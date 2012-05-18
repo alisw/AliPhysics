@@ -140,7 +140,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
 
   // Cut event
   if(fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5)){
-   AliDebug(1, "Event flagged as pileup\n");
+  AliDebug(1, "Event flagged as pileup\n");
     return;
   }
   if(!fTrackCuts->CheckEventCuts("fCutsEvRec", fInputEvent)){
@@ -217,7 +217,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
       
       // Get Production Vertex in radial direction
       Double_t vx = mcpart->Particle()->Vx(), 
-               vy = mcpart->Particle()->Vy(); 
+              vy = mcpart->Particle()->Vy(); 
       Double_t productionVertex = TMath::Sqrt(vx*vx+vy*vy);
       
       // Get Mother PDG code of the particle
@@ -247,7 +247,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
 
 
 
-	  (*fDebugTree) << "MCDebug"
+    (*fDebugTree) << "MCDebug"
                     << "centrality="          << centrality
                     << "MBtrigger="           << isMBTrigger 
                     << "CentralTrigger="      << isCentralTrigger
@@ -261,7 +261,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                     << "pdg="                 << pdg
                     << "ProductionVertex="    << productionVertex
                     << "motherPdg="           << motherPdg
-    	            << "source="              << source
+                  << "source="              << source
                     << "\n";
     }
   }
@@ -275,6 +275,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     // Cut track (Only basic track cuts)
     if(!fTrackCuts->CheckParticleCuts(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepRecKineITSTPC, track)) continue;
     // Debug streaming of PID-related quantities
+    copyTrack.~AliESDtrack();
     new(&copyTrack) AliESDtrack(*track);
     if(fTPCpid->HasEtaCorrection()) fTPCpid->ApplyEtaCorrection(&copyTrack, AliHFEpidObject::kESDanalysis); // Apply Eta Correction on copy track
     Double_t nSigmaTOF = pid->NumberOfSigmasTOF(track, AliPID::kElectron);
@@ -338,7 +339,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
         mcptTPC = ref->Pt();
       }
 
-     
+    
       TParticle *mctrack1 = mctrack->Particle();
       mesonID=GetElecSourceMC(mctrack1);
       if(mesonID==AliHFEmcQA::kGammaPi0 || mesonID==AliHFEmcQA::kPi0) mArr=0;                //pion
@@ -349,7 +350,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
       else if(mesonID==AliHFEmcQA::kGammaRho0 || mesonID==AliHFEmcQA::kRho0) mArr=5;         //rho
     
       mctrack->XvYvZv(xr);
-     
+    
       eR= TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
       eZ = xr[2];
       TParticle *mctrackt = mctrack->Particle();
@@ -358,77 +359,77 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
       AliMCParticle *mctrackmother = NULL;
 
       if(!(mArr<0)){
-	  if(mesonID>=AliHFEmcQA::kGammaPi0) {  // conversion electron, be careful with the enum odering
-	      Int_t glabel=TMath::Abs(mctrack->GetMother()); // gamma label
-	      if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
-		  glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's label
-		  if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
-		      mesonPt = mctrackmother->Pt(); //meson pt
-		      bgcategory = 1.;
-		      mctrackmother->XvYvZv(xr);
-		      mesonR = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
-		      mesonZ = xr[2];
+    if(mesonID>=AliHFEmcQA::kGammaPi0) {  // conversion electron, be careful with the enum odering
+        Int_t glabel=TMath::Abs(mctrack->GetMother()); // gamma label
+        if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+      glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's label
+      if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+          mesonPt = mctrackmother->Pt(); //meson pt
+          bgcategory = 1.;
+          mctrackmother->XvYvZv(xr);
+          mesonR = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+          mesonZ = xr[2];
 
-		      mctrackt = mctrackmother->Particle();
-		      if(mctrackt){
-			  mesonunique = mctrackt->GetUniqueID();
-		      }
-		      if(glabel>fMCEvent->GetNumberOfPrimaries()) {
-			  bgcategory = 2.;
-			  glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
-			  if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
-			      mesonMomPdg=mctrackmother->PdgCode();
-			      mesonMomPt=mctrackmother->Pt();
-			      if(TMath::Abs(mctrackmother->PdgCode())==310){
-				  bgcategory = 3.;
-				  glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother's mother
-				  if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
-				      mesonGMomPdg=mctrackmother->PdgCode();
-				      glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
-				      if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
-					  mesonGGMomPdg=mctrackmother->PdgCode();
-				      }
-				  }
-			      }
-			  }
-		      }
-		  }
-	      }
-	  }
-	  else{ // nonHFE except for the conversion electron
-	      Int_t glabel=TMath::Abs(mctrack->GetMother());
-	      if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
-		  mesonPt = mctrackmother->Pt(); //meson pt
-		  bgcategory = -1.;
-		  mctrackmother->XvYvZv(xr);
-		  mesonR = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
-		  mesonZ = xr[2];
+          mctrackt = mctrackmother->Particle();
+          if(mctrackt){
+        mesonunique = mctrackt->GetUniqueID();
+          }
+          if(glabel>fMCEvent->GetNumberOfPrimaries()) {
+        bgcategory = 2.;
+        glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
+        if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+            mesonMomPdg=mctrackmother->PdgCode();
+            mesonMomPt=mctrackmother->Pt();
+            if(TMath::Abs(mctrackmother->PdgCode())==310){
+          bgcategory = 3.;
+          glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother's mother
+          if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+              mesonGMomPdg=mctrackmother->PdgCode();
+              glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
+              if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+            mesonGGMomPdg=mctrackmother->PdgCode();
+              }
+          }
+            }
+        }
+          }
+      }
+        }
+    }
+    else{ // nonHFE except for the conversion electron
+        Int_t glabel=TMath::Abs(mctrack->GetMother());
+        if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+      mesonPt = mctrackmother->Pt(); //meson pt
+      bgcategory = -1.;
+      mctrackmother->XvYvZv(xr);
+      mesonR = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+      mesonZ = xr[2];
 
-		  mctrackt = mctrackmother->Particle();
-		  if(mctrackt){
-		      mesonunique = mctrackt->GetUniqueID();
-		  }
-		  if(glabel>fMCEvent->GetNumberOfPrimaries()) {
-		      bgcategory = -2.;
-		      glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
-		      if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
-			  mesonMomPdg=mctrackmother->PdgCode();
-			  mesonMomPt=mctrackmother->Pt();
-			  if(TMath::Abs(mctrackmother->PdgCode())==310){
-			      bgcategory = -3.;
-			      glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother's mother
-			      if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+      mctrackt = mctrackmother->Particle();
+      if(mctrackt){
+          mesonunique = mctrackt->GetUniqueID();
+      }
+      if(glabel>fMCEvent->GetNumberOfPrimaries()) {
+          bgcategory = -2.;
+          glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
+          if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+        mesonMomPdg=mctrackmother->PdgCode();
+        mesonMomPt=mctrackmother->Pt();
+        if(TMath::Abs(mctrackmother->PdgCode())==310){
+            bgcategory = -3.;
+            glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother's mother
+            if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
                                   mesonGMomPdg=mctrackmother->PdgCode();
-				  glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
-				  if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
-                                     mesonGGMomPdg=mctrackmother->PdgCode();
-				  }
-			      }
-			  }
-		      }
-		  }
-	      }
-	  }
+          glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
+          if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+                                    mesonGGMomPdg=mctrackmother->PdgCode();
+          }
+            }
+        }
+          }
+      }
+        }
+    }
       }
 
 
@@ -472,7 +473,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     Double_t trddEdxSum[6];
     for(Int_t a=0;a<6;a++) { trddEdxSum[a]= 0.;}
     for(Int_t itl = 0; itl < 6; itl++){
-	    Int_t nSliceNonZero = 0;
+      Int_t nSliceNonZero = 0;
       trddEdxSum[itl] = track->GetTRDslice(itl, 0); // in new reconstruction slice 0 contains the total charge
       for(Int_t islice = 0; islice < 8; islice++){
         if(track->GetTRDslice(itl, islice) > 0.001) nSliceNonZero++;
@@ -501,6 +502,11 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     Double_t hfeb[2] = {-99.,-99.};
     Double_t hfebCov[3] = {-999.,-999.,-999.};
     fExtraCuts->GetHFEImpactParameters(track, hfeb, hfebCov);
+
+    Double_t tofdx= -999.0;
+    Double_t tofdz= -999.0;
+    tofdx=track->GetTOFsignalDx();
+    tofdz=track->GetTOFsignalDz();
 
     // Fill Tree
     (*fDebugTree) << "PIDdebug"
@@ -535,7 +541,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                   << "nclustersITS="        << nclustersITS
                   << "nclusters="           << nclustersTRD
                   << "chi2matching="        << chi2matching
-		  << "chi2PerClusterITS="   << chi2PerClusterITS
+      << "chi2PerClusterITS="   << chi2PerClusterITS
                   << "its0="                << hasClusterITS[0]
                   << "its1="                << hasClusterITS[1]
                   << "its2="                << hasClusterITS[2]
@@ -548,18 +554,18 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                   << "trd3="                << hasTrackletTRD[3]
                   << "trd4="                << hasTrackletTRD[4]
                   << "trd5="                << hasTrackletTRD[5]
-	          << "TRDdEdxl0="           << trddEdxSum[0]
-	          << "TRDdEdxl1="           << trddEdxSum[1]
-	          << "TRDdEdxl2="           << trddEdxSum[2]
-	          << "TRDdEdxl3="           << trddEdxSum[3]
-	          << "TRDdEdxl4="           << trddEdxSum[4]
-	          << "TRDdEdxl5="           << trddEdxSum[5]
+            << "TRDdEdxl0="           << trddEdxSum[0]
+            << "TRDdEdxl1="           << trddEdxSum[1]
+            << "TRDdEdxl2="           << trddEdxSum[2]
+            << "TRDdEdxl3="           << trddEdxSum[3]
+            << "TRDdEdxl4="           << trddEdxSum[4]
+            << "TRDdEdxl5="           << trddEdxSum[5]
                   << "TOFsigmaEl="          << nSigmaTOF
                   << "TPCsigmaEl="          << nSigmaTPC
                   << "TPCdEdx="             << tPCdEdx
                   << "TRDlikeEl="           << likeEleTRD
                   << "TRDlikeEln="          << likeEleTRDn
-	          << "trdtruncmean1="       << trdtruncmean1
+            << "trdtruncmean1="       << trdtruncmean1
                   << "trdtruncmean2="       << trdtruncmean2
                   << "dcaR="                << b[0]
                   << "dcaZ="                << b[1]
@@ -573,17 +579,19 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                   << "hfedcacovZ="          << hfebCov[2]
                   << "vx="                  << vtx[0]
                   << "vy="                  << vtx[1]
-                  << "vz="                  << vtx[2] 
-	          << "ncontrib="            << ncontrib
-	          << "mesonID="             << mesonID
-	          << "eR="                  << eR
-	          << "mesonR="              << mesonR
-	          << "eZ="                  << eZ
-	          << "mesonZ="              << mesonZ
-	          << "unique="              << unique
-	          << "mesonunique="         << mesonunique
-	          << "bgcategory="          << bgcategory
-	          << "mesonpt="             << mesonPt
+                  << "vz="                  << vtx[2]
+            << "tofdx="                << tofdx
+            << "tofdz="                << tofdz
+            << "ncontrib="            << ncontrib
+            << "mesonID="             << mesonID
+            << "eR="                  << eR
+            << "mesonR="              << mesonR
+            << "eZ="                  << eZ
+            << "mesonZ="              << mesonZ
+            << "unique="              << unique
+            << "mesonunique="         << mesonunique
+            << "bgcategory="          << bgcategory
+            << "mesonpt="             << mesonPt
                   << "mesonMomPdg="         << mesonMomPdg
                   << "mesonGMomPdg="         << mesonGMomPdg
                   << "mesonGGMomPdg="         << mesonGGMomPdg
@@ -643,18 +651,18 @@ Int_t AliHFEdebugTreeTask::GetElecSourceMC(TParticle * const mcpart)
   TParticle *partMotherCopy = mctrack->Particle();
   Int_t maPdgcode = partMother->GetPdgCode();
 
-   // if the mother is charmed hadron  
-   if ( (int(abs(maPdgcode)/100.)%10) == AliHFEmcQA::kCharm || (int(abs(maPdgcode)/1000.)%10) == AliHFEmcQA::kCharm ) {
+  // if the mother is charmed hadron  
+  if ( (int(abs(maPdgcode)/100.)%10) == AliHFEmcQA::kCharm || (int(abs(maPdgcode)/1000.)%10) == AliHFEmcQA::kCharm ) {
 
-     for (Int_t i=0; i<fNparents; i++){
+    for (Int_t i=0; i<fNparents; i++){
         if (abs(maPdgcode)==fParentSelect[0][i]){
           isFinalOpenCharm = kTRUE;
         }
-     }
-     if (!isFinalOpenCharm) return -1;
+    }
+    if (!isFinalOpenCharm) return -1;
 
-     // iterate until you find B hadron as a mother or become top ancester 
-     for (Int_t i=1; i<fgkMaxIter; i++){
+    // iterate until you find B hadron as a mother or become top ancester 
+    for (Int_t i=1; i<fgkMaxIter; i++){
 
         Int_t jLabel = partMother->GetFirstMother();
         if (jLabel == -1){
@@ -672,84 +680,84 @@ Int_t AliHFEdebugTreeTask::GetElecSourceMC(TParticle * const mcpart)
         Int_t grandMaPDG = grandMa->GetPdgCode();
 
         for (Int_t j=0; j<fNparents; j++){
-           if (abs(grandMaPDG)==fParentSelect[1][j]){
-             origin = AliHFEmcQA::kBeautyCharm;
-             return origin;
-           }
+          if (abs(grandMaPDG)==fParentSelect[1][j]){
+            origin = AliHFEmcQA::kBeautyCharm;
+            return origin;
+          }
         }
 
         partMother = grandMa;
-     } // end of iteration 
-   } // end of if
-   else if ( (int(abs(maPdgcode)/100.)%10) == AliHFEmcQA::kBeauty || (int(abs(maPdgcode)/1000.)%10) == AliHFEmcQA::kBeauty ) {
-     for (Int_t i=0; i<fNparents; i++){
+    } // end of iteration 
+  } // end of if
+  else if ( (int(abs(maPdgcode)/100.)%10) == AliHFEmcQA::kBeauty || (int(abs(maPdgcode)/1000.)%10) == AliHFEmcQA::kBeauty ) {
+    for (Int_t i=0; i<fNparents; i++){
         if (abs(maPdgcode)==fParentSelect[1][i]){
           origin = AliHFEmcQA::kDirectBeauty;
           return origin;
         }
-     }
-   } // end of if
-   else if ( abs(maPdgcode) == 22 ) { //conversion
+    }
+  } // end of if
+  else if ( abs(maPdgcode) == 22 ) { //conversion
 
-     tmpMomLabel = partMotherCopy->GetFirstMother();
-     if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) return -1;
-     partMother = mctrack->Particle();
-     maPdgcode = partMother->GetPdgCode();
-     if ( abs(maPdgcode) == 111 ) {
-       origin = AliHFEmcQA::kGammaPi0;
-       return origin;
-     } 
-     else if ( abs(maPdgcode) == 221 ) {
-       origin = AliHFEmcQA::kGammaEta;
-       return origin;
-     } 
-     else if ( abs(maPdgcode) == 223 ) {
-       origin = AliHFEmcQA::kGammaOmega;
-       return origin;
-     } 
-     else if ( abs(maPdgcode) == 333 ) {
-       origin = AliHFEmcQA::kGammaPhi;
-       return origin;
-     }
-     else if ( abs(maPdgcode) == 331 ) {
-       origin = AliHFEmcQA::kGammaEtaPrime;
-       return origin; 
-     }
-     else if ( abs(maPdgcode) == 113 ) {
-       origin = AliHFEmcQA::kGammaRho0;
-       return origin;
-     }
-     else origin = AliHFEmcQA::kElse;
-     //origin = kGamma; // finer category above
-     return origin;
+    tmpMomLabel = partMotherCopy->GetFirstMother();
+    if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) return -1;
+    partMother = mctrack->Particle();
+    maPdgcode = partMother->GetPdgCode();
+    if ( abs(maPdgcode) == 111 ) {
+      origin = AliHFEmcQA::kGammaPi0;
+      return origin;
+    } 
+    else if ( abs(maPdgcode) == 221 ) {
+      origin = AliHFEmcQA::kGammaEta;
+      return origin;
+    } 
+    else if ( abs(maPdgcode) == 223 ) {
+      origin = AliHFEmcQA::kGammaOmega;
+      return origin;
+    } 
+    else if ( abs(maPdgcode) == 333 ) {
+      origin = AliHFEmcQA::kGammaPhi;
+      return origin;
+    }
+    else if ( abs(maPdgcode) == 331 ) {
+      origin = AliHFEmcQA::kGammaEtaPrime;
+      return origin; 
+    }
+    else if ( abs(maPdgcode) == 113 ) {
+      origin = AliHFEmcQA::kGammaRho0;
+      return origin;
+    }
+    else origin = AliHFEmcQA::kElse;
+    //origin = kGamma; // finer category above
+    return origin;
 
-   } // end of if
-   else if ( abs(maPdgcode) == 111 ) {
-     origin = AliHFEmcQA::kPi0;
-     return origin;
-   } // end of if
-   else if ( abs(maPdgcode) == 221 ) {
-     origin = AliHFEmcQA::kEta;
-     return origin;
-   } // end of if
-   else if ( abs(maPdgcode) == 223 ) {
-     origin = AliHFEmcQA::kOmega;
-     return origin;
-   } // end of if
-   else if ( abs(maPdgcode) == 333 ) {
-     origin = AliHFEmcQA::kPhi;
-     return origin;
-   } // end of if
-   else if ( abs(maPdgcode) == 331 ) {
-     origin = AliHFEmcQA::kEtaPrime;
-     return origin;
-   } // end of if
-   else if ( abs(maPdgcode) == 113 ) {
-     origin = AliHFEmcQA::kRho0;
-     return origin;
-   } // end of if
-   else{ 
+  } // end of if
+  else if ( abs(maPdgcode) == 111 ) {
+    origin = AliHFEmcQA::kPi0;
+    return origin;
+  } // end of if
+  else if ( abs(maPdgcode) == 221 ) {
+    origin = AliHFEmcQA::kEta;
+    return origin;
+  } // end of if
+  else if ( abs(maPdgcode) == 223 ) {
+    origin = AliHFEmcQA::kOmega;
+    return origin;
+  } // end of if
+  else if ( abs(maPdgcode) == 333 ) {
+    origin = AliHFEmcQA::kPhi;
+    return origin;
+  } // end of if
+  else if ( abs(maPdgcode) == 331 ) {
+    origin = AliHFEmcQA::kEtaPrime;
+    return origin;
+  } // end of if
+  else if ( abs(maPdgcode) == 113 ) {
+    origin = AliHFEmcQA::kRho0;
+    return origin;
+  } // end of if
+  else{ 
     origin = AliHFEmcQA::kElse;
-   }
-   return origin;
+  }
+  return origin;
 }

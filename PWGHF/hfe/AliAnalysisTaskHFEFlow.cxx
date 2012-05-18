@@ -28,6 +28,8 @@
 #include "TRandom3.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
+#include "TLorentzVector.h"
+#include "TParticle.h"
 
 #include "AliVEventHandler.h"
 #include "AliAnalysisTaskSE.h"
@@ -42,14 +44,23 @@
 #include "AliESDVZERO.h"
 #include "AliESDUtils.h"
 #include "AliMCParticle.h"
-#include "AliVTrack.h"
+#include "AliAODMCParticle.h"
+#include "AliAODEvent.h"
+#include "AliAODVertex.h"
 #include "AliAODTrack.h"
+#include "AliVTrack.h"
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
+#include "AliAODTrack.h"
+#include "AliStack.h"
+#include "AliMCEvent.h"
 
 #include "AliFlowCandidateTrack.h"
 #include "AliFlowEvent.h"
 #include "AliFlowTrackCuts.h"
 #include "AliFlowVector.h"
 #include "AliFlowCommonConstants.h"
+#include "AliKFParticle.h"
 
 #include "AliHFEcuts.h"
 #include "AliHFEpid.h"
@@ -91,13 +102,25 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fUseMCReactionPlane(kFALSE),
   fMCPID(kFALSE),
   fNoPID(kFALSE),
+  fChi2OverNDFCut(999),
+  fMaxdca(3.0),
+  fMaxopeningtheta(0.02),
+  fMaxopeningphi(0.1),
+  fMaxopening3D(0.1),
+  fMaxInvmass(0.1),
   fDebugLevel(0),
   fcutsRP(0),
   fcutsPOI(0),
   fHFECuts(0),
   fPID(0),
   fPIDqa(0),
-  fflowEvent(0x0),
+  fflowEvent(NULL),
+  fHFEBackgroundCuts(0),
+  fPIDBackground(0),
+  fPIDBackgroundqa(0),
+  fAlgorithmMA(kTRUE),
+  fArraytrack(NULL),
+  fCounterPoolBackground(0),
   fHFEVZEROEventPlane(0x0),
   fHistEV(0),
   fEventPlane(0x0),
@@ -116,9 +139,23 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fCosRes(0x0),
   fSinRes(0x0),
   fProfileCosRes(0x0),
+  fTrackingCuts(0x0),
+  fDeltaPhiMapsBeforePID(0x0),
+  fCosPhiMapsBeforePID(0x0),
   fDeltaPhiMaps(0x0),
   fCosPhiMaps(0x0),
-  fProfileCosPhiMaps(0x0)
+  fProfileCosPhiMaps(0x0),
+  fDeltaPhiMapsTaggedPhotonic(0x0),
+  fCosPhiMapsTaggedPhotonic(0x0),
+  fDeltaPhiMapsTaggedNonPhotonic(0x0),
+  fCosPhiMapsTaggedNonPhotonic(0x0),
+  fDeltaPhiMapsTaggedPhotonicLS(0x0),
+  fCosPhiMapsTaggedPhotonicLS(0x0),
+  fMCSourceDeltaPhiMaps(0x0),
+  fOppSignDeltaPhiMaps(0x0),
+  fSameSignDeltaPhiMaps(0x0),
+  fOppSignAngle(0x0),
+  fSameSignAngle(0x0)
 {
   // Constructor
 
@@ -156,13 +193,25 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fUseMCReactionPlane(kFALSE),
   fMCPID(kFALSE),
   fNoPID(kFALSE),
+  fChi2OverNDFCut(999),
+  fMaxdca(3.0),
+  fMaxopeningtheta(0.02),
+  fMaxopeningphi(0.1),
+  fMaxopening3D(0.1),
+  fMaxInvmass(0.1),
   fDebugLevel(0),
   fcutsRP(0),
   fcutsPOI(0),
   fHFECuts(0),
   fPID(0),
   fPIDqa(0),
-  fflowEvent(0x0),
+  fflowEvent(NULL),
+  fHFEBackgroundCuts(0),
+  fPIDBackground(0),
+  fPIDBackgroundqa(0),
+  fAlgorithmMA(kTRUE),  
+  fArraytrack(NULL),
+  fCounterPoolBackground(0),
   fHFEVZEROEventPlane(0x0),
   fHistEV(0),
   fEventPlane(0x0),
@@ -181,9 +230,23 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fCosRes(0x0),
   fSinRes(0x0),
   fProfileCosRes(0x0),
+  fTrackingCuts(0x0),
+  fDeltaPhiMapsBeforePID(0x0),
+  fCosPhiMapsBeforePID(0x0),
   fDeltaPhiMaps(0x0),
   fCosPhiMaps(0x0),
-  fProfileCosPhiMaps(0x0)
+  fProfileCosPhiMaps(0x0),
+  fDeltaPhiMapsTaggedPhotonic(0x0),
+  fCosPhiMapsTaggedPhotonic(0x0),
+  fDeltaPhiMapsTaggedNonPhotonic(0x0),
+  fCosPhiMapsTaggedNonPhotonic(0x0),
+  fDeltaPhiMapsTaggedPhotonicLS(0x0),
+  fCosPhiMapsTaggedPhotonicLS(0x0),
+  fMCSourceDeltaPhiMaps(0x0),
+  fOppSignDeltaPhiMaps(0x0),
+  fSameSignDeltaPhiMaps(0x0),
+  fOppSignAngle(0x0),
+  fSameSignAngle(0x0)
 {
   //
   // named ctor
@@ -200,6 +263,9 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   
   fPID = new AliHFEpid("hfePid");
   fPIDqa = new AliHFEpidQAmanager;
+
+  fPIDBackground = new AliHFEpid("hfePidBackground");
+  fPIDBackgroundqa = new AliHFEpidQAmanager;
 
   DefineInput(0,TChain::Class());
   DefineOutput(1, TList::Class());
@@ -237,13 +303,25 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fUseMCReactionPlane(ref.fUseMCReactionPlane),
   fMCPID(ref.fMCPID),
   fNoPID(ref.fNoPID),
+  fChi2OverNDFCut(ref.fChi2OverNDFCut),
+  fMaxdca(ref.fMaxdca),
+  fMaxopeningtheta(ref.fMaxopeningtheta),
+  fMaxopeningphi(ref.fMaxopeningphi),
+  fMaxopening3D(ref.fMaxopening3D),
+  fMaxInvmass(ref.fMaxInvmass),
   fDebugLevel(ref.fDebugLevel),
   fcutsRP(0),
   fcutsPOI(0),
   fHFECuts(0),
   fPID(0),
   fPIDqa(0),
-  fflowEvent(0x0),
+  fflowEvent(NULL),
+  fHFEBackgroundCuts(0),
+  fPIDBackground(0),
+  fPIDBackgroundqa(0),
+  fAlgorithmMA(kTRUE),
+  fArraytrack(NULL),
+  fCounterPoolBackground(0),
   fHFEVZEROEventPlane(0x0),
   fHistEV(0),
   fEventPlane(0x0),
@@ -262,9 +340,23 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fCosRes(0x0),
   fSinRes(0x0),
   fProfileCosRes(0x0),
+  fTrackingCuts(0x0),
+  fDeltaPhiMapsBeforePID(0x0),
+  fCosPhiMapsBeforePID(0x0),
   fDeltaPhiMaps(0x0),
   fCosPhiMaps(0x0),
-  fProfileCosPhiMaps(0x0)
+  fProfileCosPhiMaps(0x0),
+  fDeltaPhiMapsTaggedPhotonic(0x0),
+  fCosPhiMapsTaggedPhotonic(0x0),
+  fDeltaPhiMapsTaggedNonPhotonic(0x0),
+  fCosPhiMapsTaggedNonPhotonic(0x0),
+  fDeltaPhiMapsTaggedPhotonicLS(0x0),
+  fCosPhiMapsTaggedPhotonicLS(0x0),
+  fMCSourceDeltaPhiMaps(0x0),
+  fOppSignDeltaPhiMaps(0x0),
+  fSameSignDeltaPhiMaps(0x0),
+  fOppSignAngle(0x0),
+  fSameSignAngle(0x0)
 {
   //
   // Copy Constructor
@@ -313,6 +405,14 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   target.fUseMCReactionPlane = fUseMCReactionPlane;
   target.fMCPID = fMCPID;
   target.fNoPID = fNoPID;
+  target.fChi2OverNDFCut = fChi2OverNDFCut;
+  target.fMaxdca = fMaxdca;
+  target.fMaxopeningtheta = fMaxopeningtheta;
+  target.fMaxopeningphi = fMaxopeningphi;
+  target.fMaxopening3D = fMaxopening3D;
+  target.fMaxInvmass = fMaxInvmass;
+  target.fAlgorithmMA = fAlgorithmMA;
+  target.fCounterPoolBackground = fCounterPoolBackground;
   target.fDebugLevel = fDebugLevel;
   target.fcutsRP = fcutsRP;
   target.fcutsPOI = fcutsPOI;
@@ -327,6 +427,7 @@ AliAnalysisTaskHFEFlow::~AliAnalysisTaskHFEFlow(){
   //
   // Destructor
   //
+  if(fArraytrack) delete fArraytrack;
   if(fListHist) delete fListHist;
   if(fcutsRP) delete fcutsRP;
   if(fcutsPOI) delete fcutsPOI;
@@ -334,27 +435,11 @@ AliAnalysisTaskHFEFlow::~AliAnalysisTaskHFEFlow(){
   if(fPID) delete fPID;
   if(fPIDqa) delete fPIDqa;
   if(fflowEvent) delete fflowEvent;
-  if(fHFEVZEROEventPlane) delete fHFEVZEROEventPlane;
-  if(fHistEV) delete fHistEV;
-  if(fEventPlane) delete fEventPlane;
-  if(fEventPlaneaftersubtraction) delete fEventPlaneaftersubtraction;
-  if(fCosSin2phiep) delete fCosSin2phiep;
-  if(fCos2phie) delete fCos2phie;
-  if(fSin2phie) delete fSin2phie;
-  if(fCos2phiep) delete fCos2phiep;
-  if(fSin2phiep) delete fSin2phiep;
-  if(fSin2phiephiep) delete fSin2phiephiep;
-  if(fCosResabc) delete fCosResabc;
-  if(fSinResabc) delete fSinResabc;
-  if(fProfileCosResab) delete fProfileCosResab;
-  if(fProfileCosResac) delete fProfileCosResac;
-  if(fProfileCosResbc) delete fProfileCosResbc;
-  if(fCosRes) delete fCosRes;
-  if(fSinRes) delete fSinRes;
-  if(fProfileCosRes) delete fProfileCosRes;
-  if(fDeltaPhiMaps) delete fDeltaPhiMaps;
-  if(fCosPhiMaps) delete fCosPhiMaps;
-  if(fProfileCosPhiMaps) delete fProfileCosPhiMaps;
+  if(fHFEBackgroundCuts) delete fHFEBackgroundCuts;
+  if(fPIDBackground) delete fPIDBackground;
+  if(fPIDBackgroundqa) delete fPIDBackgroundqa;
+  //if(fHFEVZEROEventPlane) delete fHFEVZEROEventPlane;
+ 
 
 }
 //________________________________________________________________________
@@ -437,7 +522,30 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fPID->InitializePID();
   fPIDqa->Initialize(fPID);
   fPID->SortDetectors();
+
+  // HFE Background cuts
+
+  if(!fHFEBackgroundCuts){
+     fHFEBackgroundCuts = new AliESDtrackCuts();
+     fHFEBackgroundCuts->SetName("nackgroundcuts");
+     //Configure Default Track Cuts
+     fHFEBackgroundCuts->SetAcceptKinkDaughters(kFALSE);
+     fHFEBackgroundCuts->SetRequireTPCRefit(kTRUE);
+     fHFEBackgroundCuts->SetEtaRange(-0.9,0.9);
+     fHFEBackgroundCuts->SetRequireSigmaToVertex(kTRUE);
+     fHFEBackgroundCuts->SetMaxChi2PerClusterTPC(4.0);
+     fHFEBackgroundCuts->SetMinNClustersTPC(50);
+     fHFEBackgroundCuts->SetPtRange(0.3,1e10);
+  }
   
+  // PID background HFE
+  if(!fPIDBackground->GetNumberOfPIDdetectors()) fPIDBackground->AddDetector("TPC", 0);
+  fPIDBackground->InitializePID();
+  fPIDBackgroundqa->Initialize(fPIDBackground);
+  fPIDBackground->SortDetectors();
+  
+
+
   //**************************
   // Bins for the THnSparse
   //**************************
@@ -462,6 +570,12 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t binLimEta[nBinsEta+1];
   for(Int_t i=0; i<=nBinsEta; i++) binLimEta[i]=(Double_t)minEta + (maxEta-minEta)/nBinsEta*(Double_t)i ;
 
+  Int_t nBinsStep = 6;
+  Double_t minStep = 0.;
+  Double_t maxStep = 6.;
+  Double_t binLimStep[nBinsStep+1];
+  for(Int_t i=0; i<=nBinsStep; i++) binLimStep[i]=(Double_t)minStep + (maxStep-minStep)/nBinsStep*(Double_t)i ;
+
   Int_t nBinsEtaLess = 2;
   Double_t binLimEtaLess[nBinsEtaLess+1];
   for(Int_t i=0; i<=nBinsEtaLess; i++) binLimEtaLess[i]=(Double_t)minEta + (maxEta-minEta)/nBinsEtaLess*(Double_t)i ;
@@ -484,7 +598,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t binLimCMore[nBinsCMore+1];
   for(Int_t i=0; i<=nBinsCMore; i++) binLimCMore[i]=(Double_t)minCMore + (maxCMore-minCMore)/nBinsCMore*(Double_t)i ;
 
-  Int_t nBinsPhi = 25;
+  Int_t nBinsPhi = 12;
   Double_t minPhi = 0.0;
   Double_t maxPhi = TMath::Pi();
   Double_t binLimPhi[nBinsPhi+1];
@@ -493,17 +607,39 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     //printf("bin phi is %f for %d\n",binLimPhi[i],i);
   }
 
+  Int_t nBinsAngle = 40;
+  Double_t minAngle = 0.0;
+  Double_t maxAngle = 1.0;
+  Double_t binLimAngle[nBinsAngle+1];
+  for(Int_t i=0; i<=nBinsAngle; i++) {
+    binLimAngle[i]=(Double_t)minAngle + (maxAngle-minAngle)/nBinsAngle*(Double_t)i ;
+    //printf("bin phi is %f for %d\n",binLimPhi[i],i);
+  }
+
   Int_t nBinsCharge = 2;
   Double_t minCharge = -1.0;
   Double_t maxCharge = 1.0;
   Double_t binLimCharge[nBinsCharge+1];
   for(Int_t i=0; i<=nBinsCharge; i++) binLimCharge[i]=(Double_t)minCharge + (maxCharge-minCharge)/nBinsCharge*(Double_t)i ;
+
+  Int_t nBinsSource = 8;
+  Double_t minSource = 0.;
+  Double_t maxSource = 8.;
+  Double_t binLimSource[nBinsSource+1];
+  for(Int_t i=0; i<=nBinsSource; i++) binLimSource[i]=(Double_t)minSource + (maxSource-minSource)/nBinsSource*(Double_t)i ;
+
+  Int_t nBinsInvMass = 50;
+  Double_t minInvMass = 0.;
+  Double_t maxInvMass = 0.3;
+  Double_t binLimInvMass[nBinsInvMass+1];
+  for(Int_t i=0; i<=nBinsInvMass; i++) binLimInvMass[i]=(Double_t)minInvMass + (maxInvMass-minInvMass)/nBinsInvMass*(Double_t)i ;
   
   //******************
   // Histograms
   //******************
     
   fListHist = new TList();
+  fListHist->SetOwner();
 
   // Histos
   fHistEV = new TH2D("fHistEV", "events", 3, 0, 3, 3, 0,3);
@@ -615,6 +751,14 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   // Profile cosres centrality
   fProfileCosRes = new TProfile("ProfileCosRes","ProfileCosRes",nBinsCMore,binLimCMore);
   fProfileCosRes->Sumw2();
+
+  // Debugging tracking steps
+  const Int_t nDimTrStep=2;
+  Int_t nBinTrStep[nDimTrStep] = {nBinsPt,nBinsStep};
+  fTrackingCuts = new THnSparseF("TrackingCuts","TrackingCuts",nDimTrStep,nBinTrStep);
+  fTrackingCuts->SetBinEdges(0,binLimPt);
+  fTrackingCuts->SetBinEdges(1,binLimStep);
+  fTrackingCuts->Sumw2();
   
   // Maps delta phi
   const Int_t nDimg=5;
@@ -627,6 +771,34 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fDeltaPhiMaps->SetBinEdges(4,binLimEtaLess);
   fDeltaPhiMaps->Sumw2();  
 
+  const Int_t nDimgb=3;
+  Int_t nBingb[nDimgb] = {nBinsPhi,nBinsC,nBinsPt};
+
+  fDeltaPhiMapsBeforePID = new THnSparseF("DeltaPhiMapsBeforePID","DeltaPhiMapsBeforePID",nDimgb,nBingb);
+  fDeltaPhiMapsBeforePID->SetBinEdges(0,binLimPhi);
+  fDeltaPhiMapsBeforePID->SetBinEdges(1,binLimC);
+  fDeltaPhiMapsBeforePID->SetBinEdges(2,binLimPt);
+  fDeltaPhiMapsBeforePID->Sumw2();  
+
+ 
+  fDeltaPhiMapsTaggedPhotonic = new THnSparseF("DeltaPhiMapsTaggedPhotonic","DeltaPhiMapsTaggedPhotonic",nDimgb,nBingb);
+  fDeltaPhiMapsTaggedPhotonic->SetBinEdges(0,binLimPhi);
+  fDeltaPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
+  fDeltaPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
+  fDeltaPhiMapsTaggedPhotonic->Sumw2();  
+
+  fDeltaPhiMapsTaggedNonPhotonic = new THnSparseF("DeltaPhiMapsTaggedNonPhotonic","DeltaPhiMapsTaggedNonPhotonic",nDimgb,nBingb);
+  fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimPhi);
+  fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
+  fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
+  fDeltaPhiMapsTaggedNonPhotonic->Sumw2();  
+
+  fDeltaPhiMapsTaggedPhotonicLS = new THnSparseF("DeltaPhiMapsTaggedPhotonicLS","DeltaPhiMapsTaggedPhotonicLS",nDimgb,nBingb);
+  fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimPhi);
+  fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
+  fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
+  fDeltaPhiMapsTaggedPhotonicLS->Sumw2();  
+
   // Maps cos phi
   const Int_t nDimh=5;
   Int_t nBinh[nDimh] = {nBinsCos,nBinsC,nBinsPt,nBinsCharge,nBinsEtaLess};
@@ -638,9 +810,85 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fCosPhiMaps->SetBinEdges(4,binLimEtaLess);
   fCosPhiMaps->Sumw2();
 
+  const Int_t nDimhb=3;
+  Int_t nBinhb[nDimhb] = {nBinsCos,nBinsC,nBinsPt};
+
+  fCosPhiMapsBeforePID = new THnSparseF("CosPhiMapsBeforePID","CosPhiMapsBeforePID",nDimhb,nBinhb);
+  fCosPhiMapsBeforePID->SetBinEdges(0,binLimCos);
+  fCosPhiMapsBeforePID->SetBinEdges(1,binLimC);
+  fCosPhiMapsBeforePID->SetBinEdges(2,binLimPt);
+  fCosPhiMapsBeforePID->Sumw2();
+
+  fCosPhiMapsTaggedPhotonic = new THnSparseF("CosPhiMapsTaggedPhotonic","CosPhiMapsTaggedPhotonic",nDimhb,nBinhb);
+  fCosPhiMapsTaggedPhotonic->SetBinEdges(0,binLimCos);
+  fCosPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
+  fCosPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
+  fCosPhiMapsTaggedPhotonic->Sumw2();
+
+  fCosPhiMapsTaggedNonPhotonic = new THnSparseF("CosPhiMapsTaggedNonPhotonic","CosPhiMapsTaggedNonPhotonic",nDimhb,nBinhb);
+  fCosPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimCos);
+  fCosPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
+  fCosPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
+  fCosPhiMapsTaggedNonPhotonic->Sumw2();
+  
+  fCosPhiMapsTaggedPhotonicLS = new THnSparseF("CosPhiMapsTaggedPhotonicLS","CosPhiMapsTaggedPhotonicLS",nDimhb,nBinhb);
+  fCosPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimCos);
+  fCosPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
+  fCosPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
+  fCosPhiMapsTaggedPhotonicLS->Sumw2();
+
   // Profile Maps cos phi
   fProfileCosPhiMaps = new TProfile2D("ProfileCosPhiMaps","ProfileCosPhiMaps",nBinsC,binLimC,nBinsPt,binLimPt);
   fProfileCosPhiMaps->Sumw2();
+
+  // Background study
+  const Int_t nDimMCSource=3;
+  Int_t nBinMCSource[nDimMCSource] = {nBinsC,nBinsPt,nBinsSource};
+  fMCSourceDeltaPhiMaps = new THnSparseF("MCSourceDeltaPhiMaps","MCSourceDeltaPhiMaps",nDimMCSource,nBinMCSource);
+  fMCSourceDeltaPhiMaps->SetBinEdges(0,binLimC);
+  fMCSourceDeltaPhiMaps->SetBinEdges(1,binLimPt);
+  fMCSourceDeltaPhiMaps->SetBinEdges(2,binLimSource);
+  fMCSourceDeltaPhiMaps->Sumw2();
+
+  // Maps invmass opposite
+  const Int_t nDimOppSign=5;
+  Int_t nBinOppSign[nDimOppSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource};
+  fOppSignDeltaPhiMaps = new THnSparseF("OppSignDeltaPhiMaps","OppSignDeltaPhiMaps",nDimOppSign,nBinOppSign);
+  fOppSignDeltaPhiMaps->SetBinEdges(0,binLimPhi);
+  fOppSignDeltaPhiMaps->SetBinEdges(1,binLimC);
+  fOppSignDeltaPhiMaps->SetBinEdges(2,binLimPt);
+  fOppSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
+  fOppSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
+  fOppSignDeltaPhiMaps->Sumw2();
+
+  // Maps invmass same sign
+  const Int_t nDimSameSign=5;
+  Int_t nBinSameSign[nDimSameSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource};
+  fSameSignDeltaPhiMaps = new THnSparseF("SameSignDeltaPhiMaps","SameSignDeltaPhiMaps",nDimSameSign,nBinSameSign);
+  fSameSignDeltaPhiMaps->SetBinEdges(0,binLimPhi);
+  fSameSignDeltaPhiMaps->SetBinEdges(1,binLimC);
+  fSameSignDeltaPhiMaps->SetBinEdges(2,binLimPt);
+  fSameSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
+  fSameSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
+  fSameSignDeltaPhiMaps->Sumw2();
+
+  // Maps angle same sign
+  const Int_t nDimAngleSameSign=3;
+  Int_t nBinAngleSameSign[nDimAngleSameSign] = {nBinsAngle,nBinsC,nBinsSource};
+  fSameSignAngle = new THnSparseF("SameSignAngleMaps","SameSignAngleMaps",nDimAngleSameSign,nBinAngleSameSign);
+  fSameSignAngle->SetBinEdges(0,binLimAngle);
+  fSameSignAngle->SetBinEdges(1,binLimC);
+  fSameSignAngle->SetBinEdges(2,binLimSource);
+  fSameSignAngle->Sumw2();
+
+  // Maps angle opp sign
+  const Int_t nDimAngleOppSign=3;
+  Int_t nBinAngleOppSign[nDimAngleOppSign] = {nBinsAngle,nBinsC,nBinsSource};
+  fOppSignAngle = new THnSparseF("OppSignAngleMaps","OppSignAngleMaps",nDimAngleOppSign,nBinAngleOppSign);
+  fOppSignAngle->SetBinEdges(0,binLimAngle);
+  fOppSignAngle->SetBinEdges(1,binLimC);
+  fOppSignAngle->SetBinEdges(2,binLimSource);
+  fOppSignAngle->Sumw2();
 
 
   //**************************
@@ -649,6 +897,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
 
   //fListHist->Add(qaCutsRP);
   fListHist->Add(fPIDqa->MakeList("HFEpidQA"));
+  fListHist->Add(fPIDBackgroundqa->MakeList("HFEpidBackgroundQA"));
   fListHist->Add(fHistEV);
   fListHist->Add(fProfileCosRes);
   fListHist->Add(fProfileCosResab);
@@ -666,9 +915,24 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fListHist->Add(fCosResabc);
   fListHist->Add(fSinRes);
   fListHist->Add(fSinResabc);
+  fListHist->Add(fTrackingCuts);
+  fListHist->Add(fDeltaPhiMapsBeforePID);
+  fListHist->Add(fCosPhiMapsBeforePID);
   fListHist->Add(fDeltaPhiMaps);
   fListHist->Add(fCosPhiMaps);
   fListHist->Add(fProfileCosPhiMaps);
+  fListHist->Add(fDeltaPhiMapsTaggedPhotonic);
+  fListHist->Add(fCosPhiMapsTaggedPhotonic);
+  fListHist->Add(fDeltaPhiMapsTaggedNonPhotonic);
+  fListHist->Add(fCosPhiMapsTaggedNonPhotonic);
+  fListHist->Add(fDeltaPhiMapsTaggedPhotonicLS);
+  fListHist->Add(fCosPhiMapsTaggedPhotonicLS);
+  fListHist->Add(fMCSourceDeltaPhiMaps);
+  fListHist->Add(fOppSignDeltaPhiMaps);
+  fListHist->Add(fSameSignDeltaPhiMaps);
+  fListHist->Add(fSameSignAngle);
+  fListHist->Add(fOppSignAngle);
+
 
   if(fHFEVZEROEventPlane && (fDebugLevel > 2)) fListHist->Add(fHFEVZEROEventPlane->GetOutputList());
   
@@ -706,10 +970,12 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   Double_t valuensparseg[5];
   Double_t valuensparseh[5];
   Double_t valuensparsehprofile[3];
-
+  Double_t valuensparseMCSourceDeltaPhiMaps[3];
+  Double_t valuetrackingcuts[2];
+   
   AliMCEvent *mcEvent = MCEvent();
   AliMCParticle *mctrack = NULL;
-  
+    
   /////////////////
   // centrality
   /////////////////
@@ -774,7 +1040,8 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   valuensparseh[1] = binct; 
   valuensparsehprofile[1] = binct; 
   valuecossinephiep[2] = binctMore;
-
+  valuensparseMCSourceDeltaPhiMaps[0] = binct;
+ 
   //////////////////////
   // run number
   //////////////////////
@@ -785,6 +1052,11 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   if(!fPID->IsInitialized()){
     // Initialize PID with the given run number
     fPID->InitializePID(runnumber);
+  }
+
+  if(!fPIDBackground->IsInitialized()){
+    // Initialize PID with the given run number
+    fPIDBackground->InitializePID(runnumber);
   }
 
 
@@ -798,6 +1070,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     return;
   }
   fPID->SetPIDResponse(pidResponse);
+  fPIDBackground->SetPIDResponse(pidResponse);
 
   fHistEV->Fill(binctt,0.0);
  
@@ -988,14 +1261,14 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     fEventPlane->Fill(&valuensparsea[0]);
 
     // Fill
-    if(fDebugLevel > 3) fCosSin2phiep->Fill(&valuecossinephiep[0]);
+    if(fDebugLevel > 5) fCosSin2phiep->Fill(&valuecossinephiep[0]);
     
     if(!fVZEROEventPlane) {
       valuensparsef[0] = diffsub1sub2a;
       fCosRes->Fill(&valuensparsef[0]);
       valuensparsefsin[0] = diffsub1sub2asin;
-      fSinRes->Fill(&valuensparsefsin[0]);
-      if(fDebugLevel > 1) {
+      if(fDebugLevel > 5) fSinRes->Fill(&valuensparsefsin[0]);
+      if(fDebugLevel > 5) {
 	fProfileCosRes->Fill(valuensparsef[1],valuensparsef[0]);
       }
     }
@@ -1007,8 +1280,8 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       valuensparsefbissin[0] = diffsubasubbsin;
       valuensparsefbissin[1] = diffsubbsubcsin;
       valuensparsefbissin[2] = diffsubasubcsin;
-      fSinResabc->Fill(&valuensparsefbissin[0]);
-      if(fDebugLevel > 1) {
+      if(fDebugLevel > 5) fSinResabc->Fill(&valuensparsefbissin[0]);
+      if(fDebugLevel > 5) {
 	fProfileCosResab->Fill(valuensparsefbis[3],valuensparsefbis[0]);
 	fProfileCosResac->Fill(valuensparsefbis[3],valuensparsefbis[1]);
 	fProfileCosResbc->Fill(valuensparsefbis[3],valuensparsefbis[2]);
@@ -1017,46 +1290,274 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     
   }
   
-  //////////////////////////
-  // Loop over ESD track
-  //////////////////////////
- 
-
+  ////////////////////////////////////////
+  // Loop to determine pool background
+  /////////////////////////////////////////
+  if(  fArraytrack ){ 
+     fArraytrack->~TArrayI();
+     new(fArraytrack) TArrayI(nbtracks);
+  }
+  else {  
+    fArraytrack = new TArrayI(nbtracks);
+  }
+  fCounterPoolBackground = 0;
   for(Int_t k = 0; k < nbtracks; k++){
     
     AliVTrack *track = (AliVTrack *) fInputEvent->GetTrack(k);
     if(!track) continue;
+    
+    // Track cuts
+    Bool_t survivedbackground = kTRUE;
+    if(fAODAnalysis) {
+      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
+      if(aodtrack) {
+	AliESDtrack esdTrack(aodtrack);
+	// set the TPC cluster info
+	esdTrack.SetTPCClusterMap(aodtrack->GetTPCClusterMap());
+	esdTrack.SetTPCSharedMap(aodtrack->GetTPCSharedMap());
+	esdTrack.SetTPCPointsF(aodtrack->GetTPCNclsF());
+	// needed to calculate the impact parameters
+	AliAODEvent *aodeventu = dynamic_cast<AliAODEvent *>(fInputEvent);
+	if(aodeventu) {
+	  AliAODVertex *vAOD = aodeventu->GetPrimaryVertex();
+	  Double_t pos[3],cov[6];
+	  vAOD->GetXYZ(pos);
+	  vAOD->GetCovarianceMatrix(cov);
+	  const AliESDVertex vESD(pos,cov,100.,100);
+	  esdTrack.RelateToVertex(&vESD,0.,3.);
+	} 
+	if(!fHFEBackgroundCuts->IsSelected(&esdTrack)) {
+	  survivedbackground = kFALSE;
+	}
+      }
+    }
+    else {
+      AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+      if(esdtrack) {
+	if(!fHFEBackgroundCuts->IsSelected(esdtrack)) survivedbackground = kFALSE;
+      }
+    }
+    // PID
+    if(survivedbackground) {
+      // PID track cuts
+      AliHFEpidObject hfetrack2;
+      if(!fAODAnalysis) hfetrack2.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+      else hfetrack2.SetAnalysisType(AliHFEpidObject::kAODanalysis);
+      hfetrack2.SetRecTrack(track);
+      hfetrack2.SetCentrality((Int_t)binct);
+      //printf("centrality %f and %d\n",binct,hfetrack.GetCentrality());
+      hfetrack2.SetPbPb();
+      if(fPIDBackground->IsSelected(&hfetrack2,0x0,"recTrackCont",fPIDBackgroundqa)) {
+	fArraytrack->AddAt(k,fCounterPoolBackground);
+	fCounterPoolBackground++;
+	//printf("fCounterPoolBackground %d, track %d\n",fCounterPoolBackground,k);
+      }
+    }
+  }
 
+  // Look at kink mother in case of AOD
+  Int_t numberofvertices = 1;
+  AliAODEvent *aodevent = NULL;
+  Int_t numberofmotherkink = 0;  
+  if(fAODAnalysis) {
+    aodevent = dynamic_cast<AliAODEvent *>(fInputEvent);
+    if(aodevent) {
+      numberofvertices = aodevent->GetNumberOfVertices();
+    }
+  }
+  Double_t listofmotherkink[numberofvertices];
+  if(fAODAnalysis && aodevent) {
+    for(Int_t ivertex=0; ivertex < numberofvertices; ivertex++) {
+      AliAODVertex *aodvertex = aodevent->GetVertex(ivertex);
+      if(!aodvertex) continue;
+      if(aodvertex->GetType()==AliAODVertex::kKink) {
+	AliAODTrack *mother = (AliAODTrack *) aodvertex->GetParent();
+	if(!mother) continue;
+	Int_t idmother = mother->GetID();
+	listofmotherkink[numberofmotherkink] = idmother;
+	//printf("ID %d\n",idmother);
+	numberofmotherkink++;
+      }
+    }
+  }
+  
+  //////////////////////////
+  // Loop over track
+  //////////////////////////
+  
+  for(Int_t k = 0; k < nbtracks; k++){
+      
+    AliVTrack *track = (AliVTrack *) fInputEvent->GetTrack(k);
+    if(!track) continue;
+    
     if(fAODAnalysis) {
       AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
       if(!aodtrack){
 	AliError("AOD track is not there");
-	return;
+	continue;
       }  
       //printf("Find AOD track on\n");
       if(fUseFlagAOD){
 	if(aodtrack->GetFlags() != fFlags) continue;  // Only process AOD tracks where the HFE is set
-	//printf("Check flag on\n");
       }
     }
     
     if(fApplyCut) {
-      //printf("Apply cut\n");
-      Bool_t survived = kTRUE;
-      for(Int_t icut = AliHFEcuts::kStepRecKineITSTPC; icut <= AliHFEcuts::kStepHFEcutsTRD; icut++){
-	if(!fHFECuts->CheckParticleCuts(icut + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)){
-	  survived = kFALSE;
-	  //printf("Cut %d\n",icut);
-	  break;
+
+      valuetrackingcuts[0] = track->Pt(); 
+      valuetrackingcuts[1] = 0;
+
+      // RecKine: ITSTPC cuts  
+      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+      if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);
+      
+      // Reject kink mother
+      if(fAODAnalysis) {
+	Bool_t kinkmotherpass = kTRUE;
+	for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+	  if(track->GetID() == listofmotherkink[kinkmother]) {
+	    kinkmotherpass = kFALSE;
+	    continue;
+	  }
 	}
-	//printf("Pass the cut %d\n",icut);
+	if(!kinkmotherpass) continue;
       }
-      if(!survived) continue;
+      else {
+	AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+	if(esdtrack){  
+	  if(esdtrack->GetKinkIndex(0) != 0) continue; 
+	} // Quick and dirty fix to reject both kink mothers and daughters
+      }
+            
+      valuetrackingcuts[1] = 0; 
+       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+      // RecPrim
+      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+      valuetrackingcuts[1] = 1; 
+       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+
+      // HFEcuts: ITS layers cuts
+       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+       valuetrackingcuts[1] = 2; 
+       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);     
+
+      // HFE cuts: TOF PID and mismatch flag
+      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTOF + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+      valuetrackingcuts[1] = 3; 
+       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+      
+      // HFE cuts: TPC PID cleanup
+      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+      valuetrackingcuts[1] = 4; 
+       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+      
+      // HFEcuts: Nb of tracklets TRD0
+      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+      valuetrackingcuts[1] = 5; 
+       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+      
     }
 
     //printf("Survived\n");
 
+    /////////////////////////////////////////////////////////
+    // Subtract candidate from TPC event plane
+    ////////////////////////////////////////////////////////
+    Float_t eventplanesubtracted = 0.0;    
+
+    //if(eventplanedefined && (!fVZEROEventPlane)) {
+    if(!fVZEROEventPlane) {
+      // Subtract the tracks from the event plane
+      Double_t qX = standardQ->X() - vEPa->GetQContributionX(track);  //Modify the components: subtract the track you want to look at with your analysis
+      Double_t qY = standardQ->Y() - vEPa->GetQContributionY(track);  //Modify the components: subtract the track you want to look at with your analysis
+      TVector2 newQVectorfortrack;
+      newQVectorfortrack.Set(qX,qY);
+      eventplanesubtracted = TVector2::Phi_0_2pi(newQVectorfortrack.Phi())/2; 
+    }
+    else eventplanesubtracted = eventPlanea;
+
+    ///////////////////////////////////////////
+    // Event plane
+    //////////////////////////////////////////
+    Bool_t fillEventPlane = kTRUE;
+    if(!fVZEROEventPlane){
+      //if((!qsub1a) || (!qsub2a) || (!eventplanedefined)) fillEventPlane = kFALSE;
+      if((!qsub1a) || (!qsub2a)) fillEventPlane = kFALSE;
+      if(fSubEtaGapTPC) {
+	if(track->Eta() < (- fEtaGap/2.)) eventplanesubtracted = eventPlanesub1a;
+	else if(track->Eta() > (fEtaGap/2.)) eventplanesubtracted = eventPlanesub2a;
+	else fillEventPlane = kFALSE;
+      }
+    }
+    
+    ///////////////
+    // MC
+    //////////////
+    if(fUseMCReactionPlane) {
+      eventplanesubtracted = mcReactionPlane;
+      fillEventPlane = kTRUE;
+    }
+    
+    //////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////AFTERBURNER
+    Double_t phitrack = track->Phi();    
+    if (fAfterBurnerOn)
+      {
+	phitrack = GetPhiAfterAddV2(track->Phi(),mcReactionPlane);
+      }
+    //////////////////////////////////////////////////////////////////////////////
+
+
+    ///////////////////////
+    // Calculate deltaphi
+    ///////////////////////
+    
+    // Suppose phi track is between 0.0 and phi
+    Double_t deltaphi = TVector2::Phi_0_2pi(phitrack - eventplanesubtracted);
+    if(deltaphi > TMath::Pi()) deltaphi = deltaphi - TMath::Pi();
+
+    ////////////////////////////////////////
+    // Define variables
+    ///////////////////////////////////////
+
+    valuensparsee[2] = track->Pt();
+    valuensparsee[3] = track->Eta();    
+    valuensparseg[2] = track->Pt();
+    valuensparseh[2] = track->Pt();
+    valuensparsehprofile[2] = track->Pt();
+    valuensparseMCSourceDeltaPhiMaps[1] = track->Pt();
+    if(track->Charge() > 0.0) {
+      valuensparseg[3] = 0.2;
+      valuensparseh[3] = 0.2;
+    }
+    else {
+      valuensparseg[3] = -0.2;
+      valuensparseh[3] = -0.2;
+    }
+    valuensparseh[4] = track->Eta();
+    valuensparseg[4] = track->Eta();
+
+    //printf("charge %d\n",(Int_t)track->Charge());
+
+    ////////////////////////
+    // Fill before PID
+    ///////////////////////
+    
+    if(fDebugLevel > 4) { 
+      
+      valuensparseg[0] = deltaphi;
+      if(fillEventPlane) fDeltaPhiMapsBeforePID->Fill(&valuensparseg[0]);
+      
+      //
+      valuensparseh[0] = TMath::Cos(2*TVector2::Phi_mpi_pi(phitrack-eventplanesubtracted));
+      if(fillEventPlane) {
+	fCosPhiMapsBeforePID->Fill(&valuensparseh[0]);
+      }
+    }
+    
+    ////////////////////////
     // Apply PID
+    ////////////////////////
     if(!fNoPID) {
       // Apply PID for Data
       if(!fMCPID) {
@@ -1106,92 +1607,17 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     //printf("B: Number of tracks %d\n",fflowEvent->NumberOfTracks());
     
     
-    /////////////////////////////////////////////////////////
-    // Subtract electron candidate from TPC event plane
-    ////////////////////////////////////////////////////////
-    Float_t eventplanesubtracted = 0.0;    
-
-    //if(eventplanedefined && (!fVZEROEventPlane)) {
-    if(!fVZEROEventPlane) {
-      // Subtract the tracks from the event plane
-      Double_t qX = standardQ->X() - vEPa->GetQContributionX(track);  //Modify the components: subtract the track you want to look at with your analysis
-      Double_t qY = standardQ->Y() - vEPa->GetQContributionY(track);  //Modify the components: subtract the track you want to look at with your analysis
-      TVector2 newQVectorfortrack;
-      newQVectorfortrack.Set(qX,qY);
-      eventplanesubtracted = TVector2::Phi_0_2pi(newQVectorfortrack.Phi())/2; 
-    }
-    else eventplanesubtracted = eventPlanea;
-
-    ////////////////////////////////////////
-    // Fill pt and eta for the THnSparseF
-    ///////////////////////////////////////
-
-    valuensparsee[2] = track->Pt();
-    valuensparsee[3] = track->Eta();    
-    valuensparseg[2] = track->Pt();
-    valuensparseh[2] = track->Pt();
-    valuensparsehprofile[2] = track->Pt();
-    if(track->Charge() > 0.0) {
-      valuensparseg[3] = 0.2;
-      valuensparseh[3] = 0.2;
-    }
-    else {
-      valuensparseg[3] = -0.2;
-      valuensparseh[3] = -0.2;
-    }
-    valuensparseh[4] = track->Eta();
-    valuensparseg[4] = track->Eta();
-
-    //printf("charge %d\n",(Int_t)track->Charge());
-
-    Bool_t fillEventPlane = kTRUE;
-    if(!fVZEROEventPlane){
-      //if((!qsub1a) || (!qsub2a) || (!eventplanedefined)) fillEventPlane = kFALSE;
-      if((!qsub1a) || (!qsub2a)) fillEventPlane = kFALSE;
-      if(fSubEtaGapTPC) {
-	if(track->Eta() < (- fEtaGap/2.)) eventplanesubtracted = eventPlanesub1a;
-	else if(track->Eta() > (fEtaGap/2.)) eventplanesubtracted = eventPlanesub2a;
-	else fillEventPlane = kFALSE;
-      }
-    }
-    
-    
-    ///////////////
-    // MC
-    //////////////
-    if(fUseMCReactionPlane) {
-      eventplanesubtracted = mcReactionPlane;
-      fillEventPlane = kTRUE;
-    }
-    
-    //////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////AFTERBURNER
-    Double_t phitrack = track->Phi();    
-    if (fAfterBurnerOn)
-      {
-	phitrack = GetPhiAfterAddV2(track->Phi(),mcReactionPlane);
-      }
-    //////////////////////////////////////////////////////////////////////////////
-
-
-    ///////////////////////
-    // Calculate deltaphi
-    ///////////////////////
-    
-    // Suppose phi track is between 0.0 and phi
-    Double_t deltaphi = TVector2::Phi_0_2pi(phitrack - eventplanesubtracted);
-    if(deltaphi > TMath::Pi()) deltaphi = deltaphi - TMath::Pi();
-   
+  
     /////////////////////
     // Fill THnSparseF
     /////////////////////
 
     //
     valuensparseabis[0] = eventplanesubtracted;
-    if(fillEventPlane) fEventPlaneaftersubtraction->Fill(&valuensparseabis[0]);
+    if((fillEventPlane) && (fDebugLevel > 5)) fEventPlaneaftersubtraction->Fill(&valuensparseabis[0]);
     
 
-    if(fDebugLevel > 3) 
+    if(fDebugLevel > 5) 
       {
 	//
 	valuensparsee[0] = TMath::Cos(2*phitrack);
@@ -1221,7 +1647,32 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       }
     }
     
-    
+    if(fDebugLevel > 1) {
+      // background
+      Int_t source = 0;
+      Int_t indexmother = -1;
+      source = FindMother(TMath::Abs(track->GetLabel()),mcEvent, indexmother);
+      valuensparseMCSourceDeltaPhiMaps[2] = source;
+      if(mcEvent) fMCSourceDeltaPhiMaps->Fill(&valuensparseMCSourceDeltaPhiMaps[0]);
+      Int_t taggedvalue = LookAtNonHFE(k,track,fInputEvent,mcEvent,binct,deltaphi,source,indexmother);
+      if(fillEventPlane) {
+	// No opposite charge partner found in the invariant mass choosen
+	if((taggedvalue!=2) && (taggedvalue!=6)) {
+	  fDeltaPhiMapsTaggedNonPhotonic->Fill(&valuensparseg[0]);
+	  fCosPhiMapsTaggedNonPhotonic->Fill(&valuensparseh[0]);
+	}
+	// One opposite charge partner found in the invariant mass choosen
+	if((taggedvalue==2) || (taggedvalue==6)) {
+	  fDeltaPhiMapsTaggedPhotonic->Fill(&valuensparseg[0]);
+	  fCosPhiMapsTaggedPhotonic->Fill(&valuensparseh[0]);
+	}
+	// One same charge partner found in the invariant mass choosen
+	if((taggedvalue==4) || (taggedvalue==6)) {
+	  fDeltaPhiMapsTaggedPhotonicLS->Fill(&valuensparseg[0]);
+	  fCosPhiMapsTaggedPhotonicLS->Fill(&valuensparseh[0]);
+	}
+      }
+    }
     
   }
 
@@ -1239,9 +1690,13 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   for(Int_t bincless = 0; bincless < fNbBinsCentralityQCumulant; bincless++) {
     if((fBinCentralityLess[bincless]< cntr) && (cntr < fBinCentralityLess[bincless+1])) PostData(bincless+2,fflowEvent);
   }
+
+  if(fArraytrack) {
+    delete fArraytrack;
+    fArraytrack = NULL;
+  }
   
   PostData(1, fListHist);
-
 
  
 }
@@ -1282,4 +1737,513 @@ Double_t AliAnalysisTaskHFEFlow::GetPhiAfterAddV2(Double_t phi,Double_t reaction
     if (TMath::AreEqualAbs(phiprev,phiend,fPrecisionPhi)) break;
   }
   return phiend;
+}
+//_____________________________________________________________________________________________
+Int_t AliAnalysisTaskHFEFlow::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent, AliMCEvent *mcEvent,Int_t binct,Double_t deltaphi,Int_t source,Int_t indexmother)
+{	
+  //
+  // Look At Non HFE
+  //
+
+  // return -1 if nothing
+  // return 2 if opposite charge within the mass range found
+  // return 4 if like charge within the mass range found
+  // return 6 if opposite charge and like charge within the mass range found
+  //
+
+  Int_t taggedphotonic = -1;
+
+  Bool_t oppositetaggedphotonic = kFALSE;
+  Bool_t sametaggedphotonic = kFALSE;
+
+  //printf("fCounterPoolBackground %d in LookAtNonHFE!!!\n",fCounterPoolBackground);
+  if(!fArraytrack) return taggedphotonic;
+  //printf("process track %d\n",iTrack1);
+  
+  TVector3 v3D1;
+  TVector3 v3D2;
+
+  Double_t valuensparseDeltaPhiMaps[5];
+  Double_t valueangle[3];
+
+  valuensparseDeltaPhiMaps[1] = binct;
+  valuensparseDeltaPhiMaps[2] = track1->Pt();
+  valuensparseDeltaPhiMaps[0] = deltaphi;
+  valuensparseDeltaPhiMaps[4] = source;
+  
+  valueangle[2] = source;
+  valueangle[1] = binct;
+
+  //Magnetic Field
+  Double_t bfield = vEvent->GetMagneticField();
+  
+  for(Int_t idex = 0; idex < fCounterPoolBackground; idex++) 
+    {
+
+      Int_t iTrack2 = fArraytrack->At(idex);
+      //printf("track %d\n",iTrack2);
+      AliVTrack* track2 = (AliVTrack *) vEvent->GetTrack(iTrack2);
+      if (!track2) 
+	{
+	  printf("ERROR: Could not receive track %d\n", iTrack2);
+	  continue;
+	}
+      if(iTrack2==iTrack1) continue;
+      //printf("Different\n");
+
+      // track cuts and PID already done
+
+      // if MC look
+      if(mcEvent) {
+	Int_t source2 = 0;
+	Int_t indexmother2 = -1;
+	source2 = FindMother(TMath::Abs(track2->GetLabel()),mcEvent, indexmother2);
+	if((indexmother2 == indexmother) && (source == source2)) {
+	  if(source == kElectronfromconversion) {
+	    valueangle[2] = kElectronfromconversionboth;
+	    valuensparseDeltaPhiMaps[4] = kElectronfromconversionboth;
+	  }
+	  if(source == kElectronfrompi0) {
+	    valueangle[2] = kElectronfrompi0both;
+	    valuensparseDeltaPhiMaps[4] = kElectronfrompi0both;
+	  }
+	  if(source == kElectronfrometa) {
+	    valueangle[2] = kElectronfrometaboth;
+	    valuensparseDeltaPhiMaps[4] = kElectronfrometaboth;
+	  }
+	}
+      }
+      
+      if(fAlgorithmMA && (!fAODAnalysis))
+	{
+	  // tracks
+	  AliESDtrack *esdtrack2 = dynamic_cast<AliESDtrack *>(track2);   
+	  AliESDtrack *esdtrack1 = dynamic_cast<AliESDtrack *>(track1);      
+	  if((!esdtrack2) || (!esdtrack1)) continue;
+
+	  //Variables
+	  Double_t p1[3];
+	  Double_t p2[3];
+	  Double_t xt1; //radial position track 1 at the DCA point
+	  Double_t xt2; //radial position track 2 at the DCA point
+	  //DCA track1-track2
+	  Double_t dca12 = esdtrack2->GetDCA(esdtrack1,bfield,xt2,xt1);
+
+	  // Cut dca
+	  if(dca12 > fMaxdca) continue;
+	  
+	  //Momento of the track extrapolated to DCA track-track	
+	  //Track1
+	  Bool_t hasdcaT1 = esdtrack1->GetPxPyPzAt(xt1,bfield,p1);
+	  //Track2
+	  Bool_t hasdcaT2 = esdtrack2->GetPxPyPzAt(xt2,bfield,p2);
+	  
+	  if(!hasdcaT1 || !hasdcaT2) AliWarning("It could be a problem in the extrapolation");
+	  
+	  //track1-track2 Invariant Mass
+	  Double_t eMass = 0.000510998910; //Electron mass in GeV
+	  Double_t pP1 = sqrt(p1[0]*p1[0]+p1[1]*p1[1]+p1[2]*p1[2]); //Track 1 momentum
+	  Double_t pP2 = sqrt(p2[0]*p2[0]+p2[1]*p2[1]+p2[2]*p2[2]); //Track 2 momentum
+	  Double_t eE1 = TMath::Sqrt(pP1*pP1+eMass*eMass);
+	  Double_t eE2 = TMath::Sqrt(pP2*pP2+eMass*eMass);
+	  
+	  //TLorentzVector v1(p1[0],p1[1],p1[2],sqrt(eMass*eMass+pP1*pP1));
+	  //TLorentzVector v2(p2[0],p2[1],p2[2],sqrt(eMass*eMass+pP2*pP2));
+	  //Double_t imass = (v1+v2).M(); //Invariant Mass
+	  //Double_t angle3D = v1.Angle(v2.Vect()); //Opening Angle (Total Angle)
+	  
+	  // daughter
+	  v3D1.SetXYZ(p1[0],p1[1],p1[2]);
+	  v3D2.SetXYZ(p2[0],p2[1],p2[2]);
+	  Double_t openingangle = TVector2::Phi_0_2pi(v3D2.Angle(v3D1));
+	  
+	  // mother
+	  TVector3 motherrec = v3D1 + v3D2;
+	  Double_t invmass = TMath::Sqrt((eE1+eE2)*(eE1+eE2)-(motherrec.Px()*motherrec.Px()+motherrec.Py()*motherrec.Py()+motherrec.Pz()*motherrec.Pz()));
+	  
+	  // xy
+	  //TVector3 vectordiff = v3D1 - v3D2;
+	  //Double_t diffphi = TVector2::Phi_0_2pi(vectordiff.Phi());
+	  //Double_t massxy = TMath::Sqrt((eE1+eE2)*(eE1+eE2)-(pP1*pP1+pP2*pP2+2*pP1*pP2*TMath::Cos(diffphi)));
+
+	  // rz
+	  //Double_t difftheta = TVector2::Phi_0_2pi(vectordiff.Eta());
+	  //Double_t massrz = TMath::Sqrt((eE1+eE2)*(eE1+eE2)-(pP1*pP1+pP2*pP2+2*pP1*pP2*TMath::Cos(difftheta)));
+  
+
+	  Float_t fCharge1 = track1->Charge();
+	  Float_t fCharge2 = track2->Charge();
+
+	  // Fill Histo
+	  //valueangle[0] = diffphi;
+	  //valueangle[1] = difftheta;
+	  valueangle[0] = openingangle;
+	  if((fCharge1*fCharge2)>0.0) fSameSignAngle->Fill(&valueangle[0]);
+	  else fOppSignAngle->Fill(&valueangle[0]);
+
+	  // Cut
+	  if(openingangle > fMaxopening3D) continue;
+	  //if(difftheta > fMaxopeningtheta) continue;
+	  //if(diffphi > fMaxopeningphi) continue;
+
+	  // Invmass
+	  valuensparseDeltaPhiMaps[3] = invmass;
+	  if((fCharge1*fCharge2)>0.0) fSameSignDeltaPhiMaps->Fill(&valuensparseDeltaPhiMaps[0]);
+	  else fOppSignDeltaPhiMaps->Fill(&valuensparseDeltaPhiMaps[0]);
+	  
+	  // Cut
+	  if(invmass < fMaxInvmass) {
+	    if((fCharge1*fCharge2)<0.0) oppositetaggedphotonic=kTRUE;
+	    if((fCharge1*fCharge2)>0.0) sametaggedphotonic=kTRUE;
+	  }
+
+
+	}
+      else 
+	{
+	  Int_t fPDGtrack1 = 11; 
+	  Int_t fPDGtrack2 = 11;
+	  
+	  Float_t fCharge1 = track1->Charge();
+	  Float_t fCharge2 = track2->Charge();
+	  
+	  if(fCharge1>0) fPDGtrack1 = -11;
+	  if(fCharge2>0) fPDGtrack2 = -11;
+	  
+	  AliKFParticle fKFtrack1(*track1, fPDGtrack1);
+	  AliKFParticle fKFtrack2(*track2, fPDGtrack2);
+	  AliKFParticle fRecoGamma(fKFtrack1, fKFtrack2);
+	  
+	  //Reconstruction Cuts
+	  if(fRecoGamma.GetNDF()<1) continue;
+	  Double_t chi2OverNDF = fRecoGamma.GetChi2()/fRecoGamma.GetNDF();
+	  if(TMath::Sqrt(TMath::Abs(chi2OverNDF))>fChi2OverNDFCut) continue;
+	  
+	  //Invariant Mass
+	  Double_t imass; 
+	  Double_t width;
+	  fRecoGamma.GetMass(imass,width);
+	  
+	  //Opening Angle (Total Angle)
+	  Double_t angle = fKFtrack1.GetAngle(fKFtrack2);
+	  valueangle[0] = angle;
+	  if((fCharge1*fCharge2)>0.0) fSameSignAngle->Fill(&valueangle[0]);
+	  else fOppSignAngle->Fill(&valueangle[0]);	  
+
+	  // Invmass
+	  valuensparseDeltaPhiMaps[3] = imass;
+	  if((fCharge1*fCharge2)>0.0) fSameSignDeltaPhiMaps->Fill(&valuensparseDeltaPhiMaps[0]);
+	  else fOppSignDeltaPhiMaps->Fill(&valuensparseDeltaPhiMaps[0]);
+	  
+	  
+	  // Cut
+	  if(imass < fMaxInvmass) {
+	    if((fCharge1*fCharge2)<0.0) oppositetaggedphotonic=kTRUE;
+	    if((fCharge1*fCharge2)>0.0) sametaggedphotonic=kTRUE;
+	  }
+	
+	}
+    }
+
+  if(oppositetaggedphotonic && sametaggedphotonic){
+    taggedphotonic = 6;
+  }
+
+  if(!oppositetaggedphotonic && sametaggedphotonic){
+    taggedphotonic = 4;
+  }
+
+  if(oppositetaggedphotonic && !sametaggedphotonic){
+    taggedphotonic = 2;
+  }
+
+  
+  return taggedphotonic;
+}
+
+//_________________________________________________________________________
+Int_t AliAnalysisTaskHFEFlow::FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &indexmother){
+  //
+  // Find the mother if MC
+  //
+
+  if(!mcEvent) return 0;
+  
+  indexmother = IsMotherGamma(tr,mcEvent);
+  if(indexmother > 0) return kElectronfromconversion;
+  indexmother = IsMotherPi0(tr,mcEvent);
+  if(indexmother > 0) return kElectronfrompi0;
+  indexmother = IsMotherC(tr,mcEvent);
+  if(indexmother > 0) return kElectronfromC;
+  indexmother = IsMotherB(tr,mcEvent);
+  if(indexmother > 0) return kElectronfromB;
+  indexmother = IsMotherEta(tr,mcEvent);
+  if(indexmother > 0) return kElectronfrometa;
+  
+  return kElectronfromother;
+
+
+}
+//____________________________________________________________________________________________________________
+Int_t AliAnalysisTaskHFEFlow::IsMotherGamma(Int_t tr, AliMCEvent* mcEvent) {
+
+  //
+  // Return the lab of gamma mother or -1 if not gamma
+  //
+
+  if(tr < 0) return -1;
+  AliVParticle *mctrack = mcEvent->GetTrack(tr);
+  
+  if(mctrack->IsA() == AliMCParticle::Class()) {
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother(); 
+    if(imother < 0) return -1;  
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+    // Check gamma    
+    Int_t pdg = mother->GetPdgCode();
+    if(TMath::Abs(pdg) == 22) return imother;
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherGamma(imother,mcEvent);
+    }
+    return -1;
+  }
+
+  if(mctrack->IsA() == AliAODMCParticle::Class()) {
+    AliAODMCParticle *mctrackaod = NULL;
+    if(!(mctrackaod = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0) return -1;  
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    // Check gamma    
+    Int_t pdg = mothertrack->GetPdgCode();
+    if(TMath::Abs(pdg) == 22) return imother;
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherGamma(imother,mcEvent);
+    }
+    return -1;
+
+  }
+  
+  return -1;
+
+ 
+}
+//
+//____________________________________________________________________________________________________________
+Int_t AliAnalysisTaskHFEFlow::IsMotherPi0(Int_t tr, AliMCEvent* mcEvent) {
+
+  //
+  // Return the lab of pi0 mother or -1 if not pi0
+  //
+
+  if(tr < 0) return -1;
+  AliVParticle *mctrack = mcEvent->GetTrack(tr);
+  
+  if(mctrack->IsA() == AliMCParticle::Class()) {
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother(); 
+    if(imother < 0) return -1;  
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+    // Check gamma    
+    Int_t pdg = mother->GetPdgCode();
+    if(TMath::Abs(pdg) == 111) return imother;
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherPi0(imother,mcEvent);
+    }
+    return -1;
+  }
+
+  if(mctrack->IsA() == AliAODMCParticle::Class()) {
+    AliAODMCParticle *mctrackaod = NULL;
+    if(!(mctrackaod = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0) return -1;  
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    // Check gamma    
+    Int_t pdg = mothertrack->GetPdgCode();
+    if(TMath::Abs(pdg) == 111) return imother;
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherPi0(imother,mcEvent);
+    }
+    return -1;
+  }
+
+  return -1;
+ 
+}
+//____________________________________________________________________________________________________________
+Int_t AliAnalysisTaskHFEFlow::IsMotherC(Int_t tr, AliMCEvent* mcEvent) {
+
+  //
+  // Return the lab of signal mother or -1 if not signal
+  //
+
+  if(tr < 0) return -1;
+  AliVParticle *mctrack = mcEvent->GetTrack(tr);
+  
+  if(mctrack->IsA() == AliMCParticle::Class()) {
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother(); 
+    if(imother < 0) return -1;  
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+    // Check gamma    
+    Int_t pdg = mother->GetPdgCode();
+    if((TMath::Abs(pdg)==411) || (TMath::Abs(pdg)==421) || (TMath::Abs(pdg)==431) || (TMath::Abs(pdg)==4122) || (TMath::Abs(pdg)==4132) || (TMath::Abs(pdg)==4232) || (TMath::Abs(pdg)==43320)) return imother;
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherC(imother,mcEvent);
+    }
+    return -1;
+  }
+
+  if(mctrack->IsA() == AliAODMCParticle::Class()) {
+    AliAODMCParticle *mctrackaod = NULL;
+    if(!(mctrackaod = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0) return -1;  
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    // Check gamma    
+    Int_t pdg = mothertrack->GetPdgCode();
+    if((TMath::Abs(pdg)==411) || (TMath::Abs(pdg)==421) || (TMath::Abs(pdg)==431) || (TMath::Abs(pdg)==4122) || (TMath::Abs(pdg)==4132) || (TMath::Abs(pdg)==4232) || (TMath::Abs(pdg)==43320)) return imother;
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherC(imother,mcEvent);
+    }
+    return -1;
+  }
+
+  return -1;
+
+}
+//____________________________________________________________________________________________________________
+Int_t AliAnalysisTaskHFEFlow::IsMotherB(Int_t tr, AliMCEvent* mcEvent) {
+
+  //
+  // Return the lab of signal mother or -1 if not signal
+  //
+
+  if(tr < 0) return -1;
+  AliVParticle *mctrack = mcEvent->GetTrack(tr);
+  
+  if(mctrack->IsA() == AliMCParticle::Class()) {
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother(); 
+    if(imother < 0) return -1;  
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+    // Check gamma    
+    Int_t pdg = mother->GetPdgCode();
+    if((TMath::Abs(pdg)==511) || (TMath::Abs(pdg)==521) || (TMath::Abs(pdg)==531) || (TMath::Abs(pdg)==5122) || (TMath::Abs(pdg)==5132) || (TMath::Abs(pdg)==5232) || (TMath::Abs(pdg)==53320)) return imother; 
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherB(imother,mcEvent);
+    }
+    return -1;
+  }
+
+  if(mctrack->IsA() == AliAODMCParticle::Class()) {
+    AliAODMCParticle *mctrackaod = NULL;
+    if(!(mctrackaod = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0) return -1;  
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    // Check gamma    
+    Int_t pdg = mothertrack->GetPdgCode();
+    if((TMath::Abs(pdg)==511) || (TMath::Abs(pdg)==521) || (TMath::Abs(pdg)==531) || (TMath::Abs(pdg)==5122) || (TMath::Abs(pdg)==5132) || (TMath::Abs(pdg)==5232) || (TMath::Abs(pdg)==53320)) return imother;
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherB(imother,mcEvent);
+    }
+    return -1;
+  }
+
+  return -1;
+
+}
+//____________________________________________________________________________________________________________
+Int_t AliAnalysisTaskHFEFlow::IsMotherEta(Int_t tr, AliMCEvent* mcEvent) {
+
+  //
+  // Return the lab of pi0 mother or -1 if not pi0
+  //
+
+ if(tr < 0) return -1;
+  AliVParticle *mctrack = mcEvent->GetTrack(tr);
+  
+  if(mctrack->IsA() == AliMCParticle::Class()) {
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    TParticle *particle = 0x0;
+    particle = mctrackesd->Particle();
+    // Take mother
+    if(!particle) return -1;
+    Int_t imother   = particle->GetFirstMother(); 
+    if(imother < 0) return -1;  
+    AliMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    TParticle * mother = mothertrack->Particle();
+    if(!mother) return -1;
+    // Check gamma    
+    Int_t pdg = mother->GetPdgCode();
+    if(TMath::Abs(pdg) == 221) return imother;
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherEta(imother,mcEvent);
+    }
+    return -1;
+  }
+
+  if(mctrack->IsA() == AliAODMCParticle::Class()) {
+    AliAODMCParticle *mctrackaod = NULL;
+    if(!(mctrackaod = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return -1;
+    // Take mother
+    Int_t imother = mctrackaod->GetMother();
+    if(imother < 0) return -1;  
+    AliAODMCParticle *mothertrack = NULL;
+    if(!(mothertrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(imother))))) return -1;
+    // Check gamma    
+    Int_t pdg = mothertrack->GetPdgCode();
+    if(TMath::Abs(pdg) == 221) return imother;
+    if(TMath::Abs(pdg) == 11) {
+      return IsMotherEta(imother,mcEvent);
+    }
+    return -1;
+  }
+
+  return -1;
+  
 }
