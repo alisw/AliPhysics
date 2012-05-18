@@ -104,6 +104,7 @@ class AliHFEspectrum : public TNamed{
     void SetEtaRange(Double_t etamin, Double_t etamax) { fEtaRange[0] = etamin; fEtaRange[1] = etamax; fEtaSelected = kTRUE; }
     void SetUnSetCorrelatedErrors(Bool_t unsetcorrelatederrors) {fUnSetCorrelatedErrors = unsetcorrelatederrors;};
     void SetSmoothing(Bool_t setSmoothing) {fSetSmoothing = setSmoothing;};
+    void SetTestOneBinCentrality(Double_t centralitymin, Double_t centralitymax) { fTestCentralityLow = centralitymin; fTestCentralityHigh = centralitymax;}
 
     void SetNCentralityBinAtTheEnd(Int_t nCentralityBinAtTheEnd) {fNCentralityBinAtTheEnd = nCentralityBinAtTheEnd; };
     void SetLowHighBoundaryCentralityBinAtTheEnd(Int_t low, Int_t high, Int_t i) { fLowBoundaryCentralityBinAtTheEnd[i] = low; fHighBoundaryCentralityBinAtTheEnd[i] = high;};
@@ -129,7 +130,7 @@ class AliHFEspectrum : public TNamed{
     AliCFDataGrid* GetConversionBackground();
     AliCFDataGrid* GetNonHFEBackground();
     THnSparse* GetCharmWeights();
-    THnSparse* GetBeautyIPEff();
+    THnSparse* GetBeautyIPEff(Bool_t isMCpt);
     THnSparse* GetPIDxIPEff(Int_t source);
     void CalculateNonHFEsyst(Int_t centrality = 0);
 
@@ -142,8 +143,8 @@ class AliHFEspectrum : public TNamed{
   protected:
        
     AliCFContainer *GetContainer(AliHFEspectrum::CFContainer_t contt);
-    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1,Chargetype_t charge=kAllCharge,Int_t centrality=-1);
-    THnSparseF *GetSlicedCorrelation(THnSparseF *correlationmatrix,Int_t nDim, Int_t *dimensions) const;
+    AliCFContainer *GetSlicedContainer(AliCFContainer *cont, Int_t ndim, Int_t *dimensions,Int_t source=-1,Chargetype_t charge=kAllCharge,Int_t centralitylow=-1, Int_t centralityhigh=-1);
+    THnSparseF *GetSlicedCorrelation(THnSparseF *correlationmatrix,Int_t nDim, Int_t *dimensions,Int_t centralitylow=-1, Int_t centralityhigh=-1) const;
     TObject* GetSpectrum(const AliCFContainer * const c, Int_t step);
     TObject* GetEfficiency(const AliCFContainer * const c, Int_t step, Int_t step0);
  
@@ -166,6 +167,7 @@ class AliHFEspectrum : public TNamed{
     TF1 *fEfficiencyesdTOFPIDD[kCentrality];    // TOF PID efficiency parameterized
     TF1 *fEfficiencyIPCharmD[kCentrality];      // IP efficiency parameterized for charm
     TF1 *fEfficiencyIPBeautyD[kCentrality];     // IP efficiency parameterized for beauty 
+    TF1 *fEfficiencyIPBeautyesdD[kCentrality];  // IP efficiency parameterized for beauty for esd
     TF1 *fEfficiencyIPConversionD[kCentrality]; // IP efficiency parameterized for conversion
     TF1 *fEfficiencyIPNonhfeD[kCentrality];     // IP efficiency parameterized for nonhfe 
 
@@ -209,10 +211,13 @@ class AliHFEspectrum : public TNamed{
     Int_t fNCentralityBinAtTheEnd;// Number of centrality class at the end
     Int_t fLowBoundaryCentralityBinAtTheEnd[20];  // Boundary of the bins
     Int_t fHighBoundaryCentralityBinAtTheEnd[20];  // Boundary of the bins
+    Int_t fTestCentralityLow;                      // To test one bin in centrality only
+    Int_t fTestCentralityHigh;                     // To test one bin in centrality only
 
     THnSparseF *fHadronEffbyIPcut;// container for hadron efficiency by IP cut
     TH1D *fEfficiencyCharmSigD[kCentrality]; // charm IP cut eff from signal enhanced MC
     TH1D *fEfficiencyBeautySigD[kCentrality]; // beauty IP cut eff from signal enhanced MC
+    TH1D *fEfficiencyBeautySigesdD[kCentrality]; // beauty IP cut eff from signal enhanced MC for esd
     TH1D *fConversionEff[kCentrality];     // conversion IP cut eff
     TH1D *fNonHFEEff[kCentrality];         // nonhfe IP cut eff
     TH1D *fCharmEff[kCentrality];          // charm IP cut eff

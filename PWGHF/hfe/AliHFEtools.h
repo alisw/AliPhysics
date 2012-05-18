@@ -22,6 +22,7 @@
 
 #include <TObject.h>
 
+class TArrayD;
 class TParticle;
 class AliAODMCParticle;
 class AliPIDResponse;
@@ -38,6 +39,8 @@ class AliHFEtools : public TObject{
 
     static Double_t *MakeLinearBinning(Int_t nBins, Double_t ymin, Double_t ymax);
     static Double_t *MakeLogarithmicBinning(Int_t nBins, Double_t ymin, Double_t ymax);
+    static void FillLinearBinning(TArrayD &bins, Int_t nBins, Double_t ymin, Double_t ymax);
+    static void FillLogarithmicBinning(TArrayD &bins, Int_t nBins, Double_t ymin, Double_t ymax);
     Bool_t    BinLogAxis(TObject *o, Int_t dim);
     static Float_t GetRapidity(const TParticle *part);
     static Float_t GetRapidity(const AliAODMCParticle *part); // return rapidity

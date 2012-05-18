@@ -756,34 +756,15 @@ Bool_t AliHFEextraCuts::IsKinkDaughter(AliVTrack *track){
 //______________________________________________________
 Bool_t AliHFEextraCuts::IsKinkMother(AliVTrack *track){
   //
-  // Is kink Mother
+  // Is kink Mother: only for ESD since need to loop over vertices for AOD
   //
+  //
+
   TClass *type = track->IsA();
   if(type == AliESDtrack::Class()){
     AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
     if(!esdtrack) return kFALSE;
     if(esdtrack->GetKinkIndex(0)!=0) return kTRUE;
-    else return kFALSE;
-  }
-  else if(type == AliAODTrack::Class()){
-    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
-    if(aodtrack){
-      //printf("find a track\n");
-      AliAODVertex *aodvertex = aodtrack->GetProdVertex();
-      if(!aodvertex) return kFALSE;
-      Int_t n = aodvertex->GetNDaughters();
-      //printf("Number of daughters %d\n",n);
-      for(Int_t k=0; k < n; k++) {
-	AliAODTrack *aodtrackdaughter = (AliAODTrack *) aodvertex->GetDaughter(k);
-	if(aodtrackdaughter){
-	  AliAODVertex *aodvertexdaughter = aodtrackdaughter->GetProdVertex();
-	  if(!aodvertexdaughter) continue;
-	  //if(aodvertexdaughter->GetType()==AliAODVertex::kKink) printf("Daughter of type %d\n",(Int_t)aodvertexdaughter->GetType());
-	  if(aodvertexdaughter->GetType()==AliAODVertex::kKink) return kTRUE;
-	}
-      }
-      return kFALSE;
-    }
     else return kFALSE;
   }
 

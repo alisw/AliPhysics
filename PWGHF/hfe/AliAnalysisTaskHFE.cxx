@@ -852,8 +852,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   memset(container, 0, sizeof(Double_t) * 10);
   // container for the output THnSparse
   Double_t dataE[6]; // [pT, eta, Phi, type, 'C' or 'B']
-  Double_t dataDca[8]; // [source, pT, dca, dcaSig, centrality]
-  Double_t eDca[6]; // [source, pT, dca, dcaSig, centrality]
+  Double_t dataDca[6]; // [source, pT, dca, centrality]
   Int_t nElectronCandidates = 0;
   AliESDtrack *track = NULL, *htrack = NULL;
   AliMCParticle *mctrack = NULL;
@@ -1020,28 +1019,23 @@ void AliAnalysisTaskHFE::ProcessESD(){
         }
       }
 
-      // check if it is the proton from the lambda decay, and yes fill the dca info
-      Double_t hfeimpactR4p=0., hfeimpactnsigmaR4p=0.;
+      Double_t hfeimpactR4all=0., hfeimpactnsigmaR4all=0.;
+      Int_t sourceDca =-1;
       if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 211)){
         if(track->Pt()>4.){
-          fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4p, hfeimpactnsigmaR4p);
-          fQACollection->Fill("pionDcaSig",track->Pt(),hfeimpactnsigmaR4p);
-        }
-      }
-      else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 2212)){
-        fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4p, hfeimpactnsigmaR4p);
-        fQACollection->Fill("protonDcaSig",track->Pt(),hfeimpactnsigmaR4p);
-        Int_t glabel=TMath::Abs(mctrack->GetMother());
-        if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
-          if(TMath::Abs(mctrackmother->Particle()->GetPdgCode())==3122){
-            fQACollection->Fill("secondaryprotonDcaSig",track->Pt(),hfeimpactnsigmaR4p);
-          }
+          fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4all, hfeimpactnsigmaR4all);
+          dataDca[0]=0; //pion
+          dataDca[1]=track->Pt();
+          dataDca[2]=hfeimpactR4all;
+          dataDca[3]=fCentralityF;
+          dataDca[4] = v0pid;
+          dataDca[5] = double(track->Charge());
+          fQACollection->Fill("Dca", dataDca);
         }
       }
       else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 11)){ // to increas statistics for Martin
         if(signal){
-          fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4p, hfeimpactnsigmaR4p);
-          Int_t sourceDca =-1;
+          fExtraCuts->GetHFEImpactParameters(track, hfeimpactR4all, hfeimpactnsigmaR4all);
           if(fSignalCuts->IsCharmElectron(track)){
             sourceDca=1;
           }
@@ -1057,22 +1051,16 @@ void AliAnalysisTaskHFE::ProcessESD(){
           else if(fSignalCuts->IsJpsiElectron(track)){
             sourceDca=5;
           }
-          else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
-            sourceDca=6;
-            fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
-            fQACollection->Fill("hadronsBeforeIPcutMC",mctrack->Pt());
-          }
           else {
-            sourceDca=7;
+            sourceDca=6;
           }
-          eDca[0]=sourceDca;
-          eDca[1]=track->Pt();
-          eDca[2]=hfeimpactR4p;
-          eDca[3]=hfeimpactnsigmaR4p;
-          eDca[4]=fCentralityF;
-          eDca[5] = track->Charge()/3;
-
-          fQACollection->Fill("eDca", eDca);
+          dataDca[0]=sourceDca;
+          dataDca[1]=track->Pt();
+          dataDca[2]=hfeimpactR4all;
+          dataDca[3]=fCentralityF;
+          dataDca[4] = v0pid;
+          dataDca[5] = double(track->Charge());
+          if(signal) fQACollection->Fill("Dca", dataDca);
         }
       }
     }
@@ -1209,41 +1197,16 @@ void AliAnalysisTaskHFE::ProcessESD(){
       }
     } // end of electron background analysis
 
-
-    Int_t sourceDca =-1;
     if (GetPlugin(kDEstep)) { 
       Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.,};
       Int_t elecSource = 0;
-      // minjung for IP QA(temporary ~ 2weeks)
       Double_t hfeimpactR=0., hfeimpactnsigmaR=0.;
       fExtraCuts->GetHFEImpactParameters(track, hfeimpactR, hfeimpactnsigmaR);
-      sourceDca=0;
       if(HasMCData())
       {
-	if(fSignalCuts->IsCharmElectron(track)){
-	  sourceDca=1;
-        }
-	else if(fSignalCuts->IsBeautyElectron(track)){
-	  sourceDca=2;
-        }
-	else if(fSignalCuts->IsGammaElectron(track)){
-	  sourceDca=3;
-        }
-	else if(fSignalCuts->IsNonHFElectron(track)){
-	  sourceDca=4;
-        }
-        else if(fSignalCuts->IsJpsiElectron(track)){
-          sourceDca=5;
-        }
-	else if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
-	  sourceDca=6;
-          fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
-          fQACollection->Fill("hadronsBeforeIPcutMC",mctrack->Pt());
-        }
-	else {
-	  sourceDca=7;
-	}
-
+        if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
+            fQACollection->Fill("hadronsBeforeIPcut",track->Pt());
+        } 
         if(fMCQA && signal) {
           
           fMCQA->SetContainerStep(0);
@@ -1288,24 +1251,13 @@ void AliAnalysisTaskHFE::ProcessESD(){
         }
       } // end of MC
 
-      dataDca[0]=sourceDca;
+      dataDca[0]=-1; //for data, don't know the origin
       dataDca[1]=track->Pt();
       dataDca[2]=hfeimpactR;
-      dataDca[3]=hfeimpactnsigmaR;
-      dataDca[4]=fCentralityF;
-      dataDca[5] = 49;
-      Double_t xr[3]={49,49,49};
-      if(HasMCData()) {
-        mctrack->XvYvZv(xr);
-        dataDca[5] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
-      } 
-      dataDca[6] = v0pid;
-      dataDca[7] = track->Charge()/3;
-
- //     printf("Entries dca: [%.3f|%.3f|%.3f|%f|%f]\n", dataDca[0],dataDca[1],dataDca[2],dataDca[3],dataDca[4]);
+      dataDca[3]=fCentralityF;
+      dataDca[4] = v0pid;
+      dataDca[5] = double(track->Charge());
       if (!HasMCData()) fQACollection->Fill("Dca", dataDca);
-      else if(signal) fQACollection->Fill("Dca", dataDca);
-
 
       // Fill Containers for impact parameter analysis
       if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepHFEcutsDca + AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack,track)) continue;
@@ -1355,7 +1307,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
       if(HasMCData()){
         if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) != 11)){
           fQACollection->Fill("hadronsAfterIPcut",track->Pt());
-          fQACollection->Fill("hadronsAfterIPcutMC",mctrack->Pt());
         }
       }
     }
@@ -1407,7 +1358,27 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   //printf("pass\n");
 
   fContainer->NewEvent();
- 
+
+  // Look for kink mother
+  Int_t numberofvertices = fAOD->GetNumberOfVertices();
+  Double_t listofmotherkink[numberofvertices];
+  Int_t numberofmotherkink = 0;
+  for(Int_t ivertex=0; ivertex < numberofvertices; ivertex++) {
+    AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
+    if(!aodvertex) continue;
+    if(aodvertex->GetType()==AliAODVertex::kKink) {
+      AliAODTrack *mother = (AliAODTrack *) aodvertex->GetParent();
+      if(!mother) continue;
+      Int_t idmother = mother->GetID();
+      listofmotherkink[numberofmotherkink] = idmother;
+      //printf("ID %d\n",idmother);
+      numberofmotherkink++;
+    }
+  }
+  //printf("Number of kink mother in the events %d\n",numberofmotherkink);
+
+
+    // Loop over tracks
   AliAODTrack *track = NULL;
   AliAODMCParticle *mctrack = NULL;
   Double_t dataE[6]; // [pT, eta, Phi, Charge, type, 'C' or 'B']
@@ -1443,6 +1414,16 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     if(fApplyCutAOD) {
       // RecKine: ITSTPC cuts  
       if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+
+      // Reject kink mother
+      Bool_t kinkmotherpass = kTRUE;
+      for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+	if(track->GetID() == listofmotherkink[kinkmother]) {
+	  kinkmotherpass = kFALSE;
+	  continue;
+	}
+      }
+      if(!kinkmotherpass) continue;
       
       // RecPrim
       if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
@@ -1790,53 +1771,32 @@ void AliAnalysisTaskHFE::InitContaminationQA(){
 
       fQACollection->CreateTH1Farray("hadronsBeforeIPcut", "Hadrons before IP cut", nBinPt, kPtRange);
       fQACollection->CreateTH1Farray("hadronsAfterIPcut", "Hadrons after IP cut", nBinPt, kPtRange);
-      fQACollection->CreateTH1Farray("hadronsBeforeIPcutMC", "Hadrons before IP cut; MC p_{t}", nBinPt, kPtRange);
-      fQACollection->CreateTH1Farray("hadronsAfterIPcutMC", "Hadrons after IP cut; MC p_{t} ", nBinPt, kPtRange);
 
       fQACollection->CreateTH2Farray("Ke3Kecorr", "Ke3 decay e and K correlation; Ke3K p_{t}; Ke3e p_{t}; ", nBinPt, kPtRange, 20,0.,20.);
       fQACollection->CreateTH2Farray("Ke3K0Lecorr", "Ke3 decay e and K0L correlation; Ke3K0L p_{t}; Ke3e p_{t}; ", nBinPt, kPtRange, 20,0.,20.);
       fQACollection->CreateTH1Farray("Kptspectra", "Charged Kaons: MC p_{t} ", nBinPt, kPtRange);
       fQACollection->CreateTH1Farray("K0Lptspectra", "K0L: MC p_{t} ", nBinPt, kPtRange);
 
-      const Double_t kDCAbound[2] = {-5., 5.};
-      const Double_t kDCAsigbound[2] = {-50., 50.};
+      const Double_t kDCAbound[2] = {-0.2, 0.2};
 
-      const Int_t nDimDca=8;
-      const Int_t nBinDca[nDimDca] = { 9, nBinPt, 2000, 2000, 12, 500, 6, 2};
-      const Int_t nDimeDca=6;
-      const Int_t nBineDca[nDimeDca] = { 9, nBinPt, 2000, 2000, 12, 2};
-      Double_t minimaDca[nDimDca]  = { -1., 0., kDCAbound[0], kDCAsigbound[0], -1., 0, -1, -1.1};
-      Double_t maximaDca[nDimDca]  = { 8., 20., kDCAbound[1], kDCAsigbound[1], 11., 50, 5, 1.1};
+      const Int_t nDimDca=6;
+      const Int_t nBinDca[nDimDca] = { 8, nBinPt, 800, 12,  6, 2};
+      Double_t minimaDca[nDimDca]  = { -1., 0., kDCAbound[0], -1., -1, -1.1};
+      Double_t maximaDca[nDimDca]  = { 7., 20., kDCAbound[1], 11.,  5, 1.1};
 
       Double_t *sourceBins = AliHFEtools::MakeLinearBinning(nBinDca[0], minimaDca[0], maximaDca[0]);
       Double_t *dcaBins = AliHFEtools::MakeLinearBinning(nBinDca[2], minimaDca[2], maximaDca[2]);
-      Double_t *dcaSigBins = AliHFEtools::MakeLinearBinning(nBinDca[3], minimaDca[3], maximaDca[3]);
-      Double_t *centralityBins = AliHFEtools::MakeLinearBinning(nBinDca[4], minimaDca[4], maximaDca[4]);
-      Double_t *eProdRBins = AliHFEtools::MakeLinearBinning(nBinDca[5], minimaDca[5], maximaDca[5]);
-      Double_t *v0PIDBins = AliHFEtools::MakeLinearBinning(nBinDca[6], minimaDca[6], maximaDca[6]);
-      Double_t *chargeBins = AliHFEtools::MakeLinearBinning(nBinDca[7], minimaDca[7], maximaDca[7]);
+      Double_t *centralityBins = AliHFEtools::MakeLinearBinning(nBinDca[3], minimaDca[3], maximaDca[3]);
+      Double_t *v0PIDBins = AliHFEtools::MakeLinearBinning(nBinDca[4], minimaDca[4], maximaDca[4]);
+      Double_t *chargeBins = AliHFEtools::MakeLinearBinning(nBinDca[5], minimaDca[5], maximaDca[5]);
 
-      fQACollection->CreateTHnSparseNoLimits("Dca", "Dca; source (0-all, 1-charm,etc); pT [GeV/c]; dca; dcasig; centrality bin; eProdR; v0pid; charge", nDimDca, nBinDca);
+      fQACollection->CreateTHnSparseNoLimits("Dca", "Dca; source (0-all, 1-charm,etc); pT [GeV/c]; dca; centrality bin; v0pid; charge", nDimDca, nBinDca);
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(0, sourceBins);
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(1, kPtRange);
       ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(2, dcaBins);
-      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(3, dcaSigBins);
-      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(4, centralityBins);
-      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(5, eProdRBins);
-      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(6, v0PIDBins);
-      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(7, chargeBins);
-
-      fQACollection->CreateTHnSparseNoLimits("eDca", "eDca; source (0-all, 1-charm,etc); pT [GeV/c]; dca; dcasig; centrality bin; charge", nDimeDca, nBineDca);
-      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(0, sourceBins);
-      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(1, kPtRange);
-      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(2, dcaBins);
-      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(3, dcaSigBins);
-      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(4, centralityBins);
-      ((THnSparse*)(fQACollection->Get("eDca")))->SetBinEdges(5, chargeBins);
-
-      fQACollection->CreateTH2Farray("secondaryprotonDcaSig", "secondary proton dca significance: dca sig ", nBinPt, kPtRange, 2000, kDCAsigbound[0], kDCAsigbound[1]);
-      fQACollection->CreateTH2Farray("protonDcaSig", "proton dca significance: dca sig ", nBinPt, kPtRange, 2000, kDCAsigbound[0], kDCAsigbound[1]);
-      fQACollection->CreateTH2Farray("pionDcaSig", "pion dca significance: dca sig ", nBinPt, kPtRange, 2000, kDCAsigbound[0], kDCAsigbound[1]);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(3, centralityBins);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(4, v0PIDBins);
+      ((THnSparse*)(fQACollection->Get("Dca")))->SetBinEdges(5, chargeBins);
 
       break;
     }  

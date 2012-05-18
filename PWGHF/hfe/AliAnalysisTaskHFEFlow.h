@@ -25,6 +25,11 @@
 #include <AliAnalysisTaskSE.h>
 
 class TList;
+class AliVTrack;
+class AliVEvent;
+class AliESDtrack;
+class AliESDEvent;
+class AliMCEvent;
 class AliFlowTrackCuts;
 class AliFlowCandidateTrack;
 class AliHFEcuts;
@@ -36,11 +41,34 @@ class TProfile2D;
 class THnSparse;
 class AliHFEpidQAmanager;
 class AliFlowEvent;
+class AliESDtrackCuts;
 class AliHFEVZEROEventPlane;
+class TArrayI;
 
 class AliAnalysisTaskHFEFlow: public AliAnalysisTaskSE {
   
 public:
+
+  typedef enum{
+    kElectronfromconversion = 0,
+    kElectronfromconversionboth = 1,
+    kElectronfrompi0 = 2,
+    kElectronfrompi0both = 3,
+    kElectronfromC = 4,
+    kElectronfromB = 5,
+    kElectronfrometa = 6,
+    kElectronfrometaboth = 7,
+    kElectronfromother = 8
+  } FlowSource_t;
+  
+  typedef enum{
+    kS = 0,
+    kOp = 1
+  } FlowSign_t;
+
+
+
+
   AliAnalysisTaskHFEFlow();
   AliAnalysisTaskHFEFlow(const char *name);
   AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref);
@@ -58,8 +86,12 @@ public:
   
   AliHFEpid *GetPID() const { return fPID; }
   AliHFEpidQAmanager *GetPIDQAManager() const { return fPIDqa; }
+  AliHFEpid *GetPIDBackground() const { return fPIDBackground; }
+  AliHFEpidQAmanager *GetPIDBackgroundQAManager() const { return fPIDBackgroundqa; }
+
 
   void SetHFECuts(AliHFEcuts * const cuts) { fHFECuts = cuts; };
+  void SetHFEBackgroundCuts(AliESDtrackCuts * const cuts) { fHFEBackgroundCuts = cuts; };
   void SetSubEtaGapTPC(Bool_t  subEtaGapTPC) { fSubEtaGapTPC = subEtaGapTPC; };
   void SetEtaGap(Double_t  etaGap) { fEtaGap = etaGap; };
   void SetVZEROEventPlane(Bool_t vzeroEventPlane) { fVZEROEventPlane = vzeroEventPlane; };
@@ -89,6 +121,13 @@ public:
   
   AliFlowCandidateTrack *MakeTrack( Double_t mass, Double_t pt, Double_t phi, Double_t eta) ;
   Double_t GetPhiAfterAddV2(Double_t phi,Double_t reactionPlaneAngle) const;
+
+  void  SetMaxInvmass(Double_t maxInvmass) { fMaxInvmass = maxInvmass; };
+  void  SetMaxopening3D(Double_t maxOpening3D) { fMaxopening3D = maxOpening3D; };
+  void  SetMaxopeningtheta(Double_t maxOpeningtheta) { fMaxopeningtheta = maxOpeningtheta; };
+  void  SetMaxopeningphi(Double_t maxOpeningphi) { fMaxopeningphi = maxOpeningphi; };
+
+  Int_t    LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, AliVEvent *fESD, AliMCEvent *mcEvent,Int_t binct,Double_t deltaphi,Int_t source,Int_t indexmother);
   
 private:
   TList     *fListHist;         //! TH list
@@ -123,6 +162,14 @@ private:
   Bool_t    fMCPID; // MC PID for electrons
   Bool_t    fNoPID; // No PID for checks
 
+  Double_t  fChi2OverNDFCut;   // Limit chi2
+  Double_t  fMaxdca;           // Limit dca
+  Double_t  fMaxopeningtheta;  // Limit opening angle in theta
+  Double_t  fMaxopeningphi;    // Limit opening angle in phi
+  Double_t  fMaxopening3D;     // Limit opening 3D
+  Double_t  fMaxInvmass;       // Limit invariant mass
+  
+
   Int_t     fDebugLevel; // Debug Level  
 
   // Cuts for FLOW PWG2
@@ -133,7 +180,17 @@ private:
   AliHFEcuts *fHFECuts;           // HFE cuts
   AliHFEpid  *fPID;               // PID cuts 
   AliHFEpidQAmanager *fPIDqa;     // QA Manager
-  AliFlowEvent *fflowEvent;       //! Flow event   
+  AliFlowEvent *fflowEvent;       //! Flow event 
+
+  // Cuts for background study
+  AliESDtrackCuts *fHFEBackgroundCuts;    // HFE background cuts
+  AliHFEpid  *fPIDBackground;             // PID background cuts 
+  AliHFEpidQAmanager *fPIDBackgroundqa;   // QA Manager Background  
+  Bool_t fAlgorithmMA;                    // algorithm MA
+
+  // List of tracks
+  TArrayI *fArraytrack;                    // list of tracks
+  Int_t fCounterPoolBackground;            // number of tracks
 
   // VZERO Event plane after calibration 2010
   AliHFEVZEROEventPlane *fHFEVZEROEventPlane; // VZERO event plane calibrated
@@ -171,13 +228,45 @@ private:
   THnSparseF *fSinRes; //! Res
   TProfile   *fProfileCosRes; //! Profile Res
   
+  // Debuging Cuts step by step all centrality together: pt, step (6)
+  THnSparseF *fTrackingCuts; //! Tracking Cuts
+
+  // Before PID cut
+  // G Maps delta phi as function of deltaphi, centrality, pt
+  THnSparseF *fDeltaPhiMapsBeforePID; //! Delta phi
+  // H Maps cos phi : cos, centrality, pt
+  THnSparseF *fCosPhiMapsBeforePID; //! Cos
+
   // G Maps delta phi as function of deltaphi, centrality, pt
   THnSparseF *fDeltaPhiMaps; //! Delta phi
-  
   // H Maps cos phi : cos, centrality, pt
   THnSparseF *fCosPhiMaps;         //! Cos
   TProfile2D *fProfileCosPhiMaps;  //! Profile Cos
-  
+
+  // Background study: not statistic but tagged 
+  THnSparseF *fDeltaPhiMapsTaggedPhotonic; //! Delta phi
+  THnSparseF *fCosPhiMapsTaggedPhotonic; //! Cos
+  THnSparseF *fDeltaPhiMapsTaggedNonPhotonic; //! Delta phi
+  THnSparseF *fCosPhiMapsTaggedNonPhotonic; //! Cos
+  THnSparseF *fDeltaPhiMapsTaggedPhotonicLS; //! Delta phi
+  THnSparseF *fCosPhiMapsTaggedPhotonicLS; //! Cos
+
+  // Background study: centrality, pt, source
+  THnSparseF *fMCSourceDeltaPhiMaps; //! Source MC
+  // Background study: deltaphi, centrality, pt, minv, source
+  THnSparseF *fOppSignDeltaPhiMaps;  //! Delta phi
+  THnSparseF *fSameSignDeltaPhiMaps; //! Delta phi
+  // Background study: angle, centrality, source
+  THnSparseF *fOppSignAngle;         // ! Opening Angles
+  THnSparseF *fSameSignAngle;        // ! Opening Angles
+
+  Int_t FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &indexmother);
+  Int_t IsMotherGamma(Int_t tr, AliMCEvent* mcEvent);
+  Int_t IsMotherPi0(Int_t tr, AliMCEvent* mcEvent);
+  Int_t IsMotherC(Int_t tr, AliMCEvent* mcEvent);
+  Int_t IsMotherB(Int_t tr, AliMCEvent* mcEvent);
+  Int_t IsMotherEta(Int_t tr, AliMCEvent* mcEvent);
+    
   
   ClassDef(AliAnalysisTaskHFEFlow, 1); // analysisclass
 };

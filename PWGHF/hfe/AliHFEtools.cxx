@@ -20,6 +20,7 @@
 // Authors
 //   All authors of the HFE group
 //
+#include <TArrayD.h>
 #include <TMath.h>
 #include <TParticle.h>
 #include "TH1.h"
@@ -66,6 +67,17 @@ Double_t *AliHFEtools::MakeLinearBinning(Int_t nBins, Double_t ymin, Double_t ym
 }
 
 //__________________________________________
+void AliHFEtools::FillLinearBinning(TArrayD &bins, Int_t nBins, Double_t ymin, Double_t ymax){
+  //
+  // Helper function for linearly binned array
+  //
+  Double_t stepsize = (ymax - ymin) / static_cast<Double_t>(nBins);
+  bins[0] = ymin;
+  for(Int_t ibin = 1; ibin <= nBins; ibin++)
+    bins[ibin] = bins[ibin-1] + stepsize;
+}
+
+//__________________________________________
 Double_t *AliHFEtools::MakeLogarithmicBinning(Int_t nBins, Double_t ymin, Double_t ymax){
   //
   // Helper function for logartimically binned array
@@ -77,6 +89,17 @@ Double_t *AliHFEtools::MakeLogarithmicBinning(Int_t nBins, Double_t ymin, Double
     bins[ibin] = factor * bins[ibin-1];
   }
   return bins;
+}
+
+//__________________________________________
+void AliHFEtools::FillLogarithmicBinning(TArrayD &bins, Int_t nBins, Double_t ymin, Double_t ymax){
+  //
+  // Helper function for logartimically binned array
+  //
+  bins[0] = ymin;
+  Double_t factor = TMath::Power(ymax/ymin, 1./nBins);
+  for(Int_t ibin = 1; ibin <= nBins; ibin++)
+    bins[ibin] = factor * bins[ibin-1];
 }
 
 //_________________________________________
@@ -130,14 +153,13 @@ Bool_t AliHFEtools::BinLogAxis(TObject *o, Int_t dim){
     AliError(Form("Log binning not possible for this axis [min = %f]\n", from));
   }
   Double_t to = axis->GetXmax();
-  Double_t *newBins = new Double_t[bins+1];
+  TArrayD newBins(bins+1);
   newBins[0] = from;
   Double_t factor = TMath::Power(to/from, 1./bins);
   for(Int_t i=1; i<=bins; ++i){
     newBins[i] = factor * newBins[i-1];
   }
-  axis->Set(bins, newBins);
-  delete[] newBins;
+  axis->Set(bins, newBins.GetArray());
 
   return kTRUE;
 }
