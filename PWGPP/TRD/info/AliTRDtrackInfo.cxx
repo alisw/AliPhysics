@@ -557,7 +557,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
     if(nFound == 2) break;
   } 
   if(nFound < 2){ 
-    AliDebugGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", 1, Form("Missing track ref x0[%6.3f] nref[%d]", x0, nFound));
+    //AliDebug(1, Form("Missing track ref x0[%6.3f] nref[%d]", x0, nFound));
     if(!nFound) SETBIT(status, 0);
     else SETBIT(status, 1);
     return kFALSE;
