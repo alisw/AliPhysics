@@ -40,6 +40,7 @@ ClassImp(AliAnalysisTaskTrgContam)
 AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name) 
   : AliAnalysisTaskSE(name), 
   fCaloClusters(0),
+  fEMCalCells(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fPeriod("LHC11c"),

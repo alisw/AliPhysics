@@ -17,6 +17,13 @@ class AliAnalysisTaskTrgContam : public AliAnalysisTaskSE {
   AliAnalysisTaskSE(), 
   
     fCaloClusters(0),
+    fEMCalCells(0),
+
+    fGeoName("EMCAL_COMPLETEV1"),
+    fPeriod("LHC11c"),
+    fIsTrain(0),
+    fTrigThresh(4.8),
+    fExoticCut(0.97),
 
     fGeom(0x0),
   
