@@ -166,7 +166,9 @@ public:
      */
     Bool_t IsInit() { return fIsInit; }
     
-    
+    Bool_t HasSecondaryCorrection() const { return fSecmap != 0; }
+    Bool_t HasAcceptanceCorrection() const { return fAcceptance != 0; }
+
     /** 
      * Get the acceptance path
      * 

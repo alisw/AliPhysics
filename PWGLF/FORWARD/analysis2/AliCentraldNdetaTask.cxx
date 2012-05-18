@@ -24,6 +24,7 @@ AliCentraldNdetaTask::AliCentraldNdetaTask(const char*)
 { 
   fSymmetrice = false; 
   fCorrEmpty  = false;
+  SetTitle("Central");
 }
 
 //____________________________________________________________________

@@ -31,6 +31,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
   // 
   // Paramters
   //   name    Name of task 
+  SetTitle("FMD");
 }
 
 //____________________________________________________________________

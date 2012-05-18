@@ -18,8 +18,15 @@
  * @ingroup pwglf_forward_scripts_tasks
  */
 /**
- * This is the macro to include the Forward multiplicity in a train.  
+ * This is the script to include the Forward multiplicity in a train.  
  * 
+ * @param mc    Define as true for MC input. 
+ * @param sys   Collision system (0: deduce, 1: pp, 2: pbpb, 3:pA)
+ * @param sNN   Collision energy 
+ * @param field L3 field setting. 
+ *
+ * @return newly allocated analysis task 
+ *
  * @ingroup pwglf_forward_aod
  */
 AliAnalysisTask*
@@ -79,3 +86,39 @@ AddTaskForwardMult(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
 
   return task;
 }
+
+/**
+ * This is the script to include the Forward multiplicity in a train.  
+ * 
+ * @param type   Data type (if it contains MC, assume MC input): 
+ *               - ppb, p-pb, pa, p-a:  proton-lead 
+ *               - pp, p-p:             proton-proton
+ *               - pbpb, pb-pb, a-a:    lead-lead
+ *               
+ * @param energy Collision energy in GeV
+ * @param bfield L3 field setting in kG (-5, 0, 5)
+ *
+ * @return newly allocated analysis task 
+ *
+ * @ingroup pwglf_forward_aod
+ */
+AliAnalysisTask*
+AddTaskForwardMult(const Char_t* type, 
+		   Float_t       energy=0, 
+		   Float_t       bfield=0)
+{
+  // --- Load libraries ----------------------------------------------
+  gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
+
+  // --- Deduce parameters -------------------------------------------
+  TString  t(type);
+  Bool_t   mc    = t.Contains("MC", TString::kIgnoreCase);
+  UShort_t sys   = AliForwardUtil::ParseCollisionSystem(type);
+  UShort_t sNN   = AliForwardUtil::ParseCenterOfMassEnergy(sys, energy);
+  Short_t  field = AliForwardUtil::ParseMagneticField(field);
+
+  return AddTaskForwardMult(mc, sys, sNN, field);
+}
+//
+// EOF
+//
