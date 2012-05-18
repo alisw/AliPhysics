@@ -18,5 +18,6 @@
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class TOFSpectrappAnalysis+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra2MC+;
+#pragma link C++ class AliAnalysisTaskParticleEfficiency+;
 
 #endif
