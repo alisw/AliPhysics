@@ -34,13 +34,14 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   if (task->IsA() == AliForwardMCMultiplicityTask::Class()) 
     mc = true;
   
-#if 0 
+#if 0
   if (mc) {
     AliForwardMCMultiplicityTask* mcTask = 
       static_cast<AliForwardMCMultiplicityTask*>(task);
     mcTask->SetOnlyPrimary(true);
   }
 #endif
+
   Double_t nXi = mc ? 2 : 2;   //HHD test
   Bool_t   includeSigma = false; //true;
 
@@ -71,9 +72,9 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Least distance from primary to 2nd pile-up vertex (cm)
   task->GetEventInspector().SetMinPileupDistance(.8);
   // V0-AND triggered events flagged as NSD 
-  task->GetEventInspector().SetUseV0AndForNSD(false);
+  task->GetEventInspector().SetUseV0AndForNSD(true);
   // Use primary vertex selection from 1st physics WG
-  task->GetEventInspector().SetUseFirstPhysicsVertex(false);
+  // task->GetEventInspector().SetUseFirstPhysicsVtx(true);
 
   // --- Sharing filter ----------------------------------------------
   // Set the low cut used for sharing - overrides settings in eloss fits
@@ -104,7 +105,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Wet whether to use poisson statistics to estimate N_ch
   task->GetDensityCalculator().SetUsePoisson(true);
   // Set to use the running average in Poisson 
-  task->GetDensityCalculator().SetUseRunningAverage(false);
+  // task->GetDensityCalculator().SetUseRunningAverage(false);
   // Set whether or not to include sigma in cut
   task->GetDensityCalculator().SetCuts(cDensity);
   // Set lumping (nEta,nPhi)
@@ -149,7 +150,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Set the overall debug level (1: some output, 3: a lot of output)
   task->SetDebug(0);
   // Set the debug level of a single algorithm 
-  task->GetSharingFilter().SetDebug(0);
+  task->GetSharingFilter().SetDebug(3);
 
   // --- Eventplane Finder -------------------------------------------
   task->GetEventPlaneFinder().SetUsePhiWeights(false);

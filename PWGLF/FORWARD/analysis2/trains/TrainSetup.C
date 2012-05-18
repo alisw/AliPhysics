@@ -711,6 +711,118 @@ struct TrainSetup
     if (!plugin) return;
     
   }
+  //__________________________________________________________________
+  Bool_t Init(EType  type, 
+	      EMode  mode, 
+	      EOper  oper,
+	      Bool_t mc=false, 
+	      bool   usePar=false, 
+	      Int_t  dbg=0)
+  {
+    Info("Init", "Connecting in mode=%d", mode);
+    if (!Connect(mode)) return false;
+
+    TString cwd = gSystem->WorkingDirectory();
+    TString nam = EscapedName();
+    Info("Init", "Current directory=%s, escaped name=%s", 
+	 cwd.Data(), nam.Data());
+    if (oper != kTerminate) { 
+      if (!fAllowOverwrite && !gSystem->AccessPathName(nam.Data())) {
+	Error("Init", "File/directory %s already exists", nam.Data());
+	return false;
+      }
+      if (gSystem->AccessPathName(nam.Data())) {
+	if (gSystem->MakeDirectory(nam.Data())) {
+	  Error("Init", "Failed to make directory '%s'", nam.Data());
+	  return false;
+	}
+      }
+    }
+    else {
+      if (gSystem->AccessPathName(nam.Data())) {
+	Error("Init", "File/directory %s does not exists", nam.Data());
+	return false;
+      }
+    }
+      
+    if (!gSystem->ChangeDirectory(nam.Data())) { 
+      Error("Init", "Failed to change directory to %s", nam.Data());
+      return false;
+    }
+    Info("Init", "Made subdirectory %s, and cd'ed there", nam.Data());
+      
+    if (!LoadCommonLibraries(mode, usePar)) return false;
+    
+    // --- Create analysis manager -----------------------------------
+    AliAnalysisManager *mgr  = new AliAnalysisManager(fName,"Analysis Train");
+
+    // In test mode, collect system information on every event 
+    // if (oper == kTest)  mgr->SetNSysInfo(1); 
+    if (dbg  >  0)      mgr->SetDebugLevel(dbg);
+    if (mode == kLocal) mgr->SetUseProgressBar(kTRUE, 100);
+   
+    // --- ESD input handler ------------------------------------------
+    AliVEventHandler*  inputHandler = CreateInputHandler(type);
+    if (inputHandler) mgr->SetInputEventHandler(inputHandler);
+    
+    // --- Monte-Carlo ------------------------------------------------
+    AliVEventHandler*  mcHandler = CreateMCHandler(type,mc);
+    if (mcHandler) mgr->SetMCtruthEventHandler(mcHandler);
+    
+    // --- AOD output handler -----------------------------------------
+    AliVEventHandler*  outputHandler = CreateOutputHandler(type);
+    if (outputHandler) mgr->SetOutputEventHandler(outputHandler);
+    
+    // --- Include analysis macro path in search path ----------------
+    gROOT->SetMacroPath(Form("%s:%s:$ALICE_ROOT/ANALYSIS/macros",
+			     cwd.Data(), gROOT->GetMacroPath()));
+
+    // --- Physics selction - only for ESD ---------------------------
+    if (type == kESD) CreatePhysicsSelection(mc, mgr);
+    
+    // --- Create centrality task ------------------------------------
+    CreateCentralitySelection(mc, mgr);
+
+    // --- Create tasks ----------------------------------------------
+    CreateTasks(mode, usePar, mgr);
+
+    // --- Create Grid handler ----------------------------------------
+    // _must_ be done after all tasks has been added
+    AliAnalysisAlien* gridHandler = CreateGridHandler(type, mode, oper);
+    if (gridHandler) mgr->SetGridHandler(gridHandler);
+    
+    // --- Print setup -----------------------------------------------
+    Print();
+    // if (mode == kProof) {
+    // Info("Run", "Exported environment variables to PROOF slaves:");
+    // TProof::GetEnvVars()->ls();
+    // Info("Run", "Environment variables for this session:");
+    // gSystem->Exec("printenv");
+    // }
+
+    // --- Initialise the train --------------------------------------
+    if (!mgr->InitAnalysis())  {
+      gSystem->ChangeDirectory(cwd.Data());
+      Error("Run","Failed to initialise train");
+      return false;
+    }
+
+    // --- Show status -----------------------------------------------
+    mgr->PrintStatus();
+
+    return true;
+  }
+  //__________________________________________________________________
+  Bool_t Init(const char*  type="ESD", 
+	      const char*  mode="LOCAL", 
+	      const char*  oper="FULL",
+	      Bool_t       mc=false, 
+	      bool         usePar=false, 
+	      Int_t        dbg=0)
+  {
+    return Init(ParseType(type, mc), ParseMode(mode), ParseOperation(oper), 
+		mc, usePar, dbg);
+  }
 
 protected:
   //__________________________________________________________________
@@ -834,80 +946,11 @@ protected:
     Info("Exec", "Doing exec with type=%d, mode=%d, oper=%d, events=%d "
 	 "mc=%d, usePar=%d", type, mode, oper, nEvents, mc, usePar);
 
-    if (mode == kProof) usePar    = true;
-
-    Info("Exec", "Connecting in mode=%d", mode);
-    if (!Connect(mode)) return;
-
     TString cwd = gSystem->WorkingDirectory();
-    TString nam = EscapedName();
-    Info("Exec", "Current directory=%s, escaped name=%s", 
-	 cwd.Data(), nam.Data());
-    if (oper != kTerminate) { 
-      if (!fAllowOverwrite && !gSystem->AccessPathName(nam.Data())) {
-	Error("Exec", "File/directory %s already exists", nam.Data());
-	return;
-      }
-      if (gSystem->AccessPathName(nam.Data())) {
-	if (gSystem->MakeDirectory(nam.Data())) {
-	  Error("Exec", "Failed to make directory '%s'", nam.Data());
-	  return;
-	}
-      }
-    }
-    else {
-      if (gSystem->AccessPathName(nam.Data())) {
-	Error("Exec", "File/directory %s does not exists", nam.Data());
-	return;
-      }
-    }
-      
-    if (!gSystem->ChangeDirectory(nam.Data())) { 
-      Error("Exec", "Failed to change directory to %s", nam.Data());
-      return;
-    }
-    Info("Exec", "Made subdirectory %s, and cd'ed there", nam.Data());
-      
-    if (!LoadCommonLibraries(mode, usePar)) return;
+    if (mode == kProof) usePar    = true;
     
-    // --- Create analysis manager -----------------------------------
-    AliAnalysisManager *mgr  = new AliAnalysisManager(fName,"Analysis Train");
+    if (!Init(type, mode, oper, mc, usePar, dbg))  return;
 
-    // In test mode, collect system information on every event 
-    // if (oper == kTest)  mgr->SetNSysInfo(1); 
-    if (dbg  >  0)      mgr->SetDebugLevel(dbg);
-    if (mode == kLocal) mgr->SetUseProgressBar(kTRUE, 100);
-   
-    // --- ESD input handler ------------------------------------------
-    AliVEventHandler*  inputHandler = CreateInputHandler(type);
-    if (inputHandler) mgr->SetInputEventHandler(inputHandler);
-    
-    // --- Monte-Carlo ------------------------------------------------
-    AliVEventHandler*  mcHandler = CreateMCHandler(type,mc);
-    if (mcHandler) mgr->SetMCtruthEventHandler(mcHandler);
-    
-    // --- AOD output handler -----------------------------------------
-    AliVEventHandler*  outputHandler = CreateOutputHandler(type);
-    if (outputHandler) mgr->SetOutputEventHandler(outputHandler);
-    
-    // --- Include analysis macro path in search path ----------------
-    gROOT->SetMacroPath(Form("%s:%s:$ALICE_ROOT/ANALYSIS/macros",
-			     cwd.Data(), gROOT->GetMacroPath()));
-
-    // --- Physics selction - only for ESD ---------------------------
-    if (type == kESD) CreatePhysicsSelection(mc, mgr);
-    
-    // --- Create centrality task ------------------------------------
-    CreateCentralitySelection(mc, mgr);
-
-    // --- Create tasks ----------------------------------------------
-    CreateTasks(mode, usePar, mgr);
-
-    // --- Create Grid handler ----------------------------------------
-    // _must_ be done after all tasks has been added
-    AliAnalysisAlien* gridHandler = CreateGridHandler(type, mode, oper);
-    if (gridHandler) mgr->SetGridHandler(gridHandler);
-    
     // --- Create the chain ------------------------------------------
     TChain* chain = CreateChain(type, mode, oper, mc);
     if (mode == kLocal && !chain) {
@@ -915,25 +958,7 @@ protected:
       return;
     }
 
-    // --- Print setup -----------------------------------------------
-    Print();
-    // if (mode == kProof) {
-    // Info("Run", "Exported environment variables to PROOF slaves:");
-    // TProof::GetEnvVars()->ls();
-    // Info("Run", "Environment variables for this session:");
-    // gSystem->Exec("printenv");
-    // }
-
-    // --- Initialise the train --------------------------------------
-    if (!mgr->InitAnalysis())  {
-      gSystem->ChangeDirectory(cwd.Data());
-      Error("Run","Failed to initialise train");
-      return;
-    }
-
-    // --- Show status -----------------------------------------------
-    mgr->PrintStatus();
-
+    AliAnalysisManager *mgr  = new AliAnalysisManager(fName,"Analysis Train");
     Long64_t ret = StartAnalysis(mgr, mode, chain, nEvents);
 
     // Make sure we go back 

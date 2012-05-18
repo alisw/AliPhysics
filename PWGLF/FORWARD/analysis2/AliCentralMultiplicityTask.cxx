@@ -178,10 +178,14 @@ AliCentralMultiplicityTask::GetESDEvent()
 		      fInspector.GetField());
     AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
   }
+  if (!GetManager().HasSecondaryCorrection()) 
+    AliFatal("No secondary correction defined!");
+  if (!GetManager().HasAcceptanceCorrection()) 
+    AliFatal("No acceptance correction defined!");
+  
 
   // Check for existence and get secondary map 
   AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
-  if (!secMap) AliFatal("No secondary map defined!");
   const TAxis& vaxis = secMap->GetVertexAxis();
 
   FindEtaLimits();
@@ -242,7 +246,7 @@ AliCentralMultiplicityTask::MarkEventForStore() const
 void AliCentralMultiplicityTask::FindEtaLimits()
 {
   AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
-  
+
   const TAxis& vaxis = secMap->GetVertexAxis();
   
   fEtaMin.Set(vaxis.GetNbins());

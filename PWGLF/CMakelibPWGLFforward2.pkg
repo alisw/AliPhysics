@@ -27,59 +27,66 @@
 #------------------------------------------------------------------------#
 
 set ( SRCS   
+  FORWARD/analysis2/AliAODCentralMult.cxx
+  FORWARD/analysis2/AliAODForwardEP.cxx
   FORWARD/analysis2/AliAODForwardMult.cxx
+  FORWARD/analysis2/AliBasedNdetaTask.cxx
+  FORWARD/analysis2/AliBaseMCTrackDensity.cxx
+  FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
+  FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
+  FORWARD/analysis2/AliCentraldNdetaTask.cxx
+  FORWARD/analysis2/AliCentralMCCorrectionsTask.cxx
+  FORWARD/analysis2/AliCentralMCMultiplicityTask.cxx
+  FORWARD/analysis2/AliCentralMultiplicityTask.cxx
+  FORWARD/analysis2/AliCopyHeaderTask.cxx
+  FORWARD/analysis2/AliDisplacedVertexSelection.cxx
   FORWARD/analysis2/AliFMDCorrAcceptance.cxx
   FORWARD/analysis2/AliFMDCorrDoubleHit.cxx
+  FORWARD/analysis2/AliFMDCorrector.cxx 
   FORWARD/analysis2/AliFMDCorrELossFit.cxx 
   FORWARD/analysis2/AliFMDCorrMergingEfficiency.cxx
   FORWARD/analysis2/AliFMDCorrSecondaryMap.cxx 
   FORWARD/analysis2/AliFMDCorrVertexBias.cxx
-  FORWARD/analysis2/AliFMDCorrector.cxx 
   FORWARD/analysis2/AliFMDDensityCalculator.cxx
   FORWARD/analysis2/AliFMDEnergyFitter.cxx
   FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
   FORWARD/analysis2/AliFMDEventInspector.cxx
   FORWARD/analysis2/AliFMDEventPlaneFinder.cxx
+  FORWARD/analysis2/AliFMDEventPlaneTask.cxx
   FORWARD/analysis2/AliFMDHistCollector.cxx
-  FORWARD/analysis2/AliFMDSharingFilter.cxx
-  FORWARD/analysis2/AliFMDMCEventInspector.cxx
   FORWARD/analysis2/AliFMDMCCorrector.cxx
   FORWARD/analysis2/AliFMDMCDensityCalculator.cxx
+  FORWARD/analysis2/AliFMDMCEventInspector.cxx
   FORWARD/analysis2/AliFMDMCSharingFilter.cxx
   FORWARD/analysis2/AliFMDMCTrackDensity.cxx
+  FORWARD/analysis2/AliFMDMultCuts.cxx
+  FORWARD/analysis2/AliFMDSharingFilter.cxx
   FORWARD/analysis2/AliForwardCorrectionManager.cxx
+  FORWARD/analysis2/AliForwarddNdetaTask.cxx
+  FORWARD/analysis2/AliForwardFlowTaskQC.cxx
+  FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx
+  FORWARD/analysis2/AliForwardMCFlowTaskQC.cxx
+  FORWARD/analysis2/AliForwardMCMultiplicityTask.cxx 
   FORWARD/analysis2/AliForwardMultiplicityBase.cxx
   FORWARD/analysis2/AliForwardMultiplicityTask.cxx
-  FORWARD/analysis2/AliForwardMCMultiplicityTask.cxx 
-  FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx
-  FORWARD/analysis2/AliForwarddNdetaTask.cxx
-  FORWARD/analysis2/AliForwardUtil.cxx
-  FORWARD/analysis2/AliCentralMultiplicityTask.cxx
-  FORWARD/analysis2/AliCentralMCMultiplicityTask.cxx
-  FORWARD/analysis2/AliCentralMCCorrectionsTask.cxx
-  FORWARD/analysis2/AliAODCentralMult.cxx
-  FORWARD/analysis2/AliAODForwardEP.cxx
-  FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
-  FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
-  FORWARD/analysis2/AliCentraldNdetaTask.cxx
-  FORWARD/analysis2/AliBasedNdetaTask.cxx
-  FORWARD/analysis2/AliMCTruthdNdetaTask.cxx
-  FORWARD/analysis2/AliForwardFlowTaskQC.cxx
-  FORWARD/analysis2/AliForwardMCFlowTaskQC.cxx
-  FORWARD/analysis2/AliFMDEventPlaneTask.cxx
-  FORWARD/analysis2/AliSPDMCTrackDensity.cxx
-  FORWARD/analysis2/AliFMDMultCuts.cxx
-  FORWARD/analysis2/AliPoissonCalculator.cxx
   FORWARD/analysis2/AliForwardQATask.cxx
-  FORWARD/analysis2/AliCopyHeaderTask.cxx
-  FORWARD/analysis2/AliDisplacedVertexSelection.cxx
+  FORWARD/analysis2/AliForwardUtil.cxx
+  FORWARD/analysis2/AliMCTruthdNdetaTask.cxx
+  FORWARD/analysis2/AliPoissonCalculator.cxx
+  FORWARD/analysis2/AliSPDMCTrackDensity.cxx
   FORWARD/GEO/AliAnalysisTaskZDCPbPb.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( HDRS ${HDRS} FORWARD/analysis2/AliFMDStripIndex.h )
 
-set ( EINCLUDE  ANALYSIS PWGLF/FORWARD/analysis2  PWGLF/FORWARD/GEO PWG0 STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  
+  ANALYSIS 
+  PWGLF/FORWARD/analysis2  
+  PWGLF/FORWARD/GEO 
+  PWG0 
+  STEER/ESD 
+  STEER/STEERBase)
 
 set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h 
              FORWARD/analysis2/AliAODCentralMult.h 
@@ -100,13 +107,13 @@ add_custom_command( OUTPUT FORWARD/doc/doc.pdf
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
 		    COMMAND mv doc.pdf ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/
 		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc
-		    MAIN_DEPENDENCY FORWARD/doc/doc.tex )
+		    MAIN_DEPENDENCY FORWARD/doc/doc.tex)
 
 add_custom_command( OUTPUT FORWARD/doc/html/index.html 
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
                     COMMAND sed -e 's,../analysis2,${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/analysis2,' -e 's,OUTPUT_DIRECTORY *=.*,OUTPUT_DIRECTORY = FORWARD/doc/,' < ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc/Doxyfile > ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
-		    DEPENDS ${SRCS} ${HDRS} )
+		    DEPENDS ${SRCS} ${HDRS})
 
 add_custom_target( PWGLFforward-doc DEPENDS FORWARD/doc/doc.pdf )
 add_custom_target( PWGLFforward-doxy DEPENDS FORWARD/doc/html/index.html )

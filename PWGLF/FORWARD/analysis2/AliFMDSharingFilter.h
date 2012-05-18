@@ -100,7 +100,7 @@ public:
    * 
    * @param dbg Debug level 
    */
-  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  virtual void SetDebug(Int_t dbg=1) { fDebug = dbg; }
 
   /** 
    * Enable use of angle corrected signals in the algorithm 

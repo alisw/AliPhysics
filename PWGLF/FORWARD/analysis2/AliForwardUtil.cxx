@@ -93,6 +93,7 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t /* sys */, Float_t v)
   if (TMath::Abs(energy - 4400.)  < 10)  return 4400;
   if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
   if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
+  if (TMath::Abs(energy - 8000.)  < 10)  return 8000;
   if (TMath::Abs(energy - 10000.) < 10)  return 10000;
   if (TMath::Abs(energy - 14000.) < 10)  return 14000;
   return 0;

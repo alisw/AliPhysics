@@ -327,7 +327,15 @@ protected:
   AliBasedNdetaTask& operator=(const AliBasedNdetaTask&) { return *this; }
   // Forward declaration 
   class CentralityBin;
-
+  /** 
+   * Retrieve the AOD event 
+   *
+   * @param isESD If true, assume the AOD event is the output 
+   * 
+   * @return Pointer to AOD event or null 
+   */
+  AliAODEvent* GetAODEvent(Bool_t isESD=false);
+  
   /** 
    * Retrieve the histogram 
    * 
@@ -784,11 +792,12 @@ protected:
   TH1D*           fCent;         // Centrality distribution 
   TAxis*          fCentAxis;     // Centrality axis
   UShort_t        fNormalizationScheme; // Normalization scheme
-  TNamed*         fSchemeString;     
-  TNamed*         fTriggerString; 
+  TNamed*         fSchemeString;     // Normalization scheme string
+  TNamed*         fTriggerString;    // Trigger string 
   TString         fFinalMCCorrFile; //Filename for final MC corr
+  Bool_t          fIsESD;           // Whether we have ESD input or not
   
-  ClassDef(AliBasedNdetaTask,4); // Determine multiplicity in base area
+  ClassDef(AliBasedNdetaTask,5); // Determine multiplicity in base area
 };
 
 #endif
