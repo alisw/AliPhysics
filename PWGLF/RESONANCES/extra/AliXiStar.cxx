@@ -131,7 +131,6 @@ AliXiStar::AliXiStar(const char *name, Bool_t AODdecision, Bool_t MCdecision, In
     fZvertexBins(0),
     fEventsToMix(0),
     fMultBins(0),
-    fMultLimits(),
     fMCcase(MCdecision),
     fAODcase(AODdecision),
     fEventCounter(0),
@@ -152,7 +151,6 @@ AliXiStar::AliXiStar(const char *name, Bool_t AODdecision, Bool_t MCdecision, In
     fXiCosTheta(0),
     fXiStarCosTheta(0),
     fMassWindow(0),
-    fCovMatrix(),
     fTrueMassPr(0), 
     fTrueMassPi(0), 
     fTrueMassK(0), 
@@ -163,7 +161,10 @@ AliXiStar::AliXiStar(const char *name, Bool_t AODdecision, Bool_t MCdecision, In
     fCutList(CutListOption)
 {
   // Main Constructor
-  
+  for (Int_t i=0; i<21; i++){
+    fCovMatrix[i]=-99999.;
+    if (i<12) fMultLimits[i] = 0;
+  }
   // Define output slots here 
   // Output slot #1
   DefineOutput(1, TList::Class());
@@ -205,7 +206,6 @@ AliXiStar::AliXiStar(const AliXiStar &obj)
     fXiCosTheta(obj.fXiCosTheta),
     fXiStarCosTheta(obj.fXiStarCosTheta),
     fMassWindow(obj.fMassWindow),
-    fCovMatrix(),
     fTrueMassPr(obj.fTrueMassPr), 
     fTrueMassPi(obj.fTrueMassPi), 
     fTrueMassK(obj.fTrueMassK), 
@@ -217,6 +217,10 @@ AliXiStar::AliXiStar(const AliXiStar &obj)
     
 {
   // Copy constructor  
+  for (Int_t i=0; i<21; i++){
+    fCovMatrix[i]=obj.fCovMatrix[i];
+    if (i<12) fMultLimits[i]=obj.fMultLimits[i];
+  }  
 }
 //________________________________________________________________________
 AliXiStar &AliXiStar::operator=(const AliXiStar &obj) 
@@ -224,7 +228,8 @@ AliXiStar &AliXiStar::operator=(const AliXiStar &obj)
   // Assignment operator  
   if (this == &obj)
     return *this;
-  
+
+  fname = obj.fname;
   fAOD = obj.fAOD;
   fESD = obj.fESD; 
   fOutputList = obj.fOutputList;
@@ -236,10 +241,9 @@ AliXiStar &AliXiStar::operator=(const AliXiStar &obj)
   fZvertexBins = obj.fZvertexBins;
   fEventsToMix = obj.fEventsToMix;
   fMultBins = obj.fMultBins;
-  fMultLimits[0] = obj.fMultLimits[0]; fMultLimits[1] = obj.fMultLimits[1]; fMultLimits[2] = obj.fMultLimits[2];
-  fMultLimits[3] = obj.fMultLimits[3]; fMultLimits[4] = obj.fMultLimits[4]; fMultLimits[5] = obj.fMultLimits[5];
-  fMultLimits[6] = obj.fMultLimits[6]; fMultLimits[7] = obj.fMultLimits[7]; fMultLimits[8] = obj.fMultLimits[8];
-  fMultLimits[9] = obj.fMultLimits[9]; fMultLimits[10] = obj.fMultLimits[10]; fMultLimits[11] = obj.fMultLimits[11];
+  for (Int_t i=0; i<12; i++){
+    fMultLimits[i]=obj.fMultLimits[i];
+  }
   fMCcase = obj.fMCcase;
   fAODcase = obj.fAODcase;
   fEventCounter = obj.fEventCounter;
@@ -260,13 +264,9 @@ AliXiStar &AliXiStar::operator=(const AliXiStar &obj)
   fXiCosTheta = obj.fXiCosTheta;
   fXiStarCosTheta = obj.fXiStarCosTheta;
   fMassWindow = obj.fMassWindow;
-  fCovMatrix[0] = obj.fCovMatrix[0]; fCovMatrix[1] = obj.fCovMatrix[1]; fCovMatrix[2] = obj.fCovMatrix[2];
-  fCovMatrix[3] = obj.fCovMatrix[3]; fCovMatrix[4] = obj.fCovMatrix[4]; fCovMatrix[5] = obj.fCovMatrix[5];
-  fCovMatrix[6] = obj.fCovMatrix[6]; fCovMatrix[7] = obj.fCovMatrix[7]; fCovMatrix[8] = obj.fCovMatrix[8];
-  fCovMatrix[9] = obj.fCovMatrix[9]; fCovMatrix[10] = obj.fCovMatrix[10]; fCovMatrix[11] = obj.fCovMatrix[11];
-  fCovMatrix[12] = obj.fCovMatrix[12]; fCovMatrix[13] = obj.fCovMatrix[13]; fCovMatrix[14] = obj.fCovMatrix[14];
-  fCovMatrix[15] = obj.fCovMatrix[15]; fCovMatrix[16] = obj.fCovMatrix[16]; fCovMatrix[17] = obj.fCovMatrix[17];
-  fCovMatrix[18] = obj.fCovMatrix[18]; fCovMatrix[19] = obj.fCovMatrix[19]; fCovMatrix[20] = obj.fCovMatrix[20];
+  for (Int_t i=0; i<21; i++){
+    fCovMatrix[i]=obj.fCovMatrix[i];
+  }
   fTrueMassPr = obj.fTrueMassPr; 
   fTrueMassPi = obj.fTrueMassPi; 
   fTrueMassK = obj.fTrueMassK; 
@@ -282,7 +282,6 @@ AliXiStar &AliXiStar::operator=(const AliXiStar &obj)
 AliXiStar::~AliXiStar()
 {
   // Destructor
-  if(fname) delete fname;
   if(fAOD) delete fAOD; 
   if(fESD) delete fESD; 
   if(fOutputList) delete fOutputList;
@@ -1265,8 +1264,8 @@ void AliXiStar::Exec(Option_t *)
 	
 	fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(xiCharge));
 	//cout<<(fEvt+EN)->fNTracks<<"  "<<(fEvt+EN)->fTracks[l].fCharge<<endl;
-	fESDTrack4->Set((fEvt+EN)->fTracks[l].fX, (fEvt+EN)->fTracks[l].fP, (fEvt+EN)->fTracks[l].fCov, (fEvt+EN)->fTracks[l].fCharge);
 	if(!fESDTrack4) continue;
+	fESDTrack4->Set((fEvt+EN)->fTracks[l].fX, (fEvt+EN)->fTracks[l].fP, (fEvt+EN)->fTracks[l].fCov, (fEvt+EN)->fTracks[l].fCharge);
 	if(fAODcase){
 	  if((Bool_t)(((1<<5) & (fEvt+EN)->fTracks[l].fFilterMap) == 0)) continue;// AOD filterbit cut, "Standard cuts with tight dca"
 	}else{
