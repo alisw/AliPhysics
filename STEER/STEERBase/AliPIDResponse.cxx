@@ -897,7 +897,6 @@ void AliPIDResponse::InitializeTOFResponse(){
   //
   // Set PID Params to the TOF PID response
   // 
-  TString stMethod[4]={"kFILL_T0","kTOF_T0","kT0_T0","kBest_T0"};
   for (Int_t i=0;i<4;i++) {
     fTOFResponse.SetTrackParameter(i,fTOFPIDParams->GetSigParams(i));
   }
