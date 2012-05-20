@@ -15,18 +15,18 @@
 #include <TObject.h>
 #include "TString.h"
 
+#include "AliTHn.h"
+
 #define ANALYSIS_TYPES	7
 #define MAXIMUM_NUMBER_OF_STEPS	1024
 #define MAXIMUM_STEPS_IN_PSI 360
 
-class TGraphErrors;
 class TH1D;
 class TH2D;
 class TH3D;
-class AliTHn;
 
-const Int_t nTrackVariablesSingle = 4;       // track variables in histogram (eta, phi, pTtrig, centrality)
-const Int_t nTrackVariablesPair   = 4;       // track variables in histogram (dEta, dPhi, pT, pTtrig, centrality)
+const Int_t nTrackVariablesSingle = 5;       // track variables in histogram (centrality, phi-Psi2, eta, phi, pTtrig)
+const Int_t nTrackVariablesPair   = 6;       // track variables in histogram (centrality, phi-Psi2, dEta, dPhi, pTtrig, ptAssociated)
 const TString gBFPsiAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
 class AliBalancePsi : public TObject {
@@ -60,6 +60,15 @@ class AliBalancePsi : public TObject {
 
   void CalculateBalance(Float_t fCentrality, Double_t gReactionPlane, vector<Double_t> **chargeVector);
   
+  TH2D   *GetCorrelationFunctionPN(Double_t centrMin, Double_t centrMax, 
+				   Double_t psiMin, Double_t psiMax);
+  TH2D   *GetCorrelationFunctionNP(Double_t centrMin, Double_t centrMax, 
+				   Double_t psiMin, Double_t psiMax);
+  TH2D   *GetCorrelationFunctionPP(Double_t centrMin, Double_t centrMax, 
+				   Double_t psiMin, Double_t psiMax);
+  TH2D   *GetCorrelationFunctionNN(Double_t centrMin, Double_t centrMax, 
+				   Double_t psiMin, Double_t psiMax);
+
   AliTHn *GetHistNp() {return fHistP;}
   AliTHn *GetHistNn() {return fHistN;}
   AliTHn *GetHistNpn() {return fHistPN;}
@@ -67,12 +76,18 @@ class AliBalancePsi : public TObject {
   AliTHn *GetHistNpp() {return fHistPP;}
   AliTHn *GetHistNnn() {return fHistNN;}
 
-  void SetHistNp(AliTHn *gHist) {fHistP = gHist;}
-  void SetHistNn(AliTHn *gHist) {fHistN = gHist;}
-  void SetHistNpn(AliTHn *gHist) {fHistPN = gHist;}
-  void SetHistNnp(AliTHn *gHist) {fHistNP = gHist;}
-  void SetHistNpp(AliTHn *gHist) {fHistPP = gHist;}
-  void SetHistNnn(AliTHn *gHist) {fHistNN = gHist;}
+  void SetHistNp(AliTHn *gHist) {
+    fHistP = gHist; }//fHistP->FillParent(); fHistP->DeleteContainers();}
+  void SetHistNn(AliTHn *gHist) {
+    fHistN = gHist; }//fHistN->FillParent(); fHistN->DeleteContainers();}
+  void SetHistNpn(AliTHn *gHist) {
+    fHistPN = gHist; }//fHistPN->FillParent(); fHistPN->DeleteContainers();}
+  void SetHistNnp(AliTHn *gHist) {
+    fHistNP = gHist; }//fHistNP->FillParent(); fHistNP->DeleteContainers();}
+  void SetHistNpp(AliTHn *gHist) {
+    fHistPP = gHist; }//fHistPP->FillParent(); fHistPP->DeleteContainers();}
+  void SetHistNnn(AliTHn *gHist) {
+    fHistNN = gHist; }//fHistNN->FillParent(); fHistNN->DeleteContainers();}
 
   TH1D *GetBalanceFunctionHistogram(Int_t iVariableSingle,
 				    Int_t iVariablePair,

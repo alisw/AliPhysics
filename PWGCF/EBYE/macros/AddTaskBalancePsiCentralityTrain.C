@@ -34,38 +34,6 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       TString fileNameBase="AnalysisResults") {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
-  TString centralityName("");
-  centralityName+=Form("%.0f",centrMin);
-  centralityName+="-";
-  centralityName+=Form("%.0f",centrMax);
-  centralityName+="_";
-  centralityName+=Form("%s",centralityEstimator.Data());
-  centralityName+="_";
-  centralityName+=Form("vZ%.1f",vertexZ);
-  centralityName+="_";
-  centralityName+=Form("DCAxy%.1f",DCAxy);
-  centralityName+="_";
-  centralityName+=Form("DCAz%.1f",DCAz);
-  centralityName+="_Pt";
-  centralityName+=Form("%.1f",ptMin);
-  centralityName+="-";
-  centralityName+=Form("%.1f",ptMax);
-  centralityName+="_Eta";
-  centralityName+=Form("%.1f",etaMin);
-  centralityName+="-";
-  centralityName+=Form("%.1f",etaMax);
-  centralityName+="_Chi";
-  centralityName+=Form("%.1f",maxTPCchi2);
-  centralityName+="_nClus";
-  centralityName+=Form("%d",minNClustersTPC);
-  centralityName+="_Bit";
-  centralityName+=Form("%d",AODfilterBit);
-  if(bCentralTrigger)   centralityName+="_withCentralTrigger";
-
-
-
-
-
   TString outputFileName(fileNameBase);
   outputFileName.Append(".root");
 
@@ -165,11 +133,11 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  outputFileName += ":PWGCFEbyE.outputBalanceFunctionAnalysis";
-  AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBF_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  if(gRunShuffling) AliAnalysisDataContainer *coutBFS = mgr->CreateContainer(Form("listBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  if(kUsePID) AliAnalysisDataContainer *coutQAPID = mgr->CreateContainer(Form("listQAPID_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  outputFileName += ":PWGCFEbyE.outputBalanceFunctionPsiAnalysis";
+  AliAnalysisDataContainer *coutQA = mgr->CreateContainer("listQAPsi", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutBF = mgr->CreateContainer("listBFPsi", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(gRunShuffling) AliAnalysisDataContainer *coutBFS = mgr->CreateContainer("listBFPsiShuffled", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(kUsePID) AliAnalysisDataContainer *coutQAPID = mgr->CreateContainer("listQAPIDPsi", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 1, coutQA);
