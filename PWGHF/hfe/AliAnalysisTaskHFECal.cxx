@@ -259,7 +259,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
          double emcphi = clustpos.Phi(); 
          double emceta = clustpos.Eta();
-         double calInfo[3];
+         double calInfo[4];
          calInfo[0] = emcphi; calInfo[1] = emceta; calInfo[2] = clustE; calInfo[3] = cent; 
          fEMCAccE->Fill(calInfo); 
         }
@@ -513,13 +513,15 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   
   Bool_t flagPhotonicElec = kFALSE;
   
-  for(Int_t jTracks = itrack+1; jTracks<fESD->GetNumberOfTracks(); jTracks++){
+  //for(Int_t jTracks = itrack+1; jTracks<fESD->GetNumberOfTracks(); jTracks++){
+  for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
     AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
     if (!trackAsso) {
       printf("ERROR: Could not receive track %d\n", jTracks);
       continue;
     }
-    
+    if(itrack==jTracks)continue;    
+
     Double_t dEdxAsso = -999., ptAsso=-999., openingAngle = -999.;
     Double_t mass=999., width = -999;
     Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
@@ -529,7 +531,8 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     Int_t chargeAsso = trackAsso->Charge();
     Int_t charge = track->Charge();
     
-    if(ptAsso <0.3) continue;
+    //if(ptAsso <0.3) continue;
+    if(ptAsso <0.5) continue;
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
     if(dEdxAsso <70 || dEdxAsso>100) continue; //11a pass1
     
