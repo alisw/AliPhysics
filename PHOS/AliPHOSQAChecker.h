@@ -32,6 +32,7 @@ public:
   virtual ~AliPHOSQAChecker() {;} // dtor
 
 private:
+  virtual void Check(Double_t *rv, AliQAv1::ALITASK_t, TObjArray ** list, const AliDetectorRecoParam * recoParam=0) ; 
   AliPHOSQAChecker & operator = (const AliPHOSQAChecker & /*qac*/);
   
   ClassDef(AliPHOSQAChecker,1)  // description 
