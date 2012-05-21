@@ -63,7 +63,7 @@ class AliTRDdEdxCalibUtils
   static TObjArray * GetObj(const Bool_t kinvq, const Double_t mag, const Int_t charge);
   static TObjArray* HistToObj(const THnBase *hh, Int_t run=-999, TList *lout=0x0, TTreeSRedirector *calibStream=0x0);
   static void DeleteObjArray();
-  static Bool_t GenerateDefaultOCDB(const TString path="local://./");
+  static Bool_t GenerateOCDB(const Int_t run=-1, const TString path="local://./");
 
   static AliTRDdEdxCalibHistArray * GetHistArray(){return fgHistArray;}
   static THnBase * GetHistAt(const Int_t iter);
@@ -73,7 +73,6 @@ class AliTRDdEdxCalibUtils
   static void DeleteHistArray();
 
   static Double_t GetCalibTPCscale(const Int_t tpcncls, const Double_t tpcsig);
-  static void Output(const TList *lin, Int_t run);
   
  private:
   static void FillHist(const Int_t ncls, const TVectorD *arrayQ, const TVectorD *arrayX, THnBase * hcalib, const Double_t scale);

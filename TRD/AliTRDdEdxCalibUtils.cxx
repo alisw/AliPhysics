@@ -102,37 +102,45 @@ void AliTRDdEdxCalibUtils::DeleteObjArray()
   }
 }
 
-Bool_t AliTRDdEdxCalibUtils::GenerateDefaultOCDB(const TString path)
+Bool_t AliTRDdEdxCalibUtils::GenerateOCDB(const Int_t run, const TString path)
 {
   //
-  //generate default OCDB object PHQ, do like
-  //AliTRDdEdxCalibUtils::GenerateDefaultPHQOCDB("local://./")
+  //generate OCDB object PHQ, do like
+  //AliTRDdEdxCalibUtils::GenerateOCDB(run, "local://./")
+  //if fgObjArray==0x0, generate default one
+  //else generate according to fgObjArray
   //
 
-  TObjArray * arr8 = new TObjArray(8);
-  arr8->SetOwner();
+  TObjArray * arr8 = 0x0;
+  if(fgObjArray){
+    arr8 = fgObjArray;
+  }
+  else{
+    arr8 = new TObjArray(8);
+    arr8->SetOwner();
 
-  for(Int_t ii=0; ii<8; ii++){
-    TObjArray * arr1 = new TObjArray(1);
-    arr1->SetOwner();
-    TString objn(AliTRDdEdxCalibHistArray::GetNameAt(ii));
-    objn.ReplaceAll("Hist","Obj");
-    arr1->SetName(objn);
-
-    const Int_t nbins = AliTRDdEdxBaseUtils::NTRDtimebin();
-    TVectorD * vec = new TVectorD(nbins);
-    for(Int_t jj=0; jj<nbins; jj++){
-      (*vec)[jj] = 1;
+    for(Int_t ii=0; ii<8; ii++){
+      TObjArray * arr1 = new TObjArray(1);
+      arr1->SetOwner();
+      TString objn(AliTRDdEdxCalibHistArray::GetNameAt(ii));
+      objn.ReplaceAll("Hist","Obj");
+      arr1->SetName(objn);
+      
+      const Int_t nbins = AliTRDdEdxBaseUtils::NTRDtimebin();
+      TVectorD * vec = new TVectorD(nbins);
+      for(Int_t jj=0; jj<nbins; jj++){
+        (*vec)[jj] = 1;
+      }
+      arr1->Add(vec);
+      arr8->Add(arr1);
     }
-    arr1->Add(vec);
-    arr8->Add(arr1);
   }
 
   AliCDBMetaData *metaData= new AliCDBMetaData();
   metaData->SetObjectClassName("TObjArray");
   metaData->SetResponsible("Raphaelle Bailhache and Xianguo Lu");
 
-  AliCDBId id1("TRD/Calib/PHQ", 0, 999999999);
+  AliCDBId id1("TRD/Calib/PHQ", 0, run<0 ? 999999999 : run);
   AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(path);
   gStorage->Put(arr8, id1, metaData);
 
@@ -283,7 +291,7 @@ Double_t AliTRDdEdxCalibUtils::GetCalibTPCscale(const Int_t tpcncls, const Doubl
   if(tpcsig<EPSILON)
     return -999;
 
-  return tpcsig/120;
+  return tpcsig/45;
 
 }
 
@@ -338,62 +346,6 @@ void AliTRDdEdxCalibUtils::GetPHCountMeanRMS(const TH1D *hnor, TH1D *&hmean)
   delete obj;
 }
 
-void AliTRDdEdxCalibUtils::Output(const TList *lin, Int_t run)
-{
-  //
-  //produce calibration objects
-  //
-
-  TString objnames;
-  for(Int_t iter=0; iter<8; iter++){
-    objnames+= AliTRDdEdxCalibHistArray::GetNameAt(iter)+" ";
-  }
-
-  TList * lout = new TList;
-  lout->SetOwner();
-
-  TTreeSRedirector *calibStream = new TTreeSRedirector(Form("TRDCalibStream_%010d.root", run));
-    
-  const Int_t nh=lin->GetEntries();
-  for(Int_t ii=0; ii<nh; ii++){
-    const THnBase *hh=(THnBase*)lin->At(ii);
-    const TString hname = hh->GetName();
-    if(!objnames.Contains(hname))
-      continue;
-
-    TObjArray * cobj0 = HistToObj(hh, run, lout, calibStream);
-    lout->Add(cobj0);
-  }
-
-  //lout->ls();
-
-  //=============================================================
-  //=============================================================
-  
-  TFile *fout=new TFile(Form("TRDCalibObj_%010d.root", run),"recreate");
-  fout->cd();
-  const Int_t nout=lout->GetEntries();
-  for(Int_t ii=0; ii<nout; ii++){
-    const TString oname = lout->At(ii)->GetName();
-    if(oname.Contains("Obj")){
-      TObjArray * cobj = (TObjArray*) lout->At(ii);
-      cobj->Write(oname, TObjArray::kSingleKey);
-    }
-  }
-  fout->Save();
-  fout->Close();
-  delete fout;
-
-  fout=new TFile(Form("TRDCalibList_%010d.root", run),"recreate");
-  fout->cd();
-  lin->Write();
-  lout->Write();
-  fout->Save();
-  fout->Close();
-  delete fout;
-  
-  delete calibStream;
-
   /*
     http://root.cern.ch/root/html/TH1.html
     When an histogram is created, a reference to it is automatically added to the list of in-memory objects for the current file or directory. This default behaviour can be changed by:
@@ -403,8 +355,6 @@ void AliTRDdEdxCalibUtils::Output(const TList *lin, Int_t run)
     
     When the histogram is deleted, the reference to it is removed from the list of objects in memory. When a file is closed, all histograms in memory associated with this file are automatically deleted. 
   */
-  delete lout;
-}
 
 TObjArray* AliTRDdEdxCalibUtils::HistToObj(const THnBase *hh, Int_t run, TList *lout, TTreeSRedirector *calibStream)
 {

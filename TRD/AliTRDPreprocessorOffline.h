@@ -196,6 +196,9 @@ public:
   Bool_t IsPHQon() const { return fPHQon ;};
   void SetPHQon(const Bool_t kphq){ fPHQon = kphq; }
 
+  Bool_t IsDebugPHQon() const { return fDebugPHQon ;};
+  void SetDebugPHQon(const Bool_t kphq){ fDebugPHQon = kphq; }
+
  private:
   Bool_t fMethodSecond;                      // Second Method for drift velocity   
   TString fNameList;                         // Name of the list
@@ -266,6 +269,7 @@ private:
   AliTRDPreprocessorOffline(const AliTRDPreprocessorOffline&); // not implemented
 
   Bool_t fPHQon;                 //switch of PHQ
+  Bool_t fDebugPHQon;                 //switch of DebugPHQ
 
   ClassDef(AliTRDPreprocessorOffline,4)
 };

@@ -128,7 +128,8 @@ ClassImp(AliTRDPreprocessorOffline)
   fOutliersFitChargeLow(0.03),
   fOutliersFitChargeHigh(0.7),
   fBeginFitCharge(3.5),
-  fPHQon(kTRUE)
+  fPHQon(kTRUE),
+  fDebugPHQon(kFALSE)
 {
   //
   // default constructor
@@ -952,14 +953,35 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePHQ(Int_t startRunNumber)
   //
   //Produce PHQ calibration results
   //
+  TList *lout = 0x0;
+  TTreeSRedirector *calibStream = 0x0;
+  if(IsDebugPHQon()){
+    lout = new TList;
+    lout->SetOwner();
+
+    calibStream = new TTreeSRedirector(Form("TRDCalibStream_%010d.root", startRunNumber));
+  }
+
   for(Int_t iter=0; iter<AliTRDdEdxCalibUtils::GetHistArray()->GetSize(); iter++){
     THnBase *hi = (THnBase*) AliTRDdEdxCalibUtils::GetHistAt(iter);
-    TObjArray *obji = AliTRDdEdxCalibUtils::HistToObj(hi, startRunNumber);
+    TObjArray *obji = AliTRDdEdxCalibUtils::HistToObj(hi, startRunNumber, lout, calibStream);
     //printf("test analyze %s\n", obji->GetName());
     AliTRDdEdxCalibUtils::GetObjArray()->AddAt(obji, iter);
   }
 
   fCalibObjects->AddAt(AliTRDdEdxCalibUtils::GetObjArray(), kPHQ);
+
+  if(lout){
+    TFile *fout=new TFile(Form("TRDCalibList_%010d.root", startRunNumber),"recreate");
+    fout->cd();
+    lout->Write();
+    fout->Save();
+    fout->Close();
+    delete fout;
+  }
+  delete calibStream;
+  delete lout;
+
   return kTRUE;
 }
 

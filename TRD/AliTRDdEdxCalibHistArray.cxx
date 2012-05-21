@@ -43,9 +43,9 @@ AliTRDdEdxCalibHistArray::AliTRDdEdxCalibHistArray(const Bool_t kNoInv):
   SetName(GetArrayName());
   SetOwner(kTRUE);
 
-  const Int_t    nbin[2]={AliTRDdEdxBaseUtils::NTRDtimebin(), 100};
-  const Double_t xmin[2]={0,       0.1};
-  const Double_t xmax[2]={nbin[0], 20};
+  const Int_t    nbin[2]={AliTRDdEdxBaseUtils::NTRDtimebin(), 200};
+  const Double_t xmin[2]={0,       0.01};
+  const Double_t xmax[2]={nbin[0], 10};
   const TString aname[2]={"globalTimeBin", "trdqovertpc"};
   const TString atitle[2]={"det * AliTRDseedV1::kNtb + itb", "TRD-Cluster-Q / TPC-Signal"};
 

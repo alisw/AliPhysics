@@ -41,27 +41,22 @@
 
 #include "TTreeStream.h"
 
-#include "AliCDBId.h"
-#include "AliCDBMetaData.h"
-#include "AliCDBStorage.h"
 #include "AliESDEvent.h"
 #include "AliESDfriendTrack.h"
 #include "AliESDtrack.h"
-#include "AliTRDcalibDB.h"
-#include "AliTRDCalROC.h"
 #include "AliTRDtrackV1.h"
 
 #include "AliTRDdEdxBaseUtils.h"
 
 #define EPSILON 1e-12
 
-Double_t AliTRDdEdxBaseUtils::fgQ0Frac = 0.3;
+Double_t AliTRDdEdxBaseUtils::fgQ0Frac = 0.55;
 Double_t AliTRDdEdxBaseUtils::fgQ1Frac = 0.5;
 Double_t AliTRDdEdxBaseUtils::fgTimeBinCountCut = 0.0; 
 Int_t    AliTRDdEdxBaseUtils::fgCalibTPCnclsCut = 70;
 Bool_t   AliTRDdEdxBaseUtils::fgExBOn = kTRUE; 
 Bool_t   AliTRDdEdxBaseUtils::fgPadGainOn = kTRUE;
-Double_t AliTRDdEdxBaseUtils::fgQScale = 45;
+Double_t AliTRDdEdxBaseUtils::fgQScale = 50;
 
 //===================================================================================
 //                                   Math and Histogram
@@ -294,6 +289,12 @@ void AliTRDdEdxBaseUtils::FitSlicesY(const TH2D *hh, TH1D *&hnor, TH1D *&hmpv, T
   hwid = new TH1D(Form("%s_wid",hh->GetName()), "", nx, xmin, xmax);
   hres = new TH1D(Form("%s_res",hh->GetName()), "", nx, xmin, xmax);
 
+  Double_t newbins[ny+1];
+  for(Int_t ii=1; ii<=ny+1; ii++){
+    const Double_t lowx= hh->GetYaxis()->GetBinLowEdge(ii);
+    newbins[ii-1]=lowx;
+  }
+
   for(Int_t ix=x0; ix<=x1; ix++){
     //to speed up
     const Double_t rawcount = hh->Integral(ix,ix,0, ny+1);
@@ -302,6 +303,7 @@ void AliTRDdEdxBaseUtils::FitSlicesY(const TH2D *hh, TH1D *&hnor, TH1D *&hmpv, T
     }
 
     TH1D *htmp = new TH1D(Form("FitSlicesY_%s_%d", hh->GetName(), ix),"",ny, ymin, ymax);
+    htmp->GetXaxis()->Set(ny, newbins);
     Double_t ntot = 0;
     for(Int_t iy=y0; iy<=y1; iy++){
       const Double_t be = hh->GetBinError(ix,iy);
@@ -535,7 +537,7 @@ void AliTRDdEdxBaseUtils::PrintControl()
   //
   //print out control variable
   //
-  printf("\nAliTRDdEdxBaseUtils::PrintControl Q0Frac %.1f, Q1Frac %.1f, TimeBinCountCut %.2f, CalibTPCnclsCut %d, IsExBOn %d, IsPadGainOn %d, QScale %.2f\n\n", Q0Frac(), Q1Frac(), TimeBinCountCut(), CalibTPCnclsCut(), IsExBOn(), IsPadGainOn(), QScale());
+  printf("\nAliTRDdEdxBaseUtils::PrintControl Q0Frac %.2f, Q1Frac %.2f, TimeBinCountCut %.2f, CalibTPCnclsCut %d, IsExBOn %d, IsPadGainOn %d, QScale %.2f\n\n", Q0Frac(), Q1Frac(), TimeBinCountCut(), CalibTPCnclsCut(), IsExBOn(), IsPadGainOn(), QScale());
 }
 
 //===================================================================================
