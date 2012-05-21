@@ -31,16 +31,15 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        Terminate(Option_t *option);
   void                        Init();
 
-  void                        SetTracksName(const char *n)                         { fTracksName    = n          ; }
-  void                        SetClusName(const char *n)                           { fCaloName      = n          ; }
-  void                        SetJetsName(const char *n)                           { fJetsName      = n          ; }
-  void                        SetKtJetsName(const char *n)                         { fKtJetsName    = n          ; }
-  void                        SetEmbJetsName(const char *n)                        { fEmbJetsName   = n          ; }
-  void                        SetRhoName(const char *n)                            { fRhoName       = n          ; }
-  void                        SetAnaType(SAJFAnaType type)                         { fAnaType       = type       ; }
-  void                        SetJetRadius(Float_t r)                              { fJetRadius     = r          ; } 
-  void                        SetPtCut(Float_t cut)                                { fPtCut         = cut        ; }
-  void                        SetPtCutJetPart(Float_t cut)                         { fPtCutJetPart  = cut        ; }
+  void                        SetTracksName(const char *n)                         { fTracksName     = n          ; }
+  void                        SetClusName(const char *n)                           { fCaloName       = n          ; }
+  void                        SetJetsName(const char *n)                           { fJetsName       = n          ; }
+  void                        SetEmbJetsName(const char *n)                        { fEmbJetsName    = n          ; }
+  void                        SetRhoName(const char *n)                            { fRhoName        = n          ; }
+  void                        SetAnaType(SAJFAnaType type)                         { fAnaType        = type       ; }
+  void                        SetJetRadius(Float_t r)                              { fJetRadius      = r          ; } 
+  void                        SetPtCut(Float_t cut)                                { fPtCut          = cut        ; }
+  void                        SetPtCutJetPart(Float_t cut)                         { fPtCutJetPart   = cut        ; }
   void                        SetHistoBins(Int_t nbins, Float_t min, Float_t max)  { fNbins = nbins; fMinPt = min; fMaxPt = max; }
 
  protected:
@@ -51,13 +50,11 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   Int_t                       GetNumberOfCaloClusters()                                            const;
   AliEmcalJet                *GetJet(const Int_t i)                                                const;
   Int_t                       GetNumberOfJets()                                                    const;
-  AliEmcalJet                *GetKtJet(const Int_t i)                                              const;
-  Int_t                       GetNumberOfKtJets()                                                  const;
   AliEmcalJet                *GetEmbJet(const Int_t i)                                             const;
   Int_t                       GetNumberOfEmbJets()                                                 const;
   Bool_t                      AcceptTrack(AliVTrack* track, Bool_t acceptMC = kFALSE)              const;
   Bool_t                      AcceptCluster(AliVCluster* clus, Bool_t acceptMC = kFALSE)                ;
-  Bool_t                      AcceptJet(AliEmcalJet* jet)                                          const;
+  Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t checkPt = kFALSE)                 const;
   Bool_t                      AcceptJet(Float_t eta, Float_t phi)                                  const;
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)    const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)   const;
@@ -66,12 +63,10 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        RetrieveEventObjects()                                                                             ;
   void                        FillHistograms()                                                                                   ;
   void                        DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)                                                 ;
-  void                        DoKtJetLoop(Float_t &rhoKt, Int_t nLJs = 2)                                                        ;
   Bool_t                      DoEmbJetLoop(AliEmcalJet* &maxJet, TObject* &maxPart)                                              ;
   void                        DoTrackLoop(Float_t &rhoTracksLJex, Float_t &rhoTracks, Int_t maxJetIndex, Int_t max2JetIndex)     ;
   void                        DoClusterLoop(Float_t &rhoClusLJex, Float_t &rhoClus,Int_t maxJetIndex, Int_t max2JetIndex)        ;
   Bool_t                      GetRigidConePt(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet *jet = 0,  Float_t minD = 1.0) ;
-
 
   SAJFAnaType                 fAnaType;                    // Analysis type
   Float_t                     fMinEta;                     // Minimum eta accepatance
@@ -82,7 +77,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   TString                     fTracksName;                 // Name of track collection
   TString                     fCaloName;                   // Name of calo cluster collection
   TString                     fJetsName;                   // Name of jet collection
-  TString                     fKtJetsName;                 // Name of kt jet collection
   TString                     fEmbJetsName;                // Name of embedded jets collection
   TString                     fRhoName;                    // Name of rho object
   Int_t                       fNbins;                      // No. of pt bins
@@ -93,9 +87,8 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   TClonesArray               *fTracks;                     //!Tracks
   TClonesArray               *fCaloClusters;               //!Clusters
   TClonesArray               *fJets;                       //!Jets
-  TClonesArray               *fKtJets;                     //!Kt Jets
   TClonesArray               *fEmbJets;                    //!Embedded Jets
-  AliCentrality              *fCent;                       //!Event centrality
+  Float_t                     fCent;                       //!Event centrality
   Int_t                       fCentBin;                    //!Event centrality bin
   Float_t                     fRho;                        //!Event rho
   TList                      *fOutput;                     //!Output list
@@ -112,10 +105,11 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   TH2F                       *fHistRCPhiEta;               //!Phi-Eta distribution of embedded jets
   TH1F                       *fHistJetsPt[4];              //!Inclusive jet pt spectrum
   TH1F                       *fHistCorrJetsPt[4];          //!Corrected inclusive jet pt spectrum
-  TH1F                       *fHistJetsPtCutPart[4];       //!Inclusive jet pt spectrum selecting jet with a particle minimum fPtCutJetPart
-  TH1F                       *fHistCorrJetsPtCutPart[4];   //!Corrected inclusive jet pt spectrum selecting jet with a particle minimum fPtCutJetPart
-  TH1F                       *fHistJetsNEF[4];             //!Jet neutral energy fraction
-  TH1F                       *fHistJetsZ[4];               //!Constituent Pt over Jet Pt ratio
+  TH1F                       *fHistUnfoldedJetsPt[4];      //!Unfolded inclusive jet pt spectrum
+  TH1F                       *fHistJetsPtNonBias[4];       //!Inclusive jet pt spectrum selecting jet with a particle minimum fPtCutJetPart
+  TH1F                       *fHistCorrJetsPtNonBias[4];   //!Corrected inclusive jet pt spectrum selecting jet with a particle minimum fPtCutJetPart
+  TH2F                       *fHistJetsNEFvsPt[4];         //!Jet neutral energy fraction
+  TH2F                       *fHistJetsZvsPt[4];           //!Constituent Pt over Jet Pt ratio
   TH1F                       *fHistLeadingJetPt[4];        //!Leading jet pt spectrum
   TH1F                       *fHistCorrLeadingJetPt[4];    //!Leading jet pt spectrum
   TH1F                       *fHist2LeadingJetPt[4];       //!Second leading jet pt spectrum
