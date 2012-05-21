@@ -20,14 +20,15 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   void         UserExec(Option_t *option);
   void         Terminate(Option_t *option);
 
-  void         SetClusName(const char *n)            { fCaloName    = n;   }
-  void         SetEtaMatch(Double_t eta)             { fEtaMatch    = eta; }
-  void         SetHadCorr(Double_t c)                { fHadCorr     = c;   }
-  void         SetMinPt(Double_t min)                { fMinPt       = min; }
-  void         SetOutClusName(const char *n)         { fOutCaloName = n;   }
-  void         SetPhiMatch(Double_t phi)             { fPhiMatch    = phi; }
-  void         SetTracksName(const char *n)          { fTracksName  = n;   }
-  void         SetTrackClus(Int_t c)                 { fDoTrackClus    = c; }
+  void         SetClusName(const char *n)              { fCaloName       = n;   }
+  void         SetEtaMatch(Double_t eta)               { fEtaMatch       = eta; }
+  void         SetHadCorr(Double_t c)                  { fHadCorr        = c;   }
+  void         SetMinPt(Double_t min)                  { fMinPt          = min; }
+  void         SetOutClusName(const char *n)           { fOutCaloName    = n;   }
+  void         SetPhiMatch(Double_t phi)               { fPhiMatch       = phi; }
+  void         SetTracksName(const char *n)            { fTracksName     = n;   }
+  void         SetTrackClus(Int_t c)                   { fDoTrackClus    = c;   }
+  void         SetCreateHistograms(Bool_t h = kTRUE)   { fCreateHisto    = h;   }
 
  protected:
   Int_t        GetCentBin(Double_t cent) const;
@@ -41,9 +42,10 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   TString                fOutCaloName;            // name of output clusters
   Double_t               fPhiMatch;               // phi match value (pp=0.050)
   Double_t               fEtaMatch;               // eta match value (pp=0.025)
-  Int_t                  fDoTrackClus;            //loop over tracks first
+  Int_t                  fDoTrackClus;            // loop over tracks first
   Double_t               fHadCorr;                // hadronic correction (fraction)
   Double_t               fMinPt;                  // minimum pt (on tracks and clusters)
+  Bool_t                 fCreateHisto;            // whether or not create histograms
   TClonesArray          *fOutClusters;            //!output cluster collection
   TList                 *fOutputList;             //!output list
   TH2                   *fHistMatchEtaPhi[8][9];  //!output histograms
