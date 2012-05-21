@@ -14,6 +14,7 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
  public:
   AliHadCorrTask();
   AliHadCorrTask(const char *name); 
+  AliHadCorrTask(const char *name, Bool_t histo); 
   virtual ~AliHadCorrTask();
 
   void         UserCreateOutputObjects();
@@ -28,7 +29,6 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   void         SetPhiMatch(Double_t phi)               { fPhiMatch       = phi; }
   void         SetTracksName(const char *n)            { fTracksName     = n;   }
   void         SetTrackClus(Int_t c)                   { fDoTrackClus    = c;   }
-  void         SetCreateHistograms(Bool_t h = kTRUE)   { fCreateHisto    = h;   }
 
  protected:
   Int_t        GetCentBin(Double_t cent) const;

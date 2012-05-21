@@ -57,6 +57,7 @@ AliAnalysisTaskRho::AliAnalysisTaskRho() :
 {
   // Constructor
 }
+
 //________________________________________________________________________
 AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name) :
   AliAnalysisTaskRhoBase(name),
@@ -92,8 +93,47 @@ AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name) :
 {
   // Constructor
 
-  DefineOutput(1, TList::Class());
 }
+
+//________________________________________________________________________
+AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name, Bool_t histo) :
+  AliAnalysisTaskRhoBase(name),
+  fTracksName("tracks"),
+  fJetsName("KtJets"),
+  fClustersName("caloClusters"),
+  fRhoScaledName(""),
+  fPhiMin(0),
+  fPhiMax(0),
+  fEtaMin(0),
+  fEtaMax(0),
+  fAreaCut(0),
+  fNExclLeadJets(0),
+  fScaleFunction(0),
+  fCreateHisto(histo),
+  fOutputList(0),
+  fHistCentrality(0),
+  fHistJetPt(0),
+  fHistJetArea(0),
+  fHistRhovsCent(0),
+  fHistDeltaRhovsCent(0),
+  fHistDeltaRhoScalevsCent(0),
+  fHistJetPtvsCent(0),
+  fHistJetAreavsCent(0),
+  fHistNjetvsCent(0),
+  fHistRhovsNtrack(0),
+  fHistDeltaRhovsNtrack(0),
+  fHistDeltaRhoScalevsNtrack(0),
+  fHistJetPtvsNtrack(0),
+  fHistJetAreavsNtrack(0),
+  fHistNjetvsNtrack(0),
+  fRhoScaled(0)
+{
+  // Constructor
+
+  if (fCreateHisto)
+    DefineOutput(1, TList::Class());
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskRho::UserCreateOutputObjects()
@@ -103,6 +143,9 @@ void AliAnalysisTaskRho::UserCreateOutputObjects()
   fRhoScaledName = fRhoName;
   fRhoScaledName += "_Scaled";
   fRhoScaled = new TParameter<Double_t>(fRhoScaledName, 0);  
+
+  if (!fCreateHisto)
+    return;
 
   OpenFile(1);
   fOutputList = new TList();

@@ -106,8 +106,52 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
   } 
 
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
+}
 
-  DefineOutput(1, TList::Class());
+//________________________________________________________________________
+AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) : 
+  AliAnalysisTaskSE(name),
+  fTracksName("Tracks"),
+  fCaloName("CaloClusters"),
+  fOutCaloName("CaloClustersCorr"),
+  fPhiMatch(0.05),
+  fEtaMatch(0.025),
+  fDoTrackClus(0),
+  fHadCorr(0),
+  fMinPt(0.15),
+  fCreateHisto(histo),
+  fOutClusters(0),
+  fOutputList(0),
+  fHistNclusvsCent(0),
+  fHistNclusMatchvsCent(0),
+  fHistEbefore(0),
+  fHistEafter(0),
+  fHistEoPCent(0),
+  fHistNMatchCent(0),
+  fHistNMatchCent_trk(0),
+  fHistCentrality(0)
+
+{
+  // Standard constructor.
+
+   for(Int_t i=0; i<8; i++) {
+    if (i<4) {
+      fHistMatchEvsP[i]   = 0;
+      fHistMatchdRvsEP[i] = 0;
+      for(Int_t j=0; j<3; j++) {
+	fHistEsubPch[i][j] = 0;
+	fHistEsubPchRat[i][j] = 0;
+      }
+    }
+    for(Int_t j=0; j<9; j++) {
+      fHistMatchEtaPhi[i][j] = 0;
+    }
+  } 
+
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
+
+  if (fCreateHisto)
+    DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -384,6 +428,9 @@ void AliHadCorrTask::UserCreateOutputObjects()
     return;
   }
   fOutClusters->SetName(fOutCaloName);
+
+  if (!fCreateHisto)
+    return;
 
   OpenFile(1);
   fOutputList = new TList();

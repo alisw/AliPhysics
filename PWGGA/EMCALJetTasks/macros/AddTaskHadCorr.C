@@ -8,7 +8,8 @@ AliHadCorrTask* AddTaskHadCorr(
   const Double_t minPt       = 0.15,
   const Double_t phiMatch    = 0.050,
   const Double_t etaMatch    = 0.025,
-  const char *outputname     = "AnalysisResults.root"
+  const char *outputname     = "AnalysisResults.root",
+  const Bool_t   histo       = kFALSE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -33,7 +34,7 @@ AliHadCorrTask* AddTaskHadCorr(
   //-------------------------------------------------------
 
   TString name(Form("HadCorr_%s", outClusName));
-  AliHadCorrTask *hcor = new AliHadCorrTask(name);
+  AliHadCorrTask *hcor = new AliHadCorrTask(name, histo);
   hcor->SetTracksName(nTracks);
   hcor->SetClusName(nClusters);
   hcor->SetOutClusName(outClusName);
