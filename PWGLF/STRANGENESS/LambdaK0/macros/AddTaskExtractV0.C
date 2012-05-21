@@ -1,4 +1,7 @@
-AliAnalysisTaskExtractV0 *AddTaskExtractV0(const TString lMasterJobSessionFlag = "")
+AliAnalysisTaskExtractV0 *AddTaskExtractV0( Bool_t lSwitchIsNuclear     = kTRUE, 
+                                            Bool_t lSwitchIsLowEnergyPP = kFALSE,
+                                            Bool_t lSwitchUseOnTheFly   = kFALSE, 
+                                            const TString lMasterJobSessionFlag = "")
 {
 // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -19,6 +22,12 @@ AliAnalysisTaskExtractV0 *AddTaskExtractV0(const TString lMasterJobSessionFlag =
 
    // Create and configure the task
 	 AliAnalysisTaskExtractV0 *taskv0extract = new AliAnalysisTaskExtractV0("taskv0extract");
+
+   //Configuration
+   taskv0extract -> SetIsNuclear     ( lSwitchIsNuclear     );
+   taskv0extract -> SetIsLowEnergyPP ( lSwitchIsLowEnergyPP );
+   taskv0extract -> SetUseOnTheFly   ( lSwitchUseOnTheFly   );
+
    mgr->AddTask(taskv0extract);
 
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
