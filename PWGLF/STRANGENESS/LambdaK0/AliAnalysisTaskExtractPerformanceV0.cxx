@@ -92,7 +92,10 @@ class AliAODv0;
 ClassImp(AliAnalysisTaskExtractPerformanceV0)
 
 AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0() 
-  : AliAnalysisTaskSE(), fListHistV0(0), fTree(0),
+  : AliAnalysisTaskSE(), fListHistV0(0), fTree(0), fPIDResponse(0),
+   fkIsNuclear   ( kFALSE ), 
+   fkLowEnergyPP ( kFALSE ),
+   fkUseOnTheFly ( kFALSE ),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -138,7 +141,10 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
 }
 
 AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const char *name) 
-  : AliAnalysisTaskSE(name), fListHistV0(0), fTree(0),
+  : AliAnalysisTaskSE(name), fListHistV0(0), fTree(0), fPIDResponse(0),
+   fkIsNuclear   ( kFALSE ), 
+   fkLowEnergyPP ( kFALSE ),
+   fkUseOnTheFly ( kFALSE ),
      
 //------------------------------------------------
 // HISTOGRAMS
@@ -535,6 +541,24 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
   //REVISED multiplicity estimator after 'multiplicity day' (2011)
    Int_t lMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity( lESDevent );
 
+   //---> If this is a nuclear collision, then go nuclear on "multiplicity" variable...
+   //---> Warning: Experimental
+   if(fkIsNuclear == kTRUE){ 
+      AliCentrality* centrality;
+      centrality = lESDevent->GetCentrality();
+      lMultiplicity = ( ( Int_t ) ( centrality->GetCentralityPercentile( "V0M" ) ) );
+      if (centrality->GetQuality()>1) {
+        PostData(1, fListHistV0);
+        PostData(2, fTree);
+        return;
+      }
+   }
+  
+   //Set variable for filling tree afterwards!
+   //---> pp case......: GetReferenceMultiplicity
+   //---> Pb-Pb case...: Centrality by V0M
+   fTreeVariableMultiplicity = lMultiplicity;
+
    fHistV0MultiplicityBeforeTrigSel->Fill ( lESDevent->GetNumberOfV0s() );
    fHistMultiplicityBeforeTrigSel->Fill ( lMultiplicity );
         
@@ -671,6 +695,14 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
    Bool_t isSelected = 0;
    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+
+   //pp at 2.76TeV: special case, ignore FastOnly
+   if ( (fkLowEnergyPP == kTRUE) && (maskIsSelected& AliVEvent::kFastOnly) ){
+      PostData(1, fListHistV0);
+      PostData(2, fTree);
+      return;
+   } 
+   //Standard Min-Bias Selection
    if ( ! isSelected ) { 
       PostData(1, fListHistV0);
       PostData(2, fTree);
@@ -684,7 +716,6 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
    lNumberOfV0s          = lESDevent->GetNumberOfV0s();
   
    //Set variable for filling tree afterwards!
-   fTreeVariableMultiplicity = lMultiplicity;
    fHistV0MultiplicityForTrigEvt->Fill(lNumberOfV0s);
    fHistMultiplicityForTrigEvt->Fill ( lMultiplicity );
 
@@ -1055,7 +1086,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       //Keep only if included in a parametric InvMass Region 20 sigmas away from peak
 
       //First Selection: Reject OnFly
-      if( lOnFlyStatus == 0 ){
+      if( (lOnFlyStatus == 0 && fkUseOnTheFly == kFALSE) || (lOnFlyStatus != 1 && fkUseOnTheFly == kTRUE ) ){
          //Second Selection: rough 20-sigma band, parametric. 
          //K0Short: Enough to parametrize peak broadening with linear function.    
          Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*fTreeVariablePt; 
