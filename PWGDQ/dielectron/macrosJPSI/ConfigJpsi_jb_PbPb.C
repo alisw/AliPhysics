@@ -14,14 +14,17 @@ enum { kTPC=0, kTOF, kTRD, krec, kTOFTRD, kTOFTRD2, kITScls, kITSamy, kDCA, kChi
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
-AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition)
+Bool_t hasMC=kFALSE;
+
+AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, Bool_t isMC=kFALSE)
 {
   //
   // Setup the instance of AliDielectron
   //
   
   // MC event handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);    
+  hasMC=isMC;
+    //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);    
 
   //ESD handler?
   Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
@@ -206,7 +209,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   cuts->AddCut(trkCuts);
   
   //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  //  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   AliDielectronPID *pid = new AliDielectronPID("PID","PID");
@@ -364,7 +367,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //
   // Initialise the histograms
   //
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  //  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
   //Setup histogram Manager
   AliDielectronHistos *histos=new AliDielectronHistos(die->GetName(),die->GetTitle());
@@ -683,7 +686,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   //
   // Setup the CF Manager if needed
   //
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);  
+  //  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);  
   
   AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
   
@@ -757,7 +760,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
 void AddMCSignals(AliDielectron *die){
   //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  //Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   if (!hasMC) return;
   
   AliDielectronSignalMC* inclusiveJpsi = new AliDielectronSignalMC("inclusiveJpsi","Inclusive J/psi");
