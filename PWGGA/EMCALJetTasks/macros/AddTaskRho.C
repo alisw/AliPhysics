@@ -9,7 +9,8 @@ AliAnalysisTaskRho* AddTaskRho(
    const Double_t maxPhi      = 2 * TMath::Pi(),
    const Double_t minEta      = -0.3,
    const Double_t maxEta      = 0.3,
-   const Double_t minArea     = 0.0
+   const Double_t minArea     = 0.0,
+   const UInt_t   exclJets    = 0
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -41,6 +42,7 @@ AliAnalysisTaskRho* AddTaskRho(
   rhotask->SetJetPhi(minPhi,maxPhi);
   rhotask->SetJetEta(minEta,maxEta);
   rhotask->SetAreaCut(minArea);
+  rhotask->SetExcludeLeadJets(exclJets);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

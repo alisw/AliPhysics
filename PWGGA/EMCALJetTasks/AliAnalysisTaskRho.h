@@ -31,11 +31,11 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   void                   SetJetsName(const char *n)                            { fJetsName      = n    ; }
   void                   SetScaleFunction(TF1* sf)                             { fScaleFunction = sf   ; }
   void                   SetTracksName(const char *n)                          { fTracksName    = n    ; }
+  void                   SetExcludeLeadJets(UInt_t n)                          { fNExclLeadJets = n    ; }
+  void                   SetCreateHistograms(Bool_t h = kTRUE)                 { fCreateHisto   = h    ; }
   
  protected:
-  virtual void           Sort(vector<Double_t>& v)            ;
-  virtual Double_t       GetMedian(vector<Double_t> v, int c) ;
-  virtual Double_t       GetScaleFactor(Double_t cent)        ;
+  virtual Double_t       GetScaleFactor(Double_t cent);
 
   TString                fTracksName;                    // name of track collection
   TString                fJetsName;                      // name of jet collection
@@ -46,7 +46,9 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   Double_t               fEtaMin;                        // minimum eta
   Double_t               fEtaMax;                        // maximum eta
   Double_t               fAreaCut;                       // cut on jet area
+  UInt_t                 fNExclLeadJets;                 // number of leading jets to be excluded from the median calculation
   TF1                   *fScaleFunction;                 // pre-computed scale factor as a function of centrality
+  Bool_t                 fCreateHisto;                   // whether or not create histograms
   TList                 *fOutputList;                    //!output list
   TH1F                  *fHistCentrality;                //!centrality distribution
   TH1F                  *fHistJetPt;                     //!jet pt distribution
@@ -65,7 +67,6 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   TH2F                  *fHistJetAreavsNtrack;           //!jet area vs. no. of tracks
   TH2F                  *fHistNjetvsNtrack;              //!no. of jets vs. no. of tracks
   TParameter<Double_t>  *fRhoScaled;                     //!per event scaled rho
-  TF1                   *fNewRhoFunction;                //!new rho as a function of centrality
 
   AliAnalysisTaskRho(const AliAnalysisTaskRho&);             // not implemented
   AliAnalysisTaskRho& operator=(const AliAnalysisTaskRho&);  // not implemented
