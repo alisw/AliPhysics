@@ -1059,6 +1059,9 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     fPIDBackground->InitializePID(runnumber);
   }
 
+  fHFECuts->SetRecEvent(fInputEvent);
+  if(mcEvent) fHFECuts->SetMCEvent(mcEvent);
+
 
   //////////
   // PID
@@ -1320,11 +1323,12 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	AliAODEvent *aodeventu = dynamic_cast<AliAODEvent *>(fInputEvent);
 	if(aodeventu) {
 	  AliAODVertex *vAOD = aodeventu->GetPrimaryVertex();
+	  Double_t bfield = aodeventu->GetMagneticField();
 	  Double_t pos[3],cov[6];
 	  vAOD->GetXYZ(pos);
 	  vAOD->GetCovarianceMatrix(cov);
 	  const AliESDVertex vESD(pos,cov,100.,100);
-	  esdTrack.RelateToVertex(&vESD,0.,3.);
+	  esdTrack.RelateToVertex(&vESD,bfield,3.);
 	} 
 	if(!fHFEBackgroundCuts->IsSelected(&esdTrack)) {
 	  survivedbackground = kFALSE;

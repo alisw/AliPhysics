@@ -1359,6 +1359,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 
   fContainer->NewEvent();
 
+  fCFM->SetRecEventInfo(fAOD);
+
   // Look for kink mother
   Int_t numberofvertices = fAOD->GetNumberOfVertices();
   Double_t listofmotherkink[numberofvertices];
