@@ -45,6 +45,7 @@ public:
     return;
   }
   void SetAutomaticSettings(Bool_t flag=kTRUE){fAutomaticSettings=flag;}
+  void SetForceCorrectTRDBug(Bool_t flag=kTRUE){fForceCorrectTRDBug=flag;}
   void SetUserRecoPass(Int_t flag=0){fUserRecoPass=flag;}
   Int_t GetRecoPass(void){return fRecoPass;}
   void DetectRecoPass();
@@ -82,6 +83,7 @@ private:
   Bool_t fAutomaticSettings; // enable/disable automatic (per run) settings
   Int_t  fRecoPass;          // reconstruction pass: the tender applies different recipes depending on the pass
   Int_t  fUserRecoPass;      // when reco pass is selected by user
+  Bool_t fForceCorrectTRDBug; // force TRD bug correction (for some bad MC production...)
 
   // variables for TOF calibrations and timeZero setup
   AliTOFcalib     *fTOFCalib;       // recalibrate TOF signal with OCDB
@@ -109,7 +111,7 @@ private:
   AliTOFTenderSupply(const AliTOFTenderSupply&c);
   AliTOFTenderSupply& operator= (const AliTOFTenderSupply&c);
 
-  ClassDef(AliTOFTenderSupply, 8);
+  ClassDef(AliTOFTenderSupply, 9);
 };
 
 
