@@ -39,7 +39,7 @@ void recCPass1_OuterDet(const char *filename="raw.root",Int_t nevents=-1, const 
   if (nevents>0) rec.SetEventRange(0,nevents);
 
   // Remove recpoints after each event
-  rec.SetDeleteRecPoints("ITS MUON EMCAL PHOS");
+  rec.SetDeleteRecPoints("ITS MUON EMCAL PHOS VZERO T0");
 
   // Switch off the V0 finder - saves time!
   rec.SetRunMultFinder(kFALSE);
@@ -55,8 +55,8 @@ void recCPass1_OuterDet(const char *filename="raw.root",Int_t nevents=-1, const 
   rec.SetWriteESDfriend(kTRUE);
   rec.SetWriteAlignmentData();
   rec.SetUseTrackingErrorsForAlignment("ITS");
-  rec.SetRunReconstruction("ITS MUON EMCAL PHOS");
-  rec.SetFillESD("ITS MUON EMCAL PHOS");
+  rec.SetRunReconstruction("ITS MUON EMCAL PHOS VZERO T0");
+  rec.SetFillESD("ITS MUON EMCAL PHOS VZERO T0");
   rec.SetCleanESD(kFALSE);
 
   // Specific reco params for ZDC (why isn't this automatic?)
