@@ -119,7 +119,7 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
       }
 
       if(AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib   ||
-         //AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult ||
+         AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult ||
          AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult){ 
          //AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault ||
          
@@ -128,7 +128,7 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
         if(qaFlag < test[specie]) test[specie] = qaFlag;
       }
 
-      if(//AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult ||
+      if(AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult ||
         AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult){ 
         //AliRecoParam::ConvertIndex(specie) == AliRecoParam::kDefault ||
         //check physics 
@@ -213,11 +213,14 @@ Double_t AliT0QAChecker::CheckLaser(TObjArray *listrec) const {
   for(Int_t ih = 0; ih < nEffHistos; ih++){
 
     if(!bEffHistosNotEmpty){ //all laser efficiency plots are empty
+
       TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
       text.AddText(Form("1) T0 is in BEAMTUNIG: empty plots are ok")); 
       text.AddText(Form("2) T0 is in READY: check calibriation trigger")); 
       text.AddText(Form("if also physics data are empty report"));
       text.AddText(Form("readout problem to the T0 on-call expert")); 
+      text.SetBorderSize(0);
+      text.SetFillStyle(0);
       fhRawEff[ih]->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
     }
  
@@ -244,20 +247,27 @@ Double_t AliT0QAChecker::CheckBCID(TObjArray *listrec) const {
     Int_t nbinsY = hBCID->GetNbinsY();
     double entriesOnDiagonal  = 0; //count diagonal and off diagonal entries
     double entriesOffDiagonal = 0;
+    Int_t offset = 37; 
+    Int_t period = 3564; 
 
-    for(Int_t ix=1; ix<=nbinsX; ix++){ 
-      for(Int_t iy=1; iy<=nbinsY; iy++){ 
-        if(TMath::Abs(ix-iy)<6) entriesOnDiagonal  += hBCID->GetBinContent(ix,iy); //On  Diagonal
-        else       entriesOffDiagonal += hBCID->GetBinContent(ix,iy); //Off Diagonal
+    for(Int_t itrm=1; itrm<=nbinsX; itrm++){ //BCID TRM
+      for(Int_t ibcid=1; ibcid<=nbinsY; ibcid++){ //BCID
+        if(TMath::Abs(itrm-ibcid)<6 || TMath::Abs( (itrm+offset)%period - ibcid)<2 ){ 
+           entriesOnDiagonal  += hBCID->GetBinContent(itrm,ibcid); //On  Diagonal
+        }else{
+         entriesOffDiagonal += hBCID->GetBinContent(itrm,ibcid); //Off Diagonal
+        }
       }
     }
-    if(entriesOnDiagonal<1 || entriesOffDiagonal>0){
-      qualityFlagBCID = kT0Error; //no entries on diagonal
+    if(entriesOnDiagonal<1 || entriesOffDiagonal>20){
+      qualityFlagBCID = kT0Warning; //no entries on diagonal
       AliDebug(AliQAv1::GetQADebugLevel(), Form("T0   %s is not diagonal", hBCID->GetName() ));
 
       TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
       text.AddText(Form("Check if entries are on a diagonal.")); 
       text.AddText(Form("Report readout problem to the T0 on-call expert")); 
+      text.SetBorderSize(0);
+      text.SetFillStyle(0);
       hBCID->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
     }
   }else{ //BCID empty
@@ -268,7 +278,9 @@ Double_t AliT0QAChecker::CheckBCID(TObjArray *listrec) const {
     TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
     text.AddText(Form("NO ENTRIES!!!")); 
     text.AddText(Form("If T0 is READY report")); 
-    text.AddText(Form("readout problem to the T0 on-call expert")); 
+    text.AddText(Form("readout problem to the T0 on-call expert"));
+    text.SetBorderSize(0);
+    text.SetFillStyle(0);
     hBCID->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
   }
 
@@ -301,6 +313,8 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
       TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
       text.AddText(Form("Check ORA and ORC")); 
       text.AddText(Form("Report problem to the T0 on-call expert")); 
+      text.SetBorderSize(0);
+      text.SetFillStyle(0);
       hTrigger->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
     }
 
@@ -313,6 +327,8 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
     text.AddText(Form("NO ENTRIES!!!")); 
     text.AddText(Form("If T0 is READY report")); 
     text.AddText(Form("readout problem to the T0 on-call expert")); 
+    text.SetBorderSize(0);
+    text.SetFillStyle(0);
     hTrigger->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
 
   }
@@ -329,7 +345,9 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
     TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
     text.AddText(Form("NO ENTRIES!!!")); 
     text.AddText(Form("If T0 is READY and beam is on report")); 
-    text.AddText(Form("the problem to the T0 on-call expert")); 
+    text.AddText(Form("the problem to the T0 on-call expert"));
+    text.SetBorderSize(0);
+    text.SetFillStyle(0);
     hMeanBest->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
   }
 
@@ -348,27 +366,33 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
   // clean objects added at previous checks
   EraseOldMessages((TH1*) hVertexFirst); 
   EraseOldMessages((TH1*) hVertexBest); 
-  float errorLevelDifference   = 200; 
-  float warningLevelDifference = 100; 
+  float errorLevelDifference   = 400; 
+  float warningLevelDifference = 200; 
 
   if(hVertexFirst->Integral()>0 && hOrCminOrATvdcOn->Integral()>0){
-    float meanVertexFirst = hVertexFirst->GetMean();
-    float meanVertexTVDC  = hOrCminOrATvdcOn->GetMean();
+    Float_t thr = 0.05 * hVertexFirst->GetBinContent(hVertexFirst->GetMaximumBin());
+     
+    float meanVertexFirst = GetMeanAboveThreshold( hVertexFirst, thr);
+    float meanVertexTVDC  = GetMeanAboveThreshold( hOrCminOrATvdcOn,thr);
     float diff = TMath::Abs(meanVertexFirst - meanVertexTVDC);
     if(diff > errorLevelDifference){
-      qualityFlagVetrexFirst = kT0Error; //init quality flag for a given histogram;
+      qualityFlagVetrexFirst = kT0Warning; //init quality flag for a given histogram;
 
       TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
-      text.AddText(Form("large diff. between TVDC vertex and")); 
-      text.AddText(Form("first vertex. Alert the T0 on-call expert")); 
+      text.AddText(Form("large diff. between TVDC vertex")); 
+      text.AddText(Form("and the first vertex."));
+      text.SetBorderSize(0);
+      text.SetFillStyle(0);
       hVertexFirst->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
 
     }else if(diff > warningLevelDifference){
       qualityFlagVetrexFirst = kT0Warning; //init quality flag for a given histogram;
 
       TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
-      text.AddText(Form("large diff. between TVDC vertex and")); 
-      text.AddText(Form("first vertex. Inform the T0 on-call expert")); 
+      text.AddText(Form("large diff. between TVDC vertex")); 
+      text.AddText(Form("and the first vertex."));
+      text.SetBorderSize(0);
+      text.SetFillStyle(0);
       hVertexFirst->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
 
     }
@@ -379,28 +403,36 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
     TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
     text.AddText(Form("NO ENTRIES!!!")); 
     text.AddText(Form("If T0 is READY and beam is on report")); 
-    text.AddText(Form("the problem to the T0 on-call expert")); 
+    text.AddText(Form("the problem to the T0 on-call expert"));
+    text.SetBorderSize(0);
+    text.SetFillStyle(0);
     hVertexFirst->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
   }
 
   if(hVertexBest->Integral()>0 && hOrCminOrATvdcOn->Integral()>0){
-    float meanVertexBest  = hVertexBest->GetMean();
-    float meanVertexTVDC =  hOrCminOrATvdcOn->GetMean();
+
+    Float_t thr = 0.05 * hVertexBest->GetBinContent(hVertexBest->GetMaximumBin());
+    float meanVertexBest  = GetMeanAboveThreshold(hVertexBest,thr);
+    float meanVertexTVDC =  GetMeanAboveThreshold(hOrCminOrATvdcOn,thr);
     float diff = TMath::Abs(meanVertexBest - meanVertexTVDC);
     if(diff > errorLevelDifference){
-      qualityFlagVetrexBest = kT0Error; //init quality flag for a given histogram;
+      qualityFlagVetrexBest = kT0Warning; //init quality flag for a given histogram;
 
       TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
-      text.AddText(Form("Large. diff. between TVDC vertex and")); 
-      text.AddText(Form("best vertex. Alert the T0 on-call expert")); 
+      text.AddText(Form("Large. diff. between TVDC vertex")); 
+      text.AddText(Form("and the best vertex."));
+      text.SetBorderSize(0);
+      text.SetFillStyle(0);
       hVertexBest->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
 
     }else if(diff > warningLevelDifference){
       qualityFlagVetrexBest = kT0Warning; //init quality flag for a given histogram;
 
       TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
-      text.AddText(Form("Large. diff. between TVDC vertex and")); 
-      text.AddText(Form("best vertex. Infrom the T0 on-call expert")); 
+      text.AddText(Form("Large. diff. between TVDC vertex")); 
+      text.AddText(Form("and the best vertex."));
+      text.SetBorderSize(0);
+      text.SetFillStyle(0);
       hVertexBest->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
     }
   }else{
@@ -410,7 +442,9 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
     TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
     text.AddText(Form("NO ENTRIES!!!")); 
     text.AddText(Form("If T0 is READY and beam is on report")); 
-    text.AddText(Form("the problem to the T0 on-call expert")); 
+    text.AddText(Form("the problem to the T0 on-call expert"));
+    text.SetBorderSize(0);
+    text.SetFillStyle(0);
     hVertexBest->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
   }
 
@@ -530,4 +564,23 @@ Double_t AliT0QAChecker::ConvertQualityFlagToDouble(int qualityFlag) const
   };
 
   return checkr; 
-} 
+}
+ 
+//--------------------------------------------------------------------------
+Float_t AliT0QAChecker::GetMeanAboveThreshold(TH1F* hV, Float_t thr) const{
+  //caculate mean value of histo bins above threshold
+  Int_t nBins = hV->GetNbinsX();
+  Int_t nBinsAboveThr = 0; 
+  Float_t sum = 0;
+
+  for(Int_t ib=1;ib<=nBins;ib++){
+    Float_t val = hV->GetBinContent(ib);
+    if(val<thr){
+      sum+=val;
+      nBinsAboveThr++; 
+    }
+  }
+
+  if(nBinsAboveThr>0) return sum/nBinsAboveThr;
+  else return hV->GetMean();
+}

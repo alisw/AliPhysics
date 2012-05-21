@@ -46,7 +46,8 @@ private:
 
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t, TObjArray ** list, const AliDetectorRecoParam * recoParam) ;
   void EraseOldMessages(TH1* h) const;
-  Double_t ConvertQualityFlagToDouble(int qualityFlag) const; 
+  Double_t ConvertQualityFlagToDouble(int qualityFlag) const;
+  Float_t GetMeanAboveThreshold(TH1F* hV, Float_t thr) const;
  
   ClassDef(AliT0QAChecker,1)  // description 
 
