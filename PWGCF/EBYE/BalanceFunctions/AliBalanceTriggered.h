@@ -58,13 +58,13 @@ class AliBalanceTriggered : public TObject {
   void FillBalance(Float_t fCentrality,TObjArray* particles,TObjArray* particlesMixed);
  
   // Get the balance function histogram 
-  TH1D *GetBalanceFunctionHistogram1D(Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax);
+  TH1D *GetBalanceFunctionHistogram1D(Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax, Double_t etaGap = -1);
 
   // Get the balance function histogram (2D) 
   TH2D *GetBalanceFunctionHistogram2D(Int_t var1, Int_t var2, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax);
 
   // Get 1D histogram
-  TH1D* GetHistogram1D(Int_t histo, Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax);
+  TH1D* GetHistogram1D(Int_t histo, Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax, Double_t etaGap = -1);
 
   // Get 2D histogram
   TH2D* GetHistogram2D(Int_t histo, Int_t var1, Int_t var2, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax);

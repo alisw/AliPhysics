@@ -319,7 +319,7 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,TObjArray *particles, 
 
 	Short_t charge2 = (Short_t) secondParticle->Charge();
 	trackVarsPair[0]    =  firstEta - secondEta[j];  // delta eta
-	trackVarsPair[1]    =  firstPhi = secondPhi[j];  // delta phi
+	trackVarsPair[1]    =  firstPhi - secondPhi[j];  // delta phi
 	if (trackVarsPair[1] > 180)   // delta phi between -180 and 180 
 	  trackVarsPair[1] -= 360;
 	if (trackVarsPair[1] <  - 180) 
@@ -340,7 +340,7 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,TObjArray *particles, 
 }  
 
 
-TH1D* AliBalanceTriggered::GetBalanceFunctionHistogram1D(Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax){
+TH1D* AliBalanceTriggered::GetBalanceFunctionHistogram1D(Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax, Double_t etaGap){
 
   // check which variable should be analyzed
   // 0 = Delta eta
@@ -377,7 +377,15 @@ TH1D* AliBalanceTriggered::GetBalanceFunctionHistogram1D(Int_t var, Double_t pTM
   fHistNP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRange(centrMin,centrMax); 
   fHistPP->GetGrid(0)->GetGrid()->GetAxis(4)->SetRange(centrMin,centrMax); 
   fHistNN->GetGrid(0)->GetGrid()->GetAxis(4)->SetRange(centrMin,centrMax); 
-  
+
+  if (etaGap > 0){
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(20 + etaGap, 9999); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(20 + etaGap, 9999); 
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(20 + etaGap, 9999); 
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(20 + etaGap, 9999); 
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(20 + etaGap, 9999); 
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(20 + etaGap, 9999); 
+  }  
 
   // Project into the wanted space (1st: analysis step, 2nd: axis)
   TH1D* hTemp1 = (TH1D*)fHistPN->Project(0,var);
@@ -386,6 +394,15 @@ TH1D* AliBalanceTriggered::GetBalanceFunctionHistogram1D(Int_t var, Double_t pTM
   TH1D* hTemp4 = (TH1D*)fHistNN->Project(0,var);
   TH1D* hTemp5 = (TH1D*)fHistP->Project(0,var);
   TH1D* hTemp6 = (TH1D*)fHistN->Project(0,var);
+
+  if (etaGap > 0){
+    fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(-9999, 9999); 
+    fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(-9999, 9999); 
+    fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(-9999, 9999); 
+    fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(-9999, 9999); 
+    fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(-9999, 9999); 
+    fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(-9999, 9999); 
+  }
 
   TH1D* gHistBalanceFunctionHistogram = NULL;
 
@@ -474,13 +491,13 @@ TH2D* AliBalanceTriggered::GetBalanceFunctionHistogram2D(Int_t var1, Int_t var2,
 }
 
 
-TH1D* AliBalanceTriggered::GetHistogram1D(Int_t histo, Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax){
+TH1D* AliBalanceTriggered::GetHistogram1D(Int_t histo, Int_t var, Double_t pTMinTrigger, Double_t pTMaxTrigger, Double_t pTMin, Double_t pTMax, Double_t centrMin, Double_t centrMax, Double_t etaGap){
 
   // check which variable should be analyzed
   //
-  // pair histograms:
-  // 0 = Delta eta 
-  // 1 = Delta phi
+  // single histograms:
+  // 0 = eta 
+  // 1 = phi
   // 2 = pT, trigger
   // 3 = centrality
   //
@@ -553,10 +570,15 @@ TH1D* AliBalanceTriggered::GetHistogram1D(Int_t histo, Int_t var, Double_t pTMin
   // centrality
   if(histo < 2) gTHn->GetGrid(0)->GetGrid()->GetAxis(3)->SetRange(centrMin,centrMax); 
   else          gTHn->GetGrid(0)->GetGrid()->GetAxis(4)->SetRange(centrMin,centrMax); 
- 
+
+  if (etaGap > 0) gTHn->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(20 + etaGap, 9999); 
 
   // Project into the wanted space (1st: analysis step, 2nd: axis)
-  TH1D* gHisto = (TH1D*)gTHn->Project(0,var);
+  TH1D* gHisto      = (TH1D*)gTHn->Project(0,var);
+
+
+  gTHn->GetGrid(0)->GetGrid()->GetAxis(0)->SetRange(-9999, 9999); 
+
 
   return gHisto;
 }
@@ -566,9 +588,9 @@ TH2D* AliBalanceTriggered::GetHistogram2D(Int_t histo, Int_t var1, Int_t var2, D
 
   // check which variable should be analyzed
   //
-  // pair histograms:
-  // 0 = Delta eta 
-  // 1 = Delta phi
+  // single histograms:
+  // 0 = eta 
+  // 1 = phi
   // 2 = pT, trigger
   // 3 = centrality
   //
