@@ -1,16 +1,15 @@
-AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE, UChar_t Sample=10,
+AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE,
 				  UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
 				  Double_t TPCclRatio = 0.6, Double_t TPCclshared = 1.1,
 				  UChar_t ITScl=3,  Double_t ITSchi2perclusters=99999999.,
-                                  Double_t dcaxy=1000.0, Double_t dcaz=2000.0,
-				  Double_t TPCs=0., Double_t TPCu=3.09, 
-				  Double_t TOFs=3.,Double_t IpSig=3., TString appendix){
+                                  Double_t dcaxy=1.0, Double_t dcaz=2.0,
+				  Double_t TOFs=3.,Double_t IpSig=3., Int_t itspixelcut=AliHFEextraCuts::kFirst, TString appendix,
+				  Float_t prodlow=0., Float_t prodhigh=100., Int_t addflag=0., Int_t ptbin=0,
+				  Int_t nondefaultcentr=0, Float_t* arraycentr=NULL,
+				  Double_t* tpcdEdxcut=NULL,Double_t tpcu=3.0){
   //
   // HFE standard task configuration
   //
-    Bool_t kAnalyseTaggedTracks = kTRUE;
-
-  printf("\n String settings: %s \n",appendix);
 
   AliHFEcuts *hfecuts = new AliHFEcuts(appendix,"HFE cuts pbpb TOF TPC");
   hfecuts->CreateStandardCuts();
@@ -23,11 +22,12 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE, UCh
 
   hfecuts->SetMinNClustersITS(ITScl);
   hfecuts->SetMaxChi2perClusterITS(ITSchi2perclusters);
-  hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+  hfecuts->SetCutITSpixel(itspixelcut);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
 
-  hfecuts->SetIPcutParam(0,0,0,IpSig,kTRUE);
-  if(useMC && beauty) hfecuts->SetProductionVertex(0,100,0,100);
+  hfecuts->SetIPcutParam(0,0,0,IpSig,kTRUE,kTRUE);
+  // if(useMC && beauty) hfecuts->SetProductionVertex(prodlow,prodhigh,prodlow,prodhigh);
+  if(useMC) hfecuts->SetProductionVertex(prodlow,prodhigh,prodlow,prodhigh);
 
   hfecuts->SetMaxImpactParam(dcaxy,dcaz);
 
@@ -45,22 +45,48 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE, UCh
   AliAnalysisTaskHFE *task = new AliAnalysisTaskHFE(appendix);
   task->SetHFECuts(hfecuts);
   task->SetPbPbAnalysis(kTRUE);
-  task->SetRemovePileUp(kTRUE);
+  task->SetRemovePileUp(kFALSE);
   task->GetPIDQAManager()->SetHighResolutionHistos();
+ 
+  
+  if((nondefaultcentr!=0) && arraycentr) {
+    for(Int_t i=0;i<12;i++)
+      {
+	task->SetPbPbUserCentralityLimit(kTRUE);
+	task->SetPbPbUserCentralityArray(i,arraycentr[i]);
+	
+      }
+  }
   
   // Define Variables
-  Double_t ptbinning[19] = {0., 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2., 2.5, 3., 4., 5., 6., 8., 12., 16., 20.};
-  //Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
-  //      		    1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5.,
-  //      		    5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+
+  if(ptbin==0)
+  {
+      Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
+      1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5.,
+      5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+  }
+
+  if(ptbin==1)
+  {
+      Double_t ptbinning[19] = {0., 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2., 2.5, 3., 4., 5., 6., 8., 12., 16., 20.};
+  }
+
+
   Double_t etabinning[17] = {-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 
 			     0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
   AliHFEvarManager *vm = task->GetVarManager();
+  Int_t sizept=(sizeof(ptbinning)/sizeof(double))-1;
+  Int_t sizeeta=(sizeof(etabinning)/sizeof(double))-1;
+
+  //  printf("ptbinning: %i \n",sizept);
+
   //vm->AddVariable("pt");
   //vm->AddVariable("eta");
-  // vm->AddVariable("pt", 35, ptbinning);
-  vm->AddVariable("pt", 18, ptbinning);
-  vm->AddVariable("eta", 16, etabinning);
+  vm->AddVariable("pt", sizept, ptbinning);
+  // vm->AddVariable("pt", 18, ptbinning);
+  //  vm->AddVariable("eta", 16, etabinning);
+  vm->AddVariable("eta", sizeeta, etabinning);
   vm->AddVariable("phi");
   vm->AddVariable("charge");
   vm->AddVariable("source");
@@ -83,62 +109,35 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE, UCh
   pid->AddDetector("TOF", 0);
   pid->AddDetector("TPC", 1);
   //pid->ConfigureTPCrejection();
-  
+
+ 
+
   if(!useMC){
     
-    Double_t params_centr_0_5[1];
-    Double_t params_centr_5_10[1];
-    Double_t params_centr_10_20[1];
-    Double_t params_centr_20_30[1];
-    Double_t params_centr_per[1];
-    params_centr_0_5[0]=  0.16; // cut tuned for 0-10% // TPCs
-    params_centr_5_10[0]= 0.16; // cut tuned for 0-10%
-    params_centr_10_20[0]= 0.29;
-    params_centr_20_30[0]= 0.38;
-    params_centr_per[0]=   0.44;
+    // 0-10% 0.16
+    // 10-20% 0.29
+    // 20-30% 0.38
+    // 30-40% 0.44
+    Double_t paramsTPCdEdxcut[12] ={0.0, 0.0, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+    if((nondefaultcentr!=0) && tpcdEdxcut) memcpy(paramsTPCdEdxcut,tpcdEdxcut,sizeof(paramsTPCdEdxcut));
+    
     char *cutmodel;
     cutmodel="pol0";
     
-    
     for(Int_t a=0;a<11;a++)
-      {
-	if(a>3)  pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_per,TPCu);
-	if(a==0) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_0_5,TPCu);    //  0-5%
-	if(a==1) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_5_10,TPCu);    //  5-10%
-	if(a==2) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_10_20,TPCu);    //  10-20%
-	if(a==3) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_20_30,TPCu);    //  20-30%
-      }
+    {
+     //   cout << a << " " << paramsTPCdEdxcut[a] << endl;
+	Double_t tpcparam[1]={paramsTPCdEdxcut[a]};
+
+	pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparam,tpcu);
+    }
+
   }
   pid->ConfigureTOF(TOFs);
 
-  if(kAnalyseTaggedTracks)
-  {
-      // V0 tagged tracks
-      AliHFEcuts *v0trackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
-      v0trackCuts->CreateStandardCuts();
+  AliHFEpidTOF *tofpid = pid->GetDetPID(AliHFEpid::kTOFpid);
+  if(TOFs<3.) tofpid->SetTOFnSigmaBand(-3,TOFs);
 
-      v0trackCuts->SetMinNClustersTPC(TPCcl);
-      v0trackCuts->SetMinNClustersTPCPID(TPCclPID);
-      v0trackCuts->SetFractionOfSharedTPCClusters(TPCclshared);
-      v0trackCuts->SetMinRatioTPCclusters(TPCclRatio);
-      v0trackCuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
-      v0trackCuts->SetMinNClustersITS(1);
-      v0trackCuts->SetMaxChi2perClusterITS(ITSchi2perclusters);
-      v0trackCuts->SetCutITSpixel(AliHFEextraCuts::kAny);
-      v0trackCuts->SetCheckITSLayerStatus(kFALSE);
-      v0trackCuts->UnsetVertexRequirement();
-      //v0trackCuts->SetMaxChi2perClusterITS(36);
-      //hfecuts->SetSigmaToVertex(10);
-      v0trackCuts->SetTOFPIDStep(kTRUE);
-      //v0trackCuts->SetTOFMISMATCHStep(kTRUE);
-      //v0trackCuts->SetTPCPIDCleanUpStep(kTRUE);
-      v0trackCuts->SetQAOn();
-
-      task->SwitchOnPlugin(AliAnalysisTaskHFE::kTaggedTrackAnalysis);
-      task->SetTaggedTrackCuts(v0trackCuts);
-      task->SetCleanTaggedTrack(kFALSE);
-  }
-  
   // QA
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
   //task->SetFillSignalOnly(kFALSE);    // for DE pluging for MC
@@ -146,7 +145,7 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE, UCh
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kIsElecBackGround);
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kSecVtx);
   task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
-  if(useMC) task->SetDebugStreaming();
+  if(useMC && addflag==1) task->SetDebugStreaming();
 
   printf("*************************************\n");
   printf("Configuring task PbPb \n"); 
