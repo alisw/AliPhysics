@@ -19,6 +19,7 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
  public:
   AliAnalysisTaskRho();
   AliAnalysisTaskRho(const char *name);
+  AliAnalysisTaskRho(const char *name, Bool_t histo);
   virtual ~AliAnalysisTaskRho() {}
   
   virtual void           UserCreateOutputObjects();
@@ -32,7 +33,6 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   void                   SetScaleFunction(TF1* sf)                             { fScaleFunction = sf   ; }
   void                   SetTracksName(const char *n)                          { fTracksName    = n    ; }
   void                   SetExcludeLeadJets(UInt_t n)                          { fNExclLeadJets = n    ; }
-  void                   SetCreateHistograms(Bool_t h = kTRUE)                 { fCreateHisto   = h    ; }
   
  protected:
   virtual Double_t       GetScaleFactor(Double_t cent);
