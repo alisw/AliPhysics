@@ -64,6 +64,7 @@ AliTOFTenderSupply::AliTOFTenderSupply() :
   fAutomaticSettings(kTRUE),
   fRecoPass(0),
   fUserRecoPass(0),
+  fForceCorrectTRDBug(kFALSE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
   fTOFres(100.),
@@ -105,6 +106,7 @@ AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender
   fAutomaticSettings(kTRUE),
   fRecoPass(0),
   fUserRecoPass(0),
+  fForceCorrectTRDBug(kFALSE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
   fTOFres(100.),
@@ -336,10 +338,10 @@ void AliTOFTenderSupply::ProcessEvent()
 
   // patches for various reconstruction bugs
   if (fLHC10dPatch && !(fIsMC)) RecomputeTExp(event);   // LHC10d pass2: fake full TRD geometry
-  if (fCorrectTRDBug && !(fIsMC)) FixTRDBug(event);     // LHC10b,c pass3: wrong TRD dE/dx 
+  if ( (fCorrectTRDBug && !(fIsMC)) || (fForceCorrectTRDBug)) FixTRDBug(event);     // LHC10b,c pass3: wrong TRD dE/dx 
 
   Double_t startTime = 0.;
-  if(fIsMC) startTime = fTOFCalib->TuneForMC(event,fTOFres);   // this is for old MC when we didn't jitter startTime in MC
+  if (fIsMC) startTime = fTOFCalib->TuneForMC(event,fTOFres);   // this is for old MC when we didn't jitter startTime in MC
 
   if (fDebugLevel > 1) Printf(" TofTender: startTime %f",startTime);
   if (fDebugLevel > 1) Printf(" TofTender: T0 time (orig) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
