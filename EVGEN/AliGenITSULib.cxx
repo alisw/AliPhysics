@@ -67,10 +67,12 @@ GenFunc AliGenITSULib::GetPt(Int_t iPID, const char * sForm) const
 
   switch(TMath::Abs(iPID)) {
 
-   case kLb   :    func=PtLbDist; break;  
-   case kLc   :    func=PtLcDist; break;  
-   case kXi_c :    func=PtLcDist; break;
-   case kB    :    func=PtLbDist; break;
+   case kLb    :    func=PtLbDist; break;  
+   case kLc    :    func=PtLcDist; break;  
+   case kXi_c  :    func=PtLcDist; break;
+   case kB     :    func=PtLbDist; break;
+   case kDs    :    func=PtLcDist; break;
+   case kDplus :    func=PtLcDist; break;
    default : AliError(Form("Unknown particle type: %i, Pt dist is 0",iPID));      func=0;
   } 
  }else {
@@ -85,7 +87,7 @@ GenFunc AliGenITSULib::GetY(Int_t iPID, const char *sForm) const
 {
  GenFunc func;
 
- if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kB) {
+ if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kB && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs) {
   AliError(Form("Unknown PID: %i, form: %s, returning 0",iPID,sForm));   //////////	
   func=0;
  } else { 
@@ -100,18 +102,23 @@ GenFuncIp AliGenITSULib::GetIp(Int_t iPID, const char *sForm) const
  // Return pointer to particle type parameterisation
  GenFuncIp id;
 
- if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kB) {
+ if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kB && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs) {
   AliError(Form("Unknown PID: %i, form: %s, return 0",iPID,sForm));   //////////	
   id = 0;
  } else {
   switch (iPID){
-   case kLc:                                                 return id=IpLcPlus;
-   case -kLc:                                                return id=IpLcMinus;
-   case kLb:                                                 return id=IpLb;
-   case -kLb:                                                return id=IpLbBar;
-   case kXi_c:                                               return id=IpXic;
-   case kB:                                                  return id=IpBPlus;
-   case -kB:                                                 return id=IpBMinus;
+   case kLc    :                                  return id=IpLcPlus;
+   case -kLc   :                                  return id=IpLcMinus;
+   case kLb    :                                  return id=IpLb;
+   case -kLb   :                                  return id=IpLbBar;
+   case kXi_c  :                                  return id=IpXic;
+   case -kXi_c :                                  return id=IpXicBar;
+   case kB     :                                  return id=IpBPlus;
+   case -kB    :                                  return id=IpBMinus;
+   case kDs    :                                  return id=IpDsPlus;
+   case -kDs   :                                  return id=IpDsMinus;
+   case kDplus :                                  return id=IpDPlus;
+   case -kDplus:                                  return id=IpDMinus;
    default  : AliFatal(Form("Unknown particle type: %i",iPID));  id=0;
   }
 
