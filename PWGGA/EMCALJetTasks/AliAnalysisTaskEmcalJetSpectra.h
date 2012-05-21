@@ -18,13 +18,14 @@ class AliAnalysisTaskEmcalJetSpectra : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  virtual void   SetTracksName(const char *n)              { fTracksName = n; }
-  virtual void   SetJetsName(const char *n)                { fJetsName = n;   }
-  virtual void   SetRhos1Name(const char *rn)              { fRhos1Name=rn;    }
-  virtual void   SetRhos2Name(const char *rn)              { fRhos2Name=rn;    }
-  virtual void   SetJetPhi(Double_t pmin, Double_t pmax)   { phimin = pmin; phimax = pmax; }
-  virtual void   SetJetEta(Double_t emin, Double_t emax)   { etamin = emin; etamax = emax; }
-  virtual void   SetAreaCut(Double_t a)                    { areacut = a;}
+  virtual void   SetTracksName(const char *n)             { fTracksName = n;     }
+  virtual void   SetJetsName(const char *n)               { fJetsName =   n;     }
+  virtual void   SetRhos1Name(const char *rn)             { fRhos1Name=   rn;    }
+  virtual void   SetRhos2Name(const char *rn)             { fRhos2Name=   rn;    }
+  virtual void   SetRhos3Name(const char *rn)             { fRhos3Name=   rn;    }
+  virtual void   SetJetPhi(Double_t pmin, Double_t pmax)  { phimin =      pmin;  phimax = pmax; }
+  virtual void   SetJetEta(Double_t emin, Double_t emax)  { etamin =      emin;  etamax = emax; }
+  virtual void   SetAreaCut(Double_t a)                   { areacut =     a;     }
   
  protected:
   virtual Int_t GetCentBin(Double_t cent) const;
@@ -58,6 +59,10 @@ class AliAnalysisTaskEmcalJetSpectra : public AliAnalysisTaskSE {
   TH2F       *fHistDeltaRho12vsCent;
   TH2F       *fHistDeltaRho13vsCent;
   TH2F       *fHistDeltaRho23vsCent;
+
+  TH2F       *fHistDeltaJetPt12vsCent;
+  TH2F       *fHistDeltaJetPt13vsCent;
+  TH2F       *fHistDeltaJetPt23vsCent;
   
   TH2F       *fHistRho1vsCent;
   TH2F       *fHistRho2vsCent;
@@ -76,12 +81,16 @@ class AliAnalysisTaskEmcalJetSpectra : public AliAnalysisTaskSE {
   Double_t etamax;
   Double_t areacut;
 
- TH2F       *fHistNEFvsPt[6][4];
+  TH2F       *fHistNEFvsPt[6][4];
   TH2F       *fHistZvsPt[6][4];
   TH2F       *fHistZchvsPt[6][4];
   TH2F       *fHistZemvsPt[6][4];
   TH2F       *fHistAreavsPt[6][4];
   TH1F       *fHistJetPt[6][4];
+  TH1F       *fHistJetPt5[6][4];
+  TH1F       *fHistJetPt6[6][4];
+  TH1F       *fHistJetPt7[6][4];
+  TH1F       *fHistJetPt8[6][4];
   TH2F       *fHistNconsvsPt[6][4];
   TH1F       *fHistRawJetPt[6];
   TH2F       *fHistAreavsRawPt[6];
