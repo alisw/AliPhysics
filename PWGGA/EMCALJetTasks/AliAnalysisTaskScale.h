@@ -12,10 +12,12 @@ class TF1;
 
 class AliAnalysisTaskScale : public AliAnalysisTaskSE {
  public:
-    AliAnalysisTaskScale() : AliAnalysisTaskSE(), fTracksName(), fClustersName(), fScaleFunction(0),
-      fOutputList(0), fHistCentrality(0), fHistPtTPCvsCent(0), fHistPtEMCALvsCent(0), fHistEtvsCent(0),  
-      fHistScalevsCent(0),  fHistDeltaScalevsCent(0), fHistPtTPCvsNtrack(0), fHistPtEMCALvsNtrack(0), 
-      fHistEtvsNtrack(0), fHistScalevsNtrack(0), fHistDeltaScalevsNtrack(0) {}
+  AliAnalysisTaskScale() : AliAnalysisTaskSE(), fTracksName(), fClustersName(), fScaleFunction(0),
+    fOutputList(0), fHistCentrality(0), fHistPtTPCvsCent(0), fHistPtEMCALvsCent(0), fHistEtvsCent(0),  
+    fHistScalevsCent(0),  fHistDeltaScalevsCent(0), fHistPtTPCvsNtrack(0), fHistPtEMCALvsNtrack(0), 
+    fHistEtvsNtrack(0), fHistScalevsNtrack(0), fHistDeltaScalevsNtrack(0), fHistTrackPtvsCent(0), 
+    fHistClusterPtvsCent(0), fHistTrackEtaPhi(0), fHistClusterEtaPhi(0),  fMinTrackPt(0.15), 
+    fMinClusterPt(0.15) {}
   AliAnalysisTaskScale(const char *name);
   virtual ~AliAnalysisTaskScale() {}
   
@@ -26,6 +28,8 @@ class AliAnalysisTaskScale : public AliAnalysisTaskSE {
   void                   SetTracksName(const char *n)                          { fTracksName    = n    ; }
   void                   SetClustersName(const char *n)                        { fClustersName  = n    ; }
   void                   SetScaleFunction(TF1* sf)                             { fScaleFunction = sf   ; }
+  void                   SetMinTrackPt(Double_t min)                           { fMinTrackPt    = min  ; }
+  void                   SetMinClusterPt(Double_t min)                         { fMinClusterPt  = min  ; }
   
  protected:
   virtual Double_t       GetScaleFactor(Double_t cent);
@@ -47,10 +51,16 @@ class AliAnalysisTaskScale : public AliAnalysisTaskSE {
   TH2F                  *fHistEtvsNtrack;         //!output histogram
   TH2F                  *fHistScalevsNtrack;      //!output histogram
   TH2F                  *fHistDeltaScalevsNtrack; //!output histogram
+  TH2F                  *fHistTrackPtvsCent;      //!output histogram
+  TH2F                  *fHistClusterPtvsCent;    //!output histogram
+  TH2F                  *fHistTrackEtaPhi;        //!output histogram
+  TH2F                  *fHistClusterEtaPhi;      //!output histogram
+  Double_t               fMinTrackPt;             //pt cut for scale factor calculation
+  Double_t               fMinClusterPt;           //pt cut for scale factor calculation
 
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented
   
-  ClassDef(AliAnalysisTaskScale, 3); // Scale task
+  ClassDef(AliAnalysisTaskScale, 4); // Scale task
 };
 #endif

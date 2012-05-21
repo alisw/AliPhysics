@@ -39,7 +39,13 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
   fHistPtEMCALvsNtrack(0), 
   fHistEtvsNtrack(0),  
   fHistScalevsNtrack(0),  
-  fHistDeltaScalevsNtrack(0)
+  fHistDeltaScalevsNtrack(0),
+  fHistTrackPtvsCent(0), 
+  fHistClusterPtvsCent(0),
+  fHistTrackEtaPhi(0), 
+  fHistClusterEtaPhi(0),
+  fMinTrackPt(0.15),
+  fMinClusterPt(0.15)
 {
   // Constructor.
 
@@ -55,20 +61,22 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner();
 
-  fHistCentrality         = new TH1F("fHistCentrality","Centrality",         101, -1, 100);
-  fHistPtTPCvsCent        = new TH2F("fHistPtTPCvsCent","rho vs cent",       101, -1, 100, 500,   0, 1000);
-  fHistPtEMCALvsCent      = new TH2F("fHistPtEMCALvsCent","rho vs cent",     101, -1, 100, 500,   0, 1000);
-  fHistEtvsCent           = new TH2F("fHistEtvsCent","rho vs cent",          101, -1, 100, 500,   0, 1000);
-  fHistScalevsCent        = new TH2F("fHistScalevsCent","rho vs cent",       101, -1, 100, 400,   0, 4);
-  fHistDeltaScalevsCent   = new TH2F("fHistDeltaScalevsCent","rho vs cent",  101, -1, 100, 400,  -2, 2);
-  fHistPtTPCvsNtrack      = new TH2F("fHistPtTPCvsNtrack","rho vs cent",     500,  0, 2500, 500,  0, 1000);
-  fHistPtEMCALvsNtrack    = new TH2F("fHistPtEMCALvsNtrack","rho vs cent",   500,  0, 2500, 500,  0, 1000);
-  fHistEtvsNtrack         = new TH2F("fHistEtvsNtrack","rho vs cent",        500,  0, 2500, 500,  0, 1000);
-  fHistScalevsNtrack      = new TH2F("fHistScalevsNtrack","rho vs cent",     500,  0, 2500, 400,  0, 4);
-  fHistDeltaScalevsNtrack = new TH2F("fHistDeltaScalevsNtrack","rho vs cent",500,  0, 2500, 400, -2, 2);
+  fHistCentrality         = new TH1F("Centrality","Centrality",              101, -1, 100);
+  fHistPtTPCvsCent        = new TH2F("PtTPCvsCent","rho vs cent",            101, -1, 100, 500,   0, 1000);
+  fHistPtEMCALvsCent      = new TH2F("PtEMCALvsCent","rho vs cent",          101, -1, 100, 500,   0, 1000);
+  fHistEtvsCent           = new TH2F("EtvsCent","rho vs cent",               101, -1, 100, 500,   0, 1000);
+  fHistScalevsCent        = new TH2F("ScalevsCent","rho vs cent",            101, -1, 100, 400,   0, 4);
+  fHistDeltaScalevsCent   = new TH2F("DeltaScalevsCent","rho vs cent",       101, -1, 100, 400,  -2, 2);
+  fHistPtTPCvsNtrack      = new TH2F("PtTPCvsNtrack","rho vs cent",          500,  0, 2500, 500,  0, 1000);
+  fHistPtEMCALvsNtrack    = new TH2F("PtEMCALvsNtrack","rho vs cent",        500,  0, 2500, 500,  0, 1000);
+  fHistEtvsNtrack         = new TH2F("EtvsNtrack","rho vs cent",             500,  0, 2500, 500,  0, 1000);
+  fHistScalevsNtrack      = new TH2F("ScalevsNtrack","rho vs cent",          500,  0, 2500, 400,  0, 4);
+  fHistDeltaScalevsNtrack = new TH2F("DeltaScalevsNtrack","rho vs cent",     500,  0, 2500, 400, -2, 2);
+  fHistTrackPtvsCent      = new TH2F("TrackPtvsCent","Track pt vs cent",     101, -1, 100,  500,  0, 100);
+  fHistClusterPtvsCent    = new TH2F("ClusterPtvsCent","Cluster pt vs cent", 101, -1, 100,  500,  0, 100);
+  fHistTrackEtaPhi        = new TH2F("TrackEtaPhi","Track eta phi",          100, -1.0, 1.0, 64,  0, 6.4);
+  fHistClusterEtaPhi      = new TH2F("ClusterEtaPhi","Cluster eta phi",      100, -1.0, 1.0, 64, -3.2, 3.2);
 
-  fNewScaleFunction       = new TF1("sfunc","pol2", -1, 100);
-    
   fOutputList->Add(fHistCentrality);
   fOutputList->Add(fHistPtTPCvsCent);
   fOutputList->Add(fHistPtEMCALvsCent);
@@ -80,7 +88,10 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fOutputList->Add(fHistEtvsNtrack);
   fOutputList->Add(fHistScalevsNtrack);
   fOutputList->Add(fHistDeltaScalevsNtrack);
-  //fOutputList->Add(fNewScaleFunction);
+  fOutputList->Add(fHistTrackPtvsCent);
+  fOutputList->Add(fHistClusterPtvsCent);
+  fOutputList->Add(fHistTrackEtaPhi);
+  fOutputList->Add(fHistClusterEtaPhi);
 
   PostData(1, fOutputList);
 }
@@ -151,6 +162,12 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
     if (TMath::Abs(track->Eta()) > 0.7)   // only accept tracks in the EMCal eta range
       continue;
 
+    fHistTrackPtvsCent->Fill(cent,track->Pt());
+    fHistTrackEtaPhi->Fill(track->Eta(),track->Phi());
+
+    if (track->Pt()< fMinTrackPt)
+      continue;
+
     ptTPC += track->Pt();
     if ((track->Phi() > EmcalMaxPhi) || (track->Phi() < EmcalMinPhi))
       continue;
@@ -168,6 +185,13 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
       continue;
     TLorentzVector nPart;
     c->GetMomentum(nPart, vertex);
+
+    fHistClusterPtvsCent->Fill(cent,nPart.Pt());
+    fHistClusterEtaPhi->Fill(nPart.Eta(),nPart.Phi());
+
+    if (nPart.Pt()< fMinClusterPt)
+      continue;
+
     Et += nPart.Pt();
   }
   
