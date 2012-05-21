@@ -103,8 +103,6 @@ void AliEmcalTrackPropagatorTask::UserExec(Option_t *)
     Double_t phi = eTrack->Phi()*TMath::RadToDeg();
     if (TMath::Abs(eTrack->Eta())>0.8 || phi <= 20 || phi >= 240) 
       continue;
-    if (TMath::Abs(eTrack->Eta())>0.8 || phi <= 20 || phi >= 240) 
-      continue;
     AliExternalTrackParam *trackParam =  const_cast<AliExternalTrackParam*>(eTrack->GetInnerParam());
     if(!trackParam) 
       continue;
