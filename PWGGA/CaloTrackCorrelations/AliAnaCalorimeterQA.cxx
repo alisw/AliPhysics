@@ -52,6 +52,7 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA() :
 AliAnaCaloTrackCorrBaseClass(),             fCalorimeter(""), 
 
 //Switches
+fFillAllCellTimeHisto(kTRUE),
 fFillAllPosHisto(kFALSE),              fFillAllPosHisto2(kTRUE), 
 fFillAllTH12(kFALSE),                  fFillAllTH3(kTRUE), 
 fFillAllTMHisto(kTRUE),                fFillAllPi0Histo(kTRUE),                 
@@ -232,7 +233,7 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
   } // loop
   
   // Max cell compared to other cells in cluster
-  if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
+  if(fFillAllCellTimeHisto) 
   {
     fhBadClusterMaxCellDiffAverageTime      ->Fill(clus->E(),tmax-timeAverages[0]);
     fhBadClusterMaxCellDiffWeightedTime     ->Fill(clus->E(),tmax-timeAverages[1]);
@@ -248,7 +249,7 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
       fhBadClusterMaxCellCloseCellRatio->Fill(clus->E(),frac);
       fhBadClusterMaxCellCloseCellDiff ->Fill(clus->E(),cells->GetCellAmplitude(absIdMax)-cells->GetCellAmplitude(absId));
       
-      if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
+      if(fFillAllCellTimeHisto) 
       {
         Double_t time  = cells->GetCellTime(absId);
         GetCaloUtils()->RecalibrateCellTime(time, fCalorimeter, absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
@@ -256,7 +257,7 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
         Float_t diff = (tmax-time*1e9);
         fhBadCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff);
         
-      } // ESD
+      } 
     }// Not max
   }//loop  
   
@@ -384,14 +385,11 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       //Transform time to ns
       time *= 1.0e9;
  
-      // Remove noisy channels, only possible in ESDs
-      if(GetReader()->GetDataType() == AliCaloTrackReader::kESD)
+      if(time < fTimeCutMin || time > fTimeCutMax)
       {
-        if(time < fTimeCutMin || time > fTimeCutMax){
           if(GetDebug() > 0 )printf("AliAnaCalorimeterQA - Remove cell with Time %f\n",time);
           continue;
-        }
-      }      
+      }
       
       // Remove exotic cells, defined only for EMCAL
       if(fCalorimeter=="EMCAL" && 
@@ -430,7 +428,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         fhGridCells ->Fill(icols,irows);
         fhGridCellsE->Fill(icols,irows,amp);
         
-        if(GetReader()->GetDataType() == AliCaloTrackReader::kESD)
+        if(fFillAllCellTimeHisto)
         {
           //printf("%s: time %g\n",fCalorimeter.Data(), time);
           
@@ -711,7 +709,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,const TObjArray *c
     
     // check time of cells respect to max energy cell
     
-    if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
+    if(fFillAllCellTimeHisto) 
     {
       fhClusterMaxCellDiffAverageTime      ->Fill(clus->E(),tmax-timeAverages[0]);
       fhClusterMaxCellDiffWeightedTime     ->Fill(clus->E(),tmax-timeAverages[1]);
@@ -726,7 +724,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,const TObjArray *c
       fhClusterMaxCellCloseCellRatio->Fill(clus->E(),frac);
       fhClusterMaxCellCloseCellDiff ->Fill(clus->E(),cells->GetCellAmplitude(absIdMax)-cells->GetCellAmplitude(absId));
       
-      if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
+      if(fFillAllCellTimeHisto) 
       {
         Double_t time  = cells->GetCellTime(absId);
         GetCaloUtils()->RecalibrateCellTime(time, fCalorimeter, absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
@@ -836,7 +834,8 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     
     //Cut on time of clusters
     Double_t tof = clus->GetTOF()*1.e9;
-    if(tof < fTimeCutMin || tof > fTimeCutMax){ 
+    if(tof < fTimeCutMin || tof > fTimeCutMax)
+    { 
       if(GetDebug() > 0 )printf("AliAnaCalorimeterQA - Remove cluster with TOF %f\n",tof);
       continue;
     }    
@@ -1664,7 +1663,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhBadClusterMaxCellECross->SetYTitle("1- E_{cross}/E_{cell max}");
     outputContainer->Add(fhBadClusterMaxCellECross);        
     
-    if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+    if(fFillAllCellTimeHisto) 
+    {
       fhBadCellTimeSpreadRespectToCellMax = new TH2F ("hBadCellTimeSpreadRespectToCellMax","t_{cell max}-t_{cell i} from bad cluster", nptbins,ptmin,ptmax, tdbins,tdmin,tdmax); 
       fhBadCellTimeSpreadRespectToCellMax->SetXTitle("E (GeV)");
       fhBadCellTimeSpreadRespectToCellMax->SetYTitle("#Delta t_{cell max - i} (ns)");
@@ -2100,9 +2100,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhAmpId->SetXTitle("Cell Energy (GeV)");
   outputContainer->Add(fhAmpId);
   
-  //Cell Time histograms, time only available in ESDs
-  if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-    
+  if(fFillAllCellTimeHisto) 
+  {
     fhCellTimeSpreadRespectToCellMax = new TH2F ("hCellTimeSpreadRespectToCellMax","t_{cell max}-t_{cell i} per cluster", nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
     fhCellTimeSpreadRespectToCellMax->SetXTitle("E (GeV)");
     fhCellTimeSpreadRespectToCellMax->SetYTitle("#Delta t_{cell max-i} (ns)");
@@ -2252,7 +2251,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhAmpMod->SetYTitle("Module");
   outputContainer->Add(fhAmpMod);
   
-  if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+  if(fFillAllCellTimeHisto) 
+  {
     fhTimeMod  = new TH2F ("hTime_Mod","Cell time in each present Module",ntimebins,timemin,timemax,fNModules,0,fNModules); 
     fhTimeMod->SetXTitle("t (ns)");
     fhTimeMod->SetYTitle("Module");
@@ -2271,11 +2271,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   Int_t colmaxs = fNMaxCols;
   Int_t rowmaxs = fNMaxRows;
-  if(fCalorimeter=="EMCAL"){
+  if(fCalorimeter=="EMCAL")
+  {
     colmaxs=2*fNMaxCols;
     rowmaxs=Int_t(fNModules/2)*fNMaxRows;
   }
-  else{
+  else
+  {
     rowmaxs=fNModules*fNMaxRows;
   }
   
@@ -2291,7 +2293,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhGridCellsE->SetXTitle("column (eta direction)");
   outputContainer->Add(fhGridCellsE);
   
-  if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){ 
+  if(fFillAllCellTimeHisto)
+  { 
     fhGridCellsTime  = new TH2F ("hGridCellsTime","Accumulated time in grid of cells", 
                                  colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5); 
     fhGridCellsTime->SetYTitle("row (phi direction)");
@@ -2299,13 +2302,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhGridCellsTime);  
   }
   
-  fhNCellsPerClusterMod  = new TH2F*[fNModules];
+  fhNCellsPerClusterMod      = new TH2F*[fNModules];
   fhNCellsPerClusterModNoCut = new TH2F*[fNModules];
-  fhIMMod                = new TH2F*[fNModules];
-  if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) fhTimeAmpPerRCU        = new TH2F*[fNModules*fNRCU];
+  fhIMMod                    = new TH2F*[fNModules];
+  if(fFillAllCellTimeHisto) fhTimeAmpPerRCU = new TH2F*[fNModules*fNRCU];
 
-  for(Int_t imod = 0; imod < fNModules; imod++){
-    
+  for(Int_t imod = 0; imod < fNModules; imod++)
+  {
     fhNCellsPerClusterMod[imod]  = new TH2F (Form("hNCellsPerCluster_Mod%d",imod),
                                              Form("# cells per cluster vs cluster energy in Module %d",imod), 
                                              nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
@@ -2320,9 +2323,10 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhNCellsPerClusterModNoCut[imod]->SetYTitle("n cells");
     outputContainer->Add(fhNCellsPerClusterModNoCut[imod]);
     
-    if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-      
-      for(Int_t ircu = 0; ircu < fNRCU; ircu++){
+    if(fFillAllCellTimeHisto) 
+    {
+      for(Int_t ircu = 0; ircu < fNRCU; ircu++)
+      {
         fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
                                                       Form("Cell Energy vs Cell Time in Module %d, RCU %d ",imod,ircu), 
                                                       nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
@@ -2333,7 +2337,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       }
     }
     
-    if(fFillAllPi0Histo){
+    if(fFillAllPi0Histo)
+    {
       fhIMMod[imod]  = new TH2F (Form("hIM_Mod%d",imod),
                                  Form("Cluster pairs Invariant mass vs reconstructed pair energy in Module %d, n cell > 1",imod),
                                  nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
@@ -2718,8 +2723,8 @@ void AliAnaCalorimeterQA::InitParameters()
   fCalorimeter     = "EMCAL"; //or PHOS
   fNModules        = 12; // set maximum to maximum number of EMCAL modules
   fNRCU            = 2;  // set maximum number of RCU in EMCAL per SM
-  fTimeCutMin      = -1;
-  fTimeCutMax      = 9999999;
+  fTimeCutMin      = -9999999;
+  fTimeCutMax      =  9999999;
   fEMCALCellAmpMin = 0.2;
   fPHOSCellAmpMin  = 0.2;
   

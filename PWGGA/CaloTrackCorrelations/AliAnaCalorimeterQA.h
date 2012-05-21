@@ -105,6 +105,9 @@ public:
     
   // Histogram Switchs
   
+  void SwitchOnFillAllCellTimeHisto()           { fFillAllCellTimeHisto = kTRUE  ; }
+  void SwitchOffFillAllCellTimeHisto()          { fFillAllCellTimeHisto = kFALSE ; }
+  
   void SwitchOnFillAllPositionHistogram()       { fFillAllPosHisto  = kTRUE  ; }
   void SwitchOffFillAllPositionHistogram()      { fFillAllPosHisto  = kFALSE ; }
   
@@ -135,12 +138,14 @@ public:
   void SwitchOnStudyWeight()                    { fStudyWeight      = kTRUE  ; }
   void SwitchOffStudyWeight()                   { fStudyWeight      = kFALSE ; }
 
+
   
  private:
   
   TString  fCalorimeter ;                     // Calorimeter selection
   
   //Switches
+  Bool_t   fFillAllCellTimeHisto;             // Fill all cell time histo
   Bool_t   fFillAllPosHisto;                  // Fill all the position related histograms 
   Bool_t   fFillAllPosHisto2;                 // Fill all the position related histograms 2
   Bool_t   fFillAllTH12 ;                     // Fill simple histograms which information is already in TH3 histograms
@@ -368,7 +373,7 @@ public:
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,23)
+  ClassDef(AliAnaCalorimeterQA,24)
 } ;
 
 
