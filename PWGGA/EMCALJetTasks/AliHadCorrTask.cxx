@@ -10,16 +10,16 @@
 #include <TH2F.h>
 #include <TList.h>
 #include <TLorentzVector.h>
-#include <TParticle.h>
+
 #include "AliAODCaloCluster.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDtrack.h"
-#include "AliFJWrapper.h"
 #include "AliPicoTrack.h"
 #include "AliVEventHandler.h"
+
 #include "AliHadCorrTask.h"
 
 ClassImp(AliHadCorrTask)
@@ -35,6 +35,7 @@ AliHadCorrTask::AliHadCorrTask() :
   fDoTrackClus(0),
   fHadCorr(0),
   fMinPt(0.15),
+  fCreateHisto(kFALSE),
   fOutClusters(0),
   fOutputList(0),
   fHistNclusvsCent(0),
@@ -75,6 +76,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
   fDoTrackClus(0),
   fHadCorr(0),
   fMinPt(0.15),
+  fCreateHisto(kFALSE),
   fOutClusters(0),
   fOutputList(0),
   fHistNclusvsCent(0),
@@ -105,8 +107,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
 
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 
-  DefineInput(0,TChain::Class());
-  DefineOutput(1,TList::Class());
+  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -383,10 +384,15 @@ void AliHadCorrTask::UserCreateOutputObjects()
     return;
   }
   fOutClusters->SetName(fOutCaloName);
- 
+
   OpenFile(1);
   fOutputList = new TList();
   fOutputList->SetOwner();
+
+  if (!fCreateHisto) {
+    PostData(1, fOutputList);
+    return;
+  }
 
   for(Int_t icent=0; icent<8; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
@@ -482,8 +488,8 @@ void AliHadCorrTask::UserExec(Option_t *)
   
   Int_t centbin = GetCentBin(cent);
 
-  fHistCentrality->Fill(cent);
-
+  if (fCreateHisto)
+    fHistCentrality->Fill(cent);
 
   // get input collections
   TClonesArray *tracks = 0;
@@ -537,7 +543,9 @@ void AliHadCorrTask::UserExec(Option_t *)
 	  Nmatches++;
 	}
       }
-      fHistNMatchCent_trk->Fill(cent,Nmatches);
+
+      if (fCreateHisto)
+	fHistNMatchCent_trk->Fill(cent,Nmatches);
 
       track->SetEMCALcluster(imin);
     }
@@ -573,17 +581,20 @@ void AliHadCorrTask::UserExec(Option_t *)
     Double_t totalTrkP  = 0.0; // count total track momentum
     Int_t    Nmatches   = 0;   // count total number of matches
     for (Int_t t = 0; t<Ntrks; ++t) {
+
       AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
+
       if (!track)
         continue;
       if (!track->IsEMCAL())
         continue;
-      if (track->Pt()<fMinPt)
+      if (track->Pt() < fMinPt)
         continue;
-      Double_t etadiff=999;
-      Double_t phidiff=999;
-      AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
-      Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
+
+      Double_t etadiff = 999;
+      Double_t phidiff = 999;
+      AliPicoTrack::GetEtaPhiDiff(track, c, phidiff, etadiff);
+      Double_t dR = TMath::Sqrt(etadiff * etadiff + phidiff * phidiff);
       if(dR<dRmin){
         dEtaMin = etadiff;
         dPhiMin = phidiff;
@@ -594,35 +605,37 @@ void AliHadCorrTask::UserExec(Option_t *)
       Double_t mom = track->P();
       Int_t mombin = GetMomBin(mom);
       Int_t centbinch = centbin;
-      if (track->Charge()==-1 || track->Charge()==255) 
+      if (track->Charge() == -1 || track->Charge() == 255) 
 	centbinch += 4;
 
-      if (fHadCorr>1) {
-        if (mombin>-1) {
-          fHistMatchEtaPhi[centbinch][mombin]->Fill(etadiff,phidiff);
-          fHistMatchdRvsEP[centbin]->Fill(dR,energyclus/mom);
-        }
+      if (fCreateHisto) {
+	if (fHadCorr > 1 && mombin > -1) {
+	  fHistMatchEtaPhi[centbinch][mombin]->Fill(etadiff, phidiff);
+	  fHistMatchdRvsEP[centbin]->Fill(dR, energyclus / mom);
+	}
       }
     
-      Double_t EtaCut=0.0;
-      Double_t PhiCutlo=0.0;
-      Double_t PhiCuthi=0.0;
-      if(fPhiMatch>0){
-	PhiCutlo=-1.*fPhiMatch;
-	PhiCuthi=fPhiMatch;
-      }else{
-	PhiCutlo=GetPhiMean(mombin,centbinch)-GetPhiSigma(mombin,centbin);
-	PhiCuthi=GetPhiMean(mombin,centbinch)+GetPhiSigma(mombin,centbin);
+      Double_t EtaCut = 0.0;
+      Double_t PhiCutlo = 0.0;
+      Double_t PhiCuthi = 0.0;
+      if(fPhiMatch > 0){
+	PhiCutlo = -fPhiMatch;
+	PhiCuthi = fPhiMatch;
+      }
+      else {
+	PhiCutlo = GetPhiMean(mombin,centbinch)-GetPhiSigma(mombin,centbin);
+	PhiCuthi = GetPhiMean(mombin,centbinch)+GetPhiSigma(mombin,centbin);
       }
 
-      if(fEtaMatch>0){
-	EtaCut=fEtaMatch;
-      }else{
-	EtaCut=GetEtaSigma(mombin);
+      if(fEtaMatch > 0){
+	EtaCut = fEtaMatch;
+      }
+      else {
+	EtaCut = GetEtaSigma(mombin);
       }
 
-      if ((phidiff<PhiCuthi && phidiff>PhiCutlo) && TMath::Abs(etadiff)<EtaCut) {
-	if((fDoTrackClus && (track->GetEMCALcluster())==iClus) || !fDoTrackClus){
+      if ((phidiff < PhiCuthi && phidiff > PhiCutlo) && TMath::Abs(etadiff) < EtaCut) {
+	if((fDoTrackClus && (track->GetEMCALcluster()) == iClus) || !fDoTrackClus){
 	  ++Nmatches;
 	  totalTrkP += track->P();
 	}
@@ -633,82 +646,96 @@ void AliHadCorrTask::UserExec(Option_t *)
     c->SetEmcCpvDistance(imin);
     c->SetTrackDistance(dPhiMin, dEtaMin);
 
-    fHistNclusvsCent->Fill(cent);
-    fHistEbefore->Fill(cent,energyclus);
-    fHistNMatchCent->Fill(cent,Nmatches);
-    if(Nmatches>0) 
-      fHistNclusMatchvsCent->Fill(cent);
+    if(fCreateHisto) {
+      fHistNclusvsCent->Fill(cent);
+      fHistEbefore->Fill(cent, energyclus);
+      fHistNMatchCent->Fill(cent, Nmatches);
+
+      if(Nmatches > 0) 
+	fHistNclusMatchvsCent->Fill(cent);
+    }
   
     // apply correction / subtraction
-    if (fHadCorr>0) {
+    if (fHadCorr > 0) {
       // to subtract only the closest track set fHadCor to a %
       // to subtract all tracks within the cut set fHadCor to %+1
-      if (fHadCorr>1) {
-        if (totalTrkP>0) {
-          Double_t EoP  = energyclus/totalTrkP;
+      if (fHadCorr > 1) {
+        if (totalTrkP > 0) {
+          Double_t EoP  = energyclus / totalTrkP;
 	  Double_t Esub = (fHadCorr-1)*totalTrkP;
-	  if (Esub>energyclus) 
+	  if (Esub > energyclus) 
             Esub = energyclus;
-          fHistEoPCent->Fill(cent,EoP);
-          fHistMatchEvsP[centbin]->Fill(energyclus,EoP);
 
-	  if(Nmatches==1) fHistEsubPchRat[centbin][0]->Fill(totalTrkP,Esub/totalTrkP);
-	  else if(Nmatches==2) fHistEsubPchRat[centbin][1]->Fill(totalTrkP,Esub/totalTrkP);
-	  else fHistEsubPchRat[centbin][2]->Fill(totalTrkP,Esub/totalTrkP);
-
-
-	  if(Nmatches==1) fHistEsubPch[centbin][0]->Fill(totalTrkP,Esub);
-	  else if(Nmatches==2) fHistEsubPch[centbin][1]->Fill(totalTrkP,Esub);
-	  else fHistEsubPch[centbin][2]->Fill(totalTrkP,Esub);
-
+	  if(fCreateHisto) {
+	    fHistEoPCent->Fill(cent, EoP);
+	    fHistMatchEvsP[centbin]->Fill(energyclus, EoP);
+	    
+	    if (Nmatches == 1) fHistEsubPchRat[centbin][0]->Fill(totalTrkP,Esub/totalTrkP);
+	    else if(Nmatches == 2) fHistEsubPchRat[centbin][1]->Fill(totalTrkP,Esub/totalTrkP);
+	    else fHistEsubPchRat[centbin][2]->Fill(totalTrkP,Esub/totalTrkP);
+	    
+	    if(Nmatches==1) fHistEsubPch[centbin][0]->Fill(totalTrkP,Esub);
+	    else if(Nmatches==2) fHistEsubPch[centbin][1]->Fill(totalTrkP,Esub);
+	    else fHistEsubPch[centbin][2]->Fill(totalTrkP,Esub);
+	  }
         }
-        energyclus -= (fHadCorr-1)*totalTrkP;
-      } else if (imin>=0) {
+        energyclus -= (fHadCorr - 1) * totalTrkP;
+      } 
+      else if (imin >= 0) {
         AliVTrack *t = dynamic_cast<AliVTrack*>(tracks->At(imin));
         if (t) {
           Double_t mom = t->P();
           Int_t mombin = GetMomBin(mom);
           Int_t centbinch = centbin;
-          if (t->Charge()==-1 || t->Charge()==255) 
+          if (t->Charge() == -1 || t->Charge() == 255) 
             centbinch += 4;
-          fHistMatchEtaPhi[centbinch][mombin]->Fill(dEtaMin,dPhiMin);
-          if (mom>0){
-            fHistMatchEvsP[centbin]->Fill(energyclus,energyclus/mom);
-            fHistEoPCent->Fill(cent,energyclus/mom);
-            fHistMatchdRvsEP[centbin]->Fill(dRmin,energyclus/mom);
-          }
-    
-	  Double_t EtaCut=0.0;
-	  Double_t PhiCutlo=0.0;
-	  Double_t PhiCuthi=0.0;
-	  if(fPhiMatch>0){
-	    PhiCutlo=-1.*fPhiMatch;
-	    PhiCuthi=fPhiMatch;
-	  }else{
-	    PhiCutlo=GetPhiMean(mombin,centbinch)-GetPhiSigma(mombin,centbin);
-	    PhiCuthi=GetPhiMean(mombin,centbinch)+GetPhiSigma(mombin,centbin);
-	  }
-	  
-	  if(fEtaMatch>0){
-	    EtaCut=fEtaMatch;
-	  }else{
-	    EtaCut=GetEtaSigma(mombin);
-	  }
-	  
-	  if ((dPhiMin<PhiCuthi && dPhiMin>PhiCutlo) && TMath::Abs(dEtaMin)<EtaCut) {
+
+	  if (fCreateHisto) {
+	    fHistMatchEtaPhi[centbinch][mombin]->Fill(dEtaMin, dPhiMin);
 	    
-	    if((fDoTrackClus && (t->GetEMCALcluster())==iClus) || !fDoTrackClus){
-	      energyclus -= fHadCorr*t->P();
+	    if (mom > 0) {
+	      fHistMatchEvsP[centbin]->Fill(energyclus, energyclus / mom);
+	      fHistEoPCent->Fill(cent, energyclus / mom);
+	      fHistMatchdRvsEP[centbin]->Fill(dRmin, energyclus / mom);
+	    }
+	  }
+
+	  Double_t EtaCut = 0.0;
+	  Double_t PhiCutlo = 0.0;
+	  Double_t PhiCuthi = 0.0;
+	  if(fPhiMatch > 0) {
+	    PhiCutlo = -fPhiMatch;
+	    PhiCuthi = fPhiMatch;
+	  }
+	  else {
+	    PhiCutlo = GetPhiMean(mombin, centbinch) - GetPhiSigma(mombin, centbin);
+	    PhiCuthi = GetPhiMean(mombin, centbinch) + GetPhiSigma(mombin, centbin);
+	  }
+	  
+	  if(fEtaMatch > 0) {
+	    EtaCut = fEtaMatch;
+	  }
+	  else {
+	    EtaCut = GetEtaSigma(mombin);
+	  }
+	  
+	  if ((dPhiMin<PhiCuthi && dPhiMin>PhiCutlo) && TMath::Abs(dEtaMin) < EtaCut) {
+	    
+	    if((fDoTrackClus && (t->GetEMCALcluster()) == iClus) || !fDoTrackClus){
+	      energyclus -= fHadCorr * t->P();
 	    }
           }
         }
       }
     }
-    if (energyclus<0) 
-      energyclus = 0;
-    fHistEafter->Fill(cent,energyclus);
 
-    if (energyclus>0) { // create corrected cluster
+    if (energyclus < 0) 
+      energyclus = 0;
+
+    if (fCreateHisto)
+      fHistEafter->Fill(cent, energyclus);
+
+    if (energyclus > 0) { // create corrected cluster
       AliVCluster *oc;
       if (esdMode) {
         oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*(dynamic_cast<AliESDCaloCluster*>(c)));
@@ -719,6 +746,9 @@ void AliHadCorrTask::UserExec(Option_t *)
       ++clusCount;
     }
   }
+
+  if (fCreateHisto)
+    PostData(1, fOutputList);
 }
 
 //________________________________________________________________________
