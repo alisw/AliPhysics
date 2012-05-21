@@ -5,7 +5,6 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
-  const char *nktjets            = "KtJets",
   const char *nembjets           = "EmbJets",
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.4,
@@ -40,7 +39,6 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   phTask->SetTracksName(ntracks);
   phTask->SetClusName(nclusters);
   phTask->SetJetsName(njets);
-  phTask->SetKtJetsName(nktjets);
   phTask->SetEmbJetsName(nembjets);
   phTask->SetRhoName(nrho);
   phTask->SetPtCut(ptcut);
