@@ -33,6 +33,7 @@
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
 #include "AliAODVertex.h"
+#include "AliAODTrack.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
@@ -722,8 +723,31 @@ void AliHFEextraCuts::GetImpactParameters(AliVTrack *track, Float_t &radial, Flo
     if(aodtrack){
       Double_t xyz[3];
       aodtrack->XYZAtDCA(xyz);
-      z = xyz[2];
-      radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]+xyz[1]);
+      //printf("xyz[0] %f, xyz[1] %f, xyz[2] %f\n",xyz[0], xyz[1],xyz[2]);
+      if(xyz[0]==-999. || xyz[1]==-999. ||  xyz[2]==-999.){
+	if(!fEvent) {
+	  z = xyz[2];
+	  radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]+xyz[1]);
+	  //printf("No event\n");
+	}
+	else {
+	  // Propagate the global track to the DCA.
+	  const AliVVertex *vAOD = fEvent->GetPrimaryVertex();
+	  Double_t PosAtDCA[2] = {-999,-999};
+	  Double_t covar[3] = {-999,-999,-999};
+	  AliAODTrack *copyaodtrack = new AliAODTrack(*aodtrack);
+	  if(copyaodtrack->PropagateToDCA(vAOD,fEvent->GetMagneticField(),100.,PosAtDCA,covar)) {
+	    z = PosAtDCA[1];
+	    radial = PosAtDCA[0];
+	    //printf("Propagate z %f and radial %f\n",z,radial);
+	  }
+	  if(copyaodtrack) delete copyaodtrack;
+	}
+      }
+      else {
+	z = xyz[2];
+	radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]+xyz[1]);
+      }
     }
   }
 }

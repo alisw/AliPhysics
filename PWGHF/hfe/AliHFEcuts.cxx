@@ -608,28 +608,37 @@ void AliHFEcuts::SetRecPrimaryCutList(){
   //
   AliDebug(2, "Called\n");
   AliCFTrackIsPrimaryCuts *primaryCut = new AliCFTrackIsPrimaryCuts((Char_t *)"fCutsPrimaryCuts", (Char_t *)"REC Primary Cuts");
-  if(IsRequireDCAToVertex()){
+  //if(IsRequireDCAToVertex()){
     //primaryCut->SetDCAToVertex2D(kTRUE);
-    primaryCut->SetMaxDCAToVertexXY(fDCAtoVtx[0]);
-    primaryCut->SetMaxDCAToVertexZ(fDCAtoVtx[1]);
-  }
+    //primaryCut->SetMaxDCAToVertexXY(fDCAtoVtx[0]);
+    //primaryCut->SetMaxDCAToVertexZ(fDCAtoVtx[1]);
+  //}
   if(IsRequireSigmaToVertex()){
     primaryCut->SetRequireSigmaToVertex(kTRUE);
     if(fSigmaToVtx[0]) primaryCut->SetMaxNSigmaToVertex(fSigmaToVtx[0]);
     if(fSigmaToVtx[1]) primaryCut->SetMaxSigmaDCAxy(fSigmaToVtx[1]);
     if(fSigmaToVtx[2]) primaryCut->SetMaxSigmaDCAz(fSigmaToVtx[2]);
   }
-  primaryCut->SetAcceptKinkDaughters(kFALSE);
+  //primaryCut->SetAcceptKinkDaughters(kFALSE);
   if(IsQAOn()) primaryCut->SetQAOn(fHistQA);
   
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsPrimaryCutsextra","Extra cuts from the HFE group");
   hfecuts->SetMaxImpactParameterRpar(fMaxImpactParameterRpar);
   hfecuts->SetRejectKinkDaughter();
   hfecuts->SetRejectKinkMother();
+  if(IsRequireDCAToVertex()){
+    hfecuts->SetMaxImpactParamR(fDCAtoVtx[0]);
+    hfecuts->SetMaxImpactParamZ(fDCAtoVtx[1]);
+  }
 
   TObjArray *primCuts = new TObjArray;
   primCuts->SetName("fPartPrimCuts");
-  primCuts->AddLast(primaryCut);
+  // needed for AOD...
+  if(IsRequireSigmaToVertex()) {
+    //printf("Add primary COORFW\n");
+    primCuts->AddLast(primaryCut);
+  }
+  //printf("Did not add primary COORFW\n");
   //if(fMaxImpactParameterRpar){
   primCuts->AddLast(hfecuts);
   //}
