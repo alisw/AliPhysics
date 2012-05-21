@@ -159,19 +159,19 @@ void AliJetModelBaseTask::Init()
 	InputEvent()->AddObject(fOutClusters);
       fOutClusters->Clear();
     }
-  }
 
-  if (!fGeom) {
-    if (fGeomName.Length() > 0) {
-      fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-      if (!fGeom)
-        AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
-    } else {
-      fGeom = AliEMCALGeometry::GetInstance();
-      if (!fGeom) 
-        AliError("Could not get default geometry!");
+    if (!fGeom) {
+      if (fGeomName.Length() > 0) {
+	fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+	if (!fGeom)
+	  AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
+      } else {
+	fGeom = AliEMCALGeometry::GetInstance();
+	if (!fGeom) 
+	  AliError("Could not get default geometry!");
+      }
     }
-
+    
     // hard-coded Emcal boundaries
     const Float_t EmcalEtaMin = -0.7;
     const Float_t EmcalEtaMax = 0.7;
