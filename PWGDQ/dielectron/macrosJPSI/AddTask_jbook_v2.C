@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_jbook_v2(){
+AliAnalysisTask *AddTask_jbook_v2(Bool_t isMC=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -7,7 +7,8 @@ AliAnalysisTask *AddTask_jbook_v2(){
   }
 
   //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  Bool_t hasMC=isMC;
+    //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
   
@@ -30,7 +31,7 @@ AliAnalysisTask *AddTask_jbook_v2(){
 
   //add dielectron analysis with different cuts to the task
   for (Int_t i=16; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i);
+    AliDielectron *jpsi=ConfigJpsi_jb_PbPb(i,hasMC);
     if (jpsi ) task->AddDielectron(jpsi);
     if (jpsi ) printf("add: %s\n",jpsi->GetName());
   }
