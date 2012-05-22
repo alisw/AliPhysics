@@ -194,17 +194,24 @@ void AliJetModelBaseTask::Init()
 void AliJetModelBaseTask::GetRandomCell(Double_t &eta, Double_t &phi, Int_t &absId)
 {
   Int_t repeats = 0;
-
+  Double_t rndEta = eta;
+  Double_t rndPhi = phi;
   do {
-    eta = gRandom->Rndm() * (fEtaMax - fEtaMin) + fEtaMin;
-    phi = gRandom->Rndm() * (fPhiMax - fPhiMin) + fPhiMin;
-    fGeom->GetAbsCellIdFromEtaPhi(eta, phi, absId);  
+    if (eta < -100)
+      rndEta = GetRandomEta();
+    if (phi < 0)
+      rndPhi = GetRandomPhi();
+    fGeom->GetAbsCellIdFromEtaPhi(rndEta, rndPhi, absId);  
     repeats++;
   } while (absId == -1 && repeats < 100);
   
   if (!(absId > -1)) {
     AliWarning(Form("Could not extract random cluster! Random eta-phi extracted more than 100 times!\n"
 		    "eta [%f, %f], phi [%f, %f]\n", fEtaMin, fEtaMax, fPhiMin, fPhiMax));
+  }
+  else {
+    eta = rndEta;
+    phi = rndPhi;
   }
 }
 
@@ -230,7 +237,7 @@ Double_t AliJetModelBaseTask::GetRandomPt()
 AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Double_t eta, Double_t phi)
 {
   Int_t absId = 0;
-  if (eta < 0 || phi < 0) {
+  if (eta < -100 || phi < 0) {
     GetRandomCell(eta, phi, absId);
   }
   else {
@@ -299,7 +306,7 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
   
   if (pt < 0) 
     pt = GetRandomPt();
-  if (eta < 0) 
+  if (eta < -100) 
     eta = GetRandomEta();
   if (phi < 0) 
     phi = GetRandomPhi();
