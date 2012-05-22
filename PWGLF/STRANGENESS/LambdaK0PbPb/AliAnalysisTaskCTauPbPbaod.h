@@ -25,11 +25,14 @@ public:
   virtual ~AliAnalysisTaskCTauPbPbaod() {}
 
   void SetCentrality(Double_t min, Double_t max) {fCMin=min;fCMax=max;} 
-  void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;} 
+  void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;}
+
   void SetCosPA(Double_t cospa) {fCPA=cospa;} 
   void SetDtrDCA(Double_t cospa){fDCA=cospa;} 
   void SetTPCrows(Double_t cospa){fTPCcr=cospa;} 
   void SetTPCratio(Double_t cospa){fTPCcrfd=cospa;} 
+  void SetPrimDCA(Double_t cospa){fDCApv=cospa;} 
+
  
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -52,14 +55,18 @@ private:
   Double_t fDCA;        // threshold for the DCA between V0 daughters
   Double_t fTPCcr;      // threshold for the number of crossed TPC pad rows
   Double_t fTPCcrfd;    // threshold for the ratio of TPC crossed/findable rows
+  Double_t fDCApv;      // threshold for the DCA wrt the primary vertex
 
   TList       *fOutput; //! The list of histograms
 
   TH1F *fMult;       //! Track multiplicity
+
   TH1F *fCosPA;      //! cos(PA)
   TH1F *fDtrDCA;     //! DCA between V0 daughters
   TH1F *fTPCrows;    //! number of crossed TPC pad rows
   TH1F *fTPCratio;   //! ratio of TPC crossed/findable rows
+  TH1F *fPrimDCA;    //! DCA wrt the primary vertex
+
   TH2F* fdEdx;       //! dEdx
   TH2F* fdEdxPid;    //! dEdx with PID
 

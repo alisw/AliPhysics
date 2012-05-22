@@ -45,12 +45,14 @@ fCPA(0.9975),
 fDCA(1.0),
 fTPCcr(70.),
 fTPCcrfd(0.8),
+fDCApv(0.1),
 fOutput(0),
 fMult(0),
 fCosPA(0),
 fDtrDCA(0),
 fTPCrows(0),
 fTPCratio(0),
+fPrimDCA(0),
 fdEdx(0),
 fdEdxPid(0),
 
@@ -116,6 +118,10 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   fTPCratio=new TH1F("fTPCratio","TPC crossed/findable pad rows",50,0.0,1.5);
   fTPCratio->GetXaxis()->SetTitle("TPC crossed/findable pad rows"); 
   fOutput->Add(fTPCratio);
+
+  fPrimDCA=new TH1F("fPrimDCA","DCA wrt the primary vertex",50,0.0,1.5);
+  fPrimDCA->GetXaxis()->SetTitle("DCA wrt the PV (cm)"); 
+  fOutput->Add(fPrimDCA);
 
   fdEdx=new TH2F("fdEdx","dE/dx",50,0.2,3,50,0.,6.);
   fOutput->Add(fdEdx);
@@ -296,10 +302,10 @@ AliAnalysisTaskCTauPbPbaod::AcceptV0(const AliAODv0 *v0,const AliAODEvent *aod)
   const AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
   if (!AcceptTrack(ptrack)) return kFALSE;
 
-  Float_t xy=v0->DcaNegToPrimVertex();
-  if (TMath::Abs(xy)<0.1) return kFALSE;
-  xy=v0->DcaPosToPrimVertex();
-  if (TMath::Abs(xy)<0.1) return kFALSE;
+  Float_t xyn=v0->DcaNegToPrimVertex();
+  if (TMath::Abs(xyn)<fDCApv) return kFALSE;
+  Float_t xyp=v0->DcaPosToPrimVertex();
+  if (TMath::Abs(xyp)<fDCApv) return kFALSE;
 
   Double_t xyz[3]; v0->GetSecondaryVtx(xyz);
   Double_t r2=xyz[0]*xyz[0] + xyz[1]*xyz[1];
@@ -308,6 +314,7 @@ AliAnalysisTaskCTauPbPbaod::AcceptV0(const AliAODv0 *v0,const AliAODEvent *aod)
 
   fCosPA->Fill(cpa);
   fDtrDCA->Fill(dca);
+  fPrimDCA->Fill(xyn); fPrimDCA->Fill(xyp);
 
   return kTRUE;
 }
