@@ -23,12 +23,14 @@ class AliEmcalPicoTrackMaker : public AliAnalysisTaskSE {
   void SetESDtrackCuts(AliESDtrackCuts *cuts)        { fESDtrackCuts     = cuts; }
   void SetTracksInName(const char *name)             { fTracksInName     = name; }
   void SetTracksOutName(const char *name)            { fTracksOutName    = name; }
+  void SetMaxTrackPt(Float_t pt)                     { fMaxTrackPt       = pt  ; }
 
  protected:
   Int_t              fAODfilterBits[2];     // AOD track filter bit map
   AliESDtrackCuts   *fESDtrackCuts;         // ESD track cuts
   TString            fTracksOutName;        // name of output track array
   TString            fTracksInName;         // name of input track array
+  Float_t            fMaxTrackPt;           // max pt of tracks
   TClonesArray      *fTracksIn;             //!track array in
   TClonesArray      *fTracksOut;            //!track array out
 

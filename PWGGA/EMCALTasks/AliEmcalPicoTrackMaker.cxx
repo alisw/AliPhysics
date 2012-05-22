@@ -23,6 +23,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fESDtrackCuts(0),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
+  fMaxTrackPt(100),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -35,6 +36,7 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   fESDtrackCuts(0),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
+  fMaxTrackPt(100),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -92,9 +94,15 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
   // loop over tracks
   const Int_t Ntracks = fTracksIn->GetEntriesFast();
   for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
+
     AliVTrack *track = dynamic_cast<AliVTrack*>(fTracksIn->At(iTracks));
+
     if (!track)
       continue;
+
+    if (track->Pt() > fMaxTrackPt)
+      continue;
+
     Int_t label = -1;
     if (esdMode) {
       if (fESDtrackCuts) {
