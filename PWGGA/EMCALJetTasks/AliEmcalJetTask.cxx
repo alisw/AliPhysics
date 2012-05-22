@@ -94,7 +94,7 @@ void AliEmcalJetTask::UserExec(Option_t *)
       am->LoadBranch("Tracks");
     tracks = dynamic_cast<TClonesArray*>(l->FindObject(fTracksName));
     if (!tracks) {
-      AliError(Form("Pointer to tracks %s == 0", fTracksName.Data() ));
+      AliError(Form("Pointer to tracks %s == 0", fTracksName.Data()));
       return;
     }
   }
@@ -103,23 +103,24 @@ void AliEmcalJetTask::UserExec(Option_t *)
       am->LoadBranch("CaloClusters");
     clus = dynamic_cast<TClonesArray*>(l->FindObject(fCaloName));
     if (!clus) {
-      AliError(Form("Pointer to clus %s == 0", fCaloName.Data() ));
+      AliError(Form("Pointer to clus %s == 0", fCaloName.Data()));
       return;
     }
   }
 
   // get centrality
   Float_t cent = -1; 
-  AliCentrality *centrality = InputEvent()->GetCentrality() ;
+  AliCentrality *centrality = InputEvent()->GetCentrality();
   if (centrality)
     cent = centrality->GetCentralityPercentile("V0M");
   else
     cent=99; // probably pp data
+
   if (cent<0) {
     AliError(Form("Centrality negative: %f", cent));
     return;
   }
-      
+
   FindJets(tracks, clus, fAlgo, fRadius, cent);
 }
 
