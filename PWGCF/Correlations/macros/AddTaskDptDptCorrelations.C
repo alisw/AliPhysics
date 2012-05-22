@@ -3,27 +3,25 @@
 //
 // Author: Claude Pruneau, Wayne State
 /////////////////////////////////////////////////////////////////////////////////
-AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly            = 1,
-                                                             int    useWeights             = 0,
-                                                             int    centralityMethod       = 4)
+AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly            = 0,
+                                                             int    useWeights             = 1,
+                                                             int    centralityMethod       = 4,
+                                                             int    chargeSet              = 1)
 
 {
   // Set Default Configuration of this analysis
   // ==========================================
   int    debugLevel             = 0;
-  int    singlesOnly            = 1;
-  int    useWeights             = 0;
+  //int    singlesOnly            = 1;
+  //int    useWeights             = 0;
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
   int    sameFilter             = 1;
   
-  int    centralityMethod       =  4;
+  //int    centralityMethod       =  4;
   int    nCentrality            =  10;
   double minCentrality[] = { 0.5,   5., 10., 20., 30., 40., 50., 60., 70., 80. };
   double maxCentrality[] = { 5.0,  10., 20., 30., 40., 50., 60., 70., 80., 90. }; 
-  
-  int    nChargeSets             = 1;
-  int    chargeSets[] = { 1, 0, 3 };
   
   double zMin                   = -10.;
   double zMax                   =  10.;
@@ -77,12 +75,11 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly 
   int iTask = 0; // task counter
   AliAnalysisDataContainer *taskInputContainer;
   AliAnalysisDataContainer *taskOutputContainer;
+  AliAnalysisTaskDptDptCorrelations* task;
   
   for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
     {
-    for (int iChargeSet=0; iChargeSet < nChargeSets; iChargeSet++)    
-      {
-      switch (chargeSets[iChargeSet])
+      switch (chargeSet)
         {
           case 0: part1Name = "P_"; part2Name = "P_"; requestedCharge1 =  1; requestedCharge2 =  1; sameFilter = 1; break;
           case 1: part1Name = "P_"; part2Name = "M_"; requestedCharge1 =  1; requestedCharge2 = -1; sameFilter = 0;   break;
@@ -113,8 +110,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly 
       //eventName += int(10*zMin ); 
       //eventName += "Z";
       //eventName += int(10*zMax ); 
-      if (rejectPileup)         eventName += pileupRejecSuffix;
-      if (rejectPairConversion) eventName += pairRejecSuffix;
+      //if (rejectPileup)         eventName += pileupRejecSuffix;
+      //if (rejectPairConversion) eventName += pairRejecSuffix;
       baseName     =   prefixName;
       baseName     +=  part1Name;
       baseName     +=  part2Name;
@@ -123,12 +120,14 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly 
       taskName     =   baseName;
       //inputHistogramFileName = inputPath;
       //inputHistogramFileName += "/";
-      inputHistogramFileName =  baseName;
-      inputHistogramFileName += calibSuffix;
-      inputHistogramFileName += ".root";
+      //inputHistogramFileName =  baseName;
+      //inputHistogramFileName += calibSuffix;
+      //inputHistogramFileName += ".root";
       //outputHistogramFileName = outputPath;
       //outputHistogramFileName += "/";
-      outputHistogramFileName = baseName;
+      //inputHistogramFileName =  "/home/pruneau//wrk/Alice/PbPb/2730GeV/DptDpt/Calib/PbPb273Calibration.root";
+    inputHistogramFileName =  "alien:///alice/cern.ch/user/c/cpruneau/PbPb273Calibration.root"; //TFile::Open();
+    outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
       outputHistogramFileName += ".root";
       
@@ -144,42 +143,57 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly 
       TH3F   * weight_2   = 0;
       if (useWeights)
         {
-        inputFile = new TFile(inputHistogramFileName);
+        TGrid::Connect("alien:");
+        inputFile = TFile::Open(inputHistogramFileName,"OLD");
         if (!inputFile)
           {
           cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
           return;
           }
-        histoList = (TList *) inputFile->Get(listName);
-        if (!histoList)
-          {
-          cout << "Requested list:" << listName << " was not found. ABORT." << endl;
-          return;
-          }
+        TString nameHistoBase = "correction_";
+        TString nameHisto;
+        nameHistoBase += eventName;
         if (requestedCharge1 == 1)
-          weight_1 = (TH3 *) histoList->FindObject("correction_p");
+          {
+          nameHisto = nameHistoBase + "_p";
+          cout << "Input Histogram named: " << nameHisto << endl;
+          weight_1 = (TH3F *) inputFile->Get(nameHisto);
+          }
         else
-          weight_1 = (TH3 *) histoList->FindObject("correction_m");
+          {
+          nameHisto = nameHistoBase + "_m";
+          cout << "Input Histogram named: " << nameHisto << endl;
+          weight_1 = (TH3F *) inputFile->Get(nameHisto);
+          }
         if (!weight_1) 
           {
           cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
-          return;
+          return 0;
           }
+        
         if (!sameFilter)
           {
           weight_2 = 0;
           if (requestedCharge2 == 1)
-            weight_2 = (TH3 *) histoList->FindObject("correction_p");
+            {
+            nameHisto = nameHistoBase + "_p";
+            cout << "Input Histogram named: " << nameHisto << endl;
+            weight_2 = (TH3F *) inputFile->Get(nameHisto);
+            }
           else
-            weight_2 = (TH3 *) histoList->FindObject("correction_m");
+            {
+            nameHisto = nameHistoBase + "_m";
+            cout << "Input Histogram named: " << nameHisto << endl;
+            weight_2 = (TH3F *) inputFile->Get(nameHisto);
+            }
           if (!weight_2) 
             {
             cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
-            return;
+            return 0;
             }
-          }
+          }  
         }
-      AliAnalysisTaskDptDptCorrelations* task = new  AliAnalysisTaskDptDptCorrelations(taskName);
+      task = new  AliAnalysisTaskDptDptCorrelations(taskName);
       //configure my task
       task->SetDebugLevel(          debugLevel      ); 
       task->SetSameFilter(          sameFilter      );
@@ -227,7 +241,7 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly 
       cout << "Task added ...." << endl;
       
       iTask++;
-      }    
+    
     }
   
   
