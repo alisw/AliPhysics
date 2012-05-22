@@ -2,8 +2,10 @@
 
 AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
   Bool_t exFOnly, 
-  UInt_t computeBG = 0,
-  Bool_t wHistos = kTRUE
+  Bool_t wHistos   = kTRUE,
+  UInt_t triggers  = 0,
+  Double_t minE    = -1,
+  Double_t minPt   = -1
 )
 {
   // Add EMCAL physics selection task.
@@ -22,13 +24,18 @@ AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
   Bool_t isMC = (mgr->GetMCtruthEventHandler()) ? kTRUE:kFALSE; 
   AliEmcalPhysicsSelectionTask *pseltask = new AliEmcalPhysicsSelectionTask("EmcalPSel");
   pseltask->SetDoWriteHistos(wHistos);
-
   AliEmcalPhysicsSelection *physSel = pseltask->GetPhysicsSelection();
-  physSel->SetSkipFastOnly(exFOnly);
-  if (computeBG)
-    physSel->SetComputeBG(computeBG);
-  if (isMC)      
-    physSel->SetAnalyzeMC();
+  if (physSel) {
+    physSel->SetSkipFastOnly(exFOnly);
+    if (isMC)      
+      physSel->SetAnalyzeMC();
+    physSel->SetClusMinE(minE);
+    physSel->SetTrackMinPt(minPt);
+    physSel->SetTriggers(triggers);
+  } else {
+    ::Error("AddTaskEmcalPhysicsSelection", "No AliEmcalPhysicsSelection object found.");
+  }
+
   mgr->AddTask(pseltask);
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
