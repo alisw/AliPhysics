@@ -161,8 +161,10 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliESDtrack *track1, AliESDEvent
   fLSPartner = new int [100]; 	//store the partners index
   fULSPartner = new int [100];	//store the partners index
   
-  for(Int_t iTrack2 = iTrack1+1; iTrack2 < fESD->GetNumberOfTracks(); iTrack2++) 
+  for(Int_t iTrack2 = 0; iTrack2 < fESD->GetNumberOfTracks(); iTrack2++) 
     {
+		if(iTrack1==iTrack2) continue;
+		
       AliESDtrack* track2 = fESD->GetTrack(iTrack2);
       if (!track2) 
 	{
@@ -270,7 +272,7 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliESDtrack *track1, AliESDEvent
 	  if(fCharge1*fCharge2<0 && fHistAngle) fHistAngle->Fill(angle);
 	  if(fCharge1*fCharge2>0 && fHistAngleBack) fHistAngleBack->Fill(angle);
 	  
-	  if(angle<fAngleCut) continue;
+	  if(angle>fAngleCut) continue;
 	  
 	  if(imass<fMassCut)
 	    {

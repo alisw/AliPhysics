@@ -173,27 +173,27 @@ private:
   Int_t     fDebugLevel; // Debug Level  
 
   // Cuts for FLOW PWG2
-  AliFlowTrackCuts* fcutsRP;  // Reference particle cut
-  AliFlowTrackCuts* fcutsPOI; // Particle Of Interest cut
+  AliFlowTrackCuts* fcutsRP;  //! Reference particle cut
+  AliFlowTrackCuts* fcutsPOI; //! Particle Of Interest cut
   
   // Cuts for HFE
-  AliHFEcuts *fHFECuts;           // HFE cuts
-  AliHFEpid  *fPID;               // PID cuts 
-  AliHFEpidQAmanager *fPIDqa;     // QA Manager
+  AliHFEcuts *fHFECuts;           //! HFE cuts
+  AliHFEpid  *fPID;               //! PID cuts 
+  AliHFEpidQAmanager *fPIDqa;     //! QA Manager
   AliFlowEvent *fflowEvent;       //! Flow event 
 
   // Cuts for background study
-  AliESDtrackCuts *fHFEBackgroundCuts;    // HFE background cuts
-  AliHFEpid  *fPIDBackground;             // PID background cuts 
-  AliHFEpidQAmanager *fPIDBackgroundqa;   // QA Manager Background  
+  AliESDtrackCuts *fHFEBackgroundCuts;    //! HFE background cuts
+  AliHFEpid  *fPIDBackground;             //! PID background cuts 
+  AliHFEpidQAmanager *fPIDBackgroundqa;   //! QA Manager Background  
   Bool_t fAlgorithmMA;                    // algorithm MA
 
   // List of tracks
-  TArrayI *fArraytrack;                    // list of tracks
+  TArrayI *fArraytrack;                    //! list of tracks
   Int_t fCounterPoolBackground;            // number of tracks
 
   // VZERO Event plane after calibration 2010
-  AliHFEVZEROEventPlane *fHFEVZEROEventPlane; // VZERO event plane calibrated
+  AliHFEVZEROEventPlane *fHFEVZEROEventPlane; //! VZERO event plane calibrated
   
   // Histos
   TH2D *fHistEV;               //! Number of events
