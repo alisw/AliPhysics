@@ -6,10 +6,13 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
   const char *nembjets           = "EmbJets",
+  const char *nrandtracks        = "TracksRandomized",
+  const char *nrandclusters      = "CaloClustersRandomized",
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.4,
   Double_t    ptcut              = 0.15,
-  Double_t    jetpartcut         = 10,
+  Double_t    jetBiasTrack       = 10,
+  Double_t    jetBiasClus        = 10,
   UInt_t      type               = AliAnalysisTaskSAJF::kTPC
 )
 {  
@@ -34,21 +37,25 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliAnalysisTaskSAJF* phTask = new AliAnalysisTaskSAJF(taskname);
-  phTask->SetAnaType(type);
-  phTask->SetTracksName(ntracks);
-  phTask->SetClusName(nclusters);
-  phTask->SetJetsName(njets);
-  phTask->SetEmbJetsName(nembjets);
-  phTask->SetRhoName(nrho);
-  phTask->SetPtCut(ptcut);
-  phTask->SetJetRadius(jetradius);
-  phTask->SetPtCutJetPart(jetpartcut);
+  AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(taskname);
+  jetTask->SetAnaType(type);
+  jetTask->SetTracksName(ntracks);
+  jetTask->SetClusName(nclusters);
+  jetTask->SetJetsName(njets);
+  jetTask->SetEmbJetsName(nembjets);
+  jetTask->SetRandTracksName(nrandtracks);
+  jetTask->SetRandClusName(nrandclusters);
+  jetTask->SetRhoName(nrho);
+  jetTask->SetPtCut(ptcut);
+  jetTask->SetJetRadius(jetradius);
+  jetTask->SetPtBiasJetTrack(jetBiasTrack);
+  jetTask->SetPtBiasJetClus(jetBiasClus);
+
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
 
-  mgr->AddTask(phTask);
+  mgr->AddTask(jetTask);
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
@@ -57,8 +64,8 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
-  mgr->ConnectInput  (phTask, 0,  cinput1 );
-  mgr->ConnectOutput (phTask, 1, coutput1 );
+  mgr->ConnectInput  (jetTask, 0,  cinput1 );
+  mgr->ConnectOutput (jetTask, 1, coutput1 );
 
-  return phTask;
+  return jetTask;
 }
