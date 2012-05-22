@@ -51,6 +51,10 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     res = aev->GetHeader()->GetOfflineTrigger();
   }
 
+  // return 0, if 0 found.
+  if (res==0)
+    return 0;
+
   if (fTriggers) { // only process given triggers
     if (res & fTriggers == 0)
       return res;
@@ -59,9 +63,9 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
   fIsFastOnly  = kFALSE;
   fIsGoodEvent = kFALSE;
   fIsLedEvent  = kFALSE;
-  fCellMaxE    = 0;
-  fClusMaxE    = 0;
-  fTrackMaxPt  = 0;
+  fCellMaxE    = -1;
+  fClusMaxE    = -1;
+  fTrackMaxPt  = -1;
 
   if ((res & AliVEvent::kAnyINT) || 
       (res & AliVEvent::kEMC1)   || 
@@ -125,9 +129,14 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     }
     const Int_t Ntracks = trks->GetEntriesFast();
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-      AliVTrack *track = dynamic_cast<AliVTrack*>(trks->At(iTracks));
+      AliVTrack *track = static_cast<AliVTrack*>(trks->At(iTracks));
       if (!track)
         continue;
+      if (aev) { // a bit ugly since cuts are hard coded for now
+        AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
+        if (!aodtrack->TestFilterBit(256) && !aodtrack->TestFilterBit(512))
+          continue;
+      }
       Double_t pt = track->Pt();
       if (pt>fTrackMaxPt)
         fTrackMaxPt = pt;
@@ -167,10 +176,10 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     }
   }
 
-  if (fCellMaxE>=fCellMinE)
+  if (fCellMaxE>fCellMinE)
     res |= kEmcalHC;
 
-  if ((fClusMaxE>=fClusMinE) || (fTrackMaxPt>=fTrackMinPt))
+  if ((fClusMaxE>fClusMinE) || (fTrackMaxPt>fTrackMinPt))
     res |= kEmcalHT;
 
   if (fIsGoodEvent)
