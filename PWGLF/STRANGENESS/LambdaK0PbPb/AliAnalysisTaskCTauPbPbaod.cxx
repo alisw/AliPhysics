@@ -43,10 +43,14 @@ fCMin(0.),
 fCMax(90.),
 fCPA(0.9975),
 fDCA(1.0),
+fTPCcr(70.),
+fTPCcrfd(0.8),
 fOutput(0),
 fMult(0),
 fCosPA(0),
 fDtrDCA(0),
+fTPCrows(0),
+fTPCratio(0),
 fdEdx(0),
 fdEdxPid(0),
 
@@ -104,6 +108,14 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   fDtrDCA=new TH1F("fDtrDCA","DCA between V0 daughters",50,0.0,1.5);
   fDtrDCA->GetXaxis()->SetTitle("DCA (rel. u.)"); 
   fOutput->Add(fDtrDCA);
+
+  fTPCrows=new TH1F("fTPCrows","TPC crossed pad rows",180,0.,180.);
+  fTPCrows->GetXaxis()->SetTitle("TPC crossed pad rows"); 
+  fOutput->Add(fTPCrows);
+
+  fTPCratio=new TH1F("fTPCratio","TPC crossed/findable pad rows",50,0.0,1.5);
+  fTPCratio->GetXaxis()->SetTitle("TPC crossed/findable pad rows"); 
+  fOutput->Add(fTPCratio);
 
   fdEdx=new TH2F("fdEdx","dE/dx",50,0.2,3,50,0.,6.);
   fOutput->Add(fdEdx);
@@ -249,17 +261,20 @@ void AliAnalysisTaskCTauPbPbaod::UserCreateOutputObjects()
   PostData(1, fOutput);
 }
 
-static Bool_t AcceptTrack(const AliAODTrack *t) {
+Bool_t AliAnalysisTaskCTauPbPbaod::AcceptTrack(const AliAODTrack *t) {
   if (!t->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
   //if (t->GetKinkIndex(0)>0) return kFALSE;
 
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1); 
-  if (nCrossedRowsTPC < 70) return kFALSE;
+  if (nCrossedRowsTPC < fTPCcr) return kFALSE;
   Int_t findable=t->GetTPCNclsF();
   if (findable <= 0) return kFALSE;
-  if (nCrossedRowsTPC/findable < 0.8) return kFALSE;
+  if (nCrossedRowsTPC/findable < fTPCcrfd) return kFALSE;
 
   if (TMath::Abs(t->Eta()) > 0.8) return kFALSE;
+
+  fTPCrows->Fill(nCrossedRowsTPC);
+  fTPCratio->Fill(nCrossedRowsTPC/findable);
 
   return kTRUE;   
 }
@@ -291,10 +306,13 @@ AliAnalysisTaskCTauPbPbaod::AcceptV0(const AliAODv0 *v0,const AliAODEvent *aod)
   if (r2<0.9*0.9) return kFALSE;
   if (r2>100*100) return kFALSE;
 
+  fCosPA->Fill(cpa);
+  fDtrDCA->Fill(dca);
+
   return kTRUE;
 }
 
-static Bool_t AcceptCascade(const AliAODcascade *cs, const AliAODEvent *aod) {
+Bool_t AliAnalysisTaskCTauPbPbaod::AcceptCascade(const AliAODcascade *cs, const AliAODEvent *aod) {
 
   AliAODVertex *xi = cs->GetDecayVertexXi(); 
   const AliAODTrack *bach=(AliAODTrack *)xi->GetDaughter(0);
@@ -516,12 +534,6 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
 
       if (!AcceptV0(v0,aod)) continue;
       
-      Double_t cpa=v0->CosPointingAngle(aod->GetPrimaryVertex());
-      fCosPA->Fill(cpa);
-
-      Double_t dca=v0->DcaV0Daughters();
-      fDtrDCA->Fill(dca);
-
       const AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
       const AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
 

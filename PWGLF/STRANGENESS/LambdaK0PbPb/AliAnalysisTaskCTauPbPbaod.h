@@ -9,7 +9,9 @@ class TH3F;
 class TList;
 
 class AliAODEvent;
+class AliAODTrack;
 class AliAODv0;
+class AliAODcascade;
 
 //
 //  This is a little task for checking the c*tau of the strange particles 
@@ -26,30 +28,38 @@ public:
   void SetMC(Bool_t isMC=kTRUE) {fIsMC=isMC;} 
   void SetCosPA(Double_t cospa) {fCPA=cospa;} 
   void SetDtrDCA(Double_t cospa){fDCA=cospa;} 
-  
+  void SetTPCrows(Double_t cospa){fTPCcr=cospa;} 
+  void SetTPCratio(Double_t cospa){fTPCcrfd=cospa;} 
+ 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);  
 
 
-private: 
+private:
 
   AliAnalysisTaskCTauPbPbaod(const AliAnalysisTaskCTauPbPbaod&);           //not implemented
   AliAnalysisTaskCTauPbPbaod& operator=(const AliAnalysisTaskCTauPbPbaod&);//not implemented 
 
-  Bool_t AcceptV0(const AliAODv0 *v0, const AliAODEvent *aod); 
+  Bool_t AcceptTrack(const AliAODTrack *t); 
+  Bool_t AcceptV0(const AliAODv0 *v0, const AliAODEvent *aod);
+  Bool_t AcceptCascade(const AliAODcascade *cs, const AliAODEvent *aod);
 
   Bool_t fIsMC;
   Double_t fCMin;       // Min centrality
   Double_t fCMax;       // Max centrality
   Double_t fCPA;        // cos(PA) threshold
   Double_t fDCA;        // threshold for the DCA between V0 daughters
+  Double_t fTPCcr;      // threshold for the number of crossed TPC pad rows
+  Double_t fTPCcrfd;    // threshold for the ratio of TPC crossed/findable rows
 
   TList       *fOutput; //! The list of histograms
 
   TH1F *fMult;       //! Track multiplicity
   TH1F *fCosPA;      //! cos(PA)
   TH1F *fDtrDCA;     //! DCA between V0 daughters
+  TH1F *fTPCrows;    //! number of crossed TPC pad rows
+  TH1F *fTPCratio;   //! ratio of TPC crossed/findable rows
   TH2F* fdEdx;       //! dEdx
   TH2F* fdEdxPid;    //! dEdx with PID
 
