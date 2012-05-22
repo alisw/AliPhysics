@@ -49,24 +49,30 @@ void AliJetRandomizerTask::Run()
   // Randomize particles.
 
   if (fNClusters > 0 && fOutClusters) {
-    const Int_t nClusters = fOutClusters->GetEntriesFast();
+    const Int_t nClusters = fClusters->GetEntriesFast();
     for (Int_t i = 0; i < nClusters; ++i) {
       AliVCluster *cluster = dynamic_cast<AliVCluster*>(fClusters->At(i));
       if (!cluster)
 	continue;
       if (!cluster->IsEMCAL())
 	continue;
-      AddCluster(cluster->E());
+
+      Float_t pos[3];
+      cluster->GetPosition(pos);
+      TVector3 clusVec(pos);
+
+      AddCluster(cluster->E(), clusVec.Eta());
     }
   }
  
   if (fNTracks > 0 && fOutTracks) {
-    const Int_t nTracks = fOutTracks->GetEntriesFast();
+    const Int_t nTracks = fTracks->GetEntriesFast();
     for (Int_t i = 0; i < nTracks; ++i) {
       AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(fTracks->At(i));
       if (!track)
 	continue;
-      AddTrack(track->Pt());
+
+      AddTrack(track->Pt(), track->Eta());
     }
   }
 }
