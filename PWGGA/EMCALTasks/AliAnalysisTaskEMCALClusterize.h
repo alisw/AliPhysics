@@ -108,7 +108,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
  private:
     
-  virtual void   FillCaloClusterInAOD();
+  virtual void   FillCaloClusterInEvent();
   
   virtual void   RecPoints2Clusters();
   

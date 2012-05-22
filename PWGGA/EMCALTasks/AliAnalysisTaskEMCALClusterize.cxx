@@ -859,11 +859,12 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
   
 }
 
-//_________________________________________________________
-void AliAnalysisTaskEMCALClusterize::FillCaloClusterInAOD()
+//___________________________________________________________
+void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
 {
   // Get the CaloClusters array, do some final calculations 
-  // and put the clusters in the AOD branch
+  // and put the clusters in the output or input event 
+  // as a separate branch 
   
   //First recalculate track-matching for the new clusters
   if(fDoTrackMatching) 
@@ -878,6 +879,9 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInAOD()
     AliAODCaloCluster *newCluster = (AliAODCaloCluster *) fCaloClusterArr->At(i);
     
     newCluster->SetID(i);
+    
+    // Correct cluster energy non linearity    
+    newCluster->SetE(fRecoUtils->CorrectClusterEnergyLinearity(newCluster));
     
     //Add matched track
     if(fDoTrackMatching)
@@ -1499,7 +1503,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   // Step 3
   
-  FillCaloClusterInAOD();
+  FillCaloClusterInEvent();
   
 }      
 
