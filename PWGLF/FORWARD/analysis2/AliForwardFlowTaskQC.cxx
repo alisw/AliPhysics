@@ -526,13 +526,13 @@ void AliForwardFlowTaskQC::VertexBin::AddOutput(TList* outputlist)
     Int_t nBins = accMap->GetNbinsX();
     Double_t eta[48] = { 0. };
     Int_t n = 0;
-    Double_t newOcc[48] = { 0. };
+    // Double_t newOcc[48] = { 0. };
     Double_t prev = -1;
     for (Int_t i = 0; i < nBins; i++) {
       Double_t occ = accMap->GetBinContent(i+1);
       if (prev != occ && (((occ > 0.6 || occ == 0) && i*0.25-6 < 4) || ((occ == 0) && i*0.25-6 >= 4))) {
         eta[n] = i*0.25-6.;
-        newOcc[n] = occ;
+        // newOcc[n] = occ;
         n++;
         if (fDebug > 5) AliInfo(Form("eta: %f \t occ: %f \t Vertex: %d \n", eta[n-1], occ, fVzMin));
       }
@@ -896,7 +896,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
   }
 
   // For flow calculations
-  Double_t two = 0, qc2 = 0, vnTwo = 0, four = 0, qc4 = 0, vnFour = 0; 
+  Double_t two = 0, qc2 = 0, /*vnTwo = 0,*/ four = 0, qc4 = 0/*, vnFour = 0*/; 
   Double_t twoPrime = 0, qc2Prime = 0, vnTwoDiff = 0, fourPrime = 0, qc4Prime = 0, vnFourDiff = 0;
   Double_t w2 = 0, w4 = 0, w2p = 0, w4p = 0;
   Double_t w2Two = 0, w2pTwoPrime = 0, w4Four = 0, w4pFourPrime = 0;
@@ -931,7 +931,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
 	if (fDebug > 0) AliInfo(Form("%s: QC_%d{2} = %1.3f for eta = %1.2f and centrality %3.1f - skipping", fType.Data(), fMoment, qc2, eta, cent));
 	continue;
       }
-      vnTwo = TMath::Sqrt(qc2);
+      // vnTwo = TMath::Sqrt(qc2);
  //     if (!TMath::IsNaN(vnTwo*mult)) 
  //       cumu2->Fill(eta, cent, vnTwo, fCumuHist->GetBinContent(0,cBin,0)); 
 
@@ -979,7 +979,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsTerminate(TList* inlist, TList* o
 	if (fDebug > 0) AliInfo(Form("%s: QC_%d{4} = %1.3f for eta = %1.2f and centrality %3.1f - skipping", fType.Data(), fMoment, qc2, eta, cent));
    	continue;
       }
-      vnFour = TMath::Power(-qc4, 0.25);
+      // vnFour = TMath::Power(-qc4, 0.25);
  //     if (!TMath::IsNaN(vnFour*mult)) 
  //         cumu4->Fill(eta, cent, vnFour, fCumuHist->GetBinContent(0,cBin,0));
 

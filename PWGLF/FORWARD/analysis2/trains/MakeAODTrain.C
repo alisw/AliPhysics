@@ -75,13 +75,16 @@ public:
    * @param mc       If true, assume simulated events 
    * @param usePar   If true, use PARs 
    */
-  void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t mc=false,
-	   Bool_t usePar=false)
+  void Run(const char* mode, 
+	   const char* oper, 
+	   Int_t       nEvents=-1, 
+	   Bool_t      mc=false,
+	   Bool_t      usePar=false, 
+	   Int_t       dbg=0)
   {
     Info("Run", "Running in mode=%s, oper=%s, events=%d, MC=%d, Par=%d", 
 	 mode, oper, nEvents, mc, usePar);
-    Exec("ESD", mode, oper, nEvents, mc, usePar);
+    Exec("ESD", mode, oper, nEvents, mc, usePar, dbg);
   }
   /** 
    * Run this analysis 
@@ -92,12 +95,16 @@ public:
    * @param mc       If true, assume simulated events 
    * @param usePar   If true, use PARs 
    */
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false, 
-	   Bool_t usePar = false)
+  void Run(EMode  mode, 
+	   EOper  oper, 
+	   Int_t  nEvents=-1, 
+	   Bool_t mc=false, 
+	   Bool_t usePar = false,
+	   Int_t  dbg = 0)
   {
     Info("Run", "Running in mode=%d, oper=%d, events=%d, MC=%d, Par=%d", 
 	 mode, oper, nEvents, mc, usePar);
-    Exec(kESD, mode, oper, nEvents, mc, usePar);
+    Exec(kESD, mode, oper, nEvents, mc, usePar, dbg);
   }
 protected:
   /** 

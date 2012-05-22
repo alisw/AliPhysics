@@ -69,6 +69,7 @@ AliFMDSharingFilter::AliFMDSharingFilter()
   // 
   // Default Constructor - do not use 
   //
+  DGUARD(fDebug,0, "Default CTOR for AliFMDSharingFilter");
 }
 
 //____________________________________________________________________
@@ -94,6 +95,7 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   // Parameters:
   //    title Title of object  - not significant 
   //
+  DGUARD(fDebug,0, "Named CTOR for AliFMDSharingFilter: %s", title);
   fRingHistos.SetName(GetName());
   fRingHistos.SetOwner();
   
@@ -131,6 +133,7 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
   // Parameters:
   //    o Object to copy from 
   //
+  DGUARD(fDebug,0, "Copy CTOR for AliFMDSharingFilter");
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -142,6 +145,7 @@ AliFMDSharingFilter::~AliFMDSharingFilter()
   // 
   // Destructor
   //
+  DGUARD(fDebug,3, "DTOR for AliFMDSharingFilter");
   fRingHistos.Delete();
 }
 
@@ -158,6 +162,7 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
   // Return:
   //    Reference to this 
   //
+  DGUARD(fDebug,3, "Assigment for AliFMDSharingFilter");
   if (&o == this) return *this;
   TNamed::operator=(o);
 
@@ -212,6 +217,7 @@ void
 AliFMDSharingFilter::Init()
 {
   // Initialise 
+  DGUARD(fDebug,1, "Initialize for AliFMDSharingFilter");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
  
   // Get the high cut.  The high cut is defined as the 
@@ -270,6 +276,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
   // Return:
   //    True on success, false otherwise 
   //
+  DGUARD(fDebug,1, "Filter event in AliFMDSharingFilter");
   output.Clear();
   TIter    next(&fRingHistos);
   RingHistos* o      = 0;
@@ -493,7 +500,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
   fSummed->Fill(kMergedWithOther, nMerged);
   fSummed->Fill(kMergedInto,      nSummed);
 
-  DBGL(1, Form("none=%9d, candidate=%9d, merged=%9d, summed=%9d", 
+  DBGL(5, Form("none=%9d, candidate=%9d, merged=%9d, summed=%9d", 
 	       nNone, nCandidate, nMerged, nSummed));
   next.Reset();
   while ((o = static_cast<RingHistos*>(next())))
@@ -620,14 +627,14 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t thisE,
   // strip is considered a candidate.
   if (thisE < lowCut || thisE > 20) { 
     thisStatus = kNone;
-    DBGL(3,Form(" %9f<%9f || %9f>20, 0'ed", thisE, lowCut, thisE));
+    DBGL(5,Form(" %9f<%9f || %9f>20, 0'ed", thisE, lowCut, thisE));
     if (prevStatus == kCandidate) prevStatus = kNone;
     return 0;  
   }
   // It this strip was merged with the previous strip, then 
   // make the next strip a candidate and zero the value in this strip. 
   if (thisStatus == kMergedWithOther) { 
-    DBGL(3,Form(" Merged with other, 0'ed"));
+    DBGL(5,Form(" Merged with other, 0'ed"));
     return 0;
   }
 
@@ -675,7 +682,7 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t thisE,
       thisStatus = kMergedInto;
     else 
       thisStatus = kNone;
-    DBGL(3, Form(" %9f>%f9 (was %9f) -> %9f %s", 
+    DBGL(5, Form(" %9f>%f9 (was %9f) -> %9f %s", 
 		 totalE, highCut, thisE, totalE,status2String(thisStatus)));
     return totalE;
   }
@@ -687,14 +694,14 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t thisE,
   
   // If the total signal is smaller than low cut then zero this and kill this 
   if (totalE < lowCut)  {
-    DBGL(3, Form(" %9f<%9f (was %9f), zeroed", totalE, lowCut, thisE));
+    DBGL(5, Form(" %9f<%9f (was %9f), zeroed", totalE, lowCut, thisE));
     thisStatus = kNone;
     return 0;
   }
 
   // If total signal not above high cut or lower than low cut, 
   // mark this as a candidate for merging into the next, and zero signal 
-  DBGL(3, Form(" %9f<%9f<%9f (was %9f), zeroed, candidate", 
+  DBGL(5, Form(" %9f<%9f<%9f (was %9f), zeroed, candidate", 
 		   lowCut, totalE, highCut, thisE));
   thisStatus = kCandidate;
   return (fZeroSharedHitsBelowThreshold ? 0 : totalE); 
@@ -868,6 +875,7 @@ AliFMDSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
   //    dir     Where the output is 
   //    nEvents Number of events 
   //
+  DGUARD(fDebug,1, "Scale histograms in AliFMDSharingFilter");
   if (nEvents <= 0) return;
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
@@ -899,6 +907,7 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   // Parameters:
   //    dir Directory to add to 
   //
+  DGUARD(fDebug,1, "Define output in AliFMDSharingFilter");
   TList* d = new TList;
   d->SetName(GetName());
   dir->Add(d);

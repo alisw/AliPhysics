@@ -70,6 +70,7 @@ AliFMDEventInspector::AliFMDEventInspector()
   // 
   // Constructor 
   //
+  DGUARD(fDebug,0,"Default CTOR of AliFMDEventInspector");
 }
 
 //____________________________________________________________________
@@ -106,6 +107,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   // Parameters:
   //   name Name of object
   //
+  DGUARD(fDebug,0,"Named CTOR of AliFMDEventInspector: %s", name);
 }
 
 //____________________________________________________________________
@@ -142,6 +144,7 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
   // Parameters:
   //   o Object to copy from 
   //
+  DGUARD(fDebug,0,"Copy CTOR of AliFMDEventInspector");
 }
 
 //____________________________________________________________________
@@ -165,6 +168,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   // Return:
   //    Reference to this object
   //
+  DGUARD(fDebug,3,"Assignment of AliFMDEventInspector");
   if (&o == this) return *this; 
   TNamed::operator=(o);
   fHEventsTr         = o.fHEventsTr;
@@ -224,6 +228,7 @@ AliFMDEventInspector::FetchHistograms(const TList* d,
   // Return:
   //    true on success, false otherwise 
   //
+  DGUARD(fDebug,3,"Fetch histograms in AliFMDEventInspector");
   hEventsTr    = 0;
   hEventsTrVtx = 0;
   hTriggers    = 0;
@@ -247,7 +252,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   // Parameters:
   //   vtxAxis Vertex axis in use 
   //
-  AliInfo("Initialising the event inspector");
+  DGUARD(fDebug,1,"Initialize in AliFMDEventInspector");
   
   // -1.5 -0.5 0.5 1.5 ... 89.5 ... 100.5
   // ----- 92 number --------- ---- 1 ---
@@ -369,6 +374,7 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
 {
   // Write TNamed objects to output list containing information about
   // the running conditions 
+  DGUARD(fDebug,2,"Store information from AliFMDEventInspector");
   if (!fList) return;
 
   TNamed* sys = new TNamed("sys", "");
@@ -416,6 +422,7 @@ AliFMDEventInspector::DefineOutput(TList* dir)
   // 
   //   dir Directory to add to 
   //
+  DGUARD(fDebug,1,"Define output from AliFMDEventInspector");
   fList = new TList;
   fList->SetName(GetName());
   dir->Add(fList);
@@ -447,6 +454,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   // Return:
   //    0 (or kOk) on success, otherwise a bit mask of error codes 
   //
+  DGUARD(fDebug,1,"Process event in AliFMDEventInspector");
 
   // --- Check that we have an event ---------------------------------
   if (!event) { 
@@ -542,6 +550,8 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd,
   // Return:
   //    False on error, true otherwise 
   //
+  DGUARD(fDebug,2,"Read the centrality in AliFMDEventInspector");
+  
   cent = -1;
   qual = 0;
   AliCentrality* centObj = const_cast<AliESDEvent*>(esd)->GetCentrality();
@@ -613,6 +623,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   // Return:
   //    @c true on success, @c false otherwise 
   //
+  DGUARD(fDebug,2,"Read the triggers in AliFMDEventInspector");
   triggers = 0;
 
   // Get the analysis manager - should always be there 
@@ -925,6 +936,7 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd,
   // Return:
   //    @c true on success, @c false otherwise 
   //
+  DGUARD(fDebug,2,"Read the vertex in AliFMDEventInspector");
   vz = 0;
   vx = 1024;
   vy = 1024;
@@ -1057,6 +1069,7 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
   // AliInfo(Form("Parameters from 1st ESD event: cms=%s, sNN=%f, field=%f",
   // 	       esd->GetBeamType(), 2*esd->GetBeamEnergy(), 
   // 	       esd->GetMagneticField()));
+  DGUARD(fDebug,2,"Read the run details in AliFMDEventInspector");
   fCollisionSystem = 
     AliForwardUtil::ParseCollisionSystem(esd->GetBeamType());
   fEnergy          = 

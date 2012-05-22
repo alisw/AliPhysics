@@ -57,6 +57,7 @@ AliFMDEventPlaneFinder::AliFMDEventPlaneFinder()
   // 
   // Constructor 
   //
+  DGUARD(fDebug,0,"Default CTOR of AliFMDEventPlaneFinder");
    
 }
 
@@ -94,6 +95,7 @@ AliFMDEventPlaneFinder::AliFMDEventPlaneFinder(const char* title)
   // Parameters:
   //    name Name of object
   //
+  DGUARD(fDebug,0,"Named CTOR of AliFMDEventPlaneFinder: %s", title);
 }
 
 //____________________________________________________________________
@@ -131,6 +133,7 @@ AliFMDEventPlaneFinder::AliFMDEventPlaneFinder(const
   // Parameters:
   //    o Object to copy from 
   //
+  DGUARD(fDebug,0,"Copy CTOR of AliFMDEventPlaneFinder");
 }
 
 //____________________________________________________________________
@@ -154,6 +157,7 @@ AliFMDEventPlaneFinder::operator=(const AliFMDEventPlaneFinder& o)
   // Return:
   //    Reference to this object
   //
+  DGUARD(fDebug,3,"Assignment of AliFMDEventPlaneFinder");
   if (&o == this) return *this; 
   TNamed::operator=(o);
 
@@ -194,6 +198,7 @@ AliFMDEventPlaneFinder::Init(const TAxis& etaAxis)
   // Parameters:
   //   etaAxis   fmd eta axis binning
   //
+  DGUARD(fDebug,1,"Initalization of AliFMDEventPlaneFinder");
   fHistFMDEventplane = new TH1D("hFMDEventplane", "FMD eventplane", 
                                 100, 0., TMath::Pi());
   fHistFMDEventplane->Sumw2();
@@ -298,6 +303,7 @@ AliFMDEventPlaneFinder::DefineOutput(TList* dir)
   // Parameters:
   //    dir List to write in
   //  
+  DGUARD(fDebug,1,"Define output of AliFMDEventPlaneFinder");
   fList = new TList();
   fList->SetOwner();
   fList->SetName(GetName());
@@ -322,6 +328,7 @@ AliFMDEventPlaneFinder::FindEventplane(AliVEvent* ev,
   // 
   // Return:
   //    true on successs 
+  DGUARD(fDebug,1,"Find the event plane in AliFMDEventPlaneFinder");
 
   fQt.Set(0., 0.);
   fQa.Set(0., 0.);
@@ -363,6 +370,7 @@ AliFMDEventPlaneFinder::CalcQVectors(TH2D* h, TH1D* eHist)
   //
   // Calculate the Q vectors
   //
+  DGUARD(fDebug,2,"Calculate Q-vectors in AliFMDEventPlaneFinder");
   Double_t phi = 0, eta = 0, weight = 0;
   for (Int_t e = 1; e <= h->GetNbinsX(); e++) {
     Double_t qx = 0, qy = 0;
@@ -406,6 +414,7 @@ AliFMDEventPlaneFinder::CalcEventplane(TVector2 v) const
   //
   // Calculate the eventplane
   //
+  DGUARD(fDebug,2,"Calculate Event plane in AliFMDEventPlaneFinder");
   Double_t ep = -1;
  
   if (v.Mod() == 0.) return ep;
@@ -426,6 +435,7 @@ AliFMDEventPlaneFinder::FillHists(AliAODForwardEP* fmdEP)
   //
   // Fill diagnostics histograms
   //
+  DGUARD(fDebug,2,"Fill histograms in AliFMDEventPlaneFinder");
   Double_t fmdEPt = fmdEP->GetEventplane();
   Double_t fmdEPa = fmdEP->GetEventplaneA();
   Double_t fmdEPc = fmdEP->GetEventplaneC();

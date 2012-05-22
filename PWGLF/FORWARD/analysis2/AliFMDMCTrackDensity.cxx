@@ -30,6 +30,7 @@ AliFMDMCTrackDensity::State::Clear(Bool_t alsoCount)
 AliFMDMCTrackDensity::State&
 AliFMDMCTrackDensity::State::operator=(const State& o)
 {
+  if (&o == this) return *this;
   angle          = o.angle;
   oldDetector    = o.oldDetector;
   oldRing        = o.oldRing;

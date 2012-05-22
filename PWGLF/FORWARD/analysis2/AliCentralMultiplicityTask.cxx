@@ -49,6 +49,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
   // 
   // Constructor 
   //   
+  DGUARD(fDebug,0,"Named CTOR of AliCentralMultiplicityTask: %s", name);
   DefineOutput(1, TList::Class());
   fBranchNames = 
     "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
@@ -76,6 +77,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
   // 
   // Constructor 
   // 
+  DGUARD(fDebug,0,"Default CTOR of AliCentralMultiplicityTask");
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplicityTask& o)
@@ -99,6 +101,8 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
   //
   // Copy constructor 
   // 
+  DGUARD(fDebug,0,"COPY CTOR of AliCentralMultiplicityTask");
+
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask&
@@ -107,6 +111,7 @@ AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
   // 
   // Assignment operator 
   //
+  DGUARD(fDebug,3,"Assignment of AliCentralMultiplicityTask");
   if (&o == this) return *this; 
   fInspector         = o.fInspector;
   fData              = o.fData;
@@ -132,6 +137,7 @@ void AliCentralMultiplicityTask::UserCreateOutputObjects()
   // Create output objects 
   // 
   //
+  DGUARD(fDebug,1,"Create user output in AliCentralMultiplicityTask");
 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
@@ -159,6 +165,7 @@ AliCentralMultiplicityTask::GetESDEvent()
   //
   // Get the ESD event. IF this is the first event, initialise
   //
+  DGUARD(fDebug,1,"Get ESD event in AliCentralMultiplicityTask");
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) {
     AliWarning("No ESD event found for input event");
@@ -233,6 +240,7 @@ void
 AliCentralMultiplicityTask::MarkEventForStore() const
 {
   // Make sure the AOD tree is filled 
+  DGUARD(fDebug,1,"Mark AOD event for store in AliCentralMultiplicityTask");
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
@@ -245,6 +253,10 @@ AliCentralMultiplicityTask::MarkEventForStore() const
 //____________________________________________________________________
 void AliCentralMultiplicityTask::FindEtaLimits()
 {
+  // Find our pseudo-rapidity limits 
+  // 
+  // Uses the secondary map to do so.
+  DGUARD(fDebug,1,"Find eta limits in AliCentralMultiplicityTask");
   AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
 
   const TAxis& vaxis = secMap->GetVertexAxis();
@@ -261,10 +273,11 @@ void AliCentralMultiplicityTask::FindEtaLimits()
   secs->SetOwner();
   secs->SetName("secondaryMaps");
   fList->Add(secs);
+  unsigned short s = 1;
   TH2D* hCoverage = new TH2D("coverage", "#eta coverage per v_{z}", 
-			     secMap->GetCorrection(UShort_t(1))->GetXaxis()->GetNbins(),
-			     secMap->GetCorrection(UShort_t(1))->GetXaxis()->GetXmin(),
-			     secMap->GetCorrection(UShort_t(1))->GetXaxis()->GetXmax(),
+			     secMap->GetCorrection(s)->GetXaxis()->GetNbins(),
+			     secMap->GetCorrection(s)->GetXaxis()->GetXmin(),
+			     secMap->GetCorrection(s)->GetXaxis()->GetXmax(),
 			     vaxis.GetNbins(),vaxis.GetXmin(),vaxis.GetXmax());
   hCoverage->SetDirectory(0);
   hCoverage->SetXTitle("#eta");
@@ -352,6 +365,7 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   // Parameters:
   //    option Not used
   //  
+  DGUARD(fDebug,1,"Process event in AliCentralMultiplicityTask");
   fAODCentral.Clear("");
   fIvz = 0;
 
@@ -401,6 +415,7 @@ void
 AliCentralMultiplicityTask::ProcessESD(TH2D& aodHist, 
 				       const AliMultiplicity* spdmult) const
 {
+  DGUARD(fDebug,1,"Process the ESD in AliCentralMultiplicityTask");
   fNTracklet->Reset();
   fNCluster->Reset();
 
@@ -432,6 +447,7 @@ void
 AliCentralMultiplicityTask::CorrectData(TH2D& aodHist, UShort_t vtxbin) const
 {  
   // Corrections
+  DGUARD(fDebug,1,"Correct data in AliCentralMultiplicityTask");
   TH1D* hAcceptance = fManager.GetAcceptanceCorrection(vtxbin);
   TH2D* hSecMap     = fManager.GetSecMapCorrection(vtxbin);
   
@@ -498,6 +514,7 @@ void AliCentralMultiplicityTask::Terminate(Option_t* /*option*/)
   // Parameters:
   //    option Not used 
   //
+  DGUARD(fDebug,1,"Process merged output in AliCentralMultiplicityTask");
 }
 //____________________________________________________________________
 void

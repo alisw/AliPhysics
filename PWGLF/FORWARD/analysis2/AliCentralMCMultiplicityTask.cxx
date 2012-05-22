@@ -44,6 +44,7 @@ AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask(const char* name)
   // 
   // Constructor 
   //   
+  DGUARD(fDebug,0,"Named CTOR of AliCentralMCMultiplicityTask: %s", name);
 }
 //____________________________________________________________________
 AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask() 
@@ -54,6 +55,7 @@ AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask()
   // 
   // Constructor 
   // 
+  DGUARD(fDebug,0,"Default CTOR of AliCentralMCMultiplicityTask");
 }
 //____________________________________________________________________
 AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask(const AliCentralMCMultiplicityTask& o)
@@ -64,6 +66,7 @@ AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask(const AliCentralMCMul
   //
   // Copy constructor 
   // 
+  DGUARD(fDebug,0,"COPY CTOR of AliCentralMCMultiplicityTask");
 }
 //____________________________________________________________________
 AliCentralMCMultiplicityTask&
@@ -72,6 +75,8 @@ AliCentralMCMultiplicityTask::operator=(const AliCentralMCMultiplicityTask& o)
   // 
   // Assignment operator 
   //
+  DGUARD(fDebug,3,"Assignment of AliCentralMCMultiplicityTask");
+  if (&o == this) return *this; 
   AliCentralMultiplicityTask::operator=(o);
   fAODMCCentral     = o.fAODMCCentral;
   fTrackDensity     = o.fTrackDensity;
@@ -84,6 +89,7 @@ void AliCentralMCMultiplicityTask::UserCreateOutputObjects()
   // Create output objects 
   // 
   //
+  DGUARD(fDebug,1,"Create user output in AliCentralMCMultiplicityTask");
   AliCentralMultiplicityTask::UserCreateOutputObjects();
 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
@@ -108,6 +114,7 @@ void AliCentralMCMultiplicityTask::UserExec(Option_t* option)
   // Parameters:
   //    option Not used
   //  
+  DGUARD(fDebug,1,"Process event in AliCentralMCMultiplicityTask");
   fAODMCCentral.Clear("");
   
   // Call base class 
@@ -143,6 +150,7 @@ void AliCentralMCMultiplicityTask::Terminate(Option_t* option)
   // Parameters:
   //    option Not used 
   //
+  DGUARD(fDebug,1,"Final analysis of merge in AliCentralMCMultiplicityTask");
   AliCentralMultiplicityTask::Terminate(option);
 }
 //____________________________________________________________________

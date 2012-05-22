@@ -36,11 +36,13 @@ AliDisplacedVertexSelection::Output(TList* /*l*/, const char* /* name*/) const
 void
 AliDisplacedVertexSelection::Print(Option_t*) const
 {
+#if 0
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
   std::cout << std::boolalpha 
 	    << std::noboolalpha << std::endl;
+#endif
 }
 //____________________________________________________________________
 
@@ -107,11 +109,11 @@ for(Int_t i = 0; i < 4; ++i)
 //Global Event Filter//
 ///////////////////////
  Bool_t zdcAccSat[21];
- Bool_t zdcAccSatRunClass[21];
-for(Int_t k = -10; k <= 10; k++) 
+ // Bool_t zdcAccSatRunClass[21];
+ for(Int_t k = -10; k <= 10; k++) 
    {
       zdcAccSat[k+10]         = kFALSE;
-      zdcAccSatRunClass[k+10] = kFALSE;
+      // zdcAccSatRunClass[k+10] = kFALSE;
    }
 
 
@@ -220,11 +222,11 @@ for(Int_t i = 0; i < 4; ++i)
 //Global Event Filter//
 ///////////////////////
  Bool_t zdcAccSat[21];
- Bool_t zdcAccSatRunClass[21];
+ // Bool_t zdcAccSatRunClass[21];
 for(Int_t k = -10; k <= 10; k++) 
    {
       zdcAccSat[k+10]         = kFALSE;
-      zdcAccSatRunClass[k+10] = kFALSE;
+      // zdcAccSatRunClass[k+10] = kFALSE;
    }
 
 
