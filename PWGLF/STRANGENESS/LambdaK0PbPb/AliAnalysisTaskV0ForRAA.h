@@ -146,6 +146,8 @@ private:
    
    TH1F   *fHistMuliplicity;                         // number of particles from centrality selection
    TH1F   *fHistMuliplicityRaw;                      // number of particles from centrality selection before processing
+   TH1F   *fHistCentBinRaw;                          // events per centralitybin before centrality selection
+   TH1F   *fHistCentBin;                             // events per centralitybin
    TH1F   *fHistMultiplicityPrimary;                 // number of charged particles
    
    TH1F   *fHistNPrim;                               // number of contributors to the prim vertex
