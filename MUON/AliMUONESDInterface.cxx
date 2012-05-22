@@ -33,6 +33,7 @@
 #include "AliMUONTracker.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONVTrackReconstructor.h"
+#include "AliMUONCDB.h"
 
 #include "AliMpExMapIterator.h"
 #include "AliMpVSegmentation.h"
@@ -433,22 +434,25 @@ TIterator* AliMUONESDInterface::CreateLocalTriggerIterator() const
 void AliMUONESDInterface::ResetTracker(const AliMUONRecoParam* recoParam, Bool_t info)
 {
   /// Reset the MUON tracker using "recoParam" if provided.
-  /// If not provided, will use Kalman filter + Smoother
+  /// If not provided, will get them from OCDB.
+  /// Load the magnetic field from OCDB if not already set.
   
   delete fgTracker;
   delete fgRecoParam;
   
   if (recoParam) {
     
+    // use provided recoParam
     fgRecoParam = new AliMUONRecoParam(*recoParam);
     
-    if (info) cout<<"I-AliMUONESDInterface::ResetTracker: will refit tracks with provided RecoParam:"<<endl;
+    if (info) AliInfoClass("will refit tracks with provided RecoParam:");
     
   } else {
     
-    fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
+    // or get them from OCDB
+    fgRecoParam = AliMUONCDB::LoadRecoParam();
     
-    cout<<"W-AliMUONESDInterface::ResetTracker: RecoParam not provided. Will use default LowFlux parametrization:"<<endl;
+    if (!fgRecoParam) AliFatalClass("RecoParam have not been set!");
     
   }
   
@@ -461,8 +465,9 @@ void AliMUONESDInterface::ResetTracker(const AliMUONRecoParam* recoParam, Bool_t
     <<fgRecoParam->GetBendingVertexDispersion()<<" cm"<<endl;
   }
   
-  if (!TGeoGlobalMagField::Instance()->GetField())
-    cout<<"W-AliMUONESDInterface::ResetTracker: Magnetic field has not been set --> assume field is OFF"<<endl;
+  // load magnetic field for track extrapolation if not already set
+  if (!TGeoGlobalMagField::Instance()->GetField() && !AliMUONCDB::LoadField())
+    AliFatalClass("Magnetic field has not been set!");
   
   fgTracker = AliMUONTracker::CreateTrackReconstructor(fgRecoParam,0x0);
   
@@ -474,7 +479,7 @@ AliMUONVTrackStore* AliMUONESDInterface::NewTrackStore()
   /// Create an empty track store of type fgTrackStoreName
   TClass* classPtr = TClass::GetClass(fgTrackStoreName);
   if (!classPtr || !classPtr->InheritsFrom("AliMUONVTrackStore")) {
-    cout<<"E-AliMUONESDInterface::NewTrackStore: Unable to create store of type "<<fgTrackStoreName.Data()<<endl;
+    AliErrorClass(Form("Unable to create store of type %s", fgTrackStoreName.Data()));
     return 0x0;
   }
   return reinterpret_cast<AliMUONVTrackStore*>(gROOT->ProcessLineFast(Form("new %s()",fgTrackStoreName.Data())));
@@ -486,7 +491,7 @@ AliMUONVClusterStore* AliMUONESDInterface::NewClusterStore()
   /// Create an empty cluster store of type fgClusterStoreName
   TClass* classPtr = TClass::GetClass(fgClusterStoreName);
   if (!classPtr || !classPtr->InheritsFrom("AliMUONVClusterStore")) {
-    cout<<"E-AliMUONESDInterface::NewClusterStore: Unable to create store of type "<<fgClusterStoreName.Data()<<endl;
+    AliErrorClass(Form("Unable to create store of type %s", fgClusterStoreName.Data()));
     return 0x0;
   }
   return reinterpret_cast<AliMUONVClusterStore*>(gROOT->ProcessLineFast(Form("new %s()",fgClusterStoreName.Data())));
@@ -498,7 +503,7 @@ AliMUONVCluster* AliMUONESDInterface::NewCluster()
   /// Create an empty cluster of type associated to the cluster store of type fgClusterStoreName
   TClass* classPtr = TClass::GetClass(fgClusterStoreName);
   if (!classPtr || !classPtr->InheritsFrom("AliMUONVClusterStore")) {
-    cout<<"E-AliMUONESDInterface::NewCluster: Unable to create store of type "<<fgClusterStoreName.Data()<<endl;
+    AliErrorClass(Form("Unable to create store of type %s", fgClusterStoreName.Data()));
     return 0x0;
   }
   AliMUONVClusterStore* cStore = reinterpret_cast<AliMUONVClusterStore*>(classPtr->New());
@@ -513,7 +518,7 @@ AliMUONVDigitStore* AliMUONESDInterface::NewDigitStore()
   /// Create an empty digit store of type fgDigitStoreName
   TClass* classPtr = TClass::GetClass(fgDigitStoreName);
   if (!classPtr || !classPtr->InheritsFrom("AliMUONVDigitStore")) {
-    cout<<"E-AliMUONESDInterface::NewDigitStore: Unable to create store of type "<<fgDigitStoreName.Data()<<endl;
+    AliErrorClass(Form("Unable to create store of type %s", fgDigitStoreName.Data()));
     return 0x0;
   }
   return reinterpret_cast<AliMUONVDigitStore*>(gROOT->ProcessLineFast(Form("new %s()",fgDigitStoreName.Data())));
@@ -525,7 +530,7 @@ AliMUONVDigit* AliMUONESDInterface::NewDigit()
   /// Create an empty digit of type associated to the digit store of type fgDigitStoreName
   TClass* classPtr = TClass::GetClass(fgDigitStoreName);
   if (!classPtr || !classPtr->InheritsFrom("AliMUONVDigitStore")) {
-    cout<<"E-AliMUONESDInterface::NewDigitStore: Unable to create store of type "<<fgDigitStoreName.Data()<<endl;
+    AliErrorClass(Form("Unable to create store of type %s", fgDigitStoreName.Data()));
     return 0x0;
   }
   AliMUONVDigitStore* dStore = reinterpret_cast<AliMUONVDigitStore*>(classPtr->New());
@@ -540,7 +545,7 @@ AliMUONVTriggerStore* AliMUONESDInterface::NewTriggerStore()
   /// Create an empty trigger store of type fgTriggerStoreName
   TClass* classPtr = TClass::GetClass(fgTriggerStoreName);
   if (!classPtr || !classPtr->InheritsFrom("AliMUONVTriggerStore")) {
-    cout<<"E-AliMUONESDInterface::NewTriggerStore: Unable to create store of type "<<fgTriggerStoreName.Data()<<endl;
+    AliErrorClass(Form("Unable to create store of type %s", fgTriggerStoreName.Data()));
     return 0x0;
   }
   return reinterpret_cast<AliMUONVTriggerStore*>(gROOT->ProcessLineFast(Form("new %s()",fgTriggerStoreName.Data())));
@@ -552,7 +557,7 @@ AliMUONVTriggerTrackStore* AliMUONESDInterface::NewTriggerTrackStore()
   /// Create an empty trigger track store of type fgTriggerTrackStoreName
   TClass* classPtr = TClass::GetClass(fgTriggerTrackStoreName);
   if (!classPtr || !classPtr->InheritsFrom("AliMUONVTriggerTrackStore")) {
-    cout<<"E-AliMUONESDInterface::NewTriggerTrackStore: Unable to create store of type "<<fgTriggerTrackStoreName.Data()<<endl;
+    AliErrorClass(Form("Unable to create store of type %s", fgTriggerTrackStoreName.Data()));
     return 0x0;
   }
   return reinterpret_cast<AliMUONVTriggerTrackStore*>(gROOT->ProcessLineFast(Form("new %s()",fgTriggerTrackStoreName.Data())));
@@ -747,7 +752,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONTrac
       AliESDMuonCluster *esdCluster = esdTrack.GetESDEvent()->FindMuonCluster(esdTrack.GetClusterId(i));
       if (esdCluster) clusterFound = kTRUE;
       else {
-	cout<<"E-AliMUONESDInterface::ESDToMUON: a cluster is missing in ESD"<<endl;
+	AliErrorClass("a cluster is missing in ESD");
 	continue;
       }
       
@@ -857,11 +862,10 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonCluster& esdCluster, AliMUON
 void AliMUONESDInterface::ESDToMUON(const AliESDMuonPad& esdPad, AliMUONVDigit& digit)
 {
   /// Transfert data from ESDMuon pad to MUON digit
+  /// Load mapping from OCDB if not already set
   
-  if (!AliMpSegmentation::Instance(kFALSE)) {
-    cout<<"E-AliMUONESDInterface::ESDToMUON: need mapping segmentation to convert ESD pad to MUON digit"<<endl;
-    return;
-  }
+  if (!AliMpSegmentation::Instance(kFALSE) && !AliMUONCDB::LoadMapping(kTRUE))
+    AliFatalClass("mapping segmentation has not been set!");
   
   const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(esdPad.GetDetElemId(), esdPad.GetManuId());  
   AliMpPad pad = seg->PadByLocation(esdPad.GetManuId(), esdPad.GetManuChannel(), kFALSE);
@@ -1049,7 +1053,7 @@ void AliMUONESDInterface::MUONToESD(const AliMUONVCluster& cluster, AliESDEvent&
     for (Int_t i=0; i<cluster.GetNDigits(); i++) {
       AliMUONVDigit* digit = digits->FindObject(cluster.GetDigitId(i));
       if (!digit) {
-	cout<<"E-AliMUONESDInterface::MUONToESD: digit "<<cluster.GetDigitId(i)<<" not found"<<endl;
+	AliErrorClass(Form("digit %u not found", cluster.GetDigitId(i)));
 	continue;
       }
       MUONToESD(*digit, esd);
