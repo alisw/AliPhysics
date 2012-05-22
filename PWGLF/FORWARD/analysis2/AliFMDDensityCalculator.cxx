@@ -51,7 +51,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
   // 
   // Constructor 
   //
-   
+  DGUARD(fDebug, 0, "Default CTOR of FMD density calculator");
 }
 
 //____________________________________________________________________
@@ -85,6 +85,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   // Parameters:
   //    name Name of object
   //
+  DGUARD(fDebug, 0, "Named CTOR of FMD density calculator: %s", title);
   fRingHistos.SetName(GetName());
   fRingHistos.SetOwner();
   fRingHistos.Add(new RingHistos(1, 'I'));
@@ -151,6 +152,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
   // Parameters:
   //    o Object to copy from 
   //
+  DGUARD(fDebug, 0, "Copy CTOR of FMD density calculator");
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -162,6 +164,7 @@ AliFMDDensityCalculator::~AliFMDDensityCalculator()
   // 
   // Destructor 
   //
+  DGUARD(fDebug, 3, "DTOR of FMD density calculator");
   fRingHistos.Delete();
 }
 
@@ -178,6 +181,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   // Return:
   //    Reference to this object
   //
+  DGUARD(fDebug, 3, "Assignment of FMD density calculator");
   if (&o == this) return *this; 
   TNamed::operator=(o);
 
@@ -215,6 +219,7 @@ AliFMDDensityCalculator::Init(const TAxis& axis)
   //
   // Parameters:
   //   etaAxis   Not used
+  DGUARD(fDebug, 1, "Initialize FMD density calculator");
   CacheMaxWeights();
 
   TIter    next(&fRingHistos);
@@ -306,8 +311,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
   // 
   // Return:
   //    true on successs 
-
-  
+  DGUARD(fDebug, 1, "Calculate density in FMD density calculator");
   
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
@@ -431,6 +435,7 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
   //    r     Ring 
   //    iEta  Eta bin 
   //
+  DGUARD(fDebug, 3, "Find maximum weight in FMD density calculator");
   AliFMDCorrELossFit::ELossFit* fit = cor->GetFit(d,r,iEta);
   if (!fit) { 
     // AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
@@ -446,6 +451,7 @@ AliFMDDensityCalculator::CacheMaxWeights()
   // 
   // Find the max weights and cache them 
   // 
+  DGUARD(fDebug, 2, "Cache maximum weights in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*           cor = fcm.GetELossFit();
   const TAxis&                  eta = cor->GetEtaAxis();
@@ -583,6 +589,7 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
   //    The number of particles 
   //
   // if (mult <= GetMultCut()) return 0;
+  DGUARD(fDebug, 3, "Calculate Nch in FMD density calculator");
   if (lowFlux) return 1;
   
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
@@ -640,6 +647,7 @@ AliFMDDensityCalculator::Correction(UShort_t d,
   // Return:
   //    
   //
+  DGUARD(fDebug, 3, "Apply correction in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
 
   Float_t correction = 1; 
@@ -674,6 +682,7 @@ AliFMDDensityCalculator::GenerateAcceptanceCorrection(Char_t r) const
   // Return:
   //    Newly allocated histogram of acceptance corrections
   //
+  DGUARD(fDebug, 3, "Make acceptance correction in FMD density calculator");
   const Double_t ic1[] = { 4.9895, 15.3560 };
   const Double_t ic2[] = { 1.8007, 17.2000 };
   const Double_t oc1[] = { 4.2231, 26.6638 };
@@ -768,6 +777,7 @@ AliFMDDensityCalculator::ScaleHistograms(const TList* dir, Int_t nEvents)
   //    dir     where to put the output
   //    nEvents Number of events 
   //
+  DGUARD(fDebug, 1, "Scale histograms in FMD density calculator");
   if (nEvents <= 0) return;
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
@@ -798,6 +808,7 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   // Parameters:
   //    dir List to write in
   //  
+  DGUARD(fDebug, 1, "Define output FMD density calculator");
   TList* d = new TList;
   d->SetOwner();
   d->SetName(GetName());

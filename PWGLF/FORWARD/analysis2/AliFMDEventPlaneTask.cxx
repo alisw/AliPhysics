@@ -41,6 +41,7 @@ AliFMDEventPlaneTask::AliFMDEventPlaneTask()
   // 
   // Default constructor
   //
+  DGUARD(fDebug,0,"Default CTOR of AliFMDEventPlaneTask");
 }
 //_____________________________________________________________________
 AliFMDEventPlaneTask::AliFMDEventPlaneTask(const char* name) 
@@ -63,6 +64,7 @@ AliFMDEventPlaneTask::AliFMDEventPlaneTask(const char* name)
   // Parameters:
   //  name: Name of task
   //
+  DGUARD(fDebug,0,"Named CTOR of AliFMDEventPlaneTask: %s", name);
 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -88,6 +90,7 @@ AliFMDEventPlaneTask::AliFMDEventPlaneTask(const AliFMDEventPlaneTask& o)
   // Parameters:
   //    o Object to copy from 
   //
+  DGUARD(fDebug,0,"Copy CTOR of AliFMDEventPlaneTask");
 }
 //_____________________________________________________________________
 AliFMDEventPlaneTask&
@@ -96,6 +99,7 @@ AliFMDEventPlaneTask::operator=(const AliFMDEventPlaneTask& o)
   // 
   // Assignment operator 
   //
+  DGUARD(fDebug,3,"Assignment of AliFMDEventPlaneTask");
   if (&o == this) return *this;
   fSumList           = o.fSumList;
   fOutputList        = o.fOutputList;
@@ -116,6 +120,7 @@ void AliFMDEventPlaneTask::UserCreateOutputObjects()
   //
   // Create output objects
   //
+  DGUARD(fDebug,1,"Create user objects of AliFMDEventPlaneTask");
   if (!fSumList)
     fSumList = new TList();
   fSumList->SetName("Sums");
@@ -147,6 +152,7 @@ void AliFMDEventPlaneTask::UserExec(Option_t */*option*/)
   // Parameters:
   //  option: Not used
   //
+  DGUARD(fDebug,1,"Process an event in AliFMDEventPlaneTask");
 
   // Reset data members
   fCent = -1;
@@ -181,6 +187,7 @@ void AliFMDEventPlaneTask::Terminate(Option_t */*option*/)
   // Parameters:
   //  option: Not used
   //
+  DGUARD(fDebug,1,"Process merged output of AliFMDEventPlaneTask");
 
   // Reinitiate lists if Terminate is called separately!
   fSumList = dynamic_cast<TList*> (GetOutputData(1));
@@ -208,6 +215,7 @@ Bool_t AliFMDEventPlaneTask::AODCheck(const AliAODForwardMult* aodfm)
   // Parameters: 
   //  AliAODForwardMult: forward mult object with trigger and vertex info
   //
+  DGUARD(fDebug,2,"Check AOD in AliFMDEventPlaneTask");
 
   if (!aodfm->IsTriggerBits(AliAODForwardMult::kOffline)) return kFALSE;
 

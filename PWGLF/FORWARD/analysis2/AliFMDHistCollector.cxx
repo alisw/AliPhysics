@@ -47,7 +47,9 @@ AliFMDHistCollector::AliFMDHistCollector()
     fFiducialMethod(kByCut),
     fSkipFMDRings(0),
     fBgAndHitMaps(false)
-{}
+{
+  DGUARD(fDebug, 0, "Default CTOR of AliFMDHistCollector");
+}
 
 //____________________________________________________________________
 AliFMDHistCollector::AliFMDHistCollector(const char* title)
@@ -65,6 +67,7 @@ AliFMDHistCollector::AliFMDHistCollector(const char* title)
     fSkipFMDRings(0),
     fBgAndHitMaps(false)
 {
+  DGUARD(fDebug, 0, "Named CTOR of AliFMDHistCollector: %s", title);
 }
 //____________________________________________________________________
 AliFMDHistCollector::AliFMDHistCollector(const AliFMDHistCollector& o)
@@ -81,11 +84,14 @@ AliFMDHistCollector::AliFMDHistCollector(const AliFMDHistCollector& o)
     fFiducialMethod(o.fFiducialMethod),
     fSkipFMDRings(o.fSkipFMDRings),
     fBgAndHitMaps(o.fBgAndHitMaps)
-{}
+{
+  DGUARD(fDebug, 0, "Copy CTOR of AliFMDHistCollector");
+}
 
 //____________________________________________________________________
 AliFMDHistCollector::~AliFMDHistCollector()
 { 
+  DGUARD(fDebug, 3, "DTOR of AliFMDHistCollector");
   if (fList) delete fList;
 }
 //____________________________________________________________________
@@ -101,6 +107,7 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
   // Return:
   //    Reference to this object
   //
+  DGUARD(fDebug, 3, "Assignment of AliFMDHistCollector");
   if (&o == this) return *this; 
   TNamed::operator=(o);
 
@@ -131,6 +138,7 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
   // Parameters:
   //    vtxAxis  Vertex axis 
   //  
+  DGUARD(fDebug, 1, "Initialization of AliFMDHistCollector");
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
@@ -283,6 +291,7 @@ AliFMDHistCollector::DefineOutput(TList* dir)
   // Parameters:
   //    dir List to write in
   //  
+  DGUARD(fDebug, 1, "Define output of AliFMDHistCollector");
   fList = new TList;
   fList->SetOwner();
   fList->SetName(GetName());
@@ -570,6 +579,7 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
   // Return:
   //    true on successs 
   //
+  DGUARD(fDebug, 1, "Collect final histogram of AliFMDHistCollector");
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   const TAxis* vtxAxis = fcm.GetVertexAxis();
   Double_t vMin    = vtxAxis->GetBinLowEdge(vtxbin);
@@ -666,7 +676,8 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
       // Remove temporary histogram 
       if(fBgAndHitMaps) {
 	TH2D* hRingSumVtx 
-	  = static_cast<TH2D*>(vtxList->FindObject(Form("hitMapFMD%d%c", d, r)));
+	  = static_cast<TH2D*>(vtxList->FindObject(Form("hitMapFMD%d%c", 
+							d, r)));
 	hRingSumVtx->Add(t);
       }
       delete t;

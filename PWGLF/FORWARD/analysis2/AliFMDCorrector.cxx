@@ -35,6 +35,7 @@ AliFMDCorrector::AliFMDCorrector()
     fDebug(0)
 {
   // Constructor
+  DGUARD(fDebug, 0, "Default CTOR of AliFMDCorrector");
 }
 
 //____________________________________________________________________
@@ -51,6 +52,7 @@ AliFMDCorrector::AliFMDCorrector(const char* title)
   // 
   // Parameters: 
   //   title   Title
+  DGUARD(fDebug, 0, "Named CTOR of AliFMDCorrector: %s", title);
   fRingHistos.SetName(GetName());
   fRingHistos.Add(new RingHistos(1, 'I'));
   fRingHistos.Add(new RingHistos(2, 'I'));
@@ -73,6 +75,7 @@ AliFMDCorrector::AliFMDCorrector(const AliFMDCorrector& o)
   // 
   // Parameters: 
   //  o  Object to copy from 
+  DGUARD(fDebug, 0, "Copy CTOR of AliFMDCorrector");
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -84,6 +87,7 @@ AliFMDCorrector::~AliFMDCorrector()
   // Destructor 
   // 
   // 
+  DGUARD(fDebug, 3, "DTOR of AliFMDCorrector");
   fRingHistos.Delete();
 }
 
@@ -95,6 +99,7 @@ AliFMDCorrector::operator=(const AliFMDCorrector& o)
   // 
   // Parameters:
   //   o   Object to assign from 
+  DGUARD(fDebug, 3, "Assignment of AliFMDCorrector");
   if (&o == this) return *this; 
   TNamed::operator=(o);
 
@@ -121,6 +126,7 @@ AliFMDCorrector::Init(const TAxis&)
   // Parameters:
   //    etaAxis Eta axis to use
   //
+  DGUARD(fDebug, 1, "Initialization of AliFMDCorrector");
   if (!fUseSecondaryMap)
     AliWarning("Secondary maps not used - BE CAREFUL");
   if (!fUseVertexBias)
@@ -167,6 +173,7 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
   // Return:
   //    true on successs 
   //
+  DGUARD(fDebug, 1, "Correct histograms of AliFMDCorrector");
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
   UShort_t uvb = vtxbin;
@@ -299,6 +306,7 @@ AliFMDCorrector::ScaleHistograms(const TList* dir, Int_t nEvents)
   //    dir     Where the output is stored
   //    nEvents Number of events 
   //
+  DGUARD(fDebug, 1, "Scale histograms of AliFMDCorrector");
   if (nEvents <= 0) return;
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
@@ -329,6 +337,7 @@ AliFMDCorrector::DefineOutput(TList* dir)
   // Parameters:
   //    dir List to write in
   //  
+  DGUARD(fDebug, 1, "Define output of AliFMDCorrector");
   TList* d = new TList;
   d->SetName(GetName());
   dir->Add(d);

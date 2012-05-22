@@ -20,6 +20,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask()
   //
   // Constructor 
   // 
+  DGUARD(fDebug, 0, "Default CTOR of AliForwarddNdetaTask");
 }
 
 //____________________________________________________________________
@@ -32,6 +33,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
   // Paramters
   //   name    Name of task 
   SetTitle("FMD");
+  DGUARD(fDebug, 0, "Named CTOR of AliForwarddNdetaTask");
 }
 
 //____________________________________________________________________
@@ -41,6 +43,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const AliForwarddNdetaTask& o)
   // 
   // Copy constructor
   // 
+  DGUARD(fDebug, 0, "Copy CTOR of AliForwarddNdetaTask");
 }
 
 //____________________________________________________________________
@@ -59,6 +62,8 @@ AliForwarddNdetaTask::MakeCentralityBin(const char* name, Short_t l, Short_t h)
   // Return:
   //    Newly allocated object (of our type)
   //
+  DGUARD(fDebug, 3,"Make a centrality bin for AliForwarddNdetaTask: %s [%d,%d]",
+	 name, l, h);
   return new AliForwarddNdetaTask::CentralityBin(name, l, h);
 }
 
@@ -108,13 +113,14 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					 TList*      mclist,
 					 TList*      truthlist )
 {
-  AliInfo(Form("In End of %s with corrEmpty=%d, cutEdges=%d, rootProj=%d", 
-	       GetName(), corrEmpty, cutEdges, rootProj));
+  DGUARD(fDebug, 1, "In End of %s with corrEmpty=%d, cutEdges=%d, rootProj=%d", 
+	 GetName(), corrEmpty, cutEdges, rootProj);
   AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, 
 					shapeCorr, trigEff, 
 					symmetrice, rebin, 
 					rootProj, corrEmpty, cutEdges,
-					triggerMask, marker, color, mclist, truthlist);
+					triggerMask, marker, color, mclist, 
+					truthlist);
 
   if (!IsAllBin()) return;
   TFile* file = TFile::Open("forward.root", "READ");
