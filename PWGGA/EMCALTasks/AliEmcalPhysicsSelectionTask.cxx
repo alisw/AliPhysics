@@ -102,17 +102,6 @@ void AliEmcalPhysicsSelectionTask::UserExec(const Option_t *opt)
     fHAcc->Fill(0);
   }
 
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  am->LoadBranch("AliESDHeader.");
-  AliVHeader *header = InputEvent()->GetHeader();
-  TString title(header->GetTitle());
-  if (title.Length()>0) {
-    UInt_t offline = header->GetUniqueID();
-    if (offline!=res) {
-      AliWarning(Form("Stored offline trigger not equal computed: %ud %ud", offline, res));
-    }
-  }
-
   AliEmcalPhysicsSelection *ps=static_cast<AliEmcalPhysicsSelection *>(fPhysicsSelection);
   fHEvtTypes->Fill(0);
   if (res&AliVEvent::kAnyINT)
