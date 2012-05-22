@@ -465,9 +465,6 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
       fHistTrackEta[label]->Fill(track->Eta());
       fHistTrackPhi[label]->Fill(track->Phi());
     }
-    else {
-      AliWarning(Form("Track label %d not recognized!",label));
-    }
   }
   
   return sum;
