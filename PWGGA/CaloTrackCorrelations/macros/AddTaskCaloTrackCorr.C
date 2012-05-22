@@ -131,11 +131,18 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   // Photon analysis
   
   maker->AddAnalysis(ConfigurePhotonAnalysis(), n++); // Photon cluster selection
+
+  // Invariant mass analysis Put here to tag selected photons as decay
+  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, invariant mass and photon tagging from decay    
+  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta", AliAnaPi0EbE::kIMCalo), n++); // Eta event by event selection, invariant mass and photon tagging from decay
+  
+  // Photon analysis
   maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType), n++); // Photon isolation   
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kFALSE), n++); // Gamma hadron correlation
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kTRUE) , n++); // Isolated gamma hadron correlation
   //maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType,kTRUE), n++); // Photon multi isolation, leave it the last   
 
+  
   // Split cluster analysis
   if(kCalorimeter == "EMCAL")
   {
@@ -148,9 +155,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   }
   
   // Invariant mass analysis
-  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, invariant mass and photon tagging from decay    
   maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0SideBand", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, and photon tagging from decay    
-  maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta", AliAnaPi0EbE::kIMCalo), n++); // Eta event by event selection, invariant mass and photon tagging from decay
   maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0", partInCone,thresType), n++);         // Pi0 isolation, invariant mass   
   maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SideBand", partInCone,thresType), n++); // Pi0 isolation, side band   
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kFALSE), n++); // Pi0 hadron correlation
@@ -198,11 +203,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   if(kPrint) maker->Print("");
   
   printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, kCalorimeter.Data());
-  // CAREFUL
-  //kName = Form("%s_Trig%s_Cl%s_TM%d",kCalorimeter.Data(), kTrig.Data(),kClusterArray.Data(),kFALSE);
-  kName = Form("%s_Trig%s_Cl%s",kCalorimeter.Data(), kTrig.Data(),kClusterArray.Data());
-  if(kCollisions=="PbPb" && kMaxCen>=0) kName+=Form("Cen%d_%d",kMinCen,kMaxCen);
-
+ 
   // Create task
   
   AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("CaloTrackCorr%s",kName.Data()));

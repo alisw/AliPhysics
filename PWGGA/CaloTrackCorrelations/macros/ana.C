@@ -208,8 +208,11 @@ void ana(Int_t mode=mGRID)
   //-------------------------------------------------------------------------
   
   // Physics selection
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
-  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kMC); 
+  if(kInputData=="ESD")
+  {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kMC); 
+  }
   
   // Centrality
   if(kCollision=="PbPb")
@@ -288,6 +291,7 @@ void ana(Int_t mode=mGRID)
     Bool_t  reTM      = kFALSE; // Recalculate matches if not already done in clusterizer
     Bool_t  anTM      = kTRUE;  // Remove matched
     Bool_t  exo       = kTRUE;  // Remove exotic cells
+    Bool_t  clnonlin  = kTRUE;  // Apply non linearity (clusterization)
     Bool_t  annonlin  = kFALSE; // Apply non linearity (analysis)
     Int_t   minEcell  = 50;     // 50  MeV (10 MeV used in reconstruction)
     Int_t   minEseed  = 100;    // 100 MeV
@@ -318,7 +322,7 @@ void ana(Int_t mode=mGRID)
     
     AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(arrayNameV1,outAOD,kMC,exo,"V1",clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
-                                                                   calibEE,badMap,calibTT,annonlin);    
+                                                                   calibEE,badMap,calibTT,clnonlin);    
     
     printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
     
@@ -340,7 +344,7 @@ void ana(Int_t mode=mGRID)
     TString arrayNameV2 = "";
     AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(arrayNameV2,outAOD,kMC,exo,"V2",clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,
-                                                                   calibEE,badMap,calibTT,annonlin);    
+                                                                   calibEE,badMap,calibTT,clnonlin);    
     
     printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
     
@@ -370,6 +374,7 @@ void ana(Int_t mode=mGRID)
     Bool_t  reTM      = kFALSE; // Recalculate matches if not already done in clusterizer
     Bool_t  anTM      = kTRUE;  // Remove matched
     Bool_t  exo       = kTRUE;  // Remove exotic cells
+    Bool_t  clnonlin  = kTRUE;  // Apply non linearity (clusterization)
     Bool_t  annonlin  = kFALSE; // Apply non linearity (analysis)
     Int_t   minEcell  = 150;    // 50  MeV (10 MeV used in reconstruction)
     Int_t   minEseed  = 300;    // 100 MeV
@@ -398,7 +403,7 @@ void ana(Int_t mode=mGRID)
     TString arrayNameV1 = "";
     AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(arrayNameV1,outAOD,kMC,exo,"V1",clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
-                                                                   calibEE,badMap,calibTT,annonlin);    
+                                                                   calibEE,badMap,calibTT,clnonlin);    
     
     printf("Name of clusterizer1 array: %s\n",arrayNameV1.Data());
     
@@ -420,7 +425,7 @@ void ana(Int_t mode=mGRID)
     TString arrayNameV2 = "";
     AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(arrayNameV2,outAOD,kMC,exo,"V2",clTrigger, clTM,
                                                                    minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
-                                                                   calibEE,badMap,calibTT,annonlin);        
+                                                                   calibEE,badMap,calibTT,clnonlin);        
     
     printf("Name of clusterizer2 array: %s\n",arrayNameV2.Data());
     
@@ -994,48 +999,6 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
   
 }
 
-//_________________________________________________________________
-void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
-{
-  // Read the PYTHIA statistics from the file pyxsec.root created by
-  // the function WriteXsection():
-  // integrated cross section (xsection) and
-  // the  number of Pyevent() calls (ntrials)
-  // and calculate the weight per one event xsection/ntrials
-  // The spectrum calculated by a user should be
-  // multiplied by this weight, something like this:
-  // TH1F *userSpectrum ... // book and fill the spectrum
-  // userSpectrum->Scale(weight)
-  //
-  // Yuri Kharlov 19 June 2007
-  // Gustavo Conesa 15 April 2008
-  Double_t xsection = 0;
-  UInt_t    ntrials = 0;
-  xs = 0;
-  ntr = 0;
-  
-  Int_t nfiles =  tree->GetEntries()  ;
-  if (tree && nfiles > 0) 
-  {
-    tree->SetBranchAddress("xsection",&xsection);
-    tree->SetBranchAddress("ntrials",&ntrials);
-    for(Int_t i = 0; i < nfiles; i++){
-      tree->GetEntry(i);
-      xs += xsection ;
-      ntr += ntrials ;
-      cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl; 
-    }
-    
-    xs =   xs /  nfiles;
-    ntr =  ntr / nfiles;
-    cout << "-----------------------------------------------------------------"<<endl;
-    cout << "Average of "<< nfiles<<" files: xsection " <<xs<<" ntrials "<<ntr<<endl; 
-    cout << "-----------------------------------------------------------------"<<endl;
-  } 
-  else cout << " >>>> Empty tree !!!! <<<<< "<<endl;
-  
-}
-
 //______________________________
 void CheckEnvironmentVariables()
 {
@@ -1147,6 +1110,4 @@ void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
   else cout << " >>>> Empty tree !!!! <<<<< "<<endl;
   
 }
-
-
 
