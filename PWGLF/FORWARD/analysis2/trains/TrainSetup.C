@@ -172,6 +172,10 @@ struct TrainSetup
     kFull
   };
 
+
+  //__________________________________________________________________
+  virtual ~TrainSetup() {}
+
   //__________________________________________________________________
   /** 
    * Constructor 
@@ -345,6 +349,8 @@ struct TrainSetup
    * @param v Version string of AliROOT 
    */
   void SetAliROOTVersion(const char* v) { fAliRootVersion = v; }
+
+  void SetAliEnAPIVersion(const char* v) { fAliEnAPIVersion = v; }
   //__________________________________________________________________
   /** 
    * Set the PROOF server URL
@@ -504,7 +510,8 @@ struct TrainSetup
     char* templ  = new char[ltempl];
     snprintf(templ, ltempl, "%s/trainXXXXXX", tmpdir.Data());
     if (!mkdtemp(templ)) {
-      Error("MakeScriptPAR", "Failed to generate temporary directory from template %s", 
+      Error("MakeScriptPAR", 
+	    "Failed to generate temporary directory from template %s", 
 	    templ);
       return false;
     }
@@ -544,52 +551,53 @@ struct TrainSetup
       }
       
       // Make our build file 
-      std::ofstream build(Form("%s/PROOF-INF/BUILD.sh", dir.Data()));
-      if (!build) 
-	throw TString::Format("Failed to open build shell script");
-      build << "#!/bin/sh\n"
-	    << "echo BUILD.sh@`hostname`: Building " << base << "\n"
-	    << "root.exe -l -b -q PROOF-INF/BUILD.C 2>&1 | tee " << base << ".log\n"
-	    << "echo BUILD.sh@`hostname`: done: $?\n"
-	    << std::endl;
-      build.close();
+      std::ofstream b(Form("%s/PROOF-INF/BUILD.sh", dir.Data()));
+      if (!b) 
+	throw TString::Format("Failed to open b shell script");
+      b << "#!/bin/sh\n"
+	<< "echo BUILD.sh@`hostname`: Building " << base << "\n"
+	<< "root.exe -l -b -q PROOF-INF/BUILD.C 2>&1 | tee " << base << ".log\n"
+	<< "echo BUILD.sh@`hostname`: done: $?\n"
+	<< std::endl;
+      b.close();
       if (gSystem->Chmod(Form("%s/PROOF-INF/BUILD.sh", dir.Data()), 0755) != 0)
 	throw TString::Format("Failed to set exectuable flags on "
 			      "%s/PROOF-INF/BUILD.sh", dir.Data());
       
-      std::ofstream util(Form("%s/PROOF-INF/UTIL.C", dir.Data()));
-      if (!util) 
+      std::ofstream u(Form("%s/PROOF-INF/UTIL.C", dir.Data()));
+      if (!u) 
 	throw TString::Format("Failed to open utility script");
-      util << "void LoadROOTLibs() {\n"
-	   << "  gSystem->Load(\"libVMC\");\n"
-	   << "  gSystem->Load(\"libNet\");\n"
-	   << "  gSystem->Load(\"libTree\");\n"
-	   << "  gSystem->Load(\"libPhysics\");\n"
-	   << "  gSystem->Load(\"libMinuit\");\n"
-	   << "}\n\n"
-	   << "void AddDep(const char* env) {\n"
-	   << "  TString val(gSystem->Getenv(Form(\"%s_INCLUDE\",env)));\n"
-	   << "  if (val.IsNull())\n"
-	   << "    Warning(\"Add\",\"%s_INCLUDE not defined\", env);\n"
-	   << "  else {\n"
-	   << "    gSystem->AddIncludePath(Form(\"-I../%s\",val.Data()));\n"
-	   << "  }\n"
-	   << "}\n\n"
-	   << "void LoadDep(const char* name) {\n"
-	   << "  gSystem->AddDynamicPath(Form(\"../%s\",name));\n"
-	   << "  char* full = gSystem->DynamicPathName(name,true);\n"
-	   << "  if (!full) \n"
-	   << "   full = gSystem->DynamicPathName(Form(\"lib%s\",name),true);\n"
-	   << "  if (!full) \n"
-	   << "   full = gSystem->DynamicPathName(Form(\"lib%s.so\",name),true);\n"
-	   << "  if (!full) {\n"
-	   << "    Warning(\"LoadDep\",\"Module %s not found\", name);\n"
-	   << "    return;\n"
-	   << "  }\n"
-	   << "  gSystem->Load(full);\n"
-	   << "}\n"
-	   << std::endl;
-	          
+      u << "void LoadROOTLibs() {\n"
+	<< "  gSystem->Load(\"libVMC\");\n"
+	<< "  gSystem->Load(\"libNet\");\n"
+	<< "  gSystem->Load(\"libTree\");\n"
+	<< "  gSystem->Load(\"libPhysics\");\n"
+	<< "  gSystem->Load(\"libMinuit\");\n"
+	<< "}\n\n"
+	<< "void AddDep(const char* env) {\n"
+	<< "  TString val(gSystem->Getenv(Form(\"%s_INCLUDE\",env)));\n"
+	<< "  if (val.IsNull())\n"
+	<< "    Warning(\"Add\",\"%s_INCLUDE not defined\", env);\n"
+	<< "  else {\n"
+	<< "    gSystem->AddIncludePath(Form(\"-I../%s\",val.Data()));\n"
+	<< "  }\n"
+	<< "}\n\n"
+	<< "void LoadDep(const char* name) {\n"
+	<< "  gSystem->AddDynamicPath(Form(\"../%s\",name));\n"
+	<< "  char* full = gSystem->DynamicPathName(name,true);\n"
+	<< "  if (!full) \n"
+	<< "   full = gSystem->DynamicPathName(Form(\"lib%s\",name),true);\n"
+	<< "  if (!full) \n"
+	<< "   full = gSystem->DynamicPathName(Form(\"lib%s.so\",name),true);\n"
+	<< "  if (!full) {\n"
+	<< "    Warning(\"LoadDep\",\"Module %s not found\", name);\n"
+	<< "    return;\n"
+	<< "  }\n"
+	<< "  gSystem->Load(full);\n"
+	<< "}\n"
+	<< std::endl;
+      u.close();
+
       std::ofstream cbuild(Form("%s/PROOF-INF/BUILD.C", dir.Data()));
       if (!cbuild) 
 	throw TString::Format("Failed to open build script");
@@ -615,7 +623,7 @@ struct TrainSetup
       
       // Make our set-up script 
       std::ofstream setup(Form("%s/PROOF-INF/SETUP.C", dir.Data()));
-      if (!build) 
+      if (!setup) 
 	throw TString::Format("Failed to open setup script");
       setup << "void SETUP() {\n"
 	    << "  gROOT->LoadMacro(\"PROOF-INF/UTIL.C\");\n"
@@ -644,8 +652,9 @@ struct TrainSetup
       ret = gSystem->Exec(Form("mv -vf %s/%s.par %s.par", templ, base.Data(), 
 			       base.Data()));
       if (ret != 0) 
-	throw TString::Format("Failed to rename %s/%s.par to %s.par: %s", templ, base.Data(),
-			      base.Data(), gSystem->GetError());
+	throw TString::Format("Failed to rename %s/%s.par to %s.par: %s", 
+			      templ, base.Data(), base.Data(), 
+			      gSystem->GetError());
     }
     catch (TString& e) { 
       Error("MakeScriptPAR", "%s", e.Data()); 
@@ -712,16 +721,29 @@ struct TrainSetup
     
   }
   //__________________________________________________________________
-  Bool_t Init(EType  type, 
-	      EMode  mode, 
-	      EOper  oper,
-	      Bool_t mc=false, 
-	      bool   usePar=false, 
-	      Int_t  dbg=0)
+  /** 
+   * Initialize the job 
+   * 
+   * @param type   Type of job (ESD, AOD)
+   * @param mode   Where to do it (local, proof, grid)
+   * @param oper   What to do
+   * @param mc     If true, assume MC input
+   * @param usePar Whether to use PAR files 
+   * @param dbg    Debug flag 
+   * 
+   * @return true on success, false otherwise
+   */
+  Bool_t Init(EType   type, 
+	      EMode   mode, 
+	      EOper   oper,
+	      Bool_t  mc=false, 
+	      bool    usePar=false, 
+	      Int_t   dbg=0)
   {
     Info("Init", "Connecting in mode=%d", mode);
     if (!Connect(mode)) return false;
 
+    // --- Get current directory and set-up sub-directory ------------
     TString cwd = gSystem->WorkingDirectory();
     TString nam = EscapedName();
     Info("Init", "Current directory=%s, escaped name=%s", 
@@ -751,6 +773,7 @@ struct TrainSetup
     }
     Info("Init", "Made subdirectory %s, and cd'ed there", nam.Data());
       
+    // --- Load the common libraries ---------------------------------
     if (!LoadCommonLibraries(mode, usePar)) return false;
     
     // --- Create analysis manager -----------------------------------
@@ -813,6 +836,18 @@ struct TrainSetup
     return true;
   }
   //__________________________________________________________________
+  /** 
+   * Initialize the job 
+   * 
+   * @param type   Type of analysis (ESD, AOD)
+   * @param mode   Where to do the analysis (LOCAL, GRID, PROOF)
+   * @param oper   What to do 
+   * @param mc     If true, assume MC input
+   * @param usePar Whether to use PARs or not. 
+   * @param dbg    Debug flag 
+   * 
+   * @return true on success, false otherwise 
+   */
   Bool_t Init(const char*  type="ESD", 
 	      const char*  mode="LOCAL", 
 	      const char*  oper="FULL",
@@ -958,12 +993,14 @@ protected:
       return;
     }
 
-    AliAnalysisManager *mgr  = new AliAnalysisManager(fName,"Analysis Train");
+    // --- Get manager and execute -----------------------------------
+    AliAnalysisManager *mgr  =AliAnalysisManager::GetAnalysisManager();
     Long64_t ret = StartAnalysis(mgr, mode, chain, nEvents);
 
     // Make sure we go back 
     gSystem->ChangeDirectory(cwd.Data());
 
+    // Return. 
     if (ret < 0) Error("Exec", "Analysis failed");
   }
   //__________________________________________________________________
@@ -1011,7 +1048,6 @@ protected:
   /** 
    * Return the escaped name 
    * 
-   * 
    * @return Escaped name 
    */
   const TString& EscapedName() const 
@@ -1052,15 +1088,18 @@ protected:
     plugin->SetNtestFiles(1);
     
     // Set required version of software 
-    plugin->SetAPIVersion(fAliEnAPIVersion);
-    plugin->SetROOTVersion(fRootVersion);
-    plugin->SetAliROOTVersion(fAliRootVersion);
+    if (!fAliEnAPIVersion.IsNull()) plugin->SetAPIVersion(fAliEnAPIVersion);
+    if (!fRootVersion.IsNull())     plugin->SetROOTVersion(fRootVersion);
+    if (!fAliRootVersion.IsNull())  plugin->SetAliROOTVersion(fAliRootVersion);
 
     // Keep log files 
     plugin->SetKeepLogs();
 
     // Declare root of input data directory 
-    plugin->SetGridDataDir(fDataDir);
+    TString dataDir(fDataDir);
+    if (dataDir.BeginsWith("alien://")) 
+      dataDir.ReplaceAll("alien://", "");
+    plugin->SetGridDataDir(dataDir);
 
     // Data search patterns 
     TString pat;
@@ -1357,7 +1396,7 @@ protected:
     }
 
     // --- Open a connection to the grid -----------------------------
-#if 0
+#if 1
     TGrid::Connect("alien://");
     if (!gGrid || !gGrid->IsConnected()) { 
       // This is only fatal in grid mode 
@@ -1418,20 +1457,6 @@ protected:
       
     }
 
-#if 0
-    // We need to activate the workers here in case 
-    // we have dynamic slaves - otherwise they won't get
-    // the packages 
-    if (mode == kProof) { 
-      Info("LoadCommonLibraries", "Starting slaves");
-      if (!gProof->StartSlaves()) { 
-	Error("LoadCommonLibraries", "Failed to start slaves");
-	return false;
-      }
-      Info("LoadCommonLibraries", "Slaves started");
-    }
-#endif       
-      
     Bool_t ret   = true;
     Bool_t basic = mode == kGrid ? false : par;
     
@@ -1831,34 +1856,6 @@ protected:
   Bool_t  fAllowOverwrite;   // Allow overwriting output dir
   Bool_t  fUseGDB;           // Wrap PROOF slaves in GDB 
 };
-
-
-void
-BuildTrainSetup()
-{
-  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
-			   "$ALICE_ROOT/ANALYSIS/macros",
-			   gROOT->GetMacroPath()));
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
-  gSystem->Load("libRAliEn");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  TString path = gSystem->Which(gROOT->GetMacroPath(), "TrainSetup.C");
-  Info("BuildTrainSetup", "Path=%s", path.Data());
-  TString tmp("TrainSetup");
-  FILE* fp = gSystem->TempFileName(tmp, ".");
-  fclose(fp);
-  gSystem->Unlink(tmp);
-  tmp.Append(".C");
-  Info("BuildTrainSetup", "Copy %s -> %s", path.Data(), tmp.Data());
-  gSystem->CopyFile(path, tmp);
-  gROOT->LoadMacro(Form("%s+g", tmp.Data()));
-  gSystem->Unlink(tmp);
-  tmp.ReplaceAll(".C", "_C.so");
-  gSystem->Unlink(tmp);
-  tmp.ReplaceAll("_C.so", "_C.d");
-  gSystem->Unlink(tmp);
-}
 
   
 //____________________________________________________________________

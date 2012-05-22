@@ -22,6 +22,7 @@ ClassImp(AliCentraldNdetaTask)
 AliCentraldNdetaTask::AliCentraldNdetaTask(const char*)
   : AliBasedNdetaTask("Central") 
 { 
+  DGUARD(fDebug,0,"Named construction of AliCentraldNdetaTask");
   fSymmetrice = false; 
   fCorrEmpty  = false;
   SetTitle("Central");
@@ -32,6 +33,7 @@ TH2D*
 AliCentraldNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc) 
 {
   // Get objects from the event structure 
+  DGUARD(fDebug,2,"Get our histogram for AliCentraldNdetaTask");
   TObject* obj = 0;
   if (mc) obj = aod->FindListObject("CentralClustersMC");
   else    obj = aod->FindListObject("CentralClusters");

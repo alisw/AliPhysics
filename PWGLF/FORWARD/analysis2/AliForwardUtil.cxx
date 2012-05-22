@@ -17,6 +17,7 @@
 #include <TFitResult.h>
 #include <TMath.h>
 #include <TError.h>
+#include <TROOT.h>
 
 //====================================================================
 UShort_t
@@ -924,6 +925,41 @@ AliForwardUtil::RingHistos::GetOutputHist(const TList* d, const char* name) cons
   //
   return static_cast<TH1*>(d->FindObject(name));
 }
+
+//====================================================================
+AliForwardUtil::DebugGuard::DebugGuard(Int_t lvl, Int_t msgLvl, 
+				       const char* format, ...)
+  : fMsg("")
+{
+  if (lvl < msgLvl) return; 
+  va_list ap;
+  va_start(ap, format);
+  static char buf[512];
+  Int_t n = gROOT->GetDirLevel() + 1;
+  for (Int_t i = 0; i < n; i++) buf[i] = ' ';
+  vsnprintf(&(buf[n]), 511-n, format, ap);
+  buf[511] = '\0';
+  fMsg = buf;
+  va_end(ap);
+  Format(true);
+}
+//____________________________________________________________________
+AliForwardUtil::DebugGuard::~DebugGuard()
+{
+  if (fMsg.IsNull()) return;
+  Format(false);
+}
+//____________________________________________________________________
+void
+AliForwardUtil::DebugGuard::Format(bool in)
+{
+  fMsg[0] = in ? '>' : '<';
+  AliLog::Debug(0, fMsg, "PWGLF-forward", "", "", "", 0);
+  if (in) gROOT->IncreaseDirLevel();
+  else    gROOT->DecreaseDirLevel();
+}
+
+
 
 //
 // EOF

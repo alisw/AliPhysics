@@ -47,6 +47,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
   // 
   // Constructor
   //
+  DGUARD(0,0,"Default construction of AliForwardMultiplicityTask");
 }
 
 //____________________________________________________________________
@@ -72,6 +73,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
   // Parameters:
   //    name Name of task 
   //
+  DGUARD(0,0,"named construction of AliForwardMultiplicityTask: %s", name);
   DefineOutput(1, TList::Class());
 }
 
@@ -98,6 +100,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
   // Parameters:
   //    o Object to copy from 
   //
+  DGUARD(0,0,"Copy construction of AliForwardMultiplicityTask");
   DefineOutput(1, TList::Class());
 }
 
@@ -114,6 +117,7 @@ AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
   // Return:
   //    Reference to this object 
   //
+  DGUARD(fDebug,3,"Assignment to AliForwardMultiplicityTask");
   if (&o == this) return *this;
   AliForwardMultiplicityBase::operator=(o);
 
@@ -159,6 +163,7 @@ AliForwardMultiplicityTask::InitializeSubs()
   // Initialise the sub objects and stuff.  Called on first event 
   // 
   //
+  DGUARD(fDebug,1,"Initialize sub-algorithms");
   const TAxis* pe = 0;
   const TAxis* pv = 0;
 
@@ -208,6 +213,7 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
   // Create output objects 
   // 
   //
+  DGUARD(fDebug,1,"Create user ouput");
   fList = new TList;
   fList->SetOwner();
 
@@ -242,6 +248,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   //    option Not used
   //  
 
+  DGUARD(fDebug,1,"Process the input event");
   // static Int_t cnt = 0;
   // cnt++;
   // Get the input data 
@@ -334,6 +341,7 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
   // Parameters:
   //    option Not used 
   //
+  DGUARD(fDebug,1,"Processing the merged results");
 
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {

@@ -99,6 +99,7 @@ public:
    * @{ 
    * @name Task configuration 
    */
+  virtual void SetDebugLevel(Int_t level);
   /** 
    * Set the vertex range to use 
    * 
@@ -388,10 +389,11 @@ protected:
     TH2D* fSum;     // Sum of non-zero events
     TH2D* fSum0;    // Sum of zero events 
     TH1I* fEvents;  // Distribution of events 
+    Int_t fDebug;   // Debug level
     /** 
      * I/O Constructor - do not use
      */    
-    Sum() : fSum(0), fSum0(0), fEvents(0) {}
+    Sum() : fSum(0), fSum0(0), fEvents(0), fDebug(0) {}
     /** 
      * Constructor 
      * 
@@ -402,7 +404,8 @@ protected:
       : TNamed(name,postfix), 
 	fSum(0), 
 	fSum0(0), 
-	fEvents(0) 
+	fEvents(0), 
+	fDebug(0) 
     {}
     /** 
      * Copy constructor
@@ -413,7 +416,8 @@ protected:
       : TNamed(o), 
 	fSum(o.fSum), 
 	fSum0(o.fSum0), 
-	fEvents(o.fEvents) 
+	fEvents(o.fEvents), 
+	fDebug(o.fDebug) 
     {}
     /** 
      * Assignment operator 
@@ -741,6 +745,7 @@ protected:
     TH1* GetResult(Int_t rebin, Bool_t sym, 
 		   const char* postfix="") const;
 
+    void SetDebugLevel(Int_t lvl);
   protected:
     /** 
      * Create sum histogram 
@@ -771,8 +776,9 @@ protected:
     UShort_t fLow;       // Lower limit (inclusive)
     UShort_t fHigh;      // Upper limit (exclusive)
     Bool_t   fDoFinalMCCorrection; //Do final MC correction
-    
-    ClassDef(CentralityBin,1); // A centrality bin 
+    Int_t    fDebug;    // Debug level 
+
+    ClassDef(CentralityBin,2); // A centrality bin 
   };
   TList*          fSums;         // Container of sums 
   TList*          fOutput;       // Container of outputs 
