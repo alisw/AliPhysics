@@ -80,6 +80,8 @@ ClassImp(AliAnalysisTaskV0ForRAA)
        fHistMCVertexZ(0),
        fHistMuliplicity(0),
        fHistMuliplicityRaw(0),
+       fHistCentBinRaw(0),
+       fHistCentBin(0),
        fHistMultiplicityPrimary(0),
        fHistNPrim(0),
        //MC pdg code histos
@@ -144,7 +146,7 @@ ClassImp(AliAnalysisTaskV0ForRAA)
        fCtauPtCutK0(0),
        fCtauPtCutL(0),
        fChiCutKf(0)				       //  fShift(0),
-				       // fDeltaInvP(0)
+						   // fDeltaInvP(0)
 {  // Constructor.
 
    DefineOutput(1,TList::Class());
@@ -245,6 +247,7 @@ ClassImp(AliAnalysisTaskV0ForRAA)
       fHistPiPiRadiusXY[j]=NULL;
       fHistPiPiCosPointAng[j]=NULL;
       fHistPiPiDecayLengthVsPt[j]=NULL;
+      fHistPiPiDecayLengthVsMass[j]=NULL;
       fHistPiPiDCADaughterPosToPrimVtxVSMass[j]=NULL;
       // fHistPiPiMassVSPtK0L[j]=NULL;
       fHistPiPiDCADaughters[j]=NULL; 
@@ -261,6 +264,7 @@ ClassImp(AliAnalysisTaskV0ForRAA)
       fHistPiPRadiusXY[j]=NULL;
       fHistPiPCosPointAng[j]=NULL;
       fHistPiPDecayLengthVsPt[j]=NULL;
+      fHistPiPDecayLengthVsMass[j]=NULL;
       fHistPiPDCADaughterPosToPrimVtxVSMass[j]=NULL;
       fHistPiPMassVSPtSecSigma[j]=NULL;
       fHistPiPMassVSPtSecXi[j]=NULL;
@@ -281,6 +285,7 @@ ClassImp(AliAnalysisTaskV0ForRAA)
       fHistPiAPRadiusXY[j]=NULL;
       fHistPiAPCosPointAng[j]=NULL;
       fHistPiAPDecayLengthVsPt[j]=NULL;
+      fHistPiAPDecayLengthVsMass[j]=NULL;
       fHistPiAPDCADaughterPosToPrimVtxVSMass[j]=NULL;
       fHistPiAPMassVSPtSecSigma[j]=NULL;
       fHistPiAPMassVSPtSecXi[j]=NULL;
@@ -343,6 +348,8 @@ AliAnalysisTaskV0ForRAA::~AliAnalysisTaskV0ForRAA()
    if(fHistNPrim) delete fHistNPrim; fHistNPrim=0;
    if(fHistMuliplicity) delete fHistMuliplicity;fHistMuliplicity =0;
    if(fHistMuliplicityRaw) delete fHistMuliplicityRaw;fHistMuliplicityRaw =0;
+   if(fHistCentBinRaw) delete fHistCentBinRaw; fHistCentBinRaw=0;
+   if(fHistCentBin) delete fHistCentBin; fHistCentBin=0;
    if(fHistMultiplicityPrimary) delete fHistMultiplicityPrimary;fHistMultiplicityPrimary=0;
   
    if(fHistESDVertexZ) delete fHistESDVertexZ; fHistESDVertexZ=0;
@@ -476,457 +483,459 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 
    Int_t nbPt=800;
    Int_t nbMass=500;
-  
-   fHistITSLayerHits = new TH1F("fHistITSLayerHits","SDD layer -1=0,1=1,2=2 ... 5=5,0=nothing",7,-1.5,5.5);
-   fHistOneHitWithSDD = new TH1F("fHistOneHitWithSDD","min one hit in SDD",2,-0.5,1.5);
-   fHistNEvents = new TH1F("fHistNEvents","no of events before cuts =0, after cuts=1, after process =2",5,0.0,5.0);
-   fHistPrimVtxZESDVSNContributors = new TH2F("fHistPrimVtxZESDVSNContributors","prim vtx pos z ESD vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
-   fHistPrimVtxZESDTPCVSNContributors = new TH2F("fHistPrimVtxZESDTPCVSNContributors","prim vtx pos z TPC vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
-   fHistPrimVtxZESDSPDVSNContributors = new TH2F("fHistPrimVtxZESDSPDVSNContributors","prim vtx pos z SPD vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
+
    
-   fHistPrimVtxZESDVSNContributorsMC = new TH2F("fHistPrimVtxZESDVSNContributorsMC","prim vtx pos z ESD vs no. of contributers MC",250,-50,50,500,0.0,500.0);
-   fHistPrimVtxZESDTPCVSNContributorsMC = new TH2F("fHistPrimVtxZESDTPCVSNContributorsMC","prim vtx pos z TPC vs no. of contributers MC",250,-50,50,500,0.0,500.0);
-   fHistPrimVtxZESDSPDVSNContributorsMC = new TH2F("fHistPrimVtxZESDSPDVSNContributorsMC","prim vtx pos z SPD vs no. of contributers MC",250,-50,50,500,0.0,500.0);
+   //-----------------  create output container -----------------//
+
+   fOutputContainer = new TList() ;
+   fOutputContainer->SetName(GetName()) ;
+
+   Int_t mchist = 1;// for Data
+   if((fMCMode && fMCTruthMode) || fMCTruthMode) mchist = 2;
+	
+
+   //------------ create allways -----------------------//
+   fHistNEvents = new TH1F("fHistNEvents","no of events before cuts =0, after cuts=1, after process =2",5,0.0,5.0);
+   fOutputContainer->Add(fHistNEvents);
+      
+   fHistMuliplicity =  new TH1F("fHistMuliplicity","V0 multiplicity",3000,0.0,30000);
+   fOutputContainer->Add(fHistMuliplicity);
+      
+   fHistMuliplicityRaw =  new TH1F("fHistMuliplicityRaw","V0 multiplicity before process",3000,0.0,30000);      
+   fOutputContainer->Add(fHistMuliplicityRaw);
+      
+   fHistMultiplicityPrimary = new TH1F("fHistMultiplicityPrimary","number of charged tracks",5000,0.0,20000);
+   fOutputContainer->Add(fHistMultiplicityPrimary);
+      
+   fHistESDVertexZ= new TH1F("fHistESDVertexZ"," z vertex distr in cm",500,-50,50);
+   fOutputContainer->Add(fHistESDVertexZ);
    
    fHistPrimVtxZESD = new TH1F("fHistPrimVtxZESD","z vertex pos ESD",250,-50,50);
-   fHistPrimVtxZESDTPC = new TH1F("fHistPrimVtxZESDTPC","z vertex pos TPC",250,-50,50);
-   fHistPrimVtxZESDSPD = new TH1F("fHistPrimVtxZESDSPD","z vertex pos SPD",250,-50,50);
-  
-  
-   fHistMuliplicity =  new TH1F("fHistMuliplicity","V0 multiplicity",3000,0.0,30000);
-   fHistMuliplicityRaw =  new TH1F("fHistMuliplicityRaw","V0 multiplicity before process",3000,0.0,30000);
+   fOutputContainer->Add(fHistPrimVtxZESD);
+      
+   fHistPrimVtxZESDVSNContributors = new TH2F("fHistPrimVtxZESDVSNContributors","prim vtx pos z ESD vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
+   fOutputContainer->Add(fHistPrimVtxZESDVSNContributors);
+      
    fHistNPrim = new TH1F("fHistNPrim","Number of contributers to vertex",3000,0.0,30000);
-   fHistMultiplicityPrimary = new TH1F("fHistMultiplicityPrimary","number of charged tracks",5000,0.0,20000);
+   fOutputContainer->Add(fHistNPrim);
  
+   //------------------------ pp analysis only -------------------------//
+   if(fAnapp){
+      fHistITSLayerHits = new TH1F("fHistITSLayerHits","SDD layer -1=0,1=1,2=2 ... 5=5,0=nothing",7,-1.5,5.5);
+      fOutputContainer->Add(fHistITSLayerHits);
+      fHistOneHitWithSDD = new TH1F("fHistOneHitWithSDD","min one hit in SDD",2,-0.5,1.5);
+      fOutputContainer->Add(fHistOneHitWithSDD);
+      fHistPrimVtxZESDTPC = new TH1F("fHistPrimVtxZESDTPC","z vertex pos TPC",250,-50,50);
+      fOutputContainer->Add(fHistPrimVtxZESDTPCVSNContributors);
+      fHistPrimVtxZESDSPD = new TH1F("fHistPrimVtxZESDSPD","z vertex pos SPD",250,-50,50);
+      fOutputContainer->Add(fHistPrimVtxZESDSPDVSNContributors);
+      fHistPrimVtxZESDTPCVSNContributors = new TH2F("fHistPrimVtxZESDTPCVSNContributors","prim vtx pos z TPC vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
+      fOutputContainer->Add(fHistPrimVtxZESDTPC);
+      fHistPrimVtxZESDSPDVSNContributors = new TH2F("fHistPrimVtxZESDSPDVSNContributors","prim vtx pos z SPD vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
+      fOutputContainer->Add(fHistPrimVtxZESDSPD);  
+   }
+   else {
+      Double_t binsCent[12]={0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
+      fHistCentBinRaw = new TH1F("fHistCentBinRaw","centrality bin before cent selection",11,binsCent);
+      fOutputContainer->Add(fHistCentBinRaw);
+      fHistCentBin = new TH1F("fHistCentBin","centrality bin",11,binsCent);
+      fOutputContainer->Add(fHistCentBin);
+      
+   }
+   
+   // ------------------- add always ---------------------------//
    fHistV0RadiusZ[0]  = new TH2F("fHistV0RadiusZ","z of decay radius vs 2D radius",100,0.0,100.0,250,-125.0,125.0);
-   fHistV0RadiusZ[1]  = new TH2F("fHistV0RadiusZSec","z of decay radius vs 2D radius secondaries",100,0.0,100.0,250,-125.0,125.0);
-
    fHistV0RadiusZVSPt[0]  = new TH2F("fHistV0RadiusZVSPt","z of decay radius vs pt radius",200,0.0,20.0,125,0.0,125.0);
-   fHistV0RadiusZVSPt[1]  = new TH2F("fHistV0RadiusZVSPtSec","z of decay radius vs pt secondaries",200,0.0,20.0,125,0.0,125.0);
-   
    fHistV0RadiusXY[0]  = new TH2F("fHistV0RadiusXY","y vs x decay radius",250,-125.0,125.0,250,-125.0,125.0);
-   fHistV0RadiusXY[1]  = new TH2F("fHistV0RadiusXYSec","y vs x decay radius secondaries",250,-125.0,125.0,250,-125.0,125.0);
-
    fHistV0RadiusXYVSY[0]  = new TH2F("fHistV0RadiusXYVSY","2D decay radius vs rap",100,-10,10,100,0.0,100.0);
-   fHistV0RadiusXYVSY[1]  = new TH2F("fHistV0RadiusXYVSYSec","2D decay radius vs rap sec",100,-10,10,100,0.0,100.0);
-   
    fHistArmenteros[0] = new TH2F("fHistArmenteros"," pi+pi- armenteros",nbMass,-1.,1.,500,0.,0.5);
-   fHistArmenteros[1] = new TH2F("fHistArmenterosSec"," pi+pi- armenteros secondary",nbMass,-1.,1.,500,0.,0.5); 
-
    
-   //********************************************** K0 *************************************************//
+   //***************************************** K0s **********************************//
 	fHistPiPiMass[0] = new TH1F("fHistPiPiMass"," pi+pi- InvMass distribution",2*nbMass,0.,2.);
-   fHistPiPiMass[1] = new TH1F("fHistPiPiMassSec"," pi+pi- InvMass distribution secondary",2*nbMass,0.,2.);
-   
    fHistPiPiMassVSPt[0] = new TH2F("fHistPiPiMassVSPt","pi+pi- InvMass distribution",nbMass,0.25,0.75,300,0.0,30.0);
-   fHistPiPiMassVSPt[1] = new TH2F("fHistPiPiMassVSPtSec","pi+pi- InvMass distribution",nbMass,0.25,0.75,300,0.0,30.0);
-
    fHistPiPiMassVSPtMCTruth[0] = new TH2F("fHistPiPiMassVSPtMCTruth","pi+pi- InvMass distribution vs pt MCTruth",nbMass,0.25,0.75,300,0.0,30.0);
-   fHistPiPiMassVSPtMCTruth[1] = new TH2F("fHistPiPiMassVSPtMCTruthSec","pi+pi- InvMass distribution vs pt MCTruth",nbMass,0.25,0.75,300,0.0,30.0);
-
    fHistPiPiPtVSY[0] = new TH2F("fHistPiPiPtVSY","p{t} vs y",100,-1,1,100,0.0,20);
-   fHistPiPiPtVSY[1] = new TH2F("fHistPiPiPtVSYSec","p{t} vs y secondaries",200,-1,1,100,0.0,20);
-   
-   // fHistPiPiMassVSAlpha[0] = new TH2F("fHistPiPiMassVSAlpha"," alpha armenteros vs pi+pi- InvMass distribution",nbMass,0.25,0.75,500,-1.,1.);
-   //fHistPiPiMassVSAlpha[1] = new TH2F("fHistPiPiMassVSAlphaSec"," alpha armenteros vs pi+pi- InvMass distribution secondary",nbMass,0.25,0.75,500,-1.,1.);
-   
-   fHistPiPiRadiusXY[0] = new TH2F("fHistPiPiRadiusXY","pi+pi- opening angle vs mass",nbMass,0.25,0.75,200,0.0,4.0);
-   fHistPiPiRadiusXY[1] = new TH2F("fHistPiPiRadiusXYSec","pi+pi- opening angle vs mass for secondary",nbMass,0.25,0.75,200,0.0,4.0);
-
-   fHistPiPiCosPointAng[0]  = new TH2F("fHistPiPiCosPointAng","K0 cosine of pointing angle vs dca to prim vtx",200,0.0,10.0,250,0.99,1.00);
-   fHistPiPiCosPointAng[1]  = new TH2F("fHistPiPiCosPointAngSec","K0 cosine of pointing angle vs dca to prim vtx for secondaries",200,0.0,10.0,250,0.99,1.00);
-
    fHistPiPiDecayLengthVsPt[0] = new TH2F("fHistPiPiDecayLengthVsPt","K0 decay length vs pt",200,0.0,20.0,200,0.0,100.0);
-   fHistPiPiDecayLengthVsPt[1] = new TH2F("fHistPiPiDecayLengthVsPtSec","K0 decay length vs pt secondaries",200,0.0,20.0,200,0.0,100.0);
-
-   fHistPiPiDecayLengthVsMass[0] = new TH2F("fHistPiPiDecayLengthVsMass","K0 decay length vs mass",nbMass,0.25,0.75,200,0.0,100.0);
-   fHistPiPiDecayLengthVsMass[1] = new TH2F("fHistPiPiDecayLengthVsMassSec","K0 decay length vs mass secondaries",nbMass,0.25,0.75,200,0.0,100.0);
-   
-   fHistPiPiDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiPiDCADaughterPosToPrimVtxVSMass","pi+ DCA daughter to prim vtx vsinvmass",nbMass,0.25,0.75,250,0.0,25.0);
-   fHistPiPiDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiPiDCADaughterPosToPrimVtxVSMassSec","pi+ DCA  daughter to prim vtx vs invmass for secondaries",nbMass,0.25,0.75,250,0.0,25.0);
-   
-   fHistPiPiPDGCode = new TH1F("fHistPiPiPDGCode","PDG code of K0s mothers",3500,0,3500);
-   
-   // fHistPiPiMassVSPtK0L[0] = new TH2F("fHistPiPiMassVSPtK0LMC","K0s from K0l pt vs mass MC truth",nbMass,0.25,0.75,100,0.,20.);
-   // fHistPiPiMassVSPtK0L[1] = new TH2F("fHistPiPiMassVSPtK0L","K0s from K0l pt vs mass reco",nbMass,0.25,0.75,100,0.,20.);
-
-
-   fHistPiPMassVSPt[0] = new TH2F("fHistPiPMassVSPt","p+pi- InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
-   fHistPiPMassVSPt[1] = new TH2F("fHistPiPMassVSPtSec","p+pi- InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
-
-   fHistPiPiDCAVSMass[0] = new TH2F("fHistPiPiDCAVSMass","pi+pi- dca  vs pt",nbMass,0.25,0.75,250,0.0,5.0);
-   fHistPiPiDCAVSMass[1] = new TH2F("fHistPiPiDCAVSMassSec","pi+pi- dca  vs pt",nbMass,0.25,0.75,250,0.0,5.0);
-
-   fHistPiPiDCADaughters[0] = new TH2F("fHistPiPiDCADaughters","dca of K0 daughters",nbMass,0.25,0.75,250,0.0,2);
-   fHistPiPiDCADaughters[1] = new TH2F("fHistPiPiDCADaughtersSec","dca of K0 daughters secondary",nbMass,0.25,0.75,250,0.0,2);
-
-   fHistPiPiPtDaughters[0] = new TH2F("fHistPiPiPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
-   fHistPiPiPtDaughters[1] = new TH2F("fHistPiPiPtDaughtersSec","p_{t} pos vs p_{t} neg of daughters secondaries",400,0.0,20.0,400,0,20.0);
-
-   fHistPiPiMonitorCuts[0] = new TH1F("fHistPiPiMonitorCuts","K0 cut monitor",25,0.5,25.5);
-   fHistPiPiMonitorCuts[1] = new TH1F("fHistPiPiMonitorCutsSec","K0 cut monitor secondaries",25,0.5,25.5);
-
    
    //***************************************** Lambda **********************************//
 	fHistPiPMass[0] = new TH1F("fHistPiPMass"," p+pi- InvMass distribution",2*nbMass,0.,2.);
-   fHistPiPMass[1] = new TH1F("fHistPiPMassSec"," p+pi- InvMass distribution secondaries",2*nbMass,0.,2.);
-
    fHistPiPMassVSPt[0] = new TH2F("fHistPiPMassVSPt","p+pi- InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
-   fHistPiPMassVSPt[1] = new TH2F("fHistPiPMassVSPtSec","p+pi- InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
-
    fHistPiPMassVSPtMCTruth[0] = new TH2F("fHistPiPMassVSPtMCTruth","p+pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,300,0.0,30.0);
-   fHistPiPMassVSPtMCTruth[1] = new TH2F("fHistPiPMassVSPtMCTruthSec","p+pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,300,0.0,30.0);
-
    fHistPiPPtVSY[0] = new TH2F("fHistPiPPtVSY","p{t} vs y",100,-1,1,100,0.0,20);
-   fHistPiPPtVSY[1] = new TH2F("fHistPiPPtVSYSec","p{t} vs y secondaries",100,-1,1,100,0.0,20);   
-   
-   fHistPiPMassVSPtSecSigma[0] = new TH2F("fHistPiPMassVSPtSecSigmaMC"," pi-p+ InvMass distribution secondaries from sigma MC",nbMass,1.05,1.25,200,0.,20);
-   fHistPiPMassVSPtSecSigma[1] = new TH2F("fHistPiPMassVSPtSecSigma"," pi-p+ InvMass distribution secondaries from Sigma reco",nbMass,1.05,1.25,200,0.,20);
-   
-   fHistPiPMassVSPtSecXi[0] = new TH2F("fHistPiPMassVSPtSecXiMC"," pi-p+ InvMass distribution secondaries from  xi MC",nbMass,1.05,1.25,200,0.,20);
-   fHistPiPMassVSYSecXi[1] = new TH2F("fHistPiPMassVSYSecXi"," pi-p+ InvMass distribution secondaries from xi reco",nbMass,1.05,1.25,100,-2.,2);
- 
-   fHistPiPMassVSPtSecXi[1] = new TH2F("fHistPiPMassVSPtSecXi"," pi-p+ InvMass distribution secondaries from  xi  reco",nbMass,1.05,1.25,200,0.,20);
-   fHistPiPMassVSYSecXi[0] = new TH2F("fHistPiPMassVSYSecXiMC"," pi-p+ InvMass distribution secondaries from xi MC",nbMass,1.05,1.25,100,-2.,2);
-   
-   fHistPiPXi0PtVSLambdaPt[0]= new TH2F("fHistPiPXi0PtVSLambdaPtMC"," pt xi 0 vs pt lambda MC truth",200,0.0,20.0,200,0.0,20.0);
-   fHistPiPXi0PtVSLambdaPt[1]= new TH2F("fHistPiPXi0PtVSLambdaPt"," pt xi 0 truth vs pt lambda reco",200,0.0,20.0,200,0.0,20.0);
-
-   fHistPiPXiMinusPtVSLambdaPt[0]= new TH2F("fHistPiPXiMinusPtVSLambdaPtMC","pt xi- vs pt lambda MC truth",200,0.0,20.0,200,0.0,20.0);
-   fHistPiPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiPXiMinusPtVSLambdaPt","pt xi- truth vs pt lambda reco",200,0.0,20.0,200,0.0,20.0);
-
-   fHistPiPCosPointAngXiVsPt= new TH2F("fHistPiPCosPointAngXiVsPt","pi-p cos of pointing angle vs pt from xi",200,0.0,20.0,250,0.99,1.00);
-
-   fHistPiPPDGCode = new TH1F("fHistPiPPDGCode","PDG code of #Lambda  mothers",3500,0,3500);
-      
-   fHistPiPRadiusXY[0] = new TH2F("fHistPiPRadiusXY","pi-p+ opening angle vs mass",nbMass,1.05,1.25,200,0.0,4.0);
-   fHistPiPRadiusXY[1] = new TH2F("fHistPiPRadiusXYSec","pi-p+ opening angle vs mass for secondary",nbMass,1.05,1.25,200,0.0,4.0);
-
-   fHistPiPCosPointAng[0]  = new TH2F("fHistPiPCosPointAng","#Lambda cosine of pointing angle vs dca to prim vtx",200,0.0,10.0,250,0.99,1.00);
-   fHistPiPCosPointAng[1]  = new TH2F("fHistPiPCosPointAngSec","#Lambda cosine of pointing angle vs dca to prim vtx for secondaries",200,0.0,10.0,250,0.99,1.00);
-	  
    fHistPiPDecayLengthVsPt[0] = new TH2F("fHistPiPDecayLengthVsPt","#Lambda decay length vs pt",200,0.0,20.0,200,0.0,100.0);
-   fHistPiPDecayLengthVsPt[1] = new TH2F("fHistPiPDecayLengthVsPtSec","#Lambda decay length vs pt secondaries",200,0.0,20.0,200,0.0,100.0);
-   fHistPiPDecayLengthVsMass[0] = new TH2F("fHistPiPDecayLengthVsMass","#Lambda decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
-   fHistPiPDecayLengthVsMass[1] = new TH2F("fHistPiPDecayLengthVsMassSec","#Lambda decay length vs mass secondaries",nbMass,1.05,1.25,200,0.0,100.0);
-
-   fHistPiPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMass","p DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
-   fHistPiPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMassSec","p DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
-	
-  
-   fHistPiPDCAVSMass[0] = new TH2F("fHistPiPDCAVSMass","ppi- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
-   fHistPiPDCAVSMass[1] = new TH2F("fHistPiPDCAVSMassSec","ppi- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
-
-   fHistPiPDCADaughters[0] = new TH2F("fHistPiPDCADaughters","dca of #Lambda daughters",nbMass,1.05,1.25,250,0.0,2.0);
-   fHistPiPDCADaughters[1] = new TH2F("fHistPiPDCADaughtersSec","dca of #Lambda daughters secondary",nbMass,1.05,1.25,250,0.0,2.0);
-
-   fHistPiPPtDaughters[0] = new TH2F("fHistPiPPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
-   fHistPiPPtDaughters[1] = new TH2F("fHistPiPPtDaughtersSec","p_{t} pos vs p_{t} neg of daughters secondaries",400,0.0,20.0,400,0,20.0);
    
-   fHistPiPMonitorCuts[0] = new TH1F("fHistPiPMonitorCuts","#Lambda cut monitor",25,0.5,25.5);
-   fHistPiPMonitorCuts[1] = new TH1F("fHistPiPMonitorCutsSec","#Lambda cut monitor secondaries",25,0.5,25.5);
-
-   
-   //***************antilambda **********************************************//
-	fHistPiAPMass[0] = new TH1F("fHistPiAPMass"," ap-pi+ InvMass distribution",2*nbMass,0.,2.);
-   fHistPiAPMass[1] = new TH1F("fHistPiAPMassSec"," p-pi+ InvMass distribution secondaries",2*nbMass,0.,2.);
-
+   //***************************************** AntiLambda **********************************//
+  	fHistPiAPMass[0] = new TH1F("fHistPiAPMass"," ap-pi+ InvMass distribution",2*nbMass,0.,2.);
    fHistPiAPMassVSPt[0] = new TH2F("fHistPiAPMassVSPt","p-pi+ InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
-   fHistPiAPMassVSPt[1] = new TH2F("fHistPiAPMassVSPtSec","p-pi+ InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
-
    fHistPiAPMassVSPtMCTruth[0] = new TH2F("fHistPiAPMassVSPtMCTruth","p-pi+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,300,0.0,30.0);
-   fHistPiAPMassVSPtMCTruth[1] = new TH2F("fHistPiAPMassVSPtMCTruthSec","p-pi+ InvMass distribution vs pt MCTruth ",nbMass,1.05,1.25,300,0.0,30.0);
-
    fHistPiAPPtVSY[0] = new TH2F("fHistPiAPPtVSY","p{t} vs y",100,-1,1,100,0.0,20);
-   fHistPiAPPtVSY[1] = new TH2F("fHistPiAPPtVSYSec","p{t} vs y secondaries",100,-1,1,100,0.0,20);
-   
-   fHistPiAPRadiusXY[0] = new TH2F("fHistPiAPRadiusXY","pi+p- opening angle vs mass",nbMass,1.05,1.25,200,0.0,4.0);
-   fHistPiAPRadiusXY[1] = new TH2F("fHistPiAPRadiusXYSec","pi+p- opening angle vs mass for secondary",nbMass,1.05,1.25,200,0.0,4.0);
-      
-   fHistPiAPCosPointAng [0] = new TH2F("fHistPiAPCosPointAng","#bar{#Lambda} cosine of pointing angle vs dcs to prim vtx",200,0.0,10.0,250,0.99,1.00);
-   fHistPiAPCosPointAng[1]  = new TH2F("fHistPiAPCosPointAngSec","#bar{#Lambda} cosine of pointing angle vs dca to prim vtx for secondaries",200,0.0,10.0,250,0.99,1.00);
-
    fHistPiAPDecayLengthVsPt[0] = new TH2F("fHistPiAPDecayLengthVsPt","#bar{#Lambda} decay length vs pt",200,0.0,20.0,200,0.0,100.0);
-   fHistPiAPDecayLengthVsPt[1] = new TH2F("fHistPiAPDecayLengthVsPtSec","#bar{#Lambda} decay length vs pt secondaries",200,0.0,20.0,200,0.0,100.0);
-
-   fHistPiAPDecayLengthVsMass[0] = new TH2F("fHistPiAPDecayLengthVsMass","#bar{#Lambda} decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
-   fHistPiAPDecayLengthVsMass[1] = new TH2F("fHistPiAPDecayLengthVsMassSec","#bar{#Lambda} decay length vs mass secondaries",nbMass,1.05,1.25,200,0.0,100.0);
-
-   fHistPiAPCosPointAngXiVsPt= new TH2F("fHistPiAPCosPointAngXiVsPt","pi+p- cos of pointing angle vs pt from xi",200,0.0,20.0,250,0.98,1.00);	
-
-   fHistPiAPMassVSPtSecSigma[0] = new TH2F("fHistPiAPMassVSPtSecSigmaMC"," pi+p- InvMass distribution secondaries from Sigma MC",nbMass,1.05,1.25,200,0.,20);
-   fHistPiAPMassVSPtSecSigma[1] = new TH2F("fHistPiAPMassVSPtSecSigma"," pi+p- InvMass distribution secondaries from  Sigma  reco",nbMass,1.05,1.25,200,0.,20);
-
-   fHistPiAPMassVSPtSecXi[1] = new TH2F("fHistPiAPMassVSPtSecXi"," pi+p- InvMass distribution secondaries from  Xi reco",nbMass,1.05,1.25,200,0.,20);
-   fHistPiAPMassVSPtSecXi[0] = new TH2F("fHistPiAPMassVSPtSecXiMC"," pi+p- InvMass distribution secondaries from xi MC",nbMass,1.05,1.25,200,0.,20);
-
-   fHistPiAPMassVSYSecXi[0] = new TH2F("fHistPiAPMassVSYSecXiMC"," pi+p- InvMass distribution secondaries from  xi MC",nbMass,1.05,1.25,100,-2,2);
-   fHistPiAPMassVSYSecXi[1] = new TH2F("fHistPiAPMassVSYSecXi"," pi+p- InvMass distribution secondaries from xi reco",nbMass,1.05,1.25,100,-2.,2);
-
-   fHistPiAPXi0PtVSLambdaPt[0]= new TH2F("fHistPiAPXi0PtVSLambdaPtMC"," pt xi 0 vs pt Alambda MC truth",200,0.0,20.0,200,0.0,20.0);
-   fHistPiAPXi0PtVSLambdaPt[1]= new TH2F("fHistPiAPXi0PtVSLambdaPt"," pt xi 0 truth vs pt Alambda reco",200,0.0,20.0,200,0.0,20.0);
-
-   fHistPiAPXiMinusPtVSLambdaPt[0]= new TH2F("fHistPiAPXiMinusPtVSLambdaPtMC","pt xi- vs pt Alambda MC truth",200,0.0,20.0,200,0.0,20.0);
-   fHistPiAPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiAPXiMinusPtVSLambdaPt","pt xi- truth vs pt Alambda reco",200,0.0,20.0,200,0.0,20.0);
-
-   fHistPiAPPDGCode = new TH1F("fHistPiAPPDGCode","PDG code of #bar{#Lambda} mothers",3500,0,3500);
-      
-   fHistPiAPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMass","pi+ DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
-   fHistPiAPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMassSec","pi+ DCA daughter to prim vtx vs invmass secondaries",nbMass,1.05,1.25,250,0.0,25.0);
-	
   
-   fHistPiAPDCAVSMass[0] = new TH2F("fHistPiAPDCAVSMass","pi+p- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
-   fHistPiAPDCAVSMass[1] = new TH2F("fHistPiAPDCAVSMassSec","pi+p- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
+   if(mchist==2){// for MC reco
+      fHistV0RadiusZ[1]  = new TH2F("fHistV0RadiusZSec","z of decay radius vs 2D radius",100,0.0,100.0,250,-125.0,125.0);
+      fHistV0RadiusZVSPt[1]  = new TH2F("fHistV0RadiusZVSPtSec","z of decay radius vs pt radius",200,0.0,20.0,125,0.0,125.0);
+      fHistV0RadiusXY[1]  = new TH2F("fHistV0RadiusXYSec","y vs x decay radius",250,-125.0,125.0,250,-125.0,125.0);
+      fHistV0RadiusXYVSY[1]  = new TH2F("fHistV0RadiusXYVSYSec","2D decay radius vs rap",100,-10,10,100,0.0,100.0);
+      fHistArmenteros[1] = new TH2F("fHistArmenterosSec"," pi+pi- armenteros",nbMass,-1.,1.,500,0.,0.5);
 
-   fHistPiAPDCADaughters[0] = new TH2F("fHistPiAPDCADaughters","dca of #bar{#Lambda} daughters",nbMass,1.05,1.25,250,0.0,2.0);
-   fHistPiAPDCADaughters[1] = new TH2F("fHistPiAPDCADaughtersSec","dca of #bar{#Lambda} daughters secondary",nbMass,1.05,1.25,250,0.0,2.0);
+      //***************************************** K0s **********************************//
+	   fHistPiPiMass[1] = new TH1F("fHistPiPiMassSec"," pi+pi- InvMass distribution",2*nbMass,0.,2.);
+      fHistPiPiMassVSPt[1] = new TH2F("fHistPiPiMassVSPtSec","pi+pi- InvMass distribution",nbMass,0.25,0.75,300,0.0,30.0);
+      fHistPiPiMassVSPtMCTruth[1] = new TH2F("fHistPiPiMassVSPtMCTruthSec","pi+pi- InvMass distribution vs pt MCTruth",nbMass,0.25,0.75,300,0.0,30.0);
+      fHistPiPiPtVSY[1] = new TH2F("fHistPiPiPtVSYSec","p{t} vs y",100,-1,1,100,0.0,20);
+      fHistPiPiDecayLengthVsPt[1] = new TH2F("fHistPiPiDecayLengthVsPt","K0 decay length vs pt",200,0.0,20.0,200,0.0,100.0);
+      
+      //***************************************** Lambda **********************************//
+	   fHistPiPMass[1] = new TH1F("fHistPiPMassSec"," p+pi- InvMass distribution",2*nbMass,0.,2.);
+      fHistPiPMassVSPt[1] = new TH2F("fHistPiPMassVSPtSec","p+pi- InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
+      fHistPiPMassVSPtMCTruth[1] = new TH2F("fHistPiPMassVSPtMCTruthSec","p+pi- InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,300,0.0,30.0);
+      fHistPiPPtVSY[1] = new TH2F("fHistPiPPtVSYSec","p{t} vs y",100,-1,1,100,0.0,20);
+      fHistPiPDecayLengthVsPt[1] = new TH2F("fHistPiPDecayLengthVsPtSec","#Lambda decay length vs pt",200,0.0,20.0,200,0.0,100.0);
+      
+      //***************************************** AntiLambda **********************************//
+	   fHistPiAPMass[1] = new TH1F("fHistPiAPMassSec"," ap-pi+ InvMass distribution",2*nbMass,0.,2.);
+      fHistPiAPMassVSPt[1] = new TH2F("fHistPiAPMassVSPtSec","p-pi+ InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
+      fHistPiAPMassVSPtMCTruth[1] = new TH2F("fHistPiAPMassVSPtMCTruthSec","p-pi+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,300,0.0,30.0);
+      fHistPiAPPtVSY[1] = new TH2F("fHistPiAPPtVSYSec","p{t} vs y",100,-1,1,100,0.0,20);
+      fHistPiAPDecayLengthVsPt[1] = new TH2F("fHistPiAPDecayLengthVsPtSec","#bar{#Lambda} decay length vs pt",200,0.0,20.0,200,0.0,100.0);
      
-   fHistPiAPPtDaughters[0] = new TH2F("fHistPiAPPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
-   fHistPiAPPtDaughters[1] = new TH2F("fHistPiAPPtDaughtersSec","p_{t} pos vs p_{t} neg of daughters secondaries",400,0.0,20.0,400,0,20.0);
+   }
 
-   fHistPiAPMonitorCuts[0] = new TH1F("fHistPiAPMonitorCuts","#bar{#Lambda} cut monitor",25,0.5,25.5);
-   fHistPiAPMonitorCuts[1] = new TH1F("fHistPiAPMonitorCutsSec","#bar{#Lambda} cut monitor secondaries",25,0.5,25.5);
+   for(Int_t j=0;j<mchist;j++){
+     
+      fOutputContainer->Add(fHistArmenteros[j]);
+      fOutputContainer->Add(fHistV0RadiusZ[j]);
+      fOutputContainer->Add(fHistV0RadiusZVSPt[j]);
+      fOutputContainer->Add(fHistV0RadiusXY[j]);
+      fOutputContainer->Add(fHistV0RadiusXYVSY[j]);
+	 
+      fOutputContainer->Add(fHistPiPiMass[j]);
+      fOutputContainer->Add(fHistPiPMass[j]);
+      fOutputContainer->Add(fHistPiAPMass[j]);
+	 
+      fOutputContainer->Add(fHistPiPiMassVSPt[j]);
+      fOutputContainer->Add(fHistPiPMassVSPt[j]);
+      fOutputContainer->Add(fHistPiAPMassVSPt[j]);
+
+      fOutputContainer->Add(fHistPiPiMassVSPtMCTruth[j]);
+      fOutputContainer->Add(fHistPiPMassVSPtMCTruth[j]);
+      fOutputContainer->Add(fHistPiAPMassVSPtMCTruth[j]);
+      
+      fOutputContainer->Add(fHistPiPiPtVSY[j]);
+      fOutputContainer->Add(fHistPiPPtVSY[j]);
+      fOutputContainer->Add(fHistPiAPPtVSY[j]);
+	 
+      fOutputContainer->Add(fHistPiPiDecayLengthVsPt[j]);
+      fOutputContainer->Add(fHistPiPDecayLengthVsPt[j]);
+      fOutputContainer->Add(fHistPiAPDecayLengthVsPt[j]);
+   }
+
+   //----------------- for reco or data or mc data like MC reco only -----------------//
+   if((fMCMode) || (!fMCTruthMode && !fMCMode)){
+    
+      fHistPiPiEtaDReco[0] = new TH2F("fHistPiPiEtaDRecoRaw","K0s daughters eta raw",300,-6,6,100,0,20);
+      fOutputContainer->Add(fHistPiPiEtaDReco[0]);
+      fHistPiPiEtaDReco[1] = new TH2F("fHistPiPiEtaDReco","K0s daughters eta after rap V0 cut pos",300,-3,3,300,-3.00,3.0);
+      fOutputContainer->Add(fHistPiPiEtaDReco[1]);	 
+      fHistPiPEtaDReco[0] = new TH2F("fHistPiPEtaDRecoRaw","#Lambda daughters eta raw",300,-6,6,100,0,20);
+      fOutputContainer->Add(fHistPiPEtaDReco[0]);
+      fHistPiPEtaDReco[1] = new TH2F("fHistPiPEtaDReco","#Lambda daughters eta after rap V0 cut neg",300,-3,3,300,-3.00,3.0);
+      fOutputContainer->Add(fHistPiPEtaDReco[1]);
+	
+      //********************************************** K0 *************************************************//
+  
+	   // fHistPiPiMassVSAlpha[0] = new TH2F("fHistPiPiMassVSAlpha"," alpha armenteros vs pi+pi- InvMass distribution",nbMass,0.25,0.75,500,-1.,1.);
+
+	   fHistPiPiDCADaughters[0] = new TH2F("fHistPiPiDCADaughters","dca of K0 daughters",nbMass,0.25,0.75,250,0.0,2);
+      fHistPiPiDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiPiDCADaughterPosToPrimVtxVSMass","pi+ DCA daughter to prim vtx vsinvmass",nbMass,0.25,0.75,250,0.0,25.0);
+      fHistPiPiDCAVSMass[0] = new TH2F("fHistPiPiDCAVSMass","pi+pi- dca  vs pt",nbMass,0.25,0.75,250,0.0,5.0);
+      fHistPiPiCosPointAng[0]  = new TH2F("fHistPiPiCosPointAng","K0 cosine of pointing angle vs dca to prim vtx",200,0.0,10.0,250,0.99,1.00);
+      fHistPiPiDecayLengthVsMass[0] = new TH2F("fHistPiPiDecayLengthVsMass","K0 decay length vs mass",nbMass,0.25,0.75,200,0.0,100.0);
+      fHistPiPiRadiusXY[0] = new TH2F("fHistPiPiRadiusXY","pi+pi- opening angle vs mass",nbMass,0.25,0.75,200,0.0,4.0);
+      // fHistPiPiPtDaughters[0] = new TH2F("fHistPiPiPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
+      fHistPiPiMonitorCuts[0] = new TH1F("fHistPiPiMonitorCuts","K0 cut monitor",25,0.5,25.5);
+	 
+      //***************************************** Lambda *********************************************//
+	   fHistPiPDCADaughters[0] = new TH2F("fHistPiPDCADaughters","dca of #Lambda daughters",nbMass,1.05,1.25,250,0.0,2.0);
+      fHistPiPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMass","p DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
+      fHistPiPDCAVSMass[0] = new TH2F("fHistPiPDCAVSMass","ppi- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
+      fHistPiPCosPointAng[0]  = new TH2F("fHistPiPCosPointAng","#Lambda cosine of pointing angle vs dca to prim vtx",200,0.0,10.0,250,0.99,1.00);
+      fHistPiPDecayLengthVsMass[0] = new TH2F("fHistPiPDecayLengthVsMass","#Lambda decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
+      fHistPiPRadiusXY[0] = new TH2F("fHistPiPRadiusXY","pi-p+ opening angle vs mass",nbMass,1.05,1.25,200,0.0,4.0);
+      // fHistPiPPtDaughters[0] = new TH2F("fHistPiPPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
+      fHistPiPMonitorCuts[0] = new TH1F("fHistPiPMonitorCuts","#Lambda cut monitor",25,0.5,25.5);
+   
+      //************************************** Antilambda **********************************************//
+	   fHistPiAPDCADaughters[0] = new TH2F("fHistPiAPDCADaughters","dca of #bar{#Lambda} daughters",nbMass,1.05,1.25,250,0.0,2.0);
+      fHistPiAPDCADaughterPosToPrimVtxVSMass[0] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMass","pi+ DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
+      fHistPiAPDCAVSMass[0] = new TH2F("fHistPiAPDCAVSMass","pi+p- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
+      fHistPiAPCosPointAng [0] = new TH2F("fHistPiAPCosPointAng","#bar{#Lambda} cosine of pointing angle vs dcs to prim vtx",200,0.0,10.0,250,0.99,1.00);
+      fHistPiAPDecayLengthVsMass[0] = new TH2F("fHistPiAPDecayLengthVsMass","#bar{#Lambda} decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
+      fHistPiAPRadiusXY[0] = new TH2F("fHistPiAPRadiusXY","pi+p- opening angle vs mass",nbMass,1.05,1.25,200,0.0,4.0);
+      fHistPiAPMonitorCuts[0] = new TH1F("fHistPiAPMonitorCuts","#bar{#Lambda} cut monitor",25,0.5,25.5);
+      // fHistPiAPPtDaughters[0] = new TH2F("fHistPiAPPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
+   
+      //**********************************************TPC*****************************************************//
+
+	   fHistDedxSecProt[0] = new TH2F("fHistDedxSecProt","proton", nbPt, 0, 20, 100, 0, 400);
+      fHistDedxSecPiPlus[0] = new TH2F("fHistDedxSecPiPlus","pi plus", nbPt, 0, 20, 100, 0, 400);
+      fHistDedxSecAProt[0] = new TH2F("fHistDedxSecAProt","antiproton", nbPt, 0, 20, 100, 0, 400);
+      fHistDedxSecPiMinus[0] = new TH2F("fHistDedxSecPiMinus","pi minus", nbPt, 0, 20, 100, 0, 400);
+      fHistNclsITSPosK0[0] = new TH1F("fHistNclsITSPosK0","fHistNclsITSPos K0",10,-0.5,9.5);
+      fHistNclsITSNegK0[0] = new TH1F("fHistNclsITSNegK0","fHistNclsITSNeg K0",10,-0.5,9.5);
+      fHistNclsTPCPosK0[0] = new TH1F("fHistNclsTPCPosK0","fHistNclsTPCPos K0",200,-0.5,199.5);
+      fHistNclsTPCNegK0[0] = new TH1F("fHistNclsTPCNegK0","fHistNclsTPCNeg K0",200,-0.5,199.5);
+      fHistChi2PerNclsITSPosK0[0] = new TH1F("fHistChi2PerNclsITSPosK0","chi2 per cluster ITS pi+pi-",250,0.0,50.0);
+      fHistChi2PerNclsITSNegK0[0] = new TH1F("fHistChi2PerNclsITSNegK0","chi2 per cluster ITS pi+pi- neg",250,0.0,50.0);
+      fHistNclsITSPosL[0] = new TH1F("fHistNclsITSPosL","fHistNclsITSPos #Lambda",10,-0.5,9.5);
+      fHistNclsITSNegL[0] = new TH1F("fHistNclsITSNegL","fHistNclsITSNeg #Lambda",10,-0.5,9.5);
+      fHistNclsTPCPosL[0] = new TH1F("fHistNclsTPCPosL","fHistNclsTPCPos #Lambda",200,-0.5,199.5);
+      fHistNclsTPCNegL[0] = new TH1F("fHistNclsTPCNegL","fHistNclsTPCNeg #Lambda",200,-0.5,199.5);
+      fHistChi2PerNclsITSPosL[0] = new TH1F("fHistChi2PerNclsITSPosL","chi2 per cluster ITS pi-p+ pos",250,0.0,50.0);
+      fHistChi2PerNclsITSNegL[0] = new TH1F("fHistChi2PerNclsITSNegL","chi2 per cluster ITS pi-p+ neg",250,0.0,50.0);
+      //for 2d pt dep studies
+      fHistNclsITSPos[0] = new TH2F("fHistNclsITSPos","fHistNclsITSPos  vs pt pos",200,0.0,20.0,10,-0.5,9.5);
+      fHistNclsITSNeg[0] = new TH2F("fHistNclsITSNeg","fHistNclsITSNeg vs pt neg",200,0.0,20.0,10,-0.5,9.5);
+      fHistNclsTPCPos[0] = new TH2F("fHistNclsTPCPos","ncls vs findable ncls pos",200,0.0,200.0,200,0.0,200.0);
+      fHistNclsTPCNeg[0] = new TH2F("fHistNclsTPCNeg","ncls vs findable ncls neg",200,0.0,200.0,200,0.0,200.0);
+      fHistChi2PerNclsITSPos[0] = new TH2F("fHistChi2PerNclsITSPos","chi2 per cluster ITS pi+p-vs pt pos",200,0.0,20.0,250,0.0,50.0);
+      fHistChi2PerNclsITSNeg[0] = new TH2F("fHistChi2PerNclsITSNeg","chi2 per cluster ITS pi+p- neg vs pt neg",200,0.0,20.0,250,0.0,50.0);
+      fHistNclsITS[0] = new TH2F("fHistNclsITS","fHistNclsITS pos vs neg",10,-0.5,9.5,10,-0.5,9.5);
+      fHistNclsTPC[0] = new TH2F("fHistNclsTPC","ncls TPC neg vs crossed rows neg",200,-0.5,199.5,200,-0.5,199.5);
+      fHistNCRowsTPCPos[0] = new TH2F("fHistNCRowsTPCPos","n crossed rows vs pt pos",200,0.0,20.0,200,0.0,200.0);
+      fHistNCRowsTPCNeg[0] = new TH2F("fHistNCRowsTPCNeg","n crossed rows vs pt neg",200,0.0,20.0,200,0.0,200.0);
+   
+   
 
    
-   //*********************************************************************TPC*****************************************************//
-	fHistESDVertexZ= new TH1F("fHistESDVertexZ"," z vertex distr in cm",500,-50,50);
-   fHistMCVertexZ= new TH1F("fHistMCVertexZ"," z vertex distr in cm MC",500,-50,50);
+      if(mchist==2){// for MC reco
+
+	 //********************************************** K0 *************************************************//
+	    // fHistPiPiMassVSAlpha[0] = new TH2F("fHistPiPiMassVSAlpha"," alpha armenteros vs pi+pi- InvMass distribution",nbMass,0.25,0.75,500,-1.,1.);
+	    fHistPiPiDCADaughters[1] = new TH2F("fHistPiPiDCADaughtersSec","dca of K0 daughters",nbMass,0.25,0.75,250,0.0,2);
+	 fHistPiPiDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiPiDCADaughterPosToPrimVtxVSMassSec","pi+ DCA daughter to prim vtx vsinvmass",nbMass,0.25,0.75,250,0.0,25.0);
+	 fHistPiPiDCAVSMass[1] = new TH2F("fHistPiPiDCAVSMassSec","pi+pi- dca  vs pt",nbMass,0.25,0.75,250,0.0,5.0);
+	 fHistPiPiCosPointAng[1]  = new TH2F("fHistPiPiCosPointAngSec","K0 cosine of pointing angle vs dca to prim vtx",200,0.0,10.0,250,0.99,1.00);
+	 fHistPiPiDecayLengthVsMass[1] = new TH2F("fHistPiPiDecayLengthVsMassSec","K0 decay length vs mass",nbMass,0.25,0.75,200,0.0,100.0);
+	 fHistPiPiRadiusXY[1] = new TH2F("fHistPiPiRadiusXYSec","pi+pi- opening angle vs mass",nbMass,0.25,0.75,200,0.0,4.0);
+	 // fHistPiPiPtDaughters[0] = new TH2F("fHistPiPiPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
+	 fHistPiPiMonitorCuts[1] = new TH1F("fHistPiPiMonitorCutsSec","K0 cut monitor",25,0.5,25.5);
+	 
+	 //********************************************** Lambda ***********************************************//
+	      fHistPiPDCADaughters[1] = new TH2F("fHistPiPDCADaughtersSec","dca of #Lambda daughters",nbMass,1.05,1.25,250,0.0,2.0);
+	 fHistPiPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiPDCADaughterPosToPrimVtxVSMassSec","p DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
+	 fHistPiPDCAVSMass[1] = new TH2F("fHistPiPDCAVSMassSec","ppi- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
+	 fHistPiPCosPointAng[1]  = new TH2F("fHistPiPCosPointAngSec","#Lambda cosine of pointing angle vs dca to prim vtx",200,0.0,10.0,250,0.99,1.00);
+	 fHistPiPDecayLengthVsMass[1] = new TH2F("fHistPiPDecayLengthVsMassSec","#Lambda decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
+	 fHistPiPRadiusXY[1] = new TH2F("fHistPiPRadiusXYSec","pi-p+ opening angle vs mass",nbMass,1.05,1.25,200,0.0,4.0);
+	 // fHistPiPPtDaughters[0] = new TH2F("fHistPiPPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
+	 fHistPiPMonitorCuts[1] = new TH1F("fHistPiPMonitorCutsSec","#Lambda cut monitor",25,0.5,25.5);
    
-   fHistDedxSecProt[0] = new TH2F("fHistDedxSecProt","", nbPt, 0, 20, 100, 0, 400);
-   fHistDedxSecAProt[0] = new TH2F("fHistDedxSecAProt","", nbPt, 0, 20, 100, 0, 400);
+	 //******************************************* Antilambda **********************************************//
+	      fHistPiAPDCADaughters[1] = new TH2F("fHistPiAPDCADaughtersSec","dca of #bar{#Lambda} daughters",nbMass,1.05,1.25,250,0.0,2.0);
+	 fHistPiAPDCADaughterPosToPrimVtxVSMass[1] = new TH2F("fHistPiAPDCADaughterPosToPrimVtxVSMassSec","pi+ DCA daughter to prim vtx vs invmass",nbMass,1.05,1.25,250,0.0,25.0);
+	 fHistPiAPDCAVSMass[1] = new TH2F("fHistPiAPDCAVSMassSec","pi+p- dca  vs pt",nbMass,1.05,1.25,250,0.0,5.0);
+	 fHistPiAPCosPointAng[1] = new TH2F("fHistPiAPCosPointAngSec","#bar{#Lambda} cosine of pointing angle vs dcs to prim vtx",200,0.0,10.0,250,0.99,1.00);
+	 fHistPiAPDecayLengthVsMass[1] = new TH2F("fHistPiAPDecayLengthVsMassSec","#bar{#Lambda} decay length vs mass",nbMass,1.05,1.25,200,0.0,100.0);
+	 fHistPiAPRadiusXY[1] = new TH2F("fHistPiAPRadiusXYSec","pi+p- opening angle vs mass",nbMass,1.05,1.25,200,0.0,4.0);
+	 fHistPiAPMonitorCuts[1] = new TH1F("fHistPiAPMonitorCutsSec","#bar{#Lambda} cut monitor",25,0.5,25.5);
+	 // fHistPiAPPtDaughters[0] = new TH2F("fHistPiAPPtDaughters","p_{t} pos vs p_{t} neg of daughters",400,0.0,20.0,400,0,20.0);
 
-   fHistDedxSecPiPlus[0] = new TH2F("fHistDedxSecPiPlus","", nbPt, 0, 20, 100, 0, 400);
-   fHistDedxSecPiMinus[0] = new TH2F("fHistDedxSecPiMinus","", nbPt, 0, 20, 100, 0, 400);
+	 //******************************************* TPC ****************************************************//
+	      
+	      fHistDedxSecProt[1] = new TH2F("fHistDedxSecProtSec","proton", nbPt, 0, 20, 100, 0, 400);
+	 fHistDedxSecPiPlus[1] = new TH2F("fHistDedxSecPiPlusSec","pi plus", nbPt, 0, 20, 100, 0, 400);
+	 fHistDedxSecAProt[1] = new TH2F("fHistDedxSecAProtSec","antiproton", nbPt, 0, 20, 100, 0, 400);
+	 fHistDedxSecPiMinus[1] = new TH2F("fHistDedxSecPiMinusSec","pi minus", nbPt, 0, 20, 100, 0, 400);
+	 fHistNclsITSPosK0[1] = new TH1F("fHistNclsITSPosK0Sec","fHistNclsITSPos K0 ",10,-0.5,9.5);
+	 fHistNclsITSNegK0[1] = new TH1F("fHistNclsITSNegK0Sec","fHistNclsITSNeg K0",10,-0.5,9.5);
+	 fHistNclsTPCPosK0[1] = new TH1F("fHistNclsTPCPosK0Sec","fHistNclsTPCPos K0",200,-0.5,199.5);
+	 fHistNclsTPCNegK0[1] = new TH1F("fHistNclsTPCNegK0Sec","fHistNclsTPCNeg K0",200,-0.5,199.5);
+	 fHistChi2PerNclsITSPosK0[1] = new TH1F("fHistChi2PerNclsITSPosK0Sec","chi2 per cluster ITS pi+pi- pos",250,0.0,50.0);
+	 fHistChi2PerNclsITSNegK0[1] = new TH1F("fHistChi2PerNclsITSNegK0Sec","chi2 per cluster ITS pi+pi- neg",250,0.0,50.0);
+	 fHistNclsITSPosL[1] = new TH1F("fHistNclsITSPosLSec","fHistNclsITSPos #Lambda",10,-0.5,9.5);
+	 fHistNclsITSNegL[1] = new TH1F("fHistNclsITSNegLSec","fHistNclsITSNeg #Lambda",10,-0.5,9.5);
+	 fHistNclsTPCPosL[1] = new TH1F("fHistNclsTPCPosLSec","fHistNclsTPCPos #Lambda",200,-0.5,199.5);
+	 fHistNclsTPCNegL[1] = new TH1F("fHistNclsTPCNegLSec","fHistNclsTPCNeg #Lambda",200,-0.5,199.5);
+	 fHistChi2PerNclsITSPosL[1] = new TH1F("fHistChi2PerNclsITSPosLSec","chi2 per cluster ITS pi-p+ pos",250,0.0,50.0);
+	 fHistChi2PerNclsITSNegL[1] = new TH1F("fHistChi2PerNclsITSNegLSec","chi2 per cluster ITS pi-p+ neg",250,0.0,50.0);
+	 //for 2d pt dep studies
+	 fHistNclsITSPos[1] = new TH2F("fHistNclsITSPosSec","fHistNclsITSPos  vs pt pos",200,0.0,20.0,10,-0.5,9.5);
+	 fHistNclsITSNeg[1] = new TH2F("fHistNclsITSNegSec","fHistNclsITSNeg vs pt neg",200,0.0,20.0,10,-0.5,9.5);
+	 fHistNclsTPCPos[1] = new TH2F("fHistNclsTPCPosSec","ncls vs findable ncls pos",200,0.0,200.0,200,0.0,200.0);
+	 fHistNclsTPCNeg[1] = new TH2F("fHistNclsTPCNegSec","ncls vs findable ncls neg",200,0.0,200.0,200,0.0,200.0);
+	 fHistChi2PerNclsITSPos[1] = new TH2F("fHistChi2PerNclsITSPosSec","chi2 per cluster ITS pi+p-vs pt pos",200,0.0,20.0,250,0.0,50.0);
+	 fHistChi2PerNclsITSNeg[1] = new TH2F("fHistChi2PerNclsITSNegSec","chi2 per cluster ITS pi+p- neg vs pt neg",200,0.0,20.0,250,0.0,50.0);
+	 fHistNclsITS[1] = new TH2F("fHistNclsITSSec","fHistNclsITS pos vs neg",10,-0.5,9.5,10,-0.5,9.5);
+	 fHistNclsTPC[1] = new TH2F("fHistNclsTPCSec","ncls TPC neg vs crossed rows neg",200,-0.5,199.5,200,-0.5,199.5);
+	 fHistNCRowsTPCPos[1] = new TH2F("fHistNCRowsTPCPosSec","n crossed rows vs pt pos",200,0.0,20.0,200,0.0,200.0);
+	 fHistNCRowsTPCNeg[1] = new TH2F("fHistNCRowsTPCNegSec","n crossed rows vs pt neg",200,0.0,20.0,200,0.0,200.0);
+      }
 
-   fHistDedxSecProt[1] = new TH2F("fHistDedxSecProtSec","secondary", nbPt, 0, 20, 100, 0, 400);
-   fHistDedxSecAProt[1] = new TH2F("fHistDedxSecAProtSec","secondary", nbPt, 0, 20, 100, 0, 400);
+      for(Int_t j=0;j<mchist;j++){
 
-   fHistDedxSecPiPlus[1] = new TH2F("fHistDedxSecPiPlusSec","secondary", nbPt, 0, 20, 100, 0, 400);
-   fHistDedxSecPiMinus[1] = new TH2F("fHistDedxSecPiMinusSec","secondary", nbPt, 0, 20, 100, 0, 400);
-   
-   fHistNclsITSPosK0[0] = new TH1F("fHistNclsITSPosK0","fHistNclsITSPos K0",10,-0.5,9.5);
-   fHistNclsITSPosK0[1] = new TH1F("fHistNclsITSPosK0","fHistNclsITSPos K0 secondary",10,-0.5,9.5);
+	 fOutputContainer->Add(fHistPiPiDCADaughters[j]); 
+	 fOutputContainer->Add(fHistPiPDCADaughters[j]); 
+	 fOutputContainer->Add(fHistPiAPDCADaughters[j]);
+	    
+	 fOutputContainer->Add( fHistPiPiDCADaughterPosToPrimVtxVSMass[j]);
+	 fOutputContainer->Add( fHistPiPDCADaughterPosToPrimVtxVSMass[j]);
+	 fOutputContainer->Add( fHistPiAPDCADaughterPosToPrimVtxVSMass[j]);
+	    
+	 /*
+	   fOutputContainer->Add( fHistPiPiPtDaughters[j]);
+	   fOutputContainer->Add( fHistPiPPtDaughters[j]);
+	   fOutputContainer->Add( fHistPiAPPtDaughters[j]);
+	 */
+	 fOutputContainer->Add(fHistPiPiDCAVSMass[j]);
+	 fOutputContainer->Add(fHistPiPDCAVSMass[j]);
+	 fOutputContainer->Add(fHistPiAPDCAVSMass[j]);
 
-   fHistNclsITSNegK0[0] = new TH1F("fHistNclsITSNegK0","fHistNclsITSNeg K0",10,-0.5,9.5);
-   fHistNclsITSNegK0[1] = new TH1F("fHistNclsITSNegK0Sec","fHistNclsITSNeg K0 secondary",10,-0.5,9.5);
+	 fOutputContainer->Add(fHistPiPiCosPointAng[j]);
+	 fOutputContainer->Add(fHistPiPCosPointAng[j]);
+	 fOutputContainer->Add(fHistPiAPCosPointAng[j]);
+
+	 fOutputContainer->Add(fHistPiPiDecayLengthVsMass[j]);
+	 fOutputContainer->Add(fHistPiPDecayLengthVsMass[j]);
+	 fOutputContainer->Add(fHistPiAPDecayLengthVsMass[j]);
+
+	 fOutputContainer->Add(fHistPiPiRadiusXY[j]);
+	 fOutputContainer->Add(fHistPiPRadiusXY[j]);
+	 fOutputContainer->Add(fHistPiAPRadiusXY[j]);
  
-   fHistNclsTPCPosK0[0] = new TH1F("fHistNclsTPCPosK0","fHistNclsTPCPos K0",200,-0.5,199.5);
-   fHistNclsTPCPosK0[1] = new TH1F("fHistNclsTPCPosK0Sec","fHistNclsTPCPos K0 secondary",200,-0.5,199.5);
+	 fOutputContainer->Add(fHistPiPiMonitorCuts[j]);
+	 fOutputContainer->Add(fHistPiPMonitorCuts[j]);
+	 fOutputContainer->Add(fHistPiAPMonitorCuts[j]);
 
-   fHistNclsTPCNegK0[0] = new TH1F("fHistNclsTPCNegK0","fHistNclsTPCNeg K0",200,-0.5,199.5);
-   fHistNclsTPCNegK0[1] = new TH1F("fHistNclsTPCNegK0Sec","fHistNclsTPCNeg K0 secondary",200,-0.5,199.5);
+	 //others
+	 fOutputContainer->Add(fHistDedxSecProt[j]);
+	 fOutputContainer->Add(fHistDedxSecAProt[j]);
+	 fOutputContainer->Add(fHistDedxSecPiPlus[j]);
+	 fOutputContainer->Add(fHistDedxSecPiMinus[j]);
 
-   fHistChi2PerNclsITSPosK0[0] = new TH1F("fHistChi2PerNclsITSPosK0","chi2 per cluster ITS pi+pi-",250,0.0,50.0);
-   fHistChi2PerNclsITSPosK0[1] = new TH1F("fHistChi2PerNclsITSPosK0Sec","chi2 per cluster ITS pi+pi-",250,0.0,50.0);
+	 fOutputContainer->Add(fHistNclsITSPosK0[j]);
+	 fOutputContainer->Add(fHistNclsITSNegK0[j]);
+	 fOutputContainer->Add(fHistNclsITSPosL[j]);
+	 fOutputContainer->Add(fHistNclsITSNegL[j]);
+	 fOutputContainer->Add(fHistNclsITSPos[j]);
+	 fOutputContainer->Add(fHistNclsITSNeg[j]);
+	    
+	 fOutputContainer->Add(fHistNclsTPCPosK0[j]);
+	 fOutputContainer->Add(fHistNclsTPCNegK0[j]);
+	 fOutputContainer->Add(fHistNclsTPCPosL[j]);
+	 fOutputContainer->Add(fHistNclsTPCNegL[j]);
+	 fOutputContainer->Add(fHistNclsTPCPos[j]);
+	 fOutputContainer->Add(fHistNclsTPCNeg[j]);
+	    
+	 fOutputContainer->Add(fHistChi2PerNclsITSPosK0[j]);
+	 fOutputContainer->Add(fHistChi2PerNclsITSNegK0[j]);
+	 fOutputContainer->Add(fHistChi2PerNclsITSPosL[j]);
+	 fOutputContainer->Add(fHistChi2PerNclsITSNegL[j]);
+	 fOutputContainer->Add(fHistChi2PerNclsITSPos[j]);
+	 fOutputContainer->Add(fHistChi2PerNclsITSNeg[j]);
 
-   fHistChi2PerNclsITSNegK0[0] = new TH1F("fHistChi2PerNclsITSNegK0","chi2 per cluster ITS pi+pi- neg",250,0.0,50.0);
-   fHistChi2PerNclsITSNegK0[1] = new TH1F("fHistChi2PerNclsITSNegK0Sec","chi2 per cluster ITS pi+pi- neg",250,0.0,50.0);
+	 fOutputContainer->Add(fHistNclsITS[j]);
 
-   fHistNclsITSPosL[0] = new TH1F("fHistNclsITSPosL","fHistNclsITSPos #Lambda",10,-0.5,9.5);
-   fHistNclsITSPosL[1] = new TH1F("fHistNclsITSPosLSec","fHistNclsITSPos  #Lambda secondary",10,-0.5,9.5);
+	 fOutputContainer->Add(fHistNclsTPC[j]);
+
+	 fOutputContainer->Add(fHistNCRowsTPCNeg[j]);
+	 fOutputContainer->Add(fHistNCRowsTPCPos[j]);
+      }
+
+   }
+
+   //----------------------------- MC reco or MC truth only --------------------------//
+   if((fMCMode && fMCTruthMode) || fMCTruthMode){
    
-   fHistNclsITSNegL[0] = new TH1F("fHistNclsITSNegL","fHistNclsITSNeg #Lambda",10,-0.5,9.5);
-   fHistNclsITSNegL[1] = new TH1F("fHistNclsITSNegLSec","fHistNclsITSNeg  #Lambda secondary",10,-0.5,9.5);
+      fHistPrimVtxZESDVSNContributorsMC = new TH2F("fHistPrimVtxZESDVSNContributorsMC","prim vtx pos z ESD vs no. of contributers MC",250,-50,50,500,0.0,500.0);
+      fOutputContainer->Add(fHistPrimVtxZESDVSNContributorsMC);
+      fHistPrimVtxZESDTPCVSNContributorsMC = new TH2F("fHistPrimVtxZESDTPCVSNContributorsMC","prim vtx pos z TPC vs no. of contributers MC",250,-50,50,500,0.0,500.0);
+      fOutputContainer->Add(fHistPrimVtxZESDTPCVSNContributorsMC);
+      fHistPrimVtxZESDSPDVSNContributorsMC = new TH2F("fHistPrimVtxZESDSPDVSNContributorsMC","prim vtx pos z SPD vs no. of contributers MC",250,-50,50,500,0.0,500.0);
+      fOutputContainer->Add(fHistPrimVtxZESDSPDVSNContributorsMC);
+      fHistMCVertexZ= new TH1F("fHistMCVertexZ"," z vertex distr in cm MC",500,-50,50);
+      fOutputContainer->Add(fHistMCVertexZ);
+      fHistPiPiPDGCode = new TH1F("fHistPiPiPDGCode","PDG code of K0s mothers",3500,0,3500);
+      fOutputContainer->Add(fHistPiPPDGCode);
+      fHistPiPPDGCode = new TH1F("fHistPiPPDGCode","PDG code of #Lambda  mothers",3500,0,3500);
+      fOutputContainer->Add(fHistPiPiPDGCode);
+      fHistPiAPPDGCode = new TH1F("fHistPiAPPDGCode","PDG code of #bar{#Lambda} mothers",3500,0,3500);
+      fOutputContainer->Add(fHistPiAPPDGCode);
+      fHistPiPCosPointAngXiVsPt= new TH2F("fHistPiPCosPointAngXiVsPt","pi-p cos of pointing angle vs pt from xi",200,0.0,20.0,250,0.99,1.00);
+      fOutputContainer->Add(fHistPiPCosPointAngXiVsPt);
+      fHistPiAPCosPointAngXiVsPt= new TH2F("fHistPiAPCosPointAngXiVsPt","pi+p- cos of pointing angle vs pt from xi",200,0.0,20.0,250,0.98,1.00);	
+      fOutputContainer->Add(fHistPiAPCosPointAngXiVsPt);    
+      fHistPiPiEtaDMC[0] = new TH2F("fHistPiPiEtaDMCRaw","K0s daughters etaMC raw",300,-6,6,100,0,20);//
+      fOutputContainer->Add(fHistPiPiEtaDMC[0]);
+      fHistPiPiEtaDMC[1] = new TH2F("fHistPiPiEtaDMC","K0s daughters etaMC after rap V0 cut",300,-6,6,100,0,20);
+      fOutputContainer->Add(fHistPiPiEtaDMC[1]); 
+      fHistPiPEtaDMC[0] = new TH2F("fHistPiPEtaDMCRaw","#Lambda daughters etaMC raw",300,-6,6,100,0,20);
+      fOutputContainer->Add(fHistPiPEtaDMC[0]); 
+      fHistPiPEtaDMC[1] = new TH2F("fHistPiPEtaDMC","#Lambda daughters etaMC after rap V0 cut",300,-6,6,100,0,20);
+      fOutputContainer->Add(fHistPiPEtaDMC[1]);
+
+      //********************************************** K0 *************************************************//
    
-   fHistNclsTPCPosL[0] = new TH1F("fHistNclsTPCPosL","fHistNclsTPCPos #Lambda",200,-0.5,199.5);
-   fHistNclsTPCPosL[1] = new TH1F("fHistNclsTPCPosLSec","fHistNclsTPCPos  #Lambda secondary",200,-0.5,199.5);
-
-   fHistNclsTPCNegL[0] = new TH1F("fHistNclsTPCNegL","fHistNclsTPCNeg #Lambda",200,-0.5,199.5);
-   fHistNclsTPCNegL[1] = new TH1F("fHistNclsTPCNegLSec","fHistNclsTPCNeg  #Lambda secondary",200,-0.5,199.5);
-
-   fHistChi2PerNclsITSPosL[0] = new TH1F("fHistChi2PerNclsITSPosL","chi2 per cluster ITS pi-p+ pos",250,0.0,50.0);
-   fHistChi2PerNclsITSPosL[1] = new TH1F("fHistChi2PerNclsITSPosLSec","chi2 per cluster ITS pi-p+ pos",250,0.0,50.0);
-
-   fHistChi2PerNclsITSNegL[0] = new TH1F("fHistChi2PerNclsITSNegL","chi2 per cluster ITS pi-p+ neg",250,0.0,50.0);
-   fHistChi2PerNclsITSNegL[1] = new TH1F("fHistChi2PerNclsITSNegLSec","chi2 per cluster ITS pi-p+ neg",250,0.0,50.0);
-
-   //for 2d pt dep studies
-   fHistNclsITSPos[0] = new TH2F("fHistNclsITSPos","fHistNclsITSPos  vs pt pos",200,0.0,20.0,10,-0.5,9.5);
-   fHistNclsITSPos[1] = new TH2F("fHistNclsITSPosSec","fHistNclsITSPos  vs pt pos secondary",200,0.0,20.0,10,-0.5,9.5);
-
-   fHistNclsITSNeg[0] = new TH2F("fHistNclsITSNeg","fHistNclsITSNeg vs pt neg",200,0.0,20.0,10,-0.5,9.5);
-   fHistNclsITSNeg[1] = new TH2F("fHistNclsITSNegSec","fHistNclsITSNeg  vs pt neg secondary",200,0.0,20.0,10,-0.5,9.5);
+	 
+	 
+	   //********************************************** Lambda **********************************************//
+ 
+	   fHistPiPMassVSPtSecSigma[0] = new TH2F("fHistPiPMassVSPtSecSigmaMC"," pi-p+ InvMass distribution secondaries from sigma MC",nbMass,1.05,1.25,200,0.,20);
+      fHistPiPMassVSPtSecSigma[1] = new TH2F("fHistPiPMassVSPtSecSigma"," pi-p+ InvMass distribution secondaries from Sigma reco",nbMass,1.05,1.25,200,0.,20);
    
-   fHistNclsTPCPos[0] = new TH2F("fHistNclsTPCPos","ncls vs findable ncls pos",200,0.0,200.0,200,0.0,200.0);
-   fHistNclsTPCPos[1] = new TH2F("fHistNclsTPCPosSec","ncls vs findable ncls pos secondary",200,0.0,200.0,200,0.0,200.0);
-
-   fHistNclsTPCNeg[0] = new TH2F("fHistNclsTPCNeg","ncls vs findable ncls neg",200,0.0,200.0,200,0.0,200.0);
-   fHistNclsTPCNeg[1] = new TH2F("fHistNclsTPCNegSec","ncls vs findable ncls neg secondary",200,0.0,200.0,200,0.0,200.0);
-
-   fHistChi2PerNclsITSPos[0] = new TH2F("fHistChi2PerNclsITSPos","chi2 per cluster ITS pi+p-vs pt pos",200,0.0,20.0,250,0.0,50.0);
-   fHistChi2PerNclsITSPos[1] = new TH2F("fHistChi2PerNclsITSPosSec","chi2 per cluster ITS pi+p- vs pt pos",200,0.0,20.0,250,0.0,50.0);
-
-   fHistChi2PerNclsITSNeg[0] = new TH2F("fHistChi2PerNclsITSNeg","chi2 per cluster ITS pi+p- neg vs pt neg",200,0.0,20.0,250,0.0,50.0);
-   fHistChi2PerNclsITSNeg[1] = new TH2F("fHistChi2PerNclsITSNegsSec","chi2 per cluster ITS pi+p- neg vs pt neg",200,0.0,20.0,250,0.0,50.0);
-
-   fHistNclsITS[0] = new TH2F("fHistNclsITS","fHistNclsITS pos vs neg",10,-0.5,9.5,10,-0.5,9.5);
-   fHistNclsITS[1] = new TH2F("fHistNclsITSSec","fHistNclsITS pos vs neg",10,-0.5,9.5,10,-0.5,9.5);
-
-   fHistNclsTPC[0] = new TH2F("fHistNclsTPC","ncls TPC neg vs crossed rows neg",200,-0.5,199.5,200,-0.5,199.5);
-   fHistNclsTPC[1] = new TH2F("fHistNclsTPCSec","ncls TPC neg vs crossed rows neg",200,-0.5,199.5,200,-0.5,199.5);
-
-
-   fHistNCRowsTPCPos[0] = new TH2F("fHistNCRowsTPCPos","n crossed rows vs pt pos",200,0.0,20.0,200,0.0,200.0);
-   fHistNCRowsTPCPos[1] = new TH2F("fHistNCRowsTPCPosSec","n crossed rows vs pt pos sec",200,0.0,20.0,200,0.0,200.0);
-
-   fHistNCRowsTPCNeg[0] = new TH2F("fHistNCRowsTPCNeg","n crossed rows vs pt neg",200,0.0,20.0,200,0.0,200.0);
-   fHistNCRowsTPCNeg[1] = new TH2F("fHistNCRowsTPCNegSec","n crossed rows vs pt neg sec",200,0.0,20.0,200,0.0,200.0);
-	     
-   //***************************************** eta ******************************************************//
-	fHistPiPiEtaDMC[0] = new TH2F("fHistPiPiEtaDMCRaw","K0s daughters etaMC raw",300,-6,6,100,0,20);//
-   fHistPiPiEtaDMC[1] = new TH2F("fHistPiPiEtaDMC","K0s daughters etaMC after rap V0 cut",300,-6,6,100,0,20);
+      fHistPiPMassVSPtSecXi[0] = new TH2F("fHistPiPMassVSPtSecXiMC"," pi-p+ InvMass distribution secondaries from  xi MC",nbMass,1.05,1.25,200,0.,20);
+      fHistPiPMassVSYSecXi[1] = new TH2F("fHistPiPMassVSYSecXi"," pi-p+ InvMass distribution secondaries from xi reco",nbMass,1.05,1.25,100,-2.,2);
+ 
+      fHistPiPMassVSPtSecXi[1] = new TH2F("fHistPiPMassVSPtSecXi"," pi-p+ InvMass distribution secondaries from  xi  reco",nbMass,1.05,1.25,200,0.,20);
+      fHistPiPMassVSYSecXi[0] = new TH2F("fHistPiPMassVSYSecXiMC"," pi-p+ InvMass distribution secondaries from xi MC",nbMass,1.05,1.25,100,-2.,2);
    
-   fHistPiPEtaDMC[0] = new TH2F("fHistPiPEtaDMCRaw","#Lambda daughters etaMC raw",300,-6,6,100,0,20);
-   fHistPiPEtaDMC[1] = new TH2F("fHistPiPEtaDMC","#Lambda daughters etaMC after rap V0 cut",300,-6,6,100,0,20);
-   
-   fHistPiPiEtaDReco[0] = new TH2F("fHistPiPiEtaDRecoRaw","K0s daughters eta raw",300,-6,6,100,0,20);
-   fHistPiPiEtaDReco[1] = new TH2F("fHistPiPiEtaDReco","K0s daughters eta after rap V0 cut pos",300,-3,3,300,-3.00,3.0);
-   
-   fHistPiPEtaDReco[0] = new TH2F("fHistPiPEtaDRecoRaw","#Lambda daughters eta raw",300,-6,6,100,0,20);
-   fHistPiPEtaDReco[1] = new TH2F("fHistPiPEtaDReco","#Lambda daughters eta after rap V0 cut neg",300,-3,3,300,-3.00,3.0);
-   
+      fHistPiPXi0PtVSLambdaPt[0]= new TH2F("fHistPiPXi0PtVSLambdaPtMC"," pt xi 0 vs pt lambda MC truth",200,0.0,20.0,200,0.0,20.0);
+      fHistPiPXi0PtVSLambdaPt[1]= new TH2F("fHistPiPXi0PtVSLambdaPt"," pt xi 0 truth vs pt lambda reco",200,0.0,20.0,200,0.0,20.0);
+
+      fHistPiPXiMinusPtVSLambdaPt[0]= new TH2F("fHistPiPXiMinusPtVSLambdaPtMC","pt xi- vs pt lambda MC truth",200,0.0,20.0,200,0.0,20.0);
+      fHistPiPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiPXiMinusPtVSLambdaPt","pt xi- truth vs pt lambda reco",200,0.0,20.0,200,0.0,20.0);
+     
+      //******************************************* Antilambda **********************************************//
+
+	   fHistPiAPMassVSPtSecSigma[0] = new TH2F("fHistPiAPMassVSPtSecSigmaMC"," pi+p- InvMass distribution secondaries from Sigma MC",nbMass,1.05,1.25,200,0.,20);
+      fHistPiAPMassVSPtSecSigma[1] = new TH2F("fHistPiAPMassVSPtSecSigma"," pi+p- InvMass distribution secondaries from  Sigma  reco",nbMass,1.05,1.25,200,0.,20);
+
+      fHistPiAPMassVSPtSecXi[1] = new TH2F("fHistPiAPMassVSPtSecXi"," pi+p- InvMass distribution secondaries from  Xi reco",nbMass,1.05,1.25,200,0.,20);
+      fHistPiAPMassVSPtSecXi[0] = new TH2F("fHistPiAPMassVSPtSecXiMC"," pi+p- InvMass distribution secondaries from xi MC",nbMass,1.05,1.25,200,0.,20);
+
+      fHistPiAPMassVSYSecXi[0] = new TH2F("fHistPiAPMassVSYSecXiMC"," pi+p- InvMass distribution secondaries from  xi MC",nbMass,1.05,1.25,100,-2,2);
+      fHistPiAPMassVSYSecXi[1] = new TH2F("fHistPiAPMassVSYSecXi"," pi+p- InvMass distribution secondaries from xi reco",nbMass,1.05,1.25,100,-2.,2);
+
+      fHistPiAPXi0PtVSLambdaPt[0]= new TH2F("fHistPiAPXi0PtVSLambdaPtMC"," pt xi 0 vs pt Alambda MC truth",200,0.0,20.0,200,0.0,20.0);
+      fHistPiAPXi0PtVSLambdaPt[1]= new TH2F("fHistPiAPXi0PtVSLambdaPt"," pt xi 0 truth vs pt Alambda reco",200,0.0,20.0,200,0.0,20.0);
+
+      fHistPiAPXiMinusPtVSLambdaPt[0]= new TH2F("fHistPiAPXiMinusPtVSLambdaPtMC","pt xi- vs pt Alambda MC truth",200,0.0,20.0,200,0.0,20.0);
+      fHistPiAPXiMinusPtVSLambdaPt[1]= new TH2F("fHistPiAPXiMinusPtVSLambdaPt","pt xi- truth vs pt Alambda reco",200,0.0,20.0,200,0.0,20.0);
+
+      for(Int_t j=0;j<2;j++){
+
+	 fOutputContainer->Add(fHistPiPMassVSPtSecXi[j]);
+	 fOutputContainer->Add(fHistPiAPMassVSPtSecXi[j]);
+
+	 fOutputContainer->Add(fHistPiPMassVSYSecXi[j]);
+	 fOutputContainer->Add(fHistPiAPMassVSYSecXi[j]);
+
+	 fOutputContainer->Add(fHistPiPXi0PtVSLambdaPt[j]);
+	 fOutputContainer->Add(fHistPiAPXi0PtVSLambdaPt[j]);
+
+	 fOutputContainer->Add(fHistPiPXiMinusPtVSLambdaPt[j]);
+	 fOutputContainer->Add(fHistPiAPXiMinusPtVSLambdaPt[j]);
+
+	 fOutputContainer->Add(fHistPiPMassVSPtSecSigma[j]);
+	 fOutputContainer->Add(fHistPiAPMassVSPtSecSigma[j]);
+	 
+      }
+   }
    /*    
    //shift q/pt
    fHistUserPtShift = new TH1F("fHistUserPtShift","user defined shift in 1/pt",100,-0.5,1.5);
    */
-
-   
-      //-----------------  create output container -----------------//
-
-      fOutputContainer = new TList() ;
-      fOutputContainer->SetName(GetName()) ;
-
-      if(fAnapp){
-	 fOutputContainer->Add(fHistITSLayerHits);
-	 fOutputContainer->Add(fHistOneHitWithSDD);
-	 fOutputContainer->Add(fHistPrimVtxZESDTPCVSNContributors);
-	 fOutputContainer->Add(fHistPrimVtxZESDSPDVSNContributors);
-	 fOutputContainer->Add(fHistPrimVtxZESDTPC);
-	 fOutputContainer->Add(fHistPrimVtxZESDSPD);  
-      }
-      fOutputContainer->Add(fHistNEvents);
-      fOutputContainer->Add(fHistMuliplicity);
-      fOutputContainer->Add(fHistMuliplicityRaw);
-      fOutputContainer->Add(fHistMultiplicityPrimary);
-      fOutputContainer->Add(fHistESDVertexZ);
-      fOutputContainer->Add(fHistPrimVtxZESD);
-      fOutputContainer->Add(fHistPrimVtxZESDVSNContributors);
-      fOutputContainer->Add(fHistNPrim);
-
-      Int_t mchist = 1;// for Data
-      if((fMCMode && fMCTruthMode) || fMCTruthMode){//MC reco or MC truth only
-	 fOutputContainer->Add(fHistPrimVtxZESDVSNContributorsMC);
-	 fOutputContainer->Add(fHistPrimVtxZESDTPCVSNContributorsMC);
-	 fOutputContainer->Add(fHistPrimVtxZESDSPDVSNContributorsMC);
-	 fOutputContainer->Add(fHistMCVertexZ);
-	 fOutputContainer->Add(fHistPiPPDGCode);
-	 fOutputContainer->Add(fHistPiPiPDGCode);
-	 fOutputContainer->Add(fHistPiAPPDGCode);
-	 fOutputContainer->Add(fHistPiPCosPointAngXiVsPt);
-	 fOutputContainer->Add(fHistPiAPCosPointAngXiVsPt);      
-
-	 mchist = 2; //for MC to get secondaries
-      }
-
-      if((fMCMode) || (!fMCTruthMode && !fMCMode)){// for reco or data or mc data like MC reco only
-	 fOutputContainer->Add(fHistPiPiEtaDReco[0]);
-	 fOutputContainer->Add(fHistPiPiEtaDReco[1]);
-	 fOutputContainer->Add(fHistPiPEtaDReco[0]);
-	 fOutputContainer->Add(fHistPiPEtaDReco[1]);
-      
-      }
-	      
-      for(Int_t j=0;j<mchist;j++){//add allways
-	 fOutputContainer->Add(fHistArmenteros[j]);
-	 fOutputContainer->Add(fHistPiPiPtVSY[j]);
-	 fOutputContainer->Add(fHistPiPPtVSY[j]);
-	 fOutputContainer->Add(fHistPiAPPtVSY[j]);
-	 fOutputContainer->Add(fHistPiPiMassVSPt[j]);
-	 fOutputContainer->Add(fHistPiPMassVSPt[j]);
-	 fOutputContainer->Add(fHistPiAPMassVSPt[j]);
-	 fOutputContainer->Add(fHistPiPiMass[j]);
-	 fOutputContainer->Add(fHistPiPMass[j]);
-	 fOutputContainer->Add(fHistPiAPMass[j]);
-	 fOutputContainer->Add(fHistV0RadiusZ[j]);
-	 fOutputContainer->Add(fHistV0RadiusZVSPt[j]);
-	 fOutputContainer->Add(fHistV0RadiusXY[j]);
-	 fOutputContainer->Add(fHistV0RadiusXYVSY[j]);
-	 fOutputContainer->Add(fHistPiPiDecayLengthVsPt[j]);
-	 fOutputContainer->Add(fHistPiPDecayLengthVsPt[j]);
-	 fOutputContainer->Add(fHistPiAPDecayLengthVsPt[j]);
-		  
-	 if((fMCMode) || (!fMCTruthMode && !fMCMode)){// for reco or data or mc data like MC reco only
-	    //all
-	    fOutputContainer->Add(fHistPiPiDCADaughters[j]); 
-	    fOutputContainer->Add(fHistPiPDCADaughters[j]); 
-	    fOutputContainer->Add(fHistPiAPDCADaughters[j]);
-	    /*
-	      fOutputContainer->Add( fHistPiPiPtDaughters[j]);
-	      fOutputContainer->Add( fHistPiPPtDaughters[j]);
-	      fOutputContainer->Add( fHistPiAPPtDaughters[j]);
-	    */
-	    fOutputContainer->Add(fHistPiPiDCAVSMass[j]);
-	    fOutputContainer->Add(fHistPiPDCAVSMass[j]);
-	    fOutputContainer->Add(fHistPiAPDCAVSMass[j]);
-	    fOutputContainer->Add(fHistPiPiCosPointAng[j]);
-	    fOutputContainer->Add(fHistPiPCosPointAng[j]);
-	    fOutputContainer->Add(fHistPiAPCosPointAng[j]);
-	    fOutputContainer->Add(fHistPiPiDecayLengthVsMass[j]);
-	    fOutputContainer->Add(fHistPiPDecayLengthVsMass[j]);
-	    fOutputContainer->Add(fHistPiAPDecayLengthVsMass[j]);
-	    fOutputContainer->Add(fHistPiPiRadiusXY[j]);
-	    fOutputContainer->Add(fHistPiPRadiusXY[j]);
-	    fOutputContainer->Add(fHistPiAPRadiusXY[j]);
-	    fOutputContainer->Add(fHistPiPiMonitorCuts[j]);
-	    fOutputContainer->Add(fHistPiPMonitorCuts[j]);
-	    fOutputContainer->Add(fHistPiAPMonitorCuts[j]);
-      
-	    //others
-	    fOutputContainer->Add(fHistDedxSecProt[j]);
-	    fOutputContainer->Add(fHistDedxSecAProt[j]);
-	    fOutputContainer->Add(fHistDedxSecPiPlus[j]);
-	    fOutputContainer->Add(fHistDedxSecPiMinus[j]);
-	    fOutputContainer->Add(fHistNclsITSPosK0[j]);
-	    fOutputContainer->Add(fHistNclsITSNegK0[j]);
-	    fOutputContainer->Add(fHistNclsTPCPosK0[j]);
-	    fOutputContainer->Add(fHistNclsTPCNegK0[j]);
-	    fOutputContainer->Add(fHistChi2PerNclsITSPosK0[j]);
-	    fOutputContainer->Add(fHistChi2PerNclsITSNegK0[j]);
-	    fOutputContainer->Add(fHistNclsITSPosL[j]);
-	    fOutputContainer->Add(fHistNclsITSNegL[j]);
-	    fOutputContainer->Add(fHistNclsTPCPosL[j]);
-	    fOutputContainer->Add(fHistNclsTPCNegL[j]);
-	    fOutputContainer->Add(fHistChi2PerNclsITSPosL[j]);
-	    fOutputContainer->Add(fHistChi2PerNclsITSNegL[j]);
-	    fOutputContainer->Add(fHistNclsITSPos[j]);
-	    fOutputContainer->Add(fHistNclsITSNeg[j]);
-	    fOutputContainer->Add(fHistNclsTPCPos[j]);
-	    fOutputContainer->Add(fHistNclsTPCNeg[j]);
-	    fOutputContainer->Add(fHistChi2PerNclsITSPos[j]);
-	    fOutputContainer->Add(fHistChi2PerNclsITSNeg[j]);
-	    fOutputContainer->Add(fHistNclsITS[j]);
-	    fOutputContainer->Add(fHistNclsTPC[j]);
-	    fOutputContainer->Add(fHistNCRowsTPCNeg[j]);
-	    fOutputContainer->Add(fHistNCRowsTPCPos[j]);
-	 }
-	 if((fMCMode && fMCTruthMode) || fMCTruthMode){//MC reco or MC truth only
-	    fOutputContainer->Add(fHistPiPMassVSPtSecXi[j]);
-	    fOutputContainer->Add(fHistPiAPMassVSPtSecXi[j]);
-	    fOutputContainer->Add(fHistPiPMassVSYSecXi[j]);
-	    fOutputContainer->Add(fHistPiAPMassVSYSecXi[j]);
-	    fOutputContainer->Add(fHistPiPXi0PtVSLambdaPt[j]);
-	    fOutputContainer->Add(fHistPiAPXi0PtVSLambdaPt[j]);
-	    fOutputContainer->Add(fHistPiPXiMinusPtVSLambdaPt[j]);
-	    fOutputContainer->Add(fHistPiAPXiMinusPtVSLambdaPt[j]);
-	    fOutputContainer->Add(fHistPiPMassVSPtSecSigma[j]);
-	    fOutputContainer->Add(fHistPiAPMassVSPtSecSigma[j]);
-	    fOutputContainer->Add(fHistPiPiEtaDMC[j]);
-	    fOutputContainer->Add(fHistPiPEtaDMC[j]);
-	    fOutputContainer->Add(fHistPiPiMassVSPtMCTruth[j]);
-	    fOutputContainer->Add(fHistPiPMassVSPtMCTruth[j]);
-	    fOutputContainer->Add(fHistPiAPMassVSPtMCTruth[j]);
-	 }
-      }
+     
 }
 
 //________________________________________________________________________
@@ -1026,13 +1035,13 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
   
    // -- Check fo centrality
    Bool_t process = kTRUE;
-  
+   Int_t centBin = -1;
    if(fUseCentrality) {
-      Int_t centbin = CalculateCentralityBin();
+      centBin = CalculateCentralityBin();
       if(!fUseCentralityRange){
-	 if(centbin!= fUseCentralityBin) {process=kFALSE;}
+	 if(centBin!= fUseCentralityBin) process=kFALSE;
       }
-      else if(centbin< fUseCentralityBin || centbin>fUseCentralityBin+fUseCentralityRange)
+      else if(centBin < fUseCentralityBin || centBin > fUseCentralityBin+fUseCentralityRange)
 	 process = kFALSE;
    }
 
@@ -1041,9 +1050,12 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
   
    if(fAnapp){// pp Analysis
       // SDD test for 2.76TeV pp
-      Bool_t sdd = kFALSE;
+      // select events with SDD
+      TString trCl = fESD->GetFiredTriggerClasses();
+      if(!(trCl.Contains("ALLNOTRD")) && fSelSDD) return;
+      
       Int_t ntracks = fESD->GetNumberOfTracks();
-      for(Int_t i=0;i<ntracks;i++){
+      for(Int_t i=0;i<ntracks;i++){//check sdd event selection
 	 AliESDtrack *tr=   fESD->GetTrack(i);
       
 	 Bool_t sdd0 = tr->HasPointOnITSLayer(0);
@@ -1053,24 +1065,14 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
 	 Bool_t sdd4 = tr->HasPointOnITSLayer(4);
 	 Bool_t sdd5 = tr->HasPointOnITSLayer(5);
        
-	 fHistITSLayerHits->Fill(Int_t(sdd0)*(-1));
-	 fHistITSLayerHits->Fill(Int_t(sdd1)*1);
-	 fHistITSLayerHits->Fill(Int_t(sdd2)*2);
-	 fHistITSLayerHits->Fill(Int_t(sdd3)*3);
-	 fHistITSLayerHits->Fill(Int_t(sdd4)*4);
-	 fHistITSLayerHits->Fill(Int_t(sdd5)*5);
-	
-	 if(sdd2  || sdd3){
-	    sdd=kTRUE;
-	    break;
-	 }
+	 fHistITSLayerHits->Fill(Int_t(sdd0)*(-1),ntracks);
+	 fHistITSLayerHits->Fill(Int_t(sdd1)*1,ntracks);
+	 fHistITSLayerHits->Fill(Int_t(sdd2)*2,ntracks);
+	 fHistITSLayerHits->Fill(Int_t(sdd3)*3,ntracks);
+	 fHistITSLayerHits->Fill(Int_t(sdd4)*4,ntracks);
+	 fHistITSLayerHits->Fill(Int_t(sdd5)*5,ntracks);
       }
-      if(sdd) fHistOneHitWithSDD->Fill(1);
-      else fHistOneHitWithSDD->Fill(0);
-    
-      //select events with SDD
-      if(fSelSDD && !sdd) return;
-
+      
       //vertex selection
       if (vtxESD->GetStatus()){
 	 fHistNEvents->Fill(2);
@@ -1128,26 +1130,29 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
 	 //else return;
       }
    }
-   else if(process){// PbPb analysis
+   else{// PbPb analysis
       if(vtxESD->GetStatus()){
 	 Double_t vtxZ = vtxESD->GetZv();
-	 fHistNEvents->Fill(2);
-	 fHistESDVertexZ->Fill(vtxZ);
-	 if(fabs(vtxESD->GetZv()) < fVertexZCut){
-	    nContr = vtxESD->GetNContributors();
-	    fHistMuliplicityRaw->Fill(multV0);
-	    fHistNEvents->Fill(3);
-	    fHistNPrim->Fill(nContr);
-	    Process();
-	    fHistMuliplicity->Fill(multV0);
-	    fHistPrimVtxZESD->Fill(vtxZ);
-	    fHistPrimVtxZESDVSNContributors->Fill(vtxZ,nContr);
-	    // -- count events after processing --//
-	    fHistNEvents->Fill(4);
+	 if(process){
+	    fHistNEvents->Fill(2);
+	    fHistESDVertexZ->Fill(vtxZ);
+	    if(fabs(vtxZ) < fVertexZCut){
+	       nContr = vtxESD->GetNContributors();
+	       fHistMuliplicityRaw->Fill(multV0);
+	       fHistNEvents->Fill(3);
+	       fHistNPrim->Fill(nContr);
+	       Process();
+	       fHistMuliplicity->Fill(multV0);
+	       fHistPrimVtxZESD->Fill(vtxZ);
+	       fHistPrimVtxZESDVSNContributors->Fill(vtxZ,nContr);
+	       // -- count events after processing --//
+	       fHistCentBin->Fill(centBin);
+	       fHistNEvents->Fill(4);
+	    }
 	 }
+	 if(fabs(vtxZ) < fVertexZCut) fHistCentBinRaw->Fill(centBin);
       }
    }
-      
    PostData(1,fOutputContainer);
     
 }
@@ -1169,6 +1174,7 @@ void AliAnalysisTaskV0ForRAA::Process(){
       for(Int_t i=0;i<ntracks;i++){
 	 AliESDtrack *track = (AliESDtrack*)fESD->GetTrack(i);
 	 if(!fESDTrackCuts->AcceptTrack(track)) continue;
+	 if( track->Eta() > fEtaCutMCDaughtersVal) continue;
 	 count++;
       }
       fHistMultiplicityPrimary->Fill(count);
@@ -1483,7 +1489,7 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 
 	    fHistPiPiMass[isSecd]->Fill(massV0MC);
 	    fHistPiPiMassVSPt[isSecd]->Fill(massV0MC,ptV0MC);
-	    fHistPiPiPtDaughters[isSecd]->Fill(ptMinus,ptPlus);
+	    // fHistPiPiPtDaughters[isSecd]->Fill(ptMinus,ptPlus);
 	    fHistPiPiPtVSY[isSecd]->Fill(rapidity,ptV0MC);
 	   
 	    Double_t ctK0s=0.0;
@@ -1503,7 +1509,7 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 
 	    fHistPiPMassVSPt[isSecd]->Fill(massV0MC,ptV0MC);
 	    fHistPiPMass[isSecd]->Fill(massV0MC);  
-	    fHistPiPPtDaughters[isSecd]->Fill(ptMinus,ptPlus);
+	    //  fHistPiPPtDaughters[isSecd]->Fill(ptMinus,ptPlus);
 	    fHistPiPPtVSY[isSecd]->Fill(rapidity,ptV0MC);
 	   
 	    Double_t ctL=0.0;
@@ -1522,7 +1528,7 @@ void AliAnalysisTaskV0ForRAA::V0MCTruthLoop(){
 
 	    fHistPiAPMassVSPt[isSecd]->Fill(massV0MC,ptV0MC);
 	    fHistPiAPMass[isSecd]->Fill(massV0MC);
-	    fHistPiAPPtDaughters[isSecd]->Fill(ptMinus,ptPlus);
+	    //  fHistPiAPPtDaughters[isSecd]->Fill(ptMinus,ptPlus);
 	    fHistPiAPPtVSY[isSecd]->Fill(rapidity,ptV0MC);
 	  
 	    Double_t ctAL=0.0;
