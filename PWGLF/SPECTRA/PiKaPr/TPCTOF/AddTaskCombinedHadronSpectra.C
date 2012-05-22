@@ -1,6 +1,6 @@
 
 
-AliAnalysisTask *AddTaskCombinedHadronSpectra(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t writeOwnFile = kFALSE, Bool_t saveMotherPDG = kFALSE, Bool_t smallTHnSparse = kFALSE, Double_t nSigmaTPCLow= -3., Double_t nSigmaTPCHigh = 3., Double_t rapidityLow = -0.2, Double_t rapidityHigh = 0.2, Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
+AliAnalysisTask *AddTaskCombinedHadronSpectra(Int_t identifier = 0, Bool_t isMC = kFALSE, Bool_t isTPConly = kFALSE, Bool_t writeOwnFile = kFALSE, Bool_t saveMotherPDG = kFALSE, Bool_t useEvenDcaBinning = kFALSE, Bool_t smallTHnSparse = kFALSE, Double_t nSigmaTPCLow= -3., Double_t nSigmaTPCHigh = 3., Double_t rapidityLow = -0.2, Double_t rapidityHigh = 0.2, Bool_t setTrackCuts = kFALSE, AliESDtrackCuts *ESDtrackCuts = 0){
 
 
   //get the current analysis manager
@@ -27,6 +27,7 @@ AliAnalysisTask *AddTaskCombinedHadronSpectra(Int_t identifier = 0, Bool_t isMC 
   if (isMC) task->SetIsMCtrue(isMC);
   if (isTPConly)task->SetUseTPConlyTracks(isTPConly);
   if (saveMotherPDG) task->SetSaveMotherPDG(saveMotherPDG);
+  if (useEvenDcaBinning) task->SetEvenDCAbinning(kTRUE);
   if (smallTHnSparse){
     task->SetSmallTHnSparse(kTRUE);
     task->SetTPCnSigmaCuts(nSigmaTPCLow,nSigmaTPCHigh);

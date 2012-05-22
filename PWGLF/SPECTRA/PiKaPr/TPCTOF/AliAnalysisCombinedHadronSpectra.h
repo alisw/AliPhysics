@@ -45,6 +45,7 @@ class AliAnalysisCombinedHadronSpectra : public AliAnalysisTaskSE {
   void           SetSmallTHnSparse(Bool_t smallTHnSparse = kFALSE) {fSmallTHnSparse = smallTHnSparse;};
   void           SetTPCnSigmaCuts(Double_t nSigmaTPCLow = -3., Double_t nSigmaTPCHigh = 3.){fTPCnSigmaCutLow = nSigmaTPCLow; fTPCnSigmaCutHigh = nSigmaTPCHigh;};
   void           SetRapidityCuts(Double_t rapidityLow = -0.2, Double_t rapidityHigh = 0.2){fRapidityCutLow = rapidityLow; fRapidityCutHigh = rapidityHigh;};
+  void           SetEvenDCAbinning(Bool_t EvenDCAbinning = kTRUE) {fEvenDCAbinning = EvenDCAbinning;};
   void           Initialize();
   //
   
@@ -69,6 +70,7 @@ class AliAnalysisCombinedHadronSpectra : public AliAnalysisTaskSE {
   Double_t      fTPCnSigmaCutHigh;     // high border for TPC n-sigma cut
   Double_t      fRapidityCutLow;       // low border for rapidity cut
   Double_t      fRapidityCutHigh;      // high border for rapidity cut
+  Double_t      fEvenDCAbinning;       // same bin width for all bins in DCA xy
   Double_t      fAlephParameters[5];   // Aleph Parameters for Bethe-Bloch
 
   //
