@@ -1569,6 +1569,10 @@ AliCFDataGrid* AliHFEspectrum::GetCharmBackground(){
   if(fWriteToFile) cCharmBgEval->SaveAs("CharmBackground.eps");
 
   delete[] bins;
+  delete[] nBinpp;
+  delete[] binspp;
+  delete[] nBinPbPb;
+  delete[] binsPbPb;
 
   return charmBackgroundGrid;
 }
