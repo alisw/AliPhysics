@@ -17,13 +17,16 @@ AliEmcalPhysicsSelection::AliEmcalPhysicsSelection() :
   fMarkLedEvent(0),
   fSkipFastOnly(0), 
   fSkipLedEvent(0),
-  fCellMinE(2), 
-  fClusMinE(5), 
+  fCellMinE(-1), 
+  fClusMinE(-1),
+  fTrackMinPt(-1), 
+  fTriggers(0),
   fIsFastOnly(0),
   fIsLedEvent(0),
   fIsGoodEvent(0),
   fCellMaxE(0), 
-  fClusMaxE(0) 
+  fClusMaxE(0),
+  fTrackMaxPt(0)
 {
   // Default constructor.
 }
@@ -48,11 +51,17 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     res = aev->GetHeader()->GetOfflineTrigger();
   }
 
+  if (fTriggers) { // only process given triggers
+    if (res & fTriggers == 0)
+      return res;
+  }
+
   fIsFastOnly  = kFALSE;
   fIsGoodEvent = kFALSE;
   fIsLedEvent  = kFALSE;
   fCellMaxE    = 0;
   fClusMaxE    = 0;
+  fTrackMaxPt  = 0;
 
   if ((res & AliVEvent::kAnyINT) || 
       (res & AliVEvent::kEMC1)   || 
@@ -62,10 +71,7 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     fIsGoodEvent = kTRUE;
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  am->LoadBranch("EMCALCells.");
-  am->LoadBranch("CaloClusters");
-
-  AliVCaloCells *cells = ev->GetEMCALCells();
+  AliVCaloCells *cells   = ev->GetEMCALCells();
   const Short_t nCells   = cells->GetNumberOfCells();
     
   // mark LHC11a fast only partition if requested 
@@ -79,32 +85,73 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     }
   }
 
-  // count cells above threshold
-  Int_t nCellCount[10] = {0,0,0,0,0,0,0,0,0,0};
-  for(Int_t iCell=0; iCell<nCells; ++iCell) {
-    Short_t cellId = cells->GetCellNumber(iCell);
-    Double_t cellE = cells->GetCellAmplitude(cellId);
-    Int_t sm       = cellId / (24*48);
-    if (cellE>0.1)
-      ++nCellCount[sm];
-    if (cellE>fCellMaxE)
-      fCellMaxE = cellE;
+  if (fCellMinE>0) {
+    if (eev)
+      am->LoadBranch("EMCALCells.");
+    for(Int_t iCell=0; iCell<nCells; ++iCell) {
+      Short_t cellId = cells->GetCellNumber(iCell);
+      Double_t cellE = cells->GetCellAmplitude(cellId);
+      if (cellE>fCellMaxE)
+        fCellMaxE = cellE;
+    }
   }
-  
-  const Int_t nCaloClusters = ev->GetNumberOfCaloClusters();
-  for(Int_t iClus = 0; iClus<nCaloClusters; ++iClus) {
-    AliVCluster *cl = ev->GetCaloCluster(iClus);
-    if (!cl->IsEMCAL()) 
-      continue;
-    Double_t e = cl->E();
-    if (e>fClusMaxE)
-      fClusMaxE = e;
+
+  if (fClusMinE>0) {
+    if (eev)
+      am->LoadBranch("CaloClusters");
+
+    const Int_t nCaloClusters = ev->GetNumberOfCaloClusters();
+    for(Int_t iClus = 0; iClus<nCaloClusters; ++iClus) {
+      AliVCluster *cl = ev->GetCaloCluster(iClus);
+      if (!cl->IsEMCAL()) 
+        continue;
+      Double_t e = cl->E();
+      if (e>fClusMaxE)
+        fClusMaxE = e;
+    }
+  }
+
+  if (fTrackMinPt>0) {
+    TClonesArray *trks = 0;
+    if (eev) {
+      am->LoadBranch("PicoTracks");
+      trks = dynamic_cast<TClonesArray*>(eev->FindListObject("PicoTracks"));
+      if (!trks) {
+        am->LoadBranch("Tracks");
+        trks = dynamic_cast<TClonesArray*>(eev->FindListObject("Tracks"));
+      }
+    } else {
+      trks = dynamic_cast<TClonesArray*>(aev->FindListObject("tracks"));
+    }
+    const Int_t Ntracks = trks->GetEntriesFast();
+    for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
+      AliVTrack *track = dynamic_cast<AliVTrack*>(trks->At(iTracks));
+      if (!track)
+        continue;
+      Double_t pt = track->Pt();
+      if (pt>fTrackMaxPt)
+        fTrackMaxPt = pt;
+    }
   }
 
   // bad cell criterion for LHC11a from 
   // https://indico.cern.ch/materialDisplay.py?contribId=4&materialId=slides&confId=147067
   const Int_t runN = ev->GetRunNumber();
   if ((runN>=144871) && (runN<=146860)) { 
+
+    if (eev)
+      am->LoadBranch("EMCALCells.");
+
+    // count cells above threshold
+    Int_t nCellCount[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+    for(Int_t iCell=0; iCell<nCells; ++iCell) {
+      Short_t cellId = cells->GetCellNumber(iCell);
+      Double_t cellE = cells->GetCellAmplitude(cellId);
+      Int_t sm       = cellId / (24*48);
+      if (cellE>0.1)
+        ++nCellCount[sm];
+    }
+
     if (nCellCount[4] > 100)
       fIsLedEvent = kTRUE;
     else {
@@ -123,7 +170,7 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
   if (fCellMaxE>=fCellMinE)
     res |= kEmcalHC;
 
-  if (fClusMaxE>=fClusMinE)
+  if ((fClusMaxE>=fClusMinE) || (fTrackMaxPt>=fTrackMinPt))
     res |= kEmcalHT;
 
   if (fIsGoodEvent)
