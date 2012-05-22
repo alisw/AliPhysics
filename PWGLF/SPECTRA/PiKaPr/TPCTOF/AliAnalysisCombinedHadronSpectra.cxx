@@ -76,6 +76,7 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra()
   fTPCnSigmaCutHigh(0),
   fRapidityCutLow(0),
   fRapidityCutHigh(0),
+  fEvenDCAbinning(0),
     fAlephParameters(),
     fHistRealTracks(0),
     fHistMCparticles(0),
@@ -105,6 +106,7 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra(const char *n
   fTPCnSigmaCutHigh(0),
   fRapidityCutLow(0),
   fRapidityCutHigh(0),
+  fEvenDCAbinning(0),
     fAlephParameters(),
     fHistRealTracks(0),
     fHistMCparticles(0),
@@ -127,6 +129,8 @@ AliAnalysisCombinedHadronSpectra::AliAnalysisCombinedHadronSpectra(const char *n
   fTPCnSigmaCutHigh = 3.;
   fRapidityCutLow = -0.2;
   fRapidityCutHigh = 0.2;
+  fEvenDCAbinning = kFALSE;
+
   /* real */
   fAlephParameters[0] = 0.0283086;
   fAlephParameters[1] = 2.63394e+01;
@@ -219,16 +223,20 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
   //
   const Int_t kPtBins = 35;
   const Int_t kMultBins = 11;
-  const Int_t kDcaBins = 76;
+
+  Int_t kDcaBinsTemp = 76;
+  if (fEvenDCAbinning) kDcaBinsTemp = 150;
+  const Int_t kDcaBins = (const Int_t) kDcaBinsTemp;
+
   const Float_t kDcaBinsTPConlyFactor = 5; //need to change binning of DCA plot for tpconly
   // sort pT-bins ..
-  Double_t binsPt[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0};
+  Double_t binsPt[77] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0};
 
-  Double_t binsDca[kDcaBins+1] =  {-3,-2.85,-2.7,-2.55,-2.4,-2.25,-2.1,-1.95,-1.8,-1.65,-1.5,-1.35,-1.2,-1.05,-0.9,-0.75,-0.6,-0.45,-0.3,-0.285,-0.27,-0.255,-0.24,-0.225,-0.21,-0.195,-0.18,-0.165,-0.15,-0.135,-0.12,-0.105,-0.09,-0.075,-0.06,-0.045,-0.03,-0.015,0,0.015,0.03,0.045,0.06,0.075,0.09,0.105,0.12,0.135,0.15,0.165,0.18,0.195,0.21,0.225,0.24,0.255,0.27,0.285,0.3,0.45,0.6,0.75,0.9,1.05,1.2,1.35,1.5,1.65,1.8,1.95,2.1,2.25,2.4,2.55,2.7,2.85,3};
+  Double_t binsDca[77] =  {-3,-2.85,-2.7,-2.55,-2.4,-2.25,-2.1,-1.95,-1.8,-1.65,-1.5,-1.35,-1.2,-1.05,-0.9,-0.75,-0.6,-0.45,-0.3,-0.285,-0.27,-0.255,-0.24,-0.225,-0.21,-0.195,-0.18,-0.165,-0.15,-0.135,-0.12,-0.105,-0.09,-0.075,-0.06,-0.045,-0.03,-0.015,0,0.015,0.03,0.045,0.06,0.075,0.09,0.105,0.12,0.135,0.15,0.165,0.18,0.195,0.21,0.225,0.24,0.255,0.27,0.285,0.3,0.45,0.6,0.75,0.9,1.05,1.2,1.35,1.5,1.65,1.8,1.95,2.1,2.25,2.4,2.55,2.7,2.85,3};
 
   // DCA bins borders get multiplied by constant factor for TPConlyTracks
-  Double_t binsDcaTPConly[kDcaBins+1];
-  for (Int_t i = 0; i< kDcaBins+1; i++) {
+  Double_t binsDcaTPConly[77];
+  for (Int_t i = 0; i< 77; i++) {
   	binsDcaTPConly[i] = kDcaBinsTPConlyFactor * binsDca[i];
   }
 
@@ -266,14 +274,17 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
 
   //different DCAxy binning for TPConlyTracks
 
+  Int_t dcaAxisNumber = 8;
+  if (fSmallTHnSparse) dcaAxisNumber = 6;
+
   if (!fUseTPConlyTracks){
-    if (!fSmallTHnSparse) fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDca);
-    else                  fHistRealTracks->GetAxis(6)->Set(kDcaBins, binsDca);
+    if (fEvenDCAbinning) fHistRealTracks->GetAxis(dcaAxisNumber)->Set(kDcaBins,-3.,3.);
+    else fHistRealTracks->GetAxis(dcaAxisNumber)->Set(kDcaBins, binsDca);
   }
   else {
-    if (!fSmallTHnSparse) fHistRealTracks->GetAxis(8)->Set(kDcaBins, binsDcaTPConly);
-    else                  fHistRealTracks->GetAxis(6)->Set(kDcaBins, binsDcaTPConly);
-  }
+    if (fEvenDCAbinning) fHistRealTracks->GetAxis(dcaAxisNumber)->Set(kDcaBins,-15.,15.);
+    else fHistRealTracks->GetAxis(dcaAxisNumber)->Set(kDcaBins, binsDcaTPConly);
+   }
   fListHist->Add(fHistRealTracks);
   //
   //                      0.ptot,1.tpcSig,2.hasTOF, 3. assumed part., 4. nclDedx, 5. nSigmaTPC (4x), 6. nSigmaTOF (4x), 7. centrality
@@ -299,8 +310,8 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
     xmaxHistMC[9] = 8.5;
     binsHistMCSm[7] = 9;
     xmaxHistMCSm[7] = 8.5;
-
   }
+
 
   if (!fSmallTHnSparse) fHistMCparticles = new THnSparseF("fHistMCparticles","MC histogram",10,binsHistMC,xminHistMC,xmaxHistMC);
   else                  fHistMCparticles = new THnSparseF("fHistMCparticles","MC histogram",8,binsHistMCSm,xminHistMCSm,xmaxHistMCSm);
@@ -308,15 +319,23 @@ void AliAnalysisCombinedHadronSpectra::UserCreateOutputObjects()
 
   fHistMCparticles->GetAxis(2)->Set(kPtBins, binsPt);
 
+  /*
   //different DCAxy binning for TPConlyTracks
-  if (!fUseTPConlyTracks) {
-    if (!fSmallTHnSparse) fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDca);
-    else                  fHistMCparticles->GetAxis(6)->Set(kDcaBins, binsDca);
+  if (!fEvenDCAbinning){
+    if (!fUseTPConlyTracks) fHistMCparticles->GetAxis(dcaAxisNumber)->Set(kDcaBins, binsDca);
+    else fHistMCparticles->GetAxis(dcaAxisNumber)->Set(kDcaBins, binsDcaTPConly);
+  }
+  */
+
+  if (!fUseTPConlyTracks){
+    if (fEvenDCAbinning) fHistMCparticles->GetAxis(dcaAxisNumber)->Set(kDcaBins,-3.,3.);
+    else fHistMCparticles->GetAxis(dcaAxisNumber)->Set(kDcaBins, binsDca);
   }
   else {
-    if (!fSmallTHnSparse) fHistMCparticles->GetAxis(8)->Set(kDcaBins, binsDcaTPConly);
-    else                  fHistMCparticles->GetAxis(6)->Set(kDcaBins, binsDcaTPConly);
-  }
+    if (fEvenDCAbinning) fHistMCparticles->GetAxis(dcaAxisNumber)->Set(kDcaBins,-15.,15.);
+    else fHistMCparticles->GetAxis(dcaAxisNumber)->Set(kDcaBins, binsDcaTPConly);
+   }
+
 
 
   fListHist->Add(fHistMCparticles);
