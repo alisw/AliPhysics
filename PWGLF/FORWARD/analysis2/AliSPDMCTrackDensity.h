@@ -1,6 +1,6 @@
 #ifndef ALISPDMCTRACKDENSITY_MC
 #define ALISPDMCTRACKDENSITY_MC
-#include <AliBaseMCTrackDensity.h>
+#include "AliBaseMCTrackDensity.h"
 
 /**
  * A class to calculate the particle density from track references.

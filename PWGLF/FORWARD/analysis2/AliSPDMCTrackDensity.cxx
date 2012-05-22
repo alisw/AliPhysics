@@ -1,6 +1,6 @@
 #include "AliSPDMCTrackDensity.h"
-#include <AliMCEvent.h>
-#include <AliTrackReference.h>
+#include "AliMCEvent.h"
+#include "AliTrackReference.h"
 #include <TMath.h>
 #include <AliLog.h>
 #include <TROOT.h>

@@ -247,6 +247,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   // Parameters:
   //   vtxAxis Vertex axis in use 
   //
+  AliInfo("Initialising the event inspector");
   
   // -1.5 -0.5 0.5 1.5 ... 89.5 ... 100.5
   // ----- 92 number --------- ---- 1 ---
@@ -691,6 +692,10 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   if (offline) {
     triggers |= AliAODForwardMult::kOffline;
     triggers |= AliAODForwardMult::kInel;
+    if (!fHTriggers) { 
+      AliWarning("Histogram of triggers not defined - has init been called");
+      return false;
+    }
     fHTriggers->Fill(kOffline+0.5);
 
     // If this is inel, see if we have a tracklet 

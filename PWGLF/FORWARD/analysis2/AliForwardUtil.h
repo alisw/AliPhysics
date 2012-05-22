@@ -626,6 +626,16 @@ public:
     ClassDef(RingHistos,1) 
   };
   /* @} */
+
+  //__________________________________________________________________
+  struct DebugGuard 
+  {
+    DebugGuard(Int_t lvl, Int_t msgLvl, const char* format, ...);
+    ~DebugGuard();
+  private:
+    void Format(bool in);
+    TString fMsg;
+  };
 private:
   AliForwardUtil() {}
   AliForwardUtil(const AliForwardUtil& o) : TObject(o) {}
@@ -636,6 +646,12 @@ private:
   ClassDef(AliForwardUtil,1) // Utilities - do not make object
 };
 
+#ifdef LOG_NO_DEBUG
+# define DGUARD(L,N,F,...) do {} while(false) 
+#else
+# define DGUARD(L,N,F,...)					\
+  AliForwardUtil::DebugGuard _GUARD(L,N,F, ## __VA_ARGS__)
+#endif
 #endif
 // Local Variables:
 //  mode: C++

@@ -25,6 +25,7 @@
 #include "AliMCEvent.h"
 #include "AliAODForwardMult.h"
 #include "AliCentralCorrSecondaryMap.h"
+#include "AliForwardUtil.h"
 #include <TH1.h>
 #include <TH2D.h>
 #include <TDirectory.h>
@@ -76,6 +77,7 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask()
   // Parameters:
   //    name Name of task 
   //
+  DGUARD(fDebug,0,"Default construction of AliCentralMCCorrectionsTask");
 }
 
 //____________________________________________________________________
@@ -99,6 +101,7 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const char* name)
   // Parameters:
   //    name Name of task 
   //
+  DGUARD(fDebug,0,"Named construction of AliCentralMCCorrectionsTask: %s",name);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
@@ -124,6 +127,7 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const AliCentralMCCorre
   // Parameters:
   //    o Object to copy from 
   //
+  DGUARD(fDebug,0,"Copy construction of AliCentralMCCorrectionsTask");
 }
 
 //____________________________________________________________________
@@ -139,6 +143,7 @@ AliCentralMCCorrectionsTask::operator=(const AliCentralMCCorrectionsTask& o)
   // Return:
   //    Reference to this object 
   //
+  DGUARD(fDebug,3,"Assignment of AliCentralMCCorrectionsTask");
   if (&o == this) return *this; 
   fInspector         = o.fInspector;
   fTrackDensity      = o.fTrackDensity;
@@ -162,6 +167,7 @@ AliCentralMCCorrectionsTask::Init()
   // Initialize the task 
   // 
   //
+  DGUARD(fDebug,1,"Initialize AliCentralMCCorrectionsTask");
 }
 
 //____________________________________________________________________
@@ -177,6 +183,8 @@ AliCentralMCCorrectionsTask::SetVertexAxis(Int_t nBin, Double_t min,
   //    vzMin Least @f$z@f$ coordinate of interation point
   //    vzMax Largest @f$z@f$ coordinate of interation point
   //
+  DGUARD(fDebug,3,"Set vertex axis AliCentralMCCorrectionsTask [%d,%f,%f]",
+	 nBin, min, max);
   if (max < min) { 
     Double_t tmp = min;
     min          = max;
@@ -213,6 +221,8 @@ AliCentralMCCorrectionsTask::SetEtaAxis(Int_t nBin, Double_t min, Double_t max)
   //    vzMin Least @f$\eta@f$ 
   //    vzMax Largest @f$\eta@f$ 
   //
+  DGUARD(fDebug,3,"Set eta axis AliCentralMCCorrectionsTask [%d,%f,%f]",
+	 nBin, min, max);
   if (max < min) { 
     Double_t tmp = min;
     min          = max;
@@ -241,6 +251,7 @@ AliCentralMCCorrectionsTask::SetEtaAxis(const TAxis& axis)
 void
 AliCentralMCCorrectionsTask::DefineBins(TList* l)
 {
+  DGUARD(fDebug,1,"Define bins in AliCentralMCCorrectionsTask");
   if (!fVtxBins) fVtxBins = new TObjArray(fVtxAxis.GetNbins(), 1);
   if (fVtxBins->GetEntries() > 0) return;
 
@@ -262,6 +273,7 @@ AliCentralMCCorrectionsTask::UserCreateOutputObjects()
   // Create output objects 
   // 
   //
+  DGUARD(fDebug,1,"Create user output for AliCentralMCCorrectionsTask");
   fList = new TList;
   fList->SetOwner();
   fList->SetName(Form("%sSums", GetName()));
@@ -335,6 +347,7 @@ AliCentralMCCorrectionsTask::UserExec(Option_t*)
   //    option Not used
   //  
 
+  DGUARD(fDebug,1,"AliCentralMCCorrectionsTask process an event");
   // Get the input data - MC event
   AliMCEvent*  mcEvent = MCEvent();
   if (!mcEvent) { 
@@ -422,6 +435,7 @@ AliCentralMCCorrectionsTask::Terminate(Option_t*)
   // Parameters:
   //    option Not used 
   //
+  DGUARD(fDebug,1,"AliCentralMCCorrectionsTask analyse merged output");
 
   fList = dynamic_cast<TList*>(GetOutputData(1));
   if (!fList) {

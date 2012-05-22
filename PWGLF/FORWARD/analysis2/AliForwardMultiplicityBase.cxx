@@ -39,6 +39,7 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fFirstEvent(true),
     fCorrManager(0)
 {
+  DGUARD(0,0,"Named Construction of AliForwardMultiplicityBase %s",name);
   // Set our persistent pointer 
   fCorrManager = &AliForwardCorrectionManager::Instance();
   fBranchNames = 
@@ -50,6 +51,7 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
 AliForwardMultiplicityBase& 
 AliForwardMultiplicityBase::operator=(const AliForwardMultiplicityBase& o)
 {
+  DGUARD(fDebug,2,"Assignment to AliForwardMultiplicityBase");
   if (&o == this) return *this;
   fEnableLowFlux = o.fEnableLowFlux;
   fFirstEvent    = o.fFirstEvent;
@@ -71,6 +73,7 @@ AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
   // Return:
   //    true if all present, false otherwise
   //  
+  DGUARD(fDebug,1,"Checking corrections 0x%x", what);
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   // Check that we have the energy loss fits, needed by 
@@ -127,6 +130,7 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe,
   // Read corrections
   //
   //
+
   UInt_t what = AliForwardCorrectionManager::kAll;
   if (!fEnableLowFlux)
     what ^= AliForwardCorrectionManager::kDoubleHit;
@@ -136,6 +140,7 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe,
     what ^= AliForwardCorrectionManager::kAcceptance;
   if (!GetCorrections().IsUseMergingEfficiency())
     what ^= AliForwardCorrectionManager::kMergingEfficiency;
+  DGUARD(fDebug,1,"Read corrections 0x%x", what);
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   if (!fcm.Init(GetEventInspector().GetCollisionSystem(),
@@ -168,6 +173,7 @@ AliForwardMultiplicityBase::GetESDEvent()
   //
   // Get the ESD event. IF this is the first event, initialise
   //
+  DGUARD(fDebug,1,"Get the ESD event");
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) {
     AliWarning("No ESD event found for input event");
@@ -202,6 +208,7 @@ void
 AliForwardMultiplicityBase::MarkEventForStore() const
 {
   // Make sure the AOD tree is filled 
+  DGUARD(fDebug,3,"Mark AOD event for storage");
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
@@ -225,6 +232,8 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
   // 
   // Note, that the distributions are normalised to the number of
   // observed events only - they should be corrected for 
+  DGUARD(fDebug,3,"Make first-shot ring dN/deta");
+
   if (!input) return;
   TList* list = static_cast<TList*>(input->FindObject(inName));
   if (!list) { 

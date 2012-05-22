@@ -11,6 +11,7 @@
 #include <iostream>
 #include "AliCollisionGeometry.h"
 #include "AliGenEventHeader.h"
+#include "AliForwardUtil.h"
 #include <TF1.h>
 #include <TGraph.h>
 
@@ -33,6 +34,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity()
     fDebug(false)
 {
   // Default constructor 
+  DGUARD(0,0,"MC track density default construction");
 }
 
 //____________________________________________________________________
@@ -54,6 +56,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const char* name)
     fDebug(false)
 {
   // Normal constructor constructor 
+  DGUARD(0,0,"MC track density named construction: %s", name);
 }
 
 //____________________________________________________________________
@@ -75,6 +78,7 @@ AliBaseMCTrackDensity::AliBaseMCTrackDensity(const AliBaseMCTrackDensity& o)
     fDebug(o.fDebug)
 {
   // Normal constructor constructor 
+  DGUARD(0,0,"MC track density copy construction");
 }
 
 //____________________________________________________________________
@@ -82,6 +86,7 @@ AliBaseMCTrackDensity&
 AliBaseMCTrackDensity::operator=(const AliBaseMCTrackDensity& o)
 {
   // Assignment operator 
+  DGUARD(fDebug,3,"MC track density assignmetn");
   if (&o == this) return *this; 
   TNamed::operator=(o);
   fUseOnlyPrimary       = o.fUseOnlyPrimary;
@@ -105,6 +110,7 @@ AliBaseMCTrackDensity::operator=(const AliBaseMCTrackDensity& o)
 void
 AliBaseMCTrackDensity::DefineOutput(TList* l)
 {
+  DGUARD(fDebug,1,"MC track defines output");
   TList* ll = new TList;
   ll->SetName(GetTitle());
   ll->SetOwner();
@@ -148,6 +154,7 @@ AliBaseMCTrackDensity::DefineOutput(TList* l)
 void 
 AliBaseMCTrackDensity::SetupWeights(TList* l)
 {
+  DGUARD(fDebug,2,"MC track setup phi weights");
   fV2Eta = new TF1("v2eta", "gaus", -6, 6);
   fV2Eta->SetParameters(20 * 0.1, 0, 9);
   l->Add(fV2Eta);
@@ -209,6 +216,7 @@ AliBaseMCTrackDensity::StoreParticle(AliMCParticle*       particle,
 				     const AliMCParticle* mother, 
 				     AliTrackReference*   ref) const
 {
+  DGUARD(fDebug,3,"MC track density store particle");
   // Store a particle. 
   if (!ref) return 0;
 
@@ -285,6 +293,7 @@ AliBaseMCTrackDensity::GetMother(Int_t     iTr,
 Bool_t
 AliBaseMCTrackDensity::GetCollisionParameters(const AliMCEvent& event)
 { 
+  DGUARD(fDebug,3,"MC track density get collision parameters");
   AliCollisionGeometry* hd = 
     dynamic_cast<AliCollisionGeometry*>(event.GenEventHeader());
   fPhiR = (hd ? hd->ReactionPlaneAngle() : 0.);
@@ -298,6 +307,7 @@ AliBaseMCTrackDensity::ProcessTrack(AliMCParticle* particle,
 				    const AliMCParticle* mother)
 {
   // Check the returned particle 
+  DGUARD(fDebug,3,"MC track density Process a track");
   if (!particle) return false;
     
   Int_t              nTrRef = particle->GetNumberOfTrackReferences();
@@ -355,6 +365,7 @@ AliBaseMCTrackDensity::ProcessTracks(const AliMCEvent& event,
   // Return:
   //    True on succes, false otherwise 
   //
+  DGUARD(fDebug,3,"MC track density Process a tracks");
   fVz = vz;
   GetCollisionParameters(event);
   
