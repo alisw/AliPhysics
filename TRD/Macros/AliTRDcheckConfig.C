@@ -2,33 +2,23 @@
 // This is a macro to analyze TRD/Calib/DCS OCDB objects either
 // from the grid for a given run number or from a local object.
 // If you want to analyze data from the grid, please don't forget to
-// have a valid alien token initialized and the file /tmp/gclient_env_$UID source'd.
+// have a valid alien token initialized
 //
 // Arguments:
-// The first argument is the runnumber (this is ignored in case of a local file),
-// the second is a string that needs to contain either "grid" or "local". Further
-// you can add either verbose or quiet to that string. If you don't, you'll be asked
-// for all stuff individually wether you want to see it or not
-// the thrid argument is the number of the ROC you (eventually) want to dump its data
-// member of.
-// The fourth one is the path and name of the local file you might want to look at.
+// Either provide a run number as the first argument to access the 
+// corresponding file on the grid
+// or the path + filename as the second argument (and an arbitrary number as the first)
+// to access a local file.
 //
-// So the simplest way to use this macro is if you want to check the output of a given
-// run from the OCDB:
-// .x AliTRDcheckConfigv2.C(60111)
+// Please note that leading zeros in the run number are not supported.
 //
-// An example for quickly checking a local file:
-// .x AliTRDcheckConfigv2.C(0, "local quiet", 533, "$ALICE_ROOT/TRD/Calib/DCS/Run0_999999999_v0_s0.root")
+// Examples:
+// .x AliTRDcheckConfig.C (60111)
+// .x AliTRDcheckConfig.C (0, "$ALICE_ROOT/TRD/Calib/DCS/Run0_999999999_v0_s0.root")
 //
-// Please contact Frederick Kramer in case of problems
+// Please contact Frederick Kramer or Hans Beck in case of problems
 //===================================================================================
 
-// This is the path one needs to change if the year is no longer 2009 
-// and the runnumber cannot be found
-//TString alienOcdbPath("alien://folder=/alice/data/2009/OCDB/");
-TString alienOcdbPath("alien://folder=/alice/data/2010/OCDB/");
-
-// Do not make changes below here unless you know what your doing
 
 const Int_t nROC = 540;
 const Int_t nROB = 8;
@@ -179,6 +169,7 @@ void GetMajorityDifferences(TObject* calDCSObj, TObject* calDCSObj2) {
   for (Int_t i=0; i<nROC && i<feeArrSiz1 && i<feeArrSiz2; i++) {
     TObject* idcsfee;
     TObject* idcsfee2;
+
     if (calVer == 1) {
       idcsfee  = ((AliTRDCalDCS*)calDCSObj)->GetCalDCSFEEObj(i);
       idcsfee2 = ((AliTRDCalDCS*)calDCSObj2)->GetCalDCSFEEObj(i);
@@ -187,10 +178,13 @@ void GetMajorityDifferences(TObject* calDCSObj, TObject* calDCSObj2) {
       idcsfee  = ((AliTRDCalDCSv2*)calDCSObj)->GetCalDCSFEEObj(i);
       idcsfee2 = ((AliTRDCalDCSv2*)calDCSObj2)->GetCalDCSFEEObj(i);
     }
+    if ((idcsfee == NULL) || (idcsfee2 == NULL)) continue;
+
     Int_t sbit = 0;
-    if (calVer == 1) ((AliTRDCalDCSFEE*)idcsfee)->GetStatusBit();
-    if (calVer == 1) ((AliTRDCalDCSFEEv2*)idcsfee)->GetStatusBit();
-    if ((idcsfee == NULL) || (idcsfee2 == NULL) || (sbit != 0) /*|| (idcsfee2->GetStatusBit() != 0)*/) continue;
+    if (calVer == 1) sbit = ((AliTRDCalDCSFEE*)idcsfee)->GetStatusBit();
+    if (calVer == 2) sbit = ((AliTRDCalDCSFEEv2*)idcsfee)->GetStatusBit();
+    if (sbit != 0) continue;
+
     for (Int_t j=0; j<nROB; j++) {
       for (Int_t k=0; k<nMCM; k++) {
 	Int_t igsm, inim, inev, inpt, igsm1, inim1, inev1, inpt1, igsm2, inim2, inev2, inpt2;
@@ -266,14 +260,12 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
     cout << "I : Get CDBManager instance." << endl;
     AliCDBManager *man = AliCDBManager::Instance();
     cout << "I : SetDefaultStorage." << endl;
-    man->SetDefaultStorage(alienOcdbPath);
+    man->SetDefaultStorageFromRun(runNr);
+
     cout << "I : Get OCDB Entry." << endl;
     entry = man->Get("TRD/Calib/DCS", runNr);
     if (entry == NULL) {
-      cout << endl << "ERROR: Unable to get the AliTRDCalDCS object from the OCDB for run number " << runNr << endl << endl;
-      cout << "If the run number is correct, it could be that the year is no longer 2010 and" << endl;
-      cout << "the path where the objects is stored has changed, check the top of this macro " << endl;
-      cout << "to change the path." << endl;
+      cout << endl << "ERROR: Unable to get the AliTRDCalDCS object from the OCDB for run number " << runNr << "." << endl;
       return;
     }
   } else {
@@ -293,15 +285,26 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
     TObjArray *objArrayCDB = (TObjArray*)entry->GetObject();
   }
   
-  if (!strcmp(objArrayCDB->At(0)->ClassName(),"AliTRDCalDCS"))   calVer = 1;
-  if (!strcmp(objArrayCDB->At(0)->ClassName(),"AliTRDCalDCSv2")) calVer = 2;
+  Int_t iesor=0;
+  for (iesor=0; iesor<3; iesor++) if(objArrayCDB->At(iesor)) break;
+  if (iesor > 1) {
+    cout << "E : Neither the start or end of run objects were in the root file.";
+    return;
+  }
+
+  if (!strcmp(objArrayCDB->At(iesor)->ClassName(),"AliTRDCalDCS"))   calVer = 1;
+  else if (!strcmp(objArrayCDB->At(iesor)->ClassName(),"AliTRDCalDCSv2")) calVer = 2;
+  else {  
+    cout << "E : Object types undefined.";
+    return;
+  }
 
   Bool_t sorandeor = true;
   TObject *caldcs  = objArrayCDB->At(0);
   TObject *caldcs2 = objArrayCDB->At(1);
 
   if (caldcs == NULL && caldcs2 == NULL) {
-    cout << "E : Neither the start or end of run files were in the root file.";
+    cout << "E : Neither the start or end of run objects were in the root file.";
     return;
   } else if (caldcs != NULL && caldcs2 == NULL) {
     cout << "E : The EOR file was not in the root file.";
@@ -361,12 +364,12 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
     TObject* idcsfee;
     TObject* idcsfee2;
     if (calVer == 1) {
-      idcsfee  = ((AliTRDCalDCS*)caldcs)->GetCalDCSFEEObj(i);
-      idcsfee2 = ((AliTRDCalDCS*)caldcs2)->GetCalDCSFEEObj(i);
+      if (caldcs)  idcsfee  = ((AliTRDCalDCS*)caldcs)->GetCalDCSFEEObj(i);
+      if (caldcs2) idcsfee2 = ((AliTRDCalDCS*)caldcs2)->GetCalDCSFEEObj(i);
     }
     if (calVer == 2) {
-      idcsfee  = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(i);
-      idcsfee2 = ((AliTRDCalDCSv2*)caldcs2)->GetCalDCSFEEObj(i);
+      if (caldcs)  idcsfee  = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(i);
+      if (caldcs2) idcsfee2 = ((AliTRDCalDCSv2*)caldcs2)->GetCalDCSFEEObj(i);
     }
     if (idcsfee != NULL && idcsfee2 != NULL) {
       Int_t sbd1 = 0;
@@ -430,24 +433,23 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
     gao = ((AliTRDCalDCS*)caldcs)->GetGlobalAddOptions();
   }
   if (calVer == 2) {
-    gtb = ((AliTRDCalDCSv2*)caldcs)->GetGlobalNumberOfTimeBins();
-    gct = ((AliTRDCalDCSv2*)caldcs)->GetGlobalConfigTag();
-    gsh = ((AliTRDCalDCSv2*)caldcs)->GetGlobalSingleHitThres();
-    gtc = ((AliTRDCalDCSv2*)caldcs)->GetGlobalThreePadClustThres();
-    gsz = ((AliTRDCalDCSv2*)caldcs)->GetGlobalSelectiveNoZS();
-    gfw = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTCFilterWeight();
-    gfs = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTCFilterShortDecPar();
-    gfl = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTCFilterLongDecPar();
-    gsn = ((AliTRDCalDCSv2*)caldcs)->GetGlobalModeFastStatNoise();
-    gcv = ((AliTRDCalDCSv2*)caldcs)->GetGlobalConfigVersion();
-    gcn = ((AliTRDCalDCSv2*)caldcs)->GetGlobalConfigName();
-    gft = ((AliTRDCalDCSv2*)caldcs)->GetGlobalFilterType();
-    grp = ((AliTRDCalDCSv2*)caldcs)->GetGlobalReadoutParam();
-    gtp = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTestPattern();
-    gtm = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTrackletMode();
-    gtd = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTrackletDef();
-    gts = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTriggerSetup();
-    gao = ((AliTRDCalDCSv2*)caldcs)->GetGlobalAddOptions();
+    gtb = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetNumberOfTimeBins();
+    gct = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetConfigTag();
+    gsh = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetSingleHitThres();
+    gtc = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetThreePadClustThres();
+    gsz = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetSelectiveNoZS();
+    gfw = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetTCFilterWeight();
+    gfs = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetTCFilterShortDecPar();
+    gfl = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetTCFilterLongDecPar();
+    gcv = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetConfigVersion();
+    gcn = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetConfigName();
+    gft = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetFilterType();
+    grp = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetReadoutParam();
+    gtp = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetTestPattern();
+    gtm = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetTrackletMode();
+    gtd = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetTrackletDef();
+    gts = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetTriggerSetup();
+    gao = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(0)->GetAddOptions();
   }
 
 
