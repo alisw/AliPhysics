@@ -522,6 +522,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 				ptext->Clear();
 				ptext->AddText(results1.Data());
 				ptext->AddText(results2.Data());
+				ptext->SetFillColor(color);
 	      } else if(hname.Contains("SDDRawDataCheck")) {
 		    
 			  //AliInfo("========================================Found histo\n");
@@ -987,6 +988,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 			  ptext->Clear();
 			  ptext->AddText(results1.Data());
 			  ptext->AddText(results2.Data());
+                          ptext->SetFillColor(color);
 	      }
 	      else
 		if(hname.Contains("SDDRecPointCheck"))
@@ -1413,3 +1415,4 @@ Bool_t AliITSQASDDChecker::MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TAS
     }
    return kTRUE;
 }
+
