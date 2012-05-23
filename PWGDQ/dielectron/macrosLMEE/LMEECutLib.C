@@ -97,19 +97,14 @@ class LMEECutLib {
 	AliDielectronMixingHandler* GetMixingHandler(Int_t cutSet) {
 	  AliDielectronMixingHandler* mixingHandler = 0x0;
 	  switch (cutSet) {
+		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPCorTOF  :
 		  mixingHandler = new AliDielectronMixingHandler;
 		  mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
-		  mixingHandler->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,40,80");
-		  mixingHandler->SetDepth(25);
-		  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
-		case kPbPb2011TPCandTOF :
-		  mixingHandler = new AliDielectronMixingHandler;
-		  mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
-		  mixingHandler->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,40,80");
-		   mixingHandler->AddVariable(AliDielectronVarManager::kv0ACrpH2,"-6*(TMath::Pi()/6),-5*(TMath::Pi()/6),-4*(TMath::Pi()/6),-3*(TMath::Pi()/6),-2*(TMath::Pi()/6),-1*(TMath::Pi()/6),0,1*(TMath::Pi()/6),2*(TMath::Pi()/6),3*(TMath::Pi()/6),4*(TMath::Pi()/6),5*(TMath::Pi()/6),6*(TMath::Pi()/6)");
+		  mixingHandler->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,40,80,100");
+		  mixingHandler->AddVariable(AliDielectronVarManager::kv0ACrpH2,"-6*(TMath::Pi()/6),-5*(TMath::Pi()/6),-4*(TMath::Pi()/6),-3*(TMath::Pi()/6),-2*(TMath::Pi()/6),-1*(TMath::Pi()/6),0,1*(TMath::Pi()/6),2*(TMath::Pi()/6),3*(TMath::Pi()/6),4*(TMath::Pi()/6),5*(TMath::Pi()/6),6*(TMath::Pi()/6)");
 		  //mixingHandler->SetDepth(50);
-		  mixingHandler->SetDepth(20);
+		  mixingHandler->SetDepth(15);
 		  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
 		  break;
 		case kpp2010TPCandTOF :
@@ -118,10 +113,10 @@ class LMEECutLib {
 		  mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
 		  mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
 		  //might want to add multiplicity?
-		  mixingHandler->SetDepth(50);
+		  mixingHandler->SetDepth(25);
 		  mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
 		  break;
-		default: cout << "No Rotator defined" << endl;
+		default: cout << "No Mixing Handler defined" << endl;
 	  }
 	  return mixingHandler;
 	}
@@ -148,12 +143,17 @@ class LMEECutLib {
 
 	  //---------------------------------------------
 	  AliDielectronPID *pidTPCTOFeOnly = new AliDielectronPID("TPC-TOF","TPC-TOF");
-	  pidTPCTOFeOnly->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3,3.,0.0,100.,kFALSE);
+	  pidTPCTOFeOnly->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3. ,3.,0.0,100.,kFALSE);
 	  pidTPCTOFeOnly->AddCut(AliDielectronPID::kTOF ,AliPID::kElectron , -3. , 3. , 0.0 , 100., kFALSE );
+
+	  AliDielectronPID *pidTPCandTOF = new AliDielectronPID("TPC-TOF-HFE","TPC-TOF-HFE");
+	  pidTPCandTOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.,0.0,100.,kFALSE);
+	  pidTPCandTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3.,3.,0.,100.,kTRUE);
+	  pidTPCandTOF->AddCut(AliDielectronPID::kTOF ,AliPID::kElectron , -3. , 3. , 0.0 , 100., kFALSE );
 
 	  AliDielectronPID *pidTPChardTOF = new AliDielectronPID("TPC-TOF-HFE","TPC-TOF-HFE");
 	  pidTPChardTOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,lowerCut,3.,0.0,100.,kFALSE);
-	  pidTPChardTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3,3.,0.,100.,kTRUE);
+	  pidTPChardTOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3.,3.,0.,100.,kTRUE);
 	  pidTPChardTOF->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-3.,3.,0.,100.,kTRUE);
 	  pidTPChardTOF->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,-3.,3.,0.,100.,kTRUE);
 	  pidTPChardTOF->AddCut(AliDielectronPID::kTOF ,AliPID::kElectron , -3. , 3. , 0.0 , 100., kFALSE );
@@ -181,8 +181,8 @@ class LMEECutLib {
 		case kPbPb2011TPCandTOF :
 		  AliDielectronCutGroup* cgSecondTrackFilterPIDTPC1 = new AliDielectronCutGroup("cgPIDTPC1","cgPIDTPC1",AliDielectronCutGroup::kCompAND);
 		  cgSecondTrackFilterPIDTPC1->AddCut(pTPC);
-		  //cgSecondTrackFilterPIDTPC1->AddCut(pidTPChardTOF);
-		  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCTOFeOnly);
+		  //cgSecondTrackFilterPIDTPC1->AddCut(pidTPCTOFeOnly);
+		  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCandTOF);
 		  cgSecondTrackFilterPIDTPC1->AddCut(pidTPCsignal);
 		  cgSecondTrackFilterPIDTPC1->AddCut(GetTrackCutsAna(cutSet));
 		  anaCuts = cgSecondTrackFilterPIDTPC1;
@@ -199,6 +199,7 @@ class LMEECutLib {
 		  AliDielectronCutGroup* cgSecondTrackFilterPIDTPC = new AliDielectronCutGroup("cgPIDTPC","cgPIDTPC",AliDielectronCutGroup::kCompAND);
 		  cgSecondTrackFilterPIDTPC->AddCut(pTPC);
 		  //cgSecondTrackFilterPIDTPC->AddCut(pidTPChardTOF);
+		  cgSecondTrackFilterPIDTPC->AddCut(pidTPCandTOF);
 		  cgSecondTrackFilterPIDTPC->AddCut(pidTPCTOFeOnly);
 		  anaCuts = cgSecondTrackFilterPIDTPC;
 		  break;

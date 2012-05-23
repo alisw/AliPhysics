@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runAll=kTRUE){
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runAll=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {

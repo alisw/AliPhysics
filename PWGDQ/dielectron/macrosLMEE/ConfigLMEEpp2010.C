@@ -1,4 +1,4 @@
-
+#include "LMEECutLib.C"
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
@@ -143,8 +143,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 
   //Create Classes for Rejected Tracks/Pairs:
-  for (Int_t i=0; i<3; ++i){
-	histos->AddClass(Form("RejTrack_%s",AliDielectron::PairClassName(i)));
+  for (Int_t i=0; i<2; ++i){
+	histos->AddClass(Form("RejTrack_%s",AliDielectron::TrackClassName(i)));
   }
   for (Int_t i=0; i<3; ++i){
 	histos->AddClass(Form("RejPair_%s",AliDielectron::PairClassName(i)));
@@ -163,17 +163,17 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 		AliDielectronVarManager::kCentrality);
 
 
-  //add histograms to Track classes
+  //add histograms to Track classes, also fills RejTrack
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
   histos->UserHistogram("Track","NclsSFracTPC","NclsSFracTPC; NclsSFracTPC;#tracks",200,0,10.,AliDielectronVarManager::kNclsSFracTPC);
   histos->UserHistogram("Track","TPCclsDiff","TPCclsDiff; TPCclsDiff;#tracks",200,0,10.,AliDielectronVarManager::kTPCclsDiff);
 
   histos->UserHistogram("Track","ITS_dEdx_P","ITS_dEdx;P [GeV];ITS signal (arb units);#tracks",
-	  400,0.0,20.,1000,0.,1000.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSsignal,kTRUE);
+	  400,0.0,20.,200,0.,1000.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSsignal,kTRUE);
 
   histos->UserHistogram("Track","dEdx_P","dEdx;P [GeV];TPC signal (arb units);#tracks",
 	  400,0.0,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
-
+/*
   histos->UserHistogram("Track","TPCnSigmaEle_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;#tracks",
 	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
   histos->UserHistogram("Track","TPCnSigmaKao_P","TPC number of sigmas Kaons;P [GeV];TPC number of sigmas Kaons;#tracks",
@@ -190,9 +190,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaKao,kTRUE);
   histos->UserHistogram("Track","TOFnSigmaPro_P","TOF number of sigmas Protons;P [GeV];TOF number of sigmas Protons;#tracks",
 	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro,kTRUE);
-
+*/
   histos->UserHistogram("Track","Eta_Phi","Eta Phi Map; Eta; Phi;#tracks",
-	  200,-2,2,200,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
+	  100,-2,2,100,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
   histos->UserHistogram("Track","dXY","dXY;dXY [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
 
@@ -202,7 +202,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   histos->UserHistogram("Track","kNFclsTPCr_pT","nTPCr vs pt;nTPCr vs pt;#tracks",159,0.,159.,200,0.,20.,AliDielectronVarManager::kNFclsTPCr,AliDielectronVarManager::kPt);
 
-  //add histograms to Pair classes
+  //add histograms to Pair classes, also fills RejPair
   histos->UserHistogram("Pair","InvMass","Inv.Mass;Inv. Mass [GeV];#pairs",
 	  500,0.0,5.00,AliDielectronVarManager::kM);
   histos->UserHistogram("Pair","Rapidity","Rapidity;Rapidity;#pairs",
@@ -211,21 +211,21 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
   //2D Histo Plot
   histos->UserHistogram("Pair","InvMassPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
-	  500,0.0,5.0,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
+	  500,0.0,5.0,100,0.,10.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
 
   histos->UserHistogram("Pair","InvMassOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
 	  500,0.0,5.0,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
 
-  //add histograms to Track classes
+  //add histograms to PRE-Track classes
   histos->UserHistogram("Pre","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
 
   histos->UserHistogram("Pre","ITS_dEdx_P","ITS_dEdx;P [GeV];ITS signal (arb units);#tracks",
-	  400,0.0,20.,1000,0.,1000.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSsignal,kTRUE);
+	  400,0.0,20.,200,0.,1000.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSsignal,kTRUE);
 
   histos->UserHistogram("Pre","dEdx_P","dEdx;P [GeV];TPC signal (arb units);#tracks",
 	  400,0.0,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
 
-
+/*
   histos->UserHistogram("Pre","TPCnSigmaEle_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;#tracks",
 	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
   histos->UserHistogram("Pre","TPCnSigmaKao_P","TPC number of sigmas Kaons;P [GeV];TPC number of sigmas Kaons;#tracks",
@@ -242,65 +242,13 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaKao,kTRUE);
   histos->UserHistogram("Pre","TOFnSigmaPro_P","TOF number of sigmas Protons;P [GeV];TOF number of sigmas Protons;#tracks",
 	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro,kTRUE);
-
+*/
   histos->UserHistogram("Pre","Eta_Phi","Eta Phi Map; Eta; Phi;#tracks",
-	  200,-2,2,200,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
+	  100,-2,2,100,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
   histos->UserHistogram("Pre","dXY","dXY;dXY [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
 
-  histos->UserHistogram("Pre","ZVertex ","ZVertex ;ZVertex[cm];#tracks",20,-20,20,AliDielectronVarManager::kZv);
-  histos->UserHistogram("Pre","XVertex ","XVertex ;XVertex[cm];#tracks",20,-20,20,AliDielectronVarManager::kXv);
-  histos->UserHistogram("Pre","YVertex ","YVertex ;YVertex[cm];#tracks",20,-20,20,AliDielectronVarManager::kYv);
-
   histos->UserHistogram("Pre","TPCnCls","Number of Clusters TPC;TPC number clusteres;#tracks",159,0.,159.,AliDielectronVarManager::kNclsTPC);
-
-  //add histograms to Pair classes For Rejected Pairs:
-  histos->UserHistogram("RejPair","InvMass","Inv.Mass;Inv. Mass [GeV];#pairs",
-	  500,0.0,5.00,AliDielectronVarManager::kM);
-  histos->UserHistogram("RejPair","Rapidity","Rapidity;Rapidity;#pairs",
-	  100,-2.,2.,AliDielectronVarManager::kY);
-  histos->UserHistogram("RejPair","OpeningAngle","Opening angle;angle",
-	  100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
-  //2D Histo Plot
-  histos->UserHistogram("RejPair","InvMassPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
-	  500,0.0,5.0,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
-
-  histos->UserHistogram("RejPair","InvMassOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
-	  500,0.0,5.0,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
-
-  //add histograms to Rejected Track classes
-  histos->UserHistogram("RejTrack","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
-
-  histos->UserHistogram("RejTrack","ITS_dEdx_P","ITS_dEdx;P [GeV];ITS signal (arb units);#tracks",
-	  400,0.0,20.,1000,0.,1000.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSsignal,kTRUE);
-
-  histos->UserHistogram("RejTrack","dEdx_P","dEdx;P [GeV];TPC signal (arb units);#tracks",
-	  400,0.0,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
-
-
-  histos->UserHistogram("RejTrack","TPCnSigmaEle_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
-  histos->UserHistogram("RejTrack","TPCnSigmaKao_P","TPC number of sigmas Kaons;P [GeV];TPC number of sigmas Kaons;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao,kTRUE);
-  histos->UserHistogram("RejTrack","TPCnSigmaPio_P","TPC number of sigmas Pions;P [GeV];TPC number of sigmas Pions;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio,kTRUE);
-
-  histos->UserHistogram("RejTrack","TRDpidPobEle_P","TRD PID probability Electrons;P [GeV];TRD prob Electrons;#tracks",
-	  400,0.0,20.,100,0.,1.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTRDprobEle,kTRUE);
-  histos->UserHistogram("RejTrack","TRDpidPobPio_P","TRD PID probability Pions;P [GeV];TRD prob Pions;#tracks",
-	  400,0.0,20.,100,0.,1.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTRDprobPio,kTRUE);
-
-  histos->UserHistogram("RejTrack","TOFnSigmaKao_P","TOF number of sigmas Kaons;P [GeV];TOF number of sigmas Kaons;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaKao,kTRUE);
-  histos->UserHistogram("RejTrack","TOFnSigmaPro_P","TOF number of sigmas Protons;P [GeV];TOF number of sigmas Protons;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro,kTRUE);
-
-  histos->UserHistogram("RejTrack","Eta_Phi","Eta Phi Map; Eta; Phi;#tracks",
-	  200,-2,2,200,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
-
-  histos->UserHistogram("RejTrack","dXY","dXY;dXY [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
-
-  histos->UserHistogram("RejTrack","TPCnCls","Number of Clusters TPC;TPC number clusteres;#tracks",159,0.,159.,AliDielectronVarManager::kNclsTPC);
 
   die->SetHistogramManager(histos);
 }
@@ -314,22 +262,21 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
 
   //pair variables
-  cf->AddVariable(AliDielectronVarManager::kP,200,0,20);
+/* cf->AddVariable(AliDielectronVarManager::kP,200,0,20);
   cf->AddVariable(AliDielectronVarManager::kM,201,-0.01,4.01); //20Mev Steps
-  cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
-
-  cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,10.0,30.0,40.0,60.,80.,100.");
-
+*/
+   cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
+/*
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kP,200,0.,20.,kTRUE);
     cf->AddVariable(AliDielectronVarManager::kITSsignal,1000,0.0.,1000.,kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTPCsignal,500,0.0.,500.,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kHaveSameMother,21,-10,10,kTRUE);
-
+*/
   //only in this case write MC truth info
   if (MCenabled) {
 	cf->SetStepForMCtruth();
 	cf->SetStepsForMCtruthOnly();
+	cf->AddVariable(AliDielectronVarManager::kHaveSameMother,21,-10,10,kTRUE);
 	cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
 	cf->AddVariable(AliDielectronVarManager::kPdgCodeMother,10000,-5000.5,4999.5,kTRUE);
   }
