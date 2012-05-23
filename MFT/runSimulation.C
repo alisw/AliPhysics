@@ -14,8 +14,7 @@ void runSimulation(Int_t seed,
   simulator->SetRunHLT("");
 
   // MUON Tracker -> local:///$OCDB should reflect the content of alien://folder=/alice
-  simulator->SetSpecificStorage("MUON/Align/Data", "local:///$OCDB/simulation/2008/v4-15-Release/Ideal");
-  simulator->SetSpecificStorage("MUON/Calib/Gains","local:///$OCDB/simulation/2008/v4-15-Release/Ideal");
+  simulator->SetSpecificStorage("MUON/Align/Data", "alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
 
   // The rest
   TStopwatch timer;
