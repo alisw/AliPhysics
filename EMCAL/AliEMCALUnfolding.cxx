@@ -155,6 +155,7 @@ void AliEMCALUnfolding::MakeUnfolding()
   // Unfolds clusters using the shape of an ElectroMagnetic shower
   // Performs unfolding of all clusters
   
+  //cout<<"fNumberOfECAClusters "<<fNumberOfECAClusters<<endl;
   if(fNumberOfECAClusters > 0){
     if (fGeom==0)
       AliFatal("Did not get geometry from EMCALLoader") ;
@@ -170,7 +171,7 @@ void AliEMCALUnfolding::MakeUnfolding()
         AliEMCALDigit ** maxAt = new AliEMCALDigit*[nMultipl] ;
         Float_t * maxAtEnergy = new Float_t[nMultipl] ;
         Int_t nMax = recPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fECALocMaxCut,fDigitsArr) ;
-        
+        //cout<<"nMax "<<nMax<<endl;
         if( nMax > 1 ) {     // if cluster is very flat (no pronounced maximum) then nMax = 0
           if(UnfoldClusterV2(recPoint, nMax, maxAt, maxAtEnergy) ){
             fRecPoints->Remove(recPoint);
@@ -186,9 +187,9 @@ void AliEMCALUnfolding::MakeUnfolding()
         
         delete[] maxAt ;
         delete[] maxAtEnergy ;
-      } else AliError("RecPoint NULL");
+      } else AliError("RecPoint NULL"); //end of check if recPoint exist
     } // rec point loop
-  }
+  }//end of check fNumberOfECAClusters
   // End of Unfolding of clusters
 }
 
@@ -203,11 +204,13 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   //**************************** part 1 *******************************************
   // Performs the unfolding of a cluster with nMax overlapping showers 
   
+  //cout<<"unfolding check here part 1"<<endl;
   //printf("Original cluster E %f\n",iniTower->GetEnergy());
   
   Int_t nPar = 3 * nMax ;
   Float_t * fitparameters = new Float_t[nPar] ;
   
+  //cout<<"number of parameters "<<nPar<<" nMax "<<nMax<<endl;
   if (fGeom==0)
     AliFatal("Did not get geometry from EMCALLoader") ;
   
@@ -220,6 +223,22 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
     return kFALSE;
   }
   
+//  for(Int_t iii=0;iii<nPar;iii++){
+//    cout<<" param "<<iii<<" from fit "<<fitparameters[iii];
+//    if((iii+1)%3==0)cout<<endl;
+//    }
+
+//speed up solution for clusters with 2 maxima where one maximum is below threshold fThreshold
+  if(nMax==2){
+    if(fitparameters[2]<fThreshold || fitparameters[5]<fThreshold){
+      //cout<<"one of fitted energy below threshold"<<endl;
+      AliDebug(1,"One of fitted energy below threshold");
+      iniTower->SetNExMax(1) ;
+      delete[] fitparameters ;
+      return kFALSE;
+    }
+  }
+
   //**************************** part 2 *******************************************
   // create unfolded rec points and fill them with new energy lists
   // First calculate energy deposited in each sell in accordance with
@@ -227,7 +246,9 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   // and later correct this number in acordance with actual energy
   // deposition
   
+  //  cout<<"unfolding check here part 2"<<endl;
   Int_t nDigits = iniTower->GetMultiplicity() ;
+  //  cout<<"cluster multiplicity "<<nDigits<<" "<< iniTower->GetMultiplicity() <<endl;
   Float_t * efit = new Float_t[nDigits] ;//new fitted energy in cells
   Float_t xpar=0.,zpar=0.,epar=0.  ;//center of gravity in cell units
   
@@ -261,12 +282,18 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
         xpar = fitparameters[iparam] ;
         zpar = fitparameters[iparam+1] ;
         epar = fitparameters[iparam+2] ;
+//	cout<<" xpar from fit "<<xpar<<" "<<    fitparameters[iparam]<<endl;    
+//	cout<<" zpar from fit "<<zpar<<" "<<    fitparameters[iparam+1]<<endl;    
+//	cout<<" epar from fit "<<epar<<" "<<    fitparameters[iparam+2]<<endl;    
+
 
         efit[iDigit] += epar * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) ;
+	//	cout<<"idigit "<<iDigit<<" efit[idigit]="<<efit[iDigit]<<" iparam "<<iparam<<" "<< (Float_t)iphi - xpar <<" "<< (Float_t)ieta - zpar<<endl;
 
         iparam += 3 ;
       }
 
+      //      cout<<"idigit "<<iDigit<<" total efit[idigit]="<<efit[iDigit]<<endl;
     } else AliDebug(1,"Digit NULL part 2!");
     
   }//digit loop
@@ -277,7 +304,7 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   // to its contribution to efit
   
   Float_t * energiesList = iniTower->GetEnergiesList() ;
-  Float_t ratio = 0 ;
+  Float_t ratio = 0. ;//0 -> 0. changed
   Float_t eDigit = 0. ;
   Int_t nSplittedClusters=(Int_t)nPar/3;
   
@@ -292,6 +319,8 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   //If not the energy from a given cell in the cluster is divided in correct proportions 
   //in accordance to the other clusters and added to them and set to 0.
   
+  //  cout<<"unfolding check here part 3.1"<<endl;
+
   iparam = 0 ;
   while(iparam < nPar )
   {
@@ -310,10 +339,12 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
         
         EvalParsPhiDependence(digit->GetId(),fGeom);
        
+	//	cout<<"iparam "<<iparam<<" iDigit "<<iDigit<<" efit[iDigit] "<<efit[iDigit]<<endl;
  
         if(efit[iDigit]==0) 
         {//just for sure
-          correctedEnergyList[iparam/3*nDigits+iDigit] = 0;//correction here
+	  //	  cout<<"energy =0"<<endl;
+          correctedEnergyList[iparam/3*nDigits+iDigit] = 0.;//correction here
           continue;
         }
         
@@ -323,6 +354,8 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
         //add energy to temporary matrix
         correctedEnergyList[iparam/3*nDigits+iDigit] = eDigit;
         
+	//	cout<<"iDigit "<<iDigit<<" ratio "<<ratio<<" efit[iDigit] "<<efit[iDigit]<<" iparam "<<iparam<< "iparam/3*nDigits+iDigit "<<iparam/3*nDigits+iDigit<<" eDigit "<<eDigit<<" correctedEnergyList[] "<< correctedEnergyList[iparam/3*nDigits+iDigit]<<endl;
+
       } else AliDebug(1,"NULL digit part 3");
     }//digit loop 
     iparam += 3 ;
@@ -330,7 +363,9 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   
   //**************************** sub-part 3.2 *************************************
   //here we correct energy for each cell and cluster
-  Float_t maximumEne=0;
+  //  cout<<"unfolding check here part 3.2"<<endl;
+
+  Float_t maximumEne=0.;//0 -> 0. changed
   Int_t maximumIndex=0;
   Bool_t isAnyBelowThreshold=kFALSE;
   //  Float_t Threshold=0.01;
@@ -339,7 +374,7 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   for(iDigit = 0 ; iDigit < nDigits ; iDigit++)
   {
     isAnyBelowThreshold=kFALSE;
-    maximumEne=0;
+    maximumEne=0.;//0 -> 0. changed
     for(iparam = 0 ; iparam < nPar ; iparam+=3)
     {
 
@@ -352,9 +387,12 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
     }//end of loop over clusters after unfolding
     
     if(!isAnyBelowThreshold) continue; //no cluster-cell below threshold 
-    
-    //    printf("Correct E cell %f < %f, org Digit index %d, e = %f\n",correctedEnergyList[iparam/3*nDigits+iDigit],fThreshold,iDigit, energiesList[iDigit]);
+
+
+    //printf("Correct E cell %f < %f, org Digit index %d, e = %f\n",correctedEnergyList[iparam/3*nDigits+iDigit],fThreshold,iDigit, energiesList[iDigit]);
     //if( energiesList[iDigit] < correctedEnergyList[iparam/3*nDigits+iDigit]) printf("\t What? \n");
+    //cout<<"  Correct E cell "<<correctedEnergyList[iparam/3*nDigits+iDigit]<<" < "<<fThreshold<<", org Digit index "<<iDigit<<", e = "<<energiesList[iDigit]<<endl;
+
 
     if(maximumEne < fThreshold) 
     {//add all cluster cells and put energy into max index, other set to 0
@@ -369,17 +407,17 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
     }//end if
     
     //divide energy of cell below threshold in the correct proportion and add to other cells
-    maximumEne=0;//not used any more so use it for the energy sum
+    maximumEne=0.;//not used any more so use it for the energy sum //0 -> 0. changed
     for(iparam = 0 ; iparam < nPar ; iparam+=3)
     {//calculate energy sum
       if(correctedEnergyList[iparam/3*nDigits+iDigit] < fThreshold) energyFraction[iparam/3]=0;
       else 
       {
-        energyFraction[iparam/3]=1;
+        energyFraction[iparam/3]=1.;//1 -> 1. changed
         maximumEne+=correctedEnergyList[iparam/3*nDigits+iDigit];
       }
     }//end of loop over clusters after unfolding
-    if(maximumEne>0)
+    if(maximumEne>0.)//0 -> 0. changed
     {
       for(iparam = 0 ; iparam < nPar ; iparam+=3){//calculate fraction
         energyFraction[iparam/3] = energyFraction[iparam/3] * correctedEnergyList[iparam/3*nDigits+iDigit] / maximumEne;
@@ -387,7 +425,7 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
       
       for(iparam = 0 ; iparam < nPar ; iparam+=3)
       {//add energy from cells below threshold to others
-        if(energyFraction[iparam/3]>0) continue;
+        if(energyFraction[iparam/3]>0.) continue;//0 -> 0. changed
         else
         {
           for(iparam2 = 0 ; iparam2 < nPar ; iparam2+=3)
@@ -395,7 +433,7 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
             correctedEnergyList[iparam2/3*nDigits+iDigit] += (energyFraction[iparam2/3] * 
                                                       correctedEnergyList[iparam/3*nDigits+iDigit]) ;
           }//inner loop
-          correctedEnergyList[iparam/3*nDigits+iDigit] = 0;
+          correctedEnergyList[iparam/3*nDigits+iDigit] = 0.;//0 -> 0. changed
         }
       }
     }
@@ -404,15 +442,24 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
       //digit energy to be set to 0
       for(iparam = 0 ; iparam < nPar ; iparam+=3)
       {
-        correctedEnergyList[iparam/3*nDigits+iDigit] = 0;
+        correctedEnergyList[iparam/3*nDigits+iDigit] = 0.;//0 -> 0. changed
       }
     }//new adam correction for is energy>0
     
   }//end of loop over digits
   delete[] energyFraction;
   
+  //cout section
+//  cout<<"nDigits "<<nDigits<<endl;
+//  for(Int_t iii=0;iii<nDigits*nPar/3;++iii){
+//    cout<<"correctedEnergyList["<<iii<<"]="<<correctedEnergyList[iii]<<endl;
+//  }
+  //end of cout section
+
   //**************************** sub-part 3.3 *************************************
   //here we add digits to recpoints with corrected energy
+  //  cout<<"unfolding check here part 3.3"<<endl;
+
   iparam = 0 ;
   while(iparam < nPar )
   {
@@ -425,39 +472,53 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
     (*fRecPoints)[fNumberOfECAClusters] = new AliEMCALRecPoint("") ;
     recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
     
-    if(recPoint)
-    {
-      fNumberOfECAClusters++ ;
+    if(recPoint){//recPoint preseent -> good
       recPoint->SetNExMax(nSplittedClusters) ;
       
       for(iDigit = 0 ; iDigit < nDigits ; iDigit ++)
       {
         digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
         
-        
-        if(digit && correctedEnergyList[iparam/3*nDigits+iDigit]>0. )
-        {
+        if(digit && correctedEnergyList[iparam/3*nDigits+iDigit]>0. ){
+	  //	  cout<<"idigit,nMax"<<iDigit<<","<<iparam/3<<" correctedEnergyList["<<iparam/3*nDigits+iDigit<<"]="<<correctedEnergyList[iparam/3*nDigits+iDigit]<<endl;
           if(correctedEnergyList[iparam/3*nDigits+iDigit]<fThreshold) printf("Final E cell %f < %f\n",correctedEnergyList[iparam/3*nDigits+iDigit],fThreshold);
           recPoint->AddDigit( *digit, correctedEnergyList[iparam/3*nDigits+iDigit], kFALSE ) ; //FIXME, need to study the shared case
-        } else 
-        {
+        } else {
           AliDebug(1,Form("NULL digit part3.3 or NULL energy=%f",correctedEnergyList[iparam/3*nDigits+iDigit]));
+          //cout<<"nDigits "<<nDigits<<" iParam/3 "<<iparam/3<< endl;
         }
-      }//digit loop 
-    } else AliError("NULL RecPoint");
-    
-    //protection from recpoint with no digits
-    if(recPoint->GetMultiplicity()==0)
-    {
-      delete (*fRecPoints)[fNumberOfECAClusters];
-      //cout<<"size fRecPoints before "<<fRecPoints->GetSize()<<endl;
-      fRecPoints->RemoveAt(fNumberOfECAClusters);
-      //cout<<"size fRecPoints after "<<fRecPoints->GetSize()<<endl;
-      fNumberOfECAClusters--;
-      nSplittedClusters--;
+
+      }//digit loop
+
+      if(recPoint->GetMultiplicity()==0){//recpoint exists but no digits associated -> remove from list
+	  delete (*fRecPoints)[fNumberOfECAClusters];
+	  //cout<<"size fRecPoints before "<<fRecPoints->GetSize()<<endl;
+	  fRecPoints->RemoveAt(fNumberOfECAClusters);
+	  //cout<<"size fRecPoints after "<<fRecPoints->GetSize()<<endl;
+	  fNumberOfECAClusters--;
+	  nSplittedClusters--;
+      } else {//recPoint exists and has digits associated -> very good increase number of clusters 
+	fNumberOfECAClusters++ ; 
+      }
       
-    }
+    } else {//recPoint empty -> remove from list
+      AliError("NULL RecPoint");
     
+      //protection from recpoint with no digits
+      //      cout<<"multi rec "<<recPoint->GetMultiplicity()<<endl;
+      if(recPoint->GetMultiplicity()==0)
+	{
+	  delete (*fRecPoints)[fNumberOfECAClusters];
+	  //cout<<"size fRecPoints before "<<fRecPoints->GetSize()<<endl;
+	  fRecPoints->RemoveAt(fNumberOfECAClusters);
+	  //cout<<"size fRecPoints after "<<fRecPoints->GetSize()<<endl;
+	  fNumberOfECAClusters--;
+	  nSplittedClusters--;
+	  
+	}
+    
+    }
+
     iparam += 3 ;
   }//while
   
@@ -465,6 +526,7 @@ Bool_t AliEMCALUnfolding::UnfoldClusterV2(AliEMCALRecPoint * iniTower,
   delete[] efit ;
   delete[] correctedEnergyList ;
   
+  //  cout<<"end of unfolding check part 3.3"<<endl;
   return kTRUE;
 }
 
