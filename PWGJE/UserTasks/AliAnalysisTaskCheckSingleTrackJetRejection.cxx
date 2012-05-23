@@ -38,6 +38,7 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
+#include "AliAODInputHandler.h"
 #include "AliAODTrack.h"
 #include "AliVParticle.h"
 #include "AliAODJet.h"
@@ -295,6 +296,49 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 
 				// Main loop (called each event)
 				// Execute analysis for current event
+
+				AliAODEvent *fAOD;
+				TObject* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+				if( handler && handler->InheritsFrom("AliAODInputHandler") ) {
+								fAOD  =  ((AliAODInputHandler*)handler)->GetEvent();
+								if(fUseAODInput) fAODIn = fAOD;
+								if (fDebug > 1)  Printf("%s:%d AOD event from input", (char*)__FILE__,__LINE__);
+				}
+				else {
+								handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+								if( handler && handler->InheritsFrom("AliAODHandler") ) {
+												fAOD = ((AliAODHandler*)handler)->GetAOD();
+												fAODIn = fAOD;
+												if (fDebug > 1)  Printf("%s:%d AOD event from output", (char*)__FILE__,__LINE__);
+								}
+				}
+
+				if(!fAODIn && !fUseAODInput){ // case we have AOD in input & output and want jets from output
+								TObject* outHandler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+								if( outHandler && outHandler->InheritsFrom("AliAODHandler") ) {
+												fAODIn = ((AliAODHandler*)outHandler)->GetAOD();
+												if (fDebug > 1)  Printf("%s:%d jets from output AOD", (char*)__FILE__,__LINE__);
+								}
+				}
+
+				if(fNonStdFile.Length()!=0){
+								// case we have an AOD extension - fetch the jets from the extended output
+
+								AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+								fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
+								if(!fAODExtension){
+												if(fDebug>1)Printf("AODExtension not found for %s",fNonStdFile.Data());
+								}
+				}
+
+
+
+				//fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
+				if (!fAODIn) {
+								Printf("ERROR %s : fAODIn not available",(char*)__FILE__);
+								return;
+				}
+
 				AliInputEventHandler* inputHandler = (AliInputEventHandler*)
 								((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 				if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)){
@@ -302,6 +346,7 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 								return;
 				}
 				if(!IsMC)fH1Events->Fill(0);
+
 
 
 				// start jet analysis
@@ -320,12 +365,7 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 								}
 				}
 
-				fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
-				if (!fAODIn) {
-								Printf("ERROR: fAODIn not available");
-								return;
-				}
-
+				// get AOD event from input/ouput
 				TString cAdd = "";
 				cAdd += Form("%02d_",(int)((Radius+0.01)*10.));
 				cAdd += Form("B%d",(int)BackM);

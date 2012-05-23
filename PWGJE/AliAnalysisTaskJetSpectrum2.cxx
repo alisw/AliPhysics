@@ -1045,10 +1045,10 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
 	if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
 	  var1[6] = it;
 	  fhnJetPt[iType]->Fill(var1);
+	  fhnJetPtQA[iType]->Fill(var2);
 	}
       }
 
-      fhnJetPtQA[iType]->Fill(var2);
       if(leadTrack)fh2LTrackPtJetPt[iType][kMaxJets]->Fill(leadTrack->Pt(),ptJet);
 
       if(particlesList.GetSize()&&ij<kMaxJets){
