@@ -718,6 +718,10 @@ Int_t AliAnalysisTaskDiHadronPID::ClassifyTrack(AliAODTrack *track)
     
     // Obtaining ITS information.
     AliAODTrack* globaltrack = GetGlobalTrack(track);
+    if (!globaltrack) {
+      return 0;
+    }
+
     Bool_t ITSLayerHit[6];
     for (Int_t iITSLayer=0; iITSLayer<6; iITSLayer++) {
         ITSLayerHit[iITSLayer] = globaltrack->HasPointOnITSLayer(iITSLayer);
