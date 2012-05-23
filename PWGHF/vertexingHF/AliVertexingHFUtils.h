@@ -18,6 +18,7 @@
 
 class AliAODMCParticle;
 class AliAODMCHeader;
+class AliAODEvent;
 class TProfile;
 class TClonesArray;
 class TH1F;
@@ -29,6 +30,9 @@ class AliVertexingHFUtils : public TObject{
   AliVertexingHFUtils();
   AliVertexingHFUtils(Int_t k);
   virtual ~AliVertexingHFUtils() {};
+
+  // Significance calculator
+  static void ComputeSignificance(Double_t signal, Double_t  errsignal, Double_t  background, Double_t  errbackground, Double_t &significance,Double_t &errsignificance);
 
   // Functions for Event plane resolution
   void SetK(Int_t k){fK=k;}
