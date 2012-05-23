@@ -569,6 +569,11 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t centrMin,
     
   //0:step, 2: Delta eta, 3: Delta phi
   TH2D *gHist = dynamic_cast<TH2D *>(fHistPN->Project(0,2,3));
+  if(!gHist){
+    AliError("Projection of fHistPN = NULL");
+    return gHist;
+  }
+
   //Printf("Entries (1D): %lf",(Double_t)(fHistP->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistPN->Project(0,2,3)->GetEntries()));
   if((Double_t)(fHistP->Project(0,2)->GetEntries())!=0)
@@ -593,6 +598,11 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t centrMin,
     
   //0:step, 2: Delta eta, 3: Delta phi
   TH2D *gHist = dynamic_cast<TH2D *>(fHistNP->Project(0,2,3));
+  if(!gHist){
+    AliError("Projection of fHistPN = NULL");
+    return gHist;
+  }
+
   //Printf("Entries (1D): %lf",(Double_t)(fHistN->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistNP->Project(0,2,3)->GetEntries()));
   if((Double_t)(fHistN->Project(0,2)->GetEntries())!=0)
@@ -617,6 +627,11 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t centrMin,
       
   //0:step, 2: Delta eta, 3: Delta phi
   TH2D *gHist = dynamic_cast<TH2D *>(fHistPP->Project(0,2,3));
+  if(!gHist){
+    AliError("Projection of fHistPN = NULL");
+    return gHist;
+  }
+
   //Printf("Entries (1D): %lf",(Double_t)(fHistP->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistPP->Project(0,2,3)->GetEntries()));
   if((Double_t)(fHistP->Project(0,2)->GetEntries())!=0)
@@ -641,6 +656,11 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t centrMin,
     
   //0:step, 2: Delta eta, 3: Delta phi
   TH2D *gHist = dynamic_cast<TH2D *>(fHistNN->Project(0,2,3));
+  if(!gHist){
+    AliError("Projection of fHistPN = NULL");
+    return gHist;
+  }
+
   //Printf("Entries (1D): %lf",(Double_t)(fHistN->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistNN->Project(0,2,3)->GetEntries()));
   if((Double_t)(fHistN->Project(0,2)->GetEntries())!=0)
