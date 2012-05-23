@@ -39,11 +39,6 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp2010(){
   task->AddDielectron(lowmass1);
   printf("add: %s\n",lowmass1->GetName());
   
-  AliDielectron *lowmass2=ConfigLMEEpp2010(2,hasMC);
-  task->AddDielectron(lowmass2);
-  printf("add: %s\n",lowmass2->GetName());
-
-
   mgr->AddTask(task);
 
   //create output container
