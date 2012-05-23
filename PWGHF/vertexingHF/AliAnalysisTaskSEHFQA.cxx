@@ -490,6 +490,15 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hntrklvsPercentile";
     TH2F* hntrklvsPercentile=new TH2F(hname.Data(),"N tracklets vs Percentile;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
 
+    hname="hnTPCTracksvsPercentile";
+    TH2F* hnTPCTracksvsPercentile=new TH2F(hname.Data(),"N TPC tracks vs Percentile;nTPCTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
+
+    hname="hnTPCITSTracksvsPercentile";
+    TH2F* hnTPCITSTracksvsPercentile=new TH2F(hname.Data(),"N TPC+ITS tracks vs Percentile;nTPCITSTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
+
+    hname="hnTPCITS1SPDTracksvsPercentile";
+    TH2F* hnTPCITS1SPDTracksvsPercentile=new TH2F(hname.Data(),"N TPC+ITS+1SPD tracks vs Percentile;nTPCITS1SPDTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
+
     hname="hV0MultiplicityPercentile";
     TH2F*hV0MultiplicityPercentile = new TH2F(hname.Data(),"V0 Multiplicity vs Percentile;V0 multiplicity;percentile",1000,-0.5,9999.5,120,-10.,110);
 
@@ -505,6 +514,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputCheckCentrality->Add(hMultOut);
     fOutputCheckCentrality->Add(hMultvsPercentile);
     fOutputCheckCentrality->Add(hntrklvsPercentile);
+    fOutputCheckCentrality->Add(hnTPCTracksvsPercentile);
+    fOutputCheckCentrality->Add(hnTPCITSTracksvsPercentile);
+    fOutputCheckCentrality->Add(hnTPCITS1SPDTracksvsPercentile);
     fOutputCheckCentrality->Add(hV0MultiplicityPercentile);
     fOutputCheckCentrality->Add(hV0MultiplicityNtrackletsIn);
     fOutputCheckCentrality->Add(hStdPercentileSPDPercentile);
@@ -872,6 +884,30 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Double_t multiplicity=aod->GetHeader()->GetRefMultiplicity();
   Int_t runNumber = aod->GetRunNumber();
   TString trigClass=aod->GetFiredTriggerClasses();
+  Int_t nAODtracks=aod->GetNTracks();
+  Int_t nSelTracksTPCOnly=0;
+  Int_t nSelTracksTPCITS=0;
+  Int_t nSelTracksTPCITS1SPD=0;
+
+  for (Int_t k=0;k<nAODtracks;k++){
+    AliAODTrack* track=aod->GetTrack(k);
+    if(track->GetID()<0) continue;
+    Int_t nclsTot=0,nclsSPD=0;
+    for(Int_t l=0;l<6;l++) {
+      if(TESTBIT(track->GetITSClusterMap(),l)) {
+	nclsTot++; if(l<2) nclsSPD++;
+      }
+    }
+    UShort_t nTPCClus=track->GetTPCClusterMap().CountBits();
+    if(TMath::Abs(track->Eta())<0.8 && nTPCClus>=70 && track->GetStatus()&AliESDtrack::kTPCrefit){
+      if(track->TestFilterBit(1))  nSelTracksTPCOnly++;
+      if(track->GetStatus()&AliESDtrack::kITSrefit){
+	nSelTracksTPCITS++;
+	if(nclsSPD>0) nSelTracksTPCITS1SPD++;      
+      }
+    }
+  }
+
   if(fOnOff[4]) {
     FillFlowObs(aod);
     PostData(8,fOutputFlowObs);
@@ -1045,6 +1081,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       ((TH2F*)fOutputCheckCentrality->FindObject("hMultvsPercentile"))->Fill(aod->GetHeader()->GetRefMultiplicity(),stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile"))->Fill(aod->GetTracklets()->GetNumberOfTracklets(),stdCentf);
+      ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCTracksvsPercentile"))->Fill(nSelTracksTPCOnly,stdCentf);
+      ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITSTracksvsPercentile"))->Fill(nSelTracksTPCITS,stdCentf);
+      ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITS1SPDTracksvsPercentile"))->Fill(nSelTracksTPCITS1SPD,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hV0MultiplicityPercentile"))->Fill(vzeroMult,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hV0MultiplicityNtrackletsIn"))->Fill(vzeroMult,aod->GetTracklets()->GetNumberOfTracklets());
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdPercentileSPDPercentile"))->Fill(stdCentf,spdCentf);
@@ -1096,11 +1135,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     //loop on tracks in the event
     for (Int_t k=0;k<ntracks;k++){
       AliAODTrack* track=aod->GetTrack(k);
+      if(track->GetID()<0) continue;
       AliAODPid *pid = track->GetDetPid();
+      if(!pid && fDebug>1) cout<<"No AliAODPid found"<<endl;
 
-
-      if(fOnOff[1]){
-	if(!pid)  {if (fDebug>1)cout<<"No AliAODPid found"<<endl; continue;}
+      if(pid && fOnOff[1]){
 	Double_t times[AliPID::kSPECIES];
 	pid->GetIntegratedTimes(times);
     
@@ -1294,11 +1333,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
 	  
 	      AliAODPid *pid = track->GetDetPid();
-	      Double_t times[5];
-	      pid->GetIntegratedTimes(times);
-	      if(pidHF && pidHF->CheckStatus(track,"TOF")) ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptimeAC"))->Fill(track->P(),pid->GetTOFsignal()-times[AliPID::kKaon]);
-	      if(pidHF && pidHF->CheckStatus(track,"TPC")) ((TH2F*)fOutputPID->FindObject("hTPCsigvspAC"))->Fill(pid->GetTPCmomentum(),pid->GetTPCsignal());
-
+	      if(pid){
+		Double_t times[5];
+		pid->GetIntegratedTimes(times);
+		if(pidHF && pidHF->CheckStatus(track,"TOF")) ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptimeAC"))->Fill(track->P(),pid->GetTOFsignal()-times[AliPID::kKaon]);
+		if(pidHF && pidHF->CheckStatus(track,"TPC")) ((TH2F*)fOutputPID->FindObject("hTPCsigvspAC"))->Fill(pid->GetTPCmomentum(),pid->GetTPCsignal());
+	      }
 	      fNEntries->Fill(3);
 	    } //end analysis cuts
 	  } //end acceptance and track cuts
