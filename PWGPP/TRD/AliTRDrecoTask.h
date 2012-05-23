@@ -100,7 +100,7 @@ public:
   virtual Bool_t LoadDetectorMap(const Char_t *file = "AnalysisResults.root", const Char_t *dir = "TRD_Performance");
   virtual Bool_t Save(TObjArray * const res);
   virtual Bool_t PostProcess();
-  virtual Bool_t PutTrendValue(const Char_t *name, Double_t val);
+  virtual Bool_t PutTrendValue(const Char_t *name, Double_t val, Double_t err=0);
   virtual void   SetFriends(Bool_t fr = kTRUE) {SetBit(kFriends, fr);}
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   virtual void   SetNameId(const Char_t *nid) {snprintf(fNameId, 10, "%s", nid);}
@@ -139,7 +139,6 @@ private:
   TList             *fPlotFuncList;        //! track functors list
   TList             *fDetFuncList;         //! detector functors list
   Bool_t            fRunTerminate;         // Switch for Terminate Function
-  static TList      *fgTrendPoint;         //! trend point
   static TTreeSRedirector *fgDebugStream;  //! Debug stream
   static const Int_t fgNPt0 = 4;           // No of significant pt bins 
   static Float_t fgPt0[fgNPt0];            // Array with limits for significant pt bins 
