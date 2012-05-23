@@ -40,7 +40,7 @@
 #include <TDatabasePDG.h>
 
 #include "AliHFMassFitter.h"
-
+#include "AliVertexingHFUtils.h"
 
 
 ClassImp(AliHFMassFitter)
@@ -2012,9 +2012,7 @@ void AliHFMassFitter::Significance(Double_t min, Double_t max, Double_t &signifi
     return;
   }
 
-  significance =  signal/TMath::Sqrt(signal+background);
-
-  errsignificance = TMath::Sqrt(significance*significance/(signal+background)/(signal+background)*(1/4.*errsignal*errsignal+errbackground*errbackground)+significance*significance/signal/signal*errsignal*errsignal);
+  AliVertexingHFUtils::ComputeSignificance(signal,errsignal,background,errbackground,significance,errsignificance);
   
   return;
 }
