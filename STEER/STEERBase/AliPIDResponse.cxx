@@ -882,7 +882,7 @@ void AliPIDResponse::SetTOFPidResponseMaster()
     AliInfo(Form("Loading TOF Params from %s/COMMON/PID/data/TOFPIDParams.root", fOADBPath.Data()));
     AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("TOFoadb");
     if (fTOFPIDParams) delete fTOFPIDParams;
-    fTOFPIDParams = dynamic_cast<AliTOFPIDParams *>(oadbc->GetObject(fRun));
+    fTOFPIDParams = dynamic_cast<AliTOFPIDParams *>(oadbc->GetObject(fRun,"TOFparams"));
     oadbf->Close();
     delete oadbc;
   } else {
