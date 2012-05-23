@@ -38,6 +38,7 @@
 #include "AliExternalTrackParam.h"
 
 #include "info/AliTRDeventInfo.h"
+#include "info/AliTRDtrendingManager.h"
 #include "AliTRDrecoTask.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDpidUtil.h"
@@ -45,7 +46,6 @@
 ClassImp(AliTRDrecoTask)
 
 Float_t AliTRDrecoTask::fgPt0[AliTRDrecoTask::fgNPt0] = {0.5, 0.8, 1.5, 5};
-TList* AliTRDrecoTask::fgTrendPoint(NULL);
 TTreeSRedirector* AliTRDrecoTask::fgDebugStream(NULL);
 //_______________________________________________________
 AliTRDrecoTask::AliTRDrecoTask()
@@ -141,13 +141,13 @@ AliTRDrecoTask::~AliTRDrecoTask()
     fContainer = NULL;
   }
 
-  if(fgTrendPoint){
+/*  if(fgTrendPoint){
     TFile::Open("TRD.PerformanceTrend.root", "UPDATE");
     fgTrendPoint->Write();
     delete fgTrendPoint;
     fgTrendPoint=NULL;
     gFile->Close();
-  }
+  }*/
 }
 
 //_______________________________________________________
@@ -244,15 +244,12 @@ Bool_t AliTRDrecoTask::GetRefFigure(Int_t /*ifig*/)
 }
 
 //_______________________________________________________
-Bool_t AliTRDrecoTask::PutTrendValue(const Char_t *name, Double_t val)
+Bool_t AliTRDrecoTask::PutTrendValue(const Char_t *name, Double_t val, Double_t err)
 {
 // Generic publisher for trend values
 
-  if(!fgTrendPoint){
-    fgTrendPoint = new TList();
-    fgTrendPoint->SetOwner();
-  }
-  fgTrendPoint->AddLast(new TNamed(Form("%s_%s", GetName(), name), Form("%f", val)));
+  AliTRDtrendingManager *tm = AliTRDtrendingManager::Instance();
+  tm->AddValue(Form("%s_%s", GetName(), name), val, err);
   return kTRUE;
 }
 

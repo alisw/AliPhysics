@@ -126,7 +126,7 @@ void makeResults(const Char_t *opt = "ALL",
   }
 
   TClass *ctask = new TClass;
-  AliAnalysisTask *task = 0x0;
+  AliAnalysisTask *task = NULL;
   for(Int_t itask = AliTRDpwgppHelper::kNTRDQATASKS; itask--;){
     if(!AliTRDpwgppHelper::DoTask(itask, fSteerTask)) continue;
     new(ctask) TClass(AliTRDpwgppHelper::TaskClassName(itask));
@@ -143,6 +143,8 @@ void makeResults(const Char_t *opt = "ALL",
   }
   delete ctask;
   delete c;
+  // write trending summary
+  AliTRDtrendingManager::Instance()->Terminate();
 }
 
 

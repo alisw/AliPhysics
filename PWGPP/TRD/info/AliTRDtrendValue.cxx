@@ -20,23 +20,21 @@ ClassImp(AliTRDtrendValue)
 //____________________________________________
 AliTRDtrendValue::AliTRDtrendValue() 
   : TNamed("none", "none")
-  ,fAlarmLevel(0)
   ,fValue(0.)
-  ,fResponsible()
-  ,fNnotifiable(0)
+  ,fSigma(1.)
+  ,fResponsible(NULL)
 {
 //  Constructor. Reset all fields.
-  memset(fLimits, 0, 2*(kNlevels+1)*sizeof(Double_t));
-  for(Int_t ilevel(kNlevels); ilevel--; ) snprintf(fAlarmMessage[ilevel], 1024, " ");
+  //memset(fAlarmMessage, 0, kNlevels*sizeof(Char_t*));
+  memset(fNotifiable, 0, kNnotifiable*sizeof(TNamed*));
 }
 
 //____________________________________________
-AliTRDtrendValue::AliTRDtrendValue(Char_t *n, Char_t *t) 
+AliTRDtrendValue::AliTRDtrendValue(const Char_t *n, const Char_t *t) 
   : TNamed("none", t)
-  ,fAlarmLevel(0)
   ,fValue(0.)
-  ,fResponsible()
-  ,fNnotifiable(0)
+  ,fSigma(1.)
+  ,fResponsible(NULL)
 {
 //  Constructor. Define name and title for trend variable.
   TString s(n);
@@ -45,31 +43,42 @@ AliTRDtrendValue::AliTRDtrendValue(Char_t *n, Char_t *t)
     AliError(Form("Wrong trend value name format. Trend value name should be of the form \"trendClass_trendValue\" with only one \"_\" character."));
   } else SetName(n);
 
-  memset(fLimits, 0, 2*(kNlevels+1)*sizeof(Double_t));
-  for(Int_t ilevel(kNlevels); ilevel--; ) snprintf(fAlarmMessage[ilevel], 1024, " ");
+  //memset(fAlarmMessage, 0, kNlevels*sizeof(Char_t*));
+  memset(fNotifiable, 0, kNnotifiable*sizeof(TNamed*));
 }
 
 //____________________________________________
-Int_t AliTRDtrendValue::GetAlarmLevel()
+AliTRDtrendValue::AliTRDtrendValue(const AliTRDtrendValue &ref)
+  : TNamed(ref)
+  ,fValue(ref.fValue)
+  ,fSigma(ref.fSigma)
+  ,fResponsible(NULL)
 {
-  // check value against limits and do some more work
-  fAlarmLevel=kNlevels-1;
-  for(Int_t ilevel(0); ilevel<kNlevels+1; ilevel++)
-    if(fValue<fLimits[2*ilevel+1] &&
-       fValue>=fLimits[2*ilevel]){ 
-      fAlarmLevel = ilevel;
-      break;
-    }
-
-  return fAlarmLevel;
+  if(ref.fResponsible) fResponsible = new TNamed(*ref.fResponsible);
+  //memset(fAlarmMessage, 0, kNlevels*sizeof(Char_t*));
+  //for(Int_t ia(0); ia<kNlevels; ia++) SetAlarm(ia, ref.fAlarmMessage[ia]);
+  memset(fNotifiable, 0, kNnotifiable*sizeof(TNamed*));
+  Int_t in(0);
+  while(ref.fNotifiable[in]){
+    fNotifiable[in] = new TNamed(*(ref.fNotifiable[in]));
+    in++;
+  }
 }
 
 //____________________________________________
-const char* AliTRDtrendValue::GetAlarmMessage() const
+AliTRDtrendValue& AliTRDtrendValue::operator/=(const AliTRDtrendValue &n)
+{
+  fValue-=n.fValue;
+  if(n.fSigma>0.) fValue/=n.fSigma;
+  return *this;
+}
+
+//____________________________________________
+const char* AliTRDtrendValue::GetAlarmMessage(Int_t ns) const
 {
 // Check if value triggered alarm
-  if(!fAlarmLevel) return "OK";
-  else return fAlarmMessage[fAlarmLevel-1];
+  if(ns<0 || ns>kNlevels) return NULL;
+  else return "not defined";//fAlarmMessage[ns];
 }
 
 //____________________________________________
@@ -100,43 +109,58 @@ const char* AliTRDtrendValue::GetValueName() const
 }
 
 //____________________________________________
-const char* AliTRDtrendValue::GetResponsible(Char_t *n, Char_t *mail) const
+const char* AliTRDtrendValue::GetResponsible() const
 {
 // Get responsible with name and mail
-  if(n) snprintf(n, 100, "%s", fResponsible.fNameR);
-  if(mail) snprintf(mail, 200, "%s", fResponsible.fMail);
-  return Form("%s <%s>", fResponsible.fNameR, fResponsible.fMail);
+  if(!fResponsible) return NULL;
+  return Form("%s <%s>", fResponsible->GetName(), fResponsible->GetTitle());
 }
 
 //____________________________________________
-const char* AliTRDtrendValue::GetNotifiable(Int_t in, Char_t *n, Char_t *mail) const
+const char* AliTRDtrendValue::GetNotifiable(Int_t in) const
 {
 // Get noticible person "in" with name and mail
-  if(in<0||in>=fNnotifiable) return NULL;
-  if(n) snprintf(n, 100, "%s", fNotifiable[in].fNameR);
-  if(mail) snprintf(mail, 200, "%s", fNotifiable[in].fMail);
-  return Form("%s <%s>", fNotifiable[in].fNameR, fNotifiable[in].fMail);
+  if(in<0||in>kNnotifiable) return NULL;
+  if(!fNotifiable[in]) return NULL;
+  return Form("%s <%s>", fNotifiable[in]->GetName(), fNotifiable[in]->GetTitle());
+}
+
+//____________________________________________
+void AliTRDtrendValue::SetAlarm(Int_t level, Char_t */*m*/)
+{
+// define alarm message for "level"
+  if(level<0||level>=kNlevels){
+    AliWarning(Form("Alarm level[%d] out of range [0 %d]", level, kNlevels-1));
+    return;
+  }
+  //fAlarmMessage[level] = StrDup(m);
 }
 
 //____________________________________________
 void AliTRDtrendValue::SetNotifiable(const Char_t *name, const Char_t *mail)
 {
 // add noticible person to DB
-  if(fNnotifiable==kNnotifiable){
-    AliWarning(Form("Could not add %s for notification. Only %d persons can be registered for notification.", name, kNnotifiable));
+  Int_t n(0); while(GetNotifiable(n)) n++;
+  if(n>=kNnotifiable-1){
+    AliWarning(Form("Could not add %s for notification. There are already %d persons registered for notification.", name, kNnotifiable-1));
     return;
   }
-  snprintf(fNotifiable[fNnotifiable].fNameR, 100, "%s", name);
-  snprintf(fNotifiable[fNnotifiable].fMail, 200, "%s", mail);
-  fNnotifiable++;
+  fNotifiable[n] = new TNamed(name, mail);
 }
 
 //____________________________________________
-void AliTRDtrendValue::SetResponsible(const Char_t *name, const Char_t *mail) 
+void AliTRDtrendValue::SetResponsible(const Char_t *name, const Char_t *mail, Option_t *opt) 
 {
 // set responsible person for trend
-  snprintf(fResponsible.fNameR, 100, "%s", name);
-  snprintf(fResponsible.fMail, 200, "%s", mail);
+  if(fResponsible){
+    if(strcmp(opt, "u")!=0){
+      AliWarning(Form("Responsible already set %s <%s>", fResponsible->GetName(), fResponsible->GetTitle()));
+      return;
+    }else{
+      AliWarning(Form("Old responsible %s <%s> replaced by %s <%s>", fResponsible->GetName(), fResponsible->GetTitle(), name, mail));
+      new(fResponsible) TNamed(name, mail);
+    }
+  } else fResponsible = new TNamed(name, mail);
 }
 
 //____________________________________________
@@ -148,23 +172,14 @@ void AliTRDtrendValue::Print(Option_t */*o*/) const
 //   responsible
 
   printf("    %s [%s] - %s\n", GetValueName(), GetClassName(), GetTitle());
-  printf("*** %f limits[%f %f]\n", fValue, fLimits[0], fLimits[1]);
-  if(fAlarmLevel){
-    printf("*** Alarm level   : %d limits[%f %f]\n", fAlarmLevel, fLimits[2*fAlarmLevel], fLimits[2*fAlarmLevel+1]);
-    printf("*** Alarm message : %s\n", GetAlarmMessage());
+  printf("*** %f +- %f\n", fValue, fSigma);
+  printf("*** Responsible %s <%s>\n", fResponsible?fResponsible->GetName():"", fResponsible?fResponsible->GetTitle():"");
+  printf("*** Notifiable person(s) ***\n");
+  Int_t in(0);
+  while(fNotifiable[in]){
+    printf("        %s <%s>\n", fNotifiable[in]->GetName(), fNotifiable[in]->GetTitle());
+    in++;
   }
-  printf("*** Responsible %s <%s>\n", fResponsible.fNameR, fResponsible.fMail);
-  if(fNnotifiable){
-    printf("*** Notifiable person(s) ***\n");
-    for(Int_t i(0); i<fNnotifiable; i++)
-      printf("        %s <%s>\n", fNotifiable[i].fNameR, fNotifiable[i].fMail);
-  }
-}
-
-//____________________________________________
-AliTRDtrendValue::AliTRDtrendValueResponsible::AliTRDtrendValueResponsible(Char_t *n, Char_t *m) 
-{
-// define person with mail and mail
-  if(n) snprintf(fNameR, 100, "%s", n); else snprintf(fNameR, 100, " ");
-  if(m) snprintf(fMail, 200, "%s", m); else snprintf(fMail, 200, " ");
+/*  printf("*** Alarm messages \n");
+  for(in=0; in<kNlevels; in++) printf("*** Alarm [%d] : %s\n", in, fAlarmMessage[in]?fAlarmMessage[in]:"not defined");*/
 }
