@@ -174,7 +174,9 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   //
   // Setup the track cuts
   //
-  
+  //ESD handler?
+  Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
+
   // Quality cuts
   AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
   die->GetTrackFilter().AddCuts(cuts);
@@ -192,18 +194,18 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  if(isESD) varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
-  switch(cutDefinition) {
-    case kTOFTRD2: varCuts->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,0.5); //ITS(0) = SPDfirst
-      break;
-    default:       varCuts->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,1.5); //ITS(0-1) = SPDany
-      break;
-  }
   cuts->AddCut(varCuts);
   
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+  switch(cutDefinition) {
+  case kTOFTRD2: trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    break;
+  default:       trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    break;
+  }
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
   cuts->AddCut(trkCuts);
