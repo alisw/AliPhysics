@@ -570,9 +570,9 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t binLimEta[nBinsEta+1];
   for(Int_t i=0; i<=nBinsEta; i++) binLimEta[i]=(Double_t)minEta + (maxEta-minEta)/nBinsEta*(Double_t)i ;
 
-  Int_t nBinsStep = 6;
+  Int_t nBinsStep = 7;
   Double_t minStep = 0.;
-  Double_t maxStep = 6.;
+  Double_t maxStep = 7.;
   Double_t binLimStep[nBinsStep+1];
   for(Int_t i=0; i<=nBinsStep; i++) binLimStep[i]=(Double_t)minStep + (maxStep-minStep)/nBinsStep*(Double_t)i ;
 
@@ -1134,7 +1134,9 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   else {
     
     eventPlaneV0 = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0", fInputEvent,2));
+    //printf("eventPlaneV0 %f\n",eventPlaneV0);
     if(eventPlaneV0 > TMath::Pi()) eventPlaneV0 = eventPlaneV0 - TMath::Pi();
+    //printf("eventPlaneV0 %f\n",eventPlaneV0);
     eventPlaneV0A = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0A", fInputEvent,2));
     if(eventPlaneV0A > TMath::Pi()) eventPlaneV0A = eventPlaneV0A - TMath::Pi();
     eventPlaneV0C = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0C", fInputEvent,2));
@@ -1433,31 +1435,31 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	} // Quick and dirty fix to reject both kink mothers and daughters
       }
             
-      valuetrackingcuts[1] = 0; 
+      valuetrackingcuts[1] = 1; 
        if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       // RecPrim
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      valuetrackingcuts[1] = 1; 
+      valuetrackingcuts[1] = 2; 
        if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
 
       // HFEcuts: ITS layers cuts
        if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-       valuetrackingcuts[1] = 2; 
+       valuetrackingcuts[1] = 3; 
        if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);     
 
       // HFE cuts: TOF PID and mismatch flag
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTOF + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      valuetrackingcuts[1] = 3; 
+      valuetrackingcuts[1] = 4; 
        if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       
       // HFE cuts: TPC PID cleanup
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      valuetrackingcuts[1] = 4; 
+      valuetrackingcuts[1] = 5; 
        if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       
       // HFEcuts: Nb of tracklets TRD0
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      valuetrackingcuts[1] = 5; 
+      valuetrackingcuts[1] = 6; 
        if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       
     }

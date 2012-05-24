@@ -126,6 +126,7 @@ public:
   void  SetMaxopening3D(Double_t maxOpening3D) { fMaxopening3D = maxOpening3D; };
   void  SetMaxopeningtheta(Double_t maxOpeningtheta) { fMaxopeningtheta = maxOpeningtheta; };
   void  SetMaxopeningphi(Double_t maxOpeningphi) { fMaxopeningphi = maxOpeningphi; };
+  void  SetAlgorithmMA(Bool_t algorithmMA) { fAlgorithmMA = algorithmMA; };
 
   Int_t    LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, AliVEvent *fESD, AliMCEvent *mcEvent,Int_t binct,Double_t deltaphi,Int_t source,Int_t indexmother);
   
