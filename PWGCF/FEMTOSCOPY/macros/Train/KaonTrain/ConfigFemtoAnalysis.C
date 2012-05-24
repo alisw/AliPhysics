@@ -299,7 +299,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	  }
 	  else if (runtype == 2) {
-            sqpcetaphitpc[aniter]->SetUseAOD(kTRUE);
+	    //news here:
+            sqpcetaphitpc[aniter]->SetDataType(kAOD); // was an error with sqpcetaphitpc[aniter]->SetUseAOD(kTRUE);
+	    //
 	    sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	    sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
 	    sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
