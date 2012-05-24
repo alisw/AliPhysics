@@ -30,7 +30,11 @@
  * @ingroup pwglf_forward_aod
  */
 AliAnalysisTask*
-AddTaskForwardMult(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
+AddTaskForwardMult(Bool_t   mc, 
+		   UShort_t sys=0, 
+		   UShort_t sNN=0, 
+		   Short_t  field=0, 
+		   Int_t    debug=0)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -44,34 +48,20 @@ AddTaskForwardMult(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
 
   // --- Make the task and add it to the manager ---------------------
   AliForwardMultiplicityBase* task = 0;
-  
-  if (mc)
-    task = new AliForwardMCMultiplicityTask("FMD");
-  else    
-    task = new AliForwardMultiplicityTask("FMD");
+  if (mc) task = new AliForwardMCMultiplicityTask("FMD");
+  else    task = new AliForwardMultiplicityTask("FMD");
+  task->SetDebugLevel(debug);
+  task->Configure("ForwardAODConfig.C");
   mgr->AddTask(task);
   
   // --- Do a local initialisation with assumed values ---------------
-  if (sys > 0 && sNN > 0) 
-    AliForwardCorrectionManager::Instance().Init(sys,sNN,field,mc);
-
-  // --- Configure the task ------------------------------------------
-  TString macroPath(gROOT->GetMacroPath());
-  if (!macroPath.Contains("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2")) { 
-    macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
-    gROOT->SetMacroPath(macroPath);
-  }
-  const char* config = gSystem->Which(gROOT->GetMacroPath(),
-				      "ForwardAODConfig.C");
-  if (!config) 
-    Warning("AddTaskForwardMult", "ForwardAODConfig.C not found in %s",
-	    gROOT->GetMacroPath());
-  else {
-    Info("AddTaskForwardMult", 
-	 "Loading configuration of '%s' from %s",
-	 task->ClassName(), config);
-    gROOT->Macro(Form("%s((AliForwardMultiplicityBase*)%p)", config, task));
-    delete config;
+  if (sys > 0 && sNN > 0) {
+    UInt_t what = AliForwardCorrectionManager::kAll;
+    what ^= AliForwardCorrectionManager::kDoubleHit;
+    what ^= AliForwardCorrectionManager::kVertexBias;
+    what ^= AliForwardCorrectionManager::kMergingEfficiency;
+    if (!AliForwardCorrectionManager::Instance().Init(sys,sNN,field,mc,what))
+      Fatal("AddTaskForwardMult", "Failed to initialize corrections");
   }
   
   // --- Make the output container and connect it --------------------

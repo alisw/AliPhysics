@@ -64,8 +64,22 @@ public:
       fSys(sys), 
       fSNN(sNN), 
       fField(field),
-      fUseCent(useCent)
+      fUseCent(useCent), 
+      fDebugLvl(0), 
+      fUseTPCEventPlane(false)
   {}
+  /** 
+   * Set the debug level on Forward objects
+   * 
+   * @param lvl Debug level
+   */
+  void SetDebugLevel(Int_t lvl) { fDebugLvl = lvl; }
+  /** 
+   * If set to true, add TPC event plane task. 
+   * 
+   * @param use Wheter to include TPC event plane task 
+   */
+  void SetUseTPCEventPlance(Bool_t use) { fUseTPCEventPlane = use; }
   /** 
    * Run this analysis 
    * 
@@ -132,19 +146,19 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
     
     // --- Add TPC eventplane task
-    gROOT->Macro("AddTaskEventplane.C");
+    if (fUseTPCEventPlane) gROOT->Macro("AddTaskEventplane.C");
 
     // --- Task to copy header information ---------------------------
     gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d)", 
-		      mc, fSys, fSNN, fField));
+    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d,%d)", 
+		      mc, fSys, fSNN, fField, fDebugLvl));
     AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), "ForwardAODConfig.C"));
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d)", 
-		      mc, fSys, fSNN, fField));
+    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d,%d)", 
+		      mc, fSys, fSNN, fField, fDebugLvl));
     AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), "CentralAODConfig.C"));
 
     // --- Add MC particle task --------------------------------------
@@ -178,41 +192,6 @@ protected:
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
     // ps->SetSkipTriggerClassSelection(true);
-/*
-    if (mc) {
-      AliOADBPhysicsSelection * oadbDefaultPbPb = new AliOADBPhysicsSelection("oadbDefaultPbPb");
-      oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+C0SMH-B-NOPF-ALLNOTRD","B",0);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-A-NOPF-ALLNOTRD","A",0);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-C-NOPF-ALLNOTRD","C",0);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-E-NOPF-ALLNOTRD","E",0);  
-      oadbDefaultPbPb->SetHardwareTrigger         ( 0,"SPDGFO >= 100");
-      oadbDefaultPbPb->SetOfflineTrigger          ( 0,"SPDGFO >= 100 && !V0ABG && !V0CBG");
-  
-      oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CMBACS2-B-NOPF-ALLNOTRD","B",1);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-A-NOPF-ALLNOTRD","A",1);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-C-NOPF-ALLNOTRD","C",1);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-E-NOPF-ALLNOTRD","E",1);
-      oadbDefaultPbPb->SetHardwareTrigger         ( 1,"(V0A && V0C && SPDGFO > 1)");
-      oadbDefaultPbPb->SetOfflineTrigger          ( 1,"(V0A && V0C && SPDGFO > 1) && !V0ABG && !V0CBG");
-    // LHC10h8
-      AliOADBPhysicsSelection * oadbLHC10h8 = new AliOADBPhysicsSelection("oadbLHC10h8");
-      oadbLHC10h8->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+C0SMH-B-NOPF-ALL","B",0);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-A-NOPF-ALL","A",0);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-C-NOPF-ALL","C",0);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-E-NOPF-ALL","E",0);  
-      oadbLHC10h8->SetHardwareTrigger         ( 0,"SPDGFO >= 100");
-      oadbLHC10h8->SetOfflineTrigger          ( 0,"SPDGFO >= 100 && !V0ABG && !V0CBG");
-  
-      oadbLHC10h8->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CMBACS2-B-NOPF-ALL","B",1);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-A-NOPF-ALL","A",1);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-C-NOPF-ALL","C",1);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-E-NOPF-ALL","E",1);
-      oadbLHC10h8->SetHardwareTrigger         ( 1,"(V0A && V0C && SPDGFOL1 > 1)");
-      oadbLHC10h8->SetOfflineTrigger          ( 1,"(V0A && V0C && SPDGFOL1 > 1) && !V0ABG && !V0CBG");
-
-      ps->SetCustomOADBObjects(oadbDefaultPbPb, 0, 0);
-      ps->SetCustomOADBObjects(oadbLHC10h8, 0, 0);
-    }*/
   }
   //__________________________________________________________________
   /** 
@@ -226,10 +205,97 @@ protected:
     if (!fUseCent) return;
     TrainSetup::CreateCentralitySelection(mc, mgr);
   }
+  //__________________________________________________________________
+  /** 
+   * Create the setup script.  This is overloaded here, so that we can
+   * create our dN/deta job script here.
+   * 
+   * @param type   Type of analysis
+   * @param mode   Mode of the analysis 
+   * @param mc     Whether this is MC or not 
+   * @param usePar Whether to use par files or not 
+   * @param dbg    Debug level
+   */
+  virtual void CreateSetupScript(EType  type, 
+				 EMode  mode, 
+				 Bool_t mc, 
+				 Bool_t usePar, 
+				 Int_t  dbg) const
+  {
+    TrainSetup::CreateSetupScript(type, mode, mc, usePar, dbg);
+    
+    Info("CreateSetupScript", "Creating dNdeta train setup script");
+    TString base(Form("%s_dndeta", fName.Data()));
+    TString escaped = EscapeName(base, fDatime);
+    std::ofstream o(Form("%s.C", escaped.Data()));
+    if (!o) { 
+      Error("CreateSetupScript", "Failed to make dNdeta script %s.C", 
+	    escaped.Data());
+      return;
+    }
+    
+    o << std::boolalpha 
+      << "// Script to analyse AOD pass " << EscapedName() << " for dN/deta\n"
+      << "// Automatically generated by MakeAODTrain\n"
+      << "void " << escaped << "(bool terminate=false,"
+      << "const char* trig=\"INEL\",Double_t vzMin=-10, Double_t vzMax=+10,"
+      << "const char* scheme=\"FULL\")\n"
+      << "{\n";
+    WriteBuild(o, "MakedNdetaTrain");
+
+    o << "  MakedNdetaTrain t(\"" << base << "\",trig,vzMin,vzMax,scheme,"
+      << fUseCent << ");\n";
+    TrainSetup::WriteSettings(o, "t");
+    o << "  t.SetDataDir(\"" << GetOutputDirectory(mode) << "\");\n";
+    WriteRuns(o, "t");
+      
+    const char* cmode = (mode == kLocal ? "\"LOCAL\"" : 
+			 mode == kProof ? "\"PROOF\"" : "\"GRID\"");
+    o << "  t.Run(" << cmode << ",(terminate ? \"TERMINATE\" : \"FULL\"),-1,"
+      << usePar << ',' << dbg << ");\n"
+      << "}\n"
+      << "// EOF" << std::endl;
+    
+    o.close();
+  }
+  //__________________________________________________________________
+  const char* ClassName() const { return "MakeAODTrain"; }
+  //__________________________________________________________________
+  void WriteConstruction(std::ostream& o, const char* obj) const
+  {
+    o << "  UShort_t sys = " << fSys     << "; // 1:pp, 2:PbPb, 3:pPb\n"
+      << "  UShort_t sNN = " << fSNN     << "; // sqrt(sNN) in GeV\n"
+      << "  Short_t  fld = " << fField   << "; // L3 field in kG\n"
+      << "  Bool_t   cen = " << fUseCent << "; // enable centrality\n" 
+      << "  MakeAODTrain "<< obj << "(\"" << fName << "\",sys,sNN,fld,cen);\n"; 
+  }
+  //__________________________________________________________________
+  void WriteSettings(std::ostream& o, const char* obj) const
+  {
+    TrainSetup::WriteSettings(o, obj);
+    o << "  " << obj << ".SetDebugLvl(" << fDebugLvl << ");\n"
+      << "  " << obj << ".SetUseTPCEventPlane(" << fUseTPCEventPlane << ");\n"
+      << std::endl;
+  }
+  //__________________________________________________________________
+  void WriteRun(std::ostream& o, 
+		const char* obj, 
+		const char* /*type*/, 
+		const char* mode, 
+		const char* oper, 
+		Bool_t      mc, 
+		Bool_t      usePar, 
+		Int_t       dbg) const
+  {
+    o << "  " << obj << ".Run(" << mode << ',' << oper << ",-1," << mc << ','
+      << usePar << ',' << dbg << ");" << std::endl;
+  }
   UShort_t fSys;
   UShort_t fSNN;
   Short_t  fField;
   Bool_t   fUseCent;
+  Int_t    fDebugLvl;
+  Bool_t   fUseTPCEventPlane;
 };
 //
 // EOF

@@ -21,6 +21,7 @@
 #include "AliESDEvent.h"
 #include "AliMultiplicity.h"
 #include <TROOT.h>
+#include <TSystem.h>
 #include <TFile.h>
 #include <TError.h>
 #include <TSystem.h>
@@ -130,6 +131,29 @@ AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
   fEtaMax            = o.fEtaMax;
   return *this;
 }
+//____________________________________________________________________
+Bool_t 
+AliCentralMultiplicityTask::Configure(const char* macro)
+{
+  // --- Configure the task ------------------------------------------
+  TString macroPath(gROOT->GetMacroPath());
+  if (!macroPath.Contains("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2")) { 
+    macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
+    gROOT->SetMacroPath(macroPath);
+  }
+  const char* config = gSystem->Which(gROOT->GetMacroPath(),macro);
+  if (!config) {
+    AliWarningF("%s not found in %s", macro, gROOT->GetMacroPath());
+    return false;
+  }
+
+  AliInfoF("Loading configuration of '%s' from %s", ClassName(), config);
+  gROOT->Macro(Form("%s((AliCentralMultiplicityTask*)%p)", config, this));
+  delete config;
+  
+  return true;
+}
+
 //____________________________________________________________________
 void AliCentralMultiplicityTask::UserCreateOutputObjects() 
 {

@@ -148,9 +148,9 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
 
   // --- Debug -------------------------------------------------------
   // Set the overall debug level (1: some output, 3: a lot of output)
-  task->SetDebug(0);
+  // task->SetDebug(0);
   // Set the debug level of a single algorithm 
-  task->GetSharingFilter().SetDebug(3);
+  // task->GetSharingFilter().SetDebug(3);
 
   // --- Eventplane Finder -------------------------------------------
   task->GetEventPlaneFinder().SetUsePhiWeights(false);

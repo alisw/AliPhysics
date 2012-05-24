@@ -27,6 +27,7 @@
 #include "AliFMDEventPlaneFinder.h"
 #include "AliESDEvent.h"
 #include <TROOT.h>
+#include <TSystem.h>
 #include <TAxis.h>
 #include <THStack.h>
 #include <iostream>
@@ -57,6 +58,28 @@ AliForwardMultiplicityBase::operator=(const AliForwardMultiplicityBase& o)
   fFirstEvent    = o.fFirstEvent;
   fCorrManager   = o.fCorrManager;
   return *this;
+}
+//____________________________________________________________________
+Bool_t 
+AliForwardMultiplicityBase::Configure(const char* macro)
+{
+  // --- Configure the task ------------------------------------------
+  TString macroPath(gROOT->GetMacroPath());
+  if (!macroPath.Contains("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2")) { 
+    macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
+    gROOT->SetMacroPath(macroPath);
+  }
+  const char* config = gSystem->Which(gROOT->GetMacroPath(), macro);
+  if (!config) {
+    AliWarningF("%s not found in %s", macro, gROOT->GetMacroPath());
+    return false;
+  }
+
+  AliInfoF("Loading configuration of '%s' from %s",  ClassName(), config);
+  gROOT->Macro(Form("%s((AliForwardMultiplicityBase*)%p)", config, this));
+  delete config;
+ 
+ return true;
 }
 
 //____________________________________________________________________

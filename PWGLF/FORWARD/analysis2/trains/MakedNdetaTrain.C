@@ -67,9 +67,9 @@ public:
    * @param usePar   If true, use PARs 
    */
   void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t usePar=false)
+	   Int_t nEvents=-1, Bool_t usePar=false, Int_t dbg=0)
   {
-    Exec("AOD", mode, oper, nEvents, false, usePar);
+    Exec("AOD", mode, oper, nEvents, false, usePar, dbg);
   }
   /** 
    * Run this analysis 
@@ -80,9 +80,9 @@ public:
    * @param usePar   If true, use PARs 
    */
   void Run(EMode mode, EOper oper, Int_t nEvents=-1, 
-	   Bool_t usePar=false)
+	   Bool_t usePar=false, Int_t dbg=0)
   {
-    Exec(kAOD, mode, oper, nEvents, false, usePar);
+    Exec(kAOD, mode, oper, nEvents, false, usePar, dbg);
   }
   /** 
    * Set the trigger to use (INEL, INEL>0, NSD)
@@ -148,6 +148,31 @@ protected:
    * @return 0
    */
   AliVEventHandler* CreateOutputHandler(EType) { return 0; }
+  //__________________________________________________________________
+  const char* ClassName() const { return "MakedNdetaTrain"; }
+  //__________________________________________________________________
+  void WriteConstruction(std::ostream& o, const char* obj) const
+  {
+    o << "  const char* trig   = \"" << fTrig << "\";\n"
+      << "  Double_t    vzMin  = " << fVzMin << ";\n"
+      << "  Double_t    vzMax  = " << fVzMax << ";\n"
+      << "  const char* scheme = \"" << fScheme << "\";\n"
+      << "  Bool_t      cent   = " << fUseCent << ";\n"
+      << "  MakedNdetaTrain " << obj << "(\"" 
+      << fName << "\",trig,vzMin,vzMax,scheme,cent);\n";
+  }
+  void WriteRun(std::ostream& o, 
+		const char* obj, 
+		const char* /* type */, 
+		const char* mode, 
+		const char* oper, 
+		Bool_t      mc, 
+		Bool_t      usePar, 
+		Int_t       dbg) const
+  {
+    o << "  " << obj << ".Run(" << mode << ',' << oper << ",-1," 
+      << usePar << ',' << dbg << ");" << std::endl;
+  }
   TString  fTrig;      // Trigger to use 
   Double_t fVzMin;     // Least v_z
   Double_t fVzMax;     // Largest v_z
