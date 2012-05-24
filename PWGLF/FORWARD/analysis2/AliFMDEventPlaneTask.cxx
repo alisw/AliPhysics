@@ -162,7 +162,8 @@ void AliFMDEventPlaneTask::UserExec(Option_t */*option*/)
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fAOD) return;
 
-  AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
+  AliAODForwardMult* aodfmult = 
+    static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
 
   if (!aodfmult) return;
   if (!AODCheck(aodfmult)) return;
