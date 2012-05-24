@@ -134,6 +134,10 @@ class AliCDBManager: public TObject {
 	void UnsetSnapshotMode() {fSnapshotMode=kFALSE;}
 	void DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys);
   
+	Int_t GetStartRunLHCPeriod();
+	Int_t GetEndRunLHCPeriod();
+	TString GetLHCPeriod();
+
 protected:
 
 	static TString fgkCondUri;	// URI of the Conditions data base folder

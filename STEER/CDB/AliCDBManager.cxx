@@ -623,7 +623,9 @@ void AliCDBManager::SetDefaultStorage(const char* mcString, const char* simType)
 		}
 
 		SetDefaultStorage(dbString.Data());
-		if(!fDefaultStorage) AliFatal(Form("%s storage not there! Please check!",fLHCPeriod.Data()));
+		fStartRunLHCPeriod=0;
+		fEndRunLHCPeriod=AliCDBRunRange::Infinity();
+		if(!fDefaultStorage) AliFatal(Form("%s storage not there! Please check!",dbString.Data()));
 	}
 }
 //_____________________________________________________________________________
@@ -939,7 +941,7 @@ Bool_t AliCDBManager::SetSnapshotMode(const char* snapshotFileName) {
 	return kFALSE;
     }
 
-    Printf("The CDB manager is set in snapshot mode: cache->snapshot->defaultstorage");
+    AliInfo("The CDB manager is set in snapshot mode!");
     fSnapshotMode = kTRUE;
     return kTRUE;
 
@@ -961,6 +963,35 @@ const char* AliCDBManager::GetURI(const char* path) {
 	}
 	
 	return 0;
+}
+
+//_____________________________________________________________________________
+Int_t AliCDBManager::GetStartRunLHCPeriod(){
+    // get the first run of validity
+    // for the current period
+    // if set
+    if(fStartRunLHCPeriod==-1)
+	AliWarning("Run-range not yet set for the current LHC period.");
+    return fStartRunLHCPeriod;
+}
+
+//_____________________________________________________________________________
+Int_t AliCDBManager::GetEndRunLHCPeriod(){
+    // get the last run of validity
+    // for the current period
+    // if set
+    if(fEndRunLHCPeriod==-1)
+	AliWarning("Run-range not yet set for the current LHC period.");
+    return fEndRunLHCPeriod;
+}
+
+//_____________________________________________________________________________
+TString AliCDBManager::GetLHCPeriod(){
+    // get the current LHC period string
+    //
+    if(fLHCPeriod.IsWhitespace() || fLHCPeriod.IsNull())
+	AliWarning("LHC period (OCDB folder) not yet set");
+    return fLHCPeriod;
 }
 
 //_____________________________________________________________________________
