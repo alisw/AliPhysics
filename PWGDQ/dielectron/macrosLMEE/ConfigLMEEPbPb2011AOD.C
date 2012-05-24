@@ -168,8 +168,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 
   //Create Classes for Rejected Tracks/Pairs:
-  for (Int_t i=0; i<3; ++i){
-	histos->AddClass(Form("RejTrack_%s",AliDielectron::PairClassName(i)));
+  for (Int_t i=0; i<2; ++i){
+	histos->AddClass(Form("RejTrack_%s",AliDielectron::TrackClassName(i)));
   }
   for (Int_t i=0; i<3; ++i){
 	histos->AddClass(Form("RejPair_%s",AliDielectron::PairClassName(i)));
@@ -280,53 +280,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Pre","TPCnCls","Number of Clusters TPC;TPC number clusteres;#tracks",159,0.,159.,AliDielectronVarManager::kNclsTPC);
 
   //add histograms to Pair classes For Rejected Pairs:
-  histos->UserHistogram("RejPair","InvMass","Inv.Mass;Inv. Mass [GeV];#pairs",
-	  500,0.0,5.00,AliDielectronVarManager::kM);
-  histos->UserHistogram("RejPair","Rapidity","Rapidity;Rapidity;#pairs",
-	  100,-2.,2.,AliDielectronVarManager::kY);
-  histos->UserHistogram("RejPair","OpeningAngle","Opening angle;angle",
-	  100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
-  //2D Histo Plot
-  histos->UserHistogram("RejPair","InvMassPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
-	  500,0.0,5.0,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
-
-  histos->UserHistogram("RejPair","InvMassOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
-	  500,0.0,5.0,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
-
-  //add histograms to Rejected Track classes
-  histos->UserHistogram("RejTrack","Pt","Pt;Pt [GeV];#tracks",200,0,20.,AliDielectronVarManager::kPt);
-
-  histos->UserHistogram("RejTrack","ITS_dEdx_P","ITS_dEdx;P [GeV];ITS signal (arb units);#tracks",
-	  400,0.0,20.,1000,0.,1000.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSsignal,kTRUE);
-
-  histos->UserHistogram("RejTrack","dEdx_P","dEdx;P [GeV];TPC signal (arb units);#tracks",
-	  400,0.0,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
-
-
-  histos->UserHistogram("RejTrack","TPCnSigmaEle_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
-  histos->UserHistogram("RejTrack","TPCnSigmaKao_P","TPC number of sigmas Kaons;P [GeV];TPC number of sigmas Kaons;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao,kTRUE);
-  histos->UserHistogram("RejTrack","TPCnSigmaPio_P","TPC number of sigmas Pions;P [GeV];TPC number of sigmas Pions;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio,kTRUE);
-
-  histos->UserHistogram("RejTrack","TRDpidPobEle_P","TRD PID probability Electrons;P [GeV];TRD prob Electrons;#tracks",
-	  400,0.0,20.,100,0.,1.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTRDprobEle,kTRUE);
-  histos->UserHistogram("RejTrack","TRDpidPobPio_P","TRD PID probability Pions;P [GeV];TRD prob Pions;#tracks",
-	  400,0.0,20.,100,0.,1.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTRDprobPio,kTRUE);
-
-  histos->UserHistogram("RejTrack","TOFnSigmaKao_P","TOF number of sigmas Kaons;P [GeV];TOF number of sigmas Kaons;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaKao,kTRUE);
-  histos->UserHistogram("RejTrack","TOFnSigmaPro_P","TOF number of sigmas Protons;P [GeV];TOF number of sigmas Protons;#tracks",
-	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro,kTRUE);
-
-  histos->UserHistogram("RejTrack","Eta_Phi","Eta Phi Map; Eta; Phi;#tracks",
-	  200,-2,2,200,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
-
-  histos->UserHistogram("RejTrack","dXY","dXY;dXY [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
-
-  histos->UserHistogram("RejTrack","TPCnCls","Number of Clusters TPC;TPC number clusteres;#tracks",159,0.,159.,AliDielectronVarManager::kNclsTPC);
-
   die->SetHistogramManager(histos);
 }
 
