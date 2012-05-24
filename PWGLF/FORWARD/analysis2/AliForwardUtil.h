@@ -632,8 +632,10 @@ public:
   {
     DebugGuard(Int_t lvl, Int_t msgLvl, const char* format, ...);
     ~DebugGuard();
+    static void Message(Int_t lvl, Int_t msgLvl, const char* format, ...);
   private:
-    void Format(bool in);
+    static void Output(int in, TString& msg);
+    static void Format(TString& out, const char* format, va_list ap);
     TString fMsg;
   };
 private:
@@ -646,12 +648,14 @@ private:
   ClassDef(AliForwardUtil,1) // Utilities - do not make object
 };
 
-#ifdef LOG_NO_DEBUG
-# define DGUARD(L,N,F,...) do {} while(false) 
-#else
+// #ifdef LOG_NO_DEBUG
+// # define DGUARD(L,N,F,...) do {} while(false) 
+// #else
 # define DGUARD(L,N,F,...)					\
   AliForwardUtil::DebugGuard _GUARD(L,N,F, ## __VA_ARGS__)
-#endif
+# define DMSG(L,N,F,...)					\
+  AliForwardUtil::DebugGuard::Message(L,N,F, ## __VA_ARGS__)
+// #endif
 #endif
 // Local Variables:
 //  mode: C++
