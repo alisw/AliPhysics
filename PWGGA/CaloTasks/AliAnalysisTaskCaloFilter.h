@@ -90,7 +90,7 @@ class AliAnalysisTaskCaloFilter : public AliAnalysisTaskSE
   void    SetNcellsCut(Int_t cut)                 { fNcellsCut = cut        ; }
   Int_t   GetNcellsCut()                    const { return fNcellsCut       ; }
   void    SetVzCut(Float_t cut)                   { fVzCut = cut            ; }
-  Int_t   GetVzCut()                        const { return fVzCut           ; }
+  Float_t GetVzCut()                        const { return fVzCut           ; }
   
   
 private:
