@@ -1665,6 +1665,9 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2011() {
   
   // Default 2010 PbPb cut object
   SetStandardCutsPbPb2010();
+  AliAODPidHF *pidobj=GetPidHF();
+
+  pidobj->SetOldPid(kFALSE);
 
   //
   // Enable all 2011 PbPb run triggers
