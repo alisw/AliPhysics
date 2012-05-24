@@ -94,17 +94,18 @@ void anaCaloFilter(Int_t mode=mLocal)
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------    
     // ESD physics selection task
-    if(kInputData == "ESD" && kUsePhysSel){
+    if(kInputData == "ESD" && kUsePhysSel)
+    {
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
     }
     
-    //gROOT->LoadMacro("AddTaskCaloFilter.C");
-    //AliAnalysisTaskCaloFilter* filter = AddTaskCaloFilter();
+    gROOT->LoadMacro("AddTaskCaloFilter.C");
+    AliAnalysisTaskCaloFilter* filter = AddTaskCaloFilter();
             
-    AliAnalysisTaskCaloFilter * filter = new AliAnalysisTaskCaloFilter();
-    filter->SetConfigFileName("ConfigCaloFilter.C");
-    mgr->AddTask(filter);
+    //AliAnalysisTaskCaloFilter * filter = new AliAnalysisTaskCaloFilter();
+    //filter->SetConfigFileName("ConfigCaloFilter.C");
+    //mgr->AddTask(filter);
       
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1    = mgr->GetCommonInputContainer();
