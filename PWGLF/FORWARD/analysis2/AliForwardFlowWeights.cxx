@@ -37,6 +37,10 @@ AliForwardFlowWeights::operator=(const AliForwardFlowWeights& o)
 
   return *this;
 }
+//____________________________________________________________________
+AliForwardFlowWeights::~AliForwardFlowWeights()
+{
+}
 
 namespace {
   const char* fgkPt2Name = "v22VsPt";
