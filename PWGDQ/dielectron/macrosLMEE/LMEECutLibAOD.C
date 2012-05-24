@@ -45,6 +45,8 @@ class LMEECutLib {
 		case kpp2010TPCandTOF :
 		case kpp2010TPCorTOF  :
 		  eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
+		  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny); // AOD
+		  //           eventCuts->SetCentralityRange(0.0,80.0);
 		  eventCuts->SetRequireVertex();
 		  eventCuts->SetMinVtxContributors(1);
 		  eventCuts->SetVertexZ(-10.,10.);
@@ -276,8 +278,6 @@ class LMEECutLib {
 		        //Not necessary for AOD?
 		        //-AOD-trackCuts->SetDCAToVertex2D(kTRUE);
 			
-			//Next Diel version
-			//-AOD-trackCuts->SetMinNClustersITS(3);
 		  
 			//Not possible in AOD(?) 
 			//-AOD-trackCuts->SetMinNCrossedRowsTPC(110);
@@ -288,24 +288,27 @@ class LMEECutLib {
 
 			trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
 			trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-			trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
+			//Not working for AODs
+		//	trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   3.5);
 			
 			//trackCuts->SetMinNClustersTPC(60);
 			//Legacy cut: Use Crossed Rows in ESD, in AOD ASAP
 			trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,     60.0, 160.0);
+			//-AOD-trackCuts->SetMinNClustersITS(3);
+			trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,     3.0, 100.0);
  		        
 			//trackCuts->SetAcceptKinkDaughters(kFALSE);  
 			trackCutsAOD->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
 			
-			// trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-			trackCutsAOD->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,0.5); //ITS(0) = SPDfirst
 
 
 
 			AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
 			trackCutsDiel->SetRequireITSRefit(kTRUE);
 			trackCutsDiel->SetRequireTPCRefit(kTRUE);
-		
+			trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst)
+			// trackCutsAOD->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,0.5); //ITS(0) = SPDfirst
+			
 			trackCuts->AddCut(trackCutsDiel);
 			trackCuts->AddCut(trackCutsAOD);
 

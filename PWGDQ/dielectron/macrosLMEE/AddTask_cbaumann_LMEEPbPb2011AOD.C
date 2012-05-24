@@ -19,11 +19,11 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE){
 
   //Do we have an MC handler?
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-
+/*
   const Int_t kNtriggers=1;
     ULong64_t triggers[]={AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB };
 	const char* triggerNames[]={"all"};
-
+*/
 
 
 //  create task and add it to the manager
@@ -34,8 +34,9 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Bool_t runAll=kFALSE){
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
-  task->SetTriggerMask(triggers[0]);
-  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
+  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  
+task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
 	
 
   //load dielectron configuration file
