@@ -248,24 +248,45 @@ public:
      */
     enum { kHmult = 1, kHQnRe, kHQnIm, kHQ2nRe, kHQ2nIm };
     /*
-     * Enumeration for cumulant histogram
+     * Enumeration for cumulant histograms
      */
-    enum { kW2Two = 1, kW2, kW4Four, kW4, kQnRe, kQnIm, kM,
-       kCosphi1phi2, kSinphi1phi2, kCosphi1phi2phi3m, kSinphi1phi2phi3m, kMm1m2, 
-       kw2two, kw2, kw4four, kw4, kpnRe, kpnIm, kmp, 
-       kCospsi1phi2, kSinpsi1phi2, kCospsi1phi2phi3m, kSinpsi1phi2phi3m,
-       kmpmq, kCospsi1phi2phi3p, kSinpsi1phi2phi3p };
+    enum { kW2Two = 1, 
+	   kW2, 
+	   kW4Four, 
+	   kW4, 
+	   kQnRe, 
+	   kQnIm, 
+	   kM,
+	   kCosphi1phi2, 
+	   kSinphi1phi2, 
+	   kCosphi1phi2phi3m, 
+	   kSinphi1phi2phi3m, 
+	   kMm1m2, 
+	   kw2two, 
+	   kw2, 
+	   kw4four, 
+	   kw4, 
+	   kpnRe, 
+	   kpnIm, 
+	   kmp, 
+	   kCospsi1phi2, 
+	   kSinpsi1phi2, 
+	   kCospsi1phi2phi3m, 
+	   kSinpsi1phi2phi3m,
+	   kmpmq, 
+	   kCospsi1phi2phi3p, 
+	   kSinpsi1phi2phi3p };
 
-    const UShort_t fMoment;        // flow moment 
-    const Int_t    fVzMin;         // z-vertex min must be in whole [cm]
-    const Int_t    fVzMax;         // z-vertex max must be in whoe [cm]
-    TString        fType;          // data type
-    const Bool_t   fSymEta;        // Use forward-backward symmetry, if detector allows it
-    TH2D*          fCumuRef;       // histogram for reference flow
-    TH2D*          fCumuDiff;      // histogram for differential flow
-    TH3D*          fCumuHist;      // histogram for cumulants calculations
-    TH2D*          fdNdedpAcc;     // Diagnostics histogram to make acc. maps
-    UShort_t       fDebug;         // Debug flag
+    const UShort_t fMoment;    // flow moment 
+    const Int_t    fVzMin;     // z-vertex min must be in whole [cm]
+    const Int_t    fVzMax;     // z-vertex max must be in whoe [cm]
+    TString        fType;      // data type
+    const Bool_t   fSymEta;    // Use forward-backward symmetry, if detector allows it
+    TH2D*          fCumuRef;   // histogram for reference flow
+    TH2D*          fCumuDiff;  // histogram for differential flow
+    TH3D*          fCumuHist;  // histogram for cumulants calculations
+    TH2D*          fdNdedpAcc; // Diagnostics histogram to make acc. maps
+    UShort_t       fDebug;     // Debug flag
 
     ClassDef(VertexBin, 1); // object for cumulants ananlysis in FMD
   };
@@ -307,7 +328,7 @@ protected:
   TList*         fOutputList;     //  Output list
   AliAODEvent*   fAOD;            //  AOD event
   Bool_t         fv[7];           //  Calculate v_{n} flag
-  Float_t  	 fVtx;        //  Z vertex bin
+  Float_t  	 fVtx;            //  Z vertex bin
   Double_t       fCent;           //  Centrality
   TH1D*          fHistCent;       //  Diagnostics hist for centrality
   TH1D*          fHistVertexSel;  //  Diagnostics hist for selected vertices

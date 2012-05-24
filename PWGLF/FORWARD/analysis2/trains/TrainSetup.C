@@ -49,6 +49,7 @@
 class TArrayI;
 class TChain;
 class AliAnalysisManager;
+class TDatime;
 #endif
 
 //====================================================================
@@ -192,6 +193,7 @@ struct TrainSetup
 	     UShort_t year=0, UShort_t month=0, 
 	     UShort_t day=0, UShort_t hour=0, UShort_t min=0) 
     : fName(name),
+      fEscapedName(name),
       fRootVersion("v5-28-00a"),
       fAliRootVersion("v4-21-18-AN"),
       fAliEnAPIVersion("V1.1x"),
@@ -199,40 +201,51 @@ struct TrainSetup
       fDataDir("/alice/data/2010/LHC10c"),
       fDataSet("/COMMON/COMMON/LHC09a4_run8100X#/esdTree"),
       fXML(""), 
+      fNReplica(4),
+      fESDPass(3),
+      fPassPostfix(""),
+      fAllowOverwrite(kFALSE),
+      fUseGDB(kFALSE), 
+      fMaxSplit(50),
       fRunNumbers(0),
       fListOfPARs(),
       fListOfSources(),
       fListOfLibraries(),
       fListOfExtras(),
-      fNReplica(4),
-      fESDPass(3),
-      fPassPostfix(""),
-      fEscapedName(name),
-      fAllowOverwrite(kFALSE),
-      fUseGDB(kFALSE)
+      fDatime((year<1995?1995:year), month, day, hour, min, 0)
   {
+    // If no time is specified, set to now 
+    if (useDateTime && (year == 0 || month == 0 || day == 0)) fDatime.Set();
+      
+    fEscapedName = EscapeName(fName, fDatime);
+  }
+  
+  static TString EscapeName(const char* name, const TDatime& datime)
+  {
+    TString escaped = name;
     char  c[] = { ' ', '/', '@', 0 };
     char* p   = c;
     while (*p) { 
-      fEscapedName.ReplaceAll(Form("%c", *p), "_");
+      escaped.ReplaceAll(Form("%c", *p), "_");
       p++;
     }
-
-    if (useDateTime) { 
-      if (year == 0 || month == 0 || day == 0) {
-	TDatime now;
-	year  = now.GetYear();
-	month = now.GetMonth();
-	day   = now.GetDay();
-	hour  = now.GetHour();
-	min   = now.GetMinute();
-      }
-      fEscapedName.Append(Form("_%04d%02d%02d_%02d%02d", 
-			       year, month, day, hour, min));
-    }
-
+    if (datime.GetYear() <= 1995 && 
+	datime.GetMonth() == 0 && 
+	datime.GetDay() == 0) return escaped;
+    escaped.Append(Form("_%04d%02d%02d_%02d%02d", 
+			datime.GetYear(), 
+			datime.GetMonth(), 
+			datime.GetDay(), 
+			datime.GetHour(), 
+			datime.GetMinute()));
+    return escaped;
+  }    
+  void SetDateTime(UShort_t year, UShort_t month, UShort_t day, 
+		   UShort_t hour, UShort_t minutes)
+  {
+    fDatime.Set((year<1995?1995:year), month, day, hour, minutes, 0);
+    fEscapedName = EscapeName(fName, fDatime);
   }
-
   //__________________________________________________________________
   /** 
    * Parse a string into a type enum
@@ -349,7 +362,12 @@ struct TrainSetup
    * @param v Version string of AliROOT 
    */
   void SetAliROOTVersion(const char* v) { fAliRootVersion = v; }
-
+  //__________________________________________________________________
+  /** 
+   * Set the AliEn API version to use 
+   * 
+   * @param v AliEn API version 
+   */
   void SetAliEnAPIVersion(const char* v) { fAliEnAPIVersion = v; }
   //__________________________________________________________________
   /** 
@@ -386,12 +404,14 @@ struct TrainSetup
    * @param n Number of replicas requested 
    */
   void SetNReplica(Int_t n) { fNReplica = n; }
+  //__________________________________________________________________
   /** 
    * Set the ESD pass to use 
    * 
    * @param pass Pass number 
    */
   void SetESDPass(Int_t pass) { fESDPass = pass; }
+  //__________________________________________________________________
   /** 
    * Set the ESD pass to use 
    * 
@@ -405,6 +425,13 @@ struct TrainSetup
    * @param use Whether to use GDB or not 
    */
   void SetUseGDB(Bool_t use=kTRUE) { fUseGDB = use; }
+  //__________________________________________________________________
+  /** 
+   * Set the maximum number of files per sub-job.  
+   * 
+   * @param max Maximum number of files per sub-job
+   */  
+  void SetMaxSplit(UShort_t max=50) { fMaxSplit = max; }
   //__________________________________________________________________
   /** 
    * Add a source file to be copied and byte compiled on slaves 
@@ -617,8 +644,8 @@ struct TrainSetup
 	     << base << "." << ext << "++g\");\n"
 	     << "  if (ret != 0) Fatal(\"BUILD\",\"Failed to build\");\n"
 	     << "  else Info(\"BUILD\", \"Made " << base << "\");\n"
-	    << "}\n"
-	    << std::endl;
+	     << "}\n"
+	     << std::endl;
       cbuild.close();
       
       // Make our set-up script 
@@ -664,55 +691,68 @@ struct TrainSetup
     return retval;
   }
   //__________________________________________________________________
+  static void PrintFieldName(std::ostream& o, const char* name)
+  {
+    o << "  " << std::left << std::setw(20) << name << ": " << std::flush;
+  }
+  //__________________________________________________________________
+  static void PrintFieldList(std::ostream& o, const char* name, 
+			     const TCollection& c)
+  {
+    PrintFieldName(o, name);
+    Bool_t   first = true;
+    TObject* obj = 0;
+    TIter    next(&c);
+    while ((obj = next())) {
+      o << (first ? "" : ", ") << obj->GetName();
+      first = false;
+    }
+    std::cout << std::endl;
+  }
+  //__________________________________________________________________
+  template <typename T>
+  static void PrintField(std::ostream& o, const char* name, T& value) 
+  {
+    PrintFieldName(o, name);
+    o << value << std::endl;
+  }
+  //__________________________________________________________________
   /** 
    * Print the setup 
    * 
    */
-  void Print() const 
+  virtual void Print() const 
   {
     bool mc = AliAnalysisManager::GetAnalysisManager()
       ->GetMCtruthEventHandler();
     std::cout << fName << " train setup\n"
-	      << std::boolalpha
-	      << "  ROOT version:         " << fRootVersion    << "\n"
-	      << "  AliROOT version:      " << fAliRootVersion << "\n"
-	      << "  Name of proof server: " << fProofServer    << "\n"
-	      << "  Grid Input directory: " << fDataDir        << "\n"
-	      << "  Proof data set name:  " << fDataSet        << "\n"
-	      << "  XML collection:       " << fXML            << "\n"
-	      << "  Monte-Carlo input:    " << mc              << "\n"
-	      << "  Storage replication:  " << fNReplica       << "\n"
-	      << "  Run numbers:          " << std::flush;
+	      << std::boolalpha;
+    PrintField(std::cout, "Escaped name",               fEscapedName);
+    PrintField(std::cout, "ROOT version",		fRootVersion);
+    PrintField(std::cout, "AliROOT version",		fAliRootVersion);
+    PrintField(std::cout, "AliEn API version",		fAliEnAPIVersion);
+    PrintField(std::cout, "Name of proof server",	fProofServer);
+    PrintField(std::cout, "Input directory",		fDataDir);
+    PrintField(std::cout, "Proof data set name",	fDataSet);
+    PrintField(std::cout, "XML collection",		fXML);
+    PrintField(std::cout, "Storage replication",	fNReplica);
+    PrintField(std::cout, "ESD pass",			fESDPass);
+    PrintField(std::cout, "ESD pass postfix",		fPassPostfix);
+    PrintField(std::cout, "Allow overwrite",            fAllowOverwrite);
+    PrintField(std::cout, "Do GDB debugging",           fUseGDB);
+    PrintField(std::cout, "Max # files per split",      fMaxSplit);
+    PrintField(std::cout, "Monte-Carlo input",		mc);
+
+    PrintFieldName(std::cout, "Run numbers");
     for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
       std::cout << (i == 0 ? "" : ", ") << fRunNumbers.At(i);
+    std::cout << std::endl;
 
-    std::cout << "\n"
-	      << "  PAR files:            " << std::flush;
-    Bool_t first = true;
-    TObject* obj = 0;
-    TIter nextPar(&fListOfPARs);
-    while ((obj = nextPar())) {
-      std::cout << (first ? "" : ", ") << obj->GetName();
-      first = false;
-    }
+    PrintFieldList(std::cout, "PAR files", 		fListOfPARs);
+    PrintFieldList(std::cout, "Script sources", 	fListOfSources);
+    PrintFieldList(std::cout, "Libraries", 		fListOfLibraries);
+    PrintFieldList(std::cout, "Extras", 		fListOfExtras);
 
-    std::cout << "\n"
-	      << "  Script sources:       " << std::flush;
-    first = true;
-    TIter nextSrc(&fListOfSources);
-    while ((obj = nextSrc())) {
-      std::cout << (first ? "" : ", ") << obj->GetName();
-      first = false;
-    }
-
-    std::cout << "\n"
-	      << "  Libraries to load:    " << std::flush;
-    first = true;
-    TIter nextLib(&fListOfLibraries);
-    while ((obj = nextLib())) {
-      std::cout << (first ? "" : ", ") << obj->GetName();
-      first = false;
-    }
     std::cout << std::noboolalpha << std::endl;
 
     AliAnalysisGrid* plugin = 
@@ -815,6 +855,9 @@ struct TrainSetup
     if (gridHandler) mgr->SetGridHandler(gridHandler);
     
     // --- Print setup -----------------------------------------------
+    CreateSetupScript(type, mode, mc, usePar, dbg);
+
+    // --- Print setup -----------------------------------------------
     Print();
     // if (mode == kProof) {
     // Info("Run", "Exported environment variables to PROOF slaves:");
@@ -867,20 +910,25 @@ protected:
    * @param o Object to copy from
    */
   TrainSetup(const TrainSetup& o)
-    : fName(o.fName),
-      fRootVersion(o.fRootVersion),
-      fAliRootVersion(o.fAliRootVersion),
-      fProofServer(o.fProofServer),
-      fDataDir(o.fDataDir),	
-      fDataSet(o.fDataSet),	
-      fXML(o.fXML),	
-      fRunNumbers(o.fRunNumbers),
-      fListOfPARs(),
-      fListOfSources(),
-      fListOfLibraries(),
-      fListOfExtras(),
-      fNReplica(o.fNReplica),
-      fESDPass(o.fESDPass)
+  : fName(o.fName),
+    fRootVersion(o.fRootVersion),
+    fAliRootVersion(o.fAliRootVersion),
+    fProofServer(o.fProofServer),
+    fDataDir(o.fDataDir),	
+    fDataSet(o.fDataSet),	
+    fXML(o.fXML),	
+    fNReplica(o.fNReplica),
+    fESDPass(o.fESDPass),
+    fPassPostfix(o.fPassPostfix),
+    fAllowOverwrite(o.fAllowOverwrite),
+    fUseGDB(o.fUseGDB),
+    fMaxSplit(o.fMaxSplit),
+    fRunNumbers(o.fRunNumbers),
+    fListOfPARs(),
+    fListOfSources(),
+    fListOfLibraries(),
+    fListOfExtras(),
+    fDatime(o.fDatime)
   {
     if (isdigit(fName[0])) { 
       Warning("TrainSetup", "Name starts with a digit, prepending 'a' to name");
@@ -1103,9 +1151,10 @@ protected:
 
     // Data search patterns 
     TString pat;
-    if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) {
+    if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() ||
+	type == kAOD) {
       pat = "*/";
-      plugin->SetRunPrefix("");
+      plugin->SetRunPrefix(type == kAOD ? "000" : "");
     }
     else {
       pat = Form("*ESDs/pass%d%s/*/", fESDPass, fPassPostfix.Data());
@@ -1229,6 +1278,7 @@ protected:
     
     // Split by storage element - must be lower case!
     plugin->SetSplitMode("se");
+    plugin->SetSplitMaxInputFileNumber(fMaxSplit);
 
     return plugin;
   }
@@ -1310,8 +1360,9 @@ protected:
   virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
   {
     gROOT->Macro("AddTaskCentrality.C");
+    const char* name = "CentralitySelection";
     AliCentralitySelectionTask* ctask = 
-      dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask("CentralitySelection"));
+      dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask(name));
     if (!ctask) return;
     // ctask->SetPass(fESDPass);
     if (mc) ctask->SetMCInput();
@@ -1558,7 +1609,7 @@ protected:
     }
     
     // Extract archive 
-    gSystem->Exec(Form("tar xvzf %s", parFile.Data()));
+    gSystem->Exec(Form("tar xzf %s", parFile.Data()));
     
     // Change directory into par archive
     TString cwd = gSystem->WorkingDirectory();
@@ -1836,7 +1887,140 @@ protected:
     return chain;
   }
   //__________________________________________________________________
+  TString GetOutputDirectory(EMode mode) const 
+  {
+    TString ret(fEscapedName);
+    if (mode != kGrid) return ret;
+    
+    AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+    if (!am) { 
+      Warning("GetOutputDirectory", "No analysis manager defined yet");
+      return ret;
+    }
+    AliAnalysisGrid* ag = am->GetGridHandler();
+    if (!ag) { 
+      Warning("GetOutputDirectory", "No grid handler defined yet");
+      return ret;
+    }
+    AliAnalysisAlien* aa = dynamic_cast<AliAnalysisAlien*>(ag);
+    if (!aa) { 
+      Warning("GetOutputDirectory", "Grid handler isn't for AliEn");
+      return ret;
+    }
+    ret = aa->GetGridOutputDir();
+    if (!ret.BeginsWith("/")) {
+      if (gGrid)
+	ret = Form("%s/%s/%s", gGrid->GetHomeDirectory(), 
+		   fEscapedName.Data(), aa->GetGridOutputDir());
+      else 
+	ret = Form("%s/%s", fEscapedName.Data(), aa->GetGridOutputDir());
+    }
+    return ret;
+  }
+      
+  //__________________________________________________________________
+  virtual void WriteConstruction(std::ostream& o, const char* obj) const
+  {
+    o << "  " << ClassName() << " " 
+      << obj << "(\"" << fName << "\");" << std::endl;
+  }
+  //__________________________________________________________________
+  virtual void WriteSettings(std::ostream& o, const char* obj) const
+  {
+    o << "  " << obj << ".SetDateTime(" << fDatime.GetYear() << ',' 
+      << fDatime.GetMonth() << ',' 
+      << fDatime.GetDay() << ',' 
+      << fDatime.GetHour() << ',' 
+      << fDatime.GetMinute() << ");\n"
+      << "  " << obj << ".SetROOTVersion(\"" << fRootVersion << "\");\n"
+      << "  " << obj << ".SetAliROOTVersion(\"" << fAliRootVersion << "\");\n"
+      << "  " << obj << ".SetAliEnAPIVersion(\"" << fAliEnAPIVersion << "\");\n"
+      << "  " << obj << ".SetProofServer(\"" << fProofServer << "\");\n"
+      << "  " << obj << ".SetDataDir(\"" << fDataDir << "\");\n"
+      << "  " << obj << ".SetDataSet(\"" << fDataSet << "\");\n"
+      << "  " << obj << ".SetXML(\"" << fXML << "\");\n"
+      << "  " << obj << ".SetNReplica(" << fNReplica << ");\n"
+      << "  " << obj << ".SetESDPass(" << fESDPass << ");\n"
+      << "  " << obj << ".SetPassPostfix(\"" << fPassPostfix << "\");\n"
+      << "  " << obj << ".SetAllowOverwrite(" << fAllowOverwrite << ");\n"
+      << "  " << obj << ".SetUseGDB(" << fUseGDB << ");\n"
+      << "  " << obj << ".SetMaxSplit(" << fMaxSplit << ");\n"
+      << std::endl;
+  } 
+  //__________________________________________________________________
+  virtual void WriteRun(std::ostream& o, 
+			const char* obj, 
+			const char* type, 
+			const char* mode, 
+			const char* oper, 
+			Bool_t      mc, 
+			Bool_t      usePar, 
+			Int_t       dbg) const
+  {
+    o << "  " << obj << ".Run(" << type << "," << mode 
+      << "," << oper << "," << mc << "," << usePar << "," 
+      << dbg << ");" << std::endl;
+  }
+  //__________________________________________________________________
+  virtual const char* ClassName() const
+  {
+    return "TrainSetup";
+  }
+  //__________________________________________________________________
+  virtual void WriteBuild(std::ostream& o, const char* cls) const
+  {
+    o << "  const char* builder = \n"
+      << "    \"$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/trains/BuildTrain.C\";\n"
+      << "  gROOT->LoadMacro(builder);\n"
+      << "  BuildTrain(\"" << cls << "\");\n" << std::endl;
+  }
+  //__________________________________________________________________
+  virtual void WriteRuns(std::ostream& o, const char* obj) const
+  {
+    for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
+      o << "  " << obj << ".AddRun(" << fRunNumbers.At(i) << ");\n";
+    o << std::endl;
+  }
+  //__________________________________________________________________
+  virtual void CreateSetupScript(EType  type, 
+				 EMode  mode, 
+				 Bool_t mc, 
+				 Bool_t usePar, 
+				 Int_t  dbg) const
+  {
+    std::ofstream o(Form("setup_%s.C", fEscapedName.Data()));
+    if (!o) { 
+      Error("CreateSetupScript", "Failed to generate setup_%s.C", 
+	    fEscapedName.Data());
+      return;
+    }
+    const char* cls = ClassName();
+    o << std::boolalpha 
+      << "// Script to set-up the analysis chain\n"
+      << "// Automatically generated by TrainSetup\n"
+      << "// Run with argument to true, to do Terminate processing\n"
+      << "void setup_" << fEscapedName << "(bool terminate)\n"
+      << "{\n";
+    WriteBuild(o, cls);
+    WriteConstruction(o, "t");
+    WriteSettings(o, "t");
+    WriteRuns(o, "t");
+
+    const char* ctype = (type == kESD ? "\"ESD\"" : "\"AOD\"");
+    const char* cmode = (mode == kLocal ? "\"LOCAL\"" : 
+			 mode == kProof ? "\"PROOF\"" : "\"GRID\"");
+    WriteRun(o, "t", ctype, cmode, "(terminate ? \"TERMINATE\" : \"FULL\")",
+	     mc, usePar, dbg);
+	     
+    
+    o << "\n}\n// EOF\n" << std::endl;
+	
+    
+    o.close();
+  }
+  //__________________________________________________________________
   TString fName;             // Name of analysis
+  TString fEscapedName;      // Name escaped for special chars
   TString fRootVersion;      // ROOT version to use 
   TString fAliRootVersion;   // AliROOT version to use 
   TString fAliEnAPIVersion;  // AliEn API version to use 
@@ -1844,17 +2028,18 @@ protected:
   TString fDataDir;          // Grid Input directory 
   TString fDataSet;          // Proof data set name 
   TString fXML;              // XML collection for local/proof mode
+  Int_t   fNReplica;         // Storage replication
+  Int_t   fESDPass;          // ESD pass number 
+  TString fPassPostfix;      // Possible pass postfix
+  Bool_t  fAllowOverwrite;   // Allow overwriting output dir
+  Bool_t  fUseGDB;           // Wrap PROOF slaves in GDB 
+  Int_t   fMaxSplit;         // Maximum number of files per split
   TArrayI fRunNumbers;       // List of run number 
   TList   fListOfPARs;       // List of PAR files to use 
   TList   fListOfSources;    // List of sources to upload and AcLIC
   TList   fListOfLibraries;  // List of libraries to load
   TList   fListOfExtras;     // List of extra files to upload
-  Int_t   fNReplica;         // Storage replication
-  Int_t   fESDPass;          // ESD pass number 
-  TString fPassPostfix;      // Possible pass postfix
-  TString fEscapedName;      // Name escaped for special chars
-  Bool_t  fAllowOverwrite;   // Allow overwriting output dir
-  Bool_t  fUseGDB;           // Wrap PROOF slaves in GDB 
+  TDatime fDatime;
 };
 
   

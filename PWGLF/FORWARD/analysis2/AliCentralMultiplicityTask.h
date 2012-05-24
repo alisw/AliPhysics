@@ -78,6 +78,14 @@ public:
    */
   AliCentralMultiplicityTask& operator=(const AliCentralMultiplicityTask& o);
   /** 
+   * Configure this task via a macro 
+   * 
+   * @param macro Macro to configure va 
+   * 
+   * @return true on success, false otherwise
+   */
+  virtual Bool_t Configure(const char* macro="CentralAODConfig.C");
+  /** 
    * Create output objects 
    * 
    */

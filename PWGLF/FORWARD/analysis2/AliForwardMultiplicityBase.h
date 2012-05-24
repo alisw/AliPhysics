@@ -160,6 +160,14 @@ public:
    * @} 
    */
   /** 
+   * Configure this task via a macro 
+   * 
+   * @param macro Macro to configure va 
+   * 
+   * @return true on success, false otherwise
+   */
+  virtual Bool_t Configure(const char* macro="ForwardAODConfig.C");
+  /** 
    * Print information 
    * 
    * @param option Not used
@@ -252,6 +260,17 @@ public:
    * @} 
    */
   virtual void SetDebug(Int_t dbg) = 0;
+  /** 
+   * Overload super class method for setting debug level to call our
+   * SetDebug member function.
+   * 
+   * @param dbg Debug level (0: no output, 1: essentials, 3: a whole lot)
+   */
+  virtual void SetDebugLevel(Int_t dbg) 
+  { 
+    AliAnalysisTaskSE::SetDebugLevel(dbg); 
+    SetDebug(dbg);
+  }
 protected: 
   /** 
    * Constructor 
