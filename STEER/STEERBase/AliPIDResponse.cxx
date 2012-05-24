@@ -687,6 +687,8 @@ void AliPIDResponse::SetRecoInfo()
 
   //exception new pp MC productions from 2011
   if (fBeamType=="PP" && reg.MatchB(fCurrentFile)) fMCperiodTPC="LHC11B2";
+  // exception for 11f1
+  if (fCurrentFile.Contains("LHC11f1/")) fMCperiodTPC="LHC11F1";                                                                                                                
 }
 
 //______________________________________________________________________________
@@ -756,17 +758,21 @@ void AliPIDResponse::SetTPCParametrisation()
   for (Int_t ispec=0; ispec<AliPID::kSPECIES; ++ispec){
     fTPCResponse.SetResponseFunction((AliPID::EParticleType)ispec,0x0);
   }
-  
+
+  // period
+  TString period=fLHCperiod;
+  if (fIsMC) period=fMCperiodTPC;
+
+  AliInfo(Form("Searching splines for: %s %s PASS%d %s",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
+  Bool_t found=kFALSE;
   //
   //set the new PID splines
   //
-  TString period=fLHCperiod;
   if (fArrPidResponseMaster){
     TObject *grAll=0x0;
     //for MC don't use period information
 //     if (fIsMC) period="[A-Z0-9]*";
     //for MC use MC period information
-    if (fIsMC) period=fMCperiodTPC;
 //pattern for the default entry (valid for all particles)
     TPRegexp reg(Form("TSPLINE3_%s_([A-Z]*)_%s_PASS%d_%s_MEAN",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
     
@@ -792,6 +798,7 @@ void AliPIDResponse::SetTPCParametrisation()
             fTPCResponse.SetResponseFunction((AliPID::EParticleType)ispec,responseFunction);
             fTPCResponse.SetUseDatabase(kTRUE);
             AliInfo(Form("Adding graph: %d - %s",ispec,responseFunction->GetName()));
+            found=kTRUE;
             break;
           }
         }
@@ -804,11 +811,15 @@ void AliPIDResponse::SetTPCParametrisation()
         if (!fTPCResponse.GetResponseFunction((AliPID::EParticleType)ispec)){
           fTPCResponse.SetResponseFunction((AliPID::EParticleType)ispec,grAll);
           AliInfo(Form("Adding graph: %d - %s",ispec,grAll->GetName()));
+          found=kTRUE;
         }
       }
     }
   }
-  
+
+  if (!found){
+    AliError(Form("No splines found for: %s %s PASS%d %s",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
+  }
   //
   // Setup resolution parametrisation
   //
