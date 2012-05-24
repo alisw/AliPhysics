@@ -1,4 +1,4 @@
-// $Id: AddTaskEmcalJetSpectra.C 2829 2012-05-11 09:15:33Z loizides $
+// $Id$
 
 AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
    const char *outfilename    = "AnalysisOutput.root",
