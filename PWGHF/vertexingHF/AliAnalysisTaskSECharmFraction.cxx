@@ -7062,7 +7062,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
   if(fFastAnalysis<=3&&namehist.Contains("sign")){
     str="hSparseCxyLxy";
     str.Append(namehist.Data()); 
-    Double_t nLxy=d->NormalizedDecayLengthXY()*d->P()/pt;
+    Double_t nLxy=d->NormalizedDecayLengthXY();
     Double_t cosPxy=TMath::Abs(d->CosPointingAngleXY());
     Double_t point[4]={invMassD0,pt,cosPxy,nLxy};
     if(okD0){
