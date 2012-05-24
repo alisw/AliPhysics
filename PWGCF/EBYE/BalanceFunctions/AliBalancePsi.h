@@ -25,7 +25,7 @@ class TH1D;
 class TH2D;
 class TH3D;
 
-const Int_t nTrackVariablesSingle = 5;       // track variables in histogram (centrality, phi-Psi2, eta, phi, pTtrig)
+const Int_t nTrackVariablesSingle = 3;       // track variables in histogram (centrality, phi-Psi2, eta, phi, pTtrig)
 const Int_t nTrackVariablesPair   = 6;       // track variables in histogram (centrality, phi-Psi2, dEta, dPhi, pTtrig, ptAssociated)
 const TString gBFPsiAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
 

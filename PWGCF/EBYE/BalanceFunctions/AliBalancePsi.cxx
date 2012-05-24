@@ -129,13 +129,13 @@ void AliBalancePsi::InitHistograms() {
   axisTitlePair[1]  = "#phi - #Psi_{2} (#circ)"; 
   
   // eta
-  const Int_t kNEtaBins = 10;
+  /*const Int_t kNEtaBins = 10;
   Double_t etaBins[kNEtaBins+1];
   for(Int_t i = 0; i < kNEtaBins+1; i++)
     etaBins[i] = -1.0 + i * 0.2;
   iBinSingle[2]       = kNEtaBins;
   dBinsSingle[2]      = etaBins;
-  axisTitleSingle[2]  = "#eta"; 
+  axisTitleSingle[2]  = "#eta"; */
   
   //#eta of triggered particle
   /*iBinPair[2]       = kNEtaBins;
@@ -143,10 +143,10 @@ void AliBalancePsi::InitHistograms() {
   axisTitlePair[2]  = "#eta"; */
 
   // delta eta
-  const Int_t kNDeltaEtaBins = 80;
+  const Int_t kNDeltaEtaBins = 40;
   Double_t deltaEtaBins[kNDeltaEtaBins+1];
   for(Int_t i = 0; i < kNDeltaEtaBins+1; i++)
-    deltaEtaBins[i] = -2.0 + i * 0.05;
+    deltaEtaBins[i] = -2.0 + i * 0.1;
   iBinPair[2]       = kNDeltaEtaBins;
   dBinsPair[2]      = deltaEtaBins;
   axisTitlePair[2]  = "#Delta #eta"; 
@@ -175,14 +175,14 @@ void AliBalancePsi::InitHistograms() {
   axisTitlePair[8]  = "#Delta y"; */
 
   // phi
-  const Int_t kNPhiBins = 18;
+  /*const Int_t kNPhiBins = 18;
   Double_t phiBins[kNPhiBins+1];
   for(Int_t i = 0; i < kNPhiBins+1; i++){
     phiBins[i] = 0.0 + i * 20.;
   } 
   iBinSingle[3]       = kNPhiBins;
   dBinsSingle[3]      = phiBins;
-  axisTitleSingle[3]  = "#phi (#circ)"; 
+  axisTitleSingle[3]  = "#phi (#circ)"; */
   
   // delta phi
   const Int_t kNDeltaPhiBins = 72;
@@ -195,14 +195,14 @@ void AliBalancePsi::InitHistograms() {
   axisTitlePair[3]  = "#Delta #phi (#circ)"; 
 
   // pt(trigger-associated)
-  const Int_t kNPtBins = 50;
+  const Int_t kNPtBins = 10;
   Double_t ptBins[kNPtBins+1];
   for(Int_t i = 0; i < kNPtBins+1; i++){
-    ptBins[i] = 0.0 + i * 0.5;
+    ptBins[i] = 0.0 + i * 2.0;
    } 
-  iBinSingle[4]       = kNPtBins;
-  dBinsSingle[4]      = ptBins;
-  axisTitleSingle[4]  = "p_{t}^{trig.} (GeV/c)"; 
+  iBinSingle[2]       = kNPtBins;
+  dBinsSingle[2]      = ptBins;
+  axisTitleSingle[2]  = "p_{t}^{trig.} (GeV/c)"; 
 
   iBinPair[4]       = kNPtBins;
   dBinsPair[4]      = ptBins;
@@ -366,10 +366,10 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
     
     trackVarsSingle[0]    =  fCentrality;
     trackVarsSingle[1]    =  gPsiMinusPhi;
-    trackVarsSingle[2]    =  eta1;
+    //trackVarsSingle[2]    =  eta1;
     //trackVarsSingle[3]    =  rap1;
-    trackVarsSingle[3]    =  phi1;  
-    trackVarsSingle[4]    =  pt1;  
+    //trackVarsSingle[3]    =  phi1;  
+    trackVarsSingle[2]    =  pt1;  
 
     //Printf("Track(a) %d - phi-Psi: %lf",i+1,trackVarsSingle[1]);
     //fill single particle histograms
