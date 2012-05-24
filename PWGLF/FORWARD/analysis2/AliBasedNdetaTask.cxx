@@ -286,7 +286,7 @@ AliBasedNdetaTask::SetTriggerMask(UShort_t mask)
 
 //________________________________________________________________________
 void 
-AliBasedNdetaTask::SetShapeCorrection(const TH1* c)
+AliBasedNdetaTask::SetShapeCorrection(const TH2F* c)
 {
   // 
   // Set the shape correction (a.k.a., track correction) for selected
@@ -297,8 +297,24 @@ AliBasedNdetaTask::SetShapeCorrection(const TH1* c)
   //
   DGUARD(fDebug,3,"Set the shape correction: %p", c);
   if (!c) return;
-  fShapeCorr = static_cast<TH1*>(c->Clone());
+  fShapeCorr = static_cast<TH2F*>(c->Clone());
   fShapeCorr->SetDirectory(0);
+}
+
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::InitializeCentBins()
+{
+  if (fListOfCentralities->GetEntries() > 0) return;
+
+  // Automatically add 'all' centrality bin if nothing has been defined. 
+  AddCentralityBin(0, 0, 0);
+  if (fCentAxis && fCentAxis->GetNbins() > 0 && fCentAxis->GetXbins()) { 
+    const TArrayD* bins = fCentAxis->GetXbins();
+    Int_t          nbin = fCentAxis->GetNbins(); 
+    for (Int_t i = 0; i < nbin; i++) 
+      AddCentralityBin(i+1,  Short_t((*bins)[i]), Short_t((*bins)[i+1]));
+  }
 }
 
 //________________________________________________________________________
@@ -315,14 +331,7 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   fSums->SetName(Form("%s_sums", GetName()));
   fSums->SetOwner();
 
-  // Automatically add 'all' centrality bin if nothing has been defined. 
-  AddCentralityBin(0, 0, 0);
-  if (fCentAxis && fCentAxis->GetNbins() > 0 && fCentAxis->GetXbins()) { 
-    const TArrayD* bins = fCentAxis->GetXbins();
-    Int_t          nbin = fCentAxis->GetNbins(); 
-    for (Int_t i = 0; i < nbin; i++) 
-      AddCentralityBin(i+1,  Short_t((*bins)[i]), Short_t((*bins)[i+1]));
-  }
+  InitializeCentBins();
   if (fCentAxis) fSums->Add(fCentAxis);
 
 
@@ -337,7 +346,7 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   CentralityBin* bin = 0;
   while ((bin = static_cast<CentralityBin*>(next()))) 
     bin->CreateOutputObjects(fSums);
-
+  
   // Check that we have an AOD input handler 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODInputHandler* ah = 
@@ -352,6 +361,7 @@ AliBasedNdetaTask::UserCreateOutputObjects()
     }
   }
   if (!fIsESD && !ah) AliFatal("No AOD input handler set in analysis manager");
+
 
   // Post data for ALL output slots >0 here, to get at least an empty histogram
   PostData(1, fSums); 
@@ -634,6 +644,9 @@ AliBasedNdetaTask::Terminate(Option_t *)
      fSysString->GetUniqueID() == AliForwardUtil::kPP)
     LoadNormalizationData(fSysString->GetUniqueID(),
 			  fSNNString->GetUniqueID());
+
+  InitializeCentBins();
+
   // Print before we loop
   Print();
 
@@ -1072,14 +1085,20 @@ AliBasedNdetaTask::Sum::Init(TList* list, const TH2D* data, Int_t col)
 
 //____________________________________________________________________
 TString
-AliBasedNdetaTask::Sum::GetHistName(Int_t what) const
+AliBasedNdetaTask::Sum::GetHistName(const char* name, Int_t what, const char* post)
 {
-  TString n(GetName());
+  TString n(name);
   if      (what == 1) n.Append("0");
   else if (what == 2) n.Append("Events");
-  const char* postfix = GetTitle();
-  if (postfix && postfix[0] != '\0')  n.Append(postfix);
+  if (post && post[0] != '\0')  n.Append(post);
   return n;
+}
+
+//____________________________________________________________________
+TString
+AliBasedNdetaTask::Sum::GetHistName(Int_t what) const
+{
+  return GetHistName(GetName(), what, GetTitle());
 }
 
 //____________________________________________________________________
@@ -1094,38 +1113,28 @@ AliBasedNdetaTask::Sum::Add(const TH2D* data, Bool_t isZero)
 
 //____________________________________________________________________
 TH2D*
-AliBasedNdetaTask::Sum::GetSum(const TList* input, 
-			       TList*       output, 
-			       Double_t&    ntotal,
-			       Double_t     epsilon0, 
-			       Double_t     epsilon,
-			       Int_t        marker,
-			       Bool_t       rootProj, 
-			       Bool_t       corrEmpty) const
+AliBasedNdetaTask::Sum::CalcSum(TList*       output, 
+				Double_t&    ntotal,
+				Double_t     epsilon0, 
+				Double_t     epsilon,
+				Int_t        marker,
+				Bool_t       rootProj, 
+				Bool_t       corrEmpty) const
 {
-  DGUARD(fDebug,2,"Get sums from input list %s", input->GetName());
-  TH2D* sum      = static_cast<TH2D*>(input->FindObject(GetHistName(0)));
-  TH2D* sum0     = static_cast<TH2D*>(input->FindObject(GetHistName(1)));
-  TH1I* events   = static_cast<TH1I*>(input->FindObject(GetHistName(2)));
-  if (!sum || !sum0 || !events) {
-    AliWarning(Form("Failed to find one or more histograms: "
-		    "%s (%p) %s (%p) %s (%p)", 
-		    GetHistName(0).Data(), sum, 
-		    GetHistName(1).Data(), sum0,
-		    GetHistName(2).Data(), events));
-    return 0;
-  }
+  DGUARD(fDebug,2,"Calculating final summed histogram %s", fSum->GetName());
 
-  TH2D* ret      = static_cast<TH2D*>(sum->Clone(sum->GetName()));
+  TH2D* ret      = static_cast<TH2D*>(fSum->Clone(fSum->GetName()));
   ret->SetDirectory(0);
   ret->Reset();
-  Int_t n        = Int_t(events->GetBinContent(1));
-  Int_t n0       = Int_t(events->GetBinContent(2));
+  Int_t n        = Int_t(fEvents->GetBinContent(1));
+  Int_t n0       = Int_t(fEvents->GetBinContent(2));
 
-  AliInfo(Form("Adding histograms %s and %s with weights %f and %f resp.",
-	       sum0->GetName(), sum->GetName(), 1./epsilon, 1./epsilon0));
+  AliInfoF("Adding histograms %s and %s with weights %f and %f resp.",
+	   fSum0->GetName(), fSum->GetName(), 1./epsilon, 1./epsilon0);
+  DMSG(fDebug,2, "Adding histograms %s and %s with weights %f and %f resp.",
+       fSum0->GetName(), fSum->GetName(), 1./epsilon, 1./epsilon0);
   // Generate merged histogram 
-  ret->Add(sum0, sum, 1. / epsilon0, 1. / epsilon); 
+  ret->Add(fSum0, fSum, 1. / epsilon0, 1. / epsilon); 
   ntotal = n / epsilon + n0 / epsilon0;
 
   TList* out = new TList;
@@ -1136,8 +1145,8 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   output->Add(out);
 
   // Now make copies, normalize them, and store in output list 
-  TH2D* sumCopy  = static_cast<TH2D*>(sum->Clone("sum"));
-  TH2D* sum0Copy = static_cast<TH2D*>(sum0->Clone("sum0"));
+  TH2D* sumCopy  = static_cast<TH2D*>(fSum->Clone("sum"));
+  TH2D* sum0Copy = static_cast<TH2D*>(fSum0->Clone("sum0"));
   TH2D* retCopy  = static_cast<TH2D*>(ret->Clone("sumAll"));
   sumCopy->SetMarkerStyle(FlipHollowStyle(marker));
   sumCopy->SetDirectory(0);
@@ -1146,9 +1155,9 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   retCopy->SetMarkerStyle(marker);
   retCopy->SetDirectory(0);
 
-  TH1D* norm    = ProjectX(sum,  "norm",    0, 0, rootProj, corrEmpty, false);
-  TH1D* norm0   = ProjectX(sum0, "norm0",   0, 0, rootProj, corrEmpty, false);
-  TH1D* normAll = ProjectX(ret,  "normAll", 0, 0, rootProj, corrEmpty, false);
+  TH1D* norm    = ProjectX(fSum,  "norm",    0, 0, rootProj, corrEmpty, false);
+  TH1D* norm0   = ProjectX(fSum0, "norm0",   0, 0, rootProj, corrEmpty, false);
+  TH1D* normAll = ProjectX(ret,   "normAll", 0, 0, rootProj, corrEmpty, false);
   norm->SetDirectory(0);
   norm0->SetDirectory(0);
   normAll->SetDirectory(0);
@@ -1157,7 +1166,7 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   ScaleToCoverage(sum0Copy, norm0);
   ScaleToCoverage(retCopy, normAll);
 
-  Int_t nY = sum->GetNbinsY();
+  Int_t nY = fSum->GetNbinsY();
   TH1D* sumCopyPx  = ProjectX(sumCopy,  "average",    1, nY,rootProj,corrEmpty);
   TH1D* sum0CopyPx = ProjectX(sum0Copy, "average0",   1, nY,rootProj,corrEmpty);
   TH1D* retCopyPx  = ProjectX(retCopy,  "averageAll", 1, nY,rootProj,corrEmpty);
@@ -1188,10 +1197,10 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   out->Add(norm0);
   out->Add(normAll);
 
-  AliInfo(Form("Returning  (1/%f * %s + 1/%f * %s), "
-	       "1/%f * %d + 1/%f * %d = %d", 
-	       epsilon0, sum0->GetName(), epsilon, sum->GetName(), 
-	       epsilon0, n0, epsilon, n, int(ntotal)));
+  AliInfoF("Returning  (1/%f * %s + 1/%f * %s), "
+	   "1/%f * %d + 1/%f * %d = %d", 
+	   epsilon0, fSum0->GetName(), epsilon, fSum->GetName(), 
+	   epsilon0, n0, epsilon, n, int(ntotal));
 #if 0
   for (Int_t i = 1; i <= ret->GetNbinsX(); i++) { 
     Double_t nc  = sum->GetBinContent(i, 0);
@@ -1369,6 +1378,36 @@ AliBasedNdetaTask::CentralityBin::SetDebugLevel(Int_t lvl)
 }
 
 //____________________________________________________________________
+Bool_t
+AliBasedNdetaTask::CentralityBin::ReadSum(TList* list, bool mc)
+{
+  const char* post = (mc ? "MC" : "");
+  TString     sn   = Sum::GetHistName(GetName(),0,post);
+  TString     sn0  = Sum::GetHistName(GetName(),1,post);
+  TString     ev   = Sum::GetHistName(GetName(),2,post);
+  TH2D* sum      = static_cast<TH2D*>(list->FindObject(sn));
+  TH2D* sum0     = static_cast<TH2D*>(list->FindObject(sn0));
+  TH1I* events   = static_cast<TH1I*>(list->FindObject(ev));
+  if (!sum || !sum0 || !events) {
+    AliWarningF("Failed to find one or more histograms: "
+		"%s (%p) %s (%p) %s (%p)", 
+		sn.Data(), sum, 
+		sn0.Data(), sum0, 
+		ev.Data(), events); 
+    return false;
+  }
+  Sum* ret     = new Sum(GetName(), post);
+  ret->fSum    = sum;
+  ret->fSum0   = sum0;
+  ret->fEvents = events;
+  ret->fDebug  = fDebug;
+  if (mc) fSumMC = ret;
+  else    fSum   = ret;
+
+  return true;
+}
+
+//____________________________________________________________________
 void
 AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
 {
@@ -1379,7 +1418,8 @@ AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
   //    data  Data histogram to clone 
   //    mc    (optional) MC histogram to clone 
   //
-  DGUARD(fDebug,1,"Create centrality bin sums from %s", data->GetName());
+  DGUARD(fDebug,1,"Create centrality bin sums from %s", 
+	 data ? data->GetName() : "(null)");
   if (data) {
     fSum = new Sum(GetName(),"");
     fSum->Init(fSums, data, GetColor());
@@ -1436,7 +1476,7 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
   //    mc          MC histogram
   //
   DGUARD(fDebug,1,"Process one event for %s a given centrality bin", 
-	 data->GetName());
+	 data ? data->GetName() : "(null)");
   if (!CheckEvent(forward, triggerMask, vzMin, vzMax)) return;
   if (!data) return;
   if (!fSum) CreateSums(data, mc);
@@ -1610,7 +1650,7 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
 					     const char* postfix, 
 					     bool        rootProj, 
 					     bool        corrEmpty,
-					     const TH1*  shapeCorr,
+					     const TH2F* shapeCorr,
 					     Double_t    scaler,
 					     bool        symmetrice, 
 					     Int_t       rebin, 
@@ -1709,7 +1749,7 @@ void
 AliBasedNdetaTask::CentralityBin::End(TList*      sums, 
 				      TList*      results,
 				      UShort_t    scheme,
-				      const TH1*  shapeCorr, 
+				      const TH2F* shapeCorr, 
 				      Double_t    trigEff,
 				      Bool_t      symmetrice,
 				      Int_t       rebin, 
@@ -1750,18 +1790,17 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   results->Add(fOutput);
 
   if (!fSum) { 
-    AliInfo("This task did not produce any output");
-    return;
+    if (!ReadSum(fSums, false)) {
+      AliInfo("This task did not produce any output");
+      return;
+    }
   }
+  if (!fSumMC) ReadSum(fSums, true);
 
   fTriggers = static_cast<TH1I*>(fSums->FindObject("triggers"));
 
   if (!fTriggers) { 
     AliError("Couldn't find histogram 'triggers' in list");
-    return;
-  }
-  if (!fSum) { 
-    AliError(Form("No sum object for %s", GetName()));
     return;
   }
 
@@ -1793,13 +1832,13 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   // Get our histograms 
   Double_t nSum   = 0;
-  TH2D*    sum    = fSum->GetSum(fSums, fOutput, nSum, epsilonT0, 1, 
+  TH2D*    sum    = fSum->CalcSum(fOutput, nSum, epsilonT0, 1, 
 				 marker, rootProj, corrEmpty);
   Double_t nSumMC = 0;
   TH2D*    sumMC  = 0;
-  if (fSumMC) sumMC = fSumMC->GetSum(fSums, fOutput, nSumMC, 
-				     epsilonT0, 1, marker,
-				     rootProj, corrEmpty);
+  if (fSumMC) sumMC = fSumMC->CalcSum(fOutput, nSumMC, 
+				      epsilonT0, 1, marker,
+				      rootProj, corrEmpty);
   if (!sum) { 
     AliError("Failed to get sum from summer - bailing out");
     return;
