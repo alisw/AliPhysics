@@ -1,6 +1,7 @@
 #ifndef ALIBaseMCTRACKDENSITY_MC
 #define ALIBaseMCTRACKDENSITY_MC
 #include <TNamed.h>
+#include "AliForwardFlowWeights.h"
 class TList;
 class TH1D;
 class TH2D;
@@ -95,7 +96,6 @@ public:
    */
   virtual void Print(Option_t* option="") const;
 protected:
-  virtual void SetupWeights(TList* l);
   /** 
    * Loops over all the particles in the passed event.  If @a primary
    * is not null, then that histogram is filled with the primary
@@ -218,16 +218,13 @@ protected:
   TH2D*    fEtaBinFlow;           // dEta vs eta of strip
   TH2D*    fPhiBinFlow;           // dPhi vs phi of strip
   TH1D*    fNRefs;                // Number of track-references per track
-  TF1*     fV2Eta;                // Eta flow weight 
-  TGraph*  fV22Pt;                // Pt flow weight (v2{2})
-  TGraph*  fV24Pt;                // Pt flow weight (v2{4})
-  TGraph*  fV2B;                  // Impact paramter flow weight
+  AliForwardFlowWeights fWeights; // Flow weights
   Double_t fVz;                   // IP z-coordinate of this event
   Double_t fB;                    // Impact parameter of this event
   Double_t fPhiR;                 // Reaction plane  of this event
   Bool_t   fDebug;                // Debug flag
 
-  ClassDef(AliBaseMCTrackDensity,1); // Calculate track-ref density
+  ClassDef(AliBaseMCTrackDensity,2); // Calculate track-ref density
 };
 
 #endif

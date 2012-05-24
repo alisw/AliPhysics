@@ -84,6 +84,7 @@
 #pragma link C++ class AliForwarddNdetaTask::CentralityBin+;
 #pragma link C++ class AliForwardFlowTaskQC+;
 #pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
+#pragma link C++ class AliForwardFlowWeights+;
 #pragma link C++ class AliForwardMCCorrectionsTask+;
 #pragma link C++ class AliForwardMCCorrectionsTask::VtxBin+;
 #pragma link C++ class AliForwardMCFlowTaskQC+;

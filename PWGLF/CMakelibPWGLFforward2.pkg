@@ -64,6 +64,7 @@ set ( SRCS
   FORWARD/analysis2/AliForwardCorrectionManager.cxx
   FORWARD/analysis2/AliForwarddNdetaTask.cxx
   FORWARD/analysis2/AliForwardFlowTaskQC.cxx
+  FORWARD/analysis2/AliForwardFlowWeights.cxx
   FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx
   FORWARD/analysis2/AliForwardMCFlowTaskQC.cxx
   FORWARD/analysis2/AliForwardMCMultiplicityTask.cxx 
@@ -121,7 +122,8 @@ add_custom_target( PWGLFforward-doxy DEPENDS FORWARD/doc/html/index.html )
 add_custom_target( install-PWGLFforward2.par 
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${CMAKE_INSTALL_PREFIX}
   COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "${PACKAGE}.par installed in ${CMAKE_INSTALL_PREFIX}"
-  DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE}.par)
+  DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE}.par
+  DEPENDS test-${PACKAGE}.par)
 
 # --------------------------------------------------------------------
 # Extra installation targets 
