@@ -1,7 +1,7 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 
-void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
+void SetupTrackCuts(Bool_t isESD, AliDielectron *die, Int_t cutDefinition);
 void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
 
 void AddMCSignals(AliDielectron *die);
@@ -68,9 +68,14 @@ AliDielectron* ConfigBJpsi_ff_PbPb(Int_t cutDefinition, Bool_t isMC=kFALSE)
 	   tree->AddPairVariable(AliDielectronVarManager::kY);
            tree->AddPairVariable(AliDielectronVarManager::kEta);
            tree->AddPairVariable(AliDielectronVarManager::kPairType);
+	   tree->AddPairVariable(AliDielectronVarManager::kITSLayerFirstCls);
 	   tree->AddPairVariable(AliDielectronVarManager::kPseudoProperTime);
 	   if(hasMC) tree->AddPairVariable(AliDielectronVarManager::kPseudoProperTimeResolution);
 	   if(hasMC) tree->AddPairVariable(AliDielectronVarManager::kPseudoProperTimePull);
+	   if(hasMC) tree->AddPairVariable(AliDielectronVarManager::kPdgCode);
+           if(hasMC) tree->AddPairVariable(AliDielectronVarManager::kPdgCodeMother);
+           if(hasMC) tree->AddPairVariable(AliDielectronVarManager::kPdgCodeGrandMother);
+           if(hasMC) tree->AddPairVariable(AliDielectronVarManager::kIsJpsiPrimary);
 	   tree->AddPairVariable(AliDielectronVarManager::kCentralitySPD);
 	   tree->AddPairVariable(AliDielectronVarManager::kCentrality);
 	   tree->AddPairVariable(AliDielectronVarManager::kNevents);
@@ -104,7 +109,7 @@ AliDielectron* ConfigBJpsi_ff_PbPb(Int_t cutDefinition, Bool_t isMC=kFALSE)
   }
   
   // cut setup
-  SetupTrackCuts(die,cutDefinition);
+  SetupTrackCuts(isESD,die,cutDefinition);
   SetupPairCuts(die,cutDefinition);
   
   // histogram setup
@@ -151,7 +156,7 @@ AliDielectron* ConfigBJpsi_ff_PbPb(Int_t cutDefinition, Bool_t isMC=kFALSE)
 }
 
 //______________________________________________________________________________________
-void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
+void SetupTrackCuts(Bool_t isESD, AliDielectron *die, Int_t cutDefinition)
 {
   //
   // Setup the track cuts
@@ -171,18 +176,31 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  //varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
-  switch(cutDefinition) {
+
+   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+  if(isESD){
+    varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+    switch(cutDefinition) {
     case kTOFTRD2: varCuts->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,0.5); //ITS(0) = SPDfirst
       break;
-    default:       varCuts->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,1.5); //ITS(0-1) = SPDany
+    default:      varCuts->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,1.5); //ITS(0-1) = SPDany
       break;
-  }
+   }
+  }else
+      {
+      switch(cutDefinition) {
+      case kTOFTRD2: trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);  //ITS(0) = SPDfirst
+      break;
+      default:  trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);//ITS(0-1) = SPDany
+      break;
+      }
+    }
+ 
   cuts->AddCut(varCuts);
-  
-  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+ 
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
   cuts->AddCut(trkCuts);
@@ -198,7 +216,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-100.,3.5,0.,0.,kTRUE);
     
-    if(cutDefinition==kTRD || cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2) 
+    //if(cutDefinition==kTRD || cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2) 
+    if(cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2) 
       pid->AddCut(AliDielectronPID::kTRDeleEff,AliPID::kElectron,.8,1.,3.5.,6.,kFALSE,
                   AliDielectronPID::kIfAvailable,AliDielectronVarManager::kTRDpidQuality);
   }
@@ -296,7 +315,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   if(cutDefinition==kTOFTRD || cutDefinition==kTOFTRD2) 
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE,AliDielectronPID::kIfAvailable);
   
-  if(cutDefinition!=krec) cuts->AddCut(pid);
+  //if(cutDefinition!=krec) 
+  cuts->AddCut(pid);
   /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ PID CUTS ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
   
   
