@@ -16,11 +16,11 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter(){
   }
   
   AliAnalysisTaskCaloFilter * filter = new AliAnalysisTaskCaloFilter("CaloFilter");
-  filter->SetCaloFilter(AliAnalysisTaskCaloFilter::kBoth); //kPHOS, kEMCAL or kBoth
+  filter->SetCaloFilter(AliAnalysisTaskCaloFilter::kEMCAL); //kPHOS, kEMCAL or kBoth
   filter->SwitchOffClusterCorrection();
   
-  filter->SetVzCut(10.);
-  filter->SetEnergyCut(10.);
+  filter->SetVzCut(10.); // kEMCAL to have effect
+  filter->SetEnergyCut(10.); // kEMCAL to have effect
   filter->SetNcellsCut(2);
   
   filter->SwitchOnFillTracks();
