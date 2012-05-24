@@ -14,6 +14,7 @@
  * @ingroup pwglf_forward_flow
  */
 #include "AliForwardFlowTaskQC.h"
+#include "AliForwardFlowWeights.h"
 #include <TH2D.h>
 class TGraph;
 
@@ -124,27 +125,6 @@ protected:
    */
   Bool_t LoopAODMC();
   /**
-   * Add pt dependent flow factor
-   *
-   * @param Pt   @f$ p_T@f$
-   * @param type Type of flow 
-   */
-  Double_t AddptFlow(Double_t pt) const;
-  /**
-   * Add pid dependent flow factor
-   *
-   * @param ID   Particle ID 
-   * @param type Type of flow
-   */
-  Double_t AddpidFlow(Int_t id) const;
-  /**
-   * Add eta dependent flow factor
-   * 
-   * @param Eta  @f$\eta@f$ 
-   * @param type Type of flow 
-   */
-  Double_t AddetaFlow(Double_t eta) const;
-  /**
    * Get centrality form MC impact parameter
    */
   Double_t GetCentFromB() const;
@@ -153,17 +133,14 @@ protected:
   TList         fBinsSPDTR;         //  List with SPDTR VertexBin objects
   TList         fBinsMC;            //  List with MC VertexBin objects
   TH2D          fdNdedpMC;          //  d^2N/detadphi MC truth histogram
-  TGraph*       fAliceCent4th;      //  Parametrization of ALICE QC4 vs. cent. data
-  TGraph*       fAlicePt2nd4050;    //  Parametrization of ALICE QC2 vs. pT data
-  TGraph*       fAlicePt4th3040;    //  Parametrization of ALICE QC4 vs. pT data
-  TGraph*       fAlicePt4th4050;    //  Parametrization of ALICE QC4 vs. pT data
-  TGraph*       fImpactParToCent;   //  Parametrization of b to centrality datapoints
-  Bool_t       fUseImpactPar;      //  Flag to use impact parameter for cent
+  AliForwardFlowWeights fWeights;   //  Flow after burner 
+  TGraph*       fImpactParToCent;   //  Parametrization of b to centrality
+  Bool_t        fUseImpactPar;      //  Flag to use impact parameter for cent
   TString       fAddFlow;           //  Add flow string
   Int_t         fAddType;           //  Add flow type #
   Int_t         fAddOrder;          //  Add flow order
 
-  ClassDef(AliForwardMCFlowTaskQC, 1); // FMD MC analysis task 
+  ClassDef(AliForwardMCFlowTaskQC, 2); // FMD MC analysis task 
 };
  
 #endif
