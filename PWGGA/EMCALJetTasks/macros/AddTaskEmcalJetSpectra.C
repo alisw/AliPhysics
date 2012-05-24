@@ -1,16 +1,17 @@
-// $Id$
+// $Id: AddTaskEmcalJetSpectra.C 2829 2012-05-11 09:15:33Z loizides $
 
-AliAnalysisTaskRho* AddTaskEmcalJetSpectra(
+AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
    const char *outfilename    = "AnalysisOutput.root",
    const char *nJets          = "Jets",
    const char *nTracks        = "PicoTracks",
    const char *nRhosCh        = "rhoCh",
    const char *nRhosChEm      = "rhoChEm",
+   const char *nRhosAve       = "rho3",
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
    const Double_t minEta      = -0.3,
    const Double_t maxEta      = 0.3,
-   const Double_t minArea     = 0.0
+   const Double_t minArea     = 0.4
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -39,11 +40,13 @@ AliAnalysisTaskRho* AddTaskEmcalJetSpectra(
   spectratask->SetJetsName(nJets);
   spectratask->SetRhos1Name(nRhosChEm);
   spectratask->SetRhos2Name(nRhosCh);
+  spectratask->SetRhos3Name(nRhosAve);
   spectratask->SetTracksName(nTracks);
   spectratask->SetJetPhi(minPhi,maxPhi);
   spectratask->SetJetEta(minEta,maxEta);
   spectratask->SetAreaCut(minArea);
 
+ 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

@@ -65,7 +65,18 @@ void AliEmcalCompatTask::UserExec(Option_t *)
     title = header->GetTitle();
   if (title.Length()==0)
     return;
-
+/*
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  am->LoadBranch("AliESDHeader.");
+  AliVHeader *header = InputEvent()->GetHeader();
+  TString title(header->GetTitle());
+  if (title.Length()>0) {
+    UInt_t offline = header->GetUniqueID();
+    if (offline!=res) {
+      AliWarning(Form("Stored offline trigger not equal computed: %ud %ud", offline, res));
+    }
+  }
+*/
   if (fDoCent) {
     am->LoadBranch("Centrality.");
     AliCentrality *centin = dynamic_cast<AliCentrality*>(esdEv->FindListObject("Centrality"));

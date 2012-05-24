@@ -30,6 +30,7 @@ ClassImp(AliAnalysisTaskSAJF)
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskSE("AliAnalysisTaskSAJF"),
   fAnaType(kTPC),
+  fInitialized(kFALSE),
   fMinEta(-0.9),
   fMaxEta(0.9),
   fMinPhi(-10),
@@ -102,6 +103,10 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistDeltaPtEmb[i] = 0;
   }
 
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
+
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class()); 
 }
@@ -110,6 +115,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskSE(name),
   fAnaType(kTPC),
+  fInitialized(kFALSE),
   fMinEta(-0.9),
   fMaxEta(0.9),
   fMinPhi(-10),
@@ -180,6 +186,10 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistEmbPart[i] = 0;
     fHistDeltaPtEmb[i] = 0;
   }
+
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
 
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class()); 
@@ -605,8 +615,6 @@ Int_t AliAnalysisTaskSAJF::GetNumberOfEmbJets() const
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::FillHistograms()
 {
-  const Float_t A = fJetRadius * fJetRadius * TMath::Pi();
-
   Int_t maxJetIndex  = -1;
   Int_t max2JetIndex = -1;
 
@@ -654,14 +662,16 @@ void AliAnalysisTaskSAJF::FillHistograms()
   // Random cones
   // _________________________________
   
+  const Float_t rcArea = fJetRadius * fJetRadius * TMath::Pi();
+
   // Simple random cones
   Float_t RCpt = 0;
   Float_t RCeta = 0;
   Float_t RCphi = 0;
   GetRigidCone(RCpt, RCeta, RCphi, kFALSE, 0);
   if (RCpt > 0) {
-    fHistRCPt[fCentBin]->Fill(RCpt / A);
-    fHistDeltaPtRC[fCentBin]->Fill(RCpt - A * fRho);
+    fHistRCPt[fCentBin]->Fill(RCpt / rcArea);
+    fHistDeltaPtRC[fCentBin]->Fill(RCpt - rcArea * fRho);
   }
   
   // Random cones far from leading jet
@@ -671,15 +681,15 @@ void AliAnalysisTaskSAJF::FillHistograms()
   GetRigidCone(RCptExLJ, RCetaExLJ, RCphiExLJ, kFALSE, jet);
   if (RCptExLJ > 0) {
     fHistRCPhiEta->Fill(RCetaExLJ, RCphiExLJ);
-    fHistRhoVSRCPt->Fill(fRho, RCptExLJ / A);
+    fHistRhoVSRCPt->Fill(fRho, RCptExLJ / rcArea);
 
     Float_t dphi = RCphiExLJ - jet->Phi();
     if (dphi > 4.8) dphi -= TMath::Pi() * 2;
     if (dphi < -1.6) dphi += TMath::Pi() * 2; 
     fHistRCPtExLJVSDPhiLJ->Fill(RCptExLJ, dphi);
     
-    fHistRCPtExLJ[fCentBin]->Fill(RCptExLJ / A);
-    fHistDeltaPtRCExLJ[fCentBin]->Fill(RCptExLJ - A * fRho);
+    fHistRCPtExLJ[fCentBin]->Fill(RCptExLJ / rcArea);
+    fHistDeltaPtRCExLJ[fCentBin]->Fill(RCptExLJ - rcArea * fRho);
   }
 
   // Random cones with randomized particles
@@ -688,8 +698,8 @@ void AliAnalysisTaskSAJF::FillHistograms()
   Float_t RCphiRand = 0;
   GetRigidCone(RCptRand, RCetaRand, RCphiRand, kTRUE, 0, fRandTracks, fRandCaloClusters);
   if (RCptRand > 0) {
-    fHistRCPtRand[fCentBin]->Fill(RCptRand / A);
-    fHistDeltaPtRCRand[fCentBin]->Fill(RCptRand - A * fRho);
+    fHistRCPtRand[fCentBin]->Fill(RCptRand / rcArea);
+    fHistDeltaPtRCRand[fCentBin]->Fill(RCptRand - rcArea * fRho);
   }
 
   // ************
@@ -952,28 +962,26 @@ void AliAnalysisTaskSAJF::DoClusterLoop(Int_t maxJetIndex)
 void AliAnalysisTaskSAJF::Init()
 {
   if (fAnaType == kTPC) {
-    fMinEta = -0.9;
-    fMaxEta = 0.9;
-    fMinPhi = -10;
-    fMaxPhi = 10;
+    SetEtaLimits(-0.9, 0.9);
+    SetPhiLimits(-10, 10);
   }
   else if (fAnaType == kEMCAL) {
-    fMinEta = -0.7;
-    fMaxEta = 0.7;
-    fMinPhi = 80 * TMath::DegToRad();
-    fMaxPhi = 180 * TMath::DegToRad();
+    SetEtaLimits(-0.7, 0.7);
+    SetPhiLimits(80 * TMath::DegToRad(), 180 * TMath::DegToRad());
   }
   else {
     AliWarning("Analysis type not recognized! Assuming kTPC...");
-    fAnaType = kTPC;
+    SetAnaType(kTPC);
     Init();
   }
 
   const Float_t semiDiag = TMath::Sqrt((fMaxPhi - fMinPhi) * (fMaxPhi - fMinPhi) + (fMaxEta - fMinEta) * (fMaxEta - fMinEta)) / 2;
   if (fMinRC2LJ > semiDiag * 0.5) {
     AliWarning(Form("The parameter fMinRC2LJ = %f is too large for the considered acceptance. Will use fMinRC2LJ = %f", fMinRC2LJ, semiDiag * 0.5));
-    fMinRC2LJ = semiDiag * 0.5;
+    SetJetMinRC2LJ(semiDiag * 0.5);
   }
+
+  SetInitialized();
 }
 
 //________________________________________________________________________
@@ -1138,7 +1146,8 @@ Bool_t AliAnalysisTaskSAJF::AcceptTrack(AliVTrack* track, Bool_t acceptMC) const
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::UserExec(Option_t *) 
 {
-  Init();
+  if (!fInitialized) 
+    Init();
 
   RetrieveEventObjects();
 

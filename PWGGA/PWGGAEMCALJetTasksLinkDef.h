@@ -15,5 +15,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
 #pragma link C++ class AliAnalysisTaskRhoBase+;
 #pragma link C++ class AliAnalysisTaskRho+;
+#pragma link C++ class AliAnalysisTaskRhoAverage+;
 
 #endif

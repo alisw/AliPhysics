@@ -1,10 +1,10 @@
 // $Id$
 
 void runJetAna(
-  const char     *datatype     = "aod",        // aod, esd, sesd
-  const char     *runtype      = "local",      // local or grid (when local gridmode specifies input txt file)
-  const char     *gridmode     = "test",       // grid mode (can be "full", "test", "offline", "submit" or "terminate")
-  const char     *taskname     = "JetAna")     // name of grid generated macros
+  const char     *datatype     = "aod",            // aod, esd, sesd
+  const char     *runtype      = "local",          // local or grid (when local gridmode specifies input txt file)
+  const char     *gridmode     = "aod_files.txt",  // grid mode (can be "full", "test", "offline", "submit" or "terminate")
+  const char     *taskname     = "JetAna")         // name of grid generated macros
 {
 
   enum eDataType { kAod, kEsd, kSesd };
@@ -40,7 +40,9 @@ void runJetAna(
 
   // PSel task
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalPhysicsSelection.C");
-  AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE);
+  AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, 
+                                                                      AliVEvent::kAnyINT | AliVEvent::kCentral| AliVEvent::kSemiCentral,
+                                                                      -1,5);
 
   // Setup task
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalSetup.C");
@@ -105,16 +107,17 @@ void runJetAna(
 
   if (1) {
     UInt_t val = AliVEvent::kAny;
-    val = AliVEvent::kAnyINT | AliVEvent::kCentral| AliVEvent::kSemiCentral;
+    //val = AliVEvent::kAnyINT | AliVEvent::kCentral| AliVEvent::kSemiCentral;
     //val = AliVEvent::kEMCEGA;
     //val = AliVEvent::kEMCEJE;
+    val = AliEmcalPhysicsSelection::kEmcalHT;
 
     TObjArray *toptasks = mgr->GetTasks();
     for (Int_t i=0; i<toptasks->GetEntries(); ++i) {
       AliAnalysisTaskSE *task = dynamic_cast<AliAnalysisTaskSE*>(toptasks->At(i));
       if (!task)
         continue;
-      TString name(task->GetName());
+      TString name(task->ClassName());
       if (name.Contains("PhysicsSelection"))
         continue;
       ::Info("setPSel", "Set physics selection for %s (%s)", task->GetName(), task->ClassName());

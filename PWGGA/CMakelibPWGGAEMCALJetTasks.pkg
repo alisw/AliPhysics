@@ -36,6 +36,7 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
  EMCALJetTasks/AliAnalysisTaskRho.cxx
+ EMCALJetTasks/AliAnalysisTaskRhoAverage.cxx
 )
 
 set ( DHDR  PWGGAEMCALJetTasksLinkDef.h)
