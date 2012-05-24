@@ -934,29 +934,49 @@ AliForwardUtil::DebugGuard::DebugGuard(Int_t lvl, Int_t msgLvl,
   if (lvl < msgLvl) return; 
   va_list ap;
   va_start(ap, format);
-  static char buf[512];
-  Int_t n = gROOT->GetDirLevel() + 1;
-  for (Int_t i = 0; i < n; i++) buf[i] = ' ';
-  vsnprintf(&(buf[n]), 511-n, format, ap);
-  buf[511] = '\0';
-  fMsg = buf;
+  Format(fMsg, format, ap);
   va_end(ap);
-  Format(true);
+  Output(+1, fMsg);
 }
 //____________________________________________________________________
 AliForwardUtil::DebugGuard::~DebugGuard()
 {
   if (fMsg.IsNull()) return;
-  Format(false);
+  Output(-1, fMsg);
 }
 //____________________________________________________________________
 void
-AliForwardUtil::DebugGuard::Format(bool in)
+AliForwardUtil::DebugGuard::Message(Int_t lvl, Int_t msgLvl, 
+				    const char* format, ...)
 {
-  fMsg[0] = in ? '>' : '<';
-  AliLog::Debug(0, fMsg, "PWGLF-forward", "", "", "", 0);
-  if (in) gROOT->IncreaseDirLevel();
-  else    gROOT->DecreaseDirLevel();
+  if (lvl < msgLvl) return; 
+  TString msg;
+  va_list ap;
+  va_start(ap, format);
+  Format(msg, format, ap);
+  va_end(ap);
+  Output(0, msg);
+}
+
+//____________________________________________________________________
+void
+AliForwardUtil::DebugGuard::Format(TString& out, const char* format, va_list ap)
+{
+  static char buf[512];
+  Int_t n = gROOT->GetDirLevel() + 2;
+  for (Int_t i = 0; i < n; i++) buf[i] = ' ';
+  vsnprintf(&(buf[n]), 511-n, format, ap);
+  buf[511] = '\0';
+  out = buf;  
+}
+//____________________________________________________________________
+void
+AliForwardUtil::DebugGuard::Output(int in, TString& msg)
+{
+  msg[0] = (in > 0 ? '>' :  in < 0 ? '<' : '=');
+  AliLog::Message(AliLog::kInfo, msg, 0, 0, "PWGLF/forward", 0, 0);
+  if      (in > 0) gROOT->IncreaseDirLevel();
+  else if (in < 0) gROOT->DecreaseDirLevel();
 }
 
 
