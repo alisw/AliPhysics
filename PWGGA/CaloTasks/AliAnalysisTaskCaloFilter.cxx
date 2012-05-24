@@ -695,13 +695,13 @@ void AliAnalysisTaskCaloFilter::PrintInfo()
 {
   //Print settings
   
-  printf("TASK: AnalysisCaloFilter \n");
+  printf("AnalysisCaloFilter::PrintInfo() \n");
   printf("\t Not only filter, correct Clusters? %d\n",fCorrect);
   printf("\t Calorimeter Filtering Option     ? %d\n",fCaloFilter);
   //printf("\t Use handmade geo matrices?   EMCAL %d, PHOS %d\n",fLoadEMCALMatrices, fLoadPHOSMatrices);
   printf("\t Use handmade geo matrices?   EMCAL %d, PHOS 0\n",fLoadEMCALMatrices);
   printf("\t Fill AOD file? %d\n", fFillAODFile);
   printf("\t Fill Tracks? %d\n"  , fFillTracks);
-  printf("Event Selection : EMCAL min E %f, EMCAL NCells %d, Vertex %f\n",fEnergyCut,fNcellsCut,fVzCut);
+  printf("\t Event Selection : EMCAL E > %2.2f, EMCAL nCells >= %d, |vz| < %2.2f\n",fEnergyCut,fNcellsCut,fVzCut);
 }
 
