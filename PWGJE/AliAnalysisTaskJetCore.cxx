@@ -105,6 +105,8 @@ fh2JetCoreMethod1C30(0x0),
 fh2JetCoreMethod2C30(0x0),
 fh2JetCoreMethod1C60(0x0),
 fh2JetCoreMethod2C60(0x0),
+fh2JetTrackC10(0x0),
+fh2JetTrackC20(0x0),
 fh2AngStructpt1C10(0x0),
 fh2AngStructpt2C10(0x0),
 fh2AngStructpt3C10(0x0),
@@ -264,6 +266,8 @@ fh2JetCoreMethod1C30(0x0),
 fh2JetCoreMethod2C30(0x0),
 fh2JetCoreMethod1C60(0x0),
 fh2JetCoreMethod2C60(0x0),
+fh2JetTrackC10(0x0),
+fh2JetTrackC20(0x0),
 fh2AngStructpt1C10(0x0),
 fh2AngStructpt2C10(0x0),
 fh2AngStructpt3C10(0x0),
@@ -420,8 +424,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
      Double_t *xPt3 = new Double_t[10];
      xPt3[0] = 0.;
      for(int i = 1; i<=9;i++){
-      if(xPt3[i-1]<1)xPt3[i] = xPt3[i-1] + 0.2; // 1 - 5
-      else if(xPt3[i-1]<10)xPt3[i] = xPt3[i-1] + 3; // 5 - 12
+      if(xPt3[i-1]<2)xPt3[i] = xPt3[i-1] + 0.4; // 1 - 5
+      else if(xPt3[i-1]<11)xPt3[i] = xPt3[i-1] + 3; // 5 - 12
       else xPt3[i] = xPt3[i-1] + 150.; // 18 
      }
     fhnDeltaR->SetBinEdges(2,xPt3);
@@ -460,6 +464,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2JetCoreMethod1C60 = new TH2F("JetCoreMethod1C60","",150, 0., 150.,100, 0., 1.5);
     fh2JetCoreMethod2C60 = new TH2F("JetCoreMethod2C60","",150, 0., 150.,100, 0., 1.5);}
 
+    fh2JetTrackC10=new TH2F("JetTrackC10","",150,0.,150.,32,0,3.2);
+    fh2JetTrackC20=new TH2F("JetTrackC20","",150,0.,150.,32,0,3.2);
    
     if(fAngStructCloseTracks>0){
     fh2AngStructpt1C10 = new TH2F("Ang struct pt1 C10","",15,0.,1.5,150,0.,10.);
@@ -548,7 +554,7 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
    
 
     fh2Ntriggers=new TH2F("# of triggers","",10,0.,100.,50,0.,50.);
-    fh2JetDensity=new TH2F("Jet density vs centrality A>0.4","",10,0.,100.,100,0.,5.);
+    fh2JetDensity=new TH2F("Jet density vs centrality A>0.4","",100,0.,4000.,100,0.,5.);
     fh2JetDensityA4=new TH2F("Jet density vs multiplicity A>0.4","",100,0.,4000.,100,0.,5.);
     fh3spectriggeredC10 = new TH3F("Triggered spectrumC10","",5,0.,1.,140,-80.,200.,50,0.,50.);
     fh3spectriggeredC20 = new TH3F("Triggered spectrumC20","",5,0.,1.,140,-80.,200.,50,0.,50.);
@@ -576,7 +582,9 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
       fOutputList->Add(fh2JetCoreMethod1C60);
       fOutputList->Add(fh2JetCoreMethod2C60);}
       
-      
+      fOutputList->Add(fh2JetTrackC10);
+      fOutputList->Add(fh2JetTrackC20);
+            
      
 
 
@@ -880,7 +888,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    return;}
    fh2Ntriggers->Fill(centValue,partback->Pt());
    Double_t accep=2.*TMath::Pi()*1.8;
-   Int_t injet4=0; 
+   Int_t injet4=0;
+   Int_t injet=0; 
    for(Int_t i=0; i<fListJets[0]->GetEntries(); ++i){
            AliAODJet* jetbig = (AliAODJet*)(fListJets[0]->At(i));
            etabig  = jetbig->Eta();
@@ -890,9 +899,13 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
            areabig = jetbig->EffectiveAreaCharged();
            Double_t ptcorr=ptbig-rho*areabig;
       	   if((etabig<fJetEtaMin)||(etabig>fJetEtaMax)) continue;
-           
+          
+           if(areabig>=0.2) injet=injet+1;
            if(areabig>=0.4) injet4=injet4+1;   
            Double_t dphi=RelativePhi(partback->Phi(),phibig);  
+           if(centValue<10.) fh2JetTrackC10->Fill(ptcorr,TMath::Abs(dphi));
+           if(centValue<20.) fh2JetTrackC20->Fill(ptcorr,TMath::Abs(dphi));
+
            if(TMath::Abs(dphi)<TMath::Pi()-0.6) continue;
                    Double_t dismin=100.;
                    Double_t ptmax=-10.; 
@@ -963,16 +976,6 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                   Double_t sumpt8b=0.;
                   Double_t sumpt10a=0.;
                   Double_t sumpt10b=0.;
-                  Double_t sumpt2aa=0.;
-                  Double_t sumpt2bb=0.;
-                  Double_t sumpt4aa=0.;
-                  Double_t sumpt4bb=0.;
-                  Double_t sumpt6aa=0.;
-                  Double_t sumpt6bb=0.;
-                  Double_t sumpt8aa=0.;
-                  Double_t sumpt8bb=0.;
-                  Double_t sumpt10aa=0.;
-                  Double_t sumpt10bb=0.;
                   Double_t sumpt2aaa=0.;
                   Double_t sumpt2bbb=0.;
                   Double_t sumpt4aaa=0.;
@@ -993,16 +996,6 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                   Double_t sumpt8bp=0.;
                   Double_t sumpt10ap=0.;
                   Double_t sumpt10bp=0.;
-                  Double_t sumpt2aap=0.;
-                  Double_t sumpt2bbp=0.;
-                  Double_t sumpt4aap=0.;
-                  Double_t sumpt4bbp=0.;
-                  Double_t sumpt6aap=0.;
-                  Double_t sumpt6bbp=0.;
-                  Double_t sumpt8aap=0.;
-                  Double_t sumpt8bbp=0.;
-                  Double_t sumpt10aap=0.;
-                  Double_t sumpt10bbp=0.;
                   Double_t sumpt2aaap=0.;
                   Double_t sumpt2bbbp=0.;
                   Double_t sumpt4aaap=0.;
@@ -1022,7 +1015,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 	  AliVParticle *part = (AliVParticle*)ParticleList.At(it);
        	  Double_t deltaR = jetbig->DeltaR(part);
           Double_t deltaEta = etabig-part->Eta();
-          if(partback->Pt()>10.){
+          if(partback->Pt()>14.){
 
           if(centValue<10){
 	    //for one more centrality
@@ -1053,38 +1046,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 		 if(leadtrack->Pt()>6.) sumpt10bp=sumpt10bp+part->Pt();}}}
  
 
-                if(partback->Pt()>20.){
-
-              if(centValue<10){
-	    //for one more centrality
-               if(deltaR<0.2){if(leadtrack->Pt()>0.)sumpt2aa=sumpt2aa+part->Pt();
-		              if(leadtrack->Pt()>6.) sumpt2bb=sumpt2bb+part->Pt();}
-	       if(deltaR>=0.2 && deltaR<0.4){if(leadtrack->Pt()>0.)sumpt4aa=sumpt4aa+part->Pt();
-		                               if(leadtrack->Pt()>6.)sumpt4bb=sumpt4bb+part->Pt();}
-
-               if(deltaR>=0.4 && deltaR<0.6){if(leadtrack->Pt()>0.)sumpt6aa=sumpt6aa+part->Pt();
-		                             if(leadtrack->Pt()>6.) sumpt6bb=sumpt6bb+part->Pt();} 
-               if(deltaR>=0.6 && deltaR<0.8){if(leadtrack->Pt()>0.)sumpt8aa=sumpt8aa+part->Pt();
-		                             if(leadtrack->Pt()>6.) sumpt8bb=sumpt8bb+part->Pt();}                               
-               if(deltaR>=0.8 && deltaR<1.2){if(leadtrack->Pt()>0.)sumpt10aa=sumpt10aa+part->Pt();
-		 if(leadtrack->Pt()>6.) sumpt10bb=sumpt10bb+part->Pt();}}
-
-               if(centValue>30. && centValue<60.){
-	    //for one more centrality
-               if(deltaR<0.2){if(leadtrack->Pt()>0.)sumpt2aap=sumpt2aap+part->Pt();
-		              if(leadtrack->Pt()>6) sumpt2bbp=sumpt2bbp+part->Pt();}
-	       if(deltaR>=0.2 && deltaR<0.4){if(leadtrack->Pt()>0.)sumpt4aap=sumpt4aap+part->Pt();
-		                               if(leadtrack->Pt()>6.)sumpt4bbp=sumpt4bbp+part->Pt();}
-
-               if(deltaR>=0.4 && deltaR<0.6){if(leadtrack->Pt()>0.)sumpt6aap=sumpt6aap+part->Pt();
-		                             if(leadtrack->Pt()>6.) sumpt6bbp=sumpt6bbp+part->Pt();} 
-               if(deltaR>=0.6 && deltaR<0.8){if(leadtrack->Pt()>0.)sumpt8aap=sumpt8aap+part->Pt();
-		                             if(leadtrack->Pt()>6.) sumpt8bbp=sumpt8bbp+part->Pt();}                               
-               if(deltaR>=0.8 && deltaR<1.2){if(leadtrack->Pt()>0.)sumpt10aap=sumpt10aap+part->Pt();
-		 if(leadtrack->Pt()>6.) sumpt10bbp=sumpt10bbp+part->Pt();}}}
- 
-
-
+              
 
              if(partback->Pt()<1.){
 
@@ -1136,7 +1098,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
               
           if(rho!=0){
 
-          if(partback->Pt()>10.){
+          if(partback->Pt()>14.){
 	    if(centValue<10.){
 	    if(leadtrack->Pt()>0.){
           fh2JetsumHT3R2a->Fill(ptcorr,sumpt2a/rhoin2);
@@ -1164,39 +1126,6 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
           fh2JetsumHT3R6bp->Fill(ptcorr,sumpt6bp/rhoin6);
           fh2JetsumHT3R8bp->Fill(ptcorr,sumpt8bp/rhoin8);
           fh2JetsumHT3R10bp->Fill(ptcorr,sumpt10bp/rhoin10);}}}
-
-
-
-
-
-               if(partback->Pt()>20.){
-	    if(centValue<10.){
-	      if(leadtrack->Pt()>0.){
-          fh2JetsumHT3R2aa->Fill(ptcorr,sumpt2aa/rhoin2);
-          fh2JetsumHT3R4aa->Fill(ptcorr,sumpt4aa/rhoin4);
-          fh2JetsumHT3R6aa->Fill(ptcorr,sumpt6aa/rhoin6);
-          fh2JetsumHT3R8aa->Fill(ptcorr,sumpt8aa/rhoin8);
-          fh2JetsumHT3R10aa->Fill(ptcorr,sumpt10aa/rhoin10);}
-	    if(leadtrack->Pt()>6.){
-          fh2JetsumHT3R2bb->Fill(ptcorr,sumpt2bb/rhoin2);
-          fh2JetsumHT3R4bb->Fill(ptcorr,sumpt4bb/rhoin4);
-          fh2JetsumHT3R6bb->Fill(ptcorr,sumpt6bb/rhoin6);
-          fh2JetsumHT3R8bb->Fill(ptcorr,sumpt8bb/rhoin8);
-          fh2JetsumHT3R10bb->Fill(ptcorr,sumpt10bb/rhoin10);}}
-
-          	    if(centValue>30 && centValue<60.){
-	     if(leadtrack->Pt()>0.){
-          fh2JetsumHT3R2aap->Fill(ptcorr,sumpt2aap/rhoin2);
-          fh2JetsumHT3R4aap->Fill(ptcorr,sumpt4aap/rhoin4);
-          fh2JetsumHT3R6aap->Fill(ptcorr,sumpt6aap/rhoin6);
-          fh2JetsumHT3R8aap->Fill(ptcorr,sumpt8aap/rhoin8);
-          fh2JetsumHT3R10aap->Fill(ptcorr,sumpt10aap/rhoin10);}
-	    if(leadtrack->Pt()>6.){
-          fh2JetsumHT3R2bbp->Fill(ptcorr,sumpt2bbp/rhoin2);
-          fh2JetsumHT3R4bbp->Fill(ptcorr,sumpt4bbp/rhoin4);
-          fh2JetsumHT3R6bbp->Fill(ptcorr,sumpt6bbp/rhoin6);
-          fh2JetsumHT3R8bbp->Fill(ptcorr,sumpt8bbp/rhoin8);
-          fh2JetsumHT3R10bbp->Fill(ptcorr,sumpt10bbp/rhoin10);}}}
 
 
 
@@ -1239,7 +1168,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
 
    }
-   if(injet4>0) fh2JetDensity->Fill(centValue,injet4/accep);
+   if(injet>0) fh2JetDensity->Fill(ParticleList.GetEntries(),injet/accep);
    if(injet4>0)fh2JetDensityA4->Fill(ParticleList.GetEntries(),injet4/accep);
           //end of jet loop
 
