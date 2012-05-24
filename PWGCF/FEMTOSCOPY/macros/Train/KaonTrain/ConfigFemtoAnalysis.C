@@ -300,7 +300,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  }
 	  else if (runtype == 2) {
 	    //news here:
-            sqpcetaphitpc[aniter]->SetDataType(kAOD); // was an error with sqpcetaphitpc[aniter]->SetUseAOD(kTRUE);
+            sqpcetaphitpc[aniter]->SetDataType(AliFemtoPairCutAntiGamma::kAOD); // was an error with sqpcetaphitpc[aniter]->SetUseAOD(kTRUE);
 	    //
 	    sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	    sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
