@@ -39,7 +39,6 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
 
   TString                fTracksName;                    // name of track collection
   TString                fJetsName;                      // name of jet collection
-  TString                fClustersName;                  // name of clusters collection
   TString                fRhoScaledName;                 // name of scaled rho object
   Double_t               fPhiMin;                        // minimum phi
   Double_t               fPhiMax;                        // maximum phi

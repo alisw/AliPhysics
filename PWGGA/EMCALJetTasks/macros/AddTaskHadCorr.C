@@ -51,11 +51,14 @@ AliHadCorrTask* AddTaskHadCorr(
     
   // Create containers for input/output
   mgr->ConnectInput (hcor, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer *cohcor = mgr->CreateContainer(name,
-                                                          TList::Class(),
-                                                          AliAnalysisManager::kOutputContainer,
-                                                          outputname);
-  mgr->ConnectOutput(hcor,1,cohcor);
+
+  if (histo) {
+    AliAnalysisDataContainer *cohcor = mgr->CreateContainer(name,
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputname);
+    mgr->ConnectOutput(hcor,1,cohcor);
+  }
     
   return hcor;
 }

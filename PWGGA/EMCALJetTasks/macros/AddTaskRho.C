@@ -53,11 +53,13 @@ AliAnalysisTaskRho* AddTaskRho(
 
   // Create containers for input/output
   mgr->ConnectInput (rhotask, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer *corho = mgr->CreateContainer(name,
+  if (histo) {
+    AliAnalysisDataContainer *corho = mgr->CreateContainer(name,
                                                            TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
                                                            outfilename);
-  mgr->ConnectOutput(rhotask, 1, corho);
+    mgr->ConnectOutput(rhotask, 1, corho);
+  }
 
   return rhotask;
 }

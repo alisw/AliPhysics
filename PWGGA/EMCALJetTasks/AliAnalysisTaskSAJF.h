@@ -45,6 +45,9 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b          ; }
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b          ; }
   void                        SetHistoBins(Int_t nbins, Float_t min, Float_t max)  { fNbins = nbins; fMinPt = min; fMaxPt = max; }
+  void                        SetEtaLimits(Float_t min, Float_t max)               { fMinEta = min, fMaxEta = max ; }
+  void                        SetPhiLimits(Float_t min, Float_t max)               { fMinPhi = min, fMaxPhi = max ; }
+  void                        SetInitialized(Bool_t ini = kTRUE)                   { fInitialized = ini           ; }
 
  protected:
 
@@ -73,6 +76,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskSE {
 					   AliEmcalJet *jet = 0, TClonesArray* tracks = 0, TClonesArray* clusters = 0) const;
 
   SAJFAnaType                 fAnaType;                    // Analysis type
+  Bool_t                      fInitialized;                // Whether or not the task has been already initialized
   Float_t                     fMinEta;                     // Minimum eta accepatance
   Float_t                     fMaxEta;                     // Maximum eta accepatance
   Float_t                     fMinPhi;                     // Minimum phi accepatance
