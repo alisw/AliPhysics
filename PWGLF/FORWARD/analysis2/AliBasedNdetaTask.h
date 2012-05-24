@@ -17,6 +17,7 @@
 class TAxis;
 class TList;
 class TH2D;
+class TH2F;
 class TH1D;
 class TH1I;
 class AliAODEvent;
@@ -168,7 +169,7 @@ public:
    * 
    * @param h Correction
    */
-  void SetShapeCorrection(const TH1* h);
+  void SetShapeCorrection(const TH2F* h);
   /** 
    * Setthe normalisation scheme to use 
    * 
@@ -336,7 +337,12 @@ protected:
    * @return Pointer to AOD event or null 
    */
   AliAODEvent* GetAODEvent(Bool_t isESD=false);
-  
+
+  /** 
+   * Create the CentralityBin objects if not already done.
+   * 
+   */
+  virtual void InitializeCentBins();
   /** 
    * Retrieve the histogram 
    * 
@@ -452,6 +458,17 @@ protected:
     /** 
      * Get the histogram name 
      * 
+     * @param name Base name 
+     * @param what Which one 
+     * @param post Possible postfix
+     * 
+     * @return Name 
+     */
+    static TString GetHistName(const char* name, Int_t what=0, 
+			       const char* post=0);
+    /** 
+     * Get the histogram name 
+     * 
      * @param what Which one 
      * 
      * @return Name 
@@ -460,7 +477,6 @@ protected:
     /** 
      * Get the sum 
      * 
-     * @param l          List to get histograms from 
      * @param o          Output list
      * @param ntotal     On return, the total number of events
      * @param zeroEff    Zero-bin efficiency
@@ -471,9 +487,9 @@ protected:
      * 
      * @return The total sum histogram 
      */
-    TH2D* GetSum(const TList* l, TList* o, Double_t& ntotal,
-		 Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
-		 Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
+    TH2D* CalcSum(TList* o, Double_t& ntotal,
+		  Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
+		  Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
   };
     
   //==================================================================
@@ -632,7 +648,7 @@ protected:
 			    const char* postfix, 
 			    bool        rootProj, 
 			    bool        corrEmpty,
-			    const TH1*  shapeCorr,
+			    const TH2F* shapeCorr,
 			    Double_t    scaler,
 			    bool        symmetrice, 
 			    Int_t       rebin, 
@@ -663,7 +679,7 @@ protected:
     virtual void End(TList*      sums, 
 		     TList*      results,
 		     UShort_t    scheme,
-		     const TH1*  shapeCorr, 
+		     const TH2F* shapeCorr, 
 		     Double_t    trigEff,
 		     Bool_t      symmetrice,
 		     Int_t       rebin, 
@@ -747,6 +763,7 @@ protected:
 
     void SetDebugLevel(Int_t lvl);
   protected:
+    virtual Bool_t ReadSum(TList* list, bool mc=false);
     /** 
      * Create sum histogram 
      * 
@@ -791,7 +808,7 @@ protected:
   Bool_t          fCorrEmpty;    // Correct for empty bins 
   Bool_t          fUseROOTProj;  // Whether to use ROOT's ProjectionX
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
-  TH1*            fShapeCorr;    // Shape correction 
+  TH2F*           fShapeCorr;    // Shape correction 
   TObjArray*      fListOfCentralities; // Centrality bins 
   TNamed*         fSNNString;    // sqrt(s_NN) string 
   TNamed*         fSysString;    // Collision system string 
@@ -803,7 +820,7 @@ protected:
   TString         fFinalMCCorrFile; //Filename for final MC corr
   Bool_t          fIsESD;           // Whether we have ESD input or not
   
-  ClassDef(AliBasedNdetaTask,5); // Determine multiplicity in base area
+  ClassDef(AliBasedNdetaTask,6); // Determine multiplicity in base area
 };
 
 #endif
