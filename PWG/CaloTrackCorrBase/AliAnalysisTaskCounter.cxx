@@ -63,7 +63,8 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   fTriggerAnalysis (new AliTriggerAnalysis),
   fhNEvents(0),
   fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
-  fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0)
+  fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
+  fhCentrality(0)
 {
   //ctor
   DefineOutput(1, TList::Class());
@@ -81,7 +82,8 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fTriggerAnalysis (new AliTriggerAnalysis),
     fhNEvents(0),
     fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
-    fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0)
+    fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
+    fhCentrality(0)
 {
   // ctor
   DefineOutput(1, TList::Class());
@@ -133,6 +135,9 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fhYGoodVertex->SetXTitle("v_{y} (cm)");
   fOutputContainer->Add(fhYGoodVertex);
   
+  fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin, |vz|<10 cm, method <V0M> ",100,0.,100.) ;
+  fhCentrality->SetXTitle("Centrality bin");
+  fOutputContainer->Add(fhCentrality) ;  
   
   fhNEvents = new TH1I("hNEvents", "Number of analyzed events", 21, 0, 21) ;
   fhNEvents->SetXTitle("Selection");
@@ -337,6 +342,12 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
     if(bSelectVZ && bSelectTrack && bV0AND)    
                      fhNEvents->Fill(14.5); 
     if(!bPileup)     fhNEvents->Fill(15.5); 
+
+    if(TMath::Abs(v[2]) < 10 && InputEvent()->GetCentrality()) 
+    {
+      fhCentrality->Fill(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
+    }
+  
   }
 
   //printf("AliAnalysisTaskCounter::UserExec() : z vertex %d, good vertex %d, v0and %d, pile up %d, track mult %d\n ", bSelectVZ, bGoodV, bV0AND, bPileup, trackMult);
