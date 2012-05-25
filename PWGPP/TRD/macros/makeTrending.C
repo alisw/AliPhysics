@@ -1,4 +1,4 @@
-void makeTrending(const Char_t *fl)
+void makeTrending(const Char_t *fl, const Char_t *db = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root")
 {
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
@@ -8,8 +8,8 @@ void makeTrending(const Char_t *fl)
   gSystem->Load("libPWGmuon.so");
 
   AliTRDtrendingManager *tm = AliTRDtrendingManager::Instance();
-  tm->Load();
+  tm->Load(db);
   tm->MakeTrends(fl);
-  return /*task*/;
+  return;
 }
 

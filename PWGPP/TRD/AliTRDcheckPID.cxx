@@ -1170,7 +1170,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
         h->SetMaximum(20.);
         h->GetXaxis()->SetRangeUser(0., 35.);
         kFIRST = kFALSE;
-      } else h = (TH1F*)h1->DrawClone("samec");
+      } else /*h = (TH1F*)*/h1->DrawClone("samec");
 
 //      legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
     }
