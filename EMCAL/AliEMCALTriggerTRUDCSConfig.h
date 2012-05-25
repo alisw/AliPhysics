@@ -54,6 +54,6 @@ private:
 	UInt_t   fRLBKSTU;                       // TRU circular buffer rollback
 	UInt_t   fFw;                            // TRU fw version
 	
-	ClassDef(AliEMCALTriggerTRUDCSConfig,3)  //
+	ClassDef(AliEMCALTriggerTRUDCSConfig,4)  //
 };
 #endif
