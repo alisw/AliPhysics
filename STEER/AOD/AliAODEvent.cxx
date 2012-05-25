@@ -659,16 +659,24 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
         } else {
           
 	  //          TList* objL = (TList*)(aodEvent->GetList()->Clone());
-          TList* objL = (TList*)aodEvent->GetList();
-          printf("Get list of object from tree %d !!\n", objL->GetEntries());
-          TIter nextobject(objL);
-          TObject* obj =  0;
-          while((obj = nextobject()))
+          TList* objL = aodEvent->GetList();
+          
+          if(objL == fAODObjects)
           {
-            printf("Adding object from friend %s !\n", obj->GetName());
-            fAODObjects->Add(obj);
+   			AliInfo("Adding object from friend. Same object friend list...skipping\n");
+            
+          } else {
+					printf("Get list of object from tree %d !!\n", objL->GetEntries());
+           
+	            TIter nextobject(objL);
+   	         TObject* obj =  0;
+      	      while((obj = nextobject()))
+         	   {
+              		printf("Adding object from friend %s !\n", obj->GetName());
+              		fAODObjects->Add(obj);
+              	}
           } // object "branch" loop
-        } // has userinfo  
+        	} // has userinfo  
       } // friend loop
     } // has friends	
       // set the branch addresses

@@ -138,4 +138,17 @@ set ( DHDR  MUONmappingLinkDef.h)
 
 set ( EINCLUDE  RAW MUON/mapping)
 
-set ( EXPORT mapping/AliMpExMap.h )
+set ( EXPORT 
+  mapping/AliMpCathodType.h
+  mapping/AliMpCDB.h
+  mapping/AliMpDDLStore.h
+  mapping/AliMpEncodePair.h
+  mapping/AliMpExMap.h
+  mapping/AliMpPad.h
+  mapping/AliMpPlaneType.h
+  mapping/AliMpRegionalTrigger.h
+  mapping/AliMpSegmentation.h
+  mapping/AliMpStationType.h
+  mapping/AliMpStringObjMap.h
+  mapping/AliMpVSegmentation.h
+  )

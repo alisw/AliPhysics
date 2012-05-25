@@ -105,3 +105,5 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR ITSbaseLinkDef.h)
 
 set ( EINCLUDE TPC RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT AliITSgeomTGeo.h )

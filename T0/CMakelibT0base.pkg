@@ -55,3 +55,5 @@ set ( EHDr  AliT0CalibLatency.h)
 set ( DHDR  T0baseLinkDef.h)
 
 set ( EINCLUDE RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT AliT0digit.h)

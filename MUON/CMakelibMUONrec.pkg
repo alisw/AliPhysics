@@ -81,5 +81,12 @@ set ( DHDR  MUONrecLinkDef.h)
 
 set ( EINCLUDE  RAW MUON/mapping STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
-set ( EXPORT AliMUONESDInterface.h AliMUONTrack.h AliMUONVClusterStore.h 
-  AliMUONTrackExtrap.h AliMUONTrackParam.h AliMUONCDB.h )
+set ( EXPORT 
+  AliMUONESDInterface.h 
+  AliMUONTrack.h 
+  AliMUONVClusterStore.h 
+  AliMUONTrackExtrap.h 
+  AliMUONTrackParam.h 
+  AliMUONCDB.h 
+  AliMUONVTrackStore.h
+  AliMUONClusterStoreV2.h)

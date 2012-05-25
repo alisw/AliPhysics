@@ -37,16 +37,29 @@
  * 
  * Default:
  *  - compiles all macros from AliRoot installation dir ($ALICE_ROOT/EVE/alice-macros)
- *  - options for compilation (- k f c)
+ *  - options for compilation (- k f c):
+ * The possible options are:
+     k : keep the shared library after the session end.
+     f : force recompilation.
+     g : compile with debug symbol
+     O : optimized the code (ignore if 'g' is specified)
+     c : compile only, do not attempt to load the library.
+     - : if buildir is set, use a flat structure (see buildir below)
  */
 
 void compileEveMacros( const char * macDir="", Option_t *opt="")
 {
+
+   // solves current issue in ROOT when pre-compiling with ACLiC
+   gSystem->Load("libCint");
+   gSystem->Load("libTENDER");
+   gSystem->Load("libPWGPP");
+
   if(macDir == "")
     macDir = Form("%s/EVE/alice-macros", gSystem->Getenv("ALICE_ROOT") );
   
   if(opt == "")
-    opt = "-kfc"; // compilation options
+    opt = "-kc"; // compilation options
   
   TObjString *mac;
   TList * listOfFailedMacros = new TList; // list of macros that failed compilation
@@ -59,7 +72,13 @@ void compileEveMacros( const char * macDir="", Option_t *opt="")
   
   TPMERegexp regex("\\.C$");
     
-  printf("Files found in macro directory: %d\n", listOfMacros->GetSize() );
+  printf("Directory: %s \tfiles:%d\n",  curDir->GetName(), listOfMacros->GetSize() );
+  gSystem->cd(curDir->GetName());
+
+  const char* incPath = gSystem->GetIncludePath();
+  
+  gSystem->SetIncludePath(Form("%s -I%s", incPath, "$ROOTSYS/include"));
+  
   
   Int_t nMacros = 0;
   
@@ -73,7 +92,7 @@ void compileEveMacros( const char * macDir="", Option_t *opt="")
       
         printf("Macro %s\n", mac->String().Data() );
         TEveUtil::CheckMacro(mac->String().Data() );
-        if(!gSystem->CompileMacro(mac->String().Data(), opt, mac->String().Data(), macDir) )
+        if(!gSystem->CompileMacro(mac->String().Data(), opt ) )
           listOfFailedMacros->Add(mac);
     }
     

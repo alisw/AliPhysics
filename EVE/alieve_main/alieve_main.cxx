@@ -6,9 +6,6 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-
-#include <EveBase/AliEveConfigManager.h>
-
 #include <TInterpreter.h>
 #include <TRint.h>
 #include <TROOT.h>
@@ -17,8 +14,6 @@
 #include <TError.h>
 #include <RVersion.h>
 
-#include <AliLog.h>
-
 #include <TEveUtil.h>
 #include <TEveManager.h>
 #include <TEveSelection.h>
@@ -26,6 +21,8 @@
 #include <TEveViewer.h>
 
 #include <Getline.h>
+#include <AliLog.h>
+#include <AliEveConfigManager.h>
 
 int main(int argc, char **argv)
 {

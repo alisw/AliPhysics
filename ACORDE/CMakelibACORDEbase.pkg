@@ -19,3 +19,5 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(DHDR ACORDEbaseLinkDef.h)
 
 set(EINCLUDE STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase RAW)
+
+set(EXPORT AliACORDERawStream.h)

@@ -41,3 +41,5 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  HMPIDsimLinkDef.h)
 
 set ( EINCLUDE  RAW STEER/STEER STEER/STEERBase)
+
+set ( EXPORT AliHMPID.h AliHMPIDDigitizer.h)

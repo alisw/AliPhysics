@@ -74,7 +74,11 @@ set ( EXPORT AliMUONDigitMaker.h
   AliMUONVDigit.h 
   AliMUONVCluster.h 
   AliMUONConstants.h 
-  AliMUONTriggerCircuit.h )
+  AliMUONTriggerCircuit.h
+  AliMUONTriggerCircuit.h 
+  AliMUONRawClusterV2.h
+  AliMUONRecoParam.h 
+  )
 
 install (DIRECTORY data
 	 DESTINATION MUON

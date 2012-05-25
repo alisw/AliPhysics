@@ -13,8 +13,10 @@
 #include <TEveManager.h>
 #include <TEveElement.h>
 #include <TEvePointSet.h>
+#include <TGeoMatrix.h>
 
 #include <AliCluster.h>
+#include <AliGeomManager.h>
 #include <AliRunLoader.h>
 #include <AliTRDcluster.h>
 #include <AliEveEventManager.h>

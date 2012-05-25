@@ -83,6 +83,8 @@ set ( DHDR TOFbaseLinkDef.h)
 
 set ( EINCLUDE  RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
+set ( EXPORT  AliTOFGeometry.h)
+
 install (DIRECTORY data
 	 DESTINATION TOF
 	 PATTERN ".svn" EXCLUDE)

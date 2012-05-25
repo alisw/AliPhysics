@@ -38,6 +38,7 @@ set ( EXPORT
   EveBase/AliEveBeamsInfo.h
   EveBase/AliEveCascade.h
   EveBase/AliEveEventManager.h
+  EveBase/AliEveConfigManager.h
   EveBase/AliEveHF.h
   EveBase/AliEveJetPlane.h
   EveBase/AliEveKineTools.h
@@ -53,6 +54,4 @@ set ( EXPORT
   EveBase/AliEveTracklet.h
   EveDet/AliEveTRDData.h
   EveBase/AliEveV0.h
-  
-  
   )

@@ -16,7 +16,7 @@
 #endif
 
 #ifndef ALITRDCALPID_H
-#include "Cal/AliTRDCalPID.h"
+#include "AliTRDCalPID.h"
 #endif
 
 #ifndef ALITRDPIDRESPONSE_H

@@ -44,3 +44,5 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  MUONevaluationLinkDef.h)
 
 set ( EINCLUDE  RAW MUON/mapping)
+
+set ( EXPORT AliMUONRecoCheck.h)

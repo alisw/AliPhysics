@@ -117,7 +117,7 @@ set ( DHDR  TPCbaseLinkDef.h)
 
 set ( EINCLUDE  RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
-set (EXPORT AliSegmentID.h)
+set (EXPORT AliSegmentID.h AliTPCCalibViewerGUI.h AliTPCRawStreamV3.h)
 
 install ( DIRECTORY mapping
           DESTINATION TPC

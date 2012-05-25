@@ -54,3 +54,5 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR PMDbaseLinkDef.h)
 
 set ( EINCLUDE RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT AliPMDRawStream.h)

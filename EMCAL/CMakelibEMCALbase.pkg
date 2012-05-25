@@ -70,4 +70,13 @@ set ( DHDR EMCALbaseLinkDef.h)
 
 set ( EINCLUDE RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
-set (EXPORT AliEMCALGeometry.h AliEMCALDigit.h )
+set (EXPORT 
+  AliEMCALGeometry.h 
+  AliEMCALDigit.h 
+  AliEMCAL.h 
+  AliEMCALLoader.h 
+  AliEMCALTrigger.h 
+  AliEMCALCalibData.h
+  AliCaloCalibPedestal.h
+  AliEMCALSimParam.h
+  AliEMCALRecParam.h)
