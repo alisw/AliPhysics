@@ -905,78 +905,41 @@ Float_t AliTRDcalibDB::GetPRFWidth(Int_t det, Int_t col, Int_t row)
 Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
 {
   //
-  // Returns Number of time bins from the DCS
+  // Returns number of time bins from the DCS
   //
 
-  Int_t nMixed = -2; // not the same number for all chambers
-  Int_t nUndef = -1; // default value - has not been set!
-  Int_t nTbSor = nUndef;
-  Int_t nTbEor = nUndef;
-  Int_t calver = 0; // Check CalDCS version
+  // default value - has not been set
+  Int_t nUndef = -1;
 
-  const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
-  if (!dcsArr) {
-    AliError("No DCS object found!");
+  // Get the corresponding parameter
+  TString tbstr = "";
+  GetDCSConfigParOption(kTimebin, 0, tbstr);
+
+  // Check if there is any content in the string first
+  if (tbstr.Length() == 0) {
+    AliError("Parameter for number of timebins is empty!");
     return nUndef;
   }
 
-  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
-  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
-
-  if (calver == 1) {
-    // DCS object
-    const AliTRDCalDCS *calDCSsor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(0));
-    const AliTRDCalDCS *calDCSeor = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(1));
-    if (!calDCSsor) {
-      // the SOR file is mandatory
-      AliError("NO SOR AliTRDCalDCS object found in CDB file!");
-      return nUndef;
-    }
-    if (!calDCSeor) {
-      // this can happen if the run is shorter than a couple of seconds.
-      AliWarning("NO EOR AliTRDCalDCS object found in CDB file.");
-    }
-
-    // get the numbers
-    nTbSor = calDCSsor->GetGlobalNumberOfTimeBins();
-    if (calDCSeor) nTbEor = calDCSeor->GetGlobalNumberOfTimeBins();
-
-  } else if (calver == 2) {
-    // DCSv2 object
-    const AliTRDCalDCSv2 *calDCSsorv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(0));
-    const AliTRDCalDCSv2 *calDCSeorv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(1));
-    if (!calDCSsorv2) {
-      // the SOR file is mandatory
-      AliError("NO SOR AliTRDCalDCSv2 object found in CDB file!");
-      return nUndef;
-    }
-    if (!calDCSeorv2) {
-      // this can happen if the run is shorter than a couple of seconds.
-      AliWarning("NO EOR AliTRDCalDCSv2 object found in CDB file.");
-    }
-
-    // get the numbers
-    nTbSor = calDCSsorv2->GetGlobalNumberOfTimeBins();
-    if (calDCSeorv2) nTbEor = calDCSeorv2->GetGlobalNumberOfTimeBins();
-
-  } else AliError("NO DCS/DCSv2 OCDB entry found!");
-
-  // if they're the same return the value
-  // -2 means mixed, -1: no data, >= 0: good number of time bins
-  if (nTbSor == nTbEor) return nTbSor;
-
-  // if they're differing:
-  if (nTbSor == nMixed || nTbEor == nMixed) {
-    AliWarning("Inconsistent number of time bins found!");
-    return nMixed;
+  // Check if we have the correct config parameter
+  TString tbident  = "tb";
+  TString tbsubstr = tbstr(0,2);
+  if (!tbsubstr.EqualTo(tbident)) {
+    AliError(Form("Parameter for number of timebins is corrupted (%s)!", tbstr.Data()));
+    return nUndef;
   }
 
-  // one is undefined, the other ok -> return that one
-  if (nTbSor == nUndef) return nTbEor;
-  if (nTbEor == nUndef) return nTbSor;
+  tbstr.Remove(0,2);
+  // check if there is more than a number
+  if (!tbstr.IsDigit()) {
+    AliError(Form("Parameter for number of timebins is corrupted (%s)!", tbstr.Data()));
+    return nUndef;
+  }
 
-  // only remains: two different numbers >= 0
-  return nMixed;
+  Int_t ntb = tbstr.Atoi();
+  AliInfo(Form("Number of timebins from CDB: %d", ntb));
+
+  return ntb;
 
 }
 
@@ -1084,42 +1047,70 @@ void AliTRDcalibDB::GetGlobalConfiguration(TString &config)
 
   const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
   if(!dcsArr){
+    AliError("No DCS CDB Object available!");
     config = "";
     return;
   }
 
-  Int_t esor   = 0; // Take SOR
-  Int_t calver = 0; // Check CalDCS version
-  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
-  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
+  Int_t idSOR = 0, idEOR=1; // The index of SOR and EOR
+  Bool_t hasSOR = (dcsArr->At(idSOR));
+  Bool_t hasEOR = (dcsArr->At(idEOR));
+  TString cfgSOR = "", cfgEOR = ""; // The configuration at SOR/EOR
 
-  if      (calver == 1) {
+  // The SOR object is mandatory
+  if (!hasSOR) {
+    AliError("NO SOR object found in CDB file!");
+    config = "";
+    return;
+  }
+  if (!hasEOR) AliWarning("NO EOR object found in CDB file!");
 
+  // Check CalDCS version
+  Int_t calver = 0;
+  if (!strcmp(dcsArr->At(idSOR)->ClassName(),"AliTRDCalDCS")) calver = 1;
+  else if (!strcmp(dcsArr->At(idSOR)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
+
+  // Get the configuration strings
+  if (calver == 1) {
     // DCS object
-    const AliTRDCalDCS   *calDCS   = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(esor));
-    if(!calDCS){
-      config = "";
-      return;
-    } 
-    config = calDCS->GetGlobalConfigName();
-
+    const AliTRDCalDCS *calSOR = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(idSOR));
+    cfgSOR = calSOR->GetGlobalConfigName();
+    if (hasEOR) {
+      const AliTRDCalDCS *calEOR = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(idEOR));
+      cfgEOR = calEOR->GetGlobalConfigName();
+    }
   } 
   else if (calver == 2) {
-
     // DCSv2 object
-    const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(esor));
-    if(!calDCSv2){
-      config = "";
-      return;
-    } 
-    config = calDCSv2->GetGlobalConfigName();
-
+    const AliTRDCalDCSv2 *calv2SOR = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(idSOR));
+    cfgSOR = calv2SOR->GetGlobalConfigName();
+    if (hasEOR) {
+      const AliTRDCalDCSv2 *calv2EOR = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(idEOR));
+      cfgEOR = calv2EOR->GetGlobalConfigName();
+    }
   } 
   else {
-
     AliError("NO DCS/DCSv2 OCDB entry found!");
-
+    config = "";
+    return;
   }
+
+  // If there is no EOR entry, return the SOR value
+  if (!hasEOR || cfgEOR.Length()==0) {
+    config = cfgSOR;
+    return;
+  }
+
+  // Check if the configuration is the same for both
+  if (cfgSOR.EqualTo(cfgEOR)) {
+    config = cfgSOR;
+    return;
+  }
+
+  // When both SOR and EOR have an entry but are different, the config is not defined
+  AliError("Inconsistent configuration at start and end of run found!");
+  config = "";
+  return;
 
 }
 
