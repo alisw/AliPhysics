@@ -413,6 +413,8 @@ void AliAnalysisTaskCaloFilter::FillAODHeader()
     return;
   }
   
+  if(!esdevent) return;
+  
   // Copy from ESDs
   
   header->SetRunNumber(event->GetRunNumber());
@@ -434,7 +436,8 @@ void AliAnalysisTaskCaloFilter::FillAODHeader()
   {
     header->SetCentrality(new AliCentrality(*(event->GetCentrality())));
   }
-  else{
+  else
+  {
     header->SetCentrality(0);
   }
   
@@ -512,6 +515,8 @@ void AliAnalysisTaskCaloFilter::FillAODVertices()
     return;
   }
   
+  if(!esdevent) return;
+  
   // Copy from ESDs
   
   // Access to the AOD container of vertices
@@ -521,15 +526,8 @@ void AliAnalysisTaskCaloFilter::FillAODVertices()
   // Add primary vertex. The primary tracks will be defined
   // after the loops on the composite objects (V0, cascades, kinks)
   event->GetPrimaryVertex()->GetXYZ(pos);
-  Float_t chi = 0;
-  if      (esdevent){
-    esdevent->GetPrimaryVertex()->GetCovMatrix(covVtx);
-    chi = esdevent->GetPrimaryVertex()->GetChi2toNDF();
-  }
-  else if (aodevent){
-    aodevent->GetPrimaryVertex()->GetCovMatrix(covVtx);
-    chi = aodevent->GetPrimaryVertex()->GetChi2perNDF();//Different from ESD?
-  }
+  esdevent->GetPrimaryVertex()->GetCovMatrix(covVtx);
+  Float_t chi = esdevent->GetPrimaryVertex()->GetChi2toNDF();
   
   AliAODVertex * primary = new(vertices[jVertices++])
   AliAODVertex(pos, covVtx, chi, NULL, -1, AliAODVertex::kPrimary);
