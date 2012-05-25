@@ -12,7 +12,7 @@ void runReconstruction(Int_t seed, const Char_t *recOptions) {
   
   // MUON Tracker -> local:///$OCDB should reflect the content of alien://folder=/alice
   reco->SetSpecificStorage("MUON/Align/Data",      "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
-  reco->SetSpecificStorage("MUON/Calib/RecoParam", "alien://folder=/alice/data/2011/OCDB");
+  //  reco->SetSpecificStorage("MUON/Calib/RecoParam", "alien://folder=/alice/data/2011/OCDB");
 
   reco->SetRunReconstruction("MUON MFT");
   reco->SetRunLocalReconstruction("MUON MFT");
