@@ -273,8 +273,10 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSM(int imod, UInt_t timeStamp) cons
 	nval++;
       }
     }
+    //cout << " n " << n << " nval " << nval << " median " << median << endl;
     if (nval >  0) {
       average /= nval;
+      //cout << " average " << average << endl; 
       return average;
     }
     else { // this case should not happen, but kept for completeness (coverity etc)
@@ -853,12 +855,18 @@ Int_t AliEMCALCalibTimeDep::CalcTemperatureCorrection(Int_t nSM, Int_t nBins, In
     if (nVal>0) {
       referenceTemperature /= nVal; // valid values exist, we can look into corrections
       
+      Double_t dSMTemperature = 0;
       for (int j = 0; j < nBins; j++) {
 	// what is the timestamp in the middle of this bin? (0.5 is for middle of bin)
 	UInt_t timeStamp = fStartTime + (UInt_t)((j+0.5)*secondsPerBin);
       // get the temperature at this time; use average over whole SM for now (TO BE CHECKED LATER - if we can do better with finer grained info)
-	Double_t dSMTemperature = GetTemperatureSM(iSM, timeStamp); 
-
+	Double_t oldSMTemperature = dSMTemperature;
+	dSMTemperature = GetTemperatureSM(iSM, timeStamp); 
+	if (j>0 && (dSMTemperature==kErrorCode)) { 
+	  // if we have previous values, and retrieval of values failed - use that instead (hopefully good)
+	  dSMTemperature = oldSMTemperature; 
+	}
+ 
 	Double_t temperatureDiff = referenceTemperature - dSMTemperature; // ref - new
 	if (fVerbosity > 0) {
 	  cout << " referenceTemperature " << referenceTemperature
