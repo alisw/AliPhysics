@@ -204,17 +204,3 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
   AliDebug(1,"Stop.");
 }//Reconstruct digits from raw digits
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconstructor::FillESD(TTree */*digitsTree*/, TTree */*clustersTree*/, AliESDEvent *pESD) const
-{
-// Fill ESD with all the infos from HMPID
-// Probability vector from AliHMPIDPid
-//...
-  AliHMPIDPid pID;
-  Double_t prob[AliPID::kSPECIES];
-  
-  for(Int_t iTrk=0;iTrk<pESD->GetNumberOfTracks();iTrk++){//ESD tracks loop
-    AliESDtrack *pTrk = pESD->GetTrack(iTrk);// get next reconstructed track
-    pID.FindPid(pTrk,AliPID::kSPECIES,prob);
-    pTrk->SetHMPIDpid(prob);
-  }//ESD tracks loop
-}//FillESD()

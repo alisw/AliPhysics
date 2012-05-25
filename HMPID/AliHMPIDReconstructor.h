@@ -26,7 +26,6 @@ public:
   void         ConvertDigits         (AliRawReader *pRR, TTree *pDigTree) const;                                        //from AliReconstruction for raw->digit
   Bool_t       HasDigitConversion()   const {return kTRUE;}                                                             //HMPID digits converted with ConvertDigits 
   void         Reconstruct           (TTree* digitsTree, TTree* clustersTree) const;                                    //from AliReconstruction for digit->cluster
-  void         FillESD               (TTree* /*digitsTree*/, TTree* /*clustersTree*/, AliESDEvent *pESD)const;                                        //calculate pid for HMPID
   static Int_t StreamLevel()               { return fgStreamLevel;}
   static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
 

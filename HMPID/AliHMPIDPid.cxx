@@ -35,7 +35,7 @@ AliHMPIDPid::AliHMPIDPid():TNamed("HMPIDrec","HMPIDPid")
 //..
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
+void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Double_t nmean,Int_t nsp,Double_t *prob)
 {
 // Calculates probability to be a electron-muon-pion-kaon-proton with the "amplitude" method
 // from the given Cerenkov angle and momentum assuming no initial particle composition
@@ -69,7 +69,7 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
     
     h[iPart] = 0;                                                                                                            //  reset the height
     Double_t mass = pPid->ParticleMass(iPart);                                                                             //  with the given mass
-    Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(AliHMPIDParam::Instance()->MeanIdxRad()*pmod);                   //  evaluate the theor. Theta Cherenkov
+    Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(nmean*pmod);                   //  evaluate the theor. Theta Cherenkov
     if(cosThetaTh>1) continue;                                                                                               //  no light emitted, zero height
     Double_t thetaCerTh = TMath::ACos(cosThetaTh);                                                                           //  theoretical Theta Cherenkov
     Double_t sigmaRing = Resolution(thetaCerTh,pTrk);

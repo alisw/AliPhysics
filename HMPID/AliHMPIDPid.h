@@ -22,7 +22,7 @@ public :
              AliHMPIDPid();    //ctor
     virtual ~AliHMPIDPid() {;} //dtor
     
-    void     FindPid(AliESDtrack *pESD,Int_t nsp,Double_t *prob);  //Find PID for tracks
+    void     FindPid(AliESDtrack *pESD,Double_t nmean,Int_t nsp,Double_t *prob);  //Find PID for tracks
     Double_t Resolution(Double_t thetaCerTh, AliESDtrack *pTrk);   //Find the sigma for a given ThetaCerTh
 
 //

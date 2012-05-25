@@ -94,7 +94,7 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd,Bool_t htaCheck)
       pEsd->AddTrack(&trk);
     
       Int_t status;
-      if(!htaCheck) status = pTracker.Recon         (pEsd,pH->CluLst(),pNmean,pQthre);
+      if(!htaCheck) status = pTracker.ReconFromKin  (pEsd,pH->CluLst(),pNmean,pQthre);
       else          status = pTracker.ReconHiddenTrk(pEsd,pH->CluLst(),pNmean,pQthre);
 
 //      Printf("status %i",status);
@@ -122,6 +122,7 @@ Bool_t OpenCalib()
 {
   AliCDBManager* pCDB = AliCDBManager::Instance();
   pCDB->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  pCDB->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
   pCDB->SetRun(0);
   AliCDBEntry *pQthreEnt=pCDB->Get("HMPID/Calib/Qthre",0);
   AliCDBEntry *pNmeanEnt=pCDB->Get("HMPID/Calib/Nmean",0);
