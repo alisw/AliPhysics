@@ -102,19 +102,32 @@ void makeTrendingDB(const Char_t *fl)
     notifiable+=notMail[inot];
     if(inot<4) notifiable+=",";
   }
+  TF1 f("f", "gaus", -100, 100);
   AliTRDtrendingManager *tm = AliTRDtrendingManager::Instance();
   TCanvas *c = new TCanvas("c", "Trend Distrib.", 10, 10, 500, 500);
+  Int_t ntr=tDB->GetEntries();
   for(Int_t it(0); it<nt; it++){
-    tDB->Draw(tvn[it][0]);
-    TH1 *h = (TH1*)gROOT->FindObject("htemp");
-    h->Fit("gaus", "WQ");
-    c->Modified(); c->Update(); c->SaveAs(Form("%s.gif", tvn[it][0]));
+    tDB->Draw(tvn[it][0], "", "goff");
+    Double_t *v = tDB->GetV1(), xmin(100.), xmax(-100);
+    for(Int_t ir=0; ir<ntr; ir++){
+      if(v[ir]<-100) continue;
+      if(v[ir]<xmin) xmin = v[ir];
+      if(v[ir]>xmax) xmax = v[ir];
+    }
+    TH1 *h = new TH1F("h", Form(";%s;entries", tvn[it][0]), 10, 0.5*(3*xmin-xmax), 0.5*(3*xmax - xmin));
+    tDB->Draw(Form("%s>>h", tvn[it][0]), Form("%s>-100", tvn[it][0]));
+    if(h->Integral() < 1) continue;
+    f.SetParameter(0, h->Integral());
+    f.SetParameter(1, h->GetMean());
+    f.SetParameter(2, h->GetRMS());
+    h->Fit(&f, "WQ");
+    c->Modified(); c->Update(); c->SaveAs(Form("Fit_%s.gif", tvn[it][0]));
 
     // write trending value to manager
-    TF1 *f = h->GetFunction("gaus");
-    printf("%s %f[%f] %f[%f]\n", tvn[it][0], h->GetMean(), f->GetParameter(1), h->GetRMS(), f->GetParameter(2));
-    tm->AddValue(tvn[it][0], h->GetMean()/*f->GetParameter(1)*/, h->GetRMS()/*f->GetParameter(2)*/,
+    Info("makeTrendingDB", "%s [%f - %f] %f[%f]", tvn[it][0], xmin, xmax, f.GetParameter(1), f.GetParameter(2));
+    tm->AddValue(tvn[it][0], f.GetParameter(1), f.GetParameter(2),
       tvn[it][1], res[it>13], notifiable);
+    delete h;
   }
   tm->Terminate();
 

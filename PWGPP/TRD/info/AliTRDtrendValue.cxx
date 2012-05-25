@@ -120,7 +120,7 @@ const char* AliTRDtrendValue::GetResponsible() const
 const char* AliTRDtrendValue::GetNotifiable(Int_t in) const
 {
 // Get noticible person "in" with name and mail
-  if(in<0||in>kNnotifiable) return NULL;
+  if(in<0||in>=kNnotifiable) return NULL;
   if(!fNotifiable[in]) return NULL;
   return Form("%s <%s>", fNotifiable[in]->GetName(), fNotifiable[in]->GetTitle());
 }
