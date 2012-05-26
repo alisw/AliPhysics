@@ -38,8 +38,6 @@
 #include "AliVEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "AliESDtrackCuts.h"
-#include "AliTriggerAnalysis.h"
 
 //EMCAL
 #include "AliEMCALRecoUtils.h"
@@ -477,14 +475,20 @@ void AliAnalysisTaskCaloFilter::FillAODTracks()
   AliVEvent* event = InputEvent();
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);  
   //AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
-  
+
   // Copy from AODs
   if(aodevent)
   {
-    TClonesArray* inTracks = aodevent  ->GetTracks();
+    //TClonesArray* inTracks = aodevent  ->GetTracks();
     TClonesArray* ouTracks = AODEvent()->GetTracks();
-    
-		new (ouTracks) TClonesArray(*inTracks);
+		//new (ouTracks) TClonesArray(*inTracks);
+        
+    for (Int_t nTrack = 0; nTrack < aodevent->GetNumberOfTracks(); ++nTrack) 
+    {
+      AliAODTrack *track = aodevent->GetTrack(nTrack);
+
+      new((*ouTracks)[nTrack]) AliAODTrack(*track);
+    } 
     
     return;
   }
@@ -510,8 +514,16 @@ void AliAnalysisTaskCaloFilter::FillAODVertices()
   {
     TClonesArray* inVertices = aodevent  ->GetVertices();
     TClonesArray* ouVertices = AODEvent()->GetVertices();
+
+		//new (ouVertices) TClonesArray(*inVertices);
     
-		new (ouVertices) TClonesArray(*inVertices);
+    for (Int_t nVertices = 0; nVertices < inVertices->GetEntriesFast(); ++nVertices) 
+    {
+      AliAODVertex *vertex = (AliAODVertex*)inVertices->At(nVertices);
+      
+      new((*ouVertices)[nVertices]) AliAODVertex(*vertex);
+    } 
+    
     return;
   }
   
