@@ -4,6 +4,7 @@
 //
 // Author: C.Loizides
 
+#include "AliEmcalSetupTask.h"
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
 #include <TGeoManager.h>
@@ -12,7 +13,6 @@
 #include "AliCDBManager.h"
 #include "AliEMCALGeometry.h"
 #include "AliESDEvent.h"
-#include "AliEmcalSetupTask.h"
 #include "AliGeomManager.h"
 #include "AliMagF.h"
 #include "AliOADBContainer.h"
