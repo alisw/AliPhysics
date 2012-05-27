@@ -9,18 +9,20 @@
 ClassImp(AliEmcalJet)
 
 //__________________________________________________________________________________________________
-AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) 
-  : AliVParticle(), 
-    fPt(TMath::Sqrt(px*px+py*py)), 
-    fEta(TMath::ASinH(pz/fPt)),
-    fPhi(0), 
-    fM(0), 
-    fNEF(0), 
-    fArea(0), 
-    fMaxCPt(0), 
-    fMaxNPt(0), 
-    fClusterIDs(), 
-    fTrackIDs()
+AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) : 
+  AliVParticle(), 
+  fPt(TMath::Sqrt(px*px+py*py)), 
+  fEta(TMath::ASinH(pz/fPt)),
+  fPhi(0), 
+  fM(0), 
+  fNEF(0), 
+  fArea(0), 
+  fAreaEmc(-1), 
+  fAxisInEmcal(0),
+  fMaxCPt(0), 
+  fMaxNPt(0), 
+  fClusterIDs(), 
+  fTrackIDs()
 {    
   // Constructor.
 
@@ -40,6 +42,8 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fM(m), 
   fNEF(0), 
   fArea(0), 
+  fAreaEmc(-1), 
+  fAxisInEmcal(0),
   fMaxCPt(0), 
   fMaxNPt(0), 
   fClusterIDs(), 
@@ -48,7 +52,7 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   // Constructor.
 
  if (fPhi<0.) 
-   fPhi += 2. * TMath::Pi();
+   fPhi += TMath::TwoPi();
 }
 
 //_________________________________________________________________________________________________
@@ -60,12 +64,14 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fM(jet.fM), 
   fNEF(jet.fNEF), 
   fArea(jet.fArea), 
+  fAreaEmc(jet.fAreaEmc), 
+  fAxisInEmcal(jet.fAxisInEmcal),
   fMaxCPt(jet.fMaxCPt), 
   fMaxNPt(jet.fMaxNPt), 
   fClusterIDs(jet.fClusterIDs), 
   fTrackIDs(jet.fTrackIDs)
 {
-  // Constructor.
+  // Copy constructor.
 }
 
 //_________________________________________________________________________________________________
@@ -75,16 +81,18 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
 
   if (this!=&jet) {
     AliVParticle::operator=(jet);
-    fPt         = jet.fPt;
-    fEta        = jet.fEta;
-    fPhi        = jet.fPhi;
-    fM          = jet.fM; 
-    fNEF        = jet.fNEF;
-    fArea       = jet.fArea; 
-    fMaxCPt     = jet.fMaxCPt; 
-    fMaxNPt     = jet.fMaxNPt;
-    fClusterIDs = jet.fClusterIDs;
-    fTrackIDs   = jet.fTrackIDs;
+    fPt           = jet.fPt;
+    fEta          = jet.fEta;
+    fPhi          = jet.fPhi;
+    fM            = jet.fM; 
+    fNEF          = jet.fNEF;
+    fArea         = jet.fArea; 
+    fAreaEmc      = jet.fAreaEmc; 
+    fAxisInEmcal  = jet.fAxisInEmcal; 
+    fMaxCPt       = jet.fMaxCPt; 
+    fMaxNPt       = jet.fMaxNPt;
+    fClusterIDs   = jet.fClusterIDs;
+    fTrackIDs     = jet.fTrackIDs;
   }
 
   return *this;
