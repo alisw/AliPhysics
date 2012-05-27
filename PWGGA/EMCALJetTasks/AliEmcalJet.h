@@ -16,9 +16,10 @@ class AliEmcalJet : public AliVParticle
 {
  public:
   AliEmcalJet() : AliVParticle(), fPt(0), fEta(0), fPhi(0), fM(0), fNEF(0), fArea(0), 
-                  fMaxCPt(0), fMaxNPt(0), fClusterIDs(), fTrackIDs() {;}
-  AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
+                  fAreaEmc(-1), fAxisInEmcal(0), fMaxCPt(0), fMaxNPt(0), fClusterIDs(), 
+                  fTrackIDs() {;}
   AliEmcalJet(Double_t px, Double_t py, Double_t pz);
+  AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
   AliEmcalJet(const AliEmcalJet &jet); 
   AliEmcalJet& operator=(const AliEmcalJet &jet);
 
@@ -47,27 +48,34 @@ class AliEmcalJet : public AliVParticle
   void              Print(Option_t* option = "") const;
 
   Double_t          Area()                       const { return fArea;                     }
+  Double_t          AreaEmc()                    const { return fAreaEmc;                  }
+  Bool_t            AxisInEmcal()                const { return fAxisInEmcal;              }
   Short_t           ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx);       }
   AliVCluster      *ClusterAt(Int_t idx, TClonesArray *clusarray)  const { return dynamic_cast<AliVCluster*>(clusarray->At(ClusterAt(idx))); }
+  Double_t          FracEmcalArea()              const { return fAreaEmc/fArea;            }
   UShort_t          GetNumberOfClusters()        const { return Nn();                      }
-  Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
   UShort_t          GetNumberOfTracks()          const { return Nch();                     }
+  Bool_t            IsInsideEmcal()              const { return (fAreaEmc/fArea>0.999);    }
+  Bool_t            IsInEmcal()                  const { return (fAreaEmc>0);              }
   Double_t          MaxClusterPt()               const { return fMaxNPt;                   }
   Double_t          MaxTrackPt()                 const { return fMaxCPt;                   }
   Double_t          NEF()                        const { return fNEF;                      }
   UShort_t          Nn()                         const { return fClusterIDs.GetSize();     }
   UShort_t          Nch()                        const { return fTrackIDs.GetSize();       }
   UShort_t          N()                          const { return Nch()+Nn();                }
+  Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
   AliVTrack        *TrackAt(Int_t idx, TClonesArray *trackarray)   const { return dynamic_cast<AliVTrack*>(trackarray->At(TrackAt(idx)));    } 
 
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
   void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); 
                                                          fTrackIDs.Set(0);                 }
-  void              SetArea(Double_t a)                { fArea   = a;                      }
-  void              SetMaxClusterPt(Double32_t t)      { fMaxNPt = t;                      }
-  void              SetMaxTrackPt(Double32_t t)        { fMaxCPt = t;                      }
-  void              SetNEF(Double_t nef)               { fNEF    = nef;                    }
+  void              SetArea(Double_t a)                { fArea    = a;                     }
+  void              SetAreaEmc(Double_t a)             { fAreaEmc = a;                     }
+  void              SetAxisInEmcal(Bool_t b)           { fAxisInEmcal = b;                 }
+  void              SetMaxClusterPt(Double32_t t)      { fMaxNPt  = t;                     }
+  void              SetMaxTrackPt(Double32_t t)        { fMaxCPt  = t;                     }
+  void              SetNEF(Double_t nef)               { fNEF     = nef;                   }
   void              SetNumberOfClusters(Int_t n)       { fClusterIDs.Set(n);               }
   void              SetNumberOfTracks(Int_t n)         { fTrackIDs.Set(n);                 }
   void              SortConstituents();
@@ -79,11 +87,13 @@ class AliEmcalJet : public AliVParticle
   Double32_t  fM;            //[0,0,8]    mass
   Double32_t  fNEF;          //[0,1,8]    neutral energy fraction
   Double32_t  fArea;         //[0,0,12]   area
+  Double32_t  fAreaEmc;      //[0,0,12]   area on EMCAL surface (determined from ghosts)
+  Bool_t      fAxisInEmcal;  //           =true if jet axis inside EMCAL acceptance
   Double32_t  fMaxCPt;       //[0,0,12]   pt of maximum track
   Double32_t  fMaxNPt;       //[0,0,12]   pt of maximum cluster
   TArrayS     fClusterIDs;   //           array of cluster constituents  
   TArrayS     fTrackIDs;     //           array of track constituents    
 
-  ClassDef(AliEmcalJet,2) // ESD jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,3) // Emcal jet class in cylindrical coordinates
 };
 #endif
