@@ -14,10 +14,11 @@
 #include <TParticle.h>
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
+#include "AliEMCALGeometry.h"
+#include "AliEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliVCluster.h"
 #include "AliVTrack.h"
-#include "AliEmcalJet.h"
 
 ClassImp(AliEmcalJetTask)
 
@@ -32,6 +33,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fType(0),
   fMinJetTrackPt(0.15),
   fMinJetClusPt(0.15),
+  fMinJetArea(0.01),
+  fMinJetPt(1.0),
   fJets(0)
 {
   // Default constructor.
@@ -48,6 +51,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fType(0),
   fMinJetTrackPt(0.15),
   fMinJetClusPt(0.15),
+  fMinJetArea(0.01),
+  fMinJetPt(1.0),
   fJets(0)
 {
   // Standard constructor.
@@ -82,7 +87,6 @@ void AliEmcalJetTask::UserExec(Option_t *)
   // delete jet output
   fJets->Delete();
 
-
   // get input collections
   TClonesArray *tracks = 0;
   TClonesArray *clus   = 0;
@@ -115,7 +119,6 @@ void AliEmcalJetTask::UserExec(Option_t *)
     cent = centrality->GetCentralityPercentile("V0M");
   else
     cent=99; // probably pp data
-
   if (cent<0) {
     AliError(Form("Centrality negative: %f", cent));
     return;
@@ -146,6 +149,7 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
   }
 
   AliFJWrapper fjw(name, name);
+  fjw.SetAreaType(fastjet::active_area_explicit_ghosts);
   fjw.SetR(radius);
   fjw.SetAlgorithm(jalgo);  
   fjw.SetMaxRap(0.9);
@@ -178,56 +182,87 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
       Double_t et = nPart.Pt();
       if (et<fMinJetClusPt) 
         continue;
-      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus-1);
+      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus-123);
     }
   }
 
   // run jet finder
   fjw.Run();
+
+  // get geometry
+  AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
+  if (!geom) {
+    AliFatal("Can not create geometry");
+    return;
+  }
   
   std::vector<fastjet::PseudoJet> jets_incl = fjw.GetInclusiveJets();
   for(UInt_t ij=0, jetCount=0; ij<jets_incl.size(); ++ij) {
-    if (jets_incl[ij].perp()<1) 
+    if (jets_incl[ij].perp()<fMinJetPt) 
+      continue;
+    if (fjw.GetJetArea(ij)<fMinJetArea)
       continue;
     AliEmcalJet *jet = new ((*fJets)[jetCount]) 
       AliEmcalJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
-    jet->SetArea(fjw.GetJetArea(ij));
     Double_t vertex[3] = {0, 0, 0};
     InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
     vector<fastjet::PseudoJet> constituents = fjw.GetJetConstituents(ij);
-    Double_t neutralE = 0;Double_t maxTrack = 0;Double_t maxCluster=0;
-    jet->SetNumberOfTracks(constituents.size());
-    jet->SetNumberOfClusters(constituents.size());
     Int_t nt = 0;
     Int_t nc = 0;
+    Double_t neutralE   = 0;
+    Double_t maxTrack   = 0;
+    Double_t maxCluster = 0;
+    Int_t gall          = 0;
+    Int_t gemc          = 0;
+    jet->SetNumberOfTracks(constituents.size());
+    jet->SetNumberOfClusters(constituents.size());
     for(UInt_t ic=0; ic<constituents.size(); ++ic) {
       Int_t uid = constituents[ic].user_index();
+      if ((uid==-1) && (constituents[ic].kt2()<1e-25)) { //ghost particle
+        ++gall;
+        Double_t gphi = constituents[ic].phi()*TMath::RadToDeg();
+        Double_t geta = constituents[ic].eta();
+        if ((gphi>geom->GetArm1PhiMin()) && (gphi<geom->GetArm1PhiMax()) &&
+            (geta>geom->GetArm1EtaMin()) && (geta<geom->GetArm1EtaMax()))
+          ++gemc;
+        continue;
+      }
       if (uid>=0){
-	jet->AddTrackAt(uid, nt);
         AliVTrack *t = static_cast<AliVTrack*>(tracks->At(uid));
         if (t) {
           if (t->Pt()>maxTrack)
             maxTrack=t->Pt();
+          jet->AddTrackAt(uid, nt);
           nt++;
         }
       } else {
-	jet->AddClusterAt(-(uid+1),nc);
-        AliVCluster *c = static_cast<AliVCluster*>(clus->At(-(uid+1)));
+        Int_t cid = -uid - 123;
+        AliVCluster *c = static_cast<AliVCluster*>(clus->At(cid));
         if (c) {
           TLorentzVector nP;
           c->GetMomentum(nP, vertex);
           neutralE += nP.P();
           if (nP.Pt()>maxCluster)
             maxCluster=nP.Pt();
+          jet->AddClusterAt(cid,nc);
+          nc++;
         }
-	nc++;
       }
     }
     jet->SetNumberOfTracks(nt);
     jet->SetNumberOfClusters(nc);
+    jet->SortConstituents();
     jet->SetMaxTrackPt(maxTrack);
     jet->SetMaxClusterPt(maxCluster);
     jet->SetNEF(neutralE/jet->E());
+    jet->SetArea(fjw.GetJetArea(ij));
+    if (gall>0)
+      jet->SetAreaEmc(fjw.GetJetArea(ij)*gemc/gall);
+    else 
+      jet->SetAreaEmc(-1);
+    if ((jet->Phi()>geom->GetArm1PhiMin()*TMath::DegToRad()) && (jet->Phi()<geom->GetArm1PhiMax()*TMath::DegToRad()) &&
+        (jet->Eta()>geom->GetArm1EtaMin()) && (jet->Eta()<geom->GetArm1EtaMax()))
+      jet->SetAxisInEmcal(kTRUE);
     jetCount++;
   }
 }
