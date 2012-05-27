@@ -427,13 +427,14 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   	return;
       }
       
-     //AliAODHeader *aodHeaderMain = aodEventMain->GetHeader();
-     //AliAODHeader *aodHeaderMix  = aodEventMix->GetHeader();    
+     AliAODHeader *aodHeaderMain = aodEventMain->GetHeader();
+     AliAODHeader *aodHeaderMix  = aodEventMix->GetHeader();    
   
 
       // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
       fHistEventStats->Fill(1); //all events
 
+      // // this is not needed (checked in mixing handler!)
       // Bool_t isSelectedMain = kTRUE;
       // Bool_t isSelectedMix = kTRUE;
 
@@ -444,59 +445,60 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
       // if(isSelectedMain && isSelectedMix) {
       // 	fHistEventStats->Fill(2); //triggered events
 	
-      // 	//Centrality stuff (centrality in AOD header)
-      // 	if(fUseCentrality) {
-      // 	  fCentrality = aodHeaderMain->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+      	//Centrality stuff (centrality in AOD header)
+      	if(fUseCentrality) {
+      	  fCentrality = aodHeaderMain->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
 	  
-      // 	  // QA for centrality estimators
-      // 	  fHistCentStats->Fill(0.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("V0M"));
-      // 	  fHistCentStats->Fill(1.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("FMD"));
-      // 	  fHistCentStats->Fill(2.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("TRK"));
-      // 	  fHistCentStats->Fill(3.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("TKL"));
-      // 	  fHistCentStats->Fill(4.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("CL0"));
-      // 	  fHistCentStats->Fill(5.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("CL1"));
-      // 	  fHistCentStats->Fill(6.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
-      // 	  fHistCentStats->Fill(7.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
-      // 	  fHistCentStats->Fill(8.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
+      	  // QA for centrality estimators
+      	  fHistCentStats->Fill(0.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("V0M"));
+      	  fHistCentStats->Fill(1.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("FMD"));
+      	  fHistCentStats->Fill(2.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("TRK"));
+      	  fHistCentStats->Fill(3.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("TKL"));
+      	  fHistCentStats->Fill(4.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("CL0"));
+      	  fHistCentStats->Fill(5.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("CL1"));
+      	  fHistCentStats->Fill(6.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
+      	  fHistCentStats->Fill(7.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
+      	  fHistCentStats->Fill(8.,aodHeaderMain->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
 	  
-      // 	  // take only events inside centrality class
-      // 	  if((fCentrality < fCentralityPercentileMin) || (fCentrality > fCentralityPercentileMax)) 
-      // 	    return;
+      	  // take only events inside centrality class
+      	  if((fCentrality < fCentralityPercentileMin) || (fCentrality > fCentralityPercentileMax)) 
+      	    return;
 	  
-      // 	  // centrality QA (V0M)
-      // 	  fHistV0M->Fill(aodEventMain->GetVZEROData()->GetMTotV0A(), aodEventMain->GetVZEROData()->GetMTotV0C());
+      	  // centrality QA (V0M)
+      	  fHistV0M->Fill(aodEventMain->GetVZEROData()->GetMTotV0A(), aodEventMain->GetVZEROData()->GetMTotV0C());
 	  
-      // 	  // centrality QA (reference tracks)
-      // 	  fHistRefTracks->Fill(0.,aodHeaderMain->GetRefMultiplicity());
-      // 	  fHistRefTracks->Fill(1.,aodHeaderMain->GetRefMultiplicityPos());
-      // 	  fHistRefTracks->Fill(2.,aodHeaderMain->GetRefMultiplicityNeg());
-      // 	  fHistRefTracks->Fill(3.,aodHeaderMain->GetTPConlyRefMultiplicity());
-      // 	  fHistRefTracks->Fill(4.,aodHeaderMain->GetNumberOfITSClusters(0));
-      // 	  fHistRefTracks->Fill(5.,aodHeaderMain->GetNumberOfITSClusters(1));
-      // 	  fHistRefTracks->Fill(6.,aodHeaderMain->GetNumberOfITSClusters(2));
-      // 	  fHistRefTracks->Fill(7.,aodHeaderMain->GetNumberOfITSClusters(3));
-      // 	  fHistRefTracks->Fill(8.,aodHeaderMain->GetNumberOfITSClusters(4));
-      // 	}
+      	  // centrality QA (reference tracks)
+      	  fHistRefTracks->Fill(0.,aodHeaderMain->GetRefMultiplicity());
+      	  fHistRefTracks->Fill(1.,aodHeaderMain->GetRefMultiplicityPos());
+      	  fHistRefTracks->Fill(2.,aodHeaderMain->GetRefMultiplicityNeg());
+      	  fHistRefTracks->Fill(3.,aodHeaderMain->GetTPConlyRefMultiplicity());
+      	  fHistRefTracks->Fill(4.,aodHeaderMain->GetNumberOfITSClusters(0));
+      	  fHistRefTracks->Fill(5.,aodHeaderMain->GetNumberOfITSClusters(1));
+      	  fHistRefTracks->Fill(6.,aodHeaderMain->GetNumberOfITSClusters(2));
+      	  fHistRefTracks->Fill(7.,aodHeaderMain->GetNumberOfITSClusters(3));
+      	  fHistRefTracks->Fill(8.,aodHeaderMain->GetNumberOfITSClusters(4));
+      	}
 	
-      // 	const AliAODVertex *vertexMain = aodEventMain->GetPrimaryVertex();
-      // 	const AliAODVertex *vertexMix  = aodEventMix->GetPrimaryVertex();
-      // 	
-      // 	if(vertexMain && vertexMix) {
-      // 	  Double32_t fCovMain[6];
-      // 	  Double32_t fCovMix[6];
-      // 	  vertexMain->GetCovarianceMatrix(fCovMain);
-      // 	  vertexMix->GetCovarianceMatrix(fCovMix);
+	// // this is not needed (checked in mixing handler!)
+      	// const AliAODVertex *vertexMain = aodEventMain->GetPrimaryVertex();
+      	// const AliAODVertex *vertexMix  = aodEventMix->GetPrimaryVertex();
+      	
+      	// if(vertexMain && vertexMix) {
+      	//   Double32_t fCovMain[6];
+      	//   Double32_t fCovMix[6];
+      	//   vertexMain->GetCovarianceMatrix(fCovMain);
+      	//   vertexMix->GetCovarianceMatrix(fCovMix);
 	  
-      // 	  if(vertexMain->GetNContributors() > 0 && vertexMix->GetNContributors() > 0) {
-      // 	    if(fCovMain[5] != 0 && fCovMix[5] != 0) {
-      // 	      fHistEventStats->Fill(3); //events with a proper vertex
-      // 	      if(TMath::Abs(vertexMain->GetX()) < fVxMax && TMath::Abs(vertexMix->GetX()) < fVxMax ) {
-      // 		if(TMath::Abs(vertexMain->GetY()) < fVyMax && TMath::Abs(vertexMix->GetY()) < fVyMax) {
-      // 		  if(TMath::Abs(vertexMain->GetZ()) < fVzMax && TMath::Abs(vertexMix->GetZ()) < fVzMax) {
-      // 		    fHistEventStats->Fill(4); //analyzed events
-      // 		    fHistVx->Fill(vertexMain->GetX());
-      // 		    fHistVy->Fill(vertexMain->GetY());
-      // 		    fHistVz->Fill(vertexMain->GetZ());
+      	//   if(vertexMain->GetNContributors() > 0 && vertexMix->GetNContributors() > 0) {
+      	//     if(fCovMain[5] != 0 && fCovMix[5] != 0) {
+      	//       fHistEventStats->Fill(3); //events with a proper vertex
+      	//       if(TMath::Abs(vertexMain->GetX()) < fVxMax && TMath::Abs(vertexMix->GetX()) < fVxMax ) {
+      	// 	if(TMath::Abs(vertexMain->GetY()) < fVyMax && TMath::Abs(vertexMix->GetY()) < fVyMax) {
+      	// 	  if(TMath::Abs(vertexMain->GetZ()) < fVzMax && TMath::Abs(vertexMix->GetZ()) < fVzMax) {
+      	// 	    fHistEventStats->Fill(4); //analyzed events
+      	// 	    fHistVx->Fill(vertexMain->GetX());
+      	// 	    fHistVy->Fill(vertexMain->GetY());
+      	// 	    fHistVz->Fill(vertexMain->GetZ());
 
   		    // Loop over tracks in main event
   		    for (Int_t iTracksMain = 0; iTracksMain < aodEventMain->GetNumberOfTracks(); iTracksMain++) {
@@ -648,7 +650,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
       // 		  }//Vz cut
       // 		}//Vy cut
       // 	      }//Vx cut
-      // 	    }//proper vertex resolution
+      // 	    }//proper vertexresolution
       // 	  }//proper number of contributors
       // 	}//vertex object valid
       // }//triggered event 

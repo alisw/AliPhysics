@@ -7,12 +7,39 @@
 #include <AliVEvent.h>//|
 #endif//|
 
-void AddMixingHandler(Double_t centMin = 70, Double_t centMax = 80, Double_t centStep = 2, AliMultiInputEventHandler* multiInputHandler, Bool_t useMC = kFALSE, Bool_t usePhysSel = kFALSE,TString opts = "")
+void AddMixingHandler(Double_t centMin = 70, Double_t centMax = 80, Double_t centStep = 2, Bool_t bAOD = kTRUE, Bool_t useMC = kFALSE, Bool_t usePhysSel = kFALSE,TString opts = "")
 {
+  
+    AliESDInputHandler *esdInputHandler = 0;
+    AliAODInputHandler *aodInputHandler = 0;
+    AliMCEventHandler  *mcInputHandler  = 0;
+  
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+    AliMultiInputEventHandler *multiInputHandler = new AliMultiInputEventHandler();
+    mgr->SetInputEventHandler(multiInputHandler);
+    
+    if (!bAOD) {
+      esdInputHandler = new AliESDInputHandler();
+      multiInputHandler->AddInputEventHandler(esdInputHandler);
+      //centralityInputHandler = new AliCentralityInputHandler();
+      //multiInputHandler->AddInputEventHandler(centralityInputHandler);
+      if (bMCtruth) {
+    	mcInputHandler = new AliMCEventHandler();
+    	multiInputHandler->AddInputEventHandler(mcInputHandler);
+    	// Not reading track references
+    	mchandler->SetReadTR(kFALSE);
+      }
+    } else if (bAOD) {
+      aodInputHandler = new AliAODInputHandler();
+      multiInputHandler->AddInputEventHandler(aodInputHandler);
+    } else {
+      Printf("Error: Only ESD and AOD input format is supported !!!");
+      return;
+    }
 
    if (!multiInputHandler) return;
 
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    const Int_t bufferSize = 1;
    const Int_t mixNum = 5;
    AliMixInputEventHandler *mixHandler = new AliMixInputEventHandler(bufferSize, mixNum);
