@@ -127,7 +127,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fMaxRap            (1.)
   , fR                 (0.4)
   , fGridScatter       (1.0)
-  , fKtScatter         (1.0)
+  , fKtScatter         (0.1)
   , fMeanGhostKt       (1e-100)
   , fPluginAlgor       (0)
   , fMedUsedForBgSub   (0)
@@ -233,11 +233,9 @@ void AliFJWrapper::AddInputVectors(const std::vector<fj::PseudoJet>& vecs, Int_t
 
   for (UInt_t i = 0; i < vecs.size(); ++i) {
     fj::PseudoJet inVec = vecs[i];
-    
     if (offsetIndex > -99999)
       inVec.set_user_index(fInputVectors.size() + offsetIndex);
     // add to the fj container of input vectors
-      
     fInputVectors.push_back(inVec);
   }
 }
@@ -249,7 +247,7 @@ Double_t AliFJWrapper::GetJetArea(UInt_t idx) const
 
   Double_t retval = -1; // really wrong area..
   if ( idx < fInclusiveJets.size() ) {
-      retval = fClustSeq->area(fInclusiveJets[idx]);
+    retval = fClustSeq->area(fInclusiveJets[idx]);
   } else {
     AliError(Form("[e] ::GetJetArea wrong index: %d",idx));
   }
@@ -375,7 +373,7 @@ Int_t AliFJWrapper::Run()
 
   // inclusive jets:
   fInclusiveJets.clear();
-  fInclusiveJets = fClustSeq->inclusive_jets(0.0); //sorted_by_pt(fClustSeq->inclusive_jets(0.0));
+  fInclusiveJets = fClustSeq->inclusive_jets(0.0); 
 
   return 0;
 }
