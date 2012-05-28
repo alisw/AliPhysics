@@ -75,6 +75,7 @@
 
 #include "AliLog.h"
 
+#include "PWGPP/TRD/info/AliTRDtrendingManager.h"
 #include "PWGPP/TRD/AliTRDpwgppHelper.h"
 #include "PWGPP/TRD/AliTRDrecoTask.h"
 #include "PWGPP/TRD/AliTRDcheckESD.h"
