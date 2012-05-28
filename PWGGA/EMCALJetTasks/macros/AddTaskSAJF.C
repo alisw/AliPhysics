@@ -10,10 +10,12 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *nrandclusters      = "CaloClustersRandomized",
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.4,
+  Double_t    jetptcut           = 1,
+  Double_t    jetareacut         = 0.2,
   Double_t    ptcut              = 0.15,
   Double_t    jetBiasTrack       = 10,
   Double_t    jetBiasClus        = 10,
-  UInt_t      type               = AliAnalysisTaskSAJF::kTPC
+  UInt_t      type               = AliAnalysisTaskEmcal::kTPC
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -48,13 +50,15 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   jetTask->SetRhoName(nrho);
   jetTask->SetPtCut(ptcut);
   jetTask->SetJetRadius(jetradius);
+  jetTask->SetJetPtCut(jetptcut);
+  jetTask->SetJetAreaCut(jetareacut);
   jetTask->SetPtBiasJetTrack(jetBiasTrack);
   jetTask->SetPtBiasJetClus(jetBiasClus);
-
+  
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
-
+  
   mgr->AddTask(jetTask);
   
   // Create containers for input/output
@@ -66,6 +70,6 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput  (jetTask, 0,  cinput1 );
   mgr->ConnectOutput (jetTask, 1, coutput1 );
-
+  
   return jetTask;
 }
