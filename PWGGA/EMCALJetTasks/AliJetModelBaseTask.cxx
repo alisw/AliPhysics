@@ -172,21 +172,20 @@ void AliJetModelBaseTask::Init()
       }
     }
     
-    // hard-coded Emcal boundaries
-    const Float_t EmcalEtaMin = -0.7;
-    const Float_t EmcalEtaMax = 0.7;
-    const Float_t EmcalPhiMin = 80 * TMath::DegToRad();
-    const Float_t EmcalPhiMax = 180 * TMath::DegToRad();
-
-    if (fEtaMax > EmcalEtaMax) fEtaMax = EmcalEtaMax;
-    if (fEtaMax < EmcalEtaMin) fEtaMax = EmcalEtaMin;
-    if (fEtaMin > EmcalEtaMax) fEtaMin = EmcalEtaMax;
-    if (fEtaMin < EmcalEtaMin) fEtaMin = EmcalEtaMin;
+    const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
+    const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
+    const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+    const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+    
+    if (fEtaMax > EmcalMaxEta) fEtaMax = EmcalMaxEta;
+    if (fEtaMax < EmcalMinEta) fEtaMax = EmcalMinEta;
+    if (fEtaMin > EmcalMaxEta) fEtaMin = EmcalMaxEta;
+    if (fEtaMin < EmcalMinEta) fEtaMin = EmcalMinEta;
   
-    if (fPhiMax > EmcalPhiMax) fPhiMax = EmcalPhiMax;
-    if (fPhiMax < EmcalPhiMin) fPhiMax = EmcalPhiMin;
-    if (fPhiMin > EmcalPhiMax) fPhiMin = EmcalPhiMax;
-    if (fPhiMin < EmcalPhiMin) fPhiMin = EmcalPhiMin;
+    if (fPhiMax > EmcalMaxPhi) fPhiMax = EmcalMaxPhi;
+    if (fPhiMax < EmcalMinPhi) fPhiMax = EmcalMinPhi;
+    if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
+    if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
   }
 }
 
@@ -310,7 +309,7 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
     eta = GetRandomEta();
   if (phi < 0) 
     phi = GetRandomPhi();
-  
+
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
 						eta, 
 						phi, 
