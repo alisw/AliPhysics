@@ -135,7 +135,7 @@ Bool_t AliSpectraAODTrackCuts::CheckTOFMatching()
   else{
     UInt_t status; 
     status=fTrack->GetStatus();
-    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0){
+    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0 || (status&AliAODTrack::kTOFpid)==0){
       fHistoCuts->Fill(kTOFMatching);
       return kFALSE; //tof matching and PID
     } 

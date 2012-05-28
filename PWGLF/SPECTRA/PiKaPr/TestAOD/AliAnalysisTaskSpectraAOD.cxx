@@ -93,7 +93,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     {
       AliFatal("Not processing AODs");
     }
-    
+  Printf("ALIVE");
   //check on centrality distribution
   fHistMan->GetPtHistogram("CentCheck")->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"),fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentileUnchecked("V0M"));
   
