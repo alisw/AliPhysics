@@ -7,12 +7,13 @@ class TList;
 class TH1F;
 class TH2F;
 class TF1;
+class AliEMCALGeometry;
 
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskScale : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskScale() : AliAnalysisTaskSE(), fTracksName(), fClustersName(), fScaleFunction(0),
+  AliAnalysisTaskScale() : AliAnalysisTaskSE(), fTracksName(), fClustersName(), fScaleFunction(0), fGeom(0),
     fOutputList(0), fHistCentrality(0), fHistPtTPCvsCent(0), fHistPtEMCALvsCent(0), fHistEtvsCent(0),  
     fHistScalevsCent(0),  fHistDeltaScalevsCent(0), fHistPtTPCvsNtrack(0), fHistPtEMCALvsNtrack(0), 
     fHistEtvsNtrack(0), fHistScalevsNtrack(0), fHistDeltaScalevsNtrack(0), fHistTrackPtvsCent(0), 
@@ -38,7 +39,7 @@ class AliAnalysisTaskScale : public AliAnalysisTaskSE {
   TString                fTracksName;             // name of track collection
   TString                fClustersName;           // name of clusters collection
   TF1                   *fScaleFunction;          // scale factor as a function of centrality
-  TF1                   *fNewScaleFunction;       //!new scale factor as a function of centrality
+  AliEMCALGeometry      *fGeom;                   //!ptr to emcal geometry object
   TList                 *fOutputList;             //!output list
   TH1F                  *fHistCentrality;         //!output histogram
   TH2F                  *fHistPtTPCvsCent;        //!output histogram

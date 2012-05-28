@@ -12,11 +12,12 @@
 #include <TLorentzVector.h>
 
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTask.h"
 #include "AliCentrality.h"
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
+#include "AliVEvent.h"
 #include "AliVCluster.h"
+#include "AliVTrack.h"
+#include "AliEMCALGeometry.h"
+#include "AliLog.h"
 
 #include "AliAnalysisTaskScale.h"
 
@@ -28,6 +29,7 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
   fTracksName("Tracks"),
   fClustersName("CaloClusters"),
   fScaleFunction(0),
+  fGeom(0),
   fOutputList(0), 
   fHistCentrality(0), 
   fHistPtTPCvsCent(0), 
@@ -110,6 +112,14 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
 {
   // Execute on each event.
 
+  if (!fGeom)
+    fGeom = AliEMCALGeometry::GetInstance();
+
+  if (!fGeom) {
+    AliFatal("Can not create geometry");
+    return;
+  }
+
   // get input collections
   TClonesArray *tracks = 0;
   TClonesArray *clusters = 0;
@@ -139,15 +149,17 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
   // get vertex
   Double_t vertex[3] = {0, 0, 0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+  
+  const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
+  const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
+  const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+  const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
 
-  // hardcoded geometrical parameters
-  const Double_t EmcalMinPhi = 80 * TMath::DegToRad();
-  const Double_t EmcalMaxPhi = 180 * TMath::DegToRad();
   const Double_t TpcMinPhi   = 0;
   const Double_t TpcMaxPhi   = 2 * TMath::Pi();
-  const Double_t MaxEta      = 0.7;
-  const Double_t TpcArea     = (TpcMaxPhi - TpcMinPhi) * (MaxEta * 2);
-  const Double_t EmcalArea   = (EmcalMaxPhi - EmcalMinPhi) * (MaxEta * 2);
+
+  const Double_t TpcArea     = (TpcMaxPhi - TpcMinPhi) * (EmcalMinEta - EmcalMaxEta);
+  const Double_t EmcalArea   = (EmcalMaxPhi - EmcalMinPhi) * (EmcalMinEta - EmcalMaxEta);
 
   Double_t ptTPC   = 0;
   Double_t ptEMCAL = 0;
@@ -216,8 +228,5 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskScale::Terminate(Option_t *) 
 {
-  /*
-  fHistScalevsCent->Fit(fNewScaleFunction, "NO");
-  PostData(1, fOutputList);
-  */
+
 }
