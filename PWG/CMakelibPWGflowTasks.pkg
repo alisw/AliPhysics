@@ -41,7 +41,7 @@ set ( SRCS
     FLOW/Tasks/AliAnalysisTaskLeeYangZeros.cxx 
     FLOW/Tasks/AliAnalysisTaskFittingQDistribution.cxx 
     FLOW/Tasks/AliAnalysisTaskFlowEvent.cxx 
-    FLOW/Tasks/AliAnalysisTaskFlowK0Candidates.cxx 
+    FLOW/Tasks/AliAnalysisTaskFlowStrange.cxx 
     FLOW/Tasks/AliAnalysisTaskFlowEventforRP.cxx 
     FLOW/Tasks/AliAnalysisTaskMixedHarmonics.cxx 
     FLOW/Tasks/AliAnalysisTaskNestedLoops.cxx 
