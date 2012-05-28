@@ -10,7 +10,7 @@
 
 #include "AliVParticle.h"
 #include "AliVCluster.h"
-#include "AliVTrack.h"
+#include "AliVParticle.h"
 
 class AliEmcalJet : public AliVParticle
 {
@@ -63,8 +63,8 @@ class AliEmcalJet : public AliVParticle
   UShort_t          Nn()                         const { return fClusterIDs.GetSize();     }
   UShort_t          Nch()                        const { return fTrackIDs.GetSize();       }
   UShort_t          N()                          const { return Nch()+Nn();                }
-  Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
-  AliVTrack        *TrackAt(Int_t idx, TClonesArray *trackarray)   const { return dynamic_cast<AliVTrack*>(trackarray->At(TrackAt(idx)));    } 
+  Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);       }
+  AliVParticle     *TrackAt(Int_t idx, TClonesArray *trackarray)   const { return dynamic_cast<AliVParticle*>(trackarray->At(TrackAt(idx)));    } 
 
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
@@ -94,6 +94,6 @@ class AliEmcalJet : public AliVParticle
   TArrayS     fClusterIDs;   //           array of cluster constituents  
   TArrayS     fTrackIDs;     //           array of track constituents    
 
-  ClassDef(AliEmcalJet,3) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,4) // Emcal jet class in cylindrical coordinates
 };
 #endif
