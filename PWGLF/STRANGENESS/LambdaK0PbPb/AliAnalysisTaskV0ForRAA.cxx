@@ -526,13 +526,14 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
       fHistOneHitWithSDD = new TH1F("fHistOneHitWithSDD","min one hit in SDD",2,-0.5,1.5);
       fOutputContainer->Add(fHistOneHitWithSDD);
       fHistPrimVtxZESDTPC = new TH1F("fHistPrimVtxZESDTPC","z vertex pos TPC",250,-50,50);
-      fOutputContainer->Add(fHistPrimVtxZESDTPCVSNContributors);
-      fHistPrimVtxZESDSPD = new TH1F("fHistPrimVtxZESDSPD","z vertex pos SPD",250,-50,50);
-      fOutputContainer->Add(fHistPrimVtxZESDSPDVSNContributors);
-      fHistPrimVtxZESDTPCVSNContributors = new TH2F("fHistPrimVtxZESDTPCVSNContributors","prim vtx pos z TPC vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
       fOutputContainer->Add(fHistPrimVtxZESDTPC);
-      fHistPrimVtxZESDSPDVSNContributors = new TH2F("fHistPrimVtxZESDSPDVSNContributors","prim vtx pos z SPD vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
+      fHistPrimVtxZESDSPD = new TH1F("fHistPrimVtxZESDSPD","z vertex pos SPD",250,-50,50);
       fOutputContainer->Add(fHistPrimVtxZESDSPD);  
+      fHistPrimVtxZESDTPCVSNContributors = new TH2F("fHistPrimVtxZESDTPCVSNContributors","prim vtx pos z TPC vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
+      fOutputContainer->Add(fHistPrimVtxZESDTPCVSNContributors);
+      fHistPrimVtxZESDSPDVSNContributors = new TH2F("fHistPrimVtxZESDSPDVSNContributors","prim vtx pos z SPD vs no. of contributers TPC",250,-50,50,500,0.0,500.0);
+      fOutputContainer->Add(fHistPrimVtxZESDSPDVSNContributors);
+
    }
    else {
       Double_t binsCent[12]={0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
