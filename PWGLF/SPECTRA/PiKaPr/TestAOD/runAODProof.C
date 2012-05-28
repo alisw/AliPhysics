@@ -1,4 +1,4 @@
-void runAODProof(Int_t c=2, const char * proofMode = "full")
+void runAODProof(Int_t c=1, const char * proofMode = "full")
 { //1 data AOD049
   //2 MC AOD048
   //3 data AOD086
@@ -24,12 +24,12 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
    handler->SetProofReset(0);
    //handler->SetROOTVersion("v5-33-02a");
    //handler->SetAliROOTVersion("v5-03-11-AN");
-   handler->SetAliROOTVersion("v5-03-17-AN");
+   handler->SetAliROOTVersion("v5-04-25-AN");
    
    //handler->SetNproofWorkers(5);
-   //handler->SetNproofWorkersPerSlave(5);
-   //handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
-   handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
+   handler->SetNproofWorkersPerSlave(4);
+   handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
+   //handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
    // Set handler for Real DATA:
    if (c == 1){
      //handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree");
@@ -39,6 +39,7 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
      handler->SetProofDataSet("/alice/sim/LHC11a10a_000138653_AOD048#aodTree|/alice/sim/LHC11a10a_000138662_AOD048#aodTree|/alice/sim/LHC11a10a_000138666_AOD048#aodTree|/alice/sim/LHC11a10a_000138795_AOD048#aodTree|/alice/sim/LHC11a10a_000139107_AOD048#aodTree|/alice/sim/LHC11a10a_000139110_AOD048#aodTree");      
    }
    if (c == 3){
+     //handler->SetProofDataSet("/default/lmilano/LHC10h_000138653_AOD086_p2#aodTree");      
      handler->SetProofDataSet("/default/lmilano/LHC10h_000138653_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138662_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138666_AOD086_p2#aodTree|/default/lmilano/LHC10h_000139107_AOD086_p2#aodTree");      
    }
    if (c == 4){
@@ -96,11 +97,13 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
      //if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
      if(c==1 || c==2)tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cut with tight DCA
      if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
+     //if(c==3 || c==4)tcuts->SetTrackType(8); //AOD 086 & 090. TPC only
+     //if(c==3 || c==4)tcuts->SetTrackType(2); //AOD 086 & 090. ITS strong
      tcuts->SetEta(.8);
      //tcuts->SetDCA(.1);
      tcuts->SetPt(5);
      tcuts->SetY(.5);
-     tcuts->SetPtTOFMatching(0.6);   
+     tcuts->SetPtTOFMatching(.6);   
      tcuts->SetQvecMin(QvecCutMin[iCut]);   
      tcuts->SetQvecMax(QvecCutMax[iCut]);    
      vcuts->SetCentralityCutMax(CentCutMax[iCut]);  
