@@ -1,8 +1,10 @@
 // $Id: AliAnalysisTaskEmcal.cxx $
 //
-// Emcal base analysis task (S.Aiola).
+// Emcal base analysis task.
 //
-//
+// Author: S.Aiola
+
+#include "AliAnalysisTaskEmcal.h"
 
 #include <TObject.h>
 #include <TChain.h>
@@ -17,8 +19,6 @@
 #include "AliVEventHandler.h"
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
-
-#include "AliAnalysisTaskEmcal.h"
 
 ClassImp(AliAnalysisTaskEmcal)
 
@@ -55,9 +55,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
-
-  // Output slot #1 writes into a TH1 container
-  DefineOutput(1, TList::Class()); 
 }
 
 //________________________________________________________________________
@@ -107,12 +104,14 @@ AliAnalysisTaskEmcal::~AliAnalysisTaskEmcal()
 //________________________________________________________________________
 void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 {
-
+  // User create outputs.
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcal::RetrieveEventObjects()
 {
+  // Retrieve objects from event.
+
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
@@ -135,21 +134,21 @@ void AliAnalysisTaskEmcal::RetrieveEventObjects()
     fCentBin = 3;
   }
 
-  if (strcmp(fCaloName,"") && fAnaType == kEMCAL) {
+  if ((!fCaloName.IsNull()) && (fAnaType == kEMCAL)) {
     fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
     if (!fCaloClusters) {
       AliWarning(Form("Could not retrieve clusters %s!", fCaloName.Data())); 
     }
   }
 
-  if (strcmp(fTracksName,"")) {
+  if (!fTracksName.IsNull()) {
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
     if (!fTracks) {
       AliWarning(Form("Could not retrieve tracks %s!", fTracksName.Data())); 
     }
   }
 
-  if (strcmp(fJetsName,"")) {
+  if (!fJetsName.IsNull()) {
     fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
     if (!fJets) {
       AliWarning(Form("Could not retrieve jets %s!", fJetsName.Data())); 
@@ -160,6 +159,8 @@ void AliAnalysisTaskEmcal::RetrieveEventObjects()
 //________________________________________________________________________
 void AliAnalysisTaskEmcal::Init()
 {
+  // Init the analysis.
+
   if (fAnaType == kTPC) {
     SetEtaLimits(-0.9, 0.9);
     SetPhiLimits(-10, 10);
@@ -185,6 +186,8 @@ void AliAnalysisTaskEmcal::Init()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted) const
 {
+  // Return true if track is in jet.
+
   for (Int_t i = 0; i < jet->GetNumberOfTracks(); i++) {
     Int_t ijettrack = jet->TrackAt(i);
     if (sorted && ijettrack > itrack)
@@ -198,6 +201,8 @@ Bool_t AliAnalysisTaskEmcal::IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t s
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted) const
 {
+  // Return true if cluster is in jet.
+
   for (Int_t i = 0; i < jet->GetNumberOfClusters(); i++) {
     Int_t ijetclus = jet->ClusterAt(i);
     if (sorted && ijetclus > iclus)
@@ -211,6 +216,8 @@ Bool_t AliAnalysisTaskEmcal::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::AcceptJet(AliEmcalJet *jet) const
 {   
+  // Return true if jet is accepted.
+
   if (jet->Pt() <= fJetPtCut)
     return kFALSE;
   if (jet->Area() <= fJetAreaCut)
@@ -224,6 +231,8 @@ Bool_t AliAnalysisTaskEmcal::AcceptJet(AliEmcalJet *jet) const
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster* clus, Bool_t acceptMC) const
 {
+  // Return true if cluster is accepted.
+
   if (!acceptMC && clus->Chi2() == 100)
     return kFALSE;
 
@@ -239,6 +248,8 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster* clus, Bool_t acceptMC) c
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle* track, Bool_t acceptMC) const
 {
+  // Return true if track is accepted.
+
   if (!acceptMC && track->GetLabel() == 100)
     return kFALSE;
 
