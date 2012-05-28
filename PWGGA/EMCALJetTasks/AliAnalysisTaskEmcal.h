@@ -54,38 +54,36 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual void                RetrieveEventObjects()        ;
   virtual void                FillHistograms()           = 0; 
 
-  EmcalAnaType                fAnaType;                    // Analysis type
-  Bool_t                      fInitialized;                // Whether or not the task has been already initialized
-  Float_t                     fMinEta;                     // Minimum eta accepatance
-  Float_t                     fMaxEta;                     // Maximum eta accepatance
-  Float_t                     fMinPhi;                     // Minimum phi accepatance
-  Float_t                     fMaxPhi;                     // Maximum phi accepatance  
-  Float_t                     fJetRadius;                  // Jet radius
-  TString                     fTracksName;                 // Name of track collection
-  TString                     fCaloName;                   // Name of calo cluster collection
-  TString                     fJetsName;                   // Name of jet collection
-  Int_t                       fNbins;                      // No. of pt bins
-  Float_t                     fMinPt;                      // Min pt in histograms
-  Float_t                     fMaxPt;                      // Max pt in histograms
-  Float_t                     fPtCut;                      // Cut on particle pt
-  Float_t                     fPtBiasJetTrack;             // Select jets with a minimum pt track
-  Float_t                     fPtBiasJetClus;              // Select jets with a minimum pt cluster
-  Float_t                     fJetPtCut;                   // Cut on jet pt
-  Float_t                     fJetAreaCut;                 // Cut on jet area
-
-  TClonesArray               *fTracks;                     //!Tracks
-  TClonesArray               *fCaloClusters;               //!Clusters
-  TClonesArray               *fJets;                       //!Jets
-  Float_t                     fCent;                       //!Event centrality
-  Int_t                       fCentBin;                    //!Event centrality bin
-  Double_t                    fVertex[3];                  //!Event vertex
-
-  TList                      *fOutput;                     //!Output list
+  EmcalAnaType                fAnaType;                    // analysis type
+  Bool_t                      fInitialized;                // whether or not the task has been already initialized
+  Float_t                     fMinEta;                     // minimum eta accepatance
+  Float_t                     fMaxEta;                     // maximum eta accepatance
+  Float_t                     fMinPhi;                     // minimum phi accepatance
+  Float_t                     fMaxPhi;                     // maximum phi accepatance  
+  Float_t                     fJetRadius;                  // jet radius
+  TString                     fTracksName;                 // name of track collection
+  TString                     fCaloName;                   // name of calo cluster collection
+  TString                     fJetsName;                   // name of jet collection
+  Int_t                       fNbins;                      // no. of pt bins
+  Float_t                     fMinPt;                      // min pt in histograms
+  Float_t                     fMaxPt;                      // max pt in histograms
+  Float_t                     fPtCut;                      // cut on particle pt
+  Float_t                     fPtBiasJetTrack;             // select jets with a minimum pt track
+  Float_t                     fPtBiasJetClus;              // select jets with a minimum pt cluster
+  Float_t                     fJetPtCut;                   // cut on jet pt
+  Float_t                     fJetAreaCut;                 // cut on jet area
+  TClonesArray               *fTracks;                     //!tracks
+  TClonesArray               *fCaloClusters;               //!clusters
+  TClonesArray               *fJets;                       //!jets
+  Float_t                     fCent;                       //!event centrality
+  Int_t                       fCentBin;                    //!event centrality bin
+  Double_t                    fVertex[3];                  //!event vertex
+  TList                      *fOutput;                     //!output list
 
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 0) // emcal base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 1) // EMCAL base analysis task
 };
 #endif
