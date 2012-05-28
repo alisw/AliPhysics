@@ -3,14 +3,14 @@
 AliJetRandomizerTask* AddTaskJetRandomizer(
   const char     *tracksName   = "Tracks",
   const char     *clusName     = "CaloClustersCorr",
-  const char     *taskName     = "JetEmbeddingTask",
-  const Double_t  minEta       = -1,
-  const Double_t  maxEta       = 1,
+  const char     *taskName     = "JetRandomizerTask",
+  const Double_t  minEta       = -0.9,
+  const Double_t  maxEta       = 0.9,
   const Double_t  minPhi       = 0,
   const Double_t  maxPhi       = TMath::Pi() * 2,
   const Int_t     nTracks      = 1,
   const Int_t     nClus        = 0,
-  const Bool_t    copyArray    = kFALSE
+  const Bool_t    copyArray    = kTRUE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
