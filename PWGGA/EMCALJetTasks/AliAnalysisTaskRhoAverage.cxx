@@ -99,7 +99,7 @@ void AliAnalysisTaskRhoAverage::UserExec(Option_t *)
     Njets = jets->GetEntries();
 
   Float_t maxJetPt = 0;
-  Float_t maxJetId = -1;
+  Int_t maxJetId = -1;
   AliEmcalJet *maxJet = 0;
   for (Int_t ij = 0; ij < Njets; ij++) {
       

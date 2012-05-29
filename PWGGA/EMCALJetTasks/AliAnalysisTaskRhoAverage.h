@@ -48,6 +48,6 @@ class AliAnalysisTaskRhoAverage : public AliAnalysisTaskRhoBase {
   AliAnalysisTaskRhoAverage(const AliAnalysisTaskRhoAverage&);             // not implemented
   AliAnalysisTaskRhoAverage& operator=(const AliAnalysisTaskRhoAverage&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRhoAverage, 0); // Rho task, method: sum of all particle pt / full acceptance area
+  ClassDef(AliAnalysisTaskRhoAverage, 1); // Rho task, method: sum of all particle pt / full acceptance area
 };
 #endif
