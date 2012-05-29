@@ -529,8 +529,8 @@ void AliHadCorrTask::UserExec(Option_t *)
     cent=99; // probably pp data
   
   if (cent<0) {
-    AliError(Form("Centrality negative: %f", cent));
-    return;
+    AliWarning(Form("Centrality negative: %f, assuming 99", cent));
+    cent = 99;
   }
   
   Int_t centbin = GetCentBin(cent);
