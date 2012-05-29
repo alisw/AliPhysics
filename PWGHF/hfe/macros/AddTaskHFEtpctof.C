@@ -17,8 +17,23 @@ AliAnalysisTask *AddTaskHFEtpctof(Bool_t beauty=kTRUE, Int_t tpcCls=110,  Int_t 
   printf("appendix %s\n", appendix.Data());
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskEventplane", "This task requires an input event handler");
+    return NULL;
+  }
+  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFE *task = ConfigHFEpbpb(kFALSE,beauty,tpcCls,tpcClsPID,tpcClsRatio,tpcClShared,itsCls,itsChi2PerClusters,dcaxy,dcaz,tofs,ipSig,itspixelcut,appendix,prodlow,prodhigh,addflag);  
+
+  if (inputDataType == "AOD"){
+    task->SetFillNoCuts(kTRUE);
+    task->SetUseFlagAOD(kFALSE);
+    task->SetApplyCutAOD(kTRUE);
+  }  
   
   mgr->AddTask(task);
 
