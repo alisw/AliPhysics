@@ -39,7 +39,7 @@ class AliSpectraAODTrackCuts : public TNamed
   enum { kTrkBit = 0, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
   
   
- AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fQvecCutMin(0), fQvecCutMax(0), fHistoCuts(0), fTrack(0) {}
+ AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fQvecCutMin(0), fQvecCutMax(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fTrack(0) {}
   
   AliSpectraAODTrackCuts(const char *name);
   virtual  ~AliSpectraAODTrackCuts() {} // To be implemented
@@ -58,6 +58,10 @@ class AliSpectraAODTrackCuts : public TNamed
 
    UInt_t GetTrackType()  const    { return fTrackBits; }
    TH1I * GetHistoCuts()      { return fHistoCuts; }
+   TH1F * GetHistoNSelectedPos()      { return fHistoNSelectedPos; } 
+   TH1F * GetHistoNSelectedNeg()      { return fHistoNSelectedNeg; }
+   TH1F * GetHistoNMatchedPos()      { return fHistoNMatchedPos; }
+   TH1F * GetHistoNMatchedNeg()      { return fHistoNMatchedNeg; }
    void SetEta(Float_t eta)   { fEtaCut = eta; }
    void SetDCA(Float_t dca)   { fDCACut = dca; }
    void SetP(Float_t p)       { fPCut = p; }
@@ -91,6 +95,10 @@ class AliSpectraAODTrackCuts : public TNamed
    Float_t          fQvecCutMin;           // Minimum value of Qvec
    Float_t          fQvecCutMax;           // Minimum value of Qvec
    TH1I             *fHistoCuts;       // Cuts statistics
+   TH1F             *fHistoNSelectedPos;       // Selected positive tracks
+   TH1F             *fHistoNSelectedNeg;       // Selected negative tracks
+   TH1F             *fHistoNMatchedPos;       // Matched positive tracks
+   TH1F             *fHistoNMatchedNeg;       // Matched negative tracks
    AliAODTrack      *fTrack;           //! Track pointer
    
    AliSpectraAODTrackCuts(const AliSpectraAODTrackCuts&);
