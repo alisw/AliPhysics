@@ -412,7 +412,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
           track.GetStatusTRD(0), track.GetStatusTRD(1), track.GetStatusTRD(2), track.GetStatusTRD(3), track.GetStatusTRD(4), track.GetStatusTRD(5)));
         continue;
       } else {
-        AliDebug(2, Form("Track @ idx[%4d] #cl[%3d]", currentIndexESD, track.GetNumberOfClusters()));
+        AliDebug(2, Form("Track @ idx[%4d] #cl[%3d] expect[%+3d]", currentIndexESD, track.GetNumberOfClusters(), expectedClr));
         nFound[kTPC]++;
         // compute PID
         track.CookPID();
@@ -540,24 +540,25 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
   for (Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++) {
     AliESDtrack *seed = event->GetTrack(itrack);
     ULong_t status = seed->GetStatus();
-
+    // reject tracks which did not entered TRD from bellow (also produced by the TRD stand alone tracker)
+    if(!(status & AliESDtrack::kTRDin)) continue;
+    // reject TRD tracks with no clusters. This condition is softer than previously used
+    // !(status & AliESDtrack::kTRDout)
+    // since it allows also tracks stopped 
+    if(!seed->GetTRDncls()) continue;
+    // check back-up quality
     new(&track) AliTRDtrackV1(*seed);
     if (track.GetX() < 270.0) {
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDbackup);
       continue;
     }
-
-    // reject tracks which failed propagation in the TRD or
-    // are produced by the TRD stand alone tracker
-    if(!(status & AliESDtrack::kTRDout)) continue;
-    if(!(status & AliESDtrack::kTRDin)) continue;
-    nseed++; 
+    nseed++;
 
     track.ResetCovariance(50.0);
 
     // do the propagation and processing
     Bool_t kUPDATE = kFALSE;
-    Double_t xToGo = (status & AliESDtrack::kTPCout)?250.0:80.0;
+    Double_t xToGo = 250.;//(status & AliESDtrack::kTPCout)?250.0:.1;
     if(FollowProlongation(track)){	
       // Update the friend track
       if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0){ 
