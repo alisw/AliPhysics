@@ -42,12 +42,25 @@ ClassImp(AliSpectraAODTrackCuts)
 
 
 AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCut(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
-  fPtCutTOFMatching(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fTrack(0)
+  fPtCutTOFMatching(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fTrack(0)
   
 {
   // Constructor
   fHistoCuts = new TH1I("fTrkCuts", "Track Cuts", kNTrkCuts, -0.5, kNTrkCuts - 0.5);
   for(Int_t ibin=1;ibin<=kNTrkCuts;ibin++)fHistoCuts->GetXaxis()->SetBinLabel(ibin,kBinLabel[ibin-1]);
+  //standard histo
+  const Double_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
+  Int_t nbinsTempl=52;
+  
+  fHistoNSelectedPos=new TH1F("fHistoNSelectedPos","fHistoNSelectedPos",nbinsTempl,templBins);
+  fHistoNSelectedPos->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  fHistoNSelectedNeg=new TH1F("fHistoNSelectedNeg","fHistoNSelectedNeg",nbinsTempl,templBins);
+  fHistoNSelectedNeg->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  fHistoNMatchedPos=new TH1F("fHistoNMatchedPos","fHistoNMatchedPos",nbinsTempl,templBins);
+  fHistoNMatchedPos->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  fHistoNMatchedNeg=new TH1F("fHistoNMatchedNeg","fHistoNMatchedNeg",nbinsTempl,templBins);
+  fHistoNMatchedNeg->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  
   fEtaCut = 100000.0; // default value of eta cut ~ no cut
   fDCACut = 100000.0; // default value of dca cut ~ no cut
   fPCut = 100000.0; // default value of p cut ~ no cut
@@ -155,17 +168,20 @@ Bool_t AliSpectraAODTrackCuts::CheckTOFMatching()
   if (fTrack->Pt() < fPtCutTOFMatching) return kTRUE;
   else{
     fHistoCuts->Fill(kTrkPtTOF);
+    if(fTrack->Charge()>0)fHistoNSelectedPos->Fill(fTrack->Pt());
+    else fHistoNSelectedNeg->Fill(fTrack->Pt());
     UInt_t status; 
     status=fTrack->GetStatus();
     if((status&AliAODTrack::kTOFout))fHistoCuts->Fill(kTrTOFout);
     if((status&AliAODTrack::kTIME))fHistoCuts->Fill(kTrTIME);
     if((status&AliAODTrack::kTOFpid))fHistoCuts->Fill(kTrTOFpid);
     
-    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0 || (status&AliAODTrack::kTOFpid)==0){
-    //if((status&AliAODTrack::kTOFpid)==0){
-      return kFALSE; //tof matching and PID
+    if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0){//kTOFout and kTIME
+      return kFALSE; 
     } 
     fHistoCuts->Fill(kTOFMatching);
+    if(fTrack->Charge()>0)fHistoNMatchedPos->Fill(fTrack->Pt());
+    else fHistoNMatchedNeg->Fill(fTrack->Pt());
     return kTRUE;
   }
 }
@@ -207,7 +223,11 @@ Long64_t AliSpectraAODTrackCuts::Merge(TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  TList collections;
+  TList collections;//FIXME we should only 1 collection
+  TList collections_histoNSelectedPos;
+  TList collections_histoNSelectedNeg;
+  TList collections_histoNMatchedPos;
+  TList collections_histoNMatchedNeg;
 
   Int_t count = 0;
 
@@ -215,13 +235,25 @@ Long64_t AliSpectraAODTrackCuts::Merge(TCollection* list)
     AliSpectraAODTrackCuts* entry = dynamic_cast<AliSpectraAODTrackCuts*> (obj);
     if (entry == 0) 
       continue;
-
+    
     TH1I * histo = entry->GetHistoCuts();      
     collections.Add(histo);
+    TH1F * histoNSelectedPos = entry->GetHistoNSelectedPos();      
+    collections_histoNSelectedPos.Add(histoNSelectedPos);
+    TH1F * histoNSelectedNeg = entry->GetHistoNSelectedNeg();      
+    collections_histoNSelectedNeg.Add(histoNSelectedNeg);
+    TH1F * histoNMatchedPos = entry->GetHistoNMatchedPos();      
+    collections_histoNMatchedPos.Add(histoNMatchedPos);
+    TH1F * histoNMatchedNeg = entry->GetHistoNMatchedNeg();      
+    collections_histoNMatchedNeg.Add(histoNMatchedNeg);
     count++;
   }
   
   fHistoCuts->Merge(&collections);
+  fHistoNSelectedPos->Merge(&collections_histoNSelectedPos);
+  fHistoNSelectedNeg->Merge(&collections_histoNSelectedNeg);
+  fHistoNMatchedPos->Merge(&collections_histoNMatchedPos);
+  fHistoNMatchedNeg->Merge(&collections_histoNMatchedNeg);
   
   delete iter;
 

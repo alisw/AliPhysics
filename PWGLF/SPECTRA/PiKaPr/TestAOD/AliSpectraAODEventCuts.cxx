@@ -135,7 +135,11 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  TList collections;
+  TList collections;//FIXME we should only 1 collection
+  TList collections_histoVtxBefSel;
+  TList collections_histoVtxAftSel;
+  TList collections_histoEtaBefSel;
+  TList collections_histoEtaAftSel;
 
   Int_t count = 0;
 
@@ -146,10 +150,22 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
 
     TH1I * histo = entry->GetHistoCuts();      
     collections.Add(histo);
+    TH1F * histo_histoVtxBefSel = entry->GetHistoVtxBefSel();      
+    collections_histoVtxBefSel.Add(histo_histoVtxBefSel);
+    TH1F * histo_histoVtxAftSel = entry->GetHistoVtxAftSel();      
+    collections_histoVtxAftSel.Add(histo_histoVtxAftSel);
+    TH1F * histo_histoEtaBefSel = entry->GetHistoEtaBefSel();      
+    collections_histoEtaBefSel.Add(histo_histoEtaBefSel);
+    TH1F * histo_histoEtaAftSel = entry->GetHistoEtaAftSel();      
+    collections_histoEtaAftSel.Add(histo_histoEtaAftSel);
     count++;
   }
   
   fHistoCuts->Merge(&collections);
+  fHistoVtxBefSel->Merge(&collections_histoVtxBefSel);
+  fHistoVtxAftSel->Merge(&collections_histoVtxAftSel);
+  fHistoEtaBefSel->Merge(&collections_histoEtaBefSel);
+  fHistoEtaAftSel->Merge(&collections_histoEtaAftSel);
   
   delete iter;
 

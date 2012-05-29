@@ -88,12 +88,12 @@ void AliAnalysisTaskSpectraAOD::UserCreateOutputObjects()
 void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 {
   // main event loop
+  Printf("ALIVE");
   fAOD = dynamic_cast<AliAODEvent*>(fInputEvent);
   if (strcmp(fAOD->ClassName(), "AliAODEvent"))
     {
       AliFatal("Not processing AODs");
     }
-  Printf("ALIVE");
   //check on centrality distribution
   fHistMan->GetPtHistogram("CentCheck")->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"),fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentileUnchecked("V0M"));
   
