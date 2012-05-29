@@ -86,10 +86,12 @@ void AliEmcalJetTask::UserExec(Option_t *)
   // Main loop, called for each event.
 
   // get the event
-  if (fMC) 
-    fEvent = MCEvent();
-  else
-    fEvent = InputEvent();
+  fEvent = InputEvent();
+
+  if (!fEvent) {
+    AliError("Could not retrieve event! Returning");
+    return;
+  }
 
   // add jets to event if not yet there
   if (!(fEvent->FindListObject(fJetsName)))
@@ -133,10 +135,10 @@ void AliEmcalJetTask::UserExec(Option_t *)
   if (centrality)
     cent = centrality->GetCentralityPercentile("V0M");
   else
-    cent=99; // probably pp data
+    cent = 99; // probably pp data
   if (cent < 0) {
-    AliError(Form("Centrality negative: %f", cent));
-    return;
+    AliWarning(Form("Centrality negative: %f, assuming 99", cent));
+    cent = 99;
   }
 
   FindJets(tracks, clus, fAlgo, fRadius, cent);
@@ -173,10 +175,11 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
   if (tracks) {
     const Int_t Ntracks = tracks->GetEntries();
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-      AliVParticle *t = static_cast<AliVParticle*>(tracks->At(iTracks));
+      AliVParticle *t = dynamic_cast<AliVParticle*>(tracks->At(iTracks));
       if (!t)
         continue;
-      if (t->Pt()<fMinJetTrackPt) 
+
+      if (t->Pt() < fMinJetTrackPt) 
         continue;
 
       Int_t index = 1;
@@ -286,9 +289,9 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
     else 
       jet->SetAreaEmc(-1);
     if ((jet->Phi() > geom->GetArm1PhiMin() * TMath::DegToRad()) && 
-        (jet->Phi() < geom->GetArm1PhiMax() * TMath::DegToRad()) &&
-        (jet->Eta() > geom->GetArm1EtaMin()) && 
-        (jet->Eta() < geom->GetArm1EtaMax()))
+	(jet->Phi() < geom->GetArm1PhiMax() * TMath::DegToRad()) &&
+	(jet->Eta() > geom->GetArm1EtaMin()) && 
+	(jet->Eta() < geom->GetArm1EtaMax()))
       jet->SetAxisInEmcal(kTRUE);
     jetCount++;
   }
