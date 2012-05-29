@@ -1,4 +1,4 @@
-// $Id: AliJetResponseMaker.cxx  $
+// $Id$
 //
 // Emcal jet response matrix maker task.
 //
@@ -26,9 +26,9 @@ ClassImp(AliJetResponseMaker)
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker() : 
   AliAnalysisTaskEmcal("AliJetResponseMaker"),
-  fMCPartName("Tracks"),
-  fMCJetsName("mcJets"),
-  fMCParts(0),
+  fMCTracksName("MCParticles"),
+  fMCJetsName("MCJets"),
+  fMCTracks(0),
   fMCJets(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
@@ -53,9 +53,9 @@ AliJetResponseMaker::AliJetResponseMaker() :
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker(const char *name) : 
   AliAnalysisTaskEmcal(name),
-  fMCPartName("Tracks"),
-  fMCJetsName("mcJets"),
-  fMCParts(0),
+  fMCTracksName("MCParticles"),
+  fMCJetsName("MCJets"),
+  fMCTracks(0),
   fMCJets(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
@@ -76,7 +76,6 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
 {
   // Standard constructor.
 
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 }
 
 //________________________________________________________________________
@@ -94,6 +93,11 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
 
+  fHistJetPhiEta = new TH2F("fHistJetPhiEta", "fHistJetPhiEta", 20, -2, 2, 32, 0, 6.4);
+  fHistJetPhiEta->GetXaxis()->SetTitle("#eta");
+  fHistJetPhiEta->GetYaxis()->SetTitle("#phi");
+  fOutput->Add(fHistJetPhiEta);
+  
   fHistJetsPt = new TH1F("fHistJetsPt", "fHistJetsPt", fNbins, fMinPt, fMaxPt);
   fHistJetsPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistJetsPt->GetYaxis()->SetTitle("counts");
@@ -132,6 +136,52 @@ void AliJetResponseMaker::UserCreateOutputObjects()
     fHistJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
     fOutput->Add(fHistJetsNEFvsPt);
   }
+
+  fHistMCJetPhiEta = new TH2F("fHistMCJetPhiEta", "fHistMCJetPhiEta", 20, -2, 2, 32, 0, 6.4);
+  fHistMCJetPhiEta->GetXaxis()->SetTitle("#eta");
+  fHistMCJetPhiEta->GetYaxis()->SetTitle("#phi");
+  fOutput->Add(fHistMCJetPhiEta);
+  
+  fHistMCJetsPt = new TH1F("fHistMCJetsPt", "fHistMCJetsPt", fNbins, fMinPt, fMaxPt);
+  fHistMCJetsPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistMCJetsPt->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistMCJetsPt);
+  
+  if (fAnaType == kEMCAL) {
+    fHistMCJetsPtClus = new TH1F("fHistMCJetsPtClus", "fHistMCJetsPtClus", fNbins, fMinPt, fMaxPt);
+    fHistMCJetsPtClus->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistMCJetsPtClus->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistMCJetsPtClus);
+  }
+  
+  fHistMCJetsPtTrack = new TH1F("fHistMCJetsPtTrack", "fHistMCJetsPtTrack", fNbins, fMinPt, fMaxPt);
+  fHistMCJetsPtTrack->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistMCJetsPtTrack->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistMCJetsPtTrack);
+  
+  fHistMCJetsPtNonBias = new TH1F("fHistMCJetsPtNonBias", "fHistMCJetsPtNonBias", fNbins, fMinPt, fMaxPt);
+  fHistMCJetsPtNonBias->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistMCJetsPtNonBias->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistMCJetsPtNonBias);
+  
+  fHistMCLeadingJetPt = new TH1F("fHistMCLeadingJetPt", "fHistMCLeadingJetPt", fNbins, fMinPt, fMaxPt);
+  fHistMCLeadingJetPt->GetXaxis()->SetTitle("p_{T} [GeV]");
+  fHistMCLeadingJetPt->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistMCLeadingJetPt);
+  
+  fHistMCJetsZvsPt = new TH2F("fHistMCJetsZvsPt", "fHistMCJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinPt, fMaxPt);
+  fHistMCJetsZvsPt->GetXaxis()->SetTitle("Z");
+  fHistMCJetsZvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
+  fOutput->Add(fHistMCJetsZvsPt);
+  
+  if (fAnaType == kEMCAL) {
+    fHistMCJetsNEFvsPt = new TH2F("fHistMCJetsNEFvsPt", "fHistMCJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinPt, fMaxPt);
+    fHistMCJetsNEFvsPt->GetXaxis()->SetTitle("NEF");
+    fHistMCJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
+    fOutput->Add(fHistMCJetsNEFvsPt);
+  }
+
+  PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
 
 //________________________________________________________________________
@@ -149,7 +199,7 @@ void AliJetResponseMaker::FillHistograms()
   if (!jet) 
     return;
 
-  DoJetLoop(maxMCJetIndex, fMCJets, fMCParts);  
+  DoJetLoop(maxMCJetIndex, fMCJets, fMCTracks);  
   if (maxMCJetIndex < 0) 
     return;
   AliEmcalJet* mcjet = dynamic_cast<AliEmcalJet*>(fMCJets->At(maxMCJetIndex));
@@ -234,10 +284,17 @@ void AliJetResponseMaker::RetrieveEventObjects()
 
   AliAnalysisTaskEmcal::RetrieveEventObjects();
   
-  if (strcmp(fMCJetsName,"")) {
-    fMCJets = dynamic_cast<TClonesArray*>(MCEvent()->FindListObject(fMCJetsName));
+  if (!fMCJetsName.IsNull()) {
+    fMCJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCJetsName));
     if (!fMCJets) {
       AliWarning(Form("Could not retrieve MC jets %s!", fMCJetsName.Data())); 
+    }
+  }
+
+  if (!fMCTracksName.IsNull()) {
+    fMCTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCTracksName));
+    if (!fMCJets) {
+      AliWarning(Form("Could not retrieve MC tracks %s!", fMCTracksName.Data())); 
     }
   }
 }
