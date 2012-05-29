@@ -2,9 +2,16 @@
 // Macro designed for use with the AliAnalysisTaskDptDptCorrelations task.
 //
 // Author: Claude Pruneau, Wayne State
+// 
+//           system:  0: PbPb                 1: pp
+//      singlesOnly:  0: full correlations    1: singles only
+//       useWeights:  0: no                   1: yes
+// centralityMethod:  3: track count  4: V0 centrality
+//        chargeSet:  0: ++    1: +-    2: -+    3: --
 /////////////////////////////////////////////////////////////////////////////////
-AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly            = 0,
-                                                             int    useWeights             = 1,
+AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    system                 = 0,
+                                                             int    singlesOnly            = 1,
+                                                             int    useWeights             = 0,
                                                              int    centralityMethod       = 4,
                                                              int    chargeSet              = 1)
 
@@ -17,12 +24,57 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    singlesOnly 
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
   int    sameFilter             = 1;
+
   
-  //int    centralityMethod       =  4;
-  int    nCentrality            =  10;
-  double minCentrality[] = { 0.5,   5., 10., 20., 30., 40., 50., 60., 70., 80. };
-  double maxCentrality[] = { 5.0,  10., 20., 30., 40., 50., 60., 70., 80., 90. }; 
-  
+  int    nCentrality;
+  double minCentrality[10];
+  double maxCentrality[10];
+
+  if (system==0) // PbPb
+    {
+    if (centralityMethod == 4)
+      {
+      nCentrality = 10;
+      minCentrality[0] = 0.5; maxCentrality[0] = 5.0;
+      minCentrality[1] = 5.0; maxCentrality[1] = 10.;
+      minCentrality[2] = 10.; maxCentrality[2] = 20.;
+      minCentrality[3] = 20.; maxCentrality[3] = 30.;
+      minCentrality[4] = 30.; maxCentrality[4] = 40.;
+      minCentrality[5] = 40.; maxCentrality[5] = 50.;
+      minCentrality[6] = 50.; maxCentrality[6] = 60.;
+      minCentrality[7] = 60.; maxCentrality[7] = 70.;
+      minCentrality[8] = 70.; maxCentrality[8] = 80.;
+      minCentrality[9] = 80.; maxCentrality[9] = 90.;
+      
+      }
+    else
+      {
+      cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
+      return 0;
+      }
+    }
+  else if (system==1) // pp
+    {
+    if (centralityMethod == 3)
+      {
+      nCentrality = 4;
+      minCentrality[0] = 2;   maxCentrality[0] = 100.0;
+      minCentrality[1] = 2;   maxCentrality[1] = 20.;
+      minCentrality[2] = 20.; maxCentrality[2] = 50.;
+      minCentrality[3] = 50.; maxCentrality[3] = 100.;
+      }
+    else
+      {
+      cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
+      return 0;
+      }
+    }
+  else
+    {
+    cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". Option NOT CURRENTLY AVAILABLE. ABORT."
+    return 0;
+    }
+
   double zMin                   = -10.;
   double zMax                   =  10.;
   double ptMin                  =  0.2;
