@@ -1,7 +1,7 @@
 #ifndef ALIJETRESPONSEMAKER_H
 #define ALIJETRESPONSEMAKER_H
 
-// $Id: $
+// $Id$
 
 class TClonesArray;
 class TH1F;
