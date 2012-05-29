@@ -36,5 +36,6 @@
 #pragma link C++ class AliStaTrigger+;
 #pragma link C++ class AliStaVertex+;
 #pragma link C++ class AliAnalysisTaskSATR+;
+#pragma link C++ class AliEmcalMCTrackSelector+;
 
 #endif
