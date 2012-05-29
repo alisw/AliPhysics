@@ -105,6 +105,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
   ,fPhoElecPt(0)
+  ,fSameElecPt(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)
   ,fTPCnsigma(0)
@@ -156,6 +157,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
   ,fPhoElecPt(0)
+  ,fSameElecPt(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)	 	  
   ,fTPCnsigma(0)
@@ -261,7 +263,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          double emceta = clustpos.Eta();
          double calInfo[4];
          calInfo[0] = emcphi; calInfo[1] = emceta; calInfo[2] = clustE; calInfo[3] = cent; 
-         fEMCAccE->Fill(calInfo); 
+         if(clustE>1.5)fEMCAccE->Fill(calInfo); 
         }
    }
 
@@ -274,6 +276,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     }
     
     if(TMath::Abs(track->Eta())>0.7) continue;
+    if(TMath::Abs(track->Pt()<2.0)) continue;
     
     fTrackPtBefTrkCuts->Fill(track->Pt());		
     // RecKine: ITSTPC cuts  
@@ -290,15 +293,18 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
     
+    // HFE cuts: TPC PID cleanup
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
+
     
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
     Double_t mom = -999., eop=-999., pt = -999., dEdx=-999., fTPCnSigma=-10, phi=-999., eta=-999.;
+    pt = track->Pt();
+    if(pt<2.0)continue;
     
     // Track extrapolation
     
-    pt = track->Pt();
-    if(pt<2.0)continue;
     Int_t charge = track->Charge();
     fTrkpt->Fill(pt);
     mom = track->P();
@@ -313,7 +319,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
         double disp = -1.0;
         double rmatch = -1.0;  
         double nmatch = -1.0;
+        double oppstatus = 0.0;
+        double samestatus = 0.0;
 
+    Bool_t fFlagPhotonicElec = kFALSE;
+    Bool_t fFlagConvinatElec = kFALSE;
+    SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec);
+    if(fFlagPhotonicElec)oppstatus = 1.0;
+    if(fFlagConvinatElec)samestatus = 1.0;
 
     Int_t clsId = track->GetEMCALcluster();
     if (clsId>0){
@@ -332,10 +345,10 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		rmatch = sqrt(pow(delphi,2)+pow(deleta,2));
 		nmatch = clust->GetNTracksMatched();
 
-		  double valdedx[14];
+		  double valdedx[16];
 		  valdedx[0] = mom; valdedx[1] = pt; valdedx[2] = dEdx; valdedx[3] = phi; valdedx[4] = eta; valdedx[5] = fTPCnSigma;
 		  valdedx[6] = eop; valdedx[7] = rmatch; valdedx[8] = ncells,  valdedx[9] = m02; valdedx[10] = m20; valdedx[11] = disp;
-		  valdedx[12] = cent; valdedx[13] = charge;
+		  valdedx[12] = cent; valdedx[13] = charge; valdedx[14] = oppstatus; valdedx[15] = samestatus;
                   fEleInfo->Fill(valdedx);
                  
 
@@ -344,12 +357,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
         
     fdEdxBef->Fill(mom,dEdx);
     fTPCnsigma->Fill(mom,fTPCnSigma);
- 
+    if(fTPCnSigma >= -1.0 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,eop);
 
-    // HFE cuts: TPC PID cleanup
-    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
-      
-    if(fTPCnSigma >= 1.0 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,eop);
     Int_t pidpassed = 1;
     
 
@@ -366,10 +375,9 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     fdEdxAft->Fill(mom,dEdx);
     fIncpT->Fill(cent,pt);    
 
-    Bool_t fFlagPhotonicElec = kFALSE;
-    SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec);
     
     if(fFlagPhotonicElec) fPhoElecPt->Fill(cent,pt);
+    if(fFlagConvinatElec) fSameElecPt->Fill(cent,pt);
  }
  PostData(1, fOutputList);
 }
@@ -443,10 +451,15 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpT = new TH2F("fIncpT","HFE pid electro vs. centrality",100,0,100,100,0,50);
   fOutputList->Add(fIncpT);
 
-  fInvmassLS = new TH2F("fInvmassLS", "Inv mass of LS (e,e); mass(GeV/c^2); counts;", 100,0,100,500,0,0.5);
+
+  Int_t nBinspho[3] =  { 100, 100, 500};
+  Double_t minpho[3] = {  0.,  0., 0.};   
+  Double_t maxpho[3] = {100., 50., 0.5};   
+
+  fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2);", 3, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassLS);
   
-  fInvmassULS = new TH2F("fInvmassULS", "Inv mass of ULS (e,e); mass(GeV/c^2); counts;", 100,0,100,500,0,0.5);
+  fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2);", 3, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassULS);
   
   fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
@@ -458,23 +471,26 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fPhotoElecPt = new TH1F("fPhotoElecPt", "photonic electron pt",100,0,50);
   fOutputList->Add(fPhotoElecPt);
   
-  fPhoElecPt = new TH2F("fPhoElecPt", "Semi-inclusive electron pt",100,0,100,100,0,50);
+  fPhoElecPt = new TH2F("fPhoElecPt", "Pho-inclusive electron pt",100,0,100,100,0,50);
   fOutputList->Add(fPhoElecPt);
   
+  fSameElecPt = new TH2F("fSameElecPt", "Same-inclusive electron pt",100,0,100,100,0,50);
+  fOutputList->Add(fSameElecPt);
+
   fCent = new TH1F("fCent","Centrality",100,0,100) ;
   fOutputList->Add(fCent);
  
   // Make common binning
-  const Double_t kMinP = 0.;
+  const Double_t kMinP = 2.;
   const Double_t kMaxP = 50.;
   const Double_t kTPCSigMim = 40.;
   const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
-  Int_t nBins[14] =  {  500,   500,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,  3};
-  Double_t min[14] = {kMinP, kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5};
-  Double_t max[14] = {kMaxP, kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5};
-  fEleInfo = new THnSparseD("fEleInfo", "p [GeV/c]; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp; Centrality; charge", 14, nBins, min, max);
+  Int_t nBins[16] =  {  480,   480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    3,    3};
+  Double_t min[16] = {kMinP, kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5};
+  Double_t max[16] = {kMaxP, kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  2.5,  2.5};
+  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; p [GeV/c]; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp; Centrality; charge", 16, nBins, min, max);
   fOutputList->Add(fEleInfo);
 
 //_________________________________________________________
@@ -498,20 +514,22 @@ Bool_t AliAnalysisTaskHFECal::ProcessCutStep(Int_t cutStep, AliVParticle *track)
   return kTRUE;
 }
 //_________________________________________
-void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec)
+//void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec)
+void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
   
-  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fTrackCuts->SetRequireTPCRefit(kTRUE);
-  fTrackCuts->SetEtaRange(-0.7,0.7);
-  fTrackCuts->SetRequireSigmaToVertex(kTRUE);
+  //fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  //fTrackCuts->SetRequireTPCRefit(kTRUE);
+  //fTrackCuts->SetEtaRange(-0.7,0.7);
+  //fTrackCuts->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
-  fTrackCuts->SetMinNClustersTPC(100);
+  fTrackCuts->SetMinNClustersTPC(70);
   
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
   
   Bool_t flagPhotonicElec = kFALSE;
+  Bool_t flagConvinatElec = kFALSE;
   
   //for(Int_t jTracks = itrack+1; jTracks<fESD->GetNumberOfTracks(); jTracks++){
   for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
@@ -522,10 +540,12 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     }
     if(itrack==jTracks)continue;    
 
-    Double_t dEdxAsso = -999., ptAsso=-999., openingAngle = -999.;
+    Double_t dEdxAsso = -999., ptPrim=-999., ptAsso=-999., openingAngle = -999.;
     Double_t mass=999., width = -999;
     Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
     
+    ptPrim = track->Pt();
+
     dEdxAsso = trackAsso->GetTPCsignal();
     ptAsso = trackAsso->Pt();
     Int_t chargeAsso = trackAsso->Charge();
@@ -534,7 +554,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     //if(ptAsso <0.3) continue;
     if(ptAsso <0.5) continue;
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
-    if(dEdxAsso <70 || dEdxAsso>100) continue; //11a pass1
+    if(dEdxAsso <65 || dEdxAsso>100) continue; //11a pass1
     
     Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
     if(charge>0) fPDGe1 = -11;
@@ -565,15 +585,24 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     
     recg.GetMass(mass,width);
     
-    if(fFlagLS) fInvmassLS->Fill(cent,mass);
-    if(fFlagULS) fInvmassULS->Fill(cent,mass);
+    double phoinfo[3];
+    phoinfo[0] = cent;
+    phoinfo[1] = ptPrim;
+    phoinfo[2] = mass;
+
+    if(fFlagLS) fInvmassLS->Fill(phoinfo);
+    if(fFlagULS) fInvmassULS->Fill(phoinfo);
           
     if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
       flagPhotonicElec = kTRUE;
     }
+    if(mass<fInvmassCut && fFlagLS && !flagConvinatElec){
+      flagConvinatElec = kTRUE;
+    }
     
   }
   fFlagPhotonicElec = flagPhotonicElec;
+  fFlagConvinatElec = flagConvinatElec;
   
 }
 
