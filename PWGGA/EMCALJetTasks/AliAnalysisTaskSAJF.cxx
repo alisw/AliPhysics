@@ -219,7 +219,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistJetsPtArea_";
     histname += i;
-    fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinPt, fMaxPt, fNbins, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinPt, fMaxPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
     fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
     fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
     fOutput->Add(fHistJetsPtArea[i]);
@@ -655,19 +655,23 @@ void AliAnalysisTaskSAJF::DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)
     if (fAnaType == kEMCAL)
       fHistJetsNEFvsPt[fCentBin]->Fill(jet->NEF(), jet->Pt());
 
-    for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
-      AliVParticle *track = jet->TrackAt(it, fTracks);
-      if (track)
-	fHistJetsZvsPt[fCentBin]->Fill(track->Pt() / jet->Pt(), jet->Pt());
+    if (fTracks) {
+      for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
+	AliVParticle *track = jet->TrackAt(it, fTracks);
+	if (track)
+	  fHistJetsZvsPt[fCentBin]->Fill(track->Pt() / jet->Pt(), jet->Pt());
+      }
     }
 
-    for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
-      AliVCluster *cluster = jet->ClusterAt(ic, fCaloClusters);
-
-      if (cluster) {
-	TLorentzVector nPart;
-	cluster->GetMomentum(nPart, fVertex);
+    if (fCaloClusters) {
+      for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
+	AliVCluster *cluster = jet->ClusterAt(ic, fCaloClusters);
+	
+	if (cluster) {
+	  TLorentzVector nPart;
+	  cluster->GetMomentum(nPart, fVertex);
 	fHistJetsZvsPt[fCentBin]->Fill(nPart.Et() / jet->Pt(), jet->Pt());
+	}
       }
     }
 
