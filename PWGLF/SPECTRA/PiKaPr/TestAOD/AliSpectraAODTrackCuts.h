@@ -19,27 +19,39 @@ class AliSpectraAODHistoManager;
 #include "TNamed.h"
 
 using namespace AliSpectraNameSpace;
+ 
+const char * kBinLabel[] ={"TrkBit",
+			   "TrkEta",
+			   "TrkDCA",
+			   "TrkP",
+			   "TrkPt",
+			   "TrkPtTOF",
+			   "TOFMatching",
+			   "kTOFout",
+			   "kTIME",
+			   "kTOFpid",
+			   "Accepted"};
 
 class AliSpectraAODTrackCuts : public TNamed
 {
-public:
-
-   enum { kTrkBit = 0, kTrkEta, kTrkDCA, kTrkP, kTrkPt, kTOFMatching, kNTrkCuts};
-
-
-   AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fQvecCutMin(0), fQvecCutMax(0), fHistoCuts(0), fTrack(0) {}
-
-   AliSpectraAODTrackCuts(const char *name);
-   virtual  ~AliSpectraAODTrackCuts() {} // To be implemented
-
+ public:
+  
+  enum { kTrkBit = 0, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
+  
+  
+ AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fQvecCutMin(0), fQvecCutMax(0), fHistoCuts(0), fTrack(0) {}
+  
+  AliSpectraAODTrackCuts(const char *name);
+  virtual  ~AliSpectraAODTrackCuts() {} // To be implemented
+  
   Bool_t IsSelected(AliAODTrack * track);
-
-   void SetTrackType(UInt_t bit);
-   Bool_t CheckTrackType();
-   Bool_t CheckEtaCut();
-   Bool_t CheckYCut(AODParticleSpecies_t specie); // not included in standard cuts
-   Bool_t CheckDCACut();
-   Bool_t CheckPCut();
+  
+  void SetTrackType(UInt_t bit);
+  Bool_t CheckTrackType();
+  Bool_t CheckEtaCut();
+  Bool_t CheckYCut(AODParticleSpecies_t specie); // not included in standard cuts
+  Bool_t CheckDCACut();
+  Bool_t CheckPCut();
    Bool_t CheckPtCut();
    Bool_t CheckTOFMatching();
    void PrintCuts() const;

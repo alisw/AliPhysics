@@ -131,9 +131,6 @@ AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=0,Int_t sub=0,T
   
   
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
-  
-  
-  
   plugin->SetOverwriteMode();
   plugin->SetExecutableCommand("aliroot -q -b");  
   plugin->SetRunMode(mode.Data());
