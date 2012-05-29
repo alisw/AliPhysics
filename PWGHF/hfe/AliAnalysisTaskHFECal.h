@@ -52,7 +52,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec);
+  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
  private:
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
@@ -81,12 +81,13 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F			*fdEdxBef;		//! track dEdx vs p before HFE pid
   TH2F			*fdEdxAft;		//! track dEdx vs p after HFE pid
   TH2F			*fIncpT;		//! HFE pid electron vs centrality
-  TH2F			*fInvmassLS;		//! Inv mass of LS (e,e)
-  TH2F			*fInvmassULS;		//! Inv mass of ULS (e,e)
+  THnSparseD		*fInvmassLS;		//! Inv mass of LS (e,e)
+  THnSparseD		*fInvmassULS;		//! Inv mass of ULS (e,e)
   TH1F			*fOpeningAngleLS;	//! opening angle for LS pairs
   TH1F			*fOpeningAngleULS;	//! opening angle for ULS pairs
   TH1F			*fPhotoElecPt;		//! photonic elec pt 
-  TH2F			*fPhoElecPt;	        //! Semi inclusive ele pt
+  TH2F			*fPhoElecPt;	        //! Pho inclusive ele pt
+  TH2F			*fSameElecPt;	        //! Same inclusive ele pt
   
   TH1F			*fTrackPtBefTrkCuts;	//! Track pt before track cuts	
   TH1F			*fTrackPtAftTrkCuts;	//! Track pt after track cuts
