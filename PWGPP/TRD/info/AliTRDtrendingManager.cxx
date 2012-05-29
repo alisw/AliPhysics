@@ -53,7 +53,7 @@ void AliTRDtrendingManager::Terminate()
   
   if (fgInstance != NULL) {
     if(TFile::Open("TRD.Trend.root", "RECREATE")){
-      fEntries->Write();
+      if(fEntries) fEntries->Write();
       gFile->Close();
     }
     delete fgInstance; fgInstance = NULL;
