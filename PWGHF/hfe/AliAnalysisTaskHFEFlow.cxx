@@ -61,6 +61,7 @@
 #include "AliFlowVector.h"
 #include "AliFlowCommonConstants.h"
 #include "AliKFParticle.h"
+#include "AliKFVertex.h"
 
 #include "AliHFEcuts.h"
 #include "AliHFEpid.h"
@@ -102,12 +103,13 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fUseMCReactionPlane(kFALSE),
   fMCPID(kFALSE),
   fNoPID(kFALSE),
-  fChi2OverNDFCut(999),
+  fChi2OverNDFCut(3.0),
   fMaxdca(3.0),
   fMaxopeningtheta(0.02),
   fMaxopeningphi(0.1),
   fMaxopening3D(0.1),
   fMaxInvmass(0.1),
+  fSetMassConstraint(kFALSE),
   fDebugLevel(0),
   fcutsRP(0),
   fcutsPOI(0),
@@ -193,12 +195,13 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fUseMCReactionPlane(kFALSE),
   fMCPID(kFALSE),
   fNoPID(kFALSE),
-  fChi2OverNDFCut(999),
+  fChi2OverNDFCut(3.0),
   fMaxdca(3.0),
   fMaxopeningtheta(0.02),
   fMaxopeningphi(0.1),
   fMaxopening3D(0.1),
   fMaxInvmass(0.1),
+  fSetMassConstraint(kFALSE),
   fDebugLevel(0),
   fcutsRP(0),
   fcutsPOI(0),
@@ -309,6 +312,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fMaxopeningphi(ref.fMaxopeningphi),
   fMaxopening3D(ref.fMaxopening3D),
   fMaxInvmass(ref.fMaxInvmass),
+  fSetMassConstraint(ref.fSetMassConstraint),
   fDebugLevel(ref.fDebugLevel),
   fcutsRP(NULL),
   fcutsPOI(NULL),
@@ -411,6 +415,7 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   target.fMaxopeningphi = fMaxopeningphi;
   target.fMaxopening3D = fMaxopening3D;
   target.fMaxInvmass = fMaxInvmass;
+  target.fSetMassConstraint =  fSetMassConstraint;
   target.fAlgorithmMA = fAlgorithmMA;
   target.fCounterPoolBackground = fCounterPoolBackground;
   target.fDebugLevel = fDebugLevel;
@@ -622,9 +627,9 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t binLimCharge[nBinsCharge+1];
   for(Int_t i=0; i<=nBinsCharge; i++) binLimCharge[i]=(Double_t)minCharge + (maxCharge-minCharge)/nBinsCharge*(Double_t)i ;
 
-  Int_t nBinsSource = 8;
+  Int_t nBinsSource = 10;
   Double_t minSource = 0.;
-  Double_t maxSource = 8.;
+  Double_t maxSource = 10.;
   Double_t binLimSource[nBinsSource+1];
   for(Int_t i=0; i<=nBinsSource; i++) binLimSource[i]=(Double_t)minSource + (maxSource-minSource)/nBinsSource*(Double_t)i ;
 
@@ -1782,6 +1787,9 @@ Int_t AliAnalysisTaskHFEFlow::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, Ali
 
   //Magnetic Field
   Double_t bfield = vEvent->GetMagneticField();
+
+  // Get Primary vertex
+  const AliVVertex *pVtx = vEvent->GetPrimaryVertex();
   
   for(Int_t idex = 0; idex < fCounterPoolBackground; idex++) 
     {
@@ -1804,18 +1812,20 @@ Int_t AliAnalysisTaskHFEFlow::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, Ali
 	Int_t source2 = 0;
 	Int_t indexmother2 = -1;
 	source2 = FindMother(TMath::Abs(track2->GetLabel()),mcEvent, indexmother2);
-	if((indexmother2 == indexmother) && (source == source2)) {
-	  if(source == kElectronfromconversion) {
-	    valueangle[2] = kElectronfromconversionboth;
-	    valuensparseDeltaPhiMaps[4] = kElectronfromconversionboth;
-	  }
-	  if(source == kElectronfrompi0) {
-	    valueangle[2] = kElectronfrompi0both;
-	    valuensparseDeltaPhiMaps[4] = kElectronfrompi0both;
-	  }
-	  if(source == kElectronfrometa) {
-	    valueangle[2] = kElectronfrometaboth;
-	    valuensparseDeltaPhiMaps[4] = kElectronfrometaboth;
+	if(source2 >=0 ) {
+	  if((indexmother2 == indexmother) && (source == source2)) {
+	    if(source == kElectronfromconversion) {
+	      valueangle[2] = kElectronfromconversionboth;
+	      valuensparseDeltaPhiMaps[4] = kElectronfromconversionboth;
+	    }
+	    if(source == kElectronfrompi0) {
+	      valueangle[2] = kElectronfrompi0both;
+	      valuensparseDeltaPhiMaps[4] = kElectronfrompi0both;
+	    }
+	    if(source == kElectronfrometa) {
+	      valueangle[2] = kElectronfrometaboth;
+	      valuensparseDeltaPhiMaps[4] = kElectronfrometaboth;
+	    }
 	  }
 	}
       }
@@ -1916,25 +1926,36 @@ Int_t AliAnalysisTaskHFEFlow::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, Ali
 	  if(fCharge1>0) fPDGtrack1 = -11;
 	  if(fCharge2>0) fPDGtrack2 = -11;
 	  
-	  AliKFParticle fKFtrack1(*track1, fPDGtrack1);
-	  AliKFParticle fKFtrack2(*track2, fPDGtrack2);
-	  AliKFParticle fRecoGamma(fKFtrack1, fKFtrack2);
+	  AliKFParticle ktrack1(*track1, fPDGtrack1);
+	  AliKFParticle ktrack2(*track2, fPDGtrack2);
+	  AliKFParticle recoGamma(ktrack1, ktrack2);
 	  
 	  //Reconstruction Cuts
-	  if(fRecoGamma.GetNDF()<1) continue;
-	  Double_t chi2OverNDF = fRecoGamma.GetChi2()/fRecoGamma.GetNDF();
+	  if(recoGamma.GetNDF()<1) continue;
+	  Double_t chi2OverNDF = recoGamma.GetChi2()/recoGamma.GetNDF();
 	  if(TMath::Sqrt(TMath::Abs(chi2OverNDF))>fChi2OverNDFCut) continue;
 	  
+	  // if set mass constraint
+	  if(fSetMassConstraint && pVtx) {
+	    AliKFVertex primV(*pVtx);
+	    primV += recoGamma;
+	    recoGamma.SetProductionVertex(primV);
+	    recoGamma.SetMassConstraint(0,0.0001);
+	  }    
+
 	  //Invariant Mass
 	  Double_t imass; 
 	  Double_t width;
-	  fRecoGamma.GetMass(imass,width);
+	  recoGamma.GetMass(imass,width);
 	  
 	  //Opening Angle (Total Angle)
-	  Double_t angle = fKFtrack1.GetAngle(fKFtrack2);
+	  Double_t angle = ktrack1.GetAngle(ktrack2);
 	  valueangle[0] = angle;
 	  if((fCharge1*fCharge2)>0.0) fSameSignAngle->Fill(&valueangle[0]);
-	  else fOppSignAngle->Fill(&valueangle[0]);	  
+	  else fOppSignAngle->Fill(&valueangle[0]);
+
+	  // Cut
+	  if(angle > fMaxopening3D) continue;	  
 
 	  // Invmass
 	  valuensparseDeltaPhiMaps[3] = imass;
@@ -1950,7 +1971,7 @@ Int_t AliAnalysisTaskHFEFlow::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, Ali
 	
 	}
     }
-
+  
   if(oppositetaggedphotonic && sametaggedphotonic){
     taggedphotonic = 6;
   }
@@ -1974,6 +1995,12 @@ Int_t AliAnalysisTaskHFEFlow::FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &i
   //
 
   if(!mcEvent) return 0;
+
+  Int_t pdg = CheckPdg(tr,mcEvent);
+  if(TMath::Abs(pdg)!= 11) {
+    indexmother = -1;
+    return kNoElectron;
+  }
   
   indexmother = IsMotherGamma(tr,mcEvent);
   if(indexmother > 0) return kElectronfromconversion;
@@ -1989,6 +2016,35 @@ Int_t AliAnalysisTaskHFEFlow::FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &i
   return kElectronfromother;
 
 
+}
+//____________________________________________________________________________________________________________
+Int_t AliAnalysisTaskHFEFlow::CheckPdg(Int_t tr, AliMCEvent* mcEvent) {
+
+  //
+  // Return the pdg of the particle
+  //
+
+  Int_t pdgcode = -1;
+
+  if(tr < 0) return pdgcode;
+  AliVParticle *mctrack = mcEvent->GetTrack(tr);
+ 
+  
+  if(mctrack->IsA() == AliMCParticle::Class()) {
+    AliMCParticle *mctrackesd = NULL;
+    if(!(mctrackesd = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return pdgcode;
+    pdgcode = mctrackesd->PdgCode();
+  }
+
+  if(mctrack->IsA() == AliAODMCParticle::Class()) {
+    AliAODMCParticle *mctrackaod = NULL;
+    if(!(mctrackaod = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(tr))))) return pdgcode;
+    pdgcode = mctrackaod->GetPdgCode();
+  }
+  
+  return pdgcode;
+
+ 
 }
 //____________________________________________________________________________________________________________
 Int_t AliAnalysisTaskHFEFlow::IsMotherGamma(Int_t tr, AliMCEvent* mcEvent) {

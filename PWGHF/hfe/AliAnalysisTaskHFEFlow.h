@@ -58,7 +58,8 @@ public:
     kElectronfromB = 5,
     kElectronfrometa = 6,
     kElectronfrometaboth = 7,
-    kElectronfromother = 8
+    kElectronfromother = 8,
+    kNoElectron = 9
   } FlowSource_t;
   
   typedef enum{
@@ -127,6 +128,7 @@ public:
   void  SetMaxopeningtheta(Double_t maxOpeningtheta) { fMaxopeningtheta = maxOpeningtheta; };
   void  SetMaxopeningphi(Double_t maxOpeningphi) { fMaxopeningphi = maxOpeningphi; };
   void  SetAlgorithmMA(Bool_t algorithmMA) { fAlgorithmMA = algorithmMA; };
+  void  SetMassConstraint(Bool_t massConstraint) { fSetMassConstraint = massConstraint; };
 
   Int_t    LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, AliVEvent *fESD, AliMCEvent *mcEvent,Int_t binct,Double_t deltaphi,Int_t source,Int_t indexmother);
   
@@ -169,6 +171,7 @@ private:
   Double_t  fMaxopeningphi;    // Limit opening angle in phi
   Double_t  fMaxopening3D;     // Limit opening 3D
   Double_t  fMaxInvmass;       // Limit invariant mass
+  Bool_t    fSetMassConstraint; // Set mass constraint
   
 
   Int_t     fDebugLevel; // Debug Level  
@@ -262,6 +265,7 @@ private:
   THnSparseF *fSameSignAngle;        // ! Opening Angles
 
   Int_t FindMother(Int_t tr, AliMCEvent *mcEvent, Int_t &indexmother);
+  Int_t CheckPdg(Int_t tr, AliMCEvent* mcEvent);
   Int_t IsMotherGamma(Int_t tr, AliMCEvent* mcEvent);
   Int_t IsMotherPi0(Int_t tr, AliMCEvent* mcEvent);
   Int_t IsMotherC(Int_t tr, AliMCEvent* mcEvent);
