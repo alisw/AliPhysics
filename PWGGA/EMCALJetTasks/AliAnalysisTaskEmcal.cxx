@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskEmcal.cxx $
+// $Id$
 //
 // Emcal base analysis task.
 //
@@ -55,6 +55,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
+
+  // Output slot #1 writes into a TH1 container
+  DefineOutput(1, TList::Class()); 
 }
 
 //________________________________________________________________________

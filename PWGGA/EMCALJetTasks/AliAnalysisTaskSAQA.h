@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKSAQA_H
 #define ALIANALYSISTASKSAQA_H
 
-// $Id: AliAnalysisTaskSAQA.h 56532 2012-05-17 02:53:19Z loizides $
+// $Id$
 
 class TClonesArray;
 class TString;
@@ -71,6 +71,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcal {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 4) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 5) // Quality task for Emcal analysis
 };
 #endif

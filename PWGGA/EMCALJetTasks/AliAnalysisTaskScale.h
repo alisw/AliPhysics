@@ -62,6 +62,6 @@ class AliAnalysisTaskScale : public AliAnalysisTaskSE {
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented
   
-  ClassDef(AliAnalysisTaskScale, 4); // Scale task
+  ClassDef(AliAnalysisTaskScale, 5); // Scale task
 };
 #endif

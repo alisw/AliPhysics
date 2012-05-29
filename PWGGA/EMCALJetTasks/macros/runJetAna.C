@@ -41,8 +41,8 @@ void runJetAna(
   // PSel task
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, 
-                                                                      AliVEvent::kAnyINT | AliVEvent::kCentral| AliVEvent::kSemiCentral,
-                                                                      -1,5);
+                                                                      AliVEvent::kAnyINT /*| AliVEvent::kCentral| AliVEvent::kSemiCentral*/,
+                                                                      10,10);
 
   // Setup task
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalSetup.C");
@@ -190,6 +190,7 @@ void LoadLibs()
  
   // load fastjet libraries
   gSystem->Load("libJETAN");
+  gSystem->Load("/usr/lib64/libCGAL.so");
   gSystem->Load("$FASTJET/lib/libfastjet");
   gSystem->Load("$FASTJET/lib/libsiscone");
   gSystem->Load("$FASTJET/lib/libSISConePlugin");

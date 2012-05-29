@@ -1,4 +1,4 @@
-// $Id: AliAnalysisTaskSAQA.cxx 56636 2012-05-22 22:51:12Z loizides $
+// $Id$
 //
 // General QA task (S.Aiola).
 //
@@ -167,7 +167,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistJetsPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistJetsPhiEta);
 
-  fHistJetsPtArea = new TH2F("fHistJetsPtArea","P_{T} vs. area of reconstructed jets", fNbins, fMinPt, fMaxPt, fNbins, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+  fHistJetsPtArea = new TH2F("fHistJetsPtArea","P_{T} vs. area of reconstructed jets", fNbins, fMinPt, fMaxPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
   fHistJetsPtArea->GetXaxis()->SetTitle("P_{T} [GeV/c]");
   fHistJetsPtArea->GetYaxis()->SetTitle("area");
   fOutput->Add(fHistJetsPtArea);
