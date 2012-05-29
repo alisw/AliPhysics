@@ -199,7 +199,8 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   ULong64_t survivedCut = 0;	// Bitmap for cuts which are passed by the track, later to be compared with fRequirements
   if(IsQAOn()) FillQAhistosRec(track, kBeforeCuts);
   // Apply cuts
-  Float_t impactR, impactZ;
+  Float_t impactR = -999.;
+  Float_t impactZ = -999.;
   Double_t hfeimpactR, hfeimpactnsigmaR;
   Double_t hfeimpactRcut, hfeimpactnsigmaRcut;
   Double_t maximpactRcut; 
@@ -727,7 +728,7 @@ void AliHFEextraCuts::GetImpactParameters(AliVTrack *track, Float_t &radial, Flo
       if(xyz[0]==-999. || xyz[1]==-999. ||  xyz[2]==-999.){
 	if(!fEvent) {
 	  z = xyz[2];
-	  radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]+xyz[1]);
+	  radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 	  //printf("No event\n");
 	}
 	else {
@@ -746,7 +747,7 @@ void AliHFEextraCuts::GetImpactParameters(AliVTrack *track, Float_t &radial, Flo
       }
       else {
 	z = xyz[2];
-	radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]+xyz[1]);
+	radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
       }
     }
   }
