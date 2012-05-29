@@ -5,6 +5,7 @@
 
 class TClonesArray;
 class TString;
+class TList;
 class AliVParticle;
 class AliVCluster;
 class AliEmcalJet;
@@ -52,7 +53,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)   const;
 
   virtual void                RetrieveEventObjects()        ;
-  virtual void                FillHistograms()           = 0; 
+  virtual void                FillHistograms()             {;} 
 
   EmcalAnaType                fAnaType;                    // analysis type
   Bool_t                      fInitialized;                // whether or not the task has been already initialized
@@ -72,12 +73,14 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Float_t                     fPtBiasJetClus;              // select jets with a minimum pt cluster
   Float_t                     fJetPtCut;                   // cut on jet pt
   Float_t                     fJetAreaCut;                 // cut on jet area
+
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
   TClonesArray               *fJets;                       //!jets
   Float_t                     fCent;                       //!event centrality
   Int_t                       fCentBin;                    //!event centrality bin
   Double_t                    fVertex[3];                  //!event vertex
+
   TList                      *fOutput;                     //!output list
 
  private:
