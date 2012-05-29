@@ -356,6 +356,36 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputPID->Add(hTPCsigmaK);
     fOutputPID->Add(hTPCsigmaPion);
     fOutputPID->Add(hTPCsigmaProton);
+
+    if(fReadMC){
+      //TOF
+      hname="hTOFsigmaMCKSigPid";
+      TH2F* hTOFsigmaMCKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",500,0.,10.,400,-20,20);
+
+      hname="hTOFsigmaMCPionSigPid";
+      TH2F* hTOFsigmaMCPionSigPid=new TH2F(hname.Data(),"(TOFsignal-time#pi)/tofSigPid;p[GeV/c];(TOFsignal-time#pi)/tofSigPid",500,0.,10.,400,-20,20);
+
+      hname="hTOFsigmaMCProtonSigPid";
+      TH2F* hTOFsigmaMCProtonSigPid=new TH2F(hname.Data(),"(TOFsignal-timep)/tofSigPid;p[GeV/c];(TOFsignal-time p)/tofSigPid",500,0.,10.,400,-20,20);
+
+      //TPC
+      hname="hTPCsigmaMCK";
+      TH2F* hTPCsigmaMCK=new TH2F(hname.Data(),"TPC Sigma for K as a function of momentum;p[GeV/c];Sigma Kaon",500,0.,10.,400,-20,20);
+
+      hname="hTPCsigmaMCPion";
+      TH2F* hTPCsigmaMCPion=new TH2F(hname.Data(),"TPC Sigma for #pi as a function of momentum;p[GeV/c];Sigma #pi",500,0.,10.,400,-20,20);
+
+      hname="hTPCsigmaMCProton";
+      TH2F* hTPCsigmaMCProton=new TH2F(hname.Data(),"TPC Sigma for proton as a function of momentum;p[GeV/c];Sigma Proton",500,0.,10.,400,-20,20);
+
+      fOutputPID->Add(hTOFsigmaMCKSigPid);
+      fOutputPID->Add(hTOFsigmaMCPionSigPid);
+      fOutputPID->Add(hTOFsigmaMCProtonSigPid);
+      fOutputPID->Add(hTPCsigmaMCK);
+      fOutputPID->Add(hTPCsigmaMCPion);
+      fOutputPID->Add(hTPCsigmaMCProton);
+
+    }
   }
 
   //quality of the tracks
@@ -1163,10 +1193,25 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 	  
 	  // test TOF sigma PID
-	  if (tofRes[2] != 0.) {   // protection against 'old' AODs...
-	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaKSigPid"))->Fill(track->P(),(pid->GetTOFsignal()-times[AliPID::kKaon])/tofRes[3]);
-	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaPionSigPid"))->Fill(track->P(),(pid->GetTOFsignal()-times[AliPID::kPion])/tofRes[2]);
-	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaProtonSigPid"))->Fill(track->P(),(pid->GetTOFsignal()-times[AliPID::kProton])/tofRes[4]);
+	  if (!oldPID && respF && tofRes[2] != 0.) {   // protection against 'old' AODs...
+	    Double_t nsigma[3]={respF->NumberOfSigmasTOF(track,AliPID::kPion),respF->NumberOfSigmasTOF(track,AliPID::kKaon),respF->NumberOfSigmasTOF(track,AliPID::kProton)};
+	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaKSigPid"))->Fill(track->P(),nsigma[1]);
+	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaPionSigPid"))->Fill(track->P(),nsigma[0]);
+	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaProtonSigPid"))->Fill(track->P(),nsigma[2]);
+
+	    if(fReadMC){
+	      Int_t label=track->GetLabel();
+	      if(label<=0) continue;
+	      AliMCParticle* mcpart=(AliMCParticle*)mcArray->At(label);
+	      if(mcpart){
+		Int_t abspdgcode=TMath::Abs(mcpart->PdgCode());
+		if(abspdgcode==211) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCPionSigPid"))->Fill(track->P(),nsigma[0]);
+		if(abspdgcode==321) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCKSigPid"))->Fill(track->P(),nsigma[1]);
+		if(abspdgcode==2212) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCProtonSigPid"))->Fill(track->P(),nsigma[2]);
+
+	      }
+	    }
+
 	    for (Int_t iS=2; iS<5; iS++){ //we plot TOF Pid resolution for 3-sigma identified particles
 	      if ( (TMath::Abs(times[iS]-pid->GetTOFsignal())/tofRes[iS])<3.){
 		switch (iS) {
@@ -1194,14 +1239,36 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  ((TH1F*)fOutputPID->FindObject("hTPCsig"))->Fill(TPCsignal);
 	  ((TH1F*)fOutputPID->FindObject("hTPCsigvsp"))->Fill(TPCp,TPCsignal);
 	  //if (pidHF->IsKaonRaw(track, "TOF"))
-	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,respF->NumberOfSigmasTPC(track,AliPID::kKaon));
+	  Double_t nsigma[3]={0,0,0};
+	  if(!oldPID){
+	    nsigma[0]=respF->NumberOfSigmasTPC(track,AliPID::kPion);
+	    nsigma[1]=respF->NumberOfSigmasTPC(track,AliPID::kKaon);
+	    nsigma[2]=respF->NumberOfSigmasTPC(track,AliPID::kProton);
+	  }
+	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,nsigma[1]);
 	  if (oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kKaon));
 	  //if (pidHF->IsPionRaw(track, "TOF"))
 	  if(oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kPion));
-	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,respF->NumberOfSigmasTPC(track,AliPID::kPion));
+	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,nsigma[0]);
 	  //if (pidHF->IsProtonRaw(track,"TOF"))
 	  if(oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kProton));
-	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,respF->NumberOfSigmasTPC(track,AliPID::kProton));
+	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,nsigma[2]);
+
+	  if(fReadMC){
+	    Int_t label=track->GetLabel();
+	    if(label<=0) continue;
+	    AliMCParticle* mcpart=(AliMCParticle*)mcArray->At(label);
+	    if(mcpart){
+	      Int_t abspdgcode=TMath::Abs(mcpart->PdgCode());
+	      if(abspdgcode==211) ((TH2F*)fOutputPID->FindObject("hTPCsigmaMCPion"))->Fill(track->P(),nsigma[0]);
+	      if(abspdgcode==321) ((TH2F*)fOutputPID->FindObject("hTPCsigmaMCK"))->Fill(track->P(),nsigma[1]);
+	      if(abspdgcode==2212) ((TH2F*)fOutputPID->FindObject("hTPCsigmaMCProton"))->Fill(track->P(),nsigma[2]);
+
+	    }
+
+	  }
+
+
 	}//if TPC status
       } //end PID histograms
 
@@ -1295,11 +1362,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      mot = (AliAODMCParticle*)mcArray->At(label);
 	      label=mot->GetMother();
 	    }
-	    Int_t pdgMotCode = mot->GetPdgCode();
+	    if(mot){
+	      Int_t pdgMotCode = mot->GetPdgCode();
 	
-	    if(TMath::Abs(pdgMotCode)==4) fNEntries->Fill(6); //from primary charm
-	    if(TMath::Abs(pdgMotCode)==5) fNEntries->Fill(7); //from beauty
-
+	      if(TMath::Abs(pdgMotCode)==4) fNEntries->Fill(6); //from primary charm
+	      if(TMath::Abs(pdgMotCode)==5) fNEntries->Fill(7); //from beauty
+	    }
 	  }
 	}//end MC
 	else fNEntries->Fill(6); //count the candidates (data)
