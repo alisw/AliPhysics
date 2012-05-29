@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKEMCAL_H
 #define ALIANALYSISTASKEMCAL_H
 
-// $Id: AliAnalysisTaskEmcal.h 56670 2012-05-24 13:24:04Z loizides $
+// $Id$
 
 class TClonesArray;
 class TString;
