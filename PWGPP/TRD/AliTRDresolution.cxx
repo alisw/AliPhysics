@@ -1081,12 +1081,12 @@ void AliTRDresolution::MakeSummary()
     "TrkYnl2", "TrkYpl2", "TrkPhnl2", "TrkPhpl2", "TrkDPtnl2", "TrkDPtpl2"  // pions low pt
   };
   const Char_t *typName[] = {"", "MC"};
-  const Int_t nx(2048), ny(1536), n(0);
+  const Int_t nx(2048), ny(1536);
 
   if((arr = (TObjArray*)fProj->At(kDetector))){
     cOut = new TCanvas(Form("%s_DetOccupancy", GetName()), "Detector performance", 2*nx, 2*ny);
     cOut->Divide(AliTRDgeometry::kNlayer,AliTRDeventInfo::kCentralityClasses, 1.e-5, 1.e-5);
-    n=0;
+    Int_t n=0;
     for(Int_t icen(0); icen<AliTRDeventInfo::kCentralityClasses; icen++){
       for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
         p=cOut->cd(icen*AliTRDgeometry::kNlayer+ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
