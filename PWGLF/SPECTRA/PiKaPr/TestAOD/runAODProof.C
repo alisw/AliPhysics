@@ -1,4 +1,4 @@
-void runAODProof(Int_t c=1, const char * proofMode = "full")
+void runAODProof(Int_t c=4, const char * proofMode = "full")
 { //1 data AOD049
   //2 MC AOD048
   //3 data AOD086
@@ -26,8 +26,8 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
    //handler->SetAliROOTVersion("v5-03-11-AN");
    handler->SetAliROOTVersion("v5-04-25-AN");
    
-   //handler->SetNproofWorkers(5);
-   handler->SetNproofWorkersPerSlave(4);
+   handler->SetNproofWorkers(54);
+   //handler->SetNproofWorkersPerSlave(4);
    handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
    //handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
    // Set handler for Real DATA:
