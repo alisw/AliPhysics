@@ -1,8 +1,10 @@
-// $Id: $
+// $Id$
 //
 // Calculation of rho 
 //
 // Authors: R.Reed, S.Aiola
+
+#include "AliAnalysisTaskRho.h"
 
 #include <TList.h>
 #include <TH1F.h>
@@ -17,8 +19,6 @@
 #include "AliCentrality.h"
 #include "AliEmcalJet.h"
 #include "AliVCluster.h"
-
-#include "AliAnalysisTaskRho.h"
 
 ClassImp(AliAnalysisTaskRho)
 
@@ -90,7 +90,6 @@ AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name) :
   fRhoScaled(0)
 {
   // Constructor
-
 }
 
 //________________________________________________________________________
@@ -135,6 +134,8 @@ AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name, Bool_t histo) :
 //________________________________________________________________________
 void AliAnalysisTaskRho::UserCreateOutputObjects()
 {
+  // User create output objects, called at the beginning of the analysis.
+
   AliAnalysisTaskRhoBase::UserCreateOutputObjects();
 
   fRhoScaledName = fRhoName;
@@ -247,7 +248,7 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
   const Int_t Njets = jets->GetEntries();
 
   Int_t maxJetIds[] = {-1, -1};
-  Int_t maxJetPts[] = {0, 0};
+  Float_t maxJetPts[] = {0, 0};
   if (fNExclLeadJets > 0) {
     for (Int_t ij = 0; ij < Njets; ij++) {
       
@@ -260,7 +261,7 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
       
       if (jet->Pt() > maxJetPts[0]) {
 	maxJetPts[1] = maxJetPts[0];
-	maxJetIds[1] = maxJetPts[0];
+	maxJetIds[1] = maxJetIds[0];
 	maxJetPts[0] = jet->Pt();
 	maxJetIds[0] = ij;
       }
@@ -270,6 +271,7 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
 	maxJetIds[1] = ij;
       }
     }
+
     if (fNExclLeadJets < 2) {
       maxJetIds[1] = -1;
       maxJetPts[1] = -1;
@@ -350,9 +352,8 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
     PostData(1, fOutputList);
 }      
 
-
 //________________________________________________________________________
 void AliAnalysisTaskRho::Terminate(Option_t *) 
 {
-
+  // Called at the end of the analysis.
 }

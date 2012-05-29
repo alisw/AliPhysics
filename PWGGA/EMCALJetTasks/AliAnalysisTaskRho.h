@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKRHO_cxx
 #define ALIANALYSISTASKRHO_cxx
 
-// $Id: $
+// $Id$
 
 class TList;
 class TH1F;
@@ -70,6 +70,6 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   AliAnalysisTaskRho(const AliAnalysisTaskRho&);             // not implemented
   AliAnalysisTaskRho& operator=(const AliAnalysisTaskRho&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRho, 3); // Rho task
+  ClassDef(AliAnalysisTaskRho, 4); // Rho task
 };
 #endif
