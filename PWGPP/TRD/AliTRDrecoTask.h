@@ -105,7 +105,7 @@ public:
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   virtual void   SetNameId(const Char_t *nid) {snprintf(fNameId, 10, "%s", nid);}
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
-  static void    SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
+  static Float_t SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
   static void    SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0.);
   void SetRunTerminate(Bool_t runTerminate = kTRUE) { fRunTerminate = runTerminate; }
   virtual void   Terminate(Option_t *);

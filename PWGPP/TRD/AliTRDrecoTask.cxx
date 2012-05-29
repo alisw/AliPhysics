@@ -498,7 +498,7 @@ void AliTRDrecoTask::Terminate(Option_t *)
 }
 
 //________________________________________________________
-void AliTRDrecoTask::SetNormZ(TH2 *h2, Int_t bxmin, Int_t bxmax, Int_t bymin, Int_t bymax, Float_t thr)
+Float_t AliTRDrecoTask::SetNormZ(TH2 *h2, Int_t bxmin, Int_t bxmax, Int_t bymin, Int_t bymax, Float_t thr)
 {
 // Normalize histo content to the mean value in the range specified by bin ranges
 // [bxmin, bxmax] on the x axis and [bymin, bymax] on the y axis.
@@ -518,6 +518,7 @@ void AliTRDrecoTask::SetNormZ(TH2 *h2, Int_t bxmin, Int_t bxmax, Int_t bymin, In
       else h2->SetBinContent(ix, iy, 100.*(c/s-1.));
     }
   }
+  return s;
 }
 
 //________________________________________________________

@@ -87,6 +87,7 @@ public:
     ,kNdimTrkIn   = 7
     ,kNbunchCross = 3  // no of classes for bunch crossing
     ,kNpt         = 3  // no of log bins in pt spectrum
+    ,kNspc        = 3  // no of species e, mu+pi, K+p
     ,kNcharge     = 2  // no of charges
     ,kNpads       = 4  // no of charges
   };

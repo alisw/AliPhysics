@@ -1291,7 +1291,7 @@ TH1* AliTRDcheckDET::MakePlotNTracklets(){
 	TH1 *hBAR = hTracklets3D->Project3D("y");
 	hBAR->SetName("hBAR");
 	hBAR->SetTitle("Number of Tracklets");
-	hBAR->Scale(1./hBAR->Integral());
+	if(hBAR->Integral()) hBAR->Scale(1./hBAR->Integral());
 	hBAR->SetLineColor(kBlack);
 	hBAR->SetLineWidth(2);
 	hBAR->Draw();
@@ -1384,7 +1384,7 @@ void AliTRDcheckDET::MakePlotNclustersTrack(){
 	}
 	TH1 *hAllCentrality = hClusters->ProjectionX("hNcls_all");
 	hAllCentrality->SetTitle("Number of clusters/track");
-	hAllCentrality->Scale(1./hAllCentrality->Integral());
+	if(hAllCentrality->Integral()>0.) hAllCentrality->Scale(1./hAllCentrality->Integral());
 	hAllCentrality->SetLineColor(kBlack);
 	hAllCentrality->SetLineWidth(2);
 	hAllCentrality->GetYaxis()->SetRangeUser(0, 0.02);
@@ -1435,7 +1435,7 @@ void AliTRDcheckDET::MakePlotNclustersTracklet(){
 	}
 	TH1 *hAllCentrality = hClusters->ProjectionX("hNclsTls_all");
 	hAllCentrality->SetTitle("Number of clusters/track");
-	hAllCentrality->Scale(1./hAllCentrality->Integral());
+	if(hAllCentrality->Integral()>0.) hAllCentrality->Scale(1./hAllCentrality->Integral());
 	hAllCentrality->SetLineColor(kBlack);
 	hAllCentrality->SetLineWidth(2);
 	hAllCentrality->GetYaxis()->SetRangeUser(0, 0.3);
@@ -1453,7 +1453,7 @@ void AliTRDcheckDET::MakePlotNclustersTracklet(){
 			hProjCentral[icent] = NULL;
 			continue;
 		}
-		hProjCentral[icent]->Scale(1./hProjCentral[icent]->Integral());
+		if(hProjCentral[icent]->Integral()>0.) hProjCentral[icent]->Scale(1./hProjCentral[icent]->Integral());
 		hProjCentral[icent]->SetTitle("Number of clusters/track");
 		hProjCentral[icent]->SetLineColor(fkColorsCentrality[icent]);
 		hProjCentral[icent]->GetYaxis()->SetRangeUser(0, 0.3);
@@ -1487,8 +1487,8 @@ void AliTRDcheckDET::MakePlotTrackletCharge(){
 	// First Project all charhes
 	TH1 *hQtAll = hQt->ProjectionX("hQtAll");
 	hQtAll->SetTitle("Tracklet Charge");
-	Double_t scalefactor = 0.7 * hQtAll->Integral() / hQtAll->GetMaximum();
-	hQtAll->Scale(scalefactor/hQtAll->Integral());
+	Double_t scalefactor = hQtAll->GetMaximum()>0.?(0.7 * hQtAll->Integral() / hQtAll->GetMaximum()):1;
+	if(hQtAll->Integral()>0.) hQtAll->Scale(scalefactor/hQtAll->Integral());
 	hQtAll->GetYaxis()->SetRangeUser(0., 1.);
 	hQtAll->SetLineColor(kBlack);
 	hQtAll->SetLineWidth(2);
@@ -1505,7 +1505,7 @@ void AliTRDcheckDET::MakePlotTrackletCharge(){
 			continue;
 		}
 		hQtCent[icent]->SetTitle("Tracklet Charge");
-		hQtCent[icent]->Scale(scalefactor/hQtCent[icent]->Integral());
+		if(hQtCent[icent]->Integral()>0.) hQtCent[icent]->Scale(scalefactor/hQtCent[icent]->Integral());
 		hQtCent[icent]->GetYaxis()->SetRangeUser(0., 1.);
 		hQtCent[icent]->SetLineColor(fkColorsCentrality[icent]);
 		hQtCent[icent]->Draw("csame");
@@ -1773,7 +1773,7 @@ Bool_t AliTRDcheckDET::MakeBarPlot(TH1 *histo, Int_t color){
   // Draw nice bar plots
   //
   if(!histo->GetEntries()) return kFALSE;
-  histo->Scale(100./histo->Integral());
+  if(histo->Integral()>0.) histo->Scale(100./histo->Integral());
   histo->SetFillColor(color);
   histo->SetBarOffset(.2);
   histo->SetBarWidth(.6);
