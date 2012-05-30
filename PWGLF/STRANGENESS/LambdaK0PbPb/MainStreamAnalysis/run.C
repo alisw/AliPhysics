@@ -134,7 +134,8 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
       task[ibin]->SetUsePID("withPID"); // withPID or withoutPID
     else
       task[ibin]->SetUsePID("withoutPID"); // withPID or withoutPID
-    cout << "5" << endl;
+	task[ibin]->SetArmenterosCut(0.2);
+    cout << "6" << endl;
   }
 
   // Init and run the analy

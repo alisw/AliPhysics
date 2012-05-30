@@ -38,6 +38,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   void   SetTrackCuts(AliESDtrackCuts * myTracksCuts) { fTracksCuts = myTracksCuts;}
   void   SetCentralitySelector(AliAnalysisCentralitySelector * centr) { fCentrSelector = centr;}
   void   SetQASelector(Bool_t QA = 0) { fQASelector = QA;}
+  void   SetArmenterosCut(Double_t armenterosCut = 0.2) { fArmenterosCut = armenterosCut;}
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
  
  private:
@@ -57,6 +58,8 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   AliESDtrackCuts * fTracksCuts;		// track cuts
   AliPIDResponse *fPIDResponse;                 // PID response
   Bool_t      fQASelector;                    // Quality Assurenc Histo switch
+	
+  Bool_t	fArmenterosCut;			//gradient for Armenteros cut, 0->OFF;
 
   // MC histograms
   TH1F        *fHistMCPrimaryVertexX;      //! Histo

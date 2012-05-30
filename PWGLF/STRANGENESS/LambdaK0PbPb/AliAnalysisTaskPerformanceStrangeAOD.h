@@ -38,6 +38,7 @@ class AliAnalysisTaskPerformanceStrangeAOD : public AliAnalysisTaskSE {
   void   SetQASelector(Bool_t QA = 0) { fQASelector = QA;}
   void   SetCentMin(Int_t min  = 0) { fCentMin = min;}
   void   SetCentMax(Int_t max  = 90) { fCentMax = max;}
+  void	 SetArmenterosCut(Double_t armenterosCut = 0.2) {fArmenterosCut = armenterosCut;}
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
  
  private:
@@ -56,7 +57,8 @@ class AliAnalysisTaskPerformanceStrangeAOD : public AliAnalysisTaskSE {
   Bool_t      fQASelector;                    // Quality Assurenc Histo switch
   Int_t       fCentMin;                       // Centrality bin minimum
   Int_t       fCentMax;                       // Centrality bin maximum
-
+  Bool_t	  fArmenterosCut;			  // value of gradient for Armenteros cut; 0 -> OFF
+	
   // MC histograms
   TH1F        *fHistMCPrimaryVertexX;      //! Histo
   TH1F        *fHistMCPrimaryVertexY;      //! Histo
