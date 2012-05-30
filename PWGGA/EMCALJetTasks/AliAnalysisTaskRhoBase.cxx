@@ -6,6 +6,7 @@
 
 #include <TF1.h>
 
+#include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliVEventHandler.h"
@@ -64,6 +65,43 @@ Double_t AliAnalysisTaskRhoBase::GetRhoFactor(Double_t cent)
   return rho;
 }
 
+//_____________________________________________________
+TString AliAnalysisTaskRhoBase::GetBeamType()
+{
+  // Get beam type : pp-AA-pA
+  // ESDs have it directly, AODs get it from hardcoded run number ranges
+  
+  AliVEvent *event = InputEvent();
+
+  if (!event) { 
+    AliError("Couldn't retrieve event!");
+    return "";
+  }
+
+  TString beamType;
+
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+  if (esd) {
+    const AliESDRun *run = esd->GetESDRun();
+    beamType = run->GetBeamType();
+  }
+  else
+  {
+    Int_t runNumber = event->GetRunNumber();
+    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
+	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
+    {
+      beamType = "A-A";
+    }
+    else 
+    {
+      beamType = "p-p";
+    }
+  }
+
+  return beamType;    
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskRhoBase::UserExec(Option_t *) 
 {
@@ -76,14 +114,20 @@ void AliAnalysisTaskRhoBase::UserExec(Option_t *)
   }
 
   // get centrality 
-  AliCentrality *centrality = InputEvent()->GetCentrality() ;
-  if (centrality)
-    fCent = centrality->GetCentralityPercentile("V0M");
-  else
-    fCent = 99; // probably pp data
-  if (fCent < 0) {
-    AliError(Form("Centrality negative: %f", fCent));
-    return;
+  fCent = 99; 
+  
+  if (GetBeamType() == "A-A") {
+    AliCentrality *centrality = InputEvent()->GetCentrality();
+    
+    if (centrality)
+      fCent = centrality->GetCentralityPercentile("V0M");
+    else
+      fCent = 99; // probably pp data
+    
+    if (fCent < 0) {
+      AliWarning(Form("Centrality negative: %f, assuming 99", fCent));
+      fCent = 99;
+    }
   }
 
   Double_t rhochem = GetRhoFactor(fCent);

@@ -26,6 +26,7 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskSE {
   
  protected:
   virtual Double_t       GetRhoFactor(Double_t cent);
+  TString                GetBeamType();
 
   TString                fRhoName;                       // name of rho
   TF1                   *fRhoFunction;                   // pre-computed rho as a function of centrality
