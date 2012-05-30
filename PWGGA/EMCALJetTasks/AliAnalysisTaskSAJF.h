@@ -51,6 +51,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcal {
 
   // General histograms
   TH1F                       *fHistCentrality;             //!Event centrality distribution
+  TH1F                       *fHistRejectedEvents;         //!Rejected events
   TH2F                       *fHistJetPhiEta[4];           //!Phi-Eta distribution of jets
   TH1F                       *fHistJetsPt[4];              //!Inclusive jet pt spectrum
   TH2F                       *fHistJetsPtArea[4];          //!Jet pt vs. area

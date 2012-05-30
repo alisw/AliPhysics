@@ -355,7 +355,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
 
   for(Int_t i = 0; i < ntracks; i++) {
 
-    AliVTrack* track = dynamic_cast<AliVTrack*>(fTracks->At(i)); // pointer to reconstructed to track          
+    AliVParticle* track = dynamic_cast<AliVParticle*>(fTracks->At(i)); // pointer to reconstructed to track          
     if(!track) {
       AliError(Form("Could not retrieve track %d",i)); 
       continue; 
@@ -382,7 +382,11 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     if (!fDoEoverP)
       continue;
 
-    Int_t clId = track->GetEMCALcluster();
+    AliVTrack *vtrack = dynamic_cast<AliVTrack*>(track);
+    if (!vtrack)
+      continue;
+
+    Int_t clId = vtrack->GetEMCALcluster();
     if (clId > -1 && clId < nclusters && fCaloClusters) {
       AliVCluster* cluster = dynamic_cast<AliVCluster*>(fCaloClusters->At(i));
       if (cluster) {
