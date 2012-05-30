@@ -79,6 +79,7 @@ ClassImp(AliAnalysisTaskHFECal)
 AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name) 
   : AliAnalysisTaskSE(name)
   ,fESD(0)
+  ,fGeom(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
   ,fCuts(0)
@@ -99,18 +100,30 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fdEdxBef(0)	 
   ,fdEdxAft(0)	 
   ,fIncpT(0)	
+  ,fIncpTM20(0)	
   ,fInvmassLS(0)		
   ,fInvmassULS(0)		
   ,fOpeningAngleLS(0)	
   ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
   ,fPhoElecPt(0)
+  ,fPhoElecPtM20(0)
   ,fSameElecPt(0)
+  ,fSameElecPtM20(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)
   ,fTPCnsigma(0)
   ,fCent(0)
   ,fEleInfo(0)
+  ,fClsEBftTrigCut(0)	 
+  ,fClsEAftTrigCut(0)	 
+  ,fClsEAftTrigCut1(0)	 
+  ,fClsEAftTrigCut2(0)	 
+  ,fClsEAftTrigCut3(0)	 
+  ,fClsEAftTrigCut4(0)	 
+  ,fClsETime(0)       
+  ,fClsETime1(0)       
+  ,fTrigTimes(0)
 {
   //Named constructor
   
@@ -131,6 +144,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
 AliAnalysisTaskHFECal::AliAnalysisTaskHFECal() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskHFECal")
   ,fESD(0)
+  ,fGeom(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
   ,fCuts(0)
@@ -151,18 +165,30 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fdEdxBef(0)	 
   ,fdEdxAft(0)	 
   ,fIncpT(0)	 
+  ,fIncpTM20(0)	 
   ,fInvmassLS(0)		
   ,fInvmassULS(0)		
   ,fOpeningAngleLS(0)	
   ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
   ,fPhoElecPt(0)
+  ,fPhoElecPtM20(0)
   ,fSameElecPt(0)
+  ,fSameElecPtM20(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)	 	  
   ,fTPCnsigma(0)
   ,fCent(0)
   ,fEleInfo(0)
+  ,fClsEBftTrigCut(0)	 
+  ,fClsEAftTrigCut(0)	 
+  ,fClsEAftTrigCut1(0)	 
+  ,fClsEAftTrigCut2(0)	 
+  ,fClsEAftTrigCut3(0)	 
+  ,fClsEAftTrigCut4(0)	 
+  ,fClsETime(0)       
+  ,fClsETime1(0)       
+  ,fTrigTimes(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -186,6 +212,7 @@ AliAnalysisTaskHFECal::~AliAnalysisTaskHFECal()
   //Destructor 
   
   delete fOutputList;
+  delete fGeom;
   delete fPID;
   delete fCFM;
   delete fPIDqa;
@@ -261,8 +288,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
          double emcphi = clustpos.Phi(); 
          double emceta = clustpos.Eta();
-         double calInfo[4];
-         calInfo[0] = emcphi; calInfo[1] = emceta; calInfo[2] = clustE; calInfo[3] = cent; 
+         double calInfo[5];
+         calInfo[0] = emcphi; calInfo[1] = emceta; calInfo[2] = clustE; calInfo[3] = cent; calInfo[4] = clust->Chi2(); 
          if(clustE>1.5)fEMCAccE->Fill(calInfo); 
         }
    }
@@ -300,8 +327,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
     Double_t mom = -999., eop=-999., pt = -999., dEdx=-999., fTPCnSigma=-10, phi=-999., eta=-999.;
-    pt = track->Pt();
-    if(pt<2.0)continue;
+    //pt = track->Pt();
+    //if(pt<2.0)continue;
     
     // Track extrapolation
     
@@ -346,9 +373,9 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		nmatch = clust->GetNTracksMatched();
 
 		  double valdedx[16];
-		  valdedx[0] = mom; valdedx[1] = pt; valdedx[2] = dEdx; valdedx[3] = phi; valdedx[4] = eta; valdedx[5] = fTPCnSigma;
-		  valdedx[6] = eop; valdedx[7] = rmatch; valdedx[8] = ncells,  valdedx[9] = m02; valdedx[10] = m20; valdedx[11] = disp;
-		  valdedx[12] = cent; valdedx[13] = charge; valdedx[14] = oppstatus; valdedx[15] = samestatus;
+		  valdedx[0] = pt; valdedx[1] = dEdx; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
+		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = m02; valdedx[9] = m20; valdedx[10] = disp;
+		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = samestatus; valdedx[15] = clust->Chi2();
                   fEleInfo->Fill(valdedx);
                  
 
@@ -366,6 +393,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     AliHFEpidObject hfetrack;
     hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
     hfetrack.SetRecTrack(track);
+    int centf = (int)cent;
+    hfetrack.SetCentrality(centf); //added
     hfetrack.SetPbPb();
     if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
 
@@ -373,17 +402,26 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     
     fTrkEovPAft->Fill(pt,eop);
     fdEdxAft->Fill(mom,dEdx);
-    fIncpT->Fill(cent,pt);    
 
-    
+    fIncpT->Fill(cent,pt);    
     if(fFlagPhotonicElec) fPhoElecPt->Fill(cent,pt);
     if(fFlagConvinatElec) fSameElecPt->Fill(cent,pt);
+
+    if(m20>0.0 && m20<0.3)
+      { 
+       fIncpTM20->Fill(cent,pt);    
+       if(fFlagPhotonicElec) fPhoElecPtM20->Fill(cent,pt);
+       if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
+     }
  }
  PostData(1, fOutputList);
 }
 //_________________________________________
 void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 {
+  //---- Geometry
+  fGeom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+
   //--------Initialize PID
   fPID->SetHasMCData(kFALSE);
   if(!fPID->GetNumberOfPIDdetectors()) 
@@ -418,10 +456,10 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fNoEvents = new TH1F("fNoEvents","",4,-0.5,3.5) ;
   fOutputList->Add(fNoEvents);
   
-  Int_t binsE[4] =    {250, 100,  1000, 100};
-  Double_t xminE[4] = {1.0,  -1,   0.0,   0}; 
-  Double_t xmaxE[4] = {3.5,   1, 100.0, 100}; 
-  fEMCAccE = new THnSparseD("fEMCAccE","EMC acceptance & E;#eta;#phi;Energy;Centrality",4,binsE,xminE,xmaxE);
+  Int_t binsE[5] =    {250, 100,  1000, 100,   10};
+  Double_t xminE[5] = {1.0,  -1,   0.0,   0, -0.5}; 
+  Double_t xmaxE[5] = {3.5,   1, 100.0, 100,  9.5}; 
+  fEMCAccE = new THnSparseD("fEMCAccE","EMC acceptance & E;#eta;#phi;Energy;Centrality;trugCondition;",5,binsE,xminE,xmaxE);
   fOutputList->Add(fEMCAccE);
 
   fTrkpt = new TH1F("fTrkpt","track pt",100,0,50);
@@ -451,6 +489,8 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpT = new TH2F("fIncpT","HFE pid electro vs. centrality",100,0,100,100,0,50);
   fOutputList->Add(fIncpT);
 
+  fIncpTM20 = new TH2F("fIncpTM20","HFE pid electro vs. centrality with M20",100,0,100,100,0,50);
+  fOutputList->Add(fIncpTM20);
 
   Int_t nBinspho[3] =  { 100, 100, 500};
   Double_t minpho[3] = {  0.,  0., 0.};   
@@ -474,8 +514,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fPhoElecPt = new TH2F("fPhoElecPt", "Pho-inclusive electron pt",100,0,100,100,0,50);
   fOutputList->Add(fPhoElecPt);
   
+  fPhoElecPtM20 = new TH2F("fPhoElecPtM20", "Pho-inclusive electron pt with M20",100,0,100,100,0,50);
+  fOutputList->Add(fPhoElecPtM20);
+
   fSameElecPt = new TH2F("fSameElecPt", "Same-inclusive electron pt",100,0,100,100,0,50);
   fOutputList->Add(fSameElecPt);
+
+  fSameElecPtM20 = new TH2F("fSameElecPtM20", "Same-inclusive electron pt with M20",100,0,100,100,0,50);
+  fOutputList->Add(fSameElecPtM20);
 
   fCent = new TH1F("fCent","Centrality",100,0,100) ;
   fOutputList->Add(fCent);
@@ -487,14 +533,41 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
-  Int_t nBins[16] =  {  480,   480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    3,    3};
-  Double_t min[16] = {kMinP, kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5};
-  Double_t max[16] = {kMaxP, kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  2.5,  2.5};
-  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; p [GeV/c]; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp; Centrality; charge", 16, nBins, min, max);
+  Int_t nBins[16] =  {  480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    3,    3,   10};
+  Double_t min[16] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5, -0.5};
+  Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  2.5,  2.5,  9.5};
+  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp;Centrality;charge;opp;same;trigCond;", 16, nBins, min, max);
   fOutputList->Add(fEleInfo);
 
-//_________________________________________________________
- 
+  //<---  Trigger info
+
+  fClsEBftTrigCut = new TH1F("fClsEBftTrigCut","cluster E before trigger selection",1000,0,100);
+  fOutputList->Add(fClsEBftTrigCut);
+
+  fClsEAftTrigCut = new TH1F("fClsEAftTrigCut","cluster E if cls has 0 trigcut channel",1000,0,100);
+  fOutputList->Add(fClsEAftTrigCut);
+
+  fClsEAftTrigCut1 = new TH1F("fClsEAftTrigCut1","cluster E if cls with trig channel",1000,0,100);
+  fOutputList->Add(fClsEAftTrigCut1);
+
+  fClsEAftTrigCut2 = new TH1F("fClsEAftTrigCut2","cluster E if cls with trigcut channel",1000,0,100);
+  fOutputList->Add(fClsEAftTrigCut2);
+
+  fClsEAftTrigCut3 = new TH1F("fClsEAftTrigCut3","cluster E if cls with trigcut channel + nCell>Ecorrect",1000,0,100);
+  fOutputList->Add(fClsEAftTrigCut3);
+
+  fClsEAftTrigCut4 = new TH1F("fClsEAftTrigCut4","cluster E if cls with trigcut channel + nCell>Ecorrect + cls time cut",1000,0,100);
+  fOutputList->Add(fClsEAftTrigCut4);
+
+  fClsETime = new TH2F("fClsETime", "Cls time vs E; E; time;",1000,0,100,1000,-0.0000002,0.0000009);
+  fOutputList->Add(fClsETime);
+
+  fClsETime1 = new TH2F("fClsETime1", "Cls time vs E if cls contains trigger channel; E; time;",1000,0,100,1000,-0.0000002,0.0000009);
+  fOutputList->Add(fClsETime1);
+
+  fTrigTimes = new TH1F("fTrigTimes", "Trigger time; time; N;",25,0,25);
+  fOutputList->Add(fTrigTimes);
+
   PostData(1,fOutputList);
 }
 
@@ -519,7 +592,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
 {
   //Identify non-heavy flavour electrons using Invariant mass method
   
-  //fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
   //fTrackCuts->SetRequireTPCRefit(kTRUE);
   //fTrackCuts->SetEtaRange(-0.7,0.7);
   //fTrackCuts->SetRequireSigmaToVertex(kTRUE);
@@ -605,4 +678,251 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   fFlagConvinatElec = flagConvinatElec;
   
 }
+
+
+//_________________________________________
+void AliAnalysisTaskHFECal::FindTriggerClusters()
+{
+  // constants
+  const int nModuleCols = 2;
+  const int nModuleRows = 5;
+  const int nColsFeeModule = 48;
+  const int nRowsFeeModule = 24;
+  const int nColsFaltroModule = 24;
+  const int nRowsFaltroModule = 12;
+  //const int faltroWidthMax = 20;
+
+  // part 1, trigger extraction -------------------------------------
+  Int_t globCol, globRow;
+  //Int_t ntimes=0, nTrigChannel=0, nTrigChannelCut=0, trigInCut=0;
+  Int_t ntimes=0, nTrigChannel=0, nTrigChannelCut=0;
+
+  //Int_t trigtimes[faltroWidthMax];
+  Double_t cellTime[nColsFeeModule*nModuleCols][nRowsFeeModule*nModuleRows];
+  Double_t cellEnergy[nColsFeeModule*nModuleCols][nRowsFeeModule*nModuleRows];
+  //Double_t fTrigCutLow = 6;
+  //Double_t fTrigCutHigh = 10;
+  Double_t fTimeCutLow =  469e-09;
+  Double_t fTimeCutHigh = 715e-09;
+
+  AliESDCaloTrigger * fCaloTrigger = fESD->GetCaloTrigger( "EMCAL" );
+
+  // erase trigger maps
+  for(Int_t i = 0; i < nColsFaltroModule*nModuleCols; i++ )
+  {
+    for(Int_t j = 0; j < nRowsFaltroModule*nModuleRows; j++ )
+    {
+      ftriggersCut[i][j] = 0;
+      ftriggers[i][j] = 0;
+      ftriggersTime[i][j] = 0;
+    }
+  }
+
+  Int_t iglobCol=0, iglobRow=0;
+  // go through triggers
+  if( fCaloTrigger->GetEntries() > 0 )
+  {
+    // needs reset
+    fCaloTrigger->Reset();
+    while( fCaloTrigger->Next() )
+    {
+      fCaloTrigger->GetPosition( globCol, globRow );
+      fCaloTrigger->GetNL0Times( ntimes );
+      /*
+      // no L0s
+      if( ntimes < 1 )   continue;
+      // get precise timings
+      fCaloTrigger->GetL0Times( trigtimes );
+      trigInCut = 0;
+      for(Int_t i = 0; i < ntimes; i++ )
+      {
+        // save the first trigger time in channel
+        if( i == 0 || triggersTime[globCol][globRow] > trigtimes[i] )
+          triggersTime[globCol][globRow] = trigtimes[i];
+        //printf("trigger times: %d\n",trigtimes[i]);
+        // check if in cut
+        if(trigtimes[i] > fTrigCutLow && trigtimes[i] < fTrigCutHigh )
+          trigInCut = 1;
+
+        fTrigTimes->Fill(trigtimes[i]);
+      }
+      */
+   
+      //L1 analysis from AliAnalysisTaskEMCALTriggerQA
+      Int_t bit = 0;
+      fCaloTrigger->GetTriggerBits(bit);
+
+      Int_t ts = 0;
+      fCaloTrigger->GetL1TimeSum(ts);
+      if (ts > 0)ftriggers[globCol][globRow] = 1;
+      // number of triggered channels in event
+      nTrigChannel++;
+      // ... inside cut
+      if(ts>0 && (bit >> 6 & 0x1))
+      {
+        iglobCol = globCol;
+        iglobRow = globRow;
+        nTrigChannelCut++;
+        ftriggersCut[globCol][globRow] = 1;
+      }
+
+    } // calo trigger entries
+  } // has calo trigger entries
+
+  // part 2 go through the clusters here -----------------------------------
+  Int_t nCluster=0, nCell=0, iCell=0, gCell=0;
+  Short_t cellAddr, nSACell, mclabel;
+  //Int_t nSACell, iSACell, mclabel;
+  Int_t iSACell;
+  Double_t cellAmp=0, cellTimeT=0, clusterTime=0, efrac;
+  Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta, gphi, geta, feta, fphi;
+
+  TRefArray *fCaloClusters = new TRefArray();
+  fESD->GetEMCALClusters( fCaloClusters ); 
+  nCluster = fCaloClusters->GetEntries();
+
+
+  // save all cells times if there are clusters  
+  if( nCluster > 0 ){
+    // erase time map
+    for(Int_t i = 0; i < nColsFeeModule*nModuleCols; i++ ){ 
+      for(Int_t j = 0; j < nRowsFeeModule*nModuleRows; j++ ){
+        cellTime[i][j] = 0.;
+        cellEnergy[i][j] = 0.;
+      }
+    }
+
+    // get cells
+    AliESDCaloCells *fCaloCells = fESD->GetEMCALCells();
+    //AliVCaloCells fCaloCells = fESD->GetEMCALCells();
+    nSACell = fCaloCells->GetNumberOfCells();
+    for(iSACell = 0; iSACell < nSACell; iSACell++ ){ 
+      // get the cell info *fCal
+      fCaloCells->GetCell( iSACell, cellAddr, cellAmp, cellTimeT , mclabel, efrac);
+
+      // get cell position 
+      fGeom->GetCellIndex( cellAddr, nSupMod, nModule, nIphi, nIeta ); 
+      fGeom->GetCellPhiEtaIndexInSModule( nSupMod,nModule, nIphi, nIeta, iphi, ieta);
+
+      // convert co global phi eta  
+      gphi = iphi + nRowsFeeModule*(nSupMod/2);
+      geta = ieta + nColsFeeModule*(nSupMod%2);
+
+      // save cell time and energy
+      cellTime[geta][gphi] = cellTimeT;
+      cellEnergy[geta][gphi] = cellAmp;
+
+    }
+  }
+
+  Int_t nClusterTrig, nClusterTrigCut;
+  UShort_t *cellAddrs;
+  Double_t clsE=-999, clsEta=-999, clsPhi=-999;
+  Float_t clsPos[3] = {0.,0.,0.};
+
+  for(Int_t icl=0; icl<fESD->GetNumberOfCaloClusters(); icl++)
+  {
+    AliESDCaloCluster *cluster = fESD->GetCaloCluster(icl);
+    if(!cluster || !cluster->IsEMCAL()) continue;
+
+    // get cluster cells
+    nCell = cluster->GetNCells();
+
+    // get cluster energy
+    clsE = cluster->E();
+
+    // get cluster position
+    cluster->GetPosition(clsPos);
+    TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
+    clsEta = clsPosVec.Eta();
+    clsPhi = clsPosVec.Phi();
+
+    // get the cell addresses
+    cellAddrs = cluster->GetCellsAbsId();
+
+    // check if the cluster contains cell, that was marked as triggered
+    nClusterTrig = 0;
+    nClusterTrigCut = 0;
+
+    // loop the cells to check, if cluser in acceptance
+    // any cluster with a cell outside acceptance is not considered
+    for( iCell = 0; iCell < nCell; iCell++ )
+    {
+      // get cell position
+      fGeom->GetCellIndex( cellAddrs[iCell], nSupMod, nModule, nIphi, nIeta );
+      fGeom->GetCellPhiEtaIndexInSModule( nSupMod,nModule, nIphi, nIeta, iphi, ieta);
+
+      // convert co global phi eta
+      gphi = iphi + nRowsFeeModule*(nSupMod/2);
+      geta = ieta + nColsFeeModule*(nSupMod%2);
+
+      if( cellTime[geta][gphi] > 0. ){ 
+        clusterTime += cellTime[geta][gphi];
+        gCell++;
+      }
+
+      // get corresponding FALTRO
+      fphi = gphi / 2;
+      feta = geta / 2;
+
+      // try to match with a triggered
+      if( ftriggers[feta][fphi]==1)
+      {  nClusterTrig++;
+      }
+      if( ftriggersCut[feta][fphi]==1)
+      { nClusterTrigCut++;
+      }
+
+    } // cells
+
+
+    if( gCell > 0 ) 
+      clusterTime = clusterTime / (Double_t)gCell;
+    // fix the reconstriction code time 100ns jumps
+    if( fESD->GetBunchCrossNumber() % 4 < 2 )
+      clusterTime -= 0.0000001;
+
+    fClsETime->Fill(clsE,clusterTime);
+    fClsEBftTrigCut->Fill(clsE);
+
+    if(nClusterTrig>0){
+      fClsETime1->Fill(clsE,clusterTime);
+    }
+
+    if(nClusterTrig>0){
+      cluster->SetChi2(1);
+      fClsEAftTrigCut1->Fill(clsE);                                               
+    }
+
+    if(nClusterTrigCut>0){
+      cluster->SetChi2(2);
+      fClsEAftTrigCut2->Fill(clsE);
+    }
+
+    if(nClusterTrigCut>0 && ( nCell > (1 + clsE / 3)))
+    {
+      cluster->SetChi2(3);
+      fClsEAftTrigCut3->Fill(clsE);
+    }
+
+    if(nClusterTrigCut>0 && (nCell > (1 + clsE / 3) )&&( clusterTime > fTimeCutLow && clusterTime < fTimeCutHigh ))
+    {
+      // cluster->SetChi2(4);
+      fClsEAftTrigCut4->Fill(clsE);
+    }
+    if(nClusterTrigCut<1)
+    {
+      cluster->SetChi2(0);
+
+      fClsEAftTrigCut->Fill(clsE);
+    }
+
+  } // clusters
+}
+
+
+
+
+
+
 

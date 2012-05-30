@@ -53,11 +53,13 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
   void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
+  void FindTriggerClusters();
  private:
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
   
   AliESDEvent 		*fESD;			//!ESD object
+  AliEMCALGeometry  	*fGeom; 		// emcal geometry 
     
   TList       		*fOutputList;		//! output list
   
@@ -72,7 +74,11 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   AliHFEpidQAmanager 	*fPIDqa;		//! PID QA manager
   Double_t 		fOpeningAngleCut;	//openingAngle cut value
   Double_t		fInvmassCut;		//invariant mass cut value
-  
+ 
+  int ftriggers[48][60];//!
+  int ftriggersCut[48][60];//!
+  int ftriggersTime[48][60];//!
+ 
   TH1F			*fNoEvents;		//! no of events
   THnSparseD		*fEMCAccE;		//! EMC acc
   TH1F			*fTrkpt;		//! track pt
@@ -81,13 +87,16 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F			*fdEdxBef;		//! track dEdx vs p before HFE pid
   TH2F			*fdEdxAft;		//! track dEdx vs p after HFE pid
   TH2F			*fIncpT;		//! HFE pid electron vs centrality
+  TH2F			*fIncpTM20;		//! HFE pid electron vs centrality
   THnSparseD		*fInvmassLS;		//! Inv mass of LS (e,e)
   THnSparseD		*fInvmassULS;		//! Inv mass of ULS (e,e)
   TH1F			*fOpeningAngleLS;	//! opening angle for LS pairs
   TH1F			*fOpeningAngleULS;	//! opening angle for ULS pairs
   TH1F			*fPhotoElecPt;		//! photonic elec pt 
   TH2F			*fPhoElecPt;	        //! Pho inclusive ele pt
+  TH2F			*fPhoElecPtM20;	        //! Pho inclusive ele pt
   TH2F			*fSameElecPt;	        //! Same inclusive ele pt
+  TH2F			*fSameElecPtM20;	        //! Same inclusive ele pt
   
   TH1F			*fTrackPtBefTrkCuts;	//! Track pt before track cuts	
   TH1F			*fTrackPtAftTrkCuts;	//! Track pt after track cuts
@@ -96,6 +105,18 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH1F			*fCent;			//! centrality
   THnSparseD		*fEleInfo;		//! EMC acc
   
+  //<---- trigger info
+  TH1F	      *fClsEBftTrigCut;	//Cluster E before trigger selection
+  TH1F        *fClsEAftTrigCut;	//Cluster E after trigger selection
+  TH1F	      *fClsEAftTrigCut1;	//Cluster E after trigger selection
+  TH1F	      *fClsEAftTrigCut2;	//Cluster E after trigger selection
+  TH1F	      *fClsEAftTrigCut3;	//Cluster E after trigger selection
+  TH1F	      *fClsEAftTrigCut4;	//Cluster E after trigger selection
+  TH2F        *fClsETime; //ClsE vs time distribution
+  TH2F        *fClsETime1; //ClsE vs time distribution
+  TH1F        *fTrigTimes;// trigger time
+
+
   AliAnalysisTaskHFECal(const AliAnalysisTaskHFECal&); // not implemented
   AliAnalysisTaskHFECal& operator=(const AliAnalysisTaskHFECal&); // not implemented
   
