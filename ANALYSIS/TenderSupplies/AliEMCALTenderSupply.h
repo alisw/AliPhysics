@@ -126,7 +126,8 @@ public:
   void                SetRecParam(AliEMCALRecParam *p)    { fRecParam = p                    ;}
  
   AliEMCALRecoUtils  *GetRecoUtils() const                { return fEMCALRecoUtils           ;}
-
+  void                SetRecoUtils(AliEMCALRecoUtils *r)  { fEMCALRecoUtils = r              ;}
+  
   void     SwitchOnUpdateCell()                           { fUpdateCell = kTRUE              ;} 
   void     SwitchOffUpdateCell()                          { fUpdateCell = kFALSE             ;}  
 

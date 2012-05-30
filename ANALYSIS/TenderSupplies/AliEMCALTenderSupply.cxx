@@ -356,7 +356,9 @@ void AliEMCALTenderSupply::Init()
   }
 
   // init reco utils
-  fEMCALRecoUtils  = new AliEMCALRecoUtils;
+  
+  if(!fEMCALRecoUtils)
+    fEMCALRecoUtils  = new AliEMCALRecoUtils;
 
   // init geometry if requested
   if (fEMCALGeoName.Length()>0) 
