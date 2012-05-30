@@ -11,12 +11,12 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC){
   hfecuts->SetMinRatioTPCclusters(0.6);
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersITS(3);
-  hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+  hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetVertexRange(10.);
   hfecuts->SetTOFPIDStep(kFALSE);
   hfecuts->SetPtRange(2, 50);
-  hfecuts->SetMaxImpactParam(1,2);
+  hfecuts->SetMaxImpactParam(3.,3.);
   
   AliAnalysisTaskHFECal *task = new AliAnalysisTaskHFECal("HFEanalysisEMCal");
   printf("task ------------------------ %p\n ", task);
