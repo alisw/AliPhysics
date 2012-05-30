@@ -17,6 +17,7 @@
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 #include "AliVEvent.h"
+#include "AliESDEvent.h"
 #include "AliMCEvent.h"
 
 #include "AliEmcalJetTask.h"
@@ -29,7 +30,6 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
-  fMC(kFALSE),
   fAlgo(1),
   fRadius(0.4),
   fType(0),
@@ -49,7 +49,6 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fJetsName("Jets"),
-  fMC(kFALSE),
   fAlgo(1),
   fRadius(0.4),
   fType(0),
@@ -80,6 +79,37 @@ void AliEmcalJetTask::UserCreateOutputObjects()
   fJets->SetName(fJetsName);
 }
 
+//_____________________________________________________
+TString AliEmcalJetTask::GetBeamType()
+{
+  // Get beam type : pp-AA-pA
+  // ESDs have it directly, AODs get it from hardcoded run number ranges
+
+  TString beamType;
+
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fEvent);
+  if (esd) {
+    const AliESDRun *run = esd->GetESDRun();
+    beamType = run->GetBeamType();
+  }
+  else
+  {
+    Int_t runNumber = fEvent->GetRunNumber();
+    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
+	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
+    {
+      beamType = "A-A";
+    }
+    else 
+    {
+      beamType = "p-p";
+    }
+  }
+
+  return beamType;    
+}
+
+
 //________________________________________________________________________
 void AliEmcalJetTask::UserExec(Option_t *) 
 {
@@ -99,11 +129,6 @@ void AliEmcalJetTask::UserExec(Option_t *)
 
   // delete jet output
   fJets->Delete();
-
-  if (!fEvent) {
-    AliError(Form("Could not get the event! fMC = %d", fMC));
-    return;
-  }
 
   // get input collections
   TClonesArray *tracks = 0;
@@ -129,16 +154,22 @@ void AliEmcalJetTask::UserExec(Option_t *)
     }
   }
 
-  // get centrality
-  Float_t cent = -1; 
-  AliCentrality *centrality = fEvent->GetCentrality();
-  if (centrality)
-    cent = centrality->GetCentralityPercentile("V0M");
-  else
-    cent = 99; // probably pp data
-  if (cent < 0) {
-    AliWarning(Form("Centrality negative: %f, assuming 99", cent));
-    cent = 99;
+  
+  // get centrality 
+  Double_t cent = 99; 
+  
+  if (GetBeamType() == "A-A") {
+    AliCentrality *centrality = InputEvent()->GetCentrality();
+    
+    if (centrality)
+      cent = centrality->GetCentralityPercentile("V0M");
+    else
+      cent = 99; // probably pp data
+    
+    if (cent < 0) {
+      AliWarning(Form("Centrality negative: %f, assuming 99", cent));
+      cent = 99;
+    }
   }
 
   FindJets(tracks, clus, fAlgo, fRadius, cent);
@@ -181,12 +212,7 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
 
       if (t->Pt() < fMinJetTrackPt) 
         continue;
-
-      Int_t index = 1;
-      if(fMC && t->Charge() == 0)
-	index =- 1;
-
-      fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), (iTracks + 123) * index);
+      fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  // offset of 100 for consistency with cluster ids
     }
   }
 
@@ -202,10 +228,9 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
         continue;
       TLorentzVector nPart;
       c->GetMomentum(nPart, vertex);
-      Double_t et = nPart.Pt();
-      if (et < fMinJetClusPt) 
+      if (nPart.Pt() < fMinJetClusPt) 
         continue;
-      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus - 123);
+      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus - 100);  // offset of 100 to skip ghost particles uid = -1
     }
   }
 
@@ -233,14 +258,16 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
     Int_t nt            = 0;
     Int_t nc            = 0;
     Double_t neutralE   = 0;
-    Double_t maxTrack   = 0;
-    Double_t maxCluster = 0;
+    Double_t maxCh      = 0;
+    Double_t maxNe      = 0;
     Int_t gall          = 0;
     Int_t gemc          = 0;
+    Int_t ncharged      = 0;
+    Int_t nneutral      = 0;
+    Double_t MCpt       = 0;
 
     jet->SetNumberOfTracks(constituents.size());
     jet->SetNumberOfClusters(constituents.size());
-
     for(UInt_t ic = 0; ic < constituents.size(); ++ic) {
       Int_t uid = constituents[ic].user_index();
 
@@ -252,38 +279,56 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
             (geta > geom->GetArm1EtaMin()) && (geta < geom->GetArm1EtaMax()))
           ++gemc;
         continue;
-      }	else if (fMC || uid >= 0) {
-	Int_t tid = TMath::Abs(uid) - 123;
+      }	else if (uid > 0) {
+	Int_t tid = uid - 100;
         AliVParticle *t = static_cast<AliVParticle*>(tracks->At(tid));
         if (t) {
-	  if (uid >= 0)
+	  if (t->Charge() == 0) {
 	    neutralE += t->P();
-          if (t->Pt() > maxTrack)
-            maxTrack = t->Pt();
+	    ++nneutral;
+	    if (t->Pt() > maxNe)
+	      maxNe = t->Pt();
+	  } else {
+	    ++ncharged;
+	    if (t->Pt() > maxCh)
+	      maxCh = t->Pt();
+	  }
+
+	  if (t->InheritsFrom("AliMCParticle") || t->GetLabel() == 100) // MC particle
+	    MCpt += t->Pt();
+
           jet->AddTrackAt(tid, nt);
-          nt++;
+          ++nt;
         }
       } else {
-	Int_t cid = TMath::Abs(uid) - 123;
+	Int_t cid = -uid - 100;
 	AliVCluster *c = static_cast<AliVCluster*>(clus->At(cid));
 	if (c) {
 	  TLorentzVector nP;
 	  c->GetMomentum(nP, vertex);
 	  neutralE += nP.P();
-	  if (nP.Pt() > maxCluster)
-	    maxCluster = nP.Pt();
+	  if (nP.Pt() > maxNe)
+	    maxNe = nP.Pt();
+
+	  if (c->Chi2() == 100) // MC particle
+	    MCpt += nP.Pt();
+
 	  jet->AddClusterAt(cid, nc);
-	  nc++;
+	  ++nc;
+	  ++nneutral;
 	}
       }
     }
     jet->SetNumberOfTracks(nt);
     jet->SetNumberOfClusters(nc);
     jet->SortConstituents();
-    jet->SetMaxTrackPt(maxTrack);
-    jet->SetMaxClusterPt(maxCluster);
+    jet->SetMaxNeutralPt(maxNe);
+    jet->SetMaxChargedPt(maxCh);
     jet->SetNEF(neutralE / jet->E());
     jet->SetArea(fjw.GetJetArea(ij));
+    jet->SetNumberOfCharged(ncharged);
+    jet->SetNumberOfNeutrals(nneutral);
+    jet->SetMCPt(MCpt);
     if (gall > 0)
       jet->SetAreaEmc(fjw.GetJetArea(ij) * gemc / gall);
     else 
