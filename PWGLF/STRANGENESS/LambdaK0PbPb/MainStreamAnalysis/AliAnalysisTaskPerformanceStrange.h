@@ -62,46 +62,46 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistMCPrimaryVertexX;      //! Histo
   TH1F        *fHistMCPrimaryVertexY;      //! Histo
   TH1F        *fHistMCPrimaryVertexZ;      //! Histo
-  TH1F        *fHistPtTracksITSRefit;      //! Histo
-  TH1F        *fHistPtTracks;      //! Histo
-  TH1F        *fHistPtTracksPITSRefit;      //! Histo
-  TH1F        *fHistPtTracksP;      //! Histo
+  //TH1F        *fHistPtTracksITSRefit;      //! Histo
+  //TH1F        *fHistPtTracks;      //! Histo
+  //TH1F        *fHistPtTracksPITSRefit;      //! Histo
+  //TH1F        *fHistPtTracksP;      //! Histo
 
   TH1F        *fHistMCMultiplicityPrimary;       //! Histo
   TH1F        *fHistMCMultiplicityTracks;       //! Histo
-  TH1F        *fHistTPCTracks;                  //! Histo
+  //TH1F        *fHistTPCTracks;                  //! Histo
   
-  TH2F        *fHistMCtracksProdRadiusK0s;       //! Histo
-  TH2F        *fHistMCtracksProdRadiusLambda;       //! Histo
-  TH2F        *fHistMCtracksProdRadiusAntiLambda;       //! Histo
+  //TH2F        *fHistMCtracksProdRadiusK0s;       //! Histo
+  //TH2F        *fHistMCtracksProdRadiusLambda;       //! Histo
+  //TH2F        *fHistMCtracksProdRadiusAntiLambda;       //! Histo
 
-  TH1F        *fHistMCtracksDecayRadiusK0s;       //! Histo
-  TH1F        *fHistMCtracksDecayRadiusLambda;       //! Histo
-  TH1F        *fHistMCtracksDecayRadiusAntiLambda;       //! Histo
+  //TH1F        *fHistMCtracksDecayRadiusK0s;       //! Histo
+  //TH1F        *fHistMCtracksDecayRadiusLambda;       //! Histo
+  //TH1F        *fHistMCtracksDecayRadiusAntiLambda;       //! Histo
 
   TH1F        *fHistMCPtAllK0s;       //! Histo
   TH1F        *fHistMCPtAllLambda;       //! Histo
   TH1F        *fHistMCPtAllAntiLambda;       //! Histo
 
   //Rap3
-  TH1F        *fHistMCPtAllK0sRap3;       //! Histo
-  TH1F        *fHistMCPtAllLambdaRap3;       //! Histo
-  TH1F        *fHistMCPtAllAntiLambdaRap3;       //! Histo
+  //TH1F        *fHistMCPtAllK0sRap3;       //! Histo
+ // TH1F        *fHistMCPtAllLambdaRap3;       //! Histo
+  //TH1F        *fHistMCPtAllAntiLambdaRap3;       //! Histo
 
-  TH1F        *fHistMCProdRadiusK0s;       //! Histo
-  TH1F        *fHistMCProdRadiusLambda;       //! Histo
-  TH1F        *fHistMCProdRadiusAntiLambda;       //! Histo
+  //TH1F        *fHistMCProdRadiusK0s;       //! Histo
+  //TH1F        *fHistMCProdRadiusLambda;       //! Histo
+  //TH1F        *fHistMCProdRadiusAntiLambda;       //! Histo
 
-  TH1F        *fHistMCRapK0s;                 //! Histo
-  TH1F        *fHistMCRapInPtRangeK0s;        //! Histo
-  TH1F        *fHistMCRapLambda;              //! Histo
-  TH1F        *fHistMCRapInPtRangeLambda;     //! Histo
-  TH1F        *fHistMCRapAntiLambda;          //! Histo
-  TH1F        *fHistMCRapInPtRangeAntiLambda; //! Histo
-  TH1F        *fHistMCRapXi;                  //! Histo
-  TH1F        *fHistMCRapInPtRangeXi;         //! Histo
-  TH1F        *fHistMCRapPhi;                 //! Histo
-  TH1F        *fHistMCRapInPtRangePhi;        //! Histo
+  //TH1F        *fHistMCRapK0s;                 //! Histo
+  //TH1F        *fHistMCRapInPtRangeK0s;        //! Histo
+  //TH1F        *fHistMCRapLambda;              //! Histo
+  //TH1F        *fHistMCRapInPtRangeLambda;     //! Histo
+  //TH1F        *fHistMCRapAntiLambda;          //! Histo
+  //TH1F        *fHistMCRapInPtRangeAntiLambda; //! Histo
+  //TH1F        *fHistMCRapXi;                  //! Histo
+  //TH1F        *fHistMCRapInPtRangeXi;         //! Histo
+  //TH1F        *fHistMCRapPhi;                 //! Histo
+  //TH1F        *fHistMCRapInPtRangePhi;        //! Histo
 //////////////////////////////////////////////////////////
 
   TH1F        *fHistMCPtK0s;       //! Histo
@@ -109,24 +109,24 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistMCPtAntiLambda;       //! Histo
 
   //Rap3
-  TH1F        *fHistMCPtK0sRap3;       //! Histo
-  TH1F        *fHistMCPtLambdaRap3;       //! Histo
-  TH1F        *fHistMCPtAntiLambdaRap3;       //! Histo
+  //TH1F        *fHistMCPtK0sRap3;       //! Histo
+  //TH1F        *fHistMCPtLambdaRap3;       //! Histo
+ // TH1F        *fHistMCPtAntiLambdaRap3;       //! Histo
 
 //////////////////////////////////////////////////////////
 
 
 
-  TH1F        *fHistMCPtLambdaFromSigma;       //! Histo
-  TH1F        *fHistMCPtAntiLambdaFromSigma;       //! Histo
+  //TH1F        *fHistMCPtLambdaFromSigma;       //! Histo
+  //TH1F        *fHistMCPtAntiLambdaFromSigma;       //! Histo
 
-  TH1F        *fHistNTimesRecK0s;       //! Histo
-  TH1F        *fHistNTimesRecLambda;       //! Histo
-  TH1F        *fHistNTimesRecAntiLambda;       //! Histo
+  //TH1F        *fHistNTimesRecK0s;       //! Histo
+  //TH1F        *fHistNTimesRecLambda;       //! Histo
+  //TH1F        *fHistNTimesRecAntiLambda;       //! Histo
 
-  TH2F        *fHistNTimesRecK0sVsPt;       //! Histo
-  TH2F        *fHistNTimesRecLambdaVsPt;       //! Histo
-  TH2F        *fHistNTimesRecAntiLambdaVsPt;       //! Histo
+  //TH2F        *fHistNTimesRecK0sVsPt;       //! Histo
+  //TH2F        *fHistNTimesRecLambdaVsPt;       //! Histo
+  //TH2F        *fHistNTimesRecAntiLambdaVsPt;       //! Histo
 
 
   // ESD histograms
@@ -135,139 +135,139 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
 
   TH1F        *fHistTPCMult;             //! Histo
 
-  TH1F        *fHistTrackletPerEvent;   //! Histo
-  TH1F        *fHistMCDaughterTrack;       //! Histo
+ // TH1F        *fHistTrackletPerEvent;   //! Histo
+  //TH1F        *fHistMCDaughterTrack;       //! Histo
 
-  TH1F        *fHistSPDPrimaryVertexZ;       //! Histo
+  //TH1F        *fHistSPDPrimaryVertexZ;       //! Histo
 
   TH1F        *fHistPrimaryVertexX;       //! Histo
   TH1F        *fHistPrimaryVertexY;       //! Histo
   TH1F        *fHistPrimaryVertexZ;       //! Histo
 
-  TH1F        *fHistPrimaryVertexResX;       //! Histo
-  TH1F        *fHistPrimaryVertexResY;       //! Histo
-  TH1F        *fHistPrimaryVertexResZ;       //! Histo
+  //TH1F        *fHistPrimaryVertexResX;       //! Histo
+  //TH1F        *fHistPrimaryVertexResY;       //! Histo
+  //TH1F        *fHistPrimaryVertexResZ;       //! Histo
 
-  TH1F        *fHistPrimaryVertexPosXV0events;  //! Primary vertex position in X in events with V0 candidates
-  TH1F        *fHistPrimaryVertexPosYV0events;  //! Primary vertex position in Y in events with V0 candidates
-  TH1F        *fHistPrimaryVertexPosZV0events;  //! Primary vertex position in Z in events with V0 candidates
+  //TH1F        *fHistPrimaryVertexPosXV0events;  //! Primary vertex position in X in events with V0 candidates
+ // TH1F        *fHistPrimaryVertexPosYV0events;  //! Primary vertex position in Y in events with V0 candidates
+ // TH1F        *fHistPrimaryVertexPosZV0events;  //! Primary vertex position in Z in events with V0 candidates
 
-  TH2F        *fHistDaughterPt;               //! Histo
+  //TH2F        *fHistDaughterPt;               //! Histo
 
 ///////////////////////////K0s 2D histos: cut vs on fly status/////////////////
 
-  TH2F        *fHistDcaPosToPrimVertexK0;       //! Histo
-  TH2F        *fHistDcaNegToPrimVertexK0;       //! Histo
+ // TH2F        *fHistDcaPosToPrimVertexK0;       //! Histo
+ // TH2F        *fHistDcaNegToPrimVertexK0;       //! Histo
 //  TH2F        *fHistDcaPosToPrimVertexZoomK0;       //! Histo
 //  TH2F        *fHistDcaNegToPrimVertexZoomK0;       //! Histo
-  TH2F        *fHistRadiusV0K0;       //! Histo
-  TH2F        *fHistDecayLengthV0K0;       //! Histo
-  TH2F        *fHistDcaV0DaughtersK0;       //! Histo
-  TH2F        *fHistChi2K0;       //! Histo
-  TH2F        *fHistCosPointAngleK0;       //! Histo
+ // TH2F        *fHistRadiusV0K0;       //! Histo
+//  TH2F        *fHistDecayLengthV0K0;       //! Histo
+//  TH2F        *fHistDcaV0DaughtersK0;       //! Histo
+ // TH2F        *fHistChi2K0;       //! Histo
+ // TH2F        *fHistCosPointAngleK0;       //! Histo
 //  TH2F        *fHistCosPointAngleZoomK0;       //! Histo
 //  TH2F        *fHistProdRadiusK0;       //! Histo
 
 ///////////////////////////K0s 2D histos: cut vs mass//////////////
-  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0;  //! Histo
-  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0;  //! Histo
-  TH2F        *fHistRadiusV0K0vsMassK0;            //! Histo
-  TH2F        *fHistDecayLengthV0K0vsMassK0;       //! Histo
-  TH2F        *fHistDcaV0DaughtersK0vsMassK0;      //! Histo
-  TH2F        *fHistCosPointAngleK0vsMassK0;       //! Histo
+  //TH2F        *fHistDcaPosToPrimVertexK0vsMassK0;  //! Histo
+  //TH2F        *fHistDcaNegToPrimVertexK0vsMassK0;  //! Histo
+  //TH2F        *fHistRadiusV0K0vsMassK0;            //! Histo
+  //TH2F        *fHistDecayLengthV0K0vsMassK0;       //! Histo
+  //TH2F        *fHistDcaV0DaughtersK0vsMassK0;      //! Histo
+  //TH2F        *fHistCosPointAngleK0vsMassK0;       //! Histo
   
   // pt1
-  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt1;  //! Histo
-  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt1;  //! Histo
-  TH2F        *fHistRadiusV0K0vsMassK0pt1;            //! Histo
-  TH2F        *fHistDecayLengthV0K0vsMassK0pt1;       //! Histo
-  TH2F        *fHistDcaV0DaughtersK0vsMassK0pt1;      //! Histo
-  TH2F        *fHistCosPointAngleK0vsMassK0pt1;       //! Histo
+  //TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt1;  //! Histo
+  //TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt1;  //! Histo
+  //TH2F        *fHistRadiusV0K0vsMassK0pt1;            //! Histo
+ // TH2F        *fHistDecayLengthV0K0vsMassK0pt1;       //! Histo
+ // TH2F        *fHistDcaV0DaughtersK0vsMassK0pt1;      //! Histo
+ // TH2F        *fHistCosPointAngleK0vsMassK0pt1;       //! Histo
   
   // pt2
-  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt2;  //! Histo
-  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt2;  //! Histo
-  TH2F        *fHistRadiusV0K0vsMassK0pt2;             //! Histo
-  TH2F        *fHistDecayLengthV0K0vsMassK0pt2;     //! Histo
-  TH2F        *fHistDcaV0DaughtersK0vsMassK0pt2;    //! Histo
-  TH2F        *fHistCosPointAngleK0vsMassK0pt2;     //! Histo
+ // TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt2;  //! Histo
+ // TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt2;  //! Histo
+ // TH2F        *fHistRadiusV0K0vsMassK0pt2;             //! Histo
+ // TH2F        *fHistDecayLengthV0K0vsMassK0pt2;     //! Histo
+ // TH2F        *fHistDcaV0DaughtersK0vsMassK0pt2;    //! Histo
+ // TH2F        *fHistCosPointAngleK0vsMassK0pt2;     //! Histo
 
   // pt3
-  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt3;    //! Histo
-  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt3;    //! Histo
-  TH2F        *fHistRadiusV0K0vsMassK0pt3;             //! Histo
-  TH2F        *fHistDecayLengthV0K0vsMassK0pt3;       //! Histo
-  TH2F        *fHistDcaV0DaughtersK0vsMassK0pt3;      //! Histo
-  TH2F        *fHistCosPointAngleK0vsMassK0pt3;      //! Histo
+ // TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt3;    //! Histo
+ // TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt3;    //! Histo
+ // TH2F        *fHistRadiusV0K0vsMassK0pt3;             //! Histo
+ // TH2F        *fHistDecayLengthV0K0vsMassK0pt3;       //! Histo
+ // TH2F        *fHistDcaV0DaughtersK0vsMassK0pt3;      //! Histo
+ // TH2F        *fHistCosPointAngleK0vsMassK0pt3;      //! Histo
 
 //////////////////////////Lambda 2D histos: cut vs on fly status////////////////////
 
-  TH2F        *fHistDcaPosToPrimVertexL;       //! Histo
-  TH2F        *fHistDcaNegToPrimVertexL;       //! Histo
+ // TH2F        *fHistDcaPosToPrimVertexL;       //! Histo
+ // TH2F        *fHistDcaNegToPrimVertexL;       //! Histo
 //  TH2F        *fHistDcaPosToPrimVertexZoomL;       //! Histo
 //  TH2F        *fHistDcaNegToPrimVertexZoomL;       //! Histo
-  TH2F        *fHistRadiusV0L;       //! Histo
-  TH2F        *fHistDecayLengthV0L;       //! Histo
-  TH2F        *fHistDcaV0DaughtersL;       //! Histo
-  TH2F        *fHistChi2L;       //! Histo
-  TH2F        *fHistCosPointAngleL;       //! Histo
-  TH1F        *fHistcTauL;                 //! Histo
+ // TH2F        *fHistRadiusV0L;       //! Histo
+ // TH2F        *fHistDecayLengthV0L;       //! Histo
+//  TH2F        *fHistDcaV0DaughtersL;       //! Histo
+ // TH2F        *fHistChi2L;       //! Histo
+//  TH2F        *fHistCosPointAngleL;       //! Histo
+//  TH1F        *fHistcTauL;                 //! Histo
 //  TH2F        *fHistCosPointAngleZoomL;       //! Histo
 //  TH2F        *fHistProdRadiusL;       //! Histo    
 
 //////////////////////////Lambda 2D histos: cut vs mass////////////////
-  TH2F        *fHistDcaPosToPrimVertexLvsMassL;      //! Histo
-  TH2F        *fHistDcaNegToPrimVertexLvsMassL;      //! Histo
-  TH2F        *fHistRadiusV0LvsMassL;                 //! Histo
-  TH2F        *fHistDecayLengthV0LvsMassL;            //! Histo
-  TH2F        *fHistDcaV0DaughtersLvsMassL;         //! Histo
-  TH2F        *fHistCosPointAngleLvsMassL;            //! Histo
-  TH3F        *fHistCosPointAngleLvsMassVsPtsigL;    //! Histo
-  TH3F        *fHistCosPointAngleLvsMassVsPtbackL;    //! Histo
+ // TH2F        *fHistDcaPosToPrimVertexLvsMassL;      //! Histo
+ // TH2F        *fHistDcaNegToPrimVertexLvsMassL;      //! Histo
+ // TH2F        *fHistRadiusV0LvsMassL;                 //! Histo
+ // TH2F        *fHistDecayLengthV0LvsMassL;            //! Histo
+ // TH2F        *fHistDcaV0DaughtersLvsMassL;         //! Histo
+ // TH2F        *fHistCosPointAngleLvsMassL;            //! Histo
+ // TH3F        *fHistCosPointAngleLvsMassVsPtsigL;    //! Histo
+ // TH3F        *fHistCosPointAngleLvsMassVsPtbackL;    //! Histo
 
 
 
   // pt1
-  TH2F        *fHistDcaPosToPrimVertexLambdaVsMasspt1;  //! Histo
-  TH2F        *fHistDcaNegToPrimVertexLambdaVsMasspt1;  //! Histo
-  TH2F        *fHistRadiusV0LambdaVsMasspt1;            //! Histo
-  TH2F        *fHistDecayLengthV0LambdaVsMasspt1;       //! Histo
-  TH2F        *fHistDcaV0DaughtersLambdaVsMasspt1;      //! Histo
-  TH2F        *fHistCosPointAngleLambdaVsMasspt1;       //! Histo
+ // TH2F        *fHistDcaPosToPrimVertexLambdaVsMasspt1;  //! Histo
+ // TH2F        *fHistDcaNegToPrimVertexLambdaVsMasspt1;  //! Histo
+ // TH2F        *fHistRadiusV0LambdaVsMasspt1;            //! Histo
+ // TH2F        *fHistDecayLengthV0LambdaVsMasspt1;       //! Histo
+ // TH2F        *fHistDcaV0DaughtersLambdaVsMasspt1;      //! Histo
+ // TH2F        *fHistCosPointAngleLambdaVsMasspt1;       //! Histo
   
   // pt2
-  TH2F        *fHistDcaPosToPrimVertexLambdaVsMasspt2;  //! Histo
-  TH2F        *fHistDcaNegToPrimVertexLambdaVsMasspt2;  //! Histo
-  TH2F        *fHistRadiusV0LambdaVsMasspt2;             //! Histo
-  TH2F        *fHistDecayLengthV0LambdaVsMasspt2;     //! Histo
-  TH2F        *fHistDcaV0DaughtersLambdaVsMasspt2;    //! Histo
-  TH2F        *fHistCosPointAngleLambdaVsMasspt2;     //! Histo
+ // TH2F        *fHistDcaPosToPrimVertexLambdaVsMasspt2;  //! Histo
+ // TH2F        *fHistDcaNegToPrimVertexLambdaVsMasspt2;  //! Histo
+ // TH2F        *fHistRadiusV0LambdaVsMasspt2;             //! Histo
+ // TH2F        *fHistDecayLengthV0LambdaVsMasspt2;     //! Histo
+ // TH2F        *fHistDcaV0DaughtersLambdaVsMasspt2;    //! Histo
+ // TH2F        *fHistCosPointAngleLambdaVsMasspt2;     //! Histo
 
   // pt3
-  TH2F        *fHistDcaPosToPrimVertexLambdaVsMasspt3;    //! Histo
-  TH2F        *fHistDcaNegToPrimVertexLambdaVsMasspt3;    //! Histo
-  TH2F        *fHistRadiusV0LambdaVsMasspt3;             //! Histo
-  TH2F        *fHistDecayLengthV0LambdaVsMasspt3;       //! Histo
-  TH2F        *fHistDcaV0DaughtersLambdaVsMasspt3;      //! Histo
-  TH2F        *fHistCosPointAngleLambdaVsMasspt3;      //! Histo
+ // TH2F        *fHistDcaPosToPrimVertexLambdaVsMasspt3;    //! Histo
+ // TH2F        *fHistDcaNegToPrimVertexLambdaVsMasspt3;    //! Histo
+ // TH2F        *fHistRadiusV0LambdaVsMasspt3;             //! Histo
+ // TH2F        *fHistDecayLengthV0LambdaVsMasspt3;       //! Histo
+ // TH2F        *fHistDcaV0DaughtersLambdaVsMasspt3;      //! Histo
+ // TH2F        *fHistCosPointAngleLambdaVsMasspt3;      //! Histo
 
 
 //////////////////////////Lambda 2D histos: cut vs on fly status////////////////////
 
-  TH2F        *fHistDcaPosToPrimVertexAntiL;       //! Histo
-  TH2F        *fHistDcaNegToPrimVertexAntiL;       //! Histo
+ // TH2F        *fHistDcaPosToPrimVertexAntiL;       //! Histo
+ // TH2F        *fHistDcaNegToPrimVertexAntiL;       //! Histo
 //  TH2F        *fHistDcaPosToPrimVertexZoomL;       //! Histo
 //  TH2F        *fHistDcaNegToPrimVertexZoomL;       //! Histo
-  TH2F        *fHistRadiusV0AntiL;       //! Histo
-  TH2F        *fHistDecayLengthV0AntiL;       //! Histo
-  TH2F        *fHistDcaV0DaughtersAntiL;       //! Histo
-  TH2F        *fHistChi2AntiL;       //! Histo
-  TH2F        *fHistCosPointAngleAntiL;       //! Histo
+ // TH2F        *fHistRadiusV0AntiL;       //! Histo
+ // TH2F        *fHistDecayLengthV0AntiL;       //! Histo
+ // TH2F        *fHistDcaV0DaughtersAntiL;       //! Histo
+ // TH2F        *fHistChi2AntiL;       //! Histo
+ // TH2F        *fHistCosPointAngleAntiL;       //! Histo
 //  TH2F        *fHistCosPointAngleZoomL;       //! Histo
 //  TH2F        *fHistProdRadiusL;       //! Histo    
 
 //////////////////////////Lambda 2D histos: cut vs mass////////////////
-  TH2F        *fHistDcaPosToPrimVertexAntiLvsMass;      //! Histo
+ /* TH2F        *fHistDcaPosToPrimVertexAntiLvsMass;      //! Histo
   TH2F        *fHistDcaNegToPrimVertexAntiLvsMass;      //! Histo
   TH2F        *fHistRadiusV0AntiLvsMass;                 //! Histo
   TH2F        *fHistDecayLengthV0AntiLvsMass;            //! Histo
@@ -300,7 +300,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistDcaV0DaughtersAntiLVsMasspt3;      //! Histo
   TH2F        *fHistCosPointAngleAntiLVsMasspt3;      //! Histo
 
-
+*/
 
 //////////////////////////////////////////////////////////////////////
 
@@ -321,23 +321,23 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
 
 
   //Rap3
-  TH2F        *fHistPtVsMassK0Rap3;       //! Histo
-  TH2F        *fHistPtVsMassLambdaRap3;       //! Histo
-  TH2F        *fHistPtVsMassAntiLambdaRap3;       //! Histo
+ // TH2F        *fHistPtVsMassK0Rap3;       //! Histo
+ // TH2F        *fHistPtVsMassLambdaRap3;       //! Histo
+ // TH2F        *fHistPtVsMassAntiLambdaRap3;       //! Histo
 
 
 /////////////////////////////////////////////
 
-  TH2F        *fHistArmenterosPodolanski;       //! Histo
-  TH2F        *fHistK0sMassVsLambdaMass;       //! Histo
+ // TH2F        *fHistArmenterosPodolanski;       //! Histo
+ // TH2F        *fHistK0sMassVsLambdaMass;       //! Histo
 
   //PID check
-  TH2F *fHistTPCsigPLambda;               //! Histo
-  TH2F *fHistTPCsigPAntiLambda;               //! Histo
-  TH1F *fHistNSigmaProton;               //! Histo
+ // TH2F *fHistTPCsigPLambda;               //! Histo
+//  TH2F *fHistTPCsigPAntiLambda;               //! Histo
+//  TH1F *fHistNSigmaProton;               //! Histo
 
   //PID
-  TH1F        *fHistNsigmaPosPionAntiLambda;    //! Histo
+ /* TH1F        *fHistNsigmaPosPionAntiLambda;    //! Histo
   TH1F        *fHistNsigmaNegProtonAntiLambda;   //! Histo
   TH1F        *fHistNsigmaPosProtonLambda;        //! Histo
   TH1F        *fHistNsigmaNegPionLambda;           //! Histo
@@ -350,10 +350,10 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistAsMcRapK0;       //! Histo
   TH1F        *fHistAsMcRapLambda;       //! Histo
   TH1F        *fHistAsMcRapAntiLambda;       //! Histo
-
+*/
 
 ////////////////////////////////////////////////////////////////////
-
+/*
   TH1F        *fHistAsMcPtK0;       //! Histo
   TH1F        *fHistAsMcPtLambda;       //! Histo
   TH1F        *fHistAsMcPtAntiLambda;       //! Histo
@@ -362,11 +362,11 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistAsMcPtK0Rap3;       //! Histo
   TH1F        *fHistAsMcPtLambdaRap3;       //! Histo
   TH1F        *fHistAsMcPtAntiLambdaRap3;       //! Histo
-
+*/
 
 /////////////////////////////////////////////////////////////////////
 
-
+/*
   TH1F        *fHistAsMcPtZoomK0;       //! Histo
   TH1F        *fHistAsMcPtZoomLambda;       //! Histo
   TH1F        *fHistAsMcPtZoomAntiLambda;       //! Histo
@@ -382,7 +382,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistPidMcMassK0;       //! Histo
   TH1F        *fHistPidMcMassLambda;       //! Histo
   TH1F        *fHistPidMcMassAntiLambda;       //! Histo
-
+*/
     //Mass 
 
   TH1F        *fHistAsMcMassK0;       //! Histo
@@ -390,9 +390,9 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistAsMcMassAntiLambda;       //! Histo
 
   //Rap3
-  TH1F        *fHistAsMcMassK0Rap3;       //! Histo
-  TH1F        *fHistAsMcMassLambdaRap3;       //! Histo
-  TH1F        *fHistAsMcMassAntiLambdaRap3;       //! Histo
+ // TH1F        *fHistAsMcMassK0Rap3;       //! Histo
+ // TH1F        *fHistAsMcMassLambdaRap3;       //! Histo
+ // TH1F        *fHistAsMcMassAntiLambdaRap3;       //! Histo
 
 
   //PtVsMass
@@ -402,10 +402,10 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistAsMcPtVsMassAntiLambda;       //! Histo
 
   //Rap3
-  TH2F        *fHistAsMcPtVsMassK0Rap3;       //! Histo
-  TH2F        *fHistAsMcPtVsMassLambdaRap3;       //! Histo
-  TH2F        *fHistAsMcPtVsMassAntiLambdaRap3;       //! Histo
-
+ // TH2F        *fHistAsMcPtVsMassK0Rap3;       //! Histo
+ // TH2F        *fHistAsMcPtVsMassLambdaRap3;       //! Histo
+ // TH2F        *fHistAsMcPtVsMassAntiLambdaRap3;       //! Histo
+/*
   TH2F        *fHistAsMcMassVsRadiusK0;       //! Histo
   TH2F        *fHistAsMcMassVsRadiusLambda;       //! Histo
   TH2F        *fHistAsMcMassVsRadiusAntiLambda;       //! Histo
@@ -452,7 +452,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistAsMcMotherPdgCodeAntiLambda;       //! Histo
   TH1F        *fHistAsMcPtLambdaFromSigma;       //! Histo
   TH1F        *fHistAsMcPtAntiLambdaFromSigma;       //! Histo
-
+*/
 
   // Associated secondary particles:
   TH2F        *fHistAsMcSecondaryPtVsRapK0s;       //! Histo
@@ -462,7 +462,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistAsMcSecondaryPtVsMassK0s;       //! Histo
   TH2F        *fHistAsMcSecondaryPtVsMassLambda;       //! Histo
   TH2F        *fHistAsMcSecondaryPtVsMassAntiLambda;       //! Histo	
-	
+	/*
   TH1F        *fHistAsMcSecondaryProdRadiusK0s;       //! Histo
   TH1F        *fHistAsMcSecondaryProdRadiusLambda;       //! Histo
   TH1F        *fHistAsMcSecondaryProdRadiusAntiLambda;       //! Histo
@@ -477,7 +477,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
 
   TH1F        *fHistAsMcSecondaryPtLambdaFromSigma;       //! Histo
   TH1F        *fHistAsMcSecondaryPtAntiLambdaFromSigma;       //! Histo
-
+*/
 
   AliAnalysisTaskPerformanceStrange(const AliAnalysisTaskPerformanceStrange&); 
   AliAnalysisTaskPerformanceStrange& operator=(const AliAnalysisTaskPerformanceStrange&); 
