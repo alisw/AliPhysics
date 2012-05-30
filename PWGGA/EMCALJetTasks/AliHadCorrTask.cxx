@@ -11,12 +11,12 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 
+#include "AliAnalysisManager.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODEvent.h"
-#include "AliAnalysisManager.h"
-#include "AliCentrality.h"
+#include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
-#include "AliESDtrack.h"
+#include "AliCentrality.h"
 #include "AliPicoTrack.h"
 #include "AliVEventHandler.h"
 
@@ -491,6 +491,43 @@ void AliHadCorrTask::UserCreateOutputObjects()
   PostData(1, fOutputList);
 }
 
+//_____________________________________________________
+TString AliHadCorrTask::GetBeamType()
+{
+  // Get beam type : pp-AA-pA
+  // ESDs have it directly, AODs get it from hardcoded run number ranges
+  
+  AliVEvent *event = InputEvent();
+
+  if (!event) { 
+    AliError("Couldn't retrieve event!");
+    return "";
+  }
+
+  TString beamType;
+
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+  if (esd) {
+    const AliESDRun *run = esd->GetESDRun();
+    beamType = run->GetBeamType();
+  }
+  else
+  {
+    Int_t runNumber = event->GetRunNumber();
+    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
+	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
+    {
+      beamType = "A-A";
+    }
+    else 
+    {
+      beamType = "p-p";
+    }
+  }
+
+  return beamType;    
+}
+
 //________________________________________________________________________
 void AliHadCorrTask::UserExec(Option_t *) 
 {
@@ -519,18 +556,20 @@ void AliHadCorrTask::UserExec(Option_t *)
   TList *l = InputEvent()->GetList();
   
   // get centrality 
-  Double_t cent = -1; 
- 
-  AliCentrality *centrality = InputEvent()->GetCentrality() ;
-
-  if (centrality)
-    cent = centrality->GetCentralityPercentile("V0M");
-  else
-    cent=99; // probably pp data
+  Double_t cent = 99; 
   
-  if (cent<0) {
-    AliWarning(Form("Centrality negative: %f, assuming 99", cent));
-    cent = 99;
+  if (GetBeamType() == "A-A") {
+    AliCentrality *centrality = InputEvent()->GetCentrality();
+    
+    if (centrality)
+      cent = centrality->GetCentralityPercentile("V0M");
+    else
+      cent = 99; // probably pp data
+    
+    if (cent < 0) {
+      AliWarning(Form("Centrality negative: %f, assuming 99", cent));
+      cent = 99;
+    }
   }
   
   Int_t centbin = GetCentBin(cent);

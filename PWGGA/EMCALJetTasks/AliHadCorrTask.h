@@ -36,6 +36,7 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   Double_t     GetEtaSigma(Int_t pbin)    const;
   Double_t     GetPhiMean(Int_t pbin, Int_t centbin)    const;
   Double_t     GetPhiSigma(Int_t pbin, Int_t centbin)    const;
+  TString      GetBeamType();
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
