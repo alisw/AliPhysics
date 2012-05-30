@@ -28,24 +28,24 @@ AliJetResponseMaker::AliJetResponseMaker() :
   AliAnalysisTaskEmcal("AliJetResponseMaker"),
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
+  fMaxDistance(0.2),
   fMCTracks(0),
   fMCJets(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
-  fHistMCJetsPtTrack(0),
-  fHistMCJetsPtClus(0),
   fHistMCJetsPtNonBias(0),
-  fHistMCLeadingJetPt(0),
   fHistMCJetsNEFvsPt(0),
   fHistMCJetsZvsPt(0),
   fHistJetPhiEta(0),
   fHistJetsPt(0),
-  fHistJetsPtTrack(0),
-  fHistJetsPtClus(0),
   fHistJetsPtNonBias(0),
-  fHistLeadingJetPt(0),
   fHistJetsNEFvsPt(0),
-  fHistJetsZvsPt(0)
+  fHistJetsZvsPt(0),
+  fHistClosestDistance(0),
+  fHistClosestDeltaPhi(0),
+  fHistClosestDeltaEta(0),
+  fHistClosestDeltaPt(0),
+  fHistPartvsDetecPt(0)
 {
   // Default constructor.
 }
@@ -55,24 +55,24 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   AliAnalysisTaskEmcal(name),
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
+  fMaxDistance(0.2),
   fMCTracks(0),
   fMCJets(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
-  fHistMCJetsPtTrack(0),
-  fHistMCJetsPtClus(0),
   fHistMCJetsPtNonBias(0),
-  fHistMCLeadingJetPt(0),
   fHistMCJetsNEFvsPt(0),
   fHistMCJetsZvsPt(0),
   fHistJetPhiEta(0),
   fHistJetsPt(0),
-  fHistJetsPtTrack(0),
-  fHistJetsPtClus(0),
   fHistJetsPtNonBias(0),
-  fHistLeadingJetPt(0),
   fHistJetsNEFvsPt(0),
-  fHistJetsZvsPt(0)
+  fHistJetsZvsPt(0),
+  fHistClosestDistance(0),
+  fHistClosestDeltaPhi(0),
+  fHistClosestDeltaEta(0),
+  fHistClosestDeltaPt(0),
+  fHistPartvsDetecPt(0)
 {
   // Standard constructor.
 
@@ -103,27 +103,10 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistJetsPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistJetsPt);
   
-  if (fAnaType == kEMCAL) {
-    fHistJetsPtClus = new TH1F("fHistJetsPtClus", "fHistJetsPtClus", fNbins, fMinPt, fMaxPt);
-    fHistJetsPtClus->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistJetsPtClus->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistJetsPtClus);
-  }
-  
-  fHistJetsPtTrack = new TH1F("fHistJetsPtTrack", "fHistJetsPtTrack", fNbins, fMinPt, fMaxPt);
-  fHistJetsPtTrack->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistJetsPtTrack->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistJetsPtTrack);
-  
   fHistJetsPtNonBias = new TH1F("fHistJetsPtNonBias", "fHistJetsPtNonBias", fNbins, fMinPt, fMaxPt);
   fHistJetsPtNonBias->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistJetsPtNonBias->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistJetsPtNonBias);
-  
-  fHistLeadingJetPt = new TH1F("fHistLeadingJetPt", "fHistLeadingJetPt", fNbins, fMinPt, fMaxPt);
-  fHistLeadingJetPt->GetXaxis()->SetTitle("p_{T} [GeV]");
-  fHistLeadingJetPt->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistLeadingJetPt);
   
   fHistJetsZvsPt = new TH2F("fHistJetsZvsPt", "fHistJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinPt, fMaxPt);
   fHistJetsZvsPt->GetXaxis()->SetTitle("Z");
@@ -147,27 +130,10 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistMCJetsPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistMCJetsPt);
   
-  if (fAnaType == kEMCAL) {
-    fHistMCJetsPtClus = new TH1F("fHistMCJetsPtClus", "fHistMCJetsPtClus", fNbins, fMinPt, fMaxPt);
-    fHistMCJetsPtClus->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistMCJetsPtClus->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistMCJetsPtClus);
-  }
-  
-  fHistMCJetsPtTrack = new TH1F("fHistMCJetsPtTrack", "fHistMCJetsPtTrack", fNbins, fMinPt, fMaxPt);
-  fHistMCJetsPtTrack->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistMCJetsPtTrack->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistMCJetsPtTrack);
-  
   fHistMCJetsPtNonBias = new TH1F("fHistMCJetsPtNonBias", "fHistMCJetsPtNonBias", fNbins, fMinPt, fMaxPt);
   fHistMCJetsPtNonBias->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistMCJetsPtNonBias->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistMCJetsPtNonBias);
-  
-  fHistMCLeadingJetPt = new TH1F("fHistMCLeadingJetPt", "fHistMCLeadingJetPt", fNbins, fMinPt, fMaxPt);
-  fHistMCLeadingJetPt->GetXaxis()->SetTitle("p_{T} [GeV]");
-  fHistMCLeadingJetPt->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistMCLeadingJetPt);
   
   fHistMCJetsZvsPt = new TH2F("fHistMCJetsZvsPt", "fHistMCJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinPt, fMaxPt);
   fHistMCJetsZvsPt->GetXaxis()->SetTitle("Z");
@@ -181,6 +147,31 @@ void AliJetResponseMaker::UserCreateOutputObjects()
     fOutput->Add(fHistMCJetsNEFvsPt);
   }
 
+  fHistClosestDistance = new TH1F("fHistClosestDistance", "fHistClosestDistance", 50, 0, fMaxDistance * 1.2);
+  fHistClosestDistance->GetXaxis()->SetTitle("d");
+  fHistClosestDistance->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistClosestDistance);
+
+  fHistClosestDeltaPhi = new TH1F("fHistClosestDeltaPhi", "fHistClosestDeltaPhi", 64, -1.6, 4.8);
+  fHistClosestDeltaPhi->GetXaxis()->SetTitle("#Delta#phi");
+  fHistClosestDeltaPhi->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistClosestDeltaPhi);
+
+  fHistClosestDeltaEta = new TH1F("fHistClosestDeltaEta", "fHistClosestDeltaEta", TMath::CeilNint(fMaxEta - fMinEta) * 20, fMinEta * 2, fMaxEta * 2);
+  fHistClosestDeltaEta->GetXaxis()->SetTitle("#Delta#eta");
+  fHistClosestDeltaEta->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistClosestDeltaEta);
+
+  fHistClosestDeltaPt = new TH1F("fHistClosestDeltaPt", "fHistClosestDeltaPt", fNbins, -fMaxPt / 2, fMaxPt / 2);
+  fHistClosestDeltaPt->GetXaxis()->SetTitle("#Delta p_{T}");
+  fHistClosestDeltaPt->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistClosestDeltaPt);
+
+  fHistPartvsDetecPt = new TH2F("fHistPartvsDetecPt", "fHistPartvsDetecPt", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
+  fHistPartvsDetecPt->GetXaxis()->SetTitle("p_{T}^{det}");
+  fHistPartvsDetecPt->GetYaxis()->SetTitle("p_{T}^{rec}");
+  fOutput->Add(fHistPartvsDetecPt);
+
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
 
@@ -189,44 +180,18 @@ void AliJetResponseMaker::FillHistograms()
 {
   // Fill histograms.
 
-  Int_t maxJetIndex  = -1;
-  Int_t maxMCJetIndex  = -1;
+  // Find the closest jets
+  DoJetLoop(fJets, fMCJets);
+  DoJetLoop(fMCJets, fJets);
 
-  DoJetLoop(maxJetIndex, fJets, fTracks, fCaloClusters); 
-  if (maxJetIndex < 0) 
-    return;
-  AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fJets->At(maxJetIndex));
-  if (!jet) 
-    return;
+  Int_t nJets = fJets->GetEntriesFast();
 
-  DoJetLoop(maxMCJetIndex, fMCJets, fMCTracks);  
-  if (maxMCJetIndex < 0) 
-    return;
-  AliEmcalJet* mcjet = dynamic_cast<AliEmcalJet*>(fMCJets->At(maxMCJetIndex));
-  if (!mcjet) 
-    return;
+  for (Int_t i = 0; i < nJets; i++) {
 
-  fHistLeadingJetPt->Fill(jet->Pt());
-  fHistMCLeadingJetPt->Fill(mcjet->Pt());
-}
-
-//________________________________________________________________________
-void AliJetResponseMaker::DoJetLoop(Int_t &maxJetIndex, TClonesArray *jets, TClonesArray *tracks, TClonesArray *clusters)
-{
-  // Do the jet loop.
-
-  if (!fJets)
-    return;
-
-  Int_t njets = jets->GetEntriesFast();
-
-  Float_t maxJetPt = 0;
-  for (Int_t ij = 0; ij < njets; ij++) {
-
-    AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(jets->At(ij));
+    AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fJets->At(i));
 
     if (!jet) {
-      AliError(Form("Could not receive jet %d", ij));
+      AliError(Form("Could not receive jet %d", i));
       continue;
     }  
 
@@ -235,18 +200,20 @@ void AliJetResponseMaker::DoJetLoop(Int_t &maxJetIndex, TClonesArray *jets, TClo
 
     fHistJetsPtNonBias->Fill(jet->Pt());
 
-    if (jet->MaxTrackPt() > fPtBiasJetTrack)
-      fHistJetsPtTrack->Fill(jet->Pt());
-    
-    if (fAnaType == kEMCAL && jet->MaxClusterPt() > fPtBiasJetClus) 
-      fHistJetsPtClus->Fill(jet->Pt());
-    
     if (jet->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet->MaxClusterPt() < fPtBiasJetClus))
 	continue;
 
-    if (maxJetPt < jet->Pt()) {
-      maxJetPt = jet->Pt();
-      maxJetIndex = ij;
+    if (jet->ClosestJet() && jet->ClosestJet()->ClosestJet() == jet && jet->ClosestJetDistance() < fMaxDistance) {    // Matched jet found
+      jet->SetMatchedToClosest();
+      jet->ClosestJet()->SetMatchedToClosest();
+      fHistClosestDistance->Fill(jet->ClosestJetDistance());
+      Double_t deta = jet->Eta() - jet->MatchedJet()->Eta();
+      fHistClosestDeltaEta->Fill(deta);
+      Double_t dphi = jet->Phi() - jet->MatchedJet()->Phi();
+      fHistClosestDeltaPhi->Fill(dphi);
+      Double_t dpt = jet->Pt() - jet->MatchedJet()->Pt();
+      fHistClosestDeltaPt->Fill(dpt);
+      fHistPartvsDetecPt->Fill(jet->Pt(), jet->MatchedJet()->Pt());
     }
 
     fHistJetsPt->Fill(jet->Pt());
@@ -257,21 +224,103 @@ void AliJetResponseMaker::DoJetLoop(Int_t &maxJetIndex, TClonesArray *jets, TClo
       fHistJetsNEFvsPt->Fill(jet->NEF(), jet->Pt());
 
     for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
-      AliVParticle *track = jet->TrackAt(it, tracks);
+      AliVParticle *track = jet->TrackAt(it, fTracks);
       if (track)
 	fHistJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt());
     }
 
-    if (fAnaType != kEMCAL || !clusters)
+    for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
+      AliVCluster *cluster = jet->ClusterAt(ic, fCaloClusters);
+      if (cluster) {
+	TLorentzVector nP;
+	cluster->GetMomentum(nP, fVertex);
+	fHistJetsZvsPt->Fill(nP.Pt() / jet->Pt(), jet->Pt());
+      }
+    }
+  }
+
+ Int_t nMCJets = fMCJets->GetEntriesFast();
+
+  for (Int_t i = 0; i < nMCJets; i++) {
+
+    AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fMCJets->At(i));
+
+    if (!jet) {
+      AliError(Form("Could not receive mc jet %d", i));
+      continue;
+    }  
+
+    if (!AcceptJet(jet))
       continue;
 
-    for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
-      AliVCluster *cluster = jet->ClusterAt(ic, clusters);
+    fHistMCJetsPtNonBias->Fill(jet->Pt());
 
-      if (cluster) {
-	TLorentzVector nPart;
-	cluster->GetMomentum(nPart, fVertex);
-	fHistJetsZvsPt->Fill(nPart.Et() / jet->Pt(), jet->Pt());
+    if (jet->MaxTrackPt() < fPtBiasJetTrack)
+	continue;
+
+    fHistMCJetsPt->Fill(jet->Pt());
+
+    fHistMCJetPhiEta->Fill(jet->Eta(), jet->Phi());
+
+    if (fAnaType == kEMCAL)
+      fHistMCJetsNEFvsPt->Fill(jet->NEF(), jet->Pt());
+
+    for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
+      AliVParticle *track = jet->TrackAt(it, fMCTracks);
+      if (track)
+	fHistMCJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt());
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2)
+{
+  // Do the jet loop.
+
+  Int_t nJets1 = jets1->GetEntriesFast();
+  Int_t nJets2 = jets2->GetEntriesFast();
+
+  for (Int_t i = 0; i < nJets1; i++) {
+
+    AliEmcalJet* jet1 = dynamic_cast<AliEmcalJet*>(jets1->At(i));
+
+    if (!jet1) {
+      AliError(Form("Could not receive jet %d", i));
+      continue;
+    }  
+
+    if (!AcceptJet(jet1))
+      continue;
+    
+    if (jet1->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet1->IsMC() || jet1->MaxClusterPt() < fPtBiasJetClus))
+	continue;
+
+    for (Int_t j = 0; j < nJets2; j++) {
+      
+      AliEmcalJet* jet2 = dynamic_cast<AliEmcalJet*>(jets2->At(j));
+      
+      if (!jet2) {
+	AliError(Form("Could not receive jet %d", j));
+	continue;
+      }  
+      
+      if (!AcceptJet(jet2))
+	continue;
+      
+      if (jet2->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet2->IsMC() || jet2->MaxClusterPt() < fPtBiasJetClus))
+	continue;
+      
+      Double_t deta = jet2->Eta() - jet1->Eta();
+      Double_t dphi = jet2->Phi() - jet1->Phi();
+      Double_t d = TMath::Sqrt(deta * deta + dphi * dphi);
+
+      if (d < jet1->ClosestJetDistance()) {
+	jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
+	jet1->SetClosestJet(jet2, d);
+      }
+      else if (d < jet1->SecondClosestJetDistance()) {
+	jet1->SetSecondClosestJet(jet2, d);
       }
     }
   }
