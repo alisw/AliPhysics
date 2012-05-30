@@ -531,14 +531,14 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fhnJetPtRej[ij]);
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area.   total bins = 9.72 M
-    const Int_t nBinsSparse2 = 8;
-    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,   8,  18,             180, 10,fNTrigger,fNAcceptance+0.5};
+    const Int_t nBinsSparse2 = 9;
+    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,   8,  18,             180, 10,fNTrigger,fNAcceptance+0.5,10};
     if(cJetBranch.Contains("RandomCone")){
       nBins2[5] = 1;
     }
-    const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.,-0.5,-0.5};
-    const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 80, 0.9, 2.*TMath::Pi(),1.0,fNTrigger-0.5,fNAcceptance+0.5};
-    fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area;trigger;acceptance bin",nBinsSparse2,nBins2,xmin2,xmax2);
+    const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.,-0.5,-0.5,-100};
+    const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 80, 0.9, 2.*TMath::Pi(),1.0,fNTrigger-0.5,fNAcceptance+0.5,100};
+    fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area;trigger;acceptance bin;signed pt leading",nBinsSparse2,nBins2,xmin2,xmax2);
     fHistList->Add(fhnJetPtQA[ij]);
     
     // Bins:track number  pTtrack, cent, mult, RP.   total bins = 224 k
@@ -566,10 +566,10 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       delete [] xPt3;
 
       // Track QA bins track nr, pTrack, cent, eta, phi bins 5.4 M
-      const Int_t nBinsSparse4 = 5;
-      const Int_t nBins4[nBinsSparse4] =    {    2, 50,  10,  20, 180};
-      const Double_t xmin4[nBinsSparse4]  = { -0.5,  0,   0, -1.0,   0.};
-      const Double_t xmax4[nBinsSparse4]  = {  1.5,150, 100,  1.0,2.*TMath::Pi()};  
+      const Int_t nBinsSparse4 = 6;
+      const Int_t nBins4[nBinsSparse4] =    {    2, 50,  10,  20, 180,2};
+      const Double_t xmin4[nBinsSparse4]  = { -0.5,  0,   0, -1.0,   0.,-1.5};
+      const Double_t xmax4[nBinsSparse4]  = {  1.5,150, 100,  1.0,2.*TMath::Pi(),1.5};  
 
       // change the binning ot the pT axis:
       Double_t *xPt4 = new Double_t[nBins4[1]+1];
@@ -581,7 +581,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 	else if(xPt4[i-1]<30)xPt4[i] = xPt4[i-1] +  2.5;
 	else xPt4[i] = xPt4[i-1] + 5.;
       }
-      fhnTrackPtQA[ij] = new THnSparseF(Form("fhnTrackPtQA%s",cAdd.Data()),";track number;p_{T};cent;#eta;#phi",nBinsSparse4,nBins4,xmin4,xmax4);
+      fhnTrackPtQA[ij] = new THnSparseF(Form("fhnTrackPtQA%s",cAdd.Data()),";track number;p_{T};cent;#eta;#phi;sign",nBinsSparse4,nBins4,xmin4,xmax4);
       fhnTrackPtQA[ij]->SetBinEdges(1,xPt4);
       fHistList->Add(fhnTrackPtQA[ij]);
       delete [] xPt4;
@@ -949,7 +949,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
 
   
 
-  Double_t var2[8] = {0,}; // jet number;p_{T,jet};cent;#eta;#phi;area;trigger
+  Double_t var2[9] = {0,}; // jet number;p_{T,jet};cent;#eta;#phi;area;trigger
   var2[2] = fCentrality;
 
   for(int ij = 0;ij < nJets;ij++){
@@ -1026,6 +1026,8 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       var2[4] = phiJet;
       var2[5] = jet->EffectiveAreaCharged();
       var2[7] = var1[8];
+      var2[8] = (leadTrack?leadTrack->Charge()*leadTrack->Pt():0);//pT of leading jet
+
       if(ij<kMaxJets){
 	if(leadTrack)fh2LTrackPtJetPt[iType][ij]->Fill(leadTrack->Pt(),ptJet);
 	var1[0] = ij;
@@ -1134,7 +1136,7 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
   Double_t var3[6]; // track number;p_{T};cent;#tracks;RP
   var3[2] = fCentrality;
   var3[3] = refMult;
-  Double_t var4[5]; // track number;p_{T};cent;#eta;#phi
+  Double_t var4[6]; // track number;p_{T};cent;#eta;#phi;sign
   var4[2] = fCentrality;
   Int_t nTrackOver = particlesList.GetSize();
   // do the same for tracks and jets
@@ -1192,7 +1194,7 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
       var4[1] = tmpPt;
       var4[3] = tmpTrack->Eta();
       var4[4] = tmpPhi;
-
+      var4[5] = tmpTrack->Charge();
 
       
       for(int it = 0;it <fNTrigger;it++){
