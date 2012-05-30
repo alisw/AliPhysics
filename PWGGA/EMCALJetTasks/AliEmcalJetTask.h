@@ -18,26 +18,24 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   UserExec(Option_t *option);
   void                   Terminate(Option_t *option);
 
-  void                   SetTracksName(const char *n)     { fTracksName    = n     ; }
+  void                   SetAlgo(Int_t a)                 { fAlgo          = a     ; }
   void                   SetClusName(const char *n)       { fCaloName      = n     ; }
   void                   SetJetsName(const char *n)       { fJetsName      = n     ; }
-  void                   SetMC(Bool_t mc = kTRUE)         { fMC            = mc    ; }
-  void                   SetAlgo(Int_t a)                 { fAlgo          = a     ; }
-  void                   SetRadius(Double_t r)            { fRadius        = r     ; }
-  void                   SetType(Int_t t)                 { fType          = t     ; }
-  void                   SetMinJetClusPt(Double_t min)    { fMinJetClusPt  = min   ; }
-  void                   SetMinJetTrackPt(Double_t min)   { fMinJetTrackPt = min   ; }
   void                   SetMinJetArea(Double_t a)        { fMinJetArea    = a     ; }
+  void                   SetMinJetClusPt(Double_t min)    { fMinJetClusPt  = min   ; }
   void                   SetMinJetPt(Double_t j)          { fMinJetPt      = j     ; }
-
+  void                   SetMinJetTrackPt(Double_t min)   { fMinJetTrackPt = min   ; }
+  void                   SetRadius(Double_t r)            { fRadius        = r     ; }
+  void                   SetTracksName(const char *n)     { fTracksName    = n     ; }
+  void                   SetType(Int_t t)                 { fType          = t     ; }
 
  protected:
   void                   FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t /*cent*/);
+  TString                GetBeamType();
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
   TString                fJetsName;               // name of jet collection
-  Bool_t                 fMC;                     // true = MC analysis
   Int_t                  fAlgo;                   // algo (0==kt, 1==antikt)
   Double_t               fRadius;                 // jet radius
   Int_t                  fType;                   // jet type (0=all, 1=ch, 2=neutral)
