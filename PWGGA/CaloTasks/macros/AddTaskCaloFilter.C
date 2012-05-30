@@ -1,8 +1,8 @@
 AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE, 
-                                              const Float_t minE      = 6, 
-                                              const Float_t minN      = 2, 
+                                              const Float_t minE      = 5, 
+                                              const Float_t minN      = 3, 
                                               const Float_t vz        = 10.,
-                                              const Int_t   opt       = AliAnalysisTaskCaloFilter::kEMCAL, //kPHOS, kEMCAL or kBoth
+                                              const Int_t   opt       = AliAnalysisTaskCaloFilter::kBoth, //kPHOS, kEMCAL or kBoth
                                               const Bool_t  correct   = kFALSE,
                                               const Bool_t  fillTrack = kTRUE,
                                               const Bool_t  fillAOD   = kTRUE)
@@ -27,25 +27,44 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE,
   
   AliAnalysisTaskCaloFilter * filter = new AliAnalysisTaskCaloFilter("CaloFilter");
   
+  //filter->SetDebugLevel(2);
+  
   filter->SetCaloFilter(opt); //kPHOS, kEMCAL or kBoth
   
   filter->SetVzCut(vz);
   
-  if(bias) // select events with significant signal in EMCAL
+  if(bias) // select events with significant signal in EMCAL or TPC or PHOS
   {
-    filter->SetEnergyCut(minE);
-    filter->SetNcellsCut(minN);
+    filter->SetEventSelection(1,1,1); // Select events depending on EMCAL, PHOS and tracks criteria
+    filter->SwitchOnAcceptAllMBEvent();
     
+    filter->SetEMCALEnergyCut(minE);
+    filter->SetEMCALNcellsCut(minN);
+ 
+    filter->SetPHOSEnergyCut(minE);
+    filter->SetPHOSNcellsCut(minN);
+    
+    filter->SetTrackPtCut(minE);
+
     filter->SelectCollisionCandidates(AliVEvent::kAny) ;
     
     printf("--- Select events with 1 cluster with at least %2.2f GeV and N = %d ---\n",minE,minN);
   }
   else // Do not bias the signal in EMCAL, select MB events 
   {
-    filter->SetEnergyCut(0);
-    filter->SetNcellsCut(0);    
-
-    filter->SelectCollisionCandidates(AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral ) ;
+    
+    filter->SetEventSelection(0,0,0);
+    filter->SwitchOnAcceptAllMBEvent();
+    
+    filter->SetEMCALEnergyCut(-1);
+    filter->SetEMCALNcellsCut(0);  
+    
+    filter->SetPHOSEnergyCut(-1);
+    filter->SetPHOSNcellsCut(0); 
+    
+    filter->SetTrackPtCut(-1);
+    
+    filter->SelectCollisionCandidates(AliVEvent::kMB);// | AliVEvent::kCentral | AliVEvent::kSemiCentral ) ;
     
     printf("--- Select Min Bias events ---\n");
   }
@@ -53,8 +72,17 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE,
   if(correct)   filter->SwitchOnClusterCorrection();
   else          filter->SwitchOffClusterCorrection();  
   
-  if(fillTrack) filter->SwitchOnFillTracks();
-  else          filter->SwitchOffFillTracks();
+  AliEMCALRecoUtils * reco = filter->GetEMCALRecoUtils();
+  reco->SwitchOnRejectExoticCluster() ;
+  reco->SetExoticCellFractionCut(0.97);
+  reco->SetExoticCellMinAmplitudeCut(2.);
+
+  if(fillTrack) { filter->SwitchOnFillTracks()  ; filter->SwitchOnFillHybridTracks()  ; }
+  else          { filter->SwitchOffFillTracks() ; filter->SwitchOffFillHybridTracks() ; }
+  
+  filter->SwitchOffFillv0s() ; // Put ON if you know what you do.
+  
+  filter->SwitchOnFillVZERO(); // Be able to recalculate centrality and event plane afterwards even it is stored in header
   
   if(fillAOD)   filter->SwitchOnFillAODFile();
   else          filter->SwitchOffFillAODFile();
