@@ -202,7 +202,6 @@ Double_t AliAnalysisTaskRho::GetScaleFactor(Double_t cent)
   return scale;
 }
 
-
 //________________________________________________________________________
 void AliAnalysisTaskRho::UserExec(Option_t *) 
 {
