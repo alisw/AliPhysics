@@ -57,7 +57,7 @@ ClassImp(AliAnalysisTaskPerformanceStrangeAOD)
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrangeAOD::AliAnalysisTaskPerformanceStrangeAOD()
-: AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fAOD(0), fListHist(0),fPIDResponse(0),fQASelector(0),fCentMin(0),fCentMax(0), 
+: AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fAOD(0), fListHist(0),fPIDResponse(0),fQASelector(0),fCentMin(0),fCentMax(0),fArmenterosCut(0), 
 
   fHistMCPrimaryVertexX(0),
   fHistMCPrimaryVertexY(0),
@@ -347,7 +347,7 @@ AliAnalysisTaskPerformanceStrangeAOD::AliAnalysisTaskPerformanceStrangeAOD()
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrangeAOD::AliAnalysisTaskPerformanceStrangeAOD(const char *name)
-  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fAOD(0), fListHist(),fPIDResponse(0),fQASelector(0),fCentMin(0),fCentMax(0),
+  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fAOD(0), fListHist(),fPIDResponse(0),fQASelector(0),fCentMin(0),fCentMax(0),fArmenterosCut(0),
 
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
@@ -1634,6 +1634,7 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
 
   Double_t cutcTauL = 3*7.89;
   Double_t cutcTauK0s = 3*2.68;
+  Double_t cutArmenteros = fArmenterosCut;	
   // Min number of TPC clusters:
   // Int_t nbMinTPCclusters = 80;
 
@@ -2460,7 +2461,10 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
       //
       ////////////////
     
-      if (lcTauK0s< cutcTauK0s && lPtArmV0 > 0.2*lAlphaV0) {
+		if (lcTauK0s< cutcTauK0s) 
+		{
+			if (fArmenterosCut == 0 || lPtArmV0 > cutArmenteros*lAlphaV0) 
+			{
    
 	if (TMath::Abs(lRapK0s) < lCutRap ) {
 
@@ -2518,7 +2522,8 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
 	    } //fQASelector
 	  }
 	} // if rap. condition
-      } // end cTau condition
+		} //end Armenteros cut condition
+		} // end cTau condition
 
 
       ////////////////////////////
@@ -2682,7 +2687,10 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
       //
       /////////////////////////////////////////////////
 
-      if (lcTauK0s< cutcTauK0s && lPtArmV0 > 0.2*lAlphaV0) {
+		if (lcTauK0s< cutcTauK0s) 
+		{
+			if ( fArmenterosCut == 0 || lPtArmV0 > cutArmenteros*lAlphaV0) 
+			{
 
 	if (TMath::Abs(lRapK0s) < lCutRap) {
 
@@ -2730,7 +2738,8 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
 	  
 	  }
 	} // end rapidity condition
-      } //end cTau condition
+			} // end Armenteros cut condition
+		} //end cTau condition
     
 
       // Associated Lambda histograms in |rap| < lCutRap

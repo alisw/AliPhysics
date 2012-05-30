@@ -896,7 +896,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 	double cutMinNClustersTPC(70), cutRatio(0.8);
 	bool isMonteCarlo(false); 
 	int isMCtype(0);    //1 = Pure Hijing only, 0 = Anything, -1 = Injected only
-	double cutEta(0.8), cutRapidity(0.5);
+	double cutEta(0.8), cutRapidity(0.5), cutArmenteros(0.2);
 	
     // Create pointer to reconstructed event
 	AliAODEvent *aod=(AliAODEvent *)InputEvent();	
@@ -1375,7 +1375,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		if(k0Candidate &&  centPercentile >= 0.0001 && centPercentile <= 90.0 &&!feeddown )
 		{ fHistArmPodK0->Fill(ArmenterosAlpha,ArmenterosPt); }
 		
-		if( ArmenterosPt <= TMath::Abs(0.2*ArmenterosAlpha) )
+		if( ArmenterosPt <= TMath::Abs(cutArmenteros*ArmenterosAlpha) && cutArmenteros(0.2) !=-999 )
 		{k0Candidate = false;}
 		
 		if(lambdaCandidate)
