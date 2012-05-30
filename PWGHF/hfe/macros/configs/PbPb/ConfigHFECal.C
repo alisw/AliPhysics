@@ -28,10 +28,6 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC){
   if(useMC) pid->SetHasMCData(kTRUE);
   pid->AddDetector("TPC", 0);
   pid->AddDetector("EMCAL", 1);
-  // change E/p cuts
-  AliHFEpidEMCAL *emcpid = pid->AliHFEpid::GetDetPID(AliHFEpid::kEMCALpid);
-  emcpid->SetEoPMax(1.3);
-  emcpid->SetEoPMim(0.9);
 
   Double_t params[4];
   char *cutmodel;
@@ -52,6 +48,11 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC){
 	  params[0] = -1.0; //sigma min
   }
   pid->ConfigureTPCdefaultCut(cutmodel, params,3.0); 
+
+  // change E/p cuts
+  AliHFEpidEMCAL *emcpid = pid->AliHFEpid::GetDetPID(AliHFEpid::kEMCALpid);
+  emcpid->SetEoPMax(1.3);
+  emcpid->SetEoPMim(0.9);
 
   printf("*************************************\n");
   printf("Configuring standard Task:\n");
