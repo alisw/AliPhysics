@@ -2460,7 +2460,7 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
       //
       ////////////////
     
-      if (lcTauK0s< cutcTauK0s) {
+      if (lcTauK0s< cutcTauK0s && lPtArmV0 > 0.2*lAlphaV0) {
    
 	if (TMath::Abs(lRapK0s) < lCutRap ) {
 
@@ -2682,7 +2682,7 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
       //
       /////////////////////////////////////////////////
 
-      if (lcTauK0s< cutcTauK0s) {
+      if (lcTauK0s< cutcTauK0s && lPtArmV0 > 0.2*lAlphaV0) {
 
 	if (TMath::Abs(lRapK0s) < lCutRap) {
 
