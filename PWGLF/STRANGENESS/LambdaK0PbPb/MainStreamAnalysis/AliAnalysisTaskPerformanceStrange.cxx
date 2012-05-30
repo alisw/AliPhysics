@@ -83,342 +83,342 @@ ClassImp(AliAnalysisTaskPerformanceStrange)
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
 : AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fESD(0), fListHist(0),fCentrSelector(0),fTracksCuts(0),fPIDResponse(0),fQASelector(0), 
 
-  fHistMCPrimaryVertexX(0),
-  fHistMCPrimaryVertexY(0),
-  fHistMCPrimaryVertexZ(0),
-  fHistPtTracksITSRefit(0),
-  fHistPtTracks(0),
-  fHistPtTracksPITSRefit(0),
-  fHistPtTracksP(0),
-  fHistMCMultiplicityPrimary(0),
-  fHistMCMultiplicityTracks(0),
-  fHistTPCTracks(0),
-  fHistMCtracksProdRadiusK0s(0),
-  fHistMCtracksProdRadiusLambda(0),
-  fHistMCtracksProdRadiusAntiLambda(0),
-  fHistMCtracksDecayRadiusK0s(0),
-  fHistMCtracksDecayRadiusLambda(0),
-  fHistMCtracksDecayRadiusAntiLambda(0),
-
-  fHistMCPtAllK0s(0),
-  fHistMCPtAllLambda(0),
-  fHistMCPtAllAntiLambda(0),
-
-//Rap3
-    fHistMCPtAllK0sRap3(0),
-    fHistMCPtAllLambdaRap3(0),
-    fHistMCPtAllAntiLambdaRap3(0),
-
-
-  fHistMCProdRadiusK0s(0),
-  fHistMCProdRadiusLambda(0),
-  fHistMCProdRadiusAntiLambda(0),
-  fHistMCRapK0s(0),
-  fHistMCRapInPtRangeK0s(0),
-  fHistMCRapLambda(0),
-  fHistMCRapInPtRangeLambda(0),
-  fHistMCRapAntiLambda(0),
-  fHistMCRapInPtRangeAntiLambda(0),
-  fHistMCRapXi(0),
-  fHistMCRapInPtRangeXi(0),
-  fHistMCRapPhi(0),
-  fHistMCRapInPtRangePhi(0),
+fHistMCPrimaryVertexX(0),
+fHistMCPrimaryVertexY(0),
+fHistMCPrimaryVertexZ(0),/*
+						  fHistPtTracksITSRefit(0),
+						  fHistPtTracks(0),
+						  fHistPtTracksPITSRefit(0),
+						  fHistPtTracksP(0),*/
+fHistMCMultiplicityPrimary(0),
+fHistMCMultiplicityTracks(0),/*
+							  fHistTPCTracks(0),
+							  fHistMCtracksProdRadiusK0s(0),
+							  fHistMCtracksProdRadiusLambda(0),
+							  fHistMCtracksProdRadiusAntiLambda(0),
+							  fHistMCtracksDecayRadiusK0s(0),
+							  fHistMCtracksDecayRadiusLambda(0),
+							  fHistMCtracksDecayRadiusAntiLambda(0),
+							  */
+fHistMCPtAllK0s(0),
+fHistMCPtAllLambda(0),
+fHistMCPtAllAntiLambda(0),/*
+						   
+						   //Rap3
+						   fHistMCPtAllK0sRap3(0),
+						   fHistMCPtAllLambdaRap3(0),
+						   fHistMCPtAllAntiLambdaRap3(0),
+						   
+						   
+						   fHistMCProdRadiusK0s(0),
+						   fHistMCProdRadiusLambda(0),
+						   fHistMCProdRadiusAntiLambda(0),
+						   fHistMCRapK0s(0),
+						   fHistMCRapInPtRangeK0s(0),
+						   fHistMCRapLambda(0),
+						   fHistMCRapInPtRangeLambda(0),
+						   fHistMCRapAntiLambda(0),
+						   fHistMCRapInPtRangeAntiLambda(0),
+						   fHistMCRapXi(0),
+						   fHistMCRapInPtRangeXi(0),
+						   fHistMCRapPhi(0),
+						   fHistMCRapInPtRangePhi(0),*/
 ////////////////////////////////////////
 
-  fHistMCPtK0s(0),
-  fHistMCPtLambda(0),
-  fHistMCPtAntiLambda(0),
-
-//Rap3
-  fHistMCPtK0sRap3(0),
-  fHistMCPtLambdaRap3(0),
-  fHistMCPtAntiLambdaRap3(0),
-
-
-///////////////////////////////////////////
-
-  fHistMCPtLambdaFromSigma(0),
-  fHistMCPtAntiLambdaFromSigma(0),
-  fHistNTimesRecK0s(0),
-  fHistNTimesRecLambda(0),
-  fHistNTimesRecAntiLambda(0),
-  fHistNTimesRecK0sVsPt(0),
-  fHistNTimesRecLambdaVsPt(0),
-  fHistNTimesRecAntiLambdaVsPt(0),
-  fHistNumberEvents(0),
-  fHistTrackPerEvent(0),
-  fHistTPCMult(0),
-  fHistTrackletPerEvent(0),
-  fHistMCDaughterTrack(0),
-  fHistSPDPrimaryVertexZ(0),
-  fHistPrimaryVertexX(0),
-  fHistPrimaryVertexY(0),
-  fHistPrimaryVertexZ(0),
-  fHistPrimaryVertexResX(0),
-  fHistPrimaryVertexResY(0),
-  fHistPrimaryVertexResZ(0),
-  fHistPrimaryVertexPosXV0events(0), 
-  fHistPrimaryVertexPosYV0events(0), 
-  fHistPrimaryVertexPosZV0events(0),
-  fHistDaughterPt(0),
-////////////////////////////////////////
-
-  fHistDcaPosToPrimVertexK0(0),
-  fHistDcaNegToPrimVertexK0(0),
-  fHistRadiusV0K0(0),
-  fHistDecayLengthV0K0(0),
-  fHistDcaV0DaughtersK0(0),
-  fHistChi2K0(0),
-  fHistCosPointAngleK0(0),
-
-  fHistDcaPosToPrimVertexK0vsMassK0(0),
-  fHistDcaNegToPrimVertexK0vsMassK0(0),
-  fHistRadiusV0K0vsMassK0(0),
-  fHistDecayLengthV0K0vsMassK0(0),
-  fHistDcaV0DaughtersK0vsMassK0(0),
-  fHistCosPointAngleK0vsMassK0(0),
- 
-   fHistDcaPosToPrimVertexK0vsMassK0pt1(0),
-   fHistDcaNegToPrimVertexK0vsMassK0pt1(0),
-   fHistRadiusV0K0vsMassK0pt1(0),
-   fHistDecayLengthV0K0vsMassK0pt1(0),
-   fHistDcaV0DaughtersK0vsMassK0pt1(0),
-   fHistCosPointAngleK0vsMassK0pt1(0),
-
-   fHistDcaPosToPrimVertexK0vsMassK0pt2(0),
-   fHistDcaNegToPrimVertexK0vsMassK0pt2(0),
-   fHistRadiusV0K0vsMassK0pt2(0),
-   fHistDecayLengthV0K0vsMassK0pt2(0),
-   fHistDcaV0DaughtersK0vsMassK0pt2(0),
-   fHistCosPointAngleK0vsMassK0pt2(0),
-
-   fHistDcaPosToPrimVertexK0vsMassK0pt3(0),
-   fHistDcaNegToPrimVertexK0vsMassK0pt3(0),
-   fHistRadiusV0K0vsMassK0pt3(0),
-   fHistDecayLengthV0K0vsMassK0pt3(0),
-   fHistDcaV0DaughtersK0vsMassK0pt3(0),
-   fHistCosPointAngleK0vsMassK0pt3(0),
-
-/////////// Lambda ///////////////////////////
-
-    fHistDcaPosToPrimVertexL(0),
-    fHistDcaNegToPrimVertexL(0),
-    fHistRadiusV0L(0),
-    fHistDecayLengthV0L(0),
-    fHistDcaV0DaughtersL(0),
-    fHistChi2L(0),
-    fHistCosPointAngleL(0),
-    fHistcTauL(0),
-
-    fHistDcaPosToPrimVertexLvsMassL(0),
-    fHistDcaNegToPrimVertexLvsMassL(0),
-    fHistRadiusV0LvsMassL(0),
-    fHistDecayLengthV0LvsMassL(0),
-    fHistDcaV0DaughtersLvsMassL(0),
-    fHistCosPointAngleLvsMassL(0),
-    fHistCosPointAngleLvsMassVsPtsigL(0),
-    fHistCosPointAngleLvsMassVsPtbackL(0),
-
-    
-      fHistDcaPosToPrimVertexLambdaVsMasspt1(0),
-      fHistDcaNegToPrimVertexLambdaVsMasspt1(0),
-      fHistRadiusV0LambdaVsMasspt1(0),
-      fHistDecayLengthV0LambdaVsMasspt1(0),
-      fHistDcaV0DaughtersLambdaVsMasspt1(0),
-      fHistCosPointAngleLambdaVsMasspt1(0),
-
-      fHistDcaPosToPrimVertexLambdaVsMasspt2(0),
-      fHistDcaNegToPrimVertexLambdaVsMasspt2(0),
-      fHistRadiusV0LambdaVsMasspt2(0),
-      fHistDecayLengthV0LambdaVsMasspt2(0),
-      fHistDcaV0DaughtersLambdaVsMasspt2(0),
-      fHistCosPointAngleLambdaVsMasspt2(0),
-
-      fHistDcaPosToPrimVertexLambdaVsMasspt3(0),
-      fHistDcaNegToPrimVertexLambdaVsMasspt3(0),
-      fHistRadiusV0LambdaVsMasspt3(0),
-      fHistDecayLengthV0LambdaVsMasspt3(0),
-      fHistDcaV0DaughtersLambdaVsMasspt3(0),
-      fHistCosPointAngleLambdaVsMasspt3(0),
-
-
-
-/////////Antilambda ///////////////////
-    fHistDcaPosToPrimVertexAntiL(0),
-    fHistDcaNegToPrimVertexAntiL(0),
-    fHistRadiusV0AntiL(0),
-    fHistDecayLengthV0AntiL(0),
-    fHistDcaV0DaughtersAntiL(0),
-    fHistChi2AntiL(0),
-    fHistCosPointAngleAntiL(0),
-
-    fHistDcaPosToPrimVertexAntiLvsMass(0),
-    fHistDcaNegToPrimVertexAntiLvsMass(0),
-    fHistRadiusV0AntiLvsMass(0),
-    fHistDecayLengthV0AntiLvsMass(0),
-    fHistDcaV0DaughtersAntiLvsMass(0),
-    fHistCosPointAngleAntiLvsMass(0),
-
-    
-    
-      fHistDcaPosToPrimVertexAntiLVsMasspt1(0),
-      fHistDcaNegToPrimVertexAntiLVsMasspt1(0),
-      fHistRadiusV0AntiLVsMasspt1(0),
-      fHistDecayLengthV0AntiLVsMasspt1(0),
-      fHistDcaV0DaughtersAntiLVsMasspt1(0),
-      fHistCosPointAngleAntiLVsMasspt1(0),
-
-      fHistDcaPosToPrimVertexAntiLVsMasspt2(0),
-      fHistDcaNegToPrimVertexAntiLVsMasspt2(0),
-      fHistRadiusV0AntiLVsMasspt2(0),
-      fHistDecayLengthV0AntiLVsMasspt2(0),
-      fHistDcaV0DaughtersAntiLVsMasspt2(0),
-      fHistCosPointAngleAntiLVsMasspt2(0),
-
-      fHistDcaPosToPrimVertexAntiLVsMasspt3(0),
-      fHistDcaNegToPrimVertexAntiLVsMasspt3(0),
-      fHistRadiusV0AntiLVsMasspt3(0),
-      fHistDecayLengthV0AntiLVsMasspt3(0),
-      fHistDcaV0DaughtersAntiLVsMasspt3(0),
-      fHistCosPointAngleAntiLVsMasspt3(0),
-
+fHistMCPtK0s(0),
+fHistMCPtLambda(0),
+fHistMCPtAntiLambda(0),/*
+						
+						//Rap3
+						fHistMCPtK0sRap3(0),
+						fHistMCPtLambdaRap3(0),
+						fHistMCPtAntiLambdaRap3(0),
+						
+						
+						///////////////////////////////////////////
+						
+						fHistMCPtLambdaFromSigma(0),
+						fHistMCPtAntiLambdaFromSigma(0),
+						fHistNTimesRecK0s(0),
+						fHistNTimesRecLambda(0),
+						fHistNTimesRecAntiLambda(0),
+						fHistNTimesRecK0sVsPt(0),
+						fHistNTimesRecLambdaVsPt(0),
+						fHistNTimesRecAntiLambdaVsPt(0),*/
+fHistNumberEvents(0),
+fHistTrackPerEvent(0),
+fHistTPCMult(0),/*
+				 fHistTrackletPerEvent(0),
+				 fHistMCDaughterTrack(0),
+				 fHistSPDPrimaryVertexZ(0),*/
+fHistPrimaryVertexX(0),
+fHistPrimaryVertexY(0),
+fHistPrimaryVertexZ(0),/*
+						fHistPrimaryVertexResX(0),
+						fHistPrimaryVertexResY(0),
+						fHistPrimaryVertexResZ(0),
+						fHistPrimaryVertexPosXV0events(0), 
+						fHistPrimaryVertexPosYV0events(0), 
+						fHistPrimaryVertexPosZV0events(0),
+						fHistDaughterPt(0),
+						////////////////////////////////////////
+						
+						fHistDcaPosToPrimVertexK0(0),
+						fHistDcaNegToPrimVertexK0(0),
+						fHistRadiusV0K0(0),
+						fHistDecayLengthV0K0(0),
+						fHistDcaV0DaughtersK0(0),
+						fHistChi2K0(0),
+						fHistCosPointAngleK0(0),
+						
+						fHistDcaPosToPrimVertexK0vsMassK0(0),
+						fHistDcaNegToPrimVertexK0vsMassK0(0),
+						fHistRadiusV0K0vsMassK0(0),
+						fHistDecayLengthV0K0vsMassK0(0),
+						fHistDcaV0DaughtersK0vsMassK0(0),
+						fHistCosPointAngleK0vsMassK0(0),
+						
+						fHistDcaPosToPrimVertexK0vsMassK0pt1(0),
+						fHistDcaNegToPrimVertexK0vsMassK0pt1(0),
+						fHistRadiusV0K0vsMassK0pt1(0),
+						fHistDecayLengthV0K0vsMassK0pt1(0),
+						fHistDcaV0DaughtersK0vsMassK0pt1(0),
+						fHistCosPointAngleK0vsMassK0pt1(0),
+						
+						fHistDcaPosToPrimVertexK0vsMassK0pt2(0),
+						fHistDcaNegToPrimVertexK0vsMassK0pt2(0),
+						fHistRadiusV0K0vsMassK0pt2(0),
+						fHistDecayLengthV0K0vsMassK0pt2(0),
+						fHistDcaV0DaughtersK0vsMassK0pt2(0),
+						fHistCosPointAngleK0vsMassK0pt2(0),
+						
+						fHistDcaPosToPrimVertexK0vsMassK0pt3(0),
+						fHistDcaNegToPrimVertexK0vsMassK0pt3(0),
+						fHistRadiusV0K0vsMassK0pt3(0),
+						fHistDecayLengthV0K0vsMassK0pt3(0),
+						fHistDcaV0DaughtersK0vsMassK0pt3(0),
+						fHistCosPointAngleK0vsMassK0pt3(0),
+						
+						/////////// Lambda ///////////////////////////
+						
+						fHistDcaPosToPrimVertexL(0),
+						fHistDcaNegToPrimVertexL(0),
+						fHistRadiusV0L(0),
+						fHistDecayLengthV0L(0),
+						fHistDcaV0DaughtersL(0),
+						fHistChi2L(0),
+						fHistCosPointAngleL(0),
+						fHistcTauL(0),
+						
+						fHistDcaPosToPrimVertexLvsMassL(0),
+						fHistDcaNegToPrimVertexLvsMassL(0),
+						fHistRadiusV0LvsMassL(0),
+						fHistDecayLengthV0LvsMassL(0),
+						fHistDcaV0DaughtersLvsMassL(0),
+						fHistCosPointAngleLvsMassL(0),
+						fHistCosPointAngleLvsMassVsPtsigL(0),
+						fHistCosPointAngleLvsMassVsPtbackL(0),
+						
+						
+						fHistDcaPosToPrimVertexLambdaVsMasspt1(0),
+						fHistDcaNegToPrimVertexLambdaVsMasspt1(0),
+						fHistRadiusV0LambdaVsMasspt1(0),
+						fHistDecayLengthV0LambdaVsMasspt1(0),
+						fHistDcaV0DaughtersLambdaVsMasspt1(0),
+						fHistCosPointAngleLambdaVsMasspt1(0),
+						
+						fHistDcaPosToPrimVertexLambdaVsMasspt2(0),
+						fHistDcaNegToPrimVertexLambdaVsMasspt2(0),
+						fHistRadiusV0LambdaVsMasspt2(0),
+						fHistDecayLengthV0LambdaVsMasspt2(0),
+						fHistDcaV0DaughtersLambdaVsMasspt2(0),
+						fHistCosPointAngleLambdaVsMasspt2(0),
+						
+						fHistDcaPosToPrimVertexLambdaVsMasspt3(0),
+						fHistDcaNegToPrimVertexLambdaVsMasspt3(0),
+						fHistRadiusV0LambdaVsMasspt3(0),
+						fHistDecayLengthV0LambdaVsMasspt3(0),
+						fHistDcaV0DaughtersLambdaVsMasspt3(0),
+						fHistCosPointAngleLambdaVsMasspt3(0),
+						
+						
+						
+						/////////Antilambda ///////////////////
+						fHistDcaPosToPrimVertexAntiL(0),
+						fHistDcaNegToPrimVertexAntiL(0),
+						fHistRadiusV0AntiL(0),
+						fHistDecayLengthV0AntiL(0),
+						fHistDcaV0DaughtersAntiL(0),
+						fHistChi2AntiL(0),
+						fHistCosPointAngleAntiL(0),
+						
+						fHistDcaPosToPrimVertexAntiLvsMass(0),
+						fHistDcaNegToPrimVertexAntiLvsMass(0),
+						fHistRadiusV0AntiLvsMass(0),
+						fHistDecayLengthV0AntiLvsMass(0),
+						fHistDcaV0DaughtersAntiLvsMass(0),
+						fHistCosPointAngleAntiLvsMass(0),
+						
+						
+						
+						fHistDcaPosToPrimVertexAntiLVsMasspt1(0),
+						fHistDcaNegToPrimVertexAntiLVsMasspt1(0),
+						fHistRadiusV0AntiLVsMasspt1(0),
+						fHistDecayLengthV0AntiLVsMasspt1(0),
+						fHistDcaV0DaughtersAntiLVsMasspt1(0),
+						fHistCosPointAngleAntiLVsMasspt1(0),
+						
+						fHistDcaPosToPrimVertexAntiLVsMasspt2(0),
+						fHistDcaNegToPrimVertexAntiLVsMasspt2(0),
+						fHistRadiusV0AntiLVsMasspt2(0),
+						fHistDecayLengthV0AntiLVsMasspt2(0),
+						fHistDcaV0DaughtersAntiLVsMasspt2(0),
+						fHistCosPointAngleAntiLVsMasspt2(0),
+						
+						fHistDcaPosToPrimVertexAntiLVsMasspt3(0),
+						fHistDcaNegToPrimVertexAntiLVsMasspt3(0),
+						fHistRadiusV0AntiLVsMasspt3(0),
+						fHistDecayLengthV0AntiLVsMasspt3(0),
+						fHistDcaV0DaughtersAntiLVsMasspt3(0),
+						fHistCosPointAngleAntiLVsMasspt3(0),
+						*/
 /////////////////////////////////////////
-  fHistV0Multiplicity(0),
-  fHistMassK0(0),
-  fHistMassLambda(0),
-  fHistMassAntiLambda(0),
-  fHistMassVsRadiusK0(0),
-  fHistMassVsRadiusLambda(0),
-  fHistMassVsRadiusAntiLambda(0),
+fHistV0Multiplicity(0),
+fHistMassK0(0),
+fHistMassLambda(0),
+fHistMassAntiLambda(0),
+fHistMassVsRadiusK0(0),
+fHistMassVsRadiusLambda(0),
+fHistMassVsRadiusAntiLambda(0),
 
 ///////////////////////////////////////
-  fHistPtVsMassK0(0),
-  fHistPtVsMassLambda(0),
-  fHistPtVsMassAntiLambda(0),
-
-    /// Rap3
-    fHistPtVsMassK0Rap3(0),
-    fHistPtVsMassLambdaRap3(0),
-    fHistPtVsMassAntiLambdaRap3(0),
-
-////////////////////////////////////////
-
-  fHistArmenterosPodolanski(0),
-  fHistK0sMassVsLambdaMass(0),
-   fHistTPCsigPLambda(0),
-    fHistTPCsigPAntiLambda(0),
-  fHistNSigmaProton(0),    
-  fHistNsigmaPosPionAntiLambda(0),
-  fHistNsigmaNegProtonAntiLambda(0),
-  fHistNsigmaPosProtonLambda(0),
-  fHistNsigmaNegPionLambda(0),
-  fHistNsigmaPosProtonAntiLambda(0),
-  fHistNsigmaNegPionAntiLambda(0),
-  fHistNsigmaPosPionK0(0),
-  fHistNsigmaNegPionK0(0),
-  fHistAsMcRapK0(0),
-  fHistAsMcRapLambda(0),
-  fHistAsMcRapAntiLambda(0),
-    /////////////////////
-
-    fHistAsMcPtK0(0),
-    fHistAsMcPtLambda(0),
-    fHistAsMcPtAntiLambda(0),
-
-    ///Rap3
-    fHistAsMcPtK0Rap3(0),
-    fHistAsMcPtLambdaRap3(0),
-    fHistAsMcPtAntiLambdaRap3(0),
-
-
-    /////////////////////////////////////
-
-  fHistAsMcPtZoomK0(0),
-  fHistAsMcPtZoomLambda(0),
-  fHistAsMcPtZoomAntiLambda(0),
-  fHistAsMcProdRadiusK0(0),
-  fHistAsMcProdRadiusLambda(0),
-  fHistAsMcProdRadiusAntiLambda(0),
-  fHistAsMcProdRadiusXvsYK0s(0),
-  fHistAsMcProdRadiusXvsYLambda(0),
-  fHistAsMcProdRadiusXvsYAntiLambda(0),
-  fHistPidMcMassK0(0),
-  fHistPidMcMassLambda(0),
-  fHistPidMcMassAntiLambda(0),
-
-
-    ///////////////////////////////
-
-    fHistAsMcMassK0(0),
-    fHistAsMcMassLambda(0),
-    fHistAsMcMassAntiLambda(0),
-
-    /// Rap3
-    fHistAsMcMassK0Rap3(0),
-    fHistAsMcMassLambdaRap3(0),
-    fHistAsMcMassAntiLambdaRap3(0),
+fHistPtVsMassK0(0),
+fHistPtVsMassLambda(0),
+fHistPtVsMassAntiLambda(0),/*
+							
+							/// Rap3
+							fHistPtVsMassK0Rap3(0),
+							fHistPtVsMassLambdaRap3(0),
+							fHistPtVsMassAntiLambdaRap3(0),
+							
+							////////////////////////////////////////
+							
+							fHistArmenterosPodolanski(0),
+							fHistK0sMassVsLambdaMass(0),
+							fHistTPCsigPLambda(0),
+							fHistTPCsigPAntiLambda(0),
+							fHistNSigmaProton(0),    
+							fHistNsigmaPosPionAntiLambda(0),
+							fHistNsigmaNegProtonAntiLambda(0),
+							fHistNsigmaPosProtonLambda(0),
+							fHistNsigmaNegPionLambda(0),
+							fHistNsigmaPosProtonAntiLambda(0),
+							fHistNsigmaNegPionAntiLambda(0),
+							fHistNsigmaPosPionK0(0),
+							fHistNsigmaNegPionK0(0),
+							fHistAsMcRapK0(0),
+							fHistAsMcRapLambda(0),
+							fHistAsMcRapAntiLambda(0),
+							/////////////////////
+							
+							fHistAsMcPtK0(0),
+							fHistAsMcPtLambda(0),
+							fHistAsMcPtAntiLambda(0),
+							
+							///Rap3
+							fHistAsMcPtK0Rap3(0),
+							fHistAsMcPtLambdaRap3(0),
+							fHistAsMcPtAntiLambdaRap3(0),
+							
+							
+							/////////////////////////////////////
+							
+							fHistAsMcPtZoomK0(0),
+							fHistAsMcPtZoomLambda(0),
+							fHistAsMcPtZoomAntiLambda(0),
+							fHistAsMcProdRadiusK0(0),
+							fHistAsMcProdRadiusLambda(0),
+							fHistAsMcProdRadiusAntiLambda(0),
+							fHistAsMcProdRadiusXvsYK0s(0),
+							fHistAsMcProdRadiusXvsYLambda(0),
+							fHistAsMcProdRadiusXvsYAntiLambda(0),
+							fHistPidMcMassK0(0),
+							fHistPidMcMassLambda(0),
+							fHistPidMcMassAntiLambda(0),*/
 
 
-    fHistAsMcPtVsMassK0(0),
-    fHistAsMcPtVsMassLambda(0),
-    fHistAsMcPtVsMassAntiLambda(0),
+///////////////////////////////
 
-    /// Rap3
-    fHistAsMcPtVsMassK0Rap3(0),
-    fHistAsMcPtVsMassLambdaRap3(0),
-    fHistAsMcPtVsMassAntiLambdaRap3(0),
+fHistAsMcMassK0(0),
+fHistAsMcMassLambda(0),
+fHistAsMcMassAntiLambda(0),/*
+							
+							/// Rap3
+							fHistAsMcMassK0Rap3(0),
+							fHistAsMcMassLambdaRap3(0),
+							fHistAsMcMassAntiLambdaRap3(0),*/
 
-///////////////////////////////////////
 
-  fHistAsMcMassVsRadiusK0(0),
-  fHistAsMcMassVsRadiusLambda(0),
-  fHistAsMcMassVsRadiusAntiLambda(0),
-  fHistAsMcResxK0(0),
-  fHistAsMcResyK0(0),
-  fHistAsMcReszK0(0),
-  fHistAsMcResrVsRadiusK0(0),
-  fHistAsMcReszVsRadiusK0(0),
-  fHistAsMcResxLambda(0),
-  fHistAsMcResyLambda(0),
-  fHistAsMcReszLambda(0),
-  fHistAsMcResrVsRadiusLambda(0),
-  fHistAsMcReszVsRadiusLambda(0),
-  fHistAsMcResxAntiLambda(0),
-  fHistAsMcResyAntiLambda(0),
-  fHistAsMcReszAntiLambda(0),
-  fHistAsMcResrVsRadiusAntiLambda(0),
-  fHistAsMcReszVsRadiusAntiLambda(0),
-  fHistAsMcResPtK0(0),
-  fHistAsMcResPtLambda(0),
-  fHistAsMcResPtAntiLambda(0),
-  fHistAsMcResPtVsRapK0(0),
-  fHistAsMcResPtVsRapLambda(0),
-  fHistAsMcResPtVsRapAntiLambda(0),
-  fHistAsMcResPtVsPtK0(0),
-  fHistAsMcResPtVsPtLambda(0),
-  fHistAsMcResPtVsPtAntiLambda(0),
-  fHistAsMcMotherPdgCodeK0s(0),
-  fHistAsMcMotherPdgCodeLambda(0),
-  fHistAsMcMotherPdgCodeAntiLambda(0),
-  fHistAsMcPtLambdaFromSigma(0),
-  fHistAsMcPtAntiLambdaFromSigma(0),
-  fHistAsMcSecondaryPtVsRapK0s(0),
-  fHistAsMcSecondaryPtVsRapLambda(0),
-  fHistAsMcSecondaryPtVsRapAntiLambda(0),
-  fHistAsMcSecondaryPtVsMassK0s(0),
-  fHistAsMcSecondaryPtVsMassLambda(0),
-  fHistAsMcSecondaryPtVsMassAntiLambda(0),
-  fHistAsMcSecondaryProdRadiusK0s(0),
-  fHistAsMcSecondaryProdRadiusLambda(0),
-  fHistAsMcSecondaryProdRadiusAntiLambda(0),
-  fHistAsMcSecondaryProdRadiusXvsYK0s(0),
-  fHistAsMcSecondaryProdRadiusXvsYLambda(0),
-  fHistAsMcSecondaryProdRadiusXvsYAntiLambda(0),
-  fHistAsMcSecondaryMotherPdgCodeK0s(0),
-  fHistAsMcSecondaryMotherPdgCodeLambda(0),
-  fHistAsMcSecondaryMotherPdgCodeAntiLambda(0),
-  fHistAsMcSecondaryPtLambdaFromSigma(0),
-  fHistAsMcSecondaryPtAntiLambdaFromSigma(0)
+fHistAsMcPtVsMassK0(0),
+fHistAsMcPtVsMassLambda(0),
+fHistAsMcPtVsMassAntiLambda(0),/*
+								
+								/// Rap3
+								fHistAsMcPtVsMassK0Rap3(0),
+								fHistAsMcPtVsMassLambdaRap3(0),
+								fHistAsMcPtVsMassAntiLambdaRap3(0),
+								
+								///////////////////////////////////////
+								
+								fHistAsMcMassVsRadiusK0(0),
+								fHistAsMcMassVsRadiusLambda(0),
+								fHistAsMcMassVsRadiusAntiLambda(0),
+								fHistAsMcResxK0(0),
+								fHistAsMcResyK0(0),
+								fHistAsMcReszK0(0),
+								fHistAsMcResrVsRadiusK0(0),
+								fHistAsMcReszVsRadiusK0(0),
+								fHistAsMcResxLambda(0),
+								fHistAsMcResyLambda(0),
+								fHistAsMcReszLambda(0),
+								fHistAsMcResrVsRadiusLambda(0),
+								fHistAsMcReszVsRadiusLambda(0),
+								fHistAsMcResxAntiLambda(0),
+								fHistAsMcResyAntiLambda(0),
+								fHistAsMcReszAntiLambda(0),
+								fHistAsMcResrVsRadiusAntiLambda(0),
+								fHistAsMcReszVsRadiusAntiLambda(0),
+								fHistAsMcResPtK0(0),
+								fHistAsMcResPtLambda(0),
+								fHistAsMcResPtAntiLambda(0),
+								fHistAsMcResPtVsRapK0(0),
+								fHistAsMcResPtVsRapLambda(0),
+								fHistAsMcResPtVsRapAntiLambda(0),
+								fHistAsMcResPtVsPtK0(0),
+								fHistAsMcResPtVsPtLambda(0),
+								fHistAsMcResPtVsPtAntiLambda(0),
+								fHistAsMcMotherPdgCodeK0s(0),
+								fHistAsMcMotherPdgCodeLambda(0),
+								fHistAsMcMotherPdgCodeAntiLambda(0),
+								fHistAsMcPtLambdaFromSigma(0),
+								fHistAsMcPtAntiLambdaFromSigma(0),*/
+fHistAsMcSecondaryPtVsRapK0s(0),
+fHistAsMcSecondaryPtVsRapLambda(0),
+fHistAsMcSecondaryPtVsRapAntiLambda(0),
+fHistAsMcSecondaryPtVsMassK0s(0),
+fHistAsMcSecondaryPtVsMassLambda(0),
+fHistAsMcSecondaryPtVsMassAntiLambda(0)/*,
+										 fHistAsMcSecondaryProdRadiusK0s(0),
+										 fHistAsMcSecondaryProdRadiusLambda(0),
+										 fHistAsMcSecondaryProdRadiusAntiLambda(0),
+										 fHistAsMcSecondaryProdRadiusXvsYK0s(0),
+										 fHistAsMcSecondaryProdRadiusXvsYLambda(0),
+										 fHistAsMcSecondaryProdRadiusXvsYAntiLambda(0),
+										 fHistAsMcSecondaryMotherPdgCodeK0s(0),
+										 fHistAsMcSecondaryMotherPdgCodeLambda(0),
+										 fHistAsMcSecondaryMotherPdgCodeAntiLambda(0),
+										 fHistAsMcSecondaryPtLambdaFromSigma(0),
+										 fHistAsMcSecondaryPtAntiLambdaFromSigma(0)*/
  
 {
   // Constructor
@@ -432,342 +432,342 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char *name)
   : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fESD(0), fListHist(),fCentrSelector(0), fTracksCuts(0),fPIDResponse(0),fQASelector(0),
 
-  fHistMCPrimaryVertexX(0),
-  fHistMCPrimaryVertexY(0),
-  fHistMCPrimaryVertexZ(0),
-  fHistPtTracksITSRefit(0),
-  fHistPtTracks(0),
-  fHistPtTracksPITSRefit(0),
-  fHistPtTracksP(0),
-  fHistMCMultiplicityPrimary(0),
-  fHistMCMultiplicityTracks(0),
-  fHistTPCTracks(0),
-  fHistMCtracksProdRadiusK0s(0),
-  fHistMCtracksProdRadiusLambda(0),
-  fHistMCtracksProdRadiusAntiLambda(0),
-  fHistMCtracksDecayRadiusK0s(0),
-  fHistMCtracksDecayRadiusLambda(0),
-  fHistMCtracksDecayRadiusAntiLambda(0),
-
-  fHistMCPtAllK0s(0),
-  fHistMCPtAllLambda(0),
-  fHistMCPtAllAntiLambda(0),
-
-//Rap3
-    fHistMCPtAllK0sRap3(0),
-    fHistMCPtAllLambdaRap3(0),
-    fHistMCPtAllAntiLambdaRap3(0),
-
-
-  fHistMCProdRadiusK0s(0),
-  fHistMCProdRadiusLambda(0),
-  fHistMCProdRadiusAntiLambda(0),
-  fHistMCRapK0s(0),
-  fHistMCRapInPtRangeK0s(0),
-  fHistMCRapLambda(0),
-  fHistMCRapInPtRangeLambda(0),
-  fHistMCRapAntiLambda(0),
-  fHistMCRapInPtRangeAntiLambda(0),
-  fHistMCRapXi(0),
-  fHistMCRapInPtRangeXi(0),
-  fHistMCRapPhi(0),
-  fHistMCRapInPtRangePhi(0),
+fHistMCPrimaryVertexX(0),
+fHistMCPrimaryVertexY(0),
+fHistMCPrimaryVertexZ(0),/*
+						  fHistPtTracksITSRefit(0),
+						  fHistPtTracks(0),
+						  fHistPtTracksPITSRefit(0),
+						  fHistPtTracksP(0),*/
+fHistMCMultiplicityPrimary(0),
+fHistMCMultiplicityTracks(0),/*
+							  fHistTPCTracks(0),
+							  fHistMCtracksProdRadiusK0s(0),
+							  fHistMCtracksProdRadiusLambda(0),
+							  fHistMCtracksProdRadiusAntiLambda(0),
+							  fHistMCtracksDecayRadiusK0s(0),
+							  fHistMCtracksDecayRadiusLambda(0),
+							  fHistMCtracksDecayRadiusAntiLambda(0),
+							  */
+fHistMCPtAllK0s(0),
+fHistMCPtAllLambda(0),
+fHistMCPtAllAntiLambda(0),/*
+						   
+						   //Rap3
+						   fHistMCPtAllK0sRap3(0),
+						   fHistMCPtAllLambdaRap3(0),
+						   fHistMCPtAllAntiLambdaRap3(0),
+						   
+						   
+						   fHistMCProdRadiusK0s(0),
+						   fHistMCProdRadiusLambda(0),
+						   fHistMCProdRadiusAntiLambda(0),
+						   fHistMCRapK0s(0),
+						   fHistMCRapInPtRangeK0s(0),
+						   fHistMCRapLambda(0),
+						   fHistMCRapInPtRangeLambda(0),
+						   fHistMCRapAntiLambda(0),
+						   fHistMCRapInPtRangeAntiLambda(0),
+						   fHistMCRapXi(0),
+						   fHistMCRapInPtRangeXi(0),
+						   fHistMCRapPhi(0),
+						   fHistMCRapInPtRangePhi(0),*/
 ////////////////////////////////////////
 
-  fHistMCPtK0s(0),
-  fHistMCPtLambda(0),
-  fHistMCPtAntiLambda(0),
-
-//Rap3
-  fHistMCPtK0sRap3(0),
-  fHistMCPtLambdaRap3(0),
-  fHistMCPtAntiLambdaRap3(0),
-
-
-///////////////////////////////////////////
-
-  fHistMCPtLambdaFromSigma(0),
-  fHistMCPtAntiLambdaFromSigma(0),
-  fHistNTimesRecK0s(0),
-  fHistNTimesRecLambda(0),
-  fHistNTimesRecAntiLambda(0),
-  fHistNTimesRecK0sVsPt(0),
-  fHistNTimesRecLambdaVsPt(0),
-  fHistNTimesRecAntiLambdaVsPt(0),
-  fHistNumberEvents(0),
-  fHistTrackPerEvent(0),
-  fHistTPCMult(0),
-  fHistTrackletPerEvent(0),
-  fHistMCDaughterTrack(0),
-  fHistSPDPrimaryVertexZ(0),
-  fHistPrimaryVertexX(0),
-  fHistPrimaryVertexY(0),
-  fHistPrimaryVertexZ(0),
-  fHistPrimaryVertexResX(0),
-  fHistPrimaryVertexResY(0),
-  fHistPrimaryVertexResZ(0),
-  fHistPrimaryVertexPosXV0events(0), 
-  fHistPrimaryVertexPosYV0events(0), 
-  fHistPrimaryVertexPosZV0events(0),
-  fHistDaughterPt(0),
-////////////////////////////////////////
-
-  fHistDcaPosToPrimVertexK0(0),
-  fHistDcaNegToPrimVertexK0(0),
-  fHistRadiusV0K0(0),
-  fHistDecayLengthV0K0(0),
-  fHistDcaV0DaughtersK0(0),
-  fHistChi2K0(0),
-  fHistCosPointAngleK0(0),
-
-  fHistDcaPosToPrimVertexK0vsMassK0(0),
-  fHistDcaNegToPrimVertexK0vsMassK0(0),
-  fHistRadiusV0K0vsMassK0(0),
-  fHistDecayLengthV0K0vsMassK0(0),
-  fHistDcaV0DaughtersK0vsMassK0(0),
-  fHistCosPointAngleK0vsMassK0(0),
- 
-   fHistDcaPosToPrimVertexK0vsMassK0pt1(0),
-   fHistDcaNegToPrimVertexK0vsMassK0pt1(0),
-   fHistRadiusV0K0vsMassK0pt1(0),
-   fHistDecayLengthV0K0vsMassK0pt1(0),
-   fHistDcaV0DaughtersK0vsMassK0pt1(0),
-   fHistCosPointAngleK0vsMassK0pt1(0),
-
-   fHistDcaPosToPrimVertexK0vsMassK0pt2(0),
-   fHistDcaNegToPrimVertexK0vsMassK0pt2(0),
-   fHistRadiusV0K0vsMassK0pt2(0),
-   fHistDecayLengthV0K0vsMassK0pt2(0),
-   fHistDcaV0DaughtersK0vsMassK0pt2(0),
-   fHistCosPointAngleK0vsMassK0pt2(0),
-
-   fHistDcaPosToPrimVertexK0vsMassK0pt3(0),
-   fHistDcaNegToPrimVertexK0vsMassK0pt3(0),
-   fHistRadiusV0K0vsMassK0pt3(0),
-   fHistDecayLengthV0K0vsMassK0pt3(0),
-   fHistDcaV0DaughtersK0vsMassK0pt3(0),
-   fHistCosPointAngleK0vsMassK0pt3(0),
-
-/////////// Lambda ///////////////////////////
-
-    fHistDcaPosToPrimVertexL(0),
-    fHistDcaNegToPrimVertexL(0),
-    fHistRadiusV0L(0),
-    fHistDecayLengthV0L(0),
-    fHistDcaV0DaughtersL(0),
-    fHistChi2L(0),
-    fHistCosPointAngleL(0),
-    fHistcTauL(0),
-
-    fHistDcaPosToPrimVertexLvsMassL(0),
-    fHistDcaNegToPrimVertexLvsMassL(0),
-    fHistRadiusV0LvsMassL(0),
-    fHistDecayLengthV0LvsMassL(0),
-    fHistDcaV0DaughtersLvsMassL(0),
-    fHistCosPointAngleLvsMassL(0),
-    fHistCosPointAngleLvsMassVsPtsigL(0),
-    fHistCosPointAngleLvsMassVsPtbackL(0),
-
-    
-      fHistDcaPosToPrimVertexLambdaVsMasspt1(0),
-      fHistDcaNegToPrimVertexLambdaVsMasspt1(0),
-      fHistRadiusV0LambdaVsMasspt1(0),
-      fHistDecayLengthV0LambdaVsMasspt1(0),
-      fHistDcaV0DaughtersLambdaVsMasspt1(0),
-      fHistCosPointAngleLambdaVsMasspt1(0),
-
-      fHistDcaPosToPrimVertexLambdaVsMasspt2(0),
-      fHistDcaNegToPrimVertexLambdaVsMasspt2(0),
-      fHistRadiusV0LambdaVsMasspt2(0),
-      fHistDecayLengthV0LambdaVsMasspt2(0),
-      fHistDcaV0DaughtersLambdaVsMasspt2(0),
-      fHistCosPointAngleLambdaVsMasspt2(0),
-
-      fHistDcaPosToPrimVertexLambdaVsMasspt3(0),
-      fHistDcaNegToPrimVertexLambdaVsMasspt3(0),
-      fHistRadiusV0LambdaVsMasspt3(0),
-      fHistDecayLengthV0LambdaVsMasspt3(0),
-      fHistDcaV0DaughtersLambdaVsMasspt3(0),
-      fHistCosPointAngleLambdaVsMasspt3(0),
-
-
-
-/////////Antilambda ///////////////////
-    fHistDcaPosToPrimVertexAntiL(0),
-    fHistDcaNegToPrimVertexAntiL(0),
-    fHistRadiusV0AntiL(0),
-    fHistDecayLengthV0AntiL(0),
-    fHistDcaV0DaughtersAntiL(0),
-    fHistChi2AntiL(0),
-    fHistCosPointAngleAntiL(0),
-
-    fHistDcaPosToPrimVertexAntiLvsMass(0),
-    fHistDcaNegToPrimVertexAntiLvsMass(0),
-    fHistRadiusV0AntiLvsMass(0),
-    fHistDecayLengthV0AntiLvsMass(0),
-    fHistDcaV0DaughtersAntiLvsMass(0),
-    fHistCosPointAngleAntiLvsMass(0),
-
-    
-    
-      fHistDcaPosToPrimVertexAntiLVsMasspt1(0),
-      fHistDcaNegToPrimVertexAntiLVsMasspt1(0),
-      fHistRadiusV0AntiLVsMasspt1(0),
-      fHistDecayLengthV0AntiLVsMasspt1(0),
-      fHistDcaV0DaughtersAntiLVsMasspt1(0),
-      fHistCosPointAngleAntiLVsMasspt1(0),
-
-      fHistDcaPosToPrimVertexAntiLVsMasspt2(0),
-      fHistDcaNegToPrimVertexAntiLVsMasspt2(0),
-      fHistRadiusV0AntiLVsMasspt2(0),
-      fHistDecayLengthV0AntiLVsMasspt2(0),
-      fHistDcaV0DaughtersAntiLVsMasspt2(0),
-      fHistCosPointAngleAntiLVsMasspt2(0),
-
-      fHistDcaPosToPrimVertexAntiLVsMasspt3(0),
-      fHistDcaNegToPrimVertexAntiLVsMasspt3(0),
-      fHistRadiusV0AntiLVsMasspt3(0),
-      fHistDecayLengthV0AntiLVsMasspt3(0),
-      fHistDcaV0DaughtersAntiLVsMasspt3(0),
-      fHistCosPointAngleAntiLVsMasspt3(0),
-
+fHistMCPtK0s(0),
+fHistMCPtLambda(0),
+fHistMCPtAntiLambda(0),/*
+						
+						//Rap3
+						fHistMCPtK0sRap3(0),
+						fHistMCPtLambdaRap3(0),
+						fHistMCPtAntiLambdaRap3(0),
+						
+						
+						///////////////////////////////////////////
+						
+						fHistMCPtLambdaFromSigma(0),
+						fHistMCPtAntiLambdaFromSigma(0),
+						fHistNTimesRecK0s(0),
+						fHistNTimesRecLambda(0),
+						fHistNTimesRecAntiLambda(0),
+						fHistNTimesRecK0sVsPt(0),
+						fHistNTimesRecLambdaVsPt(0),
+						fHistNTimesRecAntiLambdaVsPt(0),*/
+fHistNumberEvents(0),
+fHistTrackPerEvent(0),
+fHistTPCMult(0),/*
+				 fHistTrackletPerEvent(0),
+				 fHistMCDaughterTrack(0),
+				 fHistSPDPrimaryVertexZ(0),*/
+fHistPrimaryVertexX(0),
+fHistPrimaryVertexY(0),
+fHistPrimaryVertexZ(0),/*
+						fHistPrimaryVertexResX(0),
+						fHistPrimaryVertexResY(0),
+						fHistPrimaryVertexResZ(0),
+						fHistPrimaryVertexPosXV0events(0), 
+						fHistPrimaryVertexPosYV0events(0), 
+						fHistPrimaryVertexPosZV0events(0),
+						fHistDaughterPt(0),
+						////////////////////////////////////////
+						
+						fHistDcaPosToPrimVertexK0(0),
+						fHistDcaNegToPrimVertexK0(0),
+						fHistRadiusV0K0(0),
+						fHistDecayLengthV0K0(0),
+						fHistDcaV0DaughtersK0(0),
+						fHistChi2K0(0),
+						fHistCosPointAngleK0(0),
+						
+						fHistDcaPosToPrimVertexK0vsMassK0(0),
+						fHistDcaNegToPrimVertexK0vsMassK0(0),
+						fHistRadiusV0K0vsMassK0(0),
+						fHistDecayLengthV0K0vsMassK0(0),
+						fHistDcaV0DaughtersK0vsMassK0(0),
+						fHistCosPointAngleK0vsMassK0(0),
+						
+						fHistDcaPosToPrimVertexK0vsMassK0pt1(0),
+						fHistDcaNegToPrimVertexK0vsMassK0pt1(0),
+						fHistRadiusV0K0vsMassK0pt1(0),
+						fHistDecayLengthV0K0vsMassK0pt1(0),
+						fHistDcaV0DaughtersK0vsMassK0pt1(0),
+						fHistCosPointAngleK0vsMassK0pt1(0),
+						
+						fHistDcaPosToPrimVertexK0vsMassK0pt2(0),
+						fHistDcaNegToPrimVertexK0vsMassK0pt2(0),
+						fHistRadiusV0K0vsMassK0pt2(0),
+						fHistDecayLengthV0K0vsMassK0pt2(0),
+						fHistDcaV0DaughtersK0vsMassK0pt2(0),
+						fHistCosPointAngleK0vsMassK0pt2(0),
+						
+						fHistDcaPosToPrimVertexK0vsMassK0pt3(0),
+						fHistDcaNegToPrimVertexK0vsMassK0pt3(0),
+						fHistRadiusV0K0vsMassK0pt3(0),
+						fHistDecayLengthV0K0vsMassK0pt3(0),
+						fHistDcaV0DaughtersK0vsMassK0pt3(0),
+						fHistCosPointAngleK0vsMassK0pt3(0),
+						
+						/////////// Lambda ///////////////////////////
+						
+						fHistDcaPosToPrimVertexL(0),
+						fHistDcaNegToPrimVertexL(0),
+						fHistRadiusV0L(0),
+						fHistDecayLengthV0L(0),
+						fHistDcaV0DaughtersL(0),
+						fHistChi2L(0),
+						fHistCosPointAngleL(0),
+						fHistcTauL(0),
+						
+						fHistDcaPosToPrimVertexLvsMassL(0),
+						fHistDcaNegToPrimVertexLvsMassL(0),
+						fHistRadiusV0LvsMassL(0),
+						fHistDecayLengthV0LvsMassL(0),
+						fHistDcaV0DaughtersLvsMassL(0),
+						fHistCosPointAngleLvsMassL(0),
+						fHistCosPointAngleLvsMassVsPtsigL(0),
+						fHistCosPointAngleLvsMassVsPtbackL(0),
+						
+						
+						fHistDcaPosToPrimVertexLambdaVsMasspt1(0),
+						fHistDcaNegToPrimVertexLambdaVsMasspt1(0),
+						fHistRadiusV0LambdaVsMasspt1(0),
+						fHistDecayLengthV0LambdaVsMasspt1(0),
+						fHistDcaV0DaughtersLambdaVsMasspt1(0),
+						fHistCosPointAngleLambdaVsMasspt1(0),
+						
+						fHistDcaPosToPrimVertexLambdaVsMasspt2(0),
+						fHistDcaNegToPrimVertexLambdaVsMasspt2(0),
+						fHistRadiusV0LambdaVsMasspt2(0),
+						fHistDecayLengthV0LambdaVsMasspt2(0),
+						fHistDcaV0DaughtersLambdaVsMasspt2(0),
+						fHistCosPointAngleLambdaVsMasspt2(0),
+						
+						fHistDcaPosToPrimVertexLambdaVsMasspt3(0),
+						fHistDcaNegToPrimVertexLambdaVsMasspt3(0),
+						fHistRadiusV0LambdaVsMasspt3(0),
+						fHistDecayLengthV0LambdaVsMasspt3(0),
+						fHistDcaV0DaughtersLambdaVsMasspt3(0),
+						fHistCosPointAngleLambdaVsMasspt3(0),
+						
+						
+						
+						/////////Antilambda ///////////////////
+						fHistDcaPosToPrimVertexAntiL(0),
+						fHistDcaNegToPrimVertexAntiL(0),
+						fHistRadiusV0AntiL(0),
+						fHistDecayLengthV0AntiL(0),
+						fHistDcaV0DaughtersAntiL(0),
+						fHistChi2AntiL(0),
+						fHistCosPointAngleAntiL(0),
+						
+						fHistDcaPosToPrimVertexAntiLvsMass(0),
+						fHistDcaNegToPrimVertexAntiLvsMass(0),
+						fHistRadiusV0AntiLvsMass(0),
+						fHistDecayLengthV0AntiLvsMass(0),
+						fHistDcaV0DaughtersAntiLvsMass(0),
+						fHistCosPointAngleAntiLvsMass(0),
+						
+						
+						
+						fHistDcaPosToPrimVertexAntiLVsMasspt1(0),
+						fHistDcaNegToPrimVertexAntiLVsMasspt1(0),
+						fHistRadiusV0AntiLVsMasspt1(0),
+						fHistDecayLengthV0AntiLVsMasspt1(0),
+						fHistDcaV0DaughtersAntiLVsMasspt1(0),
+						fHistCosPointAngleAntiLVsMasspt1(0),
+						
+						fHistDcaPosToPrimVertexAntiLVsMasspt2(0),
+						fHistDcaNegToPrimVertexAntiLVsMasspt2(0),
+						fHistRadiusV0AntiLVsMasspt2(0),
+						fHistDecayLengthV0AntiLVsMasspt2(0),
+						fHistDcaV0DaughtersAntiLVsMasspt2(0),
+						fHistCosPointAngleAntiLVsMasspt2(0),
+						
+						fHistDcaPosToPrimVertexAntiLVsMasspt3(0),
+						fHistDcaNegToPrimVertexAntiLVsMasspt3(0),
+						fHistRadiusV0AntiLVsMasspt3(0),
+						fHistDecayLengthV0AntiLVsMasspt3(0),
+						fHistDcaV0DaughtersAntiLVsMasspt3(0),
+						fHistCosPointAngleAntiLVsMasspt3(0),
+						*/
 /////////////////////////////////////////
-  fHistV0Multiplicity(0),
-  fHistMassK0(0),
-  fHistMassLambda(0),
-  fHistMassAntiLambda(0),
-  fHistMassVsRadiusK0(0),
-  fHistMassVsRadiusLambda(0),
-  fHistMassVsRadiusAntiLambda(0),
+fHistV0Multiplicity(0),
+fHistMassK0(0),
+fHistMassLambda(0),
+fHistMassAntiLambda(0),
+fHistMassVsRadiusK0(0),
+fHistMassVsRadiusLambda(0),
+fHistMassVsRadiusAntiLambda(0),
 
 ///////////////////////////////////////
-  fHistPtVsMassK0(0),
-  fHistPtVsMassLambda(0),
-  fHistPtVsMassAntiLambda(0),
-
-    /// Rap3
-    fHistPtVsMassK0Rap3(0),
-    fHistPtVsMassLambdaRap3(0),
-    fHistPtVsMassAntiLambdaRap3(0),
-
-////////////////////////////////////////
-
-  fHistArmenterosPodolanski(0),
-  fHistK0sMassVsLambdaMass(0),
-   fHistTPCsigPLambda(0),
-    fHistTPCsigPAntiLambda(0),
-  fHistNSigmaProton(0),    
-  fHistNsigmaPosPionAntiLambda(0),
-  fHistNsigmaNegProtonAntiLambda(0),
-  fHistNsigmaPosProtonLambda(0),
-  fHistNsigmaNegPionLambda(0),
-  fHistNsigmaPosProtonAntiLambda(0),
-  fHistNsigmaNegPionAntiLambda(0),
-  fHistNsigmaPosPionK0(0),
-  fHistNsigmaNegPionK0(0),
-  fHistAsMcRapK0(0),
-  fHistAsMcRapLambda(0),
-  fHistAsMcRapAntiLambda(0),
-    /////////////////////
-
-    fHistAsMcPtK0(0),
-    fHistAsMcPtLambda(0),
-    fHistAsMcPtAntiLambda(0),
-
-    ///Rap3
-    fHistAsMcPtK0Rap3(0),
-    fHistAsMcPtLambdaRap3(0),
-    fHistAsMcPtAntiLambdaRap3(0),
-
-
-    /////////////////////////////////////
-
-  fHistAsMcPtZoomK0(0),
-  fHistAsMcPtZoomLambda(0),
-  fHistAsMcPtZoomAntiLambda(0),
-  fHistAsMcProdRadiusK0(0),
-  fHistAsMcProdRadiusLambda(0),
-  fHistAsMcProdRadiusAntiLambda(0),
-  fHistAsMcProdRadiusXvsYK0s(0),
-  fHistAsMcProdRadiusXvsYLambda(0),
-  fHistAsMcProdRadiusXvsYAntiLambda(0),
-  fHistPidMcMassK0(0),
-  fHistPidMcMassLambda(0),
-  fHistPidMcMassAntiLambda(0),
-
-
-    ///////////////////////////////
-
-    fHistAsMcMassK0(0),
-    fHistAsMcMassLambda(0),
-    fHistAsMcMassAntiLambda(0),
-
-    /// Rap3
-    fHistAsMcMassK0Rap3(0),
-    fHistAsMcMassLambdaRap3(0),
-    fHistAsMcMassAntiLambdaRap3(0),
+fHistPtVsMassK0(0),
+fHistPtVsMassLambda(0),
+fHistPtVsMassAntiLambda(0),/*
+							
+							/// Rap3
+							fHistPtVsMassK0Rap3(0),
+							fHistPtVsMassLambdaRap3(0),
+							fHistPtVsMassAntiLambdaRap3(0),
+							
+							////////////////////////////////////////
+							
+							fHistArmenterosPodolanski(0),
+							fHistK0sMassVsLambdaMass(0),
+							fHistTPCsigPLambda(0),
+							fHistTPCsigPAntiLambda(0),
+							fHistNSigmaProton(0),    
+							fHistNsigmaPosPionAntiLambda(0),
+							fHistNsigmaNegProtonAntiLambda(0),
+							fHistNsigmaPosProtonLambda(0),
+							fHistNsigmaNegPionLambda(0),
+							fHistNsigmaPosProtonAntiLambda(0),
+							fHistNsigmaNegPionAntiLambda(0),
+							fHistNsigmaPosPionK0(0),
+							fHistNsigmaNegPionK0(0),
+							fHistAsMcRapK0(0),
+							fHistAsMcRapLambda(0),
+							fHistAsMcRapAntiLambda(0),
+							/////////////////////
+							
+							fHistAsMcPtK0(0),
+							fHistAsMcPtLambda(0),
+							fHistAsMcPtAntiLambda(0),
+							
+							///Rap3
+							fHistAsMcPtK0Rap3(0),
+							fHistAsMcPtLambdaRap3(0),
+							fHistAsMcPtAntiLambdaRap3(0),
+							
+							
+							/////////////////////////////////////
+							
+							fHistAsMcPtZoomK0(0),
+							fHistAsMcPtZoomLambda(0),
+							fHistAsMcPtZoomAntiLambda(0),
+							fHistAsMcProdRadiusK0(0),
+							fHistAsMcProdRadiusLambda(0),
+							fHistAsMcProdRadiusAntiLambda(0),
+							fHistAsMcProdRadiusXvsYK0s(0),
+							fHistAsMcProdRadiusXvsYLambda(0),
+							fHistAsMcProdRadiusXvsYAntiLambda(0),
+							fHistPidMcMassK0(0),
+							fHistPidMcMassLambda(0),
+							fHistPidMcMassAntiLambda(0),*/
 
 
-    fHistAsMcPtVsMassK0(0),
-    fHistAsMcPtVsMassLambda(0),
-    fHistAsMcPtVsMassAntiLambda(0),
+///////////////////////////////
 
-    /// Rap3
-    fHistAsMcPtVsMassK0Rap3(0),
-    fHistAsMcPtVsMassLambdaRap3(0),
-    fHistAsMcPtVsMassAntiLambdaRap3(0),
+fHistAsMcMassK0(0),
+fHistAsMcMassLambda(0),
+fHistAsMcMassAntiLambda(0),/*
+							
+							/// Rap3
+							fHistAsMcMassK0Rap3(0),
+							fHistAsMcMassLambdaRap3(0),
+							fHistAsMcMassAntiLambdaRap3(0),*/
 
-///////////////////////////////////////
 
-  fHistAsMcMassVsRadiusK0(0),
-  fHistAsMcMassVsRadiusLambda(0),
-  fHistAsMcMassVsRadiusAntiLambda(0),
-  fHistAsMcResxK0(0),
-  fHistAsMcResyK0(0),
-  fHistAsMcReszK0(0),
-  fHistAsMcResrVsRadiusK0(0),
-  fHistAsMcReszVsRadiusK0(0),
-  fHistAsMcResxLambda(0),
-  fHistAsMcResyLambda(0),
-  fHistAsMcReszLambda(0),
-  fHistAsMcResrVsRadiusLambda(0),
-  fHistAsMcReszVsRadiusLambda(0),
-  fHistAsMcResxAntiLambda(0),
-  fHistAsMcResyAntiLambda(0),
-  fHistAsMcReszAntiLambda(0),
-  fHistAsMcResrVsRadiusAntiLambda(0),
-  fHistAsMcReszVsRadiusAntiLambda(0),
-  fHistAsMcResPtK0(0),
-  fHistAsMcResPtLambda(0),
-  fHistAsMcResPtAntiLambda(0),
-  fHistAsMcResPtVsRapK0(0),
-  fHistAsMcResPtVsRapLambda(0),
-  fHistAsMcResPtVsRapAntiLambda(0),
-  fHistAsMcResPtVsPtK0(0),
-  fHistAsMcResPtVsPtLambda(0),
-  fHistAsMcResPtVsPtAntiLambda(0),
-  fHistAsMcMotherPdgCodeK0s(0),
-  fHistAsMcMotherPdgCodeLambda(0),
-  fHistAsMcMotherPdgCodeAntiLambda(0),
-  fHistAsMcPtLambdaFromSigma(0),
-  fHistAsMcPtAntiLambdaFromSigma(0),
-  fHistAsMcSecondaryPtVsRapK0s(0),
-  fHistAsMcSecondaryPtVsRapLambda(0),
-  fHistAsMcSecondaryPtVsRapAntiLambda(0),
-  fHistAsMcSecondaryPtVsMassK0s(0),
-  fHistAsMcSecondaryPtVsMassLambda(0),
-  fHistAsMcSecondaryPtVsMassAntiLambda(0),
-  fHistAsMcSecondaryProdRadiusK0s(0),
-  fHistAsMcSecondaryProdRadiusLambda(0),
-  fHistAsMcSecondaryProdRadiusAntiLambda(0),
-  fHistAsMcSecondaryProdRadiusXvsYK0s(0),
-  fHistAsMcSecondaryProdRadiusXvsYLambda(0),
-  fHistAsMcSecondaryProdRadiusXvsYAntiLambda(0),
-  fHistAsMcSecondaryMotherPdgCodeK0s(0),
-  fHistAsMcSecondaryMotherPdgCodeLambda(0),
-  fHistAsMcSecondaryMotherPdgCodeAntiLambda(0),
-  fHistAsMcSecondaryPtLambdaFromSigma(0),
-  fHistAsMcSecondaryPtAntiLambdaFromSigma(0)
+fHistAsMcPtVsMassK0(0),
+fHistAsMcPtVsMassLambda(0),
+fHistAsMcPtVsMassAntiLambda(0),/*
+								
+								/// Rap3
+								fHistAsMcPtVsMassK0Rap3(0),
+								fHistAsMcPtVsMassLambdaRap3(0),
+								fHistAsMcPtVsMassAntiLambdaRap3(0),
+								
+								///////////////////////////////////////
+								
+								fHistAsMcMassVsRadiusK0(0),
+								fHistAsMcMassVsRadiusLambda(0),
+								fHistAsMcMassVsRadiusAntiLambda(0),
+								fHistAsMcResxK0(0),
+								fHistAsMcResyK0(0),
+								fHistAsMcReszK0(0),
+								fHistAsMcResrVsRadiusK0(0),
+								fHistAsMcReszVsRadiusK0(0),
+								fHistAsMcResxLambda(0),
+								fHistAsMcResyLambda(0),
+								fHistAsMcReszLambda(0),
+								fHistAsMcResrVsRadiusLambda(0),
+								fHistAsMcReszVsRadiusLambda(0),
+								fHistAsMcResxAntiLambda(0),
+								fHistAsMcResyAntiLambda(0),
+								fHistAsMcReszAntiLambda(0),
+								fHistAsMcResrVsRadiusAntiLambda(0),
+								fHistAsMcReszVsRadiusAntiLambda(0),
+								fHistAsMcResPtK0(0),
+								fHistAsMcResPtLambda(0),
+								fHistAsMcResPtAntiLambda(0),
+								fHistAsMcResPtVsRapK0(0),
+								fHistAsMcResPtVsRapLambda(0),
+								fHistAsMcResPtVsRapAntiLambda(0),
+								fHistAsMcResPtVsPtK0(0),
+								fHistAsMcResPtVsPtLambda(0),
+								fHistAsMcResPtVsPtAntiLambda(0),
+								fHistAsMcMotherPdgCodeK0s(0),
+								fHistAsMcMotherPdgCodeLambda(0),
+								fHistAsMcMotherPdgCodeAntiLambda(0),
+								fHistAsMcPtLambdaFromSigma(0),
+								fHistAsMcPtAntiLambdaFromSigma(0),*/
+fHistAsMcSecondaryPtVsRapK0s(0),
+fHistAsMcSecondaryPtVsRapLambda(0),
+fHistAsMcSecondaryPtVsRapAntiLambda(0),
+fHistAsMcSecondaryPtVsMassK0s(0),
+fHistAsMcSecondaryPtVsMassLambda(0),
+fHistAsMcSecondaryPtVsMassAntiLambda(0)/*,
+										 fHistAsMcSecondaryProdRadiusK0s(0),
+										 fHistAsMcSecondaryProdRadiusLambda(0),
+										 fHistAsMcSecondaryProdRadiusAntiLambda(0),
+										 fHistAsMcSecondaryProdRadiusXvsYK0s(0),
+										 fHistAsMcSecondaryProdRadiusXvsYLambda(0),
+										 fHistAsMcSecondaryProdRadiusXvsYAntiLambda(0),
+										 fHistAsMcSecondaryMotherPdgCodeK0s(0),
+										 fHistAsMcSecondaryMotherPdgCodeLambda(0),
+										 fHistAsMcSecondaryMotherPdgCodeAntiLambda(0),
+										 fHistAsMcSecondaryPtLambdaFromSigma(0),
+										 fHistAsMcSecondaryPtAntiLambdaFromSigma(0)*/
     
 {
   // Constructor
@@ -815,7 +815,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
   fHistMCPrimaryVertexZ          = new TH1F("h1MCPrimaryVertexZ", "MC Primary Vertex Position Z;Primary Vertex Position Z (cm);Events",200,-20,20);
   fListHist->Add(fHistMCPrimaryVertexZ);
-
+/*
   // Pt track distribution
   fHistPtTracksITSRefit            = new TH1F("h1PtTracksITSRefit", "Pt tracks;p_{t} (GeV/c);Counts", 240,0,12);
   fListHist->Add(fHistPtTracksITSRefit);
@@ -829,14 +829,14 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
   fHistPtTracksP            = new TH1F("h1PtTracksP", "Pt tracks;p_{t} (GeV/c);Counts", 240,0,12);
   fListHist->Add(fHistPtTracksP);
-  
+  */
   // Multiplicity
   fHistMCMultiplicityPrimary           = new TH1F("h1MCMultiplicityPrimary", "MC Primary Particles;NPrimary;Count", 201, -0.5, 200.5);
   fListHist->Add(fHistMCMultiplicityPrimary);
 
   fHistMCMultiplicityTracks            = new TH1F("h1MCMultiplicityTracks", "MC Tracks;Ntracks;Count", 201, -0.5, 200.5);
   fListHist->Add(fHistMCMultiplicityTracks);
-
+/*
   // Production Radius of non-primary particles:
   fHistMCtracksProdRadiusK0s           = new TH2F("h2MCtracksProdRadiusK0s","Non-primary MC K^{0} Production Radius;x (cm); y (cm)",200,-50,50,200,-50,50);
   fListHist->Add(fHistMCtracksProdRadiusK0s);
@@ -856,7 +856,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
   fHistMCtracksDecayRadiusAntiLambda   = new TH1F("h1MCtracksDecayRadiusAntiLambda","Non-primary #bar{#Lambda}^{0} Decay Radius;r (cm)",100,1,101);
   fListHist->Add(fHistMCtracksDecayRadiusAntiLambda);
-
+*/
   // Pt Distribution of non-primary particles:
   fHistMCPtAllK0s                      = new TH1F("h1MCPtAllK0s", "Non-primary MC K^{0};p_{t} (GeV/c);Counts",240,0,12);
   fListHist->Add(fHistMCPtAllK0s);
@@ -866,7 +866,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
   fHistMCPtAllAntiLambda               = new TH1F("h1MCPtAllAntiLambda", "Non-primary MC #bar{#Lambda}^{0};p_{t} (GeV/c);Counts",240,0,12);
   fListHist->Add(fHistMCPtAllAntiLambda);
-
+/*
 
   // Pt Distribution of non-primary particles Rap3:
   fHistMCPtAllK0sRap3                      = new TH1F("h1MCPtAllK0sRap3", "Non-primary MC K^{0};p_{t} (GeV/c);Counts",240,0,12);
@@ -919,7 +919,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
   fHistMCRapInPtRangePhi         = new TH1F("h1MCRapInPtRangePhi", "Phi;y",160,-4,4);
   fListHist->Add(fHistMCRapInPtRangePhi);
-
+*/
   // Pt distribution:
   fHistMCPtK0s               = new TH1F("h1MCPtK0s", "K^{0};p_{t} (GeV/c)",240,0,12);
   fListHist->Add(fHistMCPtK0s);
@@ -929,7 +929,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
 fHistMCPtAntiLambda            = new TH1F("h1MCPtAntiLambda", "#AntiLambda^{0};p_{t} (GeV/c)",240,0,12);
   fListHist->Add(fHistMCPtAntiLambda);
-
+/*
 
   // Pt distribution Rap3:
   fHistMCPtK0sRap3               = new TH1F("h1MCPtK0sRap3", "K^{0};p_{t} (GeV/c)",240,0,12);
@@ -967,7 +967,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
 
   fHistNTimesRecAntiLambdaVsPt  = new TH2F("h2NTimesRecAntiLambdaVsPt","NTimes versus Pt, #bar{#Lambda}^{0} in -1<y<1;p_{t} (GeV/c);number of times",75,0,15,5,-0.5,4.5);
   fListHist->Add(fHistNTimesRecAntiLambdaVsPt);
-
+*/
   //***********************************
   // Reconstructed particles histograms
   //***********************************
@@ -982,7 +982,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
 
   fHistTPCMult           = new TH1F("h1HistTPCMult", "TPC tracks per event;Number of Tracks;Number of Events",10000,0,10000);
   fListHist->Add(fHistTPCMult);
-
+/*
 
   fHistTrackletPerEvent       = new TH1F("h1TrackletPerEvent", "Number of tracklets;Number of tracklets per events;Number of events",1000,0,1000);
   fListHist->Add(fHistTrackletPerEvent);
@@ -996,7 +996,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
   // Primary Vertex:
   fHistSPDPrimaryVertexZ          = new TH1F("h1SPDPrimaryVertexZ", "SPD Primary Vertex Position Z;Primary Vertex Position Z (cm);Events",200,-20,20);
   fListHist->Add(fHistSPDPrimaryVertexZ);
-
+*/
   fHistPrimaryVertexX          = new TH1F("h1PrimaryVertexX", "Primary Vertex Position X;Primary Vertex Position X (cm);Events",100,-0.5,0.5);
   fListHist->Add(fHistPrimaryVertexX);
 
@@ -1005,7 +1005,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
 
   fHistPrimaryVertexZ          = new TH1F("h1PrimaryVertexZ", "Primary Vertex Position Z;Primary Vertex Position Z (cm);Events",200,-20,20);
   fListHist->Add(fHistPrimaryVertexZ);
-
+/*
 
   // Primary vertex resolution
   fHistPrimaryVertexResX          = new TH1F("h1PrimaryVertexResX", "Primary Vertex Resolution X;Primary Vertex Resolution X (cm);Events",100,-0.25,0.25);
@@ -1346,7 +1346,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
       fHistCosPointAngleAntiLVsMasspt3      = new TH2F("h2CosPointAngleAntiLVsMasspt3", "Cosine of V0's pointing angle", 200,0.997,1.007,140,1.06,1.2);
       fListHist->Add(fHistCosPointAngleAntiLVsMasspt3);
   } //end QA condition for AntiLambda
-
+*/
   // V0 Multiplicity
   if (!fHistV0Multiplicity) {
     if (fCollidingSystems)
@@ -1394,7 +1394,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
   
   fHistPtVsMassAntiLambda           = new TH2F("h2PtVsMassAntiLambda","#AntiLambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",280, 1.06, 1.2,240,0,12);
   fListHist->Add(fHistPtVsMassAntiLambda);
- 
+ /*
 
  // Pt Vs Mass Rap3
   fHistPtVsMassK0Rap3               = new TH2F("h2PtVsMassK0Rap3","K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",400, 0.4, 0.6,240,0,12);
@@ -1455,11 +1455,11 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
   fHistNsigmaNegPionK0           = new TH1F("h1NsigmaNegPionK0", "Negative daughter of K0s;NsigmaPion;Counts",25,0,5);
   fListHist->Add(fHistNsigmaNegPionK0);
 
-
+*/
   //********************************
   // Associated particles histograms
   //********************************
-
+/*
   // Rap distribution
   fHistAsMcRapK0                = new TH1F("h1AsMcRapK0", "K^{0} associated;eta;Counts", 60, -1.5, 1.5);
   fListHist->Add(fHistAsMcRapK0);
@@ -1529,7 +1529,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
   
   fHistPidMcMassAntiLambda     = new TH1F("h1PidMcMassAntiLambda", "#bar{#Lambda}^{0} MC PId checked;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistPidMcMassAntiLambda);
- 
+ */
   fHistAsMcMassK0              = new TH1F("h1AsMcMassK0", "K^{0} associated;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts", 100, 0.4, 0.6);
   fListHist->Add(fHistAsMcMassK0);
   
@@ -1539,7 +1539,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
   fHistAsMcMassAntiLambda      = new TH1F("h1AsMcMassAntiLambda", "#bar{#Lambda}^{0} associated;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistAsMcMassAntiLambda);
 
-
+/*
   //Mass Rap3
  fHistAsMcMassK0Rap3              = new TH1F("h1AsMcMassK0Rap3", "K^{0} associated;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts", 100, 0.4, 0.6);
   fListHist->Add(fHistAsMcMassK0Rap3);
@@ -1550,7 +1550,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
   fHistAsMcMassAntiLambdaRap3      = new TH1F("h1AsMcMassAntiLambdaRap3", "#bar{#Lambda}^{0} associated;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistAsMcMassAntiLambdaRap3);
 
-
+*/
 
   //Pt versus Mass
   fHistAsMcPtVsMassK0               = new TH2F("h2AsMcPtVsMassK0","K^{0} associated;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",200, 0.4, 0.6,240,0,12);
@@ -1561,7 +1561,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
 
   fHistAsMcPtVsMassAntiLambda       = new TH2F("h2AsMcPtVsMassAntiLambda","#bar{#Lambda}^{0} associated;M(#bar{p}#pi^{+}) (GeV/c^{2});p_{t} (GeV/c)",140, 1.06, 1.2,240,0,12);
   fListHist->Add(fHistAsMcPtVsMassAntiLambda);
-
+/*
 
   //Pt versus Mass Rap3
   fHistAsMcPtVsMassK0Rap3               = new TH2F("h2AsMcPtVsMassK0Rap3","K^{0} associated;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",200, 0.4, 0.6,240,0,12);
@@ -1669,7 +1669,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
 
   fHistAsMcPtAntiLambdaFromSigma      = new TH1F("h1AsMcPtAntiLambdaFromSigma","#bar{#Lambda}^{0} associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
   fListHist->Add(fHistAsMcPtAntiLambdaFromSigma);
-
+*/
   // Associated secondary particles:
   // Pt and rapidity distribution
   fHistAsMcSecondaryPtVsRapK0s          = new TH2F("h2AsMcSecondaryPtVsRapK0s", "K^{0} associated secondary;p_{t} (GeV/c);rapidity",240,0,12,30,-1.5,1.5);
@@ -1690,7 +1690,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
 	
   fHistAsMcSecondaryPtVsMassAntiLambda   = new TH2F("h2AsMcSecondaryPtVsMassAntiLambda", "#bar{#Lambda}^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",400, 0.4, 0.6,240,0,12);
   fListHist->Add(fHistAsMcSecondaryPtVsMassAntiLambda);
-	
+	/*
 	
   // Production radius
   fHistAsMcSecondaryProdRadiusK0s              = new TH1F("h1AsMcSecondaryProdRadiusK0s", "K^{0} Production Radius;r (cm);Count", 170, -2, 15);
@@ -1726,6 +1726,7 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
 
   fHistAsMcSecondaryPtAntiLambdaFromSigma      = new TH1F("h1AsMcSecondaryPtAntiLambdaFromSigma","#bar{#Lambda}^{0} associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
   fListHist->Add(fHistAsMcSecondaryPtAntiLambdaFromSigma);
+	 */
   PostData(1, fListHist);
   PostData(2, fCentrSelector);
   PostData(3, fTracksCuts);
@@ -1798,9 +1799,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       track = fESD->GetTrack(i);
       track->GetInnerPxPyPz(trackP);
     TestTrackCuts->SetRequireITSRefit(kFALSE);
-    if(TestTrackCuts->IsSelected(track)) fHistPtTracks->Fill(trackP[2]);
+    //if(TestTrackCuts->IsSelected(track)) fHistPtTracks->Fill(trackP[2]);
     TestTrackCuts->SetRequireITSRefit(kTRUE);
-    if(TestTrackCuts->IsSelected(track)) fHistPtTracksITSRefit->Fill(trackP[2]);
+    //if(TestTrackCuts->IsSelected(track)) fHistPtTracksITSRefit->Fill(trackP[2]);
   }
   
 
@@ -1999,26 +2000,26 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	}
 	
 	if (lPdgcodeCurrentPart==310)   {
-	  fHistMCtracksProdRadiusK0s->Fill(mcPosX,mcPosY);
-	  fHistMCtracksDecayRadiusK0s->Fill(mcDecayPosR);
+	  //fHistMCtracksProdRadiusK0s->Fill(mcPosX,mcPosY);
+	  //fHistMCtracksDecayRadiusK0s->Fill(mcDecayPosR);
 
-	  if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtAllK0sRap3->Fill(lPtCurrentPart);
+	 //if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtAllK0sRap3->Fill(lPtCurrentPart);
 
 	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllK0s->Fill(lPtCurrentPart);
 	}
 	else if (lPdgcodeCurrentPart==3122)  {
-	  fHistMCtracksProdRadiusLambda->Fill(mcPosX,mcPosY);
-	  fHistMCtracksDecayRadiusLambda->Fill(mcDecayPosR);
+	  //fHistMCtracksProdRadiusLambda->Fill(mcPosX,mcPosY);
+	  //fHistMCtracksDecayRadiusLambda->Fill(mcDecayPosR);
 
-	  if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtAllLambdaRap3->Fill(lPtCurrentPart);
+	 // if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtAllLambdaRap3->Fill(lPtCurrentPart);
 
 	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllLambda->Fill(lPtCurrentPart);
 	}
 	else if (lPdgcodeCurrentPart==-3122) {
-	  fHistMCtracksProdRadiusAntiLambda->Fill(mcPosX,mcPosY);
-	  fHistMCtracksDecayRadiusAntiLambda->Fill(mcDecayPosR);
+	  //fHistMCtracksProdRadiusAntiLambda->Fill(mcPosX,mcPosY);
+	  //fHistMCtracksDecayRadiusAntiLambda->Fill(mcDecayPosR);
 
-	  if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtAllAntiLambdaRap3->Fill(lPtCurrentPart);
+	  //if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtAllAntiLambdaRap3->Fill(lPtCurrentPart);
 
 	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllAntiLambda->Fill(lPtCurrentPart);
 	}
@@ -2060,60 +2061,55 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
  
         // Rap distribution
         if (lPdgcodeCurrentPart==310) {
-	  fHistMCRapK0s->Fill(lRapCurrentPart);
-	  if (lPtCurrentPart < 0.2 && lPtCurrentPart < 3.0)
-	    fHistMCRapInPtRangeK0s->Fill(lRapCurrentPart);
+	  //fHistMCRapK0s->Fill(lRapCurrentPart);
+	  //if (lPtCurrentPart < 0.2 && lPtCurrentPart < 3.0) fHistMCRapInPtRangeK0s->Fill(lRapCurrentPart);
 	}
 
 	if (lPdgcodeCurrentPart==3122) {
-	  fHistMCRapLambda->Fill(lRapCurrentPart);
-	  if (lPtCurrentPart < 0.6 && lPtCurrentPart < 3.5)
-	    fHistMCRapInPtRangeLambda->Fill(lRapCurrentPart);
+	  //fHistMCRapLambda->Fill(lRapCurrentPart);
+	 // if (lPtCurrentPart < 0.6 && lPtCurrentPart < 3.5) fHistMCRapInPtRangeLambda->Fill(lRapCurrentPart);
 	}
 
 	if (lPdgcodeCurrentPart==-3122) {
-	  fHistMCRapAntiLambda->Fill(lRapCurrentPart);
-	  if (lPtCurrentPart < 0.6 && lPtCurrentPart < 3.5)
-	    fHistMCRapInPtRangeAntiLambda->Fill(lRapCurrentPart);
+	  //fHistMCRapAntiLambda->Fill(lRapCurrentPart);
+	 // if (lPtCurrentPart < 0.6 && lPtCurrentPart < 3.5) fHistMCRapInPtRangeAntiLambda->Fill(lRapCurrentPart);
 	}
 
 	if (lPdgcodeCurrentPart==3312 || lPdgcodeCurrentPart==-3312) {
-	  fHistMCRapXi->Fill(lRapCurrentPart);
-	  if (lPtCurrentPart < 0.6 && lPtCurrentPart < 3.0)
-	    fHistMCRapInPtRangeXi->Fill(lRapCurrentPart);
+	  //fHistMCRapXi->Fill(lRapCurrentPart);
+	  //if (lPtCurrentPart < 0.6 && lPtCurrentPart < 3.0) fHistMCRapInPtRangeXi->Fill(lRapCurrentPart);
 	}
 
 	if (lPdgcodeCurrentPart==333) {
-	  fHistMCRapPhi->Fill(lRapCurrentPart);
-	  if (lPtCurrentPart < 0.7 && lPtCurrentPart < 3.0)
-	    fHistMCRapInPtRangePhi->Fill(lRapCurrentPart);
+	  //fHistMCRapPhi->Fill(lRapCurrentPart);
+	  //if (lPtCurrentPart < 0.7 && lPtCurrentPart < 3.0) fHistMCRapInPtRangePhi->Fill(lRapCurrentPart);
 	}
  
 	// Rapidity Cut
 	if (TMath::Abs(lRapCurrentPart) > lCutRap) continue;
  
 	if (lPdgcodeCurrentPart==310) {
-	  fHistMCProdRadiusK0s->Fill(mcPosR);
+	  //fHistMCProdRadiusK0s->Fill(mcPosR);
 
 	  fHistMCPtK0s->Fill(lPtCurrentPart);
 
-	if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtK0sRap3->Fill(lPtCurrentPart);
+	//if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtK0sRap3->Fill(lPtCurrentPart);
 
 
-	  fHistNTimesRecK0s->Fill(lNtimesReconstructedK0s);
-	  fHistNTimesRecK0sVsPt->Fill(lPtCurrentPart,lNtimesReconstructedK0s);
+	  //fHistNTimesRecK0s->Fill(lNtimesReconstructedK0s);
+	  //fHistNTimesRecK0sVsPt->Fill(lPtCurrentPart,lNtimesReconstructedK0s);
 	}
 	else 
 	  if (lPdgcodeCurrentPart==3122) {
-	    fHistMCProdRadiusLambda->Fill(mcPosR);
+	    //fHistMCProdRadiusLambda->Fill(mcPosR);
 
 	    fHistMCPtLambda->Fill(lPtCurrentPart);	  
 
-	if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtLambdaRap3->Fill(lPtCurrentPart);
+	//if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtLambdaRap3->Fill(lPtCurrentPart);
 
-	    fHistNTimesRecLambda->Fill(lNtimesReconstructedLambda);
-	    fHistNTimesRecLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedLambda);
-	    if (lComeFromSigma) fHistMCPtLambdaFromSigma->Fill(lPtCurrentPart);
+	  //  fHistNTimesRecLambda->Fill(lNtimesReconstructedLambda);
+	  //  fHistNTimesRecLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedLambda);
+	    //if (lComeFromSigma) fHistMCPtLambdaFromSigma->Fill(lPtCurrentPart);
 
 	    //printf("found Lambda MC pT=%e\n",lPtCurrentPart);
 	    //printf("found Lambda MC Plabel=%d PPDGcode=%d Nlabel=%d NPDGcode=%d\n\n",id0,lPdgCurrentDaughter0,id1,lPdgCurrentDaughter1); 
@@ -2121,16 +2117,16 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  }
 	else 
 	  if (lPdgcodeCurrentPart==-3122) {
-	    fHistMCProdRadiusAntiLambda->Fill(mcPosR);
+	   // fHistMCProdRadiusAntiLambda->Fill(mcPosR);
 
-	    fHistMCPtAntiLambda->Fill(lPtCurrentPart);	  
+	   // fHistMCPtAntiLambda->Fill(lPtCurrentPart);	  
 
-	if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtAntiLambdaRap3->Fill(lPtCurrentPart);
+	//if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtAntiLambdaRap3->Fill(lPtCurrentPart);
 
 
-	    fHistNTimesRecAntiLambda->Fill(lNtimesReconstructedAntiLambda);
-	    fHistNTimesRecAntiLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedAntiLambda);
-	    if (lComeFromSigma) fHistMCPtAntiLambdaFromSigma->Fill(lPtCurrentPart);
+	  //  fHistNTimesRecAntiLambda->Fill(lNtimesReconstructedAntiLambda);
+	  //  fHistNTimesRecAntiLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedAntiLambda);
+	  //  if (lComeFromSigma) fHistMCPtAntiLambdaFromSigma->Fill(lPtCurrentPart);
 
 	    //printf("found Lambda MC pT=%e\n",lPtCurrentPart);
 	    //printf("found Lambda MC Plabel=%d PPDGcode=%d Nlabel=%d NPDGcode=%d\n\n",id0,lPdgCurrentDaughter0,id1,lPdgCurrentDaughter1); 
@@ -2312,7 +2308,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     const AliESDVertex *mySPDPrimaryVertex = ((AliESDEvent*)fESD)->GetPrimaryVertexSPD();
     if (!mySPDPrimaryVertex) return;
 
-    fHistSPDPrimaryVertexZ->Fill(mySPDPrimaryVertex->GetZ());
+   // fHistSPDPrimaryVertexZ->Fill(mySPDPrimaryVertex->GetZ());
 
     const AliESDVertex *myPrimaryVertexTracking = ((AliESDEvent*)fESD)->GetPrimaryVertexTracks();
     if (!myPrimaryVertexTracking) return;
@@ -2328,11 +2324,11 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     // Number of Tracklets:
 
-    fHistTrackletPerEvent->Fill(myMultiplicty->GetNumberOfTracklets());
+    //fHistTrackletPerEvent->Fill(myMultiplicty->GetNumberOfTracklets());
 
     lMagneticField = ((AliESDEvent*)fESD)->GetMagneticField();
 
-    fHistTPCTracks->Fill(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fESD, kTRUE));
+    //fHistTPCTracks->Fill(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fESD, kTRUE));
 
     //////simple chack for multiplicity////////////////////////////////////////////////////////
 
@@ -2360,9 +2356,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   fHistPrimaryVertexZ->Fill(lPrimaryVtxPosition[2]);
   //Double_t lrcPrimVtxR = TMath::Sqrt(lPrimaryVtxPosition[0]*lPrimaryVtxPosition[0]+lPrimaryVtxPosition[0]*lPrimaryVtxPosition[0]);
 
-  fHistPrimaryVertexResX->Fill(lResPrimaryVtxX);
-  fHistPrimaryVertexResY->Fill(lResPrimaryVtxY);
-  fHistPrimaryVertexResZ->Fill(lResPrimaryVtxZ);
+ // fHistPrimaryVertexResX->Fill(lResPrimaryVtxX);
+ // fHistPrimaryVertexResY->Fill(lResPrimaryVtxY);
+ // fHistPrimaryVertexResZ->Fill(lResPrimaryVtxZ);
 
   //***********************
   // AliKF Primary Vertex
@@ -2405,9 +2401,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       //      if ((v0->Pt())<0.6) continue;
       
       // Primary vertex:
-      fHistPrimaryVertexPosXV0events->Fill(lPrimaryVtxPosition[0]);
-      fHistPrimaryVertexPosYV0events->Fill(lPrimaryVtxPosition[1]);
-      fHistPrimaryVertexPosZV0events->Fill(lPrimaryVtxPosition[2]);
+     // fHistPrimaryVertexPosXV0events->Fill(lPrimaryVtxPosition[0]);
+     // fHistPrimaryVertexPosYV0events->Fill(lPrimaryVtxPosition[1]);
+     // fHistPrimaryVertexPosZV0events->Fill(lPrimaryVtxPosition[2]);
       
       // V0's Daughters
       lIndexTrackPos = TMath::Abs(v0->GetPindex());
@@ -2642,13 +2638,13 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     // Look for associated particles:
     if (fAnalysisMC) {
       if( (lIndexPosMother==-1) || (lIndexNegMother==-1) ) {
-	fHistMCDaughterTrack->Fill(1);
+	//fHistMCDaughterTrack->Fill(1);
       }
       
       else if( ( (lPDGCodePosDaughter==+211) && (lPDGCodeNegDaughter==-211) ) ) 
 		{
 	lCheckPIdK0Short    = 1;
-	fHistMCDaughterTrack->Fill(3);
+	//fHistMCDaughterTrack->Fill(3);
 	if ( (lIndexPosMother==lIndexNegMother) &&
 	     (lPdgcodeMother==310) ) {
 
@@ -2675,7 +2671,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       else if( ( (lPDGCodePosDaughter==+2212) && (lPDGCodeNegDaughter==-211)  )  ) 
 		{
 	lCheckPIdLambda     = 1;
-	fHistMCDaughterTrack->Fill(5);
+	//fHistMCDaughterTrack->Fill(5);
 	if ( (lIndexPosMother==lIndexNegMother) &&
 	     (lPdgcodeMother==3122)  ){
 	  if ( ( TMath::Abs(lPdgcodeMotherOfMother) == 3212) ||
@@ -2711,7 +2707,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       else if( ( (lPDGCodePosDaughter==211)   && (lPDGCodeNegDaughter==-2212) )	) 
 		{
 	lCheckPIdAntiLambda = 1;
-	fHistMCDaughterTrack->Fill(7);
+	//fHistMCDaughterTrack->Fill(7);
 	if ( (lIndexPosMother==lIndexNegMother) &&
 	     (lPdgcodeMother==-3122) ) {
 	  if ( ( TMath::Abs(lPdgcodeMotherOfMother) == 3212) ||
@@ -2868,8 +2864,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 //*****************************
 
     if (lPLambda <1 && lOnFlyStatus==0 ){
-        fHistArmenterosPodolanski->Fill(lAlphaV0,lPtArmV0);
-        fHistcTauL->Fill(lcTauLambda);
+       // fHistArmenterosPodolanski->Fill(lAlphaV0,lPtArmV0);
+       // fHistcTauL->Fill(lcTauLambda);
 	  }
 
 
@@ -2883,7 +2879,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       if (TMath::Abs(lRapK0s) < lCutRap ) {
 
 	//////2D histos: cut vs on fly status/////////////////////
-
+/*
 	fHistDcaPosToPrimVertexK0->Fill(lDcaPosToPrimVertex,lOnFlyStatus);
 	fHistDcaNegToPrimVertexK0->Fill(lDcaNegToPrimVertex,lOnFlyStatus);
 	fHistRadiusV0K0->Fill(lV0Radius,lOnFlyStatus);
@@ -2891,7 +2887,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	fHistDcaV0DaughtersK0->Fill(lDcaV0Daughters,lOnFlyStatus);
 	fHistChi2K0->Fill(lChi2V0,lOnFlyStatus);
 	fHistCosPointAngleK0->Fill(lV0cosPointAngle,lOnFlyStatus);
-
+*/
 	//////2D histos: cut vs mass///////////////////// 
 
 	if (lOnFlyStatus==0){
@@ -2901,8 +2897,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	fHistMassVsRadiusK0->Fill(rcPosRK0s,lInvMassK0s);
 	fHistPtVsMassK0->Fill(lInvMassK0s,lPtK0s);
 
-	if (TMath::Abs(lRapK0s) < 0.3 ) 	fHistPtVsMassK0Rap3->Fill(lInvMassK0s,lPtK0s);
-
+	//if (TMath::Abs(lRapK0s) < 0.3 ) 	fHistPtVsMassK0Rap3->Fill(lInvMassK0s,lPtK0s);
+/*
 	  fHistDcaPosToPrimVertexK0vsMassK0->Fill(lDcaPosToPrimVertex,lInvMassK0s);
 	  fHistDcaNegToPrimVertexK0vsMassK0->Fill(lDcaNegToPrimVertex,lInvMassK0s);
 	  fHistRadiusV0K0vsMassK0->Fill(lV0Radius,lInvMassK0s);
@@ -2934,7 +2930,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    fHistDcaV0DaughtersK0vsMassK0pt3->Fill(lDcaV0Daughters,lInvMassK0s);
 	    fHistCosPointAngleK0vsMassK0pt3->Fill(lV0cosPointAngle,lInvMassK0s);
 	  }   
-	  } //fQASelector
+	  } //fQASelector*/
 	}
       } // if rap. condition
       } //end ctau cut
@@ -2952,7 +2948,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       if (TMath::Abs(lRapLambda) < lCutRap) {
 
 	//////2D histos: cut vs on fly status/////////////////////
-
+/*
 	fHistDcaPosToPrimVertexL->Fill(lDcaPosToPrimVertex,lOnFlyStatus);
 	fHistDcaNegToPrimVertexL->Fill(lDcaNegToPrimVertex,lOnFlyStatus);
 	fHistRadiusV0L->Fill(lV0Radius,lOnFlyStatus);
@@ -2960,7 +2956,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	fHistDcaV0DaughtersL->Fill(lDcaV0Daughters,lOnFlyStatus);
 	fHistChi2L->Fill(lChi2V0,lOnFlyStatus);
 	fHistCosPointAngleL->Fill(lV0cosPointAngle,lOnFlyStatus);
-
+*/
 	//////2D histos: cut vs mass/////////////////////
 
 	if (lOnFlyStatus==0){
@@ -2968,10 +2964,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	fHistMassVsRadiusLambda->Fill(rcPosRLambda,lInvMassLambda);
 	fHistPtVsMassLambda->Fill(lInvMassLambda,lPtLambda);
 
-	if (TMath::Abs(lRapLambda) < 0.3 ) fHistPtVsMassLambdaRap3->Fill(lInvMassLambda,lPtLambda);
+	//if (TMath::Abs(lRapLambda) < 0.3 ) fHistPtVsMassLambdaRap3->Fill(lInvMassLambda,lPtLambda);
 
-        if(lPtLambda <=1) fHistNSigmaProton->Fill(nSigmaPosProton);
-
+      //  if(lPtLambda <=1) fHistNSigmaProton->Fill(nSigmaPosProton);
+/*
 	  fHistDcaPosToPrimVertexLvsMassL->Fill(lDcaPosToPrimVertex,lInvMassLambda);
 	  fHistDcaNegToPrimVertexLvsMassL->Fill(lDcaNegToPrimVertex,lInvMassLambda);
 	  fHistRadiusV0LvsMassL->Fill(lV0Radius,lInvMassLambda);
@@ -3004,7 +3000,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    fHistDcaV0DaughtersLambdaVsMasspt3->Fill(lDcaV0Daughters,lInvMassLambda);
 	    fHistCosPointAngleLambdaVsMasspt3->Fill(lV0cosPointAngle,lInvMassLambda);
 	  }   
-	  }//QA Selector
+	  }//QA Selector*/
 	}
       } //end of Rap condition
     } // end of PID condition
@@ -3022,7 +3018,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       if (TMath::Abs(lRapAntiLambda) < lCutRap) {
 
 	//////2D histos: cut vs on fly status/////////////////////
-
+/*
 	fHistDcaPosToPrimVertexAntiL->Fill(lDcaPosToPrimVertex,lOnFlyStatus);
 	fHistDcaNegToPrimVertexAntiL->Fill(lDcaNegToPrimVertex,lOnFlyStatus);
 	fHistRadiusV0AntiL->Fill(lV0Radius,lOnFlyStatus);
@@ -3030,7 +3026,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	fHistDcaV0DaughtersAntiL->Fill(lDcaV0Daughters,lOnFlyStatus);
 	fHistChi2AntiL->Fill(lChi2V0,lOnFlyStatus);
 	fHistCosPointAngleAntiL->Fill(lV0cosPointAngle,lOnFlyStatus);
-
+*/
 	//////2D histos: cut vs mass/////////////////////
 
 	if (lOnFlyStatus==0){
@@ -3039,9 +3035,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 		fHistMassVsRadiusAntiLambda->Fill(rcPosRAntiLambda,lInvMassAntiLambda);
 		fHistPtVsMassAntiLambda->Fill(lInvMassAntiLambda,lPtAntiLambda);
 
-		if (TMath::Abs(lRapAntiLambda) < 0.3) fHistPtVsMassAntiLambdaRap3->Fill(lInvMassAntiLambda,lPtAntiLambda);
+		//if (TMath::Abs(lRapAntiLambda) < 0.3) fHistPtVsMassAntiLambdaRap3->Fill(lInvMassAntiLambda,lPtAntiLambda);
 
-
+/*
 	  fHistDcaPosToPrimVertexAntiLvsMass->Fill(lDcaPosToPrimVertex,lInvMassAntiLambda);
 	  fHistDcaNegToPrimVertexAntiLvsMass->Fill(lDcaNegToPrimVertex,lInvMassAntiLambda);
 	  fHistRadiusV0AntiLvsMass->Fill(lV0Radius,lInvMassAntiLambda);
@@ -3074,7 +3070,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    fHistDcaV0DaughtersAntiLVsMasspt3->Fill(lDcaV0Daughters,lInvMassAntiLambda);
 	    fHistCosPointAngleAntiLVsMasspt3->Fill(lV0cosPointAngle,lInvMassAntiLambda);
 	  }   
-	  } //QA Selector
+	  } //QA Selector*/
 	}
       } //end of Rap condition
     } // end of PID condition
@@ -3085,11 +3081,11 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     // Histo versus Rap and armenteros plot
     if (!lOnFlyStatus){
-      if (lCheckMcK0Short) fHistAsMcRapK0->Fill(lRapK0s);
-      if (lCheckMcLambda) fHistAsMcRapLambda->Fill(lRapLambda);
-      if (lCheckMcAntiLambda) fHistAsMcRapLambda->Fill(lRapAntiLambda);
+      //if (lCheckMcK0Short) fHistAsMcRapK0->Fill(lRapK0s);
+      //if (lCheckMcLambda) fHistAsMcRapLambda->Fill(lRapLambda);
+      //if (lCheckMcAntiLambda) fHistAsMcRapLambda->Fill(lRapAntiLambda);
       //      fHistArmenterosPodolanski->Fill(lAlphaV0,lPtArmV0);
-      if ((TMath::Abs(lRapK0s) < lCutRap)&&(TMath::Abs(lRapLambda) < lCutRap)) fHistK0sMassVsLambdaMass->Fill(lInvMassK0s,lInvMassLambda);
+      //if ((TMath::Abs(lRapK0s) < lCutRap)&&(TMath::Abs(lRapLambda) < lCutRap)) fHistK0sMassVsLambdaMass->Fill(lInvMassK0s,lInvMassLambda);
     }
 
 
@@ -3102,20 +3098,20 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     if (TMath::Abs(lRapK0s) < lCutRap) {
 
-      fHistNsigmaPosPionK0->Fill(nSigmaPosPion);
-      fHistNsigmaNegPionK0->Fill(nSigmaNegPion);
+     // fHistNsigmaPosPionK0->Fill(nSigmaPosPion);
+     // fHistNsigmaNegPionK0->Fill(nSigmaNegPion);
 	
       switch (lOnFlyStatus){
       case 0 : 
 
 
 	//	  fHistMultVsPtVsMassK0->Fill(multiplicity ,lInvMassK0s,lPtK0s);
-	if(lCheckPIdK0Short) fHistPidMcMassK0->Fill(lInvMassK0s);
+	//if(lCheckPIdK0Short) fHistPidMcMassK0->Fill(lInvMassK0s);
 	if(lCheckMcK0Short) {
 	  fHistAsMcMassK0->Fill(lInvMassK0s);
-	  fHistAsMcPtK0->Fill(lPtK0s);
+	  //fHistAsMcPtK0->Fill(lPtK0s);
 	  fHistAsMcPtVsMassK0->Fill(lInvMassK0s,lPtK0s);
-
+/*
 	  if (TMath::Abs(lRapK0s) < 0.3){
 	  fHistAsMcMassK0Rap3->Fill(lInvMassK0s);
 	  fHistAsMcPtK0Rap3->Fill(lPtK0s);
@@ -3134,20 +3130,20 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  fHistAsMcProdRadiusXvsYK0s->Fill(mcPosMotherX,mcPosMotherY);
 	  fHistAsMcResPtK0->Fill(deltaPtK0s);
 	  fHistAsMcResPtVsRapK0->Fill(deltaPtK0s,lRapK0s);
-	  fHistAsMcResPtVsPtK0->Fill(deltaPtK0s,lPtK0s);
+	  fHistAsMcResPtVsPtK0->Fill(deltaPtK0s,lPtK0s);*/
 	}
 	else if (lCheckSecondaryK0s) {
 	  fHistAsMcSecondaryPtVsRapK0s->Fill(lPtK0s,lRapK0s);
 	  fHistAsMcSecondaryPtVsMassK0s->Fill(lInvMassK0s,lPtK0s);
-	  fHistAsMcSecondaryProdRadiusK0s->Fill(mcPosMotherR);
-	  fHistAsMcSecondaryProdRadiusXvsYK0s->Fill(mcPosMotherX,mcPosMotherY);
-	  switch (lPdgcodeMotherOfMother) {
+	 // fHistAsMcSecondaryProdRadiusK0s->Fill(mcPosMotherR);
+	//  fHistAsMcSecondaryProdRadiusXvsYK0s->Fill(mcPosMotherX,mcPosMotherY);
+	 /* switch (lPdgcodeMotherOfMother) {
 	  case 130   : fHistAsMcSecondaryMotherPdgCodeK0s->Fill(0.5);break; // K0L
 	  case 321   : fHistAsMcSecondaryMotherPdgCodeK0s->Fill(1.5);break; // K+
 	  case -321  : fHistAsMcSecondaryMotherPdgCodeK0s->Fill(2.5);break; // K-
 	  case -3122 : fHistAsMcSecondaryMotherPdgCodeK0s->Fill(3.5);break; //AntiLambda
 	  default    : fHistAsMcSecondaryMotherPdgCodeK0s->Fill(6.5);break;
-	  }
+	  }*/
 	}
 	break;
 	  
@@ -3165,28 +3161,28 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     if (TMath::Abs(lRapLambda) < lCutRap) {
 
-      fHistNsigmaPosProtonLambda->Fill(nSigmaPosProton);
-      fHistNsigmaNegPionLambda->Fill(nSigmaNegPion);
+     // fHistNsigmaPosProtonLambda->Fill(nSigmaPosProton);
+     // fHistNsigmaNegPionLambda->Fill(nSigmaNegPion);
       switch (lOnFlyStatus){
       case 0 : 
 
 	//          fHistMultVsPtVsMassLambda->Fill(multiplicity ,lInvMassLambda,lPtLambda);
-	if(lCheckPIdLambda) fHistPidMcMassLambda->Fill(lInvMassLambda);
+	//if(lCheckPIdLambda) fHistPidMcMassLambda->Fill(lInvMassLambda);
 	  
 	if(lCheckMcLambda) {
 
 	  fHistAsMcMassLambda->Fill(lInvMassLambda);
-	  fHistAsMcPtLambda->Fill(lPtLambda);
-	  fHistCosPointAngleLvsMassVsPtsigL->Fill(lPtLambda,lV0cosPointAngle,lInvMassLambda);
+	//  fHistAsMcPtLambda->Fill(lPtLambda);
+	 // fHistCosPointAngleLvsMassVsPtsigL->Fill(lPtLambda,lV0cosPointAngle,lInvMassLambda);
 	  fHistAsMcPtVsMassLambda->Fill(lInvMassLambda,lPtLambda);
 
-        if (TMath::Abs(lRapLambda) < 0.3) {
+     /*   if (TMath::Abs(lRapLambda) < 0.3) {
 	  fHistAsMcMassLambdaRap3->Fill(lInvMassLambda);
 	  fHistAsMcPtLambdaRap3->Fill(lPtLambda);
 	  fHistAsMcPtVsMassLambdaRap3->Fill(lInvMassLambda,lPtLambda);
-          }
+          }*/
 
-
+/*
 	  if (lPtLambda <= 1) fHistAsMcPtZoomLambda->Fill(lPtLambda);
 	  fHistAsMcMassVsRadiusLambda->Fill(rcPosRLambda,lInvMassLambda);
 	  fHistAsMcResxLambda->Fill(rcPosXLambda-mcPosX);
@@ -3212,7 +3208,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  case 3334 : fHistAsMcMotherPdgCodeLambda->Fill(8.5); break; // Omega
 	  case -1   : fHistAsMcMotherPdgCodeLambda->Fill(9.5); break;
 	  default   : fHistAsMcMotherPdgCodeLambda->Fill(10.5);break; 
-	  }
+	  }*/
    
 	  //printf("found Lambda RC dcaPos=%e dcaNeg=%e dcaDau=%e cosP=%e pT=%e mass=%e\n",lDcaPosToPrimVertex ,lDcaNegToPrimVertex ,lDcaV0Daughters,lV0cosPointAngle,lPtLambda,lInvMassLambda);
 	  //printf("found Lambda RC Pindex=%d  Nindex=%d  Plabel=%d  Nlabel=%d\n\n",lIndexTrackPos,lIndexTrackNeg,lLabelTrackPos,lLabelTrackNeg);
@@ -3222,8 +3218,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	else if (lCheckSecondaryLambda) {
           fHistAsMcSecondaryPtVsRapLambda->Fill(lPtLambda,lRapLambda);
 		fHistAsMcSecondaryPtVsMassLambda->Fill(lInvMassLambda,lPtLambda);
-		fHistAsMcSecondaryProdRadiusLambda->Fill(mcPosMotherR); 
-	  fHistAsMcSecondaryProdRadiusXvsYLambda->Fill(mcPosMotherX,mcPosMotherY);
+		//fHistAsMcSecondaryProdRadiusLambda->Fill(mcPosMotherR); 
+	 /* fHistAsMcSecondaryProdRadiusXvsYLambda->Fill(mcPosMotherX,mcPosMotherY);
 	  if (lComeFromSigma) fHistAsMcSecondaryPtLambdaFromSigma->Fill(lPtLambda);
 	  printf(" lPdgcodeMotherOfMother= %d",lPdgcodeMotherOfMother);
 	  switch (lPdgcodeMotherOfMother) {
@@ -3238,10 +3234,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  case 3334 : fHistAsMcSecondaryMotherPdgCodeLambda->Fill(8.5); break; // Omega
 	  case -1   : fHistAsMcSecondaryMotherPdgCodeLambda->Fill(9.5); break;
 	  default   : fHistAsMcSecondaryMotherPdgCodeLambda->Fill(10.5);break;
-	  }
+	  }*/
 	}
          
-         if(!lCheckMcLambda)fHistCosPointAngleLvsMassVsPtbackL->Fill(lPtLambda,lV0cosPointAngle,lInvMassLambda);
+       //  if(!lCheckMcLambda)fHistCosPointAngleLvsMassVsPtbackL->Fill(lPtLambda,lV0cosPointAngle,lInvMassLambda);
 	break;
 	  
       }
@@ -3259,27 +3255,27 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     if (TMath::Abs(lRapAntiLambda) < lCutRap) {
 
-         fHistNsigmaPosProtonAntiLambda->Fill(nSigmaPosProton);
-         fHistNsigmaNegPionAntiLambda->Fill(nSigmaNegPion);
+      //   fHistNsigmaPosProtonAntiLambda->Fill(nSigmaPosProton);
+      //   fHistNsigmaNegPionAntiLambda->Fill(nSigmaNegPion);
       switch (lOnFlyStatus){
       case 0 : 
 
 	//          fHistMultVsPtVsMassAntiLambda->Fill(multiplicity ,lInvMassAntiLambda,lPtAntiLambda);
-	if(lCheckPIdAntiLambda) fHistPidMcMassAntiLambda->Fill(lInvMassAntiLambda);
+	//if(lCheckPIdAntiLambda) fHistPidMcMassAntiLambda->Fill(lInvMassAntiLambda);
 	  
     if(lCheckMcAntiLambda) {
 
  	  fHistAsMcMassAntiLambda->Fill(lInvMassAntiLambda);
-	  fHistAsMcPtAntiLambda->Fill(lPtAntiLambda);
+	 // fHistAsMcPtAntiLambda->Fill(lPtAntiLambda);
 	  fHistAsMcPtVsMassAntiLambda->Fill(lInvMassAntiLambda,lPtAntiLambda);
-
+/*
     if (TMath::Abs(lRapAntiLambda) < 0.3) {
 	  fHistAsMcMassAntiLambdaRap3->Fill(lInvMassAntiLambda);
 	  fHistAsMcPtAntiLambdaRap3->Fill(lPtAntiLambda);
 	  fHistAsMcPtVsMassAntiLambdaRap3->Fill(lInvMassAntiLambda,lPtAntiLambda);
-    }
+    }*/
 
-
+/*
 	  if (lPtAntiLambda <= 1) fHistAsMcPtZoomAntiLambda->Fill(lPtAntiLambda);
 	  fHistAsMcMassVsRadiusAntiLambda->Fill(rcPosRAntiLambda,lInvMassAntiLambda);
 	  fHistAsMcResxAntiLambda->Fill(rcPosXAntiLambda-mcPosX);
@@ -3306,7 +3302,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 	  case -1   : fHistAsMcMotherPdgCodeAntiLambda->Fill(9.5); break;
 	  default   : fHistAsMcMotherPdgCodeAntiLambda->Fill(10.5);break; 
-	  }
+	  }*/
     
 	  //printf("found AntiLambda RC dcaPos=%e dcaNeg=%e dcaDau=%e cosP=%e pT=%e mass=%e\n",lDcaPosToPrimVertex ,lDcaNegToPrimVertex ,lDcaV0Daughters,lV0cosPointAngle,lPtAntiLambda,lInvMassAntiLambda);
 	  //printf("found AntiLambda RC Pindex=%d  Nindex=%d  Plabel=%d  Nlabel=%d\n\n",lIndexTrackPos,lIndexTrackNeg,lLabelTrackPos,lLabelTrackNeg);
@@ -3316,9 +3312,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 		else if (lCheckSecondaryAntiLambda) {
 	  fHistAsMcSecondaryPtVsRapAntiLambda->Fill(lPtAntiLambda,lRapAntiLambda);
 	  fHistAsMcSecondaryPtVsMassAntiLambda->Fill(lInvMassAntiLambda,lPtAntiLambda);
-	  fHistAsMcSecondaryProdRadiusAntiLambda->Fill(mcPosMotherR); 
-	  fHistAsMcSecondaryProdRadiusXvsYAntiLambda->Fill(mcPosMotherX,mcPosMotherY);
-	  if (lComeFromSigma) fHistAsMcSecondaryPtAntiLambdaFromSigma->Fill(lPtAntiLambda);
+	//  fHistAsMcSecondaryProdRadiusAntiLambda->Fill(mcPosMotherR); 
+	//  fHistAsMcSecondaryProdRadiusXvsYAntiLambda->Fill(mcPosMotherX,mcPosMotherY);
+	/*  if (lComeFromSigma) fHistAsMcSecondaryPtAntiLambdaFromSigma->Fill(lPtAntiLambda);
 	  printf(" lPdgcodeMotherOfMother= %d",lPdgcodeMotherOfMother);
 	  switch (lPdgcodeMotherOfMother) {
 	  case 3222 : fHistAsMcSecondaryMotherPdgCodeAntiLambda->Fill(0.5); break;// Sigma +
@@ -3332,7 +3328,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  case 3334 : fHistAsMcSecondaryMotherPdgCodeAntiLambda->Fill(8.5); break; // Omega
 	  case -1   : fHistAsMcSecondaryMotherPdgCodeAntiLambda->Fill(9.5); break;
 	  default   : fHistAsMcSecondaryMotherPdgCodeAntiLambda->Fill(10.5);break;
-	  }
+	  }*/
 	}
     	break;
 	  
