@@ -434,16 +434,17 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
       // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
       fHistEventStats->Fill(1); //all events
 
-      // // this is not needed (checked in mixing handler!)
-      // Bool_t isSelectedMain = kTRUE;
-      // Bool_t isSelectedMix = kTRUE;
-
-      // if(fUseOfflineTrigger)
-      // 	isSelectedMain = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-      // isSelectedMix = ((AliInputEventHandler*)((AliMultiInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetFirstMultiInputHandler())->IsEventSelected();
+      // this is not needed (checked in mixing handler!)
+      Bool_t isSelectedMain = kTRUE;
+      Bool_t isSelectedMix = kTRUE;
       
-      // if(isSelectedMain && isSelectedMix) {
-      // 	fHistEventStats->Fill(2); //triggered events
+      if(fUseOfflineTrigger){
+       	isSelectedMain = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+	isSelectedMix = ((AliInputEventHandler*)((AliMultiInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetFirstMultiInputHandler())->IsEventSelected();
+      }
+      
+      if(isSelectedMain && isSelectedMix) {
+       	fHistEventStats->Fill(2); //triggered events
 	
       	//Centrality stuff (centrality in AOD header)
       	if(fUseCentrality) {
@@ -479,17 +480,17 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
       	  fHistRefTracks->Fill(8.,aodHeaderMain->GetNumberOfITSClusters(4));
       	}
 	
-	// // this is not needed (checked in mixing handler!)
-      	// const AliAODVertex *vertexMain = aodEventMain->GetPrimaryVertex();
-      	// const AliAODVertex *vertexMix  = aodEventMix->GetPrimaryVertex();
+	// // this is crashing (Bug in ROOT (to be solved)) but not needed (checked in mixing handler)
+	// const AliAODVertex *vertexMain = aodEventMain->GetPrimaryVertex();
+	// const AliAODVertex *vertexMix  = aodEventMix->GetPrimaryVertex();
       	
-      	// if(vertexMain && vertexMix) {
-      	//   Double32_t fCovMain[6];
-      	//   Double32_t fCovMix[6];
-      	//   vertexMain->GetCovarianceMatrix(fCovMain);
-      	//   vertexMix->GetCovarianceMatrix(fCovMix);
+	// if(vertexMain && vertexMix) {
+      	//    Double32_t fCovMain[6];
+      	//    Double32_t fCovMix[6];
+      	//    vertexMain->GetCovarianceMatrix(fCovMain);
+      	//    vertexMix->GetCovarianceMatrix(fCovMix);
 	  
-      	//   if(vertexMain->GetNContributors() > 0 && vertexMix->GetNContributors() > 0) {
+	//    if(vertexMain->GetNContributors() > 0 && vertexMix->GetNContributors() > 0) {
       	//     if(fCovMain[5] != 0 && fCovMix[5] != 0) {
       	//       fHistEventStats->Fill(3); //events with a proper vertex
       	//       if(TMath::Abs(vertexMain->GetX()) < fVxMax && TMath::Abs(vertexMix->GetX()) < fVxMax ) {
@@ -651,9 +652,9 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
       // 		}//Vy cut
       // 	      }//Vx cut
       // 	    }//proper vertexresolution
-      // 	  }//proper number of contributors
-      // 	}//vertex object valid
-      // }//triggered event 
+      //    }//proper number of contributors
+      // }//vertex object valid
+      }//triggered event 
     }//AOD analysis
   }
 }
