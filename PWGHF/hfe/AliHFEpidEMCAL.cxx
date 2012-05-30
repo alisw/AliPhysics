@@ -47,8 +47,8 @@ ClassImp(AliHFEpidEMCAL)
 AliHFEpidEMCAL::AliHFEpidEMCAL():
   AliHFEpidBase()
   , fPID(NULL)
-  , feopMim(0.8)
-  , feopMax(1.4)
+  , feopMim(0.9)
+  , feopMax(1.3)
 {
   //
   // Constructor
@@ -59,8 +59,8 @@ AliHFEpidEMCAL::AliHFEpidEMCAL():
 AliHFEpidEMCAL::AliHFEpidEMCAL(const Char_t *name):
   AliHFEpidBase(name)
   , fPID(NULL)
-  , feopMim(0.8)
-  , feopMax(1.4)
+  , feopMim(0.9)
+  , feopMax(1.3)
 {
   //
   // Constructor
@@ -71,8 +71,8 @@ AliHFEpidEMCAL::AliHFEpidEMCAL(const Char_t *name):
 AliHFEpidEMCAL::AliHFEpidEMCAL(const AliHFEpidEMCAL &c):
   AliHFEpidBase("")
   , fPID(NULL)
-  , feopMim(0.8)
-  , feopMax(1.4)
+  , feopMim(0.9)
+  , feopMax(1.3)
 {  
   // 
   // Copy operator
@@ -125,6 +125,7 @@ Int_t AliHFEpidEMCAL::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanage
 { //Function to a return a code indicating whether or not an electron candidate is selected
   //
   //
+  
   if(track==NULL)return 0;
 
   if(!fkPIDResponse) return 0;
