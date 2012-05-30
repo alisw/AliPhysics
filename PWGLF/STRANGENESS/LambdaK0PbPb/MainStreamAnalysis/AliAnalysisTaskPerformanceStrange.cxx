@@ -405,6 +405,9 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
   fHistAsMcSecondaryPtVsRapK0s(0),
   fHistAsMcSecondaryPtVsRapLambda(0),
   fHistAsMcSecondaryPtVsRapAntiLambda(0),
+  fHistAsMcSecondaryPtVsMassK0s(0),
+  fHistAsMcSecondaryPtVsMassLambda(0),
+  fHistAsMcSecondaryPtVsMassAntiLambda(0),
   fHistAsMcSecondaryProdRadiusK0s(0),
   fHistAsMcSecondaryProdRadiusLambda(0),
   fHistAsMcSecondaryProdRadiusAntiLambda(0),
@@ -751,6 +754,9 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
   fHistAsMcSecondaryPtVsRapK0s(0),
   fHistAsMcSecondaryPtVsRapLambda(0),
   fHistAsMcSecondaryPtVsRapAntiLambda(0),
+  fHistAsMcSecondaryPtVsMassK0s(0),
+  fHistAsMcSecondaryPtVsMassLambda(0),
+  fHistAsMcSecondaryPtVsMassAntiLambda(0),
   fHistAsMcSecondaryProdRadiusK0s(0),
   fHistAsMcSecondaryProdRadiusLambda(0),
   fHistAsMcSecondaryProdRadiusAntiLambda(0),
@@ -1675,6 +1681,17 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
   fHistAsMcSecondaryPtVsRapAntiLambda   = new TH2F("h2AsMcSecondaryPtVsRapAntiLambda", "#bar{#Lambda}^{0} associated secondary;p_{t} (GeV/c);rapidity",240,0,12,30,-1.5,1.5);
   fListHist->Add(fHistAsMcSecondaryPtVsRapAntiLambda);
 
+	// Pt and mass distribution
+  fHistAsMcSecondaryPtVsMassK0s          = new TH2F("h2AsMcSecondaryPtVsMassK0s", "K^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",400, 0.4, 0.6,240,0,12);
+  fListHist->Add(fHistAsMcSecondaryPtVsMassK0s);
+	
+  fHistAsMcSecondaryPtVsMassLambda       = new TH2F("h2AsMcSecondaryPtVsMassLambda", "#Lambda^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",400, 0.4, 0.6,240,0,12);
+  fListHist->Add(fHistAsMcSecondaryPtVsMassLambda);
+	
+  fHistAsMcSecondaryPtVsMassAntiLambda   = new TH2F("h2AsMcSecondaryPtVsMassAntiLambda", "#bar{#Lambda}^{0} associated secondary;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",400, 0.4, 0.6,240,0,12);
+  fListHist->Add(fHistAsMcSecondaryPtVsMassAntiLambda);
+	
+	
   // Production radius
   fHistAsMcSecondaryProdRadiusK0s              = new TH1F("h1AsMcSecondaryProdRadiusK0s", "K^{0} Production Radius;r (cm);Count", 170, -2, 15);
   fListHist->Add(fHistAsMcSecondaryProdRadiusK0s);
@@ -2861,7 +2878,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 //K0s particle
 ////////////////
 
-      if (lcTauK0s< cutcTauK0s) {
+      if (lcTauK0s< cutcTauK0s && lPtArmV0 > 0.2*lAlphaV0) {
 
       if (TMath::Abs(lRapK0s) < lCutRap ) {
 
@@ -3081,7 +3098,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 ///////////////////////////////////////////////////
 
 
-      if (lcTauK0s< cutcTauK0s) {
+      if (lcTauK0s< cutcTauK0s  && lPtArmV0 > 0.2*lAlphaV0) {
 
     if (TMath::Abs(lRapK0s) < lCutRap) {
 
@@ -3121,6 +3138,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	}
 	else if (lCheckSecondaryK0s) {
 	  fHistAsMcSecondaryPtVsRapK0s->Fill(lPtK0s,lRapK0s);
+	  fHistAsMcSecondaryPtVsMassK0s->Fill(lInvMassK0s,lPtK0s);
 	  fHistAsMcSecondaryProdRadiusK0s->Fill(mcPosMotherR);
 	  fHistAsMcSecondaryProdRadiusXvsYK0s->Fill(mcPosMotherX,mcPosMotherY);
 	  switch (lPdgcodeMotherOfMother) {
@@ -3203,7 +3221,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  
 	else if (lCheckSecondaryLambda) {
           fHistAsMcSecondaryPtVsRapLambda->Fill(lPtLambda,lRapLambda);
-	  fHistAsMcSecondaryProdRadiusLambda->Fill(mcPosMotherR); 
+		fHistAsMcSecondaryPtVsMassLambda->Fill(lInvMassLambda,lPtLambda);
+		fHistAsMcSecondaryProdRadiusLambda->Fill(mcPosMotherR); 
 	  fHistAsMcSecondaryProdRadiusXvsYLambda->Fill(mcPosMotherX,mcPosMotherY);
 	  if (lComeFromSigma) fHistAsMcSecondaryPtLambdaFromSigma->Fill(lPtLambda);
 	  printf(" lPdgcodeMotherOfMother= %d",lPdgcodeMotherOfMother);
@@ -3296,6 +3315,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  
 		else if (lCheckSecondaryAntiLambda) {
 	  fHistAsMcSecondaryPtVsRapAntiLambda->Fill(lPtAntiLambda,lRapAntiLambda);
+	  fHistAsMcSecondaryPtVsMassAntiLambda->Fill(lInvMassAntiLambda,lPtAntiLambda);
 	  fHistAsMcSecondaryProdRadiusAntiLambda->Fill(mcPosMotherR); 
 	  fHistAsMcSecondaryProdRadiusXvsYAntiLambda->Fill(mcPosMotherX,mcPosMotherY);
 	  if (lComeFromSigma) fHistAsMcSecondaryPtAntiLambdaFromSigma->Fill(lPtAntiLambda);
