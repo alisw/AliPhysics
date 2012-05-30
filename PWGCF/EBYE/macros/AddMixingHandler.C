@@ -7,7 +7,7 @@
 #include <AliVEvent.h>//|
 #endif//|
 
-void AddMixingHandler(Double_t centMin = 70, Double_t centMax = 80, Double_t centStep = 2, Bool_t bAOD = kTRUE, Bool_t useMC = kFALSE, Bool_t usePhysSel = kFALSE,TString opts = "")
+void AddMixingHandler(Double_t centMin = 70, Double_t centMax = 80, Double_t centStep = 2, Bool_t bAOD = kTRUE, Bool_t useMC = kFALSE, Bool_t usePhysSel = kTRUE, Bool_t bCentralTrigger = kFALSE, TString opts = "")
 {
   
     AliESDInputHandler *esdInputHandler = 0;
@@ -35,7 +35,7 @@ void AddMixingHandler(Double_t centMin = 70, Double_t centMax = 80, Double_t cen
       multiInputHandler->AddInputEventHandler(aodInputHandler);
     } else {
       Printf("Error: Only ESD and AOD input format is supported !!!");
-      return;
+     return;
     }
 
    if (!multiInputHandler) return;
@@ -59,8 +59,15 @@ void AddMixingHandler(Double_t centMin = 70, Double_t centMax = 80, Double_t cen
    mixHandler->SetEventPool(evPool);
 
    // only use events with physics selection
-   if (usePhysSel) mixHandler->SelectCollisionCandidates(AliVEvent::kMB);
-
+   if (usePhysSel){
+     if (bCentralTrigger){
+       mixHandler->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+     }
+     else{ 
+       mixHandler->SelectCollisionCandidates(AliVEvent::kMB);
+     }
+   }
+   
    multiInputHandler->AddInputEventHandler(mixHandler);
 
 }
