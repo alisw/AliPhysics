@@ -39,6 +39,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   fRandCaloClusters(0),
   fRho(0),
   fHistCentrality(0),
+  fHistRejectedEvents(0),
   fHistRhoVSleadJetPt(0),
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
@@ -97,6 +98,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   fRandCaloClusters(0),
   fRho(0),
   fHistCentrality(0),
+  fHistRejectedEvents(0),
   fHistRhoVSleadJetPt(0),
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
@@ -160,10 +162,18 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner(); 
   
-  fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", fNbins, 0, 100);
+  fHistCentrality = new TH1F("fHistCentrality","fHistCentrality", fNbins, 0, 100);
   fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
   fHistCentrality->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistCentrality);
+
+  fHistRejectedEvents = new TH1F("fHistRejectedEvents","fHistRejectedEvents", 5, 0, 5);
+  fHistRejectedEvents->GetXaxis()->SetTitle("Reason");
+  fHistRejectedEvents->GetYaxis()->SetTitle("counts");
+  fHistRejectedEvents->GetXaxis()->SetBinLabel(1, "Rho <= 0");
+  fHistRejectedEvents->GetXaxis()->SetBinLabel(2, "Max Jet <= 0");
+  fHistRejectedEvents->GetXaxis()->SetBinLabel(3, "Max Jet not found");
+  fOutput->Add(fHistRejectedEvents);
 
   fHistRhoVSleadJetPt = new TH2F("fHistRhoVSleadJetPt","fHistRhoVSleadJetPt", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
   fHistRhoVSleadJetPt->GetXaxis()->SetTitle("#rho * area [GeV/c]");
@@ -461,7 +471,7 @@ void AliAnalysisTaskSAJF::RetrieveEventObjects()
 void AliAnalysisTaskSAJF::FillHistograms()
 {
   if (fRho < 0) {
-    AliWarning(Form("Could not retrieve rho information! Event skipped!"));
+    fHistRejectedEvents->Fill("Rho <= 0",1);
     return;
   }
 
@@ -474,12 +484,16 @@ void AliAnalysisTaskSAJF::FillHistograms()
 
   DoJetLoop(maxJetIndex, max2JetIndex);
   
-  if (maxJetIndex < 0) 
+  if (maxJetIndex < 0) {
+    fHistRejectedEvents->Fill("Max Jet <= 0",1);
     return;
+  }
 
   AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fJets->At(maxJetIndex));
-  if (!jet) 
+  if (!jet) {
+    fHistRejectedEvents->Fill("Max Jet not found",1);
     return;
+  }
 
   fHistCentrality->Fill(fCent);
 
@@ -564,45 +578,36 @@ void AliAnalysisTaskSAJF::FillHistograms()
 
   DoEmbJetLoop(embJet, maxPart);
 
-  if (embJet && maxPart) {
-    Float_t maxEmbPartPt = 0;
-    Float_t maxEmbPartEta = 0;
-    Float_t maxEmbPartPhi = 0;
+  if (embJet) {
+
+    fHistEmbJets[fCentBin]->Fill(embJet->Pt());
+    fHistEmbPart[fCentBin]->Fill(embJet->MCPt());
+    fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
+    fHistDeltaPtEmb[fCentBin]->Fill(embJet->Pt() - embJet->Area() * fRho - embJet->MCPt());
+    fHistRhoVSEmbBkg->Fill(embJet->Area() * fRho, embJet->Pt() - embJet->MCPt());
 
     AliVCluster *cluster = dynamic_cast<AliVCluster*>(maxPart);
     if (cluster) {
-      TLorentzVector nPart;
-      cluster->GetMomentum(nPart, fVertex);
       Float_t pos[3];
       cluster->GetPosition(pos);
       TVector3 clusVec(pos);
       
-      maxEmbPartPt = nPart.Et();
-      maxEmbPartEta = clusVec.Eta();
-      maxEmbPartPhi = clusVec.Phi();
+      fHistEmbPartPhiEta->Fill(clusVec.Eta(), clusVec.Phi());
     }
     else {
       AliVParticle *track = dynamic_cast<AliVParticle*>(maxPart);
       if (track) {
-	maxEmbPartPt = track->Pt();
-	maxEmbPartEta = track->Eta();
-	maxEmbPartPhi = track->Phi();
+	fHistEmbPartPhiEta->Fill(track->Eta(), track->Phi());
       }
       else {
-	AliWarning(Form("%s - Embedded particle type not recognized (neither AliVCluster nor AliVParticle)!", GetName()));
+	AliWarning(Form("%s - Embedded particle type not found or not recognized (neither AliVCluster nor AliVParticle)!", GetName()));
 	return;
       }
     }
-    fHistEmbJets[fCentBin]->Fill(embJet->Pt());
-    fHistEmbPart[fCentBin]->Fill(maxEmbPartPt);
-    fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
-    fHistEmbPartPhiEta->Fill(maxEmbPartEta, maxEmbPartPhi);
 
-    fHistDeltaPtEmb[fCentBin]->Fill(embJet->Pt() - embJet->Area() * fRho - maxEmbPartPt);
-    fHistRhoVSEmbBkg->Fill(embJet->Area() * fRho, embJet->Pt() - maxEmbPartPt);
   }
   else {
-    AliWarning(Form("%s - Embedded particle not found in the event!", GetName()));
+    AliWarning(Form("%s - Embedded jet not found in the event!", GetName()));
   }
 }
 
@@ -675,14 +680,14 @@ void AliAnalysisTaskSAJF::DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)
       }
     }
 
-    if (maxJetPt < corrPt) {
+    if (maxJetPt < jet->Pt()) {
       max2JetPt = maxJetPt;
       max2JetIndex = maxJetIndex;
-      maxJetPt = corrPt;
+      maxJetPt = jet->Pt();
       maxJetIndex = ij;
     }
-    else if (max2JetPt < corrPt) {
-      max2JetPt = corrPt;
+    else if (max2JetPt < jet->Pt()) {
+      max2JetPt = jet->Pt();
       max2JetIndex = ij;
     }
   } //jet loop 
@@ -694,7 +699,7 @@ void AliAnalysisTaskSAJF::DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &maxPart)
   if (!fEmbJets)
     return;
 
-  TLorentzVector *maxClusVect = new TLorentzVector();
+  TLorentzVector maxClusVect;
 
   Int_t nembjets = fEmbJets->GetEntriesFast();
 
@@ -710,12 +715,19 @@ void AliAnalysisTaskSAJF::DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &maxPart)
     if (!AcceptJet(jet))
       continue;
 
+    if (!jet->IsMC())
+      continue;
+
     AliVParticle *maxTrack = 0;
 
     for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
       AliVParticle *track = jet->TrackAt(it, fTracks);
       
-      if (!track) continue;
+      if (!track) 
+	continue;
+
+      if (track->GetLabel() != 100 && !track->InheritsFrom("AliMCParticle"))
+	continue;
       
       if (!maxTrack || track->Pt() > maxTrack->Pt())
 	maxTrack = track;
@@ -726,36 +738,32 @@ void AliAnalysisTaskSAJF::DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &maxPart)
     for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
       AliVCluster *cluster = jet->ClusterAt(ic, fCaloClusters);
       
-      if (!cluster) continue;
+      if (!cluster) 
+	continue;
+
+      if (cluster->Chi2() != 100)
+	continue;
       
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
       
-      if (!maxClus || nPart.Et() > maxClusVect->Et()) {
-	new (maxClusVect) TLorentzVector(nPart);
+      if (!maxClus || nPart.Et() > maxClusVect.Et()) {
+	new (&maxClusVect) TLorentzVector(nPart);
 	maxClus = cluster;
       } 
     }
 
-    if ((maxClus && maxTrack && maxClusVect->Et() > maxTrack->Pt()) || (maxClus && !maxTrack)) {
-      if (maxClus->Chi2() == 100) {
-	maxPart = maxClus;
-	embJet = jet;
-	delete maxClusVect;
-      	return;
-      }
+    if ((maxClus && maxTrack && maxClusVect.Et() > maxTrack->Pt()) || (maxClus && !maxTrack)) {
+      maxPart = maxClus;
+      embJet = jet;
     }
     else if (maxTrack) {
-      if (maxTrack->GetLabel() == 100) {
-	maxPart = maxTrack;
-	embJet = jet;
-	delete maxClusVect;
-	return;
-      }
+      maxPart = maxTrack;
+      embJet = jet;
     }
-  }
 
-  delete maxClusVect;
+    return;  // MC jets found, exit
+  }
 }
 
 //________________________________________________________________________
