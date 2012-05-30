@@ -19,11 +19,10 @@ AliXiStar *AddTaskXiStar(bool MCcase=kFALSE, bool AODcase=kFALSE, int CutList=0)
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGLF.outputXiStarAnalysis.root";
-  AliAnalysisDataContainer *coutXiStar = mgr->CreateContainer("XiStarOutput", AliXiStar::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  AliAnalysisDataContainer *coutQA = mgr->CreateContainer("listQA", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutXiStar = mgr->CreateContainer("XiStarOutput", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(XiStarTask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(XiStarTask, 1, coutXiStar);
-  mgr->ConnectOutput(XiStarTask, 2, coutQA);
+  
 
   // Add Physics Selection 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
