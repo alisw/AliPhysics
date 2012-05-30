@@ -11,6 +11,7 @@
 #include <TClonesArray.h>
 #include <TList.h>
 
+#include "AliESDEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliVCluster.h"
@@ -110,31 +111,76 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   // User create outputs.
 }
 
+//_____________________________________________________
+Int_t AliAnalysisTaskEmcal::GetBeamType()
+{
+  // Get beam type : pp-AA-pA
+  // ESDs have it directly, AODs get it from hardcoded run number ranges
+
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (esd) {
+    const AliESDRun *run = esd->GetESDRun();
+    TString beamType = run->GetBeamType();
+    if (beamType == "p-p")
+      return kpp;
+    else if (beamType == "A-A")
+      return kAA;
+    else if (beamType == "p-A")
+      return kpA;
+    else
+      return kNA;
+  }
+  else
+  {
+    Int_t runNumber = InputEvent()->GetRunNumber();
+    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
+	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
+    {
+      return kAA;
+    }
+    else 
+    {
+      return kpp;
+    }
+  }  
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskEmcal::RetrieveEventObjects()
 {
   // Retrieve objects from event.
+
+  if (!InputEvent()) {
+    AliError("Could not retrieve event! Returning...");
+    return;
+  }
 
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
   InputEvent()->GetPrimaryVertex()->GetXYZ(fVertex);
 
-  AliCentrality *aliCent = InputEvent()->GetCentrality();
-  if (aliCent) {
-    fCent = aliCent->GetCentralityPercentile("V0M");
-    if      (fCent >=  0 && fCent <   10) fCentBin = 0;
-    else if (fCent >= 10 && fCent <   30) fCentBin = 1;
-    else if (fCent >= 30 && fCent <   50) fCentBin = 2;
-    else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
+  if (GetBeamType() == kAA) {
+    AliCentrality *aliCent = InputEvent()->GetCentrality();
+    if (aliCent) {
+      fCent = aliCent->GetCentralityPercentile("V0M");
+      if      (fCent >=  0 && fCent <   10) fCentBin = 0;
+      else if (fCent >= 10 && fCent <   30) fCentBin = 1;
+      else if (fCent >= 30 && fCent <   50) fCentBin = 2;
+      else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
+      else {
+	AliWarning(Form("Negative centrality: %f. Assuming 99", fCent));
+	fCentBin = 3;
+      }
+    }
     else {
-      AliWarning(Form("Negative centrality: %f. Assuming 99", fCent));
+      AliWarning(Form("Could not retrieve centrality information! Assuming 99"));
       fCentBin = 3;
     }
   }
   else {
-    AliWarning(Form("Could not retrieve centrality information! Assuming 99"));
-    fCentBin = 3;
+    fCent = 99;
+    fCentBin = 0;
   }
 
   if ((!fCaloName.IsNull()) && (fAnaType == kEMCAL)) {
@@ -225,10 +271,8 @@ Bool_t AliAnalysisTaskEmcal::AcceptJet(AliEmcalJet *jet) const
     return kFALSE;
   if (jet->Area() <= fJetAreaCut)
     return kFALSE;
-  if (fAnaType == kEMCAL && !jet->IsInsideEmcal())
-    return kFALSE;
 
-  return (Bool_t)(jet->Eta() > fMinEta && jet->Eta() < fMaxEta && jet->Phi() > fMinPhi && jet->Phi() < fMaxPhi);
+  return (Bool_t)(jet->Eta() > fMinEta + fJetRadius && jet->Eta() < fMaxEta - fJetRadius && jet->Phi() > fMinPhi + fJetRadius && jet->Phi() < fMaxPhi - fJetRadius);
 }
 
 //________________________________________________________________________
