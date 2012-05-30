@@ -124,6 +124,8 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEvent()
 {
   // Define conditions to accept the event to be filtered
   
+  if(!AcceptEventVertex()) return kFALSE;
+  
   Bool_t eventSel = kFALSE;
   
   Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
@@ -251,9 +253,11 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEventVertex()
   Double_t v[3];
   InputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
   
+  
   if(TMath::Abs(v[2]) > fVzCut) 
   {
-    if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::AcceptEventVertex() - Vz Reject \n");
+    if (fDebug > 0) printf("AliAnalysisTaskCaloFilter::AcceptEventVertex() - Vz Reject : vz %2.2f > %2.2f\n",v[2],fVzCut);
+    
     return kFALSE ;
   }
   
@@ -277,7 +281,7 @@ Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertex()
        TMath::Abs(v[1]) < 1e-6 && 
        TMath::Abs(v[0]) < 1e-6 ) 
     {
-      if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::CheckForPrimaryVertex() - Reject \n");
+      if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::CheckForPrimaryVertex() - Reject v(0,0,0) \n");
       
       return kFALSE ;
     }
@@ -303,12 +307,13 @@ Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertex()
     if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors() < 1) 
     {
       //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::CheckForPrimaryVertex() - Reject \n");
+      if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::CheckForPrimaryVertex() - Reject, GetPrimaryVertexSPD()->GetNContributors() < 1 \n");
+      
       return kFALSE;
     }
   }
   
-  if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::CheckForPrimaryVertex() - Reject \n");
+  if (fDebug > 0)  printf("AliAnalysisTaskCaloFilter::CheckForPrimaryVertex() - Reject, GetPrimaryVertexTracks()->GetNContributors() > 1 \n");
   
   return kFALSE;
   
