@@ -4,21 +4,21 @@
 // physics selections and options, in macro and task.
 //
 // Author: Arvinder Palaha
-// Edited by Luke Hanratty for AODSExAOD
+// Edited by Luke Hanratty for AODSLukeAOD
 //
 class AliAnalysisGrid;
 
 //______________________________________________________________________________
-void runExAOD(
+void runLukeAOD(
          const char* runtype = "proof", // local, proof or grid
          const char *gridmode = "full", // Set the run mode (can be "full", "test", "offline", "submit" or "terminate"). Full & Test work for proof
-         const bool bMCtruth = 1, // 1 = MCEvent handler is on (MC truth), 0 = MCEvent handler is off (MC reconstructed/real data)
-         const bool bMCphyssel = 1, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
-         const Long64_t nentries = 1000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
+         const bool bMCtruth = 0, // 1 = MCEvent handler is on (MC truth), 0 = MCEvent handler is off (MC reconstructed/real data)
+         const bool bMCphyssel = 0, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
+         const Long64_t nentries = 1234567890, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
          const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
-         const char *proofdataset = "/alice/sim/LHC11a10a_000138662_AOD048", //"/alice/sim/LHC11a10a_000138795_AOD048", //"/alice/data/LHC10h_000139507_p2_AOD049", //"/alice/data/LHC10e_000130375_p2", //"/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
-         const char *proofcluster = "hanratty@alice-caf.cern.ch", //"alice-caf.cern.ch", //"hanratty@skaf.saske.sk", //"alice-caf.cern.ch", // which proof cluster to use in proof mode
-         const char *taskname = "AOD_AllCent_1" // sets name of grid generated macros
+		const char *proofdataset = "/alice/data/LHC10h_000138534_p2_AOD049", //"/alice/sim/LHC11a10a_000138795_AOD048", //"/alice/data/LHC10h_000139507_p2_AOD049", //"/alice/data/LHC10e_000130375_p2", //"/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
+		const char *proofcluster = "hanratty@alice-caf.cern.ch", //"alice-caf.cern.ch", //"hanratty@skaf.saske.sk", //"alice-caf.cern.ch", // which proof cluster to use in proof mode
+		const char *taskname = "example_task" // sets name of grid generated macros
          )
 {
     // check run type
@@ -56,12 +56,12 @@ void runExAOD(
     mgr->SetInputEventHandler(aodH);
         
     // mc event handler
-    /*if(bMCtruth) {
+   /* if(bMCtruth) {
         AliMCEventHandler* mchandler = new AliMCEventHandler();
         // Not reading track references
         mchandler->SetReadTR(kFALSE);
         mgr->SetMCtruthEventHandler(mchandler);
-    }*/   
+    }   */
 
     //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
     //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(bMCphyssel);
@@ -119,23 +119,23 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
 
     // Set versions of used packages
     plugin->SetAPIVersion("V1.1X");
-    plugin->SetROOTVersion("v5-30-03");
-    plugin->SetAliROOTVersion("v5-02-16-AN");
+    plugin->SetROOTVersion("v5-30-06");
+    plugin->SetAliROOTVersion("v5-03-10-AN");
 
     // Declare input data to be processed.
 
     // Method 1: Create automatically XML collections using alien 'find' command.
     // Define production directory LFN
-    plugin->SetGridDataDir("/alice/data/2010/LHC10h");
+    plugin->SetGridDataDir("/alice/data/2010/LHC10b");
     // On real reconstructed data:
     // plugin->SetGridDataDir("/alice/data/2009/LHC09d");
     // Set data search pattern
     //plugin->SetDataPattern("*ESDs.root"); // THIS CHOOSES ALL PASSES
     // Data pattern for reconstructed data
-    plugin->SetDataPattern("*ESDs/pass2/*AOD.root"); // CHECK LATEST PASS OF DATA SET IN ALIENSH
+    plugin->SetDataPattern("*ESDs/pass2/*ESDs.root"); // CHECK LATEST PASS OF DATA SET IN ALIENSH
     plugin->SetRunPrefix("000");   // real data
     // ...then add run numbers to be considered
-    plugin->AddRunNumber(139507);
+    plugin->AddRunNumber(115514);
     //plugin->SetRunRange(114917,115322);
     plugin->SetNrunsPerMaster(1);
     plugin->SetOutputToRunNo();
@@ -215,7 +215,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     // May limit the number of workers per slave
     plugin->SetNproofWorkersPerSlave(1);   
     // May use a specific version of root installed in proof
-    plugin->SetRootVersionForProof("VO_ALICE@ROOT::v5-30-03-1");
+    plugin->SetRootVersionForProof("VO_ALICE@ROOT::v5-30-06-1");
     // May set the aliroot mode. Check http://aaf.cern.ch/node/83 
     plugin->SetAliRootMode("default"); // Loads AF libs by default
     // May request ClearPackages (individual ClearPackage not supported)

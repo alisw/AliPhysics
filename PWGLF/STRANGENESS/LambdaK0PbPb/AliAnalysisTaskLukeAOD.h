@@ -52,6 +52,9 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	TH2F			*fHistBBLaNeg;		//PID of the negative daughter of lambda candidates
 	TH2F			*fHistBBLbPos;		//PID of the positive daughter of antilambda candidates
 	TH2F			*fHistBBLbNeg;		//PID of the negative daughter of antilambda candidates
+	TH2F			*fHistArmPodK0;		//Armenteros plot for K0 candidates.
+	TH2F			*fHistArmPodLa;		//Armenteros plot for Lambda candidates.
+	TH2F			*fHistArmPodLb;		//Armenteros plot for Antilambda candidates.
 	
 	TH2F			*fHistBB3SigProton;	//Bethe Bloch plot of protons @3sigma
 	TH2F			*fHistMK0Pt;			//	Mass of 'K0' vs transverse momentum

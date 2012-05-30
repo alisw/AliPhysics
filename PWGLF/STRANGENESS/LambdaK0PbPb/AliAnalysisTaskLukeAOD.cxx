@@ -69,7 +69,6 @@ AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD() // All data members should be i
 :AliAnalysisTaskSE(),
 fOutput(0),
 fPIDResponse(0),
-maskIsSelected(0),
 
 fHistPt(0), 
 fHistEta(0),
@@ -85,6 +84,9 @@ fHistBBLaPos(0),
 fHistBBLaNeg(0),
 fHistBBLbPos(0),
 fHistBBLbNeg(0),
+fHistArmPodK0(0),
+fHistArmPodLa(0),
+fHistArmPodLb(0),
 
 fHistBB3SigProton(0),
 fHistMK0Pt(0), 
@@ -229,7 +231,6 @@ AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD(const char *name) // All data mem
 :AliAnalysisTaskSE(name),
 fOutput(0),
 fPIDResponse(0),
-maskIsSelected(0),
 
 fHistPt(0), 
 fHistEta(0),
@@ -245,6 +246,9 @@ fHistBBLaPos(0),
 fHistBBLaNeg(0),
 fHistBBLbPos(0),
 fHistBBLbNeg(0),
+fHistArmPodK0(0),
+fHistArmPodLa(0),
+fHistArmPodLb(0),
 
 fHistBB3SigProton(0),
 fHistMK0Pt(0), 
@@ -438,7 +442,10 @@ void AliAnalysisTaskLukeAOD::UserCreateOutputObjects()
 	fHistBBLaNeg = new	TH2F("fHistBBLaNeg","PID of the negative daughter of La candidates; P (GeV); -dE/dx (keV/cm ?)",1000,0,10,1000,0,200);
 	fHistBBLbPos = new	TH2F("fHistBBLbPos","PID of the positive daughter of Lb candidates; P (GeV); -dE/dx (keV/cm ?)",1000,0,10,1000,0,200);
 	fHistBBLbNeg = new	TH2F("fHistBBLbNeg","PID of the negative daughter of Lb candidates; P (GeV); -dE/dx (keV/cm ?)",1000,0,10,1000,0,200);
-	
+	fHistArmPodK0 = new	TH2F("fHistArmPodK0","Armenteros plot for K0 candidates; Alpha; PtArm",100,-1,1,50,0,0.5);
+	fHistArmPodLa = new	TH2F("fHistArmPodLa","Armenteros plot for La candidates; Alpha; PtArm",100,-1,1,50,0,0.5);
+	fHistArmPodLb = new	TH2F("fHistArmPodLb","Armenteros plot for Lb candidates; Alpha; PtArm",100,-1,1,50,0,0.5);
+
 	fHistBB3SigProton = new	TH2F("fHistBB3SigProton","-dE/dX against Momentum for Protons @3sigma from TPC; P (GeV); -dE/dx (keV/cm ?)",1000,0,10,1000,0,200);
 	fHistMK0Pt = new	TH2F("fHistMK0Pt","K0 Mass versus Pt; P_{perp} (GeV/c); K0 Mass (GeV/c^2)",200,0,10,140,0.414,0.582);
 	fHistMLaPt = new	TH2F("fHistMLaPt","Lambda Mass versus Pt; P_{perp} (GeV/c); M(p#pi^{-}) (GeV/c^2)",200,0,10,96,1.08,1.2);
@@ -591,6 +598,9 @@ void AliAnalysisTaskLukeAOD::UserCreateOutputObjects()
 	fOutput->Add(fHistBBLaNeg);
 	fOutput->Add(fHistBBLbPos);
 	fOutput->Add(fHistBBLbNeg);
+	fOutput->Add(fHistArmPodK0);
+	fOutput->Add(fHistArmPodLa);
+	fOutput->Add(fHistArmPodLb);
 	
 	fOutput->Add(fHistBB3SigProton);
 	fOutput->Add(fHistMK0Pt); 
@@ -818,7 +828,8 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 	if(type == 0)
 	{cTau = decayL*(v1->MassK0Short())/(v1->P());}
 	
-	if (cTau > 30 && (type ==1 || type ==2) && TMath::Sqrt(v1->Pt2V0()) < 1) return kFALSE;
+	if (cTau > (3*7.89) && (type ==1 || type ==2)) return kFALSE;
+	if (cTau > (3*2.68) && (type ==0)) return kFALSE;
 	
 	int nnum = 1, pnum = 0;
 	const AliAODTrack *ntracktest=(AliAODTrack *)v1->GetDaughter(nnum);
@@ -836,23 +847,34 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 	if (pid_p) 
 	{
 		if(type == 1)
-		{nsig_p=PIDResponse->NumberOfSigmasTPC(ptrack1,AliPID::kProton);
-			if (TMath::Abs(nsig_p) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo) return kFALSE;}
-		if(type == 0 || type == 2)
-		{nsig_p=PIDResponse->NumberOfSigmasTPC(ptrack1,AliPID::kPion);
-			if (TMath::Abs(nsig_p) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo) return kFALSE;}
+		{
+			nsig_p=PIDResponse->NumberOfSigmasTPC(ptrack1,AliPID::kProton);
+			if (TMath::Abs(nsig_p) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo  && ptrack1->P() <= 1) return kFALSE;
+		}
 		
+		if(type == 2)
+		{
+			nsig_p=PIDResponse->NumberOfSigmasTPC(ptrack1,AliPID::kProton);
+			if (TMath::Abs(nsig_p) <= cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo  && ptrack1->P() <= 1) return kFALSE;
+		}
+	
 	}
 	
 	if (pid_n) 
 	{
 		if(type == 2)
-		{nsig_n=PIDResponse->NumberOfSigmasTPC(ntrack1,AliPID::kProton);
-			if (TMath::Abs(nsig_n) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo) return kFALSE;}
-		if(type == 0 || type == 1)
-		{nsig_n=PIDResponse->NumberOfSigmasTPC(ntrack1,AliPID::kPion);
-			if (TMath::Abs(nsig_n) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo) return kFALSE;}
+		{
+			nsig_n=PIDResponse->NumberOfSigmasTPC(ntrack1,AliPID::kProton);
+			if (TMath::Abs(nsig_n) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo  && ntrack1->P() <= 1) return kFALSE;
+		}
 		
+		if(type == 1)
+		{
+			nsig_n=PIDResponse->NumberOfSigmasTPC(ntrack1,AliPID::kProton);
+			if (TMath::Abs(nsig_n) <= cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo  && ntrack1->P() <= 1) return kFALSE;
+		}
+	
+	
 	}
 	
 	return kTRUE;
@@ -868,12 +890,12 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 	fHistLog->Fill(1);
 	
 	// parameters used for most cuts, to minimise editing
-	double cutCosPa(0.998), cutcTau(2);
-	double cutNImpact(-999), cutDCA(0.4);
+	double cutCosPa(0.998), cutcTau(-999);
+	double cutNImpact(-999), cutDCA(-999);
 	double cutBetheBloch(3); // NOTE - BB cut only applies to data, must be accounted for when constructing corrected yields
 	double cutMinNClustersTPC(70), cutRatio(0.8);
-	bool isMonteCarlo(true); 
-	int isMCtype(1);    //1 = Pure Hijing only, 0 = Anything, -1 = Injected only
+	bool isMonteCarlo(false); 
+	int isMCtype(0);    //1 = Pure Hijing only, 0 = Anything, -1 = Injected only
 	double cutEta(0.8), cutRapidity(0.5);
 	
     // Create pointer to reconstructed event
@@ -1343,7 +1365,18 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		
 		}
 		
+		double ArmenterosAlpha = v0->Alpha();
+		double ArmenterosPt	   = v0->QtProng();
 		
+		if(lambdaCandidate && centPercentile >= 0.0001 && centPercentile <= 90.0 &&!feeddown )
+		{ fHistArmPodLa->Fill(ArmenterosAlpha,ArmenterosPt); }
+		if( antilambdaCandidate &&  centPercentile >= 0.0001 && centPercentile <= 90.0 &&!feeddown )
+		{ fHistArmPodLb->Fill(ArmenterosAlpha,ArmenterosPt); }
+		if(k0Candidate &&  centPercentile >= 0.0001 && centPercentile <= 90.0 &&!feeddown )
+		{ fHistArmPodK0->Fill(ArmenterosAlpha,ArmenterosPt); }
+		
+		if( ArmenterosPt <= TMath::Abs(0.2*ArmenterosAlpha) )
+		{k0Candidate = false;}
 		
 		if(lambdaCandidate)
 		{
