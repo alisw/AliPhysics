@@ -56,6 +56,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 	virtual void	 UserCreateOutputObjects();
 	virtual void	 UserExec(Option_t *option);
 	virtual void	 Terminate(Option_t *);
+  void CheckChargeV0(AliESDv0 *thisv0);
 
   void SetIsNuclear           (Bool_t lIsNuclear   = kTRUE ) { fkIsNuclear   = lIsNuclear;   }
   void SetIsLowEnergyPP       (Bool_t lLowEnergyPP = kTRUE ) { fkLowEnergyPP = lLowEnergyPP; }
@@ -130,6 +131,7 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 	TH1F    *fHistPVxAnalysis;     					        //! multiplicity distribution
 	TH1F    *fHistPVyAnalysis;     					        //! multiplicity distribution
 	TH1F    *fHistPVzAnalysis;     					        //! multiplicity distribution
+	TH1F    *fHistSwappedV0Counter;     					        //! Swapped V0 Counter
 
    AliAnalysisTaskExtractV0(const AliAnalysisTaskExtractV0&);            // not implemented
    AliAnalysisTaskExtractV0& operator=(const AliAnalysisTaskExtractV0&); // not implemented

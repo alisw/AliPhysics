@@ -135,7 +135,8 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
    fHistPVzAnalysis(0),
    fHistPVxAnalysisHasHighPtLambda(0),
    fHistPVyAnalysisHasHighPtLambda(0),
-   fHistPVzAnalysisHasHighPtLambda(0)
+   fHistPVzAnalysisHasHighPtLambda(0),
+   fHistSwappedV0Counter(0)
 {
   // Dummy Constructor
 }
@@ -185,7 +186,8 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
    fHistPVzAnalysis(0),
    fHistPVxAnalysisHasHighPtLambda(0),
    fHistPVyAnalysisHasHighPtLambda(0),
-   fHistPVzAnalysisHasHighPtLambda(0)
+   fHistPVzAnalysisHasHighPtLambda(0),
+   fHistSwappedV0Counter(0)
 {
    // Constructor
    // Output slot #0 writes into a TList container (Cascade)
@@ -484,6 +486,13 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
             400, -20, 20);       
       fListHistV0->Add(fHistPVzAnalysisHasHighPtLambda);
    }
+   if(! fHistSwappedV0Counter) {
+      fHistSwappedV0Counter = new TH1F("fHistSwappedV0Counter", 
+         "Swap or not histo;Swapped (1) or not (0); count", 
+         2, 0, 2); 		
+      fListHistV0->Add(fHistSwappedV0Counter);
+   }
+
    //List of Histograms: Normal
    PostData(1, fListHistV0);
 
@@ -538,8 +547,10 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 // Multiplicity Information Acquistion
 //------------------------------------------------
 
-  //REVISED multiplicity estimator after 'multiplicity day' (2011)
-   Int_t lMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity( lESDevent );
+   //REVISED multiplicity estimator after 'multiplicity day' (2011)
+   Int_t lMultiplicity = -100; 
+
+   if(fkIsNuclear == kFALSE) lMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity( lESDevent );
 
    //---> If this is a nuclear collision, then go nuclear on "multiplicity" variable...
    //---> Warning: Experimental
@@ -778,7 +789,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 //------------------------------------------------
 
    // FIXME : quality selection regarding pile-up rejection 
-   if(lESDevent->IsPileupFromSPD() ){// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
+   if(lESDevent->IsPileupFromSPD() && !fkIsNuclear ){// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
       AliWarning("Pb / This is tagged as Pileup from SPD... return !");
       PostData(1, fListHistV0);
       PostData(2, fTree);
@@ -858,6 +869,15 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iV0);
       if (!v0) continue;
 
+      //---> Fix On-the-Fly candidates
+      if( v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0 ){
+        fHistSwappedV0Counter -> Fill( 1 );
+      }else{
+        fHistSwappedV0Counter -> Fill( 0 ); 
+      }
+      if ( fkUseOnTheFly ) CheckChargeV0(v0); 
+
+
       Double_t tV0mom[3];
       v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] ); 
       Double_t lV0TotalMomentum = TMath::Sqrt(
@@ -895,9 +915,9 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       // Track quality cuts 
       Float_t lPosTrackCrossedRows = pTrack->GetTPCClusterInfo(2,1);
       Float_t lNegTrackCrossedRows = nTrack->GetTPCClusterInfo(2,1);
-      fTreeVariableLeastNbrCrossedRows = lPosTrackCrossedRows;
+      fTreeVariableLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
       if( lNegTrackCrossedRows < fTreeVariableLeastNbrCrossedRows )
-         fTreeVariableLeastNbrCrossedRows = lNegTrackCrossedRows;
+         fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
 
       // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
       if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;      
@@ -1086,7 +1106,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       //Keep only if included in a parametric InvMass Region 20 sigmas away from peak
 
       //First Selection: Reject OnFly
-      if( (lOnFlyStatus == 0 && fkUseOnTheFly == kFALSE) || (lOnFlyStatus != 1 && fkUseOnTheFly == kTRUE ) ){
+      if( (lOnFlyStatus == 0 && fkUseOnTheFly == kFALSE) || (lOnFlyStatus != 0 && fkUseOnTheFly == kTRUE ) ){
          //Second Selection: rough 20-sigma band, parametric. 
          //K0Short: Enough to parametrize peak broadening with linear function.    
          Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*fTreeVariablePt; 
@@ -1099,7 +1119,13 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
          if( (fTreeVariableInvMassLambda     < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda     ) || 
              (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda     ) || 
              (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short    ) ){
-            fTree->Fill();
+             //Pre-selection in case this is AA...
+             if( fkIsNuclear == kFALSE ) fTree->Fill();
+             if( fkIsNuclear == kTRUE){ 
+             //If this is a nuclear collision___________________
+             // ... pre-filter with daughter eta selection only (not TPC)
+               if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 ) fTree->Fill();
+             }//end nuclear_____________________________________
          }
       }
 
@@ -1148,5 +1174,67 @@ Double_t AliAnalysisTaskExtractPerformanceV0::MyRapidity(Double_t rE, Double_t r
    // Local calculation for rapidity
    return 0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
 } 
-//----------------------------------------------------------------------------
+
+//________________________________________________________________________
+void AliAnalysisTaskExtractPerformanceV0::CheckChargeV0(AliESDv0 *v0)
+{
+   // This function checks charge of negative and positive daughter tracks. 
+   // If incorrectly defined (onfly vertexer), swaps out. 
+   if( v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0 ){
+      //V0 daughter track swapping is required! Note: everything is swapped here... P->N, N->P
+      Long_t lCorrectNidx = v0->GetPindex();
+      Long_t lCorrectPidx = v0->GetNindex();
+      Double32_t	lCorrectNmom[3];
+      Double32_t	lCorrectPmom[3];
+      v0->GetPPxPyPz( lCorrectNmom[0], lCorrectNmom[1], lCorrectNmom[2] );
+      v0->GetNPxPyPz( lCorrectPmom[0], lCorrectPmom[1], lCorrectPmom[2] );
+
+      AliExternalTrackParam	lCorrectParamN(
+        v0->GetParamP()->GetX() , 
+        v0->GetParamP()->GetAlpha() , 
+        v0->GetParamP()->GetParameter() , 
+        v0->GetParamP()->GetCovariance() 
+      );
+      AliExternalTrackParam	lCorrectParamP(
+        v0->GetParamN()->GetX() , 
+        v0->GetParamN()->GetAlpha() , 
+        v0->GetParamN()->GetParameter() , 
+        v0->GetParamN()->GetCovariance() 
+      );
+      lCorrectParamN.SetMostProbablePt( v0->GetParamP()->GetMostProbablePt() );
+      lCorrectParamP.SetMostProbablePt( v0->GetParamN()->GetMostProbablePt() );
+
+      //Get Variables___________________________________________________
+      Double_t lDcaV0Daughters = v0 -> GetDcaV0Daughters();
+      Double_t lCosPALocal     = v0 -> GetV0CosineOfPointingAngle(); 
+      Bool_t lOnFlyStatusLocal = v0 -> GetOnFlyStatus();
+
+      //Create Replacement Object_______________________________________
+      AliESDv0 *v0correct = new AliESDv0(lCorrectParamN,lCorrectNidx,lCorrectParamP,lCorrectPidx);
+      v0correct->SetDcaV0Daughters          ( lDcaV0Daughters   );
+      v0correct->SetV0CosineOfPointingAngle ( lCosPALocal       );
+      v0correct->ChangeMassHypothesis       ( kK0Short          );
+      v0correct->SetOnFlyStatus             ( lOnFlyStatusLocal );
+
+      //Reverse Cluster info..._________________________________________
+      v0correct->SetClusters( v0->GetClusters( 1 ), v0->GetClusters ( 0 ) );
+
+      *v0 = *v0correct;
+      //Proper cleanup..._______________________________________________
+      v0correct->Delete();
+      v0correct = 0x0;
+
+      //Just another cross-check and output_____________________________
+      if( v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0 ) {
+        AliWarning("Found Swapped Charges, tried to correct but something FAILED!");
+      }else{
+        //AliWarning("Found Swapped Charges and fixed.");
+      }
+      //________________________________________________________________
+   }else{
+      //Don't touch it! ---
+      //Printf("Ah, nice. Charges are already ordered...");
+   }
+   return;
+} 
 

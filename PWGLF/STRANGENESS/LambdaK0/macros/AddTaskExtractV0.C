@@ -33,8 +33,8 @@ AliAnalysisTaskExtractV0 *AddTaskExtractV0( Bool_t lSwitchIsNuclear     = kTRUE,
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    
    outputFileName += ":PWG2CheckLambda";
-
-   else outputFileName += "_PP";
+   //if (lCollidingSystems) outputFileName += "_AA_";
+   outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
    //if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
    
