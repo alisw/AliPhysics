@@ -459,6 +459,10 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistAsMcSecondaryPtVsRapLambda;       //! Histo
   TH2F        *fHistAsMcSecondaryPtVsRapAntiLambda;       //! Histo
 
+  TH2F        *fHistAsMcSecondaryPtVsMassK0s;       //! Histo
+  TH2F        *fHistAsMcSecondaryPtVsMassLambda;       //! Histo
+  TH2F        *fHistAsMcSecondaryPtVsMassAntiLambda;       //! Histo	
+	
   TH1F        *fHistAsMcSecondaryProdRadiusK0s;       //! Histo
   TH1F        *fHistAsMcSecondaryProdRadiusLambda;       //! Histo
   TH1F        *fHistAsMcSecondaryProdRadiusAntiLambda;       //! Histo
