@@ -33,8 +33,8 @@ AliAnalysisTaskExtractPerformanceV0 *AddTaskExtractPerformanceV0( Bool_t lSwitch
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    
    outputFileName += ":PWG2CheckPerformanceLambda";
-
-   else outputFileName += "_PP";
+   //if (lSwitchIsNuclear) outputFileName += "_AA";
+   outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
    //if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
    

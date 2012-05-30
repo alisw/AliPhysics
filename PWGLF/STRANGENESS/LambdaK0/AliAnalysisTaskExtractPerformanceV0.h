@@ -52,6 +52,7 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
+  void CheckChargeV0(AliESDv0 *thisv0);
 
   void SetIsNuclear           (Bool_t lIsNuclear   = kTRUE ) { fkIsNuclear   = lIsNuclear;   }
   void SetIsLowEnergyPP       (Bool_t lLowEnergyPP = kTRUE ) { fkLowEnergyPP = lLowEnergyPP; }
@@ -167,6 +168,8 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH1F      *fHistPVxAnalysisHasHighPtLambda;                      //! PVx distrib
    TH1F      *fHistPVyAnalysisHasHighPtLambda;                      //! PVy distrib
    TH1F      *fHistPVzAnalysisHasHighPtLambda;                      //! PVz distrib
+
+   TH1F      *fHistSwappedV0Counter;                      //! Swapped v0 counter
 
    AliAnalysisTaskExtractPerformanceV0(const AliAnalysisTaskExtractPerformanceV0&);            // not implemented
    AliAnalysisTaskExtractPerformanceV0& operator=(const AliAnalysisTaskExtractPerformanceV0&); // not implemented
