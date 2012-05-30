@@ -20,6 +20,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
     kEMCAL     = 1,     // EMCal + TPC analysis
   };
 
+  enum BeamType {
+    kNA       = -1,
+    kpp       = 0,
+    kAA       = 1,
+    kpA       = 2
+  };
+
   AliAnalysisTaskEmcal();
   AliAnalysisTaskEmcal(const char *name);
   virtual ~AliAnalysisTaskEmcal();
@@ -51,6 +58,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      AcceptJet(AliEmcalJet* jet)                                          const;
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)    const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)   const;
+  Int_t                       GetBeamType()                                                             ;
 
   virtual void                RetrieveEventObjects()        ;
   virtual void                FillHistograms()             {;} 
