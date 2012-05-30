@@ -94,11 +94,11 @@ AliAnalysisTaskHFE* ConfigHFECalstandard_PbPb(Bool_t useMC, int TPCclust){
       //params_centr_10_20[0]=0.29;
       //params_centr_20_30[0]=0.38;
       //params_centr_per[0]=0.44;
-      params_centr_0_5[0]=-1.5;  // cut tuned for 0-10%
-      params_centr_5_10[0]=-1.5; // cut tuned for 0-10%
-      params_centr_10_20[0]=-1.5;
-      params_centr_20_30[0]=-1.5;
-      params_centr_per[0]=-1.5;
+      params_centr_0_5[0] = -1.0;  // cut tuned for 0-10%
+      params_centr_5_10[0] = -1.0; // cut tuned for 0-10%
+      params_centr_10_20[0] = -1.0;
+      params_centr_20_30[0] = -1.0;
+      params_centr_per[0] = -1.0;
       char *cutmodel;
       cutmodel="pol0";
 
@@ -140,7 +140,7 @@ AliAnalysisTaskHFE* ConfigHFECalstandard_PbPb(Bool_t useMC, int TPCclust){
   
   // change E/p cuts
   AliHFEpidEMCAL *emcpid = pid->AliHFEpid::GetDetPID(AliHFEpid::kEMCALpid);
-  emcpid->SetEoPMax(1.2);
+  emcpid->SetEoPMax(1.3);
   emcpid->SetEoPMim(0.9);
 
   // QA
