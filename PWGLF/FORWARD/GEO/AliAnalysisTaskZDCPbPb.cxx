@@ -499,10 +499,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       
       AliCentrality *centrality = esd->GetCentrality();
       Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
-      if(centrperc<fCentrLowLim || centrperc>fCentrUpLim) { 
-//         return;
-      }
-
+      if(centrperc<fCentrLowLim || centrperc>fCentrUpLim) return;
       
       // ***** Trigger selection
       /*TString triggerClass = esd->GetFiredTriggerClasses();
