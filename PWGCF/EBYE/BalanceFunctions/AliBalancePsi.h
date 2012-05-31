@@ -25,8 +25,8 @@ class TH1D;
 class TH2D;
 class TH3D;
 
-const Int_t nTrackVariablesSingle = 3;       // track variables in histogram (centrality, phi-Psi2, eta, phi, pTtrig)
-const Int_t nTrackVariablesPair   = 6;       // track variables in histogram (centrality, phi-Psi2, dEta, dPhi, pTtrig, ptAssociated)
+const Int_t nTrackVariablesSingle = 2;       // track variables in histogram (centrality, phi-Psi2, eta, phi, pTtrig)
+const Int_t nTrackVariablesPair   = 5;       // track variables in histogram (centrality, phi-Psi2, dEta, dPhi, pTtrig, ptAssociated)
 const TString gBFPsiAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
 class AliBalancePsi : public TObject {
@@ -58,16 +58,13 @@ class AliBalancePsi : public TObject {
   const char* GetAnalysisLevel() {return fAnalysisLevel.Data();}
   Int_t GetNumberOfAnalyzedEvent() {return fAnalyzedEvents;}
 
-  void CalculateBalance(Float_t fCentrality, Double_t gReactionPlane, vector<Double_t> **chargeVector);
+  void CalculateBalance(Double_t gReactionPlane, 
+			vector<Double_t> **chargeVector);
   
-  TH2D   *GetCorrelationFunctionPN(Double_t centrMin, Double_t centrMax, 
-				   Double_t psiMin, Double_t psiMax);
-  TH2D   *GetCorrelationFunctionNP(Double_t centrMin, Double_t centrMax, 
-				   Double_t psiMin, Double_t psiMax);
-  TH2D   *GetCorrelationFunctionPP(Double_t centrMin, Double_t centrMax, 
-				   Double_t psiMin, Double_t psiMax);
-  TH2D   *GetCorrelationFunctionNN(Double_t centrMin, Double_t centrMax, 
-				   Double_t psiMin, Double_t psiMax);
+  TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax);
+  TH2D   *GetCorrelationFunctionNP(Double_t psiMin, Double_t psiMax);
+  TH2D   *GetCorrelationFunctionPP(Double_t psiMin, Double_t psiMax);
+  TH2D   *GetCorrelationFunctionNN(Double_t psiMin, Double_t psiMax);
 
   AliTHn *GetHistNp() {return fHistP;}
   AliTHn *GetHistNn() {return fHistN;}
@@ -91,10 +88,10 @@ class AliBalancePsi : public TObject {
 
   TH1D *GetBalanceFunctionHistogram(Int_t iVariableSingle,
 				    Int_t iVariablePair,
-				    Double_t centrMin, 
-				    Double_t centrMax, 
 				    Double_t psiMin, Double_t psiMax);
 
+  TH2D *GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin, Double_t psiMax);
+  
  private:
   Bool_t bShuffle; //shuffled balance function object
   TString fAnalysisLevel; //ESD, AOD or MC

@@ -1179,17 +1179,18 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   
   // calculate balance function
   if(fUseMultiplicity) 
-    fBalance->CalculateBalance(gNumberOfAcceptedTracks,gReactionPlane,chargeVector);
+    //fBalance->CalculateBalance(gNumberOfAcceptedTracks,gReactionPlane,chargeVector);
+    fBalance->CalculateBalance(gReactionPlane,chargeVector);
   else                 
-    fBalance->CalculateBalance(fCentrality,gReactionPlane,chargeVector);
+    fBalance->CalculateBalance(gReactionPlane,chargeVector);
 
   if(fRunShuffling) {
     // shuffle charges
     random_shuffle( chargeVectorShuffle[0]->begin(), chargeVectorShuffle[0]->end() );
     if(fUseMultiplicity) 
-      fShuffledBalance->CalculateBalance(gNumberOfAcceptedTracks,gReactionPlane,chargeVectorShuffle);
+      fShuffledBalance->CalculateBalance(gReactionPlane,chargeVectorShuffle);
     else                 
-      fShuffledBalance->CalculateBalance(fCentrality,gReactionPlane,chargeVectorShuffle);
+      fShuffledBalance->CalculateBalance(gReactionPlane,chargeVectorShuffle);
   }
 }      
 
