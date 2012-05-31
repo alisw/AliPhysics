@@ -19,7 +19,13 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
                                        Bool_t EP = kTRUE,
                                        Float_t centrMin = 20.,
                                        Float_t centrMax = 30.,
-                                       Double_t PIDconfig[7],
+                                       Double_t ITSsigma = 0.,
+                                       Double_t ITSrange = 0.,
+                                       Double_t TPCcontrol = 1.,
+                                       Double_t TPCsigma = 3.,
+                                       Double_t TPCrange = 0.,
+                                       Double_t ITScontrol = -1.,
+                                       Double_t Bpurity = 0.5,
                                        TString suffixName = "",
                                        Bool_t bCentralTrigger = kFALSE,
                                        Float_t EtaGap = 0.,
@@ -37,6 +43,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
                                        Bool_t shrinkSP = kTRUE,
                                        Bool_t debug = kTRUE)
 {
+   Double_t PIDconfig[] = {ITSsigma, ITSrange, TPCcontrol, TPCsigma, TPCrange, ITScontrol, Bpurity};
    // main function, create and add tasks
    if(debug) cout << " === Adding Task PhiFlow === " << endl;
    // set up main output container's name
