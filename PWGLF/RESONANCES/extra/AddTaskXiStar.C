@@ -23,11 +23,6 @@ AliXiStar *AddTaskXiStar(bool MCcase=kFALSE, bool AODcase=kFALSE, int CutList=0)
   mgr->ConnectInput(XiStarTask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(XiStarTask, 1, coutXiStar);
   
-
-  // Add Physics Selection 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(MCcase);
-  mgr->ConnectInput(physSelTask,0,mgr->GetCommonInputContainer());
   
   // Return the task pointer
   return XiStarTask;
