@@ -1,6 +1,0 @@
-# Bus patches with reverted order of manus
-# DDL, BusPatch 
-REVERT 0-3 13,14,15,16,17,18,19,37,38,39,40,41,42,43
-#
-# Bus patches with explicit order of manus
-EXPLICIT 0-3 24,48 232,233,234,235,236,237,243,242,241,240,239,238

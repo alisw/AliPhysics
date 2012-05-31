@@ -1,1 +1,0 @@
-add_test("PPBench_test" runtest.sh)

@@ -1,4 +1,0 @@
-$ALICE_ROOT/test/vmctest/ppbench/g4/AliESDs.root
-
-
-

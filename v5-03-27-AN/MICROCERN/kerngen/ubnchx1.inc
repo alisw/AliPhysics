@@ -1,7 +1,0 @@
-#if defined(CERNLIB_B64)
-C-  - PARAMETER    (MASK1  = X'FF00000000000000')
-      PARAMETER    (MASK1  = -72057594037927936 )
-#elif defined(CERNLIB_B32)
-C-  - PARAMETER    (MASK1  = X'FF000000')
-      PARAMETER    (MASK1  =  -16777216 )
-#endif
