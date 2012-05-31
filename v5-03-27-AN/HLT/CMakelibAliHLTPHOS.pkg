@@ -1,0 +1,76 @@
+# -*- mode: CMake -*- 
+# $Id$
+#--------------------------------------------------------------------------------#
+# Package File for AliHLTPHOS                                                    #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+include ("CMakehlt.conf")
+
+set ( CLASS_HDRS
+    AliHLTPHOSClusterizerComponent.h
+    AliHLTPHOSClusterizerComponentNbyN.h
+    AliHLTPHOSDefinitions.h
+    AliHLTPHOSRawAnalyzer.h
+    AliHLTPHOSRawAnalyzerComponentv3.h
+    AliHLTPHOSRawAnalyzerCrude.h
+    AliHLTPHOSRawAnalyzerCrudeComponent.h
+    AliHLTPHOSDigitMakerComponent.h
+    AliHLTPHOSMapper.h
+    AliHLTPHOSRawAnalyzerPeakFinder.h
+    AliHLTPHOSSanityInspector.h
+    AliHLTPHOSMonitorTriggerComponent.h
+    AliHLTPHOSConstants.h
+    AliHLTPHOSGeometry.h
+    AliHLTPHOSRecoParamHandler.h
+    offline/AliHLTPHOSDigitHandler.h
+    )
+
+string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
+
+set ( MODULE_HDRS 	  ${CLASS_HDRS} AliHLTPHOSCommonDefs.h AliHLTPHOSCoordinate.h)
+
+set ( MODULE_DHDR )
+
+set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/CALO HLT/PHOS RAW PHOS EMCAL STEER/CDB)
+
+set ( ELIBS  "HLTbase AliHLTCalo PHOSbase PHOSUtils PHOSshuttle ESD AOD STEER RAWDatarec EMCALbase EMCALraw EMCALUtils EMCALrec")
+
+include ("CMakehlt.conf")
+
+ALICE_Format(SRCS "PHOS/" "" "${MODULE_SRCS}")
+ALICE_Format(CINTHDRS "PHOS/" "" "${CLASS_HDRS}")
+ALICE_Format(HDRS "PHOS/" "" "${MODULE_HDRS}")
+ALICE_Format(DHDR "PHOS/" "" "${MODULE_DHDR}")
+
+if(NOT DHDR)
+  set(CINTAUTOLINK 1)
+endif(NOT DHDR)
+
+set ( EDEFINE  ${HLTDEFS})
+set ( PACKCXXFLAGS  ${HLTCXXFLAGS})
+set ( PACKCFLAGS  ${HLTCLFAGS})
+set ( PACKDCXXFLAGS  ${HLTDCXXFLAGS})
+set ( PACKSOFLAGS ${HLTSOFLAG})

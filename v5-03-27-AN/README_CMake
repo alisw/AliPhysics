@@ -1,0 +1,116 @@
+
+Note: The CMake build of AliRoot builds out-of-source
+
+Steps to Build AliRoot with CMake :
+
+1. Check out Aliroot source into a folder (usually specified by the environment variable ALICE)
+	
+	cd $ALICE
+	svn co https://alisoft.cern.ch/AliRoot/trunk AliRoot
+
+Note: Please use https:// if you want to be able to commit changes to the SVN repository.
+
+2. Set the environment variable ALICE_ROOT to point to the source you have checked out
+
+       cd AliRoot
+       export ALICE_ROOT=`pwd`
+
+
+3. Create a new folder where the build will take place. It must be different from the source directory!
+	
+	cd ..
+	mkdir objdir
+	cd objdir
+
+4. Optionally specify the place for installation using the environment variable ALICE_INSTALL.
+It you do not specify it, "make install" will put lib, bin and include in ALICE_ROOT
+
+5. Optionally specify the location of Geant3 using the environment variable GEANT3DIR
+
+6. Execute the following commands to configure the build
+
+	cmake $ALICE_ROOT
+
+
+Note: Some files CMakeLists.txt will be created in the source tree, so you need write access there. This 
+is a temporary situation that will change soon.
+ 	
+	6a.Run 
+		cmake -DCMAKE_BUILD_TYPE=DEBUG  $ALICE_ROOT
+ 	to compile AliRoot in Debug configuration (-g compiler flags).
+	
+	To change the configuration later on you can either 
+	edit cache variable CMAKE_BUILD_TYPE using 'ccmake' command ('None' value for default configuration), 
+	
+	or setup default configuration (-O -g flags are setting up) by running 
+		cmake $ALICE_ROOT 
+
+	6b. To compile AliRoot in Release mode (-03 flag) run
+		cmake -DCMAKE_BUILD_TYPE=Release  $ALICE_ROOT
+
+	6c. Command
+		cmake -DCMAKE_BUILD_TYPE=RelRelWithDebInfo $ALICE_ROOT
+	allows to compile AliRoot with -g -O2 options. 
+	
+Please note! The default values for these flags change with different compilers. 
+If CMake does not know your compiler, the contents will be empty. 
+
+
+7. Build and install AliRoot. Note that the parralel build is fully operational with CMake.
+
+   	 make -j4
+	 make install
+
+If you make changes in the source tree, it is enough to do
+
+       	 make
+	 make install
+
+to get them in use.
+
+9. In order to build addtional targets like THydjet and SHUTTLE add the following options to the cmake command
+
+	cmake -DTHydjet=ON -DSHUTTLE=ON <path_to_source>
+
+10. Static libraries can be built using
+
+	make alilibs-static
+
+11. Individual Modules can be built using
+
+	make <Module>-all
+	make <Module>-all-static 
+
+eg.	make STEER-all STEER-all-static
+
+12. Individual Packages can be built using
+
+	make <Package>
+	make <Package>-static
+
+eg.	make STEERbase STEERbase-static
+
+13. The code can be checked for the ALICE coding conventions on a package, module or class level using the following targets. 
+
+  make check-all
+  make <Module>-check-all
+  make <Package>-check
+  make <Module>-<ClassName>-check  // To use this run cmake with -DCLASSCHECK="YES" option. It is turned off by default since it bloats the Makefile and slows down the internal makefile rule checking
+
+  The resulting violations will be written to the folder <Build_Directory>/<Module>/check/viols
+
+14. To Build PARs the following targets can be used. The resulting packages will be created in the cmake build directory
+
+  make par-all 
+  make <Package>.par
+  make <Module>-par-all   //build all par packages in the module
+
+15. To test PARs after building run
+
+  make test-par-all
+  make test-<Package>
+  make test-<Module>-par-all
+
+!IMPORTANT! - Make sure your source folder is clean. If you used the old make system to build aliroot run make clean in the source directory before you run cmake
+ 
+

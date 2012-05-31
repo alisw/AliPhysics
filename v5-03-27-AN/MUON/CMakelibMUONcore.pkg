@@ -1,0 +1,55 @@
+# -*- mode: CMake -*-
+
+#--------------------------------------------------------------------------------#
+# Package File for MUONcore                                                      #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS   
+    mapping/AliMpIntPair.cxx 
+    mapping/AliMpExMap.cxx 
+    mapping/AliMpExMapIterator.cxx 
+    mapping/AliMpArrayI.cxx 
+    mapping/AliMpStringObjMap.cxx 
+    AliMUONObjectPair.cxx 
+    AliMUONStringIntMap.cxx 
+    AliMUON2DMap.cxx 
+    AliMUON2DMapIterator.cxx 
+    AliMUON2DMapIteratorByI.cxx 
+    AliMUON1DArray.cxx 
+    AliMUON1DMap.cxx 
+    AliMUONCheckItem.cxx 
+    AliMUONVStore.cxx 
+    AliMUONTreeManager.cxx 
+    AliMUONLogger.cxx
+    )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  MUONcoreLinkDef.h)
+
+set ( EINCLUDE  RAW MUON/mapping)
+
+set ( EXPORT mapping/AliMpExMap.h AliMUONVStore.h )

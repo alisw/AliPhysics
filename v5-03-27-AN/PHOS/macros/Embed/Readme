@@ -1,0 +1,7 @@
+Presently (Oct.2007) embedding is possible only with (S)Digits, and not with 
+raw data. Therefore, to embed simulated event into real data one has to
+1. Reconstruct raw events (example macros RecRaw.C). Of course one should do 
+   it in separate dir to avoid mixing files galice.root. 
+2. Simulate iMC events (produce simulated digits and merge them with raw ones) 
+   (examples macros Config.C and Sim.C)
+3. Reconstruct simulated events (example macro Rec.C)

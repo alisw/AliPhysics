@@ -1,0 +1,8 @@
+# FMD Config
+dn: det=FMD,o=shuttle,dc=cern,dc=ch
+objectClass: top
+objectClass: detectorConfig
+det: FMD
+strictRunOrder: 0
+responsible: hansdalsgaard@gmail.com
+responsible: cholm@nbi.dk

@@ -1,0 +1,3 @@
+Sensor/I:Type/C:Side/C:Sec/I:Num/I:ECha/I:Elmb/I:EAd/I:EIn/I
+#Sensor	Type	Side	Sec	Num	ECha	Elmb	EAd	EIn
+000	TPC	A	0	0	5055	10	0	1

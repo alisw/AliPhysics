@@ -1,0 +1,160 @@
+# $Id$
+#--------------------------------------------------------------------------------#
+# Package File for HLTbase                                                       #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+include ("CMakehlt.conf")
+
+set ( CLASS_HDRS
+    AliHLTComponent.h
+    AliHLTComponentHandler.h
+    AliHLTMisc.h
+    AliHLTSystem.h
+    AliHLTReconstructorBase.h
+    AliHLTPluginBase.h
+    AliHLTProcessor.h
+    AliHLTCalibrationProcessor.h
+    AliHLTConfiguration.h
+    AliHLTComponentConfiguration.h
+    AliHLTConfigurationHandler.h
+    AliHLTOnlineConfiguration.h
+    AliHLTTTreeProcessor.h
+    AliHLTTask.h
+    AliHLTDumpTask.h
+    AliHLTControlTask.h
+    AliHLTLogging.h
+    AliHLTErrorGuard.h
+    AliHLTDataBuffer.h
+    AliHLTConsumerDescriptor.h
+    AliHLTDataSource.h
+    AliHLTDataSink.h
+    AliHLTOfflineInterface.h
+    AliHLTOfflineDataSource.h
+    AliHLTOfflineDataSink.h
+    AliHLTModuleAgent.h
+    AliHLTModulePreprocessor.h
+    AliHLTShuttleInterface.h
+    AliHLTDimServer.h
+    AliHLTHOMERLibManager.h
+    AliHLTHOMERManager.h
+    AliHLTHOMERProxyHandler.h
+    AliHLTHOMERBlockDesc.h
+    AliHLTHOMERSourceDesc.h
+    AliHLTEsdManager.h
+    AliHLTDAQ.h
+    AliHLTOUT.h
+    AliHLTOUTHomerBuffer.h
+    AliHLTOUTTask.h
+    AliHLTOUTHandler.h
+    AliHLTOUTHandlerIgnore.h
+    AliHLTOUTHandlerEquId.h
+    AliHLTOUTHandlerDetectorDDL.h
+    AliHLTOUTHandlerChain.h
+    AliHLTOUTHandlerEsdBranch.h
+    AliHLTMemoryFile.h
+    AliHLTMessage.h
+    AliHLTEventStatistics.h
+    AliHLTBlockDataCollection.h
+    AliHLTTriggerDecision.h
+    AliHLTGlobalTriggerDecision.h
+    AliHLTReadoutList.h
+    AliHLTTriggerDomain.h
+    AliHLTDomainEntry.h
+    AliHLTTriggerMenu.h
+    AliHLTTriggerMenuItem.h
+    AliHLTTriggerMenuSymbol.h
+    AliHLTCTPData.h
+    AliHLTScalars.h
+    AliHLTRunStatistics.h
+    AliHLTSpacePointContainer.h
+    AliHLTTrackGeometry.h
+    AliHLTComponentBenchmark.h
+    AliHLTDataDeflater.h
+    AliHLTDataDeflaterSimple.h
+    AliHLTDataDeflaterHuffman.h
+    AliHLTHuffman.h
+    AliHLTDataInflater.h
+    AliHLTDataInflaterSimple.h
+    AliHLTDataInflaterHuffman.h
+    )
+
+string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
+list(APPEND MODULE_SRCS 
+    AliHLT_C_Component_WrapperInterface.cxx 
+    AliHLTDataTypes.cxx
+    )
+
+list(APPEND MODULE_HDRS 
+    ${CLASS_HDRS}
+    AliHLTDataTypes.h
+    AliHLTLoggingVariadicFree.h 
+    AliHLTExternalTrackParam.h 
+    AliHLTCommonCDBEntries.h 
+    AliHLT_C_Component_WrapperInterface.h 
+    AliHLTDefinitions.h 
+    AliHLTStdIncludes.h
+    )
+
+set ( MODULE_DHDR 	HLTbaseLinkDef.h)
+
+if (MODULE_SRCS)
+ALICE_Format (SRCS "BASE/" "" "${MODULE_SRCS}")
+endif(MODULE_SRCS)
+if (CLASS_HDRS)
+ALICE_Format (CINTHDRS "BASE/" "" "${CLASS_HDRS}")
+endif(CLASS_HDRS)
+if (MODULE_HDRS)
+ALICE_Format (HDRS "BASE/" "" "${MODULE_HDRS}")
+endif(MODULE_HDRS)
+if (MODULE_DHDR)
+ALICE_Format (DHDR "BASE/" "" "${MODULE_DHDR}")
+endif(MODULE_DHDR)
+
+set ( ELIBS  "${ROOTLIBS} -lGeom -lMinuit -lEG -lVMC -lTreePlayer -lRIO -lXMLIO -lThread -lProof -lProofPlayer -lXMLParser -lGui")
+set ( ELIBSDIR  "${ROOTLIBDIR}")
+
+if(NOT DHDR)
+  set(CINTAUTOLINK 1)
+endif(NOT DHDR)
+
+set ( EDEFINE  ${HLTDEFS})
+set ( PACKCXXFLAGS  ${HLTCXXFLAGS})
+set ( PACKCFLAGS  ${HLTCLFAGS})
+set ( PACKDCXXFLAGS  ${HLTDCXXFLAGS})
+
+set ( EINCLUDE HLT/BASE HLT/BASE/HOMER)
+
+set ( EXPORT 
+    BASE/AliHLTDataTypes.h
+    BASE/AliHLTStdIncludes.h 
+    BASE/AliHLTLogging.h
+    BASE/AliHLTGlobalTriggerDecision.h 
+    BASE/AliHLTDomainEntry.h 
+    BASE/AliHLTTriggerDomain.h 
+    BASE/AliHLTTriggerDecision.h
+    BASE/AliHLTReadoutList.h 
+    BASE/AliHLTTriggerMenu.h 
+    BASE/AliHLTTriggerMenuItem.h 
+    BASE/AliHLTTriggerMenuSymbol.h)

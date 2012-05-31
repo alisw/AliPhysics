@@ -1,0 +1,48 @@
+$Id$
+
+How to run gun test with both G3 and G4
+=======================================
+
+1. event generation
+
+cd $ALICE_ROOT/test/vmctest/gun
+./rungen.sh
+   --> will generate primary events in an external file
+
+2. simulation & reconstruction
+
+./runtest.sh
+   --> will run simulation & reconstruction with both G3 and G4;
+       if you want to re-process with one MC only, you can just
+       edit the lines with
+       RUNG3=1
+       RUNG4=1
+       
+       The output files are moved in g3, g4 directories.
+       When repeating test with a different configuration,
+       you shoul rename the existing output directory 
+
+3. extract digits
+
+cd g3
+../../scripts/digits.sh
+cd ../g4
+../../scripts/digits.sh
+
+4. plot digits
+
+First select directories to be processed in ../scripts/plotDigits.C
+by modifying lines
+  label[0] = "g3";    
+  label[1] = "g4";
+  label[2] = "g4";
+
+cd $ALICE_ROOT/test/vmctest/gun
+aliroot ../scripts/plotDigits.C
+
+
+
+
+
+
+

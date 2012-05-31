@@ -1,0 +1,92 @@
+# -*- mode: CMake -*-
+
+#--------------------------------------------------------------------------------#
+# Package File for MUONrec                                                       #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS  
+    AliMUONReconstructor.cxx 
+    AliMUONVTrackReconstructor.cxx 
+    AliMUONTrackReconstructor.cxx 
+    AliMUONTrackReconstructorK.cxx 
+    AliMUONTracker.cxx 
+    AliMUONTrack.cxx 
+    AliMUONTrackParam.cxx 
+    AliMUONTrackExtrap.cxx 
+    AliMUONTriggerTrack.cxx 
+    AliMUONVTriggerTrackStore.cxx 
+    AliMUONTriggerTrackStoreV1.cxx 
+    AliMUONVClusterFinder.cxx 
+    AliMUONPreClusterFinder.cxx 
+    AliMUONPreClusterFinderV2.cxx 
+    AliMUONPreClusterFinderV3.cxx 
+    AliMUONClusterFinderMLEM.cxx 
+    AliMUONClusterSplitterMLEM.cxx 
+    AliMUONClusterFinderSimpleFit.cxx 
+    AliMUONClusterFinderCOG.cxx 
+    AliMUONPad.cxx 
+    AliMUONCluster.cxx 
+    AliMUONTrackHitPattern.cxx 
+    AliMUONVClusterStore.cxx 
+    AliMUONClusterStoreV1.cxx 
+    AliMUONClusterStoreV2.cxx 
+    AliMUONClusterStoreV2Iterator.cxx 
+    AliMUONVTrackStore.cxx 
+    AliMUONTrackStoreV1.cxx 
+    AliMUONVClusterServer.cxx 
+    AliMUONSimpleClusterServer.cxx 
+    AliMUONVQADataMakerRec.cxx 
+    AliMUONQADataMakerRec.cxx 
+    AliMUONTrackerQADataMakerRec.cxx 
+    AliMUONTriggerQADataMakerRec.cxx 
+    AliMUONClusterFinderPeakCOG.cxx 
+    AliMUONClusterFinderPeakFit.cxx 
+    AliMUONRefitter.cxx 
+    AliMUONESDInterface.cxx 
+    AliMUONLegacyClusterServer.cxx 
+    AliMUONTriggerTrackToTrackerClusters.cxx 
+    AliMUONVTrackerDataMaker.cxx 
+    AliMUONTrackerDataMaker.cxx 
+    AliMUONQAMappingCheck.cxx 
+    AliMUONCDB.cxx 
+    AliMUONTrackerConditionDataMaker.cxx 
+    )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  MUONrecLinkDef.h)
+
+set ( EINCLUDE  RAW MUON/mapping STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT 
+  AliMUONESDInterface.h 
+  AliMUONTrack.h 
+  AliMUONVClusterStore.h 
+  AliMUONTrackExtrap.h 
+  AliMUONTrackParam.h 
+  AliMUONCDB.h 
+  AliMUONVTrackStore.h
+  AliMUONClusterStoreV2.h)

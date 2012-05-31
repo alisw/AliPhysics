@@ -1,0 +1,80 @@
+##### MACROS #####
+
+ROOTH         = TH1.h
+
+SRCS          = AliRawEventHeader.cxx AliRawEquipmentHeader.cxx \
+		AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
+		AliStats.cxx AliRawDB.cxx \
+		AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx \
+		AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx \
+		AliMDC.cxx
+
+HDRS          = $(SRCS:.cxx=.h) LinkDef.h
+
+DICT          = AliRawDict.cxx
+DICTH         = $(DICT:.cxx=.h)
+DICTO         = $(DICT:.cxx=.o)
+
+MAIN          = alimdc_main.cxx
+MAINO         = $(MAIN:.cxx=.o)
+
+OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+
+ALLDICT       = $(DICT) $(DICTH)
+ALLSRCS       = $(SRCS) $(HDRS) $(MAIN)
+ALLOBJS       = $(OBJS) $(MAINO)
+
+ALIMDC        = alimdc
+
+
+
+##### RULES #####
+
+.SUFFIXES: .cxx
+.PHONY: all rdm smi evb hlt debug
+
+.cxx.o:
+	$(CXX) $(OPT) $(CXXFLAGS) -c $<
+
+
+##### TARGETS #####
+
+all:            $(ALIMDC)
+
+rdm:            $(ALIMDC)
+
+smi:            $(ALIMDC)
+
+evb:            $(ALIMDC)
+
+hlt:            $(ALIMDC)
+
+
+$(ALIMDC):      $(MAINO) $(DICT) $(OBJS)
+		$(LD) $(LDFLAGS) $(MAINO) $(OBJS) \
+		$(LIBS) -o $(ALIMDC)
+		@if [ `id -u -n` = "alicemdc" ]; then \
+		   chmod 6755 alimdc; \
+		fi
+
+$(DICT):        $(HDRS)
+		@echo "Generating dictionary ..."
+		rootcint -f $(DICT) -c $(CXXFLAGS) $(ROOTH) $(HDRS)
+
+$(DICTO):       $(DICT)
+		$(CXX) $(NOOPT) $(CXXFLAGS) -c $(DICT)
+
+depend:
+		rmkdepend -fMake-depend -- $(CXXFLAGS) -- $(SRCS) $(MAIN) \
+		> /dev/null 2>&1
+
+dist:
+		rm -f alimdc.tar.gz ; \
+		tar cvf alimdc.tar AA* $(ALLSRCS) .rootrc *.C Make* ; \
+		gzip alimdc.tar
+
+clean:
+		@rm -f $(ALLOBJS) $(ALLDICT)
+
+distclean:      clean
+		@rm -f $(ALIMDC)

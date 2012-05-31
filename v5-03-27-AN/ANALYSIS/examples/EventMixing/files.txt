@@ -1,0 +1,3 @@
+/home/mvala/ALICE/data/alice/sim/2011/LHC11h5b/146686/AOD079/0634/root_archive.zip#AliAOD.root
+/home/mvala/ALICE/data/alice/sim/2011/LHC11h5b/146686/AOD079/0635/root_archive.zip#AliAOD.root
+/home/mvala/ALICE/data/alice/sim/2011/LHC11h5b/146686/AOD079/0636/root_archive.zip#AliAOD.root

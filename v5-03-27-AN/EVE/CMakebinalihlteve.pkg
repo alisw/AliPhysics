@@ -1,0 +1,56 @@
+#--------------------------------------------------------------------------------#
+# Package File for alihlteve                                                     #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS  alieve_main/alihlteve_main.cxx)
+set ( CSRCS )
+
+set ( EINCLUDE )
+set ( ELIBSDIR )
+
+set ( ELIBS  EveBase EveHLT EveDet MONITOR HLTbase HLTrec AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU AliHLTMUON TPCsim TPCrec TPCbase ITSbase ITSrec TRDbase TRDrec AliHLTTRD PHOSbase PHOSUtils EMCALbase EMCALraw EMCALUtils EMCALrec EMCALsim TRIGGERbase VZERObase VZEROrec VZEROsim TRIGGERbase MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore STEER CDB AOD ESD STEERBase ANALYSISalice ANALYSIS FASTSIM microcern RAWDatasim RAWDatarec RAWDatabase XMLParser STAT TOFbase TOFsim FMDbase FMDsim FMDrec PMDbase T0base OADB)
+
+set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS})
+
+if( ALICE_TARGET STREQUAL "macosx")
+			
+	set ( ELIBS ${ELIBS} GL)
+	set ( ELIBSDIR ${ELIBSDIR} /usr/X11R6/lib/)
+	
+  list(REMOVE_ITEM ELIBS microcern lhapdf herwig)
+
+  ALICE_Format(PACKLDFLAGS "-Wl,-u,_G__cpp_setupG__" "" ${LDFLAGS})
+
+  if( MACOSX_MINOR STREQUAL "5")
+						
+		set ( PACKLDFLAGS "${PACKLDFLAGS} -Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+
+endif( MACOSX_MINOR STREQUAL "5")
+	
+  set ( ELIBS ${ELIBS} GLU)
+	set ( ELIBSDIR ${ELIBSDIR} ${FINK_ROOT}/lib)
+
+endif( ALICE_TARGET STREQUAL "macosx")

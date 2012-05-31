@@ -1,0 +1,118 @@
+# -*- mode: CMake -*- 
+# $Id$
+#--------------------------------------------------------------------------------#
+# Package File for AliHLTMUON                                                    #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( CLASS_HDRS
+    AliHLTMUONUtils.h
+    OfflineInterface/AliHLTMUONAgent.h
+    OfflineInterface/AliHLTMUONTriggerRecordsSource.h
+    OfflineInterface/AliHLTMUONRecHitsSource.h
+    OfflineInterface/AliHLTMUONDigitPublisherComponent.h
+    OfflineInterface/AliHLTMUONRootifierComponent.h
+    OfflineInterface/AliHLTMUONESDMaker.h
+    OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.h
+    OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h
+    OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.h
+    OnlineAnalysis/AliHLTMUONFullTrackerComponent.h
+    OnlineAnalysis/AliHLTMUONDecisionComponent.h
+    OnlineAnalysis/AliHLTMUONClusterFinderComponent.h
+    utils/AliHLTMUONEmptyEventFilterComponent.h
+    utils/AliHLTMUONDataCheckerComponent.h
+    utils/AliHLTMUONRawDataHistoComponent.h
+    utils/AliHLTMUONClusterHistoComponent.h
+    AliHLTMUONConstants.h
+    AliHLTMUONProcessor.h
+    AliHLTMUONRecHit.h
+    AliHLTMUONTriggerRecord.h
+    AliHLTMUONTrack.h
+    AliHLTMUONMansoTrack.h
+    AliHLTMUONDecision.h
+    AliHLTMUONEvent.h
+    )
+
+string (REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
+set ( MODULE_SRCS 	${MODULE_SRCS}
+    AliHLTMUONTriggerRecordsBlockStruct.cxx
+    AliHLTMUONTrigRecsDebugBlockStruct.cxx
+    AliHLTMUONRecHitsBlockStruct.cxx
+    AliHLTMUONClustersBlockStruct.cxx
+    AliHLTMUONChannelsBlockStruct.cxx
+    AliHLTMUONMansoTracksBlockStruct.cxx
+    AliHLTMUONMansoCandidatesBlockStruct.cxx
+    AliHLTMUONTracksBlockStruct.cxx
+    AliHLTMUONSinglesDecisionBlockStruct.cxx
+    AliHLTMUONPairsDecisionBlockStruct.cxx
+    OnlineAnalysis/AliHLTMUONCalculations.cxx
+    OnlineAnalysis/AliHLTMUONTriggerReconstructor.cxx
+    OnlineAnalysis/AliHLTMUONHitReconstructor.cxx
+    OnlineAnalysis/AliHLTMUONMansoTrackerFSM.cxx
+    OnlineAnalysis/AliHLTMUONFullTracker.cxx
+    )
+
+string (REPLACE ".cxx" ".h" MODULE_HDRS "${MODULE_SRCS}")
+set ( MODULE_HDRS  ${MODULE_HDRS}
+    AliHLTMUONDataBlockReader.h
+    AliHLTMUONDataBlockWriter.h
+    AliHLTMUONDataTypes.h
+    AliHLTMUONList.h
+    AliHLTMUONCountedList.h
+    OnlineAnalysis/AliHLTMUONMansoTrackerFSMCallback.h
+    )
+
+set ( MODULE_DHDR  	AliHLTMUONLinkDef.h)
+
+set ( EINCLUDE  	HLT/BASE HLT/MUON HLT/MUON/utils HLT/MUON/OnlineAnalysis HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( ELIBS  "HLTbase MUONmapping MUONbase MUONevaluation MUONsim MUONcore MUONcalib MUONgeometry MUONraw MUONtrigger MUONrec CDB ESD STEER STEERBase RAWDatarec RAWDatasim -lMinuit")
+
+set ( ELIBSDIR "${ROOTLIBDIR}" )
+
+include ("CMakehlt.conf")
+
+if (MODULE_SRCS)
+ALICE_Format (SRCS "MUON/" "" "${MODULE_SRCS}")
+endif(MODULE_SRCS)
+if (CLASS_HDRS)
+ALICE_Format (CINTHDRS "MUON/" "" "${CLASS_HDRS}")
+endif(CLASS_HDRS)
+if (MODULE_HDRS)
+ALICE_Format (HDRS "MUON/" "" "${MODULE_HDRS}")
+endif(MODULE_HDRS)
+if (MODULE_DHDR)
+ALICE_Format (DHDR "MUON/" "" "${MODULE_DHDR}")
+endif(MODULE_DHDR)
+
+if(NOT DHDR)
+  set(CINTAUTOLINK 1)
+endif(NOT DHDR)
+
+set ( EDEFINE  ${HLTDEFS})
+set ( PACKCXXFLAGS  ${HLTCXXFLAGS})
+set ( PACKCFLAGS  ${HLTCLFAGS})
+set ( PACKDCXXFLAGS  ${HLTDCXXFLAGS})
+set ( PACKSOFLAGS ${HLTSOFLAGS})

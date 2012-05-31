@@ -1,0 +1,37 @@
+See also the html folder for documentation.
+
+To compile make shure to set the ROOTSYS variable
+to point to your ROOT installation.
+
+then type "make".
+the executable "pftest" is intended to test and debug the
+Peakfinder algorithm. It also serves as an example of how to use
+the algorithm.
+
+PEAKFINDER HOW TO
+The Peakfinder vectors are found in the folder "PFVectors".
+The folder contains  peafinder solution vectors for the most likely
+set of parameters. If a file does not exist for a given set of parameters
+then the PF vector must be supplied by the user.
+the file format is asci text and the name of the file identifies the content.
+The file name is on the format
+
+[startindex][number of samples][risetime][samplingrate in MHz].txt
+
+startindex:
+a startindex N means that the first sample of the subarray used for the 
+reconstruction must correspond to a timedelay t0 in the
+range (N, N+1) sample intervals.
+
+N:
+the number of samples of the sub array.
+
+tau: 
+Risetime in micro seconds
+
+fs:
+Sample rate in MHz
+
+
+
+	

@@ -1,0 +1,109 @@
+# -*- mode: CMake -*- 
+#--------------------------------------------------------------------------------#
+# Package File for ITSbase                                                       #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS 
+    AliITSgeom.cxx 
+    AliITSgeomMatrix.cxx 
+    AliITSInitGeometry.cxx 
+    AliITSLoader.cxx 
+    AliITSRecPoint.cxx 
+    AliITSclusterV2.cxx 
+    AliITSdigit.cxx 
+    AliITSdigitSPD.cxx 
+    AliITSdigitSDD.cxx 
+    AliITSTransientDigit.cxx 
+    AliITSdigitSSD.cxx 
+    AliITSMap.cxx 
+    AliITSMapA1.cxx 
+    AliITSMapA2.cxx 
+    AliITSMisAligner.cxx 
+    AliITSpList.cxx 
+    AliITSpListItem.cxx 
+    AliITSsegmentation.cxx 
+    AliITSsegmentationSPD.cxx 
+    AliITSsegmentationSDD.cxx 
+    AliITSsegmentationSSD.cxx 
+    AliITSCalibration.cxx 
+    AliITSresponse.cxx 
+    AliITSresponseSPD.cxx 
+    AliITSresponseSDD.cxx 
+    AliITSCalibrationSPD.cxx 
+    AliITSCalibrationSDD.cxx 
+    AliITSCalibrationSSD.cxx 
+    AliITSChannelStatus.cxx 
+    AliITSMapSDD.cxx 
+    AliITSCorrMapSDD.cxx 
+    AliITSCorrMap1DSDD.cxx 
+    AliITSCorrMap2DSDD.cxx 
+    AliITSHLTforSDD.cxx 
+    AliITSDriftSpeedSDD.cxx 
+    AliITSDDLModuleMapSDD.cxx 
+    AliITSDriftSpeedArraySDD.cxx 
+    AliITSBadChannelsSSD.cxx 
+    AliITSBadChannelsSSDv2.cxx 
+    AliITSGainSSD.cxx 
+    AliITSGainSSDv2.cxx 
+    AliITSNoiseSSD.cxx 
+    AliITSNoiseSSDv2.cxx 
+    AliITSChannelDaSSD.cxx 
+    AliITSModuleDaSSD.cxx 
+    AliITSHandleDaSSD.cxx 
+    AliITSDDLRawData.cxx 
+    AliITSRawStream.cxx 
+    AliITSRawStreamSDDCompressed.cxx 
+    AliITSRawStreamSSD.cxx 
+    AliITSRawStreamSDD.cxx 
+    AliITSCompressRawDataSDD.cxx 
+    AliITSRawStreamSPD.cxx 
+    AliITSEventHeader.cxx 
+    AliITSRawStreamSSDv1.cxx 
+    AliITSgeomTGeo.cxx 
+    AliITSPlaneEff.cxx 
+    AliITSPlaneEffSPD.cxx 
+    AliITSPlaneEffSDD.cxx 
+    AliITSPlaneEffSSD.cxx 
+    AliITSRawStreamSPDErrorLog.cxx 
+    AliITSDCSAnalyzerSDD.cxx 
+    AliITSDCSDataSDD.cxx 
+    AliITSIntMap.cxx 
+    AliITSIntMapNode.cxx 
+    AliITSPedestalSSD.cxx 
+    AliITSPedestalSSDv2.cxx 
+    AliITSSurveyToAlign.cxx 
+    AliITSTriggerConditions.cxx 
+    AliITSTriggerAlgorithmConditions.cxx 
+    AliITSdEdxSamples.cxx 
+    )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR ITSbaseLinkDef.h)
+
+set ( EINCLUDE TPC RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT AliITSgeomTGeo.h )

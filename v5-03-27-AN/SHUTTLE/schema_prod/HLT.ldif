@@ -1,0 +1,7 @@
+# HLT preprocessor Config
+dn: det=HLT,o=shuttle_prod,dc=cern,dc=ch
+objectClass: top
+objectClass: detectorConfig
+det: HLT
+strictRunOrder: 0
+responsible: Sebastian.Bablok@uib.no

@@ -1,0 +1,18 @@
+# -*- mode: CMake -*-
+
+set(SRCS 
+    AliACORDE.cxx 
+    AliACORDEv1.cxx 
+    AliACORDEhit.cxx 
+    AliACORDEDigitizer.cxx 
+    AliACORDETrigger.cxx 
+    AliACORDERawData.cxx 
+    AliACORDEQADataMakerSim.cxx 
+    AliACORDEv0.cxx
+    )
+
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+set(DHDR ACORDEsimLinkDef.h)
+
+set(EINCLUDE STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

@@ -1,0 +1,57 @@
+# -*- mode: CMake -*- 
+#--------------------------------------------------------------------------------#
+# Package File for EveBase                                                       #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+file( GLOB SRCS "EveBase/*.cxx")
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  EveBase/EveBaseLinkDef.h)
+
+set ( EINCLUDE  RAW ITS TPC EVE/EveBase STEER/STEER STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT 
+  EveBase/AliEveBeamsInfo.h
+  EveBase/AliEveCascade.h
+  EveBase/AliEveEventManager.h
+  EveBase/AliEveConfigManager.h
+  EveBase/AliEveHF.h
+  EveBase/AliEveJetPlane.h
+  EveBase/AliEveKineTools.h
+  EveBase/AliEveKink.h
+  EveBase/AliEveLego.h
+  EveBase/AliEveMacro.h
+  EveBase/AliEveMacroExecutor.h
+  EveBase/AliEveMacroExecutorWindow.h
+  EveBase/AliEveMagField.h
+  EveBase/AliEveMultiView.h
+  EveBase/AliEveTrack.h 
+  EveBase/AliEveTrackCounter.h
+  EveBase/AliEveTracklet.h
+  EveDet/AliEveTRDData.h
+  EveBase/AliEveV0.h
+  )

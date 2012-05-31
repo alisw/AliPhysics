@@ -1,0 +1,45 @@
+> Title:
+ALICE – TPC, Measurement of the TPC reference points (side A and side C) before final Transport 
+> Date:
+19/12/2006
+> Subdetector:
+TPC
+> Report URL:
+https://edms.cern.ch/document/818094
+> Version:
+1
+> General Observations:
+Point Types: M(easured),T(ransformed), R(eference)
+> Coordinate System:
+LOCAL
+> Units:
+m
+> Nr Columns:
+7
+> Column Names:
+Point Name,XLOCAL,YLOCAL,ZLOCAL,Point Type,Target Used,Precision(mm)
+> Data:
+R01 3.0168 -0.7973 2.5269 M Y 0.2
+R03 3.0164 -1.7909 -1.9538 M Y 0.2
+R04 3.0165 0.7973 -2.5278 M Y 0.2
+R05 3.0166 2.5873 -0.5738 M Y 0.2
+R06 3.0164 1.7898 1.9540 M Y 0.2
+R07 3.0161 -0.2237 0.7055 M Y 0.2
+R08 3.0162 -0.7230 0.1598 M Y 0.2
+R10 3.0166 0.2225 -0.7058 M Y 0.2
+R11 3.0164 0.7224 -0.1608 M Y 0.2
+R12 3.0164 0.4999 0.5452 M Y 0.2
+R13 -3.0168 0.7968 2.5272 M Y 0.2
+R15 -3.0166 1.7902 -1.9527 M Y 0.2
+R16 -3.0165 -0.7965 -2.5267 M Y 0.2
+R17 -3.0166 -2.5861 -0.5735 M Y 0.2
+R18 -3.0163 -1.7895 1.9535 M Y 0.2
+R19 -3.0156 0.2230 0.7055 M Y 0.2
+R21 -3.0161 0.4998 -0.5449 M Y 0.2
+R22 -3.0159 -0.2223 -0.7053 M Y 0.2
+R23 -3.0159 -0.7223 -0.1597 M Y 0.2
+R24 -3.0159 -0.4988 0.5461 M Y 0.2
+ITS_AIB -0.7321 0.5259 -0.1256 M Y 1.0
+ITS_AIT -0.7317 0.5266 0.1238 M Y 1.0
+ITS_AOB -0.7334 -0.5255 -0.1257 M Y 1.0
+ITS_AOT -0.7336 -0.5254 0.1238 M Y 1.0

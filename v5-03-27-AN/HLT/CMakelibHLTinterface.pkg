@@ -1,0 +1,62 @@
+# $Id$
+#--------------------------------------------------------------------------------#
+# Package File for HLTinterface                                                  #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( MODULE_SRCS  	AliHLTExternalInterface.cxx)
+
+set ( MODULE_HDRS)
+
+set ( MODULE_DHDR  	HLTinterface-LinkDef.h)
+
+set ( EINCLUDE  HLT/BASE/interface HLT/BASE  )
+
+set ( ELIBS  "HLTbase")
+
+include ("CMakehlt.conf")
+
+if (MODULE_SRCS)
+ALICE_Format (SRCS "BASE/interface/" "" "${MODULE_SRCS}")
+endif(MODULE_SRCS)
+if (CLASS_HDRS)
+ALICE_Format (CINTHDRS "BASE/interface/" "" "${CLASS_HDRS}")
+endif(CLASS_HDRS)
+if (MODULE_HDRS)
+ALICE_Format (HDRS "BASE/interface/" "" "${MODULE_HDRS}")
+endif(MODULE_HDRS)
+if (MODULE_DHDR)
+ALICE_Format (DHDR "BASE/interface/" "" "${MODULE_DHDR}")
+endif(MODULE_DHDR)
+
+if(NOT DHDR)
+  set(CINTAUTOLINK 1)
+endif(NOT DHDR)
+
+set ( EDEFINE  ${HLTDEFS})
+set ( PACKCXXFLAGS  ${HLTCXXFLAGS})
+set ( PACKCFLAGS  ${HLTCLFAGS})
+set ( PACKDCXXFLAGS  ${HLTDCXXFLAGS})
+set ( PACKSOFLAGS ${HLTSOFLAGS})

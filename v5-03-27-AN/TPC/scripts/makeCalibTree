@@ -1,0 +1,208 @@
+#!/bin/bash
+
+
+function usage {
+echo "Usage:"
+echo "makeCalibTree [options]"
+echo
+echo "options:"
+echo " -r, --range       : create tree for the given range of runs"
+echo "                     e.g. 70000-80000"
+echo " -a, --auto        : create trees in chunks of \$NFILES for all the files"
+echo "                     found in the OCDB entries of \$AUTOFILES"
+echo " -l, --list        : text file with a list of runs to process"
+echo " -d, --outdir      : output file directory"
+echo " -f, --outfile     : output file name"
+echo " -b, --batch       : run as batch job(s)"
+echo " -o, --overwrite   : overwrite old files"
+echo " -h, --help        : display this help"
+echo ""
+exit 0
+
+}
+
+#
+# create a list of files in $RANGE which are also available in $AUTOFILES
+#
+function createRangeList {
+  #get first and last run from range
+  local first=$(echo $RANGE | sed 's|\(.*\)-.*|\1|')
+  local last=$(echo $RANGE | sed 's|.*-\(.*\)|\1|')
+  #create list with all TPC runs
+  local command=ls
+  if [ $WITHALIEN -eq 1 ]; then command=alien_ls; fi
+  local dir=$AUTOFILES
+  RUNS=($($command $dir | sed 's|Run\([0-9]\{1,6\}\)_.*|\1|' | sort -n))
+  #define filename
+  local filename=calibTreeTime_${first}_${last}
+  #remove old files
+  #test -d $TMPLISTDIR  && rm -rf $TMPLISTDIR
+  test -d $TMPLISTDIR
+  mkdir -p $TMPLISTDIR
+  for (( i=0; i<${#RUNS[*]}; i=i+1 )); do
+    if [ ${RUNS[$i]} -lt $first ]||[ ${RUNS[$i]} -gt $last ]; then continue; fi
+    echo ${RUNS[$i]} >> $TMPLISTDIR/$filename
+  done
+}
+
+#
+# automatic list creation for runs in files in OCDB entry pointed to by $AUTOFILES
+# crete as many lists as needed in chunks of $NFILES files
+# respect the run range, if given
+#
+function createGuiLists {
+  local command=ls
+  if [ $WITHALIEN -eq 1 ]; then command=alien_ls; fi
+  local dir=$AUTOFILES
+  RUNS=($($command $dir | sed 's|Run\([0-9]\{1,6\}\)_.*|\1|' | sort -n))
+  local count=0
+  local iter=0
+  local skip=0
+  local filename=
+  local nfiles=$NFILES
+  #find first and last iterator
+  #get first and last run from range
+  local first=0
+  local last=999999999
+  local ifirst=0
+  local ilast=${#RUNS[*]}
+  if [ "x$RANGE" != "x" ]; then
+    first=$(echo $RANGE | sed 's|\(.*\)-.*|\1|')
+    last=$(echo $RANGE | sed 's|.*-\(.*\)|\1|')
+    echo $first-$last
+    for (( i=0; i<${#RUNS[*]}; i=i+1 )); do
+      if [ ${RUNS[i]} -ge $first ]&&[ $ifirst -eq 0 ]; then ifirst=$i; fi
+      if [ ${RUNS[i]} -gt $last ]&&[ $ilast -eq ${#RUNS[*]} ]; then ilast=$i; fi
+    done
+      echo $ifirst-$ilast
+      echo ${RUNS[$ifirst]}-${RUNS[$ilast-1]}
+  fi
+  #remove old files
+  #test -d $TMPLISTDIR  && rm -rf $TMPLISTDIR
+  test -d $TMPLISTDIR 
+  mkdir -p $TMPLISTDIR
+  for (( i=$ifirst; i<$ilast; i=i+1 )); do
+    if [ $count -eq $nfiles ]; then
+      count=0
+      let iter=$iter+1
+    fi
+    if [ $count -eq 0 ]; then
+       local firstLocal=$(echo "$iter*$nfiles+$ifirst" | bc)
+#       local lastLocal=$(echo "if ($firstLocal+$nfiles-1>=$ilast-$ifirst) $ilast-1 else $firstLocal+$nfiles-1" | bc)
+       local lastLocal=$(echo "if (($iter+1)*$nfiles>=$ilast-$ifirst) $ilast-1 else $firstLocal+$nfiles-1" | bc)
+      filename=calibTreeTime_${RUNS[$firstLocal]}_${RUNS[$lastLocal]}
+    fi
+    echo ${RUNS[$i]} >> $TMPLISTDIR/$filename
+    let count=$count+1
+  done
+}
+
+function runJobs {
+  local count=0;
+  local filename=
+  for file in $TMPLISTDIR/*; do
+    if [ "x$OUTFILE" == "x" ]; then
+      filename=$(basename $file).root
+    else
+      filename=${OUTFILE}_${count}
+    fi
+    if [ $OVERWRITE -eq 0 ];then
+      test -f $OUTDIR/$filename && continue
+    fi
+    if [ $BATCH -eq 0 ]; then
+      $SCRIPTDIR/makeCalibTree -l $file -f $filename -d $OUTDIR
+    else
+      $SCRIPTDIR/makeCalibTree -l $file -f $filename -d $OUTDIR -b
+    fi
+  let count=$count+1
+  done
+}
+
+function runJobOnList {
+    if [ $OVERWRITE -eq 0 ];then
+      if [ -f $OUTDIR/$OUTFILE ]; then
+        echo "Not overwriting file '$OUTDIR/$OUTFILE' use -o to enforce it"
+        exit 0;
+      fi
+    fi
+    if [ $BATCH -eq 1 ]; then
+      $BATCHCOMMAND -oo $GUI_OUTDIR/logs/$OUTFILE.out.log  -eo $GUI_OUTDIR/logs/$OUTFILE.err.log /$SCRIPTDIR/makeCalibTreeList $LISTFILE $OUTDIR/$OUTFILE $SCRIPTDIR
+    else
+      $SCRIPTDIR/makeCalibTreeList $LISTFILE $OUTDIR/$OUTFILE $SCRIPTDIR
+    fi
+}
+
+if [ "x$SCRIPTDIR" == "x" ]; then
+  echo please run:
+  echo export SCRIPTDIR=whatever_is_you_path
+  echo
+  exit 1
+fi
+source $SCRIPTDIR/guiEnv.sh
+        
+      
+#parse options
+TEMP=`getopt -o r:l:f:d:aboh --long range:,list:,calibDir:,outfile:,outdir:,auto,batch,overwrite,help \
+-n 'run' -- "$@"`
+
+if [ $? != 0 ] ; then usage ; fi
+
+eval set -- "$TEMP"
+
+RANGE=
+OUTFILE=
+OVERWRITE=0
+LISTFILE=
+BATCH=0
+COMMAND=
+AUTO=0
+OUTDIR=$GUI_OUTDIR_TIME
+
+while true ; do
+  case "$1" in
+  -r|--range)     RANGE=$2;    shift 2;;
+  -l|--list)      LISTFILE=$2; shift 2;;
+  -f|--outfile)   OUTFILE=$2;  shift 2;;
+  -d|--outdir)    OUTDIR=$2;   shift 2;;
+  -a|--auto)      AUTO=1;      shift;;
+  -b|--batch)     BATCH=1;     shift;;
+  -o|--overwrite) OVERWRITE=1; shift;;
+  -h|--help)      usage;;
+  --) shift ; break ;;
+  *) echo "Internal error!" ; exit 1 ;;
+  esac
+done
+
+
+
+if [ $AUTO -eq 1 ]; then
+  test -d $OUTDIR || mkdir -p $OUTDIR
+  #remove last file if it does not contain $NFILES files
+  lastfile=$(ls $OUTDIR/* | tail -1)
+  if [ "x$lastfile" != "x" ]; then
+    nfiles=$(wc -l $lastfile | awk '{print $1}')
+    if [ $nfiles -ne $NFILES ]; then
+      rm $lastfile
+    fi
+  fi
+  createGuiLists
+  runJobs
+  echo "files written to '$OUTDIR'"
+  exit 0
+fi
+
+if [ "x$RANGE" != "x" ]&&[ "x$LISTFILE" == "x" ]; then
+  test -d $OUTDIR || mkdir -p $OUTDIR
+  createRangeList
+  runJobs
+  exit 0
+fi
+
+if [ "x$RANGE" == "x" ]&&[ "x$LISTFILE" != "x" ]; then
+  test -d $OUTDIR || mkdir -p $OUTDIR
+  runJobOnList
+  exit 0
+fi
+
+#we should have left already, so show usage
+usage

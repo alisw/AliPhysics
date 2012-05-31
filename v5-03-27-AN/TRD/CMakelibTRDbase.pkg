@@ -1,0 +1,134 @@
+# -*- mode: CMake -*-
+
+#--------------------------------------------------------------------------------#
+# Package File for TRDbase                                                       #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS
+    AliTRDarraySignal.cxx
+    AliTRDarrayDictionary.cxx
+    AliTRDarrayADC.cxx
+    AliTRDSignalIndex.cxx
+    AliTRDgeometry.cxx
+    AliTRDdigit.cxx
+    AliTRDdigitsManager.cxx
+    AliTRDdigitsParam.cxx
+    AliTRDrawData.cxx
+    AliTRDpadPlane.cxx
+    AliTRDrawStream.cxx
+    AliTRDCommonParam.cxx
+    AliTRDfeeParam.cxx
+    AliTRDgtuParam.cxx
+    AliTRDcalibDB.cxx
+    Cal/AliTRDCalROC.cxx
+    Cal/AliTRDCalPad.cxx
+    Cal/AliTRDCalDet.cxx
+    Cal/AliTRDCalDCS.cxx
+    Cal/AliTRDCalDCSFEE.cxx
+    Cal/AliTRDCalDCSv2.cxx
+    Cal/AliTRDCalDCSFEEv2.cxx
+    Cal/AliTRDCalDCSPTR.cxx
+    Cal/AliTRDCalDCSGTUBoardInfo.cxx
+    Cal/AliTRDCalDCSGTUCtpOpc.cxx
+    Cal/AliTRDCalDCSGTUSegment.cxx
+    Cal/AliTRDCalDCSGTUTgu.cxx
+    Cal/AliTRDCalDCSGTUTmu.cxx
+    Cal/AliTRDCalDCSGTU.cxx
+    Cal/AliTRDCalMonitoring.cxx
+    Cal/AliTRDCalChamberStatus.cxx
+    Cal/AliTRDCalPadStatus.cxx
+    Cal/AliTRDCalSingleChamberStatus.cxx
+    Cal/AliTRDCalPID.cxx
+    Cal/AliTRDCalTrkAttach.cxx
+    Cal/AliTRDCalOnlineGainTable.cxx
+    Cal/AliTRDCalOnlineGainTableMCM.h
+    Cal/AliTRDCalOnlineGainTable.h  
+    Cal/AliTRDCalOnlineGainTableROC.cxx
+    Cal/AliTRDCalOnlineGainTableMCM.cxx
+    Cal/AliTRDCalOnlineGainTableROC.h
+    Cal/AliTRDCalTrapConfig.cxx
+    AliTRDCalibraFit.cxx
+    AliTRDCalibraMode.cxx
+    AliTRDCalibraVector.cxx
+    AliTRDCalibraVdriftLinearFit.cxx
+    AliTRDCalibraExbAltFit.cxx
+    AliTRDCalibPadStatus.cxx
+    AliTRDCalibChamberStatus.cxx
+    AliTRDCalibViewer.cxx
+    AliTRDCalibViewerGUI.cxx
+    AliTRDEntriesInfo.cxx
+    AliTRDPhInfo.cxx
+    AliTRDPrfInfo.cxx
+    AliTRDUshortInfo.cxx
+    AliTRDQAChecker.cxx
+    AliTRDPreprocessor.cxx
+    AliTRDSaxHandler.cxx
+    AliTRDDataDCS.cxx
+    AliTRDSensor.cxx
+    AliTRDSensorArray.cxx
+    AliTRDalignment.cxx
+    AliTRDtrapConfig.cxx
+    AliTRDmcmSim.cxx
+    AliTRDltuParam.cxx
+    AliTRDtrapConfigHandler.cxx
+    AliTRDtrackGTU.cxx
+    AliTRDtrackletBase.cxx
+    AliTRDtrackletGTU.cxx
+    AliTRDtrackletMCM.cxx
+    AliTRDtrackletWord.cxx
+    AliTRDgtuSim.cxx
+    AliTRDgtuTMU.cxx
+    AliTRDhit.cxx
+    AliTRDrecoParam.cxx
+    AliTRDSimParam.cxx
+   )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  TRDbaseLinkDef.h)
+
+set ( EINCLUDE  RAW TRD/Cal STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT 
+  Cal/AliTRDCalPID.h 
+  AliTRDgeometry.h
+  AliTRDarrayADC.h
+  AliTRDdigitsParam.h
+  AliTRDReconstructor.h 
+  AliTRDhit.h
+  AliTRDgtuParam.h
+  AliTRDarrayADC.h
+  AliTRDdigitsManager.h 
+  AliTRDpadPlane.h
+  AliTRDrecoParam.h
+  AliTRDseedV1.h
+  AliTRDtrackV1.h
+  AliTRDtrackletBase.h
+  AliTRDtrackletWord.h
+  AliTRDtrackletMCM.h
+  AliTRDtrackGTU.h
+  AliTRDtrackletGTU.h
+   )

@@ -1,0 +1,69 @@
+> Title:
+
+Alignment of the PMD.
+
+> Date:
+
+11.01.2008
+
+> Subdetector:
+
+PMD
+
+> Report URL:
+
+https://edms.cern.ch/document/000000
+
+> Version:
+
+1
+
+> General Observations:
+
+ This will be documented later by surveyer.
+
+> Coordinate System:
+
+ALICEPH
+
+> Units:
+
+mm
+
+> Nr Columns:
+
+7
+
+> Column Names:
+
+Point Name,XPH,YPH,ZPH,Point Type,Target Used,Precision(mm)
+
+> Data:
+PMD_01 -544.50 906.5 3638.0 M Y 1
+PMD_02 17.50 906.5 3638.0 M Y 1
+PMD_03 186.50 906.5 3638.0 M Y 1
+PMD_04 544.50 906.5 3638.0 M Y 1
+PMD_05 -742.75 870.5 3638.0 M Y 1
+PMD_06 77.25 870.5 3638.0 M Y 1
+PMD_07 -742.75 617.5 3638.0 M Y 1
+PMD_08 77.25 617.5 3638.0 M Y 1
+PMD_09 -742.75 364.5 3638.0 M Y 1
+PMD_10 77.25 364.5 3638.0 M Y 1
+PMD_11 -742.75 111.5 3638.0 M Y 1
+PMD_12 77.25 111.5 3638.0 M Y 1
+PMD_13 -742.75 -378.5 3638.0 M Y 1
+PMD_14 -120.25 -378.5 3638.0 M Y 1
+PMD_15 -742.75 -870.5 3638.0 M Y 1
+PMD_16 -120.25 -870.5 3638.0 M Y 1
+PMD_17 120.25 870.5 3638.0 M Y 1
+PMD_18 742.75 870.5 3638.0 M Y 1
+PMD_19 120.25 378.5 3638.0 M Y 1
+PMD_20 742.75 378.5 3638.0 M Y 1
+PMD_21 -77.25 -111.5 3638.0 M Y 1
+PMD_22 742.75 -111.5 3638.0 M Y 1
+PMD_23 -77.25 -364.5 3638.0 M Y 1
+PMD_24 742.75 -364.5 3638.0 M Y 1
+PMD_25 -77.25 -617.5 3638.0 M Y 1
+PMD_26 742.75 -617.5 3638.0 M Y 1
+PMD_27 -77.25 -870.5 3638.0 M Y 1
+PMD_28 742.75 -870.5 3638.0 M Y 1

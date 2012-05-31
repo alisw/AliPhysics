@@ -1,0 +1,48 @@
+#--------------------------------------------------------------------------------#
+# Package File for TRDqaAnalysis                                                 #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS
+    qaAnalysis/AliTRDqaElectronSpectra.cxx
+    qaAnalysis/AliTRDqaESDFriends.cxx
+    qaAnalysis/AliTRDqaEnergyDeposit.cxx
+    qaAnalysis/AliTRDqaJPsi.cxx
+    qaAnalysis/AliTRDqaBasic.cxx
+    qaAnalysis/AliTRDqaAT.cxx
+    qaAnalysis/AliAnalysisTaskTRDmon.cxx
+   )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  TRDqaAnalysisLinkDef.h)
+
+set ( EINCLUDE  TRD/qaAnalysis ANALYSIS)
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+	
+			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lANALYSIS -lANALYSISalice -lESD)
+
+endif( ALICE_TARGET STREQUAL "win32gcc")

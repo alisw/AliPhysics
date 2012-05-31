@@ -1,0 +1,92 @@
+# -*- mode: CMake -*-
+
+#--------------------------------------------------------------------------------#
+# Package File for MUONbase                                                      #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS   
+    AliMUONConstants.cxx 
+    AliMUONMathieson.cxx 
+    AliMUONDigit.cxx 
+    AliMUONRealDigit.cxx 
+    AliMUONVCluster.cxx 
+    AliMUONRawCluster.cxx 
+    AliMUONRawClusterV2.cxx 
+    AliMUONDigitMaker.cxx 
+    AliMUONRawWriter.cxx 
+    AliMUONVDigitStore.cxx 
+    AliMUONDigitStoreV1.cxx 
+    AliMUONDigitStoreV1Iterator.cxx 
+    AliMUONDigitStoreVImpl.cxx 
+    AliMUONDigitStoreVImplIterator.cxx 
+    AliMUONDigitStoreV2R.cxx 
+    AliMUONDigitStoreV2S.cxx 
+    AliMUONTOTCAStoreIterator.cxx 
+    AliMUONVDigit.cxx 
+    AliMUONTriggerCircuit.cxx 
+    AliMUONVTriggerStore.cxx 
+    AliMUONTriggerStoreV1.cxx 
+    AliMUONTriggerElectronics.cxx 
+    AliMUONQAChecker.cxx 
+    AliMUONVQAChecker.cxx 
+    AliMUONTrackerQAChecker.cxx 
+    AliMUONTriggerQAChecker.cxx 
+    AliMUONRecoParam.cxx 
+    AliMUONPadStatusMaker.cxx 
+    AliMUONDigitCalibrator.cxx 
+    AliMUONPadStatusMapMaker.cxx 
+    AliMUONTriggerUtilities.cxx
+    )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  MUONbaseLinkDef.h)
+
+set ( EINCLUDE  RAW MUON/mapping STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+set ( EXPORT AliMUONDigitMaker.h 
+  AliMUONVDigitStore.h 
+  AliMUONDigitStoreV2R.h 
+  AliMUONDigitStoreVImpl.h 
+  AliMUONVDigit.h 
+  AliMUONVCluster.h 
+  AliMUONConstants.h 
+  AliMUONTriggerCircuit.h
+  AliMUONTriggerCircuit.h 
+  AliMUONRawClusterV2.h
+  AliMUONRecoParam.h 
+  )
+
+install (DIRECTORY data
+	 DESTINATION MUON
+	 PATTERN ".svn" EXCLUDE)
+
+
+#
+# EOF
+#
+
+

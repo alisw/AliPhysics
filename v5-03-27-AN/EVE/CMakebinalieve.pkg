@@ -1,0 +1,89 @@
+# -*- mode: CMake -*- 
+#-----------------------------------------------------------------------#
+# Package File for alieve                                                        #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#-----------------------------------------------------------------------#
+
+set ( SRCS  alieve_main/alieve_main.cxx)
+set ( CSRCS )
+
+set ( EINCLUDE )
+set ( ELIBSDIR )
+
+set ( ELIBS  EveBase EveDet MONITOR MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCfast TPCsim TPCrec TPCbase ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec STEER CDB AOD ESD STEERBase ANALYSISalice ANALYSIS THijing hijing THbtp TEPEMGEN FASTSIM microcern RAWDatasim RAWDatarec RAWDatabase HLTbase XMLParser STAT OADB)
+
+if(PYTHIA6)
+  list (APPEND ELIBS EVGEN)
+endif(PYTHIA6)
+set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS} )
+
+
+if( ALICE_TARGET STREQUAL "macosx")
+			
+	set ( ELIBS ${ELIBS} GL)
+	set ( ELIBSDIR ${ELIBSDIR} /usr/X11R6/lib/)
+	
+  set ( ELIBSCPP ${ELIBS})
+	list(REMOVE_ITEM ELIBSCPP microcern lhapdf herwig)
+
+  ALICE_Format(PACKLDFLAGS "-Wl,-u,_G__cpp_setupG__" "" ${LDFLAGS})
+
+	if( MACOSX_MINOR STREQUAL "5")
+						
+		set ( PACKLDFLAGS "${PACKLDFLAGS} -Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+
+  endif( MACOSX_MINOR STREQUAL "5")
+	
+  set ( ELIBS ${ELIBS} GLU)
+	set ( ELIBSDIR ${ELIBSDIR} ${FINK_ROOT}/lib)
+	
+endif( ALICE_TARGET STREQUAL "macosx")
+
+install (DIRECTORY macros 
+	 DESTINATION EVE/ 
+	 PATTERN ".svn" EXCLUDE 
+	 PATTERN "*.d" EXCLUDE 
+	 PATTERN "*_C.so" EXCLUDE)
+
+	 
+install (DIRECTORY alice-macros 
+	 DESTINATION EVE/ 
+	 PATTERN ".svn" EXCLUDE 
+	 PATTERN "*.d" EXCLUDE 
+	 PATTERN "*_C.so" EXCLUDE)
+
+install (DIRECTORY alice-data 
+	 DESTINATION EVE/ 
+	 PATTERN ".svn" EXCLUDE 
+	 PATTERN "*.d" EXCLUDE 
+	 PATTERN "*_C.so" EXCLUDE)
+
+install (DIRECTORY hlt-macros 
+	 DESTINATION EVE/ 
+	 PATTERN ".svn" EXCLUDE 
+	 PATTERN "*.d" EXCLUDE 
+	 PATTERN "*_C.so" EXCLUDE)
+
+	 

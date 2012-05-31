@@ -1,0 +1,94 @@
+# -*- mode: CMake -*-
+
+#--------------------------------------------------------------------------------#
+# Package File for PHOSbase                                                      #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS
+    AliPHOSGeometry.cxx 
+    AliPHOSLoader.cxx 
+    AliPHOSHit.cxx 
+    AliPHOSTrackSegmentMaker.cxx 
+    AliPHOSPID.cxx 
+    AliPHOSClusterizer.cxx 
+    AliPHOSDigitizer.cxx 
+    AliPHOSSDigitizer.cxx 
+    AliPHOSDigit.cxx 
+    AliPHOSFastRecParticle.cxx 
+    AliPHOSCalibData.cxx 
+    AliPHOSCpvCalibData.cxx 
+    AliPHOSEmcCalibData.cxx 
+    AliPHOSTriggerParameters.cxx
+    AliPHOSPulseGenerator.cxx 
+    AliPHOSRawFitterv0.cxx 
+    AliPHOSRawFitterv1.cxx 
+    AliPHOSRawFitterv2.cxx 
+    AliPHOSRawFitterv3.cxx 
+    AliPHOSRawFitterv4.cxx 
+    AliPHOSRawDigiProducer.cxx 
+    AliPHOSEmcBadChannelsMap.cxx 
+    AliPHOSSurvey.cxx 
+    AliPHOSSurvey1.cxx 
+    AliPHOSModuleMisalignment.cxx 
+    AliPHOSQAChecker.cxx 
+    AliPHOSRecParticle.cxx 
+    AliPHOSRecPoint.cxx 
+    AliPHOSEmcRecPoint.cxx 
+    AliPHOSCpvRecPoint.cxx 
+    AliPHOSTrackSegment.cxx 
+    AliPHOSRecoParam.cxx 
+    AliPHOSImpact.cxx 
+    AliPHOSTrigger.cxx 
+    AliPHOSSimParam.cxx
+    )
+
+string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( DHDR  PHOSbaseLinkDef.h)
+
+set ( EXPORT AliPHOSGeometry.h AliPHOSEMCAGeometry.h AliPHOSCPVGeometry.h AliPHOSSupportGeometry.h AliPHOSCalibData.h)
+
+set ( EINCLUDE RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
+
+install ( DIRECTORY mapping
+          DESTINATION PHOS
+	  PATTERN ".svn" EXCLUDE	
+          PATTERN ".d"  EXCLUDE
+          PATTERN ".so" EXCLUDE)
+
+install ( DIRECTORY . 
+          DESTINATION PHOS
+          FILES_MATCHING PATTERN "*.root"
+                         PATTERN "*.dat"
+			 PATTERN "doc" EXCLUDE
+			 PATTERN "macros" EXCLUDE 
+			 PATTERN "ShuttleInput" EXCLUDE
+			 PATTERN "PROOF-INF.PHOSUtils" EXCLUDE
+			 PATTERN "tgt_*" EXCLUDE)
+
+#
+# EOF
+#

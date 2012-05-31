@@ -1,0 +1,1 @@
+add_test("Gun_test" runtest.sh)

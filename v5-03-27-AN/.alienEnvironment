@@ -1,0 +1,14 @@
+#!/bin/bash
+echo "Setting AliROOT to $1"
+export ALICE=$1
+shift 1
+
+export ALICE_LEVEL=v4-03-03
+export ALICE_ROOT=$ALICE/$ALICE_LEVEL
+TARGET=`uname`
+export ALICE_TARGET=`perl -e "print lc($TARGET)"`
+
+export  PATH=$ALICE_ROOT/bin/tgt_$ALICE_TARGET:/bin:/usr/bin:$HOME/bin:$ALIEN_ROOT/alice/local/bin:/usr/local/bin:$PATH
+export LD_LIBRARY_PATH=$ALICE_ROOT/lib/tgt_$ALICE_TARGET/:$LD_LIBRARY_PATH
+
+$*

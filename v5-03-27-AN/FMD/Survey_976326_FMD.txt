@@ -1,0 +1,51 @@
+> Title:
+
+Measurement of targets on FMD2
+
+> Date:
+
+05.06.2008
+
+> Subdetector:
+
+FMD2
+
+> Report URL:
+
+https://edms.cern.ch/document/976326
+
+> Version:
+
+1
+
+> General Observations:
+
+During the installation period of detectors in the Space Frame,
+several targets on the FMD2 have been measured regularly in order to
+detect relative movements of the TPC.
+
+
+> Coordinate System:
+
+ALICEPH
+
+> Units:
+
+mm
+
+> Nr Columns:
+
+7
+
+> Column Names:
+
+Point Name,XPH,YPH,ZPH,Point Type,Target Used,Precision(mm)
+
+
+> Data:
+
+FMD2_IBOT	192.7	-257.4	892.4	M	Y	1
+FMD2_OBOT	-194.5	-257.2	894.3	M	Y	1
+FMD2_OBOTM	-271.7	-122.0	892.1	M	Y	1
+FMD2_ITOP	246.9	100.4	892.5	M	Y	1
+FMD2_OTOP	-232.4	113.6	891.7	M	Y	1

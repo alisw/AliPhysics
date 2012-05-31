@@ -1,0 +1,35 @@
+//  $Id$
+
+
+This directory contains a set of scripts related to PHOS alignment.
+
+The PHOS alignment object (AliPHOSAlignData) contans as data members 3
+parameters:
+   number of modules
+   center position of each module in MARS
+   module orientation in MARS
+
+The script AliPHOSSetAlignment.C allows to set PHOS align object for
+two cases:
+   1) PHOS geometry for the first LHC run 2007, one module with ideal
+      position;
+   2) Full PHOS geometry with all 5 modules randomly displaced.
+The align object is being written to CBD to the local directory
+InitAlignDB/PHOS/Alignment/Geometry for the case 1 and directory 
+DisAlignDB/PHOS/Alignment/Geometry for the case 2.
+This script uses a menu (TControlBar) to set and read the align
+object.
+
+The script AliPHOSDisalign.C runs simulations described in Config.C
+(100 electrons towards the PHOS apperture, all detectors but PHOS are
+switched off). Before running simulations, the PHOS align object is
+read from the CDB. The first argument of the function AliPHOSDisalign
+sets the upper level directory name containing the CBD object.
+
+When the disaligned PHOS geometry was created, one has to check it for
+oberlaps:
+  gGeoManager->CheckOverlaps(0.1);
+  gGeoManager->PrintOverlaps();
+
+Yuri Kharlov
+5 March 2006

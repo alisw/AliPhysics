@@ -1,0 +1,93 @@
+# -*- mode: CMake -*- 
+# $Id$
+#--------------------------------------------------------------------------------#
+# Package File for AliHLTGlobal                                                  #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( CLASS_HDRS
+    AliHLTGlobalEsdConverterComponent.h
+    AliHLTGlobalTrackMergerComponent.h
+    AliHLTGlobalTrackMerger.h
+    AliHLTGlobalAgent.h
+    AliHLTGlobalPreprocessor.h
+    AliHLTGlobalDCSPublisherComponent.h
+    AliHLTGlobalVertexerComponent.h
+    AliHLTGlobalOfflineVertexerComponent.h
+    AliHLTGlobalTrackMatcher.h
+    AliHLTGlobalTrackMatcherComponent.h
+    AliHLTGlobalVertexerHistoComponent.h
+    AliHLTGlobalHistoComponent.h
+    AliHLTGlobalHistoCollector.h
+    AliHLTVertexFinderBase.h
+    AliHLTPrimaryVertexFinderComponent.h
+    AliHLTV0FinderComponent.h
+    physics/AliHLTV0HistoComponent.h
+    physics/AliHLTCaloHistoComponent.h
+    physics/AliHLTCaloHistoProducer.h
+    physics/AliHLTCaloHistoInvMass.h
+    physics/AliHLTCaloHistoMatchedTracks.h
+    physics/AliHLTCaloHistoClusterEnergy.h
+    physics/AliHLTCaloHistoCellEnergy.h
+    physics/AliHLTMultiplicityCorrelations.h
+    physics/AliHLTMultiplicityCorrelationsComponent.h
+    )
+
+string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
+
+set ( MODULE_HDRS  	${CLASS_HDRS})
+
+set ( MODULE_DHDR )
+
+set ( EINCLUDE  HLT/global HLT/global/physics HLT/BASE HLT/BASE/util TPC RAW TRD PHOS STEER/ESD STEER/STEERBase)
+
+set ( ELIBS  "HLTbase AliHLTUtil CDB ESD STEER STEERBase TPCrec TPCcalib TPCbase RAWDatarec RAWDatabase TRDbase -lEG")
+
+set ( ELIBSDIR  "${ROOTLIBDIR}" )
+
+include ("CMakehlt.conf")
+
+if (MODULE_SRCS)
+ALICE_Format (SRCS "global/" "" "${MODULE_SRCS}")
+endif(MODULE_SRCS)
+if (CLASS_HDRS)
+ALICE_Format (CINTHDRS "global/" "" "${CLASS_HDRS}")
+endif(CLASS_HDRS)
+if (MODULE_HDRS)
+ALICE_Format (HDRS "global/" "" "${MODULE_HDRS}")
+endif(MODULE_HDRS)
+if (MODULE_DHDR)
+ALICE_Format (DHDR "global/" "" "${MODULE_DHDR}")
+endif(MODULE_DHDR)
+
+if(NOT DHDR)
+  set(CINTAUTOLINK 1)
+endif(NOT DHDR)
+
+set ( EDEFINE  ${HLTDEFS})
+set ( PACKCXXFLAGS  ${HLTCXXFLAGS})
+set ( PACKCFLAGS  ${HLTCLFAGS})
+set ( PACKDCXXFLAGS  ${HLTDCXXFLAGS})
+set ( PACKSOFLAGS ${HLTSOFLAGS})

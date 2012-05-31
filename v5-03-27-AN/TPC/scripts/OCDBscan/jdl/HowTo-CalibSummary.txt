@@ -1,0 +1,130 @@
+NOTE: for all the steps, you need a valid alien certificate (obviously ;-) )
+alien-token-init
+source /tmp/gclient_env_$USERID
+
+
++++++++ STEP 1 +++++++++++++
+
+
+
+####################
+#!/bin/sh
+# find a list of runs which have the following OCDB entries
+# GRP, HV, ALTRO
+# 
+prefix=/alice/data/2010/OCDB/
+
+alien_find $prefix/GRP/GRP/Data Run > grpAlien.txt
+alien_find $prefix/TPC/Calib/HighVoltage Run > hvAlien.txt
+alien_find $prefix/TPC/Calib/AltroConfig Run > altroAlien.txt
+
+cat grpAlien.txt | sed s/_/\ /g | gawk '{ print $2}' | sort > grp.txt
+cat hvAlien.txt | sed s/_/\ /g | gawk '{ print $2}'  | sort > hv.txt
+cat altroAlien.txt | sed s/_/\ /g | gawk '{ print $2}'  | sort > altro.txt
+
+for run in `cat hv.txt | sort`; do
+   grun=`cat grp.txt | grep -c $run`
+   arun=`cat altro.txt | grep -c $run`   
+   if [ $grun -gt 0 ] && [ $arun -gt 0 ]; then
+      echo $run
+   fi 
+done > run.list
+# clean up
+rm grpAlien.txt hvAlien.txt altroAlien.txt grp.txt hv.txt altro.txt
+
+###################
+
++++++++ STEP 2 +++++++++++++
+
+Submit the alienjobs (one job per run)
+but skip already existing entries ...
+
+Note1: PATHtoOUTPUT is a variable to be set!
+Note2: check your job status with e.g. `alien_ps`
+Note3: in CalibSummary.jdl one MUST set a path to runCalibSummary.sh, to 
+       the validation.sh script and root macros
+
+
+####################
+#!/bin/sh
+# submit an alienjob per entry in the run.list
+# PATHtoOutpu MUST be set according to your setup
+
+PATHtoOUTPUT="/alice/cern.ch/user/k/kowal2/CalibSummary/output/"
+
+alien_find $PATHtoOUTPUT calibSum | grep calibSum > alienlist.txt
+
+for RUN in `cat run.list`; do
+    nentry=`cat alienlist.txt | grep -c $RUN `
+    if [ $nentry -eq 0 ]; then
+       echo "Submitting job to produce the calib summary for run $RUN"
+       alien_submit CalibSummary.jdl $RUN $PATHtoOUTPUT
+     else
+         echo "The calib summary for run $RUN was already created! Skipping entry ..."
+    fi
+done;
+rm alienlist.txt
+
+
+###################
+
++++++++ STEP 3 +++++++++++++
+
+print a list of all the produced calibSummary entries and copy them to 
+a local directory (if wished)
+
+###################
+#!/bin/sh
+# list and copy the created calibSummary files ...
+# PATHtoOutpu MUST be set according to your setup
+#COPYPATH must be set accroding to your setup
+
+PATHtoOUTPUT="/alice/cern.ch/user/k/kowal2/CalibSummary/output/"
+
+# copy them to one direcotory
+FILES=`alien_find $PATHtoOUTPUT calibSum | grep calibSum`
+COPYPATH="./OCDB2010/"
+for FILE in $FILES; do
+    afile=`basename $FILE`
+    if [ ! -f $COPYPATH/$afile ]; then
+        echo " +++ copying $afile "
+        alien_cp alien:$FILE $COPYPATH		    
+    else
+       	echo " --- $afile: already copied! Skipping entry ..." 
+    fi;
+done;
+
+##### don't do the following if you are not sure # ;-) #####
+
+# or delete the entries on alien
+ENTRIES=`alien_find $PATHtoOUTPUT calibSum | grep calibSum`
+for ENTRY in $ENTRIES; do
+    alien_erase $ENTRY
+done;
+
+###################
+
+
+
++++++++ STEP 4 +++++++++++++
+
+LOAD to the Calib viewer .... (merge them first, its faster)
+
+#### merge to one tree
+COPYPATH="./"
+find $COPYPATH |grep calib | grep root > calib.list
+
+----- in aliroot
+ AliXRDPROOFtoolkit::FilterList("calib.list","* dcs",1);
+  AliXRDPROOFtoolkit toolkit;
+  TChain * chain = toolkit.MakeChain("calib.list.Good","dcs",0,2000);
+  chain->Lookup();
+  TTree * tree = chain->CopyTree("1");
+  TFile f("calibTimeSummary.root","recreate");
+  tree->Write("dcs");
+  f.Close();
+-------------
+
+export SCRIPTDIR="$ALICE_ROOT/TPC/scripts/OCDBscan/"
+$ALICE_ROOT/TPC/scripts/OCDBscan/guiTime calibTimeSummary.root
+

@@ -1,0 +1,29 @@
+Scripts to test reconstruction/calibration chain
+marian.ivanov@cern.ch
+
+$ALICE_ROOT/TPC/scripts/calibPassX
+Content:
+README.PassX  
+runTrainPassX.sh   
+runPassXJob.sh  
+runPassX.sh  
+recPass0GSI.C  
+
+
+
+runTrainPassX.sh - test of the PassX reconstruction/calibration chain
+                 - filtering of the log files
+                 - merging of results
+                 - It is pseudo code
+
+submitPass0.sh   - submit reconstruction/calibration job 
+
+runPassXJob.sh   - wrapper around the script $ALICE_ROOT/TPC/scripts/runPassX.sh 
+                   to be run 
+                 - intermediate results on the local machine
+
+runPassX.sh      - copy from  $ALICE_ROOT/ANALYSIS/macros/runPassX.sh
+                 - Modification needed:                                           
+                   Provide the run number and number of events as argument
+
+recPass0GSI.C    - reconstruction script 

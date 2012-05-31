@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE TOFConfig [
+<!ELEMENT TOFConfig (Folder)>
+<!ELEMENT Folder EMPTY>
+<!ATTLIST Folder DebugFlag CDATA #REQUIRED>
+]>
+<TOFConfig>
+<Folder DebugFlag="On">
+</Folder>
+</TOFConfig>

@@ -1,0 +1,20 @@
+# Bending PCB. Density 1. Rounded (type 3).
+# Placing motifs starting bottom left and going counter-clockwise
+# starting E7, ending E19
+
+SIZES 2.5 0.5 40 40
+
+MOTIF E7   0  0
+MOTIF E8  13 41
+MOTIF E9  12 40
+MOTIF E10 10 37
+MOTIF E11  9 35
+MOTIF E12  8 33
+MOTIF E13  6 27
+MOTIF E14  5 21
+MOTIF E15  4 18
+MOTIF E16  4 20
+MOTIF E17  3 16
+MOTIF E17  2 16
+MOTIF E18  1 17
+MOTIF E19  0 17

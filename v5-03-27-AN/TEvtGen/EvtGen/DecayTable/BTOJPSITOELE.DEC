@@ -1,0 +1,203 @@
+##
+Define dm_incohMix_B_s0 0.0
+Define dm_incohMix_B0 0.0
+Define dm_incohMix_Lambda_b0 0.0
+Define dm_incohMix_B- 0.0
+Define dm_incohMix_B_c- 0.0
+Define dm_incohMix_Xi_b0 0.0
+Define dm_incohMix_Xi_b- 0.0
+Define dm_incohMix_Omega_b- 0.0
+
+#Alias MyJPSI J/psi
+ #Define the B0B0bar mass difference
+#Define dm 0.489e12
+ # define the values of the CKM angles  (alpha=70, beta=40)
+#Define beta  0.39
+ # New definitions for psiKstar modes (Lange, July 26, 2000)
+#Define PKHplus  0.159
+#Define PKHzero  0.775
+#Define PKHminus 0.612
+#Define PKphHplus  1.563
+#Define PKphHzero  0.0
+#Define PKphHminus 2.712
+
+#Define Aplus  0.490
+#Define Azero  1.10
+#Define Aminus 0.4
+#
+#Define phAplus  2.5
+#Define phAzero  0.0
+#Define phAminus -0.17
+#Define minusTwoBeta -0.78
+  # These particle aliases are used in for CP violating decays
+  # in which the decay distributions depends on how the K* decayed.
+  #
+  #
+#Alias K*L       K*0
+#Alias K*S       K*0
+#Alias K*0T      K*0
+#Alias anti-K*0T anti-K*0
+ #
+#ChargeConj K*0T    anti-K*0T
+#
+Decay B0
+0.000436    J/psi  K_S0               SSD_CP dm 0.0 1.0 minusTwoBeta 1.0 0.0 -1.0 0.0;
+0.000436    J/psi  K_L0               SSD_CP dm 0.0 1.0 minusTwoBeta 1.0 0.0 1.0 0.0;
+0.0002215   J/psi  K*S               SVV_CP beta  dm 1 Aplus phAplus Azero phAzero Aminus phAminus;
+0.0002215   J/psi  K*L               SVV_CP beta  dm -1 Aplus phAplus Azero phAzero Aminus phAminus;
+0.000886     J/psi  K*0T              SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus;
+0.0000205    J/psi  pi0              SSD_CP dm 0.0 1.0 minusTwoBeta 1.0 0.0 1.0 0.0;
+0.000016     J/psi  rho0             SVV_CP beta  dm 1 Aplus phAplus Azero phAzero Aminus phAminus;
+0.00003     J/psi  omega            SVV_CP beta  dm 1 Aplus phAplus Azero phAzero Aminus phAminus;
+0.0012     J/psi  K+  pi-           PHSP;
+0.0001     J/psi  K0  pi0           PHSP;
+#rl0.0007     J/psi  K0  pi-  pi+      PHSP;
+#rl0.00035     J/psi  K0  pi0  pi0      PHSP;
+#rl0.00035     J/psi  K+  pi-  pi0      PHSP;
+0.0013     J/psi  K_10              SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0001     J/psi  K'_10             SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0005     J/psi  K_2*0              PHSP;
+0.000094    J/psi  phi K0        PHSP;
+Enddecay
+Decay anti-B0
+0.000436    J/psi  K_S0               SSD_CP dm 0.0 1.0 minusTwoBeta 1.0 0.0 -1.0 0.0;
+0.000436    J/psi  K_L0               SSD_CP dm 0.0 1.0 minusTwoBeta 1.0 0.0 1.0 0.0;
+0.0002215   J/psi  K*S               SVV_CP beta  dm 1 Aplus phAplus Azero phAzero Aminus phAminus;
+0.0002215   J/psi  K*L               SVV_CP beta  dm -1 Aplus phAplus Azero phAzero Aminus phAminus;
+0.000886     J/psi  anti-K*0T          SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus;
+0.0000205    J/psi  pi0              SSD_CP dm 0.0 1.0 minusTwoBeta 1.0 0.0 1.0 0.0;
+0.000016     J/psi  rho0              SVV_CP beta  dm 1 Aplus phAplus Azero phAzero Aminus phAminus;
+0.000030     J/psi  omega             SVV_CP beta  dm 1 Aplus phAplus Azero phAzero Aminus phAminus;
+
+0.0012     J/psi  K-  pi+           PHSP;
+0.0001     J/psi  anti-K0   pi0           PHSP;
+#rl0.0007     J/psi  anti-K0   pi+  pi-      PHSP;
+#rl0.00035     J/psi  anti-K0   pi0  pi0      PHSP;
+#rl0.00035     J/psi  K-  pi+  pi0      PHSP;
+0.0013     J/psi  anti-K_10              SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0001     J/psi  anti-K'_10             SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0005     J/psi  anti-K_2*0              PHSP;
+0.000094    J/psi  phi anti-K0        PHSP;
+Enddecay
+
+Decay B+
+0.001007   J/psi K+                         SVS;
+0.00141   J/psi K*+                        SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus;
+0.000049  J/psi pi+                         SVS;
+0.00006   J/psi rho+                      SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus;
+0.0002   J/psi K0  pi+                    PHSP;
+0.0001   J/psi K+  pi0                    PHSP;
+#rl0.0007   J/psi K+  pi-  pi+               PHSP;
+#rl0.00035   J/psi K+  pi0  pi0               PHSP;
+#rl0.00035   J/psi K0  pi+  pi0               PHSP;
+0.0018     J/psi  K_1+                    SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0001   J/psi K'_1+                       SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0005   J/psi K_2*+                       PHSP;
+0.000052    J/psi  phi K+        PHSP;
+Enddecay
+Decay B-
+0.001007  J/psi K-                         SVS;
+0.00141   J/psi K*-                        SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus;
+0.000049  J/psi pi-                       SVS;
+0.00006   J/psi rho-                      SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus;
+0.0002   J/psi anti-K0   pi-                    PHSP;
+0.0001   J/psi K-  pi0                    PHSP;
+#rl0.0007   J/psi K-  pi+  pi-               PHSP;
+#rl0.00035   J/psi K-  pi0  pi0               PHSP;
+#rl0.00035   J/psi anti-K0   pi-  pi0               PHSP;
+0.0018     J/psi  K_1-              SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0001   J/psi K'_1-                       SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0;
+0.0005   J/psi K_2*-                       PHSP;
+
+0.000052    J/psi  phi K-        PHSP;
+Enddecay
+
+Decay B_s0
+0.00064     J/psi       eta'                               SVS;
+0.00032     J/psi       eta                                SVS;
+0.00135     J/psi       phi      SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0;
+0.00008     J/psi       anti-K0                            SVS;
+0.00070     J/psi       K-          K+                     PHSP;
+0.00070     J/psi       anti-K0     K0                     PHSP;
+0.00070     J/psi       K0          K-         pi+         PHSP;
+0.00070     J/psi       anti-K0     K0         pi0         PHSP;
+0.00070     J/psi       K-          K+         pi0         PHSP;
+Enddecay
+
+Decay anti-B_s0
+0.00064   J/psi   eta'               SVS;
+0.00032   J/psi   eta                SVS;
+0.00135   J/psi   phi                SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0;
+0.00008   J/psi   K0                 SVS;
+0.00070   J/psi   K-       K+        PHSP;
+0.00070   J/psi   anti-K0  K0        PHSP;
+0.00070   J/psi   anti-K0  K+   pi-  PHSP;
+0.00070   J/psi   anti-K0  K0   pi0  PHSP;
+0.00070   J/psi   K-       K+   pi0  PHSP;
+Enddecay
+
+Decay Lambda_b0
+0.00047    Lambda0         J/psi     PHSP;
+Enddecay
+
+Decay anti-Lambda_b0
+0.00047    anti-Lambda0    J/psi     PHSP;
+Enddecay
+
+Decay B_c+
+0.01900    J/psi      e+          nu_e         PHOTOS  PHSP;
+0.01900    J/psi      mu+         nu_mu        PHOTOS  PHSP;
+0.00480    J/psi      tau+        nu_tau               PHSP;
+0.00130    J/psi      pi+                   SVS;
+0.00400    J/psi      rho+                  SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00011    J/psi      K+                    SVS;
+0.00022    J/psi      K*+                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00170    J/psi      D_s+                  SVS;
+0.00670    J/psi      D_s*+                 SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00009    J/psi      D+                    SVS;
+0.00028    J/psi      D*+                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+Enddecay
+
+Decay B_c-
+0.01900    J/psi      e-      anti-nu_e         PHOTOS  PHSP;
+0.01900    J/psi      mu-     anti-nu_mu        PHOTOS  PHSP;
+0.00480    J/psi      tau-    anti-nu_tau               PHSP;
+0.00130    J/psi      pi-                   SVS;
+0.00400    J/psi      rho-                  SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00011    J/psi      K-                    SVS;
+0.00022    J/psi      K*-                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00170    J/psi      D_s-                  SVS;
+0.00670    J/psi      D_s*-                 SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00009    J/psi      D-                    SVS;
+0.00028    J/psi      D*-                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+Enddecay
+
+Decay Xi_b0
+0.00047    Xi0        J/psi                             PHSP;
+Enddecay
+
+Decay anti-Xi_b0
+0.00047    anti-Xi0        J/psi                        PHSP;
+Enddecay
+
+Decay Xi_b-
+0.00047    Xi-        J/psi                             PHSP;
+Enddecay
+
+Decay anti-Xi_b+
+0.00047    anti-Xi+        J/psi                        PHSP;
+Enddecay
+
+Decay Omega_b-
+0.00047    Omega-        J/psi                          PHSP;
+Enddecay
+
+Decay anti-Omega_b+
+0.00047    anti-Omega+        J/psi                     PHSP;
+Enddecay
+
+Decay J/psi
+1.000 e+   e-                PHOTOS VLL;
+Enddecay
+
+End

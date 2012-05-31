@@ -1,0 +1,37 @@
+                  ****************************
+                  *                          *
+                  *       Update notes       *
+                  *                          *
+                  *    PYQUEN version 1.1    *
+                  *                          *
+                  ****************************
+ 
+                  (Last updated 26 April 2006)
+ 
+PYQUEN version 1.1 is a direct continuation of version 1.0. 
+It should be used with PYTHIA version 6.401 (or later versions). 
+
+Main new or improved features from previous version 
+
+1. New tolerance parameter paru(14) is introduced to ajust fragmentation of 
+   strings containing in-medium emitted gluons in PYTHIA_6401 routine PYSTRF. 
+   
+2. Minimum transverse momentum, 200 MeV, is requested for in-medium emitted 
+   gluon to be included in event list and strings. 
+ 
+3. Cut off on maximum absolute pseudorapidity of hard parton to be rescattered
+   in a medium is reduced to 3.5 (instead of 5. in previous version). 
+   
+4. Showering partons produced by the initial state radiation in PYTHIA are 
+   not allowed to be rescattered in a medium.
+
+5. Treatment of the option "vacuum showering after in-medium partonic energy 
+   loss" is improved. 
+
+6. Bug fix in PYQUEN subroutine PLJETR: when hard parton loses almost its 
+   energy, restriction on values of collisional and radiative loss may need.  
+   
+7. Setting parameter mstp(111)=0 in main user routine is recommended to 
+   switch off hadronization before calling pyquen instead of mstj(1)=0. 
+
+-----------------------------------------------------------------------

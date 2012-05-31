@@ -1,0 +1,883 @@
+1st line: SHORT NAME, seq. number, number of constituents N, LONG NAME, (formula), 
+          G/L/S (G = Gas, L = Liquid, S = Solid)
+next line(s): N pairs: Z, weight fraction
+last line: density (g/cm3), Average Ion. potential (eV), Sternheimer parameters
+                       CBAR        X0        X1       AFACT      SK     (DELTA0) 
+
+HYDROGEN      1    1 HYDROGEN H                                                G
+         1      1.E0                                                            
+ 8.3748E-5    19.2E0  9.5835E0  1.8639E0  3.2718E0  .14092E0  5.7273E0      0.E0
+HELIUM        2    1 HELIUM He                                                 G
+         2      1.E0                                                            
+ 1.6632E-4    41.8E0 11.1393E0  2.2017E0  3.6122E0  .13443E0  5.8347E0      0.E0
+LITHIUM       3    1 LITHIUM Li                                                S
+         3      1.E0                                                            
+    .534E0     40.E0  3.1221E0   .1304E0  1.6397E0  .95136E0  2.4993E0     .14E0
+BERYLLIUM     4    1 BERYLLIUM Be                                              S
+         4      1.E0                                                            
+   1.848E0    63.7E0  2.7847E0   .0592E0  1.6922E0  .80392E0  2.4339E0     .14E0
+BORON         5    1 BORON B                                                   S
+         5      1.E0                                                            
+    2.37E0     76.E0  2.8477E0   .0305E0  1.9688E0  .56224E0  2.4512E0     .14E0
+CARBON        6    1 AMORPHOUS_CARBON_DENSITY_2 C                              S
+         6      1.E0                                                            
+      2.E0     78.E0  2.9925E0  -.0351E0   2.486E0   .2024E0  3.0036E0      .1E0
+NITROGEN      7    1 NITROGEN N                                                G
+         7      1.E0                                                            
+ 1.1653E-3     82.E0   10.54E0  1.7378E0  4.1323E0  .15349E0  3.2125E0      0.E0
+OXYGEN        8    1 OXYGEN O                                                  G
+         8      1.E0                                                            
+ 1.3315E-3     95.E0 10.7004E0  1.7541E0  4.3213E0  .11778E0  3.2913E0      0.E0
+FLUORINE      9    1 FLUORINE F                                                G
+         9      1.E0                                                            
+ 1.5803E-3    115.E0 10.9653E0  1.8433E0  4.4096E0  .11083E0  3.2962E0      0.E0
+NEON         10    1 NEON Ne                                                   G
+        10      1.E0                                                            
+ 8.3851E-4    137.E0 11.9041E0  2.0735E0  4.6421E0  .08064E0  3.5771E0      0.E0
+SODIUM       11    1 SODIUM Na                                                 S
+        11      1.E0                                                            
+    .971E0    149.E0  5.0526E0    .288E0  3.1962E0  .07772E0  3.6452E0     .08E0
+MAGNESIUM    12    1 MAGNESIUM Mg                                              S
+        12      1.E0                                                            
+    1.74E0    156.E0  4.5297E0   .1499E0  3.0668E0  .08163E0  3.6166E0     .08E0
+ALUMINUM     13    1 ALUMINUM Al                                               S
+        13      1.E0                                                            
+  2.6989E0    166.E0  4.2395E0   .1708E0  3.0127E0  .08024E0  3.6345E0     .12E0
+SILICON      14    1 SILICON Si                                                S
+        14      1.E0                                                            
+    2.33E0    173.E0  4.4351E0   .2014E0  2.8715E0  .14921E0  3.2546E0     .14E0
+PHOSPHORUS   15    1 PHOSPHORUS P                                              S
+        15      1.E0                                                            
+     2.2E0    173.E0  4.5214E0   .1696E0  2.7815E0   .2361E0  2.9158E0     .14E0
+SULFUR       16    1 SULFUR S                                                  S
+        16      1.E0                                                            
+      2.E0    180.E0  4.6659E0    .158E0  2.7159E0  .33992E0  2.6456E0     .14E0
+CHLORINE     17    1 CHLORINE Cl                                               G
+        17      1.E0                                                            
+ 2.9947E-3    174.E0 11.1421E0  1.5555E0  4.2994E0  .19849E0  2.9702E0      0.E0
+ARGON        18    1 ARGON Ar                                                  G
+        18      1.E0                                                            
+ 1.6620E-3    188.E0  11.948E0  1.7635E0  4.4855E0  .19714E0  2.9618E0      0.E0
+POTASSIUM    19    1 POTASSIUM K                                               S
+        19      1.E0                                                            
+    .862E0    190.E0  5.6423E0   .3851E0  3.1724E0  .19827E0  2.9233E0      .1E0
+CALCIUM      20    1 CALCIUM Ca                                                S
+        20      1.E0                                                            
+    1.55E0    191.E0  5.0396E0   .3228E0  3.1191E0  .15643E0  3.0745E0     .14E0
+SCANDIUM     21    1 SCANDIUM Sc                                               S
+        21      1.E0                                                            
+   2.989E0    216.E0  4.6949E0    .164E0  3.0593E0  .15754E0  3.0517E0      .1E0
+TITANIUM     22    1 TITANIUM Ti                                               S
+        22      1.E0                                                            
+    4.54E0    233.E0   4.445E0   .0957E0  3.0386E0  .15662E0  3.0302E0     .12E0
+VANADIUM     23    1 VANADIUM V                                                S
+        23      1.E0                                                            
+    6.11E0    245.E0  4.2659E0   .0691E0  3.0322E0  .15436E0  3.0163E0     .14E0
+CHROMIUM     24    1 CHROMIUM Cr                                               S
+        24      1.E0                                                            
+    7.18E0    257.E0  4.1781E0    .034E0  3.0451E0  .15419E0  2.9896E0     .14E0
+MANGANESE    25    1 MANGANESE Mn                                              S
+        25      1.E0                                                            
+    7.44E0    272.E0  4.2702E0   .0447E0  3.1074E0  .14973E0  2.9796E0     .14E0
+IRON         26    1 IRON Fe                                                   S
+        26      1.E0                                                            
+   7.874E0    286.E0  4.2911E0  -.0012E0  3.1531E0   .1468E0  2.9632E0     .12E0
+COBALT       27    1 COBALT Co                                                 S
+        27      1.E0                                                            
+     8.9E0    297.E0  4.2601E0  -.0187E0   3.179E0  .14474E0  2.9502E0     .12E0
+NICKEL       28    1 NICKEL Ni                                                 S
+        28      1.E0                                                            
+   8.902E0    311.E0  4.3115E0  -.0566E0  3.1851E0  .16496E0   2.843E0      .1E0
+COPPER       29    1 COPPER Cu                                                 S
+        29      1.E0                                                            
+    8.96E0    322.E0   4.419E0  -.0254E0  3.2792E0  .14339E0  2.9044E0     .08E0
+ZINC         30    1 ZINC Zn                                                   S
+        30      1.E0                                                            
+   7.133E0    330.E0  4.6906E0   .0049E0  3.3668E0  .14714E0  2.8652E0     .08E0
+GALLIUM      31    1 GALLIUM Ga                                                S
+        31      1.E0                                                            
+   5.904E0    334.E0  4.9353E0   .2267E0  3.5434E0   .0944E0  3.1314E0     .14E0
+GERMANIUM    32    1 GERMANIUM Ge                                              S
+        32      1.E0                                                            
+   5.323E0    350.E0  5.1411E0   .3376E0  3.6096E0  .07188E0  3.3306E0     .14E0
+ARSENIC      33    1 ARSENIC As                                                S
+        33      1.E0                                                            
+    5.73E0    347.E0   5.051E0   .1767E0  3.5702E0  .06633E0  3.4176E0     .08E0
+SELENIUM     34    1 SELENIUM Se                                               S
+        34      1.E0                                                            
+     4.5E0    348.E0   5.321E0   .2258E0  3.6264E0  .06568E0  3.4317E0      .1E0
+BROMINE      35    1 BROMINE Br                                                G
+        35      1.E0                                                            
+ 7.0722E-3    343.E0 11.7307E0  1.5262E0  4.9899E0  .06335E0   3.467E0      0.E0
+KRYPTON      36    1 KRYPTON Kr                                                G
+        38      1.E0                                                            
+ 3.4783E-3    352.E0 12.5115E0  1.7158E0  5.0748E0  .07446E0  3.4051E0      0.E0
+RUBIDIUM     37    1 RUBIDIUM Rb                                               S
+        37      1.E0                                                            
+   1.532E0    363.E0  6.4776E0   .5737E0  3.7995E0  .07261E0  3.4177E0     .14E0
+STRONTIUM    38    1 STRONTIUM Sr                                              S
+        38      1.E0                                                            
+    2.54E0    366.E0  5.9867E0   .4585E0  3.6778E0  .07165E0  3.4435E0     .14E0
+YTTRIUM      39    1 YTTRIUM Y                                                 S
+        39      1.E0                                                            
+   4.469E0    379.E0  5.4801E0   .3608E0  3.5542E0  .07138E0  3.4585E0     .14E0
+ZIRCONIUM    40    1 ZIRCONIUM Zr                                              S
+        40      1.E0                                                            
+   6.506E0    393.E0  5.1774E0   .2957E0   3.489E0  .07177E0  3.4533E0     .14E0
+NIOBIUM      41    1 NIOBIUM Nb                                                S
+        41      1.E0                                                            
+    8.57E0    417.E0  5.0141E0   .1785E0  3.2201E0  .13883E0   3.093E0     .14E0
+MOLYBDENUM   42    1 MOLYBDENUM Mo                                             S
+        42      1.E0                                                            
+   10.22E0    424.E0  4.8793E0   .2267E0  3.2784E0  .10525E0  3.2549E0     .14E0
+TECHNETIUM   43    1 TECHNETIUM Tc                                             S
+        43      1.E0                                                            
+    11.5E0    428.E0  4.7769E0   .0949E0  3.1253E0  .16572E0  2.9738E0     .14E0
+RUTHENIUM    44    1 RUTHENIUM Ru                                              S
+        44      1.E0                                                            
+   12.41E0    441.E0  4.7694E0   .0599E0  3.0834E0  .19342E0  2.8707E0     .14E0
+RHODIUM      45    1 RHODIUM Rh                                                S
+        45      1.E0                                                            
+   12.41E0    449.E0  4.8008E0   .0576E0  3.1069E0  .19205E0  2.8633E0     .14E0
+PALLADIUM    46    1 PALLADIUM Pd                                              S
+        46      1.E0                                                            
+   12.02E0    470.E0  4.9358E0   .0563E0  3.0555E0  .24178E0  2.7239E0     .14E0
+SILVER       47    1 SILVER Ag                                                 S
+        47      1.E0                                                            
+    10.5E0    470.E0   5.063E0   .0657E0  3.1074E0  .24585E0  2.6899E0     .14E0
+CADMIUM      48    1 CADMIUM Cd                                                S
+        48      1.E0                                                            
+    8.65E0    469.E0  5.2727E0   .1281E0  3.1667E0  .24609E0  2.6772E0     .14E0
+INDIUM       49    1 INDIUM In                                                 S
+        49      1.E0                                                            
+    7.31E0    488.E0  5.5211E0   .2406E0  3.2032E0  .23879E0  2.7144E0     .14E0
+TIN          50    1 TIN Sn                                                    S
+        50      1.E0                                                            
+    7.31E0    488.E0   5.534E0   .2879E0  3.2959E0  .18689E0  2.8576E0     .14E0
+ANTIMONY     51    1 ANTIMONY Sb                                               S
+        51      1.E0                                                            
+   6.691E0    487.E0  5.6241E0   .3189E0  3.3489E0  .16652E0  2.9319E0     .14E0
+TELLURIUM    52    1 TELLURIUM Te                                              S
+        52      1.E0                                                            
+    6.24E0    485.E0  5.7131E0   .3296E0  3.4418E0  .13815E0  3.0354E0     .14E0
+IODINE       53    1 IODINE I                                                  S
+        53      1.E0                                                            
+    4.93E0    491.E0  5.9488E0   .0549E0  3.2596E0  .23766E0  2.7276E0      0.E0
+XENON        54    1 XENON Xe                                                  G
+        54      1.E0                                                            
+ 5.4854E-3    482.E0 12.7281E0   1.563E0  4.7371E0  .23314E0  2.7414E0      0.E0
+CESIUM       55    1 CESIUM Cs                                                 S
+        55      1.E0                                                            
+   1.873E0    488.E0  6.9135E0   .5473E0  3.5914E0  .18233E0  2.8866E0     .14E0
+BARIUM       56    1 BARIUM Ba                                                 S
+        56      1.E0                                                            
+     3.5E0    491.E0  6.3153E0    .419E0  3.4547E0  .18268E0  2.8906E0     .14E0
+LANTHANUM    57    1 LANTHANUM La                                              S
+        57      1.E0                                                            
+   6.154E0    501.E0   5.785E0   .3161E0  3.3293E0  .18591E0  2.8828E0     .14E0
+CERIUM       58    1 CERIUM Ce                                                 S
+        58      1.E0                                                            
+   6.657E0    523.E0  5.7837E0   .2713E0  3.3432E0  .18885E0  2.8592E0     .14E0
+PRASEODIMI   59    1 PRASEODIMIUM Pr                                           S
+        59      1.E0                                                            
+    6.71E0    535.E0  5.8096E0   .2333E0  3.2773E0  .23265E0  2.7331E0     .14E0
+NEODYMIUM    60    1 NEODYMIUM Nd                                              S
+        60      1.E0                                                            
+     6.9E0    546.E0   5.829E0   .1984E0  3.3063E0   .2353E0   2.705E0     .14E0
+PROMETHIUM   61    1 PROMETHIUM Pm                                             S
+        61      1.E0                                                            
+    7.22E0    560.E0  5.8224E0   .1627E0  3.3199E0   .2428E0  2.6674E0     .14E0
+SAMARIUM     62    1 SAMARIUM Sm                                               S
+        62      1.E0                                                            
+    7.46E0    574.E0  5.8597E0    .152E0   3.346E0  .24698E0  2.6403E0     .14E0
+EUROPIUM     63    1 EUROPIUM Eu                                               S
+        63      1.E0                                                            
+   5.243E0    580.E0  6.2278E0   .1888E0  3.4633E0  .24448E0  2.6245E0     .14E0
+GADOLINIUM   64    1 GADOLINIUM Gd                                             S
+        64      1.E0                                                            
+  7.9004E0    591.E0  5.8738E0   .1058E0  3.3932E0  .25109E0  2.5977E0     .14E0
+TERBIUM      65    1 TERBIUM Tb                                                S
+        65      1.E0                                                            
+   8.229E0    614.E0  5.9045E0   .0947E0  3.4224E0  .24453E0  2.6056E0     .14E0
+DYSPROSIUM   66    1 DYSPROSIUM Dy                                             S
+        66      1.E0                                                            
+    8.55E0    628.E0  5.9183E0   .0822E0  3.4474E0  .24665E0  2.5849E0     .14E0
+HOLMIUM      67    1 HOLMIUM Ho                                                S
+        67      1.E0                                                            
+   8.795E0    650.E0  5.9587E0   .0761E0  3.4782E0  .24638E0  2.5726E0     .14E0
+ERBIUM       68    1 ERBIUM Er                                                 S
+        68      1.E0                                                            
+   9.066E0    658.E0  5.9521E0   .0648E0  3.4922E0  .24823E0  2.5573E0     .14E0
+THULIUM      69    1 THULIUM Tm                                                S
+        69      1.E0                                                            
+   9.321E0    674.E0  5.9677E0   .0812E0  3.5085E0  .24889E0  2.5469E0     .14E0
+YTTERBIUM    70    1 YTTERBIUM Yb                                              S
+        70      1.E0                                                            
+    6.73E0    684.E0  6.3325E0   .1199E0  3.6246E0  .25295E0  2.5141E0     .14E0
+LUTETIUM     71    1 LUTETIUM Lu                                               S
+        71      1.E0                                                            
+    9.84E0    694.E0  5.9785E0    .156E0  3.5218E0  .24033E0  2.5643E0     .14E0
+HAFNIUM      72    1 HAFNIUM Hf                                                S
+        72      1.E0                                                            
+   13.31E0    705.E0  5.7139E0   .1965E0  3.4337E0  .22918E0  2.6155E0     .14E0
+TANTALUM     73    1 TANTALUM Ta                                               S
+        73      1.E0                                                            
+  16.654E0    718.E0  5.5262E0   .2117E0  3.4805E0  .17798E0  2.7623E0     .14E0
+TUNGSTEN     74    1 TUNGSTEN W                                                S
+        74      1.E0                                                            
+    19.3E0    727.E0  5.4059E0   .2167E0   3.496E0  .15509E0  2.8447E0     .14E0
+RHENIUM      75    1 RHENIUM Re                                                S
+        75      1.E0                                                            
+   21.02E0    736.E0  5.3445E0   .0559E0  3.4845E0  .15184E0  2.8627E0     .08E0
+OSMIUM       76    1 OSMIUM Os                                                 S
+        76      1.E0                                                            
+   22.57E0    746.E0  5.3083E0   .0891E0  3.5414E0  .12751E0  2.9608E0      .1E0
+IRIDIUM      77    1 IRIDIUM Ir                                                S
+        77      1.E0                                                            
+   22.42E0    757.E0  5.3418E0   .0819E0   3.548E0   .1269E0  2.9658E0      .1E0
+PLATINUM     78    1 PLATINUM Pt                                               S
+        78      1.E0                                                            
+   21.45E0    790.E0  5.4732E0   .1484E0  3.6212E0  .11128E0  3.0417E0     .12E0
+GOLD         79    1 GOLD Au                                                   S
+        79      1.E0                                                            
+   19.32E0    790.E0  5.5747E0   .2021E0  3.6979E0  .09756E0  3.1101E0     .14E0
+MERCURY      80    1 MERCURY Hg                                                L
+        80      1.E0                                                            
+  13.546E0    800.E0  5.9605E0   .2756E0  3.7275E0  .11014E0  3.0519E0     .14E0
+THALLIUM     81    1 THALLIUM Tl                                               S
+        81      1.E0                                                            
+   11.72E0    810.E0  6.1365E0   .3491E0  3.8044E0  .09455E0   3.145E0     .14E0
+LEAD         82    1 LEAD Pb                                                   S
+        82      1.E0                                                            
+   11.35E0    823.E0  6.2018E0   .3776E0  3.8073E0  .09359E0  3.1608E0     .14E0
+BISMUTH      83    1 BISMUTH Bi                                                S
+        83      1.E0                                                            
+   9.747E0    823.E0  6.3505E0   .4152E0  3.8248E0   .0941E0  3.1671E0     .14E0
+POLONIUM     84    1 POLONIUM Po                                               S
+        84      1.E0                                                            
+    9.32E0    830.E0  6.4003E0   .4267E0  3.8293E0  .09282E0   3.183E0     .14E0
+H-LIQUID     85    1 HYDROGEN_LIQUID H                                         L
+         1      1.E0                                                            
+     6.E-2    21.8E0  3.2632E0   .4759E0  1.9215E0  .13483E0  5.6249E0      0.E0
+RADON        86    1 RADON Rn                                                  G
+        86      1.E0                                                            
+ 9.0662E-3    794.E0 13.2839E0  1.5368E0  4.9889E0  .20798E0  2.7409E0      0.E0
+GRAPHITE     87    1 GRAPHITE_DENSITY_1.7 C                                    S
+         6      1.E0                                                            
+     1.7E0     78.E0   3.155E0    .048E0  2.5387E0  .20762E0  2.9532E0     .14E0
+RADIUM       88    1 RADIUM Ra                                                 S
+        88      1.E0                                                            
+      5.E0    826.E0  7.0452E0   .5991E0  3.9428E0  .08804E0  3.2454E0     .14E0
+ACTINIUM     89    1 ACTINIUM Ac                                               S
+        89      1.E0                                                            
+   10.07E0    841.E0  6.3742E0   .4559E0  3.7966E0  .08567E0  3.2683E0     .14E0
+THORIUM      90    1 THORIUM Th                                                S
+        90      1.E0                                                            
+   11.72E0    847.E0  6.2473E0   .4202E0  3.7681E0  .08655E0   3.261E0     .14E0
+PROTACTINI   91    1 PROTACTINIUM Pa                                           S
+        91      1.E0                                                            
+   15.37E0    878.E0  6.0327E0   .3144E0  3.5079E0   .1477E0  2.9845E0     .14E0
+URANIUM      92    1 URANIUM U                                                 S
+        92      1.E0                                                            
+   18.95E0    890.E0  5.8694E0    .226E0  3.3721E0  .19677E0  2.8171E0     .14E0
+NEPTUNIUM    93    1 NEPTUNIUM Np                                              S
+        93      1.E0                                                            
+   20.25E0    902.E0  5.8149E0   .1869E0   3.369E0  .19741E0  2.8082E0     .14E0
+PLUTONIUM    94    1 PLUTONIUM Pu                                              S
+        94      1.E0                                                            
+   19.84E0    921.E0  5.8748E0   .1557E0  3.3981E0  .20419E0  2.7679E0     .14E0
+AMERICIUM    95    1 AMERICIUM Am                                              S
+        95      1.E0                                                            
+   13.67E0    934.E0  6.2813E0   .2274E0  3.5021E0  .20308E0  2.7615E0     .14E0
+CURIUM       96    1 CURIUM Cm                                                 S
+        96      1.E0                                                            
+   13.51E0    939.E0  6.3097E0   .2484E0   3.516E0  .20257E0  2.7579E0     .14E0
+BERKELIUM    97    1 BERKELIUM Bk                                              S
+        97      1.E0                                                            
+     14.E0    952.E0  6.2912E0   .2378E0  3.5186E0  .20192E0   2.756E0     .14E0
+CARBONCOMP   98    1 CARBON-COMPACT_DENSITY_2.265 C                            S
+         6      1.E0                                                            
+   2.265E0     78.E0   2.868E0  -.0178E0  2.3415E0  .26142E0  2.8697E0     .12E0
+A-150        99    6  TISSUE-EQUIVALENT-PLASTIC  A-150                         S
+         1 .101327E0         6 .775501E0         7 .035057E0         8 .052316E0
+         9 .017422E0        20 .018378E0                                        
+   1.127E0    65.1E0    3.11E0   .1329E0  2.6234E0  .10783E0  3.4442E0          
+ACETONE     100    3 ACETONE C3_H6_O                                           L
+         1 .104122E0         6 .620405E0         8 .275473E0                    
+  7.899E-1    64.2E0  3.4341E0   .2197E0  2.6928E0    .111E0  3.4047E0          
+ACETYLENE   101    2 ACETYLENE C2_H2                                           G
+         1 .077418E0         6 .922582E0                                        
+  1.097E-3    58.2E0  9.8419E0  1.6017E0  4.0074E0  .12167E0  3.4277E0          
+ADENINE     102    3 ADENINE C5_H5_N5                                          S
+         1 .037294E0         6  .44443E0         7 .518275E0                    
+    1.35E0    71.4E0  3.1724E0   .1295E0  2.4219E0  .20908E0  3.0271E0          
+ADIP_TISS   103   13 ADIPOSE_TISSUE (ICRP)                                     S
+         1 .119477E0         6  .63724E0         7  .00797E0         8 .232333E0
+        11   .0005E0        12  .00002E0        15  .00016E0        16  .00073E0
+        17  .00119E0        19  .00032E0        20  .00002E0        26  .00002E0
+        30  .00002E0                                                            
+     .92E0    63.2E0  3.2367E0   .1827E0   2.653E0  .10278E0  3.4817E0          
+AIR         104    4 AIR_DRY_(NEAR_SEA_LEVEL) AIR                              G
+         6 .000124E0         7 .755267E0         8 .231781E0        18 .012827E0
+ 1.2048E-3    85.7E0 10.5961E0  1.7418E0  4.2759E0  .10914E0  3.3994E0          
+ALANINE     105    4 ALANINE C3_H7_N_O2                                        S
+         1  .07919E0         6 .404439E0         7 .157213E0         8 .359159E0
+    1.42E0    71.9E0  3.0965E0   .1354E0  2.6336E0  .11484E0  3.3526E0          
+AL2_O3      106    2 ALUMINUM_OXIDE    AL2_O3                                  S
+         8 .470749E0        13 .529251E0                                        
+    3.97E0   145.2E0  3.5682E0   .0402E0  2.8665E0    .085E0  3.5458E0          
+AMBER       107    3 AMBER C10_H16_O                                           S
+         1  .10593E0         6 .788973E0         8 .105096E0                    
+     1.1E0    63.2E0  3.0701E0   .1335E0   2.561E0  .11934E0  3.4098E0          
+AMMONIA     108    2 AMMONIA N_H3                                              G
+         1 .177547E0         7 .822453E0                                        
+   8.26E-4    53.7E0  9.8763E0  1.6822E0  4.1158E0  .08315E0  3.6464E0          
+ANILINE     109    3 ANILINE C6_H5_N_H2                                        L
+         1 .075759E0         6 .773838E0         7 .150403E0                    
+  1.0235E0    66.2E0  3.2622E0   .1618E0  2.5805E0  .13134E0  3.3434E0          
+ANTHRACENE  110    2 ANTHRACENE C14_H10                                        S
+         1  .05655E0         6  .94345E0                                        
+   1.283E0    69.5E0  3.1514E0   .1146E0  2.5213E0  .14677E0  3.2831E0          
+B-100       111    6  BONE-EQUIVALENT_PLASTICS  B-100                          S
+         1 .065471E0         6 .536945E0         7   .0215E0         8 .032085E0
+         9 .167411E0        20 .176589E0                                        
+    1.45E0    85.9E0  3.4528E0   .1252E0   3.042E0  .05268E0  3.7365E0          
+BAKELITE    112    3 BAKELITE (C43_H38_O7)n                                    S
+         1 .057441E0         6 .774591E0         8 .167968E0                    
+    1.25E0    72.4E0  3.2582E0   .1471E0  2.6055E0  .12713E0   3.347E0          
+BA_F2       113    2 BARIUM_FLUORIDE Ba_F2                                     S
+         9  .21672E0        56  .78328E0                                        
+    4.89E0   375.9E0  5.4122E0  -.0098E0  3.3871E0  .15991E0  2.8867E0          
+BA_SO4      114    3 BARIUM_SULFATE Ba_S_O4                                    S
+         8 .274212E0        16 .137368E0        56  .58842E0                    
+     4.5E0   285.7E0  4.8923E0  -.0128E0  3.4069E0  .11747E0  3.0427E0          
+BENZENE     115    2 BENZENE C6_H6                                             L
+         1 .077418E0         6 .922582E0                                        
+ 8.7865E-1    63.4E0  3.3269E0    .171E0  2.5091E0  .16519E0  3.2174E0          
+BE_O        116    2 BERYLLIUM_OXIDE Be_O                                      S
+         4  .36032E0         8  .63968E0                                        
+    3.01E0    93.2E0  2.9801E0   .0241E0  2.5846E0  .10755E0  3.4927E0          
+BGO         117    3 BISMUTH_GERMANIUM_OXIDE Bi4_Ge3_O12                       S
+         8 .154126E0        32  .17482E0        83 .671054E0                    
+    7.13E0   534.1E0  5.7409E0   .0456E0  3.7816E0  .09569E0  3.0781E0          
+BLOOD       118   14 BLOOD_(ICRP)  BLOOD                                       L
+         1 .101866E0         6  .10002E0         7  .02964E0         8 .759414E0
+        11  .00185E0        12  .00004E0        14  .00003E0        15  .00035E0
+        16  .00185E0        17  .00278E0        19  .00163E0        20  .00006E0
+        26  .00046E0        30  .00001E0                                        
+    1.06E0    75.2E0  3.4581E0   .2239E0  2.8017E0  .08492E0  3.5406E0          
+BONECOMPAC  119    8 BONE_COMPACT_(ICRU)   BONECOMPAC                          S
+         1 .063984E0         6    .278E0         7    .027E0         8 .410016E0
+        12    .002E0        15     .07E0        16    .002E0        20    .147E0
+    1.85E0    91.9E0   3.339E0   .0944E0  3.0201E0  .05822E0  3.6419E0          
+BONECORTIC  120    9 BONE_CORTICAL_(ICRP)   BONECORTIC                         S
+         1 .047234E0         6  .14433E0         7  .04199E0         8 .446096E0
+        12   .0022E0        15  .10497E0        16  .00315E0        20  .20993E0
+        30   .0001E0                                                            
+    1.85E0   106.4E0  3.6488E0   .1161E0  3.0919E0  .06198E0  3.5919E0          
+B4_C        121    2 BORON_CARBIDE B4_C                                        S
+         5  .78261E0         6  .21739E0                                        
+    2.52E0    84.7E0  2.9859E0   .0093E0  2.1006E0  .37087E0  2.8076E0          
+B2_O3       122    2 BORON_OXIDE B2_O3                                         S
+         5 .310551E0         8 .689449E0                                        
+   1.812E0    99.6E0  3.6027E0   .1843E0  2.7379E0  .11548E0  3.3832E0          
+BRAIN       123   13 BRAIN_(ICRP)  BRAIN                                       S
+         1 .110667E0         6  .12542E0         7  .01328E0         8 .737723E0
+        11  .00184E0        12  .00015E0        15  .00354E0        16  .00177E0
+        17  .00236E0        19   .0031E0        20  .00009E0        26  .00005E0
+        30  .00001E0                                                            
+    1.03E0    73.3E0  3.4279E0   .2206E0  2.8021E0  .08255E0  3.5585E0          
+BUTANE      124    2 BUTANE C4_H10                                             G
+         1 .173408E0         6 .826592E0                                        
+ 2.4934E-3    48.3E0  8.5633E0  1.3788E0  3.7524E0  .10852E0  3.4884E0          
+BUTYLALCOH  125    3 N-BUTYL_ALCOHOL C4_H9_O_H                                 L
+         1 .135978E0         6 .648171E0         8 .215851E0                    
+  8.098E-1    59.9E0  3.2425E0   .1937E0  2.6439E0  .10081E0  3.5139E0          
+C-552       126    5  AIR-EQUIVALENT_PLASTICS  C-552                           S
+         1  .02468E0         6  .50161E0         8 .004527E0         9 .465209E0
+        14 .003973E0                                                            
+    1.76E0    86.8E0  3.3338E0    .151E0  2.7083E0  .10492E0  3.4344E0          
+CD_TE       127    2 CADMIUM_TELLURIDE Cd_Te                                   S
+        48 .468355E0        52 .531645E0                                        
+     6.2E0   539.3E0  5.9096E0   .0438E0  3.2836E0   .2484E0  2.6665E0          
+CD_W_O4     128    3 CADMIUM_TUNGSTATE Cd_W_O4                                 S
+         8 .177644E0        48 .312027E0        74 .510329E0                    
+     7.9E0   468.3E0  5.3594E0   .0123E0  3.5941E0  .12861E0   2.915E0          
+CA_C_O3     129    3 CALCIUM_CARBONATE Ca_C_O3                                 S
+         6 .120003E0         8 .479554E0        20 .400443E0                    
+     2.8E0   136.4E0  3.7738E0   .0492E0  3.0549E0  .08301E0   3.412E0          
+CA_F2       130    2 CALCIUM_FLUORIDE Ca_F2                                    S
+         9 .486659E0        20 .513341E0                                        
+    3.18E0    166.E0  4.0653E0   .0676E0  3.1683E0  .06942E0  3.5263E0          
+CA_O        131    2 CALCIUM_OXIDE Ca_O                                        S
+         8 .285299E0        20 .714701E0                                        
+     3.3E0   176.1E0  4.1209E0  -.0172E0  3.0171E0  .12128E0  3.1936E0          
+CA_S_O4     132    3 CALCIUM_SULFATE Ca_S_O4                                   S
+         8 .470095E0        16 .235497E0        20 .294408E0                    
+    2.96E0   152.3E0  3.9388E0   .0587E0  3.1229E0  .07708E0  3.4495E0          
+CA_W_O4     133    3 CALCIUM-TUNGSTATE Ca_W_O4                                 S
+         8  .22227E0        20 .139202E0        74 .638529E0                    
+   6.062E0    395.E0  5.2603E0   .0323E0  3.8932E0   .0621E0  3.2649E0          
+C_O2        134    2 CARBON-DIOXIDE C_O2                                       G
+         6 .272916E0         8 .727084E0                                        
+  1.842E-3     85.E0 10.1537E0  1.6294E0  4.1825E0  .11768E0  3.3227E0          
+C_CL4       135    2 CARBON-TETRACHLORIDE C_Cl4                                L
+         6 .078083E0        17 .921917E0                                        
+   1.594E0   166.3E0  4.7712E0   .1773E0  2.9165E0  .19018E0  3.0116E0          
+CELLOPHANE  136    3 CELLULOSE-ACETATE-CELLOPHANE (C6_H10_O5)n                 S
+         1 .062162E0         6 .444462E0         8 .493376E0                    
+    1.42E0    77.6E0  3.2647E0    .158E0  2.6778E0  .11151E0   3.381E0          
+CELLACEBUT  137    3 CELLULOSE-ACETATE-BUTYRATE (C15_H22_O8)n                  S
+         1 .067125E0         6 .545403E0         8 .387472E0                    
+     1.2E0    74.6E0  3.3497E0   .1794E0  2.6809E0  .11444E0  3.3738E0          
+CELLNITRAT  138    4 CELLULOSE-NITRATE C6_H7.7_O9.6_N2.3                       S
+         1 .029216E0         6 .271296E0         7 .121276E0         8 .578212E0
+    1.49E0     87.E0  3.4762E0   .1897E0  2.7253E0  .11813E0  3.3237E0          
+CERSULFATE  139    5 CERIC-SULFATE-DOSIMETER SOLUTION                          L
+         1 .107596E0         7   .0008E0         8 .874976E0        16 .014627E0
+        58 .002001E0                                                            
+    1.03E0    76.7E0  3.5212E0   .2363E0  2.8769E0  .07666E0  3.5607E0          
+CS_F        140    2 CESIUM-FLUORIDE Cs_F                                      S
+         9 .125069E0        55 .874931E0                                        
+   4.115E0   440.7E0  5.9046E0   .0084E0  3.3374E0  .22052E0   2.728E0          
+CS_I        141    2 CESIUM-IODIDE Cs_I                                        S
+        53 .488451E0        55 .511549E0                                        
+    4.51E0   553.1E0  6.2807E0   .0395E0  3.3353E0  .25381E0  2.6657E0          
+CHLOROBENZ  142    3 CHLOROBENZENE C6_H5_Cl                                    L
+         1 .044772E0         6 .640254E0        17 .314974E0                    
+  1.1058E0    89.1E0  3.8201E0   .1714E0  2.9272E0  .09856E0  3.3797E0          
+CHLOROFORM  143    3 CHLOROFORM C_H_Cl3                                        L
+         1 .008443E0         6 .100613E0        17 .890944E0                    
+  1.4832E0    156.E0  4.7055E0   .1786E0  2.9581E0  .16959E0  3.0627E0          
+PORTLAND    144   10 CONCRETE PORTLAND                                         S
+         1     .01E0         6    .001E0         8 .529107E0        11    .016E0
+        12    .002E0        13 .033872E0        14 .337021E0        19    .013E0
+        20    .044E0        26    .014E0                                        
+     2.3E0   135.2E0  3.9464E0   .1301E0  3.0466E0  .07515E0  3.5467E0          
+CYCLOHEXAN  145    2 CYCLOHEXANE C6_H12                                        L
+         1 .143711E0         6 .856289E0                                        
+    .779E0    56.4E0  3.1544E0   .1728E0  2.5549E0  .12035E0  3.4278E0          
+DICHLOBENZ  146    3 1,2-DICHLOROBENZENE C6_H4_Cl2                             L
+         1 .027425E0         6 .490233E0        17 .482342E0                    
+  1.3048E0   106.5E0  4.0348E0   .1587E0  2.8276E0   .1601E0  3.0836E0          
+DICHLDIETH  147    4 DICHLORODIETHYL-ETHER C4_Cl2_H8_O                         L
+         1 .056381E0         6 .335942E0         8 .111874E0        17 .495802E0
+  1.2199E0   103.3E0  4.0135E0   .1773E0  3.1586E0  .06799E0   3.525E0          
+DICHLETHAN  148    3 1,2-DICHLOROETHANE C2_H4_Cl2                              L
+         1  .04074E0         6 .242746E0        17 .716515E0                    
+  1.2351E0   111.9E0  4.1849E0   .1375E0  2.9529E0  .13383E0  3.1675E0          
+DIETHYLETH  149    3 DIETHYL-ETHER (C2_H5)2_O                                  L
+         1 .135978E0         6 .648171E0         8 .215851E0                    
+  .71378E0     60.E0  3.3721E0   .2231E0  2.6745E0   .1055E0  3.4586E0          
+DIMETHFORM  150    4 M,N-DIMETHYL-FORMAMIDE C3_H6_O_N_H                        S
+         1 .096523E0         6 .492965E0         7 .191625E0         8 .218887E0
+   .9487E0    66.6E0  3.3311E0   .1977E0  2.6686E0   .1147E0   3.371E0          
+DIMETHSULF  151    4 DIMETHYL-SULFOXIDE (C_H3)2_S_O                            S
+         1 .077403E0         6 .307467E0         8 .204782E0        16 .410348E0
+  1.1014E0    98.6E0  3.9844E0   .2021E0  3.1263E0  .06619E0  3.5708E0          
+ETHANE      152    2 ETHANE C2_H6                                              G
+         1 .201115E0         6 .798885E0                                        
+  1.253E-3    45.4E0  9.1043E0  1.5107E0  3.8743E0  .09627E0  3.6095E0          
+ETHANOL     153    3 ETHYL-ALCOHOL C2_H5_O_H                                   L
+         1 .131269E0         6 .521438E0         8 .347294E0                    
+   .7893E0    62.9E0  3.3699E0   .2218E0  2.7052E0  .09878E0  3.4834E0          
+ETHYLCELL   154    3 ETHYL-CELLULOSE (C12_H22_O5)n                             S
+         1 .090027E0         6 .585182E0         8 .324791E0                    
+    1.13E0    69.3E0  3.2415E0   .1683E0  2.6527E0  .11077E0  3.4098E0          
+ETHYLENE    155    2 ETHYLENE C2_H4                                            G
+         1 .143711E0         6 .856289E0                                        
+  1.175E-3    50.7E0   9.438E0  1.5528E0  3.9327E0  .10636E0  3.5387E0          
+EYE-LENS    156    4 EYE-LENS (ICRP)                                           S
+         1 .099269E0         6 .193710E0         7  .05327E0         8 .653751E0
+     1.1E0    73.3E0   3.372E0    .207E0  2.7446E0   .0969E0   3.455E0          
+FE2_O3      157    2 FERRIC-OXIDE Fe2_O3                                       S
+         8 .300567E0        26 .699433E0                                        
+     5.2E0   227.3E0  4.2245E0  -.0074E0  3.2573E0  .10478E0  3.1313E0          
+FE_B        158    2 FERROBORIDE Fe_B                                          S
+         5 .162174E0        26 .837826E0                                        
+    7.15E0    261.E0  4.2057E0  -.0988E0  3.1749E0  .12911E0   3.024E0          
+FE_O        159    2 FERROUS-OXIDE Fe_O                                        S
+         8 .222689E0        26 .777311E0                                        
+     5.7E0   248.6E0  4.3175E0  -.0279E0  3.2002E0  .12959E0  3.0168E0          
+FE-SULFATE  160    7 FERROUS-SULFATE-DOSIMETER SOLUTION                        L
+         1 .108259E0         7 .000027E0         8 .878636E0        11 .000022E0
+        16 .012968E0        17 .000034E0        26 .000054E0                    
+   1.024E0    76.4E0  3.5183E0   .2378E0  2.8254E0  .08759E0  3.4923E0          
+FREON-12    161    3 FREON-12 C_F2_Cl2                                         G
+         6 .099335E0         9 .314247E0        17 .586418E0                    
+    1.12E0    143.E0  4.8251E0   .3035E0  3.2659E0  .07978E0  3.4626E0          
+FREON-12B2  162    3 FREON-12B2 C_F2_Br2                                       G
+         6 .057245E0         9 .181096E0        35 .761659E0                    
+     1.8E0   284.9E0  5.7976E0   .3406E0  3.7956E0  .05144E0  3.5565E0          
+FREON-13    163    3 FREON-13 C_F3_Cl                                          G
+         6 .114983E0         9 .545622E0        17 .339396E0                    
+     .95E0   126.6E0  4.7483E0   .3659E0  3.2337E0  .07238E0  3.5551E0          
+FREON-13B1  164    3 FREON-13B1 C_F3_Br                                        G
+         6 .080659E0         9 .382749E0        35 .536592E0                    
+     1.5E0   210.5E0  5.3555E0   .3522E0  3.7554E0  .03925E0  3.7194E0          
+FREON-13I1  165    3 FREON-13I1 C_F3_I                                         G
+         6 .061309E0         9 .290924E0        53 .647767E0                    
+     1.8E0   293.5E0  5.8774E0   .2847E0   3.728E0  .09112E0  3.1658E0          
+GD2_O2_S    166    3 GADOLINIUM-OXYSULFIDE Gd2_O2_S                            S
+         8 .084528E0        16  .08469E0        64 .830782E0                    
+    7.44E0   493.3E0  5.5347E0  -.1774E0  3.4045E0  .22161E0    2.63E0          
+GA_AS       167    2 GALLIUM-ARSENIDE Ga_As                                    S
+        31 .482019E0        33 .517981E0                                        
+    5.31E0   384.9E0  5.3299E0   .1764E0   3.642E0  .07152E0  3.3356E0          
+PHOTOEMGEL  168    5 GEL-IN-PHOTOGRAPHIC EMULSION                              S
+         1  .08118E0         6  .41606E0         7  .11124E0         8  .38064E0
+        16  .01088E0                                                            
+  1.2914E0    74.8E0  3.2687E0   .1709E0  2.7058E0  .10102E0  3.4418E0          
+PYREX       169    6 GLASS-BOROSILICATE (PYREX-CORNING-7740)                   S
+         5 .040061E0         8 .539564E0        11 .028191E0        13 .011644E0
+        14  .37722E0        19 .003321E0                                        
+    2.23E0    134.E0  3.9708E0   .1479E0  2.9933E0   .0827E0  3.5224E0          
+LEAD-GLASS  170    5 GLASS LEAD                                                S
+         8 .156453E0        14 .080866E0        22 .008092E0        33 .002651E0
+        82 .751938E0                                                            
+    6.22E0   526.4E0  5.8476E0   .0614E0  3.8146E0  .09544E0   3.074E0          
+GLASS       171    4 GLASS PLATE                                               S
+         8   .4598E0        11 .096441E0        14 .336553E0        20 .107205E0
+     2.4E0   145.4E0  4.0602E0   .1237E0  3.0649E0  .07678E0  3.5381E0          
+GLUCOSE     172    3 GLUCOSE-DEXTROSE C6_H12_O6.H2_O                           S
+         1 .071204E0         6 .363652E0         8 .565144E0                    
+    1.54E0    77.2E0  3.1649E0   .1411E0    2.67E0  .10783E0  3.3946E0          
+GLUTAMINE   173    4 GLUTAMINE C5_H10_N2_O3                                    S
+         1 .068965E0         6 .410926E0         7 .191681E0         8 .328427E0
+    1.46E0    73.3E0  3.1167E0   .1347E0  2.6301E0  .11931E0  3.3254E0          
+GLYCEROL    174    3 GLYCEROL C3_H5_(O_H)3                                     L
+         1 .087554E0         6 .391262E0         8 .521185E0                    
+  1.2613E0    72.6E0  3.2267E0   .1653E0  2.6862E0  .10168E0  3.4481E0          
+GUANINE     175    4 GUANINE C5_H5_N5_O                                        S
+         1 .033346E0         6  .39738E0         7 .463407E0         8 .105867E0
+    1.58E0    75.0E0  3.1171E0   .1163E0  2.4296E0   .2053E0  3.0186E0          
+GYPSUM      176    4 GYPSUM-PLASTER-OF-PARIS Ca_S_O4.2H2_O                     S
+         1 .023416E0         8 .557572E0        16 .186215E0        20 .232797E0
+    2.32E0   129.7E0  3.8382E0   .0995E0  3.1206E0  .06949E0  3.5134E0          
+HEPTANE     177    2 N-HEPTANE C7_H16                                          L
+         1 .160937E0         6 .839063E0                                        
+  .68376E0    54.4E0  3.1978E0   .1928E0  2.5706E0  .11255E0  3.4885E0          
+HEXANE      178    2 N-HEXANE C6_H14                                           L
+         1 .163741E0         6 .836259E0                                        
+   .6603E0     54.E0  3.2156E0   .1984E0  2.5757E0  .11085E0  3.5027E0          
+KAPTON      179    4 KAPTON-POLYIMIDE-FILM (C22_H10_N2_O5)n                    S
+         1 .026362           6 .691133E0         7  .07327E0         8 .209235E0
+    1.42E0    79.6E0  3.3497E0   .1509E0  2.5631E0  .15972E0  3.1921E0          
+LA_O_BR     180    3 LANTHANUM-OXYBROMIDE La_O_Br                              S
+         8 .068138E0        35 .340294E0        57 .591568E0                    
+    6.28E0   439.7E0  5.4666E0   -.035E0  3.3288E0   .1783E0  2.8457E0          
+LA2_O2_S    181    3 LANTHANUM-OXYSULFIDE La2_O2_S                             S
+         8   .0936E0        16 .093778E0        57 .812622E0
+    5.86E0   421.2E0   5.447E0  -.0906E0  3.2664E0  .21501E0  2.7298E0          
+PB_O        182    2 LEAD-OXIDE Pb_O                                           S
+         8 .071682E0        82 .928318E0                                        
+    9.53E0   766.7E0  6.2162E0   .0356E0  3.5456E0  .19645E0  2.7299E0          
+LI_N_H2     183    3 LITHIUM-AMIDE Li_N_H2                                     S
+         1 .087783E0         3 .302262E0         7 .609955E0                    
+   1.178E0    55.5E0  2.7961E0   .0198E0  2.5152E0   .0874E0  3.7534E0          
+LI2_C_O3    184    3 LITHIUM-CARBONATE Li2_C_O3                                S
+         3 .187871E0         6  .16255E0         8 .649579E0                    
+    2.11E0    87.9E0  3.2029E0   .0551E0  2.6598E0  .09936E0  3.5417E0          
+LI_F        185    2 LITHIUM-FLUORIDE Li_F                                     S
+         3 .267585E0         9 .732415E0                                        
+   2.635E0     94.E0  3.1667E0   .0171E0  2.7049E0  .07593E0  3.7478E0          
+LI_H        186    2 LITHIUM-HYDRIDE Li_H                                      S
+         1 .126797E0         3 .873203E0                                        
+     .82E0    36.5E0   2.358E0  -.0988E0  1.4515E0  .90567E0  2.5849E0          
+LI_I        187    2 LITHIUM-IODIDE Li_I                                       S
+         3 .051858E0        53 .948142E0                                        
+   3.494E0   485.1E0  6.2671E0   .0892E0  3.3702E0  .23274E0  2.7146E0          
+LI2_O       188    2 LITHIUM-OXIDE Li2_O                                       S
+         3  .46457E0         8  .53543E0                                        
+   2.013E0    73.6E0   2.934E0  -.0511E0  2.5874E0  .08035E0  3.7878E0          
+LI2_B4_O7   189    3 LITHIUM-TETRABORATE Li2_B4_O7                             S
+         3 .082085E0         5  .25568E0         8 .662235E0                    
+    2.44E0    94.6E0  3.2093E0   .0737E0  2.6502E0  .11075E0  3.4389E0          
+LUNG        190   13 LUNG-(ICRP)  LUNG                                         S
+         1 .101278E0         6  .10231E0         7  .02865E0         8 .757072E0
+        11  .00184E0        12  .00073E0        15   .0008E0        16  .00225E0
+        17  .00266E0        19  .00194E0        20  .00009E0        26  .00037E0
+        30  .00001E0                                                            
+    1.05E0    75.3E0  3.4708E0   .2261E0  2.8001E0  .08588E0  3.5353E0          
+M3-WAX      191    5 M3 WAX                                                    S
+         1 .114318E0         6 .655823E0         8 .092183E0        12 .134792E0
+        20 .002883E0                                                            
+    1.05E0    67.9E0   3.254E0   .1523E0  2.7529E0  .07864E0  3.6412E0          
+MG_C_O3     192    3 MAGNESIUM-CARBONATE Mg_C_O3                               S
+         6 .142455E0         8 .569278E0        12 .288267E0                    
+   2.958E0    118.E0  3.4319E0    .086E0  2.7997E0  .09219E0  3.5003E0          
+MG_F2       193    2 MAGNESIUM-FLUORIDE Mg_F2                                  S
+         9 .609883E0        12 .390117E0                                        
+      3.E0   134.3E0  3.7105E0   .1369E0   2.863E0  .07934E0  3.6485E0          
+MG_O        194    2 MAGNESIUM-OXIDE Mg_O                                      S
+         8 .396964E0        12 .603036E0                                        
+    3.58E0   143.8E0  3.6404E0   .0575E0   2.858E0  .08313E0  3.5968E0          
+MG_B4_O7    195    3 MAGNESIUM-TETRABORATE Mg_B4_O7                            S
+         5 .240837E0         8  .62379E0        12 .135373E0                    
+    2.53E0   108.3E0  3.4328E0   .1147E0  2.7635E0  .09703E0  3.4893E0          
+HG_I2       196    2 MERCURIC-IODIDE Hg_I2                                     S
+        53  .55856E0        80  .44144E0                                        
+    6.36E0   684.5E0  6.3787E0    .104E0  3.4728E0  .21513E0  2.7264E0          
+METHANE     197    2 METHANE C_H4                                              G
+         1 .251306E0         6 .748694E0                                        
+  6.672E-4    41.7E0  9.5243E0  1.6263E0  3.9716E0  .09253E0  3.6257E0          
+METHANOL    198    3 METHANOL C_H3_O_H                                         L
+         1 .125822E0         6 .374852E0         8 .499326E0                    
+   .7914E0    67.6E0   3.516E0   .2529E0  2.7639E0   .0897E0  3.5477E0          
+MIX-D-WAX   199    5 MIX-D-WAX  MIX-D-WAX                                      S
+         1  .13404E0         6  .77796E0         8  .03502E0        12 .038594E0
+        22 .014386E0                                                            
+     .99E0    60.9E0   3.078E0   .1371E0  2.7145E0   .0749E0  3.6823E0          
+MS20        200    6 MS20-TISSUE-SUBSTITUTE   MS20                             S
+         1 .081192E0         6 .583442E0         7 .017798E0         8 .186381E0
+        12 .130287E0        17   .0009E0                                        
+      1.E0    75.1E0  3.5341E0   .1997E0  2.8033E0  .08294E0  3.6061E0          
+SKELMUSCLE  201   13 MUSCLE-SKELETAL-(ICRP)  SKELMUSCLE                        S
+         1 .100637E0         6  .10783E0         7  .02768E0         8 .754773E0
+        11  .00075E0        12  .00019E0        15   .0018E0        16  .00241E0
+        17  .00079E0        19  .00302E0        20  .00003E0        26  .00004E0
+        30  .00005E0                                                            
+    1.04E0    75.3E0  3.4809E0   .2282E0  2.7999E0  .08636E0   3.533E0          
+STRIMUSCLE  202    9 MUSCLE-STRIATED-(ICRU)   STRIMUSCLE                       S
+         1 .101997E0         6    .123E0         7    .035E0         8 .729003E0
+        11   .0008E0        12   .0002E0        15    .002E0        16    .005E0
+        19    .005E0                                                            
+    1.04E0    74.7E0  3.4636E0   .2249E0  2.8032E0  .08507E0  3.5383E0          
+EQVMUSCSUC  203    4 MUSCLE-EQUIVALENT-LIQUID-WITH-SUCROSE EQVMUSCSUC          L
+         1 .098234E0         6 .156214E0         7 .035451E0         8   .7101E0
+    1.11E0    74.3E0   3.391E0   .2098E0   2.755E0  .09481E0  3.4699E0          
+EQVMUSCNOS  204    4 MUSCLE-EQUIVALENT-LIQUID-WITHOUT-SUCROSE   EQVMUSCNOS     L
+         1 .101969E0         6 .120058E0         7 .035451E0         8 .742522E0
+    1.07E0    74.2E0  3.4216E0   .2187E0   2.768E0  .09143E0  3.4982E0          
+NAPHTALENE  205    2 NAPHTALENE C10_H8                                         S
+         1 .062909E0         6 .937091E0                                        
+   1.145E0    68.4E0  3.2274E0   .1374E0  2.5429E0  .14766E0  3.2654E0          
+NITROBENZ   206    4 NITROBENZENE C6_H5_N_O2                                   L
+         1 .040935E0         6 .585374E0         7 .113773E0         8 .259918E0
+  1.1987E0    75.8E0  3.4073E0   .1777E0   2.663E0  .12727E0  3.3091E0          
+N2_O        207    2 NITROUS-OXIDE N2_O                                        G
+         7 .636483E0         8 .363517E0                                        
+  1.831E-3    84.9E0 10.1575E0  1.6477E0  4.1565E0  .11992E0  3.3318E0          
+ELVAMIDE    208    4 NYLON-DU-PONT-ELVAMIDE 8062M                              S
+         1 .103509E0         6 .648415E0         7 .099536E0         8 .148539E0
+    1.08E0    64.3E0   3.125E0   .1503E0  2.6004E0  .11513E0  3.4044E0          
+NYLON-6     209    4 NYLON-TYPE-6-AND-TYPE-6/6 (C6_H11_O_N)n                   S
+         1 .097976E0         6 .636856E0         7 .123779E0         8 .141389E0
+    1.14E0    63.9E0  3.0634E0   .1336E0  2.5834E0  .11818E0  3.3826E0          
+NYLON-6/10  210    4 NYLON-TYPE-6/10 (C8_H15_O_N)n                             S
+         1 .107062E0         6 .680449E0         7 .099189E0         8   .1133E0
+    1.14E0    63.2E0  3.0333E0   .1304E0  2.5681E0  .11852E0  3.3912E0          
+RILSAN      211    4 NYLON-TYPE-11-RILSAN (C11_H21_O_N)n                       S
+         1 .115476E0         6 .720819E0         7 .076417E0         8 .087289E0
+   1.425E0    61.6E0  2.7514E0   .0678E0  2.4281E0  .14868E0  3.2576E0          
+OCTANELIQ   212    2 OCTANE-LIQUID C8_H18                                      L
+         1 .158821E0         6 .841179E0                                        
+   .7026E0    54.7E0  3.1834E0   .1882E0  2.5664E0  .11387E0  3.4776E0          
+PARAFFIN    213    2 PARAFFIN WAX                                              S
+         1 .148605E0         6 .851395E0                                        
+     .93E0    55.9E0  2.9551E0   .1289E0  2.5084E0  .12087E0  3.4288E0          
+PENTANE     214    2 N-PENTANE  PENTANE                                        L
+         1 .167635E0         6 .832365E0                                        
+   .6262E0    53.6E0  3.2504E0   .2086E0  2.5855E0  .10809E0  3.5265E0          
+PHOTOEMULS  215    8 PHOTOGRAPHIC EMULSION                                     S
+         1   .0141E0         6 .072261E0         7  .01932E0         8 .066101E0
+        16  .00189E0        35 .349103E0        47 .474105E0        53  .00312E0
+   3.815E0    331.E0  5.3319E0   .1009E0  3.4866E0  .12399E0  3.0094E0          
+PLASTSCINT  216    2 PLASTIC-SCINTILLATOR-VINYLTOLUENE-BASED  PLASTSCINT       S
+         1    .085E0         6    .915E0                                        
+   1.032E0    64.7E0  3.1997E0   .1464E0  2.4855E0  .16101E0  3.2393E0          
+PU_O2       217    2 PLUTONIUM-DIOXIDE    PU_O2                                S
+         8 .118055E0        94 .881945E0                                        
+   11.46E0   746.5E0  5.9719E0  -.2311E0  3.5554E0  .20594E0  2.6522E0          
+PACRYLNITR  218    3 POLYACRYLONITRILE (C3_H3_N)n                              S
+         1 .056983E0         6 .679056E0         7 .263962E0                    
+    1.17E0    69.6E0  3.2459E0   .1504E0  2.5159E0  .16275E0  3.1975E0          
+LEXAN       219    3 POLYCARBONATE-MAKROLON-LEXAN (C16_H14_O3)n                S
+         1 .055491E0         6 .755751E0         8 .188758E0                    
+     1.2E0    73.1E0  3.3201E0   .1606E0  2.6225E0   .1286E0  3.3288E0          
+PCHLORSTYR  220    3 POLYCHLOROSTYRENE (C17_H18_Cl2)n                          S
+         1 .061869E0         6 .696325E0        17 .241806E0                    
+     1.3E0    81.7E0  3.4659E0   .1238E0  2.9241E0   .0753E0  3.5441E0          
+POLYETHYLE  221    2 POLYETHYLENE (C2_H4)n                                     S
+         1 .143711E0         6 .856289E0                                        
+     .94E0    57.4E0  3.0016E0    .137E0  2.5177E0  .12108E0  3.4292E0          
+MYLAR       222    3 POLYETHYLENE-TEREPHTALATE-MYLAR (C10_H8_O4)n              S
+         1 .041959E0         6 .625017E0         8 .333025E0                    
+     1.4E0    78.7E0  3.3262E0   .1562E0  2.6507E0  .12679E0  3.3076E0          
+PLEXIGLAS   223    3 POLYMETHYL-METHACRYLATE-LUCITE-PLEXIGLAS (C5_H8_O2)n      S
+         1 .080538E0         6 .599848E0         8 .319614E0                    
+    1.19E0     74.E0  3.3297E0   .1824E0  2.6681E0  .11433E0  3.3836E0          
+POLYOXYMET  224    3 POLYOXYMETHYLENE (C_H2_O)n                                S
+         1 .067135E0         6 .400017E0         8 .532848E0                    
+   1.425E0    77.4E0  3.2514E0   .1584E0  2.6838E0  .10808E0  3.4002E0          
+POLYPROPYL  225    2 POLYPROPYLENE (C3_H5)n                                    S
+         1 .122698E0         6 .877302E0                                        
+      .9E0    59.2E0  3.1252E0   .1534E0  2.4822E0  .15045E0  3.2855E0          
+POLYSTYREN  226    2 POLYSTYRENE (C8_H8)n                                      S
+         1 .077418E0         6 .922582E0                                        
+    1.06E0    68.7E0  3.2999E0   .1647E0  2.5031E0  .16454E0  3.2224E0          
+TEFLON      227    2 POLYTETRAFLUOROETHYLENE-TEFLON (C2_F4)n                   S
+         6 .240183E0         9 .759817E0                                        
+     2.2E0    99.1E0  3.4161E0   .1648E0  2.7404E0  .10606E0  3.4046E0          
+KEL-F       228    3 POLYTRIFLUOROCHLOROETHYLENE (C2_F3_Cl)n                   S
+         6  .20625E0         9 .489354E0        17 .304395E0                    
+     2.1E0   120.7E0  3.8551E0   .1714E0  3.0265E0  .07727E0  3.5085E0          
+PVINYLACET  229    3 POLYVINYL-ACETATE (C4_H6_O2)n                             S
+         1 .070245E0         6 .558066E0         8 .371689E0                    
+    1.19E0    73.7E0  3.3309E0   .1769E0  2.6747E0  .11442E0  3.3762E0          
+PVINYLALCO  230    3 POLYVINYL-ALCOHOL (C2_H3_O_H)n                            S
+         1 .091517E0         6 .545298E0         8 .363185E0                    
+     1.3E0    69.7E0  3.1115E0   .1401E0  2.6315E0  .11178E0  3.3893E0          
+PVINYLBUTY  231    3 POLYVINYL-BUTYRAL (C8_H13_O2)n                            S
+         1 .092802E0         6 .680561E0         8 .226637E0                    
+    1.12E0    67.2E0  3.1865E0   .1555E0  2.6186E0  .11544E0  3.3983E0          
+PVC         232    3 POLYVINYL-CHLORIDE (C2_H3_Cl)n                            S
+         1  .04838E0         6  .38436E0        17  .56726E0                    
+     1.3E0   108.2E0  4.0532E0   .1559E0  2.9415E0  .12438E0  3.2104E0          
+SARAN       233    3 POLYVINYLIDENE-CHLORIDE-SARAN (C2_H2_Cl2)n                S
+         1 .020793E0         6 .247793E0        17 .731413E0                    
+     1.7E0   134.3E0  4.2506E0   .1314E0  2.9009E0  .15466E0  3.1020E0          
+PVNYDENFLU  234    3 POLYVINYLIDENE-FLUORIDE (C2_H2_F2)n                       S
+         1  .03148E0         6 .375141E0         9 .593379E0                    
+    1.76E0    88.8E0  3.3793E0   .1717E0  2.7375E0  .10316E0    3.42E0          
+PVNYLPYRRO  235    4 POLYVINYL-PYRROLIDONE (C6_H9_N_O)n                        S
+         1 .081616E0         6 .648407E0         7 .126024E0         8 .143953E0
+    1.25E0    67.7E0  3.1017E0   .1324E0  2.5867E0  .12504E0  3.3326E0          
+K_I         236    2 POTASSIUM-IODIDE K_I                                      S
+        19 .235528E0        53 .764472E0                                        
+    3.13E0   431.9E0  6.1088E0   .1044E0  3.3442E0  .22053E0  2.7558E0          
+K2_O        237    2 POTASSIUM-OXIDE K2_O                                      S
+         8 .169852E0        19 .830148E0                                        
+    2.32E0   189.9E0  4.6463E0    .048E0   3.011E0  .16789E0  3.0121E0          
+PROPANE     238    2 PROPANE C3_H8                                             G
+         1 .182855E0         6 .817145E0                                        
+  1.879E-3    47.1E0  8.7878E0  1.4326E0  3.7998E0  .09916E0   3.592E0          
+PROPANELIQ  239    2 PROPANE-LIQUID C3_H8                                      L
+         1 .182855E0         6 .817145E0                                        
+     .43E0     52.E0  3.5529E0   .2861E0  2.6568E0  .10329E0   3.562E0          
+PROPYLALCO  240    3 N-PROPYL-ALCOHOL C3_H7_O_H                                L
+         1 .134173E0         6 .599595E0         8 .266232E0                    
+   .8035E0    61.1E0  3.2915E0   .2046E0  2.6681E0  .09644E0  3.5415E0          
+PYRIDINE    241    3 PYRIDINE C5_H5_N                                          L
+         1  .06371E0         6 .759217E0         7 .177073E0                    
+   .9819E0    66.2E0  3.3148E0    .167E0  2.5245E0  .16399E0  3.1977E0          
+RUBBERBUTY  242    2 RUBBER-BUTYL (C4_H8)n                                     S
+         1 .143711E0         6 .856289E0                                        
+     .92E0    56.5E0  2.9915E0   .1347E0  2.5154E0  .12108E0  3.4296E0          
+RUBBERNATU  243    2 RUBBER-NATURAL (C5_H8)n                                   S
+         1 .118371E0         6 .881629E0                                        
+     .92E0    59.8E0  3.1272E0   .1512E0  2.4815E0  .15058E0  3.2879E0          
+RUBBERNEOP  244    3 RUBBER-NEOPRENE (C4_H5_Cl)n                               S
+         1  .05692E0         6 .542646E0        17 .400434E0                    
+    1.23E0     93.E0  3.7911E0   .1501E0  2.9461E0  .09763E0  3.3632E0          
+SI_O2       245    2 SILICON-DIOXIDE Si_O2                                     S
+         8 .532565E0        14 .467435E0                                        
+    2.32E0   139.2E0  4.0029E0   .1385E0  3.0025E0  .08408E0  3.5064E0          
+AG_BR       246    2 SILVER-BROMIDE Ag_Br                                      S
+        35 .425537E0        47 .574463E0                                        
+   6.473E0   486.6E0  5.6139E0   .0352E0  3.2109E0  .24582E0   2.682E0          
+AG_CL       247    2 SILVER-CHLORIDE Ag_Cl                                     S
+        17 .247368E0        47 .752632E0                                        
+    5.56E0   398.4E0  5.3437E0  -.0139E0  3.2022E0  .22968E0  2.7041E0          
+AG-HALPHOT  248    3 SILVER-HALIDES-IN-PHOTOGRAPHIC EMULSION                   S
+        35 .422895E0        47 .573748E0        53 .003357E0                    
+    6.47E0   487.1E0  5.6166E0   .0353E0  3.2117E0  .24593E0  2.6814E0          
+AG_I        249    2 SILVER-IODIDE Ag_I                                        S
+        47 .459458E0        53 .540542E0                                        
+    6.01E0   543.5E0  5.9342E0   .0148E0  3.2908E0  .25059E0  2.6572E0          
+SKIN        250   13 SKIN-(ICRP)  SKIN                                         S
+         1 .100588E0         6  .22825E0         7  .04642E0         8 .619002E0
+        11  .00007E0        12  .00006E0        15  .00033E0        16  .00159E0
+        17  .00267E0        19  .00085E0        20  .00015E0        26  .00001E0
+        30  .00001E0                                                            
+     1.1E0    72.7E0  3.3546E0   .2019E0  2.7526E0  .09459E0  3.4643E0          
+NA2_C_O3    251    3 SODIUM-CARBONATE Na2_C_O3                                 S
+         6 .113323E0         8 .452861E0        11 .433815E0                    
+   2.532E0    125.E0  3.7178E0   .1287E0  2.8591E0  .08715E0  3.5638E0          
+NA_I        252    2 SODIUM-IODIDE Na_I                                        S
+        11 .153373E0        53 .846627E0                                        
+   3.667E0    452.E0  6.0572E0   .1203E0   3.592E0  .12516E0  3.0398E0          
+NA2_O       253    2 SODIUM-MONOXIDE Na2_O                                     S
+         8 .258143E0        11 .741857E0                                        
+    2.27E0   148.8E0  4.1892E0   .1652E0  2.9793E0  .07501E0  3.6943E0          
+NA_N_O3     254    3 SODIUM-NITRATE Na_N_O3                                    S
+         7 .164795E0         8  .56472E0        11 .270485E0                    
+   2.261E0   114.6E0  3.6502E0   .1534E0  2.8221E0  .09391E0  3.5097E0          
+STILBENE    255    2 STILBENE C14_H12                                          S
+         1 .067101E0         6 .932899E0                                        
+   .9707E0    67.7E0   3.368E0   .1734E0  2.5142E0  .16659E0  3.2168E0          
+SUCROSE     256    3 SUCROSE C12_H22_O11                                       S
+         1 .064779E0         6  .42107E0         8 .514151E0                    
+  1.5805E0    77.5E0  3.1526E0   .1341E0  2.6558E0  .11301E0   3.363E0          
+TERPHENYL   257    2 TERPHENYL C18_H10                                         S
+         1 .044543E0         6 .955457E0                                        
+   1.234E0    71.7E0  3.2639E0   .1322E0  2.5429E0  .14964E0  3.2685E0          
+TESTES      258   13 TESTES-(ICRP)   TESTES                                    S
+         1 .104166E0         6  .09227E0         7  .01994E0         8 .773884E0
+        11  .00226E0        12  .00011E0        15  .00125E0        16  .00146E0
+        17  .00244E0        19  .00208E0        20   .0001E0        26  .00002E0
+        30  .00002E0                                                            
+    1.04E0     75.E0  3.4698E0   .2274E0  2.7988E0  .08533E0  3.5428E0          
+C2_CL4      259    2 TETRACHLOROETHYLENE C2_Cl4                                L
+         6 .144856E0        17 .855144E0                                        
+   1.625E0   159.2E0  4.6619E0   .1713E0  2.9083E0  .18595E0  3.0156E0          
+TL_CL       260    2 THALLIUM-CHLORIDE Tl_Cl                                   S
+        17 .147822E0        81 .852187E0                                        
+   7.004E0   690.3E0  6.3009E0   .0705E0  3.5716E0  .18599E0   2.769E0          
+TISSUEICRP  261   13 TISSUE-SOFT-(ICRP)   TISSUEICRP                           S
+         1 .104472E0         6  .23219E0         7  .02488E0         8 .630238E0
+        11  .00113E0        12  .00013E0        15  .00133E0        16  .00199E0
+        17  .00134E0        19  .00199E0        20  .00023E0        26  .00005E0
+        30  .00003E0                                                            
+      1.E0    72.3E0  3.4354E0   .2211E0  2.7799E0  .08926E0   3.511E0          
+TISSUEICRU  262    4 TISSUE-SOFT-(ICRU-FOUR-COMPONENT)     TISSUEICRU          S
+         1 .101172E0         6    .111E0         7    .026E0         8 .761828E0
+      1.E0    74.9E0  3.5087E0   .2377E0  2.7908E0  .09629E0  3.4371E0          
+TE-GASMETH  263    4 TISSUE-EQUIVALENT-GAS-(METHANE-BASED)     TE-GASMETH      G
+         1 .101869E0         6 .456179E0         7 .035172E0         8  .40678E0
+  1.064E-3    61.2E0    9.95E0  1.6442E0  4.1399E0  .09946E0  3.4708E0          
+TE-GASPROP  264    4 TISSUE-EQUIVALENT-GAS-(PROPANE-BASED)    TE-GASPROP       G
+         1 .102672E0         6  .56894E0         7 .035022E0         8 .293366E0
+  1.826E-3    59.5E0  9.3529E0  1.5139E0  3.9916E0  .09802E0  3.5159E0          
+TI_O2       265    2 TITANIUM-DIOXIDE Ti_O2                                    S
+         8 .400592E0        22 .599408E0                                        
+    4.26E0   179.5E0  3.9522E0  -.0119E0  3.1647E0  .08569E0  3.3267E0          
+TOLUENE     266    2 TOLUENE C7_H8                                             L
+         1  .08751E0         6  .91249E0                                        
+   .8669E0    62.5E0  3.3026E0   .1722E0  2.5728E0  .13284E0  3.3558E0          
+C2_H_CL3    267    3 TRICHLOROETHYLENE C2_H_Cl3                                L
+         1 .007671E0         6 .182831E0        17 .809498E0                    
+    1.46E0   148.1E0  4.6148E0   .1803E0   2.914E0  .18272E0  3.0137E0          
+TRIETHYPHO  268    4 TRIETHYL-PHOSPHATE C6_H15_P_O4                            S
+         1 .082998E0         6 .395628E0         8 .351334E0        15  .17004E0
+    1.07E0    81.2E0  3.6242E0   .2054E0  2.9428E0  .06922E0  3.6302E0          
+W_F6        269    2 TUNGSTEN-HEXAFLUORIDE  W_F6                               S
+         9 .382723E0        74 .617277E0                                        
+     2.4E0   354.4E0  5.9881E0    .302E0  4.2602E0  .03658E0  3.5134E0          
+U_C2        270    2 URANIUM-DICARBIDE U_C2                                    S
+         6 .091669E0        92 .908331E0                                        
+   11.28E0    752.E0  6.0247E0  -.2191E0  3.5208E0   .2112E0  2.6577E0          
+U_C         271    2 URANIUM-MONOCARBIDE U_C                                   S
+         6 .048036E0        92 .951964E0                                        
+   13.63E0    862.E0   6.121E0  -.2524E0  3.4941E0  .22972E0  2.6169E0          
+U_O2        272    2 URANIUM-OXIDE U_O2                                        S
+         8 .118502E0        92 .881498E0                                        
+   10.96E0   720.6E0  5.9605E0  -.1938E0  3.5292E0  .20463E0  2.6711E0          
+UREA        273    4 UREA C_O_(N_H2)2                                          S
+         1 .067131E0         6 .199999E0         7 .466459E0         8 .266411E0
+   1.323E0    72.8E0  3.2032E0   .1603E0  2.6525E0  .11609E0  3.3461E0          
+VALINE      274    4 VALINE C5_H11_N_O2                                        S
+         1 .094641E0         6 .512645E0         7 .119565E0         8  .27315E0
+    1.23E0    67.7E0  3.1059E0   .1441E0  2.6227E0  .11386E0  3.3774E0          
+VITON       275    3 VITON-FLUOROELASTOMER (C5_H2_F8)n                         S
+         1 .009417E0         6 .280555E0         9 .710028E0                    
+     1.8E0    98.6E0  3.5943E0   .2106E0  2.7874E0  .09965E0  3.4556E0          
+WATER       276    2 WATER-LIQUID H2_O                                         L
+         1 .111894E0         8 .888106E0                                        
+      1.E0     75.E0  3.5017E0     .24E0  2.8004E0  .09116E0  3.4773E0          
+WATERVAPOR  277    2 WATER-VAPOR H2_O                                          G
+         1 .111894E0         8 .888106E0                                        
+  7.562E-4    71.6E0 10.5962E0  1.7952E0  4.3437E0  .08101E0  3.5901E0          
+XYLENE      278    2 XYLENE C8_H10                                             L
+         1 .094935E0         6 .905065E0                                        
+     .87E0    61.8E0  3.2698E0   .1695E0  2.5675E0  .13216E0  3.3564E0

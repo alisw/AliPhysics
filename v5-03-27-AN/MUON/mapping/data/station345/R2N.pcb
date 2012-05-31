@@ -1,0 +1,29 @@
+# NonBending PCB. Density 1. Rounded (type 2)
+# Placing motifs starting bottom left and going counter-clockwise
+# i.e. starting O21, ending O22 (and respecting the fact that there are
+# 3 manus on the bottom, and 9 on the top of the PCB
+
+SIZES 0.714285714 2.5 40 40
+
+MOTIF O21  0  0
+MOTIF O21  8  0
+MOTIF A1  16  0
+
+MOTIF A7  50  5
+MOTIF A6  44  5
+MOTIF A5  38  4
+MOTIF A4  33  4
+MOTIF A3  28  3
+MOTIF A2  24  2
+
+MOTIF O22 16  8
+MOTIF O22  8  8
+MOTIF O22  0  8
+
+
+
+
+
+
+
+

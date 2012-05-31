@@ -1,0 +1,59 @@
+> Title: 
+Alignment of the EMCAL Supermodules for year 1
+> Date: 
+12.10.2010
+> Subdetector:
+EMCAL 
+> Report URL: 
+https://edms.cern.ch/document/1014917
+> Version: 
+1 
+> General Observations: 
+Surveyed points on the EMCAL support rails are the only reliable
+points to use.  They are located at the rail ends, and we have a 
+relationship between these survey marks and the modules, assuming 
+that the detector as built matches the design.  The relationship is
+based on a simplified 3D model of the supermodule, which is an 8 
+cornered box, where 4 corners coincide with the eta = 0 end of the
+modules and the other 4 corners are the survey marks.  After
+entering the positions of the 4 survey marks, the 3D application 
+CATIA gives the position of the 4 end module corners and the phi 
+variation between 2 adjacent supermodules.
+
+The goal is to convert the points from CATIA to a
+transformation matrix for the center of each virtual (software) SuperModule.
+The virtual supermodules are also 8-cornered boxes, but the
+dimensions are determined differently.  The x dimension matches the
+size of the strip modules, the y dimension is determined by the strip
+module size and placement (the angle of the strip module changes the
+position of its top-most edge), and the z length is currently 350.0
+cm, which is approximately 42 cm longer than the active area of the
+physical supermodules.  This extra length is a historical artifact from
+the development days of the detector.
+
+Point name format is SMVolumeID_CATIAPointID.
+> Coordinate System:
+ALICEPH 
+> Units:
+m 
+> Nr Columns: 
+7 
+> Column Names: (choose one) 
+Point Name,XPH,YPH,ZPH,Point Type,PrecisionXY(mm),PrecisionZ(mm)
+> Data: 
+40960_00 -0.7148 4.363501 0.0112 T 1 2
+40960_01 -0.7148 4.3635 3.0912 T 1 2
+40960_10 0.7364 4.363501 0.0112 T 1 2
+40960_11 0.7364 4.3635 3.0912 T 1 2
+40961_00 0.7364 4.3635 0.0112 T 1 2
+40961_01 0.7364 4.363501 -3.0688 T 1 2
+40961_10 -0.7148 4.3635 0.0112 T 1 2
+40961_11 -0.7148 4.363501 -3.0688 T 1 2
+40962_00 -2.17742 3.849361 0.0155 T 1 2
+40962_01 -2.17742 3.849360 3.0955 T 1 2
+40962_10 -0.81374 4.345701 0.0155 T 1 2
+40962_11 -0.81374 4.345700 3.0955 T 1 2
+40963_00 -0.81374 4.345700 0.0155 T 1 2
+40963_01 -0.81374 4.345701 -3.0645 T 1 2
+40963_10 -2.17742 3.849360 0.0155 T 1 2
+40963_11 -2.17742 3.849361 -3.0645 T 1 2
