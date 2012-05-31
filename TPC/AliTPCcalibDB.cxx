@@ -406,7 +406,7 @@ void AliTPCcalibDB::Update(){
   if (entry){
     //if (fPadNoise) delete fPadNoise;
     entry->SetOwner(kTRUE);
-    fParam = (AliTPCParam*)(entry->GetObject()->Clone());
+    fParam = (AliTPCParam*)(entry->GetObject());
   }else{
     AliFatal("TPC - Missing calibration entry TPC/Calib/Parameters");
   }
@@ -414,7 +414,7 @@ void AliTPCcalibDB::Update(){
   entry          = GetCDBEntry("TPC/Calib/ClusterParam");
   if (entry){
     entry->SetOwner(kTRUE);
-    fClusterParam = (AliTPCClusterParam*)(entry->GetObject()->Clone());
+    fClusterParam = (AliTPCClusterParam*)(entry->GetObject());
   }else{
     AliFatal("TPC - Missing calibration entry");
   }
