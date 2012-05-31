@@ -22,6 +22,7 @@
 
 //ROOT
 #include <Riostream.h>
+#include <TCanvas.h>
 #include <TMath.h>
 #include <TAxis.h>
 #include <TH2D.h>
@@ -103,150 +104,61 @@ void AliBalancePsi::InitHistograms() {
   TString axisTitlePair[nTrackVariablesPair];  // axis titles for track variables
 
   //centrality
-  const Int_t kNCentralityBins = 9;
+  /*const Int_t kNCentralityBins = 9;
   Double_t centralityBins[kNCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
-  //const Int_t kNCentralityBins = 200;
-  //Double_t centralityBins[kNCentralityBins+1];
-  //for(Int_t i = 0; i < kNCentralityBins+1; i++)
-  //centralityBins[i] = 0.0 + i * 0.5;
   iBinSingle[0]       = kNCentralityBins;
   dBinsSingle[0]      = centralityBins;
   axisTitleSingle[0]  = "Centrality percentile [%]"; 
   iBinPair[0]       = kNCentralityBins;
   dBinsPair[0]      = centralityBins;
-  axisTitlePair[0]  = "Centrality percentile [%]"; 
+  axisTitlePair[0]  = "Centrality percentile [%]"; */
 
   //Psi_2
-  const Int_t kNPsi2Bins = 24;
-  Double_t psi2Bins[kNPsi2Bins+1];
-  for(Int_t i = 0; i < kNPsi2Bins+1; i++)
-    psi2Bins[i] = 0.0 + i * 7.5;
-  iBinSingle[1]       = kNPsi2Bins;
-  dBinsSingle[1]      = psi2Bins;
-  axisTitleSingle[1]  = "#phi - #Psi_{2} (#circ)";
-  iBinPair[1]       = kNPsi2Bins;
-  dBinsPair[1]      = psi2Bins;
-  axisTitlePair[1]  = "#phi - #Psi_{2} (#circ)"; 
+  const Int_t kNPsi2Bins = 3;
+  Double_t psi2Bins[kNPsi2Bins+1] = {-0.5,0.5,1.5,2.5};
+  iBinSingle[0]       = kNPsi2Bins;
+  dBinsSingle[0]      = psi2Bins;
+  axisTitleSingle[0]  = "#phi - #Psi_{2} (a.u.)";
+  iBinPair[0]       = kNPsi2Bins;
+  dBinsPair[0]      = psi2Bins;
+  axisTitlePair[0]  = "#phi - #Psi_{2} (a.u.)"; 
   
-  // eta
-  /*const Int_t kNEtaBins = 10;
-  Double_t etaBins[kNEtaBins+1];
-  for(Int_t i = 0; i < kNEtaBins+1; i++)
-    etaBins[i] = -1.0 + i * 0.2;
-  iBinSingle[2]       = kNEtaBins;
-  dBinsSingle[2]      = etaBins;
-  axisTitleSingle[2]  = "#eta"; */
-  
-  //#eta of triggered particle
-  /*iBinPair[2]       = kNEtaBins;
-  dBinsPair[2]      = etaBins;
-  axisTitlePair[2]  = "#eta"; */
-
-  // delta eta
-  const Int_t kNDeltaEtaBins = 40;
+   // delta eta
+  const Int_t kNDeltaEtaBins = 80;
   Double_t deltaEtaBins[kNDeltaEtaBins+1];
   for(Int_t i = 0; i < kNDeltaEtaBins+1; i++)
-    deltaEtaBins[i] = -2.0 + i * 0.1;
-  iBinPair[2]       = kNDeltaEtaBins;
-  dBinsPair[2]      = deltaEtaBins;
-  axisTitlePair[2]  = "#Delta #eta"; 
+    deltaEtaBins[i] = -2.0 + i * 0.05;
+  iBinPair[1]       = kNDeltaEtaBins;
+  dBinsPair[1]      = deltaEtaBins;
+  axisTitlePair[1]  = "#Delta #eta"; 
 
-  // y
-  /*const Int_t kNYBins = 40;
-  Double_t yBins[kNYBins+1];
-  for(Int_t i = 0; i < kNYBins+1; i++)
-    yBins[i] = -1.0 + i * 0.05;
-  iBinSingle[3]       = kNYBins;
-  dBinsSingle[3]      = yBins;
-  axisTitleSingle[3]  = "y"; 
-  
-  //y of triggered particle
-  iBinPair[3]       = kNYBins;
-  dBinsPair[3]      = yBins;
-  axisTitlePair[3]  = "y"; */
-
-  // delta y
-  /*const Int_t kNDeltaYBins = 40;
-  Double_t deltaYBins[kNDeltaYBins+1];
-  for(Int_t i = 0; i < kNDeltaYBins+1; i++)
-    deltaYBins[i] = -2.0 + i * 0.1;
-  iBinPair[8]       = kNDeltaYBins;
-  dBinsPair[8]      = deltaYBins;
-  axisTitlePair[8]  = "#Delta y"; */
-
-  // phi
-  /*const Int_t kNPhiBins = 18;
-  Double_t phiBins[kNPhiBins+1];
-  for(Int_t i = 0; i < kNPhiBins+1; i++){
-    phiBins[i] = 0.0 + i * 20.;
-  } 
-  iBinSingle[3]       = kNPhiBins;
-  dBinsSingle[3]      = phiBins;
-  axisTitleSingle[3]  = "#phi (#circ)"; */
-  
-  // delta phi
+   // delta phi
   const Int_t kNDeltaPhiBins = 72;
   Double_t deltaPhiBins[kNDeltaPhiBins+1];
   for(Int_t i = 0; i < kNDeltaPhiBins+1; i++){
     deltaPhiBins[i] = -180.0 + i * 5.;
   } 
-  iBinPair[3]       = kNDeltaPhiBins;
-  dBinsPair[3]      = deltaPhiBins;
-  axisTitlePair[3]  = "#Delta #phi (#circ)"; 
+  iBinPair[2]       = kNDeltaPhiBins;
+  dBinsPair[2]      = deltaPhiBins;
+  axisTitlePair[2]  = "#Delta #phi (#circ)"; 
 
   // pt(trigger-associated)
-  const Int_t kNPtBins = 10;
+  const Int_t kNPtBins = 40;
   Double_t ptBins[kNPtBins+1];
   for(Int_t i = 0; i < kNPtBins+1; i++){
-    ptBins[i] = 0.0 + i * 2.0;
+    ptBins[i] = 0.0 + i * 0.5;
    } 
-  iBinSingle[2]       = kNPtBins;
-  dBinsSingle[2]      = ptBins;
-  axisTitleSingle[2]  = "p_{t}^{trig.} (GeV/c)"; 
+  iBinSingle[1]       = kNPtBins;
+  dBinsSingle[1]      = ptBins;
+  axisTitleSingle[1]  = "p_{t}^{trig.} (GeV/c)"; 
+
+  iBinPair[3]       = kNPtBins;
+  dBinsPair[3]      = ptBins;
+  axisTitlePair[3]  = "p_{t}^{trig.} (GeV/c)"; 
 
   iBinPair[4]       = kNPtBins;
   dBinsPair[4]      = ptBins;
-  axisTitlePair[4]  = "p_{t}^{trig.} (GeV/c)"; 
-
-  iBinPair[5]       = kNPtBins;
-  dBinsPair[5]      = ptBins;
-  axisTitlePair[5]  = "p_{t}^{assoc.} (GeV/c)";   
-
-  // qside
-  /*const Int_t kNQSideBins = 200;
-  Double_t qSideBins[kNQSideBins+1];
-  for(Int_t i = 0; i < kNQSideBins+1; i++)
-    qSideBins[i] = 0.0 + i * 0.02;
-  iBinPair[10]       = kNQSideBins;
-  dBinsPair[10]      = qSideBins;
-  axisTitlePair[10]  = "q_{side} (GeV/c)";
-
-  // qout
-  const Int_t kNQoutBins = 200;
-  Double_t qoutBins[kNQoutBins+1];
-  for(Int_t i = 0; i < kNQoutBins+1; i++)
-    qoutBins[i] = 0.0 + i * 0.02;
-  iBinPair[11]       = kNQoutBins;
-  dBinsPair[11]      = qoutBins;
-  axisTitlePair[11]  = "q_{out} (GeV/c)";
-
-  // qlong
-  const Int_t kNQlongBins = 200;
-  Double_t qlongBins[kNQlongBins+1];
-  for(Int_t i = 0; i < kNQlongBins+1; i++)
-    qlongBins[i] = 0.0 + i * 0.02;
-  iBinPair[12]       = kNQlongBins;
-  dBinsPair[12]      = qlongBins;
-  axisTitlePair[12]  = "q_{long} (GeV/c)";
-
-  // qinv
-  const Int_t kNQinvBins = 200;
-  Double_t qinvBins[kNQinvBins+1];
-  for(Int_t i = 0; i < kNQinvBins+1; i++)
-    qinvBins[i] = 0.0 + i * 0.02;
-  iBinPair[13]       = kNQinvBins;
-  dBinsPair[13]      = qinvBins;
-  axisTitlePair[13]  = "q_{inv} (GeV/c)";*/
+  axisTitlePair[4]  = "p_{t}^{assoc.} (GeV/c)";   
 
   TString histName;
   //+ triggered particles
@@ -312,8 +224,7 @@ void AliBalancePsi::InitHistograms() {
 }
 
 //____________________________________________________________________//
-void AliBalancePsi::CalculateBalance(Float_t fCentrality, 
-				     Double_t gReactionPlane, 
+void AliBalancePsi::CalculateBalance(Double_t gReactionPlane, 
 				     vector<Double_t> **chargeVector) {
   // Calculates the balance function
   fAnalyzedEvents++;
@@ -349,8 +260,10 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
   Double_t pt2 = 0.;
   Double_t energy2 = 0.;
   Double_t phi2    = 0.;
+  Double_t gPsiMinusPhiBin = -10.;
   
   for(i = 0; i < gNtrack; i++) {
+    gPsiMinusPhiBin = -10.;
     charge1 = chargeVector[0]->at(i);
     rap1    = chargeVector[1]->at(i);
     eta1    = chargeVector[2]->at(i);
@@ -361,15 +274,29 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
     pt1     = chargeVector[7]->at(i);
     energy1 = chargeVector[8]->at(i);
     gPsiMinusPhi   = TMath::Abs(phi1 - gReactionPlane);
-    if(gPsiMinusPhi > 180.) gPsiMinusPhi = 360. - gPsiMinusPhi;
+    if((gPsiMinusPhi <= 7.5)||
+       ((172.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 187.5)))
+      gPsiMinusPhiBin = 0.0;
+    else if(((37.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 52.5))||
+	    ((127.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 142.5))||
+	    ((217.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 232.5))||
+	    ((307.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 322.5)))
+      gPsiMinusPhiBin = 1.0;
+    else if(((82.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 97.5))||
+	    ((262.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 277.5)))
+      gPsiMinusPhiBin = 2.0;
+    else continue;
+    //cout<<"phi: "<<phi1<<" - Psi: "<<gReactionPlane<<" - phi - Psi: "<<gPsiMinusPhi<<" - Bin: "<<gPsiMinusPhiBin<<endl; 
+ 
+    //if(gPsiMinusPhi > 180.) gPsiMinusPhi = 360. - gPsiMinusPhi;
     //if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhi = 360. + gPsiMinusPhi;
     
-    trackVarsSingle[0]    =  fCentrality;
-    trackVarsSingle[1]    =  gPsiMinusPhi;
+    //trackVarsSingle[0]    =  fCentrality;
+    trackVarsSingle[0]    =  gPsiMinusPhiBin;
     //trackVarsSingle[2]    =  eta1;
     //trackVarsSingle[3]    =  rap1;
     //trackVarsSingle[3]    =  phi1;  
-    trackVarsSingle[2]    =  pt1;  
+    trackVarsSingle[1]    =  pt1;  
 
     //Printf("Track(a) %d - phi-Psi: %lf",i+1,trackVarsSingle[1]);
     //fill single particle histograms
@@ -434,16 +361,16 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
       if(dphi < -180.) dphi += 360.;  //dphi should be between -180 and 180!
       else if(dphi > 180.) dphi -= 360.; //dphi should be between -180 and 180!
       
-      trackVarsPair[0]    =  fCentrality;             
-      trackVarsPair[1]    =  gPsiMinusPhi;             
+      //trackVarsPair[0]    =  fCentrality;             
+      trackVarsPair[0]    =  gPsiMinusPhiBin;
       //trackVarsPair[2]    =  eta1;
       //trackVarsPair[3]    =  rap1;
       //trackVarsPair[4]    =  phi1;
-      trackVarsPair[2]    =  deta;
+      trackVarsPair[1]    =  deta;
       //trackVarsPair[8]    =  dy;
-      trackVarsPair[3]    =  dphi;
-      trackVarsPair[4]    =  pt1;
-      trackVarsPair[5]    =  pt2;
+      trackVarsPair[2]    =  dphi;
+      trackVarsPair[3]    =  pt1;
+      trackVarsPair[4]    =  pt2;
       //trackVarsPair[10]   =  qSide;
       //trackVarsPair[11]   =  qOut;
       //trackVarsPair[12]   =  qLong;
@@ -462,33 +389,23 @@ void AliBalancePsi::CalculateBalance(Float_t fCentrality,
 //____________________________________________________________________//
 TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
 						 Int_t iVariablePair,
-						 Double_t centrMin, 
-						 Double_t centrMax, 
 						 Double_t psiMin, 
 						 Double_t psiMax) {
   //Returns the BF histogram, extracted from the 6 AliTHn objects 
   //(private members) of the AliBalancePsi class.
-  //iVariableSingle: 2(eta), 3(y), 4(phi) 
-  //iVariablePair: 2(Delta eta), 3(Delta y), 4(Delta phi), 5(qside), 6(qout), 7(qlong) 8(qinv) 
+  //iVariableSingle: 0(phi-Psi), 1(pt-trigger)
+  //iVariablePair: 0(phi-Psi) 1(Delta eta), 2(Delta phi), 3(pt-trigger), 4(pt-associated
   TString gAnalysisType[ANALYSIS_TYPES] = {"y","eta","phi","qlong","qout","qside","qinv"};
   TString histName = "gHistBalanceFunctionHistogram";
   histName += gAnalysisType[iVariablePair];
 
-  // centrality
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-
   // Psi_2
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
 
   //Printf("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0));
 
@@ -506,33 +423,13 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
     gHistBalanceFunctionHistogram->Reset();
     
     switch(iVariablePair) {
-    case 2:
+    case 1:
       gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta #eta");
       gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(#Delta #eta)");
       break;
-    case 3:
-      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta y");
-      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(#Delta y)");
-      break;
-    case 4:
+    case 2:
       gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta #phi (deg.)");
       gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(#Delta #phi)");
-      break;
-    case 5:
-      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("q_{side} (GeV/c)");
-      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(q_{side})");
-      break;
-    case 6:
-      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("q_{out} (GeV/c)");
-      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(q_{out})");
-      break;
-    case 7:
-      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("q_{long} (GeV/c)");
-      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(q_{long})");
-      break;
-    case 8:
-      gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("q_{inv} (GeV/c)");
-      gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("B(q_{inv})");
       break;
     default:
       break;
@@ -554,50 +451,100 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
 }
 
 //____________________________________________________________________//
-TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t centrMin, 
-					      Double_t centrMax, 
-					      Double_t psiMin, 
+TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin, 
+							Double_t psiMax) {
+  //Returns the BF histogram in Delta eta vs Delta phi, 
+  //extracted from the 6 AliTHn objects 
+  //(private members) of the AliBalancePsi class.
+  //iVariableSingle: 0(phi-Psi), 1(pt-trigger)
+  //iVariablePair: 0(phi-Psi) 1(Delta eta), 2(Delta phi), 3(pt-trigger), 4(pt-associated
+  TString histName = "gHistBalanceFunctionHistogram2D";
+
+  // Psi_2
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+
+  Printf("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0));
+
+  // Project into the wanted space (1st: analysis step, 2nd: axis)
+  TH2D* hTemp1 = (TH2D*)fHistPN->Project(0,1,2);
+  TH2D* hTemp2 = (TH2D*)fHistNP->Project(0,1,2);
+  TH2D* hTemp3 = (TH2D*)fHistPP->Project(0,1,2);
+  TH2D* hTemp4 = (TH2D*)fHistNN->Project(0,1,2);
+  TH1D* hTemp5 = (TH1D*)fHistP->Project(0,1);
+  TH1D* hTemp6 = (TH1D*)fHistN->Project(0,1);
+
+  TH2D *gHistBalanceFunctionHistogram = 0x0;
+  if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)&&(hTemp5)&&(hTemp6)) {
+    gHistBalanceFunctionHistogram = (TH2D*)hTemp1->Clone();
+    gHistBalanceFunctionHistogram->Reset();
+    gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta #eta");   
+    gHistBalanceFunctionHistogram->GetYaxis()->SetTitle("#Delta #phi (deg.)");
+    gHistBalanceFunctionHistogram->GetZaxis()->SetTitle("B(#Delta #eta,#Delta #phi)");   
+    
+    hTemp1->Sumw2();
+    hTemp2->Sumw2();
+    hTemp3->Sumw2();
+    hTemp4->Sumw2();
+    hTemp1->Add(hTemp3,-1.);
+    hTemp1->Scale(1./hTemp5->GetEntries());
+    hTemp2->Add(hTemp4,-1.);
+    hTemp2->Scale(1./hTemp6->GetEntries());
+    gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
+    gHistBalanceFunctionHistogram->Scale(0.5);
+  }
+
+  return gHistBalanceFunctionHistogram;
+}
+
+//____________________________________________________________________//
+TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin, 
 					      Double_t psiMax) {
   //Returns the 2D correlation function for (+-) pairs
-  // centrality: axis 0
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  
-  // Psi_2: axis 1
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-  fHistPN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-    
+  // Psi_2: axis 0
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  //fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(-0.5,2.5); 
+  //fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(-0.5,2.5); 
+
+  TH2D *gHistTest = dynamic_cast<TH2D *>(fHistP->Project(0,0,1));
+  TCanvas *c1 = new TCanvas("c1","");
+  gHistTest->DrawCopy("colz");
+
   //0:step, 2: Delta eta, 3: Delta phi
-  TH2D *gHist = dynamic_cast<TH2D *>(fHistPN->Project(0,2,3));
+  TH2D *gHist = dynamic_cast<TH2D *>(fHistPN->Project(0,1,2));
   if(!gHist){
     AliError("Projection of fHistPN = NULL");
     return gHist;
   }
 
-  //Printf("Entries (1D): %lf",(Double_t)(fHistP->Project(0,2)->GetEntries()));
-  //Printf("Entries (2D): %lf",(Double_t)(fHistPN->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistP->Project(0,2)->GetEntries())!=0)
-    gHist->Scale(1./(Double_t)(fHistP->Project(0,2)->GetEntries()));
+  Printf("Entries (test): %lf",(Double_t)(gHistTest->GetEntries()));
+  Printf("Entries (1D): %lf",(Double_t)(fHistP->Project(0,1)->GetEntries()));
+  Printf("Entries (2D): %lf",(Double_t)(fHistPN->Project(0,1,2)->GetEntries()));
+  
+  TCanvas *c2 = new TCanvas("c2","");
+  fHistPN->Project(0,1,2)->DrawCopy("colz");
+
+  if((Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
+    gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->GetEntries()));
     
   return gHist;
 }
 
 //____________________________________________________________________//
-TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t centrMin, 
-					      Double_t centrMax, 
-					      Double_t psiMin, 
+TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin, 
 					      Double_t psiMax) {
   //Returns the 2D correlation function for (+-) pairs
-  // centrality: axis 0
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  
-  // Psi_2: axis 1
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-  fHistNP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
+  // Psi_2: axis 0
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
     
   //0:step, 2: Delta eta, 3: Delta phi
-  TH2D *gHist = dynamic_cast<TH2D *>(fHistNP->Project(0,2,3));
+  TH2D *gHist = dynamic_cast<TH2D *>(fHistNP->Project(0,1,2));
   if(!gHist){
     AliError("Projection of fHistPN = NULL");
     return gHist;
@@ -605,28 +552,22 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t centrMin,
 
   //Printf("Entries (1D): %lf",(Double_t)(fHistN->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistNP->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistN->Project(0,2)->GetEntries())!=0)
-    gHist->Scale(1./(Double_t)(fHistN->Project(0,2)->GetEntries()));
+  if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
+    gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries()));
     
   return gHist;
 }
 
 //____________________________________________________________________//
-TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t centrMin, 
-					      Double_t centrMax, 
-					      Double_t psiMin, 
+TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin, 
 					      Double_t psiMax) {
   //Returns the 2D correlation function for (+-) pairs
-  // centrality: axis 0
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  
-  // Psi_2: axis 1
-  fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-  fHistPP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
+  // Psi_2: axis 0
+  fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
       
   //0:step, 2: Delta eta, 3: Delta phi
-  TH2D *gHist = dynamic_cast<TH2D *>(fHistPP->Project(0,2,3));
+  TH2D *gHist = dynamic_cast<TH2D *>(fHistPP->Project(0,1,2));
   if(!gHist){
     AliError("Projection of fHistPN = NULL");
     return gHist;
@@ -634,28 +575,22 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t centrMin,
 
   //Printf("Entries (1D): %lf",(Double_t)(fHistP->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistPP->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistP->Project(0,2)->GetEntries())!=0)
-    gHist->Scale(1./(Double_t)(fHistP->Project(0,2)->GetEntries()));
+  if((Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
+    gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->GetEntries()));
   
   return gHist;
 }
 
 //____________________________________________________________________//
-TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t centrMin, 
-					      Double_t centrMax, 
-					      Double_t psiMin, 
+TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin, 
 					      Double_t psiMax) {
   //Returns the 2D correlation function for (+-) pairs
-  // centrality: axis 0
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(centrMin,centrMax); 
-  
-  // Psi_2: axis 1
-  fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
-  fHistNN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(psiMin,psiMax); 
+  // Psi_2: axis 0
+  fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
+  fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
     
   //0:step, 2: Delta eta, 3: Delta phi
-  TH2D *gHist = dynamic_cast<TH2D *>(fHistNN->Project(0,2,3));
+  TH2D *gHist = dynamic_cast<TH2D *>(fHistNN->Project(0,1,2));
   if(!gHist){
     AliError("Projection of fHistPN = NULL");
     return gHist;
@@ -663,8 +598,9 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t centrMin,
 
   //Printf("Entries (1D): %lf",(Double_t)(fHistN->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistNN->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistN->Project(0,2)->GetEntries())!=0)
-    gHist->Scale(1./(Double_t)(fHistN->Project(0,2)->GetEntries()));
+  if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
+    gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries()));
     
   return gHist;
 }
+
