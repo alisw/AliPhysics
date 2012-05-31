@@ -399,22 +399,21 @@ Int_t AliAnalysisTaskFlowStrange::PassesESDCuts(AliESDv0 *myV0, AliESDEvent *tES
   if(dD0D0>fV0Cuts[4]) passes = 0;
   if(dETA <fV0Cuts[6]) passes = 0;
   if(dETA >fV0Cuts[7]) passes = 0;
-  switch(fSpecie) {
-  case 0: // K0
-    if(dQT<fV0Cuts[5]) passes = 0;
-    if(fV0Cuts[8]) { //PID
+  if(fSpecie==0) if(dQT<fV0Cuts[5]) passes = 0;
+
+  if(passes&&fV0Cuts[8]) {
+    switch(fSpecie) {
+    case 0: // K0 PID
       if( (jT->GetInnerParam()->GetP()<15) &&
 	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>3.) )
 	passes = 0;
       if( (iT->GetInnerParam()->GetP()<15) &&
 	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>3.) )
 	passes = 0;
-    }
-    break;
-  case 1: // Lambda
-    Int_t antilambda=2;
-    Int_t lambda=1;
-    if(fV0Cuts[8]) { // PID i==pos j==neg
+      break;
+    case 1: // Lambda PID i==pos j==neg
+      Int_t antilambda=2;
+      Int_t lambda=1;
       // antilambda p- pi+
       if( (iT->GetInnerParam()->GetP()<15) && 
 	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>3.) )
@@ -429,9 +428,9 @@ Int_t AliAnalysisTaskFlowStrange::PassesESDCuts(AliESDv0 *myV0, AliESDEvent *tES
       if( (jT->GetInnerParam()->GetP()<15) && 
 	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>3.) )
 	lambda = 0;
+      passes=lambda+antilambda;
+      break;
     }
-    passes=passes?lambda+antilambda:passes;
-    break;
   }
   return passes;
 }
@@ -544,22 +543,21 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
   if(dD0D0>fV0Cuts[4]) passes = 0;
   if(dETA <fV0Cuts[6]) passes = 0;
   if(dETA >fV0Cuts[7]) passes = 0;
-  switch(fSpecie) {
-  case 0: // K0
-    if(dQT<fV0Cuts[5]) passes = 0;
-    if(fV0Cuts[8]) { //PID
+  if(fSpecie==0) if(dQT<fV0Cuts[5]) passes = 0;
+
+  if(passes&&fV0Cuts[8]) {
+    switch(fSpecie) {
+    case 0: // K0 PID
       if( (jT->GetTPCmomentum()<15) &&
 	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>3.) )
 	passes = 0;
       if( (iT->GetTPCmomentum()<15) &&
 	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>3.) )
 	passes = 0;
-    }
-    break;
-  case 1: // Lambda
-    Int_t antilambda=2;
-    Int_t lambda=1;
-    if(fV0Cuts[8]) { // PID  i==pos j ==neg
+      break;
+    case 1: // Lambda PID  i==pos j ==neg
+      Int_t antilambda=2;
+      Int_t lambda=1;
       // antilambda p- pi+
       if( (iT->GetTPCmomentum()<15) &&
 	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>3.) )
@@ -574,9 +572,9 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
       if( (jT->GetTPCmomentum()<15) &&
 	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>3.) )
 	lambda = 0;
+      passes=lambda+antilambda;
+      break;
     }
-    passes=lambda+antilambda;
-    break;
   }
   return passes;
 }
@@ -629,28 +627,19 @@ void AliAnalysisTaskFlowStrange::SetCuts2010(int set) {
   // defines cuts to be used
   // fV0Cuts[9] dl dca ctp d0 d0d0 qt minEta maxEta PID
   switch(set) {
-  case(0): // High purity NO PID
-    fV0Cuts[0] = +0.5; fV0Cuts[1] = +0.5; fV0Cuts[2] = +0.998;
-    fV0Cuts[3] = +0.1; fV0Cuts[4] = +0.0; fV0Cuts[5] = +0.105;
-    fV0Cuts[6] = -0.8; fV0Cuts[7] = +0.8; fV0Cuts[8] = 0;
-    break;
-  case(1): // High purity PID
-    fV0Cuts[0] = +0.5; fV0Cuts[1] = +0.5; fV0Cuts[2] = +0.998;
-    fV0Cuts[3] = +0.1; fV0Cuts[4] = +0.0; fV0Cuts[5] = +0.105;
-    fV0Cuts[6] = -0.8; fV0Cuts[7] = +0.8; fV0Cuts[8] = 1;
-    break;
-  case(2): // Low purity
+  case(0): // No cuts
     fV0Cuts[0] = -1e+6; fV0Cuts[1] = +1e+6; fV0Cuts[2] = -1e+6;
     fV0Cuts[3] = -1e+6; fV0Cuts[4] = +1e+6; fV0Cuts[5] = -1e+6;
     fV0Cuts[6] = -1e+6; fV0Cuts[7] = +1e+6; fV0Cuts[8] = 0;
-    //    fV0Cuts[0] = +0.0; fV0Cuts[1] = +1.0; fV0Cuts[2] = +0.998;
-    //    fV0Cuts[3] = +0.1; fV0Cuts[4] = +0.0; fV0Cuts[5] = +0.105;
-    //    fV0Cuts[6] = -0.8; fV0Cuts[7] = +0.8; fV0Cuts[8] = 0;
-    break;
-  case(3): // Marian Putis QM2011
-    fV0Cuts[0] = +0.0; fV0Cuts[1] = +1.0; fV0Cuts[2] = +0.998;
-    fV0Cuts[3] = +0.1; fV0Cuts[4] =99999; fV0Cuts[5] = +0.105;
+  case(1): // Tight cuts
+    fV0Cuts[0] = +0.5; fV0Cuts[1] = +0.5; fV0Cuts[2] = +0.998;
+    fV0Cuts[3] = +0.1; fV0Cuts[4] = +0.0; fV0Cuts[5] = +0.105;
     fV0Cuts[6] = -0.8; fV0Cuts[7] = +0.8; fV0Cuts[8] = 0;
+    break;
+  case(2): // Tight cuts + PID
+    fV0Cuts[0] = +0.5; fV0Cuts[1] = +0.5; fV0Cuts[2] = +0.998;
+    fV0Cuts[3] = +0.1; fV0Cuts[4] = +0.0; fV0Cuts[5] = +0.105;
+    fV0Cuts[6] = -0.8; fV0Cuts[7] = +0.8; fV0Cuts[8] = 1;
     break;
   }
 }

@@ -1,5 +1,15 @@
-void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString suffixName="",
-			int specie=0, int cuts=1, char* MULT="V0M", int harmonic=2) {
+void AddTaskFlowStrange(int trigger, int centrMin, int centrMax, int harmonic=2) {
+  AddStrangeWagon(trigger,centrMin,centrMax,"K0",Form("K%d%dc%d",centrMin,centrMax,0),0,0,"V0M",harmonic);
+  AddStrangeWagon(trigger,centrMin,centrMax,"K0",Form("K%d%dc%d",centrMin,centrMax,1),0,1,"V0M",harmonic);
+  AddStrangeWagon(trigger,centrMin,centrMax,"K0",Form("K%d%dc%d",centrMin,centrMax,2),0,2,"V0M",harmonic);
+  AddStrangeWagon(trigger,centrMin,centrMax,"K0",Form("K%d%dc%dTRK",centrMin,centrMax,1),0,1,"TRK",harmonic);
+  AddStrangeWagon(trigger,centrMin,centrMax,"L0",Form("L%d%dc%d",centrMin,centrMax,0),1,0,"V0M",harmonic);
+  AddStrangeWagon(trigger,centrMin,centrMax,"L0",Form("L%d%dc%d",centrMin,centrMax,1),1,1,"V0M",harmonic);
+  AddStrangeWagon(trigger,centrMin,centrMax,"L0",Form("L%d%dc%d",centrMin,centrMax,2),1,2,"V0M",harmonic);
+  AddStrangeWagon(trigger,centrMin,centrMax,"L0",Form("L%d%dc%dTRK",centrMin,centrMax,1),1,1,"TRK",harmonic);
+}
+void AddStrangeWagon(int trigger, float centrMin, float centrMax, TString folderName="myFolder", TString suffixName="mySuffix", 
+	      int specie=0, int cuts=1, char* MULT="V0M", int harmonic=2) {
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName.ReplaceAll(".root","");
 
@@ -46,7 +56,7 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString suf
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    Form("%s.root:Selector_%s",fileName.Data(),
-								 suffixName.Data()));
+								 folderName.Data()));
   AliAnalysisDataContainer *exc_TPC = mgr->CreateContainer( Form("TPCEventWithCandidates_%s",suffixName.Data()),
                                                             AliFlowEventSimple::Class(),
                                                             AliAnalysisManager::kExchangeContainer );
@@ -74,17 +84,18 @@ void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString suf
     filterhf[mb][1]->SetEtaMin( -0.8 ); filterhf[mb][1]->SetEtaMax( 0.0 );
     filterhf[mb][1]->SetMassMin( MassBandLowEdge(specie,mb) ); filterhf[mb][1]->SetMassMax( MassBandLowEdge(specie,mb+1) );
 
-    AddQCmethod( Form("QCTPCMB%d",mb), fileName.Data(), suffixName.Data(), harmonic, exc_TPC, filter[mb]); // QC TPC
-    AddSPmethod( Form("SPTPCMB%d",mb), fileName.Data(), suffixName.Data(), harmonic, exc_TPC, filterhf[mb][0], "Qa" ); // SP TPC Qa
-    AddSPmethod( Form("SPTPCMB%d",mb), fileName.Data(), suffixName.Data(), harmonic, exc_TPC, filterhf[mb][1], "Qb" ); // SP TPC Qb
-    AddSPmethod( Form("SPVZEMB%d",mb), fileName.Data(), suffixName.Data(), harmonic, exc_VZE, filter[mb], "Qa" ); // SP VZE Qa
-    AddSPmethod( Form("SPVZEMB%d",mb), fileName.Data(), suffixName.Data(), harmonic, exc_VZE, filter[mb], "Qb" ); // SP VZE Qa
+    AddQCmethod( Form("QCTPCMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_TPC, filter[mb]); // QC TPC
+    AddSPmethod( Form("SPTPCMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_TPC, filterhf[mb][0], "Qa" ); // SP TPC Qa
+    AddSPmethod( Form("SPTPCMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_TPC, filterhf[mb][1], "Qb" ); // SP TPC Qb
+    AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_VZE, filter[mb], "Qa" ); // SP VZE Qa
+    AddSPmethod( Form("SPVZEMB%d",mb), folderName.Data(), suffixName.Data(), harmonic, exc_VZE, filter[mb], "Qb" ); // SP VZE Qa
   }
 }
 
-void AddQCmethod(char *name, char *fileName, char *thecuts, int harmonic, 
+void AddQCmethod(char *name, TString myFolder, char *thecuts, int harmonic, 
 		 AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI=NULL) {
-  TString myFolder = Form("v%d_%s",harmonic,thecuts);
+  TString fileName = AliAnalysisManager::GetCommonFileName();
+  myFolder.Append( Form("v%d",harmonic) );
   TString myName = Form("%sv%d_%s",name,harmonic,thecuts);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer( Form("Filter_%s", myName.Data()),
@@ -96,7 +107,7 @@ void AddQCmethod(char *name, char *fileName, char *thecuts, int harmonic,
   mgr->ConnectInput( tskFilter,0,flowEvent);
   mgr->ConnectOutput(tskFilter,1,flowEvent2);
   AliAnalysisDataContainer *outQC = mgr->CreateContainer( myName.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,
-                                                          Form("%s.root:FlowStrange_QC_%s",fileName,myFolder.Data()) );
+                                                          Form("%s:FlowStrange_QC_%s",fileName.Data(),myFolder.Data()) );
   AliAnalysisTaskQCumulants *tskQC = new AliAnalysisTaskQCumulants( Form("TaskQCumulants_%s",myName.Data()),kFALSE );
   tskQC->SetApplyCorrectionForNUA(kTRUE);
   tskQC->SetHarmonic(harmonic);
@@ -107,10 +118,11 @@ void AddQCmethod(char *name, char *fileName, char *thecuts, int harmonic,
 }
 
 
-void AddSPmethod(char *name, char *fileName, char *thecuts, int harmonic,
+void AddSPmethod(char *name, TString myFolder, char *thecuts, int harmonic,
 		 AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI=NULL,
                  char *Qvector) {
-  TString myFolder = Form("v%d_%s",harmonic,thecuts);
+  TString fileName = AliAnalysisManager::GetCommonFileName();
+  myFolder.Append( Form("v%d",harmonic) );
   TString myNameSP = Form("%sv%d%s_%s",name,harmonic,Qvector,thecuts);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer( Form("Filter_%s", myNameSP.Data()),
@@ -123,7 +135,7 @@ void AddSPmethod(char *name, char *fileName, char *thecuts, int harmonic,
   mgr->ConnectInput( tskFilter,0,flowEvent);
   mgr->ConnectOutput(tskFilter,1,flowEvent2);
   AliAnalysisDataContainer *outSP = mgr->CreateContainer( myNameSP.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,
-                                                          Form("%s.root:FlowStrange_SP_%s",fileName,myFolder.Data()) );
+                                                          Form("%s:FlowStrange_SP_%s",fileName.Data(),myFolder.Data()) );
   AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct( Form("TaskScalarProduct_%s",myNameSP.Data()),kFALSE);
   tskSP->SetApplyCorrectionForNUA(kTRUE);
   tskSP->SetHarmonic(harmonic);
