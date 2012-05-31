@@ -326,6 +326,11 @@ UInt_t AliEMCALPreprocessor::MapTemperature(TMap* dcsAliasMap)
 //______________________________________________________________________________________________
 UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
 { // extract DCS trigger info
+	
+	
+	AliInfo("Print DCS alias map content");
+	dcsAliasMap->Print();
+	
   AliInfo(Form("Get TRU info from DCS DPs.\n"));
   Int_t i, iTRU;
   const Int_t bufsize = 1000;
