@@ -152,8 +152,8 @@ private:
    TH2F      *fh2JetCoreMethod2C30;          //Energy fraction in the core C30 method 2
    TH2F      *fh2JetCoreMethod1C60;          //Energy fraction in the core C60 method 1
    TH2F      *fh2JetCoreMethod2C60;          //Energy fraction in the core C60 method 2
-     TH2F*      fh2JetTrackC10;         //C10 pt2
-     TH2F*      fh2JetTrackC20;         //C10 pt2
+     TH3F*      fh3JetTrackC10;         //C10 pt2
+     TH3F*      fh3JetTrackC20;         //C10 pt2
      TH2F*      fh2AngStructpt1C10;         //Average 
      TH2F*      fh2AngStructpt2C10;         //C10 pt2
      TH2F*      fh2AngStructpt3C10;         //C10 pt3

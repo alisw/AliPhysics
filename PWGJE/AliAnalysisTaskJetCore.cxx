@@ -105,8 +105,8 @@ fh2JetCoreMethod1C30(0x0),
 fh2JetCoreMethod2C30(0x0),
 fh2JetCoreMethod1C60(0x0),
 fh2JetCoreMethod2C60(0x0),
-fh2JetTrackC10(0x0),
-fh2JetTrackC20(0x0),
+fh3JetTrackC10(0x0),
+fh3JetTrackC20(0x0),
 fh2AngStructpt1C10(0x0),
 fh2AngStructpt2C10(0x0),
 fh2AngStructpt3C10(0x0),
@@ -266,8 +266,8 @@ fh2JetCoreMethod1C30(0x0),
 fh2JetCoreMethod2C30(0x0),
 fh2JetCoreMethod1C60(0x0),
 fh2JetCoreMethod2C60(0x0),
-fh2JetTrackC10(0x0),
-fh2JetTrackC20(0x0),
+fh3JetTrackC10(0x0),
+fh3JetTrackC20(0x0),
 fh2AngStructpt1C10(0x0),
 fh2AngStructpt2C10(0x0),
 fh2AngStructpt3C10(0x0),
@@ -464,8 +464,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2JetCoreMethod1C60 = new TH2F("JetCoreMethod1C60","",150, 0., 150.,100, 0., 1.5);
     fh2JetCoreMethod2C60 = new TH2F("JetCoreMethod2C60","",150, 0., 150.,100, 0., 1.5);}
 
-    fh2JetTrackC10=new TH2F("JetTrackC10","",150,0.,150.,32,0,3.2);
-    fh2JetTrackC20=new TH2F("JetTrackC20","",150,0.,150.,32,0,3.2);
+    fh3JetTrackC10=new TH3F("JetTrackC10","",50,0,50,150,0.,150.,32,0,3.2);
+    fh3JetTrackC20=new TH3F("JetTrackC20","",50,0,50,150,0.,150.,32,0,3.2);
    
     if(fAngStructCloseTracks>0){
     fh2AngStructpt1C10 = new TH2F("Ang struct pt1 C10","",15,0.,1.5,150,0.,10.);
@@ -582,8 +582,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
       fOutputList->Add(fh2JetCoreMethod1C60);
       fOutputList->Add(fh2JetCoreMethod2C60);}
       
-      fOutputList->Add(fh2JetTrackC10);
-      fOutputList->Add(fh2JetTrackC20);
+      fOutputList->Add(fh3JetTrackC10);
+      fOutputList->Add(fh3JetTrackC20);
             
      
 
@@ -899,12 +899,11 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
            areabig = jetbig->EffectiveAreaCharged();
            Double_t ptcorr=ptbig-rho*areabig;
       	   if((etabig<fJetEtaMin)||(etabig>fJetEtaMax)) continue;
-          
            if(areabig>=0.2) injet=injet+1;
            if(areabig>=0.4) injet4=injet4+1;   
            Double_t dphi=RelativePhi(partback->Phi(),phibig);  
-           if(centValue<10.) fh2JetTrackC10->Fill(ptcorr,TMath::Abs(dphi));
-           if(centValue<20.) fh2JetTrackC20->Fill(ptcorr,TMath::Abs(dphi));
+           if(centValue<10.) fh3JetTrackC10->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));
+           if(centValue<20.) fh3JetTrackC20->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));
 
            if(TMath::Abs(dphi)<TMath::Pi()-0.6) continue;
                    Double_t dismin=100.;
