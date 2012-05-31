@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet=1,Int_t centRange=0, Bool_t mcMode=kFALSE, Bool_t mcTruthMode=kFALSE,Bool_t onFly=kTRUE,Bool_t usePID=kFALSE,Double_t etaCut,Bool_t mcEtaCut){
+AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet=1,Int_t centRange=0, Bool_t mcMode=kFALSE, Bool_t mcTruthMode=kFALSE,Bool_t onFly=kTRUE,Bool_t usePID=kFALSE,Double_t etaCut,Bool_t mcEtaCut){
    
   
   
