@@ -124,6 +124,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fClsETime(0)       
   ,fClsETime1(0)       
   ,fTrigTimes(0)
+  ,fCellCheck(0)
 {
   //Named constructor
   
@@ -189,6 +190,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fClsETime(0)       
   ,fClsETime1(0)       
   ,fTrigTimes(0)
+  ,fCellCheck(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -276,6 +278,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 	
  // Calorimeter info.
  
+   FindTriggerClusters();
+
   // make EMCAL array 
   for(Int_t iCluster=0; iCluster<fESD->GetNumberOfCaloClusters(); iCluster++)
      {
@@ -382,7 +386,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       }
     }
         
-    fdEdxBef->Fill(mom,dEdx);
+    fdEdxBef->Fill(mom,fTPCnSigma);
     fTPCnsigma->Fill(mom,fTPCnSigma);
     if(fTPCnSigma >= -1.0 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,eop);
 
@@ -401,7 +405,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(pidpassed==0) continue;
     
     fTrkEovPAft->Fill(pt,eop);
-    fdEdxAft->Fill(mom,dEdx);
+    fdEdxAft->Fill(mom,fTPCnSigma);
 
     fIncpT->Fill(cent,pt);    
     if(fFlagPhotonicElec) fPhoElecPt->Fill(cent,pt);
@@ -419,11 +423,29 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 //_________________________________________
 void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 {
+  //--- Check MC
+ 
+  Bool_t mcData = kFALSE;
+  if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())
+    {
+     mcData = kTRUE;
+     printf("+++++ MC Data available");
+    }
+  if(mcData)
+    {
+     printf("++++++++= MC analysis \n");
+    }
+  else
+   {
+     printf("++++++++ real data analysis \n");
+   }
+
   //---- Geometry
   fGeom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
 
   //--------Initialize PID
-  fPID->SetHasMCData(kFALSE);
+  //fPID->SetHasMCData(kFALSE);
+  fPID->SetHasMCData(mcData);
   if(!fPID->GetNumberOfPIDdetectors()) 
     {
       fPID->AddDetector("TPC", 0);
@@ -480,10 +502,10 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fTrkEovPAft = new TH2F("fTrkEovPAft","track E/p after HFE pid",100,0,50,100,0,2);
   fOutputList->Add(fTrkEovPAft);
   
-  fdEdxBef = new TH2F("fdEdxBef","track dEdx vs p before HFE pid",100,0,50,150,0,150);
+  fdEdxBef = new TH2F("fdEdxBef","track dEdx vs p before HFE pid",100,0,50,200,-10,10);
   fOutputList->Add(fdEdxBef);
   
-  fdEdxAft = new TH2F("fdEdxAft","track dEdx vs p after HFE pid",100,0,50,150,0,150);
+  fdEdxAft = new TH2F("fdEdxAft","track dEdx vs p after HFE pid",100,0,50,200,-10,10);
   fOutputList->Add(fdEdxAft);
   
   fIncpT = new TH2F("fIncpT","HFE pid electro vs. centrality",100,0,100,100,0,50);
@@ -567,6 +589,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fTrigTimes = new TH1F("fTrigTimes", "Trigger time; time; N;",25,0,25);
   fOutputList->Add(fTrigTimes);
+
+  fCellCheck = new TH2F("fCellCheck", "Cell vs E; E GeV; Cell ID",10,6,26,12000,0,12000);
+  fOutputList->Add(fCellCheck);
 
   PostData(1,fOutputList);
 }
@@ -774,7 +799,7 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
   Short_t cellAddr, nSACell, mclabel;
   //Int_t nSACell, iSACell, mclabel;
   Int_t iSACell;
-  Double_t cellAmp=0, cellTimeT=0, clusterTime=0, efrac;
+  Double_t cellAmp=0, cellTimeT=0, clusterTime=0, efrac=0;
   Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta, gphi, geta, feta, fphi;
 
   TRefArray *fCaloClusters = new TRefArray();
@@ -848,6 +873,9 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
     // any cluster with a cell outside acceptance is not considered
     for( iCell = 0; iCell < nCell; iCell++ )
     {
+     // check hot cell
+     if(clsE>6.0)fCellCheck->Fill(clsE,cellAddrs[iCell]); 
+
       // get cell position
       fGeom->GetCellIndex( cellAddrs[iCell], nSupMod, nModule, nIphi, nIeta );
       fGeom->GetCellPhiEtaIndexInSModule( nSupMod,nModule, nIphi, nIeta, iphi, ieta);
