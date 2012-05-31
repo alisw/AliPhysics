@@ -115,6 +115,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F        *fClsETime; //ClsE vs time distribution
   TH2F        *fClsETime1; //ClsE vs time distribution
   TH1F        *fTrigTimes;// trigger time
+  TH2F        *fCellCheck;// trigger time
 
 
   AliAnalysisTaskHFECal(const AliAnalysisTaskHFECal&); // not implemented
