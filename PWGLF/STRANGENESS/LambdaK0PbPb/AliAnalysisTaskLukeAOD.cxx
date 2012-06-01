@@ -1375,7 +1375,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		if(k0Candidate &&  centPercentile >= 0.0001 && centPercentile <= 90.0 &&!feeddown )
 		{ fHistArmPodK0->Fill(ArmenterosAlpha,ArmenterosPt); }
 		
-		if( ArmenterosPt <= TMath::Abs(cutArmenteros*ArmenterosAlpha) && cutArmenteros !=-999 )
+		if( ArmenterosPt < TMath::Abs(cutArmenteros*ArmenterosAlpha) && cutArmenteros !=-999 )
 		{k0Candidate = false;}
 		
 		if(lambdaCandidate)

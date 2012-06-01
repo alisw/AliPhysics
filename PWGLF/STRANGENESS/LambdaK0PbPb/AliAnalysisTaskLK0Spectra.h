@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKPERFORMANCESTRANGE_H
-#define ALIANALYSISTASKPERFORMANCESTRANGE_H
+#ifndef ALIANALYSISTASKLK0SPECTRA_H
+#define ALIANALYSISTASKLK0SPECTRA_H
 
 /*  See cxx source for full Copyright notice */
 
@@ -19,11 +19,11 @@ class AliAnalysisCentralitySelector;
 class AliPIDResponse;
 #include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
+class AliAnalysisTaskLK0Spectra : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskPerformanceStrange();
-  AliAnalysisTaskPerformanceStrange(const char *name);
-  virtual ~AliAnalysisTaskPerformanceStrange(); // Destructor implemented by Kalinak  
+  AliAnalysisTaskLK0Spectra();
+  AliAnalysisTaskLK0Spectra(const char *name);
+  virtual ~AliAnalysisTaskLK0Spectra(); // Destructor implemented by Kalinak  
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -331,7 +331,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
 
 /////////////////////////////////////////////
 
- // TH2F        *fHistArmenterosPodolanski;       //! Histo
+  TH2F        *fHistArmenterosPodolanski;       //! Histo
  // TH2F        *fHistK0sMassVsLambdaMass;       //! Histo
 
   //PID check
@@ -482,10 +482,10 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistAsMcSecondaryPtAntiLambdaFromSigma;       //! Histo
 */
 
-  AliAnalysisTaskPerformanceStrange(const AliAnalysisTaskPerformanceStrange&); 
-  AliAnalysisTaskPerformanceStrange& operator=(const AliAnalysisTaskPerformanceStrange&); 
+  AliAnalysisTaskLK0Spectra(const AliAnalysisTaskLK0Spectra&); 
+  AliAnalysisTaskLK0Spectra& operator=(const AliAnalysisTaskLK0Spectra&); 
 
-  ClassDef(AliAnalysisTaskPerformanceStrange, 1); 
+  ClassDef(AliAnalysisTaskLK0Spectra, 1); 
 };
 
 #endif

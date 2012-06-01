@@ -57,7 +57,7 @@ class AliAnalysisTaskPerformanceStrangeAOD : public AliAnalysisTaskSE {
   Bool_t      fQASelector;                    // Quality Assurenc Histo switch
   Int_t       fCentMin;                       // Centrality bin minimum
   Int_t       fCentMax;                       // Centrality bin maximum
-  Bool_t	  fArmenterosCut;			  // value of gradient for Armenteros cut; 0 -> OFF
+  Double_t	  fArmenterosCut;			  // value of gradient for Armenteros cut; 0 -> OFF
 	
   // MC histograms
   TH1F        *fHistMCPrimaryVertexX;      //! Histo

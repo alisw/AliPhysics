@@ -14,7 +14,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------
-//	        AliAnalysisTaskPerformanceStrange class
+//	        AliAnalysisTaskLK0Spectra class
 //    This task is for a performance study of V0 identification.
 //                It works with MC info and ESD tree.
 //                 Author: H.Ricaud, H.Ricaud@gsi.de
@@ -69,18 +69,18 @@
 #include "AliKFVertex.h"
 #include "AliVertexerTracks.h"
 
-#include "AliAnalysisTaskPerformanceStrange.h"
+#include "AliAnalysisTaskLK0Spectra.h"
 #include "AliAnalysisCentralitySelector.h"
 #include "AliPIDResponse.h"
 #include "AliCentrality.h"
 
 
 
-ClassImp(AliAnalysisTaskPerformanceStrange)
+ClassImp(AliAnalysisTaskLK0Spectra)
 
 
 //________________________________________________________________________
-AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
+AliAnalysisTaskLK0Spectra::AliAnalysisTaskLK0Spectra()
 : AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fESD(0), fListHist(0),fCentrSelector(0),fTracksCuts(0),fPIDResponse(0),fQASelector(0),fArmenterosCut(0.2), 
 
 fHistMCPrimaryVertexX(0),
@@ -299,11 +299,11 @@ fHistPtVsMassAntiLambda(0),/*
 							/// Rap3
 							fHistPtVsMassK0Rap3(0),
 							fHistPtVsMassLambdaRap3(0),
-							fHistPtVsMassAntiLambdaRap3(0),
+							fHistPtVsMassAntiLambdaRap3(0),*/
 							
 							////////////////////////////////////////
 							
-							fHistArmenterosPodolanski(0),
+fHistArmenterosPodolanski(0),/*
 							fHistK0sMassVsLambdaMass(0),
 							fHistTPCsigPLambda(0),
 							fHistTPCsigPAntiLambda(0),
@@ -429,7 +429,7 @@ fHistAsMcSecondaryPtVsMassAntiLambda(0)/*,
 
 
 //________________________________________________________________________
-AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char *name)
+AliAnalysisTaskLK0Spectra::AliAnalysisTaskLK0Spectra(const char *name)
   : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fESD(0), fListHist(),fCentrSelector(0), fTracksCuts(0),fPIDResponse(0),fQASelector(0),fArmenterosCut(0.2),
 
 fHistMCPrimaryVertexX(0),
@@ -648,11 +648,11 @@ fHistPtVsMassAntiLambda(0),/*
 							/// Rap3
 							fHistPtVsMassK0Rap3(0),
 							fHistPtVsMassLambdaRap3(0),
-							fHistPtVsMassAntiLambdaRap3(0),
+							fHistPtVsMassAntiLambdaRap3(0),*/
 							
 							////////////////////////////////////////
 							
-							fHistArmenterosPodolanski(0),
+fHistArmenterosPodolanski(0),/*
 							fHistK0sMassVsLambdaMass(0),
 							fHistTPCsigPLambda(0),
 							fHistTPCsigPAntiLambda(0),
@@ -778,7 +778,7 @@ fHistAsMcSecondaryPtVsMassAntiLambda(0)/*,
   DefineOutput(2, AliAnalysisCentralitySelector::Class());
   DefineOutput(3, AliESDtrackCuts::Class());
 }
-AliAnalysisTaskPerformanceStrange::~AliAnalysisTaskPerformanceStrange() {
+AliAnalysisTaskLK0Spectra::~AliAnalysisTaskLK0Spectra() {
   //
   // Destructor
   //
@@ -789,7 +789,7 @@ AliAnalysisTaskPerformanceStrange::~AliAnalysisTaskPerformanceStrange() {
 
 }
 //________________________________________________________________________
-void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects() 
+void AliAnalysisTaskLK0Spectra::UserCreateOutputObjects() 
 {
 
   //******************
@@ -1408,11 +1408,11 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
  
   
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+*/
   ///Armenteros Podolansky
   fHistArmenterosPodolanski     = new TH2F("h2ArmenterosPodolanski","Armenteros-Podolanski phase space;#alpha;p_{t} arm",100,-1.0,1.0,50,0,0.5);
   fListHist->Add(fHistArmenterosPodolanski);
-
+/*
   ///Inv. Mass K0s vs Inv. Mass. Lambda
   fHistK0sMassVsLambdaMass      = new TH2F("h2HistK0sMassVsLambdaMass","K^{0} vs #Lambda^{0} candidates; M(#pi^{+}#pi^{-}) (GeV/c^{2}); M(p#pi^{-}) (GeV/c^{2})",200, 0.4, 0.6,140, 1.06, 1.2);
   fListHist->Add(fHistK0sMassVsLambdaMass);
@@ -1728,12 +1728,12 @@ fHistMCPtAntiLambdaRap3            = new TH1F("h1MCPtAntiLambdaRap3", "#AntiLamb
   fListHist->Add(fHistAsMcSecondaryPtAntiLambdaFromSigma);
 	 */
   PostData(1, fListHist);
-  PostData(2, fCentrSelector);
-  PostData(3, fTracksCuts);
+  //PostData(2, fCentrSelector);
+  //PostData(3, fTracksCuts);
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *) 
+void AliAnalysisTaskLK0Spectra::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -2877,7 +2877,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
       if (lcTauK0s< cutcTauK0s) 
 	  {
-		  if( lPtArmV0 >= TMath::Abs(cutArmenteros*lAlphaV0)) {
+		  if(lPtArmV0 >= TMath::Abs(cutArmenteros*lAlphaV0)) 
+		  {
 
       if (TMath::Abs(lRapK0s) < lCutRap ) {
 
@@ -2899,6 +2900,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
    	fHistMassK0->Fill(lInvMassK0s);
 	fHistMassVsRadiusK0->Fill(rcPosRK0s,lInvMassK0s);
 	fHistPtVsMassK0->Fill(lInvMassK0s,lPtK0s);
+	fHistArmenterosPodolanski->Fill(lAlphaV0,lPtArmV0);
 
 	//if (TMath::Abs(lRapK0s) < 0.3 ) 	fHistPtVsMassK0Rap3->Fill(lInvMassK0s,lPtK0s);
 /*
@@ -3358,10 +3360,11 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
   
   // Post output data
+	PostData(1, fListHist);
 }      
 
 //________________________________________________________________________
-void AliAnalysisTaskPerformanceStrange::Terminate(Option_t *) 
+void AliAnalysisTaskLK0Spectra::Terminate(Option_t *) 
 {/*
  // Draw result to the screen
  // Called once at the end of the query
@@ -3370,7 +3373,7 @@ void AliAnalysisTaskPerformanceStrange::Terminate(Option_t *)
  cRetrievedList = (TList*)GetOutputData(1);
   
  if(!cRetrievedList){
- AliWarning("ERROR - AliAnalysisTaskPerformanceStrange: output data container list not available\n"); return;
+ AliWarning("ERROR - AliAnalysisTaskLK0Spectra: output data container list not available\n"); return;
  }
   
   
@@ -3386,12 +3389,12 @@ void AliAnalysisTaskPerformanceStrange::Terminate(Option_t *)
  return;
  }
 
- TCanvas *canPerformanceStrange = new TCanvas("AliAnalysisTaskCheckV0","Multiplicity",10,10,510,510);
- canPerformanceStrange->Divide(2,1);
- if (fHistV0Multiplicity->GetMaximum() > 0.) canPerformanceStrange->cd(1)->SetLogy();
+ TCanvas *canLK0Spectra = new TCanvas("AliAnalysisTaskCheckV0","Multiplicity",10,10,510,510);
+ canLK0Spectra->Divide(2,1);
+ if (fHistV0Multiplicity->GetMaximum() > 0.) canLK0Spectra->cd(1)->SetLogy();
  fHistV0Multiplicity->SetMarkerStyle(25);
  fHistV0Multiplicity->DrawCopy("E");
- if (fHistV0MultiplicityMI->GetMaximum() > 0.) canPerformanceStrange->cd(2)->SetLogy();
+ if (fHistV0MultiplicityMI->GetMaximum() > 0.) canLK0Spectra->cd(2)->SetLogy();
  fHistV0MultiplicityMI->SetMarkerStyle(24);
  fHistV0MultiplicityMI->DrawCopy("E");
   
@@ -3401,7 +3404,7 @@ void AliAnalysisTaskPerformanceStrange::Terminate(Option_t *)
 
 //----------------------------------------------------------------------------
 
-Double_t AliAnalysisTaskPerformanceStrange::MyRapidity(Double_t rE, Double_t rPz) const
+Double_t AliAnalysisTaskLK0Spectra::MyRapidity(Double_t rE, Double_t rPz) const
 {
   // Local calculation for rapidity
   return 0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
