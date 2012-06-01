@@ -248,7 +248,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
       TArchiveFile* arch = file->GetArchive();
       members = arch->GetMembers();
       fPathName->ReplaceAll("#", "");
-      fPathName->ReplaceAll("esdname", "");
+      fPathName->ReplaceAll(esdname, "");
     } else {
 	// Directory or alien archive
       if (fileName.BeginsWith("alien:")) {
