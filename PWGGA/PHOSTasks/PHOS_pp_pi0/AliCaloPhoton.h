@@ -33,8 +33,11 @@ class AliCaloPhoton :public TLorentzVector{
    Int_t    GetNCells()const { return fNCells ;}
 
    Bool_t   IsDispOK(void)const {return fDisp;}
+   Bool_t   IsDisp2OK(void)const {return fDisp2;}
    Bool_t   IsTOFOK(void)const {return fTof;}
    Bool_t   IsCPVOK(void)const {return fCpv;}
+   Bool_t   IsCPV2OK(void)const {return fCpv2;}
+   Bool_t   IsntUnfolded(void){return fUnfolded;}
    Bool_t   IsIsolated(void)const{return fIsIsolated ;}
    Bool_t   IsTagged(void) const{return fIsTagged ;} //check if this photon is tagged
    Bool_t   IsTagged(Int_t i,Int_t k) const{return fIsTagged_reg[i][k] ;} //check if this photon is tagged
@@ -60,9 +63,11 @@ class AliCaloPhoton :public TLorentzVector{
    Int_t ComparePi0Ids( AliCaloPhoton *phot) { if(AliCaloPhoton::fPi0Id!=0 && (*phot).fPi0Id !=0 && AliCaloPhoton::fPi0Id == (*phot).fPi0Id) return 1; else return 0; }
    void SetConvertedPartner(Int_t flag){ fConvertedPartner=flag; }
    void SetPhoton(Int_t flag){ fIsPhoton=flag; }
-   void SetDispBit(Bool_t chi2){fDisp = chi2 ;} 
+   void SetDispBit(Bool_t chi2){fDisp  = chi2 ;} 
+   void SetDisp2Bit(Bool_t chi2){fDisp2 = chi2 ;} 
    void SetTOFBit(Bool_t tof){fTof = tof ;} 
    void SetCPVBit(Bool_t cpv){fCpv = cpv; }
+   void SetCPV2Bit(Bool_t cpv){fCpv2 = cpv; }
    void SetPCAPID(Bool_t pca){fPCA = pca;}
    void SetTrig(Bool_t trig){fTrig=trig;}
    void SetEMCx(Double_t x){fX = x ;} 
@@ -75,20 +80,24 @@ class AliCaloPhoton :public TLorentzVector{
    void SetIsolated(Bool_t bit){fIsIsolated=bit;}
    void SetPartnerPt(Double_t pt){fPartnerPt=pt;}
    void SetPrimary(Int_t label){fPrimary=label;}
-
+   void SetUnfolded(Bool_t unf){fUnfolded=unf ;}
+   
    Int_t GetPrimary(){return fPrimary;}
    Double_t GetPartnerPt(){return fPartnerPt;}  
 private:
   TLorentzVector fMomV2 ; //Alternative momentum
   Bool_t    fDisp ;   //Dispersion bit
+  Bool_t    fDisp2 ;  //Strict Dispersion bit
   Bool_t    fTof ;    //TOF bit
   Bool_t    fCpv ;    //Charged bit
+  Bool_t    fCpv2 ;   //Strict Charged bit
   Bool_t    fPCA ;    //Principal Component Analysis bit
   Bool_t    fTrig ;      //If this photon fired trigger
   Bool_t    fIsTagged;   //If it is tagged 
   Bool_t    fIsTagged_reg[10][20];   //If it is tagged 
   Bool_t    fIsIsolated ; //it is isolated
   Bool_t    fIsPhoton; //If it is really photon or not
+  Bool_t    fUnfolded; //Wheter cluster was unfolded
   Double_t  fX ;        //Cluster coordinates in ALICE ref system 
   Double_t  fY ;        //Cluster coordinates in ALICE ref system
   Double_t  fZ ;        //Cluster coordinates in ALICE ref system
