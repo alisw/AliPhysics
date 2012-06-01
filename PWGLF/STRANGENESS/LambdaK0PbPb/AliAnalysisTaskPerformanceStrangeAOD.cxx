@@ -57,7 +57,7 @@ ClassImp(AliAnalysisTaskPerformanceStrangeAOD)
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrangeAOD::AliAnalysisTaskPerformanceStrangeAOD()
-: AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fAOD(0), fListHist(0),fPIDResponse(0),fQASelector(0),fCentMin(0),fCentMax(0),fArmenterosCut(0), 
+: AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fAOD(0), fListHist(0),fPIDResponse(0),fQASelector(0),fCentMin(0),fCentMax(0),fArmenterosCut(0.2), 
 
   fHistMCPrimaryVertexX(0),
   fHistMCPrimaryVertexY(0),
@@ -347,7 +347,7 @@ AliAnalysisTaskPerformanceStrangeAOD::AliAnalysisTaskPerformanceStrangeAOD()
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrangeAOD::AliAnalysisTaskPerformanceStrangeAOD(const char *name)
-  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fAOD(0), fListHist(),fPIDResponse(0),fQASelector(0),fCentMin(0),fCentMax(0),fArmenterosCut(0),
+  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fAOD(0), fListHist(),fPIDResponse(0),fQASelector(0),fCentMin(0),fCentMax(0),fArmenterosCut(0.2),
 
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
@@ -2463,7 +2463,7 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
     
 		if (lcTauK0s< cutcTauK0s) 
 		{
-			if (fArmenterosCut == 0 || lPtArmV0 > cutArmenteros*lAlphaV0) 
+			if (lPtArmV0 >= TMath::Abs(cutArmenteros*lAlphaV0)) 
 			{
    
 	if (TMath::Abs(lRapK0s) < lCutRap ) {
@@ -2689,7 +2689,7 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
 
 		if (lcTauK0s< cutcTauK0s) 
 		{
-			if ( fArmenterosCut == 0 || lPtArmV0 > cutArmenteros*lAlphaV0) 
+			if (lPtArmV0 >= TMath::Abs(cutArmenteros*lAlphaV0)) 
 			{
 
 	if (TMath::Abs(lRapK0s) < lCutRap) {
