@@ -8,6 +8,9 @@
 #pragma link C++ class AliCaloPhoton+;
 #pragma link C++ class AliAnalysisTaskPi0+;
 
+//PHOS_PbPb
+#pragma link C++ class AliAnalysisTaskPi0Flow+;
+
 // PHOS_embedding
 #pragma link C++ class AliPHOSEmbedding+;
 #pragma link C++ class AliAnalysisTaskPi0Efficiency+;
