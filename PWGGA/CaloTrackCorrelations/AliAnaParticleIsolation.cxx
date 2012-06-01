@@ -1568,8 +1568,8 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Int_t   n    [10][10];//[fNCones][fNPtThresFrac];
   Int_t   nfrac[10][10];//[fNCones][fNPtThresFrac];
   Bool_t  isolated   = kFALSE;
-  Int_t   n_;//[fNCones][fNPtThresFrac];
-  Int_t   nfrac_;//[fNCones][fNPtThresFrac];
+  Int_t   n_cone;
+  Int_t   nfrac_cone;
  
     
   // fill hist with all particles before isolation criteria
@@ -1612,7 +1612,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
  
    //In case a more strict IC is needed in the produced AOD
 
-  n_=0; nfrac_ = 0; isolated = kFALSE; coneptsum = 0;
+  n_cone=0; nfrac_cone = 0; isolated = kFALSE; coneptsum = 0;
   
   GetIsolationCut()->SetSumPtThreshold(100);
   GetIsolationCut()->SetPtThreshold(100);
@@ -1621,7 +1621,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   GetIsolationCut()->MakeIsolationCut(reftracks,   refclusters, 
                                           GetReader(), GetCaloPID(),
                                           kFALSE, ph, "", 
-                                          n_,nfrac_,coneptsum, isolated);
+                                          n_cone,nfrac_cone,coneptsum, isolated);
 
         
     fhSumPtLeadingPt[icone]->Fill(ptC,coneptsum);  
