@@ -215,6 +215,14 @@ AliTPCcalibDB::AliTPCcalibDB():
   //
   fgInstance=this;
   Update();    // temporary
+  fTimeGainSplinesArray.SetOwner(); //own the keys
+  fGRPArray.SetOwner(); //own the keys
+  fGRPMaps.SetOwner(); //own the keys
+  fGoofieArray.SetOwner(); //own the keys
+  fVoltageArray.SetOwner(); //own the keys
+  fTemperatureArray.SetOwner(); //own the keys
+  fVdriftArray.SetOwner(); //own the keys
+  fDriftCorrectionArray.SetOwner(); //own the keys
 }
 
 AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
@@ -259,6 +267,14 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   // Copy constructor invalid -- singleton implementation
   //
    Error("copy constructor","invalid -- singleton implementation");
+  fTimeGainSplinesArray.SetOwner(); //own the keys
+  fGRPArray.SetOwner(); //own the keys
+  fGRPMaps.SetOwner(); //own the keys
+  fGoofieArray.SetOwner(); //own the keys
+  fVoltageArray.SetOwner(); //own the keys
+  fTemperatureArray.SetOwner(); //own the keys
+  fVdriftArray.SetOwner(); //own the keys
+  fDriftCorrectionArray.SetOwner(); //own the keys
 }
 
 AliTPCcalibDB& AliTPCcalibDB::operator= (const AliTPCcalibDB& )
@@ -523,10 +539,10 @@ void AliTPCcalibDB::UpdateNonRec(){
     fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
   }
   // High voltage
-  if (fRun>=0 && !fVoltageArray.At(fRun)){
+  if (fRun>=0 && !fVoltageArray.GetValue(Form("%i",fRun))){
     entry = AliCDBManager::Instance()->Get("TPC/Calib/HighVoltage",fRun);
     if (entry)  {
-      fVoltageArray.AddAt(entry->GetObject(),fRun);
+      fVoltageArray.Add(new TObjString(Form("%i",fRun)),entry->GetObject());
     }
   }
 
@@ -1080,18 +1096,11 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   // - > Don't use it for reconstruction - Only for Calibration studies
   //
   if (run<=0) return;
+  TObjString runstr(Form("%i",run));
   fRun=run;
   AliCDBEntry * entry = 0;
   if (run>= fRunList.fN){
     fRunList.Set(run*2+1);
-    fGRPArray.Expand(run*2+1);
-    fGRPMaps.Expand(run*2+1);
-    fGoofieArray.Expand(run*2+1);
-    fVoltageArray.Expand(run*2+1); 
-    fTemperatureArray.Expand(run*2+1);
-    fVdriftArray.Expand(run*2+1);
-    fDriftCorrectionArray.Expand(run*2+1);
-    fTimeGainSplinesArray.Expand(run*2+1);
     //
     //
     fALTROConfigData->Expand(run*2+1);    // ALTRO configuration data
@@ -1115,21 +1124,21 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
 	//grpRun->ReadValuesFromMap(map);
 	grpRun =  MakeGRPObjectFromMap(map);
 
-	fGRPMaps.AddAt(map,run);
+	fGRPMaps.Add(new TObjString(runstr),map);
       }
     }
-    fGRPArray.AddAt(grpRun,run);
+    fGRPArray.Add(new TObjString(runstr),grpRun);
   }
   entry = AliCDBManager::Instance()->Get("TPC/Calib/Goofie",run);
   if (entry){
-    fGoofieArray.AddAt(entry->GetObject(),run);
+    fGoofieArray.Add(new TObjString(runstr),entry->GetObject());
   }
   //
   
   //
   entry = AliCDBManager::Instance()->Get("TPC/Calib/TimeGain",run);
   if (entry)  {
-    fTimeGainSplinesArray.AddAt(entry->GetObject(),run);
+    fTimeGainSplinesArray.Add(new TObjString(runstr),entry->GetObject());
   }else{
     AliFatal("TPC - Missing calibration entry TimeGain");
   }
@@ -1137,7 +1146,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   entry = AliCDBManager::Instance()->Get("TPC/Calib/TimeDrift",run);
   if (entry)  {
     TObjArray * timeArray = (TObjArray*)entry->GetObject();    
-    fDriftCorrectionArray.AddAt(entry->GetObject(),run);  
+    fDriftCorrectionArray.Add(new TObjString(runstr),entry->GetObject());  
     AliTPCCorrection * correctionTime = (AliTPCCorrection *)timeArray->FindObject("FitCorrectionTime");
     if (correctionTime && fComposedCorrectionArray){
       correctionTime->Init();
@@ -1150,13 +1159,13 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   //
   entry = AliCDBManager::Instance()->Get("TPC/Calib/Temperature",run);
   if (entry)  {
-    fTemperatureArray.AddAt(entry->GetObject(),run);
+    fTemperatureArray.Add(new TObjString(runstr),entry->GetObject());
   }
 
   // High voltage
   entry = AliCDBManager::Instance()->Get("TPC/Calib/HighVoltage",run);
-  if (!fVoltageArray.At(run) && entry)  {
-    fVoltageArray.AddAt(entry->GetObject(),run);
+  if (!fVoltageArray.GetValue(runstr.GetName()) && entry)  {
+    fVoltageArray.Add(new TObjString(runstr),entry->GetObject());
   }
 
   //apply fDButil filters
@@ -1181,7 +1190,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
 
   if (press && temp &&accept){
     AliTPCCalibVdrift * vdrift = new AliTPCCalibVdrift(temp, press,0);
-    fVdriftArray.AddAt(vdrift,run);
+    fVdriftArray.Add(new TObjString(runstr),vdrift);
   }
 
   fDButil->FilterCE(120., 3., 4.,0);
@@ -1228,13 +1237,10 @@ AliGRPObject *AliTPCcalibDB::GetGRP(Int_t run){
   //
   // Get GRP object for given run 
   //
-  if (run>= ((Instance()->fGRPArray)).GetEntriesFast()){
-    Instance()->UpdateRunInformations(run);    
-  }
-  AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>((Instance()->fGRPArray).At(run));
+  AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>((Instance()->fGRPArray).GetValue(Form("%i",run)));
   if (!grpRun) {
     Instance()->UpdateRunInformations(run);
-    grpRun = dynamic_cast<AliGRPObject *>(Instance()->fGRPArray.At(run));
+    grpRun = dynamic_cast<AliGRPObject *>(Instance()->fGRPArray.GetValue(Form("%i",run)));
     if (!grpRun) return 0; 
   }
   return grpRun;
@@ -1244,10 +1250,10 @@ TMap *  AliTPCcalibDB::GetGRPMap(Int_t run){
   //
   // Get GRP map for given run
   //
-  TMap * grpRun = dynamic_cast<TMap *>((Instance()->fGRPMaps).At(run));
+  TMap * grpRun = dynamic_cast<TMap *>((Instance()->fGRPMaps).GetValue(Form("%i",run)));
   if (!grpRun) {
     Instance()->UpdateRunInformations(run);
-    grpRun = dynamic_cast<TMap *>(Instance()->fGRPMaps.At(run));
+    grpRun = dynamic_cast<TMap *>(Instance()->fGRPMaps.GetValue(Form("%i",run)));
     if (!grpRun) return 0; 
   }
   return grpRun;
@@ -1276,10 +1282,10 @@ AliDCSSensor * AliTPCcalibDB::GetPressureSensor(Int_t run, Int_t type){
   //
   // If not map try to get it from the GRPObject
   //
-  AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.At(run)); 
+  AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.GetValue(Form("%i",run))); 
   if (!grpRun) {
     UpdateRunInformations(run);
-    grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.At(run));
+    grpRun = dynamic_cast<AliGRPObject *>(fGRPArray.GetValue(Form("%i",run)));
     if (!grpRun) return 0; 
   }
   AliDCSSensor * sensor = grpRun->GetCavernAtmosPressure();
@@ -1291,10 +1297,10 @@ AliTPCSensorTempArray * AliTPCcalibDB::GetTemperatureSensor(Int_t run){
   //
   // Get temperature sensor array
   //
-  AliTPCSensorTempArray * tempArray = (AliTPCSensorTempArray *)fTemperatureArray.At(run);
+  AliTPCSensorTempArray * tempArray = (AliTPCSensorTempArray *)fTemperatureArray.GetValue(Form("%i",run));
   if (!tempArray) {
     UpdateRunInformations(run);
-    tempArray = (AliTPCSensorTempArray *)fTemperatureArray.At(run);
+    tempArray = (AliTPCSensorTempArray *)fTemperatureArray.GetValue(Form("%i",run));
   }
   return tempArray;
 }
@@ -1304,10 +1310,10 @@ TObjArray * AliTPCcalibDB::GetTimeGainSplinesRun(Int_t run){
   //
   // Get temperature sensor array
   //
-  TObjArray * gainSplines = (TObjArray *)fTimeGainSplinesArray.At(run);
+  TObjArray * gainSplines = (TObjArray *)fTimeGainSplinesArray.GetValue(Form("%i",run));
   if (!gainSplines) {
     UpdateRunInformations(run);
-    gainSplines = (TObjArray *)fTimeGainSplinesArray.At(run);
+    gainSplines = (TObjArray *)fTimeGainSplinesArray.GetValue(Form("%i",run));
   }
   return gainSplines;
 }
@@ -1316,10 +1322,10 @@ TObjArray * AliTPCcalibDB::GetTimeVdriftSplineRun(Int_t run){
   //
   // Get drift spline array
   //
-  TObjArray * driftSplines = (TObjArray *)fDriftCorrectionArray.At(run);
+  TObjArray * driftSplines = (TObjArray *)fDriftCorrectionArray.GetValue(Form("%i",run));
   if (!driftSplines) {
     UpdateRunInformations(run);
-    driftSplines = (TObjArray *)fDriftCorrectionArray.At(run);
+    driftSplines = (TObjArray *)fDriftCorrectionArray.GetValue(Form("%i",run));
   }
   return driftSplines;
 }
@@ -1328,10 +1334,10 @@ AliDCSSensorArray * AliTPCcalibDB::GetVoltageSensors(Int_t run){
   //
   // Get temperature sensor array
   //
-  AliDCSSensorArray * voltageArray = (AliDCSSensorArray *)fVoltageArray.At(run);
+  AliDCSSensorArray * voltageArray = (AliDCSSensorArray *)fVoltageArray.GetValue(Form("%i",run));
   if (!voltageArray) {
     UpdateRunInformations(run);
-    voltageArray = (AliDCSSensorArray *)fVoltageArray.At(run);
+    voltageArray = (AliDCSSensorArray *)fVoltageArray.GetValue(Form("%i",run));
   }
   return voltageArray;
 }
@@ -1340,10 +1346,10 @@ AliDCSSensorArray * AliTPCcalibDB::GetGoofieSensors(Int_t run){
   //
   // Get temperature sensor array
   //
-  AliDCSSensorArray * goofieArray = (AliDCSSensorArray *)fGoofieArray.At(run);
+  AliDCSSensorArray * goofieArray = (AliDCSSensorArray *)fGoofieArray.GetValue(Form("%i",run));
   if (!goofieArray) {
     UpdateRunInformations(run);
-    goofieArray = (AliDCSSensorArray *)fGoofieArray.At(run);
+    goofieArray = (AliDCSSensorArray *)fGoofieArray.GetValue(Form("%i",run));
   }
   return goofieArray;
 }
@@ -1354,11 +1360,10 @@ AliTPCCalibVdrift *     AliTPCcalibDB::GetVdrift(Int_t run){
   //
   // Get the interface to the the vdrift 
   //
-  if (run>=fVdriftArray.GetEntriesFast())  UpdateRunInformations(run);
-  AliTPCCalibVdrift  * vdrift = (AliTPCCalibVdrift*)fVdriftArray.At(run);
+  AliTPCCalibVdrift  * vdrift = (AliTPCCalibVdrift*)fVdriftArray.GetValue(Form("%i",run));
   if (!vdrift) {
     UpdateRunInformations(run);
-    vdrift= (AliTPCCalibVdrift*)fVdriftArray.At(run);
+    vdrift= (AliTPCCalibVdrift*)fVdriftArray.GetValue(Form("%i",run));
   }
   return vdrift;
 }
@@ -1888,7 +1893,7 @@ Bool_t AliTPCcalibDB::CreateGUITree(const char* filename){
   
   //
   TString file(filename);
-  if (file.IsNull()) file=Form("guiTreeRun_%lld.root",fRun);
+  if (file.IsNull()) file=Form("guiTreeRun_%i.root",fRun);
   prep.DumpToFile(file.Data());
   return kTRUE;
 }
@@ -2177,11 +2182,10 @@ AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrectionDelta() const{
   //
   if (!fComposedCorrectionArray) return 0;
   if (fRun<0) return 0;
-  if (fDriftCorrectionArray.GetEntriesFast()<=fRun) return 0;
-  if (fDriftCorrectionArray.At(fRun)==0) return 0;
+  if (fDriftCorrectionArray.GetValue(Form("%i",fRun))==0) return 0;
   if (fComposedCorrectionArray->GetEntriesFast()<=4) {
     fComposedCorrectionArray->Expand(5);
-    TObjArray * timeArray =(TObjArray*)(fDriftCorrectionArray.At(fRun));
+    TObjArray * timeArray =(TObjArray*)(fDriftCorrectionArray.GetValue(Form("%i",fRun)));
      AliTPCCorrection * correctionTime = (AliTPCCorrection *)timeArray->FindObject("FitCorrectionTime");
      if (correctionTime){
        correctionTime->Init();

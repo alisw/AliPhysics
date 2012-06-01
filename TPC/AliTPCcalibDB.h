@@ -178,7 +178,7 @@ protected:
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
   Int_t        InitDeadMap();
 
-  Long64_t        fRun;         // current run number
+  Int_t        fRun;         // current run number
   AliTPCTransform *fTransform;      // object responsible for spacial corrections
   AliTPCExB *fExB;              // ExB correction factor
 //  AliCDBStorage* fLocator;      // Storage locator retrieved from AliCDBManager
@@ -212,14 +212,14 @@ protected:
   //
   // Get the corssrun information
   //
-  TObjArray      fTimeGainSplinesArray; //! array Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
-  TObjArray      fGRPArray;							//! array of GRPs  -  per run
-  TObjArray      fGRPMaps;							//! array of GRPs maps  -  per run - old data  
-  TObjArray      fGoofieArray;					//! array of GOOFIE values -per run
-  TObjArray      fVoltageArray;					//! array of Chamber HV values -per run
-  TObjArray      fTemperatureArray;			//! array of temperature sensors - per run
-  TObjArray      fVdriftArray;					//! array of v drift interfaces
-  TObjArray      fDriftCorrectionArray;                //! array of drift correction
+  TMap      fTimeGainSplinesArray; //! array Array of AliSplineFits: at 0 MIP position in time ; at 1 Fermi Plateau from cosmics
+  TMap      fGRPArray;							//! array of GRPs  -  per run
+  TMap      fGRPMaps;							//! array of GRPs maps  -  per run - old data  
+  TMap      fGoofieArray;					//! array of GOOFIE values -per run
+  TMap      fVoltageArray;					//! array of Chamber HV values -per run
+  TMap      fTemperatureArray;			//! array of temperature sensors - per run
+  TMap      fVdriftArray;					//! array of v drift interfaces
+  TMap      fDriftCorrectionArray;                //! array of drift correction
 
   TArrayI        fRunList;							//! run list - indicates try to get the run param
   Bool_t         fBHasAlignmentOCDB;                // Flag - alignment from the Transformation class
@@ -232,11 +232,11 @@ protected:
   AliCTPTimeParams *fCTPTimeParams;   //CTP timing parameters
   Int_t            fMode;             //RCU trigger config mode
 
-  ClassDef(AliTPCcalibDB, 0)
  private:
    AliTPCcalibDB (const AliTPCcalibDB& );
    AliTPCcalibDB& operator= (const AliTPCcalibDB& );
+  
+   ClassDef(AliTPCcalibDB, 0)
 };
-
 
 #endif
