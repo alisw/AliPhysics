@@ -60,6 +60,10 @@ class AliTPCPerformanceSummary
 
     static Int_t AnalyzeConstrain(const AliPerformanceMatch* pConstrain, TTreeSRedirector* pcstream);
 
+    static Int_t AnalyzeQAPosNegDpT(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    
+    static Int_t AnalyzeQADCAFitParameter(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    
     AliTPCPerformanceSummary(const AliTPCPerformanceSummary&); // copy contructor (not implemented)
     AliTPCPerformanceSummary& operator=(const AliTPCPerformanceSummary&); // assignment operator (not implemented)
       
