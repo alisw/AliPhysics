@@ -183,7 +183,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtFracIsolatedUnknown[5][5];         //! Isolated Unknown gamma with pt frac
   TH2F *   fhPtSumIsolatedUnknown[5];             //! Isolated Unknown gamma with threshold on cone pt sume
 
-  TH1F *   fhPtNoIsoPi0Decay;                     //! Number of not isolated leading pi0 decay gamma 
+  // Multi Cut analysis Several IC
+   TH1F *   fhPtNoIsoPi0Decay;                     //! Number of not isolated leading pi0 decay gamma 
   TH1F *   fhPtNoIsoEtaDecay;                     //! Number of not isolated leading eta decay gamma 
   TH1F *   fhPtNoIsoOtherDecay;                   //! Number of not isolated leading other decay gamma 
   TH1F *   fhPtNoIsoPrompt;                       //! Number of not isolated leading prompt gamma 
@@ -193,7 +194,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtNoIsoFragmentation;                //! Number of not isolated leading fragmentation gamma 
   TH1F *   fhPtNoIsoUnknown;                      //! Number of not isolated leading hadrons 
   
-  TH1F *   fhPtThresIsolated[5][5] ;              //! Isolated particle with pt threshold 
+  TH2F *   fhSumPtLeadingPt[5] ;                          //! Sum Pt in the cone
+  TH2F *   fhPtLeadingPt[5] ;                           //! Particle Pt in the cone
+  TH2F *   fhFRSumPtLeadingPt[5] ;                        //! Sum Pt in the forward region cone (phi +90)
+  TH2F *   fhFRPtLeadingPt[5];                         //! Particle Pt in the forward region cone (phi +90 ) 
+
+ TH1F *   fhPtThresIsolated[5][5] ;              //! Isolated particle with pt threshold 
   TH1F *   fhPtFracIsolated[5][5] ;               //! Isolated particle with pt threshold frac
   TH1F *   fhPtSumIsolated[5][5] ;                //! Isolated particle with threshold on cone pt sum
   

@@ -81,6 +81,7 @@ fhPtNoIsoPi0Decay(0),             fhPtNoIsoEtaDecay(0),            fhPtNoIsoOthe
 fhPtNoIsoPrompt(0),               fhPtIsoMCPhoton(0),              fhPtNoIsoMCPhoton(0),
 fhPtNoIsoConversion(0),           fhPtNoIsoFragmentation(0),       fhPtNoIsoUnknown(0),
 // Hist several IC
+fhSumPtLeadingPt(),fhPtLeadingPt(),fhFRSumPtLeadingPt(),fhFRPtLeadingPt(),
 fhPtThresIsolated(),              fhPtFracIsolated(),              fhPtSumIsolated(),
 fhEtaPhiPtThresIso(),             fhEtaPhiPtThresDecayIso(),       fhPtPtThresDecayIso(),
 fhEtaPhiPtFracIso(),              fhEtaPhiPtFracDecayIso(),        fhPtPtFracDecayIso(),
@@ -763,6 +764,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   fhEtaPhiDecayNoIso->SetYTitle("#phi");
   outputContainer->Add(fhEtaPhiDecayNoIso) ;
   
+ 
+
   if(IsDataMC())
   {
     fhPtNoIsoPi0Decay  = new TH1F
@@ -828,7 +831,40 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     char name[buffersize];
     char title[buffersize];
     for(Int_t icone = 0; icone<fNCones; icone++)
-    {		  
+    {	
+      // sum pt in cone vs. pt leading
+      snprintf(name, buffersize,"hSumPtLeadingPt_Cone_%d",icone);
+      snprintf(title, buffersize,"#Sigma p_{T} in isolation cone for R = %2.2f",fConeSizes[icone]);
+      fhSumPtLeadingPt[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhSumPtLeadingPt[icone] ->SetYTitle("#sum_{cone}p_{T} (GeV/c)");//#Sigma p_{T}
+      fhSumPtLeadingPt[icone] ->SetXTitle("p_{T}^{leading} (GeV/c)");
+      outputContainer->Add(fhSumPtLeadingPt[icone]) ;
+   
+      // pt in cone vs. pt leading      
+      snprintf(name, buffersize,"hPtLeadingPt_Cone_%d",icone);
+      snprintf(title, buffersize,"p_{T} in isolation cone for R = %2.2f",fConeSizes[icone]);
+      fhPtLeadingPt[icone]  = new TH2F(name, title,  nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax); 
+      fhPtLeadingPt[icone] ->SetYTitle("p_{T}^{cone} (GeV/c)");
+      fhPtLeadingPt[icone] ->SetXTitle("p_{T}^{leading} (GeV/c)");
+      outputContainer->Add(fhPtLeadingPt[icone]) ;    
+
+       // sum pt in cone vs. pt leading in the forward region (for background subtraction studies)
+        snprintf(name, buffersize,"hFRSumPtLeadingPt_Cone_%d",icone);
+      snprintf(title, buffersize,"#Sigma p_{T} in isolation cone for R = %2.2f",fConeSizes[icone]);
+      fhFRSumPtLeadingPt[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhFRSumPtLeadingPt[icone] ->SetYTitle("#sum_{cone}p_{T} (GeV/c)");//#Sigma p_{T}
+      fhFRSumPtLeadingPt[icone] ->SetXTitle("p_{T}^{leading} (GeV/c)");
+      outputContainer->Add(fhFRSumPtLeadingPt[icone]) ;
+      
+      // pt in cone vs. pt leading in the forward region (for background subtraction studies)    
+        snprintf(name, buffersize,"hFRPtLeadingPt_Cone_%d",icone);
+      snprintf(title, buffersize,"p_{T} in isolation cone for R = %2.2f",fConeSizes[icone]);
+      fhFRPtLeadingPt[icone]  = new TH2F(name, title,  nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax); 
+      fhFRPtLeadingPt[icone] ->SetYTitle("p_{T}^{cone} (GeV/c)");
+      fhFRPtLeadingPt[icone] ->SetXTitle("p_{T}^{leading} (GeV/c)");
+      outputContainer->Add(fhFRPtLeadingPt[icone]) ;    
+  
+
       if(IsDataMC())
       {
         snprintf(name, buffersize,"hPtSumPrompt_Cone_%d",icone);
@@ -884,6 +920,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       for(Int_t ipt = 0; ipt<fNPtThresFrac;ipt++)
       {   
+
         snprintf(name, buffersize,"hPtThres_Cone_%d_Pt%d",icone,ipt);
         snprintf(title, buffersize,"Isolated candidate p_{T} distribution for R = %2.2f and p_{T}^{th} = %2.2f GeV/c",fConeSizes[icone],fPtThresholds[ipt]);
         fhPtThresIsolated[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
@@ -1531,7 +1568,10 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Int_t   n    [10][10];//[fNCones][fNPtThresFrac];
   Int_t   nfrac[10][10];//[fNCones][fNPtThresFrac];
   Bool_t  isolated   = kFALSE;
-  
+  Int_t   n_;//[fNCones][fNPtThresFrac];
+  Int_t   nfrac_;//[fNCones][fNPtThresFrac];
+ 
+    
   // fill hist with all particles before isolation criteria
   fhPtNoIso    ->Fill(ptC);
   fhEtaPhiNoIso->Fill(etaC,phiC);
@@ -1553,13 +1593,100 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
     fhPtDecayNoIso    ->Fill(ptC);
     fhEtaPhiDecayNoIso->Fill(etaC,phiC);
   }
-  
+  //Get vertex for photon momentum calculation
+  Double_t vertex[] = {0,0,0} ; //vertex ;
+  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
+    {
+      GetReader()->GetVertex(vertex);
+    }
+
   //Loop on cone sizes
   for(Int_t icone = 0; icone<fNCones; icone++)
   {
-    GetIsolationCut()->SetConeSize(fConeSizes[icone]);
-    coneptsum = 0 ;
+    //Recover reference arrays with clusters and tracks
+    TObjArray * refclusters = ph->GetObjArray(GetAODObjArrayName()+"Clusters");
+    TObjArray * reftracks   = ph->GetObjArray(GetAODObjArrayName()+"Tracks");
     
+    //If too small or too large pt, skip
+    if(ptC < GetMinPt() || ptC > GetMaxPt() ) continue ; 
+ 
+   //In case a more strict IC is needed in the produced AOD
+
+  n_=0; nfrac_ = 0; isolated = kFALSE; coneptsum = 0;
+  
+  GetIsolationCut()->SetSumPtThreshold(100);
+  GetIsolationCut()->SetPtThreshold(100);
+  GetIsolationCut()->SetPtFraction(100);
+  GetIsolationCut()->SetConeSize(fConeSizes[icone]);
+  GetIsolationCut()->MakeIsolationCut(reftracks,   refclusters, 
+                                          GetReader(), GetCaloPID(),
+                                          kFALSE, ph, "", 
+                                          n_,nfrac_,coneptsum, isolated);
+
+        
+    fhSumPtLeadingPt[icone]->Fill(ptC,coneptsum);  
+    
+    // retreive pt tracks to fill histo vs. pt leading
+    //Fill pt distribution of particles in cone
+    //fhPtLeadingPt(),fhFRSumPtLeadingPt(),fhFRPtLeadingPt(),
+    
+    //Tracks
+    coneptsum = 0;
+    Double_t sumptFR = 0. ;
+    TObjArray * trackList   = GetCTSTracks() ;
+    for(Int_t itrack=0; itrack < trackList->GetEntriesFast(); itrack++)
+    {
+      AliVTrack* track = (AliVTrack *) trackList->At(itrack);
+      //fill the histograms at forward range
+      if(!track)
+      {
+        printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Track not available?");
+        continue;
+      }
+      
+      Double_t dPhi = phiC - track->Phi() + TMath::PiOver2();
+      Double_t dEta = etaC - track->Eta();
+      Double_t arg  = dPhi*dPhi + dEta*dEta;
+      if(TMath::Sqrt(arg) < fConeSizes[icone])
+      {
+        fhFRPtLeadingPt[icone]->Fill(ptC,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
+        sumptFR+=track->Pt();
+      }
+      
+      dPhi = phiC - track->Phi() - TMath::PiOver2();
+      arg  = dPhi*dPhi + dEta*dEta;
+      if(TMath::Sqrt(arg) < fConeSizes[icone])
+      {
+        fhFRPtLeadingPt[icone]->Fill(ptC,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
+        sumptFR+=track->Pt();
+      }      
+    }
+    fhFRSumPtLeadingPt[icone]->Fill(ptC,sumptFR);
+    if(reftracks)
+    {  
+      for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++)
+      {
+        AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
+        fhPtLeadingPt[icone]->Fill(ptC,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
+        coneptsum+=track->Pt();
+      }
+    }    
+    //CaloClusters
+    if(refclusters)
+    {    
+      TLorentzVector mom ;
+      for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++)
+      {
+        AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
+        calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+        
+        fhPtLeadingPt[icone]->Fill(ptC, mom.Pt());
+        coneptsum+=mom.Pt();
+      }
+    }
+    ///////////////////
+
+
     //Loop on ptthresholds
     for(Int_t ipt = 0; ipt<fNPtThresFrac ;ipt++)
     {
@@ -1569,8 +1696,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
       GetIsolationCut()->SetPtFraction(fPtFractions[ipt]) ;
       GetIsolationCut()->SetSumPtThreshold(fSumPtThresholds[ipt]);
       
-      GetIsolationCut()->MakeIsolationCut(ph->GetObjArray(GetAODObjArrayName()+"Tracks"), 
-                                          ph->GetObjArray(GetAODObjArrayName()+"Clusters"),
+      GetIsolationCut()->MakeIsolationCut(reftracks, refclusters,
                                           GetReader(), GetCaloPID(),
                                           kFALSE, ph, "",
                                           n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
@@ -1646,8 +1772,11 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
         }
       }
       
-      // pt sum pt frac method
-      if(coneptsum<fPtFractions[ipt]*ptC)
+     
+    
+
+    // pt sum pt frac method
+    if( ((fPtFractions[ipt]*ptC < fSumPtThresholds[ipt]) && (coneptsum < fSumPtThresholds[ipt])) || ((fPtFractions[ipt]*ptC > fSumPtThresholds[ipt]) && (coneptsum < fPtFractions[ipt]*ptC)) )
       {
         if(GetDebug()>0) printf(" AliAnaParticleIsolation::MakeSeveralICAnalysis() - filling PtFrac PtSum loop\n");
         fhPtFracPtSumIso[icone][ipt]->Fill(ptC) ;
