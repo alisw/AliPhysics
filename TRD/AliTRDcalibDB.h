@@ -93,11 +93,14 @@ class AliTRDcalibDB : public TObject {
   Float_t                             GetPRFlo() const      { return fPRFlo;  };
   Float_t                             GetPRFhi() const      { return fPRFhi;  };
 
+  Int_t                               ExtractTimeBinsFromString(TString tbstr);
   Int_t                               GetNumberOfTimeBinsDCS();
   void                                GetFilterType(TString &filterType);
   void                                GetGlobalConfiguration(TString &config);
   void                                GetGlobalConfigurationVersion(TString &version);
-  void                                GetDCSConfigParOption(Int_t cfgType, Int_t option, TString &cfgo);
+  Int_t                               GetNumberOfParsDCS(TString cname);
+  Int_t                               GetNumberOfOptsDCS(TString cname, Int_t cfgType);
+  void                                GetDCSConfigParOption(TString cname, Int_t cfgType, Int_t option, TString &cfgo);
 
   Int_t                               GetOnlineGainTableID();
 

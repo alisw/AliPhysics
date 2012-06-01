@@ -36,6 +36,7 @@
 #include <TObjArray.h>
 #include "AliTRDSaxHandler.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDcalibDB.h"
 #include "Cal/AliTRDCalDCSv2.h"
 #include "Cal/AliTRDCalDCSFEEv2.h"
 #include "Cal/AliTRDCalDCSGTU.h"
@@ -141,10 +142,61 @@ AliTRDSaxHandler::~AliTRDSaxHandler()
 AliTRDCalDCSv2* AliTRDSaxHandler::GetCalDCSObj()
 {
   // put the arrays in the global calibration object and return this
+
   fCalDCSObj->SetFEEArr(fFEEArr);
   fCalDCSObj->SetPTRArr(fPTRArr);
   fCalDCSObj->SetGTUObj(fDCSGTUObj);
   return fCalDCSObj;
+}
+
+//_____________________________________________________________________________
+void AliTRDSaxHandler::ParseConfigName(TString cfgname) const
+{
+  // Evaluate the config name and set the individual parameters
+
+  // protect
+  if (!AliTRDcalibDB::Instance()) {
+    AliError("Could not create an instance of AliTRDcalibDB!");
+    return;
+  }
+
+  TString cfg = "", par = "", pars = "";
+  Int_t nPar = AliTRDcalibDB::Instance()->GetNumberOfParsDCS(cfgname);
+  if (nPar == 0) return;
+
+  for (Int_t i=1; i<=nPar; i++) {
+    // Get the configuration parameter
+    AliTRDcalibDB::Instance()->GetDCSConfigParOption(cfgname, i, 0, cfg);
+
+    // Set Parameters accordingly
+    if (i == AliTRDcalibDB::kFltrSet) fDCSFEEObj->SetFilterType(cfg);
+    if (i == AliTRDcalibDB::kTrigSet) fDCSFEEObj->SetTriggerSetup(cfg);
+    if (i == AliTRDcalibDB::kAddOpti) fDCSFEEObj->SetAddOptions(cfg);
+    if (i == AliTRDcalibDB::kTimebin) fDCSFEEObj->SetNumberOfTimeBins(AliTRDcalibDB::Instance()->ExtractTimeBinsFromString(cfg));
+    if (i == AliTRDcalibDB::kReadout) fDCSFEEObj->SetReadoutParam(cfg);
+    if (i == AliTRDcalibDB::kTrkMode) fDCSFEEObj->SetTrackletMode(cfg);
+
+    // Set options of parameters accordingly
+    Int_t nOpt = AliTRDcalibDB::Instance()->GetNumberOfOptsDCS(cfgname, i);
+    if (nOpt == 0) continue;
+
+    for (Int_t j=1; j<=nOpt; j++) {
+      // Get the parameter option
+      AliTRDcalibDB::Instance()->GetDCSConfigParOption(cfgname, i, j, par);
+
+      if (i == AliTRDcalibDB::kReadout) {
+	if (par.EqualTo("stat")) fDCSFEEObj->SetFastStatNoise(1);
+      }
+      if (i == AliTRDcalibDB::kTrkMode) {
+	if ((j > 1) && (par.Length() != 0)) pars += "-";
+	pars += par;
+      }
+      // SetTCFilterWeight, SetTCFilterShortDecPar, SetTCFilterLongDecPar might be filled here, too
+      // SetSingleHitThres, SetThreePadClustThres, SetSelectiveNoZS, SetTestPattern might be filled here, too
+    }
+
+    fDCSFEEObj->SetTrackletDef(pars);
+  }
 }
 
 //_____________________________________________________________________________
@@ -392,27 +444,15 @@ void AliTRDSaxHandler::OnEndElement(const char *name)
   // store informations of the FEE DCS-Board
   if (fSystem == kInsideFEE) {
     if (CompareString(tagName, "DNR"))            fDCSFEEObj->SetStatusBit(fContent.Atoi());
-    if (CompareString(tagName, "CFGNME"))         fDCSFEEObj->SetConfigName(fContent);
     if (CompareString(tagName, "CFGTAG"))         fDCSFEEObj->SetConfigTag(fContent.Atoi());
     if (CompareString(tagName, "CFGVRSN"))        fDCSFEEObj->SetConfigVersion(fContent);
-    if (CompareString(tagName, "NTB"))            fDCSFEEObj->SetNumberOfTimeBins(fContent.Atoi());
     if (CompareString(tagName, "SM-ID"))          fDCSFEEObj->SetSM(fContent.Atoi());
     if (CompareString(tagName, "STACK-ID"))       fDCSFEEObj->SetStack(fContent.Atoi());
     if (CompareString(tagName, "LAYER-ID"))       fDCSFEEObj->SetLayer(fContent.Atoi());
-    if (CompareString(tagName, "SINGLEHITTHRES")) fDCSFEEObj->SetSingleHitThres(fContent.Atoi());
-    if (CompareString(tagName, "THRPADCLSTHRS"))  fDCSFEEObj->SetThreePadClustThres(fContent.Atoi());
-    if (CompareString(tagName, "SELNOZS"))        fDCSFEEObj->SetSelectiveNoZS(fContent.Atoi());
-    if (CompareString(tagName, "FASTSTATNOISE"))  fDCSFEEObj->SetFastStatNoise(fContent.Atoi());
-    if (CompareString(tagName, "FILTWEIGHT"))     fDCSFEEObj->SetTCFilterWeight(fContent.Atoi());
-    if (CompareString(tagName, "FILTSHRTDCYPRM")) fDCSFEEObj->SetTCFilterShortDecPar(fContent.Atoi());
-    if (CompareString(tagName, "FILTLNGDCYPRM"))  fDCSFEEObj->SetTCFilterLongDecPar(fContent.Atoi());
-    if (CompareString(tagName, "FLTR"))           fDCSFEEObj->SetFilterType(fContent);
-    if (CompareString(tagName, "READOUTPAR"))     fDCSFEEObj->SetReadoutParam(fContent);
-    if (CompareString(tagName, "TESTPATTERN"))    fDCSFEEObj->SetTestPattern(fContent);
-    if (CompareString(tagName, "TRCKLTMODE"))     fDCSFEEObj->SetTrackletMode(fContent);
-    if (CompareString(tagName, "TRCKLTDEF"))      fDCSFEEObj->SetTrackletDef(fContent);
-    if (CompareString(tagName, "TRIGGERSETUP"))   fDCSFEEObj->SetTriggerSetup(fContent);
-    if (CompareString(tagName, "ADDOPTIONS"))     fDCSFEEObj->SetAddOptions(fContent);
+    if (CompareString(tagName, "CFGNME")) {
+      fDCSFEEObj->SetConfigName(fContent);
+      ParseConfigName(fContent);
+    }
     if (CompareString(tagName, "gaintbl")) {
       fLevel1Tag = kInsideNone;
       fCurrentROB = -1;

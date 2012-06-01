@@ -292,6 +292,10 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
     return;
   }
 
+  Bool_t hasSOR = (objArrayCDB->At(0));
+  Bool_t hasEOR = (objArrayCDB->At(1));
+  printf("SOR entry: %d, EOR entry: %d\n", hasSOR, hasEOR);
+
   if (!strcmp(objArrayCDB->At(iesor)->ClassName(),"AliTRDCalDCS"))   calVer = 1;
   else if (!strcmp(objArrayCDB->At(iesor)->ClassName(),"AliTRDCalDCSv2")) calVer = 2;
   else {  
@@ -460,7 +464,7 @@ void AliTRDcheckConfig(Int_t runNr=0, char *pathfile="nopathgiven"){
   if (gsz != -1) cout<<"Global selective ZS (every i'th event).............: "<< gsz << endl;
   if (gfw != -1) cout<<"Global tail cancellation filter weight.............: "<< gfs << endl;
   if (gfs != -1) cout<<"Global tail cancellat. filter short decay parameter: "<< gfs << endl;
-  if (gfl != -1) cout<<"Global tail cancellation filt. long decay parameter: "<< gsn << endl;
+  if (gfl != -1) cout<<"Global tail cancellation filt. long decay parameter: "<< gfl << endl;
   if (gsn != -1) cout<<"Global fast statistics mode?.......................: "<< gsn << endl;
   if (gcv != "") cout<<"Global configuration tag version...................: "<< gcv << endl;
   if (gcn != "") cout<<"Global configuration tag name......................: "<< gcn << endl;

@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
-#include "TObject.h"
+#include <TObject.h>
 #include "Cal/AliTRDCalDCSGTUCtpOpc.h"
 #include "Cal/AliTRDCalDCSGTUBoardInfo.h"
 #include "Cal/AliTRDCalDCSGTUSegment.h"
@@ -55,6 +55,8 @@ public:
   TObjArray*         GetDCSFEEDataArray() const { return fFEEArr;        }
   TObjArray*         GetDCSPTRDataArray() const { return fPTRArr;        }
   AliTRDCalDCSv2*    GetCalDCSObj(); // to be called by the preprocessor
+  void               ParseConfigName(TString cfgname) const;
+
 
   Int_t              GetHandlerStatus() const { return fHandlerStatus; }
 

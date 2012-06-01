@@ -902,18 +902,10 @@ Float_t AliTRDcalibDB::GetPRFWidth(Int_t det, Int_t col, Int_t row)
 }
   
 //_____________________________________________________________________________
-Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
+Int_t AliTRDcalibDB::ExtractTimeBinsFromString(TString tbstr)
 {
-  //
-  // Returns number of time bins from the DCS
-  //
-
   // default value - has not been set
   Int_t nUndef = -1;
-
-  // Get the corresponding parameter
-  TString tbstr = "";
-  GetDCSConfigParOption(kTimebin, 0, tbstr);
 
   // Check if there is any content in the string first
   if (tbstr.Length() == 0) {
@@ -936,10 +928,23 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
     return nUndef;
   }
 
-  Int_t ntb = tbstr.Atoi();
-  AliInfo(Form("Number of timebins from CDB: %d", ntb));
+  return tbstr.Atoi();
 
-  return ntb;
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
+{
+  //
+  // Returns number of time bins from the DCS
+  //
+
+  // Get the corresponding parameter
+  TString cfgstr = "", cfgname = "";
+  GetGlobalConfiguration(cfgname);
+  GetDCSConfigParOption(cfgname, kTimebin, 0, cfgstr);
+
+  return ExtractTimeBinsFromString(cfgstr);
 
 }
 
@@ -950,7 +955,9 @@ void AliTRDcalibDB::GetFilterType(TString &filterType)
   // Returns the filter type
   //
 
-  GetDCSConfigParOption(kFltrSet, 0, filterType);
+  TString cfgname = "";
+  GetGlobalConfiguration(cfgname);
+  GetDCSConfigParOption(cfgname, kFltrSet, 0, filterType);
 
 }
 
@@ -1163,7 +1170,41 @@ void AliTRDcalibDB::GetGlobalConfigurationVersion(TString &version)
 }
 
 //_____________________________________________________________________________
-void AliTRDcalibDB::GetDCSConfigParOption(Int_t cfgType, Int_t option, TString &cfgo)
+Int_t AliTRDcalibDB::GetNumberOfParsDCS(TString cname)
+{
+  // Get the number of configuration parameters from the DCS config
+
+  TString cdelim = "_";
+  TObjArray *carr = cname.Tokenize(cdelim);
+  return carr->GetEntries() - 1; // -1 for the "cf"
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDcalibDB::GetNumberOfOptsDCS(TString cname, Int_t cfgType)
+{
+  // Get the number of options of a given configuration parameter from DCS
+
+  TString cdelim = "_";
+  TString odelim = "-";
+
+  TObjArray *carr = cname.Tokenize(cdelim);
+  Int_t nconfig = carr->GetEntries();
+
+  // protect
+  if ((nconfig == 0) || ((nconfig-1) < cfgType)) {
+    AliError("Not enough parameters in DCS configuration name!");
+    return 0;
+  }
+
+  TString fullcfg = ((TObjString*)carr->At(cfgType))->GetString();
+  TObjArray *oarr = fullcfg.Tokenize(odelim);
+  return oarr->GetEntries() -1; // -1 for the parameter name
+
+}
+
+//_____________________________________________________________________________
+void AliTRDcalibDB::GetDCSConfigParOption(TString cname, Int_t cfgType, Int_t option, TString &cfgo)
 {
   //
   // Get a configuration (see enum in header file) or the options of a configuration
@@ -1175,52 +1216,33 @@ void AliTRDcalibDB::GetDCSConfigParOption(Int_t cfgType, Int_t option, TString &
   TString cdelim = "_";
   TString odelim = "-";
 
-  // get the full configuration name
-  TString cname;
-  GetGlobalConfiguration(cname);
   TObjArray *carr = cname.Tokenize(cdelim);
   Int_t nconfig = carr->GetEntries();
 
   // protect
   if (nconfig == 0) {
-    AliError("Bad DCS configuration name!");
+    AliError("DCS configuration name empty!");
     cfgo = "";
     return;
   } else if ((nconfig-1) < cfgType) {
-    AliError("Not enough DCS configuration parameters!");
+    AliError("Not enough parameters in DCS configuration name!");
     cfgo = "";
     return;
   }
 
   TString fullcfg = ((TObjString*)carr->At(cfgType))->GetString();
+  TObjArray *oarr = fullcfg.Tokenize(odelim);
+  Int_t noptions = oarr->GetEntries();
 
-  if (fullcfg.Contains(odelim)) {
-
-    TObjArray *oarr = fullcfg.Tokenize(odelim);
-    Int_t noptions = oarr->GetEntries();
-
-    // protect
-    if ((noptions-1) < option) {
-      AliError("Not enough DCS configuration options defined!");
-      cfgo = "";
-      return;
-    }
-
-    cfgo = ((TObjString*)oarr->At(option))->GetString();
+  // protect
+  if ((noptions-1) < option) {
+    AliError("Not enough options in DCS configuration name!");
+    cfgo = "";
     return;
-
   }
-  else {
 
-    if (option != 0) {
-      AliError("Not enough DCS configuration options defined!");
-      cfgo = "";
-      return;
-    }
-    cfgo = fullcfg;
-    return;
-
-  }
+  cfgo = ((TObjString*)oarr->At(option))->GetString();
+  return;
 
 }
 
