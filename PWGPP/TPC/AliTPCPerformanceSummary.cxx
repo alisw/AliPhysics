@@ -123,7 +123,8 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
 
 	AnalyzePt(pTPC,pcstream);
 	AnalyzeChargeOverPt(pTPC,pcstream); 
-	
+	AnalyzeQAPosNegDpT(pTPC,pcstream);
+	AnalyzeQADCAFitParameter(pTPC,pcstream);
 
         pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRangeUser(-10,10);
         pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0,100);
@@ -407,7 +408,88 @@ Int_t AliTPCPerformanceSummary::ProduceTrends(const Char_t* infilelist, const Ch
     SaveGraph(tree,"tpcConstrainPhiA","run",condition);
     SaveGraph(tree,"tpcConstrainPhiC","run",condition);
      
-    tree->Write();
+    SaveGraph(tree,"deltaPt","run",condition);
+    SaveGraph(tree,"deltaPtchi2","run",condition);
+    SaveGraph(tree,"deltaPtA","run",condition);
+    SaveGraph(tree,"deltaPtchi2A","run",condition);
+    SaveGraph(tree,"deltaPtC","run",condition);
+    SaveGraph(tree,"deltaPtchi2C","run",condition);
+    SaveGraph(tree,"deltaPtA_Err","run",condition);
+    SaveGraph(tree,"deltaPtA_Err","run",condition);
+    SaveGraph(tree,"deltaPtC_Err","run",condition);
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //save dca fit parameters
+    SaveGraph(tree,"dcar_posA_0","run",condition);
+    SaveGraph(tree,"dcar_posA_1","run",condition);
+    SaveGraph(tree,"dcar_posA_2","run",condition);
+    SaveGraph(tree,"dcar_posA_chi2","run",condition);
+    SaveGraph(tree,"dcar_posA_0_Err","run",condition);
+    SaveGraph(tree,"dcar_posA_1_Err","run",condition);
+    SaveGraph(tree,"dcar_posA_2_Err","run",condition);
+
+    SaveGraph(tree,"dcaz_posA_0","run",condition);
+    SaveGraph(tree,"dcaz_posA_1","run",condition);
+    SaveGraph(tree,"dcaz_posA_2","run",condition);
+    SaveGraph(tree,"dcaz_posA_chi2","run",condition);
+    SaveGraph(tree,"dcaz_posA_0_Err","run",condition);
+    SaveGraph(tree,"dcaz_posA_1_Err","run",condition);
+    SaveGraph(tree,"dcaz_posA_2_Err","run",condition);
+
+    SaveGraph(tree,"dcaz_posC_0","run",condition);
+    SaveGraph(tree,"dcaz_posC_1","run",condition);
+    SaveGraph(tree,"dcaz_posC_2","run",condition);
+    SaveGraph(tree,"dcaz_posC_chi2","run",condition);
+    SaveGraph(tree,"dcaz_posC_0_Err","run",condition);
+    SaveGraph(tree,"dcaz_posC_1_Err","run",condition);
+    SaveGraph(tree,"dcaz_posC_2_Err","run",condition);
+
+    SaveGraph(tree,"dcar_posC_0","run",condition);
+    SaveGraph(tree,"dcar_posC_1","run",condition);
+    SaveGraph(tree,"dcar_posC_2","run",condition);
+    SaveGraph(tree,"dcar_posC_chi2","run",condition);
+    SaveGraph(tree,"dcar_posC_0_Err","run",condition);
+    SaveGraph(tree,"dcar_posC_1_Err","run",condition);
+    SaveGraph(tree,"dcar_posC_2_Err","run",condition);
+
+    SaveGraph(tree,"dcar_negA_0","run",condition);
+    SaveGraph(tree,"dcar_negA_1","run",condition);
+    SaveGraph(tree,"dcar_negA_2","run",condition);
+    SaveGraph(tree,"dcar_negA_chi2","run",condition);
+    SaveGraph(tree,"dcar_negA_0_Err","run",condition);
+    SaveGraph(tree,"dcar_negA_1_Err","run",condition);
+    SaveGraph(tree,"dcar_negA_2_Err","run",condition);
+
+    SaveGraph(tree,"dcaz_negA_0","run",condition);
+    SaveGraph(tree,"dcaz_negA_1","run",condition);
+    SaveGraph(tree,"dcaz_negA_2","run",condition);
+    SaveGraph(tree,"dcaz_negA_chi2","run",condition);
+    SaveGraph(tree,"dcaz_negA_0_Err","run",condition);
+    SaveGraph(tree,"dcaz_negA_1_Err","run",condition);
+    SaveGraph(tree,"dcaz_negA_2_Err","run",condition);
+    
+    SaveGraph(tree,"dcaz_negC_0","run",condition);
+    SaveGraph(tree,"dcaz_negC_1","run",condition);
+    SaveGraph(tree,"dcaz_negC_2","run",condition);
+    SaveGraph(tree,"dcaz_negC_chi2","run",condition);
+    SaveGraph(tree,"dcaz_negC_0_Err","run",condition);
+    SaveGraph(tree,"dcaz_negC_1_Err","run",condition);
+    SaveGraph(tree,"dcaz_negC_2_Err","run",condition);
+    
+    SaveGraph(tree,"dcar_negC_0","run",condition);
+    SaveGraph(tree,"dcar_negC_1","run",condition);
+    SaveGraph(tree,"dcar_negC_2","run",condition);
+    SaveGraph(tree,"dcar_negC_chi2","run",condition);
+    SaveGraph(tree,"dcar_negC_0_Err","run",condition);
+    SaveGraph(tree,"dcar_negC_1_Err","run",condition);
+    SaveGraph(tree,"dcar_negC_2_Err","run",condition);
+    
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+tree->Write();
     
     out->Close();   
     if (tree) { delete tree; tree=0; }
@@ -1900,4 +1982,446 @@ Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pCon
     "tpcConstrainPhiC="<< tpcConstrainPhiC;
   
   return 0;
+}
+
+//_____________________________________________________________________________
+ Int_t AliTPCPerformanceSummary::AnalyzeQAPosNegDpT(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
+{
+  //function which plot 1/Pt for negative and 
+  //positive particles
+  
+  if (!pcstream) return 512;
+  if (!pTPC) return 512;
+  
+  TH3D* pos3=0;
+  TH3D* neg3=0;
+  TH1D* pos=0;
+  TH1D* neg=0;
+  TH1D* posC=0;
+  TH1D* negC=0;
+  TH1D* posA=0;
+  TH1D* negA=0;
+  static Double_t deltaPtC = 0;
+  static Double_t deltaPtchi2C = 0;
+  static Double_t slopeC = 0;
+  static Double_t deltaPtA = 0;
+  static Double_t deltaPtchi2A = 0;
+  static Double_t slopeA = 0;
+  static Double_t deltaPt = 0;
+  static Double_t deltaPtchi2 = 0;
+  static Double_t slope = 0;
+  static Double_t deltaPt_Err = 0; 
+  static Double_t deltaPtA_Err = 0;
+  static Double_t deltaPtC_Err = 0;
+
+
+//C side
+
+  if(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_0_5_7"))
+    {
+    pos3 = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_0_5_7")); 
+    if(!pos3) return 512;
+  
+    pos = pos3->ProjectionZ("pos",71,-1,6,25);
+    posC = pos3->ProjectionZ("posC",71,-1,6,15);
+    posA = pos3->ProjectionZ("posA",71,-1,16,25);
+    }
+
+    if(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_0_5_7")){
+    neg3 = dynamic_cast<TH3D*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_0_5_7")); 
+    if(!neg3) return 512;
+    
+    neg = neg3->ProjectionZ("neg",71,-1,6,25);
+    negC = neg3->ProjectionZ("negC",71,-1,6,15);
+    negA = neg3->ProjectionZ("negA",71,-1,16,25);
+}
+
+
+pos->Sumw2();
+neg->Sumw2();
+posA->Sumw2();
+negA->Sumw2();
+posC->Sumw2();
+negC->Sumw2();
+
+pos->Scale(1.,"width");
+neg->Scale(1.,"width");
+posA->Scale(1.,"width");
+negA->Scale(1.,"width");
+posC->Scale(1.,"width");
+negC->Scale(1.,"width");
+
+//both sides
+
+TF1 fpt("fpt","[1]*exp(-1/((1/x))*[0])",0.1,10);
+TF1 fpt2("fpt2","[1]*exp(-1/((1/x))*[0])",0.1,10);
+fpt.SetParameters(1,0.5);
+fpt2.SetParameters(1,0.5);
+pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4); pos->Fit(&fpt,"","",1,4);
+neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4); neg->Fit(&fpt2,"","",1,4);
+
+slope = (fpt.GetParameter(0)+fpt2.GetParameter(0))/2.;
+
+TH1D* ratio = new TH1D(*pos); 
+ratio->Divide(neg);
+
+ratio->Draw();
+TF1 fptRatio("fptratio","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
+fptRatio.SetParameters(0.5,0.006,1);
+fptRatio.FixParameter(0,slope);
+fptRatio.Draw();
+ratio->Fit(&fptRatio,"","",1,4); ratio->Fit(&fptRatio,"","",1,4); 
+ratio->Fit(&fptRatio,"","",1,4);
+
+deltaPt = fptRatio.GetParameter(1);
+deltaPtchi2 = fptRatio.GetChisquare();
+
+//get the errors
+deltaPt_Err = fptRatio.GetParError(1);
+
+
+//A side
+
+TF1 fptA("fptA","[1]*exp(-1/((1/x))*[0])",0.1,10);
+TF1 fpt2A("fpt2A","[1]*exp(-1/((1/x))*[0])",0.1,10);
+fptA.SetParameters(1,0.5);
+fpt2A.SetParameters(1,0.5);
+posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4); posA->Fit(&fptA,"","",1,4);
+negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4); negA->Fit(&fpt2A,"","",1,4);
+
+slopeA = (fptA.GetParameter(0)+fpt2A.GetParameter(0))/2.;
+
+TH1D* ratioA = new TH1D(*posA); 
+ratioA->Divide(negA);
+
+ratioA->Draw();
+TF1 fptRatioA("fptratioA","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
+fptRatioA.SetParameters(0.5,0.006,1);
+fptRatioA.FixParameter(0,slopeA);
+fptRatioA.Draw();
+ratioA->Fit(&fptRatioA,"","",1,4); ratio->Fit(&fptRatioA,"","",1,4); 
+ratioA->Fit(&fptRatioA,"","",1,4);
+
+deltaPtA = fptRatioA.GetParameter(1);
+deltaPtchi2A = fptRatioA.GetChisquare();
+
+//get the errors
+deltaPtA_Err = fptRatioA.GetParError(1);
+
+ delete ratioA;
+ delete pos;
+ delete neg;
+
+
+//C side
+TF1 fptC("fptC","[1]*exp(-1/((1/x))*[0])",0.1,10);
+TF1 fpt2C("fpt2C","[1]*exp(-1/((1/x))*[0])",0.1,10);
+fptC.SetParameters(1,0.5);
+fpt2C.SetParameters(1,0.5);
+posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4); posC->Fit(&fptC,"","",1,4);
+negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4); negC->Fit(&fpt2C,"","",1,4);
+
+slopeC = (fptC.GetParameter(0)+fpt2C.GetParameter(0))/2.;
+
+TH1D* ratioC = new TH1D(*posC); 
+ratioC->Divide(negC);
+
+ratioC->Draw();
+TF1 fptRatioC("fptratioC","[2]*exp(-1/((1/x)+[1])*[0])/exp(-1/((1/x)-[1])*[0])",0.1,10);
+fptRatioC.SetParameters(0.5,0.006,1);
+fptRatioC.FixParameter(0,slopeC);
+fptRatioC.Draw();
+ratioC->Fit(&fptRatioC,"","",1,4); ratio->Fit(&fptRatioC,"","",1,4); 
+ratioC->Fit(&fptRatioC,"","",1,4);
+
+deltaPtC = fptRatioC.GetParameter(1);
+deltaPtchi2C = fptRatioC.GetChisquare();
+
+//get the errors
+deltaPtC_Err = fptRatioC.GetParError(1);
+
+
+ delete posC;
+ delete negC;
+ delete ratioC;
+    
+    (*pcstream)<<"tpcQA"<<      
+      "deltaPt="<< deltaPt<<
+      "deltaPtchi2="<< deltaPtchi2<<
+      "deltaPtA="<< deltaPtA<<
+      "deltaPtchi2A="<< deltaPtchi2A<<
+      "deltaPtC="<< deltaPtC<<
+      "deltaPtchi2C="<< deltaPtchi2C<<
+      "deltaPt_Err="<< deltaPt_Err<<
+      "deltaPtA_Err="<< deltaPtA_Err<<
+      "deltaPtC_Err="<< deltaPtC_Err;    
+      
+    return 0;
+}
+
+//_____________________________________________________________________________
+ Int_t AliTPCPerformanceSummary::AnalyzeQADCAFitParameter(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
+{
+  
+  //
+  //function which retrieve DCA fit parameters
+  //
+  
+  if (!pcstream) return 16;
+  if (!pTPC) return 16;
+  
+  TH3* dcar_pos3=0;
+  TH3* dcaz_pos3=0;
+  TH3* dcar_neg3=0;
+  TH3* dcaz_neg3=0;
+
+  static Double_t dcar_posA_0=0; 
+  static Double_t dcar_posA_1=0; 
+  static Double_t dcar_posA_2=0; 
+  static Double_t dcar_posA_chi2=0; 
+  static Double_t dcar_posA_0_Err=0; 
+  static Double_t dcar_posA_1_Err=0; 
+  static Double_t dcar_posA_2_Err=0; 
+  
+  static Double_t dcar_posC_0=0; 
+  static Double_t dcar_posC_1=0; 
+  static Double_t dcar_posC_2=0; 
+  static Double_t dcar_posC_chi2=0; 
+  static Double_t dcar_posC_0_Err=0; 
+  static Double_t dcar_posC_1_Err=0; 
+  static Double_t dcar_posC_2_Err=0; 
+
+  static Double_t dcaz_posA_0=0; 
+  static Double_t dcaz_posA_1=0; 
+  static Double_t dcaz_posA_2=0; 
+  static Double_t dcaz_posA_chi2=0; 
+  static Double_t dcaz_posA_0_Err=0; 
+  static Double_t dcaz_posA_1_Err=0; 
+  static Double_t dcaz_posA_2_Err=0; 
+  
+  static Double_t dcaz_posC_0=0; 
+  static Double_t dcaz_posC_1=0; 
+  static Double_t dcaz_posC_2=0; 
+  static Double_t dcaz_posC_chi2=0; 
+  static Double_t dcaz_posC_0_Err=0; 
+  static Double_t dcaz_posC_1_Err=0; 
+  static Double_t dcaz_posC_2_Err=0; 
+  
+  static Double_t dcar_negA_0=0; 
+  static Double_t dcar_negA_1=0; 
+  static Double_t dcar_negA_2=0; 
+  static Double_t dcar_negA_chi2=0; 
+  static Double_t dcar_negA_0_Err=0; 
+  static Double_t dcar_negA_1_Err=0; 
+  static Double_t dcar_negA_2_Err=0; 
+  
+  static Double_t dcar_negC_0=0; 
+  static Double_t dcar_negC_1=0; 
+  static Double_t dcar_negC_2=0; 
+  static Double_t dcar_negC_chi2=0; 
+  static Double_t dcar_negC_0_Err=0; 
+  static Double_t dcar_negC_1_Err=0; 
+  static Double_t dcar_negC_2_Err=0; 
+
+  static Double_t dcaz_negA_0=0; 
+  static Double_t dcaz_negA_1=0; 
+  static Double_t dcaz_negA_2=0; 
+  static Double_t dcaz_negA_chi2=0; 
+  static Double_t dcaz_negA_0_Err=0; 
+  static Double_t dcaz_negA_1_Err=0; 
+  static Double_t dcaz_negA_2_Err=0; 
+ 
+  static Double_t dcaz_negC_0=0; 
+  static Double_t dcaz_negC_1=0; 
+  static Double_t dcaz_negC_2=0; 
+  static Double_t dcaz_negC_chi2=0; 
+  static Double_t dcaz_negC_0_Err=0; 
+  static Double_t dcaz_negC_1_Err=0; 
+  static Double_t dcaz_negC_2_Err=0;
+ 
+  if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_6")) {  
+    dcar_pos3 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_6"));
+  }
+  
+  if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_6")) {  
+    dcaz_pos3 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_4_5_6"));
+  }
+  
+  if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_6")) {  
+    dcar_neg3 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_6")); 
+  }
+  
+  if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_6")) {  
+    dcaz_neg3 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_4_5_6"));
+  }
+
+  TF1 fit("fit","[0]+[1]*cos(x)+[2]*sin(x)",0,7); 
+
+  dcar_pos3->GetYaxis()->SetRangeUser(0,0.99);    
+  TH1* dcar_posA = (dynamic_cast<TH2*>(dcar_pos3->Project3D("xz_1")))->ProfileX(); 
+  dcar_posA->Fit(&fit,"NQ");
+  dcar_posA_0 = fit.GetParameter(0);
+  dcar_posA_1 = fit.GetParameter(1);
+  dcar_posA_2 = fit.GetParameter(2);
+  dcar_posA_chi2 = fit.GetChisquare();  
+  dcar_posA_0_Err = fit.GetParError(0);
+  dcar_posA_1_Err = fit.GetParError(1);
+  dcar_posA_2_Err = fit.GetParError(2);
+  
+  dcar_pos3->GetYaxis()->SetRangeUser(-1.0,-0.01);    
+  TH1* dcar_posC = (dynamic_cast<TH2*>(dcar_pos3->Project3D("xz_2")))->ProfileX(); 
+  dcar_posC->Fit(&fit,"NQ");
+  dcar_posC_0 = fit.GetParameter(0);
+  dcar_posC_1 = fit.GetParameter(1);
+  dcar_posC_2 = fit.GetParameter(2);
+  dcar_posC_chi2 = fit.GetChisquare();    
+  dcar_posC_0_Err = fit.GetParError(0);
+  dcar_posC_1_Err = fit.GetParError(1);
+  dcar_posC_2_Err = fit.GetParError(2);
+
+  dcaz_pos3->GetYaxis()->SetRangeUser(0,0.99);    
+  TH1* dcaz_posA = (dynamic_cast<TH2*>(dcaz_pos3->Project3D("xz_3")))->ProfileX(); 
+  dcaz_posA->Fit(&fit,"NQ");
+  dcaz_posA_0 = fit.GetParameter(0);
+  dcaz_posA_1 = fit.GetParameter(1);
+  dcaz_posA_2 = fit.GetParameter(2);
+  dcaz_posA_chi2 = fit.GetChisquare();      
+  dcaz_posA_0_Err = fit.GetParError(0);
+  dcaz_posA_1_Err = fit.GetParError(1);
+  dcaz_posA_2_Err = fit.GetParError(2);  
+  
+  dcaz_pos3->GetYaxis()->SetRangeUser(-1.0,-0.01);    
+  TH1* dcaz_posC = (dynamic_cast<TH2*>(dcaz_pos3->Project3D("xz_4")))->ProfileX(); 
+  dcaz_posC->Fit(&fit,"NQ");
+  dcaz_posC_0 = fit.GetParameter(0);
+  dcaz_posC_1 = fit.GetParameter(1);
+  dcaz_posC_2 = fit.GetParameter(2);
+  dcaz_posC_chi2 = fit.GetChisquare();    
+  dcaz_posC_0_Err = fit.GetParError(0);
+  dcaz_posC_1_Err = fit.GetParError(1);
+  dcaz_posC_2_Err = fit.GetParError(2);  
+    
+
+  
+   dcar_neg3->GetYaxis()->SetRangeUser(0,0.99);    
+  TH1* dcar_negA = (dynamic_cast<TH2*>(dcar_neg3->Project3D("xz_1")))->ProfileX(); 
+  dcar_negA->Fit(&fit,"NQ");
+  dcar_negA_0 = fit.GetParameter(0);
+  dcar_negA_1 = fit.GetParameter(1);
+  dcar_negA_2 = fit.GetParameter(2);
+  dcar_negA_chi2 = fit.GetChisquare();  
+  dcar_negA_0_Err = fit.GetParError(0);
+  dcar_negA_1_Err = fit.GetParError(1);
+  dcar_negA_2_Err = fit.GetParError(2);
+  
+  dcar_neg3->GetYaxis()->SetRangeUser(-1.0,-0.01);    
+  TH1* dcar_negC = (dynamic_cast<TH2*>(dcar_neg3->Project3D("xz_2")))->ProfileX(); 
+  dcar_negC->Fit(&fit,"NQ");
+  dcar_negC_0 = fit.GetParameter(0);
+  dcar_negC_1 = fit.GetParameter(1);
+  dcar_negC_2 = fit.GetParameter(2);
+  dcar_negC_chi2 = fit.GetChisquare();    
+  dcar_negC_0_Err = fit.GetParError(0);
+  dcar_negC_1_Err = fit.GetParError(1);
+  dcar_negC_2_Err = fit.GetParError(2);
+
+  dcaz_neg3->GetYaxis()->SetRangeUser(0,0.99);    
+  TH1* dcaz_negA = (dynamic_cast<TH2*>(dcaz_neg3->Project3D("xz_3")))->ProfileX(); 
+  dcaz_negA->Fit(&fit,"NQ");
+  dcaz_negA_0 = fit.GetParameter(0);
+  dcaz_negA_1 = fit.GetParameter(1);
+  dcaz_negA_2 = fit.GetParameter(2);
+  dcaz_negA_chi2 = fit.GetChisquare();      
+  dcaz_negA_0_Err = fit.GetParError(0);
+  dcaz_negA_1_Err = fit.GetParError(1);
+  dcaz_negA_2_Err = fit.GetParError(2);  
+  
+  dcaz_neg3->GetYaxis()->SetRangeUser(-1.0,-0.01);    
+  TH1* dcaz_negC = (dynamic_cast<TH2*>(dcaz_neg3->Project3D("xz_4")))->ProfileX(); 
+  dcaz_negC->Fit(&fit,"NQ");
+  dcaz_negC_0 = fit.GetParameter(0);
+  dcaz_negC_1 = fit.GetParameter(1);
+  dcaz_negC_2 = fit.GetParameter(2);
+  dcaz_negC_chi2 = fit.GetChisquare();    
+  dcaz_negC_0_Err = fit.GetParError(0);
+  dcaz_negC_1_Err = fit.GetParError(1);
+  dcaz_negC_2_Err = fit.GetParError(2);  
+    
+
+// store results (shift in dca) in ttree
+    
+    (*pcstream)<<"tpcQA"<<      
+      "dcar_posA_0="<< dcar_posA_0<<
+      "dcar_posA_1="<< dcar_posA_1<<
+      "dcar_posA_2="<< dcar_posA_2<<
+      "dcar_posA_chi2="<< dcar_posA_chi2<<
+      "dcar_posA_0_Err="<< dcar_posA_0_Err<<
+      "dcar_posA_1_Err="<< dcar_posA_1_Err<<
+      "dcar_posA_2_Err="<< dcar_posA_2_Err;    
+      
+      (*pcstream)<<"tpcQA"<<            
+      "dcaz_posA_0="<< dcaz_posA_0<<
+      "dcaz_posA_1="<< dcaz_posA_1<<
+      "dcaz_posA_2="<< dcaz_posA_2<<
+      "dcaz_posA_chi2="<< dcaz_posA_chi2<<
+      "dcaz_posA_0_Err="<< dcaz_posA_0_Err<<
+      "dcaz_posA_1_Err="<< dcaz_posA_1_Err<<
+      "dcaz_posA_2_Err="<< dcaz_posA_2_Err;          
+      
+      (*pcstream)<<"tpcQA"<<            
+      "dcaz_posC_0="<< dcaz_posC_0<<
+      "dcaz_posC_1="<< dcaz_posC_1<<
+      "dcaz_posC_2="<< dcaz_posC_2<<
+      "dcaz_posC_chi2="<< dcaz_posC_chi2<<
+      "dcaz_posC_0_Err="<< dcaz_posC_0_Err<<
+      "dcaz_posC_1_Err="<< dcaz_posC_1_Err<<
+      "dcaz_posC_2_Err="<< dcaz_posC_2_Err;           
+
+      (*pcstream)<<"tpcQA"<<            
+      "dcar_posC_0="<< dcar_posC_0<<
+      "dcar_posC_1="<< dcar_posC_1<<
+      "dcar_posC_2="<< dcar_posC_2<<
+      "dcar_posC_chi2="<< dcar_posC_chi2<<
+      "dcar_posC_0_Err="<< dcar_posC_0_Err<<
+      "dcar_posC_1_Err="<< dcar_posC_1_Err<<
+      "dcar_posC_2_Err="<< dcar_posC_2_Err;           
+            
+      
+     (*pcstream)<<"tpcQA"<<      
+      "dcar_negA_0="<< dcar_negA_0<<
+      "dcar_negA_1="<< dcar_negA_1<<
+      "dcar_negA_2="<< dcar_negA_2<<
+      "dcar_negA_chi2="<< dcar_negA_chi2<<
+      "dcar_negA_0_Err="<< dcar_negA_0_Err<<
+      "dcar_negA_1_Err="<< dcar_negA_1_Err<<
+      "dcar_negA_2_Err="<< dcar_negA_2_Err;    
+      
+      (*pcstream)<<"tpcQA"<<            
+      "dcaz_negA_0="<< dcaz_negA_0<<
+      "dcaz_negA_1="<< dcaz_negA_1<<
+      "dcaz_negA_2="<< dcaz_negA_2<<
+      "dcaz_negA_chi2="<< dcaz_negA_chi2<<
+      "dcaz_negA_0_Err="<< dcaz_negA_0_Err<<
+      "dcaz_negA_1_Err="<< dcaz_negA_1_Err<<
+      "dcaz_negA_2_Err="<< dcaz_negA_2_Err;          
+      
+      (*pcstream)<<"tpcQA"<<            
+      "dcaz_negC_0="<< dcaz_negC_0<<
+      "dcaz_negC_1="<< dcaz_negC_1<<
+      "dcaz_negC_2="<< dcaz_negC_2<<
+      "dcaz_negC_chi2="<< dcaz_negC_chi2<<
+      "dcaz_negC_0_Err="<< dcaz_negC_0_Err<<
+      "dcaz_negC_1_Err="<< dcaz_negC_1_Err<<
+      "dcaz_negC_2_Err="<< dcaz_negC_2_Err;           
+
+      (*pcstream)<<"tpcQA"<<            
+      "dcar_negC_0="<< dcar_negC_0<<
+      "dcar_negC_1="<< dcar_negC_1<<
+      "dcar_negC_2="<< dcar_negC_2<<
+      "dcar_negC_chi2="<< dcar_negC_chi2<<
+      "dcar_negC_0_Err="<< dcar_negC_0_Err<<
+      "dcar_negC_1_Err="<< dcar_negC_1_Err<<
+      "dcar_negC_2_Err="<< dcar_negC_2_Err;                 
+      
+      return 0;
 }
