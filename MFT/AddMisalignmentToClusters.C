@@ -18,7 +18,7 @@ Double_t misalignmentY[AliMFTConstants::fNMaxPlanes] = {0};
 
 void AddMisalignmentToClusters(Char_t *nameDir=".",
 			       Int_t seed = 12345,
-			       Double_t misalignment = 0.0030) {
+			       Double_t misalignment = 0.0015) {
 
   gRandom -> SetSeed(seed);
 
