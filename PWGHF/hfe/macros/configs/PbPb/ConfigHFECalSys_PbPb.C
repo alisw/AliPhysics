@@ -1,4 +1,4 @@
-AliAnalysisTaskHFE* ConfigHFECalSys_PbPb(Bool_t useMC, int TPCclust, int Nits, double nSigMim, double Mimeop, double Maxeop, int PIDorder){
+AliAnalysisTaskHFE* ConfigHFECalSys_PbPb(Bool_t useMC, int TPCclust, int Nits, int ITSstat, double nSigMim, double Mimeop, double Maxeop, int PIDorder){
   //
   // HFE standard task configuration
   //
@@ -18,6 +18,7 @@ AliAnalysisTaskHFE* ConfigHFECalSys_PbPb(Bool_t useMC, int TPCclust, int Nits, d
   //hfecuts->SetMinNClustersITS(3);
   hfecuts->SetMinNClustersITS(Nits);
   hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
+  if(ITSstat==1)hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
 
   //hfecuts->UnsetVertexRequirement();
