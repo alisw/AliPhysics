@@ -2,14 +2,14 @@
 //
 // Track/cluster matcher
 // 
-// Author: C.Loizides
+// Author: C.Loizides, S.Aiola
 
 #include <TClonesArray.h>
-#include <TString.h>
 
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliPicoTrack.h"
+#include "AliEmcalParticle.h"
 #include "AliLog.h"
 
 #include "AliEmcalClusTrackMatcherTask.h"
@@ -17,19 +17,23 @@
 ClassImp(AliEmcalClusTrackMatcherTask)
 
 //________________________________________________________________________
-AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name) : 
-  AliAnalysisTaskSE("AliEmcalClusTrackMatcherTask"),
-  fTracksName("Tracks"),
-  fCaloName("CaloClusters"),
+AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
+  AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask"),
   fDoClusTrack(1),
-  fDoTrackClus(0)
+  fDoTrackClus(0),
+  fMaxDistance(0.1)
+{
+  // Constructor.
+}
+
+//________________________________________________________________________
+AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name) : 
+  AliAnalysisTaskEmcal(name),
+  fDoClusTrack(1),
+  fDoTrackClus(0),
+  fMaxDistance(0.1)
 {
   // Standard constructor.
-
-  if (!name)
-    return;
-  SetName(name);
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,CaloClusters,Tracks";
 }
 
 //________________________________________________________________________
@@ -39,101 +43,87 @@ AliEmcalClusTrackMatcherTask::~AliEmcalClusTrackMatcherTask()
 }
 
 //________________________________________________________________________
-void AliEmcalClusTrackMatcherTask::UserCreateOutputObjects()
+Bool_t AliEmcalClusTrackMatcherTask::Run() 
 {
-  // Create user objects.
+  // Run the matching for the selected options.
+  
+  if (fDoClusTrack) 
+    DoMatching(fCaloClusters, fTracks);
+
+  if (fDoTrackClus) 
+    DoMatching(fTracks, fCaloClusters);
+  
+  return kTRUE;
 }
 
 //________________________________________________________________________
-void AliEmcalClusTrackMatcherTask::UserExec(Option_t *) 
+void AliEmcalClusTrackMatcherTask::DoMatching(TClonesArray *array1, TClonesArray *array2) 
 {
-  // Main loop, called for each event.
+  // Do the actual matching.
 
-  TList *l = InputEvent()->GetList();
-  if (!l) 
+  if (!array1 || !array2)
     return;
 
-  TClonesArray *tracks = dynamic_cast<TClonesArray*>(l->FindObject(fTracksName));
-  if (!tracks) {
-    AliError(Form("Pointer to tracks %s == 0", fTracksName.Data() ));
-    return;
-  }
+  const Int_t n1 = array1->GetEntries();
+  const Int_t n2 = array2->GetEntries();
+  for (Int_t i = 0; i < n1; ++i) {
+    AliEmcalParticle *part1 = static_cast<AliEmcalParticle*>(array1->At(i));
+    if (!part1)
+      continue;
+      
+    AliVCluster *cluster1 = part1->GetCluster();
+    AliVTrack   *track1   = part1->GetTrack()  ;
 
-  TClonesArray *clus = dynamic_cast<TClonesArray*>(l->FindObject(fCaloName));
-  if (!clus) {
-    AliError(Form("Pointer to clus %s == 0", fCaloName.Data() ));
-    return;
-  }
+    if ((!cluster1 || !AcceptCluster(cluster1)) && 
+        (!track1 || !AcceptTrack(track1)))
+      continue;
+     
+    part1->ResetMatchedObjects();
 
-  const Int_t Ntrks = tracks->GetEntries();
-  const Int_t Ncls  = clus->GetEntries();
+    for (Int_t j = 0; j < n2; ++j) {
 
-  if (fDoClusTrack) {
-    for(Int_t i=0; i < Ncls; ++i) {
-      AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
-      if (!c)
-        continue;
-      c->SetEmcCpvDistance(-1);
-      c->SetTrackDistance(999,999);
-      Double_t dEtaMin  = 1e9;
-      Double_t dPhiMin  = 1e9;
-      Double_t dRMin    = 1e9;
-      Int_t    imin     = -1;
-      for(Int_t t = 0; t<Ntrks; ++t) {
-        AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
-      if (!track)
-        continue;
-      if (!track->IsEMCAL())
-          continue;
-        Double_t etadiff=999;
-        Double_t phidiff=999;
-        AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
-        Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
-	if(dR<dRMin) {
-          dEtaMin = etadiff;
-          dPhiMin = phidiff;
-	  dRMin=dR;
-          imin = t;
-        }
+      AliEmcalParticle *part2 = static_cast<AliEmcalParticle*>(array2->At(j));
+      if (!part2)
+	continue;
+
+      AliVCluster *cluster2 = part2->GetCluster();
+      AliVTrack   *track2   = part2->GetTrack()  ;
+
+      if ((!cluster2 || !AcceptCluster(cluster2)) && 
+          (!track2 || !AcceptTrack(track2)))
+	continue;
+
+      Double_t deta = 999;
+      Double_t dphi = 999;
+      if (track1 && cluster2)
+	AliPicoTrack::GetEtaPhiDiff(track1, cluster2, dphi, deta);
+      else if (track2 && cluster1)
+	AliPicoTrack::GetEtaPhiDiff(track2, cluster1, dphi, deta);
+      else
+	continue;
+	   
+      Double_t d = TMath::Sqrt(deta * deta + dphi * dphi);
+      if(d < fMaxDistance) 
+	part1->AddMatchedObj(j, d);
+    }
+    
+    if (part1->GetNumberOfMatchedObj() > 0) {
+      if (track1) {
+	track1->SetEMCALcluster(part1->GetMatchedObjId());
+      } else if (cluster1) {
+	const UInt_t matchedId = part1->GetMatchedObjId();
+	Double_t deta = 999;
+	Double_t dphi = 999;
+	AliEmcalParticle *part2 = static_cast<AliEmcalParticle*>(array2->At(matchedId));
+	AliVTrack *track2 = 0;
+        if (part2)
+          track2 = part2->GetTrack();
+	if (track2) {
+	  AliPicoTrack::GetEtaPhiDiff(track2, cluster1, dphi, deta);
+	  cluster1->SetEmcCpvDistance(matchedId);
+	  cluster1->SetTrackDistance(deta, dphi);
+	}
       }
-      c->SetEmcCpvDistance(imin);
-      c->SetTrackDistance(dPhiMin, dEtaMin);
     }
   }
-
-  if (fDoTrackClus) {
-    for(Int_t t = 0; t<Ntrks; ++t) {
-      AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(t));
-      if (!track)
-        continue;
-      if (!track->IsEMCAL())
-        continue;
-      Double_t dEtaMin  = 1e9;
-      Double_t dPhiMin  = 1e9;
-      Double_t dRMin    = 1e9;
-      Int_t    imin     = -1;
-      for(Int_t i=0; i < Ncls; ++i) {
-        AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(i));
-        if (!c)
-          continue;
-        Double_t etadiff=999;
-        Double_t phidiff=999;
-        AliPicoTrack::GetEtaPhiDiff(track,c,phidiff,etadiff);
-        Double_t dR = TMath::Sqrt(etadiff*etadiff+phidiff*phidiff);
-	if(dR<dRMin){
-          dEtaMin = etadiff;
-          dPhiMin = phidiff;
-	  dRMin   = dR;
-          imin = i;
-        }
-      }
-      track->SetEMCALcluster(imin);
-    }
-  }
-}
-
-//________________________________________________________________________
-void AliEmcalClusTrackMatcherTask::Terminate(Option_t *) 
-{
-  // Called once at the end of the analysis.
 }
