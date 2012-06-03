@@ -59,6 +59,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
   
   AliESDEvent 		*fESD;			//!ESD object
+  AliMCEvent 		*fMC;			//!MC object
   AliEMCALGeometry  	*fGeom; 		// emcal geometry 
     
   TList       		*fOutputList;		//! output list
@@ -68,6 +69,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   Bool_t 		fIdentifiedAsOutInz;    //Out Of Range in z
   Bool_t 		fPassTheEventCut;       //Pass The Event Cut
   Bool_t 		fRejectKinkMother;      //Reject Kink Mother
+  Bool_t                fmcData;
   Double_t 		fVz;                    //z position of the primary vertex
   AliCFManager 		*fCFM;                  //! Correction Framework Manager
   AliHFEpid 		*fPID;                  //! PID
@@ -79,6 +81,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   int ftriggersCut[48][60];//!
   int ftriggersTime[48][60];//!
  
+
   TH1F			*fNoEvents;		//! no of events
   THnSparseD		*fEMCAccE;		//! EMC acc
   TH1F			*fTrkpt;		//! track pt
@@ -117,6 +120,16 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH1F        *fTrigTimes;// trigger time
   TH2F        *fCellCheck;// trigger time
 
+  //<------ MC
+  TH2F                  *fInputHFEMC;
+  TH2F			*fIncpTMChfe;		//! MC HFE pid electron vs centrality
+  TH2F			*fIncpTMCM20hfe;	//! MC HFE pid electron vs centrality
+  TH2F			*fIncpTMCpho;		//! MC HFE pid electron vs centrality
+  TH2F			*fIncpTMCM20pho;	//! MC HFE pid electron vs centrality
+  TH2F			*fPhoElecPtMC;	        //! Pho inclusive ele pt
+  TH2F			*fPhoElecPtMCM20;	        //! Pho inclusive ele pt
+  TH2F			*fSameElecPtMC;	        //! Same inclusive ele pt
+  TH2F			*fSameElecPtMCM20;	        //! Same inclusive ele pt
 
   AliAnalysisTaskHFECal(const AliAnalysisTaskHFECal&); // not implemented
   AliAnalysisTaskHFECal& operator=(const AliAnalysisTaskHFECal&); // not implemented
