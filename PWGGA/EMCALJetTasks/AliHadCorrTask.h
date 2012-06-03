@@ -5,12 +5,14 @@
 
 class TClonesArray;
 class TList;
-class TH1;
-class TH2;
+class TH1F;
+class TH2F;
+class AliEmcalParticle;
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskEmcal.h"
 
-class AliHadCorrTask : public AliAnalysisTaskSE {
+class AliHadCorrTask : public AliAnalysisTaskEmcal {
+
  public:
   AliHadCorrTask();
   AliHadCorrTask(const char *name); 
@@ -18,55 +20,59 @@ class AliHadCorrTask : public AliAnalysisTaskSE {
   virtual ~AliHadCorrTask();
 
   void         UserCreateOutputObjects();
-  void         UserExec(Option_t *option);
-  void         Terminate(Option_t *option);
+  void         Terminate(Option_t *);
 
-  void         SetClusName(const char *n)              { fCaloName       = n;   }
-  void         SetEtaMatch(Double_t eta)               { fEtaMatch       = eta; }
-  void         SetHadCorr(Double_t c)                  { fHadCorr        = c;   }
-  void         SetMinPt(Double_t min)                  { fMinPt          = min; }
-  void         SetOutClusName(const char *n)           { fOutCaloName    = n;   }
-  void         SetPhiMatch(Double_t phi)               { fPhiMatch       = phi; }
-  void         SetTracksName(const char *n)            { fTracksName     = n;   }
-  void         SetTrackClus(Int_t c)                   { fDoTrackClus    = c;   }
+  void         SetOutClusName(const char *n)           { fOutCaloName    = n    ; }
+  void         SetEtaMatch(Double_t eta)               { fEtaMatch       = eta  ; }
+  void         SetPhiMatch(Double_t phi)               { fPhiMatch       = phi  ; }
+  void         SetTrackClus(Int_t c)                   { fDoTrackClus    = c    ; }
+  void         SetHadCorr(Double_t c)                  { fHadCorr        = c    ; }
+  void         SetEexcl(Double_t Emin)                 { fEexclCell      = Emin ; }
 
  protected:
-  Int_t        GetCentBin(Double_t cent) const;
-  Int_t        GetMomBin(Double_t pt)    const;
-  Double_t     GetEtaSigma(Int_t pbin)    const;
-  Double_t     GetPhiMean(Int_t pbin, Int_t centbin)    const;
-  Double_t     GetPhiSigma(Int_t pbin, Int_t centbin)    const;
-  TString      GetBeamType();
 
-  TString                fTracksName;             // name of track collection
-  TString                fCaloName;               // name of calo cluster collection
+  virtual Bool_t       Run()                                          ;
+  virtual Bool_t       FillHistograms()                { return kTRUE ; }
+  Int_t                GetMomBin(Double_t pt)                    const;
+  Double_t             GetEtaSigma(Int_t pbin)                   const;
+  Double_t             GetPhiMean(Int_t pbin, Int_t centbin)     const;
+  Double_t             GetPhiSigma(Int_t pbin, Int_t centbin)    const;
+  void                 DoTrackClusLoop()                              ;
+  void                 DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches);
+  Double_t             ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Double_t hadCorr)                   ;
+  Double_t             ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Double_t hadCorr)                  ;
+
+
   TString                fOutCaloName;            // name of output clusters
   Double_t               fPhiMatch;               // phi match value (pp=0.050)
   Double_t               fEtaMatch;               // eta match value (pp=0.025)
   Int_t                  fDoTrackClus;            // loop over tracks first
   Double_t               fHadCorr;                // hadronic correction (fraction)
-  Double_t               fMinPt;                  // minimum pt (on tracks and clusters)
-  Bool_t                 fCreateHisto;            // whether or not create histograms
+  Double_t               fEexclCell;              // Energy/cell that we cannot subtract from the clusters
+
   TClonesArray          *fOutClusters;            //!output cluster collection
-  TList                 *fOutputList;             //!output list
-  TH2                   *fHistMatchEtaPhi[8][9];  //!output histograms
-  TH2                   *fHistMatchEvsP[4];       //!output histograms
-  TH2                   *fHistMatchdRvsEP[4];     //!output histograms
-  TH1                   *fHistNclusvsCent;        //!output histograms
-  TH1                   *fHistNclusMatchvsCent;   //!output histograms
-  TH1                   *fHistEbefore;            //!output histograms
-  TH1                   *fHistEafter;             //!output histograms
-  TH2                   *fHistEoPCent;            //!output histograms
-  TH2                   *fHistNMatchCent;         //!output histograms
-  TH2                   *fHistNMatchCent_trk;     //!output histograms
-  TH1                   *fHistEsubPch[4][3];      //!output histograms
-  TH2                   *fHistEsubPchRat[4][3];   //!output histograms
-  TH1                   *fHistCentrality;         //!output histograms
+
+  TH2F                  *fHistMatchEtaPhi[8][9][2];  //!output histograms
+  TH2F                  *fHistMatchEvsP[4];          //!output histograms
+  TH2F                  *fHistNMatchEnergy[4];       //!output histograms
+  TH2F                  *fHistNCellsEnergy[8][4];    //!output histograms
+  TH2F                  *fHistMatchdRvsEP[4];        //!output histograms
+  TH1F                  *fHistNclusvsCent;           //!output histograms
+  TH1F                  *fHistNclusMatchvsCent;      //!output histograms
+  TH1F                  *fHistEbefore;               //!output histograms
+  TH1F                  *fHistEafter;                //!output histograms
+  TH2F                  *fHistEoPCent;               //!output histograms
+  TH2F                  *fHistNMatchCent;            //!output histograms
+  TH2F                  *fHistNMatchCent_trk;        //!output histograms
+  TH1F                  *fHistEsubPch[8];            //!output histograms
+  TH2F                  *fHistEsubPchRat[8];         //!output histograms
+  TH1F                  *fHistCentrality;            //!output histograms
+  TH2F                  *fHistNoMatchEtaPhi;         //!output histograms
 
  private:
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
   AliHadCorrTask &operator=(const AliHadCorrTask&); // not implemented
 
-  ClassDef(AliHadCorrTask, 6) // Hadronic correction task
+  ClassDef(AliHadCorrTask, 9) // Hadronic correction task
 };
 #endif
