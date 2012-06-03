@@ -8,9 +8,9 @@ class TString;
 class TH1F;
 class TH2F;
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcal {
+class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
  public:
 
   AliAnalysisTaskSAJF();
@@ -21,17 +21,19 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcal {
   void                        Terminate(Option_t *option);
   void                        Init();
 
-  void                        SetJetMinRC2LJ(Float_t d)                            { fMinRC2LJ       = d          ; } 
-  void                        SetEmbJetsName(const char *n)                        { fEmbJetsName    = n          ; }
-  void                        SetRandTracksName(const char *n)                     { fRandTracksName = n          ; }
-  void                        SetRandClusName(const char *n)                       { fRandCaloName   = n          ; }
-  void                        SetRhoName(const char *n)                            { fRhoName        = n          ; }
+  void                        SetJetMinRC2LJ(Float_t d)                            { fMinRC2LJ                = d          ; } 
+  void                        SetEmbJetsName(const char *n)                        { fEmbJetsName             = n          ; }
+  void                        SetRandTracksName(const char *n)                     { fRandTracksName          = n          ; }
+  void                        SetRandClusName(const char *n)                       { fRandCaloName            = n          ; }
+  void                        SetRhoName(const char *n)                            { fRhoName                 = n          ; }
+  void                        SetSkipEventsWithNoJets(Bool_t s)                    { fSkipEventsWithNoJets    = s          ; } 
 
  protected:
 
-  void                        RetrieveEventObjects()                                                                        ;
-  void                        FillHistograms()                                                                              ;
-  void                        DoJetLoop(Int_t &maxJetIndex, Int_t &max2JetIndex)                                            ;
+  Bool_t                      RetrieveEventObjects()                                                                        ;
+  Bool_t                      FillHistograms()                                                                              ;
+  void                        GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex)                                       ;
+  void                        DoJetLoop()                                                                                   ;
   void                        DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &maxPart)                                         ;
   void                        DoTrackLoop(Int_t maxJetIndex)                                                                ;
   void                        DoClusterLoop(Int_t maxJetIndex)                                                              ;
@@ -43,6 +45,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcal {
   TString                     fRandTracksName;             // Name of randomized track collection
   TString                     fRandCaloName;               // Name of randomized calo cluster collection
   TString                     fRhoName;                    // Name of rho object
+  Bool_t                      fSkipEventsWithNoJets;       // Whether or not skip events with no jets
 
   TClonesArray               *fEmbJets;                    //!Embedded Jets
   TClonesArray               *fRandTracks;                 //!Randomized tracks
@@ -55,9 +58,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcal {
   TH2F                       *fHistJetPhiEta[4];           //!Phi-Eta distribution of jets
   TH1F                       *fHistJetsPt[4];              //!Inclusive jet pt spectrum
   TH2F                       *fHistJetsPtArea[4];          //!Jet pt vs. area
-  TH1F                       *fHistJetsPtClus[4];          //!Inclusive jet pt spectrum cluster biased
-  TH1F                       *fHistJetsPtTrack[4];         //!Inclusive jet pt spectrum track biased
-  TH1F                       *fHistJetsPtNonBias[4];       //!Non biased inclusive jet pt spectrum
   TH1F                       *fHistLeadingJetPt[4];        //!Leading jet pt spectrum
   TH1F                       *fHist2LeadingJetPt[4];       //!Second leading jet pt spectrum
   TH2F                       *fHistJetsNEFvsPt[4];         //!Jet neutral energy fraction vs. jet pt
@@ -71,9 +71,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcal {
   TH1F                       *fHistRho[4];                 //!Rho distribution
   TH2F                       *fHistRhoVSleadJetPt;         //!Area(leadjetarea) * rho vs. leading jet pt
   TH1F                       *fHistCorrJetsPt[4];          //!Corrected inclusive jet pt spectrum
-  TH1F                       *fHistCorrJetsPtClus[4];      //!Corrected inclusive jet pt spectrum cluster biased
-  TH1F                       *fHistCorrJetsPtTrack[4];     //!Corrected inclusive jet pt spectrum track biased
-  TH1F                       *fHistCorrJetsPtNonBias[4];   //!Non biased corrected inclusive jet pt spectrum
   TH1F                       *fHistCorrLeadingJetPt[4];    //!Corrected leading jet pt spectrum
 
   // Random cones
