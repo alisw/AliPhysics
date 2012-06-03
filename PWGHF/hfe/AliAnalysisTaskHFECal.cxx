@@ -35,6 +35,10 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+
 #include "AliAnalysisTaskHFECal.h"
 #include "TGeoGlobalMagField.h"
 #include "AliLog.h"
@@ -72,6 +76,8 @@
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
 
+#include "AliStack.h"
+
 #include "AliCentrality.h"
 
 ClassImp(AliAnalysisTaskHFECal)
@@ -79,6 +85,7 @@ ClassImp(AliAnalysisTaskHFECal)
 AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name) 
   : AliAnalysisTaskSE(name)
   ,fESD(0)
+  ,fMC(0)
   ,fGeom(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
@@ -86,6 +93,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIdentifiedAsOutInz(kFALSE)
   ,fPassTheEventCut(kFALSE)
   ,fRejectKinkMother(kFALSE)
+  ,fmcData(kFALSE)
   ,fVz(0.0)
   ,fCFM(0)	
   ,fPID(0)
@@ -125,6 +133,15 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fClsETime1(0)       
   ,fTrigTimes(0)
   ,fCellCheck(0)
+  ,fInputHFEMC(0)
+  ,fIncpTMChfe(0)	
+  ,fIncpTMCM20hfe(0)	
+  ,fIncpTMCpho(0)	
+  ,fIncpTMCM20pho(0)	
+  ,fPhoElecPtMC(0)
+  ,fPhoElecPtMCM20(0)
+  ,fSameElecPtMC(0)
+  ,fSameElecPtMCM20(0)
 {
   //Named constructor
   
@@ -145,6 +162,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
 AliAnalysisTaskHFECal::AliAnalysisTaskHFECal() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskHFECal")
   ,fESD(0)
+  ,fMC(0)
   ,fGeom(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
@@ -152,6 +170,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIdentifiedAsOutInz(kFALSE)
   ,fPassTheEventCut(kFALSE)
   ,fRejectKinkMother(kFALSE)
+  ,fmcData(kFALSE)
   ,fVz(0.0)
   ,fCFM(0)	
   ,fPID(0)       
@@ -191,6 +210,15 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fClsETime1(0)       
   ,fTrigTimes(0)
   ,fCellCheck(0)
+  ,fInputHFEMC(0)
+  ,fIncpTMChfe(0)	
+  ,fIncpTMCM20hfe(0)	
+  ,fIncpTMCpho(0)	
+  ,fIncpTMCM20pho(0)	
+  ,fPhoElecPtMC(0)
+  ,fPhoElecPtMCM20(0)
+  ,fSameElecPtMC(0)
+  ,fSameElecPtMCM20(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -245,6 +273,37 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     fPID->InitializePID(fESD->GetRunNumber());
   }
  
+  if(fmcData)fMC = MCEvent();
+  AliStack* stack = NULL;
+  if(fmcData && fMC)stack = fMC->Stack();
+
+  Float_t cent = -1.;
+  AliCentrality *centrality = fESD->GetCentrality(); 
+  cent = centrality->GetCentralityPercentile("V0M");
+
+  //---- fill MC track info
+  if(fmcData && fMC)
+    {
+    Int_t nParticles = stack->GetNtrack();
+    for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
+      TParticle* particle = stack->Particle(iParticle);
+      int fPDG = particle->GetPdgCode(); 
+      double mcZvertex = fMC->GetPrimaryVertex()->GetZ();
+      double pTMC = particle->Pt();
+      Bool_t mcInDtoE= kFALSE;
+      Bool_t mcInBtoE= kFALSE;
+
+      if(particle->GetFirstMother()>-1 && fabs(fPDG)==11)
+        {
+	    int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();  
+            if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(fPDG)==11)mcInDtoE = kTRUE;
+            if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(fPDG)==11)mcInBtoE = kTRUE;
+            if((mcInBtoE || mcInDtoE) && fabs(mcZvertex)<10.0)fInputHFEMC->Fill(cent,pTMC);
+         }
+
+      }
+    } 
+
   fNoEvents->Fill(0);
 
   Int_t fNOtrks =  fESD->GetNumberOfTracks();
@@ -269,9 +328,9 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
   
   fCFM->SetRecEventInfo(fESD);
   
-  Float_t cent = -1.;
-  AliCentrality *centrality = fESD->GetCentrality(); 
-  cent = centrality->GetCentralityPercentile("V0M");
+  //Float_t cent = -1.;
+  //AliCentrality *centrality = fESD->GetCentrality(); 
+  //cent = centrality->GetCentralityPercentile("V0M");
   fCent->Fill(cent);
   
   if(cent>90.) return;
@@ -305,7 +364,27 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
     }
-    
+   
+    Bool_t mcPho = kFALSE;
+    Bool_t mcDtoE= kFALSE;
+    Bool_t mcBtoE= kFALSE;
+    double mcele = -1.;
+    if(fmcData && fMC && stack)
+      {
+       Int_t label = track->GetLabel();
+       TParticle* particle = stack->Particle(label);
+       int mcpid = particle->GetPdgCode();
+       printf("MCpid = %d",mcpid);
+       if(particle->GetFirstMother()>-1)
+         {
+          int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();
+          if((parentPID==22 || parentPID==111 || parentPID==221)&& fabs(mcpid)==11)mcPho = kTRUE;
+          if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(mcpid)==11)mcDtoE = kTRUE;
+          if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(mcpid)==11)mcBtoE = kTRUE;
+         } 
+       if(fabs(mcpid)==11)mcele= 1.; 
+      }
+ 
     if(TMath::Abs(track->Eta())>0.7) continue;
     if(TMath::Abs(track->Pt()<2.0)) continue;
     
@@ -376,10 +455,11 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		rmatch = sqrt(pow(delphi,2)+pow(deleta,2));
 		nmatch = clust->GetNTracksMatched();
 
-		  double valdedx[16];
+		  double valdedx[17];
 		  valdedx[0] = pt; valdedx[1] = dEdx; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = m02; valdedx[9] = m20; valdedx[10] = disp;
 		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = samestatus; valdedx[15] = clust->Chi2();
+                  valdedx[16] = mcele;
                   fEleInfo->Fill(valdedx);
                  
 
@@ -407,6 +487,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     fTrkEovPAft->Fill(pt,eop);
     fdEdxAft->Fill(mom,fTPCnSigma);
 
+    // Fill real data
     fIncpT->Fill(cent,pt);    
     if(fFlagPhotonicElec) fPhoElecPt->Fill(cent,pt);
     if(fFlagConvinatElec) fSameElecPt->Fill(cent,pt);
@@ -417,6 +498,29 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        if(fFlagPhotonicElec) fPhoElecPtM20->Fill(cent,pt);
        if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
      }
+
+    // MC
+    if(mcele==1)
+      {
+       if(mcBtoE || mcDtoE)
+         {
+          fIncpTMChfe->Fill(cent,pt);    
+          if(m20>0.0 && m20<0.3)fIncpTMCM20hfe->Fill(cent,pt);    
+         }
+       if(mcPho)
+        {
+         fIncpTMCpho->Fill(cent,pt);    
+         if(fFlagPhotonicElec) fPhoElecPtMC->Fill(cent,pt);
+         if(fFlagConvinatElec) fSameElecPtMC->Fill(cent,pt);
+
+         if(m20>0.0 && m20<0.3) 
+           {
+            fIncpTMCM20pho->Fill(cent,pt);    
+            if(fFlagPhotonicElec) fPhoElecPtMCM20->Fill(cent,pt);
+            if(fFlagConvinatElec) fSameElecPtMCM20->Fill(cent,pt);
+           }
+        } 
+      } 
  }
  PostData(1, fOutputList);
 }
@@ -425,13 +529,13 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 {
   //--- Check MC
  
-  Bool_t mcData = kFALSE;
+  //Bool_t mcData = kFALSE;
   if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())
     {
-     mcData = kTRUE;
+     fmcData = kTRUE;
      printf("+++++ MC Data available");
     }
-  if(mcData)
+  if(fmcData)
     {
      printf("++++++++= MC analysis \n");
     }
@@ -445,7 +549,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   //--------Initialize PID
   //fPID->SetHasMCData(kFALSE);
-  fPID->SetHasMCData(mcData);
+  fPID->SetHasMCData(fmcData);
   if(!fPID->GetNumberOfPIDdetectors()) 
     {
       fPID->AddDetector("TPC", 0);
@@ -555,10 +659,10 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
-  Int_t nBins[16] =  {  480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    3,    3,   10};
-  Double_t min[16] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5, -0.5};
-  Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  2.5,  2.5,  9.5};
-  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp;Centrality;charge;opp;same;trigCond;", 16, nBins, min, max);
+  Int_t nBins[17] =  {  480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    3,    3,   10,    3};
+  Double_t min[17] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5, -0.5, -1.5};
+  Double_t max[17] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  2.5,  2.5,  9.5,  1.5};
+  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp;Centrality;charge;opp;same;trigCond;", 17, nBins, min, max);
   fOutputList->Add(fEleInfo);
 
   //<---  Trigger info
@@ -592,6 +696,36 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fCellCheck = new TH2F("fCellCheck", "Cell vs E; E GeV; Cell ID",10,6,26,12000,0,12000);
   fOutputList->Add(fCellCheck);
+
+  //<---------- MC
+
+  fInputHFEMC = new TH2F("fInputHFEMC","Input MC HFE pid electro vs. centrality",100,0,100,100,0,50);
+  fOutputList->Add(fInputHFEMC);
+
+  fIncpTMChfe = new TH2F("fIncpTMChfe","MC HFE pid electro vs. centrality",100,0,100,100,0,50);
+  fOutputList->Add(fIncpTMChfe);
+
+  fIncpTMCM20hfe = new TH2F("fIncpTMCM20hfe","MC HFE pid electro vs. centrality with M20",100,0,100,100,0,50);
+  fOutputList->Add(fIncpTMCM20hfe);
+
+  fIncpTMCpho = new TH2F("fIncpTMCpho","MC Pho pid electro vs. centrality",100,0,100,100,0,50);
+  fOutputList->Add(fIncpTMCpho);
+
+  fIncpTMCM20pho = new TH2F("fIncpTMCM20pho","MC Pho pid electro vs. centrality with M20",100,0,100,100,0,50);
+  fOutputList->Add(fIncpTMCM20pho);
+
+  fPhoElecPtMC = new TH2F("fPhoElecPtMC", "MC Pho-inclusive electron pt",100,0,100,100,0,50);
+  fOutputList->Add(fPhoElecPtMC);
+  
+  fPhoElecPtMCM20 = new TH2F("fPhoElecPtMCM20", "MC Pho-inclusive electron pt with M20",100,0,100,100,0,50);
+  fOutputList->Add(fPhoElecPtM20);
+
+  fSameElecPtMC = new TH2F("fSameElecPtMC", "MC Same-inclusive electron pt",100,0,100,100,0,50);
+  fOutputList->Add(fSameElecPtMC);
+
+  fSameElecPtMCM20 = new TH2F("fSameElecPtMCM20", "MC Same-inclusive electron pt with M20",100,0,100,100,0,50);
+  fOutputList->Add(fSameElecPtMCM20);
+
 
   PostData(1,fOutputList);
 }
