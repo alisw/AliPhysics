@@ -1,10 +1,11 @@
 // $Id$
 
-AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
-  const char *name       = "PicoTracks",
-  const char *inname     = "tracks",
-  const char *runPeriod  = "LHC11h",
-  AliESDtrackCuts *cuts  = 0
+AliEmcalParticleMaker* AddTaskEmcalParticleMaker(
+  const char *taskName            = "AliEmcalParticleMaker",
+  const char *tracksName          = "PicoTracks",
+  const char *clustersName        = "CaloClusters",
+  const char *tracksOutName       = "EmcalTracks",
+  const char *clustersOutName     = "EmcalClusters"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -12,7 +13,7 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskEmcalPicoTrackMaker", "No analysis manager to connect to.");
+    ::Error("AddTaskEmcalParticleMaker", "No analysis manager to connect to.");
     return NULL;
   }  
   
@@ -20,7 +21,7 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   //==============================================================================
   if (!mgr->GetInputEventHandler())
   {
-    ::Error("AddTaskEmcalPicoTrackMaker", "This task requires an input event handler");
+    ::Error("AddTaskEmcalParticleMaker", "This task requires an input event handler");
     return NULL;
   }
   
@@ -28,17 +29,12 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliEmcalPicoTrackMaker *eTask = new AliEmcalPicoTrackMaker();
-  eTask->SetTracksOutName(name);
-  eTask->SetTracksInName(inname);
-  if (!strcmp(runPeriod, "LHC11h")) {
-    eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
-  }
-  else {
-    if (!cuts)
-      ::Warning(Form("Run period %s not known. AOD filter bit not set.", runPeriod));
-  }
-  eTask->SetESDtrackCuts(cuts);
+  AliEmcalParticleMaker *eTask = new AliEmcalParticleMaker(taskName);
+  eTask->SetTracksName(tracksName);
+  eTask->SetClusName(clustersName);
+  eTask->SetTracksOutName(tracksOutName);
+  eTask->SetClusOutName(clustersOutName);
+  eTask->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

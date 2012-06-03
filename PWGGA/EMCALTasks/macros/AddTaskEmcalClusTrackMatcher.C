@@ -3,6 +3,7 @@
 AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   const char *nTracks    = "Tracks",
   const char *nClusters  = "CaloClusters",
+  Double_t maxDist       = 0.1,
   Bool_t doClusTrack     = kTRUE,
   Bool_t doTrackClus     = kFALSE
 )
@@ -28,11 +29,13 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   // Init the task and do settings
   //-------------------------------------------------------
   TString name(Form("ClusTrackMatcher_%s_%s",nTracks,nClusters));
-  AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask(name);//name.Data());
+  AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask(name);
   matcher->SetTracksName(nTracks);
   matcher->SetClusName(nClusters);
   matcher->SetDoClusTrackMatching(doClusTrack);
   matcher->SetDoTrackClusMatching(doTrackClus);
+  matcher->SetMaxDistance(maxDist);
+  matcher->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
