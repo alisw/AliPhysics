@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, double nSigMim, double Mimeop, double Maxeop, int PIDorder, int sysID){
+AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, int ITSstat,double nSigMim, double Mimeop, double Maxeop, int PIDorder, int sysID){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -29,7 +29,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, doub
   
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFECalSys_PbPb.C");
 
-  AliAnalysisTaskHFE *hfetask = ConfigHFECalSys_PbPb(MCthere,TPCclust,Nits,nSigMim,Mimeop,Maxeop,PIDorder);
+  AliAnalysisTaskHFE *hfetask = ConfigHFECalSys_PbPb(MCthere,TPCclust,Nits,ITSstat,nSigMim,Mimeop,Maxeop,PIDorder);
   //RequestMemory(hfetask, 250*1024);
   if(trigtype==0)hfetask->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   if(trigtype==1)hfetask->SelectCollisionCandidates(AliVEvent::kCentral);
@@ -45,7 +45,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(int trigtype, int TPCclust, int Nits, doub
   //find input container
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   TString containerName = mgr->GetCommonFileName();
-  TString appendix(TString::Format(":PWGHF_hfeCalPbPbTrig%dTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",trigtype,TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
+  TString appendix(TString::Format(":PWGHF_hfeCalPbPbTrig%dTPC%dITS%dITSLay%dnSig%dMimeop%dMaxeop%dPID%d",trigtype,TPCclust,Nits,ITSstat,inSig,iMimeop,iMaxeop,PIDorder));
   //if(trigtype==1)appendix(TString::Format(":PWGHF_hfeCentTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
   //if(trigtype==2)appendix(TString::Format(":PWGHF_hfeSemiTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
   //if(trigtype==3)appendix(TString::Format(":PWGHF_hfekMBTPC%dITS%dnSig%dMimeop%dMaxeop%dPID%d",TPCclust,Nits,inSig,iMimeop,iMaxeop,PIDorder));
