@@ -33,7 +33,6 @@ set ( SRCS
  EMCALTasks/AliAnalysisTaskEMCALTriggerQA.cxx
  EMCALTasks/AliAnalysisTaskESDfilterEMCALEventSelect.cxx
  EMCALTasks/AliAnalysisTaskTrgContam.cxx
- EMCALTasks/AliEmcalClusTrackMatcherTask.cxx
  EMCALTasks/AliEmcalCompatTask.cxx
  EMCALTasks/AliEmcalEsdTpcTrackTask.cxx
  EMCALTasks/AliEmcalPhysicsSelection.cxx
@@ -48,6 +47,10 @@ set ( SRCS
  EMCALTasks/AliStaObjects.cxx
  EMCALTasks/AliAnalysisTaskSATR.cxx
  EMCALTasks/AliEmcalMCTrackSelector.cxx
+ EMCALTasks/AliEmcalParticle.cxx
+ EMCALTasks/AliEmcalParticleMaker.cxx
+ EMCALTasks/AliAnalysisTaskEmcal.cxx
+ EMCALTasks/AliEmcalClusTrackMatcherTask.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

@@ -12,7 +12,6 @@
 #pragma link C++ class AliAnalysisTaskEMCALTriggerQA+;
 #pragma link C++ class AliAnalysisTaskESDfilterEMCALEventSelect+;
 #pragma link C++ class AliAnalysisTaskTrgContam+;
-#pragma link C++ class AliEmcalClusTrackMatcherTask+;
 #pragma link C++ class AliEmcalCompatTask+;
 #pragma link C++ class AliEmcalEsdTpcTrackTask+;
 #pragma link C++ class AliEmcalPhysicsSelection+;
@@ -37,5 +36,9 @@
 #pragma link C++ class AliStaVertex+;
 #pragma link C++ class AliAnalysisTaskSATR+;
 #pragma link C++ class AliEmcalMCTrackSelector+;
+#pragma link C++ class AliEmcalParticle+;
+#pragma link C++ class AliAnalysisTaskEmcal+;
+#pragma link C++ class AliEmcalParticleMaker+;
+#pragma link C++ class AliEmcalClusTrackMatcherTask+;
 
 #endif
