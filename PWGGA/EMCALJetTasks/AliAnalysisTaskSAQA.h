@@ -8,9 +8,9 @@ class TString;
 class TH1F;
 class TH2F;
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcal {
+class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
  public:
   AliAnalysisTaskSAQA();
   AliAnalysisTaskSAQA(const char *name);
@@ -25,8 +25,8 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcal {
 
  protected:
 
-  void                        FillHistograms()                                          ;
-  void                        RetrieveEventObjects()                                    ;
+  Bool_t                      FillHistograms()                                          ;
+  Bool_t                      RetrieveEventObjects()                                    ;
   void                        DoCellLoop(Float_t &sum, Float_t &sum_cut)                ;
   void                        DoTriggerPrimitives(Int_t &maxL1amp, Int_t &maxL1thr)     ;
   Float_t                     DoTriggerClusLoop()                                       ;
@@ -50,11 +50,14 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcal {
  
   TH1F                       *fHistTracksPt;           //!Pt spectrum of tracks
   TH2F                       *fHistTrPhiEta;           //!Phi-Eta distribution of tracks
+  TH2F                       *fHistTrEmcPhiEta;        //!Phi-Eta emcal distribution of tracks
   TH1F                       *fHistClustersEnergy;     //!Energy spectrum of clusters
   TH2F                       *fHistClusPhiEta;         //!Phi-Eta distribution of clusters
-  TH1F                       *fHistJetsPt;             //!Pt spectrum of jets
   TH2F                       *fHistJetsPhiEta;         //!Phi-Eta distribution of jets
   TH2F                       *fHistJetsPtArea;         //!Pt vs. area of jets
+  TH1F                       *fHistJetsPtClus[4];      //!Inclusive jet pt spectrum cluster biased
+  TH1F                       *fHistJetsPtTrack[4];     //!Inclusive jet pt spectrum track biased
+  TH1F                       *fHistJetsPt[4];          //!Non biased inclusive jet pt spectrum
 
   TH2F                       *fHistEoverP;             //!E/P vs. E
 

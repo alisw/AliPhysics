@@ -26,7 +26,7 @@ ClassImp(AliAnalysisTaskSAQA)
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() : 
-  AliAnalysisTaskEmcal("AliAnalysisTaskSAQA"),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA"),
   fCellEnergyCut(0.1),
   fDoEoverP(kFALSE),
   fTrgClusName("ClustersL1GAMMAFEE"),
@@ -39,9 +39,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistMaxL1ThrCent(0),
   fHistTracksPt(0),
   fHistTrPhiEta(0),
+  fHistTrEmcPhiEta(0),
   fHistClustersEnergy(0),
   fHistClusPhiEta(0),
-  fHistJetsPt(0),
   fHistJetsPhiEta(0),
   fHistJetsPtArea(0),
   fHistEoverP(0),
@@ -56,11 +56,17 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
     fHistTrackPhi[i] = 0;
     fHistTrackEta[i] = 0;
   }
+
+  for (Int_t i = 0; i < 4; i++) {
+    fHistJetsPtTrack[i] = 0;
+    fHistJetsPtClus[i] = 0;
+    fHistJetsPt[i] = 0;
+  }
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) : 
-  AliAnalysisTaskEmcal(name),
+  AliAnalysisTaskEmcalJet(name),
   fCellEnergyCut(0.1),
   fDoEoverP(kFALSE),
   fTrgClusName("ClustersL1GAMMAFEE"),
@@ -73,9 +79,9 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistMaxL1ThrCent(0),
   fHistTracksPt(0),
   fHistTrPhiEta(0),
+  fHistTrEmcPhiEta(0),
   fHistClustersEnergy(0),
   fHistClusPhiEta(0),
-  fHistJetsPt(0),
   fHistJetsPhiEta(0),
   fHistJetsPtArea(0),
   fHistEoverP(0),
@@ -89,6 +95,12 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   for (Int_t i = 0; i < 5; i++) {
     fHistTrackPhi[i] = 0;
     fHistTrackEta[i] = 0;
+  }
+
+  for (Int_t i = 0; i < 4; i++) {
+    fHistJetsPtTrack[i] = 0;
+    fHistJetsPtClus[i] = 0;
+    fHistJetsPt[i] = 0;
   }
 }
 
@@ -105,7 +117,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
   OpenFile(1);
   fOutput = new TList();
-  fOutput->SetOwner();  // IMPORTANT!
+  fOutput->SetOwner();
 
   fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", fNbins, 0, 100);
   fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
@@ -117,87 +129,93 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTracksCent->GetYaxis()->SetTitle("No. of tracks");
   fOutput->Add(fHistTracksCent);
 
-  fHistClusCent = new TH2F("fHistClusCent","Clusters vs. centrality", fNbins, 0, 100, fNbins, 0, 2000);
-  fHistClusCent->GetXaxis()->SetTitle("Centrality (%)");
-  fHistClusCent->GetYaxis()->SetTitle("No. of clusters");
-  fOutput->Add(fHistClusCent);
-
-  fHistMaxL1FastORCent = new TH2F("fHistMaxL1FastORCent","fHistMaxL1ClusCent", 100, 0, 100, 250, 0, 250);
-  fHistMaxL1FastORCent->GetXaxis()->SetTitle("Centrality [%]");
-  fHistMaxL1FastORCent->GetYaxis()->SetTitle("Maximum L1 FastOR");
-  fOutput->Add(fHistMaxL1FastORCent);
-
-  fHistMaxL1ClusCent = new TH2F("fHistMaxL1ClusCent","fHistMaxL1ClusCent", 100, 0, 100, 250, 0, 250);
-  fHistMaxL1ClusCent->GetXaxis()->SetTitle("Centrality [%]");
-  fHistMaxL1ClusCent->GetYaxis()->SetTitle("Maximum L1 trigger cluster");
-  fOutput->Add(fHistMaxL1ClusCent);
-
-  fHistMaxL1ThrCent = new TH2F("fHistMaxL1ThrCent","fHistMaxL1ThrCent", 100, 0, 100, 250, 0, 250);
-  fHistMaxL1ThrCent->GetXaxis()->SetTitle("Centrality [%]");
-  fHistMaxL1ThrCent->GetYaxis()->SetTitle("Maximum L1 threshold");
-  fOutput->Add(fHistMaxL1ThrCent);
+  if (fAnaType == kEMCAL) {
+    fHistClusCent = new TH2F("fHistClusCent","Clusters vs. centrality", fNbins, 0, 100, fNbins, 0, 2000);
+    fHistClusCent->GetXaxis()->SetTitle("Centrality (%)");
+    fHistClusCent->GetYaxis()->SetTitle("No. of clusters");
+    fOutput->Add(fHistClusCent);
     
-  fHistTracksPt = new TH1F("fHistTracksPt","P_{T} spectrum of reconstructed tracks", fNbins, fMinPt, fMaxPt);
-  fHistTracksPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
+    fHistMaxL1FastORCent = new TH2F("fHistMaxL1FastORCent","fHistMaxL1ClusCent", 100, 0, 100, 250, 0, 250);
+    fHistMaxL1FastORCent->GetXaxis()->SetTitle("Centrality [%]");
+    fHistMaxL1FastORCent->GetYaxis()->SetTitle("Maximum L1 FastOR");
+    fOutput->Add(fHistMaxL1FastORCent);
+    
+    fHistMaxL1ClusCent = new TH2F("fHistMaxL1ClusCent","fHistMaxL1ClusCent", 100, 0, 100, 250, 0, 250);
+    fHistMaxL1ClusCent->GetXaxis()->SetTitle("Centrality [%]");
+    fHistMaxL1ClusCent->GetYaxis()->SetTitle("Maximum L1 trigger cluster");
+    fOutput->Add(fHistMaxL1ClusCent);
+    
+    fHistMaxL1ThrCent = new TH2F("fHistMaxL1ThrCent","fHistMaxL1ThrCent", 100, 0, 100, 250, 0, 250);
+    fHistMaxL1ThrCent->GetXaxis()->SetTitle("Centrality [%]");
+    fHistMaxL1ThrCent->GetYaxis()->SetTitle("Maximum L1 threshold");
+    fOutput->Add(fHistMaxL1ThrCent);
+  }
+
+  fHistTracksPt = new TH1F("fHistTracksPt","p_{T} spectrum of reconstructed tracks", fNbins, fMinBinPt, fMaxBinPt);
+  fHistTracksPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistTracksPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistTracksPt);
        
-  fHistTrPhiEta = new TH2F("fHistTrPhiEta","Phi-Eta distribution of tracks", 20, -2, 2, 32, 0, 6.4);
+  fHistTrPhiEta = new TH2F("fHistTrPhiEta","Phi-Eta distribution of tracks", 80, -2, 2, 128, 0, 6.4);
   fHistTrPhiEta->GetXaxis()->SetTitle("#eta");
   fHistTrPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistTrPhiEta);
 
-  fHistClustersEnergy = new TH1F("fHistClustersEnergy","Energy spectrum of clusters", fNbins, fMinPt, fMaxPt);
-  fHistClustersEnergy->GetXaxis()->SetTitle("E [GeV]");
-  fHistClustersEnergy->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistClustersEnergy);
+  fHistTrEmcPhiEta = new TH2F("fHistTrEmcPhiEta","Phi-Eta emcal distribution of tracks", 80, -2, 2, 128, 0, 6.4);
+  fHistTrEmcPhiEta->GetXaxis()->SetTitle("#eta");
+  fHistTrEmcPhiEta->GetYaxis()->SetTitle("#phi");
+  fOutput->Add(fHistTrEmcPhiEta);
 
-  fHistClusPhiEta = new TH2F("fHistClusPhiEta","Phi-Eta distribution of clusters", 20, -2, 2, 32, 0, 6.4);
-  fHistClusPhiEta->GetXaxis()->SetTitle("#eta");
-  fHistClusPhiEta->GetYaxis()->SetTitle("#phi");
-  fOutput->Add(fHistClusPhiEta);
+  if (fAnaType == kEMCAL) {
+    fHistClustersEnergy = new TH1F("fHistClustersEnergy","Energy spectrum of clusters", fNbins, fMinBinPt, fMaxBinPt);
+    fHistClustersEnergy->GetXaxis()->SetTitle("E [GeV]");
+    fHistClustersEnergy->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistClustersEnergy);
 
-  fHistJetsPt = new TH1F("fHistJetsPt","P_{T} spectrum of reconstructed jets", fNbins, fMinPt, fMaxPt);
-  fHistJetsPt->GetXaxis()->SetTitle("P_{T} [GeV/c]");
-  fHistJetsPt->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistJetsPt);
+    fHistClusPhiEta = new TH2F("fHistClusPhiEta","Phi-Eta distribution of clusters", 80, -2, 2, 128, 0, 6.4);
+    fHistClusPhiEta->GetXaxis()->SetTitle("#eta");
+    fHistClusPhiEta->GetYaxis()->SetTitle("#phi");
+    fOutput->Add(fHistClusPhiEta);
+  }
        
-  fHistJetsPhiEta = new TH2F("fHistJetsPhiEta","Phi-Eta distribution of jets", 20, -2, 2, 32, 0, 6.4);
+  fHistJetsPhiEta = new TH2F("fHistJetsPhiEta","Phi-Eta distribution of jets", 80, -2, 2, 128, 0, 6.4);
   fHistJetsPhiEta->GetXaxis()->SetTitle("#eta");
   fHistJetsPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistJetsPhiEta);
 
-  fHistJetsPtArea = new TH2F("fHistJetsPtArea","P_{T} vs. area of reconstructed jets", fNbins, fMinPt, fMaxPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
-  fHistJetsPtArea->GetXaxis()->SetTitle("P_{T} [GeV/c]");
+  fHistJetsPtArea = new TH2F("fHistJetsPtArea","p_{T} vs. area of reconstructed jets", fNbins, fMinBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+  fHistJetsPtArea->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistJetsPtArea->GetYaxis()->SetTitle("area");
   fOutput->Add(fHistJetsPtArea);
 
-  if (fDoEoverP) {
-    fHistEoverP = new TH2F("fHistEoverP","E/P vs. E", fNbins, fMinPt, fMaxPt, fNbins, 0, 10);
-    fHistEoverP->GetXaxis()->SetTitle("E [GeV]");
-    fHistEoverP->GetYaxis()->SetTitle("E/P [c]");
-    fOutput->Add(fHistEoverP);
+  if (fAnaType == kEMCAL) {
+    if (fDoEoverP) {
+      fHistEoverP = new TH2F("fHistEoverP","E/P vs. E", fNbins, fMinBinPt, fMaxBinPt, fNbins, 0, 10);
+      fHistEoverP->GetXaxis()->SetTitle("E [GeV]");
+      fHistEoverP->GetYaxis()->SetTitle("E/P [c]");
+      fOutput->Add(fHistEoverP);
+    }
+   
+    fHistCellsEnergy = new TH1F("fHistCellsEnergy","Energy spectrum of cells", fNbins, fMinBinPt, fMaxBinPt);
+    fHistCellsEnergy->GetXaxis()->SetTitle("E [GeV]");
+    fHistCellsEnergy->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistCellsEnergy);
+    
+    fHistChVSneCells = new TH2F("fHistChVSneCells","Charged energy vs. neutral (cells) energy", fNbins, fMinBinPt * 4, fMaxBinPt * 4, fNbins, fMinBinPt * 4, fMaxBinPt * 4);
+    fHistChVSneCells->GetXaxis()->SetTitle("E [GeV]");
+    fHistChVSneCells->GetYaxis()->SetTitle("P [GeV/c]");
+    fOutput->Add(fHistChVSneCells);
+    
+    fHistChVSneClus = new TH2F("fHistChVSneClus","Charged energy vs. neutral (clusters) energy", fNbins, fMinBinPt * 4, fMaxBinPt * 4, fNbins, fMinBinPt * 4, fMaxBinPt * 4);
+    fHistChVSneClus->GetXaxis()->SetTitle("E [GeV]");
+    fHistChVSneClus->GetYaxis()->SetTitle("P [GeV/c]");
+    fOutput->Add(fHistChVSneClus);
+    
+    fHistChVSneCorrCells = new TH2F("fHistChVSneCorrCells","Charged energy vs. neutral (corrected cells) energy", fNbins, fMinBinPt * 4, fMaxBinPt * 4, fNbins, fMinBinPt * 4, fMaxBinPt * 4);
+    fHistChVSneCorrCells->GetXaxis()->SetTitle("E [GeV]");
+    fHistChVSneCorrCells->GetYaxis()->SetTitle("P [GeV/c]");
+    fOutput->Add(fHistChVSneCorrCells);
   }
-
-  fHistCellsEnergy = new TH1F("fHistCellsEnergy","Energy spectrum of cells", fNbins, fMinPt, fMaxPt);
-  fHistCellsEnergy->GetXaxis()->SetTitle("E [GeV]");
-  fHistCellsEnergy->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistCellsEnergy);
-
-  fHistChVSneCells = new TH2F("fHistChVSneCells","Charged energy vs. neutral (cells) energy", fNbins, fMinPt * 4, fMaxPt * 4, fNbins, fMinPt * 4, fMaxPt * 4);
-  fHistChVSneCells->GetXaxis()->SetTitle("E [GeV]");
-  fHistChVSneCells->GetYaxis()->SetTitle("P [GeV/c]");
-  fOutput->Add(fHistChVSneCells);
-
-  fHistChVSneClus = new TH2F("fHistChVSneClus","Charged energy vs. neutral (clusters) energy", fNbins, fMinPt * 4, fMaxPt * 4, fNbins, fMinPt * 4, fMaxPt * 4);
-  fHistChVSneClus->GetXaxis()->SetTitle("E [GeV]");
-  fHistChVSneClus->GetYaxis()->SetTitle("P [GeV/c]");
-  fOutput->Add(fHistChVSneClus);
-
-  fHistChVSneCorrCells = new TH2F("fHistChVSneCorrCells","Charged energy vs. neutral (corrected cells) energy", fNbins, fMinPt * 4, fMaxPt * 4, fNbins, fMinPt * 4, fMaxPt * 4);
-  fHistChVSneCorrCells->GetXaxis()->SetTitle("E [GeV]");
-  fHistChVSneCorrCells->GetYaxis()->SetTitle("P [GeV/c]");
-  fOutput->Add(fHistChVSneCorrCells);
  
   for (Int_t i = 0; i < 5; i++) {
     TString histnamephi("fHistTrackPhi_");
@@ -224,13 +242,41 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTrackPhi[4]->SetLineColor(kBlack);
   fHistTrackEta[4]->SetLineColor(kBlack);
 
+  TString histname;
+
+  for (Int_t i = 0; i < 4; i++) {
+    if (fAnaType == kEMCAL) {
+      histname = "fHistJetsPtClus_";
+      histname += i;
+      fHistJetsPtClus[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
+      fHistJetsPtClus[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+      fHistJetsPtClus[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetsPtClus[i]);
+    }
+
+    histname = "fHistJetsPtTrack_";
+    histname += i;
+    fHistJetsPtTrack[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
+    fHistJetsPtTrack[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistJetsPtTrack[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsPtTrack[i]);
+
+    histname = "fHistJetsPt_";
+    histname += i;
+    fHistJetsPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
+    fHistJetsPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistJetsPt[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsPt[i]);
+  }
+
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAQA::RetrieveEventObjects()
+Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
 {
-  AliAnalysisTaskEmcal::RetrieveEventObjects();
+  if(!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
+    return kFALSE;
 
   if (strcmp(fTrgClusName,"")) {
     fTrgClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTrgClusName));
@@ -238,10 +284,12 @@ void AliAnalysisTaskSAQA::RetrieveEventObjects()
       AliWarning(Form("Could not retrieve trigger clusters!")); 
     }
   }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAQA::FillHistograms()
+Bool_t AliAnalysisTaskSAQA::FillHistograms()
 {
   fHistCentrality->Fill(fCent);
   if (fTracks)
@@ -249,32 +297,37 @@ void AliAnalysisTaskSAQA::FillHistograms()
   if (fCaloClusters)
     fHistClusCent->Fill(fCent, fCaloClusters->GetEntriesFast());
 
-  Float_t clusSum = DoClusterLoop();
-  
   Float_t trackSum = DoTrackLoop();
-
-  Float_t cellSum = 0, cellCutSum = 0;
-  DoCellLoop(cellSum, cellCutSum);
-
-  fHistChVSneCells->Fill(cellSum, trackSum);
-  fHistChVSneClus->Fill(clusSum, trackSum);
-  fHistChVSneCorrCells->Fill(cellCutSum, trackSum);
 
   DoJetLoop();
 
-  Float_t maxTrgClus = DoTriggerClusLoop();
-  fHistMaxL1ClusCent->Fill(fCent, maxTrgClus);
-  
-  Int_t maxL1amp = -1;
-  Int_t maxL1thr = -1;
+  if (fAnaType == kEMCAL) {
+    Float_t clusSum = DoClusterLoop();
 
-  DoTriggerPrimitives(maxL1amp, maxL1thr);
+    Float_t cellSum = 0, cellCutSum = 0;
+    
+    DoCellLoop(cellSum, cellCutSum);
+    
+    fHistChVSneCells->Fill(cellSum, trackSum);
+    fHistChVSneClus->Fill(clusSum, trackSum);
+    fHistChVSneCorrCells->Fill(cellCutSum, trackSum);
 
-  if (maxL1amp > -1) 
-    fHistMaxL1FastORCent->Fill(fCent, maxL1amp);
+    Float_t maxTrgClus = DoTriggerClusLoop();
+    fHistMaxL1ClusCent->Fill(fCent, maxTrgClus);
+    
+    Int_t maxL1amp = -1;
+    Int_t maxL1thr = -1;
+    
+    DoTriggerPrimitives(maxL1amp, maxL1thr);
+    
+    if (maxL1amp > -1) 
+      fHistMaxL1FastORCent->Fill(fCent, maxL1amp);
+    
+    if (maxL1thr > -1) 
+      fHistMaxL1ThrCent->Fill(fCent, maxL1thr);
+  }
 
-  if (maxL1thr > -1) 
-    fHistMaxL1ThrCent->Fill(fCent, maxL1thr);
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -355,7 +408,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
 
   for(Int_t i = 0; i < ntracks; i++) {
 
-    AliVParticle* track = dynamic_cast<AliVParticle*>(fTracks->At(i)); // pointer to reconstructed to track          
+    AliVTrack* track = dynamic_cast<AliVTrack*>(fTracks->At(i)); // pointer to reconstructed to track          
     if(!track) {
       AliError(Form("Could not retrieve track %d",i)); 
       continue; 
@@ -370,6 +423,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     Int_t label = track->GetLabel();
       
     fHistTrPhiEta->Fill(track->Eta(), track->Phi());
+    fHistTrEmcPhiEta->Fill(track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal());
     
     fHistTrackEta[4]->Fill(track->Eta());
     fHistTrackPhi[4]->Fill(track->Phi());
@@ -382,11 +436,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     if (!fDoEoverP)
       continue;
 
-    AliVTrack *vtrack = dynamic_cast<AliVTrack*>(track);
-    if (!vtrack)
-      continue;
-
-    Int_t clId = vtrack->GetEMCALcluster();
+    Int_t clId = track->GetEMCALcluster();
     if (clId > -1 && clId < nclusters && fCaloClusters) {
       AliVCluster* cluster = dynamic_cast<AliVCluster*>(fCaloClusters->At(i));
       if (cluster) {
@@ -415,10 +465,17 @@ void AliAnalysisTaskSAQA::DoJetLoop()
       continue;
     }  
 
-    if (!AcceptJet(jet))
+    if (!AcceptJet(jet, kFALSE))
       continue;
+
+    fHistJetsPt[fCentBin]->Fill(jet->Pt());
+
+    if (jet->MaxTrackPt() > fPtBiasJetTrack)
+      fHistJetsPtTrack[fCentBin]->Fill(jet->Pt());
     
-    fHistJetsPt->Fill(jet->Pt());
+    if (fAnaType == kEMCAL && jet->MaxClusterPt() > fPtBiasJetClus)
+      fHistJetsPtClus[fCentBin]->Fill(jet->Pt());
+    
     fHistJetsPtArea->Fill(jet->Pt(), jet->Area());
     fHistJetsPhiEta->Fill(jet->Eta(), jet->Phi());
   }

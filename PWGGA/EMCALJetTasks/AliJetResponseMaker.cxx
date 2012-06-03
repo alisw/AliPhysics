@@ -25,7 +25,7 @@ ClassImp(AliJetResponseMaker)
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker() : 
-  AliAnalysisTaskEmcal("AliJetResponseMaker"),
+  AliAnalysisTaskEmcalJet("AliJetResponseMaker"),
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
   fMaxDistance(0.2),
@@ -52,7 +52,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker(const char *name) : 
-  AliAnalysisTaskEmcal(name),
+  AliAnalysisTaskEmcalJet(name),
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
   fMaxDistance(0.2),
@@ -98,23 +98,23 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistJetPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistJetPhiEta);
   
-  fHistJetsPt = new TH1F("fHistJetsPt", "fHistJetsPt", fNbins, fMinPt, fMaxPt);
+  fHistJetsPt = new TH1F("fHistJetsPt", "fHistJetsPt", fNbins, fMinBinPt, fMaxBinPt);
   fHistJetsPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistJetsPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistJetsPt);
   
-  fHistJetsPtNonBias = new TH1F("fHistJetsPtNonBias", "fHistJetsPtNonBias", fNbins, fMinPt, fMaxPt);
+  fHistJetsPtNonBias = new TH1F("fHistJetsPtNonBias", "fHistJetsPtNonBias", fNbins, fMinBinPt, fMaxBinPt);
   fHistJetsPtNonBias->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistJetsPtNonBias->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistJetsPtNonBias);
   
-  fHistJetsZvsPt = new TH2F("fHistJetsZvsPt", "fHistJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinPt, fMaxPt);
+  fHistJetsZvsPt = new TH2F("fHistJetsZvsPt", "fHistJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
   fHistJetsZvsPt->GetXaxis()->SetTitle("Z");
   fHistJetsZvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
   fOutput->Add(fHistJetsZvsPt);
   
   if (fAnaType == kEMCAL) {
-    fHistJetsNEFvsPt = new TH2F("fHistJetsNEFvsPt", "fHistJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinPt, fMaxPt);
+    fHistJetsNEFvsPt = new TH2F("fHistJetsNEFvsPt", "fHistJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
     fHistJetsNEFvsPt->GetXaxis()->SetTitle("NEF");
     fHistJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
     fOutput->Add(fHistJetsNEFvsPt);
@@ -125,23 +125,23 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistMCJetPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistMCJetPhiEta);
   
-  fHistMCJetsPt = new TH1F("fHistMCJetsPt", "fHistMCJetsPt", fNbins, fMinPt, fMaxPt);
+  fHistMCJetsPt = new TH1F("fHistMCJetsPt", "fHistMCJetsPt", fNbins, fMinBinPt, fMaxBinPt);
   fHistMCJetsPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistMCJetsPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistMCJetsPt);
   
-  fHistMCJetsPtNonBias = new TH1F("fHistMCJetsPtNonBias", "fHistMCJetsPtNonBias", fNbins, fMinPt, fMaxPt);
+  fHistMCJetsPtNonBias = new TH1F("fHistMCJetsPtNonBias", "fHistMCJetsPtNonBias", fNbins, fMinBinPt, fMaxBinPt);
   fHistMCJetsPtNonBias->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistMCJetsPtNonBias->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistMCJetsPtNonBias);
   
-  fHistMCJetsZvsPt = new TH2F("fHistMCJetsZvsPt", "fHistMCJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinPt, fMaxPt);
+  fHistMCJetsZvsPt = new TH2F("fHistMCJetsZvsPt", "fHistMCJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
   fHistMCJetsZvsPt->GetXaxis()->SetTitle("Z");
   fHistMCJetsZvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
   fOutput->Add(fHistMCJetsZvsPt);
   
   if (fAnaType == kEMCAL) {
-    fHistMCJetsNEFvsPt = new TH2F("fHistMCJetsNEFvsPt", "fHistMCJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinPt, fMaxPt);
+    fHistMCJetsNEFvsPt = new TH2F("fHistMCJetsNEFvsPt", "fHistMCJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
     fHistMCJetsNEFvsPt->GetXaxis()->SetTitle("NEF");
     fHistMCJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
     fOutput->Add(fHistMCJetsNEFvsPt);
@@ -162,12 +162,12 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistClosestDeltaEta->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistClosestDeltaEta);
 
-  fHistClosestDeltaPt = new TH1F("fHistClosestDeltaPt", "fHistClosestDeltaPt", fNbins, -fMaxPt / 2, fMaxPt / 2);
+  fHistClosestDeltaPt = new TH1F("fHistClosestDeltaPt", "fHistClosestDeltaPt", fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
   fHistClosestDeltaPt->GetXaxis()->SetTitle("#Delta p_{T}");
   fHistClosestDeltaPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistClosestDeltaPt);
 
-  fHistPartvsDetecPt = new TH2F("fHistPartvsDetecPt", "fHistPartvsDetecPt", fNbins, fMinPt, fMaxPt, fNbins, fMinPt, fMaxPt);
+  fHistPartvsDetecPt = new TH2F("fHistPartvsDetecPt", "fHistPartvsDetecPt", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
   fHistPartvsDetecPt->GetXaxis()->SetTitle("p_{T}^{det}");
   fHistPartvsDetecPt->GetYaxis()->SetTitle("p_{T}^{rec}");
   fOutput->Add(fHistPartvsDetecPt);
@@ -176,7 +176,7 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::FillHistograms()
+Bool_t AliJetResponseMaker::FillHistograms()
 {
   // Fill histograms.
 
@@ -271,6 +271,8 @@ void AliJetResponseMaker::FillHistograms()
 	fHistMCJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt());
     }
   }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -327,11 +329,12 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2)
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::RetrieveEventObjects()
+Bool_t AliJetResponseMaker::RetrieveEventObjects()
 {
   // Retrieve event objects.
 
-  AliAnalysisTaskEmcal::RetrieveEventObjects();
+  if(!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
+    return kFALSE;
   
   if (!fMCJetsName.IsNull()) {
     fMCJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCJetsName));
@@ -346,6 +349,8 @@ void AliJetResponseMaker::RetrieveEventObjects()
       AliWarning(Form("Could not retrieve MC tracks %s!", fMCTracksName.Data())); 
     }
   }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________

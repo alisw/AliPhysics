@@ -7,9 +7,9 @@ class TClonesArray;
 class TH1F;
 class TH2F;
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliJetResponseMaker : public AliAnalysisTaskEmcal {
+class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
  public:
   AliJetResponseMaker();
   AliJetResponseMaker(const char *name);
@@ -24,8 +24,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcal {
 
  protected:
   void                        DoJetLoop(TClonesArray *jets1, TClonesArray *jets2);
-  void                        FillHistograms();
-  void                        RetrieveEventObjects();
+  Bool_t                      FillHistograms();
+  Bool_t                      RetrieveEventObjects();
 
   TString                     fMCTracksName;              // name of MC particle collection
   TString                     fMCJetsName;                // name of MC jet collection
