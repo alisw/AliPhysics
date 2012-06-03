@@ -3,34 +3,31 @@
 
 // $Id$
 
-class TClonesArray;
+#include "AliAnalysisTaskEmcal.h"
 
-#include "AliAnalysisTaskSE.h"
-
-class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskSE {
+class AliEmcalClusTrackMatcherTask : public AliAnalysisTaskEmcal {
  public:
-  AliEmcalClusTrackMatcherTask(const char *name=0);
+  AliEmcalClusTrackMatcherTask();
+  AliEmcalClusTrackMatcherTask(const char *name);
   virtual ~AliEmcalClusTrackMatcherTask();
 
-  void         UserCreateOutputObjects();
-  void         UserExec(Option_t *option);
-  void         Terminate(Option_t *option);
+  Bool_t       Run();
 
   void         SetDoClusTrackMatching(Bool_t b) { fDoClusTrack = b; }
   void         SetDoTrackClusMatching(Bool_t b) { fDoTrackClus = b; }
-  void         SetClusName(const char *n)       { fCaloName    = n; }
-  void         SetTracksName(const char *n)     { fTracksName  = n; }
+  void         SetMaxDistance(Double_t d)       { fMaxDistance = d; }
 
  protected:
-  TString      fTracksName;         // name of track collection
-  TString      fCaloName;           // name of calo cluster collection
+  void         DoMatching(TClonesArray *array1, TClonesArray *array2);
+
   Bool_t       fDoClusTrack;        // match clusters to tracks (one -> many)
   Bool_t       fDoTrackClus;        // match tracks to clusters (one -> many) 
+  Double_t     fMaxDistance;        // maximum distance to match clusters and tracks
 
  private:
   AliEmcalClusTrackMatcherTask(const AliEmcalClusTrackMatcherTask&);            // not implemented
   AliEmcalClusTrackMatcherTask &operator=(const AliEmcalClusTrackMatcherTask&); // not implemented
 
-  ClassDef(AliEmcalClusTrackMatcherTask, 1) // Cluster-Track matching task
+  ClassDef(AliEmcalClusTrackMatcherTask, 2) // Cluster-Track matching task
 };
 #endif
