@@ -8,8 +8,10 @@ AliHadCorrTask* AddTaskHadCorr(
   const Double_t minPt       = 0.15,
   const Double_t phiMatch    = 0.050,
   const Double_t etaMatch    = 0.025,
-  const char *outputname     = "AnalysisResults.root",
-  const Bool_t   histo       = kFALSE
+  const Double_t Eexcl       = 0,
+  const Bool_t trackClus     = kTRUE,
+  const Bool_t   histo       = kFALSE,
+  const char *outputname     = "AnalysisResults.root"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -41,7 +43,10 @@ AliHadCorrTask* AddTaskHadCorr(
   hcor->SetPhiMatch(phiMatch);
   hcor->SetEtaMatch(etaMatch);
   hcor->SetHadCorr(hadcorr);
-  hcor->SetMinPt(minPt);
+  hcor->SetPtCut(minPt);
+  hcor->SetEexcl(Eexcl);
+  hcor->SetTrackClus(trackClus);
+  hcor->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
