@@ -40,8 +40,8 @@ class AliPicoTrack: public AliVTrack {
   Int_t    GetID()                     const { return 0;       }
   UChar_t  GetITSClusterMap()          const { return 0;       }
   Int_t    GetEMCALcluster()           const { return fClusId; }
-  Double_t GetEtaEmc()                 const { return fEtaEmc; }
-  Double_t GetPhiEmc()                 const { return fPhiEmc; }
+  Double_t GetEtaEmc()                 const { return GetTrackEtaOnEMCal(); }
+  Double_t GetPhiEmc()                 const { return GetTrackPhiOnEMCal(); }
   Bool_t   IsEMCAL()                   const { return fEmcal;  }
   ULong_t  GetStatus()                 const { return 0;       }
   Bool_t   GetXYZ(Double_t *v)         const { v[0]=0; v[1]=0; v[2]=0; return 0; }
@@ -50,6 +50,11 @@ class AliPicoTrack: public AliVTrack {
   Bool_t   GetCovarianceXYZPxPyPz(Double_t /*cv*/[21]) const { return 0; }
   Int_t    Compare(const TObject* obj) const;
   Bool_t   PropagateToDCA(const AliVVertex *, Double_t, Double_t, Double_t *, Double_t *) { return 0; }
+
+  virtual Double_t GetTrackPhiOnEMCal() const { return fPhiEmc ; }
+  virtual Double_t GetTrackEtaOnEMCal() const { return fEtaEmc ; }
+  virtual void SetTrackPhiEtaOnEMCal(Double_t eta, Double_t phi) { fEtaEmc = eta; fPhiEmc = phi; }
+
   void     SetEMCALcluster(Int_t id)         { fClusId = id;   }
 
   static void GetEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
