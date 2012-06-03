@@ -82,7 +82,7 @@ public:
   Bool_t      IsEmc(void) const { return kTRUE ; }                 // true if the recpoint is in EMC
   Bool_t      IsSortable() const {return kTRUE ; }                 // says that emcrecpoints are sortable objects 
   void        Print(Option_t *)const ; 
-  void        Purify(Float_t threshold) ;                          //Removes digits below threshold
+  void        Purify(Float_t threshold, const TClonesArray * digits) ;                          //Removes digits below threshold
 
   Float_t     GetM2x()   const {return fM2x;  } // Get second X-moment
   Float_t     GetM2z()   const {return fM2z;  } // Get second Z-moment

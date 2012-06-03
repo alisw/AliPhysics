@@ -977,11 +977,11 @@ void AliPHOSEmcRecPoint::EvalTime(TClonesArray * /*digits*/)
 */  
 }
 //____________________________________________________________________________
-void AliPHOSEmcRecPoint::Purify(Float_t threshold){
+void AliPHOSEmcRecPoint::Purify(Float_t threshold, const TClonesArray * digits){
   //Removes digits below threshold
 
-  Int_t * tempo = new Int_t[fMaxDigit]; 
-  Float_t * tempoE =  new Float_t[fMaxDigit];
+  Int_t tempo[fMaxDigit]; 
+  Float_t tempoE[fMaxDigit];
 
   Int_t mult = 0 ;
   for(Int_t iDigit=0;iDigit< fMulDigit ;iDigit++){
@@ -991,8 +991,42 @@ void AliPHOSEmcRecPoint::Purify(Float_t threshold){
       mult++ ;
     }
   }
-  
-  fMulDigit = mult ;
+
+  if(mult==0){ //too soft cluster
+    fMulDigit =0 ;
+    fAmp = 0.; //Recalculate total energy
+  }
+    
+  //Remove non-connected cells
+  Int_t index[mult] ;
+  Bool_t used[mult] ;
+  for(Int_t i=0; i<mult; i++) used[i]=0 ;
+  Int_t inClu=0 ;
+  Double_t eMax=0. ;
+  //find maximum
+  for(Int_t iDigit=0; iDigit<mult; iDigit++) {
+    if(eMax<tempoE[iDigit]){
+      eMax=tempoE[iDigit];
+      index[0]=iDigit ;
+      inClu=1 ;
+    }
+  }
+  used[index[0]]=kTRUE ; //mark as used
+  for(Int_t i=0; i<inClu; i++){
+    AliPHOSDigit * digit = (AliPHOSDigit *) digits->At(tempo[index[i]]) ; 
+    for(Int_t iDigit=0 ;iDigit<mult; iDigit++){
+      if(used[iDigit]) //already used
+        continue ;
+      AliPHOSDigit * digitN = (AliPHOSDigit *) digits->At(tempo[iDigit]) ; 	
+      if(AreNeighbours(digit,digitN)){
+	index[inClu]= iDigit ;
+	inClu++ ;
+	used[iDigit]=kTRUE ;
+      }
+    }
+  }
+     
+  fMulDigit = inClu ;
   delete [] fDigitsList ;
   delete [] fEnergyList ;
   fDigitsList = new Int_t[fMulDigit];
@@ -1000,14 +1034,10 @@ void AliPHOSEmcRecPoint::Purify(Float_t threshold){
 
   fAmp = 0.; //Recalculate total energy
   for(Int_t iDigit=0;iDigit< fMulDigit ;iDigit++){
-     fDigitsList[iDigit] = tempo[iDigit];
-     fEnergyList[iDigit] = tempoE[iDigit] ;
-     fAmp+=tempoE[iDigit];
-  }
-      
-  delete [] tempo ;
-  delete [] tempoE ;
-
+     fDigitsList[iDigit] = tempo[index[iDigit]];
+     fEnergyList[iDigit] = tempoE[index[iDigit]] ;
+     fAmp+=tempoE[index[iDigit]];
+  }      
 }
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::Print(Option_t *) const

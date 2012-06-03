@@ -521,7 +521,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   for(index = 0; index < nEmc; index++){
     AliPHOSEmcRecPoint * rp =
       static_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(index) );
-    rp->Purify(emcMinE) ;
+    rp->Purify(emcMinE,fDigitsArr) ;
     if(rp->GetMultiplicity()==0){
       fEMCRecPoints->RemoveAt(index) ;
       delete rp ;
