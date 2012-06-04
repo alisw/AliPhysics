@@ -41,6 +41,15 @@ class AliAnalysisTaskMuonPerformance : public AliAnalysisTaskSE {
   /// set the flag to fit or not the cluster residuals to extract means and sigmas
   void FitClusterResiduals(Bool_t flag = kTRUE) { fFitResiduals = flag; }
   
+  /// set the flag to select reconstructed tracks still reconstructible for efficiency calculations
+  void EnforceTrackingCriteria(Bool_t flag = kTRUE) { fEnforceTrkCriteria = flag; }
+  
+  /// set the flag to use kinematics from MC track for efficiency calculations when available
+  void UseMCKinematics(Bool_t flag = kTRUE) { fUseMCKinematics = flag; }
+  
+  /// if trk and trig parts match different MC, set the triggerable level from the MC matching the trk part
+  void SetMCTrigLevelFromMatchTrk(Bool_t flag = kTRUE) { fMCTrigLevelFromMatchTrk = flag; }
+  
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *option);
@@ -56,6 +65,9 @@ class AliAnalysisTaskMuonPerformance : public AliAnalysisTaskSE {
     kVarTrigger,    ///< Trigger info
     kVarMotherType, ///< Mother type
     kVarMatchMC,    ///< MC matching flag
+    kVarMCTrigger,  ///< MC trigger info
+    kVarCent,       ///< Centrality
+    kVarDupliTrg,   ///< Flag trigger track already found
     kNvars          ///< THnSparse dimensions
   };
   
@@ -73,7 +85,8 @@ class AliAnalysisTaskMuonPerformance : public AliAnalysisTaskSE {
   Bool_t  GetEfficiency(AliCFEffGrid* efficiency, Double_t& calcEff, Double_t& calcEffErr);
   Int_t   RecoTrackMother(AliMCParticle* mcParticle);
   Float_t GetBinThetaAbsEnd(Float_t RAtAbsEnd, Bool_t isTheta = kFALSE);
-  void    FillContainerInfo(Double_t* containerInput, AliESDMuonTrack* esdTrack, Int_t mcID);
+  void    FillContainerInfoReco(Double_t* containerInput, AliESDMuonTrack* esdTrack, Bool_t isValid, Int_t mcID);
+  void    FillContainerInfoMC(Double_t* containerInput, AliMCParticle* mcPart);
   
   void    FitLandauGausResVsP(TH2* h, const char* fitting, TGraphAsymmErrors* gMean, TGraphAsymmErrors* gMostProb, TGraphAsymmErrors* gSigma);
   void    FitGausResVsMom(TH2* h, const Double_t mean0, const Double_t sigma0, const char* fitting, TGraphAsymmErrors* gMean, TGraphAsymmErrors* gSigma);
@@ -87,8 +100,11 @@ class AliAnalysisTaskMuonPerformance : public AliAnalysisTaskSE {
   
   void Zoom(TH1* h, Double_t fractionCut = 0.01);
   
+  void FillEffHistos(AliCFEffGrid* efficiency, const char* suffix, TObjArray* list);
+  
   enum {
     kNoMatchTrig,  ///< No match with trigger
+    kOtherTrig,    ///< Match trigger not passing any Pt threshold (MC)
     kAllPtTrig,    ///< Match All Pt
     kLowPtTrig,    ///< Match Low Pt
     kHighPtTrig,   ///< Match High Pt
@@ -280,19 +296,21 @@ class AliAnalysisTaskMuonPerformance : public AliAnalysisTaskSE {
     kSigmaResClYVsDE                      ///< cluster resolution-Y versus DE
   };
   
-  TString  fDefaultStorage;        ///< location of the default OCDB storage
-  Int_t    fNPBins;                ///< number of momentum bins
-  Double_t fPRange[2];             ///< momentum range
-  Bool_t   fCorrectForSystematics; ///< add or not the systematic shifts of the residuals to the resolution
-  Bool_t   fFitResiduals;          ///< fit or not the cluster residuals to extract means and sigmas
-  UInt_t   fRequestedStationMask;  //!< mask of requested stations
-  Bool_t   fRequest2ChInSameSt45;  //!< 2 fired chambers requested in the same station (4 or 5) or not
-  Double_t fSigmaCut;              //!< sigma cut to associate clusters with TrackRefs
-  Double_t fSigmaCutTrig;          //!< sigma cut to associate trigger track to triggerable track
-  Double_t fClusterMaxRes[2];      //!< highest chamber resolution in both directions
-  Int_t    fNDE;                   //!< total number of DE
-  Int_t    fDEIndices[1100];       //!< index of DE in histograms refered by ID
-  Int_t    fDEIds[200];            //!< ID of DE refered by index in histograms
+  TString  fDefaultStorage;          ///< location of the default OCDB storage
+  Int_t    fNPBins;                  ///< number of momentum bins
+  Double_t fPRange[2];               ///< momentum range
+  Bool_t   fCorrectForSystematics;   ///< add or not the systematic shifts of the residuals to the resolution
+  Bool_t   fFitResiduals;            ///< fit or not the cluster residuals to extract means and sigmas
+  Bool_t   fEnforceTrkCriteria;      ///< select reconstructed tracks still reconstructible
+  Bool_t   fUseMCKinematics;         ///< use kinematics from MC track when available
+  Bool_t   fMCTrigLevelFromMatchTrk; ///< set the triggerable level from the MC matching the trk part
+  UInt_t   fRequestedStationMask;    //!< mask of requested stations
+  Bool_t   fRequest2ChInSameSt45;    //!< 2 fired chambers requested in the same station (4 or 5) or not
+  Double_t fSigmaCutTrig;            //!< sigma cut to associate trigger track to triggerable track
+  Double_t fClusterMaxRes[2];        //!< highest chamber resolution in both directions
+  Int_t    fNDE;                     //!< total number of DE
+  Int_t    fDEIndices[1100];         //!< index of DE in histograms refered by ID
+  Int_t    fDEIds[200];              //!< ID of DE refered by index in histograms
   
   AliCFContainer* fCFContainer; //!< Pointer to the CF container
   TObjArray* fEfficiencyList;   //!< List of histograms for tracker/trigger efficiencies
@@ -307,7 +325,7 @@ class AliAnalysisTaskMuonPerformance : public AliAnalysisTaskSE {
   TObjArray* fDCAList;          //!< List of graph and canvas about DCA
   TObjArray* fClusterList;      //!< List of graph and canvas about cluster resolution
   
-  ClassDef(AliAnalysisTaskMuonPerformance, 1); // Muon performance analysis
+  ClassDef(AliAnalysisTaskMuonPerformance, 2); // Muon performance analysis
 };
 
 inline void AliAnalysisTaskMuonPerformance::SetPBins(Int_t nBins, Double_t pMin, Double_t pMax)

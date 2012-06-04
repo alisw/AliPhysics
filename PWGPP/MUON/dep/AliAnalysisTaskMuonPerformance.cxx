@@ -35,6 +35,7 @@
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TMCProcess.h"
+#include "TGeoGlobalMagField.h"
 #include "TGeoManager.h"
 
 // STEER includes
@@ -50,6 +51,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliCentrality.h"
 
 // CORRFW includes
 #include "AliCFContainer.h"
@@ -70,6 +72,10 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONVCluster.h"
+#include "AliMUONVTrackReconstructor.h"
+
+// MUON mapping includes
+#include "AliMpSegmentation.h"
 #include "AliMpDEIterator.h"
 
 #include "AliAnalysisTaskMuonPerformance.h"
@@ -87,9 +93,11 @@ fDefaultStorage(""),
 fNPBins(30),
 fCorrectForSystematics(kFALSE),
 fFitResiduals(kFALSE),
+fEnforceTrkCriteria(kFALSE),
+fUseMCKinematics(kFALSE),
+fMCTrigLevelFromMatchTrk(kFALSE),
 fRequestedStationMask(0),
 fRequest2ChInSameSt45(0),
-fSigmaCut(-1.),
 fSigmaCutTrig(-1.),
 fNDE(0),
 fCFContainer(0x0),
@@ -124,9 +132,11 @@ fDefaultStorage("raw://"),
 fNPBins(30),
 fCorrectForSystematics(kFALSE),
 fFitResiduals(kFALSE),
+fEnforceTrkCriteria(kFALSE),
+fUseMCKinematics(kFALSE),
+fMCTrigLevelFromMatchTrk(kFALSE),
 fRequestedStationMask(0),
 fRequest2ChInSameSt45(0),
-fSigmaCut(-1.),
 fSigmaCutTrig(-1.),
 fNDE(0),
 fCFContainer(0x0),
@@ -199,29 +209,40 @@ void AliAnalysisTaskMuonPerformance::NotifyRun()
   //
   
   // load OCDB objects only once
-  if (fSigmaCut > 0) return;
+  if (fSigmaCutTrig > 0) return;
   
   // set OCDB location
   AliCDBManager* cdbm = AliCDBManager::Instance();
-  cdbm->SetDefaultStorage(fDefaultStorage.Data());
-  cdbm->SetRun(fCurrentRunNumber);
+  if (cdbm->IsDefaultStorageSet()) printf("PerformanceTask: CDB default storage already set!\n");
+  else cdbm->SetDefaultStorage(fDefaultStorage.Data());
+  if (cdbm->GetRun() > -1) printf("PerformanceTask: run number already set!\n");
+  else cdbm->SetRun(fCurrentRunNumber);
   
   // load magnetic field for track extrapolation
-  if (!AliMUONCDB::LoadField()) return;
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    if (!AliMUONCDB::LoadField()) return;
+  }
   
   // load mapping
-  if (!AliMUONCDB::LoadMapping()) return;
+  if (!AliMpSegmentation::Instance(kFALSE)) {
+    if (!AliMUONCDB::LoadMapping(kTRUE)) return;
+  }
 
-  // load geometry for track extrapolation to vertex
-  if (!AliGeomManager::GetGeometry()) AliGeomManager::LoadGeometry();
-  if (!AliGeomManager::GetGeometry()) return;
+  // load geometry for track extrapolation to vertex and for checking hits are under pads in reconstructible tracks
+  if (!AliGeomManager::GetGeometry()) {
+    AliGeomManager::LoadGeometry();
+    if (!AliGeomManager::GetGeometry()) return;  
+    if (!AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return;
+  }
   
   // load recoParam
-  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  const AliMUONRecoParam* recoParam = (AliMUONESDInterface::GetTracker())
+  ? AliMUONESDInterface::GetTracker()->GetRecoParam()
+  : AliMUONCDB::LoadRecoParam();
+  
   if (!recoParam) {
     fRequestedStationMask = 0;
     fRequest2ChInSameSt45 = kFALSE;
-    fSigmaCut = -1.;
     fSigmaCutTrig = -1.;
     AliError("--> skip this run");
     return;
@@ -234,13 +255,10 @@ void AliAnalysisTaskMuonPerformance::NotifyRun()
   // get from recoParam whether a track need 2 chambers hit in the same station (4 or 5) or not to be reconstructible
   fRequest2ChInSameSt45 = !recoParam->MakeMoreTrackCandidates();
   
-  // get sigma cut from recoParam to associate clusters with TrackRefs in case the labels are not used
-  fSigmaCut = (recoParam->ImproveTracks()) ? recoParam->GetSigmaCutForImprovement() : recoParam->GetSigmaCutForTracking();
-  
   // get sigma cut from recoParam to associate trigger track to triggerable track
   fSigmaCutTrig = recoParam->GetSigmaCutForTrigger();
-
-  AliMUONESDInterface::ResetTracker(recoParam);
+  
+  if (!AliMUONESDInterface::GetTracker()) AliMUONESDInterface::ResetTracker(recoParam);
   
   for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
     
@@ -272,52 +290,64 @@ void AliAnalysisTaskMuonPerformance::UserCreateOutputObjects()
   //
 
   // do it once the OCDB has been loaded (i.e. from NotifyRun())
-  if (fSigmaCut < 0) return;
+  if (fSigmaCutTrig < 0) return;
   
   // ------ CFContainer ------
   
   // define axes of particle container
-  Int_t nPtBins = 60;
-  Double_t ptMin = 0., ptMax = 30.;
-  TString ptName("Pt"), ptTitle("p_{t}"), ptUnits("GeV/c");
+  Int_t nPtBins = 30;
+  Double_t ptMin = 0., ptMax = 15.;
+  TString ptTitle("p_{t}"), ptUnits("GeV/c");
 
-  Int_t nEtaBins = 25;
-  Double_t etaMin = -4.5, etaMax = -2.;
-  TString etaName("Eta"), etaTitle("#eta"), etaUnits("a.u.");
+  Int_t nEtaBins = 15;
+  Double_t etaMin = -4., etaMax = -2.5;
+  TString etaTitle("#eta"), etaUnits("a.u.");
 
-  Int_t nPhiBins = 36;
-  Double_t phiMin = 0.; Double_t phiMax = 2*TMath::Pi();
-  TString phiName("Phi"), phiTitle("#phi"), phiUnits("rad");
+  Int_t nPhiBins = 15;
+  Double_t phiMin = 0.; Double_t phiMax = 2.*TMath::Pi();
+  TString phiTitle("#phi"), phiUnits("rad");
 
   Int_t nThetaAbsEndBins = 4;
   Double_t thetaAbsEndMin = -0.5, thetaAbsEndMax = 3.5;
-  TString thetaAbsEndName("ThetaAbsEnd"), thetaAbsEndTitle("#theta_{abs}"), thetaAbsEndUnits("a.u.");  
+  TString thetaAbsEndTitle("#theta_{abs}"), thetaAbsEndUnits("a.u.");  
 
   Int_t nChargeBins = 2;
   Double_t chargeMin = -2, chargeMax = 2.;
-  TString chargeName("Charge"), chargeTitle("charge"), chargeUnits("e");
+  TString chargeTitle("charge"), chargeUnits("e");
 
   Int_t nHasTrackerBins = 2;
   Double_t hasTrackerMin = -0.5, hasTrackerMax = (Double_t)nHasTrackerBins - 0.5;
-  TString hasTrackerName("HasTracker"), hasTrackerTitle("Has tracker"), hasTrackerUnits("");
+  TString hasTrackerTitle("Has tracker"), hasTrackerUnits("");
   
   Int_t nTriggerBins = kNtrigCuts;
   Double_t triggerMin = -0.5, triggerMax = (Double_t)nTriggerBins - 0.5;
-  TString triggerName("MatchTrig"), triggerTitle("Trigger match"), triggerUnits("");
+  TString triggerTitle("Trigger match"), triggerUnits("");
 
   Int_t nMotherTypeBins = kNtrackSources;
   Double_t motherTypeMin = -0.5, motherTypeMax = (Double_t)kNtrackSources - 0.5;
-  TString motherTypeName("MotherType"), motherTypeTitle("motherType"), motherTypeUnits("");
+  TString motherTypeTitle("motherType"), motherTypeUnits("");
 
   Int_t nMatchMCBins = kNMatchMC;
   Double_t matchMCMin = -0.5, matchMCMax = (Double_t)kNMatchMC - 0.5;
-  TString matchMCName("MatchMC"), matchMCTitle("MatchMC"), matchMCUnits("");
+  TString matchMCTitle("MatchMC"), matchMCUnits("");
   
-  Int_t nbins[kNvars] = {nPtBins, nEtaBins, nPhiBins, nThetaAbsEndBins, nChargeBins, nHasTrackerBins, nTriggerBins, nMotherTypeBins, nMatchMCBins};
-  Double_t xmin[kNvars] = {ptMin, etaMin, phiMin, thetaAbsEndMin, chargeMin, hasTrackerMin, triggerMin, motherTypeMin, matchMCMin};
-  Double_t xmax[kNvars] = {ptMax, etaMax, phiMax, thetaAbsEndMax, chargeMax, hasTrackerMax, triggerMax, motherTypeMax, matchMCMax};
-  TString axisTitle[kNvars] = {ptTitle, etaTitle, phiTitle, thetaAbsEndTitle, chargeTitle, hasTrackerTitle, triggerTitle, motherTypeTitle, matchMCTitle};
-  TString axisUnits[kNvars] = {ptUnits, etaUnits, phiUnits, thetaAbsEndUnits, chargeUnits, hasTrackerUnits, triggerUnits, motherTypeUnits, matchMCUnits};
+  Int_t nMCTriggerBins = kNtrigCuts;
+  Double_t mcTriggerMin = -0.5, mcTriggerMax = (Double_t)nMCTriggerBins - 0.5;
+  TString mcTriggerTitle("MC Trigger match"), mcTriggerUnits("");
+  
+  Int_t nCentBins = 22;
+  Double_t centMin = -5., centMax = 105.;
+  TString centTitle("centrality"), centUnits("%");
+  
+  Int_t nDupliTrgBins = 2;
+  Double_t dupliTrgMin = -0.5, dupliTrgMax = 1.5;
+  TString dupliTrgTitle("duplicate trigger"), dupliTrgUnits("");
+  
+  Int_t nbins[kNvars] = {nPtBins, nEtaBins, nPhiBins, nThetaAbsEndBins, nChargeBins, nHasTrackerBins, nTriggerBins, nMotherTypeBins, nMatchMCBins, nMCTriggerBins, nCentBins, nDupliTrgBins};
+  Double_t xmin[kNvars] = {ptMin, etaMin, phiMin, thetaAbsEndMin, chargeMin, hasTrackerMin, triggerMin, motherTypeMin, matchMCMin, mcTriggerMin, centMin, dupliTrgMin};
+  Double_t xmax[kNvars] = {ptMax, etaMax, phiMax, thetaAbsEndMax, chargeMax, hasTrackerMax, triggerMax, motherTypeMax, matchMCMax, mcTriggerMax, centMax, dupliTrgMax};
+  TString axisTitle[kNvars] = {ptTitle, etaTitle, phiTitle, thetaAbsEndTitle, chargeTitle, hasTrackerTitle, triggerTitle, motherTypeTitle, matchMCTitle, mcTriggerTitle, centTitle, dupliTrgTitle};
+  TString axisUnits[kNvars] = {ptUnits, etaUnits, phiUnits, thetaAbsEndUnits, chargeUnits, hasTrackerUnits, triggerUnits, motherTypeUnits, matchMCUnits, mcTriggerUnits, centUnits, dupliTrgUnits};
   
   // create particle container
   fCFContainer = new AliCFContainer(GetOutputSlot(1)->GetContainer()->GetName(),"container for tracks",kNsteps,kNvars,nbins);
@@ -336,6 +366,7 @@ void AliAnalysisTaskMuonPerformance::UserCreateOutputObjects()
   // define axes labels if any
   TString trigName[kNtrigCuts];
   trigName[kNoMatchTrig] = "NoMatch";
+  trigName[kOtherTrig]   = "Other";
   trigName[kAllPtTrig]   = "AllPt";
   trigName[kLowPtTrig]   = "LowPt";
   trigName[kHighPtTrig]  = "HighPt";
@@ -378,6 +409,12 @@ void AliAnalysisTaskMuonPerformance::UserCreateOutputObjects()
     TAxis* matchMCAxis = gridSparse->GetAxis(kVarMatchMC);
     for ( Int_t ibin=0; ibin<kNMatchMC; ibin++ ) {
       matchMCAxis->SetBinLabel(ibin+1,mMCName[ibin]);
+    }
+    
+    // MC trigger info
+    TAxis* mcTriggerAxis =  gridSparse->GetAxis(kVarMCTrigger);
+    for ( Int_t ibin=0; ibin<kNtrigCuts; ibin++ ) {
+      mcTriggerAxis->SetBinLabel(ibin+1,trigName[ibin]);
     }
     
   }
@@ -580,8 +617,8 @@ void AliAnalysisTaskMuonPerformance::UserCreateOutputObjects()
   AliLog::SetClassDebugLevel("AliMCEvent",-1);
   
   PostData(1, fCFContainer);
-  PostData(3, fTriggerList);
-  PostData(4, fTrackerList);
+  PostData(2, fTriggerList);
+  PostData(3, fTrackerList);
 }
 
 //________________________________________________________________________
@@ -593,11 +630,10 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
   //
 
   // check that OCDB objects have been properly set
-  if (fSigmaCut < 0) return;
+  if (fSigmaCutTrig < 0) return;
   
   // Load ESD event
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  
   if ( ! esd ) {
     AliError ("ESD event not found. Nothing done!");
     return;
@@ -610,12 +646,17 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
     return;
   }
   
+  // get centrality
+  Double_t centrality = esd->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
+  
   // Get reference tracks
   AliMUONRecoCheck rc(esd,mcH);
   AliMUONVTriggerTrackStore* triggerTrackRefStore = rc.TriggerableTracks(-1);
+  AliMUONVTrackStore* trackRefStore = rc.TrackRefs(-1);
   AliMUONVTrackStore* reconstructibleStore = rc.ReconstructibleTracks(-1, fRequestedStationMask, fRequest2ChInSameSt45);
   
   Double_t containerInput[kNvars];
+  containerInput[kVarCent] = centrality;
   AliMUONTrackParam *trackParam;
   Double_t x1,y1,z1,slopex1,slopey1,pX1,pY1,pZ1,p1,pT1,eta1,phi1;
   Double_t x2,y2,z2,slopex2,slopey2,pX2,pY2,pZ2,p2,pT2,eta2,phi2;
@@ -626,27 +667,33 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
   // ------ Loop over reconstructed tracks ------
   AliESDMuonTrack *esdTrack = 0x0;
   Int_t nMuTracks = esd->GetNumberOfMuonTracks();
+  Int_t *loCircuit = new Int_t[nMuTracks];
+  Int_t nTrgTracks = 0;
   for (Int_t iMuTrack = 0; iMuTrack < nMuTracks; ++iMuTrack) {
     
     esdTrack = esd->GetMuonTrack(iMuTrack);
 
-    AliMUONTrack* matchedTrackRef = 0x0;
-    AliMUONTriggerTrack* matchedTrigTrackRef = 0x0;
-    containerInput[kVarMatchMC] = static_cast<Double_t>(kNoMatch);
-    
     // Tracker
+    AliMUONTrack* matchedTrackRef = 0x0;
+    containerInput[kVarMatchMC] = static_cast<Double_t>(kNoMatch);
+    Bool_t isValid = kFALSE;
     if (esdTrack->ContainTrackerData()) {
     
       // convert ESD track to MUON track (without recomputing track parameters at each clusters)
       AliMUONTrack muonTrack;
       AliMUONESDInterface::ESDToMUON(*esdTrack, muonTrack, kFALSE);
       
-      // try to match the reconstructed track with a simulated one
-      Int_t nMatchClusters = 0;
-      matchedTrackRef = rc.FindCompatibleTrack(muonTrack, *reconstructibleStore, nMatchClusters, kFALSE, fSigmaCut);
-      if (matchedTrackRef) {
-	
-	containerInput[kVarMatchMC] = static_cast<Double_t>(kTrackerOnly);
+      // decide whether the track is valid for efficiency calculations
+      isValid = (!fEnforceTrkCriteria || muonTrack.IsValid(fRequestedStationMask, fRequest2ChInSameSt45));
+      
+      // get the associated simulated track (discard decays)
+      Int_t mcLabel = esdTrack->GetLabel();
+      if (mcLabel >= 0 && !esdTrack->TestBit(BIT(22)))
+	matchedTrackRef = static_cast<AliMUONTrack*>(trackRefStore->FindObject(mcLabel));
+      if (matchedTrackRef && isValid) containerInput[kVarMatchMC] = static_cast<Double_t>(kTrackerOnly);
+      
+      // compute track resolution (discard not-reconstructible trackRef)
+      if (matchedTrackRef && !esdTrack->TestBit(BIT(23))) {
 	
 	// simulated track parameters at vertex
         trackParam = matchedTrackRef->GetTrackParamAtVertex();
@@ -845,9 +892,22 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
       
     } // end if (esdTrack->ContainTrackerData())
     
+    // look for MC trigger associated to MC track
+    AliMUONTriggerTrack* triggerTrackRef = (isValid && matchedTrackRef)
+    ? static_cast<AliMUONTriggerTrack*>(triggerTrackRefStore->FindObject(matchedTrackRef->GetUniqueID()))
+    : 0x0;
+    
     // Trigger
+    AliMUONTriggerTrack* matchedTrigTrackRef = 0x0;
+    containerInput[kVarDupliTrg] = 0.;
     if (esdTrack->ContainTriggerData()) {
 
+      // check if this track is not already accounted for and record it if not
+      Bool_t trackExist = kFALSE;
+      for (Int_t i=0; i<nTrgTracks; i++) if (esdTrack->LoCircuit() == loCircuit[i]) trackExist = kTRUE;
+      if (trackExist) containerInput[kVarDupliTrg] = 1.;
+      else loCircuit[nTrgTracks++] = esdTrack->LoCircuit();
+      
       // Convert ESD track to trigger track
       AliMUONLocalTrigger locTrg;
       AliMUONESDInterface::ESDToMUON(*esdTrack, locTrg);
@@ -855,16 +915,19 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
       rc.TriggerToTrack(locTrg, trigTrack);
       
       // try to match the trigger track with the same MC track if any
-      if (matchedTrackRef) {
-	AliMUONTriggerTrack* triggerTrackRef = static_cast<AliMUONTriggerTrack*>(triggerTrackRefStore->FindObject(matchedTrackRef->GetUniqueID()));
-        if (triggerTrackRef && trigTrack.Match(*triggerTrackRef, fSigmaCutTrig)) matchedTrigTrackRef = triggerTrackRef;
-	if (matchedTrigTrackRef) containerInput[kVarMatchMC] = static_cast<Double_t>(kMatchedSame);
-      }
-      
-      // or try to match with any triggerable track
-      if (!matchedTrigTrackRef) {
+      if (triggerTrackRef && trigTrack.Match(*triggerTrackRef, fSigmaCutTrig)) matchedTrigTrackRef = triggerTrackRef;
+      if (matchedTrigTrackRef) containerInput[kVarMatchMC] = static_cast<Double_t>(kMatchedSame);
+      else { // or try to match with any triggerable track
 	matchedTrigTrackRef = rc.FindCompatibleTrack(trigTrack, *triggerTrackRefStore, fSigmaCutTrig);
-	if (matchedTrigTrackRef) containerInput[kVarMatchMC] = (matchedTrackRef) ? static_cast<Double_t>(kMatchedDiff) : static_cast<Double_t>(kTriggerOnly);
+	if (matchedTrigTrackRef) {
+	  if (isValid && matchedTrackRef) {
+	    containerInput[kVarMatchMC] = static_cast<Double_t>(kMatchedDiff);
+	    if (!fMCTrigLevelFromMatchTrk) triggerTrackRef = matchedTrigTrackRef;
+	  } else {
+	    containerInput[kVarMatchMC] = static_cast<Double_t>(kTriggerOnly);
+	    triggerTrackRef = matchedTrigTrackRef;
+	  }
+	}
       }
       
       // fill histograms
@@ -876,30 +939,49 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
       
     }
     
+    // fill container
+    if (triggerTrackRef) {
+      if (triggerTrackRef->GetPtCutLevel() == 0) containerInput[kVarMCTrigger] = static_cast<Double_t>(kOtherTrig);
+      else if (triggerTrackRef->GetPtCutLevel() == 1) containerInput[kVarMCTrigger] = static_cast<Double_t>(kAllPtTrig);
+      else if (triggerTrackRef->GetPtCutLevel() == 2) containerInput[kVarMCTrigger] = static_cast<Double_t>(kLowPtTrig);
+      else if (triggerTrackRef->GetPtCutLevel() == 3) containerInput[kVarMCTrigger] = static_cast<Double_t>(kHighPtTrig);
+    } else containerInput[kVarMCTrigger] = kNoMatchTrig;
+    
     // get MC particle ID
     Int_t mcID = -1;
-    if (matchedTrackRef) mcID = static_cast<Int_t>(matchedTrackRef->GetUniqueID());
+    if (isValid && matchedTrackRef) mcID = static_cast<Int_t>(matchedTrackRef->GetUniqueID());
     else if (matchedTrigTrackRef) mcID = static_cast<Int_t>(matchedTrigTrackRef->GetUniqueID());
     
     // fill particle container
-    FillContainerInfo(containerInput, esdTrack, mcID);
+    FillContainerInfoReco(containerInput, esdTrack, isValid, mcID);
     fCFContainer->Fill(containerInput, kStepReconstructed);
 
   }
 
+  // clean memory
+  delete[] loCircuit;
+  containerInput[kVarDupliTrg] = 0.;
+  
   // ------ Loop over reconstructible tracks ------
   AliMUONTrack* trackRef = 0x0;
   TIter next(reconstructibleStore->CreateIterator());
   while ((trackRef = static_cast<AliMUONTrack*>(next()))) {
     
     // find the corresponding triggerable track if any
-    AliMUONTriggerTrack* trigTrackRef = static_cast<AliMUONTriggerTrack*>(triggerTrackRefStore->FindObject(trackRef->GetUniqueID()));
+    UInt_t mcID = trackRef->GetUniqueID();
+    AliMUONTriggerTrack* trigTrackRef = static_cast<AliMUONTriggerTrack*>(triggerTrackRefStore->FindObject(mcID));
     
     // fill particle container
-    FillContainerInfo(containerInput, 0x0, static_cast<Int_t>(trackRef->GetUniqueID()));
+    FillContainerInfoMC(containerInput, static_cast<AliMCParticle*>(fMCEvent->GetTrack(static_cast<Int_t>(mcID))));
     containerInput[kVarHasTracker] = 1.;
-    if (trigTrackRef) containerInput[kVarTrigger] = static_cast<Double_t>(kAllPtTrig);
+    if (trigTrackRef) {
+      if (trigTrackRef->GetPtCutLevel() == 0) containerInput[kVarTrigger] = static_cast<Double_t>(kOtherTrig);
+      else if (trigTrackRef->GetPtCutLevel() == 1) containerInput[kVarTrigger] = static_cast<Double_t>(kAllPtTrig);
+      else if (trigTrackRef->GetPtCutLevel() == 2) containerInput[kVarTrigger] = static_cast<Double_t>(kLowPtTrig);
+      else if (trigTrackRef->GetPtCutLevel() == 3) containerInput[kVarTrigger] = static_cast<Double_t>(kHighPtTrig);
+    } else containerInput[kVarTrigger] = static_cast<Double_t>(kNoMatchTrig);
     containerInput[kVarMatchMC] = static_cast<Double_t>(kNoMatch);
+    containerInput[kVarMCTrigger] = static_cast<Double_t>(kNoMatchTrig);
     fCFContainer->Fill(containerInput, kStepGeneratedMC);
     
   }
@@ -910,20 +992,26 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
   while ((trigTrackRef = static_cast<AliMUONTriggerTrack*>(nextTrig()))) {
     
     // discard tracks also reconstructible
-    if (reconstructibleStore->FindObject(trigTrackRef->GetUniqueID())) continue;
+    UInt_t mcID = trigTrackRef->GetUniqueID();
+    if (reconstructibleStore->FindObject(mcID)) continue;
 
     // fill particle container
-    FillContainerInfo(containerInput, 0x0, static_cast<Int_t>(trigTrackRef->GetUniqueID()));
-    containerInput[kVarTrigger] = static_cast<Double_t>(kAllPtTrig);
+    FillContainerInfoMC(containerInput, static_cast<AliMCParticle*>(fMCEvent->GetTrack(static_cast<Int_t>(mcID))));
+    containerInput[kVarHasTracker] = 0.;
+    if (trigTrackRef->GetPtCutLevel() == 0) containerInput[kVarTrigger] = static_cast<Double_t>(kOtherTrig);
+    else if (trigTrackRef->GetPtCutLevel() == 1) containerInput[kVarTrigger] = static_cast<Double_t>(kAllPtTrig);
+    else if (trigTrackRef->GetPtCutLevel() == 2) containerInput[kVarTrigger] = static_cast<Double_t>(kLowPtTrig);
+    else if (trigTrackRef->GetPtCutLevel() == 3) containerInput[kVarTrigger] = static_cast<Double_t>(kHighPtTrig);
     containerInput[kVarMatchMC] = static_cast<Double_t>(kNoMatch);
+    containerInput[kVarMCTrigger] = static_cast<Double_t>(kNoMatchTrig);
     fCFContainer->Fill(containerInput, kStepGeneratedMC);
     
   }
   
   // Post final data
   PostData(1, fCFContainer);
-  PostData(3, fTriggerList);
-  PostData(4, fTrackerList);
+  PostData(2, fTriggerList);
+  PostData(3, fTrackerList);
 }
 
 //________________________________________________________________________
@@ -938,8 +1026,8 @@ void AliAnalysisTaskMuonPerformance::Terminate(Option_t *)
   
   // get output containers
   fCFContainer = dynamic_cast<AliCFContainer*>(GetOutputData(1));
-  fTriggerList = dynamic_cast<TObjArray*>(GetOutputData(3));
-  fTrackerList = dynamic_cast<TObjArray*>(GetOutputData(4));
+  fTriggerList = dynamic_cast<TObjArray*>(GetOutputData(2));
+  fTrackerList = dynamic_cast<TObjArray*>(GetOutputData(3));
   if (!fCFContainer || !fTriggerList || !fTrackerList) {
     AliWarning("Output containers not found: summary histograms are not created"); 
     return;
@@ -949,105 +1037,539 @@ void AliAnalysisTaskMuonPerformance::Terminate(Option_t *)
   fEfficiencyList = new TObjArray(100);
   fEfficiencyList->SetOwner();
   
+  TObjArray* effAnyPt = new TObjArray(100);
+  effAnyPt->SetName("effAnyPt");
+  effAnyPt->SetOwner();
+  fEfficiencyList->AddLast(effAnyPt);
+  
+  TObjArray* effAllPt = new TObjArray(100);
+  effAllPt->SetName("effAllPt");
+  effAllPt->SetOwner();
+  fEfficiencyList->AddLast(effAllPt);
+  
+  TObjArray* effLowPt = new TObjArray(100);
+  effLowPt->SetName("effLowPt");
+  effLowPt->SetOwner();
+  fEfficiencyList->AddLast(effLowPt);
+  
+  TObjArray* effHighPt = new TObjArray(100);
+  effHighPt->SetName("effHighPt");
+  effHighPt->SetOwner();
+  fEfficiencyList->AddLast(effHighPt);
+  
+  TObjArray* notTrgable = new TObjArray(100);
+  notTrgable->SetName("notTrgable");
+  notTrgable->SetOwner();
+  fEfficiencyList->AddLast(notTrgable);
+  
+  TObjArray* trgableNoPtOnly = new TObjArray(100);
+  trgableNoPtOnly->SetName("trgableNoPtOnly");
+  trgableNoPtOnly->SetOwner();
+  fEfficiencyList->AddLast(trgableNoPtOnly);
+  
+  TObjArray* trgableAPtOnly = new TObjArray(100);
+  trgableAPtOnly->SetName("trgableAPtOnly");
+  trgableAPtOnly->SetOwner();
+  fEfficiencyList->AddLast(trgableAPtOnly);
+  
+  TObjArray* trgableLPtOnly = new TObjArray(100);
+  trgableLPtOnly->SetName("trgableLPtOnly");
+  trgableLPtOnly->SetOwner();
+  fEfficiencyList->AddLast(trgableLPtOnly);
+  
+  TObjArray* trgableHPtOnly = new TObjArray(100);
+  trgableHPtOnly->SetName("trgableHPtOnly");
+  trgableHPtOnly->SetOwner();
+  fEfficiencyList->AddLast(trgableHPtOnly);
+  
   AliCFEffGrid* efficiency = new AliCFEffGrid("eff","",*fCFContainer);
   efficiency->CalculateEfficiency(kStepReconstructed, kStepGeneratedMC);
   Double_t totalEff = 0., totalEffErr = 0.;
   Int_t sumEffBin = 0;
-  TH1* auxHisto = 0x0;
   
   // add histogram summarizing global efficiencies
   TH1D* effSummary = new TH1D("effSummary", "Efficiency summary", 1, 0., 0.);
   effSummary->GetYaxis()->SetTitle("Efficiency");
   fEfficiencyList->AddLast(effSummary);
   
+  // ------ Tracker only ------
+  
   // Tracker efficiency using all reconstructed tracks
   efficiency->GetNum()->SetRangeUser(kVarHasTracker, 1., 1.);
   efficiency->GetDen()->SetRangeUser(kVarHasTracker, 1., 1.);
-  auxHisto = efficiency->Project(kVarPt);
-  auxHisto->SetName("effVsPt_trackerTracks");
-  fEfficiencyList->AddLast(auxHisto);
-  auxHisto = efficiency->Project(kVarEta);
-  auxHisto->SetName("effVsEta_trackerTracks");
-  fEfficiencyList->AddLast(auxHisto);
+  efficiency->GetNum()->GetAxis(kVarTrigger)->SetRange();
+  efficiency->GetDen()->GetAxis(kVarTrigger)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarMCTrigger)->SetRange();
+  FillEffHistos(efficiency, "trackerTracks", fEfficiencyList);
   GetEfficiency(efficiency, totalEff, totalEffErr);
-  sumEffBin++;
   effSummary->Fill("Tracker_all", totalEff);
-  effSummary->SetBinError(sumEffBin, totalEffErr);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
   printf("Tracker efficiency using all reconstructed tracks = %f +- %f\n", totalEff, totalEffErr);
   
   // Tracker efficiency using tracks matched with reconstructible ones
   efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kMatchedDiff);
-  auxHisto = efficiency->Project(kVarPt);
-  auxHisto->SetName("effVsPt_trackerTracksMatchMC");
-  fEfficiencyList->AddLast(auxHisto);
-  auxHisto = efficiency->Project(kVarEta);
-  auxHisto->SetName("effVsEta_trackerTracksMatchMC");
-  fEfficiencyList->AddLast(auxHisto);
+  FillEffHistos(efficiency, "trackerTracksMatchMC", fEfficiencyList);
   GetEfficiency(efficiency, totalEff, totalEffErr);
-  sumEffBin++;
   effSummary->Fill("Tracker_MCId", totalEff);
-  effSummary->SetBinError(sumEffBin, totalEffErr);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
   printf("Tracker efficiency using reconstructed tracks matching MC = %f +- %f\n", totalEff, totalEffErr);
+  
+  // ------ Tracker matched with any trigger ------
   
   // Matched efficiency using all reconstructed tracks
   efficiency->GetNum()->SetRangeUser(kVarTrigger, kAllPtTrig, kHighPtTrig);
-  efficiency->GetDen()->SetRangeUser(kVarTrigger, kAllPtTrig, kAllPtTrig);
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kOtherTrig, kHighPtTrig);
   efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
-  auxHisto = efficiency->Project(kVarPt);
-  auxHisto->SetName("effVsPt_matchedTracks");
-  fEfficiencyList->AddLast(auxHisto);
-  auxHisto = efficiency->Project(kVarEta);
-  auxHisto->SetName("effVsEta_matchedTracks");
-  fEfficiencyList->AddLast(auxHisto);
+  FillEffHistos(efficiency, "matchedTracks", effAnyPt);
   GetEfficiency(efficiency, totalEff, totalEffErr);
-  sumEffBin++;
   effSummary->Fill("Matched_all", totalEff);
-  effSummary->SetBinError(sumEffBin, totalEffErr);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
   printf("Matched efficiency using all reconstructed tracks = %f +- %f\n", totalEff, totalEffErr);
   
-  // Matched efficiency using tracks matched with reconstructible & triggerable ones
-  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedSame, kMatchedSame);
-  auxHisto = efficiency->Project(kVarPt);
-  auxHisto->SetName("effVsPt_matchedTracksMatchMC");
-  fEfficiencyList->AddLast(auxHisto);
-  auxHisto = efficiency->Project(kVarEta);
-  auxHisto->SetName("effVsEta_matchedTracksMatchMC");
-  fEfficiencyList->AddLast(auxHisto);
+  // Matched efficiency using tracks matched with reconstructible ones, triggerable or not
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kMatchedDiff);
+  FillEffHistos(efficiency, "matchedTracksMatchMC", effAnyPt);
   GetEfficiency(efficiency, totalEff, totalEffErr);
-  sumEffBin++;
   effSummary->Fill("Matched_MCId", totalEff);
-  effSummary->SetBinError(sumEffBin, totalEffErr);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
   printf("Matched efficiency using reconstructed tracks matching MC = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched efficiency using tracks matched with reconstructible ones triggerable
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCAnypt", effAnyPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  effSummary->Fill("Matched_MCIdAnypt", totalEff);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
+  printf("Matched efficiency using reconstructed tracks matching MC-anyPt = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched efficiency using tracks matched with reconstructible ones not triggerable
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kNoMatchTrig, kNoMatchTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCNoTrig", effAnyPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  effSummary->Fill("Matched_MCIdNoTrig", totalEff);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
+  printf("Matched efficiency using reconstructed tracks matching MC-noTrig = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched efficiency using tracks matched with same reconstructible & triggerable ones
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedSame, kMatchedSame);
+  efficiency->GetNum()->GetAxis(kVarMCTrigger)->SetRange();
+  FillEffHistos(efficiency, "matchedTracksMatchSameMC", effAnyPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  effSummary->Fill("Matched_SameMCId", totalEff);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
+  printf("Matched efficiency using reconstructed tracks matching same MC = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched efficiency using tracks matched with different reconstructible & triggerable ones
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedDiff, kMatchedDiff);
+  FillEffHistos(efficiency, "matchedTracksMatchDiffMC", effAnyPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  effSummary->Fill("Matched_DiffMCId", totalEff);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
+  printf("Matched efficiency using reconstructed tracks matching different MC = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched efficiency using tracks matched with reconstructible ones only
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kTrackerOnly);
+  FillEffHistos(efficiency, "matchedTracksMatchTrkMC", effAnyPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  effSummary->Fill("Matched_TrkMCId", totalEff);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
+  printf("Matched efficiency using reconstructed tracks matching tracker MC = %f +- %f\n", totalEff, totalEffErr);
+  
+  // ------ Tracker matched with all pt trigger ------
+  
+  // Matched all pt efficiency using all reconstructed tracks
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kAllPtTrig, kHighPtTrig);
+  efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
+  FillEffHistos(efficiency, "matchedTracks", effAllPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Apt efficiency using all reconstructed tracks = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched all pt efficiency using tracks matched with reconstructible ones, triggerable or not
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kMatchedDiff);
+  FillEffHistos(efficiency, "matchedTracksMatchMC", effAllPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Apt efficiency using reconstructed tracks matching MC = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched all pt efficiency using tracks matched with reconstructible ones triggerable Apt
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kAllPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCApt", effAllPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Apt efficiency using reconstructed tracks matching MC-Apt = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched all pt efficiency using tracks matched with reconstructible ones triggerable other pt
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kOtherTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCOther", effAllPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Apt efficiency using reconstructed tracks matching MC-other = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched all pt efficiency using tracks matched with reconstructible ones not triggerable
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kNoMatchTrig, kNoMatchTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCNoTrig", effAllPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Apt efficiency using reconstructed tracks matching MC-noTrig = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched all pt efficiency using tracks matched with same reconstructible & triggerable ones (all pt MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedSame, kMatchedSame);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kAllPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchSameMCApt", effAllPt);
+  
+  // Matched all pt efficiency using tracks matched with same reconstructible & triggerable ones (other MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kOtherTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchSameMCOther", effAllPt);
+  
+  // Matched all pt efficiency using tracks matched with different reconstructible & triggerable ones (all pt MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedDiff, kMatchedDiff);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kAllPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchDiffMCApt", effAllPt);
+  
+  // Matched all pt efficiency using tracks matched with different reconstructible & triggerable ones (other MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kOtherTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchDiffMCOther", effAllPt);
+  
+  // Matched efficiency using tracks matched with reconstructible ones only (all pt MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kTrackerOnly);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kAllPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchTrkMCApt", effAllPt);
+  
+  // Matched efficiency using tracks matched with reconstructible ones only (other MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kNoMatchTrig, kOtherTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchTrkMCOther", effAllPt);
+  
+  // ------ Tracker matched with low pt trigger ------
+  
+  // Matched low pt efficiency using all reconstructed tracks
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kLowPtTrig, kHighPtTrig);
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kLowPtTrig, kHighPtTrig);
+  efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarMCTrigger)->SetRange();
+  FillEffHistos(efficiency, "matchedTracks", effLowPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Lpt efficiency using all reconstructed tracks = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched low pt efficiency using tracks matched with reconstructible ones, triggerable or not
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kMatchedDiff);
+  FillEffHistos(efficiency, "matchedTracksMatchMC", effLowPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Lpt efficiency using reconstructed tracks matching MC = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched low pt efficiency using tracks matched with reconstructible ones triggerable Lpt
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kLowPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCLpt", effLowPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Lpt efficiency using reconstructed tracks matching MC-Lpt = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched low pt efficiency using tracks matched with reconstructible ones triggerable other pt
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCOther", effLowPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Lpt efficiency using reconstructed tracks matching MC-other = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched low pt efficiency using tracks matched with reconstructible ones not triggerable
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kNoMatchTrig, kNoMatchTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCNoTrig", effLowPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Lpt efficiency using reconstructed tracks matching MC-noTrig = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched low pt efficiency using tracks matched with same reconstructible & triggerable ones (low pt MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedSame, kMatchedSame);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kLowPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchSameMCLpt", effLowPt);
+  
+  // Matched low pt efficiency using tracks matched with same reconstructible & triggerable ones (other MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchSameMCOther", effLowPt);
+  
+  // Matched low pt efficiency using tracks matched with different reconstructible & triggerable ones (low pt MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedDiff, kMatchedDiff);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kLowPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchDiffMCLpt", effLowPt);
+  
+  // Matched low pt efficiency using tracks matched with different reconstructible & triggerable ones (other MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchDiffMCOther", effLowPt);
+  
+  // Matched efficiency using tracks matched with reconstructible ones only (low pt MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kTrackerOnly);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kLowPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchTrkMCLpt", effLowPt);
+  
+  // Matched efficiency using tracks matched with reconstructible ones only (other MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kNoMatchTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchTrkMCOther", effLowPt);
+  
+  // ------ Tracker matched with high pt trigger ------
+  
+  // Matched high pt efficiency using all reconstructed tracks
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarMCTrigger)->SetRange();
+  FillEffHistos(efficiency, "matchedTracks", effHighPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Hpt efficiency using all reconstructed tracks = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched high pt efficiency using tracks matched with reconstructible ones, triggerable or not
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kMatchedDiff);
+  FillEffHistos(efficiency, "matchedTracksMatchMC", effHighPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Hpt efficiency using reconstructed tracks matching MC = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched high pt efficiency using tracks matched with reconstructible ones triggerable Hpt
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCHpt", effHighPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Hpt efficiency using reconstructed tracks matching MC-Hpt = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched high pt efficiency using tracks matched with reconstructible ones triggerable other pt
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCOther", effHighPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Hpt efficiency using reconstructed tracks matching MC-other = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched high pt efficiency using tracks matched with reconstructible ones not triggerable
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kNoMatchTrig, kNoMatchTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchMCNoTrig", effHighPt);
+  GetEfficiency(efficiency, totalEff, totalEffErr);
+  printf("Matched Hpt efficiency using reconstructed tracks matching MC-noTrig = %f +- %f\n", totalEff, totalEffErr);
+  
+  // Matched high pt efficiency using tracks matched with same reconstructible & triggerable ones (high pt MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedSame, kMatchedSame);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchSameMCHpt", effHighPt);
+  
+  // Matched high pt efficiency using tracks matched with same reconstructible & triggerable ones (other MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchSameMCOther", effHighPt);
+  
+  // Matched high pt efficiency using tracks matched with different reconstructible & triggerable ones (high pt MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedDiff, kMatchedDiff);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchDiffMCHpt", effHighPt);
+  
+  // Matched high pt efficiency using tracks matched with different reconstructible & triggerable ones (other MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchDiffMCOther", effHighPt);
+  
+  // Matched efficiency using tracks matched with reconstructible ones only (high pt MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kTrackerOnly);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchTrkMCHpt", effHighPt);
+  
+  // Matched efficiency using tracks matched with reconstructible ones only (other MC trig)
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kNoMatchTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "matchedTracksMatchTrkMCOther", effHighPt);
+  
+  // ------ Trigger only ------
   
   // Trigger efficiency using all reconstructed tracks
   efficiency->GetNum()->GetAxis(kVarHasTracker)->SetRange();
   efficiency->GetDen()->GetAxis(kVarHasTracker)->SetRange();
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kAllPtTrig, kHighPtTrig);
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kOtherTrig, kHighPtTrig);
   efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
-  auxHisto = efficiency->Project(kVarPt);
-  auxHisto->SetName("effVsPt_triggerTracks");
-  fEfficiencyList->AddLast(auxHisto);
-  auxHisto = efficiency->Project(kVarEta);
-  auxHisto->SetName("effVsEta_triggerTracks");
-  fEfficiencyList->AddLast(auxHisto);
+  efficiency->GetNum()->GetAxis(kVarMCTrigger)->SetRange();
+  efficiency->GetNum()->SetRangeUser(kVarDupliTrg, 0., 0.);
+  FillEffHistos(efficiency, "triggerTracks", effAnyPt);
   GetEfficiency(efficiency, totalEff, totalEffErr);
-  sumEffBin++;
   effSummary->Fill("Trigger_all", totalEff);
-  effSummary->SetBinError(sumEffBin, totalEffErr);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
   printf("Trigger efficiency using all reconstructed tracks = %f +- %f\n", totalEff, totalEffErr);
   
   // Trigger efficiency using tracks matched with triggerable ones
   efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedSame, kTriggerOnly);
-  auxHisto = efficiency->Project(kVarPt);
-  auxHisto->SetName("effVsPt_triggerTracksMatchMC");
-  fEfficiencyList->AddLast(auxHisto);
-  auxHisto = efficiency->Project(kVarEta);
-  auxHisto->SetName("effVsEta_triggerTracksMatchMC");
-  fEfficiencyList->AddLast(auxHisto);
+  FillEffHistos(efficiency, "triggerTracksMatchMC", effAnyPt);
   GetEfficiency(efficiency, totalEff, totalEffErr);
-  sumEffBin++;
   effSummary->Fill("Trigger_MCId", totalEff);
-  effSummary->SetBinError(sumEffBin, totalEffErr);
+  effSummary->SetBinError(++sumEffBin, totalEffErr);
   printf("Trigger efficiency using reconstructed tracks matching MC = %f +- %f\n", totalEff, totalEffErr);
+  
+  // ------ All pt trigger only ------
+  
+  // All pt trigger efficiency using all reconstructed tracks
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kAllPtTrig, kHighPtTrig);
+  efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
+  FillEffHistos(efficiency, "triggerTracks", effAllPt);
+  
+  // All pt trigger efficiency using tracks matched with all pt triggerable ones
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedSame, kTriggerOnly);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kAllPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "triggerTracksMatchMCApt", effAllPt);
+  
+  // All pt trigger efficiency using tracks matched with other triggerable ones
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kOtherTrig);
+  FillEffHistos(efficiency, "triggerTracksMatchMCOther", effAllPt);
+  
+  // ------ Low pt trigger only ------
+  
+  // Low pt trigger efficiency using all reconstructed tracks
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kLowPtTrig, kHighPtTrig);
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kLowPtTrig, kHighPtTrig);
+  efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarMCTrigger)->SetRange();
+  FillEffHistos(efficiency, "triggerTracks", effLowPt);
+  
+  // Low pt trigger efficiency using tracks matched with Low pt triggerable ones
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedSame, kTriggerOnly);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kLowPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "triggerTracksMatchMCLpt", effLowPt);
+  
+  // Low pt trigger efficiency using tracks matched with other triggerable ones
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "triggerTracksMatchMCOther", effLowPt);
+  
+  // ------ High pt trigger only ------
+  
+  // High pt trigger efficiency using all reconstructed tracks
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarMCTrigger)->SetRange();
+  FillEffHistos(efficiency, "triggerTracks", effHighPt);
+  
+  // High pt trigger efficiency using tracks matched with High pt triggerable ones
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kMatchedSame, kTriggerOnly);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "triggerTracksMatchMCHpt", effHighPt);
+  
+  // All pt trigger efficiency using tracks matched with other triggerable ones
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "triggerTracksMatchMCOther", effHighPt);
+  
+  // ------ Tracker reconstructible not triggerable ------
+  
+  // all tracker tracks
+  efficiency->GetNum()->SetRangeUser(kVarHasTracker, 1., 1.);
+  efficiency->GetDen()->SetRangeUser(kVarHasTracker, 1., 1.);
+  efficiency->GetNum()->GetAxis(kVarTrigger)->SetRange();
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kNoMatchTrig, kNoMatchTrig);
+  efficiency->GetNum()->SetRangeUser(kVarMatchMC, kTrackerOnly, kMatchedDiff);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kNoMatchTrig, kNoMatchTrig);
+  efficiency->GetNum()->GetAxis(kVarDupliTrg)->SetRange();
+  FillEffHistos(efficiency, "allTracks", notTrgable);
+  
+  // tracker not matched
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kNoMatchTrig, kNoMatchTrig);
+  FillEffHistos(efficiency, "notMatched", notTrgable);
+  
+  // tracker matched with all pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kAllPtTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "MatchedApt", notTrgable);
+  
+  // tracker matched with low pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kLowPtTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "MatchedLpt", notTrgable);
+  
+  // tracker matched with high pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "MatchedHpt", notTrgable);
+  
+  // ------ Tracker reconstructible triggerable no pt ------
+  
+  // all tracker tracks
+  efficiency->GetNum()->GetAxis(kVarTrigger)->SetRange();
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kOtherTrig, kOtherTrig);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kOtherTrig, kOtherTrig);
+  FillEffHistos(efficiency, "allTracks", trgableNoPtOnly);
+  
+  // tracker not matched
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kNoMatchTrig, kNoMatchTrig);
+  FillEffHistos(efficiency, "notMatched", trgableNoPtOnly);
+  
+  // tracker matched with all pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kAllPtTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "MatchedApt", trgableNoPtOnly);
+  
+  // tracker matched with low pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kLowPtTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "MatchedLpt", trgableNoPtOnly);
+  
+  // tracker matched with high pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "MatchedHpt", trgableNoPtOnly);
+  
+  // ------ Tracker reconstructible triggerable Apt ------
+  
+  // all tracker tracks
+  efficiency->GetNum()->GetAxis(kVarTrigger)->SetRange();
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kAllPtTrig, kAllPtTrig);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kAllPtTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "allTracks", trgableAPtOnly);
+  
+  // tracker not matched
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kNoMatchTrig, kNoMatchTrig);
+  FillEffHistos(efficiency, "notMatched", trgableAPtOnly);
+  
+  // tracker matched with all pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kAllPtTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "MatchedApt", trgableAPtOnly);
+  
+  // tracker matched with low pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kLowPtTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "MatchedLpt", trgableAPtOnly);
+  
+  // tracker matched with high pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "MatchedHpt", trgableAPtOnly);
+  
+  // ------ Tracker reconstructible triggerable Lpt ------
+  
+  // all tracker tracks
+  efficiency->GetNum()->GetAxis(kVarTrigger)->SetRange();
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kLowPtTrig, kLowPtTrig);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kLowPtTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "allTracks", trgableLPtOnly);
+  
+  // tracker not matched
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kNoMatchTrig, kNoMatchTrig);
+  FillEffHistos(efficiency, "notMatched", trgableLPtOnly);
+  
+  // tracker matched with all pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kAllPtTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "MatchedApt", trgableLPtOnly);
+  
+  // tracker matched with low pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kLowPtTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "MatchedLpt", trgableLPtOnly);
+  
+  // tracker matched with high pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "MatchedHpt", trgableLPtOnly);
+  
+  // ------ Tracker reconstructible triggerable Hpt ------
+  
+  // all tracker tracks
+  efficiency->GetNum()->GetAxis(kVarTrigger)->SetRange();
+  efficiency->GetDen()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  efficiency->GetNum()->SetRangeUser(kVarMCTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "allTracks", trgableHPtOnly);
+  
+  // tracker not matched
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kNoMatchTrig, kNoMatchTrig);
+  FillEffHistos(efficiency, "notMatched", trgableHPtOnly);
+  
+  // tracker matched with all pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kAllPtTrig, kAllPtTrig);
+  FillEffHistos(efficiency, "MatchedApt", trgableHPtOnly);
+  
+  // tracker matched with low pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kLowPtTrig, kLowPtTrig);
+  FillEffHistos(efficiency, "MatchedLpt", trgableHPtOnly);
+  
+  // tracker matched with high pt trigger
+  efficiency->GetNum()->SetRangeUser(kVarTrigger, kHighPtTrig, kHighPtTrig);
+  FillEffHistos(efficiency, "MatchedHpt", trgableHPtOnly);
+  
+  // ------ reset ranges before saving CF containers ------
+  efficiency->GetNum()->GetAxis(kVarHasTracker)->SetRange();
+  efficiency->GetDen()->GetAxis(kVarHasTracker)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarTrigger)->SetRange();
+  efficiency->GetDen()->GetAxis(kVarTrigger)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarMatchMC)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarMCTrigger)->SetRange();
+  efficiency->GetNum()->GetAxis(kVarDupliTrg)->SetRange();
+  
+  // ------ Plot summary ------
   
   // plot histogram summarizing global efficiencies
   TCanvas* cEffSummary = new TCanvas("cEffSummary","Efficiency summary",20,20,310,310);
@@ -1452,7 +1974,7 @@ void AliAnalysisTaskMuonPerformance::Terminate(Option_t *)
   fDCAList->AddAt(cPDCAVsPosAbsEndMC, kcPDCAVsPosAbsEndMC);
   
   // post param containers
-  PostData(2, fEfficiencyList);
+  PostData(4, fEfficiencyList);
   PostData(5, fPAtVtxList);
   PostData(6, fSlopeAtVtxList);
   PostData(7, fEtaAtVtxList);
@@ -1555,37 +2077,56 @@ Float_t AliAnalysisTaskMuonPerformance::GetBinThetaAbsEnd(Float_t RAtAbsEnd, Boo
     return 0.;
   else if ( thetaDeg < 3. )
     return 1.;
-  else if ( thetaDeg < 9. )
+  else if ( thetaDeg < 10. )
     return 2.;
 
   return 3.;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMuonPerformance::FillContainerInfo(Double_t* containerInput, AliESDMuonTrack* esdTrack, Int_t mcID)
+void AliAnalysisTaskMuonPerformance::FillContainerInfoReco(Double_t* containerInput, AliESDMuonTrack* esdTrack,
+							   Bool_t isValid, Int_t mcID)
 {
   //
-  /// Fill container info (except kVarMatchMC)
+  /// Fill container info (except kVarMatchMC, kVarMCTrigger, kVarCent, kVarDupliTrg) for reconstructed tracks
   //
-
-  AliMCParticle* mcPart = 0x0;
-  if (mcID >= 0) mcPart = static_cast<AliMCParticle*>(fMCEvent->GetTrack(mcID));
-
-  AliVParticle* track = esdTrack;
-  if (!track) track = mcPart;
-
-  if (track) {
-    containerInput[kVarPt] = track->Pt();
-    containerInput[kVarEta] = track->Eta();
-    containerInput[kVarPhi] = track->Phi();
-    containerInput[kVarThetaZones] = (esdTrack) ? GetBinThetaAbsEnd(esdTrack->GetRAtAbsorberEnd()) : GetBinThetaAbsEnd(TMath::Pi()-track->Theta(),kTRUE);
-    containerInput[kVarCharge] = (esdTrack) ? static_cast<Double_t>(track->Charge()) : static_cast<Double_t>(track->Charge())/3.;
-    containerInput[kVarHasTracker] = (esdTrack) ? static_cast<Double_t>(esdTrack->ContainTrackerData()) : 0.;
-    containerInput[kVarTrigger] = (esdTrack) ? static_cast<Double_t>(esdTrack->GetMatchTrigger()) : 0.;
-    containerInput[kVarMotherType] = static_cast<Double_t>(RecoTrackMother(mcPart));
+  
+  AliMCParticle* mcPart = (mcID >= 0) ? static_cast<AliMCParticle*>(fMCEvent->GetTrack(mcID)) : 0x0;
+  
+  if (fUseMCKinematics && mcPart) {
+    containerInput[kVarPt] = mcPart->Pt();
+    containerInput[kVarEta] = mcPart->Eta();
+    containerInput[kVarPhi] = mcPart->Phi();
+  } else {
+    containerInput[kVarPt] = esdTrack->Pt();
+    containerInput[kVarEta] = esdTrack->Eta();
+    containerInput[kVarPhi] = esdTrack->Phi();
   }
+  containerInput[kVarThetaZones] = GetBinThetaAbsEnd(esdTrack->GetRAtAbsorberEnd());
+  containerInput[kVarCharge] = static_cast<Double_t>(esdTrack->Charge());
+  containerInput[kVarHasTracker] = static_cast<Double_t>(esdTrack->ContainTrackerData() && isValid);
+  if (esdTrack->GetMatchTrigger() == 0) containerInput[kVarTrigger] = static_cast<Double_t>(kNoMatchTrig);
+  else if (esdTrack->GetMatchTrigger() == 1) containerInput[kVarTrigger] = static_cast<Double_t>(kAllPtTrig);
+  else if (esdTrack->GetMatchTrigger() == 2) containerInput[kVarTrigger] = static_cast<Double_t>(kLowPtTrig);
+  else if (esdTrack->GetMatchTrigger() == 3) containerInput[kVarTrigger] = static_cast<Double_t>(kHighPtTrig);
+  containerInput[kVarMotherType] = static_cast<Double_t>(RecoTrackMother(mcPart));
 
-  if (esdTrack) esdTrack->SetLabel(mcID);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskMuonPerformance::FillContainerInfoMC(Double_t* containerInput, AliMCParticle* mcPart)
+{
+  //
+  /// Fill container info (except kVarMatchMC, kVarMCTrigger, kVarHasTracker and kVarTrigger, kVarCent, kVarDupliTrg) for MC tracks
+  //
+  
+  containerInput[kVarPt] = mcPart->Pt();
+  containerInput[kVarEta] = mcPart->Eta();
+  containerInput[kVarPhi] = mcPart->Phi();
+  containerInput[kVarThetaZones] = GetBinThetaAbsEnd(TMath::Pi()-mcPart->Theta(),kTRUE);
+  containerInput[kVarCharge] = static_cast<Double_t>(mcPart->Charge())/3.;
+  containerInput[kVarMotherType] = static_cast<Double_t>(RecoTrackMother(mcPart));
+  
 }
 
 //________________________________________________________________________
@@ -1806,16 +2347,24 @@ void AliAnalysisTaskMuonPerformance::FitClusterResidual(TH1* h, Int_t i, Double_
     if (!fRGaus) fRGaus = new TF1("fRGaus","gaus");
     
     // first fit
+    Double_t xMin = h->GetXaxis()->GetXmin();
+    Double_t xMax = h->GetXaxis()->GetXmax();
+    fRGaus->SetRange(xMin, xMax);
     fRGaus->SetParameters(h->GetEntries(), 0., 0.1);
+    fRGaus->SetParLimits(1, xMin, xMax);
     h->Fit("fRGaus", "WWNQ");
     
     // rebin histo
-    Int_t rebin = TMath::Max(static_cast<Int_t>(0.2*fRGaus->GetParameter(2)/h->GetBinWidth(1)),1);
+    Int_t rebin = TMath::Max(static_cast<Int_t>(0.3*fRGaus->GetParameter(2)/h->GetBinWidth(1)),1);
     while (h->GetNbinsX()%rebin!=0) rebin--;
     h->Rebin(rebin);
     
     // second fit
-    h->Fit("fRGaus","NQ");
+    xMin = TMath::Max(fRGaus->GetParameter(1)-10.*fRGaus->GetParameter(2), h->GetXaxis()->GetXmin());
+    xMax = TMath::Min(fRGaus->GetParameter(1)+10.*fRGaus->GetParameter(2), h->GetXaxis()->GetXmax());
+    fRGaus->SetRange(xMin, xMax);
+    fRGaus->SetParLimits(1, xMin, xMax);
+    h->Fit("fRGaus","NQR");
     
     mean = fRGaus->GetParameter(1);
     meanErr = fRGaus->GetParError(1);
@@ -1996,3 +2545,27 @@ void AliAnalysisTaskMuonPerformance::Zoom(TH1* h, Double_t fractionCut)
   // set new axis range
   h->GetXaxis()->SetRange(--minBin, ++maxBin);
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskMuonPerformance::FillEffHistos(AliCFEffGrid* efficiency, const char* suffix, TObjArray* list)
+{
+  /// Compute efficiency histograms and save them to the given list
+  
+  TH1* auxHisto = efficiency->Project(kVarPt);
+  auxHisto->SetName(Form("effVsPt_%s",suffix));
+  list->AddLast(auxHisto);
+  
+  auxHisto = efficiency->Project(kVarEta);
+  auxHisto->SetName(Form("effVsEta_%s",suffix));
+  list->AddLast(auxHisto);
+  
+  auxHisto = efficiency->Project(kVarPhi);
+  auxHisto->SetName(Form("effVsPhi_%s",suffix));
+  list->AddLast(auxHisto);
+  
+  auxHisto = efficiency->Project(kVarCent);
+  auxHisto->SetName(Form("effVsCent_%s",suffix));
+  list->AddLast(auxHisto);
+  
+}
+
