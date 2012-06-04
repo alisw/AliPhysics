@@ -198,16 +198,11 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   fkVertexAOD=0x0;
 
   switch(fVtxType){
-  case kVtxTracks:
-    fkVertexAOD=0x0;
-    break;
-  case kVtxTPC:            fkVertexAOD=GetPrimaryVertexTPC(ev); 
-    break;
+  case kVtxTracks:         fkVertexAOD=0x0;                       break;
+  case kVtxTPC:            fkVertexAOD=GetPrimaryVertexTPC(ev);   break;
   case kVtxSPD:
-  case kVtxTracksOrSPD:    fkVertexAOD=ev->GetPrimaryVertexSPD();
-    break;
-  case kVtxAny:            fkVertexAOD=ev->GetPrimaryVertex();
-    break;
+  case kVtxTracksOrSPD:    fkVertexAOD=ev->GetPrimaryVertexSPD(); break;
+  case kVtxAny:            fkVertexAOD=ev->GetPrimaryVertex();    break;
   }
 
   if ((fRequireVtx||fVtxZmin<fVtxZmax||fMinVtxContributors>0)&&!fkVertexAOD) return kFALSE;

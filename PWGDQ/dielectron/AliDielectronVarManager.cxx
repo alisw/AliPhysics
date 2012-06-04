@@ -151,6 +151,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "DCA",
   "PairType",
   "PseudoProperTime",
+  "PseudoProperTimeErr",
   "PseudoProperTimeResolution",
   "PseudoProperTimePull",
   "TRDpidEffPair",
@@ -168,6 +169,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "v0ATPCDiffH2",
   "v0CTPCDiffH2",
   "v0Av0CDiffH2",
+  "v0ArpH2FlowV2",         
+  "v0CrpH2FlowV2",      
+  "v0ACrpH2FlowV2",
 
   "MultV0A", 
   "MultV0C",

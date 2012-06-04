@@ -96,7 +96,7 @@ AliDielectronHistos::~AliDielectronHistos()
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      Int_t nbinsX, Double_t xmin, Double_t xmax,
-				      UInt_t valTypeX, Bool_t logBinX)
+				      UInt_t valTypeX, Bool_t logBinX, TString option)
 {
   //
   // Default histogram creation 1D case
@@ -109,7 +109,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   } else {
     binLimX=AliDielectronHelper::MakeLinBinning(nbinsX, xmin, xmax);
   }
-  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX);
+  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX,option);
 }
 
 //_____________________________________________________________________________
@@ -118,7 +118,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 				      Int_t nbinsX, Double_t xmin, Double_t xmax,
 				      Int_t nbinsY, Double_t ymin, Double_t ymax,
 				      UInt_t valTypeX, UInt_t valTypeY,
-				      Bool_t logBinX, Bool_t logBinY)
+				      Bool_t logBinX, Bool_t logBinY, TString option)
 {
   //
   // Default histogram creation 2D case
@@ -138,7 +138,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   } else {
     binLimY=AliDielectronHelper::MakeLinBinning(nbinsY, ymin, ymax);
   }
-  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,valTypeX,valTypeY);
+  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,valTypeX,valTypeY,option);
 }
 
 
@@ -149,7 +149,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 				      Int_t nbinsY, Double_t ymin, Double_t ymax,
 				      Int_t nbinsZ, Double_t zmin, Double_t zmax,
 				      UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ,
-				      Bool_t logBinX, Bool_t logBinY, Bool_t logBinZ)
+				      Bool_t logBinX, Bool_t logBinY, Bool_t logBinZ, TString option)
 {
   //
   // Default histogram creation 3D case
@@ -178,28 +178,28 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     binLimZ=AliDielectronHelper::MakeLinBinning(nbinsZ, zmin, zmax);
   }
 
-  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,binLimZ,valTypeX,valTypeY,valTypeZ);
+  UserProfile(histClass,name,title,valTypeP,binLimX,binLimY,binLimZ,valTypeX,valTypeY,valTypeZ,option);
 }
 
 //_____________________________________________________________________________
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      const char* binning,
-				      UInt_t valTypeX)
+				      UInt_t valTypeX, TString option)
 {
   //
   // Histogram creation 1D case with arbitraty binning
   //
 
   TVectorD *binLimX=AliDielectronHelper::MakeArbitraryBinning(binning);
-  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX);
+  UserProfile(histClass,name,title,valTypeP,binLimX,valTypeX,option);
 }
 
 //_____________________________________________________________________________
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      const TVectorD * const binsX,
-				      UInt_t valTypeX/*=kNoAutoFill*/)
+				      UInt_t valTypeX/*=kNoAutoFill*/, TString option)
 {
   //
   // Histogram creation 1D case with arbitraty binning X
@@ -215,7 +215,18 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     if(valTypeP==999)
       hist=new TH1F(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
     else {
+      TString opt=""; Double_t pmin=0., pmax=0.;
+      if(!option.IsNull()) {
+	TObjArray *arr=option.Tokenize(";");
+	arr->SetOwner();
+	opt=((TObjString*)arr->At(0))->GetString();
+	if(arr->GetEntriesFast()>1) pmin=(((TObjString*)arr->At(1))->GetString()).Atof();
+	if(arr->GetEntriesFast()>2) pmax=(((TObjString*)arr->At(2))->GetString()).Atof();
+	delete arr;
+      }
       hist=new TProfile(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
+      ((TProfile*)hist)->BuildOptions(pmin,pmax,opt.Data());
+      //      printf(" name %s PROFILE options: pmin %.1f pmax %.1f err %s \n",name,((TProfile*)hist)->GetYmin(),((TProfile*)hist)->GetYmax(),((TProfile*)hist)->GetErrorOption() );
     }
 
     // store var for profile in fBits
@@ -237,7 +248,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      const TVectorD * const binsX, const TVectorD * const binsY,
-				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/)
+				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, TString option)
 {
   //
   // Histogram creation 2D case with arbitraty binning X
@@ -256,11 +267,23 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
                     binsX->GetNrows()-1,binsX->GetMatrixArray(),
                     binsY->GetNrows()-1,binsY->GetMatrixArray()); 
     }
-    else 
+    else  {
+      TString opt=""; Double_t pmin=0., pmax=0.;
+      if(!option.IsNull()) {
+	TObjArray *arr=option.Tokenize(";");
+	arr->SetOwner();
+	opt=((TObjString*)arr->At(0))->GetString();
+	if(arr->GetEntriesFast()>1) pmin=(((TObjString*)arr->At(1))->GetString()).Atof();
+	if(arr->GetEntriesFast()>2) pmax=(((TObjString*)arr->At(2))->GetString()).Atof();
+	delete arr;
+      }
       hist=new TProfile2D(name,title,
                           binsX->GetNrows()-1,binsX->GetMatrixArray(),
                           binsY->GetNrows()-1,binsY->GetMatrixArray());
-    
+      ((TProfile2D*)hist)->BuildOptions(pmin,pmax,opt.Data());
+      //      printf(" name %s PROFILE options: pmin %.1f pmax %.1f err %s \n",name,((TProfile*)hist)->GetYmin(),((TProfile*)hist)->GetYmax(),((TProfile*)hist)->GetErrorOption() );
+    }
+
     // store var for profile in fBits
     StoreVarForProfile(hist,valTypeP);
 
@@ -284,7 +307,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 void AliDielectronHistos::UserProfile(const char* histClass,const char *name, const char* title,
 				      UInt_t valTypeP,
 				      const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, UInt_t valTypeZ/*=0*/)
+				      UInt_t valTypeX/*=kNoAutoFill*/, UInt_t valTypeY/*=0*/, UInt_t valTypeZ/*=0*/, TString option)
 {
   //
   // Histogram creation 3D case with arbitraty binning X
@@ -304,12 +327,24 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 		    binsX->GetNrows()-1,binsX->GetMatrixArray(),
 		    binsY->GetNrows()-1,binsY->GetMatrixArray(),
 		    binsZ->GetNrows()-1,binsZ->GetMatrixArray());
-    else
+    else {
+      TString opt=""; Double_t pmin=0., pmax=0.;
+      if(!option.IsNull()) {
+	TObjArray *arr=option.Tokenize(";");
+	arr->SetOwner();
+	opt=((TObjString*)arr->At(0))->GetString();
+	if(arr->GetEntriesFast()>1) pmin=(((TObjString*)arr->At(1))->GetString()).Atof();
+	if(arr->GetEntriesFast()>2) pmax=(((TObjString*)arr->At(2))->GetString()).Atof();
+	delete arr;
+      }
       hist=new TProfile3D(name,title,
 			  binsX->GetNrows()-1,binsX->GetMatrixArray(),
 			  binsY->GetNrows()-1,binsY->GetMatrixArray(),
 			  binsZ->GetNrows()-1,binsZ->GetMatrixArray());
-    
+      ((TProfile3D*)hist)->BuildOptions(pmin,pmax,opt.Data());
+      //      printf(" name %s PROFILE options: pmin %.1f pmax %.1f err %s \n",name,((TProfile*)hist)->GetYmin(),((TProfile*)hist)->GetYmax(),((TProfile*)hist)->GetErrorOption() );
+    }
+
     // store var for profile in fBits
     StoreVarForProfile(hist,valTypeP);
     
@@ -344,7 +379,6 @@ void AliDielectronHistos::UserHistogram(const char* histClass, TH1* hist, UInt_t
   }
   
   if (!IsHistogramOk(histClass,hist->GetName())) return;
-  
   THashList *classTable=(THashList*)fHistoList.FindObject(histClass);
   hist->SetDirectory(0);
   hist->SetUniqueID(valTypes);

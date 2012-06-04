@@ -945,7 +945,9 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       candidate->SetTracks(static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1)), fPdgLeg1,
                              static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
       candidate->SetType(pairIndex);
-      candidate->SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother));
+      Int_t label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother);
+      candidate->SetLabel(label);
+      if (label>-1) candidate->SetPdgCode(fPdgMother);
 
       //pair cuts
       UInt_t cutMask=fPairFilter.IsSelected(candidate);
@@ -989,7 +991,7 @@ void AliDielectron::FillPairArrayTR()
     //apply cut
     if (cutMask==selectedMask) {
      if(fHistos) FillHistogramsPair(&candidate);
-     if(fStoreRotatedPairs) PairArray(10)->Add(new AliDielectronPair(candidate));  
+     if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
     } 
   }
 }
