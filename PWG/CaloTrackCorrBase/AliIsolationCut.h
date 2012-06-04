@@ -62,6 +62,7 @@ class AliIsolationCut : public TObject {
   Float_t    GetPtFraction()          const { return fPtFraction     ; }
   Int_t      GetICMethod()            const { return fICMethod       ; }
   Int_t      GetParticleTypeInCone()  const { return fPartInCone     ; }
+  Bool_t     GetFracIsThresh()        const { return fFracIsThresh   ; }
 	
   void       SetConeSize(Float_t r)         { fConeSize       = r    ; }
   void       SetPtThreshold(Float_t pt)     { fPtThreshold    = pt   ; }
@@ -70,6 +71,7 @@ class AliIsolationCut : public TObject {
   void       SetICMethod(Int_t i )          { fICMethod       = i    ; }
   void       SetParticleTypeInCone(Int_t i) { fPartInCone     = i    ; }
   void       SetDebug(Int_t d)              { fDebug          = d    ; }
+  void       SetFracIsThresh(Bool_t f )     { fFracIsThresh   = f    ; }
  private:
   
   Float_t    fConeSize ;       // Size of the isolation cone 
@@ -85,6 +87,7 @@ class AliIsolationCut : public TObject {
                                // kNeutralAndCharged, kOnlyNeutral, kOnlyCharged
 
   Int_t      fDebug;           // Debug level
+  Bool_t     fFracIsThresh;    // Use threshold instead of fraction when pt leading is small
   
   AliIsolationCut(              const AliIsolationCut & g) ; // cpy ctor
   AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
