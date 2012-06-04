@@ -32,11 +32,14 @@
 
 #endif
 
+/* $Id$ */
+
 //methods for the analysis of AliAnalysisTaskSEHFv2 output
 //Authors: Chiara Bianchin cbianchi@pd.infn.it
 //         Giacomo Ortona  ortona@to.infn.it
 //         Francesco Prino prino@to.infn.it
 
+//evPlane flag: -1=V0C,0=V0,1=V0A,2=TPC2subevs,3=TPC3subevs
 //global variables to be set
 Bool_t gnopng=kTRUE; //don't save in png format (only root and eps)
 const Int_t nptbinsnew=3;
@@ -49,16 +52,15 @@ Float_t phibinslim[nphibins+1]={0,TMath::Pi()/4,TMath::Pi()/2,3*TMath::Pi()/4,TM
 Int_t minPtBin[nptbinsnew]={-1,-1,-1};
 Int_t maxPtBin[nptbinsnew]={-1,-1,-1};
 Double_t mass;
+
 //methods
-//Bool_t ReadFile(TList* &list,TH1F* &hstat,AliRDHFCuts* &cutobj,TString listname,TString partname,TString path="./",TString filename="AnalysisResults.root");
 TList *LoadMassHistos(TList *inputlist,Int_t minCent,Int_t maxCent,Bool_t inoutanis);
 Int_t FindPtBin(Int_t nbins, Float_t* array,Float_t value);
 void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs,Bool_t inoutanis);
 void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE,Int_t minC=30,Int_t maxC=50,TString partname="Dplus",Int_t evPlane=2);
 void DrawEventPlane(Int_t mincentr=0,Int_t maxcentr=0,TString filename="AnalysisResults.root",TString dirname="PWG3_D2H_HFv2",TString listname="coutputv2",Int_t evPlane=2);
-Double_t DrawEventPlane(TList *list,Int_t mincentr=0,Int_t maxcentr=0,Int_t evPlane=2);
+Double_t DrawEventPlane(TList *list,Int_t mincentr=0,Int_t maxcentr=0,Int_t evPlane=2,Double_t &error);
 void DrawEventPlaneAllCentralities(TList *list,Int_t startCentr=20,Int_t endCentr=80,Int_t evPlane=2);
-//Aggiungere <pt> method
 
 //methods implementation
 //________________________________________________________________________________
@@ -216,6 +218,11 @@ void DmesonsFlowAnalysis(Bool_t inoutanis,Int_t minC,Int_t maxC,TString partname
   TString dirname="PWG3_D2H_HFv2";
   TString listname="coutputv2";
 
+  if(evPlane>3||evPlane<-1){
+    printf("Wrong EP flag %d \n",evPlane);
+    return;
+  }
+
   AliRDHFCuts *cutsobj=0x0;
   //Load input data from AliAnalysisTaskSEHFv2
   TFile *f = TFile::Open(filename.Data());
@@ -259,30 +266,30 @@ void DmesonsFlowAnalysis(Bool_t inoutanis,Int_t minC,Int_t maxC,TString partname
 
   Int_t nphi=nphibins;
   if(inoutanis)nphi=2;
-  Int_t nSubRes=1;
-  if(evPlane<2)nSubRes=3;//3 sub-events method for VZERO EP
 
   //EP resolution
   TH1F* hevplresos=(TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",minC,minC+5));
   TH1F* hevplresos2=0;
   TH1F* hevplresos3=0;
-  if(evPlane<2){
+  if(evPlane!=2){
     hevplresos2=(TH1F*)list->FindObject(Form("hEvPlaneReso2centr%d_%d",minC,minC+5));
     hevplresos3=(TH1F*)list->FindObject(Form("hEvPlaneReso3centr%d_%d",minC,minC+5));
   }
   Double_t resol=0;
   for(Int_t icent=minC+5;icent<maxC;icent=icent+5){
     hevplresos->Add((TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",icent,icent+5)));
-    if(evPlane<2){
+    if(evPlane!=2){
       hevplresos2->Add((TH1F*)list->FindObject(Form("hEvPlaneReso2centr%d_%d",icent,icent+5)));
       hevplresos3->Add((TH1F*)list->FindObject(Form("hEvPlaneReso3centr%d_%d",icent,icent+5)));
     }
   }
-  if(evPlane>=2){
+  if(evPlane==2){
     resol=AliVertexingHFUtils::GetFullEvResol(hevplresos);
   }else{
     Double_t resolSub[3]={hevplresos->GetMean(),hevplresos2->GetMean(),hevplresos3->GetMean()};
-    resol=TMath::Sqrt(resolSub[0]*resolSub[2]/resolSub[1]);
+    if(evPlane<=0)resol=TMath::Sqrt(resolSub[1]*resolSub[2]/resolSub[0]);
+    else if(evPlane==1) resol=TMath::Sqrt(resolSub[0]*resolSub[2]/resolSub[1]);
+    else if(evPlane==3) resol=TMath::Sqrt(resolSub[0]*resolSub[1]/resolSub[2]);
   }
 
   printf("average pt for pt bin \n");
@@ -422,10 +429,10 @@ void DrawEventPlane(Int_t mincentr,Int_t maxcentr,TString filename,TString dirna
   if(!list){
     printf("list %s not found in file, please check list name\n",listname.Data());return;
   }
-  DrawEventPlane(list,mincentr,maxcentr,evPlane);
+  DrawEventPlane(list,mincentr,maxcentr,evPlane,0);
 }
 //_______________________________________________________________________________________________________________________________
-Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane){
+Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane,Double_t &error){
   
   //draw the histograms correlated to the event plane, returns event plane resolution
   
@@ -437,7 +444,7 @@ Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane)
 
   Double_t resolFull=0; 
   Int_t nSubRes=1;
-  if(evPlane<2)nSubRes=3;//3 sub-events method for VZERO EP
+  if(evPlane!=2)nSubRes=3;//3 sub-events method for VZERO EP
   TString namereso[3]={"Reso","Reso2","Reso3"};
   TString suffixcentr=Form("centr%d_%d",mincentr,maxcentr);
   TH2F* hevpls=(TH2F*)list->FindObject(Form("hEvPlanecentr%d_%d",mincentr,mincentr+5));
@@ -483,9 +490,9 @@ Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane)
   if(nSubRes>1){
     hevplresos[1]->SetLineColor(2);
     hevplresos[2]->SetLineColor(3);
-    hevplresos[0]->SetTitle("cos2(#Psi_{V0A}-#Psi_{V0B})");
-    hevplresos[1]->SetTitle("cos2(#Psi_{TPC}-#Psi_{V0A})");
-    hevplresos[2]->SetTitle("cos2(#Psi_{TPC}-#Psi_{V0B})");
+    hevplresos[0]->SetTitle("cos2(#Psi_{TPC}-#Psi_{V0A})");
+    hevplresos[1]->SetTitle("cos2(#Psi_{TPC}-#Psi_{V0C})");
+    hevplresos[2]->SetTitle("cos2(#Psi_{V0A}-#Psi_{V0C})");
     hevplresos[1]->Draw("SAME");
     hevplresos[2]->Draw("SAME");
   }
@@ -493,11 +500,30 @@ Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane)
   leg->SetLineColor(0);
   leg->SetFillColor(0);
   
-  if(nSubRes<=1) resolFull=AliVertexingHFUtils::GetFullEvResol(hevplresos[0]);
+  if(nSubRes<=1){
+    resolFull=AliVertexingHFUtils::GetFullEvResol(hevplresos[0]);
+    error = TMath::Abs(resolFull-AliVertexingHFUtils::GetSubEvResolLowLim(hevplresos[0]));
+  }
   else{
     Double_t resolSub[3];
-    for(Int_t ires=0;ires<nSubRes;ires++)resolSub[ires]=hevplresos[ires]->GetMean();
-    resolFull=TMath::Sqrt(resolSub[2]*resolSub[0]/resolSub[1]);
+    Double_t errors[3];
+    for(Int_t ires=0;ires<nSubRes;ires++){
+      resolSub[ires]=hevplresos[ires]->GetMean();
+      errors[ires]=hevplresos[ires]->GetMeanError();
+    }
+    Double_t lowlim[3];for(Int_t ie=0;ie<3;ie++)lowlim[ie]=TMath::Abs(resolSub[ie]-errors[ie]);
+    if(evPlane<=0){
+      resolFull=TMath::Sqrt(resolSub[1]*resolSub[2]/resolSub[0]);
+      error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[1]/lowlim[0]);
+    }
+    else if(evPlane==1){
+      resolFull=TMath::Sqrt(resolSub[0]*resolSub[2]/resolSub[1]);
+      error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[0]/lowlim[1]);
+    }
+    else if(evPlane==3){
+      resolFull=TMath::Sqrt(resolSub[0]*resolSub[1]/resolSub[2]);
+      error=resolFull-TMath::Sqrt(lowlim[0]*lowlim[1]/lowlim[2]);
+    }
   }
   
   TPaveText* pvreso=new TPaveText(0.1,0.1,0.6,0.2,"NDC");
@@ -516,17 +542,18 @@ Double_t DrawEventPlane(TList *list,Int_t mincentr,Int_t maxcentr,Int_t evPlane)
 
 //_______________________________________________________________________________________________________________________________
 void DrawEventPlaneAllCentralities(TList *list,Int_t startCentr,Int_t endCentr,Int_t evPlane){
-  TGraph* gresovscentr=new TGraph(0);
+  TGraphErrors* gresovscentr=new TGraphErrors(0);
   gresovscentr->SetName("gresovscentr");
   gresovscentr->SetTitle(Form("Resolution vs Centrality;centrality (%s);Resolution","%"));
 
   Int_t iPoint=0;
   Int_t step=5;//5% centrality step
   //  Int_t nCC=(endCentr-startCentr)/step;
-
+  Double_t errory=0;
   for(Int_t i=startCentr;i<endCentr;i=i+step){
-    Double_t resolFull=DrawEventPlane(list,i,i+step,evPlane);
+    Double_t resolFull=DrawEventPlane(list,i,i+step,evPlane,errory);
     gresovscentr->SetPoint(iPoint,i+(Float_t)step/2.,resolFull);
+    gresovscentr->SetPointError(iPoint,5./2.,errory);
     iPoint++;
   }
 
