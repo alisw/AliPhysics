@@ -55,7 +55,8 @@ fSumPtThreshold(0.),
 fPtFraction(0.), 
 fICMethod(0),
 fPartInCone(0),
-fDebug(-1)
+fDebug(-1),
+fFracIsThresh(1)
 {
   //default ctor
   
@@ -171,7 +172,9 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fPartInCone=%d \n",fPartInCone) ;
   parList+=onePar ;
-  
+ snprintf(onePar,buffersize,"fFracIsThresh=%i \n",fFracIsThresh) ;
+  parList+=onePar ;
+ 
   return parList; 
 }
 
@@ -186,7 +189,7 @@ void AliIsolationCut::InitParameters()
   fPtFraction     = 0.1 ; 
   fPartInCone     = kOnlyCharged;
   fICMethod       = kSumPtFracIC; // 0 pt threshol method, 1 cone pt sum method
-  
+  fFracIsThresh   = 1; 
 }
 
 //________________________________________________________________________________
@@ -409,14 +412,19 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
         coneptsum+=pt;
         if(pt > fPtThreshold )   n++;
         //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-        if(fPtFraction*ptC<fPtThreshold)
-        {
-          if(pt>fPtThreshold)    nfrac++ ;
-        }
-        else 
-        {
-          if(pt>fPtFraction*ptC) nfrac++; 
-        }
+        if(fFracIsThresh){
+	  if( fPtFraction*ptC<fPtThreshold)
+	    {
+	      if(pt>fPtThreshold)    nfrac++ ;
+	    }
+	  else 
+	    {
+	     if(pt>fPtFraction*ptC) nfrac++; 
+	    }
+	}
+	else {
+	  if(pt>fPtFraction*ptC) nfrac++;   
+	}
         
       }//in cone
       
@@ -451,10 +459,16 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
   else if( fICMethod == kSumPtFracIC)
   {
     //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
-    if(fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
-    if(fPtFraction*ptC > fSumPtThreshold  && coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
+    if(fFracIsThresh ){
+      if(fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
+      if( fPtFraction*ptC > fSumPtThreshold  && coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
+    }
+    else 
+      {
+ 	if(coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
+      }
   }
-  else if( fICMethod == kSumDensityIC)
+ else if( fICMethod == kSumDensityIC)
   {    
     // Get good cell density (number of active cells over all cells in cone)
     // and correct energy in cone
@@ -480,6 +494,7 @@ void AliIsolationCut::Print(const Option_t * opt) const
   printf("pT threshold       =     %2.1f\n", fPtThreshold) ;
   printf("pT fraction        =     %3.1f\n", fPtFraction ) ;
   printf("particle type in cone =  %d\n",    fPartInCone ) ;
+  printf("using fraction for high pt leading instead of frac ? %i\n",fFracIsThresh);
   printf("    \n") ;
   
 } 
