@@ -131,6 +131,8 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
    cutsPOI->SetMaxDCAToVertexZ(DCA);
    if(debug) cout << "    --> cutsPOI " << cutsPOI << endl;
    task->SetPOICuts(cutsPOI);
+   //set POI cuts for aods XY Z
+   task->SetPOIDCAXYZ(DCA, DCA);
    // POI filter cuts, will filter invm mass bands and subevents
    AliFlowTrackSimpleCuts* POIfilterQC[30];
    AliFlowTrackSimpleCuts* POIfilterSP[30][2];
