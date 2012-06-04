@@ -1,5 +1,5 @@
-//_______________________________________________
-void AddTaskCounter(const TString trigger = "MB")
+//___________________________________________________________________
+AliAnalysisTaskCounter * AddTaskCounter(const TString trigger = "MB")
 {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -69,6 +69,11 @@ void AddTaskCounter(const TString trigger = "MB")
     printf("counter trigger SemiCentral\n");
     counter->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   }
+  else if(trigger=="SemiOrCentral")
+  {
+    printf("counter trigger SemiCentral Or Central\n");
+    counter->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  }
   
   TString outputFile = AliAnalysisManager::GetCommonFileName(); 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
@@ -78,6 +83,8 @@ void AddTaskCounter(const TString trigger = "MB")
   mgr->AddTask(counter);
   mgr->ConnectInput  (counter, 0, cinput1);
   mgr->ConnectOutput (counter, 1, coutput);
+  
+  return counter;
   
 }
 
