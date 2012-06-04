@@ -55,6 +55,7 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   void SelectPhotonicElectron(Int_t itrack, AliESDtrack *track, Bool_t &fFlagPhotonicElec);
   Double_t GetCos2DeltaPhi(Double_t phiA,Double_t phiB)		const;
   Double_t GetDeltaPhi(Double_t phiA,Double_t phiB)	const;
+  Double_t GetclusterE(Int_t iTrack, Double_t clsPhi, Double_t clsEta) const;
  private:
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
