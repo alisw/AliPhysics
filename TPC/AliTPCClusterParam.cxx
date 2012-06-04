@@ -190,7 +190,6 @@ AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
   //
   // copy constructor
   //
-  memcpy(this, &param,sizeof(AliTPCClusterParam));
   if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
   if (param.fQNormHis) fQNormHis = (TObjArray*) param.fQNormHis->Clone();
   //
@@ -212,6 +211,47 @@ AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
     fPosZcor[1] = new TVectorD(*(param.fPosZcor[1]));
     fPosZcor[2] = new TVectorD(*(param.fPosZcor[2]));
   }
+
+  for (Int_t ii = 0; ii < 2; ++ii) {
+    for (Int_t jj = 0; jj < 3; ++jj) {
+      for (Int_t kk = 0; jj < 4; ++jj) {
+	fParamS0[ii][jj][kk] = param.fParamS0[ii][jj][kk];
+	fErrorS0[ii][jj][kk] = param.fErrorS0[ii][jj][kk];
+	fParamRMS0[ii][jj][kk] = param.fParamRMS0[ii][jj][kk];
+	fErrorRMS0[ii][jj][kk] = param.fErrorRMS0[ii][jj][kk];
+      }
+      for (Int_t kk = 0; jj < 7; ++jj) {
+	fParamS0Par[ii][jj][kk] = param.fParamS0Par[ii][jj][kk];
+	fErrorS0Par[ii][jj][kk] = param.fErrorS0Par[ii][jj][kk];
+      }
+      for (Int_t kk = 0; jj < 6; ++jj) {
+	fParamSQ[ii][jj][kk] = param.fParamSQ[ii][jj][kk];
+	fErrorSQ[ii][jj][kk] = param.fErrorSQ[ii][jj][kk];
+	fParamRMSQ[ii][jj][kk] = param.fParamRMSQ[ii][jj][kk];
+	fErrorRMSQ[ii][jj][kk] = param.fErrorRMSQ[ii][jj][kk];
+      }
+      for (Int_t kk = 0; jj < 9; ++jj) {
+	fParamSQPar[ii][jj][kk]	= param.fParamSQPar[ii][jj][kk];
+	fErrorSQPar[ii][jj][kk]	= param.fErrorSQPar[ii][jj][kk];
+      }
+      for (Int_t kk = 0; jj < 2; ++jj) {
+	fRMSSigmaFit[ii][jj][kk] = param.fRMSSigmaFit[ii][jj][kk];
+      }
+    }
+    for (Int_t jj = 0; jj < 4; ++jj) {
+      fParamS1[ii][jj] = param.fParamS1[ii][jj];
+      fErrorS1[ii][jj] = param.fErrorS1[ii][jj];
+    }
+    for (Int_t jj = 0; jj < 5; ++jj) {
+      fParamRMS1[ii][jj] = param.fParamRMS1[ii][jj];
+      fErrorRMS1[ii][jj] = param.fErrorRMS1[ii][jj];
+    }
+    fErrorRMSSys[ii] = param.fErrorRMSSys[ii];
+    for (Int_t jj = 0; jj < 2; ++jj){
+      fRMSSigmaRatio[ii][jj] = param.fRMSSigmaRatio[ii][jj];
+    }
+  }
+
   SetWaveCorrectionMap( param.fWaveCorrectionMap );
   SetResolutionYMap( param.fResolutionYMap );
 }
@@ -222,7 +262,6 @@ AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& par
   // Assignment operator
   //
   if (this != &param) {
-    memcpy(this, &param,sizeof(AliTPCClusterParam));
     if (param.fQNorm) fQNorm = (TObjArray*) param.fQNorm->Clone();
     if (param.fQNormHis) fQNormHis = (TObjArray*) param.fQNormHis->Clone();
     if (param.fPosQTnorm[0]){
@@ -243,6 +282,47 @@ AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& par
       fPosZcor[1] = new TVectorD(*(param.fPosZcor[1]));
       fPosZcor[2] = new TVectorD(*(param.fPosZcor[2]));
     }
+    
+    for (Int_t ii = 0; ii < 2; ++ii) {
+      for (Int_t jj = 0; jj < 3; ++jj) {
+	for (Int_t kk = 0; jj < 4; ++jj) {
+	  fParamS0[ii][jj][kk] = param.fParamS0[ii][jj][kk];
+	  fErrorS0[ii][jj][kk] = param.fErrorS0[ii][jj][kk];
+	  fParamRMS0[ii][jj][kk] = param.fParamRMS0[ii][jj][kk];
+	  fErrorRMS0[ii][jj][kk] = param.fErrorRMS0[ii][jj][kk];
+	}
+	for (Int_t kk = 0; jj < 7; ++jj) {
+	  fParamS0Par[ii][jj][kk] = param.fParamS0Par[ii][jj][kk];
+	  fErrorS0Par[ii][jj][kk] = param.fErrorS0Par[ii][jj][kk];
+	}
+	for (Int_t kk = 0; jj < 6; ++jj) {
+	  fParamSQ[ii][jj][kk] = param.fParamSQ[ii][jj][kk];
+	  fErrorSQ[ii][jj][kk] = param.fErrorSQ[ii][jj][kk];
+	  fParamRMSQ[ii][jj][kk] = param.fParamRMSQ[ii][jj][kk];
+	  fErrorRMSQ[ii][jj][kk] = param.fErrorRMSQ[ii][jj][kk];
+	}
+	for (Int_t kk = 0; jj < 9; ++jj) {
+	  fParamSQPar[ii][jj][kk] = param.fParamSQPar[ii][jj][kk];
+	  fErrorSQPar[ii][jj][kk] = param.fErrorSQPar[ii][jj][kk];
+	}
+	for (Int_t kk = 0; jj < 2; ++jj) {
+	  fRMSSigmaFit[ii][jj][kk] = param.fRMSSigmaFit[ii][jj][kk];
+	}
+      }
+      for (Int_t jj = 0; jj < 4; ++jj) {
+	fParamS1[ii][jj] = param.fParamS1[ii][jj];
+	fErrorS1[ii][jj] = param.fErrorS1[ii][jj];
+      }
+      for (Int_t jj = 0; jj < 5; ++jj) {
+	fParamRMS1[ii][jj] = param.fParamRMS1[ii][jj];
+	fErrorRMS1[ii][jj] = param.fErrorRMS1[ii][jj];
+      }
+      fErrorRMSSys[ii] = param.fErrorRMSSys[ii];
+      for (Int_t jj = 0; jj < 2; ++jj){
+	fRMSSigmaRatio[ii][jj] = param.fRMSSigmaRatio[ii][jj];
+      }
+    }
+    
     SetWaveCorrectionMap( param.fWaveCorrectionMap );
     SetResolutionYMap( param.fResolutionYMap );
   }
