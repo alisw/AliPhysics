@@ -654,32 +654,35 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, con
 }
 
 //_____________________________________________________________________
-void AliEMCALDigitizer::DecalibrateEnergy(Double_t& energy, const Int_t absId)
+void AliEMCALDigitizer::Decalibrate(AliEMCALDigit *digit)
 { 
 	// Load Geometry
-	const AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+	const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
 	
-	if (geom==0){
+	if (!geom) {
 		AliFatal("Did not get geometry from EMCALLoader");
 		return;
 	}
 	
+	Int_t absId   = digit->GetId();
 	Int_t iSupMod = -1;
 	Int_t nModule = -1;
 	Int_t nIphi   = -1;
 	Int_t nIeta   = -1;
 	Int_t iphi    = -1;
 	Int_t ieta    = -1;
+	
 	Bool_t bCell = geom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
-	if(!bCell)
-		Error("DigitizeEnergyTime","Wrong cell id number : absId %i ", absId) ;
+	
+	if (!bCell) Error("DigitizeEnergyTime","Wrong cell id number : absId %i ", absId) ;
 	geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 	
-	if(fCalibData) {
+	if (fCalibData) {
 		fADCchannelEC = fCalibData->GetADCchannel(iSupMod,ieta,iphi);
+		float factor = 1./(fADCchannelEC/0.0162);
+		
+		*digit = *digit * factor;
 	}
-
-	energy /= fADCchannelEC/0.0162;
 }
 
 //_____________________________________________________________________
@@ -854,13 +857,17 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
       // build FOR from simulated digits
       // and xfer to the corresponding TRU input (mapping)
       
-      TClonesArray* digits = emcalLoader->SDigits();
-      
+	  TClonesArray* sdigits = emcalLoader->SDigits();
+		
+	  TClonesArray *digits = (TClonesArray*)sdigits->Clone();
+		
 	  AliDebug(999,Form("=== %d SDigits to trigger digits ===",digits->GetEntriesFast()));
 		
       TIter NextDigit(digits);
       while (AliEMCALDigit* digit = (AliEMCALDigit*)NextDigit())
       {
+	    Decalibrate(digit);   
+		  
         Int_t id = digit->GetId();
         
         Int_t trgid;
@@ -884,11 +891,6 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
       }
       
       if (AliDebugLevel()) printf("Number of TRG digits: %d\n",digitsTMP->GetEntriesFast());
-      
-	  TF1 g4noiseF("g4noise","[0]*exp(-0.5*((x-[1])/[2])**4)",-10,10);
-	  g4noiseF.SetParameter( 0,   1 );  //
-	  g4noiseF.SetParameter( 1,   0 );  // 
-	  g4noiseF.SetParameter( 2,  .2 );  // 
 		
       Int_t    nSamples = 32;
       Int_t *timeSamples = new Int_t[nSamples];
@@ -909,9 +911,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
           // FIXME: Check digit time!
           if (depositedEnergy)
           {
-//			depositedEnergy += depositedEnergy * g4noiseF.GetRandom();
-			  
-		    DecalibrateEnergy(depositedEnergy, id);  
+			depositedEnergy += gRandom->Gaus(0., .08);
 			  
             DigitalFastOR(time, depositedEnergy, timeSamples, nSamples);
             
@@ -928,6 +928,8 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
       }
       
       delete [] timeSamples;
+		
+	  if (digits && digits->GetEntriesFast()) digits->Delete();
     }// AliEMCAL exists
     else AliFatal("Could not get AliEMCAL");
   }// loader exists
