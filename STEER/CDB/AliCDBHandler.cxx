@@ -100,7 +100,7 @@ void AliCDBHandler::OnStartDocument()
 {
 	// if something should happen right at the beginning of the
 	// XML document, this must happen here
-	AliInfo("Reading XML file for LHCPerdiod <-> Run Range correspondance");
+	AliInfo("Reading XML file for LHCPeriod <-> Run Range correspondence");
 }
 
 //_____________________________________________________________________________
