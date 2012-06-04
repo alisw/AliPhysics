@@ -53,6 +53,7 @@ void MergeCPass(const Char_t *list, TString component, TString outputFileName="C
 {
   AliFileMerger merger;
   /* select what to merge */
+  merger.SetNoTrees(kFALSE);
   if (component == "ALL")
     merger.AddReject("esdFriend");
   else

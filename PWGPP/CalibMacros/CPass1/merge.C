@@ -113,7 +113,8 @@ void cpTimeOut(const char * searchdir, const char* pattern, Int_t timeOut=10, Bo
 void mergeInChunksTXT(const char* mlist, const char* dest, int maxFiles)
 {
   TH1::AddDirectory(0);
-  AliFileMerger merger;
+  AliFileMerger merger; 
+  merger.SetNoTrees(kFALSE);
   //  merger.SetMaxFilesOpen(999);
   merger.AddReject("esdFriend"); // do not merge
   //

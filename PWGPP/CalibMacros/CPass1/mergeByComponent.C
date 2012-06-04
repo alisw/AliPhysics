@@ -52,6 +52,7 @@ void mergeByComponent(TString       component,
 void MergeCPass(const Char_t *list, TString component, TString outputFileName="CalibObjects.root")
 {
   AliFileMerger merger;
+  merger.SetNoTrees(kFALSE);
   /* select what to merge */
   if (component == "ALL")
     merger.AddReject("esdFriend");
