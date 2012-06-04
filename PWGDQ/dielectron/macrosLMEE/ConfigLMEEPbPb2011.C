@@ -111,8 +111,9 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kFALSE)
   InitHistograms(die,cutDefinition);
 
   // the last definition uses no cuts and only the QA histograms should be filled!
-//  InitCF(die,cutDefinition);
-
+  if (hasMC) {
+	  InitCF(die,cutDefinition);
+  }
   return die;
 }
 
@@ -272,30 +273,55 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
 
   //pair variables
-  /*
   cf->AddVariable(AliDielectronVarManager::kP,200,0,20);
   cf->AddVariable(AliDielectronVarManager::kM,201,-0.01,4.01); //20Mev Steps
-  */
   cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
 
   cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,10.0,30.0,40.0,60.,80.,100.");
-/*
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kP,200,0.,20.,kTRUE);
     cf->AddVariable(AliDielectronVarManager::kITSsignal,1000,0.0.,1000.,kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTPCsignal,500,0.0.,500.,kTRUE);
-*/
   //only in this case write MC truth info
   if (MCenabled) {
 	cf->SetStepForMCtruth();
 	cf->SetStepsForMCtruthOnly();
-  cf->AddVariable(AliDielectronVarManager::kHaveSameMother,21,-10,10,kTRUE);
+	cf->AddVariable(AliDielectronVarManager::kHaveSameMother,21,-10,10,kTRUE);
 	cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
 	cf->AddVariable(AliDielectronVarManager::kPdgCodeMother,10000,-5000.5,4999.5,kTRUE);
   }
 
   cf->SetStepsForSignal();
   die->SetCFManagerPair(cf);
+
+
+ AliDielectronSignalMC* lowMassDiele=new
+    AliDielectronSignalMC("lowMassDiele","low mass dielectron pairs");
+  lowMassDiele->SetLegPDGs(11,-11);
+  lowMassDiele->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  lowMassDiele->SetLegSources(AliDielectronSignalMC::kPrimary,
+      AliDielectronSignalMC::kPrimary);
+  lowMassDiele->SetFillPureMCStep(kTRUE);
+  die->AddSignalMC(lowMassDiele);
+
+  AliDielectronSignalMC* secondary=new
+    AliDielectronSignalMC("secondary","secondary electrons pairs");
+  secondary->SetLegPDGs(11,-11);
+  secondary->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  secondary->SetLegSources(AliDielectronSignalMC::kSecondary,
+      AliDielectronSignalMC::kSecondary);
+  die->AddSignalMC(secondary);
+
+
+  AliDielectronSignalMC* finalState=new
+    AliDielectronSignalMC("finalState","finalState electrons pairs");
+  finalState->SetLegPDGs(11,-11);
+  finalState->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  finalState->SetLegSources(AliDielectronSignalMC::kFinalState,
+      AliDielectronSignalMC::kFinalState);
+  die->AddSignalMC(finalState);
+
+
 }
 
 //--------------------------------------
