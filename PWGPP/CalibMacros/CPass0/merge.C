@@ -114,6 +114,7 @@ void mergeInChunksTXT(const char* mlist, const char* dest, int maxFiles)
 {
   TH1::AddDirectory(0);
   AliFileMerger merger;
+  merger.SetNoTrees(kFALSE);
   //  merger.SetMaxFilesOpen(999);
   merger.AddReject("esdFriend"); // do not merge
   //
