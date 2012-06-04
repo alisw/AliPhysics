@@ -1137,14 +1137,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
      triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD") ||
      triggerclasses.Contains("CPBI2_B1-B-NOPF-ALLNOTRD") )   bMB  = kTRUE;
   
-  if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
-     triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   bL0  = kTRUE;
+  if(triggerclasses.Contains("CEMC7-B") || 
+     triggerclasses.Contains("CEMC1-B")    )   bL0  = kTRUE;
   
-  if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") ||
-     triggerclasses.Contains("CPBI2EGA")                 )   bL1G = kTRUE;
+  if(triggerclasses.Contains("CEMC7EGA-B") ||
+     triggerclasses.Contains("CPBI2EGA-B")                 )   bL1G = kTRUE;
   
-  if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") ||
-     triggerclasses.Contains("CPBI2EJE")                 )   bL1J = kTRUE;
+  if(triggerclasses.Contains("CEMC7EJE-B") ||
+     triggerclasses.Contains("CPBI2EJE-B")                 )   bL1J = kTRUE;
   
   // Fill event histo
   fhNEvents->Fill(0.5); // All physics events
@@ -1278,7 +1278,9 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       //L0 analysis  
       Int_t nTimes = 0;
       trg.GetNL0Times(nTimes);
-      
+      Int_t l0Times[10];
+      trg.GetL0Times(l0Times);
+
       Float_t ampL0 = 0.;
       trg.GetAmplitude(ampL0);
       if (ampL0 > 0) emcalTrigL0[posY][posX] = ampL0;
@@ -1286,13 +1288,18 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EJE")) emcalTrigL0L1J[posY][posX] += ampL0;
       totTRU += ampL0;
       
-      if (nTimes) 
+      int l0fired = 0;
+      for (int itime = 0; itime < nTimes; itime++) {
+	if (l0Times[itime] > 7 && l0Times[itime] < 10) l0fired = 1;
+      }
+
+      if (l0fired) 
 	    {
 	      nL0Patch += nTimes;
 	      emcalPatchL0[posY][posX] = 1.;
 	      fhL0Patch->Fill(posX,posY);
 	    }
-      
+
       //L1 analysis
       Int_t bit = 0;
       trg.GetTriggerBits(bit);
@@ -1329,7 +1336,12 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       
     }
   }
-  
+
+  if (!nL0Patch) {
+    bL0 = kFALSE;
+    if (!triggerclasses.Contains("CPBI2")) bL1G = bL1J = kFALSE; // pp running 
+  }
+
   if(totTRU > fMaxTRUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large totTRU %f\n",totTRU);
   if(totSTU > fMaxSTUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large totSTU %f\n",totSTU);
  
@@ -1783,3 +1795,4 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   PostData(1, fOutputList);  
   
 }
+
