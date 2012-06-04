@@ -306,28 +306,23 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     if(TMath::Abs(track->Eta())>0.7) continue;
     
     fTrackPtBefTrkCuts->Fill(track->Pt());		
-    // RecKine: ITSTPC cuts  
+    
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
     
-    //RecKink
     if(fRejectKinkMother) { // Quick and dirty fix to reject both kink mothers and daughters
       if(track->GetKinkIndex(0) != 0) continue;
     } 
     
-    // RecPrim
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
     
-    // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
     
-    // HFE cuts: TPC PID cleanup
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
     
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
-    Double_t clsE = -999., p = -999., EovP=-999., pt = -999., dEdx=-999., fTPCnSigma=0, phi=-999.;
+    Double_t clsE = -999., p = -999., EovP=-999., pt = -999., dEdx=-999., fTPCnSigma=0, phi=-999., clsPhi=-999., clsEta=-999., wclsE = -999., wEovP = -999.;
     
-    // Track extrapolation
     
     pt = track->Pt();
     if(pt<2) continue;
@@ -338,18 +333,32 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
       AliESDCaloCluster *cluster = fESD->GetCaloCluster(clsId);
       if(cluster && cluster->IsEMCAL()){
 	clsE = cluster->E();
+	Float_t clusterPosition[3]={0,0,0};
+	cluster->GetPosition(clusterPosition);
+	TVector3 clsPosVec(clusterPosition[0],clusterPosition[1],clusterPosition[2]);
+	clsPhi = clsPosVec.Phi();
+	clsEta = clsPosVec.Eta();
+	
+	wclsE = GetclusterE(iTracks, clsPhi, clsEta);
+	
       }
     }
-        
+
+
+    
     p = track->P();
     phi = track->Phi();
     dEdx = track->GetTPCsignal();
     EovP = clsE/p;
+    wEovP = wclsE/p;
     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
     fdEdxBef->Fill(p,dEdx);
     fTPCnsigma->Fill(p,fTPCnSigma);
        
-    Double_t corr[8]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C)};
+    Bool_t fFlagPhotonicElec = kFALSE;
+    SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+    
+    Double_t corr[10]={phi,fTPCnSigma,cent,pt,EovP,wEovP,GetDeltaPhi(phi,evPlaneTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec};
     fCorr->Fill(corr);
        
     if(fTPCnSigma >= 1.5 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,EovP);
@@ -394,7 +403,7 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     fTrkEovPAft->Fill(pt,EovP);
     fdEdxAft->Fill(p,dEdx);
     
-    Bool_t fFlagPhotonicElec = kFALSE;
+    fFlagPhotonicElec = kFALSE;
     SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
     
     if(fFlagPhotonicElec){
@@ -506,10 +515,10 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
   fEPres = new THnSparseD ("fEPres","EP resolution",4,binsv1,xminv1,xmaxv1);
   fOutputList->Add(fEPres);
 	
-  Int_t binsv2[8]={100,100,90,100,100,100,100,100}; // phi,fTPCnSigma,cent, pt, EovP, TPCdeltaPhi, V0AdeltaPhi, V0CdeltaPhi
-  Double_t xminv2[8]={0,-3.5,0,0,0,0,0,0};
-  Double_t xmaxv2[8]={2*TMath::Pi(),3.5,90,50,3,TMath::Pi(),TMath::Pi(),TMath::Pi()}; 
-  fCorr = new THnSparseD ("fCorr","Correlations",8,binsv2,xminv2,xmaxv2);
+  Int_t binsv2[10]={100,100,90,100,100,100,100,100,100,2}; // phi,fTPCnSigma,cent, pt, EovP, EovP,TPCdeltaPhi, V0AdeltaPhi, V0CdeltaPhi,IsPhotE
+  Double_t xminv2[10]={0,-3.5,0,0,0,0,0,0,0,0};
+  Double_t xmaxv2[10]={2*TMath::Pi(),3.5,90,50,3,3,TMath::Pi(),TMath::Pi(),TMath::Pi(),1}; 
+  fCorr = new THnSparseD ("fCorr","Correlations",10,binsv2,xminv2,xmaxv2);
   fOutputList->Add(fCorr);
     
   Int_t binsv3[5]={90,100,100,100,100}; // cent, pt, TPCcos2DeltaPhi, V0Acos2DeltaPhi, V0Ccos2DeltaPhi
@@ -570,7 +579,10 @@ void AliAnalysisTaskElecV2::SelectPhotonicElectron(Int_t itrack, AliESDtrack *tr
   
   Bool_t flagPhotonicElec = kFALSE;
   
-  for(Int_t jTracks = itrack+1; jTracks<fESD->GetNumberOfTracks(); jTracks++){
+  for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
+    
+    if(jTracks==itrack) continue;
+    
     AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
     if (!trackAsso) {
       printf("ERROR: Could not receive track %d\n", jTracks);
@@ -649,4 +661,39 @@ Double_t AliAnalysisTaskElecV2::GetDeltaPhi(Double_t phiA,Double_t phiB) const
   if(dPhi > TMath::Pi()) dPhi = dPhi - TMath::Pi();
   
   return dPhi;
+}
+//_________________________________________
+Double_t AliAnalysisTaskElecV2::GetclusterE(Int_t iTrack, Double_t clsPhi, Double_t clsEta) const
+{
+  //Return E
+  for (Int_t jTracks = 0; jTracks < fESD->GetNumberOfTracks(); jTracks++){
+
+    if(jTracks==iTrack) continue;
+
+    AliESDtrack* wtrack = fESD->GetTrack(jTracks);
+    if (!wtrack) continue;
+
+    Double_t wclsPhi=-999., wclsEta=-999., dPhi=-999., dEta=-999., dR=-999., wclsE=-999.;
+
+    Int_t wclsId = wtrack->GetEMCALcluster();
+    if (wclsId>0){
+      AliESDCaloCluster *wcluster = fESD->GetCaloCluster(wclsId);
+      if(wcluster && wcluster->IsEMCAL()){
+	Float_t wclusterPosition[3]={0,0,0};
+	wcluster->GetPosition(wclusterPosition);
+	TVector3 clsPosVec(wclusterPosition[0],wclusterPosition[1],wclusterPosition[2]);
+	wclsPhi = clsPosVec.Phi();
+	wclsEta = clsPosVec.Eta();
+
+	dPhi = TMath::Abs(wclsPhi - clsPhi);
+	dEta = TMath::Abs(wclsEta - clsEta);
+	dR = TMath::Sqrt(dPhi*dPhi+dEta*dEta);
+	if(dR>0.15){
+	  wclsE = wcluster->E();
+	  return wclsE;
+	}
+      }
+    }
+  }
+  return -999.;
 }
