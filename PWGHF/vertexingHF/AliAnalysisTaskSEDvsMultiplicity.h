@@ -113,10 +113,12 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH2F* fHistNtrCorrVsNchMCPrimary; //!  hist of ntracklets vs Nch (Primary)
   TH2F* fHistNtrVsNchMCPhysicalPrimary; //!  hist of ntracklets vs Nch (Physical Primary)
   TH2F* fHistNtrCorrVsNchMCPhysicalPrimary; //!  hist of ntracklets vs Nch (Physical Primary)
+  TH1F* fHistGenPrimaryParticlesInelGt0; //!hist. of geenrated multiplcity
   
   TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
   TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
+
 
   TH3F *fPtVsMassVsMult;  //! hist. of Pt vs Mult vs. mass (
   TH3F *fPtVsMassVsMultNoPid;  //! hist. of Pt vs Mult vs. mass (no pid)

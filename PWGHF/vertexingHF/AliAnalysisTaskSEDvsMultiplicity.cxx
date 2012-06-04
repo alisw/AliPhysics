@@ -68,6 +68,7 @@ AliAnalysisTaskSE(),
   fHistNtrCorrVsNchMCPrimary(0),
   fHistNtrVsNchMCPhysicalPrimary(0),
   fHistNtrCorrVsNchMCPhysicalPrimary(0),
+  fHistGenPrimaryParticlesInelGt0(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -115,6 +116,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistNtrCorrVsNchMCPrimary(0),
   fHistNtrVsNchMCPhysicalPrimary(0),
   fHistNtrCorrVsNchMCPhysicalPrimary(0),
+  fHistGenPrimaryParticlesInelGt0(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -264,11 +266,12 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNtrVsNchMCPhysicalPrimary = new TH2F("hNtrVsNchMCPhysicalPrimary","Ntracklet vs Nch (Physical Primary); Nch (Physical Primary);N_{tracklet};",200,0,200,200,0,200.); // 
   fHistNtrCorrVsNchMCPhysicalPrimary = new TH2F("hNtrCorrVsMCPhysicalPrimary","Ntracklet vs Nch (Physical Primary); Nch (Physical Primary);N_{tracklet};",200,0,200,200,0,200.); // 
   
+  fHistGenPrimaryParticlesInelGt0 = new TH1F("hGenPrimaryParticlesInelGt0","Multiplcity of generated charged particles ; Nparticles ; Entries",200,-0.5,199.5);
 
   fHistNtrCorrEvSel->Sumw2();
   fHistNtrCorrEvWithCand->Sumw2();
   fHistNtrCorrEvWithD->Sumw2();
-
+  fHistGenPrimaryParticlesInelGt0->Sumw2();
   fOutput->Add(fHistNtrCorrEvSel);
   fOutput->Add(fHistNtrCorrEvWithCand);
   fOutput->Add(fHistNtrCorrEvWithD);
@@ -283,6 +286,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fOutput->Add(fHistNtrCorrVsNchMCPrimary);
   fOutput->Add(fHistNtrVsNchMCPhysicalPrimary);
   fOutput->Add(fHistNtrCorrVsNchMCPhysicalPrimary);
+  fOutput->Add(fHistGenPrimaryParticlesInelGt0);
 
   
   fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
@@ -466,7 +470,9 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     Int_t nChargedMC=AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-1.0,1.0);
     Int_t nChargedMCPrimary=AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(arrayMC,-1.0,1.0);
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(arrayMC,-1.0,1.0);
-    
+    if(nChargedMCPhysicalPrimary>0){ // INEL>0 for |eta|<1
+      fHistGenPrimaryParticlesInelGt0->Fill(nChargedMCPhysicalPrimary);
+    }
     fHistNtrVsNchMC->Fill(nChargedMC,countTreta1);
     fHistNtrCorrVsNchMC->Fill(nChargedMC,countTreta1corr);
 
