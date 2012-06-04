@@ -33,6 +33,7 @@ ClassImp(AliDielectronPair)
 AliDielectronPair::AliDielectronPair() :
   fType(-1),
   fLabel(-1),
+  fPdgCode(0),
   fPair(),
   fD1(),
   fD2(),
@@ -50,6 +51,7 @@ AliDielectronPair::AliDielectronPair(AliVTrack * const particle1, Int_t pid1,
                                      AliVTrack * const particle2, Int_t pid2, Char_t type) :
   fType(type),
   fLabel(-1),
+  fPdgCode(0),
   fPair(),
   fD1(),
   fD2(),
@@ -69,6 +71,7 @@ AliDielectronPair::AliDielectronPair(const AliKFParticle * const particle1,
                                      AliVTrack * const refParticle2, Char_t type) :
   fType(type),
   fLabel(-1),
+  fPdgCode(0),
   fPair(),
   fD1(),
   fD2(),

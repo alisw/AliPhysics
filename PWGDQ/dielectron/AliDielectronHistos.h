@@ -36,14 +36,14 @@ public:
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   Int_t nbinsX, Double_t xmin, Double_t xmax,
-		   UInt_t valTypeX=kNoAutoFill, Bool_t logBinX=kFALSE);
+		   UInt_t valTypeX=kNoAutoFill, Bool_t logBinX=kFALSE, TString option="");
 
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   Int_t nbinsX, Double_t xmin, Double_t xmax,
 		   Int_t nbinsY, Double_t ymin, Double_t ymax,
 		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0,
-		   Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE);
+		   Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, TString option="");
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
@@ -51,25 +51,25 @@ public:
 		   Int_t nbinsY, Double_t ymin, Double_t ymax,
 		   Int_t nbinsZ, Double_t zmin, Double_t zmax,
 		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0,
-		   Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, Bool_t logBinZ=kFALSE);
+		   Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, Bool_t logBinZ=kFALSE, TString option="");
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
-		   const char* binning, UInt_t valTypeX=kNoAutoFill);
+		   const char* binning, UInt_t valTypeX=kNoAutoFill, TString option="");
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
-		   const TVectorD * const binsX, UInt_t valTypeX=kNoAutoFill);
+		   const TVectorD * const binsX, UInt_t valTypeX=kNoAutoFill, TString option="");
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   const TVectorD * const binsX, const TVectorD * const binsY,
-		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0);
+		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, TString option="");
   
   void UserProfile(const char* histClass,const char *name, const char* title,
 		   UInt_t valTypeP,
 		   const TVectorD * const binsX, const TVectorD * const binsY, const TVectorD * const binsZ,
-		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0);
+		   UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0, TString option="");
 
 
   void UserHistogram(const char* histClass,const char *name, const char* title,

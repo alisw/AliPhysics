@@ -89,8 +89,7 @@ public:
   virtual Int_t   GetLabel() const  { return fLabel;      }
   // PID
   virtual const Double_t *PID() const { return 0;} //TODO: check
-  // Dummy
-  Int_t PdgCode() const {return 0;}
+
   //
   // Double_t GetLXY(const AliVVertex * const vtx) const;
   // Double_t GetPseudoProperTime(const AliVVertex * const vtx) const;
@@ -99,7 +98,10 @@ public:
   UChar_t GetType() const { return fType; }
   void SetType(Char_t type) { fType=type; }
 
+  // MC information
   void SetLabel(Int_t label) {fLabel=label;}
+  void SetPdgCode(Int_t pdgCode) { fPdgCode=pdgCode; }
+  Int_t PdgCode() const {return fPdgCode;}
 
   void SetProductionVertex(const AliKFParticle &Vtx) { fPair.SetProductionVertex(Vtx); }
   
@@ -138,6 +140,7 @@ public:
 private:
   Char_t   fType;         // type of the pair e.g. like sign SE, unlike sign SE, ... see AliDielectron
   Int_t    fLabel;        // MC label
+  Int_t    fPdgCode;      // pdg code in case it is a MC particle
   
   AliKFParticle fPair;   // KF particle internally used for pair calculation
   AliKFParticle fD1;     // KF particle first daughter
@@ -146,7 +149,7 @@ private:
   TRef fRefD1;           // Reference to first daughter
   TRef fRefD2;           // Reference to second daughter
   
-  ClassDef(AliDielectronPair,3)
+  ClassDef(AliDielectronPair,4)
 };
 
 #endif

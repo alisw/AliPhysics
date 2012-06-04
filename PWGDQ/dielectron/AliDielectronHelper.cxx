@@ -236,17 +236,17 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
   // put a robust Nacc definition here
 
   if (!ev) return -1;
-
+  
   AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);   // not filled in AODs?
+  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
-  varCuts->AddCut(AliDielectronVarManager::kITSLayerFirstCls,-0.01,1.5); //ITS(0-1) = SPDany
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,  -0.5,   0.5);   //noKinks
     
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+  trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
 
@@ -255,6 +255,7 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
   
   for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
     AliVParticle* candidate = ev->GetTrack(iTrack);
+    if (!candidate) continue;
     AliVTrack *track        = static_cast<AliVTrack*>(candidate);
     if (!track) continue;
     if (varCuts->IsSelected(track) && trkCuts->IsSelected(track)) 
@@ -263,8 +264,6 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
   
   delete varCuts;
   delete trkCuts;
-
-  //  if(nRecoTracks==nAcc) printf(" all (%d) reco tracks are accepted tracks? \n",nAcc);
 
   return nAcc;
 }

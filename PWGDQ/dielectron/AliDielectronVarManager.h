@@ -201,6 +201,7 @@ public:
     kDCA,                    // distance of closest approach TODO: not implemented yet
     kPairType,               // type of the pair, like like sign ++ unlikesign ...
     kPseudoProperTime,       // pseudo proper time
+    kPseudoProperTimeErr,    // pseudo proper time error
     kPseudoProperTimeResolution,     // resolution for pseudo proper decay time (reconstructed - MC truth)
     kPseudoProperTimePull,   // normalizd resolution for pseudo proper time = (reco - MC truth)/dReco
     kTRDpidEffPair,          // TRD pid efficieny from conversion electrons
@@ -213,13 +214,16 @@ public:
     kYRes,                   // primary vertex y-resolution
     kZRes,                   // primary vertex z-resolution
 
-    // v0 reaction plane quantities from AliEPSelectionTaks
+    //// v0 reaction plane quantities from AliEPSelectionTaks
     kv0ArpH2,                  // VZERO-A reaction plane of the Q vector for 2nd harmonic
     kv0CrpH2,                  //         reaction plane
     kv0ACrpH2,                 // VZERO-AC reaction plane of the Q vector for 2nd harmonic
     kv0ATPCDiffH2,             // V0A-TPC reaction plane difference for 2nd harmonic
     kv0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
     kv0Av0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
+    kv0ArpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-A
+    kv0CrpH2FlowV2,          // v2 coefficient with respect to the 2nd order reaction plane from V0-C
+    kv0ACrpH2FlowV2,         // v2 coefficient with respect to the 2nd order reaction plane from V0-A + V0-C
 
     kMultV0A,                // VZERO multiplicity and ADC amplitudes
     kMultV0C,
@@ -481,7 +485,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTPCsignalNfrac]= tpcNcls>0?tpcSignalN/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kTRDntracklets] = particle->GetTRDntracklets(); // TODO: GetTRDtracklets/GetTRDntracklets?
-  values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDpidQuality();
+  values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
   
@@ -655,8 +659,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
   values[AliDielectronVarManager::kITSchi2Cl]     = -1;
   values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
-  values[AliDielectronVarManager::kNclsSTPC]       = tpcNclsS;
-  values[AliDielectronVarManager::kNclsSFracTPC]       = tpcNcls>0?tpcNclsS/tpcNcls:0;
+  values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
+  values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTPCiter1]  = tpcNcls; // not really available in AOD
   values[AliDielectronVarManager::kNFclsTPC]      = 0;
   values[AliDielectronVarManager::kNFclsTPCr]     = 0;
@@ -665,7 +669,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
   
-  values[AliDielectronVarManager::kTPCchi2Cl] = -1;
+  values[AliDielectronVarManager::kTPCchi2Cl]     = particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls;  // it is stored as normalized to tpcNcls-5 (see AliAnalysisTaskESDfilter)
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
   
   //TRD pidProbs
@@ -678,7 +682,6 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   
   // Fill AliAODTrack interface information
   //
-
   values[AliDielectronVarManager::kKinkIndex0]    = particle->GetProdVertex()->GetType()==AliAODVertex::kKink ? 1 : 0;
 
   Double_t d0z0[2];
@@ -699,7 +702,14 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTPCnSigmaPro]=0;
 
   values[AliDielectronVarManager::kITSclusterMap]   =   particle->GetITSClusterMap();
-  
+  values[AliDielectronVarManager::kITSLayerFirstCls] = -1.;
+  for (Int_t iC=0; iC<6; iC++) {
+    if (((particle->GetITSClusterMap()) & (1<<(iC))) > 0) {
+      values[AliDielectronVarManager::kITSLayerFirstCls] = iC;
+      break;
+    }
+  }
+
   AliAODPid *pid=particle->GetDetPid();
   if (pid){
     Double_t mom =pid->GetTPCmomentum();
@@ -723,7 +733,14 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kTPCnSigmaPro]=tpcNsigmaPro;
     
     values[AliDielectronVarManager::kTRDntracklets] = 0;
-    values[AliDielectronVarManager::kTRDpidQuality] = 0;
+    values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
+    Double_t prob[AliPID::kSPECIES];
+    fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
+    values[AliDielectronVarManager::kTRDprobEle]    = prob[AliPID::kElectron];
+    values[AliDielectronVarManager::kTRDprobPio]    = prob[AliPID::kPion];
+
+    values[AliDielectronVarManager::kTOFsignal]=pid->GetTOFsignal();
+    values[AliDielectronVarManager::kTOFbeta]  =0;
 
     Double_t tofNsigmaEle=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
     Double_t tofNsigmaPio=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
@@ -1044,8 +1061,9 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   Double_t errPseudoProperTime2 = -1;
   values[AliDielectronVarManager::kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
-  values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetKFParticle().GetPseudoProperDecayTime(*(fgEvent->GetPrimaryVertex()), TDatabasePDG::Instance()->GetParticle(443)->Mass(), &errPseudoProperTime2 ) : -1e10;
+  values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? kfPair.GetPseudoProperDecayTime(*(fgEvent->GetPrimaryVertex()), TDatabasePDG::Instance()->GetParticle(443)->Mass(), &errPseudoProperTime2 ) : -1e10;
   // values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetPseudoProperTime(fgEvent->GetPrimaryVertex()): -1e10;
+  values[AliDielectronVarManager::kPseudoProperTimeErr] = (errPseudoProperTime2 > 0) ? TMath::Sqrt(errPseudoProperTime2) : -1e10;
 
   // Flow quantities
   Double_t delta=0.0;
@@ -1222,6 +1240,9 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(ep->GetEventplane("V0", event, 2));
   values[AliDielectronVarManager::kv0ArpH2]   = TVector2::Phi_mpi_pi(ep->GetEventplane("V0A",event, 2));
   values[AliDielectronVarManager::kv0CrpH2]   = TVector2::Phi_mpi_pi(ep->GetEventplane("V0C",event, 2));
+  values[AliDielectronVarManager::kv0ACrpH2FlowV2]  = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ACrpH2]) );
+  values[AliDielectronVarManager::kv0ArpH2FlowV2]   = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2]) );
+  values[AliDielectronVarManager::kv0CrpH2FlowV2]   = TMath::Cos( 2*(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2]) );
 
   // ESD VZERO information
   AliVVZERO* vzeroData = event->GetVZEROData();

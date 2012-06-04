@@ -146,7 +146,7 @@ inline void AliDielectronSignalBase::SetSignificanceAndSOB()
   fErrors(3) = fValues(3)*TMath::Sqrt(epsSig*epsSig + epsBknd*epsBknd);
   // Significance
   fValues(2) = ((fValues(0)+fValues(1))>0 ? fValues(0)/TMath::Sqrt(fValues(0)+fValues(1)) : 0);
-  Float_t s = fValues(0); Float_t b = fValues(1);
+  Float_t s = (fValues(0)>0?fValues(0):0); Float_t b = fValues(1);
   fErrors(2) = ((s+b)>0 ? TMath::Sqrt((s*(s+2*b)*(s+2*b)+b*s*s)/(4*TMath::Power(s+b,3))) : 0);
 }
 
