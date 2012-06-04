@@ -32,6 +32,10 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fPtBiasJetClus(10),
   fJetPtCut(1),
   fJetAreaCut(0.2),
+  fMinEta(-0.9),
+  fMaxEta(0.9),
+  fMinPhi(-10),
+  fMaxPhi(10),
   fJets(0)
 {
   // Default constructor.
@@ -46,6 +50,10 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name) :
   fPtBiasJetClus(10),
   fJetPtCut(1),
   fJetAreaCut(0.2),
+  fMinEta(-0.9),
+  fMaxEta(0.9),
+  fMinPhi(-10),
+  fMaxPhi(10),
   fJets(0)
 {
   // Standard constructor.
@@ -60,6 +68,10 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fPtBiasJetClus(10),
   fJetPtCut(1),
   fJetAreaCut(0.2),
+  fMinEta(-0.9),
+  fMaxEta(0.9),
+  fMinPhi(-10),
+  fMaxPhi(10),
   fJets(0)
 {
   // Standard constructor.
@@ -131,5 +143,41 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Bool_t bias) const
   if (bias && jet->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet->MaxClusterPt() < fPtBiasJetClus))
     return kFALSE;
 
-  return (Bool_t)(jet->Eta() > fMinEta + fJetRadius && jet->Eta() < fMaxEta - fJetRadius && jet->Phi() > fMinPhi + fJetRadius && jet->Phi() < fMaxPhi - fJetRadius);
+  return (Bool_t)(jet->Eta() > fMinEta && jet->Eta() < fMaxEta && jet->Phi() > fMinPhi && jet->Phi() < fMaxPhi);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalJet::Init()
+{
+  // Init the analysis.
+
+  if (fAnaType == kTPC) {
+    SetEtaLimits(-0.9 + fJetRadius, 0.9 - fJetRadius);
+    SetPhiLimits(-10, 10);
+  }
+  else if (fAnaType == kEMCAL) {
+    AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
+    if (!geom) {
+      AliFatal("Can not create geometry");
+      return;
+    }
+    SetEtaLimits(geom->GetArm1EtaMin() + fJetRadius, geom->GetArm1EtaMax() - fJetRadius);
+    SetPhiLimits(geom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, geom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+  }
+  else {
+    AliWarning("Analysis type not recognized! Assuming kTPC...");
+    SetAnaType(kTPC);
+    Init();
+  }
+
+  SetInitialized();
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalJet::UserExec(Option_t *) 
+{
+  if (!fInitialized) 
+    Init();
+
+  AliAnalysisTaskEmcal::UserExec("");
 }

@@ -21,7 +21,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
 
   void                        SetTrgClusName(const char *n)                        { fTrgClusName   = n          ; }
   void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut = cut        ; }
-  void                        SetDoEoverP(Bool_t eop = kTRUE)                      { fDoEoverP      = eop        ; }
+  void                        SetDoTrigger(Bool_t trg = kTRUE)                     { fDoTrigger     = trg        ; }
 
  protected:
 
@@ -36,7 +36,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
 
 
   Float_t                     fCellEnergyCut;          // Energy cell cut
-  Bool_t                      fDoEoverP;               // Make do E over p histogram
+  Bool_t                      fDoTrigger;              // Make trigger qa plots
   TString                     fTrgClusName;            // Name of trg clus name
   TClonesArray               *fTrgClusters;            //!Trg Clusters
 
@@ -59,8 +59,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistJetsPtTrack[4];     //!Inclusive jet pt spectrum track biased
   TH1F                       *fHistJetsPt[4];          //!Non biased inclusive jet pt spectrum
 
-  TH2F                       *fHistEoverP;             //!E/P vs. E
-
   TH1F                       *fHistCellsEnergy;        //!Energy spectrum of cells
 
   TH2F                       *fHistChVSneCells;        //!Charged vs. neutral (cells) energy
@@ -74,6 +72,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 5) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 6) // Quality task for Emcal analysis
 };
 #endif
