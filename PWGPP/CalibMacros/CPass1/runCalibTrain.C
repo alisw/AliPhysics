@@ -82,7 +82,7 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   //
   Bool_t okTPC = detStr.Contains("TPC");
   Bool_t useTPCcrv=kFALSE;
-  Bool_t writeITSTP = kTRUE;
+  Bool_t writeITSTP = kFALSE;
   if (!okTPC) useTPCcrv = kFALSE;
   AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv);
   if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE);
