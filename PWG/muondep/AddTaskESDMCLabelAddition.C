@@ -1,6 +1,7 @@
-AliAnalysisTaskESDMCLabelAddition *AddTaskESDMCLabelAddition()
+AliAnalysisTaskESDMCLabelAddition *AddTaskESDMCLabelAddition(Double_t trkSigmaCut = -1, Double_t trgSigmaCut = -1)
 {
   /// Add AliAnalysisTaskESDMCLabelAddition to the train (Philippe Pillot)
+  /// If trkSigmaCut (trgSigmaCut) is negative, value is taken from the OCDB recoParam
   
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -29,6 +30,8 @@ AliAnalysisTaskESDMCLabelAddition *AddTaskESDMCLabelAddition()
     Error("AddTaskESDMCLabelAddition", "MClabel addition task cannot be created!");
     return NULL;
   }
+  task->SetExternalTrkSigmaCut(trkSigmaCut);
+  task->SetExternalTrgSigmaCut(trgSigmaCut);
   
   // Add task to analysis manager
   mgr->AddTask(task);
