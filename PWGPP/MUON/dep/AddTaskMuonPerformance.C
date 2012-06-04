@@ -26,9 +26,9 @@ AliAnalysisTaskMuonPerformance *AddTaskMuonPerformance(Bool_t correctClusterResF
   else outputfile = baseOutName;
   
   AliAnalysisDataContainer *coutput1  = mgr->CreateContainer("EffContainer",AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  AliAnalysisDataContainer *coutput2  = mgr->CreateContainer("Efficiency",TObjArray::Class(),AliAnalysisManager::kParamContainer,outputfile);
-  AliAnalysisDataContainer *coutput3  = mgr->CreateContainer("TriggerResolution",TObjArray::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  AliAnalysisDataContainer *coutput4  = mgr->CreateContainer("TrackerResolution",TObjArray::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *coutput2  = mgr->CreateContainer("TriggerResolution",TObjArray::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *coutput3  = mgr->CreateContainer("TrackerResolution",TObjArray::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *coutput4  = mgr->CreateContainer("Efficiency",TObjArray::Class(),AliAnalysisManager::kParamContainer,outputfile);
   AliAnalysisDataContainer *coutput5  = mgr->CreateContainer("MomentumAtVtx",TObjArray::Class(),AliAnalysisManager::kParamContainer,outputfile);
   AliAnalysisDataContainer *coutput6  = mgr->CreateContainer("SlopeAtVtx",TObjArray::Class(),AliAnalysisManager::kParamContainer,outputfile);
   AliAnalysisDataContainer *coutput7  = mgr->CreateContainer("EtaAtVtx",TObjArray::Class(),AliAnalysisManager::kParamContainer,outputfile);
