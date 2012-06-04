@@ -209,12 +209,16 @@ void AliVZEROEPSelectionTask::SetHistograms(TList *list)
   // histograms from a given list
 
   for(Int_t i = 0; i < 11; ++i) {
+    if (fX2In[i]) delete fX2In[i];
     fX2In[i] = (TProfile*)list->FindObject(Form("fX2_%d",i))->Clone(Form("fX2In_%d",i));
     fX2In[i]->SetDirectory(0);
+    if (fY2In[i]) delete fY2In[i];
     fY2In[i] = (TProfile*)list->FindObject(Form("fY2_%d",i))->Clone(Form("fY2In_%d",i));
     fY2In[i]->SetDirectory(0);
+    if (fX2Y2In[i]) delete fX2Y2In[i];
     fX2Y2In[i] = (TProfile*)list->FindObject(Form("fX2Y2_%d",i))->Clone(Form("fX2Y2In_%d",i));
     fX2Y2In[i]->SetDirectory(0);
+    if (fCos8PsiIn[i]) delete fCos8PsiIn[i];
     fCos8PsiIn[i] = (TProfile*)list->FindObject(Form("fCos8Psi_%d",i))->Clone(Form("fCos8PsiIn_%d",i));
     fCos8PsiIn[i]->SetDirectory(0);
   }
