@@ -61,15 +61,16 @@ AliDielectron* ConfigBJpsi_ff_PbPb(Int_t cutDefinition, Bool_t isMC=kFALSE)
 	   tree->AddLegVariable(AliDielectronVarManager::kTRDntracklets);
 	   tree->AddLegVariable(AliDielectronVarManager::kNclsTRD);
 	   tree->AddLegVariable(AliDielectronVarManager::kTOFnSigmaEle);
-           tree->AddPairVariable(AliDielectronVarManager::kM);
+           tree->AddLegVariable(AliDielectronVarManager::kITSLayerFirstCls);
+	   tree->AddPairVariable(AliDielectronVarManager::kM);
            tree->AddPairVariable(AliDielectronVarManager::kE);
            tree->AddPairVariable(AliDielectronVarManager::kP);
            tree->AddPairVariable(AliDielectronVarManager::kPt);
 	   tree->AddPairVariable(AliDielectronVarManager::kY);
            tree->AddPairVariable(AliDielectronVarManager::kEta);
            tree->AddPairVariable(AliDielectronVarManager::kPairType);
-	   tree->AddPairVariable(AliDielectronVarManager::kITSLayerFirstCls);
 	   tree->AddPairVariable(AliDielectronVarManager::kPseudoProperTime);
+	   tree->AddPairVariable(AliDielectronVarManager::kPseudoProperTimeErr);
 	   if(hasMC) tree->AddPairVariable(AliDielectronVarManager::kPseudoProperTimeResolution);
 	   if(hasMC) tree->AddPairVariable(AliDielectronVarManager::kPseudoProperTimePull);
 	   if(hasMC) tree->AddPairVariable(AliDielectronVarManager::kPdgCode);
