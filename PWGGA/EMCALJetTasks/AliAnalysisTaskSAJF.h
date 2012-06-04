@@ -62,10 +62,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHist2LeadingJetPt[4];       //!Second leading jet pt spectrum
   TH2F                       *fHistJetsNEFvsPt[4];         //!Jet neutral energy fraction vs. jet pt
   TH2F                       *fHistJetsZvsPt[4];           //!Constituent Pt over Jet Pt ratio vs. jet pt
-  TH1F                       *fHistTracksPtLJ[4];          //!Pt spectrum of tracks belonging to the leading jet
-  TH1F                       *fHistClusEtLJ[4];            //!Et spectrum of clusters belonging to the leading jet
-  TH1F                       *fHistTracksPtBkg[4];         //!Pt spectrum of tracks not belonging to the leading jet
-  TH1F                       *fHistClusEtBkg[4];           //!Et spectrum of clusters not belonging to the leading jet
 
   // Rho
   TH1F                       *fHistRho[4];                 //!Rho distribution

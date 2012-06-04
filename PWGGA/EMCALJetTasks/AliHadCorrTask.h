@@ -8,6 +8,7 @@ class TList;
 class TH1F;
 class TH2F;
 class AliEmcalParticle;
+class TString;
 
 #include "AliAnalysisTaskEmcal.h"
 

@@ -9,6 +9,9 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   Double_t    jetradius          = 0.4,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.1,
+  Double_t    ptcut              = 0.15,
+  Double_t    jetBiasTrack       = 10,
+  Double_t    jetBiasClus        = 10,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC
 )
 {  
@@ -40,6 +43,9 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   qaTask->SetJetRadius(jetradius);
   qaTask->SetJetPtCut(jetptcut);
   qaTask->SetJetAreaCut(jetareacut);
+  qaTask->SetPtCut(ptcut);
+  qaTask->SetPtBiasJetTrack(jetBiasTrack);
+  qaTask->SetPtBiasJetClus(jetBiasClus);
   qaTask->SetAnaType(type);
 
   //-------------------------------------------------------

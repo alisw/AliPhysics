@@ -30,10 +30,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fAnaType(kTPC),
   fInitialized(kFALSE),
   fCreateHisto(kTRUE),
-  fMinEta(-0.9),
-  fMaxEta(0.9),
-  fMinPhi(-10),
-  fMaxPhi(10),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fNbins(500),
@@ -44,6 +40,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fCaloClusters(0),
   fCent(0),
   fCentBin(-1),
+  fBeamType(kNA),
   fOutput(0)
 {
   // Default constructor.
@@ -62,10 +59,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name) :
   fAnaType(kTPC),
   fInitialized(kFALSE),
   fCreateHisto(kTRUE),
-  fMinEta(-0.9),
-  fMaxEta(0.9),
-  fMinPhi(-10),
-  fMaxPhi(10),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fNbins(500),
@@ -76,6 +69,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name) :
   fCaloClusters(0),
   fCent(0),
   fCentBin(-1),
+  fBeamType(kNA),
   fOutput(0)
 {
   // Standard constructor.
@@ -94,10 +88,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fAnaType(kTPC),
   fInitialized(kFALSE),
   fCreateHisto(histo),
-  fMinEta(-0.9),
-  fMaxEta(0.9),
-  fMinPhi(-10),
-  fMaxPhi(10),
   fTracksName("Tracks"),
   fCaloName("CaloClusters"),
   fNbins(500),
@@ -108,6 +98,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fCaloClusters(0),
   fCent(0),
   fCentBin(-1),
+  fBeamType(kNA),
   fOutput(0)
 {
   // Standard constructor.
@@ -135,7 +126,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 }
 
 //_____________________________________________________
-Int_t AliAnalysisTaskEmcal::GetBeamType()
+AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
 {
   // Get beam type : pp-AA-pA
   // ESDs have it directly, AODs get it from hardcoded run number ranges
@@ -183,7 +174,9 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   fVertex[2] = 0;
   InputEvent()->GetPrimaryVertex()->GetXYZ(fVertex);
 
-  if (GetBeamType() == kAA) {
+  fBeamType = GetBeamType();
+
+  if (fBeamType == kAA) {
     AliCentrality *aliCent = InputEvent()->GetCentrality();
     if (aliCent) {
       fCent = aliCent->GetCentralityPercentile("V0M");
@@ -223,32 +216,6 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   return kTRUE;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcal::Init()
-{
-  // Init the analysis.
-
-  if (fAnaType == kTPC) {
-    SetEtaLimits(-0.9, 0.9);
-    SetPhiLimits(-10, 10);
-  }
-  else if (fAnaType == kEMCAL) {
-    AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
-    if (!geom) {
-      AliFatal("Can not create geometry");
-      return;
-    }
-    SetEtaLimits(geom->GetArm1EtaMin(), geom->GetArm1EtaMax());
-    SetPhiLimits(geom->GetArm1PhiMin() * TMath::DegToRad(), geom->GetArm1PhiMax() * TMath::DegToRad());
-  }
-  else {
-    AliWarning("Analysis type not recognized! Assuming kTPC...");
-    SetAnaType(kTPC);
-    Init();
-  }
-
-  SetInitialized();
-}
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster* clus, Bool_t acceptMC) const
@@ -273,33 +240,19 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster* clus, Bool_t acceptMC) c
 Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVTrack* track, Bool_t acceptMC) const
 {
   // Return true if track is accepted.
-
   if (!acceptMC && track->GetLabel() == 100)
     return kFALSE;
 
   if (track->Pt() < fPtCut)
     return kFALSE;
   
-  return (Bool_t)(track->Eta() > fMinEta && track->Eta() < fMaxEta && track->Phi() > fMinPhi && track->Phi() < fMaxPhi);
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliMCParticle* track) const
-{
-  // Return true if track is accepted.
-  if (track->Pt() < fPtCut)
-    return kFALSE;
-  
-  return (Bool_t)(track->Eta() > fMinEta && track->Eta() < fMaxEta && track->Phi() > fMinPhi && track->Phi() < fMaxPhi);
+  return kTRUE;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcal::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-
-  if (!fInitialized) 
-    Init();
 
   if (!RetrieveEventObjects())
     return;
