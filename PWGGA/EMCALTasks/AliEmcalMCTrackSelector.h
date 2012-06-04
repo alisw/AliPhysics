@@ -4,6 +4,7 @@
 // $Id$
 
 class TClonesArray;
+class TString;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -30,6 +31,6 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   AliEmcalMCTrackSelector(const AliEmcalMCTrackSelector&);            // not implemented
   AliEmcalMCTrackSelector &operator=(const AliEmcalMCTrackSelector&); // not implemented
 
-  ClassDef(AliEmcalMCTrackSelector, 0); // Task to select tracks in MC events
+  ClassDef(AliEmcalMCTrackSelector, 1); // Task to select tracks in MC events
 };
 #endif
