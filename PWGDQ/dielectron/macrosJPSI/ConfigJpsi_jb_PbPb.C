@@ -194,16 +194,16 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  if(isESD) varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
   cuts->AddCut(varCuts);
   
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
   switch(cutDefinition) {
-  case kTOFTRD2: trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  case kTOFTRD2: trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
     break;
-  default:       trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  default:       trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kAny);
     break;
   }
   trkCuts->SetRequireITSRefit(kTRUE);
@@ -351,9 +351,14 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
     default: gCut=0.05;             // default
   }
   
-  AliDielectronVarCuts *gammaCut=new AliDielectronVarCuts("gammaCut","gammaCut");
-  gammaCut->AddCut(AliDielectronVarManager::kM,0.,gCut);
-  die->GetPairPreFilter().AddCuts(gammaCut);
+  AliDielectronVarCuts *gammaCuts = new AliDielectronVarCuts("GammaCuts","GammaCuts");
+//  gammaCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0,   0.1,  kTRUE);
+//  gammaCuts->AddCut(AliDielectronVarManager::kLegDist,      0.0,   0.25, kTRUE);
+//  gammaCuts->AddCut(AliDielectronVarManager::kR,            3.0,   90.0, kTRUE);
+//  gammaCuts->AddCut(AliDielectronVarManager::kPsiPair,      0.0,   0.05, kTRUE);
+//  gammaCuts->AddCut(AliDielectronVarManager::kChi2NDF,      0.0,   10.0, kTRUE);
+  gammaCuts->AddCut(AliDielectronVarManager::kM,            0.0,   gCut);
+  die->GetPairPreFilter().AddCuts(gammaCuts);
   
   
   // rapidity selection
@@ -626,17 +631,23 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     
     //add histograms to Pair classes
     histos->UserHistogram("Pair","InvMass","Inv.Mass;Inv. Mass [GeV];#pairs",
-                          300,.0,300*0.04,
-                          AliDielectronVarManager::kM); // 40MeV bins, 12GeV/c2
+                          300,.0,300*0.04, AliDielectronVarManager::kM); // 40MeV bins, 12GeV/c2
     histos->UserHistogram("Pair","Rapidity","Rapidity;Rapidity;#pairs",
-                          100,-1.,1.,
-                          AliDielectronVarManager::kY);
+                          100,-1.,1., AliDielectronVarManager::kY);
     histos->UserHistogram("Pair","OpeningAngle","Opening angle;angle",
-                          100,0.,3.15,
-                          AliDielectronVarManager::kOpeningAngle);
+                          100,0.,3.15, AliDielectronVarManager::kOpeningAngle);
     histos->UserHistogram("Pair","Chi2NDF","#chi^{2}/NDF;#chi^{2}/NDF",
-                          100,0.,20,
-                          AliDielectronVarManager::kChi2NDF);
+                          100,0.,20, AliDielectronVarManager::kChi2NDF);
+    histos->UserHistogram("Pair","PsiPair","PsiPair;#psi",
+                          100,0.,3.15, AliDielectronVarManager::kPsiPair);
+    histos->UserHistogram("Pair","R","Radius;r (cm)",
+                          200,0.,100., AliDielectronVarManager::kR);
+    histos->UserHistogram("Pair","LegDist",";dca (cm)",
+                          50,0.,5., AliDielectronVarManager::kLegDist);
+    histos->UserHistogram("Pair","LegDistXY",";dca_{xy} (cm)",
+                          50,0.,5., AliDielectronVarManager::kLegDistXY);
+    
+  
   }
   
   //// FLOW results use tprofiles
@@ -659,6 +670,25 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                         AliDielectronVarManager::kV0CrpH2FlowV2,
                         125,0.,125*.04, 10, 0.,100., 200,0.,100.,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
+
+    histos->UserProfile("Pair","M_Cent_Pt_v0ACrpH2FlowV2",
+                        "cos(2(#varphi-#Psi^{V0AC}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
+                        AliDielectronVarManager::kv0ACrpH2FlowV2,
+                        125,0.,125*.04, 10, 0.,100., 200,0.,100.,
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
+    
+    histos->UserProfile("Pair","M_Cent_Pt_v0ArpH2FlowV2",
+                        "cos(2(#varphi-#Psi^{V0A}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
+                        AliDielectronVarManager::kv0ArpH2FlowV2,
+                        125,0.,125*.04, 10, 0.,100., 200,0.,100.,
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
+    
+    histos->UserProfile("Pair","M_Cent_Pt_v0CrpH2FlowV2",
+                        "cos(2(#varphi-#Psi^{V0C}));mass (GeV/c^{2});centrality (%);p_{T} (GeV/c)",
+                        AliDielectronVarManager::kv0CrpH2FlowV2,
+                        125,0.,125*.04, 10, 0.,100., 200,0.,100.,
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPt);
+    
     // 1D
     histos->UserProfile("Pair","M_V0ACrpH2FlowV2",
                         "cos(2(#varphi-#Psi^{V0AC}));mass (GeV/c^{2})",
@@ -747,10 +777,9 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
     
   }
   
-  
+
   if(hasMC) {
-    cf->AddVariable(AliDielectronVarManager::kRunNumber, GetRunNumbers() ); // LHC10h -> LHC11h
-    //    cf->AddVariable(AliDielectronVarManager::kRunNumber, 170593-136831, 136831, 170593); // LHC10h -> LHC11h
+    cf->AddVariable(AliDielectronVarManager::kRunNumber, GetRunNumbers() );
     if(cutDefinition==kTOFTRD || cutDefinition==kGam0) cf->SetStepForMCtruth();
     //    if(cutDefinition!=kTOFTRD) 
       cf->SetStepsForMCtruthOnly();  
@@ -807,6 +836,13 @@ void AddMCSignals(AliDielectron *die){
   directJpsi->SetCheckBothChargesLegs(kTRUE,kTRUE);
   directJpsi->SetCheckBothChargesMothers(kTRUE,kTRUE);
   die->AddSignalMC(directJpsi);
+  
+  AliDielectronSignalMC* conversionElePairs = new AliDielectronSignalMC("conversionElePairs","conversion electron pairs");  // pairs made from conversion (may be also from 2 different conversions)                                                                                                                                                                                             
+  conversionElePairs->SetLegPDGs(11,-11);
+  conversionElePairs->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  conversionElePairs->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+  conversionElePairs->SetMotherPDGs(22,22);
+  //   die->AddSignalMC(conversionElePairs);           
 }
 
 void SetEtaCorrection()
@@ -838,17 +874,41 @@ void SetEtaCorrection()
 }
 
 TVectorD *GetRunNumbers() {
-
-  Double_t runLHC10h[] = { // all runs
-    136851, 136854, 136879, 137042, 137045, 137124, 137125, 137132, 137133, 137135, 137136, 137137, 137161, 137162, 137163, 137165, 137230, 137231, 137232, 137235, 137236, 137243, 137365, 137366, 137370, 137430, 137431, 137432, 137434, 137439, 137440, 137441, 137443, 137530, 137531, 137539, 137541, 137544, 137546, 137549, 137595, 137608, 137609, 137638, 137639, 137685, 137686, 137689, 137691, 137692, 137693, 137704, 137718, 137722, 137724, 137748, 137751, 137752, 137843, 137844, 137847, 137848, 138125, 138126, 138150, 138151, 138153, 138154, 138190, 138192, 138197, 138200, 138201, 138225, 138275, 138359, 138364, 138396, 138438, 138439, 138442, 138469, 138533, 138534, 138578, 138579, 138582, 138583, 138620, 138621, 138624, 138637, 138638, 138652, 138653, 138662, 138666, 138730, 138731, 138732, 138736, 138737, 138740, 138742, 138795, 138796, 138826, 138828, 138830, 138831, 138836, 138837, 138870, 138871, 138872, 138924, 138965, 138972, 138973, 138976, 138977, 138978, 138979, 138980, 138982, 138983, 139024, 139025, 139028, 139029, 139030, 139031, 139034, 139036, 139037, 139038, 139042, 139104, 139105, 139107, 139110, 139172, 139173, 139308, 139309, 139310, 139311, 139314, 139316, 139328, 139329, 139360, 139437, 139438, 139439, 139440, 139441, 139465, 139466, 139467, 139470, 139471, 139503, 139504, 139505, 139507, 139510, 139511, 139513, 139514, 139517,
-0
+  
+  Double_t runLHC10h[] = { // all good runs based on RCT 29.Mai
+    139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161, 137135
   };
   
-
-  Int_t sizeLHC10h = (int) (sizeof(runLHC10h)/sizeof(Double_t)); 
-  runLHC10h[sizeLHC10h-1] =   runLHC10h[sizeLHC10h-2] + 1.;
-  TVectorD *vecLHC10h = new TVectorD(sizeLHC10h, runLHC10h);
+  Double_t runLHC11h[] = { // all good runs based on RCT 29.Mai
+    170593, 170572, 170388, 170387, 170315, 170313, 170312, 170311, 170309, 170308, 170306, 170270, 170269, 170268, 170230, 170228, 170207, 170204, 170203, 170193, 170163, 170159, 170155, 170091, 170089, 170088, 170085, 170084, 170083, 170081, 170040, 170027, 169965, 169923, 169859, 169858, 169855, 169846, 169838, 169837, 169835, 169591, 169588, 169586, 169557, 169554, 169550, 169512, 169504, 169498, 169475, 169419, 169418, 169417, 169415, 169411, 169238, 169167, 169160, 169156, 169148, 169145, 169144, 169138, 169099, 169094, 169091, 169044, 169035, 168992, 168988, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168460, 168458, 168362, 168361, 168342, 168341, 168325, 168322, 168311, 168310, 168115, 168108, 168107, 168105, 168076, 168069, 167988, 167987, 167985, 167920, 167915
+  };
   
-  return vecLHC10h;
+  // selection via environement variable (works only for gsi trains)
+  TString list=gSystem->Getenv("LIST");
+  
+  if(list.Contains("10h") || list.Contains("11a10b")) {
+    Int_t size = (int) (sizeof(runLHC10h)/sizeof(Double_t));
+    TVectorD *vec = new TVectorD(size+1);
+    
+    (*vec)[size] = runLHC10h[0] + 1;
+    for (int i = 0; i < size; i++) {
+      (*vec)[i] = runLHC10h[size-1-i];
+    }
+    //    vec->Print("");
+    return vec;
+  }
 
+  if( list.IsNull() || list.Contains("11h") || list.Contains("12a17") ) {
+    
+    Int_t size = (int) (sizeof(runLHC11h)/sizeof(Double_t));
+    TVectorD *vec = new TVectorD(size+1);
+    
+    (*vec)[size] = runLHC11h[0] + 1;
+    for (int i = 0; i < size; i++) {
+      (*vec)[i] = runLHC11h[size-1-i];
+    }
+    //   vec->Print("");
+    return vec;
+  }
+     
 }
