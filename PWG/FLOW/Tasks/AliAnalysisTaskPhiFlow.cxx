@@ -58,14 +58,14 @@ class AliFlowTrackCuts;
 ClassImp(AliAnalysisTaskPhiFlow)
 
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
-   fDebug(0), fAODAnalysis(0), fMassBins(0), fMinMass(0), fMaxMass(0), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)
+   fDebug(0), fAODAnalysis(0), fMassBins(0), fMinMass(0), fMaxMass(0), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAXY(0), fDCAZ(0), fDCA(0), fDCAXYQA(0), fDCAZQA(0)
 {
    // Default constructor
    for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = 0.;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTaskSE(name),
-    fDebug(0), fAODAnalysis(0), fMassBins(0), fMinMass(0), fMaxMass(0), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)
+   fDebug(0), fAODAnalysis(0), fMassBins(0), fMinMass(0), fMaxMass(0), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAXY(0), fDCAZ(0), fDCA(0), fDCAXYQA(0), fDCAZQA(0)
 {
    // Constructor
    for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = 0.;
@@ -241,6 +241,12 @@ void AliAnalysisTaskPhiFlow::AddPhiIdentificationOutputObjects()
 
    fTPCM = new TH1F("fTPCM", "TPC multiplicity", 1000, 0, 10000);
    fOutputList->Add(fTPCM);
+
+   fDCAXYQA = new TH1F("fDCAXYQA", "fDCAXYQA", 1000, -5, 5);
+   fOutputList->Add(fDCAXYQA);
+   
+   fDCAZQA = new TH1F("fDCAZQA", "fDCAZQA", 1000, -5, 5);
+   fOutputList->Add(fDCAZQA);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPhiFlow::UserCreateOutputObjects()
@@ -661,8 +667,19 @@ template <typename T> void AliAnalysisTaskPhiFlow::PtSelector(Int_t tracktype, c
 template <typename T> Bool_t AliAnalysisTaskPhiFlow::PhiTrack(T* track) const
 {
    // Check if track is suitable for phi flow analysis
-   if (!track) return kFALSE;
-   return fPOICuts->IsSelected(track);
+   if(!track) return kFALSE;
+   if(!fPOICuts->IsSelected(track)) return kFALSE;
+   if(fAODAnalysis && fDCA) {
+       // ONLY FOR AOD ANALYSIS
+       // if flagged force propagation of DCA to primary vertex
+       Double_t b[] = { -99., -99.};
+       Double_t bCov[] = { -99., -99., -99.};
+       track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov);
+       if( (TMath::Abs(b[0]) > fDCAXY) || (TMath::Abs(b[1]) > fDCAZ) ) return kFALSE;
+       fDCAXYQA->Fill(b[0]);
+       fDCAZQA->Fill(b[1]);
+   }
+   return kTRUE;
 }
 //_____________________________________________________________________________
 template <typename T> void AliAnalysisTaskPhiFlow::SetNullCuts(T* event)

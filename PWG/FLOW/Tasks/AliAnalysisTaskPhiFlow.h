@@ -81,6 +81,7 @@ public:
    void                                 SetRequireTPCStandAloneKaons() { fRequireTPCStandAlone = kTRUE; }
    void                                 SetOlderThanPbPbPass2() { fOldTrackParam = kTRUE; }
    void                                 SetPIDConfiguration(Double_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
+   void                                 SetPOIDCAXYZ(Double_t a, Double_t b) {fDCAXY = a; fDCAZ = b; fDCA = kTRUE; }
    void                                 SetCandidateEtaAndPt(Double_t mineta, Double_t maxeta, Double_t minpt, Double_t maxpt) { fCandidateMinEta = mineta, 
                                                                                                                                fCandidateMaxEta = maxeta,
                                                                                                                                fCandidateMinPt = minpt, 
@@ -209,12 +210,17 @@ private:
    Float_t              fDeltaDipAngle; // absolute value of delta dip angle to be excluded
    Float_t              fDeltaDipPt; // upper value of pt range in which delta dip angle must be applied
    Bool_t               fApplyDeltaDipCut; // enforce delta dip cut
+   Double_t             fDCAXY; // POI DCA XY
+   Double_t             fDCAZ; // POI DCA Z
+   Bool_t               fDCA; // force propagation of DCA for POI's AOD ONLY
+   TH1F                 *fDCAXYQA; //! qa plot of dca xz
+   TH1F                 *fDCAZQA; //!qa plot of dca z
 
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
 
    void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[]) const;
-     ClassDef(AliAnalysisTaskPhiFlow, 2);
+     ClassDef(AliAnalysisTaskPhiFlow, 3);
 
 };
 
