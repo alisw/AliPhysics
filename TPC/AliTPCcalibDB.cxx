@@ -195,15 +195,15 @@ AliTPCcalibDB::AliTPCcalibDB():
   fParam(0),
   fClusterParam(0),
   fTimeGainSplines(0),
-  fTimeGainSplinesArray(100000),
-  fGRPArray(100000),            //! array of GRPs  -  per run  - JUST for calibration studies
-  fGRPMaps(100000),            //! array of GRPs  -  per run  - JUST for calibration studies
-  fGoofieArray(100000),         //! array of GOOFIE values -per run - Just for calibration studies
-  fVoltageArray(100000),
-  fTemperatureArray(100000),    //! array of temperature sensors - per run - Just for calibration studies
-  fVdriftArray(100000),                 //! array of v drift interfaces
-  fDriftCorrectionArray(100000),  //! array of drift correction
-  fRunList(100000),              //! run list - indicates try to get the run param 
+  fTimeGainSplinesArray(1),
+  fGRPArray(1),            //! array of GRPs  -  per run  - JUST for calibration studies
+  fGRPMaps(1),            //! array of GRPs  -  per run  - JUST for calibration studies
+  fGoofieArray(1),         //! array of GOOFIE values -per run - Just for calibration studies
+  fVoltageArray(1),
+  fTemperatureArray(1),    //! array of temperature sensors - per run - Just for calibration studies
+  fVdriftArray(1),                 //! array of v drift interfaces
+  fDriftCorrectionArray(1),  //! array of drift correction
+  fRunList(1),              //! run list - indicates try to get the run param 
   fBHasAlignmentOCDB(kFALSE),    // Flag  - has the alignment on the composed correction ?
   fDButil(0),
   fCTPTimeParams(0),
@@ -249,7 +249,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fParam(0),
   fClusterParam(0),
   fTimeGainSplines(0),
-  fTimeGainSplinesArray(100000),
+  fTimeGainSplinesArray(1),
   fGRPArray(0),          //! array of GRPs  -  per run  - JUST for calibration studies
   fGRPMaps(0),          //! array of GRPs  -  per run  - JUST for calibration studies
   fGoofieArray(0),        //! array of GOOFIE values -per run - Just for calibration studies
