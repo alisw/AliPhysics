@@ -24,6 +24,7 @@ Bool_t  kHadronAN      = kFALSE;
 Bool_t  kCalibE        = kTRUE;
 Bool_t  kCalibT        = kTRUE;
 Bool_t  kBadMap        = kTRUE;
+Bool_t  kTender        = kFALSE;
 
 AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data          = "",
                                                           const TString  calorimeter   = "EMCAL", 
@@ -45,6 +46,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
                                                           const Bool_t   calibE        = kTRUE,
                                                           const Bool_t   badmap        = kTRUE,
                                                           const Bool_t   calibT        = kTRUE,
+                                                          const Bool_t   tender        = kFALSE,
                                                           const Bool_t   outputAOD     = kFALSE, 
                                                           const Bool_t   printSettings = kFALSE,
                                                           const Double_t scaleFactor   = -1
@@ -73,6 +75,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   kCalibE        = calibE;
   kCalibT        = calibT;
   kBadMap        = badmap;
+  kTender        = tender;
   
   // Get the pointer to the existing analysis manager via the static access method.
   
@@ -295,6 +298,11 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
     printf("CaloTrackCorr trigger SemiCentral\n");
     task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   }
+  else if(kTrig=="SemiOrCentral")
+  {
+    printf("CaloTrackCorr trigger SemiCentral Or Central\n");
+    task->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  }
   
   return task;
 }
@@ -367,7 +375,7 @@ AliCaloTrackReader * ConfigureReader()
   // Calorimeter
   
   reader->SetEMCALClusterListName(kClusterArray);
-  if(kClusterArray == "") 
+  if(kClusterArray == "" && !kTender) 
   {
     printf("**************** Standard EMCAL clusters branch analysis **************** \n");
     reader->SwitchOnClusterRecalculation();
@@ -478,7 +486,7 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   
 
   cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
-  
+  cu->SwitchOnRunDepCorrection(); 
   
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,

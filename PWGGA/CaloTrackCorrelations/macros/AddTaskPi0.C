@@ -22,6 +22,9 @@ Int_t   kDebug         = -1;
 Float_t kVzCut         = 10.;
 Bool_t  kPrimaryVertex = kTRUE;
 Bool_t  kUseOADB       = kTRUE;
+Bool_t  kTender        = kFALSE;
+
+
 AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = "",
                                                 const TString calorimeter   = "EMCAL", 
                                                 const Bool_t  simulation    = kFALSE,
@@ -42,8 +45,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = ""
                                                 const Int_t   maxCen        = -1,
                                                 const Bool_t  qaan          = kFALSE,
                                                 const Bool_t  splitan       = kFALSE,
+                                                const Bool_t  tender        = kFALSE,
                                                 const Bool_t  outputAOD     = kFALSE, 
-                                                const Bool_t  printSettings = kFALSE
+                                                const Bool_t  printSettings = kFALSE,
+                                                const Double_t scaleFactor   = -1
                                                 )
 {
   // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
@@ -67,7 +72,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = ""
   kVzCut         = vzcut;
   kPrimaryVertex = primver;
   kUseOADB       = oadb;
-  
+  kTender        = tender;
+
   // Get the pointer to the existing analysis manager via the static access method.
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -109,6 +115,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = ""
     
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
   
+  maker->SetScaleFactor(scaleFactor); // for MC, negative (not scaled) by default
+  
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader()   ); 
   maker->SetCaloUtils(ConfigureCaloUtils()); 
@@ -132,10 +140,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = ""
   if(kPrint) maker->Print("");
   
   printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, kCalorimeter.Data());
-  // CAREFUL
-  //kName = Form("%s_Trig%s_Cl%s_TM%d",kCalorimeter.Data(), kTrig.Data(),kClusterArray.Data(),kFALSE);
-  kName = Form("%s_Trig%s_Cl%s",kCalorimeter.Data(), kTrig.Data(),kClusterArray.Data());
-  if(kCollisions=="PbPb" && kMaxCen>=0) kName+=Form("Cen%d_%d",kMinCen,kMaxCen);
 
   // Create task
   
@@ -168,60 +172,72 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0(const TString data          = ""
   mgr->ConnectOutput (task, 2, cout_cuts);
   
   
-  if(kTrig=="EMC7"){
-    printf("CaloTrackCorr trigger EMC7\n");
+  if(kTrig=="EMC7")
+  {
+    printf("Pi0 analysis, trigger EMC7\n");
     task->SelectCollisionCandidates(AliVEvent::kEMC7);
   }
-  else if (kTrig=="INT7"){
-    printf("CaloTrackCorr trigger INT7\n");
+  else if (kTrig=="INT7")
+  {
+    printf("Pi0 analysis, trigger INT7\n");
     task->SelectCollisionCandidates(AliVEvent::kINT7);
   }
-  else if(kTrig=="EMC1"){
-    printf("CaloTrackCorr trigger EMC1\n");
+  else if(kTrig=="EMC1")
+  {
+    printf("Pi0 analysis, trigger EMC1\n");
     task->SelectCollisionCandidates(AliVEvent::kEMC1);
   }
-  else if(kTrig=="MB"){
-    printf("CaloTrackCorr trigger MB\n");
+  else if(kTrig=="MB")
+  {
+    printf("Pi0 analysis, trigger MB\n");
     task->SelectCollisionCandidates(AliVEvent::kMB);
   }  
-  else if(kTrig=="PHOS"){
-    printf("CaloTrackCorr trigger PHOS\n");
+  else if(kTrig=="PHOS")
+  {
+    printf("Pi0 analysis, trigger PHOS\n");
     task->SelectCollisionCandidates(AliVEvent::kPHI7);
   }  
-  else if(kTrig=="PHOSPb"){
-    printf("CaloTrackCorr trigger PHOSPb\n");
+  else if(kTrig=="PHOSPb")
+  {
+    printf("Pi0 analysis, trigger PHOSPb\n");
     task->SelectCollisionCandidates(AliVEvent::kPHOSPb);
   }
   else if(kTrig=="AnyINT")
   {
-    printf("CaloTrackCorr trigger AnyINT\n");
+    printf("Pi0 analysis, trigger AnyINT\n");
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
   }  
   else if(kTrig=="INT")
   {
-    printf("CaloTrackCorr trigger AnyINT\n");
+    printf("Pi0 analysis, trigger AnyINT\n");
     task->SelectCollisionCandidates(AliVEvent::kAny);
   }
   else if(kTrig=="EMCEGA")
   {
-    printf("CaloTrackCorr trigger EMC Gamma\n");
+    printf("Pi0 analysis, trigger EMC Gamma\n");
     task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   } 
   else if(kTrig=="EMCEJE")
   {
-    printf("CaloTrackCorr trigger EMC Jet\n");
+    printf("Pi0 analysis, trigger EMC Jet\n");
     task->SelectCollisionCandidates(AliVEvent::kEMCEJE);
   }
   else if(kTrig=="Central")
   {
-    printf("CaloTrackCorr trigger Central\n");
+    printf("Pi0 analysis, trigger Central\n");
     task->SelectCollisionCandidates(AliVEvent::kCentral);
   } 
   else if(kTrig=="SemiCentral")
   {
-    printf("CaloTrackCorr trigger SemiCentral\n");
+    printf("Pi0 analysis, trigger SemiCentral\n");
     task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   }
+  else if(kTrig=="SemiOrCentral")
+  {
+    printf("Pi0 analysis, trigger SemiCentral Or Central\n");
+    task->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  }
+  
   
   return task;
 }
@@ -268,29 +284,22 @@ AliCaloTrackReader * ConfigureReader()
   reader->SetEMCALEMax(1000); 
   reader->SetPHOSEMin(0.3);
   reader->SetPHOSEMax(1000);
-  reader->SetCTSPtMin(0.1);
+  reader->SetCTSPtMin(0.2);
   reader->SetCTSPtMax(1000);
+  
+  if(!kSimulation && kCalibT) reader->SetEMCALTimeCut(-30,30); 
+  else                        reader->SetEMCALTimeCut(-1000,1000); // Open time cut
   
   reader->SwitchOnFiducialCut();
   reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
 
   // Tracks
   reader->SwitchOffCTS();
-//  if(kInputDataType=="ESD")
-//  {
-//    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
-//    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
-//    reader->SetTrackCuts(esdTrackCuts);
-//  }
-//  else if(kInputDataType=="AOD")
-//  {
-//    reader->SetTrackFilterMask(128); // Filter bit, not mask
-//  }
   
   // Calorimeter
   
   reader->SetEMCALClusterListName(kClusterArray);
-  if(kClusterArray == "") 
+  if(kClusterArray == "" && !kTender) 
   {
     printf("**************** Standard EMCAL clusters branch analysis **************** \n");
     reader->SwitchOnClusterRecalculation();
@@ -500,21 +509,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
   
-//  // In case of official AODs when dX and dZ was not stored, open the cuts 
-//  // and rely on having a match recorded. In case of reclusterization, try.
-//  if(kData=="AOD" && kClusterArray=="")
-//  {
-//    caloPID->SetEMCALDEtaCut(2000);  
-//    caloPID->SetEMCALDPhiCut(2000); 
-//  }
-  
   //PHOS
   caloPID->SetPHOSDispersionCut(2.5);
   caloPID->SetPHOSRCut(2.);
   if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
-    
-  //caloPID->SetTOFCut(10000000); // Not used, only to set PID bits
-  
+      
   ana->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
   
   // Input / output delta AOD settings
@@ -564,14 +563,15 @@ AliAnaInsideClusterInvariantMass* ConfigureInClusterIMAnalysis(Float_t l0min, Fl
 
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
   
-  if(kSimulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
-  else            ana->SwitchOffDataMC() ;
-  
   AliCaloPID* caloPID = ana->GetCaloPID();
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
   caloPID->SetClusterSplittingM02Cut(0,100); // Do the selection in the analysis class and not in the PID method to fill SS histograms
 
+  caloPID->SetPi0MassRange(0.10, 0.18);
+  caloPID->SetEtaMassRange(0.40, 0.60);
+  caloPID->SetPhotonMassRange(0.00, 0.08);  
+  
   ConfigureMC(ana);
   
   if(kPrint) ana->Print("");
@@ -678,11 +678,25 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   {
     AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
     nms->SetParticle(particle);
+    
+    // Tighten a bit mass cut with respect to default window
+    if(particle=="Pi0") nms->SetInvMassCutRange(0.120,0.150);
+    if(particle=="Eta") nms->SetInvMassCutRange(0.520,0.580);    
+    
     nms->SwitchOnAngleSelection();
     nms->KeepNeutralMesonSelectionHistos(kTRUE);
     //nms->SetAngleMaxParam(2,0.2);
     nms->SetHistoERangeAndNBins(0, 20, 80) ;
     //nms->SetHistoIMRangeAndNBins(0, 1, 400);
+  }
+  else
+  { // cluster splitting settings
+    ana->SetTimeCut(-1000,1000); // Open time cut
+    AliCaloPID* caloPID = ana->GetCaloPID();
+    caloPID->SetPi0MassRange(0.10, 0.18);
+    caloPID->SetEtaMassRange(0.40, 0.60);
+    caloPID->SetPhotonMassRange(0.00, 0.08);
+    caloPID->SetClusterSplittingM02Cut(0.5,100); // Do the selection in the analysis class and not in the PID method to fill SS histograms
   }
   
   ana->SwitchOffSelectedClusterHistoFill(); 
