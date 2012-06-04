@@ -63,7 +63,7 @@ class AliEmcalJet : public AliVParticle
   UShort_t          Nch()                        const { return fNch;                      }
   UShort_t          N()                          const { return Nch()+Nn();                }
   Double_t          MCPt()                       const { return fMCPt;                     }
-  Bool_t            IsMC()                       const { return (Bool_t)(MCPt() > E() - MCPt()); }
+  Bool_t            IsMC()                       const { return (Bool_t)(MCPt() > 0);      }
   AliEmcalJet*      ClosestJet()                 const { return fClosestJets[0];           }
   Double_t          ClosestJetDistance()         const { return fClosestJetsDist[0];       }
   AliEmcalJet*      SecondClosestJet()           const { return fClosestJets[1];           }
