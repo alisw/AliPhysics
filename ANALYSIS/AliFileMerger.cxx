@@ -375,9 +375,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
   // modified version of root's hadd.cxx
   gSystem->GetProcInfo(&procInfo);
   AliInfo(Form(">> memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
-
-
-  Int_t counterF = -1;
+  //
   int status = 0;
   cout << "Target path: " << target->GetPath() << endl;
   TString path( (char*)strstr( target->GetPath(), ":" ) );
@@ -395,7 +393,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
   listHargs.Form("((TCollection*)0x%lx)", (ULong_t)&listH);
   //
   while(first_source) {
-    counterF++;
+    //
     TDirectory *current_sourcedir = first_source->GetDirectory(path);
     if (!current_sourcedir) {
       first_source = (TDirectory*)sourcelist->After(first_source);
@@ -409,6 +407,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
     TH1::AddDirectory(kFALSE);
     //
     int counterK = 0;
+    int counterF=0;
     //
     while ( (key = (TKey*)nextkey())) {
       if (current_sourcedir == target) break;
@@ -431,7 +430,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 	continue;
       }
       allNames.Add(new TObjString(key->GetName()));
-      AliSysInfo::AddStamp(nameK.Data(),1,counterK++,counterF-1); 
+      AliSysInfo::AddStamp(nameK.Data(),1,++counterK,counterF++); 
       // read object from first source file
       //current_sourcedir->cd();
 
@@ -519,6 +518,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 		     << " with the corresponding object in " << nextsource->GetName() << endl;
 	      }
 	      listH.Delete();
+	      AliSysInfo::AddStamp(nameK.Data(),1,counterK,counterF++); 
 	    }
 	  }
 	  nextsource = (TFile*)sourcelist->After( nextsource );
@@ -540,6 +540,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 	      THStack *hstack2 = (THStack*) key2->ReadObj();
 	      l->Add(hstack2->GetHists()->Clone());
 	      delete hstack2;
+	      AliSysInfo::AddStamp(nameK.Data(),1,counterK,counterF++); 
 	    }
 	  }
 	  
