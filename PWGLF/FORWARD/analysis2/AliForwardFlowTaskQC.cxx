@@ -150,10 +150,10 @@ void AliForwardFlowTaskQC::InitVertexBins()
   for(UShort_t n = 2; n <= 6; n++) {
     if (!fv[n]) continue;
     for (Int_t v = 1; v <= fVtxAxis->GetNbins(); v++) {
-      fBinsFMD.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, 
-                   "FMD", (fgDispVtx ? kFALSE : kTRUE), fFMDCut));
-      fBinsSPD.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, 
-                   "SPD", kFALSE, fSPDCut));
+      Int_t vL = Int_t(fVtxAxis->GetBinLowEdge(v));
+      Int_t vH = Int_t(fVtxAxis->GetBinUpEdge(v));
+      fBinsFMD.Add(new VertexBin(vL, vH, n, "FMD", (fgDispVtx ? kFALSE : kTRUE), fFMDCut));
+      fBinsSPD.Add(new VertexBin(vL, vH, n, "SPD", kFALSE, fSPDCut));
     }
   }
 
