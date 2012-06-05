@@ -1,7 +1,7 @@
 class  AliAnalysisManager;
 class  AliAnalysisAlien;
 
-void runGrid(TString mode="test",Int_t mc=1,Int_t sub=0,Int_t hi=1,TString fname="AODAnalysis_1June2012") 
+void runGrid(TString mode="full",Int_t mc=1,Int_t sub=0,Int_t hi=1,TString fname="AODAnalysis_5June2012") 
 {
   //0 is AOD048-049 in this case you can choos FilterBit5 (loose DCA) or 6 (tight DCA)!!!!!!!!!
   //1 is AOD086-090
@@ -43,14 +43,8 @@ void runGrid(TString mode="test",Int_t mc=1,Int_t sub=0,Int_t hi=1,TString fname
   AliAODInputHandler* aodH = new AliAODInputHandler();
   mgr->SetInputEventHandler(aodH);
   
-  // Physics selection
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask * physicsSelectionTask = AddTaskPhysicsSelection(mc,kTRUE,0);
-  if(!physicsSelectionTask ) { Printf("no physSelTask"); return; }
-  
   // Add PID task
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  Bool_t isMC = kFALSE;
   AliAnalysisTask * taskPID = AddTaskPIDResponse(mc);
   mgr->AddTask(taskPID);
   
@@ -68,7 +62,7 @@ void runGrid(TString mode="test",Int_t mc=1,Int_t sub=0,Int_t hi=1,TString fname
   AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
   mgr->AddTask(task);
   //physics selection
-  task->SelectCollisionCandidates();     
+  task->SelectCollisionCandidates();   //don't need to add the task on AOD
   
   // Set the cuts
   AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
