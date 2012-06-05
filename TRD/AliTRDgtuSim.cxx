@@ -48,6 +48,7 @@
 #include "AliTRDtrackletMCM.h"
 #include "AliESDEvent.h"
 
+using std::ifstream;
 ClassImp(AliTRDgtuSim)
 
 AliTRDgtuSim::AliTRDgtuSim(AliRunLoader *rl)

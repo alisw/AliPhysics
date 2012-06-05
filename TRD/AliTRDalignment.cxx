@@ -91,6 +91,8 @@
 
 void trdAlignmentFcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
 
+using std::ostream;
+using std::fstream;
 ClassImp(AliTRDalignment)
 
 //_____________________________________________________________________________

@@ -15,6 +15,7 @@
 /* $Id$ */
 
 #include "AliDigit.h"
+using std::ostream;
 
 class AliTOFdigit : public AliDigit {
   

@@ -13,6 +13,7 @@
 #include <TNamed.h>
 #include <TString.h>
 #include <fstream>
+using std::ostream;
 
 class AliTRDtrapConfig : public TNamed
 {

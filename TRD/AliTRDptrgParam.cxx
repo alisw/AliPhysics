@@ -39,6 +39,7 @@
 
 #include "AliTRDptrgParam.h"
 
+using std::ifstream;
 ClassImp(AliTRDptrgParam)
 
 AliTRDptrgParam *AliTRDptrgParam::fgInstance = 0;
