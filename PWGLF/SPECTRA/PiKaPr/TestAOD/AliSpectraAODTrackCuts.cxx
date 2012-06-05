@@ -27,6 +27,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODTrack.h"
+#include "AliExternalTrackParam.h"
 #include "AliAODMCParticle.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
@@ -42,7 +43,7 @@ ClassImp(AliSpectraAODTrackCuts)
 
 
 AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCut(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
-  fPtCutTOFMatching(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fTrack(0)
+  fPtCutTOFMatching(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0)
   
 {
   // Constructor
@@ -60,6 +61,9 @@ AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, 
   fHistoNMatchedPos->GetXaxis()->SetTitle("P_{T} (GeV / c)");
   fHistoNMatchedNeg=new TH1F("fHistoNMatchedNeg","fHistoNMatchedNeg",nbinsTempl,templBins);
   fHistoNMatchedNeg->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  fHistoEtaPhiHighPt=new TH2F("fHistoEtaPhiHighPt","fHistoEtaPhiHighPt",200,-1,1,400,0,7);
+  fHistoEtaPhiHighPt->SetXTitle("eta");
+  fHistoEtaPhiHighPt->SetYTitle("phi");
   
   fEtaCut = 100000.0; // default value of eta cut ~ no cut
   fDCACut = 100000.0; // default value of dca cut ~ no cut
@@ -107,7 +111,7 @@ Bool_t AliSpectraAODTrackCuts::IsSelected(AliAODTrack * track)
     return kFALSE;
   }
   fHistoCuts->Fill(kAccepted);
-  Printf("-------- %d,%d",kTOFMatching,kAccepted);
+  //Printf("-------- %d,%d",kTOFMatching,kAccepted);
   return kTRUE;
 }
 //_________________________________________________________
@@ -182,6 +186,15 @@ Bool_t AliSpectraAODTrackCuts::CheckTOFMatching()
     fHistoCuts->Fill(kTOFMatching);
     if(fTrack->Charge()>0)fHistoNMatchedPos->Fill(fTrack->Pt());
     else fHistoNMatchedNeg->Fill(fTrack->Pt());
+    if(fTrack->Pt()>1.5){
+      //fHistoEtaPhiHighPt->Fill(fTrack->GetOuterParam()->Eta(),fTrack->GetOuterParam()->Phi());
+      //Printf("AliExternalTrackParam * extpar=(AliExternalTrackParam*)fTrack->GetOuterParam();");
+      //AliExternalTrackParam * extpar=(AliExternalTrackParam*)fTrack->GetOuterParam();
+      fHistoEtaPhiHighPt->Fill(fTrack->Eta(),fTrack->Phi());
+      //Printf("fHistoEtaPhiHighPt->Fill(extpar->Eta(),extpar->Phi());");
+      //fHistoEtaPhiHighPt->Fill(extpar->Eta(),extpar->Phi());
+      //delete extpar;
+    }
     return kTRUE;
   }
 }
@@ -228,6 +241,7 @@ Long64_t AliSpectraAODTrackCuts::Merge(TCollection* list)
   TList collections_histoNSelectedNeg;
   TList collections_histoNMatchedPos;
   TList collections_histoNMatchedNeg;
+  TList collections_histoEtaPhiHighPt;
 
   Int_t count = 0;
 
@@ -246,6 +260,8 @@ Long64_t AliSpectraAODTrackCuts::Merge(TCollection* list)
     collections_histoNMatchedPos.Add(histoNMatchedPos);
     TH1F * histoNMatchedNeg = entry->GetHistoNMatchedNeg();      
     collections_histoNMatchedNeg.Add(histoNMatchedNeg);
+    TH2F * histoEtaPhiHighPt = entry->GetHistoEtaPhiHighPt();      
+    collections_histoEtaPhiHighPt.Add(histoEtaPhiHighPt);
     count++;
   }
   
@@ -254,6 +270,7 @@ Long64_t AliSpectraAODTrackCuts::Merge(TCollection* list)
   fHistoNSelectedNeg->Merge(&collections_histoNSelectedNeg);
   fHistoNMatchedPos->Merge(&collections_histoNMatchedPos);
   fHistoNMatchedNeg->Merge(&collections_histoNMatchedNeg);
+  fHistoEtaPhiHighPt->Merge(&collections_histoEtaPhiHighPt);
   
   delete iter;
 

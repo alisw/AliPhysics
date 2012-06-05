@@ -45,8 +45,11 @@ void MainAnalysis()  {
   mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
   mass[2] = TDatabasePDG::Instance()->GetParticle("proton")->Mass();
   
+  //TString fold="3SigmaPID_AOD048-049_FilterBit6";
+  //TString fold="3SigmaPID_AOD048-049_FilterBit5";
+  TString fold="3SigmaPID_AOD048-049_FilterBit5";
+  //TString fold="3SigmaPID_AOD048-049_FilterBit5_test";
   //TString fold="3SigmaPID_AOD086-090_FilterBit10";
-  TString fold="5SigmaPID_AOD046_FilterBit6";
   Int_t ibinToCompare=-1;
   
   TString sname="Cent0to5_QVec0.0to100.0";ibinToCompare=0;
@@ -76,8 +79,8 @@ void MainAnalysis()  {
   ecuts_data->PrintCuts();
   tcuts_data->PrintCuts();
   
-  //QAPlots(hman_data,hman_mc);
-
+  QAPlots(hman_data,hman_mc,ecuts_data,ecuts_mc,tcuts_data,tcuts_mc);
+  return;
   //efficiencies
   Printf("\n\n-> Calculating MC Correction Factors");
   TH1F *CorrFact[6];
@@ -89,9 +92,10 @@ void MainAnalysis()  {
       //BE CAREFUL! depending on the efficiency you choose, you must change the DCA correction (data or data/mc)
       
       TString hname=Form("hHistPtRecSigma%s%s",Particle[ipart].Data(),Sign[icharge].Data()); //MC correction for Prim+Cont+Eff
-      //TString hname=Form("hHistPtRecTrue%s%s",Particle[ipart].Data(),Sign[icharge].Data());//MC correction for Prim+Eff
-      //TString hname=Form("hHistPtRecSigmaPrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());UseMCDCACorrection=kFALSE; //MC correction for Cont+Eff
-      //TString hname=Form("hHistPtRecTruePrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());UseMCDCACorrection=kFALSE; // Pure MC efficiency for Prim. BE CAREFUL WITH MUONS!!!
+      //TString hname=Form("hHistPtRecTrue%s%s",Particle[ipart].Data(),Sign[icharge].Data());//MC correction for Prim+Eff if (idRec == idGen)
+      //TString hname=Form("hHistPtRecSigmaPrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());UseMCDCACorrection=kFALSE; //MC correction for Cont+Eff. filled with idRec
+      //TString hname=Form("hHistPtRecPrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());UseMCDCACorrection=kFALSE; //MC correction for Cont+Eff. filled with idGen
+      //TString hname=Form("hHistPtRecTruePrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());UseMCDCACorrection=kFALSE; // Pure MC efficiency for Prim. BE CAREFUL WITH MUONS!!! (idRec == idGen)
       Printf("Getting %s",hname.Data());
       CorrFact[index]=(TH1F*)((TH1F*) hman_mc->GetPtHistogram1D(hname.Data(),-1,-1))->Clone();
       CorrFact[index]->SetName(Form("CorrFact_%s%s",Particle[ipart].Data(),Sign[icharge].Data()));
@@ -140,7 +144,9 @@ void MainAnalysis()  {
     }
   } 
   
-  //Put Bin Content = 0
+
+  
+  //Put Bin Content = 0 for bin below the the range
   for(Int_t icharge=0;icharge<2;icharge++){
     for(Int_t ipart=0;ipart<3;ipart++){
       Int_t index=ipart+3*icharge;
@@ -152,8 +158,9 @@ void MainAnalysis()  {
       }
     }
   }
+ 
   //DCA Correction with the "right" DCA sample
-  DCACorrection(Spectra,hman_data,hman_mc,UseMCDCACorrection);
+  //DCACorrection(Spectra,hman_data,hman_mc,UseMCDCACorrection);
   
   //DCA Correction forcing loose DCA
   // TString fold_LooseDCA="5SigmaPID_AOD046_FilterBit5";
@@ -164,10 +171,6 @@ void MainAnalysis()  {
   // TFile *_data_LooseDCA = TFile::Open(dataFile_LooseDCA.Data());
   // AliSpectraAODHistoManager* hman_data_LooseDCA = (AliSpectraAODHistoManager*) _data_LooseDCA->Get("SpectraHistos");
   // DCACorrection(Spectra,hman_data_LooseDCA,hman_mc_LooseDCA,UseMCDCACorrection);
-  
-  
-  
-  
   
   //GFCorrection
   GFCorrection(Spectra,tcuts_data);
@@ -181,6 +184,64 @@ void MainAnalysis()  {
       MCTruth[index]->SetName(Form("MCTruth_%s%s",Particle[ipart].Data(),Sign[icharge].Data()));
       MCTruth[index]->SetTitle(Form("MCTruth_%s%s",Particle[ipart].Data(),Sign[icharge].Data()));
       MCTruth[index]->Scale(1./events_mc,"width");//NORMALIZATION
+    }
+  }
+  
+
+  //Matching efficiency in data and Monte Carlo
+  TCanvas *cMatchingEff=new TCanvas("MatchingEff","MatchingEff",700,500);
+  TH1F *hMatcEffPos_data=(TH1F*)tcuts_data->GetHistoNMatchedPos();
+  hMatcEffPos_data->Divide((TH1F*)tcuts_data->GetHistoNSelectedPos());
+  hMatcEffPos_data->SetTitle("Matching Eff Pos - data");
+  TH1F *hMatcEffNeg_data=(TH1F*)tcuts_data->GetHistoNMatchedNeg();
+  hMatcEffNeg_data->Divide((TH1F*)tcuts_data->GetHistoNSelectedNeg());
+  hMatcEffNeg_data->SetTitle("Matching Eff Neg - data");
+  hMatcEffNeg_data->SetLineColor(2);
+  TH1F *hMatcEffPos_mc=(TH1F*)tcuts_mc->GetHistoNMatchedPos();
+  hMatcEffPos_mc->Divide((TH1F*)tcuts_mc->GetHistoNSelectedPos());
+  hMatcEffPos_mc->SetTitle("Matching Eff Pos - mc");
+  hMatcEffPos_mc->SetLineStyle(2);
+  TH1F *hMatcEffNeg_mc=(TH1F*)tcuts_mc->GetHistoNMatchedNeg();
+  hMatcEffNeg_mc->Divide((TH1F*)tcuts_mc->GetHistoNSelectedNeg());
+  hMatcEffNeg_mc->SetTitle("Matching Eff Neg - mc");
+  hMatcEffNeg_mc->SetLineColor(2);
+  hMatcEffNeg_mc->SetLineStyle(2);
+  cMatchingEff->Divide(1,2);
+  cMatchingEff->cd(1);
+  gPad->SetGridy();
+  gPad->SetGridx();
+  hMatcEffPos_data->DrawClone("lhist");
+  hMatcEffNeg_data->DrawClone("lhistsame");
+  hMatcEffPos_mc->DrawClone("lhistsame");
+  hMatcEffNeg_mc->DrawClone("lhistsame");
+  gPad->BuildLegend();
+  hMatcEffPos_data->Divide(hMatcEffPos_mc);
+  hMatcEffNeg_data->Divide(hMatcEffNeg_mc);
+  cMatchingEff->cd(2);
+  gPad->SetGridy();
+  gPad->SetGridx();
+  hMatcEffPos_data->DrawClone("lhist");
+  hMatcEffNeg_data->DrawClone("lhistsame");
+  TF1 *pol0MatchPos_data=new TF1("pol0MatchPos_data","pol0",2.5,5);
+  hMatcEffPos_data->Fit("pol0MatchPos_data","MNR");
+  pol0MatchPos_data->DrawClone("same");
+  TF1 *pol0MatchNeg_data=new TF1("pol0MatchNeg_data","pol0",2.5,5);
+  hMatcEffNeg_data->Fit("pol0MatchNeg_data","MNR");
+  pol0MatchNeg_data->SetLineColor(2);
+  pol0MatchNeg_data->DrawClone("same");
+  Float_t ScalingMatchingPos=pol0MatchPos_data->GetParameter(0);
+  Float_t ScalingMatchingNeg=pol0MatchNeg_data->GetParameter(0);
+  
+  //Correction spectra for matching efficiency
+  //For the moment I'm using the inclusive correction
+  for(Int_t ipart=0;ipart<3;ipart++){
+    for(Int_t ibin=1;ibin<Spectra[ipart]->GetNbinsX();ibin++){
+      Float_t ptspectra=Spectra[ipart]->GetBinCenter(ibin);
+      if(ptspectra<tcuts_data->GetPtTOFMatching())continue;
+      //Spectra[ipart]->SetBinContent(ibin,( Spectra[ipart]->GetBinContent(ibin)/hMatcEffPos_data->GetBinContent(hMatcEffPos_data->FindBin(ptspectra))));
+      //Spectra[ipart+3]->SetBinContent(ibin,( Spectra[ipart+3]->GetBinContent(ibin)/hMatcEffNeg_data->GetBinContent(hMatcEffNeg_data->FindBin(ptspectra))));
+      Spectra[ipart]->SetBinContent(ibin,( Spectra[ipart]->GetBinContent(ibin)/ScalingMatchingPos));
+      Spectra[ipart+3]->SetBinContent(ibin,( Spectra[ipart+3]->GetBinContent(ibin)/ScalingMatchingNeg));
     }
   }
   
@@ -227,10 +288,13 @@ void MainAnalysis()  {
   	CratioComb->cd(ipart+1);
   	gPad->SetGridy();
   	gPad->SetGridx();
+  	for(Int_t ibin=1;ibin<hcomb->GetNbinsX();ibin++)hcomb->SetBinError(ibin,0);
+
   	if(icharge==0)htmp->DrawClone();
   	else htmp->DrawClone("same");
-  	hcomb->DrawClone("same");
-  	htmp->Divide(hcomb);
+	MCTruth[index]->DrawClone("same");
+	hcomb->DrawClone("same");
+	htmp->Divide(hcomb);
   	htmp->SetMaximum(1.3);
   	htmp->SetMinimum(0.7);
   	CratioComb->cd(ipart+4);
@@ -245,6 +309,15 @@ void MainAnalysis()  {
   //comparison with charged hadron
   Printf("\n\n-> ChargedHadron comparison");
   TH1F *hChHad_data=(TH1F*)((TH1F*)hman_data->GetPtHistogram1D("hHistPtRec",-1,-1))->Clone();
+  TH1F* hMatchCorrectionAllCh=(TH1F*)hMatcEffPos_data->Clone("hMatchCorrectionAllCh");
+  hMatchCorrectionAllCh->Add(hMatcEffNeg_data); //correction for Matching efficiency!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  hMatchCorrectionAllCh->Scale(0.5);
+  for(Int_t ibin=1;ibin<hChHad_data->GetNbinsX();ibin++){
+    Float_t ptch=hChHad_data->GetBinCenter(ibin);
+    if(ptch<tcuts_data->GetPtTOFMatching())continue;
+    //hChHad_data->SetBinContent(ibin,(hChHad_data->GetBinContent(ibin)/hMatchCorrectionAllCh->GetBinContent(hMatchCorrectionAllCh->FindBin(ptch))));
+    hChHad_data->SetBinContent(ibin,2*(hChHad_data->GetBinContent(ibin)/(ScalingMatchingPos+ScalingMatchingNeg)));
+  }
   //fraction of sec in MC
   TH1F *hPrimRec_mc=(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D("hHistPtRecPrimary",-1,-1))->Clone();
   TH1F *hAllRec_mc=(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D("hHistPtRec",-1,-1))->Clone();
@@ -252,7 +325,7 @@ void MainAnalysis()  {
     Double_t en_data=hChHad_data->GetBinContent(ibin);
     Double_t en_mc=hAllRec_mc->GetBinContent(ibin);
     Double_t prim_mc=hPrimRec_mc->GetBinContent(ibin);
-    if(en_mc!=0)hChHad_data->SetBinContent(ibin,en_data-(en_data*(en_mc-prim_mc)*1.1/en_mc));
+    if(en_mc!=0)hChHad_data->SetBinContent(ibin,en_data-(en_data*(en_mc-prim_mc)*1.2/en_mc));
     //Printf("Before: %.0f After: %.0f  fraction: %.1f",en_data,hChHad_data->GetBinContent(ibin),hChHad_data->GetBinContent(ibin)/en_data);
   }
   hPrimRec_mc->Divide(hAllRec_mc);
@@ -395,50 +468,6 @@ void MainAnalysis()  {
   hsum->SetMinimum(.8);
   hsum->DrawClone("");
   
-  return;
-  // //Comparison of efficiency with TPCTOF ESD analysis
-  // Printf("\n\n-> Calculating Efficiency to be compared with ESD analysis");
-  // TH1F *EffTRUEPions;
-  // TH1F *EffSIGMAPions;
-  // TCanvas *cEffESD=new TCanvas("cEffESD","cEffESD",700,500);
-  // cEffESD->Divide(1,2);
-  // Int_t icharge=1;
-  // Int_t ipart=0;
-  // //using MC truth
-  // TString hname=Form("hHistPtRecTruePrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
-  // Printf("Getting %s",hname.Data());
-  // EffTRUEPions=(TH1F*)((TH1F*) hman_mc->GetPtHistogram1D(hname.Data(),-1,-1))->Clone();
-  // EffTRUEPions->SetName(Form("Eff TRUE_%s%s",Particle[ipart].Data(),Sign[icharge].Data()));
-  // EffTRUEPions->SetTitle(Form("Eff TRUE %s%s",Particle[ipart].Data(),Sign[icharge].Data()));
-  // EffTRUEPions->SetMarkerStyle(Marker[icharge]);
-  // EffTRUEPions->SetMarkerColor(Color[ipart]);
-  // EffTRUEPions->SetLineColor(Color[ipart]);
-  // hname=Form("hHistPtGenTruePrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
-  // Printf("... and divide it by %s",hname.Data());
-  // EffTRUEPions->Divide(EffTRUEPions,(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D(hname.Data(),1,1))->Clone(),1,1,"B");//binomial error
-  // //using NSigma
-  // hname=Form("hHistPtRecSigmaPrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
-  // Printf("Getting %s",hname.Data());
-  // EffSIGMAPions=(TH1F*)((TH1F*) hman_mc->GetPtHistogram1D(hname.Data(),-1,-1))->Clone();
-  // EffSIGMAPions->SetName(Form("Eff SIGMA_%s%s",Particle[ipart].Data(),Sign[icharge].Data()));
-  // EffSIGMAPions->SetTitle(Form("Eff SIGMA %s%s",Particle[ipart].Data(),Sign[icharge].Data()));
-  // EffSIGMAPions->SetMarkerStyle(Marker[icharge]);
-  // EffSIGMAPions->SetMarkerColor(Color[ipart+1]);
-  // EffSIGMAPions->SetLineColor(Color[ipart+1]);
-  // hname=Form("hHistPtGenTruePrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data());
-  // Printf("... and divide it by %s",hname.Data());
-  // EffSIGMAPions->Divide(EffSIGMAPions,(TH1F*)((TH1F*)hman_mc->GetPtHistogram1D(hname.Data(),1,1))->Clone(),1,1,"B");//binomial error
-  // cEffESD->cd(1);
-  // EffTRUEPions->DrawClone("lhist");
-  // EffSIGMAPions->DrawClone("lhistsame");
-  // hEffESD->DrawClone("lhistsame");
-  // gPad->BuildLegend();
-  // cEffESD->cd(2);
-  // TH1F *hRatioTRUE=AliPWGHistoTools::MyDivideHistosDifferentBins(EffTRUEPions,hEffESD);
-  // hRatioTRUE->DrawClone("lhist");
-  // TH1F *hRatioSIGMA=AliPWGHistoTools::MyDivideHistosDifferentBins(EffSIGMAPions,hEffESD);
-  // hRatioSIGMA->DrawClone("lhistsame");
-  // return;
   
 }
 
@@ -473,7 +502,7 @@ void DCACorrection(TH1F **Spectra, AliSpectraAODHistoManager* hman_data, AliSpec
 	  TH1F *hmc1=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaPrimary%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge+binwidth))->Clone();
 	  TH1F *hmc2=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryWeakDecay%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge+binwidth))->Clone();
 	  TH1F *hmc3=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryMaterial%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge+binwidth))->Clone();
-	  //Double_t minentries=200;
+	  Double_t minentries=1;
 	  //if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries || hmc2->GetEntries()<=minentries || hmc3->GetEntries()<=minentries)continue;
 	  hmc1->Rebin(nrebin);
 	  hmc2->Rebin(nrebin);
@@ -714,22 +743,22 @@ void GFCorrection(TH1F **Spectra,AliSpectraAODTrackCuts* tcuts_data){
   	}
       }
       }else{
-	gGFCorrectionProtonPlus->SetPoint(binK,Spectra[1]->GetBinCenter(binK),0);
-	gGFCorrectionProtonMinus->SetPoint(binK,Spectra[4]->GetBinCenter(binK),0);
-	Float_t FlukaCorrpPosTracking=fGFpPosTracking->Eval(Spectra[1]->GetBinCenter(binK));
-	Float_t FlukaCorrpNegTracking=fGFpNegTracking->Eval(Spectra[1]->GetBinCenter(binK));
-	Printf("TPC/TOF Geant/Fluka Tracking: pt:%f  Pos:%f  Neg:%f",Spectra[1]->GetBinCenter(binK),FlukaCorrpPosTracking,FlukaCorrpNegTracking);
-	Spectra[1]->SetBinContent(binK,Spectra[1]->GetBinContent(binK)*FlukaCorrpPosTracking);
-	Spectra[4]->SetBinContent(binK,Spectra[4]->GetBinContent(binK)*FlukaCorrpNegTracking);
-	Spectra[1]->SetBinError(binK,Spectra[1]->GetBinError(binK)*FlukaCorrpPosTracking);
-	Spectra[4]->SetBinError(binK,Spectra[4]->GetBinError(binK)*FlukaCorrpNegTracking);
-	Float_t FlukaCorrpPosMatching=fGFpPosMatching->Eval(Spectra[1]->GetBinCenter(binK));
-	Float_t FlukaCorrpNegMatching=fGFpNegMatching->Eval(Spectra[1]->GetBinCenter(binK));
-	Printf("TPC/TOF Geant/Fluka Matching: pt:%f  Pos:%f  Neg:%f",Spectra[1]->GetBinCenter(binK),FlukaCorrpPosMatching,FlukaCorrpNegMatching);
-	Spectra[1]->SetBinContent(binK,Spectra[1]->GetBinContent(binK)*FlukaCorrpPosMatching);
-	Spectra[4]->SetBinContent(binK,Spectra[4]->GetBinContent(binK)*FlukaCorrpNegMatching);
-	Spectra[1]->SetBinError(binK,Spectra[1]->GetBinError(binK)*FlukaCorrpPosMatching);
-	Spectra[4]->SetBinError(binK,Spectra[4]->GetBinError(binK)*FlukaCorrpNegMatching);
+	gGFCorrectionProtonPlus->SetPoint(ibin,Spectra[2]->GetBinCenter(ibin),0);
+	gGFCorrectionProtonMinus->SetPoint(ibin,Spectra[5]->GetBinCenter(ibin),0);
+	Float_t FlukaCorrpPosTracking=fGFpPosTracking->Eval(Spectra[2]->GetBinCenter(ibin));
+	Float_t FlukaCorrpNegTracking=fGFpNegTracking->Eval(Spectra[2]->GetBinCenter(ibin));
+	Printf("TPC/TOF Geant/Fluka Tracking: pt:%f  Pos:%f  Neg:%f",Spectra[2]->GetBinCenter(ibin),FlukaCorrpPosTracking,FlukaCorrpNegTracking);
+	Spectra[2]->SetBinContent(ibin,Spectra[2]->GetBinContent(ibin)*FlukaCorrpPosTracking);
+	Spectra[5]->SetBinContent(ibin,Spectra[5]->GetBinContent(ibin)*FlukaCorrpNegTracking);
+	Spectra[2]->SetBinError(ibin,Spectra[2]->GetBinError(ibin)*FlukaCorrpPosTracking);
+	Spectra[5]->SetBinError(ibin,Spectra[5]->GetBinError(ibin)*FlukaCorrpNegTracking);
+	Float_t FlukaCorrpPosMatching=fGFpPosMatching->Eval(Spectra[2]->GetBinCenter(ibin));
+	Float_t FlukaCorrpNegMatching=fGFpNegMatching->Eval(Spectra[2]->GetBinCenter(ibin));
+	Printf("TPC/TOF Geant/Fluka Matching: pt:%f  Pos:%f  Neg:%f",Spectra[2]->GetBinCenter(ibin),FlukaCorrpPosMatching,FlukaCorrpNegMatching);
+	Spectra[2]->SetBinContent(ibin,Spectra[2]->GetBinContent(ibin)*FlukaCorrpPosMatching);
+	Spectra[5]->SetBinContent(ibin,Spectra[5]->GetBinContent(ibin)*FlukaCorrpNegMatching);
+	Spectra[2]->SetBinError(ibin,Spectra[2]->GetBinError(ibin)*FlukaCorrpPosMatching);
+	Spectra[5]->SetBinError(ibin,Spectra[5]->GetBinError(ibin)*FlukaCorrpNegMatching);
       }
     }//end loop on bins	
   }

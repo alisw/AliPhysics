@@ -41,7 +41,7 @@ using namespace std;
 
 ClassImp(AliSpectraAODEventCuts)
 
-AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fHistoCuts(0)
+AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0)
 {
   // Constructor
   fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
@@ -49,6 +49,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, 
   fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",500,-15,15);
   fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
   fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
+  fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",3000,-0.5,2999.5);
   fCentralityCutMin = 0.0;      // default value of centrality cut minimum, 0 ~ no cut
   fCentralityCutMax = 10000.0;  // default value of centrality cut maximum,  ~ no cut
 
@@ -69,12 +70,17 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
     fHistoCuts->Fill(kAcceptedEvents);
     if(vertex)fHistoVtxAftSel->Fill(vertex->GetZ());
   }
+  Int_t Nch=0;
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
     if (!fTrackCuts->IsSelected(track)) continue;
     fHistoEtaBefSel->Fill(track->Eta());
-    if(fIsSelected) fHistoEtaAftSel->Fill(track->Eta());
+    if(fIsSelected){
+      fHistoEtaAftSel->Fill(track->Eta());
+      Nch++;
+    }
   }
+  if(fIsSelected)fHistoNChAftSel->Fill(Nch);
   return fIsSelected;
 }
 
@@ -135,11 +141,12 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  TList collections;//FIXME we should only 1 collection
+  TList collections;//FIXME we should use only 1 collection
   TList collections_histoVtxBefSel;
   TList collections_histoVtxAftSel;
   TList collections_histoEtaBefSel;
   TList collections_histoEtaAftSel;
+  TList collections_histoNChAftSel;
 
   Int_t count = 0;
 
@@ -158,6 +165,8 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
     collections_histoEtaBefSel.Add(histo_histoEtaBefSel);
     TH1F * histo_histoEtaAftSel = entry->GetHistoEtaAftSel();      
     collections_histoEtaAftSel.Add(histo_histoEtaAftSel);
+    TH1F * histo_histoNChAftSel = entry->GetHistoNChAftSel();      
+    collections_histoNChAftSel.Add(histo_histoNChAftSel);
     count++;
   }
   
@@ -166,6 +175,7 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
   fHistoVtxAftSel->Merge(&collections_histoVtxAftSel);
   fHistoEtaBefSel->Merge(&collections_histoEtaBefSel);
   fHistoEtaAftSel->Merge(&collections_histoEtaAftSel);
+  fHistoNChAftSel->Merge(&collections_histoNChAftSel);
   
   delete iter;
 

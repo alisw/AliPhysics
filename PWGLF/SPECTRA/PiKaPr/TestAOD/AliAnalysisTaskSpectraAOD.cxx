@@ -179,9 +179,9 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  codemoth = TMath::Abs(moth->GetPdgCode());
 	  mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
 	}
-	// Int_t uniqueID = partMC->GetUniqueID();
-	// cout<<"uniqueID: "<<partMC->GetUniqueID()<<"       "<<kPDecay<<endl;
-	// cout<<"status: "<<partMC->GetStatus()<<"       "<<kPDecay<<endl;
+	//Int_t uniqueID = partMC->GetUniqueID();
+	cout<<"uniqueID: "<<partMC->GetUniqueID()<<"       "<<kPDecay<<endl;
+	cout<<"status: "<<partMC->GetStatus()<<"       "<<kPDecay<<endl;
 	// if(uniqueID == kPDecay)Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	if(mfl==3) isSecondaryWeak     = kTRUE; // add if(partMC->GetStatus() & kPDecay)? FIXME
 	else       isSecondaryMaterial = kTRUE;
