@@ -147,28 +147,47 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistoNbVsNc->Sumw2();
   fOutput->Add(fHistoNbVsNc);
 
-  fHistYPtPromptAllD[0] = new TH2F("hyptd0promptAllD","D0 - Prompt",20,0.,20.,40,-2.,2.);
-  fHistYPtPromptAllD[1] = new TH2F("hyptdpluspromptAllD","Dplus - Prompt",20,0.,20.,40,-2.,2.);
-  fHistYPtPromptAllD[2] = new TH2F("hyptdstarpromptAllD","Dstar - Prompt",20,0.,20.,40,-2.,2.);
-  fHistYPtPromptAllD[3] = new TH2F("hyptdspromptAllD","Ds - Prompt",20,0.,20.,40,-2.,2.);
-  fHistYPtPromptAllD[4] = new TH2F("hyptlcpromptAllD","Lc - Prompt",20,0.,20.,40,-2.,2.);
-
   fHistYPtPrompt[0] = new TH2F("hyptd0prompt","D0 - Prompt",20,0.,20.,20,-2.,2.);
   fHistYPtPrompt[1] = new TH2F("hyptdplusprompt","Dplus - Prompt",20,0.,20.,20,-2.,2.);
   fHistYPtPrompt[2] = new TH2F("hyptdstarprompt","Dstar - Prompt",20,0.,20.,20,-2.,2.);
   fHistYPtPrompt[3] = new TH2F("hyptdsprompt","Ds - Prompt",20,0.,20.,20,-2.,2.);
   fHistYPtPrompt[4] = new TH2F("hyptlcprompt","Lc - Prompt",20,0.,20.,20,-2.,2.);
 
-  fHistYPtFeeddown[0] = new TH2F("hyptd0feeddown","D0 - Feeddown",20,0.,20.,20,-2.,2.);
+  fHistYPtAllDecay[0] = new TH2F("hyptd0AllDecay","D0 - All",20,0.,20.,40,-2.,2.);
+  fHistYPtAllDecay[1] = new TH2F("hyptdplusAllDecay","Dplus - All",20,0.,20.,40,-2.,2.);
+  fHistYPtAllDecay[2] = new TH2F("hyptdstarAllDecay","Dstar - All",20,0.,20.,40,-2.,2.);
+  fHistYPtAllDecay[3] = new TH2F("hyptdsAllDecay","Ds - All",20,0.,20.,40,-2.,2.);
+  fHistYPtAllDecay[4] = new TH2F("hyptlcAllDecay","Lc - All",20,0.,20.,40,-2.,2.);
+
+  fHistYPtPromptAllDecay[0] = new TH2F("hyptd0promptAllDecay","D0 - Prompt",20,0.,20.,40,-2.,2.);
+  fHistYPtPromptAllDecay[1] = new TH2F("hyptdpluspromptAllDecay","Dplus - Prompt",20,0.,20.,40,-2.,2.);
+  fHistYPtPromptAllDecay[2] = new TH2F("hyptdstarpromptAllDecay","Dstar - Prompt",20,0.,20.,40,-2.,2.);
+  fHistYPtPromptAllDecay[3] = new TH2F("hyptdspromptAllDecay","Ds - Prompt",20,0.,20.,40,-2.,2.);
+  fHistYPtPromptAllDecay[4] = new TH2F("hyptlcpromptAllDecay","Lc - Prompt",20,0.,20.,40,-2.,2.);
+
+  fHistYPtFeeddownAllDecay[0] = new TH2F("hyptd0feeddownAllDecay","D0 - FromB",20,0.,20.,40,-2.,2.);
+  fHistYPtFeeddownAllDecay[1] = new TH2F("hyptdplusfeeddownAllDecay","Dplus - FromB",20,0.,20.,40,-2.,2.);
+  fHistYPtFeeddownAllDecay[2] = new TH2F("hyptdstarfeeddownAllDecay","Dstar - FromB",20,0.,20.,40,-2.,2.);
+  fHistYPtFeeddownAllDecay[3] = new TH2F("hyptdsfeeddownAllDecay","Ds - FromB",20,0.,20.,40,-2.,2.);
+  fHistYPtFeeddownAllDecay[4] = new TH2F("hyptlcfeeddownAllDecay","Lc - FromB",20,0.,20.,40,-2.,2.);
+
+
+ fHistYPtFeeddown[0] = new TH2F("hyptd0feeddown","D0 - Feeddown",20,0.,20.,20,-2.,2.);
   fHistYPtFeeddown[1] = new TH2F("hyptdplusfeeddown","Dplus - Feeddown",20,0.,20.,20,-2.,2.);
   fHistYPtFeeddown[2] = new TH2F("hyptdstarfeedown","Dstar - Feeddown",20,0.,20.,20,-2.,2.);
   fHistYPtFeeddown[3] = new TH2F("hyptdsfeedown","Ds - Feeddown",20,0.,20.,20,-2.,2.);
   fHistYPtFeeddown[4] = new TH2F("hyptlcfeedown","Lc - Feeddown",20,0.,20.,20,-2.,2.);
 
   for(Int_t ih=0; ih<5; ih++){
-    fHistYPtPromptAllD[ih]->Sumw2();
-    fHistYPtPromptAllD[ih]->SetMinimum(0);
-    fOutput->Add(fHistYPtPromptAllD[ih]);
+    fHistYPtAllDecay[ih]->Sumw2();
+    fHistYPtAllDecay[ih]->SetMinimum(0);
+    fOutput->Add(fHistYPtAllDecay[ih]);
+    fHistYPtPromptAllDecay[ih]->Sumw2();
+    fHistYPtPromptAllDecay[ih]->SetMinimum(0);
+    fOutput->Add(fHistYPtPromptAllDecay[ih]);
+    fHistYPtFeeddownAllDecay[ih]->Sumw2();
+    fHistYPtFeeddownAllDecay[ih]->SetMinimum(0);
+    fOutput->Add(fHistYPtFeeddownAllDecay[ih]);
     fHistYPtPrompt[ih]->Sumw2();
     fHistYPtPrompt[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtPrompt[ih]);
@@ -287,34 +306,60 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       if (part->Energy() != TMath::Abs(part->Pz())){
 	rapid=0.5*TMath::Log((part->Energy()+part->Pz())/(part->Energy()-part->Pz()));
       }
-      
+
+       
       Int_t iPart=-1;
       Int_t iType=0;
-      if(absPdg==421){  
-	fHistYPtPromptAllD[0]->Fill(part->Pt(),rapid);
+      Int_t iSpecies=-1;
+      if(absPdg==421){
+	iSpecies=0;
 	iType=CheckD0Decay(i,stack);
 	if(iType>=0) iPart=0;	
       }
       else if(absPdg==411){
-	fHistYPtPromptAllD[1]->Fill(part->Pt(),rapid);
+	iSpecies=1;
 	iType=CheckDplusDecay(i,stack);
 	if(iType>=0) iPart=1;
       }
       else if(absPdg==413){
-	fHistYPtPromptAllD[2]->Fill(part->Pt(),rapid);
+	iSpecies=2;
 	iType=CheckDstarDecay(i,stack);
 	if(iType>=0) iPart=2;
       }
       else if(absPdg==431){
-	fHistYPtPromptAllD[3]->Fill(part->Pt(),rapid);
+	iSpecies=3;
 	iType=CheckDsDecay(i,stack);
 	if(iType==0 || iType==1) iPart=3;
       }
       else if(absPdg==4122){
-	fHistYPtPromptAllD[4]->Fill(part->Pt(),rapid);
+	iSpecies=4;
 	iType=CheckLcDecay(i,stack);
 	if(iType>=0) iPart=4;
       }
+      if(iSpecies<0) continue;
+      fHistYPtAllDecay[iSpecies]->Fill(part->Pt(),rapid);
+
+      TParticle* runningpart=part;
+      Int_t iFromB=-1;
+      Int_t pdgmoth=-1;
+      while(1){
+	Int_t labmoth=runningpart->GetFirstMother();
+	if(labmoth==-1) break;
+	TParticle *mot=(TParticle*)stack->Particle(labmoth);
+	pdgmoth=TMath::Abs(mot->GetPdgCode());
+	if(pdgmoth==5){ 
+	  iFromB=1;
+	  break;
+	}else if(pdgmoth==4){
+	  iFromB=0;
+	  break;
+	}
+	runningpart=mot;
+      }
+      if(iFromB<0) continue;
+      else if(iFromB==0) fHistYPtPromptAllDecay[iSpecies]->Fill(part->Pt(),rapid);
+      else if(iFromB==1) fHistYPtFeeddownAllDecay[iSpecies]->Fill(part->Pt(),rapid);
+
       if(iPart<0) continue;
       if(iType<0) continue;
       nCharmed++;
@@ -326,28 +371,10 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	fHistYPtDsbyDecChannel[iType]->Fill(part->Pt(),rapid);
       }
       
-      TParticle* runningpart=part;
-      Int_t iFromB=-1;
-      while(1){
-	Int_t labmoth=runningpart->GetFirstMother();
-	if(labmoth==-1) break;
-	TParticle *mot=(TParticle*)stack->Particle(labmoth);
-	Int_t pdgmoth=TMath::Abs(mot->GetPdgCode());
-	if(pdgmoth==5){ 
-	  iFromB=1;
-	  break;
-	}else if(pdgmoth==4){
-	  iFromB=0;
-	break;
-	}
-	runningpart=mot;
-      }
-      if(iFromB<0) continue;
       if(iFromB==0 && iPart>=0 && iPart<5) fHistYPtPrompt[iPart]->Fill(part->Pt(),rapid);
       else if(iFromB==1 && iPart>=0 && iPart<5) fHistYPtFeeddown[iPart]->Fill(part->Pt(),rapid);
       
     }
-    printf("  ---> %f %d %d %d\n",dNchdy,nCharmed,nc,nb);
     fHistoNcharmed->Fill(dNchdy,nCharmed);
     fHistoNbVsNc->Fill(nc,nb);
   }
