@@ -23,6 +23,8 @@
 #include "AliACORDEConstants.h"
 
 //______________________________________________________________________
+using std::cout;
+using std::endl;
 ClassImp(AliACORDETrigger)
 
 AliACORDETrigger::AliACORDETrigger()

@@ -135,7 +135,7 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 	Float_t meanHitsSL0 = 0.;
 	Float_t meanHitsAMU = 0.;
 	//if ((indexActiveModuleSL0==0) || (indexActiveModuleAMU == 0)) continue;
-	if ((indexActiveModuleAMU == 0)) continue;
+	if (indexActiveModuleAMU == 0) continue;
 
 	meanHitsSL0 = h0->Integral()/indexActiveModuleSL0;
 	meanHitsAMU = h2->Integral()/indexActiveModuleAMU;

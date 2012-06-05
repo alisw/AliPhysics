@@ -34,8 +34,8 @@
 // Survey results are fetched from 
 // Survey Depot, based on survey results 
 // position of ACORDE alignment objects is computed.
-
-
+using std::cout;
+using std::endl;
 ClassImp(AliACORDEAlign)
 
 

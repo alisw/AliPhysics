@@ -14,6 +14,7 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+using std::fstream;
 
 class AliFstream : public TObject {
 public:
