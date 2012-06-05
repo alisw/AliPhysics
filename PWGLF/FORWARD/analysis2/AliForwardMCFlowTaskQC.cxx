@@ -121,11 +121,11 @@ void AliForwardMCFlowTaskQC::InitVertexBins()
   for(UShort_t n = 2; n <= 6; n++) {
     if (!fv[n]) continue;
       for (Int_t v = 1; v <= fVtxAxis->GetNbins(); v++) {
-      fBinsFMDTR.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, 
-      "FMDTR", (fgDispVtx ? kFALSE : kTRUE), fFMDCut));
-      fBinsSPDTR.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, 
-      "SPDTR", kTRUE, fSPDCut));
-      fBinsMC.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, "MC"));
+      Int_t vL = Int_t(fVtxAxis->GetBinLowEdge(v));
+      Int_t vH = Int_t(fVtxAxis->GetBinUpEdge(v));
+      fBinsFMDTR.Add(new VertexBin(vL, vH, n, "FMDTR", (fgDispVtx ? kFALSE : kTRUE), fFMDCut));
+      fBinsSPDTR.Add(new VertexBin(vL, vH, n, "SPDTR", kTRUE, fSPDCut));
+      fBinsMC.Add(new VertexBin(vL, vH, n, "MC"));
     }
   }
 }
