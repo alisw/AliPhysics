@@ -18,6 +18,7 @@ class fstream;
 #include <Riostream.h>
 #endif
 #include <TString.h>
+using std::fstream;
 
 class TArrayC;
 

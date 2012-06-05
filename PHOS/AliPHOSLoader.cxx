@@ -73,6 +73,8 @@
 #include "AliPHOS.h"
 #include "AliPHOSHit.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliPHOSLoader)
 
 

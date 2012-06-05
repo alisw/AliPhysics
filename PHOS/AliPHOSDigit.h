@@ -35,6 +35,7 @@
 // --- AliRoot header files ---
 
 #include "AliDigitNew.h"
+using std::ostream;
 
 class AliPHOSDigit : public AliDigitNew {
 

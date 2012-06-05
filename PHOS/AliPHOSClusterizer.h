@@ -41,6 +41,8 @@ class TTree;
 class AliPHOSGeometry;
 class AliPHOSCalibData ;
 
+using std::ostream;
+
 class AliPHOSClusterizer : public TObject {
 
 public:

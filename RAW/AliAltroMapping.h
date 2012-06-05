@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////////////
 
 #include <TObject.h>
+using std::ifstream;
 
 class AliAltroMapping: public TObject {
  public:
