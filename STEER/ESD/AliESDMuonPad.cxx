@@ -29,6 +29,8 @@
 
 #include <Riostream.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliESDMuonPad)
 /// \endcond

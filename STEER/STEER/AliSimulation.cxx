@@ -151,6 +151,7 @@
 #include "AliSysInfo.h"
 #include "AliVertexGenFile.h"
 
+using std::ofstream;
 ClassImp(AliSimulation)
 
 AliSimulation *AliSimulation::fgInstance = 0;

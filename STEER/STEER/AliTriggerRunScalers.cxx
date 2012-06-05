@@ -49,6 +49,9 @@
 #include "AliTriggerClass.h"
 #include "AliTriggerBCMask.h"
 
+using std::endl;
+using std::cout;
+using std::ifstream;
 ClassImp( AliTriggerRunScalers )
 
 //_____________________________________________________________________________

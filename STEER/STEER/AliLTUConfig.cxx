@@ -32,6 +32,8 @@
 #include "AliDAQ.h"
 #include "AliLTUConfig.h"
 
+using std::endl;
+using std::cout;
 ClassImp( AliLTUConfig )
 
 //_____________________________________________________________________________

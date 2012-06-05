@@ -42,6 +42,8 @@
 #include "AliLog.h"
 #include "AliTriggerInput.h"
 
+using std::endl;
+using std::cout;
 ClassImp( AliTriggerInput )
 
 Bool_t AliTriggerInput::fgkIsTriggerDetector[AliDAQ::kNDetectors] = {1,0,0,1,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,1,0};

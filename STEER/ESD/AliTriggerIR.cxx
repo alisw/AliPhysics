@@ -31,6 +31,10 @@
 
 #include "AliTriggerIR.h"
 
+using std::endl;
+using std::cout;
+using std::dec;
+using std::hex;
 ClassImp(AliTriggerIR)
 
 //_____________________________________________________________________________

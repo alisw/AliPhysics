@@ -29,6 +29,8 @@
 #include "AliTriggerInput.h"
 #include "AliTriggerInteraction.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliTriggerDescriptor)
 
 //_____________________________________________________________________________

@@ -19,6 +19,8 @@
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliLHCClockPhase)
 
 //______________________________________________________________________________

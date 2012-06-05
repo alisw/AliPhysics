@@ -80,6 +80,9 @@
 #include "AliTriggerInteraction.h"
 #include "AliTriggerPFProtection.h"
 
+using std::endl;
+using std::cout;
+using std::ifstream;
 ClassImp(AliTriggerConfiguration)
 
 const TString AliTriggerConfiguration::fgkConfigurationFileName("/data/triggerConfigurations.root");

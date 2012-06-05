@@ -30,6 +30,10 @@
 #include "AliTriggerPFProtection.h"
 #include "AliTriggerBCMask.h"
 
+using std::endl;
+using std::cout;
+using std::hex;
+using std::dec;
 ClassImp(AliTriggerClass)
 
 //_____________________________________________________________________________

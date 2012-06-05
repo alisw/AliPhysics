@@ -20,6 +20,8 @@
 #include "AliLog.h"   
 #include "AliCTPInputTimeParams.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliCTPInputTimeParams)
 
 //_____________________________________________________________________________

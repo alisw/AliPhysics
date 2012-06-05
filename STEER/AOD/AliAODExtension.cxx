@@ -22,6 +22,8 @@
 #include "TString.h"
 #include "TTree.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliAODExtension)
 
 //______________________________________________________________________________

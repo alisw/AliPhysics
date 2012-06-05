@@ -56,6 +56,11 @@
 
 #include "AliDAQ.h"
 
+using std::endl;
+using std::cout;
+using std::fstream;
+using std::ios;
+using std::ostream;
 ClassImp(AliModule)
  
 Float_t AliModule::fgDensityFactor = 1.0;

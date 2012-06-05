@@ -48,7 +48,7 @@
 
 #include "AliESDTagCreator.h"
 
-
+using std::ifstream;
 ClassImp(AliESDTagCreator)
 
 

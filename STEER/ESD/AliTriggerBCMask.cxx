@@ -26,6 +26,8 @@
 #include "AliTriggerBCMask.h"
 #include "AliLog.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliTriggerBCMask)
 
 //_____________________________________________________________________________

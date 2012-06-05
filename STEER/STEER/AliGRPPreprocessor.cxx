@@ -72,6 +72,7 @@ class AliShuttleInterface;
 #include "AliCTPTimeParams.h"
 #include "AliLHCClockPhase.h"
 
+using std::ifstream;
 ClassImp(AliGRPPreprocessor)
 
 

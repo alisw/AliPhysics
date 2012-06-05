@@ -27,6 +27,8 @@
 
 #include "AliStrLine.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliStrLine)
 
 //________________________________________________________

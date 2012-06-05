@@ -26,6 +26,8 @@
 #include <TObjArray.h>
 #include <TObjString.h>
 
+using std::endl;
+using std::cout;
 ClassImp(AliCDBId)
 
 //_____________________________________________________________________________

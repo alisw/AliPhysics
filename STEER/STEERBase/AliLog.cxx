@@ -43,6 +43,12 @@
 
 #include "AliLog.h"
 
+using std::endl;
+using std::cout;
+using std::ostream;
+using std::cerr;
+using std::ofstream;
+using std::ios;
 ClassImp(AliLog)
 
 // implementation of a singleton here

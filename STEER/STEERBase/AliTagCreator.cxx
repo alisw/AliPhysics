@@ -40,6 +40,7 @@
 #include "AliTagCreator.h"
 
 
+using std::ifstream;
 ClassImp(AliTagCreator)
 
 

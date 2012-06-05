@@ -10,7 +10,8 @@
 * copies and that both the copyright notice and this permission notice   *
 * appear in the supporting documentation. The authors make no claims     *
 * about the suitability of this software for any purpose. It is          *
-* provided "as is" without express or implied warranty.                  * **************************************************************************/
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -32,6 +33,8 @@
 #include "AliLog.h"
 #include "AliTriggerScalersESD.h"
 
+using std::endl;
+using std::cout;
 ClassImp( AliTriggerScalersESD )
 
 //_____________________________________________________________________________

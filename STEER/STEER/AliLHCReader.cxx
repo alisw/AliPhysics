@@ -37,6 +37,9 @@
 #include "AliLHCReader.h"
 #include "AliLog.h"
 
+using std::ifstream;
+ClassImp(AliLHCReader)
+
 //--------------------------------------------------------------------------
 AliLHCReader::AliLHCReader():
 	TObject(),

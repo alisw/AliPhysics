@@ -17,6 +17,7 @@
 class TStopwatch;
 class TTree;
 class TMemStatManager;
+using std::fstream;
 
 class AliSysInfo : public TObject {
 public:

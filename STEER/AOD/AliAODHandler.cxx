@@ -47,6 +47,8 @@
 #include "AliAODBranchReplicator.h"
 #include "Riostream.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliAODHandler)
 
 //______________________________________________________________________________

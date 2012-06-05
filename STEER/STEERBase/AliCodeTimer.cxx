@@ -51,6 +51,8 @@
 #include <TStopwatch.h>
 #include <Riostream.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliCodeTimer)
 ClassImp(AliCodeTimer::AliPair)

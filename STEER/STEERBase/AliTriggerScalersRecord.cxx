@@ -32,6 +32,8 @@
 #include "AliTriggerScalers.h"
 #include "AliTriggerScalersRecord.h"
 
+using std::endl;
+using std::cout;
 ClassImp( AliTriggerScalersRecord )
 //_____________________________________________________________________________
 AliTriggerScalersRecord::AliTriggerScalersRecord():

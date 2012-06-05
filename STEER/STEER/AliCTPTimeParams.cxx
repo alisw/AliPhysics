@@ -27,6 +27,9 @@
 #include "AliCTPTimeParams.h"
 #include "AliCTPInputTimeParams.h"
 
+using std::endl;
+using std::cout;
+using std::ifstream;
 ClassImp(AliCTPTimeParams)
 
 //______________________________________________________________________________

@@ -35,6 +35,8 @@
 #include "AliTriggerCluster.h"
 #include "AliTriggerInput.h"
 
+using std::endl;
+using std::cout;
 ClassImp( AliTriggerCluster )
 
 //_____________________________________________________________________________

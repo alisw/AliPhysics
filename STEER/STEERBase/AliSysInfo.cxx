@@ -95,6 +95,10 @@
 //#include "TMemStatManager.h"  //USE IFDEF
 
 
+using std::endl;
+using std::cout;
+using std::ios_base;
+using std::setprecision;
 ClassImp(AliSysInfo)
 
 AliSysInfo* AliSysInfo::fInstance=0;

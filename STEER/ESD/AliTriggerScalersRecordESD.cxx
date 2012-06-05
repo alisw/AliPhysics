@@ -21,6 +21,8 @@
 #include "AliTriggerScalersESD.h"
 #include "AliTriggerScalersRecordESD.h"
 
+using std::endl;
+using std::cout;
 ClassImp( AliTriggerScalersRecordESD )
 //_____________________________________________________________________________
 AliTriggerScalersRecordESD::AliTriggerScalersRecordESD():

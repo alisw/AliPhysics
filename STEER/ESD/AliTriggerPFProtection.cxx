@@ -43,6 +43,10 @@
 #include "AliLog.h"
 #include "AliTriggerPFProtection.h"
 
+using std::endl;
+using std::cout;
+using std::hex;
+using std::dec;
 ClassImp( AliTriggerPFProtection )
 //_____________________________________________________________________________
 AliTriggerPFProtection::AliTriggerPFProtection() :

@@ -35,6 +35,8 @@
 #include "AliLog.h"   
 #include "AliTimeStamp.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliTimeStamp)
    
 //_____________________________________________________________________________

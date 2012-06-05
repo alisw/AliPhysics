@@ -67,6 +67,7 @@
 #include "AliRunLoader.h"
 #include "AliRunTag.h"
 
+using std::ifstream;
 ClassImp(AliQAManager) 
 AliQAManager* AliQAManager::fgQAInstance = 0x0;
 

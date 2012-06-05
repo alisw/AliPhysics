@@ -44,7 +44,7 @@
 
 #include "AliAODTagCreator.h"
 
-
+using std::ifstream;
 ClassImp(AliAODTagCreator)
 
 

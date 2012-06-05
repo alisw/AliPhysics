@@ -41,7 +41,10 @@
 #include "AliTriggerDetector.h"
 
 
-
+using std::endl;
+using std::cout;
+using std::hex;
+using std::dec;
 ClassImp( AliTriggerDetector )
 
 //_____________________________________________________________________________
