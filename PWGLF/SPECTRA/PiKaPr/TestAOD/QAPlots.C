@@ -172,7 +172,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   PIDSig_mc->DrawClone("colz");
 
   //dedx projection in data and MC
-  Double_t Proj1[2]={0.6,0.7};
+  Double_t Proj1[2]={0.4,0.5};
   Double_t Proj2[2]={1.1,1.2};
   TCanvas *cPIDSigProjection=new TCanvas("cPIDSigProjection","cPIDSigProjection",700,500);
   cPIDSigProjection->Divide(2,2);
