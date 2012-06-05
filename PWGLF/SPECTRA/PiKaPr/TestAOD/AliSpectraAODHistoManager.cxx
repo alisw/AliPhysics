@@ -296,12 +296,12 @@ TH1* AliSpectraAODHistoManager::GetHistogram1D(UInt_t histoType, UInt_t particle
   if (baseId < 0)
     AliFatal(Form("Wrong histogram type %d", histoType));
 
-  cout << "T[" << histoType << "] ID["<< baseId <<"] P["<<particleType<<"] C[" << charge 
-       << " --> ["<< baseId + particleType + 3*(charge) <<"] = " ;
+  //cout << "T[" << histoType << "] ID["<< baseId <<"] P["<<particleType<<"] C[" << charge 
+  //     << " --> ["<< baseId + particleType + 3*(charge) <<"] = " ;
 
   baseId = baseId + particleType + 3*(charge);
 
-  cout <<  GetHistogram(baseId)->GetName() << endl;
+  //cout <<  GetHistogram(baseId)->GetName() << endl;
 
   return GetHistogram(baseId);
 }

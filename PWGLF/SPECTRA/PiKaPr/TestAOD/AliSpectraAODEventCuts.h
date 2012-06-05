@@ -24,7 +24,7 @@ class AliSpectraAODEventCuts : public TNamed
   enum {  kProcessedEvents = 0,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kNVtxCuts};
 
   // Constructors
- AliSpectraAODEventCuts() : TNamed(), fAOD(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0) {}
+ AliSpectraAODEventCuts() : TNamed(), fAOD(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0) {}
   AliSpectraAODEventCuts(const char *name);
   virtual  ~AliSpectraAODEventCuts() {}
 
@@ -41,6 +41,7 @@ class AliSpectraAODEventCuts : public TNamed
   TH1F * GetHistoVtxAftSel()         {  return fHistoVtxAftSel; }
   TH1F * GetHistoEtaBefSel()         {  return fHistoEtaBefSel; }
   TH1F * GetHistoEtaAftSel()         {  return fHistoEtaAftSel; }
+  TH1F * GetHistoNChAftSel()         {  return fHistoNChAftSel; }
   Float_t  GetCentralityMin()  const {  return fCentralityCutMin; }
   Float_t  GetCentralityMax()  const {  return fCentralityCutMax; }
   void   PrintCuts();
@@ -62,6 +63,7 @@ class AliSpectraAODEventCuts : public TNamed
   TH1F            *fHistoVtxAftSel;        // Vtx distr after event selection
   TH1F            *fHistoEtaBefSel;        // Eta distr before event selection
   TH1F            *fHistoEtaAftSel;        // Eta distr after event selection
+  TH1F            *fHistoNChAftSel;        // NCh distr after event selection
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   

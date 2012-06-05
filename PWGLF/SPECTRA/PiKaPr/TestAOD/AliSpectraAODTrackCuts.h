@@ -39,7 +39,7 @@ class AliSpectraAODTrackCuts : public TNamed
   enum { kTrkBit = 0, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
   
   
- AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fQvecCutMin(0), fQvecCutMax(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fTrack(0) {}
+ AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fQvecCutMin(0), fQvecCutMax(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0) {}
   
   AliSpectraAODTrackCuts(const char *name);
   virtual  ~AliSpectraAODTrackCuts() {} // To be implemented
@@ -62,6 +62,7 @@ class AliSpectraAODTrackCuts : public TNamed
    TH1F * GetHistoNSelectedNeg()      { return fHistoNSelectedNeg; }
    TH1F * GetHistoNMatchedPos()      { return fHistoNMatchedPos; }
    TH1F * GetHistoNMatchedNeg()      { return fHistoNMatchedNeg; }
+   TH2F * GetHistoEtaPhiHighPt()      { return fHistoEtaPhiHighPt; }
    void SetEta(Float_t eta)   { fEtaCut = eta; }
    void SetDCA(Float_t dca)   { fDCACut = dca; }
    void SetP(Float_t p)       { fPCut = p; }
@@ -99,6 +100,7 @@ class AliSpectraAODTrackCuts : public TNamed
    TH1F             *fHistoNSelectedNeg;       // Selected negative tracks
    TH1F             *fHistoNMatchedPos;       // Matched positive tracks
    TH1F             *fHistoNMatchedNeg;       // Matched negative tracks
+   TH2F             *fHistoEtaPhiHighPt;       // EtaPhi distr at high pt (>1.5 GeV/c)
    AliAODTrack      *fTrack;           //! Track pointer
    
    AliSpectraAODTrackCuts(const AliSpectraAODTrackCuts&);
