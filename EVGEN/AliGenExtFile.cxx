@@ -43,6 +43,8 @@
 #include <TTree.h>
 
 
+using std::cout;
+using std::endl;
 ClassImp(AliGenExtFile)
 
 AliGenExtFile::AliGenExtFile()

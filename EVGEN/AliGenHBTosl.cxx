@@ -87,6 +87,10 @@
 
 
 /***********************************************************/
+using std::cout;
+using std::endl;
+using std::ofstream;
+using std::ios;
 ClassImp(AliGenHBTosl)
 
 AliGenHBTosl::AliGenHBTosl():

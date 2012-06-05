@@ -45,7 +45,8 @@
 #include "AliMC.h"
 #include "AliRun.h"
 
-
+using std::cout;
+using std::endl;
 ClassImp(AliGenCocktailAfterBurner)
 /*********************************************************************/ 
 /*********************************************************************/ 
