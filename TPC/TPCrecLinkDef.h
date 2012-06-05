@@ -29,7 +29,6 @@
 #pragma link C++ class AliTPCclustererMI+;
 
 #pragma link C++ class AliTPCtrack+;
-#pragma link C++ class AliTPCtracker+;
 
 //#pragma link C++ class AliHelix+;
 #pragma link C++ class AliTPCpolyTrack+;

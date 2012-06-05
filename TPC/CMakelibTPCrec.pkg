@@ -39,7 +39,6 @@ set ( SRCS
     AliTPCclusterer.cxx 
     AliTPCclustererMI.cxx 
     AliTPCtrack.cxx 
-    AliTPCtracker.cxx 
     AliTPCpolyTrack.cxx 
     AliTPCseed.cxx 
     AliTPCtrackerMI.cxx 

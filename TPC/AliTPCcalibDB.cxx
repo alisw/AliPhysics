@@ -48,7 +48,7 @@
 //          Simulation:      applied in the AliTPC::MakeSector - adding offset
 //          Reconstruction:  AliTPCTransform::Transform() - remove offset
 //                           AliTPCTransform::Transform() - to be called
-//                           in AliTPCtracker::Transform()      
+//                           in AliTPCtrackerMI::Transform()      
 //
 // 
 // 2.)  Space points transformation:
