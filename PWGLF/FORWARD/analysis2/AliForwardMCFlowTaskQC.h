@@ -6,7 +6,6 @@
 /**
  * @file   AliForwardMCFlowTaskQC.h
  * @author Alexander Hansen alexander.hansen@cern.ch
- * @date   Tue Feb 14 2012
  * 
  * @brief  
  * 
@@ -19,8 +18,8 @@
 class TGraph;
 
  /**
- * @defgroup pwg2_forward_tasks_flow Flow tasks 
- * @ingroup pwg2_forward_tasks
+ * @defgroup pwglf_forward_tasks_flow Flow tasks 
+ * @ingroup pwglf_forward_tasks
  */
 /**
  * Calculate the flow in the forward regions using the Q cumulants method
@@ -31,8 +30,8 @@ class TGraph;
  * Outputs:
  *   - AnalysisResults.root
  *
- * @ingroup pwg2_forward_tasks_flow
- * @ingroup pwg2_forward_flow
+ * @ingroup pwglf_forward_tasks_flow
+ * @ingroup pwglf_forward_flow
  *
  *
  */
@@ -53,6 +52,15 @@ public:
    * Destructor 
    */
   virtual ~AliForwardMCFlowTaskQC() {}
+  /**
+   * Check trigger from AODForwardMult object
+   * returns true if B trigger is present
+   *
+   * @param aodfm AliAODForwardMultObject
+   * 
+   * @return Bool_t 
+   */
+  virtual Bool_t CheckTrigger(const AliAODForwardMult* aodfm) const;
   /**
    * Check for centrality in AliAODForwardMult object, 
    * if present return true - also sets fCent value
@@ -128,6 +136,12 @@ protected:
    * Get centrality form MC impact parameter
    */
   Double_t GetCentFromB() const;
+  /**
+   * Print the setup of the task
+   *
+   * @return void
+   */
+  virtual void PrintFlowSetup() const;
   
   TList         fBinsFMDTR;         //  List with FMDTR VertexBin objects
   TList         fBinsSPDTR;         //  List with SPDTR VertexBin objects

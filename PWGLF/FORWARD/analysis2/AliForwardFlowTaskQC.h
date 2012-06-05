@@ -6,7 +6,6 @@
 /**
  * @file AliForwardFlowTaskQC.h
  * @author Alexander Hansen
- * @date   Tue Feb 14 2012
  * 
  * @brief
  * 
@@ -17,6 +16,7 @@
 #include "TString.h"
 class AliAODForwardMult;
 class TH1D;
+class TH2F;
 class TH2D;
 class TH3D;
 class TAxis;
@@ -82,68 +82,15 @@ public:
   virtual void Terminate(Option_t *option);
   /* @} */
   /**
-   * Loops of vertex bins in list and runs analysis on those for current vertex
-   *
-   * @param list List of vertex bins
-   * @param h dN/detadphi histogram
-   * @param vtx Current vertex bin
-   *
-   * @return true on success
-   */
-  Bool_t FillVtxBinList(const TList& list, const TH2D& h, Int_t vtx) const;
-  /**
-   * Loops over VertexBin list and calls terminate on each
-   *
-   * @param list VertexBin list
-   */
-  void EndVtxBinList(const TList& list) const;
-  /**
    * Returns the outputlist
    * 
    * @return TList* 
    */
   TList* GetOutputList() { return fOutputList; }
   /**
-   * Check AODevent object for trigger, vertex and centrality
-   * returns true if event is OK
-   *
-   * @param aodfm AliAODForwardMultObject
-   * 
-   * @return Bool_t 
-   */
-  Bool_t CheckEvent(const AliAODForwardMult* aodfm);
-  /**
-   * Check trigger from AODForwardMult object
-   * returns true if offline trigger is present
-   *
-   * @param aodfm AliAODForwardMultObject
-   * 
-   * @return Bool_t 
-   */
-  virtual Bool_t CheckTrigger(const AliAODForwardMult* aodfm) const;
-  /**
-   * Check for centrality in AliAODForwardMult object, 
-   * if present return true - also sets fCent value
-   *
-   * @param aodfm AliAODForwardMultObject
-   * 
-   * @return Bool_t 
-   */
-  virtual Bool_t GetCentrality(const AliAODForwardMult* aodfm);
-  /*
-   * Check for vertex in AliAODForwardMult
-   * returns true if in range of fVtxAXis, also sets fVtx value
-   *
-   * @param aodfm AliAODForwardMultObject
-   * 
-   * @return Bool_t 
-   */
-  virtual Bool_t GetVertex(const AliAODForwardMult* aodfm);
-  /**
    * Set which harmonics to calculate. @f$ v_{1}@f$ to @f$ v_{4}@f$ is
    * available and calculated as default
    * 
-   * @param  v1 Do @f$ v_{1}$f$
    * @param  v2 Do @f$ v_{2}$f$
    * @param  v3 Do @f$ v_{3}$f$
    * @param  v4 Do @f$ v_{4}$f$
@@ -152,11 +99,11 @@ public:
    * 
    * @return void 
    */
-  void SetDoHarmonics(Bool_t v1 = kTRUE, Bool_t v2 = kTRUE, 
+  void SetDoHarmonics(Bool_t v2 = kTRUE, 
 		      Bool_t v3 = kTRUE, Bool_t v4 = kTRUE,
 		      Bool_t v5 = kTRUE, Bool_t v6 = kTRUE) { 
-    fv[1] = v1; fv[2] = v2; fv[3] = v3; fv[4] = v4; fv[5] = v5; fv[6] = v6;}
-   /*
+    fv[2] = v2; fv[3] = v3; fv[4] = v4; fv[5] = v5; fv[6] = v6;}
+  /*
    * Set non-default vertex binning and range
    *
    * @param axis Use this vtx axis
@@ -164,6 +111,15 @@ public:
    * @return void
    */
   void SetVertexAxis(TAxis* axis) { fVtxAxis = axis; }
+  /*
+   * Set detector sigma cuts
+   *
+   * @param fmdCut FMD sigma cut
+   * @param spdCut SPD sigma cut
+   *
+   * @return void
+   */
+  void SetDetectorCuts(Double_t fmdCut, Double_t spdCut) { fFMDCut = fmdCut; fSPDCut = spdCut; }
  /**
   * Nested class to handle cumulant calculations in vertex bins
   */
@@ -185,7 +141,7 @@ public:
      */
     VertexBin(Int_t vLow, Int_t vHigh, 
               UShort_t moment, TString type,
-              Bool_t sym = kTRUE);
+              Bool_t sym = kTRUE, Double_t cut = -1);
     /**
      * Copy constructor 
      * 
@@ -221,7 +177,7 @@ public:
      *
      * @return false if bad event (det. hotspot)
      */
-    Bool_t FillHists(const TH2D& dNdetadphi);
+    Bool_t FillHists(const TH2D& dNdetadphi, Double_t fCent);
     /**
      * Do cumulants calculations for current event with 
      * centrality cent
@@ -276,20 +232,32 @@ public:
 	   kmpmq, 
 	   kCospsi1phi2phi3p, 
 	   kSinpsi1phi2phi3p };
+    /**
+     * Set centrality axis
+     *
+     * @param axis Centrality axis
+     *
+     * @return void
+     */
+    void SetupCentAxis(TAxis* axis);
 
-    const UShort_t fMoment;    // flow moment 
-    const Int_t    fVzMin;     // z-vertex min must be in whole [cm]
-    const Int_t    fVzMax;     // z-vertex max must be in whoe [cm]
-    TString        fType;      // data type
-    const Bool_t   fSymEta;    // Use forward-backward symmetry, if detector allows it
-    TH2D*          fCumuRef;   // histogram for reference flow
-    TH2D*          fCumuDiff;  // histogram for differential flow
-    TH3D*          fCumuHist;  // histogram for cumulants calculations
-    TH2D*          fdNdedpAcc; // Diagnostics histogram to make acc. maps
-    UShort_t       fDebug;     // Debug flag
+    const UShort_t fMoment;        // flow moment 
+    const Int_t    fVzMin;         // z-vertex min must be in whole [cm]
+    const Int_t    fVzMax;         // z-vertex max must be in whoe [cm]
+    TString        fType;          // data type
+    const Bool_t   fSymEta;        // Use forward-backward symmetry, if detector allows it
+    const Double_t fSigmaCut;      // Detector specific cut for outlier events
+    TH2D*          fCumuRef;       // histogram for reference flow
+    TH2D*          fCumuDiff;      // histogram for differential flow
+    TH3D*          fCumuHist;      // histogram for cumulants calculations
+    TH2F*          fdNdedpAcc;     // Diagnostics histogram to make acc. maps
+    TH2F*          fOutliers;      // Sigma <M> histogram 
+    UShort_t       fDebug;         // Debug flag
 
     ClassDef(VertexBin, 1); // object for cumulants ananlysis in FMD
   };
+
+  static Bool_t fgDispVtx;         // static flag for disp vtx
 
 protected:
   /** 
@@ -320,23 +288,91 @@ protected:
    * Finalize analysis
    */
   virtual void Finalize();
+  /**
+   * Loops of vertex bins in list and runs analysis on those for current vertex
+   *
+   * @param list List of vertex bins
+   * @param h dN/detadphi histogram
+   * @param vtx Current vertex bin
+   *
+   * @return true on success
+   */
+  Bool_t FillVtxBinList(const TList& list, const TH2D& h, Int_t vtx) const;
+  /**
+   * Loops over VertexBin list and calls terminate on each
+   *
+   * @param list VertexBin list
+   */
+  void EndVtxBinList(const TList& list) const;
+  /**
+   * Projects a list of TProfile2D's with flow
+   * results to TH1's in centrality bins
+   *
+   * @param list List of flow results
+   *
+   * @return void
+   */
+  void MakeCentralityHists(TList* list);
+  /**
+   * Check AODevent object for trigger, vertex and centrality
+   * returns true if event is OK
+   *
+   * @param aodfm AliAODForwardMultObject
+   * 
+   * @return Bool_t 
+   */
+  Bool_t CheckEvent(const AliAODForwardMult* aodfm);
+  /**
+   * Check trigger from AODForwardMult object
+   * returns true if offline trigger is present
+   *
+   * @param aodfm AliAODForwardMultObject
+   * 
+   * @return Bool_t 
+   */
+  virtual Bool_t CheckTrigger(const AliAODForwardMult* aodfm) const;
+  /**
+   * Check for centrality in AliAODForwardMult object, 
+   * if present return true - also sets fCent value
+   *
+   * @param aodfm AliAODForwardMultObject
+   * 
+   * @return Bool_t 
+   */
+  virtual Bool_t GetCentrality(const AliAODForwardMult* aodfm);
+  /**
+   * Check for vertex in AliAODForwardMult
+   * returns true if in range of fVtxAXis, also sets fVtx value
+   *
+   * @param aodfm AliAODForwardMultObject
+   * 
+   * @return Bool_t 
+   */
+  virtual Bool_t GetVertex(const AliAODForwardMult* aodfm);
+  /**
+   * Print the setup of the task
+   *
+   * @return void
+   */
+  virtual void PrintFlowSetup() const;
 
-  TAxis*         fVtxAxis;        //  Axis to control vertex binning
-  TList          fBinsFMD;        //  list with FMD VertexBin objects 
-  TList          fBinsSPD;        //  list with SPD VertexBin objects
-  TList*         fSumList;        //  sum list
-  TList*         fOutputList;     //  Output list
-  AliAODEvent*   fAOD;            //  AOD event
-  Bool_t         fv[7];           //  Calculate v_{n} flag
-  Float_t  	 fVtx;            //  Z vertex bin
-  Double_t       fCent;           //  Centrality
-  TH1D*          fHistCent;       //  Diagnostics hist for centrality
-  TH1D*          fHistVertexSel;  //  Diagnostics hist for selected vertices
-  TH1D*          fHistVertexAll;  //  Diagnostics hist for all vertices
+  TAxis*         fVtxAxis;          //  Axis to control vertex binning
+  Double_t       fFMDCut;           //  FMD sigma cut for outlier events
+  Double_t       fSPDCut;           //  SPD sigma cut for outlier events
+  TList          fBinsFMD;          //  list with FMD VertexBin objects 
+  TList          fBinsSPD;          //  list with SPD VertexBin objects
+  TList*         fSumList;          //  sum list
+  TList*         fOutputList;       //  Output list
+  AliAODEvent*   fAOD;              //  AOD event
+  Bool_t         fv[7];             //  Calculate v_{n} flag
+  Float_t  	 fVtx;              //  Z vertex bin
+  Double_t       fCent;             //  Centrality
+  TH1D*          fHistCent;         //  Diagnostics hist for centrality
+  TH1D*          fHistVertexSel;    //  Diagnostics hist for selected vertices
 
   ClassDef(AliForwardFlowTaskQC, 1); // Analysis task for FMD analysis
 };
- 
+
 #endif
 // Local Variables:
 //   mode: C++ 
