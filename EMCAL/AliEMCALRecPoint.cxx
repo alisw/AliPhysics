@@ -292,8 +292,12 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
   // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
   if(fSharedCluster){
-    if(nSupMod1%2) relid1[1]+=AliEMCALGeoParams::fgkEMCALCols;
-    else           relid2[1]+=AliEMCALGeoParams::fgkEMCALCols;
+    //printf("Shared cluster in 2 SMs!\n");
+
+    //    if(nSupMod1%2) relid1[1]+=AliEMCALGeoParams::fgkEMCALCols;//bad
+    //    else           relid2[1]+=AliEMCALGeoParams::fgkEMCALCols;//bad
+    if(nSupMod1%2) relid2[1]+=AliEMCALGeoParams::fgkEMCALCols;
+    else           relid1[1]+=AliEMCALGeoParams::fgkEMCALCols;
   }
 	
   rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
@@ -1234,6 +1238,7 @@ Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * 
       digit = maxAt[iDigit] ;
           
       for(iDigitN = 0; iDigitN < fMulDigit; iDigitN++) {	
+	if(iDigitN == iDigit) continue;//the same digit
         digitN = (AliEMCALDigit *) digits->At(fDigitsList[iDigitN]) ; 
 	
 	if ( AreNeighbours(digit, digitN) ) {
@@ -1242,8 +1247,7 @@ Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * 
 	    // but may be digit too is not local max ?
 	    if(fEnergyList[iDigit] < fEnergyList[iDigitN] + locMaxCut) 
 	      maxAt[iDigit] = 0 ;
-	  }
-	  else {
+	  } else {
 	    maxAt[iDigit] = 0 ;
 	    // but may be digitN too is not local max ?
 	    if(fEnergyList[iDigit] > fEnergyList[iDigitN] - locMaxCut) 
@@ -1262,6 +1266,7 @@ Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * 
       iDigitN++ ; 
     }
   }
+
   return iDigitN ;
 }
 
