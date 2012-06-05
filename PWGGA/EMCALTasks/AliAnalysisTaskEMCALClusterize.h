@@ -131,7 +131,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   //Temporal arrays
   TClonesArray          *fDigitsArr;               //! Digits array
   TObjArray             *fClusterArr;              //! Recpoints array
-  TObjArray             *fCaloClusterArr;          //-> CaloClusters array
+  TObjArray             *fCaloClusterArr;          //! CaloClusters array
 
   //Clusterizers 
   AliEMCALRecParam      *fRecParam;                // Reconstruction parameters container
@@ -171,9 +171,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Bool_t                 fImportGeometryFromFile;  // Import geometry settings in geometry.root file
   TString                fImportGeometryFilePath;  // path fo geometry.root file
 
-  Bool_t                 fOADBSet ;                //  AODB parameters already set
-  Bool_t                 fAccessOADB ;             //  Get calibration from OADB for EMCAL
-  TString                fOADBFilePath ;           //  Default path $ALICE_ROOT/OADB/EMCAL, if needed change
+  Bool_t                 fOADBSet ;                // AODB parameters already set
+  Bool_t                 fAccessOADB ;             // Get calibration from OADB for EMCAL
+  TString                fOADBFilePath ;           // Default path $ALICE_ROOT/OADB/EMCAL, if needed change
     
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented

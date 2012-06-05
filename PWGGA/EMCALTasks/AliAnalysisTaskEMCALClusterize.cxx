@@ -358,7 +358,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
   fRun = fEvent->GetRunNumber();
   
   if(DebugLevel() > 1 )
-    printf("AliAnalysisTaksEMCALClusterize::AccessODCD() - Begin");
+    printf("AliAnalysisTaksEMCALClusterize::AccessOCDB() - Begin");
   
   AliCDBManager *cdb = AliCDBManager::Instance();
   
@@ -874,6 +874,7 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
   //Put the new clusters in the AOD list
   
   Int_t kNumberOfCaloClusters   = fCaloClusterArr->GetEntriesFast();
+
   for(Int_t i = 0; i < kNumberOfCaloClusters; i++)
   {
     AliAODCaloCluster *newCluster = (AliAODCaloCluster *) fCaloClusterArr->At(i);
@@ -921,8 +922,6 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
   
   fOutputAODBranch->Expand(kNumberOfCaloClusters); // resize TObjArray to 'remove' slots
   
-  // Clean up
-  fCaloClusterArr->Delete(); // Do not Clear(), it leaks, why?
   
 }
 
@@ -962,7 +961,6 @@ void AliAnalysisTaskEMCALClusterize::Init()
   fOADBSet           = kFALSE;
   if(fOADBFilePath == "") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;          
   
-  fCaloClusterArr    = new TObjArray(10000);
   fBranchNames       = "ESD:AliESDHeader.,EMCALCells.";
   
   if(!fRecParam)     fRecParam  = new AliEMCALRecParam;
@@ -1346,11 +1344,13 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
     Float_t g[3];
     
     // calculate new cluster position
+    
     recPoint->EvalGlobalPosition(fRecParam->GetW0(), fDigitsArr);
     recPoint->GetGlobalPosition(gpos);
     gpos.GetXYZ(g);
     
     // create a new cluster
+    
     (*fCaloClusterArr)[j] = new AliAODCaloCluster() ;
     AliAODCaloCluster *clus = dynamic_cast<AliAODCaloCluster *>( fCaloClusterArr->At(j) ) ;
     j++;
@@ -1461,7 +1461,8 @@ void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
 void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *) 
 {
   // Do clusterization event by event, execute different steps
-  // 1) Do some checks on the kind of events (ESD, AOD) or if some filtering is needed and initializations
+  // 1) Do some checks on the kind of events (ESD, AOD) or if some filtering is needed, initializations
+  //    load things and clear arrays
   // 2) Clusterize a) just unfolding existing clusters (fJustUnfold)
   //               b) recluster cells
   //                   +  convert cells into digits (calibrating them)
@@ -1470,11 +1471,16 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //                   +  transform recPoints into CaloClusters
   // 3) Do some final calculations in the found clusters (track-matching) and put them in an AOD branch
   
+  //-------
   // Step 1
   
   //Remove the contents of AOD branch output list set in the previous event 
   fOutputAODBranch->Clear("C");
-  
+
+  // intermediate array with new clusters : init the array only once or clear from previous event
+  if(!fCaloClusterArr) fCaloClusterArr    = new TObjArray(10000);
+  else                 fCaloClusterArr->Delete();//Clear("C"); it leaks?
+
   LoadBranches();
   
   //Get the event, do some checks and settings
@@ -1495,12 +1501,14 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   InitClusterization();
   
+  //-------
   // Step 2
   
   // Make clusters
   if (fJustUnfold) ClusterUnfolding();
   else             ClusterizeCells() ;
   
+  //-------
   // Step 3
   
   FillCaloClusterInEvent();
