@@ -125,10 +125,10 @@ AliAnalysisTaskLK0Spectra * AddTaskLK0Spectra(const char * outfilename, Int_t ib
    
 	sprintf(taskName,"clambdak0Histo_%2.2d",ibin);
 	
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(taskName, TList::Class(),AliAnalysisManager::kOutputContainer, outfilenameCentr.Data());
+	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(taskName, TList::Class(),AliAnalysisManager::kOutputContainer, Form("%s:lambdak0", AliAnalysisManager::GetCommonFileName()));
     //AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("clambdak0Centr_%2.2d",ibin), AliAnalysisCentralitySelector::Class(),AliAnalysisManager::kOutputContainer, outfilenameCentr.Data());
     //AliAnalysisDataContainer *output_cuts = mgr->CreateContainer(Form("cuts_%2.2d",ibin), AliESDtrackCuts::Class(), AliAnalysisManager::kOutputContainer, outfilenameCentr.Data()); 
-    
+	
 	mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task,1,coutput1);
     //mgr->ConnectOutput(task,2,coutput2);
