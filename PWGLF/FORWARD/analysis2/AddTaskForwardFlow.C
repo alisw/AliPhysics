@@ -1,7 +1,6 @@
 /**
  * @file   AddTaskForwardFlow.C
  * @author Alexander Hansen alexander.hansen@cern.ch 
- * @date   Wed Sep 07 12:14:17 2011
  * 
  * @brief  
  * 
@@ -26,6 +25,7 @@
  */
 void AddTaskForwardFlow(TString type = "", 
                         Bool_t mc = kFALSE,
+                        Bool_t dispVtx = kFALSE,
                         TString addFlow = "",
                         Int_t addFType = 0,
                         Int_t addFOrder = 0)
@@ -46,8 +46,6 @@ void AddTaskForwardFlow(TString type = "",
   }
 
   // --- Check which harmonics to calculate --- //
-
-  Bool_t v1 = kTRUE;
   Bool_t v2 = kTRUE;
   Bool_t v3 = kTRUE;
   Bool_t v4 = kTRUE;
@@ -55,7 +53,6 @@ void AddTaskForwardFlow(TString type = "",
   Bool_t v6 = kTRUE;
 
   if (type.Length() > 0) {
-    if (!type.Contains("1")) v1 = kFALSE;
     if (!type.Contains("2")) v2 = kFALSE;
     if (!type.Contains("3")) v3 = kFALSE;
     if (!type.Contains("4")) v4 = kFALSE;
@@ -83,10 +80,18 @@ void AddTaskForwardFlow(TString type = "",
   mgr->AddTask(task); 
 
   // Set which harmonics to do
-  task->SetDoHarmonics(v1, v2, v3, v4, v5, v6);
+  task->SetDoHarmonics(v2, v3, v4, v5, v6);
   // Set non-default axis for vertices
-  TAxis* a = new TAxis(20, -10, 10);
+  TAxis* a = 0;
+  if (!dispVtx) a = new TAxis(20, -10, 10);
+//  if (!dispVtx) a = new TAxis(1, -1, 0);
+  if ( dispVtx) a = new TAxis(6, 93.75, 318.75);
+//  if ( dispVtx) a = new TAxis(21, -393.75, 393.75);
   task->SetVertexAxis(a);
+  if ( dispVtx) Bool_t AliForwardFlowTaskQC::fgDispVtx = kTRUE;
+  // Set detector specific sigma cuts
+  task->SetDetectorCuts(4.10, 4.10);
+
   // Set debug flag
   task->SetDebugLevel(0);
   // Set up adding flow to MC input

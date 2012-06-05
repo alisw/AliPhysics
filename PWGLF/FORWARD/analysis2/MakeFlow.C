@@ -29,6 +29,7 @@ void MakeFlow(const char* data  = "",
               Bool_t  mc        = kFALSE,
 	      const char* name  = 0,
 	      Int_t   proof     = 0,
+	      Bool_t  dispVtx   = kFALSE,
 	      TString addFlow   = "",
               Int_t   addFType  = 0,
               Int_t   addFOrder = 0,
@@ -36,6 +37,8 @@ void MakeFlow(const char* data  = "",
 {
   // --- Load libs ---------------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+
+  Int_t debug = 0;
 
   // --- Possibly use plug-in for this -------------------------------
   if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
@@ -62,10 +65,11 @@ void MakeFlow(const char* data  = "",
 	    server.Data(), datadir.Data(), dataset.Data());
 
     MakeFlowTrain t(jobname.Data(), type.Data(), mc, addFlow.Data(), addFType, addFOrder, false);
+    t.SetUseDispVtx(dispVtx);
     t.SetProofServer(server.Data());
     t.SetDataDir(datadir.Data());
     t.SetDataSet(dataset.Data());
-    t.SetDebugLevel(1);
+    t.SetDebugLevel(debug);
     t.SetUseGDB(gdb);
     t.Run("proof", "full", nEvents, proof > 0);
 
@@ -97,8 +101,8 @@ void MakeFlow(const char* data  = "",
 
   // --- Add the tasks ---------------------------------------------
   gROOT->LoadMacro("AddTaskForwardFlow.C");
-  AddTaskForwardFlow(type, mc, addFlow, addFType, addFOrder);
-  mgr->SetDebugLevel(1);
+  AddTaskForwardFlow(type, mc, dispVtx, addFlow, addFType, addFOrder);
+  mgr->SetDebugLevel(debug);
 
   // --- Run the analysis --------------------------------------------
   TStopwatch t;
@@ -111,7 +115,6 @@ void MakeFlow(const char* data  = "",
   Printf("Doing flow analysis on %d Events", nEvents);
   Printf("****************************************");
   // 
-  mgr->SetDebugLevel(0);
   if (mgr->GetDebugLevel() < 1) 
     mgr->SetUseProgressBar(kTRUE, nEvents < 10000 ? 100 : 1000);
 

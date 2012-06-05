@@ -81,6 +81,7 @@ public:
     Exec(kAOD, mode, oper, nEvents, false, usePar, fDebug);
   }
   void SetDebugLevel(Int_t dbg = 0) { fDebug = dbg; }
+  void SetUseDispVtx(Bool_t use = kTRUE) { fDispVtx = use; }
 protected:
   /** 
    * Create the tasks 
@@ -101,8 +102,8 @@ protected:
 			     gROOT->GetMacroPath()));
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwardFlow.C(\"%s\",%d,\"%s\",%d,%d)",
-		      fType, fMC, fAddFlow, fAddFType, fAddFOrder));
+    gROOT->Macro(Form("AddTaskForwardFlow.C(\"%s\",%d,%d,\"%s\",%d,%d)",
+		      fType, fMC, fDispVtx, fAddFlow, fAddFType, fAddFOrder));
   }
   /** 
    * Do not the centrality selection
@@ -120,6 +121,7 @@ protected:
   Int_t fAddFType;
   Int_t fAddFOrder;
   Int_t fDebug;
+  Bool_t fDispVtx;
 };
 //
 // EOF

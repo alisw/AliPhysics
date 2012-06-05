@@ -118,15 +118,14 @@ void AliForwardMCFlowTaskQC::InitVertexBins()
   //
   AliForwardFlowTaskQC::InitVertexBins();
 
-  for(UShort_t n = 1; n <= 6; n++) {
+  for(UShort_t n = 2; n <= 6; n++) {
     if (!fv[n]) continue;
-    for (Int_t v = 1; v <= fVtxAxis->GetNbins(); v++) {
-      Int_t vL = Int_t(fVtxAxis->GetBinLowEdge(v));
-      Int_t vH = Int_t(fVtxAxis->GetBinUpEdge(v));
-      
-      fBinsFMDTR.Add(new VertexBin(vL, vH, n, "FMDTR"));
-      fBinsSPDTR.Add(new VertexBin(vL, vH, n, "SPDTR"));
-      fBinsMC.Add(new VertexBin(vL, vH, n, "MC"));
+      for (Int_t v = 1; v <= fVtxAxis->GetNbins(); v++) {
+      fBinsFMDTR.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, 
+      "FMDTR", (fgDispVtx ? kFALSE : kTRUE), fFMDCut));
+      fBinsSPDTR.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, 
+      "SPDTR", kTRUE, fSPDCut));
+      fBinsMC.Add(new VertexBin(fVtxAxis->GetBinLowEdge(v), fVtxAxis->GetBinUpEdge(v), n, "MC"));
     }
   }
 }
@@ -168,20 +167,21 @@ Bool_t AliForwardMCFlowTaskQC::Analyze()
     static_cast<AliAODForwardMult*>(fAOD->FindListObject("ForwardMC"));
   const AliAODCentralMult* aodcmult = 
     static_cast<AliAODCentralMult*>(fAOD->FindListObject("CentralClustersMC"));
-  if (!aodfmult || !aodcmult) return kFALSE;
+  Int_t vtx = fVtxAxis->FindBin(fVtx)-1;
   
   // if objects are present, get histograms
-  const TH2D& fmdTRdNdetadphi = aodfmult->GetHistogram();
-  const TH2D& spdTRdNdetadphi = aodcmult->GetHistogram();
-
-  // Run analysis on tr refs
-  Int_t vtx = fVtxAxis->FindBin(fVtx)-1;
-  if (!FillVtxBinList(fBinsFMDTR, fmdTRdNdetadphi, vtx)) return kFALSE;
-  if (!FillVtxBinList(fBinsSPDTR, spdTRdNdetadphi, vtx)) return kFALSE;
+  if (aodfmult) {
+    const TH2D& fmdTRdNdetadphi = aodfmult->GetHistogram();
+    FillVtxBinList(fBinsFMDTR, fmdTRdNdetadphi, vtx);
+  }
+  if (aodcmult) {
+    const TH2D& spdTRdNdetadphi = aodcmult->GetHistogram();
+    FillVtxBinList(fBinsSPDTR, spdTRdNdetadphi, vtx);
+  }
 
   // Run analysis on MC branch
   if (!LoopAODMC()) return kFALSE;
-  if (!FillVtxBinList(fBinsMC, fdNdedpMC, vtx)) return kFALSE;
+  FillVtxBinList(fBinsMC, fdNdedpMC, vtx);
 
   return kTRUE;
 }
@@ -200,6 +200,19 @@ void AliForwardMCFlowTaskQC::Finalize()
   return;
 }
 //_____________________________________________________________________
+Bool_t AliForwardMCFlowTaskQC::CheckTrigger(const AliAODForwardMult* aodfm) const 
+{
+  //
+  // Function to look for a trigger string in the event.
+  //
+  // Parameters: 
+  //  AliAODForwardMult: forward mult object with trigger and vertex info
+  //
+  // Returns true if B trigger is present - for some reason this is the one we use in MC
+  //
+  return aodfm->IsTriggerBits(AliAODForwardMult::kB);
+}
+// _____________________________________________________________________
 Bool_t AliForwardMCFlowTaskQC::GetCentrality(const AliAODForwardMult* aodfm)
 {
   // 
@@ -213,10 +226,10 @@ Bool_t AliForwardMCFlowTaskQC::GetCentrality(const AliAODForwardMult* aodfm)
   //
   if (fUseImpactPar) {
     fCent = GetCentFromB();
-    fHistCent->Fill(fCent);
-    return kTRUE;
+//    if (fCent >  30) fCent = 42;
+    if (fCent != -1) return kTRUE;
   }
-  else  return AliForwardFlowTaskQC::GetCentrality(aodfm);
+  return AliForwardFlowTaskQC::GetCentrality(aodfm);
 }
 //_____________________________________________________________________
 Bool_t AliForwardMCFlowTaskQC::LoopAODMC()  
@@ -228,17 +241,17 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
 
   //retreive MC particles from event
   TClonesArray* mcArray = 
-    static_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::
-						    StdBranchName()));
+    static_cast<TClonesArray*>(fAOD->FindListObject(
+                               AliAODMCParticle::StdBranchName()));
   if(!mcArray){
-    //    AliWarning("No MC array found in AOD. Try making it again.");
+    AliWarning("No MC array found in AOD. Try making it again.");
     return kFALSE;
   }
 
   Double_t rp = 0;
   AliAODMCHeader* header = 
-    dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::
-						       StdBranchName()));
+    dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject(
+                                  AliAODMCHeader::StdBranchName()));
   if (!header) 
     AliWarning("No header file found.");
   else 
@@ -253,7 +266,6 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
     if (fAddFlow.Contains("eta"))  flowFlags |= AliForwardFlowWeights::kEta;
     if (fAddFlow.Contains("cent")) flowFlags |= AliForwardFlowWeights::kCent;
   }
-
 
   // Track loop: chek how many particles will be accepted
   Double_t weight = 0;
@@ -278,6 +290,9 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
       fdNdedpMC.Fill(eta, phi, weight);
     }
   }
+  Int_t sBin = fdNdedpMC.GetXaxis()->FindBin(-4.);
+  Int_t eBin = fdNdedpMC.GetXaxis()->FindBin(+5.);
+  for ( ; sBin < eBin; sBin++) fdNdedpMC.SetBinContent(sBin, 0, 1.);
 
   return kTRUE;
 }
@@ -298,6 +313,23 @@ Double_t AliForwardMCFlowTaskQC::GetCentFromB() const
   cent = fImpactParToCent->Eval(b);
 
   return cent;
+}
+//_____________________________________________________________________
+void AliForwardMCFlowTaskQC::PrintFlowSetup() const  
+{
+  //
+  // Print the setup of the flow task
+  //
+  Printf("AliForwardMCFlowTaskQC::Print");
+  Printf("Number of bins in vertex axis:\t%d", fVtxAxis->GetNbins());
+  Printf("Range of vertex axis         :\t[%3.1f,%3.1f]", 
+			  fVtxAxis->GetXmin(), fVtxAxis->GetXmax());
+  printf("Doing flow analysis for      :\t");
+  for (Int_t n  = 2; n <= 6; n++) if (fv[n]) printf("v%d ", n);
+  printf("\n");
+  Printf("Displaced vertex flag:       :\t%s", (fgDispVtx ? "true" : "false"));
+  Printf("FMD sigma cut:               :\t%f", fFMDCut);
+  Printf("SPD sigma cut:               :\t%f", fSPDCut);
 }
 //_____________________________________________________________________
 //
