@@ -24,7 +24,6 @@
 #include<TTree.h>
 #include <AliMagF.h>
 #include <AliRun.h>
-#include <AliTPCtracker.h>
 #include <alles.h>
 #endif
 
@@ -79,7 +78,6 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
     if (!digp) { cerr<<"TPC parameters have not been found !\n"; return 2; }
   }
   ///////////
-  AliTPCtracker *tracker =0; 
   TObjArray tarray(MAX);
   AliTPCtrack *iotrack=0;
   Int_t nentr= 0;
@@ -114,11 +112,9 @@ Int_t AliTPCComparison2(Int_t firstev=0, Int_t eventn=1) {
       iotrack=new AliTPCtrack;
       tbranch->SetAddress(&iotrack);
       tracktree->GetEvent(i);
-      //      if(kOLD)tracker->CookLabel(iotrack,0.1);
       tarray.AddLast(iotrack);
     }   
     eventptr[event+1] = nentr;  //store end of the event
-    delete tracker;
     delete tracktree;
   }
   tf->Close();
