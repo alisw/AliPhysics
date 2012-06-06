@@ -59,6 +59,7 @@
 using namespace std;
 
 ClassImp(AliPerformanceRes)
+Double_t          AliPerformanceRes::fgkMergeEntriesCut=50000000.; //5*10**7 tracks
 
 //_____________________________________________________________________________
 AliPerformanceRes::AliPerformanceRes():
@@ -1109,7 +1110,7 @@ return newFolder;
 Long64_t AliPerformanceRes::Merge(TCollection* const list) 
 {
   // Merge list of objects (needed by PROOF)
-
+ 
   if (!list)
   return 0;
 
@@ -1125,9 +1126,10 @@ Long64_t AliPerformanceRes::Merge(TCollection* const list)
   {
   AliPerformanceRes* entry = dynamic_cast<AliPerformanceRes*>(obj);
   if (entry == 0) continue; 
-
-  fResolHisto->Add(entry->fResolHisto);
-  fPullHisto->Add(entry->fPullHisto);
+  if (fResolHisto->GetEntries()<fgkMergeEntriesCut){
+    fResolHisto->Add(entry->fResolHisto);  
+    fPullHisto->Add(entry->fPullHisto);
+  }
 
   count++;
   }
