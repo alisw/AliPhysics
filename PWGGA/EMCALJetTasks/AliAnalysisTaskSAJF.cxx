@@ -1,8 +1,8 @@
 // $Id$
 //
-// Jet analysis task (S.Aiola).
+// Jet analysis task.
 //
-//
+// Author: S.Aiola
 
 #include <TObject.h>
 #include <TChain.h>

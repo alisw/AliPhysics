@@ -2,7 +2,7 @@
 //
 // Jet embedding task.
 //
-// Author: Salvatore Aiola, Constantin Loizides
+// Author: S.Aiola, C.Loizides
 
 #include <TClonesArray.h>
 #include <TLorentzVector.h>

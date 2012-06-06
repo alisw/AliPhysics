@@ -1,8 +1,8 @@
 // $Id$
 //
-// General QA task (S.Aiola).
+// General QA task.
 //
-//
+// Author: S.Aiola
 
 #include <TChain.h>
 #include <TClonesArray.h>
