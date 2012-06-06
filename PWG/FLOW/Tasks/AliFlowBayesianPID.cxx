@@ -29,7 +29,7 @@
 
 ClassImp(AliFlowBayesianPID)
   
-TH2D* AliFlowBayesianPID::fghPriors[fgkNspecies] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}; // histo with priors (hardcoded)
+TH2D* AliFlowBayesianPID::fghPriors[fgkNspecies] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}; // histo with priors (hardcoded)
 TSpline3* AliFlowBayesianPID::fgMism = NULL; // function for mismatch
 TH1D* AliFlowBayesianPID::fgHtofChannelDist=NULL;
 
@@ -71,6 +71,10 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
     fghPriors[7] = new TH2D("fghPriorsHe","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
     redopriors = kTRUE;
   }
+  if(! fghPriors[8]){
+    fghPriors[8] = new TH2D("fghPriorsAlfa","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+    redopriors = kTRUE;
+  }
 
   if(redopriors) SetPriors();
 
@@ -89,6 +93,7 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
   fProb[5]=0.0;
   fProb[6]=0.0;
   fProb[7]=0.0;
+  fProb[8]=0.0;
 
   fMass[0] = fDB->GetParticle(11)->Mass(); // e mass
   fMass[1] = fDB->GetParticle(13)->Mass(); // mu mass
@@ -98,6 +103,7 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
   fMass[5] = fDB->GetParticle(2212)->Mass()+fDB->GetParticle(2112)->Mass(); // p mass
   fMass[6] = fDB->GetParticle(2212)->Mass()+fDB->GetParticle(2112)->Mass()*2; // p mass
   fMass[7] = (fDB->GetParticle(2212)->Mass()+fDB->GetParticle(2112)->Mass()*2)*0.5; // p mass
+  fMass[8] = (fDB->GetParticle(2212)->Mass()*2+fDB->GetParticle(2112)->Mass()*2)*0.5; // p mass
   
   // TOF response
   fTOFResponseF = new TF1("fTOFprob","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2])",-7,7);
@@ -389,11 +395,10 @@ void AliFlowBayesianPID::SetDetResponse(AliAODEvent *aod,Float_t centrality){
   fPsiRes=999;
 }
 //________________________________________________________________________
-Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS) const{
+//________________________________________________________________________
+Float_t AliFlowBayesianPID::GetExpDeDx(const AliVTrack *t,Int_t iS) const{
   // tuned dE/dx (vs. eta and centrality)
-  Double_t ptpc[3];
-  t->GetInnerPxPyPz(ptpc);
-  Float_t momtpc=TMath::Sqrt(ptpc[0]*ptpc[0] + ptpc[1]*ptpc[1] + ptpc[2]*ptpc[2]);
+  Float_t momtpc=t->GetTPCmomentum();
 
   Float_t dedxExp=0;
   if(iS==0) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kElectron);
@@ -404,7 +409,8 @@ Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS) const{
   else if(iS==5) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kDeuteron);
   else if(iS==6) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kTriton);
   else if(iS==7) dedxExp = fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5;
-    
+  else if(iS==8) dedxExp = fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[8])*5;
+
   Float_t eta = t->Eta();
   Float_t etaCorr = 7.98368e-03 - 1.67208e-02 - 1.89776e-01*eta*eta  -2.90836e-02*eta*eta + 5.96093e-01*eta*eta*eta*eta + 6.06450e-02*eta*eta*eta*eta - 3.55884e-01*eta*eta*eta*eta*eta*eta;
   if(fCurrCentrality < 0){
@@ -443,22 +449,17 @@ Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS) const{
   return dedxExp;
 }
 //________________________________________________________________________
-Float_t AliFlowBayesianPID::GetExpDeDx(const AliAODTrack *t,Int_t iS) const{
+Float_t AliFlowBayesianPID::GetExpDeDx(const AliVTrack *t,Float_t mass) const{
   // tuned dE/dx (vs. eta and centrality)
   Float_t momtpc=t->GetTPCmomentum();
 
-  Float_t dedxExp=0;
-  if(iS==0) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kElectron);
-  else if(iS==1) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kMuon);
-  else if(iS==2) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kPion);
-  else if(iS==3) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kKaon);
-  else if(iS==4) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kProton);
-  else if(iS==5) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kDeuteron);
-  else if(iS==6) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kTriton);
-  else if(iS==7) dedxExp = fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5;
+  if(mass < 0.0001) mass =  0.0001;
+
+  Float_t dedxExp = fPIDesd->GetTPCResponse().Bethe(momtpc/mass);
     
   Float_t eta = t->Eta();
   Float_t etaCorr = 7.98368e-03 - 1.67208e-02 - 1.89776e-01*eta*eta  -2.90836e-02*eta*eta + 5.96093e-01*eta*eta*eta*eta + 6.06450e-02*eta*eta*eta*eta - 3.55884e-01*eta*eta*eta*eta*eta*eta;
+
   if(fCurrCentrality < 0){
   }
   else if(fCurrCentrality < 5) etaCorr += 17E-3;
@@ -541,6 +542,22 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
 	      resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
 	      dedxExp = GetExpDeDx(t,4);
 	    }
+	    else if(iS-1e+9 == 10020){ // d
+	      resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kDeuteron);
+	      dedxExp = GetExpDeDx(t,5);
+	    }
+	    else if(iS-1e+9 == 10030){ // t
+	      resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kTriton);
+	      dedxExp = GetExpDeDx(t,6);
+	    }
+	    else if(iS-1e+9 == 20030){ // 3He
+	      resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5*0.07;
+	      dedxExp = GetExpDeDx(t,7);
+	    }
+	    else if(iS-1e+9 == 20040){ // 4He
+	      resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[5])*5*0.07;
+	      dedxExp = GetExpDeDx(t,8);
+	    }
 	    if(resolutionTPC > -1) dedx = fTPCResponseF->GetRandom()*resolutionTPC + dedxExp;
 	    else dedx = 0;
 	  }
@@ -562,6 +579,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
       else if(iS==5) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kDeuteron);
       else if(iS==6) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kTriton);
       else if(iS==7) resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5*0.07;
+      else if(iS==8) resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[8])*5*0.07;
       
       if(centr < 0) resolutionTPC *= 0.78;
       if(centr < 10) resolutionTPC *= 1.0;
@@ -601,11 +619,12 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
     Float_t mismweight = TMath::Max(fgMism->Eval(timeTOF - timeextra),0.0000001) * ((0.5 + 0.05/pt/pt/pt)*(0.75 + 0.23 * (1.3*dx*dx + 0.7*dz*dz))); // mismatch probabilities
     fWTofMism = mismfrac*mismweight;
 
-    Double_t inttimes[8];
+    Double_t inttimes[9];
     t->GetIntegratedTimes(inttimes);
     inttimes[5] = inttimes[0] / p * fMass[5] * TMath::Sqrt(1+p*p/fMass[5]/fMass[5]);
     inttimes[6] = inttimes[0] / p * fMass[6] * TMath::Sqrt(1+p*p/fMass[6]/fMass[6]);
     inttimes[7] = inttimes[0] / p * fMass[7] * TMath::Sqrt(1+p*p/fMass[7]/fMass[7]);
+    inttimes[8] = inttimes[0] / p * fMass[8] * TMath::Sqrt(1+p*p/fMass[8]/fMass[8]);
 
     for(Int_t iS=0;iS<fgkNspecies;iS++){
       Float_t expsigma = fPIDesd->GetTOFResponse().GetExpectedSigma(p, inttimes[iS], fMass[iS]);
@@ -663,14 +682,30 @@ void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,AliAODEvent *aod){
        resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kPion);
        dedxExp = GetExpDeDx(t,2);
      }
-      else if(iS==321){
-	resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kKaon);
-	dedxExp = GetExpDeDx(t,3);
-      }
-      else if(iS==2212){
-	resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
-	dedxExp = GetExpDeDx(t,4);
-      }
+     else if(iS==321){
+       resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kKaon);
+       dedxExp = GetExpDeDx(t,3);
+     }
+     else if(iS==2212){
+       resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kProton);
+       dedxExp = GetExpDeDx(t,4);
+     }
+     else if(iS-1e+9 == 10020){ // d
+       resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kDeuteron);
+       dedxExp = GetExpDeDx(t,5);
+     }
+     else if(iS-1e+9 == 10030){ // t
+       resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kTriton);
+       dedxExp = GetExpDeDx(t,6);
+     }
+     else if(iS-1e+9 == 20030){ // 3He
+       resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5*0.07;
+       dedxExp = GetExpDeDx(t,7);
+     }
+     else if(iS-1e+9 == 20040){ // 4He
+       resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[5])*5*0.07;
+       dedxExp = GetExpDeDx(t,8);
+     }
      if(resolutionTPC > -1)
        dedx = fTPCResponseF->GetRandom()*resolutionTPC + dedxExp;
      else dedx = 0;
@@ -693,6 +728,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,AliAODEvent *aod){
       else if(iS==5) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kDeuteron);
       else if(iS==6) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kTriton);
       else if(iS==7) resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5*0.07;
+      else if(iS==8) resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[8])*5*0.07;
 
       if(centr < 0) resolutionTPC *= 0.78;
       if(centr < 10) resolutionTPC *= 1.0;
@@ -735,11 +771,12 @@ void AliFlowBayesianPID::ComputeWeights(const AliAODTrack *t,AliAODEvent *aod){
     Float_t mismweight = TMath::Max(fgMism->Eval(timeTOF - timeextra),0.0000001) * ((0.5 + 0.05/pt/pt/pt)); // mismatch probabilities
     fWTofMism = mismfrac*mismweight;
 
-    Double_t inttimes[8];
+    Double_t inttimes[9];
     t->GetIntegratedTimes(inttimes);
     inttimes[5] = inttimes[0] / p * fMass[5] * TMath::Sqrt(1+p*p/fMass[5]/fMass[5]);
     inttimes[6] = inttimes[0] / p * fMass[6] * TMath::Sqrt(1+p*p/fMass[6]/fMass[6]);
     inttimes[7] = inttimes[0] / p * fMass[7] * TMath::Sqrt(1+p*p/fMass[7]/fMass[7]);
+    inttimes[8] = inttimes[0] / p * fMass[8] * TMath::Sqrt(1+p*p/fMass[8]/fMass[8]);
 
     for(Int_t iS=0;iS<fgkNspecies;iS++){
       if(iS==0){
@@ -1972,7 +2009,8 @@ void AliFlowBayesianPID::SetPriors(){
       fghPriors[5]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact);
       fghPriors[6]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact/deutFact);
       fghPriors[7]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact/deutFact/deutFact);      
-    } // end loop on pt
+       fghPriors[8]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact/deutFact/deutFact/deutFact);      
+   } // end loop on pt
   } // end loop on centrality bins
   
 }

@@ -31,8 +31,7 @@ class AliFlowCandidateTrack : public AliFlowTrack {
   protected:
     Int_t fNDaughters;        // number of daughters (5 max)
     Int_t fDaughter[5];       // fID of daughter, points back to ESD track
-    AliFlowTrack *fTrack[5];  // pointer to daughter in FlowEvent
-    
+    AliFlowTrack *fTrack[5];  //! pointer to daughter in FlowEvent
 
     ClassDef(AliFlowCandidateTrack, 2);
 };
