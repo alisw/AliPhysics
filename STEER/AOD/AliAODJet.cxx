@@ -30,6 +30,7 @@ ClassImp(AliAODJet)
 AliAODJet::AliAODJet() :
     AliVParticle(),
     fNeutralFraction(0),
+    fPtLeadingConstituent(-1.),
     fTrigger(0),
     fMomentum(0),
     fVectorAreaCharged(0),
@@ -47,10 +48,13 @@ AliAODJet::AliAODJet() :
 AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
     AliVParticle(),
     fNeutralFraction(0),
+    fPtLeadingConstituent(-1.),
     fTrigger(0),
     fMomentum(0),
     fVectorAreaCharged(0),
     fRefTracks(new TRefArray())
+
+
 {
   // constructor
     fBackgEnergy[0]   = 0.;     
@@ -65,10 +69,12 @@ AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
 AliAODJet::AliAODJet(TLorentzVector & p):
     AliVParticle(),
     fNeutralFraction(0),
+    fPtLeadingConstituent(-1.),
     fTrigger(0),
     fMomentum(0),
     fVectorAreaCharged(0),
     fRefTracks(new TRefArray())
+
 {
   // constructor
     fBackgEnergy[0]   = 0.;     
@@ -94,10 +100,12 @@ AliAODJet::~AliAODJet()
 AliAODJet::AliAODJet(const AliAODJet& jet) :
     AliVParticle(jet),
     fNeutralFraction(jet.fNeutralFraction),
+    fPtLeadingConstituent(jet.fPtLeadingConstituent),
     fTrigger(jet.fTrigger),
     fMomentum(0),
     fVectorAreaCharged(0),
     fRefTracks(0)
+
 {
   // Copy constructor
     fBackgEnergy[0]   = jet.fBackgEnergy[0];
@@ -128,6 +136,7 @@ AliAODJet& AliAODJet::operator=(const AliAODJet& jet)
     fPtSubtracted[0] =   jet.fPtSubtracted[0];
     fPtSubtracted[1] =   jet.fPtSubtracted[1];
     fNeutralFraction = jet.fNeutralFraction;
+    fPtLeadingConstituent = jet.fPtLeadingConstituent;
     fTrigger = jet.fTrigger;
     
     
@@ -142,6 +151,8 @@ AliAODJet& AliAODJet::operator=(const AliAODJet& jet)
       }
     delete fRefTracks;
     fRefTracks = new TRefArray(*jet.fRefTracks);    
+
+
   }
 
   return *this;
@@ -164,6 +175,7 @@ void AliAODJet::Print(Option_t* option) const
   printf("Effective Area: \n");
   printf("Charged:  %13.3f\n", EffectiveAreaCharged());
   printf("Neutral:  %13.3f\n", EffectiveAreaNeutral());
+  printf("Leading constituent: %f\n",GetPtLeading());
  }
  else {
   printf("Jet %s, Eta: %13.3f, Phi: %13.3f, Pt: %13.3f\n",option,Eta(),Phi(),Pt());

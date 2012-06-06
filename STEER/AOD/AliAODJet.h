@@ -88,19 +88,22 @@ class AliAODJet : public AliVParticle {
     virtual Double_t   ErrorEffectiveAreaCharged()   const { return  fEffectiveAreaError[0];}
     virtual Double_t   ErrorEffectiveAreaNeutral()   const { return  fEffectiveAreaError[1];}
     virtual Double_t   DeltaR(const AliVParticle* part) const;
-
     
     TLorentzVector*    MomentumVector()         const {return fMomentum;}
+
+    virtual void     SetPtLeading(Double_t pt) {fPtLeadingConstituent=pt;}
+    virtual Double_t GetPtLeading()        const { return fPtLeadingConstituent;}
+
     virtual void       Print(Option_t* option) const;
     
-// Dummy  
+    // Dummy  
     virtual Short_t Charge()      const { return 0;}
     virtual const Double_t* PID() const { return NULL;}
     virtual Int_t   GetLabel()    const { return -1;}
-  // Dummy
+    // Dummy
     virtual Int_t    PdgCode()    const {return 0;}
 
-//
+    //
 
     // first only one bit for EMCAL and TRD, leave space for more
     // trigger types and/or other detectors
@@ -119,12 +122,14 @@ class AliAODJet : public AliVParticle {
     Double32_t      fEffectiveAreaError[2];  //[0,1,10] relative error of jet areas, 10 bit precision
     Double32_t      fNeutralFraction;        //[0,1,12] Neutral fraction between 0 and 1 12 bit precision;
     Double32_t      fPtSubtracted[2];        //[0,0,12] pT after subtraction can be negative four momentum close to 0 in this case, 12 bit precision
-    UInt_t         fTrigger;                // Bit mask to flag jets triggered by a certain detector  
+    Double32_t      fPtLeadingConstituent;   //[0,0,12] pT of leading constituent
+    UInt_t          fTrigger;                // Bit mask to flag jets triggered by a certain detector  
     TLorentzVector* fMomentum;               // Jet 4-momentum vector
     TLorentzVector* fVectorAreaCharged;      // jet area four momentum 
     TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,13);
+
+    ClassDef(AliAODJet,14);
 
 };
 
