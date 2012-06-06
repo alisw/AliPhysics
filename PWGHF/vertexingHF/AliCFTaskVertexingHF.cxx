@@ -70,6 +70,7 @@
 #include "AliCFVertexingHF3Prong.h"
 #include "AliCFVertexingHFCascade.h"
 #include "AliCFVertexingHF.h"
+#include "AliVertexingHFUtils.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
 
@@ -98,6 +99,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fWeight(1.),
 	fUseFlatPtWeight(kFALSE),
 	fUseZWeight(kFALSE),
+	fUseNchWeight(kFALSE),
 	fNvar(0),
 	fPartName(""),
 	fDauNames(""),
@@ -109,7 +111,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fDsOption(1),
 	fGenDsOption(3),
 	fConfiguration(kCheetah), // by default, setting the fast configuration
-	fFuncWeight(0x0)
+	fFuncWeight(0x0),
+	fHistoMeasNch(0x0),
+	fHistoMCNch(0x0)
 {
 	//
 	//Default ctor
@@ -140,6 +144,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fWeight(1.),
 	fUseFlatPtWeight(kFALSE),
 	fUseZWeight(kFALSE),
+	fUseNchWeight(kFALSE),
 	fNvar(0),
 	fPartName(""),
 	fDauNames(""),
@@ -151,7 +156,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fDsOption(1),
 	fGenDsOption(3),
 	fConfiguration(kCheetah),  // by default, setting the fast configuration
-	fFuncWeight(func)
+	fFuncWeight(func),
+	fHistoMeasNch(0x0),
+	fHistoMCNch(0x0)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -180,6 +187,8 @@ AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF
 		fHistEventsProcessed = c.fHistEventsProcessed;
 		fCuts = c.fCuts;
 		fFuncWeight = c.fFuncWeight;
+		fHistoMeasNch = c.fHistoMeasNch;
+		fHistoMCNch = c.fHistoMCNch;
 	}
 	return *this;
 }
@@ -209,6 +218,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fWeight(c.fWeight),
 	fUseFlatPtWeight(c.fUseFlatPtWeight),
 	fUseZWeight(c.fUseZWeight),
+	fUseNchWeight(c.fUseNchWeight),
 	fNvar(c.fNvar),
 	fPartName(c.fPartName),
 	fDauNames(c.fDauNames),
@@ -220,7 +230,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fDsOption(c.fDsOption),
 	fGenDsOption(c.fGenDsOption),
 	fConfiguration(c.fConfiguration),
-	fFuncWeight(c.fFuncWeight)
+	fFuncWeight(c.fFuncWeight),
+	fHistoMeasNch(c.fHistoMeasNch),
+	fHistoMCNch(c.fHistoMCNch)
 {
 	//
 	// Copy Constructor
@@ -237,7 +249,9 @@ AliCFTaskVertexingHF::~AliCFTaskVertexingHF()
 	if (fHistEventsProcessed) delete fHistEventsProcessed ;
 	if (fCorrelation)	  delete fCorrelation ;
 	if (fCuts)                delete fCuts;
-	if (fFuncWeight)                delete fFuncWeight;
+	if (fFuncWeight)          delete fFuncWeight;
+	if (fHistoMeasNch)        delete fHistoMeasNch;
+	if (fHistoMCNch)          delete fHistoMCNch;
 }
 
 //_________________________________________________________________________-
@@ -249,6 +263,10 @@ void AliCFTaskVertexingHF::Init()
 	
 	if (fDebug>1) printf("AliCFTaskVertexingHF::Init()");
 	if(fUseWeight && fUseZWeight) { AliFatal("Can not use at the same time pt and z-vtx weights, please choose"); return; }
+	if(fUseWeight && fUseNchWeight) { AliFatal("Can not use at the same time pt and Nch weights, please choose"); return; }
+	if(fUseNchWeight && !fHistoMCNch) { AliFatal("Need to pass the MC Nch distribution to use Nch weights"); return; }
+	if(fUseNchWeight) CreateMeasuredNchHisto();
+
 	AliRDHFCuts *copyfCuts = 0x0;
 	if (!fCuts){
 		AliFatal("No cuts defined - Exiting...");
@@ -523,7 +541,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	Double_t zPrimVertex = aodVtx ->GetZ();
 	Double_t zMCVertex = mcHeader->GetVtxZ();
 	Int_t runnumber = aodEvent->GetRunNumber();
-	if(fUseZWeight) fWeight = GetZWeight(zMCVertex,runnumber);
+	fWeight=1.;
+	if(fUseZWeight) fWeight *= GetZWeight(zMCVertex,runnumber);
+	if(fUseNchWeight){
+	  Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
+	  fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
+	  AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));	
+	}
 
 	if (TMath::Abs(zMCVertex) > fCuts->GetMaxVtxZ()){
 	  AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fCuts->GetMaxVtxZ(), fCuts->GetMaxVtxZ()));
@@ -1150,8 +1174,42 @@ Double_t AliCFTaskVertexingHF::DodzFit(Float_t z, Double_t* par) {
 
   return value;
 }
-
 //__________________________________________________________________________________________________
+Double_t AliCFTaskVertexingHF::GetNchWeight(Int_t nch){
+  //
+  //  calculates the Nch weight using the measured and generateed Nch distributions
+  //
+  if(nch<=0) return 0.;
+  Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nch));
+  Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
+  return pMeas/pMC;
+}
+//__________________________________________________________________________________________________
+void AliCFTaskVertexingHF::CreateMeasuredNchHisto(){
+  // creates historgam with measured multiplcity distribution in pp 7 TeV collisions (from Eur. Phys. J. C (2010) 68: 345–354)
+  Double_t nchbins[66]={0.50,1.50,2.50,3.50,4.50,5.50,6.50,7.50,8.50,9.50,
+			10.50,11.50,12.50,13.50,14.50,15.50,16.50,17.50,18.50,19.50,
+			20.50,21.50,22.50,23.50,24.50,25.50,26.50,27.50,28.50,29.50,
+			30.50,31.50,32.50,33.50,34.50,35.50,36.50,37.50,38.50,39.50,
+			40.50,41.50,42.50,43.50,44.50,45.50,46.50,47.50,48.50,49.50,
+			50.50,51.50,52.50,53.50,54.50,55.50,56.50,57.50,58.50,59.50,
+			60.50,62.50,64.50,66.50,68.50,70.50};
+  Double_t pch[65]={0.062011,0.072943,0.070771,0.067245,0.062834,0.057383,0.051499,0.04591,0.041109,0.036954,
+		    0.03359,0.030729,0.028539,0.026575,0.024653,0.0229,0.021325,0.019768,0.018561,0.017187,
+		    0.01604,0.014836,0.013726,0.012576,0.011481,0.010393,0.009502,0.008776,0.008024,0.007452,
+		    0.006851,0.006428,0.00594,0.005515,0.005102,0.00469,0.004162,0.003811,0.003389,0.003071,
+		    0.002708,0.002422,0.002184,0.001968,0.00186,0.00165,0.001577,0.001387,0.001254,0.001118,
+		    0.001037,0.000942,0.000823,0.000736,0.000654,0.000579,0.000512,0.00049,0.00045,0.000355,
+		    0.000296,0.000265,0.000193,0.00016,0.000126};
+
+  if(fHistoMeasNch) delete fHistoMeasNch;
+  fHistoMeasNch=new TH1F("hMeaseNch","",65,nchbins);
+  for(Int_t i=0; i<65; i++){
+    fHistoMeasNch->SetBinContent(i+1,pch[i]);
+    fHistoMeasNch->SetBinError(i+1,0.);
+  }
+}
+
 Bool_t AliCFTaskVertexingHF::ProcessDs(Int_t recoAnalysisCuts) const{
   // processes output of Ds is selected
   Bool_t keep=kFALSE;

@@ -29,6 +29,7 @@
 #include "AliCFVertexingHF2Prong.h"
 #include "AliCFVertexingHF3Prong.h"
 #include "AliCFVertexingHF.h"
+#include <TH1F.h>
 
 class TH1I;
 class TParticle ;
@@ -104,7 +105,16 @@ public:
 	Bool_t GetUseZWeight() const {return fUseZWeight;}
 	Double_t GetZWeight(Float_t z, Int_t runnumber);
 	Double_t DodzFit(Float_t z, Double_t* par);
- 	
+
+	void SetUseNchWeight(Bool_t useWeight){fUseNchWeight=useWeight;}
+	Bool_t GetUseNchWeight() const {return fUseNchWeight;}
+ 	void SetMCNchHisto(TH1F* h){
+	  if(fHistoMCNch) delete fHistoMCNch;
+	  fHistoMCNch=new TH1F(*h);
+	}
+	void CreateMeasuredNchHisto();
+	Double_t GetNchWeight(Int_t nch);
+
 	void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
 	UShort_t GetDselection (){return fOriginDselection;}
 	void SetSign(Char_t isSign) {fSign = isSign;}
@@ -163,6 +173,7 @@ protected:
 	Double_t fWeight;              //weight used to fill the container
 	Bool_t fUseFlatPtWeight;       // flag to decide to use a flat pt shape
 	Bool_t fUseZWeight;           // flag to decide whether to use z-vtx weights != 1 when filling the container or not
+	Bool_t fUseNchWeight;         // flag to decide whether to use Ncharged weights != 1 when filling the container or not
 	Int_t fNvar;                   // number of variables for the container
 	TString fPartName;    // D meson name
 	TString fDauNames;    // daughter in fin state
@@ -175,8 +186,10 @@ protected:
 	Int_t  fGenDsOption;     // Ds decay option (generation level)
 	Int_t fConfiguration; // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 	TF1* fFuncWeight;     // user-defined function to be used to calculate weights
+	TH1F* fHistoMeasNch;  // histogram with measured Nch distribution (pp 7 TeV)
+	TH1F* fHistoMCNch;  // histogram with Nch distribution from MC production
 
-	ClassDef(AliCFTaskVertexingHF,11); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,12); // class for HF corrections as a function of many variables
 };
 
 #endif
