@@ -47,12 +47,13 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	AliHFAssociatedTrackCuts& operator=(const AliHFAssociatedTrackCuts& source);
 	
 	virtual ~AliHFAssociatedTrackCuts(); // destructor
-	//	virtual Bool_t IsSelected(TList*  list) {if(list) return kTRUE; return kFALSE;};
-	 Bool_t IsInAcceptance();
-	 Bool_t IsHadronSelected(AliAODTrack * track, AliAODVertex *vtx1, Double_t bz);
-	 Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray);
-	 Bool_t IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *vtx1);
-	 Int_t IsMCpartFromHF(Int_t label, TClonesArray*mcArray);
+	Bool_t IsSelected(TList*  list) {if(list) return kTRUE; return kFALSE;};
+	Bool_t IsSelected(TObject*  obj) {if(obj) return kTRUE; return kFALSE;};
+	Bool_t IsInAcceptance();
+	Bool_t IsHadronSelected(AliAODTrack * track, AliAODVertex *vtx1, Double_t bz);
+	Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray);
+	Bool_t IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *vtx1);
+	Int_t IsMCpartFromHF(Int_t label, TClonesArray*mcArray);
 	
 	
 	

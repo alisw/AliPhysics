@@ -231,30 +231,39 @@ Bool_t AliHFAssociatedTrackCuts::IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *
 	return kTRUE;
 }
 //--------------------------------------------------------------------------
-Int_t AliHFAssociatedTrackCuts::IsMCpartFromHF(Int_t label, TClonesArray*mcArray)
+Int_t AliHFAssociatedTrackCuts::IsMCpartFromHF(Int_t label, TClonesArray*mcArray){
+  // Check origin in MC
 
-{
-AliAODMCParticle* MCParticle;
-Int_t generationpdgcode = -1;
-if (label<0) return 0;
-Bool_t isCharmy = kFALSE;
-Bool_t isBeauty = kFALSE;
-Int_t generation = 0;
-while(generationpdgcode!=2212){	// loops back to the collision to check the particle source	
-	MCParticle = dynamic_cast<AliAODMCParticle*>(mcArray->At(label));
-	generationpdgcode =  TMath::Abs(MCParticle->GetPdgCode());
-	label = MCParticle->GetMother();
-	generation++;
-	if(generationpdgcode == 4) isCharmy = kTRUE;
-		if(generationpdgcode == 5) {isBeauty = kTRUE; isCharmy = kFALSE;}
-	if(label<0) break;
-	
-}
-if (isCharmy) return 4;
-else if (isBeauty) return 5;
-else return 0;
+  AliAODMCParticle* mcParticle;
+  Int_t pdgCode = -1;
+  if (label<0) return 0;
+  Bool_t isCharmy = kFALSE;
+  Bool_t isBeauty = kFALSE;
+  Bool_t isD = kFALSE;
+  Bool_t isB = kFALSE;
 
-	
+  while(pdgCode!=2212){ // loops back to the collision to check the particle source
+
+    mcParticle = dynamic_cast<AliAODMCParticle*>(mcArray->At(label));
+    if(!mcParticle) {cout << "NO MC PARTICLE" << endl; break;}
+    pdgCode =  TMath::Abs(mcParticle->GetPdgCode());
+
+    label = mcParticle->GetMother();
+
+
+    if((pdgCode>=400 && pdgCode <500) || (pdgCode>=4000 && pdgCode<5000 )) isD = kTRUE;
+    if((pdgCode>=500 && pdgCode <600) || (pdgCode>=5000 && pdgCode<6000 )) {isD = kFALSE; isB = kTRUE;}
+
+
+    if(pdgCode == 4) isCharmy = kTRUE;
+    if(pdgCode == 5) {isBeauty = kTRUE; isCharmy = kFALSE;}
+    if(label<0) break;
+
+  }
+  if (isCharmy && isD) return 44; // the first 4(5) indicates the charm/beauty quark, the second the charmy meson
+  if (isBeauty && isD) return 54;
+  if (isBeauty && isB) return 55;
+  return 0;
 }
 //________________________________________________________
 void AliHFAssociatedTrackCuts::SetAODTrackCuts(Float_t *cutsarray)
