@@ -149,6 +149,12 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->SetGridy();
   gPad->SetGridx();
   PIDSig_data->DrawClone("colz");
+  for(Int_t ipart=0;ipart<3;ipart++){
+    TH2F *PIDSig_dataPart = (TH2F*)((TH2F*)hman_data->GetPIDHistogram(Form("hHistPIDTPC%s",Particle[ipart].Data())))->Clone();
+    PIDSig_dataPart->SetMarkerStyle(22);
+    PIDSig_dataPart->SetMarkerSize(.5);
+    PIDSig_dataPart->DrawClone("same");
+  }
   cPIDSig->cd(2);
   TH2F *PIDSig_mc = (TH2F*)((TH2F*)hman_mc->GetPIDHistogram("hHistPIDTPC"))->Clone();
   PIDSig_mc->SetYTitle("TPC signal");
@@ -156,6 +162,12 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->SetGridy();
   gPad->SetGridx();
   PIDSig_mc->DrawClone("colz");
+  for(Int_t ipart=0;ipart<3;ipart++){
+    TH2F *PIDSig_mcPart = (TH2F*)((TH2F*)hman_mc->GetPIDHistogram(Form("hHistPIDTPC%s",Particle[ipart].Data())))->Clone();
+    PIDSig_mcPart->SetMarkerStyle(22);
+    PIDSig_mcPart->SetMarkerSize(.5);
+    PIDSig_mcPart->DrawClone("same");
+  }
   cPIDSig->cd(3);
   TH2F *PIDSig_data = (TH2F*)((TH2F*)hman_data->GetPIDHistogram("hHistPIDTOF"))->Clone();
   PIDSig_data->SetYTitle("TOF signal");
@@ -337,8 +349,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
     nsig_mc_Proj2->DrawNormalized("lhistsame");
     gPad->BuildLegend();
   }
-  return;
-
+  
   //Muon over Pion Ratio
   Printf("\n\n-> Muon Over Pion");
   TCanvas *cMu=new TCanvas("cMu","cMu");
