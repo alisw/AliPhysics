@@ -38,10 +38,12 @@ void AliSpectraAODPID::FillQAHistos(AliSpectraAODHistoManager * hman, AliAODTrac
   
   //Response
   AliVParticle *inEvHMain = dynamic_cast<AliVParticle *>(track);
-
+  
   hman->GetPIDHistogram(kHistPIDTPC)->Fill(track->GetTPCmomentum(), track->GetTPCsignal()*track->Charge()); // PID histo
-
-
+  hman->GetPIDHistogram(kHistPIDTPCPion)->Fill(track->GetTPCmomentum(),fPIDResponse->GetTPCResponse().GetExpectedSignal(track->GetTPCmomentum(),AliPID::kPion)*track->Charge()); // Expected PIDPion histo
+  hman->GetPIDHistogram(kHistPIDTPCKaon)->Fill(track->GetTPCmomentum(),fPIDResponse->GetTPCResponse().GetExpectedSignal(track->GetTPCmomentum(),AliPID::kKaon)*track->Charge()); // Expected PIDKaon histo
+  hman->GetPIDHistogram(kHistPIDTPCProton)->Fill(track->GetTPCmomentum(),fPIDResponse->GetTPCResponse().GetExpectedSignal(track->GetTPCmomentum(),AliPID::kProton)*track->Charge()); // Expected PIDProton histo
+  
   Double_t nsigmaTPCkProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kProton));
   Double_t nsigmaTPCkKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kKaon)); 
   Double_t nsigmaTPCkPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kPion)); 
@@ -49,6 +51,7 @@ void AliSpectraAODPID::FillQAHistos(AliSpectraAODHistoManager * hman, AliAODTrac
 
   if(track->Pt()>trackCuts->GetPtTOFMatching()){
     hman->GetPIDHistogram(kHistPIDTOF)->Fill(track->P(),(track->GetTOFsignal()/100)*track->Charge()); // PID histo
+    
     nsigmaTOFkProton = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kProton));
     nsigmaTOFkKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kKaon)); 
     nsigmaTOFkPion = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kPion)); 
