@@ -33,10 +33,10 @@ AliTOFPIDResponse::AliTOFPIDResponse():
   fPmax(0),         // zero at 0.5 GeV/c for pp
   fTime0(0)
 {
-  fPar[0] = 0.;
-  fPar[1] = 0.;
-  fPar[2] = 0.018;
-  fPar[3] = 50.0;
+  fPar[0] = 0.008;
+  fPar[1] = 0.008;
+  fPar[2] = 0.002;
+  fPar[3] = 40.0;
 
   // Reset T0 info
   ResetT0info();
@@ -55,10 +55,10 @@ AliTOFPIDResponse::AliTOFPIDResponse(Double_t *param):
 
   //fPmax=TMath::Exp(-0.5*3*3)/fSigma; // ~3 sigma at 0.5 GeV/c for PbPb 
 
-  fPar[0] = 0.;
-  fPar[1] = 0.;
-  fPar[2] = 0.018;
-  fPar[3] = 50.0;
+  fPar[0] = 0.008;
+  fPar[1] = 0.008;
+  fPar[2] = 0.002;
+  fPar[3] = 40.0;
 
   // Reset T0 info
   ResetT0info();
