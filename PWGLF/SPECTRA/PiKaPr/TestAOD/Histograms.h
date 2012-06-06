@@ -92,7 +92,10 @@ namespace AliSpectraNameSpace
       
       kHistPIDTPC,                              // Particle Identification histo
       kHistPIDTOF,                              
-      kNHistPID =kHistPIDTOF,                           
+      kHistPIDTPCPion,                              
+      kHistPIDTPCKaon,                              
+      kHistPIDTPCProton,                              
+      kNHistPID =kHistPIDTPCProton,                           
       
       kHistNSigPionTPC,                              
       kHistNSigKaonTPC,                              
