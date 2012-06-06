@@ -42,6 +42,7 @@
 //header
 #include "AliTPCConfigParser.h"
 
+using std::ifstream;
 
 AliTPCConfigParser::AliTPCConfigParser() :
 TObject(),

@@ -63,6 +63,8 @@
 //              Class AliTPCLaserTracks
 ////////////////////////////////////////////////////////////////////////
 
+using std::cout;
+using std::endl;
 ClassImp(AliTPCLaserTracks)
 
   AliTPCLaserTracks::AliTPCLaserTracks():TObject(),

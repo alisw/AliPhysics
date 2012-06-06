@@ -53,6 +53,8 @@
 #include "TGeoHalfSpace.h"
 #include "TTreeStream.h"
 
+using std::ifstream;
+using std::ios_base;
 ClassImp(AliTPCv2)
  
 //_____________________________________________________________________________

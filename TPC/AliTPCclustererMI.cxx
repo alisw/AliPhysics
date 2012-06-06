@@ -82,6 +82,8 @@
 #include "AliTPCTransform.h"
 #include "AliTPCclustererMI.h"
 
+using std::cerr;
+using std::endl;
 ClassImp(AliTPCclustererMI)
 
 

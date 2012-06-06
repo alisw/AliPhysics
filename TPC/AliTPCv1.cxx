@@ -54,6 +54,9 @@
 #include "TGeoTrd1.h"
 #include "TGeoCompositeShape.h"
 #include "TGeoPara.h"
+
+using std::ifstream;
+using std::ios_base;
 ClassImp(AliTPCv1)
 
 //_____________________________________________________________________________

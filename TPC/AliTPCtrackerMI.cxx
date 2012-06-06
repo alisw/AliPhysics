@@ -149,6 +149,8 @@
 
 //
 
+using std::cerr;
+using std::endl;
 ClassImp(AliTPCtrackerMI)
 
 

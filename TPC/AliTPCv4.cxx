@@ -55,6 +55,8 @@ TPC version for the krypton runs (Marek)
 #include "TGeoPara.h"
 #include "TGeoPhysicalNode.h"
 
+using std::ifstream;
+using std::ios_base;
 ClassImp(AliTPCv4)
  
 //_____________________________________________________________________________

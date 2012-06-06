@@ -70,6 +70,7 @@
 //
 #include "AliTPCCalibViewer.h"
 
+using std::ifstream;
 ClassImp(AliTPCCalibViewer)
 
 

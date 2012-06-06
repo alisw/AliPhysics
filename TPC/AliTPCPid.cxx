@@ -25,6 +25,8 @@
 #include "Riostream.h"
 #include <cassert>
 
+using std::cout;
+using std::endl;
 ClassImp(AliTPCPid)
 // Correction 13.01.2003 Z.S.,Dubna
 //            22.01.2003

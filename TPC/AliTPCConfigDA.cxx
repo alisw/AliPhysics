@@ -40,7 +40,7 @@
 //header
 #include "AliTPCConfigDA.h"
 
-
+using std::ifstream;
 
 AliTPCConfigDA::AliTPCConfigDA() :
   TObject(),

@@ -37,7 +37,8 @@
 #include "AliSegmentArray.h"
 #include "TObjString.h"
 
-
+using std::endl;
+using std::cout;
 //_____________________________________________________________________________
 ClassImp(AliSegmentArray)
   

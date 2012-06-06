@@ -49,6 +49,8 @@ Class creating the aligmnent object fro the surveyor measurements.
 #include "AliLog.h"
 #include "AliCDBManager.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliTPCAlign)
 
 AliTPCAlign::AliTPCAlign() :

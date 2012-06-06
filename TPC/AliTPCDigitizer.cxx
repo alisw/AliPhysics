@@ -56,6 +56,9 @@
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
 
+using std::cout;
+using std::cerr;
+using std::endl;
 ClassImp(AliTPCDigitizer)
 
 //___________________________________________

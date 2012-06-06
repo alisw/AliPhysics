@@ -233,6 +233,10 @@ delete stream;
 #include "AliTPCCalROC.h"
 #include "AliRawEventHeaderBase.h"
 
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::list;
 ClassImp(AliTPCclustererKr)
 
 

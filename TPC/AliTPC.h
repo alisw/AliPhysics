@@ -26,6 +26,7 @@ class TTreeSRedirector;
 #include "AliDigit.h" 
 #include "AliHit.h" 
 
+using std::fstream;
 
 class AliTPC : public AliDetector {
 

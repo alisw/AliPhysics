@@ -13,6 +13,7 @@ class fstream;
 #include "Riostream.h"
 #endif
 
+using std::fstream;
 
 class AliSimDigits;
 //class TTree;
