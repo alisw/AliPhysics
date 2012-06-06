@@ -755,7 +755,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     OpenFile(4); // 4 is the slot number of the ntuple
    
     
-    fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:piddau0:piddau1:piddau2:Ptpi:PtK:Ptpi2:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber");
+    fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:piddau0:piddau1:piddau2:Ptpi:PtK:Ptpi2:mompi:momK:mompi2:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber");
 
   }
   
@@ -951,7 +951,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Double_t arrayForSparseTrue[6]={invMass,ptCand,trueImpParXY,cosp,dlen,tracklets};
 
       //Ntuple
-      Float_t tmp[26];    
+      Float_t tmp[29];
       if(fFillNtuple){
 	tmp[0]=pdgCode;
 	tmp[1]=d->Px();
@@ -962,24 +962,27 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	tmp[5]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(0));
 	tmp[6]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(1));
 	tmp[7]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(2));
-	tmp[8]=d->PtProng(0);	  
-	tmp[9]=d->PtProng(1);	  
+	tmp[8]=d->PtProng(0);
+	tmp[9]=d->PtProng(1);
 	tmp[10]=d->PtProng(2);
-	tmp[11]=cosp;
-	tmp[12]=cxy;
-	tmp[13]=dlen;
-	tmp[14]=d->NormalizedDecayLength();
-	tmp[15]=d->DecayLengthXY();
-	tmp[16]=dlxy;
-	tmp[17]=d->InvMassDplus();
-	tmp[18]=sigvert;
-	tmp[19]=d->Getd0Prong(0);
-	tmp[20]=d->Getd0Prong(1);
-	tmp[21]=d->Getd0Prong(2);
-	tmp[22]=maxdca;
-	tmp[23]=ntracks;
-	tmp[24]=fRDCutsAnalysis->GetCentrality(aod);
-	tmp[25]=runNumber;
+	tmp[11]=d->PProng(0);
+	tmp[12]=d->PProng(1);
+	tmp[13]=d->PProng(2);
+	tmp[14]=cosp;
+	tmp[15]=cxy;
+	tmp[16]=dlen;
+	tmp[17]=d->NormalizedDecayLength();
+	tmp[18]=d->DecayLengthXY();
+	tmp[19]=dlxy;
+	tmp[20]=d->InvMassDplus();
+	tmp[21]=sigvert;
+	tmp[22]=d->Getd0Prong(0);
+	tmp[23]=d->Getd0Prong(1);
+	tmp[24]=d->Getd0Prong(2);
+	tmp[25]=maxdca;
+	tmp[26]=ntracks;
+	tmp[27]=fRDCutsAnalysis->GetCentrality(aod);
+	tmp[28]=runNumber;
 	fNtupleDplus->Fill(tmp);
 	PostData(4,fNtupleDplus);
       }
