@@ -24,6 +24,9 @@ class TObjArray;
 class AliTRDtrendingManager : public TObject
 {
 public:
+  enum AliTRDtrendingManagerSteer{
+    kRelative    = BIT(14) // trending plots normalized to mean/sigma
+  };
   virtual ~AliTRDtrendingManager();
   void              AddValue(const Char_t *name
                             ,Double_t mean,Double_t sigm=1
@@ -34,6 +37,7 @@ public:
                             );
   AliTRDtrendValue* GetValue(const Char_t *name);
   static AliTRDtrendingManager*	Instance();
+  Bool_t            IsRelativeMeanSigma() const     { return TestBit(kRelative);}
   void              Load(const char *fn = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root");
   Bool_t            MakeTrends(const char *fileList);
   Bool_t            ModifyValue(const Char_t *name
@@ -45,6 +49,7 @@ public:
                             );
   void              Print(Option_t *o="") const;
 //  void              ResetRunRange(Int_t runStart, Int_t runStop) {fRunRange[0]=runStart; fRunRange[1]=runStop;}
+  void              SetRelativeMeanSigma(Bool_t set=kTRUE) { SetBit(kRelative, set);}
   void              Terminate();
 
 protected:

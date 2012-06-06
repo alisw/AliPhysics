@@ -186,7 +186,7 @@ Bool_t AliTRDtrendingManager::MakeTrends(const char *fileList)
         AliWarning(Form("Missing %09d.%s", rno, TV->GetName()));
         continue;
       }
-      (*tv)/=(*TV);
+      if(IsRelativeMeanSigma()) (*tv)/=(*TV);
       if(!g[it]){
         g[it] = new TGraph();
         g[it]->SetNameTitle(TV->GetName(), TV->GetTitle());
@@ -200,17 +200,26 @@ Bool_t AliTRDtrendingManager::MakeTrends(const char *fileList)
   // Draw
   TH1 *hT = new TH1F("hT", ";#bf{RUN};", nr, -0.5, nr-0.5);
   TAxis *ax = hT->GetXaxis(); ax->SetTitleOffset(2.6);ax->CenterTitle(); ax->SetBit(TAxis::kLabelsVert);
-  TAxis *ay = hT->GetYaxis(); ay->SetTitleOffset(0.4);ay->CenterTitle(); ay->SetAxisColor(kRed); ay->SetRangeUser(-5, 5);
+  TAxis *ay = hT->GetYaxis(); ay->SetTitleOffset(IsRelativeMeanSigma()?0.4:0.75);ay->CenterTitle(); ay->SetAxisColor(kRed); ay->SetDecimals();
   for(Int_t ir(0); ir<nr; ir++) ax->SetBinLabel(ir+1, Form("%09d", run[ir]));
 
   TCanvas *c = new TCanvas("c", "TRD Trend", 1, 1, 1200, 500);
-  c->SetLeftMargin(0.03666361);
+  c->SetLeftMargin(IsRelativeMeanSigma()?0.03666361:0.05685619);
   c->SetRightMargin(0.005499542);
   c->SetTopMargin(0.02542373);
   c->SetBottomMargin(0.1758475);
   for(Int_t it(0); it<ntv; it++){
+    if(!g[it]) continue;
     c->Clear();
-    ay->SetTitle(Form("#bf{%s [#sigmau]}", g[it]->GetTitle())); hT->Draw("p");
+    if(IsRelativeMeanSigma()){
+      ay->SetRangeUser(-5, 5);
+      ay->SetTitle(Form("#bf{%s [#sigmau]}", g[it]->GetTitle()));
+    } else {
+      if(!(TV = (AliTRDtrendValue*)fEntries->At(it))) continue;
+      ay->SetRangeUser(TV->GetVal()-3*TV->GetErr(), TV->GetVal()+3*TV->GetErr());
+      ay->SetTitle(Form("#bf{%s}", g[it]->GetTitle()));
+    }
+    hT->Draw("p");
     g[it]->Draw("p");
     c->Modified(); c->Update(); c->SaveAs(Form("Trend_%s.gif", g[it]->GetName()));
     delete g[it];

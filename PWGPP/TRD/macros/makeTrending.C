@@ -1,4 +1,4 @@
-void makeTrending(const Char_t *fl, const Char_t *db = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root")
+void makeTrending(const Char_t *fl, const Char_t *db = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root", Bool_t relative=kFALSE)
 {
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
@@ -9,6 +9,7 @@ void makeTrending(const Char_t *fl, const Char_t *db = "$ALICE_ROOT/PWGPP/TRD/da
 
   AliTRDtrendingManager *tm = AliTRDtrendingManager::Instance();
   tm->Load(db);
+  tm->SetRelativeMeanSigma(relative);
   tm->MakeTrends(fl);
   return;
 }

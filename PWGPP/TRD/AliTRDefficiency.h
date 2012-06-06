@@ -23,6 +23,9 @@ class TTreeSRedirector;
 class AliTRDefficiency : public AliTRDrecoTask
 {
 public:
+  enum ETRDefficiencySteer {
+     kDump    = BIT(18) // dump 3D projections
+  };
   AliTRDefficiency();
   AliTRDefficiency(char* name);
   virtual       ~AliTRDefficiency();
@@ -36,8 +39,10 @@ public:
   void          MakeSummary();
   Bool_t        PostProcess();
   TObjArray*    Results() const {return fProj;}
+  void          SetDump3D(const Bool_t dump=kTRUE)    { SetBit(kDump, dump);}
 protected:
   Bool_t        MakeProjectionBasicEff();
+  Bool_t        HasDump3D() const                     { return TestBit(kDump);}
 
 private:
   AliTRDefficiency(const AliTRDefficiency&);

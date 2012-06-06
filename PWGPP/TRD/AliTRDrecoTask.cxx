@@ -650,6 +650,44 @@ void AliTRDrecoTask::AliTRDrecoProjection::Increment(Int_t bin[], Double_t v)
 }
 
 //________________________________________________________
+Double_t AliTRDrecoTask::AliTRDrecoProjection::GetTrendValue(const Int_t mid, Double_t *m, Double_t *s) const
+{
+//   Return result of fitting the main distribution (represented on the z axis) with the function selected
+// "mid". Optionally return the Mean and RMS of the distribution pointing to "m" and "s"
+
+  if(!fH){
+    AliDebug(1, Form("Missing 3D in %s", GetName()));
+    return -999.;
+  }
+  TH1 *h1s(NULL);
+  if(!(h1s = (TH2D*)fH->Project3D("z"))){
+    AliDebug(1, Form("Failed Project3D(\"z\") in %s", GetName()));
+    return -999.;
+  }
+  Int_t ne((Int_t)h1s->Integral());
+  if(ne<100){
+    AliDebug(1, Form("Statistics too low[%2d] in %s", ne, GetName()));
+    return -999.;
+  }
+  TAxis *az(h1s->GetXaxis());
+  Float_t vm(h1s->GetMean()), v(vm), ve(h1s->GetRMS());
+  if(mid==1){
+    TF1 fg("fg", "gaus", az->GetXmin(), az->GetXmax());
+    fg.SetParameter(0, Float_t(ne)); fg.SetParameter(1, vm); fg.SetParameter(2, ve);
+    h1s->Fit(&fg, "WQ0");
+    v = fg.GetParameter(1);
+  } else if (mid==2) {
+    TF1 fl("fl", "landau", az->GetXmin(), az->GetXmax());
+    fl.SetParameter(0, Float_t(ne)); fl.SetParameter(1, vm); fl.SetParameter(2, ve);
+    h1s->Fit(&fl, "WQ0");
+    v = fl.GetMaximumX();
+  }
+  if(m) *m = vm;
+  if(s) *s = ve;
+  return v;
+}
+
+//________________________________________________________
 TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid, Bool_t del)
 {
 // build the 2D projection and adjust binning
