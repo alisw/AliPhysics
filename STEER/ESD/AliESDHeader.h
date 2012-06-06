@@ -73,7 +73,9 @@ public:
   UShort_t  GetBunchCrossNumber() const {return fBunchCrossNumber;}
   UInt_t    GetPeriodNumber() const {return fPeriodNumber;}
   UChar_t   GetTriggerCluster() const {return fTriggerCluster;}
-
+  Int_t     GetTriggerIREntries() const { return fIRBufferArray.GetEntriesFast();};
+  Int_t     GetTriggerIREntries(Int_t int1, Int_t int2, Float_t deltaTime = 180.) const;
+  TObjArray GetIRArray(Int_t int1, Int_t int2, Float_t deltaTime = 180.) const;
   void      Reset();
   void      Print(const Option_t *opt=0) const;
 

@@ -304,3 +304,166 @@ Bool_t AliESDHeader::IsTriggerInputFired(const char *name) const
   else if (fL2TriggerInputs & (1 << (inputIndex-48))) return kTRUE;
   else return kFALSE;
 }
+//________________________________________________________________________________
+Int_t  AliESDHeader::GetTriggerIREntries(Int_t int1, Int_t int2, Float_t deltaTime) const
+{
+  // returns number of IR-s within time window deltaTime
+  // all possible combinations of int1 and int2 int1 - zdc bit, int2 v0 bit
+  //
+  const AliTriggerIR *IR;
+  // triggered event 
+  Int_t nIR = GetTriggerIREntries();
+  UInt_t orbit1 = GetOrbitNumber();
+  const Double_t ot=0.0889218; //orbit time msec
+  Float_t timediff; // time difference between orbits (msec)
+  //
+  Int_t nofIR;
+  nofIR=0;
+  // loop over IR-s
+    for(Int_t i=0;i<nIR;i++){//1
+      IR=GetTriggerIR(i);
+      //
+      UInt_t orbit2 = IR->GetOrbit();
+      timediff = (orbit2<=orbit1) ? (Float_t)((orbit1-orbit2))*ot : 
+	(Float_t)((16777215-orbit1+orbit2))*ot;
+      if (timediff>deltaTime) continue; //timediff outside time window
+      if((int1&int2) == -1){ //ignore both bits, just count IR-s within time window
+	nofIR++;
+        continue;
+      }
+      // now check if int1, int2 bits are set
+      UInt_t nw = IR->GetNWord();
+      Bool_t *bint1 = IR->GetInt1s();
+      Bool_t *bint2 = IR->GetInt2s();
+      //
+      Int_t flag1,flag2;
+      flag1=0;
+      flag2=0;
+      for(UInt_t j=0;j<nw;j++){//2
+	if(bint1[j]) flag1=1; // at least one int1 set
+	if(bint2[j]) flag2=1; //  at least one int2 set
+        //printf("IR %d, bint1 %d, bint2 %d\n",i,bint1[j],bint2[j]);
+      }//2
+      // checking combinations
+      //
+      
+      if((flag1*int1*flag2*int2)==1){// int1=1 & int2=1	 
+          nofIR++;
+          continue;       
+      }
+      if(int1 == -1){// ignore int1
+        if(flag2&int2){// int2=1
+          nofIR++;
+          continue;
+	}
+        else if (!flag2&!int2){ //int2=0 
+          nofIR++;
+          continue;          
+	}
+      }
+      
+      if(int2 ==-1){//ignore int2
+        if(flag1&int1){//int1=1
+          nofIR++;
+          continue;  
+	}
+        else if(!flag1&!int1){ //int1=0
+          nofIR++;
+          continue;  
+	}
+      }
+      
+      if((flag1*int1)&!flag2&!int2){// int1=1, int2=0
+          nofIR++;
+          continue;  
+      }
+      
+      if((int2*flag2)&!int1&!flag1){// int1=0, int2=1
+          nofIR++;
+          continue;  
+      } 
+         
+      
+
+    }//1
+  
+    return nofIR;
+}
+//__________________________________________________________________________
+TObjArray AliESDHeader::GetIRArray(Int_t int1, Int_t int2, Float_t deltaTime) const
+{
+  //
+  // returns an array of IR-s within time window deltaTime
+  // all possible combinations of int1 and int2 int1 - zdc bit, int2 v0 bit
+  //
+  const AliTriggerIR *IR;
+  TObjArray arr;
+  // triggered event 
+  Int_t nIR = GetTriggerIREntries();
+  UInt_t orbit1 = GetOrbitNumber();
+  const Double_t ot=0.0889218; //orbit time msec
+  Float_t timediff; // time difference between orbits (msec)
+  //
+  // loop over IR-s
+    for(Int_t i=0;i<nIR;i++){//1
+      IR=GetTriggerIR(i);
+      //
+      UInt_t orbit2 = IR->GetOrbit();
+      timediff = (orbit2<=orbit1) ? (Float_t)((orbit1-orbit2))*ot : 
+	(Float_t)((16777215-orbit1+orbit2))*ot;
+      if (timediff>deltaTime) continue; //timediff outside time window
+      if((int1&int2) == -1){ //ignore both bits, just count IR-s within time window
+	arr.Add((AliTriggerIR*)IR); //add this IR
+        continue;
+      }
+      // now check if int1, int2 bits are set
+      UInt_t nw = IR->GetNWord();
+      Bool_t *bint1 = IR->GetInt1s();
+      Bool_t *bint2 = IR->GetInt2s();
+      //
+      Int_t flag1,flag2;
+      flag1=0;
+      flag2=0;
+      for(UInt_t j=0;j<nw;j++){//2
+	if(bint1[j]) flag1=1; // at least one int1 set
+	if(bint2[j]) flag2=1; //  at least one int2 set
+      }//2
+      // checking combinations
+      //
+      if((flag1*int1*flag2*int2)==1){// int1=1 & int2=1
+	  arr.Add((AliTriggerIR*)IR); //add this IR
+          continue;       
+      }
+      if(int1 == -1){// ignore int1
+        if(flag2&int2){// int2=1
+ 	  arr.Add((AliTriggerIR*)IR); //add this IR
+          continue;
+	}
+        else if (!flag2&!int2){ //int2=0 
+          arr.Add((AliTriggerIR*)IR); //add this IR
+          continue;          
+	}
+      }
+      if(int2 ==-1){//ignore int2
+        if(flag1&int1){//int1=1
+	  arr.Add((AliTriggerIR*)IR); //add this IR
+          continue;  
+	}
+        else if(!flag1&!int1){ //int1=0
+	  arr.Add((AliTriggerIR*)IR); //add this IR
+          continue;  
+	}
+      }
+      if ((flag1*int1)&!flag2&!int2){// int1=1, int2=0
+	  arr.Add((AliTriggerIR*)IR); //add this IR
+          continue;  
+      }
+      if ((int2*flag2)&!int1&!flag1){// int1=0, int2=1
+	  arr.Add((AliTriggerIR*)IR); //add this IR
+          continue;  
+      }      
+
+    }//1
+  
+  return arr;
+}

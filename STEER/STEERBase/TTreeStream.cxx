@@ -139,17 +139,19 @@ void TTreeSRedirector::Test()
 }
 
 
-TTreeSRedirector::TTreeSRedirector(const char *fname) :
-  fFile(new TFile(fname,"recreate")),
+TTreeSRedirector::TTreeSRedirector(const char *fname,const char * option) :
+  fFile(new TFile(fname,option)),
   fDataLayouts(0)
 {
   //
   // Constructor
   //
   if (!fFile){
-    fFile = new TFile(fname,"new");
+    fFile = new TFile(fname,option);
   }
 }
+
+
 
 TTreeSRedirector::~TTreeSRedirector()
 {
@@ -170,6 +172,18 @@ void TTreeSRedirector::StoreObject(TObject* object){
   if (backup) backup->cd();
 }
 
+
+void  TTreeSRedirector::SetFile(TFile *sfile){
+  //
+  // Set the external file 
+  // In case other file already attached old file is closed before
+  // Redirector will be the owner of file ?
+  if (fFile) {
+    fFile->Close();
+    delete fFile;
+  }
+  fFile=sfile;
+}
 
 
 TTreeStream  & TTreeSRedirector::operator<<(Int_t id)

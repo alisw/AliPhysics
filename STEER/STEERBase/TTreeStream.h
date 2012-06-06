@@ -84,7 +84,7 @@ public:
 
 class TTreeSRedirector: public TObject { 
 public:
-  TTreeSRedirector(const char *fname);
+  TTreeSRedirector(const char *fname, const char * option="new");
   virtual ~TTreeSRedirector();
   void Close();
   static void Test();
@@ -92,6 +92,7 @@ public:
   TFile * GetFile() {return fFile;};
   virtual   TTreeStream  &operator<<(Int_t id);
   virtual   TTreeStream  &operator<<(const char *name);
+  void      SetFile(TFile *sfile); 
  private:
 
   TTreeSRedirector(const TTreeSRedirector & tsr);

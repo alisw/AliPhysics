@@ -1558,3 +1558,23 @@ void AliRelAlignerKalman::SetRejectOutliersSigma2Median(const Bool_t set )
     fRejectOutliersSigma2Median = kFALSE;
   }//if
 }
+
+
+Int_t AliRelAlignerKalman::CheckCovariance(){
+  //
+  // check covariance matrix
+  // Return values:
+  //         -1    - everything OK
+  //          >=0  - index of "corrupted" element in the covariance matrix
+  TMatrixDSym& mat =(*fPXcov);
+  for (Int_t irow=0; irow<9; irow++){
+    if (mat(irow,irow)<=0.) return  irow*9;
+    for (Int_t icol=0; icol<irow; icol++){
+      Double_t corel = mat(irow,irow)*mat(icol,icol);
+      if (corel<=0.) return irow*9+icol;
+      corel=mat(irow,icol)/TMath::Sqrt(corel);
+      if (TMath::Abs(corel)>=1.) return irow*9+icol;
+    }  
+  }
+  return -1;
+}

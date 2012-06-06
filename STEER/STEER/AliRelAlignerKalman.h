@@ -84,6 +84,7 @@ public:
     void PrintCorrelationMatrix();
     //void PrintCovarianceCorrection();
     void PrintSystemMatrix();
+  Int_t CheckCovariance(); // check covariance matrix
     void Reset();
     void ResetCovariance( const Double_t number=0. );
     void ResetTPCparamsCovariance( const Double_t number=0. );
