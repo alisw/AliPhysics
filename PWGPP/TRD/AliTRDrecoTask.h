@@ -50,12 +50,13 @@ public:
     virtual ~AliTRDrecoProjection();
     AliTRDrecoProjection& operator+=(const AliTRDrecoProjection& other);
     AliTRDrecoProjection& operator=(const AliTRDrecoProjection& other);
-    void  Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[]);
-    void  Increment(Int_t bin[], Double_t v);
-    TH3*  H() const { return fH;}
-    TH2*  Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0, Bool_t del=kTRUE);
-    void  SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[]);
-    void  SetShowRange(Float_t zm, Float_t zM, Float_t em=0., Float_t eM=0.) {fRange[0] = zm; fRange[1] = zM; fRange[2] = em; fRange[3] = eM;}
+    void      Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[]);
+    Double_t  GetTrendValue(const Int_t mid=0, Double_t *m=NULL, Double_t *s=NULL) const;
+    TH3*      H() const { return fH;}
+    void      Increment(Int_t bin[], Double_t v);
+    TH2*      Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0, Bool_t del=kTRUE);
+    void      SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[]);
+    void      SetShowRange(Float_t zm, Float_t zM, Float_t em=0., Float_t eM=0.) {fRange[0] = zm; fRange[1] = zM; fRange[2] = em; fRange[3] = eM;}
   private:
     AliTRDrecoProjection(const AliTRDrecoProjection&);
   protected:
