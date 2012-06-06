@@ -64,6 +64,7 @@ const char* AliDAQ::fgkDetectorName[AliDAQ::kNDetectors] = {
   "TRG",
   "EMCAL",
   "DAQ_TEST",
+  "MFT",
   "HLT"
 };
 
@@ -88,6 +89,7 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
   1,
   46,
   1,
+  10,
   28
 };
 
@@ -111,6 +113,7 @@ Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
   1,
   1,
   8,
+  1,
   1,
   7
 };
@@ -136,6 +139,7 @@ const char* AliDAQ::fgkOfflineModuleName[AliDAQ::kNDetectors] = {
   "CTP",
   "EMCAL",
   "",
+  "MFT",
   "HLT"
 };
 
@@ -160,6 +164,7 @@ const char* AliDAQ::fgkOnlineName[AliDAQ::kNDetectors] = {
   "TRI",
   "EMC",
   "TST",
+  "MFT",
   "HLT"
 };
 
