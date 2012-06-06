@@ -24,6 +24,7 @@ class AliAnalysisCuts;
 class TClonesArray;
 class AliAODMCHeader;
 class AliAODVZERO;
+class AliAODTZERO;
 
 class AliAODMuonReplicator : public AliAODBranchReplicator
 {
@@ -54,6 +55,7 @@ private:
   mutable TClonesArray* fVertices; //! internal array of vertices
   mutable TClonesArray* fDimuons; //! internal array of dimuons
   mutable AliAODVZERO* fVZERO; //! internal vzero object
+  mutable AliAODTZERO* fTZERO; //! internal tzero object
   mutable TList* fList; //! internal list of managed objects (fVertices and fTracks)
   
   mutable TClonesArray* fMCParticles; //! internal array of MC particles
@@ -66,7 +68,7 @@ private:
   AliAODMuonReplicator(const AliAODMuonReplicator&);
   AliAODMuonReplicator& operator=(const AliAODMuonReplicator&);
   
-  ClassDef(AliAODMuonReplicator,4) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliAODMuonReplicator,5) // Branch replicator for ESD to muon AOD.
 };
 
 #endif
