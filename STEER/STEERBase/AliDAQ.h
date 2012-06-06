@@ -88,7 +88,7 @@ class AliDAQ: public TObject {
   static const char* fgkOfflineModuleName[kNDetectors]; // Names of the offline modules corresponding to the detectors
   static const char* fgkOnlineName[kNDetectors]; // Online (DAQ/ECS) detector names
 
-  ClassDef(AliDAQ, 3)   // ALICE DAQ Configuration class
+  ClassDef(AliDAQ, 4)   // ALICE DAQ Configuration class
 };
 
 #endif
