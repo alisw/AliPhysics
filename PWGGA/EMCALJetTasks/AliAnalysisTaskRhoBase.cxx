@@ -2,17 +2,18 @@
 //
 // Base class for rho calculation
 //
-// Author: A.Saiola
+// Author: S.Aiola
 
 #include <TF1.h>
 
-#include "AliESDEvent.h"
-#include "AliLog.h"
 #include "AliAnalysisManager.h"
-#include "AliVEventHandler.h"
 #include "AliCentrality.h"
+#include "AliESDEvent.h"
 #include "AliEmcalJet.h"
+#include "AliLog.h"
+#include "AliRhoParameter.h"
 #include "AliVCluster.h"
+#include "AliVEventHandler.h"
 
 #include "AliAnalysisTaskRhoBase.h"
 
@@ -51,7 +52,7 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
     return;
   }
 
-  fRho = new TParameter<Double_t>(fRhoName, 0);
+  fRho = new AliRhoParameter(fRhoName, 0);
 }
 
 //________________________________________________________________________
@@ -109,11 +110,10 @@ void AliAnalysisTaskRhoBase::UserExec(Option_t *)
 
   // add rho to event if not yet there
   if (!(InputEvent()->FindListObject(fRhoName))) {
-    new(fRho) TParameter<Double_t>(fRhoName, 0);
     InputEvent()->AddObject(fRho);
   }
 
-  // get centrality 
+  // determine centrality 
   fCent = 99; 
   
   if (GetBeamType() == "A-A") {
