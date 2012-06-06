@@ -43,6 +43,10 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
 
   void OpenInfoCalbration(Int_t run);
 
+  void SetFillDCAinfo(Bool_t flag=kTRUE){fFillDCA = flag;};
+
+  void SetModulationDEDx(Bool_t flag=kTRUE){fModulationDEDx=flag;};
+
  private:
   AliAnalysisTaskVnV0(const AliAnalysisTaskVnV0 &old); 
   AliAnalysisTaskVnV0& operator=(const AliAnalysisTaskVnV0 &source); 
@@ -129,7 +133,14 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
   AliFlowVZEROResults *fContAllChargesMCAv3; //! results
   AliFlowVZEROResults *fContAllChargesMCCv3; //! results
 
-  ClassDef(AliAnalysisTaskVnV0, 5);    //Analysis task v2 and v3 analysis on AOD
+  Bool_t fFillDCA; // require to fill also DCA info
+  TH2D *fHdcaPt[nCentrBin][7]; //! DCA distribution (for MC primary)
+  TH2D *fHdcaPtSec[nCentrBin][7]; //! DCA distribution (for MC secondary, not used for data)
+  AliFlowVZEROResults *fContQApid; //! QA pid object
+
+  Bool_t fModulationDEDx; //add a modulation on the dE/dx response w.r.t. EP (kFALSE default)
+
+  ClassDef(AliAnalysisTaskVnV0, 6);    //Analysis task v2 and v3 analysis on AOD
 };
 
 #endif

@@ -82,7 +82,10 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0():
   fContAllChargesMCA(NULL),
   fContAllChargesMCC(NULL),
   fContAllChargesMCAv3(NULL),
-  fContAllChargesMCCv3(NULL)
+  fContAllChargesMCCv3(NULL),
+  fFillDCA(kFALSE),
+  fContQApid(NULL),
+  fModulationDEDx(kFALSE)
 {
   // Default constructor (should not be used)
   fList->SetName("resultsV2");
@@ -153,7 +156,10 @@ AliAnalysisTaskVnV0::AliAnalysisTaskVnV0(const char *name):
   fContAllChargesMCA(NULL),
   fContAllChargesMCC(NULL),
   fContAllChargesMCAv3(NULL),
-  fContAllChargesMCCv3(NULL)
+  fContAllChargesMCCv3(NULL),
+  fFillDCA(kFALSE),
+  fContQApid(NULL),
+  fModulationDEDx(kFALSE)
 {
 
   DefineOutput(1, TList::Class());
@@ -209,22 +215,34 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
   const Int_t nPsiTOFres = 10;
   const Int_t nMaskPID = 3;
 
-  Int_t binsTOF[5] = {nCentrTOFres,nChargeBinsTOFres,nProbTOFres,nPsiTOFres,nMaskPID};
+  Int_t nDCABin = 1; // put to 1 not to store this info
+  if(fFillDCA) nDCABin = 3;
+  if(fIsMC && nDCABin>1)  nDCABin = 6;
+  /*
+    0 = DCAxy < 2.4 && all (or Physical primary if MC)
+    1 = DCAxy > 2.4 && all (or Physical primary if MC)
+    2 = DCAxy < 2.4 && not Physical Primary for MC
+    3 = DCAxy > 2.4 && not Physical Primary for MC
+  */
+  
+  Int_t binsTOF[6] = {nCentrTOFres,nChargeBinsTOFres,nProbTOFres,nPsiTOFres,nMaskPID,nDCABin};
   Int_t binsTOFmc[5] = {nCentrTOFres,nChargeBinsTOFres,1,nPsiTOFres,2};
   Int_t binsTOFmcPureMC[5] = {nCentrTOFres,nChargeBinsTOFres,1,nPsiTOFres,1};
 
   // v2 container
-  fContAllChargesV0A = new AliFlowVZEROResults("v2A",5,binsTOF);
+  fContAllChargesV0A = new AliFlowVZEROResults("v2A",6,binsTOF);
   fContAllChargesV0A->SetVarRange(0,-0.5,8.5); // centrality
   fContAllChargesV0A->SetVarRange(1,-1.5,1.5);  // charge
   fContAllChargesV0A->SetVarRange(2,0.6,1.0001);// prob
   fContAllChargesV0A->SetVarRange(3,-TMath::Pi()/2,TMath::Pi()/2); // Psi
   fContAllChargesV0A->SetVarRange(4,-0.5,2.5); // pid mask
+  fContAllChargesV0A->SetVarRange(5,-0.5,nDCABin-0.5); // DCA mask
   fContAllChargesV0A->SetVarName(0,"centrality");
   fContAllChargesV0A->SetVarName(1,"charge");
   fContAllChargesV0A->SetVarName(2,"prob");
   fContAllChargesV0A->SetVarName(3,"#Psi");
   fContAllChargesV0A->SetVarName(4,"PIDmask");
+  fContAllChargesV0A->SetVarName(5,"DCAbin");
   if(fV2) fContAllChargesV0A->AddSpecies("all",nPtBinsTOF,binsPtTOF);
   if(fV2) fContAllChargesV0A->AddSpecies("pi",nPtBinsTOF,binsPtTOF);
   if(fV2) fContAllChargesV0A->AddSpecies("k",nPtBinsTOF,binsPtTOF);
@@ -235,17 +253,19 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
   if(fV2) fContAllChargesV0A->AddSpecies("he3",nPtBinsTOF,binsPtTOF);
   if(fV2) fContAllChargesV0A->AddSpecies("mu",nPtBinsTOF,binsPtTOF);
 
-  fContAllChargesV0C = new AliFlowVZEROResults("v2C",5,binsTOF);
+  fContAllChargesV0C = new AliFlowVZEROResults("v2C",6,binsTOF);
   fContAllChargesV0C->SetVarRange(0,-0.5,8.5); // centrality
   fContAllChargesV0C->SetVarRange(1,-1.5,1.5);  // charge
   fContAllChargesV0C->SetVarRange(2,0.6,1.0001);// prob
   fContAllChargesV0C->SetVarRange(3,-TMath::Pi()/2,TMath::Pi()/2); // Psi
   fContAllChargesV0C->SetVarRange(4,-0.5,2.5); // pid mask
+  fContAllChargesV0C->SetVarRange(5,-0.5,nDCABin-0.5); // DCA mask
   fContAllChargesV0C->SetVarName(0,"centrality");
   fContAllChargesV0C->SetVarName(1,"charge");
   fContAllChargesV0C->SetVarName(2,"prob");
   fContAllChargesV0C->SetVarName(3,"#Psi");
   fContAllChargesV0C->SetVarName(4,"PIDmask");
+  fContAllChargesV0C->SetVarName(5,"DCAbin");
   if(fV2) fContAllChargesV0C->AddSpecies("all",nPtBinsTOF,binsPtTOF);
   if(fV2) fContAllChargesV0C->AddSpecies("pi",nPtBinsTOF,binsPtTOF);
   if(fV2) fContAllChargesV0C->AddSpecies("k",nPtBinsTOF,binsPtTOF);
@@ -319,17 +339,19 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
   }
 
   // v3 container
-  fContAllChargesV0Av3 = new AliFlowVZEROResults("v3A",5,binsTOF);
+  fContAllChargesV0Av3 = new AliFlowVZEROResults("v3A",6,binsTOF);
   fContAllChargesV0Av3->SetVarRange(0,-0.5,8.5); // centrality
   fContAllChargesV0Av3->SetVarRange(1,-1.5,1.5);  // charge
   fContAllChargesV0Av3->SetVarRange(2,0.6,1.0001);// prob
   fContAllChargesV0Av3->SetVarRange(3,-TMath::Pi()/3,TMath::Pi()/3); // Psi
+  fContAllChargesV0Av3->SetVarRange(5,-0.5,nDCABin-0.5); // DCA mask
   fContAllChargesV0Av3->SetVarRange(4,-0.5,2.5); // pid mask
   fContAllChargesV0Av3->SetVarName(0,"centrality");
   fContAllChargesV0Av3->SetVarName(1,"charge");
   fContAllChargesV0Av3->SetVarName(2,"prob");
   fContAllChargesV0Av3->SetVarName(3,"#Psi");
   fContAllChargesV0Av3->SetVarName(4,"PIDmask");
+  fContAllChargesV0Av3->SetVarName(5,"DCAbin");
   if(fV3) fContAllChargesV0Av3->AddSpecies("all",nPtBinsTOF,binsPtTOF);
   if(fV3) fContAllChargesV0Av3->AddSpecies("pi",nPtBinsTOF,binsPtTOF);
   if(fV3) fContAllChargesV0Av3->AddSpecies("k",nPtBinsTOF,binsPtTOF);
@@ -340,17 +362,19 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
   if(fV3) fContAllChargesV0Av3->AddSpecies("he3",nPtBinsTOF,binsPtTOF);
   if(fV3) fContAllChargesV0Av3->AddSpecies("mu",nPtBinsTOF,binsPtTOF);
 
-  fContAllChargesV0Cv3 = new AliFlowVZEROResults("v3C",5,binsTOF);
+  fContAllChargesV0Cv3 = new AliFlowVZEROResults("v3C",6,binsTOF);
   fContAllChargesV0Cv3->SetVarRange(0,-0.5,8.5); // centrality
   fContAllChargesV0Cv3->SetVarRange(1,-1.5,1.5);  // charge
   fContAllChargesV0Cv3->SetVarRange(2,0.6,1.0001);// prob
   fContAllChargesV0Cv3->SetVarRange(3,-TMath::Pi()/3,TMath::Pi()/3); // Psi
   fContAllChargesV0Cv3->SetVarRange(4,-0.5,2.5); // pid mask
+  fContAllChargesV0Cv3->SetVarRange(5,-0.5,nDCABin-0.5); // DCA mask
   fContAllChargesV0Cv3->SetVarName(0,"centrality");
   fContAllChargesV0Cv3->SetVarName(1,"charge");
   fContAllChargesV0Cv3->SetVarName(2,"prob");
   fContAllChargesV0Cv3->SetVarName(3,"#Psi");
   fContAllChargesV0Cv3->SetVarName(4,"PIDmask");
+  fContAllChargesV0Cv3->SetVarName(5,"DCAbin");
   if(fV3) fContAllChargesV0Cv3->AddSpecies("all",nPtBinsTOF,binsPtTOF);
   if(fV3) fContAllChargesV0Cv3->AddSpecies("pi",nPtBinsTOF,binsPtTOF);
   if(fV3) fContAllChargesV0Cv3->AddSpecies("k",nPtBinsTOF,binsPtTOF);
@@ -565,6 +589,81 @@ void AliAnalysisTaskVnV0::UserCreateOutputObjects()
 
   //  fList->Add(fTree); // comment if not needed
 
+  const Int_t nDCA = 300;
+  Double_t DCAbin[nDCA+1];
+  for(Int_t i=0;i <= nDCA;i++){
+    DCAbin[i] = -3 +i*6.0/nDCA;
+  }
+  
+  char nameHistos[100];
+  for(Int_t iC=0;iC < nCentrBin;iC++){
+    snprintf(nameHistos,100,"fHdcaPtPiCent%i",iC);
+    fHdcaPt[iC][0] = new TH2D(nameHistos,"DCA_{xy} for #pi;p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+    snprintf(nameHistos,100,"fHdcaPtKaCent%i",iC);
+    fHdcaPt[iC][1] = new TH2D(nameHistos,"DCA_{xy} for K;p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+    snprintf(nameHistos,100,"fHdcaPtPrCent%i",iC);
+    fHdcaPt[iC][2] = new TH2D(nameHistos,"DCA_{xy} for #bar{p};p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+    snprintf(nameHistos,100,"fHdcaPtElCent%i",iC);
+    fHdcaPt[iC][3] = new TH2D(nameHistos,"DCA_{xy} for e;p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+    snprintf(nameHistos,100,"fHdcaPtDeCent%i",iC);
+    fHdcaPt[iC][4] = new TH2D(nameHistos,"DCA_{xy} for #bar{d};p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+    snprintf(nameHistos,100,"fHdcaPtTrCent%i",iC);
+    fHdcaPt[iC][5] = new TH2D(nameHistos,"DCA_{xy} for #bar{t};p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+    snprintf(nameHistos,100,"fHdcaPtHeCent%i",iC);
+    fHdcaPt[iC][6] = new TH2D(nameHistos,"DCA_{xy} for #bar{^{3}He};p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+  }
+  
+  if(fFillDCA && fQAsw){
+    for(Int_t i=0;i<7;i++)
+      for(Int_t iC=0;iC < nCentrBin;iC++)
+	fList4->Add(fHdcaPt[iC][i]);
+  }
+  if(fIsMC){
+    for(Int_t iC=0;iC < nCentrBin;iC++){
+      snprintf(nameHistos,100,"fHdcaPtPiSecCent%i",iC);
+      fHdcaPtSec[iC][0] = new TH2D(nameHistos,"DCA_{xy} for secondary #pi;p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+      snprintf(nameHistos,100,"fHdcaPtKaSecCent%i",iC);
+      fHdcaPtSec[iC][1] = new TH2D(nameHistos,"DCA_{xy} for secondary K;p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+      snprintf(nameHistos,100,"fHdcaPtPrSecCent%i",iC);
+      fHdcaPtSec[iC][2] = new TH2D(nameHistos,"DCA_{xy} for secondary #bar{p};p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+      snprintf(nameHistos,100,"fHdcaPtElSecCent%i",iC);
+      fHdcaPtSec[iC][3] = new TH2D(nameHistos,"DCA_{xy} for secondary e;p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+      snprintf(nameHistos,100,"fHdcaPtDeSecCent%i",iC);
+      fHdcaPtSec[iC][4] = new TH2D(nameHistos,"DCA_{xy} for secondary #bar{d};p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+      snprintf(nameHistos,100,"fHdcaPtTrSecCent%i",iC);
+      fHdcaPtSec[iC][5] = new TH2D(nameHistos,"DCA_{xy} for secondary #bar{t};p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+      snprintf(nameHistos,100,"fHdcaPtHeSecCent%i",iC);
+      fHdcaPtSec[iC][6] = new TH2D(nameHistos,"DCA_{xy} for secondary #bar{^{3}He};p_{t} (GeV/c);DCA_{xy} (cm)",nPtBinsTOF,binsPtTOF,nDCA,DCAbin);
+    }
+    
+    if(fFillDCA && fQAsw){
+      for(Int_t i=0;i<7;i++)
+	for(Int_t iC=0;iC < nCentrBin;iC++)
+	  fList4->Add(fHdcaPtSec[iC][i]);
+    }
+  }
+  
+  // Add TProfile Extra QA
+  const Int_t nBinQApid = 2;
+  Int_t binQApid[nBinQApid] = {nCentrTOF,200};
+  const Int_t nbinsigma = 100;
+  Double_t nsigmaQA[nbinsigma+1];
+  for(Int_t i=0;i<nbinsigma+1;i++){
+    nsigmaQA[i] = -10 + 20.0*i/nbinsigma;
+  }
+  fContQApid = new AliFlowVZEROResults("qaPID",nBinQApid,binQApid);
+  fContQApid->SetVarRange(0,-0.5,8.5); // centrality
+  fContQApid->SetVarRange(1,0,20);  // charge
+  fContQApid->SetVarName(0,"centrality");
+  fContQApid->SetVarName(1,"p_{t}");
+  fContQApid->AddSpecies("piTPC",nbinsigma,nsigmaQA);
+  fContQApid->AddSpecies("piTOF",nbinsigma,nsigmaQA);
+  fContQApid->AddSpecies("kaTPC",nbinsigma,nsigmaQA);
+  fContQApid->AddSpecies("kaTOF",nbinsigma,nsigmaQA);
+  fContQApid->AddSpecies("prTPC",nbinsigma,nsigmaQA);
+  fContQApid->AddSpecies("prTOF",nbinsigma,nsigmaQA);
+  if(fV2) fList->Add(fContQApid);
+  
   printf("Output creation ok!!\n\n\n\n");
 
   // Post output data.
@@ -869,6 +968,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       }
       
       Bool_t trkFlag = aodTrack->TestFilterBit(1); // TPC only tracks
+      if(fFillDCA) trkFlag = aodTrack->TestFilterBit(4); // Global track, DCA loose cut
 
       if ((TMath::Abs(aodTrack->Eta()) > fEtaCut) || (aodTrack->Pt() < fMinPt) || (aodTrack->GetTPCNcls() < 70) || !trkFlag){
 	continue;
@@ -879,9 +979,12 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       if (!aodTrack->PropagateToDCA(fOutputAOD->GetPrimaryVertex(), fOutputAOD->GetMagneticField(), 100., b, bCov))
 	continue;
 	    
-      if ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4))
+      if (!fFillDCA && ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4)))
 	continue;
  	    
+      if(fFillDCA && TMath::Abs(b[0]) > 3.0 && TMath::Abs(b[1]) > 3)
+	continue;
+      
       // re-map the container in an array to do the analysis for V0A and V0C within a loop
       Float_t evPlAngV0[2] = {evPlAngV0ACor2,evPlAngV0CCor2};
       AliFlowVZEROResults *contV0[2] = {fContAllChargesV0A,fContAllChargesV0C};
@@ -922,7 +1025,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
       for(Int_t iV0=0;iV0<2;iV0++){ // loop on A and C side
 
-	fPID->SetPsiCorrectionDeDx(evPlAngV0[iV0],evPlRes[iV0*8+iC]); // set the PID dE/dx correction as a function of the v2-EP (resolution is needed)
+	if(fModulationDEDx) fPID->SetPsiCorrectionDeDx(evPlAngV0[iV0],evPlRes[iV0*8+iC]); // set the PID dE/dx correction as a function of the v2-EP (resolution is needed)
 
 	Float_t v2V0 = TMath::Cos(2*(aodTrack->Phi() - evPlAngV0[iV0]));
 	Float_t v3V0 = TMath::Cos(3*(aodTrack->Phi() - evPlAngV0v3[iV0]));
@@ -932,8 +1035,26 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	Float_t *probRead = fPID->GetProb();
 	Float_t prob[8] = {probRead[0],probRead[1],probRead[2],probRead[3],probRead[4],probRead[5],probRead[6],probRead[7]};
 	Float_t tofMismProb = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
-	Float_t x[5] = {iC,aodTrack->Charge(),1,evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5}; // to fill analysis v2 container
-	Float_t x3[5] = {iC,aodTrack->Charge(),1,evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5}; // to fill analysis v3 container
+	Float_t x[6] = {iC,aodTrack->Charge(),1,evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v2 container
+	Float_t x3[6] = {iC,aodTrack->Charge(),1,evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v3 container
+
+	// in case fill DCA info
+	if(fFillDCA){
+	  if(TMath::Abs(b[0]) > 0.1){
+	    x[5] = 1;
+	    x3[5] = 1;
+	  }
+	  if(TMath::Abs(b[0]) > 0.3){
+	    x[5] = 2;
+	    x3[5] = 2;
+	  }
+	  if(fIsMC && mcArray){
+	    if(!((AliAODMCParticle*)mcArray->At(TMath::Abs(aodTrack->GetLabel())))->IsPhysicalPrimary()){
+	      x[5] += 3;
+	      x3[5] += 3;
+	    }
+	  }
+	}
 
 	// Fill no PID
 	if(fV2) contV0[iV0]->Fill(0,aodTrack->Pt(),v2V0,x);
@@ -986,6 +1107,17 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	// variable to fill QA container
 	Float_t xQA[5] = {iC,aodTrack->Pt(), 0.0,deltaPhiV0,x[4]}; // v2
 	Float_t xQA3[5] = {iC,aodTrack->Pt(), 0.0,deltaPhiV0v3,x[4]}; // v3
+
+	// extra QA TProfiles
+	if(iV0==1 && aodTrack->Pt() < 20 && fPID->GetCurrentMask(0) && fPID->GetCurrentMask(1)){
+	  Float_t xQApid[2] = {iC,aodTrack->Pt()};
+	  fContQApid->Fill(0,nsigmaTPC[2],v2V0,xQApid); // v2 TPC (V0C) w.r.t pions
+	  fContQApid->Fill(1,nsigmaTOF[2],v2V0,xQApid); // v2 TOF (V0C) w.r.t. pions
+	  fContQApid->Fill(2,nsigmaTPC[3],v2V0,xQApid); // v2 TPC (V0C) w.r.t kaons
+	  fContQApid->Fill(3,nsigmaTOF[3],v2V0,xQApid); // v2 TOF (V0C) w.r.t. kaons
+	  fContQApid->Fill(4,nsigmaTPC[4],v2V0,xQApid); // v2 TPC (V0C) w.r.t protons
+	  fContQApid->Fill(5,nsigmaTOF[4],v2V0,xQApid); // v2 TOF (V0C) w.r.t. protons
+	}
 
 	// QA fill
 	if(!(fPID->GetCurrentMask(0)) || !aodTrack->GetDetPid() || dedx < 10. || aodTrack->Pt() < 0 || aodTrack->Pt() > 7){}
@@ -1042,6 +1174,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[2]) < 5){ // TPC 5 sigma extra cut to accept the track
 	    if(fV2) contV0[iV0]->Fill(1,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0v3[iV0]->Fill(1,aodTrack->Pt(),v3V0,x3);
+	    if(x[2] > 0.9 && x[5] < 3) fHdcaPt[iC][0]->Fill(aodTrack->Pt(),b[0]);
+	    else if(x[2] > 0.9 && fIsMC) fHdcaPtSec[iC][0]->Fill(aodTrack->Pt(),b[0]);
 	  }
 	}
 	else if(prob[3] > 0.6){ // K
@@ -1050,6 +1184,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[3]) < 5){
 	    if(fV2) contV0[iV0]->Fill(2,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0v3[iV0]->Fill(2,aodTrack->Pt(),v3V0,x3);
+	    if(x[2] > 0.9 && x[5] < 3) fHdcaPt[iC][1]->Fill(aodTrack->Pt(),b[0]);
+	    else if(x[2] > 0.9 && fIsMC) fHdcaPtSec[iC][1]->Fill(aodTrack->Pt(),b[0]);
 	  }
 	}
 	else if(prob[4] > 0.6){ // p
@@ -1058,6 +1194,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[4]) < 5){
 	    if(fV2) contV0[iV0]->Fill(3,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0v3[iV0]->Fill(3,aodTrack->Pt(),v3V0,x3);
+	    if(x[2] > 0.9 && x[5] < 3 && x[1] < 0) fHdcaPt[iC][2]->Fill(aodTrack->Pt(),b[0]);
+	    else if(x[2] > 0.9 && fIsMC && x[1] < 0) fHdcaPtSec[iC][2]->Fill(aodTrack->Pt(),b[0]);
 	  }
 	}
 	else if(prob[0] > 0.6){ // e
@@ -1066,6 +1204,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[0]) < 5){
 	    if(fV2) contV0[iV0]->Fill(4,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0v3[iV0]->Fill(4,aodTrack->Pt(),v3V0,x3);
+	    if(x[2] > 0.9 && x[5] < 3) fHdcaPt[iC][3]->Fill(aodTrack->Pt(),b[0]);
+	    else if(x[2] > 0.9 && fIsMC) fHdcaPtSec[iC][3]->Fill(aodTrack->Pt(),b[0]);
 	  }
 	}
 	else if(prob[1] > 0.6){ // mu
@@ -1082,6 +1222,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[5]) < 5){
 	    if(fV2) contV0[iV0]->Fill(5,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0v3[iV0]->Fill(5,aodTrack->Pt(),v3V0,x3);
+	    if(x[2] > 0.9 && x[5] < 3 && x[1] < 0) fHdcaPt[iC][4]->Fill(aodTrack->Pt(),b[0]);
+	    else if(x[2] > 0.9 && fIsMC && x[1] < 0) fHdcaPtSec[iC][4]->Fill(aodTrack->Pt(),b[0]);
 	  }
 	}
 	else if(prob[6] > 0.6){ // t
@@ -1090,6 +1232,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[6]) < 5){
 	    if(fV2) contV0[iV0]->Fill(6,aodTrack->Pt(),v2V0,x);
 	    if(fV3) contV0v3[iV0]->Fill(6,aodTrack->Pt(),v3V0,x3);
+	    if(x[2] > 0.9 && x[5] < 3 && x[1] < 0) fHdcaPt[iC][5]->Fill(aodTrack->Pt(),b[0]);
+	    else if(x[2] > 0.9 && fIsMC && x[1] < 0) fHdcaPtSec[iC][5]->Fill(aodTrack->Pt(),b[0]);
 	  }
 	}
 	else if(prob[7] > 0.6){ // He3
@@ -1098,6 +1242,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(TMath::Abs(nsigmaTPC[7]) < 5){
 	    if(fV2) contV0[iV0]->Fill(7,aodTrack->Pt()*2,v2V0,x);
 	    if(fV3) contV0v3[iV0]->Fill(7,aodTrack->Pt()*2,v3V0,x3);
+	    if(x[2] > 0.9 && x[5] < 3 && x[1] < 0) fHdcaPt[iC][6]->Fill(aodTrack->Pt(),b[0]);
+	    else if(x[2] > 0.9 && fIsMC && x[1] < 0) fHdcaPtSec[iC][6]->Fill(aodTrack->Pt(),b[0]);
 	  }
 	}
 	

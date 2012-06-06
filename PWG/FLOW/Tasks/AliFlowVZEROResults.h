@@ -32,12 +32,13 @@ class AliFlowVZEROResults : public TNamed
   TProfile *GetV2(Int_t histo) const {return ((TProfile *) fV2->At(histo));};
   TProfile *GetV2(Int_t species,Float_t x[]) const;
   TProfile *GetV2(Int_t species,Float_t xMin[],Float_t xMax[]) const;
+  TProfile *GetV2reweight(Int_t species,Float_t xMin[],Float_t xMax[],Int_t varRW,Float_t rw[]) const;
   void DirectFill(Int_t histo,Float_t pt,Float_t v2){GetV2(histo)->Fill(pt,v2);};
   void Fill(Int_t species,Float_t pt,Float_t v2,Float_t x[]);
 
   void AddSpecies(const char *name,Int_t nXbin,const Double_t *bin);
 
-  const char *GetSpeciesName(Int_t species){return GetV2(species)->GetName();};
+  const char *GetSpeciesName(Int_t species){if(species < GetNspecies()) return GetV2(species*GetNhistos()/GetNspecies())->GetName();else return "";};
 
   Int_t Add(const AliFlowVZEROResults *oth);
 

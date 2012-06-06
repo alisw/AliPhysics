@@ -104,8 +104,9 @@ class AliFlowBayesianPID : public AliPIDResponse{
   Bool_t GetDetANDstatus(Int_t idet) const {if(idet < fgkNdetectors && idet >= 0){return fMaskAND[idet];} else{return kFALSE;} };
   Bool_t GetDetORstatus(Int_t idet) const {if(idet < fgkNdetectors && idet >= 0){return fMaskOR[idet];} else{return kFALSE;} };
   Bool_t GetCurrentMask(Int_t idet) const {if(idet < fgkNdetectors && idet >= 0){return fMaskCurrent[idet];} else{return kFALSE;} };
-  Float_t GetExpDeDx(const AliESDtrack *t,Int_t iS) const;
-  Float_t GetExpDeDx(const AliAODTrack *t,Int_t iS) const;
+
+  Float_t GetExpDeDx(const AliVTrack *t,Int_t iS) const;
+  Float_t GetExpDeDx(const AliVTrack *t,Float_t m) const;
 
   // methods for Bayesina Combined PID
   void ComputeWeights(const AliESDtrack *t);
@@ -122,7 +123,7 @@ class AliFlowBayesianPID : public AliPIDResponse{
   void SetPriors();
 
   static const Int_t fgkNdetectors = 2; // Number of detector used for PID
-  static const Int_t fgkNspecies = 8;// 0=el, 1=mu, 2=pi, 3=ka, 4=pr, 5=deuteron, 6=triton, 7=He3 
+  static const Int_t fgkNspecies = 9;// 0=el, 1=mu, 2=pi, 3=ka, 4=pr, 5=deuteron, 6=triton, 7=He3 
   static TH2D* fghPriors[fgkNspecies]; // histo with priors (hardcoded)
   static TSpline3 *fgMism; // function for mismatch
 
@@ -157,7 +158,7 @@ class AliFlowBayesianPID : public AliPIDResponse{
 
   static TH1D *fgHtofChannelDist; // channel distance from IP
 
-  ClassDef(AliFlowBayesianPID, 7); // example of analysis
+  ClassDef(AliFlowBayesianPID, 8); // example of analysis
 };
 
 #endif

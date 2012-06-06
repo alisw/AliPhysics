@@ -37,7 +37,7 @@ class AliFlowVZEROQA : public TNamed
 
   void AddSpecies(const char *name,Int_t nXbin,const Double_t *xbin,Int_t nYbin,const Double_t *ybin);
 
-  const char *GetSpeciesName(Int_t species){return GetQA(species)->GetName();};
+  const char *GetSpeciesName(Int_t species){if(species<GetNspecies()) return GetQA(species*GetNhistos()/GetNspecies())->GetName();else return "";};
 
   Int_t Add(const AliFlowVZEROQA *oth);
 

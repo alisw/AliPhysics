@@ -158,13 +158,15 @@ void AliFlowVZEROResults::AddSpecies(const char *name,Int_t nXbin,const Double_t
 
   char nameHisto[200];
   char title[300];
+  char title2[300];
   for(Int_t i=0; i < ncomb;i++){
     snprintf(nameHisto,200,"%s_%s_%i",GetName(),name,i);
     snprintf(title,300,"%s",name);
     Int_t ncombTemp = i;
     for(Int_t j=0;j < GetNvar();j++){
       Int_t ibin = ncombTemp%(*fNbinVar)[j];
-      snprintf(title,300,"%s_%04.1f<%s<%04.1f",title,(*fXmin)[j] + ((*fXmax)[j]-(*fXmin)[j])/(*fNbinVar)[j]*ibin,fNameVar->At(j)->GetName(),(*fXmin)[j] + ((*fXmax)[j]-(*fXmin)[j])/(*fNbinVar)[j]*(ibin+1));
+      snprintf(title2,300,"%s",title);
+      snprintf(title,300,"%s_%04.1f<%s<%04.1f",title2,(*fXmin)[j] + ((*fXmax)[j]-(*fXmin)[j])/(*fNbinVar)[j]*ibin,fNameVar->At(j)->GetName(),(*fXmin)[j] + ((*fXmax)[j]-(*fXmin)[j])/(*fNbinVar)[j]*(ibin+1));
       ncombTemp /= (*fNbinVar)[j];
     }
 
@@ -292,6 +294,68 @@ TProfile *AliFlowVZEROResults::GetV2(Int_t species,Float_t xMin[],Float_t xMax[]
 
   return GetV2(species);
 }
+TProfile *AliFlowVZEROResults::GetV2reweight(Int_t species,Float_t xMin[],Float_t xMax[],Int_t varRW,Float_t rw[]) const{
+  if(GetNvar()){
+    char title[300];
+    char title2[300];
+    Int_t ncomb = 1;
+    for(Int_t i=0;i < GetNvar();i++){
+      ncomb *= (*fNbinVar)[i];
+    }
+
+    TProfile *htemplate = GetV2(species*ncomb);
+    TProfile *temp = new TProfile(*htemplate);
+    temp->SetName("histo");
+    temp->Reset();
+    snprintf(title,300,"%i",species);
+    for(Int_t i=0;i < GetNvar();i++){
+      Int_t imin = GetBin(i,xMin[i]);
+      if(imin < 0) imin = 0;
+      else if(imin >= (*fNbinVar)[i]) imin = (*fNbinVar)[i]-1;
+      Int_t imax = GetBin(i,xMax[i]);
+      if(imax < imin) imax = imin;
+      else if(imax >= (*fNbinVar)[i]) imax = (*fNbinVar)[i]-1;
+      snprintf(title2,300,"%s",title);
+      snprintf(title,300,"%s_%04.1f<%s<%04.1f",title2,
+                (*fXmin)[i] + ((*fXmax)[i]-(*fXmin)[i])/(*fNbinVar)[i]*imin,
+                fNameVar->At(i)->GetName(),
+                (*fXmin)[i] + ((*fXmax)[i]-(*fXmin)[i])/(*fNbinVar)[i]*(imax+1));
+    }
+    temp->SetTitle(title);
+
+    for(Int_t i=species*ncomb;i < (species+1)*ncomb;i++){
+      Bool_t kGood = kTRUE;
+
+      Int_t currentBin=0;
+
+      Int_t ncombTemp = i;
+      for(Int_t j=0;j < GetNvar();j++){
+	Int_t imin = GetBin(j,xMin[j]);
+	if(imin < 0) imin = 0;
+	else if(imin >= (*fNbinVar)[j]) imin = (*fNbinVar)[j]-1;
+	Int_t imax = GetBin(j,xMax[j]);
+	if(imax < imin) imax = imin;
+	else if(imax >= (*fNbinVar)[j]) imax = (*fNbinVar)[j]-1;
+	
+	Int_t ibin = ncombTemp%(*fNbinVar)[j];
+	ncombTemp /= (*fNbinVar)[j];
+
+	if(j == varRW) currentBin = ibin;
+
+	if(ibin < imin || ibin > imax){
+	  kGood = kFALSE;
+	  j = GetNvar();
+	}
+      }
+
+      if(kGood) temp->Add(GetV2(i),rw[currentBin]);
+    }
+    return temp;
+  }
+
+  return GetV2(species);
+}
+
 
 Long64_t AliFlowVZEROResults::Merge(TCollection* list){
   Long64_t res=0;
