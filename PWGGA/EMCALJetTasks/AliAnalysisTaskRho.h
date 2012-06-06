@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKRHO_cxx
-#define ALIANALYSISTASKRHO_cxx
+#ifndef ALIANALYSISTASKRHO_H
+#define ALIANALYSISTASKRHO_H
 
 // $Id$
 
@@ -9,8 +9,7 @@ class TH2F;
 class TClonesArray;
 class TString;
 class TF1;
-
-#include <TParameter.h>
+class AliRhoParameter;
 
 #include "AliAnalysisTaskRhoBase.h"
 
@@ -65,11 +64,11 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   TH2F                  *fHistJetPtvsNtrack;             //!jet pt vs. no. of tracks
   TH2F                  *fHistJetAreavsNtrack;           //!jet area vs. no. of tracks
   TH2F                  *fHistNjetvsNtrack;              //!no. of jets vs. no. of tracks
-  TParameter<Double_t>  *fRhoScaled;                     //!per event scaled rho
+  AliRhoParameter       *fRhoScaled;                     //!per event scaled rho
 
   AliAnalysisTaskRho(const AliAnalysisTaskRho&);             // not implemented
   AliAnalysisTaskRho& operator=(const AliAnalysisTaskRho&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRho, 4); // Rho task
+  ClassDef(AliAnalysisTaskRho, 5); // Rho task
 };
 #endif

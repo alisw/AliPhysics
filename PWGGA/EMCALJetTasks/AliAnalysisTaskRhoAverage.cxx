@@ -2,20 +2,20 @@
 //
 // Calculation of rho, method: sum of all particle pt / full acceptance area
 //
-// Authors: Salvatore Aiola
+// Authors: S. Aiola
 
 #include <TList.h>
 #include <TClonesArray.h>
 #include <TMath.h>
 
-#include "AliLog.h"
 #include "AliAnalysisManager.h"
-#include "AliVEventHandler.h"
 #include "AliCentrality.h"
 #include "AliEmcalJet.h"
-#include "AliVTrack.h"
+#include "AliLog.h"
+#include "AliRhoParameter.h"
 #include "AliVCluster.h"
-
+#include "AliVEventHandler.h"
+#include "AliVTrack.h"
 #include "AliAnalysisTaskRhoAverage.h"
 
 ClassImp(AliAnalysisTaskRhoAverage)

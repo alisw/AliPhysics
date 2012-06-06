@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKRHOAVERAGE_cxx
-#define ALIANALYSISTASKRHOAVERAGE_cxx
+#ifndef ALIANALYSISTASKRHOAVERAGE_H
+#define ALIANALYSISTASKRHOAVERAGE_H
 
 // $Id$
 
@@ -9,8 +9,6 @@ class TH2F;
 class TClonesArray;
 class TString;
 class TF1;
-
-#include <TParameter.h>
 
 #include "AliAnalysisTaskRhoBase.h"
 
