@@ -776,7 +776,7 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	Int_t tofLabel[3];
 	if (!fUseTPConlyTracks) track->GetTOFLabel(tofLabel);
 	else trackForTOF->GetTOFLabel(tofLabel);
-	if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0])) hasTOF = kFALSE;
+	if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) hasTOF = kFALSE;
 	//
 	// IMPORTANT BIG PROBLEM HERE THE PROBABLILITY TO HAVE A PID SIGNAL MUST BE IN !!!!!!!!!!!!
 	//
