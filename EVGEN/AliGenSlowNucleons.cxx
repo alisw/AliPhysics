@@ -74,9 +74,9 @@ AliGenSlowNucleons::AliGenSlowNucleons(Int_t npart)
      fPmax (10.),
      fCharge(1),
      fProtonDirection(1.),
-     fTemperatureG(0.04), 
+     fTemperatureG(0.05), 
      fBetaSourceG(0.05),
-     fTemperatureB(0.004),
+     fTemperatureB(0.005),
      fBetaSourceB(0.),
      fNgp(0),
      fNgn(0),
@@ -158,18 +158,17 @@ void AliGenSlowNucleons::Generate()
   // 
     if (fCollisionGeometry) {
 	Float_t b   = fCollisionGeometry->ImpactParameter();
-	Int_t  nn   = fCollisionGeometry->NN();
-	Int_t  nwn  = fCollisionGeometry->NwN();
-	Int_t  nnw  = fCollisionGeometry->NNw();
-	Int_t  nwnw = fCollisionGeometry->NwNw();
+	//	Int_t  nn   = fCollisionGeometry->NN();
+	//      Int_t  nwn  = fCollisionGeometry->NwN();
+	//      Int_t  nnw  = fCollisionGeometry->NNw();
+	//      Int_t  nwnw = fCollisionGeometry->NwNw();
 
 	fSlowNucleonModel->GetNumberOfSlowNucleons(fCollisionGeometry, fNgp, fNgn, fNbp, fNbn);
 	if (fDebug) {
-	    printf("Nucleons %d %d %d %d \n", fNgp, fNgn, fNbp, fNbn);
+	    printf("Slow nucleons: %d grayp  %d grayn  %d blackp  %d blackn \n", fNgp, fNgn, fNbp, fNbn);
 	    fDebugHist1->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), fCollisionGeometry->NwN(), 1.);
 	    fDebugHist2->Fill(Float_t(fNgp + fNgn + fNbp + fNbn), b, 1.);
-	    printf("AliGenSlowNucleons: Impact parameter from Collision Geometry %f %d %d %d %d\n", 
-		   b, nn, nwn, nnw, nwnw);
+	    //printf("AliGenSlowNucleons: Impact parameter from Collision Geometry %f %d %d %d %d\n", b, nn, nwn, nnw, nwnw);
 	}
     }     
 
@@ -247,6 +246,8 @@ void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T,
    Three-momentum [GeV/c] is given back in q[3]    
 */
 
+ //printf("Generating slow nuc. with: charge %d. temp. %1.3f, beta %1.2f\n",charge,T,beta);
+ 
  Double_t m, pmax, p, f, phi;
  TDatabasePDG * pdg = TDatabasePDG::Instance();
  const Double_t kMassProton  = pdg->GetParticle(kProton) ->Mass();
@@ -312,3 +313,4 @@ void AliGenSlowNucleons::Lorentz(Double_t m, Double_t beta, Float_t* q)
     Double_t energy = sqrt(m*m + q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
     q[2] = gamma * (q[2] + beta*energy);
 }
+

@@ -34,7 +34,10 @@ AliSlowNucleonModelExp::AliSlowNucleonModelExp():
     fP(82),
     fN (208 - 82),
     fAlphaGray(2.),
-    fAlphaBlack(4.)
+    fAlphaBlack(4.),
+    fApplySaturation(kTRUE),
+    fnGraySaturation(15),
+    fnBlackSaturation(28)
 {
   //
   // Default constructor
@@ -59,7 +62,9 @@ void AliSlowNucleonModelExp::GetNumberOfSlowNucleons(AliCollisionGeometry* geo,
     Float_t nGrayProtons  = nGray - nGrayNeutrons;
 
 // Mean number of black nucleons 
-    Float_t nBlack         = fAlphaBlack * nu;
+    Float_t nBlack  = 0.;
+    if(!fApplySaturation || (fApplySaturation && nGray<fnGraySaturation)) nBlack = fAlphaBlack * nu;
+    else if(fApplySaturation && nGray>=fnGraySaturation) nBlack = fnBlackSaturation;
     Float_t nBlackNeutrons = nBlack * fN / (fN + fP);
     Float_t nBlackProtons  = nBlack - nBlackNeutrons;
 
@@ -90,3 +95,4 @@ void AliSlowNucleonModelExp::SetParameters(Float_t alpha1, Float_t alpha2)
     fAlphaGray  = alpha1;
     fAlphaBlack = alpha2;
 }
+

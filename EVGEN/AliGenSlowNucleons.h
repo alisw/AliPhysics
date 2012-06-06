@@ -47,6 +47,11 @@ public:
     //
     // Added by Chiara to take into account angular distribution 4 gray tracks
     virtual void   SetThetaDist(Int_t flag=0) {fThetaDistribution = flag;}
+    //
+    virtual Int_t  GetNGrayProtons()   {return fNgp;}
+    virtual Int_t  GetNGrayNeutrons()  {return fNgn;}
+    virtual Int_t  GetNBlackProtons()  {return fNbp;}
+    virtual Int_t  GetNBlackNeutrons() {return fNbn;}    
     
  protected:
     void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q, Float_t &theta);
@@ -85,6 +90,7 @@ public:
     ClassDef(AliGenSlowNucleons,2) // Slow Nucleon Generator
 };
 #endif
+
 
 
 
