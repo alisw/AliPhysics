@@ -26,20 +26,21 @@
 
 set ( SRCS 
  EMCALJetTasks/AliAnalysisTaskEmcalJet.cxx
+ EMCALJetTasks/AliAnalysisTaskEmcalJetSpectra.cxx
+ EMCALJetTasks/AliAnalysisTaskRho.cxx
+ EMCALJetTasks/AliAnalysisTaskRhoAverage.cxx
+ EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
  EMCALJetTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
  EMCALJetTasks/AliEmcalJetTask.cxx
  EMCALJetTasks/AliHadCorrTask.cxx
- EMCALJetTasks/AliJetModelBaseTask.cxx
  EMCALJetTasks/AliJetEmbeddingTask.cxx
+ EMCALJetTasks/AliJetModelBaseTask.cxx
  EMCALJetTasks/AliJetRandomizerTask.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx
- EMCALJetTasks/AliAnalysisTaskEmcalJetSpectra.cxx
- EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
- EMCALJetTasks/AliAnalysisTaskRho.cxx
- EMCALJetTasks/AliAnalysisTaskRhoAverage.cxx
+ EMCALJetTasks/AliRhoParameter.cxx
 )
 
 set ( DHDR  PWGGAEMCALJetTasksLinkDef.h)
