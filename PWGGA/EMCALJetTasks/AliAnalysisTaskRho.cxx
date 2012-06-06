@@ -6,19 +6,20 @@
 
 #include "AliAnalysisTaskRho.h"
 
-#include <TList.h>
-#include <TH1F.h>
-#include <TH2F.h>
 #include <TClonesArray.h>
 #include <TF1.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TList.h>
 #include <TMath.h>
 
-#include "AliLog.h"
 #include "AliAnalysisManager.h"
-#include "AliVEventHandler.h"
 #include "AliCentrality.h"
 #include "AliEmcalJet.h"
+#include "AliLog.h"
+#include "AliRhoParameter.h"
 #include "AliVCluster.h"
+#include "AliVEventHandler.h"
 
 ClassImp(AliAnalysisTaskRho)
 
@@ -140,7 +141,7 @@ void AliAnalysisTaskRho::UserCreateOutputObjects()
 
   fRhoScaledName = fRhoName;
   fRhoScaledName += "_Scaled";
-  fRhoScaled = new TParameter<Double_t>(fRhoScaledName, 0);  
+  fRhoScaled = new AliRhoParameter(fRhoScaledName, 0);  
 
   if (!fCreateHisto)
     return;
@@ -190,12 +191,13 @@ void AliAnalysisTaskRho::UserCreateOutputObjects()
   fOutputList->Add(fHistNjetvsNtrack);
   
   PostData(1, fOutputList);
-  
 }
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskRho::GetScaleFactor(Double_t cent)
 {
+  // Get scale factor.
+
   Double_t scale = 1;
   if (fScaleFunction)
     scale = fScaleFunction->Eval(cent);
@@ -213,7 +215,6 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
 
    // add rho to event if not yet there
   if (!(InputEvent()->FindListObject(fRhoScaledName))) {
-    new(fRhoScaled) TParameter<Double_t>(fRhoScaledName, -1);
     InputEvent()->AddObject(fRhoScaled);
   }
   else {
