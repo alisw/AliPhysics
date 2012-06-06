@@ -426,7 +426,36 @@ Bool_t AliTRDdEdxBaseUtils::IsInSameStack(const AliTRDtrackV1 *trdtrack)
     return kTRUE;
 }
 
-Bool_t AliTRDdEdxBaseUtils::GetFirstSectorStackMomentum(const AliTRDtrackV1 *trdtrack, Int_t & isec, Int_t & istk, Double_t & mom)
+Double_t AliTRDdEdxBaseUtils::GetDeltaPhi(const AliTRDseedV1 *tracklet)
+{
+  //
+  //get phi difference to normal incidence
+  //
+  if(tracklet)
+    return TMath::ATan(tracklet->GetYref(1));
+  else
+    return -999;
+}
+
+AliTRDseedV1 * AliTRDdEdxBaseUtils::GetLastTracklet(const AliTRDtrackV1 *trdtrack)
+{
+  //
+  //get last tracklet
+  //
+  AliTRDseedV1 *tracklet = 0x0;
+  
+  for(Int_t ilayer = 5; ilayer >= 0; ilayer--){
+    tracklet=trdtrack->GetTracklet(ilayer);
+    if(!tracklet)
+      continue;
+
+    break;
+  }
+
+  return tracklet;
+}
+
+AliTRDseedV1 * AliTRDdEdxBaseUtils::GetFirstSectorStackMomentum(const AliTRDtrackV1 *trdtrack, Int_t & isec, Int_t & istk, Double_t & mom)
 {
   //
   //as function name
@@ -434,8 +463,9 @@ Bool_t AliTRDdEdxBaseUtils::GetFirstSectorStackMomentum(const AliTRDtrackV1 *trd
   isec = istk = -999;
   mom = -999;
 
+  AliTRDseedV1 *tracklet = 0x0;
   for(Int_t ilayer = 0; ilayer < 6; ilayer++){
-    AliTRDseedV1 *tracklet=trdtrack->GetTracklet(ilayer);
+    tracklet=trdtrack->GetTracklet(ilayer);
     if(!tracklet)
       continue;
     
@@ -448,10 +478,7 @@ Bool_t AliTRDdEdxBaseUtils::GetFirstSectorStackMomentum(const AliTRDtrackV1 *trd
     break;
   }
 
-  if(isec<0)
-    return kFALSE;
-  else 
-    return kTRUE;
+  return tracklet;
 }
 
 //===================================================================================
@@ -543,6 +570,39 @@ void AliTRDdEdxBaseUtils::PrintControl()
 //===================================================================================
 //                                 dEdx Parameterization
 //===================================================================================
+void AliTRDdEdxBaseUtils::FastFitdEdxTR(TH1 * hh)
+{
+  //
+  //fit dedx tr from mean
+  //
+
+  TF1 *ff=new TF1("ff", MeandEdxTRLogx, -0.5, 4.5, 8);
+  Double_t par[8];
+  par[0]=   2.397001e-01;
+  par[1]=   1.334697e+00;
+  par[2]=   6.967470e+00;
+  par[3]=   9.055289e-02;
+  par[4]=   9.388760e+00;
+  par[5]=   9.452742e-04;
+  par[6]=  -1.866091e+00;
+  par[7]=   1.403545e+00;
+
+  ff->SetParameters(par);
+  hh->Fit(ff,"N");
+
+  for(int ii=0; ii<8; ii++){
+    printf("par[%d]=%e;\n", ii, ff->GetParameter(ii));
+  }
+
+  TFile *fout=new TFile("fastfit.root","recreate");
+  hh->Write();
+  ff->Write();
+  fout->Save();
+  fout->Close();
+
+  delete fout;
+  delete ff;
+}
 
 Double_t AliTRDdEdxBaseUtils::Q0MeanTRDpp(const Double_t bg)
 {
@@ -551,19 +611,20 @@ Double_t AliTRDdEdxBaseUtils::Q0MeanTRDpp(const Double_t bg)
   //
  
   Double_t par[8];
-  //03132012161150
-  //opt: ppQ0
-par[0]=   2.397001e-01;
-par[1]=   1.334697e+00;
-par[2]=   6.967470e+00;
-par[3]=   9.055289e-02;
-par[4]=   9.388760e+00;
-par[5]=   9.452742e-04;
-par[6]=  -1.866091e+00;
-par[7]=   1.403545e+00;
+  Double_t scale = 1;
+  
+  //2012-0605 /u/xlu/.task/CommondEdx/myAnaData/newTune_r56595/inuse/plot/fastFit
+  scale = 0.9257;
+par[0]=8.316476e-01;
+par[1]=1.600907e+00;
+par[2]=7.728447e+00;
+par[3]=6.235622e-02;
+par[4]=1.136209e+01;
+par[5]=-1.495764e-06;
+par[6]=-2.536119e+00;
+par[7]=3.416031e+00;
 
-  ///u/xlu/.task/CommondEdx/myAnaData/Optimum/check11/Merged/LHC10e_plot/Separation/see2.log:hhtype2Q0b2c2 scale        0.428543 at ltbg        0.650000
-  return   0.428543*MeandEdxTR(&bg, par);
+  return   scale*MeandEdxTR(&bg, par);
 }
 
 Double_t AliTRDdEdxBaseUtils::Q0MeanTRDPbPb(const Double_t bg)

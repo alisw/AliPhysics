@@ -61,8 +61,9 @@ class AliTRDdEdxReconUtils
   static Int_t GetArrayClusterQ(const Bool_t kinvq, TVectorD *arrayQ, TVectorD *arrayX, const AliTRDtrackV1 *trdtrack, Int_t timeBin0=-1, Int_t timeBin1=1000, Int_t tstep=1);
   static Int_t UpdateArrayX(const Int_t ncls, TVectorD* arrayX);
 
- private:
   static Double_t GetAngularCorrection(const AliTRDseedV1 *seed);
+
+ private:
   static Double_t GetPadGain(const Int_t det, const Int_t icol, const Int_t irow);
   static Double_t GetRNDClusterQ(AliTRDcluster *cl);
   static Double_t GetClusterQ(const Bool_t kinvq, const AliTRDseedV1 * seed, const Int_t itb);

@@ -69,7 +69,9 @@ class AliTRDdEdxBaseUtils
   static Int_t GetNtracklet(const AliESDEvent *esd);
   static AliTRDtrackV1 * GetTRDtrackV1(const AliESDtrack * esdtrack);
   static Bool_t IsInSameStack(const AliTRDtrackV1 *trdtrack);
-  static Bool_t GetFirstSectorStackMomentum(const AliTRDtrackV1 *trdtrack, Int_t & isec, Int_t & istk, Double_t & mom);
+  static AliTRDseedV1 * GetLastTracklet(const AliTRDtrackV1 *trdtrack);
+  static AliTRDseedV1 * GetFirstSectorStackMomentum(const AliTRDtrackV1 *trdtrack, Int_t & isec, Int_t & istk, Double_t & mom);
+  static Double_t GetDeltaPhi(const AliTRDseedV1 *tracklet);
 
   //===================================================================================
   //                                 Detector, Data and Control Constant
@@ -106,7 +108,8 @@ class AliTRDdEdxBaseUtils
   //===================================================================================
   //                                 dEdx Parameterization
   //===================================================================================
-  
+  static void FastFitdEdxTR(TH1 * hh);
+
   static Double_t MeandEdx(const Double_t * xx, const Double_t * par);
   static Double_t MeanTR(const Double_t * xx, const Double_t * par);
   static Double_t MeandEdxTR(const Double_t * xx, const Double_t * par);

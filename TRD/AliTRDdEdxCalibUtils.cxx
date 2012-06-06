@@ -140,7 +140,7 @@ Bool_t AliTRDdEdxCalibUtils::GenerateOCDB(const Int_t run, const TString path)
   metaData->SetObjectClassName("TObjArray");
   metaData->SetResponsible("Raphaelle Bailhache and Xianguo Lu");
 
-  AliCDBId id1("TRD/Calib/PHQ", 0, run<0 ? 999999999 : run);
+  AliCDBId id1("TRD/Calib/PHQ", run<0? 0 : run , run<0 ? 999999999 : run);
   AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(path);
   gStorage->Put(arr8, id1, metaData);
 
