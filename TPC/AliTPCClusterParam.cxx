@@ -214,27 +214,27 @@ AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
 
   for (Int_t ii = 0; ii < 2; ++ii) {
     for (Int_t jj = 0; jj < 3; ++jj) {
-      for (Int_t kk = 0; jj < 4; ++jj) {
+      for (Int_t kk = 0; kk < 4; ++kk) {
 	fParamS0[ii][jj][kk] = param.fParamS0[ii][jj][kk];
 	fErrorS0[ii][jj][kk] = param.fErrorS0[ii][jj][kk];
 	fParamRMS0[ii][jj][kk] = param.fParamRMS0[ii][jj][kk];
 	fErrorRMS0[ii][jj][kk] = param.fErrorRMS0[ii][jj][kk];
       }
-      for (Int_t kk = 0; jj < 7; ++jj) {
+      for (Int_t kk = 0; kk < 7; ++kk) {
 	fParamS0Par[ii][jj][kk] = param.fParamS0Par[ii][jj][kk];
 	fErrorS0Par[ii][jj][kk] = param.fErrorS0Par[ii][jj][kk];
       }
-      for (Int_t kk = 0; jj < 6; ++jj) {
+      for (Int_t kk = 0; kk < 6; ++kk) {
 	fParamSQ[ii][jj][kk] = param.fParamSQ[ii][jj][kk];
 	fErrorSQ[ii][jj][kk] = param.fErrorSQ[ii][jj][kk];
 	fParamRMSQ[ii][jj][kk] = param.fParamRMSQ[ii][jj][kk];
 	fErrorRMSQ[ii][jj][kk] = param.fErrorRMSQ[ii][jj][kk];
       }
-      for (Int_t kk = 0; jj < 9; ++jj) {
+      for (Int_t kk = 0; kk < 9; ++kk) {
 	fParamSQPar[ii][jj][kk]	= param.fParamSQPar[ii][jj][kk];
 	fErrorSQPar[ii][jj][kk]	= param.fErrorSQPar[ii][jj][kk];
       }
-      for (Int_t kk = 0; jj < 2; ++jj) {
+      for (Int_t kk = 0; kk < 2; ++kk) {
 	fRMSSigmaFit[ii][jj][kk] = param.fRMSSigmaFit[ii][jj][kk];
       }
     }
@@ -285,27 +285,27 @@ AliTPCClusterParam & AliTPCClusterParam::operator=(const AliTPCClusterParam& par
     
     for (Int_t ii = 0; ii < 2; ++ii) {
       for (Int_t jj = 0; jj < 3; ++jj) {
-	for (Int_t kk = 0; jj < 4; ++jj) {
+	for (Int_t kk = 0; kk < 4; ++kk) {
 	  fParamS0[ii][jj][kk] = param.fParamS0[ii][jj][kk];
 	  fErrorS0[ii][jj][kk] = param.fErrorS0[ii][jj][kk];
 	  fParamRMS0[ii][jj][kk] = param.fParamRMS0[ii][jj][kk];
 	  fErrorRMS0[ii][jj][kk] = param.fErrorRMS0[ii][jj][kk];
 	}
-	for (Int_t kk = 0; jj < 7; ++jj) {
+	for (Int_t kk = 0; kk < 7; ++kk) {
 	  fParamS0Par[ii][jj][kk] = param.fParamS0Par[ii][jj][kk];
 	  fErrorS0Par[ii][jj][kk] = param.fErrorS0Par[ii][jj][kk];
 	}
-	for (Int_t kk = 0; jj < 6; ++jj) {
+	for (Int_t kk = 0; kk < 6; ++kk) {
 	  fParamSQ[ii][jj][kk] = param.fParamSQ[ii][jj][kk];
 	  fErrorSQ[ii][jj][kk] = param.fErrorSQ[ii][jj][kk];
 	  fParamRMSQ[ii][jj][kk] = param.fParamRMSQ[ii][jj][kk];
 	  fErrorRMSQ[ii][jj][kk] = param.fErrorRMSQ[ii][jj][kk];
 	}
-	for (Int_t kk = 0; jj < 9; ++jj) {
+	for (Int_t kk = 0; kk < 9; ++kk) {
 	  fParamSQPar[ii][jj][kk] = param.fParamSQPar[ii][jj][kk];
 	  fErrorSQPar[ii][jj][kk] = param.fErrorSQPar[ii][jj][kk];
 	}
-	for (Int_t kk = 0; jj < 2; ++jj) {
+	for (Int_t kk = 0; kk < 2; ++kk) {
 	  fRMSSigmaFit[ii][jj][kk] = param.fRMSSigmaFit[ii][jj][kk];
 	}
       }
