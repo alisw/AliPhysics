@@ -76,6 +76,7 @@ struct RingQuantity : public Quantity
    * 
    * @param d Detector 
    * @param r Ring
+   * @param name Name 
    * 
    * @return Name of branch to use 
    */
@@ -87,6 +88,8 @@ struct RingQuantity : public Quantity
    * Make a branch to contain an object of this type
    * 
    * @param tree Tree to store in
+   * @param d Detector 
+   * @param r Ring
    * @param name Name of branch
    * 
    * @return Newly allocated object of this type associated with the
@@ -106,6 +109,8 @@ struct RingQuantity : public Quantity
    * Associate a branch with an object of this type
    * 
    * @param tree Tree to read from
+   * @param d Detector 
+   * @param r Ring
    * @param name Name of branch
    * 
    * @return Newly allocated object of this type associated with the
@@ -136,7 +141,6 @@ struct Global
    * Make a branch to contain an object of this type
    * 
    * @param tree Tree to store in
-   * @param name Name of branch
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
@@ -151,7 +155,6 @@ struct Global
    * Associate a branch with an object of this type
    * 
    * @param tree Tree to read from
-   * @param name Name of branch
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
@@ -194,7 +197,8 @@ struct FitStatus
    * Make a branch to contain an object of this type
    * 
    * @param tree Tree to store in
-   * @param name Name of branch
+   * @param d Detector 
+   * @param r Ring
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
@@ -212,7 +216,8 @@ struct FitStatus
    * Associate a branch with an object of this type
    * 
    * @param tree Tree to read from
-   * @param name Name of branch
+   * @param d Detector 
+   * @param r Ring
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
@@ -256,7 +261,8 @@ struct Merge
    * Make a branch to contain an object of this type
    * 
    * @param tree Tree to store in
-   * @param name Name of branch
+   * @param d Detector 
+   * @param r Ring
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
@@ -273,7 +279,8 @@ struct Merge
    * Associate a branch with an object of this type
    * 
    * @param tree Tree to read from
-   * @param name Name of branch
+   * @param d Detector 
+   * @param r Ring
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
@@ -316,7 +323,8 @@ struct DataLoss
    * Make a branch to contain an object of this type
    * 
    * @param tree Tree to store in
-   * @param name Name of branch
+   * @param d Detector 
+   * @param r Ring
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
@@ -333,7 +341,8 @@ struct DataLoss
    * Associate a branch with an object of this type
    * 
    * @param tree Tree to read from
-   * @param name Name of branch
+   * @param d Detector 
+   * @param r Ring
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
@@ -379,7 +388,8 @@ struct Correlation
    * Make a branch to contain an object of this type
    * 
    * @param tree Tree to store in
-   * @param name Name of branch
+   * @param d    Detector number 
+   * @param r    Detector ring
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
@@ -397,7 +407,8 @@ struct Correlation
    * Associate a branch with an object of this type
    * 
    * @param tree Tree to read from
-   * @param name Name of branch
+   * @param d    Detector number 
+   * @param r    Detector ring
    * 
    * @return Newly allocated object of this type associated with the
    * branch 
