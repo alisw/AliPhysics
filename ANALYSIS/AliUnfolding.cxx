@@ -55,7 +55,7 @@ Float_t AliUnfolding::fgRegularizationWeight = 10000;
 Int_t AliUnfolding::fgSkipBinsBegin = 0;
 Float_t AliUnfolding::fgMinuitStepSize = 0.1;                 // (usually not needed to be changed) step size in minimization
 Float_t AliUnfolding::fgMinuitPrecision = 1e-6;               // minuit precision
-Int_t   AliUnfolding::fgMinuitMaxIterations = 1e6;            // minuit maximum number of iterations
+Int_t   AliUnfolding::fgMinuitMaxIterations = 1000000;            // minuit maximum number of iterations
 Double_t AliUnfolding::fgMinuitStrategy = 1.;                 // minuit strategy
 Bool_t AliUnfolding::fgMinimumInitialValue = kFALSE;          // set all initial values at least to the smallest value among the initial values
 Float_t AliUnfolding::fgMinimumInitialValueFix = -1;
@@ -197,7 +197,7 @@ void AliUnfolding::SetBayesianParameters(Float_t smoothing, Int_t nIterations)
   fgBayesianSmoothing = smoothing;
   fgBayesianIterations = nIterations;
 
-  Printf("AliUnfolding::SetBayesianParameters --> Paramaters set to %d iterations with smoothing %f", fgBayesianIterations, fgBayesianSmoothing);
+  Printf("AliUnfolding::SetBayesianParameters --> Parameters set to %d iterations with smoothing %f", fgBayesianIterations, fgBayesianSmoothing);
 }
 
 //____________________________________________________________________
@@ -555,6 +555,7 @@ Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* 
   Double_t* result = new Double_t[kMaxT];
   Double_t* efficiency = new Double_t[kMaxT];
   Double_t* binWidths = new Double_t[kMaxT];
+  Double_t* normResponse = new Double_t[kMaxT]; 
 
   Double_t** response = new Double_t*[kMaxT];
   Double_t** inverseResponse = new Double_t*[kMaxT];
@@ -562,6 +563,7 @@ Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* 
   {
     response[i] = new Double_t[kMaxM];
     inverseResponse[i] = new Double_t[kMaxM];
+    normResponse[i] = 0;
   }
 
   // for normalization
@@ -575,6 +577,7 @@ Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* 
     {
       response[t][m] = correlation->GetBinContent(t+1, m+1);
       inverseResponse[t][m] = 0;
+      normResponse[t] += correlation->GetBinContent(t+1, m+1);
     }
   }
 
@@ -590,6 +593,13 @@ Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* 
     prior[t] = measuredCopy[t];
     result[t] = 0;
     binWidths[t] = aResult->GetXaxis()->GetBinWidth(t+1);
+
+    for (Int_t m=0; m<kMaxM; m++) { // Normalise response matrix
+      if (normResponse[t] != 0) 
+	response[t][m] /= normResponse[t];
+      else
+        Printf("AliUnfolding::UnfoldWithBayesian: Empty row,column in response matrix, for truth bin %d",t);
+    }
   }
 
   // pick prior distribution
@@ -619,7 +629,7 @@ Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* 
     {
       Float_t norm = 0;
       for (Int_t t = kStartBin; t<kMaxT; t++)
-        norm += response[t][m] * prior[t];
+        norm += response[t][m] * prior[t] * efficiency[t];
 
       // calc. chi2: (measured - response * prior) / error
       if (measuredError[m] > 0)
@@ -631,7 +641,7 @@ Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* 
       if (norm > 0)
       {
         for (Int_t t = kStartBin; t<kMaxT; t++)
-          inverseResponse[t][m] = response[t][m] * prior[t] / norm;
+          inverseResponse[t][m] = response[t][m] * prior[t] * efficiency[t] / norm;
       }
       else
       {
@@ -715,6 +725,7 @@ Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* 
   delete[] result;
   delete[] efficiency;
   delete[] binWidths;
+  delete[] normResponse;
 
   for (Int_t i=0; i<kMaxT; i++)
   {
