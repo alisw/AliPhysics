@@ -190,6 +190,7 @@ AliCentralMultiplicityTask::GetESDEvent()
   // Get the ESD event. IF this is the first event, initialise
   //
   DGUARD(fDebug,1,"Get ESD event in AliCentralMultiplicityTask");
+  if (IsZombie()) return 0;
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) {
     AliWarning("No ESD event found for input event");
@@ -207,13 +208,26 @@ AliCentralMultiplicityTask::GetESDEvent()
     GetManager().Init(fInspector.GetCollisionSystem(),
 		      fInspector.GetEnergy(),
 		      fInspector.GetField());
-    AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
+    //AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
   }
-  if (!GetManager().HasSecondaryCorrection()) 
-    AliFatal("No secondary correction defined!");
-  if (!GetManager().HasAcceptanceCorrection()) 
-    AliFatal("No acceptance correction defined!");
-  
+  Bool_t ok = true;
+  if (!GetManager().HasSecondaryCorrection()) {
+    ok = false;
+    AliError("No secondary correction defined!");
+  }
+  if (!GetManager().HasAcceptanceCorrection()) {
+    ok = false;
+    AliError("No acceptance correction defined!");
+  }
+  // If the corrections are not seen, make this a zombie, and prevent
+  // further execution of this task.
+  if (!ok) { 
+    AliError("Missing corrections, make this a zombie");
+    SetZombie(true);
+    esd = 0;
+    fFirstEventSeen = true;
+    return esd;
+  }
 
   // Check for existence and get secondary map 
   AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
@@ -394,7 +408,8 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   fIvz = 0;
 
   AliESDEvent* esd = GetESDEvent();
-  
+  if (!esd) return;
+
   Bool_t   lowFlux   = kFALSE;
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;

@@ -210,23 +210,53 @@ protected:
     
   }
   //__________________________________________________________________
+  void SaveSetupShell(Runner& r, Int_t nEvents)
+  {
+    TrainSetup::SaveSetupShell(r, nEvents);
+    
+    std::ofstream o("dNdeta.sh");
+    o << "#!/bin/bash\n\n"
+      << "oper=$1\n"
+      << "if test x$oper = x ; then oper=full ; fi\n\n"
+      << "class=MakedNdetaTrain\n"
+      << "name=" << fName << "_dNdeta\n"
+      << "nev=" << nEvents << "\n\n"
+      << "opts=(--class=$class \\\n"
+      << "  --name=$name \\\n"
+      << "  --events=$nev \\\n";
+    for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
+      o << "  --run=" << fRunNumbers.At(i) << " \\\n";
+    TrainSetup::SaveOptions(o, "--", r);
+    if (fUseCent) o << "  --cent \\\n"
+    o << "  --type=AOD \\\n"
+      << "  --trig=INEL \\\n"
+      << "  --vzMin=-10 \\\n"
+      << "  --vzMax=10 \\\n"
+      << "  --scheme=full \\\n"
+      << "  --datadir=" << GetOutputDirectory(fExecMode) << " \\\n"
+      << "  --oper=$oper)\n\n"
+      << "echo \"Running runTrain ${opts[@]}\"\n"
+      << "runTrain \"${opts[@]}\"\n\n"
+      << "# EOF\n" << std::endl;
+    o.close();
+    gSystem->Exec("chmod a+x dNdeta.sh");
+  }
+  //__________________________________________________________________
   void SaveSetupROOT(Runner& r, Int_t nEvents)
   {
-    TrainSetup::SaveSetup(r, nEvents);
+    TrainSetup::SaveSetupROOT(r, nEvents);
     
-    TString base(Form("dndeta_%s", fEscapedName.Data()));
-    
-    std::ofstream o(Form("%s.C", base.Data()));
-    o << "void " << base << "()\n"
+    std::ofstream o("dNdeta.C");
+    o << "void dNdeta()\n"
       << "{\n"
       << "  TString opts;\n";
     TrainSetup::SaveOptions(o, "opts", r);
     o << "  // Note, `type' from above overwritten here\n"
-      << "  opts.Append(\"type=AOD:\");\n"
-      << "  opts.Append(\"trig=INEL:\");\n"
-      << "  opts.Append(\"vzMin=-10:\");\n"
-      << "  opts.Append(\"vzMax=-10:\");\n"
-      << "  opts.Append(\"scheme=full:\");\n"
+      << "  opts.Append(\"type=AOD,\");\n"
+      << "  opts.Append(\"trig=INEL,\");\n"
+      << "  opts.Append(\"vzMin=-10,\");\n"
+      << "  opts.Append(\"vzMax=10,\");\n"
+      << "  opts.Append(\"scheme=full,\");\n"
       << "  opts.Append(\"datadir=" << GetOutputDirectory(fExecMode) 
       << ":\");\n\n"
       << "  TString runs(\"";

@@ -510,6 +510,17 @@ struct TrainSetup
     // _must_ be done after all tasks has been added
     AliAnalysisAlien* gridHandler = CreateGridHandler();
     if (gridHandler) mgr->SetGridHandler(gridHandler);
+
+    // --- Set debug level on defined tasks --------------------------
+    if (fVerbose > 0) {
+      TIter next(mgr->GetTasks());
+      AliAnalysisTask* sub = 0;
+      while ((sub = static_cast<AliAnalysisTask*>(next()))) { 
+	AliAnalysisTaskSE* se = dynamic_cast<AliAnalysisTaskSE*>(sub);
+	if (!se) continue;
+	se->SetDebugLevel(fVerbose);
+      }
+    }
     
     // --- Print setup -----------------------------------------------
     Print();
@@ -2665,8 +2676,7 @@ protected:
     o << "  --oper=$oper)\n\n"
       << "echo \"Running runTrain ${opts[@]}\"\n"
       << "runTrain \"${opts[@]}\"\n\n"
-      << "#EOF\n" 
-      << std::endl;
+      << "# EOF" << std::endl;
     o.close();
     gSystem->Exec("chmod a+x rerun.sh");
   }

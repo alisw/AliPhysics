@@ -179,7 +179,7 @@ AliForwardMCMultiplicityTask::SetOnlyPrimary(Bool_t use)
 }
 
 //____________________________________________________________________
-void
+Bool_t
 AliForwardMCMultiplicityTask::InitializeSubs()
 {
   // 
@@ -189,7 +189,7 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   const TAxis* pe = 0;
   const TAxis* pv = 0;
 
-  if (!ReadCorrections(pe,pv,true)) return;
+  if (!ReadCorrections(pe,pv,true)) return false;
 
   fHistos.Init(*pe);
   fAODFMD.Init(*pe);
@@ -247,6 +247,8 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   fEventPlaneFinder.Init(*pe);
 
   this->Print();
+
+  return true;
 }
 
 //____________________________________________________________________
@@ -312,6 +314,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   // Get the input data 
   AliESDEvent* esd     = GetESDEvent();
   AliMCEvent*  mcEvent = MCEvent();
+  if (!esd || !mcEvent) return;
 
   // Clear stuff 
   fHistos.Clear();
