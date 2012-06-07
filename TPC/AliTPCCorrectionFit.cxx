@@ -155,7 +155,15 @@ void AliTPCCorrectionFit::CreateAlignMaps(Double_t bz, Int_t run){
   //
   TFile *falign = TFile::Open("CalibObjects.root");
   TObjArray * arrayAlign = (TObjArray *)falign->Get("TPCAlign");
+  if (!arrayAlign) {
+    AliWarning("Alignment was not included in the calibration task");
+    return;
+  }
   AliTPCcalibAlign * align =  (AliTPCcalibAlign *)arrayAlign->FindObject("alignTPC");
+  if (!align) {
+      AliWarning("Alignment was not included in the calibration task");
+    return;
+  }
   TTreeSRedirector * pcstream = new TTreeSRedirector("TPCAlign.root");
 
   THnBase * hdY = (THnBase*)align->GetClusterDelta(0);
