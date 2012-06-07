@@ -44,7 +44,7 @@ class TH1;
  */
 struct QAPlotter : public QABase
 {
-  /*******************************************************************
+  /**
    * Ring class 
    */
   struct Ring : public QARing
@@ -109,7 +109,6 @@ struct QAPlotter : public QABase
      * 
      * @param g      Graph
      * @param name   Name of graph
-     * @param title  Title (not used)
      */
     void SetAtt(TGraph* g, const char* name, const char* /*title=""*/) 
     {
@@ -219,6 +218,13 @@ struct QAPlotter : public QABase
   {
     fFiles.Add(new TObjString(filename));
   }
+  /** 
+   * Make a tree 
+   * 
+   * @param read If true, read from file 
+   * 
+   * @return True on success 
+   */
   Bool_t MakeTree(bool read)
   {
     if (fFiles.GetEntriesFast() <= 0) return QABase::MakeTree(read);
@@ -398,6 +404,7 @@ struct QAPlotter : public QABase
    * 
    * @param mg     Multi graph
    * @param title  Title
+   * @param logy   If true, make @f$\log@f$ scale 
    */
   void PlotMulti(TMultiGraph* mg, const char* title, Bool_t logy=false)
   {
@@ -461,6 +468,14 @@ struct QAPlotter : public QABase
 
     PrintCanvas(mg->GetName());
   }
+  /** 
+   * Find a run 
+   * 
+   * @param runs List of runs 
+   * @param run  Run to find
+   * 
+   * @return Index of run in run list
+   */
   Int_t FindRun(const TArrayI& runs, Int_t run) 
   {
     std::sort(&(runs.fArray[0]), &(runs.fArray[runs.GetSize()]));
@@ -473,6 +488,7 @@ struct QAPlotter : public QABase
    * 
    * @param h      Frame histogram
    * @param title  Title 
+   * @param runs   List of runs, if any
    */
   void AddRuns(TH1* h, const char* title, TArrayI* runs=0)
   {
@@ -534,6 +550,11 @@ struct QAPlotter : public QABase
       tl->Draw();
     }
   }
+  /** 
+   * Output list of runs 
+   * 
+   * @param o Output stream
+   */
   void WriteRuns(std::ostream& o)
   {
     o << "<div class='jobid'><!--JOBID--></div>\n"
@@ -546,11 +567,21 @@ struct QAPlotter : public QABase
     o << "\n"
       << "</div>" << std::endl;
   }
+  /** 
+   * Write page footer 
+   * 
+   */
   void WriteFooter()
   {
     WriteRuns(*fHtml);
     QABase::WriteFooter();
   }
+  /** 
+   * Write out image footer 
+   * 
+   * @param o Output stream
+   * @param pngName Name of the PNG file 
+   */
   void WriteImageFooter(std::ostream& o, const char* pngName)
   {
     WriteRuns(o);

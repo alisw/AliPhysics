@@ -14,6 +14,7 @@
  * @param dir        Start directory
  * @param list       List to add file names to
  * @param recursive  Whether to scan recursively
+ * @param pattern    Pattern filenames must match
  * 
  * @return true on success
  * 

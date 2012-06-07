@@ -182,6 +182,7 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
  * line between the two for each ring
  * 
  * @param filename File to read
+ * @param folder   Folder in file
  * @param xmax     Minimum X
  * @param xmin     Maximum X 
  *

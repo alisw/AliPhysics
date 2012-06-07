@@ -546,6 +546,9 @@ public:
   /******************************************************************/
   /** 
    * CTOR
+   * 
+   * @param keep   Whehter to keep all info 
+   * @param single Single run input 
    */
   QATrender(Bool_t keep=false, Bool_t single=false) 
     : QABase(single), 
@@ -570,6 +573,7 @@ public:
   /**
    * Copy CTOR
    * 
+   * @param o Object to copy from 
    */
   QATrender(const QATrender& o) 
     : QABase(o), 
@@ -602,6 +606,7 @@ public:
   /** 
    * Run the job
    * 
+   * @return true on success
    */
   Bool_t Run()
   {
