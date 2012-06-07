@@ -61,6 +61,11 @@
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliStack.h"
+
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliHFEcontainer.h"
@@ -80,12 +85,14 @@ ClassImp(AliAnalysisTaskElecV2)
 AliAnalysisTaskElecV2::AliAnalysisTaskElecV2(const char *name) 
   : AliAnalysisTaskSE(name)
   ,fESD(0)
+  ,fMC(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
   ,fPassTheEventCut(kFALSE)
   ,fRejectKinkMother(kFALSE)
+  ,fIsMC(kFALSE)
   ,fVz(0.0)
   ,fCFM(0)	
   ,fPID(0)
@@ -104,6 +111,7 @@ AliAnalysisTaskElecV2::AliAnalysisTaskElecV2(const char *name)
   ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
   ,fSemiInclElecPt(0)
+  ,fMCphotoElecPt(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)
   ,fTPCnsigma(0)
@@ -138,12 +146,14 @@ AliAnalysisTaskElecV2::AliAnalysisTaskElecV2(const char *name)
 AliAnalysisTaskElecV2::AliAnalysisTaskElecV2() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElecHadCorrel")
   ,fESD(0)
+  ,fMC(0)
   ,fOutputList(0)
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
   ,fPassTheEventCut(kFALSE)
   ,fRejectKinkMother(kFALSE)
+  ,fIsMC(kFALSE)
   ,fVz(0.0)
   ,fCFM(0)	
   ,fPID(0)       
@@ -162,6 +172,7 @@ AliAnalysisTaskElecV2::AliAnalysisTaskElecV2()
   ,fOpeningAngleULS(0)	
   ,fPhotoElecPt(0)
   ,fSemiInclElecPt(0)
+  ,fMCphotoElecPt(0)
   ,fTrackPtBefTrkCuts(0)	 
   ,fTrackPtAftTrkCuts(0)	 	  
   ,fTPCnsigma(0)
@@ -229,6 +240,9 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     fPID->InitializePID(fESD->GetRunNumber());
   }
  
+  if(fIsMC)fMC = MCEvent();
+  AliStack* stack = NULL;
+  if(fIsMC && fMC) stack = fMC->Stack();
  
   Int_t fNOtrks =  fESD->GetNumberOfTracks();
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
@@ -327,7 +341,7 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     pt = track->Pt();
     if(pt<2) continue;
     fTrkpt->Fill(pt);
-    
+        
     Int_t clsId = track->GetEMCALcluster();
     if (clsId>0){
       AliESDCaloCluster *cluster = fESD->GetCaloCluster(clsId);
@@ -406,20 +420,50 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     fFlagPhotonicElec = kFALSE;
     SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
     
-    if(fFlagPhotonicElec){
-      fphoteV2->Fill(correctedV2);
-      fPhotoElecPt->Fill(pt);
+    if(fIsMC && fMC && stack){
+      Int_t label = track->GetLabel();
+      if(label>0){
+	TParticle *particle = stack->Particle(label);
+	Int_t partPDG = particle->GetPdgCode();
+	Double_t partPt = particle->Pt();
+	Int_t IsElec = 0;
+	if (TMath::Abs(partPDG)==11) IsElec = 1;
+	if(particle){
+	  Int_t idMother = particle->GetFirstMother();
+	  if (idMother>0){
+	    TParticle *mother = stack->Particle(idMother);
+	    Int_t motherPDG = mother->GetPdgCode();
+	    
+	    Double_t mc[3]={partPt,fFlagPhotonicElec,IsElec};
+	    
+	    if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// gamma, pi0, eta
+	  }
+	}
+      }
     }
     
-    if(!fFlagPhotonicElec) fSemiInclElecPt->Fill(pt);
+    
+  if(fFlagPhotonicElec){
+    fphoteV2->Fill(correctedV2);
+    fPhotoElecPt->Fill(pt);
+  }
+    
+  if(!fFlagPhotonicElec) fSemiInclElecPt->Fill(pt);
+
  }
  PostData(1, fOutputList);
 }
 //_________________________________________
 void AliAnalysisTaskElecV2::UserCreateOutputObjects()
 {
+  //--- Check MC
+  if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
+    fIsMC = kTRUE;
+    printf("+++++ MC Data available");
+  }
   //--------Initialize PID
-  fPID->SetHasMCData(kFALSE);
+  fPID->SetHasMCData(fIsMC);
+  
   if(!fPID->GetNumberOfPIDdetectors()) 
     {
       fPID->AddDetector("TPC", 0);
@@ -515,9 +559,9 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
   fEPres = new THnSparseD ("fEPres","EP resolution",4,binsv1,xminv1,xmaxv1);
   fOutputList->Add(fEPres);
 	
-  Int_t binsv2[10]={100,100,90,100,100,100,100,100,100,2}; // phi,fTPCnSigma,cent, pt, EovP, EovP,TPCdeltaPhi, V0AdeltaPhi, V0CdeltaPhi,IsPhotE
-  Double_t xminv2[10]={0,-3.5,0,0,0,0,0,0,0,0};
-  Double_t xmaxv2[10]={2*TMath::Pi(),3.5,90,50,3,3,TMath::Pi(),TMath::Pi(),TMath::Pi(),1}; 
+  Int_t binsv2[10]={100,100,90,100,100,100,100,100,100,3}; // phi,fTPCnSigma,cent, pt, EovP, EovP,TPCdeltaPhi, V0AdeltaPhi, V0CdeltaPhi,IsPhotE
+  Double_t xminv2[10]={0,-3.5,0,0,0,0,0,0,0,-1};
+  Double_t xmaxv2[10]={2*TMath::Pi(),3.5,90,50,3,3,TMath::Pi(),TMath::Pi(),TMath::Pi(),2}; 
   fCorr = new THnSparseD ("fCorr","Correlations",10,binsv2,xminv2,xmaxv2);
   fOutputList->Add(fCorr);
     
@@ -545,6 +589,12 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
   feTPCV2 = new THnSparseD ("feTPCV2","inclusive electron v2 (TPC)",5,binsv6,xminv6,xmaxv6);
   fOutputList->Add(feTPCV2);
   
+  Int_t binsv7[3]={100,3,3}; // pt, IsPhotonicElectron, IsElectron
+  Double_t xminv7[3]={0,-1,-1};
+  Double_t xmaxv7[3]={50,2,2}; 
+  fMCphotoElecPt = new THnSparseD ("fMCphotoElecPt", "pt distribution (MC)",3,binsv7,xminv7,xmaxv7);
+  fOutputList->Add(fMCphotoElecPt);
+   
   PostData(1,fOutputList);
 }
 
