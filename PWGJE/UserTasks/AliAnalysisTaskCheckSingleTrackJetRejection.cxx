@@ -321,18 +321,14 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 								}
 				}
 
-				if(fNonStdFile.Length()!=0){
-								// case we have an AOD extension - fetch the jets from the extended output
-
-								AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-								fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
-								if(!fAODExtension){
-												if(fDebug>1)Printf("AODExtension not found for %s",fNonStdFile.Data());
-								}
-				}
-
-
-
+				//if(fNonStdFile.Length()!=0){
+				//				// case we have an AOD extension - fetch the jets from the extended output
+				//				AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+				//				fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
+				//				if(!fAODExtension){
+				//								if(fDebug>1)Printf("AODExtension not found for %s",fNonStdFile.Data());
+				//				}
+				//}
 				//fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
 				if (!fAODIn) {
 								Printf("ERROR %s : fAODIn not available",(char*)__FILE__);
