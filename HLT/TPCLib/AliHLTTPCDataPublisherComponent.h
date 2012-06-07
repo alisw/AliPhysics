@@ -65,6 +65,20 @@ public:
   /// destructor
   ~AliHLTTPCDataPublisherComponent();
 
+  enum {
+    kPublisherModeDefault = 0,
+    kRegisterClusterBlocks= 0x1, // only register data blocks
+    kPublishClustersAll   = 0x2, // unpack data blocks
+    kPublishRawAll        = 0x4, // publish all raw data
+    kPublishRawFiltered   = 0x8, // publish raw data filtered by existence of clusters
+    kLastContainerMode
+  };
+
+  /// set mode
+  void SetMode(int mode) {fMode=mode;}
+
+  bool CheckMode(int flag) const {return (fMode&flag)==flag;}
+
   /// inherited from AliHLTComponent: id of the component
   virtual const char* GetComponentID();
 
@@ -208,6 +222,7 @@ private:
   AliHLTTPCDataPublisherComponent(const AliHLTTPCDataPublisherComponent&);
   AliHLTTPCDataPublisherComponent& operator=(const AliHLTTPCDataPublisherComponent&);
 
+  int fMode; //! operation mode
   bool* fArraySelected; //! transient
   AliRawClusterContainer* fClusters; // target for decoded clusters
   AliHLTTPCDataCompressionDecoder* fpDecoder; // decoder for compressed cluster blocks

@@ -39,6 +39,7 @@ ClassImp(AliHLTTPCDataPublisherComponent)
 
 AliHLTTPCDataPublisherComponent::AliHLTTPCDataPublisherComponent()
   : AliHLTRawReaderPublisherComponent()
+  , fMode(kPublisherModeDefault)
   , fArraySelected(NULL)
   , fClusters(NULL)
   , fpDecoder(NULL)
@@ -83,26 +84,36 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
   size=0;
   if (fClusters) {
     fClusters->Clear();
-    fClusters->SetTargetBuffer(outputPtr+offset, capacity-offset);
-    if ((iResult=ReadClusterFromHLTOUT(fClusters))>=0) {
-      if ((iResult=fClusters->GetState())>=0) {
-	if (fClusters->CopyBlockDescriptors(clusterBlocks)>0) {
-	  for (AliHLTComponentBlockDataList::const_iterator bd=clusterBlocks.begin();
-	       bd!=clusterBlocks.end(); bd++) {
-	    if (offset<bd->fOffset+bd->fSize)
-	      offset=bd->fOffset+bd->fSize;
-	  }
-	}
-      } else if (iResult==-ENOSPC) {
-	offset=fClusters->GetBlockCount()*sizeof(AliHLTTPCRawClusterData)+
-	  fClusters->GetClusterCount()*sizeof(AliHLTTPCRawCluster);
-	iResult=0; // keep going to also accumulate the size for raw data blocks
-      }
+    if (CheckMode(kPublishClustersAll)) {
+      // set the target buffer only if the clusters should be published
+      fClusters->SetTargetBuffer(outputPtr+offset, capacity-offset);
+    } else if (CheckMode(kRegisterClusterBlocks)) {
+      // data blocks are registered in the container, track model cluster blocks
+      // are unpacked but not stored in order to find the included partitions
+      //fClusters->
     }
-    if (iResult==-ENODATA) {
-      // return indicates absense of compressed clusters in HLTOUT
-      // but is not treated as an error further downstream
-      iResult=0;
+    if (CheckMode(kPublishClustersAll) ||
+	CheckMode(kRegisterClusterBlocks)) {
+      if ((iResult=ReadClusterFromHLTOUT(fClusters))>=0) {
+	if ((iResult=fClusters->GetState())>=0) {
+	  if (fClusters->CopyBlockDescriptors(clusterBlocks)>0) {
+	    for (AliHLTComponentBlockDataList::const_iterator bd=clusterBlocks.begin();
+		 bd!=clusterBlocks.end(); bd++) {
+	      if (offset<bd->fOffset+bd->fSize)
+		offset=bd->fOffset+bd->fSize;
+	    }
+	  }
+	} else if (iResult==-ENOSPC) {
+	  offset=fClusters->GetBlockCount()*sizeof(AliHLTTPCRawClusterData)+
+	    fClusters->GetClusterCount()*sizeof(AliHLTTPCRawCluster);
+	  iResult=0; // keep going to also accumulate the size for raw data blocks
+	}
+      }
+      if (iResult==-ENODATA) {
+	// return indicates absence of compressed clusters in HLTOUT
+	// but is not treated as an error further downstream
+	iResult=0;
+      }
     }
   }
 
@@ -116,15 +127,20 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
     size=capacity;
   }
   if (iResult>=0) {
+    unsigned firstBlock=outputBlocks.size();
     iResult=AliHLTRawReaderPublisherComponent::GetEvent(evtData, trigData, outputPtr, size, outputBlocks);
     if (iResult==-ENOSPC) {
       // not enough space in the buffer, fMaxSize has been updated by base class
       fMaxSize+=offset;
     } else if (iResult>=0) {
+      if (outputBlocks.size()>firstBlock && CheckMode(kPublishRawFiltered)) {
+	AliInfo(Form("publishing %d DDL(s) for emulation of compressed TPC clusters", outputBlocks.size()-firstBlock));
+      }
       // correct for the shifted buffer which was provided to the
       // GetEvent method
       for (AliHLTComponentBlockDataList::iterator bd=outputBlocks.begin();
 	   bd!=outputBlocks.end(); bd++) {
+	if (firstBlock>0) {firstBlock--; continue;}
 	bd->fOffset+=offset;
       }
       offset+=size;
@@ -140,7 +156,9 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
 
   if (iResult>=0) {
     size=offset;
-    outputBlocks.insert(outputBlocks.begin(), clusterBlocks.begin(), clusterBlocks.end());
+    if (clusterBlocks.size()>0 && !CheckMode(kRegisterClusterBlocks)) {
+      outputBlocks.insert(outputBlocks.begin(), clusterBlocks.begin(), clusterBlocks.end());
+    }
   }
 
   return iResult;
@@ -314,7 +332,7 @@ int AliHLTTPCDataPublisherComponent::DoInit( int argc, const char** argv )
 
   // component configuration
   //Stage 1: default initialization.
-  const char* defaultArguments="-detector TPC -datatype 'DDL_RAW ' 'TPC '";
+  const char* defaultArguments="-detector TPC -datatype 'DDL_RAW ' 'TPC ' -skipempty";
   if ((iResult = ConfigureFromArgumentString(1, &defaultArguments)) < 0)
     return iResult;
 
@@ -355,12 +373,46 @@ int AliHLTTPCDataPublisherComponent::ScanConfigurationArgument(int argc, const c
 {
   /// inherited from AliHLTComponent: argument scan
   if (argc<1) return 0;
-  // int bMissingParam=0;
-  // int i=0;
-  // TString argument=argv[i];
+  int bMissingParam=0;
+  int i=0;
+  TString argument=argv[i];
 
   do {
-    // currently no specific parameters
+    // -publish-raw
+    if (argument.CompareTo("-publish-raw")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter=argv[i];
+      if (parameter.CompareTo("all")==0) {
+	fMode|=kPublishRawAll;
+	return 2;
+      } else if (parameter.CompareTo("filtered")==0) {
+	fMode|=kPublishRawFiltered;
+	fMode|=kRegisterClusterBlocks;
+	fMode&=~kPublishRawAll;
+	return 2;
+      } else if (parameter.CompareTo("off")==0) {
+	fMode&=~(kPublishRawAll|kPublishRawFiltered);
+	return 2;
+      } else {
+	HLTError("invalid parameter for argument %s, expecting either 'all', 'filtered', or 'off' instead of %s", argument.Data(), parameter.Data());
+	return -EPROTO;
+      }
+    }
+    // -publish-clusters
+    if (argument.CompareTo("-publish-clusters")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter=argv[i];
+      if (parameter.CompareTo("all")==0) {
+	fMode|=kPublishClustersAll;
+	return 2;
+      } else if (parameter.CompareTo("off")==0) {
+	fMode&=~(kPublishClustersAll);
+	return 2;
+      } else {
+	HLTError("invalid parameter for argument %s, expecting either 'all', or 'off' instead of %s", argument.Data(), parameter.Data());
+	return -EPROTO;
+      }
+    }
 
   } while (0); // using do-while only to have break available
 
@@ -392,6 +444,11 @@ bool AliHLTTPCDataPublisherComponent::IsSelected(int equipmentId) const
   /// check if a raw data block needs to be published. This is the case if
   /// there is no corresponding compressed data, i.e. function returns
   /// only false if the block can be found in the cluster container
+  if (CheckMode(kPublishRawAll))
+    return true;
+  if (!CheckMode(kPublishRawFiltered))
+    return false;
+
   if (!fClusters)
     return true;
 
@@ -405,7 +462,7 @@ bool AliHLTTPCDataPublisherComponent::IsSelected(int equipmentId) const
   if (equipmentId>=count)
     return true;
   int slice=equipmentId<72?equipmentId/2:(equipmentId-72)/4;
-  int partition=equipmentId<72?equipmentId%2:(equipmentId-72)%4;
+  int partition=equipmentId<72?equipmentId%2:((equipmentId-72)%4)+2;
   AliHLTUInt32_t specification=AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, partition, partition);
   for (AliHLTComponentBlockDataList::const_iterator i=fClusters->GetBlockDescriptors().begin();
        i!=fClusters->GetBlockDescriptors().end(); i++) {
@@ -503,6 +560,17 @@ AliHLTTPCDataPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCData
       filled=fBufferSize;
     }
   }
+
+  // insert an empty data block which is than updated later
+  AliHLTComponentBlockData bd;
+  AliHLTComponent::FillBlockData(bd);
+  bd.fPtr=NULL;
+  bd.fSize=0;
+  bd.fOffset=filled;
+  bd.fDataType=dt;
+  bd.fSpecification=specification;
+  fDescriptors.push_back(bd);
+
   // initialize only the header, during filling the cluster count of the header
   // and the block size will be incremented
   AliHLTUInt32_t blocksize=sizeof(AliHLTTPCRawClusterData);
@@ -513,14 +581,7 @@ AliHLTTPCDataPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCData
   pData=reinterpret_cast<AliHLTTPCRawClusterData*>(fpBuffer+filled);
   pData->fVersion=0;
   pData->fCount=0;
-  AliHLTComponentBlockData bd;
-  AliHLTComponent::FillBlockData(bd);
-  bd.fPtr=NULL;
-  bd.fSize=blocksize;
-  bd.fOffset=filled;
-  bd.fDataType=dt;
-  bd.fSpecification=specification;
-  fDescriptors.push_back(bd);
+  fDescriptors.back().fSize=blocksize;
   new (&fIterator) iterator(this);
   return fIterator;
 }
