@@ -516,12 +516,12 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 
       AliESDZDC *esdZDC = esd->GetESDZDC();
       
-      Int_t tdc[32][4], tdcSum=-999, tdcDiff=-999;
+      Float_t tdc[32][4], tdcSum=-999, tdcDiff=-999;
       Bool_t tdcMult[6] = {kFALSE};
       for(Int_t itdc=0; itdc<32; itdc++){
 	 for(Int_t i=0; i<4; i++){
 	   if(esdZDC->GetZDCTDCData(itdc, i)!=0.){ 
-	     tdc[itdc][i] = Int_t(esdZDC->GetZDCTDCCorrected(itdc, i));
+	     tdc[itdc][i] = esdZDC->GetZDCTDCCorrected(itdc, i);
 	     if(itdc>=8 && itdc<=13){
 	       tdcMult[itdc-8] = kTRUE;
 	       fhTDC[itdc-8]->Fill(tdc[itdc][i]);
