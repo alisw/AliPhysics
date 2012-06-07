@@ -84,19 +84,14 @@ else {
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		"cbaumann_LMEEPbPb2011_out.root");
-  if (hasMC) {
-    AliAnalysisDataContainer *cOutputHist2 =
-	  mgr->CreateContainer("cbaumann_lowmass_CF",
-	  TList::Class(),
-	  AliAnalysisManager::kOutputContainer,
-	  "cbaumann_lowmass_CF.root");
-	  }
+//  if (hasMC) {
   AliAnalysisDataContainer *cOutputHist2 =
 	mgr->CreateContainer("cbaumann_LMEEPbPb2011_CF",
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
 		"cbaumann_LMEEPbPb2011_out.root");
 
+//	  }
   AliAnalysisDataContainer *cOutputHist3 =
 	mgr->CreateContainer("cbaumann_EventStatPbPb2011",
 		TH1D::Class(),

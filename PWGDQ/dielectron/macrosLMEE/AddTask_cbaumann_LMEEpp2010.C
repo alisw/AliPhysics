@@ -60,12 +60,6 @@ if (runTwo) {
 		AliAnalysisManager::kOutputContainer,
 		"cbaumann_LMEEpp2010_out.root");
 
-  /*  AliAnalysisDataContainer *cOutputHist2 =
-	  mgr->CreateContainer("cbaumann_lowmass_CF",
-	  TList::Class(),
-	  AliAnalysisManager::kOutputContainer,
-	  "cbaumann_lowmass_CF.root");
-	  */
   AliAnalysisDataContainer *cOutputHist2 =
 	mgr->CreateContainer("cbaumann_LMEEpp2010_CF",
 		TList::Class(),
