@@ -179,23 +179,30 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	cout << " " << endl;
 	cout << "=================================================================================" << endl;
 	
-if(fselect==1) cout << "TASK::Correlation with hadrons "<< endl;
-if(fselect==2) cout << "TASK::Correlation with kaons "<< endl;
-if(fselect==3) cout << "TASK::Correlation with kzeros "<< endl;
+	if(fselect==1) cout << "TASK::Correlation with hadrons "<< endl;
+	if(fselect==2) cout << "TASK::Correlation with kaons "<< endl;
+	if(fselect==3) cout << "TASK::Correlation with kzeros "<< endl;
 	
 	if (!fInputEvent) {
 		Error("UserExec","NO EVENT FOUND!");
 		return;
 	}
 	
-	 AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+	if(!aodEvent){
+	  AliError("AOD event not found!");
+	  return;
+	}
 	Double_t pi = TMath::Pi();
 	
 	fEvents++; // event counter
 	((TH1D*)fOutput->FindObject("NofEvents"))->Fill(0);
-		
 	fmcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-		
+	if(fmontecarlo && !fmcArray){
+	  AliError("Array of MC particles not found");
+	  return;
+	}
+	
 	// initialize the pool for event mixing
 	Int_t multiplicity = aodEvent->GetNTracks();
 	AliAODVertex *vtx = aodEvent->GetPrimaryVertex();
@@ -442,7 +449,7 @@ if(fselect==3) cout << "TASK::Correlation with kzeros "<< endl;
 					((TH2I*)fOutput->FindObject("EventMixingCheck"))->Fill(multbinflag,zvtxflag); 
 					cout << "filling" << endl;}
 
-				TObjArray* mixedtracks = new TObjArray();
+				TObjArray* mixedtracks = 0x0;
 				
 				for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) {//loop over the events in the pool
 					mixedtracks = pool->GetEvent(jMix);
