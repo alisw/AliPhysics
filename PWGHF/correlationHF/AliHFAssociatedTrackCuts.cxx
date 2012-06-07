@@ -27,6 +27,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
 #include "AliAODv0.h"
+#include "AliLog.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
 #include "TString.h"
@@ -177,6 +178,7 @@ Bool_t AliHFAssociatedTrackCuts::CheckKaonCompatibility(AliAODTrack * track, Boo
 		Int_t hadLabel = track->GetLabel();
 		if(hadLabel < 0) return kFALSE;
 		AliAODMCParticle* hadron = dynamic_cast<AliAODMCParticle*>(mcArray->At(hadLabel));
+		if(!hadron) return kFALSE;
 		Int_t pdg = TMath::Abs(hadron->GetPdgCode()); 
 		if (pdg == 321) isKaon = kTRUE;
 	}
@@ -245,7 +247,7 @@ Int_t AliHFAssociatedTrackCuts::IsMCpartFromHF(Int_t label, TClonesArray*mcArray
   while(pdgCode!=2212){ // loops back to the collision to check the particle source
 
     mcParticle = dynamic_cast<AliAODMCParticle*>(mcArray->At(label));
-    if(!mcParticle) {cout << "NO MC PARTICLE" << endl; break;}
+    if(!mcParticle) {AliError("NO MC PARTICLE"); break;}
     pdgCode =  TMath::Abs(mcParticle->GetPdgCode());
 
     label = mcParticle->GetMother();
