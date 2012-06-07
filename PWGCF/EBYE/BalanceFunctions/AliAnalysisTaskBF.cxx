@@ -702,6 +702,20 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       		  fHistVy->Fill(vertex->GetY());
       		  fHistVz->Fill(vertex->GetZ());
 		  
+		  //===========================================//
+		  TExMap *trackMap = new TExMap();
+		  for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
+		    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(iTracks));
+		    if (!aodTrack) {
+		      Printf("ERROR: Could not receive track %d", iTracks);
+		      continue;
+		    }
+		    Int_t gID = aodTrack->GetID();
+		    if (!aodTrack->TestFilterBit(nAODtrackCutBit)) trackMap->Add(gID, iTracks);
+		  }
+		  AliAODTrack* newAodTrack; 
+		  //===========================================//
+
       		  //Printf("There are %d tracks in this event", gAOD->GetNumberOfTracks());
       		  for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
       		    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(iTracks));
@@ -713,9 +727,18 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       		    // AOD track cuts
 		    
       		    // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
-      		    // take only TPC only tracks 
-      		    fHistTrackStats->Fill(aodTrack->GetFilterMap());
-      		    if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+
+		    //===========================================//
+		    // take only TPC only tracks 
+		    fHistTrackStats->Fill(aodTrack->GetFilterMap());
+		    if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+		    Int_t gID = aodTrack->GetID();
+		    newAodTrack = gID >= 0 ? aodTrack : gAOD->GetTrack(trackMap->GetValue(-1-gID));
+		    Printf("Label: %d - Pt: %lf (old) - %d - Pt: %lf(new)",gID,aodTrack->Pt(), newAodTrack->GetID(), newAodTrack->Pt());
+                    //===========================================//
+
+		    //fHistTrackStats->Fill(aodTrack->GetFilterMap());
+      		    //if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
 		    
       		    v_charge = aodTrack->Charge();
       		    v_y      = aodTrack->Y();
@@ -731,9 +754,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    
       		    // Kinematics cuts from ESD track cuts
       		    if( v_pt < fPtMin || v_pt > fPtMax)      continue;
+
 		    if (!fUsePID) {
 		      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
 		    }
+
 		    else if (fUsePID){
 		      if( v_y < fEtaMin || v_y > fEtaMax)  continue;
 		    }
@@ -752,7 +777,113 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       		    if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
       		      continue;
       		    }
-		    
+
+		   //===============================================PID==================================//		    		   
+		    if(fUsePID) {
+		      Double_t prob[AliPID::kSPECIES]={0.};
+		      Double_t probTPC[AliPID::kSPECIES]={0.};
+		      Double_t probTOF[AliPID::kSPECIES]={0.};
+		      Double_t probTPCTOF[AliPID::kSPECIES]={0.};
+
+		      Double_t nSigma = 0.;
+                      UInt_t detUsedTPC = 0;
+		      UInt_t detUsedTOF = 0;
+                      UInt_t detUsedTPCTOF = 0;
+
+		      //Decide what detector configuration we want to use
+		      switch(fPidDetectorConfig) {
+		      case kTPCpid:
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+			nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)fParticleOfInterest));
+			//detUsedTPC = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPC);
+                        detUsedTPC = (AliPIDResponse::kDetTPC);
+			for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+			  prob[iSpecies] = probTPC[iSpecies];
+			break;
+		      case kTOFpid:
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+			nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(newAodTrack,(AliPID::EParticleType)fParticleOfInterest));
+			//detUsedTOF = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTOF);
+                        detUsedTPC = (AliPIDResponse::kDetTPC);
+			for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+			  prob[iSpecies] = probTOF[iSpecies];
+			break;
+		      case kTPCTOF:
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+			//detUsedTPCTOF = fPIDCombined->ComputeProbabilities(newAodTrack, fPIDResponse, probTPCTOF);
+                        detUsedTPC = (AliPIDResponse::kDetTPC);
+			for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+			  prob[iSpecies] = probTPCTOF[iSpecies];
+			break;
+		      default:
+			break;
+		      }//end switch: define detector mask
+		      
+		      //Filling the PID QA
+		      Double_t tofTime = -999., tof = -999.; //length = 999., tof = -999.;
+		      //Double_t c = TMath::C()*1.E-9;// m/ns
+		      //Double_t beta = -999.;
+		      Double_t  nSigmaTOFForParticleOfInterest = -999.;
+		      if ( (newAodTrack->IsOn(AliAODTrack::kTOFin)) &&
+			   (newAodTrack->IsOn(AliAODTrack::kTIME))  ) { 
+			tofTime = newAodTrack->GetTOFsignal();//in ps
+			//length = newAodTrack->GetIntegratedLength();
+			tof = tofTime*1E-3; // ns	
+			
+			if (tof <= 0) {
+			  //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+			  continue;
+			}
+			//if (length <= 0){
+			  //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+			  //continue;
+			//}
+			
+			//length = length*0.01; // in meters
+			//tof = tof*c;
+			//beta = length/tof;
+			
+			nSigmaTOFForParticleOfInterest = fPIDResponse->NumberOfSigmasTOF(newAodTrack,(AliPID::EParticleType)fParticleOfInterest);
+			//fHistBetavsPTOFbeforePID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
+			fHistProbTOFvsPtbeforePID ->Fill(newAodTrack->Pt(),probTOF[fParticleOfInterest]);
+			fHistNSigmaTOFvsPtbeforePID ->Fill(newAodTrack->Pt(),nSigmaTOFForParticleOfInterest);
+		      }//TOF signal 
+		      
+		      
+		      Double_t  nSigmaTPCForParticleOfInterest = fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)fParticleOfInterest);
+		      fHistdEdxVsPTPCbeforePID -> Fill(newAodTrack->P()*newAodTrack->Charge(),newAodTrack->GetTPCsignal());
+		      fHistProbTPCvsPtbeforePID -> Fill(newAodTrack->Pt(),probTPC[fParticleOfInterest]); 
+		      fHistNSigmaTPCvsPtbeforePID -> Fill(newAodTrack->Pt(),nSigmaTPCForParticleOfInterest); 
+		      fHistProbTPCTOFvsPtbeforePID -> Fill(newAodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+		      //end of QA-before pid
+		      
+		      if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
+			//Make the decision based on the n-sigma
+			if(fUsePIDnSigma) {
+			  if(nSigma > fPIDNSigma) continue;}
+			
+			//Make the decision based on the bayesian
+			else if(fUsePIDPropabilities) {
+			  if(fParticleOfInterest != TMath::LocMax(AliPID::kSPECIES,prob)) continue;
+			  if (prob[fParticleOfInterest] < fMinAcceptedPIDProbability) continue;      
+			  }
+			
+			//Fill QA after the PID
+			//fHistBetavsPTOFafterPID ->Fill(newAodTrack->P()*newAodTrack->Charge(),beta);
+			fHistProbTOFvsPtafterPID ->Fill(newAodTrack->Pt(),probTOF[fParticleOfInterest]);
+			fHistNSigmaTOFvsPtafterPID ->Fill(newAodTrack->Pt(),nSigmaTOFForParticleOfInterest);
+			
+			fHistdEdxVsPTPCafterPID -> Fill(newAodTrack->P()*newAodTrack->Charge(),newAodTrack->GetTPCsignal());
+			fHistProbTPCvsPtafterPID -> Fill(newAodTrack->Pt(),probTPC[fParticleOfInterest]); 
+			fHistProbTPCTOFvsPtafterPID -> Fill(newAodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+			fHistNSigmaTPCvsPtafterPID -> Fill(newAodTrack->Pt(),nSigmaTPCForParticleOfInterest); 
+		      }
+		      
+		      PostData(4, fHistListPIDQA);
+		    }
+
+		    //=========================================================PID=================================================================//
+		    		    
       		    // fill QA histograms
       		    fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       		    fHistDCA->Fill(DCAz,DCAxy);
