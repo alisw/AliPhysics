@@ -230,6 +230,7 @@ AliForwardQATask::GetESDEvent()
   //
   // Get the ESD event. IF this is the first event, initialise
   //
+  if (IsZombie()) return 0;
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) {
     AliWarning("No ESD event found for input event");
@@ -245,7 +246,7 @@ AliForwardQATask::GetESDEvent()
 	     "         AliESDEvent::GetBeamType()     ->%s\n"
 	     "         AliESDEvent::GetCurrentL3()    ->%f\n"
 	     "         AliESDEvent::GetMagneticField()->%f\n"
-	     "         AliESDEvent::GetRunNumber()    ->%d\n",
+	     "         AliESDEvent::GetRunNumber()    ->%d",
 	     esd->GetBeamEnergy(),
 	     esd->GetBeamType(),
 	     esd->GetCurrentL3(),
@@ -255,6 +256,8 @@ AliForwardQATask::GetESDEvent()
 
     if (!InitializeSubs()) {
       AliWarning("Initialisation of sub algorithms failed!");
+      SetZombie(true);
+      esd = 0;
       return 0;
     }
     AliInfoF("Clearing first event flag from %s to false", 

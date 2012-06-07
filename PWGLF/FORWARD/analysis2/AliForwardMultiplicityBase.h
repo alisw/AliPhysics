@@ -287,8 +287,9 @@ protected:
   /** 
    * Initialise the sub objects and stuff.  Called on first event
    *
+   * @return false on errors 
    */
-  virtual void InitializeSubs() = 0;
+  virtual Bool_t InitializeSubs() = 0;
   /**
    * Mark this event as one to store in the AOD 
    * 

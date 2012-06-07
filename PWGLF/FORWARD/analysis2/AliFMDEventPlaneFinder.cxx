@@ -37,16 +37,18 @@ AliFMDEventPlaneFinder::AliFMDEventPlaneFinder()
     fQ1(),
     fQ2(),
     fQeta(),
-    fHistFMDEventplane(0),
-    fHistFMDEventplaneA(0),
-    fHistFMDEventplaneC(0),
-    fHistFMDEventplane1(0),
-    fHistFMDEventplane2(0),
-    fHistPhiDist(0),
-    fHistFMDmTPCep(0),
-    fHistFMDvsTPCep(0),
-    fHistFMDmVZEROep(0),
-    fHistFMDvsVZEROep(0),
+    fHepFMD(0),
+    fHepFMDA(0),
+    fHepFMDC(0),
+    fHepFMDQC1(0),
+    fHepFMDQC2(0),
+    fHdiffFMDAC(0),
+    fHdiffFMDTPC(0),
+    fHdiffFMDVZERO(0),
+    fHcorrFMDAC(0),
+    fHcorrFMDTPC(0),
+    fHcorrFMDVZERO(0),
+    fHPhi(0),
     fDebug(0),
     fOADBFileName(0),
     fOADBContainer(0),
@@ -72,16 +74,18 @@ AliFMDEventPlaneFinder::AliFMDEventPlaneFinder(const char* title)
     fQ1(),
     fQ2(),
     fQeta(),
-    fHistFMDEventplane(0),
-    fHistFMDEventplaneA(0),
-    fHistFMDEventplaneC(0),
-    fHistFMDEventplane1(0),
-    fHistFMDEventplane2(0),
-    fHistPhiDist(0),
-    fHistFMDmTPCep(0),
-    fHistFMDvsTPCep(0),
-    fHistFMDmVZEROep(0),
-    fHistFMDvsVZEROep(0),
+    fHepFMD(0),
+    fHepFMDA(0),
+    fHepFMDC(0),
+    fHepFMDQC1(0),
+    fHepFMDQC2(0),
+    fHdiffFMDAC(0),
+    fHdiffFMDTPC(0),
+    fHdiffFMDVZERO(0),
+    fHcorrFMDAC(0),
+    fHcorrFMDTPC(0),
+    fHcorrFMDVZERO(0),
+    fHPhi(0),
     fDebug(0),
     fOADBFileName(0),
     fOADBContainer(0),
@@ -110,16 +114,18 @@ AliFMDEventPlaneFinder::AliFMDEventPlaneFinder(const
     fQ1(o.fQ1),
     fQ2(o.fQ2),
     fQeta(o.fQeta),
-    fHistFMDEventplane(o.fHistFMDEventplane),
-    fHistFMDEventplaneA(o.fHistFMDEventplaneA),
-    fHistFMDEventplaneC(o.fHistFMDEventplaneC),
-    fHistFMDEventplane1(o.fHistFMDEventplane1),
-    fHistFMDEventplane2(o.fHistFMDEventplane2),
-    fHistPhiDist(o.fHistPhiDist),
-    fHistFMDmTPCep(o.fHistFMDmTPCep),
-    fHistFMDvsTPCep(o.fHistFMDvsTPCep),
-    fHistFMDmVZEROep(o.fHistFMDmVZEROep),
-    fHistFMDvsVZEROep(o.fHistFMDvsVZEROep),
+    fHepFMD(o.fHepFMD),
+    fHepFMDA(o.fHepFMDA),
+    fHepFMDC(o.fHepFMDC),
+    fHepFMDQC1(o.fHepFMDQC1),
+    fHepFMDQC2(o.fHepFMDQC2),
+    fHdiffFMDAC(o.fHdiffFMDAC),
+    fHdiffFMDTPC(o.fHdiffFMDTPC),
+    fHdiffFMDVZERO(o.fHdiffFMDVZERO),
+    fHcorrFMDAC(o.fHcorrFMDAC),
+    fHcorrFMDTPC(o.fHcorrFMDTPC),
+    fHcorrFMDVZERO(o.fHcorrFMDVZERO),
+    fHPhi(o.fHPhi),
     fDebug(o.fDebug),
     fOADBFileName(o.fOADBFileName),
     fOADBContainer(o.fOADBContainer),
@@ -161,34 +167,91 @@ AliFMDEventPlaneFinder::operator=(const AliFMDEventPlaneFinder& o)
   if (&o == this) return *this; 
   TNamed::operator=(o);
 
-  fList               = o.fList;
-  fEvent              = o.fEvent;
-  fQt                 = o.fQt;
-  fQa                 = o.fQa;
-  fQc                 = o.fQc;
-  fQ1                 = o.fQ1;
-  fQ2                 = o.fQ2;
-  fQeta               = o.fQeta;
-  fHistFMDEventplane  = o.fHistFMDEventplane;
-  fHistFMDEventplaneA = o.fHistFMDEventplaneA;
-  fHistFMDEventplaneC = o.fHistFMDEventplaneC;
-  fHistFMDEventplane1 = o.fHistFMDEventplane1;
-  fHistFMDEventplane2 = o.fHistFMDEventplane2;
-  fHistPhiDist        = o.fHistPhiDist;
-  fHistFMDmTPCep      = o.fHistFMDmTPCep;
-  fHistFMDvsTPCep     = o.fHistFMDvsTPCep;
-  fHistFMDmVZEROep    = o.fHistFMDmVZEROep;
-  fHistFMDvsVZEROep   = o.fHistFMDvsVZEROep;
-  fDebug              = o.fDebug;
-  fOADBFileName       = o.fOADBFileName;
-  fOADBContainer      = o.fOADBContainer;
-  fPhiDist            = o.fPhiDist;
-  fRunNumber          = o.fRunNumber;
-  fUsePhiWeights      = o.fUsePhiWeights;
+  fList                = o.fList;
+  fEvent               = o.fEvent;
+  fQt                  = o.fQt;
+  fQa                  = o.fQa;
+  fQc                  = o.fQc;
+  fQ1                  = o.fQ1;
+  fQ2                  = o.fQ2;
+  fQeta                = o.fQeta;
+  fHepFMD              = o.fHepFMD;
+  fHepFMDA             = o.fHepFMDA;
+  fHepFMDC             = o.fHepFMDC;
+  fHepFMDQC1           = o.fHepFMDQC1;
+  fHepFMDQC2           = o.fHepFMDQC2;
+  fHdiffFMDAC          = o.fHdiffFMDAC;
+  fHdiffFMDTPC         = o.fHdiffFMDTPC;
+  fHdiffFMDVZERO       = o.fHdiffFMDVZERO;
+  fHcorrFMDAC          = o.fHcorrFMDAC; 
+  fHcorrFMDTPC         = o.fHcorrFMDTPC;
+  fHcorrFMDVZERO       = o.fHcorrFMDVZERO;
+  fHPhi                = o.fHPhi;
+  fDebug               = o.fDebug;
+  fOADBFileName        = o.fOADBFileName;
+  fOADBContainer       = o.fOADBContainer;
+  fPhiDist             = o.fPhiDist;
+  fRunNumber           = o.fRunNumber;
+  fUsePhiWeights       = o.fUsePhiWeights;
 
   return *this;
 }
 
+//____________________________________________________________________
+TH1D*
+AliFMDEventPlaneFinder::MakePsiRHist(const char* name, 
+				     const char* title,
+				     Int_t color)
+{
+  // Generate a 1D histogram of Psi_R. 
+  TH1D* ret = new TH1D(name, Form("#Psi_{R} - %s",title), 100, 0, TMath::Pi());
+  ret->SetDirectory(0);
+  ret->SetXTitle("#Psi_{R} [radians]");
+  ret->SetYTitle("Events");
+  ret->SetLineColor(color);
+  ret->SetFillColor(color);
+  ret->SetFillStyle(3001);
+  ret->Sumw2();
+  fList->Add(ret);
+  return ret;
+}
+//____________________________________________________________________
+TH1D*
+AliFMDEventPlaneFinder::MakeDiffHist(const char* name, 
+				     const char* first,
+				     const char* second,
+				     Int_t color)
+{
+  TH1D* ret = new TH1D(name, Form("#Delta#Psi_{R} - %s minus %s",first,second), 
+		       100, -TMath::Pi()/2, +TMath::Pi()/2);
+  ret->SetDirectory(0);
+  ret->SetXTitle(Form("#Psi_{R,%s}-#Psi_{R,%s} [radians]", first, second));
+  ret->SetYTitle("Events");
+  ret->SetLineColor(color);
+  ret->SetFillColor(color);
+  ret->SetFillStyle(3001);
+  ret->Sumw2();
+  fList->Add(ret);
+  return ret;
+
+}
+//____________________________________________________________________
+TH2F*
+AliFMDEventPlaneFinder::MakeCorrHist(const char* name, 
+				     const char* first,
+				     const char* second)
+{
+  TH2F* ret = new TH2F(name, Form("#Psi_{R} - %s vs %s", first, second), 
+		       100, 0, TMath::Pi(), 100, 0, TMath::Pi());
+  ret->SetDirectory(0);
+  ret->Sumw2();
+  ret->SetXTitle(Form("#Psi_{R,%s} [radians]", first));
+  ret->SetYTitle(Form("#Psi_{R,%s} [radians]", second));
+  ret->SetZTitle("Events");
+  fList->Add(ret);
+  return ret;
+}
+   
 //____________________________________________________________________
 void
 AliFMDEventPlaneFinder::Init(const TAxis& etaAxis)
@@ -199,81 +262,32 @@ AliFMDEventPlaneFinder::Init(const TAxis& etaAxis)
   //   etaAxis   fmd eta axis binning
   //
   DGUARD(fDebug,1,"Initalization of AliFMDEventPlaneFinder");
-  fHistFMDEventplane = new TH1D("hFMDEventplane", "FMD eventplane", 
-                                100, 0., TMath::Pi());
-  fHistFMDEventplane->Sumw2();
-  fHistFMDEventplane->SetDirectory(0);
-  fList->Add(fHistFMDEventplane);
+
+  fHepFMD    = MakePsiRHist("epFMD", "FMD", kRed+1);
+  fHepFMDA   = MakePsiRHist("epFMDA","FMD - A side", kGreen+1);
+  fHepFMDC   = MakePsiRHist("epFMDC","FMD - C side", kBlue+1);
+  fHepFMDQC1 = MakePsiRHist("epFMDQC1", "FMD QC{1}", kMagenta+1);
+  fHepFMDQC2 = MakePsiRHist("epEMDQC2", "FMD QC{2}", kCyan+1);
+
+  fHdiffFMDAC     = MakeDiffHist("diffFMDAC",    "FMD-A", "FMD-C", kRed+1);
+  fHdiffFMDTPC    = MakeDiffHist("diffFMDTPC",   "FMD",   "TPC",   kGreen+1);
+  fHdiffFMDVZERO  = MakeDiffHist("diffFMDVZERO", "FMD",   "VZERO", kBlue+1);
+  fHcorrFMDAC     = MakeCorrHist("corrFMDAC",    "FMD-A", "FMD-C");
+  fHcorrFMDTPC    = MakeCorrHist("corrFMDTPC",   "FMD",   "TPC");
+  fHcorrFMDVZERO  = MakeCorrHist("corrFMDVZERO", "FMD",   "VZERO");
 
   //
-  fHistFMDEventplaneA = new TH1D("hFMDEventplaneA", "FMD eventplaneA", 
-                                100, 0., TMath::Pi());
-  fHistFMDEventplaneA->Sumw2();
-  fHistFMDEventplaneA->SetDirectory(0);
-  fList->Add(fHistFMDEventplaneA);
+  fHPhi = new TH2D("hPhi", "Phi distribution in FMD",
+		   etaAxis.GetNbins(), etaAxis.GetXmin(), etaAxis.GetXmax(), 
+		   20, 0., TMath::TwoPi());
+  fHPhi->Sumw2();
+  fHPhi->SetXTitle("#eta");
+  fHPhi->SetYTitle("#phi [radians]");
+  fHPhi->SetZTitle("Events");
+  fHPhi->SetDirectory(0);
+  fList->Add(fHPhi);
 
   //
-  fHistFMDEventplaneC = new TH1D("hFMDEventplaneC", "FMD eventplaneC", 
-                                100, 0., TMath::Pi());
-  fHistFMDEventplaneC->Sumw2();
-  fHistFMDEventplaneC->SetDirectory(0);
-  fList->Add(fHistFMDEventplaneC);
-
-  //
-  fHistFMDEventplane1 = new TH1D("hFMDEventplane1", "FMD eventplane1", 
-                                100, 0., TMath::Pi());
-  fHistFMDEventplane1->Sumw2();
-  fHistFMDEventplane1->SetDirectory(0);
-  fList->Add(fHistFMDEventplane1);
-
-  //
-  fHistFMDEventplane2 = new TH1D("hFMDEventplane2", "FMD eventplane2", 
-                                100, 0., TMath::Pi());
-  fHistFMDEventplane2->Sumw2();
-  fHistFMDEventplane2->SetDirectory(0);
-  fList->Add(fHistFMDEventplane2);
-
-  //
-  fHistPhiDist = new TH2D("hPhiDist", "Phi distribution in FMD",
-	etaAxis.GetNbins(), etaAxis.GetXmin(), etaAxis.GetXmax(), 
-	20, 0., TMath::TwoPi());
-  fHistPhiDist->Sumw2();
-  fHistPhiDist->SetDirectory(0);
-  fList->Add(fHistPhiDist);
-
-  //
-  fHistFMDmTPCep = new TH1D("hFMDmTPCep", 
-                             "Eventplane from FMD - TPC",
-                             100, -TMath::Pi()/2., TMath::Pi()/2.);
-  fHistFMDmTPCep->Sumw2();
-  fHistFMDmTPCep->SetDirectory(0);
-  fList->Add(fHistFMDmTPCep);
-
-  //
-  fHistFMDvsTPCep = new TH2F("hFMDvsTPCep", 
-                             "Eventplane from FMD vs. TPC",
-                             100, 0., TMath::Pi(),
-                             100, 0., TMath::Pi());
-  fHistFMDvsTPCep->Sumw2();
-  fHistFMDvsTPCep->SetDirectory(0);
-  fList->Add(fHistFMDvsTPCep);
-
-  //
-  fHistFMDmVZEROep = new TH1D("hFMDmVZEROep", 
-                             "Eventplane from FMD - VZERO",
-                             100, -TMath::Pi()/2., TMath::Pi()/2.);
-  fHistFMDmVZEROep->Sumw2();
-  fHistFMDmVZEROep->SetDirectory(0);
-  fList->Add(fHistFMDmVZEROep);
-
-  //
-  fHistFMDvsVZEROep = new TH2F("hFMDvsVZEROep", 
-                             "Eventplane from FMD vs. VZERO",
-                             100, 0., TMath::Pi(),
-                             100, 0., TMath::Pi());
-  fHistFMDvsVZEROep->Sumw2();
-  fHistFMDvsVZEROep->SetDirectory(0);
-  fList->Add(fHistFMDvsVZEROep);
 
   if (!fUsePhiWeights) return;
   
@@ -287,7 +301,8 @@ AliFMDEventPlaneFinder::Init(const TAxis& etaAxis)
     return;
   }
   fOADBContainer = (AliOADBContainer*)foadb.Get("FMDphidist");
-  if (!fOADBContainer) AliError(Form("No OADB container found in %s", fOADBFileName.Data()));
+  if (!fOADBContainer) 
+    AliError(Form("No OADB container found in %s", fOADBFileName.Data()));
   foadb.Close();
 
   return;
@@ -384,9 +399,9 @@ AliFMDEventPlaneFinder::CalcQVectors(TH2D* h, TH1D* eHist)
 	weight = h->GetBinContent(e, 4);
         if (fUsePhiWeights) weight *= GetPhiWeight(e, 4);
       }
-      fHistPhiDist->Fill(eta, phi, weight);
+      fHPhi->Fill(eta, phi, weight);
       // for underflowbin total Nch/eta
-      fHistPhiDist->Fill(eta, -1., weight);
+      fHPhi->Fill(eta, -1., weight);
       
       // increment Q vectors
       qx += weight*TMath::Cos(2.*phi);
@@ -429,6 +444,16 @@ AliFMDEventPlaneFinder::CalcEventplane(const TVector2& v) const
 }
 
 //_____________________________________________________________________
+Double_t 
+AliFMDEventPlaneFinder::CalcDifference(Double_t a1, Double_t a2) const
+{
+  Double_t diff = a1 - a2; 
+  if (diff <  TMath::Pi()/2) diff = TMath::Pi() - diff;
+  if (diff >= TMath::Pi()/2) diff = TMath::Pi() - diff;
+  return diff;
+}
+
+//_____________________________________________________________________
 void 
 AliFMDEventPlaneFinder::FillHists(AliAODForwardEP* fmdEP)
 {
@@ -443,44 +468,26 @@ AliFMDEventPlaneFinder::FillHists(AliAODForwardEP* fmdEP)
   // Double_t fmdEP2 = fmdEP->GetEventplane2();
 
   // FMD hists
-  fHistFMDEventplane->Fill(fmdEPt);
-  fHistFMDEventplaneA->Fill(fmdEPa);
-  fHistFMDEventplaneC->Fill(fmdEPc);
-//  fHistFMDEventplane1->Fill(fmdEP1);
-//  fHistFMDEventplane2->Fill(fmdEP2);
+  fHepFMD->Fill(fmdEPt);
+  fHepFMDA->Fill(fmdEPa);
+  fHepFMDC->Fill(fmdEPc);
+
+  fHdiffFMDAC->Fill(CalcDifference(fmdEPa,fmdEPc));
+  fHcorrFMDAC->Fill(fmdEPa, fmdEPc);
+  // fHepFMDQC1->Fill(fmdEP1);
+  // fHepFMDQC2->Fill(fmdEP2);
 
   // TPC comparison
   AliEventplane* ep = fEvent->GetEventplane();
-  Double_t tpcEP = -1;
-  if (ep) tpcEP = ep->GetEventplane("Q");
-
-  Double_t diffTPC = fmdEPt - tpcEP;
-
-  if (diffTPC <  TMath::Pi()/2.) diffTPC = TMath::Pi() - diffTPC;
-  if (diffTPC >= TMath::Pi()/2.) diffTPC = TMath::Pi() - diffTPC;
-
-  fHistFMDmTPCep->Fill(diffTPC);
-
-//  if (fmdEPt >= TMath::Pi()/2. && fmdEPt - tpcEP >= TMath::Pi()/2.) tpcEP = TMath::Pi()-tpcEP;
-//  if (fmdEPt <  TMath::Pi()/2. && tpcEP - fmdEPt >= TMath::Pi()/2.) tpcEP = TMath::Pi()-tpcEP;
-
-  fHistFMDvsTPCep->Fill(fmdEPt, tpcEP);
+  Double_t tpcEP   = (ep ? ep->GetEventplane("Q") : -1);
+  fHdiffFMDTPC->Fill(CalcDifference(fmdEPt, tpcEP));
+  fHcorrFMDTPC->Fill(fmdEPt, tpcEP);
 
   // VZERO comparison
-  Double_t vzeroEP = -1;
-  if (ep) vzeroEP = ep->GetEventplane("V0", fEvent, 2);
-
-  Double_t diffVZERO = fmdEPt - vzeroEP;
-
-  if (diffVZERO <  TMath::Pi()/2.) diffVZERO = TMath::Pi() - diffVZERO;
-  if (diffVZERO >= TMath::Pi()/2.) diffVZERO = TMath::Pi() - diffVZERO;
-
-  fHistFMDmVZEROep->Fill(diffVZERO);
-
-//  if (fmdEPt >= TMath::Pi()/2. && fmdEPt - vzeroEP >= TMath::Pi()/2.) vzeroEP = TMath::Pi()-vzeroEP;
-//  if (fmdEPt <  TMath::Pi()/2. && vzeroEP - fmdEPt >= TMath::Pi()/2.) vzeroEP = TMath::Pi()-vzeroEP;
-
-  fHistFMDvsVZEROep->Fill(fmdEPt, vzeroEP);
+  Double_t vzeroEP = ep ? ep->GetEventplane("V0", fEvent, 2) : -1;
+  fHdiffFMDVZERO->Fill(CalcDifference(fmdEPt, vzeroEP));
+  fHcorrFMDVZERO->Fill(fmdEPt, vzeroEP);
+  
   return;
 }
 
@@ -493,13 +500,13 @@ AliFMDEventPlaneFinder::GetPhiWeight(Int_t etaBin, Int_t phiBin) const
   //
   Double_t phiWeight = 1;
   
-  if (fPhiDist) {
-    Double_t nParticles = fPhiDist->GetBinContent(etaBin, 0);
-    Double_t nPhiBins = fPhiDist->GetNbinsY();
-    Double_t phiDistValue = fPhiDist->GetBinContent(etaBin, phiBin);
-    
-    if (phiDistValue > 0) phiWeight = nParticles/nPhiBins/phiDistValue;
-  }
+  if (!fPhiDist) return phiWeight;
+
+  Double_t nParticles   = fPhiDist->GetBinContent(etaBin, 0);
+  Double_t nPhiBins     = fPhiDist->GetNbinsY();
+  Double_t phiDistValue = fPhiDist->GetBinContent(etaBin, phiBin);
+  
+  if (phiDistValue > 0) phiWeight = nParticles/nPhiBins/phiDistValue;
 
   return phiWeight;
 }
@@ -528,7 +535,9 @@ AliFMDEventPlaneFinder::GetPhiDist()
   //
   if (!fOADBContainer) return;
 
-  fPhiDist = (TH2D*)fOADBContainer->GetObject(fRunNumber, "Default")->Clone(Form("fPhiDist_%d", fRunNumber));
+  fPhiDist = static_cast<TH2D*>(fOADBContainer
+				->GetObject(fRunNumber, "Default")
+				->Clone(Form("fPhiDist_%d", fRunNumber)));
   fList->Add(fPhiDist);
 
   return;
@@ -550,11 +559,11 @@ AliFMDEventPlaneFinder::Print(Option_t* /*option*/) const
   std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << std::boolalpha 
 	    << ind << "Eventplane finder active!" << '\n'
-	    << ind << "Loading OADB object for run number: " << fRunNumber << '\n'
-	    << ind << "Using phi weights: " << (fUsePhiWeights ? "true" : "false") << '\n'
+	    << ind << "Loading OADB object for run number: " 
+	    << fRunNumber << '\n'
+	    << ind << "Using phi weights: " << fUsePhiWeights  << '\n'
 	    << std::noboolalpha
-	    << std::flush;
-  std::cout << std::endl;
+	    << std::endl;
 }
 //____________________________________________________________________
 //

@@ -131,6 +131,7 @@ void AliCentralMCMultiplicityTask::UserExec(Option_t* option)
   if (!ah->GetFillAOD() || fIvz <= 0) return;
   
   const AliMCEvent*  mcEvent = MCEvent();
+  if (!mcEvent) return;
   TH2D&              hist    = fAODMCCentral.GetHistogram();
 
   Double_t vz = GetManager().GetSecMap()->GetVertexAxis().GetBinCenter(fIvz);

@@ -170,7 +170,10 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe,
 		GetEventInspector().GetEnergy(),
 		GetEventInspector().GetField(),
 		mc,
-		what)) return false;
+		what)) { 
+    AliWarning("Failed to read in some corrections, making task zombie");
+    return false;
+  }
   if (!CheckCorrections(what)) return false;
 
   // Sett our persistency pointer 
@@ -197,6 +200,7 @@ AliForwardMultiplicityBase::GetESDEvent()
   // Get the ESD event. IF this is the first event, initialise
   //
   DGUARD(fDebug,1,"Get the ESD event");
+  if (IsZombie()) return 0;
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) {
     AliWarning("No ESD event found for input event");
@@ -212,7 +216,7 @@ AliForwardMultiplicityBase::GetESDEvent()
                  "         AliESDEvent::GetBeamType()     ->%s\n"
                  "         AliESDEvent::GetCurrentL3()    ->%f\n"
                  "         AliESDEvent::GetMagneticField()->%f\n"
-                 "         AliESDEvent::GetRunNumber()    ->%d\n",
+                 "         AliESDEvent::GetRunNumber()    ->%d",
                  esd->GetBeamEnergy(),
                  esd->GetBeamType(),
                  esd->GetCurrentL3(),
@@ -222,7 +226,13 @@ AliForwardMultiplicityBase::GetESDEvent()
     fFirstEvent = false;
 
     GetEventPlaneFinder().SetRunNumber(esd->GetRunNumber());
-    InitializeSubs();
+    if (!InitializeSubs()) { 
+      AliError("Failed to initialize sub-algorithms, making this a zombie");
+      esd = 0; // Make sure we do nothing on this event
+      Info("GetESDEvent", "ESD event pointer %p", esd);
+      SetZombie(true);
+      // return 0;
+    }
   }
   return esd;
 }
