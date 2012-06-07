@@ -547,15 +547,24 @@ struct TrainSetup
 
     TString cwd = gSystem->WorkingDirectory();
     
-    Init();
+    if (!Init()) { 
+      Error("Run", "Failed to intialize the train");
+      return;
+    }
     if (r) SaveSetup(*r, nEvents, asShell);
     if (fExecOper == kInitialize) return;
     
     // --- Create the chain ------------------------------------------
     TChain* chain = CreateChain();
-    if (fExecMode == kLocal && !chain) {
-      Error("Exec", "No chain defined in local mode!");
-      return;
+    if (fExecMode == kLocal) {
+      if (!chain) {
+	Error("Run", "No chain defined in local mode!");
+	return;
+      }
+      if (chain->GetListOfFiles()->GetEntries() < 1) { 
+	Error("Run", "Empty chain in local mode!");
+	return;
+      }
     }
 
     // --- Get manager and execute -----------------------------------
@@ -1883,6 +1892,37 @@ protected:
    * @name Chain building 
    */
   /** 
+   * Check if we can add a file to the chain 
+   * 
+   * @param path   Full path to file 
+   * @param chain  Chain 
+   * 
+   * @return true on success, false otherwise
+   */
+  Bool_t CheckFile(const TString& path, TChain* chain)
+  {
+    TFile* test = TFile::Open(path, "READ");
+    if (!test) { 
+      Warning("CheckFile", "Failed to open %s", path.Data());
+      return false;
+    }
+
+    Bool_t ok = false; // Assume failure
+    TObject* o = test->Get(chain->GetName());
+    if (!o) 
+      Warning("CheckFile", "The file %s does not contain the object %s", 
+	      path.Data(), chain->GetName());
+    else if (!dynamic_cast<TTree*>(o)) 
+      Warning("CheckFile", "Object %s found in %s is not a TTree", 
+	      o->GetName(), path.Data());
+    else 
+      ok = true;
+    test->Close();
+    if (ok) chain->AddFile(path);
+
+    return ok;
+  }
+  /** 
    * Scan directory @a dir (possibly recursive) for tree files to add
    * to the chain.    This does not follow sym-links
    * 
@@ -1985,11 +2025,15 @@ protected:
 
     TIter nextAdd(&toAdd);
     TObjString* s = 0;
+    Int_t added = 0;
     while ((s = static_cast<TObjString*>(nextAdd()))) {
       // Info("ScanDirectory", "Adding %s", s->GetString().Data());
-      chain->Add(s->GetString());
+      TString fn = s->GetString();
+      if (!CheckFile(fn, chain)) continue;
+
+      added++;
     }
-    if (toAdd.GetEntries() > 0) ret = true;
+    if (added > 0) ret = true;
 
     gSystem->ChangeDirectory(oldDir);
     return ret;
@@ -2045,6 +2089,15 @@ protected:
 	TString dir(fDataDir);
 	if (dir == ".") dir = "";
 	if (!dir.BeginsWith("/")) dir = Form("../%s", dir.Data());
+	FileStat_t stat; 
+	gSystem->GetPathInfo(dir, stat);
+	if (!R_ISDIR(stat.fMode)) { // A file, check it 
+	  if (!CheckFile(dir, chain)) { 
+	    delete chain;
+	    chain = 0;
+	  }
+	  break;
+	}
 	TString savdir(gSystem->WorkingDirectory());
 	TSystemDirectory d(gSystem->BaseName(dir.Data()), dir.Data());
 	if (!ScanDirectory(&d, chain, true)) { 
