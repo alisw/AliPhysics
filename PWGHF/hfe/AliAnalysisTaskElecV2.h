@@ -61,6 +61,7 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
   
   AliESDEvent 		*fESD;			//!ESD object
+  AliMCEvent            *fMC;                   //!MC object
     
   TList       		*fOutputList;		//! output list
   
@@ -69,6 +70,7 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   Bool_t 		fIdentifiedAsOutInz;    //Out Of Range in z
   Bool_t 		fPassTheEventCut;       //Pass The Event Cut
   Bool_t 		fRejectKinkMother;      //Reject Kink Mother
+  Bool_t 		fIsMC;
   Double_t 		fVz;                    //z position of the primary vertex
   AliCFManager 		*fCFM;                  //! Correction Framework Manager
   AliHFEpid 		*fPID;                  //! PID
@@ -88,6 +90,7 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   TH1F			*fOpeningAngleULS;	//! opening angle for ULS pairs
   TH1F			*fPhotoElecPt;		//! photonic elec pt 
   TH1F			*fSemiInclElecPt;	//! Semi inclusive ele pt
+  THnSparse		*fMCphotoElecPt;	//! pt distribution (MC)
   
   TH1F			*fTrackPtBefTrkCuts;	//! Track pt before track cuts	
   TH1F			*fTrackPtAftTrkCuts;	//! Track pt after track cuts
