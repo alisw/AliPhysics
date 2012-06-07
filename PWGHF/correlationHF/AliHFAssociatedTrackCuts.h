@@ -29,6 +29,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliAODPidHF.h"
 #include "AliAODEvent.h"
+#include "AliAODRecoDecayHF2Prong.h"
 #include <TClonesArray.h>
 
 class AliAODTrack;
@@ -51,10 +52,10 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t IsSelected(TObject*  obj) {if(obj) return kTRUE; return kFALSE;};
 	Bool_t IsInAcceptance();
 	Bool_t IsHadronSelected(AliAODTrack * track, AliAODVertex *vtx1, Double_t bz);
-	Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray);
+	Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray, Int_t method=1);
 	Bool_t IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *vtx1);
 	Int_t IsMCpartFromHF(Int_t label, TClonesArray*mcArray);
-	
+	Bool_t InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliAODTrack *track, Int_t hypD0) const;	
 	
 	
 	void AddTrackCuts(const AliESDtrackCuts *cuts) {

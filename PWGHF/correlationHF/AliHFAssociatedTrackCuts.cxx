@@ -27,13 +27,12 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
 #include "AliAODv0.h"
-#include "AliLog.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
 #include "TString.h"
 
-
-
+using std::cout;
+using std::endl;
 
 ClassImp(AliHFAssociatedTrackCuts)
 
@@ -94,7 +93,7 @@ fvZeroCutsNames(source.fvZeroCutsNames)
 	//
 	
 
-	cout << "AliHFAssociatedTrackCuts::Copy constructor " << endl;
+        AliInfo("AliHFAssociatedTrackCuts::Copy constructor ");
 	if(source.fESDTrackCuts) AddTrackCuts(source.fESDTrackCuts);
 	if(source.fAODTrackCuts) SetAODTrackCuts(source.fAODTrackCuts);
 	if(source.fAODvZeroCuts) SetAODvZeroCuts(source.fAODvZeroCuts);
@@ -170,7 +169,7 @@ Bool_t AliHFAssociatedTrackCuts::IsHadronSelected(AliAODTrack * track, AliAODVer
 	
 }
 //--------------------------------------------------------------------------
-Bool_t AliHFAssociatedTrackCuts::CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray)
+Bool_t AliHFAssociatedTrackCuts::CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray, Int_t method)
 {
 	Bool_t isKaon = kFALSE;
 	
@@ -178,13 +177,13 @@ Bool_t AliHFAssociatedTrackCuts::CheckKaonCompatibility(AliAODTrack * track, Boo
 		Int_t hadLabel = track->GetLabel();
 		if(hadLabel < 0) return kFALSE;
 		AliAODMCParticle* hadron = dynamic_cast<AliAODMCParticle*>(mcArray->At(hadLabel));
-		if(!hadron) return kFALSE;
 		Int_t pdg = TMath::Abs(hadron->GetPdgCode()); 
 		if (pdg == 321) isKaon = kTRUE;
 	}
 	
 	if(!useMc) { // on DATA
-		
+          switch(method) {
+	  case(1): {
 		Bool_t isKTPC=kFALSE;
 		Bool_t isPiTPC=kFALSE;
 		Bool_t isPTPC=kFALSE;
@@ -212,6 +211,13 @@ Bool_t AliHFAssociatedTrackCuts::CheckKaonCompatibility(AliAODTrack * track, Boo
 		if (isPTOF && isPTPC) ProtonHyp = kTRUE;
 		
 		if(KaonHyp && !PionHyp && !ProtonHyp) isKaon = kTRUE; 
+	        break;
+	      }
+          case(2): {
+		isKaon = fPidObj->MakeRawPid(track,3);
+		break;
+	      }
+          }
 	}
 	
 	return isKaon;
@@ -351,4 +357,42 @@ void AliHFAssociatedTrackCuts::PrintAll()
 		cout << fvZeroCutsNames[k] <<  fAODvZeroCuts[k] << endl;
 	}
 	cout << " " << endl;
+}
+
+//--------------------------------------------------------------------------
+Bool_t AliHFAssociatedTrackCuts::InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliAODTrack *track, Int_t hypD0) const {
+  //
+  // Calculates invmass of track+D0 and rejects if compatible with D*
+  // (to remove pions from D*)
+  // 
+  Double_t nsigma = 3.;
+ 
+  Double_t mD0, mD0bar;
+  d->InvMassD0(mD0,mD0bar);
+
+  Double_t invmassDstar1 = 0, invmassDstar2 = 0; 
+  Double_t e1Pi = d->EProng(0,211), e2K = d->EProng(1,321); //hyp 1 (pi,K) - D0
+  Double_t e1K = d->EProng(0,321), e2Pi = d->EProng(1,211); //hyp 2 (K,pi) - D0bar
+  Double_t psum2 = (d->Px()+track->Px())*(d->Px()+track->Px())
+                  +(d->Py()+track->Py())*(d->Py()+track->Py())
+                  +(d->Pz()+track->Pz())*(d->Pz()+track->Pz());
+
+  switch(hypD0) {
+    case 1:
+      invmassDstar1 = TMath::Sqrt(pow(e1Pi+e2K+track->E(0.1396),2.)-psum2);
+      if ((TMath::Abs(invmassDstar1-mD0)-0.14543) < nsigma*800.*pow(10.,-6.)) return kFALSE;
+      break;
+    case 2:
+      invmassDstar2 = TMath::Sqrt(pow(e2Pi+e1K+track->E(0.1396),2.)-psum2);
+      if ((TMath::Abs(invmassDstar2-mD0bar)-0.14543) < nsigma*800.*pow(10.,-6.)) return kFALSE;
+      break;
+    case 3:
+      invmassDstar1 = TMath::Sqrt(pow(e1Pi+e2K+track->E(0.1396),2.)-psum2);
+      invmassDstar2 = TMath::Sqrt(pow(e2Pi+e1K+track->E(0.1396),2.)-psum2);
+      if ((TMath::Abs(invmassDstar1-mD0)-0.14543) < nsigma*800.*pow(10.,-6.)) return kFALSE;
+      if ((TMath::Abs(invmassDstar2-mD0bar)-0.14543) < nsigma*800.*pow(10.,-6.)) return kFALSE;
+      break;
+  }
+
+  return kTRUE;
 }
