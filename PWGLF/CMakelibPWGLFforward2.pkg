@@ -98,6 +98,13 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
 
 set ( DHDR  PWGLFforward2LinkDef.h)
 
+add_executable(runTrain
+  FORWARD/analysis2/trains/runMain.cxx)
+target_link_libraries(runTrain 
+  ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS})
+install(TARGETS runTrain 
+  RUNTIME DESTINATION bin/tgt_${ALICE_TARGET})
+
 # --------------------------------------------------------------------
 # Extra targets 
 #
