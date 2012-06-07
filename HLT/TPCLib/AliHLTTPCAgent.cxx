@@ -304,8 +304,7 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
     // reconstruction chains for AliRoot simulation
     return "TPC-compression";
   } else {
-    // TODO: activate after further testing (2012-06-07)
-    //return "TPC-compression-emulation";
+    return "TPC-compression-emulation";
   }
   return NULL;
 }
