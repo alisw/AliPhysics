@@ -294,35 +294,35 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   for(int i=0; i<5; i++){
      char hname[20];
      sprintf(hname,"hZNCPM%d",i);
-     fhZNCPM[i] = new TH1F(hname, hname, 200., -50., 140000);
+     fhZNCPM[i] = new TH1F(hname, hname, 200, -50., 140000);
      fOutput->Add(fhZNCPM[i]);
      //
      sprintf(hname,"hZNAPM%d",i);
-     fhZNAPM[i] = new TH1F(hname, hname, 200., -50., 140000);    
+     fhZNAPM[i] = new TH1F(hname, hname, 200, -50., 140000);    
      fOutput->Add(fhZNAPM[i]);
      //
      sprintf(hname,"hZPCPM%d",i);
-     fhZPCPM[i] = new TH1F(hname, hname, 200., -50., 50000);	
+     fhZPCPM[i] = new TH1F(hname, hname, 200, -50., 50000);	
      fOutput->Add(fhZPCPM[i]);
      //
      sprintf(hname,"hZPAPM%d",i);
-     fhZPAPM[i] = new TH1F(hname, hname, 200., -50., 50000);		
+     fhZPAPM[i] = new TH1F(hname, hname, 200, -50., 50000);		
      fOutput->Add(fhZPAPM[i]);
      //
      sprintf(hname,"hZNCPMlg%d",i);
-     fhZNCPMlg[i] = new TH1F(hname, hname, 200., -50., 140000);	 
+     fhZNCPMlg[i] = new TH1F(hname, hname, 200, -50., 140000);	 
      fOutput->Add(fhZNCPMlg[i]);
      //
      sprintf(hname,"hZNAPMlg%d",i);
-     fhZNAPMlg[i] = new TH1F(hname, hname, 200., -50., 140000);	 
+     fhZNAPMlg[i] = new TH1F(hname, hname, 200, -50., 140000);	 
      fOutput->Add(fhZNAPMlg[i]);
      //
      sprintf(hname,"hZPCPMlg%d",i);
-     fhZPCPMlg[i] = new TH1F(hname, hname, 200., -50., 50000);	 
+     fhZPCPMlg[i] = new TH1F(hname, hname, 200, -50., 50000);	 
      fOutput->Add(fhZPCPMlg[i]);
      //
      sprintf(hname,"hZPAPMlg%d",i);
-     fhZPAPMlg[i] = new TH1F(hname, hname, 200., -50., 50000);	 
+     fhZPAPMlg[i] = new TH1F(hname, hname, 200, -50., 50000);	 
      fOutput->Add(fhZPAPMlg[i]);
      //
      if(i<4){
@@ -516,12 +516,12 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 
       AliESDZDC *esdZDC = esd->GetESDZDC();
       
-      Int_t tdc[32][4], tdcSum=-999., tdcDiff=-999.;
+      Int_t tdc[32][4], tdcSum=-999, tdcDiff=-999;
       Bool_t tdcMult[6] = {kFALSE};
       for(Int_t itdc=0; itdc<32; itdc++){
 	 for(Int_t i=0; i<4; i++){
 	   if(esdZDC->GetZDCTDCData(itdc, i)!=0.){ 
-	     tdc[itdc][i] = esdZDC->GetZDCTDCCorrected(itdc, i);
+	     tdc[itdc][i] = Int_t(esdZDC->GetZDCTDCCorrected(itdc, i));
 	     if(itdc>=8 && itdc<=13){
 	       tdcMult[itdc-8] = kTRUE;
 	       fhTDC[itdc-8]->Fill(tdc[itdc][i]);
@@ -539,9 +539,9 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       Bool_t zna  = tdcMult[4];
       Bool_t zpa  = tdcMult[5];
       if(znc && zna){
-	 tdcSum = esdZDC->GetZNTDCSum(0);
-         tdcDiff = esdZDC->GetZNTDCDiff(0);
-	 fhDebunch->Fill(tdcDiff, tdcSum);	   
+	tdcSum = Int_t(esdZDC->GetZNTDCSum(0));
+	tdcDiff = Int_t(esdZDC->GetZNTDCDiff(0));
+	fhDebunch->Fill(tdcDiff, tdcSum);	   
       }
       
       Float_t energyZNC  = (Float_t) (esdZDC->GetZNCEnergy());
