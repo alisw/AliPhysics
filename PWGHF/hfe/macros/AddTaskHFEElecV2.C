@@ -79,5 +79,22 @@ AliAnalysisTask *AddTaskHFEElecV2()
   mgr->ConnectInput(taskTR, 0, cinput);
   mgr->ConnectOutput(taskTR, 1, coutput1);
   
+  if(MCthere){
+    
+    AliAnalysisTaskElecV2 *taskMC = ConfigHFEElecV2(MCthere);
+    mgr->AddTask(taskMC);
+    
+    taskMC->SelectCollisionCandidates(AliVEvent::kMB);
+    
+    TString containerName3 = mgr->GetCommonFileName();
+    containerName3 += ":PWGHF_hfeCalMCV2";
+    
+    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histMC", TList::Class(),AliAnalysisManager::kOutputContainer, containerName3.Data());
+    mgr->ConnectInput(taskMC, 0, cinput);
+    mgr->ConnectOutput(taskMC, 1, coutput1);
+  }
+  
+  
   return NULL;
 }
