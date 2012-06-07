@@ -1,4 +1,5 @@
 #ifndef __CINT__
+#include <AliRsnCutTrackQuality.h>
 #endif
 Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleType type2,TString opt,Bool_t isRsnMini=kFALSE,AliRsnInputHandler *rsnIH=0,AliAnalysisTaskSE *task=0)
 {
@@ -7,6 +8,8 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
 
    Bool_t valid = kTRUE;
    Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
+   Int_t useCommonQualityCut = AliAnalysisManager::GetGlobalInt("rsnCommonQualityCut",valid);
+
 
    Bool_t usePPCut = kFALSE;
 
@@ -25,9 +28,12 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
    Double_t nSigmaTPC=3.0;
    Double_t nSigmaTOF=3.0;
    Double_t etaRange=0.8;
+   Double_t trackPtMin=0.;
+   Double_t trackPtMax=1.e10;
 
    Bool_t useTPC_K=kFALSE;
    Bool_t useTOF_K=kFALSE;
+   Bool_t useTrackPtCut=kFALSE;
 
    if (opt.Contains("qualityonly")) {
       useTPC_K=kFALSE;
@@ -52,6 +58,16 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
    if (opt.Contains("KTOFnsig25")) nSigmaTOF = 2.5;
    if (opt.Contains("KTOFnsig30")) nSigmaTOF = 3.0;
 
+   if (opt.Contains("trackPt")) {
+      useTrackPtCut = kTRUE;
+      if (opt.Contains("trackPtMin02")) trackPtMin = 0.2;
+      if (opt.Contains("trackPtMin05")) trackPtMin = 0.5;
+
+      if (opt.Contains("trackPtMax18")) trackPtMax = 1.8;
+      if (opt.Contains("trackPtMax20")) trackPtMax = 2.0;
+      if (opt.Contains("trackPtMax25")) trackPtMax = 2.5;
+   }
+
    Bool_t usePDG=kFALSE;
    if (opt.Contains("pdg")) {
       Printf("Using PDG");
@@ -60,6 +76,9 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
 
    Bool_t useEta = kFALSE;
    if (opt.Contains("eta")) {
+     if(opt.Contains("eta08")) etaRange=0.8;
+     if(opt.Contains("eta07")) etaRange=0.7;
+     if(opt.Contains("eta06")) etaRange=0.6;
       Printf("Using ETA range (%.2f,%.2f)",-etaRange,etaRange);
       useEta = kTRUE;
    }
@@ -73,9 +92,12 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
    AliRsnCutSet *cuts = new AliRsnCutSet(cutname.Data(), AliRsnTarget::kDaughter);
 
    TString scheme="";
-
-   AliRsnCutTrackQuality *qualityCut = new AliRsnCutTrackQuality("cutQuatityK");
-   qualityCut->SetDefaults2010();
+   AliRsnCutTrackQuality *qualityCut = new AliRsnCutTrackQuality("cutQualityK");
+   if (useCommonQualityCut>=0) {
+      qualityCut->SetAODTestFilterBit(useCommonQualityCut);
+   } else {
+      qualityCut->SetDefaults2010();
+   }
    cuts->AddCut(qualityCut);
    if (!scheme.IsNull()) scheme += "&";
    scheme += qualityCut->GetName();
@@ -96,7 +118,7 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
       if (!scheme.IsNull()) scheme += "&";
       scheme += cutKTOF->GetName();
    }
-   
+
    if (useEta) {
       Printf("Adding ETA ...");
       AliRsnValueDaughter *valEta = new AliRsnValueDaughter(Form("val%sETA%s",AliPID::ParticleName(type1),opt.Data()),AliRsnValueDaughter::kEta);
@@ -107,6 +129,19 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
       if (!scheme.IsNull()) scheme += "&";
       scheme += cutEta->GetName();
    }
+
+   if (useTrackPtCut) {
+      Printf("Adding Pt min=%.3f max=%.3f ...",trackPtMin,trackPtMax);
+      AliRsnValueDaughter *valTrackPt = new AliRsnValueDaughter(Form("val%sTrackPt%s",AliPID::ParticleName(type1),opt.Data()),AliRsnValueDaughter::kPt);
+
+      AliRsnCutValue *cutTrackPt = new AliRsnCutValue(Form("cut%sTrackPt%s",AliPID::ParticleName(type1),opt.Data()),trackPtMin,trackPtMax);
+      cutTrackPt->SetTargetType(AliRsnTarget::kDaughter);
+      cutTrackPt->SetValueObj(valTrackPt);
+      cuts->AddCut(cutTrackPt);
+      if (!scheme.IsNull()) scheme += "&";
+      scheme += cutTrackPt->GetName();
+   }
+
    if (usePDG) {
       Printf("Adding PDG ...");
       AliRsnCutPID *cutPDG = new AliRsnCutPID(Form("cut%sPDG%s",AliPID::ParticleName(type1),opt.Data()),type1,0.0,kTRUE);
@@ -122,7 +157,7 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
       AddMonitorOutput(cuts->GetMonitorOutput(),opt);
    }
    if (isRsnMini) {
-      AliRsnMiniAnalysisTask *taskRsnMini = (AliRsnMiniAnalysisTask*)task;
+      AliRsnMiniAnalysisTask *taskRsnMini = (AliRsnMiniAnalysisTask *)task;
       if (taskRsnMini) {
          taskRsnMini->AddTrackCuts(cuts);
       }
