@@ -48,6 +48,8 @@
 #include <TMatrixD.h>
 #include <TClonesArray.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackReconstructorK) // Class implementation in ROOT context
 /// \endcond

@@ -30,6 +30,10 @@
 
 #include <Riostream.h>
 
+using std::setw;
+using std::setprecision;
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
 /// \endcond

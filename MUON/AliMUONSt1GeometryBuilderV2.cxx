@@ -61,6 +61,8 @@
 #include <TVirtualMC.h>
 #include <TArrayI.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONSt1GeometryBuilderV2)
 /// \endcond

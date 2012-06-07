@@ -72,6 +72,8 @@
 #include "AliFMDDebug.h" // Better debug macros
 
 //====================================================================
+using std::cout;
+using std::flush;
 ClassImp(AliFMDBaseDigit)
 #if 0
   ; // This is here to keep Emacs from indenting the next line

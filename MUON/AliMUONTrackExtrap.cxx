@@ -37,6 +37,8 @@
 
 #include <Riostream.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackExtrap) // Class implementation in ROOT context
 /// \endcond

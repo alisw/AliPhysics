@@ -37,6 +37,8 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerGeometryBuilder)
 /// \endcond

@@ -40,6 +40,12 @@
 /// \author Laurent Aphecetche
 //-----------------------------------------------------------------------------
 
+using std::setw;
+using std::cout;
+using std::endl;
+using std::ios_base;
+using std::cerr;
+using std::ios;
 /// \cond CLASSIMP
 ClassImp(AliMUONPad)
 /// \endcond

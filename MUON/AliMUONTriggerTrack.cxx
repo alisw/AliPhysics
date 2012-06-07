@@ -30,6 +30,8 @@
 #include <Riostream.h>
 #include "AliLog.h"
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerTrack)
 /// \endcond

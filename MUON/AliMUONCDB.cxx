@@ -97,6 +97,12 @@
 #include <sstream>
 #include <set>
 
+using std::endl;
+using std::cout;
+using std::cerr;
+using std::ostringstream;
+using std::ifstream;
+
 namespace
 {
   //_____________________________________________________________________________

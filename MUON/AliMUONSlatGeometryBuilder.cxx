@@ -53,6 +53,8 @@
 #include <TGeoTube.h>
 #include <Riostream.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONSlatGeometryBuilder)
 /// \endcond

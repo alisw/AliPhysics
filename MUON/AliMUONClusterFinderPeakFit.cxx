@@ -50,6 +50,8 @@
 #include <TMath.h>
 //#include <TCanvas.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderPeakFit)
 /// \endcond

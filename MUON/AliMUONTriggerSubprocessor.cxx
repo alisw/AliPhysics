@@ -40,6 +40,7 @@
 ///
 /// \author L. Aphecetche
 
+using std::ifstream;
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerSubprocessor)
 /// \endcond

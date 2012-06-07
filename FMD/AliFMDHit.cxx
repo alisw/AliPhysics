@@ -42,6 +42,9 @@
 // #include "AliFMDDebug.h"		// ALIFMDDEBUG_H ALILOG_H
 
 //____________________________________________________________________
+using std::setw;
+using std::cout;
+using std::endl;
 ClassImp(AliFMDHit)
 #if 0
   ; // This is here to keep Emacs for indenting the next line

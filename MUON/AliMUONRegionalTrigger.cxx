@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include <iostream>
 
 #include "AliMUONRegionalTrigger.h"
 #include "AliLog.h"
@@ -26,8 +27,8 @@
 // Author:  Ch. Finck
 //-----------------------------------------------------------------------------
 
-using std endl;
-using std cout;
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONRegionalTrigger)
 /// \endcond

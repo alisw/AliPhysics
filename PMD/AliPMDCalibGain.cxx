@@ -37,6 +37,7 @@
 #include "AliPMDddldata.h"
 #include "AliPMDCalibGain.h"
 
+using std::ifstream;
 ClassImp(AliPMDCalibGain)
 
 AliPMDCalibGain::AliPMDCalibGain():

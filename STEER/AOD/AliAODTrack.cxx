@@ -421,7 +421,7 @@ void AliAODTrack::ConvertAliPIDtoAODPID()
 
 
 //______________________________________________________________________________
-template <class T> void AliAODTrack::SetP(const T *p, const Bool_t cartesian) 
+template <typename T> void AliAODTrack::SetP(const T *p, const Bool_t cartesian) 
 {
   // Set the momentum
 
@@ -446,7 +446,7 @@ template <class T> void AliAODTrack::SetP(const T *p, const Bool_t cartesian)
 }
 
 //______________________________________________________________________________
-template <class T> void AliAODTrack::SetPosition(const T *x, const Bool_t dca) 
+template <typename T> void AliAODTrack::SetPosition(const T *x, const Bool_t dca) 
 {
   // set the position
 

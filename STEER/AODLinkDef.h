@@ -7,6 +7,7 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
+#pragma link off all methods;
  
 #pragma link C++ enum   AliAODVertex::AODVtx_t;
 #pragma link C++ enum   AliAODTrack::AODTrk_t;
@@ -51,5 +52,6 @@
 #pragma link C++ class AliAODVZERO+;
 #pragma link C++ class AliAODZDC+;
 
+#pragma link C++ method AliAODTrack::SetPosition<double>(double const*, bool);
 
 #endif

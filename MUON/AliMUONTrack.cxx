@@ -37,6 +37,11 @@
 
 #include <Riostream.h>
 
+using std::setw;
+using std::endl;
+using std::cout;
+using std::streamsize;
+using std::setprecision;
 /// \cond CLASSIMP
 ClassImp(AliMUONTrack) // Class implementation in ROOT context
 /// \endcond

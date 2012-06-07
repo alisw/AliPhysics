@@ -47,6 +47,8 @@
 #include <TMath.h>
 #include "AliCodeTimer.h"
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderMLEM)
 /// \endcond

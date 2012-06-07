@@ -31,6 +31,8 @@
 /// \author Ph. Crochet
 //-----------------------------------------------------------------------------
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONLocalTrigger)
 /// \endcond

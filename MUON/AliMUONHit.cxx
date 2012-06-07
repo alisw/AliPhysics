@@ -34,6 +34,10 @@
 #include <TMath.h>
 #include <TString.h>
 
+using std::endl;
+using std::cout;
+using std::setw;
+using std::setprecision;
 /// \cond CLASSIMP
 ClassImp(AliMUONHit)
 /// \endcond

@@ -45,6 +45,8 @@
 //#include <TCanvas.h>
 #include <TMath.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderPeakCOG)
 /// \endcond

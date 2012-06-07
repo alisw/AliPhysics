@@ -31,6 +31,8 @@
 #include <Riostream.h>		// ROOT_Riostream
 
 //____________________________________________________________________
+using std::cout;
+using std::endl;
 ClassImp(AliFMDRecPoint)
 #if 0
   ; // This is here to keep Emacs for indenting the next line

@@ -38,6 +38,8 @@
 #include <AliFMDMap.h>
 
 //====================================================================
+using std::cout;
+using std::flush;
 ClassImp(AliFMDIndex)
 #if 0
   ; // This is here to keep Emacs from indenting the next line

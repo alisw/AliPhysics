@@ -57,6 +57,8 @@
 #include <cstdlib>
 #include <cassert>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONMCDataInterface)
 /// \endcond

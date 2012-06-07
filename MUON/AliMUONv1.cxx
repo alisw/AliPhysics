@@ -56,6 +56,9 @@
 
 #include "AliMUONVHitStore.h"
 
+using std::endl;
+using std::cout;
+using std::setw;
 /// \cond CLASSIMP
 ClassImp(AliMUONv1)
 /// \endcond

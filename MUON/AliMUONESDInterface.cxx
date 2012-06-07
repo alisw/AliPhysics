@@ -72,6 +72,8 @@
 /// \author Philippe Pillot
 //-----------------------------------------------------------------------------
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONESDInterface)
 /// \endcond

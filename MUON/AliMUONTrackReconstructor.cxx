@@ -50,6 +50,8 @@
 // Functions to be minimized with Minuit
 void TrackChi2(Int_t &nParam, Double_t *gradient, Double_t &chi2, Double_t *param, Int_t flag);
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackReconstructor) // Class implementation in ROOT context
 /// \endcond

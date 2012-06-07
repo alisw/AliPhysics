@@ -45,6 +45,8 @@
 #include <TMath.h>
 #include <TRandom.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONResponseV0)
 /// \endcond

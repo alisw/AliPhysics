@@ -49,6 +49,8 @@
 /// 
 /// \author Laurent Aphecetche, Subatech
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP  
 ClassImp(AliMUONSimpleClusterServer)
 /// \endcond
