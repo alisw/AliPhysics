@@ -154,7 +154,6 @@ void AliPerformanceDEdx::Init()
   Double_t xminQA[10] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin, 0., 0.};
   Double_t xmaxQA[10] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax ,160., 160.};
 
-   //fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:alpha:y:z:snp:tgl:ncls:momentum",8,binsQA,xminQA,xmaxQA);
    fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN:CrossedRows",10,binsQA,xminQA,xmaxQA);
    fDeDxHisto->SetBinEdges(7,binsP);
 
@@ -506,18 +505,9 @@ void AliPerformanceDEdx::Analyse()
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 1, &selString);
     
     //restore cuts
-    fDeDxHisto->GetAxis(0)->SetRangeUser(0,300);
-    fDeDxHisto->GetAxis(2)->SetRangeUser(-20,20);
-    fDeDxHisto->GetAxis(3)->SetRangeUser(-250,250);
-    fDeDxHisto->GetAxis(4)->SetRangeUser(-1, 1);
-    fDeDxHisto->GetAxis(5)->SetRangeUser(-3,3);
-    fDeDxHisto->GetAxis(6)->SetRangeUser(0,160);
-    fDeDxHisto->GetAxis(7)->SetRangeUser(1e-2,10);    
-    fDeDxHisto->GetAxis(8)->SetRangeUser(0,160);
-    fDeDxHisto->GetAxis(9)->SetRangeUser(0.,1.);
-
-
-
+    for (Int_t i=0; i<fDeDxHisto->GetNdimensions(); i++) {
+      fDeDxHisto->GetAxis(i)->SetRange(1,fDeDxHisto->GetAxis(i)->GetNbins());
+    }
 
     printf("exportToFolder\n");
     // export objects to analysis folder
