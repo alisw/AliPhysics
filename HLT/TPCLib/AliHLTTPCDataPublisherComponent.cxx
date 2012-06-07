@@ -134,7 +134,7 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
       fMaxSize+=offset;
     } else if (iResult>=0) {
       if (outputBlocks.size()>firstBlock && CheckMode(kPublishRawFiltered)) {
-	AliInfo(Form("publishing %d DDL(s) for emulation of compressed TPC clusters", outputBlocks.size()-firstBlock));
+	AliInfo(Form("publishing %lu DDL(s) for emulation of compressed TPC clusters", outputBlocks.size()-firstBlock));
       }
       // correct for the shifted buffer which was provided to the
       // GetEvent method
