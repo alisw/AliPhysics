@@ -1146,14 +1146,14 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     delete [] pdgdaughters;
     return;
   }
-  AliPIDResponse* respF=pidHF->GetPidResponse();
+  //AliPIDResponse* respF=pidHF->GetPidResponse();
   AliTPCPIDResponse* tpcres=new AliTPCPIDResponse();
-  if(pidHF->GetOldPid()){ 
+  Bool_t oldPID=pidHF->GetOldPid();
+  if(oldPID){ 
     Double_t alephParameters[5];
     pidHF->GetTPCBetheBlochParams(alephParameters);
     tpcres->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
   }
-  Bool_t oldPID=pidHF->GetOldPid();
 
 
   Int_t ntracks=0;
@@ -1191,46 +1191,46 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(pid->GetTOFsignal());
 	  if (pid->GetTOFsignal()< 0) ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(-1);
 
-	  
-	  // test TOF sigma PID
-	  if (!oldPID && respF && tofRes[2] != 0.) {   // protection against 'old' AODs...
-	    Double_t nsigma[3]={respF->NumberOfSigmasTOF(track,AliPID::kPion),respF->NumberOfSigmasTOF(track,AliPID::kKaon),respF->NumberOfSigmasTOF(track,AliPID::kProton)};
-	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaKSigPid"))->Fill(track->P(),nsigma[1]);
-	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaPionSigPid"))->Fill(track->P(),nsigma[0]);
-	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaProtonSigPid"))->Fill(track->P(),nsigma[2]);
+	  Double_t nsigma[3]={-10,-10,-10};
+	  pidHF->GetnSigmaTOF(track,(Int_t)AliPID::kPion,nsigma[0]);	 
+	  pidHF->GetnSigmaTOF(track,(Int_t)AliPID::kKaon,nsigma[1]);	 
+	  pidHF->GetnSigmaTOF(track,(Int_t)AliPID::kProton,nsigma[2]);	 
 
-	    if(fReadMC){
-	      Int_t label=track->GetLabel();
-	      if(label<=0) continue;
-	      AliMCParticle* mcpart=(AliMCParticle*)mcArray->At(label);
-	      if(mcpart){
-		Int_t abspdgcode=TMath::Abs(mcpart->PdgCode());
-		if(abspdgcode==211) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCPionSigPid"))->Fill(track->P(),nsigma[0]);
-		if(abspdgcode==321) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCKSigPid"))->Fill(track->P(),nsigma[1]);
-		if(abspdgcode==2212) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCProtonSigPid"))->Fill(track->P(),nsigma[2]);
+	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaKSigPid"))->Fill(track->P(),nsigma[1]);
+	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaPionSigPid"))->Fill(track->P(),nsigma[0]);
+	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaProtonSigPid"))->Fill(track->P(),nsigma[2]);
+	  if(fReadMC){
+	    Int_t label=track->GetLabel();
+	    if(label<=0) continue;
+	    AliMCParticle* mcpart=(AliMCParticle*)mcArray->At(label);
+	    if(mcpart){
+	      Int_t abspdgcode=TMath::Abs(mcpart->PdgCode());
+	      if(abspdgcode==211) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCPionSigPid"))->Fill(track->P(),nsigma[0]);
+	      if(abspdgcode==321) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCKSigPid"))->Fill(track->P(),nsigma[1]);
+	      if(abspdgcode==2212) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCProtonSigPid"))->Fill(track->P(),nsigma[2]);
 
-	      }
 	    }
+	  }
 
-	    for (Int_t iS=2; iS<5; iS++){ //we plot TOF Pid resolution for 3-sigma identified particles
-	      if ( (TMath::Abs(times[iS]-pid->GetTOFsignal())/tofRes[iS])<3.){
-		switch (iS) {
-		case AliPID::kPion:
-		  ((TH1F*)fOutputPID->FindObject("hTOFsigPid3sigPion"))->Fill(tofRes[iS]);
-		  break;
-		case AliPID::kKaon:
-		  ((TH1F*)fOutputPID->FindObject("hTOFsigPid3sigKaon"))->Fill(tofRes[iS]);
-		  break;
-		case AliPID::kProton:
-		  ((TH1F*)fOutputPID->FindObject("hTOFsigPid3sigProton"))->Fill(tofRes[iS]);
-		  break;
-		default:
-		  break;
-		}
+	  for (Int_t iS=2; iS<5; iS++){ //we plot TOF Pid resolution for 3-sigma identified particles
+	    if ( TMath::Abs(nsigma[iS-2])<3.){
+	      switch (iS) {
+	      case AliPID::kPion:
+		((TH1F*)fOutputPID->FindObject("hTOFsigPid3sigPion"))->Fill(tofRes[iS]);
+		break;
+	      case AliPID::kKaon:
+		((TH1F*)fOutputPID->FindObject("hTOFsigPid3sigKaon"))->Fill(tofRes[iS]);
+		break;
+	      case AliPID::kProton:
+		((TH1F*)fOutputPID->FindObject("hTOFsigPid3sigProton"))->Fill(tofRes[iS]);
+		break;
+	      default:
+		break;
 	      }
 	    }
 	  }
 	}//if TOF status
+	//}
 
 	if(pidHF && pidHF->CheckStatus(track,"TPC")){ 
 
@@ -1239,21 +1239,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  ((TH1F*)fOutputPID->FindObject("hTPCsig"))->Fill(TPCsignal);
 	  ((TH1F*)fOutputPID->FindObject("hTPCsigvsp"))->Fill(TPCp,TPCsignal);
 	  //if (pidHF->IsKaonRaw(track, "TOF"))
-	  Double_t nsigma[3]={0,0,0};
-	  if(!oldPID){
-	    nsigma[0]=respF->NumberOfSigmasTPC(track,AliPID::kPion);
-	    nsigma[1]=respF->NumberOfSigmasTPC(track,AliPID::kKaon);
-	    nsigma[2]=respF->NumberOfSigmasTPC(track,AliPID::kProton);
-	  }
-	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,nsigma[1]);
-	  if (oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kKaon));
-	  //if (pidHF->IsPionRaw(track, "TOF"))
-	  if(oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kPion));
-	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,nsigma[0]);
-	  //if (pidHF->IsProtonRaw(track,"TOF"))
-	  if(oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kProton));
-	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,nsigma[2]);
+	  Double_t nsigma[3]={-10,-10,-10};
+	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kPion,nsigma[0]);	 
+	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kKaon,nsigma[1]);	 
+	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kProton,nsigma[2]);	 
 
+	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,nsigma[1]);
+	  
+	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,nsigma[0]);	  
+	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,nsigma[2]);
+	  
 	  if(fReadMC){
 	    Int_t label=track->GetLabel();
 	    if(label<=0) continue;
@@ -1331,7 +1326,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       } //fill track histos
     } //end loop on tracks
 
-      //fill once per event
+    //fill once per event
     if(fOnOff[0]){
       if (fReadMC) ((TH1F*)fOutputTrack->FindObject("hdistrFakeTr"))->Fill(isFakeTrack);
       ((TH1F*)fOutputTrack->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);

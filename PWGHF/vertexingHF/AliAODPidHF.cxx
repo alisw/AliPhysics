@@ -213,61 +213,29 @@ Bool_t AliAODPidHF::IsElectronRaw(AliAODTrack *track, TString detector) const{
 Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
 // n-sigma cut, TPC PID
 
-  if(!CheckTPCPIDStatus(track)) return 0;
+  Double_t nsigma;
   Int_t pid=-1;
-  if(fOldPid){
-  AliAODPid *pidObj = track->GetDetPid();
-  
-  Double_t dedx=pidObj->GetTPCsignal();
-  Double_t mom = pidObj->GetTPCmomentum();
-  if(mom>fPtThresholdTPC) return 0;
-  UShort_t nTPCClus=pidObj->GetTPCsignalN();
-  if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
 
   if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
-   Double_t nsigmaMax=fnSigma[0];
-   for(Int_t ipart=0;ipart<5;ipart++){
-    AliPID::EParticleType type=AliPID::EParticleType(ipart);
-    Double_t nsigma = TMath::Abs(fTPCResponse->GetNumberOfSigmas(mom,dedx,nTPCClus,type));
-    if((nsigma<nsigmaMax) && (nsigma<fnSigma[0])) {
-     pid=ipart;
-     nsigmaMax=nsigma;
+    Double_t nsigmaMin=999.;
+    for(Int_t ipart=0;ipart<5;ipart++){
+      if(GetnSigmaTPC(track,ipart,nsigma)==1){
+	nsigma=TMath::Abs(nsigma);
+	if((nsigma<nsigmaMin) && (nsigma<fnSigma[0])) {
+	  pid=ipart;
+	  nsigmaMin=nsigma;
+	}
+      }
     }
-   }
   }else{ // asks only for one particle specie
-   AliPID::EParticleType type=AliPID::EParticleType(specie);
-    Double_t nsigma = TMath::Abs(fTPCResponse->GetNumberOfSigmas(mom,dedx,nTPCClus,type));
-   if (nsigma>fnSigma[0]) {
-    pid=-1; 
-   }else{
-    pid=specie;
-   }
-  }
- }else{ //old pid
-  if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
-   Double_t nsigmaMax=fnSigma[0];
-   for(Int_t ipart=0;ipart<5;ipart++){
-    AliPID::EParticleType type=AliPID::EParticleType(ipart);
-    Double_t nsigma = TMath::Abs(fPidResponse->NumberOfSigmasTPC(track,type));
-    if((nsigma<nsigmaMax) && (nsigma<fnSigma[0])) {
-     pid=ipart;
-     nsigmaMax=nsigma;
+    if(GetnSigmaTPC(track,specie,nsigma)==1){
+      nsigma=TMath::Abs(nsigma);
+      if (nsigma>fnSigma[0]) pid=-1; 
+      else pid=specie;
     }
-   }
-  }else{ // asks only for one particle specie
-   AliPID::EParticleType type=AliPID::EParticleType(specie);
-    Double_t nsigma = TMath::Abs(fPidResponse->NumberOfSigmasTPC(track,type));
-   if (nsigma>fnSigma[0]) {
-    pid=-1;
-   }else{
-    pid=specie;
-   }
   }
 
- } //new pid
-
- return pid;
-
+  return pid;
 }
 //----------------------------
 Int_t AliAODPidHF::ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const{
@@ -339,14 +307,49 @@ Int_t AliAODPidHF::ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const{
 Int_t AliAODPidHF::ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const{
 // n-sigma cut, TOF PID
 
- if(!CheckTOFPIDStatus(track)) return 0;
+  Double_t nsigma;
+  Int_t pid=-1;
 
+  if(specie<0){  
+    Double_t nsigmaMin=999.;   
+    for(Int_t ipart=0;ipart<5;ipart++){
+      if(GetnSigmaTOF(track,ipart,nsigma)==1){
+	nsigma=TMath::Abs(nsigma);
+	if((nsigma<nsigmaMin)&& (nsigma<fnSigma[3])){
+	  pid=ipart;
+	  nsigmaMin=nsigma;
+	}
+      }
+    }
+  }else{ // asks only for one particle specie
+    if(GetnSigmaTOF(track,specie,nsigma)==1){
+      nsigma=TMath::Abs(nsigma);
+      if (nsigma>fnSigma[3]) pid=-1; 
+      else pid=specie;
+    }
+  }
+  return pid; 
+  /*
  Double_t time[AliPID::kSPECIESN];
  Double_t sigmaTOFPid[AliPID::kSPECIES];
  AliAODPid *pidObj = track->GetDetPid();
  pidObj->GetIntegratedTimes(time);
  Double_t sigTOF=pidObj->GetTOFsignal();
- pidObj->GetTOFpidResolution(sigmaTOFPid);
+
+ AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
+ if (event) {
+   AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
+   if (tofH && fPidResponse) { // reading new AOD with new aliroot
+     AliTOFPIDResponse TOFres = (AliTOFPIDResponse)fPidResponse->GetTOFResponse();
+     sigTOF -= TOFres.GetStartTime(track->P());
+     if (specie<0) {
+       for (Int_t ipart = 0; ipart<5; ipart++) {
+	 sigmaTOFPid[ipart]=TOFres.GetExpectedSigma(track->P(),time[ipart],AliPID::ParticleMass(ipart));
+       }
+     }
+     else sigmaTOFPid[specie]=TOFres.GetExpectedSigma(track->P(),time[specie],AliPID::ParticleMass(specie)); //fTOFResponse is set in InitialiseEvent
+   } else  pidObj->GetTOFpidResolution(sigmaTOFPid); // reading old AOD with new aliroot
+ } else  pidObj->GetTOFpidResolution(sigmaTOFPid);  //reading old AOD with old aliroot
 
  Int_t pid=-1;
 
@@ -376,7 +379,7 @@ Int_t AliAODPidHF::ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const{
     }
   }
  return pid; 
-
+  */
 }
 //------------------------------
 void AliAODPidHF::CombinedProbability(AliAODTrack *track,Bool_t *type) const{
@@ -564,23 +567,13 @@ Bool_t AliAODPidHF::CheckStatus(AliAODTrack *track,TString detectors) const{
 Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
 // TPC nsigma cut PID, different sigmas in different p bins
 
-  if(!CheckTPCPIDStatus(track)) return kFALSE;
+  Double_t nsigma;
+  if(GetnSigmaTPC(track,specie,nsigma)!=1) return kFALSE;
+  nsigma=TMath::Abs(nsigma);
+
   AliAODPid *pidObj = track->GetDetPid();
   Double_t mom = pidObj->GetTPCmomentum();
   if(mom>fPtThresholdTPC) return 0;
-  Double_t nsigma=999.;
-  if(fOldPid){
-    Double_t dedx=pidObj->GetTPCsignal();
-    UShort_t nTPCClus=pidObj->GetTPCsignalN();
-    if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
-  
-    AliPID::EParticleType type=AliPID::EParticleType(specie);
-    nsigma = TMath::Abs(fTPCResponse->GetNumberOfSigmas(mom,dedx,nTPCClus,type)); 
-
-  }else{ //old pid
-    AliPID::EParticleType type=AliPID::EParticleType(specie);
-    nsigma = TMath::Abs(fPidResponse->NumberOfSigmasTPC(track,type));
-  } //new pid
 
   if(mom<fPLimit[0] && nsigma<fnSigma[0]) return kTRUE;
   if(mom<fPLimit[1] && mom>fPLimit[0] && nsigma<fnSigma[1]) return kTRUE;
@@ -845,14 +838,28 @@ void AliAODPidHF::SetBetheBloch() {
 Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
 
 
- if(!CheckTOFPIDStatus(track)) return 0;
-
-  Double_t time[AliPID::kSPECIESN];
+  Double_t nsigma;
+  if(GetnSigmaTOF(track,3,nsigma)==1){
+    nsigma=TMath::Abs(nsigma);
+    if(nsigma>nsigmaK) return kTRUE;
+  } 
+  return kFALSE;
+  /*  Double_t time[AliPID::kSPECIESN];
   Double_t sigmaTOFPid[AliPID::kSPECIES];
   AliAODPid *pidObj = track->GetDetPid();
   pidObj->GetIntegratedTimes(time);
   Double_t sigTOF=pidObj->GetTOFsignal();
-  pidObj->GetTOFpidResolution(sigmaTOFPid);
+
+ AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
+ if (event) {
+   AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
+   if (tofH && fPidResponse) { 
+     AliTOFPIDResponse TOFres = (AliTOFPIDResponse)fPidResponse->GetTOFResponse();
+     sigTOF -= TOFres.GetStartTime(track->P());
+     sigmaTOFPid[3]=TOFres.GetExpectedSigma(track->P(),time[3],AliPID::ParticleMass(3));
+   }
+   else  pidObj->GetTOFpidResolution(sigmaTOFPid);
+ } else  pidObj->GetTOFpidResolution(sigmaTOFPid);
   Double_t sigmaTOFtrack;
   if (sigmaTOFPid[3]>0) sigmaTOFtrack=sigmaTOFPid[3];
   else sigmaTOFtrack=fTOFSigma;  // backward compatibility for old AODs
@@ -860,7 +867,7 @@ Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
   if((sigTOF-time[3])>nsigmaK*sigmaTOFtrack)return kTRUE;// K, Pi excluded (->LIKELY A PROTON)
   
   return kFALSE;
-
+  */
 }
 //--------------------------------------------------------------------------
 void AliAODPidHF::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior){
@@ -883,7 +890,7 @@ void AliAODPidHF::DrawPrior(AliPID::EParticleType type){
 }
 
 //--------------------------------------------------------------------------
-Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &sigma) const{
+Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &nsigma) const{
  
   if(!CheckTPCPIDStatus(track)) return -1;
   
@@ -897,34 +904,45 @@ Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &sig
     UShort_t nTPCClus=pidObj->GetTPCsignalN();
     if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
     AliPID::EParticleType type=AliPID::EParticleType(species);
-    nsigmaTPC = TMath::Abs(fTPCResponse->GetNumberOfSigmas(mom,dedx,nTPCClus,type));
-    sigma=nsigmaTPC;
+    nsigmaTPC = fTPCResponse->GetNumberOfSigmas(mom,dedx,nTPCClus,type);
+    nsigma=nsigmaTPC;
   } else{
-  
+    if(!fPidResponse) return -1;
     AliPID::EParticleType type=AliPID::EParticleType(species);
-    nsigmaTPC = TMath::Abs(fPidResponse->NumberOfSigmasTPC(track,type));
-    sigma=nsigmaTPC;
+    nsigmaTPC = fPidResponse->NumberOfSigmasTPC(track,type);
+    nsigma=nsigmaTPC;
   }
   return 1;
 }  
 
 //-----------------------------
 
-Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &sigma) const{
+Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &nsigma) const{
 
   if(!CheckTOFPIDStatus(track)) return -1;
- 
-  Double_t time[AliPID::kSPECIESN];
-  Double_t sigmaTOFPid[AliPID::kSPECIES];
-  AliAODPid *pidObj = track->GetDetPid();
-  pidObj->GetIntegratedTimes(time);
-  Double_t sigTOF=pidObj->GetTOFsignal();
-  pidObj->GetTOFpidResolution(sigmaTOFPid);
-  
-  if(sigmaTOFPid[species]<1e-99) return -2;
-  
-  Double_t sigmaTOF=TMath::Abs(sigTOF-time[species])/sigmaTOFPid[species];
-  sigma=sigmaTOF;
+
+  if(fPidResponse){
+    nsigma = fPidResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)species);
+  }else{
+    AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
+    if (event) {
+      AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
+      if (tofH) { // reading a new AOD without setting fPidResponse!!! 
+	AliFatal("To use this AOD you must start AliPIDResponseTask"); 
+      }
+      else {
+	Double_t time[AliPID::kSPECIESN];
+	Double_t sigmaTOFPid[AliPID::kSPECIES];
+	AliAODPid *pidObj = track->GetDetPid();
+	pidObj->GetIntegratedTimes(time);
+	Double_t sigTOF=pidObj->GetTOFsignal();
+	pidObj->GetTOFpidResolution(sigmaTOFPid);
+	if(sigmaTOFPid[species]<1e-99) return -2;
+	Double_t sigmaTOF=(sigTOF-time[species])/sigmaTOFPid[species];
+	nsigma=sigmaTOF;
+      } 
+    }
+  }
   return 1;
 }
 
