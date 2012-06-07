@@ -101,7 +101,7 @@ protected:
 
     // --- Add the task ----------------------------------------------
     gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d,\"%s\")", 
-		      mc, fSys, fSNN, fField, fForwarConfig.Data()));
+		      mc, fSys, fSNN, fField, fForwardConfig.Data()));
     AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), fForwardConfig));
 
     // --- Add the task ----------------------------------------------
@@ -205,8 +205,8 @@ protected:
     if (field) field->Save(o, str, fField);
     if (cent)  cent->Save(o, str, fUseCent);
     if (tep)   tep->Save(o, str, fUseTPCEventPlane);
-    if (fwdConfig) fwdConfig->Save(o. str, fForwardConfig);
-    if (cenConfig) cenConfig->Save(o. str, fCentralConfig);
+    if (fwdConfig) fwdConfig->Save(o, str, fForwardConfig);
+    if (cenConfig) cenConfig->Save(o, str, fCentralConfig);
     
   }
   //__________________________________________________________________

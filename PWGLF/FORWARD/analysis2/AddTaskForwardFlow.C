@@ -67,13 +67,12 @@ void AddTaskForwardFlow(TString  type          = "",
   mgr->AddTask(task); 
 
   // --- Check which harmonics to calculate --------------------------
-  Bool_t v1 = type.Contains("1");
   Bool_t v2 = type.Contains("2");
   Bool_t v3 = type.Contains("3");
   Bool_t v4 = type.Contains("4");
   Bool_t v5 = type.Contains("5");
   Bool_t v6 = type.Contains("6");
-  task->SetDoHarmonics(v1, v2, v3, v4, v5, v6);
+  task->SetDoHarmonics(v2, v3, v4, v5, v6);
 
   // --- Set non-default axis for vertices ---------------------------
   TAxis* a = 0;
