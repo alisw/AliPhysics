@@ -52,23 +52,26 @@
 #include "AliAODVZERO.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
+#include "AliAODMCParticle.h"
 
 class AliFlowTrackCuts;
 
 ClassImp(AliAnalysisTaskPhiFlow)
 
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
-   fDebug(0), fAODAnalysis(0), fMassBins(0), fMinMass(0), fMaxMass(0), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAXY(0), fDCAZ(0), fDCA(0), fDCAXYQA(0), fDCAZQA(0)
+   fDebug(0), fIsMC(0), fQA(0), fAODAnalysis(0), fMassBins(0), fMinMass(0), fMaxMass(0), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0),fNOPIDTOF(0), fPIDTOF(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fArmPod(0)
 {
    // Default constructor
    for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = 0.;
+   for(Int_t i = 0; i < 5; i++) fDCAConfig[i] = 0.;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTaskSE(name),
-   fDebug(0), fAODAnalysis(0), fMassBins(0), fMinMass(0), fMaxMass(0), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAXY(0), fDCAZ(0), fDCA(0), fDCAXYQA(0), fDCAZQA(0)
+   fDebug(0), fIsMC(0), fQA(0), fAODAnalysis(0), fMassBins(0), fMinMass(0), fMaxMass(0), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fOldTrackParam(0), fRequireTPCStandAlone(0), fStrictKaonCuts(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCentrality(0), fESD(0), fAOD(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fNOPIDTOF(0), fPIDTOF(0), fInvMNP03(0), fInvMPP03(0), fInvMNN03(0), fInvMNP36(0), fInvMPP36(0), fInvMNN36(0), fInvMNP69(0), fInvMPP69(0), fInvMNN69(0), fInvMNP912(0), fInvMPP912(0), fInvMNN912(0), fInvMNP1215(0), fInvMPP1215(0), fInvMNN1215(0), fInvMNP1518(0), fInvMPP1518(0), fInvMNN1518(0), fInvMNP1821(0), fInvMPP1821(0), fInvMNN1821(0), fInvMNP2124(0), fInvMPP2124(0), fInvMNN2124(0), fInvMNP2427(0), fInvMPP2427(0), fInvMNN2427(0), fInvMNP2730(0), fInvMPP2730(0), fInvMNN2730(0), fInvMNP3035(0), fInvMPP3035(0), fInvMNN3035(0), fInvMNP3540(0), fInvMPP3540(0), fInvMNN3540(0), fInvMNP4045(0), fInvMPP4045(0), fInvMNN4045(0), fInvMNP4550(0), fInvMPP4550(0), fInvMNN4550(0), fInvMNP5055(0), fInvMPP5055(0), fInvMNN5055(0), fInvMNP5560(0), fInvMPP5560(0), fInvMNN5560(0), fInvMNP6065(0), fInvMPP6065(0), fInvMNN6065(0), fInvMNP6570(0), fInvMPP6570(0), fInvMNN6570(0), fPtSpectra03(0), fPtSpectra36(0), fPtSpectra69(0), fPtSpectra912(0), fPtSpectra1215(0), fPtSpectra1518(0), fPtSpectra1821(0), fPtSpectra2124(0), fPtSpectra2427(0), fPtSpectra2730(0), fPtSpectra3035(0), fPtSpectra3540(0), fPtSpectra4045(0), fPtSpectra4550(0), fPtSpectra5055(0), fPtSpectra5560(0), fPtSpectra6065(0), fPtSpectra6570(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethod(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0), fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0), fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fArmPod(0)
 {
    // Constructor
    for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = 0.;
+   for(Int_t i = 0; i < 5; i++) fDCAConfig[i] = 0.;
 
    DefineInput(0, TChain::Class());
    DefineOutput(1, TList::Class());
@@ -97,12 +100,19 @@ TH1F* AliAnalysisTaskPhiFlow::BookHistogram(const char* name)
    return hist;
 }
 //_____________________________________________________________________________
-TH2F* AliAnalysisTaskPhiFlow::BookPIDHistogram(const char* name)
+TH2F* AliAnalysisTaskPhiFlow::BookPIDHistogram(const char* name, Bool_t TPC)
 {
    // Return a pointer to a TH2 with predefined binning
-   TH2F *hist = new TH2F(name, Form("PID (%s)", name), 100, 0, 5, 100, 0, 1000);
+   TH2F *hist = 0x0;
+   if(TPC) {
+       hist = new TH2F(name, Form("PID (%s)", name), 100, 0, 5, 100, 0, 1000);
+       hist->GetYaxis()->SetTitle("dE/dx (a.u.)");
+   }
+   if(!TPC) {
+       hist = new TH2F(name, Form("PID (%s)", name), 100, 0, 5, 100, 0, 1.5);
+       hist->GetYaxis()->SetTitle("#beta");
+   }
    hist->GetXaxis()->SetTitle("P (GeV / c)");
-   hist->GetYaxis()->SetTitle("dE/dx (a.u.)");
    fOutputList->Add(hist);
    return hist;
 }
@@ -134,17 +144,22 @@ TH1F* AliAnalysisTaskPhiFlow::BookPtHistogram(const char* name)
 void AliAnalysisTaskPhiFlow::AddPhiIdentificationOutputObjects()
 {
    // Add Phi Identification Output Objects
-   fEventStats = new TH1F("fHistStats", "Event Statistics", 18, -.25, 4.25);
-   fEventStats->GetXaxis()->SetTitle("No. of events");
-   fEventStats->GetYaxis()->SetTitle("Statistics");
-   fOutputList->Add(fEventStats);
+   if(fQA) {
+       fEventStats = new TH1F("fHistStats", "Event Statistics", 18, -.25, 4.25);
+       fEventStats->GetXaxis()->SetTitle("No. of events");
+       fEventStats->GetYaxis()->SetTitle("Statistics");
+       fOutputList->Add(fEventStats);
+   }
    fCentralityPass = new TH1F("fCentralityPass", "Centrality Pass", 101, -1, 100);
-   fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass", 101, -1, 100);
    fOutputList->Add(fCentralityPass);
-   fOutputList->Add(fCentralityNoPass);
-
-   fNOPID = BookPIDHistogram("TPC signal, all particles");
-   fPIDk = BookPIDHistogram("TPC signal, kaons");
+   if(fQA) {
+       fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass", 101, -1, 100);
+       fOutputList->Add(fCentralityNoPass);
+       fNOPID = BookPIDHistogram("TPC signal, all particles", kTRUE);
+       fPIDk = BookPIDHistogram("TPC signal, kaons", kTRUE);
+       fNOPIDTOF = BookPIDHistogram("TOF signal, all particles", kFALSE);
+       fPIDTOF = BookPIDHistogram("TOF signal, kaons", kFALSE);
+   }
    fInvMNP03 = BookHistogram("NP, 0 < p_{T} < 0.3 GeV");
    fInvMPP03 = BookHistogram("PP, 0 < p_{T} < 0.3 GeV");
    fInvMNN03 = BookHistogram("NN, 0 < p_{T} < 0.3 GeV");
@@ -200,53 +215,62 @@ void AliAnalysisTaskPhiFlow::AddPhiIdentificationOutputObjects()
    fInvMPP6570 = BookHistogram("PP, 6.5 < p_{T} < 7.0 GeV");
    fInvMNN6570 = BookHistogram("NN, 6.5 < p_{T} < 7.0 GeV");
 
-   fPtSpectra03 = InitPtSpectraHistograms(1);
-   fPtSpectra36 = InitPtSpectraHistograms(2);
-   fPtSpectra69 = InitPtSpectraHistograms(3);
-   fPtSpectra912 = InitPtSpectraHistograms(4);
-   fPtSpectra1215 = InitPtSpectraHistograms(5);
-   fPtSpectra1518 = InitPtSpectraHistograms(6);
-   fPtSpectra1821 = InitPtSpectraHistograms(7);
-   fPtSpectra2124 = InitPtSpectraHistograms(8);
-   fPtSpectra2427 = InitPtSpectraHistograms(9);
-   fPtSpectra2730 = InitPtSpectraHistograms(10);
-   fPtSpectra3035 = InitPtSpectraHistograms(11);
-   fPtSpectra3540 = InitPtSpectraHistograms(12);
-   fPtSpectra4045 = InitPtSpectraHistograms(13);
-   fPtSpectra4550 = InitPtSpectraHistograms(14);
-   fPtSpectra5055 = InitPtSpectraHistograms(15);
-   fPtSpectra5560 = InitPtSpectraHistograms(16);
-   fPtSpectra6065 = InitPtSpectraHistograms(17);
-   fPtSpectra6570 = InitPtSpectraHistograms(18);
+   if(fQA){
+       fPtSpectra03 = InitPtSpectraHistograms(1);
+       fPtSpectra36 = InitPtSpectraHistograms(2);
+       fPtSpectra69 = InitPtSpectraHistograms(3);
+       fPtSpectra912 = InitPtSpectraHistograms(4);
+       fPtSpectra1215 = InitPtSpectraHistograms(5);
+       fPtSpectra1518 = InitPtSpectraHistograms(6);
+       fPtSpectra1821 = InitPtSpectraHistograms(7);
+       fPtSpectra2124 = InitPtSpectraHistograms(8);
+       fPtSpectra2427 = InitPtSpectraHistograms(9);
+       fPtSpectra2730 = InitPtSpectraHistograms(10);
+       fPtSpectra3035 = InitPtSpectraHistograms(11);
+       fPtSpectra3540 = InitPtSpectraHistograms(12);
+       fPtSpectra4045 = InitPtSpectraHistograms(13);
+       fPtSpectra4550 = InitPtSpectraHistograms(14);
+       fPtSpectra5055 = InitPtSpectraHistograms(15);
+       fPtSpectra5560 = InitPtSpectraHistograms(16);
+       fPtSpectra6065 = InitPtSpectraHistograms(17);
+       fPtSpectra6570 = InitPtSpectraHistograms(18);
+       fPtP = BookPtHistogram("i^{+}");
+       fPtN = BookPtHistogram("i^{-}");
+       fPtKP = BookPtHistogram("K^{+}");
+       fPtKN = BookPtHistogram("K^{-}");
+       fPhi = new TH1F("fPhi", "#phi distribution", 100, -.5, 7);
+       fOutputList->Add(fPhi);
+       fPt = new TH1F("fPt", "p_{T}", 100, 0, 5.5);
+       fOutputList->Add(fPt);
+       fEta = new TH1F("fEta", "#eta distribution", 100, -1.1, 1.1);
+       fOutputList->Add(fEta);
+       fVZEROA = new TH1F("fVZEROA", "VZERO A Multiplicity", 1000, 0, 10000);
+       fOutputList->Add(fVZEROA);
+       fVZEROC = new TH1F("fVZEROC", "VZERO C Multiplicity", 1000, 0, 10000);
+       fOutputList->Add(fVZEROC);
+       fTPCM = new TH1F("fTPCM", "TPC multiplicity", 1000, 0, 10000);
+       fOutputList->Add(fTPCM);
+       fDCAXYQA = new TH1F("fDCAXYQA", "fDCAXYQA", 1000, -5, 5);
+       fOutputList->Add(fDCAXYQA);
+       fDCAZQA = new TH1F("fDCAZQA", "fDCAZQA", 1000, -5, 5);
+       fOutputList->Add(fDCAZQA);
+       fArmPod = new TH2F("fArmPod", "fArmPod", 100, -5, 5, 100, 0, 5);
+       fOutputList->Add(fArmPod);
+   }
+   if(fIsMC || fQA) {
 
-   fPtP = BookPtHistogram("i^{+}");
-   fPtN = BookPtHistogram("i^{-}");
-   fPtKP = BookPtHistogram("K^{+}");
-   fPtKN = BookPtHistogram("K^{-}");
+       fDCAAll = new TH2F("fDCAAll", "fDCAAll", 1000, 0, 10, 1000, -5, 5);
+       fOutputList->Add(fDCAAll);
 
-   fPhi = new TH1F("fPhi", "#phi distribution", 100, -.5, 7);
-   fOutputList->Add(fPhi);
+       fDCAPrim = new TH2F("fDCAprim","fDCAprim", 1000, 0, 10, 1000, -5, 5);
+       fOutputList->Add(fDCAPrim);
 
-   fPt = new TH1F("fPt", "p_{T}", 100, 0, 5.5);
-   fOutputList->Add(fPt);
+       fDCASecondaryWeak = new TH2F("fDCASecondaryWeak","fDCASecondaryWeak", 1000, 0, 10, 1000, -5, 5);
+       fOutputList->Add(fDCASecondaryWeak);
 
-   fEta = new TH1F("fEta", "#eta distribution", 100, -1.1, 1.1);
-   fOutputList->Add(fEta);
-
-   fVZEROA = new TH1F("fVZEROA", "VZERO A Multiplicity", 1000, 0, 10000);
-   fOutputList->Add(fVZEROA);
-
-   fVZEROC = new TH1F("fVZEROC", "VZERO C Multiplicity", 1000, 0, 10000);
-   fOutputList->Add(fVZEROC);
-
-   fTPCM = new TH1F("fTPCM", "TPC multiplicity", 1000, 0, 10000);
-   fOutputList->Add(fTPCM);
-
-   fDCAXYQA = new TH1F("fDCAXYQA", "fDCAXYQA", 1000, -5, 5);
-   fOutputList->Add(fDCAXYQA);
-   
-   fDCAZQA = new TH1F("fDCAZQA", "fDCAZQA", 1000, -5, 5);
-   fOutputList->Add(fDCAZQA);
+       fDCAMaterial = new TH2F("fDCAMaterial","fDCAMaterial", 1000, 0, 10, 1000, -5, 5);
+       fOutputList->Add(fDCAMaterial);
+   }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPhiFlow::UserCreateOutputObjects()
@@ -350,29 +374,22 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCandidateEtaPtCut(cons
    return kTRUE;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod)
-{
-   // Set a centrality range ]min, max] and define the method to use for centrality selection
-   fCentralityMin = CentralityMin;
-   fCentralityMax = CentralityMax;
-   fkCentralityMethod = CentralityMethod;
-}
-//_____________________________________________________________________________
 template <typename T> Bool_t AliAnalysisTaskPhiFlow::EventCut(T* event)
 {
    // Impose event cuts
    if (!event) return kFALSE;
    if (!CheckVertex(event)) return kFALSE;
    if (!CheckCentrality(event)) return kFALSE;
-   PlotVZeroMultiplcities(event);
+   if(fQA) PlotMultiplcities(event);
    return kTRUE;
 }
 //_____________________________________________________________________________
-template <typename T> void AliAnalysisTaskPhiFlow::PlotVZeroMultiplcities(const T* event) const
+template <typename T> void AliAnalysisTaskPhiFlow::PlotMultiplcities(const T* event) const
 {
    // QA multiplicity plots
    fVZEROA->Fill(event->GetVZEROData()->GetMTotV0A());
    fVZEROC->Fill(event->GetVZEROData()->GetMTotV0C());
+   fTPCM->Fill(event->GetNumberOfTracks());
 }
 //_____________________________________________________________________________
 template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckVertex(const T* event) const
@@ -390,7 +407,7 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(T* event)
    fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
    if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
    {
-      fCentralityNoPass->Fill(fCentrality) ;
+      if(fQA) fCentralityNoPass->Fill(fCentrality) ;
       return kFALSE;
    }
    fCentralityPass->Fill(fCentrality);
@@ -420,9 +437,7 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::PassesTPCbayesianCut(T* tra
    Float_t *probabilities = fBayesianResponse->GetProb();
    if (probabilities[3] > fPIDConfig[6])
    {
-      fPhi->Fill(track->Phi());
-      fPt->Fill(track->Pt());
-      fEta->Fill(track->Eta());
+      if(fQA) {fPhi->Fill(track->Phi()); fPt->Fill(track->Pt()); fEta->Fill(track->Eta());}
       return kTRUE;
    }
    return kFALSE;
@@ -448,6 +463,34 @@ Bool_t AliAnalysisTaskPhiFlow::PassesStrictKaonCuts(AliAODTrack* track) const
    return kTRUE;
 }
 //_____________________________________________________________________________
+Bool_t AliAnalysisTaskPhiFlow::PassesDCACut(AliAODTrack* track) const
+{
+    // check if track passes dca cut according to dca routine
+    // setup the routine as follows:
+    // fDCAConfig[0] < -1 no pt dependence
+    // fDCAConfig[0] =  0 do nothing
+    // fDCAConfig[0] >  1 pt dependent dca cut
+    if(fIsMC) return kTRUE;
+    if( (fDCAConfig[0] < 0.1) && (fDCAConfig[0] > -0.1) ) return kTRUE;
+    Double_t b[2] = { -99., -99.};
+    Double_t bCov[3] = { -99., -99., -99.};
+    track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov);
+    if((!fIsMC)&&fQA) fDCAMaterial->Fill(track->Pt(), b[0]);
+    if( (fDCAConfig[0] < -.9) && ( (TMath::Abs(b[0]) > fDCAConfig[1]) || (TMath::Abs(b[1]) > fDCAConfig[2])) ) return kFALSE;
+    if(fDCAConfig[0] > .9) {
+        if(fDCAConfig[4] < TMath::Abs(b[1])) return kFALSE;
+        Double_t denom = TMath::Power(track->Pt(), fDCAConfig[3]);
+        if( denom < 0.0000001 ) return kFALSE; // we don't like divisions by zero ...
+        if( (fDCAConfig[1] + fDCAConfig[2] / denom) < TMath::Abs(b[0]) ) return kFALSE;
+    }
+    if(fQA) {
+        fDCAXYQA->Fill(b[0]);
+        fDCAZQA->Fill(b[1]);
+        fDCAPrim->Fill(track->Pt(), b[0]);
+    }
+    return kTRUE;
+}
+//_____________________________________________________________________________
 Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliESDtrack* track) const
 {
    // Check if particle is a kaon according to method set in steering macro
@@ -455,7 +498,7 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliESDtrack* track) const
    if (fPIDConfig[1]!=0 || fPIDConfig[4]!=0) AliFatal("TPC || ITS PID not available in ESD anlaysis -- terminating analysis !!!");
    if (PassesTPCbayesianCut(track))
    {
-     fPIDk->Fill(track->P(), track->GetTPCsignal());
+     if(fQA) fPIDk->Fill(track->P(), track->GetTPCsignal());
      return kTRUE;
    }
    return kFALSE;
@@ -465,7 +508,8 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
 {
    // Kaon identification routine, based on multiple detectors and approaches
    if (fRequireTPCStandAlone && (!track->TestFilterBit(1))) return kFALSE;
-   fNOPID->Fill(track->P(), track->GetTPCsignal());
+   if(!PassesDCACut(track)) return kFALSE;
+   if(fQA) {fNOPID->Fill(track->P(), track->GetTPCsignal());fNOPIDTOF->Fill(track->P(), track->GetTOFsignal());}
    if(track->Pt() < fPIDConfig[1])
    {
        if(fDebug) cout << " ITS received track with p_t " << track->Pt() << endl;
@@ -480,7 +524,7 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
        else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion)) < fPIDConfig[3]) return kFALSE;
        else if (TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kKaon)) < fPIDConfig[0])
        {
-           fPIDk->Fill(track->P(), track->GetTPCsignal());
+           if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal()); fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
            return kTRUE;
        }
        return kFALSE;
@@ -499,7 +543,7 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
        else if (TMath::Abs(fPIDResponse->NumberOfSigmasITS(track, AliPID::kPion)) < fPIDConfig[0]) return kFALSE;
        else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon)) < fPIDConfig[3])
        {
-           fPIDk->Fill(track->P(), track->GetTPCsignal());
+           if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal()); fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
            return kTRUE;
        }
        return kFALSE;
@@ -508,7 +552,7 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
    // switch to bayesian PID
    if (PassesTPCbayesianCut(track))
    {
-       fPIDk->Fill(track->P(), track->GetTPCsignal());
+       if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
        return kTRUE;
    }
    return kFALSE;
@@ -532,92 +576,92 @@ template <typename T> void AliAnalysisTaskPhiFlow::PtSelector(Int_t tracktype, c
       if ((0.0 <= pt) && (0.3 > pt))
       {
          fInvMNP03->Fill(InvariantMass(track1, track2));
-         fPtSpectra03->Fill(pt);
+         if(fQA) fPtSpectra03->Fill(pt);
       }
       if ((0.3 <= pt) && (0.6 > pt))
       {
          fInvMNP36->Fill(InvariantMass(track1, track2));
-         fPtSpectra36->Fill(pt);
+         if(fQA) fPtSpectra36->Fill(pt);
       }
       if ((0.6 <= pt) && (0.9 > pt))
       {
          fInvMNP69->Fill(InvariantMass(track1, track2));
-         fPtSpectra69->Fill(pt);
+         if(fQA) fPtSpectra69->Fill(pt);
       }
       if ((0.9 <= pt) && (1.2 > pt))
       {
          fInvMNP912->Fill(InvariantMass(track1, track2));
-         fPtSpectra912->Fill(pt);
+         if(fQA) fPtSpectra912->Fill(pt);
       }
       if ((1.2 <= pt) && (1.5 > pt))
       {
          fInvMNP1215->Fill(InvariantMass(track1, track2));
-         fPtSpectra1215->Fill(pt);
+         if(fQA) fPtSpectra1215->Fill(pt);
       }
       if ((1.5 <= pt) && (1.8 > pt))
       {
          fInvMNP1518->Fill(InvariantMass(track1, track2));
-         fPtSpectra1518->Fill(pt);
+         if(fQA) fPtSpectra1518->Fill(pt);
       }
       if ((1.8 <= pt) && (2.1 > pt))
       {
          fInvMNP1821->Fill(InvariantMass(track1, track2));
-         fPtSpectra1821->Fill(pt);
+         if(fQA) fPtSpectra1821->Fill(pt);
       }
       if ((2.1 <= pt) && (2.4 > pt))
       {
          fInvMNP2124->Fill(InvariantMass(track1, track2));
-         fPtSpectra2124->Fill(pt);
+         if(fQA) fPtSpectra2124->Fill(pt);
       }
       if ((2.4 <= pt) && (2.7 > pt))
       {
          fInvMNP2427->Fill(InvariantMass(track1, track2));
-         fPtSpectra2427->Fill(pt);
+         if(fQA) fPtSpectra2427->Fill(pt);
       }
       if ((2.7 <= pt) && (3.0 > pt))
       {
          fInvMNP2730->Fill(InvariantMass(track1, track2));
-         fPtSpectra2730->Fill(pt);
+         if(fQA) fPtSpectra2730->Fill(pt);
       }
       if ((3.0 <= pt) && (3.5 > pt))
       {
          fInvMNP3035->Fill(InvariantMass(track1, track2));
-         fPtSpectra3035->Fill(pt);
+         if(fQA) fPtSpectra3035->Fill(pt);
       }
       if ((3.5 <= pt) && (4.0 > pt))
       {
          fInvMNP3540->Fill(InvariantMass(track1, track2));
-         fPtSpectra3540->Fill(pt);
+         if(fQA) fPtSpectra3540->Fill(pt);
       }
       if ((4.0 <= pt) && (4.5 > pt))
       {
          fInvMNP4045->Fill(InvariantMass(track1, track2));
-         fPtSpectra4045->Fill(pt);
+         if(fQA) fPtSpectra4045->Fill(pt);
       }
       if ((4.5 <= pt) && (5.0 > pt))
       {
          fInvMNP4550->Fill(InvariantMass(track1, track2));
-         fPtSpectra4550->Fill(pt);
+         if(fQA) fPtSpectra4550->Fill(pt);
       }
       if ((5.0 <= pt) && (5.5 > pt))
       {
          fInvMNP5055->Fill(InvariantMass(track1, track2));
-         fPtSpectra5055->Fill(pt);
+         if(fQA) fPtSpectra5055->Fill(pt);
       }
       if ((5.5 <= pt) && (6.0 > pt))
       {
          fInvMNP5560->Fill(InvariantMass(track1, track2));
-         fPtSpectra5560->Fill(pt);
+         if(fQA) fPtSpectra5560->Fill(pt);
       }
       if ((6.0 <= pt) && (6.5 > pt))
       {
          fInvMNP6065->Fill(InvariantMass(track1, track2));
-         fPtSpectra6065->Fill(pt);
+         if(fQA) fPtSpectra6065->Fill(pt);
       }
       if ((6.5 <= pt) && (7.0 > pt))
       {
          fInvMNP6570->Fill(InvariantMass(track1, track2));
-         fPtSpectra6570->Fill(pt);
+         if(fQA) fPtSpectra6570->Fill(pt);
       }
    }
    if (tracktype == 1)
@@ -669,16 +713,6 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::PhiTrack(T* track) const
    // Check if track is suitable for phi flow analysis
    if(!track) return kFALSE;
    if(!fPOICuts->IsSelected(track)) return kFALSE;
-   if(fAODAnalysis && fDCA) {
-       // ONLY FOR AOD ANALYSIS
-       // if flagged force propagation of DCA to primary vertex
-       Double_t b[] = { -99., -99.};
-       Double_t bCov[] = { -99., -99., -99.};
-       track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov);
-       if( (TMath::Abs(b[0]) > fDCAXY) || (TMath::Abs(b[1]) > fDCAZ) ) return kFALSE;
-       fDCAXYQA->Fill(b[0]);
-       fDCAZQA->Fill(b[1]);
-   }
    return kTRUE;
 }
 //_____________________________________________________________________________
@@ -723,8 +757,9 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
       SetNullCuts(fAOD);
       PrepareFlowEvent(fAOD->GetNumberOfTracks());
       fCandidates->SetLast(-1);
+      if(fIsMC) IsMC();
       // Calculate event plane Q vectors and event plane resolution
-      fEventStats->Fill(0);
+      if(fQA) fEventStats->Fill(0);
       Int_t unTracks = fAOD->GetNumberOfTracks();
       AliAODTrack* un[unTracks];
       AliAODTrack* up[unTracks];
@@ -740,13 +775,11 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
          if (track->Charge() > 0)
          {
             charge = kTRUE;
-            fEventStats->Fill(1);
-            fPtP->Fill(track->Pt());
+            if(fQA) {fEventStats->Fill(1); fPtP->Fill(track->Pt());}
          }
          if (track->Charge() < 0)
          {
-            fEventStats->Fill(2);
-            fPtN->Fill(track->Pt());
+            if(fQA) {fEventStats->Fill(2);fPtN->Fill(track->Pt());}
          }
          if (IsKaon(track))
          {
@@ -754,15 +787,13 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
             {
                up[unp] = track;
                unp++;
-               fEventStats->Fill(3);
-               fPtKP->Fill(track->Pt());
+               if(fQA) {fEventStats->Fill(3);fPtKP->Fill(track->Pt());}
             }
             if (!charge)
             {
                un[unn] = track;
                unn++;
-               fEventStats->Fill(4);
-               fPtKN->Fill(track->Pt());
+               if(fQA) {fEventStats->Fill(4); fPtKN->Fill(track->Pt());}
             }
          }
       }
@@ -784,6 +815,7 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
             Int_t nIDs[2];
             nIDs[0] = up[pTracks]->GetID();
             nIDs[1] = un[nTracks]->GetID();
+            // if(fQA) MakeArmPlot(a, b);
             MakeTrack(mass, pt, phi, eta, 2, nIDs);
          }
       }
@@ -849,7 +881,7 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
       SetNullCuts(fESD);
       PrepareFlowEvent(fESD->GetNumberOfTracks());
       // Calculate event plane Q vectors and event plane resolution
-      fEventStats->Fill(0);
+      if(fQA) fEventStats->Fill(0);
       Int_t unTracks = fESD->GetNumberOfTracks();
       AliESDtrack* un[unTracks];
       AliESDtrack* up[unTracks];
@@ -864,12 +896,11 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
          if (track->Charge() > 0)
          {
             charge = kTRUE;
-            fEventStats->Fill(1);
-            fPtP->Fill(track->Pt());
+            if(fQA) {fEventStats->Fill(1); fPtP->Fill(track->Pt());}
          }
          if (track->Charge() < 0)
          {
-            fEventStats->Fill(2);
+            if(fQA) fEventStats->Fill(2);
             fPtN->Fill(track->Pt());
          }
          if (IsKaon(track))
@@ -878,15 +909,13 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
             {
                up[unp] = track;
                unp++;
-               fEventStats->Fill(3);
-               fPtKP->Fill(track->Pt());
+               if(fQA) {fEventStats->Fill(3);fPtKP->Fill(track->Pt());}
             }
             if (!charge)
             {
                un[unn] = track;
                unn++;
-               fEventStats->Fill(4);
-               fPtKN->Fill(track->Pt());
+               if(fQA) {fEventStats->Fill(4); fPtKN->Fill(track->Pt());}
             }
          }
       }
@@ -908,6 +937,7 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
             Int_t nIDs[2];
             nIDs[0] = up[pTracks]->GetID();
             nIDs[1] = un[nTracks]->GetID();
+            //MakeArmPlot(a, b);
             MakeTrack(mass, pt, phi, eta, 2, nIDs);
          }
       }
@@ -993,12 +1023,71 @@ void  AliAnalysisTaskPhiFlow::MakeTrack(Double_t mass,
    return;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskPhiFlow::SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass) 
+void AliAnalysisTaskPhiFlow::MakeArmPlot(TVector3& a, TVector3& b)
 {
-  // set common constants
-  fMassBins = massBins;
-  fMinMass = minMass;
-  fMaxMass = maxMass;
+    // create armanteros-podolanski scatter plot
+    TVector3 mommy = b + a;
+    Double_t square_mommy = TMath::Sqrt(mommy.X()*mommy.X()+mommy.Y()*mommy.Y()+mommy.Z()*mommy.Z());
+    if (square_mommy == 0) return; //avoid division by zero
+    Double_t pl_a = (a.X()*mommy.X() + a.Y()*mommy.Y() + a.Z()*mommy.Z()) / square_mommy;
+    Double_t pl_b = (b.X()*mommy.X() + b.Y()*mommy.Y() + b.Z()*mommy.Z()) / square_mommy;
+    Double_t pt_a = pl_a * TMath::Tan(a.Angle(mommy));
+    Double_t denom = (pl_a) + (pl_b);
+    if (denom == 0) return;
+    fArmPod->Fill(pt_a, ((pl_a) - (pl_b) / denom));
+    return;
 }
 //_____________________________________________________________________________
-
+void AliAnalysisTaskPhiFlow::IsMC()
+{
+    // Fill QA histos for MC analysis
+   TClonesArray *arrayMC = 0;
+   if(fDebug) cout << " -> Switching to MC mode <- " << endl;
+   // fill array with mc tracks 
+   arrayMC = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+   if (!arrayMC) AliFatal("Error: MC particles branch not found!\n");
+   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++)
+   {
+     AliAODTrack* track = fAOD->GetTrack(iTracks);
+     // check if kaon
+     if(!PhiTrack(track) || !IsKaon(track)) {
+         if(fDebug) cout << " Rejected track" << endl;
+         continue;
+     }
+     if (fDebug) cout << " Received MC kaon " << endl;
+     Double_t b[2] = { -99., -99.};
+     Double_t bCov[3] = { -99., -99., -99.};
+     track->PropagateToDCA(fAOD->GetPrimaryVertex(), fAOD->GetMagneticField(), 100., b, bCov);
+     // find corresponding mc particle
+     AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
+     if (!partMC)
+     {
+         AliError("Cannot get MC particle");
+         continue;
+     }
+     // Check if it is primary, secondary from material or secondary from weak decay
+     Bool_t isPrimary           = partMC->IsPhysicalPrimary();
+     Bool_t isSecondaryMaterial = kFALSE;
+     Bool_t isSecondaryWeak     = kFALSE;
+     if (!isPrimary)
+     {
+         Int_t mfl = -999, codemoth = -999;
+         Int_t indexMoth = partMC->GetMother(); // FIXME ignore fakes? TO BE CHECKED, on ESD is GetFirstMother()
+         if (indexMoth >= 0) //is not fake
+         {
+            AliAODMCParticle* moth = (AliAODMCParticle*) arrayMC->At(indexMoth);
+            codemoth = TMath::Abs(moth->GetPdgCode());
+            mfl = Int_t(codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+         }
+         if (mfl == 3) isSecondaryWeak     = kTRUE; // add if(partMC->GetStatus() & kPDecay)? FIXME
+         else       isSecondaryMaterial = kTRUE;
+      }
+      if (isPrimary) {
+          fDCAPrim->Fill(track->Pt(), b[0]); // PT histo of primaries
+          fDCAXYQA->Fill(b[0]);
+          fDCAZQA->Fill(b[1]);
+      }
+      if (isSecondaryWeak)  fDCASecondaryWeak->Fill(track->Pt(), b[0]);
+      if (isSecondaryMaterial) fDCAMaterial->Fill(track->Pt(), b[0]);
+   }
+}
