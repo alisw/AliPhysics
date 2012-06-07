@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTTPCAGENT_H
 #define ALIHLTTPCAGENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -21,6 +21,19 @@ class AliHLTOUTHandlerChain;
 /**
  * @class AliHLTTPCAgent
  * This is the agent for the AliHLTTPC library.
+ *
+ * Defined reconstruction chains:
+ * - TPC-raw-data
+ * - TPC-hwcfdata
+ * - TPC-raw-clusters
+ * - TPC-clusters
+ * - TPC-global-merger
+ * - TPC-mcTrackMarker
+ * - TPC-compression
+ *
+ * Default reconstruction chains:
+ * - simulation: TPC-compression
+ * - reconstruction: TPC-compression-emulation
  *
  * @ingroup alihlt_system
  */

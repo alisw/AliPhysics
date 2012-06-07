@@ -1,11 +1,10 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
-//*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
 //* documentation strictly for non-commercial purposes is hereby granted   *
@@ -117,7 +116,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString trackerInput;
 
 
-    arg.Form("-verbose");
+    arg.Form("-publish-raw filtered");
     handler->CreateConfiguration("TPC-DP", "TPCDataPublisher", NULL , arg.Data());
 
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
@@ -132,8 +131,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	  int ddlno=768;
 	  if (part>1) ddlno+=72+4*slice+(part-2);
 	  else ddlno+=2*slice+part;
-	  arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x -silent", ddlno, slice, slice, part, part);
-	  handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+	  arg.Form("-datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x", slice, slice, part, part);
+	  handler->CreateConfiguration(publisher.Data(), "BlockFilter", "TPC-DP" , arg.Data());
 	  if (sinkRawData.Length()>0) sinkRawData+=" ";
 	  sinkRawData+=publisher;
 	} else {
@@ -188,12 +187,6 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // compression component
     if (compressorInput.Length()>0) compressorInput+=" ";
     compressorInput+=hwclustOutput;
-    if (compressorInput.Length()>0) compressorInput+=" ";
-    compressorInput+="TPC-globalmerger";
-    handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(), "");
-    handler->CreateConfiguration("TPC-compression-huffman-trainer", "TPCDataCompressor", compressorInput.Data(),"-deflater-mode 3");
-    handler->CreateConfiguration("TPC-compression-monitoring-component", "TPCDataCompressorMonitor", "TPC-compression TPC-hwcfdata","-pushback-period=30");
-    handler->CreateConfiguration("TPC-compression-monitoring", "ROOTFileWriter", "TPC-compression-monitoring-component","-concatenate-events -overwrite -datafile HLT.TPCDataCompression-statistics.root");
 
     // special configuration to run the emulation automatically if the compressed clusters
     // of a particular partition is missing. This configuration is announced for reconstruction
@@ -202,8 +195,14 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // clusters), 2 (track model compression), or 4. The emulation can not be in mode 2 or 4,
     // since the track model block can not be identified with a partition. Have to duplicate the
     // configuration of the compression component
-    handler->CreateConfiguration("TPC-auto-compression-component", "TPCDataCompressor", compressorInput.Data(), "-mode 1");
-    handler->CreateConfiguration("TPC-auto-compression", "TPCDataCompressorFilter", "TPC-auto-compression-component","");
+    handler->CreateConfiguration("TPC-compression-emulation", "TPCDataCompressor", compressorInput.Data(), "-mode 1");
+
+    if (compressorInput.Length()>0) compressorInput+=" ";
+    compressorInput+="TPC-globalmerger";
+    handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(), "");
+    handler->CreateConfiguration("TPC-compression-huffman-trainer", "TPCDataCompressor", compressorInput.Data(),"-deflater-mode 3");
+    handler->CreateConfiguration("TPC-compression-monitoring-component", "TPCDataCompressorMonitor", "TPC-compression TPC-hwcfdata","-pushback-period=30");
+    handler->CreateConfiguration("TPC-compression-monitoring", "ROOTFileWriter", "TPC-compression-monitoring-component","-concatenate-events -overwrite -datafile HLT.TPCDataCompression-statistics.root");
 
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
@@ -305,30 +304,8 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
     // reconstruction chains for AliRoot simulation
     return "TPC-compression";
   } else {
-    bool bAddEmulation=true; // add by default
-
-    // FIXME:
-    // tried to make the configuration optional depending on whether the
-    // TPC requires HLT clusters or not, bu the RecoParam OCDB object is a TObjArray
-    // and the event specie is not yet defined. Maybe it can be derived from
-    // the GRP. On the other hand, HLT data compression is expected to be the
-    // default mode from now on, so this block might be safely deleted after some
-    // time (today is 2011-11-18)
-    //
-    // AliTPCRecoParam* param=NULL;
-    // TObject* pObject=AliHLTMisc::Instance().ExtractObject(AliHLTMisc::Instance().LoadOCDBEntry("TPC/Calib/RecoParam"));
-    // if (pObject && (param=dynamic_cast<AliTPCRecoParam*>(pObject))!=NULL) {
-    //   bAddEmulation=param->GetUseHLTClusters()==3 || param->GetUseHLTClusters()==4;
-    //   HLTInfo("%s auto-compression for not existing TPC partitions, TPCRecoParam::GetUseHLTClusters %d",
-    // 	      bAddEmulation?"adding":"skipping",
-    // 	      param->GetUseHLTClusters());
-    // }
-    if (bAddEmulation) {
-      // 2011-11-23: not yet enabled
-      // testing required, furthermore a component publishing only the raw data for
-      // the missing links, to big impact to performance otherwise
-      //return "TPC-auto-compression";
-    }
+    // TODO: activate after further testing (2012-06-07)
+    //return "TPC-compression-emulation";
   }
   return NULL;
 }
