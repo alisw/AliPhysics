@@ -5,12 +5,18 @@ AliAnalysisTask *AddTask_jbook_JPsi(Bool_t isMC=kFALSE){
     Error("AddTask_jbook_JPsi", "No analysis manager found.");
     return 0;
   }
-
+  
   //Do we have an MC handler?
   Bool_t hasMC=isMC;
     //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
+  
+  // set AOD debug levels
+  if(isAOD) {
+    mgr->AddClassDebug("AliAODTrack", AliLog::kFatal);
+    mgr->AddClassDebug("AliAODpidUtil", AliLog::kInfo); 
+  }
   
   //set config file name
   TString configFile("$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C");

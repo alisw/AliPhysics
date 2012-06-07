@@ -11,6 +11,12 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(Bool_t isMC=kFALSE){
   //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
+
+  // set AOD debug levels
+  if(isAOD) {
+    mgr->AddClassDebug("AliAODTrack", AliLog::kFatal);
+    mgr->AddClassDebug("AliAODpidUtil", AliLog::kInfo); 
+  }
   
   //set config file name
   TString configFile("$TRAIN_ROOT/jbook_jpsi/ConfigJpsiQA_jb_PbPb.C");
