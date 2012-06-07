@@ -57,6 +57,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fHistograms("AliRsnMiniOutput", 0),
    fValues("AliRsnMiniValue", 0),
    fHEventStat(0x0),
+   fHAEventsVsMulti(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
    fRsnEvent(),
@@ -89,6 +90,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fHistograms("AliRsnMiniOutput", 0),
    fValues("AliRsnMiniValue", 0),
    fHEventStat(0x0),
+   fHAEventsVsMulti(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
    fRsnEvent(),
@@ -126,6 +128,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fHistograms(copy.fHistograms),
    fValues(copy.fValues),
    fHEventStat(0x0),
+   fHAEventsVsMulti(0x0),
    fEventCuts(copy.fEventCuts),
    fTrackCuts(copy.fTrackCuts),
    fRsnEvent(),
@@ -166,6 +169,8 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fMaxDiffAngle = copy.fMaxDiffAngle;
    fHistograms = copy.fHistograms;
    fValues = copy.fValues;
+   fHEventStat = copy.fHEventStat;
+   fHAEventsVsMulti = copy.fHAEventsVsMulti;
    fEventCuts = copy.fEventCuts;
    fTrackCuts = copy.fTrackCuts;
    fTriggerAna = copy.fTriggerAna;
@@ -249,6 +254,13 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHEventStat->GetXaxis()->SetBinLabel(4, "Accepted");
    fOutput->Add(fHEventStat);
 
+   if (fUseCentrality)
+      fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Centrality", 100, 0, 100.0);
+   else
+      fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Multiplicity",1000, 0, 1000.0);
+   
+   fOutput->Add(fHAEventsVsMulti);
+   
    TIter next(&fTrackCuts);
    AliRsnCutSet *cs;
    while ((cs = (AliRsnCutSet *) next())) {
@@ -670,6 +682,8 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
    AliDebugClass(2, Form("Stats: %s", msg.Data()));
    if (isSelected) {
       fHEventStat->Fill(3.1);
+      Double_t multi = ComputeCentrality((output == 'E'));
+      fHAEventsVsMulti->Fill(multi);
       return output;
    } else {
       return 0;

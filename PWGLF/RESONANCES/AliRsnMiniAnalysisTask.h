@@ -89,6 +89,7 @@ private:
    TClonesArray         fHistograms;      //  list of histogram definitions
    TClonesArray         fValues;          //  list of values to be computed
    TH1F                *fHEventStat;      //  histogram of event statistics
+   TH1F                *fHAEventsVsMulti; //  histogram of event statistics
 
    AliRsnCutSet        *fEventCuts;       //  cuts on events
    TObjArray            fTrackCuts;       //  list of single track cuts
@@ -100,7 +101,7 @@ private:
    Bool_t               fBigOutput;       // flag if open file for output list
    Int_t                fMixPrintRefresh; // how often info in mixing part is printed
 
-   ClassDef(AliRsnMiniAnalysisTask, 4);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 5);   // AliRsnMiniAnalysisTask
 };
 
 inline Int_t AliRsnMiniAnalysisTask::CreateValue(AliRsnMiniValue::EType type, Bool_t useMC)
