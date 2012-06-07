@@ -1,7 +1,7 @@
 class  AliAnalysisManager;
 class  AliAnalysisAlien;
 
-void runGrid(TString mode="full",Int_t mc=1,Int_t sub=0,Int_t hi=1,TString fname="AODAnalysis_5June2012") 
+void runGrid(TString mode="terminate",Int_t mc=1,Int_t sub=1,Int_t hi=1,TString fname="AODAnalysis_6June2012") 
 {
   //0 is AOD048-049 in this case you can choos FilterBit5 (loose DCA) or 6 (tight DCA)!!!!!!!!!
   //1 is AOD086-090
@@ -46,12 +46,12 @@ void runGrid(TString mode="full",Int_t mc=1,Int_t sub=0,Int_t hi=1,TString fname
   // Add PID task
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   AliAnalysisTask * taskPID = AddTaskPIDResponse(mc);
-  mgr->AddTask(taskPID);
+  //mgr->AddTask(taskPID);
   
   //setting the analysis
   Int_t iCut=0;
   //Double_t CentCut[2]={0,100};
-  Double_t CentCut[2]={0,100};
+  Double_t CentCut[2]={0,5};
   Double_t qVecCut[2]={0,100};
    
   //PID object
@@ -91,6 +91,7 @@ void runGrid(TString mode="full",Int_t mc=1,Int_t sub=0,Int_t hi=1,TString fname
   if (mc)
     {
       task->SetIsMC(kTRUE);
+      vcuts->SetIsMC(kTRUE);
       AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
       AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, 
 								  Form("Pt.AOD.1._MC_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCut[0],CentCut[1],qVecCut[0],qVecCut[1]));
@@ -127,7 +128,7 @@ void runGrid(TString mode="full",Int_t mc=1,Int_t sub=0,Int_t hi=1,TString fname
 }
 
 
-AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=0,Int_t sub=0,TString fname){
+AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=1,Int_t sub=0,TString fname){
   
   
   

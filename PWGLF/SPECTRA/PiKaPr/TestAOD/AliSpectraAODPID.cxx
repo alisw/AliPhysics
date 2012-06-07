@@ -104,7 +104,7 @@ Int_t AliSpectraAODPID::GetParticleSpecie(AliAODMCParticle * part) {
 }
 
 
-Int_t AliSpectraAODPID::GetParticleSpecie(AliAODTrack      * trk, AliSpectraAODTrackCuts * trackCuts) {
+Int_t AliSpectraAODPID::GetParticleSpecie(AliSpectraAODHistoManager * hman,AliAODTrack      * trk, AliSpectraAODTrackCuts * trackCuts) {
   // return PID according to detectors
   
   // Get PID response object, if needed
@@ -164,10 +164,18 @@ Int_t AliSpectraAODPID::GetParticleSpecie(AliAODTrack      * trk, AliSpectraAODT
 
   // guess the particle based on the smaller nsigma
   if( ( nsigmaKaon==nsigmaPion ) && ( nsigmaKaon==nsigmaProton )) return kSpUndefined;//if is the default value for the three
-  if( ( nsigmaKaon   < nsigmaPion ) && ( nsigmaKaon < nsigmaProton ) && (nsigmaKaon   < fNSigmaPID)) return kSpKaon;
-  if( ( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fNSigmaPID)) return kSpPion;
-  if( ( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fNSigmaPID)) return kSpProton;
-
+  if( ( nsigmaKaon   < nsigmaPion ) && ( nsigmaKaon < nsigmaProton ) && (nsigmaKaon   < fNSigmaPID)){
+    hman->GetPIDHistogram(kHistPIDTPCKaonRec)->Fill(trk->GetTPCmomentum(), trk->GetTPCsignal()*trk->Charge()); // Reconstructed PIDKaon histo
+    return kSpKaon;
+  }
+  if( ( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fNSigmaPID)){
+    hman->GetPIDHistogram(kHistPIDTPCPionRec)->Fill(trk->GetTPCmomentum(), trk->GetTPCsignal()*trk->Charge()); // Reconstructed PIDPion histo
+    return kSpPion;
+  }
+  if( ( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fNSigmaPID)){
+    hman->GetPIDHistogram(kHistPIDTPCProtonRec)->Fill(trk->GetTPCmomentum(), trk->GetTPCsignal()*trk->Charge()); // Reconstructed PIDProton histo
+    return kSpProton;
+  }
   // else, return undefined
   return kSpUndefined;
 

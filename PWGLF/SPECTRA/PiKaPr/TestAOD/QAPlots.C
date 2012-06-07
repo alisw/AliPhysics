@@ -1,9 +1,3 @@
-gROOT->LoadMacro("~/works/AOD/AliSpectraAODTrackCuts.cxx+g");
-gROOT->LoadMacro("~/works/AOD/AliSpectraAODEventCuts.cxx+g");
-gROOT->LoadMacro("~/works/AOD/AliSpectraAODHistoManager.cxx+g");
-gROOT->LoadMacro("~/works/AOD/AliSpectraAODPID.cxx+g");
-gROOT->LoadMacro("~/works/AOD/AliAnalysisTaskSpectraAOD.cxx+g");
-
 void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* hman_mc,
 	      AliSpectraAODEventCuts* ecuts_data, AliSpectraAODEventCuts* ecuts_mc,
 	      AliSpectraAODTrackCuts* tcuts_data, AliSpectraAODTrackCuts* tcuts_mc){
@@ -23,7 +17,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->SetGridx();
   hVtxBef_data->DrawClone("lhist");
   hVtxBef_mc->DrawClone("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   TH1F *hVtxAft_data=ecuts_data->GetHistoVtxAftSel();
   hVtxAft_data->Scale(1./ecuts_data->NumberOfEvents());
   hVtxAft_data->SetTitle(Form("%s - data",hVtxAft_data->GetTitle()));
@@ -36,7 +30,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->SetGridx();
   hVtxAft_data->DrawClone("lhist");
   hVtxAft_mc->DrawClone("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   
   //eta distr in data and MC before and after event selection
   TCanvas *cEta=new TCanvas("Etadistr","Etadistr",700,500);
@@ -53,7 +47,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->SetGridx();
   hEtaBef_data->DrawClone("lhist");
   hEtaBef_mc->DrawClone("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   TH1F *hEtaAft_data=ecuts_data->GetHistoEtaAftSel();
   hEtaAft_data->Scale(1./ecuts_data->NumberOfEvents());
   hEtaAft_data->SetTitle(Form("%s - data",hEtaAft_data->GetTitle()));
@@ -66,7 +60,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->SetGridx();
   hEtaAft_data->DrawClone("lhist");
   hEtaAft_mc->DrawClone("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
 
   //Nch distr in data and MC before and after event selection
   TCanvas *cNCh=new TCanvas("NChdistr","NChdistr",700,500);
@@ -81,7 +75,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   hNChAft_mc->SetLineColor(2);
   hNChAft_data->DrawClone("lhist");
   hNChAft_mc->DrawClone("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
 
   //Eta Phi at high Pt in data and Monte Carlo
   TCanvas *cEtaPhi=new TCanvas("EtaPhi","EtaPhi",700,500);
@@ -128,14 +122,14 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   hTrCuts_data->SetMinimum(0);
   hTrCuts_data->DrawClone();
   hTrCuts_mc->DrawClone("same");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   cTrackCuts->cd(2);
   gPad->SetGridy();
   gPad->SetGridx();
   hTrCuts_data->Divide(hTrCuts_mc);
   hTrCuts_data->SetTitle("DATA/MC");
   hTrCuts_data->DrawClone();
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
 
 
  
@@ -184,7 +178,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   PIDSig_mc->DrawClone("colz");
 
   //dedx projection in data and MC
-  Double_t Proj1[2]={0.4,0.5};
+  Double_t Proj1[2]={0.6,0.7};
   Double_t Proj2[2]={1.1,1.2};
   TCanvas *cPIDSigProjection=new TCanvas("cPIDSigProjection","cPIDSigProjection",700,500);
   cPIDSigProjection->Divide(2,2);
@@ -211,14 +205,14 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->SetGridx();
   PIDSig_data_Proj1->DrawNormalized("lhist");
   PIDSig_mc_Proj1->DrawNormalized("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   cPIDSigProjection->cd(2);
   gPad->SetLogy();
   gPad->SetGridy();
   gPad->SetGridx();
   PIDSig_data_Proj2->DrawNormalized("lhist");
   PIDSig_mc_Proj2->DrawNormalized("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   //TOF
   TH2F *PIDSig_data = (TH2F*)((TH2F*)hman_data->GetPIDHistogram("hHistPIDTOF"))->Clone();
   TH1F *PIDSig_data_Proj1=(TH1F*)PIDSig_data->ProjectionY(Form("TOF, data [%.1f,%.1f]",Proj1[0],Proj1[1]),
@@ -242,14 +236,14 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->SetGridx();
   PIDSig_data_Proj1->DrawNormalized("lhist");
   PIDSig_mc_Proj1->DrawNormalized("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   cPIDSigProjection->cd(4);
   gPad->SetLogy();
   gPad->SetGridy();
   gPad->SetGridx();
   PIDSig_data_Proj2->DrawNormalized("lhist");
   PIDSig_mc_Proj2->DrawNormalized("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   
   //nsig in data and MC
   for(Int_t ipart=0;ipart<3;ipart++){
@@ -340,14 +334,14 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
     gPad->SetGridx();
     nsig_data_Proj1->DrawNormalized("lhist");
     nsig_mc_Proj1->DrawNormalized("lhistsame");
-    gPad->BuildLegend();
+    gPad->BuildLegend()->SetFillColor(0);
     cnsigProjection->cd(2*ipart+2);
     gPad->SetLogy();
     gPad->SetGridy();
     gPad->SetGridx();
     nsig_data_Proj2->DrawNormalized("lhist");
     nsig_mc_Proj2->DrawNormalized("lhistsame");
-    gPad->BuildLegend();
+    gPad->BuildLegend()->SetFillColor(0);
   }
   
   //Muon over Pion Ratio
@@ -394,7 +388,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
       //Spectra[index]->Multiply(Cont[index]);
     }
   } 
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
 
 
   //Raw yield
@@ -485,7 +479,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   //     //Spectra[index]->Multiply(PIDEff[index]);
   //   }
   // } 
-  // gPad->BuildLegend();
+  // gPad->BuildLegend()->SetFillColor(0);
 
   //qvec in data and MC
   // for (Int_t icharge=0;icharge<2;icharge++){
@@ -521,7 +515,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   //     gPad->SetGridx();
   //     proj_data->DrawClone();
   //     proj_mc->DrawClone("same");
-  //     gPad->BuildLegend();
+  //     gPad->BuildLegend()->SetFillColor(0);
   //     proj_data->Divide(proj_mc);
   //     cProjqvec->cd(iproj+4);
   //     proj_data->DrawClone();

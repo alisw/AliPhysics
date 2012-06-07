@@ -1,4 +1,4 @@
-void runAODProof(Int_t c=1, const char * proofMode = "full")
+void runAODProof(Int_t c=2, const char * proofMode = "full")
 { //1 data AOD049
   //2 MC AOD048
   //3 data AOD086
@@ -26,7 +26,7 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
   //handler->SetAliROOTVersion("v5-03-11-AN");
   handler->SetAliROOTVersion("v5-04-25-AN");
    
-  handler->SetNproofWorkers(54);
+  //handler->SetNproofWorkers(1);
   //handler->SetNproofWorkersPerSlave(4);
   handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
   //handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
@@ -42,11 +42,11 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
   }
   if (c == 3){
     handler->SetProofDataSet("/default/lmilano/LHC10h_000138653_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138662_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138666_AOD086_p2#aodTree|/default/lmilano/LHC10h_000139107_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
-    //    handler->SetProofDataSet("/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
+    //handler->SetProofDataSet("/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
   }
   if (c == 4){
     handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138662_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138666_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139107_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
-    // handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
+    //handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
   }
    
   gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
@@ -71,8 +71,10 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   Bool_t isMC = kFALSE;
   if (c == 2 || c == 4) isMC = kTRUE;   
+  Printf("-------------------------------adding in runAOD AddTaskPIDResponse");
   AliAnalysisTask * taskPID = AddTaskPIDResponse(isMC);
-  mgr->AddTask(taskPID);
+  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+  //AddTaskPIDqa();
    
   //LOOP OVER SELECTION
   Double_t CentCutMin[4]={0,0,20,20};
@@ -99,9 +101,9 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
     AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
     if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
     //if(c==1 || c==2)tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cut with tight DCA
-    if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
-    //if(c==3 || c==4)tcuts->SetTrackType(8); //AOD 086 & 090. TPC only
-    //if(c==3 || c==4)tcuts->SetTrackType(2); //AOD 086 & 090. ITS strong
+    //if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
+    //if(c==3 || c==4)tcuts->SetTrackType(4); //AOD 086 & 090. Jet analysis
+    if(c==3 || c==4)tcuts->SetTrackType(7); //AOD 086 & 090. TPC Only
     tcuts->SetEta(.8);
     //tcuts->SetDCA(.1);
     tcuts->SetPt(5);
@@ -120,6 +122,7 @@ void runAODProof(Int_t c=1, const char * proofMode = "full")
     if (c == 2 || c == 4)
       {
 	task->SetIsMC(kTRUE);
+	vcuts->SetIsMC(kTRUE);
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, 
 								    Form("Pt.AOD.1._MC_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCutMin[iCut],CentCutMax[iCut],QvecCutMin[iCut],QvecCutMax[iCut]));

@@ -45,14 +45,13 @@ void MainAnalysis()  {
   mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
   mass[2] = TDatabasePDG::Instance()->GetParticle("proton")->Mass();
   
-  //TString fold="3SigmaPID_AOD048-049_FilterBit6";
-  //TString fold="3SigmaPID_AOD048-049_FilterBit5";
   TString fold="3SigmaPID_AOD048-049_FilterBit5";
-  //TString fold="3SigmaPID_AOD048-049_FilterBit5_test";
   //TString fold="3SigmaPID_AOD086-090_FilterBit10";
+  //TString fold="3SigmaPID_AOD086-090_FilterBit7";
   Int_t ibinToCompare=-1;
   
   TString sname="Cent0to5_QVec0.0to100.0";ibinToCompare=0;
+  //TString sname="Cent0to100_QVec0.0to100.0";ibinToCompare=0;
   
   TString dataFile = Form("output/%s/Pt.AOD.1._data_ptcut_%s.root",fold.Data(),sname.Data());
   TString mcFile =Form("output/%s/Pt.AOD.1._MC_%s.root",fold.Data(),sname.Data());
@@ -80,7 +79,7 @@ void MainAnalysis()  {
   tcuts_data->PrintCuts();
   
   QAPlots(hman_data,hman_mc,ecuts_data,ecuts_mc,tcuts_data,tcuts_mc);
-  return;
+
   //efficiencies
   Printf("\n\n-> Calculating MC Correction Factors");
   TH1F *CorrFact[6];
@@ -114,7 +113,7 @@ void MainAnalysis()  {
   TFile *fESD=new TFile("EffAlex/pionEffPbPb.root");
   TH1F *hEffESD=(TH1F*)fESD->Get("effMapPionTpcOnlyNeg0");
   hEffESD->DrawClone("same");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   
   //Normalization
   printf("\n\n-> Spectra Normalization");
@@ -214,7 +213,7 @@ void MainAnalysis()  {
   hMatcEffNeg_data->DrawClone("lhistsame");
   hMatcEffPos_mc->DrawClone("lhistsame");
   hMatcEffNeg_mc->DrawClone("lhistsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   hMatcEffPos_data->Divide(hMatcEffPos_mc);
   hMatcEffNeg_data->Divide(hMatcEffNeg_mc);
   cMatchingEff->cd(2);
@@ -257,7 +256,7 @@ void MainAnalysis()  {
       else Spectra[index]->DrawClone("same");
     }
   } 
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   
   //saving spectra
   Printf("\n\n-> Saving spectra in Out%s_%s.root",sname.Data(),fold.Data());
@@ -288,11 +287,11 @@ void MainAnalysis()  {
   	CratioComb->cd(ipart+1);
   	gPad->SetGridy();
   	gPad->SetGridx();
-  	for(Int_t ibin=1;ibin<hcomb->GetNbinsX();ibin++)hcomb->SetBinError(ibin,0);
+  	//for(Int_t ibin=1;ibin<hcomb->GetNbinsX();ibin++)hcomb->SetBinError(ibin,0);
 
   	if(icharge==0)htmp->DrawClone();
   	else htmp->DrawClone("same");
-	MCTruth[index]->DrawClone("same");
+	//MCTruth[index]->DrawClone("same");
 	hcomb->DrawClone("same");
 	htmp->Divide(hcomb);
   	htmp->SetMaximum(1.3);
@@ -339,13 +338,13 @@ void MainAnalysis()  {
   gPad->SetGridx();
   hPrimRec_mc->SetTitle("Prim/All, charged hadron pure MC");
   hPrimRec_mc->DrawClone("lhist");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   cAllChFactors->cd(2);
   gPad->SetGridy();
   gPad->SetGridx();
   hEff_mc->SetTitle("Efficiency for Primaries, charged hadron pure MC");
   hEff_mc->DrawClone("lhist");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   //Printf("--------%f ",((TH1F*)hman_mc->GetPtHistogram1D("hHistPtGen",1,1))->GetEntries()/1.6/ecuts_mc->NumberOfEvents());
   hChHad_data->Scale(1./events_data,"width");//NORMALIZATION
   hChHad_data->Divide(hEff_mc);//Efficiency
@@ -368,7 +367,7 @@ void MainAnalysis()  {
     hCh->SetBinError(ibin,hCh->GetBinError(ibin)*(2*TMath::Pi()*hCh->GetBinCenter(ibin)));
   }
   hCh->DrawClone("same");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   TH1F *gRatio=AliPWGHistoTools::MyDivideHistosDifferentBins(hChHad_data,hCh);
   gRatio->SetMaximum(1.3);
   gRatio->SetMinimum(.7);
@@ -410,7 +409,7 @@ void MainAnalysis()  {
   func->SetLineColor(2);
   hCh->DrawClone("same");
   func->DrawClone("same");   
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   Printf("TOTAL YIELD (JACEK): %f +- %f",yieldTools,yieldETools);
   //sumID vs AllCh
   //Convert spectra to dNdeta and sum
@@ -459,7 +458,7 @@ void MainAnalysis()  {
   hChHad_data->SetMarkerColor(2);
   hChHad_data->SetLineColor(2);
   hChHad_data->DrawClone("same");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   cChargHadComp->cd(2);
   gPad->SetGridy();
   gPad->SetGridx();
@@ -617,9 +616,9 @@ void DCACorrection(TH1F **Spectra, AliSpectraAODHistoManager* hman_data, AliSpec
     }
   }
   ccorrection->cd(1);
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
   ccorrection->cd(2);
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
 }
 
 
@@ -806,7 +805,7 @@ void GFCorrection(TH1F **Spectra,AliSpectraAODTrackCuts* tcuts_data){
   fGFpNegTracking->DrawClone("lsame");
   fGFpPosMatching->DrawClone("lsame");
   fGFpNegMatching->DrawClone("lsame");
-  gPad->BuildLegend();
+  gPad->BuildLegend()->SetFillColor(0);
 }
 
 
