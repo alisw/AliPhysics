@@ -1,6 +1,6 @@
 // $Id$
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -94,8 +94,8 @@ void AliHLTTPCDataCompressionComponent::GetInputDataTypes( AliHLTComponentDataTy
 {
   /// inherited from AliHLTComponent: list of data types in the vector reference
   tgtList.clear();
-  tgtList.push_back(AliHLTTPCDefinitions::fgkHWClustersDataType);
-  tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
+  tgtList.push_back(AliHLTTPCDefinitions::HWClustersDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::ClustersDataType());
   tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
 }
 
@@ -489,7 +489,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   else compressionFactor=0.;
   if (fHistoCompFactor) fHistoCompFactor->Fill(compressionFactor);
 
-  if (GetBenchmarkInstance()) {
+  if (GetBenchmarkInstance() && allClusters>0) {
     GetBenchmarkInstance()->Stop(0);
     if (fDeflaterMode!=3) {
       HLTBenchmark("%s - compression factor %.2f", GetBenchmarkInstance()->GetStatistics(), compressionFactor);

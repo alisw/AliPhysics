@@ -2,7 +2,7 @@
 // $Id$
 #ifndef ALIHLTTPCDATACOMPRESSIONCOMPONENT_H
 #define ALIHLTTPCDATACOMPRESSIONCOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -41,10 +41,15 @@ class TH1F;
  * Component ID: \b TPCDataCompressor      <br>
  * Library: \b libAliHLTTPC.so     <br>
  * Input Data Types:  <br>
- *  -  AliHLTTPCDefinitions::fgkHWClustersDataType
- *  -  AliHLTTPCDefinitions::fgkClustersDataType
+ *  -  AliHLTTPCDefinitions::HWClustersDataType()
+ *  -  AliHLTTPCDefinitions::ClustersDataType()
  *  -  kAliHLTDataTypeTrack|kAliHLTDataOriginTPC
- * Output Data Types: none <br>
+ * Output Data Types: <br>
+ *  -  AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
+ *  -  AliHLTTPCDefinitions::RemainingClusterIdsDataType());	 
+ *  -  AliHLTTPCDefinitions::ClusterIdTracksDataType()
+ *  -  AliHLTTPCDefinitions::ClusterTracksCompressedDataType()
+ *  -  AliHLTTPCDefinitions::RawClustersDataType());		 
  *
  * <h2>Data Formats</h2>
  * Two formats for compressed clusters can be used.
