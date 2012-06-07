@@ -9,58 +9,86 @@
  */
 /** 
  * @defgroup pwglf_forward_flow Flow 
+ *
+ * Code to deal with flow 
+ *
  * @ingroup pwglf_forward_topical
  */
 /** 
  * Add Flow task to train 
  * 
- * @param type 
- * @param etabins 
- * @param mc 
- * @param addFlow 
- * @param addFType 
- * @param addFOrder 
+ * @param type          Which moments to do 
+ * @param mc            Monte-carlo input
+ * @param dispVtx       Use satellite interactions 
+ * @param outlierCutFMD Cut to remove events with outliers 
+ * @param outlierCutSPD Cut to remove events with outliers 
+ * @param addFlow       Afterburn what (MC only)
+ * @param addFType      Afterburner parameterization
+ * @param addFOrder     Afterburder order 
  *
  * @ingroup pwglf_forward_flow
  */
-void AddTaskForwardFlow(TString type = "", 
-                        Bool_t mc = kFALSE,
-                        Bool_t dispVtx = kFALSE,
-                        TString addFlow = "",
-                        Int_t addFType = 0,
-                        Int_t addFOrder = 0)
+void AddTaskForwardFlow(TString  type          = "", 
+                        Bool_t   mc            = kFALSE,
+			Bool_t   dispVtx       = kFALSE,
+			Double_t outlierCutFMD = 4.1, 
+			Double_t outlierCutSPD = 4.1,
+                        TString  addFlow       = "",
+                        Int_t    addFType      = 0,
+                        Int_t    addFOrder     = 0)
 {
+  // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
-    Error("AddFMDFlowTask", "No analysis manager to connect to.");
-    return NULL;
-  }   
+  if (!mgr) 
+    Fatal("","No analysis manager to connect to.");
 
-  AliAODInputHandler* aodInput = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-   
-  Bool_t aod = kFALSE;
-  if (aodInput) aod = kTRUE;
-  if (!aod) {
-    Error("AddTaskForwardFlow", "No analysis manager to connect to.");
-    return NULL;
+  // --- Check that we have an AOD input handler ---------------------
+  UShort_t aodInput = 0;
+  if (!(aodInput = AliForwardUtil::CheckForAOD())) 
+    Fatal("","Cannot proceed without and AOD handler");
+  if (aodInput == 2 && 
+      (!AliForwardUtil::CheckForTask("AliForwardMultiplicityBase") ||
+       !AliForwardUtil::CheckForTask("AliCentralMultiplicityTask")))
+    Fatal("","The relevant tasks wasn't added to the train");
+
+  // --- For the selected flow tasks the input and output is set -----
+  AliForwardFlowTaskQC* task = 0;
+  if (mc) {
+    AliForwardMCFlowTaskQC* mcTask = new AliForwardMCFlowTaskQC("QCumulants");
+    // --- Set up adding flow to MC input ----------------------------
+    mcTask->SetUseImpactParameter(true);
+    mcTask->AddFlow(addFlow);
+    mcTask->AddFlowType(addFType);
+    mcTask->AddFlowOrder(addFOrder);
+    task = mcTask;
   }
+  else 
+    task = new AliForwardFlowTaskQC("QCumulants");
+  mgr->AddTask(task); 
 
-  // --- Check which harmonics to calculate --- //
-  Bool_t v2 = kTRUE;
-  Bool_t v3 = kTRUE;
-  Bool_t v4 = kTRUE;
-  Bool_t v5 = kTRUE;
-  Bool_t v6 = kTRUE;
+  // --- Check which harmonics to calculate --------------------------
+  Bool_t v1 = type.Contains("1");
+  Bool_t v2 = type.Contains("2");
+  Bool_t v3 = type.Contains("3");
+  Bool_t v4 = type.Contains("4");
+  Bool_t v5 = type.Contains("5");
+  Bool_t v6 = type.Contains("6");
+  task->SetDoHarmonics(v1, v2, v3, v4, v5, v6);
 
-  if (type.Length() > 0) {
-    if (!type.Contains("2")) v2 = kFALSE;
-    if (!type.Contains("3")) v3 = kFALSE;
-    if (!type.Contains("4")) v4 = kFALSE;
-    if (!type.Contains("5")) v5 = kFALSE;
-    if (!type.Contains("6")) v6 = kFALSE;
+  // --- Set non-default axis for vertices ---------------------------
+  TAxis* a = 0;
+  if (dispVtx) {
+    AliForwardFlowTaskQC::fgDispVtx = true;
+    a = new TAxis(6, 93.75, 318.75);
   }
+  else 
+    a = new TAxis(20, -10, 10);
+  task->SetVertexAxis(a);
 
-  // --- Create containers for output --- //
+  // --- Set sigma cuts for outliers ---------------------------------
+  task->SetDetectorCuts(outlierCutFMD, outlierCutSPD);
+
+  // --- Create containers for output --------------------------------
   AliAnalysisDataContainer* sums = 
     mgr->CreateContainer("FlowQCSums", TList::Class(), 
 			 AliAnalysisManager::kOutputContainer, 
@@ -69,43 +97,10 @@ void AddTaskForwardFlow(TString type = "",
     mgr->CreateContainer("FlowQCResults", TList::Class(), 
 			 AliAnalysisManager::kParamContainer, 
 			 AliAnalysisManager::GetCommonFileName());
-
-  // --- For the selected flow tasks the input and output is set --- //
-  
-  AliForwardFlowTaskQC* task = 0;
-  if (mc) 
-    task = new AliForwardMCFlowTaskQC("QCumulants");
-  else
-    task = new AliForwardFlowTaskQC("QCumulants");
-  mgr->AddTask(task); 
-
-  // Set which harmonics to do
-  task->SetDoHarmonics(v2, v3, v4, v5, v6);
-  // Set non-default axis for vertices
-  TAxis* a = 0;
-  if (!dispVtx) a = new TAxis(20, -10, 10);
-//  if (!dispVtx) a = new TAxis(1, -1, 0);
-  if ( dispVtx) a = new TAxis(6, 93.75, 318.75);
-//  if ( dispVtx) a = new TAxis(21, -393.75, 393.75);
-  task->SetVertexAxis(a);
-  if ( dispVtx) Bool_t AliForwardFlowTaskQC::fgDispVtx = kTRUE;
-  // Set detector specific sigma cuts
-  task->SetDetectorCuts(4.10, 4.10);
-
-  // Set debug flag
-  task->SetDebugLevel(0);
-  // Set up adding flow to MC input
-  if (mc) {
-    AliForwardMCFlowTaskQC* mcTask = 
-      static_cast<AliForwardMCFlowTaskQC*>task;
-    mcTask->SetUseImpactParameter(true);
-    mcTask->AddFlow(addFlow);
-    mcTask->AddFlowType(addFType);
-    mcTask->AddFlowOrder(addFOrder);
-  }
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, sums);
   mgr->ConnectOutput(task, 2, output);
-
-  return;
 }
+/*
+ * EOF
+ */

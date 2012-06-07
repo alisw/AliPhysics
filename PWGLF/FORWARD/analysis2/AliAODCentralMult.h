@@ -107,7 +107,9 @@ public:
   const Char_t* GetName() const { return (fIsMC ? "CentralClustersMC" : "CentralClusters"); }
 
 protected: 
+  /** Whether this is MC */
   Bool_t  fIsMC;     // Whether this is from MC 
+  /** Histogram of @f$d^2N_{ch}/(d\eta d\phi)@f$ for this event */
   TH2D    fHist;     // Histogram of d^2N_{ch}/(deta dphi) for this event
   
   ClassDef(AliAODCentralMult,1); // AOD forward multiplicity 

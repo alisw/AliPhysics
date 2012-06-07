@@ -24,6 +24,10 @@ class TString;
 class AliOADBContainer;
 class AliAODForwardEP;
 
+/**
+ * Find the event plane using the FMD
+ * 
+ */
 class AliFMDEventPlaneFinder : public TNamed
 {
 public:
@@ -55,15 +59,19 @@ public:
    * @return Reference to this object
    */
   AliFMDEventPlaneFinder& operator=(const AliFMDEventPlaneFinder& o);
- /** 
+  /** 
    * Initialize this sub-algorithm
    * 
+   * @param etaAxis  Eta axis to use 
    */
   virtual void Init(const TAxis& etaAxis);
   /** 
    * Do the calculations 
    * 
    * @param hists    Histogram cache
+   * @param esd      Event 
+   * @param aodEp    Output object 
+   * @param h        Output histogram
    * 
    * @return true on successs 
    */
@@ -84,71 +92,71 @@ public:
    *   - max  Print max weights 
    */
   void Print(Option_t* option="") const;
- /** 
+  /** 
    * Set the debug level.  The higher the value the more output 
    * 
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
- /*
-  * Calculate Q vectors
-  *
-  * @param h dN/detadphi histogram
-  * @param eHist histogram for ep vs. eta
-  */
+  /**
+   * Calculate Q vectors
+   *
+   * @param h dN/detadphi histogram
+   * @param eHist histogram for ep vs. eta
+   */
   void CalcQVectors(TH2D* h, TH1D* eHist);
- /*
-  * Calculate the eventplane from a vector
-  *
-  * @param v TVector2 of Q-vectors
-  *
-  * @return the eventplane as a double
-  */
-  Double_t CalcEventplane(TVector2 v) const;
- /*
-  * Set the run number, used for OADB object
-  *
-  * @param run Run number
-  */
+  /**
+   * Calculate the eventplane from a vector
+   *
+   * @param v TVector2 of Q-vectors
+   *
+   * @return the eventplane as a double
+   */
+  Double_t CalcEventplane(const TVector2& v) const;
+  /**
+   * Set the run number, used for OADB object
+   *
+   * @param run Run number
+   */
   void SetRunNumber(Int_t run);
- /*
-  * Get the run number
-  *
-  * @return returns the run number
-  */
+  /**
+   * Get the run number
+   *
+   * @return returns the run number
+   */
   Int_t GetRunNumber() { return fRunNumber; }
- /*
-  * Get the OADB phi distribution for flattening
-  */
+  /**
+   * Get the OADB phi distribution for flattening
+   */
   void GetPhiDist();
- /*
-  * Flag for setting the use of phi weights for flattening
-  * 
-  * @param use true or false
-  */
+  /**
+   * Flag for setting the use of phi weights for flattening
+   * 
+   * @param use true or false
+   */
   void SetUsePhiWeights(Bool_t use = kTRUE) { fUsePhiWeights = use; }
- /*
-  * Fill diagnostics hists
-  *
-  * @param fmdEP Object containing results of FMD EP calculations
-  */
+  /**
+   * Fill diagnostics hists
+   *
+   * @param fmdEP Object containing results of FMD EP calculations
+   */
   void FillHists(AliAODForwardEP* fmdEP);
- /*
-  * Set the OADB path, for using a custom OADB path and file
-  *
-  * @param fname Name of the custom OADB file, including path
-  */
+  /**
+   * Set the OADB path, for using a custom OADB path and file
+   *
+   * @param fname Name of the custom OADB file, including path
+   */
   void SetOADBPath(Char_t* fname) { fOADBFileName = fname; }
 
 protected:
- /*
-  * Get the phi weight from OADB histogram for the ep flattening
-  *
-  * @param etaBin which eta bin
-  * @param phiBin which phi bin
-  *
-  * @return phi weight for etaBin, phiBin as double
-  */
+  /**
+   * Get the phi weight from OADB histogram for the ep flattening
+   *
+   * @param etaBin which eta bin
+   * @param phiBin which phi bin
+   *
+   * @return phi weight for etaBin, phiBin as double
+   */
   Double_t GetPhiWeight(Int_t etaBin, Int_t phiBin) const;
  
   TList*            fList;              // List for diag. hists.

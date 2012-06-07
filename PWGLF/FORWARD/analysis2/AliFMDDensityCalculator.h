@@ -101,12 +101,17 @@ public:
    * @param hists    Histogram cache
    * @param vtxBin   Vertex bin 
    * @param lowFlux  Low flux flag. 
+   * @param cent     Centrality 
+   * @param vz       Vertex Z position
    * 
    * @return true on successs 
    */
-  virtual Bool_t Calculate(const AliESDFMD& fmd, 
+  virtual Bool_t Calculate(const AliESDFMD&        fmd, 
 			   AliForwardUtil::Histos& hists, 
-			   UShort_t vtxBin, Bool_t lowFlux, Double_t cent=-1, Double_t vz=0);
+			   UShort_t 		   vtxBin, 
+			   Bool_t   		   lowFlux, 
+			   Double_t  		   cent=-1, 
+			   Double_t  		   vz=0);
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -181,6 +186,11 @@ public:
    * SetMultCut) then that value is used.  If not, then the lower
    * value of the fit range for the enery loss fits is returned.
    * 
+   * @param d      Detector 
+   * @param r      Ring 
+   * @param eta    Psuedo-rapidity
+   * @param errors Factor in errors
+   *
    * @return Lower cut on multiplicity
    */
   Double_t GetMultCut(UShort_t d, Char_t r, Double_t eta, 
@@ -190,6 +200,11 @@ public:
    * SetMultCut) then that value is used.  If not, then the lower
    * value of the fit range for the enery loss fits is returned.
    * 
+   * @param d      Detector 
+   * @param r      Ring 
+   * @param ieta   Psuedo-rapidity bin
+   * @param errors Factor in errors
+   *
    * @return Lower cut on multiplicity
    */
   Double_t GetMultCut(UShort_t d, Char_t r, Int_t ieta, 
@@ -221,6 +236,8 @@ protected:
    * @param d     Detector 
    * @param r     Ring 
    * @param iEta  Eta bin 
+   *
+   * @return The maximum weight 
    */
   Int_t FindMaxWeight(const AliFMDCorrELossFit* cor,
 		      UShort_t d, Char_t r, Int_t iEta) const;

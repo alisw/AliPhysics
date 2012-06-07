@@ -55,10 +55,15 @@ class AliFMDFloatMap;
 class AliFMDSharingFilter : public TNamed
 {
 public: 
+  /** Status of a strip */
   enum Status { 
+    /** Nothing yet */
     kNone             = 1, 
+    /** Candidate for merging */
     kCandidate        = 2, 
+    /** This was merged into other strip */
     kMergedWithOther  = 3, 
+    /** Other strips was merged into this */
     kMergedInto       = 4
   };
   /** 
@@ -147,6 +152,7 @@ public:
    * @param input     Input 
    * @param lowFlux   If this is a low-flux event 
    * @param output    Output AliESDFMD object 
+   * @param zvtx      Vertex position 
    * 
    * @return True on success, false otherwise 
    */
@@ -177,11 +183,41 @@ public:
    */
   virtual void Print(Option_t* option="") const;
 
+  /** 
+   * Get the low cuts 
+   * 
+   * @return Reference to low cuts
+   */
   AliFMDMultCuts& GetLCuts() { return fLCuts; }
+  /** 
+   * Get the high cuts 
+   * 
+   * @return Reference to high cuts
+   */
   AliFMDMultCuts& GetHCuts() { return fHCuts; }
+  /** 
+   * Get the low cuts 
+   * 
+   * @return Reference to low cuts
+   */
   const AliFMDMultCuts& GetLCuts() const { return fLCuts; }
+  /** 
+   * Get the high cuts 
+   * 
+   * @return Reference to high cuts
+   */
   const AliFMDMultCuts& GetHCuts() const { return fHCuts; }
+  /** 
+   * Set the low cuts 
+   * 
+   * @param c Cuts object
+   */  
   void SetLCuts(const AliFMDMultCuts& c) { fLCuts = c; }
+  /** 
+   * Set the high cuts 
+   * 
+   * @param c Cuts object
+   */  
   void SetHCuts(const AliFMDMultCuts& c) { fHCuts = c; }
 protected:
   /** 
@@ -314,7 +350,24 @@ protected:
 			       UShort_t t,
 			       Bool_t&  usedPrev, 
 			       Bool_t&  usedThis) const;
-  Double_t MultiplicityOfStrip(Double_t thisE,
+  /** 
+   * The actual algorithm 
+   * 
+   * @param thisE      This strips energy 
+   * @param prevE      Previous strip enery 
+   * @param nextE      Next strip energy 
+   * @param eta        Psuedo-rapidity
+   * @param lowFlux    Whether to use low flux settings
+   * @param d          Detector
+   * @param r          Ring 
+   * @param s          Sector 
+   * @param t          Strip
+   * @param prevStatus Previous status
+   * @param thisStatus This status 
+   * @param nextStatus Next status
+   * 
+   * @return The filtered signal in the strip
+   */  Double_t MultiplicityOfStrip(Double_t thisE,
 			       Double_t prevE,
 			       Double_t nextE,
 			       Double_t eta,

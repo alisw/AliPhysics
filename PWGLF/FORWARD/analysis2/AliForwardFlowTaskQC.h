@@ -20,9 +20,11 @@ class TH2F;
 class TH2D;
 class TH3D;
 class TAxis;
-
- /**
+/**
  * @defgroup pwglf_forward_tasks_flow Flow tasks 
+ *
+ * Code to do with flow 
+ *
  * @ingroup pwglf_forward_tasks
  */
 /**
@@ -36,7 +38,6 @@ class TAxis;
  *
  * @ingroup pwglf_forward_tasks_flow
  * @ingroup pwglf_forward_flow
- *
  *
  */
 class AliForwardFlowTaskQC : public AliAnalysisTaskSE
@@ -91,41 +92,39 @@ public:
    * Set which harmonics to calculate. @f$ v_{1}@f$ to @f$ v_{4}@f$ is
    * available and calculated as default
    * 
-   * @param  v2 Do @f$ v_{2}$f$
-   * @param  v3 Do @f$ v_{3}$f$
-   * @param  v4 Do @f$ v_{4}$f$
-   * @param  v5 Do @f$ v_{5}$f$
-   * @param  v6 Do @f$ v_{6}$f$
+   * @param  v2 Do @f$ v_{2}@f$
+   * @param  v3 Do @f$ v_{3}@f$
+   * @param  v4 Do @f$ v_{4}@f$
+   * @param  v5 Do @f$ v_{5}@f$
+   * @param  v6 Do @f$ v_{6}@f$
    * 
    * @return void 
    */
   void SetDoHarmonics(Bool_t v2 = kTRUE, 
 		      Bool_t v3 = kTRUE, Bool_t v4 = kTRUE,
-		      Bool_t v5 = kTRUE, Bool_t v6 = kTRUE) { 
-    fv[2] = v2; fv[3] = v3; fv[4] = v4; fv[5] = v5; fv[6] = v6;}
-  /*
+		      Bool_t v5 = kTRUE, Bool_t v6 = kTRUE) 
+  { 
+    fv[2] = v2; fv[3] = v3; fv[4] = v4; fv[5] = v5; fv[6] = v6;
+  }
+  /**
    * Set non-default vertex binning and range
    *
    * @param axis Use this vtx axis
-   *
-   * @return void
    */
   void SetVertexAxis(TAxis* axis) { fVtxAxis = axis; }
-  /*
+  /**
    * Set detector sigma cuts
    *
    * @param fmdCut FMD sigma cut
    * @param spdCut SPD sigma cut
-   *
-   * @return void
    */
   void SetDetectorCuts(Double_t fmdCut, Double_t spdCut) { fFMDCut = fmdCut; fSPDCut = spdCut; }
- /**
-  * Nested class to handle cumulant calculations in vertex bins
-  */
+  /**
+   * Nested class to handle cumulant calculations in vertex bins
+   */
   class VertexBin : public TNamed
   {
-    public:
+  public:
     /*
      * Constructor
      */
@@ -137,7 +136,8 @@ public:
      * @param vHigh Max vertex z-coordinate
      * @param moment Flow moment
      * @param type Data type (FMD/SPD/FMDTR/SPDTR/MC)
-     * @parma sym Data is symmetric in eta
+     * @param sym Data is symmetric in eta
+     * @param cut Cut value 
      */
     VertexBin(Int_t vLow, Int_t vHigh, 
               UShort_t moment, TString type,
@@ -153,11 +153,11 @@ public:
     /**
      * Assignment operator 
      * 
-     * @param VertexBin&
+     * @param v Object to assing from
      * 
-     * @return VertexBin& 
+     * @return reference to this 
      */
-    VertexBin& operator=(const VertexBin&);
+    VertexBin& operator=(const VertexBin& v);
     /**
      * Destructor 
      */
@@ -174,6 +174,7 @@ public:
      * Fill reference and differential flow histograms for analysis
      *
      * @param dNdetadphi 2D data histogram
+     * @param fCent Centrality
      *
      * @return false if bad event (det. hotspot)
      */
@@ -198,7 +199,7 @@ public:
      */
     void CumulantsTerminate(TList* inlist, TList* outlist);
 
-    protected:
+  protected:
     /*
      * Enumeration for ref/diff histograms
      */
@@ -272,19 +273,21 @@ protected:
    * @return Reference to this object 
    */
   AliForwardFlowTaskQC& operator=(const AliForwardFlowTaskQC&);
-  /*
+  /**
    * Initiate vertex bin objects
    */
   virtual void InitVertexBins();
-  /*
+  /**
    * Initiate diagnostics histograms
    */
   virtual void InitHists();
-  /*
+  /**
    * Analyze event
+   *
+   * @return true on success
    */
   virtual Bool_t Analyze();
-  /*
+  /**
    * Finalize analysis
    */
   virtual void Finalize();

@@ -17,10 +17,6 @@
 #include <TH2D.h>
 class TGraph;
 
- /**
- * @defgroup pwglf_forward_tasks_flow Flow tasks 
- * @ingroup pwglf_forward_tasks
- */
 /**
  * Calculate the flow in the forward regions using the Q cumulants method
  *
@@ -33,7 +29,6 @@ class TGraph;
  * @ingroup pwglf_forward_tasks_flow
  * @ingroup pwglf_forward_flow
  *
- *
  */
 class AliForwardMCFlowTaskQC : public AliForwardFlowTaskQC
 {
@@ -42,7 +37,7 @@ public:
    * Constructor
    */
   AliForwardMCFlowTaskQC();
-  /*
+  /**
    * Constructor
    *
    * @param name Name of task
@@ -71,25 +66,25 @@ public:
    * @return Bool_t 
    */
   virtual Bool_t GetCentrality(const AliAODForwardMult* aodfm);
-  /*
+  /**
    * Set use parametrization from impact parameter for centrality
    *
    * @param use Use impact par
    */
   void SetUseImpactParameter(Bool_t use) { fUseImpactPar = use; }
-  /*
+  /**
    * Set string to add flow to MC truth particles
    *
    * @param type String
    */
   void AddFlow(TString type = "") { fAddFlow = type; }
-  /*
+  /**
    * Set which function fAddFlow should use
    *
-   * @param type of AddFlow 
+   * @param number Type of AddFlow 
    */
   void AddFlowType(Int_t number = 0) { fAddType = number; }
-  /*
+  /**
    * Set which order of flow to add
    *
    * @param order Flow order 
@@ -97,7 +92,7 @@ public:
   void AddFlowOrder(Int_t order = 2) { fAddOrder = order; }
  
 protected:
-  /*
+  /**
    * Copy constructor
    *
    * @param o Object to copy from
@@ -106,22 +101,26 @@ protected:
   /** 
    * Assignment operator 
    * 
+   * @param o Object to assing from 
+   *
    * @return Reference to this object 
    */
   AliForwardMCFlowTaskQC& operator=(const AliForwardMCFlowTaskQC& o);
-  /*
+  /**
    * Initiate vertex bin objects
    */
   void InitVertexBins();
-   /*
+  /**
    * Initiate diagnostics histograms
    */
   void InitHists();
-  /*
+  /**
    * Analyze event
+   *
+   * @return true on success 
    */
   Bool_t Analyze();
-  /*
+  /**
    * Finalize analysis
    */
   void Finalize();
@@ -134,6 +133,8 @@ protected:
   Bool_t LoopAODMC();
   /**
    * Get centrality form MC impact parameter
+   *
+   * @return Centrality
    */
   Double_t GetCentFromB() const;
   /**

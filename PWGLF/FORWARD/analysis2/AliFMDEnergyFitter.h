@@ -328,6 +328,8 @@ protected:
      *                    is loosend by a factor of 2 
      * @param chi2nuCut   Cut on @f$ \chi^2/\nu@f$ - 
      *                    the reduced @f$\chi^2@f$ 
+     *
+     * @return List of fits 
      */
     TObjArray* Fit(TList* dir, 
 		   const TAxis& eta,

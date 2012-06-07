@@ -9,6 +9,9 @@
  */
 /**
  * @defgroup pwglf_forward_qa Quality Assurance
+ * 
+ * Code to deal with Quality Assurance 
+ *
  * @ingroup pwglf_forward_topical
  */
 /**
@@ -16,6 +19,8 @@
  * 
  * @param mc       Monte-carlo input 
  * @param useCent  Use centrality 
+ *
+ * @return newly constructured task object 
  *
  * @ingroup pwglf_forward_eloss
  */

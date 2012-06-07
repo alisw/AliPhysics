@@ -38,8 +38,7 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fNormalizationScheme(kFull), 
     fSchemeString(0), 
     fTriggerString(0),
-    fFinalMCCorrFile(""), 
-    fIsESD(false)
+    fFinalMCCorrFile("")
 {
   // 
   // Constructor
@@ -70,8 +69,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fNormalizationScheme(kFull), 
     fSchemeString(0),
     fTriggerString(0),
-    fFinalMCCorrFile(""), 
-    fIsESD(false)
+    fFinalMCCorrFile("")
 {
   // 
   // Constructor
@@ -113,8 +111,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fNormalizationScheme(o.fNormalizationScheme), 
     fSchemeString(o.fSchemeString), 
     fTriggerString(o.fTriggerString),
-    fFinalMCCorrFile(o.fFinalMCCorrFile), 
-    fIsESD(o.fIsESD)
+    fFinalMCCorrFile(o.fFinalMCCorrFile)
 {
   DGUARD(0,0,"Copy construction of AliBasedNdetaTask");
 }
@@ -347,44 +344,10 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   while ((bin = static_cast<CentralityBin*>(next()))) 
     bin->CreateOutputObjects(fSums);
   
-  // Check that we have an AOD input handler 
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  AliAODInputHandler* ah = 
-    dynamic_cast<AliAODInputHandler*>(am->GetInputEventHandler());
-  if (!ah) { 
-    fIsESD = true;
-    const char* depName = GetTitle();
-    AliAnalysisTask* dep = am->GetTask(depName); // "Central"
-    if (!dep) { 
-      AliErrorF("The multiplicity task %s wasn't added to the train", depName);
-      fIsESD = false;
-    }
-  }
-  if (!fIsESD && !ah) AliFatal("No AOD input handler set in analysis manager");
 
-
-  // Post data for ALL output slots >0 here, to get at least an empty histogram
+  // Post data for ALL output slots >0 here, to get at least an empty
+  // histogram
   PostData(1, fSums); 
-}
-//____________________________________________________________________
-AliAODEvent*
-AliBasedNdetaTask::GetAODEvent(bool isESD)
-{
-  // Get the AOD event 
-  // 
-  // Parameters: 
-  //   isESD     Whether we have ESD input or not 
-  // 
-  // Return: 
-  //   Pointer to AOD event or null
-  DGUARD(fDebug,1,"Get the AOD event (%s analysis)", isESD ? "ESD" : "AOD");
-  AliAODEvent* aod = 0;
-
-  if (!isESD) aod = dynamic_cast<AliAODEvent*>(InputEvent());
-  else        aod = AODEvent();
-  if (!aod) AliError("Cannot get the AOD event");
-
-  return aod;
 }
   
 //____________________________________________________________________
@@ -399,7 +362,7 @@ AliBasedNdetaTask::UserExec(Option_t *)
   //
   // Main loop
   DGUARD(fDebug,1,"Analyse the AOD event");
-  AliAODEvent* aod = GetAODEvent(fIsESD);
+  AliAODEvent* aod = AliForwardUtil::GetAODEvent(this);
   if (!aod) return;
 
   

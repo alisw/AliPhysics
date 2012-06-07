@@ -23,6 +23,8 @@ class TH1;
 class TF1;
 class TAxis;
 class AliESDEvent;
+class AliAODEvent;
+class AliAnalysisTaskSE;
 
 /** 
  * Utilities used in the forward multiplcity analysis 
@@ -130,6 +132,35 @@ public:
    */
    static const char* MagneticFieldString(Short_t field);
   /* @} */
+
+  //__________________________________________________________________
+  /** 
+   * Get the AOD event - either from the input (AOD analysis) or the
+   * output (ESD analysis)
+   * 
+   * @param task Task to do the investigation for
+   * 
+   * @return Found AOD event or null
+   */
+  static AliAODEvent* GetAODEvent(AliAnalysisTaskSE* task);
+  /** 
+   * Check if we have something that will provide and AOD event 
+   * 
+   * @return 0 if there's nothing that provide an AOD event, 1 if it
+   * is provided on the input (AOD analysis) or 2 if it is provided on
+   * the output (ESD analysis)
+   */
+  static UShort_t CheckForAOD();
+  /** 
+   * Check if we have a particular (kind) of task in our train
+   * 
+   * @param clsOrName  Class name or name of task 
+   * @param cls If true, look for a task of a particular class -
+   * otherwise search for a speficially name task
+   * 
+   * @return true if the needed task was found 
+   */
+  static Bool_t CheckForTask(const char* clsOrName, Bool_t cls=true);
 
   /** 
    * @{ 
@@ -618,6 +649,11 @@ public:
     { 
       return AliForwardUtil::RingColor(fDet, fRing);
     }
+    /** 
+     * The name of this ring 
+     * 
+     * @return Name of this ring 
+     */
     const char* GetName() const { return fName.Data(); } 
     UShort_t fDet;   // Detector
     Char_t   fRing;  // Ring
@@ -628,20 +664,73 @@ public:
   /* @} */
 
   //__________________________________________________________________
+  /**
+   * A guard idom for producing debug output 
+   * 
+   */
   struct DebugGuard 
   {
+    /** 
+     * Constructor 
+     * 
+     * @param lvl       Current level
+     * @param msgLvl    Target level 
+     * @param format    @c printf -like format
+     * 
+     * @return 
+     */
     DebugGuard(Int_t lvl, Int_t msgLvl, const char* format, ...);
+    /** 
+     * Destructor
+     */
     ~DebugGuard();
+    /** 
+     * Make a message 
+     * 
+     * @param lvl    Current level
+     * @param msgLvl Target level 
+     * @param format @c printf -like format
+     */
     static void Message(Int_t lvl, Int_t msgLvl, const char* format, ...);
   private:
+    /** 
+     * Output the message 
+     * 
+     * @param in    Direction
+     * @param msg   Message 
+     */
     static void Output(int in, TString& msg);
+    /** 
+     * Format a message 
+     * 
+     * @param out     Output is stored here
+     * @param format  @c printf -like format
+     * @param ap      List of arguments
+     */
     static void Format(TString& out, const char* format, va_list ap);
     TString fMsg;
   };
 private:
+  /** 
+   * Constructor 
+   */
   AliForwardUtil() {}
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
   AliForwardUtil(const AliForwardUtil& o) : TObject(o) {}
+  /** 
+   * Assingment operator 
+   * 
+   * 
+   * @return Reference to this object 
+   */
   AliForwardUtil& operator=(const AliForwardUtil&) { return *this; }
+  /** 
+   * Destructor
+   */
   ~AliForwardUtil() {}
   
 
@@ -651,8 +740,22 @@ private:
 // #ifdef LOG_NO_DEBUG
 // # define DGUARD(L,N,F,...) do {} while(false) 
 // #else
+/** 
+ * Macro to declare a DebugGuard
+ * 
+ * @param L Current debug level
+ * @param N Target debug level
+ * @param F @c printf -like Format 
+ */
 # define DGUARD(L,N,F,...)					\
   AliForwardUtil::DebugGuard _GUARD(L,N,F, ## __VA_ARGS__)
+/** 
+ * Macro to make a debug message, using DebugGuard::Message
+ * 
+ * @param L Current debug level
+ * @param N Target debug level
+ * @param F @c printf -like Format 
+ */
 # define DMSG(L,N,F,...)					\
   AliForwardUtil::DebugGuard::Message(L,N,F, ## __VA_ARGS__)
 // #endif

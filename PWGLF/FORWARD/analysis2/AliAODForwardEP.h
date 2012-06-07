@@ -19,6 +19,10 @@
 class TBrowser;
 class TH1D;
 
+/** 
+ * Event-plane information from forward detectors 
+ * 
+ */
 class AliAODForwardEP : public TObject
 {
 public:
@@ -68,83 +72,83 @@ public:
    * @param option Passed verbatim to TH2::Print 
    */
   void Print(Option_t* option="") const;
- /*
-  * Get the name of the AOD object
-  *
-  * @return for now ForwardEP
-  */
+  /**
+   * Get the name of the AOD object
+   *
+   * @return for now ForwardEP
+   */
   const Char_t* GetName() const { return (fIsMC ? "ForwardEP" : "ForwardEP"); }
- /*
-  * Set the overall FMD eventplane
-  * 
-  * @param ep FMD EP
-  */
+  /**
+   * Set the overall FMD eventplane
+   * 
+   * @param ep FMD EP
+   */
   void SetEventplane(Double_t ep) { fEpT = ep; }
- /* 
-  * Get the overall FMD eventplane
-  *
-  * @return FMD EP
-  */
+  /**
+   * Get the overall FMD eventplane
+   *
+   * @return FMD EP
+   */
   Double_t GetEventplane() { return fEpT; }
- /*
-  * Set FMD eventplane from A side
-  *
-  * @param epA FMD A side EP
-  */
+  /**
+   * Set FMD eventplane from A side
+   *
+   * @param epA FMD A side EP
+   */
   void SetEventplaneA(Double_t epA) { fEpA = epA; }
- /*
-  * Get FMD eventplane from A side
-  *
-  * @return FMD A side EP
-  */
+  /**
+   * Get FMD eventplane from A side
+   *
+   * @return FMD A side EP
+   */
   Double_t GetEventplaneA() { return fEpA; }
- /*
-  * Set FMD eventplane from C side
-  *
-  * @param epC FMD C side EP
-  */
+  /**
+   * Set FMD eventplane from C side
+   *
+   * @param epC FMD C side EP
+   */
   void SetEventplaneC(Double_t epC) { fEpC = epC; }
- /*
-  * Get FMD eventplane from C side
-  *
-  * @return FMD C side EP
-  */
+  /**
+   * Get FMD eventplane from C side
+   *
+   * @return FMD C side EP
+   */
   Double_t GetEventplaneC() { return fEpC; }
- /*
-  * Set FMD eventplane 1 using random particles
-  *
-  * @param ep1 FMD EP 1 from random selection
-  */
+  /**
+   * Set FMD eventplane 1 using random particles
+   *
+   * @param ep1 FMD EP 1 from random selection
+   */
   void SetEventplane1(Double_t ep1) { fEp1 = ep1; }
- /* 
-  * Get FMD eventplane 1 from random particles
-  *
-  * @return FMD EP 1 from random selection
-  */
+  /** 
+   * Get FMD eventplane 1 from random particles
+   *
+   * @return FMD EP 1 from random selection
+   */
   Double_t GetEventplane1() { return fEp1; }
- /*
-  * Set FMD eventplane 2 using random particles
-  *
-  * @param ep2 FMD EP 2 from random selection
-  */
+  /**
+   * Set FMD eventplane 2 using random particles
+   *
+   * @param ep2 FMD EP 2 from random selection
+   */
   void SetEventplane2(Double_t ep2) { fEp2 = ep2; }
- /* 
-  * Get FMD eventplane 2 from random particles
-  *
-  * @return FMD EP 2 from random selection
-  */
+  /** 
+   * Get FMD eventplane 2 from random particles
+   *
+   * @return FMD EP 2 from random selection
+   */
   Double_t GetEventplane2() { return fEp2; }
- /*
-  * Get eta histogram from eta vs. Psi_2 calculatins
-  *
-  * @return Returns eta vs. Psi_2 histogram
-  */
+  /**
+   * Get eta histogram from eta vs. Psi_2 calculatins
+   *
+   * @return Returns eta vs. Psi_2 histogram
+   */
   const TH1D& GetHistogram() const { return fHist; } // Get histogram 
- /*
-  * Get eta histogram from eta vs. Psi_2 calculatins
-  *
-  * @return Returns eta vs. Psi_2 histogram
-  */
+  /**
+   * Get eta histogram from eta vs. Psi_2 calculatins
+   *
+   * @return Returns eta vs. Psi_2 histogram
+   */
   TH1D& GetHistogram() { return fHist; } // Get histogram 
 
 protected: 

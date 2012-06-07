@@ -67,19 +67,20 @@ public:
   /** 
    * Set the number of eta bins to group into a region
    * 
-   * @param n Number of eta bins per region
+   * @param nx Number of @f$\eta@f$ bins per region
+   * @param ny Number of @f$\phi@f$ bins per region
    */  
   void SetLumping(UShort_t nx, UShort_t ny);
   /** 
    * Set the number of X bins to group into a region
    * 
-   * @param n Number of eta bins per region
+   * @param nx Number of eta bins per region
    */  
   void SetXLumping(UShort_t nx) { SetLumping(nx, fYLumping); } //*MENU*
   /** 
    * Set the number of Y bins to group into a region
    * 
-   * @param n Number of eta bins per region
+   * @param ny Number of eta bins per region
    */  
   void SetYLumping(UShort_t ny) { SetLumping(fYLumping, ny); } //*MENU*
   /** 
@@ -94,12 +95,14 @@ public:
    * Initialize this object.  
    * 
    * Also book the cache histograms 
+   *
+   * @param xaxis The X-axis 
+   * @param yaxis The Y-axis 
    */
   void Define(const TAxis& xaxis, const TAxis& yaxis);
   /** 
    * Make output stuff for the passed list
    * 
-   * @param none
    */
   void MakeOutput();
   /** 
@@ -117,8 +120,8 @@ public:
   /** 
    * Fill in an observation 
    * 
-   * @param eta     Eta value 
-   * @param phi     Phi value
+   * @param strip   X axis bin number 
+   * @param sec     Y axis bin number 
    * @param hit     True if hit 
    * @param weight  Weight if this 
    */
@@ -126,6 +129,8 @@ public:
   /** 
    * Calculate result and store in @a output
    * 
+   * @param correct Whether to apply correction or not 
+   *
    * @return The result histogram (fBase overwritten)
    */
   TH2D* Result(Bool_t correct=true);

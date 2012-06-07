@@ -54,6 +54,8 @@ public:
 protected:
   /** 
    * Copy constructor 
+   *
+   * @param o Object to copy from 
    */
   AliMCTruthdNdetaTask(const AliMCTruthdNdetaTask& o);
   /** 
