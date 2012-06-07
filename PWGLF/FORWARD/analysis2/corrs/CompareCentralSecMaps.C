@@ -1,6 +1,8 @@
 /**
  * @defgroup pwglf_forward_scripts_corr Correction scripts 
  * 
+ * Scripts and functions to handle corrections 
+ *
  * @ingroup pwglf_forward_scripts
  */
 

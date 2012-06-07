@@ -22,9 +22,13 @@
 
 //____________________________________________________________________
 // Global 
+/** List of fitters */
 TList* fitter = 0;
+/** Canvas */
 TCanvas* canvas = 0;
+/** Name of output file */
 const char* pdfName = "FitResults.pdf";
+/** Produce plots in landscape mode */
 bool landscape = true;
 
 //____________________________________________________________________
@@ -195,10 +199,9 @@ AddToStack(TList* stacks, TList* list, const char* name)
 /** 
  * Draw summary 
  * 
- * @param fname 
+ * @param fname       File name to read 
+ * @param onlySummary Only plot summary pae 
  * 
- * @ingroup pwglf_forward_scripts_corr
- *
  * @ingroup pwglf_forward_scripts_corr
  */
 void DrawSummary(const char* fname="forward_eloss.root", 
@@ -477,7 +480,8 @@ void DrawEtaBins(const char* fname="AnalysisResults.root")
  *           ...
  * @endverbatim
  *
- * @param fname 
+ * @param fname       File name to read 
+ * @param onlySummary Only plot summary pae 
  * 
  * @ingroup pwglf_forward_scripts_corr
  */

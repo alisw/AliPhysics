@@ -1,5 +1,5 @@
 /** 
- * 
+ * Make the repository for corrections
  * 
  *
  * @ingroup pwglf_forward_scripts_corr
@@ -31,3 +31,6 @@ MakeCorrRepository()
  }
 }
 
+/*
+ * EOF 
+ */
