@@ -7,7 +7,11 @@
 #include "AliAODForwardMult.h"
 #include <AliLog.h>
 #include <AliInputEventHandler.h>
+#include <AliAODInputHandler.h>
+#include <AliAODHandler.h>
+#include <AliAODEvent.h>
 #include <AliESDEvent.h>
+#include <AliAnalysisTaskSE.h>
 #include <AliPhysicsSelection.h>
 #include <AliTriggerAnalysis.h>
 #include <AliMultiplicity.h>
@@ -147,6 +151,69 @@ AliForwardUtil::MagneticFieldString(Short_t f)
   //
   return Form("%01dkG", f);
 }
+//_____________________________________________________________________
+AliAODEvent* AliForwardUtil::GetAODEvent(AliAnalysisTaskSE* task)
+{
+  // Check if AOD is the output event
+  AliAODEvent* ret = task->AODEvent();
+  if (ret) return ret; 
+  
+  // Check if AOD is the input event 
+  ret = dynamic_cast<AliAODEvent*>(task->InputEvent());
+  if (!ret) ::Warning("GetAODEvent", "No AOD event found");
+  
+  return ret; 
+}
+//_____________________________________________________________________
+UShort_t AliForwardUtil::CheckForAOD()
+{
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  if (dynamic_cast<AliAODInputHandler*>(am->GetInputEventHandler())) {
+    ::Info("CheckForAOD", "Found AOD Input handler");
+    return 1;
+  }
+  if (dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler())) {
+    ::Info("CheckForAOD", "Found AOD Output handler");
+    return 2;
+  }
+
+  ::Warning("CheckForAOD", 
+	    "Neither and input nor output AOD handler is specified");
+  return 0;
+}
+//_____________________________________________________________________
+Bool_t AliForwardUtil::CheckForTask(const char* clsOrName, Bool_t cls)
+{
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  if (!cls) { 
+    AliAnalysisTask* t = am->GetTask(clsOrName);
+    if (!t) { 
+      ::Warning("CheckForTask", "Task %s not found in manager", clsOrName);
+      return false;
+    }
+    ::Info("CheckForTask", "Found task %s", clsOrName);
+    return true;
+  }
+  TClass* dep = gROOT->GetClass(clsOrName);
+  if (!dep) { 
+    ::Warning("CheckForTask", "Unknown class %s for needed task", clsOrName);
+    return false;
+  }
+  TIter next(am->GetTasks());
+  TObject* o = 0;
+  while ((o = next())) { 
+    if (o->IsA()->InheritsFrom(dep)) {
+      ::Info("CheckForTask", "Found task of class %s: %s", 
+	     clsOrName, o->GetName());
+      return true;
+    }
+  }
+  ::Warning("CheckForTask", "No task of class %s was found", clsOrName);
+  return false;
+}
+
+  
+  
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Double_t zvtx)
 {

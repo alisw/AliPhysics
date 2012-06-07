@@ -409,7 +409,7 @@ AliFMDEventPlaneFinder::CalcQVectors(TH2D* h, TH1D* eHist)
 
 //_____________________________________________________________________
 Double_t
-AliFMDEventPlaneFinder::CalcEventplane(TVector2 v) const
+AliFMDEventPlaneFinder::CalcEventplane(const TVector2& v) const
 {
   //
   // Calculate the eventplane

@@ -26,6 +26,9 @@ class TObjArray;
 
 /** 
  * @defgroup pwglf_forward_tasks_dndeta dN/deta tasks 
+ *
+ * Code to produce @f$ dN/d\eta@f$
+ *
  * @ingroup pwglf_forward_tasks 
  */
 /**
@@ -99,6 +102,11 @@ public:
   /** 
    * @{ 
    * @name Task configuration 
+   */
+  /** 
+   * Set the debug level 
+   * 
+   * @param level Debug level
    */
   virtual void SetDebugLevel(Int_t level);
   /** 
@@ -312,8 +320,29 @@ public:
     kCross        = 0x00c,
     kStar         = 0x00e
   };
+  /** 
+   * Get the marker style from option bits
+   * 
+   * @param bits Option bits 
+   * 
+   * @return Marker style 
+   */
   static Int_t GetMarkerStyle(UShort_t bits);
+  /** 
+   * Get the marker option bits from a style 
+   * 
+   * @param style Style
+   * 
+   * @return option bits
+   */
   static UShort_t GetMarkerBits(Int_t style);
+  /** 
+   * Flip an option bit 
+   * 
+   * @param style Style parameter
+   * 
+   * @return New style 
+   */
   static Int_t FlipHollowStyle(Int_t style);
 protected:
   /** 
@@ -329,15 +358,6 @@ protected:
   AliBasedNdetaTask& operator=(const AliBasedNdetaTask&) { return *this; }
   // Forward declaration 
   class CentralityBin;
-  /** 
-   * Retrieve the AOD event 
-   *
-   * @param isESD If true, assume the AOD event is the output 
-   * 
-   * @return Pointer to AOD event or null 
-   */
-  AliAODEvent* GetAODEvent(Bool_t isESD=false);
-
   /** 
    * Create the CentralityBin objects if not already done.
    * 
@@ -728,14 +748,16 @@ protected:
     /** 
      * Get the color of the markers
      *
-     * @return 
+     * @param fallback Fall-back color 
+     *
+     * @return Color for this centrality bin 
      */
     Int_t GetColor(Int_t fallback=kRed+2) const;
     /** 
      * Get list of results 
      * 
      * 
-     * @return 
+     * @return List of results
      */
     TList* GetResults() const { return fOutput; }
     /** 
@@ -760,9 +782,21 @@ protected:
      */
     TH1* GetResult(Int_t rebin, Bool_t sym, 
 		   const char* postfix="") const;
-
+    /** 
+     * Set the debug level
+     * 
+     * @param lvl Debug level
+     */
     void SetDebugLevel(Int_t lvl);
   protected:
+    /** 
+     * Read in sum hisotgram from list 
+     * 
+     * @param list List to read from 
+     * @param mc   True for MC input 
+     * 
+     * @return true if sum histogram is found
+     */
     virtual Bool_t ReadSum(TList* list, bool mc=false);
     /** 
      * Create sum histogram 
@@ -818,7 +852,6 @@ protected:
   TNamed*         fSchemeString;     // Normalization scheme string
   TNamed*         fTriggerString;    // Trigger string 
   TString         fFinalMCCorrFile; //Filename for final MC corr
-  Bool_t          fIsESD;           // Whether we have ESD input or not
   
   ClassDef(AliBasedNdetaTask,6); // Determine multiplicity in base area
 };

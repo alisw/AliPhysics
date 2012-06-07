@@ -1,10 +1,15 @@
 /** 
  * @defgroup pwglf_forward_scripts Scripts used in the analysis
  *
+ * These scripts add tasks to the analysis train 
+ *
  * @ingroup pwglf_forward
  */
 /** 
- * @defgroup pwglf_forward_scripts_tasks Scripts to add tasks to manager 
+ * @defgroup pwglf_forward_scripts_tasks Add tasks to manager 
+ *
+ * Scripts to add tasks to the analysis manager 
+ *
  * @ingroup pwglf_forward_scripts
  */
 /**
@@ -20,10 +25,11 @@
 /**
  * This is the script to include the Forward multiplicity in a train.  
  * 
- * @param mc    Define as true for MC input. 
- * @param sys   Collision system (0: deduce, 1: pp, 2: pbpb, 3:pA)
- * @param sNN   Collision energy 
- * @param field L3 field setting. 
+ * @param mc      Define as true for MC input. 
+ * @param sys     Collision system (0: deduce, 1: pp, 2: pbpb, 3:pA)
+ * @param sNN     Collision energy 
+ * @param field   L3 field setting. 
+ * @param config  Configuration file to use 
  *
  * @return newly allocated analysis task 
  *
@@ -34,7 +40,7 @@ AddTaskForwardMult(Bool_t   mc,
 		   UShort_t sys=0, 
 		   UShort_t sNN=0, 
 		   Short_t  field=0, 
-		   Int_t    debug=0)
+		   const char* config="ForwardAODConfig.C")
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -50,8 +56,7 @@ AddTaskForwardMult(Bool_t   mc,
   AliForwardMultiplicityBase* task = 0;
   if (mc) task = new AliForwardMCMultiplicityTask("FMD");
   else    task = new AliForwardMultiplicityTask("FMD");
-  task->SetDebugLevel(debug);
-  task->Configure("ForwardAODConfig.C");
+  task->Configure(config);
   mgr->AddTask(task);
   
   // --- Do a local initialisation with assumed values ---------------

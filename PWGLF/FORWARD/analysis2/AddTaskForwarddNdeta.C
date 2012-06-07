@@ -39,6 +39,15 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   // --- Analysis manager --------------------------------------------
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 
+  // --- Check that we have an AOD input handler ---------------------
+  UShort_t aodInput = 0;
+  if (!(aodInput = AliForwardUtil::CheckForAOD())) 
+    Fatal("","Cannot proceed without and AOD handler");
+  if (aodInput == 2 &&
+      !AliForwardUtil::CheckForTask("AliForwardMultiplicityBase")) 
+    Fatal("","The relevant task wasn't added to the train");
+
+
   // --- Make our object ---------------------------------------------
   AliForwarddNdetaTask* task = new AliForwarddNdetaTask("Forward");
   //Set the filename of the corresponding MC analysis

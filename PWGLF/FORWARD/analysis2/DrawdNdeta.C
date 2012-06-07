@@ -35,7 +35,9 @@
 #include <TImage.h>
 #include <TRandom.h>
 #include <fstream>
+/** Systematic error color */
 #define SYSERR_COLOR kBlue-10
+/** Systematic error style */
 #define SYSERR_STYLE 1001
 
 Double_t myFunc(Double_t* xp, Double_t* pp);
@@ -102,10 +104,22 @@ struct dNdetaDrawer
     fRangeParam->fSlave2Axis = 0;
     fRangeParam->fSlave2Pad  = 0;
   }
+  /** 
+   * Cpoy constructor 
+   */
   dNdetaDrawer(const dNdetaDrawer&) {}
+  /** 
+   * Assignment operator
+   * 
+   * 
+   * @return Reference to this object
+   */
   dNdetaDrawer& operator=(const dNdetaDrawer&) { return *this; }
 
   //__________________________________________________________________
+  /** 
+   * Destructor 
+   */
   virtual ~dNdetaDrawer()
   {
     if (fRatios  && fRatios->GetHists())  fRatios->GetHists()->Delete();
@@ -467,6 +481,8 @@ struct dNdetaDrawer
    * @param max   On return, maximum of data 
    * @param rmax  On return, maximum of ratios
    * @param amax  On return, maximum of left-right comparisons
+   *
+   * @return Array of results
    */
   TObjArray* 
   FetchResults(const TList* list, 
@@ -511,6 +527,13 @@ struct dNdetaDrawer
     return a;
   } 
   //__________________________________________________________________
+  /** 
+   * Get the color for a centrality bin
+   * 
+   * @param bin Centrality bin 
+   * 
+   * @return Color 
+   */
   Int_t GetCentralityColor(Int_t bin) const
   {
     UShort_t centLow  = fCentAxis->GetBinLowEdge(bin);
@@ -523,6 +546,12 @@ struct dNdetaDrawer
     return col;
   }
   //__________________________________________________________________
+  /** 
+   * Set attributed on a histogram 
+   * 
+   * @param h     Histogram
+   * @param color Color 
+   */
   void SetAttributes(TH1* h, Int_t color)
   {
     if (!h) return;
@@ -532,6 +561,12 @@ struct dNdetaDrawer
     // h->SetFillColor(color);
   }
   //__________________________________________________________________
+  /** 
+   * Set attributed on a graph 
+   * 
+   * @param g     Graph
+   * @param color Color 
+   */
   void SetAttributes(TGraph* g, Int_t color)
   {
     if (!g) return;
@@ -541,6 +576,10 @@ struct dNdetaDrawer
     // g->SetFillColor(color);
   }
   //__________________________________________________________________
+  /** 
+   * Modify the title 
+   * 
+   */
   void ModifyTitle(TNamed* /*h*/, const char* /*centTxt*/)
   {
     return;
@@ -560,6 +599,8 @@ struct dNdetaDrawer
    * @param max        On return, data maximum
    * @param rmax       On return, ratio maximum 
    * @param amax       On return, left-right maximum 
+   *
+   * @return Histogram of results 
    */
   TH1* FetchResults(const TList* list, 
 		    const char*  name, 
@@ -1138,7 +1179,7 @@ struct dNdetaDrawer
    * @param list List to search 
    * @param name Object name to search for 
    * 
-   * @return 
+   * @return Histogram
    */
   TH1* FetchResult(const TList* list, const char* name) const 
   {
@@ -1208,8 +1249,6 @@ struct dNdetaDrawer
    * Rebin a histogram 
    * 
    * @param h     Histogram to rebin
-   * 
-   * @return 
    */
   virtual void Rebin(TH1* h) const
   { 
@@ -1371,9 +1410,9 @@ struct dNdetaDrawer
   /** 
    * Transform a graph into a histogram 
    * 
-   * @param g 
+   * @param g Graph
    * 
-   * @return 
+   * @return Histogram
    */
   TH1* Graph2Hist(const TGraphAsymmErrors* g) const
   {
@@ -1966,6 +2005,11 @@ Double_t myFunc(Double_t* xp, Double_t* pp)
 }
 
 //=== Stuff for auto zooming =========================================
+/** 
+ * Update canvas range 
+ * 
+ * @param p Parameter 
+ */
 void UpdateRange(dNdetaDrawer::RangeParam* p)
 {
   if (!p) { 
@@ -2000,6 +2044,11 @@ void UpdateRange(dNdetaDrawer::RangeParam* p)
 }
   
 //____________________________________________________________________
+/** 
+ * Called when user changes X range 
+ * 
+ * @param p Parameter
+ */
 void RangeExec(dNdetaDrawer::RangeParam* p)
 {
   // Event types: 
@@ -2022,6 +2071,10 @@ void RangeExec(dNdetaDrawer::RangeParam* p)
 
 //=== Steering functions
 //==============================================  
+/** 
+ * Display usage information
+ * 
+ */
 void
 Usage()
 {

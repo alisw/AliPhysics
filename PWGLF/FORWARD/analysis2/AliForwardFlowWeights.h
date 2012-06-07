@@ -33,6 +33,8 @@ public:
    * Assignment operator 
    * 
    * @param o Object to assign from 
+   *
+   * @return Reference to this object
    */
   AliForwardFlowWeights& operator=(const AliForwardFlowWeights& o);
   /** 
@@ -47,6 +49,35 @@ public:
    */
   virtual void Init(TList* l);
   /** 
+   * @a what is a bit-wise or of 
+   *
+   * - kPt      Weight according to transverse momentum 
+   * - kEta     Weight according to Pseudo-rapidity
+   * - kPID     Weight according to particle type 
+   * - kCent    Weight according to centrality 
+   * - kB       Weight according to impact parameter. 
+   *
+   * Note, that kCent and kB are mutually exclusive 
+   *
+   * @a type can be one of 
+   *
+   * - 0  No weighting 
+   *
+   * - 1 Pt is weighted as mean of @f$v_2{2}@f$ and @f$v_2{4}@f$ from
+   *     40-50% centrality, unity weight for p, other for @f$\pi@f$,
+   *     other particles fixed, and the width of the @f$\eta@f$
+   *     Gaussian is 9
+   *
+   * - 2 Pt is weighted by @f$v_2{2}@f$ from 40-50% centrality, fixed
+   *     PID weight, and the width of the @f$\eta@f$ Gaussian is 3
+   *
+   * - 3 Pt is weighted by @f$v_2{4}@f$ from 30-40% centrality, unity
+   *     weight for p, other for @f$\pi@f$, other particles fixed, and
+   *     the width of the @f$\eta@f$ Gaussian is 15
+   *
+   * - 4 Pt is weighted by @f$v_2{4}@f$ from 40-50% centrality, unity
+   *     weight for p, other for @f$\pi@f$, other particles fixed, and
+   *     the width of the @f$\eta@f$ Gaussian is 9
    * 
    * 
    * @param eta   Pseudo-rapidity of particle (@f$\eta@f$)
@@ -94,10 +125,48 @@ public:
    */
   static AliForwardFlowWeights* FromList(TList* l);
 protected:
+  /** 
+   * Calculate weight 
+   * 
+   * @param eta   Psuedo-rapidity 
+   * @param type  Parameterization type
+   * 
+   * @return weight
+   */
   Double_t CalcEtaWeight(Double_t eta, Int_t type) const;
+  /** 
+   * Calculate weight 
+   * 
+   * @param id    Particle (type) identifier 
+   * @param type  Parameterization type
+   * 
+   * @return weight
+   */
   Double_t CalcPidWeight(Int_t id, Int_t type) const;
+  /** 
+   * Calculate weight 
+   * 
+   * @param pt    Transverse momentum (GeV)
+   * @param type  Parameterization type
+   * 
+   * @return weight
+   */
   Double_t CalcPtWeight(Double_t pt, Int_t type) const;
+  /** 
+   * Calculate weight 
+   * 
+   * @param c Centrality
+   * 
+   * @return weight
+   */
   Double_t CalcCentWeight(Double_t c) const;
+  /** 
+   * Calculate weight 
+   * 
+   * @param b Impact parameters (fm)
+   * 
+   * @return weight
+   */
   Double_t CalcBWeight(Double_t b) const;
 
   TGraph* fV22Pt;    // Contribution from v2{2} as a function of pt

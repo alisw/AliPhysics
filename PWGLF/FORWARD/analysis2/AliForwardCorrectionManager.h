@@ -78,11 +78,41 @@ public:
    * @param dirname  Directory name 
    */
   void SetFileDir(ECorrection what, const char* dirname);
+  /** 
+   * Set path to corrections 
+   * 
+   * @param d Path
+   */
   void SetSecondaryMapPath(const char* d) { SetFileDir(kSecondaryMap, d); }
+  /** 
+   * Set path to corrections 
+   * 
+   * @param d Path
+   */
   void SetDoubleHitPath(const char* d)    { SetFileDir(kDoubleHit, d); }
+  /** 
+   * Set path to corrections 
+   * 
+   * @param d Path
+   */
   void SetELossFitsPath(const char* d)    { SetFileDir(kELossFits, d); }
+  /** 
+   * Set path to corrections 
+   * 
+   * @param d Path
+   */
   void SetVertexBiasPath(const char* d)   { SetFileDir(kVertexBias, d); }
+  /** 
+   * Set path to corrections 
+   * 
+   * @param d Path
+   */
   void SetMergingEffPath(const char* d)   { SetFileDir(kMergingEfficiency, d); }
+  /** 
+   * Set path to corrections 
+   * 
+   * @param d Path
+   */
   void SetAcceptancePath(const char* d)   { SetFileDir(kAcceptance, d); }
   /** 
    * Read in corrections based on the parameters given 

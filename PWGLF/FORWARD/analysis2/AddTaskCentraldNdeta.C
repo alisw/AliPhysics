@@ -39,6 +39,14 @@ AddTaskCentraldNdeta(const char* trig     = "INEL",
   // --- Analysis manager --------------------------------------------
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 
+  // --- Check that we have an AOD input handler ---------------------
+  UShort_t aodInput = 0;
+  if (!(aodInput = AliForwardUtil::CheckForAOD())) 
+    Fatal("","Cannot proceed without and AOD handler");
+  if (aodInput == 2 &&
+      !AliForwardUtil::CheckForTask("AliCentralMultiplicityTask")) 
+    Fatal("","The relevant task wasn't added to the train");
+
   // --- Make our object ---------------------------------------------
   AliCentraldNdetaTask* task = new AliCentraldNdetaTask("Central");
   task->SetMCFinalCorrFilename(mcanalysisfilename);

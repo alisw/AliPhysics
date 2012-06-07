@@ -10,12 +10,20 @@
  */
 /**
  * @defgroup pwglf_forward_eloss Energy Loss Fits
+ *
+ * Fitting the energy loss @f$\Delta/\Delta_{mip}@f$ spectra 
+ *
  * @ingroup pwglf_forward_topical
  */
 
 /**
  * This is the macro to include the FMD energy fitter in a train.  
  * 
+ * @param mc      Assume MC input 
+ * @param useCent Use centrality information 
+ *
+ * @return Newly created task 
+ *
  * @ingroup pwglf_forward_eloss
  */
 AliAnalysisTask*

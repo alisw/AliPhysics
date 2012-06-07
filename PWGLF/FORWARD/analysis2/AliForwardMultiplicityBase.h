@@ -30,64 +30,6 @@ class TTree;
 class TAxis;
 
 /** 
- * @mainpage ALICE PWGLF Forward Multiplcity Analysis 
- * 
- * This is the analysis code for analysis of the Forward data. 
- * 
- * @par Code overview 
- * 
- * See the <a href="modules.html">Modules</a> page 
- * 
- * @par Run.sh script 
- * 
- * @verbatim 
- * Usage: Run.sh [OPTIONS]
- * 
- * Do Pass1 and Pass2 on ESD files in current directory.  
- * 
- * Options:
- * 	-h,--help		This help                  
- * 	-n,--events N		Number of events            (-1)
- * 	-1,--pass1 		Run pass 1, only AOD        (0)
- * 	-2,--pass2		Run pass 2, only Hists      (0)
- * 	-3,--pass3		Draw results                (0)
- * 	-v,--vz-min CM          Minimum value of vz         (-10)
- * 	-V,--vz-max CM          Maximum value of vz         (10)
- * 	-t,--trigger TYPE       Select trigger TYPE         (INEL)
- * 	-b,--batch              Do batch processing         (0)
- * 	-P,--proof NWORKERS	Run in PROOF(Lite) mode     (0)
- * 	-M,--mc			Run over MC data            (0)
- * 	-g,--gdb		Run in GDB mode    	    (0)
- * 	-E,--eloss		Run energy loss script      
- *      -r,--rebin              Rebin factor                (1)
- *      -C,--use-centrality     Run centrality task         (0)
- * 	-O,--show-older		Show older data	            (0)
- * 	-J,--show-published	Show ALICE published data   (1)
- * 	-R,--show-ratios	Show ratios to other data   (1)
- * 	-Z,--show-asymmetry	Show asymmetry 		    (1)
- * 	-S,--scheme SCHEME	Normalisation scheme	    (full)
- * 	-T,--title STRING       Title on plots              ()
- * 
- * TYPE is a comma or space separated list of 
- *  
- *   INEL	      Inelastic triggers (V0A|V0C|SPD)
- *   INEL>0      As above + N_ch > 0 in -0.5<eta<+0.5
- *   NSD         Non-single diffractive ((VOA&VOC)|N_ch > 5 -1.9<eta<+1.9)
- * 
- * SCHEME is a comma or space separated list of 
- * 
- *   NONE          No event-level normalization except trivial one 
- *   EVENTLEVEL    Event-level normalization 
- *   ALTEVENTLEVEL Event-level normalization (alternative version)
- *   BACKGROUND    Not implemented yet 
- *   SHAPE         Shape correction 
- *   FULL          Same as EVENTLEVEL,BACKGROUND,SHAPE
- *   ALTFULL       Same as ALTEVENTLEVEL,BACKGROUND,SHAPE
- * 
- * If NWORKERS is 0, then the analysis will be run in local mode.
- * @endverbatim
- */
-/** 
  * @defgroup pwglf_forward PWGLF Forward analysis
  *
  * Code to do the multiplicity analysis in the forward psuedo-rapidity
@@ -104,9 +46,14 @@ class TAxis;
  */
 /** 
  * @defgroup pwglf_forward_topical Topical
+ *
+ * The code divided according to topic
  */
 /** 
  * @defgroup pwglf_forward_aod AOD
+ * 
+ * Code to do with AOD production 
+ *
  * @ingroup pwglf_forward_topical
  */
 /** 
@@ -255,9 +202,12 @@ public:
    * @return Reference to AliFMDEventPlaneFinder object 
    */
   virtual const AliFMDEventPlaneFinder& GetEventPlaneFinder() const = 0;
+  /* @} */
 
   /** 
-   * @} 
+   * Set the debug level 
+   * 
+   * @param dbg 
    */
   virtual void SetDebug(Int_t dbg) = 0;
   /** 
@@ -315,15 +265,23 @@ protected:
    * @return true if all present, false otherwise
    */  
   Bool_t CheckCorrections(UInt_t what) const;
-  /**
+  /** 
    * Read corrections
-   *
+   * 
+   * 
+   * @param pe  On return, the eta axis
+   * @param pv  On return ,the vertex axis 
+   * @param mc  True assume MC input
+   * 
+   * @return true ons succcss
    */
   virtual Bool_t ReadCorrections(const TAxis*& pe, 
 				 const TAxis*& pv,
 				 Bool_t mc=false);
   /**
    * Get the ESD event. IF this is the first event, initialise
+   *
+   * @return Pointer to ESD event structore 
    */
   virtual AliESDEvent* GetESDEvent();
   /** 
@@ -366,6 +324,7 @@ private:
 };
 
 #endif
+
 // Local Variables:
 //  mode: C++
 // End:

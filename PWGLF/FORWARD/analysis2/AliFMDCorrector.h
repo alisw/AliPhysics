@@ -21,6 +21,8 @@ class TH2D;
 /** 
  * @defgroup pwglf_forward_algo Algorithms 
  *
+ * Various sub-algorithms used in the analysis 
+ *
  * @ingroup pwglf_forward 
  */
 /** 

@@ -127,6 +127,7 @@ protected:
   /** 
    * Called at before loop over track references
    * 
+   * @param nRefs Number of references 
    */
   void EndTrackRefs(Int_t nRefs);
   /** 
@@ -135,30 +136,42 @@ protected:
    * 
    * @param particle  Particle to store
    * @param mother    Ultimate mother of particle 
-   * @param longest   Longest track reference
-   * @param vz        Z coordinate of IP
-   * @param nC        Total number of track-references in this sector  
-   * @param nT 	      Number of distint strips hit in this sector
-   * @param output    Output structure 
+   * @param ref       Longest track reference
+   *
+   * @return weight
    */  
   Double_t StoreParticle(AliMCParticle*       particle, 
 			 const AliMCParticle* mother,
 			 AliTrackReference*   ref) const;
-
+  /** 
+   * Structure holding the state of the `tracker' 
+   * 
+   */
   mutable struct State 
   {
-    Double_t angle;
-    UShort_t oldDetector;
-    Char_t   oldRing; 
-    UShort_t oldSector;
-    UShort_t oldStrip;
-    UShort_t startStrip;
-    UShort_t nRefs;
-    UShort_t nStrips;
-    UShort_t count;
-    AliTrackReference* longest; //! 
-
+    Double_t angle;            // Angle 
+    UShort_t oldDetector;      // Last detector
+    Char_t   oldRing;          // Last ring
+    UShort_t oldSector;        // Last sector
+    UShort_t oldStrip;         // Last strip 
+    UShort_t startStrip;       // First strip 
+    UShort_t nRefs;            // Number of references
+    UShort_t nStrips;          // Number of strips 
+    UShort_t count;            // Count of hit strips 
+    AliTrackReference* longest; //! Longest track through 
+    /** 
+     * Clear this state
+     * 
+     * @param alsoCount If true, also clear count 
+     */
     void Clear(Bool_t alsoCount=false);
+    /** 
+     * Assignment operator 
+     * 
+     * @param o Object to assign from 
+     * 
+     * @return Reference to this object 
+     */
     State& operator=(const State& o);
   } fState; // State 
   

@@ -107,10 +107,8 @@ protected:
    * figure out which strip(s) to assign the track to, and fill the @a
    * hits structure.
    * 
-   * @param esd      Base ESD structure 
    * @param event    MC event 
    * @param vz       IP z-coordinate
-   * @param output   Output of Base hits
    * @param primary  Primary information, if available. 
    * 
    * @return true 
@@ -152,7 +150,12 @@ protected:
    * 
    */
   virtual void BeginTrackRefs() {}
-  virtual Bool_t CheckTrackRef(AliTrackReference* /*ref*/) const { return true; }
+  /** 
+   * Check a track reference 
+   * 
+   * @return true if the track reference should be used
+   */
+  virtual Bool_t CheckTrackRef(AliTrackReference*) const { return true; }
   /** 
    * Called at before loop over track references
    * 
@@ -164,11 +167,9 @@ protected:
    * 
    * @param particle  Particle to store
    * @param mother    Ultimate mother of particle 
-   * @param longest   Longest track reference
-   * @param vz        Z coordinate of IP
-   * @param nC        Total number of track-references in this sector  
-   * @param nT 	      Number of distint strips hit in this sector
-   * @param output    Output structure 
+   * @param ref      Longest track reference
+   *
+   * @return Weight factor
    */  
   virtual Double_t StoreParticle(AliMCParticle*       particle, 
 				 const AliMCParticle* mother,
@@ -185,7 +186,6 @@ protected:
    * Get incident angle of this track reference
    * 
    * @param ref Track reference
-   * @param vz  Z coordinate of the IP
    * 
    * @return incident angle (in radians)
    */

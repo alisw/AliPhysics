@@ -46,6 +46,8 @@ public:
 protected:
   /** 
    * Copy constructor 
+   *
+   * @param o object to copy from 
    */
   AliForwarddNdetaTask(const AliForwarddNdetaTask& o);
   /** 
@@ -82,6 +84,10 @@ protected:
   AliBasedNdetaTask::CentralityBin* 
   MakeCentralityBin(const char* name, Short_t l, Short_t h) const;
 
+  /**
+   * A structure holding the per-centrality bin information 
+   * 
+   */
   class CentralityBin : public AliBasedNdetaTask::CentralityBin 
   {
   public:

@@ -110,14 +110,11 @@ protected:
   /** 
    * Store a particle hit in Base<i>dr</i>[<i>s,t</i>] in @a output
    * 
-   * 
    * @param particle  Particle to store
    * @param mother    Ultimate mother of particle 
-   * @param longest   Longest track reference
-   * @param vz        Z coordinate of IP
-   * @param nC        Total number of track-references in this sector  
-   * @param nT 	      Number of distint strips hit in this sector
-   * @param output    Output structure 
+   * @param ref       Longest track reference
+   *
+   * @return weight
    */  
   Double_t StoreParticle(AliMCParticle*       particle, 
 			 const AliMCParticle* mother,

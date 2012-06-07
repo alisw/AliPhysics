@@ -22,6 +22,8 @@ class TH2;
 /** 
  * @defgroup pwglf_forward_mc  Monte-carlo code
  * 
+ * Sub-algorithms specific to Monte-carlo (simulation) productions 
+ *
  * @ingroup pwglf_forward
  */
 /** 

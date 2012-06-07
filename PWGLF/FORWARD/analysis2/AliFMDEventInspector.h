@@ -295,10 +295,15 @@ protected:
    * 
    * @param esd  ESD event 
    * @param vz   On return, the vertex Z position 
+   * @param vx   On return, the vertex X position 
+   * @param vy   On return, the vertex Y position 
    * 
    * @return @c true on success, @c false otherwise 
    */
-  Bool_t ReadVertex(const AliESDEvent* esd, Double_t& vz, Double_t& vx, Double_t& vy);
+  Bool_t ReadVertex(const AliESDEvent* esd, 
+		    Double_t& vz, 
+		    Double_t& vx, 
+		    Double_t& vy);
   /** 
    * Read centrality from event 
    * 
