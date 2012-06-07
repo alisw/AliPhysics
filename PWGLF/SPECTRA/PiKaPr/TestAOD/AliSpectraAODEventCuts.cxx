@@ -41,7 +41,7 @@ using namespace std;
 
 ClassImp(AliSpectraAODEventCuts)
 
-AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0)
+AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fIsMC(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0)
 {
   // Constructor
   fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
@@ -106,7 +106,11 @@ Bool_t AliSpectraAODEventCuts::CheckVtxRange()
 Bool_t AliSpectraAODEventCuts::CheckCentralityCut()
 {
   // Check centrality cut
-  if ( (fAOD->GetCentrality()->GetCentralityPercentile("V0M") <= fCentralityCutMax)  &&  (fAOD->GetCentrality()->GetCentralityPercentile("V0M") >= fCentralityCutMin) )  return kTRUE;   
+  Double_t cent=0;
+  if(fIsMC)cent=fAOD->GetCentrality()->GetCentralityPercentile("V0M");
+  else cent=ApplyCentralityPatchAOD049();
+  
+  if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  return kTRUE;   
   fHistoCuts->Fill(kVtxCentral);
   return kFALSE;
 }
@@ -123,6 +127,80 @@ void AliSpectraAODEventCuts::PrintCuts()
   cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;
 }
 //______________________________________________________
+
+Double_t AliSpectraAODEventCuts::ApplyCentralityPatchAOD049()
+{
+   //
+   //Apply centrality patch for AOD049 outliers
+   //
+  // if (fCentralityType!="V0M") {
+  //   AliWarning("Requested patch forAOD049 for wrong value (not centrality from V0).");
+  //   return -999.0;
+  // }
+  AliCentrality *centrality = fAOD->GetCentrality();
+   if (!centrality) {
+     AliWarning("Cannot get centrality from AOD event.");
+     return -999.0;
+   }
+   
+   Float_t cent = (Float_t)(centrality->GetCentralityPercentile("V0M"));
+   /*
+     Bool_t isSelRun = kFALSE;
+     Int_t selRun[5] = {138364, 138826, 138828, 138836, 138871};
+     if(cent<0){
+     Int_t quality = centrality->GetQuality();
+     if(quality<=1){
+     cent=(Float_t)centrality->GetCentralityPercentileUnchecked("V0M");
+     } else {
+     Int_t runnum=aodEvent->GetRunNumber();
+     for(Int_t ir=0;ir<5;ir++){
+     if(runnum==selRun[ir]){
+     isSelRun=kTRUE;
+     break;
+     }
+     }
+     if((quality==8||quality==9)&&isSelRun) cent=(Float_t)centrality->GetCentralityPercentileUnchecked("V0M");
+     }
+     }
+   */
+   if(cent>=0.0) {
+     Float_t v0 = 0.0;
+     AliAODEvent *aodEvent = (AliAODEvent *)fAOD;
+     AliAODVZERO *aodV0 = (AliAODVZERO *) aodEvent->GetVZEROData();
+     v0+=aodV0->GetMTotV0A();
+     v0+=aodV0->GetMTotV0C();
+     if ( (cent==0) && (v0<19500) ) {
+       AliDebug(3, Form("Filtering issue in centrality -> cent = %5.2f",cent));
+       return -999.0;
+     }
+     Float_t tkl = (Float_t)(aodEvent->GetTracklets()->GetNumberOfTracklets());
+     Float_t val = 1.30552 +  0.147931 * v0;
+     
+     Float_t tklSigma[101] = {176.644, 156.401, 153.789, 153.015, 142.476, 137.951, 136.127, 129.852, 127.436, 124.86,
+			      120.788, 115.611, 113.172, 110.496, 109.127, 104.421, 102.479, 99.9766, 97.5152, 94.0654,
+			      92.4602, 89.3364, 87.1342, 83.3497, 82.6216, 81.1084, 78.0793, 76.1234, 72.9434, 72.1334,
+			      68.0056, 68.2755, 66.0376, 62.9666, 62.4274, 59.65, 58.3776, 56.6361, 54.5184, 53.4224,
+			      51.932, 50.8922, 48.2848, 47.912, 46.5717, 43.4114, 43.2083, 41.3065, 40.1863, 38.5255,
+			      37.2851, 37.5396, 34.4949, 33.8366, 31.8043, 31.7412, 30.8392, 30.0274, 28.8793, 27.6398,
+			      26.6488, 25.0183, 25.1489, 24.4185, 22.9107, 21.2002, 21.6977, 20.1242, 20.4963, 19.0235,
+			      19.298, 17.4103, 16.868, 15.2939, 15.2939, 16.0295, 14.186, 14.186, 15.2173, 12.9504, 12.9504,
+			      12.9504, 15.264, 12.3674, 12.3674, 12.3674, 12.3674, 12.3674, 18.3811, 13.7544, 13.7544,
+			      13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544, 13.7544
+     };
+     
+     if ( TMath::Abs(tkl-val) > 6.*tklSigma[(Int_t)cent] )  {
+       AliDebug(3, Form("Outlier event in centrality -> cent = %5.2f",cent));
+       return -999.0;
+     }
+   } else {
+     //force it to be -999. whatever the negative value was
+     cent = -999.;
+   }
+   return cent;
+}
+
+//______________________________________________________
+
 
 Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
 {

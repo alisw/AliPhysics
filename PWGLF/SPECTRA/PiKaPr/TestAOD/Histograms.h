@@ -95,7 +95,10 @@ namespace AliSpectraNameSpace
       kHistPIDTPCPion,                              
       kHistPIDTPCKaon,                              
       kHistPIDTPCProton,                              
-      kNHistPID =kHistPIDTPCProton,                           
+      kHistPIDTPCPionRec,                              
+      kHistPIDTPCKaonRec,                              
+      kHistPIDTPCProtonRec,                              
+      kNHistPID =kHistPIDTPCProtonRec,                           
       
       kHistNSigPionTPC,                              
       kHistNSigKaonTPC,                              

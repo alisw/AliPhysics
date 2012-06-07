@@ -50,7 +50,7 @@ public:
   void FillQAHistos(AliSpectraAODHistoManager * hman, AliAODTrack * track, AliSpectraAODTrackCuts * trackCuts) ;
   void SetNSigmaCut(Float_t nsigma) { fNSigmaPID = nsigma; }
 
-  Int_t GetParticleSpecie(AliAODTrack      * trk, AliSpectraAODTrackCuts * trackCuts);
+  Int_t GetParticleSpecie(AliSpectraAODHistoManager * hman,AliAODTrack      * trk, AliSpectraAODTrackCuts * trackCuts);
   Int_t GetParticleSpecie(AliAODMCParticle * trk);
   
   Long64_t Merge(TCollection* list);

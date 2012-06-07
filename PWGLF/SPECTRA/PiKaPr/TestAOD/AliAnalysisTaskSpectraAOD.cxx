@@ -152,7 +152,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     fHistMan->GetPtHistogram(kHistPtRec)->Fill(track->Pt(),dca);  // PT histo
     
     // get identity and charge
-    Int_t idRec  = fPID->GetParticleSpecie(track, fTrackCuts);
+    Int_t idRec  = fPID->GetParticleSpecie(fHistMan,track, fTrackCuts);
     
     Int_t charge = track->Charge() > 0 ? kChPos : kChNeg;
     
