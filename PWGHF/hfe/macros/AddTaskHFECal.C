@@ -55,5 +55,22 @@ AliAnalysisTask *AddTaskHFECal()
   mgr->ConnectInput(hfetaskTrig, 0, cinput);
   mgr->ConnectOutput(hfetaskTrig, 1, coutput1);
   
+  if(MCthere)
+    {
+    //MB trigger
+    AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere);
+    mgr->AddTask(hfetaskMB);
+    hfetaskMB->SelectCollisionCandidates(AliVEvent::kMB);
+
+    TString containerName3 = mgr->GetCommonFileName();
+    containerName3 += ":PWGHF_hfeCalkMB";
+
+     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFE_Results_EMCalMB", TList::Class(),AliAnalysisManager::kOutputContainer, containerName3.Data());
+     mgr->ConnectInput(hfetaskMB, 0, cinput);
+     mgr->ConnectOutput(hfetaskMB, 1, coutput1);
+     }
+  
+
   return NULL;
 }
