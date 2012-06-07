@@ -40,5 +40,6 @@
 #pragma link C++ class AliAnalysisTaskEmcal+;
 #pragma link C++ class AliEmcalParticleMaker+;
 #pragma link C++ class AliEmcalClusTrackMatcherTask+;
+#pragma link C++ class AliAnalysisTaskPi0V2+;
 
 #endif
