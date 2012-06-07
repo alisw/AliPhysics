@@ -1,20 +1,18 @@
+/**
+ * @file   MakeMCCorrTrain.C
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Fri Jun  1 13:54:47 2012
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_trains
+ */
 #include "TrainSetup.C"
 
 //====================================================================
 /**
  * Analysis train to make Forward and Central MC corrections
  * 
- * To run, do 
- * @code 
- * gROOT->LoadMacro("TrainSetup.C");
- * // Make train 
- * MakeMCCorrTrain t("My Analysis");
- * // Set variaous parameters on the train 
- * t.SetDataDir("/home/of/data");
- * t.AddRun(118506)
- * // Run it 
- * t.Run("LOCAL", "FULL", -1, false, false);
- * @endcode 
  *
  * @ingroup pwglf_forward_mc
  * @ingroup pwglf_forward_trains
@@ -27,68 +25,26 @@ public:
    * in Termiante mode on Grid
    * 
    * @param name     Name of train (free form)
-   * @param dateTime Append date and time to name 
-   * @param year     Year     - if not specified, current year
-   * @param month    Month    - if not specified, current month
-   * @param day      Day      - if not specified, current day
-   * @param hour     Hour     - if not specified, current hour
-   * @param min      Minutes  - if not specified, current minutes
    */
-  MakeMCCorrTrain(const  char* name, 
-		  Bool_t       dateTime = false,
-		  UShort_t     year     = 0, 
-		  UShort_t     month    = 0, 
-		  UShort_t     day      = 0, 
-		  UShort_t     hour     = 0, 
-		  UShort_t     min      = 0) 
-    : TrainSetup(name, dateTime, 
-		 year, month, day, hour, min)
-  {}
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode - see TrainSetup::EMode
-   * @param oper     Operation - see TrainSetup::EOperation
-   * @param nEvents  Number of events (negative means all)
-   * @param usePar   If true, use PARs 
-   */
-  void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t usePar=false)
+  MakeMCCorrTrain(const  char* name) 
+  : TrainSetup(name)
   {
-    Info("Run", "Running in mode=%s, oper=%s, events=%d, Par=%d", 
-	 mode, oper, nEvents, usePar);
-    Exec("ESD", mode, oper, nEvents, true, usePar);
-  }
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode - see TrainSetup::EMode
-   * @param oper     Operation - see TrainSetup::EOperation
-   * @param nEvents  Number of events (negative means all)
-   * @param usePar   If true, use PARs 
-   */
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1,
-	   Bool_t usePar = false)
-  {
-    Info("Run", "Running in mode=%d, oper=%d, events=%d, Par=%d", 
-	 mode, oper, nEvents, usePar);
-    Exec(kESD, mode, oper, nEvents, true, usePar);
+    SetType(kESD);
   }
 protected:
   /** 
    * Create the tasks 
    * 
-   * @param mode Processing mode
    * @param par  Whether to use par files 
    * @param mgr  Analysis manager 
    */
-  void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
+  void CreateTasks(EMode /*mode*/, Bool_t par, AliAnalysisManager* mgr)
   {
     // --- Output file name ------------------------------------------
     AliAnalysisManager::SetCommonFileName("forward_mccorr.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWGLFforward2", mode, par, true);
+    LoadLibrary("PWGLFforward2", par, true);
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -135,8 +91,8 @@ protected:
    * Do not the centrality selection
    */
   void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
-  Double_t fVzMin;     // Least v_z
-  Double_t fVzMax;     // Largest v_z
+  //__________________________________________________________________
+  const char* ClassName() const { return "MakeMCCorrTrain"; }
 };
 
 //
