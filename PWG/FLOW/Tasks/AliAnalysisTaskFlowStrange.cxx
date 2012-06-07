@@ -332,9 +332,8 @@ void AliAnalysisTaskFlowStrange::ReadFromESDv0(AliESDEvent *tESD)
     if(fSpecie==0) {
       dMASS = myV0->GetEffMass(2,2);
     } else {
-      if(pass==1) dMASS = myV0->GetEffMass(2,4);
+      dMASS = myV0->GetEffMass(2,4);
       if(pass==2) dMASS = myV0->GetEffMass(4,2);
-      if(pass>2)  dMASS = myV0->GetEffMass(2,4);
     }
     dPT=myV0->Pt();
     dQT=myV0->PtArmV0();
@@ -353,7 +352,6 @@ Int_t AliAnalysisTaskFlowStrange::PassesESDCuts(AliESDv0 *myV0, AliESDEvent *tES
 			 tESD->GetPrimaryVertex()->GetY(),
 			 tESD->GetPrimaryVertex()->GetZ()); // primary vertex
   if(myV0->GetOnFlyStatus() ) return 0;
-
   AliESDtrack *iT, *jT;
 
   // TESTING CHARGE
@@ -380,7 +378,8 @@ Int_t AliAnalysisTaskFlowStrange::PassesESDCuts(AliESDv0 *myV0, AliESDEvent *tES
   Double_t dD0M=jT->GetD(vv.X(),vv.Y(),tESD->GetMagneticField());
   Double_t dD0D0=dD0P*dD0M;
   Double_t dQT=myV0->PtArmV0();
-  Double_t dALPHA=myV0->AlphaV0();
+  Double_t dALPHA=myV0->AlphaV0(); // return (lQlPos - lQlNeg)/(lQlPos + lQlNeg);
+  if(iPos==0) dALPHA = -dALPHA; // protects for a change in convention
   Double_t dPT=myV0->Pt();
   Double_t dETA=myV0->Eta();
   ((TH2D*)((TList*)fQAList->FindObject("QACutsBefore"))->FindObject("BefDL"))  ->Fill(dDL,dPT);
@@ -400,7 +399,7 @@ Int_t AliAnalysisTaskFlowStrange::PassesESDCuts(AliESDv0 *myV0, AliESDEvent *tES
   if(dETA <fV0Cuts[6]) passes = 0;
   if(dETA >fV0Cuts[7]) passes = 0;
   if(fSpecie==0) if(dQT<fV0Cuts[5]) passes = 0;
-
+  if(fSpecie==1&&passes==1&&dALPHA<0) passes = 2; // antilambda
   if(passes&&fV0Cuts[8]) {
     switch(fSpecie) {
     case 0: // K0 PID
@@ -412,23 +411,22 @@ Int_t AliAnalysisTaskFlowStrange::PassesESDCuts(AliESDv0 *myV0, AliESDEvent *tES
 	passes = 0;
       break;
     case 1: // Lambda PID i==pos j==neg
-      Int_t antilambda=2;
-      Int_t lambda=1;
-      // antilambda p- pi+
-      if( (iT->GetInnerParam()->GetP()<15) && 
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>3.) )
-	antilambda = 0;
-      if( (jT->GetInnerParam()->GetP()<15) && 
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kProton))>3.) )
-	antilambda = 0;
-      // lambda p+ pi-
-      if( (iT->GetInnerParam()->GetP()<15) && 
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kProton))>3.) )
-	lambda = 0;
-      if( (jT->GetInnerParam()->GetP()<15) && 
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>3.) )
-	lambda = 0;
-      passes=lambda+antilambda;
+      if(passes==1) {
+	if( (iT->GetInnerParam()->GetP()<15) && 
+	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kProton))>3.) )
+	  passes = 0;
+	if( (jT->GetInnerParam()->GetP()<15) && 
+	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>3.) )
+	  passes = 0;
+      }
+      if(passes==2) {
+	if( (iT->GetInnerParam()->GetP()<15) && 
+	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>3.) )
+	  passes = 0;
+	if( (jT->GetInnerParam()->GetP()<15) && 
+	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kProton))>3.) )
+	  passes = 0;
+      }
       break;
     }
   }
@@ -454,9 +452,8 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD)
     if(fSpecie==0) {
       dMASS = myV0->MassK0Short();
     } else {
-      if(pass==1) dMASS = myV0->MassLambda();
+      dMASS = myV0->MassLambda();
       if(pass==2) dMASS = myV0->MassAntiLambda();
-      if(pass>2)  dMASS = myV0->MassLambda();
     }
     dPT=myV0->Pt();
     dQT=myV0->PtArmV0();
@@ -472,7 +469,6 @@ void AliAnalysisTaskFlowStrange::ReadFromAODv0(AliAODEvent *tAOD)
 Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAOD)
 {
   if (myV0->GetOnFlyStatus() ) return 0;
-
   //the following is needed in order to evualuate track-quality
   AliAODTrack *iT, *jT;
   AliAODVertex *vV0s = myV0->GetSecondaryVtx();
@@ -480,8 +476,6 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
   vV0s->GetXYZ(pos);
   vV0s->GetCovarianceMatrix(cov);
   const AliESDVertex vESD(pos,cov,100.,100);
-
-
   // TESTING CHARGE
   int iPos, iNeg;
   iT=(AliAODTrack*) myV0->GetDaughter(0);
@@ -518,13 +512,9 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
   Double_t dD0P=ieT.GetD(pvertex[0],pvertex[1],tAOD->GetMagneticField());
   Double_t dD0M=jeT.GetD(pvertex[0],pvertex[1],tAOD->GetMagneticField());
   Double_t dD0D0=dD0P*dD0M;
-  //Double_t dRAD = myV0->RadiusV0;
-  //Double_t dOpenAngle = myV0->OpenAngleV0();
-  //Double_t dRapK=myV0->RapK0Short();
-  //Double_t dRapL=myV0->RapLambda();
-  //Double_t dDCAv0 = myV0->DcaV0ToPrimVertex();
   Double_t dQT=myV0->PtArmV0();
-  Double_t dALPHA=myV0->AlphaV0();
+  Double_t dALPHA=myV0->AlphaV0(); // AlphaV0 -> AODRecoDecat::Alpha -> return 1.-2./(1.+QlProng(0)/QlProng(1));
+  if(myV0->ChargeProng(iPos)<0) dALPHA = -dALPHA; // protects for a change in convention
   Double_t dPT=myV0->Pt();
   Double_t dETA=myV0->Eta();
   ((TH2D*)((TList*)fQAList->FindObject("QACutsBefore"))->FindObject("BefDL"))  ->Fill(dDL,dPT);
@@ -544,7 +534,7 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
   if(dETA <fV0Cuts[6]) passes = 0;
   if(dETA >fV0Cuts[7]) passes = 0;
   if(fSpecie==0) if(dQT<fV0Cuts[5]) passes = 0;
-
+  if(fSpecie==1&&passes==1&&dALPHA<0) passes = 2; // antilambda
   if(passes&&fV0Cuts[8]) {
     switch(fSpecie) {
     case 0: // K0 PID
@@ -556,23 +546,22 @@ Int_t AliAnalysisTaskFlowStrange::PassesAODCuts(AliAODv0 *myV0, AliAODEvent *tAO
 	passes = 0;
       break;
     case 1: // Lambda PID  i==pos j ==neg
-      Int_t antilambda=2;
-      Int_t lambda=1;
-      // antilambda p- pi+
-      if( (iT->GetTPCmomentum()<15) &&
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>3.) )
-	antilambda = 0;
-      if( (jT->GetTPCmomentum()<15) &&
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kProton))>3.) )
-	antilambda = 0;
-      // lambda p+ pi-
-      if( (iT->GetTPCmomentum()<15) &&
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kProton))>3.) )
-	lambda = 0;
-      if( (jT->GetTPCmomentum()<15) &&
-	  (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>3.) )
-	lambda = 0;
-      passes=lambda+antilambda;
+      if(passes==1) {
+	if( (iT->GetTPCmomentum()<15) &&
+	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kProton))>3.) )
+	  passes = 0;
+	if( (jT->GetTPCmomentum()<15) &&
+	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kPion))>3.) )
+	  passes = 0;
+      }
+      if(passes==2) {
+	if( (iT->GetTPCmomentum()<15) &&
+	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(iT,AliPID::kPion))>3.) )
+	  passes = 0;
+	if( (jT->GetTPCmomentum()<15) &&
+	    (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(jT,AliPID::kProton))>3.) )
+	  passes = 0;
+      }
       break;
     }
   }
@@ -631,6 +620,7 @@ void AliAnalysisTaskFlowStrange::SetCuts2010(int set) {
     fV0Cuts[0] = -1e+6; fV0Cuts[1] = +1e+6; fV0Cuts[2] = -1e+6;
     fV0Cuts[3] = -1e+6; fV0Cuts[4] = +1e+6; fV0Cuts[5] = -1e+6;
     fV0Cuts[6] = -1e+6; fV0Cuts[7] = +1e+6; fV0Cuts[8] = 0;
+    break;
   case(1): // Tight cuts
     fV0Cuts[0] = +0.5; fV0Cuts[1] = +0.5; fV0Cuts[2] = +0.998;
     fV0Cuts[3] = +0.1; fV0Cuts[4] = +0.0; fV0Cuts[5] = +0.105;
@@ -640,6 +630,11 @@ void AliAnalysisTaskFlowStrange::SetCuts2010(int set) {
     fV0Cuts[0] = +0.5; fV0Cuts[1] = +0.5; fV0Cuts[2] = +0.998;
     fV0Cuts[3] = +0.1; fV0Cuts[4] = +0.0; fV0Cuts[5] = +0.105;
     fV0Cuts[6] = -0.8; fV0Cuts[7] = +0.8; fV0Cuts[8] = 1;
+    break;
+  case(3): // No cuts + PID
+    fV0Cuts[0] = -1e+6; fV0Cuts[1] = +1e+6; fV0Cuts[2] = -1e+6;
+    fV0Cuts[3] = -1e+6; fV0Cuts[4] = +1e+6; fV0Cuts[5] = -1e+6;
+    fV0Cuts[6] = -1e+6; fV0Cuts[7] = +1e+6; fV0Cuts[8] = 1;
     break;
   }
 }

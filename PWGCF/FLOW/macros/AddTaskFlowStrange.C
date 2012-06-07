@@ -1,15 +1,18 @@
 void AddTaskFlowStrange(int trigger, int centrMin, int centrMax, int harmonic=2) {
-  AddStrangeWagon(trigger,centrMin,centrMax,"K0",Form("K%d%dc%d",centrMin,centrMax,0),0,0,"V0M",harmonic);
-  AddStrangeWagon(trigger,centrMin,centrMax,"K0",Form("K%d%dc%d",centrMin,centrMax,1),0,1,"V0M",harmonic);
-  AddStrangeWagon(trigger,centrMin,centrMax,"K0",Form("K%d%dc%d",centrMin,centrMax,2),0,2,"V0M",harmonic);
-  AddStrangeWagon(trigger,centrMin,centrMax,"K0",Form("K%d%dc%dTRK",centrMin,centrMax,1),0,1,"TRK",harmonic);
-  AddStrangeWagon(trigger,centrMin,centrMax,"L0",Form("L%d%dc%d",centrMin,centrMax,0),1,0,"V0M",harmonic);
-  AddStrangeWagon(trigger,centrMin,centrMax,"L0",Form("L%d%dc%d",centrMin,centrMax,1),1,1,"V0M",harmonic);
-  AddStrangeWagon(trigger,centrMin,centrMax,"L0",Form("L%d%dc%d",centrMin,centrMax,2),1,2,"V0M",harmonic);
-  AddStrangeWagon(trigger,centrMin,centrMax,"L0",Form("L%d%dc%dTRK",centrMin,centrMax,1),1,1,"TRK",harmonic);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc0",centrMin,centrMax),   0,0,"V0M",harmonic);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc1",centrMin,centrMax),   0,1,"V0M",harmonic);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc2",centrMin,centrMax),   0,2,"V0M",harmonic);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc3",centrMin,centrMax),   0,3,"V0M",harmonic);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"K0",Form("K%d%dc2TRK",centrMin,centrMax),0,2,"TRK",harmonic);
+
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc0",centrMin,centrMax),   1,0,"V0M",harmonic);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc1",centrMin,centrMax),   1,1,"V0M",harmonic);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc2",centrMin,centrMax),   1,2,"V0M",harmonic);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc3",centrMin,centrMax),   1,3,"V0M",harmonic);
+  AddTaskFlowStrange(trigger,centrMin,centrMax,"L0",Form("L%d%dc2TRK",centrMin,centrMax),1,2,"TRK",harmonic);
 }
-void AddStrangeWagon(int trigger, float centrMin, float centrMax, TString folderName="myFolder", TString suffixName="mySuffix", 
-	      int specie=0, int cuts=1, char* MULT="V0M", int harmonic=2) {
+void AddTaskFlowStrange(int trigger, float centrMin, float centrMax, TString folderName="myFolder", TString suffixName="mySuffix", 
+			int specie=0, int cuts=1, char* MULT="V0M", int harmonic=2) {
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName.ReplaceAll(".root","");
 
