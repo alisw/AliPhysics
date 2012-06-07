@@ -1,10 +1,21 @@
+/**
+ * @file   QATrain.C
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Fri Jun  1 13:55:50 2012
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_trains
+ */
+
 #include "TrainSetup.C"
 #include <AliESDInputHandlerRP.h>
 #include <AliCDBManager.h>
 
 //====================================================================
 /**
- * Analysis train to do energy loss fits
+ * Analysis train to do full Quality Assurance train
  * 
  * @ingroup pwglf_forward_trains
  */
@@ -57,57 +68,21 @@ public:
    * in Termiante mode on Grid
    * 
    * @param name     Name of train 
-   * @param useCent  Whether to use centrality or not 
-   * @param dateTime Append date and time to name
-   * @param year     Year
-   * @param month    Month 
-   * @param day      Day
-   * @param hour     Hour 
-   * @param min      Minutes
    */
-  QATrain(UInt_t      run  = 0,
-	  UShort_t    flags = kDefaultFlags, 
-	  UInt_t      modules = kDefaultModules)
-    : TrainSetup("PilotAnalysis", false, 0, 0, 0, 0, 0), 
-      fRun(run),
-      fFlags(flags), 
-      fModules(modules), 
+  QATrain(const char* name="PilotAnalysis")
+    : TrainSetup(name, false, 0, 0, 0, 0, 0), 
+      fRun(0),
+      fFlags(kDefaultFlags), 
+      fModules(kDefaultModules), 
       fTriggerMask(AliVEvent::kAnyINT), 
       fTriggerHM(AliVEvent::kHighMult),
       fTriggerEMC(AliVEvent::kEMC7), 
       fTriggerMUONBarrel(AliVEvent::kMUU7),
       fCollisionType(0) // 0: pp, 1: PbPb
   {}
-  //__________________________________________________________________
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode
-   * @param oper     Operation
-   * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
-   * @param par      IF true, use par files 
-   */
-  void Run(const char* oper, 
-	   Int_t nEvents=-1, Bool_t mc=false, Bool_t par=false)
-  {
-    Exec("ESD", "Local", oper, nEvents, mc, par);
-  }
-  //__________________________________________________________________
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode
-   * @param oper     Operation
-   * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
-   * @param par      IF true, use par files 
-   */
-  void Run(EOper oper, Int_t nEvents=-1, Bool_t mc=false,
-	   Bool_t par=false)
-  {
-    Exec(kESD, kLocal, oper, nEvents, mc, par);
-  }
+  void SetFlags(UShort_t flags) { fFlags = flags; }
+  void SetRun(UInt_t run) { fRun = run; }
+  void SetModules(UInt_t m) { fModules = m; }
 protected:
   AliVEventHandler* CreateInputHandler(EType type)
   {

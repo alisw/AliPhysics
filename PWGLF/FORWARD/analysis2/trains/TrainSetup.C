@@ -1,6 +1,8 @@
 /**
  * @defgroup pwglf_forward_trains Trains
  * 
+ * Train specifications 
+ *
  * @ingroup pwglf_forward
  */
 /**
@@ -50,91 +52,25 @@ class TArrayI;
 class TChain;
 class AliAnalysisManager;
 class TDatime;
+class TString;
+class TSystemDirectory;
 #endif
+
+
 
 //====================================================================
 /** 
  * Generic set-up of an analysis train using the grid-handler (AliEn plugin). 
- * 
- * Users should define a class that derives from this.  The class
- * should implement the member function CreateTasks to add needed
- * tasks to the train
- * 
- * @code 
- * // MyTrain.C 
- * class MyTrain : public TrainSetup
- * {
- * public:
- *   MyTrain(Bool_t   dateTime = false, 
- *           UShort_t year     = 0, 
- *           UShort_t month    = 0, 
- *           UShort_t day      = 0, 
- *           UShort_t hour     = 0, 
- *           UShort_t min      = 0) 
- *     : TrainSetup("My train", dateTime, year, month, day, hour, min)
- *   {}
- *   void Run(const char* type, const char* mode, const char* oper, 
- *            Int_t nEvents=-1, Bool_t mc=false,
- *            Bool_t usePar=false)
- *   {
- *     Exec(type, mode, oper, nEvents, mc, usePar);
- *   }
- * protected:
- *   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
- *   {
- *     AliAnalysisManager::SetCommonFileName("my_analysis.root");
- *     LoadLibrary("MyAnalysis", mode, par, true);
- *     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
- *     gROOT->Macro("MyAnalysis.C");
- *   }
- * };
- * @endcode 
- * 
- * This can then be run like 
- * 
- * @verbatim 
- * > aliroot 
- * Root> .L TrainSetup.C 
- * Root> .L MyTrain.C 
- * Root> MyTrain t;
- * Root> t.Run();
- * @endverbatim 
- * 
- * or as a script 
- * 
- * @code 
- * {
- *   gROOT->LoadMacro("TrainSetup.C");
- *   gROOT->LoadMacro("MyTrain.C");
- *   MyTrain t;
- *   t.Run();
- * }
- * @endcode 
- * 
- * To byte compile this, you need to 
- * - load the ROOT AliEn library
- * - load the analysis libraries 
- * - add $ALICE_ROOT/include to header search 
- * first 
  *
- * @verbatim 
- * > aliroot 
- * Root> gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2:"
- * Root>                          "$ALICE_ROOT/ANALYSIS/macros",
- * Root> 			  gROOT->GetMacroPath()));
- * Root> gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
- * Root> gSystem->Load("libRAliEn");
- * Root> gSystem->Load("libANALYSIS");
- * Root> gSystem->Load("libANALYSISalice");
- * Root> gROOT->LoadMacro("TrainSetup.C+");
- * @endverbatim 
- * 
- * 
+ * See also @ref train_setup_doc
+ *
  * @ingroup pwglf_forward_trains
  * 
  */
 struct TrainSetup
 {
+  // Forward declaration 
+  class Runner;
   /** 
    * Data type to process 
    */
@@ -142,7 +78,9 @@ struct TrainSetup
     /** Event Summary Data */
     kESD, 
     /** Analysis Object Data */
-    kAOD
+    kAOD,
+    /** User defined */
+    kUser
   };
   /**
    * How to run the analysis
@@ -170,7 +108,9 @@ struct TrainSetup
     /** Merge and terminate */
     kTerminate, 
     /** Full run */
-    kFull
+    kFull,
+    /** Only intialize */
+    kInitialize
   };
 
 
@@ -182,16 +122,8 @@ struct TrainSetup
    * Constructor 
    * 
    * @param name         Name of analysis (free-form)
-   * @param useDateTime  Whether to append date and time to the name 
-   * @param year         Year - if not specified, taken from current date
-   * @param month        Month - if not specified, taken from current date 
-   * @param day          Day - if not specified, taken from current date 
-   * @param hour         Hour - if not specified, taken from current time  
-   * @param min          Minute - if not specified, taken from current time  
    */
-  TrainSetup(const char* name, Bool_t useDateTime=true, 
-	     UShort_t year=0, UShort_t month=0, 
-	     UShort_t day=0, UShort_t hour=0, UShort_t min=0) 
+  TrainSetup(const char* name)
     : fName(name),
       fEscapedName(name),
       fRootVersion("v5-28-00a"),
@@ -199,11 +131,10 @@ struct TrainSetup
       fAliEnAPIVersion("V1.1x"),
       fProofServer("alicecaf.cern.ch"),
       fDataDir("/alice/data/2010/LHC10c"),
+      fDataPattern("*"),
       fDataSet("/COMMON/COMMON/LHC09a4_run8100X#/esdTree"),
       fXML(""), 
       fNReplica(4),
-      fESDPass(3),
-      fPassPostfix(""),
       fAllowOverwrite(kFALSE),
       fUseGDB(kFALSE), 
       fMaxSplit(50),
@@ -212,227 +143,220 @@ struct TrainSetup
       fListOfSources(),
       fListOfLibraries(),
       fListOfExtras(),
-      fDatime((year<1995?1995:year), month, day, hour, min, 0)
+      fDatime(1995, 0, 0, 0, 0, 0), 
+      fExecType(kUser), 
+      fExecMode(kLocal), 
+      fExecOper(kFull),
+      fUsePar(false), 
+      fMC(false), 
+      fPerRunMerge(false),
+      fVerbose(0)
   {
-    // If no time is specified, set to now 
-    if (useDateTime && (year == 0 || month == 0 || day == 0)) fDatime.Set();
-      
-    fEscapedName = EscapeName(fName, fDatime);
-  }
-  
-  static TString EscapeName(const char* name, const TDatime& datime)
-  {
-    TString escaped = name;
-    char  c[] = { ' ', '/', '@', 0 };
-    char* p   = c;
-    while (*p) { 
-      escaped.ReplaceAll(Form("%c", *p), "_");
-      p++;
-    }
-    if (datime.GetYear() <= 1995 && 
-	datime.GetMonth() == 0 && 
-	datime.GetDay() == 0) return escaped;
-    escaped.Append(Form("_%04d%02d%02d_%02d%02d", 
-			datime.GetYear(), 
-			datime.GetMonth(), 
-			datime.GetDay(), 
-			datime.GetHour(), 
-			datime.GetMinute()));
-    return escaped;
-  }    
-  void SetDateTime(UShort_t year, UShort_t month, UShort_t day, 
-		   UShort_t hour, UShort_t minutes)
-  {
-    fDatime.Set((year<1995?1995:year), month, day, hour, minutes, 0);
     fEscapedName = EscapeName(fName, fDatime);
   }
   //__________________________________________________________________
   /** 
-   * Parse a string into a type enum
-   * 
-   * @param type String to pass
-   * 
-   * @return Enumaration value 
+   * @{ 
+   * @name Software environment 
    */
-  static EType ParseType(const char* type, Bool_t& /*mc*/)
-  {
-    // mc = false;
-    TString sType(type);
-    sType.ToUpper();
-    EType eType = kESD;
-    // if      (sType.Contains("MC"))    mc    = true;
-    if      (sType.Contains("ESD"))   eType = kESD; 
-    else if (sType.Contains("AOD"))   eType = kAOD;
-    else 
-      Fatal("Run", "Unknown type '%s'", type);
-    
-    return eType;
-  }
-  //__________________________________________________________________
-  /** 
-   * Return a string that reflects the passed mode
-   * 
-   * @param eMode Mode 
-   * 
-   * @return String representation of mode 
-   */
-  static const char* ModeString(EMode eMode) 
-  {
-    switch (eMode) {
-    case kLocal:	return "LOCAL";
-    case kProof:	return "PROOF";
-    case kGrid:		return "GRID";
-    }
-    return 0;
-  }
-  //__________________________________________________________________
-  /** 
-   * Parse a string for mode specifier 
-   * 
-   * @param mode Mode string
-   * 
-   * @return EMode value
-   */
-  static EMode ParseMode(const char* mode)
-  {
-    TString sMode(mode);
-    sMode.ToUpper();
-    EMode eMode = kLocal;
-    if      (sMode == "LOCAL") eMode = kLocal;
-    else if (sMode == "PROOF") eMode = kProof;
-    else if (sMode == "GRID")  eMode = kGrid;
-    else 
-      Fatal("Run", "Unknown mode '%s'", mode);
-    return eMode;
-  }
-
-  //__________________________________________________________________
-  /** 
-   * Return a string that reflects the passed operation
-   * 
-   * @param eOper Operation
-   * 
-   * @return String representation of operation 
-   */
-  static const char* OperString(EOper eOper) 
-  {
-    switch (eOper) {
-    case kTest:		return "TEST";
-    case kOffline:	return "OFFLINE";
-    case kSubmit:	return "SUBMIT";
-    case kTerminate:	return "TERMINATE";
-    case kFull:		return "FULL";
-    }
-    return 0;
-  }
-  //__________________________________________________________________
-  /** 
-   * Parse an operation string 
-   * 
-   * @param oper Operation 
-   * 
-   * @return An EOper value
-   */
-  static EOper ParseOperation(const char* oper)
-  {
-    TString sOper(oper);
-    sOper.ToUpper();
-    EOper eOper = kFull;
-    if      (sOper == "TEST")      eOper = kTest;
-    else if (sOper == "OFFLINE")   eOper = kOffline;
-    else if (sOper == "SUBMIT")    eOper = kSubmit;
-    else if (sOper == "TERMINATE") eOper = kTerminate;
-    else if (sOper == "FULL")      eOper = kFull;
-    else 
-      Fatal("Run", "unknown operation '%s'", oper);
-    return eOper;
-  }
-
-  //__________________________________________________________________
   /** 
    * Set ROOT version to use 
    * 
    * @param v Version string of ROOT 
    */
   void SetROOTVersion(const char* v)    { fRootVersion = v; }
-  //__________________________________________________________________
   /** 
    * Set AliROOT version to use 
    * 
    * @param v Version string of AliROOT 
    */
   void SetAliROOTVersion(const char* v) { fAliRootVersion = v; }
-  //__________________________________________________________________
   /** 
    * Set the AliEn API version to use 
    * 
    * @param v AliEn API version 
    */
   void SetAliEnAPIVersion(const char* v) { fAliEnAPIVersion = v; }
+  /** 
+   * Wether to use par files through-out. Mandetory and enforced in
+   * case of a PROOF job,
+   * 
+   * @param usePar If true, use PAR files - even for base libraries 
+   */
+  void SetUsePar(Bool_t usePar) { fUsePar = usePar; }
+  /* @} */
+
   //__________________________________________________________________
   /** 
-   * Set the PROOF server URL
-   * 
-   * @param s PROOF server URL 
+   * @{ 
+   * @name Input data  
    */
-  void SetProofServer(const char* s)    { fProofServer = s; }
-  //__________________________________________________________________
   /** 
    * Set the GRID/Local data dir 
    * 
    * @param d Directory with data 
    */
   void SetDataDir(const char* d) { fDataDir = d; }
-  //__________________________________________________________________
+  /** 
+   * Set the glob pattern to search input files in - Grid only
+   * 
+   * @param pattern Glob pattern
+   */
+  void SetDataPattern(const char* pattern) { fDataPattern = pattern; }
   /** 
    * Set the PROOF data set 
    * 
    * @param d PROOF registered data set 
    */
   void SetDataSet(const char* d) { fDataSet = d; }
-  //__________________________________________________________________
   /** 
    * Set the XML file to use 
    * 
    * @param x XML file 
    */
   void SetXML(const char* x) { fXML = x; }
+  /** 
+   * Wether to assume the input comes from MC.  If this is set to
+   * true, and the CreateMCHandler member function isn't overloaded to
+   * return null, then the files @c galice.root, @c Kinematics.root,
+   * and @c TrackRefs.root must be present for each input file (@c
+   * AliESDs.root or @c AliAOD.root)
+   * 
+   * @param isMC If true, assume MC input 
+   */
+  void SetMC(Bool_t isMC) { fMC = isMC; } 
+  /* @} */
+
   //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Grid storage and splitting 
+   */
   /** 
    * Set how many replicas of the output we want 
    * 
    * @param n Number of replicas requested 
    */
   void SetNReplica(Int_t n) { fNReplica = n; }
-  //__________________________________________________________________
-  /** 
-   * Set the ESD pass to use 
-   * 
-   * @param pass Pass number 
-   */
-  void SetESDPass(Int_t pass) { fESDPass = pass; }
-  //__________________________________________________________________
-  /** 
-   * Set the ESD pass to use 
-   * 
-   * @param postfix Post fix to pass number 
-   */
-  void SetPassPostfix(const char* postfix) { fPassPostfix = postfix; }
-  //__________________________________________________________________
-  /** 
-   * Use GDB to wrap PROOF slaves 
-   * 
-   * @param use Whether to use GDB or not 
-   */
-  void SetUseGDB(Bool_t use=kTRUE) { fUseGDB = use; }
-  //__________________________________________________________________
   /** 
    * Set the maximum number of files per sub-job.  
    * 
    * @param max Maximum number of files per sub-job
    */  
   void SetMaxSplit(UShort_t max=50) { fMaxSplit = max; }
+  /* @} */
+
   //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Name and local working directory 
+   */
+  /** 
+   * Set whether to allow overwritting existing files/directories 
+   * 
+   * @param allow If true, allow overwritting files/directories
+   */
+  void SetAllowOverwrite(Bool_t allow) { fAllowOverwrite = allow; }
+  /** 
+   * Set the date and time 
+   * 
+   * @param year     Year (>1994) 
+   * @param month    Month
+   * @param day      Day
+   * @param hour     Hour
+   * @param minutes  Minute
+   */
+  void SetDateTime(UShort_t year, UShort_t month, UShort_t day, 
+		   UShort_t hour, UShort_t minutes)
+  {
+    fDatime.Set((year<1995?1995:year), month, day, hour, minutes, 0);
+    fEscapedName = EscapeName(fName, fDatime);
+  }
+  /** 
+   * Set the date and time from a string.
+   * 
+   * @param date Formatted like YYYY/MM/DD HH:MM:SS
+   */
+  void SetDateTime(const TString& date)
+  {
+    if (date.IsNull())
+      fDatime.Set(1985,0,0,0,0,0);
+    else if (date.EqualTo("now", TString::kIgnoreCase)) 
+      fDatime.Set();
+    else 
+      fDatime.Set(date);
+    fEscapedName = EscapeName(fName, fDatime);
+  }
+  /** 
+   * Return the escaped name 
+   * 
+   * @return Escaped name 
+   */
+  const TString& EscapedName() const 
+  {
+    return fEscapedName;
+  }
+  /* @} */
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Execution parameters 
+   */
+  /** 
+   * Set the PROOF server URL
+   * 
+   * @param s PROOF server URL 
+   */
+  void SetProofServer(const char* s)    { fProofServer = s; }
+  /** 
+   * Set the type of analysis
+   * 
+   * @param type AOD or ESD
+   */
+  void SetType(EType type) { fExecType = type; }
+  /** 
+   * Set the type of analysis
+   * 
+   * @param type AOD or ESD
+   */
+  void SetType(const char* type) { SetType(ParseType(type)); }
+  /** 
+   * Set the execution mode of analysis
+   * 
+   * @param mode LOCAL, PROOF, GRID 
+   */
+  void SetMode(EMode mode) { fExecMode = mode; }
+  /** 
+   * Set the execution mode of analysis
+   * 
+   * @param mode LOCAL, PROOF, GRID 
+   */
+  void SetMode(const char* mode) { SetMode(ParseMode(mode)); }
+  /** 
+   * Set the execution operation of analysis
+   * 
+   * @param oper FULL, TERMINATE, INIT 
+   */
+  void SetOperation(EOper oper) { fExecOper = oper; }
+  /** 
+   * Set the execution operation of analysis
+   * 
+   * @param oper FULL, TERMINATE, INIT 
+   */
+  void SetOperation(const char* oper) { SetOperation(ParseOperation(oper)); }
+  /** 
+   * Use GDB to wrap PROOF slaves 
+   * 
+   * @param use Whether to use GDB or not 
+   */
+  void SetUseGDB(Bool_t use=kTRUE) { fUseGDB = use; }
+  /* @} */
+
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Stuff to upload 
+   */
   /** 
    * Add a source file to be copied and byte compiled on slaves 
    * 
@@ -444,14 +368,29 @@ struct TrainSetup
     fListOfSources.Add(new TObjString(src)); 
     if (addToExtra) AddExtraFile(src); // Source code isn't copied!
   }
-  //__________________________________________________________________
   /** 
    * Add binary data to be uploaded to slaves 
    * 
    * @param lib Name of binary file 
    */
   void AddLibrary(const char* lib) { fListOfLibraries.Add(new TObjString(lib));}
+  /** 
+   * Add an extra file to be uploaded to slave 
+   * 
+   * @param file Extra file to be uploaded 
+   */
+  void AddExtraFile(const char* file)
+  {
+    if (!file || file[0] == '\0') return;
+    fListOfExtras.Add(new TObjString(file));
+  }
+  /* @} */
+
   //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Run numbers 
+   */
   /** 
    * Add a run to be analysed
    *  
@@ -461,7 +400,6 @@ struct TrainSetup
   {
     Int_t i = fRunNumbers.fN; fRunNumbers.Set(i+1); fRunNumbers[i] = run;
   }
-  //__________________________________________________________________
   /** 
    * Read run numbers from a file 
    * 
@@ -483,25 +421,880 @@ struct TrainSetup
     }
     file.close();
   }
-  //__________________________________________________________________
   /** 
-   * Add an extra file to be uploaded to slave 
+   * Set the runs to read from a string.  The parts should be
+   * delimited by a character in the string @a delim.  If a non-number
+   * part is seen, it is assumed to be the name of a file containing
+   * run numbers.
    * 
-   * @param file Extra file to be uploaded 
+   * @param runs   String of runs
+   * @param delim  Delimiters 
    */
-  void AddExtraFile(const char* file)
+  void SetRuns(const TString& runs, const char* delim=":, \t") 
   {
-    if (!file || file[0] == '\0') return;
-    fListOfExtras.Add(new TObjString(file));
+    TIter next(runs.Tokenize(delim));
+    TObjString* os = 0;
+    while ((os = static_cast<TObjString*>(next()))) {
+      TString s(os->String());
+      if (s.IsNull()) continue;
+      if (!s.IsDigit()) ReadRunNumbers(s);
+      else              AddRun(s.Atoi());
+    }
   }
+  /** 
+   * Whether final merge should be done over all runs (argument true),
+   * or for each run individually. 
+   * 
+   * @param perRun If true, do final merge over all runs 
+   */
+  void SetPerRunMerge(Bool_t perRun) { fPerRunMerge = perRun; }
+  /* @} */
+  //__________________________________________________________________
+  /**
+   * @{ 
+   * @name Execution 
+   */
+  /** 
+   * Initialize the job 
+   * 
+   * @return true on success, false otherwise
+   */
+  Bool_t Init()
+  {
+    if (fExecMode == kProof) fUsePar    = true;
+
+    // Info("Init", "Connecting in mode=%d", mode);
+    if (!Connect()) return false;
+
+    // --- Get current directory and set-up sub-directory ------------
+    TString cwd = gSystem->WorkingDirectory();
+    if (!SetupWorkingDirectory()) return false;
+
+    // --- Load the common libraries ---------------------------------
+    if (!LoadCommonLibraries()) return false;
+    
+    // --- Create analysis manager -----------------------------------
+    AliAnalysisManager *mgr  = new AliAnalysisManager(fName,"Analysis Train");
+
+    // In test mode, collect system information on every event 
+    // if (oper == kTest)  mgr->SetNSysInfo(1); 
+    if (fVerbose  >  0)      mgr->SetDebugLevel(fVerbose);
+    if (fExecMode == kLocal) mgr->SetUseProgressBar(kTRUE, 100);
+   
+    // --- ESD input handler ------------------------------------------
+    AliVEventHandler*  inputHandler = CreateInputHandler(fExecType);
+    if (inputHandler) mgr->SetInputEventHandler(inputHandler);
+    
+    // --- Monte-Carlo ------------------------------------------------
+    AliVEventHandler*  mcHandler = CreateMCHandler(fExecType,fMC);
+    if (mcHandler) mgr->SetMCtruthEventHandler(mcHandler);
+    
+    // --- AOD output handler -----------------------------------------
+    AliVEventHandler*  outputHandler = CreateOutputHandler(fExecType);
+    if (outputHandler) mgr->SetOutputEventHandler(outputHandler);
+    
+    // --- Include analysis macro path in search path ----------------
+    gROOT->SetMacroPath(Form("%s:%s:$ALICE_ROOT/ANALYSIS/macros",
+			     cwd.Data(), gROOT->GetMacroPath()));
+
+    // --- Physics selction - only for ESD ---------------------------
+    if (fExecType == kESD) CreatePhysicsSelection(fMC, mgr);
+    
+    // --- Create centrality task ------------------------------------
+    CreateCentralitySelection(fMC, mgr);
+
+    // --- Create tasks ----------------------------------------------
+    CreateTasks(fExecMode, fUsePar, mgr);
+
+    // --- Create Grid handler ----------------------------------------
+    // _must_ be done after all tasks has been added
+    AliAnalysisAlien* gridHandler = CreateGridHandler();
+    if (gridHandler) mgr->SetGridHandler(gridHandler);
+    
+    // --- Print setup -----------------------------------------------
+    Print();
+    // if (mode == kProof) {
+    // Info("Run", "Exported environment variables to PROOF slaves:");
+    // TProof::GetEnvVars()->ls();
+    // Info("Run", "Environment variables for this session:");
+    // gSystem->Exec("printenv");
+    // }
+
+    // --- Initialise the train --------------------------------------
+    if (!mgr->InitAnalysis())  {
+      gSystem->ChangeDirectory(cwd.Data());
+      Error("Run","Failed to initialise train");
+      return false;
+    }
+
+    // --- Show status -----------------------------------------------
+    mgr->PrintStatus();
+
+    return true;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Run the analysis. 
+   * 
+   * @param nEvents Number of events to analyse 
+   * @param r       Possible runner object 
+   * @param asShell Passed to SaveSetup
+   */
+  virtual void Run(Int_t nEvents, Runner* r=0, Bool_t asShell=false)
+  {
+    // Info("Exec", "Doing exec with type=%d, mode=%d, oper=%d, events=%d "
+    //      "mc=%d, usePar=%d", type, mode, oper, nEvents, mc, usePar);
+
+    TString cwd = gSystem->WorkingDirectory();
+    
+    Init();
+    if (r) SaveSetup(*r, nEvents, asShell);
+    if (fExecOper == kInitialize) return;
+    
+    // --- Create the chain ------------------------------------------
+    TChain* chain = CreateChain();
+    if (fExecMode == kLocal && !chain) {
+      Error("Exec", "No chain defined in local mode!");
+      return;
+    }
+
+    // --- Get manager and execute -----------------------------------
+    AliAnalysisManager *mgr  =AliAnalysisManager::GetAnalysisManager();
+    Long64_t ret = StartAnalysis(mgr, chain, nEvents);
+
+    // Make sure we go back 
+    gSystem->ChangeDirectory(cwd.Data());
+
+    // Return. 
+    if (ret < 0) Error("Exec", "Analysis failed");
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Print the setup 
+   * 
+   */
+  virtual void Print() const 
+  {
+    bool mc=AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
+    std::cout << fName << " train setup\n"
+	      << std::boolalpha;
+    PrintField(std::cout, "Escaped name",               fEscapedName);
+    PrintField(std::cout, "ROOT version",		fRootVersion);
+    PrintField(std::cout, "AliROOT version",		fAliRootVersion);
+    PrintField(std::cout, "AliEn API version",		fAliEnAPIVersion);
+    PrintField(std::cout, "Name of proof server",	fProofServer);
+    PrintField(std::cout, "Input directory",		fDataDir);
+    PrintField(std::cout, "Data pattern",		fDataPattern);
+    PrintField(std::cout, "Proof data set name",	fDataSet);
+    PrintField(std::cout, "XML collection",		fXML);
+    PrintField(std::cout, "Storage replication",	fNReplica);
+    PrintField(std::cout, "Allow overwrite",            fAllowOverwrite);
+    PrintField(std::cout, "Do GDB debugging",           fUseGDB);
+    PrintField(std::cout, "Max # files per split",      fMaxSplit);
+    PrintField(std::cout, "Monte-Carlo input",		fMC);
+    PrintField(std::cout, "Monte-Carlo handler",        mc);
+    PrintField(std::cout, "Per run merge",              fPerRunMerge);
+    PrintFieldName(std::cout, "Run numbers");
+    for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
+      std::cout << (i == 0 ? "" : ", ") << fRunNumbers.At(i);
+    std::cout << std::endl;
+
+    PrintFieldList(std::cout, "PAR files", 		fListOfPARs);
+    PrintFieldList(std::cout, "Script sources", 	fListOfSources);
+    PrintFieldList(std::cout, "Libraries", 		fListOfLibraries);
+    PrintFieldList(std::cout, "Extras", 		fListOfExtras, "\n  ");
+
+    std::cout << std::noboolalpha << std::endl;
+
+    AliAnalysisGrid* plugin = 
+      AliAnalysisManager::GetAnalysisManager()->GetGridHandler();
+    if (!plugin) return;
+    
+  }
+  /** 
+   * Whether to be verbosity level.  0 means no messages, while higher
+   * numbers increase the verbosity
+   * 
+   * @param verb Verbosity level 
+   */
+  void SetVerbose(Int_t verb) { fVerbose = verb; }
+  /* @} */
+protected:
   //__________________________________________________________________
   /** 
-   * Set whether to allow overwritting existing files/directories 
-   * 
-   * @param allow If true, allow overwritting files/directories
+   * @{ 
+   * @name Copying 
    */
-  void SetAllowOverwrite(Bool_t allow) { fAllowOverwrite = allow; }
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from
+   */
+  TrainSetup(const TrainSetup& o)
+  : fName(o.fName),
+    fEscapedName(o.fEscapedName),
+    fRootVersion(o.fRootVersion),
+    fAliRootVersion(o.fAliRootVersion),
+    fAliEnAPIVersion(o.fAliEnAPIVersion),
+    fProofServer(o.fProofServer),
+    fDataDir(o.fDataDir),	
+    fDataPattern(o.fDataPattern),
+    fDataSet(o.fDataSet),	
+    fXML(o.fXML),	
+    fNReplica(o.fNReplica),
+    fAllowOverwrite(o.fAllowOverwrite),
+    fUseGDB(o.fUseGDB),
+    fMaxSplit(o.fMaxSplit),
+    fRunNumbers(o.fRunNumbers),
+    fListOfPARs(),
+    fListOfSources(),
+    fListOfLibraries(),
+    fListOfExtras(),
+    fDatime(o.fDatime),
+    fExecType(o.fExecType), 
+    fExecMode(o.fExecMode), 
+    fExecOper(o.fExecOper),
+    fUsePar(o.fUsePar), 
+    fMC(o.fMC), 
+    fPerRunMerge(o.fPerRunMerge),
+    fVerbose(o.fVerbose)
+  {
+    if (isdigit(fName[0])) { 
+      Warning("TrainSetup", "Name starts with a digit, prepending 'a' to name");
+      fName = Form("a%s", fName.Data());
+    }
+    TObject* obj = 0;
+    TIter nextPar(&o.fListOfPARs);
+    while ((obj = nextPar())) fListOfPARs.Add(obj->Clone());
+    TIter nextSrc(&o.fListOfSources);
+    while ((obj = nextSrc())) fListOfSources.Add(obj->Clone());
+    TIter nextLib(&o.fListOfLibraries);
+    while ((obj = nextLib())) fListOfLibraries.Add(obj->Clone());
+    TIter nextExa(&o.fListOfExtras);
+    while ((obj = nextExa())) fListOfExtras.Add(obj->Clone());
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object. 
+   */
+  TrainSetup& operator=(const TrainSetup& o)
+  {
+    fName		= o.fName;
+    fRootVersion	= o.fRootVersion;
+    fAliRootVersion	= o.fAliRootVersion;
+    fProofServer	= o.fProofServer;
+    fDataDir		= o.fDataDir;	
+    fDataPattern        = o.fDataPattern;
+    fDataSet		= o.fDataSet;	
+    fXML		= o.fXML;	
+    fNReplica		= o.fNReplica;	
+    fRunNumbers         = o.fRunNumbers;
+    TObject* obj = 0;
+    TIter nextPar(&o.fListOfPARs);
+    while ((obj = nextPar())) fListOfPARs.Add(obj->Clone());
+    TIter nextSrc(&o.fListOfSources);
+    while ((obj = nextSrc())) fListOfSources.Add(obj->Clone());
+    TIter nextLib(&o.fListOfLibraries);
+    while ((obj = nextLib())) fListOfLibraries.Add(obj->Clone());
+    TIter nextExa(&o.fListOfExtras);
+    while ((obj = nextExa())) fListOfExtras.Add(obj->Clone());
+
+    return *this;
+  }
+  /* @} */
+
   //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Utility functions 
+   */
+  /** 
+   * Escape bad elements of the name 
+   * 
+   * @param name   Name to escape 
+   * @param datime Date and Time 
+   * 
+   * @return escaped name 
+   */  
+  static TString EscapeName(const char* name, const TDatime& datime)
+  {
+    TString escaped = name;
+    char  c[] = { ' ', '/', '@', 0 };
+    char* p   = c;
+    while (*p) { 
+      escaped.ReplaceAll(Form("%c", *p), "_");
+      p++;
+    }
+    if (datime.GetYear() <= 1995 ||
+	datime.GetMonth() == 0 || 
+	datime.GetDay() == 0) return escaped;
+    escaped.Append(Form("_%04d%02d%02d_%02d%02d", 
+			datime.GetYear(), 
+			datime.GetMonth(), 
+			datime.GetDay(), 
+			datime.GetHour(), 
+			datime.GetMinute()));
+    return escaped;
+  }    
+  //------------------------------------------------------------------
+  static void PrintFieldName(std::ostream& o, const char* name)
+  {
+    o << "  " << std::left << std::setw(25) << name << ": " << std::flush;
+  }
+  //------------------------------------------------------------------
+  static void PrintFieldList(std::ostream& o, const char* name, 
+			     const TCollection& c, const char* sep=", ")
+  {
+    PrintFieldName(o, name);
+    Bool_t   first = true;
+    TObject* obj = 0;
+    TIter    next(&c);
+    while ((obj = next())) {
+      o << (first ? "" : sep) << obj->GetName();
+      first = false;
+    }
+    std::cout << std::endl;
+  }
+  //------------------------------------------------------------------
+  template <typename T>
+  static void PrintField(std::ostream& o, const char* name, T& value) 
+  {
+    PrintFieldName(o, name);
+    o << value << std::endl;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Return a string that reflects the passed operation
+   * 
+   * @param eOper Operation
+   * 
+   * @return String representation of operation 
+   */
+  static const char* OperString(EOper eOper) 
+  {
+    switch (eOper) {
+    case kTest:		return "TEST";
+    case kOffline:	return "OFFLINE";
+    case kSubmit:	return "SUBMIT";
+    case kTerminate:	return "TERMINATE";
+    case kFull:		return "FULL";
+    case kInitialize:   return "INIT";
+    }
+    return 0;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Parse an operation string 
+   * 
+   * @param oper Operation 
+   * 
+   * @return An EOper value
+   */
+  static EOper ParseOperation(const char* oper)
+  {
+    TString sOper(oper);
+    sOper.ToUpper();
+    EOper eOper = kFull;
+    if      (sOper.Contains("TEST"))      eOper = kTest;
+    else if (sOper.Contains("OFFLINE"))   eOper = kOffline;
+    else if (sOper.Contains("SUBMIT"))    eOper = kSubmit;
+    else if (sOper.Contains("TERMINATE")) eOper = kTerminate;
+    else if (sOper.Contains("FULL"))      eOper = kFull;
+    else if (sOper.Contains("INIT"))      eOper = kInitialize;
+    else 
+      Fatal("Run", "unknown operation '%s'", oper);
+    return eOper;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Return a string that reflects the passed mode
+   * 
+   * @param eType Type of analysis 
+   * 
+   * @return String representation of execution type
+   */
+  static const char* TypeString(EType eType) 
+  {
+    switch (eType) {
+    case kESD:	return "ESD";
+    case kAOD:	return "AOD";
+    case kUser:	return "USER";
+    }
+    return 0;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Parse a string into a type enum
+   * 
+   * @param type String to pass
+   * 
+   * @return Enumaration value 
+   */
+  static EType ParseType(const char* type)
+  {
+    // mc = false;
+    TString sType(type);
+    sType.ToUpper();
+    EType eType = kESD;
+    // if      (sType.Contains("MC"))    mc    = true;
+    if      (sType.Contains("ESD"))   eType = kESD; 
+    else if (sType.Contains("AOD"))   eType = kAOD;
+    else 
+      Fatal("Run", "Unknown type '%s'", type);
+    
+    return eType;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Return a string that reflects the passed mode
+   * 
+   * @param eMode Mode 
+   * 
+   * @return String representation of mode 
+   */
+  static const char* ModeString(EMode eMode) 
+  {
+    switch (eMode) {
+    case kLocal:	return "LOCAL";
+    case kProof:	return "PROOF";
+    case kGrid:		return "GRID";
+    }
+    return 0;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Parse a string for mode specifier 
+   * 
+   * @param mode Mode string
+   * 
+   * @return EMode value
+   */
+  static EMode ParseMode(const char* mode)
+  {
+    TString sMode(mode);
+    sMode.ToUpper();
+    EMode eMode = kLocal;
+    if      (sMode.Contains("LOCAL")) eMode = kLocal;
+    else if (sMode.Contains("PROOF")) eMode = kProof;
+    else if (sMode.Contains("GRID"))  eMode = kGrid;
+    else 
+      Fatal("Run", "Unknown mode '%s'", mode);
+    return eMode;
+  }
+  /* @} */
+
+
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Overloadable creators 
+   */
+  /** 
+   * Create a grid handler 
+   * 
+   * @return Grid handler 
+   */
+  virtual AliAnalysisAlien* 
+  CreateGridHandler()
+  {
+    if (fExecMode != kGrid) return 0;
+
+    TString name = EscapedName();
+
+    // Create the plug-in object, and set run mode 
+    AliAnalysisAlien* plugin = new AliAnalysisAlien();
+    plugin->SetRunMode(OperString(fExecOper == kInitialize ? 
+				  kFull : fExecOper));
+    
+    // Production mode - not used here 
+    // plugin->SetProductionMode();
+    
+    // Set output to be per run 
+    plugin->SetOutputToRunNo(true); 
+
+    // Set the job tag 
+    plugin->SetJobTag(fName);
+
+    // Set number of test files - used in test mode only 
+    plugin->SetNtestFiles(1);
+
+    // Set name of generated analysis macro 
+    plugin->SetAnalysisMacro(Form("%s.C", name.Data()));
+    
+    // Maximum number of sub-jobs 
+    // plugin->SetSplitMaxInputFileNumber(25);
+    
+    // Set the Time-To-Live 
+    plugin->SetTTL(70000);
+    
+    // Re-submit failed jobs as long as the ratio of failed jobs is
+    // below this percentage. 
+    plugin->SetMasterResubmitThreshold(95);
+
+    // Set the input format
+    plugin->SetInputFormat("xml-single");
+
+    // Set the name of the generated jdl 
+    plugin->SetJDLName(Form("%s.jdl", name.Data()));
+
+    // Set the name of the generated executable 
+    plugin->SetExecutable(Form("%s.sh", name.Data()));
+    
+    // Set the job price !?
+    plugin->SetPrice(1);
+
+    // Set whether to merge via JDL 
+    plugin->SetMergeViaJDL(true);
+    
+    // Fast read otion 
+    plugin->SetFastReadOption(false);
+
+    // Whether to overwrite existing output 
+    plugin->SetOverwriteMode(true);
+
+    // Set the executable binary name and options 
+    plugin->SetExecutableCommand("aliroot -b -q -x");
+    
+    // Split by storage element - must be lower case!
+    plugin->SetSplitMode("se");
+    plugin->SetSplitMaxInputFileNumber(fMaxSplit);
+
+    // Disable default outputs 
+    plugin->SetDefaultOutputs(true);
+
+    // Merge parameters 
+    plugin->SetMaxMergeFiles(20);
+    plugin->SetMergeExcludes("AliAOD.root "
+			    "*EventStat*.root "
+			    "*event_stat*.root");
+    
+    // Keep log files 
+    plugin->SetKeepLogs();
+
+    // Set the working directory to be the trains name (with special
+    // characters replaced by '_' and the date appended), and also set
+    // the output directory (relative to working directory)
+    plugin->SetGridWorkingDir(name.Data());
+    plugin->SetGridOutputDir("output");
+
+    // Set required version of software 
+    if (!fAliEnAPIVersion.IsNull()) plugin->SetAPIVersion(fAliEnAPIVersion);
+    if (!fRootVersion.IsNull())     plugin->SetROOTVersion(fRootVersion);
+    if (!fAliRootVersion.IsNull())  plugin->SetAliROOTVersion(fAliRootVersion);
+
+    // Declare root of input data directory 
+    TString dataDir(fDataDir);
+    if (dataDir.BeginsWith("alien://")) 
+      dataDir.ReplaceAll("alien://", "");
+    plugin->SetGridDataDir(dataDir);
+
+    // Data search patterns 
+    TString pat;
+    if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())
+      plugin->SetRunPrefix("");
+    else {
+      plugin->SetRunPrefix("000");
+    }
+    pat = fDataPattern;
+    if (!pat.EndsWith("/")) pat.Append("/");
+    pat.Append(Form("*%s.root", fExecType == kESD ? "ESDs" : "AOD"));
+    plugin->SetDataPattern(pat);
+
+    // Add the run numbers 
+    Int_t nRun = 0;
+    for (Int_t i = 0; i < fRunNumbers.fN; i++) {
+      if (fRunNumbers[i] < 0) continue; 
+      plugin->AddRunNumber(fRunNumbers[i]);
+      nRun++;
+    }
+    // Set number of runs per master - set to one to per run
+    if (fPerRunMerge) plugin->SetNrunsPerMaster(1);
+    else              plugin->SetNrunsPerMaster(nRun+1);
+    
+    // Enable configured PARs 
+    TIter nextPar(&fListOfPARs);
+    TObject* parName;
+    while ((parName = nextPar()))
+      plugin->EnablePackage(parName->GetName());
+    
+    // Add sources that need to be compiled on the workers using
+    // AcLIC. 
+    TString addSources = SetupSources();
+    if (!addSources.IsNull()) plugin->SetAnalysisSource(addSources.Data());
+
+    // Add binary libraries that should be uploaded to the workers 
+    TString addLibs = SetupLibraries();
+    if (!addLibs.IsNull()) plugin->SetAdditionalLibs(addLibs.Data());
+    
+    // Loop over defined containers in the analysis manager, 
+    // and declare these as outputs 
+    TString listOfAODs  = "";
+    TString listOfHists = "";
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+    AliAnalysisDataContainer* cont = 0;
+    TIter nextCont(mgr->GetOutputs());
+    while ((cont = static_cast<AliAnalysisDataContainer*>(nextCont()))) {
+      TString outName(cont->GetFileName());
+      TString& list = (outName == "default" ? listOfAODs : listOfHists);
+      if (outName == "default") { 
+	if (!mgr->GetOutputEventHandler()) continue; 
+
+	outName = mgr->GetOutputEventHandler()->GetOutputFileName();
+      }
+      if (list.Contains(outName)) continue;
+      if (!list.IsNull()) list.Append(",");
+      list.Append(outName);
+    }
+    if (!mgr->GetExtraFiles().IsNull()) { 
+      if (!listOfAODs.IsNull()) listOfAODs.Append("+");
+      TString extra = mgr->GetExtraFiles();
+      extra.ReplaceAll(" ", ",");
+      listOfAODs.Append(extra);
+   }
+    TString outArchive = Form("stderr, stdout@disk=%d", fNReplica);
+    if (!listOfHists.IsNull()) 
+      outArchive.Append(Form(" hist_archive.zip:%s@disk=%d", 
+			     listOfHists.Data(), fNReplica));
+    if (!listOfAODs.IsNull()) 
+      outArchive.Append(Form(" aod_archive.zip:%s@disk=%d", 
+			     listOfAODs.Data(), fNReplica));
+    if (listOfAODs.IsNull() && listOfHists.IsNull()) 
+      Fatal("CreateGridHandler", "No outputs defined");
+    // Disabled for now 
+    // plugin->SetOutputArchive(outArchive);
+    
+
+    return plugin;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create input handler 
+   * 
+   * @param type 
+   * 
+   * @return 
+   */
+  virtual AliVEventHandler* CreateInputHandler(EType type)
+  {
+    switch (type) {
+    case kESD: return new AliESDInputHandler(); 
+    case kAOD: return new AliAODInputHandler(); 
+    case kUser: return 0;
+    }
+    return 0;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create input handler 
+   * 
+   * @param type  Run type (ESD or AOD)
+   * @param mc    Assume monte-carlo input 
+   * 
+   * @return 
+   */
+  virtual AliVEventHandler* CreateMCHandler(EType /*type*/, bool mc)
+  {
+    if (!mc)          return 0;
+    // if (type != kESD) return 0;
+    Info("CreateMCHandler", "Making MC handler");
+    AliMCEventHandler* mcHandler = new AliMCEventHandler();
+    mcHandler->SetReadTR(true); 
+    return mcHandler;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create output event handler 
+   * 
+   * @param type 
+   * 
+   * @return 
+   */
+  virtual AliVEventHandler* CreateOutputHandler(EType type)
+  {
+    AliAODHandler* ret = new AliAODHandler();
+    switch (type) { 
+    case kESD: 
+      ret->SetOutputFileName("AliAOD.root");
+      break;
+    case kAOD: 
+      ret->SetOutputFileName("AliAOD.pass2.root");
+      break;
+    case kUser: 
+      break;
+    }
+    
+    return ret;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create physics selection, and add to manager
+   * 
+   * @param mc Whether this is for MC 
+   * @param mgr Manager
+   */
+  virtual void CreatePhysicsSelection(Bool_t mc,
+				      AliAnalysisManager* mgr)
+  {
+    gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
+    mgr->RegisterExtraFile("event_stat.root");
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create centrality selection, and add to manager
+   * 
+   * @param mc Whether this is for MC 
+   * @param mgr Manager
+   */
+  virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
+  {
+    gROOT->Macro("AddTaskCentrality.C");
+    const char* name = "CentralitySelection";
+    AliCentralitySelectionTask* ctask = 
+      dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask(name));
+    if (!ctask) return;
+    if (mc) ctask->SetMCInput();
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create analysis tasks.  Must be overloaded by sub-class
+   * 
+   * @param mode Run mode
+   * @param mgr  Manager
+   * @param par  Whether to use pars 
+   */
+  virtual void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)=0;
+  /* @} */
+
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Library loading 
+   */
+  //------------------------------------------------------------------
+  /** 
+   * Load common libraries 
+   * 
+   * @return true on success 
+   */
+  Bool_t LoadCommonLibraries() 
+  {
+    if (!gSystem->Getenv("ALICE_ROOT")) { 
+      Error("LoadCommonLibraries", "Local AliROOT not available");
+      return false;
+    }
+    gSystem->Load("libTree.so");
+    gSystem->Load("libGeom.so");
+    gSystem->Load("libVMC.so");
+    gSystem->Load("libPhysics.so");
+    gSystem->Load("libMinuit.so");
+    if (fExecMode == kProof) { 
+      gProof->Exec("gSystem->Load(\"libTree.so\");");
+      gProof->Exec("gSystem->Load(\"libGeom.so\");");
+      gProof->Exec("gSystem->Load(\"libMinuit.so\");");
+      gProof->Exec("gSystem->Load(\"libVMC.so\");");
+
+      
+    }
+
+    Bool_t ret   = true;
+    Bool_t basic = fExecMode == kGrid ? false : fUsePar;
+    
+    ret &= LoadLibrary("STEERBase",     basic, false);
+    ret &= LoadLibrary("ESD",           basic, false);
+    ret &= LoadLibrary("AOD",           basic, false);
+    ret &= LoadLibrary("ANALYSIS",      basic, true);
+    ret &= LoadLibrary("OADB",          basic, true);
+    ret &= LoadLibrary("ANALYSISalice", basic, true);
+
+    return ret;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Load a library 
+   * 
+   * @param what What library to load
+   * @param par  If true, load as PAR
+   * @param rec  If true, also load on slaves
+   * 
+   * @return true on success 
+   */
+  Bool_t LoadLibrary(const char* what, Bool_t par, Bool_t rec=false)
+  {
+    if (!what || what[0] == '\0') return true;
+    
+    TString module(what);
+    TString libName(what);
+    if (!libName.BeginsWith("lib")) { 
+      // Check if the library corresponds to a compiled macro 
+      if (!gSystem->AccessPathName(Form("%s_C.so", libName.Data()))) {
+	libName.Append("_C");
+      }
+      else if (!gSystem->AccessPathName(Form("../%s_C.so", libName.Data()))) {
+	libName = Form("../%s_C", what);
+      }
+      else 
+	libName = Form("lib%s", libName.Data());
+    }
+    if (!libName.EndsWith(".so"))   libName.Append(".so");
+
+    Int_t ret = 0;
+
+    switch (fExecMode) { 
+    case kLocal: // Just load and exit 
+      if (gSystem->Load(libName.Data()) < 0) {
+	Error("LoadLibrary", "Failed to load library %s", libName.Data());
+	return false;
+      }
+      break;
+    case kGrid: 
+      if (par) { 
+	ret = SetupPAR(what) ? 0 : -1;
+	if (rec) fListOfPARs.Add(new TObjString(what));
+      } else  {
+	ret = gSystem->Load(libName.Data());
+	if (rec) fListOfLibraries.Add(new TObjString(libName));
+      }
+      break;
+    case kProof: 
+      Info("LoadLibrary", "Uploading %s", what);
+      ret = gProof->UploadPackage(what, TProof::kRemoveOld);
+      if (ret < 0)  {	
+	  ret = gProof->UploadPackage(gSystem->ExpandPathName(Form("../%s.par",
+								   what)));
+	if (ret < 0) {	
+	  ret = 
+	    gProof->UploadPackage(gSystem
+				  ->ExpandPathName(Form("$ALICE_ROOT/%s.par", 
+							what)));
+	  if (ret < 0) {
+	    Error("LoadLibrary", 
+		  "Could not find module %s.par in current directory nor "
+		  "in $ALICE_ROOT", module.Data());
+	    return false;
+	  }
+	}
+      }
+      Info("LoadLibrary", "Enabling package %s", what);
+      ret = gProof->EnablePackage(what);
+      break;
+    }
+    if (ret < 0) { 
+      Error("LoadLibrary", "Couldn't load %s", what);
+      return false;
+    }
+    return true;
+  }
+  /* @} */
+
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name PAR generation from script 
+   */
   /** 
    * Service function to make a PAR out of a script.  
    * 
@@ -518,19 +1311,27 @@ struct TrainSetup
    * #endif
    * @endcode
    * 
+   * @param mode   Execution mode (Grid, PROOF, Local)
    * @param script Script to upload and compile in the PAR
    * @param deps   Dependency pars 
    * 
    * @return true on success. 
    */
-  static Bool_t MakeScriptPAR(const char* script, const char* deps)
+  static Bool_t MakeScriptPAR(EMode mode, const char* script, const char* deps)
   {
     // Get the base name 
+    Info("MakeScriptPAR", "Making par file for %s", script);
     TString base(gSystem->BaseName(script));
     Int_t   idx = base.Last('.');
     if (idx != kNPOS) base.Remove(idx);
     Bool_t retval = true;
     // Info("MakeScriptPAR", "script=%s, base=%s", script, base.Data());
+
+    if (mode == kLocal) { 
+      if (gROOT->LoadMacro(Form("%s.C++g", base.Data())) < 0)
+	return false;
+      return true;
+    }
 
     TString tmpdir(gSystem->TempDirectory());
     int   ltempl = tmpdir.Length() + 1 + 5 + 6 + 1;
@@ -578,6 +1379,7 @@ struct TrainSetup
       }
       
       // Make our build file 
+      // Info("MakeScriptPAR", "Making build script %s/PROOF-INF/BUILD.sh", dir.Data());
       std::ofstream b(Form("%s/PROOF-INF/BUILD.sh", dir.Data()));
       if (!b) 
 	throw TString::Format("Failed to open b shell script");
@@ -591,6 +1393,7 @@ struct TrainSetup
 	throw TString::Format("Failed to set exectuable flags on "
 			      "%s/PROOF-INF/BUILD.sh", dir.Data());
       
+      // Info("MakeScriptPAR", "Making utility script %s/PROOF-INF/UTIL.C", dir.Data());
       std::ofstream u(Form("%s/PROOF-INF/UTIL.C", dir.Data()));
       if (!u) 
 	throw TString::Format("Failed to open utility script");
@@ -600,6 +1403,13 @@ struct TrainSetup
 	<< "  gSystem->Load(\"libTree\");\n"
 	<< "  gSystem->Load(\"libPhysics\");\n"
 	<< "  gSystem->Load(\"libMinuit\");\n"
+	<< "}\n\n"
+	<< "void AddAliROOT() {\n"
+	<< "  TString val(gSystem->Getenv(\"ALICE_ROOT\"));\n"
+	<< "  if (val.IsNull())\n"
+	<< "    Warning(\"Add\",\"ALICE_ROOT not defined\");\n"
+	<< "  else\n"
+	<< "    gSystem->AddIncludePath(Form(\"-I%s/include\",val.Data()));\n"
 	<< "}\n\n"
 	<< "void AddDep(const char* env) {\n"
 	<< "  TString val(gSystem->Getenv(Form(\"%s_INCLUDE\",env)));\n"
@@ -625,13 +1435,15 @@ struct TrainSetup
 	<< std::endl;
       u.close();
 
+      // Info("MakeScriptPAR", "Making utility script %s/PROOF-INF/BUILD.C", dir.Data());
       std::ofstream cbuild(Form("%s/PROOF-INF/BUILD.C", dir.Data()));
       if (!cbuild) 
 	throw TString::Format("Failed to open build script");
       cbuild << "void BUILD() {\n"
 	     << "  gSystem->AddIncludePath(\"-DBUILD_PAR=1\");\n"
 	     << "  gROOT->LoadMacro(\"PROOF-INF/UTIL.C\");\n"
-	     << "  LoadROOTLibs();\n";
+	     << "  LoadROOTLibs();\n"
+	     << "  AddAliROOT();\n";
       TObjArray*  depList = TString(deps).Tokenize(",");
       TIter       next(depList);
       TObject*    dep = 0;
@@ -643,40 +1455,45 @@ struct TrainSetup
 	     << "  int ret = gROOT->LoadMacro(\"" 
 	     << base << "." << ext << "++g\");\n"
 	     << "  if (ret != 0) Fatal(\"BUILD\",\"Failed to build\");\n"
-	     << "  else Info(\"BUILD\", \"Made " << base << "\");\n"
+	     << "  // else Info(\"BUILD\", \"Made " << base << "\");\n"
 	     << "}\n"
 	     << std::endl;
       cbuild.close();
       
       // Make our set-up script 
+      // Info("MakeScriptPAR", "Making setup script %s/PROOF-INF/SETUP.C", dir.Data());
       std::ofstream setup(Form("%s/PROOF-INF/SETUP.C", dir.Data()));
       if (!setup) 
 	throw TString::Format("Failed to open setup script");
       setup << "void SETUP() {\n"
 	    << "  gROOT->LoadMacro(\"PROOF-INF/UTIL.C\");\n"
 	    << "  LoadROOTLibs();\n"
-	    << "  Info(\"SETUP\",\"Loading libraries\");\n";
+	    << "  // Info(\"SETUP\",\"Loading libraries\");\n";
       next.Reset();
       dep = 0;
       while ((dep = next())) 
 	setup << "  LoadDep(\"" << dep->GetName() << "\");\n";
       setup << "  // gDebug = 5;\n"
+	    << "  // Info(\"SETUP\",\"Loading " << base << "_" << ext << ".so\");\n"
 	    << "  gSystem->Load(\"" << base << "_" << ext << ".so\");\n"
 	    << "  // gDebug = 0;\n"
 	    << "  gROOT->ProcessLine(\".include " << base << "\");\n"
 	    << "  gSystem->Setenv(\"" << base << "_INCLUDE\",\"" 
 	    << base << "\");\n"
-	    << "  Info(\"SETUP\", \"Done\");\n"
+	    << "  // Info(\"SETUP\", \"Done\");\n"
 	    << "}\n"
 	    << std::endl;
       setup.close();
 
-      ret = gSystem->Exec(Form("(cd %s && tar -czvf %s.par %s)", 
+      // Info("MakeScriptPAR", "Packing up tar-archive");
+      ret = gSystem->Exec(Form("(cd %s && tar -czf %s.par %s)", 
 			       templ, base.Data(),base.Data()));
       if (ret != 0) 
 	throw TString::Format("Failed to create PAR file %s.PAR from %s", 
 			      base.Data(), dir.Data());
-      ret = gSystem->Exec(Form("mv -vf %s/%s.par %s.par", templ, base.Data(), 
+
+      // Info("MakeScriptPAR", "Moving PAR archive");
+      ret = gSystem->Exec(Form("mv -f %s/%s.par %s.par", templ, base.Data(), 
 			       base.Data()));
       if (ret != 0) 
 	throw TString::Format("Failed to rename %s/%s.par to %s.par: %s", 
@@ -687,393 +1504,38 @@ struct TrainSetup
       Error("MakeScriptPAR", "%s", e.Data()); 
       retval = false;
     }
-    gSystem->Exec(Form("rm -vrf %s", templ));
+    // Info("MakeScriptPAR", "Removing temperary directory %s", templ);
+    gSystem->Exec(Form("rm -rf %s", templ));
     return retval;
   }
-  //__________________________________________________________________
-  static void PrintFieldName(std::ostream& o, const char* name)
-  {
-    o << "  " << std::left << std::setw(20) << name << ": " << std::flush;
-  }
-  //__________________________________________________________________
-  static void PrintFieldList(std::ostream& o, const char* name, 
-			     const TCollection& c)
-  {
-    PrintFieldName(o, name);
-    Bool_t   first = true;
-    TObject* obj = 0;
-    TIter    next(&c);
-    while ((obj = next())) {
-      o << (first ? "" : ", ") << obj->GetName();
-      first = false;
-    }
-    std::cout << std::endl;
-  }
-  //__________________________________________________________________
-  template <typename T>
-  static void PrintField(std::ostream& o, const char* name, T& value) 
-  {
-    PrintFieldName(o, name);
-    o << value << std::endl;
-  }
-  //__________________________________________________________________
-  /** 
-   * Print the setup 
-   * 
-   */
-  virtual void Print() const 
-  {
-    bool mc = AliAnalysisManager::GetAnalysisManager()
-      ->GetMCtruthEventHandler();
-    std::cout << fName << " train setup\n"
-	      << std::boolalpha;
-    PrintField(std::cout, "Escaped name",               fEscapedName);
-    PrintField(std::cout, "ROOT version",		fRootVersion);
-    PrintField(std::cout, "AliROOT version",		fAliRootVersion);
-    PrintField(std::cout, "AliEn API version",		fAliEnAPIVersion);
-    PrintField(std::cout, "Name of proof server",	fProofServer);
-    PrintField(std::cout, "Input directory",		fDataDir);
-    PrintField(std::cout, "Proof data set name",	fDataSet);
-    PrintField(std::cout, "XML collection",		fXML);
-    PrintField(std::cout, "Storage replication",	fNReplica);
-    PrintField(std::cout, "ESD pass",			fESDPass);
-    PrintField(std::cout, "ESD pass postfix",		fPassPostfix);
-    PrintField(std::cout, "Allow overwrite",            fAllowOverwrite);
-    PrintField(std::cout, "Do GDB debugging",           fUseGDB);
-    PrintField(std::cout, "Max # files per split",      fMaxSplit);
-    PrintField(std::cout, "Monte-Carlo input",		mc);
-
-    PrintFieldName(std::cout, "Run numbers");
-    for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
-      std::cout << (i == 0 ? "" : ", ") << fRunNumbers.At(i);
-    std::cout << std::endl;
-
-    PrintFieldList(std::cout, "PAR files", 		fListOfPARs);
-    PrintFieldList(std::cout, "Script sources", 	fListOfSources);
-    PrintFieldList(std::cout, "Libraries", 		fListOfLibraries);
-    PrintFieldList(std::cout, "Extras", 		fListOfExtras);
-
-    std::cout << std::noboolalpha << std::endl;
-
-    AliAnalysisGrid* plugin = 
-      AliAnalysisManager::GetAnalysisManager()->GetGridHandler();
-    if (!plugin) return;
-    
-  }
-  //__________________________________________________________________
-  /** 
-   * Initialize the job 
-   * 
-   * @param type   Type of job (ESD, AOD)
-   * @param mode   Where to do it (local, proof, grid)
-   * @param oper   What to do
-   * @param mc     If true, assume MC input
-   * @param usePar Whether to use PAR files 
-   * @param dbg    Debug flag 
-   * 
-   * @return true on success, false otherwise
-   */
-  Bool_t Init(EType   type, 
-	      EMode   mode, 
-	      EOper   oper,
-	      Bool_t  mc=false, 
-	      bool    usePar=false, 
-	      Int_t   dbg=0)
-  {
-    Info("Init", "Connecting in mode=%d", mode);
-    if (!Connect(mode)) return false;
-
-    // --- Get current directory and set-up sub-directory ------------
-    TString cwd = gSystem->WorkingDirectory();
-    TString nam = EscapedName();
-    Info("Init", "Current directory=%s, escaped name=%s", 
-	 cwd.Data(), nam.Data());
-    if (oper != kTerminate) { 
-      if (!fAllowOverwrite && !gSystem->AccessPathName(nam.Data())) {
-	Error("Init", "File/directory %s already exists", nam.Data());
-	return false;
-      }
-      if (gSystem->AccessPathName(nam.Data())) {
-	if (gSystem->MakeDirectory(nam.Data())) {
-	  Error("Init", "Failed to make directory '%s'", nam.Data());
-	  return false;
-	}
-      }
-    }
-    else {
-      if (gSystem->AccessPathName(nam.Data())) {
-	Error("Init", "File/directory %s does not exists", nam.Data());
-	return false;
-      }
-    }
-      
-    if (!gSystem->ChangeDirectory(nam.Data())) { 
-      Error("Init", "Failed to change directory to %s", nam.Data());
-      return false;
-    }
-    Info("Init", "Made subdirectory %s, and cd'ed there", nam.Data());
-      
-    // --- Load the common libraries ---------------------------------
-    if (!LoadCommonLibraries(mode, usePar)) return false;
-    
-    // --- Create analysis manager -----------------------------------
-    AliAnalysisManager *mgr  = new AliAnalysisManager(fName,"Analysis Train");
-
-    // In test mode, collect system information on every event 
-    // if (oper == kTest)  mgr->SetNSysInfo(1); 
-    if (dbg  >  0)      mgr->SetDebugLevel(dbg);
-    if (mode == kLocal) mgr->SetUseProgressBar(kTRUE, 100);
-   
-    // --- ESD input handler ------------------------------------------
-    AliVEventHandler*  inputHandler = CreateInputHandler(type);
-    if (inputHandler) mgr->SetInputEventHandler(inputHandler);
-    
-    // --- Monte-Carlo ------------------------------------------------
-    AliVEventHandler*  mcHandler = CreateMCHandler(type,mc);
-    if (mcHandler) mgr->SetMCtruthEventHandler(mcHandler);
-    
-    // --- AOD output handler -----------------------------------------
-    AliVEventHandler*  outputHandler = CreateOutputHandler(type);
-    if (outputHandler) mgr->SetOutputEventHandler(outputHandler);
-    
-    // --- Include analysis macro path in search path ----------------
-    gROOT->SetMacroPath(Form("%s:%s:$ALICE_ROOT/ANALYSIS/macros",
-			     cwd.Data(), gROOT->GetMacroPath()));
-
-    // --- Physics selction - only for ESD ---------------------------
-    if (type == kESD) CreatePhysicsSelection(mc, mgr);
-    
-    // --- Create centrality task ------------------------------------
-    CreateCentralitySelection(mc, mgr);
-
-    // --- Create tasks ----------------------------------------------
-    CreateTasks(mode, usePar, mgr);
-
-    // --- Create Grid handler ----------------------------------------
-    // _must_ be done after all tasks has been added
-    AliAnalysisAlien* gridHandler = CreateGridHandler(type, mode, oper);
-    if (gridHandler) mgr->SetGridHandler(gridHandler);
-    
-    // --- Print setup -----------------------------------------------
-    CreateSetupScript(type, mode, mc, usePar, dbg);
-
-    // --- Print setup -----------------------------------------------
-    Print();
-    // if (mode == kProof) {
-    // Info("Run", "Exported environment variables to PROOF slaves:");
-    // TProof::GetEnvVars()->ls();
-    // Info("Run", "Environment variables for this session:");
-    // gSystem->Exec("printenv");
-    // }
-
-    // --- Initialise the train --------------------------------------
-    if (!mgr->InitAnalysis())  {
-      gSystem->ChangeDirectory(cwd.Data());
-      Error("Run","Failed to initialise train");
-      return false;
-    }
-
-    // --- Show status -----------------------------------------------
-    mgr->PrintStatus();
-
-    return true;
-  }
-  //__________________________________________________________________
-  /** 
-   * Initialize the job 
-   * 
-   * @param type   Type of analysis (ESD, AOD)
-   * @param mode   Where to do the analysis (LOCAL, GRID, PROOF)
-   * @param oper   What to do 
-   * @param mc     If true, assume MC input
-   * @param usePar Whether to use PARs or not. 
-   * @param dbg    Debug flag 
-   * 
-   * @return true on success, false otherwise 
-   */
-  Bool_t Init(const char*  type="ESD", 
-	      const char*  mode="LOCAL", 
-	      const char*  oper="FULL",
-	      Bool_t       mc=false, 
-	      bool         usePar=false, 
-	      Int_t        dbg=0)
-  {
-    return Init(ParseType(type, mc), ParseMode(mode), ParseOperation(oper), 
-		mc, usePar, dbg);
-  }
-
-protected:
-  //__________________________________________________________________
-  /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from
-   */
-  TrainSetup(const TrainSetup& o)
-  : fName(o.fName),
-    fRootVersion(o.fRootVersion),
-    fAliRootVersion(o.fAliRootVersion),
-    fProofServer(o.fProofServer),
-    fDataDir(o.fDataDir),	
-    fDataSet(o.fDataSet),	
-    fXML(o.fXML),	
-    fNReplica(o.fNReplica),
-    fESDPass(o.fESDPass),
-    fPassPostfix(o.fPassPostfix),
-    fAllowOverwrite(o.fAllowOverwrite),
-    fUseGDB(o.fUseGDB),
-    fMaxSplit(o.fMaxSplit),
-    fRunNumbers(o.fRunNumbers),
-    fListOfPARs(),
-    fListOfSources(),
-    fListOfLibraries(),
-    fListOfExtras(),
-    fDatime(o.fDatime)
-  {
-    if (isdigit(fName[0])) { 
-      Warning("TrainSetup", "Name starts with a digit, prepending 'a' to name");
-      fName = Form("a%s", fName.Data());
-    }
-    TObject* obj = 0;
-    TIter nextPar(&o.fListOfPARs);
-    while ((obj = nextPar())) fListOfPARs.Add(obj->Clone());
-    TIter nextSrc(&o.fListOfSources);
-    while ((obj = nextSrc())) fListOfSources.Add(obj->Clone());
-    TIter nextLib(&o.fListOfLibraries);
-    while ((obj = nextLib())) fListOfLibraries.Add(obj->Clone());
-    TIter nextExa(&o.fListOfExtras);
-    while ((obj = nextExa())) fListOfExtras.Add(obj->Clone());
-  }
-  //__________________________________________________________________
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object. 
-   */
-  TrainSetup& operator=(const TrainSetup& o)
-  {
-    fName		= o.fName;
-    fRootVersion	= o.fRootVersion;
-    fAliRootVersion	= o.fAliRootVersion;
-    fProofServer	= o.fProofServer;
-    fDataDir		= o.fDataDir;	
-    fDataSet		= o.fDataSet;	
-    fXML		= o.fXML;	
-    fNReplica		= o.fNReplica;	
-    fESDPass            = o.fESDPass;
-    fRunNumbers         = o.fRunNumbers;
-    TObject* obj = 0;
-    TIter nextPar(&o.fListOfPARs);
-    while ((obj = nextPar())) fListOfPARs.Add(obj->Clone());
-    TIter nextSrc(&o.fListOfSources);
-    while ((obj = nextSrc())) fListOfSources.Add(obj->Clone());
-    TIter nextLib(&o.fListOfLibraries);
-    while ((obj = nextLib())) fListOfLibraries.Add(obj->Clone());
-    TIter nextExa(&o.fListOfExtras);
-    while ((obj = nextExa())) fListOfExtras.Add(obj->Clone());
-
-    return *this;
-  }
+  /* @} */
 
   //__________________________________________________________________
   /** 
-   * Run this analysis 
-   * 
-   * @param type    Type of input for analysis  (kESD, kAOD)
-   * @param mode    Mode of job (kLocal, kProof, kGrid)
-   * @param oper    Operation 
-   * @param nEvents Number of events to analyse (<0 means all)
-   * @param mc      Whether to connect MC data 
-   * @param usePar  Whether to use PARs  
-   * @param dbg     Debug level
+   * @{ 
+   * @name Execution implementation
    */
-  void Exec(const char*  type, 
-	    const char*  mode="GRID", 
-	    const char*  oper="FULL", 
-	    Int_t        nEvents=-1, 
-	    Bool_t       mc=false, 
-	    Bool_t       usePar=false, 
-	    Int_t        dbg=0)
-  {
-    Info("Exec", "Doing exec with type=%s, mode=%s, oper=%s, events=%d "
-	 "mc=%d, usePar=%d", type, mode, oper, nEvents, mc, usePar);
-    EType eType = ParseType(type, mc);
-    EMode eMode = ParseMode(mode);
-    EOper eOper = ParseOperation(oper);
-
-    Exec(eType, eMode, eOper, nEvents, mc, usePar, dbg);
-  }
-
-  //__________________________________________________________________
-  /** 
-   * Run this analysis 
-   * 
-   * @param type    Type of input for analysis  (kESD, kAOD)
-   * @param mode    Mode of job (kLocal, kProof, kGrid)
-   * @param oper    Operation 
-   * @param nEvents Number of events to analyse (<0 means all)
-   * @param mc      Whether to connect MC data 
-   * @param usePar  Whether to use PARs  
-   * @param dbg     Debug level
-   */
-  void Exec(EType  type, 
-	    EMode  mode, 
-	    EOper  oper, 
-	    Int_t  nEvents, 
-	    Bool_t mc, 
-	    Bool_t usePar, 
-	    Int_t  dbg=0)
-  {
-    Info("Exec", "Doing exec with type=%d, mode=%d, oper=%d, events=%d "
-	 "mc=%d, usePar=%d", type, mode, oper, nEvents, mc, usePar);
-
-    TString cwd = gSystem->WorkingDirectory();
-    if (mode == kProof) usePar    = true;
-    
-    if (!Init(type, mode, oper, mc, usePar, dbg))  return;
-
-    // --- Create the chain ------------------------------------------
-    TChain* chain = CreateChain(type, mode, oper, mc);
-    if (mode == kLocal && !chain) {
-      Error("Exec", "No chain defined in local mode!");
-      return;
-    }
-
-    // --- Get manager and execute -----------------------------------
-    AliAnalysisManager *mgr  =AliAnalysisManager::GetAnalysisManager();
-    Long64_t ret = StartAnalysis(mgr, mode, chain, nEvents);
-
-    // Make sure we go back 
-    gSystem->ChangeDirectory(cwd.Data());
-
-    // Return. 
-    if (ret < 0) Error("Exec", "Analysis failed");
-  }
-  //__________________________________________________________________
   /** 
    * Start the analysis 
    * 
    * @param mgr       Analysis manager
-   * @param mode      Run mode
    * @param chain     Input data (local and proof only)
    * @param nEvents   Number of events to analyse 
    */
   Long64_t StartAnalysis(AliAnalysisManager* mgr, 
-			 EMode               mode, 
 			 TChain*             chain,
 			 Int_t               nEvents)
   {
     // --- Run the analysis ------------------------------------------
-    switch (mode) { 
+    TString mode = ModeString(fExecMode);
+    switch (fExecMode) { 
     case kLocal: 
       if (!chain) {
 	Error("StartAnalysis", "No chain defined");
 	return -1;
       }
       if (nEvents < 0) nEvents = chain->GetEntries();
-      return mgr->StartAnalysis(ModeString(mode), chain, nEvents);
+      return mgr->StartAnalysis(mode, chain, nEvents);
     case kProof: 
       if (fDataSet.IsNull()) {
 	if (!chain) { 
@@ -1081,315 +1543,29 @@ protected:
 	  return -1;
 	}
 	if (nEvents < 0) nEvents = chain->GetEntries();
-	return mgr->StartAnalysis(ModeString(mode), chain, nEvents);
+	return mgr->StartAnalysis(mode, chain, nEvents);
       }
-      return mgr->StartAnalysis(ModeString(mode), fDataSet);
+      return mgr->StartAnalysis(mode, fDataSet);
     case kGrid: 
       if (nEvents < 0)
-	return mgr->StartAnalysis(ModeString(mode));
-      return mgr->StartAnalysis(ModeString(mode), nEvents);
+	return mgr->StartAnalysis(mode);
+      return mgr->StartAnalysis(mode, nEvents);
     }
     // We should never get  here 
     return -1;
   }
-  //__________________________________________________________________
-  /** 
-   * Return the escaped name 
-   * 
-   * @return Escaped name 
-   */
-  const TString& EscapedName() const 
-  {
-    return fEscapedName;
-  }
-  //__________________________________________________________________
-  /** 
-   * Create a grid handler 
-   * 
-   * @param type Data type
-   * @param mode Run mode 
-   * @param oper Operation 
-   * 
-   * @return Grid handler 
-   */
-  virtual AliAnalysisAlien* 
-  CreateGridHandler(EType type, EMode mode, EOper oper)
-  {
-    if (mode != kGrid) return 0;
-
-    TString name = EscapedName();
-
-    // Create the plug-in object, and set run mode 
-    AliAnalysisAlien* plugin = new AliAnalysisAlien();
-    plugin->SetRunMode(OperString(oper));
-    
-    // Production mode - not used here 
-    // plugin->SetProductionMode();
-    
-    // Set output to be per run 
-    plugin->SetOutputToRunNo();
-
-    // Set the job tag 
-    plugin->SetJobTag(fName);
-
-    // Set number of test files - used in test mode only 
-    plugin->SetNtestFiles(1);
-    
-    // Set required version of software 
-    if (!fAliEnAPIVersion.IsNull()) plugin->SetAPIVersion(fAliEnAPIVersion);
-    if (!fRootVersion.IsNull())     plugin->SetROOTVersion(fRootVersion);
-    if (!fAliRootVersion.IsNull())  plugin->SetAliROOTVersion(fAliRootVersion);
-
-    // Keep log files 
-    plugin->SetKeepLogs();
-
-    // Declare root of input data directory 
-    TString dataDir(fDataDir);
-    if (dataDir.BeginsWith("alien://")) 
-      dataDir.ReplaceAll("alien://", "");
-    plugin->SetGridDataDir(dataDir);
-
-    // Data search patterns 
-    TString pat;
-    if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() ||
-	type == kAOD) {
-      pat = "*/";
-      plugin->SetRunPrefix(type == kAOD ? "000" : "");
-    }
-    else {
-      pat = Form("*ESDs/pass%d%s/*/", fESDPass, fPassPostfix.Data());
-      plugin->SetRunPrefix("000");
-    }
-    pat.Append(Form("*%s.root", type == kESD ? "ESDs" : "AOD"));
-    plugin->SetDataPattern(pat);
-
-    // Add the run numbers 
-    for (Int_t i = 0; i < fRunNumbers.fN; i++) {
-      if (fRunNumbers[i] < 0) continue; 
-      plugin->AddRunNumber(fRunNumbers[i]);
-    }
-    
-    // Set the working directory to be the trains name (with special
-    // characters replaced by '_' and the date appended), and also set
-    // the output directory (relative to working directory)
-    plugin->SetGridWorkingDir(name.Data());
-    plugin->SetGridOutputDir("output");
-
-    // Enable configured PARs 
-    TIter nextPar(&fListOfPARs);
-    TObject* parName;
-    while ((parName = nextPar()))
-      plugin->EnablePackage(parName->GetName());
-    
-    // Add sources that need to be compiled on the workers using
-    // AcLIC. 
-    TString addSources = SetupSources();
-    if (!addSources.IsNull()) plugin->SetAnalysisSource(addSources.Data());
-
-    // Add binary libraries that should be uploaded to the workers 
-    TString addLibs = SetupLibraries();
-    if (!addLibs.IsNull()) plugin->SetAdditionalLibs(addLibs.Data());
-    
-    // Disable default outputs 
-    plugin->SetDefaultOutputs(true);
-
-    // Merge parameters 
-    plugin->SetMaxMergeFiles(20);
-    plugin->SetMergeExcludes("AliAOD.root "
-			    "*EventStat*.root "
-			    "*event_stat*.root");
-
-    // Set number of runs per master - set to one to per run
-    plugin->SetNrunsPerMaster(1);
-
-    // Loop over defined containers in the analysis manager, 
-    // and declare these as outputs 
-    TString listOfAODs  = "";
-    TString listOfHists = "";
-    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-    AliAnalysisDataContainer* cont = 0;
-    TIter nextCont(mgr->GetOutputs());
-    while ((cont = static_cast<AliAnalysisDataContainer*>(nextCont()))) {
-      TString outName(cont->GetFileName());
-      TString& list = (outName == "default" ? listOfAODs : listOfHists);
-      if (outName == "default") { 
-	if (!mgr->GetOutputEventHandler()) continue; 
-
-	outName = mgr->GetOutputEventHandler()->GetOutputFileName();
-      }
-      if (list.Contains(outName)) continue;
-      if (!list.IsNull()) list.Append(",");
-      list.Append(outName);
-    }
-    if (!mgr->GetExtraFiles().IsNull()) { 
-      if (!listOfAODs.IsNull()) listOfAODs.Append("+");
-      TString extra = mgr->GetExtraFiles();
-      extra.ReplaceAll(" ", ",");
-      listOfAODs.Append(extra);
-   }
-    TString outArchive = Form("stderr, stdout@disk=%d", fNReplica);
-    if (!listOfHists.IsNull()) 
-      outArchive.Append(Form(" hist_archive.zip:%s@disk=%d", 
-			     listOfHists.Data(), fNReplica));
-    if (!listOfAODs.IsNull()) 
-      outArchive.Append(Form(" aod_archive.zip:%s@disk=%d", 
-			     listOfAODs.Data(), fNReplica));
-    if (listOfAODs.IsNull() && listOfHists.IsNull()) 
-      Fatal("CreateGridHandler", "No outputs defined");
-    // Disabled for now 
-    // plugin->SetOutputArchive(outArchive);
-    
-    // Set name of generated analysis macro 
-    plugin->SetAnalysisMacro(Form("%s.C", name.Data()));
-    
-    // Maximum number of sub-jobs 
-    // plugin->SetSplitMaxInputFileNumber(25);
-    
-    // Set the Time-To-Live 
-    plugin->SetTTL(70000);
-    
-    // Re-submit failed jobs as long as the ratio of failed jobs is
-    // below this percentage. 
-    plugin->SetMasterResubmitThreshold(95);
-
-    // Set the input format
-    plugin->SetInputFormat("xml-single");
-
-    // Set the name of the generated jdl 
-    plugin->SetJDLName(Form("%s.jdl", name.Data()));
-
-    // Set the name of the generated executable 
-    plugin->SetExecutable(Form("%s.sh", name.Data()));
-    
-    // Set the job price !?
-    plugin->SetPrice(1);
-
-    // Set whether to merge via JDL 
-    plugin->SetMergeViaJDL(true);
-    
-    // Fast read otion 
-    plugin->SetFastReadOption(false);
-
-    // Whether to overwrite existing output 
-    plugin->SetOverwriteMode(true);
-
-    // Set the executable binary name and options 
-    plugin->SetExecutableCommand("aliroot -b -q -x");
-    
-    // Split by storage element - must be lower case!
-    plugin->SetSplitMode("se");
-    plugin->SetSplitMaxInputFileNumber(fMaxSplit);
-
-    return plugin;
-  }
-  //__________________________________________________________________
-  /** 
-   * Create input handler 
-   * 
-   * @param type 
-   * 
-   * @return 
-   */
-  virtual AliVEventHandler* CreateInputHandler(EType type)
-  {
-    switch (type) {
-    case kESD: return new AliESDInputHandler(); 
-    case kAOD: return new AliAODInputHandler(); 
-    }
-    return 0;
-  }
-  //__________________________________________________________________
-  /** 
-   * Create input handler 
-   * 
-   * @param type  Run type (ESD or AOD)
-   * @param mc    Assume monte-carlo input 
-   * 
-   * @return 
-   */
-  virtual AliVEventHandler* CreateMCHandler(EType type, bool mc)
-  {
-    if (!mc)          return 0;
-    if (type != kESD) return 0;
-    Info("CreateMCHandler", "Making MC handler");
-    AliMCEventHandler* mcHandler = new AliMCEventHandler();
-    mcHandler->SetReadTR(true); 
-    return mcHandler;
-  }
-  //__________________________________________________________________
-  /** 
-   * Create output event handler 
-   * 
-   * @param type 
-   * 
-   * @return 
-   */
-  virtual AliVEventHandler* CreateOutputHandler(EType type)
-  {
-    AliAODHandler* ret = new AliAODHandler();
-    switch (type) { 
-    case kESD: 
-      ret->SetOutputFileName("AliAOD.root");
-      break;
-    case kAOD: 
-      ret->SetOutputFileName("AliAOD.pass2.root");
-      break;
-    }
-    return ret;
-  }
-  //__________________________________________________________________
-  /** 
-   * Create physics selection , and add to manager
-   * 
-   * @param mc Whether this is for MC 
-   * @param mgr Manager
-   */
-  virtual void CreatePhysicsSelection(Bool_t mc,
-				      AliAnalysisManager* mgr)
-  {
-    gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
-    mgr->RegisterExtraFile("event_stat.root");
-  }
-  //__________________________________________________________________
-  /** 
-   * Create physics selection , and add to manager
-   * 
-   * @param mc Whether this is for MC 
-   * @param mgr Manager
-   */
-  virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
-  {
-    gROOT->Macro("AddTaskCentrality.C");
-    const char* name = "CentralitySelection";
-    AliCentralitySelectionTask* ctask = 
-      dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask(name));
-    if (!ctask) return;
-    // ctask->SetPass(fESDPass);
-    if (mc) ctask->SetMCInput();
-  }
-  //__________________________________________________________________
-  /** 
-   * Create analysis tasks 
-   * 
-   * @param mode Run mode
-   * @param mgr  Manager
-   * @param par  Whether to use pars 
-   */
-  virtual void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)=0;
-  //__________________________________________________________________
+  //------------------------------------------------------------------
   /** 
    * Connect to external services (Proof and/or grid)
    * 
-   * @param mode Running mode 
-   * 
    * @return true on success 
    */
-  virtual Bool_t Connect(EMode mode)
+  virtual Bool_t Connect()
   {
-    if (mode == kLocal) return true;
+    if (fExecMode == kLocal) return true;
 			  
     // --- Set-up connections to Proof cluster and alien -------------
-    if (mode == kProof) { 
+    if (fExecMode == kProof) { 
       Info("Connect", "Opening connection to proof server");
       // --- Find user name ------------------------------------------
       TString userName(gSystem->Getenv("alien_API_USER"));
@@ -1447,17 +1623,16 @@ protected:
     }
 
     // --- Open a connection to the grid -----------------------------
-#if 1
+
     TGrid::Connect("alien://");
     if (!gGrid || !gGrid->IsConnected()) { 
       // This is only fatal in grid mode 
       Error("Connect", "Failed to connect to AliEN");
-      if (mode == kGrid) return false; 
+      if (fExecMode == kGrid) return false; 
       return true;
     }
-    if (mode == kGrid) return true;
+    if (fExecMode == kGrid) return true;
 
-    
     // --- Set and make output directory -----------------------------
     TString name = EscapedName();
     TString homeDir(gGrid->GetHomeDirectory());
@@ -1476,116 +1651,102 @@ protected:
     // Make output directory 
     gGrid->Mkdir("proof_output");
     gGrid->Cd("proof_output");
-#endif
+
     return true;
   }	  
-  //__________________________________________________________________
+  //------------------------------------------------------------------
   /** 
-   * Load common libraries 
+   * Get the output directory (local or Grid)
    * 
-   * @param mode Running mode			
-   * @param par  If true, load as PARs 
+   * @param mode Mode of execution 
    * 
-   * @return true on success 
+   * @return Path to output directory 
    */
-  Bool_t LoadCommonLibraries(EMode mode, Bool_t par) 
+  TString GetOutputDirectory(EMode mode) const 
   {
-    if (!gSystem->Getenv("ALICE_ROOT")) { 
-      Error("LoadCommonLibraries", "Local AliROOT not available");
-      return false;
-    }
-    gSystem->Load("libTree.so");
-    gSystem->Load("libGeom.so");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libPhysics.so");
-    gSystem->Load("libMinuit.so");
-    if (mode == kProof) { 
-      gProof->Exec("gSystem->Load(\"libTree.so\");");
-      gProof->Exec("gSystem->Load(\"libGeom.so\");");
-      gProof->Exec("gSystem->Load(\"libMinuit.so\");");
-      gProof->Exec("gSystem->Load(\"libVMC.so\");");
-
-      
-    }
-
-    Bool_t ret   = true;
-    Bool_t basic = mode == kGrid ? false : par;
+    TString ret(fEscapedName);
+    if (mode != kGrid) return ret;
     
-    ret &= LoadLibrary("STEERBase",     mode, basic, false);
-    ret &= LoadLibrary("ESD",           mode, basic, false);
-    ret &= LoadLibrary("AOD",           mode, basic, false);
-    ret &= LoadLibrary("ANALYSIS",      mode, basic, true);
-    ret &= LoadLibrary("OADB",          mode, basic, true);
-    ret &= LoadLibrary("ANALYSISalice", mode, basic, true);
-
+    AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+    if (!am) { 
+      Warning("GetOutputDirectory", "No analysis manager defined yet");
+      return ret;
+    }
+    AliAnalysisGrid* ag = am->GetGridHandler();
+    if (!ag) { 
+      Warning("GetOutputDirectory", "No grid handler defined yet");
+      return ret;
+    }
+    AliAnalysisAlien* aa = dynamic_cast<AliAnalysisAlien*>(ag);
+    if (!aa) { 
+      Warning("GetOutputDirectory", "Grid handler isn't for AliEn");
+      return ret;
+    }
+    ret = aa->GetGridOutputDir();
+    if (!ret.BeginsWith("/")) {
+      if (gGrid)
+	ret = Form("%s/%s/%s", gGrid->GetHomeDirectory(), 
+		   fEscapedName.Data(), aa->GetGridOutputDir());
+      else 
+	ret = Form("%s/%s", fEscapedName.Data(), aa->GetGridOutputDir());
+    }
     return ret;
   }
+  /* @} */
+
   //__________________________________________________________________
   /** 
-   * Load a library 
-   * 
-   * @param what What library to load
-   * @param mode Mode (local, proof, grid)
-   * @param par  If true, load as PAR
-   * @param rec  If true, also load on slaves
-   * 
-   * @return true on success 
+   * @{ 
+   * @name Setup 
    */
-  Bool_t LoadLibrary(const char* what, EMode mode, Bool_t par, Bool_t rec=false)
+  /** 
+   * Make our working directory if so requested 
+   * 
+   * @return true on success
+   */
+  Bool_t SetupWorkingDirectory()
   {
-    if (!what || what[0] == '\0') return true;
-    
-    TString module(what);
-    TString libName(what);
-    if (!libName.BeginsWith("lib")) libName = Form("lib%s", libName.Data());
-    if (!libName.EndsWith(".so"))   libName.Append(".so");
-
-    Int_t ret = 0;
-
-    switch (mode) { 
-    case kLocal: // Just load and exit 
-      gSystem->Load(libName.Data());
-      break;
-    case kGrid: 
-      if (par) { 
-	ret = SetupPAR(what) ? 0 : -1;
-	if (rec) fListOfPARs.Add(new TObjString(what));
-      } else  {
-	ret = gSystem->Load(libName.Data());
-	if (rec) fListOfLibraries.Add(new TObjString(libName));
-      }
-      break;
-    case kProof: 
-      Info("LoadLibrary", "Uploading %s", what);
-      ret = gProof->UploadPackage(what, TProof::kRemoveOld);
-      if (ret < 0)  {	
-	  ret = gProof->UploadPackage(gSystem->ExpandPathName(Form("../%s.par",
-								   what)));
-	if (ret < 0) {	
-	  ret = 
-	    gProof->UploadPackage(gSystem
-				  ->ExpandPathName(Form("$ALICE_ROOT/%s.par", 
-							what)));
-	  if (ret < 0) {
-	    Error("LoadLibrary", 
-		  "Could not find module %s.par in current directory nor "
-		  "in $ALICE_ROOT", module.Data());
-	    return false;
-	  }
-	}
-      }
-      Info("LoadLibrary", "Enabling package %s", what);
-      ret = gProof->EnablePackage(what);
-      break;
-    }
-    if (ret < 0) { 
-      Error("LoadLibrary", "Couldn't load %s", what);
+    TString nam = EscapedName();
+    //Info("Init","Current dir=%s, escaped name=%s",cwd.Data(),nam.Data());
+    Bool_t exists = gSystem->AccessPathName(nam.Data()) == 0;
+    if (fExecOper == kTerminate && !exists) {
+      Error("SetupWorkingDirectory", "File/directory %s does not exists", 
+	    nam.Data());
       return false;
     }
+
+	
+    if (!fAllowOverwrite && exists) {
+      Error("SetupWorkingDirectory", "File/directory %s already exists", 
+	    nam.Data());
+      return false;
+    }
+
+    if (!exists) {
+      if (gSystem->MakeDirectory(nam.Data())) {
+	Error("SetupWorkingDirectory", "Failed to make directory '%s'", 
+	      nam.Data());
+	return false;
+      }
+    }
+      
+    if (!gSystem->ChangeDirectory(nam.Data())) { 
+      Error("SetupWorkingDirectory", "Failed to change directory to %s", 
+	    nam.Data());
+      return false;
+    }
+    Info("SetupWorkingDirectory", "Made subdirectory %s, and cd'ed there", 
+	 nam.Data());
     return true;
   }
-          
-  //__________________________________________________________________
+  //------------------------------------------------------------------
+  /** 
+   * Set-up a PAR file 
+   * 
+   * @param what PAR file 
+   * 
+   * @return true on success
+   */
   Bool_t SetupPAR(const char* what)
   {
     if (!what || what[0] == '\0') return -1;
@@ -1631,14 +1792,19 @@ protected:
     
     // Check for setup script
     if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
-      Info("SetupPAR", "Setting up for PAR %s", what);
+      // Info("SetupPAR", "Setting up for PAR %s", what);
       gROOT->Macro("PROOF-INF/SETUP.C");
     }
     if (!gSystem->ChangeDirectory(cwd.Data())) return false;
 
     return true;
   }
-  //__________________________________________________________________
+  //------------------------------------------------------------------
+  /** 
+   * Set-up extra sources. 
+   * 
+   * @return true on success
+   */
   TString SetupExtras()
   {
     TString ret;
@@ -1660,7 +1826,13 @@ protected:
     ret = ret.Strip();
     return ret;
   }
-  //__________________________________________________________________
+  //------------------------------------------------------------------
+  /** 
+   * Set-up sources for upload 
+   * 
+   * 
+   * @return String of sources 
+   */
   TString SetupSources()
   {
     TString nam = EscapedName();
@@ -1683,7 +1855,12 @@ protected:
     ret = ret.Strip();
     return ret;
   }
-  //__________________________________________________________________
+  //------------------------------------------------------------------
+  /** 
+   * Set-up extra libraries to upload 
+   * 
+   * @return String of libraries 
+   */
   TString SetupLibraries()
   {
     TString ret;
@@ -1698,26 +1875,31 @@ protected:
     ret = ret.Strip();
     return ret;
   }
+  /* @} */
+
   //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Chain building 
+   */
   /** 
    * Scan directory @a dir (possibly recursive) for tree files to add
    * to the chain.    This does not follow sym-links
    * 
    * @param dir        Directory to scan
    * @param chain      Chain to add to
-   * @param type       Type of tree (ESD or AOD)
    * @param recursive  Whether to scan recursively 
-   * @param mc         Look also for MC files if true 
    *
    * @return true if any files where added 
    */
   Bool_t ScanDirectory(TSystemDirectory* dir, TChain* chain, 
-		       EType type, bool recursive, bool mc)
+		       bool recursive)
   {
     TString fnPattern;
-    switch (type) { 
+    switch (fExecType) { 
     case kESD:  fnPattern = "AliESD"; break;
     case kAOD:  fnPattern = "AliAOD"; break;
+    case kUser: fnPattern = "";       break;
     }
 
     // Assume failure 
@@ -1734,9 +1916,9 @@ protected:
 
     TList toAdd;
     toAdd.SetOwner();
-    Bool_t hasGAlice = (!mc ? true : false);
-    Bool_t hasKine   = (!mc ? true : false);
-    Bool_t hasTrRef  = (!mc ? true : false);
+    Bool_t hasGAlice = (!fMC ? true : false);
+    Bool_t hasKine   = (!fMC ? true : false);
+    Bool_t hasTrRef  = (!fMC ? true : false);
     
     // Sort list of files and check if we should add it 
     files->Sort();
@@ -1765,7 +1947,7 @@ protected:
 	  // if (title[0] == '/') 
 	  TSystemDirectory* d = new TSystemDirectory(file->GetName(),
 						     full.Data());
-          if (ScanDirectory(d,chain,type,recursive,mc))
+          if (ScanDirectory(d,chain,recursive))
 	    ret = true;
 	  delete d;
 	}
@@ -1779,7 +1961,7 @@ protected:
       if (!name.Contains(fnPattern)) { 
 	// Info("ScanDirectory", "%s does not match pattern %s", 
 	//      name.Data(), fnPattern.Data());
-	if (mc) { 
+	if (fMC) { 
 	  if (name.CompareTo("galice.root") == 0)     hasGAlice = true;
 	  if (name.CompareTo("Kinematics.root") == 0) hasKine   = true;
 	  if (name.CompareTo("TrackRefs.root")  == 0) hasTrRef = true;
@@ -1792,7 +1974,7 @@ protected:
       toAdd.Add(new TObjString(full));
     }
 
-    if (mc && toAdd.GetEntries() > 0 && 
+    if (fMC && toAdd.GetEntries() > 0 && 
 	(!hasGAlice || !hasKine || !hasTrRef)) { 
       Warning("ScanDirectory", 
 	      "one or more of {galice,Kinematics,TrackRefs}.root missing from "
@@ -1812,7 +1994,7 @@ protected:
     gSystem->ChangeDirectory(oldDir);
     return ret;
   }
-  //__________________________________________________________________
+  //------------------------------------------------------------------
   /** 
    * Create a chain from an XML containing an collection
    * 
@@ -1837,26 +2019,23 @@ protected:
     
     return chain;
   }
-  //__________________________________________________________________
+  //------------------------------------------------------------------
   /** 
    * Create a chain of data 
-   * 
-   * @param type Type of data
-   * @param mode Operation mode 
-   * @param mc   Assume MC input if true
    *
    * @return TChain of data 
    */    
-  TChain* CreateChain(EType type, EMode mode, EOper /* oper */, Bool_t mc)
+  TChain* CreateChain()
   {
     TString treeName;
-    switch (type) { 
+    switch (fExecType) { 
     case kESD:  treeName = "esdTree"; break;
     case kAOD:  treeName = "aodTree"; break;
+    case kUser: treeName = "";        break;
     }
 
     TChain* chain = 0;
-    switch (mode) { 
+    switch (fExecMode) { 
     case kProof: 
       if (!fDataSet.IsNull()) break; 
       // Otherwise fall through
@@ -1868,7 +2047,7 @@ protected:
 	if (!dir.BeginsWith("/")) dir = Form("../%s", dir.Data());
 	TString savdir(gSystem->WorkingDirectory());
 	TSystemDirectory d(gSystem->BaseName(dir.Data()), dir.Data());
-	if (!ScanDirectory(&d, chain, type, true, mc)) { 
+	if (!ScanDirectory(&d, chain, true)) { 
 	  delete chain;
 	  chain = 0;
 	}
@@ -1886,138 +2065,587 @@ protected:
     }
     return chain;
   }
-  //__________________________________________________________________
-  TString GetOutputDirectory(EMode mode) const 
-  {
-    TString ret(fEscapedName);
-    if (mode != kGrid) return ret;
-    
-    AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-    if (!am) { 
-      Warning("GetOutputDirectory", "No analysis manager defined yet");
-      return ret;
-    }
-    AliAnalysisGrid* ag = am->GetGridHandler();
-    if (!ag) { 
-      Warning("GetOutputDirectory", "No grid handler defined yet");
-      return ret;
-    }
-    AliAnalysisAlien* aa = dynamic_cast<AliAnalysisAlien*>(ag);
-    if (!aa) { 
-      Warning("GetOutputDirectory", "Grid handler isn't for AliEn");
-      return ret;
-    }
-    ret = aa->GetGridOutputDir();
-    if (!ret.BeginsWith("/")) {
-      if (gGrid)
-	ret = Form("%s/%s/%s", gGrid->GetHomeDirectory(), 
-		   fEscapedName.Data(), aa->GetGridOutputDir());
-      else 
-	ret = Form("%s/%s", fEscapedName.Data(), aa->GetGridOutputDir());
-    }
-    return ret;
-  }
-      
-  //__________________________________________________________________
-  virtual void WriteConstruction(std::ostream& o, const char* obj) const
-  {
-    o << "  " << ClassName() << " " 
-      << obj << "(\"" << fName << "\");" << std::endl;
-  }
-  //__________________________________________________________________
-  virtual void WriteSettings(std::ostream& o, const char* obj) const
-  {
-    o << "  " << obj << ".SetDateTime(" << fDatime.GetYear() << ',' 
-      << fDatime.GetMonth() << ',' 
-      << fDatime.GetDay() << ',' 
-      << fDatime.GetHour() << ',' 
-      << fDatime.GetMinute() << ");\n"
-      << "  " << obj << ".SetROOTVersion(\"" << fRootVersion << "\");\n"
-      << "  " << obj << ".SetAliROOTVersion(\"" << fAliRootVersion << "\");\n"
-      << "  " << obj << ".SetAliEnAPIVersion(\"" << fAliEnAPIVersion << "\");\n"
-      << "  " << obj << ".SetProofServer(\"" << fProofServer << "\");\n"
-      << "  " << obj << ".SetDataDir(\"" << fDataDir << "\");\n"
-      << "  " << obj << ".SetDataSet(\"" << fDataSet << "\");\n"
-      << "  " << obj << ".SetXML(\"" << fXML << "\");\n"
-      << "  " << obj << ".SetNReplica(" << fNReplica << ");\n"
-      << "  " << obj << ".SetESDPass(" << fESDPass << ");\n"
-      << "  " << obj << ".SetPassPostfix(\"" << fPassPostfix << "\");\n"
-      << "  " << obj << ".SetAllowOverwrite(" << fAllowOverwrite << ");\n"
-      << "  " << obj << ".SetUseGDB(" << fUseGDB << ");\n"
-      << "  " << obj << ".SetMaxSplit(" << fMaxSplit << ");\n"
-      << std::endl;
-  } 
-  //__________________________________________________________________
-  virtual void WriteRun(std::ostream& o, 
-			const char* obj, 
-			const char* type, 
-			const char* mode, 
-			const char* oper, 
-			Bool_t      mc, 
-			Bool_t      usePar, 
-			Int_t       dbg) const
-  {
-    o << "  " << obj << ".Run(" << type << "," << mode 
-      << "," << oper << "," << mc << "," << usePar << "," 
-      << dbg << ");" << std::endl;
-  }
-  //__________________________________________________________________
-  virtual const char* ClassName() const
-  {
-    return "TrainSetup";
-  }
-  //__________________________________________________________________
-  virtual void WriteBuild(std::ostream& o, const char* cls) const
-  {
-    o << "  const char* builder = \n"
-      << "    \"$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/trains/BuildTrain.C\";\n"
-      << "  gROOT->LoadMacro(builder);\n"
-      << "  BuildTrain(\"" << cls << "\");\n" << std::endl;
-  }
-  //__________________________________________________________________
-  virtual void WriteRuns(std::ostream& o, const char* obj) const
-  {
-    for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
-      o << "  " << obj << ".AddRun(" << fRunNumbers.At(i) << ");\n";
-    o << std::endl;
-  }
-  //__________________________________________________________________
-  virtual void CreateSetupScript(EType  type, 
-				 EMode  mode, 
-				 Bool_t mc, 
-				 Bool_t usePar, 
-				 Int_t  dbg) const
-  {
-    std::ofstream o(Form("setup_%s.C", fEscapedName.Data()));
-    if (!o) { 
-      Error("CreateSetupScript", "Failed to generate setup_%s.C", 
-	    fEscapedName.Data());
-      return;
-    }
-    const char* cls = ClassName();
-    o << std::boolalpha 
-      << "// Script to set-up the analysis chain\n"
-      << "// Automatically generated by TrainSetup\n"
-      << "// Run with argument to true, to do Terminate processing\n"
-      << "void setup_" << fEscapedName << "(bool terminate)\n"
-      << "{\n";
-    WriteBuild(o, cls);
-    WriteConstruction(o, "t");
-    WriteSettings(o, "t");
-    WriteRuns(o, "t");
+  /* @} */
 
-    const char* ctype = (type == kESD ? "\"ESD\"" : "\"AOD\"");
-    const char* cmode = (mode == kLocal ? "\"LOCAL\"" : 
-			 mode == kProof ? "\"PROOF\"" : "\"GRID\"");
-    WriteRun(o, "t", ctype, cmode, "(terminate ? \"TERMINATE\" : \"FULL\")",
-	     mc, usePar, dbg);
-	     
+public:
+  //====================================================================
+  /**
+   * Option class 
+   * 
+   */
+  struct Option
+  {
+    /** 
+     * Constructor 
+     * 
+     * @param name Option name
+     * @param desc Option description 
+     * @param arg  Option argument, if any
+     */
+    Option(const char* name, const char* desc, const char* arg="")
+      : fName(name),
+	fDesc(desc),
+	fArg(arg),
+	fIsSet(false),
+	fValue("")
+    {}
+    /** 
+     * Process an option string. 
+     * 
+     * @param opt String to process
+     * 
+     * @return true, if this handled the option, false otherwise
+     */
+    Bool_t Process(const TString& opt)
+    {
+      // Info("Option::Process", "Option %s processing %s",
+      //      fName.Data(), opt.Data());
+      if (!opt.BeginsWith(fName, TString::kIgnoreCase)) return false;
+
+      // We've got a value 
+      fIsSet = true;
     
-    o << "\n}\n// EOF\n" << std::endl;
+      // No argument options shouldn't set a value 
+      if (fArg.IsNull()) return true;
+
+      // Parse out value 
+      Int_t eq = opt.Index("=");
+
+      // Empty string is an OK value 
+      if (eq == kNPOS) return true;
+
+      TString tmp = opt(eq+1,opt.Length()-eq-1);
+      fValue = tmp.Strip();
+    
+      return true;
+    }
+    /** 
+     * Get option value as a string 
+     * 
+     * @return Option value
+     */
+    const TString& AsString() const { return fValue; } 
+    /** 
+     * Get option value as a double
+     * 
+     * @return Option value
+     */
+    Double_t AsDouble() const { return fValue.Atof(); }
+    /** 
+     * Get option value as an integer 
+     * 
+     * @return Option value
+     */
+    Int_t AsInt() const { return fValue.Atoi(); } 
+    /** 
+     * Get option value as a boolean
+     * 
+     * @return Option value
+     */
+    Bool_t   AsBool() const { return fIsSet; }
+    /** 
+     * Test if the option has been set.
+     * 
+     * @return True if the option was given
+     */
+    Bool_t   IsSet() const { return fIsSet; }
+    /** 
+     * Print help. 
+     * 
+     * @param o Stream to write on
+     * @param prefix Prefix
+     */
+    void PrintHelp(std::ostream& o, const char* prefix) const 
+    {
+      TString arg(fName);
+      if (!fArg.IsNull()) arg.Append(Form("=%s", fArg.Data()));
+      o << "  " << (prefix ? prefix : "") 
+	<< std::left << std::setw(30) << arg 
+	<< " " << fDesc << std::endl;
+    }
+    /** 
+     * Print the setting 
+     * 
+     * @param o Stream to write on
+     */
+    void PrintSettings(std::ostream& o) const 
+    {
+      o << "  " << std::left << std::setw(30) << fName << ": ";
+      if (fArg.IsNull()) o << (IsSet() ? "true" : "false");
+      else               o << fValue;
+      o << std::endl;
+    }
+    /** 
+     * Save the setting 
+     * 
+     * @param str  object nmae 
+     * @param val  Value
+     * @param o Stream to write on
+     */
+    void Save(std::ostream& o, const char* str, bool val)
+    {
+      if (!val) return;
+      if (str[0] == '-') {
+	o << "  " << str << fName << " \\" << std::endl;
+	return;
+      }
+      o << "  " << str << ".Append(\"" << fName <<  ",\");" << std::endl;
+    }
+    /** 
+     * Save the setting 
+     * 
+     * @param str  object nmae 
+     * @param val  Value
+     * @param o Stream to write on
+     */
+    void Save(std::ostream& o, const char* str, Int_t val)
+    {
+      if (str[0] == '-') { 
+	o << "  " << str << fName << "=" << val << " \\" << std::endl;
+	return;
+      }
+      o << "  " << str << ".Append(\"" << fName <<  "=" << val 
+	<< ",\");" << std::endl;
+    }
+    /** 
+     * Save the setting 
+     * 
+     * @param str  object nmae 
+     * @param val  Value
+     * @param o Stream to write on
+     */
+    void Save(std::ostream& o, const char* str, Double_t val)
+    {
+      if (str[0] == '-') { 
+	o << "  " << str << fName << "=" << val << "  \\" << std::endl;
+	return;
+      }
+      o << "  " << str << ".Append(\"" << fName <<  "=" << val 
+	<< ",\");" << std::endl;
+    }
+    /** 
+     * Save the setting 
+     * 
+     * @param str  object nmae 
+     * @param val  Value
+     * @param o Stream to write on
+     */
+    void Save(std::ostream& o, const char* str, const char* val)
+    {
+      if (str[0] == '-') { 
+	TString sval(val);
+	sval.ReplaceAll(" ", "\\ ");
+	o << "  " << str << fName << "=" << sval << " \\" << std::endl;
+	return;
+      }
+      o << "  " << str << ".Append(\"" << fName <<  "=" << val 
+	<< ",\");" << std::endl;
+    }
+
+    TString fName;  // Name of the option 
+    TString fDesc;  // Decription 
+    TString fArg;   // Argument, if any
+    Bool_t  fIsSet; // Whether the option has been set.
+    TString fValue; // Value of the option. 
+  };
+  //====================================================================
+  /**
+   * Run a train setup
+   * 
+   */
+  struct Runner 
+  {
+    /** 
+     * Constructor 
+     * 
+     * @param train Train to run 
+     * @param max   Maximum number of options
+     */
+    Runner(TrainSetup& train, UShort_t max=30)
+      : fTrain(&train), fOptions(0), fN(0), fMax(max)
+    {
+      fOptions = new Option*[fMax];
+      for (Int_t i = 0; i < fMax; i++) fOptions[i] = 0;
+    }
+    /** 
+     * Add an option 
+     * 
+     * @param opt Option to add 
+     */
+    void Add(Option* opt)
+    {
+      if (fN >= fMax) {
+	Warning("AddOption", "No room for option %s", opt->fName.Data());
+	return;
+      }
+      fOptions[fN++] = opt;
+    }
+    /** 
+     * Remove an option
+     * 
+     * @param name 
+     */
+    void Remove(const TString& name)
+    {
+      Option** ptr = fOptions;
+      Option** tmp = 0;
+      while (*ptr) { 
+	if (name.EqualTo((*ptr)->fName)) {
+	  tmp = ptr;
+	  break;
+	}
+	ptr++;
+      }
+      if (!tmp) // nothing found, returning 
+	return;
+      
+      ptr = tmp;
+      delete *tmp;
+      tmp++;
+      fN--;
+      while (*tmp) { 
+	*ptr = *tmp;
+	ptr++;
+	tmp++;
+      }
+      *ptr = 0;
+    }
+
+    /** 
+     * Parse option string 
+     * 
+     * @param options Option string. 
+     * @param delim   Delimiters 
+     * 
+     * @return true on success. 
+     */
+    Bool_t Parse(const TString& options, const char* delim=",;")
+    {
+      TObjArray* a = options.Tokenize(delim);
+      return Parse(*a);
+    }
+    /** 
+     * Parse options 
+     * 
+     * @param options 
+     * 
+     * @return true on success
+     */
+    Bool_t Parse(TObjArray& options) 
+    {
+      TIter next(&options);
+      TObjString* os = 0;
+      while ((os = static_cast<TObjString*>(next()))) {
+	TString s(os->String());
+	// Info("Runner::Parse", "Processing option %s", s.Data());
+	if (s.IsNull()) continue;
+
+	Bool_t   ok  = false;
+	Option** ptr = fOptions;
+	while (*ptr && !ok) { 
+	  Option* o = *ptr;
+	  if (o->Process(s)) ok = true;
+	  ptr++;
+	}
 	
+	if (!ok) 
+	  Warning("Parse", "Unknown option %s", s.Data());
+      }
+      return true;
+    }
+    /** 
+     * Check if we asked for help 
+     * 
+     * 
+     * @return 
+     */
+    Bool_t IsHelpAsked() const 
+    {
+      Option* help = FindOption("help");
+      return (help && help->IsSet());
+    }
+    /** 
+     * Print help
+     * 
+     * @param out Stream to write on  
+     * @param prefix Prefix
+     */
+    void PrintHelp(std::ostream& out, const char* prefix="") const
+    {
+      Option** ptr = fOptions;
+      while (*ptr) { 
+	(*ptr)->PrintHelp(out, prefix);
+	ptr++;
+      }
+    }
+    /** 
+     * Print the settings 
+     * 
+     * @param out Stream to write on. 
+     */
+    void PrintSettings(std::ostream& out) const
+    {
+      Option** ptr = fOptions;
+      while (*ptr) { 
+	(*ptr)->PrintSettings(out);
+	ptr++;
+      }
+    }
+    /** 
+     * Find an option by name 
+     * 
+     * @param name Name of option to find
+     * 
+     * @return Pointer to option, or null
+     */
+    Option* FindOption(const TString& name) const
+    {
+      Option** ptr = fOptions;
+      while (*ptr) { 
+	if (name.EqualTo((*ptr)->fName)) return *ptr;
+	ptr++;
+      }
+      return 0;
+    }
+    /** 
+     * Initialize the train
+     * 
+     * @param options  Execution options 
+     * 
+     * @return true on success
+     */
+    Bool_t Init(const TString& options)
+    {
+      fTrain->MakeOptions(*this);
+      if (!Parse(options)) return false;
+      return true;
+    }
+    /** 
+     * Run the train
+     * 
+     * @param runs     Run numbers 
+     * @param nEvents  Number of events
+     * @param asShell  Save set-up as shell script 
+     * 
+     * @return 
+     */
+    Bool_t Run(const TString& runs, Int_t nEvents, Bool_t asShell=false)
+    {
+      PrintSettings(std::cout);
+
+      fTrain->SetOptions(*this);
+      fTrain->SetRuns(runs);
+      // fTrain->SaveSetup(*this, nEvents, asShell);
+      
+      fTrain->Run(nEvents, this, asShell);
+      return true;
+    }
+      
+    TrainSetup* fTrain;
+    Option** fOptions;  // Our options 
+    UShort_t fN;        // Current number of options 
+    UShort_t fMax;      // Maximum number of options
+  };
+protected:
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Options 
+   */
+  /** 
+   * Class name of this train setup.  Sub-classes must define this. 
+   * 
+   * @return Class name of this setup 
+   */
+  virtual const char* ClassName() const = 0;
+  //------------------------------------------------------------------
+  /** 
+   * Make the options for this train.  Sub-classes can overload this
+   * to define new options, or append to the set of default option.
+   */    
+  virtual void MakeOptions(Runner& r)
+  {
+    r.Add(new Option("help",   "Show this help"));
+    r.Add(new Option("par",    "Use PAR files (PROOF and Grid)"));
+    r.Add(new Option("mc",     "Assume simulation input"));
+    r.Add(new Option("debug",  "Execute in debugger"));
+    r.Add(new Option("type",   "Type of train",    "AOD|ESD"));
+    r.Add(new Option("mode",   "Execution mode",   "LOCAL|PROOF|GRID"));
+    r.Add(new Option("oper",   "Operation mode",   "TEST|TERMINATE|FULL|INIT"));
+    r.Add(new Option("date",   "Set date string",  "YYYY-MM-DD HH:MM:SS"));
+    r.Add(new Option("cluster","PROOF cluster",         "HOST"));
+    r.Add(new Option("dataSet","Data set (PROOF only)", "NAME"));
+    r.Add(new Option("dataDir","Data directory",        "DIRECTORY"));
+    r.Add(new Option("pattern","Data pattern (grid only)", "GLOB")); 
+    r.Add(new Option("verb",   "Verbosity",             "NUMBER")); 
+    r.Add(new Option("root",   "ROOT version (Grid)",   "TAG")); 
+    r.Add(new Option("aliroot","AliROOT version (Grid)","TAG")); 
+    r.Add(new Option("alien",  "AliEn API version (Grid)","TAG")); 
+    r.Add(new Option("overwrite", "Allow overwrite"));
+    r.Add(new Option("per-run", "Per run merge"));
+  } 
+  //------------------------------------------------------------------
+  /** 
+   * Set the option values on the train.  Sub-classes can overload 
+   * this to set custom options on the train. 
+   */
+  virtual void SetOptions(Runner& r)
+  {
+    Option* debug	= r.FindOption("debug");
+    Option* date	= r.FindOption("date");
+    Option* cluster	= r.FindOption("cluster");
+    Option* dataSet	= r.FindOption("dataSet");
+    Option* dataDir	= r.FindOption("dataDir");
+    Option* pattern	= r.FindOption("pattern");
+    Option* par         = r.FindOption("par");
+    Option* type        = r.FindOption("type");
+    Option* mode        = r.FindOption("mode");
+    Option* oper        = r.FindOption("oper");
+    Option* mc          = r.FindOption("mc");
+    Option* verb        = r.FindOption("verb");
+    Option* root        = r.FindOption("root");
+    Option* aliroot     = r.FindOption("aliroot");
+    Option* alien       = r.FindOption("alien");
+    Option* overwrite   = r.FindOption("overwrite");
+    Option* run_merge   = r.FindOption("per-run");
     
+    if (date && date->IsSet()) SetDateTime(date->AsString());
+    if (cluster)               SetProofServer(cluster->AsString());
+    if (dataSet)               SetDataSet(dataSet->AsString());
+    if (dataDir)               SetDataDir(dataDir->AsString());
+    if (pattern)               SetDataPattern(pattern->AsString());
+    if (debug)                 SetUseGDB(debug->AsBool());
+    if (type && type->IsSet()) SetType(type->AsString());
+    if (mode && mode->IsSet()) SetMode(mode->AsString());
+    if (oper && oper->IsSet()) SetOperation(oper->AsString());
+    if (par)                   SetUsePar(par->AsBool());
+    if (mc)                    SetMC(mc->AsBool());
+    if (verb)                  SetVerbose(verb->AsInt());
+    if (root)                  SetROOTVersion(root->AsString());
+    if (aliroot)               SetAliROOTVersion(aliroot->AsString());
+    if (alien)                 SetAliEnAPIVersion(alien->AsString());
+    if (overwrite)             SetAllowOverwrite(overwrite->AsBool());
+    if (run_merge)             SetPerRunMerge(run_merge->AsBool());
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Set the option values on the train.  Sub-classes can overload 
+   * this to set custom options on the train. 
+   */
+  virtual void SaveOptions(std::ostream& o, const char* str, Runner& r)
+  {
+    Option* debug	= r.FindOption("debug");
+    Option* date	= r.FindOption("date");
+    Option* cluster	= r.FindOption("cluster");
+    Option* dataSet	= r.FindOption("dataSet");
+    Option* dataDir	= r.FindOption("dataDir");
+    Option* pattern	= r.FindOption("pattern");
+    Option* par         = r.FindOption("par");
+    Option* type        = r.FindOption("type");
+    Option* mode        = r.FindOption("mode");
+    Option* oper        = r.FindOption("oper");
+    Option* mc          = r.FindOption("mc");
+    Option* verb        = r.FindOption("verb");
+    Option* root        = r.FindOption("root");
+    Option* aliroot     = r.FindOption("aliroot");
+    Option* alien       = r.FindOption("alien");
+    Option* overwrite   = r.FindOption("overwrite");
+    Option* run_merge   = r.FindOption("per-run");
+    
+    if (date) date->Save(o, str, 
+			 Form("%04d-%02d-%02d %02d:%02d:00",
+			      fDatime.GetYear(), 
+			      fDatime.GetMonth(), 
+			      fDatime.GetDay(), 
+			      fDatime.GetHour(),
+			      fDatime.GetMinute()));
+    if (cluster)  cluster->Save(o, str, fProofServer);
+    if (dataSet)  dataSet->Save(o, str, fDataSet);
+    if (dataDir)  dataDir->Save(o, str, fDataDir);
+    if (pattern)  pattern->Save(o, str, fDataPattern);
+    if (debug)    debug->Save(o, str, fUseGDB);
+    if (type)     type->Save(o, str, TypeString(fExecType));
+    if (mode)     mode->Save(o, str, ModeString(fExecMode));
+    if (oper)     oper->Save(o, str, OperString(fExecOper));
+    if (par)      par->Save(o, str, fUsePar);
+    if (mc)       mc->Save(o, str, fMC);
+    if (verb)     verb->Save(o, str, fVerbose);
+    if (root)     root->Save(o, str, fRootVersion);
+    if (aliroot)  aliroot->Save(o, str, fAliRootVersion);
+    if (alien)    alien->Save(o, str, fAliEnAPIVersion);
+    if (overwrite)overwrite->Save(o, str, fAllowOverwrite);
+    if (run_merge)run_merge->Save(o, str, fPerRunMerge);
+  }
+  /** 
+   * Save the setup to file for later re-execution 
+   * 
+   * @param r         Runner object 
+   * @param nEvents   Number of events 
+   * @param asShell   If true, save as shell script - otherwise ROOT script
+   */
+  virtual void SaveSetup(Runner& r, Int_t nEvents, Bool_t asShell=false)
+  {
+    if (asShell) SaveSetupShell(r, nEvents); 
+    /* else */   SaveSetupROOT(r, nEvents);
+  }
+  /** 
+   * Save the setup to shell script for later re-execution 
+   * 
+   * @param r         Runner object 
+   * @param nEvents   Number of events 
+   */
+  virtual void SaveSetupShell(Runner& r, Int_t nEvents)
+  {
+    std::ofstream o("rerun.sh");
+    o << "#!/bin/bash\n\n"
+      << "oper=$1\n"
+      << "if test x$oper = x ; then oper=full ; fi \n\n"
+      << "class=\"" << ClassName() << "\"\n"
+      << "name=\"" << fName << "\"\n"
+      << "nev=" << nEvents << "\n\n"
+      << "opts=(--class=$class \\\n"
+      << "  --name=$name \\\n"
+      << "  --events=$nev \\" << std::endl;
+    for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
+      o << "  --run=" << fRunNumbers.At(i) << " \\\n";
+    SaveOptions(o, "--", r);
+    o << "  --oper=$oper)\n\n"
+      << "echo \"Running runTrain ${opts[@]}\"\n"
+      << "runTrain \"${opts[@]}\"\n\n"
+      << "#EOF\n" 
+      << std::endl;
+    o.close();
+    gSystem->Exec("chmod a+x rerun.sh");
+  }
+  /** 
+   * Save the setup to shell script for later re-execution 
+   * 
+   * @param r         Runner object 
+   * @param nEvents   Number of events 
+   */
+  virtual void SaveSetupROOT(Runner& r, Int_t nEvents) 
+  {
+    std::ofstream o("rerun.C");
+    o << "void rerun(bool terminate=false)\n"
+      << "{\n" 
+      << "  TString opts;" << std::endl;
+    SaveOptions(o, "opts", r);
+      
+    o << "  if (terminate) opts.Append(\"mode=terminate;\");\n\n"
+      << "  TString runs(\"";
+    for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
+      o << (i == 0 ? "" : ", ") << fRunNumbers.At(i);
+    o << "\");\n\n"
+      << "  Int_t   nEvents = " << nEvents << ";\n\n"
+      << "  gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C\");\n"
+      << "  RunTrain(\"" << ClassName() << "\",\"" 
+      << fName << "\",opts,runs,nEvents);\n"
+      << "}\n"
+      << "// EOF" << std::endl;
     o.close();
   }
+  /* @} */
+
   //__________________________________________________________________
   TString fName;             // Name of analysis
   TString fEscapedName;      // Name escaped for special chars
@@ -2026,11 +2654,10 @@ protected:
   TString fAliEnAPIVersion;  // AliEn API version to use 
   TString fProofServer;      // Name of proof server
   TString fDataDir;          // Grid Input directory 
+  TString fDataPattern;      // Data directory pattern
   TString fDataSet;          // Proof data set name 
   TString fXML;              // XML collection for local/proof mode
   Int_t   fNReplica;         // Storage replication
-  Int_t   fESDPass;          // ESD pass number 
-  TString fPassPostfix;      // Possible pass postfix
   Bool_t  fAllowOverwrite;   // Allow overwriting output dir
   Bool_t  fUseGDB;           // Wrap PROOF slaves in GDB 
   Int_t   fMaxSplit;         // Maximum number of files per split
@@ -2039,9 +2666,15 @@ protected:
   TList   fListOfSources;    // List of sources to upload and AcLIC
   TList   fListOfLibraries;  // List of libraries to load
   TList   fListOfExtras;     // List of extra files to upload
-  TDatime fDatime;
+  TDatime fDatime;           // Date and time 
+  EType   fExecType;         // Execution type (ESD, AOD)
+  EMode   fExecMode;         // Execution mode (PROOF, local, Grid)
+  EOper   fExecOper;         // Execution operation (full, terminate, ...)
+  Bool_t  fUsePar;           // Wether to use PAR files 
+  Bool_t  fMC;               // Whether to assume MC input 
+  Bool_t  fPerRunMerge;      // Whether to merge per run or over-all
+  Int_t   fVerbose;          // Verbosity level 
 };
-
   
 //____________________________________________________________________
 //
