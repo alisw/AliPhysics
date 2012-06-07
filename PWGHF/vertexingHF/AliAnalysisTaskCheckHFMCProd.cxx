@@ -292,7 +292,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     Int_t nParticles=stack->GetNtrack();
     Double_t dNchdy = 0.;
     Int_t nb = 0, nc=0;
-    Int_t nCharmed=0.;
+    Int_t nCharmed=0;
     for (Int_t i=0;i<nParticles;i++){
       TParticle* part = (TParticle*)stack->Particle(i);
       Int_t absPdg=TMath::Abs(part->GetPdgCode());

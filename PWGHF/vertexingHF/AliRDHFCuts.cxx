@@ -548,12 +548,12 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
     esdTrack.GetXYZAt(7.6,0.,xyz2);
     Double_t phi1=TMath::ATan2(xyz1[1],xyz1[0]);
     if(phi1<0) phi1+=2*TMath::Pi();
-    Int_t lad1=phi1/(2.*TMath::Pi()/20.);
+    Int_t lad1=(Int_t)(phi1/(2.*TMath::Pi()/20.));
     Double_t phi2=TMath::ATan2(xyz2[1],xyz2[0]);
     if(phi2<0) phi2+=2*TMath::Pi();
-    Int_t lad2=phi2/(2.*TMath::Pi()/40.);
-    Int_t mod1=(xyz1[2]+14)/7.;
-    Int_t mod2=(xyz2[2]+14)/7.;
+    Int_t lad2=(Int_t)(phi2/(2.*TMath::Pi()/40.));
+    Int_t mod1=(Int_t)((xyz1[2]+14)/7.);
+    Int_t mod2=(Int_t)((xyz2[2]+14)/7.);
     Bool_t lay1ok=kFALSE;
     if(mod1>=0 && mod1<4 && lad1<20){
       lay1ok=deadSPDLay1PbPb2011[lad1][mod1];
