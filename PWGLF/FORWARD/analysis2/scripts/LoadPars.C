@@ -1,6 +1,12 @@
 /** 
  * Set-up for a PROOF analysis job.   Make TProof object and load pars. 
  * 
+ * @param nWorkers Number of workers 
+ *
+ * @deprecated Use TrainSetup instead 
+ *
+ * @return True on success 
+ *
  * @ingroup pwglf_forward_scripts
  */
 Bool_t
