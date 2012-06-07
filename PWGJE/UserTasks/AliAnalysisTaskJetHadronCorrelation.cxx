@@ -467,18 +467,14 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								}
 				}
 
-				if(fNonStdFile.Length()!=0){
-								// case we have an AOD extension - fetch the jets from the extended output
-
-								AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-								fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
-								if(!fAODExtension){
-												if(fDebug>1)Printf("AODExtension not found for %s",fNonStdFile.Data());
-								}
-				}
-
-
-
+				//if(fNonStdFile.Length()!=0){
+				//				// case we have an AOD extension - fetch the jets from the extended output
+				//				AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+				//				fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
+				//				if(!fAODExtension){
+				//								if(fDebug>1)Printf("AODExtension not found for %s",fNonStdFile.Data());
+				//				}
+				//}
 				//fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
 				if (!fAODIn) {
 								Printf("ERROR %s : fAODIn not available",(char*)__FILE__);
@@ -673,6 +669,12 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																fH2JetsJetMCAKT04_Aj->Fill(Leading_pt,Aj);
 																fH2JetsJetMCAKT04_pt->Fill(Leading_pt,sLeading_pt);
 												}
+
+												for(int eb=0;eb<5;eb++){//count number of Di-Jet in pt bin
+																if(TMath::Abs(Leading_pt -20.*(eb+1))<10.){
+																				if(algorithm==0)fH1AKT04_ndiJ_ediv[eb]->Fill(1);
+																}
+												}
 								}
 								if(algorithm==0)findsLJet=findsLJetAOD;
 								if(algorithm==1)findsLJet=findsLJetMC2;
@@ -682,11 +684,6 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								if(algorithm>=2)continue;
 
 								if((findsLJet)&&(Leading_pt>10.)&&(sLeading_pt>10.)){
-												for(int eb=0;eb<5;eb++){//count number of Di-Jet in pt bin
-																if(TMath::Abs(Leading_pt -20.*(eb+1))<10.){
-																				if(algorithm==0)fH1AKT04_ndiJ_ediv[eb]->Fill(1);
-																}
-												}
 												fJetBranch = "tracks";
 												TClonesArray* tracks = dynamic_cast <TClonesArray*> (fAODIn->FindListObject(fJetBranch.Data()));
 								

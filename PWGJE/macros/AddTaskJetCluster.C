@@ -1,4 +1,4 @@
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,Int_t nSkipCone = 2);
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,Int_t nSkipCone = 2,Int_t dice=0,Int_t smear=0);
 
 Int_t kBackgroundModeCl = 0;
 Float_t kPtTrackCutCl = 0.15;
@@ -30,7 +30,7 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
  }
 
 
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,Int_t nSkipCone)
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,Int_t nSkipCone,Int_t dice,Int_t smear)
  {
  // Creates a jet fider task, configures it and adds it to the analysis manager.
    kPtTrackCutCl = ptTrackCut;
@@ -73,7 +73,10 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
     cAdd += Form("_Filter%05d",filterMask);
     cAdd += Form("_Cut%05d",(int)(1000.*kPtTrackCutCl));
     cAdd += Form("_Skip%02d",nSkip);
-    Printf("%s %E",cAdd.Data(),kPtTrackCutCl);
+    if(dice>0 || smear>0)
+      cAdd += Form("Detector%d%d",dice,smear);
+
+    Printf("%s %E %d %d",cAdd.Data(),kPtTrackCutCl,dice,smear);
     AliAnalysisTaskJetCluster* clus = new  AliAnalysisTaskJetCluster(Form("JetCluster%s_%s%s",bRec,jf,cAdd.Data()));
       
    // or a config file
@@ -157,11 +160,11 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
-   AliAnalysisDataContainer *coutput1_Spec = mgr->CreateContainer(Form("cluster_%s_%s_%s%s",bRec,bGen,jf,cAdd.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_cluster_%s_%s_%s%s",AliAnalysisManager::GetCommonFileName(),bRec,bGen,jf,cAdd.Data()));
+   AliAnalysisDataContainer *coutput1_clus = mgr->CreateContainer(Form("cluster_%s_%s_%s%s",bRec,bGen,jf,cAdd.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_cluster_%s_%s_%s%s",AliAnalysisManager::GetCommonFileName(),bRec,bGen,jf,cAdd.Data()));
 
    mgr->ConnectInput  (clus, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (clus, 0, mgr->GetCommonOutputContainer());
-   mgr->ConnectOutput (clus,  1, coutput1_Spec );
+   mgr->ConnectOutput (clus,  1, coutput1_clus );
    
    return clus;
 }
