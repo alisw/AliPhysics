@@ -83,7 +83,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Int_t theMCon =5, Int
 		outputfile += "ME";
 		contname += "ME";
 		cutname += "ME";
-		cutname2 += "SE";
+		cutname2 += "ME";
 		counter+= "ME";
 	}
 	outputfile += "Dphi_DStar";
@@ -94,7 +94,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Int_t theMCon =5, Int
 	counter+= particle;
 
 	
-	cout << "Contname = " << contname << endl;
+	//cout << "Contname = " << contname << endl;
   mgr->AddTask(task);
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();

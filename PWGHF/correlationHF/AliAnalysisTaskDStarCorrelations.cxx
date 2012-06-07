@@ -372,7 +372,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 						
 			TObjArray* selectedtracks = new TObjArray();
 			if(fselect==1 || fselect ==2)	selectedtracks = AcceptAndReduceTracks(aodEvent);
-			if(fselect==3) {cout << " 2 "<< endl; selectedtracks = AcceptAndReduceKZero(aodEvent,iDStartoD0pi,1);}	
+			if(fselect==3) {selectedtracks = AcceptAndReduceKZero(aodEvent,iDStartoD0pi,1);}	
 			Int_t noftracks = selectedtracks->GetEntriesFast(); 
 			Int_t counterPeak =0;
 			Int_t counterSB = 0;
@@ -416,7 +416,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 						((TH1F*)fOutput->FindObject("PhiPart"))->Fill(phiHad);
 					
 				}
-				cout << "fill6" << endl;
+				
 				if(isInSideBand) {
 
 					FillSideBandCorrelations(ptDStar,phiDStar,etaDStar,phiHad,etaHad); // function for sidebands
@@ -426,7 +426,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 
 					counterSB++;
 				}
-				cout << "fill7" << endl;
+				
 			} // end loop on tracks	
 			
 			if(counterPeak) ((TH1D*)fOutput->FindObject("NofTracksInPeak"))->Fill(counterPeak);
@@ -445,9 +445,8 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 				Int_t multbinflag = pool->MultBinIndex();
 				Int_t zvtxflag = pool->ZvtxBinIndex();
  
-				if(isInPeak){ cout << "check 1" << endl;
-					((TH2I*)fOutput->FindObject("EventMixingCheck"))->Fill(multbinflag,zvtxflag); 
-					cout << "filling" << endl;}
+				if(isInPeak) ((TH2I*)fOutput->FindObject("EventMixingCheck"))->Fill(multbinflag,zvtxflag); 
+					
 
 				TObjArray* mixedtracks = 0x0;
 				
@@ -752,11 +751,11 @@ void AliAnalysisTaskDStarCorrelations::FillCorrelations(Double_t ptTrig, Double_
 	// set correct Delta Phi range
 	if (deltaPhi > 1.5*pi -pi/32) deltaPhi = deltaPhi - 2*pi;
 	if (deltaPhi < -0.5*pi -pi/32) deltaPhi = deltaPhi + 2*pi;
-	cout << "CRASH CHECK 1 " << endl;
+	
 		if(fselect==1) ((TH3D*)fOutput->FindObject("DPhiDStarHadron"))->Fill(deltaPhi,ptTrig,deltaEta);
 		if(fselect==2) ((TH3D*)fOutput->FindObject("DPhiDStarKaon"))->Fill(deltaPhi,ptTrig,deltaEta);
 		if(fselect==3) ((TH3D*)fOutput->FindObject("DPhiDStarKZero"))->Fill(deltaPhi,ptTrig,deltaEta);
-	cout << "CRASH CHECK 2 " << endl;
+	
 	
 	return;
 }
@@ -771,11 +770,11 @@ void AliAnalysisTaskDStarCorrelations::FillSideBandCorrelations(Double_t ptTrig,
 	// set correct Delta Phi range
 	if (deltaPhi > 1.5*pi -pi/32) deltaPhi = deltaPhi - 2*pi;
 	if (deltaPhi < -0.5*pi -pi/32) deltaPhi = deltaPhi + 2*pi;
-	cout << "CRASH CHECK bkg 1 " << endl;
+	
 		if(fselect==1) ((TH3D*)fOutput->FindObject("bkgDPhiDStarHadron"))->Fill(deltaPhi,ptTrig,deltaEta);
 		if(fselect==2) ((TH3D*)fOutput->FindObject("bkgDPhiDStarKaon"))->Fill(deltaPhi,ptTrig,deltaEta);
 		if(fselect==3) ((TH3D*)fOutput->FindObject("bkgDPhiDStarKZero"))->Fill(deltaPhi,ptTrig,deltaEta);
-	cout << "CRASH CHECK bkg 2 " << endl;
+	
 	
 	return;
 	
@@ -792,7 +791,7 @@ Double_t deltaEta = etaTrig - etaTrack;
 	
 if (deltaPhi > 1.5*pi -pi/32) deltaPhi = deltaPhi - 2*pi;
 if (deltaPhi < -0.5*pi -pi/32) deltaPhi = deltaPhi + 2*pi;
-cout << "fill1" << endl;
+
 	if(fselect==1) ((TH3D*)fOutput->FindObject("MCTagDPhiDStarHadron"))->Fill(deltaPhi,ptTrig,deltaEta);
 	if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutput->FindObject("MCTagDPhiDStarKaon"))->Fill(deltaPhi,ptTrig,deltaEta);
 	if(fselect==3) ((TH3D*)fOutput->FindObject("MCTagDPhiDStarKZero"))->Fill(deltaPhi,ptTrig,deltaEta);
@@ -800,7 +799,7 @@ cout << "fill1" << endl;
 
 
 ((TH1F*)fOutput->FindObject("MCSources"))->Fill(0);
-cout << "fill2" << endl;
+
 if (mcSource==44){ // is from charm ->D
 	if(fselect==1) ((TH3D*)fOutput->FindObject("CharmDOriginDPhiDStarHadronMC"))->Fill(deltaPhi,ptTrig,deltaEta);
 	if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutput->FindObject("CharmDOriginDPhiDStarKaonMC"))->Fill(deltaPhi,ptTrig,deltaEta);
@@ -810,7 +809,7 @@ if (mcSource==44){ // is from charm ->D
 	((TH1F*)fOutput->FindObject("MCSources"))->Fill(1);
 	((TH1F*)fOutput->FindObject("MCSources"))->Fill(2);
 	}
-cout << "fill3" << endl;
+
 if (mcSource==54){ // is from beauty -> D
 	if(fselect==1) ((TH3D*)fOutput->FindObject("BeautyDOriginDPhiDStarHadronMC"))->Fill(deltaPhi,ptTrig,deltaEta);
 	if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutput->FindObject("BeautyDOriginDPhiDStarKaonMC"))->Fill(deltaPhi,ptTrig,deltaEta);
@@ -818,7 +817,7 @@ if (mcSource==54){ // is from beauty -> D
 	if(fselect==3) ((TH1F*)fOutput->FindObject("MCSources"))->Fill(1);
 	if(fselect==3) ((TH1F*)fOutput->FindObject("MCSources"))->Fill(3);
 	}
-cout << "fill4" << endl;
+
 if (mcSource==55){ // is from beauty ->B
 	if(fselect==1) ((TH3D*)fOutput->FindObject("BeautyBOriginDPhiDStarHadronMC"))->Fill(deltaPhi,ptTrig,deltaEta);
 	if(fselect==2 && ptTrack <1.5) ((TH3D*)fOutput->FindObject("BeautyBOriginDPhiDStarKaonMC"))->Fill(deltaPhi,ptTrig,deltaEta);
