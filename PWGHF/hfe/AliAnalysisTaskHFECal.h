@@ -107,7 +107,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   
   TH1F			*fCent;			//! centrality
   THnSparseD		*fEleInfo;		//! EMC acc
-  
+  /*
   //<---- trigger info
   TH1F	      *fClsEBftTrigCut;	//Cluster E before trigger selection
   TH1F        *fClsEAftTrigCut;	//Cluster E after trigger selection
@@ -119,9 +119,10 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F        *fClsETime1; //ClsE vs time distribution
   TH1F        *fTrigTimes;// trigger time
   TH2F        *fCellCheck;// trigger time
-
+  */
   //<------ MC
   TH2F                  *fInputHFEMC;
+  TH2F                  *fInputAlle;
   TH2F			*fIncpTMChfe;		//! MC HFE pid electron vs centrality
   TH2F			*fIncpTMCM20hfe;	//! MC HFE pid electron vs centrality
   TH2F			*fIncpTMCpho;		//! MC HFE pid electron vs centrality
@@ -130,7 +131,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F			*fPhoElecPtMCM20;	        //! Pho inclusive ele pt
   TH2F			*fSameElecPtMC;	        //! Same inclusive ele pt
   TH2F			*fSameElecPtMCM20;	        //! Same inclusive ele pt
-
+  
   AliAnalysisTaskHFECal(const AliAnalysisTaskHFECal&); // not implemented
   AliAnalysisTaskHFECal& operator=(const AliAnalysisTaskHFECal&); // not implemented
   

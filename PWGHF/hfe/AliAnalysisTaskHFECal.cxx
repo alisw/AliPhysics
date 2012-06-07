@@ -123,6 +123,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fTPCnsigma(0)
   ,fCent(0)
   ,fEleInfo(0)
+  /*
   ,fClsEBftTrigCut(0)	 
   ,fClsEAftTrigCut(0)	 
   ,fClsEAftTrigCut1(0)	 
@@ -133,7 +134,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fClsETime1(0)       
   ,fTrigTimes(0)
   ,fCellCheck(0)
+  */
   ,fInputHFEMC(0)
+  ,fInputAlle(0)
   ,fIncpTMChfe(0)	
   ,fIncpTMCM20hfe(0)	
   ,fIncpTMCpho(0)	
@@ -200,6 +203,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fTPCnsigma(0)
   ,fCent(0)
   ,fEleInfo(0)
+  /*
   ,fClsEBftTrigCut(0)	 
   ,fClsEAftTrigCut(0)	 
   ,fClsEAftTrigCut1(0)	 
@@ -210,7 +214,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fClsETime1(0)       
   ,fTrigTimes(0)
   ,fCellCheck(0)
+  */
   ,fInputHFEMC(0)
+  ,fInputAlle(0)
   ,fIncpTMChfe(0)	
   ,fIncpTMCM20hfe(0)	
   ,fIncpTMCpho(0)	
@@ -290,6 +296,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       int fPDG = particle->GetPdgCode(); 
       double mcZvertex = fMC->GetPrimaryVertex()->GetZ();
       double pTMC = particle->Pt();
+      double proR = particle->R();
       Bool_t mcInDtoE= kFALSE;
       Bool_t mcInBtoE= kFALSE;
 
@@ -300,6 +307,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
             if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(fPDG)==11)mcInBtoE = kTRUE;
             if((mcInBtoE || mcInDtoE) && fabs(mcZvertex)<10.0)fInputHFEMC->Fill(cent,pTMC);
          }
+
+         if(proR<7.0 && fabs(fPDG)==11)fInputAlle->Fill(cent,pTMC);
 
       }
     } 
@@ -371,7 +380,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     double mcele = -1.;
     if(fmcData && fMC && stack)
       {
-       Int_t label = track->GetLabel();
+       Int_t label = TMath::Abs(track->GetLabel());
        TParticle* particle = stack->Particle(label);
        int mcpid = particle->GetPdgCode();
        printf("MCpid = %d",mcpid);
@@ -410,8 +419,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
     Double_t mom = -999., eop=-999., pt = -999., dEdx=-999., fTPCnSigma=-10, phi=-999., eta=-999.;
-    //pt = track->Pt();
-    //if(pt<2.0)continue;
+    pt = track->Pt();
+    if(pt<2.0)continue;
     
     // Track extrapolation
     
@@ -430,13 +439,12 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
         double rmatch = -1.0;  
         double nmatch = -1.0;
         double oppstatus = 0.0;
-        double samestatus = 0.0;
 
     Bool_t fFlagPhotonicElec = kFALSE;
     Bool_t fFlagConvinatElec = kFALSE;
     SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec);
     if(fFlagPhotonicElec)oppstatus = 1.0;
-    if(fFlagConvinatElec)samestatus = 1.0;
+    if(fFlagConvinatElec)oppstatus = 2.0;
 
     Int_t clsId = track->GetEMCALcluster();
     if (clsId>0){
@@ -455,11 +463,11 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		rmatch = sqrt(pow(delphi,2)+pow(deleta,2));
 		nmatch = clust->GetNTracksMatched();
 
-		  double valdedx[17];
+		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = dEdx; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = m02; valdedx[9] = m20; valdedx[10] = disp;
-		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = samestatus; valdedx[15] = clust->Chi2();
-                  valdedx[16] = mcele;
+		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = clust->Chi2();
+                  valdedx[15] = mcele;
                   fEleInfo->Fill(valdedx);
                  
 
@@ -498,7 +506,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        if(fFlagPhotonicElec) fPhoElecPtM20->Fill(cent,pt);
        if(fFlagConvinatElec) fSameElecPtM20->Fill(cent,pt);
      }
-
+    
     // MC
     if(mcele==1)
       {
@@ -659,14 +667,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
-  Int_t nBins[17] =  {  480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    3,    3,   10,    3};
-  Double_t min[17] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5, -0.5, -1.5};
-  Double_t max[17] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  2.5,  2.5,  9.5,  1.5};
-  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp;Centrality;charge;opp;same;trigCond;", 17, nBins, min, max);
+  Int_t nBins[16] =  {  480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    5,   10,    3};
+  Double_t min[16] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5, -1.5};
+  Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  4.5,  9.5,  1.5};
+  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
   fOutputList->Add(fEleInfo);
 
   //<---  Trigger info
-
+  /*
   fClsEBftTrigCut = new TH1F("fClsEBftTrigCut","cluster E before trigger selection",1000,0,100);
   fOutputList->Add(fClsEBftTrigCut);
 
@@ -696,11 +704,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fCellCheck = new TH2F("fCellCheck", "Cell vs E; E GeV; Cell ID",10,6,26,12000,0,12000);
   fOutputList->Add(fCellCheck);
-
+  */
   //<---------- MC
 
   fInputHFEMC = new TH2F("fInputHFEMC","Input MC HFE pid electro vs. centrality",100,0,100,100,0,50);
   fOutputList->Add(fInputHFEMC);
+
+  fInputAlle = new TH2F("fInputAlle","Input MC electro vs. centrality",100,0,100,100,0,50);
+  fOutputList->Add(fInputAlle);
 
   fIncpTMChfe = new TH2F("fIncpTMChfe","MC HFE pid electro vs. centrality",100,0,100,100,0,50);
   fOutputList->Add(fIncpTMChfe);
@@ -718,7 +729,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fPhoElecPtMC);
   
   fPhoElecPtMCM20 = new TH2F("fPhoElecPtMCM20", "MC Pho-inclusive electron pt with M20",100,0,100,100,0,50);
-  fOutputList->Add(fPhoElecPtM20);
+  fOutputList->Add(fPhoElecPtMCM20);
 
   fSameElecPtMC = new TH2F("fSameElecPtMC", "MC Same-inclusive electron pt",100,0,100,100,0,50);
   fOutputList->Add(fSameElecPtMC);
@@ -752,11 +763,11 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   //Identify non-heavy flavour electrons using Invariant mass method
   
   fTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  //fTrackCuts->SetRequireTPCRefit(kTRUE);
-  //fTrackCuts->SetEtaRange(-0.7,0.7);
+  fTrackCuts->SetRequireTPCRefit(kTRUE);
+  fTrackCuts->SetEtaRange(-0.9,0.9);
   //fTrackCuts->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
-  fTrackCuts->SetMinNClustersTPC(70);
+  fTrackCuts->SetMinNClustersTPC(90);
   
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
   
@@ -784,7 +795,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     Int_t charge = track->Charge();
     
     //if(ptAsso <0.3) continue;
-    if(ptAsso <0.5) continue;
+    if(ptAsso <1.0) continue;
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
     if(dEdxAsso <65 || dEdxAsso>100) continue; //11a pass1
     
@@ -1008,7 +1019,7 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
     for( iCell = 0; iCell < nCell; iCell++ )
     {
      // check hot cell
-     if(clsE>6.0)fCellCheck->Fill(clsE,cellAddrs[iCell]); 
+     //if(clsE>6.0)fCellCheck->Fill(clsE,cellAddrs[iCell]); 
 
       // get cell position
       fGeom->GetCellIndex( cellAddrs[iCell], nSupMod, nModule, nIphi, nIeta );
@@ -1044,39 +1055,39 @@ void AliAnalysisTaskHFECal::FindTriggerClusters()
     if( fESD->GetBunchCrossNumber() % 4 < 2 )
       clusterTime -= 0.0000001;
 
-    fClsETime->Fill(clsE,clusterTime);
-    fClsEBftTrigCut->Fill(clsE);
+    //fClsETime->Fill(clsE,clusterTime);
+    //fClsEBftTrigCut->Fill(clsE);
 
     if(nClusterTrig>0){
-      fClsETime1->Fill(clsE,clusterTime);
+      //fClsETime1->Fill(clsE,clusterTime);
     }
 
     if(nClusterTrig>0){
       cluster->SetChi2(1);
-      fClsEAftTrigCut1->Fill(clsE);                                               
+      //fClsEAftTrigCut1->Fill(clsE);                                               
     }
 
     if(nClusterTrigCut>0){
       cluster->SetChi2(2);
-      fClsEAftTrigCut2->Fill(clsE);
+      //fClsEAftTrigCut2->Fill(clsE);
     }
 
     if(nClusterTrigCut>0 && ( nCell > (1 + clsE / 3)))
     {
       cluster->SetChi2(3);
-      fClsEAftTrigCut3->Fill(clsE);
+      //fClsEAftTrigCut3->Fill(clsE);
     }
 
     if(nClusterTrigCut>0 && (nCell > (1 + clsE / 3) )&&( clusterTime > fTimeCutLow && clusterTime < fTimeCutHigh ))
     {
       // cluster->SetChi2(4);
-      fClsEAftTrigCut4->Fill(clsE);
+      //fClsEAftTrigCut4->Fill(clsE);
     }
     if(nClusterTrigCut<1)
     {
       cluster->SetChi2(0);
 
-      fClsEAftTrigCut->Fill(clsE);
+      //fClsEAftTrigCut->Fill(clsE);
     }
 
   } // clusters
