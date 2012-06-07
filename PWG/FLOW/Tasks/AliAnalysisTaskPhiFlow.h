@@ -41,9 +41,10 @@ public:
    AliAnalysisTaskPhiFlow(const char *name);
    virtual ~AliAnalysisTaskPhiFlow();
 
-   void                                 SetEnableDebugMode() {fDebug = kTRUE; };
+   Bool_t                               SetEnableDebugMode(Bool_t debug) {fDebug = debug; return fDebug; }
+   Bool_t                               SetIsMC(Bool_t ismc) {fIsMC = ismc; return fIsMC; }
    TH1F*                                BookHistogram(const char * name);
-   TH2F*                                BookPIDHistogram(const char * name);
+   TH2F*                                BookPIDHistogram(const char * name, Bool_t TPC);
    TH1F*                                InitPtSpectraHistograms(Int_t i);
    TH1F*                                BookPtHistogram(const char* name);
    void                                 AddPhiIdentificationOutputObjects();
@@ -52,13 +53,22 @@ public:
    template <typename T> Double_t       DeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckDeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckCandidateEtaPtCut(const T* track1, const T* track2) const;
-   void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod);
-   void                                 SetVertexZ(Float_t z) { fVertexRange = z; };
+   void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod) { 
+                                                                                          fCentralityMin = CentralityMin; 
+                                                                                          fCentralityMax = CentralityMax; 
+                                                                                          fkCentralityMethod = CentralityMethod; }
+   Double_t                             GetCenMin() const {return fCentralityMin; }
+   Double_t                             GetCenMax() const {return fCentralityMax; }
+   const char*                          GetCentralityMethod() const {return fkCentralityMethod; }
+   void                                 SetVertexZ(Float_t z) { fVertexRange = z; }
+   Float_t                              GetVertexZ() const { return fVertexRange; }
    void                                 SetMaxDeltaDipAngleAndPt(Float_t a, Float_t pt) { fDeltaDipAngle = a;
                                                                                           fDeltaDipPt = pt;
                                                                                           fApplyDeltaDipCut = kTRUE; };
+   Float_t                              GetDeltaDipAngle() const {return fDeltaDipAngle; }
+   Float_t                              GetDeltaDipPt() const {return fDeltaDipPt; }
    template <typename T> Bool_t         EventCut(T* event);
-   template <typename T> void           PlotVZeroMultiplcities(const T* event) const;
+   template <typename T> void           PlotMultiplcities(const T* event) const;
    template <typename T> Bool_t         CheckVertex(const T* event) const ;
    template <typename T> Bool_t         CheckCentrality(T* event);
    void                                 InitializeBayesianPID(AliESDEvent* event);
@@ -66,6 +76,7 @@ public:
    template <typename T> Bool_t         PassesTPCbayesianCut(T* track) const;
    Bool_t                               PassesStrictKaonCuts(AliESDtrack* track) const;
    Bool_t                               PassesStrictKaonCuts(AliAODTrack* track) const;
+   Bool_t                               PassesDCACut(AliAODTrack* track) const;
    Bool_t                               IsKaon(AliESDtrack* track) const;
    Bool_t                               IsKaon(AliAODTrack* track) const;
    template <typename T> Double_t       PhiPt(const T* track_1, const T* track_2) const;
@@ -81,17 +92,30 @@ public:
    void                                 SetRequireTPCStandAloneKaons() { fRequireTPCStandAlone = kTRUE; }
    void                                 SetOlderThanPbPbPass2() { fOldTrackParam = kTRUE; }
    void                                 SetPIDConfiguration(Double_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
-   void                                 SetPOIDCAXYZ(Double_t a, Double_t b) {fDCAXY = a; fDCAZ = b; fDCA = kTRUE; }
-   void                                 SetCandidateEtaAndPt(Double_t mineta, Double_t maxeta, Double_t minpt, Double_t maxpt) { fCandidateMinEta = mineta, 
-                                                                                                                               fCandidateMaxEta = maxeta,
-                                                                                                                               fCandidateMinPt = minpt, 
-                                                                                                                               fCandidateMaxPt = maxpt,
-                                                                                                                               fCandidateEtaPtCut = kTRUE;}
-   void                                 SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass);
+   void                                 GetPIDConfiguration(Double_t prob[7]) const {for(Int_t i = 0; i < 7; i++) prob[i] = fPIDConfig[i]; }
+   void                                 SetPOIDCAXYZ(Double_t dca[5]) { for(Int_t i = 0; i < 5; i++) fDCAConfig[i] = dca[i]; }
+   void                                 GetPOIDCZXYZ(Double_t dca[5]) const { for(Int_t i = 0; i < 5; i++) dca[i] = fDCAConfig[i]; }
+   void                                 SetCandidateEtaAndPt(Double_t mineta, Double_t maxeta, Double_t minpt, Double_t maxpt) { fCandidateMinEta = mineta;
+                                                                                                                                fCandidateMaxEta = maxeta;
+                                                                                                                                fCandidateMinPt = minpt;
+                                                                                                                                fCandidateMaxPt = maxpt;
+                                                                                                                                fCandidateEtaPtCut = kTRUE;}
+   void                                 GetCandidateEtaAndPt(Double_t etapt[4]) const { etapt[0] = fCandidateMinEta;
+                                                                                        etapt[1] = fCandidateMaxEta;
+                                                                                        etapt[2] = fCandidateMinPt;
+                                                                                        etapt[3] = fCandidateMaxPt; }
+   void                                 MakeArmPlot(TVector3& a, TVector3& b);
+   void                                 SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass) {        fMassBins = massBins;
+                                                                                                                        fMinMass = minMass;
+                                                                                                                        fMaxMass= maxMass; }
+   void                                 IsMC();
+   Bool_t                               SetQA(Bool_t qa) {fQA = qa; return fQA;}
 
 private:
 
-   Bool_t               fDebug; //! enable debug mode
+   Bool_t               fDebug; // enable debug mode
+   Bool_t               fIsMC; // mc mode
+   Bool_t               fQA; // qa plots
    Bool_t               fAODAnalysis; // set aod analysis
    Int_t                fMassBins; // mass bins
    Double_t             fMinMass; // mass range
@@ -110,7 +134,8 @@ private:
    Double_t             fCandidateMaxEta; // maximum eta for candidates
    Double_t             fCandidateMinPt; // minimum pt for candidates
    Double_t             fCandidateMaxPt; // maximum pt for candidates
-   Double_t             fPIDConfig[7]; // set cutoff for bayesian probability
+   Double_t             fPIDConfig[7]; // configure pid routine
+   Double_t             fDCAConfig[5]; // configure dca routine
    Double_t             fCentrality; // event centrality
    AliESDEvent          *fESD;    //! ESD object
    AliAODEvent          *fAOD;    //! AOD oject
@@ -120,6 +145,8 @@ private:
    TH1F                 *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
    TH2F                 *fNOPID;//! QA histogram of TPC response of all charged particles
    TH2F                 *fPIDk;//! QA histogram of TPC response of kaons
+   TH2F                 *fNOPIDTOF; //! QA histo of TOF repsonse charged particles
+   TH2F                 *fPIDTOF; //! QA histo of TOF response kaons
    TH1F                 *fInvMNP03; //! Invariant mass of unlike sign kaon pairs
    TH1F                 *fInvMPP03; //! Invariant mass of like sign (++) kaon pairs
    TH1F                 *fInvMNN03; //! Invariant mass of like sign (--) kaon pairs
@@ -210,17 +237,19 @@ private:
    Float_t              fDeltaDipAngle; // absolute value of delta dip angle to be excluded
    Float_t              fDeltaDipPt; // upper value of pt range in which delta dip angle must be applied
    Bool_t               fApplyDeltaDipCut; // enforce delta dip cut
-   Double_t             fDCAXY; // POI DCA XY
-   Double_t             fDCAZ; // POI DCA Z
-   Bool_t               fDCA; // force propagation of DCA for POI's AOD ONLY
+   TH2F                 *fDCAAll;//! qa dca of all charged particles
    TH1F                 *fDCAXYQA; //! qa plot of dca xz
    TH1F                 *fDCAZQA; //!qa plot of dca z
+   TH2F                 *fDCAPrim; //!dca of primaries (mc) or kaons (data)
+   TH2F                 *fDCASecondaryWeak; //! dca of weak (mc)
+   TH2F                 *fDCAMaterial; //!dca material (mc) all (data)
+   TH2F                 *fArmPod; //! ap plot 
 
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
-
    void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[]) const;
-     ClassDef(AliAnalysisTaskPhiFlow, 3);
+
+   ClassDef(AliAnalysisTaskPhiFlow, 4);
 
 };
 

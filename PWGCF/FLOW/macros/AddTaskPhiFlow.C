@@ -26,7 +26,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
                                        Double_t TPCrange = 0.,
                                        Double_t ITScontrol = -1.,
                                        Double_t Bpurity = 0.5,
-                                       TString suffixName = "",
+                                       TString suffixName = "UniqueID",
                                        Bool_t bCentralTrigger = kFALSE,
                                        Float_t EtaGap = 0.,
                                        Float_t POIEtaMin = -0.8,
@@ -35,20 +35,23 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
                                        Float_t POIPtMax = 10.,
                                        Float_t deltaDip = 0.,
                                        Float_t deltaDipMaxPt = 0.,
-                                       Float_t DCA = 0.3,
+                                       TString DCA = "pt",
                                        Int_t harm = 2,
                                        Bool_t TPCStandAloneTracks = kFALSE,
                                        Bool_t useGlobalRPCuts = kTRUE,
                                        Float_t vertexZ = 10.,
                                        Bool_t shrinkSP = kTRUE,
-                                       Bool_t debug = kTRUE)
+                                       Bool_t debug = kFALSE)
 {
    Double_t PIDconfig[] = {ITSsigma, ITSrange, TPCcontrol, TPCsigma, TPCrange, ITScontrol, Bpurity};
    // main function, create and add tasks
    if(debug) cout << " === Adding Task PhiFlow === " << endl;
    // set up main output container's name
    TString fileName = AliAnalysisManager::GetCommonFileName();
-   fileName += ":PhiV2FlowEvents";
+   fileName += ":PhiReconstruction";
+   suffixName += Form("%.0f", centrMin);
+   suffixName += Form("%.0f", centrMax);
+   fileName+=suffixName;
    if(debug) cout << "    --> Reconstruction data container: " << fileName << endl;
    // check validity of arguments
    if((!SPSUB)&&(EtaGap > 0.)) {
@@ -69,7 +72,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
       if(debug) cout << " Fatal error: no imput event handler found!" << endl;
       return 0x0;
    }
-   // create the main task
+   // create the main task3
    AliAnalysisTaskPhiFlow *task = new AliAnalysisTaskPhiFlow("TaskPhiFlow");
    if(debug) cout << " === AliAnalysisTaskPhiFlow === " << task << endl;
    if(!task) {
@@ -127,12 +130,28 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
    }
    AliFlowTrackCuts* cutsPOI = cutsPOI->GetStandardGlobalTrackCuts2010();
    cutsPOI->SetPtRange(0.2, 5); //?
-   cutsPOI->SetMaxDCAToVertexXY(DCA);
-   cutsPOI->SetMaxDCAToVertexZ(DCA);
+   cutsPOI->SetMaxDCAToVertexXY(0.3);
+   cutsPOI->SetMaxDCAToVertexZ(0.3);
    if(debug) cout << "    --> cutsPOI " << cutsPOI << endl;
    task->SetPOICuts(cutsPOI);
-   //set POI cuts for aods XY Z
-   task->SetPOIDCAXYZ(DCA, DCA);
+   //set POI cuts for aods XY Z - 3 distinct cases. comment out the unwanted case
+   Double_t POIDCA[] = {0., 0., 0., 0., 0.};
+   // 1 --- do nothing
+   if(DCA == "none" ) {
+       if (debug) cout << " --> No DCA cut on POI's <-- " << endl;
+       for (Int_t i = 0; i < 5; i++) POIDCA[i] = 0.;
+   }
+   // 2 --- use fixed values for xy z
+   if(DCA == "fix" ) {
+       if (debug) cout << " --> Fixed DCA cut on POI's <-- " << endl;
+       POIDCA[0] = -1.; POIDCA[1] = 0.3; POIDCA[2] = 0.3; POIDCA[3] = 0.; POIDCA[4] = 0.;
+   }
+   // 3 --- use pt dependent cut
+   if(DCA == "pt" ) {
+       if (debug) cout << " --> Pt dependent DCA cut on POI's <-- " << endl;
+       POIDCA[0] = 1.; POIDCA[1] = 0.0105; POIDCA[2] = 0.0350; POIDCA[3] = 1.1; POIDCA[4] = 2.;
+   }
+   task->SetPOIDCAXYZ(POIDCA);
    // POI filter cuts, will filter invm mass bands and subevents
    AliFlowTrackSimpleCuts* POIfilterQC[30];
    AliFlowTrackSimpleCuts* POIfilterSP[30][2];
@@ -146,11 +165,11 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
           return 0x0;
       }
       POIfilterSP[mb][0]->SetEtaMin(-0.8);
-      POIfilterSP[mb][0]->SetEtaMax(0.);
+      POIfilterSP[mb][0]->SetEtaMax(0.0);
       POIfilterSP[mb][0]->SetMassMin(flowBands[0][mb]);
       POIfilterSP[mb][0]->SetMassMax(flowBands[1][mb]);
       POIfilterSP[mb][1] = new AliFlowTrackSimpleCuts(Form("FilterPOISP_MB%d_ETAPOS", mb));
-      POIfilterSP[mb][1]->SetEtaMin(0.);
+      POIfilterSP[mb][1]->SetEtaMin(0.0);
       POIfilterSP[mb][1]->SetEtaMax(+0.8);
       POIfilterSP[mb][1]->SetMassMin(flowBands[0][mb]);
       POIfilterSP[mb][1]->SetMassMax(flowBands[1][mb]);
@@ -167,7 +186,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
    if((deltaDip>0.005)&&(deltaDipMaxPt>0.005)) task->SetMaxDeltaDipAngleAndPt(deltaDip, deltaDipMaxPt);
    else cout << " --> Disabled Delta-Dip exclusion. <-- " << endl;
    task->SetCandidateEtaAndPt(POIEtaMin, POIEtaMax, POIPtMin, POIPtMax);
-   task->SetCentralityParameters(centrMin, centrMax, "V0M");
+   task->SetCentralityParameters(centrMin, centrMax, "TRK");
    task->SetVertexZ(vertexZ);
    if(debug) cout << "    --> Set pair cuts and event cuts" << endl;
    // set the kaon cuts, and specify the PID procedure which will be used
@@ -201,39 +220,33 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
    if (SP || EP || QC || SPSUB) // if flow analysis should be done after reconstruction
    {
       if(debug) cout << " === RECEIVED REQUEST FOR FLOW ANALYSIS === " << endl;
-      AliAnalysisDataContainer *flowEvent = mgr->CreateContainer("FlowContainer", AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
+      AliAnalysisDataContainer *flowEvent = mgr->CreateContainer(Form("FC%s", suffixName.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
       mgr->ConnectOutput(task, 2, flowEvent);
       if(debug) cout << "    --> Created IO containers " << flowEvent << endl;
-      // set a suffixname as a unique identifier for each wagon
-      if (suffixName == "")
-      {
-         suffixName += Form("%.0f", centrMin);
-         suffixName += Form("%.0f", centrMax);
-      }
       if(debug) cout << "    --> suffixName " << suffixName << endl;
       for (int mb = 0; mb != 30; ++mb) {
          if (QC) {  // add qc tasks
-            AddQCmethod(Form("QCTPCMB_%d_%s", mb, suffixName.Data()), harm, flowEvent, POIfilterQC[mb], debug);
+            AddQCmethod(Form("QCTPCMB_%d_%s", mb, suffixName.Data()), harm, flowEvent, POIfilterQC[mb], debug, 0x0, suffixName.Data());
             if(debug) cout << "    --> Hanging QC task ... " << mb << " succes! "<< endl;
          }
          if (SPSUB) {  // add sp subevent tasks
-            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qa", harm, flowEvent, POIfilterSP[mb][1], NULL, false, shrinkSP, debug, true);
+            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qa", harm, flowEvent, POIfilterSP[mb][1], NULL, false, shrinkSP, debug, true, suffixName.Data());
             if(debug) cout << "    --> Hanging SP Qa task " << mb << " succes!" << endl;
-            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qb", harm, flowEvent, POIfilterSP[mb][0], NULL, false, shrinkSP, debug, true);
+            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qb", harm, flowEvent, POIfilterSP[mb][0], NULL, false, shrinkSP, debug, true, suffixName.Data());
             if(debug) cout << "    --> Hanging SP Qb task ..." << mb << " succes!"<< endl;
          }
          if (SP) { // add sp tasks
-            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, POIfilterQC[mb], NULL, false, shrinkSP, debug);
+            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, POIfilterQC[mb], NULL, false, shrinkSP, debug, 0x0, suffixName.Data());
             if(debug) cout << "    --> Hanging SP task ... " << mb << " succes!" << endl;
          }
          if (EP) { // add ep tasks
-            AddSPmethod(Form("EPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, POIfilterQC[mb], NULL, true, shrinkSP, debug);
+            AddSPmethod(Form("EPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -0.0, +0.0, +0.8, "QaQb", harm, flowEvent, POIfilterQC[mb], NULL, true, shrinkSP, debug, 0x0, suffixName.Data());
             if(debug) cout << "    --> Hanging EP task ... " << mb << " succes!" << endl;
          }
       }
    }
    // print summary to screen
-   cout << endl << endl << " ========= AddTaskPhiFlow launched succesfully - SUMMARY: ========== " << endl;
+   cout << endl << endl << "       ==== AddTaskPhiFlow launched  ===== " << endl;
    cout << " ************ Configured PID routine ************ " << endl;
    cout << "      0 < " << PIDconfig[1] << " p_t, ITS || TPC with s < " << PIDconfig[0] << endl;
    if(PIDconfig[2] < 0.) cout << "    --> TPC control disabled " << endl;
@@ -242,33 +255,40 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
    if(PIDconfig[5] < 0.) cout << "    --> ITS control disabled " << endl;
    if(PIDconfig[5] > 0.) cout << "    --> ITS control enabled " << endl;
    cout << "      " << PIDconfig[4] << " < 7 p_t, TPC / TOF Bayesian with p < " << PIDconfig[6] << endl;
-   cout <<   " ************************************************ " << endl << endl;
-   cout << " ************* Task statistics ****************** " << endl;
+   cout << " ************ Configured DCA setup ************** " << endl;
+   cout << "  DCA type: " << DCA;
+   if (DCA == "") cout << "default";
+   cout << endl << " ************* Task statistics ****************** " << endl;
+   cout << "   -> Launched PHI reconstruction " << endl;
    if(SP) cout << "   --> Launched 30 QaQb SP filters and corresponding 30 SP tasks " << endl;
    if(EP) cout << "   --> Launched 30 QaQb QC filters and corresponding 30 EP tasks " << endl;
    if(SPSUB) cout << "   --> Launched 30+30 Qa&&Qb SP filters and corresponding 30+30 SP tasks " << endl;
    if(QC) cout << "   --> Launched 30 QaQb QC filters and corresponding 30 QC tasks " << endl;
-   cout << " ************************************************** " << endl;
+   cout << " ************************************************ " << endl;
+   TString condit = "";
+   (task->SetQA(kTRUE)) ? condit+= " --> Enabled QA plots <-- " : condit+= " --> Disabled QA plots <-- ";
+   (task->SetIsMC(kFALSE)) ? condit+= " --> MC mode <-- " : condit+= " --> DATA mode <-- ";
+   cout << condit << endl;
    cout << "           --> Now go for a coffee! <-- " << endl;
+   cout << " ************************************************ " << endl;
    return task;
 }
 //_____________________________________________________________________________
-void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, AliFlowTrackSimpleCuts *cutsRFP = NULL, bool bEP, bool shrink = false, bool debug, bool etagap = false)
+void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, AliFlowTrackSimpleCuts *cutsRFP = NULL, bool bEP, bool shrink = false, bool debug, bool etagap = false, char *suffixName)
 {
    // add sp task and invm filter tasks
    if(debug) (bEP) ? cout << " ****** Reveived request for EP task ****** " << endl : cout << " ******* Switching to SP task ******* " << endl;
    TString fileName = AliAnalysisManager::GetCommonFileName();
    (bEP) ? fileName+=":EP" : fileName+=":SP";
+   fileName+=suffixName;
    if(etagap) {
        fileName+="_SUBEVENTS";
        if(debug) cout << "    --> Setting up subevent analysis <-- " << endl;
    }
    if(debug) cout << "    --> fileName " << fileName << endl;
-   TString myFolder = fileName;
-   if(debug) cout << "    --> myFolder " << myFolder << endl;
    TString myNameSP;
    (bEP) ? myNameSP = Form("%sEPv%d%s", name, harmonic, Qvector): myNameSP = Form("%sSPv%d%s", name, harmonic, Qvector);
-   if(debug) cout << " myNameSP " << myNameSP << endl;
+   if(debug) cout << " Task and filter name: " << myNameSP << endl;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer(Form("Filter_%s", myNameSP.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
    AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myNameSP.Data()), cutsRFP, cutsPOI);
@@ -282,21 +302,20 @@ void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, dou
    tskSP->SetHarmonic(harmonic);
    tskSP->SetTotalQvector(Qvector);
    if (bEP) tskSP->SetBehaveAsEP();
-  if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
+   if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
    mgr->AddTask(tskSP);
    mgr->ConnectInput(tskSP, 0, flowEvent2);
    mgr->ConnectOutput(tskSP, 1, outSP);
 }
 //_____________________________________________________________________________
-void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, Bool_t debug, AliFlowTrackSimpleCuts *cutsRFP = NULL)
+void AddQCmethod(char *name, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, Bool_t debug, AliFlowTrackSimpleCuts *cutsRFP = NULL, char *suffixName)
 {
    // add qc task and invm filter tasks
    if(debug) cout << " ****** Received request for QC v" << harmonic << " task " << name << ", POI " << cutsPOI << ", IO ****** " << flowEvent << endl;
    TString fileName = AliAnalysisManager::GetCommonFileName();
    fileName+=":QC";
+   fileName+=suffixName;
    if(debug) cout << "    --> Common filename: " << fileName << endl;
-   TString myFolder = Form("v%d", harmonic);
-   if(debug) cout << "    --> myFolder: " << myFolder << endl;
    TString myName = Form("%s", name);
    if(debug) cout << "    --> myName: " << myName << endl;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -327,7 +346,7 @@ TString OutputName( Float_t centrMin,
                     Float_t POIPtMax,
                     Float_t deltaDip,
                     Float_t deltaDipMaxPt,
-                    Float_t DCA,
+                    TString DCA,
                     Int_t harm,
                     Bool_t TPCStandAloneTracks,
                     Float_t vertexZ,
@@ -335,11 +354,11 @@ TString OutputName( Float_t centrMin,
                     Bool_t useGlobalRPCuts)
 {
    // generate output name
-   TString centralityName = ("");
-   centralityName += Form("%.0f", centrMin);
-   centralityName += Form("%.0f", centrMax);
-   centralityName += "_";
-   centralityName += Form("vZ%.f", vertexZ);
+   TString centralityName = "";
+   centralityName += suffixName;
+   centralityName += "_DCA";
+   centralityName += DCA;
+   centralityName += Form("_vZ%.f", vertexZ);
    centralityName += "_";
    for(Int_t i = 0; i < 7; i++) centralityName += Form("%.1f_", PIDconfig[i]);
    centralityName += "_POIEta";
