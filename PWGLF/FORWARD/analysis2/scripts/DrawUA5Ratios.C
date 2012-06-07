@@ -386,6 +386,8 @@ GetUA5Data(UShort_t type, TH1*& p, TH1*& n,
 /** 
  * Draw ratios to UA5 data 
  * 
+ * @param fname Input file name 
+ * @param rebin Re-binning factor 
  *
  * @ingroup pwglf_forward_scripts
  */
