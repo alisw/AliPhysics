@@ -816,7 +816,14 @@ UInt_t AliRDHFCutsDplustoKpipi::GetPIDTrackTPCTOFBitMap(AliAODTrack *track) cons
   Int_t oksigmaTOFPionHyp=fPidHF->GetnSigmaTOF(track,2,sigmaTOFPionHyp);
   Int_t oksigmaTOFKaonHyp=fPidHF->GetnSigmaTOF(track,3,sigmaTOFKaonHyp);
   Int_t oksigmaTOFProtonHyp=fPidHF->GetnSigmaTOF(track,4,sigmaTOFProtonHyp);
-  
+
+  sigmaTPCPionHyp=TMath::Abs(sigmaTPCPionHyp);
+  sigmaTPCKaonHyp=TMath::Abs(sigmaTPCKaonHyp);
+  sigmaTPCProtonHyp=TMath::Abs(sigmaTPCProtonHyp);
+  sigmaTOFPionHyp=TMath::Abs(sigmaTOFPionHyp);
+  sigmaTOFKaonHyp=TMath::Abs(sigmaTOFKaonHyp);
+  sigmaTOFProtonHyp==TMath::Abs(sigmaTOFProtonHyp);
+
   if (oksigmaTPCPionHyp && sigmaTPCPionHyp>0.){
     if (sigmaTPCPionHyp<1.) bitmap+=1<<kTPCPionLess1;
     else{
