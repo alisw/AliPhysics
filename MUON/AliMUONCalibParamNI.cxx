@@ -37,6 +37,8 @@
 /// \author Laurent Aphecetche
 //-----------------------------------------------------------------------------
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONCalibParamNI)
 /// \endcond

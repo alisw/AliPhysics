@@ -60,6 +60,9 @@
 #include <Riostream.h>
 #include <TClass.h>
 
+using std::cout;
+using std::endl;
+using std::setw;
 /// \cond CLASSIMP
 ClassImp(AliMUONVDigit)
 /// \endcond

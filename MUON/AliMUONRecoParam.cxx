@@ -36,6 +36,8 @@
 
 #include <Riostream.h>
 
+using std::cout;
+using std::endl;
 ClassImp(AliMUONRecoParam)
 
 

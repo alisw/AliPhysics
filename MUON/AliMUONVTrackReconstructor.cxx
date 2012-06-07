@@ -94,6 +94,8 @@
 
 #include <Riostream.h>
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONVTrackReconstructor) // Class implementation in ROOT context
 /// \endcond

@@ -42,6 +42,8 @@
 /// \author Laurent Aphecetche
 //-----------------------------------------------------------------------------
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpSlat)
 /// \endcond

@@ -45,6 +45,8 @@
 /// \author: Laurent Aphecetche and Diego Stocco, Subatech
 //-----------------------------------------------------------------------------
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpDCSNamer)
 /// \endcond

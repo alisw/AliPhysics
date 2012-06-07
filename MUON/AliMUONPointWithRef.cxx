@@ -29,6 +29,8 @@
 #include "Riostream.h"
 #include "TString.h"
 
+using std::cout;
+using std::endl;
 //\cond CLASSIMP
 ClassImp(AliMUONPointWithRef)
 //\endcond

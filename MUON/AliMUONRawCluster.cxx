@@ -31,6 +31,9 @@
 
 #include "AliMUONRawCluster.h"
 
+using std::endl;
+using std::cout;
+using std::setw;
 /// \cond CLASSIMP
 ClassImp(AliMUONRawCluster)
 /// \endcond

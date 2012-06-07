@@ -23,6 +23,9 @@ class AliMUONVStore;
 
 class TTimeStamp;
 
+using std::ofstream;
+using std::ostream;
+
 class AliMUONPedestal : public TObject
 {
   public:

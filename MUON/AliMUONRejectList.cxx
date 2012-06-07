@@ -46,6 +46,8 @@
 #include "Riostream.h"
 #include "TMath.h"
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONRejectList)
 /// \endcond

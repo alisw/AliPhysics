@@ -51,6 +51,8 @@
 #include "TPolyLine.h"
 #include "TSystem.h"
 
+using std::cout;
+using std::endl;
 ///\cond CLASSIMP
 ClassImp(AliMUONContourHandler)
 ///\endcond

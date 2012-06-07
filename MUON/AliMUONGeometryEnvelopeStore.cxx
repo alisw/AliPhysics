@@ -37,6 +37,8 @@
 #include <Riostream.h>
 #include <TString.h>
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONGeometryEnvelopeStore)
 /// \endcond

@@ -35,6 +35,8 @@
 #include <TClonesArray.h>
 #include <TTree.h>
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerStoreV1)
 /// \endcond

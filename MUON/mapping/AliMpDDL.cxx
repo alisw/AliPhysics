@@ -34,6 +34,7 @@
 #include <Riostream.h>
 
 
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpDDL)
 /// \endcond

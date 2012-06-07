@@ -41,6 +41,7 @@
 #include <Riostream.h>
 #include <TMath.h>
 
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpRowSegmentRSpecial)
 /// \endcond

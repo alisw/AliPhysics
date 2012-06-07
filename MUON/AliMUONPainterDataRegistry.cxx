@@ -35,6 +35,8 @@
 ///
 ///\author Laurent Aphecetche, Subatech
 
+using std::cout;
+using std::endl;
 ///\cond CLASSIMP
 ClassImp(AliMUONPainterDataRegistry)
 ///\endcond

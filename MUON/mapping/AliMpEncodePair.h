@@ -13,6 +13,8 @@
 #include <Rtypes.h>
 #include <Riosfwd.h>
 
+using std::ostream;
+
 typedef Int_t MpPair_t;
 
 namespace AliMp

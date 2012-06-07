@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpArrayI)
 /// \endcond

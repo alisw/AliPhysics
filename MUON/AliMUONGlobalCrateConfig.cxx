@@ -34,6 +34,9 @@
 #include <Riostream.h>
 #include <TSystem.h>
 
+using std::ifstream;
+using std::endl;
+using std::ios;
 /// \cond CLASSIMP
 ClassImp(AliMUONGlobalCrateConfig)
 /// \endcond

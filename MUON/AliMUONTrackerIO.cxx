@@ -16,6 +16,7 @@
 // $Id$
 
 #include <cstdlib>
+#include <iostream>
 #include "AliMUONTrackerIO.h"
 
 /// \class AliMUONTrackerIO
@@ -26,6 +27,10 @@
 ///
 /// \author Laurent Aphecetche, Subatech
 
+using std::ostringstream;
+using std::istringstream;
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackerIO)
 /// \endcond

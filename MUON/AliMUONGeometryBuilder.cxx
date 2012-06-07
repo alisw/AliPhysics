@@ -44,6 +44,7 @@
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
 
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONGeometryBuilder)
 /// \endcond

@@ -29,6 +29,7 @@
 #include "AliMpMotifType.h"
 #include <Riostream.h>
 
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMpMotifPosition)
 /// \endcond

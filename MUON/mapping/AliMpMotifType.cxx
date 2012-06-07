@@ -40,6 +40,10 @@
 
 #include <cstdlib>
 
+using std::cout;
+using std::endl;
+using std::ofstream;
+using std::setw;
 /// \cond CLASSIMP
 ClassImp(AliMpMotifType)
 /// \endcond

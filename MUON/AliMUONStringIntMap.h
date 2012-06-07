@@ -16,6 +16,8 @@
 #include <TObjArray.h>
 #include <TArrayI.h>
 
+using std::ofstream;
+
 class AliMUONStringIntMap : public TObject
 {
   public:

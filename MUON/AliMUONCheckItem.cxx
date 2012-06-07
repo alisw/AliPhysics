@@ -33,6 +33,8 @@
 /// \author Laurent Aphecetche
 //-----------------------------------------------------------------------------
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONCheckItem)
 /// \endcond

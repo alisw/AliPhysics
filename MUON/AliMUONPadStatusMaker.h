@@ -26,6 +26,8 @@ class AliMUONVCalibParam;
 class AliMUONVTrackerData;
 class AliMUONVStore;
 
+using std::ostream;
+
 class AliMUONPadStatusMaker : public TObject
 {
 public:

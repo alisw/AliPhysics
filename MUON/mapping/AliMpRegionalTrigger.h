@@ -23,6 +23,8 @@ class AliMpLocalBoard;
 class AliMpDataStreams;
 class TIterator;
 
+using std::istream;
+
 class AliMpRegionalTrigger : public  TObject{
 
   public:

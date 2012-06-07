@@ -17,6 +17,8 @@
 
 #include <fstream>
 
+using std::ofstream;
+
 class AliMpDataMap;
 
 class AliMpDataProcessor : public TObject

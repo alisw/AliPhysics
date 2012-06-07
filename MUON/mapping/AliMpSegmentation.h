@@ -47,6 +47,8 @@ class AliMpSlat;
 class AliMpTrigger;
 class TRootIOCtor;
 
+using std::ofstream;
+
 class AliMpSegmentation : public  TObject {
 
   public:

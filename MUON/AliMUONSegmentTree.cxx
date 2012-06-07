@@ -32,6 +32,8 @@
 #include "TArrayD.h"
 #include "TMath.h"
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONSegmentTree)
 /// \endcond

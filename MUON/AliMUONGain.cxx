@@ -84,6 +84,10 @@ namespace {
   
 }
 
+using std::endl;
+using std::cout;
+using std::istringstream;
+using std::ostringstream;
 /// \cond CLASSIMP
 ClassImp(AliMUONGain)
 /// \endcond

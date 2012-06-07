@@ -33,6 +33,9 @@ class TClonesArray;
 class AliMpExMap;
 class AliMpArea;
 
+using std::ifstream;
+using std::ofstream;
+
 class AliMUONGeometryTransformer : public TObject
 {
   public:

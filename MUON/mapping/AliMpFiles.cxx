@@ -39,6 +39,7 @@
 
 #include <stdlib.h>
 
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpFiles)
 /// \endcond

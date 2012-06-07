@@ -18,6 +18,8 @@
 
 #include <TObject.h>
 
+using std::ostream;
+
 class AliMpIntPair : public TObject
 {
  public:

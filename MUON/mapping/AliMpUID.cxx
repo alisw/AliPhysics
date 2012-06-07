@@ -28,6 +28,8 @@
 ///
 /// station/chamber/pcb/manu
 
+using std::cout;
+using std::endl;
 ClassImp(AliMpUID)
 
 namespace

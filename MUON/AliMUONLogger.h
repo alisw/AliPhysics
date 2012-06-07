@@ -24,6 +24,8 @@
 
 class AliMUONStringIntMap;
 
+using std::ofstream;
+
 class AliMUONLogger : public TObject
 {
 public:

@@ -19,6 +19,8 @@
 class AliMUONVStore;
 class TString;
 
+using std::ofstream;
+
 class AliMUONTrackerIO : public TObject
 {
 public:

@@ -31,6 +31,9 @@
 #include <TObjString.h>
 #include <Riostream.h>
 
+using std::cout;
+using std::endl;
+using std::setw;
 /// \cond CLASSIMP
 ClassImp(AliMpStringObjMap)
 /// \endcond

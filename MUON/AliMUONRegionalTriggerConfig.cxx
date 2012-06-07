@@ -38,6 +38,10 @@
 #include <TList.h>
 
 
+using std::cout;
+using std::endl;
+using std::ifstream;
+using std::ios;
 /// \cond CLASSIMP
 ClassImp(AliMUONRegionalTriggerConfig)
 /// \endcond

@@ -71,6 +71,8 @@
 #include "AliRawReader.h"
 #include <TArrayS.h>
 
+using std::endl;
+using std::cout;
 /// \cond CLASSIMP
 ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
 /// \endcond

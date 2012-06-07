@@ -33,6 +33,8 @@
 /// \author Christian Finck
 //-----------------------------------------------------------------------------
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONBusStruct)
 /// \endcond

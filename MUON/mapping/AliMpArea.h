@@ -15,6 +15,8 @@
 
 #include <TObject.h>
 
+using std::ostream;
+
 class AliMpArea : public TObject
 {
  public:

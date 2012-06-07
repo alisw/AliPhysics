@@ -32,6 +32,8 @@
 
 #include <Riostream.h>
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpArea)
 /// \endcond

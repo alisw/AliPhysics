@@ -45,6 +45,9 @@
 /// \author Laurent Aphecetche, Christian Finck Subatech
 /// \author Bogdan Vulpescu, LPC Clermont-Ferrand
 
+using std::endl;
+using std::cout;
+using std::ofstream;
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerIO)
 /// \endcond

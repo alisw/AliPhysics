@@ -35,6 +35,8 @@
 #include "TObjArray.h"
 #include "TString.h"
 
+using std::cout;
+using std::endl;
 ///\cond CLASSIMP
 ClassImp(AliMUONNode)
 ///\endcond

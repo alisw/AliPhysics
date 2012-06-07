@@ -35,6 +35,9 @@
 
 #include <iomanip>
 
+using std::cout;
+using std::endl;
+using std::setw;
 /// \cond CLASSIMP
 ClassImp(AliMpVMotif)
 /// \endcond

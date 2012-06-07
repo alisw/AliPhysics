@@ -35,6 +35,8 @@
 #include <TVector2.h>
 #include <float.h>
 
+using std::cout;
+using std::endl;
 ///\cond CLASSIMP
 ClassImp(AliMUONContour)
 ///\endcond

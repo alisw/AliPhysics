@@ -35,6 +35,8 @@
 #include "Riostream.h"
 #include "AliMpConstants.h"
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONSegment)
 /// \endcond

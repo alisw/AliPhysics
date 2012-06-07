@@ -20,6 +20,9 @@ class AliMUONGeometryTransformer;
 
 class TObjArray;
 
+using std::ifstream;
+using std::ofstream;
+
 class AliMUONGeometry : public TObject
 {
   public:

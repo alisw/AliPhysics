@@ -42,6 +42,7 @@
 
 #include <Riostream.h>
 
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpDetElement)
 /// \endcond

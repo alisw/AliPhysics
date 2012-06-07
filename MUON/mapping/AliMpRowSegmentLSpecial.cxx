@@ -42,6 +42,7 @@
 
 #include "AliLog.h"
 
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpRowSegmentLSpecial)
 /// \endcond

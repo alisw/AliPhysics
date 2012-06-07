@@ -28,6 +28,8 @@
 /// \author Alberto Baldisseri, JL Charvet (05/05/2009)
 //-----------------------------------------------------------------------------
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONErrorCounter)
 /// \endcond

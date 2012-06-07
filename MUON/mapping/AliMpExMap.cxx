@@ -35,6 +35,8 @@
 
 #include <stdlib.h>
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpExMap)
 /// \endcond

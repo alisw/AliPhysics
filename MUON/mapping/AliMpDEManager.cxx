@@ -37,6 +37,7 @@
 #include <Riostream.h>
 #include <TClass.h>
 
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMpDEManager)
 /// \endcond

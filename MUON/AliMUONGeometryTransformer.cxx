@@ -54,6 +54,11 @@
 
 #include <sstream>
 
+using std::endl;
+using std::ios;
+using std::cerr;
+using std::setw;
+using std::setprecision;
 /// \cond CLASSIMP
 ClassImp(AliMUONGeometryTransformer)
 /// \endcond

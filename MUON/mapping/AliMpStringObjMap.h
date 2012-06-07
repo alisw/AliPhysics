@@ -18,6 +18,8 @@
 #include <TObjArray.h>
 #include <TArrayI.h>
 
+using std::ofstream;
+
 class AliMpStringObjMap : public TObject
 {
   public:

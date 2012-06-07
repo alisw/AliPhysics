@@ -29,6 +29,9 @@
 #include "AliMUONStringIntMap.h"
 #include "AliLog.h"
 
+using std::cout;
+using std::setw;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONStringIntMap)
 /// \endcond

@@ -51,6 +51,9 @@
 /// \author L. Aphecetche
 //-----------------------------------------------------------------------------
 
+using std::cout;
+using std::endl;
+using std::ofstream;
 /// \cond CLASSIMP
 ClassImp(AliMpPCB)
 /// \endcond

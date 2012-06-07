@@ -43,6 +43,11 @@
 /// \author Alberto Baldisseri, JL Charvet (05/05/2009)
 //-----------------------------------------------------------------------------
 
+using std::ostream;
+using std::ifstream;
+using std::endl;
+using std::cout;
+using std::ios;
 /// \cond CLASSIMP
 ClassImp(AliMUONPedestal)
 /// \endcond

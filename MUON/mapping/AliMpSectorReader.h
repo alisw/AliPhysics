@@ -34,6 +34,8 @@ class AliMpMotifSpecial;
 class AliMpMotifType;
 class AliMpDataStreams;
 
+using std::istream;
+
 class AliMpSectorReader : public TObject
 {
   public:

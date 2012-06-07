@@ -63,6 +63,8 @@
 #include <TString.h>
 #include <TSystem.h>
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONPadStatusMaker)
 /// \endcond

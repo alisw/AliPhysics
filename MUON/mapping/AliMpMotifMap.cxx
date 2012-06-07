@@ -42,6 +42,12 @@
 #include <Riostream.h>
 #include <TArrayI.h>
 
+using std::cout;
+using std::endl;
+using std::setw;
+using std::ofstream;
+using std::ios;
+using std::ifstream;
 /// \cond CLASSIMP
 ClassImp(AliMpMotifMap)
 /// \endcond

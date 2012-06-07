@@ -43,6 +43,8 @@
 #include <RVersion.h>
 #include <cassert>
 
+using std::cout;
+using std::endl;
 ///\cond CLASSIMP
 ClassImp(AliMUONPainterInterfaceHelper)
 ///\endcond

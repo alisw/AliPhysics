@@ -40,6 +40,8 @@
 ///
 //-----------------------------------------------------------------------------
 
+using std::cout;
+using std::endl;
 /// \cond CLASSIMP
 ClassImp(AliMUONCluster)
 /// \endcond
