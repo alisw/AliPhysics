@@ -499,8 +499,8 @@ void AliHadCorrTask::DoTrackClusLoop()
     if (!AcceptTrack(track))
       continue;
 
-    Int_t     Nclus    = emctrack->GetNumberOfMatchedObj();
-    Int_t     Nmatches = 0;
+    Int_t Nclus    = emctrack->GetNumberOfMatchedObj();
+    Int_t Nmatches = 0;
 
     // loop over matched clusters
     for (Int_t i = 0; i < Nclus; ++i) {
@@ -531,14 +531,14 @@ void AliHadCorrTask::DoTrackClusLoop()
 //________________________________________________________________________
 void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches) 
 {
-  // Do the loop over matched tracks for cluster emccluster
+  // Do the loop over matched tracks for cluster emccluster.
 
   AliVCluster *cluster = emccluster->GetCluster();
   Int_t iClus = emccluster->IdInCollection();
   Double_t energyclus = cluster->E();
 
   // loop over matched tracks
-  Int_t Ntrks = emccluster->GetNumberOfMatchedObj();
+  const Int_t Ntrks = emccluster->GetNumberOfMatchedObj();
   for (Int_t i = 0; i < Ntrks; ++i) {
     Int_t    iTrack = emccluster->GetMatchedObjId(i);
     Double_t dR     = emccluster->GetMatchedObjDistance(i);
@@ -560,7 +560,7 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     Double_t mom       = track->P();
     Int_t    mombin    = GetMomBin(mom); 
     Int_t    centbinch = fCentBin;
-    if (track->Charge() == -1 || track->Charge() == 255) 
+    if (track->Charge()<0) 
       centbinch += 4;
 
     if (fCreateHisto) {
@@ -570,27 +570,27 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
       fHistMatchEtaPhi[centbinch][mombin][etabin]->Fill(etadiff, phidiff);
     }
     
-    Double_t EtaCut   = 0.0;
-    Double_t PhiCutlo = 0.0;
-    Double_t PhiCuthi = 0.0;
+    Double_t etaCut   = 0.0;
+    Double_t phiCutlo = 0.0;
+    Double_t phiCuthi = 0.0;
 
     if (fPhiMatch > 0) {
-      PhiCutlo = -fPhiMatch;
-      PhiCuthi = fPhiMatch;
+      phiCutlo = -fPhiMatch;
+      phiCuthi = fPhiMatch;
     }
     else {
-      PhiCutlo = GetPhiMean(mombin, centbinch) - GetPhiSigma(mombin, fCentBin);
-      PhiCuthi = GetPhiMean(mombin, centbinch) + GetPhiSigma(mombin, fCentBin);
+      phiCutlo = GetPhiMean(mombin, centbinch) - GetPhiSigma(mombin, fCentBin);
+      phiCuthi = GetPhiMean(mombin, centbinch) + GetPhiSigma(mombin, fCentBin);
     }
 
     if (fEtaMatch > 0) {
-      EtaCut = fEtaMatch;
+      etaCut = fEtaMatch;
     }
     else {
-      EtaCut = GetEtaSigma(mombin);
+      etaCut = GetEtaSigma(mombin);
     }
 
-    if ((phidiff < PhiCuthi && phidiff > PhiCutlo) && TMath::Abs(etadiff) < EtaCut) {
+    if ((phidiff < phiCuthi && phidiff > phiCutlo) && TMath::Abs(etadiff) < etaCut) {
       if ((fDoTrackClus && (track->GetEMCALcluster()) == iClus) || !fDoTrackClus) {
 	++Nmatches;
 	totalTrkP += track->P();
@@ -622,13 +622,14 @@ Bool_t AliHadCorrTask::Run()
   if (dynamic_cast<AliAODEvent*>(InputEvent()))
       esdMode = kFALSE;
 
-  // optimization in case autobranch loading is off
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  if (fCaloName == "CaloClusters")
-    am->LoadBranch("CaloClusters");
-  if (fTracksName == "Tracks")
-    am->LoadBranch("Tracks");
-  am->LoadBranch("Centrality");      
+  if (esdMode) { // optimization in case autobranch loading is off
+    AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+    if (fCaloName == "CaloClusters")
+      am->LoadBranch("CaloClusters");
+    if (fTracksName == "Tracks")
+      am->LoadBranch("Tracks");
+    am->LoadBranch("Centrality");      
+  }
 
   if (fCreateHisto)
     fHistCentrality->Fill(fCent);
@@ -708,6 +709,10 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   if (!emctrack)
     return energyclus;
 
+  Int_t cid      = emctrack->GetMatchedObjId();
+  if (cid!=iMin) 
+    return energyclus;
+
   AliVTrack *track = emctrack->GetTrack();
   if (!track)
     return energyclus;
@@ -723,7 +728,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
 
   Int_t mombin = GetMomBin(mom);
   Int_t centbinch = fCentBin;
-  if (track->Charge() == -1 || track->Charge() == 255) 
+  if (track->Charge()<0) 
     centbinch += 4;
 
   // Plot some histograms if switched on
@@ -742,26 +747,26 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   }
 	   
   // Define eta/phi cuts
-  Double_t EtaCut   = 0.0;
-  Double_t PhiCutlo = 0.0;
-  Double_t PhiCuthi = 0.0;
+  Double_t etaCut   = 0.0;
+  Double_t phiCutlo = 0.0;
+  Double_t phiCuthi = 0.0;
   if (fPhiMatch > 0) {
-    PhiCutlo = -fPhiMatch;
-    PhiCuthi = fPhiMatch;
+    phiCutlo = -fPhiMatch;
+    phiCuthi = fPhiMatch;
   }
   else {
-    PhiCutlo = GetPhiMean(mombin, centbinch) - GetPhiSigma(mombin, fCentBin);
-    PhiCuthi = GetPhiMean(mombin, centbinch) + GetPhiSigma(mombin, fCentBin);
+    phiCutlo = GetPhiMean(mombin, centbinch) - GetPhiSigma(mombin, fCentBin);
+    phiCuthi = GetPhiMean(mombin, centbinch) + GetPhiSigma(mombin, fCentBin);
   }
   if(fEtaMatch > 0) {
-    EtaCut = fEtaMatch;
+    etaCut = fEtaMatch;
   }
   else {
-    EtaCut = GetEtaSigma(mombin);
+    etaCut = GetEtaSigma(mombin);
   }
   
   // Apply the correction if the track is in the eta/phi window
-  if ((dPhiMin < PhiCuthi && dPhiMin > PhiCutlo) && TMath::Abs(dEtaMin) < EtaCut) {
+  if ((dPhiMin < phiCuthi && dPhiMin > phiCutlo) && TMath::Abs(dEtaMin) < etaCut) {
 
     if ((fDoTrackClus && (track->GetEMCALcluster()) == emccluster->IdInCollection()) || !fDoTrackClus) {
       energyclus -= hadCorr * mom;
@@ -821,7 +826,7 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
       AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iMin));
       AliVTrack *track = emctrack->GetTrack();
       Int_t centbinchm = fCentBin;
-      if (track->Charge() == -1 || track->Charge() == 255) 
+      if (track->Charge()<0) 
 	centbinchm += 4;
       
       if (totalTrkP > 0)
