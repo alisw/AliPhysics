@@ -156,7 +156,8 @@ void AliAnalysisTaskRhoAverage::UserExec(Option_t *)
     cluster->GetPosition(pos);
     TVector3 clusVec(pos);
 
-    if (clusVec.Eta() < fEtaMin || clusVec.Eta() > fEtaMax || clusVec.Phi() < fPhiMin || clusVec.Phi() > fPhiMax)
+    if (clusVec.Eta() < fEtaMin || clusVec.Eta() > fEtaMax || 
+        clusVec.Phi() < fPhiMin || clusVec.Phi() > fPhiMax)
       continue;
 
     TLorentzVector nPart;
@@ -184,6 +185,8 @@ void AliAnalysisTaskRhoAverage::UserExec(Option_t *)
 //________________________________________________________________________
 Bool_t AliAnalysisTaskRhoAverage::IsJetTrack(AliEmcalJet* jet, Int_t itrack) const
 {
+  // Return true if track is in jet.
+
   for (Int_t i = 0; i < jet->GetNumberOfTracks(); i++) {
     Int_t ijettrack = jet->TrackAt(i);
     if (ijettrack == itrack)
@@ -195,6 +198,8 @@ Bool_t AliAnalysisTaskRhoAverage::IsJetTrack(AliEmcalJet* jet, Int_t itrack) con
 //________________________________________________________________________
 Bool_t AliAnalysisTaskRhoAverage::IsJetCluster(AliEmcalJet* jet, Int_t iclus) const
 {
+  // Return true if cluster is in jet.
+
   for (Int_t i = 0; i < jet->GetNumberOfClusters(); i++) {
     Int_t ijetclus = jet->ClusterAt(i);
     if (ijetclus == iclus)
@@ -207,5 +212,5 @@ Bool_t AliAnalysisTaskRhoAverage::IsJetCluster(AliEmcalJet* jet, Int_t iclus) co
 //________________________________________________________________________
 void AliAnalysisTaskRhoAverage::Terminate(Option_t *) 
 {
-
+  // Called at the end of the analysis.
 }
