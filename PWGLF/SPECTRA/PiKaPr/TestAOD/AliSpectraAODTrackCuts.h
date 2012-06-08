@@ -21,6 +21,7 @@ class AliSpectraAODHistoManager;
 using namespace AliSpectraNameSpace;
  
 const char * kBinLabel[] ={"TrkBit",
+			   "TrkCuts",
 			   "TrkEta",
 			   "TrkDCA",
 			   "TrkP",
@@ -36,7 +37,7 @@ class AliSpectraAODTrackCuts : public TNamed
 {
  public:
   
-  enum { kTrkBit = 0, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
+  enum { kTrkBit = 0, kTrkCuts, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
   
   
  AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fQvecCutMin(0), fQvecCutMax(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0) {}
@@ -48,14 +49,15 @@ class AliSpectraAODTrackCuts : public TNamed
   
   void SetTrackType(UInt_t bit);
   Bool_t CheckTrackType();
+  Bool_t CheckTrackCuts();
   Bool_t CheckEtaCut();
   Bool_t CheckYCut(AODParticleSpecies_t specie); // not included in standard cuts
   Bool_t CheckDCACut();
   Bool_t CheckPCut();
-   Bool_t CheckPtCut();
-   Bool_t CheckTOFMatching();
-   void PrintCuts() const;
-
+  Bool_t CheckPtCut();
+  Bool_t CheckTOFMatching();
+  void PrintCuts() const;
+  
    UInt_t GetTrackType()  const    { return fTrackBits; }
    TH1I * GetHistoCuts()      { return fHistoCuts; }
    TH1F * GetHistoNSelectedPos()      { return fHistoNSelectedPos; } 

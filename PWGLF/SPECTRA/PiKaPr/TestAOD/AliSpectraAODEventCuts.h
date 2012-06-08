@@ -21,15 +21,18 @@ class AliSpectraAODHistoManager;
 class AliSpectraAODEventCuts : public TNamed
 {
  public:
-  enum {  kProcessedEvents = 0,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kNVtxCuts};
+  enum {  kProcessedEvents = 0,kPhysSelEvents,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kNVtxCuts};
 
   // Constructors
- AliSpectraAODEventCuts() : TNamed(), fAOD(0), fIsMC(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0) {}
+ AliSpectraAODEventCuts() : TNamed(), fAOD(0), fIsMC(0), fUseCentPatchAOD049(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0) {}
   AliSpectraAODEventCuts(const char *name);
   virtual  ~AliSpectraAODEventCuts() {}
   
   void SetIsMC(Bool_t isMC = kFALSE)    {fIsMC = isMC; };
   Bool_t GetIsMC()           const           { return fIsMC;};
+  
+  void SetUseCentPatchAOD049(Bool_t useCentPatchAOD049 = kFALSE)    {fUseCentPatchAOD049 = useCentPatchAOD049; };
+  Bool_t GetUseCentPatchAOD049()           const           { return fUseCentPatchAOD049;};
   
   // Methods
   Bool_t IsSelected(AliAODEvent * aod,AliSpectraAODTrackCuts     *trackcuts);
@@ -52,6 +55,7 @@ class AliSpectraAODEventCuts : public TNamed
 
   Float_t  NumberOfEvents()     { return fHistoCuts->GetBinContent(kAcceptedEvents+1); }
   Float_t  NumberOfProcessedEvents()     { return fHistoCuts->GetBinContent(kProcessedEvents+1); }
+  Float_t  NumberOfPhysSelEvents()     { return fHistoCuts->GetBinContent(kPhysSelEvents+1); }
 
   Long64_t Merge(TCollection* list);
 
@@ -60,6 +64,7 @@ class AliSpectraAODEventCuts : public TNamed
   
   AliAODEvent     *fAOD;              //! AOD event
   Bool_t          fIsMC;// true if processing MC
+  Bool_t          fUseCentPatchAOD049;// Patch for centrality selection on AOD049
   AliSpectraAODTrackCuts     *fTrackCuts;              //! track cuts
   Bool_t          fIsSelected;        // True if cuts are selected
   Float_t         fCentralityCutMin;     // minimum centrality percentile
