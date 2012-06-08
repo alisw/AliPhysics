@@ -1,11 +1,13 @@
 // $Id$
 // The class categories definitions for Doxygen
-// From EVGENLinkDef.h 39592 2010-03-12 11:38:21Z morsch
+// From EVGENLinkDef.h 56412 2012-05-10 21:29:49Z morsch
 
 /** @defgroup EVGEN EVGEN
  *  Category of AliRoot event generator classes
  *  @{
  */
+
+    typedef AliDecayer {};
 
     enum   Decay_t {};
     enum   Weighting_t {};
@@ -16,8 +18,10 @@
     class  AliGenThetaSlice {};
     class  AliGenParam {};
     class  AliGenCocktail {};
+    class  AliGenPairFlat {};
     class  AliGenMUONCocktail {};
     class  AliGenMUONCocktailpp {};
+    class  AliGenEMCocktail {};
     class  AliGenCocktailAfterBurner {};
     class  AliGenCocktailEntry {};
     class  AliGenExtFile {};
@@ -26,12 +30,12 @@
     class  AliGenLib {};
     class  AliGenMUONlib {};
     class  AliGenHMPIDlib {};
-    class  AliGenFLUKAsource {};
     class  AliGenHalo {};
     class  AliGenHaloProtvino {};
     class  AliDimuCombinator {};
     class  AliGenPHOSlib {};
     class  AliGenGSIlib {};
+    class  AliGenEMlib {};
     class  AliGenPMDlib {};
     class  AliGenSTRANGElib {};
     class  AliGenMC {};
@@ -59,6 +63,11 @@
     class  AliGenFunction {};
     class  AliGenTHnSparse {};
     class  AliOmegaDalitz {};
+    class  AliGenDeuteron {};
+    class  AliGenReaderSL {};
+    class  AliGenMUONLMR {};
+    class  AliGenLcLib {};
+    class  AliGenITSULib;
 
 /** @} */
 
