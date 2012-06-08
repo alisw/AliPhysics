@@ -74,7 +74,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistEmbPart[i] = 0;
     fHistDeltaPtEmb[i] = 0;
   }
-
 }
 
 //________________________________________________________________________
@@ -123,21 +122,20 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistEmbPart[i] = 0;
     fHistDeltaPtEmb[i] = 0;
   }
-
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::~AliAnalysisTaskSAJF()
 {
-  // Destructor
+  // Destructor.
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 {
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  // Create user output.
 
-  // Create histograms
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   const Float_t binWidth = (fMaxBinPt - fMinBinPt) / fNbins;
   
@@ -339,7 +337,9 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSAJF::RetrieveEventObjects()
 {
-  if(!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
+  // Retrieve event objects.
+
+  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
   fRho = -1;
@@ -382,6 +382,8 @@ Bool_t AliAnalysisTaskSAJF::RetrieveEventObjects()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSAJF::FillHistograms()
 {
+  // Fill histograms.
+
   if (fRho < 0) {
     fHistRejectedEvents->Fill("Rho <= 0", 1);
     return kFALSE;
@@ -529,10 +531,12 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex)
 {
+  // Get the leading jets.
+
   if (!fJets)
     return;
 
-  Int_t njets = fJets->GetEntriesFast();
+  const Int_t njets = fJets->GetEntriesFast();
 
   Float_t maxJetPt = 0;
   Float_t max2JetPt = 0;
@@ -560,17 +564,18 @@ void AliAnalysisTaskSAJF::GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex
       max2JetPt = corrPt;
       max2JetIndex = ij;
     }
-  } //jet loop 
+  }
 }
-
 
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::DoJetLoop()
 {
+  // Do the jet loop.
+
   if (!fJets)
     return;
 
-  Int_t njets = fJets->GetEntriesFast();
+  const Int_t njets = fJets->GetEntriesFast();
 
   for (Int_t ij = 0; ij < njets; ij++) {
 
@@ -620,6 +625,8 @@ void AliAnalysisTaskSAJF::DoJetLoop()
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &maxPart)
 {
+  // Do the embedded jet loop.
+
   if (!fEmbJets)
     return;
 
@@ -694,6 +701,8 @@ void AliAnalysisTaskSAJF::DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &maxPart)
 void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &eta, Float_t &phi, Bool_t acceptMC,
 				       AliEmcalJet *jet, TClonesArray* tracks, TClonesArray* clusters) const
 {
+  // Get rigid cone.
+
   if (!tracks)
     tracks = fTracks;
 
@@ -791,11 +800,15 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &eta, Float_t &phi, 
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::Init()
 {
+  // Initialize the analysis.
+
   AliAnalysisTaskEmcalJet::Init();
 
-  const Float_t semiDiag = TMath::Sqrt((fMaxPhi - fMinPhi) * (fMaxPhi - fMinPhi) + (fMaxEta - fMinEta) * (fMaxEta - fMinEta)) / 2;
+  const Float_t semiDiag = TMath::Sqrt((fMaxPhi - fMinPhi) * (fMaxPhi - fMinPhi) + 
+                                       (fMaxEta - fMinEta) * (fMaxEta - fMinEta)) / 2;
   if (fMinRC2LJ > semiDiag * 0.5) {
-    AliWarning(Form("The parameter fMinRC2LJ = %f is too large for the considered acceptance. Will use fMinRC2LJ = %f", fMinRC2LJ, semiDiag * 0.5));
+    AliWarning(Form("The parameter fMinRC2LJ = %f is too large for the considered acceptance. "
+                    "Will use fMinRC2LJ = %f", fMinRC2LJ, semiDiag * 0.5));
     fMinRC2LJ = semiDiag * 0.5;
   }
 }
