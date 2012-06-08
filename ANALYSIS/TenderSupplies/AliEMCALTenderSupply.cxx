@@ -228,15 +228,20 @@ AliEMCALTenderSupply::~AliEMCALTenderSupply()
 {
   //Destructor
   
-  delete fEMCALRecoUtils;
-  delete fRecParam;
-  delete fUnfolder;
-  if (!fClusterizer) {
-    fDigitsArr->Clear("C");
-    delete fDigitsArr; 
-  } else {
-    delete fClusterizer;
-    fDigitsArr = 0;
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
+  {
+    delete fEMCALRecoUtils;
+    delete fRecParam;
+    delete fUnfolder;
+    if (!fClusterizer) 
+    {
+      fDigitsArr->Clear("C");
+      delete fDigitsArr; 
+    } else 
+    {
+      delete fClusterizer;
+      fDigitsArr = 0;
+    }
   }
 }
 
