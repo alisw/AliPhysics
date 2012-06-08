@@ -14,7 +14,10 @@ AliEmcalParticle::AliEmcalParticle() :
   fTrack(0), 
   fCluster(0),
   fNMatched(0),
-  fId(-1)
+  fId(-1),
+  fPhi(0),
+  fEta(0),
+  fPt(0)
 {
   // Default constructor.
 
@@ -22,23 +25,35 @@ AliEmcalParticle::AliEmcalParticle() :
 }
 
 //_________________________________________________________________________________________________
-AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id) :
+AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Double_t vy, Double_t vz) :
   TObject(),
   fTrack(0), 
   fCluster(0),
   fNMatched(0),
-  fId(id)
+  fId(id),
+  fPhi(0),
+  fEta(0),
+  fPt(0)
 {
   // Constructor.
 
   if (!particle)
     AliWarning("Null pointer passed as particle.");
 
-
   fTrack = dynamic_cast<AliVTrack*>(particle);
-  if (!fTrack)
+  if (fTrack) {
+    fEta = fTrack->Eta();
+    fPhi = fTrack->Phi();
+    fPt = fTrack->Pt();
+  } else {
     fCluster = dynamic_cast<AliVCluster*>(particle);
-
+    Double_t vtx[3]; vtx[0]=vx;vtx[1]=vy;vtx[2]=vz;
+    TLorentzVector vect;
+    fCluster->GetMomentum(vect, vtx);
+    fEta = vect.Eta();
+    fPhi = vect.Phi();
+    fPt  = vect.Pt();
+  }
   if (!fTrack && !fCluster)
     AliWarning("Particle type not recognized (not AliVTrack nor AliVCluster).");
 
@@ -51,7 +66,10 @@ AliEmcalParticle::AliEmcalParticle(const AliEmcalParticle &p) :
   fTrack(p.fTrack),
   fCluster(p.fCluster), 
   fNMatched(p.fNMatched),
-  fId(p.fId)
+  fId(p.fId),
+  fPhi(p.fPhi),
+  fEta(p.fEta),
+  fPt(p.fPt)
 {
   // Copy constructor.
 
@@ -73,12 +91,15 @@ AliEmcalParticle &AliEmcalParticle::operator=(const AliEmcalParticle &p)
   // Assignment operator.
 
   if (this != &p) {
-    fTrack = p.fTrack;
-    fCluster = p.fCluster;
-    fNMatched    = p.fNMatched;
-    
+    fTrack    = p.fTrack;
+    fCluster  = p.fCluster;
+    fNMatched = p.fNMatched;
+    fId       = p.fId;
+    fPhi      = p.fPhi;
+    fEta      = p.fEta;
+    fPt       = p.fPt;
+
     ResetMatchedObjects();
-  
     memcpy(fMatchedIds, p.fMatchedIds, sizeof(UShort_t) * fSizeMatched);
     memcpy(fMatchedDist, p.fMatchedDist, sizeof(Double_t) * fSizeMatched);
   }
