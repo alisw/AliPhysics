@@ -1,7 +1,7 @@
 #ifndef ALIRHOPARAMETER_H
 #define ALIRHOPARAMETER_H
 
-// $Id: $
+// $Id$
 
 class TString;
 class TF1;
