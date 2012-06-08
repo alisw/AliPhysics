@@ -43,7 +43,6 @@ AliJetEmbeddingTask::~AliJetEmbeddingTask()
   // Destructor
 }
 
-
 //________________________________________________________________________
 void AliJetEmbeddingTask::Run() 
 {
