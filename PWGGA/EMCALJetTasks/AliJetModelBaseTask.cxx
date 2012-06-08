@@ -73,7 +73,6 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name) :
   fOutTracks(0)
 {
   // Standard constructor.
-
 }
 
 //________________________________________________________________________
@@ -104,14 +103,13 @@ void AliJetModelBaseTask::Init()
 
   if (fNTracks > 0) {
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+    if (!fTracks) {
+      AliError(Form("Couldn't retrieve tracks with name %s!", fTracksName.Data()));
+      return;
+    }
 
     if (strcmp(fTracks->GetClass()->GetName(), "AliPicoTrack")) {
       AliError("Can only embed PicoTracks!");
-      return;
-    }
- 
-    if (!fTracks) {
-      AliError(Form("Couldn't retrieve tracks with name %s!", fTracksName.Data()));
       return;
     }
 
@@ -192,6 +190,8 @@ void AliJetModelBaseTask::Init()
 //________________________________________________________________________
 void AliJetModelBaseTask::GetRandomCell(Double_t &eta, Double_t &phi, Int_t &absId)
 {
+  // Get random cell.
+
   Int_t repeats = 0;
   Double_t rndEta = eta;
   Double_t rndPhi = phi;
@@ -217,24 +217,32 @@ void AliJetModelBaseTask::GetRandomCell(Double_t &eta, Double_t &phi, Int_t &abs
 //________________________________________________________________________
 Double_t AliJetModelBaseTask::GetRandomEta()
 {
+  // Get random eta.
+
   return gRandom->Rndm() * (fEtaMax - fEtaMin) + fEtaMin;
 }
 
 //________________________________________________________________________
 Double_t AliJetModelBaseTask::GetRandomPhi()
 {
+  // Get random phi.
+
   return gRandom->Rndm() * (fPhiMax - fPhiMin) + fPhiMin;
 }
 
 //________________________________________________________________________
 Double_t AliJetModelBaseTask::GetRandomPt()
 {
+  // Get random pt.
+
   return gRandom->Rndm() * (fPtMax - fPtMin) + fPtMin;
 }
 
 //________________________________________________________________________
 AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Double_t eta, Double_t phi)
 {
+  // Add a cluster to the event.
+
   Int_t absId = 0;
   if (eta < -100 || phi < 0) {
     GetRandomCell(eta, phi, absId);
@@ -263,6 +271,8 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Double_t eta, Double_t 
 //________________________________________________________________________
 AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId)
 {
+  // Add a cluster to the event.
+
   const Int_t nClusters = fOutClusters->GetEntriesFast();
 
   TClonesArray digits("AliEMCALDigit", 1);
@@ -301,6 +311,8 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId)
 //________________________________________________________________________
 AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi)
 {
+  // Add a track to the event.
+
   const Int_t nTracks = fOutTracks->GetEntriesFast();
   
   if (pt < 0) 
@@ -324,7 +336,7 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
 //________________________________________________________________________
 void AliJetModelBaseTask::Run() 
 {
-
+  // Run.
 }
 
 //________________________________________________________________________
@@ -333,7 +345,5 @@ void AliJetModelBaseTask::UserExec(Option_t *)
   // Execute per event.
 
   Init();
-
   Run();
-
 }
