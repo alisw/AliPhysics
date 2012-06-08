@@ -3,9 +3,7 @@
 AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   const char *nTracks    = "Tracks",
   const char *nClusters  = "CaloClusters",
-  Double_t maxDist       = 0.1,
-  Bool_t doClusTrack     = kTRUE,
-  Bool_t doTrackClus     = kFALSE
+  Double_t maxDist       = 0.1
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -32,8 +30,6 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask(name);
   matcher->SetTracksName(nTracks);
   matcher->SetClusName(nClusters);
-  matcher->SetDoClusTrackMatching(doClusTrack);
-  matcher->SetDoTrackClusMatching(doTrackClus);
   matcher->SetMaxDistance(maxDist);
   matcher->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
 

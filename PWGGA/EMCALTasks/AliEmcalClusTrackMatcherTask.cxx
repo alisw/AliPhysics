@@ -4,23 +4,21 @@
 // 
 // Author: C.Loizides, S.Aiola
 
+#include "AliEmcalClusTrackMatcherTask.h"
+
 #include <TClonesArray.h>
 
-#include "AliVCluster.h"
-#include "AliVTrack.h"
-#include "AliPicoTrack.h"
 #include "AliEmcalParticle.h"
 #include "AliLog.h"
-
-#include "AliEmcalClusTrackMatcherTask.h"
+#include "AliPicoTrack.h"
+#include "AliVCluster.h"
+#include "AliVTrack.h"
 
 ClassImp(AliEmcalClusTrackMatcherTask)
 
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
   AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask"),
-  fDoClusTrack(1),
-  fDoTrackClus(0),
   fMaxDistance(0.1)
 {
   // Constructor.
@@ -29,8 +27,6 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() :
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name) : 
   AliAnalysisTaskEmcal(name),
-  fDoClusTrack(1),
-  fDoTrackClus(0),
   fMaxDistance(0.1)
 {
   // Standard constructor.
@@ -47,81 +43,63 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
 {
   // Run the matching for the selected options.
   
-  if (fDoClusTrack) 
-    DoMatching(fCaloClusters, fTracks);
-
-  if (fDoTrackClus) 
-    DoMatching(fTracks, fCaloClusters);
-  
-  return kTRUE;
-}
-
-//________________________________________________________________________
-void AliEmcalClusTrackMatcherTask::DoMatching(TClonesArray *array1, TClonesArray *array2) 
-{
-  // Do the actual matching.
-
-  if (!array1 || !array2)
-    return;
-
   const Double_t maxd2 = fMaxDistance*fMaxDistance;
 
-  const Int_t n1 = array1->GetEntries();
-  const Int_t n2 = array2->GetEntries();
-  for (Int_t i = 0; i < n1; ++i) {
-    AliEmcalParticle *part1 = static_cast<AliEmcalParticle*>(array1->At(i));
-    if (!part1)
+  const Int_t nC = fCaloClusters->GetEntries();
+  const Int_t nT = fTracks->GetEntries();
+
+  // set the links between tracks and clusters
+  for (Int_t c = 0; c < nC; ++c) {
+    AliEmcalParticle *partC = static_cast<AliEmcalParticle*>(fCaloClusters->At(c));
+    if (!partC)
       continue;
-    if (!AcceptEmcalPart(part1))
+    if (!AcceptEmcalPart(partC))
       continue;
-
-    AliVCluster *cluster1 = part1->GetCluster();
-    AliVTrack   *track1   = part1->GetTrack()  ;
-
-    part1->ResetMatchedObjects();
-
-    for (Int_t j = 0; j < n2; ++j) {
-
-      AliEmcalParticle *part2 = static_cast<AliEmcalParticle*>(array2->At(j));
-      if (!part2)
+    for (Int_t t = 0; t < nT; ++t) {
+      AliEmcalParticle *partT = static_cast<AliEmcalParticle*>(fTracks->At(t));
+      if (!partT)
 	continue;
-      if (!AcceptEmcalPart(part2))
+      if (!AcceptEmcalPart(partT))
         continue;
-
-      AliVCluster *cluster2 = part2->GetCluster();
-      AliVTrack   *track2   = part2->GetTrack()  ;
-
+      AliVCluster *clust = partC->GetCluster();
+      AliVTrack   *track = partT->GetTrack()  ;
       Double_t deta = 999;
       Double_t dphi = 999;
-      if (track1 && cluster2)
-	AliPicoTrack::GetEtaPhiDiff(track1, cluster2, dphi, deta);
-      else if (track2 && cluster1)
-	AliPicoTrack::GetEtaPhiDiff(track2, cluster1, dphi, deta);
-      else
-	continue;
-
+      AliPicoTrack::GetEtaPhiDiff(track, clust, dphi, deta);
       Double_t d2 = deta * deta + dphi * dphi;
-      if (d2 < maxd2) 
-	part1->AddMatchedObj(j, TMath::Sqrt(d2));
-    }
-    
-    if (part1->GetNumberOfMatchedObj() > 0) {
-      if (track1) {
-	track1->SetEMCALcluster(part1->GetMatchedObjId());
-      } else if (cluster1) {
-	const UInt_t matchedId = part1->GetMatchedObjId();
-	Double_t deta = 999;
-	Double_t dphi = 999;
-	AliEmcalParticle *part2 = static_cast<AliEmcalParticle*>(array2->At(matchedId));
-	AliVTrack *track2 = 0;
-        if (part2)
-          track2 = part2->GetTrack();
-	if (track2) {
-	  AliPicoTrack::GetEtaPhiDiff(track2, cluster1, dphi, deta);
-	  cluster1->SetEmcCpvDistance(matchedId);
-	  cluster1->SetTrackDistance(deta, dphi);
-	}
-      }
+      if (d2 > maxd2)
+        continue;
+      Double_t d = TMath::Sqrt(d2);
+      partC->AddMatchedObj(t, d);
+      partT->AddMatchedObj(c, d);
     }
   }
+
+  for (Int_t c = 0; c < nC; ++c) {
+    AliEmcalParticle *partC = static_cast<AliEmcalParticle*>(fCaloClusters->At(c));
+    if (!partC)
+      continue;
+    if (partC->GetNumberOfMatchedObj() <= 0)
+      continue;
+    const UInt_t matchedId = partC->GetMatchedObjId();
+    AliEmcalParticle *partT = static_cast<AliEmcalParticle*>(fTracks->At(matchedId));
+    AliVCluster *clust = partC->GetCluster();
+    AliVTrack   *track = partT->GetTrack()  ;
+    Double_t deta = 999;
+    Double_t dphi = 999;
+    AliPicoTrack::GetEtaPhiDiff(track, clust, dphi, deta);
+    clust->SetEmcCpvDistance(matchedId);
+    clust->SetTrackDistance(deta, dphi);
+  }
+
+  for (Int_t t = 0; t < nT; ++t) {
+    AliEmcalParticle *partT = static_cast<AliEmcalParticle*>(fTracks->At(t));
+    if (!partT)
+      continue;
+    if (partT->GetNumberOfMatchedObj() <= 0)
+      continue;
+    AliVTrack *track = partT->GetTrack();
+    track->SetEMCALcluster(partT->GetMatchedObjId());
+  }
 }
+
