@@ -154,7 +154,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
   TIter next(list);
   TString results1;
   TString results2;
-  Int_t color=1;
+	Int_t color=kBlack;
+	Int_t textcolor=kBlack;
 
   switch(index) {
     case AliQAv1::kRAW:{
@@ -442,18 +443,17 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  if(AliRecoParam::ConvertIndex(GetEventSpecieForCheck())!=AliRecoParam::kCosmic){     
 	    
 	    results1.Form("%i good module(s) and %i good drift regions didn't take data!",emptydiff,emptydrdiff);
-	    if(neventsraw<numlimit)
-	      {
-		results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsraw);
-		color=5;
-		sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
-	      }
-	    else
-	      {
-		results2.Form(" Events %d. If PHYSICS, follow the TWiki instruction and call the Expert ",neventsraw);
-		color=2;
-		sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
-	      }
+	    if(neventsraw<numlimit) {
+			results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsraw);
+			color=kYellow;
+			textcolor=kBlack;
+			sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+		} else {
+			results2.Form(" Events %d. If PHYSICS, follow the TWiki instruction and call the Expert ",neventsraw);
+			color=kRed;
+			textcolor=kWhite;
+			sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+		}
 	  }
 	  else
 	    //	    if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kTRUE)
@@ -465,14 +465,16 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		    AliWarning(Form("This is a cosmic run. Some module and drift region are empty but all is OK. "));
 		    results1.Form("OK. This is a cosmic run. you need a lot of events. Events %i",neventsraw);
 		    results2.Form("%i good module(s) and %i good drift are empty! DO NOT CALL THE EXPERT",emptydiff,emptydrdiff);
-		    color=5;
+			  color=kYellow;
+			  textcolor=kBlack;
 		    sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
 		  }
 		else
 		  {
 		    results1.Form("%i good module(s) and %i good drift region(s) have no data!",emptydiff,emptydrdiff);
 		    results2.Form(" Cosmic Events %d .Follow the TWiki instruction and call the Expert ",neventsraw);
-		    color=2;
+			  color=kRed;
+			  textcolor=kWhite;
 		    sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 		  }
 	      }
@@ -482,7 +484,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  AliInfo(Form("All the active modules (%i) and single drift regions (%i) are in acquisition. The number of excluded modules are %i and the excluded single drift regions are %i\n",active,activedriftregion,excluded,excludeddriftregion));
 	  results1.Form("OK.");
 	  results2.Form(" All active modules and drift regions in acquisition");
-	  color=3;
+	  color=kGreen;
+		textcolor=kBlack;
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kINFO];
 	}
 	if(exactive!=0||exactivedriftregion!=0){
@@ -491,21 +494,24 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  AliError(Form("Layer 3: %i modules and %i single  drift regions excluded from the acquisition took data. Active modules%i single drift region %i \n ",exactivemoduleperlayer[1],exactivedrperlayer[1],activemoduleperlayer[1],activedrperlayer[1]));
 	  results1.Form("%i modules and %i drift region excluded from the acquisition took data",exactive,exactivedriftregion);
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
-	  color=2;	
+		color=kRed;
+		textcolor=kWhite;
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 	}
 	if(excluded==exactive||excludeddriftregion==exactivedriftregion){
 	  AliError(Form("All the modules (%d) or single drift regions (%d) excluded from the acquisition  took data!\n  Active modules %i \t Active drfift regions %i\n",excluded,excludeddriftregion,active,activedriftregion));
 	  results1.Form("All the modules (%d) or drift regions (%d) excluded from the acquisition took data!",excluded,excludeddriftregion );
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
-	  color=6;
+		color=kRed;
+		textcolor=kWhite;
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 	if(active==0||activedriftregion==0){
 	  AliError(Form("No modules or single drift regions took data: excluded %i \t excluded active %i \n\t\t excluded single drift regions %i \t excluded active drift regions %i \n", excluded, exactive, excludeddriftregion, exactivedriftregion)); 
 	  results1.Form("No modules or drift region took data: excluded modules %i  excluded drift regions %i ", excluded, excludeddriftregion );
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
-	  color=6;
+		color=kRed;
+		textcolor=kWhite;
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 
@@ -519,10 +525,13 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 			  if(hname.Contains("NORM"))continue;
 			  //AliInfo("========================================Found histo 11\n");
 				TPaveText *ptext = ((TPaveText *)hdata->GetListOfFunctions()->FindObject("TPave"));
-				ptext->Clear();
-				ptext->AddText(results1.Data());
-				ptext->AddText(results2.Data());
-				ptext->SetFillColor(color);
+				if(ptext) {
+					ptext->Clear();
+					ptext->AddText(results1.Data());
+					ptext->AddText(results2.Data());
+					ptext->SetFillColor(color);
+					ptext->SetTextColor(textcolor);
+				}
 	      } else if(hname.Contains("SDDRawDataCheck")) {
 		    
 			  //AliInfo("========================================Found histo\n");
@@ -909,13 +918,15 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      if(neventsrecpoints<numlimits)
 		{
 		  results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsrecpoints);
-		  color=5;
+			color=kYellow;
+			textcolor=kBlack;
 		  sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
 		}
 	      else
 		{
 		  results2.Form(" Events %d .If PHYSICS, follow the TWiki instruction and call the Expert ",neventsrecpoints);
-		  color=2;
+			color=kRed;
+			textcolor=kWhite;
 		  sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 		}
 	    }
@@ -928,14 +939,16 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		    AliWarning(Form("This is a cosmic run. Some module and drift region are empty but all is OK. "));
 		    results1.Form("OK. Thi is a cosmic run. You need a lot of events. Events %i",neventsrecpoints);
 		    results2.Form("%i good module(s) and %i good drift are empty! DO NOT CALL THE EXPERT",emptydiff,emptydrdiff);
-		    color=5;
+			  color=kYellow;
+			  textcolor=kBlack;
 		    sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
 		  }
 		else
 		  {
 		    results1.Form("%i good module(s) and %i good drift region(s) have not recpoints!",emptydiff,emptydrdiff);
 		    results2.Form("Cosmic Events %d .Follow the TWiki instruction and call the Expert ",neventsrecpoints);
-		    color=2;
+			  color=kRed;
+			  textcolor=kWhite;
 		    sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 		  }
 	      }
@@ -947,7 +960,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  AliInfo(Form("All the active modules (%i) and single drift regions (%i) are in acquisition. The number of excluded modules are %i and the excluded single drift regions are %i\n",active,activedriftregion,excluded,excludeddriftregion));
 	  results1.Form("OK.");
 	  results2.Form(" All active modules have recpoints");
-	  color=3;
+		color=kGreen;
+		textcolor=kBlack;
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kINFO];
 	}
 	if(exactive!=0||exactivedriftregion!=0){
@@ -956,21 +970,24 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  AliError(Form("Layer 3: %i modules and %i single  drift regions excluded from the acquisition have recpoints. Active modules %i single drift region %i \n ",exactivemoduleperlayer[1],exactivedrperlayer[1],activemoduleperlayer[1],activedrperlayer[1]));
 	  results1.Form("%i modules and %i drift region excluded from the acquisition have recpoints",exactive,exactivedriftregion);
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
-	  color=2;	
+		color=kRed;
+		textcolor=kWhite;
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 	}
 	if(excluded==exactive||excludeddriftregion==exactivedriftregion){
 	  AliError(Form("All the modules (%d) or single drift regions (%d) excluded from the acquisition have recpoints!\n  Active modules %i \t Active drfift regions %i\n",excluded,excludeddriftregion,active,activedriftregion));
 	  results1.Form("All the modules (%d) or drift regions (%d) excluded from the acquisition have recpoints!",excluded,excludeddriftregion );
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
-	  color=6;
+		color=kRed;
+		textcolor=kWhite;
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 	if(active==0||activedriftregion==0){
 	  AliError(Form("No modules or single drift regions have recpoints: excluded %i \t excluded active %i \n\t\t excluded single drift regions %i \t excluded active drift regions %i \n", excluded, exactive, excludeddriftregion, exactivedriftregion)); 
 	  results1.Form("No modules or drift region have recpoints: excluded modules %i  excluded drift regions %i ", excluded, excludeddriftregion );
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
-	  color=6;
+		color=kRed;
+		textcolor=kWhite;
 	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 
@@ -985,11 +1002,14 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		if(hname.Contains("NORM"))continue;
 		//AliInfo("========================================Found histo 11\n");
 			  TPaveText *ptext = ((TPaveText *)hdata->GetListOfFunctions()->FindObject("TPave"));
-			  ptext->Clear();
-			  ptext->AddText(results1.Data());
-			  ptext->AddText(results2.Data());
-                          ptext->SetFillColor(color);
-	      }
+			  if(ptext) {
+				  ptext->Clear();
+				  ptext->AddText(results1.Data());
+				  ptext->AddText(results2.Data());
+				  ptext->SetFillColor(color);
+				  ptext->SetTextColor(textcolor);
+			  }
+		  }
 	      else
 		if(hname.Contains("SDDRecPointCheck"))
 		  {
