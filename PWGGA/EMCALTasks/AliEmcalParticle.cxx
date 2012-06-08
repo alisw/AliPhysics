@@ -125,7 +125,7 @@ void AliEmcalParticle::AddMatchedObj(Int_t id, Double_t d)
 
   Int_t i = 0;
   while (i < fNMatched && d > fMatchedDist[i])
-    i++;
+    ++i;
   
   if (i < fNMatched) {
     memmove(fMatchedIds  + i + 1, fMatchedIds  + i, sizeof(UShort_t) * (fNMatched - i));
@@ -134,7 +134,7 @@ void AliEmcalParticle::AddMatchedObj(Int_t id, Double_t d)
   
   fMatchedIds[i]  = id;
   fMatchedDist[i] = d;
-  fNMatched++;
+  ++fNMatched;
 
   if (fNMatched >= fSizeMatched)
     fNMatched = fSizeMatched - 1;
