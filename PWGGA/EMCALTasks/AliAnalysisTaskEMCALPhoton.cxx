@@ -46,8 +46,51 @@
 ClassImp(AliAnalysisTaskEMCALPhoton)
 
 //________________________________________________________________________
-AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) 
-  : AliAnalysisTaskSE(name), 
+AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton() : 
+  AliAnalysisTaskSE(), 
+  fTrCuts(0),
+  fPrTrCuts(0),
+  fSelTracks(0),
+  fSelPrimTracks(0),
+  fPhotConvArray(0),
+  fMyClusts(0),
+  fMyAltClusts(0),
+  fMyCells(0),
+  fMyTracks(0),
+  fMyMcParts(0),
+  fHeader(0x0),
+  fCaloClusters(0),
+  fCaloClustersNew(0),
+  fEMCalCells(0),
+  fGeom(0x0),
+  fTimeResTOF(0),
+  fMipResponseTPC(0),
+  fGeoName("EMCAL_COMPLETEV1"),
+  fPeriod("LHC11d"),
+  fIsTrain(0),
+  fIsMC(0),
+  fIsGrid(0),
+  fClusThresh(2.0),
+  fClusterizer(0),
+  fCaloClustersName("EmcalClusterv2"),
+  fESD(0),
+  fMCEvent(0),
+  fStack(0x0),
+  fOutputList(0),
+  fTree(0),
+  fNV0sBefAndAftRerun(0),
+  fConversionVtxXY(0),
+  fInvMassV0(0),
+  fInvMassV0KF(0),
+  fInvMassV0SS(0),
+  fDedxPAll(0)
+{
+  // Default constructor.
+}
+
+//________________________________________________________________________
+AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name) : 
+  AliAnalysisTaskSE(name), 
   fTrCuts(0),
   fPrTrCuts(0),
   fSelTracks(0),
@@ -73,23 +116,17 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name)
   fClusThresh(2.),
   fClusterizer(0),
   fCaloClustersName("EmcalClusterv2"),
-
-  
   fESD(0),
   fMCEvent(0),
   fStack(0x0),
-  
   fOutputList(0),
   fTree(0),
-
-  
   fNV0sBefAndAftRerun(0),
   fConversionVtxXY(0),
   fInvMassV0(0),
   fInvMassV0KF(0),
   fInvMassV0SS(0),
   fDedxPAll(0)
-  
 {
   // Constructor
   
@@ -100,11 +137,11 @@ AliAnalysisTaskEMCALPhoton::AliAnalysisTaskEMCALPhoton(const char *name)
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
 {
-  // Create histograms
-  // Called once
+  // Create histograms, called once.
     
   fSelTracks = new TObjArray();
   
@@ -210,7 +247,8 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *) 
 {
-  //event trigger selection
+  // User exec, called once per event.
+
   Bool_t isSelected = 0;
   if(fPeriod.Contains("11")){
     if(fPeriod.Contains("11a"))
@@ -223,10 +261,6 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   }
   else
     isSelected = 1;
-/*  if(!isSelected )
-        return;   */
-  // Main loop
-  // Called for each event
 
   // Post output data.
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -235,15 +269,11 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     return;
   }
   
-  
-  
   AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
   if(!pv) 
     return;
   if(TMath::Abs(pv->GetZ())>15)
     return;
-  //fCaloClustersNew = dynamic_cast<TClonesArray*>(fESD->FindListObject(fCaloClustersName));
-
 
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
@@ -258,10 +288,8 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
     }
     if (fPrTrCuts && fPrTrCuts->IsSelected(track))
       fSelPrimTracks->Add(track);
-  
-    
-    
   } //track loop 
+
   fHeader->fTrClassMask    = fESD->GetHeader()->GetTriggerMask();
   fHeader->fTrCluster      = fESD->GetHeader()->GetTriggerCluster();
   AliCentrality *cent = InputEvent()->GetCentrality();
@@ -285,13 +313,10 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
 
   
   FindConversions();
-//   cout<<"****calling FillMyCells()...\n";
   FillMyCells();
-//   cout<<"****calling FillMyClus...\n";
   FillMyClusters();
   if(fCaloClustersNew)
     FillMyAltClusters();
-//   cout<<"****calling FillHighPt...\n";
   FillHighPtTracks();
   if(fIsMC)
     GetMcParts();
@@ -316,6 +341,8 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhoton::FindConversions() 
 {
+  // Find conversion.
+
   if(!fTrCuts)
     return;
   Int_t iconv = 0;
@@ -360,11 +387,9 @@ void AliAnalysisTaskEMCALPhoton::FindConversions()
     AliKFParticle negKF(*paramNeg,11);
     AliKFParticle posKF(*paramPos,-11);
     AliKFParticle photKF(negKF,posKF) ;
-    
    
     if( neg->GetKinkIndex(0) > 0 || pos->GetKinkIndex(0) > 0) 
       continue ;
-     
     
     if(pos->GetSign() == neg->GetSign()){ 
       fInvMassV0SS->Fill(photKF.GetMass());
@@ -415,12 +440,14 @@ void AliAnalysisTaskEMCALPhoton::FindConversions()
   }
   return;
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhoton::FillMyCells() 
 {
-  if(!fEMCalCells)
+  // Fill cells.
+
+  if (!fEMCalCells)
     return;
-//   cout<<"++++FillMyCells starts!\n";
   Int_t ncells = fEMCalCells->GetNumberOfCells();
   Int_t mcel = 0;
   for(Int_t icell = 0; icell<ncells; icell++){
@@ -442,12 +469,14 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
     mycell->fPhi = phi;
     mycell->fTime = fEMCalCells->GetCellTime(absID);
   }
-//   cout<<"++++FillMyCells done!\n";
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhoton::FillMyClusters() 
 {
-  if(!fCaloClusters)
+  // Fill clusters.
+
+  if (!fCaloClusters)
     return;
   Int_t nclus = fCaloClusters->GetEntries();
   Int_t mcl = 0;
@@ -523,6 +552,8 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhoton::FillMyAltClusters() 
 {
+  // Fill clusters.
+
   if(!fCaloClustersNew)
     return;
   Int_t nclus = fCaloClustersNew->GetEntries();
@@ -590,6 +621,8 @@ void AliAnalysisTaskEMCALPhoton::FillMyAltClusters()
 //________________________________________________________________________
 void  AliAnalysisTaskEMCALPhoton::FillHighPtTracks()
 {
+  // Fill high pt tracks.
+
   if(!fSelPrimTracks)
     return;
   Int_t ntracks = fSelPrimTracks->GetEntries();
@@ -608,12 +641,14 @@ void  AliAnalysisTaskEMCALPhoton::FillHighPtTracks()
     mtr->fMcLabel = track->GetLabel();
   }
 }
+
 //________________________________________________________________________
 void  AliAnalysisTaskEMCALPhoton::GetMcParts()
 {
+  // Get MC particles.
+
   if (!fStack)
     return;
-//   cout<<"++++Get - MC starts!\n";
 
   const AliVVertex *evtVtx = fMCEvent->GetPrimaryVertex();
   if (!evtVtx)
@@ -668,12 +703,13 @@ void  AliAnalysisTaskEMCALPhoton::GetMcParts()
       FillMcPart(mcD, ipart++, id);
     }
   }
-//   cout<<"++++Get - MC done!\n";
-
 }
+
 //________________________________________________________________________
 void  AliAnalysisTaskEMCALPhoton::FillMcPart(TParticle *mcP, Int_t ipart, Int_t itrack)
 {
+  // Fill MC particles.
+
   if(!mcP)
     return;
   TVector3 vmcv(mcP->Vx(),mcP->Vy(), mcP->Vz());
@@ -690,6 +726,7 @@ void  AliAnalysisTaskEMCALPhoton::FillMcPart(TParticle *mcP, Int_t ipart, Int_t 
   }
   mcp->fMother = mcP->GetMother(0) ;
 }
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALPhoton::GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius, Double_t pt) const
 {
@@ -715,9 +752,12 @@ Double_t AliAnalysisTaskEMCALPhoton::GetTrackIsolation(Double_t cEta, Double_t c
   } 
   return trkIsolation;
 }
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALPhoton::GetPhiBandEt(Double_t eta, Double_t phi, Double_t R, Double_t minpt) const
 {
+  // Get phi band.
+
   if(!fSelPrimTracks)
     return 0;
   Int_t ntracks = fSelPrimTracks->GetEntries();
@@ -740,6 +780,7 @@ Double_t AliAnalysisTaskEMCALPhoton::GetPhiBandEt(Double_t eta, Double_t phi, Do
   }
   return et;
 }
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALPhoton::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
 {
@@ -749,7 +790,6 @@ Double_t AliAnalysisTaskEMCALPhoton::GetCrossEnergy(const AliVCluster *cluster, 
   cells = fESD->GetEMCALCells();
   if (!cells)
     return 0;
-
 
   if (!fGeom)
     return 0;
@@ -788,8 +828,6 @@ Double_t AliAnalysisTaskEMCALPhoton::GetCrossEnergy(const AliVCluster *cluster, 
   return crossEnergy;
 }
 
-
-
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALPhoton ::GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const
 {
@@ -813,19 +851,17 @@ Double_t AliAnalysisTaskEMCALPhoton ::GetMaxCellEnergy(const AliVCluster *cluste
   }
   return maxe;
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhoton::Terminate(Option_t *) 
 {
-  // Draw result to the screen
   // Called once at the end of the query
-    if(fIsGrid)
-      return;
-    if (fTree) {
+  if(fIsGrid)
+    return;
+  if (fTree) {
     TFile *f = OpenFile(1);
     TDirectory::TContext context(f);
     if (f) 
       fTree->Write();
   }
-
-
 }
