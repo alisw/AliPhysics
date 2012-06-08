@@ -39,7 +39,7 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
 
   // ----- Getters for offline corresponding values -----
   Bool_t CookPID() { return kFALSE; }
-  Double_t GetPID(Int_t /* is */) const { return GetPID()/255.; }
+  Double_t GetPID(Int_t /* is */) const { return GetPID()/256.; }
   Int_t GetDetector() const { return fHCId / 2; }
   Int_t GetHCId() const { return fHCId; }
   Float_t GetdYdX() const { return (GetdY() * 140e-4 / 3.); }

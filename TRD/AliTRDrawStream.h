@@ -90,9 +90,10 @@ class AliTRDrawStream : public TObject
 
   enum ErrorBehav_t {
     kTolerate = 0,
-    kAbort = 1,
-    kDiscardMCM = 2,
-    kDiscardHC = 4
+    kDiscardMCM = 1,
+    kDiscardHC = 2,
+    kDiscardDDL = 4,
+    kAbort = 8
   };
 
   enum MarkerCode_t {
@@ -158,6 +159,13 @@ class AliTRDrawStream : public TObject
 
   AliTRDrawStats* GetStats() { return &fStats; }
   Int_t GetEventSize(Int_t sector)  const { return fStats.fStatsSector[sector].fBytes; }
+  Int_t GetEventSize(Int_t sector, Int_t stack)  const {
+    Int_t size = 0;
+    for (Int_t iHC = 0; iHC < 12; iHC++) {
+      size += fStats.fStatsSector[sector].fStatsHC[12*stack + iHC].fBytes;
+    }
+    return size;
+  }
   Int_t GetNTracklets(Int_t sector) const { return fStats.fStatsSector[sector].fNTracklets; }
   Int_t GetNMCMs(Int_t sector)      const { return fStats.fStatsSector[sector].fNMCMs; }
   Int_t GetNChannels(Int_t sector)  const { return fStats.fStatsSector[sector].fNChannels; }

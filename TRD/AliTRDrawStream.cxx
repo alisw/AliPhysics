@@ -30,6 +30,7 @@
 
 #include "AliLog.h"
 #include "AliRawReader.h"
+#include "AliTRDcalibDB.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdigitsParam.h"
 #include "AliTRDcalibDB.h"
@@ -1432,7 +1433,7 @@ Int_t AliTRDrawStream::ReadTPData(Int_t mode)
       MCMError(kPosUnexp, Form("#%i after #%i in readout order", GetMCMReadoutPos(MCM(*fPayloadCurr)), lastmcmpos));
     }
 
-    if (EvNo(*fPayloadCurr) != evno) {
+    if (EvNo(*fPayloadCurr) != (evno & 0xfffff)) {
       if (evno == -1) {
 	evno = EvNo(*fPayloadCurr);
       }
@@ -1578,9 +1579,10 @@ Int_t AliTRDrawStream::ReadZSData()
 			       GetMCMReadoutPos(MCM(*fPayloadCurr)), lastmcmpos, GetMCMReadoutPos(fCurrMcmPos)));
     }
 
-    if (EvNo(*fPayloadCurr) != evno) {
-      if (evno == -1)
+    if (EvNo(*fPayloadCurr) != (evno & 0xfffff)) {
+      if (evno == -1) {
 	evno = EvNo(*fPayloadCurr);
+      }
       else {
 	MCMError(kEvCntMismatch, "%i <-> %i", evno, EvNo(*fPayloadCurr));
       }
@@ -1593,6 +1595,9 @@ Int_t AliTRDrawStream::ReadZSData()
     if ((row > 11) && (fCurrStack == 2)) {
       MCMError(kUnknown, "Data in padrow > 11 for stack 2");
     }
+
+    if (fErrorFlags & (kDiscardMCM | kDiscardHC | kDiscardDDL))
+      break; //???
 
     // ----- Reading ADC channels -----
     AliDebug(2, DumpAdcMask("ADC mask: ", *fPayloadCurr));
@@ -1781,9 +1786,10 @@ Int_t AliTRDrawStream::ReadNonZSData()
       MCMError(kPosUnexp, Form("#%i after #%i in readout order", GetMCMReadoutPos(MCM(*fPayloadCurr)), lastmcmpos));
     }
 
-    if (EvNo(*fPayloadCurr) != evno) {
-      if (evno == -1)
+    if (EvNo(*fPayloadCurr) != (evno & 0xfffff)) {
+      if (evno == -1) {
 	evno = EvNo(*fPayloadCurr);
+      }
       else {
 	MCMError(kEvCntMismatch, "%i <-> %i", evno, EvNo(*fPayloadCurr));
       }
@@ -2220,6 +2226,9 @@ void AliTRDrawStream::SortTracklets(TClonesArray *trklArray, TList &sortedTrackl
 {
   // sort tracklets for referencing from GTU tracks
 
+  if (!trklArray)
+    return;
+
   Int_t nTracklets = trklArray->GetEntriesFast();
 
   Int_t lastHC = -1;
@@ -2263,8 +2272,7 @@ void AliTRDrawStream::SortTracklets(TClonesArray *trklArray, TList &sortedTrackl
 	  trklA = 0x0;
       }
       else {
-	if ((trklA->GetZbin() < trklB->GetZbin()) ||
-	    ((trklA->GetZbin() == trklB->GetZbin()) && (trklA->GetYbin() < trklB->GetYbin()))) {
+	if (trklA->GetZbin() <= trklB->GetZbin()) {
 	  trklNext = trklA;
 	  trklIndexA++;
 	  trklA = trklIndexA < nTracklets ? (AliTRDtrackletBase*) ((*trklArray)[trklIndexA]) : 0x0;
