@@ -47,7 +47,7 @@ AliHadCorrTask::AliHadCorrTask() :
 
   for(Int_t i=0; i<8; i++) {
       fHistEsubPch[i]    = 0;
-      fHistEsubPchRat[i]    = 0;
+      fHistEsubPchRat[i] = 0;
     for(Int_t j=0; j<4; j++) {
       fHistNCellsEnergy[i][j] = 0;
     }
@@ -88,7 +88,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name) :
   // Standard constructor.
 
   for(Int_t i=0; i<8; i++) {
-      fHistEsubPch[i] = 0;
+      fHistEsubPch[i]    = 0;
       fHistEsubPchRat[i] = 0;
     for(Int_t j=0; j<3; j++) {
     }
@@ -138,7 +138,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
 	fHistNCellsEnergy[i][j] = 0;
       }
     }
-    fHistEsubPch[i] = 0;
+    fHistEsubPch[i]    = 0;
     fHistEsubPchRat[i] = 0;
     for(Int_t j=0; j<9; j++) {
       for(Int_t k=0; k<2; k++) {
@@ -162,7 +162,7 @@ Int_t AliHadCorrTask::GetMomBin(Double_t p) const
   // Get momenum bin.
 
   Int_t pbin=-1;
-  if (p>=0 && p<0.5) 
+  if (p<0.5) 
     pbin=0;
   else if (p>=0.5 && p<1.0) 
     pbin=1;
@@ -187,6 +187,8 @@ Int_t AliHadCorrTask::GetMomBin(Double_t p) const
 //________________________________________________________________________
 Double_t AliHadCorrTask::GetEtaSigma(Int_t pbin) const
 {
+  // Get sigma in eta.
+
   Double_t EtaSigma[9]={0.0097,0.0075,0.0059,0.0055,0.0053,0.005,0.005,0.0045,0.0042};
   return 2.0*EtaSigma[pbin];
 }
@@ -194,7 +196,9 @@ Double_t AliHadCorrTask::GetEtaSigma(Int_t pbin) const
 //________________________________________________________________________
 Double_t AliHadCorrTask::GetPhiMean(Int_t pbin, Int_t centbin) const
 {
-  if (centbin==0){ 
+  // Get phi mean.
+
+  if (centbin==0) { 
     Double_t PhiMean[9]={0.036,
 			 0.021,
 			 0.0121,
@@ -205,7 +209,7 @@ Double_t AliHadCorrTask::GetPhiMean(Int_t pbin, Int_t centbin) const
 			 0.0022,
 			 0.001};
     return PhiMean[pbin];
-  }else if(centbin==1){ 
+  } else if (centbin==1) { 
     Double_t PhiMean[9]={0.036,
 			 0.021,
 			 0.0121,
@@ -216,7 +220,7 @@ Double_t AliHadCorrTask::GetPhiMean(Int_t pbin, Int_t centbin) const
 			 0.0022,
 			 0.001};
     return PhiMean[pbin];
-  }else if(centbin==2){ 
+  } else if (centbin==2) { 
     Double_t PhiMean[9]={0.036,
 			 0.021,
 			 0.0121,
@@ -227,7 +231,7 @@ Double_t AliHadCorrTask::GetPhiMean(Int_t pbin, Int_t centbin) const
 			 0.0022,
 			 0.001};
     return PhiMean[pbin];
-  }else if(centbin==3){ 
+  } else if (centbin==3) { 
     Double_t PhiMean[9]={0.036,
 			 0.021,
 			 0.0121,
@@ -238,7 +242,7 @@ Double_t AliHadCorrTask::GetPhiMean(Int_t pbin, Int_t centbin) const
 			 0.0022,
 			 0.001};  
     return PhiMean[pbin];
-  }else if(centbin==4){ 
+  } else if (centbin==4) { 
     Double_t PhiMean[9]={0.036,
 			 0.021,
 			 0.0127,
@@ -249,7 +253,7 @@ Double_t AliHadCorrTask::GetPhiMean(Int_t pbin, Int_t centbin) const
 			 0.0028,
 			 0.0018};
     return PhiMean[pbin]*(-1.);
-  }else if(centbin==5){ 
+  } else if (centbin==5) { 
     Double_t PhiMean[9]={0.036,
 			 0.021,
 			 0.0127,
@@ -260,7 +264,7 @@ Double_t AliHadCorrTask::GetPhiMean(Int_t pbin, Int_t centbin) const
 			 0.0028,
 			 0.0018};
     return PhiMean[pbin]*(-1.);
-  }else if(centbin==6){ 
+  } else if (centbin==6) { 
     Double_t PhiMean[9]={0.036,
 			 0.021,
 			 0.0127,
@@ -271,7 +275,7 @@ Double_t AliHadCorrTask::GetPhiMean(Int_t pbin, Int_t centbin) const
 			 0.0028,
 			 0.0018};
     return PhiMean[pbin]*(-1.);
-  }else if(centbin==7){ 
+  } else if (centbin==7) { 
     Double_t PhiMean[9]={0.036,
 			 0.021,
 			 0.0127,
@@ -285,13 +289,14 @@ Double_t AliHadCorrTask::GetPhiMean(Int_t pbin, Int_t centbin) const
   }
 
   return 0;
-
 }
 
 //________________________________________________________________________
 Double_t AliHadCorrTask::GetPhiSigma(Int_t pbin, Int_t centbin) const
 {
-  if (centbin==0){ 
+  // Get phi sigma.
+
+  if (centbin==0) { 
     Double_t PhiSigma[9]={0.0221,
 			  0.0128,
 			  0.0074,
@@ -302,7 +307,7 @@ Double_t AliHadCorrTask::GetPhiSigma(Int_t pbin, Int_t centbin) const
 			  0.0049,
 			  0.0045};
     return 2.*PhiSigma[pbin];
-  }else if(centbin==1){ 
+  } else if (centbin==1) { 
     Double_t PhiSigma[9]={0.0217,
 			  0.0120,
 			  0.0076,
@@ -313,7 +318,7 @@ Double_t AliHadCorrTask::GetPhiSigma(Int_t pbin, Int_t centbin) const
 			  0.0054,
 0.0045};
     return 2.*PhiSigma[pbin];
-  }else if(centbin==2){ 
+  } else if (centbin==2) { 
     Double_t PhiSigma[9]={0.0211,
 			  0.0124,
 			  0.0080,
@@ -324,7 +329,7 @@ Double_t AliHadCorrTask::GetPhiSigma(Int_t pbin, Int_t centbin) const
 			  0.0054,
 			  0.0047};
     return 2.*PhiSigma[pbin];
-  }else if(centbin==3){ 
+  } else if (centbin==3) { 
     Double_t PhiSigma[9]={0.0215,
 			  0.0124,
 			  0.0082,
@@ -335,7 +340,7 @@ Double_t AliHadCorrTask::GetPhiSigma(Int_t pbin, Int_t centbin) const
 			  0.0055,
 			  0.0047};  
     return 2.*PhiSigma[pbin];
-  }else if(centbin==4){ 
+  } else if (centbin==4) { 
     Double_t PhiSigma[9]={0.0199,
 			  0.0108,
 			  0.0072,
@@ -346,7 +351,7 @@ Double_t AliHadCorrTask::GetPhiSigma(Int_t pbin, Int_t centbin) const
 			  0.0049,
 			  0.0045};
     return 2.*PhiSigma[pbin];
-  }else if(centbin==5){ 
+  } else if (centbin==5) { 
     Double_t PhiSigma[9]={0.0200,
 			  0.0110,
 			  0.0074,
@@ -357,7 +362,7 @@ Double_t AliHadCorrTask::GetPhiSigma(Int_t pbin, Int_t centbin) const
 			  0.0052,
 			  0.0045};
     return 2.*PhiSigma[pbin];
-  }else if(centbin==6){ 
+  } else if (centbin==6) { 
     Double_t PhiSigma[9]={0.0202,
 			  0.0113,
 			  0.0077,
@@ -368,7 +373,7 @@ Double_t AliHadCorrTask::GetPhiSigma(Int_t pbin, Int_t centbin) const
 			  0.0055,
 			  0.0050};
     return 2.*PhiSigma[pbin];
-  }else if(centbin==7){ 
+  } else if (centbin==7) { 
     Double_t PhiSigma[9]={0.0205,
 			  0.0113,
 			  0.0080,
@@ -382,7 +387,6 @@ Double_t AliHadCorrTask::GetPhiSigma(Int_t pbin, Int_t centbin) const
   }
 
   return 0;
-
 }
 
 //________________________________________________________________________
@@ -418,16 +422,13 @@ void AliHadCorrTask::UserCreateOutputObjects()
   for(Int_t icent=0; icent<8; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
       for(Int_t ieta=0; ieta<2; ++ieta) {
-
 	name = Form("fHistMatchEtaPhi_%i_%i_%i",icent,ipt,ieta);
 	fHistMatchEtaPhi[icent][ipt][ieta] = new TH2F(name, name, 200, -0.1, 0.1, 400, -0.2, 0.2);
 	fOutput->Add(fHistMatchEtaPhi[icent][ipt][ieta]);
       }
     }
 
-
     for(Int_t itrk=0; itrk<4; ++itrk) {
-      
       name = Form("fHistNCellsEnergy_%i_%i",icent,itrk);
       fHistNCellsEnergy[icent][itrk]  = new TH2F(name, name, 1000, 0, 100, 101, -0.5, 100.5);
       fOutput->Add(fHistNCellsEnergy[icent][itrk]);
@@ -440,9 +441,8 @@ void AliHadCorrTask::UserCreateOutputObjects()
     name = Form("fHistEsubPchRat_%i",icent);
     fHistEsubPchRat[icent]=new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
     fOutput->Add(fHistEsubPchRat[icent]);
-  
     
-    if(icent<4){
+    if (icent<4) {
       name = Form("fHistMatchEvsP_%i",icent);
       fHistMatchEvsP[icent] = new TH2F(name, name, 400, 0., 200., 1000, 0., 10.);
       fOutput->Add(fHistMatchEvsP[icent]);
@@ -454,13 +454,10 @@ void AliHadCorrTask::UserCreateOutputObjects()
       name = Form("fHistNMatchEnergy_%i",icent);
       fHistNMatchEnergy[icent]  = new TH2F(name, name, 1000, 0, 100, 101, -0.5, 100.5);
       fOutput->Add(fHistNMatchEnergy[icent]);
-
-
     }
   }
 
   fHistCentrality       = new TH1F("fHistCentrality",  "Centrality",       100, 0, 100);
-
   fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent",      100, 0, 100);
   fHistNclusMatchvsCent = new TH1F("NclusMatchvscent", "NclusMatchVsCent", 100, 0, 100);
   fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          100, 0, 100);
@@ -468,8 +465,7 @@ void AliHadCorrTask::UserCreateOutputObjects()
   fHistEoPCent          = new TH2F("EoPCent",          "EoPCent",          100, 0, 100, 1000, 0,   10);
   fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent",     100, 0, 100, 11, -0.5, 10.5);
   fHistNMatchCent_trk   = new TH2F("NMatchesCent_trk", "NMatchesCent_trk", 100, 0, 100, 11, -0.5, 10.5);
-
-  fHistNoMatchEtaPhi   = new TH2F("NoMatchEtaPhi","NoMatchEtaPhi",200,-1.0,1.0,90,1.0,4.0);
+  fHistNoMatchEtaPhi    = new TH2F("NoMatchEtaPhi",    "NoMatchEtaPhi",    200, -1, 1, 90, 1, 4);
 
   fOutput->Add(fHistNclusMatchvsCent);
   fOutput->Add(fHistNclusvsCent);
@@ -487,11 +483,13 @@ void AliHadCorrTask::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliHadCorrTask::DoTrackClusLoop() 
 {
+  // Do the track cluster loop.
+
   const Int_t Ntrks = fTracks->GetEntries();
 
   // loop over all tracks
   for (Int_t t = 0; t < Ntrks; ++t) {
-    AliEmcalParticle *emctrack = dynamic_cast<AliEmcalParticle*>(fTracks->At(t));
+    AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(t));
     if (!emctrack)
       continue;
 
@@ -507,7 +505,7 @@ void AliHadCorrTask::DoTrackClusLoop()
     // loop over matched clusters
     for (Int_t i = 0; i < Nclus; ++i) {
       Int_t c = emctrack->GetMatchedObjId(i);
-      AliEmcalParticle *emccluster = dynamic_cast<AliEmcalParticle*>(fCaloClusters->At(c));
+      AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(fCaloClusters->At(c));
       if (!emccluster)
 	continue;
 
@@ -545,7 +543,7 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     Int_t    iTrack = emccluster->GetMatchedObjId(i);
     Double_t dR     = emccluster->GetMatchedObjDistance(i);
     
-    AliEmcalParticle *emctrack = dynamic_cast<AliEmcalParticle*>(fTracks->At(iTrack));
+    AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iTrack));
     if (!emctrack)
       continue;
 
@@ -576,7 +574,7 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     Double_t PhiCutlo = 0.0;
     Double_t PhiCuthi = 0.0;
 
-    if (fPhiMatch > 0){
+    if (fPhiMatch > 0) {
       PhiCutlo = -fPhiMatch;
       PhiCuthi = fPhiMatch;
     }
@@ -642,7 +640,7 @@ Bool_t AliHadCorrTask::Run()
 
   // loop over all clusters
   for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
-    AliEmcalParticle *emccluster = dynamic_cast<AliEmcalParticle*>(fCaloClusters->At(iClus));
+    AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(fCaloClusters->At(iClus));
     if (!emccluster)
       continue;
 
@@ -670,11 +668,17 @@ Bool_t AliHadCorrTask::Run()
 
     if (energyclus > 0) { // create corrected cluster
       AliVCluster *oc;
-      if (esdMode) 
-	oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*(dynamic_cast<AliESDCaloCluster*>(cluster)));
-      else 
-	oc = new ((*fOutClusters)[clusCount]) AliAODCaloCluster(*(dynamic_cast<AliAODCaloCluster*>(cluster)));
-      
+      if (esdMode) {
+        AliESDCaloCluster *ec = dynamic_cast<AliESDCaloCluster*>(cluster);
+        if (!ec)
+          continue;
+	oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*ec);
+      } else { 
+        AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(cluster);
+        if (!ac)
+          continue;
+	oc = new ((*fOutClusters)[clusCount]) AliAODCaloCluster(*ac);
+      }
       oc->SetE(energyclus);
 
       ++clusCount;
@@ -690,6 +694,8 @@ Bool_t AliHadCorrTask::Run()
 //________________________________________________________________________
 Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Double_t hadCorr) 
 {
+  // Apply the hadronic correction with one track only.
+
   AliVCluster *cluster = emccluster->GetCluster();
   
   Double_t energyclus = cluster->E();
@@ -698,7 +704,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   if (iMin < 0)
     return energyclus;
 
-  AliEmcalParticle *emctrack = dynamic_cast<AliEmcalParticle*>(fTracks->At(iMin));
+  AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iMin));
   if (!emctrack)
     return energyclus;
 
@@ -757,7 +763,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   // Apply the correction if the track is in the eta/phi window
   if ((dPhiMin < PhiCuthi && dPhiMin > PhiCutlo) && TMath::Abs(dEtaMin) < EtaCut) {
 
-    if ((fDoTrackClus && (track->GetEMCALcluster()) == emccluster->IdInCollection()) || !fDoTrackClus){
+    if ((fDoTrackClus && (track->GetEMCALcluster()) == emccluster->IdInCollection()) || !fDoTrackClus) {
       energyclus -= hadCorr * mom;
     }
   }
@@ -768,6 +774,8 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
 //________________________________________________________________________
 Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Double_t hadCorr) 
 {
+  // Apply the hadronic correction with all tracks.
+
   AliVCluster *cluster = emccluster->GetCluster();
   
   Double_t energyclus = cluster->E();
@@ -810,7 +818,7 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 
     if (Nmatches == 1) {
       Int_t iMin = emccluster->GetMatchedObjId();
-      AliEmcalParticle *emctrack = dynamic_cast<AliEmcalParticle*>(fTracks->At(iMin));
+      AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iMin));
       AliVTrack *track = emctrack->GetTrack();
       Int_t centbinchm = fCentBin;
       if (track->Charge() == -1 || track->Charge() == 255) 
