@@ -1,10 +1,37 @@
+TF1* GetEtaCorrection(){
+  TString list=gSystem->Getenv("LIST");
+
+  TString etaMap="$TRAIN_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
+  
+  if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
+    Error("ConfigPbPb2010_Cent","Eta map not found: %s",etaMap.Data());
+    return 0;
+  }
+
+  TFile f(etaMap.Data());
+  if (!f.IsOpen()) return 0;
+  gROOT->cd();
+  TList *keys=f.GetListOfKeys();
+
+  for (Int_t i=0; i<keys->GetEntries(); ++i){
+    TString kName=keys->At(i)->GetName();
+    TPRegexp reg(kName);
+    if (reg.MatchB(list)){
+      printf("Using Eta Correction Function: %s\n",kName.Data());
+      return (TF1*)f.Get(kName.Data());
+    }
+  }
+  return 0;
+}
+
+
 AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE,
 				  UChar_t TPCcl=70, UChar_t TPCclPID = 80, 
 				  Double_t TPCclRatio = 0.6, Double_t TPCclshared = 1.1,
 				  UChar_t ITScl=3,  Double_t ITSchi2perclusters=99999999.,
                                   Double_t dcaxy=1.0, Double_t dcaz=2.0,
 				  Double_t TOFs=3.,Double_t IpSig=3., Int_t itspixelcut=AliHFEextraCuts::kFirst, TString appendix,
-				  Float_t prodlow=0., Float_t prodhigh=100., Int_t addflag=0., Int_t ptbin=0,
+				  Float_t prodlow=0., Float_t prodhigh=100., Int_t addflag=0., Int_t ptbin=0, Int_t etacor=0,
 				  Int_t nondefaultcentr=0, Float_t* arraycentr=NULL,
 				  Double_t* tpcdEdxcut=NULL,Double_t tpcu=3.0){
   //
@@ -120,6 +147,12 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE,
     // 30-40% 0.44
     Double_t paramsTPCdEdxcut[12] ={0.0, 0.0, 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
     if((nondefaultcentr!=0) && tpcdEdxcut) memcpy(paramsTPCdEdxcut,tpcdEdxcut,sizeof(paramsTPCdEdxcut));
+
+    if(etacor==1&&nondefaultcentr==0)
+      {
+        Double_t tpcdEdxcutetacor[12]={-0.08, 0.016, 0.12,0.22,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3};
+	memcpy(paramsTPCdEdxcut,tpcdEdxcutetacor,sizeof(paramsTPCdEdxcut));
+      }
     
     char *cutmodel;
     cutmodel="pol0";
@@ -131,6 +164,15 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE,
 
 	pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparam,tpcu);
     }
+
+    if(etacor==1)
+      { 
+	// Apply eta correction
+	AliHFEpidTPC *tpcpid = pid->GetDetPID(AliHFEpid::kTPCpid);
+	TF1 *etacorrection = GetEtaCorrection();
+	if(etacorrection) tpcpid->SetEtaCorrection(etacorrection);
+	
+      }
 
   }
   pid->ConfigureTOF(TOFs);
