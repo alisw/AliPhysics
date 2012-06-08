@@ -304,6 +304,7 @@ void AliFJWrapper::GetMedianAndSigma(Double_t &median, Double_t &sigma, Int_t re
 
   if (!fClustSeq) {
     AliError("[e] Run the jfinder first.");
+    return;
   }
 
   Double_t mean_area = 0;
