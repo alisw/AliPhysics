@@ -136,6 +136,10 @@ Revision 0.01  2005/07/25 A. De Caro
 
 //extern TFile *gFile;
 
+using std::cout;
+using std::endl;
+using std::ofstream;
+using std::ios;
 ClassImp(AliTOFClusterFinder)
 
 AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):

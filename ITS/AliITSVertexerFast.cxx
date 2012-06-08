@@ -30,6 +30,9 @@
 // Origin: masera@to.infn.it     25/09/2003                            //
 //                                                                     //
 /////////////////////////////////////////////////////////////////////////
+
+using std::endl;
+using std::cout;
 ClassImp(AliITSVertexerFast)
 
 

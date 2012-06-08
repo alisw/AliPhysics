@@ -7,6 +7,7 @@
 #include "AliITSRad.h"
 
 
+using std::ifstream;
 ClassImp(AliITSRad)
 //______________________________________________________________________
 AliITSRad::AliITSRad():

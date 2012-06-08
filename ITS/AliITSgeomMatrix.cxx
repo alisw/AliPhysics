@@ -45,6 +45,10 @@ $Id$
 #include "AliLog.h"
 #include "AliITSgeomMatrix.h"
 
+using std::endl;
+using std::cout;
+using std::ios;
+using std::setprecision;
 ClassImp(AliITSgeomMatrix)
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix():

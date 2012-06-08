@@ -31,6 +31,8 @@ class AliPlaneEff;
 #include "AliTracker.h"
 #include "AliITSPlaneEffSPD.h"
 
+using std::istream;
+
 class AliITSTrackleterSPDEff : public  AliTracker
 {
 public:

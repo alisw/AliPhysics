@@ -35,6 +35,9 @@
 //                                                     //
 //                                                     //
 ///////////////////////////////////////////////////////// 
+
+using std::endl;
+using std::cout;
 ClassImp(AliITSsDigitize)
 //______________________________________________________________________
 AliITSsDigitize::AliITSsDigitize():

@@ -19,6 +19,7 @@ class AliITSsegmentation;
 class TF1;
 class AliITSgeom;
 
+using std::istream;
 
 /////////////////////////////////////////////
 //                                         //

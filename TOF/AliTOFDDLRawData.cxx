@@ -91,6 +91,10 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 
 extern TRandom *gRandom;
 
+using std::ofstream;
+using std::endl;
+using std::cout;
+using std::ios;
 ClassImp(AliTOFDDLRawData)
 
 //---------------------------------------------------------------------------

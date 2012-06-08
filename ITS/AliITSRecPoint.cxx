@@ -34,6 +34,7 @@
 #include "AliITSRecPoint.h"
 #include "AliAlignObj.h"
 
+using std::ios;
 ClassImp(AliITSRecPoint)
 
 //_____________________________________________________________

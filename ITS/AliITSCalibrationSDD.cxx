@@ -33,6 +33,9 @@ const Float_t AliITSCalibrationSDD::fgkNoiseDefault = 2.38;
 const Float_t AliITSCalibrationSDD::fgkGainDefault = 1.;
 const Float_t AliITSCalibrationSDD::fgkBaselineDefault = 20.;
 //______________________________________________________________________
+
+using std::endl;
+using std::cout;
 ClassImp(AliITSCalibrationSDD)
 
 AliITSCalibrationSDD::AliITSCalibrationSDD():

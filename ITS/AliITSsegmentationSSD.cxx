@@ -35,6 +35,8 @@ const Int_t AliITSsegmentationSSD::fgkNstripsDefault = 768;
 const Int_t AliITSsegmentationSSD::fgkNchipsPerSide = 6;
 const Int_t AliITSsegmentationSSD::fgkNstripsPerChip = 128;
 
+using std::endl;
+using std::cout;
 ClassImp(AliITSsegmentationSSD)
 
 AliITSsegmentationSSD::AliITSsegmentationSSD(Option_t *opt): AliITSsegmentation(),

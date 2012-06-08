@@ -29,6 +29,8 @@
 class TGeoVolume;
 class TGeoCompositeShape;
 
+using std::istream;
+
 class AliITSv11GeometrySPD : public AliITSv11Geometry
 {
  public:

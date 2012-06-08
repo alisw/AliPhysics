@@ -36,6 +36,8 @@ $Id$
 
 //#define DEBUG
 
+using std::endl;
+using std::cout;
 ClassImp(AliITSsimulationSPD)
 ////////////////////////////////////////////////////////////////////////
 //  Version: 1

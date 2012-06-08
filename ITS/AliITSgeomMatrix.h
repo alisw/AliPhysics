@@ -16,6 +16,9 @@ class TPolyLine3D;
 class TNode;
 class TShape;
 
+using std::ostream;
+using std::istream;
+
 class AliITSgeomMatrix : public TObject {
  public:
     AliITSgeomMatrix(); // Default constructor

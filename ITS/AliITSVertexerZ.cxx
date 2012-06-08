@@ -32,6 +32,8 @@
 // It can be used successfully with Pb-Pb collisions
 ////////////////////////////////////////////////////////////////
 
+using std::endl;
+using std::cout;
 ClassImp(AliITSVertexerZ)
 
 

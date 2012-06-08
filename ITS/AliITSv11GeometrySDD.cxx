@@ -497,11 +497,8 @@ const Double_t AliITSv11GeometrySDD::fgkSDDCableR5    =  37*fgkcm; // third part
 const Double_t AliITSv11GeometrySDD::fgkSDDCableZ5    =  65*fgkcm; // third part of "cable cone"
 
 
-
-
-
-
-
+using std::endl;
+using std::cout;
 ClassImp(AliITSv11GeometrySDD)
 
 //________________________________________________________________________

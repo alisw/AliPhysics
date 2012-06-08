@@ -16,6 +16,9 @@
 #include <Riostream.h>
 #include "AliITSTableSSD.h"
 
+using std::endl;
+using std::cout;
+using std::cerr;
 ClassImp(AliITSTableSSD)
 ////////////////////////////////////////////////////////////////////////
 // Version: 0                                                         //

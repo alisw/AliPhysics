@@ -58,6 +58,9 @@ const Int_t AliITSsegmentationSDD::fgkNchipsPerHybrid = 4;
 const Int_t AliITSsegmentationSDD::fgkNanodesPerChip = 64;
 const Float_t AliITSsegmentationSDD::fgkCm2Micron = 10000.;
 const Float_t AliITSsegmentationSDD::fgkMicron2Cm = 1.0E-04;
+
+using std::endl;
+using std::cout;
 ClassImp(AliITSsegmentationSDD)
 
 //______________________________________________________________________

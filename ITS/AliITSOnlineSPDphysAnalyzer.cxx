@@ -34,6 +34,8 @@
 #include <iostream>
 #include <fstream>
 
+using std::ifstream;
+
 AliITSOnlineSPDphysAnalyzer::AliITSOnlineSPDphysAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler* handler, Bool_t readFromGridFile) :
   fFileName(fileName),fPhysObj(NULL),fHandler(handler),
   fNrEnoughStatChips(0),fNrDeadChips(0),fNrInefficientChips(0),

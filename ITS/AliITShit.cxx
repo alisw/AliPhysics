@@ -27,7 +27,7 @@
 #include "AliMC.h"
 #include "AliStack.h"
 
-
+using std::ios;
 ClassImp(AliITShit)
 ////////////////////////////////////////////////////////////////////////
 // Version: 0

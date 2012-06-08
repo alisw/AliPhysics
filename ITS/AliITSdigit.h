@@ -16,6 +16,8 @@ class TObjArray;
 class TArrayI;
 class TArrayF;
 
+using std::ostream;
+using std::istream;
 
 //______________________________________________________________________
 class AliITSdigit: public TObject  {

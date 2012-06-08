@@ -39,6 +39,9 @@
 #include "AliFstream.h"
 #include "AliITSFOSignalsSPD.h"
 
+using std::ofstream;
+using std::ios;
+using std::endl;
 ClassImp(AliITSDDLRawData)
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -66,8 +66,8 @@ class AliRunLoader;
 class AliITSLoader;
 class AliITSDetTypeRec;
 
-
-
+using std::endl;
+using std::cout;
 ClassImp(AliITSQASDDDataMakerRec)
 
 //____________________________________________________________________________ 

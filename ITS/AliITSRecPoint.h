@@ -26,6 +26,9 @@
 #include <Riostream.h>
 #include <AliLog.h>
 
+using std::ostream;
+using std::istream;
+
 class AliITSRecPoint : public AliCluster {
  public:
   AliITSRecPoint();

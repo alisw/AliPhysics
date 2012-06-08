@@ -43,6 +43,8 @@
 #include "AliITSOnlineSPDfoAnalyzer.h"
 #include "AliLog.h"
 
+using std::ifstream;
+
 AliITSOnlineSPDfoAnalyzer::AliITSOnlineSPDfoAnalyzer(const TString fileName, Bool_t readFromGridFile) :
   fFileName(0),
   fNdims(0),

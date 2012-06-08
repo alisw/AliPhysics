@@ -39,6 +39,8 @@
 #include "AliLog.h"
 #include "AliRun.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliITSsimulationSDD)
 ////////////////////////////////////////////////////////////////////////
 // Version: 0                                                         //

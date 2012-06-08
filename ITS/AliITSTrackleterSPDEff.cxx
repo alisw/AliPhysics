@@ -50,6 +50,10 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 //____________________________________________________________________
+
+using std::ofstream;
+using std::ios;
+using std::ifstream;
 ClassImp(AliITSTrackleterSPDEff)
 
 

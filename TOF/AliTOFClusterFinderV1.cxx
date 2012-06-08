@@ -60,6 +60,10 @@ Revision 0.01  2008/05/10 A. De Caro
 #include "AliTOFReconstructor.h"
 #include "AliTOFRecoParam.h"
 
+using std::endl;
+using std::cout;
+using std::ofstream;
+using std::ios;
 ClassImp(AliTOFClusterFinderV1)
 
 //_____________________________________________________________________________

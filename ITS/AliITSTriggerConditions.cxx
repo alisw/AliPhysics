@@ -18,6 +18,7 @@
 #include <TError.h>
 #include <fstream>
 
+using std::ifstream;
 ClassImp(AliITSTriggerConditions)
 
 //__________________________________________________________________________________

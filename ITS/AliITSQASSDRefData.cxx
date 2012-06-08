@@ -33,6 +33,7 @@
 #include "AliLog.h"
 #include "AliITSQASSDRefData.h"
 
+using std::ifstream;
 ClassImp(AliITSQASSDRefData)
 
 //___________________________________________________________________________

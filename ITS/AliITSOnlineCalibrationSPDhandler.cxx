@@ -30,6 +30,9 @@
 
 /* $Id$ */
 
+using std::ifstream;
+using std::ofstream;
+
 //____________________________________________________________________________________________
 AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler():
   fFileLocation("."),

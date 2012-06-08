@@ -40,6 +40,8 @@
 #include <iostream>
 #include <fstream>
 
+using std::ifstream;
+
 Double_t itsSpdErrorf(Double_t *x, Double_t *par){
   if (par[2]<0) par[2]=0;
   Double_t val = par[2]+(0.12*256*32-par[2])*(0.5+0.5*TMath::Erf((x[0]-par[0])/par[1]/sqrt(2.)));

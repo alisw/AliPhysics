@@ -94,6 +94,9 @@ const Double_t AliITSv11GeometrySPD::fgkGapLadder    =
 const Double_t AliITSv11GeometrySPD::fgkGapHalfStave =
                      AliITSv11Geometry::fgkmicron*120.; // 120 microns
 
+using std::endl;
+using std::cout;
+using std::ios;
 ClassImp(AliITSv11GeometrySPD)
 //______________________________________________________________________
 AliITSv11GeometrySPD::AliITSv11GeometrySPD(/*Double_t gap*/):

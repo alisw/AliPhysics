@@ -27,7 +27,8 @@
 // Revised to comply with coding conventions: Nov, 21 2003 m.m.
 //_____________________________________________________________________________
 
-
+using std::endl;
+using std::cout;
 ClassImp(AliITSetfSDD)
 
 const Int_t AliITSetfSDD::AliITSetfSDDparam::fgkMaxNofPoles = 5;

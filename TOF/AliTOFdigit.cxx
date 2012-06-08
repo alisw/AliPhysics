@@ -37,6 +37,8 @@
 #include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliTOFdigit)
 
 //______________________________________________________________________________

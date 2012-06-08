@@ -435,4 +435,6 @@ inline Int_t AliAODTrack::GetITSNcls() const
   return n;
 }
 
+template<> void AliAODTrack::SetPosition(const double *, Bool_t);
+
 #endif

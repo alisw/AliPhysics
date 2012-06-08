@@ -32,6 +32,8 @@
 #include "AliMC.h"
 #include "AliLog.h"
 
+using std::endl;
+
 ClassImp(AliITSClusterFinder)
 
 extern AliRun *gAlice;

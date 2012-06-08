@@ -7,6 +7,7 @@
 
 #include <TObject.h>
 
+using std::istream;
 
 class AliITSpListItem: public TObject {
  public:

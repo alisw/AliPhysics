@@ -48,6 +48,9 @@
 #include <AliRun.h>
 #include "AliITSv11Geometry.h"
 
+using std::endl;
+using std::cout;
+using std::cin;
 ClassImp(AliITSv11Geometry)
 
 const Double_t AliITSv11Geometry::fgkmicron = 1.0E-4;

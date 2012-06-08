@@ -25,6 +25,8 @@ class AliITSDetTypeRec;
 class AliRawReader;
 class TArrayI;
 
+using std::istream;
+
 //----------------------------------------------------------------------
 class AliITSClusterFinder :public TObject{
   public:

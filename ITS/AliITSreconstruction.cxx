@@ -28,7 +28,8 @@
 #include "AliITSreconstruction.h"
 #include "AliITSgeom.h"
 
-
+using std::endl;
+using std::cout;
 ClassImp(AliITSreconstruction)
 
 //______________________________________________________________________

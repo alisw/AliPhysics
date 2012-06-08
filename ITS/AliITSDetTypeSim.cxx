@@ -73,6 +73,8 @@ const Int_t AliITSDetTypeSim::fgkDefaultNModulesSPD =  240;
 const Int_t AliITSDetTypeSim::fgkDefaultNModulesSDD =  260;
 const Int_t AliITSDetTypeSim::fgkDefaultNModulesSSD = 1698;
 
+using std::endl;
+using std::cout;
 ClassImp(AliITSDetTypeSim)
 
 //----------------------------------------------------------------------
