@@ -1,3 +1,5 @@
+// $Id$
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -6,19 +8,15 @@
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-
 #include "AliESDEvent.h"
 #include "AliESDHeader.h"
 #include "AliESDUtils.h"
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
 #include "AliKFParticle.h"
-
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-
-
 #include "AliESDtrackCuts.h"
 #include "AliESDv0.h"
 #include "AliV0vertexer.h"
@@ -28,17 +26,45 @@
 #include "AliEMCALRecoUtils.h"
 #include "TLorentzVector.h"
 #include "AliVCluster.h"
-
-
 #include "AliAnalysisTaskTrgContam.h"
 #include "TFile.h"
 
-
 ClassImp(AliAnalysisTaskTrgContam)
 
+AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam() : 
+  AliAnalysisTaskSE(), 
+  fCaloClusters(0),
+  fEMCalCells(0),
+  fGeoName("EMCAL_COMPLETEV1"),
+  fPeriod("LHC11c"),
+  fIsTrain(0),
+  fTrigThresh(4.8),
+  fExoticCut(0.97),
+  fGeom(0x0),
+  fESD(0),
+  fOutputList(0),
+  fEvtSel(0),
+  fClusEt(0),
+  fClusEtTM(0),
+  fClusEtLead(0),
+  fClusEtSubLead(0),
+  fClusEtLeadTM(0),
+  fClusEtSubLeadTM(0),
+  fClusEtExotic(0), 
+  fClusEtExoticTM(0),
+  fClusEtSingleExotic(0),
+  fCellEnergy(0),
+  fM02Et(0),
+  fM02EtTM(0),
+  fM02EtExot(0),
+  fM02EtExotTM(0)
+{
+  // Default constructor.
+}
+
 //________________________________________________________________________
-AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name) 
-  : AliAnalysisTaskSE(name), 
+AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name) : 
+  AliAnalysisTaskSE(name), 
   fCaloClusters(0),
   fEMCalCells(0),
   fGeom(0x0),
@@ -47,14 +73,9 @@ AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name)
   fIsTrain(0),
   fTrigThresh(4.8),
   fExoticCut(0.97),
-
-  
   fESD(0),
-  
   fOutputList(0),
-  
   fEvtSel(0),
-
   fClusEt(0),
   fClusEtTM(0),
   fClusEtLead(0),
@@ -69,9 +90,6 @@ AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name)
   fM02EtTM(0),
   fM02EtExot(0),
   fM02EtExotTM(0)
-
-
-  
 {
   // Constructor
 
@@ -82,11 +100,11 @@ AliAnalysisTaskTrgContam::AliAnalysisTaskTrgContam(const char *name)
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::UserCreateOutputObjects()
 {
-  // Create histograms
-  // Called once
+  // Create histograms, called once.
     
   fCaloClusters = new TRefArray();
   
@@ -97,7 +115,6 @@ void AliAnalysisTaskTrgContam::UserCreateOutputObjects()
   
   fEvtSel = new TH1F("hEvtSel","Event selection counter (0=all trg, 1=pvz cut) ;evt cut ;dN/dcut}",2,0,2);
   fOutputList->Add(fEvtSel);
-    
   
   fClusEt = new TH1F("hClusEt","Clusters E_{T} ;E_{T} ;dN/dE_{T}",400,0,200);
   fOutputList->Add(fClusEt);
@@ -147,7 +164,8 @@ void AliAnalysisTaskTrgContam::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::UserExec(Option_t *) 
 {
-  //event trigger selection
+  // User exec. Called once per event.
+
   Bool_t isSelected = 0;
   if(fPeriod.Contains("11a"))
     isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
@@ -156,49 +174,46 @@ void AliAnalysisTaskTrgContam::UserExec(Option_t *)
 		   (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral));
   if(!isSelected )
     return; 
-  // Main loop
-  // Called for each event
-
-  // Post output data.
 
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-if (!fESD) {
+  if (!fESD) {
     printf("ERROR: fESD not available\n");
     return;
   }
 
-fEvtSel->Fill(0);
-  
-  /* AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
-  if(!pv) 
-    return;
-  if(TMath::Abs(pv->GetZ())>15)
-    return;*/
-
-fEvtSel->Fill(1);
-
-
-if(!fIsTrain){
-  for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-    if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
-      break;
-    fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
+  fEvtSel->Fill(0);
+  if (0) {
+    AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
+    if(!pv) 
+      return;
+    if(TMath::Abs(pv->GetZ())>15)
+      return;
   }
- }
-fESD->GetEMCALClusters(fCaloClusters);
-fEMCalCells = fESD->GetEMCALCells();
-for(int i=0;i<fEMCalCells->GetNumberOfCells();i++){
-  Double_t e = fEMCalCells->GetCellAmplitude(TMath::Abs(fEMCalCells->GetAmplitude(i)));
-  fCellEnergy->Fill(e);
+  fEvtSel->Fill(1);
+  if (!fIsTrain) {
+    for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+      if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
+        break;
+      fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
+    }
+  }
+  fESD->GetEMCALClusters(fCaloClusters);
+  fEMCalCells = fESD->GetEMCALCells();
+  for(int i=0;i<fEMCalCells->GetNumberOfCells();i++){
+    Double_t e = fEMCalCells->GetCellAmplitude(TMath::Abs(fEMCalCells->GetAmplitude(i)));
+    fCellEnergy->Fill(e);
+  }
+  FillClusHists(); 
+  
+  fCaloClusters->Clear();
+  PostData(1, fOutputList);
 }
-FillClusHists(); 
-
-fCaloClusters->Clear();
-PostData(1, fOutputList);
-}      
+ 
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::FillClusHists()
 {
+  // Fill cluster histograms.
+
   if(!fCaloClusters)
     return;
   const Int_t nclus = fCaloClusters->GetEntries();
@@ -262,6 +277,7 @@ void AliAnalysisTaskTrgContam::FillClusHists()
   if(nclus>1)if(isTM[index[1]] && EtArray[index[1]]>0)
     fClusEtSubLeadTM->Fill(EtArray[index[1]]);
 } 
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskTrgContam::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
 {
@@ -271,7 +287,6 @@ Double_t AliAnalysisTaskTrgContam::GetCrossEnergy(const AliVCluster *cluster, Sh
   cells = fESD->GetEMCALCells();
   if (!cells)
     return 0;
-
 
   if (!fGeom)
     return 0;
@@ -310,8 +325,6 @@ Double_t AliAnalysisTaskTrgContam::GetCrossEnergy(const AliVCluster *cluster, Sh
   return crossEnergy;
 }
 
-
-
 //________________________________________________________________________
 Double_t AliAnalysisTaskTrgContam ::GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const
 {
@@ -335,10 +348,9 @@ Double_t AliAnalysisTaskTrgContam ::GetMaxCellEnergy(const AliVCluster *cluster,
   }
   return maxe;
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskTrgContam::Terminate(Option_t *) 
 {
-  // Draw result to the screen
   // Called once at the end of the query
-
 }
