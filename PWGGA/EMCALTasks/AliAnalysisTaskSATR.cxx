@@ -501,8 +501,9 @@ void AliAnalysisTaskSATR::UserExec(Option_t *)
   Float_t maxL0amp = -1;
   
   for (Int_t i = 0; i < NumberOfTriggerClusters; i++) {
-    AliVCluster* trgCluster = dynamic_cast<AliVCluster*>(triggerClusters->At(i));
-    
+    AliVCluster* trgCluster = static_cast<AliVCluster*>(triggerClusters->At(i));
+    if (!trgCluster)
+      continue;
     Float_t L0amp = trgCluster->E();
 
     if (fCheckDeadClusters && trgCluster->GetDistanceToBadChannel() < 3)
