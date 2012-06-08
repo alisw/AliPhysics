@@ -62,6 +62,8 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
   fAOD = aod;
   fTrackCuts = trackcuts;
   fHistoCuts->Fill(kProcessedEvents);
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());//FIXME we can add the trigger mask here
+  if(!isSelected)return isSelected;
   //loop on tracks, before event selection, filling QA histos
   AliAODVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated
   if(vertex)fHistoVtxBefSel->Fill(vertex->GetZ());
@@ -107,7 +109,7 @@ Bool_t AliSpectraAODEventCuts::CheckCentralityCut()
 {
   // Check centrality cut
   Double_t cent=0;
-  if(fIsMC)cent=fAOD->GetCentrality()->GetCentralityPercentile("V0M");
+  if(!fUseCentPatchAOD049)cent=fAOD->GetCentrality()->GetCentralityPercentile("V0M");
   else cent=ApplyCentralityPatchAOD049();
   
   if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  return kTRUE;   
@@ -122,6 +124,7 @@ void AliSpectraAODEventCuts::PrintCuts()
   cout << "Event Stats" << endl;
   cout << " > Number of accepted events: " << fHistoCuts->GetBinContent(kAcceptedEvents + 1) << endl;
   cout << " > Number of processed events: " << fHistoCuts->GetBinContent(kProcessedEvents + 1) << endl;
+  cout << " > Number of PhysSel events: " << fHistoCuts->GetBinContent(kPhysSelEvents + 1) << endl;
   cout << " > Vertex out of range: " << fHistoCuts->GetBinContent(kVtxRange + 1) << endl;
   cout << " > Events cut by centrality: " << fHistoCuts->GetBinContent(kVtxCentral + 1) << endl;
   cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;

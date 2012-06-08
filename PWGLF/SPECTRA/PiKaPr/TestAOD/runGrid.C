@@ -81,6 +81,7 @@ void runGrid(TString mode="terminate",Int_t mc=1,Int_t sub=1,Int_t hi=1,TString 
   tcuts->SetPtTOFMatching(0.6);   
   tcuts->SetQvecMin(qVecCut[0]);   
   tcuts->SetQvecMax(qVecCut[1]);    
+  if(sub==0 && mc==0)vcuts->SetUseCentPatchAOD049(1);
   vcuts->SetCentralityCutMin(CentCut[0]);
   vcuts->SetCentralityCutMax(CentCut[1]);  
   task->SetEventCuts(vcuts);

@@ -91,6 +91,11 @@ Bool_t AliSpectraAODTrackCuts::IsSelected(AliAODTrack * track)
     return kFALSE;
   }
   fHistoCuts->Fill(kTrkBit);
+  
+  if(!CheckTrackCuts()){
+    return kFALSE;
+  }
+  fHistoCuts->Fill(kTrkCuts);
   if(!CheckEtaCut()){
     return kFALSE;
   }
@@ -118,9 +123,17 @@ Bool_t AliSpectraAODTrackCuts::IsSelected(AliAODTrack * track)
 
 Bool_t AliSpectraAODTrackCuts::CheckTrackType()
 {
-  // Check track cuts
+  // Check track Type
   if (fTrack->TestFilterBit(fTrackBits)) return kTRUE;
   return kFALSE;
+}
+//_________________________________________________________
+
+Bool_t AliSpectraAODTrackCuts::CheckTrackCuts()
+{
+  // Check additional track Cuts
+  return fTrack->HasPointOnITSLayer(0); //FIXME 1 SPD for the moment
+  
 }
 //________________________________________________________
 Bool_t AliSpectraAODTrackCuts::CheckEtaCut()

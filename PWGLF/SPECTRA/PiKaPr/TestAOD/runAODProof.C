@@ -1,4 +1,4 @@
-void runAODProof(Int_t c=2, const char * proofMode = "full")
+void runAODProof(Int_t c=3, const char * proofMode = "full")
 { //1 data AOD049
   //2 MC AOD048
   //3 data AOD086
@@ -41,12 +41,12 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
   handler->SetProofDataSet("/default/lmilano/LHC11a10a_138653_AOD048#aodTree|/default/lmilano/LHC11a10a_138662_AOD048#aodTree|/default/lmilano/LHC11a10a_138666_AOD048#aodTree|/default/lmilano/LHC11a10a_138730_AOD048#aodTree|/default/lmilano/LHC11a10a_138732_AOD048#aodTree|/default/lmilano/LHC11a10a_139507_AOD048#aodTree|/default/lmilano/LHC11a10a_139465_AOD048#aodTree|/default/lmilano/LHC11a10a_139437_AOD048#aodTree|/default/lmilano/LHC11a10a_139107_AOD048#aodTree|/default/lmilano/LHC11a10a_139510_AOD048#aodTree");      
   }
   if (c == 3){
-    handler->SetProofDataSet("/default/lmilano/LHC10h_000138653_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138662_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138666_AOD086_p2#aodTree|/default/lmilano/LHC10h_000139107_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
-    //handler->SetProofDataSet("/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
+    //handler->SetProofDataSet("/default/lmilano/LHC10h_000138653_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138662_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138666_AOD086_p2#aodTree|/default/lmilano/LHC10h_000139107_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
+    handler->SetProofDataSet("/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
   }
   if (c == 4){
-    handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138662_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138666_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139107_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
-    //handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
+    //handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138662_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138666_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139107_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
+    handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
   }
    
   gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
@@ -99,11 +99,13 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
     // Set the cuts
     AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
     AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
-    if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
+    //if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
     //if(c==1 || c==2)tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cut with tight DCA
     //if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
     //if(c==3 || c==4)tcuts->SetTrackType(4); //AOD 086 & 090. Jet analysis
-    if(c==3 || c==4)tcuts->SetTrackType(7); //AOD 086 & 090. TPC Only
+    //if(c==3 || c==4)tcuts->SetTrackType(7); //AOD 086 & 090. TPC Only
+    tcuts->SetTrackType(1);
+    Printf("-------------------- tcuts->GetTrackType() %d",tcuts->GetTrackType());
     tcuts->SetEta(.8);
     //tcuts->SetDCA(.1);
     tcuts->SetPt(5);
@@ -111,6 +113,7 @@ void runAODProof(Int_t c=2, const char * proofMode = "full")
     tcuts->SetPtTOFMatching(.6);   
     tcuts->SetQvecMin(QvecCutMin[iCut]);   
     tcuts->SetQvecMax(QvecCutMax[iCut]);    
+    if(c==1)vcuts->SetUseCentPatchAOD049(kTRUE);
     vcuts->SetCentralityCutMax(CentCutMax[iCut]);  
     vcuts->SetCentralityCutMin(CentCutMin[iCut]);
     task->SetEventCuts(vcuts);
