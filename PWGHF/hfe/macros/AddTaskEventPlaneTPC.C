@@ -1,4 +1,4 @@
-AliEPSelectionTask *AddTaskEventplaneTPC(Bool_t useEtaGap=kFALSE,Float_t etaGap=0.,Bool_t posTPC=kFALSE,TString containername = "EPStat")
+AliEPSelectionTask *AddTaskEventPlaneTPC(Bool_t useEtaGap=kFALSE,Float_t etaGap=0.,Bool_t posTPC=kFALSE,TString containername = "EPStat")
 {
   // Macro to connect an event plane selection task to an existing analysis manager.
 
@@ -53,12 +53,12 @@ AliEPSelectionTask *AddTaskEventplaneTPC(Bool_t useEtaGap=kFALSE,Float_t etaGap=
   mgr->AddTask(eventplaneTask);
 
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername,
-                TList::Class(), AliAnalysisManager::kOutputContainer,
-                "EventStat_temp.root");
+  //AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername,
+  //             TList::Class(), AliAnalysisManager::kOutputContainer,
+  //             "EventStat_temp.root");
   
   mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(eventplaneTask,1,coutput1);
+  //mgr->ConnectOutput(eventplaneTask,1,coutput1);
 
   return eventplaneTask;
 }
