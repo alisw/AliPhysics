@@ -52,6 +52,6 @@
 #pragma link C++ class AliAODVZERO+;
 #pragma link C++ class AliAODZDC+;
 
-#pragma link C++ method AliAODTrack::SetPosition<double>(double const*, bool);
+//#pragma link C++ method AliAODTrack::SetPosition<double>(double const*, bool);
 
 #endif
