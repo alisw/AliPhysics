@@ -18,7 +18,7 @@ ClassImp(AliEmcalClusTrackMatcherTask)
 
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
-  AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask"),
+  AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask",kFALSE),
   fMaxDistance(0.1)
 {
   // Constructor.
@@ -26,7 +26,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() :
 
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name) : 
-  AliAnalysisTaskEmcal(name),
+  AliAnalysisTaskEmcal(name,kFALSE),
   fMaxDistance(0.1)
 {
   // Standard constructor.
@@ -101,5 +101,7 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
     AliVTrack *track = partT->GetTrack();
     track->SetEMCALcluster(partT->GetMatchedObjId());
   }
+
+  return kTRUE;
 }
 
