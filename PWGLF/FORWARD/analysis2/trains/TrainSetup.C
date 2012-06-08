@@ -21,7 +21,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include <TAlienCollection.h>
+#include <TGridCollection.h>
 #include <TArrayI.h>
 #include <TChain.h>
 #include <TDatime.h>
@@ -2061,7 +2061,15 @@ protected:
   TChain* CreateChainFromXML(const char* treeName, 
 			     const char* xmlFile) 
   {
-    TGridCollection* collection = TAlienCollection::Open(xmlFile);
+    Long_t ret = gROOT->ProcessLine(Form("TAlienCollection(\"%s\")", 
+					 xmlFile));
+    if (!ret) { 
+      Error("CreateChainFromXML", "Cannot create AliEn collection from "
+	    "XML file %s", xmlFile);
+      return 0;
+    }
+    
+    TGridCollection* collection = reinterpret_cast<TGridCollection*>(ret);
     if (!collection) { 
       Error("CreateChainFromXML", "Cannot create AliEn collection from "
 	    "XML file %s", xmlFile);
