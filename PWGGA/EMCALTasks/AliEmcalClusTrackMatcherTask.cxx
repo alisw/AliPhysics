@@ -64,20 +64,20 @@ void AliEmcalClusTrackMatcherTask::DoMatching(TClonesArray *array1, TClonesArray
   if (!array1 || !array2)
     return;
 
+  const Double_t maxd2 = fMaxDistance*fMaxDistance;
+
   const Int_t n1 = array1->GetEntries();
   const Int_t n2 = array2->GetEntries();
   for (Int_t i = 0; i < n1; ++i) {
     AliEmcalParticle *part1 = static_cast<AliEmcalParticle*>(array1->At(i));
     if (!part1)
       continue;
-      
+    if (!AcceptEmcalPart(part1))
+      continue;
+
     AliVCluster *cluster1 = part1->GetCluster();
     AliVTrack   *track1   = part1->GetTrack()  ;
 
-    if ((!cluster1 || !AcceptCluster(cluster1)) && 
-        (!track1 || !AcceptTrack(track1)))
-      continue;
-     
     part1->ResetMatchedObjects();
 
     for (Int_t j = 0; j < n2; ++j) {
@@ -85,13 +85,11 @@ void AliEmcalClusTrackMatcherTask::DoMatching(TClonesArray *array1, TClonesArray
       AliEmcalParticle *part2 = static_cast<AliEmcalParticle*>(array2->At(j));
       if (!part2)
 	continue;
+      if (!AcceptEmcalPart(part2))
+        continue;
 
       AliVCluster *cluster2 = part2->GetCluster();
       AliVTrack   *track2   = part2->GetTrack()  ;
-
-      if ((!cluster2 || !AcceptCluster(cluster2)) && 
-          (!track2 || !AcceptTrack(track2)))
-	continue;
 
       Double_t deta = 999;
       Double_t dphi = 999;
@@ -101,10 +99,10 @@ void AliEmcalClusTrackMatcherTask::DoMatching(TClonesArray *array1, TClonesArray
 	AliPicoTrack::GetEtaPhiDiff(track2, cluster1, dphi, deta);
       else
 	continue;
-	   
-      Double_t d = TMath::Sqrt(deta * deta + dphi * dphi);
-      if(d < fMaxDistance) 
-	part1->AddMatchedObj(j, d);
+
+      Double_t d2 = deta * deta + dphi * dphi;
+      if (d2 < maxd2) 
+	part1->AddMatchedObj(j, TMath::Sqrt(d2));
     }
     
     if (part1->GetNumberOfMatchedObj() > 0) {
