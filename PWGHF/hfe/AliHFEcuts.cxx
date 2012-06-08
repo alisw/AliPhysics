@@ -121,6 +121,7 @@ AliHFEcuts::AliHFEcuts():
   fMinTrackletsTRD(0),
   fCutITSPixel(0),
   fCheckITSLayerStatus(kTRUE),
+  fCutITSDrift(0),
   fMaxChi2clusterITS(-1.),
   fMaxChi2clusterTPC(0.),
   fMinClusterRatioTPC(0.),
@@ -162,6 +163,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fMinTrackletsTRD(0),
   fCutITSPixel(0),
   fCheckITSLayerStatus(kTRUE),
+  fCutITSDrift(0),
   fMaxChi2clusterITS(-1.),
   fMaxChi2clusterTPC(0.),
   fMinClusterRatioTPC(0.),
@@ -202,6 +204,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fMinTrackletsTRD(0),
   fCutITSPixel(0),
   fCheckITSLayerStatus(0),
+  fCutITSDrift(0),
   fMaxChi2clusterITS(-1.),
   fMaxChi2clusterTPC(0),
   fMinClusterRatioTPC(0),
@@ -251,6 +254,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fMinTrackletsTRD = fMinTrackletsTRD;
   target.fCutITSPixel = fCutITSPixel;
   target.fCheckITSLayerStatus = fCheckITSLayerStatus;
+  target.fCutITSDrift = fCutITSDrift;
   target.fMaxChi2clusterITS = fMaxChi2clusterITS;
   target.fMaxChi2clusterTPC = fMaxChi2clusterTPC;
   target.fMinClusterRatioTPC = fMinClusterRatioTPC;
@@ -634,11 +638,7 @@ void AliHFEcuts::SetRecPrimaryCutList(){
   TObjArray *primCuts = new TObjArray;
   primCuts->SetName("fPartPrimCuts");
   // needed for AOD...
-  if(IsRequireSigmaToVertex()) {
-    //printf("Add primary COORFW\n");
-    primCuts->AddLast(primaryCut);
-  }
-  //printf("Did not add primary COORFW\n");
+  if(IsRequireSigmaToVertex()) primCuts->AddLast(primaryCut);
   //if(fMaxImpactParameterRpar){
   primCuts->AddLast(hfecuts);
   //}
@@ -655,6 +655,9 @@ void AliHFEcuts::SetHFElectronITSCuts(){
   if(IsRequireITSpixel()){
     hfecuts->SetRequireITSpixel(AliHFEextraCuts::ITSPixel_t(fCutITSPixel));
     hfecuts->SetCheckITSstatus(fCheckITSLayerStatus);
+  }
+  if(IsRequireITSdrift()){
+    hfecuts->SetRequireITSdrift(AliHFEextraCuts::ITSDrift_t(fCutITSDrift));
   }
   
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);

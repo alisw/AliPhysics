@@ -124,6 +124,7 @@ class AliHFEcuts : public TNamed{
    
     // Getters
     Bool_t IsRequireITSpixel() const { return TESTBIT(fRequirements, kITSPixel); };
+    Bool_t IsRequireITSdrift() const { return TESTBIT(fRequirements, kITSDrift); };
     Bool_t IsRequireMaxImpactParam() const { return TESTBIT(fRequirements, kMaxImpactParam); };
     Bool_t IsRequirePrimary() const { return TESTBIT(fRequirements, kPrimary); };
     Bool_t IsRequireProdVertex() const { return TESTBIT(fRequirements, kProductionVertex); };
@@ -135,6 +136,7 @@ class AliHFEcuts : public TNamed{
     
     // Setters
     inline void SetCutITSpixel(UChar_t cut);
+    inline void SetCutITSdrift(UChar_t cut);
     void SetCheckITSLayerStatus(Bool_t checkITSLayerStatus) { fCheckITSLayerStatus = checkITSLayerStatus; }
     void SetMinNClustersTPC(UChar_t minClustersTPC) { fMinClustersTPC = minClustersTPC; }
     void SetMinNClustersTPCPID(UChar_t minClustersTPC) { fMinClustersTPCPID = minClustersTPC; }
@@ -169,6 +171,7 @@ class AliHFEcuts : public TNamed{
     void SetRequireDCAToVertex() { SETBIT(fRequirements, kDCAToVertex); CLRBIT(fRequirements, kSigmaToVertex); };
     void SetRequireIsPrimary() { SETBIT(fRequirements, kPrimary); };
     void SetRequireITSPixel() { SETBIT(fRequirements, kITSPixel); }
+    void SetRequireITSDrift() { SETBIT(fRequirements, kITSDrift); }
     void UnsetRequireITSPixel() { CLRBIT(fRequirements, kITSPixel); }
     void SetRequireProdVertex() { SETBIT(fRequirements, kProductionVertex); };
     void SetRequireSigmaToVertex() { SETBIT(fRequirements, kSigmaToVertex); CLRBIT(fRequirements, kDCAToVertex); };
@@ -190,7 +193,8 @@ class AliHFEcuts : public TNamed{
       kDCAToVertex = 3,
       kITSPixel = 4,
       kMaxImpactParam = 5,
-      kKineMCCuts = 6
+      kKineMCCuts = 6,
+      kITSDrift = 7,
     } Require_t;
     void SetParticleGenCutList();
     void SetAcceptanceCutList();
@@ -222,6 +226,7 @@ class AliHFEcuts : public TNamed{
     UChar_t fMinTrackletsTRD;	    // Min. Number of TRD tracklets
     UChar_t fCutITSPixel;	        // Cut on ITS pixel
     Bool_t  fCheckITSLayerStatus;       // Check ITS layer status
+    UChar_t fCutITSDrift;	        // Cut on ITS drift
     Double_t fMaxChi2clusterITS;	// Max Chi2 per ITS cluster
     Double_t fMaxChi2clusterTPC;	// Max Chi2 per TPC cluster
     Double_t fMinClusterRatioTPC;	// Min. Ratio findable / found TPC clusters
@@ -298,6 +303,12 @@ void AliHFEcuts::SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, B
 void AliHFEcuts::SetCutITSpixel(UChar_t cut){
   SetRequireITSPixel();
   fCutITSPixel = cut;
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetCutITSdrift(UChar_t cut){
+  SetRequireITSDrift();
+  fCutITSDrift = cut;
 }
 
 //__________________________________________________________________

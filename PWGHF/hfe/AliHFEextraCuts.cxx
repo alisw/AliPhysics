@@ -64,6 +64,7 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fMinNbITScls(0),
   fTRDtrackletsExact(0),
   fPixelITS(0),
+  fDriftITS(0),
   fTPCclusterDef(0),
   fTPCclusterRatioDef(0),
   fFractionTPCShared(-1.0),
@@ -93,6 +94,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fMinNbITScls(c.fMinNbITScls),
   fTRDtrackletsExact(c.fTRDtrackletsExact),
   fPixelITS(c.fPixelITS),
+  fDriftITS(c.fDriftITS),
   fTPCclusterDef(c.fTPCclusterDef),
   fTPCclusterRatioDef(c.fTPCclusterRatioDef),
   fFractionTPCShared(c.fFractionTPCShared),
@@ -131,6 +133,7 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fMinNbITScls = c.fMinNbITScls;
     fTRDtrackletsExact = c.fTRDtrackletsExact;
     fPixelITS = c.fPixelITS;
+    fDriftITS = c.fDriftITS;
     fTPCclusterDef = c.fTPCclusterDef;
     fTPCclusterRatioDef = c.fTPCclusterRatioDef;
     fFractionTPCShared = c.fFractionTPCShared;
@@ -313,6 +316,17 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   if(TESTBIT(fRequirements, kMinNClustersTPCPID)){
     AliDebug(1, Form("Min TPC PID cut: [%d|%d]\n", fMinNClustersTPCPID, nclsTPCPID));
     if(nclsTPCPID >= fMinNClustersTPCPID) SETBIT(survivedCut, kMinNClustersTPCPID);
+  }
+  if(TESTBIT(fRequirements, kDriftITS)){
+    //printf("Require drift\n");
+    switch(fDriftITS){
+    case kFirstD:
+      if(TESTBIT(itsPixel, 2)) SETBIT(survivedCut, kDriftITS);
+      break;
+    default: 
+      SETBIT(survivedCut, kDriftITS);
+      break;
+  }
   }
   if(TESTBIT(fRequirements, kPixelITS)){
     // cut on ITS pixel layers

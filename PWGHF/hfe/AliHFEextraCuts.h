@@ -41,6 +41,9 @@ class AliHFEextraCuts: public AliCFCutBase{
       kExclusiveSecond = 5
     } ITSPixel_t;
     typedef enum{
+      kFirstD = 0  
+    } ITSDrift_t;
+    typedef enum{
       kFound = 0,
       kFoundIter1 = 1,
       kCrossedRows = 2
@@ -62,6 +65,7 @@ class AliHFEextraCuts: public AliCFCutBase{
 
     inline void SetClusterRatioTPC(Double_t ratio, ETPCclrDef_t def);
     inline void SetRequireITSpixel(ITSPixel_t pixel);
+    inline void SetRequireITSdrift(ITSDrift_t drift);
     inline void SetMinImpactParamR(Double_t impactParam);
     inline void SetMaxImpactParamR(Double_t impactParam);
     inline void SetMinImpactParamZ(Double_t impactParam);
@@ -136,7 +140,8 @@ class AliHFEextraCuts: public AliCFCutBase{
       kMinNbITScls = 17,
       kRejectKinkDaughter = 18,
       kRejectKinkMother = 19,
-      kNcuts = 20
+      kDriftITS = 20,
+      kNcuts = 21
     } Cut_t;
     enum{
       //
@@ -158,6 +163,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     UChar_t fMinNbITScls;	      // Min. Number of ITS clusters
     Bool_t  fTRDtrackletsExact;       // Require exact number of tracklets
     UChar_t fPixelITS;                // Cut on ITS Pixels
+    UChar_t fDriftITS;                // Cut on ITS Drift
     UChar_t fTPCclusterDef;           // TPC cluster definition Bitmap
     UChar_t fTPCclusterRatioDef;      // TPC cluster ratio definition Bitmap
     Double_t  fFractionTPCShared;     // Cut on fraction of shared clusters
@@ -167,7 +173,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     TList *fQAlist;			//! Directory for QA histograms
     Int_t   fDebugLevel;                // Debug Level
   
-    ClassDef(AliHFEextraCuts, 3)      // Additional cuts implemented by the ALICE HFE group
+    ClassDef(AliHFEextraCuts, 4)      // Additional cuts implemented by the ALICE HFE group
 };
 
 //__________________________________________________________
@@ -181,6 +187,12 @@ void AliHFEextraCuts::SetClusterRatioTPC(Double_t ratio, ETPCclrDef_t def) {
 void AliHFEextraCuts::SetRequireITSpixel(ITSPixel_t pixel) {
   SETBIT(fRequirements, kPixelITS);
   fPixelITS = pixel; 
+}
+
+//__________________________________________________________
+void AliHFEextraCuts::SetRequireITSdrift(ITSDrift_t drift) {
+  SETBIT(fRequirements, kDriftITS);
+  fDriftITS = drift; 
 }
 
 //__________________________________________________________
