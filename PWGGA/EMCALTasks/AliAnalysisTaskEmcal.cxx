@@ -6,21 +6,22 @@
 
 #include "AliAnalysisTaskEmcal.h"
 
-#include <TObject.h>
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <TList.h>
+#include <TObject.h>
 
-#include "AliESDEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
-#include "AliVCluster.h"
-#include "AliVParticle.h"
-#include "AliMCParticle.h"
-#include "AliEmcalJet.h"
-#include "AliVEventHandler.h"
-#include "AliLog.h"
 #include "AliEMCALGeometry.h"
+#include "AliESDEvent.h"
+#include "AliEmcalJet.h"
+#include "AliEmcalParticle.h"
+#include "AliLog.h"
+#include "AliMCParticle.h"
+#include "AliVCluster.h"
+#include "AliVEventHandler.h"
+#include "AliVParticle.h"
 
 ClassImp(AliAnalysisTaskEmcal)
 
@@ -218,9 +219,13 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster* clus, Bool_t acceptMC) const
+Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Bool_t acceptMC) const
 {
   // Return true if cluster is accepted.
+
+  if (!clus)
+    return kFALSE;
+
   if (!clus->IsEMCAL())
     return kFALSE;
 
@@ -237,9 +242,33 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster* clus, Bool_t acceptMC) c
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVTrack* track, Bool_t acceptMC) const
+Bool_t AliAnalysisTaskEmcal::AcceptEmcalPart(AliEmcalParticle *part, Bool_t acceptMC) const
+{
+  // Return true if cluster is accepted.
+
+  if (!part)
+    return kFALSE;
+
+  if (!part->IsEMCAL())
+    return kFALSE;
+
+  if (part->Pt() < fPtCut)
+    return kFALSE;
+
+  if (!acceptMC && part->IsMC())
+    return kFALSE;
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVTrack *track, Bool_t acceptMC) const
 {
   // Return true if track is accepted.
+
+  if (!track)
+    return kFALSE;
+
   if (!acceptMC && track->GetLabel() == 100)
     return kFALSE;
 

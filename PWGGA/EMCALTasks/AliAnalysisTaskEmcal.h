@@ -6,9 +6,10 @@
 class TClonesArray;
 class TString;
 class TList;
+class AliEmcalParticle;
 class AliMCParticle;
-class AliVTrack;
 class AliVCluster;
+class AliVTrack;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -44,13 +45,14 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
  protected:
 
-  Bool_t                      AcceptTrack(AliVTrack* track, Bool_t acceptMC = kFALSE)              const;
-  Bool_t                      AcceptCluster(AliVCluster* clus, Bool_t acceptMC = kFALSE)           const;
-  BeamType                    GetBeamType()                                                             ;
+  Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE)       const;
+  Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kFALSE)       const;
+  Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kFALSE)       const;
+  BeamType                    GetBeamType()                                                                 ;
 
+  virtual Bool_t              FillHistograms()             { return kFALSE; }
   virtual Bool_t              RetrieveEventObjects();
   virtual Bool_t              Run()                        { return kTRUE ; }
-  virtual Bool_t              FillHistograms()             { return kFALSE; }
 
   EmcalAnaType                fAnaType;                    // analysis type
   Bool_t                      fInitialized;                // whether or not the task has been already initialized
