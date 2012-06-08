@@ -1,7 +1,7 @@
 #ifndef AliPicoTrack_H
 #define AliPicoTrack_H
 
-// $Id :$
+// $Id$
 
 #include "AliVTrack.h"
 #include <TMath.h>
