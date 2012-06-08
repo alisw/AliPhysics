@@ -26,6 +26,7 @@ AliJetRandomizerTask::AliJetRandomizerTask() :
   AliJetModelBaseTask("AliJetRandomizerTask")
 {
   // Default constructor.
+
   SetSuffix("Randomized");
 }
 
@@ -34,6 +35,7 @@ AliJetRandomizerTask::AliJetRandomizerTask(const char *name) :
   AliJetModelBaseTask(name)
 {
   // Standard constructor.
+
   SetSuffix("Randomized");
 }
 
