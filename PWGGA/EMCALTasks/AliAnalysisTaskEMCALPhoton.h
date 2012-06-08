@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskEMCALPhoton_cxx
-#define AliAnalysisTaskEMCALPhoton_cxx
+#ifndef AliAnalysisTaskEMCALPhoton_h
+#define AliAnalysisTaskEMCALPhoton_h
 
 // $Id$
 
@@ -25,52 +25,7 @@ class AliPhotonCellObj;
 
 class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskEMCALPhoton() : 
-  AliAnalysisTaskSE(), 
-  
-    fTrCuts(0),
-    fPrTrCuts(0),
-    fSelTracks(0),
-    fSelPrimTracks(0),
-    fPhotConvArray(0),
-    fMyClusts(0),
-    fMyAltClusts(0),
-    fMyCells(0),
-    fMyTracks(0),
-    fMyMcParts(0),
-    fHeader(0x0),
-    fCaloClusters(0),
-    fCaloClustersNew(0),
-    fEMCalCells(0),
-    fGeom(0x0),
-    fTimeResTOF(0),
-    fMipResponseTPC(0),
-    fGeoName("EMCAL_COMPLETEV1"),
-    fPeriod("LHC11d"),
-    fIsTrain(0),
-    fIsMC(0),
-    fIsGrid(0),
-    fClusThresh(2.0),
-
-    fClusterizer(0),
-    fCaloClustersName("EmcalClusterv2"),
-
-    fESD(0),
-    fMCEvent(0),
-    fStack(0x0),
-    
-    fOutputList(0),
-    fTree(0),
-    
-    fNV0sBefAndAftRerun(0),
-    fConversionVtxXY(0),
-    fInvMassV0(0),
-    fInvMassV0KF(0),
-    fInvMassV0SS(0),
-    fDedxPAll(0)
-  
-  
-  {}
+  AliAnalysisTaskEMCALPhoton();
   AliAnalysisTaskEMCALPhoton(const char *name);
   virtual ~AliAnalysisTaskEMCALPhoton() {}
 
