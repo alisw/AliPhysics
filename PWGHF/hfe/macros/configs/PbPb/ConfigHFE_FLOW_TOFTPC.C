@@ -1,4 +1,4 @@
-AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, Int_t tpcCls, Double_t tpcClsr,Int_t tpcClspid, Double_t tpcsharedfraction, Int_t itsCls, Double_t chi2peritscl, Int_t pixellayer, Double_t dcaxy, Double_t dcaz,  Double_t tofsig, Double_t tpcdedx0, Double_t tpcdedx1, Double_t tpcdedx2, Double_t tpcdedx3, Double_t tpcdedx4, Int_t vzero, Int_t debuglevel)
+AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, Int_t tpcCls, Double_t tpcClsr,Int_t tpcClspid, Double_t tpcsharedfraction, Int_t itsCls, Double_t chi2peritscl, Int_t pixellayer, Double_t dcaxy, Double_t dcaz,  Double_t tofsig, Double_t tpcdedx0, Double_t tpcdedx1, Double_t tpcdedx2, Double_t tpcdedx3, Double_t tpcdedx4,Double_t tpcdedx5, Double_t tpcdedx6, Double_t tpcdedx7, Int_t vzero, Int_t debuglevel,Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE)
 {
   //
   // HFE flow task 
@@ -19,8 +19,17 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, Int_t tpcCls, Double
   printf("TPC min sigma cut 2: %f\n",tpcdedx2*0.001);
   printf("TPC min sigma cut 3: %f\n",tpcdedx3*0.001);
   printf("TPC min sigma cut 4: %f\n",tpcdedx4*0.001);
+  printf("TPC min sigma cut 5: %f\n",tpcdedx5*0.001);
+  printf("TPC min sigma cut 6: %f\n",tpcdedx6*0.001);
+  printf("TPC min sigma cut 7: %f\n",tpcdedx7*0.001);
   printf("VZERO event plane %d\n",vzero);
   printf("Debug level %d\n",debuglevel);
+  printf("AlgorithmMA %d\n",(Int_t)algorithmMA);
+  printf("Mass constraint %d\n",(Int_t)massconstraint);
+
+  Int_t nameTPCcut = 50; // 50% at the moment
+  // can be adjusting looking at the value of the cut
+
   
   // Cut HFE
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCuts","HFE Standard Cuts");
@@ -30,11 +39,9 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, Int_t tpcCls, Double
   hfecuts->SetMinRatioTPCclusters(tpcClsr*0.01);
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetFractionOfSharedTPCClusters(tpcsharedfraction*0.01);
-      
   hfecuts->SetMinNClustersITS(itsCls);
   hfecuts->SetCutITSpixel(pixellayer);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
-  
   hfecuts->SetMaxImpactParam(dcaxy*0.01,dcaz*0.01);
       
   //hfecuts->UnsetVertexRequirement();
@@ -54,12 +61,12 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, Int_t tpcCls, Double
   hfeBackgroundCuts->SetPtRange(0.3,1e10);
 
   // Name
-  TString appendix(TString::Format("TPC%dTPCr%dTPCpid%dTPCShared%dITScl%dChi2perITS%dPixelLayer%dDCAr%dz%dTOFsig%dTPCmindedx0%dTPCmindedx1%dTPCmindedx2%dTPCmindedx3%dTPCmindedx4%dVZERO%dDebugLevel%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t)dcaxy,(Int_t)dcaz,(Int_t)tofsig,(Int_t)tpcdedx0,(Int_t)tpcdedx1,(Int_t)tpcdedx2,(Int_t)tpcdedx3,(Int_t)tpcdedx4,vzero,debuglevel));
+  TString appendix(TString::Format("TPC%dTPCr%dTPCpid%dTPCShared%dITScl%dChi2perITS%dPixelLayer%dDCAr%dz%dTOFsig%dTPCeff%dVZERO%dDebugLevel%dalgo%dm%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t)dcaxy,(Int_t)dcaz,(Int_t)tofsig,(Int_t)nameTPCcut,vzero,debuglevel,(Int_t)algorithmMA,(Int_t)massconstraint));
   printf("appendix %s\n", appendix.Data());
   
   // The task
   AliAnalysisTaskHFEFlow *task = new AliAnalysisTaskHFEFlow(Form("HFEFlowtask_%s", appendix.Data()));
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); 
+  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral); 
   task->SetDebugLevel(1);
   task->GetPIDQAManager()->SetHighResolutionHistos();
   task->SetHFECuts(hfecuts);
@@ -81,19 +88,23 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, Int_t tpcCls, Double
   pid->AddDetector("TOF", 0);
   pid->AddDetector("TPC", 1);
 
-  TString datatype=gSystem->Getenv("CONFIG_FILE");
-  
   if(!useMC) {
     
     Double_t params_centr_0_5[1];
     Double_t params_centr_5_10[1];
     Double_t params_centr_10_20[1];
     Double_t params_centr_20_30[1];
+    Double_t params_centr_30_40[1];
+    Double_t params_centr_40_50[1];
+    Double_t params_centr_50_60[1];
     Double_t params_centr_per[1];
     params_centr_0_5[0]=tpcdedx0*0.001;  // cut tuned for 0-10%
     params_centr_5_10[0]=tpcdedx1*0.001; // cut tuned for 0-10%
     params_centr_10_20[0]=tpcdedx2*0.001;
     params_centr_20_30[0]=tpcdedx3*0.001;
+    params_centr_30_40[0]=tpcdedx4*0.001;
+    params_centr_40_50[0]=tpcdedx5*0.001;
+    params_centr_50_60[0]=tpcdedx6*0.001;
     params_centr_per[0]=tpcdedx4*0.001;
     
     char *cutmodel;
@@ -101,27 +112,40 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, Int_t tpcCls, Double
     
     for(Int_t a=0;a<11;a++)
       {
-	if(a>3)  pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_per,3.0);
-	if(a==0) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_0_5,3.0);    //  0-5%
-	if(a==1) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_5_10,3.0);    //  5-10%
+	
+	if(a>6)  pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_per,3.0);      //  60-80%
+	if(a==0) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_0_5,3.0);      //  0-5%
+	if(a==1) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_5_10,3.0);     //  5-10%
 	if(a==2) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_10_20,3.0);    //  10-20%
 	if(a==3) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_20_30,3.0);    //  20-30%
+	if(a==4) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_30_40,3.0);    //  30-40%
+	if(a==5) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_40_50,3.0);    //  40-50%
+	if(a==6) pid->ConfigureTPCcentralityCut(a,cutmodel,params_centr_50_60,3.0);    //  50-60%
+      
       }
     
   }
 
   pid->ConfigureTOF(tofsig*0.1);
 
+  // Define PID TOF Only
+  AliHFEpid *pidTOFOnly = task->GetPIDTOFOnly();
+  if(useMC) pidTOFOnly->SetHasMCData(kTRUE);
+  pidTOFOnly->AddDetector("TOF", 0);
+  pidTOFOnly->ConfigureTOF(tofsig*0.1);
+
   // Define PID background
   AliHFEpid *pidbackground = task->GetPIDBackground();
   if(useMC) pidbackground->SetHasMCData(kTRUE);
-  pidbackground->AddDetector("TOF", 0);
+  //pidbackground->AddDetector("TOF", 0);
   pidbackground->AddDetector("TPC", 1);
-  pidbackground->ConfigureTOF(3.0);
-  pidbackground->ConfigureTPCasymmetric(0.1,20.,-2.0,5.0);
+  //pidbackground->ConfigureTOF(3.0);
+  pidbackground->ConfigureTPCasymmetric(0.0,9999.,-2.0,5.0);
   task->SetMaxopeningtheta(9999.0);
   task->SetMaxopeningphi(9999.0);
   task->SetMaxopening3D(0.5);
+  task->SetAlgorithmMA(algorithmMA);
+  task->SetMassConstraint(massconstraint);
   
   printf("*************************************\n");
   printf("Configuring standard Task:\n");
