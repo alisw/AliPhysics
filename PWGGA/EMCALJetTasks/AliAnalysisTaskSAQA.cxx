@@ -269,7 +269,9 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
 {
-  if(!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
+  // Retrieve event objects.
+
+  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
   if (strcmp(fTrgClusName,"") && fDoTrigger) {
@@ -285,6 +287,8 @@ Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSAQA::FillHistograms()
 {
+  // Fill histograms.
+
   fHistCentrality->Fill(fCent);
   if (fTracks)
     fHistTracksCent->Fill(fCent, fTracks->GetEntriesFast());
@@ -329,32 +333,30 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
 //________________________________________________________________________
 void AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
 {
+  // Do cell loop.
+
   AliVCaloCells *cells = InputEvent()->GetEMCALCells();
 
   if (!cells)
     return;
 
-  Int_t ncells = cells->GetNumberOfCells();
+  const Int_t ncells = cells->GetNumberOfCells();
 
   for (Int_t pos = 0; pos < ncells; pos++) {
-
     Float_t amp = cells->GetAmplitude(pos);
-
     fHistCellsEnergy->Fill(amp);
-
     sum += amp;
-
     if (amp < fCellEnergyCut)
       continue;
-
     sum_cut += amp;
-
   } 
 }
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskSAQA::DoClusterLoop()
 {
+  // Do cluster loop.
+
   if (!fCaloClusters)
     return 0;
 
@@ -383,7 +385,7 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
     TVector3 clusVec(pos);
     fHistClusPhiEta->Fill(clusVec.Eta(), clusVec.Phi());
 
-  } //cluster loop 
+  }
 
   return sum;
 }
@@ -391,6 +393,8 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
 //________________________________________________________________________
 Float_t AliAnalysisTaskSAQA::DoTrackLoop()
 {
+  // Do track loop.
+
   if (!fTracks)
     return 0;
 
@@ -402,11 +406,11 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
   if (fCaloClusters)
     nclusters = fCaloClusters->GetEntriesFast();
 
-  for(Int_t i = 0; i < ntracks; i++) {
+  for (Int_t i = 0; i < ntracks; i++) {
 
     AliVParticle* track = dynamic_cast<AliVParticle*>(fTracks->At(i)); // pointer to reconstructed to track  
 
-    if(!track) {
+    if (!track) {
       AliError(Form("Could not retrieve track %d",i)); 
       continue; 
     }
@@ -436,7 +440,6 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
       continue;
 
     fHistTrEmcPhiEta->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());
-
   }
   
   return sum;
@@ -445,6 +448,8 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
 //________________________________________________________________________
 void AliAnalysisTaskSAQA::DoJetLoop()
 {
+  // Do jet loop.
+
   if (!fJets)
     return;
 
@@ -478,6 +483,8 @@ void AliAnalysisTaskSAQA::DoJetLoop()
 //________________________________________________________________________
 Float_t AliAnalysisTaskSAQA::DoTriggerClusLoop()
 {
+  // Do trigger cluster loop.
+
   if (!fTrgClusters)
     return 0;
 
@@ -503,6 +510,8 @@ Float_t AliAnalysisTaskSAQA::DoTriggerClusLoop()
 //________________________________________________________________________
 void AliAnalysisTaskSAQA::DoTriggerPrimitives(Int_t &maxL1amp, Int_t &maxL1thr)
 {
+  // Do trigger primitives loop.
+
   AliVCaloTrigger *triggers = InputEvent()->GetCaloTrigger("EMCAL");
 
   if (!triggers || triggers->GetEntries() == 0)
