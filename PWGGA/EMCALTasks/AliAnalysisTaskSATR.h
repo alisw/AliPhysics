@@ -1,10 +1,7 @@
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
-
 #ifndef ALIANALYSISTASKSATR_H
 #define ALIANALYSISTASKSATR_H
+
+// $Id$
 
 class TH1F;
 class TH2F;
