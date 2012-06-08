@@ -153,7 +153,6 @@ void AliEmcalJetTask::UserExec(Option_t *)
       return;
     }
   }
-
   
   // get centrality 
   Double_t cent = 99; 
@@ -212,7 +211,8 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
 
       if (t->Pt() < fMinJetTrackPt) 
         continue;
-      fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  // offset of 100 for consistency with cluster ids
+      // offset of 100 for consistency with cluster ids
+      fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  
     }
   }
 
@@ -230,7 +230,8 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
       c->GetMomentum(nPart, vertex);
       if (nPart.Pt() < fMinJetClusPt) 
         continue;
-      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus - 100);  // offset of 100 to skip ghost particles uid = -1
+      // offset of 100 to skip ghost particles uid = -1
+      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus - 100);  
     }
   }
 
@@ -279,7 +280,7 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
             (geta > geom->GetArm1EtaMin()) && (geta < geom->GetArm1EtaMax()))
           ++gemc;
         continue;
-      }	else if (uid > 0) {
+      }	else if (uid > 0) { // track constituent
 	Int_t tid = uid - 100;
         AliVParticle *t = static_cast<AliVParticle*>(tracks->At(tid));
         if (t) {
@@ -300,7 +301,7 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
           jet->AddTrackAt(tid, nt);
           ++nt;
         }
-      } else {
+      } else { // cluster constituent
 	Int_t cid = -uid - 100;
 	AliVCluster *c = static_cast<AliVCluster*>(clus->At(cid));
 	if (c) {
