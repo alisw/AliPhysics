@@ -28,6 +28,9 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fTracksOut(0)
 {
   // Constructor.
+
+  fAODfilterBits[0] = 0;
+  fAODfilterBits[1] = 0;
 }
 
 //________________________________________________________________________
@@ -42,6 +45,8 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
 {
   // Constructor.
 
+  fAODfilterBits[0] = 0;
+  fAODfilterBits[1] = 0;
   fBranchNames = "ESD:AliESDHeader.,AliESDRun.,SPDVertex.,Tracks";
 }
 
