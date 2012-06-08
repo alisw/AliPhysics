@@ -445,6 +445,7 @@ template <typename T> void AliAODTrack::SetP(const T *p, const Bool_t cartesian)
   }
 }
 
+/*
 //______________________________________________________________________________
 template <typename T> void AliAODTrack::SetPosition(const T *x, const Bool_t dca) 
 {
@@ -472,7 +473,7 @@ template <typename T> void AliAODTrack::SetPosition(const T *x, const Bool_t dca
     fPosition[2] = -999.;
   }
 }
-
+*/
 //______________________________________________________________________________
 void AliAODTrack::SetDCA(Double_t d, Double_t z) 
 {

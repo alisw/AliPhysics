@@ -435,6 +435,35 @@ inline Int_t AliAODTrack::GetITSNcls() const
   return n;
 }
 
-template<> void AliAODTrack::SetPosition(const double *, Bool_t);
+//______________________________________________________________________________
+template <typename T> 
+void AliAODTrack::SetPosition(const T *x, const Bool_t dca) 
+{
+  // set the position
+
+  if (x) {
+    if (!dca) {
+      ResetBit(kIsDCA);
+
+      fPosition[0] = x[0];
+      fPosition[1] = x[1];
+      fPosition[2] = x[2];
+    } else {
+      SetBit(kIsDCA);
+      // don't know any better yet
+      fPosition[0] = -999.;
+      fPosition[1] = -999.;
+      fPosition[2] = -999.;
+    }
+  } else {
+    ResetBit(kIsDCA);
+
+    fPosition[0] = -999.;
+    fPosition[1] = -999.;
+    fPosition[2] = -999.;
+  }
+}
+
+//template<> void AliAODTrack::SetPosition(const double *, Bool_t);
 
 #endif
