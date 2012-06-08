@@ -75,7 +75,6 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistPartvsDetecPt(0)
 {
   // Standard constructor.
-
 }
 
 //________________________________________________________________________
@@ -184,7 +183,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
   DoJetLoop(fJets, fMCJets);
   DoJetLoop(fMCJets, fJets);
 
-  Int_t nJets = fJets->GetEntriesFast();
+  const Int_t nJets = fJets->GetEntriesFast();
 
   for (Int_t i = 0; i < nJets; i++) {
 
@@ -203,7 +202,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
     if (jet->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet->MaxClusterPt() < fPtBiasJetClus))
 	continue;
 
-    if (jet->ClosestJet() && jet->ClosestJet()->ClosestJet() == jet && jet->ClosestJetDistance() < fMaxDistance) {    // Matched jet found
+    if (jet->ClosestJet() && jet->ClosestJet()->ClosestJet() == jet && 
+        jet->ClosestJetDistance() < fMaxDistance) {    // Matched jet found
       jet->SetMatchedToClosest();
       jet->ClosestJet()->SetMatchedToClosest();
       fHistClosestDistance->Fill(jet->ClosestJetDistance());
@@ -239,7 +239,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
     }
   }
 
- Int_t nMCJets = fMCJets->GetEntriesFast();
+ const Int_t nMCJets = fMCJets->GetEntriesFast();
 
   for (Int_t i = 0; i < nMCJets; i++) {
 
@@ -295,7 +295,8 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2)
     if (!AcceptJet(jet1))
       continue;
     
-    if (jet1->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet1->IsMC() || jet1->MaxClusterPt() < fPtBiasJetClus))
+    if (jet1->MaxTrackPt() < fPtBiasJetTrack && 
+        (fAnaType == kTPC || jet1->IsMC() || jet1->MaxClusterPt() < fPtBiasJetClus))
 	continue;
 
     for (Int_t j = 0; j < nJets2; j++) {
@@ -310,7 +311,8 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2)
       if (!AcceptJet(jet2))
 	continue;
       
-      if (jet2->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet2->IsMC() || jet2->MaxClusterPt() < fPtBiasJetClus))
+      if (jet2->MaxTrackPt() < fPtBiasJetTrack && 
+          (fAnaType == kTPC || jet2->IsMC() || jet2->MaxClusterPt() < fPtBiasJetClus))
 	continue;
       
       Double_t deta = jet2->Eta() - jet1->Eta();
@@ -333,7 +335,7 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
 {
   // Retrieve event objects.
 
-  if(!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
+  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
   
   if (!fMCJetsName.IsNull()) {
