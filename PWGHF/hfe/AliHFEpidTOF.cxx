@@ -45,7 +45,8 @@ AliHFEpidTOF::AliHFEpidTOF():
   // Constructor
   //
   
-  memset(fSigmaBordersTOF, 0, sizeof(Float_t) * 2);
+  memset(fSigmaBordersTOFLower, 0, sizeof(Float_t) * 12);
+  memset(fSigmaBordersTOFUpper, 0, sizeof(Float_t) * 12);
 } 
 
 //___________________________________________________________________
@@ -56,8 +57,8 @@ AliHFEpidTOF::AliHFEpidTOF(const Char_t *name):
   //
   // Constructor
   //
-
-  memset(fSigmaBordersTOF, 0, sizeof(Float_t) * 2);
+  memset(fSigmaBordersTOFLower, 0, sizeof(Float_t) * 12);
+  memset(fSigmaBordersTOFUpper, 0, sizeof(Float_t) * 12);
 
 }
 
@@ -98,7 +99,8 @@ void AliHFEpidTOF::Copy(TObject &ref) const {
   AliHFEpidTOF &target = dynamic_cast<AliHFEpidTOF &>(ref);
 
   target.fNsigmaTOF = fNsigmaTOF;
-  memcpy(target.fSigmaBordersTOF, fSigmaBordersTOF, sizeof(Float_t) * 2);
+  memcpy(target.fSigmaBordersTOFLower, fSigmaBordersTOFLower, sizeof(Float_t) * 12);
+  memcpy(target.fSigmaBordersTOFUpper, fSigmaBordersTOFUpper, sizeof(Float_t) * 12);
 
   AliHFEpidBase::Copy(ref);
 }
@@ -132,8 +134,10 @@ Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   AliDebug(2, Form("Number of sigmas in TOF: %f", sigEle));
   Int_t pdg = 0;
   if(TestBit(kSigmaBand)){
-    // Lower and Upper cut separate
-    if(sigEle > fSigmaBordersTOF[0] && sigEle < fSigmaBordersTOF[1]) pdg = 11;
+    Int_t centrality = track->IsPbPb() ? track->GetCentrality() + 1 : 0;
+    AliDebug(2, Form("Centrality: %d\n", centrality));
+    if(centrality > 11) return kFALSE;
+    if(sigEle > fSigmaBordersTOFLower[centrality] && sigEle < fSigmaBordersTOFUpper[centrality]) pdg = 11;
   } else {
     // Fixed nsigma cut
     if(TMath::Abs(sigEle) < fNsigmaTOF) pdg = 11;
@@ -142,5 +146,20 @@ Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   if(pdg == 11 && pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTOFpid, AliHFEdetPIDqa::kAfterPID);
  
   return pdg;
+}
+//___________________________________________________________________
+void AliHFEpidTOF::SetTOFnSigmaBandCentrality(Float_t lower, Float_t upper, Int_t centralityBin)
+{
+  //
+  // Lower and higher cut as function of centrality
+  //
+
+  if(centralityBin < 11) {
+    fSigmaBordersTOFLower[centralityBin+1] = lower;
+    fSigmaBordersTOFUpper[centralityBin+1] = upper;
+  }
+
+  SetBit(kSigmaBand, kTRUE);
+
 }
 

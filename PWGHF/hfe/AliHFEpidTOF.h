@@ -30,7 +30,8 @@ class AliHFEpidTOF : public AliHFEpidBase{
     virtual Int_t     IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *piqa) const;
   
     void SetTOFnSigma(Float_t nSigma) { fNsigmaTOF = nSigma; };
-    void SetTOFnSigmaBand(Float_t lower, Float_t upper) { fSigmaBordersTOF[0] = lower; fSigmaBordersTOF[1] = upper; SetBit(kSigmaBand, kTRUE); }
+    void SetTOFnSigmaBand(Float_t lower, Float_t upper) { fSigmaBordersTOFLower[0] = lower; fSigmaBordersTOFUpper[0] = upper; SetBit(kSigmaBand, kTRUE); }
+    void SetTOFnSigmaBandCentrality(Float_t lower, Float_t upper, Int_t centralityBin); 
 
   protected:
     void Copy(TObject &ref) const;
@@ -39,7 +40,8 @@ class AliHFEpidTOF : public AliHFEpidBase{
       kSigmaBand = BIT(15)
     };
     Float_t    fNsigmaTOF;          // TOF sigma band
-    Float_t    fSigmaBordersTOF[2]; // Min. and Max TOF sigma cut
+    Float_t    fSigmaBordersTOFLower[12]; // Min.  sigma cut
+    Float_t    fSigmaBordersTOFUpper[12]; // Max.  sigma cut
 
     ClassDef(AliHFEpidTOF, 1)
 };

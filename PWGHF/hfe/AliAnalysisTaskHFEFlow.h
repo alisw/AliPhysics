@@ -54,10 +54,10 @@ public:
     kElectronfromconversionboth = 1,
     kElectronfrompi0 = 2,
     kElectronfrompi0both = 3,
-    kElectronfromC = 4,
-    kElectronfromB = 5,
-    kElectronfrometa = 6,
-    kElectronfrometaboth = 7,
+    kElectronfrometa = 4,
+    kElectronfrometaboth = 5,
+    kElectronfromC = 6,
+    kElectronfromB = 7,
     kElectronfromother = 8,
     kNoElectron = 9
   } FlowSource_t;
@@ -86,6 +86,7 @@ public:
   void SetFlags(ULong_t flags)          { fFlags = flags; }
   
   AliHFEpid *GetPID() const { return fPID; }
+  AliHFEpid *GetPIDTOFOnly() const { return fPIDTOFOnly; }
   AliHFEpidQAmanager *GetPIDQAManager() const { return fPIDqa; }
   AliHFEpid *GetPIDBackground() const { return fPIDBackground; }
   AliHFEpidQAmanager *GetPIDBackgroundQAManager() const { return fPIDBackgroundqa; }
@@ -183,6 +184,7 @@ private:
   // Cuts for HFE
   AliHFEcuts *fHFECuts;           //! HFE cuts
   AliHFEpid  *fPID;               //! PID cuts 
+  AliHFEpid  *fPIDTOFOnly;        //! PID cuts TOF only
   AliHFEpidQAmanager *fPIDqa;     //! QA Manager
   AliFlowEvent *fflowEvent;       //! Flow event 
 
@@ -243,6 +245,7 @@ private:
 
   // G Maps delta phi as function of deltaphi, centrality, pt
   THnSparseF *fDeltaPhiMaps; //! Delta phi
+  THnSparseF *fDeltaPhiMapsContamination; //! Delta phi for contamination substraction
   // H Maps cos phi : cos, centrality, pt
   THnSparseF *fCosPhiMaps;         //! Cos
   TProfile2D *fProfileCosPhiMaps;  //! Profile Cos

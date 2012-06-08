@@ -227,10 +227,18 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
     pdg = CutSigmaModel(&tpctrack) ? 11 : 0;
   } else { 
     // Perform Asymmetric n-sigma cut if required, else perform symmetric TPC sigma cut
-    Float_t p = 0.;
-    if(HasAsymmetricSigmaCut() && (p = rectrack->P()) >= fPAsigCut[0] && p <= fPAsigCut[1]){ 
-      if(nsigma >= fNAsigmaTPC[0] && nsigma <= fNAsigmaTPC[1]) pdg = 11; 
-    } else {
+    Float_t p = rectrack->P();
+    if(HasAsymmetricSigmaCut()) {
+      
+      //printf("p %f, fPAsigCut[0] %f, fPAsigCut[1] %f\n",p,fPAsigCut[0],fPAsigCut[1]);
+      if(p >= fPAsigCut[0] && p <= fPAsigCut[1]) { 
+	if(nsigma >= fNAsigmaTPC[0] && nsigma <= fNAsigmaTPC[1]) pdg = 11; 
+	else pdg = 0;
+      }
+      else pdg = 0;
+    
+    }
+    else {
       if(TMath::Abs(nsigma) < fNsigmaTPC ) pdg = 11;
     }
   }
