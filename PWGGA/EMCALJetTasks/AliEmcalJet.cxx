@@ -34,7 +34,6 @@ AliEmcalJet::AliEmcalJet() :
   fClosestJets[1] = 0; 
   fClosestJetsDist[0] = 999; 
   fClosestJetsDist[1] = 999; 
-  fMatched = 2; 
 }
 
 //__________________________________________________________________________________________________
@@ -69,7 +68,6 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fClosestJets[1] = 0;
   fClosestJetsDist[0] = 999; 
   fClosestJetsDist[1] = 999;
-  fMatched = 2; 
 }
 
 //_________________________________________________________________________________________________
@@ -94,14 +92,13 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
 {
   // Constructor.
 
- if (fPhi<0.) 
-   fPhi += TMath::TwoPi();
+  if (fPhi<0.) 
+    fPhi += TMath::TwoPi();
 
   fClosestJets[0] = 0; 
   fClosestJets[1] = 0;
   fClosestJetsDist[0] = 999; 
   fClosestJetsDist[1] = 999;
-  fMatched = 2; 
 }
 
 //_________________________________________________________________________________________________
@@ -121,9 +118,15 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fNn(jet.fNn),
   fNch(jet.fNch),
   fClusterIDs(jet.fClusterIDs), 
-  fTrackIDs(jet.fTrackIDs)
+  fTrackIDs(jet.fTrackIDs),
+  fMatched(jet.fMatched) 
 {
   // Copy constructor.
+
+  fClosestJets[0]     = jet.fClosestJets[0]; 
+  fClosestJets[1]     = jet.fClosestJets[1]; 
+  fClosestJetsDist[0] = jet.fClosestJetsDist[0];  
+  fClosestJetsDist[1] = jet.fClosestJetsDist[1]; 
 }
 
 //_________________________________________________________________________________________________
@@ -133,21 +136,26 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
 
   if (this!=&jet) {
     AliVParticle::operator=(jet);
-    fPt           = jet.fPt;
-    fEta          = jet.fEta;
-    fPhi          = jet.fPhi;
-    fM            = jet.fM; 
-    fNEF          = jet.fNEF;
-    fArea         = jet.fArea; 
-    fAreaEmc      = jet.fAreaEmc; 
-    fAxisInEmcal  = jet.fAxisInEmcal; 
-    fMaxCPt       = jet.fMaxCPt; 
-    fMaxNPt       = jet.fMaxNPt;
-    fMCPt         = jet.fMCPt;
-    fNn           = jet.fNn;
-    fNch          = jet.fNch;
-    fClusterIDs   = jet.fClusterIDs;
-    fTrackIDs     = jet.fTrackIDs;
+    fPt                 = jet.fPt;
+    fEta                = jet.fEta;
+    fPhi                = jet.fPhi;
+    fM                  = jet.fM; 
+    fNEF                = jet.fNEF;
+    fArea               = jet.fArea; 
+    fAreaEmc            = jet.fAreaEmc; 
+    fAxisInEmcal        = jet.fAxisInEmcal; 
+    fMaxCPt             = jet.fMaxCPt; 
+    fMaxNPt             = jet.fMaxNPt;
+    fMCPt               = jet.fMCPt;
+    fNn                 = jet.fNn;
+    fNch                = jet.fNch;
+    fClusterIDs         = jet.fClusterIDs;
+    fTrackIDs           = jet.fTrackIDs;
+    fClosestJets[0]     = jet.fClosestJets[0]; 
+    fClosestJets[1]     = jet.fClosestJets[1]; 
+    fClosestJetsDist[0] = jet.fClosestJetsDist[0];  
+    fClosestJetsDist[1] = jet.fClosestJetsDist[1]; 
+    fMatched            = jet.fMatched;
   }
 
   return *this;
