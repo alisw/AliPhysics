@@ -90,28 +90,8 @@ void AliPicoTrack::GetEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff
   if (!t->IsEMCAL())
     return;
 
-  const AliExternalTrackParam *outp = t->GetOuterParam();
-  Double_t veta = 999;
-  Double_t vphi = 999;
-  if (outp) {
-    Double_t trkPos[3] = {0.,0.,0.};
-    if (!outp->GetXYZ(trkPos)) 
-      return;
-    TVector3 vec(trkPos[0],trkPos[1],trkPos[2]);
-    veta = vec.Eta();
-    vphi = vec.Phi();
-  } else {
-    AliPicoTrack *ptrack = dynamic_cast<AliPicoTrack*>(t);
-    if (ptrack) {
-      veta = ptrack->GetEtaEmc();
-      vphi = ptrack->GetPhiEmc();
-    }
-  }
-
-  if (0) {
-    if (TMath::Abs(veta)>0.75 || (vphi<70*TMath::DegToRad()) || (vphi>190*TMath::DegToRad()))
-      return;
-  }
+  Double_t veta = t->GetTrackEtaOnEMCal();
+  Double_t vphi = t->GetTrackPhiOnEMCal();
 
   Float_t pos[3] = {0};
   v->GetPosition(pos);  
