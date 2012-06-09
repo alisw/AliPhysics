@@ -107,7 +107,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 
     if (track->Pt() > fMaxTrackPt)
       continue;
-
+    Bool_t isEmc = kFALSE;
     Int_t label = -1;
     if (esdMode) {
       if (fESDtrackCuts) {
@@ -116,6 +116,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
           continue;
       }
       label = track->GetLabel();
+      isEmc = track->IsEMCAL();
     } else {
       AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
       if (aodtrack->TestFilterBit(fAODfilterBits[0]))
@@ -124,8 +125,14 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	label = 3;
       else /*not a good track*/
         continue;
+
+      if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
+	  track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() && 
+	  track->GetTrackPhiOnEMCal() < 190 * TMath::DegToRad())
+	isEmc = kTRUE;
     }
 
+    
     AliPicoTrack *picotrack = new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
                                                                      track->Eta(), 
                                                                      track->Phi(), 
@@ -133,10 +140,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
                                                                      label, 
                                                                      track->GetTrackEtaOnEMCal(), 
                                                                      track->GetTrackPhiOnEMCal(), 
-                                                                     track->IsEMCAL());
-    if (track->IsEMCAL()) {
-      picotrack->SetEMCALcluster(track->GetEMCALcluster());
-    }
+                                                                     isEmc);
     ++nacc;
   }
 }
