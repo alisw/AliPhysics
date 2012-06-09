@@ -673,8 +673,8 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
   AliVTrack * track = 0;
   Double_t p[3];
 
-  if(nMatches > 0){
-    
+  if(nMatches > 0)
+  {
     //In case of ESDs, by default without match one entry with negative index, no match, reject.
     if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
     {    
@@ -682,15 +682,17 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
       if(iESDtrack >= 0) track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
       else return kFALSE;
       
-      if (!track){
-        printf("AliCaloPID::IsTrackMatched() - Null matched track in ESD when index is OK!\n");
+      if (!track)
+      {
+        if(fDebug > 0) printf("AliCaloPID::IsTrackMatched() - Null matched track in ESD when index is OK!\n");
         return kFALSE;
       }
     }      
     else { // AOD
       track = dynamic_cast<AliVTrack*> (cluster->GetTrackMatched(0));
-      if (!track){
-        printf("AliCaloPID::IsTrackMatched() - Null matched track in AOD!\n");
+      if (!track)
+      {
+        if(fDebug > 0) printf("AliCaloPID::IsTrackMatched() - Null matched track in AOD!\n");
         return kFALSE;
       }
     }
@@ -699,13 +701,14 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
     Float_t dR  = cluster->GetTrackDx();
     
     // if track matching was recalculated
-    if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
+    if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn())
+    {
       dR = 2000., dZ = 2000.;
       cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
     }
         
-    if(cluster->IsPHOS()) {
-      
+    if(cluster->IsPHOS()) 
+    {
       track->GetPxPyPz(p) ;
       TLorentzVector trackmom(p[0],p[1],p[2],0);
       Int_t charge = track->Charge();
