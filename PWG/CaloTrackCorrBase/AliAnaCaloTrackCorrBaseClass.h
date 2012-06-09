@@ -81,6 +81,7 @@ public:
 	
   //Event plane
   virtual AliEventplane* GetEventPlane()                   const { return fReader->GetEventPlane()       ; }           
+  virtual Double_t       GetEventPlaneAngle()              const { return fReader->GetEventPlaneAngle()  ; }           
   virtual TString        GetEventPlaneMethod()             const { return fReader->GetEventPlaneMethod() ; }
   
   //AOD branch
@@ -169,6 +170,12 @@ public:
   virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} //cut on vertex position  
   virtual Int_t          GetMaxMulti()                     const { return fMaxMulti  ; }  
   virtual Int_t          GetMinMulti()                     const { return fMinMulti  ; }  
+    
+  virtual Int_t          GetEventCentralityBin();
+  virtual Int_t          GetEventRPBin();
+  virtual Int_t          GetEventVzBin();
+  virtual Int_t          GetEventMixBin();
+  virtual Int_t          GetEventMixBin(const Int_t iCen, const Int_t iVz, const Int_t iRP);
   
   virtual void           SetMultiBin(Int_t n=1)                  { fMultiBin  = n ;} //number of bins in Multiplicity  
   virtual void           SetNZvertBin(Int_t n=1)                 { fNZvertBin = n ;} //number of bins for vertex position
@@ -177,6 +184,15 @@ public:
   virtual void           SetNMaxEvMix(Int_t n=20)                { fNmaxMixEv = n ;} //maximal number of events for mixing
   virtual void           SetMultiplicity(Int_t multimin, Int_t multimax) {fMinMulti = multimin ; fMaxMulti = multimax ; }
   
+  virtual void           SwitchOnTrackMultBins()                 { fUseTrackMultBins = kTRUE  ; }
+  virtual void           SwitchOffTrackMultBins()                { fUseTrackMultBins = kFALSE ; }
+  
+  virtual void           SwitchOnOwnMix()                        { fDoOwnMix         = kTRUE  ; }
+  virtual void           SwitchOffOwnMix()                       { fDoOwnMix         = kFALSE ; }
+  
+  virtual Bool_t         DoOwnMix()                              { return fDoOwnMix           ; }
+  virtual Bool_t         UseTrackMultBins()                      { return fUseTrackMultBins   ; }
+
   //Mixed event  
   virtual Int_t           CheckMixedEventVertex(const Int_t caloLabel, const Int_t trackLabel) ;
   virtual AliMixedEvent * GetMixedEvent()                        { return GetReader()->GetMixedEvent()  ; } 
@@ -275,6 +291,8 @@ private:
   Int_t                      fNrpBin ;	           // Number of bins in event container for reaction plain
   Int_t                      fNCentrBin ;	         // Number of bins in event container for centrality
   Int_t                      fNmaxMixEv ;	         // Maximal number of events stored in buffer for mixing
+  Bool_t                     fDoOwnMix;            // Do combinatorial background not the one provided by the frame
+  Bool_t                     fUseTrackMultBins;    // Use track multiplicity and not centrality bins in mixing
   Int_t                      fMaxMulti ;           // Maximum multiplicity of particles in the analysis
   Int_t                      fMinMulti ;           // Maximum multiplicity of particles in the analysis
   Bool_t                     fUseSelectEvent ;     // Select events based on multiplicity and vertex cuts
@@ -302,7 +320,7 @@ private:
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy ctor
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrBaseClass,20)
+  ClassDef(AliAnaCaloTrackCorrBaseClass,21)
 } ;
 
 

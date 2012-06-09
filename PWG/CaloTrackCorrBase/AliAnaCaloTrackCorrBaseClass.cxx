@@ -51,7 +51,9 @@ fCheckCaloPID(0),             fRecalculateCaloPID(0),
 fMinPt(0),                    fMaxPt(0),                   fPairTimeCut(200), 
 fMultiBin(0),                 fNZvertBin(0),
 fNrpBin(0),                   fNCentrBin(0),
-fNmaxMixEv(0),                fMaxMulti(0),                fMinMulti(0),
+fNmaxMixEv(0),                fDoOwnMix(0),                   
+fUseTrackMultBins(0),
+fMaxMulti(0),                 fMinMulti(0),
 fUseSelectEvent(kFALSE),      fMakePlots(kFALSE),
 fInputAODBranch(0x0),         fInputAODName(""),
 fOutputAODBranch(0x0),        fNewAOD(kFALSE),
@@ -399,6 +401,144 @@ AliGenEventHeader *  AliAnaCaloTrackCorrBaseClass::GetMCGenEventHeader() const
   //Get GenEventHeader pointer from reader
   
   return fReader->GetGenEventHeader(); 
+  
+}
+
+
+//___________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin()
+{
+  // Define the centrality bin for mixing
+  // In pp collisions analysis hardcoded track multiplicities
+  
+  Int_t curCentrBin = 0;
+  
+  if(fUseTrackMultBins) // pp collisions
+  { // Track multiplicity bins
+    //curCentrBin = (GetTrackMultiplicity()-1)/5; 
+    //if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
+    Int_t trackMult = GetReader()->GetTrackMultiplicity();
+    if(trackMult<=5)
+      curCentrBin=8;
+    else if(trackMult<=10)
+      curCentrBin=7;
+    else if(trackMult<=15)
+      curCentrBin=6;
+    else if(trackMult<=20)
+      curCentrBin=5;
+    else if(trackMult<=30)
+      curCentrBin=4;
+    else if(trackMult<=40)
+      curCentrBin=3;
+    else if(trackMult<=55)
+      curCentrBin=2;
+    else if(trackMult<=70)
+      curCentrBin=1 ;
+    else curCentrBin=0 ;        
+  }
+  else // Set centrality based on centrality task, PbPb collisions
+  {
+    Float_t minCent = GetReader()->GetCentralityBin(0);
+    Float_t maxCent = GetReader()->GetCentralityBin(1);
+    
+    if((minCent< 0 && maxCent< 0) || minCent>=maxCent)
+    {
+      curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt(); 
+    }
+    else
+    {
+      curCentrBin = (Int_t)(GetEventCentrality()-minCent) * GetNCentrBin() / (maxCent-minCent); 
+      if(curCentrBin==GetNCentrBin()) curCentrBin = GetNCentrBin()-1;
+    }  
+    
+    if(GetDebug() > 0 )
+      printf("AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin() - %d, centrality %d, n bins %d, max bin from centrality %d\n",
+             curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt());        
+  }  
+  
+  return curCentrBin;
+  
+}
+
+//_________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventRPBin()
+{
+  //Reaction plane bin
+  
+  Int_t curRPBin  = 0 ;
+  
+  if(GetNRPBin() > 1 && GetEventPlane())
+  {
+    Float_t epAngle = GetEventPlaneAngle();//->GetEventplane(GetEventPlaneMethod(),fReader->GetInputEvent());
+    
+    if(epAngle < 0 || epAngle >TMath::Pi())
+    { 
+      printf("AliAnaCaloTrackCorrBaseClass::GetEventRPBin() - Wrong event plane angle : %f \n",epAngle);
+      return -1;
+    }
+    
+    curRPBin = TMath::Nint(epAngle*(GetNRPBin()-1)/TMath::Pi());
+    if(curRPBin >= GetNRPBin()) printf("RP Bin %d out of range %d\n",curRPBin,GetNRPBin());
+    
+    if(GetDebug() > 0 )
+      printf("AliAnaCaloTrackCorrBaseClass::GetEventRPBin() - %d, bin float %f, angle %f, n bins %d\n", 
+             curRPBin,epAngle*(GetNRPBin()-1)/TMath::Pi(),epAngle,GetNRPBin());
+  }  
+  
+  return curRPBin ;
+  
+}
+
+//_________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventVzBin()
+{
+  // Return Vz bin, divide vertex in GetNZvertBin() bins, 
+  // depending on the vertex cut
+  
+  Double_t v[3] = {0,0,0}; //vertex 
+  GetReader()->GetVertex(v);
+  
+  Int_t curZvertBin = (Int_t)(0.5*GetNZvertBin()*(v[2]+GetZvertexCut())/GetZvertexCut());
+  
+  if(GetDebug() > 0 )
+    printf("AliAnaCaloTrackCorrBaseClass::GetEventVzBin() - %d, vz %2.2f, n bins %d \n",
+           curZvertBin, v[2], GetNZvertBin()); 
+  
+  return curZvertBin;
+}
+
+//____________________________________________________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin(const Int_t iCen, const Int_t iVz, const Int_t iRP)
+{
+  // Event mixing bin, combination of vz, centrality and reaction plane bins
+  
+  if(iCen<0 || iVz < 0 || iRP < 0)
+    return -1;
+  else
+    return iCen*GetNZvertBin()*GetNRPBin()+iVz*GetNRPBin()+iRP;
+}
+
+//__________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetEventMixBin()
+{
+  // Event mixing bin, combination of vz, centrality and reaction plane bins
+  
+  //Get vertex z bin
+  Int_t iVz =  GetEventVzBin();
+  
+  // centrality (PbPb) or tracks multiplicity (pp) bin
+  Int_t iCen = GetEventCentralityBin();
+  
+  // reaction plane bin (PbPb)
+  Int_t iRP = GetEventRPBin();  
+  
+  Int_t eventBin = GetEventMixBin(iCen, iVz, iRP);
+  
+  if(GetDebug() > 0)
+    printf("AliAnaCaloTrackCorrBaseClass::GetEventMixBin() - Bins : cent %d, vz %d, RP %d, event %d/%d\n",
+           iCen,iVz, iRP, eventBin, GetNZvertBin()*GetNRPBin()*GetNCentrBin());
+  
+  return eventBin;
   
 }
 
