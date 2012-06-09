@@ -207,6 +207,9 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
     Et += nPart.Pt();
   }
   
+  if (ptTPC == 0) 
+    return;
+
   const Double_t scalecalc = ((Et + ptEMCAL) / EmcalArea) * (TpcArea / ptTPC);
 
   const Double_t scale     = GetScaleFactor(cent);
