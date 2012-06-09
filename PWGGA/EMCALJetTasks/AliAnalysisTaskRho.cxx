@@ -231,13 +231,13 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
 
   tracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
   if (!tracks) {
-  AliError(Form("Pointer to tracks %s == 0", fTracksName.Data() ));
-   return;
+    AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data() ));
+    return;
   }
     
   jets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
   if (!jets) {
-    AliError(Form("Pointer to jets %s == 0", fJetsName.Data() ));
+    AliError(Form("%s: Pointer to jets %s == 0", GetName(), fJetsName.Data() ));
     return;
   }
   
