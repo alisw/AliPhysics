@@ -652,7 +652,8 @@ Bool_t AliHadCorrTask::Run()
       continue;
 
     Double_t energyclus = 0;
-    fHistEbefore->Fill(fCent, cluster->E());
+    if (fCreateHisto)
+      fHistEbefore->Fill(fCent, cluster->E());
   
     // apply correction / subtraction
     if (fHadCorr > 0) {
@@ -797,6 +798,19 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 
   Double_t Esub = hadCorr * totalTrkP;
 
+  Double_t clusEexcl = fEexclCell * cNcells;
+
+  if (energyclus < clusEexcl) 
+    clusEexcl = energyclus;
+	
+  if (Esub > energyclus) 
+    Esub = energyclus;
+	
+  //applying Peter's proposed algorithm
+  //Never subtract the full energy of the cluster 
+  if ((energyclus - Esub) < clusEexcl) 
+    Esub = (energyclus - clusEexcl);
+
   Double_t EoP = energyclus / totalTrkP;
 
   // Plot some histograms if switched on
@@ -834,19 +848,6 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
       fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
     } 
   }
- 
-  Double_t clusEexcl = fEexclCell * cNcells;
-
-  if (energyclus < clusEexcl) 
-    clusEexcl = energyclus;
-	
-  if (Esub > energyclus) 
-    Esub = energyclus;
-	
-  //applying Peter's proposed algorithm
-  //Never subtract the full energy of the cluster 
-  if ((energyclus - Esub) < clusEexcl) 
-    Esub = (energyclus - clusEexcl);
 
   //apply the correction
   energyclus -= Esub;
