@@ -99,6 +99,13 @@ void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
 	GetRawsData(kHGqualMod3,itc)->Divide( GetRawsData(kHGmod3,itc) );
       if(GetRawsData(kHGqualMod4,itc) && GetRawsData(kHGmod4,itc))
 	GetRawsData(kHGqualMod4,itc)->Divide( GetRawsData(kHGmod4,itc) );
+      if(GetRawsData(kNRCUHG,itc)) {
+	Int_t norm = GetEvCountTotalRaws();
+	if (norm < 1) norm = 1;
+	TH1F* tmp = (TH1F*)GetRawsData(kNRCUHGnorm,itc);
+	tmp->Reset();
+	tmp->Add((TH1F*)GetRawsData(kNRCUHG,itc),1./norm);
+      }
     } // RS: loop over all trigger clones
   }
   // do the QA checking
@@ -232,6 +239,16 @@ void AliPHOSQADataMakerRec::InitRaws()
   h11->SetXTitle("Module number");
   Add2RawsList(h11, kNmodHG, !expert, image, !saveCorr) ;
 
+  TH1I * h11_RCU = new TH1I("hHighPhosRCU",   "PHOS RCU occupancy with HG channels",12, 0, 12) ;
+  h11_RCU->SetXTitle("RCU number");
+  Add2RawsList(h11_RCU, kNRCUHG, expert, image, !saveCorr) ;
+  TH1F * h11_RCUnorm = new TH1F("hHighPhosRCUnorm",   "PHOS RCU normalized occupancy with HG channels",12, 0, 12) ;
+  h11_RCUnorm->SetXTitle("RCU number");
+  h11_RCUnorm->SetYTitle("N hits per event");
+  h11_RCUnorm->Sumw2();
+  h11_RCUnorm->SetMarkerStyle(20);
+  Add2RawsList(h11_RCUnorm, kNRCUHGnorm, !expert, image, !saveCorr) ;
+
   TH1F * h12 = new TH1F("hLowPhosRawtime" , "Low Gain Time of raw hits in PHOS" , 500, -50., 200.) ;
   h12->SetXTitle("Time [samples]");
   h12->Sumw2() ;
@@ -258,6 +275,66 @@ void AliPHOSQADataMakerRec::InitRaws()
   h17->SetXTitle("Number of hits");
   h17->Sumw2() ;
   Add2RawsList(h17, kNtotHG, !expert, image, saveCorr) ;
+
+  TH1F * h17_1_0 = new TH1F("hHighNtot_1_0", "High Gain Total Number of raw hits in module 1 RCU0", 500, 0., 1000.) ;
+  h17_1_0->SetXTitle("Number of hits");
+  h17_1_0->Sumw2() ;
+  Add2RawsList(h17_1_0, kNtotHG_1_0, expert, image, saveCorr) ;
+
+  TH1F * h17_1_1 = new TH1F("hHighNtot_1_1", "High Gain Total Number of raw hits in module 1 RCU1", 500, 0., 1000.) ;
+  h17_1_1->SetXTitle("Number of hits");
+  h17_1_1->Sumw2() ;
+  Add2RawsList(h17_1_1, kNtotHG_1_1, expert, image, saveCorr) ;
+
+  TH1F * h17_1_2 = new TH1F("hHighNtot_1_2", "High Gain Total Number of raw hits in module 1 RCU2", 500, 0., 1000.) ;
+  h17_1_2->SetXTitle("Number of hits");
+  h17_1_2->Sumw2() ;
+  Add2RawsList(h17_1_2, kNtotHG_1_2, expert, image, saveCorr) ;
+
+  TH1F * h17_1_3 = new TH1F("hHighNtot_1_3", "High Gain Total Number of raw hits in module 1 RCU3", 500, 0., 1000.) ;
+  h17_1_3->SetXTitle("Number of hits");
+  h17_1_3->Sumw2() ;
+  Add2RawsList(h17_1_3, kNtotHG_1_3, expert, image, saveCorr) ;
+
+  TH1F * h17_2_0 = new TH1F("hHighNtot_2_0", "High Gain Total Number of raw hits in module 2 RCU0", 500, 0., 1000.) ;
+  h17_2_0->SetXTitle("Number of hits");
+  h17_2_0->Sumw2() ;
+  Add2RawsList(h17_2_0, kNtotHG_2_0, expert, image, saveCorr) ;
+
+  TH1F * h17_2_1 = new TH1F("hHighNtot_2_1", "High Gain Total Number of raw hits in module 2 RCU1", 500, 0., 1000.) ;
+  h17_2_1->SetXTitle("Number of hits");
+  h17_2_1->Sumw2() ;
+  Add2RawsList(h17_2_1, kNtotHG_2_1, expert, image, saveCorr) ;
+
+  TH1F * h17_2_2 = new TH1F("hHighNtot_2_2", "High Gain Total Number of raw hits in module 2 RCU2", 500, 0., 1000.) ;
+  h17_2_2->SetXTitle("Number of hits");
+  h17_2_2->Sumw2() ;
+  Add2RawsList(h17_2_2, kNtotHG_2_2, expert, image, saveCorr) ;
+
+  TH1F * h17_2_3 = new TH1F("hHighNtot_2_3", "High Gain Total Number of raw hits in module 2 RCU3", 500, 0., 1000.) ;
+  h17_2_3->SetXTitle("Number of hits");
+  h17_2_3->Sumw2() ;
+  Add2RawsList(h17_2_3, kNtotHG_2_3, expert, image, saveCorr) ;
+
+  TH1F * h17_3_0 = new TH1F("hHighNtot_3_0", "High Gain Total Number of raw hits in module 3 RCU0", 500, 0., 1000.) ;
+  h17_3_0->SetXTitle("Number of hits");
+  h17_3_0->Sumw2() ;
+  Add2RawsList(h17_3_0, kNtotHG_3_0, expert, image, saveCorr) ;
+
+  TH1F * h17_3_1 = new TH1F("hHighNtot_3_1", "High Gain Total Number of raw hits in module 3 RCU1", 500, 0., 1000.) ;
+  h17_3_1->SetXTitle("Number of hits");
+  h17_3_1->Sumw2() ;
+  Add2RawsList(h17_3_1, kNtotHG_3_1, expert, image, saveCorr) ;
+
+  TH1F * h17_3_2 = new TH1F("hHighNtot_3_2", "High Gain Total Number of raw hits in module 3 RCU2", 500, 0., 1000.) ;
+  h17_3_2->SetXTitle("Number of hits");
+  h17_3_2->Sumw2() ;
+  Add2RawsList(h17_3_2, kNtotHG_3_2, expert, image, saveCorr) ;
+
+  TH1F * h17_3_3 = new TH1F("hHighNtot_3_3", "High Gain Total Number of raw hits in module 3 RCU3", 500, 0., 1000.) ;
+  h17_3_3->SetXTitle("Number of hits");
+  h17_3_3->Sumw2() ;
+  Add2RawsList(h17_3_3, kNtotHG_3_3, expert, image, saveCorr) ;
 
   TH1F * h18 = new TH1F("hLowEtot" , "Low Gain Total Energy of raw hits in PHOS" , 500, 0., 100000.) ;
   h18->SetXTitle("Energy [ADC counts]");
@@ -396,8 +473,14 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   Double_t hgEtot=0. ;
   Int_t    lgNtot=0 ;
   Int_t    hgNtot=0 ;
+  Int_t    hgNtotM1RCU0=0, hgNtotM1RCU1=0, hgNtotM1RCU2=0, hgNtotM1RCU3=0;
+  Int_t    hgNtotM2RCU0=0, hgNtotM2RCU1=0, hgNtotM2RCU2=0, hgNtotM2RCU3=0;
+  Int_t    hgNtotM3RCU0=0, hgNtotM3RCU1=0, hgNtotM3RCU2=0, hgNtotM3RCU3=0;
+
 
   while (fRawStream.NextDDL()) {
+    Int_t RCUnum = fRawStream.GetDDLNumber() - 8;
+
     while (fRawStream.NextChannel()) {
       Int_t module   = fRawStream.GetModule();
       Int_t cellX    = fRawStream.GetCellX();
@@ -494,10 +577,23 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  }	  
 	}
 	FillRawsData(kNmodHG,module) ; 
+	FillRawsData(kNRCUHG,RCUnum) ; 
 	FillRawsData(kHGtime,time) ;  
 	FillRawsData(kSpecHG,energy) ;
 	hgEtot+=energy ; 
 	hgNtot++ ;  
+        if(RCUnum==0)hgNtotM1RCU0++;
+        if(RCUnum==1)hgNtotM1RCU1++;
+        if(RCUnum==2)hgNtotM1RCU2++;
+        if(RCUnum==3)hgNtotM1RCU3++;
+        if(RCUnum==4)hgNtotM2RCU0++;
+        if(RCUnum==5)hgNtotM2RCU1++;
+        if(RCUnum==6)hgNtotM2RCU2++;
+        if(RCUnum==7)hgNtotM2RCU3++;
+        if(RCUnum==8)hgNtotM3RCU0++;
+        if(RCUnum==9)hgNtotM3RCU1++;
+        if(RCUnum==10)hgNtotM3RCU2++;
+        if(RCUnum==11)hgNtotM3RCU3++;
       }
     }  // End of NextChannel
   } // End of NextDDL
@@ -528,6 +624,91 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 							GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), 
 							GetRawsData(kNtotHG)->GetName()))) ; 
   if (p) p->SetVal(hgNtot) ; 
+
+  FillRawsData(kNtotHG_1_0,hgNtotM1RCU0) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_1_0)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM1RCU0) ;
+
+  FillRawsData(kNtotHG_1_1,hgNtotM1RCU1) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_1_1)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM1RCU1) ;
+
+  FillRawsData(kNtotHG_1_2,hgNtotM1RCU2) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_1_2)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM1RCU2) ;
+
+  FillRawsData(kNtotHG_1_3,hgNtotM1RCU3) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_1_3)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM1RCU3) ;
+
+  FillRawsData(kNtotHG_2_0,hgNtotM2RCU0) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_2_0)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM2RCU0) ;
+
+  FillRawsData(kNtotHG_2_1,hgNtotM2RCU1) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_2_1)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM2RCU1) ;
+
+  FillRawsData(kNtotHG_2_2,hgNtotM2RCU2) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_2_2)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM2RCU2) ;
+
+  FillRawsData(kNtotHG_2_3,hgNtotM2RCU3) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_2_3)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM2RCU3) ;
+
+  FillRawsData(kNtotHG_3_0,hgNtotM3RCU0) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_3_0)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM3RCU0) ;
+
+  FillRawsData(kNtotHG_3_1,hgNtotM3RCU1) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_3_1)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM3RCU1) ;
+
+  FillRawsData(kNtotHG_3_2,hgNtotM3RCU2) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_3_2)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM3RCU2) ;
+
+  FillRawsData(kNtotHG_3_3,hgNtotM3RCU3) ;
+  p = dynamic_cast<TParameter<double>*>(GetParameterList()->
+                                        FindObject(Form("%s_%s_%s",
+                                                        GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(),
+                                                        GetRawsData(kNtotHG_3_3)->GetName()))) ;
+  if (p) p->SetVal(hgNtotM3RCU3) ;
+
   //
   IncEvCountCycleRaws();
   IncEvCountTotalRaws();
