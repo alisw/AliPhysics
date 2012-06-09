@@ -81,15 +81,12 @@ Bool_t AliEmcalParticleMaker::Run()
     new ((*fTracksOut)[iTracks]) AliEmcalParticle(track, iTracks);
   }
 
-  Double_t vtx[3] = {0};
-  InputEvent()->GetPrimaryVertex()->GetXYZ(vtx);
-
   // loop over clusters
   const Int_t Nclusters = fCaloClusters->GetEntries();
   for (Int_t iClusters = 0; iClusters < Nclusters; ++iClusters) {
 
     AliVCluster *cluster = dynamic_cast<AliVCluster*>(fCaloClusters->At(iClusters));
-    new ((*fCaloClustersOut)[iClusters]) AliEmcalParticle(cluster, iClusters, vtx[0], vtx[1], vtx[2]);
+    new ((*fCaloClustersOut)[iClusters]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
   }
 
   return kTRUE;
