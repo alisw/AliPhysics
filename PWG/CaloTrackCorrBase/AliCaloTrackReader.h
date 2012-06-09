@@ -290,6 +290,35 @@ public:
   virtual void           SetEventPlaneMethod(TString m)    { fEventPlaneMethod = m               ; }
   virtual TString        GetEventPlaneMethod()       const { return fEventPlaneMethod            ; }
 
+  //--------------------
+  // Mixing
+  //--------------------
+
+  //Int_t   GetLastPhotonsMixedEvent()                 const { return fLastMixedPhotonsEvent       ; }
+  Int_t   GetLastTracksMixedEvent ()                 const { return fLastMixedTracksEvent        ; }
+  
+  //TList * GetListWithMixedEventsForPhotons(Int_t bi) const { return fListMixedPhotonsEvents[bi]  ; }
+  TList * GetListWithMixedEventsForTracks (Int_t bi) const { return fListMixedTracksEvents [bi]  ; }  
+   
+  //Bool_t  ListWithMixedEventsForPhotonsExists()      const { 
+  //  if(fListMixedPhotonsEvents) return kTRUE  ;
+  //  else                        return kFALSE ; }
+
+  Bool_t  ListWithMixedEventsForTracksExists()       const { 
+    if(fListMixedTracksEvents) return kTRUE  ;
+    else                       return kFALSE ; }
+  
+  //void    SetLastPhotonsMixedEvent(Int_t e)                { fLastMixedPhotonsEvent = e          ; }
+  void    SetLastTracksMixedEvent (Int_t e)                { fLastMixedTracksEvent  = e          ; }
+  
+  //void    SetListWithMixedEventsForPhotons(TList ** l)     { 
+  //          if(fListMixedPhotonsEvents) printf("AliCaloTrackReader::SetListWithMixedEventsForPhotons() - Track Mixing event list already set, nothing done\n");
+  //          else                        fListMixedPhotonsEvents = l ; }
+  
+  void    SetListWithMixedEventsForTracks (TList ** l)     { 
+            if(fListMixedTracksEvents)  printf("AliCaloTrackReader::SetListWithMixedEventsForTracks() - Track Mixing event list already set, nothing done\n");
+            else                        fListMixedTracksEvents  = l ; }
+  
   //-------------------------------------
   // Other methods
   //-------------------------------------
@@ -420,6 +449,11 @@ public:
   Int_t            fNMixedEvent ;           // number of events in mixed event buffer
   Double_t      ** fVertex      ;           //! vertex array 3 dim for each mixed event buffer
   
+  TList **         fListMixedTracksEvents ; //! Container for tracks stored for different events, used in case of own mixing, set in analysis class
+  //TList **         fListMixedPhotonsEvents; //! Container for photon stored for different events, used in case of own mixing, set in analysis class
+  Int_t            fLastMixedTracksEvent  ; //  Temporary container with the last event added to the mixing list for tracks
+  //Int_t            fLastMixedPhotonsEvent ; //  Temporary container with the last event added to the mixing list for photons
+  
   Bool_t           fWriteOutputDeltaAOD;    // Write the created delta AOD objects into file  
 	Bool_t           fOldAOD;                 // Old AODs, before revision 4.20
   
@@ -450,7 +484,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,39)
+  ClassDef(AliCaloTrackReader,40)
   
 } ;
 
