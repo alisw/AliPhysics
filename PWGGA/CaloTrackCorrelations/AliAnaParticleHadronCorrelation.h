@@ -163,7 +163,11 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SetNAssocPtBins(Int_t n) ;     
   void         SetAssocPtBinLimit(Int_t ibin, Float_t pt) ;
-                  
+  
+  Bool_t       IsMixStoredInReaderOn()     const { return fUseMixStoredInReader  ; }
+  void         SwitchOnUseMixStoredInReader()    { fUseMixStoredInReader = kTRUE ; }
+  void         SwitchOffUseMixStoredInReader()   { fUseMixStoredInReader = kFALSE; }
+  
  private:
   Float_t      fMinTriggerPt ;                 // Minimum trigger hadron pt
   Float_t      fMaxAssocPt ;                   // Maximum associated hadron pt
@@ -187,7 +191,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fAssocPtBinLimit[10] ;          // Associated pT under study
   
   TList **     fListMixEvents ;                //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for photons in stored events for mixing
-  Bool_t       fIsPoolEvent;                   // Signal if in the current event the pool was filled
+  Bool_t       fUseMixStoredInReader;          // Signal if in the current event the pool was filled
+  
   //Histograms
 
   //leading particles 
@@ -323,7 +328,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,14)
+  ClassDef(AliAnaParticleHadronCorrelation,15)
 } ;
  
 

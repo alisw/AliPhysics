@@ -70,7 +70,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fMakeAbsoluteLeading(0),        fMakeNearSideLeading(0),      
     fLeadingTriggerIndex(-1),       fHMPIDCorrelation(0),  fFillBradHisto(0),
     fNAssocPtBins(0),               fAssocPtBinLimit(),
-    fListMixEvents(),               fIsPoolEvent(0),
+    fListMixEvents(),               fUseMixStoredInReader(0),
     //Histograms
     fhPtLeading(0),                 fhPhiLeading(0),       
     fhEtaLeading(0),                fhDeltaPhiDeltaEtaCharged(0),
@@ -543,8 +543,7 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
   // Mixed event init
     
   //printf("FillChargedEventMixPool for %s\n",GetInputAODName().Data());
-  fIsPoolEvent = kFALSE;
-  
+   
   Int_t nTracks = GetCTSTracks()->GetEntriesFast();
   
   fhNtracksAll->Fill(nTracks);
@@ -563,16 +562,27 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
   {
     
     fhNtracksMB->Fill(nTracks);
-    
-    TObjArray * mixEventTracks = new TObjArray;
-    
+        
+    if(fUseMixStoredInReader && GetReader()->GetLastTracksMixedEvent() == GetEventNumber())
+    {
+      //printf("%s : Pool already filled for this event !!!\n",GetInputAODName().Data());
+      return ; // pool filled previously for another trigger
+    }
     Int_t eventBin = GetEventMixBin();
-    //printf("***** Pool Event bin : %d - nTracks %d\n",eventBin, GetCTSTracks()->GetEntriesFast());
     
     //Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
     if(eventBin < 0) return;
     
+    TObjArray * mixEventTracks = new TObjArray;
+    
+    if(fUseMixStoredInReader) 
+    {
+      fListMixEvents[eventBin] = GetReader()->GetListWithMixedEventsForTracks(eventBin);
+    }
+    
     if(!fListMixEvents[eventBin]) fListMixEvents[eventBin] = new TList();
+    
+    //printf("%s ***** Pool Event bin : %d - nTracks %d\n",GetInputAODName().Data(),eventBin, GetCTSTracks()->GetEntriesFast());
     
     TList * pool = fListMixEvents[eventBin];
     
@@ -595,6 +605,9 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
       mixEventTracks->Add(mixedTrack);
     }
     
+    //Set the event number where the last event was added, to avoid double pool filling
+    GetReader()->SetLastTracksMixedEvent(GetEventNumber());
+    
     pool->AddFirst(mixEventTracks);
     mixEventTracks = 0;
     //printf("Pool size %d, max %d\n",pool->GetSize(), GetNMaxEvMix());
@@ -605,9 +618,7 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
       pool->RemoveLast() ;
       delete tmp ;
     }
-    
-    fIsPoolEvent = kTRUE;
-    
+        
   } // MB event
   
 }
@@ -1427,34 +1438,45 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   if(DoOwnMix())
   {
     //create event containers
-    fListMixEvents= new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;
     
-    for(Int_t ic=0; ic<GetNCentrBin(); ic++)
+    if(!fUseMixStoredInReader || (fUseMixStoredInReader && !GetReader()->ListWithMixedEventsForTracksExists())) 
     {
-      for(Int_t iz=0; iz<GetNZvertBin(); iz++)
+      fListMixEvents= new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;
+      
+      for(Int_t ic=0; ic<GetNCentrBin(); ic++)
       {
-        for(Int_t irp=0; irp<GetNRPBin(); irp++)
+        for(Int_t iz=0; iz<GetNZvertBin(); iz++)
         {
-          //printf("GetCreateOutputObjects - Bins : cent %d, vz %d, RP %d, event %d/%d\n",
-          //       ic,iz, irp, ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp,GetNZvertBin()*GetNRPBin()*GetNCentrBin());
-          fListMixEvents[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp] = new TList() ;
-          fListMixEvents[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp]->SetOwner(kFALSE);
+          for(Int_t irp=0; irp<GetNRPBin(); irp++)
+          {
+            //printf("GetCreateOutputObjects - Bins : cent %d, vz %d, RP %d, event %d/%d\n",
+            //       ic,iz, irp, ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp,GetNZvertBin()*GetNRPBin()*GetNCentrBin());
+            fListMixEvents[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp] = new TList() ;
+            fListMixEvents[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp]->SetOwner(kFALSE);
+          }
         }
-      }
-    }    
+      }    
+    }
+    
+    //Init the list in the reader if not done previously
+    if(!GetReader()->ListWithMixedEventsForTracksExists() && fUseMixStoredInReader) 
+    {
+      printf("%s : Set the list of events \n",GetInputAODName().Data());
+      GetReader()->SetListWithMixedEventsForTracks(fListMixEvents);
+    }
     
     fhEventBin=new TH1I("hEventBin","Number of real events per bin(cen,vz,rp)",
                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0, 
                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
     fhEventBin->SetXTitle("bin");
     outputContainer->Add(fhEventBin) ;
-
+    
     fhEventMixBin=new TH1I("hEventMixBin","Number of events  per bin(cen,vz,rp)",
                            GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
                            GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
     fhEventMixBin->SetXTitle("bin");
     outputContainer->Add(fhEventMixBin) ;
-
+    
     fhNtracksAll=new TH1F("hNtracksAll","Number of tracks w/o event trigger",2000,0,2000);
     outputContainer->Add(fhNtracksAll);
     
@@ -1470,28 +1492,28 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhMixDeltaPhiCharged->SetYTitle("#Delta #phi");
     fhMixDeltaPhiCharged->SetXTitle("p_{T trigger} (GeV/c)");
     outputContainer->Add(fhMixDeltaPhiCharged);
-
+    
     fhMixDeltaPhiDeltaEtaCharged  = new TH2F
     ("hMixDeltaPhiDeltaEtaCharged","Mixed event : #phi_{trigger} - #phi_{h^{#pm}} vs #eta_{trigger} - #eta_{h^{#pm}}",
      ndeltaphibins ,deltaphimin,deltaphimax,ndeltaetabins ,deltaetamin,deltaetamax); 
     fhMixDeltaPhiDeltaEtaCharged->SetXTitle("#Delta #phi");
     fhMixDeltaPhiDeltaEtaCharged->SetYTitle("#Delta #eta");
     outputContainer->Add(fhMixDeltaPhiDeltaEtaCharged);
-
+    
     fhMixDeltaPhiChargedAssocPtBin         = new TH2F*[fNAssocPtBins] ;
     fhMixDeltaPhiDeltaEtaChargedAssocPtBin = new TH2F*[fNAssocPtBins] ;
-
+    
     for(Int_t i = 0 ; i < fNAssocPtBins ; i++)
     {
       fhMixDeltaPhiChargedAssocPtBin[i] = new TH2F(Form("hMixDeltaPhiChargedAssocPtBin%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                         Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                         nptbins, ptmin, ptmax,  ndeltaphibins ,deltaphimin,deltaphimax);
+                                                   Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                                   nptbins, ptmin, ptmax,  ndeltaphibins ,deltaphimin,deltaphimax);
       fhMixDeltaPhiChargedAssocPtBin[i]->SetXTitle("p_{T trigger}");
       fhMixDeltaPhiChargedAssocPtBin[i]->SetYTitle("#Delta #phi");
-
+      
       fhMixDeltaPhiDeltaEtaChargedAssocPtBin[i] = new TH2F(Form("hMixDeltaPhiDeltaEtaChargedAssocPtBin%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                   Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                    ndeltaphibins ,deltaphimin,deltaphimax,ndeltaetabins ,deltaetamin,deltaetamax); 
+                                                           Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                                           ndeltaphibins ,deltaphimin,deltaphimax,ndeltaetabins ,deltaetamin,deltaetamax); 
       fhMixDeltaPhiDeltaEtaChargedAssocPtBin[i]->SetXTitle("#Delta #phi");
       fhMixDeltaPhiDeltaEtaChargedAssocPtBin[i]->SetYTitle("#Delta #eta");
       
@@ -1586,6 +1608,8 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fAssocPtBinLimit[8]   = 25. ;
   fAssocPtBinLimit[9]   = 50. ;
   
+  fUseMixStoredInReader = kTRUE;
+  
 }
 
 //__________________________________________________________
@@ -1605,7 +1629,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
     abort();
   }
 	
-  if(GetDebug() > 1){
+  if(GetDebug() > 1)
+  {
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - Begin hadron correlation analysis, fill AODs \n");
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In CTS aod entries %d\n",   GetCTSTracks()    ->GetEntriesFast());
@@ -1761,6 +1786,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       if(phi<0)phi+=TMath::TwoPi();
       fhPhiLeading->Fill(particle->Pt(), phi);
       fhEtaLeading->Fill(particle->Pt(), particle->Eta());
+      //printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading particle : pt %f, eta %f, phi %f\n",particle->Pt(),particle->Eta(),phi);
+
     }//ok charged && neutral
   }//Aod branch loop
   
@@ -1775,7 +1802,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
                                                                 const TObjArray* pl, const Bool_t bFillHisto)
 {  
   // Charged Hadron Correlation Analysis
-  if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Make trigger particle - charged hadron correlation \n");
+  if(GetDebug() > 1) 
+    printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Make trigger particle - charged hadron correlation \n");
     
   Float_t phiTrig = aodParticle->Phi();
   Float_t etaTrig = aodParticle->Eta();
@@ -1870,7 +1898,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
     if(bFillHisto)
     {      
 
-      if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
+      if(GetDebug() > 2 ) 
+        printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
             
       // Set the pt associated bin for the defined bins
       Int_t assocBin   = -1; 
@@ -1939,7 +1968,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   {
     aodParticle->AddObjArray(reftracks);
   }
-  
+
   //Own mixed event, add event and remove previous or fill the mixed histograms
   if(DoOwnMix() && bFillHisto)
   {
@@ -1976,7 +2005,9 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
   //Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
   if(eventBin < 0) return;
   
-  TList * pool = fListMixEvents[eventBin];
+  TList * pool = 0;
+  if(fUseMixStoredInReader) pool = GetReader()->GetListWithMixedEventsForTracks(eventBin);
+  else                      pool = fListMixEvents[eventBin];
 
   if(!pool) return ;
     
@@ -1986,8 +2017,8 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
   if(phiTrig < 0.) phiTrig+=TMath::TwoPi();
   
   if(GetDebug() > 1) 
-    printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Pool bin %d size %d, Pool event? %d, leading trigger pt=%f, phi=%f, eta=%f\n",
-           eventBin,pool->GetSize(), fIsPoolEvent, ptTrig,phiTrig,etaTrig);
+    printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Pool bin %d size %d, leading trigger pt=%f, phi=%f, eta=%f\n",
+           eventBin,pool->GetSize(), ptTrig,phiTrig,etaTrig);
   
   Double_t ptAssoc  = -999.;
   Double_t phiAssoc = -999.;
@@ -1996,7 +2027,9 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
   Double_t deltaEta = -999.;
   
   //Start from first event in pool except if in this same event the pool was filled
-  for(Int_t ev=fIsPoolEvent; ev < pool->GetSize(); ev++)
+  Int_t ev0 = 0;
+  if(GetReader()->GetLastTracksMixedEvent() == GetEventNumber()) ev0 = 1;
+  for(Int_t ev=ev0; ev < pool->GetSize(); ev++)
   {
     TObjArray* bgTracks = static_cast<TObjArray*>(pool->At(ev));
     
