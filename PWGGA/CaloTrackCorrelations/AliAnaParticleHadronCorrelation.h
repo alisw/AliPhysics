@@ -97,7 +97,6 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
                                                          const Float_t zT,       const Float_t hbpZT, 
                                                          const Float_t deltaPhi);  
   
-  
   // Parameter setter and getter
   
   Float_t      GetMinimumTriggerPt()       const { return fMinTriggerPt          ; }
@@ -164,13 +163,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SetNAssocPtBins(Int_t n) ;     
   void         SetAssocPtBinLimit(Int_t ibin, Float_t pt) ;
-  
-  void         SwitchOnOwnMix()                  { fDoOwnMix            = kTRUE  ; }
-  void         SwitchOffOwnMix()                 { fDoOwnMix            = kFALSE ; }
-
-  void         SwitchOnTrackMultBins()           { fUseTrackMultBins    = kTRUE  ; }
-  void         SwitchOffTrackMultBins()          { fUseTrackMultBins    = kFALSE ; }
-                
+                  
  private:
   Float_t      fMinTriggerPt ;                 // Minimum trigger hadron pt
   Float_t      fMaxAssocPt ;                   // Maximum associated hadron pt
@@ -193,10 +186,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Int_t        fNAssocPtBins ;                 // Number of associated pT bins under study
   Float_t      fAssocPtBinLimit[10] ;          // Associated pT under study
   
-  Bool_t       fDoOwnMix;                      // Do combinatorial background not the one provided by the frame
-  Bool_t       fUseTrackMultBins;              // Use track multiplicity and not centrality bins
-  TList **     fListMixEvents ;                //![GetNCentrBin()*GetNZvertBin()] Containers for photons in stored events for mixing
-  
+  TList **     fListMixEvents ;                //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for photons in stored events for mixing
+  Bool_t       fIsPoolEvent;                   // Signal if in the current event the pool was filled
   //Histograms
 
   //leading particles 
@@ -320,16 +311,19 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH1I *       fhNEventsTrigger;               //! number of analyzed triggered events
   TH1F *       fhNtracksAll;                   //! total number of tracks 
   TH1F *       fhNtracksTrigger;               //! total number of tracks in triggered events 
-  TH1F *       fhNtracksINT;                   //! total number of tracks in MB events
+  TH1F *       fhNtracksMB;                    //! total number of tracks in MB events
   TH2F *       fhMixDeltaPhiCharged  ;         //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F *       fhMixDeltaPhiDeltaEtaCharged  ; //! Difference of charged particle phi and trigger particle  phi as function eta difference
   TH2F **      fhMixDeltaPhiChargedAssocPtBin; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins
   TH2F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi  as function eta difference, for different associated bins
 
+  TH1I *       fhEventBin;                     //! Number of real  events in a particular bin (cen,vz,rp)
+  TH1I *       fhEventMixBin;                  //! Number of mixed events in a particular bin (cen,vz,rp)
+  
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,13)
+  ClassDef(AliAnaParticleHadronCorrelation,14)
 } ;
  
 

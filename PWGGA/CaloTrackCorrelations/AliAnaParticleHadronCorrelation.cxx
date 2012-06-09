@@ -52,6 +52,7 @@
 #include "AliMixedEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliEventplane.h"
 
 ClassImp(AliAnaParticleHadronCorrelation)
 
@@ -69,8 +70,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fMakeAbsoluteLeading(0),        fMakeNearSideLeading(0),      
     fLeadingTriggerIndex(-1),       fHMPIDCorrelation(0),  fFillBradHisto(0),
     fNAssocPtBins(0),               fAssocPtBinLimit(),
-    fDoOwnMix(0),                   fUseTrackMultBins(0),
-    fListMixEvents(),               
+    fListMixEvents(),               fIsPoolEvent(0),
     //Histograms
     fhPtLeading(0),                 fhPhiLeading(0),       
     fhEtaLeading(0),                fhDeltaPhiDeltaEtaCharged(0),
@@ -124,9 +124,10 @@ ClassImp(AliAnaParticleHadronCorrelation)
     //Mixing
     fhNEventsTrigger(0),            
     fhNtracksAll(0),                fhNtracksTrigger(0),            
-    fhNtracksINT(0),               
+    fhNtracksMB(0),               
     fhMixDeltaPhiCharged(0),        fhMixDeltaPhiDeltaEtaCharged(0),
-    fhMixDeltaPhiChargedAssocPtBin(),fhMixDeltaPhiDeltaEtaChargedAssocPtBin(0)
+    fhMixDeltaPhiChargedAssocPtBin(),fhMixDeltaPhiDeltaEtaChargedAssocPtBin(0),
+    fhEventBin(0),                   fhEventMixBin(0)
 { 
   //Default Ctor
     
@@ -139,14 +140,18 @@ AliAnaParticleHadronCorrelation::~AliAnaParticleHadronCorrelation()
 {
   // Remove event containers
   
-  if(fDoOwnMix && fListMixEvents)
+  if(DoOwnMix() && fListMixEvents)
   {      
     for(Int_t iz=0; iz < GetNZvertBin(); iz++)
     {
       for(Int_t ic=0; ic < GetNCentrBin(); ic++)
       {
-        fListMixEvents[ic*GetNZvertBin()+iz]->Delete() ;
-        delete fListMixEvents[ic*GetNZvertBin()+iz] ;
+         for(Int_t irp=0; irp<GetNRPBin(); irp++)
+         {
+           Int_t bin = GetEventMixBin(ic, iz, irp);
+           fListMixEvents[bin]->Delete() ;
+           delete fListMixEvents[bin] ;
+         }
       }
     }
     
@@ -258,11 +263,11 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(const
   
   Float_t mcxE    =-mcAssocPt/mcTrigPt*TMath::Cos(mcdeltaPhi);// -(mcAssocPx*pxprim+mcAssocPy*pyprim)/(mcTrigPt*mcTrigPt);  
   Float_t mchbpXE =-100 ;
-  if(mcxE > 0 ) mchbpXE = TMath::Log(1./mcxE);
+  if(mcxE > 0 ) mchbpXE = TMath::Log10(1./mcxE);
   
   Float_t mczT    = mcAssocPt/mcTrigPt ;
   Float_t mchbpZT =-100 ;
-  if(mczT > 0 ) mchbpZT = TMath::Log(1./mczT);
+  if(mczT > 0 ) mchbpZT = TMath::Log10(1./mczT);
   
   //Selection within angular range
   if( mcdeltaPhi< -TMath::PiOver2())  mcdeltaPhi+=TMath::TwoPi();
@@ -374,10 +379,10 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const
   if(uexE < 0.) uexE = -uexE;
     
   fhXEUeCharged->Fill(ptTrig,uexE);
-  if(uexE > 0) fhPtHbpXEUeCharged->Fill(ptTrig,TMath::Log(1/uexE));
+  if(uexE > 0) fhPtHbpXEUeCharged->Fill(ptTrig,TMath::Log10(1/uexE));
   
   fhZTUeCharged->Fill(ptTrig,uezT);
-  if(uexE > 0) fhPtHbpZTUeCharged->Fill(ptTrig,TMath::Log(1/uezT));
+  if(uexE > 0) fhPtHbpZTUeCharged->Fill(ptTrig,TMath::Log10(1/uezT));
   
   if(DoEventSelect())
   {
@@ -450,7 +455,7 @@ void AliAnaParticleHadronCorrelation::FillDecayPhotonCorrelationHistograms(const
     fhDeltaPhiDecayCharged->Fill(ptDecay1, deltaPhiDecay1);
     fhDeltaPhiDecayCharged->Fill(ptDecay2, deltaPhiDecay2);
     
-    if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::FillDecayPhotonHistograms( Charged corr) - deltaPhoton1 = %f, deltaPhoton2 = %f \n", deltaPhiDecay1, deltaPhiDecay2);
+    if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::FillDecayPhotonHistograms( Charged corr) - deltaPhoton1 = %f, deltaPhoton2 = %f \n", deltaPhiDecay1, deltaPhiDecay2);
     
     if( (deltaPhiDecay1 > fDeltaPhiMinCut) && ( deltaPhiDecay1 < fDeltaPhiMaxCut) )
     {
@@ -468,7 +473,7 @@ void AliAnaParticleHadronCorrelation::FillDecayPhotonCorrelationHistograms(const
     fhDeltaPhiDecayCharged->Fill(ptDecay1, deltaPhiDecay1);
     fhDeltaPhiDecayCharged->Fill(ptDecay2, deltaPhiDecay2);
     
-    if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::FillDecayPhotonHistograms(Neutral corr) - deltaPhoton1 = %f, deltaPhoton2 = %f \n", deltaPhiDecay1, deltaPhiDecay2);
+    if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::FillDecayPhotonHistograms(Neutral corr) - deltaPhoton1 = %f, deltaPhoton2 = %f \n", deltaPhiDecay1, deltaPhiDecay2);
     
     if( (deltaPhiDecay1 > fDeltaPhiMinCut) && ( deltaPhiDecay1 < fDeltaPhiMaxCut) )
     {
@@ -537,6 +542,9 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
 {
   // Mixed event init
     
+  //printf("FillChargedEventMixPool for %s\n",GetInputAODName().Data());
+  fIsPoolEvent = kFALSE;
+  
   Int_t nTracks = GetCTSTracks()->GetEntriesFast();
   
   fhNtracksAll->Fill(nTracks);
@@ -551,57 +559,22 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
     fhNtracksTrigger->Fill(nTracks);
   }
   
-  if(inputHandler->IsEventSelected( ) & AliVEvent::kAnyINT)
+  if(inputHandler->IsEventSelected( ) & AliVEvent::kMB)
   {
     
-    fhNtracksINT->Fill(nTracks);
-    
-    //Get vertex z bin
-    Double_t v[3] = {0,0,0}; //vertex ;
-    GetReader()->GetVertex(v);
-    
-    Int_t curZvertBin = (Int_t)(0.5*GetNZvertBin()*(v[2]+GetZvertexCut())/GetZvertexCut()) ;
-    
-    // centrality or tracks bin
-    Int_t curCentrBin = 0;
-    if(fUseTrackMultBins)
-    { // Track multiplicity bins
-      //curCentrBin = (GetTrackMultiplicity()-1)/5; 
-      //if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
-      Int_t trackMult = GetReader()->GetTrackMultiplicity();
-      if(trackMult<=5)
-        curCentrBin=8;
-      else if(trackMult<=10)
-        curCentrBin=7;
-      else if(trackMult<=15)
-        curCentrBin=6;
-      else if(trackMult<=20)
-        curCentrBin=5;
-      else if(trackMult<=30)
-        curCentrBin=4;
-      else if(trackMult<=40)
-        curCentrBin=3;
-      else if(trackMult<=55)
-        curCentrBin=2;
-      else if(trackMult<=70)
-        curCentrBin=1 ;
-      else curCentrBin=0 ;        
-    }
-    else // Set centrality based on centrality task
-    {
-      curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt(); 
-      if(GetDebug() > 0 )printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - curCentrBin %d, centrality %d, n bins %d, max bin from centrality %d\n",
-                                curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt());        
-    }
+    fhNtracksMB->Fill(nTracks);
     
     TObjArray * mixEventTracks = new TObjArray;
     
-    //printf("curCen %d, curZ %d, bin %d\n",curCentrBin,curZvertBin,curCentrBin*GetNZvertBin()+curZvertBin);
+    Int_t eventBin = GetEventMixBin();
+    //printf("***** Pool Event bin : %d - nTracks %d\n",eventBin, GetCTSTracks()->GetEntriesFast());
     
-    if(!fListMixEvents[curCentrBin*GetNZvertBin()+curZvertBin]) 
-      fListMixEvents[curCentrBin*GetNZvertBin()+curZvertBin]=new TList();
+    //Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
+    if(eventBin < 0) return;
     
-    TList * pool = fListMixEvents[curCentrBin*GetNZvertBin()+curZvertBin];
+    if(!fListMixEvents[eventBin]) fListMixEvents[eventBin] = new TList();
+    
+    TList * pool = fListMixEvents[eventBin];
     
     TVector3 p3;  
     for(Int_t ipr = 0;ipr < GetCTSTracks()->GetEntriesFast() ; ipr ++ )
@@ -624,12 +597,16 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
     
     pool->AddFirst(mixEventTracks);
     mixEventTracks = 0;
-    if(pool->GetSize() >= GetNMaxEvMix())
+    //printf("Pool size %d, max %d\n",pool->GetSize(), GetNMaxEvMix());
+    
+    if(pool->GetSize() > GetNMaxEvMix())
     {//Remove last event
       TClonesArray * tmp = static_cast<TClonesArray*>(pool->Last()) ;
       pool->RemoveLast() ;
       delete tmp ;
     }
+    
+    fIsPoolEvent = kTRUE;
     
   } // MB event
   
@@ -1447,26 +1424,45 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhMCPtAssocDeltaPhi) ;      
   } //for MC histogram
   
-  if(fDoOwnMix)
+  if(DoOwnMix())
   {
     //create event containers
-    fListMixEvents= new TList*[GetNCentrBin()*GetNZvertBin()] ;
+    fListMixEvents= new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;
     
-    for(Int_t ic=0; ic<GetNCentrBin(); ic++){
-      for(Int_t iz=0; iz<GetNZvertBin(); iz++){
-        fListMixEvents[ic*GetNZvertBin()+iz] = new TList() ;
-        fListMixEvents[ic*GetNZvertBin()+iz]->SetOwner(kFALSE);
+    for(Int_t ic=0; ic<GetNCentrBin(); ic++)
+    {
+      for(Int_t iz=0; iz<GetNZvertBin(); iz++)
+      {
+        for(Int_t irp=0; irp<GetNRPBin(); irp++)
+        {
+          //printf("GetCreateOutputObjects - Bins : cent %d, vz %d, RP %d, event %d/%d\n",
+          //       ic,iz, irp, ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp,GetNZvertBin()*GetNRPBin()*GetNCentrBin());
+          fListMixEvents[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp] = new TList() ;
+          fListMixEvents[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp]->SetOwner(kFALSE);
+        }
       }
     }    
     
+    fhEventBin=new TH1I("hEventBin","Number of real events per bin(cen,vz,rp)",
+                        GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0, 
+                        GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
+    fhEventBin->SetXTitle("bin");
+    outputContainer->Add(fhEventBin) ;
+
+    fhEventMixBin=new TH1I("hEventMixBin","Number of events  per bin(cen,vz,rp)",
+                           GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
+                           GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
+    fhEventMixBin->SetXTitle("bin");
+    outputContainer->Add(fhEventMixBin) ;
+
     fhNtracksAll=new TH1F("hNtracksAll","Number of tracks w/o event trigger",2000,0,2000);
     outputContainer->Add(fhNtracksAll);
     
     fhNtracksTrigger=new TH1F("hNtracksTriggerEvent","Number of tracks w/ event trigger",2000,0,2000);
     outputContainer->Add(fhNtracksTrigger);
     
-    fhNtracksINT=new TH1F("hNtracksMBEvent","Number of tracks w/ event trigger kAnyINT",2000,0,2000);
-    outputContainer->Add(fhNtracksINT);
+    fhNtracksMB=new TH1F("hNtracksMBEvent","Number of tracks w/ event trigger kMB",2000,0,2000);
+    outputContainer->Add(fhNtracksMB);
     
     fhMixDeltaPhiCharged  = new TH2F
     ("hMixDeltaPhiCharged","Mixed event : #phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}",
@@ -1553,7 +1549,6 @@ Bool_t AliAnaParticleHadronCorrelation::GetDecayPhotonMomentum(const AliAODPWG4P
   
 } 
 
-
 //____________________________________________________
 void AliAnaParticleHadronCorrelation::InitParameters()
 {
@@ -1624,7 +1619,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   if(!GetMixedEvent() && TMath::Abs(v[2]) > GetZvertexCut()) return ;   
   
   // Fill the pool with tracks if requested
-  if(fDoOwnMix) FillChargedEventMixPool();
+  if(DoOwnMix()) FillChargedEventMixPool();
 
   //Loop on stored AOD particles, find leading trigger
   Double_t ptTrig      = fMinTriggerPt ;
@@ -1891,12 +1886,12 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       
       // Imbalance zT/xE/pOut
       zT = pt/ptTrig ;
-      if(zT > 0 ) hbpZT = TMath::Log(1./zT);
+      if(zT > 0 ) hbpZT = TMath::Log10(1./zT);
       else        hbpZT =-100;
       
       xE   =-pt/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
       //if(xE <0.)xE =-xE;
-      if(xE > 0 ) hbpXE = TMath::Log(1./xE); 
+      if(xE > 0 ) hbpXE = TMath::Log10(1./xE); 
       else        hbpXE =-100;
     
       pout = pt*TMath::Sin(deltaPhi) ;
@@ -1946,7 +1941,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   }
   
   //Own mixed event, add event and remove previous or fill the mixed histograms
-  if(fDoOwnMix && bFillHisto)
+  if(DoOwnMix() && bFillHisto)
   {
       MakeChargedMixCorrelation(aodParticle);
   }
@@ -1959,78 +1954,57 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
 //______________________________________________________________________________________________________________________
 void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation *aodParticle)
 {  
-  if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Make trigger particle - charged hadron mixed event correlation \n");
+  // Mix current trigger with tracks in another MB event
   
-  Double_t v[3] = {0,0,0}; //vertex ;
-  GetReader()->GetVertex(v);
+  if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Make trigger particle - charged hadron mixed event correlation \n");
   
   if(GetMixedEvent()) return;  // This is not the mixed event from general mixing frame
   
-  
   // Get the event with similar caracteristics
-  
-  //Get vertex z bin
-  
-  Int_t curZvertBin = (Int_t)(0.5*GetNZvertBin()*(v[2]+GetZvertexCut())/GetZvertexCut()) ;
-  
-  // centrality or tracks bin
-  Int_t curCentrBin = 0;
-  if(fUseTrackMultBins)
-  { // Track multiplicity bins
-    //curCentrBin = (GetTrackMultiplicity()-1)/5; 
-    //if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
-    Int_t trackMult = GetReader()->GetTrackMultiplicity();
-    if(trackMult<=5)
-      curCentrBin=8;
-    else if(trackMult<=10)
-      curCentrBin=7;
-    else if(trackMult<=15)
-      curCentrBin=6;
-    else if(trackMult<=20)
-      curCentrBin=5;
-    else if(trackMult<=30)
-      curCentrBin=4;
-    else if(trackMult<=40)
-      curCentrBin=3;
-    else if(trackMult<=55)
-      curCentrBin=2;
-    else if(trackMult<=70)
-      curCentrBin=1 ;
-    else curCentrBin=0 ;        
-  }
-  else // Set centrality based on centrality task
-  {
-    curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt(); 
-    if(GetDebug() > 0 )printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - curCentrBin %d, centrality %d, n bins %d, max bin from centrality %d\n",
-                              curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt());        
-  }
+  //printf("MakeChargedMixCorrelation for %s\n",GetInputAODName().Data());
+
+  AliAnalysisManager   * manager      = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
+
+  if(!(inputHandler->IsEventSelected( ) & GetReader()->GetEventTriggerMask())) return;
   
   // Get the pool, check if it exits
-  if(!fListMixEvents[curCentrBin*GetNZvertBin()+curZvertBin]) return ;
+  Int_t eventBin = GetEventMixBin();
+
+  fhEventBin->Fill(eventBin);
   
-  //printf("curCen %d, curZ %d, bin %d\n",curCentrBin,curZvertBin,curCentrBin*GetNZvertBin()+curZvertBin);
+  //Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
+  if(eventBin < 0) return;
   
-  TList * pool = fListMixEvents[curCentrBin*GetNZvertBin()+curZvertBin];
+  TList * pool = fListMixEvents[eventBin];
+
+  if(!pool) return ;
     
   Double_t ptTrig  = aodParticle->Pt();
   Double_t etaTrig = aodParticle->Eta();
   Double_t phiTrig = aodParticle->Phi();
   if(phiTrig < 0.) phiTrig+=TMath::TwoPi();
   
-  if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - leading trigger pt=%f, phi=%f, eta=%f\n",ptTrig,phiTrig,etaTrig);
+  if(GetDebug() > 1) 
+    printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Pool bin %d size %d, Pool event? %d, leading trigger pt=%f, phi=%f, eta=%f\n",
+           eventBin,pool->GetSize(), fIsPoolEvent, ptTrig,phiTrig,etaTrig);
   
   Double_t ptAssoc  = -999.;
-  Double_t phiAssoc = -999. ;
+  Double_t phiAssoc = -999.;
   Double_t etaAssoc = -999.;
   Double_t deltaPhi = -999.;
   Double_t deltaEta = -999.;
   
-  for(Int_t ev=0; ev <pool->GetSize(); ev++)
+  //Start from first event in pool except if in this same event the pool was filled
+  for(Int_t ev=fIsPoolEvent; ev < pool->GetSize(); ev++)
   {
     TObjArray* bgTracks = static_cast<TObjArray*>(pool->At(ev));
     
-    Int_t nTracks=bgTracks->GetEntriesFast();
+    fhEventMixBin->Fill(eventBin);
     
+    Int_t nTracks=bgTracks->GetEntriesFast();
+    //printf("\t Read Pool event %d, nTracks %d\n",ev,nTracks);
+
     for(Int_t j1 = 0;j1 <nTracks; j1++ )
     {
       AliAODPWG4Particle *track = (AliAODPWG4Particle*) bgTracks->At(j1) ;
@@ -2041,7 +2015,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       etaAssoc = track->Eta();
       phiAssoc = track->Phi() ;
       if(phiAssoc < 0) phiAssoc+=TMath::TwoPi();
-      
+            
       if(IsFiducialCutOn())
       {
         Bool_t in = GetFiducialCut()->IsInFiducialCut(*aodParticle->Momentum(),"CTS") ;
@@ -2169,8 +2143,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
       hbpXE = -100;
       hbpZT = -100;
       
-      if(xE > 0 ) hbpXE = TMath::Log(1./xE); 
-      if(zT > 0 ) hbpZT = TMath::Log(1./zT); 
+      if(xE > 0 ) hbpXE = TMath::Log10(1./xE); 
+      if(zT > 0 ) hbpZT = TMath::Log10(1./zT); 
       
       if(fPi0Trigger && decayFound)
         FillDecayPhotonCorrelationHistograms(pt, phi, decayMom1,decayMom2,kFALSE) ;
@@ -2255,7 +2229,8 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
   if(GetReader()->ReadStack())
   {
     stack =  GetMCStack() ;
-    if(!stack) {
+    if(!stack) 
+    {
       printf(" AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation- Stack not available, is the MC handler called? STOP\n");
       abort();
     }
@@ -2436,9 +2411,9 @@ void AliAnaParticleHadronCorrelation::SetAssocPtBinLimit(Int_t ibin, Float_t pt)
   {
     fAssocPtBinLimit[ibin] = pt  ;
   }
-  else {
+  else 
+  {
     printf("AliAnaParticleHadronCorrelation::SetAssocPtBinLimit() - bin  number too large %d > %d or small, nothing done\n", ibin, fNAssocPtBins) ; 
-    
   }
 }
 

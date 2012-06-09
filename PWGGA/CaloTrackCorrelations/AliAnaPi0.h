@@ -54,26 +54,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   // EVENT Bin Methods
   //-------------------------------
 
-  Int_t        GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  ;
-
-  void         CountAndGetAverages(Int_t &nClus,Int_t &nCell, Float_t &eClusTot,Float_t &eCellTot, Float_t &eDenClus,Float_t &eDenCell) ;
-  
-  //Switchs for event multiplicity bin option, by default, centrality
-  
-  void         SwitchOnTrackMultBins()          { fUseTrackMultBins    = kTRUE  ; }
-  void         SwitchOffTrackMultBins()         { fUseTrackMultBins    = kFALSE ; }
-  
-  void         SwitchOnPhotonMultBins()         { fUsePhotonMultBins   = kTRUE  ; }
-  void         SwitchOffPhotonMultBins()        { fUsePhotonMultBins   = kFALSE ; }
-  
-  void         SwitchOnClusterEBins()           { fUseAverClusterEBins = kTRUE  ; }
-  void         SwitchOffClusterEBins()          { fUseAverClusterEBins = kFALSE ; }
-  
-  void         SwitchOnCellEBins()              { fUseAverCellEBins    = kTRUE  ; }
-  void         SwitchOffCellEBins()             { fUseAverCellEBins    = kFALSE ; }
-
-  void         SwitchOnClusterEDenBins()        { fUseAverClusterEDenBins = kTRUE  ; }
-  void         SwitchOffClusterEDenBins()       { fUseAverClusterEDenBins = kFALSE ; }
+  Int_t        GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  ;  
 
   //-------------------------------
 	//Opening angle pair selection
@@ -90,12 +71,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillAngleHisto()         { fFillAngleHisto      = kTRUE  ; }
   void         SwitchOffFillAngleHisto()        { fFillAngleHisto      = kFALSE ; }
   
-  //-------------------------------
-  // Use mixing code of this class
-  //-------------------------------
-  void         SwitchOnOwnMix()                 { fDoOwnMix            = kTRUE  ; }
-  void         SwitchOffOwnMix()                { fDoOwnMix            = kFALSE ; }
-
   //------------------------------------------
   //Do analysis only with clusters in same SM or different combinations of SM
   //------------------------------------------
@@ -154,7 +129,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   
   private:
 
-  Bool_t   fDoOwnMix;                  // Do combinatorial background not the one provided by the frame
   TList ** fEventsList ;               //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for photons in stored events
 
   TString  fCalorimeter ;              // Select Calorimeter for IM
@@ -182,11 +156,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fSameSM;                    // Select only pairs in same SM;
   Bool_t   fFillSMCombinations;        // Fill histograms with different cluster pairs in SM combinations
   Bool_t   fCheckConversion;           // Fill histograms with tagged photons as conversion
-  Bool_t   fUseTrackMultBins;          // Use track multiplicity and not centrality bins
-  Bool_t   fUsePhotonMultBins;         // Use photon multiplicity and not centrality bins
-  Bool_t   fUseAverCellEBins;          // Use cell average energy and not centrality bins
-  Bool_t   fUseAverClusterEBins;       // Use cluster average energy and not centrality bins
-  Bool_t   fUseAverClusterEDenBins;    // Use cluster average energy density and not centrality bins
   Bool_t   fFillBadDistHisto;          // Do plots for different distances to bad channels
   Bool_t   fFillSSCombinations;        // Do invariant mass for different combination of shower shape clusters
   Bool_t   fFillAngleHisto;            // Fill histograms with pair opening angle
@@ -247,11 +216,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhRePtAsymEta ;             //! REAL two-photon pt vs asymmetry, close to eta mass
   
   //Centrality, Event plane bins
-  TH3F *   fhEvents;                   //! Number of events per centrality, RP, zbin
+  TH1I *   fhEventBin;                 //! Number of real  pairs in a particular bin (cen,vz,rp)
+  TH1I *   fhEventMixBin;              //! Number of mixed pairs in a particular bin (cen,vz,rp)
   TH1F *   fhCentrality;               //! Histogram with centrality bins with at least one pare
   TH1F *   fhCentralityNoPair;         //! Histogram with centrality bins with no pair
 
-  TH1F *   fhEventPlaneAngle;          //! Histogram with Event plane angle
   TH2F *   fhEventPlaneResolution;     //! Histogram with Event plane resolution vs centrality
   
   // Pair opening angle
@@ -308,7 +277,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0(              const AliAnaPi0 & api0) ; // cpy ctor
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ; // cpy assignment
   
-  ClassDef(AliAnaPi0,22)
+  ClassDef(AliAnaPi0,23)
 } ;
 
 
