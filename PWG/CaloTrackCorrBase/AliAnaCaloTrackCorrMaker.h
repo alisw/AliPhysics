@@ -95,12 +95,13 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhZVertex;           //! Vertex of accepted event
   TH1I *   fhTrackMult;         //! Number of tracks per event histogram
   TH1F *   fhCentrality;        //! Histogram with centrality bins
+  TH1F *   fhEventPlaneAngle;   //! Histogram with Event plane angle
   TH1I *   fhNMergedFiles;      //! Number of files merged
   TH1F *   fhScaleFactor;       //! Factor to scale histograms
 
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,11)
+  ClassDef(AliAnaCaloTrackCorrMaker,12)
 } ;
  
 
