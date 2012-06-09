@@ -133,7 +133,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     }
 
     
-    AliPicoTrack *picotrack = new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
+    /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
                                                                      track->Eta(), 
                                                                      track->Phi(), 
                                                                      track->Charge(), 
