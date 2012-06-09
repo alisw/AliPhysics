@@ -34,6 +34,9 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   if (!strcmp(runPeriod, "LHC11h")) {
     eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
   }
+  else if (!strcmp(runPeriod, "LHC11a") || !strcmp(runPeriod, "LHC12a15a")) {
+    eTask->SetAODfilterBits(256,16); // hybrid tracks for LHC12a and LHC12a15a
+  }
   else {
     if (!cuts)
       ::Warning(Form("Run period %s not known. AOD filter bit not set.", runPeriod));
