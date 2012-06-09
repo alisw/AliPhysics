@@ -35,6 +35,7 @@
 #include "AliVEventHandler.h"
 #include "AliAnaCaloTrackCorrBaseClass.h" 
 #include "AliAnaCaloTrackCorrMaker.h" 
+#include "AliEventplane.h"
 
 ClassImp(AliAnaCaloTrackCorrMaker)
 
@@ -49,6 +50,7 @@ fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
 fhNEvents(0),                 fhZVertex(0),                 
 fhTrackMult(0),               fhCentrality(0),
+fhEventPlaneAngle(0),
 fhNMergedFiles(0),            fhScaleFactor(0)
 {
   //Default Ctor
@@ -69,6 +71,7 @@ fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
 fhNEvents(maker.fhNEvents),    fhZVertex(maker.fhZVertex),    
 fhTrackMult(maker.fhTrackMult),fhCentrality(maker.fhCentrality),
+fhEventPlaneAngle(maker.fhEventPlaneAngle),
 fhNMergedFiles(maker.fhNMergedFiles),          
 fhScaleFactor(maker.fhScaleFactor)
 {
@@ -184,6 +187,10 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin",100,0.,100) ;
   fhCentrality->SetXTitle("Centrality bin");
   fOutputContainer->Add(fhCentrality) ;  
+  
+  fhEventPlaneAngle=new TH1F("hEventPlaneAngle","Number of events in event plane",100,0.,TMath::Pi()) ;
+  fhEventPlaneAngle->SetXTitle("EP angle (rad)");
+  fOutputContainer->Add(fhEventPlaneAngle) ;
   
   if(fScaleFactor > 0)
   {
@@ -386,10 +393,11 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
   }
 	
   // Event control histograms
-  fhNEvents   ->Fill(0); //Event analyzed
-  fhTrackMult ->Fill(fReader->GetTrackMultiplicity()); 
-  fhCentrality->Fill(fReader->GetEventCentrality());
-  
+  fhNEvents        ->Fill(0); // Number of events analyzed
+  fhTrackMult      ->Fill(fReader->GetTrackMultiplicity()); 
+  fhCentrality     ->Fill(fReader->GetEventCentrality  ());
+  fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
+
   Double_t v[3];
   fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
   fhZVertex->Fill(v[2]);
