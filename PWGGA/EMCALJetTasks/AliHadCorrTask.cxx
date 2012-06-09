@@ -460,8 +460,8 @@ void AliHadCorrTask::UserCreateOutputObjects()
   fHistCentrality       = new TH1F("fHistCentrality",  "Centrality",       100, 0, 100);
   fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent",      100, 0, 100);
   fHistNclusMatchvsCent = new TH1F("NclusMatchvscent", "NclusMatchVsCent", 100, 0, 100);
-  fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          100, 0, 100);
-  fHistEafter           = new TH1F("Eafter",           "Eafter",           100, 0, 100);
+  fHistEbefore          = new TH2F("Ebefore",          "Ebefore",          100, 0, 100, 101, -0.5, 100.5);
+  fHistEafter           = new TH2F("Eafter",           "Eafter",           100, 0, 100, 101, -0.5, 100.5);
   fHistEoPCent          = new TH2F("EoPCent",          "EoPCent",          100, 0, 100, 1000, 0,   10);
   fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent",     100, 0, 100, 11, -0.5, 10.5);
   fHistNMatchCent_trk   = new TH2F("NMatchesCent_trk", "NMatchesCent_trk", 100, 0, 100, 11, -0.5, 10.5);
@@ -792,11 +792,12 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   // Do the loop over the matched tracks and get the number of matches and the total momentum
   DoMatchedTracksLoop(emccluster, totalTrkP, Nmatches);
 
+  if (totalTrkP <= 0)
+    return energyclus;
+
   Double_t Esub = hadCorr * totalTrkP;
 
-  Double_t EoP = -1;
-  if (totalTrkP > 0)
-    EoP = energyclus / totalTrkP;
+  Double_t EoP = energyclus / totalTrkP;
 
   // Plot some histograms if switched on
   if(fCreateHisto) {
@@ -829,15 +830,10 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
       if (track->Charge()<0) 
 	centbinchm += 4;
       
-      if (totalTrkP > 0)
-	fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
-
+      fHistEsubPchRat[centbinchm]->Fill(totalTrkP, Esub / totalTrkP);
       fHistEsubPch[centbinchm]->Fill(totalTrkP, Esub);
     } 
   }
-
-  if (totalTrkP <= 0)
-    return energyclus;
  
   Double_t clusEexcl = fEexclCell * cNcells;
 

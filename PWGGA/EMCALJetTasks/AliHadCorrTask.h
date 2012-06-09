@@ -55,8 +55,8 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   TH2F                  *fHistMatchdRvsEP[4];        //!output histograms
   TH1F                  *fHistNclusvsCent;           //!output histograms
   TH1F                  *fHistNclusMatchvsCent;      //!output histograms
-  TH1F                  *fHistEbefore;               //!output histograms
-  TH1F                  *fHistEafter;                //!output histograms
+  TH2F                  *fHistEbefore;               //!output histograms
+  TH2F                  *fHistEafter;                //!output histograms
   TH2F                  *fHistEoPCent;               //!output histograms
   TH2F                  *fHistNMatchCent;            //!output histograms
   TH2F                  *fHistNMatchCent_trk;        //!output histograms
