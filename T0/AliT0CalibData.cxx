@@ -30,6 +30,7 @@
 
 //#include <string>
 
+using std::ifstream;
 ClassImp(AliT0CalibData)
 
 //________________________________________________________________

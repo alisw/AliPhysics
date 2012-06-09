@@ -49,6 +49,7 @@ AliT0CalibData* AliT0Parameters::fgLookUp = 0;
 AliT0CalibWalk* AliT0Parameters::fgSlewCorr =0;
 AliT0CalibLatency *AliT0Parameters::fgLatency=0;
 //====================================================================
+using std::cout;
 ClassImp(AliT0Parameters)
 #if 0
   ; // This is here to keep Emacs for indenting the next line

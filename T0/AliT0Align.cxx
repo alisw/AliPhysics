@@ -44,7 +44,8 @@ Preliminary test version (T.Malkiewicz)
 // Survey Depot, based on survey results 
 // position of T0 alignment objects is computed.
 
-
+using std::endl;
+using std::cout;
 ClassImp(AliT0Align)
 
 AliT0Align::AliT0Align() :
