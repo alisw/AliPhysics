@@ -35,7 +35,6 @@
 #include "AliVEventHandler.h"
 #include "AliAnaCaloTrackCorrBaseClass.h" 
 #include "AliAnaCaloTrackCorrMaker.h" 
-#include "AliEventplane.h"
 
 ClassImp(AliAnaCaloTrackCorrMaker)
 

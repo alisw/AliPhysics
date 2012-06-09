@@ -447,7 +447,7 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetEventCentralityBin()
     }
     else
     {
-      curCentrBin = (Int_t)(GetEventCentrality()-minCent) * GetNCentrBin() / (maxCent-minCent); 
+      curCentrBin = (Int_t)((GetEventCentrality()-minCent) * GetNCentrBin() / (maxCent-minCent)); 
       if(curCentrBin==GetNCentrBin()) curCentrBin = GetNCentrBin()-1;
     }  
     

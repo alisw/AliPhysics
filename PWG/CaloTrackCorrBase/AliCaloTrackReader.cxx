@@ -777,9 +777,10 @@ Double_t AliCaloTrackReader::GetEventPlaneAngle() const
     }
   
     //printf("AliCaloTrackReader::GetEventPlaneAngle() = %f\n",ep);
-    if(ep > TMath::Pi()) printf("AliCaloTrackReader::GetEventPlaneAngle() - Too large angle = %f\n",ep);
+    if     (ep > TMath::Pi()) printf("AliCaloTrackReader::GetEventPlaneAngle() - Too large angle = %f\n",ep);
+    else if(ep < 0          ) printf("AliCaloTrackReader::GetEventPlaneAngle() - Negative angle = %f\n" ,ep);
     
-    return TMath::Abs(ep);
+    return ep;
   }
   else
   {
