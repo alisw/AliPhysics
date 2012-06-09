@@ -36,6 +36,8 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fMaxEta(0.9),
   fMinPhi(-10),
   fMaxPhi(10),
+  fMaxClusterPt(100),
+  fMaxTrackPt(100),
   fJets(0)
 {
   // Default constructor.
@@ -54,6 +56,8 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name) :
   fMaxEta(0.9),
   fMinPhi(-10),
   fMaxPhi(10),
+  fMaxClusterPt(100),
+  fMaxTrackPt(100),
   fJets(0)
 {
   // Standard constructor.
@@ -72,6 +76,8 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fMaxEta(0.9),
   fMinPhi(-10),
   fMaxPhi(10),
+  fMaxClusterPt(100),
+  fMaxTrackPt(100),
   fJets(0)
 {
   // Standard constructor.
@@ -132,7 +138,7 @@ Bool_t AliAnalysisTaskEmcalJet::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Bool_t bias) const
+Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Bool_t bias, Bool_t upCut) const
 {   
   // Return true if jet is accepted.
 
@@ -141,6 +147,8 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Bool_t bias) const
   if (jet->Area() <= fJetAreaCut)
     return kFALSE;
   if (bias && jet->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet->MaxClusterPt() < fPtBiasJetClus))
+    return kFALSE;
+  if (upCut && (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt))
     return kFALSE;
 
   return (Bool_t)(jet->Eta() > fMinEta && jet->Eta() < fMaxEta && jet->Phi() > fMinPhi && jet->Phi() < fMaxPhi);
