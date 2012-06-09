@@ -19,7 +19,7 @@ ClassImp(AliEmcalClusTrackMatcherTask)
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
   AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask",kFALSE),
-  fMaxDistance(0.1)
+  fMaxDistance(0.06)
 {
   // Constructor.
 }
@@ -27,7 +27,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() :
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name) : 
   AliAnalysisTaskEmcal(name,kFALSE),
-  fMaxDistance(0.1)
+  fMaxDistance(0.06)
 {
   // Standard constructor.
 }
