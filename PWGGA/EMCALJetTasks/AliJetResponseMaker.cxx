@@ -28,23 +28,23 @@ AliJetResponseMaker::AliJetResponseMaker() :
   AliAnalysisTaskEmcalJet("AliJetResponseMaker"),
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
-  fMaxDistance(0.2),
+  fMaxDistance(0.25),
   fMCTracks(0),
   fMCJets(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
-  fHistMCJetsPtNonBias(0),
   fHistMCJetsNEFvsPt(0),
   fHistMCJetsZvsPt(0),
   fHistJetPhiEta(0),
   fHistJetsPt(0),
-  fHistJetsPtNonBias(0),
   fHistJetsNEFvsPt(0),
   fHistJetsZvsPt(0),
   fHistClosestDistance(0),
   fHistClosestDeltaPhi(0),
   fHistClosestDeltaEta(0),
   fHistClosestDeltaPt(0),
+  fHistNonMatchedMCJetPt(0),
+  fHistNonMatchedJetPt(0),
   fHistPartvsDetecPt(0)
 {
   // Default constructor.
@@ -55,23 +55,23 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   AliAnalysisTaskEmcalJet(name),
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
-  fMaxDistance(0.2),
+  fMaxDistance(0.25),
   fMCTracks(0),
   fMCJets(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
-  fHistMCJetsPtNonBias(0),
   fHistMCJetsNEFvsPt(0),
   fHistMCJetsZvsPt(0),
   fHistJetPhiEta(0),
   fHistJetsPt(0),
-  fHistJetsPtNonBias(0),
   fHistJetsNEFvsPt(0),
   fHistJetsZvsPt(0),
   fHistClosestDistance(0),
   fHistClosestDeltaPhi(0),
   fHistClosestDeltaEta(0),
   fHistClosestDeltaPt(0),
+  fHistNonMatchedMCJetPt(0),
+  fHistNonMatchedJetPt(0),
   fHistPartvsDetecPt(0)
 {
   // Standard constructor.
@@ -102,11 +102,6 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistJetsPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistJetsPt);
   
-  fHistJetsPtNonBias = new TH1F("fHistJetsPtNonBias", "fHistJetsPtNonBias", fNbins, fMinBinPt, fMaxBinPt);
-  fHistJetsPtNonBias->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistJetsPtNonBias->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistJetsPtNonBias);
-  
   fHistJetsZvsPt = new TH2F("fHistJetsZvsPt", "fHistJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
   fHistJetsZvsPt->GetXaxis()->SetTitle("Z");
   fHistJetsZvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
@@ -128,11 +123,6 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistMCJetsPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistMCJetsPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistMCJetsPt);
-  
-  fHistMCJetsPtNonBias = new TH1F("fHistMCJetsPtNonBias", "fHistMCJetsPtNonBias", fNbins, fMinBinPt, fMaxBinPt);
-  fHistMCJetsPtNonBias->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistMCJetsPtNonBias->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistMCJetsPtNonBias);
   
   fHistMCJetsZvsPt = new TH2F("fHistMCJetsZvsPt", "fHistMCJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
   fHistMCJetsZvsPt->GetXaxis()->SetTitle("Z");
@@ -166,12 +156,22 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistClosestDeltaPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistClosestDeltaPt);
 
+  fHistNonMatchedMCJetPt = new TH1F("fHistNonMatchedMCJetPt", "fHistNonMatchedMCJetPt", fNbins, fMinBinPt, fMaxBinPt);
+  fHistNonMatchedMCJetPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistNonMatchedMCJetPt->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistNonMatchedMCJetPt);
+
+  fHistNonMatchedJetPt = new TH1F("fHistNonMatchedJetPt", "fHistNonMatchedJetPt", fNbins, fMinBinPt, fMaxBinPt);
+  fHistNonMatchedJetPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistNonMatchedJetPt->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistNonMatchedJetPt);
+
   fHistPartvsDetecPt = new TH2F("fHistPartvsDetecPt", "fHistPartvsDetecPt", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
-  fHistPartvsDetecPt->GetXaxis()->SetTitle("p_{T}^{det}");
-  fHistPartvsDetecPt->GetYaxis()->SetTitle("p_{T}^{rec}");
+  fHistPartvsDetecPt->GetXaxis()->SetTitle("p_{T}^{rec}");
+  fHistPartvsDetecPt->GetYaxis()->SetTitle("p_{T}^{gen}");
   fOutput->Add(fHistPartvsDetecPt);
 
-  PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
+  PostData(1, fOutput); // Post data for ALL output slots > 0 here, to get at least an empty histogram
 }
 
 //________________________________________________________________________
@@ -180,8 +180,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
   // Fill histograms.
 
   // Find the closest jets
-  DoJetLoop(fJets, fMCJets);
-  DoJetLoop(fMCJets, fJets);
+  DoJetLoop(fJets, fMCJets, kFALSE);
+  DoJetLoop(fMCJets, fJets, kTRUE);
 
   const Int_t nJets = fJets->GetEntriesFast();
 
@@ -197,11 +197,6 @@ Bool_t AliJetResponseMaker::FillHistograms()
     if (!AcceptJet(jet))
       continue;
 
-    fHistJetsPtNonBias->Fill(jet->Pt());
-
-    if (jet->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet->MaxClusterPt() < fPtBiasJetClus))
-	continue;
-
     if (jet->ClosestJet() && jet->ClosestJet()->ClosestJet() == jet && 
         jet->ClosestJetDistance() < fMaxDistance) {    // Matched jet found
       jet->SetMatchedToClosest();
@@ -214,6 +209,9 @@ Bool_t AliJetResponseMaker::FillHistograms()
       Double_t dpt = jet->Pt() - jet->MatchedJet()->Pt();
       fHistClosestDeltaPt->Fill(dpt);
       fHistPartvsDetecPt->Fill(jet->Pt(), jet->MatchedJet()->Pt());
+    }
+    else {
+      fHistNonMatchedJetPt->Fill(jet->Pt());
     }
 
     fHistJetsPt->Fill(jet->Pt());
@@ -249,14 +247,13 @@ Bool_t AliJetResponseMaker::FillHistograms()
       AliError(Form("Could not receive mc jet %d", i));
       continue;
     }  
-
-    if (!AcceptJet(jet))
+    
+    if (!AcceptJet(jet, kTRUE, kFALSE))
       continue;
 
-    fHistMCJetsPtNonBias->Fill(jet->Pt());
-
-    if (jet->MaxTrackPt() < fPtBiasJetTrack)
-	continue;
+    if (!jet->MatchedJet()) {
+      fHistNonMatchedMCJetPt->Fill(jet->Pt());
+    }
 
     fHistMCJetsPt->Fill(jet->Pt());
 
@@ -276,7 +273,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2)
+void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc)
 {
   // Do the jet loop.
 
@@ -292,7 +289,7 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2)
       continue;
     }  
 
-    if (!AcceptJet(jet1))
+    if (!AcceptJet(jet1, kTRUE, mc))
       continue;
     
     if (jet1->MaxTrackPt() < fPtBiasJetTrack && 
@@ -308,7 +305,7 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2)
 	continue;
       }  
       
-      if (!AcceptJet(jet2))
+      if (!AcceptJet(jet2, kTRUE, !mc))
 	continue;
       
       if (jet2->MaxTrackPt() < fPtBiasJetTrack && 

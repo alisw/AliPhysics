@@ -23,7 +23,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetMaxDistance(Double_t d)         { fMaxDistance   = d; }
 
  protected:
-  void                        DoJetLoop(TClonesArray *jets1, TClonesArray *jets2);
+  void                        DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc);
   Bool_t                      FillHistograms();
   Bool_t                      RetrieveEventObjects();
 
@@ -35,13 +35,11 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   // Particle level jets
   TH2F                       *fHistMCJetPhiEta;           //!phi-eta distribution of jets
   TH1F                       *fHistMCJetsPt;              //!inclusive jet pt spectrum
-  TH1F                       *fHistMCJetsPtNonBias;       //!non biased inclusive jet pt spectrum
   TH2F                       *fHistMCJetsNEFvsPt;         //!jet neutral energy fraction vs. jet pt
   TH2F                       *fHistMCJetsZvsPt;           //!constituent Pt over Jet Pt ratio vs. jet pt
   // Detector level jets
   TH2F                       *fHistJetPhiEta;             //!phi-eta distribution of jets
   TH1F                       *fHistJetsPt;                //!inclusive jet pt spectrum
-  TH1F                       *fHistJetsPtNonBias;         //!non biased inclusive jet pt spectrum
   TH2F                       *fHistJetsNEFvsPt;           //!jet neutral energy fraction vs. jet pt
   TH2F                       *fHistJetsZvsPt;             //!constituent Pt over Jet Pt ratio vs. jet pt
   // Detector-particle level matching
@@ -49,12 +47,14 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistClosestDeltaPhi;       //!delta phi between closest particle to detector level jet
   TH1F                       *fHistClosestDeltaEta;       //!delta eta between closest particle to detector level jet
   TH1F                       *fHistClosestDeltaPt;        //!delta pt between closest particle to detector level jet
+  TH1F                       *fHistNonMatchedMCJetPt;     //!non-matched mc jet pt distribution
+  TH1F                       *fHistNonMatchedJetPt;       //!non-matched jet pt distribution
   TH2F                       *fHistPartvsDetecPt;         //!particle vs detector level jet pt
 
  private:
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 1) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 2) // Jet response matrix producing task
 };
 #endif
