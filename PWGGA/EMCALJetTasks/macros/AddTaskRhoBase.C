@@ -27,7 +27,7 @@ AliAnalysisTaskRhoBase* AddTaskRhoBase(
   //-------------------------------------------------------
 
   TString name(Form("Rho_Base"));
-  AliAnalysisTaskRho *rhotask = new AliAnalysisTaskRho(name);
+  AliAnalysisTaskRhoBase *rhotask = new AliAnalysisTaskRhoBase(name);
   rhotask->SetRhoName(rhoname);
   rhotask->SetRhoFunction(rfunc);
 
