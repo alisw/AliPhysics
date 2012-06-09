@@ -378,7 +378,7 @@ void AliCaloTrackReader::InitParameters()
   fCentralityOpt    = 10;
   fCentralityBin[0] = fCentralityBin[1]=-1;
   
-  fEventPlaneMethod = "Q";
+  fEventPlaneMethod = "V0";
 
   // Allocate memory (not sure this is the right place)
   fCTSTracks       = new TObjArray();
@@ -667,9 +667,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     if(!inputHandler) return kFALSE ;  // to content coverity
     
     UInt_t isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
-    UInt_t isINT     = inputHandler->IsEventSelected() & AliVEvent::kAnyINT;
+    UInt_t isMB      = inputHandler->IsEventSelected() & AliVEvent::kMB;
     
-    if(fFillCTS && (isINT || isTrigger))
+    if(fFillCTS && (isMB || isTrigger))
     {   
       FillInputCTS();
       //Accept events with at least one track
@@ -737,16 +737,55 @@ Int_t AliCaloTrackReader::GetEventCentrality() const
   
   if(GetCentrality())
   {
-    if(fCentralityOpt==100)     return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
-    else if(fCentralityOpt==10) return GetCentrality()->GetCentralityClass10(fCentralityClass);// 10 bins max
-    else if(fCentralityOpt==20) return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
+    if     (fCentralityOpt==100) return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
+    else if(fCentralityOpt==10)  return GetCentrality()->GetCentralityClass10(fCentralityClass);// 10 bins max
+    else if(fCentralityOpt==20)  return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
     else 
     {
-      printf("AliAnaPartCorrBaseClass::Unknown centrality option %d, use 10, 20 or 100\n",fCentralityOpt);
-      return 0;
+      printf("AliCaloTrackReader::GetEventCentrality() - Unknown centrality option %d, use 10, 20 or 100\n",fCentralityOpt);
+      return -1;
     } 
   }
-  else return 0;
+  else return -1;
+  
+}
+
+//_____________________________________________________
+Double_t AliCaloTrackReader::GetEventPlaneAngle() const 
+{
+  //Return current event centrality
+  
+  if(GetEventPlane())
+  {
+    Float_t ep =  GetEventPlane()->GetEventplane(GetEventPlaneMethod(), GetInputEvent());
+    
+    if(GetEventPlaneMethod()=="Q" && (ep < 0 || ep > TMath::Pi())) 
+    {
+      printf("AliCaloTrackReader::GetEventPlaneAngle() -  Bad EP for <Q> method : %f\n",ep);
+      return -1000;
+    }
+    else if(GetEventPlaneMethod().Contains("V0")  ) 
+    {
+      if((ep > TMath::Pi()/2 || ep < -TMath::Pi()/2))
+      {
+        printf("AliCaloTrackReader::GetEventPlaneAngle() -  Bad EP for <%s> method : %f\n",GetEventPlaneMethod().Data(), ep);
+        return -1000;
+      }
+      
+      ep+=TMath::Pi()/2; // put same range as for <Q> method
+      
+    }
+  
+    //printf("AliCaloTrackReader::GetEventPlaneAngle() = %f\n",ep);
+    if(ep > TMath::Pi()) printf("AliCaloTrackReader::GetEventPlaneAngle() - Too large angle = %f\n",ep);
+    
+    return TMath::Abs(ep);
+  }
+  else
+  {
+    printf("AliCaloTrackReader::GetEventPlaneAngle() -  No EP pointer\n");
+    return -1000;
+  } 
   
 }
 
