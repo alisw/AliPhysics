@@ -1,5 +1,5 @@
 # -*- mode: Makefile -*-
-# $Id: $
+# $Id$
 #--------------------------------------------------------------------------------#
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,11 +27,9 @@
 
 set ( SRCS 
  EMCALJetTasks/AliAnalysisTaskEmcalJet.cxx
- EMCALJetTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/AliAnalysisTaskRho.cxx
  EMCALJetTasks/AliAnalysisTaskRhoAverage.cxx
  EMCALJetTasks/AliAnalysisTaskRhoBase.cxx
- EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
  EMCALJetTasks/AliEmcalJetTask.cxx
  EMCALJetTasks/AliHadCorrTask.cxx
@@ -40,9 +38,11 @@ set ( SRCS
  EMCALJetTasks/AliJetRandomizerTask.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx
  EMCALJetTasks/AliRhoParameter.cxx
+ EMCALJetTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/AliAnalysisTaskSOH.cxx
+ EMCALJetTasks/AliAnalysisTaskScale.cxx
 )
 
 set ( DHDR  PWGGAEMCALJetTasksLinkDef.h)

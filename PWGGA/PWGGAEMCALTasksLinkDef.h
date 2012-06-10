@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 
 #ifdef __CINT__
  
@@ -8,14 +8,22 @@
 
 #pragma link C++ class AliAnalysisTaskEMCALClusterize+;
 #pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
+#pragma link C++ class AliAnalysisTaskEMCALIsoPhoton+;
 #pragma link C++ class AliAnalysisTaskEMCALPhoton+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0CalibSelection+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
 #pragma link C++ class AliAnalysisTaskEMCALTriggerQA+;
 #pragma link C++ class AliAnalysisTaskESDfilterEMCALEventSelect+;
+#pragma link C++ class AliAnalysisTaskEmcal+;
+#pragma link C++ class AliAnalysisTaskPi0V2+;
+#pragma link C++ class AliAnalysisTaskSATR+;
 #pragma link C++ class AliAnalysisTaskTrgContam+;
+#pragma link C++ class AliEmcalClusTrackMatcherTask+;
 #pragma link C++ class AliEmcalCompatTask+;
 #pragma link C++ class AliEmcalEsdTpcTrackTask+;
+#pragma link C++ class AliEmcalMCTrackSelector+;
+#pragma link C++ class AliEmcalParticle+;
+#pragma link C++ class AliEmcalParticleMaker+;
 #pragma link C++ class AliEmcalPhysicsSelection+;
 #pragma link C++ class AliEmcalPhysicsSelectionTask+;
 #pragma link C++ class AliEmcalPicoTrackMaker+;
@@ -36,13 +44,5 @@
 #pragma link C++ class AliStaPart+;
 #pragma link C++ class AliStaTrigger+;
 #pragma link C++ class AliStaVertex+;
-#pragma link C++ class AliAnalysisTaskSATR+;
-#pragma link C++ class AliEmcalMCTrackSelector+;
-#pragma link C++ class AliEmcalParticle+;
-#pragma link C++ class AliAnalysisTaskEmcal+;
-#pragma link C++ class AliEmcalParticleMaker+;
-#pragma link C++ class AliEmcalClusTrackMatcherTask+;
-#pragma link C++ class AliAnalysisTaskPi0V2+;
-#pragma link C++ class AliAnalysisTaskEMCALIsoPhoton+;
 
 #endif
