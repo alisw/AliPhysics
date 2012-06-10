@@ -20,9 +20,8 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   AliAnalysisTaskRho(const char *name, Bool_t histo=kFALSE);
   virtual ~AliAnalysisTaskRho() {}
   
-  virtual void           UserCreateOutputObjects();
-  virtual void           UserExec(Option_t*);
-  virtual void           Terminate(Option_t*);
+  void                   UserCreateOutputObjects();
+  void                   UserExec(Option_t*);
 
   const char            *GetRhoScaled() const                                  { return fRhoScaledName;  }
   void                   SetAreaCut(Double_t a = 0.0)                          { fAreaCut       = a    ; }

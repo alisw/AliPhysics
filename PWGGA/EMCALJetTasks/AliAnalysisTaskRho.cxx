@@ -276,12 +276,6 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
 }      
 
 //________________________________________________________________________
-void AliAnalysisTaskRho::Terminate(Option_t *) 
-{
-  // Called at the end of the analysis.
-}
-
-//________________________________________________________________________
 void AliAnalysisTaskRho::ExecOnce() 
 {
   // Initialize some settings that need to be determined in UserExec.

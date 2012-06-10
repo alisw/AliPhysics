@@ -15,9 +15,8 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskSE {
   AliAnalysisTaskRhoBase(const char *name);
   virtual ~AliAnalysisTaskRhoBase() {}
   
-  virtual void           UserCreateOutputObjects();
-  virtual void           UserExec(Option_t*);
-  virtual void           Terminate(Option_t*);
+  void                   UserCreateOutputObjects();
+  void                   UserExec(Option_t*);
 
   const char            *GetRhoName() const                                    { return fRhoName       ; }
   void                   SetRhoFunction(TF1* rf)                               { fRhoFunction   = rf   ; }

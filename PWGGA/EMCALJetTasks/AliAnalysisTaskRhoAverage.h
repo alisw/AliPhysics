@@ -17,7 +17,6 @@ class AliAnalysisTaskRhoAverage : public AliAnalysisTaskRhoBase {
   virtual ~AliAnalysisTaskRhoAverage() {}
   
   void                   UserExec(Option_t*);
-  void                   Terminate(Option_t*);
 
   void                   SetClustersName(const char *n)                        { fClustersName  = n    ; }
   void                   SetEtaLimits(Double_t emin, Double_t emax)            { fEtaMin        = emin ; fEtaMax = emax  ; }
