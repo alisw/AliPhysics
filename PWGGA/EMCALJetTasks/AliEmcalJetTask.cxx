@@ -119,7 +119,7 @@ void AliEmcalJetTask::UserExec(Option_t *)
   fEvent = InputEvent();
 
   if (!fEvent) {
-    AliError("Could not retrieve event! Returning");
+    AliError(Form("%s: Could not retrieve event! Returning", GetName()));
     return;
   }
 
@@ -140,7 +140,7 @@ void AliEmcalJetTask::UserExec(Option_t *)
       am->LoadBranch("Tracks");
     tracks = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fTracksName));
     if (!tracks) {
-      AliError(Form("Pointer to tracks %s == 0", fTracksName.Data()));
+      AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data()));
       return;
     }
   }
@@ -149,7 +149,7 @@ void AliEmcalJetTask::UserExec(Option_t *)
       am->LoadBranch("CaloClusters");
     clus = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fCaloName));
     if (!clus) {
-      AliError(Form("Pointer to clus %s == 0", fCaloName.Data()));
+      AliError(Form("%s: Pointer to clus %s == 0", GetName(), fCaloName.Data()));
       return;
     }
   }
@@ -241,7 +241,7 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
   // get geometry
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
   if (!geom) {
-    AliFatal("Can not create geometry");
+    AliFatal(Form("%s: Can not create geometry", GetName()));
     return;
   }
   
@@ -265,7 +265,7 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
     Int_t gemc          = 0;
     Int_t ncharged      = 0;
     Int_t nneutral      = 0;
-    Double_t MCpt       = 0;
+    Double_t mcpt       = 0;
 
     jet->SetNumberOfTracks(constituents.size());
     jet->SetNumberOfClusters(constituents.size());
@@ -280,7 +280,7 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
             (geta > geom->GetArm1EtaMin()) && (geta < geom->GetArm1EtaMax()))
           ++gemc;
         continue;
-      }	else if (uid > 0) { // track constituent
+      }	else if ((uid > 0) && tracks) { // track constituent
 	Int_t tid = uid - 100;
         AliVParticle *t = static_cast<AliVParticle*>(tracks->At(tid));
         if (t) {
@@ -296,12 +296,12 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
 	  }
 
 	  if (t->InheritsFrom("AliMCParticle") || t->GetLabel() == 100) // MC particle
-	    MCpt += t->Pt();
+	    mcpt += t->Pt();
 
           jet->AddTrackAt(tid, nt);
           ++nt;
         }
-      } else { // cluster constituent
+      } else if (clus) { // cluster constituent
 	Int_t cid = -uid - 100;
 	AliVCluster *c = static_cast<AliVCluster*>(clus->At(cid));
 	if (c) {
@@ -312,12 +312,15 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
 	    maxNe = nP.Pt();
 
 	  if (c->Chi2() == 100) // MC particle
-	    MCpt += nP.Pt();
+	    mcpt += nP.Pt();
 
 	  jet->AddClusterAt(cid, nc);
 	  ++nc;
 	  ++nneutral;
 	}
+      } else {
+        AliError(Form("%s: No logical way to end up here.", GetName()));
+        continue;
       }
     }
     jet->SetNumberOfTracks(nt);
@@ -329,7 +332,7 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
     jet->SetArea(fjw.GetJetArea(ij));
     jet->SetNumberOfCharged(ncharged);
     jet->SetNumberOfNeutrals(nneutral);
-    jet->SetMCPt(MCpt);
+    jet->SetMCPt(mcpt);
     if (gall > 0)
       jet->SetAreaEmc(fjw.GetJetArea(ij) * gemc / gall);
     else 
