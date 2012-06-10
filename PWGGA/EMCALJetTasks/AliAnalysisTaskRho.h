@@ -17,23 +17,27 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
 
  public:
   AliAnalysisTaskRho();
-  AliAnalysisTaskRho(const char *name);
-  AliAnalysisTaskRho(const char *name, Bool_t histo);
+  AliAnalysisTaskRho(const char *name, Bool_t histo=kFALSE);
   virtual ~AliAnalysisTaskRho() {}
   
   virtual void           UserCreateOutputObjects();
   virtual void           UserExec(Option_t*);
   virtual void           Terminate(Option_t*);
 
+  const char            *GetRhoScaled() const                                  { return fRhoScaledName;  }
   void                   SetAreaCut(Double_t a = 0.0)                          { fAreaCut       = a    ; }
+  void                   SetExcludeLeadJets(UInt_t n)                          { fNExclLeadJets = n    ; }
   void                   SetJetEta(Double_t emin, Double_t emax)               { fEtaMin        = emin ; fEtaMax = emax  ; }
   void                   SetJetPhi(Double_t pmin, Double_t pmax)               { fPhiMin        = pmin ; fPhiMax = pmax  ; }
   void                   SetJetsName(const char *n)                            { fJetsName      = n    ; }
   void                   SetScaleFunction(TF1* sf)                             { fScaleFunction = sf   ; }
   void                   SetTracksName(const char *n)                          { fTracksName    = n    ; }
-  void                   SetExcludeLeadJets(UInt_t n)                          { fNExclLeadJets = n    ; }
-  
+  void                   SetRhoName(const char *name)                          { fRhoName       = name ; 
+                                                                                 fRhoScaledName = name;
+                                                                                 fRhoScaledName += "_Scaled"; }
+
  protected:
+  virtual void           ExecOnce();
   virtual Double_t       GetScaleFactor(Double_t cent);
 
   TString                fTracksName;                    // name of track collection
@@ -47,6 +51,8 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   UInt_t                 fNExclLeadJets;                 // number of leading jets to be excluded from the median calculation
   TF1                   *fScaleFunction;                 // pre-computed scale factor as a function of centrality
   Bool_t                 fCreateHisto;                   // whether or not create histograms
+  TClonesArray          *fTracks;                        //!ptr to input tracks
+  TClonesArray          *fJets;                          //!ptr to input jets
   TList                 *fOutputList;                    //!output list
   TH1F                  *fHistCentrality;                //!centrality distribution
   TH1F                  *fHistJetPt;                     //!jet pt distribution
@@ -57,7 +63,6 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   TH2F                  *fHistJetPtvsCent;               //!jet pt vs. centrality
   TH2F                  *fHistJetAreavsCent;             //!jet area vs. centrality
   TH2F                  *fHistNjetvsCent;                //!no. of jets vs. centrality
- 
   TH2F                  *fHistRhovsNtrack;               //!rho vs. no. of tracks
   TH2F                  *fHistDeltaRhovsNtrack;          //!delta rho vs. no. of tracks
   TH2F                  *fHistDeltaRhoScalevsNtrack;     //!delta rho scaled vs. no. of tracks
@@ -69,6 +74,6 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   AliAnalysisTaskRho(const AliAnalysisTaskRho&);             // not implemented
   AliAnalysisTaskRho& operator=(const AliAnalysisTaskRho&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRho, 5); // Rho task
+  ClassDef(AliAnalysisTaskRho, 6); // Rho task
 };
 #endif

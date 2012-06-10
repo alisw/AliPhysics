@@ -3,12 +3,9 @@
 
 // $Id$
 
-class TList;
-class TH1F;
-class TH2F;
 class TClonesArray;
-class TString;
-class TF1;
+class TList;
+class AliEmcalJet;
 
 #include "AliAnalysisTaskRhoBase.h"
 
@@ -17,20 +14,20 @@ class AliAnalysisTaskRhoAverage : public AliAnalysisTaskRhoBase {
  public:
   AliAnalysisTaskRhoAverage();
   AliAnalysisTaskRhoAverage(const char *name);
-  AliAnalysisTaskRhoAverage(const char *name, Bool_t histo);
   virtual ~AliAnalysisTaskRhoAverage() {}
   
-  virtual void           UserExec(Option_t*);
-  virtual void           Terminate(Option_t*);
+  void                   UserExec(Option_t*);
+  void                   Terminate(Option_t*);
 
-  void                   SetTracksName(const char *n)                          { fTracksName    = n    ; }
   void                   SetClustersName(const char *n)                        { fClustersName  = n    ; }
-  void                   SetJetsName(const char *n)                            { fJetsName      = n    ; }  
   void                   SetEtaLimits(Double_t emin, Double_t emax)            { fEtaMin        = emin ; fEtaMax = emax  ; }
+  void                   SetJetsName(const char *n)                            { fJetsName      = n    ; }  
   void                   SetPhiLimits(Double_t pmin, Double_t pmax)            { fPhiMin        = pmin ; fPhiMax = pmax  ; }
   void                   SetPtMin(Double_t pt)                                 { fPtMin         = pt   ; }
+  void                   SetTracksName(const char *n)                          { fTracksName    = n    ; }
   
  protected:
+  void                   ExecOnce();
   Bool_t                 IsJetCluster(AliEmcalJet* jet, Int_t iclus) const;
   Bool_t                 IsJetTrack(AliEmcalJet* jet, Int_t itrack)  const;
 
@@ -42,10 +39,13 @@ class AliAnalysisTaskRhoAverage : public AliAnalysisTaskRhoBase {
   Double_t               fPhiMin;                        // minimum phi
   Double_t               fPhiMax;                        // maximum phi
   Double_t               fPtMin;                         // minimum pt
+  TClonesArray          *fClusters;                      //!input clusters
+  TClonesArray          *fJets;                          //!input jets
+  TClonesArray          *fTracks;                        //!input tracks
 
   AliAnalysisTaskRhoAverage(const AliAnalysisTaskRhoAverage&);             // not implemented
   AliAnalysisTaskRhoAverage& operator=(const AliAnalysisTaskRhoAverage&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRhoAverage, 1); // Rho task, method: sum of all particle pt / full acceptance area
+  ClassDef(AliAnalysisTaskRhoAverage, 2); // Rho task, method: sum of all particle pt / full acceptance area
 };
 #endif

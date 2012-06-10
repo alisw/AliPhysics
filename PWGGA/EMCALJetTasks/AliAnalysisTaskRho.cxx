@@ -1,6 +1,8 @@
 // $Id$
 //
-// Calculation of rho 
+// Calculation of rho from a collection of jets.
+// If scale function is given the scaled rho will be exported
+// with the name as "fRhoName".apppend("_Scaled").
 //
 // Authors: R.Reed, S.Aiola
 
@@ -37,41 +39,8 @@ AliAnalysisTaskRho::AliAnalysisTaskRho() :
   fNExclLeadJets(0),
   fScaleFunction(0),
   fCreateHisto(kFALSE),
-  fOutputList(0),
-  fHistCentrality(0),
-  fHistJetPt(0),
-  fHistJetArea(0),
-  fHistRhovsCent(0),
-  fHistDeltaRhovsCent(0),
-  fHistDeltaRhoScalevsCent(0),
-  fHistJetPtvsCent(0),
-  fHistJetAreavsCent(0),
-  fHistNjetvsCent(0),
-  fHistRhovsNtrack(0),
-  fHistDeltaRhovsNtrack(0),
-  fHistDeltaRhoScalevsNtrack(0),
-  fHistJetPtvsNtrack(0),
-  fHistJetAreavsNtrack(0),
-  fHistNjetvsNtrack(0),
-  fRhoScaled(0)
-{
-  // Constructor
-}
-
-//________________________________________________________________________
-AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name) :
-  AliAnalysisTaskRhoBase(name),
-  fTracksName("tracks"),
-  fJetsName("KtJets"),
-  fRhoScaledName(""),
-  fPhiMin(0),
-  fPhiMax(0),
-  fEtaMin(0),
-  fEtaMax(0),
-  fAreaCut(0),
-  fNExclLeadJets(0),
-  fScaleFunction(0),
-  fCreateHisto(kFALSE),
+  fTracks(0),
+  fJets(0),
   fOutputList(0),
   fHistCentrality(0),
   fHistJetPt(0),
@@ -100,13 +69,15 @@ AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name, Bool_t histo) :
   fJetsName("KtJets"),
   fRhoScaledName(""),
   fPhiMin(0),
-  fPhiMax(0),
-  fEtaMin(0),
-  fEtaMax(0),
-  fAreaCut(0),
-  fNExclLeadJets(0),
+  fPhiMax(TMath::TwoPi()),
+  fEtaMin(-0.5),
+  fEtaMax(+0.5),
+  fAreaCut(0.01),
+  fNExclLeadJets(1),
   fScaleFunction(0),
   fCreateHisto(histo),
+  fTracks(0),
+  fJets(0),
   fOutputList(0),
   fHistCentrality(0),
   fHistJetPt(0),
@@ -131,7 +102,6 @@ AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name, Bool_t histo) :
     DefineOutput(1, TList::Class());
 }
 
-
 //________________________________________________________________________
 void AliAnalysisTaskRho::UserCreateOutputObjects()
 {
@@ -139,9 +109,11 @@ void AliAnalysisTaskRho::UserCreateOutputObjects()
 
   AliAnalysisTaskRhoBase::UserCreateOutputObjects();
 
-  fRhoScaledName = fRhoName;
-  fRhoScaledName += "_Scaled";
-  fRhoScaled = new AliRhoParameter(fRhoScaledName, 0);  
+  if (fScaleFunction) {
+    fRhoScaledName = fRhoName;
+    fRhoScaledName += "_Scaled";
+    fRhoScaled = new AliRhoParameter(fRhoScaledName, 0);  
+  }
 
   if (!fCreateHisto)
     return;
@@ -149,11 +121,6 @@ void AliAnalysisTaskRho::UserCreateOutputObjects()
   OpenFile(1);
   fOutputList = new TList();
   fOutputList->SetOwner();
-
-  if (!fCreateHisto) {
-    PostData(1, fOutputList);
-    return;
-  }
 
   fHistCentrality             = new TH1F("Centrality",            "Centrality",            101, -1,  100);
   fHistRhovsCent              = new TH2F("RhovsCent",             "RhovsCent",             101, -1,  100,   500,  0,   500);
@@ -194,84 +161,43 @@ void AliAnalysisTaskRho::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskRho::GetScaleFactor(Double_t cent)
-{
-  // Get scale factor.
-
-  Double_t scale = 1;
-  if (fScaleFunction)
-    scale = fScaleFunction->Eval(cent);
-  return scale;
-}
-
-//________________________________________________________________________
 void AliAnalysisTaskRho::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
   
-  AliAnalysisTaskRhoBase::UserExec("");
+  if (!fIsInit) {
+    ExecOnce();
+    fIsInit = 1;
+  }
 
   fRho->SetVal(-1);
-
-   // add rho to event if not yet there
-  if (!(InputEvent()->FindListObject(fRhoScaledName))) {
-    InputEvent()->AddObject(fRhoScaled);
-  }
-  else {
+  if (fRhoScaled)
     fRhoScaled->SetVal(-1);
-  }
 
-  // optimization in case autobranch loading is off
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  if (fTracksName == "Tracks")
-    am->LoadBranch("Tracks");
+  DetermineCent();
 
-  TClonesArray *jets = 0;
-  TClonesArray *tracks = 0;
+  const Int_t Njets   = fJets->GetEntries();
 
-  tracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
-  if (!tracks) {
-    AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data() ));
-    return;
-  }
-    
-  jets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
-  if (!jets) {
-    AliError(Form("%s: Pointer to jets %s == 0", GetName(), fJetsName.Data() ));
-    return;
-  }
-  
-  if (fCreateHisto)
-    fHistCentrality->Fill(fCent);
+  Int_t maxJetIds[]   = {-1, -1};
+  Float_t maxJetPts[] = { 0,  0};
 
-  const Int_t Ntracks = tracks->GetEntries();
-  const Int_t Njets = jets->GetEntries();
-
-  Int_t maxJetIds[] = {-1, -1};
-  Float_t maxJetPts[] = {0, 0};
   if (fNExclLeadJets > 0) {
-    for (Int_t ij = 0; ij < Njets; ij++) {
-      
-      AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ij));
-      
+    for (Int_t ij = 0; ij < Njets; ++ij) {
+      AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(ij));
       if (!jet) {
-	AliError(Form("Could not receive jet %d", ij));
+	AliError(Form("%s: Could not receive jet %d", GetName(), ij));
 	continue;
       } 
-      
       if (jet->Pt() > maxJetPts[0]) {
 	maxJetPts[1] = maxJetPts[0];
 	maxJetIds[1] = maxJetIds[0];
 	maxJetPts[0] = jet->Pt();
 	maxJetIds[0] = ij;
-      }
-      
-      if (jet->Pt() > maxJetPts[1]) {
+      } else if (jet->Pt() > maxJetPts[1]) {
 	maxJetPts[1] = jet->Pt();
 	maxJetIds[1] = ij;
       }
     }
-
     if (fNExclLeadJets < 2) {
       maxJetIds[1] = -1;
       maxJetPts[1] = -1;
@@ -283,13 +209,12 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
 
   // push all jets within selected acceptance into stack
   for (Int_t iJets = 0; iJets < Njets; ++iJets) {
-    
+
     // exlcuding lead jets
     if (iJets == maxJetIds[0] || iJets == maxJetIds[1])
       continue;
 
-    AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(iJets));
-
+    AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(iJets));
     if (!jet)
       continue; 
 
@@ -300,15 +225,14 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
       continue;
     if ((jet->Eta() < fEtaMin) || (jet->Eta() > fEtaMax))
       continue;
-    if (jet->Area() == 0)
-      continue;
 
     rhovec[NjetAcc] = jet->Pt() / jet->Area();
 
-    NjetAcc++;
+    ++NjetAcc;
 
     if (fCreateHisto) {
       // filling histograms
+      const Int_t Ntracks = fTracks->GetEntriesFast();
       fHistJetPt->Fill(jet->Pt());
       fHistJetArea->Fill(jet->Area());
       fHistJetPtvsCent->Fill(fCent, jet->Pt());
@@ -317,43 +241,85 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
       fHistJetAreavsNtrack->Fill(Ntracks, jet->Area());
     }
   }
-  
-  if (fCreateHisto) {
-    fHistNjetvsCent->Fill(fCent, NjetAcc);
-    fHistNjetvsNtrack->Fill(Ntracks, NjetAcc);
-  }
 
-  Double_t scale = GetScaleFactor(fCent);
-  Double_t rhochem = GetRhoFactor(fCent);
-
-  Double_t rho0 = -1;
-  
-  if (NjetAcc > 0){
+  if (NjetAcc > 0) {
     //find median value
-    rho0 = TMath::Median(NjetAcc, rhovec);
-
-    Double_t rhoScaled = rho0 * scale;
-
+    Double_t rho0      = TMath::Median(NjetAcc, rhovec);
     fRho->SetVal(rho0);
-    fRhoScaled->SetVal(rhoScaled);
+
+    Double_t rhoScaled = rho0;
+    if (fRhoScaled) {
+      rhoScaled *= GetScaleFactor(fCent);
+      fRhoScaled->SetVal(rhoScaled);
+    }
 
     if (fCreateHisto) {
       // filling other histograms
+      Double_t rho        = GetRhoFactor(fCent);
+      const Int_t Ntracks = fTracks->GetEntriesFast();
       fHistRhovsCent->Fill(fCent, rho0);
-      fHistDeltaRhovsCent->Fill(fCent, rho0 - rhochem);
-      fHistDeltaRhoScalevsCent->Fill(fCent, rhoScaled - rhochem);
+      fHistDeltaRhovsCent->Fill(fCent, rho0 - rho);
+      fHistDeltaRhoScalevsCent->Fill(fCent, rhoScaled - rho);
       fHistRhovsNtrack->Fill(Ntracks, rho0);
-      fHistDeltaRhovsNtrack->Fill(Ntracks, rho0 - rhochem);
-      fHistDeltaRhoScalevsNtrack->Fill(Ntracks, rhoScaled - rhochem);
+      fHistDeltaRhovsNtrack->Fill(Ntracks, rho0 - rho);
+      fHistDeltaRhoScalevsNtrack->Fill(Ntracks, rhoScaled - rho);
     }
   }
 
-  if (fCreateHisto)
+  if (fCreateHisto) {
+    const Int_t Ntracks = fTracks->GetEntriesFast();
+    fHistCentrality->Fill(fCent);
+    fHistNjetvsCent->Fill(fCent, NjetAcc);
+    fHistNjetvsNtrack->Fill(Ntracks, NjetAcc);
     PostData(1, fOutputList);
+  }
 }      
 
 //________________________________________________________________________
 void AliAnalysisTaskRho::Terminate(Option_t *) 
 {
   // Called at the end of the analysis.
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskRho::ExecOnce() 
+{
+  // Initialize some settings that need to be determined in UserExec.
+
+  AliAnalysisTaskRhoBase::ExecOnce();
+
+  if (fRhoScaled) {
+    // add rho to event if not yet there
+    if (!(InputEvent()->FindListObject(fRhoScaledName))) {
+      InputEvent()->AddObject(fRhoScaled);
+    } else {
+      AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fRhoScaledName.Data()));
+      return;
+    }
+  }
+
+  if (fCreateHisto) {
+    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+    if (!fTracks) {
+      AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data() ));
+      return;
+    }
+  }
+
+  fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
+  if (!fJets) {
+    AliError(Form("%s: Pointer to jets %s == 0", GetName(), fJetsName.Data() ));
+    return;
+  }
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskRho::GetScaleFactor(Double_t cent)
+{
+  // Get scale factor.
+
+  Double_t scale = 1;
+  if (fScaleFunction)
+    scale = fScaleFunction->Eval(cent);
+  return scale;
 }

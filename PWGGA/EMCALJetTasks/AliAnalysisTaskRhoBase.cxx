@@ -1,6 +1,7 @@
 // $Id$
 //
-// Base class for rho calculation
+// Base class for rho calculation.
+// Calculates parameterized rho for given centrality independent of input.
 //
 // Author: S.Aiola
 
@@ -25,7 +26,9 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
   fRhoName("Rho"),
   fRhoFunction(0x0),
   fCent(-1),
-  fRho(0)
+  fRho(0),
+  fDoCent(0),
+  fIsInit(0)
 {
   // Constructor.
 }
@@ -36,7 +39,9 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name) :
   fRhoName("Rho"),
   fRhoFunction(0x0),
   fCent(-1),
-  fRho(0)
+  fRho(0),
+  fDoCent(0),
+  fIsInit(0)
 {
   // Constructor.
 }
@@ -56,14 +61,61 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskRhoBase::GetRhoFactor(Double_t cent)
+void AliAnalysisTaskRhoBase::UserExec(Option_t *) 
 {
-  // Return rho per centrality.
+  // Main loop, called for each event.
 
-  Double_t rho = -1;
-  if (fRhoFunction)
-    rho = fRhoFunction->Eval(cent);
-  return rho;
+  if (!fIsInit) {
+    ExecOnce();
+    fIsInit = 1;
+  }
+
+  DetermineCent();
+
+  Double_t rho = GetRhoFactor(fCent);
+  fRho->SetVal(rho);
+}      
+
+//________________________________________________________________________
+void AliAnalysisTaskRhoBase::DetermineCent() 
+{
+  // Determine centrality.
+
+  fCent = 99; 
+  
+  if (fDoCent) {
+    AliCentrality *centrality = InputEvent()->GetCentrality();
+    
+    if (centrality)
+      fCent = centrality->GetCentralityPercentile("V0M");
+    else
+      fCent = 99; // probably pp data
+    
+    if (fCent < 0) {
+      AliWarning(Form("%s: Centrality negative: %f, assuming 99", GetName(), fCent));
+      fCent = 99;
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskRhoBase::ExecOnce() 
+{
+  // Initialize some settings that need to be determined in UserExec.
+
+  // add rho to event if not yet there
+  if (!(InputEvent()->FindListObject(fRhoName))) {
+    InputEvent()->AddObject(fRho);
+  } else {
+    AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fRhoName.Data()));
+    return;
+  }
+
+  // determine if centrality should be used
+  TString bt(GetBeamType());
+  if (bt == "A-A")
+    fDoCent = 1;
+  else fDoCent = 0;
 }
 
 //_____________________________________________________
@@ -73,9 +125,8 @@ TString AliAnalysisTaskRhoBase::GetBeamType()
   // ESDs have it directly, AODs get it from hardcoded run number ranges
   
   AliVEvent *event = InputEvent();
-
   if (!event) { 
-    AliError("Couldn't retrieve event!");
+    AliError(Form("%s: Couldn't retrieve event!", GetName()));
     return "";
   }
 
@@ -85,17 +136,12 @@ TString AliAnalysisTaskRhoBase::GetBeamType()
   if (esd) {
     const AliESDRun *run = esd->GetESDRun();
     beamType = run->GetBeamType();
-  }
-  else
-  {
+  } else {
     Int_t runNumber = event->GetRunNumber();
     if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
-	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
-    {
+	(runNumber >= 166529 && runNumber <= 170593)) {  // LHC11h
       beamType = "A-A";
-    }
-    else 
-    {
+    } else {
       beamType = "p-p";
     }
   }
@@ -104,38 +150,12 @@ TString AliAnalysisTaskRhoBase::GetBeamType()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskRhoBase::UserExec(Option_t *) 
+Double_t AliAnalysisTaskRhoBase::GetRhoFactor(Double_t cent)
 {
-  // Main loop, called for each event.
+  // Return rho per centrality.
 
-  // add rho to event if not yet there
-  if (!(InputEvent()->FindListObject(fRhoName))) {
-    InputEvent()->AddObject(fRho);
-  }
-
-  // determine centrality 
-  fCent = 99; 
-  
-  if (GetBeamType() == "A-A") {
-    AliCentrality *centrality = InputEvent()->GetCentrality();
-    
-    if (centrality)
-      fCent = centrality->GetCentralityPercentile("V0M");
-    else
-      fCent = 99; // probably pp data
-    
-    if (fCent < 0) {
-      AliWarning(Form("Centrality negative: %f, assuming 99", fCent));
-      fCent = 99;
-    }
-  }
-
-  Double_t rhochem = GetRhoFactor(fCent);
-  fRho->SetVal(rhochem);
-}      
-
-//________________________________________________________________________
-void AliAnalysisTaskRhoBase::Terminate(Option_t *) 
-{
-  // Run at the end of the task.
+  Double_t rho = -1;
+  if (fRhoFunction)
+    rho = fRhoFunction->Eval(cent);
+  return rho;
 }
