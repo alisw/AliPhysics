@@ -1,4 +1,5 @@
 # -*- mode: Makefile -*-
+# $Id: $
 #--------------------------------------------------------------------------------#
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,14 +28,22 @@
 set ( SRCS 
  EMCALTasks/AliAnalysisTaskEMCALClusterize.cxx 
  EMCALTasks/AliAnalysisTaskEMCALClusterizeFast.cxx
+ EMCALTasks/AliAnalysisTaskEMCALIsoPhoton.cxx
  EMCALTasks/AliAnalysisTaskEMCALPhoton.cxx
  EMCALTasks/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
  EMCALTasks/AliAnalysisTaskEMCALPi0PbPb.cxx
  EMCALTasks/AliAnalysisTaskEMCALTriggerQA.cxx
  EMCALTasks/AliAnalysisTaskESDfilterEMCALEventSelect.cxx
+ EMCALTasks/AliAnalysisTaskEmcal.cxx
+ EMCALTasks/AliAnalysisTaskPi0V2.cxx
+ EMCALTasks/AliAnalysisTaskSATR.cxx
  EMCALTasks/AliAnalysisTaskTrgContam.cxx
+ EMCALTasks/AliEmcalClusTrackMatcherTask.cxx
  EMCALTasks/AliEmcalCompatTask.cxx
  EMCALTasks/AliEmcalEsdTpcTrackTask.cxx
+ EMCALTasks/AliEmcalMCTrackSelector.cxx
+ EMCALTasks/AliEmcalParticle.cxx
+ EMCALTasks/AliEmcalParticleMaker.cxx
  EMCALTasks/AliEmcalPhysicsSelection.cxx
  EMCALTasks/AliEmcalPhysicsSelectionTask.cxx
  EMCALTasks/AliEmcalPicoTrackMaker.cxx
@@ -45,14 +54,6 @@ set ( SRCS
  EMCALTasks/AliEsdTrackExt.cxx
  EMCALTasks/AliPicoTrack.cxx
  EMCALTasks/AliStaObjects.cxx
- EMCALTasks/AliAnalysisTaskSATR.cxx
- EMCALTasks/AliEmcalMCTrackSelector.cxx
- EMCALTasks/AliEmcalParticle.cxx
- EMCALTasks/AliEmcalParticleMaker.cxx
- EMCALTasks/AliAnalysisTaskEmcal.cxx
- EMCALTasks/AliEmcalClusTrackMatcherTask.cxx
- EMCALTasks/AliAnalysisTaskPi0V2.cxx
- EMCALTasks/AliAnalysisTaskEMCALIsoPhoton.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
