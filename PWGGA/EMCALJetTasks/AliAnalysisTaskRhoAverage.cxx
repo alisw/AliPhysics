@@ -171,12 +171,6 @@ void AliAnalysisTaskRhoAverage::UserExec(Option_t *)
 }      
 
 //________________________________________________________________________
-void AliAnalysisTaskRhoAverage::Terminate(Option_t *) 
-{
-  // Called at the end of the analysis.
-}
-
-//________________________________________________________________________
 void AliAnalysisTaskRhoAverage::ExecOnce() 
 {
   // Initialize some settings that need to be determined in UserExec.
