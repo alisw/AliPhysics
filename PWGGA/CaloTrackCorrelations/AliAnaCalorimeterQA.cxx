@@ -405,7 +405,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
  
       if(time < fTimeCutMin || time > fTimeCutMax)
       {
-          //if(GetDebug() > 0 )
+          if(GetDebug() > 0 )
             printf("AliAnaCalorimeterQA - Remove cell with Time %f\n",time);
           continue;
       }
