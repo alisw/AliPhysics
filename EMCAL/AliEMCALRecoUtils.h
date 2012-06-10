@@ -316,8 +316,15 @@ public:
   Bool_t   IsExoticCell(const Int_t absId, AliVCaloCells* cells, const Int_t bc =-1) ;
   void     SwitchOnRejectExoticCell()                 { fRejectExoticCells = kTRUE     ; }
   void     SwitchOffRejectExoticCell()                { fRejectExoticCells = kFALSE    ; } 
-  Bool_t   IsRejectExoticCell()                 const { return fRejectExoticCells    ; }
+  Bool_t   IsRejectExoticCell()                 const { return fRejectExoticCells      ; }
    
+  Float_t  GetECross(const Int_t absID, const Double_t tcell,
+                     AliVCaloCells* cells, const Int_t bc);
+  
+  Float_t  GetExoticCellFractionCut()           const { return fExoticCellFraction     ; }
+  Float_t  GetExoticCellDiffTimeCut()           const { return fExoticCellDiffTime     ; }
+  Float_t  GetExoticCellMinAmplitudeCut()       const { return fExoticCellMinAmplitude ; }
+  
   void     SetExoticCellFractionCut(Float_t f)        { fExoticCellFraction     = f    ; }
   void     SetExoticCellDiffTimeCut(Float_t dt)       { fExoticCellDiffTime     = dt   ; }
   void     SetExoticCellMinAmplitudeCut(Float_t ma)   { fExoticCellMinAmplitude = ma   ; }

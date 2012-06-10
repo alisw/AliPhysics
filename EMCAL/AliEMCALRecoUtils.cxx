@@ -481,13 +481,12 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
   return kFALSE;
 }
 
-//_____________________________________________________________________________________________
-Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, const Int_t bc)
-{
-  // Look to cell neighbourhood and reject if it seems exotic
-  // Do before recalibrating the cells
 
-  if(!fRejectExoticCells) return kFALSE;
+//___________________________________________________________________________
+Float_t AliEMCALRecoUtils::GetECross(const Int_t absID, const Double_t tcell,
+                                     AliVCaloCells* cells, const Int_t bc)
+{
+  //Calculate the energy in the cross around the energy given cell
   
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   
@@ -496,7 +495,7 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
   geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
   
   //Get close cells index, energy and time, not in corners
-
+  
   Int_t absID1 = -1;
   Int_t absID2 = -1;
   
@@ -504,10 +503,9 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
   if( iphi > 0 )                                absID2 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
   
   // In case of cell in eta = 0 border, depending on SM shift the cross cell index
-
+  
   Int_t absID3 = -1;
   Int_t absID4 = -1;
-  
   
   if     ( ieta == AliEMCALGeoParams::fgkEMCALCols-1 && !(imod%2) )
   {
@@ -526,19 +524,12 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
     if( ieta > 0 )                                 
       absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
   }
-
+  
   //printf("IMOD %d, AbsId %d, a %d, b %d, c %d e %d \n",imod,absID,absID1,absID2,absID3,absID4);
-
   
-  Float_t  ecell  = 0, ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
-  Double_t tcell  = 0, tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
-  Bool_t   accept = 0, accept1 = 0, accept2 = 0, accept3 = 0, accept4 = 0;
-  
-  accept  = AcceptCalibrateCell(absID, bc, ecell ,tcell ,cells); 
-    
-  if(!accept) return kTRUE; // reject this cell
-  
-  if(ecell < fExoticCellMinAmplitude) return kFALSE; // do not reject low energy cells
+  Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
+  Double_t tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
+  Bool_t   accept1 = 0, accept2 = 0, accept3 = 0, accept4 = 0;
   
   accept1 = AcceptCalibrateCell(absID1,bc, ecell1,tcell1,cells); 
   accept2 = AcceptCalibrateCell(absID2,bc, ecell2,tcell2,cells); 
@@ -546,26 +537,44 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, 
   accept4 = AcceptCalibrateCell(absID4,bc, ecell4,tcell4,cells); 
   
   /*
-    printf("Cell absID %d \n",absID);
-    printf("\t  accept1 %d, accept2 %d, accept3 %d, accept4 %d\n",
-           accept1,accept2,accept3,accept4);
-    printf("\t id %d: id1 %d, id2 %d, id3 %d, id4 %d\n",
-           absID,absID1,absID2,absID3,absID4);
-    printf("\t e %f: e1 %f, e2 %f, e3 %f, e4 %f\n",
-           ecell,ecell1,ecell2,ecell3,ecell4);
-    printf("\t t %f: t1 %f, t2 %f, t3 %f, t4 %f;\n dt1 %f, dt2 %f, dt3 %f, dt4 %f\n",
-           tcell*1.e9,tcell1*1.e9,tcell2*1.e9,tcell3*1.e9,tcell4*1.e9,
-           TMath::Abs(tcell-tcell1)*1.e9, TMath::Abs(tcell-tcell2)*1.e9, TMath::Abs(tcell-tcell3)*1.e9, TMath::Abs(tcell-tcell4)*1.e9);
-  */
+   printf("Cell absID %d \n",absID);
+   printf("\t  accept1 %d, accept2 %d, accept3 %d, accept4 %d\n",
+   accept1,accept2,accept3,accept4);
+   printf("\t id %d: id1 %d, id2 %d, id3 %d, id4 %d\n",
+   absID,absID1,absID2,absID3,absID4);
+   printf("\t e %f: e1 %f, e2 %f, e3 %f, e4 %f\n",
+   ecell,ecell1,ecell2,ecell3,ecell4);
+   printf("\t t %f: t1 %f, t2 %f, t3 %f, t4 %f;\n dt1 %f, dt2 %f, dt3 %f, dt4 %f\n",
+   tcell*1.e9,tcell1*1.e9,tcell2*1.e9,tcell3*1.e9,tcell4*1.e9,
+   TMath::Abs(tcell-tcell1)*1.e9, TMath::Abs(tcell-tcell2)*1.e9, TMath::Abs(tcell-tcell3)*1.e9, TMath::Abs(tcell-tcell4)*1.e9);
+   */
   
   if(TMath::Abs(tcell-tcell1)*1.e9 > fExoticCellDiffTime) ecell1 = 0 ;
   if(TMath::Abs(tcell-tcell2)*1.e9 > fExoticCellDiffTime) ecell2 = 0 ;
   if(TMath::Abs(tcell-tcell3)*1.e9 > fExoticCellDiffTime) ecell3 = 0 ;
   if(TMath::Abs(tcell-tcell4)*1.e9 > fExoticCellDiffTime) ecell4 = 0 ;
+  
+  return ecell1+ecell2+ecell3+ecell4;
+  
+}
 
-  Float_t eCross = ecell1+ecell2+ecell3+ecell4;
+//_____________________________________________________________________________________________
+Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, const Int_t bc)
+{
+  // Look to cell neighbourhood and reject if it seems exotic
+  // Do before recalibrating the cells
 
-  //printf("\t eCell %f, eCross %f, 1-eCross/eCell %f\n",ecell,eCross,1-eCross/ecell);
+  if(!fRejectExoticCells) return kFALSE;
+  
+  Float_t  ecell  = 0;
+  Double_t tcell  = 0;
+  Bool_t   accept = AcceptCalibrateCell(absID, bc, ecell ,tcell ,cells); 
+  
+  if(!accept) return kTRUE; // reject this cell
+  
+  if(ecell < fExoticCellMinAmplitude) return kFALSE; // do not reject low energy cells
+
+  Float_t eCross = GetECross(absID,tcell,cells,bc);
   
   if(1-eCross/ecell > fExoticCellFraction) 
   {
