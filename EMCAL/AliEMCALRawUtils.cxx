@@ -56,6 +56,7 @@
 using namespace CALO;
 using namespace EMCAL;
 
+using std::vector;
 ClassImp(AliEMCALRawUtils)
 
 

@@ -38,6 +38,9 @@ namespace
 	const Int_t kPayLoadSizeV2     = 390;        
 }
 
+using std::cout;
+using std::setw;
+using std::endl;
 ClassImp(AliEMCALTriggerSTURawStream)
 
 //_____________________________________________________________________________

@@ -16,6 +16,7 @@
 // --- AliRoot header files ---
 #include "AliHit.h"
 
+using std::ostream;
 
 class AliEMCALHit : public AliHit {
     

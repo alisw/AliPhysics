@@ -38,6 +38,8 @@
 #include "AliEMCALGeometry.h"
 #include "AliLog.h" 
 
+using std::cout;
+using std::endl;
 ClassImp(AliEMCALDigit)
 
 //____________________________________________________________________________

@@ -44,6 +44,8 @@
 #include "AliMC.h"
 #include "AliStack.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliEMCALv1)
 
 

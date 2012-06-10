@@ -24,6 +24,8 @@
 // --- AliRoot header files ---
 #include "AliDigitNew.h"
 
+using std::ostream;
+
 class AliEMCALDigit : public AliDigitNew {
 
   friend ostream& operator << ( ostream& , const AliEMCALDigit&) ;

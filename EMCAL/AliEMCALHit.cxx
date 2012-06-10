@@ -30,6 +30,7 @@
 // --- AliRoot header files ---
 #include "AliEMCALHit.h"
 
+using std::endl;
 ClassImp(AliEMCALHit)
 
 //______________________________________________________________________

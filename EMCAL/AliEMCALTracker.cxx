@@ -59,6 +59,8 @@
 
 #include "AliEMCALTracker.h"
 
+using std::cerr;
+using std::endl;
 ClassImp(AliEMCALTracker)
 
 //

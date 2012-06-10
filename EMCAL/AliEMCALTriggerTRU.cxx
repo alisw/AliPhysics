@@ -37,6 +37,9 @@ namespace
 	const Int_t kTimeWindowSize =  4; // 
 }
 
+using std::ofstream;
+using std::endl;
+using std::ios_base;
 ClassImp(AliEMCALTriggerTRU)
 
 //________________
