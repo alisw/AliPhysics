@@ -9,9 +9,10 @@ AliAnalysisTaskRho* AddTaskRho(
    const Double_t maxPhi      = 2 * TMath::Pi(),
    const Double_t minEta      = -0.3,
    const Double_t maxEta      = 0.3,
-   const Double_t minArea     = 0.0,
-   const UInt_t   exclJets    = 0,
-   const Bool_t   histo       = kFALSE
+   const Double_t minArea     = 0.01,
+   const UInt_t   exclJets    = 1,
+   const Bool_t   histo       = kFALSE,
+   const char *taskname       = "Rho"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -35,7 +36,7 @@ AliAnalysisTaskRho* AddTaskRho(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("Rho_%s", nJets));
+  TString name(Form("%s_%s", taskname, nJets));
   AliAnalysisTaskRho *rhotask = new AliAnalysisTaskRho(name, histo);
   rhotask->SetJetsName(nJets);
   rhotask->SetTracksName(nTracks);
