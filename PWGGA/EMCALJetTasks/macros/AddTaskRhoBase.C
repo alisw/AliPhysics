@@ -2,7 +2,8 @@
 
 AliAnalysisTaskRhoBase* AddTaskRhoBase(
    const char *rhoname        = "Rho",
-   TF1        *rfunc          = 0
+   TF1        *rfunc          = 0,
+   const char *taskname       = "Rho_Base"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -26,8 +27,7 @@ AliAnalysisTaskRhoBase* AddTaskRhoBase(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("Rho_Base"));
-  AliAnalysisTaskRhoBase *rhotask = new AliAnalysisTaskRhoBase(name);
+  AliAnalysisTaskRhoBase *rhotask = new AliAnalysisTaskRhoBase(taskname);
   rhotask->SetRhoName(rhoname);
   rhotask->SetRhoFunction(rfunc);
 
