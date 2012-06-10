@@ -25,6 +25,7 @@
 
 #include "AliHLTTPCClusterTransformation.h"
 #include "AliHLTTPCTransform.h"
+#include "AliHLTTPCFastTransform.h"
 
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
@@ -40,7 +41,6 @@ ClassImp(AliHLTTPCClusterTransformation) //ROOT macro for the implementation of 
 
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 :
-  fOfflineTransform(NULL),
   fOfflineTPCParam( NULL ),
   fLastSector(-1)
 {
@@ -57,7 +57,7 @@ AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation() 
 { 
   // see header file for class documentation
-  //delete fOfflineTransform;
+  AliHLTTPCFastTransform::Terminate();
 }
 
 
@@ -65,8 +65,6 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
 {
   // Initialisation
 
-  //delete fOfflineTransform;
-  fOfflineTransform = 0;
   fOfflineTPCParam = 0;
 
   AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
@@ -81,10 +79,6 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
 
   if( !pCalib->GetTransform() ) return -2; 
 
-  //fOfflineTransform = new AliTPCTransform (*pCalib->GetTransform());
-  fOfflineTransform = pCalib->GetTransform();
-  fOfflineTransform->SetCurrentRecoParam( AliTPCRecoParam::GetHLTParam() );
-  fOfflineTransform->SetCurrentTimeStamp( TimeStamp );
   fOfflineTPCParam = pCalib->GetParameters(); 
   if( !fOfflineTPCParam ) return -3;
 
@@ -97,7 +91,7 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
   fAliT[1] = 0.;
   fAliT[2] = 0.;
   SetRotationMatrix();
-
+  SetCurrentTimeStamp( TimeStamp );
   return 0;
 }
 
@@ -105,7 +99,7 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
 void AliHLTTPCClusterTransformation::SetCurrentTimeStamp( UInt_t TimeStamp )
 {
   // Set the current time stamp
-  if( fOfflineTransform ) fOfflineTransform->SetCurrentTimeStamp( TimeStamp );
+  AliHLTTPCFastTransform::Instance()->SetCurrentTimeStamp( TimeStamp );
 }
 
 
@@ -113,19 +107,11 @@ int  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad, f
 {
   // Convert row, pad, time to X Y Z
    	   
-  Int_t sector=-99, thisrow=-99;
+  Int_t sector=-99, thisrow=-99;  
   AliHLTTPCTransform::Slice2Sector( Slice, Row, sector, thisrow);
+  Double_t x[3] = {0,0,0}; 
+  AliHLTTPCFastTransform::Instance()->Transform(sector, thisrow, Pad, Time, x);
 
-  if( !fOfflineTransform ){   	   	   
-    AliHLTTPCTransform::Raw2Local( XYZ, sector, thisrow, Pad, Time); 
-    if(Slice>17) XYZ[1]= - XYZ[1];	   
-    return 0;
-  }
-
-  Int_t iSector[1]= {sector};   
-  Double_t x[3] = { thisrow, Pad, Time }; 
-  fOfflineTransform->Transform(x,iSector,0,1);
-	  
   if( sector!= fLastSector ){
     if( fOfflineTPCParam && sector<fOfflineTPCParam->GetNSector() ){
       TGeoHMatrix  *alignment = fOfflineTPCParam->GetClusterMatrix( sector );

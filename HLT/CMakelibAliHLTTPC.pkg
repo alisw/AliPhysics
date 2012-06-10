@@ -29,6 +29,8 @@
 
 set ( CLASS_HDRS
     AliHLTTPCTransform.h
+    transform/AliHLTTPCSpline2D3D.h
+    transform/AliHLTTPCFastTransform.h
     AliHLTTPCClusterTransformation.h
     AliHLTTPCAgent.h
     AliHLTTPCMemHandler.h
@@ -134,7 +136,7 @@ set ( MODULE_HDRS
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/TPCLib HLT/TPCLib/tracking HLT/TPCLib/comp HLT/TPCLib/tracking-ca HLT/TPCLib/merger-ca HLT/TPCLib/offline HLT/TPCLib/HWCFemulator HLT/BASE HLT/BASE/util HLT/RCU TPC RAW STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  HLT/TPCLib HLT/TPCLib/tracking HLT/TPCLib/comp HLT/TPCLib/tracking-ca HLT/TPCLib/merger-ca HLT/TPCLib/offline HLT/TPCLib/HWCFemulator HLT/TPCLib/transform HLT/BASE HLT/BASE/util HLT/RCU TPC RAW STEER/STEER STEER/ESD STEER/STEERBase)
 set ( ELIBS  dl)
 
 set ( ELIBS  "HLTbase AliHLTRCU AliHLTUtil CDB ESD STEER STEERBase TPCrec TPCcalib TPCbase RAWDatarec RAWDatabase -lEG")
