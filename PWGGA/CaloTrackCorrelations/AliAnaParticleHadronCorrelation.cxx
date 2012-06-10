@@ -1461,7 +1461,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     //Init the list in the reader if not done previously
     if(!GetReader()->ListWithMixedEventsForTracksExists() && fUseMixStoredInReader) 
     {
-      printf("%s : Set the list of events \n",GetInputAODName().Data());
+      //printf("%s : Set the list of events \n",GetInputAODName().Data());
       GetReader()->SetListWithMixedEventsForTracks(fListMixEvents);
     }
     
