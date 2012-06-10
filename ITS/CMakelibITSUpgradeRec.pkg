@@ -27,21 +27,21 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    UPGRADE/AliITSlayerUpgrade.cxx 
-    UPGRADE/AliITStrackerUpgrade.cxx 
-    UPGRADE/AliITStrackU.cxx 
+    UPGRADE/v0/AliITSlayerUpgrade.cxx 
+    UPGRADE/v0/AliITStrackerUpgrade.cxx 
+    UPGRADE/v0/AliITStrackU.cxx 
     UPGRADE/AliITStrackerU.cxx 
-    UPGRADE/AliITSUpgradeReconstructor.cxx 
-    UPGRADE/AliITSUpgradeClusterList.cxx 
-    UPGRADE/AliITSUpgradeClusterListNode.cxx 
-    UPGRADE/AliITSUPixelModule.cxx 
-    UPGRADE/AliITSUpgradeClusterFinder.cxx 
+    UPGRADE/v0/AliITSUpgradeReconstructor.cxx 
+    UPGRADE/v0/AliITSUpgradeClusterList.cxx 
+    UPGRADE/v0/AliITSUpgradeClusterListNode.cxx 
+    UPGRADE/v0/AliITSUPixelModule.cxx 
+    UPGRADE/v0/AliITSUpgradeClusterFinder.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSUpgradeRecLinkDef.h)
 
-set ( EINCLUDE TPC RAW ITS ITS/UPGRADE STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase)
 
 # set ( EXPORT AliITStrackV2.h AliITSVertexer.h AliITSRecoParam.h)
