@@ -1,44 +1,85 @@
-#include "TChain.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TCanvas.h"
+// $Id$
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskEMCALIsoPhoton.h"
+
+#include <TCanvas.h>
+#include <TChain.h>
+#include <TFile.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TLorentzVector.h>
+#include <TTree.h>
+
 #include "AliAnalysisManager.h"
-
+#include "AliAnalysisTask.h"
+#include "AliEMCALGeometry.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliESDCaloCells.h"
+#include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliESDHeader.h"
-#include "AliESDUtils.h"
 #include "AliESDInputHandler.h"
+#include "AliESDUtils.h"
 #include "AliESDpid.h"
-#include "AliKFParticle.h"
-
-#include "AliMCEventHandler.h"
-#include "AliMCEvent.h"
-#include "AliStack.h"
-
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDv0.h"
+#include "AliKFParticle.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliStack.h"
 #include "AliV0vertexer.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDCaloCells.h"
-#include "AliEMCALGeometry.h"
-#include "AliEMCALRecoUtils.h"
-#include "TLorentzVector.h"
 #include "AliVCluster.h"
-
-
-#include "AliAnalysisTaskEMCALIsoPhoton.h"
-#include "TFile.h"
-
 
 ClassImp(AliAnalysisTaskEMCALIsoPhoton)
 
 //________________________________________________________________________
-AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) 
-  : AliAnalysisTaskSE(name), 
+AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() : 
+  AliAnalysisTaskSE(), 
+  fCaloClusters(0),
+  fSelPrimTracks(0),
+  fEMCalCells(0),
+  fPrTrCuts(0),
+  fGeom(0x0),
+  fESD(0),
+  fOutputList(0),
+  fEvtSel(0),
+  fPVtxZ(0),                 
+  fCellAbsIdVsAmpl(0),       
+  fNClusHighClusE(0),        
+  fM02Et(0),                 
+  fM02EtTM(0),               
+  fM02EtCeIso1(0),           
+  fM02EtCeIso2(0),           
+  fM02EtCeIso5(0),           
+  fM02EtTrIso1(0),           
+  fM02EtTrIso2(0),           
+  fM02EtTrIso5(0),           
+  fM02EtAllIso1(0),          
+  fM02EtAllIso2(0),          
+  fM02EtAllIso5(0),          
+  fCeIsoVsEtPho(0),          
+  fTrIsoVsEtPho(0),          
+  fAllIsoVsEtPho(0),         
+  fM02EtCeIso1TM(0),         
+  fM02EtCeIso2TM(0),         
+  fM02EtCeIso5TM(0),         
+  fM02EtTrIso1TM(0),         
+  fM02EtTrIso2TM(0),         
+  fM02EtTrIso5TM(0),         
+  fM02EtAllIso1TM(0),        
+  fM02EtAllIso2TM(0),        
+  fM02EtAllIso5TM(0),        
+  fCeIsoVsEtPhoTM(0),        
+  fTrIsoVsEtPhoTM(0),        
+  fAllIsoVsEtPhoTM(0)    
+{
+  // Default constructor.
+}
+
+//________________________________________________________________________
+AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) : 
+  AliAnalysisTaskSE(name), 
   fCaloClusters(0),
   fSelPrimTracks(0),
   fEMCalCells(0),
@@ -49,47 +90,38 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name)
   fIsTrain(0),
   fExoticCut(0.97),
   fIsoConeR(0.4),
-
-  
   fESD(0),
-  
   fOutputList(0),
-  
   fEvtSel(0),
-
-    fPVtxZ(0),                   //!primary vertex Z before cut
-    fCellAbsIdVsAmpl(0),         //!cell abs id vs cell amplitude (energy)
-    fNClusHighClusE(0),          //!total number of clusters vs. highest clus energy in the event
-    fM02Et(0),                   //!M02 vs Et for all clusters
-    fM02EtTM(0),                 //!M02 vs Et for clusters with track-match (dEta=0.01 && dPhi=0.025)
-    fM02EtCeIso1(0),             //!M02 vs Et for clusters with isolation neutral Et<1GeV
-    fM02EtCeIso2(0),             //!M02 vs Et for clusters with isolation neutral Et<2GeV
-    fM02EtCeIso5(0),             //!M02 vs Et for clusters with isolation neutral Et<5GeV
-    fM02EtTrIso1(0),             //!M02 vs Et for clusters with isolation charged Et<1GeV
-    fM02EtTrIso2(0),             //!M02 vs Et for clusters with isolation charged Et<2GeV
-    fM02EtTrIso5(0),             //!M02 vs Et for clusters with isolation charged Et<5GeV
-    fM02EtAllIso1(0),            //!M02 vs Et for clusters with isolation total Et<1GeV
-    fM02EtAllIso2(0),            //!M02 vs Et for clusters with isolation total Et<2GeV
-    fM02EtAllIso5(0),            //!M02 vs Et for clusters with isolation total Et<5GeV
-    fCeIsoVsEtPho(0),            //!Neutral isolation Et vs. cluster Et, 0.05<M02<0.30
-    fTrIsoVsEtPho(0),            //!Charged isolation Et vs. cluster Et, 0.05<M02<0.30
-    fAllIsoVsEtPho(0),           //!Total isolation Et vs. cluster Et, 0.05<M02<0.30
-    //track matched stuff
-    fM02EtCeIso1TM(0),           //!Track-matched M02 vs Et for clusters with isolation neutral Et<1GeV
-    fM02EtCeIso2TM(0),           //!Track-matched M02 vs Et for clusters with isolation neutral Et<2GeV
-    fM02EtCeIso5TM(0),           //!Track-matched M02 vs Et for clusters with isolation neutral Et<5GeV
-    fM02EtTrIso1TM(0),           //!Track-matched M02 vs Et for clusters with isolation charged Et<1GeV
-    fM02EtTrIso2TM(0),           //!Track-matched M02 vs Et for clusters with isolation charged Et<2GeV
-    fM02EtTrIso5TM(0),           //!Track-matched M02 vs Et for clusters with isolation charged Et<5GeV
-    fM02EtAllIso1TM(0),          //!Track-matched M02 vs Et for clusters with isolation total Et<1GeV
-    fM02EtAllIso2TM(0),          //!Track-matched M02 vs Et for clusters with isolation total Et<2GeV
-    fM02EtAllIso5TM(0),          //!Track-matched M02 vs Et for clusters with isolation total Et<5GeV
-    fCeIsoVsEtPhoTM(0),          //!Track-matched Neutral isolation Et vs. cluster Et, 0.05<M02<0.30
-    fTrIsoVsEtPhoTM(0),          //!Track-matched Charged isolation Et vs. cluster Et, 0.05<M02<0.30
-    fAllIsoVsEtPhoTM(0)         //!Track-matched Total isolation Et vs. cluster Et, 0.05<M02<0.30
-
-
-  
+  fPVtxZ(0),            
+  fCellAbsIdVsAmpl(0),  
+  fNClusHighClusE(0),   
+  fM02Et(0),            
+  fM02EtTM(0),          
+  fM02EtCeIso1(0),      
+  fM02EtCeIso2(0),      
+  fM02EtCeIso5(0),      
+  fM02EtTrIso1(0),      
+  fM02EtTrIso2(0),      
+  fM02EtTrIso5(0),      
+  fM02EtAllIso1(0),     
+  fM02EtAllIso2(0),     
+  fM02EtAllIso5(0),     
+  fCeIsoVsEtPho(0),     
+  fTrIsoVsEtPho(0),     
+  fAllIsoVsEtPho(0),    
+  fM02EtCeIso1TM(0),
+  fM02EtCeIso2TM(0),        
+  fM02EtCeIso5TM(0),        
+  fM02EtTrIso1TM(0),        
+  fM02EtTrIso2TM(0),        
+  fM02EtTrIso5TM(0),        
+  fM02EtAllIso1TM(0),       
+  fM02EtAllIso2TM(0),       
+  fM02EtAllIso5TM(0),       
+  fCeIsoVsEtPhoTM(0),       
+  fTrIsoVsEtPhoTM(0),       
+  fAllIsoVsEtPhoTM(0)       
 {
   // Constructor
 
@@ -100,11 +132,11 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name)
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 {
-  // Create histograms
-  // Called once
+  // Create histograms, called once.
     
   fCaloClusters = new TRefArray();
   fSelPrimTracks = new TObjArray();
@@ -238,7 +270,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *) 
 {
-  //event trigger selection
+  // Main loop, called for each event.
+
+  // event trigger selection
   Bool_t isSelected = 0;
   if(fPeriod.Contains("11a"))
     isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
@@ -246,10 +280,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC7);
   if(!isSelected )
         return; 
-  // Main loop
-  // Called for each event
 
-  // Post output data.
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     printf("ERROR: fESD not available\n");
@@ -266,6 +297,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     return;
 
   fEvtSel->Fill(1);
+
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack* track = (AliESDtrack*)fESD->GetTrack(iTracks);
@@ -275,7 +307,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       fSelPrimTracks->Add(track);
       //printf("pt,eta,phi:%1.1f,%1.1f,%1.1f \n",track->Pt(),track->Eta(), track->Phi());
     }
-  } //track loop 
+  }
+
   if(!fIsTrain){
     for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
       if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
@@ -293,9 +326,12 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   fSelPrimTracks->Clear();
   PostData(1, fOutputList);
 }      
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
 {
+  // Fill cluster histograms.
+
   if(!fCaloClusters)
     return;
   const Int_t nclus = fCaloClusters->GetEntries();
@@ -388,9 +424,12 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
   }
   fNClusHighClusE->Fill(maxE,nclus);
 } 
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core)
 {
+  // Get cell isolation.
+
   if(!fEMCalCells)
     return;
   const Int_t ncells = fEMCalCells->GetNumberOfCells();
@@ -430,9 +469,12 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Float_t &iso, Float_t
   phiband = totband;
   core = totcore;
 } 
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::GetTrIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core)
 {
+  // Get track isolation.
+
   if(!fSelPrimTracks)
     return;
   const Int_t ntracks = fSelPrimTracks->GetEntries();
@@ -468,6 +510,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetTrIso(TVector3 vec, Float_t &iso, Float_t
   phiband = totband;
   core = totcore;
 } 
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALIsoPhoton::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
 {
@@ -477,7 +520,6 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetCrossEnergy(const AliVCluster *cluste
   cells = fESD->GetEMCALCells();
   if (!cells)
     return 0;
-
 
   if (!fGeom)
     return 0;
@@ -516,8 +558,6 @@ Double_t AliAnalysisTaskEMCALIsoPhoton::GetCrossEnergy(const AliVCluster *cluste
   return crossEnergy;
 }
 
-
-
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALIsoPhoton ::GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const
 {
@@ -541,10 +581,9 @@ Double_t AliAnalysisTaskEMCALIsoPhoton ::GetMaxCellEnergy(const AliVCluster *clu
   }
   return maxe;
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 
 {
-  // Draw result to the screen
-  // Called once at the end of the query
-
+  // Called once at the end of the query.
 }
