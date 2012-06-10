@@ -213,11 +213,11 @@ Bool_t AliHFAssociatedTrackCuts::CheckKaonCompatibility(AliAODTrack * track, Boo
 		if(KaonHyp && !PionHyp && !ProtonHyp) isKaon = kTRUE; 
 	        break;
 	      }
-          case(2): {
-		isKaon = fPidObj->MakeRawPid(track,3);
+      case(2): {
+		if(fPidObj->MakeRawPid(track,3)>=1) isKaon = kTRUE;
 		break;
 	      }
-          }
+      }
 	}
 	
 	return isKaon;
