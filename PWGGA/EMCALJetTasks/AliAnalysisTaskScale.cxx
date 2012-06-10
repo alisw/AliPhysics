@@ -4,30 +4,32 @@
 //
 // Author: R.Reed, M.Connors
 
+#include "AliAnalysisTaskScale.h"
+
 #include <TClonesArray.h>
+#include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TList.h>
-#include <TF1.h>
 #include <TLorentzVector.h>
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
-#include "AliVEvent.h"
-#include "AliVCluster.h"
-#include "AliVTrack.h"
 #include "AliEMCALGeometry.h"
 #include "AliLog.h"
-
-#include "AliAnalysisTaskScale.h"
+#include "AliVCluster.h"
+#include "AliVEvent.h"
+#include "AliVTrack.h"
 
 ClassImp(AliAnalysisTaskScale)
 
 //________________________________________________________________________
-AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
-  AliAnalysisTaskSE(name), 
-  fTracksName("Tracks"),
-  fClustersName("CaloClusters"),
+AliAnalysisTaskScale::AliAnalysisTaskScale() : 
+  AliAnalysisTaskSE(), 
+  fTracksName(), 
+  fClustersName(), 
+  fMinTrackPt(0.15),
+  fMinClusterPt(0.15),
   fScaleFunction(0),
   fGeom(0),
   fOutputList(0), 
@@ -45,9 +47,36 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
   fHistTrackPtvsCent(0), 
   fHistClusterPtvsCent(0),
   fHistTrackEtaPhi(0), 
-  fHistClusterEtaPhi(0),
+  fHistClusterEtaPhi(0)
+{
+  // Default constructor.
+}
+
+//________________________________________________________________________
+AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
+  AliAnalysisTaskSE(name), 
+  fTracksName("Tracks"),
+  fClustersName("CaloClusters"),
   fMinTrackPt(0.15),
-  fMinClusterPt(0.15)
+  fMinClusterPt(0.15),
+  fScaleFunction(0),
+  fGeom(0),
+  fOutputList(0), 
+  fHistCentrality(0), 
+  fHistPtTPCvsCent(0), 
+  fHistPtEMCALvsCent(0), 
+  fHistEtvsCent(0),  
+  fHistScalevsCent(0),  
+  fHistDeltaScalevsCent(0), 
+  fHistPtTPCvsNtrack(0), 
+  fHistPtEMCALvsNtrack(0), 
+  fHistEtvsNtrack(0),  
+  fHistScalevsNtrack(0),  
+  fHistDeltaScalevsNtrack(0),
+  fHistTrackPtvsCent(0), 
+  fHistClusterPtvsCent(0),
+  fHistTrackEtaPhi(0), 
+  fHistClusterEtaPhi(0)
 {
   // Constructor.
 
@@ -101,6 +130,8 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
 //________________________________________________________________________
 Double_t AliAnalysisTaskScale::GetScaleFactor(Double_t cent)
 {
+  // Get scale function.
+
   Double_t scale = -1;
   if (fScaleFunction)
     scale = fScaleFunction->Eval(cent);
@@ -231,5 +262,5 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskScale::Terminate(Option_t *) 
 {
-
+  // Called once at the end of the analysis.
 }

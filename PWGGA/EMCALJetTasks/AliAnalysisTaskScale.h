@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskScale_cxx
-#define AliAnalysisTaskScale_cxx
+#ifndef AliAnalysisTaskScale_h
+#define AliAnalysisTaskScale_h
 
 // $Id$
 
@@ -13,12 +13,7 @@ class AliEMCALGeometry;
 
 class AliAnalysisTaskScale : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskScale() : AliAnalysisTaskSE(), fTracksName(), fClustersName(), fScaleFunction(0), fGeom(0),
-    fOutputList(0), fHistCentrality(0), fHistPtTPCvsCent(0), fHistPtEMCALvsCent(0), fHistEtvsCent(0),  
-    fHistScalevsCent(0),  fHistDeltaScalevsCent(0), fHistPtTPCvsNtrack(0), fHistPtEMCALvsNtrack(0), 
-    fHistEtvsNtrack(0), fHistScalevsNtrack(0), fHistDeltaScalevsNtrack(0), fHistTrackPtvsCent(0), 
-    fHistClusterPtvsCent(0), fHistTrackEtaPhi(0), fHistClusterEtaPhi(0),  fMinTrackPt(0.15), 
-    fMinClusterPt(0.15) {}
+  AliAnalysisTaskScale();
   AliAnalysisTaskScale(const char *name);
   virtual ~AliAnalysisTaskScale() {}
   
@@ -26,11 +21,11 @@ class AliAnalysisTaskScale : public AliAnalysisTaskSE {
   virtual void           UserExec(Option_t *option);
   virtual void           Terminate(Option_t *);
 
-  void                   SetTracksName(const char *n)                          { fTracksName    = n    ; }
   void                   SetClustersName(const char *n)                        { fClustersName  = n    ; }
-  void                   SetScaleFunction(TF1* sf)                             { fScaleFunction = sf   ; }
-  void                   SetMinTrackPt(Double_t min)                           { fMinTrackPt    = min  ; }
   void                   SetMinClusterPt(Double_t min)                         { fMinClusterPt  = min  ; }
+  void                   SetMinTrackPt(Double_t min)                           { fMinTrackPt    = min  ; }
+  void                   SetScaleFunction(TF1* sf)                             { fScaleFunction = sf   ; }
+  void                   SetTracksName(const char *n)                          { fTracksName    = n    ; }
   
  protected:
   virtual Double_t       GetScaleFactor(Double_t cent);
@@ -38,6 +33,8 @@ class AliAnalysisTaskScale : public AliAnalysisTaskSE {
  private:
   TString                fTracksName;             // name of track collection
   TString                fClustersName;           // name of clusters collection
+  Double_t               fMinTrackPt;             // pt cut for scale factor calculation
+  Double_t               fMinClusterPt;           // pt cut for scale factor calculation
   TF1                   *fScaleFunction;          // scale factor as a function of centrality
   AliEMCALGeometry      *fGeom;                   //!ptr to emcal geometry object
   TList                 *fOutputList;             //!output list
@@ -56,12 +53,10 @@ class AliAnalysisTaskScale : public AliAnalysisTaskSE {
   TH2F                  *fHistClusterPtvsCent;    //!output histogram
   TH2F                  *fHistTrackEtaPhi;        //!output histogram
   TH2F                  *fHistClusterEtaPhi;      //!output histogram
-  Double_t               fMinTrackPt;             //pt cut for scale factor calculation
-  Double_t               fMinClusterPt;           //pt cut for scale factor calculation
 
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented
   
-  ClassDef(AliAnalysisTaskScale, 5); // Scale task
+  ClassDef(AliAnalysisTaskScale, 6); // Scale task
 };
 #endif
