@@ -57,13 +57,18 @@ fFillAllPosHisto(kFALSE),              fFillAllPosHisto2(kTRUE),
 fFillAllTH12(kFALSE),                  fFillAllTH3(kTRUE), 
 fFillAllTMHisto(kTRUE),                fFillAllPi0Histo(kTRUE),                 
 fCorrelate(kTRUE),                     fStudyBadClusters(kFALSE),               
-fStudyClustersAsymmetry(kFALSE),       fStudyWeight(kFALSE),
+fStudyClustersAsymmetry(kFALSE),       fStudyExotic(kFALSE),
+fStudyWeight(kFALSE),
 
 //Parameters and cuts
 fNModules(12),                         fNRCU(2),
 fNMaxCols(48),                         fNMaxRows(24),  
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
 fEMCALCellAmpMin(0),                   fPHOSCellAmpMin(0), 
+
+// Exotic
+fExoNECrossCuts(0),                    fExoECrossCuts(),
+fExoNDTimeCuts(0),                     fExoDTimeCuts(),    
 
 //Histograms
 fhE(0),                                fhPt(0),                                
@@ -176,6 +181,19 @@ fhMCEle1EOverPR02(0),                  fhMCChHad1EOverPR02(0),                 f
   fhDeltaIANCells[0]        = 0 ;         fhDeltaIANCells[1]        = 0;
   fhDeltaIAMC[0]            = 0 ;         fhDeltaIAMC[1]            = 0;
   fhDeltaIAMC[2]            = 0 ;         fhDeltaIAMC[3]            = 0;
+  
+  // Exotic
+  for (Int_t ie = 0; ie < 10 ; ie++) 
+  {
+    fhExoDTime[ie] = 0;
+    for (Int_t idt = 0; idt < 5 ; idt++) 
+    {
+      fhExoNCell    [ie][idt] = 0;
+      fhExoL0       [ie][idt] = 0;
+      fhExoECross   [ie][idt] = 0;
+      fhExoTime     [ie][idt] = 0;
+    } 
+  }
   
   // MC
   
@@ -358,8 +376,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     if(GetDebug() > 2) 
       printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
     
-    if(nModule < fNModules) {	
-      
+    if(nModule < fNModules) 
+    {	
       //Check if the cell is a bad channel
       if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn()){
         if(fCalorimeter=="EMCAL")
@@ -387,7 +405,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
  
       if(time < fTimeCutMin || time > fTimeCutMax)
       {
-          if(GetDebug() > 0 )printf("AliAnaCalorimeterQA - Remove cell with Time %f\n",time);
+          //if(GetDebug() > 0 )
+            printf("AliAnaCalorimeterQA - Remove cell with Time %f\n",time);
           continue;
       }
       
@@ -882,9 +901,11 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     Float_t ampMax = cells->GetCellAmplitude(absIdMax);
     GetCaloUtils()->RecalibrateCellAmplitude(ampMax,fCalorimeter, absIdMax);
     
+    if(fStudyExotic) ExoticHistograms(absIdMax, ampMax, clus, cells);
+    
     //Check bad clusters if requested and rejection was not on
     Bool_t goodCluster = IsGoodCluster(absIdMax, cells);
-
+    
     Float_t eCrossFrac = 0;
     if(ampMax > 0.01) eCrossFrac = 1-GetECross(absIdMax,cells)/ampMax;
     
@@ -1488,6 +1509,60 @@ TObjString * AliAnaCalorimeterQA::GetAnalysisCuts()
   return new TObjString(parList) ;
 }
 
+//___________________________________________________________________________________
+void AliAnaCalorimeterQA::ExoticHistograms(const Int_t absIdMax, const Float_t ampMax,
+                                           AliVCluster *clus, AliVCaloCells* cells)
+{
+  // Calculate weights
+  
+  if(ampMax < 0.01) 
+  {
+    printf("AliAnaCalorimeterQA::ExoticHistograms()- Low amplitude energy %f\n",ampMax);
+    return;
+  }
+    
+  Float_t l0 = clus->GetM02();
+  Float_t en = clus->E();
+  Int_t   nc = clus->GetNCells();
+  
+  Double_t tmax  = cells->GetCellTime(absIdMax);
+  GetCaloUtils()->RecalibrateCellTime(tmax, fCalorimeter, absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+  
+  for(Int_t ie = 0; ie < fExoNECrossCuts; ie++)
+  {    
+    for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
+    {  
+      Float_t eCrossFrac = 1-GetECross(absIdMax,cells, fExoDTimeCuts[idt])/ampMax;
+      
+      if(eCrossFrac > fExoECrossCuts[ie])
+      {
+        //Exotic
+        fhExoL0    [ie][idt]->Fill(en,l0  );
+        fhExoTime  [ie][idt]->Fill(en,tmax);
+        
+        // Diff time, do for one cut in e cross
+        if(ie == 0)
+        {
+          for (Int_t icell = 0; icell < clus->GetNCells(); icell++) 
+          {
+            Int_t absId  = clus->GetCellsAbsId()[icell]; 
+            Double_t time  = cells->GetCellTime(absId);
+            GetCaloUtils()->RecalibrateCellTime(time, fCalorimeter, absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+            
+            Float_t diff = (tmax-time)*1e9;
+            fhExoDTime[idt]->Fill(en, diff);
+          }
+        }
+      }
+      else
+      {
+        fhExoECross[ie][idt]->Fill(en,eCrossFrac);
+        fhExoNCell[ie][idt]->Fill(en,nc);
+      }
+    } // D time cut loop
+  } // e cross cut loop
+}
+
 //____________________________________________________
 TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 {  
@@ -1528,7 +1603,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fNMaxRows = 24;
   fNRCU     = 2 ;
   //PHOS
-  if(fCalorimeter=="PHOS"){
+  if(fCalorimeter=="PHOS")
+  {
     fNMaxCols = 56;
     fNMaxRows = 64;
     fNRCU     = 4 ;
@@ -1538,7 +1614,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhE->SetXTitle("E (GeV)");
   outputContainer->Add(fhE);
   
-  if(fFillAllTH12){
+  if(fFillAllTH12)
+  {
     fhPt  = new TH1F ("hPt","p_{T} reconstructed clusters", nptbins,ptmin,ptmax); 
     fhPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPt);
@@ -1552,7 +1629,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhEta);
   }
   
-  if(fFillAllTH3){
+  if(fFillAllTH3)
+  {
     fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #phi vs energy, reconstructed clusters",
                            netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
     fhEtaPhiE->SetXTitle("#eta ");
@@ -1621,9 +1699,23 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhClusterMaxCellECross->SetYTitle("1- E_{cross}/E_{cell max}");
   outputContainer->Add(fhClusterMaxCellECross);    
   
+  fhNCellsPerClusterNoCut  = new TH2F ("hNCellsPerClusterNoCut","# cells per cluster vs energy, no bad clusters cut",
+                                       nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+  fhNCellsPerClusterNoCut->SetXTitle("E (GeV)");
+  fhNCellsPerClusterNoCut->SetYTitle("n cells");
+  outputContainer->Add(fhNCellsPerClusterNoCut);
+  
+  fhNCellsPerCluster  = new TH2F ("hNCellsPerCluster","# cells per cluster vs energy",nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+  fhNCellsPerCluster->SetXTitle("E (GeV)");
+  fhNCellsPerCluster->SetYTitle("n cells");
+  outputContainer->Add(fhNCellsPerCluster);
+    
+  fhNClusters  = new TH1F ("hNClusters","# clusters", nclbins,nclmin,nclmax); 
+  fhNClusters->SetXTitle("number of clusters");
+  outputContainer->Add(fhNClusters);
+
   if(fStudyBadClusters)
   {
-    
     fhBadClusterEnergy  = new TH1F ("hBadClusterEnergy","Bad cluster energy", nptbins,ptmin,ptmax); 
     fhBadClusterEnergy->SetXTitle("E_{cluster} (GeV) ");
     outputContainer->Add(fhBadClusterEnergy);
@@ -1684,8 +1776,55 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     
   }
   
+  if(fStudyExotic)
+  {
+    for(Int_t ie = 0; ie <fExoNECrossCuts; ie++)
+    {  
+      
+      fhExoDTime[ie]  = new TH2F(Form("hExoDTime_ECross%d",ie),
+                                 Form("#Delta time = t_{max}-t_{cells} vs E_{cluster} for exotic, 1-E_{+}/E_{max} < %2.2f",fExoECrossCuts[ie]),
+                                 nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
+      fhExoDTime[ie] ->SetYTitle("#Delta t (ns)");
+      fhExoDTime[ie] ->SetXTitle("E (GeV)");
+      outputContainer->Add(fhExoDTime[ie]) ; 
+      
+      for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
+      {        
+        fhExoNCell[ie][idt]  = new TH2F(Form("hExoNCell_ECross%d_DT%d",ie,idt),
+                                     Form("N cells per cluster vs E cluster, 1-E_{+}/E_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+                                     nptbins,ptmin,ptmax,nceclbins,nceclmin,nceclmax); 
+        fhExoNCell[ie][idt] ->SetYTitle("N cells");
+        fhExoNCell[ie][idt] ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhExoNCell[ie][idt]) ; 
+        
+        fhExoL0   [ie][idt]  = new TH2F(Form("hExoL0_ECross%d_DT%d",ie,idt),
+                                     Form("M02 vs E cluster for exotic, 1-E_{+}/E_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhExoL0   [ie][idt] ->SetYTitle("#lambda^{2}_{0}");
+        fhExoL0   [ie][idt] ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhExoL0[ie][idt]) ; 
+        
+        fhExoECross[ie][idt]  = new TH2F(Form("hExoECross_ECross%d_DT%d",ie,idt),
+                                      Form("E cross for cells vs E cell, 1-E_{+}/E_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+                                      nptbins,ptmin,ptmax,400,0,1); 
+        fhExoECross[ie][idt] ->SetYTitle("1-E_{+}/E_{cell max}");
+        fhExoECross[ie][idt] ->SetXTitle("E_{cell} (GeV)");
+        outputContainer->Add(fhExoECross[ie][idt]) ; 
+        
+        fhExoTime  [ie][idt]  = new TH2F(Form("hExoTime_ECross%d_DT%d",ie,idt),
+                                        Form("Time of cluster (max cell) vs E cluster for exotic, 1-E_{+}/E_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+                                        nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+        fhExoTime  [ie][idt] ->SetYTitle("time_{max} (ns)");
+        fhExoTime  [ie][idt] ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhExoTime[ie][idt]) ; 
+
+      } 
+    } 
+  }
+  
   // Cluster size in terms of cells
-  if(fStudyClustersAsymmetry){
+  if(fStudyClustersAsymmetry)
+  {
     fhDeltaIEtaDeltaIPhiE0[0]  = new TH2F ("hDeltaIEtaDeltaIPhiE0"," Cluster size in columns vs rows for E < 2 GeV, n cells > 3",
                                            50,0,50,50,0,50); 
     fhDeltaIEtaDeltaIPhiE0[0]->SetXTitle("#Delta Column");
@@ -1782,6 +1921,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         outputContainer->Add(fhDeltaIAMC[iPart]);     
       }
     }
+    
     if(fStudyBadClusters)
     {
       fhBadClusterDeltaIEtaDeltaIPhiE0  = new TH2F ("hBadClusterDeltaIEtaDeltaIPhiE0"," Cluster size in columns vs rows for E < 2 GeV, n cells > 3",
@@ -1810,8 +1950,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     }
   }
   
-  if(fStudyWeight){
-    
+  if(fStudyWeight)
+  {
     fhECellClusterRatio  = new TH2F ("hECellClusterRatio"," cell energy / cluster energy vs cluster energy",
                                      nptbins,ptmin,ptmax, 100,0,1.); 
     fhECellClusterRatio->SetXTitle("E_{cluster} (GeV) ");
@@ -1867,14 +2007,14 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 //          outputContainer->Add(fhLambda1ForW0MC[iw][imc]); 
         }
       }
-      
-    } 
-    
+    }     
   }
   
   //Track Matching
-  if(fFillAllTMHisto){
-    if(fFillAllTH12){
+  if(fFillAllTMHisto)
+  {
+    if(fFillAllTH12)
+    {
       fhECharged  = new TH1F ("hECharged","E reconstructed clusters, matched with track", nptbins,ptmin,ptmax); 
       fhECharged->SetXTitle("E (GeV)");
       outputContainer->Add(fhECharged);
@@ -1926,7 +2066,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fh1EOverPR02);	
   }
   
-  if(fFillAllPi0Histo){
+  if(fFillAllPi0Histo)
+  {
     fhIM  = new TH2F ("hIM","Cluster pairs Invariant mass vs reconstructed pair energy, ncell > 1",nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
     fhIM->SetXTitle("p_{T, cluster pairs} (GeV) ");
     fhIM->SetYTitle("M_{cluster pairs} (GeV/c^{2})");
@@ -1936,27 +2077,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhAsym->SetXTitle("p_{T, cluster pairs} (GeV) ");
     fhAsym->SetYTitle("Asymmetry");
     outputContainer->Add(fhAsym);	
-    
   }
   
-  fhNCellsPerClusterNoCut  = new TH2F ("hNCellsPerClusterNoCut","# cells per cluster vs energy, no bad clusters cut",
-                                       nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
-  fhNCellsPerClusterNoCut->SetXTitle("E (GeV)");
-  fhNCellsPerClusterNoCut->SetYTitle("n cells");
-  outputContainer->Add(fhNCellsPerClusterNoCut);
   
-  fhNCellsPerCluster  = new TH2F ("hNCellsPerCluster","# cells per cluster vs energy",nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
-  fhNCellsPerCluster->SetXTitle("E (GeV)");
-  fhNCellsPerCluster->SetYTitle("n cells");
-  outputContainer->Add(fhNCellsPerCluster);
-    
-  fhNClusters  = new TH1F ("hNClusters","# clusters", nclbins,nclmin,nclmax); 
-  fhNClusters->SetXTitle("number of clusters");
-  outputContainer->Add(fhNClusters);
-  
-  if(fFillAllPosHisto2){
-    
-    if(fFillAllTH3){
+  if(fFillAllPosHisto2)
+  {
+    if(fFillAllTH3)
+    {
       fhXYZ  = new TH3F ("hXYZ","Cluster: x vs y vs z",xbins,xmin,xmax,ybins,ymin,ymax,zbins,zmin,zmax); 
       fhXYZ->SetXTitle("x (cm)");
       fhXYZ->SetYTitle("y (cm)");
@@ -2005,8 +2132,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhYE->SetYTitle("E (GeV)");
     outputContainer->Add(fhYE);
   }
-  if(fFillAllPosHisto){
-    
+  
+  if(fFillAllPosHisto)
+  {
     fhRCellE  = new TH2F ("hRCellE","Cell R position vs cell energy",rbins,rmin,rmax,nptbins,ptmin,ptmax); 
     fhRCellE->SetXTitle("r = #sqrt{x^{2}+y^{2}} (cm)");
     fhRCellE->SetYTitle("E (GeV)");
@@ -2151,7 +2279,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   outputContainer->Add(fhCellECross);    
   
   
-  if(fCorrelate){
+  if(fCorrelate)
+  {
     //PHOS vs EMCAL
     fhCaloCorrNClusters  = new TH2F ("hCaloCorrNClusters","# clusters in EMCAL vs PHOS", nclbins,nclmin,nclmax,nclbins,nclmin,nclmax); 
     fhCaloCorrNClusters->SetXTitle("number of clusters in EMCAL");
@@ -2353,11 +2482,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   TString particleName[] = { "Photon", "Pi0", "Eta", "Electron", "NeutralHadron", "ChargedHadron" };
   
-  if(IsDataMC()){
-    for(Int_t iPart = 0; iPart < 6; iPart++){
-    
-      for(Int_t iCh = 0; iCh < 2; iCh++){
-        
+  if(IsDataMC())
+  {
+    for(Int_t iPart = 0; iPart < 6; iPart++)
+    {
+      for(Int_t iCh = 0; iCh < 2; iCh++)
+      {
         fhRecoMCRatioE[iPart][iCh]  = new TH2F (Form("hRecoMCRatioE_%s_Match%d",particleName[iPart].Data(),iCh),
                                                 Form("Reco/Gen E, %s, Matched %d",particleName[iPart].Data(),iCh), 
                                                 nptbins, ptmin, ptmax, 200,0,2); 
@@ -2407,7 +2537,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     }  
     
     //Pure MC
-    for(Int_t iPart = 0; iPart < 4; iPart++){
+    for(Int_t iPart = 0; iPart < 4; iPart++)
+    {
       fhGenMCE[iPart]     = new TH1F(Form("hGenMCE_%s",particleName[iPart].Data()) ,
                                      Form("p_{T} of generated %s",particleName[iPart].Data()),
                                      nptbins,ptmin,ptmax);
@@ -2530,8 +2661,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   return outputContainer;
 }
 
-//_____________________________________________________________________________________________
-Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
+//__________________________________________________________________________________________________
+Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells, const Float_t dtcut)
 {
   // Get energy in cross axis around maximum cell, for EMCAL only
   
@@ -2607,11 +2738,11 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
       tcell4 = cells->GetCellTime(absID4);
       GetCaloUtils()->RecalibrateCellTime     (tcell4, fCalorimeter, absID4, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     }
-    
-    if(TMath::Abs(tcell-tcell1)*1.e9 > 50) ecell1 = 0 ;
-    if(TMath::Abs(tcell-tcell2)*1.e9 > 50) ecell2 = 0 ;
-    if(TMath::Abs(tcell-tcell3)*1.e9 > 50) ecell3 = 0 ;
-    if(TMath::Abs(tcell-tcell4)*1.e9 > 50) ecell4 = 0 ;
+        
+    if(TMath::Abs(tcell-tcell1)*1.e9 > dtcut) ecell1 = 0 ;
+    if(TMath::Abs(tcell-tcell2)*1.e9 > dtcut) ecell2 = 0 ;
+    if(TMath::Abs(tcell-tcell3)*1.e9 > dtcut) ecell3 = 0 ;
+    if(TMath::Abs(tcell-tcell4)*1.e9 > dtcut) ecell4 = 0 ;
     
     return ecell1+ecell2+ecell3+ecell4;
   }
@@ -2727,6 +2858,14 @@ void AliAnaCalorimeterQA::InitParameters()
   fTimeCutMax      =  9999999;
   fEMCALCellAmpMin = 0.2;
   fPHOSCellAmpMin  = 0.2;
+  
+  // Exotic studies
+  fExoNECrossCuts  = 10 ;
+  fExoNDTimeCuts   = 4  ;
+  
+  fExoDTimeCuts [0] = 1.e4 ; fExoDTimeCuts [1] = 50.0 ; fExoDTimeCuts [2] = 25.0 ; fExoDTimeCuts [3] = 10.0 ;
+  fExoECrossCuts[0] = 0.80 ; fExoECrossCuts[1] = 0.85 ; fExoECrossCuts[2] = 0.90 ; fExoECrossCuts[3] = 0.92 ; fExoECrossCuts[4] = 0.94 ;
+  fExoECrossCuts[5] = 0.95 ; fExoECrossCuts[6] = 0.96 ; fExoECrossCuts[7] = 0.97 ; fExoECrossCuts[8] = 0.98 ; fExoECrossCuts[9] = 0.99 ;
   
 }
 

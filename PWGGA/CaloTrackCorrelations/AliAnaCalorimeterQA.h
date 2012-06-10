@@ -71,7 +71,10 @@ public:
 
   void         Correlate();
   
-  Float_t      GetECross(const Int_t absId, AliVCaloCells* cells);
+  void         ExoticHistograms(const Int_t absIdMax, const Float_t ampMax,
+                                AliVCluster *clus, AliVCaloCells* cells);
+  
+  Float_t      GetECross(const Int_t absId, AliVCaloCells* cells,const Float_t dtcut = 10000);
   
   void         InvariantMassHistograms(const Int_t iclus, const TLorentzVector mom, const Int_t nModule,
                                        const TObjArray* caloClusters, AliVCaloCells * cells);
@@ -137,8 +140,15 @@ public:
 
   void SwitchOnStudyWeight()                    { fStudyWeight      = kTRUE  ; }
   void SwitchOffStudyWeight()                   { fStudyWeight      = kFALSE ; }
-
-
+  
+  void SwitchOnStudyExotic()                    { fStudyExotic      = kTRUE  ; }
+  void SwitchOffStudyExotic()                   { fStudyExotic      = kFALSE ; }
+  
+  void SetNECrossCuts(Int_t n)                  { fExoNECrossCuts   = n      ; }
+  void SetNDTimeCuts (Int_t n)                  { fExoNDTimeCuts    = n      ; }
+  
+  void SetExoECrossCuts (Int_t i, Float_t c)    { if (i<fExoNECrossCuts) fExoECrossCuts[i] = c ; }
+  void SetExoDTimeCuts  (Int_t i, Float_t c)    { if (i<fExoNDTimeCuts ) fExoDTimeCuts [i] = c ; }
   
  private:
   
@@ -155,6 +165,7 @@ public:
   Bool_t   fCorrelate   ;                     // Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
   Bool_t   fStudyBadClusters;                 // Study bad clusters
   Bool_t   fStudyClustersAsymmetry;           // Study asymmetry of clusters
+  Bool_t   fStudyExotic;                      // Study the exotic cluster for different cuts
   Bool_t   fStudyWeight;                      // Study the energy weight used in different cluster calculations
   
   // Parameters
@@ -168,6 +179,12 @@ public:
   Double_t fTimeCutMax  ;                     // Remove clusters/cells with time larger than this value, in ns
   Float_t  fEMCALCellAmpMin;                  // amplitude Threshold on emcal cells
   Float_t  fPHOSCellAmpMin ;                  // amplitude Threshold on phos cells
+  
+  // Exotic studies
+  Float_t  fExoNECrossCuts   ;                // Number of ecross cuts
+  Float_t  fExoECrossCuts[10];                // List of ecross cuts
+  Float_t  fExoNDTimeCuts    ;                // Number of time cuts
+  Float_t  fExoDTimeCuts[5]  ;                // List of time cuts
   
   //CaloClusters 
   TH1F *   fhE  ;                             //! E distribution, Reco
@@ -314,16 +331,24 @@ public:
 	
   // Weight studies
   
-  TH2F* fhECellClusterRatio;                  //! e cell / e cluster vs e cluster
-  TH2F* fhECellClusterLogRatio;               //! log (e cell / e cluster)  vs e cluster
-  TH2F* fhEMaxCellClusterRatio;               //! e max cell / e cluster vs e cluster
-  TH2F* fhEMaxCellClusterLogRatio;            //! log (e max cell / e cluster) vs e cluster
+  TH2F *   fhECellClusterRatio;               //! e cell / e cluster vs e cluster
+  TH2F *   fhECellClusterLogRatio;            //! log (e cell / e cluster)  vs e cluster
+  TH2F *   fhEMaxCellClusterRatio;            //! e max cell / e cluster vs e cluster
+  TH2F *   fhEMaxCellClusterLogRatio;         //! log (e max cell / e cluster) vs e cluster
   
-  TH2F* fhLambda0ForW0[14];                    //! L0 for 7 defined w0= 3, 3.5 ... 6
-  //TH2F* fhLambda1ForW0[7];                    //! L1 for 7 defined w0= 3, 3.5 ... 6
+  TH2F *   fhLambda0ForW0[14];                //! L0 for 7 defined w0= 3, 3.5 ... 6
+  //TH2F * fhLambda1ForW0[7];                  //! L1 for 7 defined w0= 3, 3.5 ... 6
 
-  TH2F* fhLambda0ForW0MC[14][5];               //! L0 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
-  //TH2F* fhLambda1ForW0MC[7][5];               //! L1 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
+  TH2F *   fhLambda0ForW0MC[14][5];            //! L0 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
+  //TH2F * fhLambda1ForW0MC[7][5];              //! L1 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
+  
+  // Exotic studies
+  
+  TH2F *   fhExoNCell [10][5] ;                //! Number of cells per cluster for different cuts
+  TH2F *   fhExoL0    [10][5] ;                //! Long shower shape axis for exotic
+  TH2F *   fhExoECross[10][5] ;                //! E cross for max cell in cluster, for different cuts
+  TH2F *   fhExoTime  [10][5] ;                //! Time of exotic cluster, for different cuts
+  TH2F *   fhExoDTime [10]    ;                //! Difference in time between cell with max energy and rest of cells for exotic
   
   //Pure MC
 
@@ -373,7 +398,7 @@ public:
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,24)
+  ClassDef(AliAnaCalorimeterQA,25)
 } ;
 
 
