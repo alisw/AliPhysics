@@ -587,16 +587,15 @@ Bool_t AliHadCorrTask::Run()
     am->LoadBranch("Centrality");      
   }
 
-  if (fCreateHisto)
+  if (fCreateHisto) {
     fHistCentrality->Fill(fCent);
-
-  const Int_t Nclus = fCaloClusters->GetEntries();
- 
-  if (fDoTrackClus && fCreateHisto)
+    if (fDoTrackClus)
     DoTrackClusLoop();
+  }
 
-  // loop over all clusters
-  for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
+   // loop over all clusters
+  const Int_t Nclus = fCaloClusters->GetEntries();
+ for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
     AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(fCaloClusters->At(iClus));
     if (!emccluster)
       continue;
