@@ -138,6 +138,15 @@ Bool_t AliAnalysisTaskEmcalJet::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisTaskEmcalJet::AcceptBiasJet(AliEmcalJet *jet) const
+{ 
+  if (jet->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet->MaxClusterPt() < fPtBiasJetClus))
+    return kFALSE;
+  else
+    return kTRUE;
+}
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Bool_t bias, Bool_t upCut) const
 {   
   // Return true if jet is accepted.
@@ -146,7 +155,7 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Bool_t bias, Bool_t 
     return kFALSE;
   if (jet->Area() <= fJetAreaCut)
     return kFALSE;
-  if (bias && jet->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet->MaxClusterPt() < fPtBiasJetClus))
+  if (bias && !AcceptBiasJet(jet))
     return kFALSE;
   if (upCut && (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt))
     return kFALSE;

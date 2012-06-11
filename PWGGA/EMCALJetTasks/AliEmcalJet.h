@@ -49,10 +49,10 @@ class AliEmcalJet : public AliVParticle
   Bool_t            AxisInEmcal()                const { return fAxisInEmcal;              }
   UShort_t          GetNumberOfClusters()        const { return fClusterIDs.GetSize();     }
   Short_t           ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx);       }
-  AliVCluster      *ClusterAt(Int_t idx, TClonesArray *clusarray)  const { return dynamic_cast<AliVCluster*>(clusarray->At(ClusterAt(idx))); }
+  AliVCluster      *ClusterAt(Int_t idx, TClonesArray *clusarray)  const { if (!clusarray) return 0; return dynamic_cast<AliVCluster*>(clusarray->At(ClusterAt(idx))); }
   UShort_t          GetNumberOfTracks()          const { return fTrackIDs.GetSize();       }
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
-  AliVParticle     *TrackAt(Int_t idx, TClonesArray *trackarray)   const { return dynamic_cast<AliVParticle*>(trackarray->At(TrackAt(idx))); } 
+  AliVParticle     *TrackAt(Int_t idx, TClonesArray *trackarray)   const { if (!trackarray) return 0; return dynamic_cast<AliVParticle*>(trackarray->At(TrackAt(idx))); } 
   Double_t          FracEmcalArea()              const { return fAreaEmc/fArea;            }
   Bool_t            IsInsideEmcal()              const { return (fAreaEmc/fArea>0.999);    }
   Bool_t            IsInEmcal()                  const { return (fAreaEmc>0);              }
