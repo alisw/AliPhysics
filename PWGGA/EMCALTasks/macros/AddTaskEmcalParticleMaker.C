@@ -1,11 +1,11 @@
 // $Id$
 
 AliEmcalParticleMaker* AddTaskEmcalParticleMaker(
-  const char *taskName            = "AliEmcalParticleMaker",
   const char *tracksName          = "PicoTracks",
   const char *clustersName        = "CaloClusters",
   const char *tracksOutName       = "EmcalTracks",
-  const char *clustersOutName     = "EmcalClusters"
+  const char *clustersOutName     = "EmcalClusters",
+  const char *taskName            = "AliEmcalParticleMaker",
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
