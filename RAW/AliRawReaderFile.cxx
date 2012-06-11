@@ -37,6 +37,7 @@
 #include <TArrayC.h>
 
 
+using std::ios;
 ClassImp(AliRawReaderFile)
 
 

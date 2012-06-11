@@ -53,6 +53,7 @@
 #include "AliDAQ.h"
 #include "AliLog.h"
 
+using std::ifstream;
 ClassImp(AliRawReader)
 
 

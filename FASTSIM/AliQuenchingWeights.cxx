@@ -44,6 +44,8 @@
 #include <TLegend.h>
 #include "AliQuenchingWeights.h"
 
+using std::fstream;
+using std::ios;
 ClassImp(AliQuenchingWeights)
 
 // conversion from fm to GeV^-1: 1 fm = fmGeV GeV^-1

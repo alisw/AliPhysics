@@ -19,6 +19,7 @@ class fstream;
 #endif
 #include <vector>
 
+using std::vector;
 
 class AliRawReaderMemory: public AliRawReader {
   public :

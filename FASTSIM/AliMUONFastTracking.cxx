@@ -41,6 +41,8 @@
 #include "AliMUONFastTracking.h"
 #include "AliMUONFastTrackingEntry.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliMUONFastTracking)
 
 
