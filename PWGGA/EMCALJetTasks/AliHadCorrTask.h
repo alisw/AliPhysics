@@ -20,7 +20,6 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   virtual ~AliHadCorrTask();
 
   void                   UserCreateOutputObjects();
-  void                   Terminate(Option_t *);
 
   void                   SetEexcl(Double_t Emin)                 { fEexclCell      = Emin ; }
   void                   SetEtaMatch(Double_t eta)               { fEtaMatch       = eta  ; }

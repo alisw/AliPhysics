@@ -473,13 +473,39 @@ void AliHadCorrTask::DoTrackClusLoop()
       Double_t phidiff = 999;
       AliPicoTrack::GetEtaPhiDiff(track, cluster, phidiff, etadiff);
 
-      if (TMath::Abs(phidiff) < 0.050 && TMath::Abs(etadiff) < 0.025) // pp cuts!!!
+      Double_t mom    = track->P();
+      Int_t mombin    = GetMomBin(mom);
+      Int_t centbinch = fCentBin;
+      if (track->Charge()<0) 
+        centbinch += 4;
+
+      Double_t etaCut   = 0.0;
+      Double_t phiCutlo = 0.0;
+      Double_t phiCuthi = 0.0;
+
+      if (fPhiMatch > 0) {
+        phiCutlo = -fPhiMatch;
+        phiCuthi = +fPhiMatch;
+      } else {
+        phiCutlo = GetPhiMean(mombin, centbinch) - GetPhiSigma(mombin, fCentBin);
+        phiCuthi = GetPhiMean(mombin, centbinch) + GetPhiSigma(mombin, fCentBin);
+      }
+
+      if (fEtaMatch > 0) {
+        etaCut = fEtaMatch;
+      }
+      else {
+        etaCut = GetEtaSigma(mombin);
+      }
+
+      if ((phidiff < phiCuthi && phidiff > phiCutlo) && TMath::Abs(etadiff) < etaCut) {
 	Nmatches++;
+      }
     }
 
     fHistNMatchCent_trk->Fill(fCent, Nmatches);
 
-    if(Nmatches == 0 && track->Pt() > 2.0)
+    if (Nmatches == 0 && track->Pt() > 2.0)
       fHistNoMatchEtaPhi->Fill(track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal());
   }
 }
@@ -502,11 +528,14 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(iTrack));
     if (!emctrack)
       continue;
-
     AliVTrack *track = emctrack->GetTrack();
     if (!track)
       continue;
     if (!AcceptTrack(track))
+      continue;
+
+    // check if track also points to cluster
+    if (fDoTrackClus && (track->GetEMCALcluster()) != iClus)
       continue;
 
     Double_t etadiff = 999;
@@ -522,7 +551,6 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
     if (fCreateHisto) {
       Int_t etabin = 0;
       if(track->Eta() > 0) etabin=1;
-	
       fHistMatchEtaPhi[centbinch][mombin][etabin]->Fill(etadiff, phidiff);
     }
     
@@ -532,30 +560,26 @@ void AliHadCorrTask::DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t 
 
     if (fPhiMatch > 0) {
       phiCutlo = -fPhiMatch;
-      phiCuthi = fPhiMatch;
-    }
-    else {
+      phiCuthi = +fPhiMatch;
+    } else {
       phiCutlo = GetPhiMean(mombin, centbinch) - GetPhiSigma(mombin, fCentBin);
       phiCuthi = GetPhiMean(mombin, centbinch) + GetPhiSigma(mombin, fCentBin);
     }
 
     if (fEtaMatch > 0) {
       etaCut = fEtaMatch;
-    }
-    else {
+    } else {
       etaCut = GetEtaSigma(mombin);
     }
 
     if ((phidiff < phiCuthi && phidiff > phiCutlo) && TMath::Abs(etadiff) < etaCut) {
-      if ((fDoTrackClus && (track->GetEMCALcluster()) == iClus) || !fDoTrackClus) {
-	++Nmatches;
-	totalTrkP += track->P();
+      ++Nmatches;
+      totalTrkP += track->P();
 
-	if (fCreateHisto) {
-	  if (fHadCorr > 1 && mombin > -1) {
-	    fHistMatchdRvsEP[fCentBin]->Fill(dR, energyclus / mom);
-	  }
-	}
+      if (fCreateHisto) {
+        if (fHadCorr > 1 && mombin > -1) {
+          fHistMatchdRvsEP[fCentBin]->Fill(dR, energyclus / mom);
+        }
       }
     }
   }
@@ -665,7 +689,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
 
   // check if track also points to cluster
   Int_t cid = emctrack->GetMatchedObjId();
-  if (cid!=emccluster->IdInCollection()) 
+  if (fDoTrackClus && (cid!=emccluster->IdInCollection())) 
     return energyclus;
 
   AliVTrack *track = emctrack->GetTrack();
@@ -707,7 +731,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   Double_t phiCuthi = 0.0;
   if (fPhiMatch > 0) {
     phiCutlo = -fPhiMatch;
-    phiCuthi = fPhiMatch;
+    phiCuthi = +fPhiMatch;
   }
   else {
     phiCutlo = GetPhiMean(mombin, centbinch) - GetPhiSigma(mombin, fCentBin);
@@ -722,10 +746,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   
   // apply the correction if the track is in the eta/phi window
   if ((dPhiMin < phiCuthi && dPhiMin > phiCutlo) && TMath::Abs(dEtaMin) < etaCut) {
-
-    if ((fDoTrackClus && (track->GetEMCALcluster()) == emccluster->IdInCollection()) || !fDoTrackClus) {
-      energyclus -= hadCorr * mom;
-    }
+    energyclus -= hadCorr * mom;
   }
 
   return energyclus;
@@ -809,7 +830,3 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   return energyclus;
 }
 
-void AliHadCorrTask::Terminate(Option_t *)
-{
-  // Nothing to be done.
-}
