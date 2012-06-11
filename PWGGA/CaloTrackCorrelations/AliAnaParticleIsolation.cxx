@@ -90,15 +90,16 @@ fhPtSumDensityIso(),              fhPtSumDensityDecayIso(),
 fhPtFracPtSumIso(),               fhPtFracPtSumDecayIso(),      
 fhEtaPhiFracPtSumIso(),           fhEtaPhiFracPtSumDecayIso(),
 // Cluster control histograms
-fhTrackMatchedDEta(0x0),          fhTrackMatchedDPhi(0x0),         fhTrackMatchedDEtaDPhi(0x0),
-fhdEdx(0),                        fhEOverP(0),                     fhTrackMatchedMCParticle(0),
-fhELambda0(0),                    fhELambda1(0), 
-fhELambda0TRD(0),                 fhELambda1TRD(0),
+fhTrackMatchedDEta(),             fhTrackMatchedDPhi(),           fhTrackMatchedDEtaDPhi(),
+fhdEdx(),                         fhEOverP(),                     fhTrackMatchedMCParticle(),
+fhELambda0() ,                    fhELambda1(), 
+fhELambda0TRD(),                  fhELambda1TRD(),
+
 // Number of local maxima in cluster
-fhNLocMax(0),
-fhELambda0LocMax1(0),             fhELambda1LocMax1(0),
-fhELambda0LocMax2(0),             fhELambda1LocMax2(0),
-fhELambda0LocMaxN(0),             fhELambda1LocMaxN(0),
+fhNLocMax(),
+fhELambda0LocMax1(),              fhELambda1LocMax1(),
+fhELambda0LocMax2(),              fhELambda1LocMax2(),
+fhELambda0LocMaxN(),              fhELambda1LocMaxN(),
 // Histograms settings
 fHistoNPtSumBins(0),              fHistoPtSumMax(0.),              fHistoPtSumMin(0.),
 fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInConeMin(0.)
@@ -138,8 +139,8 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
       fhPtSumDensityDecayIso [i][j] = 0 ;
       fhEtaPhiSumDensityIso      [i][j] = 0 ;
       fhEtaPhiSumDensityDecayIso [i][j] = 0 ;
-      fhPtFracPtSumIso       [i][j] = 0 ;
-      fhPtFracPtSumDecayIso  [i][j] = 0 ;
+      fhPtFracPtSumIso           [i][j] = 0 ;
+      fhPtFracPtSumDecayIso      [i][j] = 0 ;
       fhEtaPhiFracPtSumIso       [i][j] = 0 ;
       fhEtaPhiFracPtSumDecayIso  [i][j] = 0 ;
       
@@ -168,14 +169,30 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
     fPtThresholds   [i] = 0 ;
     fSumPtThresholds[i] = 0 ;
   } 
+
+  
+  for(Int_t i = 0; i < 2 ; i++)
+  { 
+    fhTrackMatchedDEta[i] = 0 ;             fhTrackMatchedDPhi[i] = 0 ;           fhTrackMatchedDEtaDPhi  [i] = 0 ;
+    fhdEdx            [i] = 0 ;             fhEOverP          [i] = 0 ;           fhTrackMatchedMCParticle[i] = 0 ;
+    fhELambda0        [i] = 0 ;             fhELambda1        [i] = 0 ; 
+    fhELambda0TRD     [i] = 0 ;             fhELambda1TRD     [i] = 0 ;
+    
+    // Number of local maxima in cluster
+    fhNLocMax        [i] = 0 ;
+    fhELambda0LocMax1[i] = 0 ;              fhELambda1LocMax1[i] = 0 ;
+    fhELambda0LocMax2[i] = 0 ;              fhELambda1LocMax2[i] = 0 ;
+    fhELambda0LocMaxN[i] = 0 ;              fhELambda1LocMaxN[i] = 0 ;
+    
+  } 
   
 }
 
 //________________________________________________________________________________________________
-void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
-                                                                            const Int_t clusterID,
-                                                                            const Int_t nMaxima,
-                                                                            const Int_t mcTag
+void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(const Bool_t isolated,
+                                                                            const Int_t  clusterID,
+                                                                            const Int_t  nMaxima,
+                                                                            const Int_t  mcTag
                                                                             )
 {
   // Fill Track matching and Shower Shape control histograms
@@ -201,19 +218,19 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
     
     if(fFillSSHisto)
     {
-      fhELambda0   ->Fill(energy, cluster->GetM02() );  
-      fhELambda1   ->Fill(energy, cluster->GetM20() );  
+      fhELambda0[isolated]->Fill(energy, cluster->GetM02() );  
+      fhELambda1[isolated]->Fill(energy, cluster->GetM20() );  
       
-      if(fCalorimeter == "EMCAL" && GetModuleNumber(cluster) > 5)
+      if(fCalorimeter == "EMCAL" && GetModuleNumber(cluster) > 5) // TO DO: CHANGE FOR 2012
       {
-        fhELambda0TRD   ->Fill(energy, cluster->GetM02() );  
-        fhELambda1TRD   ->Fill(energy, cluster->GetM20() );  
+        fhELambda0TRD[isolated]->Fill(energy, cluster->GetM02() );  
+        fhELambda1TRD[isolated]->Fill(energy, cluster->GetM20() );  
       }
       
-      fhNLocMax->Fill(energy,nMaxima);
-      if     (nMaxima==1) { fhELambda0LocMax1->Fill(energy,cluster->GetM02()); fhELambda1LocMax1->Fill(energy,cluster->GetM20()); }
-      else if(nMaxima==2) { fhELambda0LocMax2->Fill(energy,cluster->GetM02()); fhELambda1LocMax2->Fill(energy,cluster->GetM20()); }
-      else                { fhELambda0LocMaxN->Fill(energy,cluster->GetM02()); fhELambda1LocMaxN->Fill(energy,cluster->GetM20()); }
+      fhNLocMax[isolated]->Fill(energy,nMaxima);
+      if     (nMaxima==1) { fhELambda0LocMax1[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMax1[isolated]->Fill(energy,cluster->GetM20()); }
+      else if(nMaxima==2) { fhELambda0LocMax2[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMax2[isolated]->Fill(energy,cluster->GetM20()); }
+      else                { fhELambda0LocMaxN[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMaxN[isolated]->Fill(energy,cluster->GetM20()); }
       
     } // SS histo fill        
     
@@ -232,9 +249,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
       //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
       if(fhTrackMatchedDEta && TMath::Abs(dR) < 999)
       {
-        fhTrackMatchedDEta->Fill(energy,dZ);
-        fhTrackMatchedDPhi->Fill(energy,dR);
-        if(energy > 0.5) fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
+        fhTrackMatchedDEta[isolated]->Fill(energy,dZ);
+        fhTrackMatchedDPhi[isolated]->Fill(energy,dR);
+        if(energy > 0.5) fhTrackMatchedDEtaDPhi[isolated]->Fill(dZ,dR);
       }
       
       // Check dEdx and E/p of matched clusters
@@ -247,10 +264,10 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
         if(track) 
         {
           Float_t dEdx = track->GetTPCsignal();
-          fhdEdx->Fill(cluster->E(), dEdx);
+          fhdEdx[isolated]->Fill(cluster->E(), dEdx);
           
           Float_t eOverp = cluster->E()/track->P();
-          fhEOverP->Fill(cluster->E(),  eOverp);
+          fhEOverP[isolated]->Fill(cluster->E(),  eOverp);
         }
         //else 
         //  printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
@@ -261,19 +278,19 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(
           if ( !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion)  )
           {
             if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
-                      GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(energy, 2.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(energy, 0.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(energy, 1.5 );
-            else                                                                                   fhTrackMatchedMCParticle->Fill(energy, 3.5 );
+                       GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 2.5 );
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 0.5 );
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 1.5 );
+            else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 3.5 );
             
           }
           else
           {
             if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
-                      GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(energy, 6.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(energy, 4.5 );
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(energy, 5.5 );
-            else                                                                                   fhTrackMatchedMCParticle->Fill(energy, 7.5 );
+                       GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 6.5 );
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 4.5 );
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 5.5 );
+            else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 7.5 );
           }                    
           
         }  // MC           
@@ -381,7 +398,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Float_t pOverEmax   = GetHistogramRanges()->GetHistoPOverEMax();       
   Float_t pOverEmin   = GetHistogramRanges()->GetHistoPOverEMin();
   
-  
   Int_t   nptsumbins    = fHistoNPtSumBins;
   Float_t ptsummax      = fHistoPtSumMax;
   Float_t ptsummin      = fHistoPtSumMin;	
@@ -395,142 +411,161 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
   if(!fMakeSeveralIC)
   {
-    if(fFillTMHisto)
+    TString hName [] = {"NoIso",""};
+    TString hTitle[] = {"Not isolated"  ,"isolated"};
+    for(Int_t iso = 0; iso < 2; iso++)
     {
-      fhTrackMatchedDEta  = new TH2F
-      ("hTrackMatchedDEta",
-       Form("d#eta of cluster-track vs cluster energy for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
-       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
-      fhTrackMatchedDEta->SetYTitle("d#eta");
-      fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
-      
-      fhTrackMatchedDPhi  = new TH2F
-      ("hTrackMatchedDPhi",
-       Form("d#phi of cluster-track vs cluster energy for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
-       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
-      fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDPhi->SetXTitle("E_{cluster} (GeV)");
-      
-      fhTrackMatchedDEtaDPhi  = new TH2F
-      ("hTrackMatchedDEtaDPhi",
-       Form("d#eta vs d#phi of cluster-track for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),       
-       nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
-      fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
-      fhTrackMatchedDEtaDPhi->SetXTitle("d#eta");   
-      
-      outputContainer->Add(fhTrackMatchedDEta) ; 
-      outputContainer->Add(fhTrackMatchedDPhi) ;
-      outputContainer->Add(fhTrackMatchedDEtaDPhi) ;
-      
-      fhdEdx  = new TH2F ("hdEdx",
-                          Form("Matched track <dE/dx> vs cluster E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac), 
-                          nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
-      fhdEdx->SetXTitle("E (GeV)");
-      fhdEdx->SetYTitle("<dE/dx>");
-      outputContainer->Add(fhdEdx);  
-      
-      fhEOverP  = new TH2F ("hEOverP",
-                            Form("Matched track E/p vs cluster E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac), 
-                            nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
-      fhEOverP->SetXTitle("E (GeV)");
-      fhEOverP->SetYTitle("E/p");
-      outputContainer->Add(fhEOverP);   
-      
-      if(IsDataMC())
+      if(fFillTMHisto)
       {
-        fhTrackMatchedMCParticle  = new TH2F
-        ("hTrackMatchedMCParticle",
-         Form("Origin of particle vs energy vs cluster E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac), 
-         nptbins,ptmin,ptmax,8,0,8); 
-        fhTrackMatchedMCParticle->SetXTitle("E (GeV)");   
-        //fhTrackMatchedMCParticle->SetYTitle("Particle type");
+        fhTrackMatchedDEta[iso]  = new TH2F
+        (Form("hTrackMatchedDEta%s",hName[iso].Data()),
+         Form("%s - d#eta of cluster-track vs cluster energy for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",hTitle[iso].Data(),r,ptthre,ptfrac),
+         nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+        fhTrackMatchedDEta[iso]->SetYTitle("d#eta");
+        fhTrackMatchedDEta[iso]->SetXTitle("E_{cluster} (GeV)");
         
-        fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(1 ,"Photon");
-        fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(2 ,"Electron");
-        fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
-        fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(4 ,"Rest");
-        fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
-        fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
-        fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
-        fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+        fhTrackMatchedDPhi[iso]  = new TH2F
+        (Form("hTrackMatchedDPhi%s",hName[iso].Data()),
+         Form("%s - d#phi of cluster-track vs cluster energy for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",hTitle[iso].Data(),r,ptthre,ptfrac),
+         nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+        fhTrackMatchedDPhi[iso]->SetYTitle("d#phi (rad)");
+        fhTrackMatchedDPhi[iso]->SetXTitle("E_{cluster} (GeV)");
         
-        outputContainer->Add(fhTrackMatchedMCParticle);         
-      }
-    }
-    
-    if(fFillSSHisto)
-    {
-      fhELambda0  = new TH2F
-      ("hELambda0","Selected #pi^{0} pairs: E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhELambda0->SetYTitle("#lambda_{0}^{2}");
-      fhELambda0->SetXTitle("E (GeV)");
-      outputContainer->Add(fhELambda0) ; 
-      
-      fhELambda1  = new TH2F
-      ("hELambda1","Selected #pi^{0} pairs: E vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhELambda1->SetYTitle("#lambda_{1}^{2}");
-      fhELambda1->SetXTitle("E (GeV)");
-      outputContainer->Add(fhELambda1) ;  
-      
-      if(fCalorimeter=="EMCAL")
-      {
-        fhELambda0TRD  = new TH2F
-        ("hELambda0TRD","Selected #pi^{0} pairs: E vs #lambda_{0}, SM behind TRD",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhELambda0TRD->SetYTitle("#lambda_{0}^{2}");
-        fhELambda0TRD->SetXTitle("E (GeV)");
-        outputContainer->Add(fhELambda0TRD) ; 
+        fhTrackMatchedDEtaDPhi[iso]  = new TH2F
+        (Form("hTrackMatchedDEtaDPhi%s",hName[iso].Data()),
+         Form("%s - d#eta vs d#phi of cluster-track for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",hTitle[iso].Data(),r,ptthre,ptfrac),       
+         nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
+        fhTrackMatchedDEtaDPhi[iso]->SetYTitle("d#phi (rad)");
+        fhTrackMatchedDEtaDPhi[iso]->SetXTitle("d#eta");   
         
-        fhELambda1TRD  = new TH2F
-        ("hELambda1TRD","Selected #pi^{0} pairs: E vs #lambda_{1}, SM behind TRD",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhELambda1TRD->SetYTitle("#lambda_{1}^{2}");
-        fhELambda1TRD->SetXTitle("E (GeV)");
-        outputContainer->Add(fhELambda1TRD) ;       
+        outputContainer->Add(fhTrackMatchedDEta[iso]) ; 
+        outputContainer->Add(fhTrackMatchedDPhi[iso]) ;
+        outputContainer->Add(fhTrackMatchedDEtaDPhi[iso]) ;
+        
+        fhdEdx[iso]  = new TH2F
+        (Form("hdEdx%s",hName[iso].Data()),
+         Form("%s - Matched track <dE/dx> vs cluster E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",hTitle[iso].Data(),r,ptthre,ptfrac), 
+         nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
+        fhdEdx[iso]->SetXTitle("E (GeV)");
+        fhdEdx[iso]->SetYTitle("<dE/dx>");
+        outputContainer->Add(fhdEdx[iso]);  
+        
+        fhEOverP[iso]  = new TH2F
+        (Form("hEOverP%s",hName[iso].Data()),
+         Form("%s - Matched track E/p vs cluster E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",hTitle[iso].Data(),r,ptthre,ptfrac), 
+         nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
+        fhEOverP[iso]->SetXTitle("E (GeV)");
+        fhEOverP[iso]->SetYTitle("E/p");
+        outputContainer->Add(fhEOverP[iso]);   
+        
+        if(IsDataMC())
+        {
+          fhTrackMatchedMCParticle[iso]  = new TH2F
+          (Form("hTrackMatchedMCParticle%s",hName[iso].Data()),
+           Form("%s - Origin of particle vs energy vs cluster E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",hTitle[iso].Data(),r,ptthre,ptfrac), 
+           nptbins,ptmin,ptmax,8,0,8); 
+          fhTrackMatchedMCParticle[iso]->SetXTitle("E (GeV)");   
+          //fhTrackMatchedMCParticle[iso]->SetYTitle("Particle type");
+          
+          fhTrackMatchedMCParticle[iso]->GetYaxis()->SetBinLabel(1 ,"Photon");
+          fhTrackMatchedMCParticle[iso]->GetYaxis()->SetBinLabel(2 ,"Electron");
+          fhTrackMatchedMCParticle[iso]->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+          fhTrackMatchedMCParticle[iso]->GetYaxis()->SetBinLabel(4 ,"Rest");
+          fhTrackMatchedMCParticle[iso]->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+          fhTrackMatchedMCParticle[iso]->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+          fhTrackMatchedMCParticle[iso]->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+          fhTrackMatchedMCParticle[iso]->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+          
+          outputContainer->Add(fhTrackMatchedMCParticle[iso]);         
+        }
       }
       
-      fhNLocMax = new TH2F("hNLocMax","Number of local maxima in cluster",
-                           nptbins,ptmin,ptmax,10,0,10); 
-      fhNLocMax ->SetYTitle("N maxima");
-      fhNLocMax ->SetXTitle("E (GeV)");
-      outputContainer->Add(fhNLocMax) ;       
-      
-      fhELambda0LocMax1  = new TH2F
-      ("hELambda0LocMax1","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, 1 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhELambda0LocMax1->SetYTitle("#lambda_{0}^{2}");
-      fhELambda0LocMax1->SetXTitle("E (GeV)");
-      outputContainer->Add(fhELambda0LocMax1) ; 
-      
-      fhELambda1LocMax1  = new TH2F
-      ("hELambda1LocMax1","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, 1 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhELambda1LocMax1->SetYTitle("#lambda_{1}^{2}");
-      fhELambda1LocMax1->SetXTitle("E (GeV)");
-      outputContainer->Add(fhELambda1LocMax1) ; 
-      
-      fhELambda0LocMax2  = new TH2F
-      ("hELambda0LocMax2","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, 2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhELambda0LocMax2->SetYTitle("#lambda_{0}^{2}");
-      fhELambda0LocMax2->SetXTitle("E (GeV)");
-      outputContainer->Add(fhELambda0LocMax2) ; 
-      
-      fhELambda1LocMax2  = new TH2F
-      ("hELambda1LocMax2","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, 2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhELambda1LocMax2->SetYTitle("#lambda_{1}^{2}");
-      fhELambda1LocMax2->SetXTitle("E (GeV)");
-      outputContainer->Add(fhELambda1LocMax2) ; 
-      
-      fhELambda0LocMaxN  = new TH2F
-      ("hELambda0LocMaxN","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, N>2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhELambda0LocMaxN->SetYTitle("#lambda_{0}^{2}");
-      fhELambda0LocMaxN->SetXTitle("E (GeV)");
-      outputContainer->Add(fhELambda0LocMaxN) ; 
-      
-      fhELambda1LocMaxN  = new TH2F
-      ("hELambda1LocMaxN","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}, N>2 Local maxima",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhELambda1LocMaxN->SetYTitle("#lambda_{1}^{2}");
-      fhELambda1LocMaxN->SetXTitle("E (GeV)");
-      outputContainer->Add(fhELambda1LocMaxN) ; 
-      
-    }
-    
+      if(fFillSSHisto)
+      {
+        fhELambda0[iso]  = new TH2F
+        (Form("hELambda0%s",hName[iso].Data()),
+         Form("%s cluster : E vs #lambda_{0}",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhELambda0[iso]->SetYTitle("#lambda_{0}^{2}");
+        fhELambda0[iso]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhELambda0[iso]) ; 
+        
+        fhELambda1[iso]  = new TH2F
+        (Form("hELambda1%s",hName[iso].Data()),
+         Form("%s cluster: E vs #lambda_{1}",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhELambda1[iso]->SetYTitle("#lambda_{1}^{2}");
+        fhELambda1[iso]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhELambda1[iso]) ;  
+        
+        if(fCalorimeter=="EMCAL")
+        {
+          fhELambda0TRD[iso]  = new TH2F
+          (Form("hELambda0TRD%s",hName[iso].Data()),
+           Form("%s cluster: E vs #lambda_{0}, SM behind TRD",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhELambda0TRD[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0TRD[iso]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhELambda0TRD[iso]) ; 
+          
+          fhELambda1TRD[iso]  = new TH2F
+          (Form("hELambda1TRD%s",hName[iso].Data()),
+           Form("%s cluster: E vs #lambda_{1}, SM behind TRD",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhELambda1TRD[iso]->SetYTitle("#lambda_{1}^{2}");
+          fhELambda1TRD[iso]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhELambda1TRD[iso]) ;         
+        }
+        
+        fhNLocMax[iso] = new TH2F
+        (Form("hNLocMax%s",hName[iso].Data()),
+         Form("%s - Number of local maxima in cluster",hTitle[iso].Data()),
+         nptbins,ptmin,ptmax,10,0,10); 
+        fhNLocMax[iso]->SetYTitle("N maxima");
+        fhNLocMax[iso]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhNLocMax[iso]) ;       
+        
+        fhELambda0LocMax1[iso]  = new TH2F
+        (Form("hELambda0LocMax1%s",hName[iso].Data()),
+         Form("%s cluster (#eta) pairs: E vs #lambda_{0}, 1 Local maxima",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhELambda0LocMax1[iso]->SetYTitle("#lambda_{0}^{2}");
+        fhELambda0LocMax1[iso]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhELambda0LocMax1[iso]) ; 
+        
+        fhELambda1LocMax1[iso]  = new TH2F
+        (Form("hELambda1LocMax1%s",hName[iso].Data()),
+         Form("%s cluster (#eta) pairs: E vs #lambda_{1}, 1 Local maxima",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhELambda1LocMax1[iso]->SetYTitle("#lambda_{1}^{2}");
+        fhELambda1LocMax1[iso]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhELambda1LocMax1[iso]) ; 
+        
+        fhELambda0LocMax2[iso]  = new TH2F
+        (Form("hELambda0LocMax2%s",hName[iso].Data()),
+         Form("%s cluster (#eta) pairs: E vs #lambda_{0}, 2 Local maxima",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhELambda0LocMax2[iso]->SetYTitle("#lambda_{0}^{2}");
+        fhELambda0LocMax2[iso]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhELambda0LocMax2[iso]) ; 
+        
+        fhELambda1LocMax2[iso]  = new TH2F
+        (Form("hELambda1LocMax2%s",hName[iso].Data()),
+         Form("%s cluster (#eta) pairs: E vs #lambda_{1}, 2 Local maxima",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhELambda1LocMax2[iso]->SetYTitle("#lambda_{1}^{2}");
+        fhELambda1LocMax2[iso]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhELambda1LocMax2[iso]) ; 
+        
+        fhELambda0LocMaxN[iso]  = new TH2F
+        ( Form("hELambda0LocMaxN%s",hName[iso].Data()),
+         Form("%s cluster (#eta) pairs: E vs #lambda_{0}, N>2 Local maxima",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhELambda0LocMaxN[iso]->SetYTitle("#lambda_{0}^{2}");
+        fhELambda0LocMaxN[iso]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhELambda0LocMaxN[iso]) ; 
+        
+        fhELambda1LocMaxN[iso]  = new TH2F
+        (Form("hELambda1LocMaxN%s",hName[iso].Data()),
+         Form("%s cluster (#eta) pairs: E vs #lambda_{1}, N>2 Local maxima",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhELambda1LocMaxN[iso]->SetYTitle("#lambda_{1}^{2}");
+        fhELambda1LocMaxN[iso]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhELambda1LocMaxN[iso]) ; 
+        
+      }
+    } // control histograms for isolated and non isolated objects
+                                                                                                                                                                                                                                                                                                                                                                            
     fhConeSumPt  = new TH2F("hConePtSum",
                             Form("#Sigma p_{T} in isolation cone for R = %2.2f",r),
                             nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
@@ -1443,12 +1478,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeAnalysisFillHistograms() - pt %1.1f, eta %1.1f, phi %1.1f\n",pt, eta, phi);
     
+    FillTrackMatchingShowerShapeControlHistograms(isolation, clID,aod->GetFiducialArea(),mcTag);
+
     if(isolation)
     {    
       if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED: fill histograms\n", iaod);
-      
-      FillTrackMatchingShowerShapeControlHistograms(clID,aod->GetFiducialArea(),mcTag);
-      
+            
       fhEIso      ->Fill(energy);
       fhPtIso     ->Fill(pt);
       fhPhiIso    ->Fill(pt,phi);
@@ -1514,8 +1549,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       }//Histograms with MC
       
     }//Isolated histograms
-    
-    if(!isolation)
+    else // NON isolated
     {
       if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d NOT ISOLATED, fill histograms\n", iaod);
       
@@ -1540,7 +1574,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         else                                                                                   fhPtNoIsoUnknown      ->Fill(pt);        
       }
     }
-    
   }// aod loop
   
 }
@@ -1567,11 +1600,10 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Float_t coneptsum = 0 ;  
   Int_t   n    [10][10];//[fNCones][fNPtThresFrac];
   Int_t   nfrac[10][10];//[fNCones][fNPtThresFrac];
-  Bool_t  isolated   = kFALSE;
-  Int_t   n_cone;
-  Int_t   nfrac_cone;
+  Bool_t  isolated  = kFALSE;
+  Int_t   nCone     = 0;
+  Int_t   nFracCone = 0;
  
-    
   // fill hist with all particles before isolation criteria
   fhPtNoIso    ->Fill(ptC);
   fhEtaPhiNoIso->Fill(etaC,phiC);
@@ -1612,7 +1644,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
  
    //In case a more strict IC is needed in the produced AOD
 
-  n_cone=0; nfrac_cone = 0; isolated = kFALSE; coneptsum = 0;
+  nCone=0; nFracCone = 0; isolated = kFALSE; coneptsum = 0;
   
   GetIsolationCut()->SetSumPtThreshold(100);
   GetIsolationCut()->SetPtThreshold(100);
@@ -1621,7 +1653,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   GetIsolationCut()->MakeIsolationCut(reftracks,   refclusters, 
                                           GetReader(), GetCaloPID(),
                                           kFALSE, ph, "", 
-                                          n_cone,nfrac_cone,coneptsum, isolated);
+                                          nCone,nFracCone,coneptsum, isolated);
 
         
     fhSumPtLeadingPt[icone]->Fill(ptC,coneptsum);  
