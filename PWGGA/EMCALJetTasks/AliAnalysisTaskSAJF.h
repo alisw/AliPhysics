@@ -97,6 +97,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 6) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 7) // jet analysis task
 };
 #endif
