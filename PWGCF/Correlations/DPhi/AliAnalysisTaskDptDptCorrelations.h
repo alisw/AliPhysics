@@ -48,15 +48,22 @@ public:
   
   virtual void   addToList(TH1 *h);
 
-  TH1D * createHisto(const TString &  name, const TString &  title,int n, double xmin, double xmax,const TString &  xTitle, const TString &  yTitle);
-  TH1D * createHisto(const TString &  name, const TString &  title,int n, double * bins,const TString &  xTitle, const TString &  yTitle);
-  TH2D * createHisto(const TString &  name, const TString &  title, 
-                    int nx, double xmin, double xmax, int ny, double ymin, double ymax, const TString &  xTitle, const TString &  yTitle, const TString &  zTitle);
-  TH2D * createHisto(const TString &  name, const TString &  title, int nx, double* xbins, int ny, double ymin, double ymax, 
-                    const TString &  xTitle, const TString &  yTitle, const TString &  zTitle);
-  TH3F * createHisto(const TString &  name, const TString &  title, 
-                    int nx, double xmin, double xmax, int ny, double ymin, double ymax, int nz, double zmin, double zmax, 
-                    const TString &  xTitle, const TString &  yTitle, const TString &  zTitle);  
+  TH1D * createHisto1D(const TString &  name, const TString &  title,int n, double xmin, double xmax,const TString &  xTitle, const TString &  yTitle);
+  TH1D * createHisto1D(const TString &  name, const TString &  title,int n, double * bins,const TString &  xTitle, const TString &  yTitle);
+  TH2D * createHisto2D(const TString &  name, const TString &  title, 
+                       int nx, double xmin, double xmax, int ny, double ymin, double ymax, const TString &  xTitle, const TString &  yTitle, const TString &  zTitle);
+  TH2D * createHisto2D(const TString &  name, const TString &  title, int nx, double* xbins, int ny, double ymin, double ymax, 
+                       const TString &  xTitle, const TString &  yTitle, const TString &  zTitle);
+
+  TH1F * createHisto1F(const TString &  name, const TString &  title,int n, double xmin, double xmax,const TString &  xTitle, const TString &  yTitle);
+  TH1F * createHisto1F(const TString &  name, const TString &  title,int n, double * bins,const TString &  xTitle, const TString &  yTitle);
+  TH2F * createHisto2F(const TString &  name, const TString &  title, 
+                       int nx, double xmin, double xmax, int ny, double ymin, double ymax, const TString &  xTitle, const TString &  yTitle, const TString &  zTitle);
+  TH2F * createHisto2F(const TString &  name, const TString &  title, int nx, double* xbins, int ny, double ymin, double ymax, 
+                       const TString &  xTitle, const TString &  yTitle, const TString &  zTitle);
+  TH3F * createHisto3F(const TString &  name, const TString &  title, 
+                       int nx, double xmin, double xmax, int ny, double ymin, double ymax, int nz, double zmin, double zmax, 
+                       const TString &  xTitle, const TString &  yTitle, const TString &  zTitle);  
   TProfile * createProfile(const TString &  title,const TString &  description, int n,  double xMin,double xMax,
                            const TString &  xTitle, const TString &  yTitle);
   TProfile * createProfile(const TString &  name,const TString &  description, 
@@ -284,38 +291,38 @@ protected:
   
   // PARTICLE 1 (satisfies filter 1)
   // Primary filled quantities
-  TH1D      *  _n1_1_vsPt;         
-  TH2D      *  _n1_1_vsEtaVsPhi;
-  TH2D      *  _s1pt_1_vsEtaVsPhi; 
+  TH1F      *  _n1_1_vsPt;         
+  TH2F      *  _n1_1_vsEtaVsPhi;
+  TH2F      *  _s1pt_1_vsEtaVsPhi; 
   TH3F      *  _n1_1_vsZVsEtaVsPhiVsPt;
   TProfile *  _n1_1_vsM;  // w/ weight
   TProfile *  _s1pt_1_vsM;
   TProfile *  _n1Nw_1_vsM; // w/o weight
   TProfile *  _s1ptNw_1_vsM;
-  TH2D      *  _dedxVsP_1;
-  TH2D      *  _corrDedxVsP_1;
-  TH2D      *  _betaVsP_1;
+  TH2F      *  _dedxVsP_1;
+  TH2F      *  _corrDedxVsP_1;
+  TH2F      *  _betaVsP_1;
   
   // PARTICLE 2 (satisfies filter 2)
   // Primary filled quantities
-  TH1D      *  _n1_2_vsPt;         
-  TH2D      *  _n1_2_vsEtaVsPhi;
-  TH2D      *  _s1pt_2_vsEtaVsPhi;
+  TH1F      *  _n1_2_vsPt;         
+  TH2F      *  _n1_2_vsEtaVsPhi;
+  TH2F      *  _s1pt_2_vsEtaVsPhi;
   TH3F      *  _n1_2_vsZVsEtaVsPhiVsPt; 
   TProfile *  _n1_2_vsM;
   TProfile *  _s1pt_2_vsM;
   TProfile *  _n1Nw_2_vsM; // w/o weight
   TProfile *  _s1ptNw_2_vsM;
-  TH2D      *  _dedxVsP_2;
-  TH2D      *  _corrDedxVsP_2;
-  TH2D      *  _betaVsP_2;
+  TH2F      *  _dedxVsP_2;
+  TH2F      *  _corrDedxVsP_2;
+  TH2F      *  _betaVsP_2;
   
   // Pairs 1 & 2  
-  TH1D      * _n2_12_vsEtaPhi;        
-  TH2D      * _n2_12_vsPtVsPt;
-  TH1D      * _s2PtPt_12_vsEtaPhi;    
-  TH1D      * _s2PtN_12_vsEtaPhi;       
-  TH1D      * _s2NPt_12_vsEtaPhi;     
+  TH1F      * _n2_12_vsEtaPhi;        
+  TH2F      * _n2_12_vsPtVsPt;
+  TH1F      * _s2PtPt_12_vsEtaPhi;    
+  TH1F      * _s2PtN_12_vsEtaPhi;       
+  TH1F      * _s2NPt_12_vsEtaPhi;     
   
   TProfile * _n2_12_vsM;        
   TProfile * _s2PtPt_12_vsM;    
@@ -326,8 +333,8 @@ protected:
   TProfile * _s2PtNNw_12_vsM;       
   TProfile * _s2NPtNw_12_vsM; 
   
-  TH1D      * _invMass;
-  TH1D      * _invMassElec;
+  TH1F      * _invMass;
+  TH1F      * _invMassElec;
   
   TString n1Name;
   TString n1NwName;
