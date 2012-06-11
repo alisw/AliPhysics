@@ -42,8 +42,8 @@ using namespace std;
 ClassImp(AliSpectraAODTrackCuts)
 
 
-AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCut(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
-  fPtCutTOFMatching(0),fQvecCutMin(0),fQvecCutMax(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0)
+AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
+  fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0)
   
 {
   // Constructor
@@ -65,19 +65,18 @@ AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, 
   fHistoEtaPhiHighPt->SetXTitle("eta");
   fHistoEtaPhiHighPt->SetYTitle("phi");
   
-  fEtaCut = 100000.0; // default value of eta cut ~ no cut
+  fEtaCutMin = -100000.0; // default value of eta cut ~ no cut
+  fEtaCutMax = 100000.0; // default value of eta cut ~ no cut
   fDCACut = 100000.0; // default value of dca cut ~ no cut
   fPCut = 100000.0; // default value of p cut ~ no cut
   fPtCut = 100000.0; // default value of pt cut ~ no cut 
   fPtCutTOFMatching=0.6; //default value fot matching with TOF
-  fQvecCutMin = -100000.0; // default value of qvec cut ~ no cut 
-  fQvecCutMax = 100000.0; // default value of qvec cut ~ no cut 
   fYCut       = 100000.0; // default value of y cut ~ no cut 
   
 }
 
 //_______________________________________________________
-Bool_t AliSpectraAODTrackCuts::IsSelected(AliAODTrack * track)
+Bool_t AliSpectraAODTrackCuts::IsSelected(AliAODTrack * track,Bool_t FillHistStat)
 {
   // Returns true if Track Cuts are selected and applied
   if (!track)
@@ -90,32 +89,32 @@ Bool_t AliSpectraAODTrackCuts::IsSelected(AliAODTrack * track)
   if(!CheckTrackType()){
     return kFALSE;
   }
-  fHistoCuts->Fill(kTrkBit);
+  if(FillHistStat)fHistoCuts->Fill(kTrkBit);
   
   if(!CheckTrackCuts()){
     return kFALSE;
   }
-  fHistoCuts->Fill(kTrkCuts);
+  if(FillHistStat)fHistoCuts->Fill(kTrkCuts);
   if(!CheckEtaCut()){
     return kFALSE;
   }
-  fHistoCuts->Fill(kTrkEta);
+  if(FillHistStat)fHistoCuts->Fill(kTrkEta);
   if(!CheckDCACut()){
     return kFALSE;
   }
-  fHistoCuts->Fill(kTrkDCA);
+  if(FillHistStat)fHistoCuts->Fill(kTrkDCA);
   if(!CheckPCut()){
     return kFALSE;
   }
-  fHistoCuts->Fill(kTrkP);
+  if(FillHistStat)fHistoCuts->Fill(kTrkP);
   if(!CheckPtCut()){
     return kFALSE;
   }
-  fHistoCuts->Fill(kTrkPt);
-  if(!CheckTOFMatching()){
+  if(FillHistStat)fHistoCuts->Fill(kTrkPt);
+  if(!CheckTOFMatching(FillHistStat)){
     return kFALSE;
   }
-  fHistoCuts->Fill(kAccepted);
+  if(FillHistStat)fHistoCuts->Fill(kAccepted);
   //Printf("-------- %d,%d",kTOFMatching,kAccepted);
   return kTRUE;
 }
@@ -132,14 +131,15 @@ Bool_t AliSpectraAODTrackCuts::CheckTrackType()
 Bool_t AliSpectraAODTrackCuts::CheckTrackCuts()
 {
   // Check additional track Cuts
-  return fTrack->HasPointOnITSLayer(0); //FIXME 1 SPD for the moment
-  
+  Bool_t HasSPD=kFALSE;
+  if (fTrack->HasPointOnITSLayer(0) || fTrack->HasPointOnITSLayer(1))HasSPD=kTRUE; //FIXME 1 SPD for the moment
+  return HasSPD;
 }
 //________________________________________________________
 Bool_t AliSpectraAODTrackCuts::CheckEtaCut()
 {
    // Check eta cut
-   if (fTrack->Eta() < fEtaCut && fTrack->Eta() > - fEtaCut) return kTRUE;
+   if (fTrack->Eta() < fEtaCutMax && fTrack->Eta() > fEtaCutMin) return kTRUE;
     return kFALSE;
 }
 
@@ -177,26 +177,26 @@ Bool_t AliSpectraAODTrackCuts::CheckPtCut()
 }
 
 //_______________________________________________________
-Bool_t AliSpectraAODTrackCuts::CheckTOFMatching()
+Bool_t AliSpectraAODTrackCuts::CheckTOFMatching(Bool_t FillHistStat)
 {
   // check Pt cut
   //    if ((fTrack->Pt() < fPtCut) && (fTrack->Pt() > 0.3 )) return kTRUE;
   
   if (fTrack->Pt() < fPtCutTOFMatching) return kTRUE;
   else{
-    fHistoCuts->Fill(kTrkPtTOF);
+    if(FillHistStat)fHistoCuts->Fill(kTrkPtTOF);
     if(fTrack->Charge()>0)fHistoNSelectedPos->Fill(fTrack->Pt());
     else fHistoNSelectedNeg->Fill(fTrack->Pt());
     UInt_t status; 
     status=fTrack->GetStatus();
-    if((status&AliAODTrack::kTOFout))fHistoCuts->Fill(kTrTOFout);
-    if((status&AliAODTrack::kTIME))fHistoCuts->Fill(kTrTIME);
-    if((status&AliAODTrack::kTOFpid))fHistoCuts->Fill(kTrTOFpid);
+    if((status&AliAODTrack::kTOFout)&&FillHistStat)fHistoCuts->Fill(kTrTOFout);
+    if((status&AliAODTrack::kTIME)&&FillHistStat)fHistoCuts->Fill(kTrTIME);
+    if((status&AliAODTrack::kTOFpid)&&FillHistStat)fHistoCuts->Fill(kTrTOFpid);
     
     if((status&AliAODTrack::kTOFout)==0 || (status&AliAODTrack::kTIME)==0){//kTOFout and kTIME
       return kFALSE; 
     } 
-    fHistoCuts->Fill(kTOFMatching);
+    if(FillHistStat)fHistoCuts->Fill(kTOFMatching);
     if(fTrack->Charge()>0)fHistoNMatchedPos->Fill(fTrack->Pt());
     else fHistoNMatchedNeg->Fill(fTrack->Pt());
     if(fTrack->Pt()>1.5){
@@ -217,12 +217,10 @@ void AliSpectraAODTrackCuts::PrintCuts() const
   // Print cuts
     cout << "Track Cuts" << endl;
     cout << " > TrackBit\t" << fTrackBits << endl;
-    cout << " > Eta cut\t" << fEtaCut << endl;
+    cout << " > Eta cut\t" << fEtaCutMin <<","<< fEtaCutMax << endl;
     cout << " > DCA cut\t" << fDCACut << endl;
     cout << " > P cut\t" << fPCut << endl;
     cout << " > Pt cut \t" << fPtCut << endl;
-    cout << " > Q vactor Min \t" << fQvecCutMin << endl;
-    cout << " > Q vactor Max \t" << fQvecCutMax << endl;
 }
 //_______________________________________________________
 void AliSpectraAODTrackCuts::SetTrackType(UInt_t bit)

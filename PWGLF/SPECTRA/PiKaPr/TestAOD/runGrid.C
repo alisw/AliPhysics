@@ -48,182 +48,197 @@ void runGrid(TString mode="test",Int_t mc=0,Int_t sub=1,Int_t hi=1,TString fname
   AliAnalysisTask * taskPID = AddTaskPIDResponse(mc);
   //mgr->AddTask(taskPID);
   
-  //setting the analysis
-  Int_t iCut=0;
-  //Double_t CentCut[2]={0,100};
-  Double_t CentCut[2]={0,100};
-  Double_t qVecCut[2]={0,100};
-   
-  //PID object
+   //LOOP OVER SELECTION
+  Double_t CentCutMin[4]={0,0,20,20};
+  Double_t CentCutMax[4]={100,5,40,40};
+  Double_t QvecPosCutMin[4]={0,0,0,3};
+  Double_t QvecPosCutMax[4]={100,100,2,100};
+  Double_t QvecNegCutMin[4]={0,0,0,3};
+  Double_t QvecNegCutMax[4]={100,100,2,100};
+  Double_t EtaMin[4]={-0.8,-0.8,-0.8,-0.8};
+  Double_t EtaMax[4]={0.8,0.8,0.8,0.8};
   using namespace AliSpectraNameSpace;
   AliSpectraAODPID *pid = new AliSpectraAODPID(kNSigmaTPCTOF); 
   pid->SetNSigmaCut(3.);
-  
-  AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
-  mgr->AddTask(task);
-  //physics selection
-  task->SelectCollisionCandidates();   //don't need to add the task on AOD
-  
-  // Set the cuts
-  AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
-  AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
-  //if(sub==0){
-    //tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cuts with loose DCA
-    //tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cuts with tight DCA
-  //}
-  //if(sub==1)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cuts
-  tcuts->SetTrackBits(1); 
-  
-  // set pid object
-  task->SetPID(pid);
-  tcuts->SetEta(.8);
-  tcuts->SetPt(5);
-  tcuts->SetY(.5);
-  tcuts->SetPtTOFMatching(0.6);   
-  tcuts->SetQvecMin(qVecCut[0]);   
-  tcuts->SetQvecMax(qVecCut[1]);    
-  if(sub==0 && mc==0)vcuts->SetUseCentPatchAOD049(1);
-  vcuts->SetCentralityCutMin(CentCut[0]);
-  vcuts->SetCentralityCutMax(CentCut[1]);  
-  task->SetEventCuts(vcuts);
-  task->SetTrackCuts(tcuts);
-  vcuts->PrintCuts();
-  tcuts->PrintCuts();
-  
-  if (mc)
-    {
-      task->SetIsMC(kTRUE);
-      vcuts->SetIsMC(kTRUE);
-      AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-      AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, 
-								  Form("Pt.AOD.1._MC_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCut[0],CentCut[1],qVecCut[0],qVecCut[1]));
-      AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
-								  Form("Pt.AOD.1._MC_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCut[0],CentCut[1],qVecCut[0],qVecCut[1]));
-      AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
-								  Form("Pt.AOD.1._MC_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCut[0],CentCut[1],qVecCut[0],qVecCut[1]));
-      AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut), AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
-								  Form("Pt.AOD.1._MC_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCut[0],CentCut[1],qVecCut[0],qVecCut[1]));
-    }else{	 
-    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, 
-								Form("Pt.AOD.1._data_ptcut_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCut[0],CentCut[1],qVecCut[0],qVecCut[1]));
-    AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
-								Form("Pt.AOD.1._data_ptcut_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCut[0],CentCut[1],qVecCut[0],qVecCut[1]));
-    AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
-								Form("Pt.AOD.1._data_ptcut_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCut[0],CentCut[1],qVecCut[0],qVecCut[1]));
-    AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut), AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
-								Form("Pt.AOD.1._data_ptcut_Cent%.0fto%.0f_QVec%.1fto%.1f.root",CentCut[0],CentCut[1],qVecCut[0],qVecCut[1]));
+   
+  for(Int_t iCut=1;iCut<2;iCut++){
+    AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
+    mgr->AddTask(task);
+    //physics selection
+    task->SelectCollisionCandidates();     
+    // set pid object
+    task->SetPID(pid);
+    // Set the cuts
+    AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
+    AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
+    //if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
+    //if(c==1 || c==2)tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cut with tight DCA
+    //if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
+    //if(c==3 || c==4)tcuts->SetTrackType(4); //AOD 086 & 090. Jet analysis
+    //if(c==3 || c==4)tcuts->SetTrackType(7); //AOD 086 & 090. TPC Only
+    tcuts->SetTrackBits(1);
+    Printf("\n\n\n\n\n\n\n-------------------- tcuts->GetTrackType() %d \n\n\n\n\n\n\n",tcuts->GetTrackType());
+    //tcuts->SetDCA(.1);
+    tcuts->SetPt(5);
+    tcuts->SetY(.5);
+    tcuts->SetPtTOFMatching(.6);   
+    //cut on qvector and eta
+    vcuts->SetQVectorPosCut(QvecPosCutMin[iCut],QvecPosCutMax[iCut]);
+    vcuts->SetQVectorNegCut(QvecNegCutMin[iCut],QvecNegCutMax[iCut]);
+    tcuts->SetEta(EtaMin[iCut],EtaMax[iCut]);
+    if(sub==0 && mc==0)vcuts->SetUseCentPatchAOD049(kTRUE);
+    vcuts->SetCentralityCutMax(CentCutMax[iCut]);  
+    vcuts->SetCentralityCutMin(CentCutMin[iCut]);
+    task->SetEventCuts(vcuts);
+    task->SetTrackCuts(tcuts);
+    vcuts->PrintCuts();
+    tcuts->PrintCuts();
+    
+    // check for MC or real data
+    if (mc)
+      {
+	task->SetIsMC(kTRUE);
+	vcuts->SetIsMC(kTRUE);
+	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+	AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, 
+								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),
+									 vcuts->GetQVectorPosCutMin(), vcuts->GetQVectorPosCutMax(),vcuts->GetQVectorNegCutMin(), vcuts->GetQVectorNegCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+	AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
+								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),
+									 vcuts->GetQVectorPosCutMin(), vcuts->GetQVectorPosCutMax(),vcuts->GetQVectorNegCutMin(), vcuts->GetQVectorNegCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+		AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
+								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),
+									 vcuts->GetQVectorPosCutMin(), vcuts->GetQVectorPosCutMax(),vcuts->GetQVectorNegCutMin(), vcuts->GetQVectorNegCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+	AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
+								   Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),
+									 vcuts->GetQVectorPosCutMin(), vcuts->GetQVectorPosCutMax(),vcuts->GetQVectorNegCutMin(), vcuts->GetQVectorNegCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+      }
+    else  {
+	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+	AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, 
+								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),
+									 vcuts->GetQVectorPosCutMin(), vcuts->GetQVectorPosCutMax(),vcuts->GetQVectorNegCutMin(), vcuts->GetQVectorNegCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+	AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
+								  Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),
+									 vcuts->GetQVectorPosCutMin(), vcuts->GetQVectorPosCutMax(),vcuts->GetQVectorNegCutMin(), vcuts->GetQVectorNegCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+	AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
+								  Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),
+									 vcuts->GetQVectorPosCutMin(), vcuts->GetQVectorPosCutMax(),vcuts->GetQVectorNegCutMin(), vcuts->GetQVectorNegCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+	AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
+								  Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),
+									 vcuts->GetQVectorPosCutMin(), vcuts->GetQVectorPosCutMax(),vcuts->GetQVectorNegCutMin(), vcuts->GetQVectorNegCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+	 
+      }
+    mgr->ConnectInput(task, 0, cinput);
+    mgr->ConnectOutput(task, 1, coutputpt1);
+    mgr->ConnectOutput(task, 2, coutputpt2);
+    mgr->ConnectOutput(task, 3, coutputpt3);
+    mgr->ConnectOutput(task, 4, coutputpt4);
   }
-  mgr->ConnectInput(task, 0, cinput);
-  mgr->ConnectOutput(task, 1, coutputpt1);
-  mgr->ConnectOutput(task, 2, coutputpt2);
-  mgr->ConnectOutput(task, 3, coutputpt3);
-  mgr->ConnectOutput(task, 4, coutputpt4);
-  
   mgr->SetDebugLevel(2);
-  
-  //mgr->Init();
-  if (!mgr->InitAnalysis())return;
-  mgr->PrintStatus();
-  // Start analysis in grid.
-  mgr->StartAnalysis("grid");
-}
+ 
+    //mgr->Init();
+    if (!mgr->InitAnalysis())return;
+    mgr->PrintStatus();
+    // Start analysis in grid.
+    mgr->StartAnalysis("grid");
+  }
 
 
-AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=1,Int_t sub=0,TString fname){
+  AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=1,Int_t sub=0,TString fname){
   
   
   
-  AliAnalysisAlien *plugin = new AliAnalysisAlien();
-  plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF");
-  plugin->SetAdditionalLibs("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
-  plugin->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx AliSpectraAODTrackCuts.cxx AliSpectraAODEventCuts.cxx AliSpectraAODPID.cxx AliAnalysisTaskSpectraAOD.cxx");
-  plugin->SetOverwriteMode();
-  plugin->SetExecutableCommand("aliroot -q -b");  
-  plugin->SetRunMode(mode.Data());
-  plugin->SetNtestFiles(1);
-  //Set versions of used packages
-  plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-33-02b");
-  plugin->SetAliROOTVersion("v5-04-25-AN");
-  // Declare input data to be processed.
-  if(sub==0){
-  if(mc)
-    {
-      plugin->SetGridDataDir("/alice/sim/LHC11a10a");
-      plugin->SetDataPattern("AOD048/*AliAOD.root");
-      plugin->SetRunPrefix(""); 
-      plugin->SetAnalysisMacro(Form("TaskAOD046PbPbMC%d.C",sub));
-      plugin->SetExecutable(Form("TaskAOD046PbPbMC%d.sh",sub));
-      plugin->SetJDLName(Form("TaskAOD046PbPbMC%d.jdl",sub));
-      //plugin->SetSplitMaxInputFileNumber(500);
-      plugin->SetGridWorkingDir(Form("%s/AOD048-049Filter5/mc%d/",fname.Data(),sub));
-    }  
-  else
-    {
-      plugin->SetGridDataDir("/alice/data/2010/LHC10h");
-      plugin->SetDataPattern("ESDs/pass2/AOD049/*AliAOD.root");
-      plugin->SetRunPrefix("000"); 
-      plugin->SetAnalysisMacro(Form("TaskAOD046PbPbdata%d.C",sub));
-      plugin->SetExecutable(Form("TaskAOD046PbPbdata%d.sh",sub));
-      plugin->SetJDLName(Form("TaskAOD046PbPbdata%d.jdl",sub));
-      //plugin->SetSplitMaxInputFileNumber(500);
-      plugin->SetGridWorkingDir(Form("%s/AOD048-049Filter5/data%d/",fname.Data(),sub));
-    }  
-  FILE* listruns=fopen("RunListGrid-AOD046.txt","r");
-  }
-  if(sub==1){
-    if(mc)
-      {
-	plugin->SetGridDataDir("/alice/sim/LHC11a10a_bis");
-	plugin->SetDataPattern("AOD090/*AliAOD.root");
-	plugin->SetRunPrefix(""); 
-	plugin->SetAnalysisMacro(Form("TaskAOD086PbPbMC%d.C",sub));
-	plugin->SetExecutable(Form("TaskAOD086PbPbMC%d.sh",sub));
-	plugin->SetJDLName(Form("TaskAOD086PbPbMC%d.jdl",sub));
-	//plugin->SetSplitMaxInputFileNumber(500);
-	plugin->SetGridWorkingDir(Form("%s/AOD086-090Filter10/mc%d/",fname.Data(),sub));
-      }  
-    else
-      {
-	plugin->SetGridDataDir("/alice/data/2010/LHC10h");
-	plugin->SetDataPattern("ESDs/pass2/AOD086/*AliAOD.root");
-	plugin->SetRunPrefix("000"); 
-	plugin->SetAnalysisMacro(Form("TaskAOD086PbPbdata%d.C",sub));
-	plugin->SetExecutable(Form("TaskAOD086PbPbdata%d.sh",sub));
-	plugin->SetJDLName(Form("TaskAOD086PbPbdata%d.jdl",sub));
-	//plugin->SetSplitMaxInputFileNumber(500);
-	plugin->SetGridWorkingDir(Form("%s/AOD086-090Filter10/data%d/",fname.Data(),sub));
-          }  
-    FILE* listruns=fopen("RunListGrid-AOD086.txt","r");
-  }
-  Int_t irun;
-  while(!feof(listruns)){
-    fscanf(listruns,"%d\n",&irun);
-    plugin->AddRunNumber(irun);
-  }
-  // Declare alien output directory. Relative to working directory.
-  //plugin->SetGridOutputDir("/alice/cern.ch/user/l/lmilano/AODAnalysis/AOD086TrackBit10/mc1/output/000/Stage_1"); // In this case will be $HOME/work/output
-  plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
-  plugin->SetNrunsPerMaster(60); // 
+    AliAnalysisAlien *plugin = new AliAnalysisAlien();
+    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF");
+    plugin->SetAdditionalLibs("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
+    plugin->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx AliSpectraAODTrackCuts.cxx AliSpectraAODEventCuts.cxx AliSpectraAODPID.cxx AliAnalysisTaskSpectraAOD.cxx");
+    plugin->SetOverwriteMode();
+    plugin->SetExecutableCommand("aliroot -q -b");  
+    plugin->SetRunMode(mode.Data());
+    plugin->SetNtestFiles(1);
+    //Set versions of used packages
+    plugin->SetAPIVersion("V1.1x");
+    plugin->SetROOTVersion("v5-33-02b");
+    plugin->SetAliROOTVersion("v5-04-25-AN");
+    // Declare input data to be processed.
+    if(sub==0){
+      if(mc)
+	{
+	  plugin->SetGridDataDir("/alice/sim/LHC11a10a");
+	  plugin->SetDataPattern("AOD048/*AliAOD.root");
+	  plugin->SetRunPrefix(""); 
+	  plugin->SetAnalysisMacro(Form("TaskAOD046PbPbMC%d.C",sub));
+	  plugin->SetExecutable(Form("TaskAOD046PbPbMC%d.sh",sub));
+	  plugin->SetJDLName(Form("TaskAOD046PbPbMC%d.jdl",sub));
+	  //plugin->SetSplitMaxInputFileNumber(500);
+	  plugin->SetGridWorkingDir(Form("%s/AOD048-049Filter5/mc%d/",fname.Data(),sub));
+	}  
+      else
+	{
+	  plugin->SetGridDataDir("/alice/data/2010/LHC10h");
+	  plugin->SetDataPattern("ESDs/pass2/AOD049/*AliAOD.root");
+	  plugin->SetRunPrefix("000"); 
+	  plugin->SetAnalysisMacro(Form("TaskAOD046PbPbdata%d.C",sub));
+	  plugin->SetExecutable(Form("TaskAOD046PbPbdata%d.sh",sub));
+	  plugin->SetJDLName(Form("TaskAOD046PbPbdata%d.jdl",sub));
+	  //plugin->SetSplitMaxInputFileNumber(500);
+	  plugin->SetGridWorkingDir(Form("%s/AOD048-049Filter5/data%d/",fname.Data(),sub));
+	}  
+      FILE* listruns=fopen("RunListGrid-AOD046.txt","r");
+    }
+    if(sub==1){
+      if(mc)
+	{
+	  plugin->SetGridDataDir("/alice/sim/LHC11a10a_bis");
+	  plugin->SetDataPattern("AOD090/*AliAOD.root");
+	  plugin->SetRunPrefix(""); 
+	  plugin->SetAnalysisMacro(Form("TaskAOD086PbPbMC%d.C",sub));
+	  plugin->SetExecutable(Form("TaskAOD086PbPbMC%d.sh",sub));
+	  plugin->SetJDLName(Form("TaskAOD086PbPbMC%d.jdl",sub));
+	  //plugin->SetSplitMaxInputFileNumber(500);
+	  plugin->SetGridWorkingDir(Form("%s/AOD086-090Filter10/mc%d/",fname.Data(),sub));
+	}  
+      else
+	{
+	  plugin->SetGridDataDir("/alice/data/2010/LHC10h");
+	  plugin->SetDataPattern("ESDs/pass2/AOD086/*AliAOD.root");
+	  plugin->SetRunPrefix("000"); 
+	  plugin->SetAnalysisMacro(Form("TaskAOD086PbPbdata%d.C",sub));
+	  plugin->SetExecutable(Form("TaskAOD086PbPbdata%d.sh",sub));
+	  plugin->SetJDLName(Form("TaskAOD086PbPbdata%d.jdl",sub));
+	  //plugin->SetSplitMaxInputFileNumber(500);
+	  plugin->SetGridWorkingDir(Form("%s/AOD086-090Filter10/data%d/",fname.Data(),sub));
+	}  
+      FILE* listruns=fopen("RunListGrid-AOD086.txt","r");
+    }
+    Int_t irun;
+    while(!feof(listruns)){
+      fscanf(listruns,"%d\n",&irun);
+      plugin->AddRunNumber(irun);
+    }
+    // Declare alien output directory. Relative to working directory.
+    //plugin->SetGridOutputDir("/alice/cern.ch/user/l/lmilano/AODAnalysis/AOD086TrackBit10/mc1/output/000/Stage_1"); // In this case will be $HOME/work/output
+    plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
+    plugin->SetNrunsPerMaster(60); // 
   
 
-  // Declare the output file names separated by blancs.
-  // (can be like: file.root or file.root@ALICE::Niham::File)
-  //plugin->SetDefaultOutputs(0);
-  //plugin->SetOutputFiles("AnalysisResults.root.root");
-  plugin->SetMergeViaJDL(kTRUE);
-  plugin->SetOneStageMerging(kFALSE);
-  plugin->SetMaxMergeStages(2);
+    // Declare the output file names separated by blancs.
+    // (can be like: file.root or file.root@ALICE::Niham::File)
+    //plugin->SetDefaultOutputs(0);
+    //plugin->SetOutputFiles("AnalysisResults.root.root");
+    plugin->SetMergeViaJDL(kTRUE);
+    plugin->SetOneStageMerging(kFALSE);
+    plugin->SetMaxMergeStages(2);
   
-  plugin->SetTTL(100000);
-  // Optionally set input format (default xml-single)
-  plugin->SetInputFormat("xml-single");
-  // Optionally modify job price (default 1)
-  plugin->SetPrice(1);      
-  // Optionally modify split mode (default 'se')    
-  //plugin->SetSplitMaxInputFileNumber();
-  plugin->SetSplitMode("se");
-  return plugin;
-  delete runs;
-}
+    plugin->SetTTL(100000);
+    // Optionally set input format (default xml-single)
+    plugin->SetInputFormat("xml-single");
+    // Optionally modify job price (default 1)
+    plugin->SetPrice(1);      
+    // Optionally modify split mode (default 'se')    
+    //plugin->SetSplitMaxInputFileNumber();
+    plugin->SetSplitMode("se");
+    return plugin;
+    delete runs;
+  }

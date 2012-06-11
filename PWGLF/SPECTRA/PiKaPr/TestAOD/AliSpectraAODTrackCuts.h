@@ -40,12 +40,12 @@ class AliSpectraAODTrackCuts : public TNamed
   enum { kTrkBit = 0, kTrkCuts, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
   
   
- AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCut(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fQvecCutMin(0), fQvecCutMax(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0) {}
+ AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCutMin(0), fEtaCutMax(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0) {}
   
   AliSpectraAODTrackCuts(const char *name);
   virtual  ~AliSpectraAODTrackCuts() {} // To be implemented
   
-  Bool_t IsSelected(AliAODTrack * track);
+  Bool_t IsSelected(AliAODTrack * track,Bool_t FillHistStat);
   
   void SetTrackType(UInt_t bit);
   Bool_t CheckTrackType();
@@ -55,7 +55,7 @@ class AliSpectraAODTrackCuts : public TNamed
   Bool_t CheckDCACut();
   Bool_t CheckPCut();
   Bool_t CheckPtCut();
-  Bool_t CheckTOFMatching();
+  Bool_t CheckTOFMatching(Bool_t FillHistStat);
   void PrintCuts() const;
   
    UInt_t GetTrackType()  const    { return fTrackBits; }
@@ -65,23 +65,20 @@ class AliSpectraAODTrackCuts : public TNamed
    TH1F * GetHistoNMatchedPos()      { return fHistoNMatchedPos; }
    TH1F * GetHistoNMatchedNeg()      { return fHistoNMatchedNeg; }
    TH2F * GetHistoEtaPhiHighPt()      { return fHistoEtaPhiHighPt; }
-   void SetEta(Float_t eta)   { fEtaCut = eta; }
+   void SetEta(Float_t etamin,Float_t etamax)   { fEtaCutMin = etamin;fEtaCutMax = etamax; }
    void SetDCA(Float_t dca)   { fDCACut = dca; }
    void SetP(Float_t p)       { fPCut = p; }
    void SetPt(Float_t pt)     { fPtCut = pt; }
    void SetY(Float_t y) { fYCut = y;}
    void SetPtTOFMatching(Float_t pt)     { fPtCutTOFMatching = pt; }
-   void SetQvecMin(Float_t qvecmin)     { fQvecCutMin = qvecmin; }
-   void SetQvecMax(Float_t qvecmax)     { fQvecCutMax = qvecmax; }
    void SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
-   Float_t GetEta()       const    { return fEtaCut; }
+   Float_t GetEtaMin()       const    { return fEtaCutMin; }
+   Float_t GetEtaMax()       const    { return fEtaCutMax; }
    Float_t GetY()         const    { return fYCut; }
    Float_t GetDCA()       const    { return fDCACut; }
    Float_t GetP()         const    { return fPCut; }
    Float_t GetPt()        const    { return fPtCut; }
    Float_t GetPtTOFMatching()        const    { return fPtCutTOFMatching; }
-   Float_t GetQvecMin()        const    { return fQvecCutMin; }
-   Float_t GetQvecMax()        const    { return fQvecCutMax; }
     
    Long64_t Merge(TCollection* list);
    
@@ -90,14 +87,13 @@ class AliSpectraAODTrackCuts : public TNamed
    
    Bool_t           fIsSelected;      // True if cuts are selected
    UInt_t           fTrackBits;       // Type of track to be used
-   Float_t          fEtaCut;          // Allowed absolute maximum value of Eta
+   Float_t          fEtaCutMin;          // Allowed absolute maximum value of Eta
+   Float_t          fEtaCutMax;          // Allowed absolute maximum value of Eta
    Float_t          fDCACut;          // Maximum value of DCA
    Float_t          fPCut;            // Maximum value of P
    Float_t          fPtCut;           // Maximum value of Pt
    Float_t          fYCut;           // Maximum value of Y
    Float_t          fPtCutTOFMatching;           // TOF Matching
-   Float_t          fQvecCutMin;           // Minimum value of Qvec
-   Float_t          fQvecCutMax;           // Minimum value of Qvec
    TH1I             *fHistoCuts;       // Cuts statistics
    TH1F             *fHistoNSelectedPos;       // Selected positive tracks
    TH1F             *fHistoNSelectedNeg;       // Selected negative tracks

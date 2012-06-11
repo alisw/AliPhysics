@@ -77,6 +77,39 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   hNChAft_mc->DrawClone("lhistsame");
   gPad->BuildLegend()->SetFillColor(0);
 
+  
+  //Nch distr in data and MC before and after event selection
+  TCanvas *cQVector=new TCanvas("QVectordistr","QVectordistr",700,500);
+  cQVector->Divide(1,2);
+  cQVector->cd(1);
+  gPad->SetGridy();
+  gPad->SetGridx();
+  TH1F *hQVector_data=ecuts_data->GetHistoQVectorPos();
+  hQVector_data->Scale(1./hQVector_data->GetEntries());
+  hQVector_data->SetTitle(Form("%s - data",hQVector_data->GetTitle()));
+  TH1F *hQVector_mc=ecuts_mc->GetHistoQVectorPos();
+  hQVector_mc->Scale(1./hQVector_mc->GetEntries());
+  hQVector_mc->SetTitle(Form("%s - mc",hQVector_mc->GetTitle()));
+  hQVector_mc->SetLineColor(2);
+  hQVector_data->DrawClone("lhist");
+  hQVector_mc->DrawClone("lhistsame");
+  gPad->BuildLegend()->SetFillColor(0);
+  cQVector->cd(2);
+  gPad->SetGridy();
+  gPad->SetGridx();
+  TH1F *hQVector_data=ecuts_data->GetHistoQVectorNeg();
+  hQVector_data->Scale(1./hQVector_data->GetEntries());
+  hQVector_data->SetTitle(Form("%s - data",hQVector_data->GetTitle()));
+  TH1F *hQVector_mc=ecuts_mc->GetHistoQVectorNeg();
+  hQVector_mc->Scale(1./hQVector_mc->GetEntries());
+  hQVector_mc->SetTitle(Form("%s - mc",hQVector_mc->GetTitle()));
+  hQVector_mc->SetLineColor(2);
+  hQVector_data->DrawClone("lhist");
+  hQVector_mc->DrawClone("lhistsame");
+  gPad->BuildLegend()->SetFillColor(0);
+  
+  
+  
   //Eta Phi at high Pt in data and Monte Carlo
   TCanvas *cEtaPhi=new TCanvas("EtaPhi","EtaPhi",700,500);
   cEtaPhi->Divide(2,1);
