@@ -263,11 +263,11 @@ Bool_t AliAnaParticleHadronCorrelation::FillChargedMCCorrelationHistograms(const
   
   Float_t mcxE    =-mcAssocPt/mcTrigPt*TMath::Cos(mcdeltaPhi);// -(mcAssocPx*pxprim+mcAssocPy*pyprim)/(mcTrigPt*mcTrigPt);  
   Float_t mchbpXE =-100 ;
-  if(mcxE > 0 ) mchbpXE = TMath::Log10(1./mcxE);
+  if(mcxE > 0 ) mchbpXE = TMath::Log(1./mcxE);
   
   Float_t mczT    = mcAssocPt/mcTrigPt ;
   Float_t mchbpZT =-100 ;
-  if(mczT > 0 ) mchbpZT = TMath::Log10(1./mczT);
+  if(mczT > 0 ) mchbpZT = TMath::Log(1./mczT);
   
   //Selection within angular range
   if( mcdeltaPhi< -TMath::PiOver2())  mcdeltaPhi+=TMath::TwoPi();
@@ -379,10 +379,10 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const
   if(uexE < 0.) uexE = -uexE;
     
   fhXEUeCharged->Fill(ptTrig,uexE);
-  if(uexE > 0) fhPtHbpXEUeCharged->Fill(ptTrig,TMath::Log10(1/uexE));
+  if(uexE > 0) fhPtHbpXEUeCharged->Fill(ptTrig,TMath::Log(1/uexE));
   
   fhZTUeCharged->Fill(ptTrig,uezT);
-  if(uexE > 0) fhPtHbpZTUeCharged->Fill(ptTrig,TMath::Log10(1/uezT));
+  if(uexE > 0) fhPtHbpZTUeCharged->Fill(ptTrig,TMath::Log(1/uezT));
   
   if(DoEventSelect())
   {
@@ -1915,12 +1915,12 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       
       // Imbalance zT/xE/pOut
       zT = pt/ptTrig ;
-      if(zT > 0 ) hbpZT = TMath::Log10(1./zT);
+      if(zT > 0 ) hbpZT = TMath::Log(1./zT);
       else        hbpZT =-100;
       
       xE   =-pt/ptTrig*TMath::Cos(deltaPhi); // -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
       //if(xE <0.)xE =-xE;
-      if(xE > 0 ) hbpXE = TMath::Log10(1./xE); 
+      if(xE > 0 ) hbpXE = TMath::Log(1./xE); 
       else        hbpXE =-100;
     
       pout = pt*TMath::Sin(deltaPhi) ;
@@ -2176,8 +2176,8 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
       hbpXE = -100;
       hbpZT = -100;
       
-      if(xE > 0 ) hbpXE = TMath::Log10(1./xE); 
-      if(zT > 0 ) hbpZT = TMath::Log10(1./zT); 
+      if(xE > 0 ) hbpXE = TMath::Log(1./xE); 
+      if(zT > 0 ) hbpZT = TMath::Log(1./zT); 
       
       if(fPi0Trigger && decayFound)
         FillDecayPhotonCorrelationHistograms(pt, phi, decayMom1,decayMom2,kFALSE) ;
