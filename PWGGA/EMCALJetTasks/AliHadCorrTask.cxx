@@ -65,49 +65,6 @@ AliHadCorrTask::AliHadCorrTask() :
 }
 
 //________________________________________________________________________
-AliHadCorrTask::AliHadCorrTask(const char *name) : 
-  AliAnalysisTaskEmcal(name, kFALSE),
-  fOutCaloName("CaloClustersCorr"),
-  fPhiMatch(0.05),
-  fEtaMatch(0.025),
-  fDoTrackClus(0),
-  fHadCorr(0),
-  fEexclCell(0),
-  fOutClusters(0),
-  fHistNclusvsCent(0),
-  fHistNclusMatchvsCent(0),
-  fHistEbefore(0),
-  fHistEafter(0),
-  fHistEoPCent(0),
-  fHistNMatchCent(0),
-  fHistNMatchCent_trk(0),
-  fHistCentrality(0),
-  fHistNoMatchEtaPhi(0)
-
-{
-  // Standard constructor.
-
-  for(Int_t i=0; i<8; i++) {
-      fHistEsubPch[i]    = 0;
-      fHistEsubPchRat[i] = 0;
-    for(Int_t j=0; j<3; j++) {
-    }
-    
-    if (i<4) {
-      fHistMatchEvsP[i]   = 0;
-      fHistMatchdRvsEP[i] = 0;
-    }
-    
-    for(Int_t j=0; j<9; j++) {
-      for(Int_t k=0; k<2; k++) {
-	fHistMatchEtaPhi[i][j][k] = 0;
-      }
-    } 
-  }
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
-}
-
-//________________________________________________________________________
 AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) : 
   AliAnalysisTaskEmcal(name, histo),
   fOutCaloName("CaloClustersCorr"),
@@ -126,7 +83,6 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   fHistNMatchCent_trk(0),
   fHistCentrality(0),
   fHistNoMatchEtaPhi(0)
-
 {
   // Standard constructor.
 
@@ -396,7 +352,7 @@ void AliHadCorrTask::UserCreateOutputObjects()
 
   AliVEventHandler* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   if (!handler) {
-    AliError("Input handler not available!");
+    AliError(Form("%s: Input handler not available!", GetName()));
     return;
   }
  
@@ -405,7 +361,7 @@ void AliHadCorrTask::UserCreateOutputObjects()
   } else if (handler->InheritsFrom("AliAODInputHandler")) {
     fOutClusters = new TClonesArray("AliAODCaloCluster");
   } else {
-    AliError("Input handler not recognized!");
+    AliError(Form("%s: Input handler not recognized!", GetName()));
     return;
   }
   fOutClusters->SetName(fOutCaloName);
@@ -699,10 +655,8 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   // Apply the hadronic correction with one track only.
 
   AliVCluster *cluster = emccluster->GetCluster();
-  
-  Double_t energyclus = cluster->E();
-  Int_t    iMin       = emccluster->GetMatchedObjId();
-
+  Double_t energyclus  = cluster->E();
+  Int_t    iMin        = emccluster->GetMatchedObjId();
   if (iMin < 0)
     return energyclus;
 
@@ -710,8 +664,9 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   if (!emctrack)
     return energyclus;
 
-  Int_t cid      = emctrack->GetMatchedObjId();
-  if (cid!=iMin) 
+  // check if track also points to cluster
+  Int_t cid = emctrack->GetMatchedObjId();
+  if (cid!=emccluster->IdInCollection()) 
     return energyclus;
 
   AliVTrack *track = emctrack->GetTrack();
@@ -732,7 +687,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
   if (track->Charge()<0) 
     centbinch += 4;
 
-  // Plot some histograms if switched on
+  // plot some histograms if switched on
   if (fCreateHisto) {
     Int_t etabin = 0;
     if(track->Eta() > 0) 
@@ -747,7 +702,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
     }
   }
 	   
-  // Define eta/phi cuts
+  // define eta/phi cuts
   Double_t etaCut   = 0.0;
   Double_t phiCutlo = 0.0;
   Double_t phiCuthi = 0.0;
@@ -766,7 +721,7 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Doub
     etaCut = GetEtaSigma(mombin);
   }
   
-  // Apply the correction if the track is in the eta/phi window
+  // apply the correction if the track is in the eta/phi window
   if ((dPhiMin < phiCuthi && dPhiMin > phiCutlo) && TMath::Abs(dEtaMin) < etaCut) {
 
     if ((fDoTrackClus && (track->GetEMCALcluster()) == emccluster->IdInCollection()) || !fDoTrackClus) {
@@ -790,7 +745,7 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   Double_t totalTrkP  = 0.0; // count total track momentum
   Int_t    Nmatches   = 0;   // count total number of matches
   
-  // Do the loop over the matched tracks and get the number of matches and the total momentum
+  // do the loop over the matched tracks and get the number of matches and the total momentum
   DoMatchedTracksLoop(emccluster, totalTrkP, Nmatches);
 
   if (totalTrkP <= 0)
@@ -806,15 +761,15 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   if (Esub > energyclus) 
     Esub = energyclus;
 	
-  //applying Peter's proposed algorithm
-  //Never subtract the full energy of the cluster 
+  // applying Peter's proposed algorithm
+  // never subtract the full energy of the cluster 
   if ((energyclus - Esub) < clusEexcl) 
     Esub = (energyclus - clusEexcl);
 
   Double_t EoP = energyclus / totalTrkP;
 
-  // Plot some histograms if switched on
-  if(fCreateHisto) {
+  // plot some histograms if switched on
+  if (fCreateHisto) {
     fHistNclusvsCent->Fill(fCent);
     fHistNMatchCent->Fill(fCent, Nmatches);
     fHistNMatchEnergy[fCentBin]->Fill(energyclus, Nmatches);
@@ -849,7 +804,7 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
     } 
   }
 
-  //apply the correction
+  // apply the correction
   energyclus -= Esub;
 
   return energyclus;

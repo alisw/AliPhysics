@@ -16,8 +16,7 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
 
  public:
   AliHadCorrTask();
-  AliHadCorrTask(const char *name); 
-  AliHadCorrTask(const char *name, Bool_t histo); 
+  AliHadCorrTask(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliHadCorrTask();
 
   void                   UserCreateOutputObjects();
