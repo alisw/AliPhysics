@@ -35,6 +35,9 @@
 #include "AliLog.h"
 
 
+using std::cout;
+using std::endl;
+using std::ofstream;
 ClassImp(AliAnalysisTaskTagCreator)
 
 ////////////////////////////////////////////////////////////////////////

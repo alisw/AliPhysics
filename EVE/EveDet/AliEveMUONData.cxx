@@ -41,6 +41,8 @@
 // AliEveMUONData
 //
 
+using std::cout;
+using std::endl;
 ClassImp(AliEveMUONData)
 
 AliRawReader*            AliEveMUONData::fgRawReader        = 0;

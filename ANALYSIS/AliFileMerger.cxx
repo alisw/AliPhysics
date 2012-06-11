@@ -68,6 +68,10 @@
 #include "AliFileMerger.h"
 #include "AliLog.h"
 
+using std::cerr;
+using std::endl;
+using std::cout;
+using std::ifstream;
 ClassImp(AliFileMerger)
 
 ProcInfo_t procInfo;//TMP

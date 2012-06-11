@@ -48,6 +48,10 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliMultiInputEventHandler.h"
 
+using std::ofstream;
+using std::ifstream;
+using std::ios;
+using std::endl;
 ClassImp(AliAnalysisAlien)
 #if 0
 ;

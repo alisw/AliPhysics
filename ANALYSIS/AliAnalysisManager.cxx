@@ -53,6 +53,10 @@
 #include "AliSysInfo.h"
 #include "AliAnalysisStatistics.h"
 
+using std::ofstream;
+using std::ios;
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisManager)
 
 AliAnalysisManager *AliAnalysisManager::fgAnalysisManager = NULL;

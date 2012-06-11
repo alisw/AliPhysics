@@ -56,6 +56,8 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisTask.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliAnalysisDataContainer)
 
 //______________________________________________________________________________

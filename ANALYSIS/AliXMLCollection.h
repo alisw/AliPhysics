@@ -22,6 +22,7 @@ class TMap;
 class TIter;
 class TEntryList;
 
+using std::ofstream;
 //___________________________________________________________________________
 class AliXMLCollection : public TGridCollection {
  

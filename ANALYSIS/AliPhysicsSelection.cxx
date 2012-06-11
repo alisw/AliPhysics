@@ -125,6 +125,8 @@
 #include "AliOADBFillingScheme.h"
 #include "AliOADBTriggerAnalysis.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliPhysicsSelection)
 
 AliPhysicsSelection::AliPhysicsSelection() :

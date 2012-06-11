@@ -88,6 +88,8 @@
 #include "AliTPCPreprocessorOffline.h"
 #include "AliTPCCorrectionFit.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliTPCPreprocessorOffline)
 
 AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():

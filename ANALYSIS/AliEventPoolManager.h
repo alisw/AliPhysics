@@ -22,6 +22,8 @@
 //
 // Authors: A. Adare and C. Loizides
 
+using std::deque;
+
 class AliEventPool : public TObject
 {
  public:

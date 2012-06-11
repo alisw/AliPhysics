@@ -56,6 +56,9 @@ extern "C" void g95_runtime_start();
   extern "C" int __mb_cur_max=0; 
 #endif 
 
+using std::cout;
+using std::endl;
+
 //_____________________________________________________________________________
 int main(int argc, char **argv)
 {

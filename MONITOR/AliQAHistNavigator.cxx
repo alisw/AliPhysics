@@ -34,6 +34,9 @@
 #include <TKey.h>
 #include "AliQAHistNavigator.h"
 
+using std::endl;
+using std::cout;
+using std::string;
 ClassImp(AliQAHistNavigator)
 
 //_________________________________________________________________________

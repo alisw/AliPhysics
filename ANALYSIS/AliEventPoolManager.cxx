@@ -1,5 +1,7 @@
 #include "AliEventPoolManager.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliEventPool)
 
 void AliEventPool::PrintInfo() const

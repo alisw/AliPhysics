@@ -42,7 +42,8 @@ class AliEMCAL;
 class AliEMCALGeometry;
 class AliEveEMCALSModule;
 
-
+using std::cout;
+using std::endl;
 ClassImp(AliEveEMCALData)
 
 //______________________________________________________________________________

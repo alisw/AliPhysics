@@ -73,6 +73,11 @@ __R_ADDTASK__->SelectCollisionCandidates();
 // the right order in the grid handler to generate train macros.
 
 
+using std::cout;
+using std::endl;
+using std::ios;
+using std::ofstream;
+using std::ifstream;
 ClassImp(AliAnalysisTaskCfg)
 
 //______________________________________________________________________________

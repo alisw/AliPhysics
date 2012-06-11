@@ -30,6 +30,8 @@
 
 #include "AliVEvent.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisStatistics)
 
 //______________________________________________________________________________

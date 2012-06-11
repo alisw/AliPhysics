@@ -43,6 +43,10 @@
 //______________________________________________________________________________
 // Produce TEveUtil:TEveTrack from AliMUONTrack with dipole field model
 
+using std::cout;
+using std::endl;
+using std::setw;
+using std::setprecision;
 ClassImp(AliEveMUONTrack)
 
 

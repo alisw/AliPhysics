@@ -59,6 +59,8 @@
 #include "TVector3.h"
 #include "AliTPCdEdxInfo.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskESDfilter)
 
 ////////////////////////////////////////////////////////////////////////
