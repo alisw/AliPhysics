@@ -14,17 +14,24 @@ enum { kTPC=0, kTOF, kTRD, krec, kTOFTRD, kTOFTRD2, kITScls, kITSamy, kDCA, kChi
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
-Bool_t hasMC=kFALSE;
+Bool_t  hasMC = kFALSE;
+TString list  = gSystem->Getenv("LIST");
 
-AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, Bool_t isMC=kFALSE)
+AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 {
   //
   // Setup the instance of AliDielectron
   //
   
+  // find mc or not?
+  if( list.IsNull()) list=prod;
+  if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
+  if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
+  
+
   // MC event handler?
-  hasMC=isMC;
-    //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);    
+  //  hasMC=isMC;
+  //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);    
 
   //ESD handler?
   Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
@@ -285,10 +292,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
       
       TF1 *ffPio=new TF1(Form("fBethe%d_c%d",AliPID::kPion,icent), Form("(%f*%f+(AliExternalTrackParam::BetheBlochAleph(x/%f,[0],[1],[2],[3],[4])-AliExternalTrackParam::BetheBlochAleph(x/%f,[0],[1],[2],[3],[4])))/%f", nSigmaPi,resolution, AliPID::ParticleMass(AliPID::kPion), AliPID::ParticleMass(AliPID::kElectron), resolution), 0.05,200.);
       
-      TString list=gSystem->Getenv("LIST");
-      
       //LHC11a10b
-      if (list.Contains("LHC11a10b") || list.IsNull()) {
+      if (list.Contains("LHC11a10b")) {
         printf("LHC11a10b parameters\n");
         ffPro->SetParameters(BBpro[0],BBpro[1],BBpro[2],BBpro[3],BBpro[4]);
         ffPio->SetParameters(BBpio[0],BBpio[1],BBpio[2],BBpio[3],BBpio[4]);
@@ -305,7 +310,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     // shifts for the nSigma electrons
     TGraph* nSigmaCorrection = new TGraph();
     // LHC11a10b
-    if (list.Contains("LHC11a10b") || list.IsNull()) {
+    if (list.Contains("LHC11a10b")) {
       nSigmaCorrection->SetPoint(0, 137161., -0.50-(0.28));
       nSigmaCorrection->SetPoint(1, 139510., -0.50-(0.28));
       pid->SetCorrGraph(nSigmaCorrection);
@@ -745,7 +750,8 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
       cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-3,-2.5,-2,2,2.5,3",kTRUE);
       //cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.5,4.0,4.5,5.0,100",kTRUE);
       //    cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"3.5,4.0,4.5,5.0,100",kTRUE);
-      
+      cf->AddVariable(AliDielectronVarManager::kTRDpidQuality,"3.5, 4.5, 5.5, 6.5",kTRUE);
+	
       // standard vars
       if(cutDefinition<=kChi) {
         if(hasMC) cf->AddVariable(AliDielectronVarManager::kEta,"-0.9,0.9",kTRUE);
@@ -761,7 +767,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
       case kTOFTRD: 
         // if(hasMC) cf->AddVariable(AliDielectronVarManager::kThetaCS,15,-1.,1.);
         //cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE); break;
-        break;
+	break;
       case kITScls: cf->AddVariable(AliDielectronVarManager::kNclsITS,"1,2,3,4,5,6",kTRUE);       break;
       case kITSamy: cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE); break;
       case kDCA:
@@ -772,7 +778,6 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
       case kChi:    cf->AddVariable(AliDielectronVarManager::kChi2NDF,"0,1,2,3,4,5",kTRUE); break;
         //    cf->AddVariable(AliDielectronVarManager::kTOFnSigmaEle,"-3,-2,2,3",kTRUE);
         //    cf->AddVariable(AliDielectronVarManager::kTOFPIDBit,"-.5,.5,1.5",kTRUE);
-        //    cf->AddVariable(AliDielectronVarManager::kTRDpidQuality,"3.5, 4.5, 5.5, 6.5",kTRUE);
     }
     
   }
@@ -849,8 +854,6 @@ void SetEtaCorrection()
 {
   if (AliDielectronPID::GetEtaCorrFunction()) return;
   
-  TString list=gSystem->Getenv("LIST");
-
   TString etaMap="$TRAIN_ROOT/jpsi_JPSI/EtaCorrMaps.root";
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
   if (trainRoot.IsNull()) etaMap="$ALICE_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
@@ -884,9 +887,9 @@ TVectorD *GetRunNumbers() {
   };
   
   // selection via environement variable (works only for gsi trains)
-  TString list=gSystem->Getenv("LIST");
+
   
-  if(list.Contains("10h") || list.Contains("11a10b")) {
+  if(list.Contains("LHC10h") || list.Contains("LHC11a10")) {
     Int_t size = (int) (sizeof(runLHC10h)/sizeof(Double_t));
     TVectorD *vec = new TVectorD(size+1);
     
@@ -898,7 +901,7 @@ TVectorD *GetRunNumbers() {
     return vec;
   }
 
-  if( list.IsNull() || list.Contains("11h") || list.Contains("12a17") ) {
+  if( list.Contains("LHC11h") || list.Contains("LHC12a17") ) {
     
     Int_t size = (int) (sizeof(runLHC11h)/sizeof(Double_t));
     TVectorD *vec = new TVectorD(size+1);

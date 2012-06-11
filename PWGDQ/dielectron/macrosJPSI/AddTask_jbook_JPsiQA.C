@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_jbook_JPsiQA(Bool_t isMC=kFALSE){
+AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod=""){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -7,8 +7,13 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(Bool_t isMC=kFALSE){
   }
 
   //Do we have an MC handler?
-  Bool_t hasMC=isMC;
+  Bool_t hasMC = kFALSE;
+  TString list = gSystem->Getenv("LIST");
+  if( list.IsNull()) list=prod;
+  if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
+  if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
   //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
 
@@ -37,7 +42,7 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(Bool_t isMC=kFALSE){
 
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *jpsi=ConfigJpsiQA_jb_PbPb(i,hasMC);
+    AliDielectron *jpsi=ConfigJpsiQA_jb_PbPb(i,list);
     if (jpsi ) task->AddDielectron(jpsi);
     if (jpsi ) printf("add: %s\n",jpsi->GetName());
   }
@@ -65,13 +70,13 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(Bool_t isMC=kFALSE){
                          AliAnalysisManager::kOutputContainer,
                          "jbookQA.root");
 
-  /*
-    AliAnalysisDataContainer *cOutputHist2 =
+  
+  AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("jbookQA_CF",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "jbookQA.root");
-  */
+                         "dummy");
+    
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("jbookQA_EventStat",
                          TH1D::Class(),
@@ -81,7 +86,7 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(Bool_t isMC=kFALSE){
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );
   mgr->ConnectOutput(task, 1, cOutputHist1);
-  //  mgr->ConnectOutput(task, 2, cOutputHist2);
+  mgr->ConnectOutput(task, 2, cOutputHist2);
   mgr->ConnectOutput(task, 3, cOutputHist3);
   
   return task;
