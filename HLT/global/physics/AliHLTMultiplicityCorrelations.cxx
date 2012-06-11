@@ -27,10 +27,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#if __GNUC__>= 3
-   using namespace std;
-#endif
-
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TList.h"
@@ -39,6 +35,10 @@
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMultiplicityCorrelations)
+
+#if __GNUC__>= 3
+   using namespace std;
+#endif
 
 /*
  * ---------------------------------------------------------------------------------
