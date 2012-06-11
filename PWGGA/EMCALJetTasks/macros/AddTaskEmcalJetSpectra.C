@@ -4,8 +4,8 @@ AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
    const char *outfilename    = "AnalysisOutput.root",
    const char *nJets          = "Jets",
    const char *nTracks        = "PicoTracks",
-   const char *nRhosCh        = "rhoCh",
    const char *nRhosChEm      = "rhoChEm",
+   const char *nRhosCh        = "rhoCh",
    const char *nRhosAve       = "rho3",
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
@@ -45,7 +45,6 @@ AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
   spectratask->SetJetPhi(minPhi,maxPhi);
   spectratask->SetJetEta(minEta,maxEta);
   spectratask->SetAreaCut(minArea);
-
  
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
