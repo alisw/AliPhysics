@@ -66,7 +66,7 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, Int_t tpcCls, Double
   
   // The task
   AliAnalysisTaskHFEFlow *task = new AliAnalysisTaskHFEFlow(Form("HFEFlowtask_%s", appendix.Data()));
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral); 
+  task->SelectCollisionCandidates(AliVEvent::kSemiCentral); 
   task->SetDebugLevel(1);
   task->GetPIDQAManager()->SetHighResolutionHistos();
   task->SetHFECuts(hfecuts);
