@@ -1,8 +1,8 @@
 // $Id$
 
 AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
-  const char *nTracks    = "Tracks",
-  const char *nClusters  = "CaloClusters",
+  const char *nTracks    = "EmcalTracks",
+  const char *nClusters  = "EmcalClusters",
   Double_t maxDist       = 0.1
 )
 {  
