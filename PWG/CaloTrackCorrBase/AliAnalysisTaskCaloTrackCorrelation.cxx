@@ -72,13 +72,15 @@ AliAnalysisTaskCaloTrackCorrelation::~AliAnalysisTaskCaloTrackCorrelation()
 {
   // Remove all pointers
   
-  if (fOutputContainer && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+  
+  if (fOutputContainer) 
   {
     fOutputContainer->Clear() ; 
     delete fOutputContainer ;
   }
   
-  if (fAna && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fAna;
+  if (fAna) delete fAna;
   
 }
 
