@@ -1,8 +1,8 @@
 // $Id$
 
 AliHadCorrTask* AddTaskHadCorr(
-  const char *nTracks        = "Tracks",
-  const char *nClusters      = "CaloClusters",
+  const char *nTracks        = "EmcalTracks",
+  const char *nClusters      = "EmcalClusters",
   const char *outClusName    = "CaloClustersCorr",
   const Double_t hadcorr     = 1,
   const Double_t minPt       = 0.15,
