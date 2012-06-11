@@ -115,7 +115,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 	  if(!partMC->Charge()) continue;//Skip neutrals
-	  if(TMath::Abs(partMC->Eta()) < fTrackCuts->GetEta()){//charged hadron are filled inside the eta acceptance
+	  if(partMC->Eta() > fTrackCuts->GetEtaMin() && partMC->Eta() < fTrackCuts->GetEtaMax()){//charged hadron are filled inside the eta acceptance
 	    fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
 	  }
 	  //rapidity cut
@@ -132,7 +132,7 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
   //main loop on tracks
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
-    if (!fTrackCuts->IsSelected(track)) continue;
+    if (!fTrackCuts->IsSelected(track,kTRUE)) continue;
     
     fPID->FillQAHistos(fHistMan, track, fTrackCuts);
     

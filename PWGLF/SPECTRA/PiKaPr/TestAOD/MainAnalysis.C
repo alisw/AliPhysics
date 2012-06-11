@@ -38,27 +38,39 @@ void MainAnalysis()  {
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGLFSPECTRA");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
- 
+  
   // Set Masses
   Double_t mass[3];
   mass[0]   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
   mass[2] = TDatabasePDG::Instance()->GetParticle("proton")->Mass();
   
-  //TString fold="3SigmaPID_AOD048-049_FilterBit5";
-  TString fold="3SigmaPID_AOD048-049_FilterBit1";
-  //TString fold="3SigmaPID_AOD086-090_FilterBit10";
-  //TString fold="3SigmaPID_AOD086-090_FilterBit7";
-  //TString fold="3SigmaPID_AOD086-090_FilterBit1";
-  Int_t ibinToCompare=-1;
+  TString fold="3SigmaPID_AOD086-090_FilterBit1";
   
-  TString sname="Cent0to5_QVec0.0to100.0";ibinToCompare=0;
-  //TString sname="Cent0to100_QVec0.0to100.0";ibinToCompare=0;
+  //LOOP OVER SELECTION
+  Double_t CentCutMin[4]={0,0,20,20};
+  Double_t CentCutMax[4]={100,5,40,40};
+  Double_t QvecPosCutMin[4]={0,0,0,3};
+  Double_t QvecPosCutMax[4]={100,100,2,100};
+  Double_t QvecNegCutMin[4]={0,0,0,3};
+  Double_t QvecNegCutMax[4]={100,100,2,100};
+  Double_t EtaMin[4]={-0.8,-0.8,-0.8,-0.8};
+  Double_t EtaMax[4]={0.8,0.8,0.8,0.8};
   
-  TString dataFile = Form("output/%s/Pt.AOD.1._data_ptcut_%s.root",fold.Data(),sname.Data());
-  TString mcFile =Form("output/%s/Pt.AOD.1._MC_%s.root",fold.Data(),sname.Data());
+  Int_t icut=1;
+  
+  Int_t ibinToCompare=0;
+  
+  TString sname=Form("Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],QvecPosCutMin[icut],QvecPosCutMax[icut],QvecNegCutMin[icut],QvecNegCutMax[icut],EtaMin[icut],EtaMax[icut]);
+  
+  
+  TString dataFile = Form("output/%s/OutputAODSpectraTask_data_%s.root",fold.Data(),sname.Data());
+  TString mcFile = Form("output/%s/OutputAODSpectraTask_mc_%s.root",fold.Data(),sname.Data());
+  
+  
+  
+  
   gStyle->SetPalette(1);
-  
   // Open root MC file and get classes
   cout << "Analysis Macro" << endl;
   cout << "  > Reading MC data" << endl;
@@ -350,7 +362,7 @@ void MainAnalysis()  {
   //Printf("--------%f ",((TH1F*)hman_mc->GetPtHistogram1D("hHistPtGen",1,1))->GetEntries()/1.6/ecuts_mc->NumberOfEvents());
   hChHad_data->Scale(1./events_data,"width");//NORMALIZATION
   hChHad_data->Divide(hEff_mc);//Efficiency
-  hChHad_data->Scale(1./(2*tcuts_data->GetEta()));
+  hChHad_data->Scale(1./1.6);
   hChHad_data->SetTitle("All Ch from AOD");
   TCanvas *cAllCh=new TCanvas("cAllCh","cAllCh",700,500);
   cAllCh->Divide(1,2);
