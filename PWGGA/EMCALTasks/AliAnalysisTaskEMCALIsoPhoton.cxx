@@ -337,8 +337,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
   const Int_t nclus = fCaloClusters->GetEntries();
   if(nclus==0)
     return;
-  Double_t maxE;
-  Int_t nthresholds = 0;
+  Double_t maxE = 0;
   for(Int_t ic=0;ic<nclus;ic++){
     maxE=0;
     AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(fCaloClusters->At(ic));
@@ -369,23 +368,23 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t allisoue =  allphiband/phibandArea*netConeArea;
     Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
     fM02Et->Fill(Et, c->GetM02());
-    if(ceiso>1)
+    if(ceiso<1)
       fM02EtCeIso1->Fill(Et, c->GetM02());
-    if(ceiso>2)
+    if(ceiso<2)
       fM02EtCeIso2->Fill(Et, c->GetM02());
-    if(ceiso>5)
+    if(ceiso<5)
       fM02EtCeIso5->Fill(Et, c->GetM02());
-    if(triso>1)
+    if(triso<1)
       fM02EtTrIso1->Fill(Et, c->GetM02());
-    if(triso>2)
+    if(triso<2)
       fM02EtTrIso2->Fill(Et, c->GetM02());
-    if(triso>5)
+    if(triso<5)
       fM02EtTrIso5->Fill(Et, c->GetM02());
-    if(alliso>1)
+    if(alliso<1)
       fM02EtAllIso1->Fill(Et, c->GetM02());
-    if(alliso>2)
+    if(alliso<2)
       fM02EtAllIso2->Fill(Et, c->GetM02());
-    if(alliso>5)
+    if(alliso<5)
       fM02EtAllIso5->Fill(Et, c->GetM02());
     if(c->GetM02()>0.1 && c->GetM02()<0.3){
       fCeIsoVsEtPho->Fill(Et, ceiso - cecore - ceisoue);
@@ -395,23 +394,23 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Double_t dR = TMath::Sqrt(pow(c->GetTrackDx(),2)+pow(c->GetTrackDz(),2));
     if(dR<0.014){
       fM02EtTM->Fill(Et, c->GetM02());
-      if(ceiso>1)
+      if(ceiso<1)
 	fM02EtCeIso1TM->Fill(Et, c->GetM02());
-      if(ceiso>2)
+      if(ceiso<2)
 	fM02EtCeIso2TM->Fill(Et, c->GetM02());
-      if(ceiso>5)
+      if(ceiso<5)
 	fM02EtCeIso5TM->Fill(Et, c->GetM02());
-      if(triso>1)
+      if(triso<1)
 	fM02EtTrIso1TM->Fill(Et, c->GetM02());
-      if(triso>2)
+      if(triso<2)
 	fM02EtTrIso2TM->Fill(Et, c->GetM02());
-      if(triso>5)
+      if(triso<5)
 	fM02EtTrIso5TM->Fill(Et, c->GetM02());
-      if(alliso>1)
+      if(alliso<1)
 	fM02EtAllIso1TM->Fill(Et, c->GetM02());
-      if(alliso>2)
+      if(alliso<2)
 	fM02EtAllIso2TM->Fill(Et, c->GetM02());
-      if(alliso>5)
+      if(alliso<5)
 	fM02EtAllIso5TM->Fill(Et, c->GetM02());
       if(c->GetM02()>0.1 && c->GetM02()<0.3){
 	fCeIsoVsEtPhoTM->Fill(Et, ceiso);
