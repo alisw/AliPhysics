@@ -36,6 +36,7 @@ AliAnalysisTaskExtractV0 *AddTaskExtractV0( Bool_t lSwitchIsNuclear     = kTRUE,
    //if (lCollidingSystems) outputFileName += "_AA_";
    outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+   if (lSwitchUseOnTheFly==kTRUE) outputFileName += "_OnTheFly";
    //if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
    
    Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
