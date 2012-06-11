@@ -32,7 +32,7 @@
 
 //---- AliRoot system ---- 
 #include "AliAnalysisManager.h"
-#include "AliVEventHandler.h"
+#include "AliInputEventHandler.h"
 #include "AliAnaCaloTrackCorrBaseClass.h" 
 #include "AliAnaCaloTrackCorrMaker.h" 
 
@@ -391,22 +391,43 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(const Int_t iEntry,
     
   }
 	
+  fReader->ResetLists();
+
+  // In case of mixing analysis, non triggered events are used,
+  // do not fill control histograms for a non requested triggered event
+  if(!fReader->IsEventTriggerAtSEOn())
+  {
+    AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
+    
+    if(!inputHandler) return ;  
+    
+    UInt_t isTrigger = inputHandler->IsEventSelected() & fReader->GetEventTriggerMask();
+    if(!isTrigger) 
+    {
+      if(fAnaDebug > 0 ) printf("AliAnaCaloTrackMaker::ProcessEvent() - *** End analysis, MB for mixing *** \n");
+      
+      return;
+    }
+  }
+  
   // Event control histograms
+ 
   fhNEvents        ->Fill(0); // Number of events analyzed
   fhTrackMult      ->Fill(fReader->GetTrackMultiplicity()); 
   fhCentrality     ->Fill(fReader->GetEventCentrality  ());
   fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
-
+  
+  
   Double_t v[3];
   fReader->GetInputEvent()->GetPrimaryVertex()->GetXYZ(v) ;
   fhZVertex->Fill(v[2]);
-
-  fReader->ResetLists();
+  
   
   //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");
   //gObjectTable->Print();
 	
-  if(fAnaDebug > 0 ) printf("*** End analysis *** \n");
+  if(fAnaDebug > 0 ) printf("AliAnaCaloTrackMaker::ProcessEvent() - *** End analysis *** \n");
   
 }
 
