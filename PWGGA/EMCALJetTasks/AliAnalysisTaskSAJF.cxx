@@ -443,21 +443,18 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 
   GetLeadingJets(maxJetIndex, max2JetIndex);
   
-  if (fSkipEventsWithNoJets && maxJetIndex < 0) {
+  if (maxJetIndex < 0) {
     fHistRejectedEvents->Fill("No jets", 1);
     return kFALSE;
   }
 
   AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fJets->At(maxJetIndex));
-  if (fSkipEventsWithNoJets && !jet) {
+  if (!jet) {
     fHistRejectedEvents->Fill("Max Jet not found", 1);
     return kFALSE;
   }
 
-  Float_t maxJetCorrPt = 0; 
-
-  if (jet)
-    maxJetCorrPt = jet->Pt() - fRho * jet->Area();
+  Float_t maxJetCorrPt = jet->Pt() - fRho * jet->Area();
 
   if (fSkipEventsWithNoJets && maxJetCorrPt <= 0) {
     fHistRejectedEvents->Fill("Max Jet <= 0", 1);
@@ -594,7 +591,7 @@ void AliAnalysisTaskSAJF::GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex
       continue;
     }  
 
-    if (!AcceptJet(jet))
+    if (!AcceptJet(jet, fSkipEventsWithNoJets))
       continue;
 
     Float_t corrPt = jet->Pt() - fRho * jet->Area();
@@ -631,7 +628,7 @@ void AliAnalysisTaskSAJF::DoJetLoop()
       continue;
     }  
 
-    if (!AcceptJet(jet, kFALSE))
+    if (!AcceptJet(jet, fSkipEventsWithNoJets))
       continue;
 
     Float_t corrPt = jet->Pt() - fRho * jet->Area();
