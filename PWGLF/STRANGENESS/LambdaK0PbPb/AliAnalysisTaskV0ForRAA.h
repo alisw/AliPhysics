@@ -91,9 +91,10 @@ public:
    void SetDCAXLambda(Double_t dcaXL)                          {fDCAXL = dcaXL; Printf("AliAnalysisTaskV0ForRAA::SetDCAXLambda %2.3f",dcaXL);}
    void SetDCAYLambda(Double_t dcaYL)                          {fDCAXL = dcaYL; Printf("AliAnalysisTaskV0ForRAA::SetDCAYLambda %2.3f",dcaYL);}
    void SetDCAZ(Double_t dcaZ)                                 {fDCAZ = dcaZ; Printf("AliAnalysisTaskV0ForRAA::SetDCAZ %2.3f",dcaZ);}
-   void SetChi2CutKf(Double_t chi2)                            {fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %3.2f",chi2);}
+   void SetChi2CutKf(Bool_t chi2){ fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %i",chi2);}
+   //Double_t chi2)                            {fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %3.2f",chi2);}
    void SetArmenterosCutAlpha(Double_t alfaMin)                {fAlfaCut=alfaMin;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut a=%1.3f",alfaMin);}
-   void SetArmenterosCutQt(Double_t qtmax,Bool_t k0s,Bool_t la){fQtCut = qtmax; fArmCutK0=k0s;fArmCutL=la;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut qt=%1.3f K0s? %i La? %i",qtmax,k0s,la);}
+   void SetArmenterosCutQt(Double_t ptmin,Double_t ptmax,Bool_t k0s,Bool_t la){fQtCut = ptmax;fQtCutPtLow=ptmin, fArmCutK0=k0s;fArmCutL=la;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut ptmin = %3.2f ptmax = %3.2f. Is K0s? %i La? %i",ptmin,ptmax,k0s,la);}
    void SetCtauCut(Double_t ctK0s, Double_t ctL,Double_t ptK0=100.0,Double_t ptL=100.0) {fCtauK0s = ctK0s*2.6842; fCtauL = ctL*7.89;fCtauPtCutK0=ptK0; fCtauPtCutL=ptL;
       Printf("AliAnalysisTaskV0ForRAA::SetCtauCut ctK=%2.2f, ctL = %2.2f for ptK= %5.2f ptL=%5.2f",ctK0s,ctL,ptK0,ptL);}
    void SetDoEtaOfMCDaughtersCut(Bool_t doCut,Double_t eta=5.0){fEtaCutMCDaughters =doCut; fEtaCutMCDaughtersVal=eta; Printf("AliAnalysisTaskV0ForRAA::eta cut on V0 (MC truth ? %i) daughters %1.3f !",doCut,eta);}
@@ -312,13 +313,14 @@ private:
 
    //armenteros
    Double_t  fAlfaCut;               // set alpha armenteros cut value
-   Double_t  fQtCut;                 // set qt armenteros cut value
+   Double_t  fQtCut;                 // set ptmax for qt armenteros cut 
+   Double_t  fQtCutPtLow;             // set ptmin for  qt armenteros cut
    Bool_t    fArmCutK0;              // set armenteros cut on/off for K0s
    Bool_t    fArmCutL;               // set armenteros cut on/off for Lambda
 
    //others
-   Double_t  fDCAToVertexK0;           // dca of V0 to vertex cut value K0s
-   Double_t  fDCAToVertexL;           // dca of V0 to vertex cut value L/AL
+   Double_t  fDCAToVertexK0;         // dca of V0 to vertex cut value K0s
+   Double_t  fDCAToVertexL;          // dca of V0 to vertex cut value L/AL
    Double_t  fDCAXK;                 // dca in x of K0s to vertex cut value
    Double_t  fDCAYK;                 // dca in y of K0s to vertex cut value
    Double_t  fDCAXL;                 // dca in x of Lambda to vertex cut value
@@ -352,7 +354,8 @@ private:
    Double_t  fCtauPtCutL;            // pt max for ctau cut usage for Lambda
 
    //KF particle chi cut
-   Double_t  fChiCutKf;              //cut value of chi2 of AliKFParticle
+   //   Double_t  fChiCutKf;         //cut value of chi2 of AliKFParticle
+   Bool_t  fChiCutKf;                //cut value of chi2 of AliKFParticle
 
   
    /*
