@@ -17,8 +17,6 @@
 #include "AliSymBDMatrix.h"
 //
 
-using namespace std;
-
 ClassImp(AliSymBDMatrix)
 
 

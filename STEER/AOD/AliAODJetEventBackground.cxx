@@ -21,8 +21,6 @@
 
 #include "AliAODJetEventBackground.h"
 
-using namespace std;
-
 ClassImp(AliAODJetEventBackground)
 
 TString AliAODJetEventBackground::fgkStdBranchName("jeteventbackground");

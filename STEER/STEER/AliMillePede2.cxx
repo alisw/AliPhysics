@@ -34,12 +34,10 @@
 #define _DUMP_EQ_BEFORE_
 #define _DUMP_EQ_AFTER_
 
-
-using namespace std;
-
 //#define _DUMPEQ_BEFORE_
 //#define _DUMPEQ_AFTER_ 
 
+using std::ifstream;
 ClassImp(AliMillePede2)
 
 Bool_t   AliMillePede2::fgInvChol        = kTRUE;     // Invert global matrix with Cholesky solver

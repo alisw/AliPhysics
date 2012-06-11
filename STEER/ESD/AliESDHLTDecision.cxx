@@ -27,8 +27,8 @@
 #include "AliESDHLTDecision.h"
 #include <iostream>
 
-using namespace std;
-
+using std::endl;
+using std::cout;
 ClassImp(AliESDHLTDecision)
 
 AliESDHLTDecision::AliESDHLTDecision()

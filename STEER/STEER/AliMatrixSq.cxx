@@ -18,8 +18,6 @@
 #include "AliMatrixSq.h"
 //
 
-using namespace std;
-
 ClassImp(AliMatrixSq)
 
 AliMatrixSq & AliMatrixSq::operator=(const AliMatrixSq &src)

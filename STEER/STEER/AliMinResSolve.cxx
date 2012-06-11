@@ -15,8 +15,6 @@
 #include <float.h>
 #include <TMath.h>
 
-using namespace std;
-
 ClassImp(AliMinResSolve)
 
 //______________________________________________________
