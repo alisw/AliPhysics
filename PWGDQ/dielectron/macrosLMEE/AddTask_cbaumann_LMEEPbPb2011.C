@@ -33,10 +33,10 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runAll=kFALSE){
 	gROOT->LoadMacro(configFile.Data());
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
-  if (!hasMC) task->UsePhysicsSelection();
+  if (!hasMC){ task->UsePhysicsSelection();
   task->SetTriggerMask(triggers[0]);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
-	
+  }
 
   //load dielectron configuration file
 
