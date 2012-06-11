@@ -52,7 +52,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
+  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig);
   void FindTriggerClusters();
  private:
   
@@ -124,7 +124,9 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH2F                  *fInputHFEMC;
   TH2F                  *fInputAlle;
   TH2F			*fIncpTMChfe;		//! MC HFE pid electron vs centrality
+  TH2F			*fIncpTMChfeAll;		//! MC HFE pid electron vs centrality
   TH2F			*fIncpTMCM20hfe;	//! MC HFE pid electron vs centrality
+  TH2F			*fIncpTMCM20hfeAll;	//! MC HFE pid electron vs centrality
   TH2F			*fIncpTMCpho;		//! MC HFE pid electron vs centrality
   TH2F			*fIncpTMCM20pho;	//! MC HFE pid electron vs centrality
   TH2F			*fPhoElecPtMC;	        //! Pho inclusive ele pt

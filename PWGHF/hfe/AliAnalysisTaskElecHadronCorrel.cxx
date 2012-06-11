@@ -382,8 +382,8 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
      fSparseElectron->Fill(fvalueElectron);
 */
-     if(fTPCnSigma >= -0.5 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,fEovP);
-     if(fTPCnSigma < -3.5)fTrkEovPBefHad->Fill(pt,fEovP);
+     if(fTPCnSigma >= -2 && fTPCnSigma <= 2)fTrkEovPBef->Fill(pt,fEovP);
+     if(fTPCnSigma < -4.5)fTrkEovPBefHad->Fill(pt,fEovP);
 /*
      Int_t pidpassed = 0;
      //--- track accepted, do PID
@@ -400,31 +400,33 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
        fTPCnsigmaAft->Fill(p,fTPCnSigma);
      }
      */
-     if(fTPCnSigma >= -0.5 && fTPCnSigma <= 3 && fEovP >= 0.9 && fEovP <=1.3) {
-       fElecPhi->Fill(track->Phi());
-       fTrkEovPAftOwn->Fill(pt,fEovP);
-       fdEdxAftOwn->Fill(p,dEdx);
-       fTPCnsigmaAftOwn->Fill(p,fTPCnSigma);
+     if(fTPCnSigma >= -2 && fTPCnSigma <= 2 && fEovP >= 0.9 && fEovP <=1.3) {
+       if(cluster->GetM20()<0.3 && cluster->GetM02()< 0.7 && cluster->GetDispersion()<1){
+         fElecPhi->Fill(track->Phi());
+         fTrkEovPAftOwn->Fill(pt,fEovP);
+         fdEdxAftOwn->Fill(p,dEdx);
+         fTPCnsigmaAftOwn->Fill(p,fTPCnSigma);
 
-       Bool_t fFlagPhotonicElec = kFALSE;
-       // select photonic electron
-       SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
-       //Inclusive electron-hadron correlation
-       ElectronHadCorrel(iTracks, track, fInclusiveElecDphi);
-       fInclusiveElecPt->Fill(pt);
+         Bool_t fFlagPhotonicElec = kFALSE;
+         // select photonic electron
+         SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+         //Inclusive electron-hadron correlation
+         ElectronHadCorrel(iTracks, track, fInclusiveElecDphi);
+         fInclusiveElecPt->Fill(pt);
 
-       // photonic electron
-       if(fFlagPhotonicElec){
-         //Electron hadron correlation
-         ElectronHadCorrel(iTracks, track, fPhotElecDphi);
-         fPhotoElecPt->Fill(pt);
-       }
+         // photonic electron
+         if(fFlagPhotonicElec){
+           //Electron hadron correlation
+           ElectronHadCorrel(iTracks, track, fPhotElecDphi);
+           fPhotoElecPt->Fill(pt);
+         }
 
-       // Semi inclusive electron 
-       if(!fFlagPhotonicElec){
-         //Electron hadron correlation
-         ElectronHadCorrel(iTracks, track, fSemiIncElecDphi);
-         fSemiInclElecPt->Fill(pt);
+         // Semi inclusive electron 
+         if(!fFlagPhotonicElec){
+           //Electron hadron correlation
+           ElectronHadCorrel(iTracks, track, fSemiIncElecDphi);
+           fSemiInclElecPt->Fill(pt);
+         }
        }
      }
    }

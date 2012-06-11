@@ -138,7 +138,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fInputHFEMC(0)
   ,fInputAlle(0)
   ,fIncpTMChfe(0)	
+  ,fIncpTMChfeAll(0)	
   ,fIncpTMCM20hfe(0)	
+  ,fIncpTMCM20hfeAll(0)	
   ,fIncpTMCpho(0)	
   ,fIncpTMCM20pho(0)	
   ,fPhoElecPtMC(0)
@@ -218,7 +220,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fInputHFEMC(0)
   ,fInputAlle(0)
   ,fIncpTMChfe(0)	
+  ,fIncpTMChfeAll(0)	
   ,fIncpTMCM20hfe(0)	
+  ,fIncpTMCM20hfeAll(0)	
   ,fIncpTMCpho(0)	
   ,fIncpTMCM20pho(0)	
   ,fPhoElecPtMC(0)
@@ -442,7 +446,10 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     Bool_t fFlagPhotonicElec = kFALSE;
     Bool_t fFlagConvinatElec = kFALSE;
-    SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec);
+    if(fTPCnSigma>-2.0 && fTPCnSigma<3.0)
+      {
+       SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma);
+      }
     if(fFlagPhotonicElec)oppstatus = 1.0;
     if(fFlagConvinatElec)oppstatus = 2.0;
 
@@ -485,8 +492,20 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     AliHFEpidObject hfetrack;
     hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
     hfetrack.SetRecTrack(track);
-    int centf = (int)cent;
-    hfetrack.SetCentrality(centf); //added
+    double binct = 10.5;
+    if((0.0< cent) && (cent<5.0)) binct = 0.5;
+    if((5.0< cent) && (cent<10.0)) binct = 1.5;
+    if((10.0< cent) && (cent<20.0)) binct = 2.5;
+    if((20.0< cent) && (cent<30.0)) binct = 3.5;
+    if((30.0< cent) && (cent<40.0)) binct = 4.5;
+    if((40.0< cent) && (cent<50.0)) binct = 5.5;
+    if((50.0< cent) && (cent<60.0)) binct = 6.5;
+    if((60.0< cent) && (cent<70.0)) binct = 7.5;
+    if((70.0< cent) && (cent<80.0)) binct = 8.5;
+    if((80.0< cent) && (cent<90.0)) binct = 9.5;
+    if((90.0< cent) && (cent<100.0)) binct = 10.5;
+
+    hfetrack.SetCentrality((int)binct); //added
     hfetrack.SetPbPb();
     if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
 
@@ -510,6 +529,10 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     // MC
     if(mcele==1)
       {
+
+          fIncpTMChfeAll->Fill(cent,pt);    
+          if(m20>0.0 && m20<0.3)fIncpTMCM20hfeAll->Fill(cent,pt);    
+
        if(mcBtoE || mcDtoE)
          {
           fIncpTMChfe->Fill(cent,pt);    
@@ -564,6 +587,12 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
       fPID->AddDetector("EMCAL", 1);
     }
   
+  Double_t params[4];
+  char *cutmodel;
+  cutmodel = "pol0";
+  params[0] = -1.0; //sigma min
+  for(Int_t a=0;a<11;a++)fPID->ConfigureTPCcentralityCut(a,cutmodel,params,3.0);
+
   fPID->SortDetectors(); 
   fPIDqa = new AliHFEpidQAmanager();
   fPIDqa->Initialize(fPID);
@@ -626,14 +655,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpTM20 = new TH2F("fIncpTM20","HFE pid electro vs. centrality with M20",100,0,100,100,0,50);
   fOutputList->Add(fIncpTM20);
 
-  Int_t nBinspho[3] =  { 100, 100, 500};
-  Double_t minpho[3] = {  0.,  0., 0.};   
-  Double_t maxpho[3] = {100., 50., 0.5};   
+  Int_t nBinspho[4] =  { 100, 100, 500, 12};
+  Double_t minpho[4] = {  0.,  0.,  0., -2.5};   
+  Double_t maxpho[4] = {100., 50., 0.5, 3.5 };   
 
-  fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2);", 3, nBinspho,minpho, maxpho);
+  fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma;", 4, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassLS);
   
-  fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2);", 3, nBinspho,minpho, maxpho);
+  fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma;", 4, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassULS);
   
   fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
@@ -716,8 +745,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpTMChfe = new TH2F("fIncpTMChfe","MC HFE pid electro vs. centrality",100,0,100,100,0,50);
   fOutputList->Add(fIncpTMChfe);
 
+  fIncpTMChfeAll = new TH2F("fIncpTMChfeAll","MC Alle pid electro vs. centrality",100,0,100,100,0,50);
+  fOutputList->Add(fIncpTMChfeAll);
+
   fIncpTMCM20hfe = new TH2F("fIncpTMCM20hfe","MC HFE pid electro vs. centrality with M20",100,0,100,100,0,50);
   fOutputList->Add(fIncpTMCM20hfe);
+
+  fIncpTMCM20hfeAll = new TH2F("fIncpTMCM20hfeAll","MC Alle pid electro vs. centrality with M20",100,0,100,100,0,50);
+  fOutputList->Add(fIncpTMCM20hfeAll);
 
   fIncpTMCpho = new TH2F("fIncpTMCpho","MC Pho pid electro vs. centrality",100,0,100,100,0,50);
   fOutputList->Add(fIncpTMCpho);
@@ -758,7 +793,7 @@ Bool_t AliAnalysisTaskHFECal::ProcessCutStep(Int_t cutStep, AliVParticle *track)
 }
 //_________________________________________
 //void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec)
-void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec)
+void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
   
@@ -795,7 +830,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     Int_t charge = track->Charge();
     
     //if(ptAsso <0.3) continue;
-    if(ptAsso <1.0) continue;
+    if(ptAsso <0.5) continue;
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
     if(dEdxAsso <65 || dEdxAsso>100) continue; //11a pass1
     
@@ -828,10 +863,11 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     
     recg.GetMass(mass,width);
     
-    double phoinfo[3];
+    double phoinfo[4];
     phoinfo[0] = cent;
     phoinfo[1] = ptPrim;
     phoinfo[2] = mass;
+    phoinfo[3] = nSig;
 
     if(fFlagLS) fInvmassLS->Fill(phoinfo);
     if(fFlagULS) fInvmassULS->Fill(phoinfo);
