@@ -189,6 +189,10 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t useMC=kFALSE, Bool_t beauty=kFALSE,
   task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
   if(useMC && addflag==1) task->SetDebugStreaming();
 
+  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+
+ 
+
   printf("*************************************\n");
   printf("Configuring task PbPb \n"); 
   //if(isLHC10) printf("Configuring TPC1 Task 2010 :\n");
