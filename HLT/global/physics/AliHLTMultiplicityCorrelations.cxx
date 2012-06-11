@@ -576,9 +576,9 @@ Int_t AliHLTMultiplicityCorrelations::ProcessZDC() {
 Int_t AliHLTMultiplicityCorrelations::ProcessSPD() {
   // see header file for class documentation
   
-  (static_cast<TH2F*>(fHistList->FindObject("fSpdNClusters")))->Fill(fSpdNClusters);
-  (static_cast<TH2F*>(fHistList->FindObject("fSpdNClustersInner")))->Fill(fSpdNClustersInner);
-  (static_cast<TH2F*>(fHistList->FindObject("fSpdNClustersOuter")))->Fill(fSpdNClustersOuter);
+  (static_cast<TH1F*>(fHistList->FindObject("fSpdNClusters")))->Fill(fSpdNClusters);
+  (static_cast<TH1F*>(fHistList->FindObject("fSpdNClustersInner")))->Fill(fSpdNClustersInner);
+  (static_cast<TH1F*>(fHistList->FindObject("fSpdNClustersOuter")))->Fill(fSpdNClustersOuter);
 
   
   // -- SPD vs TPC correlations

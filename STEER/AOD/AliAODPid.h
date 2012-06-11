@@ -74,15 +74,15 @@ class AliAODPid : public TObject {
   Int_t       fTRDnSlices;       // N slices used for PID in the TRD
   UChar_t     fTRDntls;          // number of tracklets used for PID calculation
   UChar_t     fTRDncls[6];       // number of clusters used for dE/dx calculation
-  Double32_t* fTRDslices;        //[fTRDnSlices]
-  Float_t     fTRDmomentum[6];   // momentum at the TRD layers
+  Double32_t* fTRDslices;        //![fTRDnSlices]
+  Float_t     fTRDmomentum[6];   //! momentum at the TRD layers
   Double32_t  fTOFesdsignal;     // TOF signal - t0 (T0 interaction time)
-  Double32_t  fTOFpidResolution[5]; // TOF pid resolution for each mass hypotesys 
-  Double32_t  fIntTime[5];       // track time hypothesis
+  Double32_t  fTOFpidResolution[5]; //! TOF pid resolution for each mass hypotesys 
+  Double32_t  fIntTime[5];       //! track time hypothesis
   Double32_t  fHMPIDsignal;      // detector raw signal
-  Double32_t  fHMPIDprobs[5];    // detector pid probabilities
+  Double32_t  fHMPIDprobs[5];    //! detector pid probabilities
  
-  AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
+  AliTPCdEdxInfo * fTPCdEdxInfo; //! object containing dE/dx information for different pad regions
 
   ClassDef(AliAODPid, 10);
 };
