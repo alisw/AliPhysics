@@ -10,8 +10,8 @@
 //        chargeSet:  0: ++    1: +-    2: -+    3: --
 /////////////////////////////////////////////////////////////////////////////////
 AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    system                 = 0,
-                                                             int    singlesOnly            = 1,
-                                                             int    useWeights             = 0,
+                                                             int    singlesOnly            = 0,
+                                                             int    useWeights             = 1,
                                                              int    centralityMethod       = 4,
                                                              int    chargeSet              = 1)
 
@@ -19,8 +19,6 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    system      
   // Set Default Configuration of this analysis
   // ==========================================
   int    debugLevel             = 0;
-  //int    singlesOnly            = 1;
-  //int    useWeights             = 0;
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
   int    sameFilter             = 1;
@@ -183,13 +181,40 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorrelations(int    system      
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
       outputHistogramFileName += ".root";
       
-      cout << "                   iTask: " << iTask << endl;
+    cout << "============================================================" << endl;
+    cout << "                   iTask: " << iTask << endl;
       cout << "               Task Name: " << taskName << endl;
       cout << "               List Name: " << listName << endl;
       cout << "  inputHistogramFileName: " << inputHistogramFileName  << endl;
       cout << " outputHistogramFileName: " << outputHistogramFileName << endl;
-      cout << "           using weights: " << useWeights              << endl;
-      TFile  * inputFile  = 0;
+      cout << "                  system: " << system << endl;
+      cout << "             singlesOnly: " << singlesOnly << endl;
+      cout << "           using weights: " << useWeights << endl;
+      cout << "        centralityMethod: " << centralityMethod << endl;
+      cout << "               chargeSet: " << chargeSet    << endl;
+      cout << "              debugLevel: " << debugLevel   << endl;
+      cout << "            rejectPileup: " << rejectPileup << endl;
+      cout << "    rejectPairConversion: " << rejectPairConversion  << endl;
+      cout << "              sameFilter: " << sameFilter  << endl;
+      cout << "                    zMin: " << zMin        << endl;
+      cout << "                    zMax: " << zMax        << endl;
+      cout << "                   ptMin: " << ptMin       << endl;
+      cout << "                   ptMax: " << ptMax       << endl;
+      cout << "                  etaMin: " << etaMin   << endl;
+      cout << "                  etaMax: " << etaMax   << endl;
+      cout << "                 dcaZMin: " << dcaZMin  << endl;
+      cout << "                 dcaZMax: " << dcaZMax  << endl;
+      cout << "                dcaXYMin: " << dcaXYMin << endl;
+      cout << "                dcaXYMax: " << dcaXYMax << endl;
+      cout << "                 dedxMin: " << dedxMin  << endl;
+      cout << "                 dedxMax: " << dedxMax  << endl;
+      cout << "             nClusterMin: " << nClusterMin      << endl;
+      cout << "          trackFilterBit: " << trackFilterBit   << endl;
+      cout << "        requestedCharge1: " << requestedCharge1 << endl;
+      cout << "        requestedCharge2: " << requestedCharge2 << endl;
+    cout << "============================================================" << endl;
+    
+    TFile  * inputFile  = 0;
       TList  * histoList  = 0;
       TH3F   * weight_1   = 0;
       TH3F   * weight_2   = 0;
