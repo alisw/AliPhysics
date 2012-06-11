@@ -36,6 +36,7 @@ AliAnalysisTaskExtractPerformanceV0 *AddTaskExtractPerformanceV0( Bool_t lSwitch
    //if (lSwitchIsNuclear) outputFileName += "_AA";
    outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+   if (lSwitchUseOnTheFly==kTRUE) outputFileName += "_OnTheFly";
    //if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
    
    Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
