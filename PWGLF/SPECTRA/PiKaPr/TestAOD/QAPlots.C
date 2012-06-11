@@ -105,12 +105,12 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   //Track selection in data and Monte Carlo
   TCanvas *cTrackCuts=new TCanvas("TrackCuts","TrackCuts",700,500);
   cTrackCuts->Divide(1,2);
-  TH1F *hTrCuts_data=new TH1F("hTrCuts_data","hTrCuts_data",11,0,11);
+  TH1F *hTrCuts_data=new TH1F("hTrCuts_data","hTrCuts_data",20,0,20);
   for(Int_t ibin=1;ibin<=tcuts_data->GetHistoCuts()->GetNbinsX();ibin++){
     hTrCuts_data->SetBinContent(ibin,tcuts_data->GetHistoCuts()->GetBinContent(ibin)/tcuts_data->GetHistoCuts()->GetBinContent(6));
     hTrCuts_data->GetXaxis()->SetBinLabel(ibin,tcuts_data->GetHistoCuts()->GetXaxis()->GetBinLabel(ibin));
   }
-  TH1F *hTrCuts_mc=new TH1F("hTrCuts_mc","hTrCuts_mc",11,0,11);
+  TH1F *hTrCuts_mc=new TH1F("hTrCuts_mc","hTrCuts_mc",20,0,20);
   for(Int_t ibin=1;ibin<=tcuts_mc->GetHistoCuts()->GetNbinsX();ibin++){
     hTrCuts_mc->SetBinContent(ibin,tcuts_mc->GetHistoCuts()->GetBinContent(ibin)/tcuts_mc->GetHistoCuts()->GetBinContent(6));
     hTrCuts_mc->GetXaxis()->SetBinLabel(ibin,tcuts_mc->GetHistoCuts()->GetXaxis()->GetBinLabel(ibin));
@@ -177,6 +177,39 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->SetGridx();
   PIDSig_mc->DrawClone("colz");
 
+  
+  //dedx in data and MC (Only TPC with reconstructed ID)
+  TCanvas *cPIDSig=new TCanvas("cPIDSigRec","cPIDSigRec",700,500);
+  cPIDSig->Divide(2,1);
+  cPIDSig->cd(1);
+  TH2F *PIDSig_data = (TH2F*)((TH2F*)hman_data->GetPIDHistogram("hHistPIDTPC"))->Clone();
+  PIDSig_data->SetYTitle("TPC signal");
+  gPad->SetLogz();
+  gPad->SetGridy();
+  gPad->SetGridx();
+  PIDSig_data->DrawClone("colz");
+  for(Int_t ipart=0;ipart<3;ipart++){
+    TH2F *PIDSig_dataPart = (TH2F*)((TH2F*)hman_data->GetPIDHistogram(Form("hHistPIDTPC%sRec",Particle[ipart].Data())))->Clone();
+    PIDSig_dataPart->SetMarkerColor(ipart+1);
+    PIDSig_dataPart->SetMarkerStyle(22);
+    PIDSig_dataPart->SetMarkerSize(.5);
+    PIDSig_dataPart->DrawClone("same");
+  }
+  cPIDSig->cd(2);
+  TH2F *PIDSig_mc = (TH2F*)((TH2F*)hman_mc->GetPIDHistogram("hHistPIDTPC"))->Clone();
+  PIDSig_mc->SetYTitle("TPC signal");
+  gPad->SetLogz();
+  gPad->SetGridy();
+  gPad->SetGridx();
+  PIDSig_mc->DrawClone("colz");
+  for(Int_t ipart=0;ipart<3;ipart++){
+    TH2F *PIDSig_mcPart = (TH2F*)((TH2F*)hman_mc->GetPIDHistogram(Form("hHistPIDTPC%sRec",Particle[ipart].Data())))->Clone();
+    PIDSig_mcPart->SetMarkerColor(ipart+1);
+    PIDSig_mcPart->SetMarkerStyle(22);
+    PIDSig_mcPart->SetMarkerSize(.5);
+    PIDSig_mcPart->DrawClone("same");
+  }
+  
   //dedx projection in data and MC
   Double_t Proj1[2]={0.6,0.7};
   Double_t Proj2[2]={1.1,1.2};

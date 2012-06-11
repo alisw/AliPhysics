@@ -1,4 +1,4 @@
-void runAODProof(Int_t c=3, const char * proofMode = "full")
+void runAODProof(Int_t c=2, const char * proofMode = "full")
 { //1 data AOD049
   //2 MC AOD048
   //3 data AOD086
@@ -42,11 +42,13 @@ void runAODProof(Int_t c=3, const char * proofMode = "full")
   }
   if (c == 3){
     //handler->SetProofDataSet("/default/lmilano/LHC10h_000138653_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138662_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138666_AOD086_p2#aodTree|/default/lmilano/LHC10h_000139107_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
-    handler->SetProofDataSet("/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
+    handler->SetProofDataSet("/default/lmilano/LHC10h_000138653_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138666_AOD086_p2#aodTree|/default/lmilano/LHC10h_000139107_AOD086_p2#aodTree|/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
+    //handler->SetProofDataSet("/default/lmilano/LHC10h_000138275_AOD086_p2#aodTree");      
   }
   if (c == 4){
-    //handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138662_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138666_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139107_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
-    handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
+    //handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138662_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138666_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139107_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138275_AOD090#aodTree");      
+    handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138666_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139107_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138275_AOD090#aodTree");      
+    //handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree");      
   }
    
   gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
@@ -104,8 +106,8 @@ void runAODProof(Int_t c=3, const char * proofMode = "full")
     //if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
     //if(c==3 || c==4)tcuts->SetTrackType(4); //AOD 086 & 090. Jet analysis
     //if(c==3 || c==4)tcuts->SetTrackType(7); //AOD 086 & 090. TPC Only
-    tcuts->SetTrackType(1);
-    Printf("-------------------- tcuts->GetTrackType() %d",tcuts->GetTrackType());
+    tcuts->SetTrackBits(1);
+    Printf("\n\n\n\n\n\n\n-------------------- tcuts->GetTrackType() %d \n\n\n\n\n\n\n",tcuts->GetTrackType());
     tcuts->SetEta(.8);
     //tcuts->SetDCA(.1);
     tcuts->SetPt(5);

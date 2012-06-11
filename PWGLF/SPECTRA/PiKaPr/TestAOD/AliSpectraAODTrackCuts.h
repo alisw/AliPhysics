@@ -73,6 +73,7 @@ class AliSpectraAODTrackCuts : public TNamed
    void SetPtTOFMatching(Float_t pt)     { fPtCutTOFMatching = pt; }
    void SetQvecMin(Float_t qvecmin)     { fQvecCutMin = qvecmin; }
    void SetQvecMax(Float_t qvecmax)     { fQvecCutMax = qvecmax; }
+   void SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
    Float_t GetEta()       const    { return fEtaCut; }
    Float_t GetY()         const    { return fYCut; }
    Float_t GetDCA()       const    { return fDCACut; }

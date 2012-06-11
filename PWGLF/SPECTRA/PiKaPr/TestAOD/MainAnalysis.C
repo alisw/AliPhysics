@@ -45,9 +45,11 @@ void MainAnalysis()  {
   mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
   mass[2] = TDatabasePDG::Instance()->GetParticle("proton")->Mass();
   
-  TString fold="3SigmaPID_AOD048-049_FilterBit5";
+  //TString fold="3SigmaPID_AOD048-049_FilterBit5";
+  TString fold="3SigmaPID_AOD048-049_FilterBit1";
   //TString fold="3SigmaPID_AOD086-090_FilterBit10";
   //TString fold="3SigmaPID_AOD086-090_FilterBit7";
+  //TString fold="3SigmaPID_AOD086-090_FilterBit1";
   Int_t ibinToCompare=-1;
   
   TString sname="Cent0to5_QVec0.0to100.0";ibinToCompare=0;
