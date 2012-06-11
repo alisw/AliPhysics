@@ -47,7 +47,9 @@ AliAnalysisTaskHFECal* ConfigHFECal(Bool_t useMC){
 	  //params[0] = -0.05; //sigma min
 	  params[0] = -1.0; //sigma min
   }
-  pid->ConfigureTPCdefaultCut(cutmodel, params,3.0); 
+  //pid->ConfigureTPCdefaultCut(cutmodel, params,3.0); 
+  for(Int_t a=0;a<11;a++)pid->ConfigureTPCcentralityCut(a,cutmodel,params,3.0);
+  
 
   // change E/p cuts
   AliHFEpidEMCAL *emcpid = pid->AliHFEpid::GetDetPID(AliHFEpid::kEMCALpid);
