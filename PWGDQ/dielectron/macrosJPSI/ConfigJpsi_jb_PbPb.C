@@ -122,10 +122,10 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
       die->SetTrackRotator(rot);
       // mixing
       AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
-      mix->AddVariable(AliDielectronVarManager::kZvPrim,20,-10.,10.);
-      mix->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,50,80");
+      mix->AddVariable(AliDielectronVarManager::kZvPrim,10,-10.,10.);
+      mix->AddVariable(AliDielectronVarManager::kCentrality,16,0.,80.);
       mix->SetMixType(AliDielectronMixingHandler::kAll);
-      mix->SetDepth(50);
+      mix->SetDepth(100);
       die->SetMixingHandler(mix);
     }
     
