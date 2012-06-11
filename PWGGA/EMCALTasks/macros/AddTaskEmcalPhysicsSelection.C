@@ -5,7 +5,11 @@ AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
   Bool_t wHistos   = kTRUE,
   UInt_t triggers  = 0,
   Double_t minE    = -1,
-  Double_t minPt   = -1
+  Double_t minPt   = -1,
+  Double_t vz      = -1,
+  Bool_t vzdiff    = kFALSE, 
+  Double_t cmin    = -1,
+  Double_t cmax    = -1
 )
 {
   // Add EMCAL physics selection task.
@@ -32,6 +36,9 @@ AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
     physSel->SetClusMinE(minE);
     physSel->SetTrackMinPt(minPt);
     physSel->SetTriggers(triggers);
+    physSel->SetCentRange(cmin,cmax);
+    physSel->SetZVertex(vz);
+    physSel->SetCheckZvertexDiff(vzdiff);
   } else {
     ::Error("AddTaskEmcalPhysicsSelection", "No AliEmcalPhysicsSelection object found.");
   }
