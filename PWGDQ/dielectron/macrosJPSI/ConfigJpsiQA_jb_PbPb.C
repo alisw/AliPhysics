@@ -13,17 +13,24 @@ TObjArray *arrNames=names.Tokenize(";");
 
 const Int_t nDie=arrNames->GetEntries();
 
-Bool_t hasMC=kFALSE;
+Bool_t  hasMC = kFALSE;
+TString list  = gSystem->Getenv("LIST");
 
-AliDielectron* ConfigJpsiQA_jb_PbPb(Int_t cutDefinition, Bool_t isMC=kFALSE)
+AliDielectron* ConfigJpsiQA_jb_PbPb(Int_t cutDefinition, TString prod="")
 {
   //
   // Setup the instance of AliDielectron
   //
   
+  // find mc or not?
+  if( list.IsNull()) list=prod;
+  if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
+  if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
+  
+
   // MC event handler?
-  hasMC=isMC;
-  //hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);    
+  //  hasMC=isMC;
+  //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);    
 
   //ESD handler?
   Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
@@ -295,11 +302,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           AliDielectronVarManager::kRunNumber );                      
 
     // PID QA
-    histos->UserHistogram("Track","TPCnSigmaPio_Nacc_RunNumber",";N_{acc};n#sigma_{pio}^{TPC};run",
-                          BinsToVector(60,0.,3000.), BinsToVector(40,-5.,5.), GetRunNumbers(),
+    histos->UserHistogram("Track","TPCnSigmaPio_Nacc_RunNumber",";N_{acc};run;n#sigma_{pio}^{TPC}",
+                          BinsToVector(60,0.,3000.), GetRunNumbers(), BinsToVector(40,-5.,5.),
                           AliDielectronVarManager::kNacc,
-                          AliDielectronVarManager::kTPCnSigmaPio,
-                          AliDielectronVarManager::kRunNumber);
+                          AliDielectronVarManager::kRunNumber,
+                          AliDielectronVarManager::kTPCnSigmaPio);
     histos->UserHistogram("Track","TPCnSigmaPio_Nacc",";N_{acc};n#sigma_{pio}^{TPC}",
                           BinsToVector(60,0.,3000.), BinsToVector(40,-5.,5.),
                           AliDielectronVarManager::kNacc,
@@ -527,9 +534,9 @@ TVectorD *GetRunNumbers() {
   };
   
   // selection via environement variable (works only for gsi trains)
-  TString list=gSystem->Getenv("LIST");
+
   
-  if(list.Contains("10h") || list.Contains("11a10b")) {
+  if(list.Contains("LHC10h") || list.Contains("LHC11a10")) {
     Int_t size = (int) (sizeof(runLHC10h)/sizeof(Double_t));
     TVectorD *vec = new TVectorD(size+1);
     
@@ -537,11 +544,11 @@ TVectorD *GetRunNumbers() {
     for (int i = 0; i < size; i++) {
       (*vec)[i] = runLHC10h[size-1-i];
     }
-//    vec->Print("");
+    //    vec->Print("");
     return vec;
   }
-  
-  if( list.IsNull() || list.Contains("11h") || list.Contains("12a17") ) {
+
+  if( list.Contains("LHC11h") || list.Contains("LHC12a17") ) {
     
     Int_t size = (int) (sizeof(runLHC11h)/sizeof(Double_t));
     TVectorD *vec = new TVectorD(size+1);
@@ -550,7 +557,7 @@ TVectorD *GetRunNumbers() {
     for (int i = 0; i < size; i++) {
       (*vec)[i] = runLHC11h[size-1-i];
     }
-//    vec->Print("");
+    //   vec->Print("");
     return vec;
   }
   
