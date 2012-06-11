@@ -1139,7 +1139,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
       }
       //set pT of leading constituent of jet
-      aodOutJet->SetPtLeading(ptLead);
+      aodOutJet->SetPtLeading(partLead->Pt());
 
       AliAODTrack *aodT = 0;
       if(partLead){
