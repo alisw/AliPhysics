@@ -19,6 +19,8 @@ class TGNumberEntry;
 
 class AliEveTrackCounter;
 
+using std::ofstream;
+
 //______________________________________________________________________________
 // Short description of AliEveTrackCounterEditor
 //

@@ -41,7 +41,8 @@
 # define type_of_call _stdcall
 #endif    
 
-
+using std::cout;
+using std::endl;
 ClassImp(THBTprocessor)
  
 extern "C" void  type_of_call hbtprocessor();   
