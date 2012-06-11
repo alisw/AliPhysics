@@ -62,8 +62,11 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
   fAOD = aod;
   fTrackCuts = trackcuts;
   fHistoCuts->Fill(kProcessedEvents);
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());//FIXME we can add the trigger mask here
+  Printf("\n\n\n\n\n\n\nProcessed");
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);//FIXME we can add the trigger mask here
+  Printf("\n\n\n\n\n\n\nPHYSICS SELECTION:     %i",isSelected);
   if(!isSelected)return isSelected;
+  fHistoCuts->Fill(kPhysSelEvents);
   //loop on tracks, before event selection, filling QA histos
   AliAODVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated
   if(vertex)fHistoVtxBefSel->Fill(vertex->GetZ());

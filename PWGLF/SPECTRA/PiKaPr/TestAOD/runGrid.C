@@ -1,7 +1,7 @@
 class  AliAnalysisManager;
 class  AliAnalysisAlien;
 
-void runGrid(TString mode="terminate",Int_t mc=1,Int_t sub=1,Int_t hi=1,TString fname="AODAnalysis_6June2012") 
+void runGrid(TString mode="test",Int_t mc=0,Int_t sub=1,Int_t hi=1,TString fname="AODAnalysis_6June2012") 
 {
   //0 is AOD048-049 in this case you can choos FilterBit5 (loose DCA) or 6 (tight DCA)!!!!!!!!!
   //1 is AOD086-090
@@ -51,7 +51,7 @@ void runGrid(TString mode="terminate",Int_t mc=1,Int_t sub=1,Int_t hi=1,TString 
   //setting the analysis
   Int_t iCut=0;
   //Double_t CentCut[2]={0,100};
-  Double_t CentCut[2]={0,5};
+  Double_t CentCut[2]={0,100};
   Double_t qVecCut[2]={0,100};
    
   //PID object
@@ -67,11 +67,12 @@ void runGrid(TString mode="terminate",Int_t mc=1,Int_t sub=1,Int_t hi=1,TString 
   // Set the cuts
   AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
   AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
-  if(sub==0){
-    tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cuts with loose DCA
+  //if(sub==0){
+    //tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cuts with loose DCA
     //tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cuts with tight DCA
-  }
-  if(sub==1)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cuts
+  //}
+  //if(sub==1)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cuts
+  tcuts->SetTrackBits(1); 
   
   // set pid object
   task->SetPID(pid);
