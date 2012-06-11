@@ -37,9 +37,10 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
  
  protected:
 
-  Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)  const;
-  Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)       const;
-  Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)      const;
+  Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)   const;
+  Bool_t                      AcceptBiasJet(AliEmcalJet* jet)                                          const;
+  Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)        const;
+  Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)       const;
 
   virtual Bool_t              RetrieveEventObjects();
 

@@ -73,21 +73,24 @@ Bool_t AliEmcalParticleMaker::Run()
   fTracksOut->Delete();
   fCaloClustersOut->Delete();
 
-  // loop over tracks
-  const Int_t Ntracks = fTracks->GetEntries();
-  for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-
-    AliVTrack *track = dynamic_cast<AliVTrack*>(fTracks->At(iTracks));
-    new ((*fTracksOut)[iTracks]) AliEmcalParticle(track, iTracks);
+  if (fTracks) {
+    // loop over tracks
+    const Int_t Ntracks = fTracks->GetEntries();
+    for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
+      
+      AliVTrack *track = dynamic_cast<AliVTrack*>(fTracks->At(iTracks));
+      new ((*fTracksOut)[iTracks]) AliEmcalParticle(track, iTracks);
+    }
   }
 
-  // loop over clusters
-  const Int_t Nclusters = fCaloClusters->GetEntries();
-  for (Int_t iClusters = 0; iClusters < Nclusters; ++iClusters) {
-
-    AliVCluster *cluster = dynamic_cast<AliVCluster*>(fCaloClusters->At(iClusters));
-    new ((*fCaloClustersOut)[iClusters]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
+  if (fCaloClusters) {
+    // loop over clusters
+    const Int_t Nclusters = fCaloClusters->GetEntries();
+    for (Int_t iClusters = 0; iClusters < Nclusters; ++iClusters) {
+      
+      AliVCluster *cluster = dynamic_cast<AliVCluster*>(fCaloClusters->At(iClusters));
+      new ((*fCaloClustersOut)[iClusters]) AliEmcalParticle(cluster, iClusters, fVertex[0], fVertex[1], fVertex[2]);
+    }
   }
-
   return kTRUE;
 }

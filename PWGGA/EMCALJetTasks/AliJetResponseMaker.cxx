@@ -45,7 +45,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistClosestDeltaPt(0),
   fHistNonMatchedMCJetPt(0),
   fHistNonMatchedJetPt(0),
-  fHistPartvsDetecPt(0)
+  fHistPartvsDetecPt(0),
+  fHistMissedMCJets(0)
 {
   // Default constructor.
 }
@@ -72,7 +73,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistClosestDeltaPt(0),
   fHistNonMatchedMCJetPt(0),
   fHistNonMatchedJetPt(0),
-  fHistPartvsDetecPt(0)
+  fHistPartvsDetecPt(0),
+  fHistMissedMCJets(0)
 {
   // Standard constructor.
 }
@@ -171,6 +173,11 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistPartvsDetecPt->GetYaxis()->SetTitle("p_{T}^{gen}");
   fOutput->Add(fHistPartvsDetecPt);
 
+  fHistMissedMCJets = new TH1F("fHistMissedMCJets", "fHistMissedMCJets", fNbins, fMinBinPt, fMaxBinPt);
+  fHistMissedMCJets->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistMissedMCJets->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistMissedMCJets);
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here, to get at least an empty histogram
 }
 
@@ -183,6 +190,60 @@ Bool_t AliJetResponseMaker::FillHistograms()
   DoJetLoop(fJets, fMCJets, kFALSE);
   DoJetLoop(fMCJets, fJets, kTRUE);
 
+  const Int_t nMCJets = fMCJets->GetEntriesFast();
+
+  for (Int_t i = 0; i < nMCJets; i++) {
+
+    AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fMCJets->At(i));
+
+    if (!jet) {
+      AliError(Form("Could not receive jet %d", i));
+      continue;
+    }  
+
+    if (!AcceptJet(jet, kTRUE, kFALSE))
+      continue;
+
+    if (jet->Pt() > fMaxBinPt)
+      continue;
+
+    if (jet->ClosestJet() && jet->ClosestJet()->ClosestJet() == jet && 
+        jet->ClosestJetDistance() < fMaxDistance) {    // Matched jet found
+      jet->SetMatchedToClosest();
+      jet->ClosestJet()->SetMatchedToClosest();
+      if (jet->MatchedJet()->Pt() > fMaxBinPt) {
+	fHistMissedMCJets->Fill(jet->Pt());
+      }
+      else {
+	fHistClosestDistance->Fill(jet->ClosestJetDistance());
+	Double_t deta = jet->MatchedJet()->Eta() - jet->Eta();
+	fHistClosestDeltaEta->Fill(deta);
+	Double_t dphi = jet->MatchedJet()->Phi() - jet->Phi();
+	fHistClosestDeltaPhi->Fill(dphi);
+	Double_t dpt = jet->MatchedJet()->Pt() - jet->Pt();
+	fHistClosestDeltaPt->Fill(dpt);
+	fHistPartvsDetecPt->Fill(jet->MatchedJet()->Pt(), jet->Pt());
+      }
+    }
+    else {
+      fHistNonMatchedMCJetPt->Fill(jet->Pt());
+      fHistMissedMCJets->Fill(jet->Pt());
+    }
+
+    fHistMCJetsPt->Fill(jet->Pt());
+
+    fHistMCJetPhiEta->Fill(jet->Eta(), jet->Phi());
+
+    if (fAnaType == kEMCAL)
+      fHistMCJetsNEFvsPt->Fill(jet->NEF(), jet->Pt());
+
+    for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
+      AliVParticle *track = jet->TrackAt(it, fMCTracks);
+      if (track)
+	fHistMCJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt());
+    }
+  }
+
   const Int_t nJets = fJets->GetEntriesFast();
 
   for (Int_t i = 0; i < nJets; i++) {
@@ -190,27 +251,14 @@ Bool_t AliJetResponseMaker::FillHistograms()
     AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fJets->At(i));
 
     if (!jet) {
-      AliError(Form("Could not receive jet %d", i));
+      AliError(Form("Could not receive mc jet %d", i));
       continue;
     }  
-
+    
     if (!AcceptJet(jet))
       continue;
 
-    if (jet->ClosestJet() && jet->ClosestJet()->ClosestJet() == jet && 
-        jet->ClosestJetDistance() < fMaxDistance) {    // Matched jet found
-      jet->SetMatchedToClosest();
-      jet->ClosestJet()->SetMatchedToClosest();
-      fHistClosestDistance->Fill(jet->ClosestJetDistance());
-      Double_t deta = jet->Eta() - jet->MatchedJet()->Eta();
-      fHistClosestDeltaEta->Fill(deta);
-      Double_t dphi = jet->Phi() - jet->MatchedJet()->Phi();
-      fHistClosestDeltaPhi->Fill(dphi);
-      Double_t dpt = jet->Pt() - jet->MatchedJet()->Pt();
-      fHistClosestDeltaPt->Fill(dpt);
-      fHistPartvsDetecPt->Fill(jet->Pt(), jet->MatchedJet()->Pt());
-    }
-    else {
+    if (!jet->MatchedJet()) {
       fHistNonMatchedJetPt->Fill(jet->Pt());
     }
 
@@ -234,38 +282,6 @@ Bool_t AliJetResponseMaker::FillHistograms()
 	cluster->GetMomentum(nP, fVertex);
 	fHistJetsZvsPt->Fill(nP.Pt() / jet->Pt(), jet->Pt());
       }
-    }
-  }
-
- const Int_t nMCJets = fMCJets->GetEntriesFast();
-
-  for (Int_t i = 0; i < nMCJets; i++) {
-
-    AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fMCJets->At(i));
-
-    if (!jet) {
-      AliError(Form("Could not receive mc jet %d", i));
-      continue;
-    }  
-    
-    if (!AcceptJet(jet, kTRUE, kFALSE))
-      continue;
-
-    if (!jet->MatchedJet()) {
-      fHistNonMatchedMCJetPt->Fill(jet->Pt());
-    }
-
-    fHistMCJetsPt->Fill(jet->Pt());
-
-    fHistMCJetPhiEta->Fill(jet->Eta(), jet->Phi());
-
-    if (fAnaType == kEMCAL)
-      fHistMCJetsNEFvsPt->Fill(jet->NEF(), jet->Pt());
-
-    for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
-      AliVParticle *track = jet->TrackAt(it, fMCTracks);
-      if (track)
-	fHistMCJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt());
     }
   }
 

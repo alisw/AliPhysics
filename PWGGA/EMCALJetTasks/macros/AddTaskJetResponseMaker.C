@@ -13,6 +13,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   Double_t    ptcut              = 0.15,
   Double_t    jetBiasTrack       = 10,
   Double_t    jetBiasClus        = 10,
+  Double_t    maxDistance        = 0.25,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC
 )
 {  
@@ -50,6 +51,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetJetAreaCut(jetareacut);
   jetTask->SetPtBiasJetTrack(jetBiasTrack);
   jetTask->SetPtBiasJetClus(jetBiasClus);
+  jetTask->SetMaxDistance(maxDistance);
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

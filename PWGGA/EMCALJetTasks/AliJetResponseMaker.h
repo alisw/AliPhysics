@@ -50,11 +50,12 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistNonMatchedMCJetPt;     //!non-matched mc jet pt distribution
   TH1F                       *fHistNonMatchedJetPt;       //!non-matched jet pt distribution
   TH2F                       *fHistPartvsDetecPt;         //!particle vs detector level jet pt
+  TH1F                       *fHistMissedMCJets;          //!mc jets not measured
 
  private:
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 2) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 4) // Jet response matrix producing task
 };
 #endif

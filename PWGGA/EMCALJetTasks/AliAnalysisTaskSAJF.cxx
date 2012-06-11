@@ -57,12 +57,17 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistJetPhiEta[i] = 0;
     fHistJetsPt[i] = 0;
     fHistJetsPtArea[i] = 0;
+    fHistJetsPtNonBias[i] = 0;
+    fHistJetsPtAreaNonBias[i] = 0;
     fHistLeadingJetPt[i] = 0;
     fHist2LeadingJetPt[i] = 0;
     fHistJetsNEFvsPt[i] = 0;
     fHistJetsZvsPt[i] = 0;
     fHistRho[i] = 0;
     fHistCorrJetsPt[i] = 0;
+    fHistCorrJetsPtArea[i] = 0;
+    fHistCorrJetsPtNonBias[i] = 0;
+    fHistCorrJetsPtAreaNonBias[i] = 0;
     fHistCorrLeadingJetPt[i] = 0;
     fHistRCPt[i] = 0;
     fHistRCPtExLJ[i] = 0;
@@ -105,12 +110,17 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistJetPhiEta[i] = 0;
     fHistJetsPt[i] = 0;
     fHistJetsPtArea[i] = 0;
+    fHistJetsPtNonBias[i] = 0;
+    fHistJetsPtAreaNonBias[i] = 0;
     fHistLeadingJetPt[i] = 0;
     fHist2LeadingJetPt[i] = 0;
     fHistJetsNEFvsPt[i] = 0;
     fHistJetsZvsPt[i] = 0;
     fHistRho[i] = 0;
     fHistCorrJetsPt[i] = 0;
+    fHistCorrJetsPtArea[i] = 0;
+    fHistCorrJetsPtNonBias[i] = 0;
+    fHistCorrJetsPtAreaNonBias[i] = 0;
     fHistCorrLeadingJetPt[i] = 0;
     fHistRCPt[i] = 0;
     fHistRCPtExLJ[i] = 0;
@@ -216,6 +226,20 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
     fOutput->Add(fHistJetsPtArea[i]);
 
+    histname = "fHistJetsPtNonBias_";
+    histname += i;
+    fHistJetsPtNonBias[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
+    fHistJetsPtNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistJetsPtNonBias[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsPtNonBias[i]);
+
+    histname = "fHistJetsPtAreaNonBias_";
+    histname += i;
+    fHistJetsPtAreaNonBias[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistJetsPtAreaNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistJetsPtAreaNonBias[i]->GetYaxis()->SetTitle("area");
+    fOutput->Add(fHistJetsPtAreaNonBias[i]);
+
     histname = "fHistLeadingJetPt_";
     histname += i;
     fHistLeadingJetPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
@@ -259,6 +283,27 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fHistCorrJetsPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
     fHistCorrJetsPt[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistCorrJetsPt[i]);
+
+    histname = "fHistCorrJetsPtArea_";
+    histname += i;
+    fHistCorrJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistCorrJetsPtArea[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistCorrJetsPtArea[i]->GetYaxis()->SetTitle("area");
+    fOutput->Add(fHistCorrJetsPtArea[i]);
+
+    histname = "fHistCorrJetsPtNonBias_";
+    histname += i;
+    fHistCorrJetsPtNonBias[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
+    fHistCorrJetsPtNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistCorrJetsPtNonBias[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistCorrJetsPtNonBias[i]);
+
+    histname = "fHistCorrJetsPtAreaNonBias_";
+    histname += i;
+    fHistCorrJetsPtAreaNonBias[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistCorrJetsPtAreaNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistCorrJetsPtAreaNonBias[i]->GetYaxis()->SetTitle("area");
+    fOutput->Add(fHistCorrJetsPtAreaNonBias[i]);
 
     histname = "fHistCorrLeadingJetPt_";
     histname += i;
@@ -586,14 +631,23 @@ void AliAnalysisTaskSAJF::DoJetLoop()
       continue;
     }  
 
-    if (!AcceptJet(jet))
+    if (!AcceptJet(jet, kFALSE))
       continue;
 
     Float_t corrPt = jet->Pt() - fRho * jet->Area();
+    
+    fHistJetsPtNonBias[fCentBin]->Fill(jet->Pt());
+    fHistJetsPtAreaNonBias[fCentBin]->Fill(jet->Pt(), jet->Area());
+    fHistCorrJetsPtNonBias[fCentBin]->Fill(corrPt);
+    fHistCorrJetsPtAreaNonBias[fCentBin]->Fill(corrPt, jet->Area());
+
+    if (!AcceptBiasJet(jet))
+      continue;
 
     fHistJetsPt[fCentBin]->Fill(jet->Pt());
-    fHistJetsPtArea[fCentBin]->Fill(corrPt, jet->Area());
+    fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
     fHistCorrJetsPt[fCentBin]->Fill(corrPt);
+    fHistCorrJetsPtArea[fCentBin]->Fill(corrPt, jet->Area());
 
     fHistJetPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());
 
@@ -615,7 +669,7 @@ void AliAnalysisTaskSAJF::DoJetLoop()
 	if (cluster) {
 	  TLorentzVector nPart;
 	  cluster->GetMomentum(nPart, fVertex);
-	fHistJetsZvsPt[fCentBin]->Fill(nPart.Et() / jet->Pt(), jet->Pt());
+	  fHistJetsZvsPt[fCentBin]->Fill(nPart.Et() / jet->Pt(), jet->Pt());
 	}
       }
     }

@@ -58,16 +58,21 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistJetPhiEta[4];           //!Phi-Eta distribution of jets
   TH1F                       *fHistJetsPt[4];              //!Inclusive jet pt spectrum
   TH2F                       *fHistJetsPtArea[4];          //!Jet pt vs. area
+  TH1F                       *fHistJetsPtNonBias[4];       //!Non-biased inclusive jet pt spectrum
+  TH2F                       *fHistJetsPtAreaNonBias[4];   //!Non-biased jet pt vs. area
   TH1F                       *fHistLeadingJetPt[4];        //!Leading jet pt spectrum
   TH1F                       *fHist2LeadingJetPt[4];       //!Second leading jet pt spectrum
   TH2F                       *fHistJetsNEFvsPt[4];         //!Jet neutral energy fraction vs. jet pt
   TH2F                       *fHistJetsZvsPt[4];           //!Constituent Pt over Jet Pt ratio vs. jet pt
 
   // Rho
-  TH1F                       *fHistRho[4];                 //!Rho distribution
-  TH2F                       *fHistRhoVSleadJetPt;         //!Area(leadjetarea) * rho vs. leading jet pt
-  TH1F                       *fHistCorrJetsPt[4];          //!Corrected inclusive jet pt spectrum
-  TH1F                       *fHistCorrLeadingJetPt[4];    //!Corrected leading jet pt spectrum
+  TH1F                       *fHistRho[4];                    //!Rho distribution
+  TH2F                       *fHistRhoVSleadJetPt;            //!Area(leadjetarea) * rho vs. leading jet pt
+  TH1F                       *fHistCorrJetsPt[4];             //!Corrected inclusive jet pt spectrum
+  TH2F                       *fHistCorrJetsPtArea[4];         //!Jet pt vs. area
+  TH1F                       *fHistCorrJetsPtNonBias[4];      //!Corrected non-biased inclusive jet pt spectrum
+  TH2F                       *fHistCorrJetsPtAreaNonBias[4];  //!Non-biased jet pt vs. area
+  TH1F                       *fHistCorrLeadingJetPt[4];       //!Corrected leading jet pt spectrum
 
   // Random cones
   TH2F                       *fHistRCPhiEta;               //!Phi-Eta distribution of random cones
