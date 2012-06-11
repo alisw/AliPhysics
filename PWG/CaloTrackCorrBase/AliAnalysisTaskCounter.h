@@ -58,11 +58,12 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   TH1F *  fhYGoodVertex;  //! Y Vertex good distribution
   TH1F *  fhZGoodVertex;  //! Z Vertex good distribution  
   TH1F *  fhCentrality;   //! centrality
-  
+  TH1F *  fhEventPlaneAngle; //! Histogram with Event plane angle
+
   AliAnalysisTaskCounter(           const AliAnalysisTaskCounter&); // not implemented  
   AliAnalysisTaskCounter& operator=(const AliAnalysisTaskCounter&); // not implemented
   
-  ClassDef(AliAnalysisTaskCounter, 2);
+  ClassDef(AliAnalysisTaskCounter, 3);
 
 };
 

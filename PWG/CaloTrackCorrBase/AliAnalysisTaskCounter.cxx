@@ -64,7 +64,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   fhNEvents(0),
   fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
   fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
-  fhCentrality(0)
+  fhCentrality(0), fhEventPlaneAngle(0)
 {
   //ctor
   DefineOutput(1, TList::Class());
@@ -83,7 +83,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fhNEvents(0),
     fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
     fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
-    fhCentrality(0)
+    fhCentrality(0), fhEventPlaneAngle(0)
 {
   // ctor
   DefineOutput(1, TList::Class());
@@ -93,7 +93,11 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
 AliAnalysisTaskCounter::~AliAnalysisTaskCounter()
 {
   //Destructor
-  if(fOutputContainer){
+  
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+  
+  if(fOutputContainer)
+  {
     fOutputContainer->Delete() ; 
     delete fOutputContainer ;
   }
@@ -138,6 +142,10 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin, |vz|<10 cm, method <V0M> ",100,0.,100.) ;
   fhCentrality->SetXTitle("Centrality bin");
   fOutputContainer->Add(fhCentrality) ;  
+  
+  fhEventPlaneAngle=new TH1F("hEventPlaneAngle","Number of events in event plane, |vz|<10 cm, method <V0> ",100,0.,TMath::Pi()) ;
+  fhEventPlaneAngle->SetXTitle("EP angle (rad)");
+  fOutputContainer->Add(fhEventPlaneAngle) ;
   
   fhNEvents = new TH1I("hNEvents", "Number of analyzed events", 21, 0, 21) ;
   fhNEvents->SetXTitle("Selection");
@@ -343,9 +351,19 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
                      fhNEvents->Fill(14.5); 
     if(!bPileup)     fhNEvents->Fill(15.5); 
 
-    if(TMath::Abs(v[2]) < 10 && InputEvent()->GetCentrality()) 
+    if(TMath::Abs(v[2]) < 10.) 
     {
-      fhCentrality->Fill(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
+      if(InputEvent()->GetCentrality()) 
+        fhCentrality->Fill(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
+      
+      if(InputEvent()->GetEventplane()) 
+      {
+        Float_t ep = InputEvent()->GetEventplane()->GetEventplane("V0", InputEvent());
+      
+        ep+=TMath::Pi()/2.; // put same range as for <Q> method, [0,pi]
+        
+        fhEventPlaneAngle->Fill(ep);
+      }
     }
   
   }
