@@ -49,38 +49,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
-
-  // Output slot #1 writes into a TH1 container
-  DefineOutput(1, TList::Class()); 
-}
-
-//________________________________________________________________________
-AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name) : 
-  AliAnalysisTaskSE(name),
-  fAnaType(kTPC),
-  fInitialized(kFALSE),
-  fCreateHisto(kTRUE),
-  fTracksName("Tracks"),
-  fCaloName("CaloClusters"),
-  fNbins(500),
-  fMinBinPt(0),
-  fMaxBinPt(250),
-  fPtCut(0.15),
-  fTracks(0),
-  fCaloClusters(0),
-  fCent(0),
-  fCentBin(-1),
-  fBeamType(kNA),
-  fOutput(0)
-{
-  // Standard constructor.
-
-  fVertex[0] = 0;
-  fVertex[1] = 0;
-  fVertex[2] = 0;
-
-  // Output slot #1 writes into a TH1 container
-  DefineOutput(1, TList::Class()); 
 }
 
 //________________________________________________________________________
@@ -109,7 +77,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fVertex[2] = 0;
 
   if (fCreateHisto) {
-    // Output slot #1 writes into a TH1 container
     DefineOutput(1, TList::Class()); 
   }
 }

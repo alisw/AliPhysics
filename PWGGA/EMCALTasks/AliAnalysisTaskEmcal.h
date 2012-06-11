@@ -29,8 +29,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   };
 
   AliAnalysisTaskEmcal();
-  AliAnalysisTaskEmcal(const char *name);
-  AliAnalysisTaskEmcal(const char *name, Bool_t histo); 
+  AliAnalysisTaskEmcal(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcal();
 
   virtual void                UserCreateOutputObjects();
