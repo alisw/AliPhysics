@@ -21,6 +21,10 @@ AliEmcalPhysicsSelection::AliEmcalPhysicsSelection() :
   fClusMinE(-1),
   fTrackMinPt(-1), 
   fTriggers(0),
+  fZvertex(-1),
+  fZvertexDiff(0),
+  fCentMin(-1),
+  fCentMax(-1),
   fIsFastOnly(0),
   fIsLedEvent(0),
   fIsGoodEvent(0),
@@ -51,14 +55,20 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     res = aev->GetHeader()->GetOfflineTrigger();
   }
 
-  // return 0, if 0 found.
+  // return 0, if 0 found
   if (res==0)
     return 0;
 
+  // return 0, if ptrs are not set
+  if ((eev==0) && (aev==0))
+    return 0;
+
   if (fTriggers) { // only process given triggers
-    if (res & fTriggers == 0)
+    if ((res & fTriggers) == 0)
       return res;
   }
+
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
 
   fIsFastOnly  = kFALSE;
   fIsGoodEvent = kFALSE;
@@ -67,14 +77,59 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
   fClusMaxE    = -1;
   fTrackMaxPt  = -1;
 
-  if ((res & AliVEvent::kAnyINT) || 
-      (res & AliVEvent::kEMC1)   || 
-      (res & AliVEvent::kEMC7)   || 
-      (res & AliVEvent::kEMCEJE) || 
+  if ((res & AliVEvent::kAnyINT)      || 
+      (res & AliVEvent::kSemiCentral) || 
+      (res & AliVEvent::kCentral)     || 
+      (res & AliVEvent::kEMC1)        || 
+      (res & AliVEvent::kEMC7)        || 
+      (res & AliVEvent::kEMCEJE)      || 
       (res & AliVEvent::kEMCEGA))
     fIsGoodEvent = kTRUE;
 
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  if (fZvertexDiff || (fZvertex>0)) {
+    Double_t vzPRI = +999;
+    Double_t vzSPD = -999;
+    const AliVVertex *pv = 0;
+    if (eev)
+      pv = eev->GetPrimaryVertex();
+    else
+      pv = aev->GetPrimaryVertex();
+    if (pv && pv->GetNContributors()>0) {
+      vzPRI = pv->GetZ();
+    }
+    const AliVVertex *sv = 0;
+    if (eev)
+      sv = eev->GetPrimaryVertexSPD();
+    else 
+      sv = aev->GetPrimaryVertexSPD();
+    if (sv && sv->GetNContributors()>0) {
+      vzSPD = sv->GetZ();
+    }
+    Double_t  dvertex = TMath::Abs(vzPRI-vzSPD);
+    // skip events with dvertex<1mm if requested
+    // https://indico.cern.ch/getFile.py/access?contribId=4&resId=0&materialId=slides&confId=189624
+    // also check on vertex z if requested
+    if (fZvertexDiff && (dvertex<0.1))
+      fIsGoodEvent = kFALSE;
+    if ((fZvertex>0) && (TMath::Abs(dvertex)>fZvertex))
+      fIsGoodEvent = kFALSE;
+  }
+
+  if ((fCentMin>-1) && (fCentMax>-1)) {
+    Double_t v0mcent = -1;
+    AliCentrality *centin = 0;
+    if (eev) {
+      am->LoadBranch("Centrality.");
+      centin = dynamic_cast<AliCentrality*>(eev->FindListObject("Centrality"));
+    } else {
+      centin = const_cast<AliAODEvent*>(aev)->GetCentrality();
+    }
+    if (centin)
+      v0mcent = centin->GetCentralityPercentileUnchecked("V0M");
+    if ((v0mcent<fCentMin) && (v0mcent>fCentMax))
+      fIsGoodEvent = kFALSE;
+  }
+
   AliVCaloCells *cells   = ev->GetEMCALCells();
   const Short_t nCells   = cells->GetNumberOfCells();
     
