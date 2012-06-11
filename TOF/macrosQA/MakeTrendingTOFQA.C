@@ -5,7 +5,7 @@ fbellini@cern.ch, last update on 09/01/2012
 - new method to produce trending plots from list of trees
 */
 
-Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11h", char* pass="pass1",Bool_t isMC=kFALSE,Int_t trainId=0, Bool_t displayAll=kFALSE){
+Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2012, char *period="LHC12a", char* pass="cpass1", char* nameSuffix ="_barrel",Bool_t isMC=kFALSE,Int_t trainId=0, Bool_t displayAll=kFALSE){
 	Int_t filesCounter=0;
   
 	if (!runlist) {
@@ -20,14 +20,14 @@ Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11h", 
 	char trendFileName[100]; 
 	//Define trending output
 	if (trainId==0){
-		sprintf(trendFileName,"treeTOFQA_%s_%s.root",period,pass);  
+	  sprintf(trendFileName,"treeTOFQA_%s_%s.root",period,pass);  
 	}else{
-		sprintf(trendFileName,"treeTOFQA_QA%i_%s_%s.root",trainId,period,pass);
+	  sprintf(trendFileName,"treeTOFQA_QA%i_%s_%s.root",trainId,period,pass);
 	}
 	TFile * trendFile=new TFile(trendFileName,"recreate");
 	FILE * files = fopen(runlist, "r") ; 
 
-	//create chain of treePostQA
+	//create chain of treePostQA     
 	Long64_t nentries=100000, firstentry=0; 
 	TChain *chainTree = 0;
 	chainTree=new TChain("trendTree");
@@ -36,11 +36,11 @@ Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11h", 
 	  
 	  //get QAtrain output
 	  if (trainId==0){
-	    if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QAresults.root",year,period,runNumber,pass);
-	    else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QAresults.root",year,period,runNumber);
+	    if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/%s/QAresults%s.root",year,period,runNumber,pass,nameSuffix);
+	    else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QAresults%s.root",year,period,runNumber,nameSuffix);
 	  } else{
-	    if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults.root",year,period,runNumber,pass,trainId);
-	    else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QA%i/QAresults.root",year,period,runNumber,trainId);
+	    if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults%s.root",year,period,runNumber,pass,trainId,nameSuffix);
+	    else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QA%i/QAresults%s.root",year,period,runNumber,trainId,nameSuffix);
 	  }
 
 	  Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
@@ -114,11 +114,12 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	Double_t avT0AC=0.,peakT0AC=0., spreadT0AC=0.,peakT0ACErr=0., spreadT0ACErr=0.;
 	Double_t avT0res=0.,peakT0res=0., spreadT0res=0.,peakT0resErr=0., spreadT0resErr=0.;
 	Int_t avMulti=0;
-	Float_t fractionEventsWHits=0;
+	Float_t fractionEventsWHits=0.0;
+	Double_t goodChannelRatio=0.0;
    
 	TTree * ttree = (TTree*) fin->CloneTree();
 	ttree->SetBranchAddress("run",&runNumber);
-   
+	ttree->SetBranchAddress("goodChannelsRatio",&goodChannelRatio);   
 	ttree->SetBranchAddress("avTime",&avTime); //mean time
 	ttree->SetBranchAddress("peakTime",&peakTime); //main peak time after fit
 	ttree->SetBranchAddress("spreadTime",&spreadTime); //spread of main peak of time after fit
@@ -254,13 +255,18 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	hNegLRatioVsRun->SetDrawOption("E");
 	TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","Matching efficiency (linear fit for p_{T}>1.0 GeV/c);run;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
 	hMatchEffVsRun->SetDrawOption("E");
+	TH1F * hMatchEffVsRunNormToGoodCh=new TH1F("hMatchEffVsRunNormToGoodCh","Matching efficiency normalized to percentage of TOF good channels;run;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+	hMatchEffVsRunNormToGoodCh->SetDrawOption("E");
+	
 	TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","Matching efficiency (value for p_{T}=1.0 GeV/c);run;matching efficiency (pT=1.0 GeV/c)",nRuns, 0., nRuns);
 	hMatchEffVsRun1->SetDrawOption("E");
 	TH1F * hPeakT0AVsRun=new TH1F("hPeakT0AVsRun","Peak value of T0A (gaussian fit);run;t0A (ps)",nRuns,0., nRuns);
 	TH1F * hPeakT0CVsRun=new TH1F("hPeakT0CVsRun","Peak value of T0C (gaussian fit);run;t0AC (ps)",nRuns,0., nRuns);
 	TH1F * hPeakT0ACVsRun=new TH1F("hPeakT0ACVsRun","Peak value of T0AC (gaussian fit);run;t0AC (ps)",nRuns,0., nRuns);
 	TH1F * hT0fillResVsRun=new TH1F("hT0fillResVsRun","t0_fill spread;run;t0_spread (ps)",nRuns,0., nRuns);
-  
+	
+	
+
 	lista.Add(hAvDiffTimeVsRun);
 	lista.Add(hPeakDiffTimeVsRun);
 	lista.Add(hSpreadDiffTimeVsRun);
@@ -278,6 +284,7 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	lista.Add( hMeanLVsRun);
 	lista.Add(  hNegLRatioVsRun);
 	lista.Add(  hMatchEffVsRun);
+	lista.Add(hMatchEffVsRunNormToGoodCh);
 	lista.Add(hPeakT0AVsRun);
 	lista.Add(hPeakT0CVsRun);
 	lista.Add(hPeakT0ACVsRun);
@@ -348,7 +355,15 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 		hMatchEffVsRun->SetBinContent(irun+1,matchEffLinFit1Gev);
 		hMatchEffVsRun->SetBinError(irun+1,matchEffLinFit1GevErr);
 		hMatchEffVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+		hMatchEffVsRun->SetLineColor(kRed);
+		hMatchEffVsRun->SetLineWidth(2);
 
+		hMatchEffVsRunNormToGoodCh->SetBinContent(irun+1,matchEffLinFit1Gev/goodChannelRatio);
+		hMatchEffVsRunNormToGoodCh->SetBinError(irun+1,matchEffLinFit1GevErr);
+		hMatchEffVsRunNormToGoodCh->GetXaxis()->SetBinLabel(irun+1,runlabel);
+		hMatchEffVsRunNormToGoodCh->SetLineColor(kBlue);
+		hMatchEffVsRunNormToGoodCh->SetLineWidth(2);
+     
 		hPeakT0AVsRun->SetBinContent(irun+1,peakT0A);
 		hPeakT0AVsRun->SetBinError(irun+1,spreadT0A);
 		hPeakT0AVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
@@ -377,17 +392,25 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 	gSystem->Exec(Form("mkdir %s",plotDir.Data()));
 
 	TCanvas* cPeakDiffTimeVsRun = new TCanvas("cPeakDiffTimeVsRun","cPeakDiffTimeVsRun", 50,50,750,550);
+	hPeakDiffTimeVsRun->GetYaxis()->SetRangeUser(-50.,50.);
 	hPeakDiffTimeVsRun->Draw();
 	cPeakDiffTimeVsRun->Print(Form("%s/cPeakDiffTimeVsRun.png",plotDir.Data()));
 
 	TCanvas* cSpreadDiffTimeVsRun = new TCanvas("cSpreadDiffTimeVsRun","cSpreadDiffTimeVsRun", 50,50,750,550);
+	hSpreadDiffTimeVsRun->GetYaxis()->SetRangeUser(200.,400.);
 	hSpreadDiffTimeVsRun->Draw();
 	cSpreadDiffTimeVsRun->Print(Form("%s/cSpreadDiffTimeVsRun.png",plotDir.Data()));
 
-	TCanvas* cMatchEffVsRun = new TCanvas("cMatchEffVsRun","cMatchEffVsRun", 50,50,750,550);
+	TCanvas* cMatchEffVsRun = new TCanvas("cMatchEffVsRun","cMatchEffVsRun",50, 50, 750,550);
+	hMatchEffVsRun->GetYaxis()->SetRangeUser(0.,1.);
 	hMatchEffVsRun->Draw();
 	cMatchEffVsRun->Print(Form("%s/cMatchEffVsRun.png",plotDir.Data()));
 
+	TCanvas* cMatchEffNormToGoodCh = new TCanvas("cMatchEffNormToGoodCh","cMatchEffNormToGoodCh",50, 50,750,550);
+	hMatchEffVsRunNormToGoodCh->GetYaxis()->SetRangeUser(0.,1.);
+	hMatchEffVsRunNormToGoodCh->Draw();
+	cMatchEffNormToGoodCh->Print(Form("%s/cMatchEffNormToGoodCh.png",plotDir.Data()));
+	
 	TCanvas* cPeakT0AVsRun = new TCanvas("cPeakT0AVsRun","cPeakT0AVsRun", 50,50,750,550);
 	hPeakT0AVsRun->Draw();
 	cPeakT0AVsRun->Print(Form("%s/cPeakT0AVsRun.png",plotDir.Data()));
@@ -494,11 +517,14 @@ Int_t MakePostQAtree(Int_t runNumber, Bool_t isMC=kFALSE, char * postFileName="p
 
 	Int_t avMulti=0;
 	Float_t fractionEventsWHits=-9999.;
-  
+	/*number of good (HW ok && efficient && !noisy) TOF channels from OCDB*/
+	Double_t goodChannelRatio=0.0;
+
 	TTree * ttree=new TTree("trendTree","tree of trending variables");
 	ttree->Branch("run",&runNumber,"run/I");
 	ttree->Branch("avMulti",&avMulti,"avMulti/I");
 	ttree->Branch("fractionEventsWHits",&fractionEventsWHits,"fractionEventsWHits/F");
+	ttree->Branch("goodChannelsRatio",&goodChannelRatio,"goodChannelRatio/D");
 	ttree->Branch("avTime",&avTime,"avTime/D"); //mean time
 	ttree->Branch("peakTime",&peakTime,"peakTime/D"); //main peak time after fit
 	ttree->Branch("spreadTime",&spreadTime,"spreadTime/D"); //spread of main peak of time after fit
@@ -560,6 +586,7 @@ Int_t MakePostQAtree(Int_t runNumber, Bool_t isMC=kFALSE, char * postFileName="p
 
 	//postfile->ls();
 	//save quantities for trending
+	goodChannelRatio=(Double_t)GetGoodTOFChannelsRatio(runNumber);
 	
 	//--------------------------------- Multiplicity ----------------------------------//
 	TH1F*hMulti=(TH1F*)postfile->Get("hTOFmatchedPerEvt");
@@ -839,7 +866,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 	hTime->Rebin(2);
 	hTime->GetYaxis()->SetTitle("matched tracks"); 
 	hTime->GetYaxis()->SetTitleOffset(1.35);
-  
+ 
 	TH1F * hRawTime = (TH1F*) generalList->At(2);
 	hRawTime->SetMarkerStyle(21);
 	hRawTime->SetMarkerSize(0.7);
@@ -1438,5 +1465,52 @@ char * SetQAtrainOutputName(Int_t run=0,Int_t year=2011,char *period="LHC11a", c
   
 }
 
+//----------------------------------------------------------
+Double_t GetGoodTOFChannelsRatio(Int_t run, Bool_t saveMap = kFALSE)
+{
+  /*
+    It retrieves from OCDB the number of good (= efficient && not noisy && HW ok) TOF channels.
+    Optionally is saves the channel map
+  */
+  if (run<=0) {
+    printf("MakeTrendingTOFqa.C - ERROR in CheckCalibStatus(): invalid run number. Please set a run number.\n"); 
+    return 0.0;
+  }
+  
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage("raw://");
+  cdb->SetRun(run);
+  
+  AliCDBEntry *cdbe = cdb->Get("TOF/Calib/Status");
+  if (!cdbe) {
+    printf("MakeTrendingTOFqa.C - ERROR in CheckCalibStatus(): OCDB entry not available. Please, try again.\n");
+    return 0.0;
+  }  
 
+  AliTOFChannelOnlineStatusArray *array = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
+  TH2F *hOkMap = new TH2F("hOkMap", "Ok map (!noisy & !problematic & efficient);sector;strip", 72, 0., 18., 91, 0., 91.);
+
+  AliTOFcalibHisto calibHisto;
+  calibHisto.LoadCalibHisto();
+  AliTOFcalib calib;
+  calib.Init();
+  Int_t sector, sectorStrip, padx, fea;
+  Float_t hitmapx, hitmapy;
+  for (Int_t i = 0; i <  array->GetSize(); i++) {
+    sector = calibHisto.GetCalibMap(AliTOFcalibHisto::kSector, i);
+    sectorStrip = calibHisto.GetCalibMap(AliTOFcalibHisto::kSectorStrip, i);
+    padx = calibHisto.GetCalibMap(AliTOFcalibHisto::kPadX, i);
+    fea = padx / 12;
+    hitmapx = sector + ((Double_t)(3 - fea) + 0.5) / 4.;
+    hitmapy = sectorStrip;
+    if ( !(array->GetNoiseStatus(i) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad)   &&
+	 (calib.IsChannelEnabled(i,kTRUE,kTRUE)))
+      hOkMap->Fill(hitmapx,hitmapy);
+  }
+  Int_t nOk=(Int_t) hOkMap->GetEntries();
+  Double_t ratioOk=nOk/152928.;
+  if (saveMap) hOkMap->SaveAs(Form("run%i_OKChannelsMap.root",run));
+  cout << "###    Run " << run << ": TOF channels ok = " << nOk << "/ total 152928 channels = " << ratioOk*100. << "% of whole TOF" << endl;
+  return ratioOk;
+}
 
