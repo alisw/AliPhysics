@@ -69,6 +69,7 @@ AliAnalysisTaskSE(),
   fHistNtrVsNchMCPhysicalPrimary(0),
   fHistNtrCorrVsNchMCPhysicalPrimary(0),
   fHistGenPrimaryParticlesInelGt0(0),
+  fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -117,6 +118,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistNtrVsNchMCPhysicalPrimary(0),
   fHistNtrCorrVsNchMCPhysicalPrimary(0),
   fHistGenPrimaryParticlesInelGt0(0),
+  fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -268,6 +270,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   
   fHistGenPrimaryParticlesInelGt0 = new TH1F("hGenPrimaryParticlesInelGt0","Multiplcity of generated charged particles ; Nparticles ; Entries",200,-0.5,199.5);
 
+  fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",200,0.,200.,200,0.,200.,200,0.,200.);
+
   fHistNtrCorrEvSel->Sumw2();
   fHistNtrCorrEvWithCand->Sumw2();
   fHistNtrCorrEvWithD->Sumw2();
@@ -287,6 +291,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fOutput->Add(fHistNtrVsNchMCPhysicalPrimary);
   fOutput->Add(fHistNtrCorrVsNchMCPhysicalPrimary);
   fOutput->Add(fHistGenPrimaryParticlesInelGt0);
+  fOutput->Add(fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary);
 
   
   fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
@@ -482,6 +487,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     fHistNtrVsNchMCPhysicalPrimary->Fill(nChargedMCPhysicalPrimary,countTreta1);
     fHistNtrCorrVsNchMCPhysicalPrimary->Fill(nChargedMCPhysicalPrimary,countTreta1corr);
 
+    fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary->Fill(nChargedMC,nChargedMCPrimary,nChargedMCPhysicalPrimary);
   }
   
   Int_t nCand = arrayCand->GetEntriesFast(); 
