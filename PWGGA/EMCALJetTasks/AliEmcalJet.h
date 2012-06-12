@@ -69,7 +69,6 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet*      SecondClosestJet()           const { return fClosestJets[1];           }
   Double_t          SecondClosestJetDistance()   const { return fClosestJetsDist[1];       }
   AliEmcalJet*      MatchedJet()                 const { return fMatched < 2 ? fClosestJets[fMatched] : 0; }
-  // Only for backward compatibility
   Double_t          MaxClusterPt()               const { return MaxNeutralPt();            }
   Double_t          MaxTrackPt()                 const { return MaxChargedPt();            }
 
@@ -95,24 +94,24 @@ class AliEmcalJet : public AliVParticle
   void              SetMatchedToSecondClosest()                     { fMatched = 1;        }
 
  protected:
-  Double32_t   fPt;                  //[0,0,12]   pt 
-  Double32_t   fEta;                 //[-1,1,12]  eta
-  Double32_t   fPhi;                 //[0,6.3,12] phi
-  Double32_t   fM;                   //[0,0,8]    mass
-  Double32_t   fNEF;                 //[0,1,8]    neutral energy fraction
-  Double32_t   fArea;                //[0,0,12]   area
-  Double32_t   fAreaEmc;             //[0,0,12]   area on EMCAL surface (determined from ghosts)
-  Bool_t       fAxisInEmcal;         //           =true if jet axis inside EMCAL acceptance
-  Double32_t   fMaxCPt;              //[0,0,12]   pt of maximum charged constituent
-  Double32_t   fMaxNPt;              //[0,0,12]   pt of maximum neutral constituent
-  Double32_t   fMCPt;                //           pt from MC particles contributing to the jet
-  Int_t        fNn;                  //           number of neutral constituents
-  Int_t        fNch;                 //           number of charged constituents
-  TArrayS      fClusterIDs;          //           array of cluster constituents  
-  TArrayS      fTrackIDs;            //           array of track constituents   
-  AliEmcalJet *fClosestJets[2];      //!          if this is MC it contains the two closest detector level jets in order of distance and viceversa
-  Double32_t   fClosestJetsDist[2];  //!          distance to closest jets (see above)
-  UShort_t     fMatched;             //!          0,1 if it is matched with one of the closest jets; 2 if it is not matched
+  Double32_t        fPt;                  //[0,0,12]   pt 
+  Double32_t        fEta;                 //[-1,1,12]  eta
+  Double32_t        fPhi;                 //[0,6.3,12] phi
+  Double32_t        fM;                   //[0,0,8]    mass
+  Double32_t        fNEF;                 //[0,1,8]    neutral energy fraction
+  Double32_t        fArea;                //[0,0,12]   area
+  Double32_t        fAreaEmc;             //[0,0,12]   area on EMCAL surface (determined from ghosts)
+  Bool_t            fAxisInEmcal;         //           =true if jet axis inside EMCAL acceptance
+  Double32_t        fMaxCPt;              //[0,0,12]   pt of maximum charged constituent
+  Double32_t        fMaxNPt;              //[0,0,12]   pt of maximum neutral constituent
+  Double32_t        fMCPt;                //           pt from MC particles contributing to the jet
+  Int_t             fNn;                  //           number of neutral constituents
+  Int_t             fNch;                 //           number of charged constituents
+  TArrayS           fClusterIDs;          //           array of cluster constituents  
+  TArrayS           fTrackIDs;            //           array of track constituents   
+  AliEmcalJet      *fClosestJets[2];      //!          if this is MC it contains the two closest detector level jets in order of distance and viceversa
+  Double32_t        fClosestJetsDist[2];  //!          distance to closest jets (see above)
+  UShort_t          fMatched;             //!          0,1 if it is matched with one of the closest jets; 2 if it is not matched
 
   ClassDef(AliEmcalJet,6) // Emcal jet class in cylindrical coordinates
 };
