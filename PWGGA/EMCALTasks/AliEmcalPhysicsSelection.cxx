@@ -126,7 +126,7 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     }
     if (centin)
       v0mcent = centin->GetCentralityPercentileUnchecked("V0M");
-    if ((v0mcent<fCentMin) && (v0mcent>fCentMax))
+    if ((v0mcent<fCentMin) || (v0mcent>fCentMax))
       fIsGoodEvent = kFALSE;
   }
 
@@ -231,14 +231,13 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     }
   }
 
-  if (fCellMaxE>fCellMinE)
-    res |= kEmcalHC;
-
-  if ((fClusMaxE>fClusMinE) || (fTrackMaxPt>fTrackMinPt))
-    res |= kEmcalHT;
-
-  if (fIsGoodEvent)
+  if (fIsGoodEvent) {
+    if (fCellMaxE>fCellMinE)
+      res |= kEmcalHC;
+    if ((fClusMaxE>fClusMinE) || (fTrackMaxPt>fTrackMinPt))
+      res |= kEmcalHT;
     res |= kEmcalOk;
+  }
 
   if ((fSkipLedEvent && fIsLedEvent) ||
       (fSkipFastOnly && fIsFastOnly))
