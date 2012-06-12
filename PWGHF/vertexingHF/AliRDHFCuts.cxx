@@ -91,7 +91,8 @@ fKeepSignalMC(kFALSE),
 fIsCandTrackSPDFirst(kFALSE),
 fMaxPtCandTrackSPDFirst(0.),
 fApplySPDDeadPbPb2011(kFALSE),
-fRemoveTrackletOutliers(kFALSE)
+fRemoveTrackletOutliers(kFALSE),
+fKinkReject(kFALSE)
 {
   //
   // Default Constructor
@@ -144,7 +145,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fIsCandTrackSPDFirst(source.fIsCandTrackSPDFirst),
   fMaxPtCandTrackSPDFirst(source.fMaxPtCandTrackSPDFirst),
   fApplySPDDeadPbPb2011(source.fApplySPDDeadPbPb2011),
-  fRemoveTrackletOutliers(source.fRemoveTrackletOutliers)
+  fRemoveTrackletOutliers(source.fRemoveTrackletOutliers),
+  fKinkReject(source.fKinkReject)
 {
   //
   // Copy constructor
@@ -211,6 +213,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMaxPtCandTrackSPDFirst=source.fMaxPtCandTrackSPDFirst;
   fApplySPDDeadPbPb2011=source.fApplySPDDeadPbPb2011;
   fRemoveTrackletOutliers=source.fRemoveTrackletOutliers;
+  fKinkReject=source.fKinkReject;
 
   if(source.GetTrackCuts()) {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*(source.GetTrackCuts()));}
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -471,6 +474,12 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   esdTrack.RelateToVertex(primary,0.,3.); 
 
   if(!cuts->IsSelected(&esdTrack)) retval = kFALSE;
+
+
+  if(fKinkReject){
+   AliAODVertex *maybeKink=track->GetProdVertex();
+   if(maybeKink->GetType()==AliAODVertex::kKink) retval=kFALSE;
+  }
  
   if(fOptPileup==kRejectTracksFromPileupVertex){
     // to be implemented

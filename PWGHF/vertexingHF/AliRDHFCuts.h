@@ -114,6 +114,7 @@ class AliRDHFCuts : public AliAnalysisCuts
           {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*cuts); return;}
   void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
   void SetUseAOD049(Bool_t flag=kTRUE) {fUseAOD049=flag; return;}
+  void SetKinkRejection(Bool_t flag=kTRUE) {fKinkReject=flag; return;}
   void SetUseCentrality(Int_t flag=1);    // see enum below
   void SetPidHF(AliAODPidHF* pidObj) {
     if(fPidHF) delete fPidHF;
@@ -156,6 +157,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void    GetVarPtIndex(Int_t iGlob, Int_t& iVar, Int_t& iPtBin) const;
   Bool_t  GetIsUsePID() const {return fUsePID;}
   Bool_t  GetUseAOD049() const {return fUseAOD049;}
+  Bool_t  GetUseKinkRejection() const {return fKinkReject;}
   Bool_t  GetIsPrimaryWithoutDaughters() const {return fRemoveDaughtersFromPrimary;}
   Bool_t GetOptPileUp() const {return fOptPileup;}
   Int_t GetUseCentrality() const {return fUseCentrality;}
@@ -296,8 +298,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
   Bool_t fApplySPDDeadPbPb2011;  // flag to apply SPD dead module map of PbPb2011
   Bool_t fRemoveTrackletOutliers; // flag to apply cut on tracklets vs. centrality for 2011 data
+  Bool_t fKinkReject; // flag to reject kink daughters
 
-  ClassDef(AliRDHFCuts,23);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,24);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

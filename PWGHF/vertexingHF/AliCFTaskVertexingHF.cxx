@@ -113,7 +113,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fConfiguration(kCheetah), // by default, setting the fast configuration
 	fFuncWeight(0x0),
 	fHistoMeasNch(0x0),
-	fHistoMCNch(0x0)
+	fHistoMCNch(0x0),
+        fResonantDecay(0)
 {
 	//
 	//Default ctor
@@ -158,7 +159,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fConfiguration(kCheetah),  // by default, setting the fast configuration
 	fFuncWeight(func),
 	fHistoMeasNch(0x0),
-	fHistoMCNch(0x0)
+	fHistoMCNch(0x0),
+        fResonantDecay(0)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -232,7 +234,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fConfiguration(c.fConfiguration),
 	fFuncWeight(c.fFuncWeight),
 	fHistoMeasNch(c.fHistoMeasNch),
-	fHistoMCNch(c.fHistoMCNch)
+	fHistoMCNch(c.fHistoMCNch),
+        fResonantDecay(c.fResonantDecay)
 {
 	//
 	// Copy Constructor
@@ -516,14 +519,17 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	  break;
 	}
 	case 31:
-	case 32:
+//	case 32:
 	case 33:{
 	  cfVtxHF = new AliCFVertexingHF3Prong(mcArray, fOriginDselection, fDecayChannel); 
 	  if(fDecayChannel==33){
-	    cfVtxHF->SetGeneratedDsOption(fGenDsOption);
+	    ((AliCFVertexingHF3Prong*)cfVtxHF)->SetGeneratedDsOption(fGenDsOption);
 	  }
 		break;
 	}
+	case 32:{
+	  cfVtxHF = new AliCFVertexingHF3Prong(mcArray, fOriginDselection, fDecayChannel,fResonantDecay); 
+        }
 	case 4:{
 		//cfVtxHF = new AliCFVertexingHF4Prong(mcArray, originDselection);  // not there yet
 		break;
@@ -819,7 +825,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 						    
 
 						fCuts->SetUsePID(iscutsusingpid); //restoring usage of the PID from the cuts object	
-						if (recoAnalysisCuts == 3 || recoAnalysisCuts == isPartOrAntipart){
+                                                Bool_t tempAn=(recoAnalysisCuts == 3 || recoAnalysisCuts == isPartOrAntipart);
+	                                        if (fDecayChannel == 32) tempAn=(recoAnalysisCuts >0 || recoAnalysisCuts == isPartOrAntipart);
+                                                
+						if (tempAn){
 							fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPPR, fWeight);
 							icountRecoPPR++;
 							AliDebug(3,"Reco Analysis cuts passed and container filled \n");
@@ -832,8 +841,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 							  Bool_t keepDs=ProcessDs(recoPidSelection);
 							  if(keepDs) recoPidSelection=3;							  
 							}
+                                                        Bool_t tempPid=(recoPidSelection == 3 || recoPidSelection == isPartOrAntipart);
+	                                                if (fDecayChannel == 32) tempPid=(recoPidSelection >0 || recoPidSelection == isPartOrAntipart);
 
-							if (recoPidSelection == 3 || recoPidSelection == isPartOrAntipart){
+							if (tempPid){
 								fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight);
 								icountRecoPID++;
 								AliDebug(3,"Reco PID cuts passed and container filled \n");
