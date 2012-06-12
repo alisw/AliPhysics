@@ -22,6 +22,9 @@
 #include <Riostream.h> 
 #include <TMath.h>
 #include "AliUA1JetHeader.h"
+
+using std::cout;
+using std::endl;
 ClassImp(AliUA1JetHeader)
  
 ////////////////////////////////////////////////////////////////////////

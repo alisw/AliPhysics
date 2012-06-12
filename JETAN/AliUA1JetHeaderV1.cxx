@@ -25,6 +25,9 @@
 #include <TMath.h>
 
 #include "AliUA1JetHeaderV1.h"
+
+using std::cout;
+using std::endl;
 ClassImp(AliUA1JetHeaderV1)
 
 ////////////////////////////////////////////////////////////////////////

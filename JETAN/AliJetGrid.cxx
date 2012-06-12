@@ -43,6 +43,8 @@
 // AliRoot headers
 #include "AliJetGrid.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliJetGrid)
 
 //__________________________________________________________

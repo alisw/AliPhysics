@@ -38,6 +38,9 @@ class AliAnalysisTaskSE;
 #include "AliFlowCommonHistResults.h"
 
 #include "AliLog.h"
+
+using std::endl;
+using std::cout;
 ClassImp(AliAnalysisTaskScalarProduct)
 
 //________________________________________________________________________

@@ -33,6 +33,8 @@
 // author: L. Aphecetche (Subatech)
 //
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisMuMu)
 
 namespace

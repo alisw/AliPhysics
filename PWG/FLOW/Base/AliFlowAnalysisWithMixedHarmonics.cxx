@@ -47,6 +47,9 @@
 
 class TH1;
 class TList;
+
+using std::endl;
+using std::cout;
 ClassImp(AliFlowAnalysisWithMixedHarmonics)
 
 //================================================================================================================

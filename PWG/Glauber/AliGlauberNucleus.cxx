@@ -33,6 +33,9 @@
 #include "AliGlauberNucleon.h"
 #include "AliGlauberNucleus.h"
 
+using std::cout;
+using std::endl;
+using std::cerr;
 ClassImp(AliGlauberNucleus)
 
 //______________________________________________________________________________

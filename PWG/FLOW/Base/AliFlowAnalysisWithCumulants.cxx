@@ -49,6 +49,8 @@
 
 //================================================================================================================
 
+using std::endl;
+using std::cout;
 ClassImp(AliFlowAnalysisWithCumulants)
 
 AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants(): 

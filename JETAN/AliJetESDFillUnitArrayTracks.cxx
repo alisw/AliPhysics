@@ -42,6 +42,8 @@ class AliJetFinder;
 class AliJetReader;
 class AliJetESDReader;
 
+using std::cout;
+using std::endl;
 ClassImp(AliJetESDFillUnitArrayTracks)
 
 //_____________________________________________________________________________

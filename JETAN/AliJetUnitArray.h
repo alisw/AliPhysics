@@ -31,6 +31,8 @@
 class TList;
 class TVector3;
 
+using std::vector;
+
 class AliJetUnitArray : public TObject
 {
  public:

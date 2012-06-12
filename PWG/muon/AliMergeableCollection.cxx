@@ -26,6 +26,8 @@
 
 #include "AliMergeableCollection.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliMergeableCollection)
 
 #include "AliLog.h"

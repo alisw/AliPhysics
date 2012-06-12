@@ -36,6 +36,8 @@
 #include "AliJetDummyGeo.h"
 #include "AliJetDummyShishKebabTrd1Module.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliJetDummyGeo)
 
 AliJetDummyGeo::AliJetDummyGeo():

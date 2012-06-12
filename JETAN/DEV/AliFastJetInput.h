@@ -25,6 +25,8 @@
 class AliJetCalTrkEvent;
 class AliJetHeader;
 
+using std::vector;
+
 class AliFastJetInput : public TObject
 {
  public:

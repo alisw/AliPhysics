@@ -48,6 +48,8 @@ class AliJetESDReader;
 // class AliCDBStorage;
 // class AliCDBEntry;
 
+using std::cout;
+using std::endl;
 ClassImp(AliJetESDFillUnitArrayEMCalDigits)
 
 //_____________________________________________________________________________

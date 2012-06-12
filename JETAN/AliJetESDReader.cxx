@@ -60,6 +60,8 @@
 #include "AliAnalysisTask.h"
 #include "AliOADBContainer.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliJetESDReader)
 
 AliJetESDReader::AliJetESDReader():

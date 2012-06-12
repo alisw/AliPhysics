@@ -46,6 +46,9 @@
 #include "AliFlowTrackSimple.h"
 #include "AliFlowVector.h"
 
+using std::endl;
+using std::cout;
+using std::cerr;
 ClassImp(AliFlowAnalysisWithLeeYangZeros)
 
   //-----------------------------------------------------------------------

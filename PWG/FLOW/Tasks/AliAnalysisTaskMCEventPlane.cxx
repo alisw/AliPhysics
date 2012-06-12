@@ -35,6 +35,8 @@ class AliAnalysisTaskSE;
 //
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
 
+using std::endl;
+using std::cout;
 ClassImp(AliAnalysisTaskMCEventPlane)
 
 //________________________________________________________________________

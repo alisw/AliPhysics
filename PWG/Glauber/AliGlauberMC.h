@@ -20,6 +20,9 @@
 class TObjArray;
 class TNtuple;
 
+using std::cout;
+using std::endl;
+
 class AliGlauberMC : public TNamed {
 public:
    enum EdNdEtaType { kSimple,

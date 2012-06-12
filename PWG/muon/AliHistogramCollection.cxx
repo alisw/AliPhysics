@@ -41,6 +41,8 @@
 #include "TSystem.h"
 #include "TProfile.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliHistogramCollection)
 
 //_____________________________________________________________________________

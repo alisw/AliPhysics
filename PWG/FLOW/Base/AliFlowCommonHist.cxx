@@ -37,6 +37,8 @@ class TH1D;
 // authors: N. van der Kolk (kolk@nikhef.nl), A. Bilandzic (anteb@nikhef.nl), RS
 
 
+using std::cout;
+using std::endl;
 ClassImp(AliFlowCommonHist)
 
 //-----------------------------------------------------------------------

@@ -36,6 +36,8 @@ class AliAnalysisTaskSE;
 #include "AliFlowAnalysisWithFittingQDistribution.h"
 #include "TH2D.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskFittingQDistribution)
 
 //================================================================================================================

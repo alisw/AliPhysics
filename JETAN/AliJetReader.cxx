@@ -50,6 +50,8 @@
 #include "AliJetHadronCorrectionv1.h"
 #include "AliOADBContainer.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliJetReader)
 
 ////////////////////////////////////////////////////////////////////////

@@ -65,7 +65,8 @@
 #include "AliFlowVector.h"
 #include "AliAnalysisTaskFlowEventforRP.h"
 
-
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskFlowEventforRP)
   
 //________________________________________________________________________

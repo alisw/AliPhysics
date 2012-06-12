@@ -34,6 +34,8 @@ class AliAnalysisTaskSE;
 #include "AliAnalysisTaskMixedHarmonics.h"
 #include "AliFlowAnalysisWithMixedHarmonics.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskMixedHarmonics)
 
 //================================================================================================================
