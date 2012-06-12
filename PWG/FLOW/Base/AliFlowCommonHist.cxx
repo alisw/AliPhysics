@@ -462,27 +462,27 @@ AliFlowCommonHist::~AliFlowCommonHist()
   //deletes histograms
   delete fHistMultRP;       
   delete fHistMultPOI; 
-  if(!fBookOnlyBasic){delete fHistMultPOIvsRP;}
+  delete fHistMultPOIvsRP;
   delete fHistPtRP;         
   delete fHistPtPOI;
-  if(!fBookOnlyBasic){delete fHistPtSub0;}
-  if(!fBookOnlyBasic){delete fHistPtSub1;}
+  delete fHistPtSub0;
+  delete fHistPtSub1;
   delete fHistPhiRP;        
   delete fHistPhiPOI;
-  if(!fBookOnlyBasic){delete fHistPhiSub0;}
-  if(!fBookOnlyBasic){delete fHistPhiSub1;}
+  delete fHistPhiSub0;
+  delete fHistPhiSub1;
   delete fHistEtaRP;        
   delete fHistEtaPOI;
-  if(!fBookOnlyBasic){delete fHistEtaSub0;}
-  if(!fBookOnlyBasic){delete fHistEtaSub1;}
+  delete fHistEtaSub0;
+  delete fHistEtaSub1;
   delete fHistPhiEtaRP;
   delete fHistPhiEtaPOI;
   delete fHistProMeanPtperBin;
-  if(!fBookOnlyBasic){delete fHistWeightvsPhi;}
-  if(!fBookOnlyBasic){delete fHistQ;}
-  if(!fBookOnlyBasic){delete fHistAngleQ;}
-  if(!fBookOnlyBasic){delete fHistAngleQSub0;}
-  if(!fBookOnlyBasic){delete fHistAngleQSub1;}
+  delete fHistWeightvsPhi;
+  delete fHistQ;
+  delete fHistAngleQ;
+  delete fHistAngleQSub0;
+  delete fHistAngleQSub1;
   delete fHarmonic;
   delete fRefMultVsNoOfRPs;
   delete fHistRefMult;  
@@ -774,17 +774,13 @@ Double_t AliFlowCommonHist::GetMeanPt(Int_t aBin)
 
   Int_t iCount = 0;
   TIter next(aList); // list is supposed to contain only objects of the same type as this
-  AliFlowCommonHist *toMerge;
-  // make a temporary list
-  TList *pTemp = new TList();
+  AliFlowCommonHist *toMerge=NULL;
   while ((toMerge=(AliFlowCommonHist*)next())) {
-    pTemp->Add(toMerge->GetHistList()); 
+    TList tempList;
+    tempList.Add(toMerge->GetHistList()); 
+    fHistList->Merge(&tempList);
     iCount++;
   }
-  // Now call merge for fHistList providing temp list
-  fHistList->Merge(pTemp);
-  // Cleanup
-  delete pTemp;
     
   //cout<<"Merged"<<endl;
   return (double)iCount;
