@@ -76,6 +76,8 @@ public:
    virtual void     SetAngStructCloseTracks(Int_t yesno){fAngStructCloseTracks=yesno;}
    virtual void     SetCheckMethods(Int_t yesno){fCheckMethods=yesno;}
    virtual void     SetEventMixing(Int_t yesno){fDoEventMixing=yesno;}
+   virtual void     SetFlagPhiBkg(Int_t yesno){fFlagPhiBkg=yesno;}
+
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
    virtual void     SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
    virtual void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
@@ -120,11 +122,13 @@ private:
    Int_t   fAngStructCloseTracks;//only constituents or all tracks with R<0.8 for the angular structure
    Int_t   fCheckMethods;     //to look into more detail into the core
    Int_t   fDoEventMixing;
+   Int_t   fFlagPhiBkg;
    Float_t fJetEtaMin;        // lower bound on eta for found jets
    Float_t fJetEtaMax;        // upper bound on eta for found jets
    Int_t   fNevents;          // number of events
    Int_t   fTindex;           // index reference
    Int_t   fTrigBufferIndex;  //index for the buffering
+   Int_t   fCountAgain;       //index for the buffering
    Float_t fJetPtMin;         // minimum jet pT
    UChar_t fJetTriggerExcludeMask; // mask for jet triggeres to exclude
    Float_t fJetPtFractionMin; // minimum fraction for positiv match of jets

@@ -79,11 +79,13 @@ fNInputTracksMax(-1),
 fAngStructCloseTracks(0),
 fCheckMethods(0),
 fDoEventMixing(0), 
+fFlagPhiBkg(0),
 fJetEtaMin(-.5),
 fJetEtaMax(.5),
-fNevents(0x0),
-fTindex(0x0),
-fTrigBufferIndex(0x0),
+fNevents(0),
+fTindex(0),
+fTrigBufferIndex(0),
+fCountAgain(0), 
 fJetPtMin(20.),
 fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
 fJetPtFractionMin(0.5),
@@ -199,7 +201,7 @@ fh3spectotb(0x0)
 
  // Trigger buffer.
    for(Int_t i=0; i<10; i++) {
-		for(Int_t j=0; j<7; j++) {
+		for(Int_t j=0; j<6; j++) {
 			fTrigBuffer[i][j]=0;
 		}				
 	}	
@@ -240,11 +242,13 @@ fNInputTracksMax(-1),
 fAngStructCloseTracks(0),
 fCheckMethods(0),
 fDoEventMixing(0),
+fFlagPhiBkg(0),
 fJetEtaMin(-.5),
 fJetEtaMax(.5),
-fNevents(0x0),
-fTindex(0x0),
-fTrigBufferIndex(0x0),
+fNevents(0),
+fTindex(0),
+fTrigBufferIndex(0),
+fCountAgain(0),
 fJetPtMin(20.),
 fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
 fJetPtFractionMin(0.5),
@@ -358,7 +362,7 @@ fh3spectotb(0x0)
 
 
     for(Int_t i=0; i<10; i++) {
-       for(Int_t j=0; j<7; j++) {
+       for(Int_t j=0; j<6; j++) {
 	    fTrigBuffer[i][j]=0;
 		}				
     }	
@@ -450,7 +454,7 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
    
      if(fDoEventMixing){    
      UInt_t cifras = 0; // bit coded, see GetDimParams() below 
-     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 |1<<7; 
+     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7; 
      fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);}
 
     if(fCheckMethods){
@@ -904,8 +908,8 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
            Double_t dphi=RelativePhi(partback->Phi(),phibig);  
            if(centValue<10.) fh3JetTrackC10->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));
            if(centValue<20.) fh3JetTrackC20->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));
-
-           if(TMath::Abs(dphi)<TMath::Pi()-0.6) continue;
+           if(fFlagPhiBkg!=0) if((TMath::Abs(dphi)<TMath::Pi()/2.-0.1)||(TMath::Abs(dphi)>TMath::Pi()/2.+0.1)) continue;
+           if(fFlagPhiBkg==0) if(TMath::Abs(dphi)<TMath::Pi()-0.6) continue;
                    Double_t dismin=100.;
                    Double_t ptmax=-10.; 
                    Int_t index1=-1;
@@ -931,7 +935,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                         if(centValue<10)fh3spectot->Fill(ptcorr,leadtrack->Pt(),partback->Pt());
                         if(centValue>30. && centValue<60.)fh3spectotb->Fill(ptcorr,leadtrack->Pt(),partback->Pt()); 
 			//store one trigger info                   
-                        if((partback->Pt()>10.)&&(iCount==0)){                        
+                        if(iCount==0){                        
 			  trigJet=i;
                           trigBBTrack=nT;
                           trigInTrack=ippt;
@@ -1081,12 +1085,13 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
  
 
 
-
+	  if(fDoEventMixing==0){
           Double_t deltaPhi=phibig-part->Phi();
           if(deltaPhi<-0.5*TMath::Pi()) deltaPhi+=2.*TMath::Pi();
           if(deltaPhi>3./2.*TMath::Pi()) deltaPhi-=2.*TMath::Pi();
-       	  Double_t jetEntries[8] = {centValue,ptcorr,part->Pt(),deltaR,deltaEta,deltaPhi,leadtrack->Pt(),partback->Pt()};                     fhnDeltaR->Fill(jetEntries);
-          }
+       	  Double_t jetEntries[8] = {centValue,ptcorr,part->Pt(),deltaR,deltaEta,deltaPhi,leadtrack->Pt(),partback->Pt()};                     fhnDeltaR->Fill(jetEntries);}
+
+		  }
           //end of track loop
             Double_t rhoin2=rho*TMath::Pi()*0.2*0.2; 
             Double_t rhoin4=rho*TMath::Pi()*(0.4*0.4-0.2*0.2);
@@ -1174,19 +1179,18 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
 
 
-          if(fDoEventMixing){
+          if(fDoEventMixing>0){
             //check before if the trigger exists
             // fTrigBuffer[i][0] = zvtx
             // fTrigBuffer[i][1] = phi
             // fTrigBuffer[i][2] = eta
             // fTrigBuffer[i][3] = pt_jet
             // fTrigBuffer[i][4] = pt_trig
-            // fTrigBuffer[i][5]= pt_track_in
-            // fTrigBuffer[i][6]= centrality
-	    if(fTindex==11) fTindex=0;
+            // fTrigBuffer[i][5]= centrality
+            if(fTindex==10) fTindex=0;
             if(fTrigBuffer[fTindex][3]>0){
 	    if (TMath::Abs(fTrigBuffer[fTindex][0]-primVtx->GetZ()<2.)){
-	    if (TMath::Abs(fTrigBuffer[fTindex][6]-centValue<10)){  
+	    if (TMath::Abs(fTrigBuffer[fTindex][5]-centValue<5)){  
 	      
                         for(int it = 0;it<nT;++it){
 	                AliVParticle *part = (AliVParticle*)ParticleList.At(it);         
@@ -1195,34 +1199,32 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                         Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
                         if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
                         if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
-                        Double_t triggerEntries[8] = {centValue,fTrigBuffer[fTindex][3],part->Pt(),DR,DEta,DPhi,fTrigBuffer[fTindex][4],fTrigBuffer[fTindex][5]};                      
+                        Double_t triggerEntries[7] = {centValue,fTrigBuffer[fTindex][3],part->Pt(),DR,DEta,DPhi,fTrigBuffer[fTindex][4]};                      
                         fhnMixedEvents->Fill(triggerEntries);
                         }
                         fNevents=fNevents+1;  
-                        if(fNevents==9) {fTindex=fTindex+1;
-			fNevents=0;} 
+                        if(fNevents==10) fTindex=fTindex+1; 
 	    }}}
-        
+	       if(fTindex==10&&fNevents==10) fCountAgain=0;
 
                // Copy the triggers from the current event into the buffer.
                //again, only if the trigger exists:
+	       if(fCountAgain==0){
 	        if(trigJet>-1){
-                AliAODJet* jetT = (AliAODJet*)(fListJets[0]->At(trigJet));                 
-                AliVParticle *partL = (AliVParticle*)ParticleList.At(trigInTrack);
-                AliVParticle *partT = (AliVParticle*)ParticleList.At(trigBBTrack);         
+                AliAODJet* jetT = (AliAODJet*)(fListJets[0]->At(trigJet));                      AliVParticle *partT = (AliVParticle*)ParticleList.At(trigBBTrack);         
                 fTrigBuffer[fTrigBufferIndex][0] = primVtx->GetZ();
                 fTrigBuffer[fTrigBufferIndex][1] = jetT->Phi();
                 fTrigBuffer[fTrigBufferIndex][2] = jetT->Eta();
                 fTrigBuffer[fTrigBufferIndex][3] = jetT->Pt()-rho*jetT->EffectiveAreaCharged();
                 fTrigBuffer[fTrigBufferIndex][4] = partT->Pt();
-                fTrigBuffer[fTrigBufferIndex][5] = partL->Pt();
-                fTrigBuffer[fTrigBufferIndex][6] = centValue;
+                fTrigBuffer[fTrigBufferIndex][5] = centValue;
                 fTrigBufferIndex++;
-		if(fTrigBufferIndex==9) fTrigBufferIndex=0;
+                if(fTrigBufferIndex==9) {fTrigBufferIndex=0; 
+		                         fCountAgain=1;}
 		}
-	  }
+	       }
 	  
-
+	  }
 
 
 
