@@ -65,6 +65,14 @@ public:
 		kSnail = 0,    // slow configuration, all variables
 		kCheetah = 1   // fast configuration, only a subset of variables
 	};
+
+        enum {
+          kAll = 0,   // all decays (resonant + non-resonant)
+          kNonResonant = 1, // only non resonant
+          kL1520 = 2,  // Lc --> L(1520) + p
+          kKstar = 3,  // Lc --> K* + pi
+          kDelta = 4   // Lc --> Delta + K
+        };
 	
 	AliCFTaskVertexingHF();
 	AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func = 0x0);
@@ -149,6 +157,9 @@ public:
 	
 	void SetWeightFunction(TF1* func) {fFuncWeight = func;}
 	TF1* GetWeightFunction() const {return fFuncWeight;}
+
+        void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
+        UInt_t GetResonantDecay() const {return fResonantDecay;}
 	
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
@@ -188,6 +199,7 @@ protected:
 	TF1* fFuncWeight;     // user-defined function to be used to calculate weights
 	TH1F* fHistoMeasNch;  // histogram with measured Nch distribution (pp 7 TeV)
 	TH1F* fHistoMCNch;  // histogram with Nch distribution from MC production
+        UInt_t fResonantDecay;  // resonant deacy channel to be used if the CF should be run on resonant channels only
 
 	ClassDef(AliCFTaskVertexingHF,12); // class for HF corrections as a function of many variables
 };

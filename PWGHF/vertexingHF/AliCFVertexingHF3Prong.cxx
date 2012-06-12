@@ -40,10 +40,11 @@ ClassImp(AliCFVertexingHF3Prong)
 
 
 //_________________________________________
-AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(Int_t decay):
+AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(Int_t decay, UInt_t resonantDecay):
 AliCFVertexingHF(),
   fDecay(decay),
-  fGenDsOption(kCountResonant)
+  fGenDsOption(kCountResonant),
+  fResonantDecay(resonantDecay)
  {
   // 
   SetNProngs(3);
@@ -57,10 +58,11 @@ AliCFVertexingHF(),
 
 }
 //_________________________________________
-AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(TClonesArray *mcArray, UShort_t originDselection, Int_t decay):
+AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(TClonesArray *mcArray, UShort_t originDselection, Int_t decay, UInt_t resonantDecay):
   AliCFVertexingHF(mcArray, originDselection),
   fDecay(decay),
-  fGenDsOption(kCountResonant)
+  fGenDsOption(kCountResonant),
+  fResonantDecay(resonantDecay)
 {
   //
   SetNProngs(3);
@@ -143,6 +145,10 @@ Bool_t AliCFVertexingHF3Prong::SetRecoCandidateParam(AliAODRecoDecayHF *recoCand
       AliDebug(3,"Ds not from the selected resonant channel");
       return bSignAssoc;
     }
+  }
+
+  if (fDecay==kLctopKpi && fResonantDecay != AliCFTaskVertexingHF::kAll) {
+    if (!CheckLc3Prong()) return bSignAssoc;
   }
 
   bSignAssoc = kTRUE;
@@ -487,7 +493,10 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
   Int_t daughter[3];
 
   Int_t nDau=fmcPartCandidate->GetNDaughters();
-  Int_t labelFirstDau = fmcPartCandidate->GetDaughter(0); 
+  Int_t labelFirstDau = fmcPartCandidate->GetDaughter(0);
+
+  if(fDecay==kLctopKpi && fResonantDecay!=AliCFTaskVertexingHF::kAll){if(!CheckLc3Prong()) return checkCD;}
+ 
   if(nDau==3){
     if(fDecay==kDstoKKpi && !(fGenDsOption==kCountAllDsKKpi || fGenDsOption==kCountNonResonant)){
       AliDebug(3,"Decay channel in direct KKpi, should be skipped");
@@ -562,4 +571,97 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
   checkCD = kTRUE;
   return checkCD;
   
+}
+//---------------------------------
+Bool_t AliCFVertexingHF3Prong::CheckLc3Prong() const
+{
+  Int_t numberOfLambdac=0;
+  if(TMath::Abs(fmcPartCandidate->GetPdgCode())!=4122) return kFALSE;
+  Int_t nDaugh = (Int_t)fmcPartCandidate->GetNDaughters();
+  if(nDaugh<2) return kFALSE;
+  if(nDaugh>3) return kFALSE;
+  AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)fmcArray->At(fmcPartCandidate->GetDaughter(0));
+  if(!pdaugh1) {return kFALSE;}
+  Int_t number1 = TMath::Abs(pdaugh1->GetPdgCode());
+  AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)fmcArray->At(fmcPartCandidate->GetDaughter(1));
+  if(!pdaugh2) {return kFALSE;}
+  Int_t number2 = TMath::Abs(pdaugh2->GetPdgCode());
+  if(nDaugh==3){
+    if(fResonantDecay!=AliCFTaskVertexingHF::kNonResonant && fResonantDecay!=AliCFTaskVertexingHF::kAll)return kFALSE; 
+    Int_t thirdDaugh=fmcPartCandidate->GetDaughter(1)-1;
+    AliAODMCParticle* pdaugh3 = (AliAODMCParticle*)fmcArray->At(thirdDaugh);
+    if(!pdaugh3) return kFALSE;
+    Int_t number3 = TMath::Abs(pdaugh3->GetPdgCode());
+    if((number1==321 && number2==211 && number3==2212) || (number1==211 && number2==321 && number3==2212) || (number1==211 && number2==2212 && number3==321) || (number1==321 && number2==2212 && number3==211) || (number1==2212 && number2==321 && number3==211) || (number1==2212 && number2==211 && number3==321)) numberOfLambdac++;
+  }
+  if(nDaugh==2){
+    if(fResonantDecay==AliCFTaskVertexingHF::kNonResonant)return kFALSE; 
+    Int_t nfiglieK=0;
+    if((number1==2212 && number2==313)){
+      if(fResonantDecay!=AliCFTaskVertexingHF::kKstar && fResonantDecay!=AliCFTaskVertexingHF::kAll)return kFALSE; 
+      nfiglieK=pdaugh2->GetNDaughters();
+      if(nfiglieK!=2) return kFALSE;
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)fmcArray->At(pdaugh2->GetDaughter(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)fmcArray->At(pdaugh2->GetDaughter(1));
+      if(!pdaughK1) return kFALSE;
+      if(!pdaughK2) return kFALSE;
+      if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) numberOfLambdac++;
+    }
+    if((number1==313 && number2==2212)){
+      if(fResonantDecay!=AliCFTaskVertexingHF::kKstar && fResonantDecay!=AliCFTaskVertexingHF::kAll)return kFALSE; 
+      nfiglieK=pdaugh1->GetNDaughters();
+      if(nfiglieK!=2) return kFALSE;
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)fmcArray->At(pdaugh1->GetDaughter(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)fmcArray->At(pdaugh1->GetDaughter(1));
+      if(!pdaughK1) return kFALSE;
+      if(!pdaughK2) return kFALSE;
+      if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) numberOfLambdac++;
+    }
+    Int_t nfiglieDelta=0;
+    if(number1==321 && number2==2224){
+      if(fResonantDecay!=AliCFTaskVertexingHF::kDelta && fResonantDecay!=AliCFTaskVertexingHF::kAll)return kFALSE; 
+      nfiglieDelta=pdaugh2->GetNDaughters();
+      if(nfiglieDelta!=2) return kFALSE;
+      AliAODMCParticle *pdaughD1=(AliAODMCParticle*)fmcArray->At(pdaugh2->GetDaughter(0));
+      AliAODMCParticle *pdaughD2=(AliAODMCParticle*)fmcArray->At(pdaugh2->GetDaughter(1));
+      if(!pdaughD1) return kFALSE;
+      if(!pdaughD2) return kFALSE;
+      if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) numberOfLambdac++;
+    }
+    if(number1==2224 && number2==321){
+      if(fResonantDecay!=AliCFTaskVertexingHF::kDelta && fResonantDecay!=AliCFTaskVertexingHF::kAll)return kFALSE; 
+      nfiglieDelta=pdaugh1->GetNDaughters();
+      if(nfiglieDelta!=2) return kFALSE;
+      AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)fmcArray->At(pdaugh1->GetDaughter(0));
+      AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)fmcArray->At(pdaugh1->GetDaughter(1)); 
+      if(!pdaughD1) return kFALSE;
+      if(!pdaughD2) return kFALSE;
+      if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) numberOfLambdac++;
+    }
+    
+    Int_t nfiglieLa=0;
+    if(number1==3124 && number2==211){
+      if(fResonantDecay!=AliCFTaskVertexingHF::kL1520 && fResonantDecay!=AliCFTaskVertexingHF::kAll)return kFALSE; 
+      nfiglieLa=pdaugh1->GetNDaughters();
+      if(nfiglieLa!=2) return kFALSE;
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)fmcArray->At(pdaugh1->GetDaughter(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)fmcArray->At(pdaugh1->GetDaughter(1));
+      if(!pdaughL1) return kFALSE;
+      if(!pdaughL2) return kFALSE;
+      if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) numberOfLambdac++;
+    }
+    if(number1==211 && number2==3124){
+      if(fResonantDecay!=AliCFTaskVertexingHF::kL1520 && fResonantDecay!=AliCFTaskVertexingHF::kAll)return kFALSE; 
+      nfiglieLa=pdaugh2->GetNDaughters();
+      if(nfiglieLa!=2) return kFALSE;
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)fmcArray->At(pdaugh2->GetDaughter(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)fmcArray->At(pdaugh2->GetDaughter(1));
+      if(!pdaughL1) return kFALSE;
+      if(!pdaughL2) return kFALSE;
+      if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) numberOfLambdac++;
+      
+    }
+  }
+  if(numberOfLambdac>0) return kTRUE;
+  return kFALSE;
 }

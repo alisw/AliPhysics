@@ -29,8 +29,10 @@ class TDatabasePDG;
 class AliCFVertexingHF3Prong : public AliCFVertexingHF{
 	public:
 		
+  AliCFVertexingHF3Prong(Int_t decay,UInt_t resonantDecay);
   AliCFVertexingHF3Prong(Int_t decay);
   AliCFVertexingHF3Prong(TClonesArray *mcArray, UShort_t originDselection, Int_t decay);  
+  AliCFVertexingHF3Prong(TClonesArray *mcArray, UShort_t originDselection, Int_t decay,UInt_t resonantDecay);  
   virtual ~AliCFVertexingHF3Prong(){};
   
   
@@ -41,6 +43,9 @@ class AliCFVertexingHF3Prong : public AliCFVertexingHF{
   
   Bool_t SetRecoCandidateParam(AliAODRecoDecayHF *recoCand);
   virtual void SetDecay3Prong(Int_t decay){fDecay=decay;}
+  Bool_t CheckLc3Prong() const;
+  void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
+  UInt_t GetResonantDecay() const {return fResonantDecay;}
  
   void SetGeneratedDsOption(Int_t opt) {fGenDsOption=opt;}
   Int_t GetGeneratedDsOption() const {return fGenDsOption;}
@@ -57,8 +62,9 @@ class AliCFVertexingHF3Prong : public AliCFVertexingHF{
   
   Int_t fDecay;   // decay mode id
   Int_t fGenDsOption;  // option for selection Ds (see enum)
+  UInt_t fResonantDecay; // resonant decay for which to run the CF
 
-  ClassDef(AliCFVertexingHF3Prong, 2);
+  ClassDef(AliCFVertexingHF3Prong, 3);
   
 };
 
