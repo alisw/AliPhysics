@@ -211,12 +211,12 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Bool_t acceptMC) c
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::AcceptEmcalPart(AliEmcalParticle *part, Bool_t acceptMC) const
 {
-  // Return true if cluster is accepted.
+  // Return true if EMCal particle is accepted.
 
   if (!part)
     return kFALSE;
 
-  if (!part->IsEMCAL())
+  if (fAnaType == kEMCAL && !part->IsEMCAL())
     return kFALSE;
 
   if (part->Pt() < fPtCut)
