@@ -151,7 +151,11 @@ void AliForwardMCFlowTaskQC::InitHists()
     bin->AddOutput(fSumList);
   }
 
-  fWeights.Init(fSumList);
+  TList* wList = new TList();
+  wList->SetName("FlowWeights");
+  fWeights.Init(wList);
+  fSumList->Add(wList);
+
 }
 //_____________________________________________________________________
 Bool_t AliForwardMCFlowTaskQC::Analyze() 
