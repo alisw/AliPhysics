@@ -190,7 +190,6 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
     fIPDistance(0.),fLongModuleSize(0.),fShellThickness(0.),
     fZLength(0.),fSampling(0.), fUseExternalMatrices(kFALSE)
 { 
-
   // ctor only for normal usage 
   
   fEMCGeometry = new AliEMCALEMCGeometry(name,title,mcname,mctitle);
@@ -257,7 +256,8 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
 }
 
 //____________________________________________________________________________
-AliEMCALGeometry & AliEMCALGeometry::operator = (const AliEMCALGeometry  & /*rvalue*/) { 
+AliEMCALGeometry & AliEMCALGeometry::operator = (const AliEMCALGeometry  & /*rvalue*/) 
+{ 
   //assing operator
   Fatal("assignment operator", "not implemented") ; 
   return *this ;
@@ -282,7 +282,8 @@ AliEMCALGeometry::~AliEMCALGeometry(void)
 }
 
 //______________________________________________________________________
-AliEMCALGeometry *  AliEMCALGeometry::GetInstance(){ 
+AliEMCALGeometry *  AliEMCALGeometry::GetInstance()
+{ 
   // Returns the pointer of the unique instance
   
   AliEMCALGeometry * rv = static_cast<AliEMCALGeometry *>( fgGeom );
@@ -291,7 +292,8 @@ AliEMCALGeometry *  AliEMCALGeometry::GetInstance(){
 
 //______________________________________________________________________
 AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,   const Text_t* title,
-                                                const Text_t* mcname, const Text_t* mctitle ){
+                                                const Text_t* mcname, const Text_t* mctitle )
+{
   // Returns the pointer of the unique instance
     
   AliEMCALGeometry * rv = 0; 
@@ -342,12 +344,12 @@ void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int ind) c
   // matrix stored by the geometry manager (allows for misaligned
   // geometry)
 	
-	const TGeoHMatrix* m = GetMatrixForSuperModule(ind);
-    if(m) {
-      m->LocalToMaster(loc, glob);
-    } else {
-      AliFatal("Geo matrixes are not loaded \n") ;
-    }
+  const TGeoHMatrix* m = GetMatrixForSuperModule(ind);
+  if(m) {
+    m->LocalToMaster(loc, glob);
+  } else {
+    AliFatal("Geo matrixes are not loaded \n") ;
+  }
 }
 
 //________________________________________________________________________________________________
@@ -373,9 +375,8 @@ void AliEMCALGeometry::GetGlobal(Int_t absId , double glob[3]) const
   glob[0]=glob[1]=glob[2]=0.0; // bad case
   if(RelPosCellInSModule(absId, loc)) {
     GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
-
-	  const TGeoHMatrix* m = GetMatrixForSuperModule(nSupMod);
-	  if(m) {
+    const TGeoHMatrix* m = GetMatrixForSuperModule(nSupMod);
+    if(m) {
       m->LocalToMaster(loc, glob);
     } else {
       AliFatal("Geo matrixes are not loaded \n") ;
@@ -391,9 +392,7 @@ void AliEMCALGeometry::GetGlobal(Int_t absId , TVector3 &vglob) const
 
   GetGlobal(absId, glob);
   vglob.SetXYZ(glob[0], glob[1], glob[2]);
-
 }
-
 
 //______________________________________________________________________
 void AliEMCALGeometry::PrintCellIndexes(Int_t absId, int pri, const char *tit) const
@@ -579,7 +578,7 @@ Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
         dmin = d;
         iphi = i;
       }
-      //      printf(" i %i : d %f : dmin %f : fPhiCentersOfCells[i] %f \n", i, d, dmin, fPhiCentersOfCells[i]);
+      //printf(" i %i : d %f : dmin %f : fPhiCentersOfCells[i] %f \n", i, d, dmin, fPhiCentersOfCells[i]);
     }
     // odd SM are turned with respect of even SM - reverse indexes
     AliDebug(2,Form(" iphi %i : dmin %f (phi %f, phiLoc %f ) ", iphi, dmin, phi, phiLoc));
@@ -695,7 +694,7 @@ int &iphi, int &ieta) const
   // nIphi   - cell number in phi driection inside module; 0<= nIphi < fNPHIdiv; 
   // nIeta   - cell number in eta driection inside module; 0<= nIeta < fNETAdiv; 
   // 
- // OUT:
+  // OUT:
   // ieta, iphi - indexes of cell(tower) in two dimensional grid of SM
   // ieta - have to change from 0 to (fNZ*fNETAdiv-1)
   // iphi - have to change from 0 to (fNPhi*fNPHIdiv-1 or fNPhi*fNPHIdiv/2-1)
@@ -711,7 +710,6 @@ int &iphi, int &ieta) const
   AliDebug(1,Form(" nSupMod %i nModule %i nIphi %i nIeta %i => ieta %i iphi %i\n", 
   nSupMod, nModule, nIphi, nIeta, ieta, iphi));
 }
-
 
 // Methods for AliEMCALRecPoint - Feb 19, 2006
 //________________________________________________________________________________________________
@@ -858,7 +856,6 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Doub
   return kTRUE;
 }
 
-
 //________________________________________________________________________________________________
 void AliEMCALGeometry::CreateListOfTrd1Modules()
 {
@@ -974,7 +971,6 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
 
 }
 
-
 //________________________________________________________________________________________________
 AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta) const
 {
@@ -1020,7 +1016,6 @@ void AliEMCALGeometry::PrintGeometryGeoUtils()
     printf(" ind %2.2i : y %8.3f : phi %7.5f(%6.2f) \n", i, fCentersOfCellsPhiDir.At(i), 
 	   phi, phi*TMath::RadToDeg());
   }
-
 }
 
 //____________________________________________________________________________
@@ -1132,7 +1127,8 @@ void AliEMCALGeometry::ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi,
 }
 
 //_____________________________________________________________________________
-Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
+Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const 
+{
   // Checks whether point is inside the EMCal volume, used in AliEMCALv*.cxx
   //
   // Code uses cylindrical approximation made of inner radius (for speed)
@@ -1163,7 +1159,8 @@ Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
 
 //________________________________________________________________________________________________
 Int_t AliEMCALGeometry::GetAbsTRUNumberFromNumberInSm(const Int_t row, const Int_t col, const Int_t sm) const
-{ // Nov 6, 2007
+{ 
+  // Nov 6, 2007
   // Get TRU absolute number from column, row and Super Module number
   Int_t itru = row + col*fEMCGeometry->GetNModulesInTRUPhi() + sm*fEMCGeometry->GetNTRU();
   // printf("  GetAbsTRUNumberFromNumberInSm : row %2i col %2i sm %2i -> itru %2i\n", row, col, sm, itru); 
@@ -1173,88 +1170,76 @@ Int_t AliEMCALGeometry::GetAbsTRUNumberFromNumberInSm(const Int_t row, const Int
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& id) const
 {
-	//Trigger mapping method, get  FastOr Index from TRU
+  //Trigger mapping method, get  FastOr Index from TRU
 
   if (iTRU > 31 || iTRU < 0 || iADC > 95 || iADC < 0) 
-	{
-		AliError("TRU out of range!");
-		return kFALSE;
-	}
+  {
+    AliError("TRU out of range!");
+    return kFALSE;
+  }
 	
-	id  = ( iTRU % 2 ) ? iADC%4 + 4 * (23 - int(iADC/4)) : (3 - iADC%4) + 4 * int(iADC/4);
-
-	id += iTRU * 96;
-	
-	return kTRUE;
+  id  = ( iTRU % 2 ) ? iADC%4 + 4 * (23 - int(iADC/4)) : (3 - iADC%4) + 4 * int(iADC/4);
+  id += iTRU * 96;
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iADC) const
 {
+  //Trigger mapping method, get TRU number from FastOr Index
 
-	//Trigger mapping method, get TRU number from FastOr Index
-
-	if (id > 3071 || id < 0)
-	{
-		AliError("Id out of range!");
-		return kFALSE;
-	}
+  if (id > 3071 || id < 0)
+  {
+    AliError("Id out of range!");
+    return kFALSE;
+  }
 	
-	iTRU = id / 96;
-	
-	iADC = id % 96;
-	
-	iADC = ( iTRU % 2 ) ? iADC%4 + 4 * (23 - int(iADC/4)) : (3 - iADC%4) + 4 * int(iADC/4);
-	
-	return kTRUE;
+  iTRU = id / 96;
+  iADC = id % 96;
+  iADC = ( iTRU % 2 ) ? iADC%4 + 4 * (23 - int(iADC/4)) : (3 - iADC%4) + 4 * int(iADC/4);
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetPositionInTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iEta, Int_t& iPhi) const
 {
-	//Trigger mapping method, get position in TRU from FasOr Index
+  //Trigger mapping method, get position in TRU from FasOr Index
 	
-	Int_t iADC=-1;	
-	if (!GetTRUFromAbsFastORIndex(id, iTRU, iADC)) return kFALSE;
+  Int_t iADC=-1;	
+  if (!GetTRUFromAbsFastORIndex(id, iTRU, iADC)) return kFALSE;
 	
-	Int_t x = iADC / 4;
-	Int_t y = iADC % 4;
-	
-	if ( iTRU % 2 ) // C side 
-	{
-		iEta = 23 - x;
-		iPhi =      y;
-	}
-	else            // A side
-	{
-		iEta =      x;
-		iPhi =  3 - y;
-	}
-	
-	return kTRUE;
+  Int_t x = iADC / 4;
+  Int_t y = iADC % 4;
+  if ( iTRU % 2 ) // C side 
+  {
+    iEta = 23 - x;
+    iPhi =      y;
+  }
+  else            // A side
+  {
+    iEta =      x;
+    iPhi =  3 - y;
+  }
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t& iSM, Int_t& iEta, Int_t& iPhi) const
 {
-	//Trigger mapping method, get position in Super Module from FasOr Index
+  //Trigger mapping method, get position in Super Module from FasOr Index
 
-	Int_t iTRU=-1;
-		
-	if (!GetPositionInTRUFromAbsFastORIndex(id, iTRU, iEta, iPhi)) return kFALSE;
-	
-	if (iTRU % 2) // C side
-	{
-		iSM  = 2 * ( int( int(iTRU / 2) / 3 ) ) + 1;
-	}
-	else            // A side
-	{
-		iSM  = 2 * ( int( int(iTRU / 2) / 3 ) );
-	}
-
-	iPhi += 4 * int((iTRU % 6) / 2);
-	
-	return kTRUE;
+  Int_t iTRU=-1;
+  if (!GetPositionInTRUFromAbsFastORIndex(id, iTRU, iEta, iPhi)) return kFALSE;
+  if (iTRU % 2) // C side
+  {
+    iSM  = 2 * ( int( int(iTRU / 2) / 3 ) ) + 1;
+  }
+  else            // A side
+  {
+    iSM  = 2 * ( int( int(iTRU / 2) / 3 ) );
+  }
+  iPhi += 4 * int((iTRU % 6) / 2);
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________
@@ -1262,34 +1247,27 @@ Bool_t AliEMCALGeometry::GetPositionInEMCALFromAbsFastORIndex(const Int_t id, In
 {
   //Trigger mapping method, get position in EMCAL from FastOR index
 
-	Int_t iSM=-1;
-	
-	if (GetPositionInSMFromAbsFastORIndex(id, iSM, iEta, iPhi))
-	{
-		if (iSM % 2) iEta += 24; 
-		
-		iPhi += 12 * int(iSM / 2);
-		
-		return kTRUE;
-	}
-	
-	return kFALSE;
+  Int_t iSM=-1;
+  if (GetPositionInSMFromAbsFastORIndex(id, iSM, iEta, iPhi))
+  {
+    if (iSM % 2) iEta += 24; 
+    iPhi += 12 * int(iSM / 2);
+    return kTRUE;
+  }
+  return kFALSE;
 }
 
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, const Int_t iEta, const Int_t iPhi, Int_t& id) const
 {
-	//Trigger mapping method, get Index if FastOr from Position in TRU
-
-	if (iTRU < 0 || iTRU > 31 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 3) 
-	{
-		AliError("Out of range!");	
-		return kFALSE;
-	}
-	
-	id =  iPhi  + 4 * iEta + iTRU * 96;
-	
-	return kTRUE;
+  //Trigger mapping method, get Index if FastOr from Position in TRU
+  if (iTRU < 0 || iTRU > 31 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 3) 
+  {
+    AliError("Out of range!");	
+    return kFALSE;
+  }
+  id =  iPhi  + 4 * iEta + iTRU * 96;
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________
@@ -1297,24 +1275,20 @@ Bool_t AliEMCALGeometry::GetAbsFastORIndexFromPositionInSM(const Int_t  iSM, con
 {
   //Trigger mapping method, from position in SM Index get FastOR index 
 
-	if (iSM < 0 || iSM > 11 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 11) 
-	{
-		AliError("Out of range!");
-		return kFALSE;
-	}
-	
-	Int_t x = iEta;
-	Int_t y = iPhi % 4;	
-	
-	Int_t iOff = (iSM % 2) ? 1 : 0;
-	Int_t iTRU = 2 * int(iPhi / 4) + 6 * int(iSM / 2) + iOff;
-
-	if (GetAbsFastORIndexFromPositionInTRU(iTRU, x, y, id))
-	{
-		return kTRUE;
-	}
-	
-	return kFALSE;
+  if (iSM < 0 || iSM > 11 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 11) 
+  {
+    AliError("Out of range!");
+    return kFALSE;
+  }
+  Int_t x = iEta;
+  Int_t y = iPhi % 4;	
+  Int_t iOff = (iSM % 2) ? 1 : 0;
+  Int_t iTRU = 2 * int(iPhi / 4) + 6 * int(iSM / 2) + iOff;
+  if (GetAbsFastORIndexFromPositionInTRU(iTRU, x, y, id))
+  {
+    return kTRUE;
+  }
+  return kFALSE;
 }
 
 //________________________________________________________________________________________________
@@ -1322,21 +1296,18 @@ Bool_t AliEMCALGeometry::GetAbsFastORIndexFromPositionInEMCAL(const Int_t iEta, 
 {
   //Trigger mapping method, from position in EMCAL Index get FastOR index 
 
-	if (iEta < 0 || iEta > 47 || iPhi < 0 || iPhi > 63 ) 
-	{
-		AliError(Form("Out of range! eta: %2d phi: %2d", iEta, iPhi));
-		return kFALSE;
-	}
-	
-	if (fFastOR2DMap[iEta][iPhi] == -1) 
-	{
-		AliError("Invalid index!");
-		return kFALSE;
-	}
-	
-	id = fFastOR2DMap[iEta][iPhi];
-	
-	return kTRUE;
+  if (iEta < 0 || iEta > 47 || iPhi < 0 || iPhi > 63 ) 
+  {
+    AliError(Form("Out of range! eta: %2d phi: %2d", iEta, iPhi));
+    return kFALSE;
+  }
+  if (fFastOR2DMap[iEta][iPhi] == -1) 
+  {
+    AliError("Invalid index!");
+    return kFALSE;
+  }
+  id = fFastOR2DMap[iEta][iPhi];
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________
@@ -1344,18 +1315,14 @@ Bool_t AliEMCALGeometry::GetFastORIndexFromCellIndex(const Int_t id, Int_t& idx)
 {
   //Trigger mapping method, from cell index get FastOR index 
 
-	Int_t iSupMod, nModule, nIphi, nIeta, iphim, ietam;
-	
-	Bool_t isOK = GetCellIndex( id, iSupMod, nModule, nIphi, nIeta );
-	
-	GetModulePhiEtaIndexInSModule( iSupMod, nModule, iphim, ietam );
-	
-	if (isOK && GetAbsFastORIndexFromPositionInSM(iSupMod, ietam, iphim, idx))
-	{
-		return kTRUE;
-	}
-	
-	return kFALSE;
+  Int_t iSupMod, nModule, nIphi, nIeta, iphim, ietam;
+  Bool_t isOK = GetCellIndex( id, iSupMod, nModule, nIphi, nIeta );
+  GetModulePhiEtaIndexInSModule( iSupMod, nModule, iphim, ietam );
+  if (isOK && GetAbsFastORIndexFromPositionInSM(iSupMod, ietam, iphim, idx))
+  {
+    return kTRUE;
+  }
+  return kFALSE;
 }
 
 //________________________________________________________________________________________________
@@ -1364,23 +1331,20 @@ Bool_t AliEMCALGeometry::GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4
   //Trigger mapping method, from FASTOR index get cell index 
 
   Int_t iSM=-1, iEta=-1, iPhi=-1;
-	if (GetPositionInSMFromAbsFastORIndex(id, iSM, iEta, iPhi))
-	{
-		Int_t ix = 2 * iEta;
-		Int_t iy = 2 * iPhi;
-		
-		for (Int_t i=0; i<2; i++)
-		{
-			for (Int_t j=0; j<2; j++)
-			{
-				idx[2*i+j] = GetAbsCellIdFromCellIndexes(iSM, iy + i, ix + j);
-			}
-		}
-		
-		return kTRUE;
-	}
-	
-	return kFALSE;
+  if (GetPositionInSMFromAbsFastORIndex(id, iSM, iEta, iPhi))
+  {
+    Int_t ix = 2 * iEta;
+    Int_t iy = 2 * iPhi;
+    for (Int_t i=0; i<2; i++)
+    {
+      for (Int_t j=0; j<2; j++)
+      {
+        idx[2*i+j] = GetAbsCellIdFromCellIndexes(iSM, iy + i, ix + j);
+      }
+    }
+    return kTRUE;
+  }
+  return kFALSE;
 }
 
 //________________________________________________________________________________________________
@@ -1388,15 +1352,13 @@ Bool_t AliEMCALGeometry::GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) con
 {
   //Trigger mapping method, from STU index get TRU index 
 
-	if (id > 31 || id < 0) 
-	{
-		AliError(Form("TRU index out of range: %d",id));
-		return kFALSE;
-	}
-	
-	idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
-	
-	return kTRUE;
+  if (id > 31 || id < 0) 
+  {
+    AliError(Form("TRU index out of range: %d",id));
+    return kFALSE;
+  }
+  idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________
@@ -1404,173 +1366,158 @@ Int_t AliEMCALGeometry::GetTRUIndexFromSTUIndex(const Int_t id) const
 {
   //Trigger mapping method, from STU index get TRU index 
 
-	if (id > 31 || id < 0) 
-	{
-		AliError(Form("TRU index out of range: %d",id));
-	}
-	
-	Int_t idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
-	
-	return idx;
+  if (id > 31 || id < 0) 
+  {
+    AliError(Form("TRU index out of range: %d",id));
+  }
+  Int_t idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
+  return idx;
 }
 
 //________________________________________________________________________________________________
 void AliEMCALGeometry::BuildFastOR2DMap()
 {
-	// Needed by STU
-	for (Int_t i = 0; i < 32; i++)
-	{
-		for (Int_t j = 0; j < 24; j++)
-		{
-			for (Int_t k = 0; k < 4; k++)
-			{
-				Int_t id;
-				if (GetAbsFastORIndexFromPositionInTRU(i, j, k, id))
-				{
-					Int_t x = j, y = k + 4 * int(i / 2);
-				
-					if (i % 2) x += 24;
-				
-					fFastOR2DMap[x][y] = id;
-				}
-			}			
-		}
-	}
+  // Needed by STU
+
+  for (Int_t i = 0; i < 32; i++)
+  {
+    for (Int_t j = 0; j < 24; j++)
+    {
+      for (Int_t k = 0; k < 4; k++)
+      {
+        Int_t id;
+        if (GetAbsFastORIndexFromPositionInTRU(i, j, k, id))
+        {
+          Int_t x = j, y = k + 4 * int(i / 2);
+          if (i % 2) x += 24;
+          fFastOR2DMap[x][y] = id;
+        }
+      }			
+    }
+  }
 }
 
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx) const
 {
-	//Trigger mapping method, from STU index get TRU index 
+  //Trigger mapping method, from STU index get TRU index 
 	
-	if (id > 31 || id < 0) 
-	{
-		AliError(Form("TRU index out of range: %d",id));
-		return kFALSE;
-	}
-	
-	if (id == 31) {
-	    idx = 31;
-	    return kTRUE;
-	}
-
-	idx = ((id % 6) < 3) ? 6 * int(id / 6) + 2 * (id % 3) : 6 * int(id / 6) + 2 * (2 - (id % 3)) + 1;
-
-	return kTRUE;
+  if (id > 31 || id < 0) 
+  {
+    AliError(Form("TRU index out of range: %d",id));
+    return kFALSE;
+  }
+  if (id == 31) {
+    idx = 31;
+    return kTRUE;
+  }
+  idx = ((id % 6) < 3) ? 6 * int(id / 6) + 2 * (id % 3) : 6 * int(id / 6) + 2 * (2 - (id % 3)) + 1;
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________
 Int_t AliEMCALGeometry::GetTRUIndexFromOnlineIndex(const Int_t id) const
 {
-	//Trigger mapping method, from STU index get TRU index 
+  //Trigger mapping method, from STU index get TRU index 
 	
-	if (id > 31 || id < 0) 
-	{
-		AliError(Form("TRU index out of range: %d",id));
-	}
-
-	if (id == 31) {
-	    return 31;
-	}
-
-	Int_t idx = ((id % 6) < 3) ? 6 * int(id / 6) + 2 * (id % 3) : 6 * int(id / 6) + 2 * (2 - (id % 3)) + 1;
-	
-	return idx;
+  if (id > 31 || id < 0) 
+  {
+    AliError(Form("TRU index out of range: %d",id));
+  }
+  if (id == 31) {
+    return 31;
+  }
+  Int_t idx = ((id % 6) < 3) ? 6 * int(id / 6) + 2 * (id % 3) : 6 * int(id / 6) + 2 * (2 - (id % 3)) + 1;
+  return idx;
 }
 
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx) const
 {
-	//Trigger mapping method, from STU index get TRU index 
+  //Trigger mapping method, from STU index get TRU index 
 	
-	if (id > 31 || id < 0) 
-	{
-		AliError(Form("TRU index out of range: %d",id));
-		return kFALSE;
-	}
-	
-	if (id == 31) {
-	    idx = 31;
-	    return kTRUE;
-	}
-
-	idx = (id % 2) ? int((6 - (id % 6)) / 2) + 3 * (2 * int(id / 6) + 1) : 3 * int(id / 6) + int(id / 2);
-	
-	return kTRUE;
+  if (id > 31 || id < 0) 
+  {
+    AliError(Form("TRU index out of range: %d",id));
+    return kFALSE;
+  }
+  if (id == 31) {
+    idx = 31;
+    return kTRUE;
+  }
+  idx = (id % 2) ? int((6 - (id % 6)) / 2) + 3 * (2 * int(id / 6) + 1) : 3 * int(id / 6) + int(id / 2);
+  return kTRUE;
 }
 
 //________________________________________________________________________________________________
 Int_t AliEMCALGeometry::GetOnlineIndexFromTRUIndex(const Int_t id) const
 {
-	//Trigger mapping method, from STU index get TRU index 
+  //Trigger mapping method, from STU index get TRU index 
 	
-	if (id > 31 || id < 0) 
-	{
-		AliError(Form("TRU index out of range: %d",id));
-	}
-
-	if (id == 31) {
-	    return 31;
-	}
-	
-	Int_t idx = (id % 2) ? int((6 - (id % 6)) / 2) + 3 * (2 * int(id / 6) + 1) : 3 * int(id / 6) + int(id / 2);
-	
-	return idx;
+  if (id > 31 || id < 0) 
+  {
+    AliError(Form("TRU index out of range: %d",id));
+  }
+  if (id == 31) {
+    return 31;
+  }
+  Int_t idx = (id % 2) ? int((6 - (id % 6)) / 2) + 3 * (2 * int(id / 6) + 1) : 3 * int(id / 6) + int(id / 2);
+  return idx;
 }
 
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const
 {
   //Trigger mapping method, from L0 index get FastOR index 
-	if (size <= 0 ||size > 4)
-	{
-		AliError("Size not supported!");
-		return kFALSE;
-	}
+
+  if (size <= 0 ||size > 4)
+  {
+    AliError("Size not supported!");
+    return kFALSE;
+  }
 		
-	Int_t motif[4] = {0, 1, 4, 5};
-	
-	switch (size)
-	{
-		case 1: // Cosmic trigger
-			if (!GetAbsFastORIndexFromTRU(iTRU, id, idx[1])) return kFALSE;
-			break;
-		case 4: // 4 x 4
-			for (Int_t k = 0; k < 4; k++)
-			{
-				Int_t iADC = motif[k] + 4 * int(id / 3) + (id % 3);
+  Int_t motif[4] = {0, 1, 4, 5};
+  switch (size)
+  {
+    case 1: // Cosmic trigger
+      if (!GetAbsFastORIndexFromTRU(iTRU, id, idx[1])) return kFALSE;
+      break;
+    case 4: // 4 x 4
+      for (Int_t k = 0; k < 4; k++)
+      {
+        Int_t iADC = motif[k] + 4 * int(id / 3) + (id % 3);
 				
-				if (!GetAbsFastORIndexFromTRU(iTRU, iADC, idx[k])) return kFALSE;
-			}
-			break;
-		default:
-			break;
-	}
+        if (!GetAbsFastORIndexFromTRU(iTRU, iADC, idx[k])) return kFALSE;
+      }
+      break;
+    default:
+      break;
+  }
 	
-	return kTRUE;
+  return kTRUE;
 }
 
 //____________________________________________________________________________
-const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const {
-
-	//Provides shift-rotation matrix for EMCAL
+const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const 
+{
+  //Provides shift-rotation matrix for EMCAL
 	
-	if(smod < 0 || smod > fEMCGeometry->GetNumberOfSuperModules()) 
-		AliFatal(Form("Wrong supermodule index -> %d",smod));
+  if(smod < 0 || smod > fEMCGeometry->GetNumberOfSuperModules()) 
+    AliFatal(Form("Wrong supermodule index -> %d",smod));
 		
-	//If GeoManager exists, take matrixes from it
+  //If GeoManager exists, take matrixes from it
 	
-	//
-	//    if(fKey110DEG && ind>=10) {
-	//    }
-	//
-	//    if(!gGeoManager->cd(volpath.Data()))
-	//      AliFatal(Form("AliEMCALGeometry::GeoManager cannot find path %s!",volpath.Data()));
-	//
-	//    TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
+  //
+  //    if(fKey110DEG && ind>=10) {
+  //    }
+  //
+  //    if(!gGeoManager->cd(volpath.Data()))
+  //      AliFatal(Form("AliEMCALGeometry::GeoManager cannot find path %s!",volpath.Data()));
+  //
+  //    TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
   
   //Use matrices set externally
-	if(!gGeoManager || (gGeoManager && fUseExternalMatrices)){
+  if(!gGeoManager || (gGeoManager && fUseExternalMatrices)){
     if(fkSModuleMatrix[smod]){
       return fkSModuleMatrix[smod] ;
     }
@@ -1584,36 +1531,35 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const 
     }  
   }//external matrices
   
-   if(gGeoManager){
+  if(gGeoManager){
     const Int_t buffersize = 255;
-      char path[buffersize] ;
-      snprintf(path,buffersize,"/ALIC_1/XEN1_1/SMOD_%d",smod+1) ;
-      //TString volpath = "ALIC_1/XEN1_1/SMOD_";
-       //volpath += smod+1;
+    char path[buffersize] ;
+    snprintf(path,buffersize,"/ALIC_1/XEN1_1/SMOD_%d",smod+1) ;
+    //TString volpath = "ALIC_1/XEN1_1/SMOD_";
+    //volpath += smod+1;
 
-      if(fKey110DEG && smod >= 10 && !fGeoName.Contains("12SMV1") ){
-         snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM10_%d",smod-10+1) ;
-         //volpath = "ALIC_1/XEN1_1/SM10_";
-         //volpath += smod-10+1;
-      }
-      if(fKey110DEG && smod >= 10 && fGeoName.Contains("12SMV1") ){
-         snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM3rd_%d",smod-10+1) ;
-         //volpath = "ALIC_1/XEN1_1/SM10_";
-         //volpath += smod-10+1;
-      }
-      if (!gGeoManager->cd(path)){
-         AliFatal(Form("Geo manager can not find path %s!\n",path));
-      }
-      return gGeoManager->GetCurrentMatrix();
-      }
+    if(fKey110DEG && smod >= 10 && !fGeoName.Contains("12SMV1") ){
+      snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM10_%d",smod-10+1) ;
+      //volpath = "ALIC_1/XEN1_1/SM10_";
+      //volpath += smod-10+1;
+    }
+    if(fKey110DEG && smod >= 10 && fGeoName.Contains("12SMV1") ){
+      snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM3rd_%d",smod-10+1) ;
+      //volpath = "ALIC_1/XEN1_1/SM10_";
+      //volpath += smod-10+1;
+    }
+    if (!gGeoManager->cd(path)){
+      AliFatal(Form("Geo manager can not find path %s!\n",path));
+    }
+    return gGeoManager->GetCurrentMatrix();
+  }
 
-	return 0 ;
+  return 0 ;
 }
 
 //______________________________________________________________________
 void AliEMCALGeometry::GetModulePhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &iphiSM, Int_t &ietaSM) const 
 {
-  
   // This method transforms the (eta,phi) index of module in a 
   // TRU matrix into Super Module (eta,phi) index.
   
@@ -1630,13 +1576,13 @@ void AliEMCALGeometry::GetModulePhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int
 //__________________________________________________________________________________________________________________
 void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, const Float_t depth,
                                                 const Float_t misaligTransShifts[15], const Float_t misaligRotShifts[15], Float_t global[3]) const
-{ //Transform clusters cell position into global with alternative method, taking into account the depth calculation.
+{ 
+  //Transform clusters cell position into global with alternative method, taking into account the depth calculation.
   //Input are: the tower indeces, 
   //           supermodule, 
   //           particle type (photon 0, electron 1, hadron 2 )
   //           misalignment shifts to global position in case of need.
   // Federico.Ronchetti@cern.ch
-  
     
   // To use in a print later
   Float_t droworg = drow;
@@ -1758,19 +1704,16 @@ void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
       global[1] = dglobal[1] ;
       global[2] = dglobal[2] ;
     }
-    
-    
   }
   else{
     AliFatal("Geometry boxes information, check that geometry.root is loaded\n");
   }
-  
 }
 
 void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) 
 {
-// Method to set shift-rotational matrixes from ESDHeader
-// Move from header due to coding violations : Dec 2,2011 by PAI
+  // Method to set shift-rotational matrixes from ESDHeader
+  // Move from header due to coding violations : Dec 2,2011 by PAI
   fUseExternalMatrices = kTRUE;
 
   if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules()){
