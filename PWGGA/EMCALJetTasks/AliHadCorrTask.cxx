@@ -39,9 +39,7 @@ AliHadCorrTask::AliHadCorrTask() :
   fHistEafter(0),
   fHistEoPCent(0),
   fHistNMatchCent(0),
-  fHistNMatchCent_trk(0),
-  fHistCentrality(0),
-  fHistNoMatchEtaPhi(0)
+  fHistCentrality(0)
 {
   // Default constructor.
 
@@ -70,7 +68,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   fOutCaloName("CaloClustersCorr"),
   fPhiMatch(0.05),
   fEtaMatch(0.025),
-  fDoTrackClus(0),
+  fDoTrackClus(1),
   fHadCorr(0),
   fEexclCell(0),
   fOutClusters(0),
@@ -80,9 +78,7 @@ AliHadCorrTask::AliHadCorrTask(const char *name, Bool_t histo) :
   fHistEafter(0),
   fHistEoPCent(0),
   fHistNMatchCent(0),
-  fHistNMatchCent_trk(0),
-  fHistCentrality(0),
-  fHistNoMatchEtaPhi(0)
+  fHistCentrality(0)
 {
   // Standard constructor.
 
@@ -416,12 +412,10 @@ void AliHadCorrTask::UserCreateOutputObjects()
   fHistCentrality       = new TH1F("fHistCentrality",  "Centrality",       100, 0, 100);
   fHistNclusvsCent      = new TH1F("Nclusvscent",      "NclusVsCent",      100, 0, 100);
   fHistNclusMatchvsCent = new TH1F("NclusMatchvscent", "NclusMatchVsCent", 100, 0, 100);
-  fHistEbefore          = new TH2F("Ebefore",          "Ebefore",          100, 0, 100, 101, -0.5, 100.5);
-  fHistEafter           = new TH2F("Eafter",           "Eafter",           100, 0, 100, 101, -0.5, 100.5);
+  fHistEbefore          = new TH1F("Ebefore",          "Ebefore",          100, 0, 100);
+  fHistEafter           = new TH1F("Eafter",           "Eafter",           100, 0, 100);
   fHistEoPCent          = new TH2F("EoPCent",          "EoPCent",          100, 0, 100, 1000, 0,   10);
   fHistNMatchCent       = new TH2F("NMatchesCent",     "NMatchesCent",     100, 0, 100, 11, -0.5, 10.5);
-  fHistNMatchCent_trk   = new TH2F("NMatchesCent_trk", "NMatchesCent_trk", 100, 0, 100, 11, -0.5, 10.5);
-  fHistNoMatchEtaPhi    = new TH2F("NoMatchEtaPhi",    "NoMatchEtaPhi",    200, -1, 1, 90, 1, 4);
 
   fOutput->Add(fHistNclusMatchvsCent);
   fOutput->Add(fHistNclusvsCent);
@@ -429,85 +423,9 @@ void AliHadCorrTask::UserCreateOutputObjects()
   fOutput->Add(fHistEafter);
   fOutput->Add(fHistEoPCent);
   fOutput->Add(fHistNMatchCent);
-  fOutput->Add(fHistNMatchCent_trk);
   fOutput->Add(fHistCentrality);
-  fOutput->Add(fHistNoMatchEtaPhi);
 
   PostData(1, fOutput);
-}
-
-//________________________________________________________________________
-void AliHadCorrTask::DoTrackClusLoop() 
-{
-  // Do the track cluster loop.
-
-  const Int_t Ntrks = fTracks->GetEntries();
-
-  // loop over all tracks
-  for (Int_t t = 0; t < Ntrks; ++t) {
-    AliEmcalParticle *emctrack = static_cast<AliEmcalParticle*>(fTracks->At(t));
-    if (!emctrack)
-      continue;
-
-    AliVTrack *track = emctrack->GetTrack();
-    if (!track)
-      continue;
-    if (!AcceptTrack(track))
-      continue;
-
-    Int_t Nclus    = emctrack->GetNumberOfMatchedObj();
-    Int_t Nmatches = 0;
-
-    // loop over matched clusters
-    for (Int_t i = 0; i < Nclus; ++i) {
-      Int_t c = emctrack->GetMatchedObjId(i);
-      AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(fCaloClusters->At(c));
-      if (!emccluster)
-	continue;
-
-      AliVCluster *cluster = emccluster->GetCluster();
-      if (!cluster)
-	continue;
-
-      Double_t etadiff = 999;
-      Double_t phidiff = 999;
-      AliPicoTrack::GetEtaPhiDiff(track, cluster, phidiff, etadiff);
-
-      Double_t mom    = track->P();
-      Int_t mombin    = GetMomBin(mom);
-      Int_t centbinch = fCentBin;
-      if (track->Charge()<0) 
-        centbinch += 4;
-
-      Double_t etaCut   = 0.0;
-      Double_t phiCutlo = 0.0;
-      Double_t phiCuthi = 0.0;
-
-      if (fPhiMatch > 0) {
-        phiCutlo = -fPhiMatch;
-        phiCuthi = +fPhiMatch;
-      } else {
-        phiCutlo = GetPhiMean(mombin, centbinch) - GetPhiSigma(mombin, fCentBin);
-        phiCuthi = GetPhiMean(mombin, centbinch) + GetPhiSigma(mombin, fCentBin);
-      }
-
-      if (fEtaMatch > 0) {
-        etaCut = fEtaMatch;
-      }
-      else {
-        etaCut = GetEtaSigma(mombin);
-      }
-
-      if ((phidiff < phiCuthi && phidiff > phiCutlo) && TMath::Abs(etadiff) < etaCut) {
-	Nmatches++;
-      }
-    }
-
-    fHistNMatchCent_trk->Fill(fCent, Nmatches);
-
-    if (Nmatches == 0 && track->Pt() > 2.0)
-      fHistNoMatchEtaPhi->Fill(track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal());
-  }
 }
 
 //________________________________________________________________________
@@ -613,13 +531,11 @@ Bool_t AliHadCorrTask::Run()
 
   if (fCreateHisto) {
     fHistCentrality->Fill(fCent);
-    if (fDoTrackClus)
-    DoTrackClusLoop();
   }
 
    // loop over all clusters
   const Int_t Nclus = fCaloClusters->GetEntries();
- for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
+  for (Int_t iClus = 0, clusCount=0; iClus < Nclus; ++iClus) {
     AliEmcalParticle *emccluster = static_cast<AliEmcalParticle*>(fCaloClusters->At(iClus));
     if (!emccluster)
       continue;
