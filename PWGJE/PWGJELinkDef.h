@@ -31,4 +31,5 @@
 #pragma link C++ class AliAnalysisTaskPartonDisc+;
 #pragma link C++ class AliAnalysisTaskCheckSingleTrackJetRejection+;
 #pragma link C++ class  AliAnalysisTaskJetHadronCorrelation+;
+#pragma link C++ class  AliAnalysisTaskJetHBOM+;
 #endif
