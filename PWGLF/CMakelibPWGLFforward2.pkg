@@ -101,7 +101,7 @@ set ( DHDR  PWGLFforward2LinkDef.h)
 add_executable(runTrain
   FORWARD/analysis2/trains/runMain.cxx)
 target_link_libraries(runTrain 
-  ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS})
+  ${ARLIBS} ${SHLIBS} ${PBLIBS} ${EXEFLAGS} ${ROOTCLIBS})
 install(TARGETS runTrain 
   RUNTIME DESTINATION bin/tgt_${ALICE_TARGET})
 
