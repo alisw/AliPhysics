@@ -16,8 +16,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
  public:
 
   AliAnalysisTaskEmcalJet();
-  AliAnalysisTaskEmcalJet(const char *name);
-  AliAnalysisTaskEmcalJet(const char *name, Bool_t histo); 
+  AliAnalysisTaskEmcalJet(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcalJet();
 
   virtual void                UserExec(Option_t *option);
