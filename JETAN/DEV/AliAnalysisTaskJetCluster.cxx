@@ -66,7 +66,7 @@
 // get info on how fastjet was configured
 #include "fastjet/config.h"
 
-using std::vector;
+
 ClassImp(AliAnalysisTaskJetCluster)
 
 AliAnalysisTaskJetCluster::~AliAnalysisTaskJetCluster(){
@@ -1134,6 +1134,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	  }
 	}
 	if(part->Pt()>ptLead){
+	  ptLead = part->Pt();
 	  partLead = part;
 	}
 	if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
@@ -1218,6 +1219,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
        }
        if(skip)continue;
        tmpRecC.SetBgEnergy(0,0); // this is use as temporary storage of the summed p_T below
+       tmpRecC.SetPtLeading(-1.);
        if(fTCARandomConesOut)new ((*fTCARandomConesOut)[nCone++]) AliAODJet(tmpRecC);
        if(fTCARandomConesOutRan)new ((*fTCARandomConesOutRan)[nConeRan++]) AliAODJet(tmpRecC);
      }// loop over random cones creation
@@ -1235,10 +1237,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	   if(jC&&jC->DeltaR(vp)<fRparam){
 	     if(vp->Pt()>fMaxTrackPtInJet)jC->SetTrigger(AliAODJet::kHighTrackPtTriggered);
 	     jC->SetBgEnergy(jC->ChargedBgEnergy()+vp->Pt(),0);
+	     if(vp->Pt() > jC->GetPtLeading()) jC->SetPtLeading(vp->Pt());
 	   }
 	 }  
        }// add up energy in cone
-      
+
        // the randomized input changes eta and phi, but keeps the p_T
        if(i>=fNSkipLeadingRan){// eventually skip the leading particles
 	 Double_t pTR = vp->Pt();
@@ -1258,6 +1261,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	     if(jC&&jC->DeltaR(&vTmpRanR)<fRparam){
 	       if(vTmpRanR.Pt()>fMaxTrackPtInJet)jC->SetTrigger(AliAODJet::kHighTrackPtTriggered);
 	       jC->SetBgEnergy(jC->ChargedBgEnergy()+vTmpRanR.Pt(),0);
+	       if(vTmpRanR.Pt() > jC->GetPtLeading()) jC->SetPtLeading(vTmpRanR.Pt());
 	     }
 	   }  
 	 }
@@ -1267,7 +1271,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Float_t jetArea = fRparam*fRparam*TMath::Pi();
      if(fTCARandomConesOut){
        for(int ir = 0;ir < fTCARandomConesOut->GetEntriesFast();ir++){
-	 // rescale the momntum vectors for the random cones
+	 // rescale the momentum vectors for the random cones
 	 
 	 AliAODJet *rC = (AliAODJet*)fTCARandomConesOut->At(ir);
 	 if(rC){
