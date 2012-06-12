@@ -30,6 +30,8 @@
 #include "AliFlowTrackSimple.h"
 #include "AliFlowTrackSimpleCuts.h"
 
+using std::endl;
+using std::cout;
 ClassImp(AliFlowEventSimpleMakerOnTheFly)
 
 //========================================================================================================================================

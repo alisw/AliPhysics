@@ -36,6 +36,8 @@ class AliAnalysisTaskSE;
 
 #include "AliLog.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskQCumulants)
 
 //================================================================================================================

@@ -55,6 +55,8 @@ class TVector;
 
 //================================================================================================================
 
+using std::endl;
+using std::cout;
 ClassImp(AliFlowAnalysisWithFittingQDistribution)
 
 AliFlowAnalysisWithFittingQDistribution::AliFlowAnalysisWithFittingQDistribution():  

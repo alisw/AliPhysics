@@ -36,7 +36,8 @@
 #include "AliCFManager.h"
 #include "AliFlowTrackSimpleCuts.h"
 
-
+using std::endl;
+using std::cout;
 ClassImp(AliFlowEventSimpleMaker)
 //----------------------------------------------------------------------- 
 AliFlowEventSimpleMaker::AliFlowEventSimpleMaker() :

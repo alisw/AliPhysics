@@ -39,6 +39,8 @@ class TGeoManager;
 // --- AliRoot header files ---
 class AliJetFinder;
 
+using std::cout;
+using std::endl;
 ClassImp(AliJetAODFillUnitArrayTracks)
 
 //_____________________________________________________________________________

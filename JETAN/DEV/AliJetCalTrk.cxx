@@ -25,6 +25,8 @@
 
 #include "AliVCaloCells.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliJetCalTrkTrack)
 
 //////////////////////////////////////////////////////////////////

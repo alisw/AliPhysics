@@ -74,6 +74,8 @@
 
 #include "AliLog.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskFlowEvent)
 
 //________________________________________________________________________

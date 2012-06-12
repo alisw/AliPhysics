@@ -42,6 +42,9 @@
 #include "AliFlowEventSimple.h"
 #include "TRandom.h"
 
+using std::cout;
+using std::endl;
+using std::cerr;
 ClassImp(AliFlowEventSimple)
 
 //-----------------------------------------------------------------------

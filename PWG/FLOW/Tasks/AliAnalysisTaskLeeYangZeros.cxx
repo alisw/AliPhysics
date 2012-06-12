@@ -35,6 +35,8 @@ class AliAnalysisTaskSE;
 // analysis task for Lee Yang Zeros method
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskLeeYangZeros)
 
 //________________________________________________________________________

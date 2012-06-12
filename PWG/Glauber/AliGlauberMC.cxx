@@ -36,6 +36,7 @@
 #include "AliGlauberNucleus.h"
 #include "AliGlauberMC.h"
 
+using std::flush;
 ClassImp(AliGlauberMC)
 
 //______________________________________________________________________________

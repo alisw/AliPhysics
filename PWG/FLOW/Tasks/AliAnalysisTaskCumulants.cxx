@@ -33,6 +33,8 @@ class AliAnalysisTaskSE;
 #include "AliAnalysisTaskCumulants.h"
 #include "AliFlowAnalysisWithCumulants.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskCumulants)
 
 //================================================================================================================

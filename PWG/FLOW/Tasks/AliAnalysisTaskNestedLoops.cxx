@@ -34,6 +34,8 @@ class AliAnalysisTaskSE;
 #include "AliAnalysisTaskNestedLoops.h"
 #include "AliFlowAnalysisWithNestedLoops.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskNestedLoops)
 
 //================================================================================================================

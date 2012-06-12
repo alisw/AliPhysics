@@ -26,6 +26,8 @@ class TTree;
 class AliAODEvent;
 class AliJetReaderHeader;
 
+using std::vector;
+
 class AliJetFinder : public TObject 
 {
  public:

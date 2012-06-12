@@ -52,6 +52,7 @@
 #include "TMatrixDSymEigen.h"
 #include "TVector.h"
 
+using std::ifstream;
 ClassImp(AliAnalysisHelperJetTasks)
 
 Int_t AliAnalysisHelperJetTasks::fgLastProcessType = -1;

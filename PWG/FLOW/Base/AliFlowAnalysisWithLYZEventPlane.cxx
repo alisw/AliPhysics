@@ -43,7 +43,9 @@ $Log$
 #include "AliFlowAnalysisWithLYZEventPlane.h"
 #include "AliFlowVector.h"
 
-
+using std::endl;
+using std::cout;
+using std::cerr;
 ClassImp(AliFlowAnalysisWithLYZEventPlane)
 
   //-----------------------------------------------------------------------

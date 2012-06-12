@@ -56,6 +56,8 @@
 
 class AliFlowTrackCuts;
 
+using std::cout;
+using std::endl;
 ClassImp(AliAnalysisTaskPhiFlow)
 
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),

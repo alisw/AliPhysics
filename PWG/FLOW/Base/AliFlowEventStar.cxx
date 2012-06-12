@@ -27,6 +27,8 @@
 #include "AliStarEvent.h"
 #include "AliFlowEventStar.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliFlowEventStar)
 
 //-----------------------------------------------------------------------

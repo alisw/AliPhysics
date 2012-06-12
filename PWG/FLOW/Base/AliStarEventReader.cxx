@@ -34,6 +34,9 @@
 #include "AliStarEvent.h"
 #include "AliStarTrack.h"
 
+using std::cout;
+using std::endl;
+using std::ifstream;
 ClassImp(AliStarEventReader)
 
 //______________________________________________________________________________

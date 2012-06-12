@@ -64,6 +64,9 @@ class TVector;
 
 //================================================================================================================
 
+using std::endl;
+using std::cout;
+using std::flush;
 ClassImp(AliFlowAnalysisWithQCumulants)
 
 AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants(): 

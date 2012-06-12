@@ -26,6 +26,8 @@
 
 #include "AliSISConeJetHeader.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliSISConeJetHeader)
 
 ////////////////////////////////////////////////////////////////////////

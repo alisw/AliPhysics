@@ -29,6 +29,8 @@
 
 #include "AliFastJetHeaderV1.h"
 
+using std::cout;
+using std::endl;
 ClassImp(AliFastJetHeaderV1)
 
 ////////////////////////////////////////////////////////////////////////
