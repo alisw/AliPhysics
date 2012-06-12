@@ -32,8 +32,31 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
     virtual void     UserCreateOutputObjects();
     virtual void     UserExec(Option_t *option);
     virtual void     Terminate(Option_t *);
-    
+		
+	void	SetIsMonteCarlo			(bool isMonteCarlo = false)			{fIsMonteCarlo = isMonteCarlo;}
+	void	SetCutCosPa				(double cutCosPa = 0.998)			{fcutCosPa = cutCosPa;}
+	void	SetCutcTauMin			(double cutcTauMin = -999)			{fcutcTauMin = cutcTauMin;}
+	void	SetCutNcTauMax			(double cutNcTauMax = 3.0)			{fcutNcTauMax = cutNcTauMax;}
+	void	SetCutBetheBloch		(double cutBetheBloch = 3.0)		{fcutBetheBloch = cutBetheBloch;}
+	void	SetCutMinNClustersTPC	(double cutMinNClustersTPC = 70)	{fcutMinNClustersTPC = cutMinNClustersTPC;}
+	void	SetCutRatio				(double cutRatio = 0.8)				{fcutRatio = cutRatio;}
+	void	SetCutEta				(double cutEta = 0.8)				{fcutEta = cutEta;}
+	void	SetCutRapidity			(double cutRapidity = 0.5)			{fcutRapidity = cutRapidity;}
+	void	SetCutArmenteros		(double cutArmenteros = 0.2)		{fcutArmenteros = cutArmenteros;}
+	
  private:
+	bool	fIsMonteCarlo;
+	
+	double	fcutCosPa;
+	double	fcutcTauMin;
+	double	fcutNcTauMax;
+	double	fcutBetheBloch;
+	double	fcutMinNClustersTPC;
+	double	fcutRatio;
+	double	fcutEta;
+	double	fcutRapidity;
+	double	fcutArmenteros;
+	
 	TList           *fOutput;        // Output list
 	AliPIDResponse	*fPIDResponse;	 // PID
 	UInt_t			maskIsSelected; // Physics Selection

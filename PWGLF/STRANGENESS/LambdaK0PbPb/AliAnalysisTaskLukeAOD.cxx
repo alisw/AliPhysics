@@ -66,7 +66,7 @@ ClassImp(AliAnalysisTaskLukeAOD)
 
 //________________________________________________________________________
 AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD() // All data members should be initialised here
-:AliAnalysisTaskSE(),
+:AliAnalysisTaskSE(),fIsMonteCarlo(false), fcutCosPa(0.998),fcutcTauMin(-999), fcutNcTauMax(3.0), fcutBetheBloch(3.0), fcutMinNClustersTPC(70), fcutRatio(0.8), fcutEta(0.8), fcutRapidity(0.5), fcutArmenteros(0.2),
 fOutput(0),
 fPIDResponse(0),
 
@@ -228,7 +228,7 @@ fHistMcRapAFoundK0Pt(0)
 
 //________________________________________________________________________
 AliAnalysisTaskLukeAOD::AliAnalysisTaskLukeAOD(const char *name) // All data members should be initialised here
-:AliAnalysisTaskSE(name),
+:AliAnalysisTaskSE(name), fIsMonteCarlo(false), fcutCosPa(0.998),fcutcTauMin(-999), fcutNcTauMax(3.0), fcutBetheBloch(3.0), fcutMinNClustersTPC(70), fcutRatio(0.8), fcutEta(0.8), fcutRapidity(0.5), fcutArmenteros(0.2),
 fOutput(0),
 fPIDResponse(0),
 
@@ -741,22 +741,22 @@ void AliAnalysisTaskLukeAOD::UserCreateOutputObjects()
 
 //________________________________________________________________________
 
-static Bool_t AcceptTrack(const AliAODTrack *t, double cutMinNClustersTPC, double cutRatio) 
+static Bool_t AcceptTrack(const AliAODTrack *t, double fcutMinNClustersTPC, double fcutRatio) 
 {
 	if (!t->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
 	//if (t->GetKinkIndex(0)>0) return kFALSE;
 	
 	Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1); 
-	if (nCrossedRowsTPC < cutMinNClustersTPC) return kFALSE;
+	if (nCrossedRowsTPC < fcutMinNClustersTPC && fcutMinNClustersTPC != -999) return kFALSE;
 	Int_t findable=t->GetTPCNclsF();
 	if (findable <= 0) return kFALSE;
-	if (nCrossedRowsTPC/findable < cutRatio) return kFALSE;
+	if (nCrossedRowsTPC/findable < fcutRatio && fcutRatio != -999) return kFALSE;
 	
 	return kTRUE;
 }
 
 //________________________________________________________________________
-static Bool_t AcceptV0_general(const AliAODv0 *v1, const AliAODEvent *aod, double cutCosPa, double cutNImpact, double cutDCA, double cutEta, double cutMinNClustersTPC, double cutRatio) 
+static Bool_t AcceptV0_general(const AliAODv0 *v1, const AliAODEvent *aod, double fcutCosPa, double fcutNImpact, double fcutDCA, double fcutEta, double fcutMinNClustersTPC, double fcutRatio) 
 {
 	
 	if (v1->GetOnFlyStatus()) return kFALSE;
@@ -766,33 +766,33 @@ static Bool_t AcceptV0_general(const AliAODv0 *v1, const AliAODEvent *aod, doubl
 	if(ntracktest->Charge() > 0){nnum = 0; pnum = 1;}	
 	
 	const AliAODTrack *ntrack1=(AliAODTrack *)v1->GetDaughter(nnum);
-	if (!AcceptTrack(ntrack1, cutMinNClustersTPC, cutRatio)) return kFALSE;
+	if (!AcceptTrack(ntrack1, fcutMinNClustersTPC, fcutRatio)) return kFALSE;
 	
 	const AliAODTrack *ptrack1=(AliAODTrack *)v1->GetDaughter(pnum);
-	if (!AcceptTrack(ptrack1, cutMinNClustersTPC, cutRatio)) return kFALSE;
+	if (!AcceptTrack(ptrack1, fcutMinNClustersTPC, fcutRatio)) return kFALSE;
 	
 	Float_t impact=v1->DcaNegToPrimVertex();
 	if (TMath::Abs(impact)<0.1) return kFALSE;
-	if (TMath::Abs(impact)<cutNImpact && cutNImpact != -999) return kFALSE;
+	if (TMath::Abs(impact)<fcutNImpact && fcutNImpact != -999) return kFALSE;
 	impact=v1->DcaPosToPrimVertex();
 	if (TMath::Abs(impact)<0.1) return kFALSE;
-	if (TMath::Abs(impact)<cutNImpact && cutNImpact != -999) return kFALSE;
+	if (TMath::Abs(impact)<fcutNImpact && fcutNImpact != -999) return kFALSE;
 	
 	Double_t dca=v1->DcaV0Daughters();
-	if (TMath::Abs(dca)>cutDCA && cutDCA != -999) return kFALSE;
+	if (TMath::Abs(dca)>fcutDCA && fcutDCA != -999) return kFALSE;
 	
 	Double_t cpa=v1->CosPointingAngle(aod->GetPrimaryVertex());
-	if (cpa<cutCosPa && cutCosPa != -999) return kFALSE;
+	if (cpa<fcutCosPa && fcutCosPa != -999) return kFALSE;
 	
 	Double_t etaN = v1->PseudoRapNeg();
 	Double_t etaP = v1->PseudoRapPos();
-	if ((TMath::Abs(etaN)>cutEta || TMath::Abs(etaP)>cutEta) && cutEta != -999) return kFALSE;
+	if ((TMath::Abs(etaN)>fcutEta || TMath::Abs(etaP)>fcutEta) && fcutEta != -999) return kFALSE;
 	
 	return kTRUE;
 }
 
 //________________________________________________________________________
-static Bool_t AcceptV0_particle(const AliAODv0 *v1, int type,  double cutcTau, double cutRapidity, Double_t decayL) 
+static Bool_t AcceptV0_particle(const AliAODv0 *v1, int type,  double fcutcTauMin, double fcutRapidity, Double_t decayL) 
 {
 	
 	Double_t cTau = 0;
@@ -803,20 +803,20 @@ static Bool_t AcceptV0_particle(const AliAODv0 *v1, int type,  double cutcTau, d
 	if(type == 0)
 	{cTau = decayL*(v1->MassK0Short())/(v1->P());}
 	
-	if (cTau < cutcTau && cTau != -999 ) return kFALSE;
+	if (cTau < fcutcTauMin && cTau != -999 ) return kFALSE;
 	
 	Double_t rap = 0;
 	if(type == 1 || type == 2)
 	{rap = v1->RapLambda();}
 	if(type == 0)
 	{rap = v1->RapK0Short();}
-	if (TMath::Abs(rap)>cutRapidity && cutRapidity != -999) return kFALSE;
+	if (TMath::Abs(rap)>fcutRapidity && fcutRapidity != -999) return kFALSE;
 	
 	return kTRUE;
 }
 
 //________________________________________________________________________
-static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int type, double cutBetheBloch, Double_t decayL, bool isMonteCarlo) 
+static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int type, double fcutBetheBloch, Double_t decayL, bool fIsMonteCarlo, double fcutNcTauMax) 
 {
 	
 	
@@ -828,8 +828,8 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 	if(type == 0)
 	{cTau = decayL*(v1->MassK0Short())/(v1->P());}
 	
-	if (cTau > (3*7.89) && (type ==1 || type ==2)) return kFALSE;
-	if (cTau > (3*2.68) && (type ==0)) return kFALSE;
+	if (cTau > (fcutNcTauMax*7.89) && fcutNcTauMax != -999 && (type ==1 || type ==2)) return kFALSE;
+	if (cTau > (fcutNcTauMax*2.68) && fcutNcTauMax != -999 && (type ==0)) return kFALSE;
 	
 	int nnum = 1, pnum = 0;
 	const AliAODTrack *ntracktest=(AliAODTrack *)v1->GetDaughter(nnum);
@@ -849,13 +849,13 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 		if(type == 1)
 		{
 			nsig_p=PIDResponse->NumberOfSigmasTPC(ptrack1,AliPID::kProton);
-			if (TMath::Abs(nsig_p) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo  && ptrack1->P() <= 1) return kFALSE;
+			if (TMath::Abs(nsig_p) > fcutBetheBloch && fcutBetheBloch >0 && !fIsMonteCarlo  && ptrack1->P() <= 1) return kFALSE;
 		}
 		
 		if(type == 2)
 		{
 			nsig_p=PIDResponse->NumberOfSigmasTPC(ptrack1,AliPID::kProton);
-			if (TMath::Abs(nsig_p) <= cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo  && ptrack1->P() <= 1) return kFALSE;
+			if (TMath::Abs(nsig_p) <= fcutBetheBloch && fcutBetheBloch >0 && !fIsMonteCarlo  && ptrack1->P() <= 1) return kFALSE;
 		}
 	
 	}
@@ -865,13 +865,13 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 		if(type == 2)
 		{
 			nsig_n=PIDResponse->NumberOfSigmasTPC(ntrack1,AliPID::kProton);
-			if (TMath::Abs(nsig_n) > cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo  && ntrack1->P() <= 1) return kFALSE;
+			if (TMath::Abs(nsig_n) > fcutBetheBloch && fcutBetheBloch >0 && !fIsMonteCarlo  && ntrack1->P() <= 1) return kFALSE;
 		}
 		
 		if(type == 1)
 		{
 			nsig_n=PIDResponse->NumberOfSigmasTPC(ntrack1,AliPID::kProton);
-			if (TMath::Abs(nsig_n) <= cutBetheBloch && cutBetheBloch >0 && !isMonteCarlo  && ntrack1->P() <= 1) return kFALSE;
+			if (TMath::Abs(nsig_n) <= fcutBetheBloch && fcutBetheBloch >0 && !fIsMonteCarlo  && ntrack1->P() <= 1) return kFALSE;
 		}
 	
 	
@@ -889,14 +889,14 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 	
 	fHistLog->Fill(1);
 	
-	// parameters used for most cuts, to minimise editing
-	double cutCosPa(0.998), cutcTau(-999);
-	double cutNImpact(-999), cutDCA(-999);
-	double cutBetheBloch(3); // NOTE - BB cut only applies to data, must be accounted for when constructing corrected yields
-	double cutMinNClustersTPC(70), cutRatio(0.8);
-	bool isMonteCarlo(false); 
+	// parameters used for most fcuts, to minimise editing
+	//double fcutCosPa(0.998), fcutcTauMin(-999), fcutNcTauMax(3.0);
+	double fcutNImpact(-999), fcutDCA(-999);
+	//double fcutBetheBloch(3.0); // NOTE - BB fcut only applies to data, must be accounted for when constructing corrected yields
+	//double fcutMinNClustersTPC(70), fcutRatio(0.8);
+	//bool fIsMonteCarlo(false); 
 	int isMCtype(0);    //1 = Pure Hijing only, 0 = Anything, -1 = Injected only
-	double cutEta(0.8), cutRapidity(0.5), cutArmenteros(0.2);
+	//double fcutEta(0.8), fcutRapidity(0.5), fcutArmenteros(0.2);
 	
     // Create pointer to reconstructed event
 	AliAODEvent *aod=(AliAODEvent *)InputEvent();	
@@ -924,7 +924,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 	
 	int isInjected = -1;
 	
-	if(isMonteCarlo) 
+	if(fIsMonteCarlo) 
 	{
 		
 		// Create pointer to reconstructed event
@@ -1030,7 +1030,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 						isprimaryMC = true;
 						if(lambdaMC)
 						{
-							if(TMath::Abs(mcPart->Y())<=cutRapidity)
+							if(TMath::Abs(mcPart->Y())<=fcutRapidity)
 							{
 								fHistMcPMLaPt->Fill(mcPart->Pt(),mcPart->M());
 								
@@ -1059,7 +1059,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 						}
 						if(antilambdaMC)
 						{
-							if(TMath::Abs(mcPart->Y())<=cutRapidity)
+							if(TMath::Abs(mcPart->Y())<=fcutRapidity)
 							{
 								fHistMcPMLbPt->Fill(mcPart->Pt(),mcPart->M());
 								
@@ -1089,7 +1089,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 						}
 						if(kshortMC)
 						{
-							if(TMath::Abs(mcPart->Y())<=cutRapidity)
+							if(TMath::Abs(mcPart->Y())<=fcutRapidity)
 							{
 								fHistMcPMK0Pt->Fill(mcPart->Pt(),mcPart->M());
 								
@@ -1208,7 +1208,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		Double_t dca=v0->DcaV0Daughters();
 		Double_t eta=v0->PseudoRapV0();
 		
-		if(!AcceptV0_general(v0,aod,cutCosPa,cutNImpact,cutDCA,cutEta,cutMinNClustersTPC, cutRatio))
+		if(!AcceptV0_general(v0,aod,fcutCosPa,fcutNImpact,fcutDCA,fcutEta,fcutMinNClustersTPC, fcutRatio))
 		{ 
 			fHistLog->Fill(86);
 			continue; 
@@ -1247,20 +1247,20 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 			
 		}*/
 		
-		if(!AcceptV0_particle(v0,1,cutcTau, cutRapidity, decayL))
+		if(!AcceptV0_particle(v0,1,fcutcTauMin, fcutRapidity, decayL))
 		{ lambdaCandidate = kFALSE; }
-		if(!AcceptV0_particle(v0,2,cutcTau, cutRapidity, decayL))
+		if(!AcceptV0_particle(v0,2,fcutcTauMin, fcutRapidity, decayL))
 		{ antilambdaCandidate = kFALSE; }
-		if(!AcceptV0_particle(v0,0,cutcTau, cutRapidity, decayL))
+		if(!AcceptV0_particle(v0,0,fcutcTauMin, fcutRapidity, decayL))
 		{ k0Candidate = kFALSE; }
 		
 		if(TMath::Sqrt(v0->Pt2V0())<2)
 		{
-			if(!AcceptV0_lowpt(v0,fPIDResponse,1,cutBetheBloch,decayL,isMonteCarlo))
+			if(!AcceptV0_lowpt(v0,fPIDResponse,1,fcutBetheBloch,decayL,fIsMonteCarlo,fcutNcTauMax))
 			{ lambdaCandidate = kFALSE; }
-			if(!AcceptV0_lowpt(v0,fPIDResponse,2,cutBetheBloch,decayL,isMonteCarlo))
+			if(!AcceptV0_lowpt(v0,fPIDResponse,2,fcutBetheBloch,decayL,fIsMonteCarlo,fcutNcTauMax))
 			{ antilambdaCandidate = kFALSE; }
-			if(!AcceptV0_lowpt(v0,fPIDResponse,0,cutBetheBloch,decayL,isMonteCarlo))
+			if(!AcceptV0_lowpt(v0,fPIDResponse,0,fcutBetheBloch,decayL,fIsMonteCarlo,fcutNcTauMax))
 			{ k0Candidate = kFALSE; }
 		}
 		
@@ -1273,7 +1273,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		
 		bool feeddown = false;
 		
-		if(isMonteCarlo)
+		if(fIsMonteCarlo)
 		{
 			bool passedTests = false;
 			TList *list = aod->GetList();
@@ -1375,7 +1375,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		if(k0Candidate &&  centPercentile >= 0.0001 && centPercentile <= 90.0 &&!feeddown )
 		{ fHistArmPodK0->Fill(ArmenterosAlpha,ArmenterosPt); }
 		
-		if( ArmenterosPt < TMath::Abs(cutArmenteros*ArmenterosAlpha) && cutArmenteros !=-999 )
+		if( ArmenterosPt <= TMath::Abs(fcutArmenteros*ArmenterosAlpha) && fcutArmenteros !=-999 )
 		{k0Candidate = false;}
 		
 		if(lambdaCandidate)
@@ -1419,7 +1419,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 			fHistRapLaPt->Fill(v0->RapLambda(),v0->MassLambda()); 
 			
 			
-			if(isMonteCarlo) 
+			if(fIsMonteCarlo) 
 			{
 				fHistMcCosPaFoundLaPt->Fill(1.0,v0->MassLambda()); 
 				fHistMccTauFoundLaPt->Fill(1.0,v0->MassLambda()); 
@@ -1465,7 +1465,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 			fHistEtaLbPt->Fill(eta,v0->MassAntiLambda()); 	
 			fHistRapLbPt->Fill(v0->RapLambda(),v0->MassAntiLambda()); 
 			
-			if(isMonteCarlo) 
+			if(fIsMonteCarlo) 
 			{
 				fHistMcCosPaFoundLbPt->Fill(1.0,v0->MassAntiLambda()); 
 				fHistMccTauFoundLbPt->Fill(1.0,v0->MassAntiLambda()); 	
@@ -1510,7 +1510,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 			fHistEtaK0Pt->Fill(eta,v0->MassK0Short()); 
 			fHistRapK0Pt->Fill(v0->RapK0Short(),v0->MassK0Short()); 
 			
-			if(isMonteCarlo) 
+			if(fIsMonteCarlo) 
 			{
 				fHistMcCosPaAFoundK0Pt->Fill(1.0,v0->MassK0Short()); 
 				fHistMccTauAFoundK0Pt->Fill(1.0,v0->MassK0Short()); 
