@@ -6,20 +6,20 @@
 
 #include "AliAnalysisTaskEmcalJet.h"
 
-#include <TObject.h>
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <TList.h>
+#include <TObject.h>
 
-#include "AliESDEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
-#include "AliVCluster.h"
-#include "AliVParticle.h"
-#include "AliEmcalJet.h"
-#include "AliVEventHandler.h"
-#include "AliLog.h"
 #include "AliEMCALGeometry.h"
+#include "AliESDEvent.h"
+#include "AliEmcalJet.h"
+#include "AliLog.h"
+#include "AliVCluster.h"
+#include "AliVEventHandler.h"
+#include "AliVParticle.h"
 
 ClassImp(AliAnalysisTaskEmcalJet)
 
@@ -41,26 +41,6 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fJets(0)
 {
   // Default constructor.
-}
-
-//________________________________________________________________________
-AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name) : 
-  AliAnalysisTaskEmcal(name),
-  fJetRadius(0.4),
-  fJetsName("Jets"),
-  fPtBiasJetTrack(10),
-  fPtBiasJetClus(10),
-  fJetPtCut(1),
-  fJetAreaCut(0.2),
-  fMinEta(-0.9),
-  fMaxEta(0.9),
-  fMinPhi(-10),
-  fMaxPhi(10),
-  fMaxClusterPt(100),
-  fMaxTrackPt(100),
-  fJets(0)
-{
-  // Standard constructor.
 }
 
 //________________________________________________________________________
@@ -97,10 +77,10 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
   if (!AliAnalysisTaskEmcal::RetrieveEventObjects())
     return kFALSE;
 
-  if (!fJetsName.IsNull()) {
+  if (!fJetsName.IsNull() && !fJets) {
     fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
     if (!fJets) {
-      AliWarning(Form("Could not retrieve jets %s!", fJetsName.Data())); 
+      AliWarning(Form("%s: Could not retrieve jets %s!", GetName(), fJetsName.Data())); 
     }
   }
 
@@ -112,7 +92,7 @@ Bool_t AliAnalysisTaskEmcalJet::IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_
 {
   // Return true if track is in jet.
 
-  for (Int_t i = 0; i < jet->GetNumberOfTracks(); i++) {
+  for (Int_t i = 0; i < jet->GetNumberOfTracks(); ++i) {
     Int_t ijettrack = jet->TrackAt(i);
     if (sorted && ijettrack > itrack)
       return kFALSE;
@@ -127,7 +107,7 @@ Bool_t AliAnalysisTaskEmcalJet::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool
 {
   // Return true if cluster is in jet.
 
-  for (Int_t i = 0; i < jet->GetNumberOfClusters(); i++) {
+  for (Int_t i = 0; i < jet->GetNumberOfClusters(); ++i) {
     Int_t ijetclus = jet->ClusterAt(i);
     if (sorted && ijetclus > iclus)
       return kFALSE;
@@ -171,18 +151,16 @@ void AliAnalysisTaskEmcalJet::Init()
   if (fAnaType == kTPC) {
     SetEtaLimits(-0.9 + fJetRadius, 0.9 - fJetRadius);
     SetPhiLimits(-10, 10);
-  }
-  else if (fAnaType == kEMCAL) {
+  } else if (fAnaType == kEMCAL) {
     AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
     if (!geom) {
-      AliFatal("Can not create geometry");
+      AliFatal(Form("%s: Can not create geometry", GetName()));
       return;
     }
     SetEtaLimits(geom->GetArm1EtaMin() + fJetRadius, geom->GetArm1EtaMax() - fJetRadius);
     SetPhiLimits(geom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, geom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
-  }
-  else {
-    AliWarning("Analysis type not recognized! Assuming kTPC...");
+  } else {
+    AliWarning(Form("%s: Analysis type not recognized! Assuming kTPC!", GetName()));
     SetAnaType(kTPC);
     Init();
   }
