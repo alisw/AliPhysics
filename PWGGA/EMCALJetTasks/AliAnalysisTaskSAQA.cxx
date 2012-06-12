@@ -26,7 +26,7 @@ ClassImp(AliAnalysisTaskSAQA)
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA"),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA", kTRUE),
   fCellEnergyCut(0.1),
   fDoTrigger(kFALSE),
   fTrgClusName("ClustersL1GAMMAFEE"),
@@ -56,16 +56,18 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   }
 
   for (Int_t i = 0; i < 4; i++) {
+    fHistJetsPtNonBias[i] = 0;
     fHistJetsPtTrack[i] = 0;
     fHistJetsPtClus[i] = 0;
     fHistJetsPt[i] = 0;
     fHistJetsPtArea[i] = 0;
+    fHistJetsPtAreaNonBias[i] = 0;
   }
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) : 
-  AliAnalysisTaskEmcalJet(name),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fCellEnergyCut(0.1),
   fDoTrigger(kFALSE),
   fTrgClusName("ClustersL1GAMMAFEE"),
@@ -95,10 +97,12 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   }
 
   for (Int_t i = 0; i < 4; i++) {
+    fHistJetsPtNonBias[i] = 0;
     fHistJetsPtTrack[i] = 0;
     fHistJetsPtClus[i] = 0;
     fHistJetsPt[i] = 0;
     fHistJetsPtArea[i] = 0;
+    fHistJetsPtAreaNonBias[i] = 0;
   }
 }
 
@@ -237,19 +241,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   TString histname;
 
   for (Int_t i = 0; i < 4; i++) {
-    histname = "fHistJetsPt_";
+    histname = "fHistJetsPtNonBias_";
     histname += i;
-    fHistJetsPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
-    fHistJetsPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistJetsPt[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistJetsPt[i]);
-
-    histname = "fHistJetsPtArea_";
-    histname += i;
-    fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
-    fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
-    fOutput->Add(fHistJetsPtArea[i]);
+    fHistJetsPtNonBias[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+    fHistJetsPtNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistJetsPtNonBias[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsPtNonBias[i]);
 
     histname = "fHistJetsPtTrack_";
     histname += i;
@@ -266,6 +263,27 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistJetsPtClus[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistJetsPtClus[i]);
     }
+
+    histname = "fHistJetsPt_";
+    histname += i;
+    fHistJetsPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+    fHistJetsPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistJetsPt[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsPt[i]);
+
+    histname = "fHistJetsPtAreaNonBias_";
+    histname += i;
+    fHistJetsPtAreaNonBias[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistJetsPtAreaNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistJetsPtAreaNonBias[i]->GetYaxis()->SetTitle("area");
+    fOutput->Add(fHistJetsPtAreaNonBias[i]);
+
+    histname = "fHistJetsPtArea_";
+    histname += i;
+    fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
+    fOutput->Add(fHistJetsPtArea[i]);
   }
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
@@ -472,8 +490,8 @@ void AliAnalysisTaskSAQA::DoJetLoop()
     if (!AcceptJet(jet, kFALSE))
       continue;
 
-    fHistJetsPt[fCentBin]->Fill(jet->Pt());
-    fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
+    fHistJetsPtNonBias[fCentBin]->Fill(jet->Pt());
+    fHistJetsPtAreaNonBias[fCentBin]->Fill(jet->Pt(), jet->Area());
 
     if (jet->MaxTrackPt() > fPtBiasJetTrack)
       fHistJetsPtTrack[fCentBin]->Fill(jet->Pt());
@@ -481,6 +499,12 @@ void AliAnalysisTaskSAQA::DoJetLoop()
     if (fAnaType == kEMCAL && jet->MaxClusterPt() > fPtBiasJetClus)
       fHistJetsPtClus[fCentBin]->Fill(jet->Pt());
     
+    if (!AcceptBiasJet(jet))
+      continue;
+
+    fHistJetsPt[fCentBin]->Fill(jet->Pt());
+    fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
+
     fHistJetsPhiEta->Fill(jet->Eta(), jet->Phi());
   }
 }
