@@ -7,6 +7,8 @@
 
 #include "root2date.h"
 
+using std::ofstream;
+
 int Root2Date(AliRawVEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlDir) {
 
  unsigned char *p=gdcDateEvent;

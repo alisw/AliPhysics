@@ -72,6 +72,8 @@
 
 #include "AliMUONReAlignTask.h"
 
+using std::cout;
+using std::endl;
 ///\cond CLASSIMP   
 ClassImp(AliMUONReAlignTask)
 ///\endcond

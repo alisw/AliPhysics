@@ -11,6 +11,9 @@
 #include <TGrid.h>
 #include "deroot.h"
 
+using std::cerr;
+using std::endl;
+
 int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFilesFolder);
 
 int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFilesFolder) {

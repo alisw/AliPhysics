@@ -30,6 +30,9 @@
 #include "TString.h"
 #include "Riostream.h"
 
+using std::cout;
+using std::endl;
+using std::setw;
 ClassImp(AliHLTMuonSpectroScalars);
 ClassImp(AliHLTMuonSpectroScalars::AliScalar);
 

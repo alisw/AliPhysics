@@ -31,6 +31,9 @@
 #include "Riostream.h"
 #include <cassert>
 
+using std::cout;
+using std::endl;
+using std::setw;
 ClassImp(AliHLTTriggerCounters);
 ClassImp(AliHLTTriggerCounters::AliCounter);
 

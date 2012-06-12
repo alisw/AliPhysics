@@ -61,7 +61,7 @@
 //#include "AliHLTVertexer.h"
 #include <vector>
 
-
+using std::vector;
 ClassImp(AliITStrackerHLT)
 
 Bool_t AliITStrackerHLT::CheckTrack( const AliExternalTrackParam *t )
