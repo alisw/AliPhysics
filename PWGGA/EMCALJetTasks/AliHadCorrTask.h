@@ -32,7 +32,6 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   Double_t               ApplyHadCorrOneTrack(AliEmcalParticle *emccluster, Double_t hadCorr);
   Double_t               ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Double_t hadCorr);
   void                   DoMatchedTracksLoop(AliEmcalParticle *emccluster, Double_t &totalTrkP, Int_t &Nmatches);
-  void                   DoTrackClusLoop()                              ;
   Double_t               GetEtaSigma(Int_t pbin)                   const;
   Int_t                  GetMomBin(Double_t pt)                    const;
   Double_t               GetPhiMean(Int_t pbin, Int_t centbin)     const;
@@ -53,20 +52,18 @@ class AliHadCorrTask : public AliAnalysisTaskEmcal {
   TH2F                  *fHistMatchdRvsEP[4];        //!output histograms
   TH1F                  *fHistNclusvsCent;           //!output histograms
   TH1F                  *fHistNclusMatchvsCent;      //!output histograms
-  TH2F                  *fHistEbefore;               //!output histograms
-  TH2F                  *fHistEafter;                //!output histograms
+  TH1F                  *fHistEbefore;               //!output histograms
+  TH1F                  *fHistEafter;                //!output histograms
   TH2F                  *fHistEoPCent;               //!output histograms
   TH2F                  *fHistNMatchCent;            //!output histograms
-  TH2F                  *fHistNMatchCent_trk;        //!output histograms
   TH1F                  *fHistEsubPch[8];            //!output histograms
   TH2F                  *fHistEsubPchRat[8];         //!output histograms
   TH1F                  *fHistCentrality;            //!output histograms
-  TH2F                  *fHistNoMatchEtaPhi;         //!output histograms
 
  private:
   AliHadCorrTask(const AliHadCorrTask&);            // not implemented
   AliHadCorrTask &operator=(const AliHadCorrTask&); // not implemented
 
-  ClassDef(AliHadCorrTask, 9) // Hadronic correction task
+  ClassDef(AliHadCorrTask, 10) // Hadronic correction task
 };
 #endif
