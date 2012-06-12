@@ -31,8 +31,8 @@ class AliMuonInfoStoreMC : public AliMuonInfoStoreRD {
  public:
 
   AliMuonInfoStoreMC();
-  AliMuonInfoStoreMC(AliAODTrack     *trkAOD, AliMCEvent *mcEvent, Bool_t full=kFALSE);
-  AliMuonInfoStoreMC(AliESDMuonTrack *trkESD, AliMCEvent *mcEvent, Bool_t full=kFALSE);
+  AliMuonInfoStoreMC(AliAODTrack     *trkAOD, AliMCEvent *mcEvent, UInt_t selMask, Bool_t full=kFALSE);
+  AliMuonInfoStoreMC(AliESDMuonTrack *trkESD, AliMCEvent *mcEvent, UInt_t selMask, Bool_t full=kFALSE);
   AliMuonInfoStoreMC(const AliMuonInfoStoreMC &src);
   AliMuonInfoStoreMC& operator=(const AliMuonInfoStoreMC &src);
   virtual ~AliMuonInfoStoreMC();

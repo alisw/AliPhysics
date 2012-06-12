@@ -16,6 +16,7 @@
 #include <TObject.h>
 #include <TVector3.h>
 #include <TString.h>
+#include <TMath.h>
 
 class AliAODTrack;
 class AliESDMuonTrack;
@@ -24,13 +25,15 @@ class AliMuonInfoStoreRD : public TObject {
  public:
 
   AliMuonInfoStoreRD();
-  AliMuonInfoStoreRD(AliAODTrack *trk);
-  AliMuonInfoStoreRD(AliESDMuonTrack *trk);
+  AliMuonInfoStoreRD(AliAODTrack     *trk, UInt_t selMask);
+  AliMuonInfoStoreRD(AliESDMuonTrack *trk, UInt_t selMask);
   AliMuonInfoStoreRD(const AliMuonInfoStoreRD &src);
   AliMuonInfoStoreRD& operator=(const AliMuonInfoStoreRD &src);
   virtual ~AliMuonInfoStoreRD();
 
-  TVector3 Momentum()      const { return fMomentum; }
+  TVector3 MomentumAtVtx() const { return fMomentumAtVtx; }
+  TVector3 MomentumAtDCA() const { return fMomentumAtDCA; }
+  TVector3 MomentumUncor() const { return fMomentumUncor; }
 
   void XYZAtDCA(Double_t dca[3]) const { for (Int_t i=3; i--;) dca[i]=fDCA[i]; }
   Double_t DCA() const  { return TMath::Sqrt(fDCA[0]*fDCA[0]+fDCA[1]*fDCA[1]); }
@@ -40,21 +43,19 @@ class AliMuonInfoStoreRD : public TObject {
   Double_t Chi2Tracker()  const { return fChi2FitMomentum;  }
   Double_t Chi2Trigger()  const { return fChi2MatchTrigger; }
   Double_t RabsEnd()      const { return fRabsEnd;          }
-
-  Bool_t IsSelected();
-
-  static const char* StdBranchName()              { return fgkStdBranchName.Data(); }
-  static void SelectionCust(Double_t cuts[16])    { for (Int_t i=16; i--;) cuts[i]=fgCuts[i]; }
-  static void SetSelectionCuts(Double_t cuts[16]) { for (Int_t i=16; i--;) fgCuts[i]=cuts[i]; }
+  UInt_t   SelMask()      const { return fSelMask;          }
+  Bool_t   IsSelected(const UInt_t filter) { return ((fSelMask & filter) == filter); }
+  static const char* StdBranchName()       { return fgkStdBranchName.Data();       }
 
  private:
 
   void FillMuonInfo(AliAODTrack *trk);
   void FillMuonInfo(AliESDMuonTrack *trk);
 
-  void SetMomentum(Double_t p[3])      { fMomentum.SetXYZ(p[0],p[1],p[2]);      }
-
-  void SetDCA(Double_t dca[3]) { for (Int_t i=3; i--;) fDCA[i]=dca[i];    }
+  void SetMomentumAtVtx(Double_t p[3]) { fMomentumAtVtx.SetXYZ(p[0],p[1],p[2]); }
+  void SetMomentumAtDCA(Double_t p[3]) { fMomentumAtDCA.SetXYZ(p[0],p[1],p[2]); }
+  void SetMomentumUncor(Double_t p[3]) { fMomentumUncor.SetXYZ(p[0],p[1],p[2]); }
+  void SetDCA(Double_t dca[3])         { for (Int_t i=3; i--;) fDCA[i]=dca[i];  }
   void SetCharge(Short_t charge)           { fCharge           = charge;  }
   void SetMatchTrigger(Int_t trigger)      { fMatchTrigger     = trigger; }
   void SetChi2FitMomentum(Double_t chi2)   { fChi2FitMomentum  = chi2;    }
@@ -62,24 +63,10 @@ class AliMuonInfoStoreRD : public TObject {
   void SetRabsEnd(Double_t rAbsEnd)        { fRabsEnd          = rAbsEnd; }
 
   static const TString fgkStdBranchName;  // Standard branch name
-  static Double_t fgCuts[16];  // 0, min of 3-momentum
-                               // 1, max of 3-momentum
-                               // 2, pt_Min
-                               // 3, pt_Max
-                               // 4, eta_Min
-                               // 5, eta_Max
-                               // 6, dca_Min
-                               // 7, dca_Max
-                               // 8, about trigger matching
-                               // 9, about trigger matching
-                               //10, rAbs_Min
-                               //11, rAbs_Max
-                               //12, chi2Tracker Min
-                               //13, chi2Tracker Max
-                               //14, chi2Trigger Min
-                               //15, chi2Trigger Max
 
-  TVector3 fMomentum;       // momentum corrected w vtx
+  TVector3 fMomentumAtVtx;  // momentum corrected w vtx
+  TVector3 fMomentumAtDCA;  // momentum at DCA in vtx plane
+  TVector3 fMomentumUncor;  // momentum at first station
 
   Double_t fDCA[3];            // distance of closet approach
   Short_t  fCharge;            // track charge
@@ -87,8 +74,9 @@ class AliMuonInfoStoreRD : public TObject {
   Double_t fChi2FitMomentum;   // chi2/NDF of momentum fit
   Double_t fChi2MatchTrigger;  // chi2 of trigger matching
   Double_t fRabsEnd;  // position at the end of front absorber
+  UInt_t   fSelMask;  // mask of single muon selection
 
-  ClassDef(AliMuonInfoStoreRD, 5);
+  ClassDef(AliMuonInfoStoreRD, 7);
 };
 
 #endif

@@ -19,12 +19,14 @@ class TString;
 class TList;
 class TClonesArray;
 class AliMuonsHFHeader;
+class AliMuonTrackCuts;
+class AliMuonPairCuts;
 
 class AliAnalysisTaskSEMuonsHF : public AliAnalysisTaskSE {
  public:
 
   AliAnalysisTaskSEMuonsHF();
-  AliAnalysisTaskSEMuonsHF(const char *name);
+  AliAnalysisTaskSEMuonsHF(const char *name, const AliMuonTrackCuts& cutsMuon, const AliMuonPairCuts& cutsDimu);
   virtual ~AliAnalysisTaskSEMuonsHF();
 
   virtual void Init();
@@ -32,14 +34,13 @@ class AliAnalysisTaskSEMuonsHF : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *opt);
   virtual void Terminate(Option_t *opt);
+  virtual void NotifyRun();
 
   void SetAnaMode(Int_t mode)      { fAnaMode      = ((mode>=0 && mode<3) ? mode : 0); }
   void SetIsOutputTree(Bool_t ist) { fIsOutputTree = ist;                              }
   void SetUseMC(Bool_t isMC)       { fIsMC         = isMC;                             }
 
-  void SetEvsHCuts(Double_t cuts[3])  const { AliMuonsHFHeader::SetSelectionCuts(cuts);   }
-  void SetMuonCuts(Double_t cuts[12]) const { AliMuonInfoStoreRD::SetSelectionCuts(cuts); }
-  void SetDimuCuts(Double_t cuts[12]) const { AliDimuInfoStoreRD::SetSelectionCuts(cuts); }
+  void SetEvsHCuts(Double_t cuts[5])  const { AliMuonsHFHeader::SetSelectionCuts(cuts);   }
 
  private:
 
@@ -52,12 +53,15 @@ class AliAnalysisTaskSEMuonsHF : public AliAnalysisTaskSE {
   Bool_t fIsOutputTree;  // flag used to switch on/off tree output
   Bool_t fIsMC;          // flag of whether the input is MC
 
+  AliMuonTrackCuts *fCutsMuon;  // single muon selection cuts
+  AliMuonPairCuts  *fCutsDimu;  // dimuon selection cuts
+
   AliMuonsHFHeader *fHeader;  // output for info at ev level
   TClonesArray  *fMuonClArr;  // output clones array for single mu
   TClonesArray  *fDimuClArr;  // output clones array for dimu
   TList *fListOutput;         // output list of histos
 
-  ClassDef(AliAnalysisTaskSEMuonsHF, 6);
+  ClassDef(AliAnalysisTaskSEMuonsHF, 7);
 };
 
 #endif

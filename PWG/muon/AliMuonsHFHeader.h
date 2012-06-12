@@ -17,8 +17,8 @@
 #include <TString.h>
 
 class TList;
-class AliAODEvent;
-class AliESDEvent;
+class AliMCEvent;
+class AliInputEventHandler;
 
 class AliMuonInfoStoreRD;
 class AliDimuInfoStoreRD;
@@ -33,6 +33,7 @@ class AliMuonsHFHeader : public TNamed {
   AliMuonsHFHeader& operator=(const AliMuonsHFHeader &src);
   ~AliMuonsHFHeader();
 
+  void GetVMC(Double_t *vtx)  const { for (Int_t i=3; i--;) vtx[i]=fVMC[i]; }
   void GetXYZ(Double_t *vtx)  const { for (Int_t i=3; i--;) vtx[i]=fVtx[i]; }
   Double_t Vx()               const { return fVtx[0]; }
   Double_t Vy()               const { return fVtx[1]; }
@@ -40,16 +41,16 @@ class AliMuonsHFHeader : public TNamed {
   Double_t Vt()               const { return TMath::Sqrt(fVtx[0]*fVtx[0] + fVtx[1]*fVtx[1]); }
   Int_t VtxContrsN()          const { return fVtxContrsN; }
   TString FiredTriggerClass() const { return fFiredTriggerClass; }
-  Float_t Centrality()        const { return fCentrality; }
   UInt_t SelectionMask()      const { return fSelMask; }
   Bool_t IsMB()               const { return fIsMB; }
   Bool_t IsMU()               const { return fIsMU; }
+  Bool_t IsPileupSPD()        const { return fIsPileupSPD; }
+  Float_t    Centrality()     const { return fCentrality; }
+  Int_t      CentQA()         const { return fCentQA;}
+  Double32_t EventPlane()     const { return fEventPlane; }
   Bool_t IsSelected();
 
-  void SetSelectionMask(UInt_t mask) { fSelMask=mask; }
-  void SetVertex(AliVVertex *vertex);
-  void SetFiredTriggerClass(TString trigger);
-  void SetCentrality(Float_t centr) { fCentrality=centr; }
+  void SetEventInfo(AliInputEventHandler* const handler, AliMCEvent* const eventMC);
 
   void CreateHistograms(TList *list);
   void FillHistosEvnH(TList *list);
@@ -76,17 +77,21 @@ class AliMuonsHFHeader : public TNamed {
                               // 3, centrality max
                               // 4, centrality min
 
-  UInt_t fSelMask; // mask of physics selection
-  Bool_t fIsMB;    // is min. bias triggered event (for real data)
-  Bool_t fIsMU;    // is MUON triggered event (for real data)
-  Double_t fVtx[3];   // position of vtx
-  Int_t fVtxContrsN;  // num. of contributors of vtx rec
+  UInt_t fSelMask;     // mask of physics selection
+  Bool_t fIsMB;        // is min. bias triggered event (for real data)
+  Bool_t fIsMU;        // is MUON triggered event (for real data)
+  Bool_t fIsPileupSPD; // is pileup from SPD
+  Double_t fVtx[3];    // position of vtx
+  Double_t fVMC[3];    // position of vtx in MC
+  Int_t fVtxContrsN;   // num. of contributors of vtx rec
 
   TString fFiredTriggerClass; // trigger class
 
   Float_t fCentrality;  // event centrality class
+  Int_t   fCentQA;      // quality of centrality determination
+  Double32_t fEventPlane; // event plane angle
 
-  ClassDef(AliMuonsHFHeader, 5)
+  ClassDef(AliMuonsHFHeader, 7)
 };
 
 #endif
