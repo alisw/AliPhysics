@@ -228,7 +228,7 @@ protected:
       o << "  --run=" << fRunNumbers.At(i) << " \\\n";
     TrainSetup::SaveOptions(o, "--", r);
     if (fUseCent) o << "  --cent \\\n"
-    o << "  --type=AOD \\\n"
+      << "  --type=AOD \\\n"
       << "  --trig=INEL \\\n"
       << "  --vzMin=-10 \\\n"
       << "  --vzMax=10 \\\n"

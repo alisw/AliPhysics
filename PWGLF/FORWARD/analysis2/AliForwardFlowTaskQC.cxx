@@ -295,8 +295,10 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
   TH1D* cent = 0;
   // We make summary histograms of accepted events.
   for (Int_t i = 1; i < fSumList->GetEntries(); i++) {
-    list = (TList*)fSumList->At(i);
-    hist = (TH3D*)list->At(0);
+    list = dynamic_cast<TList*>(fSumList->At(i));
+    if (!list) continue;
+    hist = dynamic_cast<TH3D*>(list->At(0));
+    if (!hist) continue;
     const char* histname = hist->GetName();
     TString name = "";
     for (Int_t j = 0; ; j++) {
@@ -380,7 +382,7 @@ void AliForwardFlowTaskQC::MakeCentralityHists(TList* list)
     for (Int_t cBin = 1; cBin <= hist2D->GetNbinsY(); cBin++) {
       Int_t cRat = 100/hist2D->GetNbinsY();
       Int_t cMin = cBin - 1;
-      Int_t cMax = (cMin == 60/cRat ? cMin + 20/cRat : ((cMin < 20/cRat || cMin >= 90) ? cMin + 5/cRat : cMin + 10/cRat));
+      Int_t cMax = (cMin == 60/cRat ? cMin + 20/cRat : ((cMin < 20/cRat || cMin >= 90/cRat) ? cMin + 5/cRat : cMin + 10/cRat));
       if (fgDispVtx) {
         cRat = 1;
 	cMin = Int_t(hist2D->GetYaxis()->GetBinLowEdge(cBin));
@@ -683,6 +685,7 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double
   Int_t nInBin = 0;
   Int_t nCurBin = 0, nPrevBin = 0;
   Int_t nCurRefBin = 0, nPrevRefBin = 0;
+  Int_t nBadBins = 0;
 
   // Then we loop over the input and calculate sum cos(k*n*phi)
   // and fill it in the reference and differential histograms
@@ -764,20 +767,22 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double
     if (data) {
       nInBin++;
     }
-    if (nInAvg > 1) {
+    if (nInAvg > 3) {
       runAvg /= nInAvg;
       avgSqr /= nInAvg;
       Double_t stdev = TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg);
       Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
-      if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent <= 60) return kFALSE;
+      if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent <= 60) nBadBins++;
+//      if (fSigmaCut > 0. && nSigma >= fSigmaCut) nBadBins++;
+      else nBadBins = 0;
       fOutliers->Fill(cent, nSigma);
+      if (nBadBins > 3) return kFALSE;
     }
     runAvg = 0;
     avgSqr = 0;
     nInAvg = 0;
     max = 0;
   }
-
 
   return kTRUE;
 }

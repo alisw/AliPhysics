@@ -1967,9 +1967,9 @@ protected:
 
     TList toAdd;
     toAdd.SetOwner();
-    Bool_t hasGAlice = (!fMC ? true : false);
-    Bool_t hasKine   = (!fMC ? true : false);
-    Bool_t hasTrRef  = (!fMC ? true : false);
+    Bool_t hasGAlice = (!(fMC || fExecType == kAOD) ? true : false);
+    Bool_t hasKine   = (!(fMC || fExecType == kAOD) ? true : false);
+    Bool_t hasTrRef  = (!(fMC || fExecType == kAOD) ? true : false);
     
     // Sort list of files and check if we should add it 
     files->Sort();
@@ -2012,7 +2012,7 @@ protected:
       if (!name.Contains(fnPattern)) { 
 	// Info("ScanDirectory", "%s does not match pattern %s", 
 	//      name.Data(), fnPattern.Data());
-	if (fMC) { 
+	if (fMC && fExecType == kESD) { 
 	  if (name.CompareTo("galice.root") == 0)     hasGAlice = true;
 	  if (name.CompareTo("Kinematics.root") == 0) hasKine   = true;
 	  if (name.CompareTo("TrackRefs.root")  == 0) hasTrRef = true;
@@ -2025,7 +2025,7 @@ protected:
       toAdd.Add(new TObjString(full));
     }
 
-    if (fMC && toAdd.GetEntries() > 0 && 
+    if (fMC && fExecType == kESD && toAdd.GetEntries() > 0 && 
 	(!hasGAlice || !hasKine || !hasTrRef)) { 
       Warning("ScanDirectory", 
 	      "one or more of {galice,Kinematics,TrackRefs}.root missing from "
