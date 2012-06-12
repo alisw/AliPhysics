@@ -111,17 +111,13 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
       return kpA;
     else
       return kNA;
-  }
-  else
-  {
+  } else {
     Int_t runNumber = InputEvent()->GetRunNumber();
     if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
 	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
     {
       return kAA;
-    }
-    else 
-    {
+    } else {
       return kpp;
     }
   }  
@@ -133,7 +129,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   // Retrieve objects from event.
 
   if (!InputEvent()) {
-    AliError("Could not retrieve event! Returning...");
+    AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
     return kFALSE;
   }
 
@@ -153,31 +149,29 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       else if (fCent >= 30 && fCent <   50) fCentBin = 2;
       else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
       else {
-	AliWarning(Form("Negative centrality: %f. Assuming 99", fCent));
+	AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
 	fCentBin = 3;
       }
-    }
-    else {
-      AliWarning(Form("Could not retrieve centrality information! Assuming 99"));
+    } else {
+      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
       fCentBin = 3;
     }
-  }
-  else {
+  } else {
     fCent = 99;
     fCentBin = 0;
   }
 
-  if ((!fCaloName.IsNull()) && (fAnaType == kEMCAL)) {
+  if (!fCaloName.IsNull() && (fAnaType == kEMCAL) && !fCaloClusters) {
     fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
     if (!fCaloClusters) {
-      AliWarning(Form("Could not retrieve clusters %s!", fCaloName.Data())); 
+      AliWarning(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloName.Data())); 
     }
   }
 
-  if (!fTracksName.IsNull()) {
+  if (!fTracksName.IsNull() && !fTracks) {
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
     if (!fTracks) {
-      AliWarning(Form("Could not retrieve tracks %s!", fTracksName.Data())); 
+      AliWarning(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
     }
   }
 
