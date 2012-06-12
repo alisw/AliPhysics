@@ -768,6 +768,11 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
   // do the loop over the matched tracks and get the number of matches and the total momentum
   DoMatchedTracksLoop(emccluster, totalTrkP, Nmatches);
 
+  if(fCreateHisto && Nmatches == 0) {
+    fHistNclusvsCent->Fill(fCent);
+    fHistNCellsEnergy[fCentBin][0]->Fill(energyclus, cNcells);
+  }
+
   if (totalTrkP <= 0)
     return energyclus;
 
@@ -790,20 +795,17 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(AliEmcalParticle *emccluster, Dou
 
   // plot some histograms if switched on
   if (fCreateHisto) {
-    fHistNclusvsCent->Fill(fCent);
     fHistNMatchCent->Fill(fCent, Nmatches);
     fHistNMatchEnergy[fCentBin]->Fill(energyclus, Nmatches);
     
     if(Nmatches > 0) 
       fHistNclusMatchvsCent->Fill(fCent);
       
-    if(Nmatches == 0)
-      fHistNCellsEnergy[fCentBin][0]->Fill(energyclus, cNcells);
-    else if(Nmatches == 1)
+    if(Nmatches == 1)
       fHistNCellsEnergy[fCentBin][1]->Fill(energyclus, cNcells);	
     else if(Nmatches == 2)
       fHistNCellsEnergy[fCentBin][2]->Fill(energyclus, cNcells);
-    else
+    else if(Nmatches > 2)
       fHistNCellsEnergy[fCentBin][3]->Fill(energyclus, cNcells);
 
     if (EoP > 0) {
