@@ -66,6 +66,7 @@
 // get info on how fastjet was configured
 #include "fastjet/config.h"
 
+using std::vector;
 
 ClassImp(AliAnalysisTaskJetCluster)
 
