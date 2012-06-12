@@ -29,7 +29,7 @@ ClassImp(AliAnalysisTaskSAJF)
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF"),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
   fMinRC2LJ(1.0),
   fEmbJetsName("EmbJets"),
   fRandTracksName("TracksRandomized"),
@@ -83,7 +83,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
-  AliAnalysisTaskEmcalJet(name),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fMinRC2LJ(1.0),
   fEmbJetsName("EmbJets"),
   fRandTracksName("TracksRandomized"),
@@ -441,6 +441,8 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
   // General histograms
   // _________________________________
 
+  DoJetLoop();
+
   GetLeadingJets(maxJetIndex, max2JetIndex);
   
   if (maxJetIndex < 0) {
@@ -476,8 +478,6 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 
   if (jet2)
     fHist2LeadingJetPt[fCentBin]->Fill(jet2->Pt());
-
-  DoJetLoop();
 
   // ************
   // Random cones
@@ -580,8 +580,8 @@ void AliAnalysisTaskSAJF::GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex
 
   const Int_t njets = fJets->GetEntriesFast();
 
-  Float_t maxJetPt = 0;
-  Float_t max2JetPt = 0;
+  Float_t maxJetPt = -999;
+  Float_t max2JetPt = -999;
   for (Int_t ij = 0; ij < njets; ij++) {
 
     AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fJets->At(ij));
@@ -628,7 +628,7 @@ void AliAnalysisTaskSAJF::DoJetLoop()
       continue;
     }  
 
-    if (!AcceptJet(jet, fSkipEventsWithNoJets))
+    if (!AcceptJet(jet, kFALSE))
       continue;
 
     Float_t corrPt = jet->Pt() - fRho * jet->Area();
