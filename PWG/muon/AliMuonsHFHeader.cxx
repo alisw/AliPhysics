@@ -28,15 +28,21 @@
 #include <TH1D.h>
 #include <TList.h>
 
+#include "AliInputEventHandler.h"
+#include "AliAODMCHeader.h"
 #include "AliVEvent.h"
+#include "AliAODEvent.h"
+#include "AliESDEvent.h"
+#include "AliVVertex.h"
+#include "AliCentrality.h"
+#include "AliEventplane.h"
+
+#include "AliMuonTrackCuts.h"
 #include "AliMuonInfoStoreRD.h"
 #include "AliMuonInfoStoreMC.h"
 #include "AliDimuInfoStoreRD.h"
 #include "AliDimuInfoStoreMC.h"
 #include "AliMuonsHFHeader.h"
-
-class TNamed;
-class AliVVertex;
 
 ClassImp(AliMuonsHFHeader)
 
@@ -51,14 +57,18 @@ TNamed(),
 fSelMask(AliVEvent::kAny),
 fIsMB(kFALSE),
 fIsMU(kFALSE),
+fIsPileupSPD(kFALSE),
 fVtxContrsN(0),
 fFiredTriggerClass(),
-fCentrality(0.)
+fCentrality(-1.),
+fCentQA(-1),
+fEventPlane(0.)
 {
   //
   // default constructor
   //
   for (Int_t i=3; i--;) fVtx[i] = 0.;
+  for (Int_t i=3; i--;) fVMC[i] = 0.;
 }
 
 //_____________________________________________________________________________
@@ -67,14 +77,18 @@ TNamed(),
 fSelMask(src.fSelMask),
 fIsMB(src.fIsMB),
 fIsMU(src.fIsMU),
+fIsPileupSPD(src.fIsPileupSPD),
 fVtxContrsN(src.fVtxContrsN),
 fFiredTriggerClass(src.fFiredTriggerClass),
-fCentrality(src.fCentrality)
+fCentrality(src.fCentrality),
+fCentQA(src.fCentQA),
+fEventPlane(src.fEventPlane)
 {
   //
   // copy constructor
   //
   for (Int_t i=3; i--;) fVtx[i] = src.fVtx[i];
+  for (Int_t i=3; i--;) fVMC[i] = src.fVMC[i];
 }
 
 //_____________________________________________________________________________
@@ -89,10 +103,14 @@ AliMuonsHFHeader& AliMuonsHFHeader::operator=(const AliMuonsHFHeader &src)
   fSelMask           = src.fSelMask;
   fIsMB              = src.fIsMB;
   fIsMU              = src.fIsMU;
+  fIsPileupSPD       = src.fIsPileupSPD;
   fVtxContrsN        = src.fVtxContrsN;
   fFiredTriggerClass = src.fFiredTriggerClass;
   fCentrality        = src.fCentrality;
+  fCentQA            = src.fCentQA;
+  fEventPlane        = src.fEventPlane;
   for (Int_t i=3; i--;) fVtx[i] = src.fVtx[i];
+  for (Int_t i=3; i--;) fVMC[i] = src.fVMC[i];
 
   return *this;
 }
@@ -106,28 +124,39 @@ AliMuonsHFHeader::~AliMuonsHFHeader()
 }
 
 //_____________________________________________________________________________
-void AliMuonsHFHeader::SetVertex(AliVVertex *vertex)
+void AliMuonsHFHeader::SetEventInfo(AliInputEventHandler* const handler, AliMCEvent* const eventMC)
 {
-  // extract event info from AOD event
+  // fill info at event level
 
+  AliVEvent *event = handler->GetEvent();
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event);
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+
+  fSelMask = handler->IsEventSelected();
+  if (aod) fFiredTriggerClass = aod->GetFiredTriggerClasses();
+  if (esd) fFiredTriggerClass = esd->GetFiredTriggerClasses();
+  fIsMB = fSelMask & AliVEvent::kMB;
+  fIsMU = fSelMask & AliVEvent::kMUON;
+
+  const AliVVertex *vertex = event->GetPrimaryVertex();
   vertex->GetXYZ(fVtx);
   fVtxContrsN = vertex->GetNContributors();
-  this->SetTitle(vertex->GetTitle());
-  return;
-}
+  if (fgIsMC) {
+    if (esd)   eventMC->GetPrimaryVertex()->GetXYZ(fVMC);
+    if (aod) ((AliAODMCHeader*)aod->FindListObject(AliAODMCHeader::StdBranchName()))->GetVertex(fVMC);
+  } this->SetTitle(vertex->GetTitle());
+  fIsPileupSPD = (aod && !aod->GetTracklets()) ? event->IsPileupFromSPD(3,0.8,3.,2.,5.) : event->IsPileupFromSPDInMultBins();
 
-void AliMuonsHFHeader::SetFiredTriggerClass(TString trigger)
-{
-  fFiredTriggerClass = trigger;
-  fIsMB=(fFiredTriggerClass.Contains("CINT1B-ABCE-NOPF-ALL")  ||   // p-p   min. bias trigger before Aug/2010
-         fFiredTriggerClass.Contains("CINT1-B-NOPF-ALLNOTRD") ||   // p-p   min. bias trigger from   Aug/2010
-         fFiredTriggerClass.Contains("CMBS2A-B-NOPF-ALL")     ||   // Pb-Pb min. bias trigger 2-out-of-3
-         fFiredTriggerClass.Contains("CMBS2C-B-NOPF-ALL")     ||   // Pb-Pb min. bias trigger 2-out-of-3
-         fFiredTriggerClass.Contains("CMBAC-B-NOPF-ALL")      ||   // Pb-Pb min. bias trigger 2-out-of-3
-         fFiredTriggerClass.Contains("CMBACS2-B-NOPF-ALL")    ||   // Pb-Pb min. bias trigger 3-out-of-3 (early)
-         fFiredTriggerClass.Contains("CMBACS2-B-NOPF-ALLNOTRD"));  // Pb-Pb min. bias trigger 3-out-of-3 (late 2010)
-  fIsMU=(fFiredTriggerClass.Contains("CMUS1B-ABCE-NOPF-MUON") ||   // p-p MUON trigger before Aug/2010
-         fFiredTriggerClass.Contains("CMUS1-B-NOPF-ALLNOTRD"));    // p-p MUON trigger from   Aug/2010 
+  AliCentrality *cent = event->GetCentrality();
+  if (cent) {
+    fCentrality = cent->GetCentralityPercentileUnchecked("V0M");
+    fCentQA     = cent->GetQuality();
+  }
+
+  AliEventplane *evnP = event->GetEventplane();
+  if (evnP) fEventPlane = evnP->GetEventplane("Q");
+//if (evnP) fEventPlane = evnP->GetEventplane("V0A");
+
   return;
 }
 
@@ -257,7 +286,7 @@ void AliMuonsHFHeader::FillHistosEvnH(TList *list)
 {
   // fill histograms at event level according to event selection cuts
 
-  if (!list)                   return;
+  if (!list)               return;
   if (!this->IsSelected()) return;
 
   const Int_t nhs    = 3;
@@ -277,19 +306,19 @@ void AliMuonsHFHeader::FillHistosMuon(TList *list, AliMuonInfoStoreRD* const inf
 {
   // fill histograms for single muon according to event & muon track selection cuts
 
-  if (!list)                    return;
-  if (!this->IsSelected())      return;
-  if (!infoStore->IsSelected()) return;
+  if (!list)                     return;
+  if (!this->IsSelected())       return;
+  if (!infoStore->IsSelected(0)) return;
 
   const Int_t nhs    = 7;
   TString tName[nhs] = { "P", "Pt", "Eta", "DCA", "TrM", "Charge", "Rabs" };
-  Double_t dist[nhs] = { infoStore->Momentum().Mag(),
-                             infoStore->Momentum().Pt(),
-                             infoStore->Momentum().Eta(),
-                             infoStore->DCA(),
-                             infoStore->MatchTrigger(),
-                             infoStore->Charge(),
-                             infoStore->RabsEnd() };
+  Double_t dist[nhs] = { infoStore->MomentumAtVtx().Mag(),
+                         infoStore->MomentumAtVtx().Pt(),
+                         infoStore->MomentumAtVtx().Eta(),
+                         infoStore->DCA(),
+                         infoStore->MatchTrigger(),
+                         infoStore->Charge(),
+                         infoStore->RabsEnd() };
 
   if (fgIsMC && (fSelMask & AliVEvent::kAny)) {
     TString sName[7] = { "BottomMu", "CharmMu", "PrimaryMu", "SecondaryMu", "Hadron", "Unidentified", "" };
@@ -308,9 +337,9 @@ void AliMuonsHFHeader::FillHistosDimu(TList *list, AliDimuInfoStoreRD* const inf
 {
   // fill histograms for dimuon according to evnet & dimuon candidates selection cuts
 
-  if (!list)                    return;
-  if (!this->IsSelected())      return;
-  if (!infoStore->IsSelected()) return;
+  if (!list)                     return;
+  if (!this->IsSelected())       return;
+  if (!infoStore->IsSelected(0)) return;
 
   TString dimuName = "DimuNN";
   if (infoStore->Charge()==0)     dimuName = "DimuNP";
@@ -319,8 +348,8 @@ void AliMuonsHFHeader::FillHistosDimu(TList *list, AliDimuInfoStoreRD* const inf
   const Int_t nhs    = 3;
   TString tName[nhs] = { "P", "Pt", "InvM" };
   Double_t dist[nhs] = { infoStore->Momentum().Mag(),
-                             infoStore->Momentum().Pt(),
-                             infoStore->InvM() };
+                         infoStore->Momentum().Pt(),
+                         infoStore->InvM() };
 
   if (fgIsMC && (fSelMask & AliVEvent::kAny)) {
     TString sName[7] = { "BBdiff", "BBsame", "DDdiff", "DDsame", "Resonance", "Uncorr", "" };

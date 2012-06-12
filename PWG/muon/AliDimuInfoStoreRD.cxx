@@ -32,18 +32,11 @@
 ClassImp(AliDimuInfoStoreRD)
 
 const TString AliDimuInfoStoreRD::fgkStdBranchName("DimuRD");
-Double_t      AliDimuInfoStoreRD::fgCutd[16] = {-999999., 999999.,
-                                                -999999., 999999.,
-                                                -999999., 999999.,
-                                                -999999., 999999.,
-                                                -999999., 999999.,
-                                                -999999., 999999.,
-                                                -999999., 999999.,
-                                                -999999., 999999.};
 
 //-----------------------------------------------------------------------------
 AliDimuInfoStoreRD::AliDimuInfoStoreRD() :
 TObject(),
+fSelMask(0),
 fMomentum(),
 fCharge(0),
 fInvM(0.)
@@ -55,8 +48,9 @@ fInvM(0.)
 }
 
 //-----------------------------------------------------------------------------
-AliDimuInfoStoreRD::AliDimuInfoStoreRD(AliMuonInfoStoreRD* const trk0, AliMuonInfoStoreRD* const trk1) :
+AliDimuInfoStoreRD::AliDimuInfoStoreRD(AliMuonInfoStoreRD* const trk0, AliMuonInfoStoreRD* const trk1, UInt_t selMask) :
 TObject(),
+fSelMask(selMask),
 fMomentum(),
 fCharge(0),
 fInvM(0.)
@@ -72,6 +66,7 @@ fInvM(0.)
 //-----------------------------------------------------------------------------
 AliDimuInfoStoreRD::AliDimuInfoStoreRD(const AliDimuInfoStoreRD &src) :
 TObject(src),
+fSelMask(src.fSelMask),
 fMomentum(src.fMomentum),
 fCharge(src.fCharge),
 fInvM(src.fInvM)
@@ -90,6 +85,7 @@ AliDimuInfoStoreRD& AliDimuInfoStoreRD::operator=(const AliDimuInfoStoreRD &src)
   //
   if(&src==this) return *this;
 
+  fSelMask  = src.fSelMask;
   fMomentum = src.fMomentum;
   fCharge   = src.fCharge;
   fInvM     = src.fInvM;
@@ -114,34 +110,17 @@ void AliDimuInfoStoreRD::FillDimuInfo()
   AliMuonInfoStoreRD *trk0 = (AliMuonInfoStoreRD*)fMuonRef[0].GetObject();
   AliMuonInfoStoreRD *trk1 = (AliMuonInfoStoreRD*)fMuonRef[1].GetObject();
 
-  fMomentum = trk0->Momentum() + trk1->Momentum();
+  fMomentum = trk0->MomentumAtVtx() + trk1->MomentumAtVtx();
   fCharge   = trk0->Charge()   + trk1->Charge();
 
   Double_t mMu = TDatabasePDG::Instance()->GetParticle(13)->Mass();
   TLorentzVector lorentzP0, lorentzP1, lorentzP;
-  lorentzP0.SetVectM(trk0->Momentum(), mMu);
-  lorentzP1.SetVectM(trk1->Momentum(), mMu);
+  lorentzP0.SetVectM(trk0->MomentumAtVtx(), mMu);
+  lorentzP1.SetVectM(trk1->MomentumAtVtx(), mMu);
   lorentzP = lorentzP0 + lorentzP1;
   fInvM = lorentzP.Mag();
 
   trk0 = 0;
   trk1 = 0;
   return;
-}
-
-//-----------------------------------------------------------------------------
-Bool_t AliDimuInfoStoreRD::IsSelected()
-{
-  // select dimuon candidates according to the corresponding two muon tracks cuts
-
-  Double_t cutsOld[16];
-  AliMuonInfoStoreRD::SelectionCust(cutsOld);
-  AliMuonInfoStoreRD::SetSelectionCuts(AliDimuInfoStoreRD::fgCutd);
-  AliMuonInfoStoreRD *trk0 = (AliMuonInfoStoreRD*)fMuonRef[0].GetObject();
-  AliMuonInfoStoreRD *trk1 = (AliMuonInfoStoreRD*)fMuonRef[1].GetObject(); 
-  if (!trk0->IsSelected()) { AliMuonInfoStoreRD::SetSelectionCuts(cutsOld); return kFALSE; }
-  if (!trk1->IsSelected()) { AliMuonInfoStoreRD::SetSelectionCuts(cutsOld); return kFALSE; }
-
-  AliMuonInfoStoreRD::SetSelectionCuts(cutsOld);
-  return kTRUE;
 }

@@ -45,7 +45,7 @@ fSource(-1)
 }
 
 //-----------------------------------------------------------------------------
-AliDimuInfoStoreMC::AliDimuInfoStoreMC(AliMuonInfoStoreMC* const trk0, AliMuonInfoStoreMC* const trk1, Bool_t full) :
+AliDimuInfoStoreMC::AliDimuInfoStoreMC(AliMuonInfoStoreMC* const trk0, AliMuonInfoStoreMC* const trk1, UInt_t selMask, Bool_t full) :
 AliDimuInfoStoreRD(),
 fIsFull(full),
 fLorentzP(),
@@ -54,6 +54,7 @@ fSource(-1)
   //
   // default constructor
   //
+  fSelMask = selMask;
   fMuonRef[0] = trk0;
   fMuonRef[1] = trk1;
   fLorentzP = trk0->LorentzP() + trk1->LorentzP();

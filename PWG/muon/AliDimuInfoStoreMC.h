@@ -21,7 +21,7 @@ class AliDimuInfoStoreMC : public AliDimuInfoStoreRD {
  public:
 
   AliDimuInfoStoreMC();
-  AliDimuInfoStoreMC(AliMuonInfoStoreMC *trk0, AliMuonInfoStoreMC *trk1, Bool_t full=kFALSE);
+  AliDimuInfoStoreMC(AliMuonInfoStoreMC *trk0, AliMuonInfoStoreMC *trk1, UInt_t selMask, Bool_t full=kFALSE);
   AliDimuInfoStoreMC(const AliDimuInfoStoreMC &src);
   AliDimuInfoStoreMC& operator=(const AliDimuInfoStoreMC &src);
   virtual ~AliDimuInfoStoreMC();
@@ -43,7 +43,7 @@ class AliDimuInfoStoreMC : public AliDimuInfoStoreRD {
   static const TString fgkStdBranchName;  // Standard branch name
   static const Int_t   fgkSourcesN;       // num. of dimuon sources
 
-  Bool_t fIsFull;  // flag of using full analysis (for Pb-Pb)
+  Bool_t fIsFull;   // flag of using full analysis (for Pb-Pb)
   TLorentzVector fLorentzP;  // lorentz momentum of MC particle
   Int_t fSource;  // = 0, BBdiff
                   // = 1, Bchain
@@ -52,7 +52,7 @@ class AliDimuInfoStoreMC : public AliDimuInfoStoreRD {
                   // = 4, Resonance
                   // = 5, UnCorr bkg
 
-  ClassDef(AliDimuInfoStoreMC, 5);
+  ClassDef(AliDimuInfoStoreMC, 7);
 };
 
 #endif

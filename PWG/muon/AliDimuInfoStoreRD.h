@@ -24,7 +24,7 @@ class AliDimuInfoStoreRD : public TObject {
  public:
 
   AliDimuInfoStoreRD();
-  AliDimuInfoStoreRD(AliMuonInfoStoreRD* const trk0, AliMuonInfoStoreRD* const trk1);
+  AliDimuInfoStoreRD(AliMuonInfoStoreRD* const trk0, AliMuonInfoStoreRD* const trk1, UInt_t selMask);
   AliDimuInfoStoreRD(const AliDimuInfoStoreRD &src);
   AliDimuInfoStoreRD& operator=(const AliDimuInfoStoreRD &src);
   virtual ~AliDimuInfoStoreRD();
@@ -34,27 +34,26 @@ class AliDimuInfoStoreRD : public TObject {
   TVector3 Momentum() const { return fMomentum; }
   Short_t  Charge()   const { return fCharge;   }
   Double_t InvM()     const { return fInvM;     }
-
-  Bool_t IsSelected();
+  UInt_t   SelMask()  const { return fSelMask;  }
+  Bool_t IsSelected(const UInt_t filter) { return ((fSelMask & filter) == filter); }
 
   static const char* StdBranchName() { return fgkStdBranchName.Data(); }
-  static void SetSelectionCuts(Double_t cuts[16]) { for (Int_t i=16; i--;) fgCutd[i]=cuts[i]; }
 
  protected:
 
   void FillDimuInfo();
+  UInt_t fSelMask;   // dimuon selection mask
   TRef fMuonRef[2];  // ref to the two corresponding muon tracks
 
  private:
 
   static const TString fgkStdBranchName;  // Standard branch name
-  static Double_t fgCutd[16];             // single muon cuts for dimuon selection
 
   TVector3 fMomentum;  // 3-momentum of dimuon
   Short_t  fCharge;    // charge of dimuon
   Double_t fInvM;      // invariance mass of dimuon
 
-  ClassDef(AliDimuInfoStoreRD, 5);
+  ClassDef(AliDimuInfoStoreRD, 7);
 };
 
 #endif

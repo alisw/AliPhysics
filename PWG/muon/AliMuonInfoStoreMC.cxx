@@ -58,8 +58,8 @@ fWeight(0.)
 }
 
 //-----------------------------------------------------------------------------
-AliMuonInfoStoreMC::AliMuonInfoStoreMC(AliAODTrack *trkAOD, AliMCEvent *mcEvent, Bool_t full) :
-AliMuonInfoStoreRD(trkAOD),
+AliMuonInfoStoreMC::AliMuonInfoStoreMC(AliAODTrack *trkAOD, AliMCEvent *mcEvent, UInt_t selMask, Bool_t full) :
+AliMuonInfoStoreRD(trkAOD,selMask),
 fIsFull(full),
 fLorentzP(),
 fTrackIndex(-1),
@@ -79,8 +79,8 @@ fWeight(0.)
 }
 
 //-----------------------------------------------------------------------------
-AliMuonInfoStoreMC::AliMuonInfoStoreMC(AliESDMuonTrack *trkESD, AliMCEvent *mcEvent, Bool_t full) :
-AliMuonInfoStoreRD(trkESD),
+AliMuonInfoStoreMC::AliMuonInfoStoreMC(AliESDMuonTrack *trkESD, AliMCEvent *mcEvent, UInt_t selMask, Bool_t full) :
+AliMuonInfoStoreRD(trkESD,selMask),
 fIsFull(full),
 fLorentzP(),
 fTrackIndex(-1),
