@@ -32,10 +32,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcal();
 
-  virtual void                Init();
-  virtual void                UserCreateOutputObjects();
-  virtual void                UserExec(Option_t *option);
-  virtual void                Terminate(Option_t *option);
+  void                        UserExec(Option_t *option);
 
   void                        SetAnaType(EmcalAnaType type)                        { fAnaType        = type       ; }
   void                        SetClusName(const char *n)                           { fCaloName       = n          ; }
@@ -48,6 +45,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kFALSE)       const;
   Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kFALSE)       const;
   BeamType                    GetBeamType()                                                                 ;
+  virtual void                Init();
   virtual Bool_t              FillHistograms()                                     { return fCreateHisto; }
   void                        SetInitialized(Bool_t ini = kTRUE)                   { fInitialized    = ini        ; }
   virtual Bool_t              RetrieveEventObjects();

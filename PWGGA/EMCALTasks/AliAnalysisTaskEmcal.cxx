@@ -88,101 +88,26 @@ AliAnalysisTaskEmcal::~AliAnalysisTaskEmcal()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcal::UserCreateOutputObjects()
+void AliAnalysisTaskEmcal::UserExec(Option_t *) 
 {
-  // User create outputs.
-}
+  // Main loop, called for each event.
 
-//_____________________________________________________
-AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
-{
-  // Get beam type : pp-AA-pA
-  // ESDs have it directly, AODs get it from hardcoded run number ranges
+  if (!fInitialized) 
+    Init();
 
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (esd) {
-    const AliESDRun *run = esd->GetESDRun();
-    TString beamType = run->GetBeamType();
-    if (beamType == "p-p")
-      return kpp;
-    else if (beamType == "A-A")
-      return kAA;
-    else if (beamType == "p-A")
-      return kpA;
-    else
-      return kNA;
-  } else {
-    Int_t runNumber = InputEvent()->GetRunNumber();
-    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
-	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
-    {
-      return kAA;
-    } else {
-      return kpp;
-    }
-  }  
-}
+  if (!RetrieveEventObjects())
+    return;
 
-void AliAnalysisTaskEmcal::Init()
-{
-  // Init the analysis.
+  if (!Run())
+    return;
 
-  if (!fCaloName.IsNull() && (fAnaType == kEMCAL) && !fCaloClusters) {
-    fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
-    if (!fCaloClusters) {
-      AliWarning(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloName.Data())); 
-    }
+  if (!FillHistograms())
+    return;
+    
+  if (fCreateHisto) {
+    // information for this iteration of the UserExec in the container
+    PostData(1, fOutput);
   }
-
-  if (!fTracksName.IsNull() && !fTracks) {
-    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
-    if (!fTracks) {
-      AliWarning(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
-    }
-  }
-
-  SetInitialized();
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
-{
-  // Retrieve objects from event.
-
-  if (!InputEvent()) {
-    AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
-    return kFALSE;
-  }
-
-  fVertex[0] = 0;
-  fVertex[1] = 0;
-  fVertex[2] = 0;
-  InputEvent()->GetPrimaryVertex()->GetXYZ(fVertex);
-
-  fBeamType = GetBeamType();
-
-  if (fBeamType == kAA) {
-    AliCentrality *aliCent = InputEvent()->GetCentrality();
-    if (aliCent) {
-      fCent = aliCent->GetCentralityPercentile("V0M");
-      if      (fCent >=  0 && fCent <   10) fCentBin = 0;
-      else if (fCent >= 10 && fCent <   30) fCentBin = 1;
-      else if (fCent >= 30 && fCent <   50) fCentBin = 2;
-      else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
-      else {
-	AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
-	fCentBin = 3;
-      }
-    } else {
-      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      fCentBin = 3;
-    }
-  } else {
-    fCent = 99;
-    fCentBin = 0;
-  }
-
-  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -245,31 +170,96 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVTrack *track, Bool_t acceptMC) cons
   return kTRUE;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcal::UserExec(Option_t *) 
+//_____________________________________________________
+AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
 {
-  // Main loop, called for each event.
+  // Get beam type : pp-AA-pA
+  // ESDs have it directly, AODs get it from hardcoded run number ranges
 
-  if (!fInitialized) 
-    Init();
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (esd) {
+    const AliESDRun *run = esd->GetESDRun();
+    TString beamType = run->GetBeamType();
+    if (beamType == "p-p")
+      return kpp;
+    else if (beamType == "A-A")
+      return kAA;
+    else if (beamType == "p-A")
+      return kpA;
+    else
+      return kNA;
+  } else {
+    Int_t runNumber = InputEvent()->GetRunNumber();
+    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
+	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
+    {
+      return kAA;
+    } else {
+      return kpp;
+    }
+  }  
+}
 
-  if (!RetrieveEventObjects())
-    return;
+//________________________________________________________________________
+void AliAnalysisTaskEmcal::Init()
+{
+  // Init the analysis.
 
-  if (!Run())
-    return;
-
-  if (!FillHistograms())
-    return;
-    
-  if (fCreateHisto) {
-    // information for this iteration of the UserExec in the container
-    PostData(1, fOutput);
+  if (!fCaloName.IsNull() && (fAnaType == kEMCAL) && !fCaloClusters) {
+    fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
+    if (!fCaloClusters) {
+      AliWarning(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloName.Data())); 
+    }
   }
+
+  if (!fTracksName.IsNull() && !fTracks) {
+    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+    if (!fTracks) {
+      AliWarning(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
+    }
+  }
+
+  SetInitialized();
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcal::Terminate(Option_t *) 
+Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 {
-  // Called once at the end of the analysis.
+  // Retrieve objects from event.
+
+  if (!InputEvent()) {
+    AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
+    return kFALSE;
+  }
+
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
+  InputEvent()->GetPrimaryVertex()->GetXYZ(fVertex);
+
+  fBeamType = GetBeamType();
+
+  if (fBeamType == kAA) {
+    AliCentrality *aliCent = InputEvent()->GetCentrality();
+    if (aliCent) {
+      fCent = aliCent->GetCentralityPercentile("V0M");
+      if      (fCent >=  0 && fCent <   10) fCentBin = 0;
+      else if (fCent >= 10 && fCent <   30) fCentBin = 1;
+      else if (fCent >= 30 && fCent <   50) fCentBin = 2;
+      else if (fCent >= 50 && fCent <= 100) fCentBin = 3; 
+      else {
+	AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+	fCentBin = 3;
+      }
+    } else {
+      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      fCentBin = 3;
+    }
+  } else {
+    fCent = 99;
+    fCentBin = 0;
+  }
+
+  return kTRUE;
 }
+
