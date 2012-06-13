@@ -41,15 +41,24 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
   // Calculate selection mask.
   
   const AliVEvent *ev   = dynamic_cast<const AliVEvent*>(obj);
-  if (!ev) {
+  if (!ev)
     return 0;
-  }
+
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
 
   UInt_t res = 0;
   const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(obj);
   const AliAODEvent *aev = 0;
   if (eev) {
-    res = IsCollisionCandidate(eev); 
+    am->LoadBranch("AliESDHeader.");
+    am->LoadBranch("AliESDRun.");
+    TString title(eev->GetHeader()->GetTitle());
+    if (1&&(title.Length()>0)) {
+      res = eev->GetHeader()->GetUniqueID();
+      res &= 0x4FFFFFFF;
+    } else {
+      res = IsCollisionCandidate(eev); 
+    }
   } else {
     aev = dynamic_cast<const AliAODEvent*>(obj);
     res = aev->GetHeader()->GetOfflineTrigger();
@@ -68,8 +77,6 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
       return res;
   }
 
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-
   fIsFastOnly  = kFALSE;
   fIsGoodEvent = kFALSE;
   fIsLedEvent  = kFALSE;
@@ -85,23 +92,30 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
       (res & AliVEvent::kEMCEJE)      || 
       (res & AliVEvent::kEMCEGA))
     fIsGoodEvent = kTRUE;
+  else {
+    return 0;
+  }
 
   if (fZvertexDiff || (fZvertex>0)) {
     Double_t vzPRI = +999;
     Double_t vzSPD = -999;
     const AliVVertex *pv = 0;
-    if (eev)
+    if (eev) {
+      am->LoadBranch("PrimaryVertex.");
       pv = eev->GetPrimaryVertex();
-    else
+    } else {
       pv = aev->GetPrimaryVertex();
+    }
     if (pv && pv->GetNContributors()>0) {
       vzPRI = pv->GetZ();
     }
     const AliVVertex *sv = 0;
-    if (eev)
+    if (eev) {
+      am->LoadBranch("SPDVertex.");
       sv = eev->GetPrimaryVertexSPD();
-    else 
+    } else {
       sv = aev->GetPrimaryVertexSPD();
+    }
     if (sv && sv->GetNContributors()>0) {
       vzSPD = sv->GetZ();
     }
