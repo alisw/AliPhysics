@@ -70,56 +70,10 @@ AliAnalysisTaskEmcalJet::~AliAnalysisTaskEmcalJet()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
-{
-  // Retrieve objects from event.
-
-  if (!AliAnalysisTaskEmcal::RetrieveEventObjects())
-    return kFALSE;
-
-  if (!fJetsName.IsNull() && !fJets) {
-    fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
-    if (!fJets) {
-      AliWarning(Form("%s: Could not retrieve jets %s!", GetName(), fJetsName.Data())); 
-    }
-  }
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted) const
-{
-  // Return true if track is in jet.
-
-  for (Int_t i = 0; i < jet->GetNumberOfTracks(); ++i) {
-    Int_t ijettrack = jet->TrackAt(i);
-    if (sorted && ijettrack > itrack)
-      return kFALSE;
-    if (ijettrack == itrack)
-      return kTRUE;
-  }
-  return kFALSE;
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted) const
-{
-  // Return true if cluster is in jet.
-
-  for (Int_t i = 0; i < jet->GetNumberOfClusters(); ++i) {
-    Int_t ijetclus = jet->ClusterAt(i);
-    if (sorted && ijetclus > iclus)
-      return kFALSE;
-    if (ijetclus == iclus)
-      return kTRUE;
-  }
-  return kFALSE;
-}
-
-//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJet::AcceptBiasJet(AliEmcalJet *jet) const
 { 
+  // Accept jet with a bias.
+
   if (jet->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet->MaxClusterPt() < fPtBiasJetClus))
     return kFALSE;
   else
@@ -148,6 +102,8 @@ void AliAnalysisTaskEmcalJet::Init()
 {
   // Init the analysis.
 
+  AliAnalysisTaskEmcal::Init();
+
   if (fAnaType == kTPC) {
     SetEtaLimits(-0.9 + fJetRadius, 0.9 - fJetRadius);
     SetPhiLimits(-10, 10);
@@ -162,17 +118,55 @@ void AliAnalysisTaskEmcalJet::Init()
   } else {
     AliWarning(Form("%s: Analysis type not recognized! Assuming kTPC!", GetName()));
     SetAnaType(kTPC);
-    Init();
   }
 
   SetInitialized();
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJet::UserExec(Option_t *) 
+Bool_t AliAnalysisTaskEmcalJet::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted) const
 {
-  if (!fInitialized) 
-    Init();
+  // Return true if cluster is in jet.
 
-  AliAnalysisTaskEmcal::UserExec("");
+  for (Int_t i = 0; i < jet->GetNumberOfClusters(); ++i) {
+    Int_t ijetclus = jet->ClusterAt(i);
+    if (sorted && ijetclus > iclus)
+      return kFALSE;
+    if (ijetclus == iclus)
+      return kTRUE;
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEmcalJet::IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted) const
+{
+  // Return true if track is in jet.
+
+  for (Int_t i = 0; i < jet->GetNumberOfTracks(); ++i) {
+    Int_t ijettrack = jet->TrackAt(i);
+    if (sorted && ijettrack > itrack)
+      return kFALSE;
+    if (ijettrack == itrack)
+      return kTRUE;
+  }
+  return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
+{
+  // Retrieve objects from event.
+
+  if (!AliAnalysisTaskEmcal::RetrieveEventObjects())
+    return kFALSE;
+
+  if (!fJetsName.IsNull() && !fJets) {
+    fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
+    if (!fJets) {
+      AliWarning(Form("%s: Could not retrieve jets %s!", GetName(), fJetsName.Data())); 
+    }
+  }
+
+  return kTRUE;
 }
