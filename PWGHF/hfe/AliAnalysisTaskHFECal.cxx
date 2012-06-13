@@ -301,6 +301,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       double mcZvertex = fMC->GetPrimaryVertex()->GetZ();
       double pTMC = particle->Pt();
       double proR = particle->R();
+      double etaMC = particle->Eta();
+      if(fabs(etaMC)>0.6)continue;
       Bool_t mcInDtoE= kFALSE;
       Bool_t mcInBtoE= kFALSE;
 
@@ -387,7 +389,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        Int_t label = TMath::Abs(track->GetLabel());
        TParticle* particle = stack->Particle(label);
        int mcpid = particle->GetPdgCode();
-       printf("MCpid = %d",mcpid);
+       //printf("MCpid = %d",mcpid);
        if(particle->GetFirstMother()>-1)
          {
           int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();
@@ -395,10 +397,12 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(mcpid)==11)mcDtoE = kTRUE;
           if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(mcpid)==11)mcBtoE = kTRUE;
          } 
-       if(fabs(mcpid)==11)mcele= 1.; 
+       if(fabs(mcpid)==11 && mcDtoE)mcele= 1.; 
+       if(fabs(mcpid)==11 && mcBtoE)mcele= 2.; 
+       if(fabs(mcpid)==11 && mcPho)mcele= 3.; 
       }
  
-    if(TMath::Abs(track->Eta())>0.7) continue;
+    if(TMath::Abs(track->Eta())>0.6) continue;
     if(TMath::Abs(track->Pt()<2.0)) continue;
     
     fTrackPtBefTrkCuts->Fill(track->Pt());		
@@ -591,7 +595,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   char *cutmodel;
   cutmodel = "pol0";
   params[0] = -1.0; //sigma min
-  for(Int_t a=0;a<11;a++)fPID->ConfigureTPCcentralityCut(a,cutmodel,params,3.0);
+  double maxnSig = 3.0;
+  if(fmcData)
+    {
+     params[0] = -5.0; //sigma min
+     maxnSig = 5.0; 
+    } 
+
+  for(Int_t a=0;a<11;a++)fPID->ConfigureTPCcentralityCut(a,cutmodel,params,maxnSig);
 
   fPID->SortDetectors(); 
   fPIDqa = new AliHFEpidQAmanager();
@@ -696,9 +707,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
-  Int_t nBins[16] =  {  480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    5,   10,    3};
+  Int_t nBins[16] =  {  480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    5,   10,    8};
   Double_t min[16] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5, -1.5};
-  Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  4.5,  9.5,  1.5};
+  Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  4.5,  9.5,  6.5};
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
   fOutputList->Add(fEleInfo);
 
