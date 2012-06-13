@@ -118,7 +118,7 @@ else()
 endif(${CMAKE_Fortran_COMPILER} MATCHES "g95")
 
 set(LDFLAGS "${OPT}")
-set(SOFLAGS "${OPT} -shared -Wl")
+set(SOFLAGS "${OPT} -shared")
 set(ALLIB)
 
 

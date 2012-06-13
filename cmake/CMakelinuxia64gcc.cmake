@@ -51,7 +51,7 @@ set(FFLAGS "${CLIBFOPT} ${FOPT} -Wall -fPIC -pipe -fno-second-underscore")
 set(SYSLIBS "-ldl -lg2c -lcrypt -L/usr/X11R6/lib -lX11")
 
 set(LDFLAGS "${OPT}")
-set(SOFLAGS "${OPT} -Wall -fPIC -pipe -shared -Wl")
+set(SOFLAGS "${OPT} -Wall -fPIC -pipe -shared")
 set(SHLIB "-lg2c")
 set(ALLIB)
 
