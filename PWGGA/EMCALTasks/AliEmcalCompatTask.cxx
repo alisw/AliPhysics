@@ -5,12 +5,16 @@
 // Author: C.Loizides
 
 #include "AliEmcalCompatTask.h"
+
 #include <TClonesArray.h>
+
 #include "AliAnalysisManager.h"
+#include "AliCentrality.h"
 #include "AliESDEvent.h"
 #include "AliEsdTrackExt.h"
 #include "AliEventplane.h"
-#include "AliCentrality.h"
+#include "AliInputEventHandler.h"
+
 ClassImp(AliEmcalCompatTask)
 
 //________________________________________________________________________
@@ -58,25 +62,25 @@ void AliEmcalCompatTask::UserExec(Option_t *)
 
   am->LoadBranch("AliESDHeader.");
   am->LoadBranch("AliESDRun.");
+  LoadBranches();
 
   AliESDHeader *header = esdEv->GetHeader();
   TString title;
   if (header)
     title = header->GetTitle();
-  if (title.Length()==0)
+  if (title.Length()==0) {
+    AliError("Title should encode offline trigger, returning");
     return;
-/*
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  am->LoadBranch("AliESDHeader.");
-  AliVHeader *header = InputEvent()->GetHeader();
-  TString title(header->GetTitle());
-  if (title.Length()>0) {
-    UInt_t offline = header->GetUniqueID();
-    if (offline!=res) {
-      AliWarning(Form("Stored offline trigger not equal computed: %ud %ud", offline, res));
+  } else {
+    UInt_t off = header->GetUniqueID();
+    off &= 0x4FFFFFFF;
+    UInt_t res     = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected(); 
+    res &= 0x4FFFFFFF;
+    if (off!=res) {
+      AliWarning(Form("Stored offline trigger not equal computed: %ud %ud", off, res));
     }
   }
-*/
+
   if (fDoCent) {
     am->LoadBranch("Centrality.");
     AliCentrality *centin = dynamic_cast<AliCentrality*>(esdEv->FindListObject("Centrality"));
@@ -108,8 +112,9 @@ void AliEmcalCompatTask::UserExec(Option_t *)
   }
 
   TTree *tree = am->GetTree();
-  if (tree&&tree->GetBranch("PicoTracks"))
+  if (tree&&tree->GetBranch("PicoTracks")) {
     am->LoadBranch("PicoTracks");
+  }
 
   if (tree&&tree->GetBranch("Tracks")) {
     am->LoadBranch("Tracks");
