@@ -32,6 +32,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcal();
 
+  virtual void                Init();
   virtual void                UserCreateOutputObjects();
   virtual void                UserExec(Option_t *option);
   virtual void                Terminate(Option_t *option);
@@ -43,15 +44,14 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTracksName(const char *n)                         { fTracksName     = n          ; }
 
  protected:
-
   Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE)       const;
   Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kFALSE)       const;
   Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kFALSE)       const;
   BeamType                    GetBeamType()                                                                 ;
-
-  virtual Bool_t              FillHistograms()             { return fCreateHisto; }
+  virtual Bool_t              FillHistograms()                                     { return fCreateHisto; }
+  void                        SetInitialized(Bool_t ini = kTRUE)                   { fInitialized    = ini        ; }
   virtual Bool_t              RetrieveEventObjects();
-  virtual Bool_t              Run()                        { return kTRUE ; }
+  virtual Bool_t              Run()                                                { return kTRUE                 ; }
 
   EmcalAnaType                fAnaType;                    // analysis type
   Bool_t                      fInitialized;                // whether or not the task has been already initialized
