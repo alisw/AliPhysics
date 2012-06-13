@@ -68,17 +68,19 @@ void AliEmcalPhysicsSelectionTask::UserCreateOutputObjects()
   AliPhysicsSelectionTask::UserCreateOutputObjects();
   fHAcc = new TH1D("hEvCount",";0=rej/1=acc;#",2,-0.5,1.5);
   fOutput->Add(fHAcc);
-  fHEvtTypes = new TH1D("hEvtTypes",";#",10,-0.5,9.5);
+  fHEvtTypes = new TH1D("hEvtTypes",";#",12,-0.5,11.5);
   fHEvtTypes->GetXaxis()->SetBinLabel(1,  "All");
   fHEvtTypes->GetXaxis()->SetBinLabel(2,  "MB");
   fHEvtTypes->GetXaxis()->SetBinLabel(3,  "FO");
-  fHEvtTypes->GetXaxis()->SetBinLabel(4,  "EMC");
-  fHEvtTypes->GetXaxis()->SetBinLabel(5,  "EJE");
-  fHEvtTypes->GetXaxis()->SetBinLabel(6,  "EGA");
-  fHEvtTypes->GetXaxis()->SetBinLabel(7,  "Good");
-  fHEvtTypes->GetXaxis()->SetBinLabel(8,  "HC");
-  fHEvtTypes->GetXaxis()->SetBinLabel(9,  "HT");
-  fHEvtTypes->GetXaxis()->SetBinLabel(10, "LED");
+  fHEvtTypes->GetXaxis()->SetBinLabel(4,  "SC");
+  fHEvtTypes->GetXaxis()->SetBinLabel(5,  "CE");
+  fHEvtTypes->GetXaxis()->SetBinLabel(6,  "EMC");
+  fHEvtTypes->GetXaxis()->SetBinLabel(7,  "EJE");
+  fHEvtTypes->GetXaxis()->SetBinLabel(8,  "EGA");
+  fHEvtTypes->GetXaxis()->SetBinLabel(9,  "Good");
+  fHEvtTypes->GetXaxis()->SetBinLabel(10, "HC");
+  fHEvtTypes->GetXaxis()->SetBinLabel(11, "HT");
+  fHEvtTypes->GetXaxis()->SetBinLabel(12, "LED");
   fOutput->Add(fHEvtTypes);
   if (!fDoWriteHistos) {
     fOutput->Remove(fPhysicsSelection);
@@ -108,20 +110,24 @@ void AliEmcalPhysicsSelectionTask::UserExec(const Option_t *opt)
     fHEvtTypes->Fill(1);
   if (ps->IsFastOnly())
     fHEvtTypes->Fill(2);
-  if ((res&AliVEvent::kEMC1) || (res&AliVEvent::kEMC7))
+  if (res&AliVEvent::kCentral)
     fHEvtTypes->Fill(3);
-  if (res&AliVEvent::kEMCEJE)
+  if (res&AliVEvent::kSemiCentral)
     fHEvtTypes->Fill(4);
-  if (res&AliVEvent::kEMCEGA)
+  if ((res&AliVEvent::kEMC1) || (res&AliVEvent::kEMC7))
     fHEvtTypes->Fill(5);
-  if (ps->IsGoodEvent())
+  if (res&AliVEvent::kEMCEJE)
     fHEvtTypes->Fill(6);
-  if (res&AliEmcalPhysicsSelection::kEmcalHC)
+  if (res&AliVEvent::kEMCEGA)
     fHEvtTypes->Fill(7);
-  if (res&AliEmcalPhysicsSelection::kEmcalHT)
+  if (res&AliEmcalPhysicsSelection::kEmcalOk)
     fHEvtTypes->Fill(8);
-  if (ps->IsLedEvent())
+  if (res&AliEmcalPhysicsSelection::kEmcalHC)
     fHEvtTypes->Fill(9);
+  if (res&AliEmcalPhysicsSelection::kEmcalHT)
+    fHEvtTypes->Fill(10);
+  if (ps->IsLedEvent())
+    fHEvtTypes->Fill(11);
 }
 
 //__________________________________________________________________________________________________
