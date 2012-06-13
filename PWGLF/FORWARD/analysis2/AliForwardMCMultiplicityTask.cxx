@@ -274,7 +274,7 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   TObject* mcobj = &fMCAODFMD;
   ah->AddBranch("AliAODForwardMult", &mcobj);
 
-  TObject* epobj = &fAODFMD;
+  TObject* epobj = &fAODEP;
   ah->AddBranch("AliAODForwardEP", &epobj);
   
   fPrimary = new TH2D("primary", "MC Primaries", 
