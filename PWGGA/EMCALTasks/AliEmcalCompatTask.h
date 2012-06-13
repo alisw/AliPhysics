@@ -11,13 +11,13 @@ class AliEmcalCompatTask : public AliAnalysisTaskSE {
   AliEmcalCompatTask(const char *name);
   virtual ~AliEmcalCompatTask();
 
-  void UserExec(Option_t *option);
-  void SetDoCent(Bool_t ce) { fDoCent = ce; }
-  void SetDoEp(Bool_t ep) { fDoEp = ep; }
+  void        UserExec(Option_t *option);
+  void        SetDoCent(Bool_t ce)       { fDoCent = ce; }
+  void        SetDoEp(Bool_t ep)         { fDoEp   = ep; }
 
  protected:
-  Bool_t fDoCent; //
-  Bool_t fDoEp;   // 
+  Bool_t      fDoCent; //=true then copy centrality
+  Bool_t      fDoEp;   //=true then copy event plane
 
  private:
   AliEmcalCompatTask(const AliEmcalCompatTask&);            // not implemented
