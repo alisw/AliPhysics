@@ -11,14 +11,10 @@
 //
 
 #include "AliVAnalysisMuon.h"
-#include "TVector3.h"
 
 class TObjArray;
-class AliHistogramCollection;
 class TString;
 class TAxis;
-class AliVParticle;
-class AliAODEvent;
 class AliMuonTrackCuts;
 
 class AliAnalysisTaskSingleMu : public AliVAnalysisMuon {

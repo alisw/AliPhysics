@@ -335,7 +335,7 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
     return;
   }
 
-  Double_t centrality = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+  Double_t centrality = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
   Int_t centralityBin = fCentralityClasses->FindBin(centrality);
   TString centralityBinLabel = fCentralityClasses->GetBinLabel(centralityBin);
 
@@ -360,6 +360,8 @@ void AliVAnalysisMuon::Terminate(Option_t *)
   /// Draw some histogram at the end.
   //
   
+  if ( ! fTerminateOptions ) SetTerminateOptions();
+  
   if ( gROOT->IsBatch() ) return;
     
   fOutputList = dynamic_cast<TObjArray*>(GetOutputData(1));
@@ -367,9 +369,8 @@ void AliVAnalysisMuon::Terminate(Option_t *)
   fEventCounters = static_cast<AliCounterCollection*>(fOutputList->FindObject("eventCounters"));
   fMergeableCollection = static_cast<AliMergeableCollection*>(fOutputList->FindObject("outputObjects"));
   
-  if ( ! fTerminateOptions ) SetTerminateOptions();
   if ( ! fMergeableCollection ) return;
-  AliInfo(Form("Histogram collection size %g MB", fMergeableCollection->EstimateSize()/1024.0/1024.0));
+  AliInfo(Form("Mergeable collection size %g MB", fMergeableCollection->EstimateSize()/1024.0/1024.0));
   if ( fTerminateOptions->At(3) ) {
     TString sopt = fTerminateOptions->At(3)->GetName();
     if ( sopt.Contains("verbose") ) fMergeableCollection->Print("*"); 
@@ -404,7 +405,7 @@ AliVParticle* AliVAnalysisMuon::GetTrack(Int_t itrack)
 Double_t AliVAnalysisMuon::MuonMass2() const
 {
   /// A usefull constant
-  static Double_t m2 = 1.11636129640000012e-02; // using a constant here as the line below is a problem for CINT...
+  static Double_t m2 = 1.11636129640000012e-02;
   return m2;
 }
 

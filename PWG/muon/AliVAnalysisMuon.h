@@ -56,6 +56,9 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
                                Int_t ivar, TString labelName,
                                Double_t varMin, Double_t varMax,
                                TString option = "");
+  
+  /// Set minimum number of vertex contributors
+  void SetMinNvtxContributors(Int_t minNvtxContributors) { fMinNvtxContirbutors = minNvtxContributors; }
 
  protected:
   
@@ -107,8 +110,6 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   
   // Methods for event information
   AliVVertex* GetVertexSPD() const;
-  /// Set minimum number of vertex contributors
-  void SetMinNvtxContributors(Int_t minNvtxContributors) { fMinNvtxContirbutors = minNvtxContributors; }
   
   enum {
     kPhysSelPass,    ///< Physics selected events
