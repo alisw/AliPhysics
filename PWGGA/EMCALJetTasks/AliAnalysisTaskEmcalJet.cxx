@@ -120,7 +120,7 @@ void AliAnalysisTaskEmcalJet::Init()
     SetAnaType(kTPC);
   }
 
-  SetInitialized();
+  //  SetInitialized();
 }
 
 //________________________________________________________________________
