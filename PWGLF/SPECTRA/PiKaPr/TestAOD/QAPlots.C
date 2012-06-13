@@ -1,6 +1,7 @@
 void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* hman_mc,
 	      AliSpectraAODEventCuts* ecuts_data, AliSpectraAODEventCuts* ecuts_mc,
-	      AliSpectraAODTrackCuts* tcuts_data, AliSpectraAODTrackCuts* tcuts_mc){
+	      AliSpectraAODTrackCuts* tcuts_data, AliSpectraAODTrackCuts* tcuts_mc,
+	      TFile * fout){
    
   //vtx distr in data and MC before and after event selection
   TCanvas *cVtx=new TCanvas("Vtxdistr","Vtxdistr",700,500);
@@ -212,9 +213,9 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
 
   
   //dedx in data and MC (Only TPC with reconstructed ID)
-  TCanvas *cPIDSig=new TCanvas("cPIDSigRec","cPIDSigRec",700,500);
-  cPIDSig->Divide(2,1);
-  cPIDSig->cd(1);
+  TCanvas *cPIDSigRec=new TCanvas("cPIDSigRec","cPIDSigRec",700,500);
+  cPIDSigRec->Divide(2,1);
+  cPIDSigRec->cd(1);
   TH2F *PIDSig_data = (TH2F*)((TH2F*)hman_data->GetPIDHistogram("hHistPIDTPC"))->Clone();
   PIDSig_data->SetYTitle("TPC signal");
   gPad->SetLogz();
@@ -228,7 +229,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
     PIDSig_dataPart->SetMarkerSize(.5);
     PIDSig_dataPart->DrawClone("same");
   }
-  cPIDSig->cd(2);
+  cPIDSigRec->cd(2);
   TH2F *PIDSig_mc = (TH2F*)((TH2F*)hman_mc->GetPIDHistogram("hHistPIDTPC"))->Clone();
   PIDSig_mc->SetYTitle("TPC signal");
   gPad->SetLogz();
@@ -369,6 +370,8 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
     gPad->SetGridy();
     gPad->SetGridx();
     nsig_mc->DrawClone("colz");
+    fout->cd();
+    cnsig->Write();
   }
   
   //NSigma projection in data and MC
@@ -587,7 +590,21 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   //     proj_data->DrawClone();
   //   }
   // }
-  
+  fout->cd();
+  cVtx->Write();
+  cEta->Write();
+  cNCh->Write();
+  cQVector->Write();
+  cEtaPhi->Write();
+  cRatioEtaPhi->Write();
+  cTrackCuts->Write();
+  cPIDSig->Write();
+  cPIDSigRec->Write();
+  cPIDSigProjection->Write();
+  cnsigProjection->Write();
+  cMu->Write();
+  ccont->Write();
+  cRaw->Write();
   
   
 } 

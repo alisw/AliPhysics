@@ -131,9 +131,10 @@ Bool_t AliSpectraAODTrackCuts::CheckTrackType()
 Bool_t AliSpectraAODTrackCuts::CheckTrackCuts()
 {
   // Check additional track Cuts
-  Bool_t HasSPD=kFALSE;
-  if (fTrack->HasPointOnITSLayer(0) || fTrack->HasPointOnITSLayer(1))HasSPD=kTRUE; //FIXME 1 SPD for the moment
-  return HasSPD;
+  Bool_t PassTrackCuts=kTRUE;
+  if (!fTrack->HasPointOnITSLayer(0) && !fTrack->HasPointOnITSLayer(1))PassTrackCuts=kFALSE; //FIXME 1 SPD for the moment
+  if (fTrack->GetTPCNcls()<70)PassTrackCuts=kFALSE;
+  return PassTrackCuts;
 }
 //________________________________________________________
 Bool_t AliSpectraAODTrackCuts::CheckEtaCut()
