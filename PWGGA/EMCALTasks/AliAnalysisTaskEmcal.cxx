@@ -123,6 +123,27 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
   }  
 }
 
+void AliAnalysisTaskEmcal::Init()
+{
+  // Init the analysis.
+
+  if (!fCaloName.IsNull() && (fAnaType == kEMCAL) && !fCaloClusters) {
+    fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
+    if (!fCaloClusters) {
+      AliWarning(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloName.Data())); 
+    }
+  }
+
+  if (!fTracksName.IsNull() && !fTracks) {
+    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+    if (!fTracks) {
+      AliWarning(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
+    }
+  }
+
+  SetInitialized();
+}
+
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 {
@@ -161,23 +182,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     fCentBin = 0;
   }
 
-  if (!fCaloName.IsNull() && (fAnaType == kEMCAL) && !fCaloClusters) {
-    fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
-    if (!fCaloClusters) {
-      AliWarning(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloName.Data())); 
-    }
-  }
-
-  if (!fTracksName.IsNull() && !fTracks) {
-    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
-    if (!fTracks) {
-      AliWarning(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
-    }
-  }
-
   return kTRUE;
 }
-
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Bool_t acceptMC) const
@@ -243,6 +249,9 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVTrack *track, Bool_t acceptMC) cons
 void AliAnalysisTaskEmcal::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
+
+  if (!fInitialized) 
+    Init();
 
   if (!RetrieveEventObjects())
     return;
