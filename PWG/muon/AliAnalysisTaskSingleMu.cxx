@@ -20,7 +20,6 @@
 /// Analysis task for single muons in the spectrometer.
 /// The output is a list of histograms and CF containers.
 /// The macro class can run on AODs or ESDs.
-/// In the latter case a flag can be activated to produce a tree as output.
 /// If Monte Carlo information is present, some basics checks are performed.
 ///
 /// \author Diego Stocco
@@ -294,11 +293,12 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   TString currName = "";
   for ( Int_t iopt=0; iopt<optArr->GetEntries(); iopt++ ) {
     currName = optArr->At(iopt)->GetName();
-    if ( currName.Contains("-B-") ) minBiasTrig = currName;
+    if ( currName.Contains("-B-") || currName.Contains("ANY") ) minBiasTrig = currName;
   }
   delete optArr;
 
   furtherOpt.ToUpper();
+  Bool_t plotChargeAsymmetry = furtherOpt.Contains("ASYM");
   
   AliCFContainer* cfContainer = static_cast<AliCFContainer*> ( GetSum(physSel,trigClassName,centralityRange,"SingleMuContainer") );
   if ( ! cfContainer ) return;
@@ -334,7 +334,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   TCanvas* canKine[3] = {0x0, 0x0, 0x0};
   TLegend* legKine[3] = {0x0, 0x0, 0x0};
   for ( Int_t isrc = firstSrc; isrc <= lastSrc; ++isrc ) {
-    for ( Int_t icharge=0; icharge<2; ++icharge ) {        
+    for ( Int_t icharge=0; icharge<2; ++icharge ) {
       for ( Int_t igrid=0; igrid<3; ++igrid ) {
         if ( gridSparseArray[igrid]->GetEntries() == 0. ) break;
         if ( gridSparseArray[igrid]->IsA() != AliCFEffGrid::Class() ) {
@@ -355,7 +355,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
           canKine[igrid]->cd(iproj+1);
           if ( ( iproj == kHvarPt || iproj == kHvarVz ) && gridSparseArray[igrid]->IsA() != AliCFEffGrid::Class() ) gPad->SetLogy();
           TH1* projHisto = gridSparseArray[igrid]->Project(iproj);
-          projHisto->SetName(Form("proj%i_%s_src%i_charge%i", iproj, gridSparseName[igrid].Data(), isrc, icharge));
+          projHisto->SetName(Form("proj%i_%s_%s_%s", iproj, gridSparseName[igrid].Data(), fSrcKeys->At(isrc)->GetName(), fChargeKeys->At(icharge)->GetName()));
           if ( projHisto->GetEntries() == 0 ) continue;
           Bool_t isFirst = ( gPad->GetListOfPrimitives()->GetEntries() == 0 );
           drawOpt = isFirst ? "e" : "esames";
@@ -386,6 +386,49 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     if ( gridSparseArray[igrid]->IsA() == AliCFEffGrid::Class() ) continue;
     SetSparseRange(gridSparseArray[igrid], kHvarCharge, "", 1, gridSparseArray[igrid]->GetAxis(kHvarCharge)->GetNbins(), "USEBIN"); // Reset range
   } // loop on container steps
+
+  // Plot charge asymmetry or mu+/mu-
+  TString basePlotName = plotChargeAsymmetry ? "ChargeAsymmetry" : "ChargeRatio";
+  for ( Int_t igrid=0; igrid<2; igrid++ ) {
+    if ( ! canKine[igrid] ) continue;
+    TList* padList = canKine[igrid]->GetListOfPrimitives();
+    currName = canKine[igrid]->GetName();
+    currName.Append(Form("_%s", basePlotName.Data()));
+    can = new TCanvas(currName.Data(),currName.Data(),canKine[igrid]->GetWindowTopX(),igroup2*yshift,600,600);
+    can->Divide(2,2);
+    for ( Int_t ipad=0; ipad<padList->GetEntries(); ipad++ ) {
+      TPad* pad = dynamic_cast<TPad*> (padList->At(ipad));
+      if ( ! pad ) continue;
+      TList* histoList = pad->GetListOfPrimitives();
+      can->cd(ipad+1);
+      for ( Int_t iobj=0; iobj<histoList->GetEntries(); iobj++ ) {
+        currName = histoList->At(iobj)->GetName();
+        if ( ! histoList->At(iobj)->InheritsFrom(TH1::Class()) || ! currName.Contains(fChargeKeys->At(1)->GetName()) ) continue;
+        histoName = currName;
+        histoName.ReplaceAll(fChargeKeys->At(1)->GetName(),"");
+        histoName.Append(Form("_%s", basePlotName.Data()));
+        currName.ReplaceAll(fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName());
+        TH1* auxHisto = dynamic_cast<TH1*> (histoList->FindObject(currName.Data()));
+        if ( ! auxHisto ) continue;        
+        TH1* histo = static_cast<TH1*> (histoList->At(iobj)->Clone(histoName.Data()));
+        if ( plotChargeAsymmetry ) {
+          histo->Add(auxHisto, -1.);
+          // h2 + h1 = 2xh2 + (h1-h2)
+          auxHisto->Add(auxHisto, histo, 2.);
+        }
+        histo->Divide(auxHisto);
+        histo->SetMarkerStyle(20);
+        TString axisTitle = plotChargeAsymmetry ? Form("(%s - %s) / (%s + %s)", fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName(), fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName()) : Form("%s / %s", fChargeKeys->At(1)->GetName(), fChargeKeys->At(0)->GetName());
+        axisTitle.ReplaceAll("MuPlus","#mu^{+}");
+        axisTitle.ReplaceAll("MuMinus","#mu^{-}");
+        histo->GetYaxis()->SetTitle(axisTitle.Data());
+        histo->SetStats(kFALSE);
+        drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "e" : "esames";
+        histo->Draw(drawOpt.Data());
+      } // loop on histos
+      gPad->Update();
+    } // loop on pads
+  } // loop on container steps
   
   
   //////////////////////
@@ -411,7 +454,8 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   // Vertex method //
   ///////////////////
   if ( ! furtherOpt.Contains("VERTEX") ) return;
-  Int_t firstMother = kUnidentified, lastMother = kUnidentified;
+  Int_t firstMother = ( isMC ) ? 0 : kUnidentified;
+  Int_t lastMother = ( isMC ) ? kNtrackSources - 1 : kUnidentified;
   igroup1++;
   TH1* eventVertex = (TH1*)GetSum(physSel, minBiasTrig, centralityRange, "hIpVtx");
   if ( ! eventVertex ) return;
