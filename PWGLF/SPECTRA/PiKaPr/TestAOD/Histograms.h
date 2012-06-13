@@ -121,9 +121,6 @@ namespace AliSpectraNameSpace
       kHistNSigKaonPtTPCTOF,                              
       kHistNSigProtonPtTPCTOF,                              
       kNHistNSig=kHistNSigProtonPtTPCTOF,                              
-      
-      kHistqVecPos,
-      kHistqVecNeg,
       kNHist,                                   // Total number of histos
    };  // Type of events plotted in Pt Histogram
 

@@ -48,28 +48,30 @@ void MainAnalysis()  {
   TString fold="3SigmaPID_AOD086-090_FilterBit1";
   
   //LOOP OVER SELECTION
-  Double_t CentCutMin[4]={0,0,20,20};
-  Double_t CentCutMax[4]={100,5,40,40};
-  Double_t QvecPosCutMin[4]={0,0,0,3};
-  Double_t QvecPosCutMax[4]={100,100,2,100};
-  Double_t QvecNegCutMin[4]={0,0,0,3};
-  Double_t QvecNegCutMax[4]={100,100,2,100};
-  Double_t EtaMin[4]={-0.8,-0.8,-0.8,-0.8};
-  Double_t EtaMax[4]={0.8,0.8,0.8,0.8};
+  Double_t CentCutMin[6]= {   0 , 20, 20, 20, 20, 20};
+  Double_t CentCutMax[6]= {   5 , 40, 40, 40, 40, 40};
+  Double_t QvecPosCutMin[6]= {0 ,  0,  0,  3,  0,  0};
+  Double_t QvecPosCutMax[6]={100,100,  2,100,100,100};
+  Double_t QvecNegCutMin[6]={0  ,  0,  0,  0,  0,  3};
+  Double_t QvecNegCutMax[6]={100,100,100,100,  2,100};
+  Double_t EtaMin[6]={-0.8,-0.8,-0.8,-0.8,0,0};
+  Double_t EtaMax[6]={0.8,0.8,0,0,0.8,0.8};
   
-  Int_t icut=1;
+  Int_t icut=2;
   
   Int_t ibinToCompare=0;
   
   TString sname=Form("Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],QvecPosCutMin[icut],QvecPosCutMax[icut],QvecNegCutMin[icut],QvecNegCutMax[icut],EtaMin[icut],EtaMax[icut]);
   
-  
   TString dataFile = Form("output/%s/OutputAODSpectraTask_data_%s.root",fold.Data(),sname.Data());
   TString mcFile = Form("output/%s/OutputAODSpectraTask_mc_%s.root",fold.Data(),sname.Data());
   
-  
-  
-  
+
+
+
+  Printf("\n\n-> Creating Output file Out_%s_%s.root",sname.Data(),fold.Data());
+  TFile * fout=new TFile(Form("results/Out_%s_%s.root",sname.Data(),fold.Data()),"RECREATE");
+ 
   gStyle->SetPalette(1);
   // Open root MC file and get classes
   cout << "Analysis Macro" << endl;
@@ -92,7 +94,7 @@ void MainAnalysis()  {
   ecuts_data->PrintCuts();
   tcuts_data->PrintCuts();
   
-  QAPlots(hman_data,hman_mc,ecuts_data,ecuts_mc,tcuts_data,tcuts_mc);
+  QAPlots(hman_data,hman_mc,ecuts_data,ecuts_mc,tcuts_data,tcuts_mc,fout);
 
   //efficiencies
   Printf("\n\n-> Calculating MC Correction Factors");
@@ -123,7 +125,6 @@ void MainAnalysis()  {
       else CorrFact[index]->DrawClone("same");
     }
   } 
-  
   TFile *fESD=new TFile("EffAlex/pionEffPbPb.root");
   TH1F *hEffESD=(TH1F*)fESD->Get("effMapPionTpcOnlyNeg0");
   hEffESD->DrawClone("same");
@@ -173,7 +174,7 @@ void MainAnalysis()  {
   }
  
   //DCA Correction with the "right" DCA sample
-  //DCACorrection(Spectra,hman_data,hman_mc,UseMCDCACorrection);
+  //DCACorrection(Spectra,hman_data,hman_mc,UseMCDCACorrection,fout);
   
   //DCA Correction forcing loose DCA
   // TString fold_LooseDCA="5SigmaPID_AOD046_FilterBit5";
@@ -186,7 +187,7 @@ void MainAnalysis()  {
   // DCACorrection(Spectra,hman_data_LooseDCA,hman_mc_LooseDCA,UseMCDCACorrection);
   
   //GFCorrection
-  GFCorrection(Spectra,tcuts_data);
+  GFCorrection(Spectra,tcuts_data,fout);
   
   TH1F *MCTruth[6];
   for(Int_t icharge=0;icharge<2;icharge++){
@@ -272,23 +273,11 @@ void MainAnalysis()  {
   } 
   gPad->BuildLegend()->SetFillColor(0);
   
-  //saving spectra
-  Printf("\n\n-> Saving spectra in Out%s_%s.root",sname.Data(),fold.Data());
-  TFile * fout=new TFile(Form("results/Out_%s_%s.root",sname.Data(),fold.Data()),"RECREATE");
-  for(Int_t icharge=0;icharge<2;icharge++){
-    for(Int_t ipart=0;ipart<3;ipart++){
-      Int_t index=ipart+3*icharge;
-      Spectra[index]->Write();
-      CorrFact[index]->Write();
-      MCTruth[index]->Write();
-    }
-  }
-  
+
   //if Bin 0-5% with no cut ratio with combined analysis
-  if(ibinToCompare!=-1){
-    TCanvas *CratioComb=new TCanvas("CratioComb","CratioComb",700,500);
-    CratioComb->Divide(3,2);
-    TString nameComb[6]={Form("cent%d_pion_plus",ibinToCompare),Form("cent%d_kaon_plus",ibinToCompare),Form("cent%d_proton_plus",ibinToCompare),
+  TCanvas *CratioComb=new TCanvas("CratioComb","CratioComb",700,500);
+  CratioComb->Divide(3,2);
+  TString nameComb[6]={Form("cent%d_pion_plus",ibinToCompare),Form("cent%d_kaon_plus",ibinToCompare),Form("cent%d_proton_plus",ibinToCompare),
   			 Form("cent%d_pion_minus",ibinToCompare),Form("cent%d_kaon_minus",ibinToCompare),Form("cent%d_proton_minus",ibinToCompare)};
     TFile *fComb=new TFile("Combined05/SPECTRA_COMB_20120412.root");
     TH1F *Spectra_copy[6]=0x0;
@@ -302,7 +291,7 @@ void MainAnalysis()  {
   	gPad->SetGridy();
   	gPad->SetGridx();
   	//for(Int_t ibin=1;ibin<hcomb->GetNbinsX();ibin++)hcomb->SetBinError(ibin,0);
-
+	
   	if(icharge==0)htmp->DrawClone();
   	else htmp->DrawClone("same");
 	//MCTruth[index]->DrawClone("same");
@@ -317,7 +306,6 @@ void MainAnalysis()  {
   	else htmp->DrawClone("same");
       }
     }
-  }	
   
   //comparison with charged hadron
   Printf("\n\n-> ChargedHadron comparison");
@@ -362,8 +350,9 @@ void MainAnalysis()  {
   //Printf("--------%f ",((TH1F*)hman_mc->GetPtHistogram1D("hHistPtGen",1,1))->GetEntries()/1.6/ecuts_mc->NumberOfEvents());
   hChHad_data->Scale(1./events_data,"width");//NORMALIZATION
   hChHad_data->Divide(hEff_mc);//Efficiency
-  hChHad_data->Scale(1./1.6);
+  hChHad_data->Scale(1./(TMath::Abs(tcuts_data->GetEtaMin())+TMath::Abs(tcuts_data->GetEtaMax())));
   hChHad_data->SetTitle("All Ch from AOD");
+  hChHad_data->SetName("AllCh");
   TCanvas *cAllCh=new TCanvas("cAllCh","cAllCh",700,500);
   cAllCh->Divide(1,2);
   cAllCh->cd(1);
@@ -481,16 +470,39 @@ void MainAnalysis()  {
   hsum->SetMinimum(.8);
   hsum->DrawClone("");
   
+  //saving spectra
+  fout->cd();
+  for(Int_t icharge=0;icharge<2;icharge++){
+    for(Int_t ipart=0;ipart<3;ipart++){
+      Int_t index=ipart+3*icharge;
+      Spectra[index]->Write();
+      CorrFact[index]->Write();
+      MCTruth[index]->Write();
+    }
+  }
+  hChHad_data->Write();
+  cRaw->Write();
+  ceff->Write();
+  cMatchingEff->Write();
+  cspectra->Write();
+  CratioComb->Write();
+  cAllChFactors->Write();
+  cAllCh->Write();
+  cFitChargHad->Write();
+  cChargHadComp->Write();
+  
+  fout->Close();
+  delete fout;
   
 }
 
 
 
 
-void DCACorrection(TH1F **Spectra, AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* hman_mc,Bool_t UseMCDCACorrection){
+void DCACorrection(TH1F **Spectra, AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* hman_mc,Bool_t UseMCDCACorrection,TFile *fout){
   printf("\n\n-> DCA Correction");
   
-  Double_t FitRange[2]={-1.,1.};
+  Double_t FitRange[2]={-3.,3.};
   Int_t nrebin=2;
   Printf("\DCACorr");
   TH1F *hcorrection[2];
@@ -517,10 +529,10 @@ void DCACorrection(TH1F **Spectra, AliSpectraAODHistoManager* hman_data, AliSpec
 	  TH1F *hmc3=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryMaterial%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge+binwidth))->Clone();
 	  Double_t minentries=1;
 	  //if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries || hmc2->GetEntries()<=minentries || hmc3->GetEntries()<=minentries)continue;
-	  hmc1->Rebin(nrebin);
-	  hmc2->Rebin(nrebin);
-	  hmc3->Rebin(nrebin);
-	  hToFit->Rebin(nrebin);
+	  // hmc1->Rebin(nrebin);
+	  // hmc2->Rebin(nrebin);
+	  // hmc3->Rebin(nrebin);
+	  // hToFit->Rebin(nrebin);
 	  //Data and MC can have different stat
 	  hToFit->Sumw2();
 	  hmc1->Sumw2();
@@ -614,6 +626,8 @@ void DCACorrection(TH1F **Spectra, AliSpectraAODHistoManager* hman_data, AliSpec
 	// for(Int_t ibin=1;ibin<30;ibin++){
 	//   hcorrection[isample]->SetBinContent(ibin,fitfun->Eval(hcorrection[isample]->GetBinCenter(ibin)));
 	// }
+	fout->cd();
+	cDCA->Write();
       }
       Spectra[index]->Multiply(hcorrection[0]);//multiply for data
       Printf("DCACorrection for DATA used: Spectra[index]->Multiply(hcorrection[0])")
@@ -633,6 +647,9 @@ void DCACorrection(TH1F **Spectra, AliSpectraAODHistoManager* hman_data, AliSpec
   gPad->BuildLegend()->SetFillColor(0);
   ccorrection->cd(2);
   gPad->BuildLegend()->SetFillColor(0);
+  fout->cd();
+  cRatiocorrection->Write();
+  ccorrection->Write();
 }
 
 
@@ -643,7 +660,7 @@ Double_t eta2y(Double_t pt, Double_t mass, Double_t eta){
   return TMath::ASinH(pt / mt * TMath::SinH(eta));
 }
 ///////////////////////
-void GFCorrection(TH1F **Spectra,AliSpectraAODTrackCuts* tcuts_data){
+void GFCorrection(TH1F **Spectra,AliSpectraAODTrackCuts* tcuts_data, TFile * fout){
   //Geant/Fluka Correction
   Printf("\nGF correction for Kaons");
   //Getting GF For Kaons in TPC
@@ -713,7 +730,7 @@ void GFCorrection(TH1F **Spectra,AliSpectraAODTrackCuts* tcuts_data){
   TGraph *gGFCorrectionProtonMinus=new TGraph();
   gGFCorrectionProtonMinus->SetName("gGFCorrectionProtonMinus");
   gGFCorrectionProtonMinus->SetTitle("gGFCorrectionProtonMinus");
-   //getting GF func for Kaons with TPCTOF
+  //getting GF func for Kaons with TPCTOF
   TF1 *fGFpPosTracking;
   fGFpPosTracking = TrackingEff_geantflukaCorrection(4,kPositive);
   TF1 *fGFpNegTracking;
@@ -728,33 +745,33 @@ void GFCorrection(TH1F **Spectra,AliSpectraAODTrackCuts* tcuts_data){
     Int_t nbinsy=hCorrFluka[icharge]->GetNbinsY();
     for(Int_t ibin = 0; ibin < nbins; ibin++){
       if(Spectra[2]->GetBinCenter(ibin)<tcuts_data->GetPtTOFMatching()){//use TPC GeantFlukaCorrection
-      Float_t pt = Spectra[2]->GetBinCenter(ibin);
-      Float_t minPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(1);
-      Float_t maxPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(nbinsy+1);
-      if (pt < minPtCorrection) pt = minPtCorrection+0.0001;
-      if (pt > maxPtCorrection) pt = maxPtCorrection;
-      Float_t correction = hCorrFluka[icharge]->GetBinContent(1,hCorrFluka[icharge]->GetYaxis()->FindBin(pt));
-      //cout<<correction<<"     charge "<<icharge<<endl;
-      if(icharge==0){
-  	if (correction != 0) {// If the bin is empty this is a  0
-  	  Spectra[2]->SetBinContent(ibin,Spectra[2]->GetBinContent(ibin)*correction);
-  	  Spectra[2]->SetBinError(ibin,Spectra[2]->GetBinError  (ibin)*correction);
-	  gGFCorrectionProtonPlus->SetPoint(ibin,pt,correction);
-	}else if (Spectra[2]->GetBinContent(ibin) > 0) { // If we are skipping a non-empty bin, we notify the user
-  	  cout << "Fluka/GEANT: Not correcting bin "<<ibin << " for protons secondaries, Pt:"<< pt<< endl;
-  	  cout << " Bin content: " << Spectra[2]->GetBinContent(ibin)  << endl;
-  	}
-      }
-      if(icharge==1){
-  	if (correction != 0) {// If the bin is empty this is a  0
-  	  Spectra[5]->SetBinContent(ibin,Spectra[5]->GetBinContent(ibin)*correction);
-  	  Spectra[5]->SetBinError(ibin,Spectra[5]->GetBinError  (ibin)*correction);
-	  gGFCorrectionProtonMinus->SetPoint(ibin,pt,correction);
-  	}else if (Spectra[5]->GetBinContent(ibin) > 0) { // If we are skipping a non-empty bin, we notify the user
-  	  cout << "Fluka/GEANT: Not correcting bin "<<ibin << " for Antiprotons secondaries, Pt:"<< pt<< endl;
-  	  cout << " Bin content: " << Spectra[5]->GetBinContent(ibin)  << endl;
-  	}
-      }
+	Float_t pt = Spectra[2]->GetBinCenter(ibin);
+	Float_t minPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(1);
+	Float_t maxPtCorrection = hCorrFluka[icharge]->GetYaxis()->GetBinLowEdge(nbinsy+1);
+	if (pt < minPtCorrection) pt = minPtCorrection+0.0001;
+	if (pt > maxPtCorrection) pt = maxPtCorrection;
+	Float_t correction = hCorrFluka[icharge]->GetBinContent(1,hCorrFluka[icharge]->GetYaxis()->FindBin(pt));
+	//cout<<correction<<"     charge "<<icharge<<endl;
+	if(icharge==0){
+	  if (correction != 0) {// If the bin is empty this is a  0
+	    Spectra[2]->SetBinContent(ibin,Spectra[2]->GetBinContent(ibin)*correction);
+	    Spectra[2]->SetBinError(ibin,Spectra[2]->GetBinError  (ibin)*correction);
+	    gGFCorrectionProtonPlus->SetPoint(ibin,pt,correction);
+	  }else if (Spectra[2]->GetBinContent(ibin) > 0) { // If we are skipping a non-empty bin, we notify the user
+	    cout << "Fluka/GEANT: Not correcting bin "<<ibin << " for protons secondaries, Pt:"<< pt<< endl;
+	    cout << " Bin content: " << Spectra[2]->GetBinContent(ibin)  << endl;
+	  }
+	}
+	if(icharge==1){
+	  if (correction != 0) {// If the bin is empty this is a  0
+	    Spectra[5]->SetBinContent(ibin,Spectra[5]->GetBinContent(ibin)*correction);
+	    Spectra[5]->SetBinError(ibin,Spectra[5]->GetBinError  (ibin)*correction);
+	    gGFCorrectionProtonMinus->SetPoint(ibin,pt,correction);
+	  }else if (Spectra[5]->GetBinContent(ibin) > 0) { // If we are skipping a non-empty bin, we notify the user
+	    cout << "Fluka/GEANT: Not correcting bin "<<ibin << " for Antiprotons secondaries, Pt:"<< pt<< endl;
+	    cout << " Bin content: " << Spectra[5]->GetBinContent(ibin)  << endl;
+	  }
+	}
       }else{
 	gGFCorrectionProtonPlus->SetPoint(ibin,Spectra[2]->GetBinCenter(ibin),0);
 	gGFCorrectionProtonMinus->SetPoint(ibin,Spectra[5]->GetBinCenter(ibin),0);
@@ -804,7 +821,7 @@ void GFCorrection(TH1F **Spectra,AliSpectraAODTrackCuts* tcuts_data){
   fGFpPosMatching->SetRange(.6,5);
   fGFpNegMatching->SetRange(.6,5);
  
-  TCanvas * GFCorrection = new TCanvas ("GFCorrection","GFCorrection",700,500);
+  TCanvas * cGFCorrection = new TCanvas ("GFCorrection","GFCorrection",700,500);
   gPad->SetGridx();
   gPad->SetGridy();
   gGFCorrectionKaonPlus->DrawClone("al");
@@ -820,6 +837,8 @@ void GFCorrection(TH1F **Spectra,AliSpectraAODTrackCuts* tcuts_data){
   fGFpPosMatching->DrawClone("lsame");
   fGFpNegMatching->DrawClone("lsame");
   gPad->BuildLegend()->SetFillColor(0);
+  fout->cd();
+  cGFCorrection->Write();
 }
 
 

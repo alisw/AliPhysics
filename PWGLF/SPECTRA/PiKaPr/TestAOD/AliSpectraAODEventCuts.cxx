@@ -49,7 +49,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, 
   fHistoVtxAftSel = new TH1F("fHistoVtxAftSel", "Vtx distr after event selection",500,-15,15);
   fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
   fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
-  fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",3000,-0.5,2999.5);
+  fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",2000,-0.5,1999.5);
   fHistoQVectorPos = new TH1F("fHistoQVectorPos", "QVectorPos distribution",100,0,10);
   fHistoQVectorNeg = new TH1F("fHistoQVectorNeg", "QVectorNeg distribution",100,0,10);
   fCentralityCutMin = 0.0;      // default value of centrality cut minimum, 0 ~ no cut
@@ -75,7 +75,7 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
   if(vertex)fHistoVtxBefSel->Fill(vertex->GetZ());
   fIsSelected =kFALSE;
   if(CheckVtxRange() && CheckCentralityCut()){ //selection on vertex and Centrality
-    fIsSelected=CheckQVectorCut(); // QVector is calculated only if the centrality and vertex are correct
+    fIsSelected=CheckQVectorCut(); // QVector is calculated only if the centrality and vertex are correct (performance)
   }
   if(fIsSelected){
     fHistoCuts->Fill(kAcceptedEvents);
@@ -139,7 +139,7 @@ Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
   Int_t multNeg = 0;
   for(Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++) {
     AliAODTrack* aodTrack = fAOD->GetTrack(iT);
-    if (!fTrackCuts->IsSelected(aodTrack,kFALSE)) continue;
+    if (!aodTrack->TestFilterBit(1)) continue; //FilterBit 1 is the standard TPC track
     if (aodTrack->Eta() >= 0){
       multPos++;
       Qx2EtaPos += TMath::Cos(2*aodTrack->Phi()); 
@@ -155,8 +155,11 @@ Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
   Double_t qNeg=-999;
   if(multNeg!=0)qNeg= TMath::Sqrt((Qx2EtaNeg*Qx2EtaNeg + Qy2EtaNeg*Qy2EtaNeg)/multNeg);
   
-  
+  //Printf("Cuts on Q vector: %f,%f,%f,%f",fQVectorPosCutMin,fQVectorPosCutMax,fQVectorNegCutMin,fQVectorNegCutMax);
+  //Printf("Q vectors: %f,%f",qPos,qNeg);
   if(qPos<fQVectorPosCutMin || qPos>fQVectorPosCutMax || qNeg<fQVectorNegCutMin || qNeg>fQVectorNegCutMax)return kFALSE;
+  
+  
   fHistoCuts->Fill(kQVector);
   fHistoQVectorPos->Fill(qPos);
   fHistoQVectorNeg->Fill(qNeg);

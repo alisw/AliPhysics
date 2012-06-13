@@ -58,12 +58,6 @@ AliSpectraAODHistoManager::AliSpectraAODHistoManager(const char *name): TNamed(n
       if (ihist > kNHistPID && ihist <= kNHistNSig) BookNSigHistogram(kHistName[ihist]);  // NSigmaSep histos
       if (ihist > kNHistNSig) BookqVecHistogram(kHistName[ihist]);  // qDistr histos
    }
-   //adding quickly o plot to check the centrality distr in two different ways
-   TH2F *hist=new TH2F("CentCheck","CentCheck",1000,0,100,1000,0,100);
-   hist->SetXTitle("fAOD->GetCentrality()->GetCentralityPercentile(V0M)");
-   hist->SetYTitle("fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentileUnchecked(V0M)");
-   hist->Sumw2();
-   fOutputList->Add(hist);
    
    TH1::AddDirectory(oldStatus);
 
@@ -101,7 +95,7 @@ TH2F* AliSpectraAODHistoManager::BookPtRecHistogram(const char * name)
    const Double_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
    Int_t nbinsTempl=52;
    
-   TH2F * hist = new TH2F(name,Form("reconstructed P_{T} distribution (%s)", name),nbinsTempl,templBins,3000,-3,3);//need to be at least 1 becuase the generated are filled with (pt,IsPhysPrim)
+   TH2F * hist = new TH2F(name,Form("reconstructed P_{T} distribution (%s)", name),nbinsTempl,templBins,500,-3,3);//need to be at least 1 becuase the generated are filled with (pt,IsPhysPrim)
    hist->GetXaxis()->SetTitle("P_{T} (GeV / c)");
    hist->GetYaxis()->SetTitle("DCA xy");
    hist->SetMarkerStyle(kFullCircle);
@@ -118,7 +112,7 @@ TH2F* AliSpectraAODHistoManager::BookPIDHistogram(const char * name)
    // Return a pt histogram with predefined binning, set the ID and add it to the output list
    AliInfo(Form("Booking PID histogram %s", name));
 
-   TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 200, 0, 2.5, 2000, -1000, 1000);
+   TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 100, 0, 2.5, 200, -1000, 1000);
    hist->GetXaxis()->SetTitle("(GeV / c)");
    hist->GetYaxis()->SetTitle("PID signal");
 //  hist->Sumw2();
@@ -134,7 +128,7 @@ TH2F* AliSpectraAODHistoManager::BookNSigHistogram(const char * name)
   // Return a pt histogram with predefined binning, set the ID and add it to the output list
   AliInfo(Form("Booking NSigma histogram %s", name));
   
-  TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 200, 0, 2.5, 2000,-40, 40);
+  TH2F * hist = new TH2F(name, Form("Particle Identification (%s)", name), 100, 0, 2.5, 200,-40, 40);
   hist->GetXaxis()->SetTitle("P (GeV / c)");
   hist->GetYaxis()->SetTitle("TPC");
   //hist->Sumw2();

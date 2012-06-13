@@ -94,8 +94,6 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     {
       AliFatal("Not processing AODs");
     }
-  //check on centrality distribution
-  fHistMan->GetPtHistogram("CentCheck")->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"),fAOD->GetHeader()->GetCentralityP()->GetCentralityPercentileUnchecked("V0M"));
   
   if(!fEventCuts->IsSelected(fAOD,fTrackCuts))return;//event selection
   
@@ -115,9 +113,11 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 	  if(!partMC->Charge()) continue;//Skip neutrals
-	  if(partMC->Eta() > fTrackCuts->GetEtaMin() && partMC->Eta() < fTrackCuts->GetEtaMax()){//charged hadron are filled inside the eta acceptance
-	    fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
-	  }
+	  //if(partMC->Eta() > fTrackCuts->GetEtaMin() && partMC->Eta() < fTrackCuts->GetEtaMax()){//charged hadron are filled inside the eta acceptance
+	  //Printf("%f     %f-%f",partMC->Eta(),fTrackCuts->GetEtaMin(),fTrackCuts->GetEtaMax());
+	  if(partMC->Eta() < fTrackCuts->GetEtaMin() || partMC->Eta() > fTrackCuts->GetEtaMax())continue;//ETA CUT ON GENERATED!!!!!!!!!!!!!!!!!!!!!!!!!!
+	  fHistMan->GetPtHistogram(kHistPtGen)->Fill(partMC->Pt(),partMC->IsPhysicalPrimary());
+	  
 	  //rapidity cut
 	  if(TMath::Abs(partMC->Y())   > fTrackCuts->GetY()  ) continue;	    
 	  // check for true PID + and fill P_t histos 
@@ -135,9 +135,6 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
     if (!fTrackCuts->IsSelected(track,kTRUE)) continue;
     
     fPID->FillQAHistos(fHistMan, track, fTrackCuts);
-    
-    // //cut on q vectors track-by-track FIXME
-    // if ((qPos>fTrackCuts->GetQvecMin() && qPos<fTrackCuts->GetQvecMax() && track->Eta()<0) || (qNeg>fTrackCuts->GetQvecMin() && qNeg<fTrackCuts->GetQvecMax() && track->Eta()>=0)){
     
     //calculate DCA for AOD track
     Double_t dca=track->DCA();
@@ -180,8 +177,8 @@ void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 	  mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
 	}
 	//Int_t uniqueID = partMC->GetUniqueID();
-	cout<<"uniqueID: "<<partMC->GetUniqueID()<<"       "<<kPDecay<<endl;
-	cout<<"status: "<<partMC->GetStatus()<<"       "<<kPDecay<<endl;
+	//cout<<"uniqueID: "<<partMC->GetUniqueID()<<"       "<<kPDecay<<endl;
+	//cout<<"status: "<<partMC->GetStatus()<<"       "<<kPDecay<<endl;
 	// if(uniqueID == kPDecay)Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	if(mfl==3) isSecondaryWeak     = kTRUE; // add if(partMC->GetStatus() & kPDecay)? FIXME
 	else       isSecondaryMaterial = kTRUE;
