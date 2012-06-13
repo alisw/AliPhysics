@@ -19,11 +19,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   AliAnalysisTaskEmcalJet(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcalJet();
 
-  virtual void                UserExec(Option_t *option);
-  virtual void                Init();
-
   void                        SetEtaLimits(Float_t min, Float_t max)               { fMinEta = min, fMaxEta = max ; }
-  void                        SetInitialized(Bool_t ini = kTRUE)                   { fInitialized    = ini        ; }
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut        ; }
   void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut        ; }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r          ; } 
@@ -35,13 +31,12 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b          ; }
  
  protected:
-
   Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)   const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)                                          const;
+  void                        Init();
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)        const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)       const;
-
-  virtual Bool_t              RetrieveEventObjects();
+  Bool_t                      RetrieveEventObjects();
 
   Float_t                     fJetRadius;                  // jet radius
   TString                     fJetsName;                   // name of jet collection
