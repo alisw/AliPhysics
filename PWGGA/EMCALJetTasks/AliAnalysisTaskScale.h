@@ -17,10 +17,10 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   AliAnalysisTaskScale(const char *name);
   virtual ~AliAnalysisTaskScale() {}
   
-  virtual void           UserCreateOutputObjects();
-  virtual void           Terminate(Option_t *);
+  void                   UserCreateOutputObjects();
+  void                   Terminate(Option_t *);
 
-  void                   SetScaleFunction(TF1* sf)                             { fScaleFunction = sf   ; }
+  void                   SetScaleFunction(TF1* sf)  { fScaleFunction = sf   ; }
   
  protected:
   virtual Double_t       GetScaleFactor(Double_t cent);
