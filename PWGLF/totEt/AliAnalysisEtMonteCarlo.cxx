@@ -24,7 +24,9 @@
 #include "AliLog.h"
 #include <iostream>
 #include <AliCentrality.h>
-
+#include "AliPHOSGeoUtils.h"
+#include "AliPHOSGeometry.h"
+#include "TFile.h"
 using namespace std;
 
 ClassImp(AliAnalysisEtMonteCarlo);
@@ -49,6 +51,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fHistEtNonRemovedKaonPlus(0)
         ,fHistEtNonRemovedKaonMinus(0)
         ,fHistEtNonRemovedK0s(0)
+	,fHistEtNonRemovedK0L(0)
         ,fHistEtNonRemovedLambdas(0)
         ,fHistEtNonRemovedElectrons(0)
         ,fHistEtNonRemovedPositrons(0)
@@ -58,9 +61,16 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fHistEtNonRemovedAntiNeutrons(0)
         ,fHistEtNonRemovedGammas(0)
         ,fHistEtNonRemovedGammasFromPi0(0)
-        ,fHistEtRemovedGammas(0)
+        
+	,fHistEtRemovedGammas(0)
         ,fHistEtRemovedNeutrons(0)
         ,fHistEtRemovedAntiNeutrons(0)
+	
+	,fHistEtRemovedCharged(0)
+	,fHistEtRemovedNeutrals(0)
+	,fHistEtNonRemovedCharged(0)
+	,fHistEtNonRemovedNeutrals(0)
+	
         ,fHistMultNonRemovedProtons(0)
         ,fHistMultNonRemovedAntiProtons(0)
         ,fHistMultNonRemovedPiPlus(0)
@@ -68,6 +78,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fHistMultNonRemovedKaonPlus(0)
         ,fHistMultNonRemovedKaonMinus(0)
         ,fHistMultNonRemovedK0s(0)
+	,fHistMultNonRemovedK0L(0)
         ,fHistMultNonRemovedLambdas(0)
         ,fHistMultNonRemovedElectrons(0)
         ,fHistMultNonRemovedPositrons(0)
@@ -76,9 +87,17 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fHistMultNonRemovedNeutrons(0)
         ,fHistMultNonRemovedAntiNeutrons(0)
         ,fHistMultNonRemovedGammas(0)
+	
         ,fHistMultRemovedGammas(0)
         ,fHistMultRemovedNeutrons(0)
         ,fHistMultRemovedAntiNeutrons(0)
+	
+	,fHistMultRemovedCharged(0)
+	,fHistMultRemovedNeutrals(0)
+	
+	,fHistMultNonRemovedCharged(0)
+	,fHistMultNonRemovedNeutrals(0)
+	
         ,fHistTrackMultvsNonRemovedCharged(0)
         ,fHistTrackMultvsNonRemovedNeutral(0)
         ,fHistTrackMultvsRemovedGamma(0)
@@ -94,7 +113,8 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fEtNonRemovedPiMinus(0)
         ,fEtNonRemovedKaonPlus(0)
         ,fEtNonRemovedKaonMinus(0)
-        ,fEtNonRemovedK0s(0)
+        ,fEtNonRemovedK0S(0)
+	,fEtNonRemovedK0L(0)
         ,fEtNonRemovedLambdas(0)
         ,fEtNonRemovedElectrons(0)
         ,fEtNonRemovedPositrons(0)
@@ -104,6 +124,22 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fEtNonRemovedGammasFromPi0(0)
         ,fEtNonRemovedNeutrons(0)
         ,fEtNonRemovedAntiNeutrons(0)
+	
+	,fEtRemovedProtons(0)
+	,fEtRemovedAntiProtons(0)
+	,fEtRemovedPiPlus(0)
+	,fEtRemovedPiMinus(0)
+	,fEtRemovedKaonPlus(0)
+	,fEtRemovedKaonMinus(0)
+	,fEtRemovedK0s(0)
+	,fEtRemovedK0L(0)
+	,fEtRemovedLambdas(0)
+	,fEtRemovedElectrons(0)
+	,fEtRemovedPositrons(0)
+	,fEtRemovedMuMinus(0)
+	,fEtRemovedMuPlus(0)
+	
+	,fEtRemovedGammasFromPi0(0)
         ,fEtRemovedGammas(0)
         ,fEtRemovedNeutrons(0)
         ,fEtRemovedAntiNeutrons(0)
@@ -114,6 +150,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fMultNonRemovedKaonPlus(0)
         ,fMultNonRemovedKaonMinus(0)
         ,fMultNonRemovedK0s(0)
+	,fMultNonRemovedK0L(0)
         ,fMultNonRemovedLambdas(0)
         ,fMultNonRemovedElectrons(0)
         ,fMultNonRemovedPositrons(0)
@@ -122,9 +159,26 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fMultNonRemovedGammas(0)
         ,fMultNonRemovedNeutrons(0)
         ,fMultNonRemovedAntiNeutrons(0)
+	
+	,fMultRemovedProtons(0)
+	,fMultRemovedAntiProtons(0)
+	,fMultRemovedPiPlus(0)
+	,fMultRemovedPiMinus(0)
+	,fMultRemovedKaonPlus(0)
+	,fMultRemovedKaonMinus(0)
+	,fMultRemovedK0s(0)
+	,fMultRemovedK0L(0)
+	,fMultRemovedLambdas(0)
+	,fMultRemovedElectrons(0)
+	,fMultRemovedPositrons(0)
+	,fMultRemovedMuMinus(0)
+	,fMultRemovedMuPlus(0)
+	
+	
         ,fMultRemovedGammas(0)
         ,fMultRemovedNeutrons(0)
         ,fMultRemovedAntiNeutrons(0)
+	
         ,fTrackMultInAcc(0)
         ,fHistDxDzNonRemovedCharged(0)
         ,fHistDxDzRemovedCharged(0)
@@ -150,6 +204,11 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fEnergyChargedRemoved(0)
         ,fEnergyChargedNotRemoved(0)
         ,fEnergyNeutralNotRemoved(0)
+	,fNClusters(0)
+	,fGeoUtils(0)
+	,fBadMapM2(0)
+	,fBadMapM3(0)
+	,fBadMapM4(0)
 
 {
     fTrackDistanceCut = 7.0;
@@ -172,6 +231,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
 	delete fHistEtNonRemovedKaonPlus; // enter comment here
 	delete fHistEtNonRemovedKaonMinus; // enter comment here
 	delete fHistEtNonRemovedK0s; // enter comment here
+	delete fHistEtNonRemovedK0L; // enter comment here
 	delete fHistEtNonRemovedLambdas; // enter comment here
 	delete fHistEtNonRemovedElectrons; // enter comment here
 	delete fHistEtNonRemovedPositrons; // enter comment here
@@ -194,6 +254,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
 	delete fHistMultNonRemovedKaonPlus; // enter comment here 
 	delete fHistMultNonRemovedKaonMinus; // enter comment here 
 	delete fHistMultNonRemovedK0s; // enter comment here 
+	delete fHistMultNonRemovedK0L; // enter comment here 
 	delete fHistMultNonRemovedLambdas; // enter comment here 
 	delete fHistMultNonRemovedElectrons; // enter comment here 
 	delete fHistMultNonRemovedPositrons; // enter comment here 
@@ -277,17 +338,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
         fImpactParameter = hijingGenHeader->ImpactParameter();
         fNcoll = hijingGenHeader->HardScatters(); // or should this be some combination of NN() NNw() NwN() NwNw() ?
         fNpart = hijingGenHeader->ProjectileParticipants() + hijingGenHeader->TargetParticipants();
-        /*
-          printf("Hijing: ImpactParameter %g ReactionPlaneAngle %g \n",
-          hijingGenHeader->ImpactParameter(), hijingGenHeader->ReactionPlaneAngle());
-          printf("HardScatters %d ProjecileParticipants %d TargetParticipants %d\n",
-          hijingGenHeader->HardScatters(), hijingGenHeader->ProjectileParticipants(), hijingGenHeader->TargetParticipants());
-          printf("ProjSpectatorsn %d ProjSpectatorsp %d TargSpectatorsn %d TargSpectatorsp %d\n",
-          hijingGenHeader->ProjSpectatorsn(), hijingGenHeader->ProjSpectatorsp(), hijingGenHeader->TargSpectatorsn(), hijingGenHeader->TargSpectatorsp());
-          printf("NN %d NNw %d NwN %d, NwNw %d\n",
-          hijingGenHeader->NN(), hijingGenHeader->NNw(), hijingGenHeader->NwN(), hijingGenHeader->NwNw());
-        */
-    }
+      }
 
     /* // placeholder if we want to get some Pythia info later
        AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
@@ -296,7 +347,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
        pythiaGenHeader->ProcessType(), pythiaGenHeader->GetPtHard());
        }
     */
-
     // Let's play with the stack!
     AliStack *stack = event->Stack();
 
@@ -320,34 +370,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 //         Int_t iPartLastMom = part->GetMother(1);
 
         TParticlePDG *pdg = part->GetPDG(0);
-        //TParticlePDG *pdgMom = 0;
-//         TParticlePDG *pdgMomLast = 0;
 
-        if (!pdg)
+	if (!pdg)
         {
             //Printf("ERROR: Could not get particle PDG %d", iPart);
             continue;
         }
 
-//         if (iPartMom>0)
-//         {
-//             partMom = stack->Particle(iPartMom);
-//             //pdgMom = partMom->GetPDG(0);
-//         }
-
-//         if (iPartLastMom>0)
-//         {
-//             partMomLast = stack->Particle(iPartLastMom);
-//             pdgMomLast = partMomLast->GetPDG(0);
-//         }
-
-
         Double_t particleMassPart = 0; //The mass part in the Et calculation for this particle
-
-        // Check if it is a primary particle
-        //if (!stack->IsPhysicalPrimary(iPart)) continue;
-
-        //printf("MC: iPart %03d eta %4.3f phi %4.3f code %d charge %g \n", iPart, part->Eta(), part->Phi(), pdg->PdgCode(), pdg->Charge()); // tmp/debug printout
+	Int_t code = pdg->PdgCode();
 
         // Check for reasonable (for now neutral and singly charged) charge on the particle
         //TODO:Maybe not only singly charged?
@@ -360,24 +391,24 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
             {
                 // calculate E_T
                 if (
-                    TMath::Abs(pdg->PdgCode()) == fgProtonCode ||
-                    TMath::Abs(pdg->PdgCode()) == fgNeutronCode ||
-                    TMath::Abs(pdg->PdgCode()) == fgLambdaCode ||
-                    TMath::Abs(pdg->PdgCode()) == fgXiCode ||
-                    TMath::Abs(pdg->PdgCode()) == fgXi0Code ||
-                    TMath::Abs(pdg->PdgCode()) == fgOmegaCode
+                    TMath::Abs(code) == fgProtonCode ||
+                    TMath::Abs(code) == fgNeutronCode ||
+                    TMath::Abs(code) == fgLambdaCode ||
+                    TMath::Abs(code) == fgXiCode ||
+                    TMath::Abs(code) == fgXi0Code ||
+                    TMath::Abs(code) == fgOmegaCode
                 )
                 {
-                    if (pdg->PdgCode() > 0) {
+                    if (code > 0) {
                         particleMassPart = - protonMass;
                     }
-                    if (pdg->PdgCode() < 0) {
+                    if (code < 0) {
                         particleMassPart = protonMass;
                     }
                 }
                 Double_t et = part->Energy() * TMath::Sin(part->Theta()) + particleMassPart;
 
-                fSparseTracks[0] = pdg->PdgCode();
+                fSparseTracks[0] = code;
                 fSparseTracks[1] = pdg->Charge()*3;
                 fSparseTracks[2] = pdg->Mass();
                 fSparseTracks[3] = et;
@@ -386,14 +417,14 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                 fSparseHistTracks->Fill(fSparseTracks);
 
                 // Fill up total E_T counters for each particle species
-                if (pdg->PdgCode() == fgProtonCode || pdg->PdgCode() == fgAntiProtonCode)
+                if (code == fgProtonCode || code == fgAntiProtonCode)
                 {
                     fProtonEt += et;
                 }
-                if (pdg->PdgCode() == fgPiPlusCode || pdg->PdgCode() == fgPiMinusCode)
+                if (code == fgPiPlusCode || code == fgPiMinusCode)
                 {
                     fPionEt += et;
-                    if (pdg->PdgCode() == fgPiPlusCode)
+                    if (code == fgPiPlusCode)
                     {
                         fPiPlusMult++;
                     }
@@ -402,39 +433,40 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         fPiMinusMult++;
                     }
                 }
-                if (pdg->PdgCode() == fgGammaCode)
+                if (code == fgGammaCode)
                 {
                     fPiZeroMult++;
                 }
-                if (pdg->PdgCode() == fgKPlusCode || pdg->PdgCode() == fgKMinusCode)
+                if (code == fgKPlusCode || code == fgKMinusCode)
                 {
                     fChargedKaonEt += et;
                 }
-                if (pdg->PdgCode() == fgMuPlusCode || pdg->PdgCode() == fgMuMinusCode)
+                if (code == fgMuPlusCode || code == fgMuMinusCode)
                 {
                     fMuonEt += et;
                 }
-                if (pdg->PdgCode() == fgEPlusCode || pdg->PdgCode() == fgEMinusCode)
+                if (code == fgEPlusCode || code == fgEMinusCode)
                 {
                     fElectronEt += et;
                 }
-
                 // some neutrals also
-                if (pdg->PdgCode() == fgNeutronCode)
+                if (code == fgNeutronCode)
                 {
                     fNeutronEt += et;
                 }
-                if (pdg->PdgCode() == fgAntiNeutronCode)
+                if (code == fgAntiNeutronCode)
                 {
                     fAntiNeutronEt += et;
                 }
-                if (pdg->PdgCode() == fgGammaCode)
+                if (code == fgGammaCode)
                 {
                     fGammaEt += et;
                 }
 
                 // Neutral particles
-                if (TMath::Abs(pdg->Charge() - fCuts->GetMonteCarloNeutralParticle()) <1e-3 )
+                //if (TMath::Abs(pdg->Charge() - fCuts->GetMonteCarloNeutralParticle()) <1e-3 )
+                
+                if(code == fgGammaCode || code == fgPi0Code || code == fgEtaCode)
                 {
 
                     if (et > fCuts->GetCommonClusterEnergyCut()) fTotNeutralEt += et;
@@ -443,11 +475,14 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                     if (TMath::Abs(part->Eta()) < fEtaCutAcc && part->Phi() < fPhiCutAccMax && part->Phi() > fPhiCutAccMin)
                     {
                         fNeutralMultiplicity++;
-                        //std::cout << pdg->PdgCode() << ", " << iPart << ", " <<  part->GetMother(0) << ", " << stack->IsPhysicalPrimary(iPart) << ", " << part->GetNDaughters() << ", " << part->Energy() << ", " << part->Eta() << ", " << part->Phi() << std::endl;
+                        //std::cout << code << ", " << iPart << ", " <<  part->GetMother(0) << ", " << stack->IsPhysicalPrimary(iPart) << ", " << part->GetNDaughters() << ", " << part->Energy() << ", " << part->Eta() << ", " << part->Phi() << std::endl;
 
                         //if(part->GetDaughter(0) > 0) std::cout << stack->Particle(part->GetDaughter(0))->GetPdgCode() << " " << stack->Particle(part->GetDaughter(1))->GetPdgCode() << std::endl;
-                        if (et > fCuts->GetCommonClusterEnergyCut()) fTotNeutralEtAcc += et;
-                        if (et > fCuts->GetCommonClusterEnergyCut()) fTotEtAcc += et;
+			fTotNeutralEtAcc += et;
+			fTotEtAcc += et;
+                        //if (et > fCuts->GetCommonClusterEnergyCut()) fTotNeutralEtAcc += et;
+                        //if (et > fCuts->GetCommonClusterEnergyCut()) fTotEtAcc += et;
+			
                         if (part->Energy() > 0.05) partCount++;
                     }
                 }
@@ -463,24 +498,24 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         fTotChargedEtAcc += et;
                         fTotEtAcc += et;
 
-                        if (pdg->PdgCode() == fgProtonCode || pdg->PdgCode() == fgAntiProtonCode)
+                        if (code == fgProtonCode || code == fgAntiProtonCode)
                         {
                             fProtonEtAcc += et;
                         }
-                        if (pdg->PdgCode() == fgPiPlusCode || pdg->PdgCode() == fgPiMinusCode)
+                        if (code == fgPiPlusCode || code == fgPiMinusCode)
                         {
                             fPionEtAcc += et;
                         }
-                        if (pdg->PdgCode() == fgKPlusCode || pdg->PdgCode() == fgKMinusCode)
+                        if (code == fgKPlusCode || code == fgKMinusCode)
                         {
                             fChargedKaonEtAcc += et;
                         }
-                        if (pdg->PdgCode() == fgMuPlusCode || pdg->PdgCode() == fgMuMinusCode)
+                        if (code == fgMuPlusCode || code == fgMuMinusCode)
                         {
                             fMuonEtAcc += et;
                         }
                         
-                        if (pdg->PdgCode() == fgEPlusCode || pdg->PdgCode() == fgEMinusCode)
+                        if (code == fgEPlusCode || code == fgEMinusCode)
                         {
                           fElectronEtAcc += et;
                         }
@@ -499,9 +534,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     }
 
     fTotEt = fTotChargedEt + fTotNeutralEt;
-    fTotEtAcc = fTotChargedEtAcc + fTotNeutralEtAcc;
-
-
+    fTotEtAcc = fTotChargedEtAcc + fTotNeutralEtAcc;//
     //std::cout << "Event done! # of particles: " << partCount << std::endl;
     return 0;
 }
@@ -513,7 +546,17 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         AliFatal("ERROR: Event does not exist");
         return 0;
     }
+    //if (!fMatrixInitialized)
+    if(0)
+    {
+        for (Int_t mod=0; mod<5; mod++) {
+            if (!ev->GetPHOSMatrix(mod)) continue;
+            fGeoUtils->SetMisalMatrix(ev->GetPHOSMatrix(mod),mod) ;
+            Printf("PHOS geo matrix %p for module # %d is set\n", ev->GetPHOSMatrix(mod), mod);
 
+        }
+        fMatrixInitialized = kTRUE;
+    }
     fSparseClusters[0] = 0;
     fSparseClusters[1] = 0;
     fSparseClusters[2] = 0;
@@ -545,7 +588,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         AliFatal("Detector ID has not been specified");
         return -1;
     }
-
+if(0)
+{
     // Track loop to fill a pT spectrum
     for (Int_t iTracks = 0; iTracks < realEvent->GetNumberOfTracks(); iTracks++)
     {
@@ -561,18 +605,23 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
             fTrackMultInAcc++;
         }
     }
-
+}
     Int_t nCluster = caloClusters->GetEntries();
-
+    fNClusters = 0;
     // loop the clusters
     for (int iCluster = 0; iCluster < nCluster; iCluster++ )
     {
+	
         AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
         //Float_t caloE = caloCluster->E();
+	
+	if(caloCluster->GetType() != fClusterType) continue;
+	if(AliAnalysisEtMonteCarlo::TooCloseToBadChannel(*caloCluster))continue;
 
+	fNClusters++;
         UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
-        TParticle *part  = stack->Particle(iPart);
-        TParticle *partMom = 0;
+        TParticle *part  =  stack->Particle(iPart);
+        //TParticle *partMom = 0;
 
         if (!part)
         {
@@ -583,41 +632,54 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         // compare MC and Rec energies for all particles
         //fHistAllERecEMC->Fill(part->Energy(),caloE);
 
-        TParticlePDG *pdg = part->GetPDG(0);
-        TParticlePDG *pdgMom = 0;
+        //TParticlePDG *pdgMom = 0;
 
-        if (!pdg)
-        {
-            Printf("ERROR: Could not get particle PDG %d", iPart);
-            continue;
-        }
-
+/*
         Int_t iPartMom = part->GetMother(0);
 
         if (iPartMom>0)
         {
             partMom = stack->Particle(iPartMom);
             pdgMom = partMom->GetPDG(0);
-        }
-
-        // Check if it is a primary particle
-        //if (!stack->IsPhysicalPrimary(iPart)) continue;
+        }*/
+	//int mcClusterCharge = stack->Particle(iPart)->GetPDG()->Charge();
         if (!stack->IsPhysicalPrimary(iPart)) // check whether particle is primary. we keep secondary electron and gamma for testing.
         {
-            if (!((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode) || (pdg->PdgCode() == fgGammaCode)))
-                continue;
+   //         if (!((code == fgEPlusCode) || (code == fgEMinusCode) || (code == fgGammaCode)))
+		int p = GetPrimMother(iPart, stack);
+	//	std::cout << p << std::endl;
+		if(p > 0) 
+		{ 
+		  part = stack->Particle(p);
+		}
+		else 
+		{
+		  std::cout << "What!? No primary?" << std::endl;
+		  continue;
+		}
+		
         } // end of primary particle check
-
-        if (TMath::Abs(TMath::Abs(pdg->Charge()) - fCuts->GetMonteCarloSingleChargedParticle())<1e-3 && TMath::Abs(TMath::Abs(pdg->Charge()) - fCuts->GetMonteCarloNeutralParticle())<1e-3) continue;
+        TParticlePDG *pdg = part->GetPDG();
+	Int_t code = pdg->PdgCode();
+	if (!pdg)
+        {
+            Printf("ERROR: Could not get particle PDG %d", iPart);
+            continue;
+        }	
+        //if(code == fgK0SCode)PrintFamilyTree(iPart, stack);
+	//pdgMom = stack->Particle(GetPrimMother(iPart, stack))->GetPDG();
+	
+        //-if (TMath::Abs(TMath::Abs(pdg->Charge()) - fCuts->GetMonteCarloSingleChargedParticle())<1e-3 && TMath::Abs(TMath::Abs(pdg->Charge()) - fCuts->GetMonteCarloNeutralParticle())<1e-3) continue;
 
         Double_t clEt = CalculateTransverseEnergy(caloCluster);
+//	if(code == fgK0SCode) std::cout << "K0 energy: " << caloCluster->E() << std::endl;
         if (caloCluster->E() < fCuts->GetCommonClusterEnergyCut()) continue;
         Float_t pos[3];
 
         caloCluster->GetPosition(pos);
         TVector3 cp(pos);
 
-        fSparseClusters[0] = pdg->PdgCode();
+        fSparseClusters[0] = code;
         fSparseClusters[1] = pdg->Charge()/3;
         fSparseClusters[2] = pdg->Mass();
         fSparseClusters[3] = clEt;
@@ -630,16 +692,19 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         fSparseClusters[10] = 0;
         fSparseHistClusters->Fill(fSparseClusters);
 
+	
         //if(caloCluster->GetEmcCpvDistance() < fTrackDistanceCut)
-
-        if (TMath::Abs(caloCluster->GetTrackDx()) < fTrackDxCut && TMath::Abs(caloCluster->GetTrackDz()) < fTrackDzCut)
+	pdg = part->GetPDG(0);
+        //if (TMath::Abs(caloCluster->GetTrackDx()) < fTrackDxCut && TMath::Abs(caloCluster->GetTrackDz()) < fTrackDzCut)
+	if(caloCluster->GetTrackMatchedIndex() > -1 && (fCuts->GetPhosTrackRCut() > TestCPV(caloCluster->GetTrackDx(), caloCluster->GetTrackDz(), ev->GetTrack(caloCluster->GetTrackMatchedIndex())->Pt(), ev->GetTrack(caloCluster->GetTrackMatchedIndex())->Charge(), ev)))
         {
 
             if (pdg->Charge() != 0)
             {
-                //std::cout << "Removing charged: " << pdg->PdgCode() << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
+                //std::cout << "Removing charged: " << code << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
                 fChargedRemoved++;
-                fEnergyChargedRemoved += caloCluster->E();
+                //fEnergyChargedRemoved += caloCluster->E();
+		fEnergyChargedRemoved += clEt;
                 fHistRemovedOrNot->Fill(0.0, fCentClass);
                 //std::cout << part->Vx() << " " << part->Vy() << " " << part->Vz() << " " << std::endl;
                 //fHistDecayVertexRemovedCharged->Fill(part->Vy(), part->Vx(), part->Vz());
@@ -649,31 +714,33 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
             }
             else
             {
-                //std::cout << "Removing neutral: " << pdg->PdgCode() << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
+                //std::cout << "Removing neutral: " << code << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
                 //std::cout << "Mother is: " << stack->Particle(part->GetMother(0))->GetPdgCode() << std::endl;
                 fNeutralRemoved++;
-                fEnergyNeutralRemoved += caloCluster->E();
+                //fEnergyNeutralRemoved += caloCluster->E();
+		fEnergyNeutralRemoved += clEt;
                 fHistRemovedOrNot->Fill(1.0, fCentClass);
                 //std::cout << part->Vx() << " " << part->Vy() << " " << part->Vz() << " " << std::endl;
                 //fHistDecayVertexRemovedNeutral->Fill(part->Vy(), part->Vx(), part->Vz());
                 fHistDxDzRemovedNeutral->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
 
-                if (pdg->PdgCode() == fgGammaCode)
+                if (code == fgGammaCode || code == fgPi0Code || code == fgEtaCode)
                 {
                     fEtRemovedGammas += clEt;
                     fMultRemovedGammas++;
                 }
-                else if (pdg->PdgCode() == fgNeutronCode)
+                else if (code == fgNeutronCode)
                 {
                     fEtRemovedNeutrons += clEt;
                     fMultRemovedNeutrons++;
                 }
-                else if (pdg->PdgCode() == fgAntiNeutronCode)
+                else if (code == fgAntiNeutronCode)
                 {
                     fEtRemovedAntiNeutrons += clEt;
                     fMultRemovedAntiNeutrons++;
                 }
-                //else std::cout << "Hmm, what is this (neutral: " << pdg->PdgCode() << std::endl;
+                
+                //else std::cout << "Hmm, what is this (neutral: " << code << std::endl;
             }
         }
         else
@@ -681,52 +748,53 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
             if (pdg->Charge() != 0)
             {
-                //std::cout << "Not removing charged: " << pdg->PdgCode() << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
+                std::cout << "Not removing charged: " << code << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
                 //std::cout << "Mother is: " << stack->Particle(part->GetMother(0))->GetPdgCode() << std::endl;
                 fChargedNotRemoved++;
-                fEnergyChargedNotRemoved += caloCluster->E();
+                //fEnergyChargedNotRemoved += caloCluster->E();
+		fEnergyChargedNotRemoved += clEt;
                 fHistRemovedOrNot->Fill(2.0, fCentClass);
                 //std::cout << fHistDecayVertexNonRemovedCharged << std::endl;
                 //std::cout << part->Vx() << " " << part->Vy() << " " << part->Vz() << " " << std::endl;
                 //fHistDecayVertexNonRemovedCharged->Fill(part->Vy(), part->Vx(), part->Vz());
                 fHistDxDzNonRemovedCharged->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
-                if (pdg->PdgCode() == fgProtonCode)
+                if (code == fgProtonCode)
                 {
                     //std::cout << clEt << std::endl;
                     fEtNonRemovedProtons += clEt;
                     fMultNonRemovedProtons++;
                 }
-                else if (pdg->PdgCode() == fgAntiProtonCode)
+                else if (code == fgAntiProtonCode)
                 {
                     //std::cout << clEt << std::endl;
                     fEtNonRemovedAntiProtons += clEt;
                     fMultNonRemovedAntiProtons++;
                 }
-                else if (pdg->PdgCode() == fgPiPlusCode)
+                else if (code == fgPiPlusCode)
                 {
                     //std::cout << "PI+" <<  clEt << std::endl;
                     fEtNonRemovedPiPlus += clEt;
                     fMultNonRemovedPiPlus++;
                 }
-                else if (pdg->PdgCode() == fgPiMinusCode)
+                else if (code == fgPiMinusCode)
                 {
                     // std::cout << "PI-"  << clEt << std::endl;
                     fEtNonRemovedPiMinus += clEt;
                     fMultNonRemovedPiMinus++;
                 }
-                else if (pdg->PdgCode() == fgKPlusCode)
+                else if (code == fgKPlusCode)
                 {
                     //std::cout << clEt << std::endl;
                     fEtNonRemovedKaonPlus += clEt;
                     fMultNonRemovedKaonPlus++;
                 }
-                else if (pdg->PdgCode() == fgKMinusCode)
+                else if (code == fgKMinusCode)
                 {
                     //std::cout << clEt << std::endl;
                     fEtNonRemovedKaonMinus += clEt;
                     fMultNonRemovedKaonMinus++;
                 }
-                else if (pdg->PdgCode() == fgEPlusCode)
+                else if (code == fgEPlusCode)
                 {
                     //std::cout << clEt << std::endl;
                     if (TMath::Sqrt(part->Vx()*part->Vx() + part->Vy()*part->Vy()) < 430)
@@ -735,7 +803,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
                         fMultNonRemovedPositrons++;
                     }
                 }
-                else if (pdg->PdgCode() == fgEMinusCode)
+                else if (code == fgEMinusCode)
                 {
                     //std::cout << clEt << std::endl;
                     if (TMath::Sqrt(part->Vx()*part->Vx() + part->Vy()*part->Vy()) < 430)
@@ -744,15 +812,13 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
                         fMultNonRemovedElectrons++;
                     }
                 }
-                else if (pdg->PdgCode() == fgMuPlusCode)
+                else if (code == fgMuPlusCode)
                 {
-                    std::cout << clEt << std::endl;
                     fEtNonRemovedMuPlus += clEt;
                     fMultNonRemovedMuPlus++;
                 }
-                else if (pdg->PdgCode() == fgMuMinusCode)
+                else if (code == fgMuMinusCode)
                 {
-                    std::cout << clEt << std::endl;
                     fEtNonRemovedMuMinus += clEt;
                     fMultNonRemovedMuMinus++;
                 }
@@ -760,50 +826,73 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
             }
             else
             {
-                //std::cout << "Accepted: " << pdg->PdgCode() << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
-                //std::cout << "Not removing charged: " << pdg->PdgCode() << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
+                //std::cout << "Accepted: " << code << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
+                //std::cout << "Not removing charged: " << code << ", with energy: " << caloCluster->E() << ", dist matched: " << caloCluster->GetTrackDx() << " " << caloCluster->GetTrackDz() << std::endl;
                 //std::cout << "Mother is: " << stack->Particle(part->GetMother(0))->GetPdgCode() << stack->Particle(part->GetMother(0))->GetPDG()->GetName() << ", E: " << part->Energy() << std::endl;
                 fNeutralNotRemoved++;
-                fEnergyNeutralNotRemoved += caloCluster->E();
+		fEnergyNeutralNotRemoved += clEt;
                 fHistRemovedOrNot->Fill(3.0, fCentClass);
-                //std::cout << part->Vx() << " " << part->Vy() << " " << part->Vz() << " " << std::endl;
-                //fHistDecayVertexNonRemovedNeutral->Fill(part->Vy(), part->Vx(), part->Vz());
                 fHistDxDzNonRemovedNeutral->Fill(caloCluster->GetTrackDx(), caloCluster->GetTrackDz());
-                if (pdg->PdgCode() == fgGammaCode)
+                if (code == fgGammaCode)
                 {
                     fEtNonRemovedGammas += clEt;
                     fMultNonRemovedGammas++;
-                    if (pdgMom)
-                    {
-                        if (TMath::Abs(pdgMom->PdgCode()) == fgPi0Code || TMath::Abs(pdgMom->PdgCode()) == fgEtaCode || TMath::Abs(pdgMom->PdgCode()) == 331)
-                        {
+//                    if (pdgMom)
+  //                  {
+    //                    if (TMath::Abs(pdgMom->PdgCode()) == fgPi0Code || TMath::Abs(pdgMom->PdgCode()) == fgEtaCode || TMath::Abs(pdgMom->PdgCode()) == 331)
+      //                  {
 //			std::cout << "Mother of gamma: " << pdgMom->PdgCode() << " " << pdgMom->GetName() <<  ", E: " << part->Energy() << std::endl;
-                            fEtNonRemovedGammasFromPi0 += clEt;
-                        }
-                    }
+        //                    fEtNonRemovedGammasFromPi0 += clEt;
+          //              }
+            //        }
                 }
-                else if (pdg->PdgCode() == fgNeutronCode)
+                else if(TMath::Abs(code) == fgPi0Code)
+		{
+		  fEtNonRemovedGammasFromPi0 += clEt;
+		  fMultNonRemovedGammas++;
+		}
+                else if(TMath::Abs(code) == fgEtaCode)
+		{
+		  fEtNonRemovedGammasFromPi0 += clEt;
+		  fMultNonRemovedGammas++;
+		}
+                else if(TMath::Abs(code) == 331)
+		{
+		  fEtNonRemovedGammasFromPi0 += clEt;
+		  fMultNonRemovedGammas++;
+		}
+                else if (code == fgNeutronCode)
                 {
                     fEtNonRemovedNeutrons += clEt;
                     fMultNonRemovedNeutrons++;
                 }
-                else if (pdg->PdgCode() == fgAntiNeutronCode)
+                else if (code == fgAntiNeutronCode)
                 {
                     fEtNonRemovedAntiNeutrons += clEt;
                     fMultNonRemovedAntiNeutrons++;
                 }
-                else if (pdg->PdgCode() == fgK0LCode || pdg->PdgCode() == fgK0SCode)
+                //else if (code == fgK0LCode || pdgMom->PdgCode() == fgK0SCode)
+                else if (code == fgK0SCode)
                 {
-                    fEtNonRemovedK0s += clEt;
+		    //std::cout << "K0 with energy: " << clEt << std::endl;
+                    fEtNonRemovedK0S += clEt;
                     fMultNonRemovedK0s++;
 
                 }
-                else if (TMath::Abs(pdg->PdgCode()) == fgLambdaCode)
+                else if(TMath::Abs(code) == fgK0LCode)
+		{
+		  
+		  fEtNonRemovedK0L += clEt;
+		  fMultNonRemovedK0L++;
+		}
+		
+                else if (TMath::Abs(code) == fgLambdaCode)
                 {
                     fEtNonRemovedLambdas += clEt;
                     fMultNonRemovedLambdas++;
                 }
-                else std::cout << "Hmm, what is this (neutral not removed): " << pdg->PdgCode() << " " << pdg->GetName() << ", ET: " << clEt << std::endl;
+                  
+                else std::cout << "Hmm, what is this (neutral not removed): " << code << " " << pdg->GetName() << ", ET: " << clEt << std::endl;
             }
         }
     } // end of loop over clusters
@@ -827,6 +916,12 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 void AliAnalysisEtMonteCarlo::Init()
 { // init
     AliAnalysisEt::Init();
+    TFile *f = TFile::Open("badchannels.root", "READ");
+
+    fBadMapM2 = (TH2I*)f->Get("bad_channels_m2");
+    fBadMapM3 = (TH2I*)f->Get("bad_channels_m3");
+    fBadMapM4 = (TH2I*)f->Get("bad_channels_m4");
+
 }
 
 void AliAnalysisEtMonteCarlo::ResetEventValues()
@@ -844,7 +939,8 @@ void AliAnalysisEtMonteCarlo::ResetEventValues()
     fEtNonRemovedPiMinus = 0;
     fEtNonRemovedKaonPlus = 0;
     fEtNonRemovedKaonMinus = 0;
-    fEtNonRemovedK0s = 0;
+    fEtNonRemovedK0S = 0;
+    fEtNonRemovedK0L = 0;
     fEtNonRemovedLambdas = 0;
     fEtNonRemovedElectrons = 0;
     fEtNonRemovedPositrons = 0;
@@ -855,6 +951,22 @@ void AliAnalysisEtMonteCarlo::ResetEventValues()
     fEtNonRemovedGammas = 0;
     fEtNonRemovedGammasFromPi0 = 0;
 
+    fEtRemovedProtons = 0;
+    fEtRemovedAntiProtons = 0;
+    fEtRemovedPiPlus = 0;
+    fEtRemovedPiMinus = 0;
+    fEtRemovedKaonPlus = 0;
+    fEtRemovedKaonMinus = 0;
+    fEtRemovedK0s = 0;
+    fEtRemovedK0L = 0;
+    fEtRemovedLambdas = 0;
+    fEtRemovedElectrons = 0;
+    fEtRemovedPositrons = 0;
+    fEtRemovedMuPlus = 0;
+    fEtRemovedMuMinus = 0;
+    fEtRemovedNeutrons = 0;
+
+    fEtRemovedGammasFromPi0 = 0;
     fEtRemovedGammas = 0;
     fEtRemovedNeutrons = 0;
     fEtRemovedAntiNeutrons = 0;
@@ -866,6 +978,7 @@ void AliAnalysisEtMonteCarlo::ResetEventValues()
     fMultNonRemovedKaonPlus = 0;
     fMultNonRemovedKaonMinus = 0;
     fMultNonRemovedK0s = 0;
+    fMultNonRemovedK0L = 0;
     fMultNonRemovedLambdas = 0;
     fMultNonRemovedElectrons = 0;
     fMultNonRemovedPositrons = 0;
@@ -875,10 +988,35 @@ void AliAnalysisEtMonteCarlo::ResetEventValues()
     fMultNonRemovedAntiNeutrons = 0;
     fMultNonRemovedGammas = 0;
 
+    fMultRemovedProtons = 0;
+    fMultRemovedAntiProtons = 0;
+    fMultRemovedPiPlus = 0;
+    fMultRemovedPiMinus = 0;
+    fMultRemovedKaonPlus = 0;
+    fMultRemovedKaonMinus = 0;
+    fMultRemovedK0s = 0;
+    fMultRemovedK0L = 0;
+    fMultRemovedLambdas = 0;
+    fMultRemovedElectrons = 0;
+    fMultRemovedPositrons = 0;
+    fMultRemovedMuPlus = 0;
+    fMultRemovedMuMinus = 0;
+
     fMultRemovedGammas = 0;
     fMultRemovedNeutrons = 0;
     fMultRemovedAntiNeutrons = 0;
 
+    fEnergyChargedNotRemoved = 0;
+    fEnergyChargedRemoved = 0;
+    fEnergyNeutralNotRemoved = 0;
+    fEnergyNeutralRemoved = 0;
+    
+    fChargedNotRemoved = 0;
+    fChargedRemoved = 0;
+    fNeutralNotRemoved = 0;
+    fNeutralRemoved = 0;
+    
+    
     fTrackMultInAcc = 0;
 
 }
@@ -906,6 +1044,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistEtNonRemovedKaonPlus = new TH2F("fHistEtNonRemovedKaonPlus", "fHistEtNonRemovedKaonPlus", 1500, 0, 30, 10, -0.5, 9.5);
     fHistEtNonRemovedKaonMinus = new TH2F("fHistEtNonRemovedKaonMinus", "fHistEtNonRemovedKaonMinus", 1500, 0, 30, 10, -0.5, 9.5);
     fHistEtNonRemovedK0s = new TH2F("fHistEtNonRemovedK0s", "fHistEtNonRemovedK0s", 1500, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedK0L = new TH2F("fHistEtNonRemovedK0L", "fHistEtNonRemovedK0L", 1500, 0, 30, 10, -0.5, 9.5);
     fHistEtNonRemovedLambdas = new TH2F("fHistEtNonRemovedLambdas", "fHistEtNonRemovedLambdas", 1500, 0, 30, 10, -0.5, 9.5);
     fHistEtNonRemovedElectrons = new TH2F("fHistEtNonRemovedElectrons", "fHistEtNonRemovedElectrons", 1500, 0, 30, 10, -0.5, 9.5);
     fHistEtNonRemovedPositrons = new TH2F("fHistEtNonRemovedPositrons", "fHistEtNonRemovedPositrons", 1500, 0, 30, 10, -0.5, 9.5);
@@ -920,7 +1059,13 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistEtRemovedGammas = new  TH2F("fHistEtRemovedGammas", "fHistEtRemovedGammas", 1500, 0, 30, 10, -0.5, 9.5);
     fHistEtRemovedNeutrons = new  TH2F("fHistEtRemovedNeutrons", "fHistEtRemovedNeutrons", 1500, 0, 30, 10, -0.5, 9.5);
     fHistEtRemovedAntiNeutrons = new  TH2F("fHistEtRemovedAntiNeutrons", "fHistEtRemovedAntiNeutrons", 1500, 0, 30, 10, -0.5, 9.5);
+  
+    fHistEtRemovedCharged = new  TH2F("fHistEtRemovedCharged", "fHistEtRemovedCharged", 1500, 0, 30, 10, -0.5, 9.5);
+    fHistEtRemovedNeutrals = new  TH2F("fHistEtRemovedNeutrals", "fHistEtRemovedNeutrals", 1500, 0, 30, 10, -0.5, 9.5);
 
+    fHistEtNonRemovedCharged = new  TH2F("fHistEtNonRemovedCharged", "fHistEtNonRemovedCharged", 1500, 0, 30, 10, -0.5, 9.5);
+    fHistEtNonRemovedNeutrals = new  TH2F("fHistEtNonRemovedNeutrals", "fHistEtNonRemovedNeutrals", 1500, 0, 30, 10, -0.5, 9.5);
+  
     fHistMultNonRemovedProtons = new TH2F("fHistMultNonRemovedProtons", "fHistMultNonRemovedProtons", 100, -0.5, 99.5, 10, -0.5, 9.5);
     fHistMultNonRemovedAntiProtons = new TH2F("fHistMultNonRemovedAntiProtons", "fHistMultNonRemovedAntiProtons", 100, -0.5, 99.5, 10, -0.5, 9.5);
     fHistMultNonRemovedPiPlus = new TH2F("fHistMultNonRemovedPiPlus", "fHistMultNonRemovedPiPlus", 100, -0.5, 99.5, 10, -0.5, 9.5);
@@ -928,6 +1073,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistMultNonRemovedKaonPlus = new TH2F("fHistMultNonRemovedKaonPlus", "fHistMultNonRemovedKaonPlus", 100, -0.5, 99.5, 10, -0.5, 9.5);
     fHistMultNonRemovedKaonMinus = new TH2F("fHistMultNonRemovedKaonMinus", "fHistMultNonRemovedKaonMinus", 100, -0.5, 99.5, 10, -0.5, 9.5);
     fHistMultNonRemovedK0s = new TH2F("fHistMultNonRemovedK0s", "fHistMultNonRemovedK0s", 100, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedK0L = new TH2F("fHistMultNonRemovedK0L", "fHistMultNonRemovedK0L", 100, -0.5, 99.5, 10, -0.5, 9.5);
     fHistMultNonRemovedLambdas = new TH2F("fHistMultNonRemovedLambdas", "fHistMultNonRemovedLambdas", 100, -0.5, 99.5, 10, -0.5, 9.5);
     fHistMultNonRemovedElectrons = new TH2F("fHistMultNonRemovedElectrons", "fHistMultNonRemovedElectrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
     fHistMultNonRemovedPositrons = new TH2F("fHistMultNonRemovedPositrons", "fHistMultNonRemovedPositrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
@@ -936,11 +1082,24 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistMultNonRemovedNeutrons = new TH2F("fHistMultNonRemovedNeutrons", "fHistMultNonRemovedNeutrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
     fHistMultNonRemovedAntiNeutrons = new TH2F("fHistMultNonRemovedAntiNeutrons", "fHistMultNonRemovedAntiNeutrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
 
-    fHistMultNonRemovedGammas = new  TH2F("fHistMultNonRemovedGammas", "fHistMultNonRemovedGammas", 100, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultNonRemovedGammas = new  TH2F("fHistMultNonRemovedGammas", "fHistMultNonRemovedGammas", 100, -0.5, 99.5, 100, -0.5, 99.5);
 
-    fHistMultRemovedGammas = new  TH2F("fHistMultRemovedGammas", "fHistMultRemovedGammas", 100, -0.5, 99.5, 10, -0.5, 9.5);
+    fHistMultRemovedGammas = new  TH2F("fHistMultRemovedGammas", "fHistMultRemovedGammas", 100, -0.5, 99.5, 100, -0.5, 99.5);
     fHistMultRemovedNeutrons = new  TH2F("fHistMultRemovedNeutrons", "fHistMultRemovedNeutrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
     fHistMultRemovedAntiNeutrons = new  TH2F("fHistMultRemovedAntiNeutrons", "fHistMultRemovedAntiNeutrons", 100, -0.5, 99.5, 10, -0.5, 9.5);
+  /*
+    fHistMultRemovedCharged = new  TH2F("fHistMultRemovedCharged", "fHistMultRemovedCharged", 1500, 0, 30, 10, -0.5, 9.5);
+    fHistMultRemovedNeutrals = new  TH2F("fHistMultRemovedNeutrals", "fHistMultRemovedNeutrals", 1500, 0, 30, 10, -0.5, 9.5);
+
+    fHistMultNonRemovedCharged = new  TH2F("fHistMultNonRemovedCharged", "fHistMultNonRemovedCharged", 1500, 0, 30, 10, -0.5, 9.5);
+    fHistMultNonRemovedNeutrals = new  TH2F("fHistMultNonRemovedNeutrals", "fHistMultNonRemovedNeutrals", 1500, 0, 30, 10, -0.5, 9.5);*/
+
+  
+    fHistMultRemovedCharged = new  TH2F("fHistMultRemovedCharged", "fHistMultRemovedCharged", 100, -0.5, 99.5, 100, -0.5, 99.5);
+    fHistMultRemovedNeutrals = new  TH2F("fHistMultRemovedNeutrals", "fHistMultRemovedNeutrals", 100, -0.5, 99.5, 100, -0.5, 99.5);
+
+    fHistMultNonRemovedCharged = new  TH2F("fHistMultNonRemovedCharged", "fHistMultNonRemovedCharged", 100, -0.5, 99.5, 100, -0.5, 99.5);
+    fHistMultNonRemovedNeutrals = new  TH2F("fHistMultNonRemovedNeutrals", "fHistMultNonRemovedNeutrals", 100, -0.5, 99.5, 100, -0.5, 99.5);
 
     fHistTrackMultvsNonRemovedCharged = new TH2F("fHistTrackMultvsNonRemovedCharged", "fHistTrackMultvsNonRemovedCharged", 1000, -0.5, 999.5, 100, -0.5, 99.5);
     fHistTrackMultvsNonRemovedNeutral = new TH2F("fHistTrackMultvsNonRemovedNeutral", "fHistTrackMultvsNonRemovedNeutral", 1000, -0.5, 999.5, 100, -0.5, 99.5);
@@ -978,6 +1137,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistEtNonRemovedKaonPlus);
     list->Add(fHistEtNonRemovedKaonMinus);
     list->Add(fHistEtNonRemovedK0s);
+    list->Add(fHistEtNonRemovedK0L);
     list->Add(fHistEtNonRemovedLambdas);
     list->Add(fHistEtNonRemovedElectrons);
     list->Add(fHistEtNonRemovedPositrons);
@@ -992,6 +1152,11 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistEtRemovedNeutrons);
     list->Add(fHistEtRemovedAntiNeutrons);
 
+    list->Add(fHistEtRemovedCharged);
+    list->Add(fHistEtRemovedNeutrals);
+
+    list->Add(fHistEtNonRemovedCharged);
+    list->Add(fHistEtNonRemovedNeutrals);
 
     list->Add(fHistMultNonRemovedProtons);
     list->Add(fHistMultNonRemovedAntiProtons);
@@ -1000,6 +1165,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistMultNonRemovedKaonPlus);
     list->Add(fHistMultNonRemovedKaonMinus);
     list->Add(fHistMultNonRemovedK0s);
+    list->Add(fHistMultNonRemovedK0L);
     list->Add(fHistMultNonRemovedLambdas);
     list->Add(fHistMultNonRemovedElectrons);
     list->Add(fHistMultNonRemovedPositrons);
@@ -1012,6 +1178,12 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistMultRemovedGammas);
     list->Add(fHistMultRemovedNeutrons);
     list->Add(fHistMultRemovedAntiNeutrons);
+
+    list->Add(fHistMultRemovedCharged);
+    list->Add(fHistMultRemovedNeutrals);
+
+    list->Add(fHistMultNonRemovedCharged);
+    list->Add(fHistMultNonRemovedNeutrals);
 
     list->Add(fHistTrackMultvsNonRemovedCharged);
     list->Add(fHistTrackMultvsNonRemovedNeutral);
@@ -1069,7 +1241,8 @@ void AliAnalysisEtMonteCarlo::FillHistograms()
     fHistEtNonRemovedAntiProtons->Fill(fEtNonRemovedAntiProtons, fCentClass);
     fHistEtNonRemovedKaonPlus->Fill(fEtNonRemovedKaonPlus, fCentClass);
     fHistEtNonRemovedKaonMinus->Fill(fEtNonRemovedKaonMinus, fCentClass);
-    fHistEtNonRemovedK0s->Fill(fEtNonRemovedK0s, fCentClass);
+    fHistEtNonRemovedK0s->Fill(fEtNonRemovedK0S, fCentClass);
+    fHistEtNonRemovedK0L->Fill(fEtNonRemovedK0L, fCentClass);
     fHistEtNonRemovedLambdas->Fill(fEtNonRemovedLambdas, fCentClass);
     fHistEtNonRemovedPiPlus->Fill(fEtNonRemovedPiPlus, fCentClass);
     fHistEtNonRemovedPiMinus->Fill(fEtNonRemovedPiMinus, fCentClass);
@@ -1082,15 +1255,39 @@ void AliAnalysisEtMonteCarlo::FillHistograms()
     fHistEtNonRemovedGammas->Fill(fEtNonRemovedGammas, fCentClass);
     fHistEtNonRemovedGammasFromPi0->Fill(fEtNonRemovedGammasFromPi0, fCentClass);
 
-    fHistEtRemovedGammas->Fill(fEtRemovedGammas, fCentClass);
+    fHistEtRemovedGammas->Fill(fEtRemovedGammas, fNClusters);
     fHistEtRemovedNeutrons->Fill(fEtRemovedNeutrons, fCentClass);
     fHistEtRemovedAntiNeutrons->Fill(fEtRemovedAntiNeutrons, fCentClass);
 
+//     fHistEtRemovedCharged->Fill(fEtRemovedAntiProtons+fEtRemovedElectrons+fEtRemovedKaonMinus+fEtRemovedKaonPlus
+//                                             +fEtRemovedMuMinus+fEtRemovedMuPlus+fEtRemovedPiMinus+fEtRemovedPiPlus+fEtRemovedPositrons
+//                                             +fEtRemovedProtons.
+// 				fCentClass);
+//     fHistEtRemovedNeutrals->Fill(fEtRemovedNeutrons+fEtRemovedAntiNeutrons, fCentClass);
+// 
+//     fHistEtNonRemovedCharged->Fill(fEtNonRemovedAntiProtons+fEtNonRemovedElectrons+fEtNonRemovedKaonMinus+fEtNonRemovedKaonPlus
+//                                             +fEtNonRemovedMuMinus+fEtNonRemovedMuPlus+fEtNonRemovedPiMinus+fEtNonRemovedPiPlus+fEtNonRemovedPositrons
+//                                             +fEtNonRemovedProtons,
+// 				fCentClass);
+//     fHistEtRemovedNeutrals->Fill(fEtNonRemovedNeutrons+fEtNonRemovedAntiNeutrons, fCentClass);
+
+    fHistEtRemovedCharged->Fill(fEnergyChargedRemoved, fNClusters);
+    fHistEtRemovedNeutrals->Fill(fEnergyNeutralRemoved, fNClusters);
+    fHistEtNonRemovedCharged->Fill(fEnergyChargedNotRemoved, fNClusters);
+    fHistEtNonRemovedNeutrals->Fill(fEnergyNeutralNotRemoved, fNClusters);
+    
+    fHistMultRemovedCharged->Fill(fChargedRemoved, fNClusters);
+    fHistMultRemovedNeutrals->Fill(fNeutralRemoved, fNClusters);
+    fHistMultNonRemovedCharged->Fill(fChargedNotRemoved, fNClusters);
+    fHistMultNonRemovedNeutrals->Fill(fNeutralNotRemoved, fNClusters);
+    
+    
     fHistMultNonRemovedProtons->Fill(fMultNonRemovedProtons, fCentClass);
     fHistMultNonRemovedAntiProtons->Fill(fMultNonRemovedAntiProtons, fCentClass);
     fHistMultNonRemovedKaonPlus->Fill(fMultNonRemovedKaonPlus, fCentClass);
     fHistMultNonRemovedKaonMinus->Fill(fMultNonRemovedKaonMinus, fCentClass);
     fHistMultNonRemovedK0s->Fill(fMultNonRemovedK0s, fCentClass);
+    fHistMultNonRemovedK0L->Fill(fMultNonRemovedK0L, fCentClass);
     fHistMultNonRemovedLambdas->Fill(fMultNonRemovedLambdas, fCentClass);
     fHistMultNonRemovedPiPlus->Fill(fMultNonRemovedPiPlus, fCentClass);
     fHistMultNonRemovedPiMinus->Fill(fMultNonRemovedPiMinus, fCentClass);
@@ -1112,22 +1309,121 @@ void AliAnalysisEtMonteCarlo::FillHistograms()
                                             +fMultNonRemovedProtons);
 
     fHistTrackMultvsNonRemovedNeutral->Fill(fTrackMultInAcc,
-                                            fMultNonRemovedNeutrons+fMultNonRemovedAntiNeutrons+fMultNonRemovedK0s+fMultNonRemovedLambdas);
+                                            fMultNonRemovedNeutrons+fMultNonRemovedAntiNeutrons+fMultNonRemovedK0s+fMultNonRemovedK0L+fMultNonRemovedLambdas);
 
     fHistTrackMultvsRemovedGamma->Fill(fTrackMultInAcc,
                                        fMultRemovedGammas);
 
-    fHistClusterMultvsNonRemovedCharged->Fill(fNeutralMultiplicity,
+    fHistClusterMultvsNonRemovedCharged->Fill(fNClusters,
             fMultNonRemovedAntiProtons+fMultNonRemovedElectrons+fMultNonRemovedKaonMinus
             +fMultNonRemovedKaonPlus+fMultNonRemovedMuMinus+fMultNonRemovedMuPlus
             +fMultNonRemovedPiMinus+fMultNonRemovedPiPlus+fMultNonRemovedPositrons+fMultNonRemovedProtons);
 
-    fHistClusterMultvsNonRemovedNeutral->Fill(fTrackMultInAcc,
-            fMultNonRemovedNeutrons+fMultNonRemovedAntiNeutrons+fMultNonRemovedK0s+fMultNonRemovedLambdas);
+    fHistClusterMultvsNonRemovedNeutral->Fill(fNClusters,
+            fMultNonRemovedNeutrons+fMultNonRemovedAntiNeutrons+fMultNonRemovedK0s+fMultNonRemovedK0L+fMultNonRemovedLambdas);
 
-    fHistClusterMultvsRemovedGamma->Fill(fTrackMultInAcc,
+    fHistClusterMultvsRemovedGamma->Fill(fNClusters,
                                          fMultRemovedGammas);
 
+}
+
+
+
+
+Int_t AliAnalysisEtMonteCarlo::PrintFamilyTree(Int_t partIdx, AliStack* stack)
+{
+  TParticle *part = stack->Particle(partIdx);
+  std::cout << "This is index: " << partIdx << " (" << stack->Particle(partIdx)->GetName() <<") , is it primary: " << stack->IsPhysicalPrimary(partIdx)<< std::endl;
+  std::cout << "PID: " << part->GetPdgCode() << "/" << part->GetName() << std::endl;
+  std::cout << "Energy: " << part->Energy() << std::endl;
+  std::cout << "Vertex: " << part->Vx() << ", " << part->Vy() << ", " << part->Vz() << std::endl;
+  PrintMothers(partIdx, stack, 1);
+  return 0;
+}
+
+Int_t AliAnalysisEtMonteCarlo::PrintMothers(Int_t partIdx, AliStack* stack, Int_t gen)
+{
+  char *tabs = new char[gen+1];
+  for(Int_t i = 0; i < gen; ++i)
+  {
+    //std::cout << i << std::endl;
+    tabs[i] = '\t';
+  }
+  tabs[gen] = '\0';
+  Int_t mothIdx = stack->Particle(partIdx)->GetMother(0);
+  if(mothIdx < 0) return 0;
+  TParticle *mother = stack->Particle(mothIdx);
+  std::cout << tabs << "Mother of index: " << partIdx << " (" << stack->Particle(partIdx)->GetName() <<") is: " << mothIdx << ", is it primary: " << stack->IsPhysicalPrimary(mothIdx)<< std::endl;
+  std::cout << tabs << "PID: " << mother->GetPdgCode() << "/" << mother->GetName() << std::endl;
+  std::cout << tabs << "Energy: " << mother->Energy() << std::endl;
+  std::cout << tabs << "Vertex: " << mother->Vx() << ", " << mother->Vy() << ", " << mother->Vz() << std::endl;
+  if(mother->GetPdgCode() == fgK0SCode) 
+      {	
+//	std::cout << "K0S!!!!!!!!!!!!!11111!!!!!" << std::endl;
+      }
+//  std::cout << "Mother of index: " << partIdx << " (" << stack->Particle(partIdx)->GetName() <<") is: " << mothIdx << std::endl;
+//  std::cout << "PID: " << mother->GetPdgCode() << "/" << mother->GetName() << std::endl;
+//  std::cout << "Energy: " << mother->Energy() << std::endl;
+//  std::cout << "Vertex: " << mother->Vx() << ", " << mother->Vy() << ", " << mother->Vz() << std::endl;
+  
+  delete [] tabs;
+  return PrintMothers(mothIdx, stack, gen+1) + 1;
+}
+
+Int_t AliAnalysisEtMonteCarlo::GetPrimMother(Int_t partIdx, AliStack *stack)
+{
+  if(partIdx >= 0) 
+  {
+    Int_t mothIdx = stack->Particle(partIdx)->GetMother(0);
+    if(mothIdx < 0) return -1;
+    TParticle *mother = stack->Particle(mothIdx);
+    if(mother)
+    {
+     // if(mother->GetPdgCode() == fgK0SCode) 
+      //{	
+//	std::cout << "!!!!!!!!!!!!!!!!! K0S !!!!!!!!!!!!!!!!!!" << std::endl;
+	//return mothIdx;
+  //    }
+      //if(mother->GetPdgCode() == fgK0SCode&& stack->IsPhysicalPrimary(mothIdx)) 
+      //{	
+//	std::cout << "!!!!!!!!!!!!!!!!! Primary K0S !!!!!!!!!!!!!!!!!!" << std::endl;
+	//return mothIdx;
+      //      }
+      if(stack->IsPhysicalPrimary(mothIdx)) return mothIdx;
+      else return GetPrimMother(mothIdx, stack);
+    }
+    else 
+    {
+      std::cout << "WAT!" << std::endl;
+      return -1;
+    }
+  }
+  return -1;
+}
+
+Int_t AliAnalysisEtMonteCarlo::GetK0InFamily(Int_t partIdx, AliStack* stack)
+{
+ if(partIdx >= 0) 
+  {
+    if(stack->Particle(partIdx)->GetPdgCode() == fgK0SCode) return partIdx;
+    Int_t mothIdx = stack->Particle(partIdx)->GetMother(0);
+    if(mothIdx < 0) return -1;
+    TParticle *mother = stack->Particle(mothIdx);
+    if(mother)
+    {
+      if(mother->GetPdgCode() == fgK0SCode) 
+      {	
+	return mothIdx;
+      }
+      return GetK0InFamily(mothIdx, stack);
+    }
+    else 
+    {
+      std::cout << "WAT WAT!" << std::endl;
+      return -1;
+    }
+  }
+  return -1;
 }
 
 
@@ -1138,7 +1434,105 @@ void AliAnalysisEtMonteCarlo::FillHistograms()
 
 
 
+Bool_t AliAnalysisEtMonteCarlo::TooCloseToBadChannel(const AliESDCaloCluster &cluster) const
+{
+    Float_t gPos[3];
+    cluster.GetPosition(gPos);
+    Int_t relId[4];
+    TVector3 glVec(gPos);
+    fGeoUtils->GlobalPos2RelId(glVec, relId);
 
+    TVector3 locVec;
+    fGeoUtils->Global2Local(locVec, glVec, relId[0]);
+//    std::cout << fGeoUtils << std::endl;
+    //std::cout << relId[0] << " " << cluster.IsPHOS() <<  std::endl;
+    //std::cout << locVec[0] << " " << " " << locVec[1] << " " << locVec[2] << std::endl;
+    for (Int_t x = 0; x < fBadMapM2->GetNbinsX(); x++)
+    {
+        for (Int_t z = 0; z < fBadMapM2->GetNbinsY(); z++)
+        {
+            if (relId[0] == 3)
+            {
+                if (fBadMapM2->GetBinContent(x+1, z+1) != 0)
+                {
+		    Int_t tmpRel[4];
+		    tmpRel[0] = 3;
+		    tmpRel[1] = 0;
+		    tmpRel[2] = x+1;
+		    tmpRel[3] = z+1;
+		    
+		    Float_t tmpX;
+		    Float_t tmpZ;
+		    fGeoUtils->RelPosInModule(tmpRel, tmpX, tmpZ);
+
+                    Float_t distance = TMath::Sqrt((tmpX-locVec[0])*(tmpX-locVec[0]) + (tmpZ - locVec[2])*(tmpZ-locVec[2]));
+                    //Float_t distance = TMath::Sqrt((x-relId[3])*(x-relId[3]) + (z - relId[2])*(z-relId[2]));
+		    
+                    if (distance < fCuts->GetPhosBadDistanceCut())
+                    {
+//		      std::cout << "Module 2, position: " << locVec[0] << ", " << locVec[2] << ", distance to bad channel: " << distance << ", number of cells: " << cluster.GetNCells() <<  std::endl;
+                        return kTRUE;
+                    }
+                }
+            }
+            if (relId[0] == 2)
+            {
+                if (fBadMapM3->GetBinContent(x+1, z+1) != 0)
+                {
+		    Int_t tmpRel[4];
+		    tmpRel[0] = 2;
+		    tmpRel[1] = 0;
+		    tmpRel[2] = x+1;
+		    tmpRel[3] = z+1;
+		    
+		    Float_t tmpX;
+		    Float_t tmpZ;
+		    fGeoUtils->RelPosInModule(tmpRel, tmpX, tmpZ);
+
+                    Float_t distance = TMath::Sqrt((tmpX-locVec[0])*(tmpX-locVec[0]) + (tmpZ - locVec[2])*(tmpZ-locVec[2]));
+
+//                    Float_t distance = TMath::Sqrt((x-locVec[0])*(x-locVec[0]) + (z - locVec[2])*(z-locVec[2]));
+		    //Float_t distance = TMath::Sqrt((x-relId[3])*(x-relId[3]) + (z - relId[2])*(z-relId[2]));
+                    if (distance < fCuts->GetPhosBadDistanceCut())
+                    {
+//		      std::cout << "Module 3, position: " << locVec[0] << ", " << locVec[2] << ", distance to bad channel: " << distance << ", number of cells: " << cluster.GetNCells() <<  std::endl;
+                        return kTRUE;
+                    }
+                }
+            }
+            if (relId[0] == 1)
+            {
+                if (fBadMapM4->GetBinContent(x+1, z+1) != 0)
+                {
+		    Int_t tmpRel[4];
+		    tmpRel[0] = 1;
+		    tmpRel[1] = 0;
+		    tmpRel[2] = x+1;
+		    tmpRel[3] = z+1;
+		    
+		    Float_t tmpX;
+		    Float_t tmpZ;
+		    fGeoUtils->RelPosInModule(tmpRel, tmpX, tmpZ);
+
+                    Float_t distance = TMath::Sqrt((tmpX-locVec[0])*(tmpX-locVec[0]) + (tmpZ - locVec[2])*(tmpZ-locVec[2]));
+
+//                    Float_t distance = TMath::Sqrt((x-locVec[0])*(x-locVec[0]) + (z - locVec[2])*(z-locVec[2]));
+		    //Float_t distance = TMath::Sqrt((x-relId[3])*(x-relId[3]) + (z - relId[2])*(z-relId[2]));
+                    if (distance < fCuts->GetPhosBadDistanceCut())
+                    {
+//			std::cout << "Module 4, position: " << locVec[0] << ", " << locVec[2] << ", distance to bad channel: " << distance << ", number of cells: " << cluster.GetNCells() <<  std::endl;
+                        return kTRUE;
+                    }
+                }
+            }
+
+        }
+    }
+
+    return kFALSE;
+
+
+}
 
 
 

@@ -24,11 +24,15 @@
 #include "AliESDpid.h"
 #include <iostream>
 #include "TH2F.h"
+#include "TH2I.h"
+#include "TH1I.h"
+#include "TFile.h"
 #include "AliAnalysisHadEtCorrections.h"
+#include "AliAnalysisEtSelector.h"
 #include "AliLog.h"
 #include "AliCentrality.h"
-
-
+#include "AliPHOSGeoUtils.h"
+#include "AliPHOSGeometry.h"
 
 
 using namespace std;
@@ -37,29 +41,37 @@ ClassImp(AliAnalysisEtReconstructed);
 
 
 AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
-        AliAnalysisEt()
-        ,fCorrections(0)
-        ,fPidCut(0)
-        ,fClusterType(0)
-        ,fHistChargedPionEnergyDeposit(0)
-        ,fHistProtonEnergyDeposit(0)
-        ,fHistAntiProtonEnergyDeposit(0)
-        ,fHistChargedKaonEnergyDeposit(0)
-        ,fHistMuonEnergyDeposit(0)
-	,fHistRemovedEnergy(0)
-        ,fGeomCorrection(1.0)
-        ,fEMinCorrection(1.0)
+    AliAnalysisEt()
+    ,fCorrections(0)
+    ,fPidCut(0)
+    ,fHistChargedPionEnergyDeposit(0)
+    ,fHistProtonEnergyDeposit(0)
+    ,fHistAntiProtonEnergyDeposit(0)
+    ,fHistChargedKaonEnergyDeposit(0)
+    ,fHistMuonEnergyDeposit(0)
+    ,fHistRemovedEnergy(0)
+    ,fGeomCorrection(1.0)
+    ,fEMinCorrection(1.0/0.89)
+    ,fRecEffCorrection(1.0)
+    ,fGeoUtils(0)
+    ,fBadMapM2(0)
+    ,fBadMapM3(0)
+    ,fBadMapM4(0)
+    ,fClusterPosition(0)
+    ,fHistChargedEnergyRemoved(0)
+    ,fHistNeutralEnergyRemoved(0)
+    ,fHistGammaEnergyAdded(0)
 {
 
 }
 
 AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
-{//destructor
+{   //destructor
     delete fCorrections;
-    delete fHistChargedPionEnergyDeposit; /** Energy deposited in calorimeter by charged pions */    
-    delete fHistProtonEnergyDeposit; /** Energy deposited in calorimeter by protons */    
-    delete fHistAntiProtonEnergyDeposit; /** Energy deposited in calorimeter by anti-protons */    
-    delete fHistChargedKaonEnergyDeposit; /** Energy deposited in calorimeter by charged kaons */    
+    delete fHistChargedPionEnergyDeposit; /** Energy deposited in calorimeter by charged pions */
+    delete fHistProtonEnergyDeposit; /** Energy deposited in calorimeter by protons */
+    delete fHistAntiProtonEnergyDeposit; /** Energy deposited in calorimeter by anti-protons */
+    delete fHistChargedKaonEnergyDeposit; /** Energy deposited in calorimeter by charged kaons */
     delete fHistMuonEnergyDeposit; /** Energy deposited in calorimeter by muons */
 
     delete fHistRemovedEnergy; // removed energy
@@ -81,155 +93,26 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         AliFatal("ERROR: ESD Event does not exist");
         return 0;
     }
+    fSelector->SetEvent(event);
+    if (!fMatrixInitialized)
+    {
+        for (Int_t mod=0; mod<5; mod++) {
+            if (!event->GetPHOSMatrix(mod)) continue;
+            fGeoUtils->SetMisalMatrix(event->GetPHOSMatrix(mod),mod) ;
+//	    std::cout << event->GetPHOSMatrix(mod) << std::endl;
+            Printf("PHOS geo matrix %p for module # %d is set\n", event->GetPHOSMatrix(mod), mod);
+        }
+        fMatrixInitialized = kTRUE;
+    }
 
     Int_t cent = -1;
     if (fCentrality)
     {
         cent = fCentrality->GetCentralityClass10("V0M");
-	fCentClass = fCentrality->GetCentralityClass10("V0M");
+        fCentClass = fCentrality->GetCentralityClass10("V0M");
     }
 
-    Double_t protonMass = fgProtonMass;
-
-    //for PID
-    AliESDpid pID;
-    pID.MakePID(event);
-    TObjArray* list = fEsdtrackCutsTPC->GetAcceptedTracks(event);
-
-    Int_t nGoodTracks = list->GetEntries();
-    // printf("nGoodTracks %d nCaloClusters %d\n", nGoodTracks, event->GetNumberOfCaloClusters());
-
-    for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++)
-    {
-        AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
-        if (!track)
-        {
-            AliError(Form("ERROR: Could not get track %d", iTrack));
-            continue;
-        }
-
-        fMultiplicity++;
-
-
-        Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
-        nSigmaPion = TMath::Abs(pID.NumberOfSigmasTPC(track,AliPID::kPion));
-        nSigmaProton = TMath::Abs(pID.NumberOfSigmasTPC(track,AliPID::kProton));
-        nSigmaKaon = TMath::Abs(pID.NumberOfSigmasTPC(track,AliPID::kKaon));
-        nSigmaElectron = TMath::Abs(pID.NumberOfSigmasTPC(track,AliPID::kElectron));
-        /*
-        bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
-        bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
-        bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
-        bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
-        */
-
-        Int_t nItsClusters = dynamic_cast<AliESDtrack*>(track)->GetNcls(0);
-        Int_t nTPCClusters = dynamic_cast<AliESDtrack*>(track)->GetNcls(1);
-
-        Float_t massPart = 0;
-
-        const Double_t *pidWeights = track->PID();
-        Int_t maxpid = -1;
-        Double_t maxpidweight = 0;
-
-        if (pidWeights)
-        {
-            for (Int_t p =0; p < AliPID::kSPECIES; p++)
-            {
-                if (pidWeights[p] > maxpidweight)
-                {
-                    maxpidweight = pidWeights[p];
-                    maxpid = p;
-                }
-            }
-            if (maxpid == AliPID::kProton)
-            {
-                //by definition of ET
-                massPart = -protonMass*track->Charge();
-            }
-
-        }
-
-        Double_t et = track->E() * TMath::Sin(track->Theta()) + massPart;
-	if(fMakeSparse){
-	  fSparseTracks[0] = maxpid;
-	  fSparseTracks[1] = track->Charge();
-	  fSparseTracks[2] = track->M();
-	  fSparseTracks[3] = et;
-	  fSparseTracks[4] = track->Pt();
-	  fSparseTracks[5] = track->Eta();
-	  fSparseTracks[6] = cent;
-	  fSparseHistTracks->Fill(fSparseTracks);
-	}
-        //printf("Rec track: iTrack %03d eta %4.3f phi %4.3f nITSCl %d nTPCCl %d\n", iTrack, track->Eta(), track->Phi(), nItsClusters, nTPCClusters); // tmp/debug printout
-
-        if (TMath::Abs(track->Eta()) < fCuts->GetCommonEtaCut() && CheckGoodVertex(track) && nItsClusters > fCuts->GetReconstructedNItsClustersCut() && nTPCClusters > fCuts->GetReconstructedNTpcClustersCut() )
-        {
-            fTotChargedEt +=  et;
-            fChargedMultiplicity++;
-            if (maxpid != -1)
-            {
-                if (maxpid == AliPID::kProton)
-                {
-                    fProtonEt += et;
-                }
-                if (maxpid == AliPID::kPion)
-                {
-                    fPionEt += et;
-                }
-                if (maxpid == AliPID::kKaon)
-                {
-                    fChargedKaonEt += et;
-                }
-                if (maxpid == AliPID::kMuon)
-                {
-                    fMuonEt += et;
-                }
-                if (maxpid == AliPID::kElectron)
-                {
-                    fElectronEt += et;
-                }
-            }
-
-            if (TMath::Abs(track->Eta()) < fEtaCutAcc && track->Phi() < fPhiCutAccMax && track->Phi() > fPhiCutAccMin)
-            {
-                fTotChargedEtAcc += track->E()*TMath::Sin(track->Theta()) + massPart;
-                if (maxpid != -1)
-                {
-                    if (maxpid == AliPID::kProton)
-                    {
-                        fProtonEtAcc += et;
-                    }
-                    if (maxpid == AliPID::kPion)
-                    {
-                        fPionEtAcc += et;
-                    }
-                    if (maxpid == AliPID::kKaon)
-                    {
-                        fChargedKaonEtAcc += et;
-                    }
-                    if (maxpid == AliPID::kMuon)
-                    {
-                        fMuonEtAcc += et;
-                    }
-                    if (maxpid == AliPID::kElectron)
-                    {
-                        fElectronEtAcc += et;
-                    }
-                }
-
-            }
-        }
-
-        if (TrackHitsCalorimeter(track, event->GetMagneticField()))
-        {
-            Double_t phi = track->Phi();
-            Double_t pt = track->Pt();
-            // printf("Rec track hit: iTrack %03d phi %4.3f pt %4.3f\n", iTrack, phi, pt); // tmp/debug printout
-            if (track->Charge() > 0) fHistPhivsPtPos->Fill(phi, pt);
-            else fHistPhivsPtNeg->Fill(phi, pt);
-        }
-    }
+    //Double_t protonMass = fgProtonMass;
 
     for (Int_t iCluster = 0; iCluster < event->GetNumberOfCaloClusters(); iCluster++)
     {
@@ -239,13 +122,14 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             AliError(Form("ERROR: Could not get cluster %d", iCluster));
             continue;
         }
-        if (cluster->GetType() != fClusterType) continue;
-
-        //if(cluster->GetTracksMatched() > 0)
-//	printf("Rec Cluster: iCluster %03d E %4.3f type %.qd NCells %d, nmatched: %d, distance to closest: %f\n", iCluster, cluster->E(), (int)(cluster->GetType()), cluster->GetNCells(), cluster->GetNTracksMatched(), cluster->GetEmcCpvDistance()); // tmp/debug printout
-
-
-        if (cluster->E() < fClusterEnergyCut) continue;
+        int x = 0;
+        fCutFlow->Fill(x++);
+        if(cluster->IsEMCAL()) continue;
+        fCutFlow->Fill(x++);
+        if(!fSelector->CutMinEnergy(*cluster)) continue;
+        fCutFlow->Fill(x++);
+        if (!fSelector->CutDistanceToBadChannel(*cluster)) continue;
+        fCutFlow->Fill(x++);
 
         Float_t pos[3];
 
@@ -258,71 +142,15 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             distance = CalcTrackClusterDistance(pos, &trackMatchedIndex, event);
         }
 
-	if(fMakeSparse){
-        fSparseClusters[0] = 0;
-        fSparseClusters[1] = 0;
-        fSparseClusters[2] = 0;
-        fSparseClusters[6] = 0;
-        fSparseClusters[7] = 0;
-        fSparseClusters[8] = 0;
-        fSparseClusters[9] = cent;
-        fSparseClusters[10] = 0;
-	}
-
-        if (cluster->GetNTracksMatched() > 0 && trackMatchedIndex > -1)
-        {
-            AliVTrack *tmptrack = event->GetTrack(trackMatchedIndex);
-            if (!tmptrack)
-            {
-                AliError("Error: track does not exist");
-                return -1;
-            }
-            const Double_t *pidWeights = tmptrack->PID();
-
-            Double_t maxpidweight = 0;
-            Int_t maxpid = 0;
-            Double_t massPart = 0;
-            if (pidWeights)
-            {
-                for (Int_t p =0; p < AliPID::kSPECIES; p++)
-                {
-                    if (pidWeights[p] > maxpidweight)
-                    {
-                        maxpidweight = pidWeights[p];
-                        maxpid = p;
-                    }
-                }
-                if (maxpid == AliPID::kProton)
-                {
-                    //by definition of ET
-                    massPart = -protonMass*tmptrack->Charge();
-                }
-            }
-	if(fMakeSparse){
-            fSparseClusters[0] = maxpid;
-            fSparseClusters[1] = tmptrack->Charge();
-            fSparseClusters[2] = tmptrack->M();
-            fSparseClusters[6] = tmptrack->E() * TMath::Sin(tmptrack->Theta()) + massPart;;
-            fSparseClusters[7] = tmptrack->Pt();
-            fSparseClusters[8] = tmptrack->Eta();
-	}
-        }
-
-        
-	if(fMakeSparse){fSparseClusters[10] = distance;}
-
-        fHistTMDeltaR->Fill(distance);
-        fHistTMDxDz->Fill(cluster->GetTrackDx(), cluster->GetTrackDz());
-
-//        Float_t clusteret = cluster->E() * TMath::Sin(cp.Theta());
-
         Bool_t matched = false;
 
-        if (cluster->IsEMCAL()) matched = distance < fTrackDistanceCut;
-        else matched = (TMath::Abs(cluster->GetTrackDx()) < fTrackDxCut && TMath::Abs(cluster->GetTrackDz()) < fTrackDzCut);
+        Double_t r = 0;
+
+        matched = !fSelector->CutTrackMatching(*cluster, r);
 
         if (matched)
         {
+
             if (cluster->GetNTracksMatched() > 0 && trackMatchedIndex>=0)
             {
                 AliVTrack *track = event->GetTrack(trackMatchedIndex);
@@ -405,58 +233,49 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         } // distance
         else
         {
-	if(fMakeSparse){
-	  fSparseClusters[0] = AliPID::kPhoton;
-	  fSparseClusters[1] = 0;
-	}
+            fCutFlow->Fill(x++);
+            //std::cout << x++ << std::endl;
+            fSparseClusters[0] = AliPID::kPhoton;
+            fSparseClusters[1] = 0;
 
-            if (cluster->E() >  fSingleCellEnergyCut && cluster->GetNCells() == fCuts->GetCommonSingleCell()) continue;
-            if (cluster->E() < fClusterEnergyCut) continue;
+            //if (cluster->E() >  fSingleCellEnergyCut && cluster->GetNCells() == fCuts->GetCommonSingleCell()) continue;
+            //if (cluster->E() < fClusterEnergyCut) continue;
             cluster->GetPosition(pos);
 
-            // TODO: replace with TVector3, too lazy now...
+            TVector3 p2(pos);
 
-            float dist = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
+            fClusterPosition->Fill(p2.Phi(), p2.PseudoRapidity());
 
-            float theta = TMath::ATan(pos[2]/dist)+TMath::Pi()/2;
-            // float eta = TMath::Log(TMath::Abs( TMath::Tan( 0.5 * theta ) ) );
-            fTotNeutralEt += cluster->E() * TMath::Sin(theta);
+            fTotNeutralEt += CalculateTransverseEnergy(cluster);
             fNeutralMultiplicity++;
         }
-
-        cluster->GetPosition(pos);
-
-        // TODO: replace with TVector3
-
-        float dist = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
-        float theta = TMath::ATan(pos[2]/dist)+TMath::Pi()/2;
-        float eta = TMath::Log(TMath::Abs( TMath::Tan( 0.5 * theta ) ) );
-	if(fMakeSparse){
-	  fSparseClusters[3] = cluster->E() * TMath::Sin(theta);
-	  fSparseClusters[4] = cluster->E();
-	  fSparseClusters[5] = eta;
-	  
-	  fSparseHistClusters->Fill(fSparseClusters);
-	}
-
         fMultiplicity++;
     }
+
+    fChargedEnergyRemoved = GetChargedContribution(fNeutralMultiplicity);
+    fNeutralEnergyRemoved = GetNeutralContribution(fNeutralMultiplicity);
+    fHistChargedEnergyRemoved->Fill(fChargedEnergyRemoved, fNeutralMultiplicity);
+    fHistNeutralEnergyRemoved->Fill(fNeutralEnergyRemoved, fNeutralMultiplicity);
+
+    fGammaEnergyAdded = GetGammaContribution(fNeutralMultiplicity);
+    fHistGammaEnergyAdded->Fill(fGammaEnergyAdded, fNeutralMultiplicity);
+
     Double_t removedEnergy = GetChargedContribution(fNeutralMultiplicity) + GetNeutralContribution(fNeutralMultiplicity) - GetGammaContribution(fNeutralMultiplicity);
     fHistRemovedEnergy->Fill(removedEnergy);
-//  std::cout << "fTotNeutralEt: " << fTotNeutralEt << ", Contribution from non-removed charged: " << GetChargedContribution(fNeutralMultiplicity) << ", neutral: " << GetNeutralContribution(fNeutralMultiplicity) << ", gammas: " << GetGammaContribution(fNeutralMultiplicity) << ", multiplicity: " << fNeutralMultiplicity<< std::endl;
-    fTotNeutralEt = fGeomCorrection * fEMinCorrection * fTotNeutralEt - removedEnergy;
-    fTotNeutralEtAcc = fTotNeutralEt/fGeomCorrection;
+
+    fTotNeutralEt = fGeomCorrection * fEMinCorrection * (fTotNeutralEt - removedEnergy);
+    fTotNeutralEtAcc = fTotNeutralEt;
     fTotEt = fTotChargedEt + fTotNeutralEt;
     fTotEtAcc = fTotChargedEtAcc + fTotNeutralEtAcc;
-	if(fMakeSparse){
-	  fSparseEt[0] = fTotEt;
-	  fSparseEt[1] = fTotNeutralEt;
-	  fSparseEt[2] = fTotChargedEtAcc;
-	  fSparseEt[3] = fMultiplicity;
-	  fSparseEt[4] = fNeutralMultiplicity;
-	  fSparseEt[5] = fChargedMultiplicity;
-	  fSparseEt[6] = cent;
-	}
+    if(fMakeSparse) {
+        fSparseEt[0] = fTotEt;
+        fSparseEt[1] = fTotNeutralEt;
+        fSparseEt[2] = fTotChargedEtAcc;
+        fSparseEt[3] = fMultiplicity;
+        fSparseEt[4] = fNeutralMultiplicity;
+        fSparseEt[5] = fChargedMultiplicity;
+        fSparseEt[6] = cent;
+    }
     // Fill the histograms...
     FillHistograms();
 
@@ -464,7 +283,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 }
 
 bool AliAnalysisEtReconstructed::CheckGoodVertex(AliVParticle* track)
-{ // check vertex
+{   // check vertex
 
     Float_t bxy = 999.;
     Float_t bz = 999.;
@@ -490,17 +309,25 @@ bool AliAnalysisEtReconstructed::CheckGoodVertex(AliVParticle* track)
 }
 
 void AliAnalysisEtReconstructed::Init()
-{ // Init
+{   // Init
     AliAnalysisEt::Init();
     fPidCut = fCuts->GetReconstructedPidCut();
     TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
     if (!fCorrections) {
         cout<<"Warning!  You have not set corrections.  Your code will crash.  You have to set the corrections."<<endl;
     }
+    //fGeoUtils = new AliPHOSGeoUtils("PHOS", "noCPV");
+    fGeoUtils = AliPHOSGeometry::GetInstance("IHEP");
+    // ifstream f("badchannels.txt", ios::in);
+    TFile *f = TFile::Open("badchannels.root", "READ");
+
+    fBadMapM2 = (TH2I*)f->Get("bad_channels_m2");
+    fBadMapM3 = (TH2I*)f->Get("bad_channels_m3");
+    fBadMapM4 = (TH2I*)f->Get("bad_channels_m4");
 }
 
 bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)
-{ // propagate track to detector radius
+{   // propagate track to detector radius
 
     if (!track) {
         cout<<"Warning: track empty"<<endl;
@@ -523,7 +350,7 @@ bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Doubl
 }
 
 void AliAnalysisEtReconstructed::FillOutputList(TList* list)
-{ // add some extra histograms to the ones from base class
+{   // add some extra histograms to the ones from base class
     AliAnalysisEt::FillOutputList(list);
 
     list->Add(fHistChargedPionEnergyDeposit);
@@ -533,10 +360,15 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistMuonEnergyDeposit);
 
     list->Add(fHistRemovedEnergy);
+    list->Add(fClusterPosition);
+
+    list->Add(fHistChargedEnergyRemoved);
+    list->Add(fHistNeutralEnergyRemoved);
+    list->Add(fHistGammaEnergyAdded);
 }
 
 void AliAnalysisEtReconstructed::CreateHistograms()
-{ // add some extra histograms to the ones from base class
+{   // add some extra histograms to the ones from base class
     AliAnalysisEt::CreateHistograms();
 
     Int_t nbinsEt = 1000;
@@ -581,6 +413,20 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     //fHistMuonEnergyDeposit->SetXTitle("Energy deposited in calorimeter");
     //fHistMuonEnergyDeposit->SetYTitle("Energy of track");
 
+    histname = "fClusterPosition" + fHistogramNameSuffix;
+    fClusterPosition = new TH2D(histname.Data(), "Position of accepted neutral clusters",1000, -2.0, -.5, 1000, -.13 , 0.13);
+    fClusterPosition->SetXTitle("Energy deposited in calorimeter");
+    fClusterPosition->SetYTitle("Energy of track");
+
+
+    histname = "fHistChargedEnergyRemoved" + fHistogramNameSuffix;
+    fHistChargedEnergyRemoved = new TH2D(histname.Data(), histname.Data(), 1000, .0, 30, 100, -0.5 , 99.5);
+
+    histname = "fHistNeutralEnergyRemoved" + fHistogramNameSuffix;
+    fHistNeutralEnergyRemoved = new TH2D(histname.Data(), histname.Data(), 1000, .0, 30, 100, -0.5 , 99.5);
+
+    histname = "fHistGammaEnergyAdded" + fHistogramNameSuffix;
+    fHistGammaEnergyAdded = new TH2D(histname.Data(), histname.Data(), 1000, .0, 30, 100, -0.5 , 99.5);
 
 
 }
@@ -589,7 +435,7 @@ Double_t
 AliAnalysisEtReconstructed::CalcTrackClusterDistance(const Float_t clsPos[3],
         Int_t *trkMatchId,
         const AliESDEvent *event)
-{ // calculate distance between cluster and closest track
+{   // calculate distance between cluster and closest track
 
     Double_t trkPos[3] = {0,0,0};
 
@@ -632,3 +478,169 @@ AliAnalysisEtReconstructed::CalcTrackClusterDistance(const Float_t clsPos[3],
     return distance;
 }
 
+
+Bool_t AliAnalysisEtReconstructed::TooCloseToBadChannel(const AliESDCaloCluster &cluster) const
+{
+
+    Float_t gPos[3];
+    cluster.GetPosition(gPos);
+    Int_t relId[4];
+    TVector3 glVec(gPos);
+    fGeoUtils->GlobalPos2RelId(glVec, relId);
+
+    TVector3 locVec;
+    fGeoUtils->Global2Local(locVec, glVec, relId[0]);
+//    std::cout << fGeoUtils << std::endl;
+    //std::cout << relId[0] << " " << cluster.IsPHOS() <<  std::endl;
+    //std::cout << locVec[0] << " " << " " << locVec[1] << " " << locVec[2] << std::endl;
+    for (Int_t x = 0; x < fBadMapM2->GetNbinsX(); x++)
+    {
+        for (Int_t z = 0; z < fBadMapM2->GetNbinsY(); z++)
+        {
+            if (relId[0] == 3)
+            {
+                if (fBadMapM2->GetBinContent(x+1, z+1) != 0)
+                {
+                    Int_t tmpRel[4];
+                    tmpRel[0] = 3;
+                    tmpRel[1] = 0;
+                    tmpRel[2] = x+1;
+                    tmpRel[3] = z+1;
+
+                    Float_t tmpX;
+                    Float_t tmpZ;
+                    fGeoUtils->RelPosInModule(tmpRel, tmpX, tmpZ);
+
+                    Float_t distance = TMath::Sqrt((tmpX-locVec[0])*(tmpX-locVec[0]) + (tmpZ - locVec[2])*(tmpZ-locVec[2]));
+                    //Float_t distance = TMath::Sqrt((x-relId[3])*(x-relId[3]) + (z - relId[2])*(z-relId[2]));
+
+                    if (distance < fCuts->GetPhosBadDistanceCut())
+                    {
+//		      std::cout << "Module 2, position: " << locVec[0] << ", " << locVec[2] << ", distance to bad channel: " << distance << ", number of cells: " << cluster.GetNCells() <<  std::endl;
+                        return kTRUE;
+                    }
+                }
+            }
+            if (relId[0] == 2)
+            {
+                if (fBadMapM3->GetBinContent(x+1, z+1) != 0)
+                {
+                    Int_t tmpRel[4];
+                    tmpRel[0] = 2;
+                    tmpRel[1] = 0;
+                    tmpRel[2] = x+1;
+                    tmpRel[3] = z+1;
+
+                    Float_t tmpX;
+                    Float_t tmpZ;
+                    fGeoUtils->RelPosInModule(tmpRel, tmpX, tmpZ);
+
+                    Float_t distance = TMath::Sqrt((tmpX-locVec[0])*(tmpX-locVec[0]) + (tmpZ - locVec[2])*(tmpZ-locVec[2]));
+
+//                    Float_t distance = TMath::Sqrt((x-locVec[0])*(x-locVec[0]) + (z - locVec[2])*(z-locVec[2]));
+                    //Float_t distance = TMath::Sqrt((x-relId[3])*(x-relId[3]) + (z - relId[2])*(z-relId[2]));
+                    if (distance < fCuts->GetPhosBadDistanceCut())
+                    {
+//		      std::cout << "Module 3, position: " << locVec[0] << ", " << locVec[2] << ", distance to bad channel: " << distance << ", number of cells: " << cluster.GetNCells() <<  std::endl;
+                        return kTRUE;
+                    }
+                }
+            }
+            if (relId[0] == 1)
+            {
+                if (fBadMapM4->GetBinContent(x+1, z+1) != 0)
+                {
+                    Int_t tmpRel[4];
+                    tmpRel[0] = 1;
+                    tmpRel[1] = 0;
+                    tmpRel[2] = x+1;
+                    tmpRel[3] = z+1;
+
+                    Float_t tmpX;
+                    Float_t tmpZ;
+                    fGeoUtils->RelPosInModule(tmpRel, tmpX, tmpZ);
+
+                    Float_t distance = TMath::Sqrt((tmpX-locVec[0])*(tmpX-locVec[0]) + (tmpZ - locVec[2])*(tmpZ-locVec[2]));
+
+//                    Float_t distance = TMath::Sqrt((x-locVec[0])*(x-locVec[0]) + (z - locVec[2])*(z-locVec[2]));
+                    //Float_t distance = TMath::Sqrt((x-relId[3])*(x-relId[3]) + (z - relId[2])*(z-relId[2]));
+                    if (distance < fCuts->GetPhosBadDistanceCut())
+                    {
+//			std::cout << "Module 4, position: " << locVec[0] << ", " << locVec[2] << ", distance to bad channel: " << distance << ", number of cells: " << cluster.GetNCells() <<  std::endl;
+                        return kTRUE;
+                    }
+                }
+            }
+
+        }
+    }
+
+    return kFALSE;
+
+
+}
+
+
+
+
+/*
+Bool_t AliAnalysisEtReconstructed::TooCloseToBadChannel(const AliESDCaloCluster &cluster) const
+{
+
+    Float_t gPos[3];
+
+    cluster.GetPosition(gPos);
+    Int_t relId[4];
+    TVector3 glVec(gPos);
+    fGeoUtils->GlobalPos2RelId(glVec, relId);
+    TVector3 locVec;
+    fGeoUtils->Global2Local(locVec, glVec, relId[0]);
+
+    std::vector<Int_t>::const_iterator badIt;
+
+    for (Int_t x = 0; x < fBadMapM2->GetNbinsX(); x++)
+    {
+        for (Int_t z = 0; z < fBadMapM2->GetNbinsY(); z++)
+        {
+            if (relId[0] == 3)
+            {
+                if (fBadMapM2->GetBinContent(x+1, z+1) != 0)
+                {
+
+                    Float_t distance = TMath::Sqrt((x-locVec[0])*(x-locVec[0]) + (z - locVec[2])*(z-locVec[2]));
+                    if (distance < fCuts->GetPhosBadDistanceCut())
+                    {
+                        return kTRUE;
+                    }
+                }
+            }
+            if (relId[0] == 2)
+            {
+                if (fBadMapM3->GetBinContent(x+1, z+1) != 0)
+                {
+
+                    Float_t distance = TMath::Sqrt((x-locVec[0])*(x-locVec[0]) + (z - locVec[2])*(z-locVec[2]));
+                    if (distance < fCuts->GetPhosBadDistanceCut())
+                    {
+                        return kTRUE;
+                    }
+                }
+            }
+            if (relId[0] == 1)
+            {
+                if (fBadMapM4->GetBinContent(x+1, z+1) != 0)
+                {
+
+                    Float_t distance = TMath::Sqrt((x-locVec[0])*(x-locVec[0]) + (z - locVec[2])*(z-locVec[2]));
+                    if (distance < fCuts->GetPhosBadDistanceCut())
+                    {
+                        return kTRUE;
+                    }
+                }
+            }
+        }
+    }
+
+    return kFALSE;
+}
+*/

@@ -18,6 +18,7 @@ ClassImp(AliAnalysisEtMonteCarloEmcal);
 AliAnalysisEtMonteCarloEmcal::AliAnalysisEtMonteCarloEmcal()
 {
    fHistogramNameSuffix = TString("EmcalMC");
+
 }
 
 AliAnalysisEtMonteCarloEmcal::~AliAnalysisEtMonteCarloEmcal()
@@ -28,7 +29,7 @@ AliAnalysisEtMonteCarloEmcal::~AliAnalysisEtMonteCarloEmcal()
 void AliAnalysisEtMonteCarloEmcal::Init()
 { // Init
   AliAnalysisEtMonteCarlo::Init();
-  
+   fClusterType = fCuts->GetEmcalClusterType();
   fDetectorRadius = fCuts->GetGeometryEmcalDetectorRadius();
   fEtaCutAcc = fCuts->GetGeometryEmcalEtaAccCut();
   fPhiCutAccMax = fCuts->GetGeometryEmcalPhiAccMaxCut() * TMath::Pi()/180.;

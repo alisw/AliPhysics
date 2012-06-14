@@ -33,6 +33,7 @@ AliAnalysisTaskTransverseEnergy::AliAnalysisTaskTransverseEnergy(const char* nam
         ,fEsdtrackCutsTPC(0)
         ,fEsdtrackCutsITS(0)
         ,fOutputList(0)
+	,fPhysSelTaskName("physSelTask")
         ,fCentSelTaskName("centralityTask")
 	,fIsMc(isMc)
 	,fCurrentRunNum(-1)
