@@ -16,24 +16,48 @@ class AliAnalysisEtReconstructedPhos : public AliAnalysisEtReconstructed
 {
 
 public:
-   
+
     AliAnalysisEtReconstructedPhos();
     virtual ~AliAnalysisEtReconstructedPhos();
 
     virtual void Init();
-    
-    virtual Double_t GetChargedContribution(Int_t clusterMultiplicity);
-    
-    virtual Double_t GetNeutralContribution(Int_t clusterMultiplicity);
-    
-    virtual Double_t GetGammaContribution(Int_t clusterMultiplicity);
-    
-   protected:
-      
-      virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
- private:
 
-      ClassDef(AliAnalysisEtReconstructedPhos, 1);
+    virtual Double_t GetChargedContribution(Int_t clusterMultiplicity);
+
+    virtual Double_t GetNeutralContribution(Int_t clusterMultiplicity);
+
+    virtual Double_t GetGammaContribution(Int_t clusterMultiplicity);
+
+    void SetChargedContributionParameters(Double_t par[2])
+    {
+        fChargedContributionCorrectionParameters[0] = par[0];
+        fChargedContributionCorrectionParameters[1] = par[1];
+    }
+    void SetNeutralContributionParameters(Double_t par[3])
+    {
+        fNeutralContributionCorrectionParameters[0] = par[0];
+        fNeutralContributionCorrectionParameters[1] = par[1];
+	fNeutralContributionCorrectionParameters[2] = par[2];
+    }
+    void SetRemovedGammaContributionParameters(Double_t par[3])
+    {
+        fRemovedGammaContributionCorrectionParameters[0] = par[0];
+        fRemovedGammaContributionCorrectionParameters[1] = par[1];
+	fRemovedGammaContributionCorrectionParameters[2] = par[2];
+    }
+
+protected:
+
+    virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
+    
+private:
+
+    Double_t fChargedContributionCorrectionParameters[2]; // Parametrization of the charged contribution as function of cluster multiplicity
+    Double_t fNeutralContributionCorrectionParameters[3]; // Parametrization of the neutral contribution as function of cluster multiplicity
+    Double_t fRemovedGammaContributionCorrectionParameters[3]; // Parametrization of the negative contribution from removed gammas as function of cluster multiplicity
+
+
+    ClassDef(AliAnalysisEtReconstructedPhos, 1);
 };
 
 #endif // ALIANALYSISETRECONSTRUCTEDPHOS_H

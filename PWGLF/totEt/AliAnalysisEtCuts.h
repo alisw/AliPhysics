@@ -46,14 +46,18 @@ class AliAnalysisEtCuts : public TNamed
   Int_t GetReconstructedNItsClustersCut() const { return fReconstructedNItsClustersCut; }
   Double_t GetReconstructedPidCut() const { return fReconstructedPidCut; }
   // ReconstructedPhos
-  Char_t GetReconstructedPhosClusterType() const { return fReconstructedPhosClusterType; }
+  Char_t GetPhosClusterType() const { return fReconstructedPhosClusterType; }
   Double_t GetReconstructedPhosClusterEnergyCut() const { return fReconstructedPhosClusterEnergyCut; }
   Double_t GetReconstructedPhosSingleCellEnergyCut() const { return fReconstructedPhosSingleCellEnergyCut; }
   Double_t GetPhosTrackDistanceCut() const { return fPhosTrackDistanceCut; }
   Double_t GetPhosTrackDxCut() const { return fPhosTrackDxCut; }
   Double_t GetPhosTrackDzCut() const { return fPhosTrackDzCut; }
+  Double_t GetPhosTrackRCut() const { return fPhosTrackRCut; }
+  
+  Double_t GetPhosBadDistanceCut() const { return fPhosBadDistanceCut; }
+  
   // ReconstructedEmcal
-  Char_t GetReconstructedEmcalClusterType() const { return fReconstructedEmcalClusterType; }
+  Char_t GetEmcalClusterType() const { return fReconstructedEmcalClusterType; }
   Double_t GetReconstructedEmcalClusterEnergyCut() const { return fReconstructedEmcalClusterEnergyCut; }
   Double_t GetReconstructedEmcalSingleCellEnergyCut() const { return fReconstructedEmcalSingleCellEnergyCut; }
   Double_t GetEmcalTrackDistanceCut() const { return fEmcalTrackDistanceCut; }
@@ -82,6 +86,8 @@ class AliAnalysisEtCuts : public TNamed
   Int_t GetHistNbinsParticlePt() const { return fHistNbinsParticlePt; }
   Double_t GetHistMinParticlePt() const { return fHistMinParticlePt; }
   Double_t GetHistMaxParticlePt() const { return fHistMaxParticlePt; }
+  
+  
   
   Short_t GetDetectorPhos() const { return fgkDetectorPhos; }
   Short_t GetDetectorEmcal() const { return fgkDetectorEmcal; }
@@ -118,6 +124,9 @@ class AliAnalysisEtCuts : public TNamed
   void SetPhosTrackDistanceCut(const Double_t val) { fPhosTrackDistanceCut = val; }
   void SetPhosTrackDxCut(const Double_t val) { fPhosTrackDxCut = val; }
   void SetPhosTrackDzCut(const Double_t val) { fPhosTrackDzCut = val; }
+  void SetPhosTrackRCut(const Double_t val) { fPhosTrackRCut = val; }
+  
+  void SetPhosBadDistanceCut(const Double_t val) { fPhosBadDistanceCut = val; }
   
   // ReconstructedEmcal
   void SetReconstructedEmcalClusterType(const Char_t val) { fReconstructedEmcalClusterType = val; }
@@ -162,7 +171,10 @@ class AliAnalysisEtCuts : public TNamed
   Double_t fPhosTrackDistanceCut; // PHOS track distance  
   Double_t fPhosTrackDxCut; // PHOS track distance in x
   Double_t fPhosTrackDzCut; // PHOS track distance  in z
-  
+  Double_t fPhosTrackRCut; // PHOS track distance  in r (using the parametrized track distance)
+ 
+ Double_t fPhosBadDistanceCut; // PHOS distance to bad channel 
+ 
   // GeometryPhos
   Double_t fGeometryPhosEtaAccCut; // PHOS Eta Acc cut
   Double_t fGeometryPhosPhiAccMinCut; // PHOS Phi Acc Min cut

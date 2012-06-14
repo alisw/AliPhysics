@@ -21,7 +21,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   TNamed()
 				    //
   ,fCommonEtaCut(0.5)
-  ,fCommonClusterEnergyCut(0.1)
+  ,fCommonClusterEnergyCut(0.15)
   ,fCommonTrackPtCut(0.0)
   ,fCommonSingleCell(1)
   ,fEmcalTrackDistanceCut(15.0)
@@ -30,6 +30,8 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fPhosTrackDistanceCut(10.0)  
   ,fPhosTrackDxCut(8.0)
   ,fPhosTrackDzCut(3.0)
+  ,fPhosTrackRCut(2.0)
+  ,fPhosBadDistanceCut(3.0)
   
   ,fGeometryPhosEtaAccCut(0.12)
   ,fGeometryPhosPhiAccMinCut(260.0)
@@ -51,7 +53,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fReconstructedPidCut(0.0)
 				    //
   ,fReconstructedPhosClusterType(-1)
-  ,fReconstructedPhosClusterEnergyCut(0.1)
+  ,fReconstructedPhosClusterEnergyCut(0.15)
   ,fReconstructedPhosSingleCellEnergyCut(0.5)
   ,fReconstructedPhosTrackDistanceTightCut(3.0)
   ,fReconstructedPhosTrackDistanceMediumCut(5.0)

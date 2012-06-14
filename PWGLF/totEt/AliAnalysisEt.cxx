@@ -12,6 +12,7 @@
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH1I.h" 
 #include "TTree.h"
 #include <iostream>
 #include "AliAnalysisEtCuts.h"
@@ -21,6 +22,8 @@
 #include "Rtypes.h"
 #include "TString.h"
 #include "AliCentrality.h"
+#include "AliAnalysisEtSelector.h"
+
 	       //#include "THnSparse.h"
 
 using namespace std;
@@ -95,6 +98,9 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fTrackDistanceCut(0)
 			       ,fTrackDxCut(0)
 			       ,fTrackDzCut(0)
+			       ,fChargedEnergyRemoved(0)
+			       ,fNeutralEnergyRemoved(0)
+			       ,fGammaEnergyAdded(0)
 			       ,fHistEt(0)
 			       ,fHistChargedEt(0)
 			       ,fHistNeutralEt(0)
@@ -128,13 +134,17 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fTreeDeposit(0)
 			       ,fCentrality(0)
 			       ,fDetector(0)
-			       ,fMakeSparse(kFALSE)
+			       ,fMakeSparse(kTRUE)
 			       ,fSparseHistTracks(0)
 			       ,fSparseHistClusters(0)
 			       ,fSparseHistEt(0)
-			       ,fSparseTracks(0)
+       			       ,fSparseTracks(0)
 			       ,fSparseClusters(0)
 			       ,fSparseEt(0)
+			       ,fClusterType(0)
+      			       ,fMatrixInitialized(kFALSE)
+			       ,fCutFlow(0)
+			       ,fSelector(0)
 			       
 {}
 
@@ -243,6 +253,8 @@ void AliAnalysisEt::FillOutputList(TList *list)
       list->Add(fSparseHistClusters);
       list->Add(fSparseHistEt);
     }
+    
+    list->Add(fCutFlow);
 
 }
 
@@ -445,6 +457,9 @@ void AliAnalysisEt::CreateHistograms()
       fSparseHistEt->GetAxis(5)->SetTitle("charged_mult");
       fSparseHistEt->GetAxis(6)->SetTitle("cent");
     }
+    
+    histname = "fCutFlow" + fHistogramNameSuffix;
+    fCutFlow = new TH1I(histname, histname, 20, -0.5, 19.5);
 }
 
 TH2F* AliAnalysisEt::CreateEtaEHisto2D(TString name, TString title, TString ztitle)
@@ -591,6 +606,9 @@ void AliAnalysisEt::CreateTrees()
     fTree->Branch("fChargedMultiplicity",&fChargedMultiplicity,"fChargedMultiplicity/I");
     fTree->Branch("fNeutralMultiplicity",&fNeutralMultiplicity,"fNeutralMultiplicity/I");
     fTree->Branch("fCentClass",&fCentClass,"fCentClass/I");
+    fTree->Branch("fChargedEnergyRemoved", &fChargedEnergyRemoved, "fChargedEnergyRemoved/D");
+    fTree->Branch("fNeutralEnergyRemoved", &fNeutralEnergyRemoved, "fNeutralEnergyRemoved/D");
+    fTree->Branch("fGammaEnergyAdded", &fGammaEnergyAdded, "fGammaEnergyAdded/D");
     
     fTree->Branch("fBaryonEt",&fBaryonEt,"fBaryonEt/D");
     fTree->Branch("fAntiBaryonEt",&fAntiBaryonEt,"fAntiBaryonEt/D");
@@ -666,6 +684,7 @@ void AliAnalysisEt::FillHistograms()
 
 Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)
 { //this line is basically here to eliminate a compiler warning that event is not used.  Making it a virtual function did not work with the plugin.
+  fSelector->SetEvent(event);
   AliAnalysisEtCommon::AnalyseEvent(event);
   ResetEventValues();
   return 0;
@@ -708,7 +727,50 @@ Double_t AliAnalysisEt::CalculateTransverseEnergy(AliESDCaloCluster* cluster)
   Float_t pos[3];
   cluster->GetPosition(pos);
   TVector3 cp(pos);
+  Double_t corrEnergy = 0;
   
-  return cluster->E() * TMath::Sin(cp.Theta());
+  if(cluster->E() < 1.5)
+  {
+    corrEnergy =cluster->E()/(0.51 + 0.02*cluster->E());
+  }    
+  else
+  {
+    corrEnergy =cluster->E()/(0.51 + 0.02*1.5);
+  }
+  //std::cout << "Original energy: " << cluster->E() << ", corrected energy: " << corrEnergy << std::endl;
+  
+  return corrEnergy * TMath::Sin(cp.Theta());
+}
 
+//____________________________________________________________________________
+Double_t AliAnalysisEt::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge, AliVEvent* e) const {
+  //Parameterization of LHC10h period
+  //_true if neutral_
+  
+  Double_t meanX=0;
+  Double_t meanZ=0.;
+  Double_t sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
+              6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
+  Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
+  
+  Double_t mf = e->GetMagneticField(); //Positive for ++ and negative for --
+
+  if(mf<0.){ //field --
+    meanZ = -0.468318 ;
+    if(charge>0)
+      meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01)) ;
+    else
+      meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01)) ;
+  }
+  else{ //Field ++
+    meanZ= -0.468318;
+    if(charge>0)
+      meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01)) ;
+    else
+      meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01)) ;     
+  }
+
+  Double_t rz=(dz-meanZ)/sz ;
+  Double_t rx=(dx-meanX)/sx ;
+  return TMath::Sqrt(rx*rx+rz*rz) ;
 }
