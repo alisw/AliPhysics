@@ -214,6 +214,33 @@ void AliAnalysisTaskEmcal::Init()
 }
 
 //________________________________________________________________________
+TClonesArray *AliAnalysisTaskEmcal::GetArrayFromEvent(const char *name, const char *clname)
+{
+  // Get array from event.
+
+  TClonesArray *arr = 0;
+  TString sname(name);
+  if (!sname.IsNull()) {
+    arr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(sname));
+    if (!arr) {
+      AliWarning(Form("%s: Could not retrieve array with name %s!", GetName(), name)); 
+      return 0;
+    }
+  }
+  if (!clname)
+    return arr;
+
+  TString objname(arr->GetClass()->GetName());
+  TClass cls(objname);
+  if (!cls.InheritsFrom(clname)) {
+    AliWarning(Form("%s: Objects of type %s in %s are not inherited from %s!", 
+                    GetName(), cls.GetName(), name, clname)); 
+    return 0;
+  }
+  return arr;
+}
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 {
   // Retrieve objects from event.
