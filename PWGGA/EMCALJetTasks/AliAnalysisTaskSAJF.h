@@ -7,6 +7,7 @@ class TClonesArray;
 class TString;
 class TH1F;
 class TH2F;
+class AliRhoParameter;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -25,8 +26,9 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        SetEmbJetsName(const char *n)                        { fEmbJetsName             = n          ; }
   void                        SetRandTracksName(const char *n)                     { fRandTracksName          = n          ; }
   void                        SetRandClusName(const char *n)                       { fRandCaloName            = n          ; }
-  void                        SetRhoName(const char *n)                            { fRhoName                 = n          ; }
-  void                        SetSkipEventsWithNoJets(Bool_t s)                    { fSkipEventsWithNoJets    = s          ; } 
+  void                        SetEmbTracksName(const char *n)                      { fEmbTracksName          = n          ; }
+  void                        SetEmbClusName(const char *n)                        { fEmbCaloName            = n          ; }
+  void                        SetRhoName(const char *n)                            { fRhoName                 = n          ; } 
 
  protected:
 
@@ -34,44 +36,51 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   Bool_t                      FillHistograms()                                                                              ;
   void                        GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex)                                       ;
   void                        DoJetLoop()                                                                                   ;
-  void                        DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &maxPart)                                         ;
-  void                        DoTrackLoop(Int_t maxJetIndex)                                                                ;
-  void                        DoClusterLoop(Int_t maxJetIndex)                                                              ;
+  void                        DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &embPart)                                         ;
+  void                        DoTrackLoop()                                                                                 ;
+  void                        DoClusterLoop()                                                                               ;
   void                        GetRigidCone(Float_t &pt, Float_t &eta, Float_t &phi, Bool_t acceptMC = kFALSE, 
 					   AliEmcalJet *jet = 0, TClonesArray* tracks = 0, TClonesArray* clusters = 0) const;
 
   Float_t                     fMinRC2LJ;                   // Minimum distance random cone to leading jet
-  TString                     fEmbJetsName;                // Name of embedded jets collection
+  TString                     fEmbJetsName;                // Name of embedded jet collection
+  TString                     fEmbTracksName;              // Name of embedded track collection
+  TString                     fEmbCaloName;                // Name of embedded calo cluster collection
   TString                     fRandTracksName;             // Name of randomized track collection
   TString                     fRandCaloName;               // Name of randomized calo cluster collection
   TString                     fRhoName;                    // Name of rho object
-  Bool_t                      fSkipEventsWithNoJets;       // Whether or not skip events with no jets
 
   TClonesArray               *fEmbJets;                    //!Embedded Jets
+  TClonesArray               *fEmbTracks;                  //!Embedded tracks
+  TClonesArray               *fEmbCaloClusters;            //!Embedded clusters  
   TClonesArray               *fRandTracks;                 //!Randomized tracks
   TClonesArray               *fRandCaloClusters;           //!Randomized clusters
-  Float_t                     fRho;                        //!Event rho
+  AliRhoParameter            *fRho;                        //!Event rho
 
   // General histograms
   TH1F                       *fHistCentrality;             //!Event centrality distribution
-  TH1F                       *fHistRejectedEvents;         //!Rejected events
+  TH1F                       *fHistEvents[4];              //!Events accepted/rejected
+  TH1F                       *fHistTracksPt[4];            //!Inclusive track pt spectrum
+  TH1F                       *fHistClustersPt[4];          //!Inclusive clusters pt spectrum
   TH2F                       *fHistJetPhiEta[4];           //!Phi-Eta distribution of jets
   TH1F                       *fHistJetsPt[4];              //!Inclusive jet pt spectrum
   TH2F                       *fHistJetsPtArea[4];          //!Jet pt vs. area
-  TH1F                       *fHistJetsPtNonBias[4];       //!Non-biased inclusive jet pt spectrum
-  TH2F                       *fHistJetsPtAreaNonBias[4];   //!Non-biased jet pt vs. area
   TH1F                       *fHistLeadingJetPt[4];        //!Leading jet pt spectrum
   TH1F                       *fHist2LeadingJetPt[4];       //!Second leading jet pt spectrum
   TH2F                       *fHistJetsNEFvsPt[4];         //!Jet neutral energy fraction vs. jet pt
   TH2F                       *fHistJetsZvsPt[4];           //!Constituent Pt over Jet Pt ratio vs. jet pt
+  TH2F                       *fHistMaxTrackPtvsJetPt[4];   //!Max constituent track pt vs. jet pt
+  TH2F                       *fHistMaxClusPtvsJetPt[4];    //!Max constituent cluster pt vs. jet pt
+  TH2F                       *fHistMaxPartPtvsJetPt[4];    //!Max constituent particle (track or cluster) pt vs. jet pt
+  TH2F                       *fHistMaxTrackPtvsJetCorrPt[4];   //!Max constituent track pt vs. jet pt
+  TH2F                       *fHistMaxClusPtvsJetCorrPt[4];    //!Max constituent cluster pt vs. jet pt
+  TH2F                       *fHistMaxPartPtvsJetCorrPt[4];    //!Max constituent particle (track or cluster) pt vs. jet pt
 
   // Rho
   TH1F                       *fHistRho[4];                    //!Rho distribution
   TH2F                       *fHistRhoVSleadJetPt;            //!Area(leadjetarea) * rho vs. leading jet pt
   TH1F                       *fHistCorrJetsPt[4];             //!Corrected inclusive jet pt spectrum
   TH2F                       *fHistCorrJetsPtArea[4];         //!Jet pt vs. area
-  TH1F                       *fHistCorrJetsPtNonBias[4];      //!Corrected non-biased inclusive jet pt spectrum
-  TH2F                       *fHistCorrJetsPtAreaNonBias[4];  //!Non-biased jet pt vs. area
   TH1F                       *fHistCorrLeadingJetPt[4];       //!Corrected leading jet pt spectrum
 
   // Random cones
@@ -86,7 +95,8 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistDeltaPtRCRand[4];       //!deltaPt = Pt(RC) - A * rho, randomzied particles
 
   // Jet embedding
-  TH1F                       *fHistEmbJets[4];             //!Pt distribution of embedded jets
+  TH1F                       *fHistEmbJetsPt[4];           //!Pt distribution of embedded jets
+  TH1F                       *fHistEmbJetsCorrPt[4];       //!Pt distribution of embedded jets
   TH1F                       *fHistEmbPart[4];             //!Pt distribution of embedded particle
   TH2F                       *fHistEmbJetPhiEta;           //!Phi-Eta distribution of embedded jets
   TH2F                       *fHistEmbPartPhiEta;          //!Phi-Eta distribution of embedded particles

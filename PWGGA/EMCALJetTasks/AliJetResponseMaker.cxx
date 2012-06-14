@@ -25,7 +25,7 @@ ClassImp(AliJetResponseMaker)
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker() : 
-  AliAnalysisTaskEmcalJet("AliJetResponseMaker"),
+  AliAnalysisTaskEmcalJet("AliJetResponseMaker", kTRUE),
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
   fMaxDistance(0.25),
@@ -53,7 +53,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
 
 //________________________________________________________________________
 AliJetResponseMaker::AliJetResponseMaker(const char *name) : 
-  AliAnalysisTaskEmcalJet(name),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
   fMaxDistance(0.25),
@@ -194,7 +194,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
   for (Int_t i = 0; i < nMCJets; i++) {
 
-    AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fMCJets->At(i));
+    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fMCJets->At(i));
 
     if (!jet) {
       AliError(Form("Could not receive jet %d", i));
@@ -248,7 +248,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
   for (Int_t i = 0; i < nJets; i++) {
 
-    AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fJets->At(i));
+    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
 
     if (!jet) {
       AliError(Form("Could not receive mc jet %d", i));
@@ -298,7 +298,7 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
 
   for (Int_t i = 0; i < nJets1; i++) {
 
-    AliEmcalJet* jet1 = dynamic_cast<AliEmcalJet*>(jets1->At(i));
+    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(jets1->At(i));
 
     if (!jet1) {
       AliError(Form("Could not receive jet %d", i));
@@ -307,14 +307,10 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
 
     if (!AcceptJet(jet1, kTRUE, mc))
       continue;
-    
-    if (jet1->MaxTrackPt() < fPtBiasJetTrack && 
-        (fAnaType == kTPC || jet1->IsMC() || jet1->MaxClusterPt() < fPtBiasJetClus))
-	continue;
 
     for (Int_t j = 0; j < nJets2; j++) {
       
-      AliEmcalJet* jet2 = dynamic_cast<AliEmcalJet*>(jets2->At(j));
+      AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(jets2->At(j));
       
       if (!jet2) {
 	AliError(Form("Could not receive jet %d", j));
@@ -322,10 +318,6 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
       }  
       
       if (!AcceptJet(jet2, kTRUE, !mc))
-	continue;
-      
-      if (jet2->MaxTrackPt() < fPtBiasJetTrack && 
-          (fAnaType == kTPC || jet2->IsMC() || jet2->MaxClusterPt() < fPtBiasJetClus))
 	continue;
       
       Double_t deta = jet2->Eta() - jet1->Eta();
@@ -351,17 +343,32 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
   
-  if (!fMCJetsName.IsNull()) {
+  if (!fMCJetsName.IsNull() && !fMCJets) {
     fMCJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCJetsName));
     if (!fMCJets) {
-      AliWarning(Form("Could not retrieve MC jets %s!", fMCJetsName.Data())); 
+      AliError(Form("%s: Could not retrieve mc jets %s!", GetName(), fMCJetsName.Data()));
+      return kFALSE;
+    }
+    else if (!fMCJets->GetClass()->GetBaseClass("AliEmcalJet")) {
+      AliError(Form("%s: Collection %s does not contain AliEmcalJet objects!", GetName(), fMCJetsName.Data())); 
+      fMCJets = 0;
+      return kFALSE;
     }
   }
 
-  if (!fMCTracksName.IsNull()) {
+  if (!fMCTracksName.IsNull() && !fMCTracks) {
     fMCTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCTracksName));
-    if (!fMCJets) {
-      AliWarning(Form("Could not retrieve MC tracks %s!", fMCTracksName.Data())); 
+    if (!fMCTracks) {
+      AliError(Form("%s: Could not retrieve mc tracks %s!", GetName(), fMCTracksName.Data())); 
+      return kFALSE;
+    }
+    else {
+      TClass *cl = fMCTracks->GetClass();
+      if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
+	AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fMCTracksName.Data())); 
+	fMCTracks = 0;
+	return kFALSE;
+      }
     }
   }
 

@@ -49,12 +49,16 @@ void AliJetEmbeddingTask::Run()
   // Embed particles.
   
   if (fNClusters > 0 && fOutClusters) {
+    if (fCopyArray) 
+      CopyClusters();
     for (Int_t i = 0; i < fNClusters; ++i) {
       AddCluster();
     }
   }
  
   if (fNTracks > 0 && fOutTracks) {
+    if (fCopyArray) 
+      CopyTracks();
     for (Int_t i = 0; i < fNTracks; ++i) {
       AddTrack();
     }

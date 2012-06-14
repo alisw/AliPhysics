@@ -30,7 +30,8 @@ AliAnalysisTaskScale* AddTaskScale(
   TString name(Form("Scale_%s", nClusters));
   AliAnalysisTaskScale *scaletask = new AliAnalysisTaskScale(name);
   scaletask->SetTracksName(nTracks);
-  scaletask->SetClustersName(nClusters);
+  scaletask->SetClusName(nClusters);
+  scaletask->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

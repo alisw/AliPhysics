@@ -102,22 +102,22 @@ void AliAnalysisTaskEmcalJet::Init()
 {
   // Init the analysis.
 
-  AliAnalysisTaskEmcal::Init();
-
   if (fAnaType == kTPC) {
     SetEtaLimits(-0.9 + fJetRadius, 0.9 - fJetRadius);
     SetPhiLimits(-10, 10);
   } else if (fAnaType == kEMCAL) {
     AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
-    if (!geom) {
-      AliFatal(Form("%s: Can not create geometry", GetName()));
-      return;
+    if (geom) {
+      SetEtaLimits(geom->GetArm1EtaMin() + fJetRadius, geom->GetArm1EtaMax() - fJetRadius);
+      SetPhiLimits(geom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, geom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
     }
-    SetEtaLimits(geom->GetArm1EtaMin() + fJetRadius, geom->GetArm1EtaMax() - fJetRadius);
-    SetPhiLimits(geom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, geom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+    else {
+      AliWarning(Form("%s: Can not create geometry", GetName()));
+    }
   } else {
     AliWarning(Form("%s: Analysis type not recognized! Assuming kTPC!", GetName()));
     SetAnaType(kTPC);
+    Init();
   }
 
   SetInitialized();
@@ -164,7 +164,13 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
   if (!fJetsName.IsNull() && !fJets) {
     fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
     if (!fJets) {
-      AliWarning(Form("%s: Could not retrieve jets %s!", GetName(), fJetsName.Data())); 
+      AliError(Form("%s: Could not retrieve jets %s!", GetName(), fJetsName.Data()));
+      return kFALSE;
+    }
+    else if (!fJets->GetClass()->GetBaseClass("AliEmcalJet")) {
+      AliError(Form("%s: Collection %s does not contain AliEmcalJet objects!", GetName(), fJetsName.Data())); 
+      fJets = 0;
+      return kFALSE;
     }
   }
 

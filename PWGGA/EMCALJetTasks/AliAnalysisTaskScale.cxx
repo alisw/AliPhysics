@@ -25,14 +25,9 @@ ClassImp(AliAnalysisTaskScale)
 
 //________________________________________________________________________
 AliAnalysisTaskScale::AliAnalysisTaskScale() : 
-  AliAnalysisTaskSE(), 
-  fTracksName(), 
-  fClustersName(), 
-  fMinTrackPt(0.15),
-  fMinClusterPt(0.15),
+  AliAnalysisTaskEmcal("AliAnalysisTaskScale", kTRUE), 
   fScaleFunction(0),
   fGeom(0),
-  fOutputList(0), 
   fHistCentrality(0), 
   fHistPtTPCvsCent(0), 
   fHistPtEMCALvsCent(0), 
@@ -54,14 +49,9 @@ AliAnalysisTaskScale::AliAnalysisTaskScale() :
 
 //________________________________________________________________________
 AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
-  AliAnalysisTaskSE(name), 
-  fTracksName("Tracks"),
-  fClustersName("CaloClusters"),
-  fMinTrackPt(0.15),
-  fMinClusterPt(0.15),
+  AliAnalysisTaskEmcal(name, kTRUE), 
   fScaleFunction(0),
   fGeom(0),
-  fOutputList(0), 
   fHistCentrality(0), 
   fHistPtTPCvsCent(0), 
   fHistPtEMCALvsCent(0), 
@@ -80,7 +70,6 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
 {
   // Constructor.
 
-  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -89,8 +78,8 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   // Create my user objects.
 
   OpenFile(1);
-  fOutputList = new TList();
-  fOutputList->SetOwner();
+  fOutput = new TList();
+  fOutput->SetOwner();
 
   fHistCentrality         = new TH1F("Centrality","Centrality",              101, -1, 100);
   fHistPtTPCvsCent        = new TH2F("PtTPCvsCent","rho vs cent",            101, -1, 100, 500,   0, 1000);
@@ -108,23 +97,23 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fHistTrackEtaPhi        = new TH2F("TrackEtaPhi","Track eta phi",          100, -1.0, 1.0, 64,  0, 6.4);
   fHistClusterEtaPhi      = new TH2F("ClusterEtaPhi","Cluster eta phi",      100, -1.0, 1.0, 64, -3.2, 3.2);
 
-  fOutputList->Add(fHistCentrality);
-  fOutputList->Add(fHistPtTPCvsCent);
-  fOutputList->Add(fHistPtEMCALvsCent);
-  fOutputList->Add(fHistEtvsCent);
-  fOutputList->Add(fHistScalevsCent);
-  fOutputList->Add(fHistDeltaScalevsCent);
-  fOutputList->Add(fHistPtTPCvsNtrack);
-  fOutputList->Add(fHistPtEMCALvsNtrack);
-  fOutputList->Add(fHistEtvsNtrack);
-  fOutputList->Add(fHistScalevsNtrack);
-  fOutputList->Add(fHistDeltaScalevsNtrack);
-  fOutputList->Add(fHistTrackPtvsCent);
-  fOutputList->Add(fHistClusterPtvsCent);
-  fOutputList->Add(fHistTrackEtaPhi);
-  fOutputList->Add(fHistClusterEtaPhi);
+  fOutput->Add(fHistCentrality);
+  fOutput->Add(fHistPtTPCvsCent);
+  fOutput->Add(fHistPtEMCALvsCent);
+  fOutput->Add(fHistEtvsCent);
+  fOutput->Add(fHistScalevsCent);
+  fOutput->Add(fHistDeltaScalevsCent);
+  fOutput->Add(fHistPtTPCvsNtrack);
+  fOutput->Add(fHistPtEMCALvsNtrack);
+  fOutput->Add(fHistEtvsNtrack);
+  fOutput->Add(fHistScalevsNtrack);
+  fOutput->Add(fHistDeltaScalevsNtrack);
+  fOutput->Add(fHistTrackPtvsCent);
+  fOutput->Add(fHistClusterPtvsCent);
+  fOutput->Add(fHistTrackEtaPhi);
+  fOutput->Add(fHistClusterEtaPhi);
 
-  PostData(1, fOutputList);
+  PostData(1, fOutput);
 }
 
 //________________________________________________________________________
@@ -139,48 +128,25 @@ Double_t AliAnalysisTaskScale::GetScaleFactor(Double_t cent)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskScale::UserExec(Option_t *) 
+void AliAnalysisTaskScale::Init() 
 {
-  // Execute on each event.
+  // Init the analysis.
 
-  if (!fGeom)
-    fGeom = AliEMCALGeometry::GetInstance();
+  AliAnalysisTaskEmcal::Init();
+
+  fGeom = AliEMCALGeometry::GetInstance();
 
   if (!fGeom) {
     AliFatal("Can not create geometry");
     return;
   }
+}
 
-  // get input collections
-  TClonesArray *tracks = 0;
-  TClonesArray *clusters = 0;
-  TList *l = InputEvent()->GetList();
-  tracks = dynamic_cast<TClonesArray*>(l->FindObject(fTracksName));
-  if (!tracks) {
-    AliError(Form("Pointer to tracks %s == 0", fTracksName.Data() ));
-    return;
-  }
-  clusters = dynamic_cast<TClonesArray*>(l->FindObject(fClustersName));
-  if (!clusters){
-    AliError(Form("Pointer to clusters %s == 0", fClustersName.Data() ));
-    return;
-  }
+//________________________________________________________________________
+Bool_t AliAnalysisTaskScale::FillHistograms() 
+{
+  // Execute on each event.
 
-  // get centrality
-  Double_t cent = -1;
-  AliCentrality *centrality = InputEvent()->GetCentrality();
-  if (centrality)
-    cent = centrality->GetCentralityPercentile("V0M");
-  if (cent < 0) {
-    AliError(Form("Centrality negative: %f", cent));
-    return;
-  }
-  fHistCentrality->Fill(cent);
-
-  // get vertex
-  Double_t vertex[3] = {0, 0, 0};
-  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-  
   const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
   const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
   const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
@@ -195,21 +161,21 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
   Double_t ptTPC   = 0;
   Double_t ptEMCAL = 0;
 
-  const Int_t Ntracks = tracks->GetEntries();
+  const Int_t Ntracks = fTracks->GetEntries();
   for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-    AliVTrack *track = static_cast<AliVTrack*>(tracks->At(iTracks));
+    AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(iTracks));
 
     if (!track)
+      continue;
+
+    if (!AcceptTrack(track))
       continue;
 
     if (TMath::Abs(track->Eta()) > 0.7)   // only accept tracks in the EMCal eta range
       continue;
 
-    fHistTrackPtvsCent->Fill(cent,track->Pt());
+    fHistTrackPtvsCent->Fill(fCent,track->Pt());
     fHistTrackEtaPhi->Fill(track->Eta(),track->Phi());
-
-    if (track->Pt()< fMinTrackPt)
-      continue;
 
     ptTPC += track->Pt();
     if ((track->Phi() > EmcalMaxPhi) || (track->Phi() < EmcalMinPhi))
@@ -217,46 +183,45 @@ void AliAnalysisTaskScale::UserExec(Option_t *)
 
     ptEMCAL += track->Pt();
   }
+
+  if (ptTPC == 0) 
+    return kFALSE;
   
   Double_t Et = 0;
-  const Int_t Nclus = clusters->GetEntries();
+  const Int_t Nclus = fCaloClusters->GetEntries();
   for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
-    AliVCluster *c = static_cast<AliVCluster*>(clusters->At(iClus));
+    AliVCluster *c = static_cast<AliVCluster*>(fCaloClusters->At(iClus));
     if (!c)
       continue;
-    if (!c->IsEMCAL())
+
+    if (!AcceptCluster(c))
       continue;
+
     TLorentzVector nPart;
-    c->GetMomentum(nPart, vertex);
+    c->GetMomentum(nPart, fVertex);
 
-    fHistClusterPtvsCent->Fill(cent,nPart.Pt());
-    fHistClusterEtaPhi->Fill(nPart.Eta(),nPart.Phi());
-
-    if (nPart.Pt()< fMinClusterPt)
-      continue;
+    fHistClusterPtvsCent->Fill(fCent, nPart.Pt());
+    fHistClusterEtaPhi->Fill(nPart.Eta(), nPart.Phi());
 
     Et += nPart.Pt();
   }
-  
-  if (ptTPC == 0) 
-    return;
 
   const Double_t scalecalc = ((Et + ptEMCAL) / EmcalArea) * (TpcArea / ptTPC);
+  const Double_t scale     = GetScaleFactor(fCent);
 
-  const Double_t scale     = GetScaleFactor(cent);
-
-  fHistPtTPCvsCent->Fill(cent, ptTPC);
-  fHistPtEMCALvsCent->Fill(cent, ptEMCAL);
-  fHistEtvsCent->Fill(cent, Et);
-  fHistScalevsCent->Fill(cent, scalecalc);
-  fHistDeltaScalevsCent->Fill(cent, scalecalc - scale);
+  fHistCentrality->Fill(fCent);
+  fHistPtTPCvsCent->Fill(fCent, ptTPC);
+  fHistPtEMCALvsCent->Fill(fCent, ptEMCAL);
+  fHistEtvsCent->Fill(fCent, Et);
+  fHistScalevsCent->Fill(fCent, scalecalc);
+  fHistDeltaScalevsCent->Fill(fCent, scalecalc - scale);
   fHistPtTPCvsNtrack->Fill(Ntracks, ptTPC);
   fHistPtEMCALvsNtrack->Fill(Ntracks, ptEMCAL);
   fHistEtvsNtrack->Fill(Ntracks, Et);
   fHistScalevsNtrack->Fill(Ntracks, scalecalc);
   fHistDeltaScalevsNtrack->Fill(Ntracks, scalecalc - scale);
 
-  PostData(1, fOutputList);
+  return kTRUE;
 }      
 
 //________________________________________________________________________

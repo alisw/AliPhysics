@@ -181,11 +181,6 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fHistClusPhiEta->GetYaxis()->SetTitle("#phi");
     fOutput->Add(fHistClusPhiEta);
   }
-       
-  fHistJetsPhiEta = new TH2F("fHistJetsPhiEta","Phi-Eta distribution of jets", 80, -2, 2, 128, 0, 6.4);
-  fHistJetsPhiEta->GetXaxis()->SetTitle("#eta");
-  fHistJetsPhiEta->GetYaxis()->SetTitle("#phi");
-  fOutput->Add(fHistJetsPhiEta);
 
   if (fAnaType == kEMCAL) {
    
@@ -238,52 +233,60 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTrackPhi[4]->SetLineColor(kBlack);
   fHistTrackEta[4]->SetLineColor(kBlack);
 
-  TString histname;
+  if (!fJetsName.IsNull()) {
 
-  for (Int_t i = 0; i < 4; i++) {
-    histname = "fHistJetsPtNonBias_";
-    histname += i;
-    fHistJetsPtNonBias[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
-    fHistJetsPtNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistJetsPtNonBias[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistJetsPtNonBias[i]);
+    fHistJetsPhiEta = new TH2F("fHistJetsPhiEta","Phi-Eta distribution of jets", 80, -2, 2, 128, 0, 6.4);
+    fHistJetsPhiEta->GetXaxis()->SetTitle("#eta");
+    fHistJetsPhiEta->GetYaxis()->SetTitle("#phi");
+    fOutput->Add(fHistJetsPhiEta);
 
-    histname = "fHistJetsPtTrack_";
-    histname += i;
-    fHistJetsPtTrack[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
-    fHistJetsPtTrack[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistJetsPtTrack[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistJetsPtTrack[i]);
+    TString histname;
 
-    if (fAnaType == kEMCAL) {
-      histname = "fHistJetsPtClus_";
+    for (Int_t i = 0; i < 4; i++) {
+      histname = "fHistJetsPtNonBias_";
       histname += i;
-      fHistJetsPtClus[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
-      fHistJetsPtClus[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-      fHistJetsPtClus[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistJetsPtClus[i]);
+      fHistJetsPtNonBias[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+      fHistJetsPtNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+      fHistJetsPtNonBias[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetsPtNonBias[i]);
+
+      histname = "fHistJetsPtTrack_";
+      histname += i;
+      fHistJetsPtTrack[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+      fHistJetsPtTrack[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+      fHistJetsPtTrack[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetsPtTrack[i]);
+
+      if (fAnaType == kEMCAL) {
+	histname = "fHistJetsPtClus_";
+	histname += i;
+	fHistJetsPtClus[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+	fHistJetsPtClus[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+	fHistJetsPtClus[i]->GetYaxis()->SetTitle("counts");
+	fOutput->Add(fHistJetsPtClus[i]);
+      }
+
+      histname = "fHistJetsPt_";
+      histname += i;
+      fHistJetsPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+      fHistJetsPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+      fHistJetsPt[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistJetsPt[i]);
+
+      histname = "fHistJetsPtAreaNonBias_";
+      histname += i;
+      fHistJetsPtAreaNonBias[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+      fHistJetsPtAreaNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+      fHistJetsPtAreaNonBias[i]->GetYaxis()->SetTitle("area");
+      fOutput->Add(fHistJetsPtAreaNonBias[i]);
+
+      histname = "fHistJetsPtArea_";
+      histname += i;
+      fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+      fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+      fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
+      fOutput->Add(fHistJetsPtArea[i]);
     }
-
-    histname = "fHistJetsPt_";
-    histname += i;
-    fHistJetsPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
-    fHistJetsPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistJetsPt[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistJetsPt[i]);
-
-    histname = "fHistJetsPtAreaNonBias_";
-    histname += i;
-    fHistJetsPtAreaNonBias[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
-    fHistJetsPtAreaNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistJetsPtAreaNonBias[i]->GetYaxis()->SetTitle("area");
-    fOutput->Add(fHistJetsPtAreaNonBias[i]);
-
-    histname = "fHistJetsPtArea_";
-    histname += i;
-    fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
-    fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
-    fOutput->Add(fHistJetsPtArea[i]);
   }
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
@@ -297,10 +300,19 @@ Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
-  if (strcmp(fTrgClusName,"") && fDoTrigger) {
+  if (!fTrgClusName.IsNull() && fDoTrigger && !fTrgClusters) {
     fTrgClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTrgClusName));
     if (!fTrgClusters) {
-      AliWarning(Form("Could not retrieve trigger clusters!")); 
+      AliError(Form("%s: Could not retrieve trigger clusters %s!", GetName(), fTrgClusName.Data())); 
+      return kFALSE;
+    }
+    else {
+      TClass *cl = fTrgClusters->GetClass();
+      if (!cl->GetBaseClass("AliVCluster") && !cl->GetBaseClass("AliEmcalParticle")) {
+	AliError(Form("%s: Collection %s does not contain AliVCluster nor AliEmcalParticle objects!", GetName(), fTrgClusName.Data())); 
+	fTrgClusters = 0;
+	return kFALSE;
+      }
     }
   }
 
@@ -389,15 +401,14 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
   Int_t nclusters =  fCaloClusters->GetEntriesFast();
 
   for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
-    AliVCluster* cluster = dynamic_cast<AliVCluster*>(fCaloClusters->At(iClusters));
+    AliVCluster* cluster = static_cast<AliVCluster*>(fCaloClusters->At(iClusters));
     if (!cluster) {
       AliError(Form("Could not receive cluster %d", iClusters));
       continue;
     }  
-    
-    if (!(cluster->IsEMCAL())) continue;
 
-    if (!AcceptCluster(cluster, kTRUE)) continue;
+    if (!AcceptCluster(cluster, kTRUE))
+      continue;
 
     fHistClustersEnergy->Fill(cluster->E());
 
@@ -423,7 +434,6 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
 
   Float_t sum = 0;
 
-  // Track loop 
   Int_t ntracks = fTracks->GetEntriesFast();
   Int_t nclusters = 0;
   if (fCaloClusters)
@@ -431,7 +441,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
 
   for (Int_t i = 0; i < ntracks; i++) {
 
-    AliVParticle* track = dynamic_cast<AliVParticle*>(fTracks->At(i)); // pointer to reconstructed to track  
+    AliVParticle* track = static_cast<AliVParticle*>(fTracks->At(i)); // pointer to reconstructed to track  
 
     if (!track) {
       AliError(Form("Could not retrieve track %d",i)); 
@@ -480,7 +490,7 @@ void AliAnalysisTaskSAQA::DoJetLoop()
 
   for (Int_t ij = 0; ij < njets; ij++) {
 
-    AliEmcalJet* jet = dynamic_cast<AliEmcalJet*>(fJets->At(ij));
+    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(ij));
 
     if (!jet) {
       AliError(Form("Could not receive jet %d", ij));
@@ -521,7 +531,7 @@ Float_t AliAnalysisTaskSAQA::DoTriggerClusLoop()
   Float_t maxTrgClus = 0;
 
   for (Int_t iClusters = 0; iClusters < ntrgclusters; iClusters++) {
-    AliVCluster* cluster = dynamic_cast<AliVCluster*>(fTrgClusters->At(iClusters));
+    AliVCluster* cluster = static_cast<AliVCluster*>(fTrgClusters->At(iClusters));
     if (!cluster) {
       AliError(Form("Could not receive cluster %d", iClusters));
       continue;
