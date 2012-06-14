@@ -55,7 +55,6 @@ class AliHLTTPCClusterTransformation{
 
  protected:
 
-  AliTPCTransform * fOfflineTransform;                             //! transient
   AliTPCParam     * fOfflineTPCParam;                                 //! transient
   Int_t fLastSector; // last sector
   Double_t fAliT[3]; // alignment - translation
@@ -69,7 +68,7 @@ class AliHLTTPCClusterTransformation{
   /** assignment operator prohibited */
   AliHLTTPCClusterTransformation& operator=(const AliHLTTPCClusterTransformation&);
 
-  ClassDef(AliHLTTPCClusterTransformation, 0)
+  ClassDef(AliHLTTPCClusterTransformation, 1)
 };
 
 #endif
