@@ -132,7 +132,7 @@ void AliKalmanTrack:: AddTimeStep(Double_t length)
 
   Double_t p = TMath::Abs(pt * TMath::Sqrt(1+tgl*tgl));
 
-  if (length > 100) return;
+  //  if (length > 100) return;
 
   for (Int_t i=0; i<AliPID::kSPECIES; i++) {
     
