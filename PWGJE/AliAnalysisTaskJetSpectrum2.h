@@ -23,6 +23,7 @@ class AliVParticle;
 class AliAODJetEventBackground;
 class AliGenPythiaEventHeader;
 class AliCFManager;
+class AliCFContainer;
 class AliTHn;
 
 class TList;
@@ -103,12 +104,20 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     enum {kMaxCorrelation =  3};
     
     // 
-    // 0 all jets
-    // 1 all jet in eta window
-    // 2 all jets with partner
-    // 3 all jets in eta window with partner
-    // 4 all jets with partner in eta window
-    enum {kStep0 = 0, kStep1, kStep2, kStep3, kStep4,kMaxStep};
+    // Stored as function of generated values
+    // 0 all gen jets
+    // 1 all gen jets in eta window
+    // 2 all gen jets with rec partner
+    // 3 all gen jets in eta window with rec partner
+    // 4 all gen jets in eta window with rec partner in eta window
+    // 5 all gen jets in eta window with rec partner in eta window with leading track on reconstructed level
+    // 6 all rec jets in eta window with gen partner
+
+    // Stored as function of reconstructed values:
+    // 7 all rec jets in eta window
+
+
+    enum {kStep0 = 0, kStep1, kStep2, kStep3, kStep4, kStep5, kStep6, kStep7,kMaxStep};
 
 
  private:
@@ -139,10 +148,11 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     AliAODEvent  *fAODIn; //! where we take the jets from 
     AliAODEvent  *fAODOut; //! where we take the jets from 
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
-    AliTHn   *fhnJetContainer;               //! like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
-    AliTHn   *fhnCorrelation;                //! response matrix for unfolding 
-    THnSparseF   *fhnEvent;                  //! event counts 
-    TF1          *f1PtScale;                 //! correction function to correct to the average true jet energy depending on p_T,rec
+
+    AliCFContainer *fhnJetContainer; //! like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
+    THnSparse    *fhnCorrelation;    //! response matrix for unfolding 
+    THnSparseF   *fhnEvent;          //! event counts 
+    TF1          *f1PtScale;         //! correction function to correct to the average true jet energy depending on p_T,rec
 
     TString       fBranchRec;  // AOD branch name for reconstructed
     TString       fBranchGen;  // AOD brnach for genereated
@@ -244,7 +254,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 21); // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 22); // Analysis task for standard jet analysis
 };
  
 #endif
