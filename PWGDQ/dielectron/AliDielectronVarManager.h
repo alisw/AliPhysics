@@ -173,6 +173,7 @@ public:
     kDecayLength,            // decay length
     kR,                      // distance to the origin
     kOpeningAngle,           // opening angle
+    kCosPointingAngle,       // cosine of the pointing angle
     // helicity picture: Z-axis is considered the direction of the mother's 3-momentum vector
     kThetaHE,                // theta in mother's rest frame in the helicity picture 
     kPhiHE,                  // phi in mother's rest frame in the helicity picture
@@ -384,7 +385,7 @@ private:
   static TString          fgVZERORecenteringFile;  // file with VZERO Q-vector averages needed for event plane recentering
   static TProfile2D      *fgVZEROCalib[64];           // 1 histogram per VZERO channel
   static TProfile2D      *fgVZERORecentering[2][2];   // 2 VZERO sides x 2 Q-vector components
-  static Int_t            fgCurrentRun;
+  static Int_t            fgCurrentRun;               // current run number
   
   static Double_t fgData[kNMaxValues];        //! data
   
@@ -669,7 +670,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
   
-  values[AliDielectronVarManager::kTPCchi2Cl]     = particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls;  // it is stored as normalized to tpcNcls-5 (see AliAnalysisTaskESDfilter)
+  values[AliDielectronVarManager::kTPCchi2Cl]     = (tpcNcls>0)?particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls:999.;  // it is stored as normalized to tpcNcls-5 (see AliAnalysisTaskESDfilter)
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
   
   //TRD pidProbs
@@ -1042,6 +1043,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kDecayLength]  = kfPair.GetDecayLength();
   values[AliDielectronVarManager::kR]            = kfPair.GetR();
   values[AliDielectronVarManager::kOpeningAngle] = pair->OpeningAngle();
+  values[AliDielectronVarManager::kCosPointingAngle] = fgEvent ? pair->GetCosPointingAngle(fgEvent->GetPrimaryVertex()) : -1;
   values[AliDielectronVarManager::kThetaHE]      = thetaHE;
   values[AliDielectronVarManager::kPhiHE]        = phiHE;
   values[AliDielectronVarManager::kThetaSqHE]    = thetaHE * thetaHE;
@@ -1113,13 +1115,19 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	}
       }
     }
-    Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
-    Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
-    AliVParticle* leg1 = pair->GetFirstDaughter();
-    AliVParticle* leg2 = pair->GetSecondDaughter();
-    Fill(leg1, valuesLeg1);
-    Fill(leg2, valuesLeg2);
-    values[AliDielectronVarManager::kTRDpidEffPair] = valuesLeg1[AliDielectronVarManager::kTRDpidEffLeg]*valuesLeg2[AliDielectronVarManager::kTRDpidEffLeg];
+    
+    values[AliDielectronVarManager::kTRDpidEffPair] = 0.;
+    if (fgTRDpidEff[0][0]){
+      Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
+      Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
+      AliVParticle* leg1 = pair->GetFirstDaughter();
+      AliVParticle* leg2 = pair->GetSecondDaughter();
+      if (leg1 && leg2){
+        Fill(leg1, valuesLeg1);
+        Fill(leg2, valuesLeg2);
+        values[AliDielectronVarManager::kTRDpidEffPair] = valuesLeg1[AliDielectronVarManager::kTRDpidEffLeg]*valuesLeg2[AliDielectronVarManager::kTRDpidEffLeg];
+      }
+    }
   }//if (mc->HasMC())
 
 
@@ -1713,7 +1721,8 @@ inline void AliDielectronVarManager::SetEvent(AliVEvent * const ev)
   fgEvent = ev;
   if (fgKFVertex) delete fgKFVertex;
   fgKFVertex=0x0;
-  if (ev && ev->GetPrimaryVertex()) fgKFVertex=new AliKFVertex(*ev->GetPrimaryVertex());
+  if (!ev) return;
+  if (ev->GetPrimaryVertex()) fgKFVertex=new AliKFVertex(*ev->GetPrimaryVertex());
 
   for (Int_t i=0; i<AliDielectronVarManager::kNMaxValues;++i) fgData[i]=0.;
   AliDielectronVarManager::Fill(fgEvent, fgData);

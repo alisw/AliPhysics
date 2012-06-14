@@ -126,6 +126,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "DecayLength",
   "R",
   "OpeningAngle",
+  "CosPointingAngle",
   "ThetaHE",
   "PhiHE",
   "ThetaSqHE",

@@ -117,6 +117,7 @@ AliDielectron::AliDielectron() :
   fPreFilterAllSigns(kFALSE),
   fHasMC(kFALSE),
   fStoreRotatedPairs(kFALSE),
+  fDontClearArrays(kFALSE),
   fEstimatorFilename(""),
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
@@ -155,6 +156,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPreFilterAllSigns(kFALSE),
   fHasMC(kFALSE),
   fStoreRotatedPairs(kFALSE),
+  fDontClearArrays(kFALSE),
   fEstimatorFilename(""),
   fTRDpidCorrectionFilename(""),
   fVZEROCalibrationFilename(""),
@@ -298,7 +300,7 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   if (fHistos) FillHistograms(ev1);
 
   // clear arrays
-  ClearArrays();
+  if (!fDontClearArrays) ClearArrays();
   AliDielectronVarManager::SetTPCEventPlane(0x0);
   delete cevplane;
 }
