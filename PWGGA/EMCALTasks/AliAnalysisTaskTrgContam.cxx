@@ -1,4 +1,8 @@
 // $Id$
+//
+// Task to compute the trigger contamination by exotics.
+//
+// Authors: M.Cosentino
 
 #include "TChain.h"
 #include "TTree.h"

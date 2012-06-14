@@ -1,4 +1,4 @@
-// $Id: AliEmcalParticleMaker.cxx 56635 2012-05-22 22:49:56Z loizides $
+// $Id$
 //
 // Class to make emcal particles in AOD/ESD events.
 //
