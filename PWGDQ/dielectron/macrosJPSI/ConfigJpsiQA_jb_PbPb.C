@@ -43,9 +43,9 @@ AliDielectron* ConfigJpsiQA_jb_PbPb(Int_t cutDefinition, TString prod="")
     case kTOF:
     case kTOFTRD:
     case kTRDeff:
-      if(hasMC) return 0x0;
+      if(hasMC)  return 0x0;
       break;
-    case kTRD: return 0x0; break;
+    case kTRD:   return 0x0; break;
     case kEleMC: return 0x0; break;
     case kEleJPsiMC:
     case kEleConvMC:
@@ -104,6 +104,7 @@ void SetupElectronCuts(AliDielectron *die, Int_t cutDefinition)
   // Pair inclusion
   AliDielectronVarCuts *gammaCuts = new AliDielectronVarCuts("GammaCuts","GammaCuts");
   gammaCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0,   0.035); // 0.1
+  gammaCuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0);
 //  gammaCuts->AddCut(AliDielectronVarManager::kLegDist,      0.0,   0.25);
   gammaCuts->AddCut(AliDielectronVarManager::kR,            3.0,   90.0);
 //  gammaCuts->AddCut(AliDielectronVarManager::kPsiPair,      0.0,   0.05);
@@ -395,6 +396,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           100,.0,100*0.005, AliDielectronVarManager::kM); // 5MeV bins, 0.5GeV/c2
     histos->UserHistogram("Pair","OpeningAngle",";angle (rad.)",
                           100,0.,3.15, AliDielectronVarManager::kOpeningAngle);
+    histos->UserHistogram("Pair","CosPointingAngle",";|cos(#theta)|",
+                          110,0.0,1.1, AliDielectronVarManager::kCosPointingAngle);
     histos->UserHistogram("Pair","Chi2NDF",";#chi^{2}/NDF",
                           100,0.,20, AliDielectronVarManager::kChi2NDF);
     histos->UserHistogram("Pair","PsiPair","PsiPair;#psi",

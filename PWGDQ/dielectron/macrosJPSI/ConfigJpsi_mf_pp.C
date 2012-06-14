@@ -5,7 +5,7 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD);
 
 AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition);
 
-TString namesDieleData=("EMCal+SPDAny;EMCal+SPDFirst");
+TString namesDieleData=("EMCal+SPDAny;EMCal+SPDAny+Cut");
 TObjArray *arrNamesDieleData=namesDieleData.Tokenize("; ");
 
 const Int_t nDie=arrNamesDieleData->GetEntries();
@@ -37,7 +37,8 @@ AliDielectron* ConfigJpsi_mf_pp(Int_t cutDefinition, Bool_t isAOD=kFALSE)
   InitHistogramsDieleData(diele, cutDefinition, isAOD);
 
   // the last definition uses no cuts and only the QA histograms should be filled!
-  InitCFDieleData(diele, cutDefinition, isAOD);
+  if(cutDefinition==0)
+    InitCFDieleData(diele, cutDefinition, isAOD);
 
   AliDielectronTrackRotator *rot=new AliDielectronTrackRotator;
   rot->SetConeAnglePhi(TMath::Pi());
@@ -76,10 +77,7 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
     diele->GetTrackFilter().AddCuts(SetupESDtrackCutsDieleData(cutDefinition));
   } else {
     AliDielectronTrackCuts *trackCuts=new AliDielectronTrackCuts("trackCuts","trackCuts");
-    if (cutDefinition==1)
-      trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    else 
-      trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     trackCuts->SetRequireTPCRefit(kTRUE);
     trackCuts->SetRequireITSRefit(kTRUE);
     diele->GetTrackFilter().AddCuts(trackCuts);
@@ -94,8 +92,13 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
   pt->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   pt->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   //pt->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  pt->AddCut(AliDielectronVarManager::kTPCsignal,68.,150.); 
-  pt->AddCut(AliDielectronVarManager::kNclsTPC,70.,160.);
+  pt->AddCut(AliDielectronVarManager::AliDielectronVarManager::kTPCnSigmaEle,-3.,4.);
+  pt->AddCut(AliDielectronVarManager::AliDielectronVarManager::kTPCsignal,67.,100.);
+
+  pt->AddCut(AliDielectronVarManager::kNclsTPC,95.,160.);
+  if(cutDefinition==1)
+    pt->AddCut(AliDielectronVarManager::kEMCALnSigmaEle,-3.,3.);
+    
   diele->GetTrackFilter().AddCuts(pt);
 }
 
@@ -109,8 +112,17 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
   AliDielectronVarCuts *pairCut=new AliDielectronVarCuts("0<M<5+|Y|<.9+PtEMCalleg","0<M<5 + |Y|<.9+PtEMCalleg");
   pairCut->AddCut(AliDielectronVarManager::kM,1.,5.);
   pairCut->AddCut(AliDielectronVarManager::kY,-0.9,0.9);
-  pairCut->AddCut(AliDielectronVarManager::kPt,2.,100.);
+  pairCut->AddCut(AliDielectronVarManager::kPt,3.,100.);
   diele->GetPairFilter().AddCuts(pairCut);
+  
+  if(cutDefinition==1){
+	AliDielectronVarCuts *mycut = new AliDielectronVarCuts("ptCutEMCAL","cut for EMCal");
+	mycut->AddCut(AliDielectronVarManager::kP,3.,1e30);
+	AliDielectronPairLegCuts *varpair=new AliDielectronPairLegCuts();
+	varpair->GetLeg1Filter().AddCuts(mycut);
+	diele->GetPairFilter().AddCuts(varpair);
+  }
+  
   
 }
 
@@ -132,10 +144,7 @@ AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition)
   esdTrackCuts->SetPtRange(1.,1e30);
   esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-
-  if (cutDefinition==1)
-   	esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-	else esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);  
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);  
 
   return esdTrackCuts;
 }
@@ -170,19 +179,20 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
   for (Int_t i=0; i<3; ++i){
     histos->AddClass(Form("Track_Legs_%s",AliDielectron::PairClassName(i)));
   }
-  //track rotation
-  histos->AddClass(Form("Pair_%s",PairClassName(AliDielectron::kEv1PMRot)));
-  histos->AddClass(Form("Track_Legs_%s",PairClassName(AliDielectron::kEv1PMRot)));
   
+  //track rotation
+  if (cutDefinition==1) {     
+      histos->AddClass(Form("Pair_%s",PairClassName(AliDielectron::kEv1PMRot)));
+      histos->AddClass(Form("Track_Legs_%s",PairClassName(AliDielectron::kEv1PMRot)));
+  }
   
   //add histograms to event class
-//   if (cutDefinition==0) {
+  if (cutDefinition==0) {
     histos->AddClass("Event");
     histos->UserHistogram("Event","VtxZ","Vertex Z;Z[cm]",300,-15.,15.,AliDielectronVarManager::kZvPrim);
     histos->UserHistogram("Event","Centrality","Centrality;Cent(%)",100,0.,100.,AliDielectronVarManager::kCentrality);
-    histos->UserHistogram("Event","Multiplicity","Multiplicity V0;Multiplicity V0",
-                        500,0.,25000.);
-    //   }
+    histos->UserHistogram("Event","Multiplicity","Multiplicity V0;Multiplicity V0",500,0.,25000.,AliDielectronVarManager::kMultV0);
+  }
   
   //add histograms to Track classes
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",400,0,20.,AliDielectronVarManager::kPt);
@@ -194,20 +204,21 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
                         100,-1,1,144,0,6.285,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
   histos->UserHistogram("Track","dEdx_P","dEdx;P [GeV];TPC signal (arb units);#tracks",
-                        200,0.2,20.,100,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
+                        200,0.2,20.,400,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
 
-  histos->UserHistogram("Track","dEdx_Phi","dEdx;P [GeV];TPC signal (arb units);#tracks",
-                        200,0.,2*TMath::Pi(),100,0.,200.,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCsignal,kTRUE);
+  histos->UserHistogram("Track","dEdx_Phi","dEdx;#phi [rad];TPC signal (arb units);#tracks",
+                        200,0.,2*TMath::Pi(),400,0.,200.,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCsignal,kTRUE);
 
   histos->UserHistogram("Track","dEdx_nSigmaEMCal","dEdx;NsigmaEmcal;TPC signal (arb units);NSigmaEMCAL",
-                        200,-10.,10.,100,0.,200.,AliDielectronVarManager::kEMCALnSigmaEle,AliDielectronVarManager::kTPCsignal,kTRUE);
+                        200,-5.,5.,400,0.,200.,AliDielectronVarManager::kEMCALnSigmaEle,AliDielectronVarManager::kTPCsignal,kTRUE);
 
-  histos->UserHistogram("Track","TPCnSigmaEle_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;#tracks",
-                        200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
-  
-  histos->UserHistogram("Track","dEdx_EoverP","dEdx;EoverP;TPC signal (arbunits);E/P",100,0.,5.,100,0.,200.,AliDielectronVarManager::kEMCALnSigmaEle,AliDielectronVarManager::kTPCsignal,kTRUE);
-  
+  histos->UserHistogram("Track","dEdx_TPCnSigmaEle","dEdx;TPC signal (arbunits);TPC number of sigmas Electrons;TPC signal (a.u.);#tracks",
+                        100,-10.,10.,400,0.,200.,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kTPCsignal,kTRUE);
 
+  histos->UserHistogram("Track","dEdx_EoverP","dEdx;EoverP;TPC signal (arbunits);E/P",200,0.,5.,400,0.,200.,AliDielectronVarManager::kEMCALEoverP,AliDielectronVarManager::kTPCsignal,kTRUE);
+  
+  histos->UserHistogram("Track","nSigmaEMCal_EoverP","NsigmaEmcal;EoverP;NSigmaEMCAL;E/P",200,0.,5.,200,-5.,5.,AliDielectronVarManager::kEMCALEoverP,AliDielectronVarManager::kEMCALnSigmaEle,kTRUE);
+  
   //add histograms to Pair classes
   histos->UserHistogram("Pair","InvMass","Inv.Mass;Inv. Mass [GeV];#pairs",
                         251,-.01,5.01,AliDielectronVarManager::kM);
@@ -229,23 +240,25 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   AliDielectronCF *cf=new AliDielectronCF(diele->GetName(),diele->GetTitle());
   
   //pair variables
-  cf->AddVariable(AliDielectronVarManager::kPt,"2.0, 4.0, 6.0, 8.0, 10.0, 100.0");
+  cf->AddVariable(AliDielectronVarManager::kPt,"3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 16.0, 20.0, 100.0");
   cf->AddVariable(AliDielectronVarManager::kM,125,0.,125*.04); //40Mev Steps
-  cf->AddVariable(AliDielectronVarManager::kPairType,11,0,11);
-  cf->AddVariable(AliDielectronVarManager::kOpeningAngle,"0.,0.2,0.5,0.8,1.,2.,3.14");
+  cf->AddVariable(AliDielectronVarManager::kPairType,12,0,12);
+  cf->AddVariable(AliDielectronVarManager::kOpeningAngle,"0.,0.1,0.2,0.4,0.6,0.8,1.0,2.0,3.14");
   //leg variables
-  cf->AddVariable(AliDielectronVarManager::kPt,"1.0, 2.0, 3.0, 4.0, 5.0, 100.0",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kP,"0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 8.0, 10.0, 100.0",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kNclsTPC,"0, 70, 80, 90, 120, 160",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kEta,"-5,-1,-0.9,-0.7,0.7,0.9,1,5",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kPhi,"0.,1.,2.,3.,4.,5.,7.",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kEMCALnSigmaEle,"-3.,-2,-1.,1.,2.,3.,4.",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kEMCALM02,"0.,0.1,0.2,0.4,2.,4.",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kEMCALNCells,"0,1,2,3,4,20",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-3.,-2,-1.,1.,2.,3.,4.",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kTPCsignal,"68.,70.,72.,80.,100.,120.,150.",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kPt,"1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 10.0, 100.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kP,"0.0, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 100.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kNclsTPC,"90, 95, 100, 110, 120, 160",kTRUE);
+//   cf->AddVariable(AliDielectronVarManager::kEta,"-5.0,-1.0,-0.9,-0.7,0.7,0.9,1.0,5.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kPhi,"0.0,1.0,2.0,3.0,4.0,5.0,6.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kEMCALnSigmaEle,"-3.5,-3.0,-2.0,-1.0,1.0,2.0,3.0,4.0,5.0",kTRUE);
+//   cf->AddVariable(AliDielectronVarManager::kEMCALM02,"0.,0.02,0.2,0.3,0.4,0.5,0.8,1.0,2.0,4.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kEMCALNCells,25,0,25,kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kEMCALEoverP,"0.5,0.7,0.8,0.9,1.1,1.2,1.3,1.8,2.0,4.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4.0,-3.0,-2.0,-1.0,1.0,2.0,3.0,4.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kTPCsignal,"66.0,67.0,68.0,69.0,70.0,72.0,75.0,80.0,90.0,100.0,110.0",kTRUE);
+//   cf->AddVariable(AliDielectronVarManager::kTPCchi2Cl,"0.0,1.0,2.0,3.0,3.5,4.0,5.0,10.0",kTRUE);
   //event variables
-  cf->AddVariable(AliDielectronVarManager::kCentrality,"0.0,10.0,20.0,40.0,60.0,80.0");
+  cf->AddVariable(AliDielectronVarManager::kCentrality,"0.0,10.0,20.0,40.0,80.0,100.0");
 
   if (!isAOD){
     Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
