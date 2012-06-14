@@ -52,6 +52,8 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetUseAfterBurner(Bool_t ab){fUseAfterBurner=ab;}
   void SetAfterBurner(AliHFAfterBurner *ab){fAfterBurner=ab;}
   void SetEtaGapFeatureForEventplaneFromTracks (Bool_t etaGap) {fEtaGap = etaGap;}
+  void SetCentralityBinWidthPerMil(Int_t w){fCentBinSizePerMil=w;}
+
 
   void SetNTPCSubEvents(Int_t nsub);
   void Set2TPCEPSubEvents(){SetNTPCSubEvents(2);}
@@ -113,8 +115,9 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Int_t fMaxCentr;              //maximum centrality
   Bool_t fEtaGap;               // Eta gap feature for Eventplane from tracks; be careful that you do the correct settings in AddTaskEventPlane.C !!!!
   Int_t fSubEvents;             //Sub-events definition for TPC EP
+  Int_t fCentBinSizePerMil;     // width of centrality bins
 
-  ClassDef(AliAnalysisTaskSEHFv2,2); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFv2,3); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
