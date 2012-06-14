@@ -234,7 +234,6 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
       fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus - 100);  
     }
   }
-
   // run jet finder
   fjw.Run();
 

@@ -71,6 +71,7 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet*      MatchedJet()                 const { return fMatched < 2 ? fClosestJets[fMatched] : 0; }
   Double_t          MaxClusterPt()               const { return MaxNeutralPt();            }
   Double_t          MaxTrackPt()                 const { return MaxChargedPt();            }
+  Double_t          MaxPartPt()                  const { return fMaxCPt < fMaxNPt ? fMaxNPt : fMaxCPt;     }
 
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }

@@ -7,6 +7,7 @@ class TClonesArray;
 class AliEMCALGeometry;
 class AliVCluster;
 class AliPicoTrack;
+class TF1;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -30,6 +31,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void         SetNTracks(Int_t n)                   { fNTracks      = n;    }
   void         SetGeometryName(const char *n)        { fGeomName     = n;    }
   void         SetSuffix(const char *s)              { fSuffix       = s;    }
+  void         SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = f;    }
 
  protected:
 
@@ -41,6 +43,8 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliVCluster           *AddCluster(Double_t e = -1, Double_t eta = -999, Double_t phi = -1);   // add a cluster; if values are -1 generate random parameters
   AliVCluster           *AddCluster(Double_t e, Int_t absId);                                   // add a cluster with given energy and position
   AliPicoTrack          *AddTrack(Double_t pt = -1, Double_t eta = -999, Double_t phi = -1);    // add a track; if values are -1 generate random parameters
+  void                   CopyClusters();
+  void                   CopyTracks();
 
   TString                fGeomName;               // EMCal geometry name
   TString                fTracksName;             // name of track collection
@@ -57,6 +61,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Bool_t                 fCopyArray;              // whether or not the array will be copied to a new one before modelling
   Int_t                  fNClusters;              // how many clusters are being processed
   Int_t                  fNTracks;                // how many tracks are being processed
+  TF1                   *fPtSpectrum;             // pt spectrum parametrization to extract random pt values
   AliEMCALGeometry      *fGeom;                   //!pointer to EMCal geometry
   TClonesArray          *fClusters;               //!cluster collection
   TClonesArray          *fOutClusters;            //!output cluster collection
@@ -67,6 +72,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented
 
-  ClassDef(AliJetModelBaseTask, 1) // Jet modelling task
+  ClassDef(AliJetModelBaseTask, 2) // Jet modelling task
 };
 #endif

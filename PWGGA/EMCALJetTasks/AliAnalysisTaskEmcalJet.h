@@ -29,14 +29,14 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetPhiLimits(Float_t min, Float_t max)               { fMinPhi = min, fMaxPhi = max ; }
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b          ; }
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b          ; }
+  void                        Init();
  
  protected:
+  Bool_t                      RetrieveEventObjects();
   Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)   const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)                                          const;
-  void                        Init();
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)        const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)       const;
-  Bool_t                      RetrieveEventObjects();
 
   Float_t                     fJetRadius;                  // jet radius
   TString                     fJetsName;                   // name of jet collection

@@ -77,10 +77,16 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
   }
 
   // retrieve tracks from input.
-  fTracksIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksInName));
-  if (!fTracksIn) {
-    AliError(Form("Could not retrieve tracks %s!", fTracksInName.Data())); 
-    return;
+  if (!fTracksIn) { 
+    fTracksIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksInName));
+    if (!fTracksIn) {
+      AliError(Form("Could not retrieve tracks %s!", fTracksInName.Data())); 
+      return;
+    }
+    if (!fTracksIn->GetClass()->GetBaseClass("AliVParticle")) {
+      AliError(Form("%s: Collection %s does not contain AliVParticle objects!", GetName(), fTracksInName.Data())); 
+      return;
+    }
   }
 
   // add tracks to event if not yet there
@@ -100,7 +106,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
   const Int_t Ntracks = fTracksIn->GetEntriesFast();
   for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
 
-    AliVTrack *track = dynamic_cast<AliVTrack*>(fTracksIn->At(iTracks));
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksIn->At(iTracks));
 
     if (!track)
       continue;

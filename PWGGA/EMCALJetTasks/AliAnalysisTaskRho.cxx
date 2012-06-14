@@ -164,11 +164,14 @@ void AliAnalysisTaskRho::UserCreateOutputObjects()
 void AliAnalysisTaskRho::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-  
+
   if (!fIsInit) {
     ExecOnce();
     fIsInit = 1;
   }
+
+  if (!fJets)
+    return;
 
   fRho->SetVal(-1);
   if (fRhoScaled)

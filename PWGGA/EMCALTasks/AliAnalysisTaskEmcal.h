@@ -37,7 +37,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetAnaType(EmcalAnaType type)                        { fAnaType        = type       ; }
   void                        SetClusName(const char *n)                           { fCaloName       = n          ; }
   void                        SetHistoBins(Int_t nbins, Float_t min, Float_t max)  { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max; }
-  void                        SetPtCut(Float_t cut)                                { fPtCut          = cut        ; }
+  void                        SetPtCut(Float_t cut)                                { SetClusPtCut(cut); SetTrackPtCut(cut); }
+  void                        SetClusPtCut(Float_t cut)                            { fClusPtCut      = cut        ; }
+  void                        SetTrackPtCut(Float_t cut)                           { fTrackPtCut     = cut        ; }
   void                        SetTracksName(const char *n)                         { fTracksName     = n          ; }
 
  protected:
@@ -45,11 +47,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kFALSE)       const;
   Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kFALSE)       const;
   BeamType                    GetBeamType()                                                                 ;
-  virtual void                Init();
+  void                        Init();
   virtual Bool_t              FillHistograms()                                     { return fCreateHisto; }
-  void                        SetInitialized(Bool_t ini = kTRUE)                   { fInitialized    = ini        ; }
   virtual Bool_t              RetrieveEventObjects();
   virtual Bool_t              Run()                                                { return kTRUE                 ; }
+  void                        SetInitialized(Bool_t ini = kTRUE)                   { fInitialized    = ini        ; }
 
   EmcalAnaType                fAnaType;                    // analysis type
   Bool_t                      fInitialized;                // whether or not the task has been already initialized
@@ -59,7 +61,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fNbins;                      // no. of pt bins
   Float_t                     fMinBinPt;                   // min pt in histograms
   Float_t                     fMaxBinPt;                   // max pt in histograms
-  Float_t                     fPtCut;                      // cut on particle pt
+  Float_t                     fClusPtCut;                  // cut on cluster pt
+  Float_t                     fTrackPtCut;                 // cut on track pt
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
   Float_t                     fCent;                       //!event centrality

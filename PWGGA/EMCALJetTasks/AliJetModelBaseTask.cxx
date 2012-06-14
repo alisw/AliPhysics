@@ -7,10 +7,13 @@
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
+#include <TF1.h>
 
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
 #include "AliVCluster.h"
+#include "AliESDCaloCluster.h"
+#include "AliAODCaloCluster.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALRecPoint.h"
 #include "AliPicoTrack.h"
@@ -39,6 +42,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fCopyArray(kTRUE),
   fNClusters(0),
   fNTracks(0),
+  fPtSpectrum(0),
   fGeom(0),
   fClusters(0),
   fOutClusters(0),
@@ -66,6 +70,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name) :
   fCopyArray(kTRUE),
   fNClusters(0),
   fNTracks(1),
+  fPtSpectrum(0),
   fGeom(0),
   fClusters(0),
   fOutClusters(0),
@@ -101,15 +106,16 @@ void AliJetModelBaseTask::Init()
     fPhiMax = fPhiMin;
   }
 
-  if (fNTracks > 0) {
+  if (fNTracks > 0 && !fTracks) {
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
     if (!fTracks) {
-      AliError(Form("Couldn't retrieve tracks with name %s!", fTracksName.Data()));
+      AliError(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
       return;
     }
-
-    if (strcmp(fTracks->GetClass()->GetName(), "AliPicoTrack")) {
-      AliError("Can only embed PicoTracks!");
+    
+    if (!fTracks->GetClass()->GetBaseClass("AliPicoTrack")) {
+      AliError(Form("%s: Collection %s does not contain AliPicoTrack objects!", GetName(), fTracksName.Data())); 
+      fTracks = 0;
       return;
     }
 
@@ -117,7 +123,7 @@ void AliJetModelBaseTask::Init()
       fOutTracksName = fTracksName;
       if (fCopyArray) {
 	fOutTracksName += fSuffix;
-	fOutTracks = new TClonesArray(*fTracks);
+	fOutTracks = new TClonesArray("AliPicoTrack", fTracks->GetSize());
 	fOutTracks->SetName(fOutTracksName);
       }
       else {
@@ -128,15 +134,21 @@ void AliJetModelBaseTask::Init()
     if (fCopyArray) {
       if (!(InputEvent()->FindListObject(fOutTracksName)))
 	InputEvent()->AddObject(fOutTracks);
-      fOutTracks->Clear();
+      //fOutTracks->Clear();
     }
   }
 
-  if (fNClusters > 0) {
+  if (fNClusters > 0 && !fClusters) {
     fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
  
     if (!fClusters) {
-      AliError(Form("Couldn't retrieve clusters with name %s!", fCaloName.Data()));
+      AliError(Form("%s: Couldn't retrieve clusters with name %s!", GetName(), fCaloName.Data()));
+      return;
+    }
+
+    if (!fClusters->GetClass()->GetBaseClass("AliVCluster")) {
+      AliError(Form("%s: Collection %s does not contain AliVCluster objects!", GetName(), fCaloName.Data())); 
+      fClusters = 0;
       return;
     }
 
@@ -144,7 +156,7 @@ void AliJetModelBaseTask::Init()
       fOutCaloName = fCaloName;
       if (fCopyArray) {
 	fOutCaloName += fSuffix;
-	fOutClusters = new TClonesArray(*fClusters);
+	fOutClusters = new TClonesArray(fClusters->GetClass()->GetName(), fClusters->GetSize());
 	fOutClusters->SetName(fOutCaloName);
       }
       else {
@@ -155,7 +167,7 @@ void AliJetModelBaseTask::Init()
     if (fCopyArray) {
       if (!(InputEvent()->FindListObject(fOutCaloName)))
 	InputEvent()->AddObject(fOutClusters);
-      fOutClusters->Clear();
+      //fOutClusters->Clear();
     }
 
     if (!fGeom) {
@@ -184,6 +196,13 @@ void AliJetModelBaseTask::Init()
     if (fPhiMax < EmcalMinPhi) fPhiMax = EmcalMinPhi;
     if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
     if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
+  }
+
+  if (fCopyArray) {
+    if (fOutTracks)
+      fOutTracks->Clear();
+    if (fOutClusters)
+      fOutClusters->Clear();
   }
 }
 
@@ -235,7 +254,10 @@ Double_t AliJetModelBaseTask::GetRandomPt()
 {
   // Get random pt.
 
-  return gRandom->Rndm() * (fPtMax - fPtMin) + fPtMin;
+  if (fPtSpectrum)
+    return fPtSpectrum->GetRandom();
+  else
+    return gRandom->Rndm() * (fPtMax - fPtMin) + fPtMin;
 }
 
 //________________________________________________________________________
@@ -323,13 +345,13 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
     phi = GetRandomPhi();
 
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
-						eta, 
-						phi, 
-						1, 
-						100,    // MC flag!      
-						0, 
-						0, 
-						kFALSE);
+								  eta, 
+								  phi, 
+								  1, 
+								  100,    // MC flag!      
+								  0, 
+								  0, 
+								  kFALSE);
   return track;
 }
 
@@ -337,6 +359,48 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
 void AliJetModelBaseTask::Run() 
 {
   // Run.
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::CopyClusters()
+{
+  // Copy all the clusters in the new collection
+
+  Bool_t esdMode = (Bool_t)(fClusters->GetClass()->GetBaseClass("AliESDCaloCluster") != 0);
+  const Int_t nClusters = fClusters->GetEntriesFast();
+  
+  if (esdMode) {
+    for (Int_t i = 0; i < nClusters; ++i) {
+      AliESDCaloCluster *esdcluster = static_cast<AliESDCaloCluster*>(fClusters->At(i));
+      if (!esdcluster)
+	continue;
+      if (!esdcluster->IsEMCAL())
+	continue;
+      new ((*fOutClusters)[i]) AliESDCaloCluster(*esdcluster);
+    }
+  }
+  else {
+    for (Int_t i = 0; i < nClusters; ++i) {
+      AliAODCaloCluster *aodcluster = static_cast<AliAODCaloCluster*>(fClusters->At(i));
+      if (!aodcluster)
+	continue;
+      if (!aodcluster->IsEMCAL())
+	continue;
+      new ((*fOutClusters)[i]) AliAODCaloCluster(*aodcluster);
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::CopyTracks()
+{
+  const Int_t nTracks = fTracks->GetEntriesFast();
+  for (Int_t i = 0; i < nTracks; ++i) {
+    AliPicoTrack *track = static_cast<AliPicoTrack*>(fTracks->At(i));
+    if (!track)
+      continue;
+    new ((*fOutTracks)[i]) AliPicoTrack(*track);
+  }
 }
 
 //________________________________________________________________________
