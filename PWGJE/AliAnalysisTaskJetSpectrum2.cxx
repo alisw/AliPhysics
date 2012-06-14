@@ -61,7 +61,7 @@
 #include "AliJetKineReaderHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliInputEventHandler.h"
-
+#include "AliCFContainer.h"
 
 #include "AliAnalysisHelperJetTasks.h"
 
@@ -503,17 +503,20 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     // Bins:  Jet number: pTJet, cent, mult, RP, Area, trigger, leading track pT total bins = 4.5M
     const Int_t nBinsSparse1 = 9;
     const Int_t nBinsLeadingTrackPt = 10;
-    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  20,    fNRPBins, 5,fNTrigger,nBinsLeadingTrackPt,fNAcceptance+1};
+    const Int_t nBinsArea = 10;
+    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  20,    fNRPBins, nBinsArea,fNTrigger,nBinsLeadingTrackPt,fNAcceptance+1};
     if(cJetBranch.Contains("RandomCone")){
       nBins1[1] = 600;
       nBins1[5] = 1;
     }
-    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,-0.5,0.,-0.5,};
+    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.,         -0.5,  0.,           -0.5,};
     const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,4000,fNRPBins-0.5,1.0,fNTrigger-0.5,200.,fNAcceptance+0.5};
     
+    const Double_t binArrayArea[nBinsArea+1] = {xmin1[5],0.05,0.1,0.15,0.2,0.25,0.3,0.4,0.5,0.6,xmax1[5]};
     const Double_t binArrayLeadingTrackPt[nBinsLeadingTrackPt+1] = {xmin1[7],1.,2.,3.,4.,5.,6.,8.,10.,12.,xmax1[7]}; //store pT of leading track in jet
 
     fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger;leading track p_{T};acceptance bin",nBinsSparse1,nBins1,xmin1,xmax1);
+    fhnJetPt[ij]->SetBinEdges(5,binArrayArea);
     fhnJetPt[ij]->SetBinEdges(7,binArrayLeadingTrackPt);
     fHistList->Add(fhnJetPt[ij]);
 
@@ -1014,11 +1017,12 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       AliVParticle *leadTrack = LeadingTrackFromJetRefs(jet);
       //      AliVParticle *leadTrack = LeadingTrackInCone(jet,&particlesList);
       Int_t phiBin = GetPhiBin(phiJet-fRPAngle);
+      Double_t ptLead = jet->GetPtLeading(); //pT of leading jet
 
       var1[1] = ptJet;
       var1[4] = phiBin;
       var1[5] = jet->EffectiveAreaCharged();
-      var1[7] = (leadTrack?leadTrack->Pt():0);//pT of leading jet
+      var1[7] = ptLead;
       var1[8] = CheckAcceptance(phiJet,etaJet);
 
       var2[1] = ptJet;
@@ -1026,10 +1030,10 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       var2[4] = phiJet;
       var2[5] = jet->EffectiveAreaCharged();
       var2[7] = var1[8];
-      var2[8] = (leadTrack?leadTrack->Charge()*leadTrack->Pt():0);//pT of leading jet
+      var2[8] = (leadTrack?leadTrack->Charge()*leadTrack->Pt():0);//pT of leading jet x charge
 
       if(ij<kMaxJets){
-	if(leadTrack)fh2LTrackPtJetPt[iType][ij]->Fill(leadTrack->Pt(),ptJet);
+	fh2LTrackPtJetPt[iType][ij]->Fill(jet->GetPtLeading(),ptJet);
 	var1[0] = ij;
 	var2[0] = ij;
 	for(int it = 0;it <fNTrigger;it++){
@@ -1051,7 +1055,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
 	}
       }
 
-      if(leadTrack)fh2LTrackPtJetPt[iType][kMaxJets]->Fill(leadTrack->Pt(),ptJet);
+      fh2LTrackPtJetPt[iType][kMaxJets]->Fill(jet->GetPtLeading(),ptJet);
 
       if(particlesList.GetSize()&&ij<kMaxJets){
 	// Particles... correlated with jets...
@@ -1259,7 +1263,9 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
     }
   }
 
-  Double_t container[6];
+  Double_t container[8];
+  Double_t containerRec[4];
+  Double_t containerGen[4];
 
   // loop over generated jets
   // consider the 
@@ -1269,18 +1275,29 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
     Double_t phiGen = genJet->Phi();
     if(phiGen<0)phiGen+=TMath::Pi()*2.;    
     Double_t etaGen = genJet->Eta();
-    container[3] = ptGen;
-    container[4] = etaGen;
-    container[5] = phiGen;
-    fhnJetContainer->Fill(&container[3],kStep0);
-    if(JetSelected(genJet)){
-      fhnJetContainer->Fill(&container[3],kStep1);
-      Int_t ir = aRecIndex[ig];
-      if(ir>=0&&ir<recJetsList.GetEntries()){   
-	fhnJetContainer->Fill(&container[3],kStep2);
+    containerGen[0] = ptGen;
+    containerGen[1] = etaGen;
+    containerGen[2] = phiGen;
+    containerGen[3] = genJet->GetPtLeading();
+
+    fhnJetContainer->Fill(containerGen,kStep0); //all generated jets
+
+    Int_t ir = aRecIndex[ig];
+    if(ir>=0&&ir<recJetsList.GetEntries()){   
+      fhnJetContainer->Fill(containerGen,kStep2); // all generated jets with reconstructed partner
+      
+      if(JetSelected(genJet)){
+	fhnJetContainer->Fill(containerGen,kStep1); // all generated jets in eta window
+
 	AliAODJet* recJet = (AliAODJet*)recJetsList.At(ir); 
-	if(JetSelected(recJet))fhnJetContainer->Fill(&container[3],kStep4);
-	if(JetSelected(recJet))fhnJetContainer->Fill(&container[3],kStep3);
+
+	fhnJetContainer->Fill(containerGen,kStep3); // all generated jets in eta window with reconstructed partner
+	if(JetSelected(recJet)) {
+	  fhnJetContainer->Fill(containerGen,kStep4); // all generated jets in eta window with reconstructed partner in eta window
+
+	  containerGen[3] = recJet->GetPtLeading();
+	  fhnJetContainer->Fill(containerGen,kStep5); // all generated jets in eta window with reconstructed partner in eta window with leading track on reconstructed level
+	}
       }
     }
   }// loop over generated jets used for matching...
@@ -1294,37 +1311,44 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
     Double_t ptRec = recJet->Pt();
     Double_t phiRec = recJet->Phi();
     if(phiRec<0)phiRec+=TMath::Pi()*2.;    
-    // do something with dijets...
     
+    containerRec[0] = ptRec;
+    containerRec[1] = etaRec;
+    containerRec[2] = phiRec;
+    containerRec[3] = recJet->GetPtLeading();
+
     container[0] = ptRec;
     container[1] = etaRec;
     container[2] = phiRec;
+    container[3] = recJet->GetPtLeading();
 
-    fhnJetContainer->Fill(container,kStep0+kMaxStep);
     if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
   
     if(JetSelected(recJet)){
-      fhnJetContainer->Fill(container,kStep1+kMaxStep);
+      fhnJetContainer->Fill(containerRec,kStep7); //all rec jets in eta window
       // Fill Correlation
       Int_t ig = aGenIndex[ir];
       if(ig>=0 && ig<genJetsList.GetEntries()){
-	fhnJetContainer->Fill(container,kStep2+kMaxStep);
 	if (fDebug > 10)Printf("%s:%d ig = %d ir = %d",(char*)__FILE__,__LINE__,ig,ir);
 	AliAODJet *genJet = (AliAODJet*)genJetsList.At(ig);
 	Double_t ptGen  = genJet->Pt();
 	Double_t phiGen = genJet->Phi();
 	if(phiGen<0)phiGen+=TMath::Pi()*2.; 
 	Double_t etaGen = genJet->Eta();
-      
-	container[3] = ptGen;
-	container[4] = etaGen;
-	container[5] = phiGen;
-	// 
-	// we accept only jets which are detected within a smaller window, to avoid ambigious pair association at the edges of the acceptance
-	// 
-	if(JetSelected(genJet))fhnJetContainer->Fill(container,kStep4+kMaxStep);
-	fhnJetContainer->Fill(container,kStep3+kMaxStep);
-	fhnCorrelation->Fill(container,0);
+
+	containerGen[0] = ptGen;
+	containerGen[1] = etaGen;
+	containerGen[2] = phiGen;
+	containerGen[3] = genJet->GetPtLeading();
+
+	container[4] = ptGen;
+	container[5] = etaGen;
+	container[6] = phiGen;
+	container[7] = genJet->GetPtLeading();
+
+	fhnJetContainer->Fill(containerGen,kStep6); // all rec jets in eta window with generated partner
+
+	fhnCorrelation->Fill(container);
 	if(ptGen>0){
 	  Float_t delta = (ptRec-ptGen)/ptGen;
 	  fh2RelPtFGen->Fill(ptGen,delta);
@@ -1342,10 +1366,11 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   // Create the particle container for the correction framework manager and 
   // link it
   //
-  const Int_t kNvar   = 3 ; //number of variables on the grid:pt,eta, phi
+  const Int_t kNvar   = 4 ; //number of variables on the grid:pt,eta, phi
   const Double_t kPtmin = 0.0, kPtmax = 250.; // we do not want to have empty bins at the beginning...
-  const Double_t kEtamin = -3.0, kEtamax = 3.0;
+  const Double_t kEtamin = -1.0, kEtamax = 1.0;
   const Double_t kPhimin = 0., kPhimax = 2. * TMath::Pi();
+  const Double_t kPtLeadingTrackPtMin = 0., kPtLeadingTrackPtMax = 200.;
 
   // can we neglect migration in eta and phi?
   // phi should be no problem since we cover full phi and are phi symmetric
@@ -1355,8 +1380,9 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   //arrays for the number of bins in each dimension
   Int_t iBin[kNvar];
   iBin[0] = 125; //bins in pt
-  iBin[1] =  1; //bins in eta 
-  iBin[2] = 1; // bins in phi
+  iBin[1] =  4; //bins in eta 
+  iBin[2] =  1; // bins in phi
+  iBin[3] =  10; // bins in leading track Pt
 
   //arrays for lower bounds :
   Double_t* binEdges[kNvar];
@@ -1368,9 +1394,19 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   for(Int_t i=0; i<=iBin[0]; i++) binEdges[0][i]=(Double_t)kPtmin  + (kPtmax-kPtmin)/(Double_t)iBin[0]*(Double_t)i;
   for(Int_t i=0; i<=iBin[1]; i++) binEdges[1][i]=(Double_t)kEtamin  + (kEtamax-kEtamin)/iBin[1]*(Double_t)i;
   for(Int_t i=0; i<=iBin[2]; i++) binEdges[2][i]=(Double_t)kPhimin  + (kPhimax-kPhimin)/iBin[2]*(Double_t)i;
+  binEdges[3][0]= kPtLeadingTrackPtMin;
+  binEdges[3][1]= 1.;
+  binEdges[3][2]= 2.;
+  binEdges[3][3]= 3.;
+  binEdges[3][4]= 4.;
+  binEdges[3][5]= 5.;
+  binEdges[3][6]= 6.;
+  binEdges[3][7]= 8.;
+  binEdges[3][8]= 10.;
+  binEdges[3][9]= 12.;
+  binEdges[3][10]= kPtLeadingTrackPtMax;
 
-
-  fhnJetContainer = new AliTHn(Form("fahnJetContainer"),Form("AliTHn jet info"),kMaxStep*2,kNvar,iBin);
+  fhnJetContainer = new AliCFContainer(Form("fhnJetContainer"),Form("AliCFContainer jet info"),kMaxStep,kNvar,iBin);
   for (int k=0; k<kNvar; k++) {
     fhnJetContainer->SetBinLimits(k,binEdges[k]);
   }
@@ -1384,10 +1420,10 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
     thnDim[k+kNvar] = iBin[k];
   }
 
-  fhnCorrelation = new AliTHn("fahnCorrelation","AliTHn with correlations",1,2*kNvar,thnDim);
+  fhnCorrelation = new THnSparseF("fhnCorrelation","THnSparseF with correlations",2*kNvar,thnDim);
   for (int k=0; k<kNvar; k++) {
-    fhnCorrelation->SetBinLimits(k,binEdges[k]);
-    fhnCorrelation->SetBinLimits(k+kNvar,binEdges[k]);
+    fhnCorrelation->SetBinEdges(k,binEdges[k]);
+    fhnCorrelation->SetBinEdges(k+kNvar,binEdges[k]);
   }
 
   for(Int_t ivar = 0; ivar < kNvar; ivar++)
