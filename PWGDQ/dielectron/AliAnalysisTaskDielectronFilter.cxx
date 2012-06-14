@@ -100,6 +100,7 @@ void AliAnalysisTaskDielectronFilter::UserCreateOutputObjects()
     return;
   }
   if(fStoreRotatedPairs) fDielectron->SetStoreRotatedPairs(kTRUE);
+  fDielectron->SetDontClearArrays(); 
   fDielectron->Init();
 
   if (!fEventStat){

@@ -116,6 +116,7 @@ public:
   Double_t DeltaEta()             const { return TMath::Abs(fD1.GetEta()-fD2.GetEta());         }
   Double_t DeltaPhi()             const { Double_t dphi=TMath::Abs(fD1.GetPhi()-fD2.GetPhi());
                                           return (dphi>TMath::Pi())?dphi-TMath::Pi():dphi;      }
+
   // calculate cos(theta*) and phi* in HE and CS pictures
   void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;
   
@@ -124,6 +125,7 @@ public:
 			                       const Bool_t isHE, const Bool_t isTheta);
 
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
+  Double_t GetCosPointingAngle(const AliVVertex *primVtx) const;
   // internal KF particle
   const AliKFParticle& GetKFParticle()       const { return fPair; }
   const AliKFParticle& GetKFFirstDaughter()  const { return fD1;   }

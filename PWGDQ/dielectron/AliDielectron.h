@@ -108,6 +108,7 @@ public:
   Bool_t GetHasMC() const     { return fHasMC;  }
 
   void SetStoreRotatedPairs(Bool_t storeTR) {fStoreRotatedPairs = storeTR;}
+  void SetDontClearArrays(Bool_t dontClearArrays=kTRUE) { fDontClearArrays=dontClearArrays; }
 
   void AddSignalMC(AliDielectronSignalMC* signal);  
 
@@ -165,8 +166,9 @@ private:
   Bool_t fPreFilterUnlikeOnly;  //Apply PreFilter either in +- or to ++/--/+- individually
   Bool_t fPreFilterAllSigns;    //Apply PreFilter find in  ++/--/+- and remove from all
   Bool_t fHasMC;                //If we run with MC, at the moment only needed in AOD
-  Bool_t fStoreRotatedPairs;    //It the rotated pairs should be stored in the pair array 
- 
+  Bool_t fStoreRotatedPairs;    //It the rotated pairs should be stored in the pair array
+  Bool_t fDontClearArrays;      //Don't clear the arrays at the end of the Process function, needed for external use of pair and tracks
+  
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTracks1, TObjArray arrTracks2, const AliVEvent *ev, AliEventplane *cevplane);
   void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2);
@@ -200,7 +202,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,4);
+  ClassDef(AliDielectron,5);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

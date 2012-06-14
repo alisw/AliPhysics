@@ -398,6 +398,27 @@ Double_t AliDielectronPair::ThetaPhiCM(const Bool_t isHE, const Bool_t isTheta) 
       return TMath::ATan2((p2Mom.Vect()).Dot(yAxis), (p2Mom.Vect()).Dot(xAxis));
   }
 }
+//______________________________________________
+Double_t AliDielectronPair::GetCosPointingAngle(const AliVVertex *primVtx) const
+{
+  //
+  // Calculate the poiting angle of the pair to the primary vertex and take the cosine
+  //
+  if(!primVtx) return -1.;
+
+  Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
+  deltaPos[0] = fPair.GetX() - primVtx->GetX();
+  deltaPos[1] = fPair.GetY() - primVtx->GetY();
+  deltaPos[2] = fPair.GetZ() - primVtx->GetZ();
+
+  Double_t momV02    = fPair.GetPx()*fPair.GetPx() + fPair.GetPy()*fPair.GetPy() + fPair.GetPz()*fPair.GetPz();
+  Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
+
+  Double_t cosinePointingAngle = (deltaPos[0]*fPair.GetPx() + deltaPos[1]*fPair.GetPy() + deltaPos[2]*fPair.GetPz()) / TMath::Sqrt(momV02 * deltaPos2);
+  
+  return TMath::Abs(cosinePointingAngle);
+
+}
 
 // //______________________________________________
 // Double_t AliDielectronPair::GetLXY(const AliVVertex * const vtx) const
