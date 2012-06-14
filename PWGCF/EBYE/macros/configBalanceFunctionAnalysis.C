@@ -5,7 +5,8 @@ AliBalance *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
 				     Double_t centrMax = 100.,
 				     Bool_t bShuffle = kFALSE,
 				     Bool_t bHBTcut = kFALSE,
-				     Bool_t bConversionCut = kFALSE) {
+				     Bool_t bConversionCut = kFALSE,
+				     Bool_t kUsePID = kTRUE) {
   //Function to setup the AliBalance object and return it
   AliBalance *gBalance = new AliBalance();
   gBalance->SetAnalysisLevel(analysisLevel);
@@ -27,7 +28,7 @@ AliBalance *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
   //Qside
   gBalance->SetInterval(AliBalance::kQside,-1,1,100,0.0,2.0);
   //Qinv
-  gBalance->SetInterval(AliBalance::kQinv,-1,1,100,0.0,2.0);
+  gBalance->SetInterval(AliBalance::kQinv,-1,1,100,0.0,5.0);
   //Phi
   gBalance->SetInterval(AliBalance::kPhi,0.,360.,90,0.,180.0);
 
