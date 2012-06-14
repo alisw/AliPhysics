@@ -711,7 +711,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      continue;
 		    }
 		    Int_t gID = aodTrack->GetID();
-		    if (!aodTrack->TestFilterBit(nAODtrackCutBit)) trackMap->Add(gID, iTracks);
+		    //if (!aodTrack->TestFilterBit(nAODtrackCutBit)) trackMap->Add(gID, iTracks);
+		    if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, iTracks);
 		  }
 		  AliAODTrack* newAodTrack; 
 		  //===========================================//
@@ -724,17 +725,16 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       		      continue;
       		    }
 		    
-      		    // AOD track cuts
-		    
+      		    // AOD track cuts		    
       		    // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
-
 		    //===========================================//
 		    // take only TPC only tracks 
 		    fHistTrackStats->Fill(aodTrack->GetFilterMap());
 		    if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+
 		    Int_t gID = aodTrack->GetID();
 		    newAodTrack = gID >= 0 ? aodTrack : gAOD->GetTrack(trackMap->GetValue(-1-gID));
-		    Printf("Label: %d - Pt: %lf (old) - %d - Pt: %lf(new)",gID,aodTrack->Pt(), newAodTrack->GetID(), newAodTrack->Pt());
+		    //Printf("Label: %d - Pt: %lf (old) - %d - Pt: %lf(new)",gID,aodTrack->Pt(), newAodTrack->GetID(), newAodTrack->Pt());
                     //===========================================//
 
 		    //fHistTrackStats->Fill(aodTrack->GetFilterMap());

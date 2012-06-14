@@ -9,9 +9,9 @@
 //=============================================//
 
 //PID config
-Bool_t kUseNSigmaPID = kFALSE;
+Bool_t kUseNSigmaPID = kTRUE;
 Double_t nSigmaMax = 3.0;
-Bool_t kUseBayesianPID = kTRUE;
+Bool_t kUseBayesianPID = kFALSE;
 Double_t gMinAcceptedProbability = 0.7;
 
 //_________________________________________________________//
@@ -87,8 +87,9 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
     ::Error("AddTaskBF", "This task requires an input event handler");
     return NULL;
   }
-  TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "MC";
+  TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD" or "MC"
+  if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "AOD";
+
 
   // for local changed BF configuration
   //gROOT->LoadMacro("./configBalanceFunctionAnalysis.C");
@@ -97,16 +98,16 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   AliBalance *bfs = 0;  // shuffled Balance function object
 
   if (analysisType=="ESD"){
-    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut);
+    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,kUsePID);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,kUsePID);
   }
   else if (analysisType=="AOD"){
-    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut);
+    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,kUsePID);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,kUsePID);
   }
   else if (analysisType=="MC"){
-    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut);
+    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,kUsePID);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut,kUsePID);
   }
   else{
     ::Error("AddTaskBF", "analysis type NOT known.");
@@ -128,8 +129,8 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
       else if(kUseNSigmaPID)
 	taskBF->SetUseNSigmaPID(nSigmaMax);
-      taskBF->SetParticleOfInterest(AliAnalysistaskBF::kProton);
-      taskBF->SetDetectorUsedForPID(AliAnalysisTaskBF::kTOFpid);
+      taskBF->SetParticleOfInterest(AliAnalysisTaskBF::kPion);
+      taskBF->SetDetectorUsedForPID(AliAnalysisTaskBF::kTPCpid);
     }
   }
   else if(analysisType == "AOD") {
@@ -139,6 +140,16 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 
     // set extra DCA cuts (-1 no extra cut)
     taskBF->SetExtraDCACutsAOD(DCAxy,DCAz);
+
+    // PID
+    if(kUsePID) {
+      if(kUseBayesianPID)
+	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
+      else if(kUseNSigmaPID)
+	taskBF->SetUseNSigmaPID(nSigmaMax);
+      taskBF->SetParticleOfInterest(AliAnalysisTaskBF::kPion);
+      taskBF->SetDetectorUsedForPID(AliAnalysisTaskBF::kTPCpid);
+    }
 
     // set extra TPC chi2 / nr of clusters cut
     taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
@@ -180,7 +191,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   mgr->ConnectOutput(taskBF, 1, coutQA);
   mgr->ConnectOutput(taskBF, 2, coutBF);
   if(gRunShuffling) mgr->ConnectOutput(taskBF, 3, coutBFS);
-  if(kUsePID && analysisType == "ESD") mgr->ConnectOutput(taskBF, 4, coutQAPID);
+  if(kUsePID) mgr->ConnectOutput(taskBF, 4, coutQAPID);
 
   return taskBF;
 }
