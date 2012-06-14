@@ -29,7 +29,8 @@
 #pragma link C++ class AliAnalysisTaskJetProperties+;
 #pragma link C++ class AliAnalysisTaskJetResponseV2+;
 #pragma link C++ class AliAnalysisTaskPartonDisc+;
+#pragma link C++ class AliAnaChargedJetResponseMaker+;
 #pragma link C++ class AliAnalysisTaskCheckSingleTrackJetRejection+;
-#pragma link C++ class  AliAnalysisTaskJetHadronCorrelation+;
-#pragma link C++ class  AliAnalysisTaskJetHBOM+;
+#pragma link C++ class AliAnalysisTaskJetHadronCorrelation+;
+#pragma link C++ class AliAnalysisTaskJetHBOM+;
 #endif
