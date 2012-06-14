@@ -2,7 +2,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFPeri");
+TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFPeri;TPCTOFCentnoRejTight;TPCTOFCentTight");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -42,35 +42,48 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 	//not yet implemented
   }
   else if (cutDefinition==1) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==2) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
 	selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==3) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
 	selectedCentrality = LMEECutLib::kPbPb2011Peripheral;
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==4) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kTRUE;
   }
   else if (cutDefinition==5) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
 	selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
 	rejectionStep = kTRUE;
   }
   else if (cutDefinition==6) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
 	selectedCentrality = LMEECutLib::kPbPb2011Peripheral;
 	rejectionStep = kTRUE;
   }
+
+//Legacy cuts, check consistence w/ 1 & 4, then remove
+  else if (cutDefinition==7) {
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedCentrality = LMEECutLib::kPbPb2011Central;
+	rejectionStep = kFALSE;
+  }
+  else if (cutDefinition==8) {
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedCentrality = LMEECutLib::kPbPb2011Central;
+	rejectionStep = kTRUE;
+  }
+
   else Semi{
 	cout << " =============================== " << endl;
 	cout << " ==== INVALID CONFIGURATION ==== " << endl;

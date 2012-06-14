@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runAll=kFALSE, Bool_t setMC=kFALSE){
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_t setMC=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -56,10 +56,13 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runAll=kFALSE, Bool_t setM
   task->AddDielectron(lowmass3);
   printf("add: %s\n",lowmass3->GetName());
 */
-if (runAll) {
+if (runRejection) {
   AliDielectron *lowmass4=ConfigLMEEPbPb2011(4,hasMC);
   task->AddDielectron(lowmass4);
   printf("add: %s\n",lowmass4->GetName());
+  AliDielectron *lowmass8=ConfigLMEEPbPb2011(8,hasMC);
+  task->AddDielectron(lowmass8);
+  printf("add: %s\n",lowmass8->GetName())
 
 //  AliDielectron *lowmass5=ConfigLMEEPbPb2011(5,hasMC);
 //  task->AddDielectron(lowmass5);
@@ -69,6 +72,9 @@ else {
   AliDielectron *lowmass1=ConfigLMEEPbPb2011(1,hasMC);
   task->AddDielectron(lowmass1);
   printf("add: %s\n",lowmass1->GetName())
+  AliDielectron *lowmass7=ConfigLMEEPbPb2011(7,hasMC);
+  task->AddDielectron(lowmass7);
+  printf("add: %s\n",lowmass7->GetName())
 }
 
   mgr->AddTask(task);
