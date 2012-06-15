@@ -34,6 +34,7 @@
 #include <TStopwatch.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TMCVerbose.h>
 #include <TTree.h>
  
 #include "AliCDBEntry.h"
@@ -213,6 +214,151 @@ void  AliMC::ConstructOpGeometry()
   }  
 }
 
+#include <TPDGCode.h>
+//_______________________________________________________________________
+void  AliMC::AddParticles()
+{
+  //
+  // Add particles (not present in Geant3 or Geant4)
+  //
+  
+  // --------------------------------------------------------------------
+  // An example of adding a particle He5 with defined decay mode
+  // (TO BE REMOVED after a useful code is added)
+  
+  cout << "########## AliMC::AddParticles"  << endl;
+
+  //Hypertriton
+  gMC->DefineParticle(1010010030, "HyperTriton", kPTHadron, 2.99131 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
+  //Anti-Hypertriton
+  gMC->DefineParticle(-1010010030, "AntiHyperTriton", kPTHadron, 2.99131 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
+
+
+  //Lambda-Neutron 
+  gMC->DefineParticle(1010000020, "LambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+  //Anti-Lambda-Neutron
+  gMC->DefineParticle(-1010000020, "AntiLambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+  //H-Dibaryon
+  gMC->DefineParticle(1020000020, "Hdibaryon", kPTNeutron, 2.21, 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  //Anti-H-Dibaryon
+  gMC->DefineParticle(-1020000020, "AntiHdibaryon", kPTNeutron, 2.21  , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+  
+  // Define the 2- and 3-body phase space decay for the Hyper-Triton
+  Int_t mode[6][3];                  
+  Float_t bratio[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio[kz] = 0.;
+     mode[kz][0] = 0;
+     mode[kz][1] = 0;
+     mode[kz][2] = 0;
+  }
+  bratio[0] = 50.;
+  mode[0][0] = 1000020030; // Helium3 
+  mode[0][1] = -211; // negative pion
+  bratio[1] = 50.;
+  mode[1][0] = 1000010020; // deuteron 
+  mode[1][1] = 2212; // proton
+  mode[1][2] = -211; // negative pion
+
+  gMC->SetDecayMode(1010010030,bratio,mode);
+
+
+
+  // Define the 2- and 3-body phase space decay for the Anti-Hyper-Triton
+  Int_t amode[6][3];                  
+  Float_t abratio[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio[kz] = 0.;
+     amode[kz][0] = 0;
+     amode[kz][1] = 0;
+     amode[kz][2] = 0;
+  }
+  abratio[0] = 50.;
+  amode[0][0] = -1000020030; // anti- Helium3 
+  amode[0][1] = 211; // positive pion
+  abratio[1] = 50.;
+  amode[1][0] = -1000010020; // anti-deuteron 
+  amode[1][1] = -2212; // anti-proton
+  amode[1][2] = 211; // positive pion
+
+  gMC->SetDecayMode(-1010010030,abratio,amode);
+  
+  // Define the 2-body phase space decay for the Lambda-neutron boundstate
+  Int_t mode1[6][3];                  
+  Float_t bratio1[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio1[kz] = 0.;
+     mode1[kz][0] = 0;
+     mode1[kz][1] = 0;
+     mode1[kz][2] = 0;
+  }
+  bratio1[0] = 100.;
+  mode1[0][0] = 1000010020; // deuteron 
+  mode1[0][1] = -211; // negative pion
+
+  gMC->SetDecayMode(1010000020,bratio1,mode1);
+
+
+  // Define the 2-body phase space decay for the Anti-Lambda-neutron boundstate
+  Int_t amode1[6][3];                  
+  Float_t abratio1[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio1[kz] = 0.;
+     amode1[kz][0] = 0;
+     amode1[kz][1] = 0;
+     amode1[kz][2] = 0;
+  }
+  abratio1[0] = 100.;
+  amode1[0][0] = -1000010020; // anti-deuteron 
+  amode1[0][1] = 211; // positive pion
+
+  gMC->SetDecayMode(-1010000020,abratio1,amode1);
+
+  // Define the 2-body phase space decay for the H-Dibaryon
+  Int_t mode2[6][3];                  
+  Float_t bratio2[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio2[kz] = 0.;
+     mode2[kz][0] = 0;
+     mode2[kz][1] = 0;
+     mode2[kz][2] = 0;
+  }
+  bratio2[0] = 100.;
+  mode2[0][0] = 3122; // Lambda 
+  mode2[0][1] = 2212; // proton
+  mode2[0][2] = -211; // negative pion
+
+  gMC->SetDecayMode(1020000020,bratio2,mode2);
+
+  // Define the 2-body phase space decay for the Anti-H-Dibaryon
+  Int_t amode2[6][3];                  
+  Float_t abratio2[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio2[kz] = 0.;
+     amode2[kz][0] = 0;
+     amode2[kz][1] = 0;
+     amode2[kz][2] = 0;
+  }
+  abratio2[0] = 100.;
+  amode2[0][0] = -3122; // anti-deuteron 
+  amode2[0][1] = -2212; // anti-proton
+  amode2[0][2] = 211; // positive pion
+
+  gMC->SetDecayMode(-1020000020,abratio2,amode2);
+
+  // end of the example
+  // --------------------------------------------------------------------
+}  
+  
 //_______________________________________________________________________
 void  AliMC::InitGeometry()
 { 
@@ -333,6 +479,8 @@ void AliMC::PreTrack()
 {
   // Actions before the track's transport
 
+     //verbose.PreTrack();
+
      TObjArray &dets = *gAlice->Modules();
      AliModule *module;
 
@@ -347,6 +495,8 @@ void AliMC::Stepping()
   //
   // Called at every step during transport
   //
+  //verbose.Stepping();
+
   Int_t id = DetFromMate(gMC->CurrentMedium());
   if (id < 0) return;
 
