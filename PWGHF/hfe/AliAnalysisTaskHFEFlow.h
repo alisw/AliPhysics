@@ -117,6 +117,12 @@ public:
   void SetNoPID(Bool_t noPID) { fNoPID = noPID;};
 
   void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel;};
+  void SetMonitorEventPlane(Bool_t monitorEventPlane) { fMonitorEventPlane = monitorEventPlane;};
+  void SetMonitorContamination(Bool_t monitorContamination) { fMonitorContamination = monitorContamination;};
+  void SetMonitorPhotonic(Bool_t monitorPhotonic) { fMonitorPhotonic = monitorPhotonic;};
+  void SetMonitorWithoutPID(Bool_t monitorWithoutPID) { fMonitorWithoutPID = monitorWithoutPID;};
+  void SetMonitorTrackCuts(Bool_t monitorTrackCuts) { fMonitorTrackCuts = monitorTrackCuts;};
+  void SetMonitorQCumulant(Bool_t monitorQCumulant) { fMonitorQCumulant = monitorQCumulant;};
 
   Int_t GetNbBinsCentralityQCumulant() const { return  fNbBinsCentralityQCumulant; };
   Double_t GetBinCentralityLess(Int_t k) const { return fBinCentralityLess[k]; };
@@ -176,7 +182,13 @@ private:
   
 
   Int_t     fDebugLevel; // Debug Level  
-
+  Bool_t    fMonitorEventPlane; // Monitor event plane
+  Bool_t    fMonitorContamination; // Monitor contamination
+  Bool_t    fMonitorPhotonic;// Monitor photonic
+  Bool_t    fMonitorWithoutPID;// Monitor without PID
+  Bool_t    fMonitorTrackCuts;// Monitor track cuts
+  Bool_t    fMonitorQCumulant;// Monitor Q cumulant
+  
   // Cuts for FLOW PWG2
   AliFlowTrackCuts* fcutsRP;  //! Reference particle cut
   AliFlowTrackCuts* fcutsPOI; //! Particle Of Interest cut
