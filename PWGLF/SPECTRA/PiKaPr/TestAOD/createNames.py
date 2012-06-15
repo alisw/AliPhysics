@@ -26,8 +26,11 @@ def main():
 
     # write file
     outfile = open("HistogramNames.h", "w")
+    outfile.write("#ifndef HISTOGRAMNAMES_H\n");
+    outfile.write("#define HISTOGRAMNAMES_H\n\n");
     outfile.write("//This file was generated automatically, please do not edit!!\n\n");
     outfile.writelines(output)
+    outfile.write("\n#endif\n");
     outfile.close()
 
 

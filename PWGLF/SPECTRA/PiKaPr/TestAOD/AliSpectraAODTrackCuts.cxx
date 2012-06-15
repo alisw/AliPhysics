@@ -22,6 +22,7 @@
 #include "TTree.h"
 #include "TLegend.h"
 #include "TH1F.h"
+#include "TH1I.h"
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "AliAnalysisTask.h"
@@ -34,7 +35,7 @@
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliSpectraAODTrackCuts.h"
-#include "AliSpectraAODHistoManager.h"
+//#include "AliSpectraAODHistoManager.h"
 #include <iostream>
 
 using namespace std;
@@ -42,7 +43,7 @@ using namespace std;
 ClassImp(AliSpectraAODTrackCuts)
 
 
-AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
+AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, "AOD Track Cuts"), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fDCACut(0), fPCut(0), fPtCut(0), fYCut(0),
   fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0)
   
 {
@@ -72,7 +73,7 @@ AliSpectraAODTrackCuts::AliSpectraAODTrackCuts(const char *name) : TNamed(name, 
   fPtCut = 100000.0; // default value of pt cut ~ no cut 
   fPtCutTOFMatching=0.6; //default value fot matching with TOF
   fYCut       = 100000.0; // default value of y cut ~ no cut 
-  
+  fMinTPCcls=70; // ncls in TPC
 }
 
 //_______________________________________________________
@@ -133,7 +134,7 @@ Bool_t AliSpectraAODTrackCuts::CheckTrackCuts()
   // Check additional track Cuts
   Bool_t PassTrackCuts=kTRUE;
   if (!fTrack->HasPointOnITSLayer(0) && !fTrack->HasPointOnITSLayer(1))PassTrackCuts=kFALSE; //FIXME 1 SPD for the moment
-  if (fTrack->GetTPCNcls()<70)PassTrackCuts=kFALSE;
+  if (fTrack->GetTPCNcls()<fMinTPCcls)PassTrackCuts=kFALSE;
   return PassTrackCuts;
 }
 //________________________________________________________
@@ -158,7 +159,7 @@ Bool_t AliSpectraAODTrackCuts::CheckYCut(AODParticleSpecies_t species)
 Bool_t AliSpectraAODTrackCuts::CheckDCACut()
 {
    // Check DCA cut
-  if (TMath::Abs(fTrack->DCA()) < fDCACut) return kTRUE;
+  if (TMath::Abs(fTrack->DCA()) < fDCACut) return kTRUE; //FIXME for newest AOD fTrack->DCA() always gives -999
    return kFALSE;
 }
 //________________________________________________________
@@ -222,6 +223,7 @@ void AliSpectraAODTrackCuts::PrintCuts() const
     cout << " > DCA cut\t" << fDCACut << endl;
     cout << " > P cut\t" << fPCut << endl;
     cout << " > Pt cut \t" << fPtCut << endl;
+    cout << " > TPC cls \t" << fMinTPCcls << endl;
 }
 //_______________________________________________________
 void AliSpectraAODTrackCuts::SetTrackType(UInt_t bit)

@@ -1,53 +1,112 @@
-AliAnalysisTaskSpectraAOD * AddTaskSpectraAOD(const char * outfilename)
+AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(int mc=0,
+					     Double_t CentCutMin=0,
+					     Double_t CentCutMax=100,
+					     Double_t QvecPosCutMin=0,
+					     Double_t QvecPosCutMax=100,
+					     Double_t QvecNegCutMin=0,
+					     Double_t QvecNegCutMax=100,
+					     Double_t EtaMin=-0.8,
+					     Double_t EtaMax=0.8,
+					     Double_t Nsigmapid=3.,
+					     Double_t pt=5.,
+					     Double_t p=5.,
+					     Double_t y=5.,
+					     Double_t ptTofMatch=.6,
+					     UInt_t trkbit=1,
+					     UInt_t trkbitQVector=1,
+					     Bool_t UseCentPatchAOD049=kFALSE,
+					     Double_t DCA=100000,
+					     UInt_t minNclsTPC=70,
+					     )
 {
-  // TODO: add some parameters to set the centrality for this task, and maybe the name of the task
-  // TODO: shall I use the same file and different dirs for the different centralities?
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
-    ::Error("AddTaskSpectraAOD", "No analysis manager to connect to.");
-    return NULL;
-  }  
+  if (!mgr) 
+    {
+      ::Error("AddAliAnalysisTaskSpectraAOD", "No analysis manager to connect to.");
+      return NULL;
+    }   
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskSpectraAOD", "This task requires an input event handler");
-    return NULL;
-  }
-  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  if (!mgr->GetInputEventHandler()) 
+    {
+      ::Error("AddTaskITSsaTracks", "This task requires an input event handler");
+      return NULL;
+    }   
   
-  if (inputDataType != "AOD") {
-    Printf("ERROR! This task can only run on AODs!");
-  }
-
-  // Configure analysis
-  //===========================================================================
-    
-   
-  // Set I/O
-  AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
-  AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODSpectra");
-  mgr->AddTask(task);
- 
-  // Set the cuts
-  AliSpectraAODVertexCuts * vcuts = new AliSpectraAODVertexCuts("VertexCuts");
-  AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts ("TracksCuts");
-  tcuts->SetTrackType(6);
-  tcuts->SetEta(1.);
-  task->SetVertexCuts(vcuts);
-  task->SetTrackCuts (tcuts);
-
-
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer("chistpt", AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, outfilename);
-  AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer("cvcutpt", AliSpectraAODVertexCuts::Class(),    AliAnalysisManager::kOutputContainer, outfilename);
-  AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer("ctcutpt", AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, outfilename);
-
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  if(type.Contains("ESD"))
+    {
+      ::Error("AddTaskITSsaTracks", "This task requires to run on AOD");
+      return NULL;
+    }
+  
+  using namespace AliSpectraNameSpace;
+  
+  AliSpectraAODPID *pid = new AliSpectraAODPID(kNSigmaTPCTOF); 
+  pid->SetNSigmaCut(Nsigmapid);
+  
+  AliSpectraAODTrackCuts  * trcuts = new AliSpectraAODTrackCuts("Track Cuts");  
+  trcuts->SetDCA(DCA);
+  trcuts->SetTrackBits(trkbit);
+  trcuts->SetPt(pt);
+  trcuts->SetP(p);
+  trcuts->SetY(y);
+  trcuts->SetPtTOFMatching(ptTofMatch);   
+  trcuts->SetEta(EtaMin,EtaMax);
+  trcuts->SetMinTPCcls(minNclsTPC);
+  trcuts->PrintCuts();
+  
+  AliSpectraAODEventCuts * evcuts = new AliSpectraAODEventCuts("Event Cuts");
+  evcuts->SetQVectorPosCut(QvecPosCutMin,QvecPosCutMax);
+  evcuts->SetQVectorNegCut(QvecNegCutMin,QvecNegCutMax);
+  evcuts->SetCentralityCutMax(CentCutMax);  
+  evcuts->SetCentralityCutMin(CentCutMin);
+  evcuts->SetTrackBits(trkbitQVector);
+  if(mc==1)evcuts->SetIsMC(kTRUE);
+  evcuts->PrintCuts();
+  
+  AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD(Form("TaskAODSpectraCent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f",	
+								       CentCutMin,
+								       CentCutMax,
+								       QvecPosCutMin,
+								       QvecPosCutMax,
+								       QvecNegCutMin,
+								       QvecNegCutMax,
+								       EtaMin,
+								       EtaMax));
+  task->SetPID(pid);  
+  task->SetEventCuts(evcuts);
+  task->SetTrackCuts(trcuts);
+  if(mc==1)task->SetIsMC(kTRUE);
+  
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  
+  TString typeofdata=mc?"MC":"Data";
+  
+  outputFileName += Form(":OutputAODSpectraTask_%s_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),
+			 evcuts->GetQVectorPosCutMin(), evcuts->GetQVectorPosCutMax(),evcuts->GetQVectorNegCutMin(), evcuts->GetQVectorNegCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax());
+  
+  cout<<outputFileName<<endl;
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();      
+  AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer("chistpt", AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer,outputFileName);
+  AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer("cvcutpt", AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer,outputFileName);
+  AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer("ctcutpt%d", AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer("cpidpt%d",  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer,outputFileName);
+  
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutputpt1);
   mgr->ConnectOutput(task, 2, coutputpt2);
   mgr->ConnectOutput(task, 3, coutputpt3);
-
+  mgr->ConnectOutput(task, 4, coutputpt4);
   return task;
-}   
+  
+  
+  
+  
+  
+  
+  
+  mgr->AddTask(task);
+  return task;
+}

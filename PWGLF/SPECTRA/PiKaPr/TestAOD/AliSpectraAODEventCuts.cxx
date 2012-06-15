@@ -22,6 +22,7 @@
 #include "TTree.h"
 #include "TLegend.h"
 #include "TH1F.h"
+#include "TH1I.h"
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "AliAnalysisTask.h"
@@ -34,14 +35,14 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliSpectraAODEventCuts.h"
 #include "AliSpectraAODTrackCuts.h"
-#include "AliSpectraAODHistoManager.h"
+//#include "AliSpectraAODHistoManager.h"
 #include <iostream>
 
 using namespace std;
 
 ClassImp(AliSpectraAODEventCuts)
 
-AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0),fIsMC(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorPosCutMin(0), fQVectorPosCutMax(0), fQVectorNegCutMin(0), fQVectorNegCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVectorPos(0),fHistoQVectorNeg(0)
+AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fTrackBits(0),fIsMC(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorPosCutMin(0), fQVectorPosCutMax(0), fQVectorNegCutMin(0), fQVectorNegCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVectorPos(0),fHistoQVectorNeg(0)
 {
   // Constructor
   fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
@@ -58,6 +59,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, 
   fQVectorPosCutMax=10000.0;
   fQVectorNegCutMin=0.0;
   fQVectorNegCutMax=10000.0;
+  fTrackBits=1;
 }
 
 //______________________________________________________
@@ -139,7 +141,7 @@ Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
   Int_t multNeg = 0;
   for(Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++) {
     AliAODTrack* aodTrack = fAOD->GetTrack(iT);
-    if (!aodTrack->TestFilterBit(1)) continue; //FilterBit 1 is the standard TPC track
+    if (!aodTrack->TestFilterBit(fTrackBits)) continue;
     if (aodTrack->Eta() >= 0){
       multPos++;
       Qx2EtaPos += TMath::Cos(2*aodTrack->Phi()); 
@@ -164,7 +166,6 @@ Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
   fHistoQVectorPos->Fill(qPos);
   fHistoQVectorNeg->Fill(qNeg);
   return kTRUE;
-
 }
 
 //______________________________________________________
@@ -179,6 +180,10 @@ void AliSpectraAODEventCuts::PrintCuts()
   cout << " > Events cut by centrality: " << fHistoCuts->GetBinContent(kVtxCentral + 1) << endl;
   cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;
   cout << " > QVector cut: " << fHistoCuts->GetBinContent(kQVector + 1) << endl;
+  cout << " > Track type used for the QVector calculation: " << fTrackBits << endl;
+  cout << " > QPosRange: [" << fQVectorPosCutMin <<"," <<fQVectorPosCutMax<<"]"<< endl;
+  cout << " > QNegRange: [" << fQVectorNegCutMin <<"," <<fQVectorNegCutMax<<"]"<< endl;
+  cout << " > Centrality: [" << fCentralityCutMin <<"," <<fCentralityCutMax<<"]"<< endl;
 }
 //______________________________________________________
 
