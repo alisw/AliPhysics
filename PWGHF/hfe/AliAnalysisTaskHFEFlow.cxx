@@ -112,6 +112,12 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fMaxInvmass(0.1),
   fSetMassConstraint(kFALSE),
   fDebugLevel(0),
+  fMonitorEventPlane(kFALSE),
+  fMonitorContamination(kFALSE),
+  fMonitorPhotonic(kFALSE),
+  fMonitorWithoutPID(kFALSE),
+  fMonitorTrackCuts(kFALSE),
+  fMonitorQCumulant(kFALSE),
   fcutsRP(0),
   fcutsPOI(0),
   fHFECuts(0),
@@ -206,6 +212,12 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fMaxInvmass(0.1),
   fSetMassConstraint(kFALSE),
   fDebugLevel(0),
+  fMonitorEventPlane(kFALSE),
+  fMonitorContamination(kFALSE),
+  fMonitorPhotonic(kFALSE),
+  fMonitorWithoutPID(kFALSE),
+  fMonitorTrackCuts(kFALSE),
+  fMonitorQCumulant(kFALSE),
   fcutsRP(0),
   fcutsPOI(0),
   fHFECuts(0),
@@ -321,6 +333,12 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fMaxInvmass(ref.fMaxInvmass),
   fSetMassConstraint(ref.fSetMassConstraint),
   fDebugLevel(ref.fDebugLevel),
+  fMonitorEventPlane(ref.fMonitorEventPlane),
+  fMonitorContamination(ref.fMonitorContamination),
+  fMonitorPhotonic(ref.fMonitorPhotonic),
+  fMonitorWithoutPID(ref.fMonitorWithoutPID),
+  fMonitorTrackCuts(ref.fMonitorTrackCuts),
+  fMonitorQCumulant(ref.fMonitorQCumulant),
   fcutsRP(NULL),
   fcutsPOI(NULL),
   fHFECuts(NULL),
@@ -428,6 +446,12 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   target.fAlgorithmMA = fAlgorithmMA;
   target.fCounterPoolBackground = fCounterPoolBackground;
   target.fDebugLevel = fDebugLevel;
+  target.fMonitorEventPlane = fMonitorEventPlane;
+  target.fMonitorContamination = fMonitorContamination;
+  target.fMonitorPhotonic = fMonitorPhotonic;
+  target.fMonitorWithoutPID = fMonitorWithoutPID;
+  target.fMonitorTrackCuts = fMonitorTrackCuts;
+  target.fMonitorQCumulant = fMonitorQCumulant;
   target.fcutsRP = fcutsRP;
   target.fcutsPOI = fcutsPOI;
   target.fHFECuts = fHFECuts;
@@ -579,10 +603,10 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   for(Int_t i=0; i<=nBinsPt; i++) binLimPt[i]=(Double_t)TMath::Power(10,binLimLogPt[i]);
   */
 
-  Int_t nBinsPt = 35;
-  Double_t binLimPt[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
-			    1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5.,
-			    5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+  Int_t nBinsPt = 24;
+  Double_t binLimPt[25] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
+			   1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 5.,
+			   6.};
 
 
   Int_t nBinsPtPlus = fNbBinsPtQCumulant;
@@ -625,7 +649,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t binLimCMore[nBinsCMore+1];
   for(Int_t i=0; i<=nBinsCMore; i++) binLimCMore[i]=(Double_t)minCMore + (maxCMore-minCMore)/nBinsCMore*(Double_t)i ;
 
-  Int_t nBinsPhi = 12;
+  Int_t nBinsPhi = 8;
   Double_t minPhi = 0.0;
   Double_t maxPhi = TMath::Pi();
   Double_t binLimPhi[nBinsPhi+1];
@@ -684,6 +708,8 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner();
 
+  // Minimum histos
+
   // Histos
   fHistEV = new TH2D("fHistEV", "events", 3, 0, 3, 3, 0,3);
   
@@ -697,57 +723,6 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fEventPlane->SetBinEdges(3,binLimPhi);
   fEventPlane->SetBinEdges(4,binLimC);
   fEventPlane->Sumw2();
-  
-  // Event Plane after subtraction as function of phiep, centrality, pt, eta
-  const Int_t nDimb=2;
-  Int_t nBinb[nDimb] = {nBinsPhi, nBinsC};
-  fEventPlaneaftersubtraction = new THnSparseF("EventPlane_aftersubtraction","EventPlane_aftersubtraction",nDimb,nBinb);
-  fEventPlaneaftersubtraction->SetBinEdges(0,binLimPhi);
-  fEventPlaneaftersubtraction->SetBinEdges(1,binLimC);
-  fEventPlaneaftersubtraction->Sumw2();
-
-  // Monitoring of the event Plane cos(2phi) sin(2phi) centrality
-  const Int_t nDimi=3;
-  Int_t nBini[nDimi] = {nBinsCos, nBinsCos, nBinsCMore};
-  fCosSin2phiep = new THnSparseF("CosSin2phiep","CosSin2phiep",nDimi,nBini);
-  fCosSin2phiep->SetBinEdges(0,binLimCos);
-  fCosSin2phiep->SetBinEdges(1,binLimCos);
-  fCosSin2phiep->SetBinEdges(2,binLimCMore);
-  fCosSin2phiep->Sumw2();
-
-  // Monitoring Event plane after subtraction of the track
-  const Int_t nDime=4;
-  Int_t nBine[nDime] = {nBinsCos, nBinsC, nBinsPt, nBinsEta};
-  fCos2phie = new THnSparseF("cos2phie","cos2phie",nDime,nBine);
-  fCos2phie->SetBinEdges(2,binLimPt);
-  fCos2phie->SetBinEdges(3,binLimEta);
-  fCos2phie->SetBinEdges(0,binLimCos);
-  fCos2phie->SetBinEdges(1,binLimC);
-  fCos2phie->Sumw2();
-  fSin2phie = new THnSparseF("sin2phie","sin2phie",nDime,nBine);
-  fSin2phie->SetBinEdges(2,binLimPt);
-  fSin2phie->SetBinEdges(3,binLimEta);
-  fSin2phie->SetBinEdges(0,binLimCos);
-  fSin2phie->SetBinEdges(1,binLimC);
-  fSin2phie->Sumw2();
-  fCos2phiep = new THnSparseF("cos2phiep","cos2phiep",nDime,nBine);
-  fCos2phiep->SetBinEdges(2,binLimPt);
-  fCos2phiep->SetBinEdges(3,binLimEta);
-  fCos2phiep->SetBinEdges(0,binLimCos);
-  fCos2phiep->SetBinEdges(1,binLimC);
-  fCos2phiep->Sumw2();
-  fSin2phiep = new THnSparseF("sin2phiep","sin2phiep",nDime,nBine);
-  fSin2phiep->SetBinEdges(2,binLimPt);
-  fSin2phiep->SetBinEdges(3,binLimEta);
-  fSin2phiep->SetBinEdges(0,binLimCos);
-  fSin2phiep->SetBinEdges(1,binLimC);
-  fSin2phiep->Sumw2();
-  fSin2phiephiep = new THnSparseF("sin2phie_phiep","sin2phie_phiep",nDime,nBine);
-  fSin2phiephiep->SetBinEdges(2,binLimPt);
-  fSin2phiephiep->SetBinEdges(3,binLimEta);
-  fSin2phiephiep->SetBinEdges(0,binLimCos);
-  fSin2phiephiep->SetBinEdges(1,binLimC);
-  fSin2phiephiep->Sumw2();  
 
   // Resolution cosres_abc centrality
   const Int_t nDimfbis=4;
@@ -759,23 +734,6 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fCosResabc->SetBinEdges(3,binLimCMore);
   fCosResabc->Sumw2();
 
-  const Int_t nDimfbiss=4;
-  Int_t nBinfbiss[nDimfbiss] = {nBinsCos,nBinsCos,nBinsCos,nBinsC};
-  fSinResabc = new THnSparseF("SinRes_abc","SinRes_abc",nDimfbiss,nBinfbiss);
-  fSinResabc->SetBinEdges(0,binLimCos);
-  fSinResabc->SetBinEdges(1,binLimCos);
-  fSinResabc->SetBinEdges(2,binLimCos);
-  fSinResabc->SetBinEdges(3,binLimC);
-  fSinResabc->Sumw2();
-
-  // Profile cosres centrality with 3 subevents
-  fProfileCosResab = new TProfile("ProfileCosRes_a_b","ProfileCosRes_a_b",nBinsCMore,binLimCMore);
-  fProfileCosResab->Sumw2();
-  fProfileCosResac = new TProfile("ProfileCosRes_a_c","ProfileCosRes_a_c",nBinsCMore,binLimCMore);
-  fProfileCosResac->Sumw2();
-  fProfileCosResbc = new TProfile("ProfileCosRes_b_c","ProfileCosRes_b_c",nBinsCMore,binLimCMore);
-  fProfileCosResbc->Sumw2();
-  
   // Resolution cosres centrality
   const Int_t nDimf=2;
   Int_t nBinf[nDimf] = {nBinsCos, nBinsCMore};
@@ -784,25 +742,6 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fCosRes->SetBinEdges(1,binLimCMore);
   fCosRes->Sumw2();
 
-  const Int_t nDimff=2;
-  Int_t nBinff[nDimff] = {nBinsCos, nBinsC};
-  fSinRes = new THnSparseF("SinRes","SinRes",nDimff,nBinff);
-  fSinRes->SetBinEdges(0,binLimCos);
-  fSinRes->SetBinEdges(1,binLimC);
-  fSinRes->Sumw2();
-
-  // Profile cosres centrality
-  fProfileCosRes = new TProfile("ProfileCosRes","ProfileCosRes",nBinsCMore,binLimCMore);
-  fProfileCosRes->Sumw2();
-
-  // Debugging tracking steps
-  const Int_t nDimTrStep=2;
-  Int_t nBinTrStep[nDimTrStep] = {nBinsPt,nBinsStep};
-  fTrackingCuts = new THnSparseF("TrackingCuts","TrackingCuts",nDimTrStep,nBinTrStep);
-  fTrackingCuts->SetBinEdges(0,binLimPt);
-  fTrackingCuts->SetBinEdges(1,binLimStep);
-  fTrackingCuts->Sumw2();
-  
   // Maps delta phi
   const Int_t nDimg=5;
   Int_t nBing[nDimg] = {nBinsPhi,nBinsC,nBinsPt, nBinsCharge,nBinsEtaLess};
@@ -813,46 +752,6 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fDeltaPhiMaps->SetBinEdges(3,binLimCharge);
   fDeltaPhiMaps->SetBinEdges(4,binLimEtaLess);
   fDeltaPhiMaps->Sumw2();  
-
-  // Maps delta phi contamination
-  const Int_t nDimgcont=4;
-  Int_t nBingcont[nDimgcont] = {nBinsPhiLess,nBinsC,nBinsPt, nBinsTPCdEdx};
-  fDeltaPhiMapsContamination = new THnSparseF("DeltaPhiMapsContamination","DeltaPhiMapsContamination",nDimgcont,nBingcont);
-  fDeltaPhiMapsContamination->SetBinEdges(0,binLimPhiLess);
-  fDeltaPhiMapsContamination->SetBinEdges(1,binLimC);
-  fDeltaPhiMapsContamination->SetBinEdges(2,binLimPt);
-  fDeltaPhiMapsContamination->SetBinEdges(3,binLimTPCdEdx);
-  fDeltaPhiMapsContamination->Sumw2();  
-
-
-  //
-  const Int_t nDimgb=3;
-  Int_t nBingb[nDimgb] = {nBinsPhi,nBinsC,nBinsPt};
-
-  fDeltaPhiMapsBeforePID = new THnSparseF("DeltaPhiMapsBeforePID","DeltaPhiMapsBeforePID",nDimgb,nBingb);
-  fDeltaPhiMapsBeforePID->SetBinEdges(0,binLimPhi);
-  fDeltaPhiMapsBeforePID->SetBinEdges(1,binLimC);
-  fDeltaPhiMapsBeforePID->SetBinEdges(2,binLimPt);
-  fDeltaPhiMapsBeforePID->Sumw2();  
-
- 
-  fDeltaPhiMapsTaggedPhotonic = new THnSparseF("DeltaPhiMapsTaggedPhotonic","DeltaPhiMapsTaggedPhotonic",nDimgb,nBingb);
-  fDeltaPhiMapsTaggedPhotonic->SetBinEdges(0,binLimPhi);
-  fDeltaPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
-  fDeltaPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
-  fDeltaPhiMapsTaggedPhotonic->Sumw2();  
-
-  fDeltaPhiMapsTaggedNonPhotonic = new THnSparseF("DeltaPhiMapsTaggedNonPhotonic","DeltaPhiMapsTaggedNonPhotonic",nDimgb,nBingb);
-  fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimPhi);
-  fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
-  fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
-  fDeltaPhiMapsTaggedNonPhotonic->Sumw2();  
-
-  fDeltaPhiMapsTaggedPhotonicLS = new THnSparseF("DeltaPhiMapsTaggedPhotonicLS","DeltaPhiMapsTaggedPhotonicLS",nDimgb,nBingb);
-  fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimPhi);
-  fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
-  fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
-  fDeltaPhiMapsTaggedPhotonicLS->Sumw2();  
 
   // Maps cos phi
   const Int_t nDimh=5;
@@ -865,118 +764,285 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fCosPhiMaps->SetBinEdges(4,binLimEtaLess);
   fCosPhiMaps->Sumw2();
 
-  const Int_t nDimhb=3;
-  Int_t nBinhb[nDimhb] = {nBinsCos,nBinsC,nBinsPt};
+  //
+  // fMonitorEventPlane
+  //
+  //
 
-  fCosPhiMapsBeforePID = new THnSparseF("CosPhiMapsBeforePID","CosPhiMapsBeforePID",nDimhb,nBinhb);
-  fCosPhiMapsBeforePID->SetBinEdges(0,binLimCos);
-  fCosPhiMapsBeforePID->SetBinEdges(1,binLimC);
-  fCosPhiMapsBeforePID->SetBinEdges(2,binLimPt);
-  fCosPhiMapsBeforePID->Sumw2();
+  if(fMonitorEventPlane) {  
+    // Event Plane after subtraction as function of phiep, centrality, pt, eta
+    const Int_t nDimb=2;
+    Int_t nBinb[nDimb] = {nBinsPhi, nBinsC};
+    fEventPlaneaftersubtraction = new THnSparseF("EventPlane_aftersubtraction","EventPlane_aftersubtraction",nDimb,nBinb);
+    fEventPlaneaftersubtraction->SetBinEdges(0,binLimPhi);
+    fEventPlaneaftersubtraction->SetBinEdges(1,binLimC);
+    fEventPlaneaftersubtraction->Sumw2();
+    
+    // Monitoring of the event Plane cos(2phi) sin(2phi) centrality
+    const Int_t nDimi=3;
+    Int_t nBini[nDimi] = {nBinsCos, nBinsCos, nBinsCMore};
+    fCosSin2phiep = new THnSparseF("CosSin2phiep","CosSin2phiep",nDimi,nBini);
+    fCosSin2phiep->SetBinEdges(0,binLimCos);
+    fCosSin2phiep->SetBinEdges(1,binLimCos);
+    fCosSin2phiep->SetBinEdges(2,binLimCMore);
+    fCosSin2phiep->Sumw2();
+    
+    // Monitoring Event plane after subtraction of the track
+    const Int_t nDime=4;
+    Int_t nBine[nDime] = {nBinsCos, nBinsC, nBinsPt, nBinsEta};
+    fCos2phie = new THnSparseF("cos2phie","cos2phie",nDime,nBine);
+    fCos2phie->SetBinEdges(2,binLimPt);
+    fCos2phie->SetBinEdges(3,binLimEta);
+    fCos2phie->SetBinEdges(0,binLimCos);
+    fCos2phie->SetBinEdges(1,binLimC);
+    fCos2phie->Sumw2();
+    fSin2phie = new THnSparseF("sin2phie","sin2phie",nDime,nBine);
+    fSin2phie->SetBinEdges(2,binLimPt);
+    fSin2phie->SetBinEdges(3,binLimEta);
+    fSin2phie->SetBinEdges(0,binLimCos);
+    fSin2phie->SetBinEdges(1,binLimC);
+    fSin2phie->Sumw2();
+    fCos2phiep = new THnSparseF("cos2phiep","cos2phiep",nDime,nBine);
+    fCos2phiep->SetBinEdges(2,binLimPt);
+    fCos2phiep->SetBinEdges(3,binLimEta);
+    fCos2phiep->SetBinEdges(0,binLimCos);
+    fCos2phiep->SetBinEdges(1,binLimC);
+    fCos2phiep->Sumw2();
+    fSin2phiep = new THnSparseF("sin2phiep","sin2phiep",nDime,nBine);
+    fSin2phiep->SetBinEdges(2,binLimPt);
+    fSin2phiep->SetBinEdges(3,binLimEta);
+    fSin2phiep->SetBinEdges(0,binLimCos);
+    fSin2phiep->SetBinEdges(1,binLimC);
+    fSin2phiep->Sumw2();
+    fSin2phiephiep = new THnSparseF("sin2phie_phiep","sin2phie_phiep",nDime,nBine);
+    fSin2phiephiep->SetBinEdges(2,binLimPt);
+    fSin2phiephiep->SetBinEdges(3,binLimEta);
+    fSin2phiephiep->SetBinEdges(0,binLimCos);
+    fSin2phiephiep->SetBinEdges(1,binLimC);
+    fSin2phiephiep->Sumw2();  
+    
+    const Int_t nDimfbiss=4;
+    Int_t nBinfbiss[nDimfbiss] = {nBinsCos,nBinsCos,nBinsCos,nBinsC};
+    fSinResabc = new THnSparseF("SinRes_abc","SinRes_abc",nDimfbiss,nBinfbiss);
+    fSinResabc->SetBinEdges(0,binLimCos);
+    fSinResabc->SetBinEdges(1,binLimCos);
+    fSinResabc->SetBinEdges(2,binLimCos);
+    fSinResabc->SetBinEdges(3,binLimC);
+    fSinResabc->Sumw2();
+    
+    // Profile cosres centrality with 3 subevents
+    fProfileCosResab = new TProfile("ProfileCosRes_a_b","ProfileCosRes_a_b",nBinsCMore,binLimCMore);
+    fProfileCosResab->Sumw2();
+    fProfileCosResac = new TProfile("ProfileCosRes_a_c","ProfileCosRes_a_c",nBinsCMore,binLimCMore);
+    fProfileCosResac->Sumw2();
+    fProfileCosResbc = new TProfile("ProfileCosRes_b_c","ProfileCosRes_b_c",nBinsCMore,binLimCMore);
+    fProfileCosResbc->Sumw2();
+    
+    //
+    const Int_t nDimff=2;
+    Int_t nBinff[nDimff] = {nBinsCos, nBinsC};
+    fSinRes = new THnSparseF("SinRes","SinRes",nDimff,nBinff);
+    fSinRes->SetBinEdges(0,binLimCos);
+    fSinRes->SetBinEdges(1,binLimC);
+    fSinRes->Sumw2();
+    
+    // Profile cosres centrality
+    fProfileCosRes = new TProfile("ProfileCosRes","ProfileCosRes",nBinsCMore,binLimCMore);
+    fProfileCosRes->Sumw2();
+    
+    // Profile Maps cos phi
+    fProfileCosPhiMaps = new TProfile2D("ProfileCosPhiMaps","ProfileCosPhiMaps",nBinsC,binLimC,nBinsPt,binLimPt);
+    fProfileCosPhiMaps->Sumw2();
 
-  fCosPhiMapsTaggedPhotonic = new THnSparseF("CosPhiMapsTaggedPhotonic","CosPhiMapsTaggedPhotonic",nDimhb,nBinhb);
-  fCosPhiMapsTaggedPhotonic->SetBinEdges(0,binLimCos);
-  fCosPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
-  fCosPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
-  fCosPhiMapsTaggedPhotonic->Sumw2();
+  }
+  //
+  // fMonitorTrackCuts
+  //
 
-  fCosPhiMapsTaggedNonPhotonic = new THnSparseF("CosPhiMapsTaggedNonPhotonic","CosPhiMapsTaggedNonPhotonic",nDimhb,nBinhb);
-  fCosPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimCos);
-  fCosPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
-  fCosPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
-  fCosPhiMapsTaggedNonPhotonic->Sumw2();
-  
-  fCosPhiMapsTaggedPhotonicLS = new THnSparseF("CosPhiMapsTaggedPhotonicLS","CosPhiMapsTaggedPhotonicLS",nDimhb,nBinhb);
-  fCosPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimCos);
-  fCosPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
-  fCosPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
-  fCosPhiMapsTaggedPhotonicLS->Sumw2();
+  if(fMonitorTrackCuts) {
+    // Debugging tracking steps
+    const Int_t nDimTrStep=2;
+    Int_t nBinTrStep[nDimTrStep] = {nBinsPt,nBinsStep};
+    fTrackingCuts = new THnSparseF("TrackingCuts","TrackingCuts",nDimTrStep,nBinTrStep);
+    fTrackingCuts->SetBinEdges(0,binLimPt);
+    fTrackingCuts->SetBinEdges(1,binLimStep);
+    fTrackingCuts->Sumw2();
+  }
 
-  // Profile Maps cos phi
-  fProfileCosPhiMaps = new TProfile2D("ProfileCosPhiMaps","ProfileCosPhiMaps",nBinsC,binLimC,nBinsPt,binLimPt);
-  fProfileCosPhiMaps->Sumw2();
+  //
+  // fMonitorContamination
+  //
 
-  // Background study
-  const Int_t nDimMCSource=3;
-  Int_t nBinMCSource[nDimMCSource] = {nBinsC,nBinsPt,nBinsSource};
-  fMCSourceDeltaPhiMaps = new THnSparseF("MCSourceDeltaPhiMaps","MCSourceDeltaPhiMaps",nDimMCSource,nBinMCSource);
-  fMCSourceDeltaPhiMaps->SetBinEdges(0,binLimC);
-  fMCSourceDeltaPhiMaps->SetBinEdges(1,binLimPt);
-  fMCSourceDeltaPhiMaps->SetBinEdges(2,binLimSource);
-  fMCSourceDeltaPhiMaps->Sumw2();
+  if(fMonitorContamination) { 
+    // Maps delta phi contamination
+    const Int_t nDimgcont=4;
+    Int_t nBingcont[nDimgcont] = {nBinsPhiLess,nBinsC,nBinsPt, nBinsTPCdEdx};
+    fDeltaPhiMapsContamination = new THnSparseF("DeltaPhiMapsContamination","DeltaPhiMapsContamination",nDimgcont,nBingcont);
+    fDeltaPhiMapsContamination->SetBinEdges(0,binLimPhiLess);
+    fDeltaPhiMapsContamination->SetBinEdges(1,binLimC);
+    fDeltaPhiMapsContamination->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsContamination->SetBinEdges(3,binLimTPCdEdx);
+    fDeltaPhiMapsContamination->Sumw2();  
+  }
+  //
+  // fMonitorWithoutPID
+  //
 
-  // Maps invmass opposite
-  const Int_t nDimOppSign=5;
-  Int_t nBinOppSign[nDimOppSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource};
-  fOppSignDeltaPhiMaps = new THnSparseF("OppSignDeltaPhiMaps","OppSignDeltaPhiMaps",nDimOppSign,nBinOppSign);
-  fOppSignDeltaPhiMaps->SetBinEdges(0,binLimPhi);
-  fOppSignDeltaPhiMaps->SetBinEdges(1,binLimC);
-  fOppSignDeltaPhiMaps->SetBinEdges(2,binLimPt);
-  fOppSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
-  fOppSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
-  fOppSignDeltaPhiMaps->Sumw2();
+  if(fMonitorWithoutPID) {
+    //
+    const Int_t nDimgb=3;
+    Int_t nBingb[nDimgb] = {nBinsPhi,nBinsC,nBinsPt};
+    
+    fDeltaPhiMapsBeforePID = new THnSparseF("DeltaPhiMapsBeforePID","DeltaPhiMapsBeforePID",nDimgb,nBingb);
+    fDeltaPhiMapsBeforePID->SetBinEdges(0,binLimPhi);
+    fDeltaPhiMapsBeforePID->SetBinEdges(1,binLimC);
+    fDeltaPhiMapsBeforePID->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsBeforePID->Sumw2();  
+    
+    const Int_t nDimhb=3;
+    Int_t nBinhb[nDimhb] = {nBinsCos,nBinsC,nBinsPt};
+    
+    fCosPhiMapsBeforePID = new THnSparseF("CosPhiMapsBeforePID","CosPhiMapsBeforePID",nDimhb,nBinhb);
+    fCosPhiMapsBeforePID->SetBinEdges(0,binLimCos);
+    fCosPhiMapsBeforePID->SetBinEdges(1,binLimC);
+    fCosPhiMapsBeforePID->SetBinEdges(2,binLimPt);
+    fCosPhiMapsBeforePID->Sumw2();
+  }
+  //
+  // fMonitorPhotonic
+  //
 
-  // Maps invmass same sign
-  const Int_t nDimSameSign=5;
-  Int_t nBinSameSign[nDimSameSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource};
-  fSameSignDeltaPhiMaps = new THnSparseF("SameSignDeltaPhiMaps","SameSignDeltaPhiMaps",nDimSameSign,nBinSameSign);
-  fSameSignDeltaPhiMaps->SetBinEdges(0,binLimPhi);
-  fSameSignDeltaPhiMaps->SetBinEdges(1,binLimC);
-  fSameSignDeltaPhiMaps->SetBinEdges(2,binLimPt);
-  fSameSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
-  fSameSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
-  fSameSignDeltaPhiMaps->Sumw2();
-
-  // Maps angle same sign
-  const Int_t nDimAngleSameSign=3;
-  Int_t nBinAngleSameSign[nDimAngleSameSign] = {nBinsAngle,nBinsC,nBinsSource};
-  fSameSignAngle = new THnSparseF("SameSignAngleMaps","SameSignAngleMaps",nDimAngleSameSign,nBinAngleSameSign);
-  fSameSignAngle->SetBinEdges(0,binLimAngle);
-  fSameSignAngle->SetBinEdges(1,binLimC);
-  fSameSignAngle->SetBinEdges(2,binLimSource);
-  fSameSignAngle->Sumw2();
-
-  // Maps angle opp sign
-  const Int_t nDimAngleOppSign=3;
-  Int_t nBinAngleOppSign[nDimAngleOppSign] = {nBinsAngle,nBinsC,nBinsSource};
-  fOppSignAngle = new THnSparseF("OppSignAngleMaps","OppSignAngleMaps",nDimAngleOppSign,nBinAngleOppSign);
-  fOppSignAngle->SetBinEdges(0,binLimAngle);
-  fOppSignAngle->SetBinEdges(1,binLimC);
-  fOppSignAngle->SetBinEdges(2,binLimSource);
-  fOppSignAngle->Sumw2();
-
+  if(fMonitorPhotonic) {
+    const Int_t nDimgbp=3;
+    Int_t nBingbp[nDimgbp] = {nBinsPhi,nBinsC,nBinsPt};
+    
+    fDeltaPhiMapsTaggedPhotonic = new THnSparseF("DeltaPhiMapsTaggedPhotonic","DeltaPhiMapsTaggedPhotonic",nDimgbp,nBingbp);
+    fDeltaPhiMapsTaggedPhotonic->SetBinEdges(0,binLimPhi);
+    fDeltaPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
+    fDeltaPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsTaggedPhotonic->Sumw2();  
+    
+    fDeltaPhiMapsTaggedNonPhotonic = new THnSparseF("DeltaPhiMapsTaggedNonPhotonic","DeltaPhiMapsTaggedNonPhotonic",nDimgbp,nBingbp);
+    fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimPhi);
+    fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
+    fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsTaggedNonPhotonic->Sumw2();  
+    
+    fDeltaPhiMapsTaggedPhotonicLS = new THnSparseF("DeltaPhiMapsTaggedPhotonicLS","DeltaPhiMapsTaggedPhotonicLS",nDimgbp,nBingbp);
+    fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimPhi);
+    fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
+    fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsTaggedPhotonicLS->Sumw2();  
+    
+    const Int_t nDimhbp=3;
+    Int_t nBinhbp[nDimhbp] = {nBinsCos,nBinsC,nBinsPt};
+    
+    fCosPhiMapsTaggedPhotonic = new THnSparseF("CosPhiMapsTaggedPhotonic","CosPhiMapsTaggedPhotonic",nDimhbp,nBinhbp);
+    fCosPhiMapsTaggedPhotonic->SetBinEdges(0,binLimCos);
+    fCosPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
+    fCosPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
+    fCosPhiMapsTaggedPhotonic->Sumw2();
+    
+    fCosPhiMapsTaggedNonPhotonic = new THnSparseF("CosPhiMapsTaggedNonPhotonic","CosPhiMapsTaggedNonPhotonic",nDimhbp,nBinhbp);
+    fCosPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimCos);
+    fCosPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
+    fCosPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
+    fCosPhiMapsTaggedNonPhotonic->Sumw2();
+    
+    fCosPhiMapsTaggedPhotonicLS = new THnSparseF("CosPhiMapsTaggedPhotonicLS","CosPhiMapsTaggedPhotonicLS",nDimhbp,nBinhbp);
+    fCosPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimCos);
+    fCosPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
+    fCosPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
+    fCosPhiMapsTaggedPhotonicLS->Sumw2();
+    
+    const Int_t nDimMCSource=3;
+    Int_t nBinMCSource[nDimMCSource] = {nBinsC,nBinsPt,nBinsSource};
+    fMCSourceDeltaPhiMaps = new THnSparseF("MCSourceDeltaPhiMaps","MCSourceDeltaPhiMaps",nDimMCSource,nBinMCSource);
+    fMCSourceDeltaPhiMaps->SetBinEdges(0,binLimC);
+    fMCSourceDeltaPhiMaps->SetBinEdges(1,binLimPt);
+    fMCSourceDeltaPhiMaps->SetBinEdges(2,binLimSource);
+    fMCSourceDeltaPhiMaps->Sumw2();
+    
+    // Maps invmass opposite
+    const Int_t nDimOppSign=5;
+    Int_t nBinOppSign[nDimOppSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource};
+    fOppSignDeltaPhiMaps = new THnSparseF("OppSignDeltaPhiMaps","OppSignDeltaPhiMaps",nDimOppSign,nBinOppSign);
+    fOppSignDeltaPhiMaps->SetBinEdges(0,binLimPhi);
+    fOppSignDeltaPhiMaps->SetBinEdges(1,binLimC);
+    fOppSignDeltaPhiMaps->SetBinEdges(2,binLimPt);
+    fOppSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
+    fOppSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
+    fOppSignDeltaPhiMaps->Sumw2();
+    
+    // Maps invmass same sign
+    const Int_t nDimSameSign=5;
+    Int_t nBinSameSign[nDimSameSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource};
+    fSameSignDeltaPhiMaps = new THnSparseF("SameSignDeltaPhiMaps","SameSignDeltaPhiMaps",nDimSameSign,nBinSameSign);
+    fSameSignDeltaPhiMaps->SetBinEdges(0,binLimPhi);
+    fSameSignDeltaPhiMaps->SetBinEdges(1,binLimC);
+    fSameSignDeltaPhiMaps->SetBinEdges(2,binLimPt);
+    fSameSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
+    fSameSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
+    fSameSignDeltaPhiMaps->Sumw2();
+    
+    // Maps angle same sign
+    const Int_t nDimAngleSameSign=3;
+    Int_t nBinAngleSameSign[nDimAngleSameSign] = {nBinsAngle,nBinsC,nBinsSource};
+    fSameSignAngle = new THnSparseF("SameSignAngleMaps","SameSignAngleMaps",nDimAngleSameSign,nBinAngleSameSign);
+    fSameSignAngle->SetBinEdges(0,binLimAngle);
+    fSameSignAngle->SetBinEdges(1,binLimC);
+    fSameSignAngle->SetBinEdges(2,binLimSource);
+    fSameSignAngle->Sumw2();
+    
+    // Maps angle opp sign
+    const Int_t nDimAngleOppSign=3;
+    Int_t nBinAngleOppSign[nDimAngleOppSign] = {nBinsAngle,nBinsC,nBinsSource};
+    fOppSignAngle = new THnSparseF("OppSignAngleMaps","OppSignAngleMaps",nDimAngleOppSign,nBinAngleOppSign);
+    fOppSignAngle->SetBinEdges(0,binLimAngle);
+    fOppSignAngle->SetBinEdges(1,binLimC);
+    fOppSignAngle->SetBinEdges(2,binLimSource);
+    fOppSignAngle->Sumw2();
+  }
 
   //**************************
   // Add to the list
   //******************************
 
-  //fListHist->Add(qaCutsRP);
-  fListHist->Add(fPIDqa->MakeList("HFEpidQA"));
-  fListHist->Add(fPIDBackgroundqa->MakeList("HFEpidBackgroundQA"));
   fListHist->Add(fHistEV);
-  fListHist->Add(fProfileCosRes);
-  fListHist->Add(fProfileCosResab);
-  fListHist->Add(fProfileCosResac);
-  fListHist->Add(fProfileCosResbc);
-  fListHist->Add(fCosSin2phiep);
   fListHist->Add(fEventPlane);
-  fListHist->Add(fEventPlaneaftersubtraction);
-  fListHist->Add(fCos2phie);
-  fListHist->Add(fSin2phie);
-  fListHist->Add(fCos2phiep);
-  fListHist->Add(fSin2phiep);
-  fListHist->Add(fSin2phiephiep);
   fListHist->Add(fCosRes);
   fListHist->Add(fCosResabc);
-  fListHist->Add(fSinRes);
-  fListHist->Add(fSinResabc);
-  fListHist->Add(fTrackingCuts);
-  fListHist->Add(fDeltaPhiMapsBeforePID);
-  fListHist->Add(fCosPhiMapsBeforePID);
-  fListHist->Add(fDeltaPhiMaps);
-  fListHist->Add(fDeltaPhiMapsContamination);
   fListHist->Add(fCosPhiMaps);
-  fListHist->Add(fProfileCosPhiMaps);
+  fListHist->Add(fDeltaPhiMaps);
+  fListHist->Add(fPIDqa->MakeList("HFEpidQA"));
+
+  if(fMonitorEventPlane) {
+    fListHist->Add(fProfileCosRes);
+    fListHist->Add(fProfileCosResab);
+    fListHist->Add(fProfileCosResac);
+    fListHist->Add(fProfileCosResbc);
+    fListHist->Add(fCosSin2phiep);
+    fListHist->Add(fCos2phie);
+    fListHist->Add(fSin2phie);
+    fListHist->Add(fCos2phiep);
+    fListHist->Add(fSin2phiep);
+    fListHist->Add(fSin2phiephiep);
+    fListHist->Add(fSinRes);
+    fListHist->Add(fSinResabc);
+    fListHist->Add(fProfileCosPhiMaps);
+  }
+
+  if(fMonitorTrackCuts) fListHist->Add(fTrackingCuts);
+
+  if(fMonitorContamination) fListHist->Add(fDeltaPhiMapsContamination);
+  
+  if(fMonitorWithoutPID) {
+    fListHist->Add(fDeltaPhiMapsBeforePID);
+    fListHist->Add(fCosPhiMapsBeforePID);
+  }
+
+  if(fMonitorPhotonic) {
+  fListHist->Add(fPIDBackgroundqa->MakeList("HFEpidBackgroundQA"));
   fListHist->Add(fDeltaPhiMapsTaggedPhotonic);
   fListHist->Add(fCosPhiMapsTaggedPhotonic);
   fListHist->Add(fDeltaPhiMapsTaggedNonPhotonic);
@@ -988,9 +1054,9 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fListHist->Add(fSameSignDeltaPhiMaps);
   fListHist->Add(fSameSignAngle);
   fListHist->Add(fOppSignAngle);
+  }
 
-
-  if(fHFEVZEROEventPlane && (fDebugLevel > 2)) fListHist->Add(fHFEVZEROEventPlane->GetOutputList());
+  if(fHFEVZEROEventPlane && fMonitorEventPlane) fListHist->Add(fHFEVZEROEventPlane->GetOutputList());
   
 
   PostData(1, fListHist);
@@ -1280,37 +1346,40 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     return;
   }
 
-  ///////////////////////
-  // AliFlowEvent  
-  //////////////////////
+  //////////////////////////////////////
+  // AliFlowEvent  and MC event plane
+  /////////////////////////////////////
 
   Int_t nbtracks = fInputEvent->GetNumberOfTracks();
   //printf("Number of tracks %d\n",nbtracks);
 
-  fcutsRP->SetEvent( InputEvent(), MCEvent());
-  fcutsPOI->SetEvent( InputEvent(), MCEvent());
-  if( fflowEvent ){ 
-    fflowEvent->~AliFlowEvent();
-    new(fflowEvent) AliFlowEvent(fcutsRP,fcutsPOI);
-  }else fflowEvent = new AliFlowEvent(fcutsRP,fcutsPOI);
-  if(mcEvent && mcEvent->GenEventHeader()) {
-    fflowEvent->SetMCReactionPlaneAngle(mcEvent);
-    //if reaction plane not set from elsewhere randomize it before adding flow
-    //if (!fflowEvent->IsSetMCReactionPlaneAngle()) fflowEvent->SetMCReactionPlaneAngle(gRandom->Uniform(0.0,TMath::TwoPi()));
-    mcReactionPlane = TVector2::Phi_0_2pi(fflowEvent->GetMCReactionPlaneAngle());
-    if(mcReactionPlane > TMath::Pi()) mcReactionPlane = mcReactionPlane - TMath::Pi();
-    //printf("MC reaction plane %f\n",mcReactionPlane);
-  }
-  fflowEvent->SetReferenceMultiplicity( nbtracks );
-  fflowEvent->DefineDeadZone(0,0,0,0);
-  //fflowEvent.TagSubeventsInEta(-0.8,-0.1,0.1,0.8);
+  if(fMonitorQCumulant) {
 
-  ////////////////
-  // MC
-  ///////////////
-  if(fUseMCReactionPlane) {
-    eventPlanea = mcReactionPlane;
-    diffsub1sub2a = 0.0;
+    fcutsRP->SetEvent( InputEvent(), MCEvent());
+    fcutsPOI->SetEvent( InputEvent(), MCEvent());
+    if( fflowEvent ){ 
+      fflowEvent->~AliFlowEvent();
+      new(fflowEvent) AliFlowEvent(fcutsRP,fcutsPOI);
+    }else fflowEvent = new AliFlowEvent(fcutsRP,fcutsPOI);
+    if(mcEvent && mcEvent->GenEventHeader()) {
+      fflowEvent->SetMCReactionPlaneAngle(mcEvent);
+      //if reaction plane not set from elsewhere randomize it before adding flow
+      //if (!fflowEvent->IsSetMCReactionPlaneAngle()) fflowEvent->SetMCReactionPlaneAngle(gRandom->Uniform(0.0,TMath::TwoPi()));
+      mcReactionPlane = TVector2::Phi_0_2pi(fflowEvent->GetMCReactionPlaneAngle());
+      if(mcReactionPlane > TMath::Pi()) mcReactionPlane = mcReactionPlane - TMath::Pi();
+      //printf("MC reaction plane %f\n",mcReactionPlane);
+    }
+    fflowEvent->SetReferenceMultiplicity( nbtracks );
+    fflowEvent->DefineDeadZone(0,0,0,0);
+    //fflowEvent.TagSubeventsInEta(-0.8,-0.1,0.1,0.8);
+    
+    ////////////////
+    // MC
+    ///////////////
+    if(fUseMCReactionPlane) {
+      eventPlanea = mcReactionPlane;
+      diffsub1sub2a = 0.0;
+    }
   }
 
   
@@ -1330,14 +1399,14 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     fEventPlane->Fill(&valuensparsea[0]);
 
     // Fill
-    if(fDebugLevel > 5) fCosSin2phiep->Fill(&valuecossinephiep[0]);
+    if(fMonitorEventPlane) fCosSin2phiep->Fill(&valuecossinephiep[0]);
     
     if(!fVZEROEventPlane) {
       valuensparsef[0] = diffsub1sub2a;
       fCosRes->Fill(&valuensparsef[0]);
       valuensparsefsin[0] = diffsub1sub2asin;
-      if(fDebugLevel > 5) fSinRes->Fill(&valuensparsefsin[0]);
-      if(fDebugLevel > 5) {
+      if(fMonitorEventPlane) fSinRes->Fill(&valuensparsefsin[0]);
+      if(fMonitorEventPlane) {
 	fProfileCosRes->Fill(valuensparsef[1],valuensparsef[0]);
       }
     }
@@ -1349,8 +1418,8 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       valuensparsefbissin[0] = diffsubasubbsin;
       valuensparsefbissin[1] = diffsubbsubcsin;
       valuensparsefbissin[2] = diffsubasubcsin;
-      if(fDebugLevel > 5) fSinResabc->Fill(&valuensparsefbissin[0]);
-      if(fDebugLevel > 5) {
+      if(fMonitorEventPlane) fSinResabc->Fill(&valuensparsefbissin[0]);
+      if(fMonitorEventPlane) {
 	fProfileCosResab->Fill(valuensparsefbis[3],valuensparsefbis[0]);
 	fProfileCosResac->Fill(valuensparsefbis[3],valuensparsefbis[1]);
 	fProfileCosResbc->Fill(valuensparsefbis[3],valuensparsefbis[2]);
@@ -1362,69 +1431,77 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   ////////////////////////////////////////
   // Loop to determine pool background
   /////////////////////////////////////////
-  if(  fArraytrack ){ 
-     fArraytrack->~TArrayI();
-     new(fArraytrack) TArrayI(nbtracks);
-  }
-  else {  
-    fArraytrack = new TArrayI(nbtracks);
-  }
-  fCounterPoolBackground = 0;
-  for(Int_t k = 0; k < nbtracks; k++){
+  if(fMonitorPhotonic) {
+  
+    if(  fArraytrack ){ 
+      fArraytrack->~TArrayI();
+      new(fArraytrack) TArrayI(nbtracks);
+    }
+    else {  
+      fArraytrack = new TArrayI(nbtracks);
+    }
+    fCounterPoolBackground = 0;
     
-    AliVTrack *track = (AliVTrack *) fInputEvent->GetTrack(k);
-    if(!track) continue;
-    
-    // Track cuts
-    Bool_t survivedbackground = kTRUE;
-    if(fAODAnalysis) {
-      AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
-      if(aodtrack) {
-	AliESDtrack esdTrack(aodtrack);
-	// set the TPC cluster info
-	esdTrack.SetTPCClusterMap(aodtrack->GetTPCClusterMap());
-	esdTrack.SetTPCSharedMap(aodtrack->GetTPCSharedMap());
-	esdTrack.SetTPCPointsF(aodtrack->GetTPCNclsF());
-	// needed to calculate the impact parameters
-	AliAODEvent *aodeventu = dynamic_cast<AliAODEvent *>(fInputEvent);
-	if(aodeventu) {
-	  AliAODVertex *vAOD = aodeventu->GetPrimaryVertex();
-	  Double_t bfield = aodeventu->GetMagneticField();
-	  Double_t pos[3],cov[6];
-	  vAOD->GetXYZ(pos);
-	  vAOD->GetCovarianceMatrix(cov);
-	  const AliESDVertex vESD(pos,cov,100.,100);
-	  esdTrack.RelateToVertex(&vESD,bfield,3.);
-	} 
-	if(!fHFEBackgroundCuts->IsSelected(&esdTrack)) {
-	  survivedbackground = kFALSE;
+    for(Int_t k = 0; k < nbtracks; k++){
+      
+      AliVTrack *track = (AliVTrack *) fInputEvent->GetTrack(k);
+      if(!track) continue;
+      
+      // Track cuts
+      Bool_t survivedbackground = kTRUE;
+      if(fAODAnalysis) {
+	AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
+	if(aodtrack) {
+	  AliESDtrack esdTrack(aodtrack);
+	  // set the TPC cluster info
+	  esdTrack.SetTPCClusterMap(aodtrack->GetTPCClusterMap());
+	  esdTrack.SetTPCSharedMap(aodtrack->GetTPCSharedMap());
+	  esdTrack.SetTPCPointsF(aodtrack->GetTPCNclsF());
+	  // needed to calculate the impact parameters
+	  AliAODEvent *aodeventu = dynamic_cast<AliAODEvent *>(fInputEvent);
+	  if(aodeventu) {
+	    AliAODVertex *vAOD = aodeventu->GetPrimaryVertex();
+	    Double_t bfield = aodeventu->GetMagneticField();
+	    Double_t pos[3],cov[6];
+	    vAOD->GetXYZ(pos);
+	    vAOD->GetCovarianceMatrix(cov);
+	    const AliESDVertex vESD(pos,cov,100.,100);
+	    esdTrack.RelateToVertex(&vESD,bfield,3.);
+	  } 
+	  if(!fHFEBackgroundCuts->IsSelected(&esdTrack)) {
+	    survivedbackground = kFALSE;
+	  }
 	}
       }
-    }
-    else {
-      AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-      if(esdtrack) {
-	if(!fHFEBackgroundCuts->IsSelected(esdtrack)) survivedbackground = kFALSE;
+      else {
+	AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+	if(esdtrack) {
+	  if(!fHFEBackgroundCuts->IsSelected(esdtrack)) survivedbackground = kFALSE;
+	}
       }
-    }
-    // PID
-    if(survivedbackground) {
-      // PID track cuts
-      AliHFEpidObject hfetrack2;
-      if(!fAODAnalysis) hfetrack2.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-      else hfetrack2.SetAnalysisType(AliHFEpidObject::kAODanalysis);
-      hfetrack2.SetRecTrack(track);
-      hfetrack2.SetCentrality((Int_t)binct);
-      //printf("centrality %f and %d\n",binct,hfetrack.GetCentrality());
-      hfetrack2.SetPbPb();
-      if(fPIDBackground->IsSelected(&hfetrack2,0x0,"recTrackCont",fPIDBackgroundqa)) {
-	fArraytrack->AddAt(k,fCounterPoolBackground);
-	fCounterPoolBackground++;
-	//printf("fCounterPoolBackground %d, track %d\n",fCounterPoolBackground,k);
+      // PID
+      if(survivedbackground) {
+	// PID track cuts
+	AliHFEpidObject hfetrack2;
+	if(!fAODAnalysis) hfetrack2.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+	else hfetrack2.SetAnalysisType(AliHFEpidObject::kAODanalysis);
+	hfetrack2.SetRecTrack(track);
+	hfetrack2.SetCentrality((Int_t)binct);
+	//printf("centrality %f and %d\n",binct,hfetrack.GetCentrality());
+	hfetrack2.SetPbPb();
+	if(fPIDBackground->IsSelected(&hfetrack2,0x0,"recTrackCont",fPIDBackgroundqa)) {
+	  fArraytrack->AddAt(k,fCounterPoolBackground);
+	  fCounterPoolBackground++;
+	  //printf("fCounterPoolBackground %d, track %d\n",fCounterPoolBackground,k);
+	}
       }
     }
   }
 
+
+  ///////////////////////////////////
+  // Loop for kink mother AOD
+  //////////////////////////////////
   // Look at kink mother in case of AOD
   Int_t numberofvertices = 1;
   AliAODEvent *aodevent = NULL;
@@ -1479,7 +1556,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 
       // RecKine: ITSTPC cuts  
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
-      if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);
+      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);
       
       // Reject kink mother
       if(fAODAnalysis) {
@@ -1498,33 +1575,33 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	  if(esdtrack->GetKinkIndex(0) != 0) continue; 
 	} // Quick and dirty fix to reject both kink mothers and daughters
       }
-            
+      
       valuetrackingcuts[1] = 1; 
-       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       // RecPrim
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecPrim + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
       valuetrackingcuts[1] = 2; 
-       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
-
+      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+      
       // HFEcuts: ITS layers cuts
-       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
+      if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsITS + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
        valuetrackingcuts[1] = 3; 
-       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);     
+       if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);     
 
       // HFE cuts: TOF PID and mismatch flag
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTOF + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
       valuetrackingcuts[1] = 4; 
-       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       
       // HFE cuts: TPC PID cleanup
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
       valuetrackingcuts[1] = 5; 
-       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       
       // HFEcuts: Nb of tracklets TRD0
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepHFEcutsTRD + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
       valuetrackingcuts[1] = 6; 
-       if(fDebugLevel > 3) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
+      if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);    
       
     }
 
@@ -1624,7 +1701,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     // Fill before PID
     ///////////////////////
     
-    if(fDebugLevel > 5) { 
+    if(fMonitorWithoutPID) { 
       
       valuensparseg[0] = deltaphi;
       if(fillEventPlane) fDeltaPhiMapsBeforePID->Fill(&valuensparseg[0]);
@@ -1652,10 +1729,12 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	hfetrack.SetPbPb();
 
 	// Only TOF PID
-	if(fPIDTOFOnly->IsSelected(&hfetrack,0x0,"recTrackCont",0x0)) {
-	  Float_t nsigma = pidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
-	  valuedeltaphicontamination[3] = nsigma;
-	  fDeltaPhiMapsContamination->Fill(&valuedeltaphicontamination[0]);
+	if(fMonitorContamination) {
+	  if(fPIDTOFOnly->IsSelected(&hfetrack,0x0,"recTrackCont",0x0)) {
+	    Float_t nsigma = pidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+	    valuedeltaphicontamination[3] = nsigma;
+	    fDeltaPhiMapsContamination->Fill(&valuedeltaphicontamination[0]);
+	  }
 	}
 
 	// Complete PID TOF+TPC
@@ -1675,28 +1754,29 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     /////////////////////////////////////////////////////////////////////////////
     // Add candidate to AliFlowEvent for POI and subtract from RP if needed
     ////////////////////////////////////////////////////////////////////////////
-    Int_t idtrack = static_cast<AliVTrack*>(track)->GetID();
-    Bool_t found = kFALSE;
-    Int_t numberoffound = 0;
-    //printf("A: Number of tracks %d\n",fflowEvent->NumberOfTracks());
-    for(Int_t iRPs=0; iRPs< fflowEvent->NumberOfTracks(); iRPs++) {
-      AliFlowTrack *iRP = (AliFlowTrack*) (fflowEvent->GetTrack(iRPs));
-      //if(!iRP->InRPSelection()) continue;
-      if( TMath::Abs(idtrack) == TMath::Abs(iRP->GetID()) ) {
-	iRP->SetForPOISelection(kTRUE);
-	found = kTRUE;
-	numberoffound ++;
+    if(fMonitorQCumulant) {
+      Int_t idtrack = static_cast<AliVTrack*>(track)->GetID();
+      Bool_t found = kFALSE;
+      Int_t numberoffound = 0;
+      //printf("A: Number of tracks %d\n",fflowEvent->NumberOfTracks());
+      for(Int_t iRPs=0; iRPs< fflowEvent->NumberOfTracks(); iRPs++) {
+	AliFlowTrack *iRP = (AliFlowTrack*) (fflowEvent->GetTrack(iRPs));
+	//if(!iRP->InRPSelection()) continue;
+	if( TMath::Abs(idtrack) == TMath::Abs(iRP->GetID()) ) {
+	  iRP->SetForPOISelection(kTRUE);
+	  found = kTRUE;
+	  numberoffound ++;
+	}
       }
+      //printf("Found %d mal\n",numberoffound);
+      if(!found) {
+	AliFlowCandidateTrack *sTrack = (AliFlowCandidateTrack*) MakeTrack(massElectron,track->Pt(),track->Phi(), track->Eta());
+	sTrack->SetID(idtrack);
+	fflowEvent->AddTrack(sTrack);
+	//printf("Add the track\n");
+      }
+      //printf("B: Number of tracks %d\n",fflowEvent->NumberOfTracks());
     }
-    //printf("Found %d mal\n",numberoffound);
-    if(!found) {
-      AliFlowCandidateTrack *sTrack = (AliFlowCandidateTrack*) MakeTrack(massElectron,track->Pt(),track->Phi(), track->Eta());
-      sTrack->SetID(idtrack);
-      fflowEvent->AddTrack(sTrack);
-      //printf("Add the track\n");
-    }
-    //printf("B: Number of tracks %d\n",fflowEvent->NumberOfTracks());
-    
     
   
     /////////////////////
@@ -1705,10 +1785,10 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 
     //
     valuensparseabis[0] = eventplanesubtracted;
-    if((fillEventPlane) && (fDebugLevel > 5)) fEventPlaneaftersubtraction->Fill(&valuensparseabis[0]);
+    if((fillEventPlane) && (fMonitorEventPlane)) fEventPlaneaftersubtraction->Fill(&valuensparseabis[0]);
     
 
-    if(fDebugLevel > 5) 
+    if(fMonitorEventPlane) 
       {
 	//
 	valuensparsee[0] = TMath::Cos(2*phitrack);
@@ -1733,12 +1813,12 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     valuensparseh[0] = TMath::Cos(2*TVector2::Phi_mpi_pi(phitrack-eventplanesubtracted));
     if(fillEventPlane) {
       fCosPhiMaps->Fill(&valuensparseh[0]);
-      if(fDebugLevel > 0) {
+      if(fMonitorEventPlane) {
 	fProfileCosPhiMaps->Fill(valuensparsehprofile[1],valuensparsehprofile[2],valuensparseh[0]);
       }
     }
     
-    if(fDebugLevel > 1) {
+    if(fMonitorPhotonic) {
       // background
       Int_t source = 0;
       Int_t indexmother = -1;
@@ -1769,7 +1849,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 
   //////////////////////////////////////////////////////////////////////////////
   ///////////////////////////AFTERBURNER
-  if (fAfterBurnerOn)
+  if (fAfterBurnerOn &  fMonitorQCumulant)
     {
       fflowEvent->AddFlow(fV1,fV2,fV3,fV4,fV5);     //add flow
       fflowEvent->CloneTracks(fNonFlowNumberOfTrackClones); //add nonflow by cloning tracks
@@ -1782,9 +1862,11 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     if((fBinCentralityLess[bincless]< cntr) && (cntr < fBinCentralityLess[bincless+1])) PostData(bincless+2,fflowEvent);
   }
 
-  if(fArraytrack) {
-    delete fArraytrack;
-    fArraytrack = NULL;
+  if(fMonitorPhotonic) {
+    if(fArraytrack) {
+      delete fArraytrack;
+      fArraytrack = NULL;
+    }
   }
   
   PostData(1, fListHist);
