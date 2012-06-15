@@ -373,9 +373,10 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
 
       Double_t maxzaxis=h->GetBinContent(h->GetMaximumBin());
       Double_t minzaxis=h->GetBinContent(h->GetMinimumBin());
-
+      printf("Minimum = %f, maximum = %f\n",minzaxis,maxzaxis);
       TH2F* hallzrange=(TH2F*)h->Clone(Form("%swholez",hname.Data()));
       hallzrange->SetAxisRange(1e-07,maxzaxis,"Z");
+      //hallzrange->SetAxisRange(minzaxis,maxzaxis,"Z");
 
       TCanvas* cwholez=new TCanvas(Form("c%swholez",hname.Data()),Form("%s down to lowest z",hname.Data()));
       cwholez->SetLogz();
@@ -657,7 +658,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
-  TString listname="outputCentrCheck",name1="",name2="",path2="",filename2="PWG3histograms.root";
+  TString listname="outputCentrCheck",partname2="",path2="",suffixdir2="",filename2="PWG3histograms.root";
 
   // if(superimpose){
   //   cout<<"Enter the names:\n>";
@@ -669,16 +670,19 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   TString tmp="y";
 
   if(superimpose){
-    cout<<"Enter the names:\n>";
-    cin>>name1;
+    cout<<"##Second file\n";
+    cout<<"Enter the name:\n";
     cout<<">";
-    cin>>name2;
+    cin>>partname2;
     cout<<"Are they in the same output file? (y/n)"<<endl;
     cin>>tmp;
     if(tmp=="n"){
       cout<<"Path: \n";
       cout<<">";
       cin>>path2;
+      cout<<"Dir name:\n";
+      cout<<">";
+      cin>>suffixdir2;
       cout<<"Filename: "<<endl;
       cout<<">";
       cin>>filename2;
@@ -700,10 +704,10 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   TList* list;
   TH1F * hstat;
 
-  TString dirname="PWG3_D2H_QA";
+  TString dirname="PWG3_D2H_QA",dirname2=dirname;
   dirname+=suffixdir;
-
-  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename,dirname);
+  dirname2+=suffixdir2;
+  Bool_t isRead=ReadFile(list,hstat,listname,partname.Data(),path,filename,dirname);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
@@ -713,18 +717,18 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
   pvtxt->SetBorderSize(0);
   pvtxt->SetFillStyle(0);
-  pvtxt->AddText(name1);
+  pvtxt->AddText(partname);
 
   TList* llist;
   TH1F* hhstat;
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2,dirname);
+    isRead=ReadFile(llist,hhstat,listname,partname2.Data(),path2,filename2,dirname2);
     if(!isRead) return;
     if(!llist || !hhstat){
       cout<<":-( null pointers..."<<endl;
       return;
     }
-    TText *redtext=pvtxt->AddText(name2);
+    TText *redtext=pvtxt->AddText(partname2);
     redtext->SetTextColor(kRed);
 
   }
@@ -788,17 +792,17 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 	continue;
       }
       TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
-      TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
-      pvtxt->SetBorderSize(0);
-      pvtxt->SetFillStyle(0);
+      TPaveText *pvtxt3=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
+      pvtxt3->SetBorderSize(0);
+      pvtxt3->SetFillStyle(0);
 
       c->cd();
       c->SetGrid();
       Int_t entries=h->Integral();
-      pvtxt->AddText(Form("%.1f %s of the events",(Double_t)entries/(Double_t)nevents*100,"%"));
+      pvtxt3->AddText(Form("%.1f %s of the events",(Double_t)entries/(Double_t)nevents*100,"%"));
       h->Draw("colz");
       c->SetLogz();
-      pvtxt->Draw();
+      pvtxt3->Draw();
       c->SaveAs(Form("%s%s.pdf",c->GetName(),textleg.Data()));
       c->SaveAs(Form("%s%s.eps",c->GetName(),textleg.Data()));
     }
@@ -807,7 +811,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   
   listname="countersCentrality";
 
-  isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename,dirname);
+  isRead=ReadFile(list,hstat,listname,partname.Data(),path,filename,dirname);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
@@ -816,13 +820,13 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 
 
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2,dirname);
+    isRead=ReadFile(llist,hhstat,listname,partname2.Data(),path2,filename2,dirname2);
     if(!isRead) return;
     if(!llist || !hhstat){
       cout<<":-( null pointers..."<<endl;
       return;
     }
-    TText *redtext=pvtxt->AddText(name2);
+    TText *redtext=pvtxt->AddText(partname2);
     redtext->SetTextColor(kRed);
 
   }
@@ -884,6 +888,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 	  hhallcntr=(TH1F*)hh->Clone("hhallcntr");
 	  hhallcntr->Sumw2();
 	}else hhallcntr->Add(hh);
+
 	nnevents080+=hh->Integral();
 	
       }
@@ -946,14 +951,17 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
       // if(ic==0)h->DrawClone();
       // else h->DrawClone("sames");
     }
-    /*//draw 0-20 and 20-80 in the multi pad canvas (increase divisions before uncommenting)
-    ccent->cd(ncentr+1);
     h020->Divide(hallcntr);
-    h020->DrawClone();
     if(superimpose){
       hh020->Divide(hhallcntr);
       hh020->SetLineColor(2);
       hh020->SetMarkerColor(2);
+    }
+
+    /*//draw 0-20 and 20-80 in the multi pad canvas (increase divisions before uncommenting)
+    ccent->cd(ncentr+1);
+    h020->DrawClone();
+    if(superimpose){
       hh020->DrawClone("sames");
     }
     */
@@ -966,16 +974,21 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     cv020->SaveAs(Form("cv020-%d.pdf",i));
     cv020->SaveAs(Form("cv020-%d.eps",i));
 
-    ccent->cd(ncentr+2);
     h2080->Divide(hallcntr);
-    h2080->DrawClone();
-    if(superimpose){
+    if(superimpose) {
       hh2080->Divide(hhallcntr);
       hh2080->SetLineColor(2);
       hh2080->SetMarkerColor(2);
-      hh2080->DrawClone("sames");
     }
 
+    /*
+    ccent->cd(ncentr+2);
+    h2080->DrawClone();
+   
+    if(superimpose){
+      hh2080->DrawClone("sames");
+    }
+    */
     TCanvas* cv2080=new TCanvas(Form("cv2080-%d",i),"20-80% vs run number",1400,600);
     cv2080->cd();
     cv2080->SetTicky();
@@ -991,7 +1004,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   
 }
 
-void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",Int_t nsteps=0,TString direction="X",TString path="./",TString suffixdir="", TString filename="AnalysisResults.root"){
+void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",Int_t groupnbins=5,Float_t fitmin=15,Float_t fitmax=50,TString direction="X",TString path="./",TString suffixdir="", TString filename="AnalysisResults.root", TString fitfunc="pol0"/*option "nofit" does not fit*/){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
@@ -1015,6 +1028,7 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
   TH2F* h2=(TH2F*)list->FindObject(h2dname);
   if(!h2){
     cout<<h2dname.Data()<<" not found"<<endl;
+    list->ls();
     return;
   }
   TCanvas* cv2d=new TCanvas("cv2d",h2->GetName());
@@ -1027,37 +1041,58 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
   pvst->SetFillStyle(0);
   pvst->AddText("Bin -> Cont/nEvVtx");
 
+  //nsteps=group bins in the Y(X) direction if projecting on the X(Y) direction
+  Int_t nsteps=0;
 
-  Int_t kbins=1;
-  if(nsteps==0){
-    if(direction=="X") nsteps=h2->GetNbinsY();
-    if(direction=="Y") nsteps=h2->GetNbinsX();
-  }
-  else{
-    if(direction=="X") kbins=h2->GetNbinsY()/nsteps;
-    if(direction=="Y") kbins=h2->GetNbinsX()/nsteps;
-  }
+  if(direction=="X") nsteps=h2->GetNbinsY()/groupnbins;
+  if(direction=="Y") nsteps=h2->GetNbinsX()/groupnbins;
+  cout<<"Grouping bins by " <<groupnbins<<" I obtaine "<<nsteps<<" projections"<<endl;
 
   TCanvas *cvpj=new TCanvas(Form("cvpj%s%s",direction.Data(),h2dname.Data()),Form("cvpj%s",direction.Data()),1200,800);
   cvpj->Divide((Int_t)(nsteps/3)+1,3);
   TFile* fout=new TFile(Form("proj%s%s.root",direction.Data(),h2dname.Data()), "recreate");
   //Float_t maxx[nsteps];
-  Float_t maxx[12]={9000,9000,6000,4000,2000,1400,800,500,200,100,40,25};
+  //Float_t maxx[12]={9000,9000,6000,4000,2000,1400,800,500,200,100,40,25};
   Double_t integralpernev[nsteps];
+
+  Double_t minx=0,maxx=0;
+  if(direction=="X"){
+    minx=h2->GetYaxis()->GetXmin();
+    maxx=h2->GetYaxis()->GetXmax();
+  }
+  if(direction=="Y"){
+    minx=h2->GetXaxis()->GetXmin();
+    maxx=h2->GetXaxis()->GetXmax();
+  }
+  printf("Plotting from %.1f to %.1f\n",minx,maxx);
+  TCanvas *cintegral=new TCanvas("cintegral","Integral of each projection");
+  TH1F* hint=new TH1F("hint","Integral of each projection;Centrality (%);Entries",nsteps,minx,maxx);
+  Double_t minint=999999999,maxint=0;
 
   for(Int_t i=0;i<nsteps;i++){
     TH1F* h=0x0;
-    if(direction=="X")h=(TH1F*)h2->ProjectionX(Form("px%d",i),i+kbins,i+2*kbins);
-    if(direction=="Y")h=(TH1F*)h2->ProjectionY(Form("py%d",i),i+kbins,i+2*kbins);
+    // if(direction=="X")h=(TH1F*)h2->ProjectionX(Form("px%d",i),i+kbins,i+2*kbins);
+    // if(direction=="Y")h=(TH1F*)h2->ProjectionY(Form("py%d",i),i+kbins,i+2*kbins);
+    if(direction=="X")h=(TH1F*)h2->ProjectionX(Form("px%d",i),groupnbins*i+1,groupnbins*(i+1));
+    if(direction=="Y")h=(TH1F*)h2->ProjectionY(Form("py%d",i),groupnbins*i+1,groupnbins*(i+1));
+    Double_t projint=h->Integral();
+    cout<<"Integral of projection "<<i<<" = "<<projint<<endl;
+    hint->SetBinContent(i+1,projint);
+    hint->SetBinError(i+1,TMath::Sqrt(projint));
+
+    if(projint<1e-7) continue;
+    if(minint>projint) minint=projint;
+    if(projint>maxint) maxint=projint;
     integralpernev[i]=h->Integral()/nevents;
 
     TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
     pvtxt->SetBorderSize(0);
     pvtxt->SetFillStyle(0);
-    pvtxt->AddText(Form("%.0f - %.0f",h2->GetYaxis()->GetBinLowEdge((i+kbins)),h2->GetYaxis()->GetBinLowEdge((i+2*kbins))));
-    pvst->AddText(Form("%.0f - %.0f -> %.2f",h2->GetYaxis()->GetBinLowEdge((i+kbins)),h2->GetYaxis()->GetBinLowEdge((i+2*kbins)),integralpernev[i]));
+    pvtxt->AddText(Form("%.0f - %.0f",h2->GetYaxis()->GetBinLowEdge(groupnbins*i+1),h2->GetYaxis()->GetBinLowEdge(groupnbins*(i+1))));
+    pvst->AddText(Form("%.0f - %.0f -> %.2f",h2->GetYaxis()->GetBinLowEdge(groupnbins*i+1),h2->GetYaxis()->GetBinLowEdge((groupnbins*(i+1))),integralpernev[i]));
+
     cvpj->cd(i+1);
-    h->GetXaxis()->SetRangeUser(0,maxx[i]);
+    //h->GetXaxis()->SetRangeUser(0,maxx[i]);
     h->Draw();
     pvtxt->Draw();
     fout->cd();
@@ -1071,6 +1106,28 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
   cv2d->SaveAs(Form("%s.pdf",h2->GetName()));
   cv2d->SaveAs(Form("%s.eps",h2->GetName()));
 
+  cintegral->cd();
+  hint->SetMarkerStyle(20);
+  hint->Draw("PE");
+  if(!fitfunc.Contains("nofit")){
+    hint->Fit(fitfunc.Data(),"RL","PE",fitmin,fitmax);
+    TF1* fpolfit=hint->GetFunction(fitfunc.Data());
+    TPaveText *txtvar=new TPaveText(0.3,0.1,0.9,0.4,"NDC");
+    txtvar->SetBorderSize(0);
+    txtvar->SetFillStyle(0);
+    //txtvar->AddText(Form("Full spread %.0f- %.0f",maxint,minint));
+    txtvar->AddText(Form("Fit in %.1f-%.1f; ",fitmin,fitmax));
+    for(Int_t ipar=0;ipar<fpolfit->GetNpar();ipar++){
+      txtvar->AddText(Form("par%d = %.0f, ",ipar, fpolfit->GetParameter(ipar)));
+    }
+    txtvar->AddText(Form("#tilde{#chi}^{2} = %.2f",fpolfit->GetChisquare()/fpolfit->GetNDF()));
+    txtvar->AddText(Form("bin width = %.1f %s",hint->GetBinWidth(3),"%"));
+    txtvar->Draw();
+  }
+  fout->cd();
+  hint->Write();
+  cintegral->SaveAs(Form("%s.pdf",hint->GetName()));
+  cintegral->SaveAs(Form("%s.eps",hint->GetName()));
 }
 
 void DrawEventSelection(TString partname="D0", TString path="./",TString suffixdir="",TString filename="AnalysisResults.root"){
@@ -1134,7 +1191,7 @@ void DrawEventSelection(TString partname="D0", TString path="./",TString suffixd
 
   Int_t nkeys=keywords.CountChar(',')+1;
 
-  TString words[nkeys];
+  TString *words = new TString[nkeys];
   for(Int_t k=0;k<nkeys;k++) words[k]="";
   printf("Keywords: ");
   Int_t count=0;
@@ -1177,5 +1234,7 @@ void DrawEventSelection(TString partname="D0", TString path="./",TString suffixd
   legtr->Draw();
   ctrigfraction->SaveAs("TrgFractionOverANY.pdf");
   ctrigfraction->SaveAs("TrgFractionOverANY.eps");
-    
+
+  delete [] words;
+
 }
