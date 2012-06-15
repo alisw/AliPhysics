@@ -13,13 +13,16 @@
 //-------------------------------------------------------------------------
 
 class AliAODEvent;
-class AliSpectraAODHistoManager;
-#include "AliAODMCParticle.h"
+//class AliSpectraAODHistoManager;
+class TH1I;
+class AliAODMCParticle;
+class AliAODTrack;
+
 #include "AliSpectraAODHistoManager.h"
 #include "TNamed.h"
-
-using namespace AliSpectraNameSpace;
  
+using namespace AliSpectraNameSpace;
+
 const char * kBinLabel[] ={"TrkBit",
 			   "TrkCuts",
 			   "TrkEta",
@@ -40,7 +43,7 @@ class AliSpectraAODTrackCuts : public TNamed
   enum { kTrkBit = 0, kTrkCuts, kTrkEta, kTrkDCA, kTrkP, kTrkPt,kTrkPtTOF,kTOFMatching,kTrTOFout,kTrTIME,kTrTOFpid,kAccepted,kNTrkCuts};
   
   
- AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fEtaCutMin(0), fEtaCutMax(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0) {}
+ AliSpectraAODTrackCuts() : TNamed(), fIsSelected(0), fTrackBits(0), fMinTPCcls(0), fEtaCutMin(0), fEtaCutMax(0), fPCut(0), fPtCut(0), fPtCutTOFMatching(0), fHistoCuts(0), fHistoNSelectedPos(0), fHistoNSelectedNeg(0), fHistoNMatchedPos(0), fHistoNMatchedNeg(0), fHistoEtaPhiHighPt(0), fTrack(0) {}
   
   AliSpectraAODTrackCuts(const char *name);
   virtual  ~AliSpectraAODTrackCuts() {} // To be implemented
@@ -58,7 +61,7 @@ class AliSpectraAODTrackCuts : public TNamed
   Bool_t CheckTOFMatching(Bool_t FillHistStat);
   void PrintCuts() const;
   
-   UInt_t GetTrackType()  const    { return fTrackBits; }
+   UInt_t GetTrackType()  const    { return fTrackBits;}
    TH1I * GetHistoCuts()      { return fHistoCuts; }
    TH1F * GetHistoNSelectedPos()      { return fHistoNSelectedPos; } 
    TH1F * GetHistoNSelectedNeg()      { return fHistoNSelectedNeg; }
@@ -72,6 +75,7 @@ class AliSpectraAODTrackCuts : public TNamed
    void SetY(Float_t y) { fYCut = y;}
    void SetPtTOFMatching(Float_t pt)     { fPtCutTOFMatching = pt; }
    void SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
+   void SetMinTPCcls(UInt_t MinTPCcls) {fMinTPCcls=MinTPCcls;}
    Float_t GetEtaMin()       const    { return fEtaCutMin; }
    Float_t GetEtaMax()       const    { return fEtaCutMax; }
    Float_t GetY()         const    { return fYCut; }
@@ -87,6 +91,7 @@ class AliSpectraAODTrackCuts : public TNamed
    
    Bool_t           fIsSelected;      // True if cuts are selected
    UInt_t           fTrackBits;       // Type of track to be used
+   UInt_t           fMinTPCcls;       // min number of clusters in the TPC
    Float_t          fEtaCutMin;          // Allowed absolute maximum value of Eta
    Float_t          fEtaCutMax;          // Allowed absolute maximum value of Eta
    Float_t          fDCACut;          // Maximum value of DCA

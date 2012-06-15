@@ -14,8 +14,9 @@
 
 class AliAODEvent;
 class AliSpectraAODTrackCuts;
-class AliSpectraAODHistoManager;
+//class AliSpectraAODHistoManager;
 
+#include "TH1I.h"
 #include "TNamed.h"
 
 class AliSpectraAODEventCuts : public TNamed
@@ -24,7 +25,7 @@ class AliSpectraAODEventCuts : public TNamed
   enum {  kProcessedEvents = 0,kPhysSelEvents,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector, kNVtxCuts};
 
   // Constructors
- AliSpectraAODEventCuts() : TNamed(), fAOD(0), fIsMC(0), fUseCentPatchAOD049(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorPosCutMin(0), fQVectorPosCutMax(0), fQVectorNegCutMin(0), fQVectorNegCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVectorPos(0),fHistoQVectorNeg(0) {}
+ AliSpectraAODEventCuts() : TNamed(), fAOD(0), fTrackBits(0), fIsMC(0), fUseCentPatchAOD049(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorPosCutMin(0), fQVectorPosCutMax(0), fQVectorNegCutMin(0), fQVectorNegCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVectorPos(0),fHistoQVectorNeg(0) {}
   AliSpectraAODEventCuts(const char *name);
   virtual  ~AliSpectraAODEventCuts() {}
   
@@ -43,8 +44,10 @@ class AliSpectraAODEventCuts : public TNamed
   void  SetCentralityCutMax(Float_t cut)  { fCentralityCutMax = cut; }
   void  SetQVectorPosCut(Float_t min,Float_t max)  { fQVectorPosCutMin = min; fQVectorPosCutMax = max; }
   void  SetQVectorNegCut(Float_t min,Float_t max)  { fQVectorNegCutMin = min; fQVectorNegCutMax = max; }
+  void SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
 
-   
+
+  UInt_t GetTrackType()  const    { return fTrackBits;}
   TH1I * GetHistoCuts()         {  return fHistoCuts; }
   TH1F * GetHistoVtxBefSel()         {  return fHistoVtxBefSel; }
   TH1F * GetHistoVtxAftSel()         {  return fHistoVtxAftSel; }
@@ -72,6 +75,7 @@ class AliSpectraAODEventCuts : public TNamed
  private:
   
   AliAODEvent     *fAOD;              //! AOD event
+  UInt_t           fTrackBits;       // Type of track to be used in the Qvector calculation
   Bool_t          fIsMC;// true if processing MC
   Bool_t          fUseCentPatchAOD049;// Patch for centrality selection on AOD049
   AliSpectraAODTrackCuts     *fTrackCuts;              //! track cuts
