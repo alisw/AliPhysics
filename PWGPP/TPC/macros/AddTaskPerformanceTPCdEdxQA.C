@@ -237,7 +237,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   task->AddPerformanceObject( pCompDEdx3 );
   task->AddPerformanceObject( pCompConstrain6 );
   if(bUseMCInfo)   {
-      task->AddPerformanceObject( pCompRes4 );
+      //task->AddPerformanceObject( pCompRes4 );
       task->AddPerformanceObject( pCompEff5 );
   }
 
