@@ -1449,8 +1449,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         {
           for(Int_t irp=0; irp<GetNRPBin(); irp++)
           {
-            printf("GetCreateOutputObjects - Bins : cent %d, vz %d, RP %d, event %d/%d\n",
-                   ic,iz, irp, ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp,GetNZvertBin()*GetNRPBin()*GetNCentrBin());
+            //printf("GetCreateOutputObjects - Bins : cent %d, vz %d, RP %d, event %d/%d\n",
+            //       ic,iz, irp, ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp,GetNZvertBin()*GetNRPBin()*GetNCentrBin());
             fListMixEvents[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp] = new TList() ;
             fListMixEvents[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp]->SetOwner(kFALSE);
           }
