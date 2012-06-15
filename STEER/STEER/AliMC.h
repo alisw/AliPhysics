@@ -37,6 +37,7 @@ public:
    virtual  void  ConstructGeometry();
    virtual  Bool_t  MisalignGeometry();
    virtual  void  ConstructOpGeometry();
+   virtual  void  AddParticles();
    virtual  void  InitGeometry();     
    virtual  void  SetAllAlignableVolumes();     
    virtual  void  GeneratePrimaries();
