@@ -1011,7 +1011,8 @@ void AliPHOSEmcRecPoint::Purify(Float_t threshold, const TClonesArray * digits){
       inClu=1 ;
     }
   }
-  used[index[0]]=kTRUE ; //mark as used
+  if(mult>0)
+    used[index[0]]=kTRUE ; //mark as used
   for(Int_t i=0; i<inClu; i++){
     AliPHOSDigit * digit = (AliPHOSDigit *) digits->At(tempo[index[i]]) ; 
     for(Int_t iDigit=0 ;iDigit<mult; iDigit++){
