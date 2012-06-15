@@ -592,7 +592,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
     }
   
   Double_t params[4];
-  char *cutmodel;
+  const char *cutmodel;
   cutmodel = "pol0";
   params[0] = -1.0; //sigma min
   double maxnSig = 3.0;
