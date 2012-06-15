@@ -1,11 +1,76 @@
-AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=10, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Int_t vzero=3, Int_t debuglevel=4, Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE, Double_t tpcdedx0=-200.0, Double_t tpcdedx1=-150.0, Double_t tpcdedx2=-100.0, Double_t tpcdedx3=-50.0, Double_t tpcdedx4=50.0,Double_t tpcdedx5=100.0, Double_t tpcdedx6=180.0, Double_t tpcdedx7=200.0){
+AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=10, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=3, Int_t debuglevel=0, Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE){
 
   // libraries in case
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libPWGflowBase.so");
   gSystem->Load("libPWGflowTasks.so");
+  
+  //
+  // Define TPC cut for 2011 data
+  //
+  Double_t tpcdedx[8] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}; //0-5,5-10,10-20,20-30,30-40,40-50,50-60,60-100
+  // -0.2 0-5%
+  // -0.15 5-10%
+  // -0.1 10-20%
+  // -0.0 20-30%
+  // 0.156 30-40%
+  // 0.2 40-50%
+  // 0.2 50-60%
+  // 0.2 60-80% 
+  tpcdedx[0]=-0.2;
+  tpcdedx[1]=-0.15;
+  tpcdedx[2]=-0.1;
+  tpcdedx[3]=0.0;
+  tpcdedx[4]=0.156;
+  tpcdedx[5]=0.2;
+  tpcdedx[6]=0.2;
+  tpcdedx[7]=0.2;
+  if(TMath::Abs(tpceff-55)<0.01) {
+    tpcdedx[0]=-0.365;
+    tpcdedx[1]=-0.314;
+    tpcdedx[2]=-0.267;
+    tpcdedx[3]=-0.17;
+    tpcdedx[4]=-0.022;
+    tpcdedx[5]=-0.018;
+    tpcdedx[6]=0.018;
+    tpcdedx[7]=0.018;
+  }
+  if(TMath::Abs(tpceff-45)<0.01) {
+    tpcdedx[0]=-0.062;
+    tpcdedx[1]=-0.015;
+    tpcdedx[2]=0.035;
+    tpcdedx[3]=0.13;
+    tpcdedx[4]=0.278;
+    tpcdedx[5]=0.32;
+    tpcdedx[6]=0.32;
+    tpcdedx[7]=0.32;
+  }
+  if(TMath::Abs(tpceff-60)<0.01) {
+    tpcdedx[0]=-0.518;
+    tpcdedx[1]=-0.47;
+    tpcdedx[2]=-0.42;
+    tpcdedx[3]=-0.325;
+    tpcdedx[4]=-0.178;
+    tpcdedx[5]=-0.135;
+    tpcdedx[6]=-0.135;
+    tpcdedx[7]=-0.135;
+  }
+  if(TMath::Abs(tpceff-40)<0.01) {
+    tpcdedx[0]=0.09;
+    tpcdedx[1]=0.14;
+    tpcdedx[2]=0.188;
+    tpcdedx[3]=0.282;
+    tpcdedx[4]=0.43;
+    tpcdedx[5]=0.473;
+    tpcdedx[6]=0.473;
+    tpcdedx[7]=0.473;
+  }
 
+  // Name
+  TString appendixx(TString::Format("TPC%dr%dp%ds%dITS%dC%dPi%dDCAr%dz%dTOF%dTPCe%dV%dD%dec%dal%dm%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)tpceff,vzero,debuglevel,(Int_t)algorithmMA,(Int_t)massconstraint));
+  printf("appendixx %s\n", appendixx.Data());
+  
 
   //set config file name
   TString configFile("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TOFTPC.C");
@@ -16,7 +81,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisTaskHFEFlow *task = ConfigHFE_FLOW_TOFTPC(kFALSE, tpcCls, tpcClsr, tpcClspid, tpcsharedfraction, itsCls, chi2peritscl, pixellayer, dcaxy, dcaz,tofsig,tpcdedx0,tpcdedx1,tpcdedx2,tpcdedx3,tpcdedx4,tpcdedx5,tpcdedx6,tpcdedx7,vzero,debuglevel,algorithmMA,massconstraint);  
+  AliAnalysisTaskHFEFlow *task =  ConfigHFE_FLOW_TOFTPC(kFALSE,appendixx,tpcCls, tpcClsr, tpcClspid, tpcsharedfraction, itsCls, chi2peritscl, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,algorithmMA,massconstraint);
   
   task->SetNbBinsCentralityQCumulant(5);
   //task->SetBinCentralityLess(0,0.0);
@@ -28,13 +93,8 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   task->SetBinCentralityLess(5,60.0);
   //task->SetBinCentralityLess(7,80.0);
 
-  Int_t nameTPCcut = 50; // 50% at the moment
-  // can be adjusting looking at the value of the cut
-
-  TString appendixx(TString::Format("TPC%dTPCr%dTPCpid%dTPCShared%dITScl%dChi2perITS%dPixelLayer%dDCAr%dz%dTOFsig%dTPCeff%dVZERO%dDebugLevel%dalgo%dm%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)nameTPCcut,vzero,debuglevel,(Int_t)algorithmMA,(Int_t)massconstraint));
-  printf("appendixx %s\n", appendixx.Data());
-  
   task->SetHFEVZEROEventPlane(0x0);
+  task->SelectCollisionCandidates(AliVEvent::kSemiCentral); 
   
   mgr->AddTask(task);
 
@@ -43,7 +103,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   containerName += appendixx.Data();
 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  mgr->ConnectOutput(task,1, mgr->CreateContainer(Form("bailhach_HFEv2EP_%s", appendixx.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data()));
+  mgr->ConnectOutput(task,1, mgr->CreateContainer((const char*)(appendixx.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data()));
   mgr->ConnectInput(task,0, cinput );    
 
   return NULL;
