@@ -82,7 +82,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name)
   for(Int_t i=0;i<nCentrBinV0;i++){
     for(Int_t j=0;j<2; j++)
       for(Int_t k=0; k<2; k++)
-        fMeanQ[nCentrBinV0][2][2]=0. ;
+        fMeanQ[i][j][k]=0. ;
   }
   
   // Output slots #0 write into a TH1 container
@@ -91,7 +91,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name)
   // Set bad channel map
   char key[55] ;
   for(Int_t i=0; i<6; i++){
-    sprintf(key,"PHOS_BadMap_mod%d",i) ;
+    snprintf(key,55,"PHOS_BadMap_mod%d",i) ;
     fPHOSBadMap[i]=new TH2I(key,"Bad Modules map",64,0.,64.,56,0.,56.) ;
   }
   // Initialize the PHOS geometry
@@ -544,7 +544,7 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 
 
   //reaction plane
-  AliEventplane *eventplane = (dynamic_cast<AliESDEvent*>(InputEvent()))->GetEventplane();
+  AliEventplane *eventplane = event->GetEventplane();
   Double_t rpFull = eventplane->GetEventplane("Q");
   FillHistogram("phiRP",rpFull,fCentrality) ;
   
@@ -718,7 +718,7 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
     if(mod==2) ecore*=135.5/134.0 ;
     if(mod==3) ecore*=135.5/137.2 ;
     
-    sprintf(skey,"hCluLowM%d",mod) ;
+    snprintf(skey,55,"hCluLowM%d",mod) ;
     FillHistogram(skey,cellX,cellZ,1.);
     if(cluPHOS1.E()>1.5){
       sprintf(skey,"hCluHighM%d",mod) ;
@@ -1498,7 +1498,8 @@ Double_t AliAnalysisTaskPi0Flow::TestCPV(Double_t dx, Double_t dz, Double_t pt, 
               6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
   Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
-  Double_t mf = event->GetMagneticField(); //Positive for ++ and negative for --
+  Double_t mf = 0.; //
+  if(event) mf = event->GetMagneticField(); //Positive for ++ and negative for --
 
   if(mf<0.){ //field --
     meanZ = -0.468318 ;
@@ -2784,13 +2785,13 @@ void AliAnalysisTaskPi0Flow::OpenInfoCalbration(Int_t run){
 	    for(Int_t i=0;i  < nCentrBinV0;i++){
 		char namecont[100];
   		if(iside==0 && icoord==0)
-		    sprintf(namecont,"hQxc2_%i",i);
+		    snprintf(namecont,100,"hQxc2_%i",i);
 		else if(iside==1 && icoord==0)
-		    sprintf(namecont,"hQxa2_%i",i);
+		    snprintf(namecont,100,"hQxa2_%i",i);
 		else if(iside==0 && icoord==1)
-		    sprintf(namecont,"hQyc2_%i",i);
+		    snprintf(namecont,100,"hQyc2_%i",i);
 		else if(iside==1 && icoord==1)
-		    sprintf(namecont,"hQya2_%i",i);
+		    snprintf(namecont,100,"hQya2_%i",i);
 
 		cont = (AliOADBContainer*) foadb->Get(namecont);
 		if(!cont){
@@ -2807,13 +2808,13 @@ void AliAnalysisTaskPi0Flow::OpenInfoCalbration(Int_t run){
 
 		//for v3
 		if(iside==0 && icoord==0)
-		    sprintf(namecont,"hQxc3_%i",i);
+		    snprintf(namecont,100,"hQxc3_%i",i);
 		else if(iside==1 && icoord==0)
-		    sprintf(namecont,"hQxa3_%i",i);
+		    snprintf(namecont,100,"hQxa3_%i",i);
 		else if(iside==0 && icoord==1)
-		    sprintf(namecont,"hQyc3_%i",i);
+		    snprintf(namecont,100,"hQyc3_%i",i);
 		else if(iside==1 && icoord==1)
-		    sprintf(namecont,"hQya3_%i",i);
+		    snprintf(namecont,100,"hQya3_%i",i);
 
 		cont = (AliOADBContainer*) foadb->Get(namecont);
 		if(!cont){
