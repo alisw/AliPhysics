@@ -1521,12 +1521,10 @@ void AliAnaCalorimeterQA::ExoticHistograms(const Int_t absIdMax, const Float_t a
     return;
   }
     
-  Float_t l0 = clus->GetM02();
-  Float_t en = clus->E();
-  Int_t   nc = clus->GetNCells();
-  
-  Double_t tmax  = cells->GetCellTime(absIdMax);
-  GetCaloUtils()->RecalibrateCellTime(tmax, fCalorimeter, absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+  Float_t  l0   = clus->GetM02();
+  Float_t  en   = clus->E();
+  Int_t    nc   = clus->GetNCells();  
+  Double_t tmax = clus->GetTOF(); // recalibrated elsewhere
   
   for(Int_t ie = 0; ie < fExoNECrossCuts; ie++)
   {    
@@ -1538,7 +1536,7 @@ void AliAnaCalorimeterQA::ExoticHistograms(const Int_t absIdMax, const Float_t a
       {
         //Exotic
         fhExoL0    [ie][idt]->Fill(en,l0  );
-        fhExoTime  [ie][idt]->Fill(en,tmax);
+        fhExoTime  [ie][idt]->Fill(en,tmax*1.e9);
         
         // Diff time, do for one cut in e cross
         if(ie == 0)
@@ -1557,7 +1555,7 @@ void AliAnaCalorimeterQA::ExoticHistograms(const Int_t absIdMax, const Float_t a
       else
       {
         fhExoECross[ie][idt]->Fill(en,eCrossFrac);
-        fhExoNCell[ie][idt]->Fill(en,nc);
+        fhExoNCell [ie][idt]->Fill(en,nc);
       }
     } // D time cut loop
   } // e cross cut loop
