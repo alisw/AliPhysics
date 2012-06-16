@@ -707,7 +707,9 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
   fTrackingPhase="PropagateBack";
   Int_t nentr=event->GetNumberOfTracks();
   //  Info("PropagateBack", "Number of ESD tracks: %d\n", nentr);
-
+  double bz0 = GetBz();
+  const double kWatchStep=10.; // for larger steps watch arc vs segment difference
+  //
   Int_t ntrk=0;
   for (Int_t i=0; i<nentr; i++) {
      AliESDtrack *esd=event->GetTrack(i);
@@ -718,7 +720,22 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
      t.GetXYZ(xyzTrk); 
      Double_t dst2 = 0.;
-     for (Int_t icoord=0; icoord<3; icoord++) {Double_t di = xyzTrk[icoord] - xyzVtx[icoord];dst2 += di*di; } 
+     {
+       double dxs = xyzTrk[0] - xyzVtx[0];
+       double dys = xyzTrk[1] - xyzVtx[1];
+       double dzs = xyzTrk[2] - xyzVtx[2];
+       // RS: for large segment steps d use approximation of cicrular arc s by
+       // s = 2R*asin(d/2R) = d/p asin(p) \approx d/p (p + 1/6 p^3) = d (1+1/6 p^2)
+       // where R is the track radius, p = d/2R = 2C*d (C is the abs curvature)
+       // Hence s^2/d^2 = (1+1/6 p^2)^2
+       dst2 = dxs*dxs + dys*dys;
+       if (dst2 > kWatchStep*kWatchStep) { // correct circular part for arc/segment factor
+	 double crv = TMath::Abs(esd->GetC(bz0));
+	 double fcarc = 1.+crv*crv*dst2/6.;
+	 dst2 *= fcarc*fcarc;
+       }
+       dst2 += dzs*dzs;
+     }
      t.StartTimeIntegral();
      t.AddTimeStep(TMath::Sqrt(dst2));
      //
