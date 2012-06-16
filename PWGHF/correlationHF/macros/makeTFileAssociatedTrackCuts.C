@@ -18,6 +18,10 @@ void makeInputHFCorrelation(){
 	//______________________________ set ESD track cuts
 	AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
 
+	
+	esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+	//esdTrackCuts->SetDCAToVertex2D(kFALSE);
+	
 	esdTrackCuts->SetRequireTPCRefit(kTRUE);
 	esdTrackCuts->SetRequireITSRefit(kTRUE);
 	esdTrackCuts->SetMinNClustersTPC(80);
@@ -26,6 +30,8 @@ void makeInputHFCorrelation(){
 	// default is kBoth, otherwise kAny
 	esdTrackCuts->SetPtRange(0.3,1.e10);
 	esdTrackCuts->SetEtaRange(-eta,eta);
+	
+	 
 	HFCorrelationCuts->AddTrackCuts(esdTrackCuts);
 	
 	//______________________________ set kinematics cuts for AOD track 
