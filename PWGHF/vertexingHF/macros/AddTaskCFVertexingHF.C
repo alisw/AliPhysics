@@ -27,8 +27,10 @@ const Int_t    minITSClusters = 5;
 
 const Float_t centmin_0_10 = 0.;
 const Float_t centmax_0_10 = 10.;
-const Float_t centmin_10_100 = 10.;
-const Float_t centmax_10_100 = 100.;
+const Float_t centmin_10_60 = 10.;
+const Float_t centmax_10_60 = 60.;
+const Float_t centmin_60_100 = 60.;
+const Float_t centmax_60_100 = 100.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
 const Float_t fakemax = 2.5.;
@@ -123,9 +125,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbinpointing  = 50 ; //bins in cosPointingAngle
 	const Int_t nbinphi  = 18 ; //bins in Phi
 	const Int_t nbinzvtx  = 30 ; //bins in z vertex
-	const Int_t nbincent = 11;  //bins in centrality
-	const Int_t nbincent_0_10 = 2;  //bins in centrality between 0 and 10
-	const Int_t nbincent_10_100 = 9;  //bins in centrality between 10 and 100
+	const Int_t nbincent = 18;  //bins in centrality
+	const Int_t nbincent_0_10 = 4;  //bins in centrality between 0 and 10
+	const Int_t nbincent_10_60 = 10;  //bins in centrality between 10 and 60
+	const Int_t nbincent_60_100 = 4;  //bins in centrality between 60 and 100
 	const Int_t nbinfake = 3;  //bins in fake
 	const Int_t nbinpointingXY = 50;  //bins in cosPointingAngleXY
 	const Int_t nbinnormDecayLXY = 20;  //bins in NormDecayLengthXY
@@ -308,10 +311,14 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 	// centrality
 	for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i ; 
-	if (binLimcent[nbincent_0_10] != centmin_10_100)  {
+	if (binLimcent[nbincent_0_10] != centmin_10_60)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 1st range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbincent_10_100; i++) binLimcent[i+nbincent_0_10]=(Double_t)centmin_10_100 + (centmax_10_100-centmin_10_100)/nbincent_10_100*(Double_t)i ; 
+	for(Int_t i=0; i<=nbincent_10_60; i++) binLimcent[i+nbincent_0_10]=(Double_t)centmin_10_60 + (centmax_10_60-centmin_10_60)/nbincent_10_60*(Double_t)i ;
+	if (binLimcent[nbincent_0_10+nbincent_10_60] != centmin_60_100)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 2st range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbincent_60_100; i++) binLimcent[i+nbincent_10_60]=(Double_t)centmin_60_100 + (centmax_60_100-centmin_60_100)/nbincent_60_100*(Double_t)i ;
 
 	// fake
 	for(Int_t i=0; i<=nbinfake; i++) {
@@ -647,19 +654,25 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	TString output1name="", output2name="", output3name="",output4name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
+	output4name= "Cuts_CommonFramework";
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskD0toKpi_CommonFramework";
 		output1name="CFHFchist0_CommonFramework";
+		output3name+="_cOnly";
+		output4name+="_cOnly";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly_CommonFramework";
 		output1name="CFHFchist0DfromB_CommonFramework";
+		output3name+="_bOnly";
+		output4name+="_bOnly";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB_CommonFramework";
 		output1name="CFHFchist0allD_CommonFramework";
+		output3name+="_all";
+		output4name+="_all";
 	}
-	output4name= "Cuts_CommonFramework";
 
 	outputfile += suffix;
 	output1name += suffix;
