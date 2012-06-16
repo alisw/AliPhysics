@@ -344,11 +344,16 @@ public:
   
   // Exotic studies
   
-  TH2F *   fhExoNCell [10][5] ;                //! Number of cells per cluster for different cuts
-  TH2F *   fhExoL0    [10][5] ;                //! Long shower shape axis for exotic
-  TH2F *   fhExoECross[10][5] ;                //! E cross for max cell in cluster, for different cuts
-  TH2F *   fhExoTime  [10][5] ;                //! Time of exotic cluster, for different cuts
-  TH2F *   fhExoDTime [10]    ;                //! Difference in time between cell with max energy and rest of cells for exotic
+  TH2F *   fhExoNCell  [10][5] ;               //! Number of cells per cluster for different cuts
+  TH2F *   fhExoL0     [10][5] ;               //! Long shower shape axis for exotic
+  TH2F *   fhExoL1     [10][5] ;               //! Short shower shape axis for exotic
+  TH2F *   fhExoECross [10][5] ;               //! E cross for max cell in cluster, for different cuts
+  TH2F *   fhExoTime   [10][5] ;               //! Time of exotic cluster, for different cuts
+  TH2F *   fhExoDTime  [10]    ;               //! Difference in time between cell with max energy and rest of cells for exotic
+  TH2F *   fhExoL0NCell[10][5] ;               //! Lambda0 vs n cells in cluster for several E cross cuts and cluster with E > 5
+  TH2F *   fhExoL0ECross      ;                //! Lambda0 vs E cross fraction for clusters with E > 5 GeV
+  TH2F *   fhExoL1NCell[10][5] ;               //! Lambda1 vs n cells in cluster for several E cross cuts and cluster with E > 5
+  TH2F *   fhExoL1ECross      ;                //! Lambda1 vs E cross fraction for clusters with E > 5 GeV
   
   //Pure MC
 
@@ -398,7 +403,7 @@ public:
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,25)
+  ClassDef(AliAnaCalorimeterQA,26)
 } ;
 
 

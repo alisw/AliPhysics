@@ -49,7 +49,7 @@ ClassImp(AliAnaCalorimeterQA)
 
 //________________________________________
 AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
-AliAnaCaloTrackCorrBaseClass(),             fCalorimeter(""), 
+AliAnaCaloTrackCorrBaseClass(),        fCalorimeter(""), 
 
 //Switches
 fFillAllCellTimeHisto(kTRUE),
@@ -140,6 +140,8 @@ fhTimeAmpPerRCU(0),                    fhIMMod(0),
 fhECellClusterRatio(0),                fhECellClusterLogRatio(0),                 
 fhEMaxCellClusterRatio(0),             fhEMaxCellClusterLogRatio(0),                
 
+fhExoL0ECross(0),                      fhExoL1ECross(0),
+
 // MC and reco
 fhRecoMCE(),                           fhRecoMCPhi(),                          fhRecoMCEta(), 
 fhRecoMCDeltaE(),                      fhRecoMCRatioE(),                      
@@ -190,8 +192,11 @@ fhMCEle1EOverPR02(0),                  fhMCChHad1EOverPR02(0),                 f
     {
       fhExoNCell    [ie][idt] = 0;
       fhExoL0       [ie][idt] = 0;
+      fhExoL1       [ie][idt] = 0;
       fhExoECross   [ie][idt] = 0;
       fhExoTime     [ie][idt] = 0;
+      fhExoL0NCell  [ie][idt] = 0;
+      fhExoL1NCell  [ie][idt] = 0;
     } 
   }
   
@@ -1522,21 +1527,37 @@ void AliAnaCalorimeterQA::ExoticHistograms(const Int_t absIdMax, const Float_t a
   }
     
   Float_t  l0   = clus->GetM02();
+  Float_t  l1   = clus->GetM20();
   Float_t  en   = clus->E();
   Int_t    nc   = clus->GetNCells();  
-  Double_t tmax = clus->GetTOF(); // recalibrated elsewhere
+  Double_t tmax = clus->GetTOF()*1.e9; // recalibrated elsewhere
+  
+  Float_t eCrossFrac = 1-GetECross(absIdMax,cells, 10000000)/ampMax;
+
+  if(en > 5) 
+  {
+    fhExoL0ECross->Fill(eCrossFrac,l0);
+    fhExoL1ECross->Fill(eCrossFrac,l1);
+  }
   
   for(Int_t ie = 0; ie < fExoNECrossCuts; ie++)
   {    
     for(Int_t idt = 0; idt < fExoNDTimeCuts; idt++)
     {  
-      Float_t eCrossFrac = 1-GetECross(absIdMax,cells, fExoDTimeCuts[idt])/ampMax;
+      eCrossFrac = 1-GetECross(absIdMax,cells, fExoDTimeCuts[idt])/ampMax;
       
       if(eCrossFrac > fExoECrossCuts[ie])
       {
         //Exotic
         fhExoL0    [ie][idt]->Fill(en,l0  );
-        fhExoTime  [ie][idt]->Fill(en,tmax*1.e9);
+        fhExoL1    [ie][idt]->Fill(en,l1  );
+        fhExoTime  [ie][idt]->Fill(en,tmax);
+        
+        if(en > 5) 
+        {
+          fhExoL0NCell[ie][idt]->Fill(nc,l0);
+          fhExoL1NCell[ie][idt]->Fill(nc,l1);
+        } 
         
         // Diff time, do for one cut in e cross
         if(ie == 0)
@@ -1776,6 +1797,20 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   if(fStudyExotic)
   {
+    fhExoL0ECross  = new TH2F("hExoL0_ECross",
+                               "#lambda^{2}_{0} vs 1-E_{+}/E_{max} for E > 5 GeV",
+                               nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
+    fhExoL0ECross ->SetYTitle("1-E_{+}/E_{cell max}");
+    fhExoL0ECross ->SetXTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhExoL0ECross) ;     
+
+    fhExoL1ECross  = new TH2F("hExoL1_ECross",
+                              "#lambda^{2}_{1} vs 1-E_{+}/E_{max} for E > 5 GeV",
+                              nptbins,ptmin,ptmax,tdbins,tdmin,tdmax); 
+    fhExoL1ECross ->SetYTitle("1-E_{+}/E_{cell max}");
+    fhExoL1ECross ->SetXTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhExoL1ECross) ;  
+    
     for(Int_t ie = 0; ie <fExoNECrossCuts; ie++)
     {  
       
@@ -1796,11 +1831,18 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         outputContainer->Add(fhExoNCell[ie][idt]) ; 
         
         fhExoL0   [ie][idt]  = new TH2F(Form("hExoL0_ECross%d_DT%d",ie,idt),
-                                     Form("M02 vs E cluster for exotic, 1-E_{+}/E_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+                                     Form("#lambda^{2}_{0} vs E cluster for exotic, 1-E_{+}/E_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
         fhExoL0   [ie][idt] ->SetYTitle("#lambda^{2}_{0}");
         fhExoL0   [ie][idt] ->SetXTitle("E (GeV)");
         outputContainer->Add(fhExoL0[ie][idt]) ; 
+
+        fhExoL1   [ie][idt]  = new TH2F(Form("hExoL1_ECross%d_DT%d",ie,idt),
+                                        Form("#lambda^{2}_{1} vs E cluster for exotic, 1-E_{+}/E_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhExoL1   [ie][idt] ->SetYTitle("#lambda^{2}_{1}");
+        fhExoL1   [ie][idt] ->SetXTitle("E (GeV)");
+        outputContainer->Add(fhExoL1[ie][idt]) ; 
         
         fhExoECross[ie][idt]  = new TH2F(Form("hExoECross_ECross%d_DT%d",ie,idt),
                                       Form("E cross for cells vs E cell, 1-E_{+}/E_{max} < %2.2f, #Delta t < %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
@@ -1816,6 +1858,20 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhExoTime  [ie][idt] ->SetXTitle("E (GeV)");
         outputContainer->Add(fhExoTime[ie][idt]) ; 
 
+        fhExoL0NCell[ie][idt]  = new TH2F(Form("hExoL0_NCell%d_DT%d",ie,idt),
+                                          Form("#lambda^{2}_{0} vs N cells per clusters for E > 5 GeV, 1-E_{+}/E_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+        fhExoL0NCell[ie][idt] ->SetYTitle("N cells");
+        fhExoL0NCell[ie][idt] ->SetXTitle("#lambda^{2}_{0}");
+        outputContainer->Add(fhExoL0NCell[ie][idt]) ;  
+        
+        fhExoL1NCell[ie][idt]  = new TH2F(Form("hExoL1_NCell%d_DT%d",ie,idt),
+                                          Form("#lambda^{2}_{1} vs N cells per clusters for E > 5 GeV, 1-E_{+}/E_{max} < %2.2f, #Delta t = %2.0f",fExoECrossCuts[ie],fExoDTimeCuts[idt]),
+                                          nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+        fhExoL1NCell[ie][idt] ->SetYTitle("N cells");
+        fhExoL1NCell[ie][idt] ->SetXTitle("#lambda^{2}_{1}");
+        outputContainer->Add(fhExoL1NCell[ie][idt]) ;  
+        
       } 
     } 
   }
