@@ -126,6 +126,7 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		TH1F         *fH1leadJetMCAKT04_dphiResolution[5];
 		TH1F         *fH1subJetMCAKT04_dphiResolution [5];
 
+
 		ClassDef(AliAnalysisTaskJetHadronCorrelation, 13); // Analysis task for standard dijet analysis
 };
 
