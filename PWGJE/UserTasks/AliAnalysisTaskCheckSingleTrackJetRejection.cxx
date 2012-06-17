@@ -410,12 +410,18 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 																for(int ntr=0;ntr<ntracks;ntr++){// calc. max pt of track which is in Jet
 																				AliAODTrack *AODtrack = dynamic_cast<AliAODTrack*>(reftracks->At(ntr));
 																				if(AODtrack){
-																								if(AODtrack->TestFilterMask(256)){
-																												trackpt = AODtrack->Pt();
-																												sumtrackpt += trackpt;
-																												if(trackpt>maxpt[algorithm][njet]){
-																																maxpt[algorithm][njet] = trackpt;
-																												}
+																								Bool_t bgoodT=false;
+																								if(Filtermask!=768){
+																												if(AODtrack->TestFilterMask(Filtermask))bgoodT=true;
+																								}
+																								else{
+																												if(AODtrack->IsHybridGlobalConstrainedGlobal())bgoodT=true; //for hybrid Track cuts
+																								}
+																								if(!bgoodT)continue;
+																								trackpt = AODtrack->Pt();
+																								sumtrackpt += trackpt;
+																								if(trackpt>maxpt[algorithm][njet]){
+																												maxpt[algorithm][njet] = trackpt;
 																								}
 																				}
 																}// track Loop
