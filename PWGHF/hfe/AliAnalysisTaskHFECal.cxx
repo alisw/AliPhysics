@@ -531,7 +531,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
      }
     
     // MC
-    if(mcele==1)
+    if(mcele>0)
       {
 
           fIncpTMChfeAll->Fill(cent,pt);    
