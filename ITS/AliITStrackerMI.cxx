@@ -4976,9 +4976,20 @@ if(index[lay]>=0)nclout++;
   //
   Double_t nsigx=AliITSReconstructor::GetRecoParam()->GetNSigXFromBoundaryPlaneEff();
   Double_t nsigz=AliITSReconstructor::GetRecoParam()->GetNSigZFromBoundaryPlaneEff();
-  Double_t dx=nsigx*TMath::Sqrt(tmp.GetSigmaY2());  // those are precisions in the tracking reference system
-  Double_t dz=nsigz*TMath::Sqrt(tmp.GetSigmaZ2());  // Use it also for the module reference system, as it is
-                                                    // done for RecPoints
+  Double_t distx=AliITSReconstructor::GetRecoParam()->GetDistXFromBoundaryPlaneEff();
+  Double_t distz=AliITSReconstructor::GetRecoParam()->GetDistZFromBoundaryPlaneEff();
+  Double_t dx=nsigx*TMath::Sqrt(tmp.GetSigmaY2()) + distx;
+  // those are precisions in the tracking reference system
+  Double_t dz=nsigz*TMath::Sqrt(tmp.GetSigmaZ2()) + distz;
+  // Use it also for the module reference system, as it is done for RecPoints
+
+  if(AliITSReconstructor::GetRecoParam()->GetSwitchOnMaxDistNSigFrmBndPlaneEff()){
+   if(nsigx*TMath::Sqrt(tmp.GetSigmaY2())<=distx) dx -= nsigx*TMath::Sqrt(tmp.GetSigmaY2());
+   else dx -= distx;
+
+   if(nsigz*TMath::Sqrt(tmp.GetSigmaZ2())<=distz) dz -= nsigz*TMath::Sqrt(tmp.GetSigmaZ2());
+   else dz -= distz;
+  }
 
   // exclude tracks at boundary between detectors
   //Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidthPlaneEff();
@@ -5090,9 +5101,32 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
     msz *= AliITSReconstructor::GetRecoParam()->GetNSigma2RoadZNonC();
     msy *= AliITSReconstructor::GetRecoParam()->GetNSigma2RoadYNonC();
   }
+
+  if(AliITSReconstructor::GetRecoParam()->GetSwitchOffStdSearchClusPlaneEff()){
+     Double_t nsigx=AliITSReconstructor::GetRecoParam()->GetNSigXSearchClusterPlaneEff();
+     Double_t nsigz=AliITSReconstructor::GetRecoParam()->GetNSigZSearchClusterPlaneEff();
+     Double_t distx=AliITSReconstructor::GetRecoParam()->GetDistXSearchClusterPlaneEff();
+     Double_t distz=AliITSReconstructor::GetRecoParam()->GetDistZSearchClusterPlaneEff();
+     msy = nsigx*TMath::Sqrt(tmp.GetSigmaY2()) + distx;
+     msz = nsigz*TMath::Sqrt(tmp.GetSigmaZ2()) + distz;
+
+  if(AliITSReconstructor::GetRecoParam()->GetSwitchOnMaxDistNSigSrhClusPlaneEff()){
+     if(nsigx*TMath::Sqrt(tmp.GetSigmaY2())<=distx) msy -= nsigx*TMath::Sqrt(tmp.GetSigmaY2());
+     else msy -= distx;
+
+     if(nsigz*TMath::Sqrt(tmp.GetSigmaZ2())<=distz) msz -= nsigz*TMath::Sqrt(tmp.GetSigmaZ2());
+     else msz -= distz;
+  }
+
+  msy *= msy;
+  msz *= msz;
+
+  }
+
+  if(msz==0 || msy==0){AliWarning("UseTrackForPlaneEff: null search frame"); return;}
+    
   msz = 1./msz; // 1/RoadZ^2
   msy = 1./msy; // 1/RoadY^2
-//
 
   const AliITSRecPoint *cl=0; Int_t clidx=-1, ci=-1;
   Int_t idetc=-1;
@@ -5299,4 +5333,3 @@ Int_t AliITStrackerMI::AliITSlayer::FindClusterForLabel(Int_t label, Int_t *stor
   }
   return nfound;
 }
-

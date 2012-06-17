@@ -265,10 +265,28 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t GetRequireClusterInInnerLayerPlaneEff() const {return fRequireClusterInInnerLayerPlaneEff;}
   void   SetOnlyConstraintPlaneEff(Bool_t con=kFALSE) { fOnlyConstraintPlaneEff=con; }
   Bool_t GetOnlyConstraintPlaneEff() const { return fOnlyConstraintPlaneEff; }
-  void SetNSigXFromBoundaryPlaneEff(Double_t nsigx=1.) {fNSigXFromBoundaryPlaneEff=nsigx;}
+  void SetNSigXFromBoundaryPlaneEff(Double_t nsigx=0.) {if(nsigx<0.)fNSigXFromBoundaryPlaneEff=TMath::Abs(nsigx);else fNSigXFromBoundaryPlaneEff=nsigx;}
   Double_t GetNSigXFromBoundaryPlaneEff() const {return fNSigXFromBoundaryPlaneEff;}
-  void SetNSigZFromBoundaryPlaneEff(Double_t nsigz=1.) {fNSigZFromBoundaryPlaneEff=nsigz;}
+  void SetNSigZFromBoundaryPlaneEff(Double_t nsigz=0.) {if(nsigz<0.)fNSigZFromBoundaryPlaneEff=TMath::Abs(nsigz);else fNSigZFromBoundaryPlaneEff=nsigz;}
   Double_t GetNSigZFromBoundaryPlaneEff() const {return fNSigZFromBoundaryPlaneEff;}
+  void SetDistXFromBoundaryPlaneEff(Double_t distx=0.) {if(distx<0.)fDistXFromBoundaryPlaneEff=TMath::Abs(distx);else fDistXFromBoundaryPlaneEff=distx;}
+  Double_t GetDistXFromBoundaryPlaneEff() const {return fDistXFromBoundaryPlaneEff;}
+  void SetDistZFromBoundaryPlaneEff(Double_t distz=0.) {if(distz<0.)fDistZFromBoundaryPlaneEff=TMath::Abs(distz);else fDistZFromBoundaryPlaneEff=distz;}
+  Double_t GetDistZFromBoundaryPlaneEff() const {return fDistZFromBoundaryPlaneEff;}
+  void SetSwitchOnMaxDistNSigFrmBndPlaneEff(Bool_t flagbnd=kFALSE) {fSwitchOnMaxDistNSigFrmBndPlaneEff=flagbnd;}
+  Bool_t GetSwitchOnMaxDistNSigFrmBndPlaneEff() const {return fSwitchOnMaxDistNSigFrmBndPlaneEff;}
+  void SetSwitchOffStdSearchClusPlaneEff(Bool_t flagstdclus=kFALSE) {fSwitchOffStdSearchClusPlaneEff=flagstdclus;}
+  Bool_t GetSwitchOffStdSearchClusPlaneEff() const {return fSwitchOffStdSearchClusPlaneEff;}
+  void SetNSigXSearchClusterPlaneEff(Double_t nsigclx=0.) {if(nsigclx<0.)fNSigXSearchClusterPlaneEff=TMath::Abs(nsigclx);else fNSigXSearchClusterPlaneEff=nsigclx;}
+  Double_t GetNSigXSearchClusterPlaneEff() const {return fNSigXSearchClusterPlaneEff;}
+  void SetNSigZSearchClusterPlaneEff(Double_t nsigclz=0.) {if(nsigclz<0.)fNSigZSearchClusterPlaneEff=TMath::Abs(nsigclz);else fNSigZSearchClusterPlaneEff=nsigclz;}
+  Double_t GetNSigZSearchClusterPlaneEff() const {return fNSigZSearchClusterPlaneEff;}
+  void SetDistXSearchClusterPlaneEff(Double_t distclx=0.) {if(distclx<0.)fDistXSearchClusterPlaneEff=TMath::Abs(distclx);else fDistXSearchClusterPlaneEff=distclx;}
+  Double_t GetDistXSearchClusterPlaneEff() const {return fDistXSearchClusterPlaneEff;}
+  void SetDistZSearchClusterPlaneEff(Double_t distclz=0.) {if(distclz<0.)fDistZSearchClusterPlaneEff=TMath::Abs(distclz);else fDistZSearchClusterPlaneEff=distclz;}
+  Double_t GetDistZSearchClusterPlaneEff() const {return fDistZSearchClusterPlaneEff;}
+  void SetSwitchOnMaxDistNSigSrhClusPlaneEff(Bool_t flagbndcl=kFALSE) {fSwitchOnMaxDistNSigSrhClusPlaneEff=flagbndcl;}
+  Bool_t GetSwitchOnMaxDistNSigSrhClusPlaneEff() const {return fSwitchOnMaxDistNSigSrhClusPlaneEff;}
   void SetDCACutPlaneEff(Double_t dcacpe=999.) {fDCACutPlaneEff=dcacpe;}
   Double_t GetDCACutPlaneEff() const {return fDCACutPlaneEff;}
   void SetVertexChi2CutPlaneEff(Double_t vtxchipe=999999999.) {fVertexChi2CutPlaneEff=vtxchipe;}
@@ -642,6 +660,15 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fOnlyConstraintPlaneEff;  // if kTRUE, use only constrained tracks at primary vertex for Plane Eff.
   Double_t fNSigXFromBoundaryPlaneEff;  // accept one track for PlaneEff if distance from border (in loc x or z)
   Double_t fNSigZFromBoundaryPlaneEff;  // is greater than fNSigXFromBoundaryPlaneEff * Track_precision
+  Double_t fDistXFromBoundaryPlaneEff;  // accept one track for PlaneEff if distance from border (in loc x or z)
+  Double_t fDistZFromBoundaryPlaneEff;  // is greater than fDistXFromBoundaryPlaneEff centimeters 
+  Bool_t fSwitchOnMaxDistNSigFrmBndPlaneEff; //if kTRUE,use max(fDistXFromBoundaryPlaneEff,fNSigXFromBoundaryPlaneEff) to accept tracks
+  Bool_t fSwitchOffStdSearchClusPlaneEff; //if kTRUE,use fNSigXSearchClusterPlaneEff and fDistXSearchClusterPlaneEff
+  Double_t fNSigXSearchClusterPlaneEff;  //  cluster search in distance from track impact point (in loc x or z)
+  Double_t fNSigZSearchClusterPlaneEff;  // less than fNSigXSearchClusterPlaneEff * Track_precision
+  Double_t fDistXSearchClusterPlaneEff;  // cluster found in distance from track impact point (in loc x or z)
+  Double_t fDistZSearchClusterPlaneEff;  // is greater than fDistXSearchClusterPlaneEff centimeters
+  Bool_t fSwitchOnMaxDistNSigSrhClusPlaneEff; //if kTRUE,use max(fDistXSearchClusterPlaneEff,fNSigXSearchClusterPlaneEff) to accept tracks
   Double_t fDCACutPlaneEff;  // this set the cut on DCA in rphi plane when evaluating PlaneEff(SPD0)
   Double_t fVertexChi2CutPlaneEff; // and also with a cut on the chi2
 
@@ -771,7 +798,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,52) // ITS reco parameters
+  ClassDef(AliITSRecoParam,53) // ITS reco parameters
 };
 
 #endif
+
+

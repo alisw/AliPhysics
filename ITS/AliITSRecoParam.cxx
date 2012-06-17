@@ -134,8 +134,17 @@ fMaxMissingClustersOutPlaneEff(5),
 fRequireClusterInOuterLayerPlaneEff(kFALSE),
 fRequireClusterInInnerLayerPlaneEff(kFALSE),
 fOnlyConstraintPlaneEff(kFALSE),
-fNSigXFromBoundaryPlaneEff(1.),
-fNSigZFromBoundaryPlaneEff(1.),
+fNSigXFromBoundaryPlaneEff(0.),
+fNSigZFromBoundaryPlaneEff(0.),
+fDistXFromBoundaryPlaneEff(0.),
+fDistZFromBoundaryPlaneEff(0.),
+fSwitchOnMaxDistNSigFrmBndPlaneEff(kFALSE),
+fSwitchOffStdSearchClusPlaneEff(kFALSE),
+fNSigXSearchClusterPlaneEff(0.),
+fNSigZSearchClusterPlaneEff(0.),
+fDistXSearchClusterPlaneEff(0.),
+fDistZSearchClusterPlaneEff(0.),
+fSwitchOnMaxDistNSigSrhClusPlaneEff(kFALSE),
 fDCACutPlaneEff(999.),
 fVertexChi2CutPlaneEff(999999999.),
 fImproveWithVertex(kFALSE),
@@ -926,4 +935,3 @@ Bool_t AliITSRecoParam::SetOptReco(TString r){
   }
   return isFine;
 } 
-
