@@ -4,6 +4,8 @@
 //
 // Authors: C.Loizides, S.Aiola
 
+#include "AliEmcalJetTask.h"
+
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <TList.h>
@@ -12,15 +14,14 @@
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliEMCALGeometry.h"
-#include "AliEmcalJet.h"
-#include "AliFJWrapper.h"
-#include "AliVCluster.h"
-#include "AliVParticle.h"
-#include "AliVEvent.h"
 #include "AliESDEvent.h"
+#include "AliEmcalJet.h"
+#include "AliEmcalParticle.h"
+#include "AliFJWrapper.h"
 #include "AliMCEvent.h"
-
-#include "AliEmcalJetTask.h"
+#include "AliVCluster.h"
+#include "AliVEvent.h"
+#include "AliVParticle.h"
 
 ClassImp(AliEmcalJetTask)
 
@@ -35,10 +36,19 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fType(0),
   fMinJetTrackPt(0.15),
   fMinJetClusPt(0.15),
+  fPhiMin(0),
+  fPhiMax(TMath::TwoPi()),
+  fEtaMin(-1),
+  fEtaMax(1),
   fMinJetArea(0.01),
   fMinJetPt(1.0),
+  fIsInit(0),
+  fIsMcPart(0),
+  fIsEmcPart(0),
   fJets(0),
-  fEvent(0)
+  fEvent(0),
+  fTracks(0),
+  fClus(0)
 {
   // Default constructor.
 }
@@ -54,10 +64,19 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fType(0),
   fMinJetTrackPt(0.15),
   fMinJetClusPt(0.15),
+  fPhiMin(0),
+  fPhiMax(TMath::TwoPi()),
+  fEtaMin(-1),
+  fEtaMax(1),
   fMinJetArea(0.01),
   fMinJetPt(1.0),
+  fIsInit(0),
+  fIsMcPart(0),
+  fIsEmcPart(0),
   fJets(0),
-  fEvent(0)
+  fEvent(0),
+  fTracks(0),
+  fClus(0)
 {
   // Standard constructor.
 
@@ -79,99 +98,21 @@ void AliEmcalJetTask::UserCreateOutputObjects()
   fJets->SetName(fJetsName);
 }
 
-//_____________________________________________________
-TString AliEmcalJetTask::GetBeamType()
-{
-  // Get beam type : pp-AA-pA
-  // ESDs have it directly, AODs get it from hardcoded run number ranges
-
-  TString beamType;
-
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fEvent);
-  if (esd) {
-    const AliESDRun *run = esd->GetESDRun();
-    beamType = run->GetBeamType();
-  }
-  else
-  {
-    Int_t runNumber = fEvent->GetRunNumber();
-    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
-	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
-    {
-      beamType = "A-A";
-    }
-    else 
-    {
-      beamType = "p-p";
-    }
-  }
-
-  return beamType;    
-}
-
-
 //________________________________________________________________________
 void AliEmcalJetTask::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
 
-  // get the event
-  fEvent = InputEvent();
-
-  if (!fEvent) {
-    AliError(Form("%s: Could not retrieve event! Returning", GetName()));
-    return;
+  if (!fIsInit) {
+    if (!DoInit())
+      return;
+    fIsInit = kTRUE;
   }
-
-  // add jets to event if not yet there
-  if (!(fEvent->FindListObject(fJetsName)))
-    fEvent->AddObject(fJets);
 
   // delete jet output
   fJets->Delete();
 
-  // get input collections
-  TClonesArray *tracks = 0;
-  TClonesArray *clus   = 0;
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-
-  if ((fType == 0) || (fType == 1)) {
-    if (fTracksName == "Tracks")
-      am->LoadBranch("Tracks");
-    tracks = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fTracksName));
-    if (!tracks) {
-      AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data()));
-      return;
-    }
-  }
-  if ((fType == 0) || (fType == 2)) {
-    if (fCaloName == "CaloClusters")
-      am->LoadBranch("CaloClusters");
-    clus = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fCaloName));
-    if (!clus) {
-      AliError(Form("%s: Pointer to clus %s == 0", GetName(), fCaloName.Data()));
-      return;
-    }
-  }
-  
-  // get centrality 
-  Double_t cent = 99; 
-  
-  if (GetBeamType() == "A-A") {
-    AliCentrality *centrality = InputEvent()->GetCentrality();
-    
-    if (centrality)
-      cent = centrality->GetCentralityPercentile("V0M");
-    else
-      cent = 99; // probably pp data
-    
-    if (cent < 0) {
-      AliWarning(Form("Centrality negative: %f, assuming 99", cent));
-      cent = 99;
-    }
-  }
-
-  FindJets(tracks, clus, fAlgo, fRadius, cent);
+  FindJets();
 }
 
 //________________________________________________________________________
@@ -181,59 +122,111 @@ void AliEmcalJetTask::Terminate(Option_t *)
 }
 
 //________________________________________________________________________
-void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t /*cent*/)
+void AliEmcalJetTask::FindJets()
 {
   // Find jets.
 
-  if (!tracks && !clus)
+  if (!fTracks && !fClus)
     return;
 
   TString name("kt");
   fastjet::JetAlgorithm jalgo(fastjet::kt_algorithm);
-  if (algo>=1) {
+  if (fAlgo>=1) {
     name  = "antikt";
     jalgo = fastjet::antikt_algorithm;
   }
 
+  // setup fj wrapper
   AliFJWrapper fjw(name, name);
   fjw.SetAreaType(fastjet::active_area_explicit_ghosts);
-  fjw.SetR(radius);
+  fjw.SetR(fRadius);
   fjw.SetAlgorithm(jalgo);  
-  fjw.SetMaxRap(0.9);
+  fjw.SetMaxRap(1);
   fjw.Clear();
 
-  if (tracks) {
-    const Int_t Ntracks = tracks->GetEntries();
+  // get primary vertex
+  Double_t vertex[3] = {0, 0, 0};
+  fEvent->GetPrimaryVertex()->GetXYZ(vertex);
+
+  if (fTracks) {
+    const Int_t Ntracks = fTracks->GetEntries();
     for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-      AliVParticle *t = dynamic_cast<AliVParticle*>(tracks->At(iTracks));
+      AliVParticle *t = static_cast<AliVParticle*>(fTracks->At(iTracks));
       if (!t)
         continue;
-
       if (t->Pt() < fMinJetTrackPt) 
+        continue;
+      Double_t eta = t->Eta();
+      Double_t phi = t->Phi();
+      if ((eta<fEtaMin) && (eta>fEtaMax) &&
+          (phi<fPhiMin) && (phi<fPhiMax))
         continue;
       // offset of 100 for consistency with cluster ids
       fjw.AddInputVector(t->Px(), t->Py(), t->Pz(), t->P(), iTracks + 100);  
     }
   }
 
-  if (clus) {
-    Double_t vertex[3] = {0, 0, 0};
-    fEvent->GetPrimaryVertex()->GetXYZ(vertex);
-    const Int_t Nclus = clus->GetEntries();
-    for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
-      AliVCluster *c = dynamic_cast<AliVCluster*>(clus->At(iClus));
-      if (!c)
-        continue;
-      if (!c->IsEMCAL())
-        continue;
-      TLorentzVector nPart;
-      c->GetMomentum(nPart, vertex);
-      if (nPart.Pt() < fMinJetClusPt) 
-        continue;
-      // offset of 100 to skip ghost particles uid = -1
-      fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus - 100);  
+  if (fClus) {
+    if (fIsEmcPart) {
+      const Int_t Nclus = fClus->GetEntries();
+      for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
+        AliVCluster *c = 0;
+        Double_t cEta=0,cPhi=0,cPt=0;
+        Double_t cPx=0,cPy=0,cPz=0;
+        if (fIsEmcPart) {
+          AliEmcalParticle *ep = static_cast<AliEmcalParticle*>(fClus->At(iClus));
+          if (!ep)
+            continue;
+          c = ep->GetCluster();
+          if (!c)
+            continue;
+          cEta = ep->Eta();
+          cPhi = ep->Phi();
+          cPt  = ep->Pt();
+          cPx  = ep->Px();
+          cPy  = ep->Py();
+          cPz  = ep->Pz();
+        } else {
+          c = static_cast<AliVCluster*>(fClus->At(iClus));
+          if (!c)
+            continue;
+          TLorentzVector nP;
+          c->GetMomentum(nP, vertex);
+          cEta = nP.Eta();
+          cPhi = nP.Phi();
+          cPt  = nP.Pt();
+          cPx  = nP.Px();
+          cPy  = nP.Py();
+          cPz  = nP.Pz();
+        }
+        if (!c->IsEMCAL())
+          continue;
+        if (cPt < fMinJetClusPt) 
+          continue;
+        if ((cEta<fEtaMin) && (cEta>fEtaMax) &&
+            (cPhi<fPhiMin) && (cPhi<fPhiMax))
+          continue;
+        // offset of 100 to skip ghost particles uid = -1
+        fjw.AddInputVector(cPx, cPy, cPz, TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz), -iClus - 100);  
+      }
+    } else { /*CaloClusters given as input*/
+      const Int_t Nclus = fClus->GetEntries();
+      for (Int_t iClus = 0; iClus < Nclus; ++iClus) {
+        AliVCluster *c = static_cast<AliVCluster*>(fClus->At(iClus));
+        if (!c)
+          continue;
+        if (!c->IsEMCAL())
+          continue;
+        TLorentzVector nPart;
+        c->GetMomentum(nPart, vertex);
+        if (nPart.Pt() < fMinJetClusPt) 
+          continue;
+        // offset of 100 to skip ghost particles uid = -1
+        fjw.AddInputVector(nPart.Px(), nPart.Py(), nPart.Pz(), nPart.P(), -iClus - 100);  
+      }
     }
   }
+
   // run jet finder
   fjw.Run();
 
@@ -243,18 +236,23 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
     AliFatal(Form("%s: Can not create geometry", GetName()));
     return;
   }
-  
+
+  // loop over fastjet jets
   std::vector<fastjet::PseudoJet> jets_incl = fjw.GetInclusiveJets();
   for (UInt_t ij=0, jetCount=0; ij<jets_incl.size(); ++ij) {
     if (jets_incl[ij].perp()<fMinJetPt) 
       continue;
     if (fjw.GetJetArea(ij)<fMinJetArea)
       continue;
+
     AliEmcalJet *jet = new ((*fJets)[jetCount]) 
       AliEmcalJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
-    Double_t vertex[3] = {0, 0, 0};
-    fEvent->GetPrimaryVertex()->GetXYZ(vertex);
-    vector<fastjet::PseudoJet> constituents = fjw.GetJetConstituents(ij);
+
+    // loop over constituents
+    vector<fastjet::PseudoJet> constituents(fjw.GetJetConstituents(ij));
+    jet->SetNumberOfTracks(constituents.size());
+    jet->SetNumberOfClusters(constituents.size());
+
     Int_t nt            = 0;
     Int_t nc            = 0;
     Double_t neutralE   = 0;
@@ -262,66 +260,111 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
     Double_t maxNe      = 0;
     Int_t gall          = 0;
     Int_t gemc          = 0;
+    Int_t cemc          = 0;
     Int_t ncharged      = 0;
     Int_t nneutral      = 0;
     Double_t mcpt       = 0;
+    Double_t emcpt      = 0;
 
-    jet->SetNumberOfTracks(constituents.size());
-    jet->SetNumberOfClusters(constituents.size());
     for(UInt_t ic = 0; ic < constituents.size(); ++ic) {
       Int_t uid = constituents[ic].user_index();
 
-      if ((uid == -1) && (constituents[ic].kt2() < 1e-25)) { //ghost particle
+      if ((uid == -1) /*&& (constituents[ic].kt2() < 1e-25)*/) { //ghost particle
         ++gall;
-        Double_t gphi = constituents[ic].phi() * TMath::RadToDeg();
+        Double_t gphi = constituents[ic].phi();
+        if (gphi<0) 
+          gphi += TMath::TwoPi();
+        gphi *= TMath::RadToDeg();
         Double_t geta = constituents[ic].eta();
         if ((gphi > geom->GetArm1PhiMin()) && (gphi < geom->GetArm1PhiMax()) &&
             (geta > geom->GetArm1EtaMin()) && (geta < geom->GetArm1EtaMax()))
-          ++gemc;
-        continue;
-      }	else if ((uid > 0) && tracks) { // track constituent
+          ++gemc; 
+      }	else if ((uid > 0) && fTracks) { // track constituent
 	Int_t tid = uid - 100;
-        AliVParticle *t = static_cast<AliVParticle*>(tracks->At(tid));
-        if (t) {
-	  if (t->Charge() == 0) {
-	    neutralE += t->P();
-	    ++nneutral;
-	    if (t->Pt() > maxNe)
-	      maxNe = t->Pt();
-	  } else {
-	    ++ncharged;
-	    if (t->Pt() > maxCh)
-	      maxCh = t->Pt();
-	  }
-
-	  if (t->InheritsFrom("AliMCParticle") || t->GetLabel() == 100) // MC particle
-	    mcpt += t->Pt();
-
-          jet->AddTrackAt(tid, nt);
-          ++nt;
+        AliVParticle *t = static_cast<AliVParticle*>(fTracks->At(tid));
+        if (!t)
+          continue;
+        Double_t cEta = t->Eta();
+        Double_t cPhi = t->Phi();
+        Double_t cPt  = t->Pt();
+        Double_t cP   = t->P();
+        if (t->Charge() == 0) {
+          neutralE += cP;
+          ++nneutral;
+          if (cPt > maxNe)
+            maxNe = cPt;
+        } else {
+          ++ncharged;
+          if (cPt > maxCh)
+            maxCh = cPt;
         }
-      } else if (clus) { // cluster constituent
+
+        if (fIsMcPart || t->GetLabel() == 100) // check if MC particle
+          mcpt += cPt;
+
+        if (cPhi<0) 
+          cPhi += TMath::TwoPi();
+        cPhi *= TMath::RadToDeg();
+        if ((cPhi > geom->GetArm1PhiMin()) && (cPhi < geom->GetArm1PhiMax()) &&
+            (cEta > geom->GetArm1EtaMin()) && (cEta < geom->GetArm1EtaMax())) {
+          emcpt += cPt;
+          ++cemc;
+        }
+
+        jet->AddTrackAt(tid, nt);
+        ++nt;
+      } else if (fClus) { // cluster constituent
 	Int_t cid = -uid - 100;
-	AliVCluster *c = static_cast<AliVCluster*>(clus->At(cid));
-	if (c) {
-	  TLorentzVector nP;
-	  c->GetMomentum(nP, vertex);
-	  neutralE += nP.P();
-	  if (nP.Pt() > maxNe)
-	    maxNe = nP.Pt();
+	AliVCluster *c = 0;
+        Double_t cEta=0,cPhi=0,cPt=0,cP=0;
+        if (fIsEmcPart) {
+          AliEmcalParticle *ep = static_cast<AliEmcalParticle*>(fClus->At(cid));
+          if (!ep)
+            continue;
+          c = ep->GetCluster();
+          if (!c)
+            continue;
+          cEta = ep->Eta();
+          cPhi = ep->Phi();
+          cPt  = ep->Pt();
+          cP   = ep->P();
+        } else {
+          c = static_cast<AliVCluster*>(fClus->At(cid));
+          if (!c)
+            continue;
+          TLorentzVector nP;
+          c->GetMomentum(nP, vertex);
+          cEta = nP.Eta();
+          cPhi = nP.Phi();
+          cPt  = nP.Pt();
+          cP   = nP.P();
+        }
 
-	  if (c->Chi2() == 100) // MC particle
-	    mcpt += nP.Pt();
+        neutralE += cP;
+        if (cPt > maxNe)
+          maxNe = cPt;
 
-	  jet->AddClusterAt(cid, nc);
-	  ++nc;
-	  ++nneutral;
-	}
+        if (c->Chi2() == 100) // MC particle
+          mcpt += cPt;
+
+        if (cPhi<0) 
+          cPhi += TMath::TwoPi();
+        cPhi *= TMath::RadToDeg();
+        if ((cPhi > geom->GetArm1PhiMin()) && (cPhi < geom->GetArm1PhiMax()) &&
+            (cEta > geom->GetArm1EtaMin()) && (cEta < geom->GetArm1EtaMax())) {
+          emcpt += cPt;
+          ++cemc;
+        }
+
+        jet->AddClusterAt(cid, nc);
+        ++nc;
+        ++nneutral;
       } else {
         AliError(Form("%s: No logical way to end up here.", GetName()));
         continue;
       }
-    }
+    } /* end of constituent loop */
+
     jet->SetNumberOfTracks(nt);
     jet->SetNumberOfClusters(nc);
     jet->SortConstituents();
@@ -332,6 +375,9 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
     jet->SetNumberOfCharged(ncharged);
     jet->SetNumberOfNeutrals(nneutral);
     jet->SetMCPt(mcpt);
+    jet->SetNEmc(cemc);
+    jet->SetPtEmc(emcpt);
+
     if (gall > 0)
       jet->SetAreaEmc(fjw.GetJetArea(ij) * gemc / gall);
     else 
@@ -343,4 +389,62 @@ void AliEmcalJetTask::FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, D
       jet->SetAxisInEmcal(kTRUE);
     jetCount++;
   }
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalJetTask::DoInit()
+{
+  // Init. Return true if successful.
+
+  // get input collections
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+
+  // get the event
+  fEvent = InputEvent();
+  if (!fEvent) {
+    AliError(Form("%s: Could not retrieve event! Returning", GetName()));
+    return 0;
+  }
+
+  // add jets to event if not yet there
+  if (!(fEvent->FindListObject(fJetsName)))
+    fEvent->AddObject(fJets);
+  else {
+    AliError(Form("%s: Object with name %s already in event! Returning", fJetsName.Data(), GetName()));
+    return 0;
+  }
+
+  if ((fType == 0) || (fType == 1)) {
+    if (fTracksName == "Tracks")
+      am->LoadBranch("Tracks");
+    if (!fTracks && !fTracksName.IsNull()) {
+      fTracks = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fTracksName));
+      if (!fTracks) {
+        AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data()));
+        return 0;
+      }
+    }
+    TString objname(fTracks->GetClass()->GetName());
+    TClass cls(objname);
+    if (cls.InheritsFrom("AliMCParticle"))
+      fIsMcPart = 1;
+  }
+
+  if ((fType == 0) || (fType == 2)) {
+    if (fCaloName == "CaloClusters")
+      am->LoadBranch("CaloClusters");
+    if (!fClus && !fCaloName.IsNull()) {
+      fClus = dynamic_cast<TClonesArray*>(fEvent->FindListObject(fCaloName));
+      if (!fClus) {
+        AliError(Form("%s: Pointer to clus %s == 0", GetName(), fCaloName.Data()));
+        return 0;
+      }
+    }
+    TString objname(fClus->GetClass()->GetName());
+    TClass cls(objname);
+    if (cls.InheritsFrom("AliEmcalParticle"))
+      fIsEmcPart = 1;
+  }
+
+  return 1;
 }
