@@ -133,7 +133,9 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     Double_t v0mcent = -1;
     AliCentrality *centin = 0;
     if (eev) {
-      am->LoadBranch("Centrality.");
+      TTree *tree = am->GetTree();
+      if (tree->GetBranch("Centrality."))
+        am->LoadBranch("Centrality.");
       centin = dynamic_cast<AliCentrality*>(eev->FindListObject("Centrality"));
     } else {
       centin = const_cast<AliAODEvent*>(aev)->GetCentrality();
