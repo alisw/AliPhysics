@@ -25,7 +25,7 @@ class AliSpectraAODEventCuts : public TNamed
   enum {  kProcessedEvents = 0,kPhysSelEvents,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector, kNVtxCuts};
 
   // Constructors
- AliSpectraAODEventCuts() : TNamed(), fAOD(0), fTrackBits(0), fIsMC(0), fUseCentPatchAOD049(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorPosCutMin(0), fQVectorPosCutMax(0), fQVectorNegCutMin(0), fQVectorNegCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVectorPos(0),fHistoQVectorNeg(0) {}
+ AliSpectraAODEventCuts() : TNamed(), fAOD(0), fTrackBits(0), fIsMC(0), fUseCentPatchAOD049(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0) {}
   AliSpectraAODEventCuts(const char *name);
   virtual  ~AliSpectraAODEventCuts() {}
   
@@ -42,8 +42,9 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t CheckQVectorCut();
   void  SetCentralityCutMin(Float_t cut)  { fCentralityCutMin = cut; }
   void  SetCentralityCutMax(Float_t cut)  { fCentralityCutMax = cut; }
-  void  SetQVectorPosCut(Float_t min,Float_t max)  { fQVectorPosCutMin = min; fQVectorPosCutMax = max; }
-  void  SetQVectorNegCut(Float_t min,Float_t max)  { fQVectorNegCutMin = min; fQVectorNegCutMax = max; }
+  //void  SetQVectorPosCut(Float_t min,Float_t max)  { fQVectorPosCutMin = min; fQVectorPosCutMax = max; }
+  //void  SetQVectorNegCut(Float_t min,Float_t max)  { fQVectorNegCutMin = min; fQVectorNegCutMax = max; }
+  void  SetQVectorCut(Float_t min,Float_t max)  { fQVectorCutMin = min; fQVectorCutMax = max; }
   void SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
 
 
@@ -54,14 +55,18 @@ class AliSpectraAODEventCuts : public TNamed
   TH1F * GetHistoEtaBefSel()         {  return fHistoEtaBefSel; }
   TH1F * GetHistoEtaAftSel()         {  return fHistoEtaAftSel; }
   TH1F * GetHistoNChAftSel()         {  return fHistoNChAftSel; }
-  TH1F * GetHistoQVectorPos()         {  return fHistoQVectorPos; }
-  TH1F * GetHistoQVectorNeg()         {  return fHistoQVectorNeg; }
+  /* TH1F * GetHistoQVectorPos()         {  return fHistoQVectorPos; } */
+  /* TH1F * GetHistoQVectorNeg()         {  return fHistoQVectorNeg; } */
+  TH1F * GetHistoQVector()         {  return fHistoQVector; }
+  TH1F * GetHistoEP()         {  return fHistoEP; }
   Float_t  GetCentralityMin()  const {  return fCentralityCutMin; }
   Float_t  GetCentralityMax()  const {  return fCentralityCutMax; }
-  Float_t  GetQVectorPosCutMin()  const {  return fQVectorPosCutMin; }
-  Float_t  GetQVectorPosCutMax()  const {  return fQVectorPosCutMax; }
-  Float_t  GetQVectorNegCutMin()  const {  return fQVectorNegCutMin; }
-  Float_t  GetQVectorNegCutMax()  const {  return fQVectorNegCutMax; }
+  //Float_t  GetQVectorPosCutMin()  const {  return fQVectorPosCutMin; }
+  //Float_t  GetQVectorPosCutMax()  const {  return fQVectorPosCutMax; }
+  //Float_t  GetQVectorNegCutMin()  const {  return fQVectorNegCutMin; }
+  //Float_t  GetQVectorNegCutMax()  const {  return fQVectorNegCutMax; }
+  Float_t  GetQVectorCutMin()  const {  return fQVectorCutMin; }
+  Float_t  GetQVectorCutMax()  const {  return fQVectorCutMax; }
   void   PrintCuts();
   Double_t ApplyCentralityPatchAOD049();
 
@@ -82,18 +87,22 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t          fIsSelected;        // True if cuts are selected
   Float_t         fCentralityCutMin;     // minimum centrality percentile
   Float_t         fCentralityCutMax;     // maximum centrality percentile
-  Float_t         fQVectorPosCutMin;     // minimum qvecPos
-  Float_t         fQVectorPosCutMax;     // maximum qvecPos
-  Float_t         fQVectorNegCutMin;     // minimum qvecNeg
-  Float_t         fQVectorNegCutMax;     // maximum qvecNeg
+  /* Float_t         fQVectorPosCutMin;     // minimum qvecPos */
+  /* Float_t         fQVectorPosCutMax;     // maximum qvecPos */
+  /* Float_t         fQVectorNegCutMin;     // minimum qvecNeg */
+  /* Float_t         fQVectorNegCutMax;     // maximum qvecNeg */
+  Float_t         fQVectorCutMin;     // minimum qvecPos
+  Float_t         fQVectorCutMax;     // maximum qvecPos
   TH1I            *fHistoCuts;        // Cuts statistics
   TH1F            *fHistoVtxBefSel;        // Vtx distr before event selection
   TH1F            *fHistoVtxAftSel;        // Vtx distr after event selection
   TH1F            *fHistoEtaBefSel;        // Eta distr before event selection
   TH1F            *fHistoEtaAftSel;        // Eta distr after event selection
   TH1F            *fHistoNChAftSel;        // NCh distr after event selection
-  TH1F            *fHistoQVectorPos;        // QVectorPos
-  TH1F            *fHistoQVectorNeg;        // QVectorNeg
+  //TH1F            *fHistoQVectorPos;        // QVectorPos
+  //TH1F            *fHistoQVectorNeg;        // QVectorNeg
+  TH1F            *fHistoQVector;        // QVector
+  TH1F            *fHistoEP;        // EP
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   

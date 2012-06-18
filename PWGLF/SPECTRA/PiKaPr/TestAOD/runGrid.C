@@ -1,7 +1,7 @@
 class  AliAnalysisManager;
 class  AliAnalysisAlien;
 
-void runGrid(TString mode="test",Int_t mc=1,Int_t day=15,Int_t month=6, Int_t year=2012) 
+void runGrid(TString mode="test",Int_t mc=0,Int_t day=15,Int_t month=6, Int_t year=2012) 
 {
   //0 is AOD048-049 in this case you can choos FilterBit5 (loose DCA) or 6 (tight DCA)!!!!!!!!!
   //1 is AOD086-090
@@ -38,8 +38,14 @@ void runGrid(TString mode="test",Int_t mc=1,Int_t day=15,Int_t month=6, Int_t ye
   
   // Add PID task
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  AliAnalysisTask * taskPID = AddTaskPIDResponse(mc);
- 
+  AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(mc);
+  // Printf("OADB PATH:::::%s",taskPID->GetOADBPath());
+  // taskPID->SetOADBPath("alien:///alice/cern.ch/user/a/akalweit/ForLeornado/OADB");
+  // Printf("OADB PATH:::::%s",taskPID->GetOADBPath());
+
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
+  AliVZEROEPSelectionTask *selTask = AddTaskVZEROEPSelection();
+
   gROOT->LoadMacro("AddTaskSpectraAOD.C");
   AliAnalysisTaskSpectraAOD* taskAOD=AddTaskSpectraAOD();
   
