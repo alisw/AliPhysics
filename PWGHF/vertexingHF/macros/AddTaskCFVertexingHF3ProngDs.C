@@ -21,8 +21,10 @@ const Int_t    minITSClusters = 5;
 
 const Float_t centmin_0_10 = 0.;
 const Float_t centmax_0_10 = 10.;
-const Float_t centmin_10_100 = 10.;
-const Float_t centmax_10_100 = 100.;
+const Float_t centmin_10_60 = 10.;
+const Float_t centmax_10_60 = 60.;
+const Float_t centmin_60_100 = 60.;
+const Float_t centmax_60_100 = 100.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
 const Float_t fakemax = 2.5.;
@@ -152,9 +154,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(Int_t decayOption=AliCFVertex
 	const Int_t nbinpT3_4_8  = 4 ; //bins in pt3 from 4 to 8 GeV
 	const Int_t nbinpT3_8_10  = 1 ; //bins in pt3 from 8 to 10 GeV
 	const Int_t nbinzvtx  = 30 ; //bins in z vertex
-	const Int_t nbincent = 11; //bins in centrality
-	const Int_t nbincent_0_10 = 2;  //bins in centrality between 0 and 10
-	const Int_t nbincent_10_100 = 9;  //bins in centrality between 10 and 100
+	const Int_t nbincent = 18;  //bins in centrality
+	const Int_t nbincent_0_10 = 4;  //bins in centrality between 0 and 10
+	const Int_t nbincent_10_60 = 10;  //bins in centrality between 10 and 60
+	const Int_t nbincent_60_100 = 4;  //bins in centrality between 60 and 100
 	const Int_t nbinfake = 3;  //bins in fake
 	const Int_t nbinpointingXY = 50;  //bins in cosPointingAngleXY
 	const Int_t nbinnormDecayLXY = 20;  //bins in NormDecayLengthXY
@@ -290,12 +293,16 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(Int_t decayOption=AliCFVertex
 		binLimzvtx[i]=(Double_t)zvtxmin  + (zvtxmax-zvtxmin)  /nbinzvtx*(Double_t)i ;
 	}
 	
-	// centrality
+	// centrality 
 	for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i ; 
-	if (binLimcent[nbincent_0_10] != centmin_10_100)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 1st range - differs from expected!\n");
+	if (binLimcent[nbincent_0_10] != centmin_10_60)  {
+	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 1st range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbincent_10_100; i++) binLimcent[i+nbincent_0_10]=(Double_t)centmin_10_100 + (centmax_10_100-centmin_10_100)/nbincent_10_100*(Double_t)i ; 
+	for(Int_t i=0; i<=nbincent_10_60; i++) binLimcent[i+nbincent_0_10]=(Double_t)centmin_10_60 + (centmax_10_60-centmin_10_60)/nbincent_10_60*(Double_t)i ;
+	if (binLimcent[nbincent_0_10+nbincent_10_60] != centmin_60_100)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 2st range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbincent_60_100; i++) binLimcent[i+nbincent_10_60]=(Double_t)centmin_60_100 + (centmax_60_100-centmin_60_100)/nbincent_60_100*(Double_t)i ;
 	
 	// fake
 	for(Int_t i=0; i<=nbinfake; i++) {
