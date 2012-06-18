@@ -353,6 +353,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
+    Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
     Float_t ceiso, cephiband, cecore;
     Float_t triso, trphiband, trcore;
     Float_t alliso, allphiband, allcore;
@@ -360,13 +361,13 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t netConeArea = TMath::Pi()*(fIsoConeR*fIsoConeR - 0.04*0.04);
     GetCeIso(clsVec, ceiso, cephiband, cecore);
     GetTrIso(clsVec, triso, trphiband, trcore);
+    ceiso -= Et;
     alliso = ceiso + triso;
     allphiband = cephiband + trphiband;
     allcore = cecore + trcore;
     Float_t ceisoue =  cephiband/phibandArea*netConeArea;
     Float_t trisoue =  trphiband/phibandArea*netConeArea;
     Float_t allisoue =  allphiband/phibandArea*netConeArea;
-    Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
     fM02Et->Fill(Et, c->GetM02());
     if(ceiso<1)
       fM02EtCeIso1->Fill(Et, c->GetM02());
