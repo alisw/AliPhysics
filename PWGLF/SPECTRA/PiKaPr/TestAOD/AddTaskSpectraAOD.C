@@ -14,7 +14,7 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kTRUE,
 					     UInt_t trkbitQVector=1,
 					     Bool_t UseCentPatchAOD049=kFALSE,
 					     Double_t DCA=100000,
-					     UInt_t minNclsTPC=70,
+					     UInt_t minNclsTPC=70
 					     ){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
