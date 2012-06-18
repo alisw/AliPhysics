@@ -58,8 +58,8 @@ AliDielectron* ConfigJpsiQA_jb_PbPb(Int_t cutDefinition, TString prod="")
   if (cutDefinition<arrNames->GetEntriesFast()){
     name=arrNames->At(cutDefinition)->GetName();
   }
-  AliDielectron *die = new AliDielectron(Form("%s",name.Data()),
-                                         Form("Track cuts: %s",name.Data()));
+  AliDielectron *die = new AliDielectron(Form("%s",name.Data()),Form("Track cuts: %s",name.Data()));
+  die->SetHasMC(hasMC);
 
   //only track QA, no Pairing
   if(cutDefinition<kTRDeff) die->SetNoPairing();
@@ -159,6 +159,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  if(isESD && (cutDefinition==kTOFTRD || cutDefinition==kTRD)) 
+    varCuts->AddCut(AliDielectronVarManager::kTRDchi2,    0.0,   2.0);
   if(cutDefinition!=kCutStats) cuts->AddCut(varCuts);
   
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
@@ -166,13 +168,13 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
   if(cutDefinition!=kCutStats) cuts->AddCut(trkCuts);
-
+  
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   AliDielectronPID *pid = new AliDielectronPID("PID","PID");
   
   ////////////////////////////////// DATA
   if(!hasMC) {
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,2.5,0.,0.,kTRUE);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-100.,3.5,0.,0.,kTRUE);
   }
   

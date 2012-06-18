@@ -76,9 +76,9 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   if (cutDefinition<arrNames->GetEntriesFast()){
     name=arrNames->At(cutDefinition)->GetName();
   }
-  AliDielectron *die = new AliDielectron(Form("%s",name.Data()),
-                                         Form("Track cuts: %s",name.Data()));
-  
+  AliDielectron *die = new AliDielectron(Form("%s",name.Data()), Form("Track cuts: %s",name.Data()));
+  die->SetHasMC(hasMC);
+
   // Monte Carlo Signals and TRD efficiency tables
   if(hasMC) {
     AddMCSignals(die);
@@ -204,6 +204,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  if(isESD) 
+    varCuts->AddCut(AliDielectronVarManager::kTRDchi2,    0.0,   2.0);
   cuts->AddCut(varCuts);
   
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
@@ -225,7 +227,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   
   ////////////////////////////////// DATA
   if(!hasMC) {
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,2.5,0.,0.,kTRUE);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-100.,3.5,0.,0.,kTRUE);
     
     if(cutDefinition==kTRD || cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2) 
@@ -748,7 +750,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
     if(cutDefinition!=kSubRndm) {
       cf->AddVariable(AliDielectronVarManager::kPt,"0.8, 1.0, 1.1, 1.2, 1.5, 100.0",kTRUE);
       cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-3,-2.5,-2,2,2.5,3",kTRUE);
-      //cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.5,4.0,4.5,5.0,100",kTRUE);
+      cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"2.5,3.0,3.5,4.0,4.5,100",kTRUE);
       //    cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"3.5,4.0,4.5,5.0,100",kTRUE);
       cf->AddVariable(AliDielectronVarManager::kTRDpidQuality,"3.5, 4.5, 5.5, 6.5",kTRUE);
 	
