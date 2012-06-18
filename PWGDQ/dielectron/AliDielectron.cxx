@@ -230,11 +230,7 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   }
 
   //in case we have MC load the MC event and process the MC particles
-  if (AliDielectronMC::Instance()->HasMC()) {
-    if (!AliDielectronMC::Instance()->ConnectMCEvent()){
-      AliError("Could not properly connect the MC event, skipping this event!");
-      return;
-    }
+  if (AliDielectronMC::Instance()->ConnectMCEvent()){
     ProcessMC(ev1);
   }
   
