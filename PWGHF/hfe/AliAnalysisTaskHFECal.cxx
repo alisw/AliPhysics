@@ -665,15 +665,15 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fIncpTM20 = new TH2F("fIncpTM20","HFE pid electro vs. centrality with M20",100,0,100,100,0,50);
   fOutputList->Add(fIncpTM20);
+  
+  Int_t nBinspho[5] =  { 100, 100, 500, 12,   50};
+  Double_t minpho[5] = {  0.,  0.,  0., -2.5,  0};   
+  Double_t maxpho[5] = {100., 50., 0.5, 3.5,   1};   
 
-  Int_t nBinspho[4] =  { 100, 100, 500, 12};
-  Double_t minpho[4] = {  0.,  0.,  0., -2.5};   
-  Double_t maxpho[4] = {100., 50., 0.5, 3.5 };   
-
-  fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma;", 4, nBinspho,minpho, maxpho);
+  fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle;", 5, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassLS);
   
-  fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma;", 4, nBinspho,minpho, maxpho);
+  fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; ", 5, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassULS);
   
   fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
@@ -874,11 +874,12 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     
     recg.GetMass(mass,width);
     
-    double phoinfo[4];
+    double phoinfo[5];
     phoinfo[0] = cent;
     phoinfo[1] = ptPrim;
     phoinfo[2] = mass;
     phoinfo[3] = nSig;
+    phoinfo[4] = openingAngle;
 
     if(fFlagLS) fInvmassLS->Fill(phoinfo);
     if(fFlagULS) fInvmassULS->Fill(phoinfo);
