@@ -30,7 +30,7 @@ class AliEmcalParticle: public AliVParticle {
   Double_t          OneOverPt() const { return 1./fPt; }
   Double_t          Phi()       const { return fPhi; }
   Double_t          Theta()     const { return 0.; }
-  Double_t          E()         const { if (fTrack) return fTrack->M(); return fCluster->E(); }
+  Double_t          E()         const { if (fTrack) return fTrack->E(); return fCluster->E(); }
   Double_t          M()         const { if (fTrack) return fTrack->M(); return 0; }
   Double_t          Eta()       const { return fEta; }
   Double_t          Y()         const { if (fTrack) return fTrack->Y(); return fEta; }
