@@ -96,79 +96,80 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
       QvecCutMax[i]=100;
     }
   }
+  AliAnalysisTaskSpectraAOD* taskAOD=AddTaskSpectraAOD();
+
+  // using namespace AliSpectraNameSpace;
+  // AliSpectraAODPID *pid = new AliSpectraAODPID(kNSigmaTPCTOF); 
+  // pid->SetNSigmaCut(3.);
   
-  using namespace AliSpectraNameSpace;
-  AliSpectraAODPID *pid = new AliSpectraAODPID(kNSigmaTPCTOF); 
-  pid->SetNSigmaCut(3.);
-  
-  for(Int_t iCut=0;iCut<4;iCut++){
-    if(iCut!=1)continue; //uncomemnt if you want to run only on 1 subsample
-    AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
-    mgr->AddTask(task);
-    //physics selection
-    task->SelectCollisionCandidates();     
-    // set pid object
-    task->SetPID(pid);
-    // Set the cuts
-    AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
-    AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
-    //if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
-    //if(c==1 || c==2)tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cut with tight DCA
-    //if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
-    //if(c==3 || c==4)tcuts->SetTrackType(4); //AOD 086 & 090. Jet analysis
-    //if(c==3 || c==4)tcuts->SetTrackType(7); //AOD 086 & 090. TPC Only
-    tcuts->SetTrackBits(1024);
-    Printf("\n-------------------- tcuts->GetTrackType() %d \n",tcuts->GetTrackType());
-    //tcuts->SetDCA(.1);
-    tcuts->SetPt(5);
-    tcuts->SetY(.5);
-    tcuts->SetPtTOFMatching(.6);   
-    //cut on qvector and eta
-    vcuts->SetQVectorCut(QvecCutMin[iCut],QvecCutMax[iCut]);
-    tcuts->SetEta(EtaMin[iCut],EtaMax[iCut]);
-    if(c==1)vcuts->SetUseCentPatchAOD049(kTRUE);
-    vcuts->SetCentralityCutMax(CentCutMax[iCut]);  
-    vcuts->SetCentralityCutMin(CentCutMin[iCut]);
-    task->SetEventCuts(vcuts);
-    task->SetTrackCuts(tcuts);
-    vcuts->PrintCuts();
-    tcuts->PrintCuts();
+  // for(Int_t iCut=0;iCut<4;iCut++){
+  //   if(iCut!=1)continue; //uncomemnt if you want to run only on 1 subsample
+  //   AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
+  //   mgr->AddTask(task);
+  //   //physics selection
+  //   task->SelectCollisionCandidates();     
+  //   // set pid object
+  //   task->SetPID(pid);
+  //   // Set the cuts
+  //   AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
+  //   AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
+  //   //if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
+  //   //if(c==1 || c==2)tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cut with tight DCA
+  //   //if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
+  //   //if(c==3 || c==4)tcuts->SetTrackType(4); //AOD 086 & 090. Jet analysis
+  //   //if(c==3 || c==4)tcuts->SetTrackType(7); //AOD 086 & 090. TPC Only
+  //   tcuts->SetTrackBits(1024);
+  //   Printf("\n-------------------- tcuts->GetTrackType() %d \n",tcuts->GetTrackType());
+  //   //tcuts->SetDCA(.1);
+  //   tcuts->SetPt(5);
+  //   tcuts->SetY(.5);
+  //   tcuts->SetPtTOFMatching(.6);   
+  //   //cut on qvector and eta
+  //   vcuts->SetQVectorCut(QvecCutMin[iCut],QvecCutMax[iCut]);
+  //   tcuts->SetEta(EtaMin[iCut],EtaMax[iCut]);
+  //   if(c==1)vcuts->SetUseCentPatchAOD049(kTRUE);
+  //   vcuts->SetCentralityCutMax(CentCutMax[iCut]);  
+  //   vcuts->SetCentralityCutMin(CentCutMin[iCut]);
+  //   task->SetEventCuts(vcuts);
+  //   task->SetTrackCuts(tcuts);
+  //   vcuts->PrintCuts();
+  //   tcuts->PrintCuts();
     
-    // check for MC or real data
-    if (c == 2 || c == 4)
-      {
-	task->SetIsMC(kTRUE);
-	vcuts->SetIsMC(kTRUE);
-	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer,
-								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-	AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
-								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-	AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
-								   Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-	AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
-								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-      }
-    if (c == 1 || c==3)
-      {
-	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, 
-								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-	AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
-								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-	AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
-								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-	AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
-								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+  //   // check for MC or real data
+  //   if (c == 2 || c == 4)
+  //     {
+  // 	task->SetIsMC(kTRUE);
+  // 	vcuts->SetIsMC(kTRUE);
+  // 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  // 	AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer,
+  // 								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+  // 	AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
+  // 								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+  // 	AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
+  // 								   Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+  // 	AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
+  // 								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+  //     }
+  //   if (c == 1 || c==3)
+  //     {
+  // 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  // 	AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, 
+  // 								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+  // 	AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
+  // 								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+  // 	AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
+  // 								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
+  // 	AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
+  // 								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
 	
-      }
-    mgr->ConnectInput(task, 0, cinput);
-    mgr->ConnectOutput(task, 1, coutputpt1);
-    mgr->ConnectOutput(task, 2, coutputpt2);
-    mgr->ConnectOutput(task, 3, coutputpt3);
-    mgr->ConnectOutput(task, 4, coutputpt4);
-  }
-  mgr->SetDebugLevel(2);
+  //     }
+  //   mgr->ConnectInput(task, 0, cinput);
+  //   mgr->ConnectOutput(task, 1, coutputpt1);
+  //   mgr->ConnectOutput(task, 2, coutputpt2);
+  //   mgr->ConnectOutput(task, 3, coutputpt3);
+  //   mgr->ConnectOutput(task, 4, coutputpt4);
+  // }
+  // mgr->SetDebugLevel(2);
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
