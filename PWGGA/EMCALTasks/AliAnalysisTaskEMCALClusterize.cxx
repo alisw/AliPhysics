@@ -81,9 +81,10 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fCellMatchdEta(),       fCellMatchdPhi()
 , fMaxEvent(0),           fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),    fSelectCellMinE(0),         fSelectCellMinFrac(0)
-, fRemoveLEDEvents(kTRUE), fRemoveExoticEvents(kFALSE)
+, fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("") 
-, fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")           
+, fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
+, fCentralityClass("")
 {
   // Constructor
   
@@ -97,6 +98,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
     fCellMatchdPhi[j]    = -999;
   }  
   
+  fCentralityBin[0] = fCentralityBin[1]=-1;
   
 }
 
@@ -119,10 +121,10 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fCellMatchdEta(),         fCellMatchdPhi()
 , fMaxEvent(0),             fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),      fSelectCellMinE(0),         fSelectCellMinFrac(0)
-, fRemoveLEDEvents(kTRUE), fRemoveExoticEvents(kFALSE)
+, fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
-, fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")           
-
+, fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
+, fCentralityClass("")           
 {
   // Constructor
   
@@ -970,6 +972,10 @@ void AliAnalysisTaskEMCALClusterize::Init()
   if(fSelectCellMinE    <= 0) fSelectCellMinE    = 0.005;     
   if(fSelectCellMinFrac <= 0) fSelectCellMinFrac = 0.001;
   
+  //Centrality
+  if(fCentralityClass  == "") fCentralityClass  = "V0M";
+  fCentralityBin[0] = fCentralityBin[1]=-1;
+  
   if (fOCDBpath            == "") fOCDBpath            = "raw://" ;
   if (fOutputAODBranchName == "") fOutputAODBranchName = "newEMCALClusters" ;
   
@@ -990,6 +996,9 @@ void AliAnalysisTaskEMCALClusterize::Init()
     fDoTrackMatching  = clus->fDoTrackMatching;
     fOutputAODBranchName = clus->fOutputAODBranchName;
     for(Int_t i = 0; i < 12; i++) fGeomMatrix[i] = clus->fGeomMatrix[i] ;
+    fCentralityClass  = clus->fCentralityClass;
+    fCentralityBin[0] = clus->fCentralityBin[0];
+    fCentralityBin[1] = clus->fCentralityBin[1];
   }
   
   // Init geometry, I do not like much to do it like this ...
@@ -1477,12 +1486,20 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //Remove the contents of AOD branch output list set in the previous event 
   fOutputAODBranch->Clear("C");
 
+  LoadBranches();
+  
+  //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
+  //If we need a centrality bin, we select only those events in the corresponding bin.
+  if( GetCentrality() && fCentralityBin[0] >= 0 && fCentralityBin[1] >= 0 )
+  {
+    Int_t cen = GetEventCentrality();
+    if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return ; //reject events out of bin.
+  }  
+  
   // intermediate array with new clusters : init the array only once or clear from previous event
   if(!fCaloClusterArr) fCaloClusterArr    = new TObjArray(10000);
   else                 fCaloClusterArr->Delete();//Clear("C"); it leaks?
 
-  LoadBranches();
-  
   //Get the event, do some checks and settings
   CheckAndGetEvent() ;
   
