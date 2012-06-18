@@ -526,7 +526,7 @@ Bool_t AliHadCorrTask::Run()
       am->LoadBranch("CaloClusters");
     if (fTracksName == "Tracks")
       am->LoadBranch("Tracks");
-    am->LoadBranch("Centrality");      
+    am->LoadBranch("Centrality.");      
   }
 
   if (fCreateHisto) {
