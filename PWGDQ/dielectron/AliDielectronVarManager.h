@@ -402,7 +402,7 @@ inline void AliDielectronVarManager::Fill(const TObject* object, Double_t * cons
   //
   // Main function to fill all available variables according to the type of particle
   //
-//   if (!object) return;
+  if (!object) return;
   if      (object->IsA() == AliESDtrack::Class())       FillVarESDtrack(static_cast<const AliESDtrack*>(object), values);
   else if (object->IsA() == AliAODTrack::Class())       FillVarAODTrack(static_cast<const AliAODTrack*>(object), values);
   else if (object->IsA() == AliMCParticle::Class())     FillVarMCParticle(static_cast<const AliMCParticle*>(object), values);
@@ -1104,7 +1104,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
       if(pair->GetFirstDaughter()->GetLabel() > 0) {
         const AliVParticle* d1 = mc->GetMCTrackFromMCEvent(pair->GetFirstDaughter()->GetLabel());
         const AliVParticle* motherMC = mc->GetMCTrackFromMCEvent(((AliMCParticle*)d1)->GetMother());
-        const AliVVertex* mcVtx = mc->GetMCEvent()->GetPrimaryVertex();
+        const AliMCEvent *mcevent = mc->GetMCEvent();
+	const AliVVertex* mcVtx = mcevent ? mcevent->GetPrimaryVertex() : 0x0;
 	if(motherMC && mcVtx) {
 	  const Double_t lxyMC = ( (motherMC->Xv() - mcVtx->GetX()) * motherMC->Px() +
                                    (motherMC->Yv() - mcVtx->GetY()) * motherMC->Py()   ) / motherMC->Pt();

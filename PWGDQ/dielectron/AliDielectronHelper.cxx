@@ -346,6 +346,7 @@ void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t a
 
 //_____________________________________________________________________________
 Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, Int_t pdgMother, Int_t pdgDaughter, Int_t prim){
+  // TODO: add AODs
   // counting number of mother particles generated in given eta range and 2 particle decay
   if (!ev || ev->IsA()!=AliMCEvent::Class()) return -1;
   

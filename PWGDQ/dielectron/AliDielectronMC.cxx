@@ -160,7 +160,8 @@ AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t itrk) const
     if (!fMCEvent){ AliError("No fMCEvent"); return NULL;}
     track = fMCEvent->GetTrack(itrk); //  tracks from MC event (ESD)
   } else if(fAnaType == kAOD) {
-    if (!fMcArray){ AliError("No fMCEvent"); return NULL;}
+    if (!fMcArray){ AliError("No fMcArray"); return NULL;}
+    if (itrk>fMcArray->GetEntriesFast()) { AliWarning(Form("track %d out of array size %d",itrk,fMcArray->GetEntriesFast())); return NULL;}
     track = (AliVParticle*)fMcArray->At(itrk); //  tracks from MC event (AOD)
   }
   return track;
@@ -175,13 +176,13 @@ Bool_t AliDielectronMC::ConnectMCEvent()
   if(fAnaType == kESD){
     fMCEvent=0x0;
     AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!mcHandler){ AliError("Could not retrive MC event handler!"); return kFALSE; }
+    if (!mcHandler){ /*AliError("Could not retrive MC event handler!");*/ return kFALSE; }
     if (!mcHandler->InitOk() ) return kFALSE;
     if (!mcHandler->TreeK() )  return kFALSE;
     if (!mcHandler->TreeTR() ) return kFALSE;
     
     AliMCEvent* mcEvent = mcHandler->MCEvent();
-    if (!mcEvent){ AliError("Could not retrieve MC event!"); return kFALSE; }
+    if (!mcEvent){ /*AliError("Could not retrieve MC event!");*/ return kFALSE; }
     fMCEvent = mcEvent;
     
     if (!UpdateStack()) return kFALSE;
@@ -191,7 +192,8 @@ Bool_t AliDielectronMC::ConnectMCEvent()
     fMcArray = 0x0;
     AliAODEvent *aod=((AliAODInputHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetEvent();
     fMcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
-    if(!fMcArray) return kFALSE;
+    if (!fMcArray){ /*AliError("Could not retrieve MC array!");*/ return kFALSE; }
+    else fHasMC=kTRUE;
   }
   return kTRUE;
 }
@@ -232,9 +234,9 @@ AliAODMCParticle* AliDielectronMC::GetMCTrack( const AliAODTrack* _track)
   //
   // return MC track
   //
- if(!fMcArray) { AliError("No fMCArray"); return NULL;}
+ if(!fMcArray) { AliError("No fMcArray"); return NULL;}
  Int_t label = _track->GetLabel();
- if(label < 0) return NULL;
+ if(label < 0 || label > fMcArray->GetEntriesFast()) return NULL;
  AliAODMCParticle *mctrack = (AliAODMCParticle*)fMcArray->At(label);
  return mctrack; 
 }
