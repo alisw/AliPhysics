@@ -38,7 +38,6 @@
 
 ClassImp(AliCFVertexingHF3Prong)
 
-
 //_________________________________________
 AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(Int_t decay, UInt_t resonantDecay):
 AliCFVertexingHF(),
@@ -54,6 +53,24 @@ AliCFVertexingHF(),
   for(Int_t iP=0; iP<fProngs; iP++){
 	  fPtAccCut[iP]=0.1;
 	  fEtaAccCut[iP]=0.9;
+  }
+
+}
+//_________________________________________
+AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(Int_t decay):
+AliCFVertexingHF(),
+  fDecay(decay),
+  fGenDsOption(kCountResonant),
+  fResonantDecay(0)
+ {
+  //
+  SetNProngs(3);
+
+  fPtAccCut=new Float_t[fProngs];
+  fEtaAccCut=new Float_t[fProngs];
+  for(Int_t iP=0; iP<fProngs; iP++){
+          fPtAccCut[iP]=0.1;
+          fEtaAccCut[iP]=0.9;
   }
 
 }
@@ -74,7 +91,22 @@ AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(TClonesArray *mcArray, UShort_t o
   }
 }
 
-
+//_________________________________________
+AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(TClonesArray *mcArray, UShort_t originDselection, Int_t decay):
+  AliCFVertexingHF(mcArray, originDselection),
+  fDecay(decay),
+  fGenDsOption(kCountResonant),
+  fResonantDecay(0)
+{
+  //
+  SetNProngs(3);
+  fPtAccCut=new Float_t[fProngs];
+  fEtaAccCut=new Float_t[fProngs];
+  for(Int_t iP=0; iP<fProngs; iP++){
+          fPtAccCut[iP]=0.1;
+          fEtaAccCut[iP]=0.9;
+  }
+}
 //_____________________________________
 AliCFVertexingHF3Prong& AliCFVertexingHF3Prong::operator=(const AliCFVertexingHF3Prong& c){
   //
