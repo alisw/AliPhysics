@@ -1,26 +1,28 @@
 // $Id$
 
 AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
-  TString & arrayName,
-  const Bool_t  bFillAOD   = kFALSE,                                                
-  const Int_t   bMC        = kFALSE,
-  const Bool_t  exotic     = kTRUE,
-  const TString name       = "V1Unfold", 
-  const TString trigger    = "", 
-  const Bool_t  tm         = kTRUE, 
-  const Int_t   minEcell   = 50,
-  const Int_t   minEseed   = 100,
-  const Int_t   maxDeltaT  = 250,
-  const Int_t   timeWindow = 1000,
-  const Int_t   minEUnf    = 15, 
-  const Int_t   minFrac    = 1,
-  const Bool_t  bRecalE    = kTRUE,
-  const Bool_t  bBad       = kTRUE,
-  const Bool_t  bRecalT    = kTRUE,
-  const Bool_t  bNonLine   = kFALSE,
-  const Int_t   nRowDiff   = 1,
-  const Int_t   nColDiff   = 1
-)
+                                                       TString & arrayName,
+                                                       const Bool_t  bFillAOD   = kFALSE,                                                
+                                                       const Int_t   bMC        = kFALSE,
+                                                       const Bool_t  exotic     = kTRUE,
+                                                       const TString name       = "V1Unfold", 
+                                                       const TString trigger    = "", 
+                                                       const Bool_t  tm         = kTRUE, 
+                                                       const Int_t   minEcell   = 50,
+                                                       const Int_t   minEseed   = 100,
+                                                       const Int_t   maxDeltaT  = 250,
+                                                       const Int_t   timeWindow = 1000,
+                                                       const Int_t   minEUnf    = 15, 
+                                                       const Int_t   minFrac    = 1,
+                                                       const Bool_t  bRecalE    = kTRUE,
+                                                       const Bool_t  bBad       = kTRUE,
+                                                       const Bool_t  bRecalT    = kTRUE,
+                                                       const Bool_t  bNonLine   = kFALSE,
+                                                       const Int_t   minCen     = -1,
+                                                       const Int_t   maxCen     = -1,
+                                                       const Int_t   nRowDiff   = 1,
+                                                       const Int_t   nColDiff   = 1
+                                                       )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -41,15 +43,27 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   printf("Passed Settings : mc %d, exo %d, name %s, trigger %s, tm %d\n",bMC,exotic,name.Data(),trigger.Data(),tm);
   printf("                  Ecell %d, Eseed %d, dT %d, wT %d, minUnf %d, minFrac %d \n",minEcell, minEseed,maxDeltaT,timeWindow,minEUnf,minFrac);
-  printf("                  recalE %d, bad %d, recalT %d, nonlin %d, rowDiff %d, colDiff %d \n",bRecalE,bBad,bRecalT,bNonLine,nRowDiff,nColDiff);
+  printf("                  recalE %d, bad %d, recalT %d, nonlin %d, minCen %d, maxCen %d, rowDiff %d, colDiff %d \n",bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff);
 
+  // Create name of task and AOD branch depending on different settings
+  
+  if(name.Contains("NxN")) arrayName = Form("%dx%d_Ecell%d_Eseed%d_DT%d_WT%d",2*nRowDiff+1,2*nColDiff+1,minEcell,minEseed,maxDeltaT,timeWindow);
+  else                     arrayName = Form(   "%s_Ecell%d_Eseed%d_DT%d_WT%d",              name.Data(),minEcell,minEseed,maxDeltaT,timeWindow);
+  
+  if(minCen != -1 && maxCen != -1)
+    arrayName+=Form("_Cen%d_%d",minCen,maxCen);
+
+  printf("Created Branch Name: \n",arrayName.Data());
+  
+  
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliAnalysisTaskEMCALClusterize* clusterize = new AliAnalysisTaskEMCALClusterize(Form("EMCALClusterize%s_Ecell%d_Eseed%d_DT%d_WT%d",
-                                                                                       name.Data(),minEcell,minEseed,maxDeltaT,timeWindow));
+  AliAnalysisTaskEMCALClusterize* clusterize = new AliAnalysisTaskEMCALClusterize(Form("EMCALClusterize%s",arrayName.Data()));
 
+  clusterize->SetAODBranchName(arrayName);
+  
   //clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB");
 
   // Some general settings to create AOD file in case we want to keep it
@@ -232,14 +246,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   }
   
   // Set clusters branch name, make sure the analysis after this one reads this name
-  
-  if(name.Contains("NxN")) arrayName = Form("%dx%d_Ecell%d_Eseed%d_DT%d_WT%d",2*nRowDiff+1,2*nColDiff+1,minEcell,minEseed,maxDeltaT,timeWindow);
-  else                     arrayName = Form(   "%s_Ecell%d_Eseed%d_DT%d_WT%d",              name.Data(),minEcell,minEseed,maxDeltaT,timeWindow);
-  
-  clusterize->SetAODBranchName(arrayName);
-  
-  printf("Created Branch Name: \n",arrayName.Data());
-  
+    
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
