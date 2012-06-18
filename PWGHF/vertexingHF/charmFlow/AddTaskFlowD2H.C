@@ -216,7 +216,7 @@ int MassBands( int nDmeson, bool bOldApproach=false ) {
     if(bOldApproach) return 5;
     else return 26;
   case ( AliRDHFCuts::kDstarCuts ):
-    return 20;
+    return 13; 
   }
 }
 
@@ -231,8 +231,7 @@ double MassBandLowEdge( int nDmeson, int mb, bool bOldApproach=false ) {
     if(bOldApproach) return lowEdgeMinimal[mb];
     else return lowEdge[mb];
   case ( AliRDHFCuts::kDstarCuts ): // 2 + 10 + 3
-    double lowEdge[20+1] = {0.1380, 0.1396, 0.1412, 0.1420, 0.1428, 0.1436, 0.1444, 0.1452, 0.1460, 0.1468, 0.1476, 0.1484, 0.1492, 0.1500,
-			    0.1508, 0.1516, 0.1524, 0.1532, 0.1548, 0.1564, 0.1580};
+    double lowEdge[13+1]={0.138, 0.139, 0.141, 0.143, 0.144, 0.145, 0.146, 0.147, 0.148, 0.150, 0.152,  0.154, 0.156, 0.158}; 
     return lowEdge[mb];
   }
 }
@@ -263,7 +262,7 @@ int MassBins( int nDmeson ) {
   case ( AliRDHFCuts::kD0toKpiCuts ):
     return 50;
   case ( AliRDHFCuts::kDstarCuts ):
-    return 25;
+    return 40; 
   }
 }
 
