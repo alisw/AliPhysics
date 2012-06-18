@@ -8,6 +8,9 @@
 
 ClassImp(AliEmcalJet)
 
+  Double32_t        fPtEmc;               //[0,0,12]   pt in EMCAL acceptance
+  Int_t             fNEmc;                //           number of constituents in EMCAL acceptance
+
 //__________________________________________________________________________________________________
 AliEmcalJet::AliEmcalJet() : 
   AliVParticle(), 
@@ -24,9 +27,12 @@ AliEmcalJet::AliEmcalJet() :
   fMCPt(0),
   fNn(0), 
   fNch(0),        
+  fPtEmc(0),
+  fNEmc(0),
   fClusterIDs(),
   fTrackIDs(),
-  fMatched(2) 
+  fMatched(2),
+  fPtSub(0)
 {
   // Constructor.
 
@@ -52,9 +58,12 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fMCPt(0),
   fNn(0),
   fNch(0),
+  fPtEmc(0),
+  fNEmc(0),
   fClusterIDs(), 
   fTrackIDs(),
-  fMatched(2)
+  fMatched(2),
+  fPtSub(0)
 {    
   // Constructor.
 
@@ -86,9 +95,12 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fMCPt(0),
   fNn(0),
   fNch(0), 
+  fPtEmc(0),
+  fNEmc(0),
   fClusterIDs(), 
   fTrackIDs(),
-  fMatched(2)
+  fMatched(2),
+  fPtSub(0)
 {
   // Constructor.
 
@@ -117,9 +129,12 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fMCPt(jet.fMCPt),
   fNn(jet.fNn),
   fNch(jet.fNch),
+  fPtEmc(jet.fPtEmc),
+  fNEmc(jet.fNEmc),
   fClusterIDs(jet.fClusterIDs), 
   fTrackIDs(jet.fTrackIDs),
-  fMatched(jet.fMatched) 
+  fMatched(jet.fMatched),
+  fPtSub(jet.fPtSub)
 {
   // Copy constructor.
 
@@ -149,6 +164,8 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fMCPt               = jet.fMCPt;
     fNn                 = jet.fNn;
     fNch                = jet.fNch;
+    fPtEmc              = jet.fPtEmc;
+    fNEmc               = jet.fNEmc;
     fClusterIDs         = jet.fClusterIDs;
     fTrackIDs           = jet.fTrackIDs;
     fClosestJets[0]     = jet.fClosestJets[0]; 
@@ -156,6 +173,7 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fClosestJetsDist[0] = jet.fClosestJetsDist[0];  
     fClosestJetsDist[1] = jet.fClosestJetsDist[1]; 
     fMatched            = jet.fMatched;
+    fPtSub              = jet.fPtSub;
   }
 
   return *this;

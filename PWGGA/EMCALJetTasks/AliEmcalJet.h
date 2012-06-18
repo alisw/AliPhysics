@@ -49,10 +49,10 @@ class AliEmcalJet : public AliVParticle
   Bool_t            AxisInEmcal()                const { return fAxisInEmcal;              }
   UShort_t          GetNumberOfClusters()        const { return fClusterIDs.GetSize();     }
   Short_t           ClusterAt(Int_t idx)         const { return fClusterIDs.At(idx);       }
-  AliVCluster      *ClusterAt(Int_t idx, TClonesArray *clusarray)  const { if (!clusarray) return 0; return dynamic_cast<AliVCluster*>(clusarray->At(ClusterAt(idx))); }
+  AliVCluster      *ClusterAt(Int_t idx, TClonesArray *ca)  const { if (!ca) return 0; return dynamic_cast<AliVCluster*>(ca->At(ClusterAt(idx))); }
   UShort_t          GetNumberOfTracks()          const { return fTrackIDs.GetSize();       }
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
-  AliVParticle     *TrackAt(Int_t idx, TClonesArray *trackarray)   const { if (!trackarray) return 0; return dynamic_cast<AliVParticle*>(trackarray->At(TrackAt(idx))); } 
+  AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)   const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); } 
   Double_t          FracEmcalArea()              const { return fAreaEmc/fArea;            }
   Bool_t            IsInsideEmcal()              const { return (fAreaEmc/fArea>0.999);    }
   Bool_t            IsInEmcal()                  const { return (fAreaEmc>0);              }
@@ -62,6 +62,7 @@ class AliEmcalJet : public AliVParticle
   UShort_t          Nn()                         const { return fNn;                       }
   UShort_t          Nch()                        const { return fNch;                      }
   UShort_t          N()                          const { return Nch()+Nn();                }
+  Int_t             NEmc()                       const { return fNEmc;                     }
   Double_t          MCPt()                       const { return fMCPt;                     }
   Bool_t            IsMC()                       const { return (Bool_t)(MCPt() > 0);      }
   AliEmcalJet*      ClosestJet()                 const { return fClosestJets[0];           }
@@ -72,6 +73,9 @@ class AliEmcalJet : public AliVParticle
   Double_t          MaxClusterPt()               const { return MaxNeutralPt();            }
   Double_t          MaxTrackPt()                 const { return MaxChargedPt();            }
   Double_t          MaxPartPt()                  const { return fMaxCPt < fMaxNPt ? fMaxNPt : fMaxCPt;     }
+  Double_t          PtEmc()                      const { return fPtEmc;                    }
+  Double_t          PtSub()                      const { return fPtSub;                    }
+  Double_t          PtSub(Double_t rho)          const { return fPt - fArea*rho;           }
 
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
@@ -93,6 +97,9 @@ class AliEmcalJet : public AliVParticle
   void              SetSecondClosestJet(AliEmcalJet *j, Double_t d) { fClosestJets[1] = j; fClosestJetsDist[1] = d; }
   void              SetMatchedToClosest()                           { fMatched = 0;        }
   void              SetMatchedToSecondClosest()                     { fMatched = 1;        }
+  void              SetNEmc(Int_t n)                                { fNEmc    = n;        }
+  void              SetPtEmc(Double_t pt)                           { fPtEmc   = pt;       }
+  void              SetPtSub(Double_t ps)                           { fPtSub   = ps;       } 
 
  protected:
   Double32_t        fPt;                  //[0,0,12]   pt 
@@ -108,12 +115,15 @@ class AliEmcalJet : public AliVParticle
   Double32_t        fMCPt;                //           pt from MC particles contributing to the jet
   Int_t             fNn;                  //           number of neutral constituents
   Int_t             fNch;                 //           number of charged constituents
+  Double32_t        fPtEmc;               //[0,0,12]   pt in EMCAL acceptance
+  Int_t             fNEmc;                //           number of constituents in EMCAL acceptance
   TArrayS           fClusterIDs;          //           array of cluster constituents  
   TArrayS           fTrackIDs;            //           array of track constituents   
   AliEmcalJet      *fClosestJets[2];      //!          if this is MC it contains the two closest detector level jets in order of distance and viceversa
   Double32_t        fClosestJetsDist[2];  //!          distance to closest jets (see above)
   UShort_t          fMatched;             //!          0,1 if it is matched with one of the closest jets; 2 if it is not matched
+  Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside) 
 
-  ClassDef(AliEmcalJet,6) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,7) // Emcal jet class in cylindrical coordinates
 };
 #endif
