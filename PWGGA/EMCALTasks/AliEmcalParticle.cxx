@@ -10,7 +10,7 @@
 
 //_________________________________________________________________________________________________
 AliEmcalParticle::AliEmcalParticle() :
-  TObject(),
+  AliVParticle(),
   fTrack(0), 
   fCluster(0),
   fNMatched(0),
@@ -26,7 +26,7 @@ AliEmcalParticle::AliEmcalParticle() :
 
 //_________________________________________________________________________________________________
 AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Double_t vy, Double_t vz) :
-  TObject(),
+  AliVParticle(),
   fTrack(0), 
   fCluster(0),
   fNMatched(0),
@@ -62,7 +62,7 @@ AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Dou
   
 //_________________________________________________________________________________________________
 AliEmcalParticle::AliEmcalParticle(const AliEmcalParticle &p) :
-  TObject(),
+  AliVParticle(p),
   fTrack(p.fTrack),
   fCluster(p.fCluster), 
   fNMatched(p.fNMatched),
@@ -100,7 +100,7 @@ AliEmcalParticle &AliEmcalParticle::operator=(const AliEmcalParticle &p)
     fPt       = p.fPt;
 
     ResetMatchedObjects();
-    memcpy(fMatchedIds, p.fMatchedIds, sizeof(UShort_t) * fSizeMatched);
+    memcpy(fMatchedIds,  p.fMatchedIds,  sizeof(UShort_t) * fSizeMatched);
     memcpy(fMatchedDist, p.fMatchedDist, sizeof(Double_t) * fSizeMatched);
   }
 
