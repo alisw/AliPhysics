@@ -47,25 +47,23 @@ void MainAnalysis()  {
   
   TString fold="3SigmaPID_AOD086-090_FilterBit1";
   
-  //LOOP OVER SELECTION
+ //LOOP OVER SELECTION
   //                            0    1    2    3    4    5
-  Double_t CentCutMin[6]= {     0,  20,  20,  20,  20,  20};
-  Double_t CentCutMax[6]= {     5,  50,  50,  50,  50,  50};
-  Double_t QvecPosCutMin[6]= {  0,   0,   0,   4,   0,   4};
-  Double_t QvecPosCutMax[6]={ 100, 100,   2, 100,   2, 100};
-  Double_t QvecNegCutMin[6]={   0,   0,   0,   0,   0,   0};
-  Double_t QvecNegCutMax[6]={ 100, 100, 100, 100, 100, 100};
-  Double_t EtaMin[6]={       -0.8,-0.8,-0.8,-0.8,   0,   0};
-  Double_t EtaMax[6]={        0.8, 0.8,   0,   0, 0.8, 0.8};
-  
-  Int_t icut=5;
+  Double_t CentCutMin[4]= {     0,  20,  20,  20};
+  Double_t CentCutMax[4]= {     5,  50,  50,  50};
+  Double_t QvecCutMin[4]=    {  0,   0,   0, 1.5};
+  Double_t QvecCutMax[4]=   { 100, 100, 0.4, 100};
+  Double_t EtaMin[4]={       -0.8,-0.8,-0.8,-0.8};
+  Double_t EtaMax[4]={        0.8, 0.8, 0.8, 0.8};
+   
+  Int_t icut=2;
   
   Int_t ibinToCompare=0;
   
-  TString sname_data=Form("Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],QvecPosCutMin[icut],QvecPosCutMax[icut],QvecNegCutMin[icut],QvecNegCutMax[icut],EtaMin[icut],EtaMax[icut]);
+  TString sname_data=Form("Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut]);
   //TString sname_mc=Form("Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],QvecPosCutMin[icut],QvecPosCutMax[icut],QvecNegCutMin[icut],QvecNegCutMax[icut],EtaMin[icut],EtaMax[icut]);
   //For MC we always take the output without cut on q vector (more stat and the eff is not dependent on q)
-  TString sname_mc=Form("Cent%.0fto%.0f_QVecPos0.0to100.0_QVecNeg0.0to100.0_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],EtaMin[icut],EtaMax[icut]);
+  TString sname_mc=Form("Cent%.0fto%.0f_QVec0.0to100.0_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],EtaMin[icut],EtaMax[icut]);
   
   TString dataFile = Form("output/%s/OutputAODSpectraTask_data_%s.root",fold.Data(),sname_data.Data());
   TString mcFile = Form("output/%s/OutputAODSpectraTask_mc_%s.root",fold.Data(),sname_mc.Data());

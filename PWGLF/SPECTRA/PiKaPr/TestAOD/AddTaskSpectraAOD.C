@@ -1,10 +1,8 @@
 AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(int mc=0,
 					     Double_t CentCutMin=0,
 					     Double_t CentCutMax=100,
-					     Double_t QvecPosCutMin=0,
-					     Double_t QvecPosCutMax=100,
-					     Double_t QvecNegCutMin=0,
-					     Double_t QvecNegCutMax=100,
+					     Double_t QvecCutMin=0,
+					     Double_t QvecCutMax=100,
 					     Double_t EtaMin=-0.8,
 					     Double_t EtaMax=0.8,
 					     Double_t Nsigmapid=3.,
@@ -58,21 +56,18 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(int mc=0,
   trcuts->PrintCuts();
   
   AliSpectraAODEventCuts * evcuts = new AliSpectraAODEventCuts("Event Cuts");
-  evcuts->SetQVectorPosCut(QvecPosCutMin,QvecPosCutMax);
-  evcuts->SetQVectorNegCut(QvecNegCutMin,QvecNegCutMax);
+  evcuts->SetQVectorCut(QvecCutMin,QvecCutMax);
   evcuts->SetCentralityCutMax(CentCutMax);  
   evcuts->SetCentralityCutMin(CentCutMin);
   evcuts->SetTrackBits(trkbitQVector);
   if(mc==1)evcuts->SetIsMC(kTRUE);
   evcuts->PrintCuts();
   
-  AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD(Form("TaskAODSpectraCent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f",	
+  AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD(Form("TaskAODSpectraCent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f",	
 								       CentCutMin,
 								       CentCutMax,
-								       QvecPosCutMin,
-								       QvecPosCutMax,
-								       QvecNegCutMin,
-								       QvecNegCutMax,
+								       QvecCutMin,
+								       QvecCutMax,
 								       EtaMin,
 								       EtaMax));
   task->SetPID(pid);  
@@ -84,8 +79,8 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(int mc=0,
   
   TString typeofdata=mc?"MC":"Data";
   
-  outputFileName += Form(":OutputAODSpectraTask_%s_Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f.root",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),
-			 evcuts->GetQVectorPosCutMin(), evcuts->GetQVectorPosCutMax(),evcuts->GetQVectorNegCutMin(), evcuts->GetQVectorNegCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax());
+  outputFileName += Form(":OutputAODSpectraTask_%s_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),
+			 evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax());
   
   cout<<outputFileName<<endl;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();      

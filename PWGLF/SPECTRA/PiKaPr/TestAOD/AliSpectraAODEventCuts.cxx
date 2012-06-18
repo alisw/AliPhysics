@@ -42,7 +42,8 @@ using namespace std;
 
 ClassImp(AliSpectraAODEventCuts)
 
-AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fTrackBits(0),fIsMC(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorPosCutMin(0), fQVectorPosCutMax(0), fQVectorNegCutMin(0), fQVectorNegCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVectorPos(0),fHistoQVectorNeg(0)
+AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fTrackBits(0),fIsMC(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
+,fHistoEP(0)
 {
   // Constructor
   fHistoCuts = new TH1I("fEventCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
@@ -51,14 +52,18 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, 
   fHistoEtaBefSel = new TH1F("fHistoEtaBefSel", "Eta distr before event selection",500,-2,2);
   fHistoEtaAftSel = new TH1F("fHistoEtaAftSel", "Eta distr after event selection",500,-2,2);
   fHistoNChAftSel = new TH1F("fHistoNChAftSel", "NCh distr after event selection",2000,-0.5,1999.5);
-  fHistoQVectorPos = new TH1F("fHistoQVectorPos", "QVectorPos distribution",100,0,10);
-  fHistoQVectorNeg = new TH1F("fHistoQVectorNeg", "QVectorNeg distribution",100,0,10);
+  //fHistoQVectorPos = new TH1F("fHistoQVectorPos", "QVectorPos distribution",100,0,10);
+  //fHistoQVectorNeg = new TH1F("fHistoQVectorNeg", "QVectorNeg distribution",100,0,10);
+  fHistoQVector = new TH1F("fHistoQVector", "QVector with VZERO distribution",100,0,10);
+  fHistoEP = new TH1F("fHistoEP", "EP with VZERO distribution",100,-10,10);
   fCentralityCutMin = 0.0;      // default value of centrality cut minimum, 0 ~ no cut
   fCentralityCutMax = 10000.0;  // default value of centrality cut maximum,  ~ no cut
-  fQVectorPosCutMin=0.0;
-  fQVectorPosCutMax=10000.0;
-  fQVectorNegCutMin=0.0;
-  fQVectorNegCutMax=10000.0;
+  // fQVectorPosCutMin=0.0;
+  // fQVectorPosCutMax=10000.0;
+  // fQVectorNegCutMin=0.0;
+  // fQVectorNegCutMax=10000.0;
+  fQVectorCutMin=0.0;
+  fQVectorCutMax=10000.0;
   fTrackBits=1;
 }
 
@@ -135,36 +140,42 @@ Bool_t AliSpectraAODEventCuts::CheckQVectorCut()
   /// FIXME: Q vector
   // //Selection on QVector, before ANY other selection on the event
   // //Spectra MUST be normalized wrt events AFTER the selection on Qvector
-  Double_t Qx2EtaPos = 0, Qy2EtaPos = 0;
-  Double_t Qx2EtaNeg = 0, Qy2EtaNeg = 0;
-  Int_t multPos = 0;
-  Int_t multNeg = 0;
-  for(Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++) {
-    AliAODTrack* aodTrack = fAOD->GetTrack(iT);
-    if (!aodTrack->TestFilterBit(fTrackBits)) continue;
-    if (aodTrack->Eta() >= 0){
-      multPos++;
-      Qx2EtaPos += TMath::Cos(2*aodTrack->Phi()); 
-      Qy2EtaPos += TMath::Sin(2*aodTrack->Phi());
-    } else {
-      multNeg++;
-      Qx2EtaNeg += TMath::Cos(2*aodTrack->Phi()); 
-      Qy2EtaNeg += TMath::Sin(2*aodTrack->Phi());
-    }
-  } 
-  Double_t qPos=-999;
-  if(multPos!=0)qPos= TMath::Sqrt((Qx2EtaPos*Qx2EtaPos + Qy2EtaPos*Qy2EtaPos)/multPos);
-  Double_t qNeg=-999;
-  if(multNeg!=0)qNeg= TMath::Sqrt((Qx2EtaNeg*Qx2EtaNeg + Qy2EtaNeg*Qy2EtaNeg)/multNeg);
+  // Double_t Qx2EtaPos = 0, Qy2EtaPos = 0;
+  // Double_t Qx2EtaNeg = 0, Qy2EtaNeg = 0;
+ 
+  // Int_t multPos = 0;
+  // Int_t multNeg = 0;
+  // for(Int_t iT = 0; iT < fAOD->GetNumberOfTracks(); iT++) {
+  //   AliAODTrack* aodTrack = fAOD->GetTrack(iT);
+  //   if (!aodTrack->TestFilterBit(fTrackBits)) continue;
+  //   if (aodTrack->Eta() >= 0){
+  //     multPos++;
+  //     Qx2EtaPos += TMath::Cos(2*aodTrack->Phi()); 
+  //     Qy2EtaPos += TMath::Sin(2*aodTrack->Phi());
+  //   } else {
+  //     multNeg++;
+  //     Qx2EtaNeg += TMath::Cos(2*aodTrack->Phi()); 
+  //     Qy2EtaNeg += TMath::Sin(2*aodTrack->Phi());
+  //   }
+  // } 
+  // Double_t qPos=-999;
+  // if(multPos!=0)qPos= TMath::Sqrt((Qx2EtaPos*Qx2EtaPos + Qy2EtaPos*Qy2EtaPos)/multPos);
+  // Double_t qNeg=-999;
+  // if(multNeg!=0)qNeg= TMath::Sqrt((Qx2EtaNeg*Qx2EtaNeg + Qy2EtaNeg*Qy2EtaNeg)/multNeg);
+  //if(qPos<fQVectorPosCutMin || qPos>fQVectorPosCutMax || qNeg<fQVectorNegCutMin || qNeg>fQVectorNegCutMax)return kFALSE;
   
-  //Printf("Cuts on Q vector: %f,%f,%f,%f",fQVectorPosCutMin,fQVectorPosCutMax,fQVectorNegCutMin,fQVectorNegCutMax);
-  //Printf("Q vectors: %f,%f",qPos,qNeg);
-  if(qPos<fQVectorPosCutMin || qPos>fQVectorPosCutMax || qNeg<fQVectorNegCutMin || qNeg>fQVectorNegCutMax)return kFALSE;
+  Double_t qxEPVZERO = 0, qyEPVZERO = 0;
+  Double_t qVZERO = -999;
+  Double_t psi=fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,10,2,qxEPVZERO,qyEPVZERO);
   
+  qVZERO= TMath::Sqrt(qxEPVZERO*qxEPVZERO + qyEPVZERO*qyEPVZERO);
+  if(qVZERO<fQVectorCutMin || qVZERO>fQVectorCutMax)return kFALSE;
+  fHistoQVector->Fill(qVZERO);
+  fHistoEP->Fill(psi);
   
   fHistoCuts->Fill(kQVector);
-  fHistoQVectorPos->Fill(qPos);
-  fHistoQVectorNeg->Fill(qNeg);
+  // fHistoQVectorPos->Fill(qPos);
+  // fHistoQVectorNeg->Fill(qNeg);
   return kTRUE;
 }
 
@@ -181,8 +192,9 @@ void AliSpectraAODEventCuts::PrintCuts()
   cout << " > Events without vertex: " << fHistoCuts->GetBinContent(kVtxNoEvent + 1) << endl;
   cout << " > QVector cut: " << fHistoCuts->GetBinContent(kQVector + 1) << endl;
   cout << " > Track type used for the QVector calculation: " << fTrackBits << endl;
-  cout << " > QPosRange: [" << fQVectorPosCutMin <<"," <<fQVectorPosCutMax<<"]"<< endl;
-  cout << " > QNegRange: [" << fQVectorNegCutMin <<"," <<fQVectorNegCutMax<<"]"<< endl;
+  // cout << " > QPosRange: [" << fQVectorPosCutMin <<"," <<fQVectorPosCutMax<<"]"<< endl;
+  // cout << " > QNegRange: [" << fQVectorNegCutMin <<"," <<fQVectorNegCutMax<<"]"<< endl;
+  cout << " > QRange: [" << fQVectorCutMin <<"," <<fQVectorCutMax<<"]"<< endl;
   cout << " > Centrality: [" << fCentralityCutMin <<"," <<fCentralityCutMax<<"]"<< endl;
 }
 //______________________________________________________
@@ -284,8 +296,10 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
   TList collections_histoEtaBefSel;
   TList collections_histoEtaAftSel;
   TList collections_histoNChAftSel;
-  TList collections_histoQVectorPos;
-  TList collections_histoQVectorNeg;
+  // TList collections_histoQVectorPos;
+  // TList collections_histoQVectorNeg;
+  TList collections_histoQVector;
+  TList collections_histoEP;
 
   Int_t count = 0;
 
@@ -306,10 +320,14 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
     collections_histoEtaAftSel.Add(histo_histoEtaAftSel);
     TH1F * histo_histoNChAftSel = entry->GetHistoNChAftSel();      
     collections_histoNChAftSel.Add(histo_histoNChAftSel);
-    TH1F * histo_histoQVectorPos = entry->GetHistoQVectorPos();      
-    collections_histoQVectorPos.Add(histo_histoQVectorPos);
-    TH1F * histo_histoQVectorNeg = entry->GetHistoQVectorNeg();      
-    collections_histoQVectorNeg.Add(histo_histoQVectorNeg);
+    // TH1F * histo_histoQVectorPos = entry->GetHistoQVectorPos();      
+    // collections_histoQVectorPos.Add(histo_histoQVectorPos);
+    // TH1F * histo_histoQVectorNeg = entry->GetHistoQVectorNeg();      
+    // collections_histoQVectorNeg.Add(histo_histoQVectorNeg);
+    TH1F * histo_histoQVector = entry->GetHistoQVector();      
+    collections_histoQVector.Add(histo_histoQVector);
+    TH1F * histo_histoEP = entry->GetHistoEP();      
+    collections_histoEP.Add(histo_histoEP);
     count++;
   }
   
@@ -319,9 +337,12 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
   fHistoEtaBefSel->Merge(&collections_histoEtaBefSel);
   fHistoEtaAftSel->Merge(&collections_histoEtaAftSel);
   fHistoNChAftSel->Merge(&collections_histoNChAftSel);
-  fHistoQVectorPos->Merge(&collections_histoQVectorPos);
-  fHistoQVectorNeg->Merge(&collections_histoQVectorNeg);
+  // fHistoQVectorPos->Merge(&collections_histoQVectorPos);
+  // fHistoQVectorNeg->Merge(&collections_histoQVectorNeg);
+  fHistoQVector->Merge(&collections_histoQVector);
+  fHistoEP->Merge(&collections_histoEP);
   
+
   delete iter;
 
   return count+1;

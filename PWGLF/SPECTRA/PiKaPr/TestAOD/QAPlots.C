@@ -85,10 +85,10 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   cQVector->cd(1);
   gPad->SetGridy();
   gPad->SetGridx();
-  TH1F *hQVector_data=(TH1F*)ecuts_data->GetHistoQVectorPos()->Clone();
+  TH1F *hQVector_data=(TH1F*)ecuts_data->GetHistoQVector()->Clone();
   hQVector_data->Scale(1./hQVector_data->GetEntries());
   hQVector_data->SetTitle(Form("%s - data",hQVector_data->GetTitle()));
-  TH1F *hQVector_mc=(TH1F*)ecuts_mc->GetHistoQVectorPos()->Clone();
+  TH1F *hQVector_mc=(TH1F*)ecuts_mc->GetHistoQVector()->Clone();
   hQVector_mc->Scale(1./hQVector_mc->GetEntries());
   hQVector_mc->SetTitle(Form("%s - mc",hQVector_mc->GetTitle()));
   hQVector_mc->SetLineColor(2);
@@ -98,24 +98,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   cQVector->cd(2);
   gPad->SetGridy();
   gPad->SetGridx();
-  TH1F *hQVector_data=(TH1F*)ecuts_data->GetHistoQVectorNeg()->Clone();
-  hQVector_data->Scale(1./hQVector_data->GetEntries());
-  hQVector_data->SetTitle(Form("%s - data",hQVector_data->GetTitle()));
-  TH1F *hQVector_mc=(TH1F*)ecuts_mc->GetHistoQVectorNeg()->Clone();
-  hQVector_mc->Scale(1./hQVector_mc->GetEntries());
-  hQVector_mc->SetTitle(Form("%s - mc",hQVector_mc->GetTitle()));
-  hQVector_mc->SetLineColor(2);
-  hQVector_data->DrawClone("lhist");
-  hQVector_mc->DrawClone("lhistsame");
-  gPad->BuildLegend()->SetFillColor(0);
-  
-  //Nch distr in data and MC before and after event selection
-  TCanvas *cQVectorIntegral=new TCanvas("QVectorIntegraldistr","QVectorIntegraldistr",700,500);
-  cQVectorIntegral->Divide(1,2);
-  cQVectorIntegral->cd(1);
-  gPad->SetGridy();
-  gPad->SetGridx();
-  TH1F *hQVectorIntegral_data=(TH1F*)ecuts_data->GetHistoQVectorPos()->Clone();
+  TH1F *hQVectorIntegral_data=(TH1F*)ecuts_data->GetHistoQVector()->Clone();
   hQVectorIntegral_data->Scale(1./hQVectorIntegral_data->GetEntries());
   Float_t count=0;
   for(Int_t ibin=1;ibin<hQVectorIntegral_data->GetNbinsX();ibin++){
@@ -123,7 +106,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
     hQVectorIntegral_data->SetBinContent(ibin,count);
   }
   hQVectorIntegral_data->SetTitle(Form("%s - data",hQVectorIntegral_data->GetTitle()));
-  TH1F *hQVectorIntegral_mc=(TH1F*)ecuts_mc->GetHistoQVectorPos()->Clone();
+  TH1F *hQVectorIntegral_mc=(TH1F*)ecuts_mc->GetHistoQVector()->Clone();
   hQVectorIntegral_mc->Scale(1./hQVectorIntegral_mc->GetEntries());
   count=0;
   for(Int_t ibin=1;ibin<hQVectorIntegral_mc->GetNbinsX();ibin++){
@@ -135,31 +118,22 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   hQVectorIntegral_data->DrawClone("lhist");
   hQVectorIntegral_mc->DrawClone("lhistsame");
   gPad->BuildLegend()->SetFillColor(0);
-  cQVectorIntegral->cd(2);
+  
+
+  //EP
+  TCanvas *cEP=new TCanvas("EPdistr","EPdistr",700,500);
   gPad->SetGridy();
   gPad->SetGridx();
-  TH1F *hQVectorIntegral_data=(TH1F*)ecuts_data->GetHistoQVectorNeg()->Clone();
-  hQVectorIntegral_data->Scale(1./hQVectorIntegral_data->GetEntries());
-  count=0;
-  for(Int_t ibin=1;ibin<hQVectorIntegral_data->GetNbinsX();ibin++){
-    count+=hQVectorIntegral_data->GetBinContent(ibin);
-    hQVectorIntegral_data->SetBinContent(ibin,count);
-  }
-  hQVectorIntegral_data->SetTitle(Form("%s - data",hQVectorIntegral_data->GetTitle()));
-  TH1F *hQVectorIntegral_mc=(TH1F*)ecuts_mc->GetHistoQVectorNeg()->Clone();
-  hQVectorIntegral_mc->Scale(1./hQVectorIntegral_mc->GetEntries());
-  count=0;
-  for(Int_t ibin=1;ibin<hQVectorIntegral_mc->GetNbinsX();ibin++){
-    count+=hQVectorIntegral_mc->GetBinContent(ibin);
-    hQVectorIntegral_mc->SetBinContent(ibin,count);
-  }
-  hQVectorIntegral_mc->SetTitle(Form("%s - mc",hQVectorIntegral_mc->GetTitle()));
-  hQVectorIntegral_mc->SetLineColor(2);
-  hQVectorIntegral_data->DrawClone("lhist");
-  hQVectorIntegral_mc->DrawClone("lhistsame");
+  TH1F *hEP_data=(TH1F*)ecuts_data->GetHistoEP()->Clone();
+  hEP_data->Scale(1./hEP_data->GetEntries());
+  hEP_data->SetTitle(Form("%s - data",hEP_data->GetTitle()));
+  TH1F *hEP_mc=(TH1F*)ecuts_mc->GetHistoEP()->Clone();
+  hEP_mc->Scale(1./hEP_mc->GetEntries());
+  hEP_mc->SetTitle(Form("%s - mc",hEP_mc->GetTitle()));
+  hEP_mc->SetLineColor(2);
+  hEP_data->DrawClone("lhist");
+  hEP_mc->DrawClone("lhistsame");
   gPad->BuildLegend()->SetFillColor(0);
-  
-  
   
   //Eta Phi at high Pt in data and Monte Carlo
   TCanvas *cEtaPhi=new TCanvas("EtaPhi","EtaPhi",700,500);
@@ -645,7 +619,6 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   cEta->Write();
   cNCh->Write();
   cQVector->Write();
-  cQVectorIntegral->Write();
   cEtaPhi->Write();
   cRatioEtaPhi->Write();
   cTrackCuts->Write();
