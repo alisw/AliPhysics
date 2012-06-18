@@ -279,14 +279,14 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
   fHistList->Add(fh1Trials);
 
-  const Int_t nBinPt = 100;
+  const Int_t nBinPt = 125;
   Double_t binLimitsPt[nBinPt+1];
   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
     if(iPt == 0){
       binLimitsPt[iPt] = 0.0;
     }
     else {// 1.0
-      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.5;
+      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.;
     }
   }
   
