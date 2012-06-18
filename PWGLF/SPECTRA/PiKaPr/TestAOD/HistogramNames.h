@@ -5,7 +5,7 @@
 
 namespace AliSpectraNameSpace
 {
-  extern const char * kHistName[] ;
+  extern const char * kHistName[kNHist] ;
 }
 
 #endif

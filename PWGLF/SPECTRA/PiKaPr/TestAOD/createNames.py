@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 def main():
+    print "I need to be debugged, please fix me"
+    return
 
     # print header
     output = list()

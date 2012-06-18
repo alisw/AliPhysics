@@ -43,7 +43,7 @@ ClassImp(AliSpectraAODHistoManager)
 
 
 using namespace AliSpectraNameSpace;
-
+#include "HistogramNames.cxx" // generate this automatically running createNames.py 
 
 const char * kParticleSpecies[] =
    {
