@@ -427,9 +427,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   	return;
       }
       
-     AliAODHeader *aodHeaderMain = aodEventMain->GetHeader();
-     AliAODHeader *aodHeaderMix  = aodEventMix->GetHeader();    
-  
+     AliAODHeader *aodHeaderMain = aodEventMain->GetHeader();  
 
       // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
       fHistEventStats->Fill(1); //all events

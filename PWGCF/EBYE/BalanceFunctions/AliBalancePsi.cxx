@@ -513,7 +513,14 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
 
   TH2D *gHistTest = dynamic_cast<TH2D *>(fHistP->Project(0,0,1));
   TCanvas *c1 = new TCanvas("c1","");
-  gHistTest->DrawCopy("colz");
+  c1->cd();
+  if(!gHistTest){
+    AliError("Projection of fHistP = NULL");
+    return gHistTest;
+  }
+  else{
+    gHistTest->DrawCopy("colz");
+  }
 
   //0:step, 2: Delta eta, 3: Delta phi
   TH2D *gHist = dynamic_cast<TH2D *>(fHistPN->Project(0,1,2));
@@ -527,6 +534,7 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
   Printf("Entries (2D): %lf",(Double_t)(fHistPN->Project(0,1,2)->GetEntries()));
   
   TCanvas *c2 = new TCanvas("c2","");
+  c2->cd();
   fHistPN->Project(0,1,2)->DrawCopy("colz");
 
   if((Double_t)(fHistP->Project(0,1)->GetEntries())!=0)

@@ -64,8 +64,9 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   centralityName+="_Bit";
   centralityName+=Form("%d",AODfilterBit);
   if(bCentralTrigger)   centralityName+="_withCentralTrigger";
-  if(bHBTcut)   centralityName+="_withHBTcut";
-  if(bConversionCut)   centralityName+="_withConversionCut";
+  if(bHBTcut)           centralityName+="_withHBTcut";
+  if(bConversionCut)    centralityName+="_withConversionCut";
+  if(kUsePID)           centralityName+="_PID";
 
 
 
