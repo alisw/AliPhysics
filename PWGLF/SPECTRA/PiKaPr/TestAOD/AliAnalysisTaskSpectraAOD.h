@@ -39,6 +39,12 @@ public:
    virtual void   UserCreateOutputObjects();
    virtual void   UserExec(Option_t *option);
    virtual void   Terminate(Option_t *);
+
+   AliSpectraAODHistoManager * GetHistoManager()         {  return fHistMan; }
+   AliSpectraAODTrackCuts * GetTrackCuts()         {  return fTrackCuts; }
+   AliSpectraAODEventCuts * GetEventCuts()         {  return fEventCuts; }
+   AliSpectraAODPID * GetPID()         {  return fPID; }
+   
    void SetTrackCuts(AliSpectraAODTrackCuts * tc)   {   fTrackCuts = tc;   }
    void SetEventCuts(AliSpectraAODEventCuts * vc)   {   fEventCuts = vc;   }
    void SetPID      (AliSpectraAODPID      * pid)   {   fPID       = pid;  }

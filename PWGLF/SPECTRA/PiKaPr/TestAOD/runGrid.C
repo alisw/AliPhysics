@@ -1,31 +1,44 @@
 class  AliAnalysisManager;
 class  AliAnalysisAlien;
 
-void runGrid(TString mode="test",Int_t mc=0,Int_t day=15,Int_t month=6, Int_t year=2012) 
+void runGrid(TString mode="test",Int_t mc=1,Int_t day=15,Int_t month=6, Int_t year=2012) 
 {
-  //0 is AOD048-049 in this case you can choos FilterBit5 (loose DCA) or 6 (tight DCA)!!!!!!!!!
-  //1 is AOD086-090
   AliLog::SetGlobalDebugLevel(100);
   // Load common libraries
   gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   
+  // Load common libraries
+  gSystem->Load("libCore.so");
   gSystem->Load("libTree.so");
-  //gSystem->Load("libGeom.so");
-  //gSystem->Load("libVMC.so");
+  gSystem->Load("libGeom.so");
+  gSystem->Load("libVMC.so");
   gSystem->Load("libPhysics.so");
+  gSystem->Load("libMinuit.so"); 
+  gSystem->Load("libGui.so");
+  gSystem->Load("libXMLParser.so");
   gSystem->Load("libSTEERBase.so");
   gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libOADB.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
-  gROOT->LoadMacro("AliSpectraAODEventCuts.cxx+g");
-  gROOT->LoadMacro("AliSpectraAODHistoManager.cxx+g");
-  gROOT->LoadMacro("AliSpectraAODPID.cxx+g");
-  gROOT->LoadMacro("AliAnalysisTaskSpectraAOD.cxx+g");
+  gSystem->Load("libCDB.so");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libProof.so");
+  gSystem->Load("libRAWDatabase.so");
+  gSystem->Load("libSTEER.so");
+  //__________________________________________________________________________
   // Use AliRoot includes to compile our task
+  gROOT->ProcessLine(".include $ALICE_ROOT/include");
+  gSystem->Load("libPWGLFspectra.so");
+  
+  // gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/HistogramNames.h");
+  // gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AliSpectraAODTrackCuts.cxx+g");
+  // gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AliSpectraAODEventCuts.cxx+g");
+  // gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AliSpectraAODHistoManager.cxx+g");
+  // gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AliSpectraAODPID.cxx+g");
+  // gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AliAnalysisTaskSpectraAOD.cxx+g");
+  // Use AliRoot includes to compile our task
+  
   // Create and configure the alien handler plugin
   AliAnalysisGrid *alienHandler = CreateAlienHandler(mode,mc,day,month,year);  
   if (!alienHandler) return;
@@ -45,12 +58,30 @@ void runGrid(TString mode="test",Int_t mc=0,Int_t day=15,Int_t month=6, Int_t ye
 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
   AliVZEROEPSelectionTask *selTask = AddTaskVZEROEPSelection();
-
-  gROOT->LoadMacro("AddTaskSpectraAOD.C");
+  
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AddTaskSpectraAOD.C");
+  // AliAnalysisTaskSpectraAOD* taskAOD=AddTaskSpectraAOD(mc,
+  // 						       0,//min Cent
+  // 						       100,//CentCutMax
+  // 						       0,//QvecCutMin
+  // 						       100,//QvecCutMax
+  // 						       -0.8,//EtaMin
+  // 						       0.8,//EtaMax
+  // 						       3.,//Nsigmapid
+  // 						       5.,//pt
+  // 						       5.,//p
+  // 						       .5,//y
+  // 						       .6,//ptTofMatch
+  // 						       1024,//trkbit
+  // 						       1,//trkbitQVector
+  // 						       kFALSE,//UseCentPatchAOD049
+  // 						       100000,//DCA
+  // 						       70//minNclsTPC
+  // 						       );
   AliAnalysisTaskSpectraAOD* taskAOD=AddTaskSpectraAOD();
   
   mgr->SetDebugLevel(2);
-  
+
   //mgr->Init();
   if (!mgr->InitAnalysis())return;
   mgr->PrintStatus();
@@ -61,12 +92,12 @@ void runGrid(TString mode="test",Int_t mc=0,Int_t day=15,Int_t month=6, Int_t ye
 
 AliAnalysisGrid* CreateAlienHandler(TString mode="test",Int_t mc=1,Int_t day=0,Int_t month=0, Int_t year=2012)
 {
-  
-  
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
-  plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF");
-  plugin->SetAdditionalLibs("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
-  plugin->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx AliSpectraAODTrackCuts.cxx AliSpectraAODEventCuts.cxx AliSpectraAODPID.cxx AliAnalysisTaskSpectraAOD.cxx");
+  plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF -I$ALICE_ROOT/PWGLF");
+  plugin->SetAdditionalLibs("libPWGLFspectra.so");
+  
+//plugin->SetAdditionalLibs("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
+  //plugin->SetAnalysisSource("Histograms.h HistogramNames.h HistogramNames.cxx AliSpectraAODHistoManager.cxx AliSpectraAODTrackCuts.cxx AliSpectraAODEventCuts.cxx AliSpectraAODPID.cxx AliAnalysisTaskSpectraAOD.cxx");
   plugin->SetOverwriteMode();
   plugin->SetExecutableCommand("aliroot -q -b");  
   plugin->SetRunMode(mode.Data());
