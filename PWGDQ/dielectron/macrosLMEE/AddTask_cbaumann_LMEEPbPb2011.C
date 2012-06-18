@@ -21,12 +21,6 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
   //Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   Bool_t hasMC=setMC;
 
-  const Int_t kNtriggers=1;
-    ULong64_t triggers[]={AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB };
-	const char* triggerNames[]={"all"};
-
-
-
 //  create task and add it to the manager
 //	gSystem->AddIncludePath("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE");
 
@@ -36,7 +30,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC){ task->UsePhysicsSelection();
   }
-  task->SetTriggerMask(triggers[0]);
+  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
 
   //load dielectron configuration file
@@ -60,16 +54,20 @@ if (runRejection) {
   AliDielectron *lowmass4=ConfigLMEEPbPb2011(4,hasMC);
   task->AddDielectron(lowmass4);
   printf("add: %s\n",lowmass4->GetName());
+/*
   AliDielectron *lowmass8=ConfigLMEEPbPb2011(8,hasMC);
   task->AddDielectron(lowmass8);
   printf("add: %s\n",lowmass8->GetName())
-
+*/
 //  AliDielectron *lowmass5=ConfigLMEEPbPb2011(5,hasMC);
 //  task->AddDielectron(lowmass5);
 //  printf("add: %s\n",lowmass5->GetName());
 }
 else {
-  AliDielectron *lowmass1=ConfigLMEEPbPb2011(1,hasMC);
+  AliDielectron *lowmass3=ConfigLMEEPbPb2011(3,hasMC);
+  task->AddDielectron(lowmass3);
+  printf("add: %s\n",lowmass3->GetName())
+AliDielectron *lowmass1=ConfigLMEEPbPb2011(1,hasMC);
   task->AddDielectron(lowmass1);
   printf("add: %s\n",lowmass1->GetName())
   AliDielectron *lowmass7=ConfigLMEEPbPb2011(7,hasMC);
