@@ -4,17 +4,17 @@
 // $Id$
 
 class TClonesArray;
-class TString;
 class TList;
-class AliVParticle;
-class AliVCluster;
+class TString;
 class AliEmcalJet;
+class AliRhoParameter;
+class AliVCluster;
+class AliVParticle;
 
 #include "AliAnalysisTaskEmcal.h"
 
 class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
  public:
-
   AliAnalysisTaskEmcalJet();
   AliAnalysisTaskEmcalJet(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcalJet();
@@ -29,12 +29,13 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetPhiLimits(Float_t min, Float_t max)               { fMinPhi = min, fMaxPhi = max ; }
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b          ; }
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b          ; }
-  void                        Init();
  
  protected:
   Bool_t                      RetrieveEventObjects();
   Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)   const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)                                          const;
+  AliRhoParameter            *GetRhoFromEvent(const char *name);
+  void                        Init();
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)        const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)       const;
 
