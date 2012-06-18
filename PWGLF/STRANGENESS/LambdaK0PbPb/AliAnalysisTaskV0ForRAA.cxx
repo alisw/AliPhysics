@@ -491,7 +491,8 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
 
    fOutputContainer = new TList() ;
    fOutputContainer->SetName(GetName()) ;
-
+   fOutputContainer->SetOwner();
+ 
    Int_t mchist = 1;// for Data
    if((fMCMode && fMCTruthMode) || fMCTruthMode) mchist = 2;
 	
