@@ -38,7 +38,8 @@ public:
    virtual Int_t      GetNInputTracks();
      
    Double_t RelativePhi(Double_t angle1,Double_t angle2);     
-    virtual THnSparse* NewTHnSparseF(const char* name, UInt_t entries);
+   Int_t   GetPhiBin(Double_t phi);
+   virtual THnSparse* NewTHnSparseF(const char* name, UInt_t entries);
    virtual void       GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
    virtual AliVEvent::EOfflineTriggerTypes GetOfflineTrgMask() const { return fOfflineTrgMask; }
    virtual void     GetBranchNames(TString &branch1, TString &branch2) const { branch1 = fJetBranchName[0]; branch2 = fJetBranchName[1]; }
@@ -77,6 +78,7 @@ public:
    virtual void     SetCheckMethods(Int_t yesno){fCheckMethods=yesno;}
    virtual void     SetEventMixing(Int_t yesno){fDoEventMixing=yesno;}
    virtual void     SetFlagPhiBkg(Int_t yesno){fFlagPhiBkg=yesno;}
+   virtual void     SetFlagRandom(Int_t yesno){fFlagRandom=yesno;}
 
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
    virtual void     SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
@@ -123,6 +125,9 @@ private:
    Int_t   fCheckMethods;     //to look into more detail into the core
    Int_t   fDoEventMixing;
    Int_t   fFlagPhiBkg;
+   Int_t   fFlagRandom;
+   Int_t   fRPAngle;
+   Int_t   fNRPBins;
    Float_t fJetEtaMin;        // lower bound on eta for found jets
    Float_t fJetEtaMax;        // upper bound on eta for found jets
    Int_t   fNevents;          // number of events
@@ -156,8 +161,9 @@ private:
    TH2F      *fh2JetCoreMethod2C30;          //Energy fraction in the core C30 method 2
    TH2F      *fh2JetCoreMethod1C60;          //Energy fraction in the core C60 method 1
    TH2F      *fh2JetCoreMethod2C60;          //Energy fraction in the core C60 method 2
-     TH3F*      fh3JetTrackC10;         //C10 pt2
-     TH3F*      fh3JetTrackC20;         //C10 pt2
+     TH3F*      fh3JetTrackC3060;           //C3060 pt2
+     TH3F*      fh3JetTrackC20;             //C10 pt2
+     TH3F*      fh3JetTrackC4080;           //C4080
      TH2F*      fh2AngStructpt1C10;         //Average 
      TH2F*      fh2AngStructpt2C10;         //C10 pt2
      TH2F*      fh2AngStructpt3C10;         //C10 pt3
@@ -175,77 +181,14 @@ private:
      TH2F*      fh2AngStructpt3C60;         //C60 pt3
      TH2F*      fh2AngStructpt4C60;         //C60 pt4
   
-     TH2F*      fh2JetsumHT3R2a;             //jet shape 02
-     TH2F*      fh2JetsumHT3R2ap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4a;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4ap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6a;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6ap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8a;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8ap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R10a;             //jet shape 12
-     TH2F*      fh2JetsumHT3R10ap;             //jet shape 12
-     TH2F*      fh2JetsumHT3R2aa;             //jet shape 02
-     TH2F*      fh2JetsumHT3R2aap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4aa;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4aap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6aa;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6aap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8aa;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8aap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R10aa;             //jet shape 12
-     TH2F*      fh2JetsumHT3R10aap;             //jet shape 12
-     TH2F*      fh2JetsumHT3R2aaa;             //jet shape 02
-     TH2F*      fh2JetsumHT3R2aaap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4aaa;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4aaap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6aaa;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6aaap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8aaa;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8aaap;             //jet shape 02
-     TH2F*      fh2JetsumHT3R10aaa;             //jet shape 12
-     TH2F*      fh2JetsumHT3R10aaap;             //jet shape 12
-     TH2F*      fh2JetsumHT3R2b;             //jet shape 02
-     TH2F*      fh2JetsumHT3R2bp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4b;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4bp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6b;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6bp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8b;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8bp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R10b;             //jet shape 12
-     TH2F*      fh2JetsumHT3R10bp;             //jet shape 12
-     TH2F*      fh2JetsumHT3R2bb;             //jet shape 02
-     TH2F*      fh2JetsumHT3R2bbp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4bb;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4bbp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6bb;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6bbp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8bb;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8bbp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R10bb;             //jet shape 12
-     TH2F*      fh2JetsumHT3R10bbp;             //jet shape 12
-     TH2F*      fh2JetsumHT3R2bbb;             //jet shape 02
-     TH2F*      fh2JetsumHT3R2bbbp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4bbb;             //jet shape 02
-     TH2F*      fh2JetsumHT3R4bbbp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6bbb;             //jet shape 02
-     TH2F*      fh2JetsumHT3R6bbbp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8bbb;             //jet shape 02
-     TH2F*      fh2JetsumHT3R8bbbp;             //jet shape 02
-     TH2F*      fh2JetsumHT3R10bbb;             //jet shape 12
-     TH2F*      fh2JetsumHT3R10bbbp;             //jet shape 12
-    
-
      TH2F*      fh2Ntriggers;
      TH2F*      fh2JetDensity;
      TH2F*      fh2JetDensityA4;
-     TH3F*      fh3spectriggeredC10;           //triggered spectra
+     TH2F*      fh2RPJets;
+     TH3F*      fh3spectriggeredC4080;         //triggered spectra
      TH3F*      fh3spectriggeredC20;           //triggered spectra
-     TH3F*      fh3spectriggeredC3060;           //triggered spectra
-     TH3F*      fh3specbiased;              //biased spectra
-     TH3F*      fh3spectot;                 //the two combined  
-     TH3F*      fh3spectotb;                 //the two combined    
+     TH3F*      fh3spectriggeredC3060;         //triggered spectra
+
      
      Double_t            fTrigBuffer[10][7];      //!buffer for triggers   
 
