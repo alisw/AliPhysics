@@ -1,4 +1,4 @@
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,Int_t nSkipCone = 2,Int_t dice=0,Int_t smear=0);
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,Int_t nSkipCone = 2,Int_t dice=0,Int_t smear=0,Bool_t useOADB=kFALSE,Double_t changeEfficiencyFraction=0.);
 
 Int_t kBackgroundModeCl = 0;
 Float_t kPtTrackCutCl = 0.15;
@@ -30,7 +30,7 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
  }
 
 
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,Int_t nSkipCone,Int_t dice,Int_t smear)
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,Int_t nSkipCone,Int_t dice,Int_t smear,Bool_t useOADB,Double_t changeEfficiencyFraction)
  {
  // Creates a jet fider task, configures it and adds it to the analysis manager.
    kPtTrackCutCl = ptTrackCut;
@@ -74,7 +74,8 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
     cAdd += Form("_Cut%05d",(int)(1000.*kPtTrackCutCl));
     cAdd += Form("_Skip%02d",nSkip);
     if(dice>0 || smear>0)
-      cAdd += Form("Detector%d%d",dice,smear);
+      cAdd += Form("Detector%d%dFr%d",dice,smear,(int)(changeEfficiencyFraction*100.));
+    
 
     Printf("%s %E %d %d",cAdd.Data(),kPtTrackCutCl,dice,smear);
     AliAnalysisTaskJetCluster* clus = new  AliAnalysisTaskJetCluster(Form("JetCluster%s_%s%s",bRec,jf,cAdd.Data()));
@@ -154,6 +155,12 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    clus->SetNSkipLeadingCone(nSkipCone);
 
    if(iPhysicsSelectionFlag)clus->SelectCollisionCandidates(iPhysicsSelectionFlag);
+
+   if(useOADB) {
+     clus->SetUseTrResolutionFromOADB();
+     clus->SetUseTrEfficiencyFromOADB();
+     clus->SetChangeEfficiencyFraction(changeEfficiencyFraction);
+   }
 
    mgr->AddTask(clus);
 

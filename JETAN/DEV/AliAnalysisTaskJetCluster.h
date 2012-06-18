@@ -44,8 +44,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual ~AliAnalysisTaskJetCluster();
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
-    virtual void Init();
-    virtual void LocalInit() { Init(); }
+    virtual void LocalInit();
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
     virtual Bool_t Notify();
@@ -83,7 +82,12 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetBackgroundCalc(Bool_t b){fUseBackgroundCalc = b;} 
 
     //Setters for detector level effects
-    virtual void SetSmearResolution(Bool_t b){fUseTrMomentumSmearing = b;} 
+    virtual void SetUseTrResolutionFromOADB(Bool_t b=kTRUE, TString path="$ALICE_ROOT/OADB/PWGJE/Resolution/PtResol_LHCh_Cent0-10_v1.root") {fUseTrPtResolutionFromOADB = b; fPathTrPtResolution=path;}
+    virtual void SetUseTrEfficiencyFromOADB(Bool_t b=kTRUE, TString path="$ALICE_ROOT/OADB/PWGJE/Efficiency/Efficiency_LHC11a2aj_Cent0_v1.root") {fUseTrEfficiencyFromOADB = b; fPathTrEfficiency=path;}
+    virtual void LoadTrEfficiencyRootFileFromOADB();
+    virtual void LoadTrPtResolutionRootFileFromOADB();
+    virtual void SetChangeEfficiencyFraction(Double_t p) {fChangeEfficiencyFraction = p;}
+    virtual void SetSmearResolution(Bool_t b){fUseTrPtResolutionSmearing = b;} 
     virtual void SetDiceEfficiency(Bool_t b){fUseDiceEfficiency = b;} 
     virtual void SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3);
     virtual void SetEfficiencyHybrid(TH1 *h1, TH1 *h2, TH1 *h3);
@@ -180,8 +184,14 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH1      *fhEffH1;        // Efficiency for Spectra Hybrid Category 1
     TH1      *fhEffH2;        // Efficiency for Spectra Hybrid Category 2
     TH1      *fhEffH3;        // Efficiency for Spectra Hybrid Category 3
-    Bool_t    fUseTrMomentumSmearing;     // Apply momentum smearing on track level
-    Bool_t    fUseDiceEfficiency;         // Apply efficiency on track level by dicing
+    Bool_t    fUseTrPtResolutionSmearing;  // Apply momentum smearing on track level
+    Bool_t    fUseDiceEfficiency;          // Apply efficiency on track level by dicing
+    Bool_t fUseTrPtResolutionFromOADB;     // Load track pt resolution root file from OADB path
+    Bool_t fUseTrEfficiencyFromOADB;       // Load tracking efficiency root file from OADB path
+    TString fPathTrPtResolution;           // OADB path to root file
+    TString fPathTrEfficiency;             // OADB path to root file
+    Double_t fChangeEfficiencyFraction;    //change efficiency by fraction
+
 
     // Fast jet
     Double_t fRparam;                  // fastjet distance parameter

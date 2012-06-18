@@ -18,7 +18,9 @@ class TGraphErrors;
 class AliAnaChargedJetResponseMaker {
  public:
   AliAnaChargedJetResponseMaker();
-  ~AliAnaChargedJetResponseMaker();
+  AliAnaChargedJetResponseMaker(const AliAnaChargedJetResponseMaker& obj); // copy constructor
+  AliAnaChargedJetResponseMaker& operator=(const AliAnaChargedJetResponseMaker& other); // assignment
+  virtual ~AliAnaChargedJetResponseMaker() {;}
 
   // kParam        = use parametrization of response 
   // kResiduals    = use response as measured, w/o  statistical error propagation
@@ -26,59 +28,59 @@ class AliAnaChargedJetResponseMaker {
   enum ResolutionType {kParam,kResiduals,kResidualsErr}; 
 
   //Setters
-  void SetDebugMode(Bool_t b) {fDebug=b;}
+  virtual void SetDebugMode(Bool_t b) {fDebug=b;}
 
-  void SetResolutionType(ResolutionType r) {fResolutionType=r;}
+  virtual void SetResolutionType(ResolutionType r) {fResolutionType=r;}
 
-  void SetDeltaPtJetsFunc(TF1 *f1)  {fDeltaPt=f1;}
-  void SetDeltaPtJetsHist(TH1D *h1) {fhDeltaPt=h1;}
-  void SetNDimensions(Int_t dim)    {fDimensions = dim;}
-  void SetMeasuredSpectrum(TH1D *hPtMeasured);
+  virtual void SetDeltaPtJetsFunc(TF1 *f1)  {fDeltaPt=f1;}
+  virtual void SetDeltaPtJetsHist(TH1D *h1) {fhDeltaPt=h1;}
+  virtual void SetNDimensions(Int_t dim)    {fDimensions = dim;}
+  virtual void SetMeasuredSpectrum(TH1D *hPtMeasured);
 
-  void SetFlatEfficiency(Double_t eff);
-  void SetEfficiency(TGraphErrors *grEff);
+  virtual void SetFlatEfficiency(Double_t eff);
+  virtual void SetEfficiency(TGraphErrors *grEff);
 
-  void SetPtMinUnfolded(Double_t ptmin)      {fPtMinUnfolded = ptmin;}
-  void SetPtMaxUnfolded(Double_t ptmax)      {fPtMaxUnfolded = ptmax;}
-  void SetPtMaxUnfoldedHigh(Double_t ptmaxh) {fPtMaxUnfoldedHigh = ptmaxh;}
-  void SetBinWidthFactorUnfolded(Int_t fac)  {fBinWidthFactorUnfolded = fac;}
-  void SetSkipBinsUnfolded(Int_t skip)       {fSkipBinsUnfolded=skip;}
-  void SetExtraBinsUnfolded(Int_t extra)     {fExtraBinsUnfolded=extra;}
-  void SetVariableBinning(Bool_t b, double ptmax) {
+  virtual void SetPtMinUnfolded(Double_t ptmin)      {fPtMinUnfolded = ptmin;}
+  virtual void SetPtMaxUnfolded(Double_t ptmax)      {fPtMaxUnfolded = ptmax;}
+  virtual void SetPtMaxUnfoldedHigh(Double_t ptmaxh) {fPtMaxUnfoldedHigh = ptmaxh;}
+  virtual void SetBinWidthFactorUnfolded(Int_t fac)  {fBinWidthFactorUnfolded = fac;}
+  virtual void SetSkipBinsUnfolded(Int_t skip)       {fSkipBinsUnfolded=skip;}
+  virtual void SetExtraBinsUnfolded(Int_t extra)     {fExtraBinsUnfolded=extra;}
+  virtual void SetVariableBinning(Bool_t b, double ptmax) {
     fbVariableBinning=b;
     fPtMaxUnfVarBinning=ptmax;
   }
-  void SetCalcErrors(Bool_t b) {fbCalcErrors=b;}
+  virtual void SetCalcErrors(Bool_t b) {fbCalcErrors=b;}
 
   //Setters for merging fine to normal response matrix
-  void SetFineFrac(Int_t i = 10)         {fFineFrac = i;}
-  void SetRMMergeWeightFunction(TF1 *f1) {f1MergeFunction = f1;}
+  virtual void SetFineFrac(Int_t i = 10)         {fFineFrac = i;}
+  virtual void SetRMMergeWeightFunction(TF1 *f1) {f1MergeFunction = f1;}
 
   //Getters
-  TF1       *GetDeltaPtJetsFunc() {return fDeltaPt;}
-  TH1D      *GetDeltaPtJetsHist() {return fhDeltaPt;}
-  THnSparse *GetMeasuredSpectrum() {return fPtMeasured;}
-  THnSparse *GetEfficiency() {return fEfficiency;}
-  THnSparse *GetEfficiencyFine() {return fEfficiencyFine;}
-  THnSparse *GetResponseMatrix() {return fResponseMatrix;}
-  THnSparse *GetResponseMatrixFine() {return fResponseMatrixFine;}
+  virtual TF1       *GetDeltaPtJetsFunc() {return fDeltaPt;}
+  virtual TH1D      *GetDeltaPtJetsHist() {return fhDeltaPt;}
+  virtual THnSparse *GetMeasuredSpectrum() {return fPtMeasured;}
+  virtual THnSparse *GetEfficiency() {return fEfficiency;}
+  virtual THnSparse *GetEfficiencyFine() {return fEfficiencyFine;}
+  virtual THnSparse *GetResponseMatrix() {return fResponseMatrix;}
+  virtual THnSparse *GetResponseMatrixFine() {return fResponseMatrixFine;}
 
   //Utility functions
-  Double_t InterpolateFast(TGraph *gr, Double_t x);
-  Double_t InterpolateFast(TH1 *h, Double_t x);
+  virtual Double_t InterpolateFast(TGraph *gr, Double_t x);
+  virtual Double_t InterpolateFast(TH1 *h, Double_t x);
 
-  TH1D *MultiplyResponseGenerated(TH1 *hGen=0, TH2 *hResponse=0,TH1 *hEfficiency=0,Bool_t bDrawSlices=kFALSE);
-  TH1D *MultiplyResponseGenerated(TF1 *fGen, TH2 *hResponse,TH1 *hEfficiency);
+  virtual TH1D *MultiplyResponseGenerated(TH1 *hGen=0, TH2 *hResponse=0,TH1 *hEfficiency=0,Bool_t bDrawSlices=kFALSE);
+  virtual TH1D *MultiplyResponseGenerated(TF1 *fGen, TH2 *hResponse,TH1 *hEfficiency);
 
-  void MakeResponseMatrixJetsFineMerged(Int_t skipBins =0, Int_t binWidthFactor = 2, Int_t extraBins = 0, Bool_t bVariableBinning = kFALSE, Double_t ptmin = 0.);
+  virtual void MakeResponseMatrixJetsFineMerged(Int_t skipBins =0, Int_t binWidthFactor = 2, Int_t extraBins = 0, Bool_t bVariableBinning = kFALSE, Double_t ptmin = 0.);
 
-  void InitializeResponseMatrix();
-  void InitializeResponseMatrixFine();
+  virtual void InitializeResponseMatrix();
+  virtual void InitializeResponseMatrixFine();
 
-  void InitializeEfficiency();
-  void InitializeEfficiencyFine();
+  virtual void InitializeEfficiency();
+  virtual void InitializeEfficiencyFine();
 
-  void FillResponseMatrixFineAndMerge();
+  virtual void FillResponseMatrixFineAndMerge();
 
  protected:
   Bool_t      fDebug;
