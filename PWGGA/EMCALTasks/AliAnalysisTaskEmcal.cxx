@@ -31,8 +31,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fAnaType(kTPC),
   fInitialized(kFALSE),
   fCreateHisto(kTRUE),
-  fTracksName("Tracks"),
-  fCaloName("CaloClusters"),
+  fTracksName(),
+  fCaloName(),
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
@@ -58,8 +58,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fAnaType(kTPC),
   fInitialized(kFALSE),
   fCreateHisto(histo),
-  fTracksName("Tracks"),
-  fCaloName("CaloClusters"),
+  fTracksName(),
+  fCaloName(),
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
@@ -255,8 +255,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if (!fCaloClusters) {
       AliError(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloName.Data())); 
       return kFALSE;
-    }
-    else {
+    } else {
       TClass *cl = fCaloClusters->GetClass();
       if (!cl->GetBaseClass("AliVCluster") && !cl->GetBaseClass("AliEmcalParticle")) {
 	AliError(Form("%s: Collection %s does not contain AliVCluster nor AliEmcalParticle objects!", GetName(), fCaloName.Data())); 
@@ -271,8 +270,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if (!fTracks) {
       AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
       return kFALSE;
-    }
-    else {
+    } else {
       TClass *cl = fTracks->GetClass();
       if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
 	AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fTracksName.Data())); 
@@ -312,4 +310,3 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 
   return kTRUE;
 }
-
