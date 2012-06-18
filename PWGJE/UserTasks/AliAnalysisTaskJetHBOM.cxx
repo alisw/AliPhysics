@@ -90,6 +90,9 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM():
   fNSkipLeadingRan(0),
   fNSkipLeadingCone(0),
   fNRandomCones(0),
+  randCone_pos(0),
+  randCone_Eta(0),
+  randCone_Phi(0),
   fNHBOM(0),
   fTrackEtaWindow(0.9),    
   //fRecEtaWindow(0.5),
@@ -164,6 +167,9 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM(const char* name):
   fNSkipLeadingRan(0),
   fNSkipLeadingCone(0),
   fNRandomCones(0),
+  randCone_pos(0),
+  randCone_Eta(0),
+  randCone_Phi(0),
   fNHBOM(0),
   fTrackEtaWindow(0.9),    
   //fRecEtaWindow(0.5),
@@ -614,7 +620,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
 
 
     // generate random cones
-    if(fTCARandomConesOut){       
+    if(fTCARandomConesOut){
       // create a random jet within the acceptance
       Double_t etaMax = fTrackEtaWindow - fRparam;//0.9 - 0.4
       Int_t nCone = 0;
@@ -622,6 +628,11 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
       Double_t pTC = 1; // small number
       Double_t etaC = etaMax*2.*(fRandom->Rndm()-0.5); // +- etamax
       Double_t phiC = fRandom->Rndm()*2.*TMath::Pi(); // 0 - 2pi
+      // use fixed position for random Cones
+      if(randCone_pos){
+	etaC = randCone_Eta;
+	phiC = randCone_Phi;
+      }
       // massless jet
       Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
       Double_t pZC = pTC/TMath::Tan(thetaC);

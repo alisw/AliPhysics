@@ -70,6 +70,7 @@ class AliAnalysisTaskJetHBOM : public AliAnalysisTaskSE
     virtual void SetNSkipLeadingRan(Int_t x){fNSkipLeadingRan = x;}
     virtual void SetNSkipLeadingCone(Int_t x){fNSkipLeadingCone = x;}
     virtual void SetNRandomCones(Int_t x){fNRandomCones = x;}
+    virtual void SetRandConePos(Double_t eta, Double_t phi){randCone_pos=1;randCone_Eta=eta;randCone_Phi=phi;}
 
     virtual void SetfNHBOM(Int_t x){fNHBOM = x;};
     virtual void SetEfficiencyPt(TH1F *h){fh1efficiencyPt = h;}
@@ -151,6 +152,9 @@ class AliAnalysisTaskJetHBOM : public AliAnalysisTaskSE
     Int_t         fNSkipLeadingRan;       // number of leading tracks to be skipped in the randomized event
     Int_t         fNSkipLeadingCone;      // number of leading jets to be for the random cones
     Int_t         fNRandomCones;          // number of generated random cones
+    Bool_t        randCone_pos;           // use fixed position for random cones
+    Double_t      randCone_Eta;           // eta for random Cone at fixed position
+    Double_t      randCone_Phi;           // phi for random Cone at fixed position
     Int_t         fNHBOM;                 // number of detector runs
     Float_t       fTrackEtaWindow;        // eta window used for corraltion plots between rec and gen 
     //    Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
