@@ -28,10 +28,12 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   void                   SetRadius(Double_t r)            { fRadius        = r     ; }
   void                   SetTracksName(const char *n)     { fTracksName    = n     ; }
   void                   SetType(Int_t t)                 { fType          = t     ; }
+  void                   SetEtaRange(Double_t emi, Double_t ema) {fEtaMin = emi; fEtaMax = ema; }
+  void                   SetPhiRange(Double_t pmi, Double_t pma) {fPhiMin = pmi; fPhiMax = pma; }
 
  protected:
-  void                   FindJets(TObjArray *tracks, TObjArray *clus, Int_t algo, Double_t radius, Float_t /*cent*/);
-  TString                GetBeamType();
+  void                   FindJets();
+  Bool_t                 DoInit();
 
   TString                fTracksName;             // name of track collection
   TString                fCaloName;               // name of calo cluster collection
@@ -41,15 +43,24 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Int_t                  fType;                   // jet type (0=all, 1=ch, 2=neutral)
   Double_t               fMinJetTrackPt;          // min jet track momentum   (applied before clustering)
   Double_t               fMinJetClusPt;           // min jet cluster momentum (applied before clustering)
+  Double_t               fPhiMin;                 // minimum phi for constituents (applied before clustering)
+  Double_t               fPhiMax;                 // maximum phi for constituents (applied before clustering)
+  Double_t               fEtaMin;                 // minimum eta for constituents (applied before clustering)
+  Double_t               fEtaMax;                 // maximum eta for constituents (applied before clustering)
   Double_t               fMinJetArea;             // min area to keep jet in output
   Double_t               fMinJetPt;               // min jet pt to keep jet in output
+  Bool_t                 fIsInit;                 //!=true if already initialized
+  Bool_t                 fIsMcPart;               //!=true if MC particles are given as input
+  Bool_t                 fIsEmcPart;              //!=true if emcal particles are given as input (for clusters)
   TClonesArray          *fJets;                   //!jet collection
   AliVEvent             *fEvent;                  //!current event
+  TClonesArray          *fTracks;                 //!tracks collection
+  TClonesArray          *fClus;                   //!cluster collection
 
  private:
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 3) // Jet producing task
+  ClassDef(AliEmcalJetTask, 4) // Jet producing task
 };
 #endif
