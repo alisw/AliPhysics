@@ -140,6 +140,10 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
     fRecoPass=2;
   } else if (fileName.Contains("pass3") ) {
     fRecoPass=3;
+  } else if (fileName.Contains("pass4") ) {
+    fRecoPass=4;
+  } else if (fileName.Contains("pass5") ) {
+    fRecoPass=5;
   }
 
   fPIDResponse->SetCurrentFile(fileName.Data());
