@@ -293,11 +293,7 @@ void AliAnalysisTaskFlowD2H::FillDStartoKpipi(const AliAODEvent *theAOD )
     if( !dst->HasSelectionBit(AliRDHFCuts::kDstarCuts) ) continue;
     if( !fCutsDStartoKpipi->IsInFiducialAcceptance(dst->Pt(),dst->YDstar()) )continue;
     Int_t topCut=0;
-    if(dst->Pt() > 5) {
-      fCutsDStartoKpipi->SetUsePID(kFALSE);
-      topCut = fCutsDStartoKpipi->IsSelected( dst, AliRDHFCuts::kAll );
-      fCutsDStartoKpipi->SetUsePID(kTRUE);
-    } else topCut = fCutsDStartoKpipi->IsSelected( dst, AliRDHFCuts::kAll ); 
+    topCut = fCutsDStartoKpipi->IsSelected( dst, AliRDHFCuts::kAll );
     if(!topCut) continue;
     Double_t massDS=dst->DeltaInvMass();
     // TO HANDLE AUTOCORRELATIONS
