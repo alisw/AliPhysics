@@ -17,6 +17,7 @@
 #include "AliESDEvent.h"
 #include "AliEmcalJet.h"
 #include "AliLog.h"
+#include "AliRhoParameter.h"
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
@@ -27,7 +28,7 @@ ClassImp(AliAnalysisTaskEmcalJet)
 AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() : 
   AliAnalysisTaskEmcal("AliAnalysisTaskEmcalJet"),
   fJetRadius(0.4),
-  fJetsName("Jets"),
+  fJetsName(),
   fPtBiasJetTrack(10),
   fPtBiasJetClus(10),
   fJetPtCut(1),
@@ -47,7 +48,7 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
 AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo) : 
   AliAnalysisTaskEmcal(name, histo),
   fJetRadius(0.4),
-  fJetsName("Jets"),
+  fJetsName(),
   fPtBiasJetTrack(10),
   fPtBiasJetClus(10),
   fJetPtCut(1),
@@ -95,6 +96,23 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Bool_t bias, Bool_t 
     return kFALSE;
 
   return (Bool_t)(jet->Eta() > fMinEta && jet->Eta() < fMaxEta && jet->Phi() > fMinPhi && jet->Phi() < fMaxPhi);
+}
+
+//________________________________________________________________________
+AliRhoParameter *AliAnalysisTaskEmcalJet::GetRhoFromEvent(const char *name)
+{
+  // Get rho from event.
+
+  AliRhoParameter *rho = 0;
+  TString sname(name);
+  if (!sname.IsNull()) {
+    rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(sname));
+    if (!rho) {
+      AliWarning(Form("%s: Could not retrieve rho with name %s!", GetName(), name)); 
+      return 0;
+    }
+  }
+  return rho;
 }
 
 //________________________________________________________________________
