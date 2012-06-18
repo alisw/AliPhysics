@@ -356,7 +356,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistCorrJetsPtArea_";
     histname += i;
-    fHistCorrJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistCorrJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
     fHistCorrJetsPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
     fHistCorrJetsPtArea[i]->GetYaxis()->SetTitle("area");
     fOutput->Add(fHistCorrJetsPtArea[i]);
@@ -420,7 +420,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
       histname = "fHistEmbJetsCorrPt_";
       histname += i;
-      fHistEmbJetsCorrPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbJetsCorrPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
       fHistEmbJetsCorrPt[i]->GetXaxis()->SetTitle("embedded jet p_{T}^{corr} [GeV/c]");
       fHistEmbJetsCorrPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbJetsCorrPt[i]);
