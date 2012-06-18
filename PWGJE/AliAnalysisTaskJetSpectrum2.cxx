@@ -373,14 +373,14 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
 
 
-  const Int_t nBinPt = 120;
+  const Int_t nBinPt = 150;
   Double_t binLimitsPt[nBinPt+1];
   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
     if(iPt == 0){
       binLimitsPt[iPt] = -50.0;
     }
     else {// 1.0
-      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.5;
+      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.;
     }
   }
   const Int_t nBinPhi = 90;
