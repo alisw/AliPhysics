@@ -80,6 +80,7 @@ fAngStructCloseTracks(0),
 fCheckMethods(0),
 fDoEventMixing(0), 
 fFlagPhiBkg(0),
+fFlagEtaBkg(0),
 fFlagRandom(0),
 fRPAngle(0),
 fNRPBins(3),
@@ -186,6 +187,7 @@ fAngStructCloseTracks(0),
 fCheckMethods(0),
 fDoEventMixing(0),
 fFlagPhiBkg(0),
+fFlagEtaBkg(0),
 fFlagRandom(0),
 fRPAngle(0),
 fNRPBins(3),
@@ -662,10 +664,22 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 	
            if(areabig>=0.2) injet=injet+1;
            if(areabig>=0.4) injet4=injet4+1;   
-           Double_t dphi=RelativePhi(partback->Phi(),phibig);  
+           Double_t dphi=RelativePhi(partback->Phi(),phibig); 
+
+           if(fFlagEtaBkg!=0){
+	   Double_t etadif= partback->Eta()-etabig;
+           if(TMath::Abs(etadif)<=0.5){             
            if(centValue>40. && centValue<80.) fh3JetTrackC4080->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));
            if(centValue<20.) fh3JetTrackC20->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));
-           if(centValue>30. && centValue<60.) fh3JetTrackC3060->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));
+           if(centValue>30. && centValue<60.) fh3JetTrackC3060->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));}}
+
+           if(fFlagEtaBkg==0){
+           if(centValue>40. && centValue<80.) fh3JetTrackC4080->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));
+           if(centValue<20.) fh3JetTrackC20->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));
+           if(centValue>30. && centValue<60.) fh3JetTrackC3060->Fill(partback->Pt(),ptcorr,TMath::Abs(dphi));}
+
+
+
 
            if(fFlagPhiBkg!=0) if((TMath::Abs(dphi)<TMath::Pi()/2.-0.1)||(TMath::Abs(dphi)>TMath::Pi()/2.+0.1)) continue;
            if(fFlagPhiBkg==0) if(TMath::Abs(dphi)<TMath::Pi()-0.6) continue;

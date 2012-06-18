@@ -78,6 +78,7 @@ public:
    virtual void     SetCheckMethods(Int_t yesno){fCheckMethods=yesno;}
    virtual void     SetEventMixing(Int_t yesno){fDoEventMixing=yesno;}
    virtual void     SetFlagPhiBkg(Int_t yesno){fFlagPhiBkg=yesno;}
+   virtual void     SetFlagEtaBkg(Int_t yesno){fFlagEtaBkg=yesno;}
    virtual void     SetFlagRandom(Int_t yesno){fFlagRandom=yesno;}
 
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
@@ -125,6 +126,7 @@ private:
    Int_t   fCheckMethods;     //to look into more detail into the core
    Int_t   fDoEventMixing;
    Int_t   fFlagPhiBkg;
+   Int_t   fFlagEtaBkg;
    Int_t   fFlagRandom;
    Int_t   fRPAngle;
    Int_t   fNRPBins;
