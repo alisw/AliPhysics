@@ -1,6 +1,8 @@
 
 
-AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton()
+AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
+TString period = "LHC11d"
+)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -19,6 +21,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton()
   Bool_t isMC = (mgr->GetMCtruthEventHandler() != NULL);
 
   //ana->SetClusThreshold(clusTh);
+  
   ana->SetTrainMode(kTRUE);
   //ana->SetGridMode(kTRUE);
   // ana->SetMcMode(isMC);
