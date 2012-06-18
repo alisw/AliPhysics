@@ -136,8 +136,13 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fhEffH1(0x0),
   fhEffH2(0x0),
   fhEffH3(0x0),
-  fUseTrMomentumSmearing(kFALSE),
+  fUseTrPtResolutionSmearing(kFALSE),
   fUseDiceEfficiency(kFALSE),
+  fUseTrPtResolutionFromOADB(kFALSE),
+  fUseTrEfficiencyFromOADB(kFALSE),
+  fPathTrPtResolution(""),
+  fPathTrEfficiency(""),
+  fChangeEfficiencyFraction(0.),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -268,8 +273,13 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fhEffH1(0x0),
   fhEffH2(0x0),
   fhEffH3(0x0),
-  fUseTrMomentumSmearing(kFALSE),
+  fUseTrPtResolutionSmearing(kFALSE),
   fUseDiceEfficiency(kFALSE),
+  fUseTrPtResolutionFromOADB(kFALSE),
+  fUseTrEfficiencyFromOADB(kFALSE),
+  fPathTrPtResolution(""),
+  fPathTrEfficiency(""),
+  fChangeEfficiencyFraction(0.),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -404,8 +414,8 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       if(fJetTypes&kJetRan){
 	fTCAJetsOutRan = new TClonesArray("AliAODJet", 0);
 	fTCAJetsOutRan->SetName(Form("%s_%s",fNonStdBranch.Data(),"random"));
-	if(fUseDiceEfficiency || fUseTrMomentumSmearing)
-	  fTCAJetsOutRan->SetName(Form("%s_%sDetector%d%d",fNonStdBranch.Data(),"random",fUseTrMomentumSmearing,fUseDiceEfficiency));
+	if(fUseDiceEfficiency || fUseTrPtResolutionSmearing)
+	  fTCAJetsOutRan->SetName(Form("%s_%sDetector%d%dFr%d",fNonStdBranch.Data(),"random",fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fChangeEfficiencyFraction*100.)));
 	AddAODBranch("TClonesArray",&fTCAJetsOutRan,fNonStdFile.Data());
       }
 
@@ -413,16 +423,16 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 	if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
 	  fAODJetBackgroundOut = new AliAODJetEventBackground();
 	  fAODJetBackgroundOut->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
-	  if(fUseDiceEfficiency || fUseTrMomentumSmearing)
-	    fAODJetBackgroundOut->SetName(Form("%s_%sDetector%d%d",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data(),fUseTrMomentumSmearing,fUseDiceEfficiency));
+	  if(fUseDiceEfficiency || fUseTrPtResolutionSmearing)
+	    fAODJetBackgroundOut->SetName(Form("%s_%sDetector%d%dFr%d",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data(),fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fChangeEfficiencyFraction*100.)));
 
 	  AddAODBranch("AliAODJetEventBackground",&fAODJetBackgroundOut,fNonStdFile.Data());  
 	}
       }
       // create the branch for the random cones with the same R 
       TString cName = Form("%sRandomConeSkip%02d",fNonStdBranch.Data(),fNSkipLeadingCone);
-      if(fUseDiceEfficiency || fUseTrMomentumSmearing)
-	cName = Form("%sDetector%d%d_RandomConeSkip%02d",fNonStdBranch.Data(),fUseTrMomentumSmearing,fUseDiceEfficiency,fNSkipLeadingCone);
+      if(fUseDiceEfficiency || fUseTrPtResolutionSmearing)
+	cName = Form("%sDetector%d%dFr%d_RandomConeSkip%02d",fNonStdBranch.Data(),fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fChangeEfficiencyFraction*100.),fNSkipLeadingCone);
 
       if(fNRandomCones>0){
 	if(fJetTypes&kRC){
@@ -452,8 +462,6 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 	fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
       }
     }
-
-  //  FitMomentumResolution();
 
 
   if(!fHistList)fHistList = new TList();
@@ -705,13 +713,17 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   TH1::AddDirectory(oldStatus);
 }
 
-void AliAnalysisTaskJetCluster::Init()
+void AliAnalysisTaskJetCluster::LocalInit()
 {
   //
   // Initialization
   //
 
   if (fDebug > 1) printf("AnalysisTaskJetCluster::Init() \n");
+
+  if(fUseTrPtResolutionFromOADB) LoadTrPtResolutionRootFileFromOADB();
+  if(fUseTrEfficiencyFromOADB)   LoadTrEfficiencyRootFileFromOADB();
+
 
   FitMomentumResolution();
 
@@ -759,7 +771,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   }
 
   //Check if information is provided detector level effects
-  if(!fMomResH1 || !fMomResH2 || !fMomResH3) fUseTrMomentumSmearing = kFALSE;
+  if(!fMomResH1 || !fMomResH2 || !fMomResH3) fUseTrPtResolutionSmearing = kFALSE;
   if(!fhEffH1 || !fhEffH2 || !fhEffH3)       fUseDiceEfficiency = kFALSE;
   
   Bool_t selectEvent =  false;
@@ -846,7 +858,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     // Carefull energy is not well determined in real data, should not matter for p_T scheme?
     // we take total momentum here
 
-    if((!fUseTrMomentumSmearing) && (!fUseDiceEfficiency)) {
+    if((!fUseTrPtResolutionSmearing) && (!fUseDiceEfficiency)) {
       //Add particles to fastjet in case we are not running toy model
       fastjet::PseudoJet jInp(vp->Px(),vp->Py(),vp->Pz(),vp->P());
       jInp.set_user_index(i);
@@ -916,7 +928,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fp1Efficiency->Fill(vp->Pt(),sumEff);
       if(rnd>sumEff) continue;
 
-      if(fUseTrMomentumSmearing) {
+      if(fUseTrPtResolutionSmearing) {
 	//Smear momentum of generated particle
 	Double_t smear = 1.;
 	//Select hybrid track category
@@ -978,11 +990,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     if(fTCAJetsOut){
       if(i == 0){
 	fRef->Delete(); // make sure to delete before placement new...
-	if((!fUseTrMomentumSmearing) && (!fUseDiceEfficiency)) {
+	if((!fUseTrPtResolutionSmearing) && (!fUseDiceEfficiency)) {
 	  new(fRef) TRefArray(TProcessID::GetProcessWithUID(vp)); //TRefArray does not work with toy model ...
 	} 
       }
-      if((!fUseTrMomentumSmearing) && (!fUseDiceEfficiency)) fRef->Add(vp);  //TRefArray does not work with toy model ...
+      if((!fUseTrPtResolutionSmearing) && (!fUseDiceEfficiency)) fRef->Add(vp);  //TRefArray does not work with toy model ...
     }
   }// recparticles
 
@@ -1129,7 +1141,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	if(!part) continue;
 	fh1PtJetConstRec->Fill(part->Pt());
 	if(aodOutJet){
-	  if((!fUseTrMomentumSmearing) && (!fUseDiceEfficiency)) aodOutJet->AddTrack(fRef->At(constituents[ic].user_index()));
+	  if((!fUseTrPtResolutionSmearing) && (!fUseDiceEfficiency)) aodOutJet->AddTrack(fRef->At(constituents[ic].user_index()));
 	  if(part->Pt()>fMaxTrackPtInJet){
 	    aodOutJet->SetTrigger(AliAODJet::kHighTrackPtTriggered);
 	  }
@@ -1688,6 +1700,51 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
   }// AODMCparticle
   list->Sort();
   return iCount;
+}
+
+void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
+
+  TFile *f = new TFile(fPathTrPtResolution.Data());
+
+  TProfile *fProfPtPtSigma1PtGlobSt     = (TProfile*)f->Get("fProfPtPtSigma1PtGlobSt");
+  TProfile *fProfPtPtSigma1PtGlobCnoITS = (TProfile*)f->Get("fProfPtPtSigma1PtGlobCnoITS");
+  TProfile *fProfPtPtSigma1PtGlobCnoSPD = (TProfile*)f->Get("fProfPtPtSigma1PtGlobCnoSPD");
+
+  SetSmearResolution(kTRUE);
+  SetMomentumResolutionHybrid(fProfPtPtSigma1PtGlobSt,fProfPtPtSigma1PtGlobCnoITS,fProfPtPtSigma1PtGlobCnoSPD);
+
+
+  if(f) delete f;
+
+}
+
+void AliAnalysisTaskJetCluster::LoadTrEfficiencyRootFileFromOADB() {
+
+  TFile *f = new TFile(fPathTrEfficiency.Data());
+
+  TH1D *hEffPosGlobSt = (TH1D*)f->Get("hEffPosGlobSt");
+  TH1D *hEffPosGlobCnoITS = (TH1D*)f->Get("hEffPosGlobCnoITS");
+  TH1D *hEffPosGlobCnoSPD = (TH1D*)f->Get("hEffPosGlobCnoSPD");
+
+  SetDiceEfficiency(kTRUE);
+
+  if(fChangeEfficiencyFraction>0.) {
+
+    TH1D *hEffPosGlobStMin = (TH1D*)hEffPosGlobSt->Clone("hEffPosGlobStMin");
+    
+    for(int bin=1; bin<=hEffPosGlobSt->GetNbinsX(); bin++) {
+      Double_t content = hEffPosGlobSt->GetBinContent(bin);
+      hEffPosGlobStMin->SetBinContent(bin,content-fChangeEfficiencyFraction);
+    }
+
+    SetEfficiencyHybrid(hEffPosGlobStMin,hEffPosGlobCnoITS,hEffPosGlobCnoSPD);
+
+  }
+  else
+    SetEfficiencyHybrid(hEffPosGlobSt,hEffPosGlobCnoITS,hEffPosGlobCnoSPD);
+
+  if(f) delete f;
+
 }
 
 void AliAnalysisTaskJetCluster::SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3) {

@@ -45,9 +45,75 @@ AliAnaChargedJetResponseMaker::AliAnaChargedJetResponseMaker():
   fbCalcErrors(kFALSE)
 {;}
 
-AliAnaChargedJetResponseMaker::~AliAnaChargedJetResponseMaker() {
-  //destructor
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+AliAnaChargedJetResponseMaker::AliAnaChargedJetResponseMaker(const AliAnaChargedJetResponseMaker& obj):
+  fDebug(obj.fDebug),
+  fResolutionType(obj.fResolutionType),
+  fDeltaPt(obj.fDeltaPt),
+  fhDeltaPt(obj.fhDeltaPt),
+  fDimensions(obj.fDimensions),
+  fDimRec(obj.fDimRec),
+  fDimGen(obj.fDimGen),
+  fPtMin(obj.fPtMin),
+  fPtMax(obj.fPtMax),
+  fNbins(obj.fNbins),
+  fBinArrayPtRec(obj.fBinArrayPtRec),
+  fPtMeasured(obj.fPtMeasured),
+  fEffFlat(obj.fEffFlat),
+  fEfficiency(obj.fEfficiency),
+  fEfficiencyFine(obj.fEfficiencyFine),
+  fResponseMatrix(obj.fResponseMatrix),
+  fResponseMatrixFine(obj.fResponseMatrixFine),
+  fPtMinUnfolded(obj.fPtMinUnfolded),
+  fPtMaxUnfolded(obj.fPtMaxUnfolded),
+  fPtMaxUnfoldedHigh(obj.fPtMaxUnfoldedHigh),
+  fBinWidthFactorUnfolded(obj.fBinWidthFactorUnfolded),
+  fSkipBinsUnfolded(obj.fSkipBinsUnfolded),
+  fExtraBinsUnfolded(obj.fExtraBinsUnfolded),
+  fbVariableBinning(obj.fbVariableBinning),
+  fPtMaxUnfVarBinning(obj.fPtMaxUnfVarBinning),
+  f1MergeFunction(obj.f1MergeFunction),
+  fFineFrac(obj.fFineFrac),
+  fbCalcErrors(obj.fbCalcErrors)
+{;}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+AliAnaChargedJetResponseMaker& AliAnaChargedJetResponseMaker::operator=(const AliAnaChargedJetResponseMaker& other)
+{
+// Assignment
+  if(&other == this) return *this;
+  AliAnaChargedJetResponseMaker::operator=(other);
+  fDebug                  = other.fDebug;
+  fResolutionType         = other.fResolutionType;
+  fDeltaPt                = other.fDeltaPt;
+  fhDeltaPt               = other.fhDeltaPt;
+  fDimensions             = other.fDimensions;
+  fDimRec                 = other.fDimRec;
+  fDimGen                 = other.fDimGen;
+  fPtMin                  = other.fPtMin;
+  fPtMax                  = other.fPtMax;
+  fNbins                  = other.fNbins;
+  fBinArrayPtRec          = other.fBinArrayPtRec;
+  fPtMeasured             = other.fPtMeasured;
+  fEffFlat                = other.fEffFlat;
+  fEfficiency             = other.fEfficiency;
+  fEfficiencyFine         = other.fEfficiencyFine;
+  fResponseMatrix         = other.fResponseMatrix;
+  fResponseMatrixFine     = other.fResponseMatrixFine;
+  fPtMinUnfolded          = other.fPtMinUnfolded;
+  fPtMaxUnfolded          = other.fPtMaxUnfolded;
+  fPtMaxUnfoldedHigh      = other.fPtMaxUnfoldedHigh;
+  fBinWidthFactorUnfolded = other.fBinWidthFactorUnfolded;
+  fSkipBinsUnfolded       = other.fSkipBinsUnfolded;
+  fExtraBinsUnfolded      = other.fExtraBinsUnfolded;
+  fbVariableBinning       = other.fbVariableBinning;
+  fPtMaxUnfVarBinning     = other.fPtMaxUnfVarBinning;
+  f1MergeFunction         = other.f1MergeFunction;
+  fFineFrac               = other.fFineFrac;
+  fbCalcErrors            = other.fbCalcErrors;
+
+  return *this;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
@@ -206,6 +272,7 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrix() {
 
   Int_t nbins[fDimensions*2];
   nbins[fDimRec] = fNbins;
+  nbins[fDimGen] = fNbins;
 
   double binWidthMeas = (double)((fPtMax-fPtMin)/fNbins);
   double binWidthUnf  = (double)fBinWidthFactorUnfolded*binWidthMeas;
@@ -263,13 +330,15 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrix() {
   binArrayPt0[nbins[fDimRec]]= xmax[fDimRec];
 
   //Define bin limits generated/unfolded axis
-  for(int i=0; i<nbins[fDimGen]; i++) {
-    if(!fbVariableBinning) binArrayPt1[i] = xmin[fDimGen]+(double)i*binWidth[fDimGen];
+  binArrayPt1[0] = fPtMinUnfolded;
+  for(int i=1; i<nbins[fDimGen]; i++) {
     if(fbVariableBinning) {
       double test = xmin[fDimGen]+(double)i*binWidthUnfLowPt;
       if(test<=fPtMaxUnfVarBinning) binArrayPt1[i] = test;
       else binArrayPt1[i] = binArrayPt1[i-1]+binWidthUnf;
     }
+    else
+      binArrayPt1[i] = xmin[fDimGen]+(double)i*binWidth[fDimGen];
     //printf("RM. i = %d \t binArrayPt[i] = %f \n",i,binArrayPt1[i]);
   }
   binArrayPt1[nbins[fDimGen]]= xmaxGen;
@@ -330,20 +399,18 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrixFine() {
   //
 
   Int_t nbinsFine[fDimensions*2];
-  Double_t xminFine[fDimensions*2]; 
-  Double_t xmaxFine[fDimensions*2]; 
+  Double_t xminFine[fDimensions*2];
+  Double_t xmaxFine[fDimensions*2];
   Double_t pTarrayFine[fDimensions*2];
 
-  for(int i=0; i<fDimensions*2; i++) {
-    
-    if(i==0) nbinsFine[i] = fResponseMatrix->GetAxis(fDimRec)->GetNbins()*fFineFrac; // dimension 0 is reconstructed value
-    else     nbinsFine[i] = fResponseMatrix->GetAxis(fDimRec)->GetNbins()*fFineFrac; // dimension 1 is generated value
-
-    xminFine[i] = TMath::Min(fPtMin,0.);
-    xmaxFine[i] = fResponseMatrix->GetAxis(fDimGen)->GetXmax()+40.;
-
-    pTarrayFine[i] = 0.;
-  }
+  nbinsFine[fDimRec] = fResponseMatrix->GetAxis(fDimRec)->GetNbins()*fFineFrac; 
+  nbinsFine[fDimGen] = fResponseMatrix->GetAxis(fDimRec)->GetNbins()*fFineFrac; 
+  xminFine[fDimRec] = TMath::Min(fPtMin,0.);
+  xminFine[fDimGen] = TMath::Min(fPtMin,0.);
+  xmaxFine[fDimRec] = fResponseMatrix->GetAxis(fDimGen)->GetXmax()+40.;
+  xmaxFine[fDimGen] = fResponseMatrix->GetAxis(fDimGen)->GetXmax()+40.;
+  pTarrayFine[fDimRec] = 0.;
+  pTarrayFine[fDimGen] = 0.;
 
   Double_t binWidth[2];
   binWidth[fDimRec] = fResponseMatrix->GetAxis(fDimRec)->GetBinWidth(1);
@@ -443,6 +510,8 @@ void AliAnaChargedJetResponseMaker::FillResponseMatrixFineAndMerge() {
   xminFine[fDimRec]  = recAxis->GetXmin();
   xmaxFine[fDimGen]  = genAxis->GetXmax();
   xmaxFine[fDimRec]  = recAxis->GetXmax();
+  pTarrayFine[fDimGen] = 0.;
+  pTarrayFine[fDimRec] = 0.;
 
   double sumyield = 0.;
   double sumyielderror2 = 0.;
@@ -623,7 +692,6 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
   Double_t sumYield = 0.;
   const Int_t nbinsRec = hRec->GetNbinsX();
   Double_t sumError2[nbinsRec+1];
-  for(int i=0; i<=nbinsRec; i++) sumError2[i] = 0.;
   Double_t eff = 0.;
 
   for(int igen=1; igen<=hGen->GetNbinsX(); igen++) {
