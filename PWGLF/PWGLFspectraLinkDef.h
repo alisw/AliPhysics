@@ -20,4 +20,11 @@
 #pragma link C++ class AliAnalysisCombinedHadronSpectra2MC+;
 #pragma link C++ class AliAnalysisTaskParticleEfficiency+;
 
+#pragma link C++ class AliAnalysisTaskSpectraAOD+;
+#pragma link C++ class AliSpectraAODEventCuts+;
+#pragma link C++ class AliSpectraAODHistoManager+;
+#pragma link C++ class AliSpectraAODPID+;
+#pragma link C++ class AliSpectraAODTrackCuts+;
+
+
 #endif
