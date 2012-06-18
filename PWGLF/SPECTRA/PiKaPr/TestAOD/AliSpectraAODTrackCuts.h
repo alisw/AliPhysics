@@ -23,19 +23,6 @@ class AliAODTrack;
  
 using namespace AliSpectraNameSpace;
 
-const char * kBinLabel[] ={"TrkBit",
-			   "TrkCuts",
-			   "TrkEta",
-			   "TrkDCA",
-			   "TrkP",
-			   "TrkPt",
-			   "TrkPtTOF",
-			   "TOFMatching",
-			   "kTOFout",
-			   "kTIME",
-			   "kTOFpid",
-			   "Accepted"};
-
 class AliSpectraAODTrackCuts : public TNamed
 {
  public:
@@ -106,6 +93,8 @@ class AliSpectraAODTrackCuts : public TNamed
    TH1F             *fHistoNMatchedNeg;       // Matched negative tracks
    TH2F             *fHistoEtaPhiHighPt;       // EtaPhi distr at high pt (>1.5 GeV/c)
    AliAODTrack      *fTrack;           //! Track pointer
+   static const char * kBinLabel[]; // labels of stat histo
+
    
    AliSpectraAODTrackCuts(const AliSpectraAODTrackCuts&);
    AliSpectraAODTrackCuts& operator=(const AliSpectraAODTrackCuts&);

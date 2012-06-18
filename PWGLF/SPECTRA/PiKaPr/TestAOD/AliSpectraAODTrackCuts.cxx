@@ -40,6 +40,20 @@
 
 using namespace std;
 
+const char * AliSpectraAODTrackCuts::kBinLabel[] ={"TrkBit",
+						   "TrkCuts",
+						   "TrkEta",
+						   "TrkDCA",
+						   "TrkP",
+						   "TrkPt",
+						   "TrkPtTOF",
+						   "TOFMatching",
+						   "kTOFout",
+						   "kTIME",
+						   "kTOFpid",
+						   "Accepted"};
+
+
 ClassImp(AliSpectraAODTrackCuts)
 
 

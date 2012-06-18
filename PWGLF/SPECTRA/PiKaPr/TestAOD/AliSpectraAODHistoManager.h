@@ -21,7 +21,7 @@ class TH2;
 #include "TNamed.h"
 #include "TList.h"
 #include "Histograms.h" // Change this file if you want to add an histogram
-#include "HistogramNames.h"
+#include "HistogramNames.h" // generate this automatically running createNames.py 
 
 namespace AliSpectraNameSpace
 {
@@ -36,15 +36,7 @@ namespace AliSpectraNameSpace
      kSpUndefined,
    }; // Particle species used in plotting
 
-   const char * kParticleSpecies[] =
-   {
-       "PionPlus",
-       "KaonPlus",
-       "ProtonPlus",
-       "PionMinus",
-       "KaonMinus",
-       "ProtonMinus",
-   };
+   extern const char * kParticleSpecies[];
 
    enum AODHistoType_t
    {

@@ -34,6 +34,7 @@
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliSpectraAODHistoManager.h"
+
 #include <iostream>
 
 using namespace std;
@@ -42,6 +43,18 @@ ClassImp(AliSpectraAODHistoManager)
 
 
 using namespace AliSpectraNameSpace;
+
+
+const char * kParticleSpecies[] =
+   {
+       "PionPlus",
+       "KaonPlus",
+       "ProtonPlus",
+       "PionMinus",
+       "KaonMinus",
+       "ProtonMinus",
+   };
+
 
 AliSpectraAODHistoManager::AliSpectraAODHistoManager(const char *name): TNamed(name, "AOD Spectra Histo Manager"), fOutputList(0)
 {
