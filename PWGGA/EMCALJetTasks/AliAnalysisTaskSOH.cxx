@@ -33,18 +33,19 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
   fHybridTrackCuts1(0x0),
   fHybridTrackCuts2(0x0),
   fTrackIndices(0x0),
+  fClusterIndices(0x0),
+  fClusterArray(0x0),
   fOutputList(0x0),        
   fHEventStat(0),      
   fHTrkEffParGenPt(0), 
   fHTrkEffDetGenPt(0), 
   fHTrkEffDetRecPt(0), 
+  fHScaleFactor(0),
+  fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
   fHEMCalResponsePion(0x0), 
   fHEMCalResponseElec(0x0),
   fHEMCalResponseProton(0x0), 
-  fHEMCalRecPhiEtaClus(0x0),
-  fHEMCalRecPhiEtaTrk(0x0), 
-  fHClsPhiEta(0x0),
   fHEMCalRecdPhidEta(0x0),
   fHEMCalRecdPhidEtaP(0x0),
   fHEMCalRecdPhidEtaM(0x0),
@@ -52,7 +53,8 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
   fHEMCalRecdPhidEtaP_Truth(0x0),
   fHEMCalRecdPhidEtaM_Truth(0x0),
   fHEMCalRecdPhidEtaposEta(0x0),
-  fHEMCalRecdPhidEtanegEta(0x0)
+  fHEMCalRecdPhidEtanegEta(0x0),
+  fHPhotonEdiff100HC(0x0)
 {
   // Constructor
 
@@ -70,18 +72,16 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH(const char *name) :
   fHybridTrackCuts1(0x0),
   fHybridTrackCuts2(0x0),
   fTrackIndices(0x0),
+  fClusterIndices(0x0),
+  fClusterArray(0x0),
   fOutputList(0x0),        
   fHEventStat(0),      
   fHTrkEffParGenPt(0), 
   fHTrkEffDetGenPt(0), 
   fHTrkEffDetRecPt(0), 
+  fHScaleFactor(0),
+  fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
-  fHEMCalResponsePion(0x0), 
-  fHEMCalResponseElec(0x0),
-  fHEMCalResponseProton(0x0), 
-  fHEMCalRecPhiEtaClus(0x0),
-  fHEMCalRecPhiEtaTrk(0x0), 
-  fHClsPhiEta(0x0),
   fHEMCalRecdPhidEta(0x0),
   fHEMCalRecdPhidEtaP(0x0),
   fHEMCalRecdPhidEtaM(0x0),
@@ -89,7 +89,8 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH(const char *name) :
   fHEMCalRecdPhidEtaP_Truth(0x0),
   fHEMCalRecdPhidEtaM_Truth(0x0),
   fHEMCalRecdPhidEtaposEta(0x0),
-  fHEMCalRecdPhidEtanegEta(0x0)
+  fHEMCalRecdPhidEtanegEta(0x0),
+  fHPhotonEdiff100HC(0x0)
 {
   // Constructor
 
@@ -107,6 +108,8 @@ AliAnalysisTaskSOH::~AliAnalysisTaskSOH()
   delete fHybridTrackCuts1;
   delete fHybridTrackCuts2;
   delete fTrackIndices;
+  delete fClusterIndices;
+  delete fClusterArray;
 }
 
 
@@ -120,8 +123,15 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(1);
 
-  fHEventStat = new TH1F("fHEventStat","Event statistics for analysis",1,0,1);
+  fHEventStat = new TH1F("fHEventStat","Event statistics for analysis",8,0,8);
   fHEventStat->GetXaxis()->SetBinLabel(1,"Event");
+  fHEventStat->GetXaxis()->SetBinLabel(2,"cluster");
+  fHEventStat->GetXaxis()->SetBinLabel(3,"good cluster");
+  fHEventStat->GetXaxis()->SetBinLabel(4,"cls/0-truth");
+  fHEventStat->GetXaxis()->SetBinLabel(5,"cls/1-truth");
+  fHEventStat->GetXaxis()->SetBinLabel(6,"cls/2-truth");
+  fHEventStat->GetXaxis()->SetBinLabel(7,"cls/2-goodtruth");
+  fHEventStat->GetXaxis()->SetBinLabel(8,"cls/>3-truth");
   fOutputList->Add(fHEventStat);
 
   fHTrkEffParGenPt = new TH1F("fHTrkEffParGenPt", "Particle level truth p_{T} distribution of generated primary charged pions;p_{T}^{gen} (GeV/c)",15,0.15,3.1);
@@ -133,7 +143,13 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   fHTrkEffDetRecPt = new TH1F("fHTrkEffDetRecPt", "Reconstructed track p_{T} distribution of primary charged pions;p_{T}^{rec} (GeV/c)",15,0.15,3.1);
   fOutputList->Add(fHTrkEffDetRecPt);
 
-  fHEOverPVsPt = new TH2F("fHEOverPVsPt", "E/P vs track p_{T}; p_{T} (GeV/c); E/P", 20 , 0, 4, 40, 0, 3.2);
+  fHScaleFactor = new TH1F("fHScaleFactor", "Scale factor distribution without hadronic correction;Scale factor",100,0,10);
+  fOutputList->Add(fHScaleFactor);
+
+  fHScaleFactor100HC = new TH1F("fHScaleFactor100HC", "Scale factor distribution with 100% hadronic correction;Scale factor",100,0,10);
+  fOutputList->Add(fHScaleFactor100HC);
+
+  fHEOverPVsPt = new TH2F("fHEOverPVsPt", "E/P vs track p_{T}; p_{T} (GeV/c); E/P", 200 , 0, 4, 200, 0, 3.2);
   fOutputList->Add(fHEOverPVsPt);
 
   fHEMCalResponsePion = new TH2F("fHEMCalResponsePion", "Pion E/P vs track p_{T}; p_{T} (GeV/c); E/P", 100 , 0, 4, 100, 0, 3.2);
@@ -144,15 +160,6 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
 
   fHEMCalResponseProton = new TH2F("fHEMCalResponseProton", "Proton E/P vs track p_{T};  p_{T} (GeV/c); E/P", 100 , 0, 4, 100, 0, 3.2);
   fOutputList->Add(fHEMCalResponseElec);
-
-  fHEMCalRecPhiEtaClus = new TH2F("fHEMCalRecPhiEtaClus","EMCAL Cluster#phi-#eta; #eta; #phi",1000,-3,3,1000,-4,4);
-  fOutputList->Add(fHEMCalRecPhiEtaClus);
-
-  fHEMCalRecPhiEtaTrk = new TH2F("fHEMCalRecPhiEtaTrk","EMCAL Track #phi-#eta; #eta; #phi",1000,-3,3,1000,-4,4);
-  fOutputList->Add(fHEMCalRecPhiEtaTrk);
-
-  fHClsPhiEta = new TH2F("fHClsPhiEta", "cluster #phi-#eta; #eta; #phi",1000,-3,3,1000,-4,4);
-  fOutputList->Add(fHClsPhiEta);
 
   fHEMCalRecdPhidEta = new TH2F("fHEMCalRecdPhidEta","EMCAL Cluster-Track #Delta#phi-#Delta#eta; #Delta#eta; #Delta#phi",1000,-0.1,0.1,1000,-0.5,0.5);
   fOutputList->Add(fHEMCalRecdPhidEta);
@@ -177,7 +184,15 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
 
   fHEMCalRecdPhidEtanegEta = new TH2F("fHEMCalRecdPhidEtanegEta","(-eta track) EMCAL Cluster-Track #Delta#phi-#Delta#eta; #Delta#eta; #Delta#phi",1000,-0.1,0.1,1000,-0.5,0.5);
   fOutputList->Add(fHEMCalRecdPhidEtanegEta);
+
+  fHPhotonEdiff100HC = new TH2F("fHPhotonEdiff100HC","Photon (E_{Truth}- E_{calc,100% HC})/E_{Truth} vs. E_{Truth}; E_{Truth} (GeV); (E_{Truth}- E_{calc,100% HC})/E_{Truth}",500,0,5,500,0,1.1);
+  fOutputList->Add(fHPhotonEdiff100HC);
+
   fTrackIndices = new TArrayI();
+  fClusterIndices = new TArrayI();
+
+  fClusterArray = new TObjArray();
+  fClusterArray->SetOwner(1);
 
   PostData(1, fOutputList);
 }
@@ -204,9 +219,15 @@ void AliAnalysisTaskSOH::UserExec(Option_t *)
 
   if(fTrackIndices) 
     fTrackIndices->Reset();
+  if(fClusterIndices) 
+    fClusterIndices->Reset();
+  if(fClusterArray)
+    fClusterArray->Delete();
 
   ProcessTrack();
+  ProcessCluster();
   ProcessMc();
+  ProcessScaleFactor();
   
   PostData(1, fOutputList);
 }   
@@ -224,15 +245,6 @@ void  AliAnalysisTaskSOH::ProcessTrack()
 
   Float_t ClsPos[3] = {-999,-999,-999};
   Double_t emcTrkpos[3] = {-999,-999,-999};
-
-  for(Int_t itr=0; itr<fESD->GetNumberOfCaloClusters(); itr++)
-  {
-    AliESDCaloCluster *cluster = fESD->GetCaloCluster(itr);
-    if(!cluster) continue;
-    cluster->GetPosition(ClsPos);
-    TVector3 VClsPos(ClsPos[0], ClsPos[1], ClsPos[2]);
-    fHClsPhiEta->Fill(VClsPos.Eta(), VClsPos.Phi());
-  }
 
   for(Int_t itr=0; itr<fESD->GetNumberOfTracks(); itr++)
   {
@@ -259,9 +271,6 @@ void  AliAnalysisTaskSOH::ProcessTrack()
         }
         EMCTrk.GetXYZ(emcTrkpos);
         TVector3 VemcTrkPos(emcTrkpos[0],emcTrkpos[1],emcTrkpos[2]);
-	      
-        fHEMCalRecPhiEtaClus->Fill(VClsPos.Eta(), VClsPos.Phi());
-        fHEMCalRecPhiEtaTrk->Fill(VemcTrkPos.Eta(), VemcTrkPos.Phi());
 	      
         Double_t dPhi = VClsPos.Phi() - VemcTrkPos.Phi();
         if (dPhi < -1*TMath::Pi()) dPhi += (2*TMath::Pi());
@@ -316,9 +325,83 @@ void  AliAnalysisTaskSOH::ProcessTrack()
     fTrackIndices->AddAt(itr,nTracks);
     nTracks++;
   }
+
   fTrackIndices->Set(nTracks);
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskSOH::ProcessCluster()
+{
+  // Process cluster.
+
+  Int_t nCluster = 0;
+  TLorentzVector gamma;
+  Double_t vertex[3] = {0, 0, 0};
+  fESD->GetVertex()->GetXYZ(vertex);
+  const Int_t nCaloClusters = fESD->GetNumberOfCaloClusters(); 
+  fClusterIndices->Set(nCaloClusters);
+
+  for(Int_t itr=0; itr<nCaloClusters; itr++) 
+  {
+    fHEventStat->Fill(1.5); 
+    AliESDCaloCluster *cluster = fESD->GetCaloCluster(itr);
+    if(!IsGoodCluster(cluster)) continue;
+    cluster->GetMomentum(gamma, vertex);
+    if (gamma.Pt() < 0.15) continue;
+    fHEventStat->Fill(2.5);
+
+    TArrayI *MCLabels = cluster->GetLabelsArray();
+
+    if(MCLabels->GetSize() == 0) fHEventStat->Fill(3.5);
+    if(MCLabels->GetSize() == 1) fHEventStat->Fill(4.5);
+    if(MCLabels->GetSize() == 2) 
+    {
+      fHEventStat->Fill(5.5);
+      AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->GetAt(0));
+      AliVParticle* vParticle2 = fMC->GetTrack(MCLabels->GetAt(1));
+      if(IsGoodMcParticle(vParticle1, MCLabels->GetAt(0)) && IsGoodMcParticle(vParticle2, MCLabels->GetAt(1))) 
+      {
+	fHEventStat->Fill(6.5);
+	if((vParticle1->PdgCode()==22) && (vParticle2->PdgCode()==22)) {;}
+	else if((vParticle1->PdgCode()!=22) && (vParticle2->PdgCode()!=22)) {;}
+	else 
+	{
+	  fClusterIndices->AddAt(itr,nCluster);
+	  nCluster++;
+	}
+      }
+    }
+    if(MCLabels->GetSize() > 2) fHEventStat->Fill(7.5);
+
+    AliESDCaloCluster *newCluster = new AliESDCaloCluster(*cluster);
+ 
+    Double_t subE = 0;
+    TArrayI arrayTrackMatched(fTrackIndices->GetSize());
+    Int_t nGoodMatch = 0;
+
+    for(Int_t j=0; j<fTrackIndices->GetSize(); j++)
+    {
+      AliESDtrack *trk = fESD->GetTrack(fTrackIndices->At(j));
+      if(itr==trk->GetEMCALcluster())
+      {
+	arrayTrackMatched[nGoodMatch] = j;
+	nGoodMatch ++;
+	subE += trk->P();
+      }
+    }
+  
+    arrayTrackMatched.Set(nGoodMatch);
+    newCluster->AddTracksMatched(arrayTrackMatched);
+      
+    Double_t clsE = newCluster->E();
+    Double_t newE = clsE-subE; 
+    if(newE<0) newE = 0;
+    newCluster->SetDispersion(newE);
+    fClusterArray->Add(newCluster);
+  }
+
+  fClusterIndices->Set(nCluster);
+}
 //________________________________________________________________________
 void AliAnalysisTaskSOH::ProcessMc()
 {
@@ -341,11 +424,75 @@ void AliAnalysisTaskSOH::ProcessMc()
         {
           fHTrkEffDetGenPt->Fill(vParticle->Pt());
           fHTrkEffDetRecPt->Fill(esdtrack->Pt());
+	  for(Int_t k=0; k<fClusterIndices->GetSize(); k++)
+	  {
+	    AliESDCaloCluster *cluster = fESD->GetCaloCluster(fClusterIndices->At(k));
+	    Double_t clsE = cluster->E();
+	    TArrayI *MCLabels = cluster->GetLabelsArray();
+	    AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->GetAt(0));
+	    AliVParticle* vParticle2 = fMC->GetTrack(MCLabels->GetAt(1));
+	    
+	    if(vParticle1->PdgCode()==22 && vParticle2 == vParticle)
+	    {
+	      if((clsE - esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle1->E(), 1);
+	      else  fHPhotonEdiff100HC->Fill(vParticle1->E(), (vParticle1->E() + esdtrack->E() - clsE)/vParticle1->E());
+	      continue;
+	    }
+	    if(vParticle2->PdgCode()==22 && vParticle1 == vParticle)
+	    {
+	      if((clsE-esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle2->E(), 1);
+	      else fHPhotonEdiff100HC->Fill(vParticle2->E(), (vParticle2->E() + esdtrack->E() - clsE)/vParticle2->E());
+	    }
+	  }
           break;
         }
       }
     }
   } 
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSOH::ProcessScaleFactor()
+{
+  // Scale factor. 
+
+  const Double_t phiMax = 180 * TMath::DegToRad();
+  const Double_t phiMin = 80 * TMath::DegToRad();
+  const Double_t TPCArea= 2*TMath::Pi()*1.8;
+  const Double_t EMCArea = (phiMax-phiMin)*1.4;
+
+  Double_t PtEMC = 0;
+  Double_t PtTPC = 0;
+
+  for(Int_t j=0; j<fTrackIndices->GetSize(); j++)
+  {
+    AliESDtrack *trk = fESD->GetTrack(fTrackIndices->At(j));
+    Double_t eta = trk->Eta();
+    Double_t phi = trk->Phi();
+    if(TMath::Abs(eta)<0.9) PtTPC += trk->Pt();
+    if(TMath::Abs(eta)<0.7  && phi > phiMin && phi < phiMax ) PtEMC += trk->Pt();
+  }
+
+  Double_t EtWithHadCorr = 0;
+  Double_t EtWithoutHadCorr = 0;
+  Double_t vertex[3] = {0, 0, 0};
+  fESD->GetVertex()->GetXYZ(vertex);
+  TLorentzVector gamma;
+
+  for(Int_t i=0; i<fClusterArray->GetEntriesFast(); i++)
+  {
+    AliESDCaloCluster *cluster = (AliESDCaloCluster*)fClusterArray->At(i);
+    cluster->GetMomentum(gamma, vertex);
+    Double_t sinTheta = TMath::Sqrt(1-TMath::Power(gamma.CosTheta(),2));
+    EtWithoutHadCorr +=  cluster->E() * sinTheta;
+    EtWithHadCorr += cluster->GetDispersion() * sinTheta;
+  }
+
+  if(PtTPC>0)
+  {
+    fHScaleFactor->Fill((PtEMC+EtWithoutHadCorr)/EMCArea * TPCArea/PtTPC);
+    fHScaleFactor100HC->Fill((PtEMC+EtWithHadCorr)/EMCArea * TPCArea/PtTPC);
+  }
 }
 
 //________________________________________________________________________
@@ -403,7 +550,6 @@ Bool_t AliAnalysisTaskSOH::IsGoodMcParticle(AliVParticle* vParticle, Int_t ipart
   return kTRUE;
 }
 
-
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSOH::IsGoodCluster(AliESDCaloCluster *cluster)
 {
@@ -413,7 +559,6 @@ Bool_t AliAnalysisTaskSOH::IsGoodCluster(AliESDCaloCluster *cluster)
   if (!cluster->IsEMCAL()) return kFALSE;
   return kTRUE;
 }
-
 
 //________________________________________________________________________
 void AliAnalysisTaskSOH::Terminate(Option_t *) 

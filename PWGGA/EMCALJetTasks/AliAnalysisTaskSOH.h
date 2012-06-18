@@ -35,7 +35,9 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   Bool_t              IsGoodCluster(AliESDCaloCluster *cluster)             ;
   Bool_t              IsGoodMcParticle(AliVParticle* vParticle, Int_t ipart);
   void                ProcessTrack()                       ;
+  void                ProcessCluster()                     ;
   void                ProcessMc()                          ;
+  void                ProcessScaleFactor()                 ;
 
   AliESDEvent        *fESD;                      //!esd event
   AliMCEvent         *fMC;                       //!mv event
@@ -43,18 +45,20 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   AliESDtrackCuts    *fHybridTrackCuts1;         // hybrid track cuts
   AliESDtrackCuts    *fHybridTrackCuts2;         // hybrid track cuts
   TArrayI            *fTrackIndices;             //!selected track index
+  TArrayI            *fClusterIndices;           //!cluster with two matched MC track index
+  TObjArray          *fClusterArray;             //!selected cluster array
+  
   TList              *fOutputList;               //!output list
   TH1F               *fHEventStat;               //!statistics histo
   TH1F               *fHTrkEffParGenPt;          //!mc truth pt spectrum
   TH1F               *fHTrkEffDetGenPt;          //!mc detector level pt spectrum
   TH1F               *fHTrkEffDetRecPt;          //!reconstructed detector level pt spectrum
+  TH1F               *fHScaleFactor;             //!scale factor spectrum
+  TH1F               *fHScaleFactor100HC;        //!scale factor with 100% HC spectrum
   TH2F               *fHEOverPVsPt;              //!(cluster energy over reconstructed track p) vs. track pt
   TH2F               *fHEMCalResponsePion;       //!same as above for pions 
   TH2F               *fHEMCalResponseElec;       //!same as above for electrons
   TH2F               *fHEMCalResponseProton;     //!same as above for protons
-  TH2F               *fHEMCalRecPhiEtaClus;      //!EMCal cluster phi vs. eta
-  TH2F               *fHEMCalRecPhiEtaTrk;       //!EMCal cluster label matched track phi vs. eta
-  TH2F               *fHClsPhiEta;               //!EMCal cluster phi vs. eta
   TH2F               *fHEMCalRecdPhidEta;        //!(EMCal cluster phi - track phi) vs. (EMCal cluster eta - track eta)
   TH2F               *fHEMCalRecdPhidEtaP;       //!same as above for positive charge tracks
   TH2F               *fHEMCalRecdPhidEtaM;       //!same as above for negative charge tracks
@@ -63,6 +67,8 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   TH2F               *fHEMCalRecdPhidEtaM_Truth; //!same as above with negative truth charge matching
   TH2F               *fHEMCalRecdPhidEtaposEta;  //!same as above for positive eta
   TH2F               *fHEMCalRecdPhidEtanegEta;  //!same as above for negative eta
+  TH2F               *fHPhotonEdiff100HC;        //!(truth E - calculated E in 100% HC) vs. truth E with photon
+ 
 
   AliAnalysisTaskSOH(const AliAnalysisTaskSOH&); // not implemented
   AliAnalysisTaskSOH& operator=(const AliAnalysisTaskSOH&); // not implemented
