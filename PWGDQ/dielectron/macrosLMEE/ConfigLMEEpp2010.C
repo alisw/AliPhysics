@@ -10,7 +10,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE;
 
 
-AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE)
+AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t enableCF=kTRUE);
 {
 
   Int_t selectedPID=-1;
@@ -23,6 +23,8 @@ AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 
   MCenabled=hasMC;
 
+  if (MCenabled)
+	die->SetHasMC(kTRUE);
   // create the actual framework object
 
   TString name=Form("%02d",cutDefinition);
@@ -88,7 +90,7 @@ AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE)
   InitHistograms(die,cutDefinition);
 
   // the last definition uses no cuts and only the QA histograms should be filled!
-  InitCF(die,cutDefinition);
+  if (enableCF) InitCF(die,cutDefinition);
 
   return die;
 }
@@ -259,20 +261,35 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   //
   // Setupd the CF Manager if needed
   //
-  AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
+	AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
 
-  //pair variables
-/* cf->AddVariable(AliDielectronVarManager::kP,200,0,20);
-  cf->AddVariable(AliDielectronVarManager::kM,201,-0.01,4.01); //20Mev Steps
-*/
-   cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
-/*
-  //leg variables
-  cf->AddVariable(AliDielectronVarManager::kP,200,0.,20.,kTRUE);
-    cf->AddVariable(AliDielectronVarManager::kITSsignal,1000,0.0.,1000.,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kTPCsignal,500,0.0.,500.,kTRUE);
-*/
-  //only in this case write MC truth info
+	//pair variables
+	cf->AddVariable(AliDielectronVarManager::kP,200,0,20);
+	cf->AddVariable(AliDielectronVarManager::kM,201,-0.01,4.01); //20Mev Steps
+	cf->AddVariable(AliDielectronVarManager::kY,100,-2.,2.);
+	cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
+
+	cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,10.0,30.0,40.0,60.,80.,100.");
+	cf->AddVariable(AliDielectronVarManager::kOpeningAngle,320,0.,3.2);
+	//leg variables
+	cf->AddVariable(AliDielectronVarManager::kP,200,0.,20.,kTRUE);
+	cf->AddVariable(AliDielectronVarManager::kITSsignal,1000,0.0.,1000.,kTRUE);
+	cf->AddVariable(AliDielectronVarManager::kTPCsignal,500,0.0.,500.,kTRUE);
+	cf->AddVariable(AliDielectronVarManager::kY,100,-2.,2.,kTRUE);
+	//only in this case write MC truth info
+	if (MCenabled) {
+		cf->SetStepForMCtruth();
+		cf->SetStepsForMCtruthOnly();
+		cf->AddVariable(AliDielectronVarManager::kHaveSameMother,5,-2,2);
+		cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
+		cf->AddVariable(AliDielectronVarManager::kPdgCodeMother,10000,-5000.5,4999.5,kTRUE);
+	}
+
+	cf->SetStepsForSignal();
+	die->SetCFManagerPair(cf);
+
+
+//only in this case write MC truth info
   if (MCenabled) {
 	cf->SetStepForMCtruth();
 	cf->SetStepsForMCtruthOnly();

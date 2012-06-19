@@ -23,6 +23,9 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kFALSE)
 
   MCenabled=hasMC;
 
+  if (MCenabled)
+	  die->SetHasMC(kTRUE);
+
   // create the actual framework object
 
   TString name=Form("%02d",cutDefinition);
@@ -288,18 +291,21 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   //pair variables
   cf->AddVariable(AliDielectronVarManager::kP,200,0,20);
   cf->AddVariable(AliDielectronVarManager::kM,201,-0.01,4.01); //20Mev Steps
+  cf->AddVariable(AliDielectronVarManager::kY,100,-2.,2.);
   cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
 
   cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,10.0,30.0,40.0,60.,80.,100.");
+  cf->AddVariable(AliDielectronVarManager::kOpeningAngle,320,0.,3.2);
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kP,200,0.,20.,kTRUE);
     cf->AddVariable(AliDielectronVarManager::kITSsignal,1000,0.0.,1000.,kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTPCsignal,500,0.0.,500.,kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kY,100,-2.,2.,kTRUE);
   //only in this case write MC truth info
   if (MCenabled) {
 	cf->SetStepForMCtruth();
 	cf->SetStepsForMCtruthOnly();
-	cf->AddVariable(AliDielectronVarManager::kHaveSameMother,21,-10,10,kTRUE);
+	cf->AddVariable(AliDielectronVarManager::kHaveSameMother,5,-2,2);
 	cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
 	cf->AddVariable(AliDielectronVarManager::kPdgCodeMother,10000,-5000.5,4999.5,kTRUE);
   }
