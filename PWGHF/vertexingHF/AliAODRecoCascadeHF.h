@@ -85,7 +85,7 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
 
   Int_t MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
                   Int_t *pdgDg,Int_t *pdgDg2prong,
-                  TClonesArray *mcArray) const;
+                  TClonesArray *mcArray, Bool_t isV0=kFALSE) const;
 
  protected:
 
