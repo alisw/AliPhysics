@@ -391,21 +391,21 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistDeltaPtRC_";
     histname += i;
-    fHistDeltaPtRC[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt - fMaxBinPt / 2 + binWidth / 2, fMinBinPt + fMaxBinPt / 2 + binWidth / 2);
+    fHistDeltaPtRC[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
     fHistDeltaPtRC[i]->GetXaxis()->SetTitle("#deltap_{T}^{RC} [GeV/c]");
     fHistDeltaPtRC[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaPtRC[i]);
 
     histname = "fHistDeltaPtRCExLJ_";
     histname += i;
-    fHistDeltaPtRCExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt - fMaxBinPt / 2 + binWidth / 2, fMinBinPt + fMaxBinPt / 2 + binWidth / 2);
+    fHistDeltaPtRCExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
     fHistDeltaPtRCExLJ[i]->GetXaxis()->SetTitle("#deltap_{T}^{RC} [GeV/c]");
     fHistDeltaPtRCExLJ[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaPtRCExLJ[i]);
 
     histname = "fHistDeltaPtRCRand_";
     histname += i;
-    fHistDeltaPtRCRand[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt - fMaxBinPt / 2 + binWidth / 2, fMinBinPt + fMaxBinPt / 2 + binWidth / 2);
+    fHistDeltaPtRCRand[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
     fHistDeltaPtRCRand[i]->GetXaxis()->SetTitle("#deltap_{T}^{RC} [GeV/c]");
     fHistDeltaPtRCRand[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistDeltaPtRCRand[i]);
@@ -434,7 +434,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       
       histname = "fHistDeltaPtEmb_";
       histname += i;
-      fHistDeltaPtEmb[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt - fMaxBinPt / 2 + binWidth / 2, fMinBinPt + fMaxBinPt / 2 + binWidth / 2);
+      fHistDeltaPtEmb[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
       fHistDeltaPtEmb[i]->GetXaxis()->SetTitle("#deltap_{T}^{emb} [GeV/c]");
       fHistDeltaPtEmb[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistDeltaPtEmb[i]);
