@@ -71,6 +71,10 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistMuonEnergyDeposit; /** Energy deposited in calorimeter by muons */
 
     delete fHistRemovedEnergy; // removed energy
+    delete fClusterPosition;
+    delete fHistChargedEnergyRemoved;
+    delete fHistNeutralEnergyRemoved;
+    delete fHistGammaEnergyAdded;
 
 }
 

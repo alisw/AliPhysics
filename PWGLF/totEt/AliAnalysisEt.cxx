@@ -163,11 +163,18 @@ AliAnalysisEt::~AliAnalysisEt()
     fEventSummaryTree->Clear();
     delete fEventSummaryTree;
   }
+  if(fAcceptedTree)
+  {
+    fAcceptedTree->Clear();
+    delete fAcceptedTree;
+  }
   delete fHistEt; //Et spectrum
   delete fHistNeutralMult; //Neutral multiplicity
   delete fHistPhivsPtPos; //phi vs pT plot for positive tracks
-  delete fHistPhivsPtNeg; //phi vs pT plot for negative tracks
+  delete fHistPhivsPtNeg; //phi vs pT Moplot for negative tracks
   //delete fCentrality;//this code does not actually own AliCentrality so we don't have to worry about deleting it...  we just borrow it...
+  delete fCutFlow;
+  delete fSelector;
 }
 
 void AliAnalysisEt::FillOutputList(TList *list)

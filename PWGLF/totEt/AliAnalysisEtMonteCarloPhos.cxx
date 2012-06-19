@@ -32,6 +32,10 @@ AliAnalysisEtMonteCarloPhos::AliAnalysisEtMonteCarloPhos():AliAnalysisEtMonteCar
 
 AliAnalysisEtMonteCarloPhos::~AliAnalysisEtMonteCarloPhos()
 {
+  delete fBadMapM2;
+  delete fBadMapM3;
+  delete fBadMapM4;
+  delete fGeoUtils;
 }
 
 
