@@ -5,8 +5,10 @@ class TString;
 class TList;
 class AliESDEvent;
 class AliAnalysisFilter;
-class TDatabasePDG;
-
+class AliCDBManager;
+class AliTOFcalib;
+class AliTOFT0maker;
+class AliTOFT0v1;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -30,13 +32,15 @@ class AliAnalysisTaskTOFqa : public AliAnalysisTaskSE {
   void SetExpTimeHistoSmallRange(Float_t min, Float_t max){fExpTimeSmallRangeMin=min; fExpTimeSmallRangeMax=max;return;};
   void SetExpTimeBinWidth(Float_t width){fExpTimeBinWidth=width;return;};
   void FillStartTimeMaskHisto();
+  Bool_t ComputeTimeZeroByTOF1GeV();
+
  private: 
-  UInt_t fRunNumber; //run number
+  Int_t fRunNumber; //run number
   AliESDEvent *fESD;    //ESD object
   AliAnalysisFilter *fTrackFilter; //track filter object
   AliESDVertex *fVertex; //pointer to the vertex object
   AliESDpid *fESDpid; //pointer to the PID object
-    
+  AliTOFT0v1 *fTOFT0v1; // TOF-T0 v1
   Int_t fNTOFtracks; //number of tracks matching with TOF
   //Int_t fNPrimaryTracks; //number of primary tracks
   Float_t fT0[3]; //event time
@@ -47,6 +51,8 @@ class AliAnalysisTaskTOFqa : public AliAnalysisTaskSE {
   Float_t fExpTimeBinWidth;//bin width for t-texp histos
   Float_t fExpTimeRangeMin, fExpTimeRangeMax; //range of t-texp histogram
   Float_t fExpTimeSmallRangeMin, fExpTimeSmallRangeMax; //reduced range of t-texp histogram
+  Double_t fMyTimeZeroTOF, fMyTimeZeroTOFsigma; //timeZero by TOF recomputed
+  Int_t fMyTimeZeroTOFtracks; // number of tracks used to recompute TOF_T0
 
   //output objects
   TList *fHlist;  //list of general histos
@@ -56,7 +62,7 @@ class AliAnalysisTaskTOFqa : public AliAnalysisTaskSE {
   TList *fHneg;  //list of general histos for negative tracks
   
 
-  ClassDef(AliAnalysisTaskTOFqa, 3); // example of analysis
+  ClassDef(AliAnalysisTaskTOFqa, 4); // example of analysis
 };
 
 #endif
