@@ -16,21 +16,16 @@
 /* $Id$ */
 
 // --- Root ---
-#include <Riostream.h>
 #include <TChain.h>
-#include <TTree.h>
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH1I.h>
-#include <TH2I.h>
-#include <TCanvas.h>
 #include <TList.h>
+#include <TClonesArray.h>
 
 // --- AliRoot ---
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliStack.h"
 #include "AliVEvent.h"
 #include "AliVCaloTrigger.h"
 #include "AliVCluster.h"
@@ -48,7 +43,28 @@ ClassImp(AliAnalysisTaskSATR)
 
 //________________________________________________________________________
 AliAnalysisTaskSATR::AliAnalysisTaskSATR() : 
-  AliAnalysisTaskSE(),
+  AliAnalysisTaskSE("AliAnalysisTaskSATR"),
+  fL0Calib(0.065),
+  fCaloClustersName("CaloClusters"),
+  fTriggerClustersName("triggerClusters"),
+  fMinCutL0Amp(-1),
+  fMaxCutL0Amp(999),
+  fMinCutClusEnergy(-1),
+  fMaxCutClusEnergy(999),
+  fTimeCutOn(0),
+  fMinL0Time(-20),
+  fMaxL0Time(20),
+  fMinClusTime(-1),
+  fMaxClusTime(1),
+  fCheckDeadClusters(0),
+  fPedestal(0),
+  fLoadPed(0),
+  fOCDBpath(""),
+  fMinDistanceFromBadTower(0.5),
+  fClusterizer(0),
+  fTriggerClusterizer(0),
+  fGeom(0),
+  fRun(-1),
   fOutput(0),
   fHistEclus(0),
   fHistEmaxClus(0),
@@ -91,26 +107,7 @@ AliAnalysisTaskSATR::AliAnalysisTaskSATR() :
   fHistEmaxCell(0),
   fHistTOFvsEcells(0),
   fHistTOFvsEcellsC(0),
-  fHistEmaxCellvsAmpFastOR(0),
-  fCaloClustersName("CaloClusters"),
-  fTriggerClustersName("triggerClusters"),
-  fMinCutL0Amp(-1),
-  fMaxCutL0Amp(999),
-  fMinCutClusEnergy(-1),
-  fMaxCutClusEnergy(999),
-  fTimeCutOn(0),
-  fMinL0Time(-20),
-  fMaxL0Time(20),
-  fMinClusTime(-1),
-  fMaxClusTime(1),
-  fCheckDeadClusters(0),
-  fPedestal(0),
-  fLoadPed(0),
-  fOCDBpath(""),
-  fMinDistanceFromBadTower(0.5),
-  fClusterizer(0),
-  fTriggerClusterizer(0),
-  fRun(-1)
+  fHistEmaxCellvsAmpFastOR(0)
 {
   // Constructor
 }
@@ -118,6 +115,27 @@ AliAnalysisTaskSATR::AliAnalysisTaskSATR() :
 //________________________________________________________________________
 AliAnalysisTaskSATR::AliAnalysisTaskSATR(const char *name) : 
   AliAnalysisTaskSE(name),
+  fL0Calib(0.065),
+  fCaloClustersName("CaloClusters"),
+  fTriggerClustersName("triggerClusters"),
+  fMinCutL0Amp(-1),
+  fMaxCutL0Amp(999),
+  fMinCutClusEnergy(-1),
+  fMaxCutClusEnergy(999),
+  fTimeCutOn(0),
+  fMinL0Time(-20),
+  fMaxL0Time(20),
+  fMinClusTime(-1),
+  fMaxClusTime(1),
+  fCheckDeadClusters(0),
+  fPedestal(0),
+  fLoadPed(0),
+  fOCDBpath(""),
+  fMinDistanceFromBadTower(0.5),
+  fClusterizer(0),
+  fTriggerClusterizer(0),
+  fGeom(0),
+  fRun(-1),
   fOutput(0),
   fHistEclus(0),
   fHistEmaxClus(0),
@@ -160,44 +178,54 @@ AliAnalysisTaskSATR::AliAnalysisTaskSATR(const char *name) :
   fHistEmaxCell(0),
   fHistTOFvsEcells(0),
   fHistTOFvsEcellsC(0),
-  fHistEmaxCellvsAmpFastOR(0),
-  fCaloClustersName("CaloClusters"),
-  fTriggerClustersName("triggerClusters"),
-  fMinCutL0Amp(-1),
-  fMaxCutL0Amp(999),
-  fMinCutClusEnergy(-1),
-  fMaxCutClusEnergy(999),
-  fTimeCutOn(0),
-  fMinL0Time(-20),
-  fMaxL0Time(20),
-  fMinClusTime(-1),
-  fMaxClusTime(1),
-  fCheckDeadClusters(0),
-  fPedestal(0),
-  fLoadPed(0),
-  fOCDBpath(""),
-  fMinDistanceFromBadTower(0.5),
-  fClusterizer(0),
-  fTriggerClusterizer(0),
-  fRun(-1)
+  fHistEmaxCellvsAmpFastOR(0)
 {
   // Constructor
-  // Define input and output slots here (never in the dummy constructor)
-  // Input slot #0 works with a TChain - it is connected to the default input container
-  // Output slot #1 writes into a TH1 container
+
   DefineOutput(1, TList::Class()); 
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSATR::~AliAnalysisTaskSATR()
 {
-  delete fOutput;
+
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskSATR::UserCreateOutputObjects()
 {
   // Create histograms
+  
+  const Int_t     L0Ampbins   = 100;
+  const Float_t   L0Amplow    = 0;
+  const Float_t   L0Ampup     = 100;
+  const Int_t     L0Timebins  = 20;
+  const Float_t   L0Timelow   = 0;
+  const Float_t   L0Timeup    = 20;
+  const Int_t     Ebins       = 100;
+  const Float_t   Elow        = 0;
+  const Float_t   Eup         = 25;
+  const Int_t     TOFbins     = 100;
+  const Float_t   TOFlow      = 0;
+  const Float_t   TOFup       = 1e-6;
+  const Float_t   L1Amplow    = 0;
+  const Float_t   L1Ampup     = 400;
+  const Int_t     L1Ampbins   = 400;
+  const Int_t     Indexesbins = 1440;
+  const Int_t     Indexeslow  = 0;
+  const Int_t     Indexesup   = 2880;
+  const Int_t     nPhibins    = 60;
+  const Int_t     nPhilow     = 0;
+  const Int_t     nPhiup      = 60;
+  const Int_t     nEtabins    = 48;
+  const Int_t     nEtalow     = 0;
+  const Int_t     nEtaup      = 48;
+  const Int_t     RowTrgbins  = 60;
+  const Int_t     RowTrglow   = 0;
+  const Int_t     RowTrgup    = 60;
+  const Int_t     ColTrgbins  = 48;
+  const Int_t     ColTrglow   = 0;
+  const Int_t     ColTrgup    = 48;
   
   if (fClusterizer)
     fCaloClustersName = fClusterizer->GetNewClusterArrayName();
@@ -425,6 +453,12 @@ void AliAnalysisTaskSATR::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSATR::Init() 
 {
+  fGeom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+  if (!fGeom) {
+    AliError("Couldn't get geometry. Returning...");
+    return;
+  }
+
   if (fRun <= 0)
     return;
   
@@ -463,12 +497,6 @@ void AliAnalysisTaskSATR::UserExec(Option_t *)
   }
   
   Init();
-  
-  AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
-  if (!fGeom) {
-    AliError("Couldn't get geometry. Returning...");
-    return;
-  }
   
   TClonesArray *caloClusters = dynamic_cast<TClonesArray*>(event->FindListObject(fCaloClustersName));  
 
