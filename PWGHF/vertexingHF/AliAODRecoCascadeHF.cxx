@@ -113,7 +113,7 @@ Double_t AliAODRecoCascadeHF::InvMassDstarKpipi() const
 //----------------------------------------------------------------------------
 Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
                                      Int_t *pdgDg,Int_t *pdgDg2prong,
-				     TClonesArray *mcArray) const
+				     TClonesArray *mcArray, Bool_t isV0) const
 {
   //
   // Check if this candidate is matched to a MC signal
@@ -127,8 +127,15 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     return -1;
   }
   
-  AliAODRecoDecayHF2Prong *the2Prong = Get2Prong();
-  Int_t lab2Prong = the2Prong->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong);
+  Int_t lab2Prong = -1;
+
+  if (!isV0) {
+    AliAODRecoDecayHF2Prong *the2Prong = Get2Prong();
+    lab2Prong = the2Prong->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong);
+  } else {
+    AliAODv0 *theV0 = Getv0();
+    lab2Prong = theV0->MatchToMC(pdgabs2prong,mcArray,2,pdgDg2prong);
+  }
 
   if(lab2Prong<0) return -1;
 
