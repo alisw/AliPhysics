@@ -15,7 +15,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
   TString configLMEECutLib("LMEECutLib.C");
 
   TString configFilePath(configBasePath+configFile);
-  TString configLMEECutLib(configBasePath+configLMEECutLib);
+  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 
   //AOD Usage currently tested with separate task, to be merged
   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
