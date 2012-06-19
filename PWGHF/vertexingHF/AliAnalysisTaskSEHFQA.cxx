@@ -58,6 +58,7 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsLctopKpi.h"
+#include "AliRDHFCutsLctoV0.h"
 #include "AliInputEventHandler.h"
 
 #include "AliFlowEvent.h"
@@ -152,6 +153,9 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   case 5:
     DefineOutput(4,AliRDHFCutsLctopKpi::Class());  //My private output
     break;
+  case kLambdactoV0:
+    DefineOutput(4,AliRDHFCutsLctoV0::Class());  //My private output
+    break;
   }
   if (fOnOff[2]) {
     // Output slot #5 writes into a TList container (AliCounterCollection)
@@ -232,6 +236,13 @@ void AliAnalysisTaskSEHFQA::Init(){
   case 5:
     {
       AliRDHFCutsLctopKpi* copycut=new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi*>(fCuts)));
+      // Post the data
+      PostData(4,copycut);
+    }
+    break;
+  case kLambdactoV0:
+    {
+      AliRDHFCutsLctoV0* copycut=new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0*>(fCuts)));
       // Post the data
       PostData(4,copycut);
     }
@@ -808,6 +819,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[2]=211;//pi
 	}
 	break; 
+      case kLambdactoV0:
+	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadeHF");
+	pdg=4122;
+	if(fReadMC){
+	  pdgdaughters =new Int_t[3];
+	  pdgdaughters[0]=2212;//p
+	  pdgdaughters[1]=211;//pi
+	  pdgdaughters[2]=211;//pi
+	}
+	break; 
       }
     }
   } else if(aod) {
@@ -872,6 +893,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	pdgdaughters[2]=211;//pi
       }
       break; 
+      case kLambdactoV0:
+	arrayProng=(TClonesArray*)aod->GetList()->FindObject("CascadeHF");
+	pdg=4122;
+	if(fReadMC){
+	  pdgdaughters =new Int_t[3];
+	  pdgdaughters[0]=2212;//p
+	  pdgdaughters[1]=211;//pi
+	  pdgdaughters[2]=211;//pi
+	}
+	break; 
     }
   }
   Bool_t isSimpleMode=fSimpleMode;
