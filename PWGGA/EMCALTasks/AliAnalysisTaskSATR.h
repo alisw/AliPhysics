@@ -10,43 +10,9 @@ class TH2I;
 class TList;
 class AliCaloCalibPedestal;
 class AliAnalysisTaskEMCALClusterizeFast;
+class AliEMCALGeometry;
 
-const Float_t   L0Calib     = .065;
-const Int_t     L0Ampbins   = 100;
-const Float_t   L0Amplow    = 0;
-const Float_t   L0Ampup     = 100;
-const Int_t     L0Timebins  = 20;
-const Float_t   L0Timelow   = 0;
-const Float_t   L0Timeup    = 20;
-const Int_t     Ebins       = 100;
-const Float_t   Elow        = 0;
-const Float_t   Eup         = 25;
-const Int_t     Ptbins      = 200;
-const Float_t   Ptlow       = 0;
-const Float_t   Ptup        = 100;
-const Int_t     TOFbins     = 100;
-const Float_t   TOFlow      = 0;
-const Float_t   TOFup       = 1e-6;
-const Float_t   L1Amplow    = 0;
-const Float_t   L1Ampup     = 400;
-const Int_t     L1Ampbins   = 400;
-const Int_t     Indexesbins = 1440;
-const Int_t     Indexeslow  = 0;
-const Int_t     Indexesup   = 2880;
-const Int_t     nPhibins    = 60;
-const Int_t     nPhilow     = 0;
-const Int_t     nPhiup      = 60;
-const Int_t     nEtabins    = 48;
-const Int_t     nEtalow     = 0;
-const Int_t     nEtaup      = 48;
-const Int_t     RowTrgbins  = 60;
-const Int_t     RowTrglow   = 0;
-const Int_t     RowTrgup    = 60;
-const Int_t     ColTrgbins  = 48;
-const Int_t     ColTrglow   = 0;
-const Int_t     ColTrgup    = 48;
-
-#include <AliAnalysisTaskSE.h>
+#include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskSATR : public AliAnalysisTaskSE {
 public:
@@ -80,84 +46,86 @@ public:
   
  protected:
   AliVCluster*                           GetClusterFromId(TClonesArray *caloClusters, Int_t id);
+
+  Float_t                                fL0Calib                                    ; // L0 amplitude calibration  
+  TString                                fCaloClustersName                           ; // Calo cluster collection name
+  TString                                fTriggerClustersName                        ; // Trigger cluster collection name
+  Float_t                                fMinCutL0Amp                                ; // Min L0 amplitude
+  Float_t                                fMaxCutL0Amp                                ; // Max L0 amplitude
+  Float_t                                fMinCutClusEnergy                           ; // Min cluster energy
+  Float_t                                fMaxCutClusEnergy                           ; // Max cluster energy
+  Bool_t                                 fTimeCutOn                                  ; // True = time cut on
+  Int_t                                  fMinL0Time                                  ; // Min L0 time
+  Int_t                                  fMaxL0Time                                  ; // Max L0 time
+  Float_t                                fMinClusTime                                ; // Min clus time
+  Float_t                                fMaxClusTime                                ; // Max clus time
+  Bool_t                                 fCheckDeadClusters                          ; // True = check for dead clusters
+  AliCaloCalibPedestal                  *fPedestal                                   ; // Calo calib pedestal object
+  Bool_t                                 fLoadPed                                    ; // True = load pedesta
+  TString                                fOCDBpath                                   ; // Path with OCDB location
+  Float_t                                fMinDistanceFromBadTower                    ; // Min distance from bad tower
+  AliAnalysisTaskEMCALClusterizeFast    *fClusterizer                                ; // Clusterizer
+  AliAnalysisTaskEMCALClusterizeFast    *fTriggerClusterizer                         ; // Trigger clusterizer
+
+  AliEMCALGeometry                      *fGeom                                       ; //!Pointer to emcal geometry object
+  Int_t                                  fRun                                        ; //!Current run
+  TList                                 *fOutput                                     ; //!Output list
+  TH1F                                  *fHistEclus                                  ; //!Energy spectrum of clusters
+  TH1F                                  *fHistEmaxClus                               ; //!Energy of max cluster per event
+  TH2I                                  *fHistEtavsPhiMaxClus                        ; //!Position (eta-phi) of max cluster per event
+  TH2F                                  *fHistEtavsEmaxClus                          ; //!Eta vs. energy of max cluster per event
+  TH2F                                  *fHistPhivsEmaxClus                          ; //!Phi vs. energy of max cluster per event
+  TH2F                                  *fHistTOFvsEclus                             ; //!TOF vs. energy of clusters
+  TH2F                                  *fHistTOFvsEclusC                            ; //!Output histogram
+  TH2F                                  *fHistNcellsvsEclus                          ; //!Output histogram
   
-  TList                                 *fOutput;                         // Output list
-  TH1F                                  *fHistEclus;                      // Energy spectrum of clusters
-  TH1F                                  *fHistEmaxClus;
-  TH2I                                  *fHistEtavsPhiMaxClus;
-  TH2F                                  *fHistEtavsEmaxClus;
-  TH2F                                  *fHistPhivsEmaxClus;
-  TH2F                                  *fHistTOFvsEclus;
-  TH2F                                  *fHistTOFvsEclusC;
-  TH2F                                  *fHistNcellsvsEclus; 
+  TH1F                                  *fHistAmpTClus                               ; //!Output histogram
+  TH1F                                  *fHistAmpMaxTClus                            ; //!Output histogram
+  TH2I                                  *fHistEtavsPhiMaxTClus                       ; //!Output histogram
   
-  TH1F                                  *fHistAmpTClus;
-  TH1F                                  *fHistAmpMaxTClus;
-  TH2I                                  *fHistEtavsPhiMaxTClus;
-  
-  TH2F                                  *fHistEmaxClusvsAmpMaxTClus;
-  TH2F                                  *fHistEmaxClusvsAmpMatchedTClus;
-  TH1F                                  *fHistEmaxClusNotMatchingTClus;
-  TH2I                                  *fHistEtavsPhiMaxClusNotMatchingTClus;
-  TH2F                                  *fHistEmatchedClusvsAmpMaxTClus;
-  TH1F                                  *fHistAmpMaxTClusNotMatchingClus;
-  TH2I                                  *fHistEtavsPhiMaxTClusNotMatchingClus;
-  TH2I                                  *fHistIdxMaxClusvsIdxMaxTClus;
-  TH2I                                  *fHistPhiMaxClusvsPhiMaxTClus;
-  TH2I                                  *fHistEtaMaxClusvsEtaMaxTClus;
-  TH2F                                  *fHistTOFmaxClusvsTimeMaxTClus;
-  TH2F                                  *fHistEmatchedClusvsAmpMatchedTClus;
-  TH1F                                  *fHistEmatchedClus;
-  TH1F                                  *fHistEmaxMatchedClus;
+  TH2F                                  *fHistEmaxClusvsAmpMaxTClus                  ; //!Output histogram
+  TH2F                                  *fHistEmaxClusvsAmpMatchedTClus              ; //!Output histogram
+  TH1F                                  *fHistEmaxClusNotMatchingTClus               ; //!Output histogram
+  TH2I                                  *fHistEtavsPhiMaxClusNotMatchingTClus        ; //!Output histogram
+  TH2F                                  *fHistEmatchedClusvsAmpMaxTClus              ; //!Output histogram
+  TH1F                                  *fHistAmpMaxTClusNotMatchingClus             ; //!Output histogram
+  TH2I                                  *fHistEtavsPhiMaxTClusNotMatchingClus        ; //!Output histogram
+  TH2I                                  *fHistIdxMaxClusvsIdxMaxTClus                ; //!Output histogram
+  TH2I                                  *fHistPhiMaxClusvsPhiMaxTClus                ; //!Output histogram
+  TH2I                                  *fHistEtaMaxClusvsEtaMaxTClus                ; //!Output histogram
+  TH2F                                  *fHistTOFmaxClusvsTimeMaxTClus               ; //!Output histogram
+  TH2F                                  *fHistEmatchedClusvsAmpMatchedTClus          ; //!Output histogram
+  TH1F                                  *fHistEmatchedClus                           ; //!Output histogram
+  TH1F                                  *fHistEmaxMatchedClus                        ; //!Output histogram
 	
-  TH1F                                  *fHistAmpL1TimeSum;
-  TH1F                                  *fHistAmpMaxL1TimeSum;
-  TH2F                                  *fHistAmpMaxL1TimeSumVScent;
+  TH1F                                  *fHistAmpL1TimeSum                           ; //!Output histogram
+  TH1F                                  *fHistAmpMaxL1TimeSum                        ; //!Output histogram
+  TH2F                                  *fHistAmpMaxL1TimeSumVScent                  ; //!Output histogram
   
-  TH2F                                  *fHistAmpFastORvsAmpL1TimeSum;
+  TH2F                                  *fHistAmpFastORvsAmpL1TimeSum                ; //!Output histogram
   
-  TH1F                                  *fHistAmpFastOR;
-  TH1F                                  *fHistAmpMaxFastOR;
-  TH1F                                  *fHistTimeFastOR;
-  TH2I                                  *fHistEtavsPhiFastOR;
-  TH2I                                  *fHistEtavsPhiMaxFastOR;
-  TH1F                                  *fHistTimeDispFastOR;
-  TH2F                                  *fHistTimevsL0TimeFastOR;
-  TH1I                                  *fHistNtimesFastOR;
+  TH1F                                  *fHistAmpFastOR                              ; //!Output histogram
+  TH1F                                  *fHistAmpMaxFastOR                           ; //!Output histogram
+  TH1F                                  *fHistTimeFastOR                             ; //!Output histogram
+  TH2I                                  *fHistEtavsPhiFastOR                         ; //!Output histogram
+  TH2I                                  *fHistEtavsPhiMaxFastOR                      ; //!Output histogram
+  TH1F                                  *fHistTimeDispFastOR                         ; //!Output histogram
+  TH2F                                  *fHistTimevsL0TimeFastOR                     ; //!Output histogram
+  TH1I                                  *fHistNtimesFastOR                           ; //!Output histogram
 
-  TH1F                                  *fHistEcells;
-  TH1F                                  *fHistEmaxCell;
-  TH2F                                  *fHistTOFvsEcells;
-  TH2F                                  *fHistTOFvsEcellsC;
+  TH1F                                  *fHistEcells                                 ; //!Output histogram
+  TH1F                                  *fHistEmaxCell                               ; //!Output histogram
+  TH2F                                  *fHistTOFvsEcells                            ; //!Output histogram
+  TH2F                                  *fHistTOFvsEcellsC                           ; //!Output histogram
   
-  TH2F                                  *fHistEmaxCellvsAmpFastOR;
-
-  TString                                fCaloClustersName;
-  TString                                fTriggerClustersName;
-  Float_t                                fMinCutL0Amp;
-  Float_t                                fMaxCutL0Amp;
-  Float_t                                fMinCutClusEnergy;
-  Float_t                                fMaxCutClusEnergy;
-  Bool_t                                 fTimeCutOn;
-  Int_t                                  fMinL0Time;
-  Int_t                                  fMaxL0Time;
-  Float_t                                fMinClusTime;
-  Float_t                                fMaxClusTime;
-  Bool_t                                 fCheckDeadClusters;
-  AliCaloCalibPedestal                  *fPedestal;
-  Bool_t                                 fLoadPed;
-  TString                                fOCDBpath;                               // path with OCDB location
-  Float_t                                fMinDistanceFromBadTower;
-  AliAnalysisTaskEMCALClusterizeFast    *fClusterizer;
-  AliAnalysisTaskEMCALClusterizeFast    *fTriggerClusterizer;
-  Int_t                                  fRun;
+  TH2F                                  *fHistEmaxCellvsAmpFastOR                    ; //!Output histogram
   
 private:
   
   AliAnalysisTaskSATR (const AliAnalysisTaskSATR&);           // not implemented
   AliAnalysisTaskSATR operator=(const AliAnalysisTaskSATR&);  // not implemented
   
-  ClassDef(AliAnalysisTaskSATR, 1);
+  ClassDef(AliAnalysisTaskSATR, 2);
 };
 
 #endif
