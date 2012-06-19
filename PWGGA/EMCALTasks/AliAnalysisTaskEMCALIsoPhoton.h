@@ -34,6 +34,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }
   void                   SetPeriod(const char *n)               { fPeriod             = n;       }
+  void                   SetTriggerBit(const char *tb)          { fTrigBit            = tb;      }
   void                   SetPrimTrackCuts(AliESDtrackCuts *c)   { fPrTrCuts           = c;       }
   void                   SetTrainMode(Bool_t t)                 { fIsTrain            = t;       }
   
@@ -45,6 +46,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   AliEMCALGeometry      *fGeom;                  // geometry utils
   TString                fGeoName;               // geometry name (def = EMCAL_FIRSTYEARV1)
   TString                fPeriod;                // string to the LHC period
+  TString                fTrigBit;               // string to the trigger bit name
   Bool_t                 fIsTrain;               // variable to set train mode
   Double_t               fExoticCut;             // variable to set the cut on exotic clusters
   Double_t               fIsoConeR;              // variable to set the isolation cone radius

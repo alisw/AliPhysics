@@ -1,8 +1,9 @@
 
 
 AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
-TString period = "LHC11d"
-)
+						     TString period = "LHC11d",
+						     TString trigbitname = "kEMC7"
+						     )
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -23,7 +24,7 @@ TString period = "LHC11d"
   //ana->SetClusThreshold(clusTh);
   
   ana->SetTrainMode(kTRUE);
-  //ana->SetGridMode(kTRUE);
+  ana->SetTriggerBit(trigbitname);
   // ana->SetMcMode(isMC);
   
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
