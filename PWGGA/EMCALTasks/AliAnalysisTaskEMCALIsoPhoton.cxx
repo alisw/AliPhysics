@@ -87,6 +87,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
   fPeriod("LHC11c"),
+  fTrigBit("kEMC7"),
   fIsTrain(0),
   fExoticCut(0.97),
   fIsoConeR(0.4),
@@ -274,10 +275,18 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
 
   // event trigger selection
   Bool_t isSelected = 0;
-  if(fPeriod.Contains("11a"))
-    isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
-  else
-    isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC7);
+  if(fPeriod.Contains("11a")){
+    if(fTrigBit.Contains("kEMC"))
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
+    else
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  }
+  else{
+    if(fTrigBit.Contains("kEMC"))
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC7);
+    else
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+  }
   if(!isSelected )
         return; 
 
