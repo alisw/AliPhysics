@@ -30,6 +30,8 @@ TEvePointSet* phos_clusters(TEveElement* cont=0)
 
   TTree *cTree = rl->GetTreeR("PHOS", false);
 
+	if(!cTree) return 0;
+
   TEvePointSet* clusters = new TEvePointSet(10000);
   clusters->SetOwnIds(kTRUE);
 

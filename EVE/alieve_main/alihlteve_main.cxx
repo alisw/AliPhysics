@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
   if (gEve && gEve->GetBrowser())
     gEve->GetBrowser()->UnmapWindow();
-  TEveManager::Terminate();
+  gEve->Terminate();
 
   app->Terminate(0);
 

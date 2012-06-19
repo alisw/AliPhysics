@@ -7,6 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include <AliQAHistViewer.h>
+
 class AliEveMacroExecutor;
 class TEveProjectionManager;
 class TEveGeoShape;

@@ -35,6 +35,7 @@ set ( DHDR  EveBase/EveBaseLinkDef.h)
 set ( EINCLUDE  RAW ITS TPC EVE/EveBase STEER/STEER STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)
 
 set ( EXPORT 
+  EveBase/AliEveApplication.h  
   EveBase/AliEveBeamsInfo.h
   EveBase/AliEveCascade.h
   EveBase/AliEveEventManager.h
@@ -48,6 +49,7 @@ set ( EXPORT
   EveBase/AliEveMacroExecutor.h
   EveBase/AliEveMacroExecutorWindow.h
   EveBase/AliEveMagField.h
+  EveBase/AliEveManager.h
   EveBase/AliEveMultiView.h
   EveBase/AliEveTrack.h 
   EveBase/AliEveTrackCounter.h

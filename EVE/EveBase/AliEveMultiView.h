@@ -32,7 +32,7 @@ class AliEveMultiView
 {
 public:
   AliEveMultiView(Bool_t setMuonView = kFALSE);
-  virtual ~AliEveMultiView() {}
+  virtual ~AliEveMultiView();
 
   static AliEveMultiView* Instance();
 

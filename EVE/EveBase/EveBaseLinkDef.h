@@ -11,6 +11,12 @@
 #pragma link off all globals;
 #pragma link off all classes;
 
+// AliEveApplication
+#pragma link C++ class AliEveApplication+;
+
+// AliEveManager
+#pragma link C++ class AliEveManager+;
+
 // AliEveConfigManager
 #pragma link C++ class AliEveConfigManager+;
 

@@ -162,7 +162,7 @@ AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master
 
   Resize(400, 700);
 
-  SetCleanup(kDeepCleanup);
+  //SetCleanup(kDeepCleanup);
   Layout();
   MapSubwindows();
   MapWindow();
@@ -174,7 +174,8 @@ AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master
 AliEveMacroExecutorWindow::~AliEveMacroExecutorWindow()
 {
   // Destructor.
-
+	fBoxContents.clear();
+		
   AliEveEventManager::GetMaster()->Disconnect("NewEventLoaded()", this);
 }
 

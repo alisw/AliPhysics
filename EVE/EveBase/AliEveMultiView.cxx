@@ -147,6 +147,20 @@ if(fIsMuonView)
 
 }
 
+AliEveMultiView::~AliEveMultiView()
+{
+		DestroyAllGeometries();
+		
+		delete fGeomGentle;
+		delete fGeomGentleRPhi;
+		delete fGeomGentleRhoZ;
+		
+		delete	fRPhiMgr;
+		delete fRhoZMgr;
+		delete fMuonMgr;
+		
+}
+
 //-------------------------------------------------------------------------
 
 void AliEveMultiView::InitGeomGentle(TEveGeoShape* g3d, TEveGeoShape* grphi, TEveGeoShape* grhoz, TEveGeoShape* gmuon)

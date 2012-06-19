@@ -64,8 +64,9 @@ public:
   virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;
   virtual void  GotoEvent(Int_t event);
   virtual void  NextEvent();
-  virtual void  PrevEvent();
+  virtual void  PrevEvent(); 
   virtual void  Close();
+  void Timeout(); // * SIGNAL*
 
   Int_t         GetEventId()         const { return fEventId; }
   AliRunLoader* GetRunLoader()       const { return fRunLoader; }

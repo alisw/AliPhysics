@@ -120,6 +120,7 @@ void AliEveEventManager::InitInternals()
 
   fAutoLoadTimer = new TTimer;
   fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "AutoLoadNextEvent()");
+  fAutoLoadTimer->Connect("Timeout()", "AliEveEventManager", this, "Timeout()");
 
   fExecutor = new AliEveMacroExecutor;
 
@@ -189,6 +190,8 @@ AliEveEventManager::AliEveEventManager(const TString& name, const TString& path,
 AliEveEventManager::~AliEveEventManager()
 {
   // Destructor.
+  fAutoLoadTimer->Stop();
+	fAutoLoadTimer->Disconnect("Timeout");
 
   delete fSubManagers;
 
@@ -202,6 +205,8 @@ AliEveEventManager::~AliEveEventManager()
 
   fTransientLists->DecDenyDestroy();
   fTransientLists->Destroy();
+  
+  //delete fExecutor;
 }
 
 /******************************************************************************/
@@ -870,6 +875,11 @@ void AliEveEventManager::GotoEvent(Int_t event)
   AliSysInfo::AddStamp(sysInfoHeader + "PostUserActions");
 }
 
+void AliEveEventManager::Timeout()
+{
+		Emit("Timeout()");
+}
+
 void AliEveEventManager::NextEvent()
 {
   // Loads next event.
@@ -888,7 +898,7 @@ void AliEveEventManager::NextEvent()
     // so here we should do it in SetEvent().
     DestroyElements();
 
-    gSystem->ExitLoop();
+
   }
   else if (fESDTree)
   {
@@ -907,7 +917,7 @@ void AliEveEventManager::NextEvent()
 void AliEveEventManager::PrevEvent()
 {
   // Loads previous event.
-
+	
   static const TEveException kEH("AliEveEventManager::PrevEvent ");
 
   if (fAutoLoadTimerRunning)
