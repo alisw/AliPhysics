@@ -55,6 +55,7 @@ set ( SRCS
     vertexingHF/AliAnalysisTaskSELambdac.cxx 
     vertexingHF/AliAnalysisTaskSED0Mass.cxx 
     vertexingHF/AliAnalysisTaskSECharmFraction.cxx 
+    vertexingHF/AliAnalysisTaskSELc2V0bachelor.cxx 
     vertexingHF/AliAnalysisTaskSEDvsMultiplicity.cxx
     vertexingHF/AliAnalysisTaskCheckHFMCProd.cxx
     vertexingHF/AliCFVertexingHF.cxx 
