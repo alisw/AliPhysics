@@ -59,6 +59,8 @@ class AliAnalysisTaskCaloFilter : public AliAnalysisTaskSE
   
   void    FillAODCaloTrigger();
 
+  void    FillAODMCParticles();
+  
   void    FillAODTracks();
 
   void    FillAODv0s();
@@ -87,6 +89,9 @@ class AliAnalysisTaskCaloFilter : public AliAnalysisTaskSE
   void    SwitchOnFillAODFile()                   { fFillAODFile = kTRUE        ; }
   void    SwitchOffFillAODFile()                  { fFillAODFile = kFALSE       ; }
 
+  void    SwitchOnFillMCParticles()               { fFillMCParticles = kTRUE    ; }
+  void    SwitchOffFillMCParticles()              { fFillMCParticles = kFALSE   ; }
+  
   void    SwitchOnFillTracks()                    { fFillTracks  = kTRUE        ; }
   void    SwitchOffFillTracks()                   { fFillTracks  = kFALSE       ; }
   
@@ -162,6 +167,7 @@ private:
   TString             fConfigName;        // Name of analysis configuration file
   
   Bool_t              fFillAODFile;       // Fill the output AOD file with clusters 
+  Bool_t              fFillMCParticles;   // Fill tracks
   Bool_t              fFillTracks;        // Fill tracks
   Bool_t              fFillHybridTracks;  // Fill hybrid tracks
 
@@ -187,7 +193,7 @@ private:
   AliAnalysisTaskCaloFilter(           const AliAnalysisTaskCaloFilter&);
   AliAnalysisTaskCaloFilter& operator=(const AliAnalysisTaskCaloFilter&);
   
-  ClassDef(AliAnalysisTaskCaloFilter, 9); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskCaloFilter, 10); // Analysis task for standard ESD filtering
   
 };
 

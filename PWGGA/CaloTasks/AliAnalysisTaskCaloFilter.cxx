@@ -37,6 +37,7 @@
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliVEventHandler.h"
+#include "AliAODHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 
@@ -59,6 +60,7 @@ fEMCALRecoUtils(new AliEMCALRecoUtils),
 fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
 fGeoMatrixSet(kFALSE),
 fConfigName(""),          fFillAODFile(kTRUE), 
+fFillMCParticles(kFALSE),
 fFillTracks(kFALSE),      fFillHybridTracks(kFALSE),
 fFillAllVertices(kFALSE), fFillv0s(kFALSE),  
 fFillVZERO(kFALSE),
@@ -89,6 +91,7 @@ fEMCALRecoUtils(new AliEMCALRecoUtils),
 fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
 fGeoMatrixSet(kFALSE),
 fConfigName(""),          fFillAODFile(kTRUE),
+fFillMCParticles(kFALSE),
 fFillTracks(kFALSE),      fFillHybridTracks(kFALSE),
 fFillAllVertices(kFALSE), fFillv0s(kFALSE),
 fFillVZERO(kFALSE),
@@ -676,6 +679,21 @@ void AliAnalysisTaskCaloFilter::FillAODHeader()
   
 }
 
+
+//__________________________________________________
+void AliAnalysisTaskCaloFilter::FillAODMCParticles()
+{
+  // Copy MC particles
+  
+  if(!fFillMCParticles) return;
+  
+  TClonesArray* inMCParticles = (TClonesArray*) (fAODEvent  ->FindListObject("mcparticles"));
+  TClonesArray* ouMCParticles = (TClonesArray*) ( AODEvent()->FindListObject("mcparticles"));
+  
+  if( inMCParticles &&  ouMCParticles ) new (ouMCParticles) TClonesArray(*inMCParticles);
+    
+}  
+
 //_____________________________________________
 void AliAnalysisTaskCaloFilter::FillAODTracks()
 {
@@ -943,6 +961,13 @@ void AliAnalysisTaskCaloFilter::UserCreateOutputObjects()
 	
   fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
   
+  if(fFillMCParticles)
+  {
+    TClonesArray * aodMCParticles = new TClonesArray("AliAODMCParticle",500);
+		aodMCParticles->SetName("mcparticles");
+		((AliAODHandler*)AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler())->AddBranch("TClonesArray", &aodMCParticles);
+  }
+  
 }  
 
 //____________________________________________________________
@@ -1010,6 +1035,9 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   
   //
   FillAODCaloTrigger();
+  
+  // 
+  FillAODMCParticles();
   
   //printf("Filtered event, end processing : %s\n",fAODEvent->GetFiredTriggerClasses().Data());
   

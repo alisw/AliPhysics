@@ -1,5 +1,6 @@
 AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE, 
-                                              const Float_t minE      = 5, 
+                                              const Bool_t  mc        = kFALSE,
+                                              const Float_t minE      = 6, 
                                               const Float_t minN      = 3, 
                                               const Float_t vz        = 10.,
                                               const Int_t   opt       = AliAnalysisTaskCaloFilter::kBoth, //kPHOS, kEMCAL or kBoth
@@ -33,9 +34,24 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE,
   
   filter->SetVzCut(vz);
   
-  if(bias) // select events with significant signal in EMCAL or TPC or PHOS
+  if(mc)
   {
-    filter->SetEventSelection(1,1,1); // Select events depending on EMCAL, PHOS and tracks criteria
+    filter->SetEventSelection(1,0,0); // Select events depending on EMCAL, PHOS and tracks criteria
+    filter->SwitchOnAcceptAllMBEvent();
+    
+    filter->SwitchOnFillMCParticles();
+    
+    filter->SetEMCALEnergyCut(minE);
+    filter->SetEMCALNcellsCut(minN);
+    
+    filter->SetPHOSEnergyCut(minE);
+    filter->SetPHOSNcellsCut(minN);
+    
+    filter->SetTrackPtCut(minE);
+  }
+  else if(bias) // select events with significant signal in EMCAL or TPC or PHOS
+  {
+    filter->SetEventSelection(1,0,0); // Select events depending on EMCAL, PHOS and tracks criteria
     filter->SwitchOnAcceptAllMBEvent();
     
     filter->SetEMCALEnergyCut(minE);
@@ -69,6 +85,9 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE,
     printf("--- Select Min Bias events ---\n");
   }
 
+  
+  //    filter->SelectCollisionCandidates(AliVEvent::kAny) ;
+      
   if(correct)   filter->SwitchOnClusterCorrection();
   else          filter->SwitchOffClusterCorrection();  
   
