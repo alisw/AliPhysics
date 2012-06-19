@@ -8,6 +8,7 @@
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 
@@ -42,7 +43,6 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistTrEmcPhiEta(0),
   fHistClustersEnergy(0),
   fHistClusPhiEta(0),
-  fHistJetsPhiEta(0),
   fHistCellsEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -56,6 +56,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   }
 
   for (Int_t i = 0; i < 4; i++) {
+    fHistJetsPhiEtaPt[i] = 0;
     fHistJetsPtNonBias[i] = 0;
     fHistJetsPtTrack[i] = 0;
     fHistJetsPtClus[i] = 0;
@@ -83,7 +84,6 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistTrEmcPhiEta(0),
   fHistClustersEnergy(0),
   fHistClusPhiEta(0),
-  fHistJetsPhiEta(0),
   fHistCellsEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -97,6 +97,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   }
 
   for (Int_t i = 0; i < 4; i++) {
+    fHistJetsPhiEtaPt[i] = 0;
     fHistJetsPtNonBias[i] = 0;
     fHistJetsPtTrack[i] = 0;
     fHistJetsPtClus[i] = 0;
@@ -235,14 +236,17 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
   if (!fJetsName.IsNull()) {
 
-    fHistJetsPhiEta = new TH2F("fHistJetsPhiEta","Phi-Eta distribution of jets", 80, -2, 2, 128, 0, 6.4);
-    fHistJetsPhiEta->GetXaxis()->SetTitle("#eta");
-    fHistJetsPhiEta->GetYaxis()->SetTitle("#phi");
-    fOutput->Add(fHistJetsPhiEta);
-
     TString histname;
 
     for (Int_t i = 0; i < 4; i++) {
+      histname = "fHistJetsPhiEtaPt_";
+      histname += i;
+      fHistJetsPhiEtaPt[i] = new TH3F(histname.Data(), histname.Data(), 80, -2, 2, 128, 0, 6.4, fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+      fHistJetsPhiEtaPt[i]->GetXaxis()->SetTitle("#eta");
+      fHistJetsPhiEtaPt[i]->GetYaxis()->SetTitle("#phi");
+      fHistJetsPhiEtaPt[i]->GetZaxis()->SetTitle("p_{T} [GeV/c]");
+      fOutput->Add(fHistJetsPhiEtaPt[i]);
+
       histname = "fHistJetsPtNonBias_";
       histname += i;
       fHistJetsPtNonBias[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
@@ -515,7 +519,7 @@ void AliAnalysisTaskSAQA::DoJetLoop()
     fHistJetsPt[fCentBin]->Fill(jet->Pt());
     fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
 
-    fHistJetsPhiEta->Fill(jet->Eta(), jet->Phi());
+    fHistJetsPhiEtaPt[fCentBin]->Fill(jet->Eta(), jet->Phi(), jet->Pt());
   }
 }
 

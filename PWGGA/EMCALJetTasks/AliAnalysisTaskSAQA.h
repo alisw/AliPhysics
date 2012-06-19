@@ -7,6 +7,7 @@ class TClonesArray;
 class TString;
 class TH1F;
 class TH2F;
+class TH3F;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -53,7 +54,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistTrEmcPhiEta;          //!Phi-Eta emcal distribution of tracks
   TH1F                       *fHistClustersEnergy;       //!Energy spectrum of clusters
   TH2F                       *fHistClusPhiEta;           //!Phi-Eta distribution of clusters
-  TH2F                       *fHistJetsPhiEta;           //!Phi-Eta distribution of jets
+  TH3F                       *fHistJetsPhiEtaPt[4];      //!Phi-Eta-Pt distribution of jets
   TH1F                       *fHistJetsPtNonBias[4];     //!Non biased inclusive jet pt spectrum
   TH1F                       *fHistJetsPtClus[4];        //!Inclusive jet pt spectrum cluster biased
   TH1F                       *fHistJetsPtTrack[4];       //!Inclusive jet pt spectrum track biased
