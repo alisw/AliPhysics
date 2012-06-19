@@ -24,7 +24,7 @@ public:
     /** Constructor */
     AliAnalysisTaskTransverseEnergy(const char* name, Bool_t isMc);
 
-    /** Destructro */
+    /** Destructor */
     virtual ~AliAnalysisTaskTransverseEnergy();
 
     AliESDtrackCuts* GetTPCITSTrackCuts(){return (AliESDtrackCuts*) fOutputList->FindObject("fEsdTrackCuts");}

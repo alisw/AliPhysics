@@ -69,6 +69,7 @@ AliAnalysisEtReconstructedPhos::AliAnalysisEtReconstructedPhos() :
     fSecondaryContributionCorrectionParameters[0] = 0.075;
     fSecondaryContributionCorrectionParameters[1] = 0.150187;
     fSecondaryContributionCorrectionParameters[2] = 0.00329361;
+
 }
 
 AliAnalysisEtReconstructedPhos::~AliAnalysisEtReconstructedPhos()
@@ -79,7 +80,6 @@ void AliAnalysisEtReconstructedPhos::Init()
 { // Init
     AliAnalysisEtReconstructed::Init();
 
-    fSelector = new AliAnalysisEtSelectorPhos(fCuts);
     
     fDetectorRadius = fCuts->GetGeometryPhosDetectorRadius();
     fSingleCellEnergyCut = fCuts->GetReconstructedPhosSingleCellEnergyCut();
@@ -144,3 +144,9 @@ Double_t AliAnalysisEtReconstructedPhos::GetSecondaryContribution(Int_t clusterM
 
 
 
+
+void AliAnalysisEtReconstructedPhos::CreateHistograms()
+{ // add some extra histograms & objects to the ones from base class
+  AliAnalysisEtReconstructed::CreateHistograms();
+  fSelector = new AliAnalysisEtSelectorPhos(fCuts);
+}

@@ -222,6 +222,11 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 // dtor
 AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
 {   //Destructor
+
+  if(fPrimaryTree){
+    fPrimaryTree->Clear();
+    delete fPrimaryTree;
+  }
     delete fHistDecayVertexNonRemovedCharged; // Decay vertex for non-removed charged particles
     delete fHistDecayVertexRemovedCharged; // Decay vertex for non-removed charged particles
     delete fHistDecayVertexNonRemovedNeutral; // Decay vertex for non-removed charged particles
