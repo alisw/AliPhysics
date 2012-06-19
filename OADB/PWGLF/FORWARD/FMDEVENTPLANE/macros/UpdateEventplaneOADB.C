@@ -16,8 +16,8 @@ void UpdateEventplaneOADB(TString oadbname, const char* updatename, Int_t runBeg
     else         Fatal("Something is wrong. There is no container, but you supplied a runrange...\n");
   }
 
-  TList* list   = (TList*)in->Get("FMDEventplaneSums");
-  TList* eplist = (TList*)list->FindObject("fmdEventplaneFinder");
+  TList* list   = (TList*)in->Get("Forward");
+  TList* eplist = (TList*)list->FindObject("fmdEventPlaneFinder");
   TH1D*  hist   = (TH1D*) eplist->FindObject("hPhiDist");
 
   if (!newcont) {
