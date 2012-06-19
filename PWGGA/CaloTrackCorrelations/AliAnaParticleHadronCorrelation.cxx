@@ -73,7 +73,9 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fListMixEvents(),               fUseMixStoredInReader(0),
     //Histograms
     fhPtLeading(0),                 fhPhiLeading(0),       
-    fhEtaLeading(0),                fhDeltaPhiDeltaEtaCharged(0),
+    fhEtaLeading(0),                
+    fhPtLeadingCentrality(0),       fhPtLeadingEventPlane(0), 
+    fhLeadingEventPlaneCentrality(0),fhDeltaPhiDeltaEtaCharged(0),
     fhPhiCharged(0),                fhEtaCharged(0), 
     fhDeltaPhiCharged(0),           fhDeltaEtaCharged(0), 
     fhDeltaPhiChargedPt(0),         fhDeltaPhiUeChargedPt(0), 
@@ -127,7 +129,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhNtracksMB(0),               
     fhMixDeltaPhiCharged(0),        fhMixDeltaPhiDeltaEtaCharged(0),
     fhMixDeltaPhiChargedAssocPtBin(),fhMixDeltaPhiDeltaEtaChargedAssocPtBin(0),
-    fhEventBin(0),                   fhEventMixBin(0)
+    fhEventBin(0),                  fhEventMixBin(0)
 { 
   //Default Ctor
     
@@ -695,6 +697,21 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   outputContainer->Add(fhPtLeading);
   outputContainer->Add(fhPhiLeading);
   outputContainer->Add(fhEtaLeading);
+  
+  fhPtLeadingCentrality   = new TH2F("hPtLeadingCentrality","Leading particle p_{T} vs centrality",nptbins,ptmin,ptmax,100,0.,100) ;
+  fhPtLeadingCentrality->SetXTitle("p_{T}^{trig} (GeV/c)");
+  fhPtLeadingCentrality->SetYTitle("Centrality (%)");
+  outputContainer->Add(fhPtLeadingCentrality) ;  
+  
+  fhPtLeadingEventPlane  = new TH2F("hPtLeadingEventPlane","Leading particle p_{T} vs event plane angle",nptbins,ptmin,ptmax, 100,0.,TMath::Pi()) ;
+  fhPtLeadingEventPlane->SetXTitle("p_{T}^{trig} (GeV/c)");
+  fhPtLeadingEventPlane->SetXTitle("EP angle (rad)");
+  outputContainer->Add(fhPtLeadingEventPlane) ;
+  
+  fhLeadingEventPlaneCentrality  = new TH2F("hLeadingEventPlane","Leading particle centrality vs event plane angle",100,0.,100,100,0.,TMath::Pi()) ;
+  fhLeadingEventPlaneCentrality->SetXTitle("Centrality (%)");
+  fhLeadingEventPlaneCentrality->SetYTitle("EP angle (rad)");
+  outputContainer->Add(fhLeadingEventPlaneCentrality) ;
   
   //Correlation with charged hadrons
   if(GetReader()->IsCTSSwitchedOn()) 
@@ -1781,13 +1798,23 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     // no problem was found, like not absolute leading, or bad vertex in mixing.
     if(okcharged && okneutral)
     {
-      fhPtLeading->Fill(particle->Pt());
+      Float_t pt = particle->Pt();
+      fhPtLeading->Fill(pt);
+      
       Float_t phi = particle->Phi();
       if(phi<0)phi+=TMath::TwoPi();
-      fhPhiLeading->Fill(particle->Pt(), phi);
-      fhEtaLeading->Fill(particle->Pt(), particle->Eta());
+      fhPhiLeading->Fill(pt, phi);
+      
+      fhEtaLeading->Fill(pt, particle->Eta());
       //printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Leading particle : pt %f, eta %f, phi %f\n",particle->Pt(),particle->Eta(),phi);
-
+      
+      Float_t cen = GetEventCentrality();
+      Float_t ep  = GetEventPlaneAngle();
+      
+      fhPtLeadingCentrality        ->Fill(pt,cen);
+      fhPtLeadingEventPlane        ->Fill(pt,ep);
+      fhLeadingEventPlaneCentrality->Fill(cen,ep);
+      
     }//ok charged && neutral
   }//Aod branch loop
   
