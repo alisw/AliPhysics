@@ -9,7 +9,7 @@
 class TTree;
 class TClonesArray;
 
-#include "AliCentrality.h";
+#include "AliCentrality.h"
 
 //EMCAL
 class AliEMCALGeometry;
@@ -110,13 +110,13 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // Centrality selection
   
   AliCentrality* GetCentrality()                                { return InputEvent()->GetCentrality() ; } //Look in AOD reader, different there
-  void     SetCentralityClass(TString name)                     { fCentralityClass   = name            ; }
-  TString  GetCentralityClass()                           const { return fCentralityClass              ; }
-  Int_t    GetEventCentrality()                                 { if(GetCentrality()) return GetCentrality()->GetCentralityPercentile(fCentralityClass) ;
-                                                                  else                return -1        ; }
-  void     SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
+  void          SetCentralityClass(TString name)                { fCentralityClass   = name            ; }
+  TString       GetCentralityClass()                      const { return fCentralityClass              ; }
+  Float_t       GetEventCentrality()                            { if(GetCentrality()) return GetCentrality()->GetCentralityPercentile(fCentralityClass) ;
+                                                                  else                return -1.       ; }
+  void          SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
                                                                 { fCentralityBin[0]=min ; fCentralityBin[1]=max ; }
-  Float_t  GetCentralityBin(Int_t i)                      const { if(i < 0 || i > 1) return -1 ; 
+  Float_t       GetCentralityBin(Int_t i)                 const { if(i < 0 || i > 1) return -1 ; 
                                                                   else               return fCentralityBin[i]   ; }
   
  private:
@@ -190,7 +190,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
     
   //Centrality
   TString                fCentralityClass;         // Name of selected centrality class     
-  Int_t                  fCentralityBin[2];        // Minimum and maximum value of the centrality for the analysis
+  Float_t                fCentralityBin[2];        // Minimum and maximum value of the centrality for the analysis
   
   
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&); // not implemented

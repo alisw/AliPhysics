@@ -1492,7 +1492,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //If we need a centrality bin, we select only those events in the corresponding bin.
   if( GetCentrality() && fCentralityBin[0] >= 0 && fCentralityBin[1] >= 0 )
   {
-    Int_t cen = GetEventCentrality();
+    Float_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return ; //reject events out of bin.
   }  
   
