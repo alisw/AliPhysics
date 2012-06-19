@@ -200,6 +200,10 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPhiLeading;                   //! phi distribution vs pT of leading particles
   TH2F *       fhEtaLeading;                   //! eta distribution vs pT of leading particles
   
+  TH2F *       fhPtLeadingCentrality;          //! pT distribution of leading particles vs centrality
+  TH2F *       fhPtLeadingEventPlane;          //! pT distribution of leading particles vs centrality
+  TH2F *       fhLeadingEventPlaneCentrality;  //! event plane vs centrality for leading particles
+  
   //trigger-charged histograms
   TH2F *       fhDeltaPhiDeltaEtaCharged ;     //! differences of eta and phi between trigger and charged hadrons
   TH2F *       fhPhiCharged  ;                 //! Phi distribution of charged particles
@@ -328,7 +332,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,15)
+  ClassDef(AliAnaParticleHadronCorrelation,16)
 } ;
  
 
