@@ -49,16 +49,42 @@ protected:
     Int_t PrintFamilyTree(Int_t partIdx, AliStack *stack);
     Int_t PrintMothers(Int_t partIdx, AliStack *stack, Int_t gen);
     
-    
-    virtual Bool_t TooCloseToBadChannel(const AliESDCaloCluster &cluster) const;
-
-
 protected:
 
     Double_t fImpactParameter; // b(fm), for Hijing; 0 otherwise
     Int_t fNcoll; // Ncoll, for Hijing; 1 otherwise
     Int_t fNpart; // Ncoll, for Hijing; 2 otherwise
+    
+    TTree *fPrimaryTree; // Tree holding info on primaries
 
+    Double_t fTotEtWithSecondaryRemoved;
+    Double_t fTotEtSecondaryFromEmEtPrimary;
+    Double_t fTotEtSecondary;
+    
+    Int_t fPrimaryCode;
+    Int_t fPrimaryCharge;
+
+    Double_t fPrimaryE;
+    Double_t fPrimaryEt;
+
+    Double_t fPrimaryPx;
+    Double_t fPrimaryPy;
+    Double_t fPrimaryPz;
+    
+    Double_t fPrimaryVx;
+    Double_t fPrimaryVy;
+    Double_t fPrimaryVz;
+    
+    Bool_t fPrimaryAccepted;
+    Int_t fDepositedCode;
+    Double_t fDepositedEt;
+    Int_t fDepositedCharge;
+
+    Double_t fDepositedVx;
+    Double_t fDepositedVy;
+    Double_t fDepositedVz;
+    
+    
     TH3F *fHistDecayVertexNonRemovedCharged; // Decay vertex for non-removed charged particles
     TH3F *fHistDecayVertexRemovedCharged; // Decay vertex for non-removed charged particles
     TH3F *fHistDecayVertexNonRemovedNeutral; // Decay vertex for non-removed charged particles
@@ -243,12 +269,8 @@ protected:
 
     Int_t fNClusters; // Number of clusters in event
 
-    AliPHOSGeometry *fGeoUtils;
-
-    TH2I *fBadMapM2; // Bad map
-    TH2I *fBadMapM3; // Bad map
-    TH2I *fBadMapM4; // Bad map
-
+    Double_t fTotNeutralEtAfterMinEnergyCut;
+    
 private:
 
     //Declare it private to avoid compilation warning

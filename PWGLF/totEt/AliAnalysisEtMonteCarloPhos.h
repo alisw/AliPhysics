@@ -1,7 +1,8 @@
 #ifndef ALIANALYSISETMONTECARLOPHOS_H
 #define ALIANALYSISETMONTECARLOPHOS_H
 
-class AliPHOSGeoUtils;//_________________________________________________________________________
+class AliPHOSGeoUtils;
+//_________________________________________________________________________
 //  Utility Class for transverse energy studies
 //  Base class for MC analysis, for PHOS
 //  - MC output
@@ -10,6 +11,7 @@ class AliPHOSGeoUtils;//________________________________________________________
 //_________________________________________________________________________
 
 #include "AliAnalysisEtMonteCarlo.h"
+
 class TH2I;
 
 class AliAnalysisEtMonteCarloPhos : public AliAnalysisEtMonteCarlo
@@ -29,6 +31,8 @@ protected:
     TH2I *fBadMapM2; // Bad map
     TH2I *fBadMapM3; // Bad map
     TH2I *fBadMapM4; // Bad map
+
+    AliPHOSGeoUtils *fGeoUtils; // Geo utils
     
     // Prohibited
     AliAnalysisEtMonteCarloPhos & operator = (const AliAnalysisEtMonteCarloPhos&) ;//cpy assignment

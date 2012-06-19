@@ -29,14 +29,6 @@ AliAnalysisEtMonteCarloEmcal::~AliAnalysisEtMonteCarloEmcal()
 void AliAnalysisEtMonteCarloEmcal::Init()
 { // Init
   AliAnalysisEtMonteCarlo::Init();
-   fClusterType = fCuts->GetEmcalClusterType();
   fDetectorRadius = fCuts->GetGeometryEmcalDetectorRadius();
-  fEtaCutAcc = fCuts->GetGeometryEmcalEtaAccCut();
-  fPhiCutAccMax = fCuts->GetGeometryEmcalPhiAccMaxCut() * TMath::Pi()/180.;
-  fPhiCutAccMin = fCuts->GetGeometryEmcalPhiAccMinCut() * TMath::Pi()/180.;
-  fClusterEnergyCut = fCuts->GetReconstructedEmcalClusterEnergyCut();
   fSingleCellEnergyCut = fCuts->GetReconstructedEmcalSingleCellEnergyCut();
-  
-  fDetector = fCuts->GetDetectorEmcal();
-
 }

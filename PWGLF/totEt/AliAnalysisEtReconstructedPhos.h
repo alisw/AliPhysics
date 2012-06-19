@@ -27,11 +27,14 @@ public:
     virtual Double_t GetNeutralContribution(Int_t clusterMultiplicity);
 
     virtual Double_t GetGammaContribution(Int_t clusterMultiplicity);
+    
+    virtual Double_t GetSecondaryContribution(Int_t clusterMultiplicity);
 
-    void SetChargedContributionParameters(Double_t par[2])
+    void SetChargedContributionParameters(Double_t par[3])
     {
         fChargedContributionCorrectionParameters[0] = par[0];
         fChargedContributionCorrectionParameters[1] = par[1];
+	fChargedContributionCorrectionParameters[1] = par[2];
     }
     void SetNeutralContributionParameters(Double_t par[3])
     {
@@ -45,6 +48,13 @@ public:
         fRemovedGammaContributionCorrectionParameters[1] = par[1];
 	fRemovedGammaContributionCorrectionParameters[2] = par[2];
     }
+    void SetSecondaryContributionParameters(Double_t par[3])
+    {
+        fSecondaryContributionCorrectionParameters[0] = par[0];
+        fSecondaryContributionCorrectionParameters[1] = par[1];
+	fSecondaryContributionCorrectionParameters[2] = par[2];
+    }
+    
 
 protected:
 
@@ -52,9 +62,11 @@ protected:
     
 private:
 
-    Double_t fChargedContributionCorrectionParameters[2]; // Parametrization of the charged contribution as function of cluster multiplicity
+    Double_t fChargedContributionCorrectionParameters[3]; // Parametrization of the charged contribution as function of cluster multiplicity
     Double_t fNeutralContributionCorrectionParameters[3]; // Parametrization of the neutral contribution as function of cluster multiplicity
     Double_t fRemovedGammaContributionCorrectionParameters[3]; // Parametrization of the negative contribution from removed gammas as function of cluster multiplicity
+
+    Double_t fSecondaryContributionCorrectionParameters[3]; // Parametrization of the positive contribution of secondary particles
 
 
     ClassDef(AliAnalysisEtReconstructedPhos, 1);

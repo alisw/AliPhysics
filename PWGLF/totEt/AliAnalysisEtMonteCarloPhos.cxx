@@ -25,6 +25,7 @@ AliAnalysisEtMonteCarloPhos::AliAnalysisEtMonteCarloPhos():AliAnalysisEtMonteCar
 ,fBadMapM2(0)
 ,fBadMapM3(0)
 ,fBadMapM4(0)
+,fGeoUtils(0)
 {
    fHistogramNameSuffix = TString("PhosMC");
 }
@@ -39,21 +40,9 @@ void AliAnalysisEtMonteCarloPhos::Init()
   AliAnalysisEtMonteCarlo::Init();
   fSelector = new AliAnalysisEtSelectorPhos(fCuts);
     
-    fSelector->Init(137366);
-   fClusterType = fCuts->GetPhosClusterType();    
   fDetectorRadius = fCuts->GetGeometryPhosDetectorRadius();
-  fEtaCutAcc = fCuts->GetGeometryPhosEtaAccCut();
-  fPhiCutAccMax = fCuts->GetGeometryPhosPhiAccMaxCut() * TMath::Pi()/180.;
-  fPhiCutAccMin = fCuts->GetGeometryPhosPhiAccMinCut() * TMath::Pi()/180.;
-  fClusterEnergyCut = fCuts->GetReconstructedPhosClusterEnergyCut();
   fSingleCellEnergyCut = fCuts->GetReconstructedPhosSingleCellEnergyCut();
-  
-  fTrackDistanceCut = fCuts->GetPhosTrackDistanceCut();
-  fTrackDxCut = fCuts->GetPhosTrackDxCut();
-  fTrackDzCut = fCuts->GetPhosTrackDzCut();
-    
-  fDetector = fCuts->GetDetectorPhos();
-  
+
  // ifstream f("badchannels.txt", ios::in);
   TFile *f = TFile::Open("badchannels.root", "READ");
   
@@ -61,7 +50,6 @@ void AliAnalysisEtMonteCarloPhos::Init()
    fBadMapM3 = (TH2I*)f->Get("bad_channels_m3");
    fBadMapM4 = (TH2I*)f->Get("bad_channels_m4");
 // 
-//  fGeoUtils = new AliPHOSGeoUtils("PHOS", "noCPV");
    fGeoUtils = AliPHOSGeometry::GetInstance("IHEP");
   
 }

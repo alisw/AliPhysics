@@ -43,17 +43,32 @@ AliAnalysisEtReconstructedPhos::AliAnalysisEtReconstructedPhos() :
 {
     fHistogramNameSuffix = TString("PhosRec");
 
-    fChargedContributionCorrectionParameters[0] = -0.017;
-    fChargedContributionCorrectionParameters[1] = 0.065;
+//     fChargedContributionCorrectionParameters[0] = -0.017;
+//     fChargedContributionCorrectionParameters[1] = 0.065;
+// 
+//     fNeutralContributionCorrectionParameters[0] = -0.002;
+//     fNeutralContributionCorrectionParameters[1] = 0.017;
+//     fNeutralContributionCorrectionParameters[2] = -3.6e-5;
+// 
+//     fRemovedGammaContributionCorrectionParameters[0] = 0.001;
+//     fRemovedGammaContributionCorrectionParameters[1] = 0.37e-5;
+//     fRemovedGammaContributionCorrectionParameters[2] = 0.0003;
 
-    fNeutralContributionCorrectionParameters[0] = -0.002;
-    fNeutralContributionCorrectionParameters[1] = 0.017;
-    fNeutralContributionCorrectionParameters[2] = -3.6e-5;
+    fChargedContributionCorrectionParameters[0] = -0.0231864;
+    fChargedContributionCorrectionParameters[1] = 0.112661;
+    fChargedContributionCorrectionParameters[2] = 9.2836e-05;
 
-    fRemovedGammaContributionCorrectionParameters[0] = 0.001;
-    fRemovedGammaContributionCorrectionParameters[1] = 0.37e-5;
-    fRemovedGammaContributionCorrectionParameters[2] = 0.0003;
+    fNeutralContributionCorrectionParameters[0] = -9.18740e-03;
+    fNeutralContributionCorrectionParameters[1] = 3.58584e-02;
+    fNeutralContributionCorrectionParameters[2] = 9.48208e-04;
 
+    fRemovedGammaContributionCorrectionParameters[0] = -2.74323e-03;
+    fRemovedGammaContributionCorrectionParameters[1] = 2.71104e-03;
+    fRemovedGammaContributionCorrectionParameters[2] = 3.52758e-04;
+
+    fSecondaryContributionCorrectionParameters[0] = 0.075;
+    fSecondaryContributionCorrectionParameters[1] = 0.150187;
+    fSecondaryContributionCorrectionParameters[2] = 0.00329361;
 }
 
 AliAnalysisEtReconstructedPhos::~AliAnalysisEtReconstructedPhos()
@@ -66,22 +81,9 @@ void AliAnalysisEtReconstructedPhos::Init()
 
     fSelector = new AliAnalysisEtSelectorPhos(fCuts);
     
-    fSelector->Init(137366);
-    
     fDetectorRadius = fCuts->GetGeometryPhosDetectorRadius();
-    fEtaCutAcc = fCuts->GetGeometryPhosEtaAccCut();
-    fPhiCutAccMax = fCuts->GetGeometryPhosPhiAccMaxCut() * TMath::Pi()/180.;
-    fPhiCutAccMin = fCuts->GetGeometryPhosPhiAccMinCut() * TMath::Pi()/180.;
-    fClusterEnergyCut = fCuts->GetReconstructedPhosClusterEnergyCut();
     fSingleCellEnergyCut = fCuts->GetReconstructedPhosSingleCellEnergyCut();
 
-    fClusterType = fCuts->GetPhosClusterType();
-    fTrackDistanceCut = fCuts->GetPhosTrackDistanceCut();
-    fTrackDxCut = fCuts->GetPhosTrackDxCut();
-    fTrackDzCut = fCuts->GetPhosTrackDzCut();
-
-    fDetector = fCuts->GetDetectorPhos();
-  
 
 }
 
@@ -94,7 +96,7 @@ Double_t AliAnalysisEtReconstructedPhos::GetChargedContribution(Int_t clusterMul
 { // Charged contrib
     if (clusterMult > 0)
     {
-        Double_t nPart = fChargedContributionCorrectionParameters[0] + fChargedContributionCorrectionParameters[1]*clusterMult;
+        Double_t nPart = fChargedContributionCorrectionParameters[0] + fChargedContributionCorrectionParameters[1]*clusterMult + fChargedContributionCorrectionParameters[2]*clusterMult*clusterMult;
 
         Double_t contr = nPart*kMEANCHARGED;
 
@@ -130,6 +132,15 @@ Double_t AliAnalysisEtReconstructedPhos::GetGammaContribution(Int_t clusterMult)
     return 0;
 }
 
+Double_t AliAnalysisEtReconstructedPhos::GetSecondaryContribution(Int_t clusterMultiplicity)
+{
+  if(clusterMultiplicity > 0)
+  {
+    return fSecondaryContributionCorrectionParameters[0] + fSecondaryContributionCorrectionParameters[1]*clusterMultiplicity + fSecondaryContributionCorrectionParameters[2]*clusterMultiplicity*clusterMultiplicity;
+  }
+  
+  return 0;
+}
 
 
 

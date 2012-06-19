@@ -3,8 +3,8 @@
 
 class TH2F;
 class TH2D;
-class AliPHOSGeometry;
-class AliPHOSGeoUtils;//_________________________________________________________________________
+
+//_________________________________________________________________________
 //  Utility Class for transverse energy studies
 //  Base class for ESD analysis
 //  - reconstruction output
@@ -46,9 +46,6 @@ protected:
 
     bool CheckGoodVertex(AliVParticle *track);
     virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
-    virtual Bool_t TooCloseToBadChannel(const AliESDCaloCluster &cluster) const;
-
-    //Bool_t TooCloseToBadChannel(const AliESDCaloCluster &cluster) const;
 
     AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
 
@@ -67,13 +64,6 @@ protected:
     
     Double_t fRecEffCorrection; // Eff correction
     Double_t CalcTrackClusterDistance(const Float_t pos[3],Int_t *trkMatchId, const AliESDEvent *event);
-    
-//    AliPHOSGeoUtils *fGeoUtils;
-    AliPHOSGeometry *fGeoUtils;
-    TH2I *fBadMapM2; // Bad map
-    TH2I *fBadMapM3; // Bad map
-    TH2I *fBadMapM4; // Bad map
-
     
     TH2D *fClusterPosition; // Position of clusters
     
