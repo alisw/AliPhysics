@@ -56,202 +56,136 @@ Float_t AliAnalysisEt::fgRAxis[48]={-2.,-1.,0.,0.0005,0.001,0.0015,0.002,0.0025,
 
 
 AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
+			       ,fEventSummaryTree(0)
+			       ,fAcceptedTree(0)
+			       ,fDepositTree(0)
 			       ,fTotEt(0)
-			       ,fTotEtAcc(0)
 			       ,fTotNeutralEt(0)
-			       ,fTotNeutralEtAcc(0)
 			       ,fTotChargedEt(0)
-			       ,fTotChargedEtAcc(0)
 			       ,fMultiplicity(0)
 			       ,fChargedMultiplicity(0)
 			       ,fNeutralMultiplicity(0)
-			       ,fBaryonEt(0)
-			       ,fAntiBaryonEt(0)
-			       ,fMesonEt(0)
 			       ,fProtonEt(0)
-			       ,fPionEt(0)
-			       ,fChargedKaonEt(0)
-			       ,fMuonEt(0)
-			       ,fElectronEt(0)
+			       ,fAntiProtonEt(0)
 			       ,fNeutronEt(0)
 			       ,fAntiNeutronEt(0)
+			       ,fPi0Et(0)
+			       ,fPiPlusEt(0)
+			       ,fPiMinusEt(0)
+			       ,fKPlusEt(0)
+			       ,fKMinusEt(0)
+			       ,fK0sEt(0)
+			       ,fK0lEt(0)
+			       ,fMuMinusEt(0)
+			       ,fMuPlusEt(0)
+			       ,fEMinusEt(0)
+			       ,fEPlusEt(0)
 			       ,fGammaEt(0)
-			       ,fProtonEtAcc(0)
-			       ,fPionEtAcc(0)
-			       ,fChargedKaonEtAcc(0)
-			       ,fMuonEtAcc(0)
-			       ,fElectronEtAcc(0)
+			       ,fProtonRemovedEt(0)
+			       ,fAntiProtonRemovedEt(0)
+			       ,fNeutronRemovedEt(0)
+			       ,fAntiNeutronRemovedEt(0)
+			       ,fPi0RemovedEt(0)
+			       ,fPiPlusRemovedEt(0)
+			       ,fPiMinusRemovedEt(0)
+			       ,fKPlusRemovedEt(0)
+			       ,fKMinusRemovedEt(0)
+			       ,fK0sRemovedEt(0)
+			       ,fK0lRemovedEt(0)
+			       ,fMuMinusRemovedEt(0)
+			       ,fMuPlusRemovedEt(0)
+			       ,fEMinusRemovedEt(0)
+			       ,fEPlusRemovedEt(0)
+			       ,fGammaRemovedEt(0)
+			       ,fProtonMult(0)
+			       ,fAntiProtonMult(0)
+			       ,fNeutronMult(0)
+			       ,fAntiNeutronMult(0)
+			       ,fPi0Mult(0)
+			       ,fPiPlusMult(0)
+			       ,fPiMinusMult(0)
+			       ,fKPlusMult(0)
+			       ,fKMinusMult(0)
+			       ,fK0sMult(0)
+			       ,fK0lMult(0)
+			       ,fMuMinusMult(0)
+			       ,fMuPlusMult(0)
+			       ,fEMinusMult(0)
+			       ,fEPlusMult(0)
+			       ,fGammaMult(0)
+			       ,fProtonRemovedMult(0)
+			       ,fAntiProtonRemovedMult(0)
+			       ,fNeutronRemovedMult(0)
+			       ,fAntiNeutronRemovedMult(0)
+			       ,fPi0RemovedMult(0)
+			       ,fPiPlusRemovedMult(0)
+			       ,fPiMinusRemovedMult(0)
+			       ,fKPlusRemovedMult(0)
+			       ,fKMinusRemovedMult(0)
+			       ,fK0sRemovedMult(0)
+			       ,fK0lRemovedMult(0)
+			       ,fMuMinusRemovedMult(0)
+			       ,fMuPlusRemovedMult(0)
+			       ,fEMinusRemovedMult(0)
+			       ,fEPlusRemovedMult(0)
+			       ,fGammaRemovedMult(0)
 			       ,fEnergyDeposited(0)
-			       ,fEnergyTPC(0)
+			       ,fMomentumTPC(0)
 			       ,fCharge(0)
 			       ,fParticlePid(0)
 			       ,fPidProb(0)
 			       ,fTrackPassedCut(kFALSE)
 			       ,fCentClass(0)
-			       ,fEtaCut(0)
-			       ,fEtaCutAcc(0)
-			       ,fPhiCutAccMin(0)
-			       ,fPhiCutAccMax(0)
 			       ,fDetectorRadius(0)
-			       ,fClusterEnergyCut(0) 
 			       ,fSingleCellEnergyCut(0)
-			       ,fTrackDistanceCut(0)
-			       ,fTrackDxCut(0)
-			       ,fTrackDzCut(0)
 			       ,fChargedEnergyRemoved(0)
 			       ,fNeutralEnergyRemoved(0)
 			       ,fGammaEnergyAdded(0)
 			       ,fHistEt(0)
-			       ,fHistChargedEt(0)
-			       ,fHistNeutralEt(0)
-			       ,fHistEtAcc(0)
-			       ,fHistChargedEtAcc(0)
-			       ,fHistNeutralEtAcc(0)
-			       ,fHistMult(0)
-			       ,fHistChargedMult(0)
 			       ,fHistNeutralMult(0)
 			       ,fHistPhivsPtPos(0)
 			       ,fHistPhivsPtNeg(0)
-			       ,fHistBaryonEt(0)
-			       ,fHistAntiBaryonEt(0)
-			       ,fHistMesonEt(0)
-			       ,fHistProtonEt(0)
-			       ,fHistPionEt(0)
-			       ,fHistChargedKaonEt(0)
-			       ,fHistMuonEt(0)
-			       ,fHistElectronEt(0)
-			       ,fHistNeutronEt(0)
-			       ,fHistAntiNeutronEt(0)
-			       ,fHistGammaEt(0)
-			       ,fHistProtonEtAcc(0)
-			       ,fHistPionEtAcc(0)
-			       ,fHistChargedKaonEtAcc(0)
-			       ,fHistMuonEtAcc(0)
-			       ,fHistElectronEtAcc(0)
-			       ,fHistTMDeltaR(0)
-			       ,fHistTMDxDz(0)
-			       ,fTree(0)
-			       ,fTreeDeposit(0)
 			       ,fCentrality(0)
-			       ,fDetector(0)
-			       ,fMakeSparse(kTRUE)
-			       ,fSparseHistTracks(0)
-			       ,fSparseHistClusters(0)
-			       ,fSparseHistEt(0)
-       			       ,fSparseTracks(0)
-			       ,fSparseClusters(0)
-			       ,fSparseEt(0)
-			       ,fClusterType(0)
-      			       ,fMatrixInitialized(kFALSE)
+			       ,fMakeSparse(kFALSE)
 			       ,fCutFlow(0)
 			       ,fSelector(0)
-			       
+	       
 {}
 
 AliAnalysisEt::~AliAnalysisEt()
 {//Destructor
-  if(fTreeDeposit){
-    fTreeDeposit->Clear();
-    delete fTreeDeposit; // optional TTree
+  if(fDepositTree){
+    fDepositTree->Clear();
+    delete fDepositTree; // optional TTree
   }
-  if(fTree){
-    fTree->Clear();
-    delete fTree; // optional TTree
+  if(fEventSummaryTree)
+  {
+    fEventSummaryTree->Clear();
+    delete fEventSummaryTree;
   }
   delete fHistEt; //Et spectrum
-  delete fHistChargedEt; //Charged Et spectrum 
-  delete fHistNeutralEt; //Neutral Et spectrum
-  delete fHistEtAcc; //Et in acceptance
-  delete fHistChargedEtAcc; //Charged Et in acceptance
-  delete fHistNeutralEtAcc; //Et in acceptance
-  delete fHistMult; //Multiplicity
-  delete fHistChargedMult; //Charged multiplicity
   delete fHistNeutralMult; //Neutral multiplicity
   delete fHistPhivsPtPos; //phi vs pT plot for positive tracks
   delete fHistPhivsPtNeg; //phi vs pT plot for negative tracks
-  delete fHistBaryonEt; /** Et of identified baryons */    
-  delete fHistAntiBaryonEt; /** Et of identified anti-baryons */
-  delete fHistMesonEt; /** Et of identified mesons */
-  delete fHistProtonEt; /** Et of identified protons */
-  delete fHistPionEt; /** Et of identified protons */
-  delete fHistChargedKaonEt; /** Et of identified charged kaons */
-  delete fHistMuonEt; /** Et of identified muons */
-  delete fHistElectronEt; /** Et of identified electrons */
-  delete fHistNeutronEt; /** Et of neutrons (MC only for now) */
-  delete fHistAntiNeutronEt; /** Et of anti-neutrons (MC only for now) */
-  delete fHistGammaEt; /** Et of gammas (MC only for now) */
-  delete fHistProtonEtAcc; /** Et of identified protons in calorimeter acceptance */    
-  delete fHistPionEtAcc; /** Et of identified protons in calorimeter acceptance */    
-  delete fHistChargedKaonEtAcc; /** Et of identified charged kaons in calorimeter acceptance */    
-  delete fHistMuonEtAcc; /** Et of identified muons in calorimeter acceptance */
-  delete fHistElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
-  delete fHistTMDeltaR; /* Track matching plots; Rec only for now */
-  delete fHistTMDxDz; /* Track matching plots; Rec only for now */
-  //arrays for axes were not dynamically created so don't need to be deleted
-  delete fTree;
-  delete fTreeDeposit;
   //delete fCentrality;//this code does not actually own AliCentrality so we don't have to worry about deleting it...  we just borrow it...
-  delete fSparseHistTracks;
-  delete fSparseHistClusters;
-  delete fSparseHistEt;
-  delete [] fSparseTracks;
-  delete [] fSparseClusters;
-  delete [] fSparseEt;
 }
 
 void AliAnalysisEt::FillOutputList(TList *list)
 { // histograms to be added to output
     list->Add(fHistEt);
-    list->Add(fHistChargedEt);
-    list->Add(fHistNeutralEt);
-
-    list->Add(fHistEtAcc);
-    list->Add(fHistChargedEtAcc);
-    list->Add(fHistNeutralEtAcc);
-
-    list->Add(fHistMult);
-    list->Add(fHistChargedMult);
     list->Add(fHistNeutralMult);
 
     list->Add(fHistPhivsPtPos);
     list->Add(fHistPhivsPtNeg);
 
-    list->Add(fHistBaryonEt);
-    list->Add(fHistAntiBaryonEt);
-    list->Add(fHistMesonEt);
-
-    list->Add(fHistProtonEt);
-    list->Add(fHistPionEt);
-    list->Add(fHistChargedKaonEt);
-    list->Add(fHistMuonEt);
-    list->Add(fHistElectronEt);
-    
-    list->Add(fHistNeutronEt);
-    list->Add(fHistAntiNeutronEt);
-    list->Add(fHistGammaEt);
-    
-    list->Add(fHistProtonEtAcc);
-    list->Add(fHistPionEtAcc);
-    list->Add(fHistChargedKaonEtAcc);
-    list->Add(fHistMuonEtAcc);
-    list->Add(fHistElectronEtAcc);
-
-    list->Add(fHistTMDeltaR);
-    list->Add(fHistTMDxDz);
-	
     if (fCuts) {
       if (fCuts->GetHistMakeTree()) {
-	list->Add(fTree);
+	//list->Add(fTree);
+	list->Add(fEventSummaryTree);
       }
       if (fCuts->GetHistMakeTreeDeposit()) {
-	list->Add(fTreeDeposit);
+	list->Add(fDepositTree);
       }
-    }
-    
-    if(fMakeSparse){
-      list->Add(fSparseHistTracks);
-      list->Add(fSparseHistClusters);
-      list->Add(fSparseHistEt);
     }
     
     list->Add(fCutFlow);
@@ -301,42 +235,6 @@ void AliAnalysisEt::CreateHistograms()
     fHistEt->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
     fHistEt->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
 
-    histname = "fHistChargedEt" + fHistogramNameSuffix;
-    fHistChargedEt = new TH1F(histname.Data(), "Total Charged E_{T} Distribution", nbinsEt, minEt, maxEt);
-    fHistChargedEt->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
-    fHistChargedEt->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
-
-    histname = "fHistNeutralEt" + fHistogramNameSuffix;
-    fHistNeutralEt = new TH1F(histname.Data(), "Total Neutral E_{T} Distribution", nbinsEt, minEt, maxEt);
-    fHistNeutralEt->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
-    fHistNeutralEt->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
-
-    histname = "fHistEtAcc" + fHistogramNameSuffix;
-    fHistEtAcc = new TH1F(histname.Data(), "Total E_{T} Distribution in Acceptance", nbinsEt, minEt, maxEt);
-    fHistEtAcc->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
-    fHistEtAcc->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
-
-    histname = "fHistChargedEtAcc" + fHistogramNameSuffix;
-    fHistChargedEtAcc = new TH1F(histname.Data(), "Total Charged E_{T} Distribution in Acceptance", nbinsEt, minEt, maxEt);
-    fHistChargedEtAcc->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
-    fHistChargedEtAcc->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
-
-    histname = "fHistNeutralEtAcc" + fHistogramNameSuffix;
-    fHistNeutralEtAcc = new TH1F(histname.Data(), "Total Neutral E_{T} Distribution in Acceptance", nbinsEt, minEt, maxEt);
-    fHistNeutralEtAcc->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
-    fHistNeutralEtAcc->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
-    std::cout << histname << std::endl;
-
-	histname = "fHistMult" + fHistogramNameSuffix;
-    fHistMult = new TH1F(histname.Data(), "Total Multiplicity", nbinsMult, minMult, maxMult);
-    fHistMult->GetXaxis()->SetTitle("N");
-    fHistMult->GetYaxis()->SetTitle("Multiplicity");
-
-    histname = "fHistChargedMult" + fHistogramNameSuffix;
-    fHistChargedMult = new TH1F(histname.Data(), "Charged Multiplicity", nbinsMult, minMult, maxMult);
-    fHistChargedMult->GetXaxis()->SetTitle("N");
-    fHistChargedMult->GetYaxis()->SetTitle("Multiplicity");
-
     histname = "fHistNeutralMult" + fHistogramNameSuffix;
     fHistNeutralMult = new TH1F(histname.Data(), "Neutral Multiplicity", nbinsMult, minMult, maxMult);
     fHistNeutralMult->GetXaxis()->SetTitle("N");
@@ -348,116 +246,6 @@ void AliAnalysisEt::CreateHistograms()
     histname = "fHistPhivsPtNeg" + fHistogramNameSuffix;
     fHistPhivsPtNeg = new TH2F(histname.Data(), "Phi vs pT of negatively charged tracks hitting the calorimeter", 	200, 0, 2*TMath::Pi(), nbinsPt, minPt, maxPt);
 
-    histname = "fHistBaryonEt" + fHistogramNameSuffix;
-    fHistBaryonEt = new TH1F(histname.Data(), "E_{T} for baryons",  nbinsEt, minEt, maxEt);
-
-    histname = "fHistAntiBaryonEt" + fHistogramNameSuffix;
-    fHistAntiBaryonEt = new TH1F(histname.Data(), "E_{T} for anti baryons",  nbinsEt, minEt, maxEt);
-
-    histname = "fHistMesonEt" + fHistogramNameSuffix;
-    fHistMesonEt = new TH1F(histname.Data(), "E_{T} for mesons",  nbinsEt, minEt, maxEt);
-
-    histname = "fHistProtonEt" + fHistogramNameSuffix;
-    fHistProtonEt = new TH1F(histname.Data(), "E_{T} for (anti-)protons", nbinsEt, minEt, maxEt);
-
-    histname = "fHistPionEt" + fHistogramNameSuffix;
-    fHistPionEt = new TH1F(histname.Data(), "E_{T} for #pi^+/#pi^-", nbinsEt, minEt, maxEt);
-
-    histname = "fHistKaonEt" + fHistogramNameSuffix;
-    fHistChargedKaonEt = new TH1F(histname.Data(), "E_{T} for charged kaons", nbinsEt, minEt, maxEt);
-
-    histname = "fHistMuonEt" + fHistogramNameSuffix;
-    fHistMuonEt = new TH1F(histname.Data(), "E_{T} for muons", nbinsEt, minEt, maxEt);
-
-    histname = "fHistElectronEt" + fHistogramNameSuffix;
-    fHistElectronEt = new TH1F(histname.Data(), "E_{T} for electrons/positrons", nbinsEt, minEt, maxEt);
-
-    histname = "fHistNeutronEt" + fHistogramNameSuffix;
-    fHistNeutronEt = new TH1F(histname.Data(), "E_{T} for neutrons", nbinsEt, minEt, maxEt);
-
-    histname = "fHistAntiNeutronEt" + fHistogramNameSuffix;
-    fHistAntiNeutronEt = new TH1F(histname.Data(), "E_{T} for anti-neutrons", nbinsEt, minEt, maxEt);
-
-    histname = "fHistGammaEt" + fHistogramNameSuffix;
-    fHistGammaEt = new TH1F(histname.Data(), "E_{T} for gammas", nbinsEt, minEt, maxEt);
-
-    histname = "fHistProtonEtAcc" + fHistogramNameSuffix;
-    fHistProtonEtAcc = new TH1F(histname.Data(), "E_{T} for (anti-)protons in calorimeter acceptance", nbinsEt, minEt, maxEt);
-
-    histname = "fHistPionEtAcc" + fHistogramNameSuffix;
-    fHistPionEtAcc = new TH1F(histname.Data(), "E_{T} for #pi^+/#pi^- in calorimeter acceptance", nbinsEt, minEt, maxEt);
-
-    histname = "fHistKaonEtAcc" + fHistogramNameSuffix;
-    fHistChargedKaonEtAcc = new TH1F(histname.Data(), "E_{T} for charged kaons in calorimeter acceptance", nbinsEt, minEt, maxEt);
-
-    histname = "fHistMuonEtAcc" + fHistogramNameSuffix;
-    fHistMuonEtAcc = new TH1F(histname.Data(), "E_{T} for muons in calorimeter acceptance", nbinsEt, minEt, maxEt);
-
-    histname = "fHistElectronEtAcc" + fHistogramNameSuffix;
-    fHistElectronEtAcc = new TH1F(histname.Data(), "E_{T} for electrons/positrons in calorimeter acceptance", nbinsEt, minEt, maxEt);
-
-    //
-    histname = "fHistTMDeltaR" + fHistogramNameSuffix;
-    fHistTMDeltaR = new TH1F(histname.Data(), "#Delta R for calorimeter clusters", 200, 0, 50);
-    
-    histname = "fHistTMDxDz" + fHistogramNameSuffix;
-    fHistTMDxDz = new TH2F(histname.Data(), "#Delta x vs #Delta z for calorimeter clusters", 800, -200, 200, 800, -200, 200);
-    
-    if(fMakeSparse){
-      histname = "fSparseHistTracks" + fHistogramNameSuffix;
-      const Int_t stsize = 7;
-      Int_t binsHist[stsize]   = {  1001,    7, 200000, 10000, 10000, 100,   11};
-      Double_t minHist[stsize] = {-500.5, -3.5,    0.0,   0.0,   0.0, -1.5, -0.5};
-      Double_t maxHist[stsize] = { 499.5,  3.5,  200.0, 100.0, 100.0,  1.5, 10.5};
-      fSparseHistTracks = new THnSparseF(histname.Data(), "pid:charge:mass:et:pt:rap:cent", stsize, binsHist, minHist, maxHist);
-      fSparseTracks = new Double_t[stsize];
-    
-      fSparseHistTracks->GetAxis(0)->SetTitle("pid");
-      fSparseHistTracks->GetAxis(1)->SetTitle("charge");
-      fSparseHistTracks->GetAxis(2)->SetTitle("mass");
-      fSparseHistTracks->GetAxis(3)->SetTitle("et");
-      fSparseHistTracks->GetAxis(4)->SetTitle("pt");
-      fSparseHistTracks->GetAxis(5)->SetTitle("rap");
-      fSparseHistTracks->GetAxis(6)->SetTitle("cent");
-
-      histname = "fSparseHistClusters" + fHistogramNameSuffix;
-      const Int_t scsize = 11;
-      //                            pid     ch    mass     et     pt   eta   et_t   pt_t  eta_t  cent   dist
-      Int_t scbinsHist[scsize]   = {  1001,    7, 200000, 10000, 10000,  100, 10000, 10000,  100,   11,   4000};
-      Double_t scminHist[scsize] = {-500.5, -3.5,    0.0,   0.0,   0.0, -1.5,   0.0,   0.0, -1.5, -0.5, -200.0};
-      Double_t scmaxHist[scsize] = { 499.5,  3.5,  200.0, 100.0, 100.0,  1.5, 100.0, 100.0,  1.5, 10.5,  200.0};
-      fSparseClusters = new Double_t[scsize];
-      fSparseHistClusters = new THnSparseF(histname.Data(), "pid:charge:mass:et:pt:rap:et_track:pt_track:eta_track:cent:dist_matched", scsize, scbinsHist, scminHist, scmaxHist);
-    
-      fSparseHistClusters->GetAxis(0)->SetTitle("pid");
-      fSparseHistClusters->GetAxis(1)->SetTitle("charge");
-      fSparseHistClusters->GetAxis(2)->SetTitle("mass");
-      fSparseHistClusters->GetAxis(3)->SetTitle("et");
-      fSparseHistClusters->GetAxis(4)->SetTitle("pt");
-      fSparseHistClusters->GetAxis(5)->SetTitle("rap");
-      fSparseHistClusters->GetAxis(6)->SetTitle("et_track");
-      fSparseHistClusters->GetAxis(7)->SetTitle("pt_track");
-      fSparseHistClusters->GetAxis(8)->SetTitle("rap_track");
-      fSparseHistClusters->GetAxis(9)->SetTitle("cent");
-      fSparseHistClusters->GetAxis(10)->SetTitle("dist_matched");
-
-      histname = "fSparseHistEt" + fHistogramNameSuffix;
-      const Int_t etsize = 7;
-      Int_t etbinsHist[etsize]   = { 10000, 10000,  10000,   3000,   500,   30000,   11};
-      Double_t etminHist[etsize] = {   0.0,   0.0,    0.0,   -0.5,  -0.5,    -0.5, -0.5};
-      Double_t etmaxHist[etsize] = { 200.0, 200.0,  200.0, 2999.5, 499.5,  2999.5, 10.5};
-      fSparseEt = new Double_t[etsize];
-      fSparseHistEt = new THnSparseF(histname.Data(), "tot_et:neutral_et:charged_et:tot_mult:neutral_mult:charged_mult:cent", etsize, etbinsHist, etminHist, etmaxHist);
-    
-      fSparseHistEt->GetAxis(0)->SetTitle("tot_et");
-      fSparseHistEt->GetAxis(1)->SetTitle("neutral_et");
-      fSparseHistEt->GetAxis(2)->SetTitle("charged_et");
-      fSparseHistEt->GetAxis(3)->SetTitle("tot_mult");
-      fSparseHistEt->GetAxis(4)->SetTitle("netral_mult");
-      fSparseHistEt->GetAxis(5)->SetTitle("charged_mult");
-      fSparseHistEt->GetAxis(6)->SetTitle("cent");
-    }
-    
     histname = "fCutFlow" + fHistogramNameSuffix;
     fCutFlow = new TH1I(histname, histname, 20, -0.5, 19.5);
 }
@@ -591,50 +379,130 @@ THnSparseF* AliAnalysisEt::CreateChargedPartHistoSparse(TString name, TString ti
 
 void AliAnalysisEt::CreateTrees()
 { // create tree..
-  TString treename = "fTree" + fHistogramNameSuffix;
+  TString treename = "fEventSummaryTree" + fHistogramNameSuffix;
   if(fCuts->GetHistMakeTree())
   {
   
-    fTree = new TTree(treename, treename);
-    fTree->Branch("fTotEt",&fTotEt,"fTotEt/D");
-    fTree->Branch("fTotEtAcc",&fTotEtAcc,"fTotEtAcc/D");
-    fTree->Branch("fTotNeutralEt",&fTotNeutralEt,"fTotNeutralEt/D");
-    fTree->Branch("fTotNeutralEtAcc",&fTotNeutralEtAcc,"fTotNeutralEtAcc/D");
-    fTree->Branch("fTotChargedEt",&fTotChargedEt,"fTotChargedEt/D");
-    fTree->Branch("fTotChargedEtAcc",&fTotChargedEtAcc,"fTotChargedEtAcc/D");
-    fTree->Branch("fMultiplicity",&fMultiplicity,"fMultiplicity/I");
-    fTree->Branch("fChargedMultiplicity",&fChargedMultiplicity,"fChargedMultiplicity/I");
-    fTree->Branch("fNeutralMultiplicity",&fNeutralMultiplicity,"fNeutralMultiplicity/I");
-    fTree->Branch("fCentClass",&fCentClass,"fCentClass/I");
-    fTree->Branch("fChargedEnergyRemoved", &fChargedEnergyRemoved, "fChargedEnergyRemoved/D");
-    fTree->Branch("fNeutralEnergyRemoved", &fNeutralEnergyRemoved, "fNeutralEnergyRemoved/D");
-    fTree->Branch("fGammaEnergyAdded", &fGammaEnergyAdded, "fGammaEnergyAdded/D");
+    fEventSummaryTree = new TTree(treename, treename);
+    fEventSummaryTree->Branch("fTotEt",&fTotEt,"fTotEt/D");
+    fEventSummaryTree->Branch("fTotNeutralEt",&fTotNeutralEt,"fTotNeutralEt/D");
+    fEventSummaryTree->Branch("fTotChargedEt",&fTotChargedEt,"fTotChargedEt/D");
+    fEventSummaryTree->Branch("fMultiplicity",&fMultiplicity,"fMultiplicity/I");
+    fEventSummaryTree->Branch("fChargedMultiplicity",&fChargedMultiplicity,"fChargedMultiplicity/I");
+    fEventSummaryTree->Branch("fNeutralMultiplicity",&fNeutralMultiplicity,"fNeutralMultiplicity/I");
+    fEventSummaryTree->Branch("fCentClass",&fCentClass,"fCentClass/I");
+    fEventSummaryTree->Branch("fChargedEnergyRemoved", &fChargedEnergyRemoved, "fChargedEnergyRemoved/D");
+    fEventSummaryTree->Branch("fNeutralEnergyRemoved", &fNeutralEnergyRemoved, "fNeutralEnergyRemoved/D");
+    fEventSummaryTree->Branch("fGammaEnergyAdded", &fGammaEnergyAdded, "fGammaEnergyAdded/D");
     
-    fTree->Branch("fBaryonEt",&fBaryonEt,"fBaryonEt/D");
-    fTree->Branch("fAntiBaryonEt",&fAntiBaryonEt,"fAntiBaryonEt/D");
-    fTree->Branch("fMesonEt",&fMesonEt,"fMesonEt/D");
-    fTree->Branch("fProtonEt",&fProtonEt,"fProtonEt/D");
-    fTree->Branch("fChargedKaonEt",&fChargedKaonEt,"fChargedKaonEt/D");
-    fTree->Branch("fMuonEt",&fMuonEt,"fMuonEt/D");
-    fTree->Branch("fElectronEt",&fElectronEt,"fElectronEt/D");
-    fTree->Branch("fProtonEtAcc",&fProtonEtAcc,"fProtonEtAcc/D");
-    fTree->Branch("fChargedKaonEtAcc",&fChargedKaonEtAcc,"fChargedKaonEtAcc/D");
-    fTree->Branch("fMuonEtAcc",&fMuonEtAcc,"fMuonEtAcc/D");
-    fTree->Branch("fElectronEtAcc",&fElectronEtAcc,"fElectronEtAcc/D");
+
+    fEventSummaryTree->Branch("fProtonEt",&fProtonEt,"fProtonEt/D");
+    fEventSummaryTree->Branch("fAntiProtonEt",&fAntiProtonEt,"fAntiProtonEt/D");
+
+    fEventSummaryTree->Branch("fNeutronEt",&fNeutronEt,"fNeutronEt/D");
+    fEventSummaryTree->Branch("fAntiNeutronEt",&fAntiNeutronEt,"fAntiNeutronEt/D");
+
+    fEventSummaryTree->Branch("fPi0Et",&fPi0Et,"fPi0Et/D");
+    fEventSummaryTree->Branch("fPiPlusEt",&fPiPlusEt,"fPiPlusEt/D");
+    fEventSummaryTree->Branch("fPiMinusEt",&fPiMinusEt,"fPiMinusEt/D");
+
+    fEventSummaryTree->Branch("fKPlusEt",&fKPlusEt,"fKPlusEt/D");
+    fEventSummaryTree->Branch("fKMinusEt",&fKMinusEt,"fKMinusEt/D");
+    fEventSummaryTree->Branch("fK0sEt",&fK0sEt,"fK0sEt/D");
+    fEventSummaryTree->Branch("fK0lEt",&fK0lEt,"fK0lEt/D");
+
+    fEventSummaryTree->Branch("fMuMinusEt",&fMuMinusEt,"fMuMinusEt/D");
+    fEventSummaryTree->Branch("fMuPlusEt",&fMuPlusEt,"fMuPlusEt/D");
+    
+    fEventSummaryTree->Branch("fEMinusEt",&fEMinusEt,"fEMinusEt/D");
+    fEventSummaryTree->Branch("fEPlusEt",&fEPlusEt,"fEPlusEt/D");
+    
+    fEventSummaryTree->Branch("fGammaEt", &fGammaEt, "fGammaEt/D");
+    
+    fEventSummaryTree->Branch("fProtonRemovedEt",&fProtonRemovedEt,"fProtonRemovedEt/D");
+    fEventSummaryTree->Branch("fAntiProtonRemovedEt",&fAntiProtonRemovedEt,"fAntiProtonRemovedEt/D");
+
+    fEventSummaryTree->Branch("fNeutronRemovedEt",&fNeutronRemovedEt,"fNeutronRemovedEt/D");
+    fEventSummaryTree->Branch("fAntiNeutronRemovedEt",&fAntiNeutronRemovedEt,"fAntiNeutronRemovedEt/D");
+
+    fEventSummaryTree->Branch("fPi0RemovedEt",&fPi0RemovedEt,"fPi0RemovedEt/D");
+    fEventSummaryTree->Branch("fPiPlusRemovedEt",&fPiPlusRemovedEt,"fPiPlusRemovedEt/D");
+    fEventSummaryTree->Branch("fPiMinusRemovedEt",&fPiMinusRemovedEt,"fPiMinusRemovedEt/D");
+
+    fEventSummaryTree->Branch("fKPlusRemovedEt",&fKPlusRemovedEt,"fKPlusRemovedEt/D");
+    fEventSummaryTree->Branch("fKMinusRemovedEt",&fKMinusEt,"fKMinusRemovedEt/D");
+    fEventSummaryTree->Branch("fK0sRemovedEt",&fK0sEt,"fK0sRemovedEt/D");
+    fEventSummaryTree->Branch("fK0lRemovedEt",&fK0lRemovedEt,"fK0lRemovedEt/D");
+
+    fEventSummaryTree->Branch("fMuMinusRemovedEt",&fMuMinusRemovedEt,"fMuMinusRemovedEt/D");
+    fEventSummaryTree->Branch("fMuPlusRemovedEt",&fMuPlusRemovedEt,"fMuPlusRemovedEt/D");
+    
+    fEventSummaryTree->Branch("fEMinusRemovedEt",&fEMinusRemovedEt,"fEMinusRemovedEt/D");
+    fEventSummaryTree->Branch("fEPlusRemovedEt",&fEPlusRemovedEt,"fEPlusRemovedEt/D");
+    
+    fEventSummaryTree->Branch("fGammaRemovedEt", &fGammaRemovedEt, "fGammaEtRemoved/D");
+
+    fEventSummaryTree->Branch("fProtonMult",&fProtonMult,"fProtonMult/D");
+    fEventSummaryTree->Branch("fAntiProtonMult",&fAntiProtonMult,"fAntiProtonMult/D");
+
+    fEventSummaryTree->Branch("fNeutronMult",&fNeutronMult,"fNeutronMult/D");
+    fEventSummaryTree->Branch("fAntiNeutronMult",&fAntiNeutronMult,"fAntiNeutronMult/D");
+
+    fEventSummaryTree->Branch("fPi0Mult",&fPi0Mult,"fPi0Mult/D");
+    fEventSummaryTree->Branch("fPiPlusMult",&fPiPlusMult,"fPiPlusMult/D");
+    fEventSummaryTree->Branch("fPiMinusMult",&fPiMinusMult,"fPiMinusMult/D");
+
+    fEventSummaryTree->Branch("fKPlusMult",&fKPlusMult,"fKPlusMult/D");
+    fEventSummaryTree->Branch("fKMinusMult",&fKMinusMult,"fKMinusMult/D");
+    fEventSummaryTree->Branch("fK0sMult",&fK0sMult,"fK0sMult/D");
+    fEventSummaryTree->Branch("fK0lMult",&fK0lMult,"fK0lMult/D");
+
+    fEventSummaryTree->Branch("fMuMinusMult",&fMuMinusMult,"fMuMinusMult/D");
+    fEventSummaryTree->Branch("fMuPlusMult",&fMuPlusMult,"fMuPlusMult/D");
+    
+    fEventSummaryTree->Branch("fEMinusMult",&fEMinusMult,"fEMinusMult/D");
+    fEventSummaryTree->Branch("fEPlusMult",&fEPlusMult,"fEPlusMult/D");
+    
+    fEventSummaryTree->Branch("fGammaMult", &fGammaMult, "fGammaMult/D");
+    
+    fEventSummaryTree->Branch("fProtonRemovedMult",&fProtonRemovedMult,"fProtonRemovedMult/D");
+    fEventSummaryTree->Branch("fAntiProtonRemovedMult",&fAntiProtonRemovedMult,"fAntiProtonRemovedMult/D");
+
+    fEventSummaryTree->Branch("fNeutronRemovedMult",&fNeutronRemovedMult,"fNeutronRemovedMult/D");
+    fEventSummaryTree->Branch("fAntiNeutronRemovedMult",&fAntiNeutronRemovedMult,"fAntiNeutronRemovedMult/D");
+
+    fEventSummaryTree->Branch("fPi0RemovedMult",&fPi0RemovedMult,"fPi0RemovedMult/D");
+    fEventSummaryTree->Branch("fPiPlusRemovedMult",&fPiPlusRemovedMult,"fPiPlusRemovedMult/D");
+    fEventSummaryTree->Branch("fPiMinusRemovedMult",&fPiMinusRemovedMult,"fPiMinusRemovedMult/D");
+
+    fEventSummaryTree->Branch("fKPlusRemovedMult",&fKPlusRemovedMult,"fKPlusRemovedMult/D");
+    fEventSummaryTree->Branch("fKMinusRemovedMult",&fKMinusMult,"fKMinusRemovedMult/D");
+    fEventSummaryTree->Branch("fK0sRemovedMult",&fK0sMult,"fK0sRemovedMult/D");
+    fEventSummaryTree->Branch("fK0lRemovedMult",&fK0lRemovedMult,"fK0lRemovedMult/D");
+
+    fEventSummaryTree->Branch("fMuMinusRemovedMult",&fMuMinusRemovedMult,"fMuMinusRemovedMult/D");
+    fEventSummaryTree->Branch("fMuPlusRemovedMult",&fMuPlusRemovedMult,"fMuPlusRemovedMult/D");
+    
+    fEventSummaryTree->Branch("fEMinusRemovedMult",&fEMinusRemovedMult,"fEMinusRemovedMult/D");
+    fEventSummaryTree->Branch("fEPlusRemovedMult",&fEPlusRemovedMult,"fEPlusRemovedMult/D");
+    
+    fEventSummaryTree->Branch("fGammaRemovedMult", &fGammaRemovedMult, "fGammaMultRemoved/D");
+
+    
+    
   }
   
   if(fCuts->GetHistMakeTreeDeposit())
   {
     treename = "fTreeDeposit" + fHistogramNameSuffix;
-    fTreeDeposit = new TTree(treename, treename);
+    fDepositTree = new TTree(treename, treename);
   
-    fTreeDeposit->Branch("fEnergyDeposited", &fEnergyDeposited, "fEnergyDeposited/F");
-    fTreeDeposit->Branch("fEnergyTPC", &fEnergyTPC, "fEnergyTPC/F");
-    fTreeDeposit->Branch("fCharge", &fCharge, "fCharge/S");
-    fTreeDeposit->Branch("fParticlePid", &fParticlePid, "fParticlePid/S");
-    fTreeDeposit->Branch("fPidProb", &fPidProb, "fPidProb/F");
-    fTreeDeposit->Branch("fTrackPassedCut", &fTrackPassedCut, "fTrackPassedCut/B");
- 
+    fDepositTree->Branch("fEnergyDeposited", &fEnergyDeposited, "fEnergyDeposited/F");
+    fDepositTree->Branch("fMomentumTPC", &fMomentumTPC, "fMomentumTPC/F");
+    fDepositTree->Branch("fCharge", &fCharge, "fCharge/S");
+    fDepositTree->Branch("fParticlePid", &fParticlePid, "fParticlePid/S");
+    fDepositTree->Branch("fPidProb", &fPidProb, "fPidProb/F");
+    fDepositTree->Branch("fTrackPassedCut", &fTrackPassedCut, "fTrackPassedCut/B");
   }
 
   return;
@@ -642,50 +510,28 @@ void AliAnalysisEt::CreateTrees()
 void AliAnalysisEt::FillHistograms()
 { // fill histograms..
     fHistEt->Fill(fTotEt);
-    fHistChargedEt->Fill(fTotChargedEt);
-    fHistNeutralEt->Fill(fTotNeutralEt);
 
-    fHistEtAcc->Fill(fTotEtAcc);
-    fHistChargedEtAcc->Fill(fTotChargedEtAcc);
-    fHistNeutralEtAcc->Fill(fTotNeutralEtAcc);
-
-    fHistMult->Fill(fMultiplicity);
-    fHistChargedMult->Fill(fChargedMultiplicity);
     fHistNeutralMult->Fill(fNeutralMultiplicity);
-
-    fHistBaryonEt->Fill(fBaryonEt);
-    fHistAntiBaryonEt->Fill(fAntiBaryonEt);
-    fHistMesonEt->Fill(fMesonEt);
-
-    fHistProtonEt->Fill(fProtonEt);
-    fHistPionEt->Fill(fPionEt);
-    fHistChargedKaonEt->Fill(fChargedKaonEt);
-    fHistMuonEt->Fill(fMuonEt);
-    fHistElectronEt->Fill(fElectronEt);
-    fHistNeutronEt->Fill(fNeutronEt);
-    fHistAntiNeutronEt->Fill(fAntiNeutronEt);
-    fHistGammaEt->Fill(fGammaEt);
-    
-    fHistProtonEtAcc->Fill(fProtonEtAcc);
-    fHistPionEtAcc->Fill(fPionEtAcc);
-    fHistChargedKaonEtAcc->Fill(fChargedKaonEtAcc);
-    fHistMuonEtAcc->Fill(fMuonEtAcc);
-    fHistElectronEtAcc->Fill(fElectronEtAcc);
 
     if (fCuts) {
       if (fCuts->GetHistMakeTree()) {
-	fTree->Fill();
+	fEventSummaryTree->Fill();
       }
     }
-    
-    
-    if(fMakeSparse){fSparseHistEt->Fill(fSparseEt);}
+    if(fCuts)
+    {
+      if(fCuts->GetHistMakeTreeDeposit())
+      {
+	fDepositTree->Fill();
+      }
+    }
+      
 }
 
 Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)
 { //this line is basically here to eliminate a compiler warning that event is not used.  Making it a virtual function did not work with the plugin.
-  fSelector->SetEvent(event);
   AliAnalysisEtCommon::AnalyseEvent(event);
+  //fSelector->SetEvent(event);
   ResetEventValues();
   return 0;
 }
@@ -694,30 +540,105 @@ void AliAnalysisEt::ResetEventValues()
 { // clear
   AliAnalysisEtCommon::ResetEventValues();
   fTotEt = 0;
-  fTotEtAcc = 0;
   fTotNeutralEt = 0;
-  fTotNeutralEtAcc = 0;
   fTotChargedEt  = 0;
-  fTotChargedEtAcc = 0;
   fMultiplicity = 0;
   fChargedMultiplicity = 0;
   fNeutralMultiplicity = 0;
-  fBaryonEt = 0;
-  fAntiBaryonEt = 0;
-  fMesonEt = 0;
+  
   fProtonEt = 0;
-  fPionEt = 0;
-  fChargedKaonEt = 0;
-  fMuonEt = 0;
-  fElectronEt = 0;
+  fAntiProtonEt = 0;
+  
   fNeutronEt = 0;
   fAntiNeutronEt = 0;
+  
+  fPi0Et = 0;
+  fPiPlusEt = 0;
+  fPiMinusEt = 0;
+  
+  fKPlusEt = 0;
+  fKMinusEt = 0;
+  fK0sEt = 0;
+  fK0lEt = 0;
+  
+  fMuMinusEt = 0;
+  fMuPlusEt = 0;
+  
+  fEMinusEt = 0;
+  fEPlusEt = 0;
+  
   fGammaEt = 0;
-  fProtonEtAcc = 0;
-  fPionEtAcc = 0;
-  fChargedKaonEtAcc = 0;
-  fMuonEtAcc = 0;
-  fElectronEtAcc = 0;
+  
+  fProtonRemovedEt = 0;
+  fAntiProtonRemovedEt = 0;
+  
+  fNeutronRemovedEt = 0;
+  fAntiNeutronRemovedEt = 0;
+  
+  fPi0RemovedEt = 0;
+  fPiPlusRemovedEt = 0;
+  fPiMinusRemovedEt = 0;
+  
+  fKPlusRemovedEt = 0;
+  fKMinusRemovedEt = 0;
+  fK0sRemovedEt = 0;
+  fK0lRemovedEt = 0;
+  
+  fMuMinusRemovedEt = 0;
+  fMuPlusRemovedEt = 0;
+  
+  fEMinusRemovedEt = 0;
+  fEPlusRemovedEt = 0;
+  
+  fGammaRemovedEt = 0;
+  
+  
+  fProtonMult = 0;
+  fAntiProtonMult = 0;
+  
+  fNeutronMult = 0;
+  fAntiNeutronMult = 0;
+  
+  fPi0Mult = 0;
+  fPiPlusMult = 0;
+  fPiMinusMult = 0;
+  
+  fKPlusMult = 0;
+  fKMinusMult = 0;
+  fK0sMult = 0;
+  fK0lMult = 0;
+  
+  fMuMinusMult = 0;
+  fMuPlusMult = 0;
+  
+  fEMinusMult = 0;
+  fEPlusMult = 0;
+  
+  fGammaMult = 0;
+  
+  fProtonRemovedMult = 0;
+  fAntiProtonRemovedMult = 0;
+  
+  fNeutronRemovedMult = 0;
+  fAntiNeutronRemovedMult = 0;
+  
+  fPi0RemovedMult = 0;
+  fPiPlusRemovedMult = 0;
+  fPiMinusRemovedMult = 0;
+  
+  fKPlusRemovedMult = 0;
+  fKMinusRemovedMult = 0;
+  fK0sRemovedMult = 0;
+  fK0lRemovedMult = 0;
+  
+  fMuMinusRemovedMult = 0;
+  fMuPlusRemovedMult = 0;
+  
+  fEMinusRemovedMult = 0;
+  fEPlusRemovedMult = 0;
+  
+  fGammaRemovedMult = 0;
+  
   return;
 }
 
@@ -742,35 +663,3 @@ Double_t AliAnalysisEt::CalculateTransverseEnergy(AliESDCaloCluster* cluster)
   return corrEnergy * TMath::Sin(cp.Theta());
 }
 
-//____________________________________________________________________________
-Double_t AliAnalysisEt::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge, AliVEvent* e) const {
-  //Parameterization of LHC10h period
-  //_true if neutral_
-  
-  Double_t meanX=0;
-  Double_t meanZ=0.;
-  Double_t sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
-              6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
-  Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
-  
-  Double_t mf = e->GetMagneticField(); //Positive for ++ and negative for --
-
-  if(mf<0.){ //field --
-    meanZ = -0.468318 ;
-    if(charge>0)
-      meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01)) ;
-    else
-      meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01)) ;
-  }
-  else{ //Field ++
-    meanZ= -0.468318;
-    if(charge>0)
-      meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01)) ;
-    else
-      meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01)) ;     
-  }
-
-  Double_t rz=(dz-meanZ)/sz ;
-  Double_t rx=(dx-meanX)/sx ;
-  return TMath::Sqrt(rx*rx+rz*rz) ;
-}

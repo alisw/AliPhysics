@@ -36,7 +36,6 @@ public:
     /** Initialise the analysis, must be overloaded. */
     virtual void Init();
 
-
     /** Reset event specific values (Et etc.) */
     virtual void ResetEventValues();
 

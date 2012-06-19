@@ -208,9 +208,9 @@ void AliAnalysisTaskTotEt::UserExec(Option_t *)
     }
   if(fMCAnalysis)
     {
-      fHistEtRecvsEtMC->Fill(fRecAnalysis->GetTotNeutralEtAcc(), fMCAnalysis->GetTotNeutralEtAcc());
-      if(fMCAnalysis->GetTotNeutralEtAcc()) fHistEtRecOverEtMC->Fill(fRecAnalysis->GetTotNeutralEt()/fMCAnalysis->GetTotNeutralEtAcc(), cent->GetCentralityClass10("V0M"));
-      if(fMCAnalysis->GetTotNeutralEtAcc()) fHistDiffEtRecEtMCOverEtMC->Fill(fMCAnalysis->GetTotNeutralEt(), (fRecAnalysis->GetTotNeutralEt()-fMCAnalysis->GetTotNeutralEt())/fMCAnalysis->GetTotNeutralEt());
+      fHistEtRecvsEtMC->Fill(fRecAnalysis->GetTotNeutralEt(), fMCAnalysis->GetTotNeutralEt());
+      if(fMCAnalysis->GetTotNeutralEt()) fHistEtRecOverEtMC->Fill(fRecAnalysis->GetTotNeutralEt()/fMCAnalysis->GetTotNeutralEt(), cent->GetCentralityClass10("V0M"));
+      if(fMCAnalysis->GetTotNeutralEt()) fHistDiffEtRecEtMCOverEtMC->Fill(fMCAnalysis->GetTotNeutralEt(), (fRecAnalysis->GetTotNeutralEt()-fMCAnalysis->GetTotNeutralEt())/fMCAnalysis->GetTotNeutralEt());
     }
   //}
   // Post output data.

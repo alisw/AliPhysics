@@ -4,7 +4,9 @@
 #include "AliAnalysisEtSelector.h"
 
 class TH2I;
+class TParticle;
 class AliPHOSGeometry;
+class AliESDEvent;
 
 class AliAnalysisEtSelectorPhos : public AliAnalysisEtSelector
 {
@@ -16,11 +18,16 @@ public:
     
     virtual TRefArray* GetClusters();
     virtual Bool_t CutMinEnergy(const AliESDCaloCluster& cluster) const;
+    virtual Bool_t CutMinEnergy(const TParticle& part) const;
     virtual Bool_t CutDistanceToBadChannel(const AliESDCaloCluster& cluster) const;
-    virtual Bool_t CutTrackMatching(const AliESDCaloCluster& cluster, Double_t &r) const;
+    virtual Bool_t CutTrackMatching(const AliESDCaloCluster& cluster) const;
+    virtual Bool_t CutGeometricalAcceptance(const TParticle& part) const;    
+    virtual Bool_t CutGeometricalAcceptance(const AliVTrack& part) const;    
+    virtual void Init() {}
+    virtual Int_t Init(const AliESDEvent *ev);
+
+    virtual void SetEvent(const AliESDEvent* event);
     
-    virtual Int_t Init(int runNumber);
-  
 private:
 
 
@@ -32,6 +39,9 @@ private:
     TH2I *fBadMapM2; // Bad map
     TH2I *fBadMapM3; // Bad map
     TH2I *fBadMapM4; // Bad map
+
+    Bool_t fInitialized; // matrix initialized
+    Bool_t fMatrixInitialized; // matrix initialized
     
     AliAnalysisEtSelectorPhos();
     AliAnalysisEtSelectorPhos(const AliAnalysisEtSelectorPhos& other); // Prohibited

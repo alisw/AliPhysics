@@ -1,20 +1,25 @@
 #include "AliAnalysisEtSelectorPhos.h"
 #include "AliAnalysisEtCuts.h"
 #include "AliESDCaloCluster.h"
-#include <AliVEvent.h>
+#include "AliESDEvent.h"
 #include "TRefArray.h"
 #include "AliPHOSGeometry.h"
 #include "TH2I.h"
 #include "TFile.h"
 #include "TMath.h"
+#include "TParticle.h"
 #include "AliLog.h"
 #include <iostream>
+
 ClassImp(AliAnalysisEtSelectorPhos)
+
 AliAnalysisEtSelectorPhos::AliAnalysisEtSelectorPhos(AliAnalysisEtCuts* cuts): AliAnalysisEtSelector(cuts)
 ,fGeoUtils(0)
 ,fBadMapM2(0)
 ,fBadMapM3(0)
 ,fBadMapM4(0)
+,fInitialized(kFALSE)
+,fMatrixInitialized(kFALSE)
 {
   
 }
@@ -25,17 +30,46 @@ AliAnalysisEtSelectorPhos::~AliAnalysisEtSelectorPhos()
 }
 
 TRefArray* AliAnalysisEtSelectorPhos::GetClusters()
-{  
-  return 0;
+{
+  if(!fClusterArray) fClusterArray = new TRefArray;
+  
+  if(fClusterArray)
+  {
+    fEvent->GetPHOSClusters(fClusterArray);
+  }
+  else
+  {
+    Printf("Could not initialize cluster array");
+  }
+  
+  return fClusterArray;
 }
 
-Int_t AliAnalysisEtSelectorPhos::Init(Int_t runNumber)
+Int_t AliAnalysisEtSelectorPhos::Init(const AliESDEvent* event)
 {
-  AliAnalysisEtSelector::Init(runNumber);
   
+  AliAnalysisEtSelector::Init(event);
+  Printf("Initializing selector for run: %d", event->GetRunNumber());
   int res = LoadGeometry();
   if(res) return -1;
-  return LoadBadMaps();  
+  if(LoadBadMaps()) return -1;
+  fInitialized = kTRUE;
+  if (!fMatrixInitialized)
+    {
+	Printf("INITIALIZING MISALIGNMENT MATRICES");
+        for (Int_t mod=0; mod<5; mod++) {
+	    
+            if (!event->GetPHOSMatrix(mod))
+	    {
+	      Printf("Could not find geo matrix for module %d", mod);
+	      continue;
+	    }
+	    fMatrixInitialized = kTRUE;
+            fGeoUtils->SetMisalMatrix(event->GetPHOSMatrix(mod),mod) ;
+            Printf("PHOS geo matrix %p for module # %d is set\n", event->GetPHOSMatrix(mod), mod);
+        }
+    }
+  return 0;
 }
 
 Bool_t AliAnalysisEtSelectorPhos::CutMinEnergy(const AliESDCaloCluster& cluster) const
@@ -43,8 +77,19 @@ Bool_t AliAnalysisEtSelectorPhos::CutMinEnergy(const AliESDCaloCluster& cluster)
   return cluster.E() > fCuts->GetReconstructedPhosClusterEnergyCut();
 }
 
+Bool_t AliAnalysisEtSelectorPhos::CutMinEnergy(const TParticle& part) const
+{
+    return part.Energy() > fCuts->GetReconstructedPhosClusterEnergyCut();
+}
+
+
 Bool_t AliAnalysisEtSelectorPhos::CutDistanceToBadChannel(const AliESDCaloCluster& cluster) const
 {
+  if(!fMatrixInitialized)
+  {
+    Printf("Misalignment matrices are not initialized");
+    return kFALSE;
+  }
     Float_t gPos[3];
     cluster.GetPosition(gPos);
     Int_t relId[4];
@@ -142,9 +187,14 @@ Bool_t AliAnalysisEtSelectorPhos::CutDistanceToBadChannel(const AliESDCaloCluste
 
 }
 
-Bool_t AliAnalysisEtSelectorPhos::CutTrackMatching(const AliESDCaloCluster& cluster, Double_t &r) const
+Bool_t AliAnalysisEtSelectorPhos::CutTrackMatching(const AliESDCaloCluster& cluster) const
 {
 
+  if(!fMatrixInitialized)
+  {
+    Printf("Misalignment matrices are not initialized");
+    return kFALSE;
+  }
   
   // cluster->GetTrackDx(), cluster->GetTrackDz(), event->GetTrack(trackMatchedIndex)->Pt(), event->GetTrack(trackMatchedIndex)->Charge(), ev
   
@@ -185,7 +235,7 @@ Bool_t AliAnalysisEtSelectorPhos::CutTrackMatching(const AliESDCaloCluster& clus
 
   Double_t rz=(dz-meanZ)/sz ;
   Double_t rx=(dx-meanX)/sx ;
-  r = TMath::Sqrt(rx*rx+rz*rz);
+  Double_t r = TMath::Sqrt(rx*rx+rz*rz);
   if(r < fCuts->GetPhosTrackRCut()) return kFALSE;
   
   return kTRUE;
@@ -209,26 +259,46 @@ TFile *f = TFile::Open("badchannels.root", "READ");
       std::cout << "Could not open badchannels.root" << std::endl;
       return -1;
     }
-    
+
     fBadMapM2 = (TH2I*)f->Get("bad_channels_m2");
-    if(fBadMapM2) 
+    if(!fBadMapM2) 
     {
       std::cout << "Could not find bad_channels_m2 in badchannels.root" << std::endl;
     }
     fBadMapM3 = (TH2I*)f->Get("bad_channels_m3");
-    if(fBadMapM2) 
+    if(!fBadMapM2) 
     {
       std::cout << "Could not find bad_channels_m3 in badchannels.root" << std::endl;
     }
     
     fBadMapM4 = (TH2I*)f->Get("bad_channels_m4");
-    if(fBadMapM4) 
+    if(!fBadMapM4) 
     {
       std::cout << "Could not find bad_channels_m4 in badchannels.root" << std::endl;
     }
-
+    
+    
     return 0;
     
-    
-    
+}
+
+void AliAnalysisEtSelectorPhos::SetEvent(const AliESDEvent* event)
+{
+    //AliAnalysisEtSelector::SetEvent(event);
+    fEvent = event;
+    if(!fInitialized) Init(event);
+}
+
+Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const TParticle& part) const
+{
+  return TMath::Abs(part.Eta()) < fCuts->GetGeometryPhosEtaAccCut() 
+	  && part.Phi() < fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180.
+	  && part.Phi() > fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
+}
+
+Bool_t AliAnalysisEtSelectorPhos::CutGeometricalAcceptance(const AliVTrack& track) const
+{
+  return TMath::Abs(track.Eta()) < fCuts->GetGeometryPhosEtaAccCut() &&
+           track.Phi() > fCuts->GetGeometryPhosPhiAccMaxCut()*TMath::Pi()/180. &&
+           track.Phi() < fCuts->GetGeometryPhosPhiAccMinCut()*TMath::Pi()/180.;
 }

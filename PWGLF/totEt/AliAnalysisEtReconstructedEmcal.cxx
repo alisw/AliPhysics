@@ -31,17 +31,8 @@ void AliAnalysisEtReconstructedEmcal::Init()
   AliAnalysisEtReconstructed::Init();
     
   fDetectorRadius = fCuts->GetGeometryEmcalDetectorRadius();
-  fEtaCutAcc = fCuts->GetGeometryEmcalEtaAccCut();
-  fPhiCutAccMax = fCuts->GetGeometryEmcalPhiAccMaxCut() * TMath::Pi()/180.;
-  fPhiCutAccMin = fCuts->GetGeometryEmcalPhiAccMinCut() * TMath::Pi()/180.;
-  fClusterEnergyCut = fCuts->GetReconstructedEmcalClusterEnergyCut();
   fSingleCellEnergyCut = fCuts->GetReconstructedEmcalSingleCellEnergyCut();
 
-  fClusterType = fCuts->GetEmcalClusterType();
-  fTrackDistanceCut = fCuts->GetEmcalTrackDistanceCut();
-  
-  fDetector = fCuts->GetDetectorEmcal();
-	 
 }
 
 bool AliAnalysisEtReconstructedEmcal::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)
