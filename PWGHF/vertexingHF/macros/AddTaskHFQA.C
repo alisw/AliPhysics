@@ -90,6 +90,16 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     else analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get(cutsobjname);
     suffix="Lc";
     break;
+  case 6:
+    cutsobjname="LctoV0AnalysisCuts";
+    if(stdcuts) {
+      analysiscuts = new AliRDHFCutsLctoV0bachelor();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2010();
+    }
+    else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(cutsobjname);
+    suffix="LcToV0x";
+    break;
   }
 
   inname+=suffix;

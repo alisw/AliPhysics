@@ -28,7 +28,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
 
  public:
 
-  enum DecChannel {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kD0toKpipipi,kLambdactopKpi};
+  enum DecChannel {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kD0toKpipipi,kLambdactopKpi,kLambdactoV0};
 
   AliAnalysisTaskSEHFQA();
   AliAnalysisTaskSEHFQA(const char *name, DecChannel ch, AliRDHFCuts* cuts);
