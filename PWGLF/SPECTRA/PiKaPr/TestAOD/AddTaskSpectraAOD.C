@@ -83,7 +83,7 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kTRUE,
   
   outputFileName += Form(":OutputAODSpectraTask_%s_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d.root",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax(),pid->GetNSigmaCut(),trcuts->GetTrackType());
   
-  cout<<outputFileName<<endl;
+  cout<<"outputFileName:  "<<outputFileName<<endl;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();      
   AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer("chistpt", AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer,outputFileName);
   AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer("cvcutpt", AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer,outputFileName);
@@ -95,7 +95,7 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kTRUE,
   mgr->ConnectOutput(task, 2, coutputpt2);
   mgr->ConnectOutput(task, 3, coutputpt3);
   mgr->ConnectOutput(task, 4, coutputpt4);
-  return task;
+  //return task;
   
   mgr->AddTask(task);
   return task;

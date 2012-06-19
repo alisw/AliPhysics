@@ -6,38 +6,47 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   
   //  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   
+  // Load common libraries
+  gSystem->Load("libCore.so");
   gSystem->Load("libTree.so");
   gSystem->Load("libGeom.so");
   gSystem->Load("libVMC.so");
   gSystem->Load("libPhysics.so");
+  gSystem->Load("libMinuit.so"); 
+  gSystem->Load("libGui.so");
+  gSystem->Load("libXMLParser.so");
   gSystem->Load("libSTEERBase.so");
   gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libOADB.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-
+  gSystem->Load("libCDB.so");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libProof.so");
+  gSystem->Load("libRAWDatabase.so");
+  gSystem->Load("libSTEER.so");
+  //__________________________________________________________________________
+  // Use AliRoot includes to compile our task
+  gROOT->ProcessLine(".include $ALICE_ROOT/include");
+  gSystem->Load("libPWGLFspectra.so");
+  
   AliAnalysisAlien * handler = new AliAnalysisAlien("test");
   handler->SetOverwriteMode();
   handler->SetRunMode(proofMode);
   handler->SetProofReset(0);
   //handler->SetROOTVersion("v5-33-02a");
   //handler->SetAliROOTVersion("v5-03-11-AN");
-  handler->SetAliROOTVersion("v5-04-25-AN");
-   
+  handler->SetAliROOTVersion("v5-03-32-AN");
+  
   //handler->SetNproofWorkers(80);
   //handler->SetNproofWorkersPerSlave(4);
   handler->SetProofCluster(Form("%s@alice-caf.cern.ch", gSystem->Getenv("CAFUSER")));
   //handler->SetProofCluster(Form("%s@skaf.saske.sk",gSystem->Getenv("CAFUSER")));
   // Set handler for Real DATA:
   if (c == 1){
-    //handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree");
-    //handler->SetProofDataSet("/alice/data/LHC10h_000138653_p2_AOD049#aodTree|/alice/data/LHC10h_000138662_p2_AOD049#aodTree|/alice/data/LHC10h_000138666_p2_AOD049#aodTree|/alice/data/LHC10h_000138795_p2_AOD049#aodTree|/alice/data/LHC10h_000139107_p2_AOD049#aodTree|/alice/data/LHC10h_000139110_p2_AOD049#aodTree");
     handler->SetProofDataSet("/default/lmilano/LHC10h_000138653_AOD049_p2#aodTree|/default/lmilano/LHC10h_000138662_AOD049_p2#aodTree|/default/lmilano/LHC10h_000138666_AOD049_p2#aodTree|/default/lmilano/LHC10h_000138730_AOD049_p2#aodTree|/default/lmilano/LHC10h_000138732_AOD049_p2#aodTree|/default/lmilano/LHC10h_000139507_AOD049_p2#aodTree|/default/lmilano/LHC10h_000139465_AOD049_p2#aodTree|/default/lmilano/LHC10h_000139437_AOD049_p2#aodTree|/default/lmilano/LHC10h_000139107_AOD049_p2#aodTree|/default/lmilano/LHC10h_000139510_AOD049_p2#aodTree");
   }
   if (c == 2){
-    //handler->SetProofDataSet("/alice/sim/LHC11a10a_000138653_AOD048#aodTree|/alice/sim/LHC11a10a_000138662_AOD048#aodTree|/alice/sim/LHC11a10a_000138666_AOD048#aodTree|/alice/sim/LHC11a10a_000138795_AOD048#aodTree|/alice/sim/LHC11a10a_000139107_AOD048#aodTree|/alice/sim/LHC11a10a_000139110_AOD048#aodTree");      
     handler->SetProofDataSet("/default/lmilano/LHC11a10a_138653_AOD048#aodTree|/default/lmilano/LHC11a10a_138662_AOD048#aodTree|/default/lmilano/LHC11a10a_138666_AOD048#aodTree|/default/lmilano/LHC11a10a_138730_AOD048#aodTree|/default/lmilano/LHC11a10a_138732_AOD048#aodTree|/default/lmilano/LHC11a10a_139507_AOD048#aodTree|/default/lmilano/LHC11a10a_139465_AOD048#aodTree|/default/lmilano/LHC11a10a_139437_AOD048#aodTree|/default/lmilano/LHC11a10a_139107_AOD048#aodTree|/default/lmilano/LHC11a10a_139510_AOD048#aodTree");      
   }
   if (c == 3){
@@ -45,131 +54,65 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   }
   if (c == 4){
     handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138666_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139107_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138275_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139465_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139437_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138442_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138396_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138364_AOD090#aodTree");        }
-   
-  gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
-  gROOT->LoadMacro("AliSpectraAODEventCuts.cxx+g");
-  gROOT->LoadMacro("AliSpectraAODHistoManager.cxx+g");
-  gROOT->LoadMacro("AliSpectraAODPID.cxx+g");
-  gROOT->LoadMacro("AliAnalysisTaskSpectraAOD.cxx+g");
 
   handler->SetAliRootMode("default");
-  handler->SetAdditionalLibs("AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
-  handler->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx+ AliSpectraAODTrackCuts.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODPID.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
+  handler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF -I$ALICE_ROOT/PWGLF");
+  handler->SetAdditionalLibs("libPWGLFspectra.so");
+  
+  // handler->SetAliRootMode("default");
+  // handler->SetAdditionalLibs("AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
+  // handler->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx+ AliSpectraAODTrackCuts.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODPID.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
   //   handler->SetFileForTestMode("filelist.txt"); // list of local files for testing
   //  handler->SetAliRootMode("");
   handler->SetClearPackages();
-   
+  
   AliAnalysisManager *mgr = new AliAnalysisManager("testAnalysis");
   mgr->SetGridHandler(handler);
   AliAODInputHandler* aodH = new AliAODInputHandler();
   mgr->SetInputEventHandler(aodH);
-   
+  
   // Add PID task
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   Bool_t isMC = kFALSE;
   if (c == 2 || c == 4) isMC = kTRUE;   
   Printf("-------------------------------adding in runAOD AddTaskPIDResponse");
-  //AliAnalysisTask * taskPID = AddTaskPIDResponse(isMC);
-  //Printf("\n\n\n\n\n\n\n\nsetting specific OADB for TPC Response");
-  //taskPID->SetOADBPath("/alice/cern.ch/user/a/akalweit/ForLeornado/OADB");
+  // Add PID task
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse();
+  // Printf("OADB PATH:::::%s",taskPID->GetOADBPath());
+  // taskPID->SetOADBPath("alien:///alice/cern.ch/user/a/akalweit/ForLeornado/OADB");
+  // Printf("OADB PATH:::::%s",taskPID->GetOADBPath());
   
-  AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(isMC);
-  //taskPID->SetOADBPath("alien:///alice/cern.ch/user/a/akalweit/ForLeornado/OADB");
-
-  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
-  //AddTaskPIDqa();
-   
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
   AliVZEROEPSelectionTask *selTask = AddTaskVZEROEPSelection();
-
+  
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AddTaskSpectraAOD.C");
   //LOOP OVER SELECTION
   //                            0    1    2    3    4    5
+  Bool_t mc=kFALSE;
   Double_t CentCutMin[4]= {     0,  20,  20,  20};
-  Double_t CentCutMax[4]= {     5,  50,  50,  50};
+  Double_t CentCutMax[4]= {   100,  50,  50,  50};
   Double_t QvecCutMin[4]=    {  0,   0,   0, 1.5};
   Double_t QvecCutMax[4]=   { 100, 100, 0.4, 100};
   Double_t EtaMin[4]={       -0.8,-0.8,-0.8,-0.8};
   Double_t EtaMax[4]={        0.8, 0.8, 0.8, 0.8};
-  if(c==2 || c==4){//for the MC the efficiency doesn't depend on q, we increase the stat
-    for(Int_t i=0;i<4;i++){
-      QvecCutMin[i]=0;
-      QvecCutMax[i]=100;
-    }
-  }
-  AliAnalysisTaskSpectraAOD* taskAOD=AddTaskSpectraAOD();
-
-  // using namespace AliSpectraNameSpace;
-  // AliSpectraAODPID *pid = new AliSpectraAODPID(kNSigmaTPCTOF); 
-  // pid->SetNSigmaCut(3.);
+  Double_t Nsigmapid=3.;
+  Double_t pt=5.;
+  Double_t p=5.;
+  Double_t y=.5;
+  Double_t ptTofMatch=.6;
+  UInt_t trkbit=1024;
+  UInt_t trkbitQVector=1;
+  Bool_t UseCentPatchAOD049=kFALSE;
+  Double_t DCA=100000;
+  UInt_t minNclsTPC=70;
   
-  // for(Int_t iCut=0;iCut<4;iCut++){
-  //   if(iCut!=1)continue; //uncomemnt if you want to run only on 1 subsample
-  //   AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD("TaskAODExercise");
-  //   mgr->AddTask(task);
-  //   //physics selection
-  //   task->SelectCollisionCandidates();     
-  //   // set pid object
-  //   task->SetPID(pid);
-  //   // Set the cuts
-  //   AliSpectraAODEventCuts * vcuts = new AliSpectraAODEventCuts("Event Cuts");
-  //   AliSpectraAODTrackCuts  * tcuts = new AliSpectraAODTrackCuts("Track Cuts");
-  //   //if(c==1 || c==2)tcuts->SetTrackType(5); //AOD 046 & 047. Standard Cut with loose DCA
-  //   //if(c==1 || c==2)tcuts->SetTrackType(6); //AOD 046 & 047. Standard Cut with tight DCA
-  //   //if(c==3 || c==4)tcuts->SetTrackType(10); //AOD 086 & 090. Standard Raa cut
-  //   //if(c==3 || c==4)tcuts->SetTrackType(4); //AOD 086 & 090. Jet analysis
-  //   //if(c==3 || c==4)tcuts->SetTrackType(7); //AOD 086 & 090. TPC Only
-  //   tcuts->SetTrackBits(1024);
-  //   Printf("\n-------------------- tcuts->GetTrackType() %d \n",tcuts->GetTrackType());
-  //   //tcuts->SetDCA(.1);
-  //   tcuts->SetPt(5);
-  //   tcuts->SetY(.5);
-  //   tcuts->SetPtTOFMatching(.6);   
-  //   //cut on qvector and eta
-  //   vcuts->SetQVectorCut(QvecCutMin[iCut],QvecCutMax[iCut]);
-  //   tcuts->SetEta(EtaMin[iCut],EtaMax[iCut]);
-  //   if(c==1)vcuts->SetUseCentPatchAOD049(kTRUE);
-  //   vcuts->SetCentralityCutMax(CentCutMax[iCut]);  
-  //   vcuts->SetCentralityCutMin(CentCutMin[iCut]);
-  //   task->SetEventCuts(vcuts);
-  //   task->SetTrackCuts(tcuts);
-  //   vcuts->PrintCuts();
-  //   tcuts->PrintCuts();
-    
-  //   // check for MC or real data
-  //   if (c == 2 || c == 4)
-  //     {
-  // 	task->SetIsMC(kTRUE);
-  // 	vcuts->SetIsMC(kTRUE);
-  // 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  // 	AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer,
-  // 								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-  // 	AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
-  // 								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-  // 	AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
-  // 								   Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-  // 	AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
-  // 								    Form("OutputAODSpectraTask_mc_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-  //     }
-  //   if (c == 1 || c==3)
-  //     {
-  // 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  // 	AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("chistpt%d",iCut), AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer, 
-  // 								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-  // 	AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer(Form("cvcutpt%d",iCut), AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer, 
-  // 								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-  // 	AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer(Form("ctcutpt%d",iCut), AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, 
-  // 								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-  // 	AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer(Form("cpidpt%d",iCut),  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer, 
-  // 								    Form("OutputAODSpectraTask_data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f.root",vcuts->GetCentralityMin(),vcuts->GetCentralityMax(),vcuts->GetQVectorCutMin(), vcuts->GetQVectorCutMax(),tcuts->GetEtaMin(),tcuts->GetEtaMax()));
-	
-  //     }
-  //   mgr->ConnectInput(task, 0, cinput);
-  //   mgr->ConnectOutput(task, 1, coutputpt1);
-  //   mgr->ConnectOutput(task, 2, coutputpt2);
-  //   mgr->ConnectOutput(task, 3, coutputpt3);
-  //   mgr->ConnectOutput(task, 4, coutputpt4);
-  // }
-  // mgr->SetDebugLevel(2);
+  if(c==2||c==4)mc=kTRUE;
+  if(c==1)UseCentPatchAOD049=kTRUE;
+  for(Int_t icut=0;icut<4;icut++){
+    if(icut!=0)continue;
+    AddTaskSpectraAOD(mc,CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC);
+  }
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
