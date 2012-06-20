@@ -10,7 +10,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE;
 
 
-AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t enableCF=kTRUE);
+AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t CFenable=kTRUE);
 {
 
   Int_t selectedPID=-1;
@@ -23,9 +23,7 @@ AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t
 
   MCenabled=hasMC;
 
-  if (MCenabled)
-	die->SetHasMC(kTRUE);
-  // create the actual framework object
+ // create the actual framework object
 
   TString name=Form("%02d",cutDefinition);
   if ((cutDefinition)<arrNames->GetEntriesFast()){
@@ -38,7 +36,9 @@ AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t
 		("%s",name.Data()),
 		Form("Track cuts: %s",name.Data()));
 
-
+ if (MCenabled)
+	die->SetHasMC(kTRUE);
+  
   //Setup AnalysisSelection:
   if (cutDefinition==0) {
 	//not yet implemented
@@ -90,7 +90,7 @@ AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t
   InitHistograms(die,cutDefinition);
 
   // the last definition uses no cuts and only the QA histograms should be filled!
-  if (enableCF) InitCF(die,cutDefinition);
+  if (CFenable) InitCF(die,cutDefinition);
 
   return die;
 }
@@ -265,6 +265,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
 	//pair variables
 	cf->AddVariable(AliDielectronVarManager::kP,200,0,20);
+	cf->AddVariable(AliDielectronVarManager::kPt,200,0,20);
 	cf->AddVariable(AliDielectronVarManager::kM,201,-0.01,4.01); //20Mev Steps
 	cf->AddVariable(AliDielectronVarManager::kY,100,-2.,2.);
 	cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
@@ -273,6 +274,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 	cf->AddVariable(AliDielectronVarManager::kOpeningAngle,320,0.,3.2);
 	//leg variables
 	cf->AddVariable(AliDielectronVarManager::kP,200,0.,20.,kTRUE);
+	cf->AddVariable(AliDielectronVarManager::kPt,200,0.,20.,kTRUE);
 	cf->AddVariable(AliDielectronVarManager::kITSsignal,1000,0.0.,1000.,kTRUE);
 	cf->AddVariable(AliDielectronVarManager::kTPCsignal,500,0.0.,500.,kTRUE);
 	cf->AddVariable(AliDielectronVarManager::kY,100,-2.,2.,kTRUE);
