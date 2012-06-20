@@ -301,6 +301,36 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
   cf->SetStepsForSignal();
   die->SetCFManagerPair(cf);
+
+  AliDielectronSignalMC* lowMassDiele=new
+	AliDielectronSignalMC("lowMassDiele","low mass dielectron pairs");
+  lowMassDiele->SetLegPDGs(11,-11);
+  lowMassDiele->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  lowMassDiele->SetLegSources(AliDielectronSignalMC::kPrimary,
+	  AliDielectronSignalMC::kPrimary);
+  lowMassDiele->SetFillPureMCStep(kTRUE);
+  die->AddSignalMC(lowMassDiele);
+
+  AliDielectronSignalMC* secondary=new
+	AliDielectronSignalMC("secondary","secondary electrons pairs");
+  secondary->SetLegPDGs(11,-11);
+  secondary->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  secondary->SetLegSources(AliDielectronSignalMC::kSecondary,
+	  AliDielectronSignalMC::kSecondary);
+  die->AddSignalMC(secondary);
+
+
+  AliDielectronSignalMC* finalState=new
+	AliDielectronSignalMC("finalState","finalState electrons pairs");
+  finalState->SetLegPDGs(11,-11);
+  finalState->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  finalState->SetLegSources(AliDielectronSignalMC::kFinalState,
+	  AliDielectronSignalMC::kFinalState);
+  die->AddSignalMC(finalState);
+
+
+
+
 }
 
 //--------------------------------------
