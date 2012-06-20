@@ -59,7 +59,7 @@ void MakeMUONRecoParamArray(Int_t startRun = 0,
   {
     // save RecoParam in CDB
     AliMUONCDB::WriteToCDB(recoParams, "MUON/Calib/RecoParam", startRun, endRun, 
-                           "reconstruction parameters for MUON", "MakeMUONRecoParamArray $Id$");
+                           "reconstruction parameters for MUON", "L. Aphecetche and P. Pillot");
   }
   
   delete recoParams;
