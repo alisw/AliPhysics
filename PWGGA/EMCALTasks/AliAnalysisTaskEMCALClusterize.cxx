@@ -137,7 +137,9 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
     fCellMatchdEta[j]    = -999;
     fCellMatchdPhi[j]    = -999;
   }
-  
+ 
+  fCentralityBin[0] = fCentralityBin[1]=-1;
+
 }
 
 
