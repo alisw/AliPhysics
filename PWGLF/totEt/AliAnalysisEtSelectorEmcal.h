@@ -28,22 +28,13 @@ public:
     virtual Bool_t CutTrackMatching(const AliESDCaloCluster& cluster) const;
     virtual Bool_t CutGeometricalAcceptance(const TParticle& part) const;    
     virtual Bool_t CutGeometricalAcceptance(const AliVTrack& part) const;    
-    virtual void Init() {}
+    virtual void Init();
     virtual Int_t Init(const AliESDEvent *ev);
     
     virtual void SetEvent(const AliESDEvent* event);
 
 private:
   
-    int LoadGeometry();
-    int LoadBadMaps();
-    
-    AliPHOSGeometry *fGeoUtils;
-    
-    TH2I *fBadMapM2; // Bad map
-    TH2I *fBadMapM3; // Bad map
-    TH2I *fBadMapM4; // Bad map
-
     Bool_t fInitialized; // matrix initialized
 
     AliAnalysisEtSelectorEmcal(); // Prohibited

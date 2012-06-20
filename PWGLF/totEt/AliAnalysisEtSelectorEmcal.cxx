@@ -15,12 +15,13 @@ void AliAnalysisEtSelectorEmcal::SetEvent(const AliESDEvent* event)
     if(!fInitialized) Init(event);
 }
 
-AliAnalysisEtSelectorEmcal::AliAnalysisEtSelectorEmcal(AliAnalysisEtCuts* cuts)
+AliAnalysisEtSelectorEmcal::AliAnalysisEtSelectorEmcal(AliAnalysisEtCuts* cuts):AliAnalysisEtSelector(cuts)
+,fInitialized(kFALSE)
 {
 
 }
 
-AliAnalysisEtSelectorEmcal::~AliAnalysisEtSelector()
+AliAnalysisEtSelectorEmcal::~AliAnalysisEtSelectorEmcal()
 {
 
 }
@@ -67,12 +68,12 @@ Bool_t AliAnalysisEtSelectorEmcal::CutMinEnergy(const TParticle& p) const
 
 Bool_t AliAnalysisEtSelectorEmcal::CutDistanceToBadChannel(const AliESDCaloCluster& ) const
 {
-    return AliAnalysisEtSelector::CutDistanceToBadChannel();
+    return kTRUE;
 }
 
 Bool_t AliAnalysisEtSelectorEmcal::CutTrackMatching(const AliESDCaloCluster& ) const
 {
-    return AliAnalysisEtSelector::CutTrackMatching();
+    return kTRUE;
 }
 
 Bool_t AliAnalysisEtSelectorEmcal::CutGeometricalAcceptance(const TParticle& part) const
