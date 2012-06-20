@@ -247,7 +247,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(cons
       }
       
       //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
-      if(fhTrackMatchedDEta && TMath::Abs(dR) < 999)
+      if(fhTrackMatchedDEta[isolated] && TMath::Abs(dR) < 999)
       {
         fhTrackMatchedDEta[isolated]->Fill(energy,dZ);
         fhTrackMatchedDPhi[isolated]->Fill(energy,dR);
