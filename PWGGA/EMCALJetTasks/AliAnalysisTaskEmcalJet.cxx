@@ -116,14 +116,14 @@ AliRhoParameter *AliAnalysisTaskEmcalJet::GetRhoFromEvent(const char *name)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJet::Init()
+void AliAnalysisTaskEmcalJet::ExecOnce()
 {
   // Init the analysis.
 
   if (fAnaType == kTPC) {
     SetEtaLimits(-0.9 + fJetRadius, 0.9 - fJetRadius);
     SetPhiLimits(-10, 10);
-  } else if (fAnaType == kEMCAL) {
+  } else if (fAnaType == kEMCAL || fAnaType == kTPCSmall) {
     AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
     if (geom) {
       SetEtaLimits(geom->GetArm1EtaMin() + fJetRadius, geom->GetArm1EtaMax() - fJetRadius);
@@ -135,10 +135,14 @@ void AliAnalysisTaskEmcalJet::Init()
   } else {
     AliWarning(Form("%s: Analysis type not recognized! Assuming kTPC!", GetName()));
     SetAnaType(kTPC);
-    Init();
+    ExecOnce();
+    return;
   }
 
-  SetInitialized();
+  if (fAnaType == kTPCSmall)
+    fAnaType = kTPC;
+
+  AliAnalysisTaskEmcal::ExecOnce();
 }
 
 //________________________________________________________________________
