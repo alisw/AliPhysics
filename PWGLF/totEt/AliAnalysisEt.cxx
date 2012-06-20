@@ -60,8 +60,11 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fAcceptedTree(0)
 			       ,fDepositTree(0)
 			       ,fTotEt(0)
+			       ,fTotEtAcc(0)
 			       ,fTotNeutralEt(0)
+			       ,fTotNeutralEtAcc(0)
 			       ,fTotChargedEt(0)
+			       ,fTotChargedEtAcc(0)
 			       ,fMultiplicity(0)
 			       ,fChargedMultiplicity(0)
 			       ,fNeutralMultiplicity(0)
@@ -392,8 +395,11 @@ void AliAnalysisEt::CreateTrees()
   
     fEventSummaryTree = new TTree(treename, treename);
     fEventSummaryTree->Branch("fTotEt",&fTotEt,"fTotEt/D");
+    fEventSummaryTree->Branch("fTotEtAcc",&fTotEtAcc,"fTotEtAcc/D");
     fEventSummaryTree->Branch("fTotNeutralEt",&fTotNeutralEt,"fTotNeutralEt/D");
+    fEventSummaryTree->Branch("fTotNeutralEtAcc",&fTotNeutralEtAcc,"fTotNeutralEtAcc/D");
     fEventSummaryTree->Branch("fTotChargedEt",&fTotChargedEt,"fTotChargedEt/D");
+    fEventSummaryTree->Branch("fTotChargedEtAcc",&fTotChargedEtAcc,"fTotChargedEtAcc/D");
     fEventSummaryTree->Branch("fMultiplicity",&fMultiplicity,"fMultiplicity/I");
     fEventSummaryTree->Branch("fChargedMultiplicity",&fChargedMultiplicity,"fChargedMultiplicity/I");
     fEventSummaryTree->Branch("fNeutralMultiplicity",&fNeutralMultiplicity,"fNeutralMultiplicity/I");
@@ -547,8 +553,11 @@ void AliAnalysisEt::ResetEventValues()
 { // clear
   AliAnalysisEtCommon::ResetEventValues();
   fTotEt = 0;
+  fTotEtAcc = 0;
   fTotNeutralEt = 0;
-  fTotChargedEt  = 0;
+  fTotChargedEt = 0;
+  fTotNeutralEtAcc = 0;
+  fTotChargedEtAcc  = 0;
   fMultiplicity = 0;
   fChargedMultiplicity = 0;
   fNeutralMultiplicity = 0;
