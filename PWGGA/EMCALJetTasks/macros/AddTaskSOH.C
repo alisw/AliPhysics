@@ -37,7 +37,6 @@ AliAnalysisTaskSOH* AddTaskSOH()
   taskSOH->SetEsdTrackCuts(esdTrackCuts);
   taskSOH->SetHybridTrackCuts1(hybridTrackCuts1);
   taskSOH->SetHybridTrackCuts2(hybridTrackCuts2);
-  taskSOH->SetCutOnGGCChi2(0);
 
   // Add task(s)
   mgr->AddTask(taskSOH); 
