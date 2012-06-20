@@ -37,7 +37,9 @@ set ( SRCS
     totEt/AliAnalysisEtMonteCarloPhos.cxx 
     totEt/AliAnalysisEtReconstructed.cxx 
     totEt/AliAnalysisEtReconstructedEmcal.cxx 
-    totEt/AliAnalysisEtReconstructedPhos.cxx 
+    totEt/AliAnalysisEtReconstructedPhos.cxx
+    totEt/AliAnalysisEmEtMonteCarlo.cxx
+    totEt/AliAnalysisEmEtReconstructed.cxx
     totEt/AliAnalysisTaskTotEt.cxx 
     totEt/AliAnalysisHadEt.cxx 
     totEt/AliAnalysisHadEtMonteCarlo.cxx 
