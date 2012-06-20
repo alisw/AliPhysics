@@ -25,7 +25,7 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
  protected:
   virtual Double_t       GetScaleFactor(Double_t cent);
   virtual Bool_t         FillHistograms();
-  void                   Init();
+  void                   ExecOnce();
 
  private:
   TF1                   *fScaleFunction;          // scale factor as a function of centrality

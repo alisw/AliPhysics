@@ -128,11 +128,9 @@ Double_t AliAnalysisTaskScale::GetScaleFactor(Double_t cent)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskScale::Init() 
+void AliAnalysisTaskScale::ExecOnce() 
 {
   // Init the analysis.
-
-  AliAnalysisTaskEmcal::Init();
 
   fGeom = AliEMCALGeometry::GetInstance();
 
@@ -140,6 +138,8 @@ void AliAnalysisTaskScale::Init()
     AliFatal("Can not create geometry");
     return;
   }
+
+  AliAnalysisTaskEmcal::ExecOnce();
 }
 
 //________________________________________________________________________
