@@ -37,6 +37,7 @@ ClassImp(AliAnalysisEmEtReconstructed);
 
 // ctor
 AliAnalysisEmEtReconstructed::AliAnalysisEmEtReconstructed():AliAnalysisEtReconstructed()
+							    ,fResCut(0)
 							    ,fAllRectotETDep(0)
 							    ,fElectronMatchtotETDep(0)
 							    ,fNeutralRectotET(0)
