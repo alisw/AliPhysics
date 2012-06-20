@@ -9,7 +9,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE;
 
 
-AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t CFenable=kFALSE)
+AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE, Bool_t CFenable=kFALSE)
 {
 
   Int_t selectedPID=-1;
@@ -21,7 +21,7 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool
   // Setup the instance of AliDielectron
   //
 
-  MCenabled=hasMC;
+  MCenabled=withMC;
   // create the actual framework object
 
   TString name=Form("%02d",cutDefinition);
@@ -77,12 +77,12 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool
 
 //Legacy cuts, check consistence w/ 1 & 4, then remove
   else if (cutDefinition==7) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kFALSE;
   }
   else if (cutDefinition==8) {
-	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
 	selectedCentrality = LMEECutLib::kPbPb2011Central;
 	rejectionStep = kTRUE;
   }

@@ -29,10 +29,10 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
 
 
 
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
-    gROOT->LoadMacro(configFilePath.Data());
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
     gROOT->LoadMacro(configLMEECutLibPath.Data());
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
+    gROOT->LoadMacro(configFilePath.Data());
 
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
@@ -77,8 +77,10 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
 	TList::Class(),
 	AliAnalysisManager::kOutputContainer,
 	"cbaumann_LMEEPbPb2011_out.root");
+  
+  AliAnalysisDataContainer *cOutputHist2 = 0x0;
   if (enableCF) {
-    AliAnalysisDataContainer *cOutputHist2 =
+    cOutputHist2 = 
       mgr->CreateContainer("cbaumann_LMEEPbPb2011_CF",
 	  TList::Class(),
 	  AliAnalysisManager::kOutputContainer,

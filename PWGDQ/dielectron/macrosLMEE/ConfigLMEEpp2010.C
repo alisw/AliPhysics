@@ -1,4 +1,3 @@
-#include "LMEECutLib.C"
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
@@ -10,7 +9,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE;
 
 
-AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t CFenable=kTRUE);
+AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t withMC=kFALSE, Bool_t CFenable=kTRUE)
 {
 
   Int_t selectedPID=-1;
@@ -21,7 +20,7 @@ AliDielectron* ConfigLMEEpp2010(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t
   // Setup the instance of AliDielectron
   //
 
-  MCenabled=hasMC;
+  MCenabled=withMC;
 
  // create the actual framework object
 

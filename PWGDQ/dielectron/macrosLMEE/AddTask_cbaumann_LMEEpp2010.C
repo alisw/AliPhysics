@@ -7,7 +7,18 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp2010(Bool_t runTwo=kFALSE, Bool_t hasMC=
   }
 
   //set config file name
-  TString configFile("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/ConfigLMEEpp2010.C");
+  //create config File names: TRAIN_ROOT is for running on GSI train, 
+  // ALICE_ROOT for CERN Lego trains
+  TString configBasePath("$TRAIN_ROOT/cbaumann_dielectron/");
+  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+  if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
+  TString configFile("ConfigLMEEpp2010.C");
+  TString configLMEECutLib("LMEECutLib.C");
+
+  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+  TString configFilePath(configBasePath+configFile);
+
+
 
   //AOD Usage not yet testes/avialable-------------------------------------
 
@@ -24,8 +35,11 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp2010(Bool_t runTwo=kFALSE, Bool_t hasMC=
 
   //  create task and add it to the manager
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/LMEECutLib.C");
-  gROOT->LoadMacro(configFile.Data());
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
+	gROOT->LoadMacro(configLMEECutLibPath.Data());
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
+	gROOT->LoadMacro(configFilePath.Data());
+  
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
@@ -60,8 +74,9 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp2010(Bool_t runTwo=kFALSE, Bool_t hasMC=
 	TList::Class(),
 	AliAnalysisManager::kOutputContainer,
 	"cbaumann_LMEEpp2010_out.root");
+    AliAnalysisDataContainer *cOutputHist2 = 0x0;
   if (enableCF) {
-    AliAnalysisDataContainer *cOutputHist2 =
+    cOutputHist2 =
       mgr->CreateContainer("cbaumann_LMEEpp2010_CF",
 	  TList::Class(),
 	  AliAnalysisManager::kOutputContainer,
