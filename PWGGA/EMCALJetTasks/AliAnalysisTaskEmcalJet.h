@@ -19,6 +19,8 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   AliAnalysisTaskEmcalJet(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcalJet();
 
+  void                        Init();
+
   void                        SetEtaLimits(Float_t min, Float_t max)               { fMinEta = min, fMaxEta = max ; }
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut        ; }
   void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut        ; }
@@ -35,7 +37,6 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)   const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)                                          const;
   AliRhoParameter            *GetRhoFromEvent(const char *name);
-  void                        Init();
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)        const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)       const;
 
