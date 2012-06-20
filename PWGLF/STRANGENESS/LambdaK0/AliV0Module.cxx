@@ -37,6 +37,8 @@ To be compiled as a library
 
 //--- For C++ ----
 #include <TApplication.h>
+#include <TMatrix.h>
+#include <TMatrixD.h>
 #include <TROOT.h>
 #include <TMath.h>
 #include <TF1.h>
@@ -88,6 +90,14 @@ AliV0Module::AliV0Module()
   //Default: Use bin counting
   fFitBackgroundSwitch = kFALSE;
 
+  //Default: Min-Bias
+  fPerformMultiplicityStudy = kFALSE;
+  fLoMultBound       = -1;
+  fHiMultBound       = 10000;
+
+  //Default: no cut in Armenteros 
+  fSpecialArmenterosCutK0s = kFALSE;
+
   //Pt Bins: undefined
   fptbinnumb = -1;
 }
@@ -128,6 +138,14 @@ AliV0Module::AliV0Module(TString fParticleType)
 
   //Default: Use bin counting
   fFitBackgroundSwitch = kFALSE;
+
+  //Default: Min-Bias
+  fPerformMultiplicityStudy = kFALSE;
+  fLoMultBound       = -1;
+  fHiMultBound       = 10000;
+
+  //Default: no cut in Armenteros 
+  fSpecialArmenterosCutK0s = kFALSE;
 
   //Pt Bins: undefined
   fptbinnumb = -1;
@@ -298,6 +316,33 @@ void AliV0Module::SetFitBackground ( Bool_t fitBgSwitch ){
   fFitBackgroundSwitch = fitBgSwitch;
 }
 
+void AliV0Module::SetPerformMultiplicityStudy ( Bool_t lPerformMultStudy ){
+  //Turns on selection according to multiplicity of the event. 
+  //Boundaries are set in charged track multiplicity (pp) or in
+  //centrality percentiles (PbPb). This is a requirement for studying
+  //PbPb.
+  fPerformMultiplicityStudy = lPerformMultStudy;
+}
+
+void AliV0Module::SetLowMultValue ( Int_t lLoMultBound       ){
+  //Lower boundary (inclusive) in integer number for mult selection.
+  //Note: If in PbPb and you want, say, 10-20% centrality, set this 
+  //to 10. 
+  fLoMultBound = lLoMultBound;
+}
+
+void AliV0Module::SetHighMultValue ( Int_t lHiMultBound       ){
+  //Lower boundary (inclusive) in integer number for mult selection.
+  //Note: If in PbPb and you want, say, 10-20% centrality, set this 
+  //to 10. 
+  fHiMultBound = lHiMultBound;
+}
+
+void AliV0Module::SetSpecialArmenterosCutK0s ( Bool_t lSpecialArmenterosCutK0s ){
+  //Special armenteros cut: |alpha|<5*pt_{arm} 
+  fSpecialArmenterosCutK0s = lSpecialArmenterosCutK0s;
+}
+
 void AliV0Module::SetDefaultCuts(){ 
    //Sets Default cuts for analysis. (adjusted for adequate pp analysis)
   cout<<"[AliV0Module] Setting default cuts for particle species: "<<fWhichParticle<<endl;
@@ -313,9 +358,13 @@ void AliV0Module::SetDefaultCuts(){
 
 
   //Set Cuts - other
-  SetCutProperLifetime                          ( 30);
+  if ( fWhichParticle == "K0Short")
+    SetCutProperLifetime                          ( 20);
+  if ( fWhichParticle == "Lambda" || fWhichParticle == "AntiLambda" )
+    SetCutProperLifetime                          ( 30);
+
   SetCutTPCPIDNSigmas                           (  5);
-  SetCutSigmaForSignalExtraction                (  5);
+  SetCutSigmaForSignalExtraction                (  6);
   SetCutLeastNumberOfCrossedRows                ( 70);
   SetCutLeastNumberOfCrossedRowsOverFindable    (0.8);
   SetCutDaughterEta                             (0.8);
@@ -502,6 +551,9 @@ void AliV0Module::DoAnalysis(){
    //Resolution Histogram (filled with MC)
 	TH2F* f2dHistPtResolution 		= new TH2F("f2dHistPtResolution","p_{t} Resolution;p_{t} (reco);p_{t} (mc)",fptbinnumb,fptbinlimits, fptbinnumb, fptbinlimits);
 
+	TH2F* f2dHistPtBlur 		= new TH2F("f2dHistPtBlur","p_{t} blurring matrix;p_{t} (reco);p_{t} (mc)",fptbinnumb,fptbinlimits, fptbinnumb, fptbinlimits);
+	TH2F* f2dHistPtSharpen 		= new TH2F("f2dHistPtSharpen","p_{t} sharpening matrix;p_{t} (reco);p_{t} (mc)",fptbinnumb,fptbinlimits, fptbinnumb, fptbinlimits);
+
   /********************************************************
 
     ---> Let's Remember the limits of the data we're analyzing! 
@@ -567,6 +619,15 @@ void AliV0Module::DoAnalysis(){
   TH1F* lHistoFullV0MC[100];
   TCanvas* lCanvasHistoFullV0[100];
   TCanvas* lCanvasHistoFullV0MC[100];
+  TH1F *lHistResolution[100];
+  TF1 *lHistResolutionGaussian[100];
+  char lHistResolutionName[100]; 
+	TH1F* fHistResolutionVsPt 		= new TH1F("fHistResolutionVsPt","Resolution vs p_{t};p_{t} (GeV/c);#Delta(p_{t}) = p_{t}-p_{t}^{true} (GeV/c)",fptbinnumb,fptbinlimits); 
+	TH1F* fHistResolutionVsPtDivByBinWidth 		= new TH1F("fHistResolutionVsPtDivByBinWidth","Resolution vs p_{t};p_{t} (GeV/c);#Delta(p_{t})/#Delta^{bin}(p_{t}) = (p_{t}-p_{t}^{true})/#Delta^{bin}(p_{t}) (GeV/c)",fptbinnumb,fptbinlimits); 
+	TH1F* fHistResolutionVsPtWithGaussians 		= new TH1F("fHistResolutionVsPtWithGaussians","Resolution vs p_{t};p_{t} (GeV/c);#Delta(p_{t}) = p_{t}-p_{t}^{true} (GeV/c)",fptbinnumb,fptbinlimits); 
+	TH1F* fHistResolutionVsPtDivByBinWidthWithGaussians 		= new TH1F("fHistResolutionVsPtDivByBinWidthWithGaussians","Resolution vs p_{t};p_{t} (GeV/c);#Delta(p_{t})/#Delta^{bin}(p_{t}) = (p_{t}-p_{t}^{true})/#Delta^{bin}(p_{t}) (GeV/c)",fptbinnumb,fptbinlimits); 
+  for(Int_t ibin=0;ibin<fptbinnumb;ibin++){
+  }
   char histname[80]; 	TString bindescription = "";
   for(Int_t ihist=0;ihist<100;ihist++){
     //Histo For Real Data
@@ -589,7 +650,6 @@ void AliV0Module::DoAnalysis(){
     lCanvasHistoFullV0[ihist] -> SetFillColor(kWhite);
     lCanvasHistoFullV0[ihist] -> SetLeftMargin( 0.175 );
     lCanvasHistoFullV0[ihist] -> SetBottomMargin( 0.175 );
-    
 
     //Histo for MC 
     sprintf(histname,"lHistoFullV0MC%i",ihist);
@@ -611,6 +671,19 @@ void AliV0Module::DoAnalysis(){
     lCanvasHistoFullV0MC[ihist] -> SetFillColor(kWhite);
     lCanvasHistoFullV0MC[ihist] -> SetLeftMargin( 0.175 );
     lCanvasHistoFullV0MC[ihist] -> SetBottomMargin( 0.175 );
+
+    //Histo for resolution tests
+    sprintf(lHistResolutionName,"lHistResolution%i",ihist);
+    Long_t lNumberOfBinsResolution = 5000;
+    if ( (fptbinlimits[ihist+1]+fptbinlimits[ihist])*0.5 > 5 ) 
+      lNumberOfBinsResolution = 500;
+    if ( (fptbinlimits[ihist+1]+fptbinlimits[ihist])*0.5 > 10 ) 
+      lNumberOfBinsResolution = 50;
+
+    lHistResolution[ihist] = new TH1F ( lHistResolutionName,bindescription,lNumberOfBinsResolution, -5, 5); //histo with 5MeV/c precision!
+    sprintf(lHistResolutionName,"lHistResolutionGaussian%i",ihist);
+    lHistResolutionGaussian[ihist] = new TF1(lHistResolutionName, "[0]*TMath::Gaus(x,[1],[2])",-5,5);
+
   }
 	//================================================================	
   cout<<endl;
@@ -643,6 +716,29 @@ void AliV0Module::DoAnalysis(){
 	cout<<" V0 Candidates.................: "<<lNCandidates<<endl;
   cout<<"--------------------------------------------------------"<<endl;
 
+  Double_t lNEventsBeforePileup = 0;
+  Double_t lNEventsAfterPileup = 0;
+  if( fPerformMultiplicityStudy == kTRUE ){
+    lNInelasticEvents = 0; 
+
+    TH1F* fHistMultiplicity             = (TH1F*)v0list->FindObject("fHistMultiplicityForTrigEvt");
+    TH1F* fHistMultiplicityBeforePileup = (TH1F*)v0list->FindObject("fHistMultiplicityNoTPCOnly");
+    TH1F* fHistMultiplicityAfterPileup  = (TH1F*)v0list->FindObject("fHistMultiplicityNoTPCOnlyNoPileup");
+
+
+
+    for( Int_t ibin = fHistMultiplicity->FindBin(fLoMultBound); ibin<fHistMultiplicity->FindBin(fHiMultBound)+1; ibin++){
+      lNInelasticEvents += fHistMultiplicity->GetBinContent(ibin); 
+      lNEventsBeforePileup += fHistMultiplicityBeforePileup->GetBinContent(ibin); 
+      lNEventsAfterPileup  += fHistMultiplicityAfterPileup ->GetBinContent(ibin); 
+    }
+    cout<<" Number of events, no pileup rejection..: "<<lNInelasticEvents<<endl;
+  	cout<<" Number of events, this multiplicity....: "<<lNInelasticEvents * ( lNEventsAfterPileup / lNEventsBeforePileup ) <<endl;
+    lNInelasticEvents = lNInelasticEvents * ( lNEventsAfterPileup / lNEventsBeforePileup );
+    cout<<"--------------------------------------------------------"<<endl;
+
+  }
+
 	//Variable Definition=============================================
 	//Kinematic
 	Float_t lPt, lRap, lPtMC, lNegEta, lPosEta;
@@ -660,6 +756,9 @@ void AliV0Module::DoAnalysis(){
   Float_t lLeastNbrCrossedRowsOverFindable;
   //TPC dE/dx acquired with AliPIDResponse class
   Float_t lNSigmasPosProton,lNSigmasNegProton,lNSigmasPosPion,lNSigmasNegPion;
+  Float_t lArmPt,lArmAlpha;
+  //Multiplicity Variable
+  Int_t lMultiplicity = -1;
 	//================================================================
 
 	//Linking to Tree=================================================
@@ -701,6 +800,11 @@ void AliV0Module::DoAnalysis(){
 	lTree->SetBranchAddress("fTreeVariableDcaPosToPrimVertex",&lDcaPosToPrimVertex);
 	lTree->SetBranchAddress("fTreeVariableDcaV0Daughters",&lDcaV0Daughters);
 	lTree->SetBranchAddress("fTreeVariableV0CosineOfPointingAngle",&lV0CosinePointingAngle);
+  //--- Multiplicity Variable ----------------------------------------
+  lTree->SetBranchAddress("fTreeVariableMultiplicity",&lMultiplicity);
+  //--- Armenteros-Podolansky ----------------------------------------
+  lTree->SetBranchAddress("fTreeVariableAlphaV0",&lArmAlpha);
+  lTree->SetBranchAddress("fTreeVariablePtArmV0",&lArmPt);
 	//================================================================
 
 
@@ -723,6 +827,7 @@ void AliV0Module::DoAnalysis(){
             lLeastNbrCrossedRowsOverFindable >= fCutLeastNumberOfCrossedRowsOverFindable &&
             TMath::Abs(lInvariantMassCompetingOne - lCompetingParticleMass) > fCutCompetingV0Rejection &&
             TMath::Abs(lInvariantMassCompetingTwo - lCompetingParticleMass) > fCutCompetingV0Rejection &&
+          ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt>TMath::Abs(lArmAlpha)*0.5 ) ) &&
           ( //official response code
           ( fWhichParticle == "Lambda"
           && TMath::Abs(lNSigmasNegPion)   <= fCutTPCPIDNSigmas
@@ -733,6 +838,12 @@ void AliV0Module::DoAnalysis(){
           ( fWhichParticle == "K0Short"
           && TMath::Abs(lNSigmasPosPion)   <= fCutTPCPIDNSigmas
           && TMath::Abs(lNSigmasNegPion)   <= fCutTPCPIDNSigmas)
+          ) && 
+          ( //Multiplicity Switch
+          fPerformMultiplicityStudy == kFALSE || //No mult selection, or...
+          (fPerformMultiplicityStudy == kTRUE &&  //inside mult bin
+          lMultiplicity>=fLoMultBound &&
+          lMultiplicity<=fHiMultBound)
           )
       ){
 		  lWeAreAtBin = fHistPt->FindBin(lPt)-1;
@@ -766,17 +877,24 @@ void AliV0Module::DoAnalysis(){
   TLine *lLineRightMC[100];
   TLine *lLineRightMostMC[100];
 
+  Double_t lMiddle = 0; 
+  Double_t lUpperFit = 0; 
+  Double_t lLowerFit = 0; 
+
   char fgausname[100]; 
   TF1 *fgausPt[100];
   for(Int_t ibin = 0; ibin<fptbinnumb; ibin++){ 
     cout<<"---> Peak Finding, bin #"<<ibin<<"..."<<endl;
     sprintf(fgausname,"fGausPt%i",ibin);
    	if ( fWhichParticle == "Lambda" || fWhichParticle == "AntiLambda" ){
-      fgausPt[ibin]= new TF1(fgausname,"[0]*TMath::Gaus(x,[1],[2])+[3]*x+[4]",1.116-0.040,1.116+0.040);
+      lMiddle = 0.5 * ( fLDataLower->Eval( fHistPt->GetBinCenter(ibin+1) ) + fLDataUpper->Eval( fHistPt->GetBinCenter(ibin+1) ) );
+      lUpperFit = lMiddle + 0.7 * ( fLDataUpper->Eval( fHistPt->GetBinCenter(ibin+1) ) - lMiddle );
+      lLowerFit = lMiddle - 0.7 * ( lMiddle - fLDataLower->Eval( fHistPt->GetBinCenter(ibin+1) ) );
+      fgausPt[ibin]= new TF1(fgausname,"[0]*TMath::Gaus(x,[1],[2])+[3]*x+[4]", lLowerFit, lUpperFit );
   	  fgausPt[ibin]->SetParameter(1,1.116);
   	  fgausPt[ibin]->SetParameter(2,0.0025); 
       fgausPt[ibin]->SetParLimits(1,1,1.2);
-      fgausPt[ibin]->SetParLimits(2,0.001,0.02);
+      fgausPt[ibin]->SetParLimits(2,0.001,0.01);
     }
    	if ( fWhichParticle == "K0Short"){ 
       fgausPt[ibin]= new TF1(fgausname,"[0]*TMath::Gaus(x,[1],[2])+[3]*x+[4]",0.498-0.06,0.498+0.060);
@@ -790,7 +908,7 @@ void AliV0Module::DoAnalysis(){
 	  fgausPt[ibin]->SetParameter(4,lHistoFullV0[ibin]->GetMaximum() * 0.1); 
     lHistoFullV0[ibin]->Fit(fgausname,"QREM0");
     lPeakPosition[ibin] = fgausPt[ibin]->GetParameter(1);
-    lPeakWidth[ibin] = fgausPt[ibin]->GetParameter(2);
+    lPeakWidth[ibin] = TMath::Abs( fgausPt[ibin]->GetParameter(2) );
     cout<<"---> ["<<fptbinlimits[ibin]<<" - "<<fptbinlimits[ibin+1]<<" GeV/c]\tPeak at: "<<lPeakPosition[ibin]<<", sigma = "<<lPeakWidth[ibin]<<endl;
     //Find Corresponding Limits In this bin
     lLeftBgLeftLimit[ibin]  = lPeakPosition[ibin] - 2.*fCutNSigmasForSignalExtraction*lPeakWidth[ibin]; 
@@ -859,6 +977,7 @@ void AliV0Module::DoAnalysis(){
             lLeastNbrCrossedRowsOverFindable >= fCutLeastNumberOfCrossedRowsOverFindable &&
             TMath::Abs(lInvariantMassCompetingOne - lCompetingParticleMass) > fCutCompetingV0Rejection &&
             TMath::Abs(lInvariantMassCompetingTwo - lCompetingParticleMass) > fCutCompetingV0Rejection &&
+          ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt>TMath::Abs(lArmAlpha)*0.5 ) ) &&
           ( //official response code
           ( fWhichParticle == "Lambda"
           && TMath::Abs(lNSigmasNegPion)   <= fCutTPCPIDNSigmas
@@ -869,6 +988,12 @@ void AliV0Module::DoAnalysis(){
           ( fWhichParticle == "K0Short"
           && TMath::Abs(lNSigmasPosPion)   <= fCutTPCPIDNSigmas
           && TMath::Abs(lNSigmasNegPion)   <= fCutTPCPIDNSigmas)
+          ) && 
+          ( //Multiplicity Switch
+          fPerformMultiplicityStudy == kFALSE || //No mult selection, or...
+          (fPerformMultiplicityStudy == kTRUE &&  //inside mult bin
+          lMultiplicity>=fLoMultBound &&
+          lMultiplicity<=fHiMultBound)
           )
       ){ // Start Entry Loop
 		  lWeAreAtBin = fHistPt->FindBin(lPt)-1;
@@ -1054,6 +1179,11 @@ void AliV0Module::DoAnalysis(){
 	lTreeMC->SetBranchAddress("fTreeVariablePIDMother",&lPIDMother);
 	lTreeMC->SetBranchAddress("fTreeVariablePIDPositive",&lPIDPositive);
 	lTreeMC->SetBranchAddress("fTreeVariablePIDNegative",&lPIDNegative);
+  //--- Multiplicity ------------------------------------------------
+  lTreeMC->SetBranchAddress("fTreeVariableMultiplicity",&lMultiplicity);
+  //--- Armenteros-Podolansky ----------------------------------------
+  lTreeMC->SetBranchAddress("fTreeVariableAlphaV0",&lArmAlpha);
+  lTreeMC->SetBranchAddress("fTreeVariablePtArmV0",&lArmPt);
 	//================================================================
 
   //================================================================
@@ -1077,6 +1207,7 @@ void AliV0Module::DoAnalysis(){
             lLeastNbrCrossedRowsOverFindable >= fCutLeastNumberOfCrossedRowsOverFindable &&
             TMath::Abs(lInvariantMassCompetingOne - lCompetingParticleMass) > fCutCompetingV0Rejection &&
             TMath::Abs(lInvariantMassCompetingTwo - lCompetingParticleMass) > fCutCompetingV0Rejection &&
+          ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt>TMath::Abs(lArmAlpha)*0.5 ) ) &&
           ( //perfect PID association, IsPhysicalPrimary association
           ( fWhichParticle == "Lambda"
           && lPID           == 3122 //V0 is a Lambda
@@ -1096,12 +1227,18 @@ void AliV0Module::DoAnalysis(){
           && lPIDNegative   == -211  //Neg Daughter is pi-
           && lPrimaryStatus == 1     //K0Short is a primary          
           )
+          ) && 
+          ( //Multiplicity Switch
+          fPerformMultiplicityStudy == kFALSE || //No mult selection, or...
+          (fPerformMultiplicityStudy == kTRUE &&  //inside mult bin
+          lMultiplicity>=fLoMultBound &&
+          lMultiplicity<=fHiMultBound)
           )
       ){ // Start Entry Loop
 		  lWeAreAtBin = fHistPt->FindBin(lPtMC)-1;
 		  if(lWeAreAtBin == -1) lWeAreAtBin = 99; //UnderFlow, special treatment
 		  lHistoFullV0MC[lWeAreAtBin]->Fill(lInvariantMass); //fill with specific inv mass
-        f2dHistPtResolution->Fill(lPt,lPtMC);
+      f2dHistPtResolution->Fill(lPt,lPtMC);
       //Extract left and right background areas and peak 
       //--- Left Background Sample
 			if(lInvariantMass>lLeftBgLeftLimit[lWeAreAtBin]    && lInvariantMass<lLeftBgRightLimit[lWeAreAtBin]   ){ lLeftPlusRightBgV0MC[lWeAreAtBin]++; }
@@ -1111,6 +1248,8 @@ void AliV0Module::DoAnalysis(){
       //--- Info may be needed for geant3/fluka 
       if ( fWhichParticle == "Lambda"     ) lProtonMomentum[lWeAreAtBin]->Fill( lPosTransvMomentumMC );
       if ( fWhichParticle == "AntiLambda" ) lProtonMomentum[lWeAreAtBin]->Fill( lNegTransvMomentumMC );
+      //--- Resolution tests
+      lHistResolution[lWeAreAtBin]->Fill(lPt - lPtMC);
 		} // End Entry Loop
 	}
   cout<<"--------------- Loop Completed -------------------------"<<endl;
@@ -1142,7 +1281,7 @@ void AliV0Module::DoAnalysis(){
 	  //fgausPtMC[ibin]->SetParameter(3,0); 
 	  //fgausPtMC[ibin]->SetParameter(4,HistoFullV0MC[ibin]->GetMaximum() * 0.1); 
     lHistoFullV0MC[ibin]->Fit(fgausnameMC,"QREM0");
-    lPeakPositionMC[ibin] = fgausPtMC[ibin]->GetParameter(1);
+    lPeakPositionMC[ibin] = TMath::Abs( fgausPtMC[ibin]->GetParameter(1) );
     lPeakWidthMC[ibin] = fgausPtMC[ibin]->GetParameter(2);
     cout<<"---> ["<<fptbinlimits[ibin]<<" - "<<fptbinlimits[ibin+1]<<" GeV/c]\tPeak at: "<<lPeakPositionMC[ibin]<<", sigma = "<<lPeakWidthMC[ibin]<<endl;
     fHistPeakPositionMC->SetBinContent(ibin+1, lPeakPositionMC[ibin]);
@@ -1239,13 +1378,24 @@ void AliV0Module::DoAnalysis(){
       f3dHistGenPtVsYVsMultV0 			= (TH3F*)v0listMC->FindObject("f3dHistPrimRawPtVsYVsMultAntiLambda");
 	  if(fWhichParticle == "K0Short") 
       f3dHistGenPtVsYVsMultV0 			= (TH3F*)v0listMC->FindObject("f3dHistPrimRawPtVsYVsMultK0Short");
-	
-	TH1D *fHistDummyV0 = f3dHistGenPtVsYVsMultV0->ProjectionX("fHistDummyV0",
-		f3dHistGenPtVsYVsMultV0->GetYaxis()->FindBin(-fRapidityBoundary+1e-2),  //avoid taking previous bin
-		f3dHistGenPtVsYVsMultV0->GetYaxis()->FindBin(+fRapidityBoundary-1e-2), //avoid taking next bin
-		f3dHistGenPtVsYVsMultV0->GetZaxis()->FindBin(-1), //Not interested in Multiplicity so far, integrate
-		f3dHistGenPtVsYVsMultV0->GetZaxis()->FindBin(101) //Not interested in Multiplicity so far, integrate
-	);
+
+	TH1D *fHistDummyV0 = 0x0;
+	if( fPerformMultiplicityStudy == kFALSE ){
+	  fHistDummyV0 = f3dHistGenPtVsYVsMultV0->ProjectionX("fHistDummyV0",
+		  f3dHistGenPtVsYVsMultV0->GetYaxis()->FindBin(-fRapidityBoundary+1e-2),  //avoid taking previous bin
+		  f3dHistGenPtVsYVsMultV0->GetYaxis()->FindBin(+fRapidityBoundary-1e-2), //avoid taking next bin
+		  f3dHistGenPtVsYVsMultV0->GetZaxis()->FindBin(-1), //Not interested in Multiplicity so far, integrate
+		  f3dHistGenPtVsYVsMultV0->GetZaxis()->FindBin(101) //Not interested in Multiplicity so far, integrate
+	  );
+  }
+	if( fPerformMultiplicityStudy == kTRUE ){
+	  fHistDummyV0 = f3dHistGenPtVsYVsMultV0->ProjectionX("fHistDummyV0",
+		  f3dHistGenPtVsYVsMultV0->GetYaxis()->FindBin(-fRapidityBoundary+1e-2),  //avoid taking previous bin
+		  f3dHistGenPtVsYVsMultV0->GetYaxis()->FindBin(+fRapidityBoundary-1e-2), //avoid taking next bin
+		  f3dHistGenPtVsYVsMultV0->GetZaxis()->FindBin(fLoMultBound), //Interested in Multiplicity!
+		  f3dHistGenPtVsYVsMultV0->GetZaxis()->FindBin(fHiMultBound)  //Interested in Multiplicity!
+	  );
+  }
 
 	TH1F *fHistMCCountbyptV0	= new TH1F("fHistMCCountbyptV0","V0 MC count;p_{T} (GeV/c);Counts",fptbinnumb,fptbinlimits);
 
@@ -1262,7 +1412,127 @@ void AliV0Module::DoAnalysis(){
   }
   cout<<"--------------------------------------------------------"<<endl;
 
-    //=============================================================  
+  //---------------------------------------------------------------
+  //extremely curious test!!! experimental only, FIXME
+  cout<<"Resolution tests ongoing - Experimental! "<<endl;
+  cout<<"--------------------------------------------------------"<<endl;
+  cout<<" Usual tests: (Pt - PtMC) histograms "<<endl;
+  cout<<" Fitting gaussians..."<<endl;
+  for(Int_t ibin=0;ibin<fptbinnumb;ibin++){ 
+    lHistResolutionGaussian[ibin]->SetParameter(0, lHistResolution[ibin]->GetMaximum() );
+    lHistResolutionGaussian[ibin]->SetParameter(1, lHistResolution[ibin]->GetMean()    );
+    lHistResolutionGaussian[ibin]->SetParameter(2, lHistResolution[ibin]->GetRMS()     );
+    sprintf(lHistResolutionName,"lHistResolutionGaussian%i",ibin);
+    lHistResolution[ibin]->Fit(lHistResolutionName,"IREM0");  
+  }
+
+  Double_t lTotSigMCPtMC[100];
+  Double_t lTotSigMCPtMCXCheck[100];
+  Double_t lTotSigMCPtReco[100];
+  Double_t lTotSigMCPtRecoXCheck[100];
+  for(Int_t ibin=0;ibin<100;ibin++){ 
+    lTotSigMCPtMC[ibin] = 0;
+    lTotSigMCPtReco[ibin] = 0; 
+    lTotSigMCPtRecoXCheck[ibin] = 0; 
+  }
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){   //reco pt
+    for(Int_t jbin=0; jbin<fptbinnumb; jbin++){ //mc pt
+      lTotSigMCPtMC[jbin] += ((double)f2dHistPtResolution->GetBinContent(ibin+1,jbin+1));
+      lTotSigMCPtReco[ibin] += ((double)f2dHistPtResolution->GetBinContent(ibin+1,jbin+1));
+    }
+  }  
+
+
+  TMatrixD fResolutionMatrix(fptbinnumb,fptbinnumb); 
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){   //reco pt
+    for(Int_t jbin=0; jbin<fptbinnumb; jbin++){ //mc pt
+      fResolutionMatrix[ibin][jbin] = ((double)f2dHistPtResolution->GetBinContent(ibin+1,jbin+1)) / lTotSigMCPtMC[jbin] ;
+      f2dHistPtBlur->SetBinContent(ibin+1,jbin+1,(float)fResolutionMatrix[ibin][jbin]);
+    }
+  }
+  fResolutionMatrix.Print();
+  cout<<"---> Debug Test 1: Check if fResolutionMatrix * lTotSigMCPtMC is lTotSigMCPtReco"<<endl;
+  cout<<"---> Multiplying... "<<endl;
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){   //reco pt
+    for(Int_t jbin=0; jbin<fptbinnumb; jbin++){ //mc pt
+      //if resolution is perfect: lTempSigReal[ibin] = lSigRealV0[ibin] 
+      // (as fResolution is delta[ibin][jbin]) 
+      lTotSigMCPtRecoXCheck[ibin] += lTotSigMCPtMC[jbin]*fResolutionMatrix[ibin][jbin]; 
+    }
+  }
+
+  cout<<"---> Compare for Cross-check!..."<<endl;
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){ 
+    cout<<"---> bin #"<<ibin<<"\t"<<lTotSigMCPtRecoXCheck[ibin]<<"\t"<<lTotSigMCPtReco[ibin]<<endl;
+  }
+  
+  
+  cout<<"Resolution matrix has determinant: "<<fResolutionMatrix.Determinant()<<endl;
+  if(TMath::Abs(fResolutionMatrix.Determinant()) > 1e-5){
+    cout<<"Determinant is different from zero enough to do inversion."<<endl;
+    cout<<"Will, however, suppress data too far from diagonal!"<<endl;
+    cout<<"Truncation: meant to ensure better numerical stability"<<endl;
+
+    for(Int_t ibin=0; ibin<fptbinnumb; ibin++){   //reco pt
+      for(Int_t jbin=0; jbin<fptbinnumb; jbin++){ //mc pt
+        if ( TMath::Abs(ibin-jbin) > 1 ){ 
+          fResolutionMatrix[ibin][jbin] = 0;
+        }
+      }
+    }
+
+    fResolutionMatrix.Invert();
+    fResolutionMatrix.Print();
+  }
+
+  fResolutionMatrix.Print();
+  cout<<"---> Debug Test 2: Check if fResolutionMatrix^-1 * lTotSigMCPtReco is lTotSigMCPtMC"<<endl;
+  cout<<"---> AKA \"the big test\"!"<<endl;
+  cout<<"---> Multiplying... "<<endl;
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){   //reco pt
+    for(Int_t jbin=0; jbin<fptbinnumb; jbin++){ //mc pt
+      //if resolution is perfect: lTempSigReal[ibin] = lSigRealV0[ibin] 
+      // (as fResolution is delta[ibin][jbin]) 
+      lTotSigMCPtMCXCheck[ibin] += lTotSigMCPtReco[jbin]*fResolutionMatrix[ibin][jbin]; 
+    }
+  }
+  cout<<"---> Compare for Cross-check!..."<<endl;
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){ 
+    cout<<"---> bin #"<<ibin<<"\t"<<lTotSigMCPtMCXCheck[ibin]<<"\t"<<lTotSigMCPtMC[ibin]<<endl;
+  }
+  
+
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){   //reco pt
+    for(Int_t jbin=0; jbin<fptbinnumb; jbin++){ //mc pt
+      f2dHistPtSharpen->SetBinContent(ibin+1,jbin+1,(float)fResolutionMatrix[ibin][jbin]);
+    }
+  }
+
+  Double_t lTempSigRealV0[100]; 
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){ 
+    lTempSigRealV0[ibin] = 0;
+  }
+  //To use: de-convolute by doing matrix multiplication with lSigRealV0[]... 
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){   //reco pt
+    for(Int_t jbin=0; jbin<fptbinnumb; jbin++){ //mc pt
+      //if resolution is perfect: lTempSigReal[ibin] = lSigRealV0[ibin] 
+      // (as fResolution is delta[ibin][jbin]) 
+      lTempSigRealV0[ibin] += lSigRealV0[jbin]*fResolutionMatrix[ibin][jbin]; 
+    }
+  }
+
+  cout<<"Compare considering resolutions"<<endl;
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){ 
+    cout<<"bin #"<<ibin<<"\t"<<lTempSigRealV0[ibin]<<"\t"<<lSigRealV0[ibin]<<endl;
+  }
+  cout<<endl;
+  cout<<"inspect ratio for trends..."<<endl;
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){ 
+    cout<<"bin #"<<ibin<<"\t"<<lTempSigRealV0[ibin]/lSigRealV0[ibin]<<endl;
+  }
+  //---------------------------------------------------------------
+
+  //=============================================================  
   // Compute Efficiency 
   Double_t lEfficiency[100];
   Double_t lEfficiencyError[100]; 
@@ -1446,6 +1716,11 @@ void AliV0Module::DoAnalysis(){
 	  lTreeMCFD->SetBranchAddress("fTreeVariablePIDMother",&lPIDMother);
 	  lTreeMCFD->SetBranchAddress("fTreeVariablePIDPositive",&lPIDPositive);
 	  lTreeMCFD->SetBranchAddress("fTreeVariablePIDNegative",&lPIDNegative);
+    //---- Multiplicity info -------------------------------------------
+    lTreeMCFD->SetBranchAddress("fTreeVariableMultiplicity",&lMultiplicity);
+    //--- Armenteros-Podolansky ----------------------------------------
+    lTreeMCFD->SetBranchAddress("fTreeVariableAlphaV0",&lArmAlpha);
+    lTreeMCFD->SetBranchAddress("fTreeVariablePtArmV0",&lArmPt);
 	  //================================================================
 
     //================================================================
@@ -1492,6 +1767,7 @@ void AliV0Module::DoAnalysis(){
               lLeastNbrCrossedRowsOverFindable >= fCutLeastNumberOfCrossedRowsOverFindable &&
               TMath::Abs(lInvariantMassCompetingOne - lCompetingParticleMass) > fCutCompetingV0Rejection &&
               TMath::Abs(lInvariantMassCompetingTwo - lCompetingParticleMass) > fCutCompetingV0Rejection &&
+            ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt>TMath::Abs(lArmAlpha)*0.5 ) ) &&
             ( //perfect PID association, IsPhysicalPrimary association
             ( fWhichParticle == "Lambda"
             && lPID           == 3122 //V0 is a Lambda
@@ -1507,6 +1783,12 @@ void AliV0Module::DoAnalysis(){
             && (lPIDMother     ==-3312 || (lPIDMother ==-3322 && fFDSwitch=="UseMCRatio") ) 
             && lPrimaryStatusMother == 1 //Xi is actually a primary (should matter little) 
             )
+            ) && 
+            ( //Multiplicity Switch
+            fPerformMultiplicityStudy == kFALSE || //No mult selection, or...
+            (fPerformMultiplicityStudy == kTRUE &&  //inside mult bin
+            lMultiplicity>=fLoMultBound &&
+            lMultiplicity<=fHiMultBound)
             )
         ){ // Start Entry Loop
 		    lWeAreAtBin   = fHistPt->FindBin(lPtMC)-1;
@@ -1606,7 +1888,7 @@ void AliV0Module::DoAnalysis(){
 
     Double_t lProducedXi[100]; 
     
-	  TF1 *lLevyFitXiFeedDown = new TF1("LevyFitXiFeedDown",this ,&AliV0Module::MyLevyPtXi, 0.0,15,3, "AliV0Module","MyLevyPtXi");
+	  TF1 *lLevyFitXiFeedDown = new TF1("LevyFitXiFeedDown",this ,&AliV0Module::MyLevyPtXi, 0.0,15,3, "AliV0Module","MyLevyPXi");
     
     //Set Parameters Adequately, as in paper
     //FIXME: These are the 7TeV Xi- parameters!!! 
@@ -1813,6 +2095,8 @@ void AliV0Module::DoAnalysis(){
   fHistPeakPositionMC->Write();
   fHistSigToNoiseMC->Write();
    f2dHistPtResolution->Write();
+   f2dHistPtBlur->Write();
+   f2dHistPtSharpen->Write();
   for(Int_t ibin = 0; ibin<fptbinnumb; ibin++) {
     lHistoFullV0MC[ibin] ->Write();
     fgausPtMC[ibin]         ->Write();
@@ -1841,6 +2125,35 @@ void AliV0Module::DoAnalysis(){
     f2dFeedDownEfficiencyGFCorrected->Write();
     fHistFeeddownSubtraction->Write();
   }
+
+  //Saving Resolution Information
+
+  //preparing... 
+  for(Int_t ibin=0; ibin<fptbinnumb; ibin++){ 
+    fHistResolutionVsPt->SetBinContent(ibin+1,lHistResolution[ibin]->GetMean());
+    fHistResolutionVsPt->SetBinError(ibin+1,lHistResolution[ibin]->GetRMS());
+    fHistResolutionVsPtDivByBinWidth->SetBinContent(ibin+1,lHistResolution[ibin]->GetMean() / (fptbinlimits[ibin+1]-fptbinlimits[ibin]) );
+    fHistResolutionVsPtDivByBinWidth->SetBinError(ibin+1,lHistResolution[ibin]->GetRMS() / (fptbinlimits[ibin+1]-fptbinlimits[ibin]) );
+
+    fHistResolutionVsPtWithGaussians->SetBinContent(ibin+1,lHistResolutionGaussian[ibin]->GetParameter(1));
+    fHistResolutionVsPtWithGaussians->SetBinError(ibin+1,lHistResolutionGaussian[ibin]->GetParameter(2));
+    fHistResolutionVsPtDivByBinWidthWithGaussians->SetBinContent(ibin+1,lHistResolutionGaussian[ibin]->GetParameter(1) / (fptbinlimits[ibin+1]-fptbinlimits[ibin]) );
+    fHistResolutionVsPtDivByBinWidthWithGaussians->SetBinError(ibin+1,lHistResolutionGaussian[ibin]->GetParameter(2) / (fptbinlimits[ibin+1]-fptbinlimits[ibin]) );
+  }
+
+
+  lResultsFile->cd();
+  TDirectoryFile *lDirResolution = new TDirectoryFile("lInfoResolution","Resolution Information");
+  lDirResolution->cd();
+  fHistResolutionVsPt->Write();
+  fHistResolutionVsPtDivByBinWidth->Write();
+  fHistResolutionVsPtWithGaussians->Write();
+  fHistResolutionVsPtDivByBinWidthWithGaussians->Write();
+  for(Int_t ibin = 0; ibin<fptbinnumb; ibin++) {
+    lHistResolution[ibin] ->Write();
+    lHistResolutionGaussian[ibin]->Write();
+  }
+
 
   lResultsFile->cd();
 
@@ -1904,10 +2217,18 @@ void AliV0Module::DoAnalysis(){
 
 
   //pt-by-pt histos
+  fHistResolutionVsPt->Delete();
+  fHistResolutionVsPtDivByBinWidth->Delete();
+  fHistResolutionVsPtWithGaussians->Delete();
+  fHistResolutionVsPtDivByBinWidthWithGaussians->Delete();
+  f2dHistPtBlur->Delete();
+  f2dHistPtSharpen->Delete();
   if (lDebugCleaningProcess) cout<<"lHistoFullV0*[*]->Delete()"<<endl;
   for(Int_t ihist=0;ihist<100;ihist++){
     lHistoFullV0[ihist]->Delete();
     lHistoFullV0MC[ihist]->Delete();
+    lHistResolution[ihist]->Delete();
+    lHistResolutionGaussian[ihist]->Delete();
   }
 
   if (lDebugCleaningProcess) cout<<"lLine*[*]->Delete()"<<endl;
