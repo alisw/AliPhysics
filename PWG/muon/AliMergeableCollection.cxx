@@ -42,6 +42,9 @@ ClassImp(AliMergeableCollection)
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TH1.h"
+#include "THnSparse.h"
+//#include "AliCFGridSparse.h"
+//#include "AliCFContainer.h"
 //#include "TH2.h"
 
 //_____________________________________________________________________________
@@ -313,8 +316,9 @@ TObject* AliMergeableCollection::GetSum(const char* idPattern)
 {
   /// Sum objects
   /// The pattern must be in the form:
-  /// /key1_pattern1 key1_pattern2,key1_pattern,.../key2_pattern1,key2_pattern,.../.../objectName_pattern1,objectName_pattern...
+  /// /key1_1,key1_2,.../key2_1,key2_2,.../.../objectName_1,objectName_2...
   /// The logical or between patterns separated by commas is taken
+  /// Exact match is required for keys and objectNames
   
   TObject* sumObject = 0x0;
   
@@ -331,6 +335,9 @@ TObject* AliMergeableCollection::GetSum(const char* idPattern)
   
   TString debugMsg = "Adding objects:";
   
+  //
+  // First handle the keys
+  //
   TIter next(Map());
   TObjString* str;
   while ( ( str = static_cast<TObjString*>(next()) ) )
@@ -344,7 +351,7 @@ TObject* AliMergeableCollection::GetSum(const char* idPattern)
       TObjArray* subKeyList = static_cast<TObjArray*> ( keyMatrix.At(ikey) );
       for ( Int_t isub=0; isub<subKeyList->GetEntries(); isub++ ) {
         TString subKeyString = static_cast<TObjString*> (subKeyList->At(isub))->GetString();
-        if ( currKey.Contains(subKeyString.Data()) ) {
+        if ( currKey == subKeyString ) {
           matchKey = kTRUE;
           break;
         }
@@ -356,6 +363,10 @@ TObject* AliMergeableCollection::GetSum(const char* idPattern)
     } // loop on keys in the idPattern
     if ( ! listMatchPattern ) continue;
     
+    
+    //
+    // Then handle the object name
+    //
     THashList* list = static_cast<THashList*>(Map()->GetValue(identifier.Data()));
     
     TIter nextObj(list);
@@ -368,7 +379,7 @@ TObject* AliMergeableCollection::GetSum(const char* idPattern)
       TObjArray* subKeyList = static_cast<TObjArray*> ( keyMatrix.Last() );
       for ( Int_t isub=0; isub<subKeyList->GetEntries(); isub++ ) {
         TString subKeyString = static_cast<TObjString*> (subKeyList->At(isub))->GetString();
-        if ( currKey.Contains(subKeyString.Data()) ) {
+        if ( currKey == subKeyString ) {
           matchKey = kTRUE;
           break;
         }
@@ -866,6 +877,20 @@ AliMergeableCollection::EstimateSize(Bool_t show) const
       
       if ( hasErrors) thissize += nbins*8;
     }
+    else if ( obj->IsA()->InheritsFrom(THnSparse::Class()) ) {
+      THnSparse* sparse = static_cast<THnSparse*> (obj);
+      thissize = sizeof(Float_t) * (UInt_t)sparse->GetNbins();
+    }
+//    else if ( obj->IsA() == AliCFGridSparse::Class() ) {
+//      AliCFGridSparse* sparse = static_cast<AliCFGridSparse*> (obj);
+//      thissize = sizeof(Float_t) * (UInt_t)sparse->GetNFilledBins();
+//    }
+//    else if ( obj->IsA() == AliCFContainer::Class() ) {
+//      AliCFContainer* cont = static_cast<AliCFContainer*> (obj);
+//      for ( Int_t istep=0; istep<cont->GetNStep(); istep++ ) {
+//        thissize += sizeof(Float_t) * (UInt_t)cont->GetGrid(istep)->GetNFilledBins();
+//      }
+//    }
     else {
       AliWarning(Form("Cannot estimate size of %s\n", obj->ClassName()));
       continue;
