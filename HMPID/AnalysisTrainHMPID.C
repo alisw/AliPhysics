@@ -48,7 +48,7 @@ Bool_t      kUseTR              = kFALSE;  // use track references
 //==============================================================================
 Int_t       iHMPID             = 1;      // Basic HMPID analysis task
 Int_t       iHMPIDperf         = 0;      // Basic HMPID performance task
-Int_t       iJETAN             = 0;      // Jet analysis (PWG4) // 1 write standard 2 write non-standard jets
+Int_t       iJETAN             = 0;      // Jet analysis (PWGJE) // 1 write standard 2 write non-standard jets
 Int_t       iHMPIDJets         = 0;      // Jet chemistry with HMPID
 Int_t       iJETANLib          = 0;
 Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Filter
@@ -74,8 +74,8 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-28-00d";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-21-26-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-33-02b";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v5-03-31-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption    = kFALSE;  // use xrootd flags to reduce timeouts
 Bool_t      kPluginOverwriteMode     = kTRUE;  // overwrite existing collections
@@ -98,7 +98,7 @@ TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be
 TString     kGridOutputStorages      = "disk=2"; // Make replicas on the storages
 // == grid process variables
 Int_t       kGridRunsPerMaster     = 1; // Number of runs per master job
-Int_t       kGridFilesPerJob       = 100; // Maximum number of files per job (gives size of AOD)
+Int_t       kGridFilesPerJob       = 50; // Maximum number of files per job (gives size of AOD)
 
 //==============================================================================
 // ### Local Steering variables
@@ -193,7 +193,7 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
    // ESD input handler
       AliESDInputHandler *esdHandler = new AliESDInputHandler();
       if (kUseESDTags) esdHandler->SetReadTags();
-      esdHandler->SetReadFriends(kTRUE);
+      esdHandler->SetReadFriends(kFALSE);
       mgr->SetInputEventHandler(esdHandler);
    }
 
@@ -252,6 +252,15 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter,kUseMuonfilter);
+//  if jet analysis is included, better use the following macro with kHighPtFilterMask=272
+/*      gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskESDFilterPWGJETrain.C");
+      AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilterPWGJETrain(kUseKinefilter,kUseMuonfilter);
+      taskesdfilter->DisableV0s();
+      taskesdfilter->DisableCascades();
+      taskesdfilter->DisableKinks();
+      taskesdfilter->DisablePmdClusters();
+      taskesdfilter->DisableCaloClusters();
+      taskesdfilter->DisableCells();*/
       if(kIsMC){
          mgr->RegisterExtraFile("pyxsec_hists.root");
          if(kGridMergeExclude.Length())kGridMergeExclude += " ";
@@ -261,9 +270,9 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
 
     // Jet analysis
    if (iJETAN) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJets.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskJets.C");
       AliAnalysisTaskJets *taskjets = 0;
-      if (iJETAN&1) taskjets = AddTaskJets(kHighPtFilterMask); 
+      if (iJETAN&1) taskjets = AddTaskJets("AOD","FASTJET",0.4,kHighPtFilterMask); 
       if (!taskjets) ::Warning("AnalysisTrainHMPID", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
    }
 
@@ -281,7 +290,7 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
       
    if(iHMPIDJets){
      gROOT->LoadMacro("$ALICE_ROOT/HMPID/AddTaskJetsHMPID.C");
-     AliAnalysisTaskJetsHMPID *taskHmpidJets = AddTaskJetsHMPID("clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00","jeteventbackground_clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00");
+     AliAnalysisTaskJetsHMPID *taskHmpidJets = AddTaskJetsHMPID("jetsAOD_FASTJET04_B0_Filter00272_Cut00150","jeteventbackground_clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00");
      if (!taskHmpidJets) ::Warning("AnalysisTrainHMPID", "AliAnalysisTaskJetsHMPID cannot run for this train conditions - EXCLUDED");
    }
    
@@ -415,23 +424,23 @@ void CheckModuleFlags(const char *mode) {
    if (iAODanalysis) {
    // AOD analysis
       if (kUseMC)
-         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "MC usage disabled in analysis on AOD's");
+         ::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "MC usage disabled in analysis on AOD's");
       kUseMC = kFALSE;
       kUseTR = kFALSE;
       if (iESDfilter)
-         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "ESD filter disabled in analysis on AOD's");
+         ::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "ESD filter disabled in analysis on AOD's");
       iESDfilter   = 0;
       if (iPhysicsSelection)
-         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "Physics Selection disabled in analysis on AOD's");
+         ::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "Physics Selection disabled in analysis on AOD's");
       iPhysicsSelection   = 0;
       if (!iAODhandler) {
          if (iJETAN) 
-            ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "JETAN disabled in analysis on AOD's without AOD handler");
+            ::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "JETAN disabled in analysis on AOD's without AOD handler");
          iJETAN = 0;
       }
-      if(iHMPID)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "HMPID analysis disabled in analysis on AOD's");
+      if(iHMPID)::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "HMPID analysis disabled in analysis on AOD's");
       iHMPID = 0;
-      if(iHMPIDperf)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "HMPID performance disabled in analysis on AOD's");
+      if(iHMPIDperf)::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "HMPID performance disabled in analysis on AOD's");
       iHMPIDperf = 0;
    } else {   
    // ESD analysis
@@ -550,7 +559,7 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("libANALYSISalice.so", mode);
             success &= LoadLibrary("libCORRFW.so", mode);
             gROOT->ProcessLine(".include $ALICE_ROOT/include");
-         }   
+         }
          break;
       case 1:
          if (!kProofUseAFPAR) {
@@ -560,11 +569,11 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("ANALYSIS", mode);
             success &= LoadLibrary("ANALYSISalice", mode);
             success &= LoadLibrary("CORRFW", mode);
-         } else { 
+         } else {
             success &= !gProof->EnablePackage(kProofAFversion);
             success &= LoadLibrary("CORRFW", mode);
          }
-         break;         
+         break;
       default:
          ::Error("AnalysisTrainHMPID.C::LoadCommonLibraries", "Unknown run mode: %s", mode);
          return kFALSE;
@@ -573,10 +582,10 @@ Bool_t LoadCommonLibraries(const char *mode)
       ::Info("AnalysisTrainHMPID.C::LoadCommodLibraries", "Load common libraries:    SUCCESS");
       ::Info("AnalysisTrainHMPID.C::LoadCommodLibraries", "Include path for Aclic compilation:\n%s",
               gSystem->GetIncludePath());
-   } else {           
+   } else {
       ::Info("AnalysisTrainHMPID.C::LoadCommodLibraries", "Load common libraries:    FAILED");
-   }   
-      
+   }
+
    return success;
 }
 
@@ -587,9 +596,34 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 // Load common analysis libraries.
    Bool_t success = kTRUE;
    if (iESDfilter) {
-      if (!LoadLibrary("PWG3base", mode, kTRUE) ||
-          !LoadLibrary("PWG3muon", mode, kTRUE)) return kFALSE;
+      if (!LoadLibrary("PWGHFbase", mode, kTRUE) ||
+          !LoadLibrary("PWGmuon", mode, kTRUE)) return kFALSE;
    }   
+
+   if (iJETANLib) {
+     // this part needs some rework in case we do not need the fastjed finders for processing
+     if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
+     if (!strcmp(mode, "PROOF")){
+       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libCGAL.so\"\)", kTRUE); 
+       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libfastjet.so\"\)", kTRUE); 
+       // problem when loading siscone copiled with different gcc version??
+       // gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libsiscone.so\"\)", kTRUE); 
+       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libSISConePlugin.so\"\)", kTRUE);      
+     }
+     if(!kUsePAR){ 
+       if (!LoadLibrary("CGAL", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("fastjet", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("siscone", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("SISConePlugin", mode, kTRUE)) return kFALSE;
+     }
+     else{
+       if (!LoadLibrary("libCGAL.so", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("libfastjet.so", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("libsiscone.so", mode, kTRUE)) return kFALSE;
+       if (!LoadLibrary("libSISConePlugin.so", mode, kTRUE)) return kFALSE;
+     }
+     if (!LoadLibrary("FASTJETAN", mode, kTRUE)) return kFALSE;
+   }
 
    if(iHMPID){
      if (!LoadSource(Form("%s/HMPID/AliHMPIDAnalysisTask.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
@@ -924,6 +958,13 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    // Declare alien output directory. Relative to working directory.
    if (!kGridOutdir.Length()) kGridOutdir = Form("output_%s",kTrainName.Data());
    plugin->SetGridOutputDir(kGridOutdir);
+
+   // Add external packages
+   if (iJETAN) {
+      plugin->AddExternalPackage("boost::v1_43_0");
+      plugin->AddExternalPackage("cgal::v3.6");
+      plugin->AddExternalPackage("fastjet::v2.4.2");
+   }   
 
    // set extra libs before par file compilation
    anaLibs += kGridExtraFiles;
