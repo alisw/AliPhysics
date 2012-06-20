@@ -910,37 +910,35 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
 		    (mother->Yv()- values[AliDielectronVarManager::kYvPrim]) * mother->Py() )/mother->Pt();
     values[AliDielectronVarManager::kPseudoProperTime] = lxy*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/mother->Pt();
   }
-  else {         // the 2 particles come from different mothers so 2-particles quantities are calculated here
-    // AliVParticle part
-    values[AliDielectronVarManager::kPx]        = p1->Px()+p2->Px();
-    values[AliDielectronVarManager::kPy]        = p1->Py()+p2->Py();
-    values[AliDielectronVarManager::kPz]        = p1->Pz()+p2->Pz();
-    values[AliDielectronVarManager::kPt]        = TMath::Sqrt(values[AliDielectronVarManager::kPx]*
-							      values[AliDielectronVarManager::kPx]+
-							      values[AliDielectronVarManager::kPy]*
-							      values[AliDielectronVarManager::kPy]);
-    values[AliDielectronVarManager::kP]         = TMath::Sqrt(values[AliDielectronVarManager::kPt]*
-							      values[AliDielectronVarManager::kPt]+
-							      values[AliDielectronVarManager::kPz]*
-							      values[AliDielectronVarManager::kPz]);
+  // AliVParticle part
+  values[AliDielectronVarManager::kPx]        = p1->Px()+p2->Px();
+  values[AliDielectronVarManager::kPy]        = p1->Py()+p2->Py();
+  values[AliDielectronVarManager::kPz]        = p1->Pz()+p2->Pz();
+  values[AliDielectronVarManager::kPt]        = TMath::Sqrt(values[AliDielectronVarManager::kPx]*
+						      values[AliDielectronVarManager::kPx]+
+						      values[AliDielectronVarManager::kPy]*
+						      values[AliDielectronVarManager::kPy]);
+  values[AliDielectronVarManager::kP]         = TMath::Sqrt(values[AliDielectronVarManager::kPt]*
+						      values[AliDielectronVarManager::kPt]+
+						      values[AliDielectronVarManager::kPz]*
+						      values[AliDielectronVarManager::kPz]);
     
-    values[AliDielectronVarManager::kXv]        = 0;
-    values[AliDielectronVarManager::kYv]        = 0;
-    values[AliDielectronVarManager::kZv]        = 0;
+  values[AliDielectronVarManager::kXv]        = 0;
+  values[AliDielectronVarManager::kYv]        = 0;
+  values[AliDielectronVarManager::kZv]        = 0;
     
-    values[AliDielectronVarManager::kOneOverPt] = (values[AliDielectronVarManager::kPt]>1.0e-6 ? 1.0/values[AliDielectronVarManager::kPt] : 0.0);
-    values[AliDielectronVarManager::kPhi]       = TMath::ATan2(values[AliDielectronVarManager::kPy],values[AliDielectronVarManager::kPx]);
-    values[AliDielectronVarManager::kTheta]     = TMath::ATan2(values[AliDielectronVarManager::kPt],values[AliDielectronVarManager::kPz]);
-    values[AliDielectronVarManager::kEta]       = ((values[AliDielectronVarManager::kP]-values[AliDielectronVarManager::kPz])>1.0e-6 && (values[AliDielectronVarManager::kP]+values[AliDielectronVarManager::kPz])>1.0e-6 ? 0.5*TMath::Log((values[AliDielectronVarManager::kP]+values[AliDielectronVarManager::kPz])/(values[AliDielectronVarManager::kP]-values[AliDielectronVarManager::kPz])) : -9999.);
-    values[AliDielectronVarManager::kE]         = p1->E()+p2->E();
-    values[AliDielectronVarManager::kY]         = ((values[AliDielectronVarManager::kE]-values[AliDielectronVarManager::kPz])>1.0e-6 && (values[AliDielectronVarManager::kE]+values[AliDielectronVarManager::kPz])>1.0e-6 ? 0.5*TMath::Log((values[AliDielectronVarManager::kE]+values[AliDielectronVarManager::kPz])/(values[AliDielectronVarManager::kE]-values[AliDielectronVarManager::kPz])) : -9999.);
-    values[AliDielectronVarManager::kCharge]    = p1->Charge()+p2->Charge();
+  values[AliDielectronVarManager::kOneOverPt] = (values[AliDielectronVarManager::kPt]>1.0e-6 ? 1.0/values[AliDielectronVarManager::kPt] : 0.0);
+  values[AliDielectronVarManager::kPhi]       = TMath::ATan2(values[AliDielectronVarManager::kPy],values[AliDielectronVarManager::kPx]);
+  values[AliDielectronVarManager::kTheta]     = TMath::ATan2(values[AliDielectronVarManager::kPt],values[AliDielectronVarManager::kPz]);
+  values[AliDielectronVarManager::kEta]       = ((values[AliDielectronVarManager::kP]-values[AliDielectronVarManager::kPz])>1.0e-6 && (values[AliDielectronVarManager::kP]+values[AliDielectronVarManager::kPz])>1.0e-6 ? 0.5*TMath::Log((values[AliDielectronVarManager::kP]+values[AliDielectronVarManager::kPz])/(values[AliDielectronVarManager::kP]-values[AliDielectronVarManager::kPz])) : -9999.);
+  values[AliDielectronVarManager::kE]         = p1->E()+p2->E();
+  values[AliDielectronVarManager::kY]         = ((values[AliDielectronVarManager::kE]-values[AliDielectronVarManager::kPz])>1.0e-6 && (values[AliDielectronVarManager::kE]+values[AliDielectronVarManager::kPz])>1.0e-6 ? 0.5*TMath::Log((values[AliDielectronVarManager::kE]+values[AliDielectronVarManager::kPz])/(values[AliDielectronVarManager::kE]-values[AliDielectronVarManager::kPz])) : -9999.);
+  values[AliDielectronVarManager::kCharge]    = p1->Charge()+p2->Charge();
 
-    values[AliDielectronVarManager::kM]         = TMath::Sqrt(p1->M()*p1->M()+p2->M()*p2->M()+
+  values[AliDielectronVarManager::kM]         = TMath::Sqrt(p1->M()*p1->M()+p2->M()*p2->M()+
       2.0*(p1->E()*p2->E()-p1->Px()*p2->Px()-p1->Py()*p2->Py()-p1->Pz()*p2->Pz()));
 
-    if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
-  }
+  if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);  
 
   values[AliDielectronVarManager::kThetaHE]   = AliDielectronPair::ThetaPhiCM(p1,p2,kTRUE,  kTRUE);
   values[AliDielectronVarManager::kPhiHE]     = AliDielectronPair::ThetaPhiCM(p1,p2,kTRUE,  kFALSE);
