@@ -8,9 +8,6 @@
 
 ClassImp(AliEmcalJet)
 
-  Double32_t        fPtEmc;               //[0,0,12]   pt in EMCAL acceptance
-  Int_t             fNEmc;                //           number of constituents in EMCAL acceptance
-
 //__________________________________________________________________________________________________
 AliEmcalJet::AliEmcalJet() : 
   AliVParticle(), 
