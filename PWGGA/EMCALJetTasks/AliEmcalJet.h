@@ -79,8 +79,8 @@ class AliEmcalJet : public AliVParticle
 
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
-  void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); 
-                                                         fTrackIDs.Set(0);                 }
+  void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0; 
+                                                         fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0; }
   void              SetArea(Double_t a)                { fArea    = a;                     }
   void              SetAreaEmc(Double_t a)             { fAreaEmc = a;                     }
   void              SetAxisInEmcal(Bool_t b)           { fAxisInEmcal = b;                 }
