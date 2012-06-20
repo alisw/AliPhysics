@@ -31,6 +31,7 @@ set ( SRCS
     totEt/AliAnalysisEtCommon.cxx 
     totEt/AliAnalysisEtSelector.cxx
     totEt/AliAnalysisEtSelectorPhos.cxx
+    totEt/AliAnalysisEtSelectorEmcal.cxx
     totEt/AliAnalysisEt.cxx 
     totEt/AliAnalysisEtMonteCarlo.cxx 
     totEt/AliAnalysisEtMonteCarloEmcal.cxx 
