@@ -134,9 +134,15 @@ protected:
     
     Double_t fTotEt;/** Total Et in the event (without acceptance cuts) */
 
+    Double_t fTotEtAcc;/** Total Et in the event (without acceptance cuts) */
+
     Double_t fTotNeutralEt;/** Total neutral Et in the event */
 
+    Double_t fTotNeutralEtAcc;/** Total neutral Et in the event */
+
     Double_t fTotChargedEt;/** Total charged Et in the event */
+
+    Double_t fTotChargedEtAcc;/** Total charged Et in the event */
 
     Int_t fMultiplicity;/** Multiplicity of particles in the event */
     Int_t fChargedMultiplicity;/** Multiplicity of charged particles in the event */
