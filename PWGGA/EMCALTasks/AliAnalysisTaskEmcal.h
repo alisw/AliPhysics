@@ -19,6 +19,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   enum EmcalAnaType {
     kTPC       = 0,     // TPC only analysis
     kEMCAL     = 1,     // EMCal + TPC analysis
+    kTPCSmall  = 2      // TPC only in EMCal acceptance
   };
 
   enum BeamType {
@@ -43,11 +44,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTracksName(const char *n)                         { fTracksName     = n          ; }
 
  protected:
+  virtual void                ExecOnce()                                                                    ;
   Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE)       const;
   Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kFALSE)       const;
   Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kFALSE)       const;
   BeamType                    GetBeamType()                                                                 ;
-  void                        Init();
   virtual Bool_t              FillHistograms()                                     { return fCreateHisto; }
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
   virtual Bool_t              RetrieveEventObjects();

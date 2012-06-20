@@ -95,7 +95,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *)
   // Main loop, called for each event.
 
   if (!fInitialized)
-    Init();
+    ExecOnce();
 
   if (!fInitialized)
     return;
@@ -206,9 +206,43 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcal::Init()
+void AliAnalysisTaskEmcal::ExecOnce()
 {
   // Init the analysis.
+  if (!InputEvent()) {
+    AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
+    return;
+  }
+
+  if (!fCaloName.IsNull() && (fAnaType == kEMCAL) && !fCaloClusters) {
+    fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
+    if (!fCaloClusters) {
+      AliError(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloName.Data())); 
+      return;
+    } else {
+      TClass *cl = fCaloClusters->GetClass();
+      if (!cl->GetBaseClass("AliVCluster") && !cl->GetBaseClass("AliEmcalParticle")) {
+	AliError(Form("%s: Collection %s does not contain AliVCluster nor AliEmcalParticle objects!", GetName(), fCaloName.Data())); 
+	fCaloClusters = 0;
+	return;
+      }
+    }
+  }
+
+  if (!fTracksName.IsNull() && !fTracks) {
+    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+    if (!fTracks) {
+      AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
+      return;
+    } else {
+      TClass *cl = fTracks->GetClass();
+      if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
+	AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fTracksName.Data())); 
+	fTracks = 0;
+	return;
+      }
+    }
+  }
 
   SetInitialized();
 }
@@ -244,41 +278,6 @@ TClonesArray *AliAnalysisTaskEmcal::GetArrayFromEvent(const char *name, const ch
 Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 {
   // Retrieve objects from event.
-
-  if (!InputEvent()) {
-    AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
-    return kFALSE;
-  }
-
-  if (!fCaloName.IsNull() && (fAnaType == kEMCAL) && !fCaloClusters) {
-    fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
-    if (!fCaloClusters) {
-      AliError(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloName.Data())); 
-      return kFALSE;
-    } else {
-      TClass *cl = fCaloClusters->GetClass();
-      if (!cl->GetBaseClass("AliVCluster") && !cl->GetBaseClass("AliEmcalParticle")) {
-	AliError(Form("%s: Collection %s does not contain AliVCluster nor AliEmcalParticle objects!", GetName(), fCaloName.Data())); 
-	fCaloClusters = 0;
-	return kFALSE;
-      }
-    }
-  }
-
-  if (!fTracksName.IsNull() && !fTracks) {
-    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
-    if (!fTracks) {
-      AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
-      return kFALSE;
-    } else {
-      TClass *cl = fTracks->GetClass();
-      if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
-	AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fTracksName.Data())); 
-	fTracks = 0;
-	return kFALSE;
-      }
-    }
-  }
 
   fVertex[0] = 0;
   fVertex[1] = 0;
