@@ -70,6 +70,14 @@ public:
   //Set Fit Background or not 
   void SetFitBackground ( Bool_t fitBgSwitch );
 
+  //Multiplicity Study Setters
+  void SetPerformMultiplicityStudy ( Bool_t lPerformMultStudy );
+  void SetLowMultValue             ( Int_t lLoMultBound       );
+  void SetHighMultValue            ( Int_t lHiMultBound       );
+
+  //Set Fit Background or not 
+  void SetSpecialArmenterosCutK0s ( Bool_t lSpecialArmenterosCutK0s );
+
   //Do Analysis
   void DoAnalysis();
 
@@ -132,6 +140,15 @@ private:
 
   //Do Fitting instead of bin counting switch
   Bool_t fFitBackgroundSwitch;
+
+  //Special Armenteros Selection For K0s
+  Bool_t fSpecialArmenterosCutK0s;
+
+  //Perform multiplicity selection 
+  // --- (mult estimator in pp, centrality in PbPb)
+  Bool_t fPerformMultiplicityStudy; 
+  Int_t fLoMultBound;
+  Int_t fHiMultBound;
 
   //FeedDownTreatment switch:  
   // --- NoFD.............: Doesn't feeddown subtract at all 
