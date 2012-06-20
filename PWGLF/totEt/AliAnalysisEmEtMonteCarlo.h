@@ -177,6 +177,8 @@ protected:
 	TH2F *fHistNonConvGammaEtaPt;//  multiplicity - Eta vs pt
 	TH1F *fHistNonConvGammatotET;//  total ET distribution
 	
+	
+	
 	// *******************
 	// total gamma ET
 	// *******************
@@ -278,6 +280,7 @@ protected:
 	TH2F *fHistNonConvGammaAccEtaPt;//  multiplicity - Eta vs pt
 	TH1F *fHistNonConvGammaAcctotET;//  total ET distribution
 	
+	
 	// *******************
 	// total gamma ET inside EMCal acceptance
 	// *******************
@@ -338,6 +341,16 @@ protected:
 	TH2F *fHistGammaRecEtaPt;//  multiplicity - Eta vs pt
 	TH1F *fHistGammaRectotET;//  total ET distribution
 	
+	
+	
+	TH2F *fHistGammaRecResEET;// ET - track matching residual vs E_Added CAIO
+	TH2F *fHistGammaRecResPtET;// ET - track matching residual vs pt_Added CAIO
+	TH2F *fHistGammaRecResE;// multiplicity - track matching residual vs E_Added CAIO
+	TH2F *fHistGammaRecResPt;// multiplicity - track matching residual vs pt_Added CAIO 
+	TH2F *fHistGammaRecResEDepETDep;// ET deposited - track matching residual vs E deposited_Added CAIO
+	TH2F *fHistGammaRecResPtETDep;// ET deposited - track matching residual vs pt_Added Caio
+
+	
 	TH2F *fHistAnnihGammaRecEtaEET;//ET - Eta vs E   
 	TH2F *fHistAnnihGammaRecEtaPtET;//ET - Eta vs pt  
 	TH2F *fHistAnnihGammaRecEtaET;//  ET - Eta
@@ -351,7 +364,8 @@ protected:
 	TH2F *fHistScatGammaRecEtaE;//  multiplicity - Eta vs E
 	TH2F *fHistScatGammaRecEtaPt;//  multiplicity - Eta vs pt
 	TH1F *fHistScatGammaRectotET;//  total ET distribution
-
+	
+	
 	// *******************
 	// total gamma ET reconstructed in EMCal
 	// *******************
@@ -441,6 +455,7 @@ protected:
 	// *******************
 	// pion ET (+ and -)
 	// *******************
+	
 	TH2F *fHistPionEtaEET;//ET - Eta vs E  
 	TH2F *fHistPionAccEtaEET;//ET - Eta vs E 
 	TH2F *fHistPionRecEtaEET;//ET - Eta vs E 
