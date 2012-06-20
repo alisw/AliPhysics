@@ -20,7 +20,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
-  void                        Init();
 
   void                        SetJetMinRC2LJ(Float_t d)                            { fMinRC2LJ                = d          ; } 
   void                        SetEmbJetsName(const char *n)                        { fEmbJetsName             = n          ; }
@@ -31,7 +30,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        SetRhoName(const char *n)                            { fRhoName                 = n          ; } 
 
  protected:
-
+  void                        ExecOnce()                                                                                    ;
   Bool_t                      RetrieveEventObjects()                                                                        ;
   Bool_t                      FillHistograms()                                                                              ;
   void                        GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex)                                       ;
@@ -39,7 +38,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &embPart)                                         ;
   void                        DoTrackLoop()                                                                                 ;
   void                        DoClusterLoop()                                                                               ;
-  void                        GetRigidCone(Float_t &pt, Float_t &eta, Float_t &phi, Bool_t acceptMC = kFALSE, 
+  void                        GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &eta, Float_t &phi, Bool_t acceptMC = kFALSE, 
 					   AliEmcalJet *jet = 0, TClonesArray* tracks = 0, TClonesArray* clusters = 0) const;
 
   Float_t                     fMinRC2LJ;                   // Minimum distance random cone to leading jet
@@ -85,11 +84,13 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
   // Random cones
   TH2F                       *fHistRCPhiEta;               //!Phi-Eta distribution of random cones
+  TH1F                       *fHistRCPtRigid[4];           //!Random cone pt, rigid
   TH1F                       *fHistRCPt[4];                //!Random cone pt
   TH1F                       *fHistRCPtExLJ[4];            //!Random cone pt, imposing min distance from leading jet
   TH1F                       *fHistRCPtRand[4];            //!Random cone pt, randomized particles
   TH2F                       *fHistRCPtExLJVSDPhiLJ;       //!Random cone pt, imposing min distance from leading jet, vs. deltaPhi leading jet
   TH2F                       *fHistRhoVSRCPt;              //!Rho vs. Pt(RCExLJ) / Area(RCExLJ)
+  TH1F                       *fHistDeltaPtRCRigid[4];      //!deltaPt = Pt(RC) - A * rho, rigid
   TH1F                       *fHistDeltaPtRC[4];           //!deltaPt = Pt(RC) - A * rho
   TH1F                       *fHistDeltaPtRCExLJ[4];       //!deltaPt = Pt(RC) - A * rho, imposing min distance from leading jet
   TH1F                       *fHistDeltaPtRCRand[4];       //!deltaPt = Pt(RC) - A * rho, randomzied particles
