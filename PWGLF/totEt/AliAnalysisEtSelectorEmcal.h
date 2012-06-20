@@ -9,7 +9,7 @@
 #ifndef ALIANALYSISETSELECTOREMCAL_H
 #define ALIANALYSISETSELECTOREMCAL_H
 
-#include <../../AliRoot-TRUNK-20120619-git/PWGLF/totEt/AliAnalysisEtSelector.h>
+#include "AliAnalysisEtSelector.h"
 
 
 class AliAnalysisEtSelectorEmcal : public AliAnalysisEtSelector
