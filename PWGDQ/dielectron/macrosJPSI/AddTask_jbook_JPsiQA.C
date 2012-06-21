@@ -74,7 +74,7 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod=""){
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("jbookQA_CF",
                          TList::Class(),
-                         AliAnalysisManager::kOutputContainer,
+                         AliAnalysisManager::kExchangeContainer, //AliAnalysisManager::kOutputContainer,
                          "dummy");
     
   AliAnalysisDataContainer *cOutputHist3 =
