@@ -210,7 +210,7 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   // Cuts
   //**************
 
-  AliInfo("AliAnalysisTaskHFEFlowData: create output objects");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: create output objects");
 
   // HFE cuts
 
@@ -221,7 +221,7 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   fHFECuts->Initialize();
   if(fAODAnalysis) fHFECuts->SetAOD();  
 
-  AliInfo("AliAnalysisTaskHFEFlowData: HFE cuts initialize");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: HFE cuts initialize");
 
   // PID HFE
   //fPID->SetHasMCData(HasMCData());
@@ -230,7 +230,7 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   fPIDqa->Initialize(fPID);
   fPID->SortDetectors();
 
-  AliInfo("AliAnalysisTaskHFEFlowData: pid and pidqa");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: pid and pidqa");
   
   //**************************
   // Bins for the THnSparse
@@ -279,7 +279,7 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   Double_t binLimCharge[nBinsCharge+1];
   for(Int_t i=0; i<=nBinsCharge; i++) binLimCharge[i]=(Double_t)minCharge + (maxCharge-minCharge)/nBinsCharge*(Double_t)i ;
   
-  AliInfo("AliAnalysisTaskHFEFlowData: array of bins");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: array of bins");
 
   //******************
   // Histograms
@@ -288,12 +288,12 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner();
 
-  AliInfo("AliAnalysisTaskHFEFlowData: list created");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: list created");
   
   // Histos
   fHistEV = new TH2D("fHistEV", "events", 3, 0, 3, 3, 0,3);
   
-  AliInfo("AliAnalysisTaskHFEFlowData: fHistEv");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: fHistEv");
 
   // Event plane as function of phiep, centrality
   const Int_t nDima=5;
@@ -306,7 +306,7 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   fEventPlane->SetBinEdges(4,binLimC);
   fEventPlane->Sumw2();
 
-  AliInfo("AliAnalysisTaskHFEFlowData: fEventPlane");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: fEventPlane");
   
   // Resolution cosres_abc centrality
   const Int_t nDimfbis=4;
@@ -318,7 +318,7 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   fCosResabc->SetBinEdges(3,binLimCMore);
   fCosResabc->Sumw2();
 
-  AliInfo("AliAnalysisTaskHFEFlowData: fCosResabc");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: fCosResabc");
 
   // Resolution cosres centrality
   const Int_t nDimf=2;
@@ -328,7 +328,7 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   fCosRes->SetBinEdges(1,binLimCMore);
   fCosRes->Sumw2();
 
-  AliInfo("AliAnalysisTaskHFEFlowData: fCosRes");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: fCosRes");
   
   // Maps delta phi
   const Int_t nDimg=5;
@@ -341,7 +341,7 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   fDeltaPhiMaps->SetBinEdges(4,binLimEtaLess);
   fDeltaPhiMaps->Sumw2();  
 
-  AliInfo("AliAnalysisTaskHFEFlowData: fDeltaPhiMaps");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: fDeltaPhiMaps");
 
   // Maps cos phi
   const Int_t nDimh=5;
@@ -354,7 +354,7 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   fCosPhiMaps->SetBinEdges(4,binLimEtaLess);
   fCosPhiMaps->Sumw2();
 
-  AliInfo("AliAnalysisTaskHFEFlowData: fCosPhiMaps");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: fCosPhiMaps");
 
   //**************************
   // Add to the list
@@ -369,12 +369,12 @@ void AliAnalysisTaskHFEFlowData::UserCreateOutputObjects()
   fListHist->Add(fDeltaPhiMaps);
   fListHist->Add(fCosPhiMaps);
 
-  AliInfo("AliAnalysisTaskHFEFlowData: added to the list");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: added to the list");
   
   
   PostData(1, fListHist);
 
-  AliInfo("AliAnalysisTaskHFEFlowData: Post Data");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: Post Data");
 
 }
    
@@ -385,7 +385,7 @@ void AliAnalysisTaskHFEFlowData::UserExec(Option_t */*option*/)
   // Loop over event
   //
 
-  AliInfo("AliAnalysisTaskHFEFlowData: UserExec");
+  AliDebug(1,"AliAnalysisTaskHFEFlowData: UserExec");
    
   Float_t cntr = 0.0;
   Double_t binct = 11.5;
