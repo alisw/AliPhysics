@@ -4,6 +4,9 @@
 //                             AliEvtPool
 // ===================================================================
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliEvtPool)
 
 AliEvtPool::~AliEvtPool()

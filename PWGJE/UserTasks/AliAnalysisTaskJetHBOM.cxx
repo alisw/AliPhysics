@@ -55,6 +55,10 @@
 #include "AliAODJetEventBackground.h"
 
 
+using std::cout;
+using std::endl;
+using std::vector;
+
 ClassImp(AliAnalysisTaskJetHBOM)
 
 AliAnalysisTaskJetHBOM::~AliAnalysisTaskJetHBOM(){

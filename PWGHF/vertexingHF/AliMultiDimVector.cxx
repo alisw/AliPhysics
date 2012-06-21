@@ -33,6 +33,9 @@
 #include "AliLog.h"
 #include "TString.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliMultiDimVector)
 //___________________________________________________________________________
 AliMultiDimVector::AliMultiDimVector():TNamed("AliMultiDimVector","default"),

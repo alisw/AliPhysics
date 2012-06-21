@@ -43,6 +43,9 @@
 #include "TFile.h"
 
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEMCALPhoton)
 
 //________________________________________________________________________

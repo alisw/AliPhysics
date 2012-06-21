@@ -27,6 +27,10 @@
 #include "TList.h"
 #include "TString.h"
 #include "TMath.h"
+
+using std::cout;
+using std::endl;
+
 ClassImp(AliLRCProcess)
 
 AliLRCProcess::AliLRCProcess():fIsEventOpend(kFALSE), fIsOnline(kFALSE), fDisplayInitOnDemandWarning(kTRUE), fEventCount(0),fStartForwardETA(0), fEndForwardETA(0), fStartForwardPhi(0),fEndForwardPhi(0),fStartBakwardETA(0), fEndBakwardETA(0),fStartBackwardPhi(0),fEndBackwardPhi(0),fHiPt(0),fLoPt(0),fHiMult(0),fLoMult(0),fMultBins(0),fPtBins(0),fSumPtFw(0),  fSumPtBw(0), fSumPtBw2(0), fNchFw(0), fNchBw(0),fOutList(0), fShortDef(0),fOutputSlot(0), fHistPt(0),fHistEta(0),fHistNN(0),fHistPtN(0),fHistPtPt(0),fProfNberr(0),fProfNberrPtPt(0),fProfdPtB(0),fProfTestLRC(0),fHistPtForward(0),fHistEtaForward(0),fHistNchForward(0),fHistPhiForward(0),fHistPtBakward(0),fHistEtaBakward(0),fHistNchBakward(0),fHistPhiBakward(0){};
@@ -293,7 +297,7 @@ void AliLRCProcess::StartEvent()
 // Open new Event for track by track event import
 if(fIsEventOpend)                     // Check if trying to open event more than once !
 	{Printf("Event is already opened! Auto finishing ! \n");
-	 cout<<fShortDef<<": event count = "<<fEventCount<<" ";
+	  cout<<fShortDef<<": event count = "<<fEventCount<<" "<<endl;
 	 Printf("NchF = %i,NchB = %i \n",fNchFw,fNchBw);
 	 
 	 FinishEvent();

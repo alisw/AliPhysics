@@ -22,6 +22,9 @@
 #include "AliPool.h"
 #include "AliVParticle.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliDhcTask)
 
 //________________________________________________________________________

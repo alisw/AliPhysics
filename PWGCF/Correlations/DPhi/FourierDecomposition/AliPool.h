@@ -10,6 +10,10 @@
 #include <TMath.h>
 #include <TSystem.h>
 
+using std::vector;
+using std::deque;
+
+
 class AliMiniTrack;
 
 // Low-memory event mixing classes:

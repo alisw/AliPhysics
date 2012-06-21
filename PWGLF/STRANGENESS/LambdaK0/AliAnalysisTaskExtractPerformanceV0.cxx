@@ -89,6 +89,9 @@ class AliAODv0;
 
 #include "AliAnalysisTaskExtractPerformanceV0.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskExtractPerformanceV0)
 
 AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0() 

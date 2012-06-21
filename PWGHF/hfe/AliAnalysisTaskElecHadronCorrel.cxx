@@ -86,6 +86,9 @@
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskElecHadronCorrel)
 //________________________________________________________________________
   AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel(const char *name) 

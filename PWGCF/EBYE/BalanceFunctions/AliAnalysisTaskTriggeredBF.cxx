@@ -1,3 +1,4 @@
+#include <vector>
 #include "TChain.h"
 #include "TList.h"
 #include "TCanvas.h"
@@ -38,6 +39,10 @@
 
 // Analysis task for the TriggeredBF code
 // Authors: Panos.Christakoglou@nikhef.nl, m.weber@cern.ch
+
+using std::cout;
+using std::endl;
+using std::vector;
 
 ClassImp(AliAnalysisTaskTriggeredBF)
 

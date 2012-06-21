@@ -12,10 +12,13 @@
 //    Origin: Panos Christakoglou, Nikhef, Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
+#include <vector>
 #include <TObject.h>
 #include "TString.h"
 
 #include "AliTHn.h"
+
+using std::vector;
 
 #define ANALYSIS_TYPES	7
 #define MAXIMUM_NUMBER_OF_STEPS	1024

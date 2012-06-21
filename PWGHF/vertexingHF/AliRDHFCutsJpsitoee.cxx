@@ -30,6 +30,9 @@
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliRDHFCutsJpsitoee)
 
 //--------------------------------------------------------------------------

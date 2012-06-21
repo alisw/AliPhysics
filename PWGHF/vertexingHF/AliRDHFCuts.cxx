@@ -44,6 +44,9 @@
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliRDHFCuts)
 
 //--------------------------------------------------------------------------

@@ -11,8 +11,11 @@
 //    Modified: Michael Weber, m.weber@cern.ch
 //-------------------------------------------------------------------------
 
+#include <vector>
 #include <TObject.h>
 #include "TString.h"
+
+using std::vector;
 
 #define ANALYSIS_TYPES	7
 #define MAXIMUM_NUMBER_OF_STEPS	1024

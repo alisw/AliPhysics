@@ -62,6 +62,9 @@
 #include "AliAnalysisNoiseTPC.h"
 
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisNoiseTPC)
 
 //________________________________________________________________________

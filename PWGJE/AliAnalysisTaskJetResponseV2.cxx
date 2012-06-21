@@ -48,6 +48,9 @@
 
 #include "AliAnalysisTaskJetResponseV2.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskJetResponseV2)
 
 AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2() :

@@ -53,6 +53,9 @@
 
 #include "AliAnalysisTaskAj.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskAj)
 
 AliAnalysisTaskAj::AliAnalysisTaskAj() :

@@ -35,6 +35,9 @@
 #include "AliKFVertex.h"
 #include "AliKFParticle.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliRDHFCutsD0toKpi)
 
 //--------------------------------------------------------------------------

@@ -48,6 +48,10 @@
 #include "AliTrackerBase.h"
 #include "AliTriggerAnalysis.h"
 
+using std::cout;
+using std::endl;
+using std::max;
+
 ClassImp(AliAnalysisTaskEMCALPi0PbPb)
 
 //________________________________________________________________________

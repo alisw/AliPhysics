@@ -33,6 +33,9 @@
 #include "AliKFParticle.h"
 #include "AliESDVertex.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliRDHFCutsLctopKpi)
 
 //--------------------------------------------------------------------------

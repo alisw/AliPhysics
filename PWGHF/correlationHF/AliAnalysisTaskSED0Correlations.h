@@ -14,6 +14,7 @@
 // F.Colamaria, fabio.colamaria@ba.infn.it
 //*************************************************************************
 
+#include <vector>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TNtuple.h>
@@ -25,6 +26,8 @@
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliHFAssociatedTrackCuts.h"
 #include "AliNormalizationCounter.h"
+
+using std::vector;
 
 class AliAODEvent;
 

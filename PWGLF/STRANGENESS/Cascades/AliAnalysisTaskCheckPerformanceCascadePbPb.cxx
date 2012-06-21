@@ -74,6 +74,9 @@
 #include "AliAODMCParticle.h" 
 #include "AliAnalysisTaskCheckPerformanceCascadePbPb.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskCheckPerformanceCascadePbPb)
 
 

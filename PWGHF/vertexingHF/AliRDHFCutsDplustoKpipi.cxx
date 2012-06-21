@@ -33,6 +33,9 @@
 #include "AliESDtrack.h"
 
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliRDHFCutsDplustoKpipi)
 
 //--------------------------------------------------------------------------

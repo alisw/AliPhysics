@@ -37,6 +37,10 @@
 
 #include "AliBalance.h"
 
+using std::cout;
+using std::cerr;
+using std::endl;
+
 ClassImp(AliBalance)
 
 //____________________________________________________________________//

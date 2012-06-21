@@ -42,6 +42,9 @@
 #include "AliCentrality.h"
 #include "AliAnalysisTask3PCorrelations.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTask3PCorrelations)
 
 AliAnalysisTask3PCorrelations::AliAnalysisTask3PCorrelations()

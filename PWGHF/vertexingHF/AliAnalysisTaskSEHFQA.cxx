@@ -68,6 +68,9 @@
 
 #include "AliAnalysisTaskSEHFQA.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskSEHFQA)
 
 //____________________________________________________________________________
