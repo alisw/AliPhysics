@@ -55,6 +55,8 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TClonesArray               *fRandTracks;                 //!Randomized tracks
   TClonesArray               *fRandCaloClusters;           //!Randomized clusters
   AliRhoParameter            *fRho;                        //!Event rho
+  Int_t                       fEmbeddedClusterId;          //!Embedded cluster id
+  Int_t                       fEmbeddedTrackId;            //!Embedded track id
 
   // General histograms
   TH1F                       *fHistCentrality;             //!Event centrality distribution
@@ -74,6 +76,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistMaxTrackPtvsJetCorrPt[4];   //!Max constituent track pt vs. jet pt
   TH2F                       *fHistMaxClusPtvsJetCorrPt[4];    //!Max constituent cluster pt vs. jet pt
   TH2F                       *fHistMaxPartPtvsJetCorrPt[4];    //!Max constituent particle (track or cluster) pt vs. jet pt
+  TH1F                       *fHistDeltaVectorPt;              //!Delta Pt between vector and scalar sum
 
   // Rho
   TH1F                       *fHistRho[4];                    //!Rho distribution
@@ -96,6 +99,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistDeltaPtRCRand[4];       //!deltaPt = Pt(RC) - A * rho, randomzied particles
 
   // Jet embedding
+  TH2F                       *fHistEmbNotFoundPhiEta;      //!Phi-Eta of "not found" embedded particles
   TH1F                       *fHistEmbJetsPt[4];           //!Pt distribution of embedded jets
   TH1F                       *fHistEmbJetsCorrPt[4];       //!Pt distribution of embedded jets
   TH1F                       *fHistEmbPart[4];             //!Pt distribution of embedded particle

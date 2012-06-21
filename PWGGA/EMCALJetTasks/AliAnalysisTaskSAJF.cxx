@@ -44,11 +44,15 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   fRandTracks(0),
   fRandCaloClusters(0),
   fRho(0),
+  fEmbeddedClusterId(-1),
+  fEmbeddedTrackId(-1),
   fHistCentrality(0),
+  fHistDeltaVectorPt(0),
   fHistRhoVSleadJetPt(0),
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
   fHistRhoVSRCPt(0),
+  fHistEmbNotFoundPhiEta(0),
   fHistEmbJetPhiEta(0),
   fHistEmbPartPhiEta(0),
   fHistRhoVSEmbBkg(0)
@@ -108,11 +112,15 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   fRandTracks(0),
   fRandCaloClusters(0),
   fRho(0),
+  fEmbeddedClusterId(-1),
+  fEmbeddedTrackId(-1),
   fHistCentrality(0),
+  fHistDeltaVectorPt(0),
   fHistRhoVSleadJetPt(0),
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
   fHistRhoVSRCPt(0),
+  fHistEmbNotFoundPhiEta(0),
   fHistEmbJetPhiEta(0),
   fHistEmbPartPhiEta(0),
   fHistRhoVSEmbBkg(0)
@@ -177,6 +185,11 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fHistCentrality->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistCentrality);
 
+  fHistDeltaVectorPt = new TH1F("fHistDeltaVectorPt", "fHistDeltaVectorPt", fNbins, -50, 50);
+  fHistDeltaVectorPt->GetXaxis()->SetTitle("#deltap_{T} [GeV/c]");
+  fHistDeltaVectorPt->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistDeltaVectorPt);
+
   fHistRhoVSleadJetPt = new TH2F("fHistRhoVSleadJetPt","fHistRhoVSleadJetPt", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
   fHistRhoVSleadJetPt->GetXaxis()->SetTitle("#rho * area [GeV/c]");
   fHistRhoVSleadJetPt->GetYaxis()->SetTitle("Leading jet p_{T} [GeV/c]");
@@ -198,6 +211,11 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fOutput->Add(fHistRhoVSRCPt);
 
   if (!fEmbJetsName.IsNull()) {
+    fHistEmbNotFoundPhiEta = new TH2F("fHistEmbNotFoundPhiEta","Phi-Eta distribution of not found embedded particles", 40, -2, 2, 64, 0, 6.4);
+    fHistEmbNotFoundPhiEta->GetXaxis()->SetTitle("#eta");
+    fHistEmbNotFoundPhiEta->GetYaxis()->SetTitle("#phi");
+    fOutput->Add(fHistEmbNotFoundPhiEta);
+
     fHistEmbJetPhiEta = new TH2F("fHistEmbJetPhiEta","Phi-Eta distribution of embedded jets", 40, -2, 2, 64, 0, 6.4);
     fHistEmbJetPhiEta->GetXaxis()->SetTitle("#eta");
     fHistEmbJetPhiEta->GetYaxis()->SetTitle("#phi");
@@ -671,36 +689,50 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
   DoEmbJetLoop(embJet, embPart);
 
   if (embJet) {
-
-    fHistEmbJetsPt[fCentBin]->Fill(embJet->Pt());
-    fHistEmbJetsCorrPt[fCentBin]->Fill(embJet->Pt() - rho * embJet->Area());
-    fHistEmbPart[fCentBin]->Fill(embJet->MCPt());
-    fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
-    fHistDeltaPtEmb[fCentBin]->Fill(embJet->Pt() - embJet->Area() * rho - embJet->MCPt());
-    fHistRhoVSEmbBkg->Fill(embJet->Area() * rho, embJet->Pt() - embJet->MCPt());
+    Double_t probePt = 0;
 
     AliVCluster *cluster = dynamic_cast<AliVCluster*>(embPart);
     if (cluster) {
-      Float_t pos[3];
-      cluster->GetPosition(pos);
-      TVector3 clusVec(pos);
+      TLorentzVector nPart;
+      cluster->GetMomentum(nPart, fVertex);
       
-      fHistEmbPartPhiEta->Fill(clusVec.Eta(), clusVec.Phi());
+      fHistEmbPartPhiEta->Fill(nPart.Eta(), nPart.Phi());
+      probePt = nPart.Pt();
     }
     else {
       AliVTrack *track = dynamic_cast<AliVTrack*>(embPart);
       if (track) {
 	fHistEmbPartPhiEta->Fill(track->Eta(), track->Phi());
+	probePt = track->Pt();
       }
       else {
-	AliWarning(Form("%s - Embedded particle type not found or not recognized (neither AliVCluster nor AliVTrack)!", GetName()));
+	  AliWarning(Form("%s - Embedded jet found but embedded particle not found (wrong type?)!", GetName()));
 	return kTRUE;
       }
     }
 
+    fHistEmbJetsPt[fCentBin]->Fill(embJet->Pt());
+    fHistEmbJetsCorrPt[fCentBin]->Fill(embJet->Pt() - rho * embJet->Area());
+    fHistEmbPart[fCentBin]->Fill(probePt);
+    fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
+    fHistDeltaPtEmb[fCentBin]->Fill(embJet->Pt() - embJet->Area() * rho - probePt);
+    fHistRhoVSEmbBkg->Fill(embJet->Area() * rho, embJet->Pt() - probePt);
+
   }
   else {
-    AliWarning(Form("%s - Embedded jet not found in the event!", GetName()));
+    if (fEmbeddedTrackId >= 0) {
+      AliVTrack *track2 = static_cast<AliVTrack*>(fTracks->At(fEmbeddedTrackId));
+      fHistEmbNotFoundPhiEta->Fill(track2->Eta(), track2->Phi());
+    }
+    else if (fEmbeddedClusterId >= 0) {
+      AliVCluster *cluster2 = static_cast<AliVCluster*>(fCaloClusters->At(fEmbeddedClusterId));
+      TLorentzVector nPart;
+      cluster2->GetMomentum(nPart, fVertex);
+      fHistEmbNotFoundPhiEta->Fill(nPart.Eta(), nPart.Phi());
+    }
+    else {
+      AliWarning(Form("%s - Embedded particle not found!", GetName()));
+    }
   }
 
   return kTRUE;
@@ -755,6 +787,8 @@ void AliAnalysisTaskSAJF::DoClusterLoop()
   if (!fCaloClusters)
     return;
 
+  fEmbeddedClusterId = -1;
+
   Int_t nclusters =  fCaloClusters->GetEntriesFast();
 
   for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
@@ -767,6 +801,9 @@ void AliAnalysisTaskSAJF::DoClusterLoop()
     if (!AcceptCluster(cluster, kTRUE)) 
       continue;
 
+    if (cluster->Chi2() == 100)
+      fEmbeddedClusterId = iClusters;
+
     fHistClustersPt[fCentBin]->Fill(cluster->E());
   }
 }
@@ -778,6 +815,8 @@ void AliAnalysisTaskSAJF::DoTrackLoop()
 
   if (!fTracks)
     return;
+
+  fEmbeddedTrackId = -1;
 
   Int_t ntracks = fTracks->GetEntriesFast();
 
@@ -794,6 +833,9 @@ void AliAnalysisTaskSAJF::DoTrackLoop()
     
     if (vtrack && !AcceptTrack(vtrack, kTRUE)) 
       continue;
+
+    if (track->GetLabel() == 100)
+      fEmbeddedTrackId = i;
     
     fHistTracksPt[fCentBin]->Fill(track->Pt());
   }
@@ -845,11 +887,15 @@ void AliAnalysisTaskSAJF::DoJetLoop()
       fHistJetsNEFvsPt[fCentBin]->Fill(jet->NEF(), jet->Pt());
     }
 
+    Float_t scalarpt = 0;
+
     if (fTracks) {
       for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
 	AliVParticle *track = jet->TrackAt(it, fTracks);
-	if (track)
+	if (track) {
 	  fHistJetsZvsPt[fCentBin]->Fill(track->Pt() / jet->Pt(), jet->Pt());
+	  scalarpt += track->Pt();
+	}
       }
     }
 
@@ -861,9 +907,12 @@ void AliAnalysisTaskSAJF::DoJetLoop()
 	  TLorentzVector nPart;
 	  cluster->GetMomentum(nPart, fVertex);
 	  fHistJetsZvsPt[fCentBin]->Fill(nPart.Et() / jet->Pt(), jet->Pt());
+	  scalarpt += nPart.Pt();
 	}
       }
     }
+
+    fHistDeltaVectorPt->Fill(scalarpt - jet->Pt());
   } //jet loop 
 }
 
