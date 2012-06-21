@@ -79,7 +79,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   gPad->BuildLegend()->SetFillColor(0);
 
   
-  //Nch distr in data and MC before and after event selection
+  //QVector distr before and after event selection
   TCanvas *cQVector=new TCanvas("QVectordistr","QVectordistr",700,500);
   cQVector->Divide(1,2);
   cQVector->cd(1);
@@ -618,6 +618,10 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   cVtx->Write();
   cEta->Write();
   cNCh->Write();
+  hNChAft_data->SetName(Form("%s_data",hNChAft_data->GetName()));
+  hNChAft_data->Write();
+  hNChAft_mc->SetName(Form("%s_mc",hNChAft_mc->GetName()));
+  hNChAft_mc->Write();
   cQVector->Write();
   cEtaPhi->Write();
   cRatioEtaPhi->Write();
