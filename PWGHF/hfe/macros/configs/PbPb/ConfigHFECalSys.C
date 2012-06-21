@@ -1,4 +1,4 @@
-AliAnalysisTaskHFECal* ConfigHFECalSys(Bool_t useMC, int TPCclust, int TPCclustPID, int Nits, int ITSstat){
+AliAnalysisTaskHFECal* ConfigHFECalSys(Bool_t useMC, int TPCclust, int TPCclustPID, int Nits, int ITSstat, int QAhist){
   //
   // HFE standard task configuration
   //
@@ -24,6 +24,8 @@ AliAnalysisTaskHFECal* ConfigHFECalSys(Bool_t useMC, int TPCclust, int TPCclustP
   printf("task ------------------------ %p\n ", task);
   task->SetHFECuts(hfecuts);
   task->SetInvariantMassCut(0.05);
+  printf("<<<<<< ------------------ QA status %d",QAhist);
+  task->SetQAHist(QAhist);
 
   // Define PID
   AliHFEpid *pid = task->GetPID();
