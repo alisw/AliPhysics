@@ -67,8 +67,8 @@ using namespace AliSpectraNameSpace;
 class AliSpectraAODHistoManager : public TNamed
 {
 public:
-   AliSpectraAODHistoManager() :  TNamed(), fOutputList(0) {}
-   AliSpectraAODHistoManager(const char *name);
+   AliSpectraAODHistoManager() :  TNamed(), fOutputList(0), fNRebin(0) {}
+  AliSpectraAODHistoManager(const char *name,Int_t nrebin);
    virtual  ~AliSpectraAODHistoManager() {}
 
 
@@ -100,13 +100,15 @@ public:
    //TH2F*   GetTH2F(UInt_t id)            {      return (TH2F*) GetPIDHistogram(id);   }
 
   TList * GetOutputList() {return fOutputList;}
+  void    SetNRebin(Int_t nreb){fNRebin=nreb;}
+  Int_t   GetNRebin() {return fNRebin;}
 
   Long64_t Merge(TCollection* list);
 
 
 private:
    TList     *fOutputList;  // List of Pt Histo's
-
+   Int_t      fNRebin; //rebin of histos
    AliSpectraAODHistoManager(const AliSpectraAODHistoManager&);
    AliSpectraAODHistoManager& operator=(const AliSpectraAODHistoManager&);
 

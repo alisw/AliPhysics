@@ -56,23 +56,24 @@ using namespace std;
 ClassImp(AliAnalysisTaskSpectraAOD) // EX1 This stuff tells root to implement the streamer, inspector methods etc (we discussed about it today)
 
 //________________________________________________________________________
-AliAnalysisTaskSpectraAOD::AliAnalysisTaskSpectraAOD(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0),  fPID(0), fIsMC(0)
+AliAnalysisTaskSpectraAOD::AliAnalysisTaskSpectraAOD(const char *name) : AliAnalysisTaskSE(name), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0),  fPID(0), fIsMC(0), fNRebin(0)
 {
   // Default constructor
-
+  
   DefineInput(0, TChain::Class());
   DefineOutput(1, AliSpectraAODHistoManager::Class());
   DefineOutput(2, AliSpectraAODEventCuts::Class());
   DefineOutput(3, AliSpectraAODTrackCuts::Class());
   DefineOutput(4, AliSpectraAODPID::Class());
-
+  fNRebin=0;
+  
 }
 //________________________________________________________________________
 //________________________________________________________________________
 void AliAnalysisTaskSpectraAOD::UserCreateOutputObjects()
 {
   // create output objects
-  fHistMan = new AliSpectraAODHistoManager("SpectraHistos");
+  fHistMan = new AliSpectraAODHistoManager("SpectraHistos",fNRebin);
 
   if (!fTrackCuts) AliFatal("Track Cuts should be set in the steering macro");
   if (!fEventCuts) AliFatal("Event Cuts should be set in the steering macro");

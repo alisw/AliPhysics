@@ -1,4 +1,4 @@
-AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kTRUE,
+AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kFALSE,
 					     Double_t CentCutMin=0,
 					     Double_t CentCutMax=100,
 					     Double_t QvecCutMin=0,
@@ -14,8 +14,9 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kTRUE,
 					     UInt_t trkbitQVector=1,
 					     Bool_t UseCentPatchAOD049=kFALSE,
 					     Double_t DCA=100000,
-					     UInt_t minNclsTPC=70
-					     ){
+					     UInt_t minNclsTPC=70,
+					     Int_t nrebin=0,
+					     TString opt=""){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 
@@ -63,7 +64,7 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kTRUE,
   if(mc==1)evcuts->SetIsMC(kTRUE);
   evcuts->PrintCuts();
   
-  AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD(Form("TaskAODSpectraCent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d",	
+  AliAnalysisTaskSpectraAOD *task = new AliAnalysisTaskSpectraAOD(Form("TaskAODSpectraCent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",	
   								       CentCutMin,
   								       CentCutMax,
   								       QvecCutMin,
@@ -71,31 +72,32 @@ AliAnalysisTaskSpectraAOD* AddTaskSpectraAOD(Bool_t mc=kTRUE,
   								       EtaMin,
   								       EtaMax,
   								       Nsigmapid,
-  								       trkbit));
+  								       trkbit,
+								       opt.Data()));
   task->SetPID(pid);  
   task->SetEventCuts(evcuts);
   task->SetTrackCuts(trcuts);
+  task->SetNRebin(nrebin);
   if(mc==1)task->SetIsMC(kTRUE);
   
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   
   TString typeofdata=mc?"MC":"Data";
   
-  outputFileName += Form(":OutputAODSpectraTask_%s_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d.root",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax(),pid->GetNSigmaCut(),trcuts->GetTrackType());
+  outputFileName += Form(":OutputAODSpectraTask_%s_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax(),pid->GetNSigmaCut(),trcuts->GetTrackType(),opt.Data());
   
   cout<<"outputFileName:  "<<outputFileName<<endl;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();      
   AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer("chistpt", AliSpectraAODHistoManager::Class(),  AliAnalysisManager::kOutputContainer,outputFileName);
   AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer("cvcutpt", AliSpectraAODEventCuts::Class(),    AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer("ctcutpt%d", AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, outputFileName);
-  AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer("cpidpt%d",  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer,outputFileName);
+  AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer("ctcutpt", AliSpectraAODTrackCuts::Class(),     AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutputpt4 = mgr->CreateContainer("cpidpt",  AliSpectraAODPID::Class(),     AliAnalysisManager::kOutputContainer,outputFileName);
   
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutputpt1);
   mgr->ConnectOutput(task, 2, coutputpt2);
   mgr->ConnectOutput(task, 3, coutputpt3);
   mgr->ConnectOutput(task, 4, coutputpt4);
-  //return task;
   
   mgr->AddTask(task);
   return task;

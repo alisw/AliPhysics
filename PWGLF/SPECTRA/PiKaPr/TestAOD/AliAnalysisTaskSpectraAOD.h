@@ -28,9 +28,9 @@ class AliAnalysisTaskSpectraAOD : public AliAnalysisTaskSE
 public:
 
    // constructors
-  AliAnalysisTaskSpectraAOD() : AliAnalysisTaskSE(), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0), fPID(0), fIsMC(0)
+  AliAnalysisTaskSpectraAOD() : AliAnalysisTaskSE(), fAOD(0), fHistMan(0), fTrackCuts(0), fEventCuts(0), fPID(0), fIsMC(0), fNRebin(0)
  {}
-   AliAnalysisTaskSpectraAOD(const char *name);
+  AliAnalysisTaskSpectraAOD(const char *name);
    virtual ~AliAnalysisTaskSpectraAOD() {}
 
    void SetIsMC(Bool_t isMC = kFALSE)    {fIsMC = isMC; };
@@ -48,6 +48,8 @@ public:
    void SetTrackCuts(AliSpectraAODTrackCuts * tc)   {   fTrackCuts = tc;   }
    void SetEventCuts(AliSpectraAODEventCuts * vc)   {   fEventCuts = vc;   }
    void SetPID      (AliSpectraAODPID      * pid)   {   fPID       = pid;  }
+   void SetNRebin(Int_t nreb){fNRebin=nreb;}
+   Int_t   GetNRebin() {return fNRebin;}
 
 private:
 
@@ -57,6 +59,7 @@ private:
    AliSpectraAODEventCuts      * fEventCuts;     // Event Cuts
    AliSpectraAODPID             * fPID;// PID class
    Bool_t          fIsMC;// true if processing MC
+   Int_t      fNRebin; //rebin of histos
    AliAnalysisTaskSpectraAOD(const AliAnalysisTaskSpectraAOD&);
    AliAnalysisTaskSpectraAOD& operator=(const AliAnalysisTaskSpectraAOD&);
 

@@ -34,8 +34,6 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   handler->SetOverwriteMode();
   handler->SetRunMode(proofMode);
   handler->SetProofReset(0);
-  //handler->SetROOTVersion("v5-33-02a");
-  //handler->SetAliROOTVersion("v5-03-11-AN");
   handler->SetAliROOTVersion("v5-03-32-AN");
   
   //handler->SetNproofWorkers(80);
@@ -57,13 +55,15 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
 
   handler->SetAliRootMode("default");
   handler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF -I$ALICE_ROOT/PWGLF");
-  handler->SetAdditionalLibs("libPWGLFspectra.so");
+  //handler->SetAdditionalLibs("libPWGLFspectra.so");
+  // gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
+  // gROOT->LoadMacro("AliSpectraAODEventCuts.cxx+g");
+  // gROOT->LoadMacro("AliSpectraAODHistoManager.cxx+g");
+  // gROOT->LoadMacro("AliSpectraAODPID.cxx+g");
+  // gROOT->LoadMacro("AliAnalysisTaskSpectraAOD.cxx+g");
   
-  // handler->SetAliRootMode("default");
   // handler->SetAdditionalLibs("AliSpectraAODHistoManager.cxx AliSpectraAODHistoManager.h AliSpectraAODPID.cxx AliSpectraAODPID.h AliSpectraAODTrackCuts.cxx AliSpectraAODTrackCuts.h AliSpectraAODEventCuts.cxx AliSpectraAODEventCuts.h AliAnalysisTaskSpectraAOD.cxx AliAnalysisTaskSpectraAOD.h");
   // handler->SetAnalysisSource("Histograms.h HistogramNames.h AliSpectraAODHistoManager.cxx+ AliSpectraAODTrackCuts.cxx+ AliSpectraAODEventCuts.cxx+ AliSpectraAODPID.cxx+ AliAnalysisTaskSpectraAOD.cxx+");
-  //   handler->SetFileForTestMode("filelist.txt"); // list of local files for testing
-  //  handler->SetAliRootMode("");
   handler->SetClearPackages();
   
   AliAnalysisManager *mgr = new AliAnalysisManager("testAnalysis");
