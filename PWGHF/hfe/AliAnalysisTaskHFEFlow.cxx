@@ -472,11 +472,11 @@ AliAnalysisTaskHFEFlow::~AliAnalysisTaskHFEFlow(){
   if(fHFECuts) delete fHFECuts;
   if(fPID) delete fPID;
   if(fPIDTOFOnly) delete fPIDTOFOnly;
-  if(fPIDqa) delete fPIDqa;
+  //if(fPIDqa) delete fPIDqa;
   if(fflowEvent) delete fflowEvent;
   if(fHFEBackgroundCuts) delete fHFEBackgroundCuts;
   if(fPIDBackground) delete fPIDBackground;
-  if(fPIDBackgroundqa) delete fPIDBackgroundqa;
+  //if(fPIDBackgroundqa) delete fPIDBackgroundqa;
   //if(fHFEVZEROEventPlane) delete fHFEVZEROEventPlane;
  
 
