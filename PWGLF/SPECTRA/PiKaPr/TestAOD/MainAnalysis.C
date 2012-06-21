@@ -45,53 +45,71 @@ void MainAnalysis()  {
   mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
   mass[2] = TDatabasePDG::Instance()->GetParticle("proton")->Mass();
   
-  TString fold="3SigmaPID_AOD086-090_FilterBit1";
+  TString fold="test";
   
- //LOOP OVER SELECTION
-  //                            0    1    2    3    4    5
-  Double_t CentCutMin[4]= {     0,  20,  20,  20};
-  Double_t CentCutMax[4]= {     5,  50,  50,  50};
-  Double_t QvecCutMin[4]=    {  0,   0,   0, 1.5};
-  Double_t QvecCutMax[4]=   { 100, 100, 0.4, 100};
+  //LOOP OVER SELECTION
+  //                            0    1    2    3    4    5    6    7    8    9
+  Double_t CentCutMin[4]= {     0,  30,  30,  30};
+  Double_t CentCutMax[4]= {     5,  40,  40,  40};
+  Double_t QvecCutMin[4]={      0,   0,   0, 1.5};
+  Double_t QvecCutMax[4]={    100, 100, 0.4, 100};
   Double_t EtaMin[4]={       -0.8,-0.8,-0.8,-0.8};
   Double_t EtaMax[4]={        0.8, 0.8, 0.8, 0.8};
-   
-  Int_t icut=2;
-  
+  Double_t Nsigmapid=3.;
+  Double_t pt=10.;
+  Double_t p=10.;
+  Double_t y=.5;
+  Double_t ptTofMatch=.6;
+  UInt_t trkbit=1024;
+  UInt_t trkbitQVector=1;
+  Bool_t UseCentPatchAOD049=kFALSE;
+  Double_t DCA=100000;
+  UInt_t minNclsTPC=70;
+  Int_t nrebin=0;
+  TString opt="";
+ 
+  Int_t icut=0;
   Int_t ibinToCompare=0;
   
-  TString sname_data=Form("Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut]);
-  //TString sname_mc=Form("Cent%.0fto%.0f_QVecPos%.1fto%.1f_QVecNeg%.1fto%.1f_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],QvecPosCutMin[icut],QvecPosCutMax[icut],QvecNegCutMin[icut],QvecNegCutMax[icut],EtaMin[icut],EtaMax[icut]);
-  //For MC we always take the output without cut on q vector (more stat and the eff is not dependent on q)
-  TString sname_mc=Form("Cent%.0fto%.0f_QVec0.0to100.0_Eta%.1fto%.1f",CentCutMin[icut],CentCutMax[icut],EtaMin[icut],EtaMax[icut]);
+  TString sname_data=Form("OutputAODSpectraTask_Data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d",CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,trkbit);
+  TString sname_mc=Form("OutputAODSpectraTask_MC_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d",CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,trkbit);
   
-  TString dataFile = Form("output/%s/OutputAODSpectraTask_data_%s.root",fold.Data(),sname_data.Data());
-  TString mcFile = Form("output/%s/OutputAODSpectraTask_mc_%s.root",fold.Data(),sname_mc.Data());
+  TString dataFile = Form("output/%s/AnalysisResultsDATA.root",fold.Data());
+  TString mcFile = Form("output/%s/AnalysisResultsMC.root",fold.Data());
   
-  Printf("\n\n-> Creating Output file Out_%s_%s.root",sname_data.Data(),fold.Data());
-  TFile * fout=new TFile(Form("results/Out_%s_%s.root",sname_data.Data(),fold.Data()),"RECREATE");
+  Printf("\n\n-> Creating Output file Res_%s_%s.root",sname_data.Data(),fold.Data());
+  TFile * fout=new TFile(Form("results/Res_%s_%s.root",sname_data.Data(),fold.Data()),"RECREATE");
  
   gStyle->SetPalette(1);
   // Open root MC file and get classes
   cout << "Analysis Macro" << endl;
   cout << "  > Reading MC data" << endl;
-  TFile *_mc = TFile::Open(mcFile.Data());
-  AliSpectraAODHistoManager* hman_mc = (AliSpectraAODHistoManager*) _mc->Get("SpectraHistos");
-  AliSpectraAODEventCuts* ecuts_mc = (AliSpectraAODEventCuts*) _mc->Get("Event Cuts");
-  AliSpectraAODTrackCuts* tcuts_mc = (AliSpectraAODTrackCuts*) _mc->Get("Track Cuts");
+  TFile *f_mc = TFile::Open(mcFile.Data());
+  f_mc->Print("");
+  Printf("sname_MC: %s",sname_mc.Data());
+  TDirectoryFile *Dir_mc=(TDirectoryFile*)f_mc->Get(Form("%s",sname_mc.Data()));
+  AliSpectraAODHistoManager* hman_mc = (AliSpectraAODHistoManager*) Dir_mc->Get("SpectraHistos");
+  AliSpectraAODEventCuts* ecuts_mc = (AliSpectraAODEventCuts*) Dir_mc->Get("Event Cuts");
+  AliSpectraAODTrackCuts* tcuts_mc = (AliSpectraAODTrackCuts*) Dir_mc->Get("Track Cuts");
   // print info about mc track and Event cuts
   cout << " -- Info about MC -- "<< endl;
   ecuts_mc->PrintCuts();
-  // tcuts_mc->PrintCuts();
+  tcuts_mc->PrintCuts();
   // proceed likewise for data
-  TFile *_data = TFile::Open(dataFile.Data());
-  AliSpectraAODHistoManager* hman_data = (AliSpectraAODHistoManager*) _data->Get("SpectraHistos");
-  AliSpectraAODEventCuts* ecuts_data = (AliSpectraAODEventCuts*) _data->Get("Event Cuts");
-  AliSpectraAODTrackCuts* tcuts_data = (AliSpectraAODTrackCuts*) _data->Get("Track Cuts");
-  // print info about track and Event cuts
-  cout << " -- Info about data -- " << endl;
+  // Open root DATA file and get classes
+  cout << "  > Reading DATA data" << endl;
+  TFile *f_data = TFile::Open(dataFile.Data());
+  f_data->Print("");
+  Printf("sname_DATA: %s",sname_data.Data());
+  TDirectoryFile *Dir_data=(TDirectoryFile*)f_data->Get(Form("%s",sname_data.Data()));
+  AliSpectraAODHistoManager* hman_data = (AliSpectraAODHistoManager*) Dir_data->Get("SpectraHistos");
+  AliSpectraAODEventCuts* ecuts_data = (AliSpectraAODEventCuts*) Dir_data->Get("Event Cuts");
+  AliSpectraAODTrackCuts* tcuts_data = (AliSpectraAODTrackCuts*) Dir_data->Get("Track Cuts");
+  // print info about data track and Event cuts
+  cout << " -- Info about DATA -- "<< endl;
   ecuts_data->PrintCuts();
   tcuts_data->PrintCuts();
+  
   
   QAPlots(hman_data,hman_mc,ecuts_data,ecuts_mc,tcuts_data,tcuts_mc,fout);
 
@@ -131,7 +149,6 @@ void MainAnalysis()  {
   
   //Normalization
   printf("\n\n-> Spectra Normalization");
-  AliSpectraAODEventCuts* ecuts_data = (AliSpectraAODEventCuts*) _data->Get("Event Cuts");
   Double_t events_data =  ecuts_data->NumberOfEvents();
   Printf(": accepted events: %.0f",events_data);
   Double_t events_mc =  ecuts_mc->NumberOfEvents();
@@ -277,35 +294,36 @@ void MainAnalysis()  {
   TCanvas *CratioComb=new TCanvas("CratioComb","CratioComb",700,500);
   CratioComb->Divide(3,2);
   TString nameComb[6]={Form("cent%d_pion_plus",ibinToCompare),Form("cent%d_kaon_plus",ibinToCompare),Form("cent%d_proton_plus",ibinToCompare),
-  			 Form("cent%d_pion_minus",ibinToCompare),Form("cent%d_kaon_minus",ibinToCompare),Form("cent%d_proton_minus",ibinToCompare)};
-    TFile *fComb=new TFile("Combined05/SPECTRA_COMB_20120412.root");
-    TH1F *Spectra_copy[6]=0x0;
-    for(Int_t icharge=0;icharge<2;icharge++){
-      for(Int_t ipart=0;ipart<3;ipart++){
-	Int_t index=ipart+3*icharge;
-	TH1F *htmp=(TH1F*)((TH1F*)Spectra[index])->Clone("");
-	htmp->GetXaxis()->SetRangeUser(0,2.5);
-  	TH1F *hcomb=fComb->Get(nameComb[index].Data())->Clone();
-  	CratioComb->cd(ipart+1);
-  	gPad->SetGridy();
-  	gPad->SetGridx();
-  	//for(Int_t ibin=1;ibin<hcomb->GetNbinsX();ibin++)hcomb->SetBinError(ibin,0);
+		       Form("cent%d_pion_minus",ibinToCompare),Form("cent%d_kaon_minus",ibinToCompare),Form("cent%d_proton_minus",ibinToCompare)};
+  TFile *fComb=new TFile("Combined05/SPECTRA_COMB_20120412.root");
+  TH1F *Spectra_copy[6]=0x0;
+  for(Int_t icharge=0;icharge<2;icharge++){
+    for(Int_t ipart=0;ipart<3;ipart++){
+      Int_t index=ipart+3*icharge;
+      TH1F *htmp=(TH1F*)((TH1F*)Spectra[index])->Clone("");
+      htmp->GetXaxis()->SetRangeUser(0,2.5);
+      TH1F *hcomb=fComb->Get(nameComb[index].Data())->Clone();
+      CratioComb->cd(ipart+1);
+      gPad->SetGridy();
+      gPad->SetGridx();
+      //for(Int_t ibin=1;ibin<hcomb->GetNbinsX();ibin++)hcomb->SetBinError(ibin,0);
 	
-  	if(icharge==0)htmp->DrawClone();
-  	else htmp->DrawClone("same");
-	//MCTruth[index]->DrawClone("same");
-	hcomb->DrawClone("same");
-	htmp->Divide(hcomb);
-  	htmp->SetMaximum(1.3);
-  	htmp->SetMinimum(0.7);
-  	CratioComb->cd(ipart+4);
-  	gPad->SetGridy();
-  	gPad->SetGridx();
-  	if(icharge==0)htmp->DrawClone();
-  	else htmp->DrawClone("same");
-      }
+      if(icharge==0)htmp->DrawClone();
+      else htmp->DrawClone("same");
+      //MCTruth[index]->DrawClone("same");
+      hcomb->DrawClone("same");
+      htmp->Divide(hcomb);
+      htmp->SetMaximum(1.3);
+      htmp->SetMinimum(0.7);
+      CratioComb->cd(ipart+4);
+      gPad->SetGridy();
+      gPad->SetGridx();
+      if(icharge==0)htmp->DrawClone();
+      else htmp->DrawClone("same");
     }
+  }
   
+    
   //comparison with charged hadron
   Printf("\n\n-> ChargedHadron comparison");
   TH1F *hChHad_data=(TH1F*)((TH1F*)hman_data->GetPtHistogram1D("hHistPtRec",-1,-1))->Clone();
@@ -370,7 +388,7 @@ void MainAnalysis()  {
   }
   hCh->DrawClone("same");
   gPad->BuildLegend()->SetFillColor(0);
-  TH1F *gRatio=AliPWGHistoTools::MyDivideHistosDifferentBins(hChHad_data,hCh);
+  TH1F *gRatio=AliPWGHistoTools::DivideHistosDifferentBins(hChHad_data,hCh);
   gRatio->SetMaximum(1.3);
   gRatio->SetMinimum(.7);
   cAllCh->cd(2);
@@ -401,13 +419,13 @@ void MainAnalysis()  {
   // // }
   Double_t yieldTools, yieldETools;
   Double_t partialYields[3],partialYieldsErrors[3]; 
-  AliPWGHistoTools::GetYield(hToFit, func, yieldTools, yieldETools,0, 100, partialYields,partialYieldsErrors);
+  AliPWGHistoTools::GetYield(hToFit, func, yieldTools, yieldETools,1, 5, partialYields,partialYieldsErrors);
   func->DrawClone("same");   
   Printf("TOTAL YIELD (AOD Charged Hadron) : %f +- %f",yieldTools,yieldETools);
   //Fit All Charged
   hToFit = hCh;
   hToFit->Fit(func,"N","VMRN",fitmin,fitmax);
-  AliPWGHistoTools::GetYield(hToFit, func, yieldTools, yieldETools,0, 100, partialYields,partialYieldsErrors);
+  AliPWGHistoTools::GetYield(hToFit, func, yieldTools, yieldETools,1, 5, partialYields,partialYieldsErrors);
   func->SetLineColor(2);
   hCh->DrawClone("same");
   func->DrawClone("same");   
@@ -454,7 +472,7 @@ void MainAnalysis()  {
   hsum->DrawClone();
   hToFit = hsum;
   hToFit->Fit(func,"N","VMRN",fitmin,fitmax);
-  AliPWGHistoTools::GetYield(hToFit, func, yieldTools, yieldETools,0, 100, partialYields,partialYieldsErrors);
+  AliPWGHistoTools::GetYield(hToFit, func, yieldTools, yieldETools,1, 5, partialYields,partialYieldsErrors);
   func->SetLineColor(2);
   Printf("TOTAL YIELD (Pi+K+p): %f +- %f",yieldTools,yieldETools);
   hChHad_data->SetMarkerColor(2);
@@ -464,10 +482,10 @@ void MainAnalysis()  {
   cChargHadComp->cd(2);
   gPad->SetGridy();
   gPad->SetGridx();
-  hsum->Divide(hChHad_data);
-  hsum->SetMaximum(1.2);
-  hsum->SetMinimum(.8);
-  hsum->DrawClone("");
+  TH1F *hRatio=AliPWGHistoTools::DivideHistosDifferentBins(hsum,hChHad_data);
+  hRatio->SetMaximum(1.2);
+  hRatio->SetMinimum(.8);
+  hRatio->DrawClone("");
 
   //saving spectra
   fout->cd();
@@ -527,7 +545,7 @@ void DCACorrection(TH1F **Spectra, AliSpectraAODHistoManager* hman_data, AliSpec
 	  TH1F *hmc2=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryWeakDecay%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge+binwidth))->Clone();
 	  TH1F *hmc3=(TH1F*) ((TH1F*)hman_mc->GetDCAHistogram1D(Form("hHistPtRecSigmaSecondaryMaterial%s%s",Particle[ipart].Data(),Sign[icharge].Data()),lowedge,lowedge+binwidth))->Clone();
 	  Double_t minentries=1;
-	  //if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries || hmc2->GetEntries()<=minentries || hmc3->GetEntries()<=minentries)continue;
+	  if(hToFit->GetEntries()<=minentries || hmc1->GetEntries()<=minentries || hmc2->GetEntries()<=minentries || hmc3->GetEntries()<=minentries)continue;
 	  // hmc1->Rebin(nrebin);
 	  // hmc2->Rebin(nrebin);
 	  // hmc3->Rebin(nrebin);
