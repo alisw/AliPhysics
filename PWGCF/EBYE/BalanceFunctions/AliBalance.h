@@ -92,6 +92,11 @@ class AliBalance : public TObject {
   TH2D *GetHistNpp(Int_t iAnalysisType) { return fHistPP[iAnalysisType];}
   TH2D *GetHistNnn(Int_t iAnalysisType) { return fHistNN[iAnalysisType];}
 
+  TH2D *GetQAHistHBTbefore()         {return fHistHBTbefore;};
+  TH2D *GetQAHistHBTafter()          {return fHistHBTafter;};
+  TH2D *GetQAHistConversionbefore()  {return fHistConversionbefore;};
+  TH2D *GetQAHistConversionafter()   {return fHistConversionafter;};
+
   void PrintAnalysisSettings();
   TGraphErrors *DrawBalance(Int_t fAnalysisType);
 
@@ -148,6 +153,12 @@ class AliBalance : public TObject {
   TH2D *fHistNP[ANALYSIS_TYPES]; //N-+
   TH2D *fHistPP[ANALYSIS_TYPES]; //N++
   TH2D *fHistNN[ANALYSIS_TYPES]; //N--
+
+  //QA histograms
+  TH2D *fHistHBTbefore; // Delta Eta vs. Delta Phi before HBT inspired cuts
+  TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts
+  TH2D *fHistConversionbefore; // Delta Eta vs. Delta Phi before Conversion cuts
+  TH2D *fHistConversionafter; // Delta Eta vs. Delta Phi before Conversion cuts
 
 
 

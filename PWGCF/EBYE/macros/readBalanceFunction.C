@@ -34,6 +34,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
   Int_t maximumCanvases = 13;
   Int_t iCanvas         = 0;
   Int_t iList           = -1;
+  TCanvas *cQACuts[13][10];
   TCanvas *cQA[13][10];
   TCanvas *cQAV0M = new TCanvas("cQAV0M","V0M multiplicities");
   cQAV0M->Divide(4,3);
@@ -229,6 +230,41 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 	histRef->Draw("colz");
       }
     }
+
+
+    cQACuts[iList][iCanvas] = new TCanvas(Form("%sCuts",listName.Data()),Form("%sCuts",listName.Data()));
+    cQACuts[iList][iCanvas]->Divide(2,2);
+
+    cQACuts[iList][iCanvas]->cd(1);
+    TH2D* histHBTcuts = (TH2D*)list->FindObject("fHistHBTafter");
+    if(histHBTcuts){
+      histHBTcuts->DrawCopy("colz");
+    }
+
+    cQACuts[iList][iCanvas]->cd(2);
+    TH2D* histHBTall = (TH2D*)list->FindObject("fHistHBTbefore");
+    if(histHBTall){
+      histHBTcuts->Divide(histHBTall);
+      histHBTcuts->SetMaximum(1.5);
+      histHBTcuts->SetMinimum(0.5);
+      histHBTcuts->DrawCopy("colz");
+    }
+
+    cQACuts[iList][iCanvas]->cd(3);
+    TH2D* histConversioncuts = (TH2D*)list->FindObject("fHistConversionafter");
+    if(histConversioncuts){
+      histConversioncuts->DrawCopy("colz");
+    }
+
+    cQACuts[iList][iCanvas]->cd(4);
+    TH2D* histConversionall = (TH2D*)list->FindObject("fHistConversionbefore");
+    if(histConversionall){
+      histConversioncuts->Divide(histConversionall);
+      histConversioncuts->SetMaximum(1.5);
+      histConversioncuts->SetMinimum(0.5);
+      histConversioncuts->DrawCopy("colz");
+    }
+
     // ----------------------------------------------------
 
     // ----------------------------------------------------
@@ -311,15 +347,28 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 	  }
     	  else{
     	    fHistPN[iList][a]->SetLineColor(2);
-    	    fHistPN[iList][a]->ProjectionY(Form("pn%d",a))->DrawCopy();
+	    TH1D *fHistTmp = (TH1D*)fHistPN[iList][a]->ProjectionY(Form("pn%d",a),centralityArray[iCanvas]+1,centralityArray[iCanvas+1]);
+	    fHistTmp->Scale(0.5);
+	    fHistTmp->DrawCopy();
     	    fHistPP[iList][a]->SetLineColor(1);
-    	    fHistPP[iList][a]->ProjectionY(Form("pp%d",a))->DrawCopy("same");
+    	    fHistPP[iList][a]->ProjectionY(Form("pp%d",a),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
     	    fHistNP[iList][a]->SetLineColor(4);
-    	    fHistNP[iList][a]->ProjectionY(Form("np%d",a))->DrawCopy("same");
+    	    fHistNP[iList][a]->ProjectionY(Form("np%d",a),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
     	    fHistNN[iList][a]->SetLineColor(8);
-    	    fHistNN[iList][a]->ProjectionY(Form("nn%d",a))->DrawCopy("same");
+    	    fHistNN[iList][a]->ProjectionY(Form("nn%d",a),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
     	  }
     	}
+      }
+
+      if(bHistos){
+  	for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
+	  cBF[iList][iCanvas]->cd(8);
+	  fHistP[iList][1]->ProjectionY(Form("p%d",1),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy();
+	  fHistN[iList][1]->ProjectionY(Form("n%d",1),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
+	  cBF[iList][iCanvas]->cd(9);
+	  fHistP[iList][6]->ProjectionY(Form("p%d",6),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy();
+	  fHistN[iList][6]->ProjectionY(Form("n%d",6),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
+	}
       }
     }
     // ----------------------------------------------------
@@ -400,15 +449,28 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
   	  }
   	  else{
   	    fHistPNS[iList][a]->SetLineColor(2);
-  	    fHistPNS[iList][a]->ProjectionY(Form("pns%d",a))->DrawCopy();
+	    TH1D *fHistTmp = (TH1D*)fHistPN[iList][a]->ProjectionY(Form("pns%d",a),centralityArray[iCanvas]+1,centralityArray[iCanvas+1]);
+	    fHistTmp->Scale(0.5);
+	    fHistTmp->DrawCopy();
   	    fHistPPS[iList][a]->SetLineColor(1);
-  	    fHistPPS[iList][a]->ProjectionY(Form("pps%d",a))->DrawCopy("same");
+  	    fHistPPS[iList][a]->ProjectionY(Form("pps%d",a),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
   	    fHistNPS[iList][a]->SetLineColor(4);
-  	    fHistNPS[iList][a]->ProjectionY(Form("nps%d",a))->DrawCopy("same");
+  	    fHistNPS[iList][a]->ProjectionY(Form("nps%d",a),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
   	    fHistNNS[iList][a]->SetLineColor(8);
-  	    fHistNNS[iList][a]->ProjectionY(Form("nns%d",a))->DrawCopy("same");
+  	    fHistNNS[iList][a]->ProjectionY(Form("nns%d",a),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
   	  }
   	}
+      }
+
+      if(bHistos){
+  	for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
+	  cBFS[iList][iCanvas]->cd(8);
+	  fHistPS[iList][1]->ProjectionY(Form("pS%d",1),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy();
+	  fHistNS[iList][1]->ProjectionY(Form("nS%d",1),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
+	  cBFS[iList][iCanvas]->cd(9);
+	  fHistPS[iList][6]->ProjectionY(Form("pS%d",6),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy();
+	  fHistNS[iList][6]->ProjectionY(Form("nS%d",6),centralityArray[iCanvas]+1,centralityArray[iCanvas+1])->DrawCopy("same");
+	}
       }
     }
     // ----------------------------------------------------

@@ -265,6 +265,12 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
     fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
   fList->Add(fHistRefTracks);
 
+  // QA histograms for HBTinspired and Conversion cuts
+  fList->Add(fBalance->GetQAHistHBTbefore());
+  fList->Add(fBalance->GetQAHistHBTafter());
+  fList->Add(fBalance->GetQAHistConversionbefore());
+  fList->Add(fBalance->GetQAHistConversionafter());
+
   // Balance function histograms
   // Initialize histograms if not done yet
   if(!fBalance->GetHistNp(0)){
@@ -297,7 +303,7 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
       fListBFS->Add(fShuffledBalance->GetHistNpp(a));
       fListBFS->Add(fShuffledBalance->GetHistNnp(a));
     }  
-  }
+  }  
 
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
