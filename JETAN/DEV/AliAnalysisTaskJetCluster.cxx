@@ -138,6 +138,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fhEffH3(0x0),
   fUseTrPtResolutionSmearing(kFALSE),
   fUseDiceEfficiency(kFALSE),
+  fDiceEfficiencyMinPt(0.),
   fUseTrPtResolutionFromOADB(kFALSE),
   fUseTrEfficiencyFromOADB(kFALSE),
   fPathTrPtResolution(""),
@@ -275,6 +276,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fhEffH3(0x0),
   fUseTrPtResolutionSmearing(kFALSE),
   fUseDiceEfficiency(kFALSE),
+  fDiceEfficiencyMinPt(0.),
   fUseTrPtResolutionFromOADB(kFALSE),
   fUseTrEfficiencyFromOADB(kFALSE),
   fPathTrPtResolution(""),
@@ -926,7 +928,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       
       Double_t sumEff = eff[0]+eff[1]+eff[2];
       fp1Efficiency->Fill(vp->Pt(),sumEff);
-      if(rnd>sumEff) continue;
+      if(rnd>sumEff && pT > fDiceEfficiencyMinPt) continue;
 
       if(fUseTrPtResolutionSmearing) {
 	//Smear momentum of generated particle
