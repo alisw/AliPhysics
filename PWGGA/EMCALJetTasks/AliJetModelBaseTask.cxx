@@ -4,23 +4,23 @@
 //
 // Author: S.Aiola, C.Loizides
 
+#include "AliJetModelBaseTask.h"
+
 #include <TClonesArray.h>
+#include <TF1.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
-#include <TF1.h>
 
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
-#include "AliVCluster.h"
-#include "AliESDCaloCluster.h"
 #include "AliAODCaloCluster.h"
+#include "AliAnalysisManager.h"
 #include "AliEMCALDigit.h"
-#include "AliEMCALRecPoint.h"
-#include "AliPicoTrack.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALRecPoint.h"
+#include "AliESDCaloCluster.h"
 #include "AliLog.h"
-
-#include "AliJetModelBaseTask.h"
+#include "AliPicoTrack.h"
+#include "AliVCluster.h"
+#include "AliVEvent.h"
 
 ClassImp(AliJetModelBaseTask)
 
@@ -43,6 +43,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fNClusters(0),
   fNTracks(0),
   fPtSpectrum(0),
+  fIsInit(0),
   fGeom(0),
   fClusters(0),
   fOutClusters(0),
@@ -71,6 +72,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name) :
   fNClusters(0),
   fNTracks(1),
   fPtSpectrum(0),
+  fIsInit(0),
   fGeom(0),
   fClusters(0),
   fOutClusters(0),
@@ -87,177 +89,13 @@ AliJetModelBaseTask::~AliJetModelBaseTask()
 }
 
 //________________________________________________________________________
-void AliJetModelBaseTask::Init()
+void AliJetModelBaseTask::UserExec(Option_t *) 
 {
-  // Init task.
+  // Execute per event.
 
-  if (fPtMax < fPtMin) {
-    AliWarning (Form("PtMax (%f) < PtMin (%f), setting PtMax = PtMin = %f", fPtMax, fPtMin, fPtMin));
-    fPtMax = fPtMin;
-  }
-
-  if (fEtaMax < fEtaMin) {
-    AliWarning (Form("EtaMax (%f) < EtaMin (%f), setting EtaMax = EtaMin = %f", fEtaMax, fEtaMin, fEtaMin));
-    fEtaMax = fEtaMin;
-  }
-
-  if (fPhiMax < fPhiMin) {
-    AliWarning (Form("PhiMax (%f) < PhiMin (%f), setting PhiMax = PhiMin = %f", fPhiMax, fPhiMin, fPhiMin));
-    fPhiMax = fPhiMin;
-  }
-
-  if (fNTracks > 0 && !fTracks) {
-    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
-    if (!fTracks) {
-      AliError(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
-      return;
-    }
-    
-    if (!fTracks->GetClass()->GetBaseClass("AliPicoTrack")) {
-      AliError(Form("%s: Collection %s does not contain AliPicoTrack objects!", GetName(), fTracksName.Data())); 
-      fTracks = 0;
-      return;
-    }
-
-    if (!fOutTracks) {
-      fOutTracksName = fTracksName;
-      if (fCopyArray) {
-	fOutTracksName += fSuffix;
-	fOutTracks = new TClonesArray("AliPicoTrack", fTracks->GetSize());
-	fOutTracks->SetName(fOutTracksName);
-      }
-      else {
-	fOutTracks = fTracks;
-      }
-    }
-
-    if (fCopyArray) {
-      if (!(InputEvent()->FindListObject(fOutTracksName)))
-	InputEvent()->AddObject(fOutTracks);
-      //fOutTracks->Clear();
-    }
-  }
-
-  if (fNClusters > 0 && !fClusters) {
-    fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
- 
-    if (!fClusters) {
-      AliError(Form("%s: Couldn't retrieve clusters with name %s!", GetName(), fCaloName.Data()));
-      return;
-    }
-
-    if (!fClusters->GetClass()->GetBaseClass("AliVCluster")) {
-      AliError(Form("%s: Collection %s does not contain AliVCluster objects!", GetName(), fCaloName.Data())); 
-      fClusters = 0;
-      return;
-    }
-
-    if (!fOutClusters) {
-      fOutCaloName = fCaloName;
-      if (fCopyArray) {
-	fOutCaloName += fSuffix;
-	fOutClusters = new TClonesArray(fClusters->GetClass()->GetName(), fClusters->GetSize());
-	fOutClusters->SetName(fOutCaloName);
-      }
-      else {
-	fOutClusters = fClusters;
-      }
-    }
-
-    if (fCopyArray) {
-      if (!(InputEvent()->FindListObject(fOutCaloName)))
-	InputEvent()->AddObject(fOutClusters);
-      //fOutClusters->Clear();
-    }
-
-    if (!fGeom) {
-      if (fGeomName.Length() > 0) {
-	fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-	if (!fGeom)
-	  AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
-      } else {
-	fGeom = AliEMCALGeometry::GetInstance();
-	if (!fGeom) 
-	  AliError("Could not get default geometry!");
-      }
-    }
-    
-    const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
-    const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
-    const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
-    const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
-    
-    if (fEtaMax > EmcalMaxEta) fEtaMax = EmcalMaxEta;
-    if (fEtaMax < EmcalMinEta) fEtaMax = EmcalMinEta;
-    if (fEtaMin > EmcalMaxEta) fEtaMin = EmcalMaxEta;
-    if (fEtaMin < EmcalMinEta) fEtaMin = EmcalMinEta;
-  
-    if (fPhiMax > EmcalMaxPhi) fPhiMax = EmcalMaxPhi;
-    if (fPhiMax < EmcalMinPhi) fPhiMax = EmcalMinPhi;
-    if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
-    if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
-  }
-
-  if (fCopyArray) {
-    if (fOutTracks)
-      fOutTracks->Clear();
-    if (fOutClusters)
-      fOutClusters->Clear();
-  }
-}
-
-//________________________________________________________________________
-void AliJetModelBaseTask::GetRandomCell(Double_t &eta, Double_t &phi, Int_t &absId)
-{
-  // Get random cell.
-
-  Int_t repeats = 0;
-  Double_t rndEta = eta;
-  Double_t rndPhi = phi;
-  do {
-    if (eta < -100)
-      rndEta = GetRandomEta();
-    if (phi < 0)
-      rndPhi = GetRandomPhi();
-    fGeom->GetAbsCellIdFromEtaPhi(rndEta, rndPhi, absId);  
-    repeats++;
-  } while (absId == -1 && repeats < 100);
-  
-  if (!(absId > -1)) {
-    AliWarning(Form("Could not extract random cluster! Random eta-phi extracted more than 100 times!\n"
-		    "eta [%f, %f], phi [%f, %f]\n", fEtaMin, fEtaMax, fPhiMin, fPhiMax));
-  }
-  else {
-    eta = rndEta;
-    phi = rndPhi;
-  }
-}
-
-//________________________________________________________________________
-Double_t AliJetModelBaseTask::GetRandomEta()
-{
-  // Get random eta.
-
-  return gRandom->Rndm() * (fEtaMax - fEtaMin) + fEtaMin;
-}
-
-//________________________________________________________________________
-Double_t AliJetModelBaseTask::GetRandomPhi()
-{
-  // Get random phi.
-
-  return gRandom->Rndm() * (fPhiMax - fPhiMin) + fPhiMin;
-}
-
-//________________________________________________________________________
-Double_t AliJetModelBaseTask::GetRandomPt()
-{
-  // Get random pt.
-
-  if (fPtSpectrum)
-    return fPtSpectrum->GetRandom();
-  else
-    return gRandom->Rndm() * (fPtMax - fPtMin) + fPtMin;
+  if (!fIsInit)
+    ExecOnce();
+  Run();
 }
 
 //________________________________________________________________________
@@ -356,12 +194,6 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
 }
 
 //________________________________________________________________________
-void AliJetModelBaseTask::Run() 
-{
-  // Run.
-}
-
-//________________________________________________________________________
 void AliJetModelBaseTask::CopyClusters()
 {
   // Copy all the clusters in the new collection
@@ -404,10 +236,172 @@ void AliJetModelBaseTask::CopyTracks()
 }
 
 //________________________________________________________________________
-void AliJetModelBaseTask::UserExec(Option_t *) 
+void AliJetModelBaseTask::ExecOnce()
 {
-  // Execute per event.
+  // Init task.
 
-  Init();
-  Run();
+  if (fPtMax < fPtMin) {
+    AliWarning (Form("PtMax (%f) < PtMin (%f), setting PtMax = PtMin = %f", fPtMax, fPtMin, fPtMin));
+    fPtMax = fPtMin;
+  }
+
+  if (fEtaMax < fEtaMin) {
+    AliWarning (Form("EtaMax (%f) < EtaMin (%f), setting EtaMax = EtaMin = %f", fEtaMax, fEtaMin, fEtaMin));
+    fEtaMax = fEtaMin;
+  }
+
+  if (fPhiMax < fPhiMin) {
+    AliWarning (Form("PhiMax (%f) < PhiMin (%f), setting PhiMax = PhiMin = %f", fPhiMax, fPhiMin, fPhiMin));
+    fPhiMax = fPhiMin;
+  }
+
+  if (fNTracks > 0 && !fTracks) {
+    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+    if (!fTracks) {
+      AliError(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
+      return;
+    }
+    
+    if (!fTracks->GetClass()->GetBaseClass("AliPicoTrack")) {
+      AliError(Form("%s: Collection %s does not contain AliPicoTrack objects!", GetName(), fTracksName.Data())); 
+      fTracks = 0;
+      return;
+    }
+
+    if (!fOutTracks) {
+      fOutTracksName = fTracksName;
+      if (fCopyArray) {
+	fOutTracksName += fSuffix;
+	fOutTracks = new TClonesArray("AliPicoTrack", fTracks->GetSize());
+	fOutTracks->SetName(fOutTracksName);
+      }
+      else {
+	fOutTracks = fTracks;
+      }
+    }
+
+    if (fCopyArray) {
+      if (!(InputEvent()->FindListObject(fOutTracksName)))
+	InputEvent()->AddObject(fOutTracks);
+    }
+  }
+
+  if (fNClusters > 0 && !fClusters) {
+    fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
+ 
+    if (!fClusters) {
+      AliError(Form("%s: Couldn't retrieve clusters with name %s!", GetName(), fCaloName.Data()));
+      return;
+    }
+
+    if (!fClusters->GetClass()->GetBaseClass("AliVCluster")) {
+      AliError(Form("%s: Collection %s does not contain AliVCluster objects!", GetName(), fCaloName.Data())); 
+      fClusters = 0;
+      return;
+    }
+
+    if (!fOutClusters) {
+      fOutCaloName = fCaloName;
+      if (fCopyArray) {
+	fOutCaloName += fSuffix;
+	fOutClusters = new TClonesArray(fClusters->GetClass()->GetName(), fClusters->GetSize());
+	fOutClusters->SetName(fOutCaloName);
+      }
+      else {
+	fOutClusters = fClusters;
+      }
+    }
+
+    if (fCopyArray) {
+      if (!(InputEvent()->FindListObject(fOutCaloName)))
+	InputEvent()->AddObject(fOutClusters);
+    }
+
+    if (!fGeom) {
+      if (fGeomName.Length() > 0) {
+	fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+	if (!fGeom)
+	  AliError(Form("Could not get geometry with name %s!", fGeomName.Data()));
+      } else {
+	fGeom = AliEMCALGeometry::GetInstance();
+	if (!fGeom) 
+	  AliError("Could not get default geometry!");
+      }
+    }
+    
+    const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
+    const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
+    const Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+    const Double_t EmcalMaxPhi = fGeom->GetArm1PhiMax() * TMath::DegToRad();
+    
+    if (fEtaMax > EmcalMaxEta) fEtaMax = EmcalMaxEta;
+    if (fEtaMax < EmcalMinEta) fEtaMax = EmcalMinEta;
+    if (fEtaMin > EmcalMaxEta) fEtaMin = EmcalMaxEta;
+    if (fEtaMin < EmcalMinEta) fEtaMin = EmcalMinEta;
+  
+    if (fPhiMax > EmcalMaxPhi) fPhiMax = EmcalMaxPhi;
+    if (fPhiMax < EmcalMinPhi) fPhiMax = EmcalMinPhi;
+    if (fPhiMin > EmcalMaxPhi) fPhiMin = EmcalMaxPhi;
+    if (fPhiMin < EmcalMinPhi) fPhiMin = EmcalMinPhi;
+  }
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::GetRandomCell(Double_t &eta, Double_t &phi, Int_t &absId)
+{
+  // Get random cell.
+
+  Int_t repeats = 0;
+  Double_t rndEta = eta;
+  Double_t rndPhi = phi;
+  do {
+    if (eta < -100)
+      rndEta = GetRandomEta();
+    if (phi < 0)
+      rndPhi = GetRandomPhi();
+    fGeom->GetAbsCellIdFromEtaPhi(rndEta, rndPhi, absId);  
+    repeats++;
+  } while (absId == -1 && repeats < 100);
+  
+  if (!(absId > -1)) {
+    AliWarning(Form("Could not extract random cluster! Random eta-phi extracted more than 100 times!\n"
+		    "eta [%f, %f], phi [%f, %f]\n", fEtaMin, fEtaMax, fPhiMin, fPhiMax));
+  }
+  else {
+    eta = rndEta;
+    phi = rndPhi;
+  }
+}
+
+//________________________________________________________________________
+Double_t AliJetModelBaseTask::GetRandomEta()
+{
+  // Get random eta.
+
+  return gRandom->Rndm() * (fEtaMax - fEtaMin) + fEtaMin;
+}
+
+//________________________________________________________________________
+Double_t AliJetModelBaseTask::GetRandomPhi()
+{
+  // Get random phi.
+
+  return gRandom->Rndm() * (fPhiMax - fPhiMin) + fPhiMin;
+}
+
+//________________________________________________________________________
+Double_t AliJetModelBaseTask::GetRandomPt()
+{
+  // Get random pt.
+
+  if (fPtSpectrum)
+    return fPtSpectrum->GetRandom();
+  else
+    return gRandom->Rndm() * (fPtMax - fPtMin) + fPtMin;
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::Run() 
+{
+  // Run.
 }

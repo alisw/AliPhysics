@@ -46,6 +46,24 @@ AliJetRandomizerTask::~AliJetRandomizerTask()
 }
 
 //________________________________________________________________________
+void AliJetRandomizerTask::UserExec(Option_t *) 
+{
+  // Execute per event.
+
+  if (!fCopyArray) {
+    AliWarning("fCopyArray == kFALSE not allowed for AliJetRandomizerTask, will set kTRUE");
+    fCopyArray = kTRUE;
+  }
+
+  if (!fIsInit) { 
+    ExecOnce();
+    fIsInit = 1;
+  }
+
+  Run();
+}
+
+//________________________________________________________________________
 void AliJetRandomizerTask::Run() 
 {
   // Randomize particles.
@@ -77,19 +95,4 @@ void AliJetRandomizerTask::Run()
       AddTrack(track->Pt(), track->Eta());
     }
   }
-}
-
-//________________________________________________________________________
-void AliJetRandomizerTask::UserExec(Option_t *) 
-{
-  // Execute per event.
-
-  if (!fCopyArray) {
-    AliWarning("fCopyArray == kFALSE not allowed for AliJetRandomizerTask, will set kTRUE");
-    fCopyArray = kTRUE;
-  }
-
-  Init();
-
-  Run();
 }
