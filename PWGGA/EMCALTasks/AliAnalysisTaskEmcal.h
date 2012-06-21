@@ -37,9 +37,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   void                        SetAnaType(EmcalAnaType type)                        { fAnaType        = type       ; }
   void                        SetClusName(const char *n)                           { fCaloName       = n          ; }
+  void                        SetClusPtCut(Float_t cut)                            { fClusPtCut      = cut        ; }
   void                        SetHistoBins(Int_t nbins, Float_t min, Float_t max)  { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max; }
   void                        SetPtCut(Float_t cut)                                { SetClusPtCut(cut); SetTrackPtCut(cut); }
-  void                        SetClusPtCut(Float_t cut)                            { fClusPtCut      = cut        ; }
   void                        SetTrackPtCut(Float_t cut)                           { fTrackPtCut     = cut        ; }
   void                        SetTracksName(const char *n)                         { fTracksName     = n          ; }
 
