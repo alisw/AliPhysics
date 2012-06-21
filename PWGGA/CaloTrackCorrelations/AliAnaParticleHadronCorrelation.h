@@ -212,6 +212,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhDeltaEtaCharged  ;            //! Difference of charged particle eta and trigger particle  eta as function of  trigger particle pT
   TH2F *       fhDeltaPhiChargedPt  ;          //! Difference of charged particle phi and trigger particle  phi as function of charged particle pT
   TH2F *       fhDeltaPhiUeChargedPt ;         //! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT
+  TH1F *       fhUePart;                       //! UE particles distribution vs pt trig
   TH2F *       fhXECharged  ;                  //! Trigger particle -charged hadron momentum imbalance histogram
   TH2F *       fhXEUeCharged  ;                //! Trigger particle -underlying charged hadron momentum imbalance histogram  
   TH2F *       fhXEPosCharged  ;               //! Trigger particle -positive charged hadron momentum imbalance histogram
@@ -303,6 +304,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   //if the data is MC, fill MC information
   TH2F *       fh2phiLeadingParticle;          //! #phi resolution for triggers
+  TH1F *       fhMCPtLeading;                  //! MC pure pT distribution of leading particles
   TH2F *       fhMCEtaCharged;                 //! MC pure particles charged primary pt vs eta (both associated) 
   TH2F *       fhMCPhiCharged;                 //! MC pure particles charged primary pt vs phi (both associated) 
   TH2F *       fhMCDeltaEtaCharged;            //! MC pure particles charged trigger primary pt vs delta eta (associated-trigger) 
@@ -310,7 +312,10 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhMCDeltaPhiDeltaEtaCharged;    //! MC pure particles charged associated primary pt vs delta phi (associated-trigger), in away side 
   TH2F *       fhMCDeltaPhiChargedPt;          //! MC pure particles charged delta phi vs delta eta (associated-trigger) 
   TH2F *       fhMCPtXECharged;                //! MC pure particles charged trigger primary pt vs xE
+  TH2F *       fhMCPtXEUeCharged;              //! MC pure particles charged trigger primary pt vs xE (underlying event)
   TH2F *       fhMCPtHbpXECharged;             //! MC pure particles charged trigger primary pt vs ln(1/xE)
+  TH2F *       fhMCPtHbpXEUeCharged;           //! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event)
+  TH1F *       fhMCUePart;                     //! MC pure UE particles distribution vs pt trig
   TH2F *       fhMCPtZTCharged;                //! MC pure particles charged trigger primary pt vs zT
   TH2F *       fhMCPtHbpZTCharged;             //! MC pure particles charged trigger primary pt vs ln(1/zT)
   TH2F *       fhMCPtTrigPout ;                //! MC pure particles charged trigger primary pt vs pOut
@@ -332,7 +337,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,16)
+  ClassDef(AliAnaParticleHadronCorrelation,17)
 } ;
  
 
