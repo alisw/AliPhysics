@@ -12,47 +12,33 @@
 
 #include "AliMUONResponseTrigger.h"
 #include "AliMUONHit.h"
+#include "TArrayF.h"
 
 class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger 
 {
   public:
     // default constructor
     AliMUONResponseTriggerV1();
-    AliMUONResponseTriggerV1(Float_t hv);
+    AliMUONResponseTriggerV1(Int_t mode);
     virtual ~AliMUONResponseTriggerV1();
-
+    
     // Set the GenerCluster parameter       
     virtual Int_t SetGenerCluster();
-    
     virtual void DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t timeDif);
     
   protected:
-    Float_t fGenerCluster;   ///< Random number  
-    Float_t fA;              ///< first parameter  of the cluster-size param
-    Float_t fB;              ///< second parameter of the cluster-size param
-    Float_t fC;              ///< third parameter  of the cluster-size param
+    Float_t fGenerCluster;   ///< Random number
+    TArrayF fHVvalues;       ///< Array containing HV values
+    TArrayF fBValues;        ///< Array containing b parameters
+    Int_t fWorkCondition;    ///< 1=streamer - 2=avalanche
 
   private:
-    // initialize parameters
-    void SetParameters(Float_t hv);
     // parametrization of the cluster-size
-    Float_t FireStripProb(Float_t x4, Float_t theta) const;
-    void Neighbours(const Int_t cath, const Int_t iX, const Int_t iY, Int_t Xlist[10], Int_t Ylist[10]) const;
+    void SetHV();
+    void SetBValues();
+    Float_t FireStripProb(Float_t x4, Float_t theta,Int_t rpc,Int_t plane,Int_t cath) const;
+    void Neighbours(const Int_t cath, const Int_t iX, const Int_t iY, Int_t Xlist[30], Int_t Ylist[30]) const;
     
-  ClassDef(AliMUONResponseTriggerV1,1) // Implementation of RPC response
-    
+  ClassDef(AliMUONResponseTriggerV1,2) // Implementation of RPC response
 };
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-

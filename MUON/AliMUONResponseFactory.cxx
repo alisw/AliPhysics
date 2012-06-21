@@ -171,20 +171,22 @@ void AliMUONResponseFactory::BuildStation6()
 {
 /// Configuration for Trigger Chambers   (Station 6,7) ---------           
 
-    Bool_t resTrigV1 = fMUON->GetTriggerResponseV1();    
+    Int_t resTrigV1 = fMUON->GetTriggerResponseV1();    
 
     for (Int_t chamber = 10; chamber < 14; chamber++) 
     {
       AliMUONResponse* response;
-      if (!resTrigV1) 
+      if(resTrigV1==1 || resTrigV1==2) //cluster size ON
       {
-        response = new AliMUONResponseTrigger;
+	response = new AliMUONResponseTriggerV1(resTrigV1); //1=STREAMER - 2=AVALANCHE
       }
-      else
+      
+      else // default: clustrer size OFF
       {
-        response = new AliMUONResponseTriggerV1;
+	response = new AliMUONResponseTrigger;
       }
-	    fMUON->SetResponseModel(chamber,*response);	
+      
+      fMUON->SetResponseModel(chamber,*response);	
       fMUON->Chamber(chamber).SetChargeCorrel(0); // same charge on both cathodes
       delete response;
     }

@@ -105,9 +105,9 @@ class AliMUON : public  AliDetector
     virtual void  SetTriggerScalerEvent(Bool_t scaler = true){fTriggerScalerEvent = scaler;}
 
                   /// Set trigger response version
-    virtual void  SetTriggerResponseV1(Bool_t trigResV1 = false)
+    virtual void  SetTriggerResponseV1(Int_t trigResV1 = 0)
 	{ fTriggerResponseV1 = trigResV1; }
-    virtual Bool_t GetTriggerResponseV1() const;
+    virtual Int_t GetTriggerResponseV1() const;
                   /// Set trigger coinc44
     virtual void  SetTriggerCoinc44(Int_t trigCoinc44 = 0)
 	{ fTriggerCoinc44 = trigCoinc44; }
@@ -177,7 +177,7 @@ class AliMUON : public  AliDetector
     // Options
     Bool_t fIsMaxStep;          ///< Flag to inactivate calls to gMC->SetMaxStep
     Bool_t fTriggerScalerEvent; ///< Flag to generates scaler event
-    Bool_t fTriggerResponseV1;  ///< Flag to select TriggerResponseV1
+    Int_t  fTriggerResponseV1;  ///< Flag to select TriggerResponseV1 (for cluster size in MTR)
     Int_t  fTriggerCoinc44;     ///< Flag to select TriggerCoinc44 
     Bool_t fTriggerEffCells;    ///< Flag to select TriggerEffCells
     Int_t  fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits

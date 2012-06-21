@@ -100,7 +100,7 @@ AliMUON::AliMUON()
     fCurIterPad(0),
     fIsMaxStep(kTRUE),
     fTriggerScalerEvent(kFALSE),
-    fTriggerResponseV1(kFALSE),
+    fTriggerResponseV1(0),
     fTriggerCoinc44(0),
     fTriggerEffCells(kTRUE),
     fDigitizerWithNoise(1),
@@ -139,7 +139,7 @@ AliMUON::AliMUON(const char *name, const char* title)
     fCurIterPad(0),
     fIsMaxStep(kTRUE),
     fTriggerScalerEvent(kFALSE),
-    fTriggerResponseV1(kFALSE),
+    fTriggerResponseV1(0),
     fTriggerCoinc44(0),
     fTriggerEffCells(kTRUE),
     fDigitizerWithNoise(1),
@@ -608,7 +608,7 @@ AliMUON::ResetGeometryBuilder()
 }
 
 //____________________________________________________________________
-Bool_t  AliMUON::GetTriggerResponseV1() const
+Int_t  AliMUON::GetTriggerResponseV1() const
 {
 ///
 /// Returns fTriggerResponseV1
