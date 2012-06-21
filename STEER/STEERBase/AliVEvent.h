@@ -49,9 +49,11 @@ public:
       kMUU7         = BIT(9), // Muon trigger, unlike sign dimuon, offline V0 selection, CINT7 suite
       kMuonUnlikePB = BIT(9), // idem for PbPb
       kEMC7         = BIT(10), // EMCAL trigger, CINT7 suite
+      kEMC8         = BIT(10), // EMCAL trigger, CINT8 suite
       kMUS7         = BIT(11), // Muon trigger: low pt, single muon, offline V0 selection, CINT7 suite
       kPHI1         = BIT(12), // PHOS trigger, CINT1 suite
       kPHI7         = BIT(13), // PHOS trigger, CINT7 suite
+      kPHI8         = BIT(13), // PHOS trigger, CINT8 suite
       kPHOSPb       = BIT(13), // idem for PbPb
       kEMCEJE       = BIT(14), // EMCAL jet patch trigger
       kEMCEGA       = BIT(15), // EMCAL gamma trigger
