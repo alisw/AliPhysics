@@ -31,6 +31,7 @@ class AliFJWrapper
   const char*                           GetName()            const { return fName;                       }
   const char*                           GetTitle()           const { return fTitle;                      }
   Double_t                              GetJetArea         (UInt_t idx) const;
+  fastjet::PseudoJet                    GetJetAreaVector   (UInt_t idx) const;
   Double_t                              GetJetSubtractedPt (UInt_t idx) const;
   virtual std::vector<double>           GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
 
@@ -248,6 +249,19 @@ Double_t AliFJWrapper::GetJetArea(UInt_t idx) const
   Double_t retval = -1; // really wrong area..
   if ( idx < fInclusiveJets.size() ) {
     retval = fClustSeq->area(fInclusiveJets[idx]);
+  } else {
+    AliError(Form("[e] ::GetJetArea wrong index: %d",idx));
+  }
+  return retval;
+}
+
+//_________________________________________________________________________________________________
+fastjet::PseudoJet AliFJWrapper::GetJetAreaVector(UInt_t idx) const
+{
+  // Get the jet area as vector.
+  fastjet::PseudoJet retval;
+  if ( idx < fInclusiveJets.size() ) {
+    retval = fClustSeq->area_4vector(fInclusiveJets[idx]);
   } else {
     AliError(Form("[e] ::GetJetArea wrong index: %d",idx));
   }
