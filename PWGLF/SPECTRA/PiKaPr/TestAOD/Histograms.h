@@ -20,8 +20,9 @@ namespace AliSpectraNameSpace
       kHistPtGenTruePrimaryPionMinus,           // Pt histo for pions -, generated tracks, true ID, primary Event
       kHistPtGenTruePrimaryKaonMinus,           // Pt histo for kaons -, generated tracks, true ID, primary Event
       kHistPtGenTruePrimaryProtonMinus,         // Pt histo for protons -, generated tracks, true ID, primary Event
+      kNPtGenHist = kHistPtGenTruePrimaryProtonMinus,                    // Number of ptGen-likehistos histos - PID
       kHistPtGen,                               // Pt histo for all particles, generated tracks
-      kNPtGenHist = kHistPtGen,                    // Number of ptGen-likehistos histos
+      kNPtGenAllChHist = kHistPtGen,                    // Number of ptGen-likehistos histos - AllCh
       
       // 6 Pt Reconstructed Sigma
       kHistPtRecSigmaPionPlus,                  // Pt histo for pions +, reconstructed tracks, sigma ID
@@ -84,11 +85,12 @@ namespace AliSpectraNameSpace
       kHistPtRecTruePrimaryProtonMinus,         // Pt histo for protons -, reconstructed tracks, true ID, primary event
       kHistPtRecTruePrimaryMuonPlus,            // Pt histo for muons +, reconstructed tracks, true ID, primary event
       kHistPtRecTruePrimaryMuonMinus,            // Pt histo for muons +, reconstructed tracks, true ID, primary event
+      kNPtRecHist = kHistPtRecTruePrimaryMuonMinus,                    // Number of ptRec-likehistos histos
       
       // Rest
       kHistPtRec,                               // Pt histo for all particles, reconstructed tracks
       kHistPtRecPrimary,                               // Pt histo for all particles, reconstructed tracks
-      kNPtRecHist = kHistPtRecPrimary,                    // Number of ptRec-likehistos histos
+      kNPtRecAllChHist = kHistPtRecPrimary,                    // Number of ptRec-likehistos histos - no PID
       
       kHistPIDTPC,                              // Particle Identification histo
       kHistPIDTOF,                              

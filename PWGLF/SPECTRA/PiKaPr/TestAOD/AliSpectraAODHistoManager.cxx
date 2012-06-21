@@ -67,8 +67,10 @@ AliSpectraAODHistoManager::AliSpectraAODHistoManager(const char *name,Int_t nreb
   for (Int_t ihist  = 0; ihist < kNHist ; ihist++)
     {
       if (ihist <= kNPtGenHist) BookPtGenHistogram(kHistName[ihist]);  // PT histos
-      if (ihist > kNPtGenHist && ihist <= kNPtRecHist) BookPtRecHistogram(kHistName[ihist]);  // PT histos
-      if (ihist > kNPtRecHist && ihist <= kNHistPID) BookPIDHistogram(kHistName[ihist]);  // PID histos
+      if (ihist > kNPtGenHist && ihist <= kNPtGenAllChHist) BookPtGenAllChHistogram(kHistName[ihist]);  // PT histos
+      if (ihist > kNPtGenAllChHist && ihist <= kNPtRecHist) BookPtRecHistogram(kHistName[ihist]);  // PT histos
+      if (ihist > kNPtRecHist && ihist <= kNPtRecAllChHist) BookPtRecAllChHistogram(kHistName[ihist]);  // PT histos
+      if (ihist > kNPtRecAllChHist && ihist <= kNHistPID) BookPIDHistogram(kHistName[ihist]);  // PID histos
       if (ihist > kNHistPID && ihist <= kNHistNSig) BookNSigHistogram(kHistName[ihist]);  // NSigmaSep histos
       if (ihist > kNHistNSig) BookqVecHistogram(kHistName[ihist]);  // qDistr histos
     }
@@ -97,6 +99,27 @@ TH2F* AliSpectraAODHistoManager::BookPtGenHistogram(const char * name)
   return hist;
 }
 
+//_______________________________________________________
+
+TH2F* AliSpectraAODHistoManager::BookPtGenAllChHistogram(const char * name)
+{
+  // Return a pt histogram with predefined binning, set the ID and add it to the output list
+  AliInfo(Form("Booking pt gen histogram - no PID %s", name));
+   
+  //standard histo
+  const Double_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,6.5,7,7.5,8,8.5,9,9.5,10};
+  Int_t nbinsTempl=62;
+   
+  TH2F * hist = new TH2F(name,Form("P_{T} distribution (All Ch) (%s)", name),nbinsTempl,templBins,2,-0.5,1.5);//need to be at least 1 becuase the generated are filled with (pt,IsPhysPrim)
+  hist->GetXaxis()->SetTitle("generated P_{T} (GeV / c)");
+  hist->GetYaxis()->SetTitle("IsPhysicalPrimary()");
+  hist->SetMarkerStyle(kFullCircle);
+  hist->Sumw2();
+  fOutputList->Add(hist);
+   
+  return hist;
+}
+
 
 //_______________________________________________________
 TH2F* AliSpectraAODHistoManager::BookPtRecHistogram(const char * name)
@@ -109,6 +132,27 @@ TH2F* AliSpectraAODHistoManager::BookPtRecHistogram(const char * name)
   Int_t nbinsTempl=52;
    
   TH2F * hist = new TH2F(name,Form("reconstructed P_{T} distribution (%s)", name),nbinsTempl,templBins,3000,-3,3);//need to be at least 1 becuase the generated are filled with (pt,IsPhysPrim)
+  if(fNRebin!=0)hist->RebinY(fNRebin);
+  hist->GetXaxis()->SetTitle("P_{T} (GeV / c)");
+  hist->GetYaxis()->SetTitle("DCA xy");
+  hist->SetMarkerStyle(kFullCircle);
+  hist->Sumw2();
+  fOutputList->Add(hist);
+
+  return hist;
+}
+
+//_______________________________________________________
+TH2F* AliSpectraAODHistoManager::BookPtRecAllChHistogram(const char * name)
+{
+  // Return a pt histogram with predefined binning, set the ID and add it to the output list
+  AliInfo(Form("Booking pt rec histogram %s,  rebin:%d", name, fNRebin));
+   
+  //standard histo
+  const Double_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,6.5,7,7.5,8,8.5,9,9.5,10};
+  Int_t nbinsTempl=62;
+   
+  TH2F * hist = new TH2F(name,Form("reconstructed P_{T} distribution (All Ch)  (%s)", name),nbinsTempl,templBins,3000,-3,3);//need to be at least 1 becuase the generated are filled with (pt,IsPhysPrim)
   if(fNRebin!=0)hist->RebinY(fNRebin);
   hist->GetXaxis()->SetTitle("P_{T} (GeV / c)");
   hist->GetYaxis()->SetTitle("DCA xy");
