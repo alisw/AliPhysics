@@ -93,6 +93,13 @@ AliBalance::AliBalance() :
     fHistNN[i] = NULL;
 
   }
+
+  //QA histograms
+  fHistHBTbefore = NULL;
+  fHistHBTafter  = NULL;
+  fHistConversionbefore = NULL;
+  fHistConversionafter  = NULL;
+
 }
 
 
@@ -222,6 +229,13 @@ void AliBalance::InitHistograms() {
     if(fCentralityId) histName += fCentralityId.Data();
     fHistNN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
   }
+
+  // QA histograms
+  fHistHBTbefore        = new TH2D("fHistHBTbefore","before HBT cut",200,0,2,200,0,200);
+  fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,0,2,200,0,200);
+  fHistConversionbefore = new TH2D("fHistConversionbefore","before Conversion cut",200,0,2,200,0,200);
+  fHistConversionafter  = new TH2D("fHistConversionafter","after Conversion cut",200,0,2,200,0,200);
+
 }
 
 //____________________________________________________________________//
@@ -401,6 +415,8 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 	  // VERSION 2 (Taken from DPhiCorrelations)
 	  // the variables & cuthave been developed by the HBT group 
 	  // see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
+
+	  fHistHBTbefore->Fill(deta,dphi);
 	  
 	  // optimization
 	  if (TMath::Abs(deta) < 0.02 * 2.5 * 3) //twoTrackEfficiencyCutValue = 0.02 [default for dphicorrelations]
@@ -440,12 +456,16 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 		    }
 		}
 	    }
+	  fHistHBTafter->Fill(deta,dphi);
 	}
 	
 	// conversions
 	if(bConversionCut){
 	  if (charge1 * charge2 < 0)
 	    {
+
+	      fHistConversionbefore->Fill(deta,dphi);
+
 	      Float_t m0 = 0.510e-3;
 	      Float_t tantheta1 = 1e10;
 
@@ -469,6 +489,7 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
 		//AliInfo(Form("Conversion: Removed track pair %d %d with [[%f %f] %f %f] %d %d <- %f %f  %f %f   %f %f ", i, j, deta, dphi, masssqu, charge1, charge2,eta1,eta2,phi1,phi2,pt1,pt2));
 		continue;
 	      }
+	      fHistConversionafter->Fill(deta,dphi);
 	    }
 	}
 	
