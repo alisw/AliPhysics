@@ -24,6 +24,7 @@
 
 #include <errno.h>
 #include <Riostream.h>
+#include <RVersion.h>
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,15,0)
 #include <TBufferFile.h>
@@ -46,6 +47,7 @@
 
 #include "AliRawDB.h"
 
+using std::ofstream;
 
 ClassImp(AliRawDB)
 

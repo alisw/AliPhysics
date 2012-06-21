@@ -34,6 +34,9 @@
 #include "AliRun.h"
 #include "driver.h"
 
+using std::cerr;
+using std::endl;
+
 ClassImp(AliGenHerwig)
 
 

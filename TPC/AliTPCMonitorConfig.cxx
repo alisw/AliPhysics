@@ -44,6 +44,12 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 #include "AliLog.h" 
 #include <Riostream.h>
 
+using std::cout;
+using std::endl;
+using std::ifstream;
+using std::ofstream;
+using std::string;
+
 ClassImp(AliTPCMonitorConfig)
 
 // _______________________________________________________________________________________________________________

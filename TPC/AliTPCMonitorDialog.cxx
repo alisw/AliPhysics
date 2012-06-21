@@ -57,6 +57,8 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 #include "Rtypes.h"
 #include "AliLog.h"
 
+using std::string;
+
 ClassImp(AliTPCMonitorDialog)
 //_____________________________________________________________________________________________
 AliTPCMonitorDialog::AliTPCMonitorDialog(TGWindow *p, TGWindow *main, UInt_t w,

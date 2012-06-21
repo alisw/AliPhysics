@@ -57,6 +57,9 @@
 #include "Riostream.h"
 
 
+using std::cout;
+using std::endl;
+
 ClassImp(THerwig6)
 
 extern "C" {

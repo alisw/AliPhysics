@@ -31,6 +31,9 @@
 
 #include <Riostream.h>
 
+using std::cout;
+using std::endl;
+
 static Int_t miniEventIDOffset[AliDAQ::kNDetectors] = {3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565,3565};
 static Bool_t detTriggerClasses[AliDAQ::kNDetectors] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 

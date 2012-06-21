@@ -53,6 +53,9 @@
 #include <string>
 #include <TString.h>
 
+using std::ifstream;
+using std::ios;
+
 ClassImp(AliTPCMonitorMappingHandler)
 
 //_____________________________________________________________________________________________
