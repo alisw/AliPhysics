@@ -3,12 +3,12 @@
 
 // $Id$
 
-class TList;
+class TClonesArray;
+class TF1;
 class TH1F;
 class TH2F;
-class TClonesArray;
+class TList;
 class TString;
-class TF1;
 class AliRhoParameter;
 
 #include "AliAnalysisTaskRhoBase.h"
@@ -23,17 +23,18 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   void                   UserCreateOutputObjects();
   void                   UserExec(Option_t*);
 
-  const char            *GetRhoScaled() const                                  { return fRhoScaledName;  }
-  void                   SetAreaCut(Double_t a = 0.0)                          { fAreaCut       = a    ; }
-  void                   SetExcludeLeadJets(UInt_t n)                          { fNExclLeadJets = n    ; }
+  const char            *GetRhoScaled() const                                  { return fRhoScaledName ;                   }
+  void                   SetAreaCut(Double_t a = 0.05)                         { fAreaCut       = a    ;                   }
+  void                   SetAreaEmcCut(Double_t a = 0.99)                      { fAreaEmcCut    = a    ;                   }
+  void                   SetExcludeLeadJets(UInt_t n)                          { fNExclLeadJets = n    ;                   }
   void                   SetJetEta(Double_t emin, Double_t emax)               { fEtaMin        = emin ; fEtaMax = emax  ; }
   void                   SetJetPhi(Double_t pmin, Double_t pmax)               { fPhiMin        = pmin ; fPhiMax = pmax  ; }
-  void                   SetJetsName(const char *n)                            { fJetsName      = n    ; }
-  void                   SetScaleFunction(TF1* sf)                             { fScaleFunction = sf   ; }
-  void                   SetTracksName(const char *n)                          { fTracksName    = n    ; }
+  void                   SetJetsName(const char *n)                            { fJetsName      = n    ;                   }
   void                   SetRhoName(const char *name)                          { fRhoName       = name ; 
-                                                                                 fRhoScaledName = name;
-                                                                                 fRhoScaledName += "_Scaled"; }
+                                                                                 fRhoScaledName = name ;
+                                                                                 fRhoScaledName += "_Scaled";              }
+  void                   SetScaleFunction(TF1* sf)                             { fScaleFunction = sf   ;                   }
+  void                   SetTracksName(const char *n)                          { fTracksName    = n    ;                   }
 
  protected:
   virtual void           ExecOnce();
@@ -46,7 +47,8 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   Double_t               fPhiMax;                        // maximum phi
   Double_t               fEtaMin;                        // minimum eta
   Double_t               fEtaMax;                        // maximum eta
-  Double_t               fAreaCut;                       // cut on jet area
+  Double_t               fAreaCut;                       // minimum cut on jet area
+  Double_t               fAreaEmcCut;                    // minimum cut on jet emcal area
   UInt_t                 fNExclLeadJets;                 // number of leading jets to be excluded from the median calculation
   TF1                   *fScaleFunction;                 // pre-computed scale factor as a function of centrality
   Bool_t                 fCreateHisto;                   // whether or not create histograms
@@ -73,6 +75,6 @@ class AliAnalysisTaskRho : public AliAnalysisTaskRhoBase {
   AliAnalysisTaskRho(const AliAnalysisTaskRho&);             // not implemented
   AliAnalysisTaskRho& operator=(const AliAnalysisTaskRho&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRho, 6); // Rho task
+  ClassDef(AliAnalysisTaskRho, 7); // Rho task
 };
 #endif
