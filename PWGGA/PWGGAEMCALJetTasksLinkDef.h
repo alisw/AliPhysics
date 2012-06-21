@@ -25,6 +25,6 @@
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskScale+;
-#pragma link C++ class AliAnalysisTaskMECEmcalJetH+;
+#pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 
 #endif

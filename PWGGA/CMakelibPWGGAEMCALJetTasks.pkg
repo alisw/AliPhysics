@@ -43,7 +43,7 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/AliAnalysisTaskSOH.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
- EMCALJetTasks/AliAnalysisTaskMECEmcalJetH.cxx
+ EMCALJetTasks/AliAnalysisTaskEmcalJetHMEC.cxx
 )
 
 set ( DHDR  PWGGAEMCALJetTasksLinkDef.h)
