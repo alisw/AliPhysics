@@ -78,9 +78,9 @@ fCurrCentrality(0.0)
   //
   // default ctor
   //
-  AliLog::SetClassDebugLevel("AliPIDResponse",10);
-  AliLog::SetClassDebugLevel("AliESDpid",10);
-  AliLog::SetClassDebugLevel("AliAODpidUtil",10);
+  AliLog::SetClassDebugLevel("AliPIDResponse",0);
+  AliLog::SetClassDebugLevel("AliESDpid",0);
+  AliLog::SetClassDebugLevel("AliAODpidUtil",0);
 
   memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
 }
