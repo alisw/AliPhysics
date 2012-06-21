@@ -660,6 +660,10 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       //Centrality stuff (centrality in AOD header)
       if(fUseCentrality) {
     	fCentrality = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+
+	// in OLD AODs (i.e. AOD049) fCentrality can be == 0
+	if(fCentrality == 0) 
+	  return;
  	
     	// QA for centrality estimators
     	fHistCentStats->Fill(0.,aodHeader->GetCentralityP()->GetCentralityPercentile("V0M"));
