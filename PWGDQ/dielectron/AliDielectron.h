@@ -46,6 +46,7 @@ public:
       kEv1PEv2M, kEv1MEv2M, kEv2PM,
       kEv2MM, kEv1PMRot };
   enum ELegType  { kEv1P, kEv1M, kEv2P, kEv2M };
+  enum EFilterBit  { kNone=0, kTPCqual=1, kTPCqualSPDany=4, kTPCqualSPDanyPIDele=8 };
   
   AliDielectron();
   AliDielectron(const char* name, const char* title);

@@ -30,6 +30,7 @@ public:
                     kSDD0=0x0004, kSDD1=0x0008,
                     kSSD0=0x0010, kSSD1=0x0020};
   enum ITSclusterCutType { kOneOf=0, kAtLeast, kExact };
+  enum EFilterBit  { kSwitchOff=0, kTPCqual=1, kTPCqualSPDany=4, kTPCqualSPDanyPIDele=8 };
 
   AliDielectronTrackCuts();
   AliDielectronTrackCuts(const char*name, const char* title);
@@ -48,6 +49,9 @@ public:
   ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
 
   void SetITSclusterCut(ITSclusterCutType type, UChar_t map) { fITSclusterBitMap=map; fITSclusterCutType=type; }
+
+  void SetAODFilterBit(EFilterBit type) { fAODFilterBit = type; }
+
   //
   //Analysis cuts interface
   //
@@ -71,7 +75,8 @@ private:
   Bool_t fRequireTPCRefit;                             // require TPC refit
 
   Int_t fTPCNclRobustCut;                              // TPC Ncl cut, Robust
-  
+  Int_t fAODFilterBit;                                 // Filter bit for AOD analysis
+
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
   Bool_t CheckITSClusterCut(UChar_t itsBits) const;
   

@@ -61,6 +61,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "NclsTRD",
   "TRDntracklets",
   "TRDpidQuality",
+  "TRDchi2",
   "TRDpidProb_Electrons",
   "TRDpidProb_Pions",
   "TRDphi",

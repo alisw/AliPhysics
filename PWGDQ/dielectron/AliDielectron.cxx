@@ -584,6 +584,7 @@ void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr)
       AliESDtrack *track=static_cast<AliESDtrack*>(particle);
       track->SetESDEvent(static_cast<AliESDEvent*>(ev)); //only in trunk...
     }
+
     //apply track cuts
     if (fTrackFilter.IsSelected(particle)!=selectedMask) continue;
 
