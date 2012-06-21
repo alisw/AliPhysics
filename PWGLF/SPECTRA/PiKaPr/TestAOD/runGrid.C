@@ -1,7 +1,7 @@
 class  AliAnalysisManager;
 class  AliAnalysisAlien;
 
-void runGrid(TString mode="test",Bool_t mc=kTRUE,Int_t day=15,Int_t month=6, Int_t year=2012) 
+void runGrid(TString mode="test",Bool_t mc=0,Int_t day=15,Int_t month=6, Int_t year=2012) 
 {
   //to be used with Aliroot > v5-03-32-AN
   AliLog::SetGlobalDebugLevel(100);
@@ -55,7 +55,6 @@ void runGrid(TString mode="test",Bool_t mc=kTRUE,Int_t day=15,Int_t month=6, Int
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AddTaskSpectraAOD.C");
   //LOOP OVER SELECTION
   //                            0    1    2    3    4    5
-  Bool_t mc=kTRUE;
   Double_t CentCutMin[4]= {     0,  20,  20,  20};
   Double_t CentCutMax[4]= {   100,  50,  50,  50};
   Double_t QvecCutMin[4]=    {  0,   0,   0, 1.5};
@@ -72,17 +71,22 @@ void runGrid(TString mode="test",Bool_t mc=kTRUE,Int_t day=15,Int_t month=6, Int
   Bool_t UseCentPatchAOD049=kFALSE;
   Double_t DCA=100000;
   UInt_t minNclsTPC=70;
+  Int_t nrebin=0;
+  TString opt="";
+  
   for(Int_t icut=0;icut<4;icut++){
     //if(icut!=0)continue;
-    AliAnalysisTaskSpectraAOD *taskAOD =AddTaskSpectraAOD(mc,CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC);
+    AliAnalysisTaskSpectraAOD *taskAOD =AddTaskSpectraAOD(mc,CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,nrebin,opt.Data());
     
     taskAOD->GetOutputSlot(1)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(1)->GetContainer()->GetName(),taskAOD->GetName()));
     taskAOD->GetOutputSlot(2)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(2)->GetContainer()->GetName(),taskAOD->GetName()));
     taskAOD->GetOutputSlot(3)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(3)->GetContainer()->GetName(),taskAOD->GetName()));
     taskAOD->GetOutputSlot(4)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(4)->GetContainer()->GetName(),taskAOD->GetName()));
     
-    //cout<<"OutSlot :"<<taskAOD->GetOutputSlot(1)->GetContainer()->GetName()<<endl;
-    //return;
+    // taskAOD->GetEventCuts()->SetMultiplicityCut(800,2000);
+    // taskAOD->GetEventCuts()->SetVertexCut(-8,10);
+    // taskAOD->GetEventCuts()->PrintCuts();
+    
   }
   
   mgr->SetDebugLevel(2);

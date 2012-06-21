@@ -25,7 +25,7 @@ class AliSpectraAODEventCuts : public TNamed
   enum {  kProcessedEvents = 0,kPhysSelEvents,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector, kNVtxCuts};
 
   // Constructors
- AliSpectraAODEventCuts() : TNamed(), fAOD(0), fTrackBits(0), fIsMC(0), fUseCentPatchAOD049(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0) {}
+ AliSpectraAODEventCuts() : TNamed(), fAOD(0), fTrackBits(0), fIsMC(0), fUseCentPatchAOD049(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0) {}
   AliSpectraAODEventCuts(const char *name);
   virtual  ~AliSpectraAODEventCuts() {}
   
@@ -39,14 +39,16 @@ class AliSpectraAODEventCuts : public TNamed
   Bool_t IsSelected(AliAODEvent * aod,AliSpectraAODTrackCuts     *trackcuts);
   Bool_t CheckVtxRange();
   Bool_t CheckCentralityCut();
+  Bool_t CheckMultiplicityCut();
   Bool_t CheckQVectorCut();
   void  SetCentralityCutMin(Float_t cut)  { fCentralityCutMin = cut; }
   void  SetCentralityCutMax(Float_t cut)  { fCentralityCutMax = cut; }
   //void  SetQVectorPosCut(Float_t min,Float_t max)  { fQVectorPosCutMin = min; fQVectorPosCutMax = max; }
   //void  SetQVectorNegCut(Float_t min,Float_t max)  { fQVectorNegCutMin = min; fQVectorNegCutMax = max; }
   void  SetQVectorCut(Float_t min,Float_t max)  { fQVectorCutMin = min; fQVectorCutMax = max; }
+  void  SetVertexCut(Float_t min,Float_t max)  { fVertexCutMin = min; fVertexCutMax = max; }
+  void  SetMultiplicityCut(Float_t min,Float_t max)  { fMultiplicityCutMin = min; fMultiplicityCutMax = max; }
   void SetTrackBits(UInt_t TrackBits) {fTrackBits=TrackBits;}
-
 
   UInt_t GetTrackType()  const    { return fTrackBits;}
   TH1I * GetHistoCuts()         {  return fHistoCuts; }
@@ -67,6 +69,10 @@ class AliSpectraAODEventCuts : public TNamed
   //Float_t  GetQVectorNegCutMax()  const {  return fQVectorNegCutMax; }
   Float_t  GetQVectorCutMin()  const {  return fQVectorCutMin; }
   Float_t  GetQVectorCutMax()  const {  return fQVectorCutMax; }
+  Float_t  GetVertexCutMin()  const {  return fVertexCutMin; }
+  Float_t  GetVertexCutMax()  const {  return fVertexCutMax; }
+  Float_t  GetMultiplicityCutMin()  const {  return fMultiplicityCutMin; }
+  Float_t  GetMultiplicityCutMax()  const {  return fMultiplicityCutMax; }
   void   PrintCuts();
   Double_t ApplyCentralityPatchAOD049();
 
@@ -93,6 +99,10 @@ class AliSpectraAODEventCuts : public TNamed
   /* Float_t         fQVectorNegCutMax;     // maximum qvecNeg */
   Float_t         fQVectorCutMin;     // minimum qvecPos
   Float_t         fQVectorCutMax;     // maximum qvecPos
+  Float_t         fVertexCutMin;     // minimum vertex position
+  Float_t         fVertexCutMax;     // maximum vertex position
+  Float_t         fMultiplicityCutMin;     // minimum multiplicity position
+  Float_t         fMultiplicityCutMax;     // maximum multiplicity position
   TH1I            *fHistoCuts;        // Cuts statistics
   TH1F            *fHistoVtxBefSel;        // Vtx distr before event selection
   TH1F            *fHistoVtxAftSel;        // Vtx distr after event selection

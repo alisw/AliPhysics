@@ -42,7 +42,7 @@ using namespace std;
 
 ClassImp(AliSpectraAODEventCuts)
 
-AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fTrackBits(0),fIsMC(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
+AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fTrackBits(0),fIsMC(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0)
 {
   // Constructor
@@ -64,6 +64,10 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, 
   // fQVectorNegCutMax=10000.0;
   fQVectorCutMin=0.0;
   fQVectorCutMax=10000.0;
+  fVertexCutMin=-10.0;
+  fVertexCutMax=10.0;
+  fMultiplicityCutMin=-0.0;
+  fMultiplicityCutMax=10000.0;
   fTrackBits=1;
 }
 
@@ -81,7 +85,7 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
   AliAODVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated
   if(vertex)fHistoVtxBefSel->Fill(vertex->GetZ());
   fIsSelected =kFALSE;
-  if(CheckVtxRange() && CheckCentralityCut()){ //selection on vertex and Centrality
+  if(CheckVtxRange() && CheckCentralityCut() && CheckMultiplicityCut()){ //selection on vertex and Centrality
     fIsSelected=CheckQVectorCut(); // QVector is calculated only if the centrality and vertex are correct (performance)
   }
   if(fIsSelected){
@@ -98,6 +102,7 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
       Nch++;
     }
   }
+  Printf("NCHARGED_EvSel : %d",Nch);
   if(fIsSelected)fHistoNChAftSel->Fill(Nch);
   return fIsSelected;
 }
@@ -112,7 +117,7 @@ Bool_t AliSpectraAODEventCuts::CheckVtxRange()
       fHistoCuts->Fill(kVtxNoEvent);
       return kFALSE;
     }
-  if (TMath::Abs(vertex->GetZ()) < 10)
+  if (vertex->GetZ() > fVertexCutMin && vertex->GetZ() < fVertexCutMax)
     {
       return kTRUE;
     }
@@ -130,6 +135,22 @@ Bool_t AliSpectraAODEventCuts::CheckCentralityCut()
   
   if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  return kTRUE;   
   fHistoCuts->Fill(kVtxCentral);
+  return kFALSE;
+}
+
+//______________________________________________________
+Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
+{
+  // Check multiplicity cut
+  Int_t Ncharged=0;
+  for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++){
+    AliAODTrack* track = fAOD->GetTrack(iTracks);
+    if (!fTrackCuts->IsSelected(track,kFALSE)) continue;
+    Ncharged++;
+  }
+  Printf("NCHARGED_cut : %d",Ncharged);
+  if(Ncharged>fMultiplicityCutMin && Ncharged<fMultiplicityCutMax)return kTRUE;
+  
   return kFALSE;
 }
 
@@ -195,6 +216,8 @@ void AliSpectraAODEventCuts::PrintCuts()
   // cout << " > QPosRange: [" << fQVectorPosCutMin <<"," <<fQVectorPosCutMax<<"]"<< endl;
   // cout << " > QNegRange: [" << fQVectorNegCutMin <<"," <<fQVectorNegCutMax<<"]"<< endl;
   cout << " > QRange: [" << fQVectorCutMin <<"," <<fQVectorCutMax<<"]"<< endl;
+  cout << " > Vertex: [" << fVertexCutMin <<"," <<fVertexCutMax<<"]"<< endl;
+  cout << " > Multiplicity: [" << fMultiplicityCutMin <<"," <<fMultiplicityCutMax<<"]"<< endl;
   cout << " > Centrality: [" << fCentralityCutMin <<"," <<fCentralityCutMax<<"]"<< endl;
 }
 //______________________________________________________
