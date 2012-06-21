@@ -342,7 +342,7 @@ AliAnalysisTaskV0ForRAA::~AliAnalysisTaskV0ForRAA()
    if(fOutputContainer) delete fOutputContainer;fOutputContainer=0;
    if(fESDTrackCuts) delete fESDTrackCuts;fESDTrackCuts=0;
    if(fESDTrackCutsCharged) delete fESDTrackCutsCharged;fESDTrackCutsCharged=0;
-  
+   /*  
    //histograms
    if(fHistITSLayerHits) delete fHistITSLayerHits;fHistITSLayerHits=0;
    if(fHistOneHitWithSDD) delete fHistOneHitWithSDD;fHistOneHitWithSDD=0;  
@@ -478,6 +478,7 @@ AliAnalysisTaskV0ForRAA::~AliAnalysisTaskV0ForRAA()
       if(fHistPiPiEtaDReco[j]) delete fHistPiPiEtaDReco[j];fHistPiPiEtaDReco[j]=0;
       if(fHistPiPEtaDReco[j]) delete fHistPiPEtaDReco[j];fHistPiPEtaDReco[j]=0;     
    }
+   */
 }
 //________________________________________________________________________
 void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
@@ -493,9 +494,6 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    fOutputContainer->SetName(GetName()) ;
    fOutputContainer->SetOwner();
  
-   Int_t mchist = 1;// for Data
-   if((fMCMode && fMCTruthMode) || fMCTruthMode) mchist = 2;
-	
 
    //------------ create allways -----------------------//
    fHistNEvents = new TH1F("fHistNEvents","no of events before cuts =0, after cuts=1, after process =2",5,0.0,5.0);
@@ -638,7 +636,7 @@ void AliAnalysisTaskV0ForRAA::UserCreateOutputObjects(){
    //***************************************** AntiLambda **********************************//
 	fHistPiAPMass[1] = new TH1F("fHistPiAPMassSec"," ap-pi+ InvMass distribution",2*nbMass,0.,2.);
    fOutputContainer->Add( fHistPiAPMass[1]);
-   fHistPiAPMassVSPt[1] = new TH2F("fHistPiAPMassVSPtSec","p-pi+ InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
+  fHistPiAPMassVSPt[1] = new TH2F("fHistPiAPMassVSPtSec","p-pi+ InvMass distribution",nbMass,1.05,1.25,300,0.0,30.0);
    fOutputContainer->Add(    fHistPiAPMassVSPt[1]);
    fHistPiAPMassVSPtMCTruth[1] = new TH2F("fHistPiAPMassVSPtMCTruthSec","p-pi+ InvMass distribution vs pt MCTruth",nbMass,1.05,1.25,300,0.0,30.0);
    fOutputContainer->Add(fHistPiAPMassVSPtMCTruth[1]);
