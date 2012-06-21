@@ -60,8 +60,10 @@ fhPhiIso(0),                      fhEtaIso(0),                     fhEtaPhiIso(0
 fhEtaPhiNoIso(0), 
 fhPtNoIso(0),                     fhPtDecayIso(0),                 fhPtDecayNoIso(0),
 fhEtaPhiDecayIso(0),              fhEtaPhiDecayNoIso(0), 
-fhConeSumPt(0),                   fhPtInCone(0),
-fhFRConeSumPt(0),                 fhPtInFRCone(0),
+fhConeSumPt(0),                   fhPtInCone(0),                   fhPtInConeCent(0),
+fhFRConeSumPt(0),                 fhPtInFRCone(0),                 fhPhiUEConeSumPt(0),
+fhEtaUEConeSumPt(0),              fhEtaBand(0),                    fhPhiBand(0),
+fhConeSumPtEtaUESub(0),           fhConeSumPtPhiUESub(0),
 // MC histograms
 fhPtIsoPrompt(0),                 fhPhiIsoPrompt(0),               fhEtaIsoPrompt(0), 
 fhPtThresIsolatedPrompt(),        fhPtFracIsolatedPrompt(),        fhPtSumIsolatedPrompt(),
@@ -247,7 +249,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(cons
       }
       
       //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
-      if(fhTrackMatchedDEta[isolated] && TMath::Abs(dR) < 999)
+      if(fhTrackMatchedDEta && TMath::Abs(dR) < 999)
       {
         fhTrackMatchedDEta[isolated]->Fill(energy,dZ);
         fhTrackMatchedDPhi[isolated]->Fill(energy,dR);
@@ -579,6 +581,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtInCone->SetYTitle("p_{T in cone} (GeV/c)");
     fhPtInCone->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtInCone) ;
+
+    fhPtInConeCent  = new TH2F("hPtInConeCent",
+                           Form("p_{T} in isolation cone for R = %2.2f",r),
+                           100,0,100,nptinconebins,ptinconemin,ptinconemax);
+    fhPtInConeCent->SetYTitle("p_{T in cone} (GeV/c)");
+    fhPtInConeCent->SetXTitle("centrality");
+    outputContainer->Add(fhPtInConeCent) ;
     
     fhFRConeSumPt  = new TH2F("hFRConePtSum",
                               Form("#Sigma p_{T} in the forward region isolation cone for R = %2.2f",r),
@@ -592,8 +601,50 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                              nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
     fhPtInFRCone->SetYTitle("p_{T in cone} (GeV/c)");
     fhPtInFRCone->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtInFRCone) ;    
-    
+    outputContainer->Add(fhPtInFRCone) ; 
+
+    fhPhiUEConeSumPt  = new TH2F("hPhiUEConeSumPt",
+                             Form("p_{T} in phi band around isolation cone for R = %2.2f",r),
+                             nptbins,ptmin,ptmax,4*nptinconebins,ptinconemin,4*ptinconemax);
+    fhPhiUEConeSumPt->SetYTitle("p_{T in band} (GeV/c)");
+    fhPhiUEConeSumPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPhiUEConeSumPt) ; 
+
+    fhEtaUEConeSumPt  = new TH2F("hEtaUEConeSumPt",
+                             Form("p_{T} in eta band around isolation cone for R = %2.2f",r),
+                             nptbins,ptmin,ptmax,4*nptinconebins,ptinconemin,4*ptinconemax);
+    fhEtaUEConeSumPt->SetYTitle("p_{T in band} (GeV/c)");
+    fhEtaUEConeSumPt->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhEtaUEConeSumPt) ; 
+
+    fhEtaBand  = new TH2F("fhEtaBand",
+                             Form("Eta/Phi of particle in Eta band isolation cone for R = %2.2f",r),
+			    netabins,etamin,etamax,nphibins,phimin,phimax); 
+    fhEtaBand->SetXTitle("#eta");
+    fhEtaBand->SetYTitle("#phi");
+    outputContainer->Add(fhEtaBand) ; 
+
+    fhPhiBand  = new TH2F("fhPhiBand",
+                             Form("Eta/Phi of particle in Phi band isolation cone for R = %2.2f",r),
+			    netabins,etamin,etamax,nphibins,phimin,phimax); 
+    fhPhiBand->SetXTitle("#eta");
+    fhPhiBand->SetYTitle("#phi");
+    outputContainer->Add(fhPhiBand) ;
+
+    fhConeSumPtEtaUESub  = new TH2F("hConeSumPtEtaUESub",
+                              Form("#Sigma p_{T} after bkg subtraction from eta band in the isolation cone for R = %2.2f",r),
+				    nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
+    fhConeSumPtEtaUESub->SetYTitle("#Sigma p_{T}");
+    fhConeSumPtEtaUESub->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhConeSumPtEtaUESub) ;
+
+    fhConeSumPtPhiUESub  = new TH2F("hConeSumPtPhiUESub",
+                              Form("#Sigma p_{T} after bkg subtraction from phi band in the isolation cone for R = %2.2f",r),
+				    nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
+    fhConeSumPtPhiUESub->SetYTitle("#Sigma p_{T}");
+    fhConeSumPtPhiUESub->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhConeSumPtPhiUESub) ;
+                                
     fhEIso   = new TH1F("hE",
                         Form("Number of isolated particles vs E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
                         nptbins,ptmin,ptmax); 
@@ -1349,6 +1400,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   Int_t   n = 0, nfrac = 0;
   Bool_t  isolated  = kFALSE ;
   Float_t coneptsum = 0 ;
+  Float_t etaUEptsum = 0 ;
+  Float_t phiUEptsum = 0 ;
   
   //Loop on stored AOD 
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
@@ -1419,13 +1472,28 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     for(Int_t itrack=0; itrack < trackList->GetEntriesFast(); itrack++)
     {
       AliVTrack* track = (AliVTrack *) trackList->At(itrack);
-      //fill the histograms at forward range
+      
       if(!track)
       {
         printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Track not available?");
         continue;
       }
       
+      //fill histogram for UE in phi band
+      if(track->Eta() > (eta-conesize) && track->Eta()  < (eta+conesize))
+	{
+	  phiUEptsum+=track->Pt();
+	  fhPhiBand->Fill(track->Eta(),track->Phi());
+	}
+      //fill histogram for UE in eta band in EMCal acceptance
+      if(track->Phi() > (phi-conesize) && track->Phi() < (phi+conesize) && track->Eta() > -0.6 && track->Eta() < 0.6)
+	{
+	  etaUEptsum+=track->Pt();
+	  fhEtaBand->Fill(track->Eta(),track->Phi());
+	}
+
+
+      //fill the histograms at forward range
       Double_t dPhi = phi - track->Phi() + TMath::PiOver2();
       Double_t dEta = eta - track->Eta();
       Double_t arg  = dPhi*dPhi + dEta*dEta;
@@ -1451,6 +1519,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       {
         AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
         fhPtInCone->Fill(pt,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
+	if (GetEventCentrality()) fhPtInConeCent->Fill(GetEventCentrality(),TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
         coneptsum+=track->Pt();
       }
     }
@@ -1463,12 +1532,37 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       {
         AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
         calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+
+	//fill histogram for UE in phi band
+	if(mom.Eta() > (eta-conesize) && mom.Eta()  < (eta+conesize))
+	{
+	  phiUEptsum+=mom.Pt();
+	  fhPhiBand->Fill(mom.Eta(),mom.Phi());
+	}
+	//fill histogram for UE in eta band in EMCal acceptance
+	if(mom.Phi() > (phi-conesize) && mom.Phi() < (phi+conesize))
+	{
+	  etaUEptsum+=mom.Pt();
+	  fhEtaBand->Fill(mom.Eta(),mom.Phi());
+	}
         
         fhPtInCone->Fill(pt, mom.Pt());
+	if (GetEventCentrality()) fhPtInConeCent->Fill(GetEventCentrality(),mom.Pt());
         coneptsum+=mom.Pt();
       }
     }
-    
+
+    //normalize phi/eta band per area unit
+    fhPhiUEConeSumPt->Fill(pt, phiUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*TMath::Pi()));
+    fhEtaUEConeSumPt->Fill(pt, etaUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*0.6));
+
+    Double_t SumPhiUESub = coneptsum-(phiUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*TMath::Pi()));
+    Double_t SumEtaUESub = coneptsum-(etaUEptsum*(TMath::Pi()*conesize*conesize)/(2*conesize*2*0.6));
+
+    fhConeSumPtPhiUESub->Fill(pt,SumPhiUESub);
+    fhConeSumPtEtaUESub->Fill(pt,SumEtaUESub);
+     
+ 
     if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d Energy Sum in Isolation Cone %2.2f\n", iaod, coneptsum);
     
     if(!fReMakeIC) fhConeSumPt->Fill(pt,coneptsum);
@@ -1597,7 +1691,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   Float_t ptfracorg  = GetIsolationCut()->GetPtFraction();
   Float_t rorg       = GetIsolationCut()->GetConeSize();
   
-  Float_t coneptsum = 0 ;  
+  Float_t coneptsum = 0 ; 
   Int_t   n    [10][10];//[fNCones][fNPtThresFrac];
   Int_t   nfrac[10][10];//[fNCones][fNPtThresFrac];
   Bool_t  isolated  = kFALSE;
@@ -1644,7 +1738,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
  
    //In case a more strict IC is needed in the produced AOD
 
-  nCone=0; nFracCone = 0; isolated = kFALSE; coneptsum = 0;
+    nCone=0; nFracCone = 0; isolated = kFALSE; coneptsum = 0; 
   
   GetIsolationCut()->SetSumPtThreshold(100);
   GetIsolationCut()->SetPtThreshold(100);
@@ -1653,7 +1747,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   GetIsolationCut()->MakeIsolationCut(reftracks,   refclusters, 
                                           GetReader(), GetCaloPID(),
                                           kFALSE, ph, "", 
-                                          nCone,nFracCone,coneptsum, isolated);
+				      nCone,nFracCone,coneptsum, isolated);
 
         
     fhSumPtLeadingPt[icone]->Fill(ptC,coneptsum);  
