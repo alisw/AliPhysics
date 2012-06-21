@@ -136,7 +136,7 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
 
   //check if there are tracks available
   if (diele->GetTrackArray(0)->GetEntriesFast()==0 && diele->GetTrackArray(1)->GetEntriesFast()==0) return;
-  
+
   //find mixing bin
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::Fill(ev,values);
@@ -162,10 +162,10 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
 
   AliDebug(10,Form("new event at %d: %d",bin,pool.GetEntriesFast()));
   AliDielectronEvent *event=new(pool[pool.GetEntriesFast()]) AliDielectronEvent();
-
+  if(ev->IsA() == AliAODEvent::Class()) event->SetAOD();
   event->SetTracks(*diele->GetTrackArray(0), *diele->GetTrackArray(1), *diele->GetPairArray(1));
   event->SetEventData(values);
-  
+
   // check if pool depth is reached.
   if (pool.GetEntriesFast()<fDepth) return;
 
@@ -188,7 +188,7 @@ void AliDielectronMixingHandler::DoMixing(TClonesArray &pool, AliDielectron *die
   //
   // perform the mixing
   //
-  
+
   //buffer track arrays and copy them back afterwards
   TObjArray arrTrDummy[4];
   for (Int_t i=0; i<4; ++i) arrTrDummy[i]=diele->fTracks[i];
@@ -217,7 +217,6 @@ void AliDielectronMixingHandler::DoMixing(TClonesArray &pool, AliDielectron *die
       
       //setup track arrays
       AliDielectronEvent *ev2=static_cast<AliDielectronEvent*>(pool.At(i2));
-
       ev1P.Reset();
       ev1N.Reset();
       TIter ev2P(ev2->GetTrackArrayP());
@@ -254,8 +253,36 @@ void AliDielectronMixingHandler::DoMixing(TClonesArray &pool, AliDielectron *die
         ev2N.Reset();
       }
       
+      // set the vertex to the track in case (AOD only)
+      if ( ev1->IsAOD() && ev2->IsAOD() ) {
+	Int_t idx = 0;
+  
+	while ( (o=ev1N()) ) {
+	  idx = ev1->GetTrackArrayN()->IndexOf(o);
+	  ((AliAODTrack *)o)->SetProdVertex(ev1->GetVertexArrayN()->At(idx));
+	}
+	while ( (o=ev1P()) ) {
+	  idx = ev1->GetTrackArrayP()->IndexOf(o);
+	  ((AliAODTrack *)o)->SetProdVertex(ev1->GetVertexArrayP()->At(idx));
+	}
+	while ( (o=ev2N()) ) {
+	  idx = ev2->GetTrackArrayN()->IndexOf(o);
+	  ((AliAODTrack *)o)->SetProdVertex(ev2->GetVertexArrayN()->At(idx));
+	}
+	while ( (o=ev2P()) ) {
+	  idx = ev2->GetTrackArrayP()->IndexOf(o);
+	  ((AliAODTrack *)o)->SetProdVertex(ev2->GetVertexArrayP()->At(idx));
+	}
+
+	// reset the iterators
+        ev1N.Reset();
+        ev1P.Reset();
+        ev2N.Reset();
+        ev2P.Reset();
+      }
+
       //mixing of ev1- ev2+ (pair type4). This is common for all mixing types
-      while ( (o=ev1N()) ) diele->fTracks[1].Add(o);
+      while ( (o=ev1N()) ) diele->fTracks[1].Add(o); 
       while ( (o=ev2P()) ) diele->fTracks[2].Add(o);
       diele->FillPairArrays(1,2);
       
@@ -276,6 +303,7 @@ void AliDielectronMixingHandler::DoMixing(TClonesArray &pool, AliDielectron *die
         while ( (o=ev2N()) ) diele->fTracks[2].Add(o);
         diele->FillPairArrays(1,2);
       }
+
     }
   }
 
@@ -299,7 +327,7 @@ void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele)
   //Check if there was any processed data and it is requested to mix incomplete bins
   if (!diele || !diele->PairArray(0) || !fMixIncomplete ) return;
 
-
+  AliDielectronVarManager::SetEvent(0x0);
   for (Int_t ipool=0; ipool<fArrPools.GetSize(); ++ipool){
     TClonesArray *poolp=static_cast<TClonesArray*>(fArrPools.At(ipool));
     if (!poolp || !poolp->GetEntriesFast() || !poolp->At(0)) continue;

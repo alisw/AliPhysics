@@ -39,6 +39,8 @@ AliDielectronEvent::AliDielectronEvent() :
   TNamed(),
   fArrTrackP("AliESDtrack",1000),
   fArrTrackN("AliESDtrack",1000),
+  fArrVertexP("AliAODVertex",1000),
+  fArrVertexN("AliAODVertex",1000),
   fArrPairs("AliKFParticle",0),
   fNTracksP(0),
   fNTracksN(0),
@@ -56,6 +58,8 @@ AliDielectronEvent::AliDielectronEvent(const char* name, const char* title) :
   TNamed(name, title),
   fArrTrackP("AliESDtrack",1000),
   fArrTrackN("AliESDtrack",1000),
+  fArrVertexP("AliAODVertex",1000),
+  fArrVertexN("AliAODVertex",1000),
   fArrPairs("AliKFParticle",0),
   fNTracksP(0),
   fNTracksN(0),
@@ -75,6 +79,8 @@ AliDielectronEvent::~AliDielectronEvent()
   //
   fArrTrackP.Delete();
   fArrTrackN.Delete();
+  fArrVertexP.Delete();
+  fArrVertexN.Delete();
   fArrPairs.Delete();
 }
 
@@ -93,8 +99,14 @@ void AliDielectronEvent::SetTracks(const TObjArray &arrP, const TObjArray &arrN,
   fNTracksP=0;
 
   //check size of the arrays
-  if (fArrTrackP.GetSize()<arrP.GetSize()) fArrTrackP.Expand(arrP.GetSize());
-  if (fArrTrackN.GetSize()<arrN.GetSize()) fArrTrackN.Expand(arrN.GetSize());
+  if (fArrTrackP.GetSize()<arrP.GetSize()) {
+    fArrTrackP.Expand(arrP.GetSize());
+    fArrVertexP.Expand(arrP.GetSize());
+  }
+  if (fArrTrackN.GetSize()<arrN.GetSize()) {
+    fArrTrackN.Expand(arrN.GetSize());
+    fArrVertexN.Expand(arrN.GetSize());
+  }
 
   // fill particles
   Int_t tracks=0;
@@ -107,7 +119,9 @@ void AliDielectronEvent::SetTracks(const TObjArray &arrP, const TObjArray &arrN,
     } else {
       AliAODTrack *track=dynamic_cast<AliAODTrack*>(arrP.At(itrack));
       if (!track) continue;
+
       new (fArrTrackP[tracks]) AliAODTrack(*track);
+      new (fArrVertexP[tracks]) AliAODVertex(*(track->GetProdVertex()));
       ++tracks;
     }
   }
@@ -123,7 +137,9 @@ void AliDielectronEvent::SetTracks(const TObjArray &arrP, const TObjArray &arrN,
     } else {
       AliAODTrack *track=dynamic_cast<AliAODTrack*>(arrN.At(itrack));
       if (!track) continue;
+      
       new (fArrTrackN[tracks]) AliAODTrack(*track);
+      new (fArrVertexN[tracks]) AliAODVertex(*(track->GetProdVertex()));
       ++tracks;
     }
   }
@@ -143,10 +159,12 @@ void AliDielectronEvent::Clear(Option_t *opt)
 
   for (Int_t i=fArrTrackP.GetEntriesFast()-1; i>=0; --i){
     delete fArrTrackP.RemoveAt(i);
+    delete fArrVertexP.RemoveAt(i);
   }
   
   for (Int_t i=fArrTrackN.GetEntriesFast()-1; i>=0; --i){
     delete fArrTrackN.RemoveAt(i);
+    delete fArrVertexN.RemoveAt(i);
   }
   
   fArrPairs.Clear(opt);
@@ -159,8 +177,8 @@ void AliDielectronEvent::SetAOD()
   //
   // use AOD as input
   //
-  fArrTrackP.SetClass("AliAODTrack");
-  fArrTrackN.SetClass("AliAODTrack");
+  //  fArrTrackP.SetClass("AliAODTrack"); //not needed since AODTracks are smaller than ESDtracks
+  //  fArrTrackN.SetClass("AliAODTrack");
   fIsAOD=kTRUE;
 }
 

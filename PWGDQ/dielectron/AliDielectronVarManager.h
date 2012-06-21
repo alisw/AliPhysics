@@ -104,6 +104,7 @@ public:
     kNclsTRD,                // number of clusters assigned in the TRD
     kTRDntracklets,          // number of TRD tracklets used for tracking/PID TODO: correct getter
     kTRDpidQuality,          // number of TRD tracklets used for PID
+    kTRDchi2,                // chi2 in TRD
     kTRDprobEle,             // TRD electron pid probability
     kTRDprobPio,             // TRD electron pid probability
     kTRDphi,                 // Phi angle of the track at the entrance of the TRD
@@ -487,6 +488,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kTRDntracklets] = particle->GetTRDntracklets(); // TODO: GetTRDtracklets/GetTRDntracklets?
   values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
+  values[AliDielectronVarManager::kTRDchi2]       = particle->GetTRDchi2();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
   
@@ -677,7 +679,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   //TODO: set correctly
   values[AliDielectronVarManager::kTRDprobEle]    = 0;
   values[AliDielectronVarManager::kTRDprobPio]    = 0;
-  
+  values[AliDielectronVarManager::kTRDchi2]       = -1;
+
   values[AliDielectronVarManager::kTPCsignalN]    = 0;
   values[AliDielectronVarManager::kTPCsignalNfrac]= 0;
   
@@ -1742,11 +1745,14 @@ inline Bool_t AliDielectronVarManager::GetDCA(const AliAODTrack *track, Double_t
     return kTRUE;
   }
   
-  Double_t covd0z0[3];
-  AliAODTrack copy(*track);
-  AliAODVertex *vtx =(AliAODVertex*)(fgEvent->GetPrimaryVertex());
-  Double_t fBzkG = fgEvent->GetMagneticField(); // z componenent of field in kG
-  Bool_t ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+  Bool_t ok=kFALSE;
+  if(fgEvent) {
+    Double_t covd0z0[3];
+    AliAODTrack copy(*track);
+    AliAODVertex *vtx =(AliAODVertex*)(fgEvent->GetPrimaryVertex());
+    Double_t fBzkG = fgEvent->GetMagneticField(); // z componenent of field in kG
+    ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+  }
   if(!ok){
     d0z0[0]=-999.;
     d0z0[1]=-999.;

@@ -30,6 +30,7 @@ Detailed description
 
 #include "AliDielectronTrackCuts.h"
 #include "AliVTrack.h"
+#include "AliAODTrack.h"
 
 ClassImp(AliDielectronTrackCuts)
 
@@ -41,7 +42,8 @@ AliDielectronTrackCuts::AliDielectronTrackCuts() :
   fITSclusterCutType(kOneOf),
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
-  fTPCNclRobustCut(-1)
+  fTPCNclRobustCut(-1),
+  fAODFilterBit(kSwitchOff)
 {
   //
   // Default Constructor
@@ -61,7 +63,8 @@ AliDielectronTrackCuts::AliDielectronTrackCuts(const char* name, const char* tit
   fITSclusterCutType(kOneOf),
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
-  fTPCNclRobustCut(-1)
+  fTPCNclRobustCut(-1),
+  fAODFilterBit(kSwitchOff)
 {
   //
   // Named Constructor
@@ -116,6 +119,16 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
     Int_t nclr=TMath::Nint(vtrack->GetTPCClusterInfo(2,1));
     accept*=(nclr>fTPCNclRobustCut);
   }
+
+  // use filter bit to speed up the AOD analysis (track pre-filter)
+  // relevant filter bits are:
+  // kTPCqual==1             -> TPC quality cuts
+  // kTPCqualSPDany==4       -> + SPD any
+  // kTPCqualSPDanyPIDele==8 -> + nSigmaTPCele +-3 (inclusion) 
+  if (track->IsA()==AliAODTrack::Class() && fAODFilterBit!=kSwitchOff) {
+    accept*=((AliAODTrack*)track)->TestFilterBit(fAODFilterBit);
+  }
+
   return accept;
 }
 
