@@ -137,8 +137,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiDecayNoIso ;                   //! eta vs phi of not isolated leading Pi0 decay particles
   TH2F *   fhConeSumPt ;                          //! Sum Pt in the cone
   TH2F *   fhPtInCone ;                           //! Particle Pt in the cone
+  TH2F *   fhPtInConeCent ;                       //! Particle Pt in the cone versus centrality
   TH2F *   fhFRConeSumPt ;                        //! Sum Pt in the forward region cone (phi +90)
   TH2F *   fhPtInFRCone ;                         //! Particle Pt in the forward region cone (phi +90 ) 
+  TH2F *   fhPhiUEConeSumPt ;                     //! UE Pt sum in phi band around cone
+  TH2F *   fhEtaUEConeSumPt ;                     //! UE Pt sum in eta band around cone
+  TH2F *   fhEtaBand ;                            //! Eta band to estimate UE in cone
+  TH2F *   fhPhiBand ;                            //! Phi band to estimate UE in cone
+  TH2F *   fhConeSumPtEtaUESub;                   //! Sum Pt in the cone after bkg subtraction
+  TH2F *   fhConeSumPtPhiUESub;                   //! Sum Pt in the cone after bkg subtraction
   
   //MC
   TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 
@@ -227,32 +234,32 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiFracPtSumDecayIso[5][5];       //! Isolated particle with threshold on cone sum density
  
   // Track matching studies
-  TH2F *   fhTrackMatchedDEta[2]     ;               //! Eta distance between track and cluster vs cluster E
-  TH2F *   fhTrackMatchedDPhi[2]     ;               //! Phi distance between track and cluster vs cluster E
-  TH2F *   fhTrackMatchedDEtaDPhi[2] ;               //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
-  TH2F *   fhdEdx[2]  ;                              //! matched track dEdx vs cluster E 
-  TH2F *   fhEOverP[2];                              //! matched track E cluster over P track vs cluster E, after dEdx cut 
-  TH2F *   fhTrackMatchedMCParticle[2];              //! Trace origin of matched particle
+  TH2F *   fhTrackMatchedDEta[2]     ;            //! Eta distance between track and cluster vs cluster E
+  TH2F *   fhTrackMatchedDPhi[2]     ;            //! Phi distance between track and cluster vs cluster E
+  TH2F *   fhTrackMatchedDEtaDPhi[2] ;            //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  TH2F *   fhdEdx[2]  ;                           //! matched track dEdx vs cluster E 
+  TH2F *   fhEOverP[2];                           //! matched track E cluster over P track vs cluster E, after dEdx cut 
+  TH2F *   fhTrackMatchedMCParticle[2];           //! Trace origin of matched particle
 
   // Shower Shape histograms
-  TH2F *   fhELambda0[2];                            //! Shower shape of (non) isolated photons (do not apply SS cut previously)
-  TH2F *   fhELambda1[2];                            //! Shower shape of (non) isolated photons (do not apply SS cut previously)
-  TH2F *   fhELambda0TRD[2];                         //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
-  TH2F *   fhELambda1TRD[2];                         //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
+  TH2F *   fhELambda0[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
+  TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
+  TH2F *   fhELambda0TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
+  TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   
   // Local maxima
-  TH2F *   fhNLocMax[2];                             //! number of maxima in selected clusters
-  TH2F *   fhELambda0LocMax1[2] ;                    //! E vs lambda0 of selected cluster, 1 local maxima in cluster 
-  TH2F *   fhELambda1LocMax1[2] ;                    //! E vs lambda1 of selected cluster, 1 local maxima in cluster 
-  TH2F *   fhELambda0LocMax2[2] ;                    //! E vs lambda0 of selected cluster, 2 local maxima in cluster 
-  TH2F *   fhELambda1LocMax2[2] ;                    //! E vs lambda1 of selected cluster, 2 local maxima in cluster
-  TH2F *   fhELambda0LocMaxN[2] ;                    //! E vs lambda0 of selected cluster, N>2 local maxima in cluster 
-  TH2F *   fhELambda1LocMaxN[2] ;                    //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
+  TH2F *   fhNLocMax[2];                          //! number of maxima in selected clusters
+  TH2F *   fhELambda0LocMax1[2] ;                 //! E vs lambda0 of selected cluster, 1 local maxima in cluster 
+  TH2F *   fhELambda1LocMax1[2] ;                 //! E vs lambda1 of selected cluster, 1 local maxima in cluster 
+  TH2F *   fhELambda0LocMax2[2] ;                 //! E vs lambda0 of selected cluster, 2 local maxima in cluster 
+  TH2F *   fhELambda1LocMax2[2] ;                 //! E vs lambda1 of selected cluster, 2 local maxima in cluster
+  TH2F *   fhELambda0LocMaxN[2] ;                 //! E vs lambda0 of selected cluster, N>2 local maxima in cluster 
+  TH2F *   fhELambda1LocMaxN[2] ;                 //! E vs lambda1 of selected cluster, N>2 local maxima in cluster 
   
   //Histograms settings
   Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
   Float_t  fHistoPtSumMax;                        // PtSum maximum in histogram
-  Float_t  fHistoPtSumMin;	                      // PtSum minimum in histogram
+  Float_t  fHistoPtSumMin;	                  // PtSum minimum in histogram
   Int_t    fHistoNPtInConeBins;                   // Number of bins in PtInCone histogram
   Float_t  fHistoPtInConeMax;                     // PtInCone maximum in histogram
   Float_t  fHistoPtInConeMin;                     // PtInCone maximum in histogram 
@@ -260,7 +267,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,14)
+  ClassDef(AliAnaParticleIsolation,15)
 } ;
 
 
