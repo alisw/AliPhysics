@@ -276,11 +276,11 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
   
   Double_t evPlaneV0A = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0A",fESD,2));
   if(evPlaneV0A > TMath::Pi()) evPlaneV0A = evPlaneV0A - TMath::Pi();
-  fevPlaneV0A->Fill(evPlaneV0A);
+  fevPlaneV0A->Fill(evPlaneV0A,cent);
   
   Double_t evPlaneV0C = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0C",fESD,2));
   if(evPlaneV0C > TMath::Pi()) evPlaneV0C = evPlaneV0C - TMath::Pi();
-  fevPlaneV0C->Fill(evPlaneV0C);
+  fevPlaneV0C->Fill(evPlaneV0C,cent);
   
   AliEventplane* esdTPCep = fESD->GetEventplane();
   TVector2 *standardQ = 0x0;
@@ -294,7 +294,7 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
   TVector2 qVectorfortrack;
   qVectorfortrack.Set(qx,qy);
   Float_t evPlaneTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
-  fevPlaneTPC->Fill(evPlaneTPC);
+  fevPlaneTPC->Fill(evPlaneTPC,cent);
   
   TVector2 *qsub1a = esdTPCep->GetQsub1();
   TVector2 *qsub2a = esdTPCep->GetQsub2();
@@ -369,10 +369,12 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     fdEdxBef->Fill(p,dEdx);
     fTPCnsigma->Fill(p,fTPCnSigma);
        
-    Bool_t fFlagPhotonicElec = kFALSE;
-    SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+    Bool_t fFlagPhotonicElec = kFALSE, fFlagLS=kFALSE, fFlagULS=kFALSE;
+    Double_t openingAngle = -999., mass=999., width = -999;
+            
+    SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec,fFlagLS,fFlagULS,openingAngle,mass,width);
     
-    Double_t corr[10]={phi,fTPCnSigma,cent,pt,EovP,wEovP,GetDeltaPhi(phi,evPlaneTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec};
+    Double_t corr[14]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec,fFlagLS,fFlagULS,openingAngle,mass,width};
     fCorr->Fill(corr);
        
     if(fTPCnSigma >= 1.5 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,EovP);
@@ -417,24 +419,30 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
     fTrkEovPAft->Fill(pt,EovP);
     fdEdxAft->Fill(p,dEdx);
     
+    openingAngle = -999.;
+    mass=999.;
+    width = -999;
     fFlagPhotonicElec = kFALSE;
-    SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+    fFlagLS=kFALSE;
+    fFlagULS=kFALSE;
+    SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec,fFlagLS,fFlagULS,openingAngle,mass,width);
     
     if(fIsMC && fMC && stack){
       Int_t label = track->GetLabel();
       if(label>0){
 	TParticle *particle = stack->Particle(label);
-	Int_t partPDG = particle->GetPdgCode();
-	Double_t partPt = particle->Pt();
-	Int_t IsElec = 0;
-	if (TMath::Abs(partPDG)==11) IsElec = 1;
 	if(particle){
-	  Int_t idMother = particle->GetFirstMother();
-	  if (idMother>0){
+	    Int_t partPDG = particle->GetPdgCode();
+	    Double_t partPt = particle->Pt();
+	    Int_t IsElec = 0;
+	    if (TMath::Abs(partPDG)==11) IsElec = 1;
+	  
+	    Int_t idMother = particle->GetFirstMother();
+	    if (idMother>0){
 	    TParticle *mother = stack->Particle(idMother);
 	    Int_t motherPDG = mother->GetPdgCode();
 	    
-	    Double_t mc[3]={partPt,fFlagPhotonicElec,IsElec};
+	    Double_t mc[4]={partPt,fFlagPhotonicElec,IsElec,cent};
 	    
 	    if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// gamma, pi0, eta
 	  }
@@ -541,13 +549,13 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
   fCent = new TH1F("fCent","Centrality",100,0,100) ;
   fOutputList->Add(fCent);
   
-  fevPlaneV0A = new TH1F("fevPlaneV0A","V0A EP",100,0,TMath::Pi()) ;
+  fevPlaneV0A = new TH2F("fevPlaneV0A","V0A EP",100,0,TMath::Pi(),90,0,90);
   fOutputList->Add(fevPlaneV0A);
   
-  fevPlaneV0C = new TH1F("fevPlaneV0C","V0C EP",100,0,TMath::Pi()) ;
+  fevPlaneV0C = new TH2F("fevPlaneV0C","V0C EP",100,0,TMath::Pi(),90,0,90);
   fOutputList->Add(fevPlaneV0C);
   
-  fevPlaneTPC = new TH1F("fevPlaneTPC","TPC EP",100,0,TMath::Pi()) ;
+  fevPlaneTPC = new TH2F("fevPlaneTPC","TPC EP",100,0,TMath::Pi(),90,0,90);
   fOutputList->Add(fevPlaneTPC);
     
   fTPCsubEPres = new TH2F("fTPCsubEPres","TPC subevent plane resolution",100,-1,1,90,0,90);
@@ -559,10 +567,11 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
   fEPres = new THnSparseD ("fEPres","EP resolution",4,binsv1,xminv1,xmaxv1);
   fOutputList->Add(fEPres);
 	
-  Int_t binsv2[10]={100,100,90,100,100,100,100,100,100,3}; // phi,fTPCnSigma,cent, pt, EovP, EovP,TPCdeltaPhi, V0AdeltaPhi, V0CdeltaPhi,IsPhotE
-  Double_t xminv2[10]={0,-3.5,0,0,0,0,0,0,0,-1};
-  Double_t xmaxv2[10]={2*TMath::Pi(),3.5,90,50,3,3,TMath::Pi(),TMath::Pi(),TMath::Pi(),2}; 
-  fCorr = new THnSparseD ("fCorr","Correlations",10,binsv2,xminv2,xmaxv2);
+  //phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec,fFlagLS,fFlagULS,openingAngle,mass,width
+  Int_t binsv2[14]={100,100,90,100,100,100,100,100,3,3,3,100,100,100}; 
+  Double_t xminv2[14]={0,-3.5,0,0,0,0,0,0,-1,-1,-1,0,0,-5};
+  Double_t xmaxv2[14]={2*TMath::Pi(),3.5,90,50,3,TMath::Pi(),TMath::Pi(),TMath::Pi(),2,2,2,1,0.5,5}; 
+  fCorr = new THnSparseD ("fCorr","Correlations",14,binsv2,xminv2,xmaxv2);
   fOutputList->Add(fCorr);
     
   Int_t binsv3[5]={90,100,100,100,100}; // cent, pt, TPCcos2DeltaPhi, V0Acos2DeltaPhi, V0Ccos2DeltaPhi
@@ -589,10 +598,10 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
   feTPCV2 = new THnSparseD ("feTPCV2","inclusive electron v2 (TPC)",5,binsv6,xminv6,xmaxv6);
   fOutputList->Add(feTPCV2);
   
-  Int_t binsv7[3]={100,3,3}; // pt, IsPhotonicElectron, IsElectron
-  Double_t xminv7[3]={0,-1,-1};
-  Double_t xmaxv7[3]={50,2,2}; 
-  fMCphotoElecPt = new THnSparseD ("fMCphotoElecPt", "pt distribution (MC)",3,binsv7,xminv7,xmaxv7);
+  Int_t binsv7[4]={100,3,3,90}; // pt, IsPhotonicElectron, IsElectron,centrality
+  Double_t xminv7[4]={0,-1,-1,0};
+  Double_t xmaxv7[4]={50,2,2,90}; 
+  fMCphotoElecPt = new THnSparseD ("fMCphotoElecPt", "pt distribution (MC)",4,binsv7,xminv7,xmaxv7);
   fOutputList->Add(fMCphotoElecPt);
    
   PostData(1,fOutputList);
@@ -614,12 +623,13 @@ Bool_t AliAnalysisTaskElecV2::ProcessCutStep(Int_t cutStep, AliVParticle *track)
   return kTRUE;
 }
 //_________________________________________
-void AliAnalysisTaskElecV2::SelectPhotonicElectron(Int_t itrack, AliESDtrack *track, Bool_t &fFlagPhotonicElec)
+void AliAnalysisTaskElecV2::SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec,Bool_t &fFlagLS,Bool_t &fFlagULS, Double_t &openingAngle,Double_t &mass,Double_t &width)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
   
   fTrackCuts->SetAcceptKinkDaughters(kFALSE);
   fTrackCuts->SetRequireTPCRefit(kTRUE);
+  fTrackCuts->SetRequireITSRefit(kTRUE);
   fTrackCuts->SetEtaRange(-0.7,0.7);
   fTrackCuts->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
@@ -631,7 +641,7 @@ void AliAnalysisTaskElecV2::SelectPhotonicElectron(Int_t itrack, AliESDtrack *tr
   
   for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
     
-    if(jTracks==itrack) continue;
+    if(jTracks==iTracks) continue;
     
     AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
     if (!trackAsso) {
@@ -639,9 +649,7 @@ void AliAnalysisTaskElecV2::SelectPhotonicElectron(Int_t itrack, AliESDtrack *tr
       continue;
     }
     
-    Double_t dEdxAsso = -999., ptAsso=-999., openingAngle = -999.;
-    Double_t mass=999., width = -999;
-    Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
+    Double_t dEdxAsso = -999., ptAsso=-999.;
     
     dEdxAsso = trackAsso->GetTPCsignal();
     ptAsso = trackAsso->Pt();
@@ -650,7 +658,7 @@ void AliAnalysisTaskElecV2::SelectPhotonicElectron(Int_t itrack, AliESDtrack *tr
     
     if(ptAsso <0.3) continue;
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
-    if(dEdxAsso <70 || dEdxAsso>100) continue; //11a pass1
+    if(dEdxAsso <70 || dEdxAsso>100) continue;
     
     Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
     if(charge>0) fPDGe1 = -11;
@@ -677,16 +685,14 @@ void AliAnalysisTaskElecV2::SelectPhotonicElectron(Int_t itrack, AliESDtrack *tr
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
     if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
     
-    if(openingAngle > fOpeningAngleCut) continue;
-    
     recg.GetMass(mass,width);
     
+    if(openingAngle > fOpeningAngleCut) continue;
+        
     if(fFlagLS) fInvmassLS->Fill(mass);
     if(fFlagULS) fInvmassULS->Fill(mass);
           
-    if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
-      flagPhotonicElec = kTRUE;
-    }
+    if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE;
     
   }
   fFlagPhotonicElec = flagPhotonicElec;

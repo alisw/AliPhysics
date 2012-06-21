@@ -52,7 +52,7 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t itrack, AliESDtrack *track, Bool_t &fFlagPhotonicElec);
+  void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec,Bool_t &fFlagLS,Bool_t &fFlagULS, Double_t &openingAngle,Double_t &mass,Double_t &width);
   Double_t GetCos2DeltaPhi(Double_t phiA,Double_t phiB)		const;
   Double_t GetDeltaPhi(Double_t phiA,Double_t phiB)	const;
   Double_t GetclusterE(Int_t iTrack, Double_t clsPhi, Double_t clsEta) const;
@@ -97,9 +97,9 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   TH2F			*fTPCnsigma;		//! TPC n sigma vs p	
   
   TH1F			*fCent;			//! centrality
-  TH1F			*fevPlaneV0A;		//! V0A event plane distribution
-  TH1F			*fevPlaneV0C;		//! V0C event plane distribution
-  TH1F			*fevPlaneTPC;		//! TPC event plane distribution
+  TH2F			*fevPlaneV0A;		//! V0A event plane distribution
+  TH2F			*fevPlaneV0C;		//! V0C event plane distribution
+  TH2F			*fevPlaneTPC;		//! TPC event plane distribution
   TH2F			*fTPCsubEPres;		//! TPC event plane resolution
   THnSparse		*fEPres;		//! event plane resolution
   THnSparse		*fCorr;			//! correlations
@@ -107,7 +107,7 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   THnSparse		*feV2;			//! inclusive eletron v2 (TPC + EMCAL PID)
   THnSparse		*fphoteV2;		//! photonic electron v2 (TPC + EMCAL PID)
   THnSparse		*fChargPartV2;		//! charged particle v2
-  
+    
   AliAnalysisTaskElecV2(const AliAnalysisTaskElecV2&); // not implemented
   AliAnalysisTaskElecV2& operator=(const AliAnalysisTaskElecV2&); // not implemented
   
