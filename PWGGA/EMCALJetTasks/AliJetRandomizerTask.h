@@ -13,11 +13,10 @@ class AliJetRandomizerTask : public AliJetModelBaseTask {
   AliJetRandomizerTask(const char *name); 
   virtual ~AliJetRandomizerTask();
 
-  virtual void         UserExec(Option_t* /*option*/);
+  void         UserExec(Option_t* /*option*/);
 
  protected:
-
-  virtual void         Run();               // do randomizing
+  void         Run();
 
  private:
   AliJetRandomizerTask(const AliJetRandomizerTask&);            // not implemented

@@ -31,13 +31,13 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b          ; }
  
  protected:
-  void                        ExecOnce()                                                                    ;
-  Bool_t                      RetrieveEventObjects()                                                        ;
   Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)   const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)                                          const;
+  void                        ExecOnce()                                                                    ;
   AliRhoParameter            *GetRhoFromEvent(const char *name);
   Bool_t                      IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted = kTRUE)        const;
   Bool_t                      IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted = kTRUE)       const;
+  Bool_t                      RetrieveEventObjects()                                                        ;
 
   Float_t                     fJetRadius;                  // jet radius
   TString                     fJetsName;                   // name of jet collection

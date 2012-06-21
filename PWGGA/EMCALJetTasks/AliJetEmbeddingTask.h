@@ -14,11 +14,10 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   AliJetEmbeddingTask(const char *name); 
   virtual ~AliJetEmbeddingTask();
 
-  virtual void           UserExec(Option_t* /*option*/);
+  void           UserExec(Option_t* /*option*/);
 
  protected:
-
-  virtual void           Run();                 // do embedding
+  void           Run();
 
  private:
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
