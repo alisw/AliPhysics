@@ -50,7 +50,6 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual Bool_t Notify();
 
     
-
     virtual void SetAODTrackInput(Bool_t b){fUseAODTrackInput = b;}
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
     virtual void SetEventSelection(Bool_t b){fEventSelection = b;}
@@ -89,6 +88,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetChangeEfficiencyFraction(Double_t p) {fChangeEfficiencyFraction = p;}
     virtual void SetSmearResolution(Bool_t b){fUseTrPtResolutionSmearing = b;} 
     virtual void SetDiceEfficiency(Bool_t b){fUseDiceEfficiency = b;} 
+    virtual void SetDiceEfficiencyMinPt(Double_t pt) {fDiceEfficiencyMinPt = pt;}
     virtual void SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3);
     virtual void SetEfficiencyHybrid(TH1 *h1, TH1 *h2, TH1 *h3);
 
@@ -186,6 +186,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH1      *fhEffH3;        // Efficiency for Spectra Hybrid Category 3
     Bool_t    fUseTrPtResolutionSmearing;  // Apply momentum smearing on track level
     Bool_t    fUseDiceEfficiency;          // Apply efficiency on track level by dicing
+    Double_t  fDiceEfficiencyMinPt;        // Only do efficiency dicing for tracks above this pt
     Bool_t fUseTrPtResolutionFromOADB;     // Load track pt resolution root file from OADB path
     Bool_t fUseTrEfficiencyFromOADB;       // Load tracking efficiency root file from OADB path
     TString fPathTrPtResolution;           // OADB path to root file
