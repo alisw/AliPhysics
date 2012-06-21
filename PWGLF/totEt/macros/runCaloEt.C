@@ -7,7 +7,7 @@
 void runCaloEt(bool submit = false, // true or false 
 	       const char *dataType="realPbPb", // "sim" or "real" etc.
 	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
-	       const char *det = "EMCalDetail") // "PHOS" or "EMCAL"
+	       const char *det = "PHOS") // "PHOS" or "EMCAL" or EMCalDetail
 {
   TStopwatch timer;
   timer.Start();
@@ -15,7 +15,6 @@ void runCaloEt(bool submit = false, // true or false
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libPhysics");
-
   gSystem->Load("libMinuit");
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
@@ -41,6 +40,9 @@ void runCaloEt(bool submit = false, // true or false
   gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtSelector.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtSelectorPhos.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtSelectorEmcal.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEt.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtMonteCarlo.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtMonteCarloPhos.cxx+g");
@@ -48,17 +50,13 @@ void runCaloEt(bool submit = false, // true or false
   gROOT->ProcessLine(".L AliAnalysisEtReconstructed.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtReconstructedPhos.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtReconstructedEmcal.cxx+g");  
-  gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtSelector.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtSelectorPhos.cxx+g");
+  //gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
+  //gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
-#  gROOT->ProcessLine(".L AliAnalysisEmEtMonteCarlo.cxx+g");
-#  gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEmEtMonteCarlo.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
 
-  gInterpreter->GenerateDictionary("std::map<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;map")  ;
-  gInterpreter->GenerateDictionary("std::pair<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;utility");
 
   char *kTreeName = "esdTree" ;
   TChain * chain   = new TChain(kTreeName,"myESDTree") ;
@@ -174,7 +172,7 @@ void runCaloEt(bool submit = false, // true or false
   if(isPb){	 
     cout<<"Adding centrality selection task"<<endl;
     gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-    gROOT->ProcessLine(".L AliCentralitySelectionTask.cxx++g");
+    //gROOT->ProcessLine(".L AliCentralitySelectionTask.cxx++g");
     AliCentralitySelectionTask *centTask = AddTaskCentrality();
   }
 
