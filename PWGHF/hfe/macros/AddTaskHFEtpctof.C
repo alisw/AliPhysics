@@ -33,8 +33,9 @@ AliAnalysisTask *AddTaskHFEtpctof(Bool_t beauty=kTRUE, Int_t tpcCls=110,  Int_t 
     task->SetFillNoCuts(kTRUE);
     task->SetUseFlagAOD(kFALSE);
     task->SetApplyCutAOD(kTRUE);
-  }  
-  
+  }
+
+   
   mgr->AddTask(task);
 
   TString containerName = mgr->GetCommonFileName();
