@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFECalSys(int sysID, int TPCclust, int TPCclustPID, int Nits, int ITSstat)
+AliAnalysisTask *AddTaskHFECalSys(int sysID, int TPCclust, int TPCclustPID, int Nits, int ITSstat, int QAhist)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -27,8 +27,8 @@ AliAnalysisTask *AddTaskHFECalSys(int sysID, int TPCclust, int TPCclustPID, int 
   //analysis task 
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/ConfigHFECalSys.C");
 
-  AliAnalysisTaskHFECal *hfetaskCent = ConfigHFECalSys(MCthere,TPCclust,TPCclustPID,Nits,ITSstat);
-  AliAnalysisTaskHFECal *hfetaskTrig= ConfigHFECalSys(MCthere,TPCclust,TPCclustPID,Nits,ITSstat);
+  AliAnalysisTaskHFECal *hfetaskCent = ConfigHFECalSys(MCthere,TPCclust,TPCclustPID,Nits,ITSstat,QAhist);
+  AliAnalysisTaskHFECal *hfetaskTrig= ConfigHFECalSys(MCthere,TPCclust,TPCclustPID,Nits,ITSstat,QAhist);
  
   mgr->AddTask(hfetaskCent);
   mgr->AddTask(hfetaskTrig);
@@ -60,7 +60,7 @@ AliAnalysisTask *AddTaskHFECalSys(int sysID, int TPCclust, int TPCclustPID, int 
   mgr->ConnectOutput(hfetaskTrig, 1, coutput1);
   
     //MB trigger
-    AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECalSys(MCthere,TPCclust,TPCclustPID,Nits,ITSstat);
+    AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECalSys(MCthere,TPCclust,TPCclustPID,Nits,ITSstat,QAhist);
     mgr->AddTask(hfetaskMB);
     hfetaskMB->SelectCollisionCandidates(AliVEvent::kMB);
 
