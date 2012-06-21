@@ -21,6 +21,9 @@
 // Analysis task for the toy model analysis
 // Authors: Panos.Christakoglou@nikhef.nl
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskToyModel)
 
 //________________________________________________________________________

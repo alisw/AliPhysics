@@ -33,6 +33,9 @@
 #include "AliAODv0.h"
 #include "AliESDv0.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliRDHFCutsLctoV0)
 
 //--------------------------------------------------------------------------

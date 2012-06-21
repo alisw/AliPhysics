@@ -65,6 +65,9 @@
 #include "AliTOFPIDResponse.h"
 #include "AliInputEventHandler.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskSELc2V0bachelor)
 
 //__________________________________________________________________________

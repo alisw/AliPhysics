@@ -53,6 +53,9 @@
 #include "AliAnalysisTaskSED0Mass.h"
 #include "AliNormalizationCounter.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskSED0Mass)
 
 

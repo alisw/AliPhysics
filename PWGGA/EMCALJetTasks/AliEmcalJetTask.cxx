@@ -4,6 +4,7 @@
 //
 // Authors: C.Loizides, S.Aiola
 
+#include <vector>
 #include "AliEmcalJetTask.h"
 
 #include <TChain.h>
@@ -249,7 +250,7 @@ void AliEmcalJetTask::FindJets()
       AliEmcalJet(jets_incl[ij].perp(), jets_incl[ij].eta(), jets_incl[ij].phi(), jets_incl[ij].m());
 
     // loop over constituents
-    vector<fastjet::PseudoJet> constituents(fjw.GetJetConstituents(ij));
+    std::vector<fastjet::PseudoJet> constituents(fjw.GetJetConstituents(ij));
     jet->SetNumberOfTracks(constituents.size());
     jet->SetNumberOfClusters(constituents.size());
 

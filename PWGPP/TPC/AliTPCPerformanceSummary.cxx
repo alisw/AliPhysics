@@ -42,6 +42,8 @@
 
 #include "AliTPCPerformanceSummary.h"
 
+using std::ifstream;
+
 ClassImp(AliTPCPerformanceSummary)
 
 Bool_t AliTPCPerformanceSummary::fgForceTHnSparse = kFALSE;

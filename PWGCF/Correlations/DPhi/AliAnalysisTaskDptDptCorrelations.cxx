@@ -42,6 +42,9 @@
 #include "AliCentrality.h"
 #include "AliAnalysisTaskDptDptCorrelations.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskDptDptCorrelations)
 
 AliAnalysisTaskDptDptCorrelations::AliAnalysisTaskDptDptCorrelations()

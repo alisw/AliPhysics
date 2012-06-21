@@ -47,6 +47,9 @@
 // PWG includes
 #include "AliMuonTrackCuts.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskMuonQA)
 
 const Int_t AliAnalysisTaskMuonQA::nCh = 10;

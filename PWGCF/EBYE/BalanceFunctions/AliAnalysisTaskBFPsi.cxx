@@ -40,6 +40,9 @@
 // Analysis task for the BF vs Psi code
 // Authors: Panos.Christakoglou@nikhef.nl
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskBFPsi)
 
 //________________________________________________________________________

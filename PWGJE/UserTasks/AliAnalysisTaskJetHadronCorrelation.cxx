@@ -67,6 +67,9 @@
 
 
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskJetHadronCorrelation)
 
 				//________________________________________________________________________

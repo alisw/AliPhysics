@@ -59,6 +59,9 @@
 
 #include "AliAnalysisTaskSESignificance.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskSESignificance)
 
 

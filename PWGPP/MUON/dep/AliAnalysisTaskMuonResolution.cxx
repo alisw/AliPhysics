@@ -72,6 +72,10 @@
 #define SafeDelete(x) if (x != NULL) { delete x; x = NULL; }
 #endif
 
+using std::cout;
+using std::endl;
+using std::flush;
+
 ClassImp(AliAnalysisTaskMuonResolution)
 
 const Int_t AliAnalysisTaskMuonResolution::fgkMinEntries = 10;

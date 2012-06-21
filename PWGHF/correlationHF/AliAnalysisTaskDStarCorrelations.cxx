@@ -52,6 +52,9 @@
 
 
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskDStarCorrelations)
 
 

@@ -178,6 +178,10 @@ TProfile prof("prof","prof",10,0.5,5);
 
 
 
+using std::cout;
+using std::cerr;
+using std::endl;
+
 ClassImp(AliRecInfoMaker)
 
 

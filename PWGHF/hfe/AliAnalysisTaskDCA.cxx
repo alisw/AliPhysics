@@ -57,7 +57,10 @@
 
 #include "AliAnalysisTaskDCA.h"
 
+using std::cout;
+using std::endl;
 
+ClassImp(AliAnalysisTaskDCA)
 //____________________________________________________________
 AliAnalysisTaskDCA::AliAnalysisTaskDCA():
   AliAnalysisTaskSE("Impact Parameter Resolution and Pull Analysis")

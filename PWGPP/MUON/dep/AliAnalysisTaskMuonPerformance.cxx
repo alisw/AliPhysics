@@ -81,6 +81,10 @@
 #include "AliAnalysisTaskMuonPerformance.h"
 
 
+using std::cout;
+using std::endl;
+using std::flush;
+
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskMuonPerformance) // Class implementation in ROOT context
 /// \endcond

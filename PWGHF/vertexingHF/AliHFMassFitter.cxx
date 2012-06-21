@@ -43,6 +43,9 @@
 #include "AliVertexingHFUtils.h"
 
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliHFMassFitter)
 
  //************** constructors

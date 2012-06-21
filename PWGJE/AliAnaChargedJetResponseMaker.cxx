@@ -12,6 +12,9 @@
 
 #define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnaChargedJetResponseMaker)
 
 AliAnaChargedJetResponseMaker::AliAnaChargedJetResponseMaker(): 
