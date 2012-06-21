@@ -20,16 +20,17 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   UserExec(Option_t* /*option*/);
 
   void                   SetClusName(const char *n)            { fCaloName     = n;    }
-  void                   SetTracksName(const char *n)          { fTracksName   = n;    }
-  void                   SetEtaRange(Float_t min, Float_t max) { fEtaMin       = min;  fEtaMax = max; }
-  void                   SetPhiRange(Float_t min, Float_t max) { fPhiMin       = min;  fPhiMax = max; }
-  void                   SetPtRange(Float_t min, Float_t max)  { fPtMin        = min;  fPtMax  = max;  }
   void                   SetCopyArray(Bool_t copy)             { fCopyArray    = copy; }
+  void                   SetEtaRange(Float_t min, Float_t max) { fEtaMin       = min;  fEtaMax = max; }
+  void                   SetGeometryName(const char *n)        { fGeomName     = n;    }
+  void                   SetMarkMC(Bool_t m)                   { fMarkMC       = m;    }
   void                   SetNClusters(Int_t n)                 { fNClusters    = n;    }
   void                   SetNTracks(Int_t n)                   { fNTracks      = n;    }
-  void                   SetGeometryName(const char *n)        { fGeomName     = n;    }
-  void                   SetSuffix(const char *s)              { fSuffix       = s;    }
+  void                   SetPhiRange(Float_t min, Float_t max) { fPhiMin       = min;  fPhiMax = max; }
+  void                   SetPtRange(Float_t min, Float_t max)  { fPtMin        = min;  fPtMax  = max;  }
   void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = f;    }
+  void                   SetSuffix(const char *s)              { fSuffix       = s;    }
+  void                   SetTracksName(const char *n)          { fTracksName   = n;    }
 
  protected:
   AliVCluster           *AddCluster(Double_t e = -1, Double_t eta = -999, Double_t phi = -1);   // add a cluster; if values are -1 generate random parameters
@@ -59,6 +60,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Bool_t                 fCopyArray;              // whether or not the array will be copied to a new one before modelling
   Int_t                  fNClusters;              // how many clusters are being processed
   Int_t                  fNTracks;                // how many tracks are being processed
+  Bool_t                 fMarkMC;                 // whether or not mark new tracks/cluster as MC
   TF1                   *fPtSpectrum;             // pt spectrum parametrization to extract random pt values
   Bool_t                 fIsInit;                 //=true if initialized
   AliEMCALGeometry      *fGeom;                   //!pointer to EMCal geometry

@@ -42,6 +42,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fCopyArray(kTRUE),
   fNClusters(0),
   fNTracks(0),
+  fMarkMC(kTRUE),
   fPtSpectrum(0),
   fIsInit(0),
   fGeom(0),
@@ -71,6 +72,7 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name) :
   fCopyArray(kTRUE),
   fNClusters(0),
   fNTracks(1),
+  fMarkMC(kTRUE),
   fPtSpectrum(0),
   fIsInit(0),
   fGeom(0),
@@ -163,7 +165,8 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId)
   cluster->SetCellsAmplitudeFraction(&fract);
   cluster->SetID(nClusters);
   cluster->SetEmcCpvDistance(-1);
-  cluster->SetChi2(100); // MC flag!
+  if (fMarkMC)
+    cluster->SetChi2(100); // MC flag!
 
   return cluster;
 }
@@ -182,11 +185,13 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
   if (phi < 0) 
     phi = GetRandomPhi();
 
+  Int_t label = fMarkMC ? 100 : 0;
+
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
 								  eta, 
 								  phi, 
 								  1, 
-								  100,    // MC flag!      
+								  label,    // MC flag!      
 								  0, 
 								  0, 
 								  kFALSE);
