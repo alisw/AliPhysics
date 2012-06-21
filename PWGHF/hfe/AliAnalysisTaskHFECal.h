@@ -50,6 +50,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
   void SetOpeningAngleCut (Double_t openingAngle) {fOpeningAngleCut = openingAngle;};
   void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
+  void SetQAHist (int qahist) {fqahist = qahist;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
   void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig);
@@ -63,7 +64,8 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   AliEMCALGeometry  	*fGeom; 		// emcal geometry 
     
   TList       		*fOutputList;		//! output list
-  
+  Int_t                 fqahist;  
+
   AliESDtrackCuts	*fTrackCuts;		//! ESD track cuts
   AliHFEcuts 		*fCuts;                 //! Cut Collection
   Bool_t 		fIdentifiedAsOutInz;    //Out Of Range in z

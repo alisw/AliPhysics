@@ -88,6 +88,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fMC(0)
   ,fGeom(0)
   ,fOutputList(0)
+  ,fqahist(1) 
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -170,6 +171,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fMC(0)
   ,fGeom(0)
   ,fOutputList(0)
+  ,fqahist(1)
   ,fTrackCuts(0)
   ,fCuts(0)
   ,fIdentifiedAsOutInz(kFALSE)
@@ -368,7 +370,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          double emceta = clustpos.Eta();
          double calInfo[5];
          calInfo[0] = emcphi; calInfo[1] = emceta; calInfo[2] = clustE; calInfo[3] = cent; calInfo[4] = clust->Chi2(); 
-         if(clustE>1.5)fEMCAccE->Fill(calInfo); 
+         //if(clustE>1.5)fEMCAccE->Fill(calInfo); 
+         if(fqahist==1 && clustE>1.5)fEMCAccE->Fill(calInfo); 
         }
    }
 
@@ -479,7 +482,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = m02; valdedx[9] = m20; valdedx[10] = disp;
 		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = clust->Chi2();
                   valdedx[15] = mcele;
-                  fEleInfo->Fill(valdedx);
+                  if(fqahist==1)fEleInfo->Fill(valdedx);
                  
 
       }
@@ -579,6 +582,8 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
      printf("++++++++ real data analysis \n");
    }
 
+   printf("+++++++ QA hist %d",fqahist);
+
   //---- Geometry
   fGeom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
 
@@ -634,7 +639,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t xminE[5] = {1.0,  -1,   0.0,   0, -0.5}; 
   Double_t xmaxE[5] = {3.5,   1, 100.0, 100,  9.5}; 
   fEMCAccE = new THnSparseD("fEMCAccE","EMC acceptance & E;#eta;#phi;Energy;Centrality;trugCondition;",5,binsE,xminE,xmaxE);
-  fOutputList->Add(fEMCAccE);
+  if(fqahist==1)fOutputList->Add(fEMCAccE);
 
   fTrkpt = new TH1F("fTrkpt","track pt",100,0,50);
   fOutputList->Add(fTrkpt);
@@ -711,7 +716,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t min[16] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5, -1.5};
   Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  4.5,  9.5,  6.5};
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
-  fOutputList->Add(fEleInfo);
+  if(fqahist==1)fOutputList->Add(fEleInfo);
 
   //<---  Trigger info
   /*
@@ -810,6 +815,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
   
   fTrackCuts->SetAcceptKinkDaughters(kFALSE);
   fTrackCuts->SetRequireTPCRefit(kTRUE);
+  fTrackCuts->SetRequireITSRefit(kTRUE);
   fTrackCuts->SetEtaRange(-0.9,0.9);
   //fTrackCuts->SetRequireSigmaToVertex(kTRUE);
   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
