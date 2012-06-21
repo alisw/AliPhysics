@@ -49,6 +49,9 @@
 #include "AliEMCALGeometry.h"
 #include "THnSparse.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskPi0V2)
 
 //________________________________________________________________________
