@@ -188,6 +188,11 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
   die->GetTrackFilter().AddCuts(cuts);
   
+  // AOD track filter (needs to be first cut)
+  AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
+  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDanyPIDele);
+  if(!isESD) cuts->AddCut(trkFilter);
+
   //Pt cut, should make execution a bit faster
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
   if(cutDefinition >= kEtaGap01 )   
