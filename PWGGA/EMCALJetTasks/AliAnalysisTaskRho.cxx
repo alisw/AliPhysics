@@ -28,14 +28,15 @@ ClassImp(AliAnalysisTaskRho)
 //________________________________________________________________________
 AliAnalysisTaskRho::AliAnalysisTaskRho() : 
   AliAnalysisTaskRhoBase(),
-  fTracksName("tracks"),
-  fJetsName("KtJets"),
+  fTracksName(),
+  fJetsName(),
   fRhoScaledName(""),
   fPhiMin(0),
   fPhiMax(0),
   fEtaMin(0),
   fEtaMax(0),
   fAreaCut(0),
+  fAreaEmcCut(0),
   fNExclLeadJets(0),
   fScaleFunction(0),
   fCreateHisto(kFALSE),
@@ -59,7 +60,7 @@ AliAnalysisTaskRho::AliAnalysisTaskRho() :
   fHistNjetvsNtrack(0),
   fRhoScaled(0)
 {
-  // Constructor
+  // Constructor.
 }
 
 //________________________________________________________________________
@@ -73,6 +74,7 @@ AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name, Bool_t histo) :
   fEtaMin(-0.5),
   fEtaMax(+0.5),
   fAreaCut(0.01),
+  fAreaEmcCut(0),
   fNExclLeadJets(1),
   fScaleFunction(0),
   fCreateHisto(histo),
@@ -96,7 +98,7 @@ AliAnalysisTaskRho::AliAnalysisTaskRho(const char *name, Bool_t histo) :
   fHistNjetvsNtrack(0),
   fRhoScaled(0)
 {
-  // Constructor
+  // Constructor.
 
   if (fCreateHisto)
     DefineOutput(1, TList::Class());
@@ -224,6 +226,8 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
     // applying some other cuts
     if (jet->Area() < fAreaCut)
       continue;
+    if (jet->AreaEmc()<fAreaEmcCut)
+      continue;
     if ((jet->Phi() < fPhiMin) || (jet->Phi() > fPhiMax))
       continue;
     if ((jet->Eta() < fEtaMin) || (jet->Eta() > fEtaMax))
@@ -249,7 +253,6 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
     //find median value
     Double_t rho0      = TMath::Median(NjetAcc, rhovec);
     fRho->SetVal(rho0);
-
     Double_t rhoScaled = rho0;
     if (fRhoScaled) {
       rhoScaled *= GetScaleFactor(fCent);
