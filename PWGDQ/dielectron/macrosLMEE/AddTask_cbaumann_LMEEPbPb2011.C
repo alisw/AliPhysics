@@ -55,13 +55,13 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
 
     AliDielectron *lowmass3=ConfigLMEEPbPb2011(3,hasMC,enableCF);
     task->AddDielectron(lowmass3);
-    printf("add: %s\n",lowmass3->GetName())
+    printf("add: %s\n",lowmass3->GetName());
       AliDielectron *lowmass1=ConfigLMEEPbPb2011(1,hasMC,enableCF);
     task->AddDielectron(lowmass1);
-    printf("add: %s\n",lowmass1->GetName())
+    printf("add: %s\n",lowmass1->GetName());
       AliDielectron *lowmass7=ConfigLMEEPbPb2011(7,hasMC,enableCF);
     task->AddDielectron(lowmass7);
-    printf("add: %s\n",lowmass7->GetName())
+    printf("add: %s\n",lowmass7->GetName());
   }
 
   mgr->AddTask(task);
