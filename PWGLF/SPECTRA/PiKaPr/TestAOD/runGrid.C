@@ -62,8 +62,8 @@ void runGrid(TString mode="test",Bool_t mc=0,Int_t day=15,Int_t month=6, Int_t y
   Double_t EtaMin[4]={       -0.8,-0.8,-0.8,-0.8};
   Double_t EtaMax[4]={        0.8, 0.8, 0.8, 0.8};
   Double_t Nsigmapid=3.;
-  Double_t pt=5.;
-  Double_t p=5.;
+  Double_t pt=10.;
+  Double_t p=10.;
   Double_t y=.5;
   Double_t ptTofMatch=.6;
   UInt_t trkbit=1024;
@@ -75,7 +75,7 @@ void runGrid(TString mode="test",Bool_t mc=0,Int_t day=15,Int_t month=6, Int_t y
   TString opt="";
   
   for(Int_t icut=0;icut<4;icut++){
-    //if(icut!=0)continue;
+    if(icut!=0)continue;
     AliAnalysisTaskSpectraAOD *taskAOD =AddTaskSpectraAOD(mc,CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,nrebin,opt.Data());
     
     taskAOD->GetOutputSlot(1)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(1)->GetContainer()->GetName(),taskAOD->GetName()));

@@ -102,7 +102,7 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
       Nch++;
     }
   }
-  Printf("NCHARGED_EvSel : %d",Nch);
+  //Printf("NCHARGED_EvSel : %d",Nch);
   if(fIsSelected)fHistoNChAftSel->Fill(Nch);
   return fIsSelected;
 }
@@ -148,7 +148,7 @@ Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
     if (!fTrackCuts->IsSelected(track,kFALSE)) continue;
     Ncharged++;
   }
-  Printf("NCHARGED_cut : %d",Ncharged);
+  //Printf("NCHARGED_cut : %d",Ncharged);
   if(Ncharged>fMultiplicityCutMin && Ncharged<fMultiplicityCutMax)return kTRUE;
   
   return kFALSE;
