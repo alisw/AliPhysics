@@ -781,6 +781,9 @@ void AliRDHFCuts::PrintAll() const {
 
 //--------------------------------------------------------------------------
 void AliRDHFCuts::PrintTrigger() const{
+  // print the trigger selection 
+
+  printf("Selected trigger classes: %s %s\n",fTriggerClass[0].Data(),fTriggerClass[1].Data());
 
   cout<<" Trigger selection pattern: ";
   if( fTriggerMask & AliVEvent::kAny ) cout<<" kAny ";
