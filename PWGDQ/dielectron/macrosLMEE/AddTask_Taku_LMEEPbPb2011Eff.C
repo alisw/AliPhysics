@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_t setMC=kFALSE,Bool_t enableCF=kFALSE){
+AliAnalysisTask *AddTask_Taku_LMEEPbPb2011Eff(Bool_t runRejection=kFALSE, Bool_t setMC=kTRUE, Bool_t enableCF=kTRUE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -11,7 +11,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
   TString configBasePath("$TRAIN_ROOT/cbaumann_dielectron/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");                                                                            
   if (trainRoot.IsNull()) configBasePath= "$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/";
-  TString configFile("ConfigLMEEPbPb2011.C");
+  TString configFile("ConfigLMEEPbPb2011MC.C");
   TString configLMEECutLib("LMEECutLib.C");
 
   TString configFilePath(configBasePath+configFile);
@@ -47,19 +47,19 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
   //add dielectron analysis with different cuts to the task
   if (runRejection) {
 
-    AliDielectron *lowmass4=ConfigLMEEPbPb2011(4,hasMC,enableCF);
+    AliDielectron *lowmass4=ConfigLMEEPbPb2011MC(4,hasMC,enableCF);
     task->AddDielectron(lowmass4);
     printf("add: %s\n",lowmass4->GetName());
   }
   else {
 
-    AliDielectron *lowmass3=ConfigLMEEPbPb2011(3,hasMC,enableCF);
+    AliDielectron *lowmass3=ConfigLMEEPbPb2011MC(3,hasMC,enableCF);
     task->AddDielectron(lowmass3);
     printf("add: %s\n",lowmass3->GetName())
-      AliDielectron *lowmass1=ConfigLMEEPbPb2011(1,hasMC,enableCF);
+      AliDielectron *lowmass1=ConfigLMEEPbPb2011MC(1,hasMC,enableCF);
     task->AddDielectron(lowmass1);
     printf("add: %s\n",lowmass1->GetName())
-      AliDielectron *lowmass7=ConfigLMEEPbPb2011(7,hasMC,enableCF);
+      AliDielectron *lowmass7=ConfigLMEEPbPb2011MC(7,hasMC,enableCF);
     task->AddDielectron(lowmass7);
     printf("add: %s\n",lowmass7->GetName())
   }
@@ -68,31 +68,31 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("cbaumann_LMEEPbPb2011_tree",
+    mgr->CreateContainer("mc_tg_LMEEPbPb2011_tree",
 	TTree::Class(),
 	AliAnalysisManager::kExchangeContainer,
-	"cbaumann_LMEEPbPb2011_default.root");
+	"mc_tg_LMEEPbPb2011_default.root");
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("cbaumann_LMEEPbPb2011_out",
+    mgr->CreateContainer("mc_tg_LMEEPbPb2011_out",
 	TList::Class(),
 	AliAnalysisManager::kOutputContainer,
-	"cbaumann_LMEEPbPb2011_out.root");
+	"mc_tg_LMEEPbPb2011_out.root");
   
   AliAnalysisDataContainer *cOutputHist2 = 0x0;
   if (enableCF) {
     cOutputHist2 = 
-      mgr->CreateContainer("cbaumann_LMEEPbPb2011_CF",
+      mgr->CreateContainer("mc_tg_LMEEPbPb2011_CF",
 	  TList::Class(),
 	  AliAnalysisManager::kOutputContainer,
-	  "cbaumann_LMEEPbPb2011_out.root");
+	  "mc_tg_LMEEPbPb2011_out.root");
 
   }
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("cbaumann_EventStatPbPb2011",
+    mgr->CreateContainer("mc_tg_EventStatPbPb2011",
 	TH1D::Class(),
 	AliAnalysisManager::kOutputContainer,
-	"cbaumann_LMEEPbPb2011_out.root");
+	"mc_tg_LMEEPbPb2011_out.root");
 
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());

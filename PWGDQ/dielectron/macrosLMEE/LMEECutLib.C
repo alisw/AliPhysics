@@ -18,9 +18,11 @@ class LMEECutLib {
 	};
 
 	//char* LMEECutNames[kCUTSETMAX] = { "PbPb2011TPCandTOF","PbPb2011TPCorTOF"};
+	
+	Bool_t useMC;
 
 
-	LMEECutLib() {}
+	LMEECutLib() {useMC=kFALSE;}
 
 	AliDielectronEventCuts*     GetEventCuts(Int_t cutSet);
 	AliAnalysisCuts*            GetCentralityCuts(Int_t centSel);
@@ -34,6 +36,8 @@ class LMEECutLib {
 
 	AliAnalysisCuts* GetTrackCutsAna(Int_t cutSet);  
 	AliAnalysisCuts* GetTrackCutsPre(Int_t cutSet);  
+
+	void SetMCFlag( Bool_t isMC=kTRUE) {useMC=isMC;}
 
 
 
@@ -140,7 +144,7 @@ class LMEECutLib {
 	  lowerCut->SetParameter(1,-0.8);
 	  lowerCut->SetParameter(2,-0.35);
 
-	  if (MCenabled) { //overwrite parameters
+	  if (useMC) { //overwrite parameters
 		lowerCut->SetParameter(0,-2.5);
 		lowerCut->SetParameter(2,-2.2);
 	  }
@@ -172,7 +176,12 @@ class LMEECutLib {
 	  pidTT->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,-3.,3.,0.,100.,kTRUE);
 	  //___________________________________________
 	  AliDielectronVarCuts *pidTPCsignal = new AliDielectronVarCuts("pidTPCsignal","cut on the TPC signal");
-	  pidTPCsignal->AddCut(AliDielectronVarManager::kTPCsignal,75.,90.); 
+	  if (useMC) {
+		  pidTPCsignal->AddCut(AliDielectronVarManager::kTPCsignal,65.,85.); 
+	  }
+	  else {
+		  pidTPCsignal->AddCut(AliDielectronVarManager::kTPCsignal,75.,90.); 
+	  }
 	  //___________________________________________
 	  AliDielectronVarCuts *pidTPCsignalWide = new AliDielectronVarCuts("pidTPCsignalWide","cut on the TPC signal");
 	  pidTPCsignalWide->AddCut(AliDielectronVarManager::kTPCsignal,70.,90.); 
