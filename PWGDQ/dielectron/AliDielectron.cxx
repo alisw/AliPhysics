@@ -47,8 +47,6 @@ The names are available via the function PairClassName(Int_t i)
 #include <TMath.h>
 #include <TObject.h>
 
-#include <AliESDEvent.h>
-#include <AliESDtrack.h>
 #include <AliKFParticle.h>
 
 #include <AliEventplane.h>
@@ -577,13 +575,6 @@ void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr)
   for (Int_t itrack=0; itrack<ntracks; ++itrack){
     //get particle
     AliVParticle *particle=ev->GetTrack(itrack);
-    //TODO: temporary solution, perhaps think about a better implementation
-    //      This is needed to use AliESDpidCuts, which relies on the ESD event
-    //      is set as a AliESDtrack attribute... somehow ugly!
-    if (ev->IsA()==AliESDEvent::Class()){
-      AliESDtrack *track=static_cast<AliESDtrack*>(particle);
-      track->SetESDEvent(static_cast<AliESDEvent*>(ev)); //only in trunk...
-    }
 
     //apply track cuts
     if (fTrackFilter.IsSelected(particle)!=selectedMask) continue;

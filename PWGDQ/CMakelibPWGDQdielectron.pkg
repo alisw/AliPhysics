@@ -61,6 +61,9 @@ set ( SRCS
       dielectron/AliDielectronSignalMC.cxx
       dielectron/AliDielectronEvent.cxx
       dielectron/AliDielectronMixingHandler.cxx
+      dielectron/AliReducedEvent.cxx
+      dielectron/AliAnalysisTaskReducedTree.cxx
+
 )
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
