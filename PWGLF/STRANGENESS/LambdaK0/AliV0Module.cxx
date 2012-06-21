@@ -827,7 +827,7 @@ void AliV0Module::DoAnalysis(){
             lLeastNbrCrossedRowsOverFindable >= fCutLeastNumberOfCrossedRowsOverFindable &&
             TMath::Abs(lInvariantMassCompetingOne - lCompetingParticleMass) > fCutCompetingV0Rejection &&
             TMath::Abs(lInvariantMassCompetingTwo - lCompetingParticleMass) > fCutCompetingV0Rejection &&
-          ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt>TMath::Abs(lArmAlpha)*0.5 ) ) &&
+          ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt*5>TMath::Abs(lArmAlpha) ) ) &&
           ( //official response code
           ( fWhichParticle == "Lambda"
           && TMath::Abs(lNSigmasNegPion)   <= fCutTPCPIDNSigmas
@@ -977,7 +977,7 @@ void AliV0Module::DoAnalysis(){
             lLeastNbrCrossedRowsOverFindable >= fCutLeastNumberOfCrossedRowsOverFindable &&
             TMath::Abs(lInvariantMassCompetingOne - lCompetingParticleMass) > fCutCompetingV0Rejection &&
             TMath::Abs(lInvariantMassCompetingTwo - lCompetingParticleMass) > fCutCompetingV0Rejection &&
-          ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt>TMath::Abs(lArmAlpha)*0.5 ) ) &&
+          ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt*5>TMath::Abs(lArmAlpha) ) ) &&
           ( //official response code
           ( fWhichParticle == "Lambda"
           && TMath::Abs(lNSigmasNegPion)   <= fCutTPCPIDNSigmas
@@ -1207,7 +1207,7 @@ void AliV0Module::DoAnalysis(){
             lLeastNbrCrossedRowsOverFindable >= fCutLeastNumberOfCrossedRowsOverFindable &&
             TMath::Abs(lInvariantMassCompetingOne - lCompetingParticleMass) > fCutCompetingV0Rejection &&
             TMath::Abs(lInvariantMassCompetingTwo - lCompetingParticleMass) > fCutCompetingV0Rejection &&
-          ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt>TMath::Abs(lArmAlpha)*0.5 ) ) &&
+          ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt*5>TMath::Abs(lArmAlpha) ) ) &&
           ( //perfect PID association, IsPhysicalPrimary association
           ( fWhichParticle == "Lambda"
           && lPID           == 3122 //V0 is a Lambda
@@ -1767,7 +1767,7 @@ void AliV0Module::DoAnalysis(){
               lLeastNbrCrossedRowsOverFindable >= fCutLeastNumberOfCrossedRowsOverFindable &&
               TMath::Abs(lInvariantMassCompetingOne - lCompetingParticleMass) > fCutCompetingV0Rejection &&
               TMath::Abs(lInvariantMassCompetingTwo - lCompetingParticleMass) > fCutCompetingV0Rejection &&
-            ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt>TMath::Abs(lArmAlpha)*0.5 ) ) &&
+            ( fSpecialArmenterosCutK0s == kFALSE || ( fSpecialArmenterosCutK0s == kTRUE && lArmPt*5>TMath::Abs(lArmAlpha) ) ) &&
             ( //perfect PID association, IsPhysicalPrimary association
             ( fWhichParticle == "Lambda"
             && lPID           == 3122 //V0 is a Lambda
