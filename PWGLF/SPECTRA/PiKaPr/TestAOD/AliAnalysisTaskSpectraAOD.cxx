@@ -89,7 +89,7 @@ void AliAnalysisTaskSpectraAOD::UserCreateOutputObjects()
 void AliAnalysisTaskSpectraAOD::UserExec(Option_t *)
 {
   // main event loop
-  Printf("ALIVE");
+  //Printf("ALIVE");
   fAOD = dynamic_cast<AliAODEvent*>(fInputEvent);
   if (strcmp(fAOD->ClassName(), "AliAODEvent"))
     {
