@@ -41,6 +41,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp2010(Bool_t runTwo=kFALSE, Bool_t hasMC=
 	gROOT->LoadMacro(configFilePath.Data());
   
   LMEECutLib* cutlib = new LMEECutLib();
+  cutlib->SetMCFlag(hasMC);
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kpp2010TPCandTOF)); //
