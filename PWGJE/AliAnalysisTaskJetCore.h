@@ -79,8 +79,9 @@ public:
    virtual void     SetEventMixing(Int_t yesno){fDoEventMixing=yesno;}
    virtual void     SetFlagPhiBkg(Int_t yesno){fFlagPhiBkg=yesno;}
    virtual void     SetFlagEtaBkg(Int_t yesno){fFlagEtaBkg=yesno;}
+   virtual void     SetFlagJetHadron(Int_t yesno){fFlagJetHadron=yesno;}
    virtual void     SetFlagRandom(Int_t yesno){fFlagRandom=yesno;}
-
+ 
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
    virtual void     SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
    virtual void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
@@ -127,6 +128,7 @@ private:
    Int_t   fDoEventMixing;
    Int_t   fFlagPhiBkg;
    Int_t   fFlagEtaBkg;
+   Int_t   fFlagJetHadron;
    Int_t   fFlagRandom;
    Int_t   fRPAngle;
    Int_t   fNRPBins;
@@ -183,10 +185,11 @@ private:
      TH2F*      fh2AngStructpt3C60;         //C60 pt3
      TH2F*      fh2AngStructpt4C60;         //C60 pt4
   
-     TH2F*      fh2Ntriggers;
-     TH2F*      fh2JetDensity;
-     TH2F*      fh2JetDensityA4;
-     TH2F*      fh2RPJets;
+     TH2F*      fh2Ntriggers;              //triggers
+     TH2F*      fh2Ntriggers2;             //centrality bias of triggers 
+     TH2F*      fh2JetDensity;             //jet density
+     TH2F*      fh2JetDensityA4;           //jet density
+     TH2F*      fh2RPJets;                  //reaction plane from tracks
      TH3F*      fh3spectriggeredC4080;         //triggered spectra
      TH3F*      fh3spectriggeredC20;           //triggered spectra
      TH3F*      fh3spectriggeredC3060;         //triggered spectra
