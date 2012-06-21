@@ -1,11 +1,5 @@
 AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=10, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=3, Int_t debuglevel=0, Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE){
 
-  // libraries in case
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libPWGflowBase.so");
-  gSystem->Load("libPWGflowTasks.so");
-  
   //
   // Define TPC cut for 2011 data
   //
@@ -33,8 +27,8 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
     tpcdedx[3]=-0.17;
     tpcdedx[4]=-0.022;
     tpcdedx[5]=-0.018;
-    tpcdedx[6]=0.018;
-    tpcdedx[7]=0.018;
+    tpcdedx[6]=-0.018;
+    tpcdedx[7]=-0.018;
   }
   if(TMath::Abs(tpceff-45)<0.01) {
     tpcdedx[0]=-0.062;
@@ -68,8 +62,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   }
 
   // Name
-  TString appendixx(TString::Format("TPC%dr%dp%ds%dITS%dC%dPi%dDCAr%dz%dTOF%dTPCe%dV%dD%dec%dal%dm%d",tpcCls,(Int_t)tpcClsr,tpcClspid,(Int_t) tpcsharedfraction,itsCls,(Int_t) chi2peritscl,(Int_t) pixellayer,(Int_t) dcaxy,(Int_t)dcaz,(Int_t) tofsig,(Int_t)tpceff,vzero,debuglevel,(Int_t)algorithmMA,(Int_t)massconstraint));
-  printf("appendixx %s\n", appendixx.Data());
+  TString appendixx("tpctofv2");
   
 
   //set config file name
@@ -103,7 +96,7 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   containerName += appendixx.Data();
 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  mgr->ConnectOutput(task,1, mgr->CreateContainer((const char*)(appendixx.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data()));
+  mgr->ConnectOutput(task,1, mgr->CreateContainer("testtpctofv2", TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data()));
   mgr->ConnectInput(task,0, cinput );    
 
   return NULL;

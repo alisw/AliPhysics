@@ -83,6 +83,7 @@ set (SRCS
     hfe/AliHFEdebugTreeTask.cxx
     hfe/AliHFEVZEROEventPlane.cxx
     hfe/AliAnalysisTaskHFEFlow.cxx
+    hfe/AliAnalysisTaskHFEFlowData.cxx
     hfe/AliSelectNonHFE.cxx
     )
 
