@@ -590,6 +590,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // some other Informations which we may wish to store in order to find problematic cases
     fTrackInfo->SetKinkIndex(esdTrack->GetKinkIndex(0));
     fTrackInfo->SetTPCncls(static_cast<UShort_t>(esdTrack->GetNcls(1)));
+    fTrackInfo->SetTPCdedx(esdTrack->GetTPCsignal());
     fTrackInfo->SetTOFbc(esdTrack->GetTOFBunchCrossing()==AliVTrack::kTOFBCNA?0:esdTrack->GetTOFBunchCrossing());
     nclsTrklt = 0;
   

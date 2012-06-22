@@ -43,6 +43,7 @@ public:
     Int_t       GetKinkIndex() const             { return fKinkIndex;}
     Short_t     GetTOFbc() const                 { return fTOFbc;}
     UShort_t    GetTPCncls() const               { return fTPCncls;}
+    Float_t     GetTPCdedx() const               { return fTPCdedx;}
     AliTrackPointArray* GetTrackPointArray() const      { return fTPArray; }
     UChar_t     GetPidQuality() const            { return fTRDpidQuality;}
 
@@ -67,6 +68,7 @@ public:
     ULong_t     fStatus;                  // ESD track status
     Int_t       fKinkIndex;               // ESD kink index
     UShort_t    fTPCncls;                 // Number of Clusters inside TPC
+    Float_t     fTPCdedx;                 // dEdx in TPC
     Short_t     fTOFbc;                   // TOF bunch crossing index
     Double32_t  fTRDr[AliPID::kSPECIES];  // TRD radial position
     UChar_t     fTRDpidQuality;           // TRD PID quality
@@ -81,7 +83,7 @@ public:
     AliTrackPointArray *fTPArray;         // track point array to be used for alignment
     Int_t  fTRDv0pid[AliPID::kSPECIES];   // PID from v0s
 
-    ClassDef(AliESDinfo, 8)     // ESD info related to TRD
+    ClassDef(AliESDinfo, 9)     // ESD info related to TRD
   };
 
   class AliMCinfo{
@@ -164,6 +166,7 @@ public:
   void               SetKinkIndex(Int_t kinkIndex)    { fESD.fKinkIndex = kinkIndex;}
   void               SetTOFbc(Int_t bc)               { fESD.fTOFbc = bc;}
   void               SetTPCncls(UShort_t TPCncls)     { fESD.fTPCncls = TPCncls;}
+  void               SetTPCdedx(Float_t dedx)         { fESD.fTPCdedx = dedx;}
   void               SetTrackId(Int_t id)             { fESD.fId = id;}
   void               SetTrack(const AliTRDtrackV1 *track);
   void               SetTrackPointArray(const AliTrackPointArray *tps) {fESD.SetTrackPointArray(tps);}

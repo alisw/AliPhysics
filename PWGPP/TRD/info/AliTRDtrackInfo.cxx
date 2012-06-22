@@ -132,6 +132,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   ,fStatus(0)
   ,fKinkIndex(0)
   ,fTPCncls(0)
+  ,fTPCdedx(0.)
   ,fTOFbc(0)
   ,fTRDpidQuality(0)
   ,fTRDnSlices(0)
@@ -159,6 +160,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   ,fStatus(esd.fStatus)
   ,fKinkIndex(esd.fKinkIndex)
   ,fTPCncls(esd.fTPCncls)
+  ,fTPCdedx(esd.fTPCdedx)
   ,fTOFbc(esd.fTOFbc)
   ,fTRDpidQuality(esd.fTRDpidQuality)
   ,fTRDnSlices(esd.fTRDnSlices)
@@ -313,6 +315,7 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
   fStatus      = esd.fStatus;
   fKinkIndex   = esd.fKinkIndex;
   fTPCncls     = esd.fTPCncls;
+  fTPCdedx     = esd.fTPCdedx;
   fTOFbc       = esd.fTOFbc;
   fTRDpidQuality= esd.fTRDpidQuality;
   fTRDnSlices  = esd.fTRDnSlices;
