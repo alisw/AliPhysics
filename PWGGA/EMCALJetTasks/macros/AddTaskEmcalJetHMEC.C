@@ -1,4 +1,4 @@
-// $Id: AddTaskEmcalJetHMECadron.C 57095 2012-06-20 1:21:07Z mconnors $
+// $Id: AddTaskEmcalJetHMECadron.C 57095 2012-06-22 18:50:07Z mconnors $
 
 AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const char *outfilename    = "AnalysisOutput.root",
@@ -34,17 +34,17 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
 
   TString name(Form("Correlations_%s", nJets));
   AliAnalysisTaskEmcalJetHMEC *correlationtask = new AliAnalysisTaskEmcalJetHMEC(name);
-  spectratask->SetJetsName(nJets);
-  spectratask->SetTracksName(nTracks);
-  spectratask->SetJetPhi(minPhi,maxPhi);
-  spectratask->SetJetEta(minEta,maxEta);
-  spectratask->SetAreaCut(minArea);
+  correlationtask->SetJetsName(nJets);
+  correlationtask->SetTracksName(nTracks);
+  correlationtask->SetJetPhi(minPhi,maxPhi);
+  correlationtask->SetJetEta(minEta,maxEta);
+  correlationtask->SetAreaCut(minArea);
  
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
 
-  mgr->AddTaskMEC(correlationtask);
+  mgr->AddTask(correlationtask);
 
   // Create containers for input/output
   mgr->ConnectInput (correlationtask, 0, mgr->GetCommonInputContainer() );
