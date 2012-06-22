@@ -995,21 +995,21 @@ void  AliAnalysisTask3PCorrelations::UserExec(Option_t */*option*/)
 {
   // cout << "AliAnalysisTask3PCorrelations::UserExec(Option_t *option) - Starting!!!!" << endl;
   
-  int    k1,k2,k3;
-  int    iPhi, iEta, iEtaPhi, iPt, charge;
-  float  q, p, phi, pt, eta, corr, dedx, px, py, pz;
-  int    ij_12, ij_13, ij_23, ijk_123;
-  int    id_1, id_2, id_3, iPhi_1, iPhi_2, iPhi_3;
-  float  corr_1, corr_2, corr_3;
-  float  corr_12, corr_13, corr_23, corr_123;
-  int    iVertex, iVertexP1, iVertexP2, iVertexP3;
-  int    iZEtaPhiPt;
-  //float  massElecSq = 2.5e-7;
+  int    k1=0,k2=0,k3=0;
+  int    iPhi=0, iEta=0, iEtaPhi=0, iPt=0, charge=0;
+  float  q=0, p=0, phi=0, pt=0, eta=0, corr=0, dedx=0, px=0, py=0, pz=0;
+  int    ij_12=0, ij_13=0, ij_23=0, ijk_123=0;
+  int    id_1=0, id_2=0, id_3=0, iPhi_1=0, iPhi_2=0, iPhi_3=0;
+  float  corr_1=0, corr_2=0, corr_3=0;
+  float  corr_12=0, corr_13=0, corr_23=0, corr_123=0;
+  int    iVertex=0, iVertexP1=0, iVertexP2=0, iVertexP3=0;
+  int    iZEtaPhiPt=0;
+  //float  massElecSq = 2.5e-7=0;
   double b[2];
   double bCov[3];
-  const  AliAODVertex*	vertex;
-  int    nClus;
-  bool   bitOK;
+  const  AliAODVertex*	vertex=0;
+  int    nClus=0;
+  bool   bitOK=0;
   
   // count all events looked at here
   _eventCount++;
