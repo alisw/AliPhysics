@@ -1154,11 +1154,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	}
 	if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
       }
-      //set pT of leading constituent of jet
-      aodOutJet->SetPtLeading(partLead->Pt());
 
       AliAODTrack *aodT = 0;
-      if(partLead){
+      if(partLead&&aodOutJet){
+	//set pT of leading constituent of jet
+	aodOutJet->SetPtLeading(partLead->Pt());
 	aodT = dynamic_cast<AliAODTrack*>(partLead);
 	if(aodT){
 	  if(aodT->TestFilterBit(fFilterMaskBestPt)){
@@ -1708,6 +1708,8 @@ void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
 
   TFile *f = new TFile(fPathTrPtResolution.Data());
 
+  if(!f)return;
+
   TProfile *fProfPtPtSigma1PtGlobSt     = (TProfile*)f->Get("fProfPtPtSigma1PtGlobSt");
   TProfile *fProfPtPtSigma1PtGlobCnoITS = (TProfile*)f->Get("fProfPtPtSigma1PtGlobCnoITS");
   TProfile *fProfPtPtSigma1PtGlobCnoSPD = (TProfile*)f->Get("fProfPtPtSigma1PtGlobCnoSPD");
@@ -1723,6 +1725,7 @@ void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
 void AliAnalysisTaskJetCluster::LoadTrEfficiencyRootFileFromOADB() {
 
   TFile *f = new TFile(fPathTrEfficiency.Data());
+  if(!f)return;
 
   TH1D *hEffPosGlobSt = (TH1D*)f->Get("hEffPosGlobSt");
   TH1D *hEffPosGlobCnoITS = (TH1D*)f->Get("hEffPosGlobCnoITS");
