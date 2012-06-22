@@ -41,8 +41,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistTracksPt(0),
   fHistTrPhiEta(0),
   fHistTrEmcPhiEta(0),
-  fHistClustersEnergy(0),
-  fHistClusPhiEta(0),
+  fHistClusPhiEtaEnergy(0),
+  fHistNCellsEnergy(0),
   fHistCellsEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -82,8 +82,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistTracksPt(0),
   fHistTrPhiEta(0),
   fHistTrEmcPhiEta(0),
-  fHistClustersEnergy(0),
-  fHistClusPhiEta(0),
+  fHistClusPhiEtaEnergy(0),
+  fHistNCellsEnergy(0),
   fHistCellsEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -172,15 +172,16 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fOutput->Add(fHistTrEmcPhiEta);
 
   if (fAnaType == kEMCAL) {
-    fHistClustersEnergy = new TH1F("fHistClustersEnergy","Energy spectrum of clusters", fNbins, fMinBinPt, fMaxBinPt);
-    fHistClustersEnergy->GetXaxis()->SetTitle("E [GeV]");
-    fHistClustersEnergy->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistClustersEnergy);
+    fHistClusPhiEtaEnergy = new TH3F("fHistClusPhiEtaEnergy","Phi-Eta-Energy distribution of clusters", fNbins, fMinBinPt, fMaxBinPt, 80, -2, 2, 128, 0, 6.4);
+    fHistClusPhiEtaEnergy->GetXaxis()->SetTitle("E [GeV]");
+    fHistClusPhiEtaEnergy->GetYaxis()->SetTitle("#eta");
+    fHistClusPhiEtaEnergy->GetZaxis()->SetTitle("#phi");
+    fOutput->Add(fHistClusPhiEtaEnergy);
 
-    fHistClusPhiEta = new TH2F("fHistClusPhiEta","Phi-Eta distribution of clusters", 80, -2, 2, 128, 0, 6.4);
-    fHistClusPhiEta->GetXaxis()->SetTitle("#eta");
-    fHistClusPhiEta->GetYaxis()->SetTitle("#phi");
-    fOutput->Add(fHistClusPhiEta);
+    fHistNCellsEnergy = new TH2F("fHistNCellsEnergy","Number of cells vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, 30, 0, 30);
+    fHistNCellsEnergy->GetXaxis()->SetTitle("E [GeV]");
+    fHistNCellsEnergy->GetYaxis()->SetTitle("N_{cells}");
+    fOutput->Add(fHistNCellsEnergy);
   }
 
   if (fAnaType == kEMCAL) {
@@ -414,15 +415,13 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
     if (!AcceptCluster(cluster, kTRUE))
       continue;
 
-    fHistClustersEnergy->Fill(cluster->E());
-
     sum += cluster->E();
 
-    Float_t pos[3];
-    cluster->GetPosition(pos);
-    TVector3 clusVec(pos);
-    fHistClusPhiEta->Fill(clusVec.Eta(), clusVec.Phi());
+    TLorentzVector nPart;
+    cluster->GetMomentum(nPart, fVertex);
 
+    fHistClusPhiEtaEnergy->Fill(cluster->E(), nPart.Eta(), nPart.Phi());
+    fHistNCellsEnergy->Fill(cluster->E(), cluster->GetNCells());
   }
 
   return sum;

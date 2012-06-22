@@ -1,7 +1,6 @@
 // $Id$
 
 AliAnalysisTaskSAJF* AddTaskSAJF(
-  const char *taskname           = "AliAnalysisTaskSAJF",
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
@@ -11,11 +10,12 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.4,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.2,
+  Double_t    jetareacut         = 0.4,
   Double_t    ptcut              = 0.15,
-  Double_t    jetBiasTrack       = 10,
-  Double_t    jetBiasClus        = 10,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC
+  Double_t    jetBiasTrack       = 5,
+  Double_t    jetBiasClus        = 5,
+  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
+  const char *taskname           = "AliAnalysisTaskSAJF"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -39,7 +39,27 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(taskname);
+  TString name(taskname);
+  name += "_";
+  name += njets;
+  name += "_";
+  name += nrho;
+  name += "_Track";
+  name += jetBiasTrack;
+  name += "_Clus";
+  name += jetBiasClus;
+  name += "_R0";
+  name += floor(jetradius*10+0.5);
+  name += "_PtCut";
+  name += floor(ptcut*1000+0.5);
+  name += "_";
+  if (type == AliAnalysisTaskEmcal::kTPC) 
+    name += "TPC";
+  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
+    name += "EMCAL";
+  else if (type == AliAnalysisTaskEmcal::kTPCSmall) 
+    name += "TPCSmall";
+  AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(name);
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);
   jetTask->SetClusName(nclusters);
@@ -63,7 +83,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  TString contname(taskname);
+  TString contname(name);
   contname += "_histos";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
