@@ -19,6 +19,7 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliHFMassFitter.h"
 #endif
@@ -32,7 +33,7 @@
 
 
 //
-enum {kD0toKpi, kDplusKpipi};
+enum {kD0toKpi, kDplusKpipi,kDsKKpi};
 enum {kBoth, kParticleOnly, kAntiParticleOnly};
 enum {kExpo=0, kLinear, kPol2};
 enum {kGaus=0, kDoubleGaus};
@@ -67,6 +68,7 @@ Int_t nevents[nsamples]={1.18860695e+08 /*LHC10dnewTPCpid*/,9.0374946e+07 /*LHC1
 // Functions
 
 Bool_t LoadDplusHistos(TObjArray* listFiles, TH1F** hMass);
+Bool_t LoadDsHistos(TObjArray* listFiles, TH1F** hMass);
 Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH1F** hMass);
 TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse=-1);
 
@@ -74,9 +76,10 @@ TH1F* RebinHisto(TH1F* hOrig, Int_t reb, Int_t firstUse=-1);
 
 
 void FitMassSpectra(Int_t analysisType=kDplusKpipi,
-	       TString fileNameb="",
-	       TString fileNamec="",
-	       TString fileNamed=""
+		    TString fileNameb="",
+		    TString fileNamec="",
+		    TString fileNamed="",
+		    TString fileNamee=""
 	       ){
   //
 
@@ -87,6 +90,7 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   if(fileNameb!="") listFiles->AddLast(new TObjString(fileNameb.Data()));
   if(fileNamec!="") listFiles->AddLast(new TObjString(fileNamec.Data()));
   if(fileNamed!="") listFiles->AddLast(new TObjString(fileNamed.Data()));
+  if(fileNamee!="") listFiles->AddLast(new TObjString(fileNamee.Data()));
   if(listFiles->GetEntries()==0){
     printf("Missing file names in input\n");
     return;
@@ -105,8 +109,12 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     retCode=LoadDplusHistos(listFiles,hmass);
     massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
   }
+  else if(analysisType==kDsKKpi){
+    retCode=LoadDsHistos(listFiles,hmass);
+    massD=TDatabasePDG::Instance()->GetParticle(431)->Mass();
+  }
   else{
-    printf("Wronganalysistype parameter\n");
+    printf("Wrong analysis type parameter\n");
     return;
   }
   if(!retCode){
@@ -336,10 +344,12 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
   if(optPartAntiPart==kParticleOnly) {
     if(analysisType==kD0toKpi) partname="D0";
     if(analysisType==kDplusKpipi) partname="Dplus";
+    if(analysisType==kDsKKpi) partname="Dsplus";
   }
   if(optPartAntiPart==kAntiParticleOnly) {
     if(analysisType==kD0toKpi) partname="D0bar";
     if(analysisType==kDplusKpipi) partname="Dminus";
+    if(analysisType==kDsKKpi) partname="Dsminus";
   }
 
   TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"update");
@@ -448,6 +458,102 @@ Bool_t LoadDplusHistos(TObjArray* listFiles, TH1F** hMass){
   return kTRUE;
 
 }
+
+
+Bool_t LoadDsHistos(TObjArray* listFiles, TH1F** hMass){
+
+  Int_t nFiles=listFiles->GetEntries();
+  TList **hlist=new TList*[nFiles];
+  AliRDHFCutsDstoKKpi** dcuts=new AliRDHFCutsDstoKKpi*[nFiles];
+
+  Int_t nReadFiles=0;
+  for(Int_t iFile=0; iFile<nFiles; iFile++){
+    TString fName=((TObjString*)listFiles->At(iFile))->GetString();    
+    TFile *f=TFile::Open(fName.Data());
+    if(!f){
+      printf("ERROR: file %s does not exist\n",fName.Data());
+      continue;
+    }
+    printf("Open File %s\n",f->GetName()); 
+    TDirectory *dir = (TDirectory*)f->Get("PWG3_D2H_InvMassDs");
+    if(!dir){
+      printf("ERROR: directory PWG3_D2H_InvMassDs not found in %s\n",fName.Data());
+      continue;
+    }
+    hlist[nReadFiles]=(TList*)dir->Get("coutputDs");
+    TList *listcut = (TList*)dir->Get("coutputDsCuts");
+    dcuts[nReadFiles]=(AliRDHFCutsDstoKKpi*)listcut->At(0);
+    cout<< dcuts[nReadFiles]<<endl;
+    if(nReadFiles>0){
+      Bool_t sameCuts=dcuts[nReadFiles]->CompareCuts(dcuts[0]);
+      if(!sameCuts){
+	printf("ERROR: Cut objects do not match\n");
+	return kFALSE;
+      }
+    }
+    nReadFiles++;
+  }
+  if(nReadFiles<nFiles){
+    printf("WARNING: not all requested files have been found\n");
+  }
+
+  Int_t nPtBinsCuts=dcuts[0]->GetNPtBins();
+  printf("Number of pt bins for cut object = %d\n",nPtBins);
+  Float_t *ptlimsCuts=dcuts[0]->GetPtBinLimits();
+  ptlimsCuts[nPtBinsCuts]=ptlimsCuts[nPtBinsCuts-1]+4.;
+
+  Int_t iFinBin=0;
+  for(Int_t i=0;i<nPtBinsCuts;i++){
+    if(ptlimsCuts[i]>=ptlims[iFinBin+1]) iFinBin+=1; 
+    if(iFinBin>nPtBins) break;
+    if(ptlimsCuts[i]>=ptlims[iFinBin] && 
+       ptlimsCuts[i+1]<=ptlims[iFinBin+1]){
+      for(Int_t iFile=0; iFile<nReadFiles; iFile++){
+	TString histoName;
+	if(optPartAntiPart==kBoth) histoName.Form("hMassAllPt%dphi",i);
+	else if(optPartAntiPart==kParticleOnly){
+	  printf("Particle/Antiparticle not yet enabled for Ds");
+	  histoName.Form("hMassAllPt%dphi",i);
+	}
+	else if(optPartAntiPart==kAntiParticleOnly){
+	  printf("Particle/Antiparticle not yet enabled for Ds");
+	  histoName.Form("hMassAllPt%dphi",i);
+	}
+	TH1F* htemp=(TH1F*)hlist[iFile]->FindObject(histoName.Data());
+	if(!htemp){
+	  printf("ERROR: Histogram %s not found\n",histoName.Data());
+	  return kFALSE;
+	}
+	if(!hMass[iFinBin]){
+	  hMass[iFinBin]=new TH1F(*htemp);
+	}else{
+	  hMass[iFinBin]->Add(htemp);
+	}
+      }
+    }
+  }
+  TString partname="Both";
+  if(optPartAntiPart==kParticleOnly) partname="Both";
+  if(optPartAntiPart==kAntiParticleOnly) partname="Both";
+
+  for(Int_t iFile=0; iFile<nReadFiles; iFile++){
+    TH2F* htemp2=(TH2F*)hlist[iFile]->FindObject("hPtVsMassPhi");
+    if(iFile==0){
+      hPtMass=new TH2F(*htemp2);
+    }else{
+      hPtMass->Add(htemp2);
+    }
+  }
+
+  TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"recreate");
+  outf->cd();
+  dcuts[0]->Write();
+  outf->Close();
+
+  return kTRUE;
+
+}
+
 
 Bool_t LoadD0toKpiHistos(TObjArray* listFiles, TH1F** hMass){
   //
