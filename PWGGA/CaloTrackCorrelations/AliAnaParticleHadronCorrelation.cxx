@@ -71,6 +71,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fLeadingTriggerIndex(-1),       fHMPIDCorrelation(0),  fFillBradHisto(0),
     fNAssocPtBins(0),               fAssocPtBinLimit(),
     fListMixEvents(),               fUseMixStoredInReader(0),
+    fM02MaxCut(0),                  fM02MinCut(0),       
     //Histograms
     fhPtLeading(0),                 fhPhiLeading(0),       
     fhEtaLeading(0),                
@@ -1669,7 +1670,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
 {
   
   //Initialize the parameters of the analysis.
-  SetInputAODName("PWG4Particle");
+  SetInputAODName("Particle");
   SetAODObjArrayName("Hadrons");  
   AddToHistogramsName("AnaHadronCorr_");
   
@@ -1702,6 +1703,9 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fAssocPtBinLimit[9]   = 50. ;
   
   fUseMixStoredInReader = kTRUE;
+  
+  fM02MinCut   = -1 ;
+  fM02MaxCut   = -1 ;
   
 }
 
@@ -1841,6 +1845,32 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(fLeadingTriggerIndex));
 
+    // check if it was a calorimeter cluster and if the SS cut was requested, if so, apply it
+    Int_t clID1  = particle->GetCaloLabel(0) ;
+    Int_t clID2  = particle->GetCaloLabel(1) ; // for photon clusters should not be set.
+    //printf("Leading for for %s: id1 %d, id2 %d, min %f, max %f, det %s\n",
+    //       GetInputAODName().Data(),clID1,clID2,fM02MinCut,fM02MaxCut,(particle->GetDetector()).Data());
+
+    if(clID1 > 0 && clID2 < 0 && fM02MaxCut > 0 && fM02MinCut > 0)
+    {
+      Int_t iclus = -1;
+      TObjArray* clusters = 0x0;
+      if     (particle->GetDetector() == "EMCAL") clusters = GetEMCALClusters();
+      else if(particle->GetDetector() == "PHOS" ) clusters = GetPHOSClusters();
+      
+      if(clusters)
+      {
+        AliVCluster *cluster = FindCluster(clusters,clID1,iclus); 
+        Float_t m02 = cluster->GetM02();
+        //printf("\t Check m02 = %2.2f\n",m02);
+        if(m02 > fM02MaxCut || m02 < fM02MinCut) 
+        {
+          //printf("\t \t Not accepted\n");
+          return;
+        }
+      }        
+    }
+    
     // Check if trigger is in fiducial region
     if(IsFiducialCutOn())
     {
