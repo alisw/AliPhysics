@@ -52,8 +52,10 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistTracksPt;             //!Pt spectrum of tracks
   TH2F                       *fHistTrPhiEta;             //!Phi-Eta distribution of tracks
   TH2F                       *fHistTrEmcPhiEta;          //!Phi-Eta emcal distribution of tracks
-  TH1F                       *fHistClustersEnergy;       //!Energy spectrum of clusters
-  TH2F                       *fHistClusPhiEta;           //!Phi-Eta distribution of clusters
+
+  TH3F                       *fHistClusPhiEtaEnergy;     //!Phi-Eta-Energy distribution of clusters
+  TH2F                       *fHistNCellsEnergy;         //!Number of cells vs. energy of cluster
+
   TH3F                       *fHistJetsPhiEtaPt[4];      //!Phi-Eta-Pt distribution of jets
   TH1F                       *fHistJetsPtNonBias[4];     //!Non biased inclusive jet pt spectrum
   TH1F                       *fHistJetsPtClus[4];        //!Inclusive jet pt spectrum cluster biased
@@ -75,6 +77,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 7) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 8) // Quality task for Emcal analysis
 };
 #endif
