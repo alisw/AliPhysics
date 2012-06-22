@@ -87,18 +87,18 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   AliVZEROEPSelectionTask *selTask = AddTaskVZEROEPSelection();
   
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/AddTaskSpectraAOD.C");
-  //LOOP OVER SELECTION
-  //                            0    1    2    3    4    5
   Bool_t mc=kFALSE;
-  Double_t CentCutMin[4]= {     0,  20,  20,  20};
-  Double_t CentCutMax[4]= {   100,  50,  50,  50};
-  Double_t QvecCutMin[4]=    {  0,   0,   0, 1.5};
-  Double_t QvecCutMax[4]=   { 100, 100, 0.4, 100};
+  //LOOP OVER SELECTION
+  //                            0    1    2    3    4    5    6    7    8    9
+  Double_t CentCutMin[4]= {     0,  30,  30,  30};
+  Double_t CentCutMax[4]= {     5,  40,  40,  40};
+  Double_t QvecCutMin[4]={      0,   0,   0, 1.5};
+  Double_t QvecCutMax[4]={    100, 100, 0.4, 100};
   Double_t EtaMin[4]={       -0.8,-0.8,-0.8,-0.8};
   Double_t EtaMax[4]={        0.8, 0.8, 0.8, 0.8};
   Double_t Nsigmapid=3.;
-  Double_t pt=5.;
-  Double_t p=5.;
+  Double_t pt=10.;
+  Double_t p=10.;
   Double_t y=.5;
   Double_t ptTofMatch=.6;
   UInt_t trkbit=1024;
@@ -106,18 +106,19 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   Bool_t UseCentPatchAOD049=kFALSE;
   Double_t DCA=100000;
   UInt_t minNclsTPC=70;
+  Int_t nrebin=10;
+  TString opt="";
   
   if(c==2||c==4)mc=kTRUE;
   if(c==1)UseCentPatchAOD049=kTRUE;
+  
   for(Int_t icut=0;icut<4;icut++){
     //if(icut!=0)continue;
-    AliAnalysisTaskSpectraAOD *taskAOD =AddTaskSpectraAOD(mc,CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC);
-    
+    AliAnalysisTaskSpectraAOD *taskAOD =AddTaskSpectraAOD(mc,CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,nrebin,opt);
     taskAOD->GetOutputSlot(1)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(1)->GetContainer()->GetName(),taskAOD->GetName()));
     taskAOD->GetOutputSlot(2)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(2)->GetContainer()->GetName(),taskAOD->GetName()));
     taskAOD->GetOutputSlot(3)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(3)->GetContainer()->GetName(),taskAOD->GetName()));
     taskAOD->GetOutputSlot(4)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(4)->GetContainer()->GetName(),taskAOD->GetName()));
-  
   }
   
   if (!mgr->InitAnalysis()) return;
