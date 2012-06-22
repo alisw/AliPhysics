@@ -339,9 +339,9 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
   if(dphiV0C > TMath::Pi())  dphiV0C -= TMath::Pi();
   if(dphiTPC > TMath::Pi())  dphiTPC -= TMath::Pi();
 
-cout<<"cos2V0: "<<cos2phiV0<<"  cos2V0A: "<<cos2phiV0A<<"  cos2V0C: "<<cos2phiV0C<<endl;
-cout<<mass<<"  "<<pt<<"  "<<phi<<"  "<<endl;
-cout<<" dphiV0: "<<dphiV0<<"    dphiV0A: "<<dphiV0A<<"  dphiV0C: "<<dphiV0C<<"+++++++"<<endl;
+  //cout<<"cos2V0: "<<cos2phiV0<<"  cos2V0A: "<<cos2phiV0A<<"  cos2V0C: "<<cos2phiV0C<<endl;
+  //cout<<mass<<"  "<<pt<<"  "<<phi<<"  "<<endl;
+  //cout<<" dphiV0: "<<dphiV0<<"    dphiV0A: "<<dphiV0A<<"  dphiV0C: "<<dphiV0C<<"+++++++"<<endl;
 
   Double_t xV0[5]; // Match ndims in fH  V0 EP
   xV0[0]       = mass;
