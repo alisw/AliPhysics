@@ -73,7 +73,7 @@ void runGrid(TString mode="test",Bool_t mc=1,Int_t day=15,Int_t month=6, Int_t y
   UInt_t minNclsTPC=70;
   Int_t nrebin=0;
   TString opt="";
-  
+ 
   for(Int_t icut=0;icut<4;icut++){
     //if(icut!=0)continue;
     AliAnalysisTaskSpectraAOD *taskAOD =AddTaskSpectraAOD(mc,CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,nrebin,opt);

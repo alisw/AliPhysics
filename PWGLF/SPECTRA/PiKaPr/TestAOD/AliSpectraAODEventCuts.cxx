@@ -66,7 +66,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, 
   fQVectorCutMax=10000.0;
   fVertexCutMin=-10.0;
   fVertexCutMax=10.0;
-  fMultiplicityCutMin=-0.0;
+  fMultiplicityCutMin=0.0;
   fMultiplicityCutMax=10000.0;
   fTrackBits=1;
 }

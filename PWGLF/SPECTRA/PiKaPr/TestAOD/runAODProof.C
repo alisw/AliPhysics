@@ -34,7 +34,7 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   handler->SetOverwriteMode();
   handler->SetRunMode(proofMode);
   handler->SetProofReset(0);
-  handler->SetAliROOTVersion("v5-03-32-AN");
+  handler->SetAliROOTVersion("v5-03-33-AN");
   
   //handler->SetNproofWorkers(80);
   //handler->SetNproofWorkersPerSlave(4);
@@ -55,7 +55,7 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
 
   handler->SetAliRootMode("default");
   handler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF -I$ALICE_ROOT/PWGLF");
-  //handler->SetAdditionalLibs("libPWGLFspectra.so");
+  handler->SetAdditionalLibs("libPWGLFspectra.so");
   // gROOT->LoadMacro("AliSpectraAODTrackCuts.cxx+g");
   // gROOT->LoadMacro("AliSpectraAODEventCuts.cxx+g");
   // gROOT->LoadMacro("AliSpectraAODHistoManager.cxx+g");
