@@ -972,8 +972,15 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
 
      Int_t iCount = 0;
      AliAODEvent *aod = 0;
+
+
+
+
      if(!fESD)aod = fAODIn;
      else aod = fAODOut;   
+
+     if(!aod)return iCount;
+
      Int_t index=-1;
      Double_t ptmax=-10;
     for(int it = 0;it < aod->GetNumberOfTracks();++it){
