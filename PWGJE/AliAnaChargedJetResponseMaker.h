@@ -82,6 +82,8 @@ class AliAnaChargedJetResponseMaker {
 
   virtual void FillResponseMatrixFineAndMerge();
 
+  virtual TH2* MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *hRM);
+
  protected:
   Bool_t      fDebug;
   ResolutionType fResolutionType;

@@ -179,7 +179,12 @@ void AliAnaChargedJetResponseMaker::SetMeasuredSpectrum(TH1D *hPtMeasured)
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 void AliAnaChargedJetResponseMaker::SetFlatEfficiency(Double_t eff) {
 
+  //
+  // Set flat efficiency to value of eff
+  //
+
   fEffFlat = eff;
+  return;
 
   Int_t nbins[fDimensions];
   Double_t xmin[fDimensions]; 
@@ -208,6 +213,10 @@ void AliAnaChargedJetResponseMaker::SetFlatEfficiency(Double_t eff) {
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 void AliAnaChargedJetResponseMaker::SetEfficiency(TGraphErrors *grEff)
 {
+  //
+  // Fill fEfficiency (THnSparse) with values from grEff
+  //
+
   Int_t nbins[fDimensions];
   Double_t xmin[fDimensions]; 
   Double_t xmax[fDimensions];
@@ -248,7 +257,12 @@ void AliAnaChargedJetResponseMaker::MakeResponseMatrixJetsFineMerged(Int_t skipB
   // Make jet response matrix
   //
 
-  if(!fPtMeasured) return;
+  if(fDebug) printf(">>AliAnaChargedJetResponseMaker::MakeResponseMatrixJetsFineMerged\n");
+
+  if(!fPtMeasured) {
+    if(fDebug) printf("fPtMeasured does not exist. Aborting!!\n");
+    return;
+  }
   if(fResponseMatrix)     { delete fResponseMatrix; }
   if(fResponseMatrixFine) { delete fResponseMatrixFine; }
 
@@ -270,7 +284,7 @@ void AliAnaChargedJetResponseMaker::MakeResponseMatrixJetsFineMerged(Int_t skipB
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 void AliAnaChargedJetResponseMaker::InitializeResponseMatrix() {
   //
-  //Define bin width of RM to be used for unfolding
+  //Define bin edges of RM to be used for unfolding
   //
 
   Int_t nbins[fDimensions*2];
@@ -292,7 +306,7 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrix() {
   printf("binWidthMeas: %f  binWidthUnf: %f   fBinWidthFactorUnfolded: %d\n",binWidthMeas,binWidthUnf,fBinWidthFactorUnfolded);
   printf("binWidthUnfLowPt: %f\n",binWidthUnfLowPt);
 
-  int tmp = round((fPtMaxUnfolded/binWidthUnf)); //nbins which fit between 0 and fPtMaxUnfolded
+  int tmp = round((fPtMaxUnfolded-fPtMinUnfolded)/binWidthUnf); //nbins which fit between 0 and fPtMaxUnfolded
   tmp = tmp - fSkipBinsUnfolded;
   fPtMinUnfolded = fPtMaxUnfolded-(double)(tmp)*binWidthUnf; //set ptmin unfolded
   fPtMaxUnfolded = fPtMinUnfolded+(double)(tmp)*binWidthUnf; //set ptmax unfolded
@@ -350,6 +364,7 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrix() {
   // Response matrix : dimensions must be 2N = 2 x (number of variables)
   // dimensions 0 ->  N-1 must be filled with reconstructed values
   // dimensions N -> 2N-1 must be filled with generated values
+  if(fResponseMatrix) delete fResponseMatrix;
   fResponseMatrix = new THnSparseD("fResponseMatrix","Response Matrix pTMC vs pTrec",fDimensions*2,nbins,xmin,xmax);
   fResponseMatrix->Sumw2();
   fResponseMatrix->GetAxis(fDimRec)->SetTitle("p_{T}^{rec}");
@@ -357,6 +372,16 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrix() {
 
   fResponseMatrix->SetBinEdges(fDimRec,binArrayPt0);
   fResponseMatrix->SetBinEdges(fDimGen,binArrayPt1);
+
+  Int_t bin[2] = {1,1};
+  for(int i=1; i<fResponseMatrix->GetAxis(0)->GetNbins(); i++) {
+    bin[0]=i;
+    for(int j=1; j<fResponseMatrix->GetAxis(1)->GetNbins(); j++) {
+    bin[1]=j;
+      fResponseMatrix->SetBinContent(bin,0.);
+    }
+  }
+
 
 
 }
@@ -449,6 +474,7 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrixFine() {
   // Response matrix : dimensions must be 2N = 2 x (number of variables)
   // dimensions 0 ->  N-1 must be filled with reconstructed values
   // dimensions N -> 2N-1 must be filled with generated values
+  if(fResponseMatrixFine) delete fResponseMatrixFine;
   fResponseMatrixFine = new THnSparseD("fResponseMatrixFine","Response Matrix pTMC vs pTrec",fDimensions*2,nbinsFine,xminFine,xmaxFine);
   fResponseMatrixFine->Sumw2();
   fResponseMatrixFine->GetAxis(fDimRec)->SetTitle("p_{T}^{rec}");
@@ -456,6 +482,15 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrixFine() {
 
   fResponseMatrixFine->SetBinEdges(fDimRec,binArrayPt0Fine);
   fResponseMatrixFine->SetBinEdges(fDimGen,binArrayPt1Fine);
+
+  Int_t bin[2] = {1,1};
+  for(int i=1; i<fResponseMatrixFine->GetAxis(0)->GetNbins(); i++) {
+    bin[0]=i;
+    for(int j=1; j<fResponseMatrixFine->GetAxis(1)->GetNbins(); j++) {
+    bin[1]=j;
+      fResponseMatrixFine->SetBinContent(bin,0.);
+    }
+  }
 
 }
 
@@ -498,6 +533,16 @@ void AliAnaChargedJetResponseMaker::FillResponseMatrixFineAndMerge() {
   //
   // Fill fine response matrix
   //
+
+  if(!fResponseMatrix) {
+    printf("Dimensions of fResponseMatrix have to be defined first. Aborting!");
+    return;
+  }
+
+  if(!fResponseMatrixFine) {
+    printf("Dimensions of fResponseMatrixFine have to be defined first. Aborting!");
+    return;
+  }
 
   TAxis *genAxis = fResponseMatrixFine->GetAxis(fDimGen);
   TAxis *recAxis = fResponseMatrixFine->GetAxis(fDimRec);
@@ -661,13 +706,78 @@ void AliAnaChargedJetResponseMaker::FillResponseMatrixFineAndMerge() {
 
 }
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *hRM) {
+
+  //
+  // Rebin matrix hRMFine to dimensions of hRM
+  // function returns matrix in TH2D format with dimensions from hRM
+  //
+
+  TH2 *hRM2 = (TH2*)hRM->Clone("hRM2");
+  hRM2->Reset();
+
+  //Forst normalize columns of input
+  const Int_t nbinsNorm = hRM2->GetNbinsX();
+  cout << "nbinsNorm: " << nbinsNorm << endl;
+
+  TArrayF *normVector = new TArrayF(nbinsNorm);
+
+  for(int ix=1; ix<=hRM2->GetNbinsX(); ix++) {
+    Double_t xLow = hRM2->GetXaxis()->GetBinLowEdge(ix);
+    Double_t xUp = hRM2->GetXaxis()->GetBinUpEdge(ix);
+    //cout << "xLow: " << xLow << " xUp: " << xUp << "\t center: " << hRM2->GetXaxis()->GetBinCenter(ix) << endl;
+    Int_t binxLowFine = hRMFine->GetXaxis()->FindBin(xLow);
+    Int_t binxUpFine = hRMFine->GetXaxis()->FindBin(xUp)-1;
+    //cout << "xLowFine: " << hRMFine->GetXaxis()->GetBinLowEdge(binxLowFine) << "\txUpFine: " << hRMFine->GetXaxis()->GetBinUpEdge(binxUpFine) << endl;
+    normVector->SetAt(hRMFine->Integral(binxLowFine,binxUpFine,1,hRMFine->GetYaxis()->GetNbins()),ix-1);
+  }
+
+  Double_t content, oldcontent = 0.;
+  Int_t ixNew = 0;
+  Int_t iyNew = 0;
+  Double_t xval, yval;
+  Double_t xmin = hRM2->GetXaxis()->GetXmin();
+  Double_t ymin = hRM2->GetYaxis()->GetXmin();
+  Double_t xmax = hRM2->GetXaxis()->GetXmax();
+  Double_t ymax = hRM2->GetYaxis()->GetXmax();
+  for(int ix=1; ix<=hRMFine->GetXaxis()->GetNbins(); ix++) {
+    xval = hRMFine->GetXaxis()->GetBinCenter(ix);
+    if(xval<xmin || xval>xmax) continue;
+    ixNew = hRM2->GetXaxis()->FindBin(xval);
+    for(int iy=1; iy<=hRMFine->GetYaxis()->GetNbins(); iy++) {
+      yval = hRMFine->GetYaxis()->GetBinCenter(iy);
+      if(yval<ymin || yval>ymax) continue;
+      content = hRMFine->GetBinContent(ix,iy);
+      iyNew = hRM2->GetYaxis()->FindBin(yval);
+      oldcontent = hRM2->GetBinContent(ixNew,iyNew);
+
+      // if(fDebug) cout << "ixNew: " << ixNew << " " << xval << " iyNew: " << iyNew << " " << yval << " content: " << content << " oldContent: " << oldcontent << " newContent: " << oldcontent+content << endl;
+      Double_t weight = 1.;
+      if(normVector->At(ixNew-1)>0.) weight = 1./normVector->At(ixNew-1);
+      hRM2->SetBinContent(ixNew,iyNew,oldcontent+content*weight);
+    }
+  }
+
+  if(normVector) delete normVector;
+  
+  return hRM2;
+
+}
+
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *hResponse,TH1 *hEfficiency,Bool_t bDrawSlices) {
 
   //
   // Multiply hGen with response matrix to obtain refolded spectrum
+  // Efficiency must be given. In case efficiency is 1 use SetFlatEfficiency(1.) before calling function
   //
+
+  if(!hEfficiency) {
+    printf("Efficiency must be given. In case efficiency is 1 use SetFlatEfficiency(1.) before calling function. Aborting!");
+    return 0;
+  }
 
   //For response
   //x-axis: generated
@@ -739,7 +849,10 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
     cout << "igen: " << igen << "\tpTMC: " << hGen->GetXaxis()->GetBinCenter(igen) << "\teff:" << eff << "\tsumYield: " << sumYield << endl;
   }
   
-  for(int i=0; i<=nbinsRec; i++) hRec->SetBinError(i+1,TMath::Sqrt(sumError2[i]));
+  for(int i=0; i<=nbinsRec; i++) {
+    if(sumError2[i]>0.)
+      hRec->SetBinError(i+1,TMath::Sqrt(sumError2[i]));
+  }
 
 
   return hRec;
@@ -748,11 +861,21 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TF1 *fGen, TH2 *hResponse,TH1 *hEfficiency) {
 
+  //
+  // Multiply fGen function with response matrix to obtain (re)folded spectrum
+  // Efficiency must be given. In case efficiency is 1 use SetFlatEfficiency(1.) before calling function
+  //
+
   //For response
   //x-axis: generated
   //y-axis: reconstructed
 
   if(fDebug>0) printf(">>AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TF1 *fGen, TH2 *hResponse,TH1 *hEfficiency)");
+
+  if(!hEfficiency) {
+    printf("Efficiency must be given. In case efficiency is 1 use SetFlatEfficiency(1.) before calling function. Aborting!");
+    return 0;
+  }
 
   TH1D *hRec = hResponse->ProjectionY("hRec");
   hRec->Sumw2();
