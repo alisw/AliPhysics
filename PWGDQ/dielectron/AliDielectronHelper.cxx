@@ -254,9 +254,7 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
   Int_t nAcc = 0;
   
   for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
-    AliVParticle* candidate = ev->GetTrack(iTrack);
-    if (!candidate) continue;
-    AliVTrack *track        = static_cast<AliVTrack*>(candidate);
+    AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
     if (!track) continue;
     if (varCuts->IsSelected(track) && trkCuts->IsSelected(track)) 
       nAcc++;
