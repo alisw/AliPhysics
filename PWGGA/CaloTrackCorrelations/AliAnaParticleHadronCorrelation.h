@@ -252,6 +252,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *       fhAssocPtBkg;                   //! Trigger pT vs associated pT for background
   TH2F **      fhDeltaPhiAssocPtBin;           //![fNAssocPtBins] Trigger pT vs dPhi for different associated pt bins
+  TH2F **      fhDeltaPhiAssocPtBinDEta08;     //![fNAssocPtBins] Trigger pT vs dPhi for different associated pt bins for Delta eta > 0.8
   TH2F **      fhDeltaPhiAssocPtBinHMPID;      //![fNAssocPtBins] Trigger pT vs dPhi for different associated pt bins, track with HMPID  
   TH2F **      fhDeltaPhiAssocPtBinHMPIDAcc;   //![fNAssocPtBins] Trigger pT vs dPhi for different associated pt bins, track with HMPIDAcc  
   TH2F **      fhDeltaPhiBradAssocPtBin;       //![fNAssocPtBins] Trigger pT vs dPhi Brad (?) for different associated pt bins
@@ -329,6 +330,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhMixDeltaPhiCharged  ;         //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F *       fhMixDeltaPhiDeltaEtaCharged  ; //! Difference of charged particle phi and trigger particle  phi as function eta difference
   TH2F **      fhMixDeltaPhiChargedAssocPtBin; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins
+  TH2F **      fhMixDeltaPhiChargedAssocPtBinDEta08; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins, delta eta > 0.8
   TH2F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi  as function eta difference, for different associated bins
 
   TH1I *       fhEventBin;                     //! Number of real  events in a particular bin (cen,vz,rp)
@@ -337,7 +339,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,17)
+  ClassDef(AliAnaParticleHadronCorrelation,18)
 } ;
  
 
