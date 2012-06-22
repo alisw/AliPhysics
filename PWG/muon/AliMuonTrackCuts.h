@@ -98,6 +98,8 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   
   /// Apply also sharp pt cut when matching with trigger
   void ApplySharpPtCutInMatching ( Bool_t sharpPtCut = kTRUE ) { fSharpPtCut = sharpPtCut; }
+  /// Get flag to apply the sharp pt cut when matching with trigger
+  Bool_t IsApplySharpPtCutInMatching () const { return fSharpPtCut; }
 
  private:
   

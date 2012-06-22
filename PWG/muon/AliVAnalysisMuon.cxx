@@ -127,6 +127,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fTriggerClasses->SetOwner();
   InitKeys();
   SetTrigClassPatterns();
+  SetTrigClassLevels();
   SetCentralityClasses();
 
   DefineOutput(1, TObjArray::Class());
@@ -161,6 +162,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonTrackCuts& tra
   fTriggerClasses->SetOwner();
   InitKeys();
   SetTrigClassPatterns();
+  SetTrigClassLevels();
   SetCentralityClasses();
   
   DefineOutput(1, TObjArray::Class());
@@ -195,6 +197,7 @@ AliVAnalysisMuon::AliVAnalysisMuon(const char *name, const AliMuonPairCuts& pair
   fTriggerClasses->SetOwner();
   InitKeys();
   SetTrigClassPatterns();
+  SetTrigClassLevels();
   SetCentralityClasses();
     
   DefineOutput(1, TObjArray::Class());
@@ -335,7 +338,7 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
     return;
   }
 
-  Double_t centrality = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
+  Double_t centrality = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
   Int_t centralityBin = fCentralityClasses->FindBin(centrality);
   TString centralityBinLabel = fCentralityClasses->GetBinLabel(centralityBin);
 
@@ -799,17 +802,10 @@ void AliVAnalysisMuon::SetTrigClassPatterns(TString pattern)
   ///
   /// Classes are filled dynamically according to the pattern
   /// - if name contains ! (without spaces): reject it
-  /// - in the matching pattern it is also possible to specify the
-  ///   pt cut level associated to the trigger
+  /// - otherwise, keep it
   /// example:
-  /// SetTrigClassPatterns("CMBAC CPBI1MSL:Lpt CPBI1MSH:Hpt !ALLNOTRD")
-  /// keeps classes containing CMBAC, CPBI1MSL and CPBI1MSH and not containing ALLNOTRD.
-  /// In addition, it knows that the class matching CPBI1MSL requires an Lpt trigger
-  /// and the one with CPBI1MSH requires a Hpt trigger.
-  /// Hence, in the analysis, the function
-  /// TrackPtCutMatchTrigClass(track, "CPBIMSL") returns true if track match Lpt
-  /// TrackPtCutMatchTrigClass(track, "CPBIMSL") returns true if track match Hpt
-  /// TrackPtCutMatchTrigClass(track, "CMBAC") always returns true
+  /// SetTrigClassPatterns("CMBAC !ALLNOTRD")
+  /// keeps classes containing CMBAC, and not containing ALLNOTRD.
   ///
   /// CAVEAT: if you use an fCFContainer and you want an axis to contain the trigger classes,
   ///         please be sure that each pattern matches only 1 trigger class, or triggers will be mixed up
@@ -819,12 +815,9 @@ void AliVAnalysisMuon::SetTrigClassPatterns(TString pattern)
   if ( fSelectedTrigPattern->GetEntries() > 0 ) fSelectedTrigPattern->Delete();
   fRejectedTrigPattern->SetOwner();
   if ( fRejectedTrigPattern->GetEntries() > 0 ) fRejectedTrigPattern->Delete();
-  fSelectedTrigLevel->SetOwner();
-  if ( fSelectedTrigLevel->GetEntries() > 0 ) fSelectedTrigLevel->Delete();
 
   pattern.ReplaceAll("  "," ");
   pattern.ReplaceAll("! ","!");
-  pattern.ReplaceAll(" :",":");
 
   TObjArray* fullList = pattern.Tokenize(" ");
 
@@ -834,18 +827,53 @@ void AliVAnalysisMuon::SetTrigClassPatterns(TString pattern)
       currPattern.ReplaceAll("!","");
       fRejectedTrigPattern->AddLast(new TObjString(currPattern));
     }
-    else {
-      TObjArray* arr = currPattern.Tokenize(":");
-      fSelectedTrigPattern->AddLast(new TObjString(arr->At(0)->GetName()));
-      TString selTrigLevel = ( arr->At(1) ) ? arr->At(1)->GetName() : "none";
-      selTrigLevel.ToUpper();
-      fSelectedTrigLevel->AddLast(new TObjString(selTrigLevel));
-      delete arr;
-    }
+    else fSelectedTrigPattern->AddLast(new TObjString(currPattern));
   }
   
   delete fullList;
 }
+
+//________________________________________________________________________
+void AliVAnalysisMuon::SetTrigClassLevels(TString pattern)
+{
+  /// Set trigger cut level associated to the trigger class
+  ///
+  /// example:
+  /// SetTrigClassLevels("MSL:Lpt MSH:Hpt")
+  ///
+  /// For the trigger classes defined in SetTrigClassPatterns
+  /// it check if they contains the keywords MSL or MSH
+  /// Hence, in the analysis, the function
+  /// TrackPtCutMatchTrigClass(track, "CPBIMSL") returns true if track match Lpt
+  /// TrackPtCutMatchTrigClass(track, "CPBIMSH") returns true if track match Hpt
+  /// TrackPtCutMatchTrigClass(track, "CMBAC") always returns true
+  
+  fSelectedTrigLevel->SetOwner();
+  if ( fSelectedTrigLevel->GetEntries() > 0 ) fSelectedTrigLevel->Delete();
+  
+  pattern.ReplaceAll("  "," ");
+  pattern.ReplaceAll(" :",":");
+  
+  TObjArray* fullList = pattern.Tokenize(" ");
+  
+  for ( Int_t ipat=0; ipat<fullList->GetEntries(); ++ipat ) {
+    TString currPattern = fullList->At(ipat)->GetName();
+    TObjArray* arr = currPattern.Tokenize(":");
+    TObjString* trigClassPattern = new TObjString(arr->At(0)->GetName());
+    TString selTrigLevel = arr->At(1)->GetName();
+    selTrigLevel.ToUpper();
+    UInt_t trigLevel = 0;
+    if ( selTrigLevel.Contains("APT") ) trigLevel = 1;
+    else if ( selTrigLevel.Contains("LPT") ) trigLevel = 2;
+    else if ( selTrigLevel.Contains("HPT") ) trigLevel = 3;
+    trigClassPattern->SetUniqueID(trigLevel);
+    fSelectedTrigLevel->AddLast(trigClassPattern);
+    delete arr;
+  }
+  
+  delete fullList;
+}
+
 
 //________________________________________________________________________
 void AliVAnalysisMuon::SetCentralityClasses(Int_t nCentralityBins, Double_t* centralityBins)
@@ -912,38 +940,48 @@ TObjArray* AliVAnalysisMuon::BuildTriggerClasses(TString firedTrigClasses)
   selectedTrigClasses->SetOwner();
   
   TObjArray* firedTrigClassesList = firedTrigClasses.Tokenize(" ");
-
+  
+  UInt_t trigLevel = 0;
   for ( Int_t itrig=0; itrig<firedTrigClassesList->GetEntries(); ++itrig ) {
     TString trigName = ((TObjString*)firedTrigClassesList->At(itrig))->GetString();
-    Bool_t rejectTrig = kFALSE;
-    for ( Int_t ipat=0; ipat<fRejectedTrigPattern->GetEntries(); ++ipat ) {
-      if ( trigName.Contains(fRejectedTrigPattern->At(ipat)->GetName() ) ) {
-        rejectTrig = kTRUE;
-        break;
-      }
-    } // loop on reject pattern
-    if ( rejectTrig ) continue;
+    
+    TObject* foundTrig = fTriggerClasses->FindObject(trigName.Data());
+    if ( foundTrig ) trigLevel = foundTrig->GetUniqueID();
+    else {
+      Bool_t rejectTrig = kFALSE;
+      for ( Int_t ipat=0; ipat<fRejectedTrigPattern->GetEntries(); ++ipat ) {
+        if ( trigName.Contains(fRejectedTrigPattern->At(ipat)->GetName() ) ) {
+          rejectTrig = kTRUE;
+          break;
+        }
+      } // loop on reject pattern
+      if ( rejectTrig ) continue;
 
-    Int_t matchPatternIndex = -1;
-    for ( Int_t ipat=0; ipat<fSelectedTrigPattern->GetEntries(); ++ipat ) {
-      if ( trigName.Contains(fSelectedTrigPattern->At(ipat)->GetName() ) ) {
-        matchPatternIndex = ipat;
-        break;
-      }
-    } // loop on keep pattern
-    if ( matchPatternIndex < 0 ) continue;
-
-    selectedTrigClasses->AddLast(new TObjString(trigName));
-    if ( fTriggerClasses->FindObject(trigName.Data()) ) continue;
-    Int_t trigLevel = 0;
-    TString trigLevelString = fSelectedTrigLevel->At(matchPatternIndex)->GetName();
-    if ( trigLevelString.Contains("APT") ) trigLevel = 1;
-    else if ( trigLevelString.Contains("LPT") ) trigLevel = 2;
-    else if ( trigLevelString.Contains("HPT") ) trigLevel = 3;
-    AliInfo(Form("Adding %s to considered trigger classes",trigName.Data()));
+      rejectTrig = kTRUE;
+      for ( Int_t ipat=0; ipat<fSelectedTrigPattern->GetEntries(); ++ipat ) {
+        if ( trigName.Contains(fSelectedTrigPattern->At(ipat)->GetName() ) ) {
+          rejectTrig = kFALSE;
+          break;
+        }
+      } // loop on keep pattern
+      if ( rejectTrig ) continue;
+    
+      trigLevel = 0;
+      for ( Int_t ipat=0; ipat<fSelectedTrigLevel->GetEntries(); ++ipat ) {
+        if ( trigName.Contains(fSelectedTrigLevel->At(ipat)->GetName() ) ) {
+          trigLevel = fSelectedTrigLevel->At(ipat)->GetUniqueID();
+          break;
+        }
+      } // loop on trig level patterns      
+    }
+    TObjString* currTrig = new TObjString(trigName);
+    currTrig->SetUniqueID(trigLevel);
+    selectedTrigClasses->AddLast(currTrig);
+    
+    if ( foundTrig ) continue;
+    AliInfo(Form("Adding %s (trig level %u) to considered trigger classes",trigName.Data(),trigLevel));
     TObjString* addTrig = new TObjString(trigName);
-    UInt_t uniqueId = trigLevel;
-    addTrig->SetUniqueID(uniqueId);
+    addTrig->SetUniqueID(trigLevel);
     fTriggerClasses->Add(addTrig);
   } // loop on trigger classes
 
@@ -959,7 +997,13 @@ Bool_t AliVAnalysisMuon::TrackPtCutMatchTrigClass(AliVParticle* track, TString t
   /// Check if track passes the trigger pt cut level used in the trigger class
   Int_t matchTrig = ( fAODEvent ) ? ((AliAODTrack*)track)->GetMatchTrigger() : ((AliESDMuonTrack*)track)->GetMatchTrigger();
   Int_t classMatchLevel = GetTrigClassPtCutLevel(trigClassName);
-  return matchTrig >= classMatchLevel;
+  Bool_t matchTrackerPt = kTRUE;
+  if ( fMuonTrackCuts && fMuonTrackCuts->IsApplySharpPtCutInMatching() ) {
+    matchTrackerPt = ( track->Pt() >= fMuonTrackCuts->GetSharpPtCut(classMatchLevel-1,kFALSE) );
+  }
+  Bool_t passCut = ( ( matchTrig >= classMatchLevel ) && matchTrackerPt );
+  AliDebug(1,Form("Class %s  matchTrig %i  trackMatchTrig %i  trackPt %g (required %i)  passCut %i", trigClassName.Data(), classMatchLevel, matchTrig, track->Pt(), fMuonTrackCuts->IsApplySharpPtCutInMatching(),passCut));
+  return passCut;
 }
 
 
