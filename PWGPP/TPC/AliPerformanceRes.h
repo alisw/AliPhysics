@@ -80,6 +80,8 @@ public :
   //
   THnSparse *GetResolHisto() const  { return fResolHisto; }
   THnSparse *GetPullHisto()  const  { return fPullHisto; }
+  static void SetMergeEntriesCut(Double_t entriesCut){fgkMergeEntriesCut = entriesCut;}
+
 private:
   //
   // Control histograms
@@ -102,6 +104,7 @@ private:
 
   AliPerformanceRes(const AliPerformanceRes&); // not implemented
   AliPerformanceRes& operator=(const AliPerformanceRes&); // not implemented
+  static Double_t            fgkMergeEntriesCut;  //maximal number of entries for merging  -can be modified via setter
 
   ClassDef(AliPerformanceRes,1);
 };
