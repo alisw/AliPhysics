@@ -33,9 +33,10 @@
 ClassImp(AliTrackFixTenderSupply)
 
 AliTrackFixTenderSupply::AliTrackFixTenderSupply() :
-fBz(0),
+fDebug(0),
+  fBz(0),
   fParams(0),
-  fOADBObjPath("$OADB/PWGPP/Data/CorrPTInv.root"),
+  fOADBObjPath("$OADB/PWGPP/data/CorrPTInv.root"),
   fOADBObjName("CorrPTInv"),
   fOADBCont(0)
 {
@@ -45,9 +46,10 @@ fBz(0),
 //_____________________________________________________
 AliTrackFixTenderSupply::AliTrackFixTenderSupply(const char *name, const AliTender *tender) :
   AliTenderSupply(name,tender),
+  fDebug(0),
   fBz(0),
   fParams(0),
-  fOADBObjPath("$OADB/PWGPP/CorrPTInv.root"),
+  fOADBObjPath("$OADB/PWGPP/data/CorrPTInv.root"),
   fOADBObjName("CorrPTInv"),
   fOADBCont(0)
 {
@@ -86,7 +88,7 @@ void AliTrackFixTenderSupply::ProcessEvent()
     if (vtx && vtx->GetStatus()<1) vtx = 0;
   }
   vtxTPC = event->GetPrimaryVertexTPC(); // vertex to be used for update via RelateToVertexTPC
-  if (vtxTPC && vtx->GetStatus()<1) vtxTPC = 0;
+  if (vtxTPC && vtxTPC->GetStatus()<1) vtxTPC = 0;
   //  
   AliExternalTrackParam* extPar = 0;
   double xOrig = 0;
@@ -107,6 +109,12 @@ void AliTrackFixTenderSupply::ProcessEvent()
     }
     double phi = parInner->Phi();
     //
+    if (fDebug>1) {
+      AliInfo(Form("Tr:%4d kITSin:%d Phi=%+5.2f at X=%+7.2f | SideA fraction: %.3f",itr,trc->IsOn(AliESDtrack::kITSin),phi,parInner->GetX(),sideAfraction));
+      AliInfo(Form("Main Param before corr. in mode %s, xIni:%.1f",cormode== AliOADBTrackFix::kCorModeGlob ?  "Glo":"TPC",xIniCor));
+      trc->AliExternalTrackParam::Print();
+    }
+    //
     if (xIniCor>0) trc->PropagateTo(xIniCor,fBz);
     CorrectTrackPtInv(trc, cormode, sideAfraction, phi);
     if (xIniCor>0) {                             // full update is requested
@@ -114,17 +122,31 @@ void AliTrackFixTenderSupply::ProcessEvent()
       else     trc->PropagateTo(xOrig, fBz);            // otherwise bring to original point
     }
     // 
+    if (fDebug>1) {
+      AliInfo("Main Param after corr.");
+      trc->AliExternalTrackParam::Print();
+    }
     // correct TPCinner param
     if ( (extPar=(AliExternalTrackParam*)trc->GetTPCInnerParam()) ) {
       cormode = AliOADBTrackFix::kCorModeTPCInner;
       xOrig = extPar->GetX();
       xIniCor = fParams->GetXIniPtInvCorr(cormode);
+      if (fDebug>1) {
+	AliInfo(Form("TPCinner Param before corr. in mode %s, xIni:%.1f",cormode== AliOADBTrackFix::kCorModeGlob ?  "Glo":"TPC",xIniCor));
+	extPar->AliExternalTrackParam::Print();
+      }
+      //
       if (xIniCor>0) extPar->PropagateTo(xIniCor,fBz);
       CorrectTrackPtInv(extPar,cormode,sideAfraction, phi);
       if (xIniCor>0) {                              // full update is requested
 	if (vtxTPC) trc->RelateToVertexTPC(vtxTPC, fBz, kVeryBig);  // redo DCA if vtx is available
 	else        extPar->PropagateTo(xOrig, fBz);                // otherwise bring to original point
       }
+      //
+      if (fDebug>1) {
+	AliInfo("TPCinner Param after corr.");
+	extPar->AliExternalTrackParam::Print();
+      }      
     }
     //
   }

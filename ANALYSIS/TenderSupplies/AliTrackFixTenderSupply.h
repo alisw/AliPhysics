@@ -43,11 +43,15 @@ public:
   TString& GetOADBObjPath()                 const  { return (TString&)fOADBObjPath; }
   TString& GetOADBObjName()                 const  { return (TString&)fOADBObjName; }
   //
+  void     SetDebugLevel(Int_t l=1)                {fDebug = l;}
+  Int_t    GetDebugLevel()                  const  {return fDebug;}
+  //
 private:
   
   AliTrackFixTenderSupply(const AliTrackFixTenderSupply&c);
   AliTrackFixTenderSupply& operator= (const AliTrackFixTenderSupply&c);
   //
+  Int_t             fDebug;                  // Debug level
   Double_t          fBz;                     // mag field from ESD
   AliOADBTrackFix*  fParams;                 // parameters for current run
   TString           fOADBObjPath;            // path of file with parameters to use, starting from OADB dir
