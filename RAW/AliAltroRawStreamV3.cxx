@@ -346,7 +346,7 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   }
   if ((fBunchDataIndex + fBunchLength) > fCount) {
     // Too long bunch detected
-    AliWarning(Form("Too long bunch detected @ %d in Address=0x%x (DDL=%03d) ! Expected <= %d 10-bit words, found %d !", fBunchDataIndex,
+    AliDebug(1,Form("Too long bunch detected @ %d in Address=0x%x (DDL=%03d) ! Expected <= %d 10-bit words, found %d !", fBunchDataIndex,
 		    fHWAddress,fDDLNumber,fCount-fBunchDataIndex,fBunchLength));
     fRawReader->AddMinorErrorLog(kAltroBunchHeadErr,Form("hw=0x%x",fHWAddress));
     if (AliDebugLevel() > 0) HexDumpChannel();
