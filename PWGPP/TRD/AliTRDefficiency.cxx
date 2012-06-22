@@ -141,10 +141,10 @@ TH1* AliTRDefficiency::PlotBasicEff(const AliTRDtrackV1 *track)
     else if(fkMC->GetLabel() == -fkMC->GetTRDlabel()) val[4] = 1.;
     else val[4] = -1.;
   }
-  val[6] = 0;//fkTrack->GetNumberOfTracklets();
+  val[5] = 0;//fkTrack->GetNumberOfTracklets();
   // down scale PID resolution
-  Int_t spc(fSpecies); if(spc==3) spc=2; if(spc==-3) spc=-2;
-  val[7] = spc;
+  Int_t spc(fSpecies); if(spc==3) spc=2; if(spc==-3) spc=-2; if(spc>3) spc=3; if(spc<-3) spc=-3;
+  val[6] = spc;
   H->Fill(val);
   return NULL;
 }
