@@ -75,7 +75,9 @@ Double_t AliOADBTrackFix::GetPtInvCorr(int mode, double sideAfrac, double phi) c
   if (!fPtInvCor[mode][0] || !fPtInvCor[mode][1]) return 0; // no graph 
   while (phi>2*TMath::Pi()) phi -= 2*TMath::Pi();
   while (phi<0) phi += 2*TMath::Pi();  
-  int bin = int( phi/(2*TMath::Pi())*fPtInvCor[mode][0]->GetN());
+  int nb = fPtInvCor[mode][0]->GetN();
+  int bin = int( phi/(2*TMath::Pi())*nb );
+  if (bin==nb) bin = nb-1;
   return sideAfrac*fPtInvCor[mode][0]->GetY()[bin] + (1.-sideAfrac)*fPtInvCor[mode][1]->GetY()[bin];
 }
 
