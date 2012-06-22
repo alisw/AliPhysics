@@ -291,9 +291,9 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
 
   DefineInput(0,TChain::Class());
   DefineOutput(1, TList::Class());
-  for(Int_t bincless = 0; bincless < fNbBinsCentralityQCumulant; bincless++) {
-    DefineOutput(bincless+2,AliFlowEventSimple::Class()); 
-  }
+  //for(Int_t bincless = 0; bincless < fNbBinsCentralityQCumulant; bincless++) {
+  //  DefineOutput(bincless+2,AliFlowEventSimple::Class()); 
+  //}
   
 }
 //____________________________________________________________
@@ -503,18 +503,20 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   //AliFlowTrackCuts::trackParameterMix rpmix = AliFlowTrackCuts::kPure;
   //AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: User create output objects");
+  AliDebug(2,"test");
+
+  AliDebug(2,"AliAnalysisTaskHFEFlow: User create output objects");
  
   // AOD or ESD
   AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
     SetAODAnalysis(kTRUE);
-    //printf("Put AOD analysis on\n");
+    AliDebug(2,"Put AOD analysis on");
   } else {
     SetAODAnalysis(kFALSE);
   }
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: AOD ESD");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: AOD ESD");
 
   // RP TRACK CUTS:
   fcutsRP = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010();
@@ -524,7 +526,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   //TList *qaCutsRP = fcutsRP->GetQA();
   //qaCutsRP->SetName("QA_StandartTPC_RP");
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: cutsRP");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: cutsRP");
 
   //POI TRACK CUTS:
   fcutsPOI = new AliFlowTrackCuts("dummy");
@@ -532,7 +534,13 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fcutsPOI->SetPtRange(+1,-1); // select nothing QUICK
   fcutsPOI->SetEtaRange(+1,-1); // select nothing VZERO
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: cutsPOI");
+  if( fflowEvent ){ 
+    fflowEvent->~AliFlowEvent();
+    new(fflowEvent) AliFlowEvent(fcutsRP,fcutsPOI);
+  }
+  else fflowEvent = new AliFlowEvent(fcutsRP,fcutsPOI);
+    
+  AliDebug(2,"AliAnalysisTaskHFEFlow: cutsPOI");
 
   // Flow
   AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
@@ -552,7 +560,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   cc->SetQMin(0.0);
   cc->SetQMax(3.0);
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: common constants");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: common constants");
 
   
   // HFE cuts
@@ -564,23 +572,32 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fHFECuts->Initialize();
   if(fAODAnalysis) fHFECuts->SetAOD();  
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: HFE cuts");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: HFE cuts");
 
 
   // PID HFE
   //fPID->SetHasMCData(HasMCData());
+  if(!fPID) {
+    fPID =new AliHFEpid("hfePid");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: pid init 0");
+  }
+  AliDebug(2,"AliAnalysisTaskHFEFlow: pid init 1");
   if(!fPID->GetNumberOfPIDdetectors()) fPID->AddDetector("TPC", 0);
+  AliDebug(2,Form("AliAnalysisTaskHFEFlow: GetNumber of PID detectors %d",fPID->GetNumberOfPIDdetectors()));
   fPID->InitializePID();
+  AliDebug(2,"Init ");
   fPIDqa->Initialize(fPID);
+  AliDebug(2,"Init qa");
   fPID->SortDetectors();
+  AliDebug(2,"Sort detectors");
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: pid and pidqa");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: pid and pidqa");
 
   if(!fPIDTOFOnly->GetNumberOfPIDdetectors()) fPIDTOFOnly->AddDetector("TPC", 0);
   fPIDTOFOnly->InitializePID();
   fPIDTOFOnly->SortDetectors();
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: pidtof");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: pidtof");
 
   // HFE Background cuts
 
@@ -597,7 +614,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
      fHFEBackgroundCuts->SetPtRange(0.3,1e10);
   }
   
-  AliDebug(1,"AliAnalysisTaskHFEFlow: hfe background");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: hfe background");
 
   // PID background HFE
   if(!fPIDBackground->GetNumberOfPIDdetectors()) fPIDBackground->AddDetector("TPC", 0);
@@ -605,7 +622,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fPIDBackgroundqa->Initialize(fPIDBackground);
   fPIDBackground->SortDetectors();
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: pid background");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: pid background");
   
 
 
@@ -675,7 +692,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t binLimPhi[nBinsPhi+1];
   for(Int_t i=0; i<=nBinsPhi; i++) {
     binLimPhi[i]=(Double_t)minPhi + (maxPhi-minPhi)/nBinsPhi*(Double_t)i ;
-    //printf("bin phi is %f for %d\n",binLimPhi[i],i);
+    AliDebug(2,Form("bin phi is %f for %d",binLimPhi[i],i));
   }
 
   Int_t nBinsPhiLess = 2.0;
@@ -700,7 +717,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t binLimAngle[nBinsAngle+1];
   for(Int_t i=0; i<=nBinsAngle; i++) {
     binLimAngle[i]=(Double_t)minAngle + (maxAngle-minAngle)/nBinsAngle*(Double_t)i ;
-    //printf("bin phi is %f for %d\n",binLimPhi[i],i);
+    AliDebug(2,Form("bin phi is %f for %d",binLimPhi[i],i));
   }
 
   Int_t nBinsCharge = 2;
@@ -721,7 +738,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   Double_t binLimInvMass[nBinsInvMass+1];
   for(Int_t i=0; i<=nBinsInvMass; i++) binLimInvMass[i]=(Double_t)minInvMass + (maxInvMass-minInvMass)/nBinsInvMass*(Double_t)i ;
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: variables");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: variables");
   
   //******************
   // Histograms
@@ -730,14 +747,14 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner();
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: list");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: list");
 
   // Minimum histos
 
   // Histos
   fHistEV = new TH2D("fHistEV", "events", 3, 0, 3, 3, 0,3);
   
-  AliDebug(1,"AliAnalysisTaskHFEFlow: histev");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: histev");
 
   // Event plane as function of phiep, centrality
   const Int_t nDima=5;
@@ -750,7 +767,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fEventPlane->SetBinEdges(4,binLimC);
   fEventPlane->Sumw2();
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: eventplane");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: eventplane");
 
   // Resolution cosres_abc centrality
   const Int_t nDimfbis=4;
@@ -762,7 +779,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fCosResabc->SetBinEdges(3,binLimCMore);
   fCosResabc->Sumw2();
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: cosresabc");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: cosresabc");
 
   // Resolution cosres centrality
   const Int_t nDimf=2;
@@ -772,7 +789,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fCosRes->SetBinEdges(1,binLimCMore);
   fCosRes->Sumw2();
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: cosres");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: cosres");
 
   // Maps delta phi
   const Int_t nDimg=5;
@@ -785,7 +802,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fDeltaPhiMaps->SetBinEdges(4,binLimEtaLess);
   fDeltaPhiMaps->Sumw2();  
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: deltaphimaps");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: deltaphimaps");
 
   // Maps cos phi
   const Int_t nDimh=5;
@@ -798,7 +815,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fCosPhiMaps->SetBinEdges(4,binLimEtaLess);
   fCosPhiMaps->Sumw2();
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: cosphimaps");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: cosphimaps");
 
   //
   // fMonitorEventPlane
@@ -814,7 +831,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fEventPlaneaftersubtraction->SetBinEdges(1,binLimC);
     fEventPlaneaftersubtraction->Sumw2();
 
-    AliDebug(1,"AliAnalysisTaskHFEFlow: eventplane after sub");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: eventplane after sub");
     
     // Monitoring of the event Plane cos(2phi) sin(2phi) centrality
     const Int_t nDimi=3;
@@ -825,7 +842,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fCosSin2phiep->SetBinEdges(2,binLimCMore);
     fCosSin2phiep->Sumw2();
 
-    AliDebug(1,"AliAnalysisTaskHFEFlow: cossin2phiep");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: cossin2phiep");
     
     // Monitoring Event plane after subtraction of the track
     const Int_t nDime=4;
@@ -836,35 +853,35 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fCos2phie->SetBinEdges(0,binLimCos);
     fCos2phie->SetBinEdges(1,binLimC);
     fCos2phie->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: cos2phie");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: cos2phie");
     fSin2phie = new THnSparseF("sin2phie","sin2phie",nDime,nBine);
     fSin2phie->SetBinEdges(2,binLimPt);
     fSin2phie->SetBinEdges(3,binLimEta);
     fSin2phie->SetBinEdges(0,binLimCos);
     fSin2phie->SetBinEdges(1,binLimC);
     fSin2phie->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: sin2phie");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: sin2phie");
     fCos2phiep = new THnSparseF("cos2phiep","cos2phiep",nDime,nBine);
     fCos2phiep->SetBinEdges(2,binLimPt);
     fCos2phiep->SetBinEdges(3,binLimEta);
     fCos2phiep->SetBinEdges(0,binLimCos);
     fCos2phiep->SetBinEdges(1,binLimC);
     fCos2phiep->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: cos2phiep");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: cos2phiep");
     fSin2phiep = new THnSparseF("sin2phiep","sin2phiep",nDime,nBine);
     fSin2phiep->SetBinEdges(2,binLimPt);
     fSin2phiep->SetBinEdges(3,binLimEta);
     fSin2phiep->SetBinEdges(0,binLimCos);
     fSin2phiep->SetBinEdges(1,binLimC);
     fSin2phiep->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: sin2phiep");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: sin2phiep");
     fSin2phiephiep = new THnSparseF("sin2phie_phiep","sin2phie_phiep",nDime,nBine);
     fSin2phiephiep->SetBinEdges(2,binLimPt);
     fSin2phiephiep->SetBinEdges(3,binLimEta);
     fSin2phiephiep->SetBinEdges(0,binLimCos);
     fSin2phiephiep->SetBinEdges(1,binLimC);
     fSin2phiephiep->Sumw2();  
-    AliDebug(1,"AliAnalysisTaskHFEFlow: sin2phiephiep");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: sin2phiephiep");
     
     const Int_t nDimfbiss=4;
     Int_t nBinfbiss[nDimfbiss] = {nBinsCos,nBinsCos,nBinsCos,nBinsC};
@@ -874,7 +891,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fSinResabc->SetBinEdges(2,binLimCos);
     fSinResabc->SetBinEdges(3,binLimC);
     fSinResabc->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: sinresabc");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: sinresabc");
     
     // Profile cosres centrality with 3 subevents
     fProfileCosResab = new TProfile("ProfileCosRes_a_b","ProfileCosRes_a_b",nBinsCMore,binLimCMore);
@@ -883,7 +900,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fProfileCosResac->Sumw2();
     fProfileCosResbc = new TProfile("ProfileCosRes_b_c","ProfileCosRes_b_c",nBinsCMore,binLimCMore);
     fProfileCosResbc->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: profilecosresbc");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: profilecosresbc");
     
     //
     const Int_t nDimff=2;
@@ -892,17 +909,17 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fSinRes->SetBinEdges(0,binLimCos);
     fSinRes->SetBinEdges(1,binLimC);
     fSinRes->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: sinres");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: sinres");
     
     // Profile cosres centrality
     fProfileCosRes = new TProfile("ProfileCosRes","ProfileCosRes",nBinsCMore,binLimCMore);
     fProfileCosRes->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: profilecosres");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: profilecosres");
     
     // Profile Maps cos phi
     fProfileCosPhiMaps = new TProfile2D("ProfileCosPhiMaps","ProfileCosPhiMaps",nBinsC,binLimC,nBinsPt,binLimPt);
     fProfileCosPhiMaps->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: profilecosphimaps");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: profilecosphimaps");
 
   }
   //
@@ -917,7 +934,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fTrackingCuts->SetBinEdges(0,binLimPt);
     fTrackingCuts->SetBinEdges(1,binLimStep);
     fTrackingCuts->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: trackingcuts");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: trackingcuts");
   }
 
   //
@@ -934,7 +951,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fDeltaPhiMapsContamination->SetBinEdges(2,binLimPt);
     fDeltaPhiMapsContamination->SetBinEdges(3,binLimTPCdEdx);
     fDeltaPhiMapsContamination->Sumw2();  
-    AliDebug(1,"AliAnalysisTaskHFEFlow: deltaphimapscontamination");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: deltaphimapscontamination");
   }
   //
   // fMonitorWithoutPID
@@ -950,7 +967,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fDeltaPhiMapsBeforePID->SetBinEdges(1,binLimC);
     fDeltaPhiMapsBeforePID->SetBinEdges(2,binLimPt);
     fDeltaPhiMapsBeforePID->Sumw2();  
-    AliDebug(1,"AliAnalysisTaskHFEFlow: deltaphimapsbeforepid");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: deltaphimapsbeforepid");
     
     const Int_t nDimhb=3;
     Int_t nBinhb[nDimhb] = {nBinsCos,nBinsC,nBinsPt};
@@ -960,7 +977,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fCosPhiMapsBeforePID->SetBinEdges(1,binLimC);
     fCosPhiMapsBeforePID->SetBinEdges(2,binLimPt);
     fCosPhiMapsBeforePID->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: cosphimapsbeforepid");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: cosphimapsbeforepid");
   }
   //
   // fMonitorPhotonic
@@ -975,21 +992,21 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fDeltaPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
     fDeltaPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
     fDeltaPhiMapsTaggedPhotonic->Sumw2();  
-    AliDebug(1,"AliAnalysisTaskHFEFlow: deltaphimapstaggedphotonic");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: deltaphimapstaggedphotonic");
     
     fDeltaPhiMapsTaggedNonPhotonic = new THnSparseF("DeltaPhiMapsTaggedNonPhotonic","DeltaPhiMapsTaggedNonPhotonic",nDimgbp,nBingbp);
     fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimPhi);
     fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
     fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
     fDeltaPhiMapsTaggedNonPhotonic->Sumw2();  
-    AliDebug(1,"AliAnalysisTaskHFEFlow: deltaphimapstaggednonphotonic");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: deltaphimapstaggednonphotonic");
     
     fDeltaPhiMapsTaggedPhotonicLS = new THnSparseF("DeltaPhiMapsTaggedPhotonicLS","DeltaPhiMapsTaggedPhotonicLS",nDimgbp,nBingbp);
     fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimPhi);
     fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
     fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
     fDeltaPhiMapsTaggedPhotonicLS->Sumw2();  
-    AliDebug(1,"AliAnalysisTaskHFEFlow: deltaphimapstaggedphotonicls");    
+    AliDebug(2,"AliAnalysisTaskHFEFlow: deltaphimapstaggedphotonicls");    
 
     const Int_t nDimhbp=3;
     Int_t nBinhbp[nDimhbp] = {nBinsCos,nBinsC,nBinsPt};
@@ -999,21 +1016,21 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fCosPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
     fCosPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
     fCosPhiMapsTaggedPhotonic->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: cosphimapstaggedphotonic");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: cosphimapstaggedphotonic");
     
     fCosPhiMapsTaggedNonPhotonic = new THnSparseF("CosPhiMapsTaggedNonPhotonic","CosPhiMapsTaggedNonPhotonic",nDimhbp,nBinhbp);
     fCosPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimCos);
     fCosPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
     fCosPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
     fCosPhiMapsTaggedNonPhotonic->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: cosphimapstaggednonphotonic");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: cosphimapstaggednonphotonic");
     
     fCosPhiMapsTaggedPhotonicLS = new THnSparseF("CosPhiMapsTaggedPhotonicLS","CosPhiMapsTaggedPhotonicLS",nDimhbp,nBinhbp);
     fCosPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimCos);
     fCosPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
     fCosPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
     fCosPhiMapsTaggedPhotonicLS->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: cosphimapstaggedphotonicls");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: cosphimapstaggedphotonicls");
     
     const Int_t nDimMCSource=3;
     Int_t nBinMCSource[nDimMCSource] = {nBinsC,nBinsPt,nBinsSource};
@@ -1022,7 +1039,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fMCSourceDeltaPhiMaps->SetBinEdges(1,binLimPt);
     fMCSourceDeltaPhiMaps->SetBinEdges(2,binLimSource);
     fMCSourceDeltaPhiMaps->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: mcsourcedeltaphimaps");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: mcsourcedeltaphimaps");
     
     // Maps invmass opposite
     const Int_t nDimOppSign=5;
@@ -1034,7 +1051,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fOppSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
     fOppSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
     fOppSignDeltaPhiMaps->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: oppsigndeltaphimaps");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: oppsigndeltaphimaps");
     
     // Maps invmass same sign
     const Int_t nDimSameSign=5;
@@ -1046,7 +1063,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fSameSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
     fSameSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
     fSameSignDeltaPhiMaps->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: samesigndeltaphimaps");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: samesigndeltaphimaps");
     
     // Maps angle same sign
     const Int_t nDimAngleSameSign=3;
@@ -1056,7 +1073,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fSameSignAngle->SetBinEdges(1,binLimC);
     fSameSignAngle->SetBinEdges(2,binLimSource);
     fSameSignAngle->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: samesignangle");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: samesignangle");
     
     // Maps angle opp sign
     const Int_t nDimAngleOppSign=3;
@@ -1066,7 +1083,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fOppSignAngle->SetBinEdges(1,binLimC);
     fOppSignAngle->SetBinEdges(2,binLimSource);
     fOppSignAngle->Sumw2();
-    AliDebug(1,"AliAnalysisTaskHFEFlow: oppsignangle");
+    AliDebug(2,"AliAnalysisTaskHFEFlow: oppsignangle");
 
   }
 
@@ -1081,7 +1098,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fListHist->Add(fCosPhiMaps);
   fListHist->Add(fDeltaPhiMaps);
   fListHist->Add(fPIDqa->MakeList("HFEpidQA"));
-  AliDebug(1,"AliAnalysisTaskHFEFlow: add default");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: add default");
 
   if(fMonitorEventPlane) {
     fListHist->Add(fProfileCosRes);
@@ -1098,22 +1115,22 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fListHist->Add(fSinResabc);
     fListHist->Add(fProfileCosPhiMaps);
   }
-  AliDebug(1,"AliAnalysisTaskHFEFlow: add monitor");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: add monitor");
 
   if(fMonitorTrackCuts) fListHist->Add(fTrackingCuts);
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: add monitortrackcuts");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: add monitortrackcuts");
 
   if(fMonitorContamination) fListHist->Add(fDeltaPhiMapsContamination);
   
-  AliDebug(1,"AliAnalysisTaskHFEFlow: add deltaphimapscontamination");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: add deltaphimapscontamination");
 
   if(fMonitorWithoutPID) {
     fListHist->Add(fDeltaPhiMapsBeforePID);
     fListHist->Add(fCosPhiMapsBeforePID);
   }
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: add without pid");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: add without pid");
 
   if(fMonitorPhotonic) {
   fListHist->Add(fPIDBackgroundqa->MakeList("HFEpidBackgroundQA"));
@@ -1130,15 +1147,18 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fListHist->Add(fOppSignAngle);
   }
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: add photonic");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: add photonic");
 
   if(fHFEVZEROEventPlane && fMonitorEventPlane) fListHist->Add(fHFEVZEROEventPlane->GetOutputList());
   
-  AliDebug(1,"AliAnalysisTaskHFEFlow: add event plane");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: add event plane");
 
   PostData(1, fListHist);
+  //for(Int_t bincless = 0; bincless < fNbBinsCentralityQCumulant; bincless++) {
+  // PostData(bincless+2,fflowEvent); 
+  //}
 
-  AliDebug(1,"AliAnalysisTaskHFEFlow: post");
+  AliDebug(2,"AliAnalysisTaskHFEFlow: post");
 
 
 }
@@ -1185,7 +1205,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   //AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
   //if(!esd) return;
   AliCentrality *centrality = fInputEvent->GetCentrality();
-  //printf("Got the centrality\n");
+  //AliDebug(2,"Got the centrality");
   if(!centrality) return;
   cntr = centrality->GetCentralityPercentile("V0M");
   if((0.0< cntr) && (cntr<5.0)) binct = 0.5;
@@ -1250,7 +1270,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   //////////////////////
 
   Int_t runnumber = fInputEvent->GetRunNumber();
-  //printf("Run number %d\n",runnumber);
+  AliDebug(2,Form("Run number %d",runnumber));
    
   if(!fPID->IsInitialized()){
     // Initialize PID with the given run number
@@ -1277,7 +1297,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
  
   AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
   if(!pidResponse){
-    //printf("No PID response set\n");
+    AliDebug(2,"No PID response set");
     return;
   }
   fPID->SetPIDResponse(pidResponse);
@@ -1291,7 +1311,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   // Event cut
   //////////////////
   if(!fHFECuts->CheckEventCuts("fEvRecCuts", fInputEvent)) {
-    //printf("Do not pass the event cut\n");
+    AliDebug(2,"Do not pass the event cut");
     PostData(1, fListHist);
     return;
   }
@@ -1343,9 +1363,9 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   else {
     
     eventPlaneV0 = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0", fInputEvent,2));
-    //printf("eventPlaneV0 %f\n",eventPlaneV0);
+    AliDebug(2,Form("eventPlaneV0 %f",eventPlaneV0));
     if(eventPlaneV0 > TMath::Pi()) eventPlaneV0 = eventPlaneV0 - TMath::Pi();
-    //printf("eventPlaneV0 %f\n",eventPlaneV0);
+    AliDebug(2,Form("eventPlaneV0 %f",eventPlaneV0));
     eventPlaneV0A = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0A", fInputEvent,2));
     if(eventPlaneV0A > TMath::Pi()) eventPlaneV0A = eventPlaneV0A - TMath::Pi();
     eventPlaneV0C = TVector2::Phi_0_2pi(vEPa->GetEventplane("V0C", fInputEvent,2));
@@ -1421,7 +1441,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   //}
 
   if((!standardQ) || (!qsub1a) || (!qsub2a)) {
-    //printf("No event plane\n");
+    AliDebug(2,"No event plane");
     return;
   }
 
@@ -1430,7 +1450,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   /////////////////////////////////////
 
   Int_t nbtracks = fInputEvent->GetNumberOfTracks();
-  //printf("Number of tracks %d\n",nbtracks);
+  AliDebug(2,Form("Number of tracks %d",nbtracks));
 
   if(fMonitorQCumulant) {
 
@@ -1446,7 +1466,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       //if (!fflowEvent->IsSetMCReactionPlaneAngle()) fflowEvent->SetMCReactionPlaneAngle(gRandom->Uniform(0.0,TMath::TwoPi()));
       mcReactionPlane = TVector2::Phi_0_2pi(fflowEvent->GetMCReactionPlaneAngle());
       if(mcReactionPlane > TMath::Pi()) mcReactionPlane = mcReactionPlane - TMath::Pi();
-      //printf("MC reaction plane %f\n",mcReactionPlane);
+      AliDebug(2,Form("MC reaction plane %f",mcReactionPlane));
     }
     fflowEvent->SetReferenceMultiplicity( nbtracks );
     fflowEvent->DefineDeadZone(0,0,0,0);
@@ -1566,12 +1586,12 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	else hfetrack2.SetAnalysisType(AliHFEpidObject::kAODanalysis);
 	hfetrack2.SetRecTrack(track);
 	hfetrack2.SetCentrality((Int_t)binct);
-	//printf("centrality %f and %d\n",binct,hfetrack.GetCentrality());
+	AliDebug(2,Form("centrality %f and %d",binct,hfetrack2.GetCentrality()));
 	hfetrack2.SetPbPb();
 	if(fPIDBackground->IsSelected(&hfetrack2,0x0,"recTrackCont",fPIDBackgroundqa)) {
 	  fArraytrack->AddAt(k,fCounterPoolBackground);
 	  fCounterPoolBackground++;
-	  //printf("fCounterPoolBackground %d, track %d\n",fCounterPoolBackground,k);
+	  AliDebug(2,Form("fCounterPoolBackground %d, track %d",fCounterPoolBackground,k));
 	}
       }
     }
@@ -1601,7 +1621,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	if(!mother) continue;
 	Int_t idmother = mother->GetID();
 	listofmotherkink[numberofmotherkink] = idmother;
-	//printf("ID %d\n",idmother);
+	AliDebug(2,Form("ID %d",idmother));
 	numberofmotherkink++;
       }
     }
@@ -1622,7 +1642,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	AliError("AOD track is not there");
 	continue;
       }  
-      //printf("Find AOD track on\n");
+      AliDebug(2,"Find AOD track on");
       if(fUseFlagAOD){
 	if(aodtrack->GetFlags() != fFlags) continue;  // Only process AOD tracks where the HFE is set
       }
@@ -1684,7 +1704,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       
     }
 
-    //printf("Survived\n");
+    AliDebug(2,"Survived");
 
     /////////////////////////////////////////////////////////
     // Subtract candidate from TPC event plane
@@ -1774,7 +1794,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     valuensparseh[4] = track->Eta();
     valuensparseg[4] = track->Eta();
 
-    //printf("charge %d\n",(Int_t)track->Charge());
+    AliDebug(2,Form("charge %d",(Int_t)track->Charge()));
 
     ////////////////////////
     // Fill before PID
@@ -1804,7 +1824,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	else hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
 	hfetrack.SetRecTrack(track);
 	hfetrack.SetCentrality((Int_t)binct);
-	//printf("centrality %f and %d\n",binct,hfetrack.GetCentrality());
+	AliDebug(2,Form("centrality %f and %d",binct,hfetrack.GetCentrality()));
 	hfetrack.SetPbPb();
 
 	// Only TOF PID
@@ -1824,7 +1844,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       else {
 	if(!mcEvent) continue;
 	if(!(mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
-	//printf("PdgCode %d\n",TMath::Abs(mctrack->Particle()->GetPdgCode()));
+	AliDebug(2,Form("PdgCode %d",TMath::Abs(mctrack->Particle()->GetPdgCode())));
 	if(TMath::Abs(mctrack->Particle()->GetPdgCode())!=11) continue;
       }
     }
@@ -1837,7 +1857,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       Int_t idtrack = static_cast<AliVTrack*>(track)->GetID();
       Bool_t found = kFALSE;
       Int_t numberoffound = 0;
-      //printf("A: Number of tracks %d\n",fflowEvent->NumberOfTracks());
+      AliDebug(2,Form("A: Number of tracks %d",fflowEvent->NumberOfTracks()));
       for(Int_t iRPs=0; iRPs< fflowEvent->NumberOfTracks(); iRPs++) {
 	AliFlowTrack *iRP = (AliFlowTrack*) (fflowEvent->GetTrack(iRPs));
 	//if(!iRP->InRPSelection()) continue;
@@ -1847,14 +1867,14 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	  numberoffound ++;
 	}
       }
-      //printf("Found %d mal\n",numberoffound);
+      AliDebug(2,Form("Found %d mal",numberoffound));
       if(!found) {
 	AliFlowCandidateTrack *sTrack = (AliFlowCandidateTrack*) MakeTrack(massElectron,track->Pt(),track->Phi(), track->Eta());
 	sTrack->SetID(idtrack);
 	fflowEvent->AddTrack(sTrack);
-	//printf("Add the track\n");
+	AliDebug(2,"Add the track");
       }
-      //printf("B: Number of tracks %d\n",fflowEvent->NumberOfTracks());
+      AliDebug(2,Form("B: Number of tracks %d",fflowEvent->NumberOfTracks()));
     }
     
   
@@ -1937,9 +1957,9 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 
 
 
-  for(Int_t bincless = 0; bincless < fNbBinsCentralityQCumulant; bincless++) {
-    if((fBinCentralityLess[bincless]< cntr) && (cntr < fBinCentralityLess[bincless+1])) PostData(bincless+2,fflowEvent);
-  }
+  //for(Int_t bincless = 0; bincless < fNbBinsCentralityQCumulant; bincless++) {
+  //  if((fBinCentralityLess[bincless]< cntr) && (cntr < fBinCentralityLess[bincless+1])) PostData(bincless+2,fflowEvent);
+  //}
 
   if(fMonitorPhotonic) {
     if(fArraytrack) {
@@ -2008,9 +2028,9 @@ Int_t AliAnalysisTaskHFEFlow::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, Ali
   Bool_t oppositetaggedphotonic = kFALSE;
   Bool_t sametaggedphotonic = kFALSE;
 
-  //printf("fCounterPoolBackground %d in LookAtNonHFE!!!\n",fCounterPoolBackground);
+  AliDebug(2,Form("fCounterPoolBackground %d in LookAtNonHFE!!!",fCounterPoolBackground));
   if(!fArraytrack) return taggedphotonic;
-  //printf("process track %d\n",iTrack1);
+  AliDebug(2,Form("process track %d",iTrack1));
   
   TVector3 v3D1;
   TVector3 v3D2;
@@ -2040,15 +2060,15 @@ Int_t AliAnalysisTaskHFEFlow::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, Ali
     {
 
       Int_t iTrack2 = fArraytrack->At(idex);
-      //printf("track %d\n",iTrack2);
+      AliDebug(2,Form("track %d",iTrack2));
       AliVTrack* track2 = (AliVTrack *) vEvent->GetTrack(iTrack2);
       if (!track2) 
 	{
-	  printf("ERROR: Could not receive track %d\n", iTrack2);
+	  printf("ERROR: Could not receive track %d", iTrack2);
 	  continue;
 	}
       if(iTrack2==iTrack1) continue;
-      //printf("Different\n");
+      AliDebug(2,"Different");
 
       // Reset the MC info
       valueangle[2] = source;
@@ -2222,10 +2242,10 @@ Int_t AliAnalysisTaskHFEFlow::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, Ali
 	    fOppSignDeltaPhiMaps->Fill(&valuensparseDeltaPhiMaps[0]);
 	    /*
 	    if(valueangle[2] == kElectronfromconversionboth) {
-	      printf("Reconstructed charge1 %f, charge 2 %f and invmass %f\n",fCharge1,fCharge2,imass);
-	      printf("MC charge1 %d, charge 2 %d\n",pdg1,pdg2);
-	      printf("DCA %f\n",dca12);
-	      printf("Number of found %d\n",numberfound);
+	      printf("Reconstructed charge1 %f, charge 2 %f and invmass %f",fCharge1,fCharge2,imass);
+	      printf("MC charge1 %d, charge 2 %d",pdg1,pdg2);
+	      printf("DCA %f",dca12);
+	      printf("Number of found %d",numberfound);
 	    }
 	    */
 	  }

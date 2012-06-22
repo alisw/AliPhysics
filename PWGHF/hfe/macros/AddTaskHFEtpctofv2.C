@@ -76,18 +76,19 @@ AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisTaskHFEFlow *task =  ConfigHFE_FLOW_TOFTPC(kFALSE,appendixx,tpcCls, tpcClsr, tpcClspid, tpcsharedfraction, itsCls, chi2peritscl, pixellayer, dcaxy, dcaz,tofsig,&tpcdedx[0],vzero,debuglevel,algorithmMA,massconstraint);
   
-  task->SetNbBinsCentralityQCumulant(5);
+  task->SetNbBinsCentralityQCumulant(4);
   //task->SetBinCentralityLess(0,0.0);
   task->SetBinCentralityLess(0,0.0);
   task->SetBinCentralityLess(1,10.0);
   task->SetBinCentralityLess(2,20.0);
   task->SetBinCentralityLess(3,40.0);
   task->SetBinCentralityLess(4,50.0);
-  task->SetBinCentralityLess(5,60.0);
+  //task->SetBinCentralityLess(5,60.0);
   //task->SetBinCentralityLess(7,80.0);
 
   task->SetHFEVZEROEventPlane(0x0);
   task->SelectCollisionCandidates(AliVEvent::kSemiCentral); 
+  AliLog::SetClassDebugLevel("AliAnalysisTaskHFEFlow",2);
   
   mgr->AddTask(task);
 
