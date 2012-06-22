@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnalysisTaskRho+;
 #pragma link C++ class AliAnalysisTaskRhoAverage+;
 #pragma link C++ class AliAnalysisTaskRhoBase+;
+#pragma link C++ class AliAnalysisTaskScale+;
 #pragma link C++ class AliEmcalJet+;
 #pragma link C++ class AliEmcalJetTask+;
 #pragma link C++ class AliHadCorrTask+;
@@ -20,11 +21,10 @@
 #pragma link C++ class AliRhoParameter+;
 
 // user tasks
+#pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
-#pragma link C++ class AliAnalysisTaskScale+;
-#pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 
 #endif
