@@ -162,12 +162,12 @@ public:
   
   //Getters / Setters for parameters of event buffers
   
-  virtual Int_t          GetMultiBin()                     const { return fMultiBin  ; } //number of bins in Multiplicity 
-  virtual Int_t          GetNZvertBin()                    const { return fNZvertBin ; } //number of bins in vertex   
-  virtual Int_t          GetNRPBin()                       const { return fNrpBin    ; } //number of bins in reaction plain 
-  virtual Int_t          GetNCentrBin()                    const { return fNCentrBin ; } //number of bins in centrality
-  virtual Int_t          GetNMaxEvMix()                    const { return fNmaxMixEv ; } //maximal number of events for mixin
-  virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} //cut on vertex position  
+  virtual Int_t          GetMultiBin()                     const { return fMultiBin  ; } // number of bins in Multiplicity 
+  virtual Int_t          GetNZvertBin()                    const { return fNZvertBin ; } // number of bins in vertex   
+  virtual Int_t          GetNRPBin()                       const { return fNrpBin    ; } // number of bins in reaction plain 
+  virtual Int_t          GetNCentrBin()                    const { return fNCentrBin ; } // number of bins in centrality
+  virtual Int_t          GetNMaxEvMix()                    const { return fNmaxMixEv ; } // maximal number of events for mixin
+  virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} // cut on vertex position  
   virtual Int_t          GetMaxMulti()                     const { return fMaxMulti  ; }  
   virtual Int_t          GetMinMulti()                     const { return fMinMulti  ; }  
     
@@ -177,11 +177,11 @@ public:
   virtual Int_t          GetEventMixBin();
   virtual Int_t          GetEventMixBin(const Int_t iCen, const Int_t iVz, const Int_t iRP);
   
-  virtual void           SetMultiBin(Int_t n=1)                  { fMultiBin  = n ;} //number of bins in Multiplicity  
-  virtual void           SetNZvertBin(Int_t n=1)                 { fNZvertBin = n ;} //number of bins for vertex position
-  virtual void           SetNRPBin(Int_t n=1)                    { fNrpBin    = n ;} //number of bins in reaction plain  
-  virtual void           SetNCentrBin(Int_t n=1)                 { fNCentrBin = n ;} //number of bins in centrality 
-  virtual void           SetNMaxEvMix(Int_t n=20)                { fNmaxMixEv = n ;} //maximal number of events for mixing
+  virtual void           SetMultiBin (Int_t n = 1 )              { fMultiBin  = n ; if(n < 1) fMultiBin  = 1 ; } // number of bins in Multiplicity  
+  virtual void           SetNZvertBin(Int_t n = 1 )              { fNZvertBin = n ; if(n < 1) fNZvertBin = 1 ; } // number of bins for vertex position
+  virtual void           SetNRPBin   (Int_t n = 1 )              { fNrpBin    = n ; if(n < 1) fNrpBin    = 1 ; } // number of bins in reaction plain  
+  virtual void           SetNCentrBin(Int_t n = 1 )              { fNCentrBin = n ; if(n < 1) fNCentrBin = 1 ; } // number of bins in centrality 
+  virtual void           SetNMaxEvMix(Int_t n = 20)              { fNmaxMixEv = n ; if(n < 1) fNmaxMixEv = 1 ; } // maximal number of events for mixing
   virtual void           SetMultiplicity(Int_t multimin, Int_t multimax) {fMinMulti = multimin ; fMaxMulti = multimax ; }
   
   virtual void           SwitchOnTrackMultBins()                 { fUseTrackMultBins = kTRUE  ; }
