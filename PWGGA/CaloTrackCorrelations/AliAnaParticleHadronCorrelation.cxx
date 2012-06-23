@@ -2172,14 +2172,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
   Double_t etaAssoc = -999.;
   Double_t deltaPhi = -999.;
   Double_t deltaEta = -999.;
-  
-  // Get the clusters array, needed for isolation
-  TObjArray * caloList    = 0x0; ; 
-  if      (aodParticle->GetDetector() == "PHOS" )
-    caloList = GetPHOSClusters();
-  else if (aodParticle->GetDetector() == "EMCAL")
-    caloList = GetEMCALClusters();  
-  
+    
   //Start from first event in pool except if in this same event the pool was filled
   Int_t ev0 = 0;
   if(GetReader()->GetLastTracksMixedEvent() == GetEventNumber()) ev0 = 1;
@@ -2192,15 +2185,16 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
     if(OnlyIsolated())
     {
       Int_t n=0; Int_t nfrac = 0; Bool_t isolated = kFALSE; Float_t coneptsum = 0;
-      GetIsolationCut()->MakeIsolationCut(bgTracks,caloList,
+      GetIsolationCut()->MakeIsolationCut(bgTracks,0x0, // no mixed event with calorimeter clusters for the moment!
                                           GetReader(), GetCaloPID(),
                                           kTRUE, aodParticle, GetAODObjArrayName(), 
                                           n,nfrac,coneptsum, isolated);
-      printf("Isolated? %d - cone %f, ptthres %f",
-             isolated,GetIsolationCut()->GetConeSize(),GetIsolationCut()->GetPtThreshold());
-      if(caloList)printf(" - n clus %d",caloList->GetEntriesFast());
-      if(bgTracks)printf(" - n track %d", bgTracks->GetEntriesFast());
-      printf("\n");
+      
+//      printf("Isolated? %d - cone %f, ptthres %f",
+//             isolated,GetIsolationCut()->GetConeSize(),GetIsolationCut()->GetPtThreshold());
+//      if(bgTracks)printf(" - n track %d", bgTracks->GetEntriesFast());
+//      printf("\n");
+      
       if(!isolated) return ;
     }
     
