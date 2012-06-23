@@ -51,9 +51,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, const Bool_t bFillHisto) ;
   
-  void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle);
+  void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle) ;
   
-  void         MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation *aodParticle);
+  void         MakeChargedMixCorrelation(AliAODPWG4ParticleCorrelation *aodParticle) ;
   
   // Filling histogram methods
   
