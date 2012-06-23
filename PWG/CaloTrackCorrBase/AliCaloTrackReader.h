@@ -211,6 +211,11 @@ public:
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
   void             SetEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
+
+  UInt_t           GetMixEventTriggerMask()             const { return fMixEventTriggerMask  ; }
+  void             SetMixEventTriggerMaks(UInt_t evtTrig = AliVEvent::kAnyINT) 
+                                                           { fMixEventTriggerMask = evtTrig  ; }
+  
   
   Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
   void             SwitchOnEventTriggerAtSE()              { fEventTriggerAtSE      = kTRUE  ; }
@@ -437,6 +442,7 @@ public:
   TString          fFiredTriggerClassName;  // Name of trigger event type used to do the analysis
 
   UInt_t           fEventTriggerMask ;      // select this triggerered event
+  UInt_t           fMixEventTriggerMask ;   // select this triggerered event for mixing, tipically kMB or kAnyINT
   Bool_t           fEventTriggerAtSE;       // select triggered event at SE base task or here
   
   Bool_t           fAnaLED;                 // Analyze LED data only.
@@ -484,7 +490,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,40)
+  ClassDef(AliCaloTrackReader,41)
   
 } ;
 

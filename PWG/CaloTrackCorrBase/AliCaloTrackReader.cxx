@@ -74,11 +74,11 @@ fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0), 
 fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),             
-fESDtrackCuts(0),            fConstrainTrack(kFALSE),          fSelectHybridTracks(0),
+fESDtrackCuts(0),            fConstrainTrack(kFALSE),         fSelectHybridTracks(0),
 fTrackMult(0),               fTrackMultEtaCut(0.8),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),      
-fEventTriggerMask(0),        fEventTriggerAtSE(0), 
+fEventTriggerMask(0),        fMixEventTriggerMask(0),         fEventTriggerAtSE(0), 
 fAnaLED(kFALSE),
 fTaskName(""),               fCaloUtils(0x0), 
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL), 
@@ -351,6 +351,7 @@ void AliCaloTrackReader::InitParameters()
   fDeltaAODFileName      = "deltaAODPartCorr.root";
   fFiredTriggerClassName = "";
   fEventTriggerMask      = AliVEvent::kAny;
+  fMixEventTriggerMask   = AliVEvent::kAnyINT;
   fEventTriggerAtSE      = kTRUE; // Use only events that pass event selection at SE base class
   
   fAcceptFastCluster = kTRUE;
@@ -422,8 +423,8 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d\n",    fRecalculateClusters) ;
   
-  printf("Use Triggers selected in SE base class %d; If not what trigger Mask %d? \n", 
-         fEventTriggerAtSE, fEventTriggerMask);
+  printf("Use Triggers selected in SE base class %d; If not what trigger Mask? %d; Trigger max for mixed %d \n", 
+         fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   
   if(fComparePtHardAndJetPt)
 	  printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
@@ -669,7 +670,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
     if(!inputHandler) return kFALSE ;  // to content coverity
     
     UInt_t isTrigger = inputHandler->IsEventSelected() & fEventTriggerMask;
-    UInt_t isMB      = inputHandler->IsEventSelected() & AliVEvent::kMB;
+    UInt_t isMB      = inputHandler->IsEventSelected() & fMixEventTriggerMask;
     
     if(fFillCTS && (isMB || isTrigger))
     {   
