@@ -25,6 +25,7 @@ Bool_t  kCalibE        = kTRUE;
 Bool_t  kCalibT        = kTRUE;
 Bool_t  kBadMap        = kTRUE;
 Bool_t  kTender        = kFALSE;
+Bool_t  kMix           = kFALSE;
 
 AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data          = "",
                                                           const TString  calorimeter   = "EMCAL", 
@@ -37,6 +38,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
                                                           const TString  col           = "pp", 
                                                           const TString  trigger       = "MB", 
                                                           const TString  clustersArray = "V1",
+                                                          const Bool_t   mix           = kTRUE,
                                                           const Bool_t   recaltm       = kTRUE,
                                                           const Bool_t   tm            = kTRUE,
                                                           const Int_t    minCen        = -1,
@@ -76,7 +78,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   kCalibT        = calibT;
   kBadMap        = badmap;
   kTender        = tender;
-  
+  kMix           = mix;
+
   // Get the pointer to the existing analysis manager via the static access method.
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -130,6 +133,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   // Isolation settings
   Int_t partInCone = AliIsolationCut::kNeutralAndCharged; // kOnlyCharged;
   Int_t thresType  = AliIsolationCut::kPtThresIC;//  AliIsolationCut::kSumPtFracIC ; 
+  Float_t cone = -1;
+  Float_t pth  = -1;
   
   // Photon analysis
   
@@ -140,9 +145,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta", AliAnaPi0EbE::kIMCalo), n++); // Eta event by event selection, invariant mass and photon tagging from decay
   
   // Photon analysis
-  maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType), n++); // Photon isolation   
+  maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType,cone, pth), n++); // Photon isolation   
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kFALSE), n++); // Gamma hadron correlation
-  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kTRUE) , n++); // Isolated gamma hadron correlation
+  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kTRUE,partInCone,thresType, cone, pth) , n++); // Isolated gamma hadron correlation
   //maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType,kTRUE), n++); // Photon multi isolation, leave it the last   
 
   
@@ -150,29 +155,29 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   if(kCalorimeter == "EMCAL")
   {
     maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo), n++); // Pi0 event by event selection, cluster splitting   
-    maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", partInCone,thresType), n++);       // Pi0 isolation, cluster splits   
+    maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", partInCone,thresType,cone, pth), n++);       // Pi0 isolation, cluster splits   
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS" ,kFALSE), n++); // Pi0 hadron correlation
-    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS" ,kTRUE) , n++); // Isolated pi0 hadron correlation
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SS" ,kTRUE,partInCone,thresType, cone, pth) , n++); // Isolated pi0 hadron correlation
     //maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS",  partInCone,thresType,kTRUE), n++); // Pi0 multi isolation, split cluster  
     //maker->AddAnalysis(ConfigureInClusterIMAnalysis(0.5,3), n++); 
   }
   
   // Invariant mass analysis
   maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0SideBand", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, and photon tagging from decay    
-  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0", partInCone,thresType), n++);         // Pi0 isolation, invariant mass   
-  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SideBand", partInCone,thresType), n++); // Pi0 isolation, side band   
+  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0", partInCone,thresType,cone, pth), n++);         // Pi0 isolation, invariant mass   
+  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SideBand", partInCone,thresType,cone, pth), n++); // Pi0 isolation, side band   
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kFALSE), n++); // Pi0 hadron correlation
-  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kTRUE) , n++); // Isolated pi0 hadron correlation
+  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kTRUE,partInCone,thresType, cone, pth) , n++); // Isolated pi0 hadron correlation
   maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SideBand" ,kFALSE), n++); // Pi0 hadron correlation
-  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SideBand" ,kTRUE) , n++); // Isolated pi0 hadron correlation
+  maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0SideBand" ,kTRUE,partInCone,thresType, cone, pth) , n++); // Isolated pi0 hadron correlation
   //maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0",    partInCone,thresType,kTRUE), n++); // Pi0 multi isolation, invariant mass, leave it the last   
 
   if(kHadronAN)
   {
     maker->AddAnalysis(ConfigureChargedAnalysis(), n++);                                // track selection
-    maker->AddAnalysis(ConfigureIsolationAnalysis("Hadron",AliIsolationCut::kOnlyCharged,thresType), n++); // track isolation
+    maker->AddAnalysis(ConfigureIsolationAnalysis("Hadron",AliIsolationCut::kOnlyCharged,thresType,cone, pth), n++); // track isolation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kFALSE), n++);       // track-track correlation
-    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kTRUE) , n++);       // Isolated track-track correlation
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kTRUE,partInCone,thresType, cone, pth) , n++);       // Isolated track-track correlation
     //maker->AddAnalysis(ConfigureIsolationAnalysis("Hadron",partInCone,thresType,kTRUE), n++);// Hadron multi isolation  
   }
   
@@ -180,19 +185,18 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   if( kTrig.Contains("INT") || kTrig.Contains("Central") || kTrig.Contains("MB")  )
   {
     maker->AddAnalysis(ConfigureRandomTriggerAnalysis(), n++); 
-    maker->AddAnalysis(ConfigureIsolationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType), n++); // Ghost trigger isolation   
+    maker->AddAnalysis(ConfigureIsolationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType,cone, pth), n++); // Ghost trigger isolation   
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()),kFALSE), n++); // Ghost trigger hadron correlation
-    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()),kTRUE) , n++); // Isolated ghost hadron correlation
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()),kTRUE,partInCone,thresType, cone, pth) , n++); // Isolated ghost hadron correlation
     //maker->AddAnalysis(ConfigureIsolationAnalysis(Form("RandomTrigger%s",kCalorimeter.Data()), partInCone,thresType,kTRUE), n++); // Ghost multi isolation   
     
     if(kHadronAN)
     {
       maker->AddAnalysis(ConfigureRandomTriggerAnalysis("CTS"), n++);                                // track selection
-      maker->AddAnalysis(ConfigureIsolationAnalysis("RandomTriggerCTS",AliIsolationCut::kOnlyCharged,thresType), n++); // track isolation
+      maker->AddAnalysis(ConfigureIsolationAnalysis("RandomTriggerCTS",AliIsolationCut::kOnlyCharged,thresType,cone, pth), n++); // track isolation
       maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("RandomTriggerCTS",kFALSE), n++);       // track-track correlation
-      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("RandomTriggerCTS",kTRUE) , n++);       // Isolated track-track correlation
+      maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("RandomTriggerCTS",kTRUE,partInCone,thresType, cone, pth) , n++);       // Isolated track-track correlation
       //maker->AddAnalysis(ConfigureIsolationAnalysis("RandomTriggerCTS",AliIsolationCut::kOnlyCharged,thresType,kTRUE), n++); // Ghost multi isolation   
-
     }
   }
   
@@ -237,72 +241,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   mgr->ConnectOutput (task, 1, cout_pc);
   mgr->ConnectOutput (task, 2, cout_cuts);
   
-  
-  if(kTrig=="EMC7")
-  {
-    printf("CaloTrackCorr trigger EMC7\n");
-    task->SelectCollisionCandidates(AliVEvent::kEMC7);
-  }
-  else if (kTrig=="INT7")
-  {
-    printf("CaloTrackCorr trigger INT7\n");
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
-  }
-  else if(kTrig=="EMC1")
-  {
-    printf("CaloTrackCorr trigger EMC1\n");
-    task->SelectCollisionCandidates(AliVEvent::kEMC1);
-  }
-  else if(kTrig=="MB")
-  {
-    printf("CaloTrackCorr trigger MB\n");
-    task->SelectCollisionCandidates(AliVEvent::kMB);
-  }  
-  else if(kTrig=="PHOS")
-  {
-    printf("CaloTrackCorr trigger PHOS\n");
-    task->SelectCollisionCandidates(AliVEvent::kPHI7);
-  }  
-  else if(kTrig=="PHOSPb")
-  {
-    printf("CaloTrackCorr trigger PHOSPb\n");
-    task->SelectCollisionCandidates(AliVEvent::kPHOSPb);
-  }
-  else if(kTrig=="AnyINT")
-  {
-    printf("CaloTrackCorr trigger AnyINT\n");
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-  }  
-  else if(kTrig=="INT")
-  {
-    printf("CaloTrackCorr trigger AnyINT\n");
-    task->SelectCollisionCandidates(AliVEvent::kAny);
-  }
-  else if(kTrig=="EMCEGA")
-  {
-    printf("CaloTrackCorr trigger EMC Gamma\n");
-    task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-  } 
-  else if(kTrig=="EMCEJE")
-  {
-    printf("CaloTrackCorr trigger EMC Jet\n");
-    task->SelectCollisionCandidates(AliVEvent::kEMCEJE);
-  }
-  else if(kTrig=="Central")
-  {
-    printf("CaloTrackCorr trigger Central\n");
-    task->SelectCollisionCandidates(AliVEvent::kCentral);
-  } 
-  else if(kTrig=="SemiCentral")
-  {
-    printf("CaloTrackCorr trigger SemiCentral\n");
-    task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
-  }
-  else if(kTrig=="SemiOrCentral")
-  {
-    printf("CaloTrackCorr trigger SemiCentral Or Central\n");
-    task->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
-  }
+  if(!kMix) task->SelectCollisionCandidates(TriggerMask());
   
   return task;
 }
@@ -397,7 +336,8 @@ AliCaloTrackReader * ConfigureReader()
   //}
   
   // for case data="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
-  if(kData.Contains("delta")){
+  if(kData.Contains("delta"))
+  {
     reader->SwitchOffEMCAL();
     reader->SwitchOffPHOS();
     reader->SwitchOffEMCALCells(); 
@@ -411,9 +351,16 @@ AliCaloTrackReader * ConfigureReader()
   //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
   
   // For mixing with AliAnaParticleHadronCorrelation switch it off
-  reader->SwitchOnEventTriggerAtSE();
-  reader->SetEventTriggerMaks(AliVEvent::kEMC7); // Only for mixing and SwitchOffEventTriggerAtSE();
-  
+  if(kMix)
+  {
+    reader->SwitchOffEventTriggerAtSE();
+    reader->SetEventTriggerMaks(TriggerMask()); // Only for mixing and SwitchOffEventTriggerAtSE();
+    reader->SetMixEventTriggerMaks(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
+    
+    printf("---Trigger selection done in AliCaloTrackReader!!!\n");
+  }
+  else 
+    reader->SwitchOnEventTriggerAtSE();  
   reader->SetZvertexCut(10.);                // Open cut
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
 
@@ -435,8 +382,8 @@ AliCaloTrackReader * ConfigureReader()
     reader->SetCentralityOpt(10);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
     reader->SetCentralityBin(kMinCen,kMaxCen); // Accept all events, if not select range
     
-    // Event plane (only used in AliAnaPi0 for the moment)
-    reader->SetEventPlaneMethod("Q");
+    // Event plane (only used in Maker and mixing for AliAnaPi0/AliAnaHadronCorrelation for the moment)
+    reader->SetEventPlaneMethod("V0");
   }
   
   reader->SetImportGeometryFromFile(kTRUE);
@@ -939,6 +886,8 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
 AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon", 
                                                     Int_t  partInCone = AliIsolationCut::kOnlyCharged,
                                                     Int_t  thresType  = AliIsolationCut::kSumPtFracIC,
+                                                    Float_t cone = 0.3,
+                                                    Float_t pth  = 0.3,
                                                     Bool_t multi      = kFALSE)
 {
   
@@ -954,9 +903,9 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   // Same Eta as EMCal, cut in phi if EMCAL was triggering
   if(particle=="Hadron"  || particle.Contains("CTS"))
   {
-    if(kTrig.Contains("EMC"))
-      ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 260, 360) ;
-    else
+   // if(kTrig.Contains("EMC"))
+   //   ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 260, 360) ;
+   // else
       ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 0, 360) ;    
   }
   
@@ -965,7 +914,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   // Input / output delta AOD settings
   
   ana->SetInputAODName(Form("%s%s",particle.Data(),kName.Data()));
-  ana->SetAODObjArrayName(Form("IC%sTM%d",particle.Data(),kTM)); 
+  ana->SetAODObjArrayName(Form("IC%s_%s",particle.Data(),kName.Data())); 
   
   ana->SetCalorimeter(kCalorimeter);
   
@@ -978,17 +927,24 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   AliIsolationCut * ic =  ana->GetIsolationCut();	
   ic->SetDebug(kDebug);
   
-  
-  if(kCollisions=="pp") 
+  if(cone >0 && pth > 0)
   {
-    ic->SetPtThreshold(0.5);
-    ic->SetConeSize(0.5);
+    ic->SetPtThreshold(pth);
+    ic->SetConeSize(cone);
   }
-  if(kCollisions=="PbPb")
+  else
   {
-    ic->SetPtThreshold(2.);
-  //ic->SetPtThreshold(1.);
-    ic->SetConeSize(0.3);
+    if(kCollisions=="pp") 
+    {
+      ic->SetPtThreshold(0.5);
+      ic->SetConeSize(0.4);
+    }
+    if(kCollisions=="PbPb")
+    {
+      ic->SetPtThreshold(2.);
+      //ic->SetPtThreshold(1.);
+      ic->SetConeSize(0.3);
+    }
   }
   
   ic->SetPtFraction(0.1);
@@ -1053,7 +1009,11 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
 
 //___________________________________________________________________________________
 AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle, 
-                                                                    Int_t bIsolated)
+                                                                    Int_t bIsolated                                                                    
+                                                                    Int_t  partInCone = AliIsolationCut::kOnlyCharged,
+                                                                    Int_t  thresType  = AliIsolationCut::kSumPtFracIC,
+                                                                    Float_t cone = 0.3,
+                                                                    Float_t pth  = 0.3)
 {
   
   AliAnaParticleHadronCorrelation *ana = new AliAnaParticleHadronCorrelation();
@@ -1063,24 +1023,76 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SetAssociatedPtRange(0.2,200); 
   ana->SetDeltaPhiCutRange( TMath::Pi()/2,3*TMath::Pi()/2 ); //[90 deg, 270 deg]
   
+  ana->SetNAssocPtBins(9);
+  
+  ana->SetAssocPtBinLimit(0, 0.2) ;
+  ana->SetAssocPtBinLimit(1, 0.5) ;
+  ana->SetAssocPtBinLimit(2, 1)   ;
+  ana->SetAssocPtBinLimit(3, 2)   ;
+  ana->SetAssocPtBinLimit(4, 3)   ;
+  ana->SetAssocPtBinLimit(5, 4)   ;
+  ana->SetAssocPtBinLimit(6, 6)   ;
+  ana->SetAssocPtBinLimit(7, 10)  ;
+  ana->SetAssocPtBinLimit(8, 30)  ;
+  ana->SetAssocPtBinLimit(9, 200) ;
+  
   ana->SelectIsolated(bIsolated); // do correlation with isolated photons
+  
+  if(bIsolated)
+  {
+    //Do settings for main isolation cut class
+    AliIsolationCut * ic =  ana->GetIsolationCut();	
+    ic->SetDebug(kDebug);
+    
+    if(cone >0 && pth > 0)
+    {
+      ic->SetPtThreshold(pth);
+      ic->SetConeSize(cone);
+    }
+    else
+    {
+      if(kCollisions=="pp") 
+      {
+        ic->SetPtThreshold(0.5);
+        ic->SetConeSize(0.4);
+      }
+      if(kCollisions=="PbPb")
+      {
+        ic->SetPtThreshold(2.);
+        //ic->SetPtThreshold(1.);
+        ic->SetConeSize(0.3);
+      }
+    }
+    
+    ic->SetPtFraction(0.1);
+    ic->SetSumPtThreshold(1.0) ;
+    ic->SetParticleTypeInCone(partInCone);
+    ic->SetICMethod(thresType);
+    
+  }  
   
   ana->SwitchOnAbsoluteLeading();  // Select trigger leading particle of all the selected tracks
   ana->SwitchOffNearSideLeading(); // Select trigger leading particle of all the particles at +-90 degrees, default
   
   // Mixing with own pool
-  ana->SwitchOffOwnMix();
-  ana->SetNCentrBin(9);
-  ana->SetNZvertBin(10);
+  if(kMix)ana->SwitchOnOwnMix();
+  else    ana->SwitchOffOwnMix();
+  
+  ana->SetNZvertBin(4);
+  
   if(kCollisions=="pp")
   {
     ana->SetNMaxEvMix(10);    
     ana->SwitchOnTrackMultBins();
+    ana->SetNCentrBin(9); // Fixed track mult values
+    ana->SetNRPBin(1);
   }
   else 
   {
-    ana->SetNMaxEvMix(2);    
-    ana->SwitchOffTrackMultBins();
+    ana->SetNMaxEvMix(5);    
+    ana->SwitchOffTrackMultBins(); // centrality bins
+    ana->SetNCentrBin(3); 
+    ana->SetNRPBin(3);
   }  
   
   ana->SwitchOnFiducialCut();
@@ -1092,16 +1104,16 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   // Same Eta as EMCal, cut in phi if EMCAL was triggering
   if(particle=="Hadron" || particle.Contains("CTS"))
   {
-    if(kTrig.Contains("EMC"))
-      ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 260, 360) ;
-    else
+    //if(kTrig.Contains("EMC"))
+    //  ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 260, 360) ;
+    //else
       ana->GetFiducialCut()->SetSimpleCTSFiducialCut  (0.6, 0, 360) ;    
   }
   
   // Input / output delta AOD settings
   
   ana->SetInputAODName(Form("%s%s",particle.Data(),kName.Data()));
-  ana->SetAODObjArrayName(Form("%sHadronCorrIso%dTM%d",particle.Data(),bIsolated,kTM)); 
+  ana->SetAODObjArrayName(Form("%sHadronCorrIso%d_%s",particle.Data(),bIsolated,kName.Data())); 
   
   // Fill extra plots on tagged decay photons
   // If trigger is pi0/eta found with invariant mass, get the decays
@@ -1124,6 +1136,12 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   {
     ana->SwitchOffPi0TriggerDecayCorr();
     ana->SwitchOffDecayTriggerDecayCorr(); 
+  }
+  
+  if(particle=="Photon")
+  {
+    printf("**** SET M02 limits *** \n");
+    ana->SetM02Cut(0.15,0.3);
   }
   
   // if triggering on PHOS and EMCAL is on
@@ -1191,7 +1209,8 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ana->SwitchOffStudyClustersAsymmetry();
   ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
-  
+  ana->SwitchOffFillAllCellTimeHisto() ;
+
   if(kCalorimeter=="EMCAL")
   {
     if     (kYears==2010)  ana->SetNumberOfModules(4); 
@@ -1290,5 +1309,75 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   histoRanges->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
   histoRanges->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
   
+}
+
+//_________________
+Int_t TriggerMask()
+{
+  if(kTrig=="EMC7")
+  {
+    printf("CaloTrackCorr trigger EMC7\n");
+    return AliVEvent::kEMC7;
+  }
+  else if (kTrig=="INT7")
+  {
+    printf("CaloTrackCorr trigger INT7\n");
+    return AliVEvent::kINT7;
+  }
+  else if(kTrig=="EMC1")
+  {
+    printf("CaloTrackCorr trigger EMC1\n");
+    return AliVEvent::kEMC1;
+  }
+  else if(kTrig=="MB")
+  {
+    printf("CaloTrackCorr trigger MB\n");
+    return AliVEvent::kMB;
+  }  
+  else if(kTrig=="PHOS")
+  {
+    printf("CaloTrackCorr trigger PHOS\n");
+    return AliVEvent::kPHI7;
+  }  
+  else if(kTrig=="PHOSPb")
+  {
+    printf("CaloTrackCorr trigger PHOSPb\n");
+    return AliVEvent::kPHOSPb;
+  }
+  else if(kTrig=="AnyINT")
+  {
+    printf("CaloTrackCorr trigger AnyINT\n");
+    return AliVEvent::kAnyINT;
+  }  
+  else if(kTrig=="INT")
+  {
+    printf("CaloTrackCorr trigger AnyINT\n");
+    return AliVEvent::kAny;
+  }
+  else if(kTrig=="EMCEGA")
+  {
+    printf("CaloTrackCorr trigger EMC Gamma\n");
+    return AliVEvent::kEMCEGA;
+  } 
+  else if(kTrig=="EMCEJE")
+  {
+    printf("CaloTrackCorr trigger EMC Jet\n");
+    return AliVEvent::kEMCEJE;
+  }
+  else if(kTrig=="Central")
+  {
+    printf("CaloTrackCorr trigger Central\n");
+    return AliVEvent::kCentral;
+  } 
+  else if(kTrig=="SemiCentral")
+  {
+    printf("CaloTrackCorr trigger SemiCentral\n");
+    return AliVEvent::kSemiCentral;
+  }
+  else if(kTrig=="SemiOrCentral")
+  {
+    printf("CaloTrackCorr trigger SemiCentral Or Central\n");
+    return (AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  }    
 }
 
