@@ -20,7 +20,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
  public:
 
     AliGenMUONCocktailpp();
-    enum CMSEnergyCode { kCMS07TeV, kCMS10TeV, kCMS14TeV, kCMS09TeVpPb, kCMS09TeVPbp, kCMS03TeVPbPb, kNCMSEs };    
+    enum CMSEnergyCode { kCMS07TeV, kCMS10TeV, kCMS14TeV, kCMS03TeVpPb, kCMS03TeVPbp, kCMS04TeVpPb, kCMS04TeVPbp, kCMS05TeVpPb, kCMS05TeVPbp, kCMS09TeVpPb, kCMS09TeVPbp, kCMS03TeVPbPb, kNCMSEs };    
 
     virtual ~AliGenMUONCocktailpp();    
     virtual void Init();
@@ -54,7 +54,13 @@ class AliGenMUONCocktailpp : public AliGenCocktail
 
     void    SetCMSEnergy(CMSEnergyCode cmsEnergy);
     void    SetSigmaSilent() { fSigmaSilent = kTRUE; }
-    
+
+    void    ScaleJPsi(Double_t sc) { fScaleJPsi = sc;}
+    void    ScaleCharmonia(Double_t sc) { fScaleCharmonia = sc;}
+    void    ScaleBottomonia(Double_t sc) { fScaleBottomonia = sc;}
+    void    ScaleCCbar(Double_t sc) { fScaleCCbar = sc;}
+    void    ScaleBBbar(Double_t sc) { fScaleBBbar = sc;}
+   
  protected:
 
     //
@@ -75,7 +81,12 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Float_t fMuonOriginCut; //use only muons whose "part->Vz()" value is larger than fMuonOrigin
     Int_t   fNSucceded;// Number of Succes in the (di)-muon generation in the acceptance
     Int_t   fNGenerated;// Number of generated cocktails
-    Int_t   fCentralityBin;// Collision centrality bin number
+    Int_t   fCentralityBin;                 // Collision centrality bin number
+    Double_t fScaleJPsi;                    // xsec scale factors for onia and HF
+    Double_t fScaleCharmonia;
+    Double_t fScaleBottomonia;
+    Double_t fScaleCCbar;
+    Double_t fScaleBBbar;
     Double_t fJpsiPol, fChic1Pol, fChic2Pol, fPsiPPol, fUpsPol, fUpsPPol, fUpsPPPol;//Resonances polarization parameters
     Int_t    fPolFrame;//Resonances polarization frame (Collins-Soper / Helicity)
 //    Int_t fCMSEnergy; // CMS beam energy

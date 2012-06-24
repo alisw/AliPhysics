@@ -23,9 +23,7 @@
 //
 // andreas.morsch@cern.ch
 //
-//Modified to take into account x-sections of Upsilon 1S, 2S and 3S in pp collisions at 7 TeV from LHCb paper CERN-PH-EP-2012-051 (Loic Manceau, 14/05/12)
 
- 
 #include "TMath.h"
 #include "TRandom.h"
 #include "TDatabasePDG.h"
@@ -183,6 +181,22 @@ Double_t AliGenMUONlib::PtJpsiPP2760(const Double_t *px, const Double_t */*dummy
   return PtJpsiPPdummy(*px,2760);
 }
 
+Double_t AliGenMUONlib::PtJpsiPP4400(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+// pp 4.4 TeV
+//
+  return PtJpsiPPdummy(*px,4400);
+}
+
+Double_t AliGenMUONlib::PtJpsiPP5030(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+// pp 5.03 TeV
+//
+  return PtJpsiPPdummy(*px,5030);
+}
+
 Double_t AliGenMUONlib::PtJpsiPP8800(const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
@@ -314,6 +328,120 @@ Double_t AliGenMUONlib::PtJpsiPbPb2760c11(const Double_t *px, const Double_t *du
 // PbPb 2.76 TeV, 11th centrality bin 90-100 %
 //
   return PtJpsiPbPb2760ShFdummy(*px, 11) * PtJpsiPP2760(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPPb5030ShFdummy(Double_t x, Int_t n)
+{
+// J/Psi shadowing factor vs pT for pPb min. bias and 4 centr. bins (in 2.5<y<4)
+//
+// pPb 5.03 TeV, for EPS09-LO, minimum bias shadowing factor = 0.81 in 4pi
+//
+  const Double_t f[5] = {1, 1.33, 1.05, 0.67, 0.23};
+  const Double_t c[7] = {6.675e-01, 1.808e-02, 2.721e-03,-7.793e-04, 7.504e-05,-3.884e-06, 5.759e-07}; 
+  Double_t y;
+  Int_t j;
+  y = c[j = 6];
+  while (j > 0) y  = y * x + c[--j];
+  y /= 1 + c[6]*TMath::Power(x,6);
+  //  
+  return 1 + (y-1)*f[n];
+}
+
+Double_t AliGenMUONlib::PtJpsiPPb5030(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// pPb 5.03 TeV, minimum bias 0-100 %
+//
+  return PtJpsiPPb5030ShFdummy(*px, 0) * PtJpsiPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPPb5030c1(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// pPb 5.03 TeV, 1st centrality bin 0-20 %
+//
+  return PtJpsiPPb5030ShFdummy(*px, 1) * PtJpsiPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPPb5030c2(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// pPb 5.03 TeV, 2nd centrality bin 20-40 %
+//
+  return PtJpsiPPb5030ShFdummy(*px, 2) * PtJpsiPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPPb5030c3(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// pPb 5.03 TeV, 3rd centrality bin 40-60 %
+//
+  return PtJpsiPPb5030ShFdummy(*px, 3) * PtJpsiPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPPb5030c4(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// pPb 5.03 TeV, 4th centrality bin 60-100 %
+//
+  return PtJpsiPPb5030ShFdummy(*px, 4) * PtJpsiPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPbP5030ShFdummy(Double_t x, Int_t n)
+{
+// J/Psi shadowing factor vs pT for Pbp min. bias and 4 centr. bins (in 2.5<y<4)
+//
+// Pbp 5.03 TeV, for EPS09-LO, minimum bias shadowing factor = 0.81 in 4pi
+//
+  const Double_t f[5] = {1, 1.33, 1.05, 0.67, 0.23};
+  const Double_t c[7] = {8.966e-01, 3.498e-02, 6.637e-03,-1.765e-03, 1.240e-04,-2.086e-06, 4.062e-07};
+  Double_t y;
+  Int_t j;
+  y = c[j = 6];
+  while (j > 0) y  = y * x + c[--j];
+  y /= 1 + c[6]*TMath::Power(x,6);
+  //  
+  return 1 + (y-1)*f[n];
+}
+
+Double_t AliGenMUONlib::PtJpsiPbP5030(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// Pbp 5.03 TeV, minimum bias 0-100 %
+//
+  return PtJpsiPbP5030ShFdummy(*px, 0) * PtJpsiPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPbP5030c1(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// Pbp 5.03 TeV, 1st centrality bin 0-20 %
+//
+  return PtJpsiPbP5030ShFdummy(*px, 1) * PtJpsiPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPbP5030c2(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// Pbp 5.03 TeV, 2nd centrality bin 20-40 %
+//
+  return PtJpsiPbP5030ShFdummy(*px, 2) * PtJpsiPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPbP5030c3(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// Pbp 5.03 TeV, 3rd centrality bin 40-60 %
+//
+  return PtJpsiPbP5030ShFdummy(*px, 3) * PtJpsiPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtJpsiPbP5030c4(const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+// Pbp 5.03 TeV, 4th centrality bin 60-100 %
+//
+  return PtJpsiPbP5030ShFdummy(*px, 4) * PtJpsiPP5030(px, dummy);
 }
 
 Double_t AliGenMUONlib::PtJpsiPPb8800ShFdummy(Double_t x, Int_t n)
@@ -730,6 +858,22 @@ Double_t AliGenMUONlib::YJpsiPP2760(const Double_t *px, const Double_t */*dummy*
   return YJpsiPPdummy(*px, 2760);
 }
 
+Double_t AliGenMUONlib::YJpsiPP4400(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// pp 4.4 TeV
+//
+  return YJpsiPPdummy(*px, 4400);
+}
+
+Double_t AliGenMUONlib::YJpsiPP5030(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// pp 5.03 TeV
+//
+  return YJpsiPPdummy(*px, 5030);
+}
+
 Double_t AliGenMUONlib::YJpsiPP8800(const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi y
@@ -872,6 +1016,118 @@ Double_t AliGenMUONlib::YJpsiPbPb2760c11(const Double_t *px, const Double_t *dum
 // PbPb 2.76 TeV, 11th centrality bin 90-100 %
 //
   return YJpsiPbPb2760ShFdummy(*px, 11) * YJpsiPP2760(px, dummy);
+}
+
+Double_t AliGenMUONlib::YJpsiPP5030dummy(Double_t px)
+{
+  return AliGenMUONlib::YJpsiPP5030(&px, (Double_t*) 0);
+}
+
+Double_t AliGenMUONlib::YJpsiPPb5030ShFdummy(Double_t x, Int_t n)
+{
+// J/Psi shadowing factor vs y for pPb min. bias and 4 centr. bins
+//
+// pPb 5.03 TeV, for EPS09-LO, minimum bias shadowing factor = 0.81 in 4pi
+//
+  const Double_t f[5] = {1, 1.33, 1.05, 0.67, 0.23};
+  const Double_t c[7] = {7.641e-01, 1.611e-02, 4.109e-03, 2.818e-03, 3.359e-04,-6.376e-05,-9.717e-06};
+  Double_t y;
+  Int_t j;
+  y = c[j = 6];
+  while (j > 0) y = y * x + c[--j];
+  if(y<0) y=0;
+  //
+  return 1 +(y-1)*f[n];
+}
+
+Double_t AliGenMUONlib::YJpsiPPb5030(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// pPb 5.03 TeV, minimum bias 0-100 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 0) * YJpsiPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiPPb5030c1(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// pPb 5.03 TeV, 1st centrality bin 0-20 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 1) * YJpsiPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiPPb5030c2(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// pPb 5.03 TeV, 2nd centrality bin 20-40 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 2) * YJpsiPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiPPb5030c3(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// pPb 5.03 TeV, 3rd centrality bin 40-60 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 3) * YJpsiPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiPPb5030c4(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// pPb 5.03 TeV, 4th centrality bin 60-100 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 4) * YJpsiPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiPbP5030(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// Pbp 5.03 TeV, minimum bias 0-100 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 0) * YJpsiPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiPbP5030c1(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// Pbp 5.03 TeV, 1st centrality bin 0-20 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 1) * YJpsiPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiPbP5030c2(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// Pbp 5.03 TeV, 2nd centrality bin 20-40 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 2) * YJpsiPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiPbP5030c3(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// Pbp 5.03 TeV, 3rd centrality bin 40-60 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 3) * YJpsiPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YJpsiPbP5030c4(const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+// Pbp 5.03 TeV, 4th centrality bin 60-100 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YJpsiPPb5030ShFdummy(x, 4) * YJpsiPP5030dummy(x);
 }
 
 Double_t AliGenMUONlib::YJpsiPP8800dummy(Double_t px)
@@ -1348,6 +1604,22 @@ Double_t AliGenMUONlib::PtUpsilonPP2760(const Double_t *px, const Double_t */*du
   return PtUpsilonPPdummy(*px,2760);
 }
 
+Double_t AliGenMUONlib::PtUpsilonPP4400(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon pT
+// pp 4.4 TeV
+//
+  return PtUpsilonPPdummy(*px,4400);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPP5030(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon pT
+// pp 5.03 TeV
+//
+  return PtUpsilonPPdummy(*px,5030);
+}
+
 Double_t AliGenMUONlib::PtUpsilonPP8800(const Double_t *px, const Double_t */*dummy*/)
 {
 // Upsilon pT
@@ -1477,6 +1749,120 @@ Double_t AliGenMUONlib::PtUpsilonPbPb2760c11(const Double_t *px, const Double_t 
 // PbPb 2.76 TeV, 11th centrality bin 90-100 %
 //
   return PtUpsilonPbPb2760ShFdummy(*px, 11) * PtUpsilonPP2760(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPPb5030ShFdummy(Double_t x, Int_t n)
+{
+// Upsilon shadowing factor vs pT for pPb min. bias and 4 centr. bins (in 2.5<y<4)
+//
+// pPb 5.03 TeV, for EPS09-LO, minimum bias shadowing factor = 0.92 in 4pi
+//
+  const Double_t f[5] = {1, 1.33, 1.05, 0.67, 0.23};
+  const Double_t c[5] = {8.069e-01, 1.407e-04, 4.372e-04,-2.797e-05, 4.405e-06};
+  Double_t y;
+  Int_t j;
+  y = c[j = 4];
+  while (j > 0) y  = y * x + c[--j];
+  y /= 1 + c[4]*TMath::Power(x,4);
+  //  
+  return 1 + (y-1)*f[n];
+}
+
+Double_t AliGenMUONlib::PtUpsilonPPb5030(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// pPb 5.03 TeV, minimum bias 0-100 %
+//
+  return PtUpsilonPPb5030ShFdummy(*px, 0) * PtUpsilonPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPPb5030c1(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// pPb 5.03 TeV, 1st centrality bin 0-20 %
+//
+  return PtUpsilonPPb5030ShFdummy(*px, 1) * PtUpsilonPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPPb5030c2(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// pPb 5.03 TeV, 2nd centrality bin 20-40 %
+//
+  return PtUpsilonPPb5030ShFdummy(*px, 2) * PtUpsilonPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPPb5030c3(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// pPb 5.03 TeV, 3rd centrality bin 40-60 %
+//
+  return PtUpsilonPPb5030ShFdummy(*px, 3) * PtUpsilonPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPPb5030c4(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// pPb 5.03 TeV, 4th centrality bin 60-100 %
+//
+  return PtUpsilonPPb5030ShFdummy(*px, 4) * PtUpsilonPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPbP5030ShFdummy(Double_t x, Int_t n)
+{
+// Upsilon shadowing factor vs pT for Pbp min. bias and 4 centr. bins (in 2.5<y<4)
+//
+// Pbp 5.03 TeV, for EPS09-LO, minimum bias shadowing factor = 0.92 in 4pi
+//
+  const Double_t f[5] = {1, 1.33, 1.05, 0.67, 0.23};
+  const Double_t c[5] = {1.122, 2.565e-03,-3.025e-04, 4.113e-06, 6.140e-07};
+  Double_t y;
+  Int_t j;
+  y = c[j = 4];
+  while (j > 0) y  = y * x + c[--j];
+  y /= 1 + c[4]*TMath::Power(x,4);
+  //  
+  return 1 + (y-1)*f[n];
+}
+
+Double_t AliGenMUONlib::PtUpsilonPbP5030(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// Pbp 5.03 TeV, minimum bias 0-100 %
+//
+  return PtUpsilonPbP5030ShFdummy(*px, 0) * PtUpsilonPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPbP5030c1(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// Pbp 5.03 TeV, 1st centrality bin 0-20 %
+//
+  return PtUpsilonPbP5030ShFdummy(*px, 1) * PtUpsilonPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPbP5030c2(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// Pbp 5.03 TeV, 2nd centrality bin 20-40 %
+//
+  return PtUpsilonPbP5030ShFdummy(*px, 2) * PtUpsilonPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPbP5030c3(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// Pbp 5.03 TeV, 3rd centrality bin 40-60 %
+//
+  return PtUpsilonPbP5030ShFdummy(*px, 3) * PtUpsilonPP5030(px, dummy);
+}
+
+Double_t AliGenMUONlib::PtUpsilonPbP5030c4(const Double_t *px, const Double_t *dummy)
+{
+// Upsilon pT
+// Pbp 5.03 TeV, 4th centrality bin 60-100 %
+//
+  return PtUpsilonPbP5030ShFdummy(*px, 4) * PtUpsilonPP5030(px, dummy);
 }
 
 Double_t AliGenMUONlib::PtUpsilonPPb8800ShFdummy(Double_t x, Int_t n)
@@ -1850,6 +2236,22 @@ Double_t AliGenMUONlib::YUpsilonPP2760(const Double_t *px, const Double_t */*dum
   return YUpsilonPPdummy(*px, 2760);
 }
 
+Double_t AliGenMUONlib::YUpsilonPP4400(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// pp 4.4 TeV
+//
+  return YUpsilonPPdummy(*px, 4400);
+}
+
+Double_t AliGenMUONlib::YUpsilonPP5030(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// pp 5.03 TeV
+//
+  return YUpsilonPPdummy(*px, 5030);
+}
+
 Double_t AliGenMUONlib::YUpsilonPP8800(const Double_t *px, const Double_t */*dummy*/)
 {
 // Upsilon y
@@ -1992,6 +2394,118 @@ Double_t AliGenMUONlib::YUpsilonPbPb2760c11(const Double_t *px, const Double_t *
 // PbPb 2.76 TeV, 11th centrality bin 90-100 %
 //
   return YUpsilonPbPb2760ShFdummy(*px, 11) * YUpsilonPP2760(px, dummy);
+}
+
+Double_t AliGenMUONlib::YUpsilonPP5030dummy(Double_t px)
+{
+    return AliGenMUONlib::YUpsilonPP5030(&px, (Double_t*) 0);
+}
+
+Double_t AliGenMUONlib::YUpsilonPPb5030ShFdummy(Double_t x, Int_t n)
+{
+// Upsilon shadowing factor vs y for pPb min. bias and 4 centr. bins
+//
+// pPb 5.03 TeV, for EPS09-LO, minimum bias shadowing factor = 0.92 in 4pi
+//
+    const Double_t f[5] = {1, 1.33, 1.05, 0.67, 0.23};
+    const Double_t c[7] = {8.885e-01, 4.620e-02, 1.158e-02, 4.959e-04,-4.422e-04,-5.345e-05, 0.};
+    Double_t y;
+    Int_t j;
+    y = c[j = 6];
+    while (j > 0) y = y * x + c[--j];
+    if(y<0) y=0;
+    //
+    return 1 +(y-1)*f[n];
+}
+
+Double_t AliGenMUONlib::YUpsilonPPb5030(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// pPb 5.03 TeV, minimum bias 0-100 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 0) * YUpsilonPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonPPb5030c1(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// pPb 5.03 TeV, 1st centrality bin 0-20 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 1) * YUpsilonPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonPPb5030c2(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// pPb 5.03 TeV, 2nd centrality bin 20-40 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 2) * YUpsilonPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonPPb5030c3(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// pPb 5.03 TeV, 3rd centrality bin 40-60 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 3) * YUpsilonPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonPPb5030c4(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// pPb 5.03 TeV, 4th centrality bin 60-100 %
+//
+  Double_t x = px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 4) * YUpsilonPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonPbP5030(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// Pbp 5.03 TeV, minimum bias 0-100 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 0) * YUpsilonPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonPbP5030c1(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// Pbp 5.03 TeV, 1st centrality bin 0-20 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 1) * YUpsilonPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonPbP5030c2(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// Pbp 5.03 TeV, 2nd centrality bin 20-40 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 2) * YUpsilonPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonPbP5030c3(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// Pbp 5.03 TeV, 3rd centrality bin 40-60 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 3) * YUpsilonPP5030dummy(x);
+}
+
+Double_t AliGenMUONlib::YUpsilonPbP5030c4(const Double_t *px, const Double_t */*dummy*/)
+{
+// Upsilon y
+// Pbp 5.03 TeV, 4th centrality bin 60-100 %
+//
+  Double_t x = -px[0] + 0.47;              // rapidity shift
+  return YUpsilonPPb5030ShFdummy(x, 4) * YUpsilonPP5030dummy(x);
 }
 
 Double_t AliGenMUONlib::YUpsilonPP8800dummy(Double_t px)
@@ -2334,18 +2848,15 @@ Int_t AliGenMUONlib::IpUpsilonPP(TRandom *)
 Int_t AliGenMUONlib::IpUpsilonFamily(TRandom *)
 {
 // y composition
+  // Using the LHCb pp data at 7 TeV: CERN-PH-EP-2012-051
+  // (L. Manceau, S. Grigoryan)
   Int_t ip;
-  Float_t r = gRandom->Rndm();
-
-  //tunning according to LHCb results in pp collisons at 7 TeV 
-  //ref.: CERN-PH-EP-2012-051 
-  //sigma_U(1S)/sigma_U(2S)=4.07 and sigma_U(1S)/sigma_U(3S)=8.09
-
-  if (r < 0.73029) {
-    //if (r < 0.712) {
+  Float_t r = gRandom->Rndm();  
+  if (r < 0.687) {
+    //  if (r < 0.712) {
     ip = 553;
-  } else if (r < 0.90973) {
-    // } else if (r < 0.896) {
+  } else if (r < 0.903) {
+    //  } else if (r < 0.896) {
     ip = 100553;
   } else {
     ip = 200553;
@@ -3350,6 +3861,16 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiPP7000;
 	} else if (sname == "pp 2.76") {
 	    func=PtJpsiPP2760;
+	} else if (sname == "pp 4.4") {
+	    func=PtJpsiPP4400;
+	} else if (sname == "pp 5.03") {
+	    func=PtJpsiPP5030;		
+	} else if (sname == "pp 8.8") {
+	    func=PtJpsiPP8800;
+	} else if (sname == "pp 7 poly") {
+	    func=PtJpsiPP7000;
+	} else if (sname == "pp 2.76 poly") {
+	    func=PtJpsiPP2760;
 	} else if (sname == "PbPb 2.76") {
 	    func=PtJpsiPbPb2760;
 	} else if (sname == "PbPb 2.76c1") {
@@ -3374,12 +3895,26 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiPbPb2760c10;
 	} else if (sname == "PbPb 2.76c11") {
 	    func=PtJpsiPbPb2760c11;
-	} else if (sname == "pp 7 poly") {
-	    func=PtJpsiPP7000;
-	} else if (sname == "pp 2.76 poly") {
-	    func=PtJpsiPP2760;
-	} else if (sname == "pp 8.8") {
-	    func=PtJpsiPP8800;
+	} else if (sname == "pPb 5.03") {
+	    func=PtJpsiPPb5030;
+	} else if (sname == "pPb 5.03c1") {
+	    func=PtJpsiPPb5030c1;
+	} else if (sname == "pPb 5.03c2") {
+	    func=PtJpsiPPb5030c2;
+	} else if (sname == "pPb 5.03c3") {
+	    func=PtJpsiPPb5030c3;
+	} else if (sname == "pPb 5.03c4") {
+	    func=PtJpsiPPb5030c4;
+	} else if (sname == "Pbp 5.03") {
+	    func=PtJpsiPbP5030;
+	} else if (sname == "Pbp 5.03c1") {
+	    func=PtJpsiPbP5030c1;
+	} else if (sname == "Pbp 5.03c2") {
+	    func=PtJpsiPbP5030c2;
+	} else if (sname == "Pbp 5.03c3") {
+	    func=PtJpsiPbP5030c3;
+	} else if (sname == "Pbp 5.03c4") {
+	    func=PtJpsiPbP5030c4;
 	} else if (sname == "pPb 8.8") {
 	    func=PtJpsiPPb8800;
 	} else if (sname == "pPb 8.8c1") {
@@ -3443,6 +3978,16 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtUpsilonPP7000;
 	} else if (sname == "pp 2.76") {
 	    func=PtUpsilonPP2760;
+	} else if (sname == "pp 4.4") {
+	    func=PtUpsilonPP4400;
+	} else if (sname == "pp 5.03") {
+	    func=PtUpsilonPP5030;
+	} else if (sname == "pp 8.8") {
+	    func=PtUpsilonPP8800;
+	} else if (sname == "pp 7 poly") {
+	    func=PtUpsilonPP7000;
+	} else if (sname == "pp 2.76 poly") {
+	    func=PtUpsilonPP2760;
 	} else if (sname == "PbPb 2.76") {
 	    func=PtUpsilonPbPb2760;
 	} else if (sname == "PbPb 2.76c1") {
@@ -3467,12 +4012,26 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtUpsilonPbPb2760c10;
 	} else if (sname == "PbPb 2.76c11") {
 	    func=PtUpsilonPbPb2760c11;
-	} else if (sname == "pp 7 poly") {
-	    func=PtUpsilonPP7000;
-	} else if (sname == "pp 2.76 poly") {
-	    func=PtUpsilonPP2760;
-	} else if (sname == "pp 8.8") {
-	    func=PtUpsilonPP8800;
+	} else if (sname == "pPb 5.03") {
+	    func=PtUpsilonPPb5030;
+	} else if (sname == "pPb 5.03c1") {
+	    func=PtUpsilonPPb5030c1;
+	} else if (sname == "pPb 5.03c2") {
+	    func=PtUpsilonPPb5030c2;
+	} else if (sname == "pPb 5.03c3") {
+	    func=PtUpsilonPPb5030c3;
+	} else if (sname == "pPb 5.03c4") {
+	    func=PtUpsilonPPb5030c4;
+	} else if (sname == "Pbp 5.03") {
+	    func=PtUpsilonPbP5030;
+	} else if (sname == "Pbp 5.03c1") {
+	    func=PtUpsilonPbP5030c1;
+	} else if (sname == "Pbp 5.03c2") {
+	    func=PtUpsilonPbP5030c2;
+	} else if (sname == "Pbp 5.03c3") {
+	    func=PtUpsilonPbP5030c3;
+	} else if (sname == "Pbp 5.03c4") {
+	    func=PtUpsilonPbP5030c4;
 	} else if (sname == "pPb 8.8") {
 	    func=PtUpsilonPPb8800;
 	} else if (sname == "pPb 8.8c1") {
@@ -3637,6 +4196,16 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiPP7000;
 	} else if (sname == "pp 2.76") {
 	    func=YJpsiPP2760;
+	} else if (sname == "pp 4.4") {
+	    func=YJpsiPP4400;
+	} else if (sname == "pp 5.03") {
+	    func=YJpsiPP5030;		
+	} else if (sname == "pp 8.8") {
+	    func=YJpsiPP8800;
+	} else if (sname == "pp 7 poly") {
+	    func=YJpsiPPpoly7000;
+	} else if (sname == "pp 2.76 poly") {
+	    func=YJpsiPPpoly2760;
 	} else if (sname == "PbPb 2.76") {
 	    func=YJpsiPbPb2760;
 	} else if (sname == "PbPb 2.76c1") {
@@ -3661,12 +4230,26 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiPbPb2760c10;
 	} else if (sname == "PbPb 2.76c11") {
 	    func=YJpsiPbPb2760c11;
-	} else if (sname == "pp 7 poly") {
-	    func=YJpsiPPpoly7000;
-	} else if (sname == "pp 2.76 poly") {
-	    func=YJpsiPPpoly2760;
-	} else if (sname == "pp 8.8") {
-	    func=YJpsiPP8800;
+	} else if (sname == "pPb 5.03") {
+	    func=YJpsiPPb5030;
+	} else if (sname == "pPb 5.03c1") {
+	    func=YJpsiPPb5030c1;
+	} else if (sname == "pPb 5.03c2") {
+	    func=YJpsiPPb5030c2;
+	} else if (sname == "pPb 5.03c3") {
+	    func=YJpsiPPb5030c3;
+	} else if (sname == "pPb 5.03c4") {
+	    func=YJpsiPPb5030c4;
+	} else if (sname == "Pbp 5.03") {
+	    func=YJpsiPbP5030;
+	} else if (sname == "Pbp 5.03c1") {
+	    func=YJpsiPbP5030c1;
+	} else if (sname == "Pbp 5.03c2") {
+	    func=YJpsiPbP5030c2;
+	} else if (sname == "Pbp 5.03c3") {
+	    func=YJpsiPbP5030c3;
+	} else if (sname == "Pbp 5.03c4") {
+	    func=YJpsiPbP5030c4;
 	} else if (sname == "pPb 8.8") {
 	    func=YJpsiPPb8800;
 	} else if (sname == "pPb 8.8c1") {
@@ -3730,6 +4313,16 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YUpsilonPP7000;
 	} else if (sname == "pp 2.76") {
 	    func=YUpsilonPP2760;
+	} else if (sname == "pp 4.4") {
+	    func=YUpsilonPP4400;
+	} else if (sname == "pp 5.03") {
+	    func=YUpsilonPP5030;
+	} else if (sname == "pp 8.8") {
+	    func=YUpsilonPP8800;
+	} else if (sname == "pp 7 poly") {
+	    func=YUpsilonPPpoly7000;
+	} else if (sname == "pp 2.76 poly") {
+	    func=YUpsilonPPpoly2760;
 	} else if (sname == "PbPb 2.76") {
 	    func=YUpsilonPbPb2760;
 	} else if (sname == "PbPb 2.76c1") {
@@ -3754,12 +4347,26 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YUpsilonPbPb2760c10;
 	} else if (sname == "PbPb 2.76c11") {
 	    func=YUpsilonPbPb2760c11;
-	} else if (sname == "pp 7 poly") {
-	    func=YUpsilonPPpoly7000;
-	} else if (sname == "pp 2.76 poly") {
-	    func=YUpsilonPPpoly2760;
-	} else if (sname == "pp 8.8") {
-	    func=YUpsilonPP8800;
+	} else if (sname == "pPb 5.03") {
+	    func=YUpsilonPPb5030;
+	} else if (sname == "pPb 5.03c1") {
+	    func=YUpsilonPPb5030c1;
+	} else if (sname == "pPb 5.03c2") {
+	    func=YUpsilonPPb5030c2;
+	} else if (sname == "pPb 5.03c3") {
+	    func=YUpsilonPPb5030c3;
+	} else if (sname == "pPb 5.03c4") {
+	    func=YUpsilonPPb5030c4;
+	} else if (sname == "Pbp 5.03") {
+	    func=YUpsilonPbP5030;
+	} else if (sname == "Pbp 5.03c1") {
+	    func=YUpsilonPbP5030c1;
+	} else if (sname == "Pbp 5.03c2") {
+	    func=YUpsilonPbP5030c2;
+	} else if (sname == "Pbp 5.03c3") {
+	    func=YUpsilonPbP5030c3;
+	} else if (sname == "Pbp 5.03c4") {
+	    func=YUpsilonPbP5030c4;
 	} else if (sname == "pPb 8.8") {
 	    func=YUpsilonPPb8800;
 	} else if (sname == "pPb 8.8c1") {

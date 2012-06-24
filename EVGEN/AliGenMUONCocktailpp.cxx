@@ -54,6 +54,15 @@
 // https://indico.cern.ch/conferenceDisplay.py?confId=157367
 // - simplifications and bug fix in CreateCocktail() 
 // S. Grigoryan
+//-----------------------
+// 06/2012:
+// - added the cocktail for p-Pb & Pb-p @ 2.76, 4.4 & 5.03 TeV with 4 centrality 
+// bins, using the EPS09-LO shadowing computed for 5.03 TeV. Energies are set by
+// AliGenMUONCocktailpp::SetCMSEnergy(int CMSEnergyCode), CMSEnergy codes are
+// defined in AliGenMUONCocktailpp.h.
+// - added functions to scale x-section of JPsi, Charmonia, Bottomonia, CCbar & BBbar
+// in Config.C, e.g. AliGenMUONCocktailpp::ScaleJPsi(2.5), to manage the statistics.
+// S. Grigoryan
  
 #include <TObjArray.h>
 #include <TParticle.h>
@@ -90,6 +99,11 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
      fNSucceded(0),
      fNGenerated(0),
      fCentralityBin(0),
+     fScaleJPsi(1),
+     fScaleCharmonia(1),
+     fScaleBottomonia(1),
+     fScaleCCbar(1),
+     fScaleBBbar(1),
 
      fJpsiPol(0), 
      fChic1Pol(0), 
@@ -132,7 +146,7 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
 // gives 60 mub; so sigma_prompt = 54 mub, while Ref = R.Vogt_arXiv:1003.3497 (Table 2)
 // gives 35 mub. Below we use sigma_direct from the Ref scaled by the factor 54/35.
 // -bottomonia: 4pi integral of fit function for inclusive Upsilon1S dsigma/dy LHC data
-// gives 0.56 mub, sigmas for 2S & 3S obtained using CMS data for ratios 2S/1S & 3S/1S
+// gives 0.56 mub, sigmas for 2S & 3S obtained using LHCb data for ratios 2S/1S & 3S/1S
 // -ccbar & bbbar: NLO pQCD computations - http://www-alice.gsi.de/ana/MNR/results.html
     fCMSEnergyTeVArray[0] =   7.00;
     fSigmaReactionArray[0] =  0.070;
@@ -141,8 +155,8 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
     fSigmaChic2Array[0] =     53.8e-6;
     fSigmaPsiPArray[0] =       7.6e-6;
     fSigmaUpsilonArray[0] =   0.56e-6;
-    fSigmaUpsilonPArray[0] =  0.19e-6;
-    fSigmaUpsilonPPArray[0] = 0.09e-6;
+    fSigmaUpsilonPArray[0] =  0.18e-6;
+    fSigmaUpsilonPPArray[0] = 0.08e-6;
     fSigmaCCbarArray[0] =     6.91e-3;
     fSigmaBBbarArray[0] =     0.232e-3;
     
@@ -175,20 +189,20 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
     fSigmaCCbarArray[2] =     11.2e-3;
     fSigmaBBbarArray[2] =     0.445e-3;
 
-// x-sections for Min. Bias p-Pb & Pb-p @ 8.8 TeV: charmonia and bottomonia 
+// x-sections for Min. Bias p-Pb & Pb-p @ 2.76 TeV: charmonia and bottomonia 
 // from 7 TeV numbers scaled according to pQCD ccbar and bbbar x-sections
 // and with Glauber scaling
-    fCMSEnergyTeVArray[3] =   9.00;           // for 8.8 TeV
+    fCMSEnergyTeVArray[3] =   2.00;           // for 2.76 TeV
     fSigmaReactionArray[3] =  2.10;
-    fSigmaJPsiArray[3] =      8.19e-3;        // 208*1.172*33.6e-6
-    fSigmaChic1Array[3] =     7.95e-3;
-    fSigmaChic2Array[3] =     13.1e-3;
-    fSigmaPsiPArray[3] =      1.85e-3;
-    fSigmaUpsilonArray[3] =   0.146e-3;       // 208*1.25*0.56e-6
-    fSigmaUpsilonPArray[3] =  0.049e-3;
-    fSigmaUpsilonPPArray[3] = 0.023e-3;
-    fSigmaCCbarArray[3] =     1.68;           // 208*8.1e-3
-    fSigmaBBbarArray[3] =     0.061;          // 208*0.29e-3
+    fSigmaJPsiArray[3] =      3.54e-3;        // 208*0.507*33.6e-6
+    fSigmaChic1Array[3] =     3.44e-3;
+    fSigmaChic2Array[3] =     5.66e-3;
+    fSigmaPsiPArray[3] =      0.80e-3;
+    fSigmaUpsilonArray[3] =   0.045e-3;       // 208*0.384*0.56e-6
+    fSigmaUpsilonPArray[3] =  0.014e-3;
+    fSigmaUpsilonPPArray[3] = 0.006e-3;
+    fSigmaCCbarArray[3] =     0.73;           // 208*3.50e-3
+    fSigmaBBbarArray[3] =     0.019;          // 208*0.089e-3
 
     fCMSEnergyTeVArray[4] =  -fCMSEnergyTeVArray[3];
     fSigmaReactionArray[4] =  fSigmaReactionArray[3];
@@ -202,20 +216,101 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
     fSigmaCCbarArray[4] =     fSigmaCCbarArray[3];
     fSigmaBBbarArray[4] =     fSigmaBBbarArray[3];
 
+// x-sections for Min. Bias p-Pb & Pb-p @ 4.4 TeV: charmonia and bottomonia 
+// from 7 TeV numbers scaled according to pQCD ccbar and bbbar x-sections
+// and with Glauber scaling
+    fCMSEnergyTeVArray[5] =   4.00;           // for 4.4 TeV
+    fSigmaReactionArray[5] =  2.10;
+    fSigmaJPsiArray[5] =      5.00e-3;        // 208*0.715*33.6e-6
+    fSigmaChic1Array[5] =     4.86e-3;
+    fSigmaChic2Array[5] =     7.99e-3;
+    fSigmaPsiPArray[5] =      1.12e-3;
+    fSigmaUpsilonArray[5] =   0.074e-3;       // 208*0.629*0.56e-6
+    fSigmaUpsilonPArray[5] =  0.023e-3;
+    fSigmaUpsilonPPArray[5] = 0.010e-3;
+    fSigmaCCbarArray[5] =     1.03;           // 208*4.94e-3
+    fSigmaBBbarArray[5] =     0.030;          // 208*0.146e-3
+
+    fCMSEnergyTeVArray[6] =  -fCMSEnergyTeVArray[5];
+    fSigmaReactionArray[6] =  fSigmaReactionArray[5];
+    fSigmaJPsiArray[6] =      fSigmaJPsiArray[5];
+    fSigmaChic1Array[6] =     fSigmaChic1Array[5];
+    fSigmaChic2Array[6] =     fSigmaChic2Array[5];
+    fSigmaPsiPArray[6] =      fSigmaPsiPArray[5];
+    fSigmaUpsilonArray[6] =   fSigmaUpsilonArray[5];
+    fSigmaUpsilonPArray[6] =  fSigmaUpsilonPArray[5];
+    fSigmaUpsilonPPArray[6] = fSigmaUpsilonPPArray[5];
+    fSigmaCCbarArray[6] =     fSigmaCCbarArray[5];
+    fSigmaBBbarArray[6] =     fSigmaBBbarArray[5];
+
+// x-sections for Min. Bias p-Pb & Pb-p @ 5.03 TeV: charmonia and bottomonia 
+// from 7 TeV numbers scaled according to pQCD ccbar and bbbar x-sections
+// and with Glauber scaling
+    fCMSEnergyTeVArray[7] =   5.00;           // for 5.03 TeV
+    fSigmaReactionArray[7] =  2.10;
+    fSigmaJPsiArray[7] =      5.50e-3;        // 208*0.787*33.6e-6
+    fSigmaChic1Array[7] =     5.35e-3;
+    fSigmaChic2Array[7] =     8.79e-3;
+    fSigmaPsiPArray[7] =      1.23e-3;
+    fSigmaUpsilonArray[7] =   0.083e-3;       // 208*0.716*0.56e-6
+    fSigmaUpsilonPArray[7] =  0.026e-3;
+    fSigmaUpsilonPPArray[7] = 0.011e-3;
+    fSigmaCCbarArray[7] =     1.13;           // 208*5.44e-3
+    fSigmaBBbarArray[7] =     0.035;          // 208*0.166e-3
+
+    fCMSEnergyTeVArray[8] =  -fCMSEnergyTeVArray[7];
+    fSigmaReactionArray[8] =  fSigmaReactionArray[7];
+    fSigmaJPsiArray[8] =      fSigmaJPsiArray[7];
+    fSigmaChic1Array[8] =     fSigmaChic1Array[7];
+    fSigmaChic2Array[8] =     fSigmaChic2Array[7];
+    fSigmaPsiPArray[8] =      fSigmaPsiPArray[7];
+    fSigmaUpsilonArray[8] =   fSigmaUpsilonArray[7];
+    fSigmaUpsilonPArray[8] =  fSigmaUpsilonPArray[7];
+    fSigmaUpsilonPPArray[8] = fSigmaUpsilonPPArray[7];
+    fSigmaCCbarArray[8] =     fSigmaCCbarArray[7];
+    fSigmaBBbarArray[8] =     fSigmaBBbarArray[7];
+
+// x-sections for Min. Bias p-Pb & Pb-p @ 8.8 TeV: charmonia and bottomonia 
+// from 7 TeV numbers scaled according to pQCD ccbar and bbbar x-sections
+// and with Glauber scaling
+    fCMSEnergyTeVArray[9] =   9.00;           // for 8.8 TeV
+    fSigmaReactionArray[9] =  2.10;
+    fSigmaJPsiArray[9] =      8.19e-3;        // 208*1.172*33.6e-6
+    fSigmaChic1Array[9] =     7.95e-3;
+    fSigmaChic2Array[9] =     13.1e-3;
+    fSigmaPsiPArray[9] =      1.85e-3;
+    fSigmaUpsilonArray[9] =   0.146e-3;       // 208*1.25*0.56e-6
+    fSigmaUpsilonPArray[9] =  0.047e-3;
+    fSigmaUpsilonPPArray[9] = 0.021e-3;
+    fSigmaCCbarArray[9] =     1.68;           // 208*8.1e-3
+    fSigmaBBbarArray[9] =     0.061;          // 208*0.29e-3
+
+    fCMSEnergyTeVArray[10] =  -fCMSEnergyTeVArray[9];
+    fSigmaReactionArray[10] =  fSigmaReactionArray[9];
+    fSigmaJPsiArray[10] =      fSigmaJPsiArray[9];
+    fSigmaChic1Array[10] =     fSigmaChic1Array[9];
+    fSigmaChic2Array[10] =     fSigmaChic2Array[9];
+    fSigmaPsiPArray[10] =      fSigmaPsiPArray[9];
+    fSigmaUpsilonArray[10] =   fSigmaUpsilonArray[9];
+    fSigmaUpsilonPArray[10] =  fSigmaUpsilonPArray[9];
+    fSigmaUpsilonPPArray[10] = fSigmaUpsilonPPArray[9];
+    fSigmaCCbarArray[10] =     fSigmaCCbarArray[9];
+    fSigmaBBbarArray[10] =     fSigmaBBbarArray[9];
+
 // x-sections for Min. Bias Pb-Pb @ 2.76 TeV: charmonia and bottomonia 
 // from 7 TeV numbers scaled according to pQCD ccbar and bbbar x-sections
 // and with Glauber scaling
-    fCMSEnergyTeVArray[5] =   3.00;           // for 2.76 TeV
-    fSigmaReactionArray[5] =  7.65;
-    fSigmaJPsiArray[5] =      0.734;          // 208*208*0.505*33.6e-6
-    fSigmaChic1Array[5] =     0.712;
-    fSigmaChic2Array[5] =     1.175;
-    fSigmaPsiPArray[5] =      0.166;
-    fSigmaUpsilonArray[5] =   0.0092;         // 208*208*0.379*0.56e-6
-    fSigmaUpsilonPArray[5] =  0.0031;
-    fSigmaUpsilonPPArray[5] = 0.0015;
-    fSigmaCCbarArray[5] =     151.;           // 208*208*3.49e-3
-    fSigmaBBbarArray[5] =     3.8;            // 208*208*0.088e-3
+    fCMSEnergyTeVArray[11] =   3.00;           // for 2.76 TeV
+    fSigmaReactionArray[11] =  7.65;
+    fSigmaJPsiArray[11] =      0.737;          // 208*208*0.507*33.6e-6
+    fSigmaChic1Array[11] =     0.715;
+    fSigmaChic2Array[11] =     1.179;
+    fSigmaPsiPArray[11] =      0.166;
+    fSigmaUpsilonArray[11] =   0.0093;         // 208*208*0.384*0.56e-6
+    fSigmaUpsilonPArray[11] =  0.0030;
+    fSigmaUpsilonPPArray[11] = 0.0013;
+    fSigmaCCbarArray[11] =     151.;           // 208*208*3.50e-3
+    fSigmaBBbarArray[11] =     3.8;            // 208*208*0.089e-3
     
 }
 
@@ -279,6 +374,10 @@ void AliGenMUONCocktailpp::CreateCocktail()
 // create and add resonances and open HF to the coctail
     Int_t cmsEnergy = Int_t(fCMSEnergyTeV);
 
+    // For temporary use of p-Pb & Pb-p shadowing at 5.03 TeV for lower energies  
+    if (cmsEnergy == 2 || cmsEnergy == 4) cmsEnergy = 5;
+    if (cmsEnergy == -2 || cmsEnergy == -4) cmsEnergy = -5;
+
 // These limits are only used for renormalization of quarkonia cross section
 // Pythia events are generated in 4pi  
     Double_t ptMin  = fPtMin;
@@ -289,8 +388,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
     Double_t phiMax = fPhiMax*180./TMath::Pi();
     AliInfo(Form("Ranges pT:%4.1f : %4.1f GeV/c, y:%4.2f : %4.2f, Phi:%5.1f : %5.1f degres",ptMin,ptMax,yMin,yMax,phiMin,phiMax));
     
-// Cross sections in barns (from PPR Vol. II p: 552) pp - 14 TeV and 
-// corrected from feed down of higher resonances 
+// Cross sections in barns
 
     Double_t sigmajpsi      = fSigmaJPsi;  
     Double_t sigmachic1     = fSigmaChic1;  
@@ -312,6 +410,18 @@ void AliGenMUONCocktailpp::CreateCocktail()
     if(TMath::Abs(fUpsPol) > 1.e-30) {sigmaupsilon   = fSigmaUpsilon*0.0248;}
     if(TMath::Abs(fUpsPPol) > 1.e-30) {sigmaupsilonP  = fSigmaUpsilonP*0.0193;}
     if(TMath::Abs(fUpsPPPol) > 1.e-30) {sigmaupsilonPP = fSigmaUpsilonPP*0.0218;}
+
+// Cross sections scaled to manage the statistics
+
+    sigmajpsi      *= fScaleJPsi*fScaleCharmonia;  
+    sigmachic1     *= fScaleCharmonia;  
+    sigmachic2     *= fScaleCharmonia;  
+    sigmapsiP      *= fScaleCharmonia;  
+    sigmaupsilon   *= fScaleBottomonia;  
+    sigmaupsilonP  *= fScaleBottomonia;  
+    sigmaupsilonPP *= fScaleBottomonia;  
+    sigmaccbar     *= fScaleCCbar;  
+    sigmabbbar     *= fScaleBBbar;  
 
     AliInfo(Form("the parametrised resonances uses the decay mode %d",fDecayModeResonance));
 
@@ -345,6 +455,10 @@ void AliGenMUONCocktailpp::CreateCocktail()
     } else if (cmsEnergy == 14){snprintf(tname, 40, "CDF pp");
     } else if (cmsEnergy == 7) {snprintf(tname, 40, "pp 7");
       //    } else if (cmsEnergy == 2) {snprintf(tname, 40, "pp 2.76");
+    } else if (cmsEnergy == 5) {snprintf(tname, 40, "pPb 5.03");
+      if (fCentralityBin > 0) snprintf(tname, 40, "pPb 5.03c%d",fCentralityBin); 
+    } else if (cmsEnergy == -5){snprintf(tname, 40, "Pbp 5.03");
+      if (fCentralityBin > 0) snprintf(tname, 40, "Pbp 5.03c%d",fCentralityBin); 
     } else if (cmsEnergy == 9) {snprintf(tname, 40, "pPb 8.8");
       if (fCentralityBin > 0) snprintf(tname, 40, "pPb 8.8c%d",fCentralityBin); 
     } else if (cmsEnergy == -9){snprintf(tname, 40, "Pbp 8.8");
@@ -373,7 +487,19 @@ void AliGenMUONCocktailpp::CreateCocktail()
     chard[0] = 1;                 // 1st element for pp and min. bias (MB) collisions
     bhard[0] = 1;
 
-// 4 centrality bins for p-Pb & Pb-p: 0-20-40-60-100 % 
+// 4 centrality bins for p-Pb & Pb-p at 5.03 TeV: 0-20-40-60-100 % 
+    if (cmsEnergy == 5 || cmsEnergy == -5) {
+      const Int_t n5 = 5;         // 1st element for MB collisions
+      Double_t r5[n5] = {1, 1.936, 1.473, 0.914, 0.333};        // ratio of hard-over-geo fractions
+      Double_t cshad5[n5] = {0.806, 0.742, 0.796, 0.870, 0.955};// EPS09-LO shadowing factors
+      Double_t bshad5[n5] = {0.917, 0.889, 0.913, 0.944, 0.981};
+      for(i=0; i<n5; i++) {
+	  chard[i] = cshad5[i]*r5[i];   
+	  bhard[i] = bshad5[i]*r5[i];
+      }
+    }
+
+// 4 centrality bins for p-Pb & Pb-p at 8.8 TeV: 0-20-40-60-100 % 
     if (cmsEnergy == 9 || cmsEnergy == -9) {
       const Int_t n9 = 5;         // 1st element for MB collisions
       Double_t r9[n9] = {1, 1.936, 1.473, 0.914, 0.333};        // ratio of hard-over-geo fractions
@@ -385,7 +511,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
       }
     }
 
-// 11 centrality bins for Pb-Pb: 0-5-10-20-30-40-50-60-70-80-90-100 % 
+// 11 centrality bins for Pb-Pb at 2.76 TeV: 0-5-10-20-30-40-50-60-70-80-90-100 % 
     if (cmsEnergy == 3) {
       const Int_t n3 = 12;        // 1st element for MB collisions
       Double_t r3[n3] = {1, 4.661, 3.647, 2.551, 1.544, 0.887, 0.474,
