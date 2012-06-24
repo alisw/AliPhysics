@@ -1607,7 +1607,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhMixDeltaPhiChargedAssocPtBin[i]->SetXTitle("p_{T trigger}");
       fhMixDeltaPhiChargedAssocPtBin[i]->SetYTitle("#Delta #phi");
       
-      fhMixDeltaPhiChargedAssocPtBinDEta08[i] = new TH2F(Form("hMixDeltaPhiDeltaEta0.8ChargedAssocPtBinDEta08%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+      fhMixDeltaPhiChargedAssocPtBinDEta08[i] = new TH2F(Form("hMixDeltaPhiDeltaEta0.8ChargedAssocPtBin%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
                                                          Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f] for #Delta #eta > 0.8", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
                                                          nptbins, ptmin, ptmax,  ndeltaphibins ,deltaphimin,deltaphimax);
       fhMixDeltaPhiChargedAssocPtBinDEta08[i]->SetXTitle("p_{T trigger}");

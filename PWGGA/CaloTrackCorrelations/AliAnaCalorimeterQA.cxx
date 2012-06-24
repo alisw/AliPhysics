@@ -1800,15 +1800,15 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhExoL0ECross  = new TH2F("hExoL0_ECross",
                                "#lambda^{2}_{0} vs 1-E_{+}/E_{max} for E > 5 GeV",
                                400,0,1,ssbins,ssmin,ssmax); 
-    fhExoL0ECross ->SetYTitle("1-E_{+}/E_{cell max}");
-    fhExoL0ECross ->SetXTitle("#lambda^{2}_{0}");
+    fhExoL0ECross ->SetXTitle("1-E_{+}/E_{cell max}");
+    fhExoL0ECross ->SetYTitle("#lambda^{2}_{0}");
     outputContainer->Add(fhExoL0ECross) ;     
 
     fhExoL1ECross  = new TH2F("hExoL1_ECross",
                               "#lambda^{2}_{1} vs 1-E_{+}/E_{max} for E > 5 GeV",
                               400,0,1,ssbins,ssmin,ssmax); 
-    fhExoL1ECross ->SetYTitle("1-E_{+}/E_{cell max}");
-    fhExoL1ECross ->SetXTitle("#lambda^{2}_{1}");
+    fhExoL1ECross ->SetXTitle("1-E_{+}/E_{cell max}");
+    fhExoL1ECross ->SetYTitle("#lambda^{2}_{1}");
     outputContainer->Add(fhExoL1ECross) ;  
     
     for(Int_t ie = 0; ie <fExoNECrossCuts; ie++)
