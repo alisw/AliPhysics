@@ -18,7 +18,6 @@
 #include <TSystem.h>
 #include <TArrayF.h>
 #include <TArrayI.h>
-#include <AliCheb3D.h>
 
 ClassImp(AliMagWrapCheb)
 
@@ -692,13 +691,13 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
   //
   AliCheb3DCalc::ReadLine(buffs,stream);
   if (!buffs.BeginsWith("END DIPOLE")) {
-    Error("LoadData","Expected \"END DIPOLE\", found \"%s\"\nStop\n",GetName(),buffs.Data());
+    Error("LoadData","Expected \"END DIPOLE\", found \"%s\"\nStop\n",buffs.Data());
     exit(1);
   }
   //
   AliCheb3DCalc::ReadLine(buffs,stream);
-  if (!buffs.BeginsWith("END") || !buffs.Contains(GetName())) {
-    Error("LoadData","Expected: \"END %s\", found \"%s\"\nStop\n",GetName(),buffs.Data());
+  if (!buffs.BeginsWith("END DIPOLE") || !buffs.Contains(GetName())) {
+    Error("LoadData","Expected: \"END DIPOLE\", found \"%s\"\nStop\n",buffs.Data());
     exit(1);
   }
   //
@@ -840,6 +839,49 @@ void AliMagWrapCheb::AddParamDip(const AliCheb3D* param)
   if (!fParamsDip) fParamsDip = new TObjArray();
   fParamsDip->Add( (AliCheb3D*)param);
   fNParamsDip++;
+  //
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::ResetDip()
+{
+  // clean Dip field (used for update)
+  if (fNParamsDip) {
+    delete   fParamsDip;  fParamsDip = 0;
+    delete[] fSegZDip;    fSegZDip   = 0;
+    delete[] fSegXDip;    fSegXDip   = 0;
+    delete[] fSegYDip;    fSegYDip   = 0;
+    delete[] fBegSegYDip; fBegSegYDip = 0;
+    delete[] fNSegYDip;   fNSegYDip   = 0;
+    delete[] fBegSegXDip; fBegSegXDip = 0;
+    delete[] fNSegXDip;   fNSegXDip   = 0;
+    delete[] fSegIDDip;   fSegIDDip   = 0;   
+  }
+  fNParamsDip = fNZSegDip = fNXSegDip = fNYSegDip = 0;
+  fMinZDip = 1e6;
+  fMaxZDip = -1e6;
+  //
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::ResetSol()
+{
+  // clean Sol field (used for update)
+  if (fNParamsSol) {
+    delete   fParamsSol;  fParamsSol = 0;
+    delete[] fSegZSol;    fSegZSol   = 0;
+    delete[] fSegPSol;    fSegPSol   = 0;
+    delete[] fSegRSol;    fSegRSol   = 0;
+    delete[] fBegSegPSol; fBegSegPSol = 0;
+    delete[] fNSegPSol;   fNSegPSol   = 0;
+    delete[] fBegSegRSol; fBegSegRSol = 0;
+    delete[] fNSegRSol;   fNSegRSol   = 0;
+    delete[] fSegIDSol;   fSegIDSol   = 0;   
+  }
+  fNParamsSol = fNZSegSol = fNPSegSol = fNRSegSol = 0;
+  fMinZSol = 1e6;
+  fMaxZSol = -1e6;
+  fMaxRSol = 0;
   //
 }
 

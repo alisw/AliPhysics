@@ -40,7 +40,7 @@
 #include <TMath.h>
 #include <TNamed.h>
 #include <TObjArray.h>
-class AliCheb3D;
+#include "AliCheb3D.h"
 
 class TSystem;
 class TArrayF;
@@ -136,6 +136,8 @@ class AliMagWrapCheb: public TNamed
   void       BuildTableTPCRatInt();
   void       ResetTPCInt();
   void       ResetTPCRatInt();
+  void       ResetSol();
+  void       ResetDip();
   //
   //
 #endif
