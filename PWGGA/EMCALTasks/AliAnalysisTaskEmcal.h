@@ -19,7 +19,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   enum EmcalAnaType {
     kTPC       = 0,     // TPC only analysis
     kEMCAL     = 1,     // EMCal + TPC analysis
-    kTPCSmall  = 2      // TPC only in EMCal acceptance
+    kTPCSmall  = 2,     // TPC only in EMCal acceptance
+    kEMCALOnly = 3,     // EMCal only analysis
   };
 
   enum BeamType {

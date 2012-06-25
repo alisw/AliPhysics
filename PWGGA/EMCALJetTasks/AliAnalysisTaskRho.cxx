@@ -172,12 +172,12 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
     fIsInit = 1;
   }
 
+  fRho->SetVal(0);
+  if (fRhoScaled)
+    fRhoScaled->SetVal(0);
+
   if (!fJets)
     return;
-
-  fRho->SetVal(-1);
-  if (fRhoScaled)
-    fRhoScaled->SetVal(-1);
 
   DetermineCent();
 

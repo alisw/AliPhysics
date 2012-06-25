@@ -214,7 +214,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
     return;
   }
 
-  if (!fCaloName.IsNull() && (fAnaType == kEMCAL) && !fCaloClusters) {
+  if (!fCaloName.IsNull() && (fAnaType == kEMCAL || fAnaType == kEMCALOnly) && !fCaloClusters) {
     fCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
     if (!fCaloClusters) {
       AliError(Form("%s: Could not retrieve clusters %s!", GetName(), fCaloName.Data())); 
@@ -229,7 +229,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
     }
   }
 
-  if (!fTracksName.IsNull() && !fTracks) {
+  if (!fTracksName.IsNull() && fAnaType != kEMCALOnly && !fTracks) {
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
     if (!fTracks) {
       AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
