@@ -9,6 +9,30 @@ AliAnalysisTaskPi0V2 *AddTaskEMCALPi0V2()
     ::Error("AddTaskEMCALPi0V2", "No analysis manager to connect to.");
     return NULL;
   }  
+
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskEMCALPi0V2", "This task requires an input event handler");
+    return NULL;
+  }
+
+  AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
+  eventplaneTask->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kAnyINT);
+
+  eventplaneTask->SetTrackType("TPC");
+  eventplaneTask->SetUsePtWeight();
+  eventplaneTask->SetUsePhiWeight();
+  eventplaneTask->SetSaveTrackContribution();
+
+  AliESDtrackCuts* epTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "Standard");
+  epTrackCuts->SetPtRange(0.1, 4);
+  eventplaneTask->SetPersonalESDtrackCuts(epTrackCuts);
+
+  mgr->AddTask(eventplaneTask);
+
+  AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("EPStat",TList::Class(), AliAnalysisManager::kOutputContainer,"EPoutput.root");
+  mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(eventplaneTask,1,coutput1);
   
   // Create the task and configure it.
   //===========================================================================
