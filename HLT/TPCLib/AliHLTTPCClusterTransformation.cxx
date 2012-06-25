@@ -27,6 +27,8 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCFastTransform.h"
 
+#include "AliCDBPath.h"
+#include "AliCDBManager.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
 #include "AliTPCParam.h"
@@ -79,8 +81,13 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
 
   if( !pCalib->GetTransform() ) return -2; 
 
+  AliCDBPath cdbPath("TPC/Calib/RecoParam");
+  AliTPCRecoParam* recParam = (AliTPCRecoParam*)AliCDBManager::Instance()->Get(cdbPath);
+  if(!recParam) return -3;
+  pCalib->GetTransform()->SetCurrentRecoParam(recParam);
+
   fOfflineTPCParam = pCalib->GetParameters(); 
-  if( !fOfflineTPCParam ) return -3;
+  if( !fOfflineTPCParam ) return -4;
 
   fOfflineTPCParam->Update();
   fOfflineTPCParam->ReadGeoMatrices();  
