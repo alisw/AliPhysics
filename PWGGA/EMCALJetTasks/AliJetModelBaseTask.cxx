@@ -260,7 +260,7 @@ void AliJetModelBaseTask::ExecOnce()
     fPhiMax = fPhiMin;
   }
 
-  if (fNTracks > 0 && !fTracks) {
+  if (fNTracks > 0 && !fTracks && !fTracksName.IsNull()) {
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
     if (!fTracks) {
       AliError(Form("%s: Couldn't retrieve tracks with name %s!", GetName(), fTracksName.Data()));
@@ -291,7 +291,7 @@ void AliJetModelBaseTask::ExecOnce()
     }
   }
 
-  if (fNClusters > 0 && !fClusters) {
+  if (fNClusters > 0 && !fClusters && !fCaloName.IsNull()) {
     fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCaloName));
  
     if (!fClusters) {

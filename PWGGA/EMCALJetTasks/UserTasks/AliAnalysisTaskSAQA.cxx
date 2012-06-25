@@ -122,18 +122,18 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
 
-  fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", fNbins, 0, 100);
+  fHistCentrality = new TH1F("fHistCentrality","Event centrality distribution", 100, 0, 100);
   fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
   fHistCentrality->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistCentrality);
 
-  fHistTracksCent = new TH2F("fHistTracksCent","Tracks vs. centrality", fNbins, 0, 100, fNbins, 0, 4000);
+  fHistTracksCent = new TH2F("fHistTracksCent","Tracks vs. centrality", 100, 0, 100, fNbins, 0, 4000);
   fHistTracksCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistTracksCent->GetYaxis()->SetTitle("No. of tracks");
   fOutput->Add(fHistTracksCent);
 
   if (fAnaType == kEMCAL) {
-    fHistClusCent = new TH2F("fHistClusCent","Clusters vs. centrality", fNbins, 0, 100, fNbins, 0, 2000);
+    fHistClusCent = new TH2F("fHistClusCent","Clusters vs. centrality", 100, 0, 100, fNbins, 0, 2000);
     fHistClusCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistClusCent->GetYaxis()->SetTitle("No. of clusters");
     fOutput->Add(fHistClusCent);

@@ -21,6 +21,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
 
   void                        SetEtaLimits(Float_t min, Float_t max)               { fMinEta = min, fMaxEta = max ; }
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut        ; }
+  void                        SetPercAreaCut(Float_t p)                            { fPercAreaCut    = p          ; }
   void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut        ; }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r          ; } 
   void                        SetJetsName(const char *n)                           { fJetsName       = n          ; }
@@ -29,6 +30,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetPhiLimits(Float_t min, Float_t max)               { fMinPhi = min, fMaxPhi = max ; }
   void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b          ; }
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b          ; }
+
  
  protected:
   Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)   const;
@@ -45,6 +47,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Float_t                     fPtBiasJetClus;              // select jets with a minimum pt cluster
   Float_t                     fJetPtCut;                   // cut on jet pt
   Float_t                     fJetAreaCut;                 // cut on jet area
+  Float_t                     fPercAreaCut;                // cut on jet area as a percentage of average jet area
   Float_t                     fMinEta;                     // minimum eta jet acceptance
   Float_t                     fMaxEta;                     // maximum eta jet acceptance
   Float_t                     fMinPhi;                     // minimum phi jet acceptance

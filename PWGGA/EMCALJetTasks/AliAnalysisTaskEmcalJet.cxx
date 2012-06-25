@@ -29,10 +29,11 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   AliAnalysisTaskEmcal("AliAnalysisTaskEmcalJet"),
   fJetRadius(0.4),
   fJetsName(),
-  fPtBiasJetTrack(10),
-  fPtBiasJetClus(10),
+  fPtBiasJetTrack(5),
+  fPtBiasJetClus(5),
   fJetPtCut(1),
-  fJetAreaCut(0.2),
+  fJetAreaCut(0.4),
+  fPercAreaCut(0.8),
   fMinEta(-0.9),
   fMaxEta(0.9),
   fMinPhi(-10),
@@ -49,10 +50,11 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   AliAnalysisTaskEmcal(name, histo),
   fJetRadius(0.4),
   fJetsName(),
-  fPtBiasJetTrack(10),
-  fPtBiasJetClus(10),
+  fPtBiasJetTrack(5),
+  fPtBiasJetClus(5),
   fJetPtCut(1),
-  fJetAreaCut(0.2),
+  fJetAreaCut(0.4),
+  fPercAreaCut(0.8),
   fMinEta(-0.9),
   fMaxEta(0.9),
   fMinPhi(-10),
@@ -120,10 +122,15 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
 {
   // Init the analysis.
 
+  if (fPercAreaCut >= 0) {
+    AliInfo(Form("%s: jet area cut will be calculated as a percentage of the average area, given value will be overwritten", GetName()));
+    fJetAreaCut = fPercAreaCut * fJetRadius * fJetRadius * TMath::Pi();
+  }
+
   if (fAnaType == kTPC) {
     SetEtaLimits(-0.9 + fJetRadius, 0.9 - fJetRadius);
     SetPhiLimits(-10, 10);
-  } else if (fAnaType == kEMCAL || fAnaType == kTPCSmall) {
+  } else if (fAnaType == kEMCAL || fAnaType == kTPCSmall || fAnaType == kEMCALOnly) {
     AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
     if (geom) {
       SetEtaLimits(geom->GetArm1EtaMin() + fJetRadius, geom->GetArm1EtaMax() - fJetRadius);
