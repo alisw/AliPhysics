@@ -82,15 +82,18 @@ AliAnalysisTaskEMCALCaloTrackCorr *AddTaskEmcalCaloTrackCorr(
     ::Error("AddTaskHadCorr", "This task requires an input event handler");
     return NULL;
   }
-  
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
-  trackCuts->SetEtaRange(-0.8,0.8);
+ 
+  if(fDataType == "ESD"){ 
+   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+   AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
+   esdTrackCuts->SetEtaRange(-0.8,0.8);
+  }
 
   AliAnalysisTaskEMCALCaloTrackCorr *task = new AliAnalysisTaskEMCALCaloTrackCorr("NeutralCorr"); 
   task->SetMC(kSimulation);
   task->SetDataType(fDataType);
-  task->SetTrackCuts(esdTrackCuts);
+  if(fDataType == "ESD")task->SetTrackCuts(esdTrackCuts);
+  if(fDataType == "AOD") task->SwitchOnAODHybridTrackSelection();
   task->SetTrackMatchedDPhiCut(fDPhiCut);
   task->SetTrackMatchedDEtaCut(fDEtaCut);
   task->SetLargeCorrTrigger(5, 50);
@@ -113,7 +116,7 @@ AliAnalysisTaskEMCALCaloTrackCorr *AddTaskEmcalCaloTrackCorr(
   
   task->SetCentralityClass("V0M");
   task->SetCentralityBin(fMinCen,fMaxCen); 
-  task->SetEventPlaneMethod("Q");
+  task->SetEventPlaneMethod("V0");
   task->SetEMCALGeometryName("EMCAL_COMPLETEV1");
   mgr->AddTask(task);
 
@@ -131,7 +134,8 @@ AliAnalysisTaskEMCALCaloTrackCorr *AddTaskEmcalCaloTrackCorr(
   ConfigureTrigger(task);
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-   if(kAnaPhotonCorr && !kAnaMesonCorr) {
+ 
+ if(kAnaPhotonCorr && !kAnaMesonCorr) {
     AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer(Form("InclusivePhotonCen%.1f_%.1f",fMinCen, fMaxCen), TList::Class(),
                             AliAnalysisManager::kOutputContainer, "AnalysisResults.root");  
    }
