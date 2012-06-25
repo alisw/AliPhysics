@@ -30,6 +30,7 @@
 #include "TProfile2D.h"
 #include "TLorentzVector.h"
 #include "TParticle.h"
+#include "TF1.h"
 
 #include "AliVEventHandler.h"
 #include "AliAnalysisTaskSE.h"
@@ -135,6 +136,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fHistEV(0),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
+  fFractionContamination(0x0),
   fCosSin2phiep(0x0),
   fCos2phie(0x0),
   fSin2phie(0x0),
@@ -156,12 +158,12 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fDeltaPhiMapsContamination(0x0),
   fCosPhiMaps(0x0),
   fProfileCosPhiMaps(0x0),
-  fDeltaPhiMapsTaggedPhotonic(0x0),
-  fCosPhiMapsTaggedPhotonic(0x0),
-  fDeltaPhiMapsTaggedNonPhotonic(0x0),
-  fCosPhiMapsTaggedNonPhotonic(0x0),
-  fDeltaPhiMapsTaggedPhotonicLS(0x0),
-  fCosPhiMapsTaggedPhotonicLS(0x0),
+  //fDeltaPhiMapsTaggedPhotonic(0x0),
+  //fCosPhiMapsTaggedPhotonic(0x0),
+  //fDeltaPhiMapsTaggedNonPhotonic(0x0),
+  //fCosPhiMapsTaggedNonPhotonic(0x0),
+  //fDeltaPhiMapsTaggedPhotonicLS(0x0),
+  //fCosPhiMapsTaggedPhotonicLS(0x0),
   fMCSourceDeltaPhiMaps(0x0),
   fOppSignDeltaPhiMaps(0x0),
   fSameSignDeltaPhiMaps(0x0),
@@ -173,7 +175,10 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   for(Int_t k = 0; k < 10; k++) {
     fBinCentralityLess[k] = 0.0;
   }
-  
+  for(Int_t k = 0; k < 11; k++) {
+    fContamination[k] = NULL;
+  }
+   
 }
 //______________________________________________________________________________
 AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
@@ -235,6 +240,7 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fHistEV(0),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
+  fFractionContamination(0x0),
   fCosSin2phiep(0x0),
   fCos2phie(0x0),
   fSin2phie(0x0),
@@ -256,12 +262,12 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fDeltaPhiMapsContamination(0x0),
   fCosPhiMaps(0x0),
   fProfileCosPhiMaps(0x0),
-  fDeltaPhiMapsTaggedPhotonic(0x0),
-  fCosPhiMapsTaggedPhotonic(0x0),
-  fDeltaPhiMapsTaggedNonPhotonic(0x0),
-  fCosPhiMapsTaggedNonPhotonic(0x0),
-  fDeltaPhiMapsTaggedPhotonicLS(0x0),
-  fCosPhiMapsTaggedPhotonicLS(0x0),
+  //fDeltaPhiMapsTaggedPhotonic(0x0),
+  //fCosPhiMapsTaggedPhotonic(0x0),
+  //fDeltaPhiMapsTaggedNonPhotonic(0x0),
+  //fCosPhiMapsTaggedNonPhotonic(0x0),
+  //fDeltaPhiMapsTaggedPhotonicLS(0x0),
+  //fCosPhiMapsTaggedPhotonicLS(0x0),
   fMCSourceDeltaPhiMaps(0x0),
   fOppSignDeltaPhiMaps(0x0),
   fSameSignDeltaPhiMaps(0x0),
@@ -280,6 +286,10 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fBinCentralityLess[2] = 40.0;
   fBinCentralityLess[3] = 60.0;
   fBinCentralityLess[4] = 80.0;
+
+  for(Int_t k = 0; k < 11; k++) {
+    fContamination[k] = NULL;
+  }
   
   fPID = new AliHFEpid("hfePid");
   fPIDqa = new AliHFEpidQAmanager;
@@ -356,6 +366,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fHistEV(NULL),
   fEventPlane(NULL),
   fEventPlaneaftersubtraction(NULL),
+  fFractionContamination(NULL),
   fCosSin2phiep(NULL),
   fCos2phie(NULL),
   fSin2phie(NULL),
@@ -377,12 +388,12 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fDeltaPhiMapsContamination(NULL),
   fCosPhiMaps(NULL),
   fProfileCosPhiMaps(NULL),
-  fDeltaPhiMapsTaggedPhotonic(NULL),
-  fCosPhiMapsTaggedPhotonic(NULL),
-  fDeltaPhiMapsTaggedNonPhotonic(NULL),
-  fCosPhiMapsTaggedNonPhotonic(NULL),
-  fDeltaPhiMapsTaggedPhotonicLS(NULL),
-  fCosPhiMapsTaggedPhotonicLS(NULL),
+  //fDeltaPhiMapsTaggedPhotonic(NULL),
+  //fCosPhiMapsTaggedPhotonic(NULL),
+  //fDeltaPhiMapsTaggedNonPhotonic(NULL),
+  //fCosPhiMapsTaggedNonPhotonic(NULL),
+  //fDeltaPhiMapsTaggedPhotonicLS(NULL),
+  //fCosPhiMapsTaggedPhotonicLS(NULL),
   fMCSourceDeltaPhiMaps(NULL),
   fOppSignDeltaPhiMaps(NULL),
   fSameSignDeltaPhiMaps(NULL),
@@ -458,6 +469,9 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   target.fPID = fPID;
   target.fPIDqa = fPIDqa;
   target.fHFEVZEROEventPlane = fHFEVZEROEventPlane;
+  for(Int_t k = 0; k < 11; k++) {
+    target.fContamination[k] = fContamination[k];
+  }
  
 }
 //____________________________________________________________
@@ -757,17 +771,26 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   AliDebug(2,"AliAnalysisTaskHFEFlow: histev");
 
   // Event plane as function of phiep, centrality
-  const Int_t nDima=5;
-  Int_t nBina[nDima] = {nBinsPhi,nBinsPhi,nBinsPhi,nBinsPhi,nBinsC};
+  const Int_t nDima=4;
+  Int_t nBina[nDima] = {nBinsPhi,nBinsPhi,nBinsPhi,nBinsC};
   fEventPlane = new THnSparseF("EventPlane","EventPlane",nDima,nBina);
   fEventPlane->SetBinEdges(0,binLimPhi);
   fEventPlane->SetBinEdges(1,binLimPhi);
   fEventPlane->SetBinEdges(2,binLimPhi);
-  fEventPlane->SetBinEdges(3,binLimPhi);
-  fEventPlane->SetBinEdges(4,binLimC);
+  fEventPlane->SetBinEdges(3,binLimC);
   fEventPlane->Sumw2();
 
   AliDebug(2,"AliAnalysisTaskHFEFlow: eventplane");
+
+  // Fraction of contamination, centrality
+  const Int_t nDimcont=2;
+  Int_t nBincont[nDimcont] = {nBinsPt,nBinsC};
+  fFractionContamination = new THnSparseF("Contamination","Contamination",nDimcont,nBincont);
+  fFractionContamination->SetBinEdges(0,binLimPt);
+  fFractionContamination->SetBinEdges(1,binLimC);
+  fFractionContamination->Sumw2();
+
+  AliDebug(2,"AliAnalysisTaskHFEFlow: fraction of contamination");
 
   // Resolution cosres_abc centrality
   const Int_t nDimfbis=4;
@@ -984,6 +1007,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   //
 
   if(fMonitorPhotonic) {
+    /*
     const Int_t nDimgbp=3;
     Int_t nBingbp[nDimgbp] = {nBinsPhi,nBinsC,nBinsPt};
     
@@ -1031,7 +1055,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fCosPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
     fCosPhiMapsTaggedPhotonicLS->Sumw2();
     AliDebug(2,"AliAnalysisTaskHFEFlow: cosphimapstaggedphotonicls");
-    
+    */
     const Int_t nDimMCSource=3;
     Int_t nBinMCSource[nDimMCSource] = {nBinsC,nBinsPt,nBinsSource};
     fMCSourceDeltaPhiMaps = new THnSparseF("MCSourceDeltaPhiMaps","MCSourceDeltaPhiMaps",nDimMCSource,nBinMCSource);
@@ -1093,6 +1117,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
 
   fListHist->Add(fHistEV);
   fListHist->Add(fEventPlane);
+  fListHist->Add(fFractionContamination);
   fListHist->Add(fCosRes);
   fListHist->Add(fCosResabc);
   fListHist->Add(fCosPhiMaps);
@@ -1134,12 +1159,12 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
 
   if(fMonitorPhotonic) {
   fListHist->Add(fPIDBackgroundqa->MakeList("HFEpidBackgroundQA"));
-  fListHist->Add(fDeltaPhiMapsTaggedPhotonic);
-  fListHist->Add(fCosPhiMapsTaggedPhotonic);
-  fListHist->Add(fDeltaPhiMapsTaggedNonPhotonic);
-  fListHist->Add(fCosPhiMapsTaggedNonPhotonic);
-  fListHist->Add(fDeltaPhiMapsTaggedPhotonicLS);
-  fListHist->Add(fCosPhiMapsTaggedPhotonicLS);
+  //fListHist->Add(fDeltaPhiMapsTaggedPhotonic);
+  //fListHist->Add(fCosPhiMapsTaggedPhotonic);
+  //fListHist->Add(fDeltaPhiMapsTaggedNonPhotonic);
+  //fListHist->Add(fCosPhiMapsTaggedNonPhotonic);
+  //fListHist->Add(fDeltaPhiMapsTaggedPhotonicLS);
+  //fListHist->Add(fCosPhiMapsTaggedPhotonicLS);
   fListHist->Add(fMCSourceDeltaPhiMaps);
   fListHist->Add(fOppSignDeltaPhiMaps);
   fListHist->Add(fSameSignDeltaPhiMaps);
@@ -1181,7 +1206,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   Float_t binctt = -1.0;
   
   Double_t valuecossinephiep[3];
-  Double_t valuensparsea[5];
+  Double_t valuensparsea[4];
   Double_t valuensparseabis[5];
   Double_t valuensparsee[4];
   Double_t valuensparsef[2];
@@ -1194,6 +1219,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   Double_t valuensparseMCSourceDeltaPhiMaps[3];
   Double_t valuetrackingcuts[2];
   Double_t valuedeltaphicontamination[4];
+  Double_t valuefractioncont[2];
    
   AliMCEvent *mcEvent = MCEvent();
   AliMCParticle *mctrack = NULL;
@@ -1251,7 +1277,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   if(binct > 11.0) return;
  
   // centrality
-  valuensparsea[4] = binct;  
+  valuensparsea[3] = binct;  
   valuensparseabis[1] = binct;  
   valuensparsee[1] = binct;    
   valuensparsef[1] = binctMore;  
@@ -1260,6 +1286,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   valuensparsefbissin[3] = binct;  
   valuensparseg[1] = binct;
   valuensparseh[1] = binct; 
+  valuefractioncont[1] = binct;
   valuensparsehprofile[1] = binct; 
   valuecossinephiep[2] = binctMore;
   valuensparseMCSourceDeltaPhiMaps[0] = binct;
@@ -1407,16 +1434,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   Double_t diffsubasubcsin = -100.0;
   Double_t diffsubbsubcsin = -100.0;
 
-  //if(fVZEROEventPlane) {
-  diffsubasubb = TMath::Cos(2.*(eventPlaneV0A - eventPlaneV0C));
-  diffsubasubc = TMath::Cos(2.*(eventPlaneV0A - eventPlaneTPC));
-  diffsubbsubc = TMath::Cos(2.*(eventPlaneV0C - eventPlaneTPC));
-
-  diffsubasubbsin = TMath::Sin(2.*(eventPlaneV0A - eventPlaneV0C));
-  diffsubasubcsin = TMath::Sin(2.*(eventPlaneV0A - eventPlaneTPC));
-  diffsubbsubcsin = TMath::Sin(2.*(eventPlaneV0C - eventPlaneTPC));
-  //}
-  //else {
+  // two sub event TPC
   qsub1a = vEPa->GetQsub1();
   qsub2a = vEPa->GetQsub2();
   if(qsub1a) eventPlanesub1a = TVector2::Phi_0_2pi(qsub1a->Phi())/2.;
@@ -1425,7 +1443,25 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     diffsub1sub2a = TMath::Cos(2.*TVector2::Phi_0_2pi(qsub1a->Phi()/2.- qsub2a->Phi()/2.));
     diffsub1sub2asin = TMath::Sin(2.*TVector2::Phi_0_2pi(qsub1a->Phi()/2.- qsub2a->Phi()/2.));
   }
-  //}
+
+  // three sub events in case of VZEROA and VZEROC
+  diffsubasubb = TMath::Cos(2.*(eventPlaneV0A - eventPlaneV0C));
+  diffsubasubc = TMath::Cos(2.*(eventPlaneV0A - eventPlaneTPC));
+  diffsubbsubc = TMath::Cos(2.*(eventPlaneV0C - eventPlaneTPC));
+
+  diffsubasubbsin = TMath::Sin(2.*(eventPlaneV0A - eventPlaneV0C));
+  diffsubasubcsin = TMath::Sin(2.*(eventPlaneV0A - eventPlaneTPC));
+  diffsubbsubcsin = TMath::Sin(2.*(eventPlaneV0C - eventPlaneTPC));
+  // three sub events in case of VZERO all
+  if(fVZEROEventPlane && (!fVZEROEventPlaneA) && (!fVZEROEventPlaneC)) {
+    diffsubasubb = TMath::Cos(2.*(eventPlaneV0 - eventPlanesub1a));
+    diffsubasubc = TMath::Cos(2.*(eventPlaneV0 - eventPlanesub2a));
+    diffsubbsubc = TMath::Cos(2.*(eventPlanesub1a - eventPlanesub2a));
+    
+    diffsubasubbsin = TMath::Sin(2.*(eventPlaneV0 - eventPlanesub1a));
+    diffsubasubcsin = TMath::Sin(2.*(eventPlaneV0 - eventPlanesub2a));
+    diffsubbsubcsin = TMath::Sin(2.*(eventPlanesub1a - eventPlanesub2a));
+  }
   
 
   /////////////////////////////////////////////////////////
@@ -1494,7 +1530,12 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     valuensparsea[0] = eventPlaneV0A;
     valuensparsea[1] = eventPlaneV0C;
     valuensparsea[2] = eventPlaneTPC;
-    valuensparsea[3] = eventPlaneV0;  
+    if(fVZEROEventPlane && (!fVZEROEventPlaneA) && (!fVZEROEventPlaneC)) {
+      // case VZERO all
+      valuensparsea[0] = eventPlaneV0;
+      valuensparsea[1] = eventPlanesub1a;
+      valuensparsea[2] = eventPlanesub2a;
+    } 
     fEventPlane->Fill(&valuensparsea[0]);
 
     // Fill
@@ -1781,6 +1822,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     valuensparsee[3] = track->Eta();    
     valuensparseg[2] = track->Pt();
     valuensparseh[2] = track->Pt();
+    valuefractioncont[0] = track->Pt();
     valuensparsehprofile[2] = track->Pt();
     valuensparseMCSourceDeltaPhiMaps[1] = track->Pt();
     if(track->Charge() > 0.0) {
@@ -1912,6 +1954,14 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     valuensparseh[0] = TMath::Cos(2*TVector2::Phi_mpi_pi(phitrack-eventplanesubtracted));
     if(fillEventPlane) {
       fCosPhiMaps->Fill(&valuensparseh[0]);
+      if((valuefractioncont[1] >=0) && (valuefractioncont[1] < 11)){
+	if(fContamination[((Int_t)valuefractioncont[1])]){
+	  Double_t weight = fContamination[((Int_t)valuefractioncont[1])]->Eval(track->P());
+	  if(weight<0.0) weight=0.0;
+	  if(weight>1.0) weight=1.0;
+	  fFractionContamination->Fill(&valuefractioncont[0],weight);
+	}     
+      }
       if(fMonitorEventPlane) {
 	fProfileCosPhiMaps->Fill(valuensparsehprofile[1],valuensparsehprofile[2],valuensparseh[0]);
       }
@@ -1924,7 +1974,9 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       source = FindMother(TMath::Abs(track->GetLabel()),mcEvent, indexmother);
       valuensparseMCSourceDeltaPhiMaps[2] = source;
       if(mcEvent) fMCSourceDeltaPhiMaps->Fill(&valuensparseMCSourceDeltaPhiMaps[0]);
-      Int_t taggedvalue = LookAtNonHFE(k,track,fInputEvent,mcEvent,binct,deltaphi,source,indexmother);
+      LookAtNonHFE(k,track,fInputEvent,mcEvent,binct,deltaphi,source,indexmother);
+      //Int_t taggedvalue = LookAtNonHFE(k,track,fInputEvent,mcEvent,binct,deltaphi,source,indexmother);
+      /*
       if(fillEventPlane) {
 	// No opposite charge partner found in the invariant mass choosen
 	if((taggedvalue!=2) && (taggedvalue!=6)) {
@@ -1942,6 +1994,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	  fCosPhiMapsTaggedPhotonicLS->Fill(&valuensparseh[0]);
 	}
       }
+      */
     }
     
   }

@@ -82,6 +82,14 @@ void runGridPbPb()
    //===== ADD CENTRALITY: ===
    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
    AddTaskCentrality();
+
+   //===== ADD VZERO event plane: ===
+   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
+   AddTaskVZEROEPSelection();
+
+   //===== ADD TPC event plane: ===
+   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/AddTaskEventPlaneTPC.C");
+   AddTaskEventPlaneTPC();
    
 
    //===== ADD TASK::

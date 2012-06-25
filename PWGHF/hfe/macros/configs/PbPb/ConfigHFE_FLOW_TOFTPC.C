@@ -153,6 +153,21 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix, In
       }
   }
 
+  // Define hadron contamination
+  TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]+[1]*x+[2]*x*x+[3]*x*x*x", 0., 200.);
+  // 20-30%
+  hBackground->SetParameter(0, -0.165789);
+  hBackground->SetParameter(1, 0.218694);
+  hBackground->SetParameter(2, -0.076635);
+  hBackground->SetParameter(3, 0.00947502);
+  task->SetContamination(hBackground,3);
+  // 30-40%
+  hBackground->SetParameter(0, -0.072222);
+  hBackground->SetParameter(1, 0.132098);
+  hBackground->SetParameter(2, -0.0561759);
+  hBackground->SetParameter(3, 0.00789356);
+  task->SetContamination(hBackground,4);
+
   // Define PID TOF Only
   AliHFEpid *pidTOFOnly = task->GetPIDTOFOnly();
   if(useMC) pidTOFOnly->SetHasMCData(kTRUE);
