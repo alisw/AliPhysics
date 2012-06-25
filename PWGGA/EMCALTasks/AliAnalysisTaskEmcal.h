@@ -43,6 +43,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetPtCut(Float_t cut)                                { SetClusPtCut(cut); SetTrackPtCut(cut); }
   void                        SetTrackPtCut(Float_t cut)                           { fTrackPtCut     = cut        ; }
   void                        SetTracksName(const char *n)                         { fTracksName     = n          ; }
+  void                        SetClusTimeCut(Float_t min, Float_t max)             { fClusTimeCutLow = min; fClusTimeCutUp = max; }
 
  protected:
   virtual void                ExecOnce()                                                                    ;
@@ -66,6 +67,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Float_t                     fMaxBinPt;                   // max pt in histograms
   Float_t                     fClusPtCut;                  // cut on cluster pt
   Float_t                     fTrackPtCut;                 // cut on track pt
+  Float_t                     fClusTimeCutLow;             // low time cut for clusters
+  Float_t                     fClusTimeCutUp;              // up time cut for clusters
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
   Float_t                     fCent;                       //!event centrality

@@ -35,6 +35,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistCentrality(0),
   fHistTracksCent(0),
   fHistClusCent(0),
+  fHistClusTracks(0),
   fHistMaxL1FastORCent(0),
   fHistMaxL1ClusCent(0),
   fHistMaxL1ThrCent(0),
@@ -43,6 +44,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistTrEmcPhiEta(0),
   fHistClusPhiEtaEnergy(0),
   fHistNCellsEnergy(0),
+  fHistClusTimeEnergy(0),
   fHistCellsEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -76,6 +78,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistCentrality(0),
   fHistTracksCent(0),
   fHistClusCent(0),
+  fHistClusTracks(0),
   fHistMaxL1FastORCent(0),
   fHistMaxL1ClusCent(0),
   fHistMaxL1ThrCent(0),
@@ -84,6 +87,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistTrEmcPhiEta(0),
   fHistClusPhiEtaEnergy(0),
   fHistNCellsEnergy(0),
+  fHistClusTimeEnergy(0),
   fHistCellsEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
@@ -132,12 +136,22 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTracksCent->GetYaxis()->SetTitle("No. of tracks");
   fOutput->Add(fHistTracksCent);
 
-  if (fAnaType == kEMCAL) {
+  if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
     fHistClusCent = new TH2F("fHistClusCent","Clusters vs. centrality", 100, 0, 100, fNbins, 0, 2000);
     fHistClusCent->GetXaxis()->SetTitle("Centrality (%)");
     fHistClusCent->GetYaxis()->SetTitle("No. of clusters");
     fOutput->Add(fHistClusCent);
-    
+
+    fHistClusTracks = new TH2F("fHistClusTracks","Clusters vs. tracks", fNbins, 0, 4000, fNbins, 0, 2000);
+    fHistClusTracks->GetXaxis()->SetTitle("No. of tracks");
+    fHistClusTracks->GetYaxis()->SetTitle("No. of clusters");
+    fOutput->Add(fHistClusTracks);
+
+    fHistClusTimeEnergy = new TH2F("fHistClusTimeEnergy","Time vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, fNbins,  0, 1e-6);
+    fHistClusTimeEnergy->GetXaxis()->SetTitle("Energy (GeV)");
+    fHistClusTimeEnergy->GetYaxis()->SetTitle("Time");
+    fOutput->Add(fHistClusTimeEnergy);
+
     if (fDoTrigger) {
       fHistMaxL1FastORCent = new TH2F("fHistMaxL1FastORCent","fHistMaxL1ClusCent", 100, 0, 100, 250, 0, 250);
       fHistMaxL1FastORCent->GetXaxis()->SetTitle("Centrality [%]");
@@ -171,7 +185,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTrEmcPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistTrEmcPhiEta);
 
-  if (fAnaType == kEMCAL) {
+  if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
     fHistClusPhiEtaEnergy = new TH3F("fHistClusPhiEtaEnergy","Phi-Eta-Energy distribution of clusters", fNbins, fMinBinPt, fMaxBinPt, 80, -2, 2, 128, 0, 6.4);
     fHistClusPhiEtaEnergy->GetXaxis()->SetTitle("E [GeV]");
     fHistClusPhiEtaEnergy->GetYaxis()->SetTitle("#eta");
@@ -184,7 +198,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fOutput->Add(fHistNCellsEnergy);
   }
 
-  if (fAnaType == kEMCAL) {
+  if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
    
     fHistCellsEnergy = new TH1F("fHistCellsEnergy","Energy spectrum of cells", fNbins, fMinBinPt, fMaxBinPt);
     fHistCellsEnergy->GetXaxis()->SetTitle("E [GeV]");
@@ -262,7 +276,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistJetsPtTrack[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistJetsPtTrack[i]);
 
-      if (fAnaType == kEMCAL) {
+      if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
 	histname = "fHistJetsPtClus_";
 	histname += i;
 	fHistJetsPtClus[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
@@ -335,11 +349,14 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   if (fCaloClusters)
     fHistClusCent->Fill(fCent, fCaloClusters->GetEntriesFast());
 
+  if (fTracks && fCaloClusters)
+    fHistClusTracks->Fill(fTracks->GetEntriesFast(), fCaloClusters->GetEntriesFast());
+
   Float_t trackSum = DoTrackLoop();
 
   DoJetLoop();
 
-  if (fAnaType == kEMCAL) {
+  if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
     Float_t clusSum = DoClusterLoop();
 
     Float_t cellSum = 0, cellCutSum = 0;
@@ -422,6 +439,8 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
 
     fHistClusPhiEtaEnergy->Fill(cluster->E(), nPart.Eta(), nPart.Phi());
     fHistNCellsEnergy->Fill(cluster->E(), cluster->GetNCells());
+
+    fHistClusTimeEnergy->Fill(cluster->E(), cluster->GetTOF());
   }
 
   return sum;
