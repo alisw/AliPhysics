@@ -318,7 +318,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	if (binLimcent[nbincent_0_10+nbincent_10_60] != centmin_60_100)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 2st range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbincent_60_100; i++) binLimcent[i+nbincent_10_60]=(Double_t)centmin_60_100 + (centmax_60_100-centmin_60_100)/nbincent_60_100*(Double_t)i ;
+	for(Int_t i=0; i<=nbincent_60_100; i++) binLimcent[i+nbincent_0_10+nbincent_10_60]=(Double_t)centmin_60_100 + (centmax_60_100-centmin_60_100)/nbincent_60_100*(Double_t)i ;
 
 	// fake
 	for(Int_t i=0; i<=nbinfake; i++) {
