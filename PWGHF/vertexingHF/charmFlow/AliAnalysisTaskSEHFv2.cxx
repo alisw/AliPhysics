@@ -452,13 +452,16 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   
   //determine centrality bin
   Float_t centr=fRDCuts->GetCentrality(aod);
-  Int_t icentr=0;
+  Float_t centrPerMil=centr*10.;
+  Int_t icentr=-1;
   for(Int_t ic=fMinCentr*10+fCentBinSizePerMil;ic<=fMaxCentr*10;ic=ic+fCentBinSizePerMil){
-    if(ic>centr){
+    if(ic>centrPerMil){
       icentr=ic;
       break;
     }
   }
+  if(icentr==-1) return;
+
   TString centrbinname=Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
   if(fReadMC){
