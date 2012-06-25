@@ -540,7 +540,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		       fTimeMeanShift[1],fTimeMeanShift[2] ) );
        if( besttimeC < 999999 &&  besttimeA < 999999) { 
 	 if(equalize  ==0 )
-	   timeclock = ((besttimeC * channelWidth)- 1000.*fLatencyHPTDC +1000.*fLatencyL1 - 1000.*fGRPdelays - fTimeMeanShift[0]);
+	   timeclock = (channelWidth*(besttimeC + besttimeA)/2.- 1000.*fLatencyHPTDC +1000.*fLatencyL1 - 1000.*fGRPdelays - fTimeMeanShift[0]);
 	 else
 	   {
 	     timeclock = channelWidth * Float_t( besttimeA+besttimeC)/2. - fTimeMeanShift[0];
