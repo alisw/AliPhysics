@@ -51,10 +51,10 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     AliHFEpid *GetPID() const { return fPID; }
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SelectPhotonicElectron(Int_t itrack, AliESDtrack *track, Bool_t &fFlagPhotonicElec);
-    void ElectronHadCorrel(Int_t itrack, AliESDtrack *track, TH2F *DphiPt);	
-    void ElectronHadCorrelNoPartner(Int_t itrack,Int_t jtrack, AliESDtrack *track, TH2F *DphiPtNew);	
-  //  void MixedEvent(AliESDtrack *track, TH2F *DphiPt);
-  //  TObjArray* CloneAndReduceTrackList();
+    void ElectronHadCorrel(Int_t itrack, AliESDtrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2,TH2F *DphiPt3,TH2F *DphiPt4);	
+    void ElectronHadCorrelNoPartner(Int_t itrack,Int_t jtrack, AliESDtrack *track, TH2F *DphiPtNew,TH2F *DphiPtNew1,TH2F *DphiPtNew2,TH2F *DphiPtNew3,TH2F *DphiPtNew4);	
+//    void MixedEvent(AliESDtrack *track, TH2F *DphiPt);
+//    TObjArray* CloneAndReduceTrackList();
   private:
 
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
@@ -76,7 +76,7 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     AliHFEpidQAmanager 	*fPIDqa;		//! PID QA manager
     Double_t 		      fOpeningAngleCut;	//openingAngle cut value
     Double_t	         	fInvmassCut;		//invariant mass cut value
-   // AliEventPoolManager*     fPoolMgr;         //! event pool manager
+//    AliEventPoolManager*     fPoolMgr;         //! event pool manager
 
     TH1F			*fNoEvents;		//no of events
     TH1F			*fTrkpt;		//track pt
@@ -87,17 +87,43 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH2F			*fdEdxBef;		//track dEdx vs p before HFE pid
     TH2F			*fdEdxAft;		//track dEdx vs p before HFE pid
     TH2F			*fdEdxAftOwn;		//track dEdx vs p before HFE pid
-    TH1F			*fInvmassLS;		//Inv mass of LS (e,e)
-    TH1F			*fInvmassULS;		//Inv mass of ULS (e,e)
     TH1F			*fOpeningAngleLS;	//opening angle for LS pairs
     TH1F			*fOpeningAngleULS;	//opening angle for ULS pairs
     TH2F			*fSemiIncElecDphi;  	//Semi Inclusive elec - had DPhi
+    TH2F			*fSemiIncElecDphi1;  	//Semi Inclusive elec - had DPhi
+    TH2F			*fSemiIncElecDphi2;  	//Semi Inclusive elec - had DPhi
+    TH2F			*fSemiIncElecDphi3;  	//Semi Inclusive elec - had DPhi
+    TH2F			*fSemiIncElecDphi4;  	//Semi Inclusive elec - had DPhi
     TH2F			*fPhotElecDphi;  	//Photon elec - had DPhi
+    TH2F			*fPhotElecDphi1;  	//Photon elec - had DPhi
+    TH2F			*fPhotElecDphi2;  	//Photon elec - had DPhi
+    TH2F			*fPhotElecDphi3;  	//Photon elec - had DPhi
+    TH2F			*fPhotElecDphi4;  	//Photon elec - had DPhi
     TH2F			*fInclusiveElecDphi;  	//Inclusive elec - had DPhi
+    TH2F			*fInclusiveElecDphi1;  	//Inclusive elec - had DPhi
+    TH2F			*fInclusiveElecDphi2;  	//Inclusive elec - had DPhi
+    TH2F			*fInclusiveElecDphi3;  	//Inclusive elec - had DPhi
+    TH2F			*fInclusiveElecDphi4;  	//Inclusive elec - had DPhi
     TH2F			*fDphiULSMassLow;	//Dphi - ULS, mass< mass cut
+    TH2F			*fDphiULSMassLow1;	//Dphi - ULS, mass< mass cut
+    TH2F			*fDphiULSMassLow2;	//Dphi - ULS, mass< mass cut
+    TH2F			*fDphiULSMassLow3;	//Dphi - ULS, mass< mass cut
+    TH2F			*fDphiULSMassLow4;	//Dphi - ULS, mass< mass cut
     TH2F        *fDphiLSMassLow;  //Dphi - LS, mass< mass cut
+    TH2F        *fDphiLSMassLow1;  //Dphi - LS, mass< mass cut
+    TH2F        *fDphiLSMassLow2;  //Dphi - LS, mass< mass cut
+    TH2F        *fDphiLSMassLow3;  //Dphi - LS, mass< mass cut
+    TH2F        *fDphiLSMassLow4;  //Dphi - LS, mass< mass cut
     TH2F        *fDphiULSMassLowNoPartner; //Dphi - ULS, mass< mass cut no partner
+    TH2F        *fDphiULSMassLowNoPartner1; //Dphi - ULS, mass< mass cut no partner
+    TH2F        *fDphiULSMassLowNoPartner2; //Dphi - ULS, mass< mass cut no partner
+    TH2F        *fDphiULSMassLowNoPartner3; //Dphi - ULS, mass< mass cut no partner
+    TH2F        *fDphiULSMassLowNoPartner4; //Dphi - ULS, mass< mass cut no partner
     TH2F			*fDphiLSMassLowNoPartner;	//Dphi - LS, mass< mass cut
+    TH2F			*fDphiLSMassLowNoPartner1;	//Dphi - LS, mass< mass cut
+    TH2F			*fDphiLSMassLowNoPartner2;	//Dphi - LS, mass< mass cut
+    TH2F			*fDphiLSMassLowNoPartner3;	//Dphi - LS, mass< mass cut
+    TH2F			*fDphiLSMassLowNoPartner4;	//Dphi - LS, mass< mass cut
     TH1F			*fPhotoElecPt;		//photonic elec pt 
     TH1F			*fSemiInclElecPt;	//Semi inclusive ele pt
     TH1F        *fInclusiveElecPt; // Inclusive elec pt
@@ -116,7 +142,15 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH1F        *fKFParticleP; //KFparticle rec P distr
     TH1F        *fKFParticleE; //KFparticle rec E distr
     TH1F        *fInvmassLS1; //LS Invmass for all rec par
+    TH1F        *fInvmassLS2; //LS Invmass for all rec par
+    TH1F        *fInvmassLS3; //LS Invmass for all rec par
+    TH1F        *fInvmassLS4; //LS Invmass for all rec par
+    TH1F        *fInvmassLS5; //LS Invmass for all rec par
     TH1F        *fInvmassULS1;//ULS Invmass for all rec par
+    TH1F        *fInvmassULS2;//ULS Invmass for all rec par
+    TH1F        *fInvmassULS3;//ULS Invmass for all rec par
+    TH1F        *fInvmassULS4;//ULS Invmass for all rec par
+    TH1F        *fInvmassULS5;//ULS Invmass for all rec par
     TH1F        *fcentrality;//
     TH1F        *fElecPhi;//
     TH1F        *fElecPhiTPC;//
@@ -137,6 +171,12 @@ class AliAnalysisTaskElecHadronCorrel : public AliAnalysisTaskSE {
     TH2F        *fMixedDphiULSMassLow;//
     TH2F        *fMixedDphiLSMassLow;//
 */
+    TH1F        *fNLSminus;//
+    TH1F        *fNLSplus;//
+    TH1F        *fNULS;//  
+    TH1F        *fHadronIPxy;//  
+    TH1F        *fHadronIPz;//  
+
 
     //  THnSparse  *fSparseElectron;//!Electron info 
     //  Double_t *fvalueElectron;//!Electron info 
