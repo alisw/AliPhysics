@@ -313,7 +313,7 @@ void AliTPC::CreateMaterials()
   zmat[1]=6.;
   zmat[2]=8.;
 
-  if(title == TString("Ne-CO2")){
+  if(title == TString("Ne-CO2") || title == TString("Default")){
     wmat[0]=0.8038965;
     wmat[1]= 0.053519;
     wmat[2]= 0.1425743;
