@@ -715,7 +715,7 @@ Double_t AliAODTrack::GetTRDmomentum(Int_t plane, Double_t */*sp*/) const
   // in TRD layer "plane".
 
   if (!fDetPid) return -1;
-  const Float_t *trdMomentum=fDetPid->GetTRDmomentum();
+  const Double_t *trdMomentum=fDetPid->GetTRDmomentum();
 
   if (!trdMomentum) {
     return -1.;

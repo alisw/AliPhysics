@@ -18,6 +18,15 @@
 #pragma link C++ class AliAODEvent+;
 #pragma link C++ class AliAODHeader+;
 #pragma link C++ class AliAODTrack+;
+
+#pragma read                                              \
+    sourceClass="AliAODPid"                               \
+    targetClass="AliAODPid"                               \
+    source="UShort_t fTPCsignalN; Double_t fTPCmomentum; Float_t fTRDmomentum[6]"  \
+    version="[-10]"                                       \
+    target="fTPCsignalN, fTPCmomentum, fTRDnSlices, fTRDmomentum"                                          \
+    code="{fTPCsignalN=(UChar_t)onfile.fTPCsignalN; fTPCmomentum=onfile.fTPCmomentum; for (Int_t i=0;i<6;++i) fTRDmomentum[i]=onfile.fTRDmomentum[i];}" 
+
 #pragma link C++ class AliAODPid+;
 #pragma link C++ class AliAODVertex+;
 #pragma link C++ class AliAODCluster+;

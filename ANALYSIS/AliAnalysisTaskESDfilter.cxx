@@ -2284,7 +2284,7 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
   }
   aodpid->SetTOFpidResolution(tofRes);
 
-  aodpid->SetHMPIDsignal(track->GetHMPIDsignal());
+//  aodpid->SetHMPIDsignal(track->GetHMPIDsignal());
 
 }
 

@@ -39,12 +39,10 @@ AliAODPid::AliAODPid():
     fTRDntls(0),
     fTRDslices(0x0),
     fTOFesdsignal(0),
-    fHMPIDsignal(0),
     fTPCdEdxInfo(0)
 {
   // default constructor
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]   = 0; 
-    for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = 0.;
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i] = 0.;
     for(Int_t i=0; i<6; i++) {
       fTRDmomentum[i]      = 0.;
@@ -74,13 +72,11 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   fTRDntls(pid.fTRDntls),
   fTRDslices(0x0),
   fTOFesdsignal(pid.fTOFesdsignal),
-  fHMPIDsignal(pid.fHMPIDsignal),
   fTPCdEdxInfo(0x0)
 {
   // Copy constructor
   SetTRDsignal(fTRDnSlices, pid.fTRDslices);
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
-    for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
 
     for(Int_t i=0; i<6; i++){ 
       fTRDmomentum[i]=pid.fTRDmomentum[i];
@@ -130,10 +126,6 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
     for (Int_t i = 0; i < 5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
     for (Int_t i = 0; i < 5; i++) fIntTime[i]=pid.fIntTime[i];
     
-    fHMPIDsignal=pid.fHMPIDsignal;
-    
-    for(Int_t i = 0; i < 5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
-    
      SetTPCdEdxInfo(pid.fTPCdEdxInfo);
   }
 
@@ -164,22 +156,6 @@ void AliAODPid::GetTOFpidResolution(Double_t tofRes[5]) const
 }
 
 //______________________________________________________________________________
-void AliAODPid::SetHMPIDprobs(Double_t hmpPid[5]) 
-{
-  //
-  // Set the HMPID PID probablities that are read from ESD
-  //  
-  for(Int_t i = 0; i < 5; i++ ) fHMPIDprobs[i] =  hmpPid[i];
-}
-//______________________________________________________________________________
-void AliAODPid::GetHMPIDprobs(Double_t *p) const
-{
-  //
-  // Set the HMPID PID probablities that are read from ESD
-  //  
-  for(Int_t i = 0; i < AliPID::kSPECIES; i++ ) p[i] =  fHMPIDprobs[i];
-}
-//______________________________________________________________________________
 void AliAODPid::SetITSdEdxSamples(const Double_t s[4])
 {
   //
@@ -209,5 +185,4 @@ void AliAODPid::SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo)
   if (!fTPCdEdxInfo) fTPCdEdxInfo=new AliTPCdEdxInfo;
   (*fTPCdEdxInfo)=(*dEdxInfo);
 }
-
 
