@@ -177,9 +177,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TProfile *fMomResH1; // Momentum resolution from TrackQA Hybrid Category 1
     TProfile *fMomResH2; // Momentum resolution from TrackQA Hybrid Category 2
     TProfile *fMomResH3; // Momentum resolution from TrackQA Hybrid Category 3
-    TF1 *fMomResH1Fit; //fit
-    TF1 *fMomResH2Fit; //fit
-    TF1 *fMomResH3Fit; //fit
+    TF1 *fMomResH1Fit;   //fit
+    TF1 *fMomResH2Fit;   //fit
+    TF1 *fMomResH3Fit;   //fit
 
     TH1      *fhEffH1;        // Efficiency for Spectra Hybrid Category 1
     TH1      *fhEffH2;        // Efficiency for Spectra Hybrid Category 2

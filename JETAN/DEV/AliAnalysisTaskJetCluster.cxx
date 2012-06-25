@@ -1706,7 +1706,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 
 void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
 
-  TFile *f = new TFile(fPathTrPtResolution.Data());
+  TFile *f = TFile::Open(fPathTrPtResolution.Data());
 
   if(!f)return;
 
@@ -1716,15 +1716,13 @@ void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
 
   SetSmearResolution(kTRUE);
   SetMomentumResolutionHybrid(fProfPtPtSigma1PtGlobSt,fProfPtPtSigma1PtGlobCnoITS,fProfPtPtSigma1PtGlobCnoSPD);
-
-
-  if(f) delete f;
+  
 
 }
 
 void AliAnalysisTaskJetCluster::LoadTrEfficiencyRootFileFromOADB() {
 
-  TFile *f = new TFile(fPathTrEfficiency.Data());
+  TFile *f = TFile::Open(fPathTrEfficiency.Data());
   if(!f)return;
 
   TH1D *hEffPosGlobSt = (TH1D*)f->Get("hEffPosGlobSt");
@@ -1748,8 +1746,6 @@ void AliAnalysisTaskJetCluster::LoadTrEfficiencyRootFileFromOADB() {
   else
     SetEfficiencyHybrid(hEffPosGlobSt,hEffPosGlobCnoITS,hEffPosGlobCnoSPD);
 
-  if(f) delete f;
-
 }
 
 void AliAnalysisTaskJetCluster::SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3) {
@@ -1758,9 +1754,14 @@ void AliAnalysisTaskJetCluster::SetMomentumResolutionHybrid(TProfile *p1, TProfi
   // set mom res profiles
   //
 
-  fMomResH1 = (TProfile*)p1->Clone("fMomResH1");
-  fMomResH2 = (TProfile*)p2->Clone("fMomResH2");
-  fMomResH3 = (TProfile*)p3->Clone("fMomResH3");
+  if(fMomResH1) delete fMomResH1;
+  if(fMomResH2) delete fMomResH2;
+  if(fMomResH3) delete fMomResH3;
+
+  fMomResH1 = new TProfile(*p1);//(TProfile*)p1->Clone("fMomResH1");
+  fMomResH2 = new TProfile(*p2);//(TProfile*)p2->Clone("fMomResH2");
+  fMomResH3 = new TProfile(*p3);//(TProfile*)p3->Clone("fMomResH3");
+
 }
 
 void AliAnalysisTaskJetCluster:: SetEfficiencyHybrid(TH1 *h1, TH1 *h2, TH1 *h3) {
