@@ -330,7 +330,7 @@ void Config()
     {
       //============================ TPC parameters =====================
 
-        AliTPC *TPC = new AliTPCv2("TPC", "Default");
+        AliTPC *TPC = new AliTPCv2("TPC", "Ne-CO2");
     }
 
 
