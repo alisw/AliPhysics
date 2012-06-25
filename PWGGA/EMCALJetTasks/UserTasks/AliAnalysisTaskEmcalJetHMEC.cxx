@@ -1,6 +1,3 @@
-// To make jet hadron correlations
-// Author: Megan Connors
-
 #include "TChain.h"
 #include "TTree.h"
 #include "TList.h"
@@ -52,11 +49,14 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
 
   for(Int_t icent = 0; icent<6; ++icent){
     fHistJetPt[icent]=0;
-    fHistJetPt[icent]=0;
+    fHistJetPtBias[icent]=0;
+    fHistJetPtTT[icent]=0;
     for(Int_t iptjet = 0; iptjet<3; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
 	fHistJetH[icent][iptjet][ieta]=0;
 	fHistJetHBias[icent][iptjet][ieta]=0;
+	fHistJetHTT[icent][iptjet][ieta]=0;
+
       }
     }
   }
@@ -84,10 +84,12 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   for(Int_t icent = 0; icent<6; ++icent){
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
-    for(Int_t iptjet = 0; iptjet<3; ++iptjet){
+    fHistJetPtTT[icent]=0;
+    for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
 	fHistJetH[icent][iptjet][ieta]=0;
 	fHistJetHBias[icent][iptjet][ieta]=0;
+	fHistJetHTT[icent][iptjet][ieta]=0;
       }
     }
   }
@@ -137,7 +139,11 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
     fHistJetPtBias[icent] = new TH1F(name,name,200,0,200);
     fOutputList->Add(fHistJetPtBias[icent]);
 
-    for(Int_t iptjet = 0; iptjet<3; ++iptjet){
+    sprintf(name,"fHistJetPtTT_%i",icent);   
+    fHistJetPtTT[icent] = new TH1F(name,name,200,0,200);
+    fOutputList->Add(fHistJetPtTT[icent]);
+
+    for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
 	sprintf(name,"fHistJetH_%i_%i_%i",icent,iptjet,ieta);   
 	fHistJetH[icent][iptjet][ieta]=new TH2F(name,name,64,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
@@ -146,6 +152,10 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
 	sprintf(name,"fHistJetHBias_%i_%i_%i",icent,iptjet,ieta);   
 	fHistJetHBias[icent][iptjet][ieta]=new TH2F(name,name,64,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
 	fOutputList->Add(fHistJetHBias[icent][iptjet][ieta]);
+
+	sprintf(name,"fHistJetHTT_%i_%i_%i",icent,iptjet,ieta);   
+	fHistJetHTT[icent][iptjet][ieta]=new TH2F(name,name,64,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
+	fOutputList->Add(fHistJetHTT[icent][iptjet][ieta]);
 
       }
     }
@@ -218,19 +228,24 @@ Int_t AliAnalysisTaskEmcalJetHMEC::GetEtaBin(Double_t eta) const
   return etabin;
 }
 //________________________________________________________________________
-Int_t AliAnalysisTaskEmcalJetHMEC::GetpTjetBin(Double_t jetpt) const 
+Int_t AliAnalysisTaskEmcalJetHMEC::GetpTjetBin(Double_t pt) const 
 {
-  // Get eta bin for histos.
+  // Get jet pt  bin for histos.
 
-  Int_t jetptbin = -1;
-  if (jetpt>20)
-    jetptbin = 0;
-  else if (jetpt>30)
-    jetptbin = 1;
-  else if (jetpt>45)
-    jetptbin = 2;
+  Int_t ptbin = -1;
+  if (pt>=10 && pt<15)
+    ptbin = 0;
+  else if (pt>=15 && pt<20)
+    ptbin = 1;
+  else if (pt>=20 && pt<25)
+    ptbin = 2;
+  else if (pt>=25 && pt<30)
+    ptbin = 3;
+  else if (pt>=30)
+    ptbin = 4;
 
-  return jetptbin;
+
+  return ptbin;
 }
 
 
@@ -285,11 +300,38 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
   jets= dynamic_cast<TClonesArray*>(list->FindObject(fJetsName));
   const Int_t Njets = jets->GetEntries();
  
+  //Leticia's loop to find hardest track
+
+  Int_t iTT=-1;
+  Double_t ptmax=-10;
+
+  for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++) 
+    {
+      AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
+      if (!track) {
+	printf("ERROR: Could not receive track %d\n", iTracks);
+	continue;
+      }
+      
+      if(TMath::Abs(track->Eta())>0.9) continue;
+      if(track->Pt()<0.15)continue;
+      //iCount++;
+      if(track->Pt()>ptmax){
+	ptmax=track->Pt();
+	iTT=iTracks;
+      }
+    }
 
   
+  Int_t ijethi=-1;
+
+  Double_t highestjetpt=0.0;
+
+  Int_t passedTTcut=0;
 
   for (Int_t ijet = 0; ijet < Njets; ijet++)
     {
+ 
       AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
       
       if (!jet)
@@ -317,26 +359,60 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
       fHistJetPt[centbin]->Fill(jet->Pt());
 
+      if ((jet->MaxTrackPt()>6) || (jet->MaxClusterPt()>6))
+	fHistJetPtBias[centbin]->Fill(jet->Pt());
+
+
       fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
 
       //fHistDeltaPtvsArea->Fill(jetPt,jet->Area());
 
-      if (jetPt<20) 
-	continue;
+      if(iTT>0){
+	AliVTrack* TT = static_cast<AliVTrack*>(tracks->At(iTT));
+	if(TMath::Abs(jetphi-TT->Phi()-TMath::Pi())<0.6) passedTTcut=1;
+	else passedTTcut=0;
+      }
 
-      for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++) 
-	{
-	  AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
-	  if (!track) {
-	    printf("ERROR: Could not receive track %d\n", iTracks);
-	    continue;
-	  }
+      if(passedTTcut)
+	fHistJetPtTT[centbin]->Fill(jet->Pt());
 
+      if(highestjetpt<jetPt){
+	ijethi=ijet;
+      }
+
+    }
+
+
+    
+  //Only look at the highest pT jet in the event
+
+  if (highestjetpt>10) {
+    AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijethi)); 
+    
+    float jetphi = jet->Phi();
+    Double_t jetPt = jet->Pt();
+   
+
+    if(iTT>0){
+      AliVTrack* TT = static_cast<AliVTrack*>(tracks->At(iTT));
+      if(TMath::Abs(jetphi-TT->Phi()-TMath::Pi())<0.6) passedTTcut=1;
+      else passedTTcut=0;
+    }
+
+    
+    for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++) 
+      {
+	AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
+	if (!track) {
+	  printf("ERROR: Could not receive track %d\n", iTracks);
+	  continue;
+	}
+	
 	  if(TMath::Abs(track->Eta())>0.9) continue;
 
 	  fHistTrackPt->Fill(track->Pt());
 	  	  
-	  if (track->Pt()<0.5)
+	  if (track->Pt()<0.15)
 	    continue;
 	  
 	  Double_t trackphi = track->Phi();
@@ -360,16 +436,15 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	  fHistJetH[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
 	  fHistJetHEtaPhi->Fill(deta,dphijh);
 	  fHistTrackEtaPhi->Fill(tracketa,trackphi);
-	  if ((jet->MaxTrackPt()>6) || (jet->MaxClusterPt()>6)){
+	  if ((jet->MaxTrackPt()>6) || (jet->MaxClusterPt()>6))
 	    fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
-	    fHistJetPtBias[centbin]->Fill(jet->Pt());
+	  
+	  if(passedTTcut)
+	  fHistJetHTT[centbin][0][ieta]->Fill(dphijh,track->Pt());
 
-	  }
 
 	} //track loop
-      
-    }//jet loop
-	  
+}//jet loop
   
   PostData(1, fOutputList);
 }      
