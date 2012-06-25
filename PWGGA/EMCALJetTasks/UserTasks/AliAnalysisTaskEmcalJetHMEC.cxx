@@ -353,9 +353,24 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
       if (jet->Area()==0)
 	continue;
 
-
       Double_t jetPt = jet->Pt();
 
+      if(highestjetpt<jetPt){
+	ijethi=ijet;
+	highestjetpt=jetPt;
+      }
+
+    }
+
+
+    
+  //Only look at the highest pT jet in the event
+
+  if(ijethi>-1){
+    AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijethi)); 
+    
+    float jetphi = jet->Phi();
+    Double_t jetPt = jet->Pt();
 
       fHistJetPt[centbin]->Fill(jet->Pt());
 
@@ -375,31 +390,10 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
       if(passedTTcut)
 	fHistJetPtTT[centbin]->Fill(jet->Pt());
-
-      if(highestjetpt<jetPt){
-	ijethi=ijet;
-      }
-
-    }
-
-
-    
-  //Only look at the highest pT jet in the event
-
-  if (highestjetpt>10) {
-    AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijethi)); 
-    
-    float jetphi = jet->Phi();
-    Double_t jetPt = jet->Pt();
    
 
-    if(iTT>0){
-      AliVTrack* TT = static_cast<AliVTrack*>(tracks->At(iTT));
-      if(TMath::Abs(jetphi-TT->Phi()-TMath::Pi())<0.6) passedTTcut=1;
-      else passedTTcut=0;
-    }
-
-    
+  if (highestjetpt>10) {
+   
     for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++) 
       {
 	AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
@@ -440,12 +434,13 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	    fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
 	  
 	  if(passedTTcut)
-	  fHistJetHTT[centbin][0][ieta]->Fill(dphijh,track->Pt());
+	  fHistJetHTT[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
 
 
 	} //track loop
-}//jet loop
-  
+  }//jet pt cut
+  }
+
   PostData(1, fOutputList);
 }      
 
