@@ -185,6 +185,7 @@ void AliAnaChargedJetResponseMaker::SetFlatEfficiency(Double_t eff) {
 
   fEffFlat = eff;
   return;
+  /*
 
   Int_t nbins[fDimensions];
   Double_t xmin[fDimensions]; 
@@ -207,7 +208,7 @@ void AliAnaChargedJetResponseMaker::SetFlatEfficiency(Double_t eff) {
     fEfficiency->SetBinContent(bin,fEffFlat);
     fEfficiency->SetBinError(bin,0);
   }
-
+  */
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
