@@ -57,14 +57,10 @@
 #include "AliGenEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 
-
-
 #include "AliAnalysisTaskCheckSingleTrackJetRejection.h"
 #include "AliAnalysisTaskPhiCorrelations.h"
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliPWG4HighPtQAMC.h"
-
-
 
 
 using std::cout;
