@@ -297,6 +297,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
   cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,10.0,30.0,40.0,60.,80.,100.");
   cf->AddVariable(AliDielectronVarManager::kOpeningAngle,320,0.,3.2);
+  cf->AddVariable(AliDielectronVarManager::kPsiPair,320,0.,3.2);
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kP,200,0.,20.,kTRUE);
   cf->AddVariable(AliDielectronVarManager::kPt,200,0.,20.,kTRUE);
@@ -311,6 +312,11 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 	cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
 	cf->AddVariable(AliDielectronVarManager::kPdgCodeMother,10000,-5000.5,4999.5,kTRUE);
   }
+
+//Added after train commit
+  cf->SetStepsForEachCut();
+  cf->SetStepForAfterAllCuts();
+
 
   cf->SetStepsForSignal();
   die->SetCFManagerPair(cf);
@@ -342,6 +348,28 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
       AliDielectronSignalMC::kFinalState);
   die->AddSignalMC(finalState);
 
+
+  AliDielectronSignalMC* eleFromConversions=new
+	AliDielectronSignalMC("eleFromConversions","conversion electrons");
+  eleFromConversions->SetLegPDGs(11,-11);
+  eleFromConversions->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFromConversions->SetLegSources(AliDielectronSignalMC::kSecondary,
+	  AliDielectronSignalMC::kSecondary);
+  eleFromConversions->SetMotherPDGs(22,22);    // 22- photon
+  die->AddSignalMC(eleFromConversions);
+
+
+  AliDielectronSignalMC* dalitzDecays=new
+	AliDielectronSignalMC("dalitzDecays","dalitz Pairs");
+  dalitzDecays->SetLegPDGs(11,-11);
+  dalitzDecays->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  dalitzDecays->SetLegSources(AliDielectronSignalMC::kSecondary,
+	  AliDielectronSignalMC::kSecondary);
+  dalitzDecays->SetMotherPDGs(111,111);
+  dalitzDecays->SetFillPureMCStep(kTRUE);
+  die->AddSignalMC(dalitzDecays);
+
+							 
 
 }
 
