@@ -193,6 +193,16 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
 	AliError(Form("%s: Could not receive jet %d", GetName(), ij));
 	continue;
       } 
+
+      if (jet->Area() < fAreaCut)
+        continue;
+      if (jet->AreaEmc()<fAreaEmcCut)
+        continue;
+      if ((jet->Phi() < fPhiMin) || (jet->Phi() > fPhiMax))
+        continue;
+      if ((jet->Eta() < fEtaMin) || (jet->Eta() > fEtaMax))
+        continue;
+
       if (jet->Pt() > maxJetPts[0]) {
 	maxJetPts[1] = maxJetPts[0];
 	maxJetIds[1] = maxJetIds[0];
@@ -220,10 +230,11 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
       continue;
 
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(iJets));
-    if (!jet)
-      continue; 
+    if (!jet) {
+      AliError(Form("%s: Could not receive jet %d", GetName(), iJets));
+      continue;
+    } 
 
-    // applying some other cuts
     if (jet->Area() < fAreaCut)
       continue;
     if (jet->AreaEmc()<fAreaEmcCut)
@@ -234,7 +245,6 @@ void AliAnalysisTaskRho::UserExec(Option_t *)
       continue;
 
     rhovec[NjetAcc] = jet->Pt() / jet->Area();
-
     ++NjetAcc;
 
     if (fCreateHisto) {
