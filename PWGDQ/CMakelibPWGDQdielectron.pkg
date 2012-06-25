@@ -39,6 +39,7 @@ set ( SRCS
       dielectron/AliAnalysisTaskDielectronFilter.cxx
       dielectron/AliAnalysisTaskDielectronEfficiency.cxx
       dielectron/AliAnalysisTaskMultiDielectron.cxx
+      dielectron/AliAnalysisTaskMultiDielectronTG.cxx
       dielectron/AliAnalysisTaskDielectronReadAODBranch.cxx
       dielectron/AliAnalysisTaskSingleParticle.cxx
       dielectron/AliDielectronVarCuts.cxx
