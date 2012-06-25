@@ -75,7 +75,8 @@ AliAnalysisTaskSE(),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
   fHigherImpPar(2000.),
-  fDoLS(0)
+  fDoLS(0),
+  fSystem(0)
 {
   // Default constructor
 
@@ -152,7 +153,8 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fNImpParBins(400),
   fLowerImpPar(-2000.),
   fHigherImpPar(2000.),
-  fDoLS(0)
+  fDoLS(0),
+  fSystem(0)
 {
   // 
   // Standrd constructor
@@ -1157,9 +1159,12 @@ void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
   // Histos for impact paramter study
 
   Int_t nmassbins=GetNBinsHistos();
+  Double_t maxmult;
+  if(fSystem==1) maxmult=5000;
+  else maxmult=200;
   Int_t nbins[6]={nmassbins,200,fNImpParBins,5,50,100};
   Double_t xmin[6]={fLowmasslimit,0.,fLowerImpPar,0.95,0.,-0.5};
-  Double_t xmax[6]={fUpmasslimit,20.,fHigherImpPar,1.,1.,99.5};
+  Double_t xmax[6]={fUpmasslimit,40.,fHigherImpPar,1.,1.,maxmult};
 
   fHistMassPtImpParTC[0]=new THnSparseF("hMassPtImpParAll",
 					"Mass vs. pt vs.imppar - All",

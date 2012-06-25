@@ -56,7 +56,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   dplusTask->SetDebugLevel(0);
   dplusTask->SetMassLimits(0.2);
   dplusTask->SetUseBit(kTRUE);
-
+  dplusTask->SetSystem(system);
   if (doSparse) dplusTask->SetDoImpactParameterHistos(kTRUE);
 
   mgr->AddTask(dplusTask);
