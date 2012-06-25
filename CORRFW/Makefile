@@ -1,7 +1,9 @@
 
 include Makefile.arch
 
-default-target: libCORRFW.so
+PACKAGE = CORRFW
+
+default-target: lib$(PACKAGE).so
 
 ALICEINC      = -I.
 
@@ -33,9 +35,12 @@ endif
   endif
 #endif
 
-CXXFLAGS     += $(ALICEINC) -g
+ifeq ($(PLATFORM),macosx)
+     ROOTLIBDIR     := $(shell $(RC) --libdir)
+     PACKLDFLAGS = $(STEERBase_LIBS) $(ESD_LIBS) $(AOD_LIBS) $(ANALYSIS_LIBS) $(ANALYSISalice_LIBS) -L$(ROOTLIBDIR)  -lVMC -lMinuit -lEG -lGeom
+endif
 
-PACKAGE = CORRFW
+CXXFLAGS     += $(ALICEINC) -g
 
 SRCS     = $(wildcard *.cxx)
 HDRS     = $(SRCS:.cxx=.h)
@@ -52,7 +57,11 @@ PARFILE       = $(PACKAGE).par
 lib$(PACKAGE).so: $(OBJS_CORRFW)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+ifeq ($(PLATFORM),macosx)
+	$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+else
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
+endif
 	@chmod a+x $@
 	@echo "done"
 
