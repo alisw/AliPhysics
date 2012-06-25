@@ -41,6 +41,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetDoLikeSign(Int_t dols=0){fDoLS=dols;}
+  void SetSystem(Int_t system=0){fSystem=system;}
   void SetCutsDistr(Bool_t cutsDistr=kTRUE){fCutsDistr=cutsDistr;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
   void SetImpactParameterBinning(Int_t nbins, Float_t dmin, Float_t dmax){
@@ -143,8 +144,9 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t fLowerImpPar;  // lower limit in impact parameter (um)
   Float_t fHigherImpPar; // higher limit in impact parameter (um)
   Int_t  fDoLS;        // flag to do LS analysis
+  Int_t fSystem;   //0=pp,1=PbPb
   
-  ClassDef(AliAnalysisTaskSEDplus,17); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,18); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
