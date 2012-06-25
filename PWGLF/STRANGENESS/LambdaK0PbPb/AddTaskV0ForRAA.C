@@ -119,6 +119,7 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t
    mgr->ConnectInput  (task,  0, cinput );
    mgr->ConnectOutput (task,  1, coutput1);
    
-   
+   AliLog::SetClassDebugLevel("AliAnalysisTaskV0ForRAA",2);
+
    return task;
 }
