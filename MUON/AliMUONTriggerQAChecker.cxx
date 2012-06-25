@@ -193,13 +193,6 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
   TPaveText* text = new TPaveText(0.25,y1,0.75,0.89,"NDC");
     
   text->AddText(Form("MTR - Total events %i", nevents));
-    
-  TIter next(&messages);
-  TObjString* str;
-    
-  while ( ( str = static_cast<TObjString*>(next()) ) ){
-    text->AddText(str->String());
-  }
 
   TString defaultText = "";  
   Int_t color = 0;
@@ -211,9 +204,16 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
   else if ( nevents <= 20 ) {
     color = AliMUONVQAChecker::kWarningColor;
     text->AddText("Not enough events to judge");
-    text->AddText("Please wait for more statistics");
+    defaultText = "Please wait for more statistics";
   }
   else {
+    TIter next(&messages);
+    TObjString* str;
+    
+    while ( ( str = static_cast<TObjString*>(next()) ) ){
+      text->AddText(str->String());
+    }
+    
     switch ( code ) {
       case AliMUONVQAChecker::kInfo:
         color = AliMUONVQAChecker::kInfoColor;
