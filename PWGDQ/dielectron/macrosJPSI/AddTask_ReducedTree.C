@@ -42,7 +42,7 @@ AliAnalysisTask *AddTask_ReducedTree(){
   //create output container
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("diele_defaultTree",
-                         TChain::Class(),
+                         TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
                          "diele_default");
   
