@@ -915,7 +915,7 @@ void AliAnalysisTaskEMCALCaloTrackCorr::UserExec(Option_t *)
     if(feventplane<0)feventplane+=TMath::Pi();
     if(feventplane>TMath::Pi())feventplane-=TMath::Pi();
 
-    replane = Int_t(10*feventplane)/TMath::Pi();
+    replane = Int_t((10*feventplane)/TMath::Pi());
     if(replane>9) replane =9;
    }
    else{
