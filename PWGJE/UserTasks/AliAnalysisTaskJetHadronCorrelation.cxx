@@ -57,15 +57,10 @@
 #include "AliGenEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 
-
-
 #include "AliAnalysisTaskJetHadronCorrelation.h"
 #include "AliAnalysisTaskPhiCorrelations.h"
 //#include "AliAnalysisHelperJetTasks.h"
 #include "AliPWG4HighPtQAMC.h"
-
-
-
 
 using std::cout;
 using std::endl;
@@ -89,59 +84,67 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 								TrackPtcut(0.15),
 								SkipCone(0),
 								IsMC(kTRUE),
-                fxsec(0.),
-                ftrial(1.),
-                fJetRecEtaWindow(0.5),       // eta window for rec jets
-                fMinJetPt(10), 
+								fxsec(0.),
+								ftrial(1.),
+								fJetRecEtaWindow(0.5),       // eta window for rec jets
+								fMinJetPt(10), 
 								fHistList(0x0), // Output list
 								fIfiles(0),
 								fH1Events(0x0),
 								fH1Xsec(0x0),
 								fH1Trials(0x0),
-								fH1JetAKT04_pt                (0x0),
-								fH1leadJetAKT04_pt            (0x0),
-								fH1leadJetAKT04_pt_dijet      (0x0),
-								fH1subJetAKT04_pt_dijet       (0x0),
-								fH2JetsJetAKT04_dphi          (0x0),
-								fH2JetsJetAKT04_deta          (0x0),
-								fH2JetsJetAKT04_Aj            (0x0),
-								fH2JetsJetAKT04_pt            (0x0),
-								fH1JetMCAKT04_pt              (0x0),
-								fH1leadJetMCAKT04_pt          (0x0),
-								fH1leadJetMCAKT04_pt_dijet    (0x0),
-								fH1subJetMCAKT04_pt_dijet     (0x0),
-								fH2JetsJetMCAKT04_dphi        (0x0),
-								fH2JetsJetMCAKT04_deta        (0x0),
-								fH2JetsJetMCAKT04_Aj          (0x0),
-								fH2JetsJetMCAKT04_pt          (0x0)
-
-
+								fH1Track_pt              (0x0),
+								fH1Track_phi             (0x0),
+								fH1Track_eta             (0x0),
+								fH1Jet_pt                (0x0),
+								fH1Jet_phi               (0x0),
+								fH1Jet_eta               (0x0),
+								fH1leadJet_pt            (0x0),
+								fH1leadJet_pt_dijet      (0x0),
+								fH1subJet_pt_dijet       (0x0),
+								fH2JetsJet_dphi          (0x0),
+								fH2JetsJet_deta          (0x0),
+								fH2JetsJet_Aj            (0x0),
+								fH2JetsJet_pt            (0x0),
+								fH1JetMC_pt              (0x0),
+								fH1leadJetMC_pt          (0x0),
+								fH1leadJetMC_pt_dijet    (0x0),
+								fH1subJetMC_pt_dijet     (0x0),
+								fH2JetsJetMC_dphi        (0x0),
+								fH2JetsJetMC_deta        (0x0),
+								fH2JetsJetMC_Aj          (0x0),
+								fH2JetsJetMC_pt          (0x0),
+								fH2Mult_Mtrack          (0x0),
+								fH2Mult_Mlead           (0x0),
+								fH2Mult_Mjet            (0x0),
+								fH2Mult_Njet            (0x0),
+								fH2Mult_Aj              (0x0),
+								fH2Mlead_Aj             (0x0),
+								fH2Jet_pt_Mlead         (0x0),
+								fH2Jet_pt_Munder        (0x0)
 {
-
-
-				if(IsMC){
-								for(int j=0;j<5;j++){
-												fH1AKT04_ndiJ_ediv[j]=0;
-												fH1leadJetMCAKT04_dphiResolution          [j]=0;
-												fH1subJetMCAKT04_dphiResolution           [j]=0;
-												for(int k=0;k<5;k++){
-																fH1JetHadronAKT04_dphi_ediv               [j][k]=0;
-																fH1JetHadronAKT04_dphi_tptweight_ediv     [j][k]=0;
-																fH1JetHadronAKT04_dphi_tJptweight_ediv    [j][k]=0;
-												}
-								}
-				}else{
-								for(int j=0;j<5;j++){
-												fH1AKT04_ndiJ_ediv[j]=0;
-												for(int k=0;k<5;k++){
-																fH1JetHadronAKT04_dphi_ediv             [j][k]=0;
-																fH1JetHadronAKT04_dphi_tptweight_ediv   [j][k]=0;
-																fH1JetHadronAKT04_dphi_tJptweight_ediv  [j][k]=0;
-												}
+				for(int j=0;j<5;j++){
+								fH1ndiJ_ediv                             [j]=0;
+								fH1Aj                                    [j]=0;
+								fH1Mlead                                 [j]=0;
+								fH1leadJetMC_dphiResolution              [j]=0;
+								fH1subJetMC_dphiResolution               [j]=0;
+								fH1leadJetMC_Efficiency                  [j]=0;
+								fH1subJetMC_Efficiency                   [j]=0;
+								for(int k=0;k<5;k++){
+												fH1JetHadron_dphi_ediv           [j][k]=0;
+												fH1JetHadron_dphi_tptweight_ediv [j][k]=0;
+												fH1JetHadron_dphi_tJptweight_ediv[j][k]=0;
 								}
 				}
-
-
+				for(int j=0;j<3;j++){
+								fH1ndiJ_2040Mlead                               [j]=0;
+								fH1ndiJ_2040Aj                                  [j]=0;
+								for(int k=0;k<5;k++){
+												fH1JetHadron_dphi_tptweight2040_Mleaddep[j][k]=0;
+												fH1JetHadron_dphi_tptweight2040_Ajdep   [j][k]=0;
+								}
+				}
 				// Default constructor
 }
 
@@ -172,58 +175,67 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 				fH1Events(0x0),
 				fH1Xsec(0x0),
 				fH1Trials(0x0),
-				fH1JetAKT04_pt                (0x0),
-				fH1leadJetAKT04_pt            (0x0),
-				fH1leadJetAKT04_pt_dijet      (0x0),
-				fH1subJetAKT04_pt_dijet       (0x0),
-				fH2JetsJetAKT04_dphi          (0x0),
-				fH2JetsJetAKT04_deta          (0x0),
-				fH2JetsJetAKT04_Aj            (0x0),
-				fH2JetsJetAKT04_pt            (0x0),
-				fH1JetMCAKT04_pt              (0x0),
-				fH1leadJetMCAKT04_pt          (0x0),
-				fH1leadJetMCAKT04_pt_dijet    (0x0),
-				fH1subJetMCAKT04_pt_dijet     (0x0),
-				fH2JetsJetMCAKT04_dphi        (0x0),
-				fH2JetsJetMCAKT04_deta        (0x0),
-				fH2JetsJetMCAKT04_Aj          (0x0),
-				fH2JetsJetMCAKT04_pt          (0x0)
-
-
+				fH1Track_pt              (0x0),
+				fH1Track_phi             (0x0),
+				fH1Track_eta             (0x0),
+				fH1Jet_pt                (0x0),
+				fH1Jet_phi               (0x0),
+				fH1Jet_eta               (0x0),
+				fH1leadJet_pt            (0x0),
+				fH1leadJet_pt_dijet      (0x0),
+				fH1subJet_pt_dijet       (0x0),
+				fH2JetsJet_dphi          (0x0),
+				fH2JetsJet_deta          (0x0),
+				fH2JetsJet_Aj            (0x0),
+				fH2JetsJet_pt            (0x0),
+				fH1JetMC_pt              (0x0),
+				fH1leadJetMC_pt          (0x0),
+				fH1leadJetMC_pt_dijet    (0x0),
+				fH1subJetMC_pt_dijet     (0x0),
+				fH2JetsJetMC_dphi        (0x0),
+				fH2JetsJetMC_deta        (0x0),
+				fH2JetsJetMC_Aj          (0x0),
+				fH2JetsJetMC_pt          (0x0),
+				fH2Mult_Mtrack          (0x0),
+				fH2Mult_Mlead           (0x0),
+				fH2Mult_Mjet            (0x0),
+				fH2Mult_Njet            (0x0),
+				fH2Mult_Aj              (0x0),
+				fH2Mlead_Aj             (0x0),
+				fH2Jet_pt_Mlead         (0x0),
+				fH2Jet_pt_Munder        (0x0)
 {
-				if(IsMC){
-								for(int j=0;j<5;j++){
-												fH1AKT04_ndiJ_ediv[j]=0;
-												fH1leadJetMCAKT04_dphiResolution          [j]=0;
-												fH1subJetMCAKT04_dphiResolution           [j]=0;
-												for(int k=0;k<5;k++){
-																fH1JetHadronAKT04_dphi_ediv               [j][k]=0;
-																fH1JetHadronAKT04_dphi_tptweight_ediv     [j][k]=0;
-																fH1JetHadronAKT04_dphi_tJptweight_ediv    [j][k]=0;
-												}
+				for(int j=0;j<5;j++){
+								fH1ndiJ_ediv                             [j]=0;
+								fH1Aj                                    [j]=0;
+								fH1Mlead                                 [j]=0;
+								fH1leadJetMC_dphiResolution              [j]=0;
+								fH1subJetMC_dphiResolution               [j]=0;
+								fH1leadJetMC_Efficiency                  [j]=0;
+								fH1subJetMC_Efficiency                   [j]=0;
+								for(int k=0;k<5;k++){
+												fH1JetHadron_dphi_ediv           [j][k]=0;
+												fH1JetHadron_dphi_tptweight_ediv [j][k]=0;
+												fH1JetHadron_dphi_tJptweight_ediv[j][k]=0;
 								}
-				}else{
-								for(int j=0;j<5;j++){
-												fH1AKT04_ndiJ_ediv[j]=0;
-												for(int k=0;k<5;k++){
-																fH1JetHadronAKT04_dphi_ediv             [j][k]=0;
-																fH1JetHadronAKT04_dphi_tptweight_ediv   [j][k]=0;
-																fH1JetHadronAKT04_dphi_tJptweight_ediv  [j][k]=0;
-												}
+				}
+				for(int j=0;j<3;j++){
+								fH1ndiJ_2040Mlead                               [j]=0;
+								fH1ndiJ_2040Aj                                  [j]=0;
+								for(int k=0;k<5;k++){
+												fH1JetHadron_dphi_tptweight2040_Mleaddep[j][k]=0;
+												fH1JetHadron_dphi_tptweight2040_Ajdep   [j][k]=0;
 								}
 				}
 
 				// Default constructor
-
 				// Constructor
-
 				// Define input and output slots here
 				// Input slot #0 works with a TChain
 				DefineInput(0, TChain::Class());
 				// Output slot #0 id reserved by the base class for AOD
 				// Output slot #1 writes into a TH1 container
 				DefineOutput(1, TList::Class());
-
 }
 
 //________________________________________________________________________
@@ -232,137 +244,186 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 				// Create histograms
 				// Called once
 
-
 				fHistList = new TList();fHistList->SetOwner(kTRUE); cout<<"TList is created for output "<<endl;
 				//if (!fHistList){ fHistList = new TList();fHistList->SetOwner(kTRUE); cout<<"TList is created for output "<<endl;}
 
 				Bool_t oldStatus = TH1::AddDirectoryStatus();
 				TH1::AddDirectory(kFALSE);
-
 				Float_t pi=TMath::Pi();
-				//gStyle->SetPalette(1);
 
 
 				char *histname;
-				if(IsMC){
-								fH1Xsec                         = new TProfile("Xsec"               ,"Xsec"                   ,1,0,1);
-								fH1Trials                       = new TH1F    ("Trials"             ,"Trials"                 ,1,0,1);
-								fH1JetMCAKT04_pt                = new TH1F("JetMCAKT04_pt"          ,"JetMCAKT04_pt"          ,400,0,400);
-								fH1leadJetMCAKT04_pt            = new TH1F("leadJetMCAKT04_pt"      ,"leadJetMCAKT04_pt"      ,400,0,400);
-								fH1leadJetMCAKT04_pt_dijet      = new TH1F("leadJetMCAKT04_pt_dijet","leadJetMCAKT04_pt_dijet",400,0,400);
-								fH1subJetMCAKT04_pt_dijet       = new TH1F("subJetMCAKT04_pt_dijet" ,"subJetMCAKT04_pt_dijet" ,400,0,400);
-								fH1JetAKT04_pt                  = new TH1F("JetAKT04_pt"            ,"JetAKT04_pt"            ,400,0,400);
-								fH1leadJetAKT04_pt              = new TH1F("leadJetAKT04_pt"        ,"leadJetAKT04_pt"        ,400,0,400);
-								fH1leadJetAKT04_pt_dijet        = new TH1F("leadJetAKT04_pt_dijet"  ,"leadJetAKT04_pt_dijet"  ,400,0,400);
-								fH1subJetAKT04_pt_dijet         = new TH1F("subJetAKT04_pt_dijet"   ,"subJetAKT04_pt_dijet"   ,400,0,400);
-								histname = Form("JetsJetMCAKT04_dphi");
-								fH2JetsJetMCAKT04_dphi          = new TH2F(histname,histname,200,0,400,100,-2*pi,2*pi);
-								histname = Form("JetsJetMCAKT04_deta");
-								fH2JetsJetMCAKT04_deta          = new TH2F(histname,histname,200,0,400,100,-1.5,1.5);
-								histname = Form("JetsJetMCAKT04_Aj");
-								fH2JetsJetMCAKT04_Aj            = new TH2F(histname,histname,200,0,400,100,0,1.2);
-								histname = Form("JetsJetMCAKT04_pt");
-								fH2JetsJetMCAKT04_pt            = new TH2F(histname,histname,200,0,400,200,0,400);
-								histname = Form("JetsJetAKT04_dphi");
-								fH2JetsJetAKT04_dphi            = new TH2F(histname,histname,200,0,400,100,-2*pi,2*pi);
-								histname = Form("JetsJetAKT04_deta");
-								fH2JetsJetAKT04_deta            = new TH2F(histname,histname,200,0,400,100,-1.5,1.5);
-								histname = Form("JetsJetAKT04_Aj");
-								fH2JetsJetAKT04_Aj              = new TH2F(histname,histname,200,0,400,100,0,1.2);
-								histname = Form("JetsJetAKT04_pt");
-								fH2JetsJetAKT04_pt              = new TH2F(histname,histname,200,0,400,200,0,400);
-								for(int j=0;j<5;j++){
-												histname = Form("AKT04_ndiJ_ediv%d",j);
-												fH1AKT04_ndiJ_ediv[j]= new TH1F(histname,histname,1,1,2);
-												histname = Form("leadJetMCAKT04_dphiResolution%d",j);
-												fH1leadJetMCAKT04_dphiResolution[j] = new TH1F(histname,histname,200,-2*pi,2*pi);
-												histname = Form("subJetMCAKT04_dphiResolution%d",j);
-												fH1subJetMCAKT04_dphiResolution[j] = new TH1F(histname,histname,200,-2*pi,2*pi);
-												for(int k=0;k<5;k++){
-																histname = Form("JetHadronAKT04_dphi_ediv%d%d",j,k);
-																fH1JetHadronAKT04_dphi_ediv             [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
-																histname = Form("JetHadronAKT04_dphi_tptweight_ediv%d%d",j,k);
-																fH1JetHadronAKT04_dphi_tptweight_ediv   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
-																histname = Form("JetHadronAKT04_dphi_tJptweight_ediv%d%d",j,k);
-																fH1JetHadronAKT04_dphi_tJptweight_ediv  [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
-												}
-								}
 
+				fH1Events                   = new TH1F    ("Events"             ,"Events"                 ,1,0,1);
+				fH1Xsec                     = new TProfile("Xsec"               ,"Xsec"                   ,1,0,1);
+				fH1Trials                   = new TH1F    ("Trials"             ,"Trials"                 ,1,0,1);
+
+				fH1JetMC_pt                = new TH1F("JetMC_pt"          ,"JetMC_pt"          ,400,0,400);
+				fH1leadJetMC_pt            = new TH1F("leadJetMC_pt"      ,"leadJetMC_pt"      ,400,0,400);
+				fH1leadJetMC_pt_dijet      = new TH1F("leadJetMC_pt_dijet","leadJetMC_pt_dijet",400,0,400);
+				fH1subJetMC_pt_dijet       = new TH1F("subJetMC_pt_dijet" ,"subJetMC_pt_dijet" ,400,0,400);
+
+				histname = Form("JetsJetMC_dphi");
+				fH2JetsJetMC_dphi          = new TH2F(histname,histname,200,0,400,100,-2*pi,2*pi);
+				histname = Form("JetsJetMC_deta");
+				fH2JetsJetMC_deta          = new TH2F(histname,histname,200,0,400,100,-1.5,1.5);
+				histname = Form("JetsJetMC_Aj");
+				fH2JetsJetMC_Aj            = new TH2F(histname,histname,200,0,400,100,0,1.2);
+				histname = Form("JetsJetMC_pt");
+				fH2JetsJetMC_pt            = new TH2F(histname,histname,200,0,400,200,0,400);
+
+				fH1Track_pt                = new TH1F("Track_pt"          ,"Track_pt"          ,400,0,400);
+				fH1Track_phi               = new TH1F("Track_phi"         ,"Track_phi"         ,100,0,2*pi);
+				fH1Track_eta               = new TH1F("Track_eta"         ,"Track_eta"         ,100,-1.,1);
+				fH1Jet_pt                  = new TH1F("Jet_pt"            ,"Jet_pt"            ,400,0,400);
+				fH1Jet_phi                 = new TH1F("Jet_phi"           ,"Jet_pt"            ,100,0,2*pi);
+				fH1Jet_eta                 = new TH1F("Jet_eta"           ,"Jet_pt"            ,100,-1.,1);
+				fH1leadJet_pt              = new TH1F("leadJet_pt"        ,"leadJet_pt"        ,400,0,400);
+				fH1leadJet_pt_dijet        = new TH1F("leadJet_pt_dijet"  ,"leadJet_pt_dijet"  ,400,0,400);
+				fH1subJet_pt_dijet         = new TH1F("subJet_pt_dijet"   ,"subJet_pt_dijet"   ,400,0,400);
+				histname = Form("JetsJet_dphi");
+				fH2JetsJet_dphi            = new TH2F(histname,histname,200,0,400,100,-2*pi,2*pi);
+				histname = Form("JetsJet_deta");
+				fH2JetsJet_deta            = new TH2F(histname,histname,200,0,400,100,-1.5,1.5);
+				histname = Form("JetsJet_Aj");
+				fH2JetsJet_Aj              = new TH2F(histname,histname,200,0,400,100,0,1.2);
+				histname = Form("JetsJet_pt");
+				fH2JetsJet_pt              = new TH2F(histname,histname,200,0,400,200,0,400);
+
+
+				histname = Form("Mult_Mtrack");                                             
+				fH2Mult_Mtrack             = new TH2F(histname,histname,50,0,250,50,0,250); 
+				histname = Form("Mult_Mlead");                                              
+				fH2Mult_Mlead             = new TH2F(histname,histname,50,0,250,25,0,25);   
+				histname = Form("Mult_Mjet");                                               
+				fH2Mult_Mjet              = new TH2F(histname,histname,50,0,250,50,0,100);  
+				histname = Form("Mult_Njet");                                               
+				fH2Mult_Njet              = new TH2F(histname,histname,50,0,250,50,0,50);   
+				histname = Form("Mult_Aj");                                                 
+				fH2Mult_Aj                = new TH2F(histname,histname,50,0,250,25,0,1.2);  
+				histname = Form("Mlead_Aj");                                                
+				fH2Mlead_Aj               = new TH2F(histname,histname,25,0,25,25,0,1.2);   
+				histname = Form("Jet_pt_Mlead");                                                
+				fH2Jet_pt_Mlead               = new TH2F(histname,histname,50,0,200,25,0,25);   
+				histname = Form("Jet_pt_Munder");                                               
+				fH2Jet_pt_Munder              = new TH2F(histname,histname,50,0,200,25,0,5);    
+
+				for(int j=0;j<5;j++){
+								histname = Form("ndiJ_ediv%d",j);
+								fH1ndiJ_ediv[j]= new TH1F(histname,histname,1,1,2);
+								histname = Form("leadJetMC_dphiResolution%d",j);
+								fH1leadJetMC_dphiResolution[j] = new TH1F(histname,histname,200,-2*pi,2*pi);
+								histname = Form("subJetMC_dphiResolution%d",j);
+								fH1subJetMC_dphiResolution[j] = new TH1F(histname,histname,200,-2*pi,2*pi);
+								histname = Form("leadJetMC_Efficiency%d",j);
+								fH1leadJetMC_Efficiency[j] = new TH1F(histname,histname,100,0,1.2);
+								histname = Form("subJetMC_Efficiency%d",j);
+								fH1subJetMC_Efficiency[j] = new TH1F(histname,histname,100,0,1.2);
+
+								histname        = Form("Aj%d",j);                    
+								fH1Aj[j]    = new TH1F(histname,histname,50,0,1.2);  
+								histname        = Form("Mlead%d",j);                 
+								fH1Mlead[j] = new TH1F(histname,histname,50,0,50);   
+								for(int k=0;k<5;k++){
+												histname = Form("JetHadron_dphi_ediv%d%d",j,k);
+												fH1JetHadron_dphi_ediv             [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadron_dphi_tptweight_ediv%d%d",j,k);
+												fH1JetHadron_dphi_tptweight_ediv   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadron_dphi_tJptweight_ediv%d%d",j,k);
+												fH1JetHadron_dphi_tJptweight_ediv  [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+								}
+				}
+				for(int j=0;j<3;j++){
+								histname = Form("ndiJ_2040Mlead%d",j);
+								fH1ndiJ_2040Mlead[j]= new TH1F(histname,histname,1,1,2);
+								histname = Form("ndiJ_2040Aj%d",j);
+								fH1ndiJ_2040Aj[j]= new TH1F(histname,histname,1,1,2);
+								for(int k=0;k<5;k++){
+												histname = Form("JetHadron_dphi_tptweight2040_Mleaddep%d%d",j,k);
+												fH1JetHadron_dphi_tptweight2040_Mleaddep   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadron_dphi_tptweight2040_Ajdep%d%d",j,k);
+												fH1JetHadron_dphi_tptweight2040_Ajdep      [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+								}
+				}
+
+
+				if(IsMC){
 								fHistList->Add(fH1Xsec);
 								fHistList->Add(fH1Trials);
-								fHistList->Add(fH1JetMCAKT04_pt          );
-								fHistList->Add(fH1leadJetMCAKT04_pt      );
-								fHistList->Add(fH1leadJetMCAKT04_pt_dijet);
-								fHistList->Add(fH1subJetMCAKT04_pt_dijet );
-								fHistList->Add(fH1JetAKT04_pt            );
-								fHistList->Add(fH1leadJetAKT04_pt        );
-								fHistList->Add(fH1leadJetAKT04_pt_dijet  );
-								fHistList->Add(fH1subJetAKT04_pt_dijet   );
-								fHistList->Add(fH2JetsJetMCAKT04_dphi);
-								fHistList->Add(fH2JetsJetMCAKT04_deta);
-								fHistList->Add(fH2JetsJetMCAKT04_Aj  );
-								fHistList->Add(fH2JetsJetMCAKT04_pt  );
-								fHistList->Add(fH2JetsJetAKT04_dphi  );
-								fHistList->Add(fH2JetsJetAKT04_deta  );
-								fHistList->Add(fH2JetsJetAKT04_Aj    );
-								fHistList->Add(fH2JetsJetAKT04_pt    );
+								fHistList->Add(fH1JetMC_pt          );
+								fHistList->Add(fH1leadJetMC_pt      );
+								fHistList->Add(fH1leadJetMC_pt_dijet);
+								fHistList->Add(fH1subJetMC_pt_dijet );
+								fHistList->Add(fH1Jet_pt            );
+								fHistList->Add(fH1Jet_phi           );
+								fHistList->Add(fH1Jet_eta           );
+								fHistList->Add(fH1leadJet_pt        );
+								fHistList->Add(fH1leadJet_pt_dijet  );
+								fHistList->Add(fH1subJet_pt_dijet   );
+								fHistList->Add(fH2JetsJetMC_dphi    );
+								fHistList->Add(fH2JetsJetMC_deta    );
+								fHistList->Add(fH2JetsJetMC_Aj      );
+								fHistList->Add(fH2JetsJetMC_pt      );
+								fHistList->Add(fH2JetsJet_dphi      );
+								fHistList->Add(fH2JetsJet_deta      );
+								fHistList->Add(fH2JetsJet_Aj        );
+								fHistList->Add(fH2JetsJet_pt        );
 								for(int j=0;j<5;j++){
-												fHistList->Add(fH1AKT04_ndiJ_ediv    [j]);
-												fHistList->Add(fH1leadJetMCAKT04_dphiResolution          [j]);
-												fHistList->Add(fH1subJetMCAKT04_dphiResolution           [j]);
+												fHistList->Add(fH1ndiJ_ediv                        [j]);
+												fHistList->Add(fH1leadJetMC_dphiResolution          [j]);
+												fHistList->Add(fH1subJetMC_dphiResolution           [j]);
+												fHistList->Add(fH1leadJetMC_Efficiency              [j]);
+												fHistList->Add(fH1subJetMC_Efficiency               [j]);
 												for(int k=0;k<5;k++){
-																fHistList->Add(fH1JetHadronAKT04_dphi_ediv               [j][k]);
-																fHistList->Add(fH1JetHadronAKT04_dphi_tptweight_ediv     [j][k]);
-																fHistList->Add(fH1JetHadronAKT04_dphi_tJptweight_ediv    [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_ediv               [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_tptweight_ediv     [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_tJptweight_ediv    [j][k]);
 												}
 								}
 				}
 				else{
-								fH1Events                     = new TH1F("Events"                  ,"Events"                  ,1,0,1);
-								fH1JetAKT04_pt                = new TH1F("JetAKT04_pt"             ,"JetAKT04_pt"             ,400,0,400);
-								fH1leadJetAKT04_pt            = new TH1F("leadJetAKT04_pt"         ,"leadJetAKT04_pt"         ,400,0,400);
-								fH1leadJetAKT04_pt_dijet      = new TH1F("leadJetAKT04_pt_dijet"   ,"leadJetAKT04_pt_dijet"   ,400,0,400);
-								fH1subJetAKT04_pt_dijet       = new TH1F("subJetAKT04_pt_dijet"    ,"subJetAKT04_pt_dijet"    ,400,0,400);
-								histname = Form("JetsJetAKT04_dphi");
-								fH2JetsJetAKT04_dphi          = new TH2F(histname,histname,200,0,400,100,-2*pi,2*pi);
-								histname = Form("JetsJetAKT04_deta");
-								fH2JetsJetAKT04_deta          = new TH2F(histname,histname,200,0,400,100,-1.5,1.5);
-								histname = Form("JetsJetAKT04_Aj");
-								fH2JetsJetAKT04_Aj            = new TH2F(histname,histname,200,0,400,100,0,1.2);
-								histname = Form("JetsJetAKT04_pt");
-								fH2JetsJetAKT04_pt            = new TH2F(histname,histname,200,0,400,200,0,400);
+								fHistList->Add(fH1Events);
+								fHistList->Add(fH1Track_pt        );
+								fHistList->Add(fH1Track_phi       );
+								fHistList->Add(fH1Track_eta       );
+								fHistList->Add(fH1Jet_pt          );
+								fHistList->Add(fH1Jet_phi         );
+								fHistList->Add(fH1Jet_eta         );
+								fHistList->Add(fH1leadJet_pt      );
+								fHistList->Add(fH1leadJet_pt_dijet);
+								fHistList->Add(fH1subJet_pt_dijet );
+								fHistList->Add(fH2JetsJet_dphi    );
+								fHistList->Add(fH2JetsJet_deta    );
+								fHistList->Add(fH2JetsJet_Aj      );
+								fHistList->Add(fH2JetsJet_pt      );
+								fHistList->Add(fH2Mult_Mtrack     );
+								fHistList->Add(fH2Mult_Mlead      ); 
+								fHistList->Add(fH2Mult_Mjet       );  
+								fHistList->Add(fH2Mult_Njet       );  
+								fHistList->Add(fH2Mult_Aj         );    
+								fHistList->Add(fH2Mlead_Aj        );   
+								fHistList->Add(fH2Jet_pt_Mlead    );   
+								fHistList->Add(fH2Jet_pt_Munder   );  
+
 								for(int j=0;j<5;j++){
-												histname = Form("AKT04_ndiJ_ediv%d",j);
-												fH1AKT04_ndiJ_ediv[j]= new TH1F(histname,histname,1,1,2);
+												fHistList->Add(fH1ndiJ_ediv    [j]);
+												fHistList->Add(fH1Aj   [j]);
+												fHistList->Add(fH1Mlead[j]);
 												for(int k=0;k<5;k++){
-																histname = Form("JetHadronAKT04_dphi_ediv%d%d",j,k);
-																fH1JetHadronAKT04_dphi_ediv             [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
-																histname = Form("JetHadronAKT04_dphi_tptweight_ediv%d%d",j,k);
-																fH1JetHadronAKT04_dphi_tptweight_ediv   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
-																histname = Form("JetHadronAKT04_dphi_tJptweight_ediv%d%d",j,k);
-																fH1JetHadronAKT04_dphi_tJptweight_ediv  [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+																fHistList->Add(fH1JetHadron_dphi_ediv             [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_tptweight_ediv   [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_tJptweight_ediv  [j][k]);
 												}
 								}
-								fHistList->Add(fH1Events);
-								fHistList->Add(fH1JetAKT04_pt          );
-								fHistList->Add(fH1leadJetAKT04_pt      );
-								fHistList->Add(fH1leadJetAKT04_pt_dijet);
-								fHistList->Add(fH1subJetAKT04_pt_dijet );
-								fHistList->Add(fH2JetsJetAKT04_dphi  );
-								fHistList->Add(fH2JetsJetAKT04_deta  );
-								fHistList->Add(fH2JetsJetAKT04_Aj    );
-								fHistList->Add(fH2JetsJetAKT04_pt    );
-								for(int j=0;j<5;j++){
-												fHistList->Add(fH1AKT04_ndiJ_ediv    [j]);
+								for(int j=0;j<3;j++){
+												fHistList->Add(fH1ndiJ_2040Mlead    [j]);
+												fHistList->Add(fH1ndiJ_2040Aj       [j]);
 												for(int k=0;k<5;k++){
-																fHistList->Add(fH1JetHadronAKT04_dphi_ediv             [j][k]);
-																fHistList->Add(fH1JetHadronAKT04_dphi_tptweight_ediv   [j][k]);
-																fHistList->Add(fH1JetHadronAKT04_dphi_tJptweight_ediv  [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_tptweight2040_Mleaddep     [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_tptweight2040_Ajdep        [j][k]);
 												}
 								}
 				}
-
-
 
 				// =========== Switch on Sumw2 for all histos ===========
 				for (Int_t i=0; i<fHistList->GetEntries(); ++i) 
@@ -378,11 +439,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 				}
 				TH1::AddDirectory(oldStatus);
 
-
-
-
 				PostData(1,fHistList);
-
 }
 
 //----------------------------------------------------------------------                                                 
@@ -418,15 +475,11 @@ Bool_t AliAnalysisTaskJetHadronCorrelation::Notify()
 												Error("Notify","No current file");
 												return kFALSE;
 								}
-
-
 								if(IsMC){
 												AliPWG4HighPtQAMC::PythiaInfoFromFile(curfile->GetName(),fxsec,ftrial);
-												//cout<<" Xsec "<<fxsec<<" trial "<<ftrial<<endl;
 												fH1Xsec  ->Fill(0.,fxsec);
 												fH1Trials->Fill(0.,ftrial);
 								}
-								//else    fH1Events->Fill(0.,ftrial);
 
 				}
 
@@ -445,7 +498,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 
 
 				// Main loop (called each event)
-			 // Execute analysis for current event
+				// Execute analysis for current event
 
 				AliAODEvent *fAOD;
 				TObject* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
@@ -470,35 +523,34 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												if (fDebug > 1)  Printf("%s:%d jets from output AOD", (char*)__FILE__,__LINE__);
 								}
 				}
-
-				//if(fNonStdFile.Length()!=0){
-				//				// case we have an AOD extension - fetch the jets from the extended output
-				//				AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-				//				fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
-				//				if(!fAODExtension){
-				//								if(fDebug>1)Printf("AODExtension not found for %s",fNonStdFile.Data());
-				//				}
-				//}
-				//fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
 				if (!fAODIn) {
 								Printf("ERROR %s : fAODIn not available",(char*)__FILE__);
 								return;
 				}
 
-				  AliInputEventHandler* inputHandler = (AliInputEventHandler*)
-									    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+				AliInputEventHandler* inputHandler = (AliInputEventHandler*)
+								((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 				if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)){
 								if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
 								return;
 				}
 				if(!IsMC)fH1Events->Fill(0);
 
-				// start jet analysis
+				AliAODHeader* aliH = dynamic_cast <AliAODHeader*> (fAODIn->GetHeader());
+				if(!aliH){
+								Printf("ERROR: AliAODHeader not available");
+								return;
+				}
+				double Mult = aliH->GetRefMultiplicity();
 
-				Double_t Jet_n  [20];
-				Double_t Jet_pt [20][1000];
-				Double_t Jet_eta[20][1000];
-				Double_t Jet_phi[20][1000];
+				// start jet analysis  -------------------------Init.
+				Float_t pi=TMath::Pi();
+
+				Double_t Jet_n    [20];
+				Double_t Jet_pt   [20][1000];
+				Double_t Jet_phi  [20][1000];
+				Double_t Jet_eta  [20][1000];
+				Double_t Jet_area [20][1000];
 				Double_t subJet_n  [20];
 				Double_t subJet_pt [20][1000];
 				Double_t subJet_eta[20][1000];
@@ -516,6 +568,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												Jet_pt[i][j]=0.;
 												Jet_phi[i][j]=999.;
 												Jet_eta[i][j]=999.;
+												Jet_area[i][j]=999.;
 												subJet_pt[i][j]=0.;
 												subJet_phi[i][j]=999.;
 												subJet_eta[i][j]=999.;
@@ -525,17 +578,23 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								}
 				}
 
-				//////-----------------------------------------------------------------------------------
-
-
 				int nLJetAOD=999; double ptLJetAOD=0;double phiLJetAOD=999.;double etaLJetAOD=999.;int nsLJetAOD=900;double ptsLJetAOD=0;double phisLJetAOD=900.;double etasLJetAOD=900.;
 				int nLJetMC2=999; double ptLJetMC2=0;double phiLJetMC2=999.;double etaLJetMC2=999.;int nsLJetMC2=900;double ptsLJetMC2=0;double phisLJetMC2=900.;double etasLJetMC2=900.;
 				int nLJetMC =999; double ptLJetMC =0;double phiLJetMC =999.;double etaLJetMC =999.;int nsLJetMC =900;double ptsLJetMC =0;double phisLJetMC =900.;double etasLJetMC =900.;
-				bool findLJetAOD=false;bool findsLJetAOD=false;bool findsLJetAOD_temp=false;
-				bool findLJetMC2=false;bool findsLJetMC2=false;bool findsLJetMC2_temp=false;
-				bool findLJetMC =false;bool findsLJetMC =false;bool findsLJetMC_temp =false;
-				bool findsLJet=false;
+				bool findLJetAOD=false;bool findsLJetAOD=false;
+				bool findLJetMC2=false;bool findsLJetMC2=false;
+				bool findLJetMC =false;bool findsLJetMC =false;
+				bool findDiJet=false;
 				int nLJet = 999;
+				int nsLJet =999;
+				int Mjet_tot =0;
+				int Njet_tot =0;
+
+				double Aj=0;
+				double Mlead=0;
+				int    Munder=0;
+
+				//--------------------------------------------------------------------Init.
 
 
 				TString cAdd = "";
@@ -545,15 +604,13 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 				cAdd += Form("_Cut%05d",(int)(1000.*TrackPtcut));
 				cAdd += Form("_Skip%02d",SkipCone);
 				TString Branchname_gen,Branchname_gen2,Branchname_rec;
-				//Branchname_gen  = Form("clustersMCKINE_%s%s",JFAlg.Data(),cAdd.Data());
-				//Branchname_gen2 = Form("clustersMCKINE2_%s%s",JFAlg.Data(),cAdd.Data());
 				Branchname_gen  = Form("clustersAODMC_%s%s",JFAlg.Data(),cAdd.Data());
 				Branchname_gen2 = Form("clustersAODMC2_%s%s",JFAlg.Data(),cAdd.Data());
 				Branchname_rec  = Form("clustersAOD_%s%s",JFAlg.Data(),cAdd.Data());
 
 
 				for(int algorithm=0;algorithm<3;algorithm++){
-								//for LHC11a1  LHC11a2
+
 								if(algorithm==0)fJetBranch   = Branchname_rec.Data();
 								if(algorithm==1)fJetBranch   = Branchname_gen2.Data();
 								if(algorithm==2)fJetBranch   = Branchname_gen.Data();
@@ -583,18 +640,23 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												Jet_pt   [algorithm][njet] = jetsAOD->Pt();
 												Jet_phi  [algorithm][njet] = jetsAOD->Phi();  
 												Jet_eta  [algorithm][njet] = jetsAOD->Eta();
-												//TRefArray *reftracks = jetsAOD->GetRefTracks();
+												Jet_area [algorithm][njet] = jetsAOD->EffectiveAreaCharged();
+
+												TRefArray *reftracks = jetsAOD->GetRefTracks();
+												if(algorithm==0){if(Jet_pt[algorithm][njet]>1.)Mjet_tot +=  reftracks->GetEntriesFast();Njet_tot++;}
 												double eta_cut_Jet=0.5;
 												if((TMath::Abs(Jet_eta[algorithm][njet])<eta_cut_Jet)&&(Jet_pt[algorithm][njet]>10.)){
 																if(algorithm==0){
-																				 fH1JetAKT04_pt->Fill(Jet_pt[algorithm][njet]);  
+																				fH1Jet_pt ->Fill(Jet_pt [algorithm][njet]);  
+																				fH1Jet_phi->Fill(Jet_phi[algorithm][njet]);  
+																				fH1Jet_eta->Fill(Jet_eta[algorithm][njet]);  
 																				if(Jet_pt[algorithm][njet]>ptLJetAOD){
 																								findLJetAOD=true;
 																								nLJetAOD=njet;ptLJetAOD=Jet_pt[algorithm][njet];phiLJetAOD=Jet_phi[algorithm][njet];etaLJetAOD=Jet_eta[algorithm][njet];
 																				}
 																}
 																if(algorithm==1){
-																				 fH1JetMCAKT04_pt->Fill(Jet_pt[algorithm][njet]);  
+																				fH1JetMC_pt->Fill(Jet_pt[algorithm][njet]);  
 																				if(Jet_pt[algorithm][njet]>ptLJetMC2){
 																								findLJetMC2=true;
 																								nLJetMC2=njet;ptLJetMC2=Jet_pt[algorithm][njet];phiLJetMC2=Jet_phi[algorithm][njet];etaLJetMC2=Jet_eta[algorithm][njet];
@@ -608,12 +670,15 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																}
 												}
 								}//njet loop
-								//Leading Jet -----------------------------------------------------------
-
-								if(algorithm==0){nLJet=nLJetAOD;fH1leadJetAKT04_pt->Fill(Jet_pt[algorithm][nLJet]);}
-								if(algorithm==1){nLJet=nLJetMC2;fH1leadJetMCAKT04_pt->Fill(Jet_pt[algorithm][nLJet]);}
-								if(algorithm==2){nLJet=nLJetMC2;}
-
+								if(algorithm==0){nLJet=nLJetAOD;fH1leadJet_pt  ->Fill(Jet_pt[algorithm][nLJet]);}
+								if(algorithm==1){nLJet=nLJetMC2;fH1leadJetMC_pt->Fill(Jet_pt[algorithm][nLJet]);}
+								if(algorithm==2){nLJet=nLJetMC;}
+								if(findLJetAOD&&(algorithm==0)){
+												jetsAOD = (AliAODJet*) (jets->At(nLJet));
+												TRefArray *reftracks = jetsAOD->GetRefTracks();
+												Mlead = reftracks->GetEntriesFast();
+								}
+								//----------------------------------------------------------- Leading Jet
 								if(nj<2)continue;
 								//Find Sub leading Jet ==================================================
 								for(int njet=0;njet<nj;njet++){
@@ -625,20 +690,23 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												double eta_cut_Jet=0.5;
 												if((TMath::Abs(subJet_eta[algorithm][njet])<eta_cut_Jet) && (subJet_pt[algorithm][njet]>10.)){
 																if(subJet_pt[algorithm][njet]>ptsLJetAOD&&algorithm==0){
-																				findsLJetAOD_temp=true;
+																				findsLJetAOD=true;
 																				nsLJetAOD=njet;ptsLJetAOD=Jet_pt[algorithm][njet];phisLJetAOD=Jet_phi[algorithm][njet];etasLJetAOD=Jet_eta[algorithm][njet];
 																}
 																if(subJet_pt[algorithm][njet]>ptsLJetMC2 &&algorithm==1){
-																				findsLJetMC2_temp=true;
+																				findsLJetMC2=true;
 																				nsLJetMC2=njet;ptsLJetMC2=Jet_pt[algorithm][njet];phisLJetMC2=Jet_phi[algorithm][njet];etasLJetMC2=Jet_eta[algorithm][njet];
 																}
 																if(subJet_pt[algorithm][njet]>ptsLJetMC &&algorithm==2){
-																				findsLJetMC_temp=true;
+																				findsLJetMC=true;
 																				nsLJetMC =njet;ptsLJetMC =Jet_pt[algorithm][njet];phisLJetMC =Jet_phi[algorithm][njet];etasLJetMC =Jet_eta[algorithm][njet];
 																}
 												}
 								}
-								////Sub leading Jet ======================================================
+								if(algorithm==0){nsLJet=nsLJetAOD;}
+								if(algorithm==1){nsLJet=nsLJetMC2;}
+								if(algorithm==2){nsLJet=nsLJetMC ;}
+								//====================================================== Sub leading Jet 
 
 								double Leading_pt=0.;double Leading_phi=999.;double Leading_eta=999.;double sLeading_pt=0.;double sLeading_phi=999.;double sLeading_eta=999.;
 								if(algorithm==0){Leading_pt=ptLJetAOD;Leading_phi=phiLJetAOD;Leading_eta=etaLJetAOD;sLeading_pt=ptsLJetAOD;sLeading_phi=phisLJetAOD;sLeading_eta=etasLJetAOD;}
@@ -649,85 +717,114 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								double DPhi = DeltaPhi(Leading_phi,sLeading_phi);
 								double DEta = Leading_eta-sLeading_eta;
 								if(algorithm==0){
-												fH2JetsJetAKT04_dphi->Fill(Leading_pt,DPhi);
-												fH2JetsJetAKT04_deta->Fill(Leading_pt,DEta);
+												fH2JetsJet_dphi->Fill(Leading_pt,DPhi);
+												fH2JetsJet_deta->Fill(Leading_pt,DEta);
 								}
 								if(algorithm==1){
-												fH2JetsJetMCAKT04_dphi->Fill(Leading_pt,DPhi);
-												fH2JetsJetMCAKT04_deta->Fill(Leading_pt,DEta);
+												fH2JetsJetMC_dphi->Fill(Leading_pt,DPhi);
+												fH2JetsJetMC_deta->Fill(Leading_pt,DEta);
 								}
 								if((TMath::Cos(DPhi)<-0.5)&&(Leading_pt>10.)&&(sLeading_pt>10.)){
-												if(algorithm==0)findsLJetAOD=true;                                                         
-												if(algorithm==1)findsLJetMC=true;                                                         
-
-												double Aj = (Leading_pt-sLeading_pt)/(Leading_pt+sLeading_pt);
+												Aj = (Leading_pt-sLeading_pt)/(Leading_pt+sLeading_pt);
 												if(algorithm==0){
-																fH1leadJetAKT04_pt_dijet->Fill(Leading_pt);
-																fH1subJetAKT04_pt_dijet ->Fill(sLeading_pt);
-																fH2JetsJetAKT04_Aj->Fill(Leading_pt,Aj);
-																fH2JetsJetAKT04_pt->Fill(Leading_pt,sLeading_pt);
+																fH1leadJet_pt_dijet->Fill(Leading_pt);
+																fH1subJet_pt_dijet ->Fill(sLeading_pt);
+																fH2JetsJet_Aj      ->Fill(Leading_pt,Aj);
+																fH2JetsJet_pt      ->Fill(Leading_pt,sLeading_pt);
+																fH2Mult_Aj         ->Fill(Mult,Aj); 
+																fH2Mlead_Aj        ->Fill(Mlead,Aj);
+																for(int eb=0;eb<5;eb++){
+																				if(TMath::Abs(Leading_pt -10.-20.*(eb))<10.){
+																								fH1Aj[eb]   ->Fill(Aj);
+																				}
+																}
+
 												}
 												if(algorithm==1){
-																fH1leadJetMCAKT04_pt_dijet->Fill(Leading_pt);
-																fH1subJetMCAKT04_pt_dijet ->Fill(sLeading_pt);
-																fH2JetsJetMCAKT04_Aj->Fill(Leading_pt,Aj);
-																fH2JetsJetMCAKT04_pt->Fill(Leading_pt,sLeading_pt);
+																fH1leadJetMC_pt_dijet->Fill(Leading_pt);
+																fH1subJetMC_pt_dijet ->Fill(sLeading_pt);
+																fH2JetsJetMC_Aj      ->Fill(Leading_pt,Aj);
+																fH2JetsJetMC_pt      ->Fill(Leading_pt,sLeading_pt);
 												}
-
+												findDiJet=true;
 								}
-								if(algorithm==0)findsLJet=findsLJetAOD;
-								if(algorithm==1)findsLJet=findsLJetMC2;
-								if(algorithm==2)findsLJet=findsLJetMC;
-								////++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+								////+++++++++++++++++++++++++++++++++++++++++++++++ Di-Jet event trigger 
 
-								if(algorithm!=0)continue;
+								if(algorithm!=0)continue;// for only data & reconstructed Jets
 
-								if((findsLJet)&&(Leading_pt>10.)&&(sLeading_pt>10.)){
+								//count number of tracks@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
+								TClonesArray* tracks = dynamic_cast <TClonesArray*> (fAODIn->GetTracks());
+								if(!tracks){
+												if (fDebug > 1)  Printf("%s:%d could not get AODtracks", (char*)__FILE__,__LINE__);
+												continue;
+								}
+								Int_t nt = fAODIn->GetNumberOfTracks();
 
+								AliAODTrack* trackAOD;
+								for(int ntrack =0;ntrack<nt;ntrack++){
+												trackAOD = (AliAODTrack*) (tracks->At(ntrack));
+												Bool_t bgoodT=false;
+												if(Filtermask!=768){if(trackAOD->TestFilterMask(Filtermask))bgoodT=true;}
+												else               {if(trackAOD->IsHybridGlobalConstrainedGlobal())bgoodT=true;} //for hybrid Track cuts
+												if(!bgoodT)continue;
+												if(TMath::Abs(trackAOD->Eta())<0.9){
+																Track_n++;
+																fH1Track_pt ->Fill(trackAOD->Pt());
+																fH1Track_phi->Fill(trackAOD->Phi());
+																fH1Track_eta->Fill(trackAOD->Eta());
+												}
+								}
+								//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  count number of tracks
+
+								//Jet-Hadron Correlation###############################################
+								if((findDiJet)&&(Leading_pt>10.)&&(sLeading_pt>10.)){
 												for(int eb=0;eb<5;eb++){//count number of Di-Jet in pt bin
-																if(TMath::Abs(Leading_pt -20.*(eb+1))<10.){
-																				if(algorithm==0)fH1AKT04_ndiJ_ediv[eb]->Fill(1);
+																if(TMath::Abs(Leading_pt -10.-20.*(eb))<10.){
+																				fH1ndiJ_ediv[eb]->Fill(1);
+																}
+																if(eb==1){
+																				if((0<Mlead)&&Mlead<8)              {fH1ndiJ_2040Mlead[0]->Fill(1);}
+																				else if((8<=Mlead)&&(Mlead<12))     {fH1ndiJ_2040Mlead[1]->Fill(1);}
+																				else                                {fH1ndiJ_2040Mlead[2]->Fill(1);}
+																				if(Aj<0.2)                          {fH1ndiJ_2040Aj   [0]->Fill(1);}
+																				else if((0.2<=Aj)&&(Aj<0.4))        {fH1ndiJ_2040Aj   [1]->Fill(1);}
+																				else                                {fH1ndiJ_2040Aj   [2]->Fill(1);}
 																}
 												}
 
-												TClonesArray* tracks = dynamic_cast <TClonesArray*> (fAODIn->GetTracks());
-												if(!tracks){
-																if (fDebug > 1)  Printf("%s:%d could not get AODtracks", (char*)__FILE__,__LINE__);
-																continue;
-												}
-												Int_t nt = fAODIn->GetNumberOfTracks();
-
-												AliAODTrack* trackAOD;
-												Track_n = nt;
 												double eta_cut_Jet=0.5;
 												if(TMath::Abs(Leading_eta)<eta_cut_Jet){
 																for(int eb=0;eb<5;eb++){
-																				if(TMath::Abs(Leading_pt -20.*(eb+1))<10.){
+																				if(TMath::Abs(Leading_pt -10.-20.*(eb))<10.){
+																								fH1Mlead[eb]->Fill(Mlead);
 																								for(int ntrack =0;ntrack<nt;ntrack++){
 																												trackAOD = (AliAODTrack*) (fAODIn->GetTrack(ntrack));
 																												Bool_t bgoodT=false;
-																												if(Filtermask!=768){
-																																if(trackAOD->TestFilterMask(Filtermask))bgoodT=true;
-																												}
-																												else{
-																																if(trackAOD->IsHybridGlobalConstrainedGlobal())bgoodT=true; //for hybrid Track cuts
-																												}
+																												if(Filtermask!=768){if(trackAOD->TestFilterMask(Filtermask))bgoodT=true;}
+																												else{               if(trackAOD->IsHybridGlobalConstrainedGlobal())bgoodT=true;} //for hybrid Track cuts
 																												if(!bgoodT)continue;
 																												Track_pt   [ntrack]      = trackAOD->Pt();
 																												Track_phi  [ntrack]      = trackAOD->Phi();
 																												Track_eta  [ntrack]      = trackAOD->Eta();
 																												double DelPhi = DeltaPhi(Leading_phi,Track_phi[ntrack]);
 																												if(TMath::Abs(Track_eta[ntrack])<0.9){
+																																if((TMath::Abs(DelPhi-pi/2.)<pi/8.)||((DelPhi+pi/2.)<pi/8.)||(TMath::Abs(DelPhi-3./2.*pi)<pi/8.))Munder++;
 																																for(int teb=0;teb<5;teb++){
-																																				if(teb==0){if(!(Track_pt[ntrack]>0.15))continue;}
+																																				if(teb==0){if(!( Track_pt[ntrack]>0.15))continue;}
 																																				if(teb==1){if(!((Track_pt[ntrack]<1.5)&&(Track_pt[ntrack]>0.15)))continue;}
 																																				if(teb==2){if(!((Track_pt[ntrack]<3.0)&&(Track_pt[ntrack]>1.5)))continue;}
 																																				if(teb==3){if(!((Track_pt[ntrack]<4.5)&&(Track_pt[ntrack]>3.0)))continue;}
-																																				if(teb==4){if(!(Track_pt[ntrack]>4.5))continue;}
-																																				if(algorithm==0){
-																																								fH1JetHadronAKT04_dphi_ediv                [eb][teb]->Fill(DelPhi); 
-																																								fH1JetHadronAKT04_dphi_tptweight_ediv      [eb][teb]->Fill(DelPhi,Track_pt[ntrack]);
-																																								fH1JetHadronAKT04_dphi_tJptweight_ediv     [eb][teb]->Fill(DelPhi,Track_pt[ntrack]/Leading_pt);
+																																				if(teb==4){if(!( Track_pt[ntrack]>4.5))continue;}
+																																				fH1JetHadron_dphi_ediv                [eb][teb]->Fill(DelPhi); 
+																																				fH1JetHadron_dphi_tptweight_ediv      [eb][teb]->Fill(DelPhi,Track_pt[ntrack]);
+																																				fH1JetHadron_dphi_tJptweight_ediv     [eb][teb]->Fill(DelPhi,Track_pt[ntrack]/Leading_pt);
+																																				if(eb==1){
+																																								if((0<Mlead)&&Mlead<8)         {fH1JetHadron_dphi_tptweight2040_Mleaddep[0][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								else if((8<=Mlead)&&(Mlead<12)){fH1JetHadron_dphi_tptweight2040_Mleaddep[1][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								else                           {fH1JetHadron_dphi_tptweight2040_Mleaddep[2][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								if(Aj<0.2)                     {fH1JetHadron_dphi_tptweight2040_Ajdep   [0][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								else if((0.2<=Aj)&&(Aj<0.4))   {fH1JetHadron_dphi_tptweight2040_Ajdep   [1][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								else                           {fH1JetHadron_dphi_tptweight2040_Ajdep   [2][teb]->Fill(DelPhi,Track_pt[ntrack]);}
 																																				}
 																																}
 																												}
@@ -735,18 +832,33 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																				}
 																}
 												}//eta cut
+												fH2Jet_pt_Munder   ->Fill(Leading_pt,(double)Munder/(1.8*pi/2.)*Jet_area[0][nLJet]);
+												fH2Jet_pt_Mlead    ->Fill(Leading_pt,Mlead);
 								}// Di-Jet
+								//############################################### Jet-Hadron Correlation
 				}// algorithm LOOP
 				if(IsMC){
 								for(int eb=0;eb<5;eb++){
-												double DPhi;
-												if(TMath::Abs(ptLJetAOD -20.*(eb+1))<10.){
+												double DPhi;double DEta;
+												if(TMath::Abs(ptLJetAOD -10.-20.*(eb))<10.){
 																DPhi = DeltaPhi(phiLJetMC,phiLJetAOD);
-																fH1leadJetMCAKT04_dphiResolution[eb]->Fill(DPhi);
+																DEta = etaLJetMC-etaLJetAOD;
+																fH1leadJetMC_dphiResolution[eb]->Fill(DPhi);
+																if(sqrt(pow(DPhi,2)+pow(DEta,2))<0.4)fH1leadJetMC_Efficiency[eb]->Fill(1);
+																else                                 fH1leadJetMC_Efficiency[eb]->Fill(0);
 																DPhi = DeltaPhi(phisLJetMC,phisLJetAOD);
-																fH1subJetMCAKT04_dphiResolution[eb]->Fill(DPhi);
+																DEta = etasLJetMC-etasLJetAOD;
+																fH1subJetMC_dphiResolution[eb]->Fill(DPhi);
+																if(sqrt(pow(DPhi,2)+pow(DEta,2))<0.4)fH1subJetMC_Efficiency[eb]->Fill(1);
+																else                                 fH1subJetMC_Efficiency[eb]->Fill(0);
 												}
 								}
+				}
+				else{
+								fH2Mult_Mtrack->Fill(Mult,Track_n); 
+								fH2Mult_Mjet  ->Fill(Mult,Mjet_tot);
+								fH2Mult_Njet  ->Fill(Mult,Njet_tot);
+								if(findLJetAOD)fH2Mult_Mlead ->Fill(Mult,Mlead);   
 				}
 
 				PostData(1, fHistList);
@@ -760,41 +872,6 @@ void AliAnalysisTaskJetHadronCorrelation::Terminate(Option_t *){
 }
 
 
-Int_t  AliAnalysisTaskJetHadronCorrelation::GetListOfJets(TList *list,TClonesArray* jarray,Int_t type){
-
-				if(fDebug>2)Printf("%s:%d Selecting jets with cuts %d",(char*)__FILE__,__LINE__,type);
-				Int_t iCount = 0;
-
-				if(!jarray){
-								Printf("%s:%d no Jet array",(char*)__FILE__,__LINE__);
-								return iCount;
-				}
-
-
-				for(int ij=0;ij<jarray->GetEntries();ij++){
-								AliAODJet* jet = (AliAODJet*)jarray->At(ij);
-								if(!jet)continue;
-								if(type==0){
-												// No cut at all, main purpose here is sorting      
-												list->Add(jet);
-												iCount++;
-								}
-								else if(type == 1){
-												// eta cut
-												if(JetSelected(jet)){
-																list->Add(jet);
-																iCount++;
-												}
-								}
-				}
-
-				list->Sort();
-				return iCount;
-
-}
-
-
-
 Bool_t  AliAnalysisTaskJetHadronCorrelation::JetSelected(AliAODJet *jet){
 				Bool_t selected = false;
 
@@ -806,8 +883,6 @@ Bool_t  AliAnalysisTaskJetHadronCorrelation::JetSelected(AliAODJet *jet){
 				return selected;
 
 }
-
-
 Double_t AliAnalysisTaskJetHadronCorrelation::DeltaPhi(Double_t phi1,Double_t phi2){
 				Float_t pi=TMath::Pi();
 				Double_t dphi = phi1-phi2;
@@ -815,39 +890,3 @@ Double_t AliAnalysisTaskJetHadronCorrelation::DeltaPhi(Double_t phi1,Double_t ph
 				else if(dphi>( 3./2*pi))dphi = dphi -2*pi;
 				return dphi;
 }
-
-//Float_t AliAnalysisTaskJetHadronCorrelation::GetTotalEvents(const char* currFile){
-//				Float_t totalevent;
-//				//TString file_es(currFile);
-//				//if(file_es.Contains("root_archive.zip#")){
-//				//				Ssiz_t pos1 = file_es.Index("root_archive",12,TString::kExact);
-//				//				Ssiz_t pos = file_es.Index("#",1,pos1,TString::kExact);
-//				//				file_es.Replace(pos+1,20,"");
-//				//}
-//				//else {
-//				//				// not an archive take the basename....
-//				//				file_es.ReplaceAll(gSystem->BaseName(file_es.Data()),"");
-//				//}
-//
-//				//TString cAdd = "";
-//				//cAdd += Form("%02d_",(int)((Radius+0.01)*10.));
-//				//cAdd += Form("B%d",(int)BackM);
-//				//cAdd += Form("_Filter%05d",Filtermask);
-//				//cAdd += Form("_Cut%05d",(int)(1000.*TrackPtcut));
-//				//cAdd += Form("_Skip%02d",SkipCone);
-//				//TString Dirname,Listname;
-//				//Dirname  = Form("PWG4_cluster_AOD__%s%s",JFAlg.Data(),cAdd.Data());
-//				//Listname = Form("pwg4cluster_AOD__%s%s",JFAlg.Data(),cAdd.Data());
-//
-//				//TFile *feventstat = TFile::Open(Form("%s%s",file_es.Data(),"JetTasksOutput.root"));
-//				//gROOT->Cd(Dirname.Data());
-//				//TList *templist     = (TList*)gROOT->FindObject(Listname.Data());
-//				//TH1F* temphist = (TH1F*)templist->FindObject("fh1Trials");
-//				//totalevent = temphist->Integral();
-//				////cout<<temphist->Integral()<<endl;
-//				//delete feventstat;
-//				return totalevent;
-//
-//}
-
-

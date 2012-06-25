@@ -47,9 +47,6 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		virtual void   SetSkipCone(Int_t skipCone=0){SkipCone=skipCone;}
 		virtual void   SetMC(Bool_t ismc=true){IsMC=ismc;}
 		virtual void   FinishTaskOutput();
-		//virtual Float_t GetTotalEvents(const char* currFile);
-		virtual Double_t DeltaPhi(Double_t phi1,Double_t phi2);
-
 
 		enum {kNPTBINS=10};
 
@@ -66,15 +63,15 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		AliAnalysisTaskJetHadronCorrelation(const AliAnalysisTaskJetHadronCorrelation &det); // not implemented
 		AliAnalysisTaskJetHadronCorrelation& operator=(const AliAnalysisTaskJetHadronCorrelation &det); // not implemented
 
-		Int_t GetListOfJets(TList *list,TClonesArray *jarray,Int_t type);
-		Bool_t JetSelected(AliAODJet *jet);
+		Bool_t   JetSelected(AliAODJet *jet);
+		Double_t DeltaPhi(Double_t phi1,Double_t phi2);
 
 		Bool_t        fUseAODInput; // read jets from input AOD
 		Bool_t        fFillAOD;     // option to fill AOD branch
 		TString       fJetBranch;   // jet branch to read
 		TString       fNonStdFile;
 
-		AliAODEvent   *fAODIn;      // AOD event
+		AliAODEvent   *fAODIn;       // AOD event
 		AliAODEvent   *fAODOut;      // AOD event
 		AliAODExtension *fAODExtension;
 		TString         JFAlg;
@@ -98,36 +95,57 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		TH1F         *fH1Events;
 		TProfile     *fH1Xsec;
 		TH1F         *fH1Trials;
-		//for Reconstructed Jet (Data&MC)
-		TH1F         *fH1JetAKT04_pt                ;
-		TH1F         *fH1leadJetAKT04_pt            ;
-		TH1F         *fH1leadJetAKT04_pt_dijet      ;
-		TH1F         *fH1subJetAKT04_pt_dijet       ;
-		TH2F         *fH2JetsJetAKT04_dphi          ;
-		TH2F         *fH2JetsJetAKT04_deta          ;
-		TH2F         *fH2JetsJetAKT04_Aj            ;
-		TH2F         *fH2JetsJetAKT04_pt            ;
 
-		TH1F         *fH1AKT04_ndiJ_ediv            [5];
-		TH1F         *fH1JetHadronAKT04_dphi_ediv           [5][5];
-		TH1F         *fH1JetHadronAKT04_dphi_tptweight_ediv [5][5];
-		TH1F         *fH1JetHadronAKT04_dphi_tJptweight_ediv[5][5];
+		TH1F         *fH1Track_pt          ;
+		TH1F         *fH1Track_phi         ;
+		TH1F         *fH1Track_eta         ;
+		TH1F         *fH1Jet_pt            ;
+		TH1F         *fH1Jet_phi           ;
+		TH1F         *fH1Jet_eta           ;
+		TH1F         *fH1leadJet_pt        ;
+		TH1F         *fH1leadJet_pt_dijet  ;
+		TH1F         *fH1subJet_pt_dijet   ;
+		TH2F         *fH2JetsJet_dphi      ;
+		TH2F         *fH2JetsJet_deta      ;
+		TH2F         *fH2JetsJet_Aj        ;
+		TH2F         *fH2JetsJet_pt        ;
+		TH1F         *fH1JetMC_pt          ;
+		TH1F         *fH1leadJetMC_pt      ;
+		TH1F         *fH1leadJetMC_pt_dijet;
+		TH1F         *fH1subJetMC_pt_dijet ;
+		TH2F         *fH2JetsJetMC_dphi    ;
+		TH2F         *fH2JetsJetMC_deta    ;
+		TH2F         *fH2JetsJetMC_Aj      ;
+		TH2F         *fH2JetsJetMC_pt      ;
 
-		//for Generated Jet (MC)
+		TH2F         *fH2Mult_Mtrack      ;
+		TH2F         *fH2Mult_Mlead       ;
+		TH2F         *fH2Mult_Mjet        ;
+		TH2F         *fH2Mult_Njet        ;
+		TH2F         *fH2Mult_Aj          ;
+		TH2F         *fH2Mlead_Aj         ;
+		TH2F         *fH2Jet_pt_Mlead     ;
+		TH2F         *fH2Jet_pt_Munder    ;
 
-		TH1F         *fH1JetMCAKT04_pt                ;
-		TH1F         *fH1leadJetMCAKT04_pt            ;
-		TH1F         *fH1leadJetMCAKT04_pt_dijet      ;
-		TH1F         *fH1subJetMCAKT04_pt_dijet       ;
-		TH2F         *fH2JetsJetMCAKT04_dphi          ;
-		TH2F         *fH2JetsJetMCAKT04_deta          ;
-		TH2F         *fH2JetsJetMCAKT04_Aj            ;
-		TH2F         *fH2JetsJetMCAKT04_pt            ;
-		TH1F         *fH1leadJetMCAKT04_dphiResolution[5];
-		TH1F         *fH1subJetMCAKT04_dphiResolution [5];
+		TH1F         *fH1ndiJ_ediv                     [5];
+		TH1F         *fH1Aj                            [5];
+		TH1F         *fH1Mlead                         [5];
 
+		TH1F         *fH1leadJetMC_dphiResolution      [5];
+		TH1F         *fH1subJetMC_dphiResolution       [5];
+		TH1F         *fH1leadJetMC_Efficiency          [5];
+		TH1F         *fH1subJetMC_Efficiency           [5];
 
-		ClassDef(AliAnalysisTaskJetHadronCorrelation, 13); // Analysis task for standard dijet analysis
+		TH1F         *fH1JetHadron_dphi_ediv           [5][5];
+		TH1F         *fH1JetHadron_dphi_tptweight_ediv [5][5];
+		TH1F         *fH1JetHadron_dphi_tJptweight_ediv[5][5];
+
+		TH1F         *fH1ndiJ_2040Mlead                       [3];
+		TH1F         *fH1ndiJ_2040Aj                          [3];
+		TH1F         *fH1JetHadron_dphi_tptweight2040_Mleaddep[3][5];
+		TH1F         *fH1JetHadron_dphi_tptweight2040_Ajdep   [3][5];
+
+		ClassDef(AliAnalysisTaskJetHadronCorrelation, 15); // Analysis task for JetHadronCorrelation
 };
 
 #endif
