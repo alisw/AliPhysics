@@ -553,6 +553,7 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
    //REVISED multiplicity estimator after 'multiplicity day' (2011)
    Int_t lMultiplicity = -100; 
 
+   //testing purposes
    if(fkIsNuclear == kFALSE) lMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity( lESDevent );
 
    //---> If this is a nuclear collision, then go nuclear on "multiplicity" variable...
@@ -615,8 +616,13 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
          Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
          continue;
       }
-      if ( TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3312 ){ 
-         Double_t lRapXiMCPrimary = 0.5*TMath::Log((lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13));
+      if ( TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3312 ) { 
+         Double_t lRapXiMCPrimary = -100;
+         if( (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) != 0 ) { 
+           if ( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) !=0 ){
+             lRapXiMCPrimary = 0.5*TMath::Log( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) );
+           }
+         }
 
          //=================================================================================
          // Xi Histograms for Feeddown - Primary Charged Xis
@@ -685,7 +691,8 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
                //Need to correct for relativitity! Involves multiplying by mass and dividing by momentum. 
                if(TMath::Abs( lPdgcodeCurrentPart ) == 3122 ) { lV0Mass = 1.115683; }
                if(TMath::Abs( lPdgcodeCurrentPart ) == 310 ) { lV0Mass = 0.497614; }
-               decaylength = ( lV0Mass * decaylength ) / ( lCurrentParticleForLambdaCheck->P() + 1e-10 );
+               if( lCurrentParticleForLambdaCheck->P() + 1e-10 != 0 ) decaylength = ( lV0Mass * decaylength ) / ( lCurrentParticleForLambdaCheck->P() + 1e-10 );
+               if( lCurrentParticleForLambdaCheck->P() + 1e-10 == 0 ) decaylength = 1e+5;
             }
          }
          if( lPdgcodeCurrentPart == 3122) f3dHistPrimRawPtVsYVsDecayLengthLambda ->Fill( lPtCurrentPart, lRapCurrentPart , decaylength ); 
@@ -936,8 +943,10 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 
       //Compute ratio Crossed Rows / Findable clusters
       //Note: above test avoids division by zero! 
-      Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF())); 
-      Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF())); 
+      Float_t lPosTrackCrossedRowsOverFindable = -1;
+      Float_t lNegTrackCrossedRowsOverFindable = -1;
+      if ( ((double)(pTrack->GetTPCNclsF()) ) != 0 ) lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF())); 
+      if ( ((double)(nTrack->GetTPCNclsF()) ) != 0 ) lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF())); 
 
       fTreeVariableLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
       if( lNegTrackCrossedRowsOverFindable < fTreeVariableLeastRatioCrossedRowsOverFindable )
@@ -1084,7 +1093,8 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 						TMath::Power( tDecayVertexV0[1] - lBestPrimaryVtxPos[1] , 2) +
 						TMath::Power( tDecayVertexV0[2] - lBestPrimaryVtxPos[2] , 2)
 					);
-      fTreeVariableDistOverTotMom /= (lV0TotalMomentum + 1e-10); //avoid division by zero, to be sure
+      fTreeVariableDistOverTotMom = 1e+5;
+      if( lV0TotalMomentum + 1e-10 != 0 ) fTreeVariableDistOverTotMom /= (lV0TotalMomentum + 1e-10); //avoid division by zero, to be sure
 
       Double_t lMomentumPosTemp[3];
       pTrack->GetPxPyPz(lMomentumPosTemp);
@@ -1175,7 +1185,11 @@ void AliAnalysisTaskExtractPerformanceV0::Terminate(Option_t *)
 Double_t AliAnalysisTaskExtractPerformanceV0::MyRapidity(Double_t rE, Double_t rPz) const
 {
    // Local calculation for rapidity
-   return 0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
+   Double_t ReturnValue = -100;
+   if( (rE-rPz+1.e-13) != 0 && (rE+rPz) != 0 ){ 
+      ReturnValue =  0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
+   }
+   return ReturnValue;
 } 
 
 //________________________________________________________________________
