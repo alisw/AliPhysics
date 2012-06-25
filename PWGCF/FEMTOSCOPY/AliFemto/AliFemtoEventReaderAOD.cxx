@@ -995,7 +995,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
 	}
 	else {
 		tFemtoTrack->SetImpactD(impact[0]);
-		tFemtoTrack->SetImpactZ(impact[1]+fV1[2]);
+		tFemtoTrack->SetImpactZ(impact[1]);
 	}
 
   double aodpid[10];
@@ -1011,7 +1011,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   aodpid[2] = -100000.0;
   aodpid[3] = -100000.0;
   aodpid[4] = -100000.0;
-		
+  
   double tTOF = 0.0;
 
   if (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
