@@ -11,6 +11,8 @@
 
 #include "TObject.h"
 #include "AliPID.h"
+#include "AliVParticle.h"
+#include "AliVTrack.h"
 
 class AliTOFPIDParams;
 
@@ -28,8 +30,9 @@ public:
   void     SetMaxMismatchProbability(Double_t p) {fPmax=p;}
   Double_t GetMaxMismatchProbability() const {return fPmax;}
 
-  Double_t GetExpectedSigma(Float_t mom, Float_t tof, Float_t mass) const;
-
+  Double_t GetExpectedSigma(Float_t mom, Float_t tof, Float_t massZ) const;
+  Double_t GetExpectedSigma(Float_t mom, Float_t tof, AliPID::EParticleType type) const;
+  Double_t GetExpectedSignal(const AliVTrack *track, AliPID::EParticleType type) const;
 
   Double_t GetMismatchProbability(Double_t p,Double_t mass) const;
 

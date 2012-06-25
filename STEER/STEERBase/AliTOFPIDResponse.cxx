@@ -82,7 +82,7 @@ AliTOFPIDResponse::GetMismatchProbability(Double_t p, Double_t mass) const {
 Double_t AliTOFPIDResponse::GetExpectedSigma(Float_t mom, Float_t time, Float_t mass) const {
   //
   // Return the expected sigma of the PID signal for the specified
-  // particle type.
+  // particle mass/Z.
   // If the operation is not possible, return a negative value.
   //
 
@@ -97,6 +97,42 @@ Double_t AliTOFPIDResponse::GetExpectedSigma(Float_t mom, Float_t time, Float_t 
 
   return TMath::Sqrt(sigma*sigma + fPar[3]*fPar[3]/mom/mom + fSigma*fSigma + t0res*t0res);
 
+}
+//_________________________________________________________________________
+Double_t AliTOFPIDResponse::GetExpectedSigma(Float_t mom, Float_t time, AliPID::EParticleType  type) const {
+  //
+  // Return the expected sigma of the PID signal for the specified
+  // particle type.
+  // If the operation is not possible, return a negative value.
+  //
+  
+  Double_t mass = AliPID::ParticleMassZ(type);
+  Double_t dpp=fPar[0] + fPar[1]*mom + fPar[2]*mass/mom;      //mean relative pt resolution;
+
+ 
+  Double_t sigma = dpp*time/(1.+ mom*mom/(mass*mass));
+  
+  Int_t index = GetMomBin(mom);
+
+  Double_t t0res = fT0resolution[index];
+
+  return TMath::Sqrt(sigma*sigma + fPar[3]*fPar[3]/mom/mom + fSigma*fSigma + t0res*t0res);
+
+}
+//_________________________________________________________________________
+Double_t AliTOFPIDResponse::GetExpectedSignal(const AliVTrack* track,AliPID::EParticleType type) const {
+  //
+  // Return the expected signal of the PID signal for the particle type
+  // If the operation is not possible, return a negative value.
+  //
+  Double_t expt[5];
+  track->GetIntegratedTimes(expt);
+  if (type<=AliPID::kProton) return expt[type];
+  else {
+    Double_t p = track->P();
+    Double_t massZ = AliPID::ParticleMassZ(type);
+    return expt[0]/p*massZ*TMath::Sqrt(1.+p*p/massZ/massZ);
+  }
 }
 //_________________________________________________________________________
 Int_t AliTOFPIDResponse::GetMomBin(Float_t p) const{

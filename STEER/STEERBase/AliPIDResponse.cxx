@@ -418,17 +418,19 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTOFProbability  (const AliV
   Double_t time[AliPID::kSPECIESN];
   track->GetIntegratedTimes(time);
   
-  Double_t sigma[AliPID::kSPECIES];
-  for (Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++) {
-    sigma[iPart] = fTOFResponse.GetExpectedSigma(track->P(),time[iPart],AliPID::ParticleMass(iPart));
-  }
+  //  Double_t sigma[AliPID::kSPECIES];
+  // for (Int_t iPart = 0; iPart < AliPID::kSPECIES; iPart++) {
+  //    sigma[iPart] = fTOFResponse.GetExpectedSigma(track->P(),time[iPart],AliPID::ParticleMass(iPart));
+  //  }
   
   Bool_t mismatch = kTRUE/*, heavy = kTRUE*/;
   for (Int_t j=0; j<AliPID::kSPECIES; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
     Double_t nsigmas=NumberOfSigmasTOF(track,type) + meanCorrFactor;
 
-    Double_t sig = sigma[j];
+    //    Double_t sig = sigma[j];
+    Double_t expTime = fTOFResponse.GetExpectedSignal(track,type);
+    Double_t sig = fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type));
     if (TMath::Abs(nsigmas) > (fRange+2)) {
       if(nsigmas < fTOFtail)
 	p[j] = TMath::Exp(-0.5*(fRange+2)*(fRange+2))/sig;

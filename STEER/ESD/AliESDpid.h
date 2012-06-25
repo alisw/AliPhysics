@@ -52,9 +52,11 @@ private:
 
 inline Float_t AliESDpid::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const {
   AliESDtrack *track=(AliESDtrack*)vtrack;
-  Double_t times[AliPID::kSPECIES];
-  track->GetIntegratedTimes(times);
-  return (track->GetTOFsignal() - fTOFResponse.GetStartTime(track->GetP()) - times[type])/fTOFResponse.GetExpectedSigma(track->GetP(),times[type],AliPID::ParticleMass(type));
+  //  Double_t times[AliPID::kSPECIES];
+  // track->GetIntegratedTimes(times);
+  Double_t expTime = fTOFResponse.GetExpectedSignal((AliVTrack*)vtrack,type);
+  //  return (track->GetTOFsignal() - fTOFResponse.GetStartTime(track->GetP()) - times[type])/fTOFResponse.GetExpectedSigma(track->GetP(),times[type],AliPID::ParticleMass(type));
+  return (track->GetTOFsignal() - fTOFResponse.GetStartTime(track->GetP()) - expTime)/fTOFResponse.GetExpectedSigma(track->GetP(),expTime,AliPID::ParticleMassZ(type));
 }
 
 #endif

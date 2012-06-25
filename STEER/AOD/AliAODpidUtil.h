@@ -47,23 +47,25 @@ private:
 
 inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {
   AliAODTrack *track=(AliAODTrack*)vtrack;
-  Double_t times[AliPID::kSPECIES];
-  Double_t sigmaTOFPid[AliPID::kSPECIES];
+  Double_t sigTOF;
   AliAODPid *pidObj = track->GetDetPid();
   if (!pidObj) return -999.;
   Double_t tofTime=pidObj->GetTOFsignal();
-  pidObj->GetIntegratedTimes(times);
-  pidObj->GetTOFpidResolution(sigmaTOFPid);
+  Double_t expTime=fTOFResponse.GetExpectedSignal((AliVTrack*)vtrack,type);
   AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
-  if (event) {
-    AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
-    if (tofH) { 
-      sigmaTOFPid[type]=fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type)); //fTOFResponse is set in InitialiseEvent
-      tofTime -= fTOFResponse.GetStartTime(vtrack->P());
-    } 
+  AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
+  if (tofH) { // new AOD
+    sigTOF=fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type)); //fTOFResponse is set in InitialiseEvent
+    tofTime -= fTOFResponse.GetStartTime(vtrack->P());
+  } else { // old AOD
+    if (type <= AliPID::kProton) {
+      Double_t sigmaTOFPid[AliPID::kSPECIES];
+      pidObj->GetTOFpidResolution(sigmaTOFPid);
+      sigTOF=sigmaTOFPid[type];
+    } else return -998.;  // light nuclei cannot be supported on old AOD because we don't have timeZero resolution
   }
-  if (sigmaTOFPid[type]>0) return (tofTime - times[type])/sigmaTOFPid[type];
-  else return (tofTime - times[type])/fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
+  if (sigTOF>0) return (tofTime - expTime)/sigTOF;
+  else return -997.;
 }
 
 #endif

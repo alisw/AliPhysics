@@ -142,6 +142,26 @@ const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
   0.00000        // unknown
   */
 };
+/*const*/ Float_t AliPID::fgkParticleMassZ[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  /*
+  M(kElectron),  // electron
+  M(kMuon), // muon
+  M(kPion),    // pion
+  M(kKaon),     // kaon
+  M(kProton),    // proton
+  M(kPhoton),     // photon
+  M(kPi0),       // pi0
+  M(kNeutron),   // neutron
+  M(kKaon0),        // kaon0
+  M(kEleCon),     // electron conversion
+  M(kDeuteron), // deuteron
+  M(kTriton),   // triton
+  M(kHe3)/2,      // he3
+  M(kAlpha)/2,    // alpha
+  0.00000        // unknown
+  */
+};
 
 Double_t AliPID::fgPrior[kSPECIESN] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -243,8 +263,11 @@ void AliPID::Init()
   // Initialise only once... 
   if(!fgkParticleMass[0]) {
     AliPDG::AddParticlesToPdgDataBase();
-    for (Int_t i = 0; i < kSPECIESN + kSPECIESLN; i++) 
+    for (Int_t i = 0; i < kSPECIESN + kSPECIESLN; i++) {
       fgkParticleMass[i] = M(i);
+      if (i == kHe3 || i == kAlpha) fgkParticleMassZ[i] = M(i)/2.;
+      else fgkParticleMassZ[i]=M(i);
+    }
   }
 }
 
