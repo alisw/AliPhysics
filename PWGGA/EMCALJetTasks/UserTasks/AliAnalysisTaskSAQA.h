@@ -44,6 +44,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistCentrality;         //!Event centrality distribution
   TH2F                       *fHistTracksCent;         //!Number of tracks vs. centrality
   TH2F                       *fHistClusCent;           //!Number of clusters vs. centrality
+  TH2F                       *fHistClusTracks;         //!Number of clusters vs. number of tracks
 
   TH2F                       *fHistMaxL1FastORCent;    //!Maximum L1 trigger FastOR amplitude vs. centrality
   TH2F                       *fHistMaxL1ClusCent;      //!Maximum L1 trigger cluster amplitude vs. centrality
@@ -55,7 +56,8 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
 
   TH3F                       *fHistClusPhiEtaEnergy;     //!Phi-Eta-Energy distribution of clusters
   TH2F                       *fHistNCellsEnergy;         //!Number of cells vs. energy of cluster
-
+  TH2F                       *fHistClusTimeEnergy;       //!Time vs. energy of cluster
+  
   TH3F                       *fHistJetsPhiEtaPt[4];      //!Phi-Eta-Pt distribution of jets
   TH1F                       *fHistJetsPtNonBias[4];     //!Non biased inclusive jet pt spectrum
   TH1F                       *fHistJetsPtClus[4];        //!Inclusive jet pt spectrum cluster biased
@@ -77,6 +79,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 8) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 9) // Quality task for Emcal analysis
 };
 #endif

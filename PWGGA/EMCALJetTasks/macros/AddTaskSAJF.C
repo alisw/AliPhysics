@@ -59,6 +59,8 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
     name += "EMCAL";
   else if (type == AliAnalysisTaskEmcal::kTPCSmall) 
     name += "TPCSmall";
+  else if (type == AliAnalysisTaskEmcal::kEMCALOnly) 
+    name += "EMCALOnly";
   AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(name);
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);

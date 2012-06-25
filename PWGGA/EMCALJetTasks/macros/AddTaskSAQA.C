@@ -53,6 +53,8 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
     name += "EMCAL";
   else if (type == AliAnalysisTaskEmcal::kTPCSmall) 
     name += "TPCSmall";
+  else if (type == AliAnalysisTaskEmcal::kEMCALOnly) 
+    name += "EMCALOnly";
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
   qaTask->SetTracksName(ntracks);
   qaTask->SetClusName(nclusters);

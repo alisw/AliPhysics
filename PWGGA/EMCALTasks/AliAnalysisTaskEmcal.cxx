@@ -38,6 +38,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMaxBinPt(250),
   fClusPtCut(0.15),
   fTrackPtCut(0.15),
+  fClusTimeCutLow(0.50e-6),
+  fClusTimeCutUp(0.66e-6),
   fTracks(0),
   fCaloClusters(0),
   fCent(0),
@@ -65,6 +67,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMaxBinPt(250),
   fClusPtCut(0.15),
   fTrackPtCut(0.15),
+  fClusTimeCutLow(0.50e-6),
+  fClusTimeCutUp(0.66e-6),
   fTracks(0),
   fCaloClusters(0),
   fCent(0),
@@ -127,6 +131,9 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Bool_t acceptMC) c
     return kFALSE;
 
   if (!acceptMC && clus->Chi2() == 100)
+    return kFALSE;
+
+  if (clus->GetTOF() > fClusTimeCutUp || clus->GetTOF() < fClusTimeCutLow)
     return kFALSE;
 
   TLorentzVector nPart;
