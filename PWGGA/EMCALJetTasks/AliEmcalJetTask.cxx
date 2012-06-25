@@ -110,9 +110,6 @@ void AliEmcalJetTask::UserExec(Option_t *)
     fIsInit = kTRUE;
   }
 
-  // delete jet output
-  fJets->Delete();
-
   FindJets();
 }
 
@@ -372,7 +369,10 @@ void AliEmcalJetTask::FindJets()
     jet->SetMaxNeutralPt(maxNe);
     jet->SetMaxChargedPt(maxCh);
     jet->SetNEF(neutralE / jet->E());
-    jet->SetArea(fjw.GetJetArea(ij));
+    fastjet::PseudoJet area(fjw.GetJetAreaVector(ij));
+    jet->SetArea(area.perp());
+    jet->SetAreaEta(area.eta());
+    jet->SetAreaPhi(area.phi());
     jet->SetNumberOfCharged(ncharged);
     jet->SetNumberOfNeutrals(nneutral);
     jet->SetMCPt(mcpt);
@@ -390,6 +390,7 @@ void AliEmcalJetTask::FindJets()
       jet->SetAxisInEmcal(kTRUE);
     jetCount++;
   }
+  fJets->Sort();
 }
 
 //________________________________________________________________________
