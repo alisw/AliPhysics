@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=10, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=3, Int_t debuglevel=0, Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE){
+AliAnalysisTask *AddTaskHFEtpctofv2(Int_t tpcCls=110, Double_t tpcClsr=50, Int_t tpcClspid=60, Double_t tpcsharedfraction=10, Int_t itsCls=4, Double_t chi2peritscl=36, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1, Int_t debuglevel=3, Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE){
 
   //
   // Define TPC cut for 2011 data

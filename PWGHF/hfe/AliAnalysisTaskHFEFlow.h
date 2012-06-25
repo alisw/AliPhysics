@@ -36,6 +36,7 @@ class AliHFEcuts;
 class AliHFEpid;
 class TH1D;
 class TH2D;
+class TF1;
 class TProfile;
 class TProfile2D;
 class THnSparse;
@@ -92,6 +93,7 @@ public:
   AliHFEpidQAmanager *GetPIDBackgroundQAManager() const { return fPIDBackgroundqa; }
 
 
+  void SetContamination(TF1 * const function,Int_t k) { fContamination[k] = function; };
   void SetHFECuts(AliHFEcuts * const cuts) { fHFECuts = cuts; };
   void SetHFEBackgroundCuts(AliESDtrackCuts * const cuts) { fHFEBackgroundCuts = cuts; };
   void SetSubEtaGapTPC(Bool_t  subEtaGapTPC) { fSubEtaGapTPC = subEtaGapTPC; };
@@ -200,6 +202,9 @@ private:
   AliHFEpidQAmanager *fPIDqa;     // QA Manager
   AliFlowEvent *fflowEvent;       //! Flow event 
 
+  // Hadron Contamination
+  TF1 *fContamination[11];        // Parametrization of the contamination (0-5,5-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100)
+
   // Cuts for background study
   AliESDtrackCuts *fHFEBackgroundCuts;    // HFE background cuts
   AliHFEpid  *fPIDBackground;             // PID background cuts 
@@ -217,11 +222,14 @@ private:
   TH2D *fHistEV;               //! Number of events
   
   // A Event plane as function of phiepa, phiepb, phiepc, phiepd centrality 
-  // a V0A, b V0C, c TPC, d V0
+  // a V0A, b V0C, c TPC,
   THnSparseF *fEventPlane;     //! Event plane
   
   // B Event Plane after subtraction as function of phiep, centrality 
   THnSparseF *fEventPlaneaftersubtraction; //! Event plane
+
+  // Contamination
+  THnSparseF *fFractionContamination;//! Fraction of contamination as function of pt
 
   // Monitoring Event plane: cos2phi, sin2phi, centrality
   THnSparseF *fCosSin2phiep;        //! Cos(2phi), Sin(2phi)
@@ -263,12 +271,12 @@ private:
   TProfile2D *fProfileCosPhiMaps;  //! Profile Cos
 
   // Background study: not statistic but tagged 
-  THnSparseF *fDeltaPhiMapsTaggedPhotonic; //! Delta phi
-  THnSparseF *fCosPhiMapsTaggedPhotonic; //! Cos
-  THnSparseF *fDeltaPhiMapsTaggedNonPhotonic; //! Delta phi
-  THnSparseF *fCosPhiMapsTaggedNonPhotonic; //! Cos
-  THnSparseF *fDeltaPhiMapsTaggedPhotonicLS; //! Delta phi
-  THnSparseF *fCosPhiMapsTaggedPhotonicLS; //! Cos
+  //THnSparseF *fDeltaPhiMapsTaggedPhotonic; //! Delta phi
+  //THnSparseF *fCosPhiMapsTaggedPhotonic; //! Cos
+  //THnSparseF *fDeltaPhiMapsTaggedNonPhotonic; //! Delta phi
+  //THnSparseF *fCosPhiMapsTaggedNonPhotonic; //! Cos
+  //THnSparseF *fDeltaPhiMapsTaggedPhotonicLS; //! Delta phi
+  //THnSparseF *fCosPhiMapsTaggedPhotonicLS; //! Cos
 
   // Background study: centrality, pt, source
   THnSparseF *fMCSourceDeltaPhiMaps; //! Source MC
