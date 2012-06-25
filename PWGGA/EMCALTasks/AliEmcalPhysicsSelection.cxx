@@ -198,19 +198,21 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     } else {
       trks = dynamic_cast<TClonesArray*>(aev->FindListObject("tracks"));
     }
-    const Int_t Ntracks = trks->GetEntriesFast();
-    for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-      AliVTrack *track = static_cast<AliVTrack*>(trks->At(iTracks));
-      if (!track)
-        continue;
-      if (aev) { // a bit ugly since cuts are hard coded for now
-        AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
-        if (!aodtrack->TestFilterBit(256) && !aodtrack->TestFilterBit(512))
+    if (trks) {
+      const Int_t Ntracks = trks->GetEntriesFast();
+      for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
+        AliVTrack *track = static_cast<AliVTrack*>(trks->At(iTracks));
+        if (!track)
           continue;
+        if (aev) { // a bit ugly since cuts are hard coded for now
+          AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
+          if (!aodtrack->TestFilterBit(256) && !aodtrack->TestFilterBit(512))
+            continue;
+        }
+        Double_t pt = track->Pt();
+        if (pt>fTrackMaxPt)
+          fTrackMaxPt = pt;
       }
-      Double_t pt = track->Pt();
-      if (pt>fTrackMaxPt)
-        fTrackMaxPt = pt;
     }
   }
 
