@@ -37,8 +37,10 @@ AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Dou
 {
   // Constructor.
 
-  if (!particle)
+  if (!particle) {
     AliWarning("Null pointer passed as particle.");
+    return;
+  }
 
   fTrack = dynamic_cast<AliVTrack*>(particle);
   if (fTrack) {
@@ -47,15 +49,20 @@ AliEmcalParticle::AliEmcalParticle(TObject *particle, Int_t id, Double_t vx, Dou
     fPt = fTrack->Pt();
   } else {
     fCluster = dynamic_cast<AliVCluster*>(particle);
-    Double_t vtx[3]; vtx[0]=vx;vtx[1]=vy;vtx[2]=vz;
-    TLorentzVector vect;
-    fCluster->GetMomentum(vect, vtx);
-    fEta = vect.Eta();
-    fPhi = vect.Phi();
-    fPt  = vect.Pt();
+    if (fCluster) {
+      Double_t vtx[3]; vtx[0]=vx;vtx[1]=vy;vtx[2]=vz;
+      TLorentzVector vect;
+      fCluster->GetMomentum(vect, vtx);
+      fEta = vect.Eta();
+      fPhi = vect.Phi();
+      fPt  = vect.Pt();
+    }
   }
-  if (!fTrack && !fCluster)
+
+  if (!fTrack && !fCluster) {
     AliWarning("Particle type not recognized (not AliVTrack nor AliVCluster).");
+    return;
+  }
 
   ResetMatchedObjects();
 }

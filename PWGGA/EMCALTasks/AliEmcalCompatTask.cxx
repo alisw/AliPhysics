@@ -68,8 +68,13 @@ void AliEmcalCompatTask::UserExec(Option_t *)
   TString title;
   if (header)
     title = header->GetTitle();
+  else {
+    AliError(Form("%s: Header zero, returning!", GetName()));
+    return;
+  }
+
   if (title.Length()==0) {
-    AliError("Title should encode offline trigger, returning");
+    AliError(Form("%s: Title should encode offline trigger, returning!", GetName()));
     return;
   } else {
     UInt_t off = header->GetUniqueID();

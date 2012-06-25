@@ -741,7 +741,8 @@ void AliAnalysisTaskSATR::UserExec(Option_t *)
  
   for (Int_t i = 0; i < NumberOfTriggerClusters; i++){
     AliVCluster* trgCluster = dynamic_cast<AliVCluster*>(triggerClusters->At(i));
-    
+    if (!trgCluster)
+      continue;
     if (fCheckDeadClusters && trgCluster->GetDistanceToBadChannel() < 3) {
       AliWarning(Form("Trigger cluster %d removed from analysis because distance to bad channel = %f < 3", i, trgCluster->GetDistanceToBadChannel()));
       continue;

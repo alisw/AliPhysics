@@ -260,7 +260,10 @@ TClonesArray *AliAnalysisTaskEmcal::GetArrayFromEvent(const char *name, const ch
       AliWarning(Form("%s: Could not retrieve array with name %s!", GetName(), name)); 
       return 0;
     }
+  } else {
+    return 0;
   }
+
   if (!clname)
     return arr;
 
