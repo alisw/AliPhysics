@@ -61,12 +61,13 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     fOutput(0),
     fTrackCuts(0),
     fESD(0),
-    fcheckEP2sub(1),
+    fcheckEP2sub(0),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.), 
     fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
     fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
+    hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
     hEPTPC(0), hresoTPC(0),
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
@@ -86,12 +87,13 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
     fOutput(0),
     fTrackCuts(0),
     fESD(0),
-    fcheckEP2sub(1),
+    fcheckEP2sub(0),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.),
     fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
     fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
+    hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
     hEPTPC(0), hresoTPC(0),
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
@@ -288,9 +290,9 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodPion(const TLorentzVector &p1, const TLorentz
   // Is good pion?
 
 
-  Double_t asym = TMath::Abs(p1.E()-p2.E())/(p1.E()+p2.E());
-  if (asym>0.7)
-    return kFALSE;
+//  Double_t asym = TMath::Abs(p1.E()-p2.E())/(p1.E()+p2.E());
+//  if (asym>0.7)
+//    return kFALSE;
 
 //    if (TMath::Abs(p1.Eta()-p2.Eta())>0.5)
 //      return kFALSE;
@@ -329,15 +331,10 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
   Double_t cos2phiV0C = TMath::Cos(2.*(dphiV0C));
   Double_t cos2phiTPC = TMath::Cos(2.*(dphiTPC));
 
-  if(dphiV0  < 0.)  dphiV0  += TMath::Pi();
-  if(dphiV0A < 0.)  dphiV0A += TMath::Pi();
-  if(dphiV0C < 0.)  dphiV0C += TMath::Pi();
-  if(dphiTPC < 0.)  dphiTPC += TMath::Pi();
-
-  if(dphiV0  > TMath::Pi())  dphiV0  -= TMath::Pi();
-  if(dphiV0A > TMath::Pi())  dphiV0A -= TMath::Pi();
-  if(dphiV0C > TMath::Pi())  dphiV0C -= TMath::Pi();
-  if(dphiTPC > TMath::Pi())  dphiTPC -= TMath::Pi();
+  dphiV0  = TVector2::Phi_0_2pi(dphiV0);  if(dphiV0 >TMath::Pi())  dphiV0 -= TMath::Pi();
+  dphiV0A = TVector2::Phi_0_2pi(dphiV0A); if(dphiV0A >TMath::Pi()) dphiV0A -= TMath::Pi();
+  dphiV0C = TVector2::Phi_0_2pi(dphiV0C); if(dphiV0C >TMath::Pi()) dphiV0C -= TMath::Pi();
+  dphiTPC = TVector2::Phi_0_2pi(dphiTPC); if(dphiTPC >TMath::Pi()) dphiTPC -= TMath::Pi();
 
   //cout<<"cos2V0: "<<cos2phiV0<<"  cos2V0A: "<<cos2phiV0A<<"  cos2V0C: "<<cos2phiV0C<<endl;
   //cout<<mass<<"  "<<pt<<"  "<<phi<<"  "<<endl;
@@ -412,18 +409,18 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     
     fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
 
-    hEPTPC   = new TH2F("hEPTPC",   "EPTPC     vs cent", 100, 0., 100., 152, 0., 3.2);
-    hresoTPC = new TH2F("hresoTPC", "TPc reso  vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0    = new TH2F("hEPV0",    "EPV0      vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0A   = new TH2F("hEPV0A",   "EPV0A     vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0C   = new TH2F("hEPV0C",   "EPV0C     vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0Ar  = new TH2F("hEPV0Ar",  "EPV0Ar    vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0Cr  = new TH2F("hEPV0Cr",  "EPV0Cr    vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0r   = new TH2F("hEPV0r",   "EPV0r     vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0AR4 = new TH2F("hEPV0AR4", "EPV0AR4   vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0AR7 = new TH2F("hEPV0AR7", "EPV0AR7   vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0CR0 = new TH2F("hEPV0CR0", "EPV0CR0   vs cent", 100, 0., 100., 152, 0., 3.2);
-    hEPV0CR3 = new TH2F("hEPV0CR3", "EPV0CR3   vs cent", 100, 0., 100., 152, 0., 3.2);
+    hEPTPC   = new TH2F("hEPTPC",   "EPTPC     vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hresoTPC = new TH2F("hresoTPC", "TPc reso  vs cent", 100, 0., 100., 100, 0., 1.);
+    hEPV0    = new TH2F("hEPV0",    "EPV0      vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0A   = new TH2F("hEPV0A",   "EPV0A     vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0C   = new TH2F("hEPV0C",   "EPV0C     vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0Ar  = new TH2F("hEPV0Ar",  "EPV0Ar    vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0Cr  = new TH2F("hEPV0Cr",  "EPV0Cr    vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0r   = new TH2F("hEPV0r",   "EPV0r     vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0AR4 = new TH2F("hEPV0AR4", "EPV0AR4   vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0AR7 = new TH2F("hEPV0AR7", "EPV0AR7   vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0CR0 = new TH2F("hEPV0CR0", "EPV0CR0   vs cent", 100, 0., 100., 100, 0., TMath::Pi());
+    hEPV0CR3 = new TH2F("hEPV0CR3", "EPV0CR3   vs cent", 100, 0., 100., 100, 0., TMath::Pi());
     fOutput->Add(hEPTPC);
     fOutput->Add(hresoTPC);
     fOutput->Add(hEPV0);
@@ -437,12 +434,12 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hEPV0CR0);
     fOutput->Add(hEPV0CR3);
 
-    hdifV0A_V0CR0    = new TH2F("hdifV0A_V0CR0",    "EP A-R0 ",  100, 0., 100., 152, 0., 3.2);    
-    hdifV0A_V0CR3    = new TH2F("hdifV0A_V0CR3",    "EP A-R3 ",  100, 0., 100., 152, 0., 3.2);    
-    hdifV0ACR0_V0CR3 = new TH2F("hdifV0ACR0_V0CR3", "EP R0-R3 ", 100, 0., 100., 152, 0., 3.2);    
-    hdifV0C_V0AR4    = new TH2F("hdifV0C_V0AR4",    "EP C-R4 ",  100, 0., 100., 152, 0., 3.2);    
-    hdifV0C_V0AR7    = new TH2F("hdifV0C_V0AR7",    "EP C-R7 ",  100, 0., 100., 152, 0., 3.2);    
-    hdifV0AR4_V0AR7  = new TH2F("hdifV0AR4_V0AR7",  "EP R4-R7 ", 100, 0., 100., 152, 0., 3.2);    
+    hdifV0A_V0CR0    = new TH2F("hdifV0A_V0CR0",    "EP A-R0 ",  100, 0., 100., 100, -1., 1.);    
+    hdifV0A_V0CR3    = new TH2F("hdifV0A_V0CR3",    "EP A-R3 ",  100, 0., 100., 100, -1., 1.);    
+    hdifV0ACR0_V0CR3 = new TH2F("hdifV0ACR0_V0CR3", "EP R0-R3 ", 100, 0., 100., 100, -1., 1.);    
+    hdifV0C_V0AR4    = new TH2F("hdifV0C_V0AR4",    "EP C-R4 ",  100, 0., 100., 100, -1., 1.);    
+    hdifV0C_V0AR7    = new TH2F("hdifV0C_V0AR7",    "EP C-R7 ",  100, 0., 100., 100, -1., 1.);    
+    hdifV0AR4_V0AR7  = new TH2F("hdifV0AR4_V0AR7",  "EP R4-R7 ", 100, 0., 100., 100, -1., 1.);    
     fOutput->Add(hdifV0A_V0CR0);
     fOutput->Add(hdifV0A_V0CR3);
     fOutput->Add(hdifV0ACR0_V0CR3);
@@ -450,10 +447,10 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hdifV0C_V0AR7);
     fOutput->Add(hdifV0AR4_V0AR7);
 
-    hdifV0A_V0C = new TH2F("hdifV0A_V0C", "EP A-C  ", 100, 0., 100., 152, 0., 3.2);
-    hdifV0A_TPC = new TH2F("hdifV0A_TPC", "EP A-TPC", 100, 0., 100., 152, 0., 3.2);
-    hdifV0C_TPC = new TH2F("hdifV0C_TPC", "EP C-TPC", 100, 0., 100., 152, 0., 3.2);
-    hdifV0C_V0A = new TH2F("hdifV0C_V0A", "EP C-A  ", 100, 0., 100., 152, 0., 3.2);
+    hdifV0A_V0C = new TH2F("hdifV0A_V0C", "EP A-C  ", 100, 0., 100., 100, -1., 1.);
+    hdifV0A_TPC = new TH2F("hdifV0A_TPC", "EP A-TPC", 100, 0., 100., 100, -1., 1.);
+    hdifV0C_TPC = new TH2F("hdifV0C_TPC", "EP C-TPC", 100, 0., 100., 100, -1., 1.);
+    hdifV0C_V0A = new TH2F("hdifV0C_V0A", "EP C-A  ", 100, 0., 100., 100, -1., 1.);
     fOutput->Add(hdifV0A_V0C);
     fOutput->Add(hdifV0A_TPC);
     fOutput->Add(hdifV0C_TPC);
@@ -467,6 +464,17 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->Add(hdifEMC_EP);
     fOutput->Add(hdifful_EP);
     fOutput->Add(hdifout_EP);
+
+    hAllcentV0  = new TH1F("hAllcentV0",  "All cent EP V0",  100, 0., TMath::Pi());
+    hAllcentV0r = new TH1F("hAllcentV0r", "All cent EP V0r", 100, 0., TMath::Pi());
+    hAllcentV0A = new TH1F("hAllcentV0A", "All cent EP V0A", 100, 0., TMath::Pi());
+    hAllcentV0C = new TH1F("hAllcentV0C", "All cent EP V0C", 100, 0., TMath::Pi());
+    hAllcentTPC = new TH1F("hAllcentTPC", "All cent EP TPC", 100, 0., TMath::Pi());
+    fOutput->Add(hAllcentV0);
+    fOutput->Add(hAllcentV0r);
+    fOutput->Add(hAllcentV0A);
+    fOutput->Add(hAllcentV0C);
+    fOutput->Add(hAllcentTPC);
 
     const Int_t ndims = 5;
     Int_t nMgg=500, nPt=40, nCent=20, nDeltaPhi=315,  ncos2phi=500;
@@ -556,19 +564,20 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     if(!fcheckEP2sub){
       if(fEPV0A<-2. || fEPV0C<-2. || fEPV0AR4<-2. || fEPV0AR7<-2. || fEPV0CR0<-2. || fEPV0CR3<-2.) return;
     }
+    fEPV0   = TVector2::Phi_0_2pi(fEPV0);    if(fEPV0>TMath::Pi())   fEPV0  = fEPV0  - TMath::Pi();
+    fEPV0r  = TVector2::Phi_0_2pi(fEPV0r);   if(fEPV0r>TMath::Pi())  fEPV0r = fEPV0r - TMath::Pi();
+    fEPV0A  = TVector2::Phi_0_2pi(fEPV0A);   if(fEPV0A>TMath::Pi())  fEPV0A = fEPV0A - TMath::Pi();
+    fEPV0C  = TVector2::Phi_0_2pi(fEPV0C);   if(fEPV0C>TMath::Pi())  fEPV0C = fEPV0C - TMath::Pi();
+    fEPV0Ar = TVector2::Phi_0_2pi(fEPV0Ar);  if(fEPV0Ar>TMath::Pi()) fEPV0Ar = fEPV0Ar - TMath::Pi();
+    fEPV0Cr = TVector2::Phi_0_2pi(fEPV0Cr);  if(fEPV0Cr>TMath::Pi()) fEPV0Cr = fEPV0Cr - TMath::Pi();
+    fEPV0AR4   = TVector2::Phi_0_2pi(fEPV0AR4);    if(fEPV0AR4>TMath::Pi())   fEPV0AR4  = fEPV0AR4 - TMath::Pi();
+    fEPV0AR7   = TVector2::Phi_0_2pi(fEPV0AR7);    if(fEPV0AR7>TMath::Pi())   fEPV0AR7  = fEPV0AR7 - TMath::Pi();
+    fEPV0CR0   = TVector2::Phi_0_2pi(fEPV0CR0);    if(fEPV0CR0>TMath::Pi())   fEPV0CR0  = fEPV0CR0 - TMath::Pi();
+    fEPV0CR3   = TVector2::Phi_0_2pi(fEPV0CR3);    if(fEPV0CR3>TMath::Pi())   fEPV0CR3  = fEPV0CR3 - TMath::Pi();
 
-   if(fEPV0   < TMath::Pi())   fEPV0  += TMath::Pi();
-   if(fEPV0A  < TMath::Pi())   fEPV0A += TMath::Pi();
-   if(fEPV0C  < TMath::Pi())   fEPV0C += TMath::Pi();
-   if(fEPV0Ar < TMath::Pi())   fEPV0A += TMath::Pi();
-   if(fEPV0Cr < TMath::Pi())   fEPV0C += TMath::Pi();
-   if(fEPV0r  < TMath::Pi())   fEPV0A += TMath::Pi();
-   if(fEPV0AR4  < TMath::Pi())   fEPV0AR4 += TMath::Pi();
-   if(fEPV0AR7  < TMath::Pi())   fEPV0AR7 += TMath::Pi();
-   if(fEPV0CR0  < TMath::Pi())   fEPV0CR0 += TMath::Pi();
-   if(fEPV0CR3  < TMath::Pi())   fEPV0CR3 += TMath::Pi();
-  
-//cout<<" fEPV0:"<<fEPV0<<" fEPV0A:"<<fEPV0A<<" fEPV0C:"<<fEPV0C<<" fEPV0Ar:"<<fEPV0Ar<<" fEPV0Cr:"<<fEPV0Cr<<" fEPV0r:"<<fEPV0AR4<<" fEPV0AR7:"<<fEPV0AR7<<" fEPV0CR0:"<<fEPV0CR0<<" fEPV0CR3:"<<fEPV0CR3<<"--------------------------------------------"<<endl;
+cout<<" EPTPC: "<<fEPTPC<<" reso: "<<fEPTPCreso<<" -------------------"<<endl;
+cout<<" cent: "<<fCentrality<<" fEPV0:"<<fEPV0<<" fEPV0A:"<<fEPV0A<<" fEPV0C:"<<fEPV0C<<" fEPV0Ar:"<<fEPV0Ar<<" fEPV0Cr:"<<fEPV0Cr<<" fEPV0r:"<<fEPV0AR4<<" fEPV0AR7:"<<fEPV0AR7<<" fEPV0CR0:"<<fEPV0CR0<<" fEPV0CR3:"<<fEPV0CR3<<"--------------------------------------------"<<endl;
+
    hEPTPC->Fill(fCentrality,  fEPTPC); 
    if(fEPTPCreso!=-1) hresoTPC->Fill(fCentrality, fEPTPCreso);
    hEPV0->Fill(fCentrality,   fEPV0);
@@ -577,6 +586,16 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    hEPV0Ar->Fill(fCentrality, fEPV0Ar);
    hEPV0Cr->Fill(fCentrality, fEPV0Cr);
    hEPV0r->Fill(fCentrality,  fEPV0r);
+   hEPV0AR4->Fill(fCentrality, fEPV0AR4);
+   hEPV0AR7->Fill(fCentrality, fEPV0AR7);
+   hEPV0CR0->Fill(fCentrality, fEPV0CR0);
+   hEPV0CR3->Fill(fCentrality, fEPV0CR3);
+
+   hAllcentV0->Fill(fEPV0);
+   hAllcentV0r->Fill(fEPV0r);
+   hAllcentV0A->Fill(fEPV0A);
+   hAllcentV0C->Fill(fEPV0C);  
+   hAllcentTPC->Fill(fEPTPC);
 
    hdifV0A_V0CR0->Fill(fCentrality, TMath::Cos(2.*(fEPV0A - fEPV0CR0)));
    hdifV0A_V0CR3->Fill(fCentrality, TMath::Cos(2.*(fEPV0A - fEPV0CR3)));
@@ -616,13 +635,14 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
         }
 	Double_t tPhi = esdtrack->Phi();
 	Double_t tPt  = esdtrack->Pt();
-//	if(tPhi*TMath::RadToDeg() > 80. && tPhi*TMath::RadToDeg()<180.){
+
+	Double_t difTrack = TVector2::Phi_0_2pi(tPhi-fEPV0r);  if(difTrack >TMath::Pi()) difTrack -= TMath::Pi();
 	if(esdtrack->IsEMCAL()){	
-          hdifEMC_EP->Fill(fCentrality, tPhi-fEPV0r, tPt);
+          hdifEMC_EP->Fill(fCentrality, difTrack, tPt);
 	}else{
-	  hdifout_EP->Fill(fCentrality, tPhi-fEPV0r, tPt);
+	  hdifout_EP->Fill(fCentrality, difTrack, tPt);
 	}
-	hdifful_EP->Fill(fCentrality, tPhi-fEPV0r, tPt);
+	hdifful_EP->Fill(fCentrality,   difTrack, tPt);
     }
 
     // NEW HISTO should be filled before this point, as PostData puts the
