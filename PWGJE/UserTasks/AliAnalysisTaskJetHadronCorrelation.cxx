@@ -786,7 +786,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																				if((0<Mlead)&&Mlead<8)              {fH1ndiJ_2040Mlead[0]->Fill(1);}
 																				else if((8<=Mlead)&&(Mlead<12))     {fH1ndiJ_2040Mlead[1]->Fill(1);}
 																				else                                {fH1ndiJ_2040Mlead[2]->Fill(1);}
-																				if(Aj<0.2)                          {fH1ndiJ_2040Aj   [0]->Fill(1);}
+																				if((0<Aj)&&(Aj<0.2))                {fH1ndiJ_2040Aj   [0]->Fill(1);}
 																				else if((0.2<=Aj)&&(Aj<0.4))        {fH1ndiJ_2040Aj   [1]->Fill(1);}
 																				else                                {fH1ndiJ_2040Aj   [2]->Fill(1);}
 																}
@@ -822,7 +822,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																																								if((0<Mlead)&&Mlead<8)         {fH1JetHadron_dphi_tptweight2040_Mleaddep[0][teb]->Fill(DelPhi,Track_pt[ntrack]);}
 																																								else if((8<=Mlead)&&(Mlead<12)){fH1JetHadron_dphi_tptweight2040_Mleaddep[1][teb]->Fill(DelPhi,Track_pt[ntrack]);}
 																																								else                           {fH1JetHadron_dphi_tptweight2040_Mleaddep[2][teb]->Fill(DelPhi,Track_pt[ntrack]);}
-																																								if(Aj<0.2)                     {fH1JetHadron_dphi_tptweight2040_Ajdep   [0][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								if((0<Aj)&&(Aj<0.2))           {fH1JetHadron_dphi_tptweight2040_Ajdep   [0][teb]->Fill(DelPhi,Track_pt[ntrack]);}
 																																								else if((0.2<=Aj)&&(Aj<0.4))   {fH1JetHadron_dphi_tptweight2040_Ajdep   [1][teb]->Fill(DelPhi,Track_pt[ntrack]);}
 																																								else                           {fH1JetHadron_dphi_tptweight2040_Ajdep   [2][teb]->Fill(DelPhi,Track_pt[ntrack]);}
 																																				}
