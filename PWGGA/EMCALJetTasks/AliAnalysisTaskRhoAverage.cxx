@@ -177,22 +177,28 @@ void AliAnalysisTaskRhoAverage::ExecOnce()
 
   AliAnalysisTaskRhoBase::ExecOnce();
 
-  fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fClustersName));
-  if (!fClusters) {
-    AliError(Form("%s: Pointer to jets %s == 0", GetName(), fClustersName.Data() ));
-    return;
+  if (!fClustersName.IsNull()) {
+    fClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fClustersName));
+    if (!fClusters) {
+      AliError(Form("%s: Pointer to jets %s == 0", GetName(), fClustersName.Data() ));
+      return;
+    }
   }
 
-  fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
-  if (!fJets) {
-    AliError(Form("%s: Pointer to jets %s == 0", GetName(), fJetsName.Data() ));
-    return;
+  if (!fTracksName.IsNull()) {
+    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+    if (!fTracks) {
+      AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data() ));
+      return;
+    }
   }
 
-  fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
-  if (!fTracks) {
-    AliError(Form("%s: Pointer to tracks %s == 0", GetName(), fTracksName.Data() ));
-    return;
+  if (!fJetsName.IsNull()) {
+    fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
+    if (!fJets) {
+      AliError(Form("%s: Pointer to jets %s == 0", GetName(), fJetsName.Data() ));
+      return;
+    }
   }
 }
 
