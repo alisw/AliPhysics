@@ -34,7 +34,7 @@ AliAnalysisTaskRhoAverage* AddTaskRhoAverage(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s", taskname, nJets));
+  TString name(Form("%s_%s_%s", taskname, nTracks, nClusters));
   AliAnalysisTaskRhoAverage *rhotask = new AliAnalysisTaskRhoAverage(name);
   rhotask->SetJetsName(nJets);
   rhotask->SetTracksName(nTracks);
