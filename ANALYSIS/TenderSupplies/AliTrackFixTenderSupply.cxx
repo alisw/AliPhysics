@@ -92,6 +92,7 @@ void AliTrackFixTenderSupply::ProcessEvent()
   //  
   AliExternalTrackParam* extPar = 0;
   double xOrig = 0;
+  double xyzTPCInner[3] = {0,0,0};
   for (int itr=0;itr<nTracks;itr++) {
     //
     AliESDtrack* trc = event->GetTrack(itr);
@@ -107,7 +108,8 @@ void AliTrackFixTenderSupply::ProcessEvent()
       AliError("Failed to extract inner param");
       continue;
     }
-    double phi = parInner->Phi();
+    parInner->GetXYZ(xyzTPCInner);
+    double phi = TMath::ATan2(xyzTPCInner[1],xyzTPCInner[0]) + TMath::Pi();
     //
     if (fDebug>1) {
       AliInfo(Form("Tr:%4d kITSin:%d Phi=%+5.2f at X=%+7.2f | SideA fraction: %.3f",itr,trc->IsOn(AliESDtrack::kITSin),phi,parInner->GetX(),sideAfraction));
