@@ -453,12 +453,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     Bool_t fFlagPhotonicElec = kFALSE;
     Bool_t fFlagConvinatElec = kFALSE;
-    if(fTPCnSigma>-2.0 && fTPCnSigma<3.0)
-      {
-       SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma);
-      }
-    if(fFlagPhotonicElec)oppstatus = 1.0;
-    if(fFlagConvinatElec)oppstatus = 2.0;
 
     Int_t clsId = track->GetEMCALcluster();
     if (clsId>0){
@@ -476,6 +470,14 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		double deleta = clust->GetTrackDz(); 
 		rmatch = sqrt(pow(delphi,2)+pow(deleta,2));
 		nmatch = clust->GetNTracksMatched();
+
+		if(fTPCnSigma>-1.5 && fTPCnSigma<3.0)
+		{
+		  SelectPhotonicElectron(iTracks,cent,track,fFlagPhotonicElec,fFlagConvinatElec,fTPCnSigma,m20,eop,mcele);
+		}
+		if(fFlagPhotonicElec)oppstatus = 1.0;
+		if(fFlagConvinatElec)oppstatus = 2.0;
+		if(fFlagPhotonicElec && fFlagConvinatElec)oppstatus = 3.0;
 
 		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = dEdx; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
@@ -671,14 +673,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpTM20 = new TH2F("fIncpTM20","HFE pid electro vs. centrality with M20",100,0,100,100,0,50);
   fOutputList->Add(fIncpTM20);
   
-  Int_t nBinspho[5] =  { 100, 100, 500, 12,   50};
-  Double_t minpho[5] = {  0.,  0.,  0., -2.5,  0};   
-  Double_t maxpho[5] = {100., 50., 0.5, 3.5,   1};   
+  Int_t nBinspho[8] =  { 100, 100, 500, 12,   50,    4, 200,   8};
+  Double_t minpho[8] = {  0.,  0.,  0., -2.5,  0, -0.5,   0,-1.5};   
+  Double_t maxpho[8] = {100., 50., 0.5, 3.5,   1,  3.5,   2, 6.5};   
 
-  fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle;", 5, nBinspho,minpho, maxpho);
+  fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; Mcele;", 8, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassLS);
   
-  fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; ", 5, nBinspho,minpho, maxpho);
+  fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; MCele", 8, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassULS);
   
   fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
@@ -809,7 +811,8 @@ Bool_t AliAnalysisTaskHFECal::ProcessCutStep(Int_t cutStep, AliVParticle *track)
 }
 //_________________________________________
 //void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec)
-void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig)
+//void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig)
+void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce)
 {
   //Identify non-heavy flavour electrons using Invariant mass method
   
@@ -879,12 +882,18 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     
     recg.GetMass(mass,width);
     
-    double phoinfo[5];
+    double ishower = 0;
+    if(shower>0.0 && shower<0.3)ishower = 1;
+
+    double phoinfo[8];
     phoinfo[0] = cent;
     phoinfo[1] = ptPrim;
     phoinfo[2] = mass;
     phoinfo[3] = nSig;
     phoinfo[4] = openingAngle;
+    phoinfo[5] = ishower;
+    phoinfo[6] = ep;
+    phoinfo[7] = mce;
 
     if(fFlagLS) fInvmassLS->Fill(phoinfo);
     if(fFlagULS) fInvmassULS->Fill(phoinfo);
