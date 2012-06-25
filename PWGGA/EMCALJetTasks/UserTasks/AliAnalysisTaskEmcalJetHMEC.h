@@ -8,6 +8,7 @@ class TH2;
 class AliESDEvent;
 
 #include "AliAnalysisTaskSE.h"
+//#include "/project/projectdirs/alice/tschuste/AliceSoftware/aliroot/train_jet/ANALYSIS/AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
  public:
@@ -48,14 +49,16 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   TH2         *fHistJetHEtaPhi;
   TH1         *fHistJetPt[6];
   TH1         *fHistJetPtBias[6];
-  TH2         *fHistJetH[6][3][3];
-  TH2         *fHistJetHBias[6][3][3];
+  TH1         *fHistJetPtTT[6];
+  TH2         *fHistJetH[6][5][3];
+  TH2         *fHistJetHBias[6][5][3];
+  TH2         *fHistJetHTT[6][5][3];
 
    
   AliAnalysisTaskEmcalJetHMEC(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   AliAnalysisTaskEmcalJetHMEC& operator=(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetHMEC, 1); 
+  ClassDef(AliAnalysisTaskEmcalJetHMEC, 2); 
 };
 
 #endif
