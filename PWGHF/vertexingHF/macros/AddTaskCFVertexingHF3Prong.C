@@ -633,17 +633,19 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_CommonFramework";
 		output1name="CFHFchist0_3Prong_CommonFramework";
+		output4name= "Cuts_3Prong_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskDplustoKpipiKeepDfromBOnly_CommonFramework";
 		output1name="CFHFchist0DfromB_3Prong_CommonFramework";
+		output4name= "CutsDfromB_3Prong_CommonFramework";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskDplustoKpipiKeepDfromB_CommonFramework";
 		output1name="CFHFchist0allD_3Prong_CommonFramework";
+		output4name= "CutsallD_3Prong_CommonFramework";
 	}
 
-	output4name= "Cuts_3Prong_CommonFramework";
 
 	//now comes user's output objects :
 	// output TH1I for event counting
