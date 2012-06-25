@@ -173,7 +173,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
 
-  fTransform.SetCurrentTimeStamp( GetTimeStamp() );
+  // fTransform.SetCurrentTimeStamp( GetTimeStamp() ); !!! for the future
   
   for( unsigned long ndx=0; ndx<evtData.fBlockCnt; ndx++ ){
      
