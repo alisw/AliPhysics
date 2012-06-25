@@ -272,7 +272,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 c.SetQMax(cl.GetQMax());
 
 	 Float_t xyz[3];
-	 fTransform.Transform( minSlice, padrow, pad, time, xyz );
+	 fTransform.Transform( minSlice, padrow, pad, time, xyz );	 
 	 c.SetX(xyz[0]);
 	 c.SetY(xyz[1]);
 	 c.SetZ(xyz[2]);
@@ -467,10 +467,13 @@ void AliHLTTPCHWClusterTransformComponent::GetOCDBObjectDescription( TMap* const
   // OCDB entries to be fetched by the TAXI (access via the AliTPCcalibDB class)
   targetMap->Add(new TObjString("TPC/Calib/Parameters"),    new TObjString("unknown content"));
   targetMap->Add(new TObjString("TPC/Calib/TimeDrift"),     new TObjString("drift velocity calibration"));
+  targetMap->Add(new TObjString("TPC/Calib/TimeGain"),     new TObjString("time gain  calibration"));
   targetMap->Add(new TObjString("TPC/Calib/Temperature"),   new TObjString("temperature map"));
   targetMap->Add(new TObjString("TPC/Calib/PadGainFactor"), new TObjString("gain factor pad by pad"));
   targetMap->Add(new TObjString("TPC/Calib/ClusterParam"),  new TObjString("cluster parameters"));
-  
+  targetMap->Add(new TObjString("TPC/Calib/Correction"),  new TObjString("coreection"));
+  targetMap->Add(new TObjString("TPC/Calib/RecoParam"),  new TObjString("reconstruction parameters"));
+ 
   // OCDB entries needed to be fetched by the Pendolino
   targetMap->Add(new TObjString("TPC/Calib/AltroConfig"), new TObjString("contains the altro config, e.g. info about the L0 trigger timing"));
   targetMap->Add(new TObjString("GRP/CTP/CTPtiming"),     new TObjString("content used in the cluster coordinate transformation in relation to the L0 trigger timing"));
@@ -479,6 +482,8 @@ void AliHLTTPCHWClusterTransformComponent::GetOCDBObjectDescription( TMap* const
   targetMap->Add(new TObjString("GRP/GRP/Data"), new TObjString("contains magnetic field info"));  
  
   // OCDB entries needed to suppress fatals/errors/warnings during reconstruction
+  targetMap->Add(new TObjString("TPC/Calib/Distortion"),  new TObjString("distortion map"));
+  targetMap->Add(new TObjString("TPC/Calib/GainFactorDedx"), new TObjString("gain factor dedx"));
   targetMap->Add(new TObjString("TPC/Calib/PadTime0"),    new TObjString("time0 offset pad by pad"));
   targetMap->Add(new TObjString("TPC/Calib/PadNoise"),    new TObjString("pad noise values"));
   targetMap->Add(new TObjString("TPC/Calib/Pedestals"),   new TObjString("pedestal info"));
@@ -489,5 +494,6 @@ void AliHLTTPCHWClusterTransformComponent::GetOCDBObjectDescription( TMap* const
   targetMap->Add(new TObjString("TPC/Calib/Mapping"),     new TObjString("unknown content"));
   targetMap->Add(new TObjString("TPC/Calib/Goofie"),      new TObjString("Goofie values, not used at the moment (05.03.2010)"));
   targetMap->Add(new TObjString("TPC/Calib/HighVoltage"), new TObjString("high voltage values, not used"));
+  targetMap->Add(new TObjString("TPC/Calib/PreprocStatus"), new TObjString("not important"));
   targetMap->Add(new TObjString("TPC/Calib/Ref"),         new TObjString("unknown content"));
 }
