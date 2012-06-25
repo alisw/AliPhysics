@@ -70,6 +70,11 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t			fEPV0CR2;	//! EP V0C ring2 only	
     Double_t			fEPV0CR3;	//! EP V0C ring3 only	
 
+    TH1F			*hAllcentV0;	//!
+    TH1F			*hAllcentV0r;	//!
+    TH1F			*hAllcentV0A;	//!
+    TH1F			*hAllcentV0C;	//!
+    TH1F			*hAllcentTPC;   //!
     TH2F			*hEPTPC;	//! 2-D histo EPTPC  vs cent
     TH2F			*hresoTPC;	//! 2-D histo TPC resolution vs cent
     TH2F			*hEPV0;		//! 2-D histo EPV0   vs cent
