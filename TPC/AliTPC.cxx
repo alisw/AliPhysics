@@ -181,12 +181,12 @@ AliTPC::AliTPC(const char *name, const char *title)
   //
 
 
-  if (!strcmp(title,"Default")) {       
-    //fTPCParam = new AliTPCParamSR;
-    fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
+  if (!strcmp(title,"Ne-CO2") || !strcmp(title,"Ne-CO2-N") || !strcmp(title,"Default") ) {       
+      fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
   } else {
+      
     AliWarning("In Config.C you must set non-default parameters.");
-    fTPCParam=0;
+    fTPCParam=0;    
   }
 
 }
@@ -295,34 +295,51 @@ void AliTPC::CreateMaterials()
   //----------------------------------------------------------------
 
   //
-  // Drift gases 1 - nonsensitive, 2 - sensitive
-  // Ne-CO2 (90-10) (volume) values at 20deg and 1 atm.
-  // rho(Ne) = 0.839 g/cm^3, rho(CO2) = 1.842 g/cm^3
-  
+  // Drift gases 1 - nonsensitive, 2 - sensitive, 3 - for Kr
+  //  Composition by % of volume, values at 20deg and 1 atm.
+  //
+  //  get the geometry title - defined in Config.C
+  //
 
+  TString title(GetTitle());
+  
+  //
   amat[0]= 20.18;
   amat[1]=12.011;
   amat[2]=15.9994;
-  // amat[3]=14.007;
+
 
   zmat[0]= 10.; 
   zmat[1]=6.;
   zmat[2]=8.;
-  // zmat[3]=7.;
 
-  //wmat[0]=0.756992632;
-  wmat[0]=0.8038965;
-  //wmat[1]=0.056235789;
-  wmat[1]= 0.053519;
-  //wmat[2]=0.128469474;
-  wmat[2]= 0.1425743;
-  // wmat[3]=0.058395789;
- 
-  density=0.0009393;
+  if(title == TString("Ne-CO2")){
+    wmat[0]=0.8038965;
+    wmat[1]= 0.053519;
+    wmat[2]= 0.1425743;
+    density=0.0009393;
+    //
+    AliMixture(12,"Ne-CO2-1",amat,zmat,density,3,wmat);
+    AliMixture(13,"Ne-CO2-2",amat,zmat,density,3,wmat);
+    AliMixture(35,"Ne-CO2-3",amat,zmat,density,3,wmat);
+  }
+  else if (title == TString("Ne-CO2-N")){
+     amat[3]=14.007;
+     zmat[3]=7.; 
+     wmat[0]=0.756992632;
+     wmat[1]=0.056235789; 
+     wmat[2]=0.128469474; 
+     wmat[3]=0.058395789;
+     density=0.000904929;
+     //
+     AliMixture(12,"Ne-CO2-N-1",amat,zmat,density,4,wmat);
+     AliMixture(13,"Ne-CO2-N-2",amat,zmat,density,4,wmat);
+     AliMixture(30,"Ne-CO2-N-3",amat,zmat,density,4,wmat);
+  
+  }
 
-  AliMixture(12,"Ne-CO2-1",amat,zmat,density,3,wmat);
-  AliMixture(13,"Ne-CO2-2",amat,zmat,density,3,wmat);
-  AliMixture(35,"Ne-CO2-3",amat,zmat,density,3,wmat);
+
+
   //----------------------------------------------------------------------
   //               solid materials
   //----------------------------------------------------------------------
@@ -685,10 +702,10 @@ void AliTPC::CreateMaterials()
   //----------------------------------------------------------
 
   AliMedium(0, "Air", 11, 0, iSXFLD, sXMGMX, 10., 999., .1, .01, .1);
-  AliMedium(1, "Ne-CO2-1", 12, 0, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
-  AliMedium(2, "Ne-CO2-2", 13, 1, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
+  AliMedium(1, "DriftGas1", 12, 0, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
+  AliMedium(2, "DriftGas2", 13, 1, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
   AliMedium(3,"CO2",10,0, iSXFLD, sXMGMX, 10., 999.,.1, .001, .001); 
-  AliMedium(20, "Ne-CO2-3", 35, 1, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
+  AliMedium(20, "DriftGas3", 35, 1, iSXFLD, sXMGMX, 10., 999.,.1,.001, .001);
   //-----------------------------------------------------------  
   // tracking media for solids
   //-----------------------------------------------------------
