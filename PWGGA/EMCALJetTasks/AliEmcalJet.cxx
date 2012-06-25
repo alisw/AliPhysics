@@ -17,6 +17,8 @@ AliEmcalJet::AliEmcalJet() :
   fM(0), 
   fNEF(0),
   fArea(0),       
+  fAreaEta(0),       
+  fAreaPhi(0),       
   fAreaEmc(-1), 
   fAxisInEmcal(0), 
   fMaxCPt(0), 
@@ -29,7 +31,8 @@ AliEmcalJet::AliEmcalJet() :
   fClusterIDs(),
   fTrackIDs(),
   fMatched(2),
-  fPtSub(0)
+  fPtSub(0),
+  fPtVectSub(0)
 {
   // Constructor.
 
@@ -48,6 +51,8 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fM(0), 
   fNEF(0), 
   fArea(0), 
+  fAreaEta(0),       
+  fAreaPhi(0),       
   fAreaEmc(-1), 
   fAxisInEmcal(0),
   fMaxCPt(0), 
@@ -60,7 +65,8 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fClusterIDs(), 
   fTrackIDs(),
   fMatched(2),
-  fPtSub(0)
+  fPtSub(0),
+  fPtVectSub(0)
 {    
   // Constructor.
 
@@ -85,6 +91,8 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fM(m), 
   fNEF(0), 
   fArea(0), 
+  fAreaEta(0),       
+  fAreaPhi(0),       
   fAreaEmc(-1), 
   fAxisInEmcal(0),
   fMaxCPt(0), 
@@ -97,7 +105,8 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fClusterIDs(), 
   fTrackIDs(),
   fMatched(2),
-  fPtSub(0)
+  fPtSub(0),
+  fPtVectSub(0)
 {
   // Constructor.
 
@@ -119,6 +128,8 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fM(jet.fM), 
   fNEF(jet.fNEF), 
   fArea(jet.fArea), 
+  fAreaEta(jet.fAreaEta),       
+  fAreaPhi(jet.fAreaPhi),       
   fAreaEmc(jet.fAreaEmc), 
   fAxisInEmcal(jet.fAxisInEmcal),
   fMaxCPt(jet.fMaxCPt), 
@@ -131,7 +142,8 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet &jet) :
   fClusterIDs(jet.fClusterIDs), 
   fTrackIDs(jet.fTrackIDs),
   fMatched(jet.fMatched),
-  fPtSub(jet.fPtSub)
+  fPtSub(jet.fPtSub),
+  fPtVectSub(jet.fPtVectSub)
 {
   // Copy constructor.
 
@@ -154,6 +166,8 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fM                  = jet.fM; 
     fNEF                = jet.fNEF;
     fArea               = jet.fArea; 
+    fAreaEta            = jet.fAreaEta; 
+    fAreaPhi            = jet.fAreaPhi; 
     fAreaEmc            = jet.fAreaEmc; 
     fAxisInEmcal        = jet.fAxisInEmcal; 
     fMaxCPt             = jet.fMaxCPt; 
@@ -171,9 +185,22 @@ AliEmcalJet &AliEmcalJet::operator=(const AliEmcalJet &jet)
     fClosestJetsDist[1] = jet.fClosestJetsDist[1]; 
     fMatched            = jet.fMatched;
     fPtSub              = jet.fPtSub;
+    fPtVectSub              = jet.fPtVectSub;
   }
 
   return *this;
+}
+
+Int_t AliEmcalJet::Compare(const TObject* obj) const
+{
+  //Return -1 if this is smaller than obj, 0 if objects are equal and 1 if this is larger than obj.
+
+  const AliEmcalJet *jet = static_cast<const AliEmcalJet *>(obj);
+  if (!obj)
+    return 0;
+  if (Pt()>jet->Pt())
+    return -1;
+  return 1;
 }
 
 //__________________________________________________________________________________________________
@@ -191,6 +218,17 @@ void AliEmcalJet::Print(Option_t* /*option*/) const
   // Print jet information.
 
   printf("Jet pt=%.2f, eta=%.2f, phi=%.2f, area=%.2f, NEF=%.2f\n", fPt, fEta, fPhi, fArea, fNEF);
+}
+
+//__________________________________________________________________________________________________
+Double_t AliEmcalJet::PtSubVect(Double_t rho) const
+{
+  // Return vectorial subtracted transverse momentum.
+
+  Double_t dx = Px() - rho * fArea * TMath::Cos(fAreaPhi);
+  Double_t dy = Py() - rho * fArea * TMath::Sin(fAreaPhi);
+  //Double_t dz = Pz() - rho * fArea * TMath::SinH(fAreaEta);
+  return TMath::Sqrt(dx*dx+dy*dy);
 }
 
 //__________________________________________________________________________________________________
