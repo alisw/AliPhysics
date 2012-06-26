@@ -767,7 +767,7 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
   TH1* hist1 = 0;
   GetDistAndFlow(h, 0, &hist1,  0, step, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
   
-  ((TH2*) hist1)->Rebin2D(2, 2);
+//   ((TH2*) hist1)->Rebin2D(2, 2);
 //   hist1->Scale(0.25);
 
   NormalizeToBinWidth(hist1);
@@ -782,20 +782,26 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
 //     }
 //   }
 
-  new TCanvas("c", "c", 800, 800);
+  c = new TCanvas("c", "c", 1600, 800);
+  c->Divide(2, 1);
+  c->cd(1);
   gPad->SetLeftMargin(0.15);
   hist1->SetTitle("");
   hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist1->GetZaxis()->SetTitleOffset(1.8);
   hist1->GetXaxis()->SetTitleOffset(1.5);
   hist1->GetYaxis()->SetTitleOffset(2);
+  hist1->GetZaxis()->SetTitle("same event pairs (a.u.)");
   hist1->SetStats(kFALSE);
   hist1->DrawCopy("SURF1");
+  
+  DrawALICELogo(kFALSE, 0.2, 0.7, 0.4, 0.9);
   
   hist2 = hist1;
   
   GetDistAndFlow(hMixed, 0, &hist1,  0, step, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
 
-  ((TH2*) hist1)->Rebin2D(2, 2);
+//   ((TH2*) hist1)->Rebin2D(2, 2);
   NormalizeToBinWidth(hist1);
 
 //   for (Int_t j=1; j<=hist1->GetNbinsY(); ++j)
@@ -809,14 +815,21 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
 //     }
 //   }
 
-  new TCanvas("c2", "c2", 800, 800);
+  c->cd(2);
   gPad->SetLeftMargin(0.15);
   hist1->SetTitle("");
   hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist1->GetZaxis()->SetTitleOffset(1.8);
   hist1->GetXaxis()->SetTitleOffset(1.5);
   hist1->GetYaxis()->SetTitleOffset(2);
+  hist1->GetZaxis()->SetTitle("mixed event pairs (a.u.)");
   hist1->SetStats(kFALSE);
   hist1->DrawCopy("SURF1");
+  
+  DrawALICELogo(kFALSE, 0.2, 0.7, 0.4, 0.9);
+
+  c->SaveAs(Form("samemixed_%d.eps", step));
+  c->SaveAs(Form("samemixed_%d.png", step));
 
   new TCanvas("c3", "c3", 800, 800);
   gPad->SetLeftMargin(0.15);
@@ -842,66 +855,97 @@ void DrawValidation2D(const char* fileName, const char* fileNamePbPbMix = 0)
 
   TH1* hist1 = 0;
   GetDistAndFlow(h, hMixed, &hist1,  0, 0, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
+  // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
+  hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
   
   ((TH2*) hist1)->Rebin2D(2, 2);
-//   hist1->Scale(0.25);
+  hist1->Scale(0.25);
 
 //   NormalizeToBinWidth(hist1);
   
-  new TCanvas("c", "c", 800, 800);
+  c = new TCanvas("c", "c", 1000, 1000);
+  c->Divide(2, 2);
+  
+  c->cd(1);
   gPad->SetLeftMargin(0.15);
-  hist1->SetTitle("");
-  hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+//   hist1->SetTitle("");
+  hist1->GetYaxis()->SetRangeUser(-1.59, 1.59);
   hist1->GetXaxis()->SetTitleOffset(1.5);
   hist1->GetYaxis()->SetTitleOffset(2);
+  hist1->GetZaxis()->SetTitleOffset(1.8);
+  hist1->GetZaxis()->SetTitle("1/N_{trig} dN_{assoc}/d#Delta#etad#Delta#varphi (1/rad.)");
   hist1->SetStats(kFALSE);
   hist1->DrawCopy("SURF1");
+  DrawLatex(0.1, 0.85, 1, "MC", 0.04);
+  DrawALICELogo(kFALSE, 0.7, 0.7, 0.9, 0.9);
   
   hist2 = hist1;
   hist1 = 0;
   GetDistAndFlow(h, hMixed, &hist1,  0, 6, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE, 6); 
+  // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
+  hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
 
   ((TH2*) hist1)->Rebin2D(2, 2);
+  hist1->Scale(0.25);
 //   NormalizeToBinWidth(hist1);
 
-  new TCanvas("c2", "c2", 800, 800);
+  c->cd(2);
   gPad->SetLeftMargin(0.15);
   hist1->SetTitle("");
-  hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist1->GetYaxis()->SetRangeUser(-1.59, 1.59);
   hist1->GetXaxis()->SetTitleOffset(1.5);
   hist1->GetYaxis()->SetTitleOffset(2);
+  hist1->GetZaxis()->SetTitleOffset(1.8);
   hist1->SetStats(kFALSE);
+  hist1->GetZaxis()->SetTitle("1/N_{trig} dN_{assoc}/d#Delta#etad#Delta#varphi (1/rad.)");
   hist1->DrawCopy("SURF1");  
+  DrawLatex(0.1, 0.85, 1, "Uncorrected", 0.04);
+  DrawALICELogo(kFALSE, 0.7, 0.7, 0.9, 0.9);
 
-  new TCanvas("c3", "c3", 800, 800);
+  c2 = new TCanvas("c3", "c3", 800, 800);
   hist1->Divide(hist2);
   hist1->DrawCopy("SURF1");  
   
-  AliUEHistograms* h2 = (AliUEHistograms*) GetUEHistogram("corrected.root");
+  AliUEHistograms* h2 = (AliUEHistograms*) GetUEHistogram("LHC11a10a_bis_AOD090_120406_zvtx_rebinned_corrected.root");
   SetupRanges(h2);
  
   GetDistAndFlow(h2, hMixed, &hist1,  0, 0, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE, 6); 
-  ((TH2*) hist1)->Rebin2D(2, 2);
+  // NOTE fix normalization. these 2d correlations come out of AliUEHist normalized by dphi bin width, but not deta
+  hist1->Scale(1.0 / hist1->GetYaxis()->GetBinWidth(1));
 
-  new TCanvas("c4", "c4", 800, 800);
+  ((TH2*) hist1)->Rebin2D(2, 2);
+  hist1->Scale(0.25);
+
+  c->cd(3);
   gPad->SetLeftMargin(0.15);
   hist1->SetTitle("");
-  hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist1->GetYaxis()->SetRangeUser(-1.59, 1.59);
   hist1->GetXaxis()->SetTitleOffset(1.5);
+  hist1->GetZaxis()->SetTitleOffset(1.8);
+  hist1->GetZaxis()->SetTitle("1/N_{trig} dN_{assoc}/d#Delta#etad#Delta#varphi (1/rad.)");
   hist1->GetYaxis()->SetTitleOffset(2);
   hist1->SetStats(kFALSE);
   hist1->DrawCopy("SURF1");  
+  DrawLatex(0.1, 0.85, 1, "Corrected", 0.04);
+  DrawALICELogo(kFALSE, 0.7, 0.7, 0.9, 0.9);
   
   hist1->Divide(hist2);
 
-  new TCanvas("c5", "c5", 800, 800);
-  gPad->SetLeftMargin(0.15);
+  c->cd(4);
+  gPad->SetRightMargin(0.15);
   hist1->SetTitle("");
-  hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
-  hist1->GetXaxis()->SetTitleOffset(1.5);
-  hist1->GetYaxis()->SetTitleOffset(2);
+  hist1->GetYaxis()->SetRangeUser(-1.59, 1.59);
+  hist1->GetXaxis()->SetTitleOffset(1.2);
+  hist1->GetYaxis()->SetTitleOffset(1.2);
+  hist1->GetZaxis()->SetTitle("Ratio: Corrected / MC");
   hist1->SetStats(kFALSE);
-  hist1->DrawCopy("SURF1");  
+  hist1->GetZaxis()->SetRangeUser(0.99, 1.01);
+  hist1->DrawCopy("COLZ");  
+
+  DrawALICELogo(kFALSE, 0.7, 0.7, 0.9, 0.9);
+  
+  c->SaveAs("validation.eps");
+  c->SaveAs("validation.gif");
 }
 
 void DrawValidation(const char* fileName1, const char* fileName2)
@@ -5109,6 +5153,18 @@ void IAAPaper(const char* fileName, Int_t iaa, const char* fileNameEtaGap = 0)
 
 void DrawALICELogo(Float_t x1, Float_t y1, Float_t x2, Float_t y2, Bool_t debug = kFALSE)
 {
+  DrawALICELogo(kTRUE, x1, y1, x2, y2, debug);
+}
+
+void DrawALICELogo(Bool_t prel, Float_t x1, Float_t y1, Float_t x2, Float_t y2, Bool_t debug = kFALSE)
+{
+  // correct for aspect ratio of figure plus aspect ratio of pad (coordinates are NDC!)
+//   Printf("%d %f %d %f", gPad->GetCanvas()->GetWindowHeight(), gPad->GetHNDC(), gPad->GetCanvas()->GetWindowWidth(), gPad->GetWNDC());
+  x2 = x1 + (y2 - y1) * 0.891 * gPad->GetCanvas()->GetWindowHeight() * gPad->GetHNDC() / (gPad->GetWNDC() * gPad->GetCanvas()->GetWindowWidth());
+//   Printf("%f %f %f %f", x1, x2, y1, y2);
+  
+  if (!prel)
+    DrawLatex((x1+x2)/2, y1, 1, "09.05.12", 0.03)->SetTextAlign(23);
   TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo", x1, y1, x2, y2);
   if (debug)
     myPadLogo->SetFillColor(2); // color to first figure out where is the pad then comment !
@@ -5118,7 +5174,8 @@ void DrawALICELogo(Float_t x1, Float_t y1, Float_t x2, Float_t y2, Bool_t debug 
   myPadLogo->SetBottomMargin(0);
   myPadLogo->Draw();
   myPadLogo->cd();
-  TASImage *myAliceLogo = new TASImage("~/alice_logo_transparent.png");
+//   TASImage *myAliceLogo = new TASImage("~/alice_logo_transparent.png");
+  TASImage *myAliceLogo = new TASImage((prel) ? "~/alice_logo_preliminary.eps" : "~/alice_logo_performance.eps");
   myAliceLogo->Draw();
 }
 
@@ -6627,7 +6684,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
       
       Int_t histType = 1;
 
-      if (1)
+      if (0)
       {
 	Int_t step = 8;
       
@@ -6643,7 +6700,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
 	GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,  -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE); 
 // 	new TCanvas; hist3->Draw("SURF1"); return;
       }
-      else if (0)
+      else if (1)
       {
 	Int_t step = 0;
 	
@@ -6722,13 +6779,14 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
     }
 }
 
-void DrawLatex(Float_t x, Float_t y, Int_t color, const char* text)
+TLatex* DrawLatex(Float_t x, Float_t y, Int_t color, const char* text, Float_t fontSize = 0.06)
 {
   latex = new TLatex(x, y, text);
   latex->SetNDC();
-  latex->SetTextSize(0.06);
+  latex->SetTextSize(fontSize);
   latex->SetTextColor(color);
   latex->Draw();
+  return latex;
 }
 
 void DrawChi2NDF(TF1* func, TH1* hist, Float_t x, Float_t y, Int_t color = 1)
@@ -10250,12 +10308,16 @@ void EvaluateParticleEfficiency2D(const char* fileName)
   legend->Draw();
 }
 
-void DrawEventCount(const char* fileName)
+void DrawEventCount(const char* fileName, Int_t step = 8)
 {
   loadlibs();
   
   AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
   h->GetEventCount()->Draw("TEXT");
+  
+  eventCount = h->GetEventCount();
+  Float_t events = eventCount->Integral(eventCount->GetXaxis()->FindBin(step), eventCount->GetXaxis()->FindBin(step), eventCount->GetYaxis()->FindBin(0.01 + 1), eventCount->GetYaxis()->FindBin(-0.01 + 10));
+  Printf("Events: %f", events);
 }
 
 void FitDCADistributions(const char* fileName1)
@@ -10588,6 +10650,8 @@ void PlotQA(const char* fileName)
   dphi_corr = h->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed, 0, 4.01, 14.99, 1, 8);
   if (dphi_corr->GetEntries() == 0)
     dphi_corr = h->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed+2, 0, 4.01, 14.99, 1, 8);
+  if (dphi_corr->GetEntries() == 0)
+    dphi_corr = h->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepAll, 0, 4.01, 14.99, 1, 8);
   
   AliUEHistograms* hMixed = (AliUEHistograms*) GetUEHistogram(fileName, 0, kTRUE);
   if (hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(6)->GetGrid()->GetNbins() == 0)
@@ -10600,6 +10664,8 @@ void PlotQA(const char* fileName)
   dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed, 0, 4.01, 14.99, 1, 8);
   if (dphi_corr_mixed->GetEntries() == 0)
     dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepReconstructed+2, 0, 4.01, 14.99, 1, 8);
+  if (dphi_corr_mixed->GetEntries() == 0)
+    dphi_corr_mixed = hMixed->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepAll, 0, 4.01, 14.99, 1, 8);
   
   if (runNumber != 0 && runNumber != h->GetRunNumber())
     AliFatal("Run numbers inconsistent");
@@ -11188,17 +11254,20 @@ void PlotTrackingEfficiency(const char* fileName)
   
   legend = new TLegend(0.2, 0.15, 0.46, 0.42);
   legend->SetFillColor(0);
+  
+  Int_t colors[] = { 1, 2, 3, 4, 6 };
 
   for (Int_t i=0; i<nCentralityBins; i++)
   {
     h->GetUEHist(2)->SetCentralityRange(centralityBins[i] + 0.1, centralityBins[i+1] - 0.1);
     proj = h->GetUEHist(2)->GetTrackingEfficiency(1);
     proj->GetYaxis()->SetRangeUser(0.7, 0.9);
+    proj->GetXaxis()->SetRangeUser(0.5, 9.9);
     proj->GetYaxis()->SetTitleOffset(1.5);
     proj->SetTitle("");
-    proj->GetYaxis()->SetTitle("tracking efficiency");
-    proj->SetMarkerColor(i+1);
-    proj->SetLineColor(i+1);
+    proj->GetYaxis()->SetTitle("Tracking efficiency");
+    proj->SetMarkerColor(colors[i]);
+    proj->SetLineColor(colors[i]);
     proj->SetStats(0);
     projClone = proj->DrawClone((i == 0) ? "" : "SAME");
     
@@ -11206,22 +11275,48 @@ void PlotTrackingEfficiency(const char* fileName)
   }
   
   legend->Draw();  
+  DrawLatex(0.58, 0.85, 1, "HIJING Pb-Pb 2.76 TeV", 0.03);
+  DrawLatex(0.58, 0.81, 1, "|#eta| < 0.9", 0.03);
+  
+  DrawALICELogo(kFALSE, 0.7, 0.2, 0.9, 0.4);
   
   c->SaveAs("correction_tracking.eps");
   
   c = new TCanvas("c2", "c2", 600, 600);
   gPad->SetLeftMargin(0.15);
   
+  proj = (TH1D*) h->GetUEHist(2)->GetTrackEfficiency(AliUEHist::kCFStepTracked, AliUEHist::kCFStepTrackedOnlyPrim, 1);
+  proj->GetYaxis()->SetRangeUser(0.8, 1.0);
+  proj->GetXaxis()->SetRangeUser(0.5, 9.9);
+  proj->GetYaxis()->SetTitleOffset(1.5);
+  proj->SetTitle("");
+  proj->GetYaxis()->SetTitle("contamination correction");
+  proj->SetStats(0);
+  projClone = proj->DrawClone("");
+
+  DrawLatex(0.58, 0.85, 1, "HIJING Pb-Pb 2.76 TeV", 0.03);
+  DrawLatex(0.58, 0.81, 1, "|#eta| < 0.9", 0.03);
+  DrawALICELogo(kFALSE, 0.7, 0.2, 0.9, 0.4);
+
+  c->SaveAs("correction_contamination.eps");
+  
+  c = new TCanvas("c3", "c3", 600, 600);
+  gPad->SetLeftMargin(0.15);
+  
   proj = (TH1D*) h->GetUEHist(2)->GetTrackEfficiency(AliUEHist::kCFStepTrackedOnlyPrim, AliUEHist::kCFStepTracked, 1);
   proj->GetYaxis()->SetRangeUser(0.95, 1.15);
-  proj->GetXaxis()->SetRangeUser(0.5, 20);
+  proj->GetXaxis()->SetRangeUser(0.5, 9.9);
   proj->GetYaxis()->SetTitleOffset(1.5);
   proj->SetTitle("");
   proj->GetYaxis()->SetTitle("contamination");
   proj->SetStats(0);
   projClone = proj->DrawClone("");
 
-  c->SaveAs("correction_contamination.eps");
+  DrawLatex(0.58, 0.85, 1, "HIJING Pb-Pb 2.76 TeV", 0.03);
+  DrawLatex(0.58, 0.81, 1, "|#eta| < 0.9", 0.03);
+  DrawALICELogo(kFALSE, 0.7, 0.2, 0.9, 0.4);
+
+  c->SaveAs("contamination.eps");  
 }
 
 void PlotCorrections(const char* fileName)
@@ -11233,7 +11328,7 @@ void PlotCorrections(const char* fileName)
   c = new TCanvas("c", "c", 1200, 800);
   c->Divide(3, 3);
 
-  h->SetEtaRange(-0.89, 0.89);
+  h->SetEtaRange(-0.79, 0.79);
   
   for (Int_t i=0; i<5; i++)
   {
@@ -12018,30 +12113,172 @@ void CondenseCentrality(const char* fileName, Float_t targetValue)
   file3->Close();
 }
 
-void PtDistributions(Int_t step = 8, Float_t centralityBegin = 0, Float_t centralityEnd = 10)
+void PtDistributions(Int_t step = 8, Float_t centralityBegin = 1, Float_t centralityEnd = 10)
 {
   loadlibs();
 
 //   const char* fileNames[] = { "LHC10h_AOD086_120411_zvtx_rebinned_corrected.root", "LHC10h_AOD086_120411_hybrid_zvtx_rebinned_corrected.root", "LHC10h_AOD086_120430_raacuts_zvtx_rebinned_corrected.root" };
   
-  const char* fileNames[] = { "LHC10h_AOD086_120411_zvtx_rebinned.root", "LHC10h_AOD086_120411_hybrid_zvtx_rebinned.root", "LHC10h_AOD086_120430_raacuts_zvtx_rebinned.root" };
+//   const char* fileNames[] = { "LHC10h_AOD086_120411_zvtx_rebinned.root", "LHC10h_AOD086_120411_hybrid_zvtx_rebinned.root", "LHC10h_AOD086_120430_raacuts_zvtx_rebinned.root" };
+  const char* fileNames[] = { "ptdist1.root", "ptdist2.root", "ptdist3.root" };
+//   const char* fileNames[] = { "LHC11a10a_bis_AOD090_120406_zvtx.root" };
 
-  Float_t eventCount[] = { 1098234., 1034306., 1369707. };
+//   Float_t eventCount[] = { 1098234., 1034306., 1369707. };
+  Float_t eventCount[] = { 987360.000000, 930278.000000, 1231806.000000 };
+//   Float_t eventCount[] = { 72589. };
 
+  TH1* pt[3];
+
+  new TCanvas;
   for (Int_t i=0; i<3; i++)
   {
-    AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNames[i]);
+/*    AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNames[i]);
     
     h->GetUEHist(2)->GetEventHist()->GetGrid(step)->GetGrid()->GetAxis(1)->SetRangeUser(0.01 + centralityBegin, -0.01 + centralityEnd);
-    ptDist = h->GetUEHist(2)->GetEventHist()->Project(step, 0);
+    ptDist = h->GetUEHist(2)->GetEventHist()->Project(step, 0);*/
     
 /*    eventCount = h->GetEventCount();
     Float_t events = eventCount->Integral(eventCount->GetXaxis()->FindBin(step), eventCount->GetXaxis()->FindBin(step), eventCount->GetYaxis()->FindBin(0.01 + centralityBegin), eventCount->GetYaxis()->FindBin(-0.01 + centralityEnd));*/
     Float_t events = eventCount[i];
     
-    ptDist->Scale(1.0 / events);
+    TFile::Open(fileNames[i]);
+    ptDist = (TH2*) gFile->Get("ptDist");
     
-    ptDist->SetLineColor(i+1);
-    ptDist->DrawCopy((i == 0) ? "" : "SAME");
+    ptDistProj = ptDist->ProjectionX("ptDistProj", ptDist->GetYaxis()->FindBin(0.01 + centralityBegin), ptDist->GetYaxis()->FindBin(-0.01 + centralityEnd));
+  
+//     new TCanvas; ptDistProj->Draw(); gPad->SetLogy();
+  
+   
+    ptDistProj->Scale(1.0 / events);
+    
+    ptDistProj->SetLineColor(i+1);
+    ptDistProj->DrawCopy((i == 0) ? "" : "SAME");
+
+    pt[i] = (TH1*) ptDistProj->Clone(Form("clone_%d", i));
   }
+  gPad->SetLogy();
+
+  new TCanvas;
+  for (Int_t i=1; i<3; i++)
+  {
+    pt[i]->Divide(pt[0]);
+    pt[i]->DrawCopy((i == 1) ? "" : "SAME");
+  }  
+}
+
+void CorrectPtDistribution(const char* fileNameCorrections, const char* fileNameESD, const char* outputFile)
+{
+  Int_t step = 8;
+  Float_t centralityBegin = 1;
+  Float_t centralityEnd = 10;
+  
+  loadlibs();
+  
+  AliUEHistograms* corr = (AliUEHistograms*) GetUEHistogram(fileNameCorrections);
+  
+  TList* list = 0;
+  AliUEHistograms* esd = (AliUEHistograms*) GetUEHistogram(fileNameESD, &list);
+  
+  SetupRanges(corr);
+  SetupRanges(esd);
+  
+  corr->SetEtaRange(-0.89, 0.89);
+  corr->ExtendTrackingEfficiency(0);
+
+  eff = corr->GetUEHist(2)->GetTrackingEfficiencyCorrectionCentrality();
+  new TCanvas; eff->Draw("COLZ");
+  
+  cont = corr->GetUEHist(2)->GetTrackingContaminationCentrality();
+  new TCanvas; cont->Draw("COLZ");
+  
+  ptDist = (TH2*) esd->GetUEHist(2)->GetEventHist()->Project(step, 0, 1);
+  ptDist->SetStats(0);
+  new TCanvas; ptDist->DrawCopy("COLZ");
+  
+  for (Int_t x=1; x<=ptDist->GetNbinsX(); x++)
+    for (Int_t y=1; y<=ptDist->GetNbinsY(); y++)
+    {
+      Float_t factor = eff->GetBinContent(eff->GetXaxis()->FindBin(ptDist->GetXaxis()->GetBinCenter(x)), eff->GetYaxis()->FindBin(ptDist->GetYaxis()->GetBinCenter(y)));
+      Float_t contFactor = cont->GetBinContent(cont->GetXaxis()->FindBin(ptDist->GetXaxis()->GetBinCenter(x)), cont->GetYaxis()->FindBin(ptDist->GetYaxis()->GetBinCenter(y)));
+      
+      printf("%f", contFactor);
+      if (contFactor > 0)
+	contFactor = 1.0 + 1.1 * (contFactor - 1.0);
+      printf(" --> %f\n", contFactor);
+      
+      factor *= contFactor;
+      
+      ptDist->SetBinContent(x, y, ptDist->GetBinContent(x, y) * factor);
+      ptDist->SetBinError(x, y, ptDist->GetBinError(x, y) * factor);
+    }
+  
+  new TCanvas; ptDist->DrawCopy("COLZ");
+  
+  file3 = TFile::Open(outputFile, "RECREATE");
+  ptDist->Write("ptDist");
+  file3->Write();
+  file3->Close();
+  
+  delete corr;
+  delete esd;
+}
+
+void CorrectPtDistributionAll()
+{
+  CorrectPtDistribution("LHC11a10a_bis_AOD090_120406.root", "LHC10h_AOD086_120411_zvtx_rebinned.root", "ptdist1.root");
+  CorrectPtDistribution("LHC11a10a_bis_AOD090_120505_zvtx_hybrid.root", "LHC10h_AOD086_120411_hybrid_zvtx_rebinned.root", "ptdist2.root");
+  CorrectPtDistribution("LHC11a10a_bis_AOD090_120505_zvtx_raa.root", "LHC10h_AOD086_120430_raacuts_zvtx_rebinned.root", "ptdist3.root");
+}
+  
+void CreateNormalizationTestObject()
+{
+  loadlibs();
+  gSystem->Load("libPWGCFCorrelationsDPhi");
+
+  AliUEHistograms* hNew = new AliUEHistograms("AliUEHistogramsSame", "5R");
+  
+  // fill 1000 particles in one bin
+  TObjArray* particles = new TObjArray;
+  particles->Add(new AliDPhiBasicParticle(0, 0, 3.5, 1));
+  for (Int_t i=0; i<1000; i++)
+    particles->Add(new AliDPhiBasicParticle(gRandom->Gaus(0, 0.1), gRandom->Gaus(0, 0.2), 1.75, 1));
+  hNew->FillCorrelations(0.5, 0, 8, particles);
+
+  // fill flat mixed event
+  AliUEHistograms* hMixedNew = new AliUEHistograms("AliUEHistogramsMixed", "5R");
+  THnSparse* sparse = hMixedNew->GetUEHist(2)->GetTrackHist(0)->GetGrid(8)->GetGrid();
+  for (Int_t x=1; x<=sparse->GetAxis(0)->GetNbins(); x++)
+    for (Int_t y=1; y<=sparse->GetAxis(4)->GetNbins(); y++)
+    {
+      Double_t bin[6];
+      bin[0] = sparse->GetAxis(0)->GetBinCenter(x);
+      bin[4] = sparse->GetAxis(4)->GetBinCenter(y);
+      bin[1] = 1.75;
+      bin[2] = 3.5;
+      bin[3] = 0.5;
+      bin[5] = 0;
+      sparse->Fill(bin);
+    }
+    
+  Double_t bin[6];
+  bin[0] = 3.5;
+  bin[1] = 0.5;
+  bin[2] = 0;
+  hMixedNew->GetUEHist(2)->GetEventHist()->GetGrid(8)->GetGrid()->Fill(bin);
+  
+  ((AliTHn*) hNew->GetUEHist(2)->GetTrackHist(0))->FillParent();
+  ((AliTHn*) hNew->GetUEHist(2)->GetTrackHist(0))->DeleteContainers();
+
+  ((AliTHn*) hMixedNew->GetUEHist(2)->GetTrackHist(0))->FillParent();
+  ((AliTHn*) hMixedNew->GetUEHist(2)->GetTrackHist(0))->DeleteContainers();
+
+  list = new TList;
+  list->Add(hNew);
+  list->Add(hMixedNew);
+
+  file3 = TFile::Open("norm.root", "RECREATE");
+  file3->mkdir("PWG4_PhiCorrelations");
+  file3->cd("PWG4_PhiCorrelations");
+  list->Write("histosPhiCorrelations", TObject::kSingleKey);
+  file3->Close();
 }
