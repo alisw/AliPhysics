@@ -231,10 +231,10 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
   }
   
   //Initialize the array with refrences
-  TObjArray * refclusters = 0x0;
-  TObjArray * reftracks   = 0x0;
-  Int_t ntrackrefs   = 0;
-  Int_t nclusterrefs = 0;
+  TObjArray * refclusters  = 0x0;
+  TObjArray * reftracks    = 0x0;
+  Int_t       ntrackrefs   = 0;
+  Int_t       nclusterrefs = 0;
   
   //Check charged particles in cone.
   if(plCTS && 
@@ -243,18 +243,34 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
     TVector3 p3;
     for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ )
     {
+      AliVTrack* track = dynamic_cast<AliVTrack*>(plCTS->At(ipr)) ; 
       
-      AliAODTrack* track = (AliAODTrack *)(plCTS->At(ipr)) ; 
+      if(track)
+      {
+        //Do not count the candidate (pion, conversion photon) or the daughters of the candidate
+        if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) || 
+           track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3)   ) continue ;
+        
+        p3.SetXYZ(track->Px(),track->Py(),track->Pz());
+        pt  = p3.Pt();
+        eta = p3.Eta();
+        phi = p3.Phi() ;
+      }
+      else
+      {// Mixed event stored in AliAODPWG4Particles
+        AliAODPWG4Particle * trackmix = dynamic_cast<AliAODPWG4Particle*>(plCTS->At(ipr)) ; 
+        if(!trackmix)
+        {
+          printf("AliIsolationCut::MakeIsolationCut() - Wrong track data type, continue\n");
+          continue;
+        }
+        
+        pt  = trackmix->Pt();
+        eta = trackmix->Eta();
+        phi = trackmix->Phi() ;
+      }
       
-      //Do not count the candidate (pion, conversion photon) or the daughters of the candidate
-      if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) || 
-         track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3)   ) continue ;
-      
-      p3.SetXYZ(track->Px(),track->Py(),track->Pz());
-      pt   = p3.Pt();
-      eta  = p3.Eta();
-      phi  = p3.Phi() ;
-      if(phi<0) phi+=TMath::TwoPi();
+      if( phi < 0 ) phi+=TMath::TwoPi();
       
       // Only loop the particle at the same side of candidate
       if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
@@ -328,29 +344,47 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
     
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ )
     {
-      AliVCluster * calo = (AliVCluster *)(plNe->At(ipr)) ;
+      AliVCluster * calo = dynamic_cast<AliVCluster *>(plNe->At(ipr)) ;
       
-      //Get the index where the cluster comes, to retrieve the corresponding vertex
-      Int_t evtIndex = 0 ; 
-      if (reader->GetMixedEvent()) 
-        evtIndex=reader->GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
+      if(calo)
+      {
+        //Get the index where the cluster comes, to retrieve the corresponding vertex
+        Int_t evtIndex = 0 ; 
+        if (reader->GetMixedEvent()) 
+          evtIndex=reader->GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
+        
+        
+        //Do not count the candidate (photon or pi0) or the daughters of the candidate
+        if(calo->GetID() == pCandidate->GetCaloLabel(0) || 
+           calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;      
+        
+        //Skip matched clusters with tracks in case of neutral+charged analysis
+        if( fPartInCone == kNeutralAndCharged && 
+           pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
+        
+        //Assume that come from vertex in straight line
+        calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;
+        
+        pt  = mom.Pt()  ;
+        eta = mom.Eta() ;
+        phi = mom.Phi() ;
+      }
+      else 
+      {// Mixed event stored in AliAODPWG4Particles
+        AliAODPWG4Particle * calomix = dynamic_cast<AliAODPWG4Particle*>(plNe->At(ipr)) ; 
+        if(!calomix)
+        {
+          printf("AliIsolationCut::MakeIsolationCut() - Wrong calo data type, continue\n");
+          continue;
+        }
+        
+        pt  = calomix->Pt();
+        eta = calomix->Eta();
+        phi = calomix->Phi() ;
+      }
       
+      if( phi < 0 ) phi+=TMath::TwoPi();
       
-      //Do not count the candidate (photon or pi0) or the daughters of the candidate
-      if(calo->GetID() == pCandidate->GetCaloLabel(0) || 
-         calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;      
-      
-      //Skip matched clusters with tracks in case of neutral+charged analysis
-      if( fPartInCone == kNeutralAndCharged && 
-          pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
-    
-      //Assume that come from vertex in straight line
-      calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;
-      
-      pt   = mom.Pt();
-      eta  = mom.Eta();
-      phi  = mom.Phi() ;
-      if(phi<0) phi+=TMath::TwoPi();
       
       // Only loop the particle at the same side of candidate
       if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
