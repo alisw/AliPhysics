@@ -5,7 +5,7 @@ void SETUP() {
   gROOT->ProcessLine(".include PWGCFCorrelationsDPhi/Correlations/DPhi");
 
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWGCFCorrelationsDPhi_INCLUDE", "PWGCFCorrelationsDPhi");
+  gSystem->Setenv("PWGCFCorrelationsDPhi_INCLUDE", "PWGCFCorrelationsDPhi/Correlations/DPhi");
 }
 
 Int_t CheckLoadLibrary(const char* library) {

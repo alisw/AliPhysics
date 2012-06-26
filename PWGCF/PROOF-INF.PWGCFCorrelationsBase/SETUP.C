@@ -5,7 +5,7 @@ void SETUP() {
   gROOT->ProcessLine(".include PWGCFCorrelationsBase/Correlations/Base");
 
   // Set our location, so that other packages can find us
-  gSystem->Setenv("PWGCFCorrelationsBase_INCLUDE", "PWGCFCorrelationsBase");
+  gSystem->Setenv("PWGCFCorrelationsBase_INCLUDE", "PWGCFCorrelationsBase/Correlations/Base");
 }
 
 Int_t CheckLoadLibrary(const char* library) {

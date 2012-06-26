@@ -14,6 +14,38 @@ endif
 ALICEINC = -I.
 ALICEINC += -I./$(PACKAGE)/
 
+ifneq ($(ESD_INCLUDE),)
+   ALICEINC += -I../$(ESD_INCLUDE)
+endif
+
+ifneq ($(AOD_INCLUDE),)
+   ALICEINC += -I../$(AOD_INCLUDE)
+endif
+
+ifneq ($(STEERBase_INCLUDE),)
+   ALICEINC += -I../$(STEERBase_INCLUDE)
+endif
+
+ifneq ($(ANALYSIS_INCLUDE),)
+   ALICEINC += -I../$(ANALYSIS_INCLUDE)
+endif
+
+ifneq ($(OADB_INCLUDE),)
+   ALICEINC += -I../$(OADB_INCLUDE)
+endif
+
+ifneq ($(ANALYSISalice_INCLUDE),)
+   ALICEINC += -I../$(ANALYSISalice_INCLUDE)
+endif
+
+ifneq ($(CORRFW_INCLUDE),)
+   ALICEINC += -I../$(CORRFW_INCLUDE)
+endif
+
+ifneq ($(PWGTools_INCLUDE),)
+   ALICEINC += -I../$(PWGTools_INCLUDE)
+endif
+
 ifneq ($(PWGCFebye_INCLUDE),)
    ALICEINC += -I../$(PWGCFebye_INCLUDE) -I../$(PWGCFebye_INCLUDE)/LRC 
 else
