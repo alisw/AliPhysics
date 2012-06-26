@@ -1,7 +1,5 @@
 #ifndef ALIANALYSISETMONTECARLOPHOS_H
 #define ALIANALYSISETMONTECARLOPHOS_H
-
-class AliPHOSGeoUtils;
 //_________________________________________________________________________
 //  Utility Class for transverse energy studies
 //  Base class for MC analysis, for PHOS
@@ -9,9 +7,8 @@ class AliPHOSGeoUtils;
 //
 //*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
 //_________________________________________________________________________
-
 #include "AliAnalysisEtMonteCarlo.h"
-
+class AliPHOSGeoUtils;
 class TH2I;
 
 class AliAnalysisEtMonteCarloPhos : public AliAnalysisEtMonteCarlo

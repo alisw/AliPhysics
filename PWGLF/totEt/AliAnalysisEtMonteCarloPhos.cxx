@@ -31,7 +31,7 @@ AliAnalysisEtMonteCarloPhos::AliAnalysisEtMonteCarloPhos():AliAnalysisEtMonteCar
 }
 
 AliAnalysisEtMonteCarloPhos::~AliAnalysisEtMonteCarloPhos()
-{
+{ // dtor
   delete fBadMapM2;
   delete fBadMapM3;
   delete fBadMapM4;
@@ -60,7 +60,7 @@ void AliAnalysisEtMonteCarloPhos::Init()
 
 
 Bool_t AliAnalysisEtMonteCarloPhos::TooCloseToBadChannel(const AliESDCaloCluster &cluster) const
-{
+{ // too close to bad channel?
 
     Float_t gPos[3];
     cluster.GetPosition(gPos);

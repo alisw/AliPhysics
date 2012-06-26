@@ -1458,10 +1458,15 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     // Get us an mc event
     if(!ev)
     {
-        Printf("ERROR: Event does not exist");   
+        Printf("ERROR: ev does not exist");   
         return 0;
     }
     AliMCEvent *event = dynamic_cast<AliMCEvent*>(ev);
+    if(!event)
+    {
+        Printf("ERROR: event does not exist");   
+        return 0;
+    }
     
     // Hijing header
     AliGenEventHeader* genHeader = event->GenEventHeader();

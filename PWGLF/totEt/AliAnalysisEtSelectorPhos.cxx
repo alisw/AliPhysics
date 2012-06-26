@@ -1,3 +1,11 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Selector Base class for PHOS
+//  -  
+// implementation file
+//
+//*-- Authors: Oystein Djuvsland (Bergen)
+//_________________________________________________________________________
 #include "AliAnalysisEtSelectorPhos.h"
 #include "AliAnalysisEtCuts.h"
 #include "AliESDCaloCluster.h"
@@ -30,7 +38,7 @@ AliAnalysisEtSelectorPhos::~AliAnalysisEtSelectorPhos()
 }
 
 TRefArray* AliAnalysisEtSelectorPhos::GetClusters()
-{
+{ // Get clusters
   if(!fClusterArray) fClusterArray = new TRefArray;
   
   if(fClusterArray)
@@ -46,7 +54,7 @@ TRefArray* AliAnalysisEtSelectorPhos::GetClusters()
 }
 
 Int_t AliAnalysisEtSelectorPhos::Init(const AliESDEvent* event)
-{
+{ // Init
   
   AliAnalysisEtSelector::Init(event);
   Printf("Initializing selector for run: %d", event->GetRunNumber());
@@ -84,7 +92,7 @@ Bool_t AliAnalysisEtSelectorPhos::CutMinEnergy(const TParticle& part) const
 
 
 Bool_t AliAnalysisEtSelectorPhos::CutDistanceToBadChannel(const AliESDCaloCluster& cluster) const
-{
+{ // cut distance to bad channel
   if(!fMatrixInitialized)
   {
     Printf("Misalignment matrices are not initialized");
@@ -188,7 +196,7 @@ Bool_t AliAnalysisEtSelectorPhos::CutDistanceToBadChannel(const AliESDCaloCluste
 }
 
 Bool_t AliAnalysisEtSelectorPhos::CutTrackMatching(const AliESDCaloCluster& cluster) const
-{
+{ // cut track matching
 
   if(!fMatrixInitialized)
   {
@@ -243,7 +251,7 @@ Bool_t AliAnalysisEtSelectorPhos::CutTrackMatching(const AliESDCaloCluster& clus
 }
 
 int AliAnalysisEtSelectorPhos::LoadGeometry()
-{
+{ // load geometry
 
   fGeoUtils = AliPHOSGeometry::GetInstance("IHEP");
     // ifstream f("badchannels.txt", ios::in);
@@ -251,7 +259,7 @@ int AliAnalysisEtSelectorPhos::LoadGeometry()
 }
 
 int AliAnalysisEtSelectorPhos::LoadBadMaps()
-{
+{ // load bad maps
 TFile *f = TFile::Open("badchannels.root", "READ");
 
     if(!f)
@@ -283,7 +291,7 @@ TFile *f = TFile::Open("badchannels.root", "READ");
 }
 
 void AliAnalysisEtSelectorPhos::SetEvent(const AliESDEvent* event)
-{
+{ // set event
     //AliAnalysisEtSelector::SetEvent(event);
     fEvent = event;
     if(!fInitialized) Init(event);

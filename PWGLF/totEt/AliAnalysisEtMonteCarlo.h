@@ -1,19 +1,18 @@
 #ifndef ALIANALYSISETMONTECARLO_H
 #define ALIANALYSISETMONTECARLO_H
-
-class AliPHOSGeometry;//_________________________________________________________________________
+//_________________________________________________________________________
 //  Utility Class for transverse energy studies
 //  Base class for MC analysis
 //  - MC output
 //
 //*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
 //_________________________________________________________________________
-
 #include "AliAnalysisEt.h"
 class TParticle;
 class TH3F;
 class TH2I;
 class AliPHOSGeoUtils;
+class AliPHOSGeometry;
 class AliStack;
 //class AliMCEvent;
 //class AliESDEvent;
@@ -57,32 +56,32 @@ protected:
     
     TTree *fPrimaryTree; // Tree holding info on primaries
 
-    Double_t fTotEtWithSecondaryRemoved;
-    Double_t fTotEtSecondaryFromEmEtPrimary;
-    Double_t fTotEtSecondary;
+    Double_t fTotEtWithSecondaryRemoved; // enter comment here
+    Double_t fTotEtSecondaryFromEmEtPrimary; // enter comment here
+    Double_t fTotEtSecondary; // enter comment here
     
-    Int_t fPrimaryCode;
-    Int_t fPrimaryCharge;
+    Int_t fPrimaryCode; // enter comment here
+    Int_t fPrimaryCharge; // enter comment here
 
-    Double_t fPrimaryE;
-    Double_t fPrimaryEt;
+    Double_t fPrimaryE; // enter comment here
+    Double_t fPrimaryEt; // enter comment here
 
-    Double_t fPrimaryPx;
-    Double_t fPrimaryPy;
-    Double_t fPrimaryPz;
+    Double_t fPrimaryPx; // enter comment here
+    Double_t fPrimaryPy; // enter comment here
+    Double_t fPrimaryPz; // enter comment here
     
-    Double_t fPrimaryVx;
-    Double_t fPrimaryVy;
-    Double_t fPrimaryVz;
+    Double_t fPrimaryVx; // enter comment here
+    Double_t fPrimaryVy; // enter comment here
+    Double_t fPrimaryVz; // enter comment here
     
-    Bool_t fPrimaryAccepted;
-    Int_t fDepositedCode;
-    Double_t fDepositedEt;
-    Int_t fDepositedCharge;
+    Bool_t fPrimaryAccepted; // enter comment here
+    Int_t fDepositedCode; // enter comment here
+    Double_t fDepositedEt; // enter comment here
+    Int_t fDepositedCharge; // enter comment here
 
-    Double_t fDepositedVx;
-    Double_t fDepositedVy;
-    Double_t fDepositedVz;
+    Double_t fDepositedVx; // enter comment here
+    Double_t fDepositedVy; // enter comment here
+    Double_t fDepositedVz; // enter comment here
     
     
     TH3F *fHistDecayVertexNonRemovedCharged; // Decay vertex for non-removed charged particles
@@ -248,8 +247,10 @@ protected:
     TH1F *fHistPiMinusMultAcc; // enter comment here
     TH1F *fHistPiZeroMultAcc; // enter comment here
 
+    // DS: pi+- mult already defined in base class..
     Int_t fPiPlusMult; // enter comment here
     Int_t fPiMinusMult; // enter comment here
+    
     Int_t fPiZeroMult; // enter comment here
 
     Int_t fPiPlusMultAcc; // enter comment here
@@ -269,7 +270,7 @@ protected:
 
     Int_t fNClusters; // Number of clusters in event
 
-    Double_t fTotNeutralEtAfterMinEnergyCut;
+    Double_t fTotNeutralEtAfterMinEnergyCut; // enter comment here
     
 private:
 

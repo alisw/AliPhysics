@@ -1,3 +1,11 @@
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Selector Base class 
+//  -  
+// implementation file
+//
+//*-- Authors: Oystein Djuvsland (Bergen)
+//_________________________________________________________________________
 #include "AliAnalysisEtSelector.h"
 #include "AliAnalysisEtCuts.h"
 #include "AliESDCaloCluster.h"
@@ -18,7 +26,7 @@ AliAnalysisEtSelector::AliAnalysisEtSelector(AliAnalysisEtCuts *cuts) : AliAnaly
 }
 
 AliAnalysisEtSelector::~AliAnalysisEtSelector()
-{
+{ // dtor
   if(fClusterArray)
   {
     delete fClusterArray;
@@ -41,7 +49,7 @@ Bool_t AliAnalysisEtSelector::PrimaryIsEmEtParticle(const Int_t pIdx, AliStack& 
   return IsEmEtParticle(stack.Particle(GetPrimary(pIdx, stack))->GetPdgCode());
 }
 Int_t AliAnalysisEtSelector::GetPrimary(const Int_t partIdx, AliStack& stack) const
-{
+{ // get primary
   if(partIdx >= 0) 
   {
     Int_t mothIdx = stack.Particle(partIdx)->GetMother(0);
