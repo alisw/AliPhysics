@@ -840,7 +840,6 @@ Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
 
   Double_t nsigma;
   if(GetnSigmaTOF(track,3,nsigma)==1){
-    nsigma=TMath::Abs(nsigma);
     if(nsigma>nsigmaK) return kTRUE;
   } 
   return kFALSE;
