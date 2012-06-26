@@ -13,5 +13,6 @@
 #pragma link C++ class  AliESDEventMFT+;
 #pragma link C++ class  AliMuonForwardTrackFinder+;
 #pragma link C++ class  AliMFTClusterQA+;
+#pragma link C++ class  AliMFTRecoParam+;
 
 #endif
