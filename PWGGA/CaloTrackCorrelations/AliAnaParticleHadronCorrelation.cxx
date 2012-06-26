@@ -70,7 +70,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fMakeAbsoluteLeading(0),        fMakeNearSideLeading(0),      
     fLeadingTriggerIndex(-1),       fHMPIDCorrelation(0),  fFillBradHisto(0),
     fNAssocPtBins(0),               fAssocPtBinLimit(),
-    fListMixEvents(),               fUseMixStoredInReader(0),
+    fListMixTrackEvents(),          fListMixCaloEvents(),  fUseMixStoredInReader(0),
     fM02MaxCut(0),                  fM02MinCut(0),       
     //Histograms
     fhPtLeading(0),                 fhPhiLeading(0),       
@@ -149,22 +149,43 @@ AliAnaParticleHadronCorrelation::~AliAnaParticleHadronCorrelation()
 {
   // Remove event containers
   
-  if(DoOwnMix() && fListMixEvents)
-  {      
-    for(Int_t iz=0; iz < GetNZvertBin(); iz++)
-    {
-      for(Int_t ic=0; ic < GetNCentrBin(); ic++)
+  if(DoOwnMix())
+  {
+    if(fListMixTrackEvents)
+    {      
+      for(Int_t iz=0; iz < GetNZvertBin(); iz++)
       {
-         for(Int_t irp=0; irp<GetNRPBin(); irp++)
-         {
-           Int_t bin = GetEventMixBin(ic, iz, irp);
-           fListMixEvents[bin]->Delete() ;
-           delete fListMixEvents[bin] ;
-         }
+        for(Int_t ic=0; ic < GetNCentrBin(); ic++)
+        {
+          for(Int_t irp=0; irp<GetNRPBin(); irp++)
+          {
+            Int_t bin = GetEventMixBin(ic, iz, irp);
+            fListMixTrackEvents[bin]->Delete() ;
+            delete fListMixTrackEvents[bin] ;
+          }
+        }
       }
     }
-    
-    delete[] fListMixEvents;
+
+    delete[] fListMixTrackEvents;
+
+    if(fListMixCaloEvents)
+    {      
+      for(Int_t iz=0; iz < GetNZvertBin(); iz++)
+      {
+        for(Int_t ic=0; ic < GetNCentrBin(); ic++)
+        {
+          for(Int_t irp=0; irp<GetNRPBin(); irp++)
+          {
+            Int_t bin = GetEventMixBin(ic, iz, irp);
+            fListMixCaloEvents[bin]->Delete() ;
+            delete fListMixCaloEvents[bin] ;
+          }
+        }
+      }
+    }
+  
+    delete[] fListMixCaloEvents;
     
   }
 }
@@ -570,10 +591,10 @@ void AliAnaParticleHadronCorrelation::FillNeutralUnderlyingEventSidesHistograms(
 //_____________________________________________________________
 void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
 {
-  // Mixed event init
-    
+  // Mixed event pool filling for tracks
+  
   //printf("FillChargedEventMixPool for %s\n",GetInputAODName().Data());
-   
+  
   if(fUseMixStoredInReader && GetReader()->GetLastTracksMixedEvent() == GetEventNumber())
   {
     //printf("%s : Pool already filled for this event !!!\n",GetInputAODName().Data());
@@ -594,64 +615,161 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
     fhNtracksTrigger->Fill(nTracks);
   }
   
-  if( inputHandler->IsEventSelected( ) & GetReader()->GetMixEventTriggerMask() )
-  {
-    
-    fhNtracksMB->Fill(nTracks);
-            
-    Int_t eventBin = GetEventMixBin();
-    
-    //Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
-    if(eventBin < 0) return;
-    
-    TObjArray * mixEventTracks = new TObjArray;
-    
-    if(fUseMixStoredInReader) 
-    {
-      fListMixEvents[eventBin] = GetReader()->GetListWithMixedEventsForTracks(eventBin);
-    }
-    
-    if(!fListMixEvents[eventBin]) fListMixEvents[eventBin] = new TList();
-    
-    //printf("%s ***** Pool Event bin : %d - nTracks %d\n",GetInputAODName().Data(),eventBin, GetCTSTracks()->GetEntriesFast());
-    
-    TList * pool = fListMixEvents[eventBin];
-    
-    TVector3 p3;  
-    for(Int_t ipr = 0;ipr < GetCTSTracks()->GetEntriesFast() ; ipr ++ )
-    {
-      AliVTrack * track = (AliVTrack *) (GetCTSTracks()->At(ipr)) ;
-      
-      Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
-      p3.SetXYZ(mom[0],mom[1],mom[2]);
-      Float_t pt   = p3.Pt();
-      
-      //Select only hadrons in pt range
-      if(pt < fMinAssocPt || pt > fMaxAssocPt) continue ;
-      
-      AliAODPWG4Particle * mixedTrack = new AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
-      mixedTrack->SetDetector("CTS");
-      mixedTrack->SetChargedBit(track->Charge()>0);
-      
-      mixEventTracks->Add(mixedTrack);
-    }
-    
-    //Set the event number where the last event was added, to avoid double pool filling
-    GetReader()->SetLastTracksMixedEvent(GetEventNumber());
-    
-    pool->AddFirst(mixEventTracks);
-    mixEventTracks = 0;
-    //printf("Pool size %d, max %d\n",pool->GetSize(), GetNMaxEvMix());
-    
-    if(pool->GetSize() > GetNMaxEvMix())
-    {//Remove last event
-      TClonesArray * tmp = static_cast<TClonesArray*>(pool->Last()) ;
-      pool->RemoveLast() ;
-      delete tmp ;
-    }
-        
-  } // MB event
+  // Do mixing only with MB event (or the chosen mask), if not skip
+  if( !(inputHandler->IsEventSelected( ) & GetReader()->GetMixEventTriggerMask()) ) return ;
   
+  fhNtracksMB->Fill(nTracks);
+  
+  Int_t eventBin = GetEventMixBin();
+  
+  //Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
+  if(eventBin < 0) return;
+  
+  TObjArray * mixEventTracks = new TObjArray;
+  
+  if(fUseMixStoredInReader) 
+  {
+    fListMixTrackEvents[eventBin] = GetReader()->GetListWithMixedEventsForTracks(eventBin);
+  }
+  
+  if(!fListMixTrackEvents[eventBin]) fListMixTrackEvents[eventBin] = new TList();
+  
+  //printf("%s ***** Pool Event bin : %d - nTracks %d\n",GetInputAODName().Data(),eventBin, GetCTSTracks()->GetEntriesFast());
+  
+  TList * pool = fListMixTrackEvents[eventBin];
+  
+  TVector3 p3;  
+  for(Int_t ipr = 0;ipr < GetCTSTracks()->GetEntriesFast() ; ipr ++ )
+  {
+    AliVTrack * track = (AliVTrack *) (GetCTSTracks()->At(ipr)) ;
+    
+    Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
+    p3.SetXYZ(mom[0],mom[1],mom[2]);
+    Float_t pt   = p3.Pt();
+    
+    //Select only hadrons in pt range
+    if(pt < fMinAssocPt || pt > fMaxAssocPt) continue ;
+    
+    AliAODPWG4Particle * mixedTrack = new AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
+    mixedTrack->SetDetector("CTS");
+    mixedTrack->SetChargedBit(track->Charge()>0);
+    mixEventTracks->Add(mixedTrack);
+  }
+  
+  //Set the event number where the last event was added, to avoid double pool filling
+  GetReader()->SetLastTracksMixedEvent(GetEventNumber());
+  
+  //printf("Add event to pool with %d tracks \n ",mixEventTracks->GetEntries());
+  pool->AddFirst(mixEventTracks);
+  mixEventTracks = 0;
+  
+  //printf("Pool size %d, max %d\n",pool->GetSize(), GetNMaxEvMix());
+
+  if(pool->GetSize() > GetNMaxEvMix())
+  {//Remove last event
+    TClonesArray * tmp = static_cast<TClonesArray*>(pool->Last()) ;
+    pool->RemoveLast() ;
+    delete tmp ;
+  }
+}
+
+//_____________________________________________________________
+void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
+{
+  // Mixed event pool filling for neutral clusters
+  // Right now only for EMCAL and in isolation case
+  
+  //printf("FillNeutralEventMixPool for %s\n",GetInputAODName().Data());
+  
+  if(fUseMixStoredInReader && GetReader()->GetLastCaloMixedEvent() == GetEventNumber())
+  {
+    //printf("%s : Pool already filled for this event !!!\n",GetInputAODName().Data());
+    return ; // pool filled previously for another trigger
+  }
+  
+  //  Int_t nClusters = GetEMCALClusters()->GetEntriesFast();
+  //  
+  //  fhNclustersAll->Fill(nClusters);
+  
+  AliAnalysisManager   * manager      = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler * inputHandler = dynamic_cast<AliInputEventHandler*>(manager->GetInputEventHandler());
+  
+  if(!inputHandler) return ;
+  
+  //  if( inputHandler->IsEventSelected( ) & GetReader()->GetEventTriggerMask()    )
+  //  {
+  //    fhNclustersTrigger->Fill(nClusters);
+  //  }
+  
+  // Do mixing only with MB event (or the chosen mask), if not skip
+  if( !(inputHandler->IsEventSelected( ) & GetReader()->GetMixEventTriggerMask()) ) return ;
+  
+  //  fhNClustersMB->Fill(nCluster);
+  
+  Int_t eventBin = GetEventMixBin();
+  
+  //Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
+  if(eventBin < 0) return;
+  
+  TObjArray * mixEventCalo = new TObjArray;
+  
+  if(fUseMixStoredInReader) 
+  {
+    fListMixCaloEvents[eventBin] = GetReader()->GetListWithMixedEventsForCalo(eventBin);
+  }
+  
+  if(!fListMixCaloEvents[eventBin]) fListMixCaloEvents[eventBin] = new TList();
+  
+  TList * poolCalo = fListMixCaloEvents[eventBin];
+  
+  TObjArray * pl = GetEMCALClusters(); 
+  //if (GetAODObjArrayName.Contains("PHOS") )pl    = GetPHOSClusters();
+  //else                                     pl    = GetEMCALClusters();
+  
+  TLorentzVector mom;
+  //printf("NClusters before selection %d\n",pl->GetEntriesFast());
+  for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ )
+  {
+    AliVCluster * calo = (AliVCluster *) (pl->At(ipr)) ;
+  
+    // remove matched clusters
+    if( IsTrackMatched( calo, GetReader()->GetInputEvent() ) ) continue ;
+    
+    //Cluster momentum calculation	  
+    if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
+    {
+      calo->GetMomentum(mom,GetVertex(0)) ;
+    }//Assume that come from vertex in straight line
+    else
+    {
+      Double_t vertex[]={0,0,0};
+      calo->GetMomentum(mom,vertex) ;
+    }
+    
+    Float_t pt = mom.Pt();
+    //Select only clusters in pt range
+    if(pt < fMinAssocPt || pt > fMaxAssocPt) continue ;
+    
+    AliAODPWG4Particle * mixedCalo = new AliAODPWG4Particle(mom);
+    mixedCalo->SetDetector("EMCAL");
+    mixEventCalo->Add(mixedCalo);
+  }
+  
+  //Set the event number where the last event was added, to avoid double pool filling
+  GetReader()->SetLastCaloMixedEvent(GetEventNumber());
+  
+  //printf("Add event to pool with %d clusters \n ",mixEventCalo->GetEntries());
+  poolCalo->AddFirst(mixEventCalo);
+  mixEventCalo = 0;
+  
+  //printf("Pool size %d, max %d\n",poolCalo->GetSize(), GetNMaxEvMix());
+  
+  if(poolCalo->GetSize() > GetNMaxEvMix())
+  {//Remove last event
+    TClonesArray * tmp = static_cast<TClonesArray*>(poolCalo->Last()) ;
+    poolCalo->RemoveLast() ;
+    delete tmp ;
+  }  
 }
 
 //____________________________________________________________
@@ -1528,12 +1646,11 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     if(!fUseMixStoredInReader || (fUseMixStoredInReader && !GetReader()->ListWithMixedEventsForTracksExists())) 
     {
-      
       Int_t nvz = GetNZvertBin();
       Int_t nrp = GetNRPBin();
       Int_t nce = GetNCentrBin();
       
-      fListMixEvents= new TList*[nvz*nrp*nce] ;
+      fListMixTrackEvents= new TList*[nvz*nrp*nce] ;
       
       for( Int_t ice = 0 ; ice < nce ; ice++ )
       {
@@ -1546,18 +1663,48 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
             //printf("GetCreateOutputObjects - Bins : cent %d, vz %d, RP %d, event %d/%d\n",
             //       ic,iz, irp, bin);
             
-            fListMixEvents[bin] = new TList() ;
-            fListMixEvents[bin]->SetOwner(kFALSE);
+            fListMixTrackEvents[bin] = new TList() ;
+            fListMixTrackEvents[bin]->SetOwner(kFALSE);
+          }
+        }
+      }    
+    }
+
+    // Fill the cluster pool only in isolation analysis
+    if( OnlyIsolated() && (!fUseMixStoredInReader || (fUseMixStoredInReader && !GetReader()->ListWithMixedEventsForCaloExists()))) 
+    {
+      Int_t nvz = GetNZvertBin();
+      Int_t nrp = GetNRPBin();
+      Int_t nce = GetNCentrBin();
+      
+      fListMixCaloEvents= new TList*[nvz*nrp*nce] ;
+      
+      for( Int_t ice = 0 ; ice < nce ; ice++ )
+      {
+        for( Int_t ivz = 0 ; ivz < nvz ; ivz++ )
+        {
+          for( Int_t irp = 0 ; irp < nrp ; irp++ )
+          {
+            Int_t bin = GetEventMixBin(ice,ivz,irp); //ic*nvz*nrp+iz*nrp+irp;
+            
+            //printf("GetCreateOutputObjects - Bins : cent %d, vz %d, RP %d, event %d/%d\n",
+            //       ic,iz, irp, bin);
+            
+            fListMixCaloEvents[bin] = new TList() ;
+            fListMixCaloEvents[bin]->SetOwner(kFALSE);
           }
         }
       }    
     }
     
     //Init the list in the reader if not done previously
-    if(!GetReader()->ListWithMixedEventsForTracksExists() && fUseMixStoredInReader) 
+    if(fUseMixStoredInReader)
     {
-      //printf("%s : Set the list of events \n",GetInputAODName().Data());
-      GetReader()->SetListWithMixedEventsForTracks(fListMixEvents);
+      if( !GetReader()->ListWithMixedEventsForTracksExists() ) 
+        GetReader()->SetListWithMixedEventsForTracks(fListMixTrackEvents);
+      
+      if( !GetReader()->ListWithMixedEventsForCaloExists()   ) 
+        GetReader()->SetListWithMixedEventsForCalo  (fListMixCaloEvents );
     }
     
     fhEventBin=new TH1I("hEventBin","Number of real events per bin(cen,vz,rp)",
@@ -1750,8 +1897,13 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   if(!GetMixedEvent() && TMath::Abs(v[2]) > GetZvertexCut()) return ;   
   
   // Fill the pool with tracks if requested
-  if(DoOwnMix()) FillChargedEventMixPool();
-
+  if(DoOwnMix())
+  {
+    FillChargedEventMixPool();
+    if(OnlyIsolated())
+      FillNeutralEventMixPool();
+  }
+  
   //Loop on stored AOD particles, find leading trigger
   Double_t ptTrig      = fMinTriggerPt ;
   fLeadingTriggerIndex = -1 ;
@@ -2152,12 +2304,25 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
   //Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
   if(eventBin < 0) return;
   
-  TList * pool = 0;
-  if(fUseMixStoredInReader) pool = GetReader()->GetListWithMixedEventsForTracks(eventBin);
-  else                      pool = fListMixEvents[eventBin];
-
+  TList * pool     = 0;
+  TList * poolCalo = 0;
+  if(fUseMixStoredInReader) 
+  {
+    pool     = GetReader()->GetListWithMixedEventsForTracks(eventBin);
+    poolCalo = GetReader()->GetListWithMixedEventsForCalo  (eventBin);
+  }
+  else
+  {
+    pool     = fListMixTrackEvents[eventBin];
+    poolCalo = fListMixCaloEvents [eventBin];
+  }
+  
   if(!pool) return ;
     
+  if(OnlyIsolated() && !poolCalo && 
+     (GetIsolationCut()->GetParticleTypeInCone()!=AliIsolationCut::AliIsolationCut::kOnlyCharged)) 
+    printf("AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation() - Careful, cluster pool not available\n");
+  
   Double_t ptTrig  = aodParticle->Pt();
   Double_t etaTrig = aodParticle->Eta();
   Double_t phiTrig = aodParticle->Phi();
@@ -2184,18 +2349,26 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
     // Check if the particle is isolated in the mixed event, it not, do not fill the histograms
     if(OnlyIsolated())
     {
+      if(pool->GetSize()!=poolCalo->GetSize()) 
+        printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Different size of calo and track pools\n");
+      
+      TObjArray* bgCalo = static_cast<TObjArray*>(poolCalo->At(ev));
+      
+      if(!bgCalo) 
+        printf("AliAnaParticleHadronCorrelationNew::MakeChargedMixCorrelation() - Event %d in calo pool not available?\n",ev);
+      
       Int_t n=0; Int_t nfrac = 0; Bool_t isolated = kFALSE; Float_t coneptsum = 0;
-      GetIsolationCut()->MakeIsolationCut(bgTracks,0x0, // no mixed event with calorimeter clusters for the moment!
+      GetIsolationCut()->MakeIsolationCut(bgTracks,bgCalo,
                                           GetReader(), GetCaloPID(),
-                                          kTRUE, aodParticle, GetAODObjArrayName(), 
+                                          kFALSE, aodParticle, "", 
                                           n,nfrac,coneptsum, isolated);
       
-//      printf("Isolated? %d - cone %f, ptthres %f",
-//             isolated,GetIsolationCut()->GetConeSize(),GetIsolationCut()->GetPtThreshold());
-//      if(bgTracks)printf(" - n track %d", bgTracks->GetEntriesFast());
-//      printf("\n");
+      //printf("AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation() - Isolated? %d - cone %f, ptthres %f",
+      //       isolated,GetIsolationCut()->GetConeSize(),GetIsolationCut()->GetPtThreshold());
+      //if(bgTracks)printf(" - n track %d", bgTracks->GetEntriesFast());
+      //printf("\n");
       
-      if(!isolated) return ;
+      if(!isolated) continue ;
     }
     
     fhEventMixBin->Fill(eventBin);
