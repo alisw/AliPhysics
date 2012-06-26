@@ -13,6 +13,7 @@
 
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
+#include "AliEventplane.h"
 #include "AliEMCALGeometry.h"
 #include "AliESDEvent.h"
 #include "AliEmcalJet.h"
@@ -44,6 +45,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fCaloClusters(0),
   fCent(0),
   fCentBin(-1),
+  fEPV0(-1.0),
+  fEPV0A(-1.0),
+  fEPV0C(-1.0),
   fBeamType(kNA),
   fOutput(0)
 {
@@ -73,6 +77,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fCaloClusters(0),
   fCent(0),
   fCentBin(-1),
+  fEPV0(-1.0),
+  fEPV0A(-1.0),
+  fEPV0C(-1.0),
   fBeamType(kNA),
   fOutput(0)
 {
@@ -311,6 +318,14 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     } else {
       AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
       fCentBin = 3;
+    }
+    AliEventplane *aliEP = InputEvent()->GetEventplane();
+    if (aliEP) {
+      fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
+      fEPV0A = aliEP->GetEventplane("V0A",InputEvent());
+      fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
+    } else {
+      AliWarning(Form("%s: Could not retrieve event plane information!", GetName()));
     }
   } else {
     fCent = 99;
