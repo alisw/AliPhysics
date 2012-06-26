@@ -21,7 +21,8 @@ public:
                      kFromTracklet=3,
                      kFromFMD=4,
                      kFromPMD=5,
-                     kFromV0=6 };
+                     kFromV0=6,
+                     kFromMUON=7 }; // XZhang 20120604
   AliFlowTrack();
   AliFlowTrack(const AliVParticle* p);
   AliFlowTrack& operator=(const AliFlowTrack& aTrack);

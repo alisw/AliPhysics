@@ -16,6 +16,7 @@
 #include "AliESDtrackCuts.h"
 #include "TMCProcess.h"
 #include "AliESDtrack.h"
+#include "AliMuonTrackCuts.h"  // XZhang 20120604
 #include "AliPID.h"
 #include "AliESDpid.h"
 
@@ -26,6 +27,7 @@ class AliFlowTrack;
 class AliMCEvent;
 class AliVEvent;
 class AliMultiplicity; 
+class AliAODTracklets;  // XZhang 20120615
 class AliAODTrack;
 class AliESDtrack;
 class AliESDPmdTrack;
@@ -45,6 +47,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
   static AliFlowTrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
   static AliFlowTrackCuts* GetStandardVZEROOnlyTrackCuts();
+  static AliFlowTrackCuts* GetStandardMuonTrackCuts(Bool_t isMC=kFALSE);  // XZhang 20120604
 
   Int_t Count(AliVEvent* event=NULL);
 
@@ -53,7 +56,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kTPCstandalone, 
                             kSPDtracklet,
                             kPMD,
-                            kV0
+                            kV0,
+                            kMUON  // XZhang 20120604
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 
@@ -108,6 +112,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetPmdNcell(Float_t pmdNcell) {fCutPmdNcell=kTRUE; fPmdNcell = pmdNcell; }						 
   void SetPriors(Float_t centr = 0); // set my favourite priors for Bayesian PID (requested if Bayesian PID is used)
   void SetFlowTagType(AliFlowTrackSimple::tagType t) {fFlowTagType=t;}
+
+  void SetStandardMuonTrackCuts() { InitMuonCuts();     fMuonTrackCuts->SetDefaultFilterMask(); return; }  // XZhang 20120604
+  void SetIsMuonMC(Bool_t isMC)   { InitMuonCuts();     fMuonTrackCuts->SetIsMC(isMC);          return; }  // XZhang 20120604
+  void SetRunsMuon( Int_t runN)   { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(runN);           return; }  // XZhang 20120604
 
   Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClustersITS();}
@@ -210,6 +218,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesV0cuts(Int_t id);
   Bool_t PassesCuts(const AliFlowTrackSimple* track);
   Bool_t PassesCuts(const AliMultiplicity* track, Int_t id);
+  Bool_t PassesCuts(const AliAODTracklets* track, Int_t id);  // XZhang 20120615
   Bool_t PassesMCcuts();
   Bool_t PassesMCcuts(AliMCEvent* mcevent, Int_t label);
   Bool_t PassesTPCdedxCut(const AliESDtrack* track);
@@ -219,6 +228,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesTOFbetaSimpleCut(const AliESDtrack* track);
   Bool_t PassesTOFpidCut(const AliESDtrack* track) const;
   Bool_t PassesESDpidCut(const AliESDtrack* track);
+  Bool_t PassesMuonCuts(AliVParticle* track);  // XZhang 20120604
 
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);
@@ -235,6 +245,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void DefineHistograms();
   void InitPIDcuts();
   void InitESDcuts() {if (!fAliESDtrackCuts) {fAliESDtrackCuts=new AliESDtrackCuts();}}
+  void InitMuonCuts() { if (!fMuonTrackCuts)  fMuonTrackCuts  =new AliMuonTrackCuts("StdMuCuts","StdMuCuts"); return; }  // XZhang 20120604
   // part added by F. Noferini
   Bool_t PassesTOFbayesianCut(const AliESDtrack* track); 
   Bool_t PassesNucleiSelection(const AliESDtrack* track);   // added by Natasha
@@ -243,6 +254,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
+  AliMuonTrackCuts* fMuonTrackCuts;  // muon selection cuts // XZhang 20120604
   TList* fQA;                        //qa histograms go here
   Bool_t fCutMC;                     //do we cut on MC?
   Bool_t fCutMChasTrackReferences;   //did we leave a trace in the detector?
