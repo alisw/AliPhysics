@@ -1156,17 +1156,19 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       }
 
       AliAODTrack *aodT = 0;
-      if(partLead&&aodOutJet){
-	//set pT of leading constituent of jet
-	aodOutJet->SetPtLeading(partLead->Pt());
-	aodT = dynamic_cast<AliAODTrack*>(partLead);
-	if(aodT){
-	  if(aodT->TestFilterBit(fFilterMaskBestPt)){
-	    aodOutJet->SetTrigger(AliAODJet::kHighTrackPtBest);
+      if(partLead){
+	if(aodOutJet){
+	  //set pT of leading constituent of jet
+	  aodOutJet->SetPtLeading(partLead->Pt());
+	  aodT = dynamic_cast<AliAODTrack*>(partLead);
+	  if(aodT){
+	    if(aodT->TestFilterBit(fFilterMaskBestPt)){
+	      aodOutJet->SetTrigger(AliAODJet::kHighTrackPtBest);
+	    }
 	  }
 	}
       }
-      
+    
      // correlation
      Float_t tmpPhi =  tmpRec.Phi();
      Float_t tmpEta =  tmpRec.Eta();
