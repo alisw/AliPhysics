@@ -160,6 +160,10 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
   }
 	
   fESD = dynamic_cast<AliESDEvent*>(ev);
+  if (!fESD) {
+    AliError("ERROR: Could not retrieve event");
+    return 0;
+  }
 
 //   if(!fGeoUt){
 //     fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");//new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
@@ -228,11 +232,16 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
       // *********************
         
       // Retrieve track PID
-      if (track)
+      if (track) {
 	maxPid = GetTrackPID(track);
-      else
+	xCharged[0] = track->Eta();
+	xCharged[1] = track->Pt();      }
+      else {
 	maxPid = -99;
-		
+	xCharged[0] = -99;
+	xCharged[1] = -99;
+      }
+
       // calculate ET
       Double_t etDep = CalculateTransverseEnergy(caloCluster);
 		
@@ -252,16 +261,6 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	fHistAllRec->Fill(xCluster);
       }
 
-      if (track)
-	{
-	  xCharged[0] = track->Eta();
-	  xCharged[1] = track->Pt();
-	}
-      else
-	{
-	  xCharged[0] = -99;
-	  xCharged[1] = -99;
-	}
       xCharged[2] = caloE;
       xCharged[3] = caloPos.Eta();
       xCharged[4] = TMath::RadToDeg()*caloPos.Phi();
@@ -278,7 +277,7 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    fHistProtonRec->Fill(xCharged);
 	  }
 
-	  fHistProtonRecdEdxP->Fill(track->P(),track->GetTPCsignal());
+	  if (track) fHistProtonRecdEdxP->Fill(track->P(),track->GetTPCsignal());
 			
 	  if ((res>0.) && (res<fResCut))
 	    {
@@ -295,7 +294,7 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    fHistPionRec->Fill(xCharged);
 	  }
 
-	  fHistPionRecdEdxP->Fill(track->P(),track->GetTPCsignal());
+	  if (track) fHistPionRecdEdxP->Fill(track->P(),track->GetTPCsignal());
 			
 	  if ((res>0.) && (res<fResCut))
 	    {
@@ -311,7 +310,7 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    fHistKaonRec->Fill(xCharged);
 	  }
 
-	  fHistKaonRecdEdxP->Fill(track->P(),track->GetTPCsignal());
+	  if (track) fHistKaonRecdEdxP->Fill(track->P(),track->GetTPCsignal());
 			
 	  if ((res>0.) && (res<fResCut))
 	    {
@@ -327,7 +326,7 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    fHistMuonRecETDep->Fill(xCharged,etDep);
 	    fHistMuonRec->Fill(xCharged);
 	  }
-	  fHistMuonRecdEdxP->Fill(track->P(),track->GetTPCsignal());
+	  if (track) fHistMuonRecdEdxP->Fill(track->P(),track->GetTPCsignal());
 			
 	  if ((res>0.) && (res<fResCut))
 	    {
@@ -344,7 +343,7 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    fHistElectronRec->Fill(xCharged);
 	  }
 
-	  fHistElectronRecdEdxP->Fill(track->P(),track->GetTPCsignal());
+	  if (track) fHistElectronRecdEdxP->Fill(track->P(),track->GetTPCsignal());
 			
 	  if ((res>0.) && (res<fResCut))
 	    {
