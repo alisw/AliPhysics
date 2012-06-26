@@ -92,6 +92,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
                                                          const Float_t phiAssoc, const Float_t phiTrig,  Float_t &     deltaPhi,
                                                          const Float_t etaAssoc, const Float_t etaTrig);
   
+  void         FillNeutralEventMixPool();
+  
   void         FillNeutralUnderlyingEventSidesHistograms(const Float_t ptTrig,   const Float_t ptAssoc, 
                                                          const Float_t xE,       const Float_t hbpXE, 
                                                          const Float_t zT,       const Float_t hbpZT, 
@@ -194,7 +196,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Int_t        fNAssocPtBins ;                 // Number of associated pT bins under study
   Float_t      fAssocPtBinLimit[10] ;          // Associated pT under study
   
-  TList **     fListMixEvents ;                //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for photons in stored events for mixing
+  TList **     fListMixTrackEvents ;           //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for tracks in stored events for mixing
+  TList **     fListMixCaloEvents ;            //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for calo clusters in stored events for mixing
+
   Bool_t       fUseMixStoredInReader;          // Signal if in the current event the pool was filled
   
   Float_t      fM02MaxCut   ;                  // Study photon clusters with l0 smaller than cut
@@ -346,7 +350,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,19)
+  ClassDef(AliAnaParticleHadronCorrelation,20)
 } ;
  
 
