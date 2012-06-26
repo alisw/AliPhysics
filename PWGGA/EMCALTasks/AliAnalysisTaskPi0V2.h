@@ -46,11 +46,10 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
 
     
  private:
-    TList           		*fOutput;        // Output list
-    AliESDtrackCuts 		*fTrackCuts;     // Track cuts
+    TList           		*fOutput;        //! Output list
     AliESDEvent			*fESD;          //!ESD object
 
-    Bool_t 			fcheckEP2sub;	//! do 2 sub event method
+    Bool_t 			fcheckEP2sub;	// do 2 sub event method
     // NEW HISTO to be declared here
     Double_t			fCentrality;	//! Centrality
     Double_t			fEPTPC;	//! Evt plane TPC
@@ -114,7 +113,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     AliAnalysisTaskPi0V2(const AliAnalysisTaskPi0V2&); // not implemented
     AliAnalysisTaskPi0V2& operator=(const AliAnalysisTaskPi0V2&); // not implemented
     
-    ClassDef(AliAnalysisTaskPi0V2, 1); // example of analysis
+    ClassDef(AliAnalysisTaskPi0V2, 2); // example of analysis
 };
 
 #endif

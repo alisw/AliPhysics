@@ -59,7 +59,6 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
  //  :AliAnalysisTaskSE(),
    :AliAnalysisTaskSE(),
     fOutput(0),
-    fTrackCuts(0),
     fESD(0),
     fcheckEP2sub(0),
     fCentrality(99.),
@@ -85,7 +84,6 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
 AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members should be initialised here
    :AliAnalysisTaskSE(name),
     fOutput(0),
-    fTrackCuts(0),
     fESD(0),
     fcheckEP2sub(0),
     fCentrality(99.),
@@ -117,7 +115,6 @@ AliAnalysisTaskPi0V2::~AliAnalysisTaskPi0V2()
     if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
         delete fOutput;
     }
-    delete fTrackCuts;
 }
 //_____________________________________________________________________
 Double_t AliAnalysisTaskPi0V2::GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const
@@ -407,8 +404,6 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput = new TList();
     fOutput->SetOwner();  // IMPORTANT!
     
-    fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
-
     hEPTPC   = new TH2F("hEPTPC",   "EPTPC     vs cent", 100, 0., 100., 100, 0., TMath::Pi());
     hresoTPC = new TH2F("hresoTPC", "TPc reso  vs cent", 100, 0., 100., 100, 0., 1.);
     hEPV0    = new TH2F("hEPV0",    "EPV0      vs cent", 100, 0., 100., 100, 0., TMath::Pi());
@@ -636,7 +631,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 	Double_t tPhi = esdtrack->Phi();
 	Double_t tPt  = esdtrack->Pt();
 
-	Double_t difTrack = TVector2::Phi_0_2pi(tPhi-fEPV0r);  if(difTrack >TMath::Pi()) difTrack -= TMath::Pi();
+	Double_t difTrack = TVector2::Phi_0_2pi(tPhi-fEPV0);  if(difTrack >TMath::Pi()) difTrack -= TMath::Pi();
 	if(esdtrack->IsEMCAL()){	
           hdifEMC_EP->Fill(fCentrality, difTrack, tPt);
 	}else{
