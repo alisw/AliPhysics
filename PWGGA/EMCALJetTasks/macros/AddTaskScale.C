@@ -29,7 +29,7 @@ AliAnalysisTaskScale* AddTaskScale(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s_%s_%f", taskname, nTracks, nClusters, TMath::FloorNint(ptcut*1000)));
+  TString name(Form("%s_%s_%s_%d", taskname, nTracks, nClusters, TMath::FloorNint(ptcut*1000)));
   AliAnalysisTaskScale *scaletask = new AliAnalysisTaskScale(name);
   scaletask->SetTracksName(nTracks);
   scaletask->SetClusName(nClusters);
