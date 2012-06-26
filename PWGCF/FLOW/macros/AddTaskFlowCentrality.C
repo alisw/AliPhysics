@@ -9,15 +9,15 @@
 
 void AddTaskFlowCentrality( Float_t centrMin=0.,
                             Float_t centrMax=100.,
-                            TString fileNameBase="AnalysisResults" )
+                            TString fileNameBase="AnalysisResults")
 {
-  // Define the range for eta subevents (for SP method)
+//Define the range for eta subevents (for SP method)
   Double_t minA = -0.9;
   Double_t maxA = -0.5;
-  Double_t minB = 0.5;
-  Double_t maxB = 0.9;
+  Double_t minB =  0.5;
+  Double_t maxB =  0.9;
 
-  // AFTERBURNER
+//AFTERBURNER
   Bool_t useAfterBurner=kFALSE;
   Double_t v1=0.0;
   Double_t v2=0.0;
@@ -25,136 +25,85 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   Double_t v4=0.0;
   Int_t numberOfTrackClones=0; //non-flow
 
-  // Define a range of the detector to exclude
+//Define a range of the detector to exclude
   Bool_t ExcludeRegion = kFALSE;
   Double_t excludeEtaMin = -0.;
-  Double_t excludeEtaMax = 0.;
-  Double_t excludePhiMin = 0.;
-  Double_t excludePhiMax = 0.;
+  Double_t excludeEtaMax =  0.;
+  Double_t excludePhiMin =  0.;
+  Double_t excludePhiMax =  0.;
 
-  // use physics selection class
+//use physics selection class
   Bool_t  UsePhysicsSelection = kTRUE;
 
-  // separate QA task
-  Bool_t runQAtask=kFALSE;
-  Bool_t FillQAntuple=kFALSE;
+//separate QA task
+  Bool_t runQAtask       =kFALSE;
+  Bool_t FillQAntuple    =kFALSE;
   Bool_t DoQAcorrelations=kFALSE;
+//=============================================================================
 
-  // RUN SETTINGS
-  // Flow analysis method can be:(set to kTRUE or kFALSE)
-  Bool_t MCEP     = kTRUE;  // correlation with Monte Carlo reaction plane
-  Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
-  Bool_t GFC      = kTRUE;  // cumulants based on generating function
-  Bool_t QC       = kTRUE;  // cumulants using Q vectors
-  Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
-  Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
-  Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
-  Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
-  Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
-  Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
+//Flow analysis method can be:(set to kTRUE or kFALSE)
+  Bool_t MCEP     = kFALSE;  // correlation with Monte Carlo reaction plane
+  Bool_t SP       = kFALSE;  // scalar product method (similar to eventplane method)
+  Bool_t GFC      = kFALSE;  // cumulants based on generating function
+  Bool_t QC       = kFALSE;  // cumulants using Q vectors
+  Bool_t FQD      = kFALSE;  // fit of the distribution of the Q vector (only integrated v)
+  Bool_t LYZ1SUM  = kTRUE;   // Lee Yang Zeroes using sum generating function (integrated v)
+  Bool_t LYZ1PROD = kTRUE;   // Lee Yang Zeroes using product generating function (integrated v)
+  Bool_t LYZ2SUM  = kFALSE;  // Lee Yang Zeroes using sum generating function (second pass differential v)
+  Bool_t LYZ2PROD = kFALSE;  // Lee Yang Zeroes using product generating function (second pass differential v)
+  Bool_t LYZEP    = kFALSE;  // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
   Bool_t MH       = kFALSE;  // azimuthal correlators in mixed harmonics  
   Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
-
   Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
-
-  // Boolean to use/not use weights for the Q vector
   Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
+//=============================================================================
 
-  // SETTING THE CUTS
+  UInt_t eventSelMask = AliVEvent::kMUSPB;
+//AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kTPCstandalone;
+//AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kV0;
+  AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kSPDtracklet;
+  AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kMUON;
 
-  //---------Data selection----------
-  //kMC, kGlobal, kTPCstandalone, kSPDtracklet, kPMD
-  AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
-  AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
-
-  //---------Parameter mixing--------
-  //kPure - no mixing, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt
-  AliFlowTrackCuts::trackParameterMix rpmix = AliFlowTrackCuts::kPure;
+  AliFlowTrackCuts::trackParameterMix rpmix  = AliFlowTrackCuts::kPure;
   AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
 
-
-  const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype);
+  const char* rptypestr  = AliFlowTrackCuts::GetParamTypeName(rptype);
   const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype);
+  printf("CREATE CUTS\n"); cout << "Used for RP: "  << rptypestr  << endl;  
+                           cout << "Used for POI: " << poitypestr << endl;  
+//=============================================================================
 
-  TString fileName(fileNameBase);
-  fileName.Append(".root");
-  //===========================================================================
-  printf("CREATE CUTS\n");
-  cout << "Used for RP: "<< rptypestr << endl;  
-  cout << "Used for POI: "<< poitypestr << endl;  
-  // EVENTS CUTS:
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("event cuts");
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-  //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
+//cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
   cutsEvent->SetNContributorsRange(2);
   cutsEvent->SetPrimaryVertexZrange(-7.,7.);
-  //cutsEvent->SetCutSPDvertexerAnomaly(); //"Francesco's cut"
-  //cutsEvent->SetCutZDCtiming();
-  //cutsEvent->SetCutTPCmultiplicityOutliers();
-  //cutsEvent->SetUseCentralityUnchecked();
+//cutsEvent->SetCutSPDvertexerAnomaly(); //"Francesco's cut"
+//cutsEvent->SetCutZDCtiming();
+//cutsEvent->SetCutTPCmultiplicityOutliers();
+//cutsEvent->SetUseCentralityUnchecked();
+//cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); // Tracklets + Global tracks (default)
+//cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSSA);  // Tracklets + ITS SA tracks 
+  cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTracklets);       // Tracklets
 
-  // Reference multiplicity:
-  cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); // Tracklets + Global tracks (default)
-  //cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSSA); // Tracklets + ITS SA tracks 
-  //cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTracklets); // Tracklets
-  
-  // RP TRACK CUTS:
-  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("GlobalRP");
-  cutsRP->SetParamType(rptype);
-  cutsRP->SetParamMix(rpmix);
-  cutsRP->SetPtRange(0.2,5.);
-  cutsRP->SetEtaRange(-0.8,0.8);
-  //cutsRP->SetRequireCharge(kTRUE);
-  //cutsRP->SetCharge(chargeRP);
-  //cutsRP->SetPID(PdgRP);
-  cutsRP->SetMinNClustersTPC(70);
-  cutsRP->SetMinChi2PerClusterTPC(0.1);
-  cutsRP->SetMaxChi2PerClusterTPC(4.0);
-  cutsRP->SetMinNClustersITS(2);
-  cutsRP->SetRequireITSRefit(kTRUE);
-  cutsRP->SetRequireTPCRefit(kTRUE);
-  //cutsRP->SetMaxChi2PerClusterITS(1.e+09);
-  cutsRP->SetMaxDCAToVertexXY(0.3);
-  cutsRP->SetMaxDCAToVertexZ(0.3);
-  //cutsRP->SetDCAToVertex2D(kTRUE);
-  //cutsRP->SetMaxNsigmaToVertex(1.e+10);
-  //cutsRP->SetRequireSigmaToVertex(kFALSE);
-  cutsRP->SetAcceptKinkDaughters(kFALSE);
-  cutsRP->SetMinimalTPCdedx(10.);
+  AliFlowTrackCuts* cutsRP = 0x0;
+  if (rptype==AliFlowTrackCuts::kTPCstandalone) cutsRP = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010();
+  if (rptype==AliFlowTrackCuts::kV0) {
+    minA=-10.; maxA=-0.5; minB=0.5; maxB=10.;
+    cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts();
+  } if (rptype==AliFlowTrackCuts::kSPDtracklet) {
+    minA=-0.8; maxA=-0.4; minB=0.4; maxB=0.8;
+    cutsRP = new AliFlowTrackCuts("SPDtrackletRP");
+    cutsRP->SetParamType(rptype);
+    cutsRP->SetParamMix(rpmix);
+    cutsRP->SetEtaRange(-0.8,0.8);
+  }
 
-  // POI TRACK CUTS:
-  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("GlobalPOI");
-  cutsPOI->SetParamType(poitype);
-  cutsPOI->SetParamMix(poimix);
-  cutsPOI->SetPtRange(0.0,10.);
-  cutsPOI->SetEtaRange(-1.2,1.2);
-  //cutsPOI->SetRequireCharge(kTRUE);
-  //cutsPOI->SetCharge(chargeRP);
-  //cutsPOI->SetPID(PdgRP);
-  cutsPOI->SetMinNClustersTPC(80);
-  cutsPOI->SetMinChi2PerClusterTPC(0.1);
-  cutsPOI->SetMaxChi2PerClusterTPC(4.0);
-  cutsPOI->SetRequireITSRefit(kTRUE);
-  cutsPOI->SetRequireTPCRefit(kTRUE);
-  cutsPOI->SetMinNClustersITS(2);
-  //cutsPOI->SetMaxChi2PerClusterITS(1.e+09);
-  cutsPOI->SetMaxDCAToVertexXY(0.3);
-  cutsPOI->SetMaxDCAToVertexZ(0.3);
-  //cutsPOI->SetDCAToVertex2D(kTRUE);
-  //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
-  //cutsPOI->SetRequireSigmaToVertex(kFALSE);
-  cutsPOI->SetAcceptKinkDaughters(kFALSE);
-  cutsRP->SetMinimalTPCdedx(10.);
-  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFpid);
-  //cutsPOI->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
-  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCdedx);
-  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFbeta);
-  //cutsPOI->SetAllowTOFmismatch(kFALSE);
-  //iexample: francesco's tunig TPC Bethe Bloch for data:
-  //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
-  //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
+  AliFlowTrackCuts* cutsPOI = AliFlowTrackCuts::GetStandardMuonTrackCuts();
+//=============================================================================
 
+  TString fileName(fileNameBase); fileName.Append(".root");
   TString outputSlotName("");
   outputSlotName+=Form("%.0f",centrMin);
   outputSlotName+="-";
@@ -204,7 +153,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   //LYZ2
   if (LYZ2SUM || LYZ2PROD) {
     //read the outputfile of the first run
-    TString outputFileName = "AnalysisResults1.root";
+    TString outputFileName = "AnalysisResultsRedoFinishLYZ1.root";
     TString pwd(gSystem->pwd());
     pwd+="/";
     pwd+=outputFileName.Data();
@@ -226,7 +175,8 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
 	break;
       }
       else {
-	TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("LYZ1SUM");
+//      TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("LYZ1SUM");
+        TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get(Form("LYZ1SUM_%s",outputSlotName.Data()));
 	if (!fInputListLYZ2SUM) {cout<<"list is NULL pointer!"<<endl;}
       }
       cout<<"LYZ2SUM input file/list read..."<<endl;
@@ -243,7 +193,8 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
 	break;
       }
       else {
-	TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("LYZ1PROD");
+//	TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("LYZ1PROD");
+        TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get(Form("LYZ1PROD_%s",outputSlotName.Data()));
 	if (!fInputListLYZ2PROD) {cout<<"list is NULL pointer!"<<endl;}
       }
       cout<<"LYZ2PROD input file/list read..."<<endl;
@@ -252,7 +203,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
 
   if (LYZEP) {
     //read the outputfile of the second run
-    TString outputFileName = "AnalysisResults2.root";
+    TString outputFileName = "AnalysisResultsRedoFinishLYZ2.root";
     TString pwd(gSystem->pwd());
     pwd+="/";
     pwd+=outputFileName.Data();
@@ -317,8 +268,8 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-    //taskFE->SelectCollisionCandidates(AliVEvent::kUserDefined);
-    taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+//  taskFE->SelectCollisionCandidates(AliVEvent::kUserDefined);
+    taskFE->SelectCollisionCandidates(eventSelMask);
     cout<<"Using Physics Selection"<<endl;
   }
   mgr->AddTask(taskFE);
@@ -342,7 +293,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   if (SP){
     AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",WEIGHTS[0]);
     taskSP->SetRelDiffMsub(1.0);
-    taskSP->SetApplyCorrectionForNUA(kFALSE);
+    taskSP->SetApplyCorrectionForNUA(kTRUE);
     //taskSP->SetHarmonic(2); // default is v2
     mgr->AddTask(taskSP);
   }
@@ -391,7 +342,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     taskQC->SetMinMult(0.);
     taskQC->SetMaxMult(10000.);
     //taskQC->SetHarmonic(2); // default is v2
-    taskQC->SetApplyCorrectionForNUA(kFALSE);
+    taskQC->SetApplyCorrectionForNUA(kTRUE);
     taskQC->SetFillMultipleControlHistograms(kFALSE);     
     mgr->AddTask(taskQC);
   }
@@ -471,7 +422,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
 							       TList::Class(),AliAnalysisManager::kOutputContainer,outputSP); 
     mgr->ConnectInput(taskSP,0,coutputFE); 
     mgr->ConnectOutput(taskSP,1,coutputSP); 
-    if (WEIGHTS[0]) {
+    if (useWeights) {
       mgr->ConnectInput(taskSP,1,cinputWeights);
       cinputWeights->SetData(weightsList);
     }
@@ -644,8 +595,3 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
   }
 }
-
-
-
-
-
