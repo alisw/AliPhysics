@@ -48,8 +48,10 @@
 #include "AliVParticle.h"
 #include "AliMCParticle.h"
 #include "AliESDtrack.h"
+#include "AliESDMuonTrack.h"   // XZhang 20120604
 #include "AliMultiplicity.h"
 #include "AliAODTrack.h"
+#include "AliAODTracklets.h"   // XZhang 20120615
 #include "AliFlowTrackSimple.h"
 #include "AliFlowTrack.h"
 #include "AliFlowTrackCuts.h"
@@ -65,6 +67,7 @@ ClassImp(AliFlowTrackCuts)
 AliFlowTrackCuts::AliFlowTrackCuts():
   AliFlowTrackSimpleCuts(),
   fAliESDtrackCuts(NULL),
+  fMuonTrackCuts(NULL),  // XZhang 20120604
   fQA(NULL),
   fCutMC(kFALSE),
   fCutMChasTrackReferences(kFALSE),
@@ -141,6 +144,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
 AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   AliFlowTrackSimpleCuts(name),
   fAliESDtrackCuts(NULL),
+  fMuonTrackCuts(NULL),  // XZhang 20120604
   fQA(NULL),
   fCutMC(kFALSE),
   fCutMChasTrackReferences(kFALSE),
@@ -227,6 +231,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
 AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   AliFlowTrackSimpleCuts(that),
   fAliESDtrackCuts(NULL),
+  fMuonTrackCuts(NULL),  // XZhang 20120604
   fQA(NULL),
   fCutMC(that.fCutMC),
   fCutMChasTrackReferences(that.fCutMChasTrackReferences),
@@ -299,6 +304,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
   if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
   if (that.fAliESDtrackCuts) fAliESDtrackCuts = new AliESDtrackCuts(*(that.fAliESDtrackCuts));
+  if (that.fMuonTrackCuts)   fMuonTrackCuts   = new AliMuonTrackCuts(*(that.fMuonTrackCuts));  // XZhang 20120604
   SetPriors(); //init arrays
   if (that.fQA) DefineHistograms();
 
@@ -319,6 +325,11 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   if (that.fAliESDtrackCuts && fAliESDtrackCuts) *fAliESDtrackCuts=*(that.fAliESDtrackCuts);
   if (that.fAliESDtrackCuts && !fAliESDtrackCuts) fAliESDtrackCuts=new AliESDtrackCuts(*(that.fAliESDtrackCuts));
   if (!that.fAliESDtrackCuts) delete fAliESDtrackCuts; fAliESDtrackCuts=NULL;
+
+  if ( that.fMuonTrackCuts &&  fMuonTrackCuts) *fMuonTrackCuts = *(that.fMuonTrackCuts);                   // XZhang 20120604
+  if ( that.fMuonTrackCuts && !fMuonTrackCuts)  fMuonTrackCuts = new AliMuonTrackCuts(*(fMuonTrackCuts));  // XZhang 20120604
+  if (!that.fMuonTrackCuts) delete fMuonTrackCuts; fMuonTrackCuts = NULL;                                  // XZhang 20120604
+
   //these guys we don't need to copy, just reinit
   if (that.fQA) {fQA->Delete(); delete fQA; fQA=NULL; DefineHistograms();} 
   fCutMC=that.fCutMC;
@@ -407,6 +418,7 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
   delete fAliESDtrackCuts;
   delete fTPCpidCuts;
   delete fTOFpidCuts;
+  if (fMuonTrackCuts) delete fMuonTrackCuts;  // XZhang 20120604
   if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
 }
 
@@ -457,11 +469,17 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
 {
   //check cuts
   AliVParticle* vparticle = dynamic_cast<AliVParticle*>(obj);
-  if (vparticle) return PassesCuts(vparticle);
+//if (vparticle) return PassesCuts(vparticle);                // XZhang 20120604
+  if (vparticle) {                                            // XZhang 20120604
+    if (fParamType==kMUON) return PassesMuonCuts(vparticle);  // XZhang 20120604
+    return PassesCuts(vparticle);                             // XZhang 20120604
+  }                                                           // XZhang 20120604
   AliFlowTrackSimple* flowtrack = dynamic_cast<AliFlowTrackSimple*>(obj);
   if (flowtrack) return PassesCuts(flowtrack);
   AliMultiplicity* tracklets = dynamic_cast<AliMultiplicity*>(obj);
   if (tracklets) return PassesCuts(tracklets,id);
+  AliAODTracklets* trkletAOD = dynamic_cast<AliAODTracklets*>(obj);  // XZhang 20120615
+  if (trkletAOD) return PassesCuts(trkletAOD,id);                    // XZhang 20120615
   AliESDPmdTrack* pmdtrack = dynamic_cast<AliESDPmdTrack*>(obj);
   if (pmdtrack) return PassesPMDcuts(pmdtrack);
   AliVEvent* vvzero = dynamic_cast<AliVEvent*>(obj); // should be removed; left for protection only
@@ -514,6 +532,40 @@ Bool_t AliFlowTrackCuts::PassesCuts(const AliMultiplicity* tracklet, Int_t id)
 
   fTrackPhi = tracklet->GetPhi(id);
   fTrackEta = tracklet->GetEta(id);
+  fTrackWeight = 1.0;
+  if (fCutEta) {if (  fTrackEta < fEtaMin || fTrackEta >= fEtaMax ) return kFALSE;}
+  if (fCutPhi) {if ( fTrackPhi < fPhiMin || fTrackPhi >= fPhiMax ) return kFALSE;}
+
+  //check MC info if available
+  //if the 2 clusters have different label track cannot be good
+  //and should therefore not pass the mc cuts
+  Int_t label0 = tracklet->GetLabel(id,0);
+  Int_t label1 = tracklet->GetLabel(id,1);
+  //if possible get label and mcparticle
+  fTrackLabel = (label0==label1)?tracklet->GetLabel(id,1):-1;
+  if (!fFakesAreOK && fTrackLabel<0) return kFALSE;
+  if (fTrackLabel>=0 && fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
+  //check MC cuts
+  if (fCutMC && !PassesMCcuts()) return kFALSE;
+  return kTRUE;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesCuts(const AliAODTracklets* tracklet, Int_t id)
+{
+  // XZhang 20120615
+  //check cuts on a tracklets
+
+  if (id<0) return kFALSE;
+
+  //clean up from last iteration, and init label
+  fTrack = NULL;
+  fMCparticle=NULL;
+  fTrackLabel=-999;
+
+  fTrackPhi = tracklet->GetPhi(id);
+//fTrackEta = tracklet->GetEta(id);
+  fTrackEta = -1.*TMath::Log(TMath::Tan(tracklet->GetTheta(id)/2.));
   fTrackWeight = 1.0;
   if (fCutEta) {if (  fTrackEta < fEtaMin || fTrackEta >= fEtaMax ) return kFALSE;}
   if (fCutPhi) {if ( fTrackPhi < fPhiMin || fTrackPhi >= fPhiMax ) return kFALSE;}
@@ -1150,6 +1202,17 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPri
   return cuts;
 }
 
+//-----------------------------------------------------------------------------
+AliFlowTrackCuts* AliFlowTrackCuts::GetStandardMuonTrackCuts(Bool_t isMC)
+{
+// XZhang 20120604
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard muon track cuts");
+  cuts->SetParamType(kMUON);
+  cuts->SetStandardMuonTrackCuts();
+  cuts->SetIsMuonMC(isMC);
+  return cuts;
+}
+
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::FillFlowTrackGeneric(AliFlowTrack* flowtrack) const
 {
@@ -1249,9 +1312,17 @@ Bool_t AliFlowTrackCuts::FillFlowTrackVParticle(AliFlowTrack* flowtrack) const
     flowtrack->SetSource(AliFlowTrack::kFromESD);
     flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
   }
-  else if (dynamic_cast<AliAODTrack*>(fTrack)) 
+  else if (dynamic_cast<AliESDMuonTrack*>(fTrack))                                  // XZhang 20120604
+  {                                                                                 // XZhang 20120604
+    flowtrack->SetSource(AliFlowTrack::kFromMUON);                                  // XZhang 20120604
+    flowtrack->SetID((Int_t)static_cast<AliESDMuonTrack*>(fTrack)->GetUniqueID());  // XZhang 20120604
+  }                                                                                 // XZhang 20120604
+  else if (dynamic_cast<AliAODTrack*>(fTrack))
   {
-    flowtrack->SetSource(AliFlowTrack::kFromAOD);
+    if (fParamType==kMUON)                            // XZhang 20120604
+      flowtrack->SetSource(AliFlowTrack::kFromMUON);  // XZhang 20120604
+    else                                              // XZhang 20120604
+      flowtrack->SetSource(AliFlowTrack::kFromAOD);   // XZhang 20120604
     flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
   }
   else if (dynamic_cast<AliMCParticle*>(fTrack)) 
@@ -1740,12 +1811,17 @@ Int_t AliFlowTrackCuts::GetNumberOfInputObjects() const
   //get the number of tracks in the input event according source
   //selection (ESD tracks, tracklets, MC particles etc.)
   AliESDEvent* esd=NULL;
+  AliAODEvent* aod=NULL;  // XZhang 20120615
   switch (fParamType)
   {
     case kSPDtracklet:
+      if (!fEvent) return 0;                                           // XZhang 20120615
       esd = dynamic_cast<AliESDEvent*>(fEvent);
-      if (!esd) return 0;
-      return esd->GetMultiplicity()->GetNumberOfTracklets();
+      aod = dynamic_cast<AliAODEvent*>(fEvent);                        // XZhang 20120615
+//    if (!esd) return 0;                                              // XZhang 20120615
+//    return esd->GetMultiplicity()->GetNumberOfTracklets();           // XZhang 20120615
+      if (esd) return esd->GetMultiplicity()->GetNumberOfTracklets();  // XZhang 20120615
+      if (aod) return aod->GetTracklets()->GetNumberOfTracklets();     // XZhang 20120615
     case kMC:
       if (!fMCevent) return 0;
       return fMCevent->GetNumberOfTracks();
@@ -1755,6 +1831,11 @@ Int_t AliFlowTrackCuts::GetNumberOfInputObjects() const
       return esd->GetNumberOfPmdTracks();
     case kV0:
       return fgkNumberOfV0tracks;
+    case kMUON:                                      // XZhang 20120604
+      if (!fEvent) return 0;                         // XZhang 20120604
+      esd = dynamic_cast<AliESDEvent*>(fEvent);      // XZhang 20120604
+      if (esd) return esd->GetNumberOfMuonTracks();  // XZhang 20120604
+      return fEvent->GetNumberOfTracks();  // if AOD // XZhang 20120604
     default:
       if (!fEvent) return 0;
       return fEvent->GetNumberOfTracks();
@@ -1768,12 +1849,17 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
   //get the input object according the data source selection:
   //(esd tracks, traclets, mc particles,etc...)
   AliESDEvent* esd=NULL;
+  AliAODEvent* aod=NULL;  // XZhang 20120615
   switch (fParamType)
   {
     case kSPDtracklet:
+      if (!fEvent) return NULL;                                              // XZhang 20120615
       esd = dynamic_cast<AliESDEvent*>(fEvent);
-      if (!esd) return NULL;
-      return const_cast<AliMultiplicity*>(esd->GetMultiplicity());
+      aod = dynamic_cast<AliAODEvent*>(fEvent);                              // XZhang 20120615
+//    if (!esd) return NULL;                                                 // XZhang 20120615
+//    return const_cast<AliMultiplicity*>(esd->GetMultiplicity());           // XZhang 20120615
+      if (esd) return const_cast<AliMultiplicity*>(esd->GetMultiplicity());  // XZhang 20120615
+      if (aod) return const_cast<AliAODTracklets*>(aod->GetTracklets());     // XZhang 20120615
     case kMC:
       if (!fMCevent) return NULL;
       return fMCevent->GetTrack(i);
@@ -1791,6 +1877,11 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       //}
       //return esd->GetVZEROData();
       return fEvent; // left only for compatibility
+    case kMUON:                                  // XZhang 20120604
+      if (!fEvent) return NULL;                  // XZhang 20120604
+      esd = dynamic_cast<AliESDEvent*>(fEvent);  // XZhang 20120604
+      if (esd) return esd->GetMuonTrack(i);      // XZhang 20120604
+      return fEvent->GetTrack(i);  // if AOD     // XZhang 20120604
     default:
       if (!fEvent) return NULL;
       return fEvent->GetTrack(i);
@@ -3677,6 +3768,8 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
       return "PMD";
     case kV0:
       return "V0";
+    case kMUON:       // XZhang 20120604
+      return "MUON";  // XZhang 20120604
     default:
       return "unknown";
   }
@@ -3747,6 +3840,23 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(Int_t id)
   if (fCutPhi) {if ( fTrackPhi < fPhiMin || fTrackPhi >= fPhiMax ) pass = kFALSE;}
 
   return pass;
+}
+
+//-----------------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesMuonCuts(AliVParticle* vparticle)
+{
+// XZhang 20120604
+  fTrack=NULL;
+  fTrackLabel = (fFakesAreOK)?TMath::Abs(vparticle->GetLabel()):vparticle->GetLabel();
+  if (fMCevent) fMCparticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(fTrackLabel));
+  else fMCparticle=NULL;
+
+  AliESDMuonTrack *esdTrack = dynamic_cast<AliESDMuonTrack*>(vparticle);
+  AliAODTrack     *aodTrack = dynamic_cast<AliAODTrack*>(vparticle);
+  if ((!esdTrack) && (!aodTrack)) return kFALSE;
+  if (!fMuonTrackCuts->IsSelected(vparticle)) return kFALSE;
+  HandleVParticle(vparticle);   if (!fTrack)  return kFALSE;
+  return kTRUE;
 }
 
 //----------------------------------------------------------------------------//

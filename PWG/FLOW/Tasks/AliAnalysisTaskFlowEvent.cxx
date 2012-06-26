@@ -238,6 +238,8 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
 void AliAnalysisTaskFlowEvent::NotifyRun()
 {
   //at the beginning of each new run
+  if (fCutsRP)   fCutsRP->SetRunsMuon(fCurrentRunNumber);  // XZhang 20120604
+  if (fCutsPOI) fCutsPOI->SetRunsMuon(fCurrentRunNumber);  // XZhang 20120604
 	AliESDEvent* fESD = dynamic_cast<AliESDEvent*> (InputEvent());
   if (!fESD) return;
 
