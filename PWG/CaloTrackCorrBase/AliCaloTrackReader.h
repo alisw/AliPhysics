@@ -118,8 +118,8 @@ public:
   void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)              ; }
   void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
   
-  Double_t         GetEMCALTimeCutMin()             const { return fEMCALTimeCutMin        ; }
-  Double_t         GetEMCALTimeCutMax()             const { return fEMCALTimeCutMax        ; }	
+  Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin        ; }
+  Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax        ; }	
 
   void             SetEMCALTimeCut(Double_t a, Double_t b) { fEMCALTimeCutMin = a; 
                                                              fEMCALTimeCutMax = b          ; } // ns
@@ -299,29 +299,27 @@ public:
   // Mixing
   //--------------------
 
-  //Int_t   GetLastPhotonsMixedEvent()                 const { return fLastMixedPhotonsEvent       ; }
+  Int_t   GetLastCaloMixedEvent()                    const { return fLastMixedCaloEvent          ; }
   Int_t   GetLastTracksMixedEvent ()                 const { return fLastMixedTracksEvent        ; }
   
-  //TList * GetListWithMixedEventsForPhotons(Int_t bi) const { return fListMixedPhotonsEvents[bi]  ; }
-  TList * GetListWithMixedEventsForTracks (Int_t bi) const { return fListMixedTracksEvents [bi]  ; }  
+  TList * GetListWithMixedEventsForCalo  (Int_t bi)  const { return fListMixedCaloEvents[bi]     ; }
+  TList * GetListWithMixedEventsForTracks(Int_t bi)  const { return fListMixedTracksEvents [bi]  ; }  
    
-  //Bool_t  ListWithMixedEventsForPhotonsExists()      const { 
-  //  if(fListMixedPhotonsEvents) return kTRUE  ;
-  //  else                        return kFALSE ; }
+  Bool_t  ListWithMixedEventsForCaloExists()         const { if(fListMixedCaloEvents) return kTRUE  ;
+                                                             else                     return kFALSE ; }
 
-  Bool_t  ListWithMixedEventsForTracksExists()       const { 
-    if(fListMixedTracksEvents) return kTRUE  ;
-    else                       return kFALSE ; }
+  Bool_t  ListWithMixedEventsForTracksExists()       const { if(fListMixedTracksEvents) return kTRUE  ;
+                                                             else                       return kFALSE ; }
   
-  //void    SetLastPhotonsMixedEvent(Int_t e)                { fLastMixedPhotonsEvent = e          ; }
-  void    SetLastTracksMixedEvent (Int_t e)                { fLastMixedTracksEvent  = e          ; }
+  void    SetLastCaloMixedEvent  (Int_t e)                 { fLastMixedCaloEvent    = e          ; }
+  void    SetLastTracksMixedEvent(Int_t e)                 { fLastMixedTracksEvent  = e          ; }
   
-  //void    SetListWithMixedEventsForPhotons(TList ** l)     { 
-  //          if(fListMixedPhotonsEvents) printf("AliCaloTrackReader::SetListWithMixedEventsForPhotons() - Track Mixing event list already set, nothing done\n");
-  //          else                        fListMixedPhotonsEvents = l ; }
+  void    SetListWithMixedEventsForCalo (TList ** l)       { 
+            if(fListMixedCaloEvents) printf("AliCaloTrackReader::SetListWithMixedEventsForCalo() - Track Mixing event list already set, nothing done\n");
+            else                        fListMixedCaloEvents    = l ; }
   
-  void    SetListWithMixedEventsForTracks (TList ** l)     { 
-            if(fListMixedTracksEvents)  printf("AliCaloTrackReader::SetListWithMixedEventsForTracks() - Track Mixing event list already set, nothing done\n");
+  void    SetListWithMixedEventsForTracks(TList ** l)      { 
+            if(fListMixedTracksEvents)  printf("AliCaloTrackReader::SetListWithMixedEventsForTracks() - Calorimeter Mixing event list already set, nothing done\n");
             else                        fListMixedTracksEvents  = l ; }
   
   //-------------------------------------
@@ -456,9 +454,9 @@ public:
   Double_t      ** fVertex      ;           //! vertex array 3 dim for each mixed event buffer
   
   TList **         fListMixedTracksEvents ; //! Container for tracks stored for different events, used in case of own mixing, set in analysis class
-  //TList **         fListMixedPhotonsEvents; //! Container for photon stored for different events, used in case of own mixing, set in analysis class
+  TList **         fListMixedCaloEvents;    //! Container for photon stored for different events, used in case of own mixing, set in analysis class
   Int_t            fLastMixedTracksEvent  ; //  Temporary container with the last event added to the mixing list for tracks
-  //Int_t            fLastMixedPhotonsEvent ; //  Temporary container with the last event added to the mixing list for photons
+  Int_t            fLastMixedCaloEvent ;    //  Temporary container with the last event added to the mixing list for photons
   
   Bool_t           fWriteOutputDeltaAOD;    // Write the created delta AOD objects into file  
 	Bool_t           fOldAOD;                 // Old AODs, before revision 4.20
@@ -490,7 +488,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,41)
+  ClassDef(AliCaloTrackReader,42)
   
 } ;
 
