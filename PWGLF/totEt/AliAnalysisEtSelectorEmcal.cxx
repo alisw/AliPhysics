@@ -32,7 +32,7 @@ void AliAnalysisEtSelectorEmcal::Init()
 }
 
 Int_t AliAnalysisEtSelectorEmcal::Init(const AliESDEvent* event)
-{
+{ // Init
     
     AliAnalysisEtSelector::Init(event);
     Printf("Initializing selector for run: %d", event->GetRunNumber());
@@ -41,7 +41,7 @@ Int_t AliAnalysisEtSelectorEmcal::Init(const AliESDEvent* event)
 }
 
 TRefArray* AliAnalysisEtSelectorEmcal::GetClusters()
-{
+{ // Get clusters
     
   if(!fClusterArray) fClusterArray = new TRefArray;
   

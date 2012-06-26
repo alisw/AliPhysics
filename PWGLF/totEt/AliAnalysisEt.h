@@ -1,3 +1,5 @@
+#ifndef ALIANALYSISET_H
+#define ALIANALYSISET_H
 //_________________________________________________________________________
 //  Utility Class for transverse energy studies
 //  Base class for ESD & MC analysis
@@ -5,9 +7,6 @@
 //
 //*-- Authors: Oystein Djuvsland (Bergen), David Silvermyr (ORNL)
 //_________________________________________________________________________
-
-#ifndef ALIANALYSISET_H
-#define ALIANALYSISET_H
 
 #include "AliAnalysisEtCommon.h"
 #include "THnSparse.h"
@@ -255,9 +254,9 @@ protected:
     /** Minimum energy to cut on single cell cluster */
     Double_t fSingleCellEnergyCut;  // Minimum energy to cut on single cell cluster
 
-    Double_t fChargedEnergyRemoved;
-    Double_t fNeutralEnergyRemoved;
-    Double_t fGammaEnergyAdded;
+    Double_t fChargedEnergyRemoved; // Charged energy removed
+    Double_t fNeutralEnergyRemoved; // Neutral energy removed
+    Double_t fGammaEnergyAdded; // gamma energy added
 
     // Declare the histograms
 

@@ -1,6 +1,12 @@
 #ifndef ALIANALYSISETSELECTORPHOS_H
 #define ALIANALYSISETSELECTORPHOS_H
-
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Selector Base class for PHOS
+//  - 
+//
+//*-- Authors: Oystein Djuvsland (Bergen)
+//_________________________________________________________________________
 #include "AliAnalysisEtSelector.h"
 
 class TH2I;
@@ -31,10 +37,10 @@ public:
 private:
 
 
-    int LoadGeometry();
-    int LoadBadMaps();
+    int LoadGeometry(); // load geometry
+    int LoadBadMaps(); // load bad maps
     
-    AliPHOSGeometry *fGeoUtils;
+    AliPHOSGeometry *fGeoUtils; // geo utils
     
     TH2I *fBadMapM2; // Bad map
     TH2I *fBadMapM3; // Bad map

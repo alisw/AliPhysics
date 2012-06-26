@@ -1488,7 +1488,7 @@ void AliAnalysisEtMonteCarlo::FillHistograms()
 
 
 Int_t AliAnalysisEtMonteCarlo::PrintFamilyTree(Int_t partIdx, AliStack* stack)
-{
+{ // print family tree
     TParticle *part = stack->Particle(partIdx);
     if(part->GetPdgCode() == fgK0SCode)
     {
@@ -1501,7 +1501,7 @@ Int_t AliAnalysisEtMonteCarlo::PrintFamilyTree(Int_t partIdx, AliStack* stack)
 }
 
 Int_t AliAnalysisEtMonteCarlo::PrintMothers(Int_t partIdx, AliStack* stack, Int_t gen)
-{
+{ // print mothers
     char *tabs = new char[gen+1];
     for(Int_t i = 0; i < gen; ++i)
     {
@@ -1537,7 +1537,7 @@ Int_t AliAnalysisEtMonteCarlo::PrintMothers(Int_t partIdx, AliStack* stack, Int_
 }
 
 Int_t AliAnalysisEtMonteCarlo::GetPrimMother(Int_t partIdx, AliStack *stack)
-{
+{ // get primary mother
     if(partIdx >= 0)
     {
         Int_t mothIdx = stack->Particle(partIdx)->GetMother(0);
@@ -1567,7 +1567,7 @@ Int_t AliAnalysisEtMonteCarlo::GetPrimMother(Int_t partIdx, AliStack *stack)
 }
 
 Int_t AliAnalysisEtMonteCarlo::GetK0InFamily(Int_t partIdx, AliStack* stack)
-{
+{ // get K0 in family
     if(partIdx >= 0)
     {
         if(stack->Particle(partIdx)->GetPdgCode() == fgK0SCode) return partIdx;

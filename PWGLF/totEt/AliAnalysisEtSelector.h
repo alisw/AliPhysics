@@ -1,5 +1,12 @@
 #ifndef ALIANALYSISETSELECTOR_H
 #define ALIANALYSISETSELECTOR_H
+//_________________________________________________________________________
+//  Utility Class for transverse energy studies
+//  Selector Base class
+//  -  
+//
+//*-- Authors: Oystein Djuvsland (Bergen)
+//_________________________________________________________________________
 #include <Rtypes.h>
 #include "AliAnalysisEtCommon.h"
 #include "AliESDEvent.h"
@@ -70,11 +77,11 @@ protected:
   
     const AliVEvent *fEvent; // Pointer to current event
 
-    AliAnalysisEtCuts *fCuts; // Pointer to the cuts object
-    
     TRefArray *fClusterArray; // Array of clusters
-    
-    Int_t fRunNumber;
+
+    AliAnalysisEtCuts *fCuts; // Pointer to the cuts object; DS: also in base class?
+
+    Int_t fRunNumber; // run number
     
 
     

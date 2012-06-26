@@ -1,9 +1,5 @@
 #ifndef ALIANALYSISETRECONSTRUCTED_H
 #define ALIANALYSISETRECONSTRUCTED_H
-
-class TH2F;
-class TH2D;
-
 //_________________________________________________________________________
 //  Utility Class for transverse energy studies
 //  Base class for ESD analysis
@@ -13,7 +9,8 @@ class TH2D;
 //_________________________________________________________________________
 
 #include "AliAnalysisEt.h"
-
+class TH2F;
+class TH2D;
 class TH2I;
 class AliVParticle;
 class AliESDEvent;
@@ -67,9 +64,9 @@ protected:
     
     TH2D *fClusterPosition; // Position of clusters
     
-    TH2D *fHistChargedEnergyRemoved;
-    TH2D *fHistNeutralEnergyRemoved;
-    TH2D *fHistGammaEnergyAdded;
+    TH2D *fHistChargedEnergyRemoved; // Charged energy removed
+    TH2D *fHistNeutralEnergyRemoved; // Neutral energy removed
+    TH2D *fHistGammaEnergyAdded; // gamma energy added
     
 
 private:

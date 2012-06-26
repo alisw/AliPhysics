@@ -40,7 +40,7 @@ const Double_t kMEANGAMMA = 0.374/(0.51 + 0.02*0.374);
 
 AliAnalysisEtReconstructedPhos::AliAnalysisEtReconstructedPhos() :
         AliAnalysisEtReconstructed()
-{
+{ // ctor
     fHistogramNameSuffix = TString("PhosRec");
 
 //     fChargedContributionCorrectionParameters[0] = -0.017;
@@ -88,7 +88,7 @@ void AliAnalysisEtReconstructedPhos::Init()
 }
 
 bool AliAnalysisEtReconstructedPhos::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)
-{
+{ 
     return  AliAnalysisEtReconstructed::TrackHitsCalorimeter(track, magField);
 }
 
@@ -133,7 +133,7 @@ Double_t AliAnalysisEtReconstructedPhos::GetGammaContribution(Int_t clusterMult)
 }
 
 Double_t AliAnalysisEtReconstructedPhos::GetSecondaryContribution(Int_t clusterMultiplicity)
-{
+{ // Secondary contrib
   if(clusterMultiplicity > 0)
   {
     return fSecondaryContributionCorrectionParameters[0] + fSecondaryContributionCorrectionParameters[1]*clusterMultiplicity + fSecondaryContributionCorrectionParameters[2]*clusterMultiplicity*clusterMultiplicity;
