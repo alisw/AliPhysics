@@ -73,6 +73,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TClonesArray               *fCaloClusters;               //!clusters
   Float_t                     fCent;                       //!event centrality
   Int_t                       fCentBin;                    //!event centrality bin
+  Float_t                     fEPV0;                       //!event plane V0
+  Float_t                     fEPV0A;                      //!event plane V0A
+  Float_t                     fEPV0C;                      //!event plane V0C
   Double_t                    fVertex[3];                  //!event vertex
   BeamType                    fBeamType;                   //!event beam type
   TList                      *fOutput;                     //!output list
