@@ -28,7 +28,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
 
   Bool_t                      FillHistograms()                                          ;
   Bool_t                      RetrieveEventObjects()                                    ;
-  void                        DoCellLoop(Float_t &sum, Float_t &sum_cut)                ;
+  Int_t                       DoCellLoop(Float_t &sum, Float_t &sum_cut)                ;
   void                        DoTriggerPrimitives(Int_t &maxL1amp, Int_t &maxL1thr)     ;
   Float_t                     DoTriggerClusLoop()                                       ;
   Float_t                     DoTrackLoop()                                             ;
@@ -42,9 +42,12 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TClonesArray               *fTrgClusters;            //!Trg Clusters
 
   TH1F                       *fHistCentrality;         //!Event centrality distribution
+  TH3F                       *fHistVertex;             //!Vertex position
   TH2F                       *fHistTracksCent;         //!Number of tracks vs. centrality
   TH2F                       *fHistClusCent;           //!Number of clusters vs. centrality
   TH2F                       *fHistClusTracks;         //!Number of clusters vs. number of tracks
+  TH2F                       *fHistCellsCent;          //!Number of cells vs. centrality
+  TH2F                       *fHistCellsTracks;        //!Number of cells vs. number of tracks
 
   TH2F                       *fHistMaxL1FastORCent;    //!Maximum L1 trigger FastOR amplitude vs. centrality
   TH2F                       *fHistMaxL1ClusCent;      //!Maximum L1 trigger cluster amplitude vs. centrality

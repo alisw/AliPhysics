@@ -33,9 +33,12 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTrgClusters(0),
   fHistCentrality(0),
+  fHistVertex(0),
   fHistTracksCent(0),
   fHistClusCent(0),
   fHistClusTracks(0),
+  fHistCellsCent(0),
+  fHistCellsTracks(0),
   fHistMaxL1FastORCent(0),
   fHistMaxL1ClusCent(0),
   fHistMaxL1ThrCent(0),
@@ -76,9 +79,12 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTrgClusters(0),
   fHistCentrality(0),
+  fHistVertex(0),
   fHistTracksCent(0),
   fHistClusCent(0),
   fHistClusTracks(0),
+  fHistCellsCent(0),
+  fHistCellsTracks(0),
   fHistMaxL1FastORCent(0),
   fHistMaxL1ClusCent(0),
   fHistMaxL1ThrCent(0),
@@ -131,6 +137,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistCentrality->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistCentrality);
 
+  fHistVertex = new TH3F("fHistVertex","Vertex position", 6, -3, 3, 6, -3, 3, 60, -30, 30);
+  fHistVertex->GetXaxis()->SetTitle("x");
+  fHistVertex->GetYaxis()->SetTitle("y");
+  fHistVertex->GetZaxis()->SetTitle("z");
+  fOutput->Add(fHistVertex);
+
   fHistTracksCent = new TH2F("fHistTracksCent","Tracks vs. centrality", 100, 0, 100, fNbins, 0, 4000);
   fHistTracksCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistTracksCent->GetYaxis()->SetTitle("No. of tracks");
@@ -146,6 +158,16 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fHistClusTracks->GetXaxis()->SetTitle("No. of tracks");
     fHistClusTracks->GetYaxis()->SetTitle("No. of clusters");
     fOutput->Add(fHistClusTracks);
+
+    fHistCellsCent = new TH2F("fHistCellsCent","Cells vs. centrality", 100, 0, 100, fNbins, 0, 6000);
+    fHistCellsCent->GetXaxis()->SetTitle("Centrality (%)");
+    fHistCellsCent->GetYaxis()->SetTitle("No. of EMCal cells");
+    fOutput->Add(fHistCellsCent);
+
+    fHistCellsTracks = new TH2F("fHistCellsTracks","Cells vs. tracks", fNbins, 0, 4000, fNbins, 0, 6000);
+    fHistCellsTracks->GetXaxis()->SetTitle("No. of tracks");
+    fHistCellsTracks->GetYaxis()->SetTitle("No. of EMCal cells");
+    fOutput->Add(fHistCellsTracks);
 
     fHistClusTimeEnergy = new TH2F("fHistClusTimeEnergy","Time vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, fNbins,  0, 1e-6);
     fHistClusTimeEnergy->GetXaxis()->SetTitle("Energy (GeV)");
@@ -206,19 +228,19 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fOutput->Add(fHistCellsEnergy);
     
     fHistChVSneCells = new TH2F("fHistChVSneCells","Charged energy vs. neutral (cells) energy", 
-				fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+				(Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
     fHistChVSneCells->GetXaxis()->SetTitle("E [GeV]");
     fHistChVSneCells->GetYaxis()->SetTitle("P [GeV/c]");
     fOutput->Add(fHistChVSneCells);
     
     fHistChVSneClus = new TH2F("fHistChVSneClus","Charged energy vs. neutral (clusters) energy", 
-			       fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+			       (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
     fHistChVSneClus->GetXaxis()->SetTitle("E [GeV]");
     fHistChVSneClus->GetYaxis()->SetTitle("P [GeV/c]");
     fOutput->Add(fHistChVSneClus);
     
     fHistChVSneCorrCells = new TH2F("fHistChVSneCorrCells","Charged energy vs. neutral (corrected cells) energy", 
-				    fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, fNbins * 2.5, fMinBinPt , fMaxBinPt * 2.5);
+				    (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, (Int_t)(fNbins * 2.5), fMinBinPt , fMaxBinPt * 2.5);
     fHistChVSneCorrCells->GetXaxis()->SetTitle("E [GeV]");
     fHistChVSneCorrCells->GetYaxis()->SetTitle("P [GeV/c]");
     fOutput->Add(fHistChVSneCorrCells);
@@ -256,7 +278,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     for (Int_t i = 0; i < 4; i++) {
       histname = "fHistJetsPhiEtaPt_";
       histname += i;
-      fHistJetsPhiEtaPt[i] = new TH3F(histname.Data(), histname.Data(), 80, -2, 2, 128, 0, 6.4, fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+      fHistJetsPhiEtaPt[i] = new TH3F(histname.Data(), histname.Data(), 80, -2, 2, 128, 0, 6.4, (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
       fHistJetsPhiEtaPt[i]->GetXaxis()->SetTitle("#eta");
       fHistJetsPhiEtaPt[i]->GetYaxis()->SetTitle("#phi");
       fHistJetsPhiEtaPt[i]->GetZaxis()->SetTitle("p_{T} [GeV/c]");
@@ -264,14 +286,14 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
       histname = "fHistJetsPtNonBias_";
       histname += i;
-      fHistJetsPtNonBias[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+      fHistJetsPtNonBias[i] = new TH1F(histname.Data(), histname.Data(), (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
       fHistJetsPtNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
       fHistJetsPtNonBias[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistJetsPtNonBias[i]);
 
       histname = "fHistJetsPtTrack_";
       histname += i;
-      fHistJetsPtTrack[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+      fHistJetsPtTrack[i] = new TH1F(histname.Data(), histname.Data(), (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
       fHistJetsPtTrack[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
       fHistJetsPtTrack[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistJetsPtTrack[i]);
@@ -279,7 +301,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
 	histname = "fHistJetsPtClus_";
 	histname += i;
-	fHistJetsPtClus[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+	fHistJetsPtClus[i] = new TH1F(histname.Data(), histname.Data(), (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
 	fHistJetsPtClus[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
 	fHistJetsPtClus[i]->GetYaxis()->SetTitle("counts");
 	fOutput->Add(fHistJetsPtClus[i]);
@@ -287,21 +309,21 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
       histname = "fHistJetsPt_";
       histname += i;
-      fHistJetsPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5);
+      fHistJetsPt[i] = new TH1F(histname.Data(), histname.Data(), (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
       fHistJetsPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
       fHistJetsPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistJetsPt[i]);
 
       histname = "fHistJetsPtAreaNonBias_";
       histname += i;
-      fHistJetsPtAreaNonBias[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+      fHistJetsPtAreaNonBias[i] = new TH2F(histname.Data(), histname.Data(), (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
       fHistJetsPtAreaNonBias[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
       fHistJetsPtAreaNonBias[i]->GetYaxis()->SetTitle("area");
       fOutput->Add(fHistJetsPtAreaNonBias[i]);
 
       histname = "fHistJetsPtArea_";
       histname += i;
-      fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2.5, fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+      fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
       fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
       fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
       fOutput->Add(fHistJetsPtArea[i]);
@@ -349,19 +371,27 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   if (fCaloClusters)
     fHistClusCent->Fill(fCent, fCaloClusters->GetEntriesFast());
 
-  if (fTracks && fCaloClusters)
-    fHistClusTracks->Fill(fTracks->GetEntriesFast(), fCaloClusters->GetEntriesFast());
+  fHistVertex->Fill(fVertex[0], fVertex[1], fVertex[2]);
 
   Float_t trackSum = DoTrackLoop();
 
   DoJetLoop();
 
   if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
+
+    if (fTracks && fCaloClusters)
+      fHistClusTracks->Fill(fTracks->GetEntriesFast(), fCaloClusters->GetEntriesFast());
+
     Float_t clusSum = DoClusterLoop();
 
     Float_t cellSum = 0, cellCutSum = 0;
     
-    DoCellLoop(cellSum, cellCutSum);
+    Int_t ncells = DoCellLoop(cellSum, cellCutSum);
+
+    if (fTracks)
+      fHistCellsTracks->Fill(fTracks->GetEntriesFast(), ncells);
+
+    fHistCellsCent->Fill(fCent, ncells);
     
     fHistChVSneCells->Fill(cellSum, trackSum);
     fHistChVSneClus->Fill(clusSum, trackSum);
@@ -388,14 +418,14 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
+Int_t AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
 {
   // Do cell loop.
 
   AliVCaloCells *cells = InputEvent()->GetEMCALCells();
 
   if (!cells)
-    return;
+    return 0;
 
   const Int_t ncells = cells->GetNumberOfCells();
 
@@ -407,6 +437,8 @@ void AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
       continue;
     sum_cut += amp;
   } 
+
+  return ncells;
 }
 
 //________________________________________________________________________
