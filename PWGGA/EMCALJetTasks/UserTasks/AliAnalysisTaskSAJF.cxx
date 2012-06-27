@@ -252,7 +252,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     if (fAnaType != kEMCALOnly) { 
       histname = "fHistTracksPt_";
       histname += i;
-      fHistTracksPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins / 2.5, fMinBinPt, fMaxBinPt / 2.5);
+      fHistTracksPt[i] = new TH1F(histname.Data(), histname.Data(), (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
       fHistTracksPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
       fHistTracksPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistTracksPt[i]);
@@ -261,7 +261,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {    
       histname = "fHistClustersPt_";
       histname += i;
-      fHistClustersPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins / 2.5, fMinBinPt, fMaxBinPt / 2.5);
+      fHistClustersPt[i] = new TH1F(histname.Data(), histname.Data(),  (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
       fHistClustersPt[i]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
       fHistClustersPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistClustersPt[i]);
@@ -321,7 +321,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     if (fAnaType != kEMCALOnly) { 
       histname = "fHistMaxTrackPtvsJetPt_";
       histname += i;
-      fHistMaxTrackPtvsJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins / 2.5, fMinBinPt, fMaxBinPt / 2.5);
+      fHistMaxTrackPtvsJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt,  (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
       fHistMaxTrackPtvsJetPt[i]->GetXaxis()->SetTitle("p_{T}^{jet} [GeV/c]");
       fHistMaxTrackPtvsJetPt[i]->GetYaxis()->SetTitle("p_{T}^{track} [GeV/c]");
       fOutput->Add(fHistMaxTrackPtvsJetPt[i]);
@@ -330,7 +330,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
       histname = "fHistMaxClusPtvsJetPt_";
       histname += i;
-      fHistMaxClusPtvsJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins / 2.5, fMinBinPt, fMaxBinPt / 2.5);
+      fHistMaxClusPtvsJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt,  (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
       fHistMaxClusPtvsJetPt[i]->GetXaxis()->SetTitle("p_{T}^{jet} [GeV/c]");
       fHistMaxClusPtvsJetPt[i]->GetYaxis()->SetTitle("p_{T}^{clus} [GeV/c]");
       fOutput->Add(fHistMaxClusPtvsJetPt[i]);
@@ -338,7 +338,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistMaxPartPtvsJetPt_";
     histname += i;
-    fHistMaxPartPtvsJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins / 2.5, fMinBinPt, fMaxBinPt / 2.5);
+    fHistMaxPartPtvsJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt,  (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
     fHistMaxPartPtvsJetPt[i]->GetXaxis()->SetTitle("p_{T}^{jet} [GeV/c]");
     fHistMaxPartPtvsJetPt[i]->GetYaxis()->SetTitle("p_{T}^{part} [GeV/c]");
     fOutput->Add(fHistMaxPartPtvsJetPt[i]);
@@ -346,7 +346,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     if (fAnaType != kEMCALOnly) { 
       histname = "fHistMaxTrackPtvsJetCorrPt_";
       histname += i;
-      fHistMaxTrackPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, fNbins / 2.5, fMinBinPt, fMaxBinPt / 2.5);
+      fHistMaxTrackPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt,  (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
       fHistMaxTrackPtvsJetCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{jet} [GeV/c]");
       fHistMaxTrackPtvsJetCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{track} [GeV/c]");
       fOutput->Add(fHistMaxTrackPtvsJetCorrPt[i]);
@@ -355,7 +355,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
       histname = "fHistMaxClusPtvsJetCorrPt_";
       histname += i;
-      fHistMaxClusPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, fNbins / 2.5, fMinBinPt, fMaxBinPt / 2.5);
+      fHistMaxClusPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt,  (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
       fHistMaxClusPtvsJetCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{jet} [GeV/c]");
       fHistMaxClusPtvsJetCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{clus} [GeV/c]");
       fOutput->Add(fHistMaxClusPtvsJetCorrPt[i]);
@@ -363,7 +363,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistMaxPartPtvsJetCorrPt_";
     histname += i;
-    fHistMaxPartPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, fNbins / 2.5, fMinBinPt, fMaxBinPt / 2.5);
+    fHistMaxPartPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt,  (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
     fHistMaxPartPtvsJetCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{jet} [GeV/c]");
     fHistMaxPartPtvsJetCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{part} [GeV/c]");
     fOutput->Add(fHistMaxPartPtvsJetCorrPt[i]);
