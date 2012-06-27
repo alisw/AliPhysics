@@ -6,8 +6,9 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   Bool_t recalibClus   = kTRUE, 
   Bool_t recalcClusPos = kTRUE, 
   Bool_t nonLinearCorr = kTRUE, 
-  Bool_t remExotic     = kTRUE, 
-  Bool_t fidRegion     = kFALSE)
+  Bool_t remExotic     = kTRUE,
+  Bool_t fidRegion     = kFALSE,
+  Bool_t calibTime     = kTRUE)
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
   EMCALSupply->SetDebugLevel(2);
@@ -55,6 +56,11 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     EMCALSupply->SwitchOnCellFiducialRegion();
   else
     EMCALSupply->SwitchOffCellFiducialRegion();
+
+  if (calibTime)
+    EMCALSupply->SwitchOnCalibrateTime();
+  else
+    EMCALSupply->SwitchOffCalibrateTime();
 
   EMCALSupply->SetMass(0.139);
   //EMCALSupply->SetStep(5);
