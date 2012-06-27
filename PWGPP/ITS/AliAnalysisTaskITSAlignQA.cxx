@@ -405,6 +405,7 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
   }
   //
   if (fITSSumTP) { // store vertex and mometum info
+    double xyz[3]={0,0,0};
     fITSSumTP->SetVertex(vtx);
     TObjArray& tps = fITSSumTP->GetTracks();
     int ntp = tps.GetEntriesFast();
@@ -417,12 +418,17 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
       double crve = TMath::Sqrt(esdTr->GetSigma1Pt2()) * esd->GetMagneticField()*kB2C;
       fITSSumTP->SetCrvGlo(it,crv);
       fITSSumTP->SetCrvGloErr(it,crve);
-      const AliExternalTrackParam* inTPC =  esdTr->GetTPCInnerParam();
+      const AliExternalTrackParam* inTPC =  esdTr->GetTPCInnerParam(); // TPC track at vtx
       if (inTPC) {
 	 crv =  inTPC->GetC(esd->GetMagneticField());
-	 crve = TMath::Sqrt(inTPC->GetSigma1Pt2()) * esd->GetMagneticField()*kB2C;
+	 crve = TMath::Sqrt(inTPC->GetSigma1Pt2()) * TMath::Abs(esd->GetMagneticField()*kB2C);
 	 fITSSumTP->SetCrvTPC(it,crv);
 	 fITSSumTP->SetCrvTPCErr(it,crve);
+      }
+      inTPC = esdTr->GetInnerParam();  // TPC track at the inner wall
+      if (inTPC) {
+	inTPC->GetXYZ(xyz);
+	fITSSumTP->GetTPCInnerXYZ(it,xyz);
       }
     }
     fITSSumTP->SetUniqueID(fCurrentRunNumber);
