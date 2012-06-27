@@ -5,7 +5,7 @@
 
 #include "AliPhysicsSelectionTask.h"
 
-class AliPhysicsSelection;
+class AliEmcalPhysicsSelection;
 class TH1;
 
 class AliEmcalPhysicsSelectionTask : public AliPhysicsSelectionTask {
@@ -18,9 +18,11 @@ class AliEmcalPhysicsSelectionTask : public AliPhysicsSelectionTask {
   virtual void   UserCreateOutputObjects();
   virtual void   Terminate(Option_t*);
 
-  void           SetDoWriteHistos(Bool_t b) { fDoWriteHistos = b; }
   Int_t          GetNCalled() const         { return fNCalled;    }
   Int_t          GetNAccepted() const       { return fNAccepted;  }
+  void           SetDoWriteHistos(Bool_t b) { fDoWriteHistos = b; }
+  void           SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) 
+                  { static_cast<AliEmcalPhysicsSelection*>(fPhysicsSelection)->SetTriggers(offlineTriggerMask); }
 
  protected:
   Bool_t         fDoWriteHistos; //=true then write output
