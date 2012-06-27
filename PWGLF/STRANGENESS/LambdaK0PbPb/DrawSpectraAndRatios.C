@@ -36,9 +36,10 @@ static Int_t nBins=sizeof(xBins)/sizeof(Double_t) - 1;
 static Bool_t gFlag=kFALSE;
 
 //*** The systematic uncertainties for combining
+// TPC crossed/findable
 // cos(PA)
 // DCA between V0 daughters
-// TPC crossed/findable
+// TPC crossed pad rows
 static Double_t sysErrK0s[]={ 
   0.0,
   0.05,0.05,0.04,0.03,  //Dominated by cos(PA)
@@ -46,6 +47,15 @@ static Double_t sysErrK0s[]={
   0.10,0.10,0.11,0.12,0.12,0.13,0.13,0.13,0.14,0.14,0.14,
   0.14,0.13,0.13,0.12,0.11,0.11,0.11,0.10,0.09,0.08,
   0.08,0.05,0.04,0.03,
+  0.3,0.3,0.3 // "trailers"
+};
+static Double_t sysErrLam[]={ 
+  0.0,0.0,0.0,
+  0.20,0.12,0.05,0.04,  //Dominated by cos(PA)+FD
+  0.03,0.03,0.04,0.05,0.06,0.06, //Dominated by TPC crossed/findable
+  0.07,0.09,0.09,0.10,0.10,0.11,0.11,0.11,0.10,0.10,0.09,
+  0.08,0.08,0.07,0.07,0.07,0.06,0.07,0.06,0.07,0.05,
+  0.06,0.08,0.04,
   0.3,0.3,0.3 // "trailers"
 };
 const Double_t sysPID=0.02; //PID
@@ -257,7 +267,7 @@ void DrawSpectraAndRatios() {
       SetAttributes(rawHl,title[cent],colour[cent],marker[cent],masize[cent]);
       c1->cd();
       //rawHl->Draw(option.Data());
-      DrawHisto(rawHl, option.Data(), sysErrK0s);
+      DrawHisto(rawHl, option.Data(), sysErrLam);
 
       // K0s
     if (cent==nCent-1) gFlag=kTRUE;
