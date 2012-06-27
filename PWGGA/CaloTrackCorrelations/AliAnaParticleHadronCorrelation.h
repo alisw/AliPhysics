@@ -208,6 +208,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
   //leading particles 
   TH1F *       fhPtLeading;                    //! pT distribution of leading particles
+  TH2F *       fhPtLeadingBin;                 //! pT distribution of leading particles, vs mixing bin
   TH2F *       fhPhiLeading;                   //! phi distribution vs pT of leading particles
   TH2F *       fhEtaLeading;                   //! eta distribution vs pT of leading particles
   
@@ -215,6 +216,11 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPtLeadingEventPlane;          //! pT distribution of leading particles vs centrality
   TH2F *       fhLeadingEventPlaneCentrality;  //! event plane vs centrality for leading particles
   
+  TH1F *       fhPtLeadingMixed;               //! pT distribution of leading particles, used in mixing
+  TH2F *       fhPtLeadingMixedBin;            //! pT distribution of leading particles vs mixing bin
+  TH2F *       fhPhiLeadingMixed;              //! phi distribution vs pT of leading particles, used in mixing
+  TH2F *       fhEtaLeadingMixed;              //! eta distribution vs pT of leading particles, used in mixing  
+
   //trigger-charged histograms
   TH2F *       fhDeltaPhiDeltaEtaCharged ;     //! differences of eta and phi between trigger and charged hadrons
   TH2F *       fhPhiCharged  ;                 //! Phi distribution of charged particles

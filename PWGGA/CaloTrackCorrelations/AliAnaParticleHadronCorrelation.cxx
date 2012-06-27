@@ -73,10 +73,13 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fListMixTrackEvents(),          fListMixCaloEvents(),  fUseMixStoredInReader(0),
     fM02MaxCut(0),                  fM02MinCut(0),       
     //Histograms
-    fhPtLeading(0),                 fhPhiLeading(0),       
-    fhEtaLeading(0),                
+    fhPtLeading(0),                 fhPtLeadingBin(0),                 
+    fhPhiLeading(0),                fhEtaLeading(0),                
     fhPtLeadingCentrality(0),       fhPtLeadingEventPlane(0), 
-    fhLeadingEventPlaneCentrality(0),fhDeltaPhiDeltaEtaCharged(0),
+    fhLeadingEventPlaneCentrality(0),
+    fhPtLeadingMixed(0),            fhPtLeadingMixedBin(0),              
+    fhPhiLeadingMixed(0),           fhEtaLeadingMixed(0), 
+    fhDeltaPhiDeltaEtaCharged(0),
     fhPhiCharged(0),                fhEtaCharged(0), 
     fhDeltaPhiCharged(0),           fhDeltaEtaCharged(0), 
     fhDeltaPhiChargedPt(0),         fhDeltaPhiUeChargedPt(0), 
@@ -832,9 +835,15 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax  = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax   = GetHistogramRanges()->GetHistoEtaMax(); Float_t deltaphimax  = GetHistogramRanges()->GetHistoDeltaPhiMax();  Float_t deltaetamax   = GetHistogramRanges()->GetHistoDeltaEtaMax();
   Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin  = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin   = GetHistogramRanges()->GetHistoEtaMin(); Float_t deltaphimin  = GetHistogramRanges()->GetHistoDeltaPhiMin();  Float_t deltaetamin   = GetHistogramRanges()->GetHistoDeltaEtaMin();	
   
+  Int_t nMixBins = GetNCentrBin()*GetNZvertBin()*GetNRPBin();
+  
   fhPtLeading  = new TH1F ("hPtLeading","p_T distribution of leading particles", nptbins,ptmin,ptmax); 
   fhPtLeading->SetXTitle("p_{T}^{trig} (GeV/c)");
   
+  fhPtLeadingBin  = new TH2F ("hPtLeadingBin","p_T distribution of leading particles", nptbins,ptmin,ptmax,nMixBins,0,nMixBins); 
+  fhPtLeadingBin->SetXTitle("p_{T}^{trig} (GeV/c)");
+  fhPtLeadingBin->SetYTitle("Bin");
+
   fhPhiLeading  = new TH2F ("hPhiLeading","#phi distribution of leading Particles",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
   fhPhiLeading->SetYTitle("#phi (rad)");
   
@@ -842,6 +851,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   fhEtaLeading->SetYTitle("#eta ");  
   
   outputContainer->Add(fhPtLeading);
+  outputContainer->Add(fhPtLeadingBin);
   outputContainer->Add(fhPhiLeading);
   outputContainer->Add(fhEtaLeading);
   
@@ -1669,7 +1679,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         }
       }    
     }
+    
+    fhPtLeadingMixed  = new TH1F ("hPtLeadingMixed","p_T distribution of leading particles, used for mixing", nptbins,ptmin,ptmax); 
+    fhPtLeadingMixed->SetXTitle("p_{T}^{trig} (GeV/c)");
+    
+    fhPtLeadingMixedBin  = new TH2F ("hPtLeadingMixedBin","p_T distribution of leading particles vs mixing bin", nptbins,ptmin,ptmax,nMixBins,0,nMixBins); 
+    fhPtLeadingMixedBin->SetXTitle("p_{T}^{trig} (GeV/c)");
+    fhPtLeadingMixedBin->SetYTitle("Bin");
 
+    fhPhiLeadingMixed  = new TH2F ("hPhiLeadingMixed","#phi distribution of leading Particles, used for mixing",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+    fhPhiLeadingMixed->SetYTitle("#phi (rad)");
+    
+    fhEtaLeadingMixed  = new TH2F ("hEtaLeadingMixed","#eta distribution of leading, used for mixing",nptbins,ptmin,ptmax, netabins,etamin,etamax); 
+    fhEtaLeadingMixed->SetYTitle("#eta ");  
+    
+    outputContainer->Add(fhPtLeadingMixed);
+    outputContainer->Add(fhPtLeadingMixedBin);
+    outputContainer->Add(fhPhiLeadingMixed);
+    outputContainer->Add(fhEtaLeadingMixed);
+    
     // Fill the cluster pool only in isolation analysis
     if( OnlyIsolated() && (!fUseMixStoredInReader || (fUseMixStoredInReader && !GetReader()->ListWithMixedEventsForCaloExists()))) 
     {
@@ -2067,7 +2095,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     {
       Float_t pt = particle->Pt();
       fhPtLeading->Fill(pt);
-      
+      fhPtLeadingBin->Fill(pt,GetEventMixBin());
+
       Float_t phi = particle->Phi();
       if(phi<0)phi+=TMath::TwoPi();
       fhPhiLeading->Fill(pt, phi);
@@ -2232,7 +2261,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
         
         FillChargedUnderlyingEventHistograms(ptTrig, pt, deltaPhi, nTracks);
 
-	fhUePart->Fill(ptTrig);
+        fhUePart->Fill(ptTrig);
         
       }
       
@@ -2375,6 +2404,46 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
     
     Int_t nTracks=bgTracks->GetEntriesFast();
     //printf("\t Read Pool event %d, nTracks %d\n",ev,nTracks);
+
+    //Check if it is leading if mixed event
+    if(fMakeNearSideLeading || fMakeAbsoluteLeading)
+    {
+      Bool_t leading = kTRUE;
+      for(Int_t jlead = 0;jlead <nTracks; jlead++ )
+      {
+        AliAODPWG4Particle *track = (AliAODPWG4Particle*) bgTracks->At(jlead) ;
+        
+        ptAssoc  = track->Pt();
+        phiAssoc = track->Phi() ;
+        
+        if(phiAssoc < 0) phiAssoc+=TMath::TwoPi();
+        //printf("ptTrig %f : pTmix %f \n",ptTrig,ptAssoc);
+        if (fMakeNearSideLeading)
+        {
+          if(ptAssoc > ptTrig && TMath::Abs(phiAssoc-phiTrig) < TMath::PiOver2())  
+          {
+            leading = kFALSE;
+            break;
+          }
+        }
+        //jump out this event if there is any other particle with pt larger than trigger
+        else if(fMakeAbsoluteLeading)
+        {
+          if(ptAssoc > ptTrig) 
+          { 
+            leading = kFALSE;
+            printf("*** NOT Leading in mixed event\n");
+            break;
+          }
+        }
+      }
+      if(!leading) continue; // not leading, check the next event in pool
+    }
+    
+    fhPtLeadingMixed ->Fill(ptTrig);
+    fhPhiLeadingMixed->Fill(ptTrig, phiTrig);
+    fhEtaLeadingMixed->Fill(ptTrig, etaTrig);
+    fhPtLeadingMixedBin->Fill(ptTrig,eventBin);
 
     for(Int_t j1 = 0;j1 <nTracks; j1++ )
     {
