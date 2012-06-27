@@ -35,12 +35,22 @@ static Int_t nBins=sizeof(xBins)/sizeof(Double_t) - 1;
 
 static Bool_t gFlag=kFALSE;
 
-static Double_t sysErr[]={
-   0.0,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,
-   0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,
-   0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,
-   0.1,0.1,0.1,0.1,0.1,0.1,0.1,  0.1,0.1
+//*** The systematic uncertainties for combining
+// cos(PA)
+// DCA between V0 daughters
+// TPC crossed/findable
+static Double_t sysErrK0s[]={ 
+  0.0,
+  0.05,0.05,0.04,0.03,  //Dominated by cos(PA)
+  0.04,0.05,0.06,0.07,0.08,0.09, //Dominated by TPC crossed/findable
+  0.10,0.10,0.11,0.12,0.12,0.13,0.13,0.13,0.14,0.14,0.14,
+  0.14,0.13,0.13,0.12,0.11,0.11,0.11,0.10,0.09,0.08,
+  0.08,0.05,0.04,0.03,
+  0.3,0.3,0.3 // "trailers"
 };
+const Double_t sysPID=0.02; //PID
+const Double_t sysSig=0.03; //Signal extraction
+const Double_t sysArm=0.01; //Armenteros cut
 
 
 TH1 *MapHisto(const TH1 *h) {
@@ -116,13 +126,16 @@ void SetAttributes(TH1 *h,const Char_t *tit,Int_t col,Int_t mar,Float_t siz) {
   h->SetMinimum(1e-5);
 }
 
-void DrawHisto(TH1 *h, const Option_t *option) {
+void DrawHisto(TH1 *h, const Option_t *option, Double_t *sysErr) {
   TH1F *hh=new TH1F(*((TH1F*)h));
   Int_t nb=hh->GetNbinsX();
   for (Int_t i=1; i<=nb; i++) {
       Double_t c=hh->GetBinContent(i);
       Double_t e=hh->GetBinError(i);
-      e=TMath::Sqrt(e*e + sysErr[i]*c*sysErr[i]*c);
+      e = c*TMath::Sqrt(sysErr[i]*sysErr[i] + 
+                        sysPID*sysPID + 
+                        sysSig*sysSig +
+                        sysArm*sysArm);
       hh->SetBinError(i,e);
   }
   hh->SetFillColor(17);
@@ -233,6 +246,8 @@ void DrawSpectraAndRatios() {
 
   TCanvas *c3=new TCanvas;
   //TCanvas *c4=new TCanvas;
+
+
   for (Int_t cent=0; cent<nCent; cent++) {
       // Lambda
       if (!GetHistos(rNameL+2*cent, eNameL+2*cent, raw, eff)) return;
@@ -242,7 +257,7 @@ void DrawSpectraAndRatios() {
       SetAttributes(rawHl,title[cent],colour[cent],marker[cent],masize[cent]);
       c1->cd();
       //rawHl->Draw(option.Data());
-      DrawHisto(rawHl, option.Data());
+      DrawHisto(rawHl, option.Data(), sysErrK0s);
 
       // K0s
     if (cent==nCent-1) gFlag=kTRUE;
@@ -253,7 +268,7 @@ void DrawSpectraAndRatios() {
       SetAttributes(rawHk,title[cent],colour[cent],marker[cent],masize[cent]);
       c2->cd();
       //rawHk->Draw(option.Data());
-      DrawHisto(rawHk, option.Data());
+      DrawHisto(rawHk, option.Data(), sysErrK0s);
 
       // Lambda/K0s
       TH1 *rawHlk=(TH1*)rawHl->Clone();
