@@ -2417,7 +2417,6 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
         phiAssoc = track->Phi() ;
         
         if(phiAssoc < 0) phiAssoc+=TMath::TwoPi();
-        //printf("ptTrig %f : pTmix %f \n",ptTrig,ptAssoc);
         if (fMakeNearSideLeading)
         {
           if(ptAssoc > ptTrig && TMath::Abs(phiAssoc-phiTrig) < TMath::PiOver2())  
@@ -2432,7 +2431,6 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
           if(ptAssoc > ptTrig) 
           { 
             leading = kFALSE;
-            printf("*** NOT Leading in mixed event\n");
             break;
           }
         }
