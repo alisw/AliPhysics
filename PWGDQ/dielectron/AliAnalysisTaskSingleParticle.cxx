@@ -39,9 +39,9 @@
 #include <AliKFVertex.h>
 #include <AliESDfriendTrack.h>
 #include <AliESDfriend.h>
-#include <../TRD/AliTRDseedV1.h>
-#include <../TRD/AliTRDcluster.h>
-#include <../TRD/AliTRDtrackV1.h>
+#include <AliTRDseedV1.h>
+#include <AliTRDcluster.h>
+#include <AliTRDtrackV1.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronHistos.h"

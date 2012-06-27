@@ -163,6 +163,8 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
   AliDebug(10,Form("new event at %d: %d",bin,pool.GetEntriesFast()));
   AliDielectronEvent *event=new(pool[pool.GetEntriesFast()]) AliDielectronEvent();
   if(ev->IsA() == AliAODEvent::Class()) event->SetAOD();
+  else event->SetESD();
+
   event->SetTracks(*diele->GetTrackArray(0), *diele->GetTrackArray(1), *diele->GetPairArray(1));
   event->SetEventData(values);
 

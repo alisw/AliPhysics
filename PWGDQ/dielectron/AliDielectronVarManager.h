@@ -165,6 +165,7 @@ public:
     kEMCALM20,               // M20 showershape parameter
     kEMCALDispersion,        // Dispersion paramter
     
+    kV0Index0,               // v0 index 0
     kKinkIndex0,             // kink index 0
       
     kParticleMax,             //
@@ -502,6 +503,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTRDprobEle]    = pidProbs[AliPID::kElectron];
   values[AliDielectronVarManager::kTRDprobPio]    = pidProbs[AliPID::kPion];
 
+  values[AliDielectronVarManager::kV0Index0]      = particle->GetV0Index(0);
   values[AliDielectronVarManager::kKinkIndex0]    = particle->GetKinkIndex(0);
   
   Float_t impactParXY, impactParZ;
@@ -686,6 +688,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   
   // Fill AliAODTrack interface information
   //
+  values[AliDielectronVarManager::kV0Index0]      = particle->GetProdVertex()->GetType()==AliAODVertex::kV0   ? 1 : 0;
   values[AliDielectronVarManager::kKinkIndex0]    = particle->GetProdVertex()->GetType()==AliAODVertex::kKink ? 1 : 0;
 
   Double_t d0z0[2];
@@ -938,8 +941,9 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kY]         = ((values[AliDielectronVarManager::kE]-values[AliDielectronVarManager::kPz])>1.0e-6 && (values[AliDielectronVarManager::kE]+values[AliDielectronVarManager::kPz])>1.0e-6 ? 0.5*TMath::Log((values[AliDielectronVarManager::kE]+values[AliDielectronVarManager::kPz])/(values[AliDielectronVarManager::kE]-values[AliDielectronVarManager::kPz])) : -9999.);
   values[AliDielectronVarManager::kCharge]    = p1->Charge()+p2->Charge();
 
-  values[AliDielectronVarManager::kM]         = TMath::Sqrt(p1->M()*p1->M()+p2->M()*p2->M()+
-      2.0*(p1->E()*p2->E()-p1->Px()*p2->Px()-p1->Py()*p2->Py()-p1->Pz()*p2->Pz()));
+  values[AliDielectronVarManager::kM]         = p1->M()*p1->M()+p2->M()*p2->M()+
+                       2.0*(p1->E()*p2->E()-p1->Px()*p2->Px()-p1->Py()*p2->Py()-p1->Pz()*p2->Pz());
+  values[AliDielectronVarManager::kM]         = (values[AliDielectronVarManager::kM]>1.0e-8 ? TMath::Sqrt(values[AliDielectronVarManager::kM]) : -1.0);
 
   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);  
 

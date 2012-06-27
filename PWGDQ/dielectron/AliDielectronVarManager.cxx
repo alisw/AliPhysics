@@ -121,6 +121,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "EMCAL_M20",
   "EMCAL_Dispersion",
 
+  "V0Index0",
   "KinkIndex0",
   //
   "Chi2NDF",
