@@ -19,6 +19,7 @@
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliMCEvent.h"
 
 ClassImp(AliJetResponseMaker)
@@ -29,8 +30,17 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
   fMaxDistance(0.25),
+  fDoWeighting(kFALSE),
+  fVertexCut(10),
+  fPythiaHeader(0),
+  fEventWeight(0),
+  fPtHardBin(0),
+  fNTrials(0),
   fMCTracks(0),
   fMCJets(0),
+  fHistNTrials(0),
+  fHistAcceptedEvents(0),
+  fHistEvents(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
   fHistMCJetsNEFvsPt(0),
@@ -57,8 +67,17 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fMCTracksName("MCParticles"),
   fMCJetsName("MCJets"),
   fMaxDistance(0.25),
+  fDoWeighting(kFALSE),
+  fVertexCut(10),
+  fPythiaHeader(0),
+  fEventWeight(0),
+  fPtHardBin(0),
+  fNTrials(0),
   fMCTracks(0),
   fMCJets(0),
+  fHistNTrials(0),
+  fHistAcceptedEvents(0),
+  fHistEvents(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
   fHistMCJetsNEFvsPt(0),
@@ -93,6 +112,30 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   OpenFile(1);
   fOutput = new TList();
   fOutput->SetOwner();
+
+  const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+  const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+
+  fHistNTrials = new TH1F("fHistNTrials", "fHistNTrials", 11, 0, 11);
+  fHistNTrials->GetXaxis()->SetTitle("p_{T} hard bin");
+  fHistNTrials->GetYaxis()->SetTitle("trials");
+  fOutput->Add(fHistNTrials);
+
+  fHistAcceptedEvents = new TH1F("fHistAcceptedEvents", "fHistAcceptedEvents", 11, 0, 11);
+  fHistAcceptedEvents->GetXaxis()->SetTitle("p_{T} hard bin");
+  fHistAcceptedEvents->GetYaxis()->SetTitle("accepted events");
+  fOutput->Add(fHistAcceptedEvents);
+
+  fHistEvents = new TH1F("fHistEvents", "fHistEvents", 11, 0, 11);
+  fHistEvents->GetXaxis()->SetTitle("p_{T} hard bin");
+  fHistEvents->GetYaxis()->SetTitle("total events");
+  fOutput->Add(fHistEvents);
+
+  for (Int_t i = 1; i < 12; i++) {
+    fHistNTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+    fHistAcceptedEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+    fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+  }
 
   fHistJetPhiEta = new TH2F("fHistJetPhiEta", "fHistJetPhiEta", 20, -2, 2, 32, 0, 6.4);
   fHistJetPhiEta->GetXaxis()->SetTitle("#eta");
@@ -182,13 +225,29 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
+Bool_t AliJetResponseMaker::Run()
+{
+  // Find the closest jets
+
+  fHistEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
+
+  if (TMath::Abs(fVertex[2]) > fVertexCut)
+    return kFALSE;
+  
+  fHistAcceptedEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
+  fHistNTrials->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + fNTrials);
+
+  DoJetLoop(fJets, fMCJets, kFALSE);
+  DoJetLoop(fMCJets, fJets, kTRUE);
+
+  return kTRUE;
+}
+
+
+//________________________________________________________________________
 Bool_t AliJetResponseMaker::FillHistograms()
 {
   // Fill histograms.
-
-  // Find the closest jets
-  DoJetLoop(fJets, fMCJets, kFALSE);
-  DoJetLoop(fMCJets, fJets, kTRUE);
 
   const Int_t nMCJets = fMCJets->GetEntriesFast();
 
@@ -212,35 +271,39 @@ Bool_t AliJetResponseMaker::FillHistograms()
       jet->SetMatchedToClosest();
       jet->ClosestJet()->SetMatchedToClosest();
       if (jet->MatchedJet()->Pt() > fMaxBinPt) {
-	fHistMissedMCJets->Fill(jet->Pt());
+	fHistMissedMCJets->Fill(jet->Pt(), fEventWeight);
       }
       else {
-	fHistClosestDistance->Fill(jet->ClosestJetDistance());
+	fHistClosestDistance->Fill(jet->ClosestJetDistance(), fEventWeight);
+
 	Double_t deta = jet->MatchedJet()->Eta() - jet->Eta();
-	fHistClosestDeltaEta->Fill(deta);
+	fHistClosestDeltaEta->Fill(deta, fEventWeight);
+
 	Double_t dphi = jet->MatchedJet()->Phi() - jet->Phi();
-	fHistClosestDeltaPhi->Fill(dphi);
+	fHistClosestDeltaPhi->Fill(dphi, fEventWeight);
+
 	Double_t dpt = jet->MatchedJet()->Pt() - jet->Pt();
-	fHistClosestDeltaPt->Fill(dpt);
-	fHistPartvsDetecPt->Fill(jet->MatchedJet()->Pt(), jet->Pt());
+	fHistClosestDeltaPt->Fill(dpt, fEventWeight);
+
+	fHistPartvsDetecPt->Fill(jet->MatchedJet()->Pt(), jet->Pt(), fEventWeight);
       }
     }
     else {
-      fHistNonMatchedMCJetPt->Fill(jet->Pt());
-      fHistMissedMCJets->Fill(jet->Pt());
+      fHistNonMatchedMCJetPt->Fill(jet->Pt(), fEventWeight);
+      fHistMissedMCJets->Fill(jet->Pt(), fEventWeight);
     }
 
-    fHistMCJetsPt->Fill(jet->Pt());
+    fHistMCJetsPt->Fill(jet->Pt(), fEventWeight);
 
-    fHistMCJetPhiEta->Fill(jet->Eta(), jet->Phi());
+    fHistMCJetPhiEta->Fill(jet->Eta(), jet->Phi(), fEventWeight);
 
     if (fAnaType == kEMCAL)
-      fHistMCJetsNEFvsPt->Fill(jet->NEF(), jet->Pt());
+      fHistMCJetsNEFvsPt->Fill(jet->NEF(), jet->Pt(), fEventWeight);
 
     for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
       AliVParticle *track = jet->TrackAt(it, fMCTracks);
       if (track)
-	fHistMCJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt());
+	fHistMCJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt(), fEventWeight);
     }
   }
 
@@ -259,20 +322,20 @@ Bool_t AliJetResponseMaker::FillHistograms()
       continue;
 
     if (!jet->MatchedJet()) {
-      fHistNonMatchedJetPt->Fill(jet->Pt());
+      fHistNonMatchedJetPt->Fill(jet->Pt(), fEventWeight);
     }
 
-    fHistJetsPt->Fill(jet->Pt());
+    fHistJetsPt->Fill(jet->Pt(), fEventWeight);
 
-    fHistJetPhiEta->Fill(jet->Eta(), jet->Phi());
+    fHistJetPhiEta->Fill(jet->Eta(), jet->Phi(), fEventWeight);
 
     if (fAnaType == kEMCAL)
-      fHistJetsNEFvsPt->Fill(jet->NEF(), jet->Pt());
+      fHistJetsNEFvsPt->Fill(jet->NEF(), jet->Pt(), fEventWeight);
 
     for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
       AliVParticle *track = jet->TrackAt(it, fTracks);
       if (track)
-	fHistJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt());
+	fHistJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt(), fEventWeight);
     }
 
     for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
@@ -280,7 +343,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
       if (cluster) {
 	TLorentzVector nP;
 	cluster->GetMomentum(nP, fVertex);
-	fHistJetsZvsPt->Fill(nP.Pt() / jet->Pt(), jet->Pt());
+	fHistJetsZvsPt->Fill(nP.Pt() / jet->Pt(), jet->Pt(), fEventWeight);
       }
     }
   }
@@ -338,21 +401,49 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
 //________________________________________________________________________
 Bool_t AliJetResponseMaker::RetrieveEventObjects()
 {
-  // Retrieve event objects.
-
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
   
+  fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+
+  if (!fPythiaHeader)
+    return kFALSE;
+
+  if (fDoWeighting)
+    fEventWeight = fPythiaHeader->EventWeight();
+  else
+    fEventWeight = 1;
+
+  const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+  const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+
+  Double_t pthard = fPythiaHeader->GetPtHard();
+  
+  for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
+    if (ptHardLo[fPtHardBin] < pthard && ptHardHi[fPtHardBin] > pthard)
+      break;
+  }
+
+  fNTrials = fPythiaHeader->Trials();
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliJetResponseMaker::ExecOnce()
+{
+  // Retrieve event objects.
+
   if (!fMCJetsName.IsNull() && !fMCJets) {
     fMCJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCJetsName));
     if (!fMCJets) {
       AliError(Form("%s: Could not retrieve mc jets %s!", GetName(), fMCJetsName.Data()));
-      return kFALSE;
+      return;
     }
     else if (!fMCJets->GetClass()->GetBaseClass("AliEmcalJet")) {
       AliError(Form("%s: Collection %s does not contain AliEmcalJet objects!", GetName(), fMCJetsName.Data())); 
       fMCJets = 0;
-      return kFALSE;
+      return;
     }
   }
 
@@ -360,19 +451,19 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
     fMCTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCTracksName));
     if (!fMCTracks) {
       AliError(Form("%s: Could not retrieve mc tracks %s!", GetName(), fMCTracksName.Data())); 
-      return kFALSE;
+      return;
     }
     else {
       TClass *cl = fMCTracks->GetClass();
       if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
 	AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fMCTracksName.Data())); 
 	fMCTracks = 0;
-	return kFALSE;
+	return;
       }
     }
   }
 
-  return kTRUE;
+  AliAnalysisTaskEmcalJet::ExecOnce();
 }
 
 //________________________________________________________________________
