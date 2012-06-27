@@ -62,11 +62,13 @@ set ( SRCS
     STEERBase/AliITSPidParams.cxx 
     STEERBase/AliTRDPIDReference.cxx 
     STEERBase/AliTRDPIDParams.cxx 
-    STEERBase/AliTOFPIDParams.cxx 
+    STEERBase/AliTRDPIDResponseObject.cxx
+    STEERBase/AliTRDTKDInterpolator.cxx
     STEERBase/AliPIDResponse.cxx 
     STEERBase/AliITSPIDResponse.cxx 
     STEERBase/AliTPCPIDResponse.cxx 
     STEERBase/AliTOFPIDResponse.cxx 
+    STEERBase/AliTOFPIDParams.cxx 
     STEERBase/AliTRDPIDResponse.cxx 
     STEERBase/AliEMCALPIDResponse.cxx 
     STEERBase/AliPIDCombined.cxx

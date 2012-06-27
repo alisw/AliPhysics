@@ -29,14 +29,14 @@
 #include <TF1.h>
 #include <TSpline.h>
 #include <TFile.h>
+#include <TArrayF.h>
 
 #include <AliVEvent.h>
 #include <AliVTrack.h>
 #include <AliLog.h>
 #include <AliPID.h>
 #include <AliOADBContainer.h>
-#include <AliTRDPIDParams.h>
-#include <AliTRDPIDReference.h>
+#include <AliTRDPIDResponseObject.h>
 #include <AliTOFPIDParams.h>
 
 #include "AliPIDResponse.h"
@@ -67,8 +67,7 @@ fRun(0),
 fOldRun(0),
 fArrPidResponseMaster(0x0),
 fResolutionCorrection(0x0),
-fTRDPIDParams(0x0),
-fTRDPIDReference(0x0),
+fTRDPIDResponseObject(0x0),
 fTOFtail(1.1),
 fTOFPIDParams(0x0),
 fEMCALPIDParams(0x0),
@@ -91,9 +90,8 @@ AliPIDResponse::~AliPIDResponse()
   //
   // dtor
   //
-  delete fArrPidResponseMaster;
-  delete fTRDPIDParams;
-  delete fTRDPIDReference;
+    delete fArrPidResponseMaster;
+    delete fTRDPIDResponseObject;
   if (fTOFPIDParams) delete fTOFPIDParams;
 }
 
@@ -120,8 +118,7 @@ fRun(0),
 fOldRun(0),
 fArrPidResponseMaster(0x0),
 fResolutionCorrection(0x0),
-fTRDPIDParams(0x0),
-fTRDPIDReference(0x0),
+fTRDPIDResponseObject(0x0),
 fTOFtail(1.1),
 fTOFPIDParams(0x0),
 fEMCALPIDParams(0x0),
@@ -163,8 +160,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fOldRun=0;
     fArrPidResponseMaster=0x0;
     fResolutionCorrection=0x0;
-    fTRDPIDParams=0x0;
-    fTRDPIDReference=0x0;
+    fTRDPIDResponseObject=0x0;
     fEMCALPIDParams=0x0;
     memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
     fTOFtail=1.1;
@@ -846,20 +842,20 @@ void AliPIDResponse::SetTRDPidResponseMaster()
   //
   // Load the TRD pid params and references from the OADB
   //
-  if(fTRDPIDParams) return;
+  if(fTRDPIDResponseObject) return;
   AliOADBContainer contParams("contParams"); 
 
-  Int_t statusPars = contParams.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDParams.root", fOADBPath.Data()), "AliTRDPIDParams");
-  if(statusPars){
-    AliError("Failed initializing PID Params from OADB");
+  Int_t statusResponse = contParams.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDResponse.root", fOADBPath.Data()), "AliTRDPIDResponseObject");
+  if(statusResponse){
+    AliError("Failed initializing PID Response Object from OADB");
   } else {
-    AliInfo(Form("Loading TRD Params from %s/COMMON/PID/data/TRDPIDParams.root", fOADBPath.Data()));
-    fTRDPIDParams = dynamic_cast<AliTRDPIDParams *>(contParams.GetObject(fRun));
-    if(!fTRDPIDParams){
-      AliError(Form("TRD Params not found in run %d", fRun));
+    AliInfo(Form("Loading TRD Response from %s/COMMON/PID/data/TRDPIDResponse.root", fOADBPath.Data()));
+    fTRDPIDResponseObject = dynamic_cast<AliTRDPIDResponseObject *>(contParams.GetObject(fRun));
+    if(!fTRDPIDResponseObject){
+      AliError(Form("TRD Response not found in run %d", fRun));
     }
   }
-
+  /*
   AliOADBContainer contRefs("contRefs");
   Int_t statusRefs = contRefs.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDReferenceLQ1D.root", fOADBPath.Data()), "AliTRDPIDReference");
   if(statusRefs){
@@ -870,7 +866,8 @@ void AliPIDResponse::SetTRDPidResponseMaster()
     if(!fTRDPIDReference){
       AliError(Form("TRD References not found in OADB Container for run %d", fRun));
     }
-  }
+    }
+    */
 }
 
 //______________________________________________________________________________
@@ -878,12 +875,11 @@ void AliPIDResponse::InitializeTRDResponse(){
   //
   // Set PID Params and references to the TRD PID response
   // 
-  fTRDResponse.SetPIDParams(fTRDPIDParams);
-  fTRDResponse.Load(fTRDPIDReference);
-  if(fLHCperiod == "LHC10b" || fLHCperiod == "LHC10c" || fLHCperiod == "LHC10d" || fLHCperiod == "LHC10e"){
-    fTRDslicesForPID[0] = 0;
-    fTRDslicesForPID[1] = 7;
-  }
+    fTRDResponse.SetPIDResponseObject(fTRDPIDResponseObject);
+    if(fLHCperiod == "LHC10b" || fLHCperiod == "LHC10c" || fLHCperiod == "LHC10d" || fLHCperiod == "LHC10e"){
+	fTRDslicesForPID[0] = 0;
+	fTRDslicesForPID[1] = 7;
+    }
 }
 
 //______________________________________________________________________________

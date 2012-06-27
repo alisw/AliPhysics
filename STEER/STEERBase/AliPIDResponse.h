@@ -25,6 +25,7 @@
 
 class AliVEvent;
 class TF1;
+class AliTRDPIDResponseObject; 
 
 class AliPIDResponse : public TNamed {
 public:
@@ -130,8 +131,7 @@ private:
   TObjArray *fArrPidResponseMaster;    //!  TPC pid splines
   TF1       *fResolutionCorrection;    //! TPC resolution correction
 
-  AliTRDPIDParams *fTRDPIDParams;       //! TRD PID Params
-  AliTRDPIDReference *fTRDPIDReference; //! TRD PID References
+  AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
   UInt_t fTRDslicesForPID[2];           //! TRD PID slices
 
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability

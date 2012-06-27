@@ -1544,7 +1544,7 @@ AliTRDPIDResponse *AliTRDcalibDB::GetPIDResponse(AliTRDPIDResponse::ETRDPIDMetho
     Bool_t hasReference = kFALSE;
     while ((obj = refs())){
       if ((ref = dynamic_cast<AliTRDPIDReference *>(obj))){
-        fPIDResponse->Load(ref);
+        //fPIDResponse->Load(ref);
         hasReference = kTRUE;
         break;
       }

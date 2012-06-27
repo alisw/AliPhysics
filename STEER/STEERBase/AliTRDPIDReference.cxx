@@ -58,14 +58,26 @@ AliTRDPIDReference::AliTRDPIDReference(const Char_t *name):
 //____________________________________________________________
 AliTRDPIDReference::AliTRDPIDReference(const AliTRDPIDReference &ref):
 		  TNamed(ref),
-		  fRefContainer(ref.fRefContainer),
+		  fRefContainer(NULL),
 		  fMomentumBins(ref.fMomentumBins)
 {
-	//
-	// Copy constructor
-	// Only copies poiters, object is not the owner of the references
-	//
-	SetBit(kIsOwner, kFALSE);
+    //
+    // Copy constructor
+    //
+    fRefContainer = new TObjArray(fMomentumBins.GetSize() * AliPID::kSPECIES);
+    fRefContainer->SetOwner();
+
+    for(Int_t ip = 0; ip < GetNumberOfMomentumBins(); ip++){
+	for(Int_t is = 0; is < 5; is++){
+	    Int_t ent=is * fMomentumBins.GetSize() + ip;
+	    TObject *obj=ref.fRefContainer->At(ent);
+	    if(obj){
+		fRefContainer->AddAt(obj->Clone(),ent);
+	    }
+	}
+    }
+
+    SetBit(kIsOwner, kTRUE);
 }
 
 //____________________________________________________________
@@ -124,7 +136,7 @@ void AliTRDPIDReference::AddReference(TObject *ref, AliPID::EParticleType spec, 
 		return;
 	}
 	AliDebug(1, Form("Adding object with address %p to position %d", ref, spec * fMomentumBins.GetSize() + pbin));
-	fRefContainer->AddAt(ref, spec * fMomentumBins.GetSize() + pbin);
+	fRefContainer->AddAt(ref->Clone(), spec * fMomentumBins.GetSize() + pbin);
 }
 
 //____________________________________________________________

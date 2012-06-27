@@ -28,6 +28,7 @@ class AliTRDPIDParams : public TNamed{
   public:
     AliTRDPIDParams();
     AliTRDPIDParams(const char *name);
+    AliTRDPIDParams(const AliTRDPIDParams &);
     virtual ~AliTRDPIDParams();
     virtual void Print(Option_t *) const;
 
@@ -36,35 +37,34 @@ class AliTRDPIDParams : public TNamed{
 
   private:
     class AliTRDPIDThresholds : public TObject{
-      public:
-        AliTRDPIDThresholds();
-        AliTRDPIDThresholds(Int_t nTracklets, Double_t effMin, Double_t effMax, Double_t *params = NULL);
-        AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Double_t *params = NULL);
-        AliTRDPIDThresholds(const AliTRDPIDThresholds &);
-        AliTRDPIDThresholds &operator=(const AliTRDPIDThresholds &);
-        virtual ~AliTRDPIDThresholds() {}
-        
-        Int_t GetNTracklets() const { return fNTracklets; }
-        Double_t GetElectronEfficiency(Int_t step = 0) const { if(step == 0) return fEfficiency[0]; else return fEfficiency[1]; }
-        const Double_t *GetThresholdParams() const { return fParams; }
+    public:
+	AliTRDPIDThresholds();
+	AliTRDPIDThresholds(Int_t nTracklets, Double_t effMin, Double_t effMax, Double_t *params = NULL);
+	AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Double_t *params = NULL);
+	AliTRDPIDThresholds(const AliTRDPIDThresholds &);
+	AliTRDPIDThresholds &operator=(const AliTRDPIDThresholds &);
+	virtual ~AliTRDPIDThresholds() {}
 
-        virtual Bool_t IsSortable() const { return kTRUE; }
-        virtual Int_t Compare(const TObject *ref) const;
+        Int_t GetNTracklets() const { return fNTracklets; }
+	Double_t GetElectronEfficiency(Int_t step = 0) const { if(step == 0) return fEfficiency[0]; else return fEfficiency[1]; }
+	const Double_t *GetThresholdParams() const { return fParams; }
+
+	virtual Bool_t IsSortable() const { return kTRUE; }
+	virtual Int_t Compare(const TObject *ref) const;
         virtual Bool_t IsEqual(const TObject *ref) const;
 
-      private:
-        Int_t fNTracklets;          //
-        Double_t fEfficiency[2];    //
-        Double_t fParams[4];        //
+    private:
+	Int_t fNTracklets;          //
+	Double_t fEfficiency[2];    //
+	Double_t fParams[4];        //
 
-        ClassDef(AliTRDPIDThresholds, 1);
+	ClassDef(AliTRDPIDThresholds, 1);
     };
 
+    AliTRDPIDParams &operator=(const AliTRDPIDParams &);
+  
     static const Double_t kVerySmall;
 
-    AliTRDPIDParams(const AliTRDPIDParams &);
-    AliTRDPIDParams &operator=(const AliTRDPIDParams &);
-    
     TSortedList *fEntries; //
 
     ClassDef(AliTRDPIDParams, 1);
