@@ -412,7 +412,7 @@ Bool_t AliEmcalJetTask::DoInit()
   if (!(fEvent->FindListObject(fJetsName)))
     fEvent->AddObject(fJets);
   else {
-    AliError(Form("%s: Object with name %s already in event! Returning", fJetsName.Data(), GetName()));
+    AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fJetsName.Data()));
     return 0;
   }
 
