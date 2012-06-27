@@ -236,11 +236,15 @@ void AliMUONResponseTriggerV1::SetHV()
   AliCDBManager *manager = AliCDBManager::Instance();
   AliCDBPath path("MUON/Calib/TriggerDCS");
   AliCDBEntry *entry = manager->Get(path);
+  if (entry == NULL) {
+    AliWarning("No map found in MUON/Calib/TriggerDCS");
+    return;
+  }
   TMap *hvMap = dynamic_cast<TMap*>(entry->GetObject());
   TObjArray *objArr = 0x0;
   
   AliDCSValue *dcsValue = 0x0;
-  UInt_t time1,time2,timebegin,timeend;
+  UInt_t time1,time2,timebegin=0,timeend=0;
   Int_t nEntries;
   Float_t voltage = 0;
   
