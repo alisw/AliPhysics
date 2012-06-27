@@ -16,10 +16,10 @@
  
 //_________________________________________________________________________
 
-#include "AliAODParticle.h"
-ClassImp(AliAODParticle) 
+#include "AliCaloTrackParticle.h"
+ClassImp(AliCaloTrackParticle) 
 //===============================================
-AliAODParticle::AliAODParticle():TLorentzVector(),
+AliCaloTrackParticle::AliCaloTrackParticle():TLorentzVector(),
 fChargedSign(0),
 fL0(0), fL1(0), fModule(0), fBadDist(0), fNCells(0), fClusterTime(0), fClusterID(0), fAODClusterID(0),
 kInSSA(0), kInTOF(0),  kInTrackMatched(0),
@@ -30,7 +30,7 @@ kIsLeading(0),   kIsIsolated()
 
 } 
 //===============================================
-AliAODParticle::AliAODParticle(Double_t px,Double_t py,Double_t pz,Double_t energy):
+AliCaloTrackParticle::AliCaloTrackParticle(Double_t px,Double_t py,Double_t pz,Double_t energy):
 TLorentzVector(px,py,pz,energy),
 fChargedSign(0),
 fL0(0), fL1(0), fModule(0),fBadDist(0),fNCells(0), fClusterTime(0), fClusterID(0), fAODClusterID(0),
@@ -41,7 +41,7 @@ kIsLeading(0),   kIsIsolated(0)
   
 }
 //===============================================
-Bool_t AliAODParticle::IsPIDOK(Int_t ipid)const{
+Bool_t AliCaloTrackParticle::IsPIDOK(Int_t ipid)const{
   // returns true if photon satisfies given PID criterium
   switch(ipid){
   case 0: return  kTRUE ; //No PID at all
