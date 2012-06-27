@@ -9,7 +9,9 @@ AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
   Double_t vz      = -1,
   Bool_t vzdiff    = kFALSE, 
   Double_t cmin    = -1,
-  Double_t cmax    = -1
+  Double_t cmax    = -1,
+  Double_t minCellTrackScale = -1,
+  Double_t maxCellTrackScale = -1
 )
 {
   // Add EMCAL physics selection task.
@@ -28,7 +30,7 @@ AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
   Bool_t isMC = (mgr->GetMCtruthEventHandler()) ? kTRUE:kFALSE; 
   AliEmcalPhysicsSelectionTask *pseltask = new AliEmcalPhysicsSelectionTask("EmcalPSel");
   pseltask->SetDoWriteHistos(wHistos);
-  AliEmcalPhysicsSelection *physSel = pseltask->GetPhysicsSelection();
+  AliEmcalPhysicsSelection *physSel = static_cast<AliEmcalPhysicsSelection*>(pseltask->GetPhysicsSelection());
   if (physSel) {
     physSel->SetSkipFastOnly(exFOnly);
     if (isMC)      
@@ -39,6 +41,7 @@ AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
     physSel->SetCentRange(cmin,cmax);
     physSel->SetZVertex(vz);
     physSel->SetCheckZvertexDiff(vzdiff);
+    physSel->SetCellTrackScale(minCellTrackScale,maxCellTrackScale);
   } else {
     ::Error("AddTaskEmcalPhysicsSelection", "No AliEmcalPhysicsSelection object found.");
   }
