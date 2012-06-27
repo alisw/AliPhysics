@@ -62,18 +62,6 @@ fEntries(NULL)
 }
 
 //____________________________________________________________
-AliTRDPIDParams::AliTRDPIDParams(const AliTRDPIDParams &ref):
-TNamed(ref),
-fEntries(NULL)
-{
-    //
-    // Copy constructor
-    //
-
-    fEntries=(TSortedList*)ref.fEntries->Clone();
-}
-
-//____________________________________________________________
 AliTRDPIDParams::~AliTRDPIDParams(){
   //
   // Destructor

@@ -62,9 +62,7 @@ class AliTRDPIDParams : public TNamed{
     };
 
     AliTRDPIDParams &operator=(const AliTRDPIDParams &);
-  
     static const Double_t kVerySmall;
-
     TSortedList *fEntries; //
 
     ClassDef(AliTRDPIDParams, 1);
