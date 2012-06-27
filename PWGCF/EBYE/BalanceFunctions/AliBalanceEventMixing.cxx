@@ -47,6 +47,8 @@ ClassImp(AliBalanceEventMixing)
 AliBalanceEventMixing::AliBalanceEventMixing() :
   TObject(), 
   bShuffle(kFALSE),
+  bHBTcut(kFALSE),
+  bConversionCut(kFALSE),
   fAnalysisLevel("ESD"),
   fAnalyzedEvents(0) ,
   fCentralityId(0) ,
@@ -100,7 +102,9 @@ AliBalanceEventMixing::AliBalanceEventMixing() :
 
 //____________________________________________________________________//
 AliBalanceEventMixing::AliBalanceEventMixing(const AliBalanceEventMixing& balance):
-  TObject(balance), bShuffle(balance.bShuffle), 
+  TObject(balance), bShuffle(balance.bShuffle),
+  bHBTcut(balance.bHBTcut), 
+  bConversionCut(balance.bConversionCut),  
   fAnalysisLevel(balance.fAnalysisLevel),
   fAnalyzedEvents(balance.fAnalyzedEvents), 
   fCentralityId(balance.fCentralityId),
@@ -241,7 +245,7 @@ void AliBalanceEventMixing::PrintAnalysisSettings() {
 }
 
 //____________________________________________________________________//
-void AliBalanceEventMixing::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeVector,Int_t iMainTrack) {
+void AliBalanceEventMixing::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeVector,Int_t iMainTrack,Float_t bSign) {
   // Calculates the balance function
   // For the event mixing only for all combinations of the first track (main event) with all other tracks (mix event)
   fAnalyzedEvents++;
@@ -357,7 +361,7 @@ void AliBalanceEventMixing::CalculateBalance(Float_t fCentrality,vector<Double_t
       px2     = chargeVector[4]->at(j);
       py2     = chargeVector[5]->at(j);
       pz2     = chargeVector[6]->at(j);
-      pt2     = chargeVector[7]->at(i);
+      pt2     = chargeVector[7]->at(j);
       energy2 = chargeVector[8]->at(j);
     
 	// filling the arrays
@@ -403,6 +407,86 @@ void AliBalanceEventMixing::CalculateBalance(Float_t fCentrality,vector<Double_t
 	//phi
 	dphi = TMath::Abs(phi1 - phi2);
 	if(dphi>180) dphi = 360 - dphi;  //dphi should be between 0 and 180!
+
+	// HBT like cut
+	if(bHBTcut && charge1 * charge2 > 0){
+	  //if( dphi < 3 || deta < 0.01 ){   // VERSION 1
+	  //  continue;
+	  
+	  // VERSION 2 (Taken from DPhiCorrelations)
+	  // the variables & cuthave been developed by the HBT group 
+	  // see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
+	  
+	  // optimization
+	  if (TMath::Abs(deta) < 0.02 * 2.5 * 3) //twoTrackEfficiencyCutValue = 0.02 [default for dphicorrelations]
+	    {
+
+	      // phi in rad
+	      Float_t phi1rad = phi1*TMath::DegToRad();
+	      Float_t phi2rad = phi2*TMath::DegToRad();
+
+	      // check first boundaries to see if is worth to loop and find the minimum
+	      Float_t dphistar1 = GetDPhiStar(phi1rad, pt1, charge1, phi2rad, pt2, charge2, 0.8, bSign);
+	      Float_t dphistar2 = GetDPhiStar(phi1rad, pt1, charge1, phi2rad, pt2, charge2, 2.5, bSign);
+	      
+	      const Float_t kLimit = 0.02 * 3;
+	      
+	      Float_t dphistarminabs = 1e5;
+	      Float_t dphistarmin = 1e5;
+
+	      if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0 )
+		{
+		  for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
+		    {
+		      Float_t dphistar = GetDPhiStar(phi1rad, pt1, charge1, phi2rad, pt2, charge2, rad, bSign);
+		      Float_t dphistarabs = TMath::Abs(dphistar);
+		      
+		      if (dphistarabs < dphistarminabs)
+			{
+			  dphistarmin = dphistar;
+			  dphistarminabs = dphistarabs;
+			}
+		    }
+		
+		  if (dphistarminabs < 0.02 && TMath::Abs(deta) < 0.02)
+		    {
+		      //AliInfo(Form("HBT: Removed track pair %d %d with [[%f %f]] %f %f %f | %f %f %d %f %f %d %f", i, j, deta, dphi, dphistarminabs, dphistar1, dphistar2, phi1rad, pt1, charge1, phi2rad, pt2, charge2, bSign));
+		      continue;
+		    }
+		}
+	    }
+	}
+	
+	// conversions
+	if(bConversionCut){
+	  if (charge1 * charge2 < 0)
+	    {
+
+	      Float_t m0 = 0.510e-3;
+	      Float_t tantheta1 = 1e10;
+
+	      // phi in rad
+	      Float_t phi1rad = phi1*TMath::DegToRad();
+	      Float_t phi2rad = phi2*TMath::DegToRad();
+	      
+	      if (eta1 < -1e-10 || eta1 > 1e-10)
+		tantheta1 = 2 * TMath::Exp(-eta1) / ( 1 - TMath::Exp(-2*eta1));
+	      
+	      Float_t tantheta2 = 1e10;
+	      if (eta2 < -1e-10 || eta2 > 1e-10)
+		tantheta2 = 2 * TMath::Exp(-eta2) / ( 1 - TMath::Exp(-2*eta2));
+	      
+	      Float_t e1squ = m0 * m0 + pt1 * pt1 * (1.0 + 1.0 / tantheta1 / tantheta1);
+	      Float_t e2squ = m0 * m0 + pt2 * pt2 * (1.0 + 1.0 / tantheta2 / tantheta2);
+
+	      Float_t masssqu = 2 * m0 * m0 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( TMath::Cos(phi1rad - phi2rad) + 1.0 / tantheta1 / tantheta2 ) ) );
+
+	      if (masssqu < 0.04*0.04){
+		//AliInfo(Form("Conversion: Removed track pair %d %d with [[%f %f] %f %f] %d %d <- %f %f  %f %f   %f %f ", i, j, deta, dphi, masssqu, charge1, charge2,eta1,eta2,phi1,phi2,pt1,pt2));
+		continue;
+	      }
+	    }
+	}
 
 	//0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
 	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
