@@ -37,8 +37,8 @@ ClassImp(AliDielectronEvent)
 
 AliDielectronEvent::AliDielectronEvent() :
   TNamed(),
-  fArrTrackP("AliESDtrack",1000),
-  fArrTrackN("AliESDtrack",1000),
+  fArrTrackP(),
+  fArrTrackN(),
   fArrVertexP("AliAODVertex",1000),
   fArrVertexN("AliAODVertex",1000),
   fArrPairs("AliKFParticle",0),
@@ -56,8 +56,8 @@ AliDielectronEvent::AliDielectronEvent() :
 //______________________________________________
 AliDielectronEvent::AliDielectronEvent(const char* name, const char* title) :
   TNamed(name, title),
-  fArrTrackP("AliESDtrack",1000),
-  fArrTrackN("AliESDtrack",1000),
+  fArrTrackP(),
+  fArrTrackN(),
   fArrVertexP("AliAODVertex",1000),
   fArrVertexN("AliAODVertex",1000),
   fArrPairs("AliKFParticle",0),
@@ -177,9 +177,20 @@ void AliDielectronEvent::SetAOD()
   //
   // use AOD as input
   //
-  //  fArrTrackP.SetClass("AliAODTrack"); //not needed since AODTracks are smaller than ESDtracks
-  //  fArrTrackN.SetClass("AliAODTrack");
+  fArrTrackP.SetClass("AliAODTrack",1000);
+  fArrTrackN.SetClass("AliAODTrack",1000);
   fIsAOD=kTRUE;
+}
+
+//______________________________________________
+void AliDielectronEvent::SetESD()
+{
+  //
+  // use ESD as input
+  //
+  fArrTrackP.SetClass("AliESDtrack",1000);
+  fArrTrackN.SetClass("AliESDtrack",1000);
+  fIsAOD=kFALSE;
 }
 
 //______________________________________________

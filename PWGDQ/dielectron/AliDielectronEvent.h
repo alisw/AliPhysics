@@ -29,8 +29,9 @@ public:
 
   virtual ~AliDielectronEvent();
 
+  void SetESD();
   void SetAOD();
-  Bool_t IsAOD() { return fIsAOD; }
+  Bool_t IsAOD() const { return fIsAOD; }
 
   void SetTracks(const TObjArray &arrP, const TObjArray &arrN, const TObjArray &arrPairs);
   void SetEventData(const Double_t data[AliDielectronVarManager::kNMaxValues]);
