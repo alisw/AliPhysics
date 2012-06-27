@@ -604,14 +604,18 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       {
        containTriggerData = kTRUE;
 
-      Bool_t scalerEvent =  rawReader->GetDataHeader()->GetL1TriggerMessage() & 0x1;
+        Bool_t scalerEvent =  rawReader->GetDataHeader()->GetL1TriggerMessage() & 0x1;
+        if ( scalerEvent ) AliDebug(1,Form("Scaler event: evtSpecie recoParam %s  QA %s\n",
+                                           AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(AliRecoParam::Convert(GetRecoParam()->GetEventSpecie()))),
+                                           AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(CurrentEventSpecie()))));
 
       Bool_t fillScalerHistos = ( scalerEvent && 
 				  ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) );
 
       if ( scalerEvent != fillScalerHistos ) {
-	Int_t esindex = AliRecoParam::AConvert(CurrentEventSpecie());
-	AliWarning(Form("Scaler event found but event specie is %s. Scaler histos will not be filled", AliRecoParam::GetEventSpecieName(esindex)));
+	//Int_t esindex = AliRecoParam::AConvert(CurrentEventSpecie());
+        Int_t esindex = AliRecoParam::AConvert(AliRecoParam::Convert(GetRecoParam()->GetEventSpecie()));
+        AliWarning(Form("Scaler event found but event specie is %s. Scaler histos will not be filled", AliRecoParam::GetEventSpecieName(esindex)));
       }
 
       darcHeader = rawStreamTrig.GetHeaders();
@@ -1261,28 +1265,39 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
   {  
     loCircuit = recoLocalTrigger->LoCircuit();
     Int_t iboard = loCircuit - 1;
+    
+    TString debugString = Form("Local board %i", loCircuit);
   
     // Fill ratio 44/34 histos (if not scaler event)
     if ( GetRecoParam()->GetEventSpecie() != AliRecoParam::kCalib ) {
-      Bool_t is34 = ( recoLocalTrigger->GetLoDecision() != 0 );
+      Bool_t is34 = ( recoLocalTrigger->IsTrigX() && recoLocalTrigger->IsTrigY() );
       Bool_t is44 = TriggerElectronics()->ModifiedLocalResponse(loCircuit, respBendPlane, respNonBendPlane, kTRUE);
       if ( is34 ) FillRawsData(AliMUONQAIndices::kTriggerNumberOf34Dec,loCircuit);
       if ( is44 ) FillRawsData(AliMUONQAIndices::kTriggerNumberOf44Dec,loCircuit);
-
-      if ( is44 && ! is34 )
-	AliWarning(Form("Local board %i satisfies the 4/4 conditions but not the 3/4", loCircuit));
+      
+      inputLocalTrigger = fTriggerStoreFromRaw->FindLocal(loCircuit);
+      
+      if ( is44 && ! is34 ) {
+        AliWarning(Form("Local board %i satisfies the 4/4 conditions but not the 3/4", loCircuit));
+        debugString += Form("  is34 %i is44 %i is34_recalc %i", is34, is44, TriggerElectronics()->ModifiedLocalResponse(loCircuit, respBendPlane, respNonBendPlane, kFALSE));
+        debugString += Form("  isTrigX %i %i  isTrigY %i %i  Lpt %i %i  Hpt %i %i", recoLocalTrigger->IsTrigX(), inputLocalTrigger->IsTrigX(),
+                              recoLocalTrigger->IsTrigY(), inputLocalTrigger->IsTrigY(),
+                              recoLocalTrigger->LoLpt(), inputLocalTrigger->LoLpt(), 
+                              recoLocalTrigger->LoHpt(), inputLocalTrigger->LoHpt());
+      }
     }
     
-    inputLocalTrigger = fTriggerStoreFromRaw->FindLocal(loCircuit);
 
     if ( recoLocalTrigger->LoStripX() != inputLocalTrigger->LoStripX() ) {
       FillRawsData(AliMUONQAIndices::kTriggerErrorLocalXPos,loCircuit);
       errorInXPosDev = kTRUE;
+      debugString += Form("  errXpos (%i, %i)", recoLocalTrigger->LoStripX(), inputLocalTrigger->LoStripX());
     }
     
     if ( recoLocalTrigger->GetDeviation() != inputLocalTrigger->GetDeviation() ) {
       FillRawsData(AliMUONQAIndices::kTriggerErrorLocalDev,loCircuit);
       errorInXPosDev = kTRUE;
+      debugString += Form("  errXdev (%i, %i)", recoLocalTrigger->GetDeviation(), inputLocalTrigger->GetDeviation());
     }
 
     // Skip following checks in case we previously found YCopy error and YPos or trigY errors
@@ -1290,6 +1305,7 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
 	
 	if ( recoLocalTrigger->GetLoDecision() != inputLocalTrigger->GetLoDecision() ) {
 	  FillRawsData(AliMUONQAIndices::kTriggerErrorLocalTriggerDec,loCircuit);
+    debugString += Form("  errDecision (%i, %i)", recoLocalTrigger->GetLoDecision(), inputLocalTrigger->GetLoDecision());
 	}
 	
 	// Test Hpt and LPT
@@ -1300,6 +1316,7 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
 	for (Int_t ilut=0; ilut<2; ilut++){
 	    Int_t bitDiff = recoLut[ilut]^inputLut[ilut];
 	    if ( bitDiff == 0 ) continue;
+    debugString += Form("  errLUT[%i] (%i, %i)", ilut, recoLut[ilut], inputLut[ilut]);
 	    for (Int_t ibit=0; ibit<2; ibit++){
 		Bool_t isBitDifferent = (bitDiff>>ibit)&1;
 		if ( isBitDifferent ){
@@ -1312,18 +1329,23 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal()
     
  
     // Skip following checks in case we previously found YCopy errors
-    if ( skipBoard[iboard] ) continue;
+    if ( ! skipBoard[iboard] ) {
 
-    if ( recoLocalTrigger->LoStripY() != inputLocalTrigger->LoStripY() ) {
-      FillRawsData(AliMUONQAIndices::kTriggerErrorLocalYPos,loCircuit);
-      errorInYPosTrigY = kTRUE;
-    }
+      if ( recoLocalTrigger->LoStripY() != inputLocalTrigger->LoStripY() ) {
+        FillRawsData(AliMUONQAIndices::kTriggerErrorLocalYPos,loCircuit);
+        errorInYPosTrigY = kTRUE;
+        debugString += Form("  errYpos (%i, %i)", recoLocalTrigger->LoStripY(), inputLocalTrigger->LoStripY());
+      }
 
-    if ( recoLocalTrigger->LoTrigY() != inputLocalTrigger->LoTrigY()  ) {
-      FillRawsData(AliMUONQAIndices::kTriggerErrorLocalTrigY,loCircuit);	
-      errorInYPosTrigY = kTRUE;
+      if ( recoLocalTrigger->LoTrigY() != inputLocalTrigger->LoTrigY()  ) {
+        FillRawsData(AliMUONQAIndices::kTriggerErrorLocalTrigY,loCircuit);	
+        errorInYPosTrigY = kTRUE;
+        debugString += Form("  errYtrig (%i, %i)", recoLocalTrigger->LoTrigY(), inputLocalTrigger->LoTrigY());
+      }
     }
+    if ( debugString.Length() > 15 ) AliDebug(1,debugString.Data());
   } // loop on local boards
+    
   
   if (errorInXPosDev)
     FillRawsData(AliMUONQAIndices::kTriggerErrorSummary,AliMUONQAIndices::kAlgoLocalX);
