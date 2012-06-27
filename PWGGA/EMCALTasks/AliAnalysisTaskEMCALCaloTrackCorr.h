@@ -43,7 +43,7 @@ public:
 
   Int_t    GetMinNCells()           const { return fMinNCells  ; }
   Double_t GetMinE()                const { return fMinE       ; }
-  Int_t    GetMinDistBad()          const { return fMinDistBad ; }  
+  Double_t GetMinDistBad()          const { return fMinDistBad ; }  
 
   Int_t    GetDebug()               const { return fDebug ; }
   void     SetDebug(Int_t deb)            { fDebug = deb  ; }
@@ -86,7 +86,7 @@ public:
   
   void   SetMinNCells(Int_t n)                { fMinNCells   = n  ; }
   void   SetMinE(Double_t pt)                 { fMinE        = pt ; }
-  void   SetMinDistBad(Int_t fn)              { fMinDistBad = fn ; }
+  void   SetMinDistBad(Double_t fn)           { fMinDistBad = fn ; }
   
   void   SetConeR(Float_t r)              { fSetConeR          = r       ; }
   void   SetPtThreshold(Float_t pt)       { fSetPtThreshold    = pt      ; }
@@ -200,7 +200,8 @@ public:
   void    SwitchOffAODHybridTrackSelection() { kDoSelectHybridTracks = kFALSE;}  
   void    SetAnaMesonType(TString fmesontype){ fAnaMesonType = fmesontype ; }
 
-  void    SetCentralityBin(Int_t min, Int_t max)                                                       { fCentralityBinMin = min; fCentralityBinMax = max ; }
+  void    SetCentralityBin(Int_t min, Int_t max)
+                       { fCentralityBinMin = min; fCentralityBinMax = max ; }
   void    SetCentralityClass(TString name)   { fCentralityClass   = name  ; }
   
   void    SetEventPlaneMethod(TString m)     { fEventPlaneMethod = m      ; }
@@ -208,6 +209,8 @@ public:
   UInt_t  GetEventTriggerMask()        const { return fEventTriggerMaks   ; }
   void    SetEventTriggerMask(UInt_t evtTrig = AliVEvent::kAny)
                                         { fEventTriggerMaks = evtTrig     ; }
+  void    SetNCentralityBins(Int_t fcenbins) { fNCentralityBins = fcenbins; }
+  void    SetNEventPlaneBins(Int_t fevbins)  { fNEventPlaneBins = fevbins ; }
 
   void    SetEMCALLambda0Cut(Float_t l0min, Float_t l0max)
                                    { fL0CutMin = l0min, fL0CutMax = l0max ; }
@@ -283,6 +286,8 @@ private:
   Int_t    fCentralityBinMax;
   TString  fEventPlaneMethod;
   UInt_t   fEventTriggerMaks;
+  Int_t    fNCentralityBins;
+  Int_t    fNEventPlaneBins;
  
   Int_t    fHistoPtBins ; 
   Float_t  fHistoPtMax  ; 
@@ -296,7 +301,7 @@ private:
  
   Int_t    fMinNCells;
   Float_t  fMinE;
-  Int_t    fMinDistBad;
+  Double_t fMinDistBad;
   Float_t  fL0CutMin;
   Float_t  fL0CutMax;
   Float_t  fTimeCutMin;

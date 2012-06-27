@@ -49,7 +49,7 @@ AliAnalysisTaskEMCALCaloTrackCorr::AliAnalysisTaskEMCALCaloTrackCorr(const char 
 
   fEMCALGeomName("EMCAL_COMPLETEV1"),
   fCentralityClass(""),  fCentralityBinMin(0), fCentralityBinMax(0),
-  fEventPlaneMethod(""), fEventTriggerMaks(0), 
+  fEventPlaneMethod(""), fEventTriggerMaks(0), fNCentralityBins(0),      fNEventPlaneBins(0), 
   fHistoPtBins(0),       fHistoPtMax(0.),      fHistoPtMin(0.),
   fHistoPhiBins(0),      fHistoPhiMax(0.),     fHistoPhiMin(0.),
   fHistoEtaBins(0),      fHistoEtaMax(0.),     fHistoEtaMin(0.),
@@ -882,7 +882,7 @@ void AliAnalysisTaskEMCALCaloTrackCorr::UserExec(Option_t *)
    replane = 0;
   }
   else{///for PbPb
-   Float_t fCentralityPerBin = (fCentralityBinMax -fCentralityBinMin)/10.;
+   Float_t fCentralityPerBin = (fCentralityBinMax -fCentralityBinMin)/fNCentralityBins;
    Float_t fcentrality = 0; 
   
    if(fDataType == "ESD")fCentrality->GetCentralityPercentile(fCentralityClass);
@@ -915,8 +915,8 @@ void AliAnalysisTaskEMCALCaloTrackCorr::UserExec(Option_t *)
     if(feventplane<0)feventplane+=TMath::Pi();
     if(feventplane>TMath::Pi())feventplane-=TMath::Pi();
 
-    replane = Int_t((10*feventplane)/TMath::Pi());
-    if(replane>9) replane =9;
+    replane = Int_t((fNEventPlaneBins*feventplane)/TMath::Pi());
+    if(replane>(fNEventPlaneBins -1)) replane = fNEventPlaneBins -1;
    }
    else{
     replane = 0;
@@ -998,7 +998,9 @@ void AliAnalysisTaskEMCALCaloTrackCorr::InitParameters()
   fCentralityClass  = "V0M";
   fCentralityBinMin = fCentralityBinMax=-1;
   fEventPlaneMethod = "Q";
-  fEventTriggerMaks  = AliVEvent::kAny;
+  fEventTriggerMaks = AliVEvent::kAny;
+  fNCentralityBins  = 5;
+  fNEventPlaneBins  = 5;
 
   kMC = kFALSE ;
   kDoMixEventsAna    = kTRUE  ;
@@ -1030,7 +1032,7 @@ void AliAnalysisTaskEMCALCaloTrackCorr::InitParameters()
 
   fMinNCells = 1 ;
   fMinE = 0.5;
-  fMinDistBad = 2 ;
+  fMinDistBad = 2. ;
   
   fL0CutMin = 0.1;
   fL0CutMax = 0.27;
@@ -1099,11 +1101,11 @@ Bool_t AliAnalysisTaskEMCALCaloTrackCorr::FillInputEvent()
     if(!fEvent) {
      Printf("ERROR: Could not retrieve event");
      return kFALSE;
-   
-     fcentrality = ((AliAODHeader*)fEvent->GetHeader())->GetCentrality();
-     if((fcentrality < fCentralityBinMin) || (fcentrality>fCentralityBinMax)) return kFALSE;
-
     }
+    
+    fcentrality = ((AliAODHeader*)fEvent->GetHeader())->GetCentrality();
+    if((fcentrality < fCentralityBinMin) || (fcentrality>fCentralityBinMax)) return kFALSE;
+
    }
    else return kFALSE;
 
@@ -1424,7 +1426,7 @@ Bool_t AliAnalysisTaskEMCALCaloTrackCorr::SelectPair(AliAODParticle *mesonCandid
   Float_t invmassRightBandMaxCut = fRightBandMaxCut;
 
   //for EMCAL, pi0s, mass depends strongly with energy for e > 6, loose max cut
-  if(e > 8.){
+  if(e > 10.){
    invmassmaxcut = (fInvMassMaxCutParam[0]+fInvMassMaxCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
    invmassRightBandMinCut = (fInvMassMaxCutParam[0]+fRightBandMinCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
    invmassRightBandMaxCut = (fInvMassMaxCutParam[0]+fRightBandMaxCut)+fInvMassMaxCutParam[1]*e+fInvMassMaxCutParam[2]*e*e;
