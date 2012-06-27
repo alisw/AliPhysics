@@ -29,7 +29,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliAODTrack.h"
 #include "AliCentrality.h"
-#include "AliAODParticle.h"
+#include "AliCaloTrackParticle.h"
 #include "AliTriggerAnalysis.h"
 #include "AliFiducialCut.h"
 #include "AliEventplane.h"
@@ -796,17 +796,17 @@ void AliAnalysisTaskEMCALCaloTrackCorr::UserExec(Option_t *)
   if(fPhotonEvent)
    fPhotonEvent->Clear();
   else
-   fPhotonEvent = new TClonesArray("AliAODParticle", InputEvent()->GetNumberOfCaloClusters());
+   fPhotonEvent = new TClonesArray("AliCaloTrackParticle", InputEvent()->GetNumberOfCaloClusters());
    nPhotonsEMCAL=0;
   if(fPhotonPairEvent)
    fPhotonPairEvent->Clear();
   else
-   fPhotonPairEvent = new TClonesArray("AliAODParticle", InputEvent()->GetNumberOfCaloClusters());
+   fPhotonPairEvent = new TClonesArray("AliCaloTrackParticle", InputEvent()->GetNumberOfCaloClusters());
 
   if(fCTSEvent)
     fCTSEvent->Clear();
   else
-    fCTSEvent = new TClonesArray("AliAODParticle", InputEvent()->GetNumberOfTracks());
+    fCTSEvent = new TClonesArray("AliCaloTrackParticle", InputEvent()->GetNumberOfTracks());
     nTracksCTS = 0;
 
   if(kEventTriggerAtSE){
@@ -936,7 +936,7 @@ void AliAnalysisTaskEMCALCaloTrackCorr::UserExec(Option_t *)
 
   Int_t naod = fAnaAODParticle->GetEntriesFast();
   for(Int_t iaod=0; iaod<naod; iaod++){
-   AliAODParticle *aodParticle=(AliAODParticle*)fAnaAODParticle->At(iaod);
+   AliCaloTrackParticle *aodParticle=(AliCaloTrackParticle*)fAnaAODParticle->At(iaod);
    if(!aodParticle) continue;
    if(kDoIsolatedAna) {
     if(aodParticle->IsIsolated()) 
@@ -1077,8 +1077,8 @@ Bool_t AliAnalysisTaskEMCALCaloTrackCorr::FillInputEvent()
      return kFALSE;
     }
 
-   AliESDEvent * fESDEvent = dynamic_cast<AliESDEvent*> (InputEvent()); 
-    if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors() <= 0){
+    AliESDEvent * fESDEvent = dynamic_cast<AliESDEvent*> (InputEvent()); 
+     if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors() <= 0){
      return kFALSE;
     }
 
@@ -1155,8 +1155,8 @@ void AliAnalysisTaskEMCALCaloTrackCorr::FillInputTrack()
 
    }
   
-   new((*fCTSEvent)[nTracksCTS])AliAODParticle(track->Px(),track->Py(),track->Pz(),0);
-   AliAODParticle * tr = (AliAODParticle*)fCTSEvent->At(nTracksCTS);
+   new((*fCTSEvent)[nTracksCTS])AliCaloTrackParticle(track->Px(),track->Py(),track->Pz(),0);
+   AliCaloTrackParticle * tr = (AliCaloTrackParticle*)fCTSEvent->At(nTracksCTS);
    tr->SetChargedSign(track->Charge());
    nTracksCTS++;
 
@@ -1218,9 +1218,9 @@ void AliAnalysisTaskEMCALCaloTrackCorr::FillInputPhoton()
     tmpId = clusEMCAL->GetID();
    }
 
-   ////put selected clusters into AOD (AliAODParticle)
-   new((*fPhotonEvent)[nPhotonsEMCAL])AliAODParticle(ph.Px(), ph.Py(), ph.Pz(), ph.E());
-   AliAODParticle * phcluster = (AliAODParticle*)fPhotonEvent->At(nPhotonsEMCAL);
+   ////put selected clusters into AOD (AliCaloTrackParticle)
+   new((*fPhotonEvent)[nPhotonsEMCAL])AliCaloTrackParticle(ph.Px(), ph.Py(), ph.Pz(), ph.E());
+   AliCaloTrackParticle * phcluster = (AliCaloTrackParticle*)fPhotonEvent->At(nPhotonsEMCAL);
    phcluster->SetModule(iSM);
    phcluster->SetNCells(clusEMCAL->GetNCells());
    phcluster->SetLambdas(clusEMCAL->GetM02(),clusEMCAL->GetM20());
@@ -1254,7 +1254,7 @@ void AliAnalysisTaskEMCALCaloTrackCorr::FillInputPhoton()
   }///end loop for clusters
 
   for(Int_t j=0; j< nPhotonsEMCAL; j++){
-   AliAODParticle * phCan=(AliAODParticle*)fPhotonEvent->At(j);
+   AliCaloTrackParticle * phCan=(AliCaloTrackParticle*)fPhotonEvent->At(j);
    Double_t phPt  = phCan->Pt();
    Double_t phPhi = phCan->Phi();
    if(phPhi<0) phPhi+=TMath::TwoPi();
@@ -1286,10 +1286,10 @@ void AliAnalysisTaskEMCALCaloTrackCorr::FillInputMeson()
   Int_t nPhotonPairEMCAL = 0;
 
   for (Int_t i=0; i<nPhotonsEMCAL-1; i++) {
-   AliAODParticle * ph1=(AliAODParticle*)fPhotonEvent->At(i);
+   AliCaloTrackParticle * ph1=(AliCaloTrackParticle*)fPhotonEvent->At(i);
    if(kDoPhotonIDCut && !ph1->IsPIDOK(8)) continue;
    for (Int_t j=i+1; j<nPhotonsEMCAL; j++) {
-    AliAODParticle * ph2=(AliAODParticle*)fPhotonEvent->At(j);
+    AliCaloTrackParticle * ph2=(AliCaloTrackParticle*)fPhotonEvent->At(j);
     if(kDoPhotonIDCut && !ph2->IsPIDOK(8)) continue;
     ph12  = *ph1  + *ph2;
     Double_t phi=ph12.Phi();
@@ -1299,8 +1299,8 @@ void AliAnalysisTaskEMCALCaloTrackCorr::FillInputMeson()
     Double_t deltaTime = TMath::Abs(ph1->GetTOF()-ph2->GetTOF());
     Int_t    deltaModule = TMath::Abs(ph1->GetModule()-ph2->GetModule());  
 
-    new((*fPhotonPairEvent)[nPhotonPairEMCAL])AliAODParticle(ph12.Px(), ph12.Py(), ph12.Pz(), ph12.E());
-    AliAODParticle * phPair = (AliAODParticle*)fPhotonPairEvent->At(nPhotonPairEMCAL);
+    new((*fPhotonPairEvent)[nPhotonPairEMCAL])AliCaloTrackParticle(ph12.Px(), ph12.Py(), ph12.Pz(), ph12.E());
+    AliCaloTrackParticle * phPair = (AliCaloTrackParticle*)fPhotonPairEvent->At(nPhotonPairEMCAL);
     phPair->SetPhotonPairAsy(asy); 
     phPair->SetPhotonPairAngle(angle);
     phPair->SetPhotonPairDTime(deltaTime);
@@ -1315,11 +1315,11 @@ void AliAnalysisTaskEMCALCaloTrackCorr::FillInputMeson()
   Int_t    tmpMesonID = -1;
  
   for(Int_t k=0; k<nPhotonPairEMCAL; k++){
-   AliAODParticle * phPairCan=(AliAODParticle*)fPhotonPairEvent->At(k);
+   AliCaloTrackParticle * phPairCan=(AliCaloTrackParticle*)fPhotonPairEvent->At(k);
    if(kPhotonPairTimeCut && phPairCan->GetPhotonPairDTime() > fPhotonPairTimeCut) continue;
    if(SelectPair(phPairCan)){
-    AliAODParticle *photon1 = (AliAODParticle*)fPhotonEvent->At(phPairCan->GetAODPhotonPairID(0));
-    AliAODParticle *photon2 = (AliAODParticle*)fPhotonEvent->At(phPairCan->GetAODPhotonPairID(1));
+    AliCaloTrackParticle *photon1 = (AliCaloTrackParticle*)fPhotonEvent->At(phPairCan->GetAODPhotonPairID(0));
+    AliCaloTrackParticle *photon2 = (AliCaloTrackParticle*)fPhotonEvent->At(phPairCan->GetAODPhotonPairID(1));
 
     fhMesonE->Fill(phPairCan->E());
     fhMesonPtPhi->Fill(phPairCan->Pt(), phPairCan->Phi());
@@ -1355,7 +1355,7 @@ void AliAnalysisTaskEMCALCaloTrackCorr::FillInputMeson()
   }//end loop for mesons
 
   for(Int_t kmeson=0; kmeson<nPhotonPairEMCAL; kmeson++){
-   AliAODParticle * phPairCan=(AliAODParticle*)fPhotonPairEvent->At(kmeson);
+   AliCaloTrackParticle * phPairCan=(AliCaloTrackParticle*)fPhotonPairEvent->At(kmeson);
    phPairCan->SetIsLeading(kFALSE);
    if(kmeson == tmpMesonID) phPairCan->SetIsLeading(kTRUE);
   }
@@ -1363,7 +1363,7 @@ void AliAnalysisTaskEMCALCaloTrackCorr::FillInputMeson()
 }
 
 //======================================
-Bool_t AliAnalysisTaskEMCALCaloTrackCorr::SelectPair(AliAODParticle *mesonCandidate)
+Bool_t AliAnalysisTaskEMCALCaloTrackCorr::SelectPair(AliCaloTrackParticle *mesonCandidate)
 {
   Double_t fInvMassMaxCutParam[3]={0.};
   if(fAnaMesonType.Contains("Pi0")){
@@ -1495,7 +1495,7 @@ Bool_t AliAnalysisTaskEMCALCaloTrackCorr::IsolatedPhoton(TClonesArray *fPhotonEv
  
   if(fParticlesInCone==kIsolatedOnlyCharged ||fParticlesInCone==kIsolatedNeutralAndCharged){
    for(Int_t j1=0; j1<fCTSEventIsolated->GetEntries(); j1++){
-    AliAODParticle *traForIso=(AliAODParticle*)fCTSEventIsolated->At(j1); 
+    AliCaloTrackParticle *traForIso=(AliCaloTrackParticle*)fCTSEventIsolated->At(j1); 
     ptTrack  = traForIso->Pt();
     if(fDebug>2) printf("track pt=%f\n",ptTrack);
     phiTrack = traForIso->Phi();
@@ -1521,7 +1521,7 @@ Bool_t AliAnalysisTaskEMCALCaloTrackCorr::IsolatedPhoton(TClonesArray *fPhotonEv
 
   if(fParticlesInCone==kIsolatedOnlyNeutral || fParticlesInCone==kIsolatedNeutralAndCharged){
    for(Int_t i2=0; i2<fPhotonEventIsolated->GetEntries(); i2++){
-    AliAODParticle *ph2=(AliAODParticle*)fPhotonEventIsolated->At(i2);
+    AliCaloTrackParticle *ph2=(AliCaloTrackParticle*)fPhotonEventIsolated->At(i2);
     if(!ph2->IsInTrackMatched() || i2==fIndexPhotonCan) continue;
      
     ptNeutral  = ph2->Pt();
@@ -1621,7 +1621,7 @@ Bool_t AliAnalysisTaskEMCALCaloTrackCorr::MakeChargedCorrelation(Int_t fTrackInd
   Double_t uexELog = -999.; 
 
   for(Int_t j1 = 0;j1 < nTracks; j1++ ){
-   AliAODParticle *track = (AliAODParticle *)(fCTSEvent->At(j1)) ;
+   AliCaloTrackParticle *track = (AliCaloTrackParticle *)(fCTSEvent->At(j1)) ;
    if(!track) continue;
    if(kTwoTracksCorr && fTrackIndex ==j1) continue;
    ptAssoc  = track->Pt();
@@ -1785,7 +1785,7 @@ void AliAnalysisTaskEMCALCaloTrackCorr::MakeChargedMixCorrelation(Double_t ptTri
    TClonesArray *bgTracks = static_cast<TClonesArray*>(poolMix->At(ev));
    Int_t nTracks=bgTracks->GetEntriesFast();
    for(Int_t j1 = 0;j1 <nTracks; j1++ ){
-    AliAODParticle *track = (AliAODParticle*)bgTracks->At(j1) ;
+    AliCaloTrackParticle *track = (AliCaloTrackParticle*)bgTracks->At(j1) ;
     if(!track) continue;
     ptAssoc  = track->Pt();
     etaAssoc = track->Eta();

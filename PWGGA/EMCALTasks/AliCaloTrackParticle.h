@@ -1,5 +1,5 @@
-#ifndef ALIAODPARTICLE_H
-#define ALIAODPARTICLE_H
+#ifndef ALICALOTRACKPARTICLE_H
+#define ALICALOTRACKPARTICLE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id: $ */
@@ -9,13 +9,13 @@
 
 #include "TLorentzVector.h"
 
-class AliAODParticle :public TLorentzVector{
+class AliCaloTrackParticle :public TLorentzVector{
   
  public:
   
-  AliAODParticle() ;
-  AliAODParticle(Double_t px,Double_t py,Double_t pz,Double_t E) ; 
-  ~AliAODParticle(){} 
+  AliCaloTrackParticle() ;
+  AliCaloTrackParticle(Double_t px,Double_t py,Double_t pz,Double_t E) ; 
+  ~AliCaloTrackParticle(){} 
 
    Int_t    GetChargedSign() const { return fChargedSign ;}
 
@@ -90,10 +90,10 @@ private:
   Bool_t    kIsLeading        ;
   Bool_t    kIsIsolated       ;
 
-  ClassDef(AliAODParticle,2)
+  ClassDef(AliCaloTrackParticle,2)
 
 };
 
-#endif // #ifdef ALIAODPARTICLE_H
+#endif // #ifdef ALICALOTRACKPARTICLE_H
 
   

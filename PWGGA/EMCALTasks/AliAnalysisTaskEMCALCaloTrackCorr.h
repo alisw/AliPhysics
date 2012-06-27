@@ -16,7 +16,7 @@ class AliMCEvent;
 class AliStack;
 class AliVCluster;
 class AliFiducialCut;
-class AliAODParticle;
+class AliCaloTrackParticle;
 class AliCentrality;
 class AliEventplane;
 class AliAnalysisManager;
@@ -249,7 +249,7 @@ private:
  
   Bool_t  FillInputEvent();
 
-  Bool_t  SelectPair(AliAODParticle *mesonCandidate);
+  Bool_t  SelectPair(AliCaloTrackParticle *mesonCandidate);
   Bool_t  IsolatedPhoton(TClonesArray *fEMCALEventIsolated, 
                          TClonesArray *fCTSEventIsolated,
                          Int_t fIndexPhotonCan,  Double_t ptPhotonCan,
