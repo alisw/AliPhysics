@@ -1066,7 +1066,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 		}
 	}
 
-	
+	/*
 	THnSparseD* hcorr = dynamic_cast<THnSparseD*> (GetOutputData(3));
 	
 	TH2D* corr1 =hcorr->Projection(0,2);
@@ -1078,11 +1078,12 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	corr1->DrawCopy("text");
 	c7->cd(2);
 	corr2->DrawCopy("text");
-	
+	*/
 	TFile* file_projection = new TFile("CFtaskHFprojectionNew.root","RECREATE");
 	
-	corr1->Write();
-	corr2->Write();
+	//	corr1->Write();
+	//	corr2->Write();
+	
 	for(Int_t iC=0;iC<nvarToPlot; iC++){ 
 		for(Int_t iStep=0;iStep<3;iStep++){
 			h[iStep][iC].Write(Form("Step%d_%s",iStep,titles[iC].Data()));
