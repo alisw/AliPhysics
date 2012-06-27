@@ -38,7 +38,7 @@
 //  9) Flag to decide if there is need to evaluate the dependence on the energy loss
 //
 
-enum centrality{ kpp7, kpp276, k010, k1020, k020, k2040, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp7, kpp276, k07half, k010, k1020, k020, k2040, k3050, k4060, k6080, k4080, k80100 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
@@ -83,7 +83,9 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
   //
   Double_t tab = 1., tabUnc = 0.;
-  if ( cc == k010 ) {
+  if ( cc == k07half ) {
+    tab = 24.81; tabUnc = 0.8037;
+  } else if ( cc == k010 ) {
     tab = 23.48; tabUnc = 0.97;
   } else if ( cc == k1020 ) {
     tab = 14.4318; tabUnc = 0.5733;
@@ -91,6 +93,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     tab = 18.93; tabUnc = 0.74;
   } else if ( cc == k2040 ) {
     tab = 6.86; tabUnc = 0.28;
+  } else if ( cc == k3050 ) {
+    tab = 3.87011; tabUnc = 0.183847;
   } else if ( cc == k4060 ) {
     tab = 2.00;  tabUnc= 0.11;
   } else if ( cc == k4080 ) {
@@ -282,17 +286,25 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     systematics->SetIsLowEnergy(true);
   } else if( cc!=kpp7 )  {
     systematics->SetCollisionType(1);
-    if ( cc == k010 )  systematics->SetCentrality("010");
+    if ( cc == k07half ) { 
+      cout<<endl<<" Beware, you're using the systematics of the 0-10% of 2010 data !! FIX ME !!"<<endl<<endl; 
+      systematics->SetCentrality("010"); 
+    }
+    else if ( cc == k010 )  systematics->SetCentrality("010");
     else if ( cc == k1020 )  systematics->SetCentrality("1020");
     else if ( cc == k020 )  systematics->SetCentrality("020");
     else if ( cc == k2040 ) {
       systematics->SetCentrality("2040");
       systematics->SetIsPbPb2010EnergyScan(true);
     }
+    else if ( cc == k3050 ) {
+      cout<<endl<<" Beware, you're using the systematics of the 40-80% of 2010 data !! FIX ME !!"<<endl<<endl; 
+      systematics->SetCentrality("4080");
+    }
     else if ( cc == k4060 )  systematics->SetCentrality("4060");
     else if ( cc == k6080 )  systematics->SetCentrality("6080");
     else if ( cc == k4080 ) systematics->SetCentrality("4080");
-    else { 
+    else {
       cout << " Systematics not yet implemented " << endl;
       return;
     }
