@@ -249,7 +249,9 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       
       if(trecal)
       {
-        TObjArray *trecalpass=(TObjArray*)trecal->FindObject(pass);
+        TString passTmp = pass;
+        if(pass!="pass1" && pass!="pass2") pass = "pass2"; // TEMPORARY FIX FOR LHC11a analysis
+        TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passTmp);
         
         if(trecalpass)
         {
@@ -1139,6 +1141,8 @@ TString AliCalorimeterUtils::GetPass()
   if      (pass.Contains("ass1")) return TString("pass1");
   else if (pass.Contains("ass2")) return TString("pass2");
   else if (pass.Contains("ass3")) return TString("pass3");
+  else if (pass.Contains("ass4")) return TString("pass4");
+  else if (pass.Contains("ass5")) return TString("pass5");
 
   // No condition fullfilled, give a default value
   printf("AliCalorimeterUtils::GetPass() - Pass number string not found \n");
