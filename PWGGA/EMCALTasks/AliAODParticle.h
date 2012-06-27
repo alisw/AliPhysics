@@ -22,7 +22,7 @@ class AliAODParticle :public TLorentzVector{
    Float_t  GetLambda0(void)        const {return fL0      ;}
    Float_t  GetLambda1(void)        const {return fL1      ;}
    Int_t    GetModule(void)         const {return fModule  ;}
-   Int_t    GetDistBad(void)        const {return fBadDist ;}
+   Double_t GetDistBad(void)        const {return fBadDist ;}
    Int_t    GetNCells(void)         const {return fNCells  ;}
    Double_t GetTOF(void)            const {return fClusterTime;}
    Int_t    GetClusterID(void)      const {return fClusterID;}
@@ -47,7 +47,7 @@ class AliAODParticle :public TLorentzVector{
    
    void SetLambdas(Float_t l0,Float_t l1){fL0=l0,fL1=l1;}
    void SetModule(Int_t mod){fModule = mod;}
-   void SetDistBad(Int_t nbad){fBadDist = nbad;}
+   void SetDistBad(Double_t nbad){fBadDist = nbad;}
    void SetNCells(Int_t ncell){fNCells = ncell;}
    void SetTOF(Double_t time){fClusterTime = time;}
    void SetClusterID(Int_t id){fClusterID = id;}
