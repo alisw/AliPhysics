@@ -25,6 +25,8 @@ AliEmcalPhysicsSelection::AliEmcalPhysicsSelection() :
   fZvertexDiff(0),
   fCentMin(-1),
   fCentMax(-1),
+  fMinCellTrackScale(-1),
+  fMaxCellTrackScale(-1),
   fIsFastOnly(0),
   fIsLedEvent(0),
   fIsGoodEvent(0),
@@ -186,8 +188,10 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     }
   }
 
-  if (fTrackMinPt>0) {
-    TClonesArray *trks = 0;
+  TClonesArray *trks = 0;
+  Int_t Ntracks = 0;
+
+  if (fTrackMinPt>0 || fMinCellTrackScale > 0 || fMaxCellTrackScale > 0) {
     if (eev) {
       am->LoadBranch("PicoTracks");
       trks = dynamic_cast<TClonesArray*>(eev->FindListObject("PicoTracks"));
@@ -198,22 +202,32 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     } else {
       trks = dynamic_cast<TClonesArray*>(aev->FindListObject("tracks"));
     }
-    if (trks) {
-      const Int_t Ntracks = trks->GetEntriesFast();
-      for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-        AliVTrack *track = static_cast<AliVTrack*>(trks->At(iTracks));
-        if (!track)
-          continue;
-        if (aev) { // a bit ugly since cuts are hard coded for now
-          AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
-          if (!aodtrack->TestFilterBit(256) && !aodtrack->TestFilterBit(512))
-            continue;
-        }
-        Double_t pt = track->Pt();
-        if (pt>fTrackMaxPt)
-          fTrackMaxPt = pt;
+    if (trks)
+      Ntracks = trks->GetEntriesFast();
+  }
+  
+  Int_t nAccTracks = 0;
+
+  if (fTrackMinPt>0 || fMinCellTrackScale > 0 || fMaxCellTrackScale > 0) {
+    for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
+      AliVTrack *track = static_cast<AliVTrack*>(trks->At(iTracks));
+      if (!track)
+	continue;
+      if (aev) { // a bit ugly since cuts are hard coded for now
+	AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
+	if (!aodtrack->TestFilterBit(256) && !aodtrack->TestFilterBit(512))
+	  continue;
       }
+      nAccTracks++;
+      Double_t pt = track->Pt();
+      if (pt>fTrackMaxPt)
+	fTrackMaxPt = pt;
     }
+  }
+
+  if (fMinCellTrackScale > 0 || fMaxCellTrackScale > 0) {
+    if (nCells < fMinCellTrackScale * nAccTracks || nCells > fMaxCellTrackScale * nAccTracks)
+      fIsGoodEvent = kFALSE;
   }
 
   // bad cell criterion for LHC11a from 
