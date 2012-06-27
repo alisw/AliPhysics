@@ -17,7 +17,7 @@ class AliTrackPointArray;
 class AliITSSumTP : public TObject
 {
  public:
-  enum {kCrvTPC,kCrvTPCErr,kCrvGlo,kCrvGloErr,kNVarPerTrack};
+  enum {kCrvTPC,kCrvTPCErr,kCrvGlo,kCrvGloErr,kTPCInX,kTPCInY,kTPCInZ,kNVarPerTrack};
   //
   AliITSSumTP() : fTracks(0),fVertex(),fNVars(0),fCrvVars(0) {fTracks.SetOwner(kTRUE);}
   AliITSSumTP(const AliITSSumTP& src);
@@ -33,6 +33,8 @@ class AliITSSumTP : public TObject
   Double_t     GetCrvTPCErr(Int_t i)    const {return fCrvVars[i*kNVarPerTrack+kCrvTPCErr];}
   Double_t     GetCrvGlo(Int_t i)       const {return fCrvVars[i*kNVarPerTrack+kCrvGlo];}
   Double_t     GetCrvGloErr(Int_t i)    const {return fCrvVars[i*kNVarPerTrack+kCrvGloErr];}
+  void         GetTPCInnerXYZ(int i, double* xyz) const;
+  void         SetTPCInnerXYZ(int i, const double* xyz);
   //
   void         Reset();
   void         BookNTracks(Int_t n);
@@ -52,6 +54,26 @@ class AliITSSumTP : public TObject
 
   ClassDef(AliITSSumTP,1)
 };
+
+
+//---------------------------------------------------------------
+inline void AliITSSumTP::GetTPCInnerXYZ(int i, double* xyz) const
+{
+  // get tpc inner coordinates
+  xyz[0] = fCrvVars[i*kNVarPerTrack+kTPCInX];
+  xyz[1] = fCrvVars[i*kNVarPerTrack+kTPCInY];
+  xyz[2] = fCrvVars[i*kNVarPerTrack+kTPCInZ];
+}
+
+//---------------------------------------------------------------
+inline void AliITSSumTP::SetTPCInnerXYZ(int i, const double* xyz)
+{
+  // Set tpc inner coordinates
+  fCrvVars[i*kNVarPerTrack+kTPCInX] = xyz[0];
+  fCrvVars[i*kNVarPerTrack+kTPCInY] = xyz[1];
+  fCrvVars[i*kNVarPerTrack+kTPCInZ] = xyz[2];
+}
+
 
 #endif
 
