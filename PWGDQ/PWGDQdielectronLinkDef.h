@@ -43,7 +43,7 @@
 #pragma link C++ class AliDielectronEvent+;
 #pragma link C++ class AliDielectronMixingHandler+;
 #pragma link C++ class AliReducedEvent+;
-#pragma link C++ class AliReducedEventFriend+;                                                                                                                                  
+#pragma link C++ class AliReducedEventFriend+;
 #pragma link C++ class AliReducedTrack+;
 #pragma link C++ class AliReducedPair+;
 #pragma link C++ class AliReducedCaloCluster+;
