@@ -3,6 +3,7 @@
 
 // $Id$
 
+class AliGenPythiaEventHeader;
 class TClonesArray;
 class TH1F;
 class TH2F;
@@ -21,17 +22,32 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetMCJetsName(const char *n)       { fMCJetsName    = n; }
   void                        SetMCTracksName(const char *n)     { fMCTracksName  = n; }
   void                        SetMaxDistance(Double_t d)         { fMaxDistance   = d; }
+  void                        SetDoWeighting(Bool_t d = kTRUE)   { fDoWeighting   = d; }
+  void                        SetVertexCut(Double_t v)           { fVertexCut     = v; }
 
  protected:
+  void                        ExecOnce();
   void                        DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc);
   Bool_t                      FillHistograms();
   Bool_t                      RetrieveEventObjects();
+  Bool_t                      Run();
 
   TString                     fMCTracksName;              // name of MC particle collection
   TString                     fMCJetsName;                // name of MC jet collection
   Double_t                    fMaxDistance;               // maximum distance between matched particle and detector level jets
+  Bool_t                      fDoWeighting;               // = true, weight using trials and given x section
+  Double_t                    fVertexCut;                 // z vertex cut
+
+  AliGenPythiaEventHeader    *fPythiaHeader;              //!event Pythia header
+  Double_t                    fEventWeight;               //!event weight
+  Int_t                       fPtHardBin;                 //!event pt hard bin
+  Int_t                       fNTrials;                   //!event trials
   TClonesArray               *fMCTracks;                  //!MC particles
   TClonesArray               *fMCJets;                    //!MC jets
+  // General histograms
+  TH1F                       *fHistNTrials;               //!total number of trials per pt hard bin
+  TH1F                       *fHistAcceptedEvents;        //!number of accepted events per pt hard bin
+  TH1F                       *fHistEvents;                //!total number of events per pt hard bin
   // Particle level jets
   TH2F                       *fHistMCJetPhiEta;           //!phi-eta distribution of jets
   TH1F                       *fHistMCJetsPt;              //!inclusive jet pt spectrum
