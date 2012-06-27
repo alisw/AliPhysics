@@ -732,6 +732,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
       cout<<"Double_t gIntegralPhiShuffledAlice[nCentralityBins] = {";
       for(Int_t k = 0; k < gintegPS[i]->GetN()-1;k++){
+	gintegPS[i]->GetPoint(k,x,y);
 	cout<<y<<", ";      
       }
       gintegPS[i]->GetPoint(k,x,y);

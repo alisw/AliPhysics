@@ -1,13 +1,17 @@
 //__________________________________________________//
 AliBalanceEventMixing *GetBalanceFunctionObject(const char* analysisLevel = "ESD", 
-				     const char* centralityName = 0x0,
-				     Double_t centrMin = 0.,
-				     Double_t centrMax = 100.,
-				     Bool_t bShuffle = kFALSE) {
+						const char* centralityName = 0x0,
+						Double_t centrMin = 0.,
+						Double_t centrMax = 100.,
+						Bool_t bShuffle = kFALSE,
+						Bool_t bHBTcut = kFALSE,
+						Bool_t bConversionCut = kFALSE) {
   //Function to setup the AliBalanceEventMixing object and return it
   AliBalanceEventMixing *gBalance = new AliBalanceEventMixing();
   gBalance->SetAnalysisLevel(analysisLevel);
   gBalance->SetShuffle(bShuffle);
+  gBalance->SetHBTcut(bHBTcut);
+  gBalance->SetConversionCut(bConversionCut);
   if(centralityName) gBalance->SetCentralityIdentifier(centralityName);
   gBalance->SetCentralityInterval(centrMin,centrMax);
 

@@ -393,6 +393,9 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   AliMixInputEventHandler *mixIEH = SetupEventsForMixing();
 
   Float_t fCentrality           = 0.;
+
+  // for HBT like cuts need magnetic field sign
+  Float_t bSign = 0; // only used in AOD so far
   
   // vector holding the charges/kinematics of all tracks (charge,y,eta,phi,p0,p1,p2,pt,E)
   vector<Double_t> *chargeVector[9];          // original charge
@@ -426,6 +429,9 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   	Printf("ERROR: aodEventMix not available");
   	return;
       }
+
+     // for HBT like cuts need magnetic field sign
+     bSign = (aodEventMain->GetMagneticField() > 0) ? 1 : -1;
       
      AliAODHeader *aodHeaderMain = aodEventMain->GetHeader();  
 
@@ -638,7 +644,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   		      // calculate balance function for each track in main event
 		      iMainTrackUsed++; // is needed to do no double counting in Balance Function calculation   
 		      if(iMainTrackUsed >= (Int_t)chargeVector[0]->size()) break; //do not allow more tracks than in mixed event!
-		      fBalance->CalculateBalance(fCentrality,chargeVector,iMainTrackUsed);
+		      fBalance->CalculateBalance(fCentrality,chargeVector,iMainTrackUsed,bSign);
   		      // clean charge vector afterwards
   		      for(Int_t i = 0; i < 9; i++){		       
   			chargeVector[i]->clear();

@@ -16,23 +16,25 @@ Double_t gMinAcceptedProbability = 0.7;
 
 //_________________________________________________________//
 AliAnalysisTaskEventMixingBF *AddTaskBalanceEventMixing(Double_t centrMin=0.,
-						 Double_t centrMax=100.,
-						 Bool_t gRunShuffling=kFALSE,
-						 TString centralityEstimator="V0M",
-						 Double_t vertexZ=10.,
-						 Double_t DCAxy=-1,
-						 Double_t DCAz=-1,
-						 Double_t ptMin=0.3,
-						 Double_t ptMax=1.5,
-						 Double_t etaMin=-0.8,
-						 Double_t etaMax=0.8,
-						 Double_t maxTPCchi2 = -1, 
-						 Int_t minNClustersTPC = -1,
-						 Bool_t kUsePID = kFALSE,
-						 Int_t AODfilterBit = 128,
-						 Bool_t bCentralTrigger = kFALSE,
-						 TString fileNameBase="AnalysisResults") {
-
+							Double_t centrMax=100.,
+							Bool_t gRunShuffling=kFALSE,
+							TString centralityEstimator="V0M",
+							Double_t vertexZ=10.,
+							Double_t DCAxy=-1,
+							Double_t DCAz=-1,
+							Double_t ptMin=0.3,
+							Double_t ptMax=1.5,
+							Double_t etaMin=-0.8,
+							Double_t etaMax=0.8,
+							Double_t maxTPCchi2 = -1, 
+							Int_t minNClustersTPC = -1,
+							Bool_t kUsePID = kFALSE,
+							Int_t AODfilterBit = 128,
+							Bool_t bCentralTrigger = kFALSE,
+							Bool_t bHBTcut = kFALSE,
+							Bool_t bConversionCut = kFALSE,
+							TString fileNameBase="AnalysisResults") {
+  
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString centralityName("");
@@ -62,6 +64,8 @@ AliAnalysisTaskEventMixingBF *AddTaskBalanceEventMixing(Double_t centrMin=0.,
   centralityName+="_Bit";
   centralityName+=Form("%d",AODfilterBit);
   if(bCentralTrigger)   centralityName+="_withCentralTrigger";
+  if(bHBTcut)           centralityName+="_withHBTcut";
+  if(bConversionCut)    centralityName+="_withConversionCut";
 
 
 
@@ -93,16 +97,16 @@ AliAnalysisTaskEventMixingBF *AddTaskBalanceEventMixing(Double_t centrMin=0.,
   AliBalanceEventMixing *bfs = 0;  // shuffled Balance function object
 
   if (analysisType=="ESD"){
-    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE);
+    bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut);
   }
   else if (analysisType=="AOD"){
-    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE);
+    bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut);
   }
   else if (analysisType=="MC"){
-    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax);
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE);
+    bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE,bHBTcut,bConversionCut);
   }
   else{
     ::Error("AddTaskEventMixingBF", "analysis type NOT known.");
