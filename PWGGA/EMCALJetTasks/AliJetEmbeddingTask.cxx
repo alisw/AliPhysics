@@ -44,18 +44,6 @@ AliJetEmbeddingTask::~AliJetEmbeddingTask()
 }
 
 //________________________________________________________________________
-void AliJetEmbeddingTask::UserExec(Option_t *) 
-{
-  // Execute per event.
-
-  if (!fIsInit) {
-    ExecOnce();
-    fIsInit = 1;
-  }
-  Run();
-}
-
-//________________________________________________________________________
 void AliJetEmbeddingTask::Run() 
 {
   // Embed particles.
