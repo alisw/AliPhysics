@@ -39,6 +39,7 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
     virtual ~AliAnalysisTaskFlowD2H();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
+    virtual void Terminate(Option_t *);
     void SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass, Int_t ptWidth);
 
   private:
@@ -57,11 +58,11 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
 		    Double_t phi, Double_t eta,
 		    Int_t nDaughters, const Int_t *iID );
 
-    AliFlowEvent *fTPCEvent;
-    AliFlowEvent *fVZEEvent;
-    AliFlowTrackCuts *fCutsTPC;
-    AliFlowTrackCuts *fCutsVZE;
-    AliFlowTrackCuts *fNoPOIs;
+    AliFlowEvent *fTPCEvent; //!
+    AliFlowEvent *fVZEEvent; //!
+    AliFlowTrackCuts *fCutsTPC; //!
+    AliFlowTrackCuts *fCutsVZE; //!
+    AliFlowTrackCuts *fNoPOIs; //!
 
     AliRDHFCuts *fCutsPOI; // cuts for POIs
     Int_t  fSource; // AliRDHFCuts::ESele
@@ -73,7 +74,7 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
     Double_t fMaxMass; // configures mass range for the analysis
     Int_t fPtBinWidth; // configures pt bin width for the analysis
 
-    TList *fHList; // List for histos
+    TList *fHList; //! List for histos
     TH1D *fEvent;  // Event counter
     TH1D *fCC;     // CC histogram
     TH1D *fRFPMTPC; // Multiplicity RFPTPC
@@ -81,7 +82,7 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
 
     TObjArray *fCandidates; // Array of selected candidates
 
-  ClassDef(AliAnalysisTaskFlowD2H, 4);
+  ClassDef(AliAnalysisTaskFlowD2H, 5);
 };
 
 #endif
