@@ -428,7 +428,7 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
       inTPC = esdTr->GetInnerParam();  // TPC track at the inner wall
       if (inTPC) {
 	inTPC->GetXYZ(xyz);
-	fITSSumTP->GetTPCInnerXYZ(it,xyz);
+	fITSSumTP->SetTPCInnerXYZ(it,xyz);
       }
     }
     fITSSumTP->SetUniqueID(fCurrentRunNumber);
