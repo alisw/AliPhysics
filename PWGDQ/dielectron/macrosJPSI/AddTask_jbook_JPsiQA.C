@@ -12,7 +12,6 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod=""){
   if( list.IsNull()) list=prod;
   if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
   if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
-  //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
   //Do we have an AOD handler?
   Bool_t isAOD=(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class() ? kTRUE : kFALSE);
@@ -28,7 +27,6 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod=""){
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");                                                                                   
   if (trainRoot.IsNull()) configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jb_PbPb.C";
 
-  
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
@@ -44,7 +42,7 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod=""){
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliDielectron *jpsi=ConfigJpsiQA_jb_PbPb(i,list);
     if (jpsi ) task->AddDielectron(jpsi);
-    if (jpsi ) printf("add: %s\n",jpsi->GetName());
+    //    if (jpsi ) printf("add: %s\n",jpsi->GetName());
   }
   
   //Add event filter
@@ -74,8 +72,8 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod=""){
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("jbookQA_CF",
                          TList::Class(),
-                         AliAnalysisManager::kExchangeContainer, //AliAnalysisManager::kOutputContainer,
-                         "dummy");
+			 AliAnalysisManager::kOutputContainer,//AliAnalysisManager::kExchangeContainer,
+                         "jbookQA.root");
     
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("jbookQA_EventStat",
