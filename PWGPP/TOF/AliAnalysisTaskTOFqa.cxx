@@ -1,5 +1,5 @@
 /*  created by fbellini@cern.ch on 14/09/2010 */
-/*  last modified by fbellini   on 31/03/2010 */
+/*  last modified by fbellini   on 18/06/2012 */
 
 
 #ifndef ALIANALYSISTASKTOFQA_CXX
@@ -15,6 +15,10 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
+#include "AliCDBManager.h"
+#include "AliTOFcalib.h"
+#include "AliTOFT0maker.h"
+#include "AliTOFT0v1.h"
 #include "AliAnalysisTaskTOFqa.h"
 #include "AliAnalysisFilter.h"
 #include "AliESDtrackCuts.h"
@@ -31,14 +35,17 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa() :
   fTrackFilter(0x0), 
   fVertex(0x0),
   fESDpid(new AliESDpid()),
+  fTOFT0v1(new AliTOFT0v1(fESDpid)),
   fNTOFtracks(0), 
-//  fNPrimaryTracks(0), 
   fEnableAdvancedCheck(kFALSE),
   fExpTimeBinWidth(24.4),
   fExpTimeRangeMin(-25010.),
   fExpTimeRangeMax(25010.),
   fExpTimeSmallRangeMin(-5002.),
   fExpTimeSmallRangeMax(5002.),
+  fMyTimeZeroTOF(1e20),
+  fMyTimeZeroTOFsigma(1e20),
+  fMyTimeZeroTOFtracks(-1),
   fHlist(0x0),
   fHlistTimeZero(0x0),
   fHlistPID(0x0),
@@ -62,14 +69,17 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa(const char *name) :
   fTrackFilter(0x0),
   fVertex(0x0),
   fESDpid(new AliESDpid()),
+  fTOFT0v1(new AliTOFT0v1(fESDpid)),
   fNTOFtracks(0), 
-  // fNPrimaryTracks(0),
   fEnableAdvancedCheck(kFALSE),
   fExpTimeBinWidth(24.4),
   fExpTimeRangeMin(-25010.),
   fExpTimeRangeMax(25010.),
   fExpTimeSmallRangeMin(-5002.),
   fExpTimeSmallRangeMax(5002.),
+  fMyTimeZeroTOF(1e20),
+  fMyTimeZeroTOFsigma(1e20),
+  fMyTimeZeroTOFtracks(-1),
   fHlist(0x0),
   fHlistTimeZero(0),
   fHlistPID(0x0),
@@ -106,14 +116,17 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa(const AliAnalysisTaskTOFqa& copy)
   fTrackFilter(copy.fTrackFilter), 
   fVertex(copy.fVertex),
   fESDpid(copy.fESDpid),
+  fTOFT0v1(copy.fTOFT0v1),
   fNTOFtracks(copy.fNTOFtracks), 
-  //fNPrimaryTracks(copy.fNPrimaryTracks), 
   fEnableAdvancedCheck(copy.fEnableAdvancedCheck),
   fExpTimeBinWidth(copy.fExpTimeBinWidth),
   fExpTimeRangeMin(copy.fExpTimeRangeMin),
   fExpTimeRangeMax(copy.fExpTimeRangeMax),
   fExpTimeSmallRangeMin(copy.fExpTimeSmallRangeMin),
   fExpTimeSmallRangeMax(copy.fExpTimeSmallRangeMax),
+  fMyTimeZeroTOF(copy.fMyTimeZeroTOF),
+  fMyTimeZeroTOFsigma(copy.fMyTimeZeroTOFsigma),
+  fMyTimeZeroTOFtracks(copy.fMyTimeZeroTOFtracks),
   fHlist(copy.fHlist),
   fHlistTimeZero(copy.fHlistTimeZero),
   fHlistPID(copy.fHlistPID),
@@ -144,16 +157,17 @@ AliAnalysisTaskTOFqa& AliAnalysisTaskTOFqa::operator=(const AliAnalysisTaskTOFqa
     fTrackFilter=copy.fTrackFilter;
     fVertex=copy.fVertex;
     fESDpid=copy.fESDpid;
+    fTOFT0v1=copy.fTOFT0v1;
     fNTOFtracks=copy.fNTOFtracks; 
-    fEnableAdvancedCheck=copy.fEnableAdvancedCheck;
     fEnableAdvancedCheck=copy.fEnableAdvancedCheck;
     fExpTimeBinWidth=copy.fExpTimeBinWidth;
     fExpTimeRangeMin=copy.fExpTimeRangeMin;
     fExpTimeRangeMax=copy.fExpTimeRangeMax;
     fExpTimeSmallRangeMin=copy.fExpTimeSmallRangeMin;
     fExpTimeSmallRangeMax=copy.fExpTimeSmallRangeMax;
-    
-    //fNPrimaryTracks=copy.fNPrimaryTracks; 
+    fMyTimeZeroTOF=copy.fMyTimeZeroTOF;
+    fMyTimeZeroTOFsigma=copy.fMyTimeZeroTOFsigma;
+    fMyTimeZeroTOFtracks=copy.fMyTimeZeroTOFtracks;
     for (Int_t j=0;j<5;j++ ) {
       if (j<3) fT0[j]=copy.fT0[j];
       fSigmaSpecie[j]=copy.fSigmaSpecie[j];
@@ -177,6 +191,7 @@ AliAnalysisTaskTOFqa::~AliAnalysisTaskTOFqa() {
 
   Info("~AliAnalysisTaskTOFqa","Calling Destructor");
   if (fESDpid) delete fESDpid;
+  if (fTOFT0v1) delete fTOFT0v1;
   if (fVertex) delete fVertex;
   if (fTrackFilter) delete fTrackFilter;
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;  
@@ -234,9 +249,6 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   nExpTimeSmallBins = TMath::Nint((fExpTimeSmallRangeMax - fExpTimeSmallRangeMin)/fExpTimeBinWidth);//ps
   fExpTimeSmallRangeMax=fExpTimeSmallRangeMin+nExpTimeSmallBins*fExpTimeBinWidth;//ps
   
-  //  nExpTimeSmallBins, fExpTimeSmallRangeMin, fExpTimeSmallRangeMax
-  //  nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax
-
 //0
   TH1I* hTOFmatchedESDperEvt = new TH1I("hTOFmatchedPerEvt", "Matched TOF tracks per event (|#eta| #leq 0.8 and pT #geq 0.3 GeV/c);TOF-matched ESD tracks;Events", 100, 0, 100) ;  
   hTOFmatchedESDperEvt->Sumw2() ;
@@ -499,8 +511,6 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   hStartTimeMask->GetYaxis()->SetBinLabel(8,"T0C & tof_t0");
   fHlistTimeZero->AddLast(hStartTimeMask);
 
-
-
 //--------------------------------------------- TOF PID QA plots
   //PID 0
   TH2F* hTOFmatchedESDpVsBeta  = new TH2F("hTOFmatchedESDpVsBeta", "Matched ESDs tracks beta vs. p; p(GeV/c); beta", 500, 0.0, 5.0, 150, 0., 1.5) ; 
@@ -697,15 +707,25 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
     fHlistPID->AddLast(hTOFmatchedExpTimeProVsPNoTRDNeg) ;
 
 //PID 30
-  TH1F* hTOFmatchedTimePion1GeV = new TH1F("hTOFmatchedTimePion1GeV", "ESDs t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} (from tracking) for 0.95 <= p_{T} <= 1.05 GeV/c; t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH2F* hTOFmatchedTimePion1GeV = new TH2F("hTOFmatchedTimePion1GeV", "ESDs t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} (from tracking) for 0.95 <= p_{T} <= 1.05 GeV/c; n tracks used for TOF_T0; t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} [ps];Counts", 1000, 0., 1000., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
   hTOFmatchedTimePion1GeV->Sumw2() ;
-  hTOFmatchedTimePion1GeV->SetLineWidth(1);
-  hTOFmatchedTimePion1GeV->SetLineColor(kBlue);
-  hTOFmatchedTimePion1GeV->SetMarkerStyle(20);
-  hTOFmatchedTimePion1GeV->SetMarkerSize(0.8); 
-  hTOFmatchedTimePion1GeV->SetMarkerColor(kBlue);
   fHlistPID->AddLast(hTOFmatchedTimePion1GeV) ;
   
+  //PID 31
+  TH2F* hTimeT0subtractedPionVsP = new TH2F("hTimeT0subtractedPionVsP", "ESDs t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} vs p; p (GeV/c); t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} [ps];Counts", 500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  hTimeT0subtractedPionVsP->Sumw2() ;
+  fHlistPID->AddLast(hTimeT0subtractedPionVsP) ;
+
+//PID 32
+  TH2F* hTimeT0subtractedKaonVsP = new TH2F("hTimeT0subtractedKaonVsP", "ESDs t_{TOF}-t_{0}^{TOF}-t_{K,exp} vs p; p (GeV/c); t_{TOF}-t_{0}^{TOF}-t_{K,exp} [ps];Counts", 500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  hTimeT0subtractedKaonVsP->Sumw2() ;
+  fHlistPID->AddLast(hTimeT0subtractedKaonVsP) ;
+
+//PID 33
+  TH2F* hTimeT0subtractedProtonVsP = new TH2F("hTimeT0subtractedProtonVsP", "ESDs t_{TOF}-t_{0}^{TOF}-t_{p,exp} vs p; p(GeV/c) t_{TOF}-t_{0}^{TOF}-t_{p,exp} [ps];Counts", 500, 0.,5., nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  hTimeT0subtractedProtonVsP->Sumw2() ;
+  fHlistPID->AddLast(hTimeT0subtractedProtonVsP) ;
+
   //----------------------------------------------------------POSITIVE TRACKS
   //0
   TH1F* hTOFmatchedESDtrkLengthPos  = new TH1F("hTOFmatchedESDtrkLengthPos", "Matched positive ESDs tracks length; Track length [cm];Counts", 1600, -800., 800) ; 
@@ -1207,6 +1227,11 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
     return;
   }
 
+  /* get run number */
+   Int_t runNb = fESD->GetRunNumber();
+   if (runNb>0)
+     fRunNumber = runNb;
+
   //Get vertex info and apply vertex cut
   fVertex = (AliESDVertex*) fESD->GetPrimaryVertexTracks(); 
   if(fVertex->GetNContributors()<1) { 
@@ -1468,18 +1493,15 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	  isValidBeta[specie]=kFALSE;
 	}
       }
-      
+      Float_t timeZeroTOF = (Float_t) fESDpid->GetTOFResponse().GetStartTime(pT);
       if (isValidBeta[AliPID::kPion]){
 	((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsEta"))->Fill((Int_t)GetStripIndex(volId),tofTime-fTrkExpTimes[AliPID::kPion]);//ps
 	((TH1F*)fHlistPID->FindObject("hTOFmatchedExpTimePi"))->Fill(tofTime-fTrkExpTimes[AliPID::kPion]);//ps
 	((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsP"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
-	if ((pT>=0.95)&&(pT<=1.05)){
-	  Double_t t0tofTrack=fESDpid->GetTOFResponse().GetStartTime(pT);
-	  ((TH1F*)fHlistPID->FindObject("hTOFmatchedTimePion1GeV"))->Fill(tofTime-t0tofTrack-fTrkExpTimes[AliPID::kPion]);
-	}
 	((TH1F*)fHlistPID->FindObject("hTOFtheoreticalExpTimePi"))->Fill(tofTime-fThExpTimes[AliPID::kPion]);//ps
 	((TH2F*)fHlistPID->FindObject("hTOFtheoreticalExpTimePiVsP"))->Fill(mom,(tofTime-fThExpTimes[AliPID::kPion]));	
 	((TH2F*)fHlistPID->FindObject("hTOFExpSigmaPi"))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
+       	((TH2F*)fHlistPID->FindObject("hTimeT0subtractedPionVsP"))->Fill(mom,tofTime-fTrkExpTimes[AliPID::kPion]-timeZeroTOF);   
       }
       
       if (isValidBeta[AliPID::kKaon]){
@@ -1488,6 +1510,7 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	((TH1F*)fHlistPID->FindObject("hTOFtheoreticalExpTimeKa"))->Fill(tofTime-fThExpTimes[AliPID::kKaon]);//ps
 	((TH2F*)fHlistPID->FindObject("hTOFtheoreticalExpTimeKaVsP"))->Fill(mom,(tofTime-fThExpTimes[AliPID::kKaon]));
 	((TH2F*)fHlistPID->FindObject("hTOFExpSigmaKa"))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
+       	((TH2F*)fHlistPID->FindObject("hTimeT0subtractedKaonVsP"))->Fill(mom,tofTime-fTrkExpTimes[AliPID::kKaon]-timeZeroTOF);
       }
       if (isValidBeta[AliPID::kProton]){
 	((TH1F*)fHlistPID->FindObject("hTOFmatchedExpTimePro"))->Fill(tofTime-fTrkExpTimes[AliPID::kProton]);//ps
@@ -1495,6 +1518,7 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	((TH1F*)fHlistPID->FindObject("hTOFtheoreticalExpTimePro"))->Fill(tofTime-fThExpTimes[AliPID::kProton]);//ps
 	((TH2F*)fHlistPID->FindObject("hTOFtheoreticalExpTimeProVsP"))->Fill(mom,(tofTime-fThExpTimes[AliPID::kProton]));
 	((TH2F*)fHlistPID->FindObject("hTOFExpSigmaPro"))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
+	((TH2F*)fHlistPID->FindObject("hTimeT0subtractedProtonVsP"))->Fill(mom,tofTime-fTrkExpTimes[AliPID::kProton]-timeZeroTOF);
       }
 
       if (fEnableAdvancedCheck && (pT<1.)) {
@@ -1567,9 +1591,14 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	      if (isValidBeta[AliPID::kProton])
 		((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeProVsPNoTRDNeg"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
 	  }
-	}
-	
+	}	
       }//end advanced checks && cut on pT for t-texp phi distrib      
+
+      if (ComputeTimeZeroByTOF1GeV()){
+      	if ((pT>0.95)&&(pT<1.05)){
+      	  ((TH2F*)fHlistPID->FindObject("hTOFmatchedTimePion1GeV"))->Fill(fMyTimeZeroTOFtracks,tofTime-fMyTimeZeroTOF-fTrkExpTimes[AliPID::kPion]);
+      	}
+      }//fill timeZero TOF vs number of tracks used
     }//matched
   }//end loop on tracks
   
@@ -1581,7 +1610,6 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
   PostData(3, fHlistPID);
   PostData(4, fHpos);
   PostData(5, fHneg);
-  
 }      
 
 //________________________________________________________________________
@@ -1672,7 +1700,25 @@ void AliAnalysisTaskTOFqa::FillStartTimeMaskHisto()
       ((TH2F*)fHlistTimeZero->FindObject("hStartTimeMaskMatched"))->Fill(track->P(),StartTimeBit);
     }
   }
-  
   return;
 }
+
+//----------------------------------------------------
+Bool_t AliAnalysisTaskTOFqa::ComputeTimeZeroByTOF1GeV()
+{
+  /* compute T0-TOF for tracks within momentum range [0.95, 1.05] */
+  /* init T0-TOF */
+  fTOFT0v1->Init(fESD);
+  //AliTOFT0v1 *fTOFT0v1 = new AliTOFT0v1(fESDpid);
+  fTOFT0v1->DefineT0("all", 0.95, 1.05);
+  fMyTimeZeroTOF = -1000. * fTOFT0v1->GetResult(0);
+  fMyTimeZeroTOFsigma = 1000. * fTOFT0v1->GetResult(1);
+  fMyTimeZeroTOFtracks = fTOFT0v1->GetResult(3);
+  Bool_t hasTimeZeroTOF = kFALSE;
+  /* check T0-TOF sigma */
+  if (fMyTimeZeroTOFsigma < 250.)
+    hasTimeZeroTOF = kTRUE;  
+  return hasTimeZeroTOF;
+}
+
 #endif
