@@ -70,7 +70,7 @@ class LMEECutLib {
 		case kPbPb2011SemiCentral:
 		  centCuts = new AliDielectronVarCuts("centCuts","CentralityPbPb2011SemiCentral");
 		  //Restrict to 50%, Trigger selction
-		  centCuts->AddCut(AliDielectronVarManager::kCentrality,10.,50.);
+		  centCuts->AddCut(AliDielectronVarManager::kCentrality,20.,50.);
 		  break;
 		case kPbPb2011Peripheral:
 		  centCuts = new AliDielectronVarCuts("centCuts","CentralityPbPb2011Peripheral");
@@ -184,7 +184,7 @@ class LMEECutLib {
 	  }
 	  //___________________________________________
 	  AliDielectronVarCuts *pidTPCsignalWide = new AliDielectronVarCuts("pidTPCsignalWide","cut on the TPC signal");
-	  pidTPCsignalWide->AddCut(AliDielectronVarManager::kTPCsignal,70.,90.); 
+	  pidTPCsignalWide->AddCut(AliDielectronVarManager::kTPCsignal,65.,90.); 
 	  //___________________________________________
 
 	  AliDielectronVarCuts *pTPC = new AliDielectronVarCuts("P>.4","P>.4");
