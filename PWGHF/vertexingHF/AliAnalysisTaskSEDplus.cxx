@@ -422,9 +422,9 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   TString hisname;
   Int_t index=0;
   Int_t nbins=GetNBinsHistos();
-  fHistCentrality[0]=new TH1F("centrality","centrality",100,0.5,30000.5);
-  fHistCentrality[1]=new TH1F("centrality(selectedCent)","centrality(selectedCent)",100,0.5,30000.5);
-  fHistCentrality[2]=new TH1F("centrality(OutofCent)","centrality(OutofCent)",100,0.5,30000.5);
+  fHistCentrality[0]=new TH2F("hCentrMult","centrality",100,0.5,30000.5,40,0.,100.);
+  fHistCentrality[1]=new TH2F("hCentrMult(selectedCent)","centrality(selectedCent)",100,0.5,30000.5,40,0.,100.);
+  fHistCentrality[2]=new TH2F("hCentrMult(OutofCent)","centrality(OutofCent)",100,0.5,30000.5,40,0.,100.);
   for(Int_t i=0;i<3;i++){
     fHistCentrality[i]->Sumw2();
     fOutput->Add(fHistCentrality[i]);
@@ -741,11 +741,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
   //Event selection
   Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
-  Float_t ntracks=aod->GetNTracks();//fRDCutsAnalysis->GetCentrality(aod);
-  fHistCentrality[0]->Fill(ntracks);
+  Float_t ntracks=aod->GetNTracks();
+  Float_t evCentr=fRDCutsAnalysis->GetCentrality(aod);
+  fHistCentrality[0]->Fill(ntracks,evCentr);
   if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(2);
   if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(3); 
-  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(4);fHistCentrality[2]->Fill(ntracks);}
+  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(4);fHistCentrality[2]->Fill(ntracks,evCentr);}
   if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(5);
   if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(6);
 
@@ -758,7 +759,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   // printf("ntracklet===%d\n",tracklets);
   fSPDMult->Fill(tracklets);
 
-  fHistCentrality[1]->Fill(ntracks);
+  fHistCentrality[1]->Fill(ntracks,evCentr);
   fHistNEvents->Fill(1);
 
   TClonesArray *arrayMC=0;
