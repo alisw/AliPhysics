@@ -1,3 +1,59 @@
+TF1* Getv2Contamination_30_40(){
+  
+  TString v2Map="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/raw_TF1_pi_v2_3040.root";
+  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+
+  if (gSystem->AccessPathName(gSystem->ExpandPathName(v2Map.Data()))){
+    //Error("ConfigPbPb2010_Cent","v2 map not found: %s",v2Map.Data());
+    return 0;
+  }
+
+  TFile f(v2Map.Data());
+  if (!f.IsOpen()) return 0;
+  gROOT->cd();
+  TF1 *fg = (TF1 *) f.Get("flogisticTadd");
+  return fg;
+
+}
+
+TF1* Getv2Contamination_40_50(){
+  
+  TString v2Map="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/raw_TF1_pi_v2_4050.root";
+  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+
+  if (gSystem->AccessPathName(gSystem->ExpandPathName(v2Map.Data()))){
+    //Error("ConfigPbPb2010_Cent","v2 map not found: %s",v2Map.Data());
+    return 0;
+  }
+
+  TFile f(v2Map.Data());
+  if (!f.IsOpen()) return 0;
+  gROOT->cd();
+  TF1 *fg = (TF1 *) f.Get("flogisticTadd");
+  return fg;
+
+}
+
+
+TF1* Getv2Contamination_20_30(){
+  
+  TString v2Map="$ALICE_ROOT/PWGHF/hfe/macros/configs/PbPb/raw_TF1_pi_v2_2030.root";
+  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+
+  if (gSystem->AccessPathName(gSystem->ExpandPathName(v2Map.Data()))){
+    //Error("ConfigPbPb2010_Cent","v2 map not found: %s",v2Map.Data());
+    return 0;
+  }
+
+  TFile f(v2Map.Data());
+  if (!f.IsOpen()) return 0;
+  gROOT->cd();
+  TF1 *fg = (TF1 *) f.Get("flogisticTadd");
+  return fg;
+
+}
+
+
 AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix, Int_t tpcCls, Double_t tpcClsr,Int_t tpcClspid, Double_t tpcsharedfraction, Int_t itsCls, Double_t chi2peritscl, Int_t pixellayer, Double_t dcaxy, Double_t dcaz,  Double_t tofsig, Double_t *tpcdedx, Int_t vzero, Int_t debuglevel, Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE)
 {
   //
@@ -161,12 +217,20 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix, In
   hBackground->SetParameter(2, -0.076635);
   hBackground->SetParameter(3, 0.00947502);
   task->SetContamination(hBackground,3);
+  TF1 *fv2_20_30 = Getv2Contamination_20_30();  
+  if(fv2_20_30) task->SetV2Contamination(fv2_20_30,3);
   // 30-40%
   hBackground->SetParameter(0, -0.072222);
   hBackground->SetParameter(1, 0.132098);
   hBackground->SetParameter(2, -0.0561759);
   hBackground->SetParameter(3, 0.00789356);
   task->SetContamination(hBackground,4);
+  TF1 *fv2_30_40 = Getv2Contamination_30_40();  
+  if(fv2_30_40) task->SetV2Contamination(fv2_30_40,4);
+  // 40-50%
+  TF1 *fv2_40_50 = Getv2Contamination_40_50();  
+  if(fv2_40_50) task->SetV2Contamination(fv2_40_50,5);
+
 
   // Define PID TOF Only
   AliHFEpid *pidTOFOnly = task->GetPIDTOFOnly();

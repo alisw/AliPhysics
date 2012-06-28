@@ -94,6 +94,7 @@ public:
 
 
   void SetContamination(TF1 * const function,Int_t k) { fContamination[k] = function; };
+  void SetV2Contamination(TF1 * const function,Int_t k) { fv2contamination[k] = function; };
   void SetHFECuts(AliHFEcuts * const cuts) { fHFECuts = cuts; };
   void SetHFEBackgroundCuts(AliESDtrackCuts * const cuts) { fHFEBackgroundCuts = cuts; };
   void SetSubEtaGapTPC(Bool_t  subEtaGapTPC) { fSubEtaGapTPC = subEtaGapTPC; };
@@ -204,6 +205,7 @@ private:
 
   // Hadron Contamination
   TF1 *fContamination[11];        // Parametrization of the contamination (0-5,5-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100)
+  TF1 *fv2contamination[11];      // Parametrization of the v2 of charged pions (0-5,5-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100)
 
   // Cuts for background study
   AliESDtrackCuts *fHFEBackgroundCuts;    // HFE background cuts
@@ -229,7 +231,8 @@ private:
   THnSparseF *fEventPlaneaftersubtraction; //! Event plane
 
   // Contamination
-  THnSparseF *fFractionContamination;//! Fraction of contamination as function of pt
+  THnSparseF *fFractionContamination;    //! Fraction of contamination as function of pt
+  TProfile2D *fContaminationv2;          //! v2 of contamination
 
   // Monitoring Event plane: cos2phi, sin2phi, centrality
   THnSparseF *fCosSin2phiep;        //! Cos(2phi), Sin(2phi)

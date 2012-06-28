@@ -137,6 +137,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
+  fContaminationv2(0x0),
   fCosSin2phiep(0x0),
   fCos2phie(0x0),
   fSin2phie(0x0),
@@ -177,6 +178,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   }
   for(Int_t k = 0; k < 11; k++) {
     fContamination[k] = NULL;
+    fv2contamination[k] = NULL;
   }
    
 }
@@ -241,6 +243,7 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
+  fContaminationv2(0x0),
   fCosSin2phiep(0x0),
   fCos2phie(0x0),
   fSin2phie(0x0),
@@ -289,6 +292,7 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
 
   for(Int_t k = 0; k < 11; k++) {
     fContamination[k] = NULL;
+    fv2contamination[k] = NULL;
   }
   
   fPID = new AliHFEpid("hfePid");
@@ -367,6 +371,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fEventPlane(NULL),
   fEventPlaneaftersubtraction(NULL),
   fFractionContamination(NULL),
+  fContaminationv2(NULL),
   fCosSin2phiep(NULL),
   fCos2phie(NULL),
   fSin2phie(NULL),
@@ -471,6 +476,7 @@ void AliAnalysisTaskHFEFlow::Copy(TObject &o) const {
   target.fHFEVZEROEventPlane = fHFEVZEROEventPlane;
   for(Int_t k = 0; k < 11; k++) {
     target.fContamination[k] = fContamination[k];
+    target.fv2contamination[k] = fv2contamination[k];
   }
  
 }
@@ -789,6 +795,9 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fFractionContamination->SetBinEdges(0,binLimPt);
   fFractionContamination->SetBinEdges(1,binLimC);
   fFractionContamination->Sumw2();
+  //  
+  fContaminationv2 = new TProfile2D("Contaminationv2","",nBinsC,binLimC,nBinsPt,binLimPt);
+  fContaminationv2->Sumw2();
 
   AliDebug(2,"AliAnalysisTaskHFEFlow: fraction of contamination");
 
@@ -975,6 +984,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
     fDeltaPhiMapsContamination->SetBinEdges(3,binLimTPCdEdx);
     fDeltaPhiMapsContamination->Sumw2();  
     AliDebug(2,"AliAnalysisTaskHFEFlow: deltaphimapscontamination");
+
   }
   //
   // fMonitorWithoutPID
@@ -1123,6 +1133,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   fListHist->Add(fCosPhiMaps);
   fListHist->Add(fDeltaPhiMaps);
   fListHist->Add(fPIDqa->MakeList("HFEpidQA"));
+  fListHist->Add(fContaminationv2);
   AliDebug(2,"AliAnalysisTaskHFEFlow: add default");
 
   if(fMonitorEventPlane) {
@@ -1146,7 +1157,9 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
 
   AliDebug(2,"AliAnalysisTaskHFEFlow: add monitortrackcuts");
 
-  if(fMonitorContamination) fListHist->Add(fDeltaPhiMapsContamination);
+  if(fMonitorContamination) {
+    fListHist->Add(fDeltaPhiMapsContamination);
+  }
   
   AliDebug(2,"AliAnalysisTaskHFEFlow: add deltaphimapscontamination");
 
@@ -1960,6 +1973,10 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 	  if(weight<0.0) weight=0.0;
 	  if(weight>1.0) weight=1.0;
 	  fFractionContamination->Fill(&valuefractioncont[0],weight);
+	  if(fv2contamination[((Int_t)valuefractioncont[1])]){
+	    Double_t v2 =  fv2contamination[((Int_t)valuefractioncont[1])]->Eval(track->Pt());
+	    fContaminationv2->Fill(valuefractioncont[1],valuefractioncont[0],v2,weight);
+	  }
 	}     
       }
       if(fMonitorEventPlane) {
