@@ -95,8 +95,10 @@ void AliJetModelBaseTask::UserExec(Option_t *)
 {
   // Execute per event.
 
-  if (!fIsInit)
+  if (!fIsInit) {
     ExecOnce();
+    fIsInit = 1;
+  }
   Run();
 }
 
