@@ -67,6 +67,9 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fCeIsoVsEtPho(0),          
   fTrIsoVsEtPho(0),          
   fAllIsoVsEtPho(0),         
+  fCeIsoVsEtPi0(0),          
+  fTrIsoVsEtPi0(0),          
+  fAllIsoVsEtPi0(0),         
   fM02EtCeIso1TM(0),         
   fM02EtCeIso2TM(0),         
   fM02EtCeIso5TM(0),         
@@ -78,7 +81,10 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fM02EtAllIso5TM(0),        
   fCeIsoVsEtPhoTM(0),        
   fTrIsoVsEtPhoTM(0),        
-  fAllIsoVsEtPhoTM(0)    
+  fAllIsoVsEtPhoTM(0),    
+  fCeIsoVsEtPi0TM(0),        
+  fTrIsoVsEtPi0TM(0),        
+  fAllIsoVsEtPi0TM(0)    
 {
   // Default constructor.
 }
@@ -117,6 +123,9 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fCeIsoVsEtPho(0),     
   fTrIsoVsEtPho(0),     
   fAllIsoVsEtPho(0),    
+  fCeIsoVsEtPi0(0),          
+  fTrIsoVsEtPi0(0),          
+  fAllIsoVsEtPi0(0),         
   fM02EtCeIso1TM(0),
   fM02EtCeIso2TM(0),        
   fM02EtCeIso5TM(0),        
@@ -128,7 +137,10 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fM02EtAllIso5TM(0),       
   fCeIsoVsEtPhoTM(0),       
   fTrIsoVsEtPhoTM(0),       
-  fAllIsoVsEtPhoTM(0)       
+  fAllIsoVsEtPhoTM(0),       
+  fCeIsoVsEtPi0TM(0),        
+  fTrIsoVsEtPi0TM(0),        
+  fAllIsoVsEtPi0TM(0)    
 {
   // Constructor
 
@@ -223,6 +235,18 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fAllIsoVsEtPho->Sumw2();
   fOutputList->Add(fAllIsoVsEtPho);
 
+  fCeIsoVsEtPi0 = new TH2F("fCeIsoVsEtPi0","ISO_{EMC} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{EMC}",1000,0,100,1000,-10,190);
+  fCeIsoVsEtPi0->Sumw2();
+  fOutputList->Add(fCeIsoVsEtPi0);
+
+  fTrIsoVsEtPi0 = new TH2F("fTrIsoVsEtPi0","ISO_{TRK} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{TRK}",1000,0,100,1000,-10,190);
+  fTrIsoVsEtPi0->Sumw2();
+  fOutputList->Add(fTrIsoVsEtPi0);
+
+  fAllIsoVsEtPi0 = new TH2F("fAllIsoVsEtPi0","ISO_{EMC+TRK} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{EMC+TRK}",1000,0,100,1000,-10,190);
+  fAllIsoVsEtPi0->Sumw2();
+  fOutputList->Add(fAllIsoVsEtPi0);
+
   fM02EtCeIso1TM = new TH2F("fM02EtCeIso1TM","M02 vs Et for all clusters (ISO_{EMC}<1GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
   fM02EtCeIso1TM->Sumw2();
   fOutputList->Add(fM02EtCeIso1TM);
@@ -270,6 +294,18 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fAllIsoVsEtPhoTM = new TH2F("fAllIsoVsEtPhoTM","ISO_{EMC+TRK} vs. E_{T}^{clus} (0.1<#lambda_{0}^{2}<0.3);E_{T} (GeV);ISO_{EMC+TRK}",1000,0,100,1000,-10,190);
   fAllIsoVsEtPhoTM->Sumw2();
   fOutputList->Add(fAllIsoVsEtPhoTM);
+
+  fCeIsoVsEtPi0TM = new TH2F("fCeIsoVsEtPi0TM","ISO_{EMC} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{EMC}",1000,0,100,1000,-10,190);
+  fCeIsoVsEtPi0TM->Sumw2();
+  fOutputList->Add(fCeIsoVsEtPi0TM);
+
+  fTrIsoVsEtPi0TM = new TH2F("fTrIsoVsEtPi0TM","ISO_{TRK} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{TRK}",1000,0,100,1000,-10,190);
+  fTrIsoVsEtPi0TM->Sumw2();
+  fOutputList->Add(fTrIsoVsEtPi0TM);
+
+  fAllIsoVsEtPi0TM = new TH2F("fAllIsoVsEtPi0TM","ISO_{EMC+TRK} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{EMC+TRK}",1000,0,100,1000,-10,190);
+  fAllIsoVsEtPi0TM->Sumw2();
+  fOutputList->Add(fAllIsoVsEtPi0TM);
 
   PostData(1, fOutputList);
 }
@@ -382,32 +418,50 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t ceisoue =  cephiband/phibandArea*netConeArea;
     Float_t trisoue =  trphiband/phibandArea*netConeArea;
     Float_t allisoue =  allphiband/phibandArea*netConeArea;
-    fM02Et->Fill(Et, c->GetM02());
-    if(ceiso-cecore<1)
-      fM02EtCeIso1->Fill(Et, c->GetM02());
-    if(ceiso-cecore<2)
-      fM02EtCeIso2->Fill(Et, c->GetM02());
-    if(ceiso-cecore<5)
-      fM02EtCeIso5->Fill(Et, c->GetM02());
-    if(triso-trcore<1)
-      fM02EtTrIso1->Fill(Et, c->GetM02());
-    if(triso-trcore<2)
-      fM02EtTrIso2->Fill(Et, c->GetM02());
-    if(triso-trcore<5)
-      fM02EtTrIso5->Fill(Et, c->GetM02());
-    if(alliso-allcore<1)
-      fM02EtAllIso1->Fill(Et, c->GetM02());
-    if(alliso-allcore<2)
-      fM02EtAllIso2->Fill(Et, c->GetM02());
-    if(alliso-allcore<5)
-      fM02EtAllIso5->Fill(Et, c->GetM02());
-    if(c->GetM02()>0.1 && c->GetM02()<0.3){
-      fCeIsoVsEtPho->Fill(Et, ceiso - cecore - ceisoue);
-      fTrIsoVsEtPho->Fill(Et, triso - trcore - trisoue);
-      fAllIsoVsEtPho->Fill(Et, alliso - allcore - allisoue);
-      }
     Double_t dR = TMath::Sqrt(pow(c->GetTrackDx(),2)+pow(c->GetTrackDz(),2));
-    if(dR<0.014){
+    Double_t M02u;
+    if(Et<12)
+      M02u = 0.02486*Et*Et - 0.7289*Et + 6.266;
+    else
+      M02u = 14.32/Et - 0.09863;
+    if(M02u<0.65)
+      M02u = 0.65;
+    Double_t M02l = 12.88/Et - 0.3194;
+    if(M02l<0.4)
+      M02l = 0.4;
+    if(dR>0.028){
+      fM02Et->Fill(Et, c->GetM02());
+      if(ceiso-cecore<1)
+	fM02EtCeIso1->Fill(Et, c->GetM02());
+      if(ceiso-cecore<2)
+	fM02EtCeIso2->Fill(Et, c->GetM02());
+      if(ceiso-cecore<5)
+	fM02EtCeIso5->Fill(Et, c->GetM02());
+      if(triso-trcore<1)
+	fM02EtTrIso1->Fill(Et, c->GetM02());
+      if(triso-trcore<2)
+	fM02EtTrIso2->Fill(Et, c->GetM02());
+      if(triso-trcore<5)
+	fM02EtTrIso5->Fill(Et, c->GetM02());
+      if(alliso-allcore<1)
+	fM02EtAllIso1->Fill(Et, c->GetM02());
+      if(alliso-allcore<2)
+	fM02EtAllIso2->Fill(Et, c->GetM02());
+      if(alliso-allcore<5)
+	fM02EtAllIso5->Fill(Et, c->GetM02());
+      if(c->GetM02()>0.1 && c->GetM02()<0.3){
+	fCeIsoVsEtPho->Fill(Et, ceiso - cecore - ceisoue);
+	fTrIsoVsEtPho->Fill(Et, triso - trcore - trisoue);
+	fAllIsoVsEtPho->Fill(Et, alliso - allcore - allisoue);
+      }
+      if(c->GetM02()>M02l && c->GetM02()<M02u){
+	fCeIsoVsEtPi0->Fill(Et, ceiso - cecore - ceisoue);
+	fTrIsoVsEtPi0->Fill(Et, triso - trcore - trisoue);
+	fAllIsoVsEtPi0->Fill(Et, alliso - allcore - allisoue);
+      }
+    }
+    else
+      {
       fM02EtTM->Fill(Et, c->GetM02());
       if(ceiso-cecore<1)
 	fM02EtCeIso1TM->Fill(Et, c->GetM02());
@@ -428,9 +482,14 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       if(alliso-allcore<5)
 	fM02EtAllIso5TM->Fill(Et, c->GetM02());
       if(c->GetM02()>0.1 && c->GetM02()<0.3){
-	fCeIsoVsEtPhoTM->Fill(Et, ceiso);
-	fTrIsoVsEtPhoTM->Fill(Et, triso);
-	fAllIsoVsEtPhoTM->Fill(Et, alliso);
+	fCeIsoVsEtPhoTM->Fill(Et, ceiso - cecore - ceisoue);
+	fTrIsoVsEtPhoTM->Fill(Et, triso - trcore - trisoue);
+	fAllIsoVsEtPhoTM->Fill(Et, alliso - allcore - allisoue);
+      }
+      if(c->GetM02()>M02l && c->GetM02()<M02u){
+	fCeIsoVsEtPi0TM->Fill(Et, ceiso - cecore - ceisoue);
+	fTrIsoVsEtPi0TM->Fill(Et, triso - trcore - trisoue);
+	fAllIsoVsEtPi0TM->Fill(Et, alliso - allcore - allisoue);
       }
     }
     if(c->E()>maxE)

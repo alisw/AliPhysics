@@ -328,10 +328,10 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
   Double_t cos2phiV0C = TMath::Cos(2.*(dphiV0C));
   Double_t cos2phiTPC = TMath::Cos(2.*(dphiTPC));
 
-  dphiV0  = TVector2::Phi_0_2pi(dphiV0);  if(dphiV0 >TMath::Pi())  dphiV0 -= TMath::Pi();
-  dphiV0A = TVector2::Phi_0_2pi(dphiV0A); if(dphiV0A >TMath::Pi()) dphiV0A -= TMath::Pi();
-  dphiV0C = TVector2::Phi_0_2pi(dphiV0C); if(dphiV0C >TMath::Pi()) dphiV0C -= TMath::Pi();
-  dphiTPC = TVector2::Phi_0_2pi(dphiTPC); if(dphiTPC >TMath::Pi()) dphiTPC -= TMath::Pi();
+  dphiV0  = TVector2::Phi_0_2pi(dphiV0);  if(dphiV0  >TMath::Pi())  dphiV0 -= TMath::Pi();
+  dphiV0A = TVector2::Phi_0_2pi(dphiV0A); if(dphiV0A >TMath::Pi())  dphiV0A -= TMath::Pi();
+  dphiV0C = TVector2::Phi_0_2pi(dphiV0C); if(dphiV0C >TMath::Pi())  dphiV0C -= TMath::Pi();
+  dphiTPC = TVector2::Phi_0_2pi(dphiTPC); if(dphiTPC >TMath::Pi())  dphiTPC -= TMath::Pi();
 
   //cout<<"cos2V0: "<<cos2phiV0<<"  cos2V0A: "<<cos2phiV0A<<"  cos2V0C: "<<cos2phiV0C<<endl;
   //cout<<mass<<"  "<<pt<<"  "<<phi<<"  "<<endl;
@@ -509,11 +509,8 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     }  
     const AliESDVertex* fvertex = fESD->GetPrimaryVertex();
 
-    if(!(fvertex->GetStatus())) return;
-    // if vertex is from spd vertexZ, require more stringent cut
-    if (fvertex->IsFromVertexerZ()) {
-        if (fvertex->GetDispersion()>0.02 ||  fvertex->GetZRes()>0.25 ) return; // bad vertex from VertexerZ
-    }
+    if(TMath::Abs(fvertex->GetZ())>10.)
+      return;
     Double_t vertex[3] = {fvertex->GetX(), fvertex->GetY(), fvertex->GetZ()};
 
     if(fESD->GetCentrality()) {
@@ -557,7 +554,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       if(fEPV0r<-2. || fEPV0Ar<-2. || fEPV0Cr<-2.) return; 
     }
     if(!fcheckEP2sub){
-      if(fEPV0A<-2. || fEPV0C<-2. || fEPV0AR4<-2. || fEPV0AR7<-2. || fEPV0CR0<-2. || fEPV0CR3<-2.) return;
+      if(fEPV0A<-2. || fEPV0C<-2. || fEPV0AR4<-2. || fEPV0AR7<-2. || fEPV0CR0<-2. || fEPV0CR3<-2. || fEPTPC<-2.) return;
     }
     fEPV0   = TVector2::Phi_0_2pi(fEPV0);    if(fEPV0>TMath::Pi())   fEPV0  = fEPV0  - TMath::Pi();
     fEPV0r  = TVector2::Phi_0_2pi(fEPV0r);   if(fEPV0r>TMath::Pi())  fEPV0r = fEPV0r - TMath::Pi();
