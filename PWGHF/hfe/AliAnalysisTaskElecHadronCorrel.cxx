@@ -405,10 +405,10 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
   Float_t centvalue = fCentrality->GetCentralityPercentile("V0M");
   fcentrality->Fill(centvalue);    
-  //cout << "cent val" << centvalue <<endl;
+ // cout << "cent val" << centvalue <<endl;
   if(centvalue<0 || centvalue>10) return;
 
-  //cout << "event no : " <<fESD->GetRunNumber() <<endl;
+ // cout << "event no : " <<fESD->GetRunNumber() <<endl;
   Int_t fNOtrks =  fESD->GetNumberOfTracks();
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
 
@@ -1104,7 +1104,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliESDtrac
   
     Float_t IPxy=-999.0, IPz=-999.0;
     trackHad->GetImpactParameters(IPxy,IPz);
-   cout << "xy,z: " << IPxy << ", " << IPz <<endl;
+   //cout << "xy,z: " << IPxy << ", " << IPz <<endl;
     fHadronIPxy->Fill(IPxy);
     fHadronIPz->Fill(IPz);
 
