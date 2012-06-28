@@ -47,9 +47,21 @@ class AliAnalysisTaskVnV0 : public AliAnalysisTaskSE {
 
   void SetModulationDEDx(Bool_t flag=kTRUE){fModulationDEDx=flag;};
 
+  static Bool_t IsPsiComputed(){return fgIsPsiComputed;};
+  static Float_t GetPsi2V0A(){return fgPsi2v0a;};
+  static Float_t GetPsi2V0C(){return fgPsi2v0c;};
+  static Float_t GetPsi2TPC(){return fgPsi2tpc;};
+  static Float_t GetPsi3V0A(){return fgPsi3v0a;};
+  static Float_t GetPsi3V0C(){return fgPsi3v0c;};
+  static Float_t GetPsi3TPC(){return fgPsi3tpc;};
+
  private:
   AliAnalysisTaskVnV0(const AliAnalysisTaskVnV0 &old); 
   AliAnalysisTaskVnV0& operator=(const AliAnalysisTaskVnV0 &source); 
+
+  static Bool_t fgIsPsiComputed; // flag which return if event was processed
+  static Float_t fgPsi2v0a,fgPsi2v0c,fgPsi2tpc; // current Psi2
+  static Float_t fgPsi3v0a,fgPsi3v0c,fgPsi3tpc; // current Psi3
 
   virtual Float_t GetVertex(AliAODEvent* aod) const;
   virtual void Analyze(AliAODEvent* aodEvent, Float_t v0Centr); 
