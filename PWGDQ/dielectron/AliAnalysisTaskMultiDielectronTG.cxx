@@ -49,7 +49,10 @@
 #include <cstdlib> 
 #include <TRandom.h>
 
-const char* fgkPairClassNamesTG[7] = {
+using std::vector;
+using std::deque;
+
+const char* kPairClassNamesTG[7] = {
   "unlike",
   "like_pp",
   "like_ee",
@@ -69,7 +72,7 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG() :
   fListDielectron(),
   fListHistos(),
   fListCF(),
-  tQAElectron(),
+  fQAElectron(),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
   fExcludeTriggerMask(0),
@@ -87,16 +90,16 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG() :
   fdEdXnSigmaElecvsPtTOF(0x0),
   fTOFbetavsPt(0x0),
   fTOFnSigmaElecvsPt(0x0),
-  hNCrossedRowsTPC(0x0),
-  hChi2ClusTPC(0x0),
-  hRatioCrossClusTPC(0x0),
-  vem(0x0),
-  vep(0x0),
-  vem_tmp(0x0),
-  vep_tmp(0x0),
-  d_conv_phiv(acos(-1.0)),
-  bz(0),
-  d_v0_mixing(kTRUE)
+  fNCrossedRowsTPC(0x0),
+  fChi2ClusTPC(0x0),
+  fRatioCrossClusTPC(0x0),
+  fVem(0x0),
+  fVep(0x0),
+  fVemtmp(0x0),
+  fVeptmp(0x0),
+  fdconvphiv(acos(-1.0)),
+  fbz(0),
+  fdv0mixing(kTRUE)
 {
   //
   // Constructor
@@ -109,7 +112,7 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG(const char *n
   fListDielectron(),
   fListHistos(),
   fListCF(),
-  tQAElectron(),
+  fQAElectron(),
   fSelectPhysics(kFALSE),
   fTriggerMask(AliVEvent::kMB),
   fExcludeTriggerMask(0),
@@ -127,16 +130,16 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG(const char *n
   fdEdXnSigmaElecvsPtTOF(0x0),
   fTOFbetavsPt(0x0),
   fTOFnSigmaElecvsPt(0x0),
-  hNCrossedRowsTPC(0x0),
-  hChi2ClusTPC(0x0),
-  hRatioCrossClusTPC(0x0),
-  vem(0x0),
-  vep(0x0),
-  vem_tmp(0x0),
-  vep_tmp(0x0),
-  d_conv_phiv(acos(-1.0)),
-  bz(0),
-  d_v0_mixing(kTRUE)
+  fNCrossedRowsTPC(0x0),
+  fChi2ClusTPC(0x0),
+  fRatioCrossClusTPC(0x0),
+  fVem(0x0),
+  fVep(0x0),
+  fVemtmp(0x0),
+  fVeptmp(0x0),
+  fdconvphiv(acos(-1.0)),
+  fbz(0),
+  fdv0mixing(kTRUE)
 {
   //
   // Constructor
@@ -152,16 +155,16 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG(const char *n
   fListCF.SetOwner();
 
   ///////////////
-  for(int i=0;i<NDIE; i++){
-    for(int j=0;j<NZBIN;j++){
-      for(int k=0;k<NCENT;k++){
-	for(int l=0; l<NRPBIN; l++){
-	  d_ibuf[i][j][k][l] = 0;
-	  d_poolp[i][j][k][l].clear();
-	  d_poolm[i][j][k][l].clear();
-	  for(int ib=0;ib<NBUF; ib++){
-	    d_vep[ib][i][j][k][l].clear();
-	    d_vem[ib][i][j][k][l].clear();
+  for(int i=0;i<fgkNDIE; i++){
+    for(int j=0;j<fgkNZBIN;j++){
+      for(int k=0;k<fgkNCENT;k++){
+	for(int l=0; l<fgkNRPBIN; l++){
+	  fibuf[i][j][k][l] = 0;
+	  fpoolp[i][j][k][l].clear();
+	  fpoolm[i][j][k][l].clear();
+	  for(int ib=0;ib<fgkNBUF; ib++){
+	    fvep[ib][i][j][k][l].clear();
+	    fvem[ib][i][j][k][l].clear();
 	  }
 	}
       }
@@ -185,16 +188,16 @@ AliAnalysisTaskMultiDielectronTG::~AliAnalysisTaskMultiDielectronTG()
   fListHistos.SetOwner(kFALSE);
   fListCF.SetOwner(kFALSE);
   
-  for(int i=0;i<NDIE; i++){
-    for(int j=0;j<NZBIN;j++){
-      for(int k=0;k<NCENT;k++){
-	for(int l=0; l<NRPBIN; l++){
-	  d_ibuf[i][j][k][l] = 0;
-	  d_poolp[i][j][k][l].clear();
-	  d_poolm[i][j][k][l].clear();
-	  for(int ib=0;ib<NBUF; ib++){
-	    d_vep[ib][i][j][k][l].clear();
-	    d_vem[ib][i][j][k][l].clear();
+  for(int i=0;i<fgkNDIE; i++){
+    for(int j=0;j<fgkNZBIN;j++){
+      for(int k=0;k<fgkNCENT;k++){
+	for(int l=0; l<fgkNRPBIN; l++){
+	  fibuf[i][j][k][l] = 0;
+	  fpoolp[i][j][k][l].clear();
+	  fpoolm[i][j][k][l].clear();
+	  for(int ib=0;ib<fgkNBUF; ib++){
+	    fvep[ib][i][j][k][l].clear();
+	    fvem[ib][i][j][k][l].clear();
 	  }
 	}
       }
@@ -251,50 +254,50 @@ void AliAnalysisTaskMultiDielectronTG::UserCreateOutputObjects()
 
   
   int nbinx=400;
-  float max_x=20;
-  float min_x=0.2;
-  float binw = (TMath::Log(max_x)-TMath::Log(min_x))/nbinx;
+  float maxx=20;
+  float minx=0.2;
+  float binw = (TMath::Log(maxx)-TMath::Log(minx))/nbinx;
   double xbin[401];
   for(int ii=0;ii<nbinx+1;ii++){
-    xbin[ii] = TMath::Exp(TMath::Log(min_x) + 0.5*binw+binw*ii);
+    xbin[ii] = TMath::Exp(TMath::Log(minx) + 0.5*binw+binw*ii);
   }
 
   
-  tQAElectron = new TList();
-  tQAElectron->SetName("QAElectron");
-  tQAElectron->SetOwner();
+  fQAElectron = new TList();
+  fQAElectron->SetName("QAElectron");
+  fQAElectron->SetOwner();
 
 
   fEvent = new TH1D("Event","centrality",   100,0,100);
-  tQAElectron->Add(fEvent);
+  fQAElectron->Add(fEvent);
   fdEdXvsPt = new TH2D("dEdXvsPt","dE/dX vs. PT of TPC", nbinx, xbin, 2000,0,200);
-  tQAElectron->Add(fdEdXvsPt);
+  fQAElectron->Add(fdEdXvsPt);
   fdEdXnSigmaElecvsPt = new TH2D("fdEdXnSigmaElecvsPt"," dE/dX normalized to electron vs. pT of TPC",
                                  nbinx, xbin, 2000, -10, 10);
-  tQAElectron->Add(fdEdXnSigmaElecvsPt);
+  fQAElectron->Add(fdEdXnSigmaElecvsPt);
 
   fdEdXvsPtTOF = new TH2D("dEdXvsPtTOF","dE/dX vs. PT of TPC", nbinx, xbin, 2000,0,200);
-  tQAElectron->Add(fdEdXvsPtTOF);
+  fQAElectron->Add(fdEdXvsPtTOF);
   fdEdXnSigmaElecvsPtTOF = new TH2D("fdEdXnSigmaElecvsPtTOF"," dE/dX normalized to electron vs. pT of TPC",
                                  nbinx, xbin, 2000, -10, 10);
-  tQAElectron->Add(fdEdXnSigmaElecvsPtTOF);
+  fQAElectron->Add(fdEdXnSigmaElecvsPtTOF);
 
 
 
   fTOFbetavsPt = new TH2D("fTOFbetavsPt","TOF beta vs. p", 400, 0, 20, 1200, 0, 1.2);
-  tQAElectron->Add(fTOFbetavsPt);
+  fQAElectron->Add(fTOFbetavsPt);
   fTOFnSigmaElecvsPt = new TH2D("fTOFnSigmaElecvsPt","TOF nsigma for electron", 400, 0, 20, 2000, -10, 10);
-  tQAElectron->Add(fTOFnSigmaElecvsPt);
+  fQAElectron->Add(fTOFnSigmaElecvsPt);
 
-  hNCrossedRowsTPC = new TH2F("hNCrossedRowsTPC", "TPC nCrossed Rows vs. pT", 200, 0, 20, 200, 0, 200);
-  tQAElectron->Add(hNCrossedRowsTPC);
-  hChi2ClusTPC = new TH2F("hChi2ClusTPC", "hChi2ClusTPC vs. pT", 200, 0, 20, 200, 0, 10);
-  tQAElectron->Add(hChi2ClusTPC);
+  fNCrossedRowsTPC = new TH2F("fNCrossedRowsTPC", "TPC nCrossed Rows vs. pT", 200, 0, 20, 200, 0, 200);
+  fQAElectron->Add(fNCrossedRowsTPC);
+  fChi2ClusTPC = new TH2F("fChi2ClusTPC", "hChi2ClusTPC vs. pT", 200, 0, 20, 200, 0, 10);
+  fQAElectron->Add(fChi2ClusTPC);
   
-  hRatioCrossClusTPC = new TH2F("hRatioCrossClusTPC", "hRatioCrossClusTPC vs. pT", 200, 0, 20, 200, 0, 10);     
-  tQAElectron->Add(hRatioCrossClusTPC);
+  fRatioCrossClusTPC = new TH2F("fRatioCrossClusTPC", "hRatioCrossClusTPC vs. pT", 200, 0, 20, 200, 0, 10);     
+  fQAElectron->Add(fRatioCrossClusTPC);
 
-  fListHistos.Add(tQAElectron);
+  fListHistos.Add(fQAElectron);
 
   fListHistos.SetOwner();  
   
@@ -414,9 +417,8 @@ void AliAnalysisTaskMultiDielectronTG::UserExec(Option_t *)
   fEventStat->Fill(kPileupEvents);
   
   //bz for AliKF
-  bz = InputEvent()->GetMagneticField();
-  AliKFParticle::SetField( bz );
-
+  fbz = InputEvent()->GetMagneticField();
+  AliKFParticle::SetField( fbz );
   AliDielectronPID::SetCorrVal((Double_t)InputEvent()->GetRunNumber());
   
   //Process event in all AliDielectron instances
@@ -446,7 +448,7 @@ void AliAnalysisTaskMultiDielectronTG::UserExec(Option_t *)
         ////////////////////////////////////////////////////////////////////
 
 	if(fgValues[AliDielectronVarManager::kCharge]>0){
-	  vep_tmp.push_back(new  AliDielectronSingleTG(1, 
+	  fVeptmp.push_back(new  AliDielectronSingleTG(1, 
 						       fgValues[AliDielectronVarManager::kCentrality],
 						       fgValues[AliDielectronVarManager::kXv],
 						       fgValues[AliDielectronVarManager::kYv],
@@ -461,7 +463,7 @@ void AliAnalysisTaskMultiDielectronTG::UserExec(Option_t *)
 						       1, 1, static_cast<AliVTrack*>(obj->UncheckedAt(itrack)))
 			    );
 	}else if(fgValues[AliDielectronVarManager::kCharge]<0){
-	  vem_tmp.push_back(new  AliDielectronSingleTG(-1, 
+	  fVemtmp.push_back(new  AliDielectronSingleTG(-1, 
 						       fgValues[AliDielectronVarManager::kCentrality],
 						       fgValues[AliDielectronVarManager::kXv],
 						       fgValues[AliDielectronVarManager::kYv],
@@ -478,57 +480,57 @@ void AliAnalysisTaskMultiDielectronTG::UserExec(Option_t *)
 	}
       }
     }
-    //AliInfo(Form("size of e and p = %d %d", (int)vep_tmp.size(), (int)vem_tmp.size()));
+    //AliInfo(Form("size of e and p = %d %d", (int)fVeptmp.size(), (int)fVemtmp.size()));
+    
 
+    CheckGhostPairs(fVeptmp);
+    CheckGhostPairs(fVemtmp);
+    RandomizePool(fVeptmp, fVemtmp);    
+    CalcPair(fVep, fVem, die, idie);
 
-    check_ghost_pairs(vep_tmp);
-    check_ghost_pairs(vem_tmp);
-    randomize_pool(vep_tmp, vem_tmp);    
-    calc_pair(vep, vem, die, idie);
+    //    AliInfo(Form("size of e and p (after) = %d %d", (int)fVep.size(), (int)fVem.size()));
 
-    //    AliInfo(Form("size of e and p (after) = %d %d", (int)vep.size(), (int)vem.size()));
+    double dwcent = 100.0/fgkNCENT;
+    double dwiz = 20.0/fgkNZBIN;
+    double dwrp = acos(-1.0)/fgkNRPBIN;
 
-    double dw_cent = 100.0/NCENT;
-    double dw_iz = 20.0/NZBIN;
-    double dw_rp = acos(-1.0)/NRPBIN;
-
-    int icent = (int)(fgValues[AliDielectronVarManager::kCentrality]/dw_cent);
-    int izbin = (int)((fgValues[AliDielectronVarManager::kZvPrim]+10)/dw_iz);
-    int irp = (int)((fgValues[AliDielectronVarManager::kV0ACrpH2])/dw_rp);
+    int icent = (int)(fgValues[AliDielectronVarManager::kCentrality]/dwcent);
+    int izbin = (int)((fgValues[AliDielectronVarManager::kZvPrim]+10)/dwiz);
+    int irp = (int)((fgValues[AliDielectronVarManager::kV0ACrpH2])/dwrp);
     
     if(icent<0) icent=0;
-    if(icent>=NCENT) icent=NCENT-1;
+    if(icent>=fgkNCENT) icent=fgkNCENT-1;
     if(izbin<0) izbin=0;
-    if(izbin>=NZBIN) izbin=NZBIN-1;
+    if(izbin>=fgkNZBIN) izbin=fgkNZBIN-1;
     if(irp<0) irp=0;
-    if(irp>=NRPBIN) irp=NRPBIN-1;
+    if(irp>=fgkNRPBIN) irp=fgkNRPBIN-1;
     
-    d_vep[d_ibuf[idie][izbin][icent][irp]][idie][izbin][icent][irp].clear();
-    for(int iep = 0; iep<(int)vep.size();iep++) {
-      d_vep[d_ibuf[idie][izbin][icent][irp]][idie][izbin][icent][irp].push_back(vep[iep]);
-      d_poolp[idie][izbin][icent][irp].push_back(vep[iep]);
-      if(d_poolp[idie][izbin][icent][irp].size()>MAXPOOL) {
-	d_poolp[idie][izbin][icent][irp].pop_front();
+    fvep[fibuf[idie][izbin][icent][irp]][idie][izbin][icent][irp].clear();
+    for(int iep = 0; iep<(int)fVep.size();iep++) {
+      fvep[fibuf[idie][izbin][icent][irp]][idie][izbin][icent][irp].push_back(fVep[iep]);
+      fpoolp[idie][izbin][icent][irp].push_back(fVep[iep]);
+      if(fpoolp[idie][izbin][icent][irp].size()>fgkMAXPOOL) {
+	fpoolp[idie][izbin][icent][irp].pop_front();
       }
     }
-    d_vem[d_ibuf[idie][izbin][icent][irp]][idie][izbin][icent][irp].clear();
-    for(int iem = 0; iem<(int)vem.size();iem++) {
-      d_vem[d_ibuf[idie][izbin][icent][irp]][idie][izbin][icent][irp].push_back(vem[iem]);
-      d_poolm[idie][izbin][icent][irp].push_back(vem[iem]);
-      if(d_poolm[idie][izbin][icent][irp].size()>MAXPOOL) {
-	d_poolm[idie][izbin][icent][irp].pop_front();
+    fvem[fibuf[idie][izbin][icent][irp]][idie][izbin][icent][irp].clear();
+    for(int iem = 0; iem<(int)fVem.size();iem++) {
+      fvem[fibuf[idie][izbin][icent][irp]][idie][izbin][icent][irp].push_back(fVem[iem]);
+      fpoolm[idie][izbin][icent][irp].push_back(fVem[iem]);
+      if(fpoolm[idie][izbin][icent][irp].size()>fgkMAXPOOL) {
+	fpoolm[idie][izbin][icent][irp].pop_front();
       }
     }
 
 
-    d_ibuf[idie][izbin][icent][irp]++;
-    if(d_ibuf[idie][izbin][icent][irp]>= NBUF) d_ibuf[idie][izbin][icent][irp]=0; 
+    fibuf[idie][izbin][icent][irp]++;
+    if(fibuf[idie][izbin][icent][irp]>= fgkNBUF) fibuf[idie][izbin][icent][irp]=0; 
 
 
-    vep_tmp.clear();
-    vem_tmp.clear();
-    vep.clear();
-    vem.clear();
+    fVeptmp.clear();
+    fVemtmp.clear();
+    fVep.clear();
+    fVem.clear();
 
 
     ++idie;
@@ -580,9 +582,10 @@ void AliAnalysisTaskMultiDielectronTG::UserExec(Option_t *)
 
       
       if(track->GetTPCsignal()>70 && track->GetTPCsignal()<90){
-	hNCrossedRowsTPC->Fill(track->GetTPCmomentum(), track->GetTPCCrossedRows());
-	hChi2ClusTPC->Fill(track->GetTPCmomentum(), track->GetTPCchi2()/track->GetTPCNcls());
-	hRatioCrossClusTPC->Fill(track->GetTPCmomentum(), track->GetTPCCrossedRows()/track->GetTPCNclsF());
+	fNCrossedRowsTPC->Fill(track->GetTPCmomentum(), track->GetTPCCrossedRows());
+	//fChi2ClusTPC->Fill(track->GetTPCmomentum(), track->GetTPCchi2()/track->GetTPCNcls());
+	fChi2ClusTPC->Fill(track->GetTPCmomentum(), track->GetTPCchi2());
+	fRatioCrossClusTPC->Fill(track->GetTPCmomentum(), track->GetTPCCrossedRows()/track->GetTPCNclsF());
       }
     }
   }
@@ -611,7 +614,12 @@ void AliAnalysisTaskMultiDielectronTG::FinishTaskOutput()
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskMultiDielectronTG::check_ghost_pairs(vector<AliDielectronSingleTG*> e1){
+void AliAnalysisTaskMultiDielectronTG::CheckGhostPairs(vector<AliDielectronSingleTG*> e1)
+{
+  ////// Check whether the pairs are in ghost pairs 
+  /////  ghost means that one of the pairs is highly associated but reconstructed as a true particle
+
+
   bool reject = false;
   if(e1.size()>1){
     for(int i1=0; i1<(int)e1.size(); i1++){
@@ -628,91 +636,102 @@ void AliAnalysisTaskMultiDielectronTG::check_ghost_pairs(vector<AliDielectronSin
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskMultiDielectronTG::randomize_pool(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2){
+void AliAnalysisTaskMultiDielectronTG::RandomizePool(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2)
+{
   
+  ///// Randomize the pool constent to cancel the filling scheme of the single tracks
+  //// 
+
+
   int size1 = e1.size();
-  int used_index[1000];
+  int usedindex[1000];
   for(int i=0;i<1000;i++){
-    used_index[i] = -1;
+    usedindex[i] = -1;
   }
   for(int i=0;i<size1;i++){
-    used_index[i] = 0;
+    usedindex[i] = 0;
   }
 
   for(int i=0;i<size1;i++){
     int j = (int)(gRandom->Uniform(0,size1));
-    while(used_index[j]==1){
+    while(usedindex[j]==1){
       j = (int)(gRandom->Uniform(0,size1));
     }
     if( (e1[j]->GetGstFlag()==1) &&
 	(e1[j]->GetConvFlag()==1)
         ){
-      vep.push_back(e1[j]);
+      fVep.push_back(e1[j]);
     }
-    used_index[j] = 1;
+    usedindex[j] = 1;
   }
   
 
   int size2 = e2.size();
   for(int i=0;i<1000;i++){
-    used_index[i] = -1;
+    usedindex[i] = -1;
   }
   for(int i=0;i<size2;i++){
-    used_index[i] = 0;
+    usedindex[i] = 0;
   }
 
   for(int i=0;i<size2;i++){
     int j = (int)(gRandom->Uniform(0,size2));
-    while(used_index[j]==1){
+    while(usedindex[j]==1){
       j = (int)(gRandom->Uniform(0,size2));
     }
     if( (e2[j]->GetGstFlag()==1) &&
 	(e2[j]->GetConvFlag()==1)
         ){
-      vem.push_back(e2[j]);
+      fVem.push_back(e2[j]);
     }
-    used_index[j] = 1;
+    usedindex[j] = 1;
   }
 }
 
 
 //_________________________________________________________________________________
-void AliAnalysisTaskMultiDielectronTG::calc_pair(vector<AliDielectronSingleTG*> ve1, 
-						vector<AliDielectronSingleTG*> ve2, AliDielectron *die, Int_t idie){
+void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> ve1, 
+						vector<AliDielectronSingleTG*> ve2, AliDielectron *die, Int_t idie)
+{
+
+  //
+  // main routine for the pair procesing 
+  //
+
 
   for(int i1=0; i1<(int)ve1.size(); i1++){
     for(int i2=0; i2<(int)ve2.size(); i2++){
-      fill_pair(ve1[i1], ve2[i2], 0, die);  
+      FillPair(ve1[i1], ve2[i2], 0, die);  
     }    
   }
 
   for(int i1=0; i1<(int)ve1.size(); i1++){
     for(int i2=i1+1; i2<(int)ve1.size(); i2++){
-      fill_pair(ve1[i1], ve1[i2], 1, die);  
+      FillPair(ve1[i1], ve1[i2], 1, die);  
     }    
   }
 
   for(int i1=0; i1<(int)ve2.size(); i1++){
     for(int i2=i1+1; i2<(int)ve2.size(); i2++){
-      fill_pair(ve2[i1], ve2[i2], 2, die);  
+      FillPair(ve2[i1], ve2[i2], 2, die);  
     }    
   }
 
 
-  double dw_cent = 100.0/NCENT;
-  double dw_iz = 20.0/NZBIN;
-  double dw_rp = acos(-1.0)/NRPBIN;
+  double dwcent = 100.0/fgkNCENT;
+  double dwiz = 20.0/fgkNZBIN;
+  double dwrp = acos(-1.0)/fgkNRPBIN;
 
-  int icent = (int)(fgValues[AliDielectronVarManager::kCentrality]/dw_cent);
-  int izbin = (int)((fgValues[AliDielectronVarManager::kZvPrim]+10)/dw_iz);
-  int irp = (int)((fgValues[AliDielectronVarManager::kV0ACrpH2])/dw_rp);
+  int icent = (int)(fgValues[AliDielectronVarManager::kCentrality]/dwcent);
+  int izbin = (int)((fgValues[AliDielectronVarManager::kZvPrim]+10)/dwiz);
+  int irp = (int)((fgValues[AliDielectronVarManager::kV0ACrpH2])/dwrp);
 
   if(icent<0) icent=0;
-  if(icent>=NCENT) icent=NCENT-1;
+  if(icent>=fgkNCENT) icent=fgkNCENT-1;
   if(izbin<0) izbin=0;
-  if(izbin>=NZBIN) izbin=NZBIN-1;
+  if(izbin>=fgkNZBIN) izbin=fgkNZBIN-1;
   if(irp<0) irp=0;
-  if(irp>=NRPBIN) irp=NRPBIN-1;
+  if(irp>=fgkNRPBIN) irp=fgkNRPBIN-1;
 
   int nmixed;
   if(ve1.size()>0) {
@@ -720,15 +739,15 @@ void AliAnalysisTaskMultiDielectronTG::calc_pair(vector<AliDielectronSingleTG*> 
     // Now mixed event for +- pairs
     //
     nmixed = 0;
-    for(int ibuf=0;(nmixed<NMix);ibuf++) {
+    for(int ibuf=0;(nmixed<fgkNMix);ibuf++) {
       int ntry = 0;
-      while(ntry<MAX_TRY) {
-        reshuffle_buffer(d_vem[ibuf][idie][izbin][icent][irp],d_poolm[idie][izbin][icent][irp]);
+      while(ntry<fgkMAXTRY) {
+        ReshuffleBuffer(fvem[ibuf][idie][izbin][icent][irp],fpoolm[idie][izbin][icent][irp]);
         ntry++;
       }
       for(int i1=0; i1<(int)ve1.size(); i1++){
-	for(int i2=0; i2<(int)d_vem[ibuf][idie][izbin][icent][irp].size(); i2++){
-          fill_pair(ve1[i1],d_vem[ibuf][idie][izbin][icent][irp][i2], 3, die);
+	for(int i2=0; i2<(int)fvem[ibuf][idie][izbin][icent][irp].size(); i2++){
+          FillPair(ve1[i1],fvem[ibuf][idie][izbin][icent][irp][i2], 3, die);
         }
       }
       ++nmixed;
@@ -739,15 +758,15 @@ void AliAnalysisTaskMultiDielectronTG::calc_pair(vector<AliDielectronSingleTG*> 
     // Now mixed event for +- pairs
     //
     nmixed = 0;
-    for(int ibuf=0;(nmixed<NMix);ibuf++) {
+    for(int ibuf=0;(nmixed<fgkNMix);ibuf++) {
       int ntry = 0;
-      while(ntry<MAX_TRY) {
-        reshuffle_buffer(d_vep[ibuf][idie][izbin][icent][irp],d_poolp[idie][izbin][icent][irp]);
+      while(ntry<fgkMAXTRY) {
+        ReshuffleBuffer(fvep[ibuf][idie][izbin][icent][irp],fpoolp[idie][izbin][icent][irp]);
         ntry++;
       }
       for(int i1=0; i1<(int)ve2.size(); i1++){
-        for(int i2=0; i2<(int)d_vep[ibuf][idie][izbin][icent][irp].size(); i2++){
-          fill_pair(ve2[i1],d_vep[ibuf][idie][izbin][icent][irp][i2],4, die);
+        for(int i2=0; i2<(int)fvep[ibuf][idie][izbin][icent][irp].size(); i2++){
+          FillPair(ve2[i1],fvep[ibuf][idie][izbin][icent][irp][i2],4, die);
         }
       }
       ++nmixed;
@@ -759,15 +778,15 @@ void AliAnalysisTaskMultiDielectronTG::calc_pair(vector<AliDielectronSingleTG*> 
     // Now mixed event for ++ pairs
     //
     nmixed = 0;
-    for(int ibuf=0;(nmixed<NMix);ibuf++) {
+    for(int ibuf=0;(nmixed<fgkNMix);ibuf++) {
       int ntry = 0;
-      while(ntry<MAX_TRY) {
-        reshuffle_buffer(d_vep[ibuf][idie][izbin][icent][irp],d_poolp[idie][izbin][icent][irp]);
+      while(ntry<fgkMAXTRY) {
+        ReshuffleBuffer(fvep[ibuf][idie][izbin][icent][irp],fpoolp[idie][izbin][icent][irp]);
         ntry++;
       }
       for(int i1=0; i1<(int)ve1.size(); i1++){
-        for(int i2=0;i2<(int)d_vep[ibuf][idie][izbin][icent][irp].size(); i2++){
-          fill_pair(ve1[i1],d_vep[ibuf][idie][izbin][icent][irp][i2], 5, die);
+        for(int i2=0;i2<(int)fvep[ibuf][idie][izbin][icent][irp].size(); i2++){
+          FillPair(ve1[i1],fvep[ibuf][idie][izbin][icent][irp][i2], 5, die);
         }
       }
       ++nmixed;
@@ -779,15 +798,15 @@ void AliAnalysisTaskMultiDielectronTG::calc_pair(vector<AliDielectronSingleTG*> 
     // Now mixed event for +- pairs
     //
     nmixed = 0;
-    for(int ibuf=0;(nmixed<NMix);ibuf++) {
+    for(int ibuf=0;(nmixed<fgkNMix);ibuf++) {
       int ntry = 0;
-      while(ntry<MAX_TRY) {
-        reshuffle_buffer(d_vem[ibuf][idie][izbin][icent][irp],d_poolm[idie][izbin][icent][irp]);
+      while(ntry<fgkMAXTRY) {
+        ReshuffleBuffer(fvem[ibuf][idie][izbin][icent][irp],fpoolm[idie][izbin][icent][irp]);
         ntry++;
       }
       for(int i1=0; i1<(int)ve2.size(); i1++){
-        for(int i2=0; i2<(int)d_vem[ibuf][idie][izbin][icent][irp].size(); i2++){
-          fill_pair(ve2[i1],d_vem[ibuf][idie][izbin][icent][irp][i2],6, die);
+        for(int i2=0; i2<(int)fvem[ibuf][idie][izbin][icent][irp].size(); i2++){
+          FillPair(ve2[i1],fvem[ibuf][idie][izbin][icent][irp][i2],6, die);
         }
       }
       ++nmixed;
@@ -798,48 +817,55 @@ void AliAnalysisTaskMultiDielectronTG::calc_pair(vector<AliDielectronSingleTG*> 
 
 
 //_________________________________________________________________________________
-void AliAnalysisTaskMultiDielectronTG::fill_pair(AliDielectronSingleTG *iep, 
-						AliDielectronSingleTG *iem, int type, AliDielectron *die){                      
+void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep, 
+						AliDielectronSingleTG *iem, int type, AliDielectron *die)
+{                      
+
+  //
+  // main routine for filling kinematics of pairs
+  //
+
+
   
-  double d_mass, d_phiv, d_pxpair, d_pypair, d_pzpair;
-  double d_ptpair, d_epair, d_phipair, d_etapair, d_cos, d_psi;
+  double dmass, dphiv, dpxpair, dpypair, dpzpair;
+  double dptpair, depair, dphipair, detapair, dcos, dpsi;
 
-  calc_vars(iep, iem, d_mass, d_phiv, d_pxpair, d_pypair, d_pzpair, 
-            d_ptpair, d_epair, d_phipair, d_etapair, d_cos, d_psi);
+  CalcVars(iep, iem, dmass, dphiv, dpxpair, dpypair, dpzpair, 
+            dptpair, depair, dphipair, detapair, dcos, dpsi);
 
 
-  double d_openingangle =  -9999;
-  double d_v0_mass =  -9999;
-  double d_v0_pxpair = -9999;
-  double d_v0_pypair = -9999;
-  double d_v0_pzpair = -9999;
-  double d_v0_ptpair = -9999;
-  double d_v0_epair = -9999;
-  double d_v0_xv_pair = -9999;
-  double d_v0_yv_pair = -9999;
-  double d_v0_zv_pair = -9999;
-  double d_v0_phipair = -9999;
-  double d_v0_etapair = -9999;
-  double d_v0_r_pair = -9999;
-  double d_psi_pair =  -9999;
+  double dopeningangle =  -9999;
+  double dv0mass =  -9999;
+  double dv0pxpair = -9999;
+  double dv0pypair = -9999;
+  double dv0pzpair = -9999;
+  double dv0ptpair = -9999;
+  double dv0epair = -9999;
+  double dv0xvpair = -9999;
+  double dv0yvpair = -9999;
+  double dv0zvpair = -9999;
+  double dv0phipair = -9999;
+  double dv0etapair = -9999;
+  double dv0rpair = -9999;
+  double dpsipair =  -9999;
 
   ////////////////////////////
   ///// calculate v0 ////////
   ///////////////////////////
-  Bool_t V0OFF=kFALSE;
+  Bool_t v0OFF=kFALSE;
   /// for the moment, this doesn't work for MC
-  if(d_v0_mixing == kFALSE && (type==3 || type==4 || type==5 || type==6)){
-    V0OFF = kTRUE;
+  if(fdv0mixing == kFALSE && (type==3 || type==4 || type==5 || type==6)){
+    v0OFF = kTRUE;
   }
   if(die->GetHasMC()==kTRUE && (type==3 || type==4 || type==5 || type==6)){
-    V0OFF = kTRUE;
+    v0OFF = kTRUE;
   }
   if(type==0 || type==1 || type==2){
-    V0OFF = kFALSE;
+    v0OFF = kFALSE;
   }
   
 
-  if(V0OFF==kFALSE){
+  if(v0OFF==kFALSE){
     AliVTrack* trackob1= iep->GetTrack();    
     AliVTrack* trackob2= iem->GetTrack();    
 
@@ -856,69 +882,69 @@ void AliAnalysisTaskMultiDielectronTG::fill_pair(AliDielectronSingleTG *iep,
       return; 
     }
     const AliKFParticle &kfPair = candidate.GetKFParticle();
-    d_openingangle = candidate.OpeningAngle();
-    d_v0_mass = candidate.M();
-    d_v0_pxpair = candidate.Px();
-    d_v0_pypair = candidate.Py();
-    d_v0_pzpair = candidate.Pz();
-    d_v0_ptpair = candidate.Pt();
-    d_v0_epair = candidate.E();
-    d_v0_xv_pair = candidate.Xv();
-    d_v0_yv_pair = candidate.Yv();
-    d_v0_zv_pair = candidate.Zv();
-    d_v0_phipair = candidate.Phi();
-    // d_v0_theta_pair = candidate.Theta();
-    d_v0_etapair = candidate.Eta();
-    d_v0_r_pair =  kfPair.GetR();
+    dopeningangle = candidate.OpeningAngle();
+    dv0mass = candidate.M();
+    dv0pxpair = candidate.Px();
+    dv0pypair = candidate.Py();
+    dv0pzpair = candidate.Pz();
+    dv0ptpair = candidate.Pt();
+    dv0epair = candidate.E();
+    dv0xvpair = candidate.Xv();
+    dv0yvpair = candidate.Yv();
+    dv0zvpair = candidate.Zv();
+    dv0phipair = candidate.Phi();
+    // dv0theta_pair = candidate.Theta();
+    dv0etapair = candidate.Eta();
+    dv0rpair =  kfPair.GetR();
     
-    d_psi_pair = candidate.PsiPair(bz);
+    dpsipair = candidate.PsiPair(fbz);
   }
 
   Double_t values[AliDielectronVarManager::kNMaxValues];
   TString  className1;
   TString  className2;
-  className1.Form("MyPair_%s",fgkPairClassNamesTG[type]);
-  className2.Form("MyPairV0_%s",fgkPairClassNamesTG[type]);
+  className1.Form("MyPair_%s",kPairClassNamesTG[type]);
+  className2.Form("MyPairV0_%s",kPairClassNamesTG[type]);
   
   AliDielectronHistos *fHistos = die->GetHistoManager();
   Bool_t pairClass1=fHistos->GetHistogramList()->FindObject(className1.Data())!=0x0;
   Bool_t pairClass2=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
 
-  if (pairClass1 && PairTrackcut(d_phiv)==true){
+  if (pairClass1 && PairTrackcut(dphiv)==true){
     ///import pair variables to values!!
-    values[AliDielectronVarManager::kPx] = d_pxpair;
-    values[AliDielectronVarManager::kPy] = d_pypair;
-    values[AliDielectronVarManager::kPz] = d_pzpair;
-    values[AliDielectronVarManager::kPt] = d_ptpair;
-    values[AliDielectronVarManager::kXv] = d_v0_xv_pair;
-    values[AliDielectronVarManager::kYv] = d_v0_yv_pair;
-    values[AliDielectronVarManager::kZv] = d_v0_zv_pair;
-    values[AliDielectronVarManager::kR] = d_v0_r_pair;
-    values[AliDielectronVarManager::kE] = d_epair;
-    values[AliDielectronVarManager::kEta] = d_etapair;
-    values[AliDielectronVarManager::kM] = d_mass;
-    values[AliDielectronVarManager::kPsiPair] = d_phiv;
-    values[AliDielectronVarManager::kPhi]  = d_phipair;
-    values[AliDielectronVarManager::kOpeningAngle]  = d_cos;
+    values[AliDielectronVarManager::kPx] = dpxpair;
+    values[AliDielectronVarManager::kPy] = dpypair;
+    values[AliDielectronVarManager::kPz] = dpzpair;
+    values[AliDielectronVarManager::kPt] = dptpair;
+    values[AliDielectronVarManager::kXv] = dv0xvpair;
+    values[AliDielectronVarManager::kYv] = dv0yvpair;
+    values[AliDielectronVarManager::kZv] = dv0zvpair;
+    values[AliDielectronVarManager::kR] = dv0rpair;
+    values[AliDielectronVarManager::kE] = depair;
+    values[AliDielectronVarManager::kEta] = detapair;
+    values[AliDielectronVarManager::kM] = dmass;
+    values[AliDielectronVarManager::kPsiPair] = dphiv;
+    values[AliDielectronVarManager::kPhi]  = dphipair;
+    values[AliDielectronVarManager::kOpeningAngle]  = dcos;
     fHistos->FillClass(className1, AliDielectronVarManager::kNMaxValues, values);
   }
 
 
-  if (pairClass2 && PairTrackcut(d_phiv)==true){
-    values[AliDielectronVarManager::kPx] = d_v0_pxpair;
-    values[AliDielectronVarManager::kPy] = d_v0_pypair;
-    values[AliDielectronVarManager::kPz] = d_v0_pzpair;
-    values[AliDielectronVarManager::kPt] = d_v0_ptpair;
-    values[AliDielectronVarManager::kXv] = d_v0_xv_pair;
-    values[AliDielectronVarManager::kYv] = d_v0_yv_pair;
-    values[AliDielectronVarManager::kZv] = d_v0_zv_pair;
-    values[AliDielectronVarManager::kR] = d_v0_r_pair;
-    values[AliDielectronVarManager::kE] = d_v0_epair;
-    values[AliDielectronVarManager::kEta] = d_v0_etapair;
-    values[AliDielectronVarManager::kM] = d_v0_mass;
-    values[AliDielectronVarManager::kPsiPair] = d_psi_pair;
-    values[AliDielectronVarManager::kPhi]  = d_v0_phipair;
-    values[AliDielectronVarManager::kOpeningAngle]  = d_openingangle;
+  if (pairClass2 && PairTrackcut(dphiv)==true){
+    values[AliDielectronVarManager::kPx] = dv0pxpair;
+    values[AliDielectronVarManager::kPy] = dv0pypair;
+    values[AliDielectronVarManager::kPz] = dv0pzpair;
+    values[AliDielectronVarManager::kPt] = dv0ptpair;
+    values[AliDielectronVarManager::kXv] = dv0xvpair;
+    values[AliDielectronVarManager::kYv] = dv0yvpair;
+    values[AliDielectronVarManager::kZv] = dv0zvpair;
+    values[AliDielectronVarManager::kR] = dv0rpair;
+    values[AliDielectronVarManager::kE] = dv0epair;
+    values[AliDielectronVarManager::kEta] = dv0etapair;
+    values[AliDielectronVarManager::kM] = dv0mass;
+    values[AliDielectronVarManager::kPsiPair] = dpsipair;
+    values[AliDielectronVarManager::kPhi]  = dv0phipair;
+    values[AliDielectronVarManager::kOpeningAngle]  = dopeningangle;
     fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
   }
 
@@ -927,15 +953,20 @@ void AliAnalysisTaskMultiDielectronTG::fill_pair(AliDielectronSingleTG *iep,
 }
 
 //_________________________________________________________________________________
-bool AliAnalysisTaskMultiDielectronTG::PairTrackcut(double phiv){
+bool AliAnalysisTaskMultiDielectronTG::PairTrackcut(double phiv)
+{
+
+  //
+  // pair-by-pair cuts
+  //
   
 
   bool pairOK = true;
 
   //var is phiv for the moment 
-  if(bz>0 && phiv>d_conv_phiv){
+  if(fbz>0 && phiv>fdconvphiv){
     pairOK = false;
-  }else if(bz<0 && phiv<acos(-1.0)-d_conv_phiv){
+  }else if(fbz<0 && phiv<acos(-1.0)-fdconvphiv){
     pairOK = false;
   }
 
@@ -945,16 +976,22 @@ bool AliAnalysisTaskMultiDielectronTG::PairTrackcut(double phiv){
 
 
 //_________________________________________________________________________________
-void AliAnalysisTaskMultiDielectronTG::calc_vars(AliDielectronSingleTG *iep, AliDielectronSingleTG *iem, 
+void AliAnalysisTaskMultiDielectronTG::CalcVars(AliDielectronSingleTG *iep, AliDielectronSingleTG *iem, 
 						double &mass, double &phiv, double &px, double &py, double&pz,
 						double &pt, double &e, double &phi, 
-						double &eta, double &cos, double &psi){
+						double &eta, double &cos, double &psi)
+{
+
+
+  //
+  // standalone calculator for the pair variables
+  //
 
   px = iep->Px()+iem->Px();
   py = iep->Py()+iem->Py();
   pz = iep->Pz()+iem->Pz();
   pt = sqrt(px*px+py*py);
-  double d_ppair = sqrt(pt*pt+pz*pz);
+  double dppair = sqrt(pt*pt+pz*pz);
   static const double me=0.0005109989;
   e = sqrt(me*me+iep->Px()*iep->Px()+iep->Py()*iep->Py()+iep->Pz()*iep->Pz())
     + sqrt(me*me+iem->Px()*iem->Px()+iem->Py()*iem->Py()+iem->Pz()*iem->Pz());
@@ -968,7 +1005,7 @@ void AliAnalysisTaskMultiDielectronTG::calc_vars(AliDielectronSingleTG *iep, Ali
    
   
   phi = atan2(py, px);
-  eta = -0.5*TMath::Log((d_ppair+pz)/(d_ppair-pz));
+  eta = -0.5*TMath::Log((dppair+pz)/(dppair-pz));
   double p1 = sqrt(pow(iep->Px(),2)+pow(iep->Py(),2)+pow(iep->Pz(),2));
   double p2 = sqrt(pow(iem->Px(),2)+pow(iem->Py(),2)+pow(iem->Pz(),2));
   cos = acos((iep->Px()*iem->Px()+iep->Py()*iem->Py()+iep->Pz()*iem->Pz())/(p1*p2));
@@ -978,7 +1015,7 @@ void AliAnalysisTaskMultiDielectronTG::calc_vars(AliDielectronSingleTG *iep, Ali
 
 
   //unit vector of (pep+pem) 
-  double pl = d_ppair;
+  double pl = dppair;
   double ux = px/pl;
   double uy = py/pl;
   double uz = pz/pl;
@@ -1026,13 +1063,17 @@ void AliAnalysisTaskMultiDielectronTG::calc_vars(AliDielectronSingleTG *iep, Ali
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskMultiDielectronTG::reshuffle_buffer(vector<AliDielectronSingleTG*> ve, deque<AliDielectronSingleTG*> pool){
+void AliAnalysisTaskMultiDielectronTG::ReshuffleBuffer(vector<AliDielectronSingleTG*> ve, deque<AliDielectronSingleTG*> pool)
+{
   //If there is not enough electron in the pool, give up
+  //
+  // ReshuffleBuffer for th event mixing 
+  //
 
   unsigned int ne = ve.size();
   unsigned int poolsize = pool.size();
-  int used[MAXPOOL];
-  for(int i=0;i<(int)MAXPOOL;i++){
+  int used[fgkMAXPOOL];
+  for(int i=0;i<(int)fgkMAXPOOL;i++){
     used[i]=0;
   }
 
