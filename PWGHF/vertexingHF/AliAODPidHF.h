@@ -153,12 +153,12 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fTOFdecide; //  real data PbPb 
  Bool_t fOldPid; //  old PID method implemented
  Double_t fPtThresholdTPC; //  pT threshold to use TPC PID
- AliPIDResponse *fPidResponse; //pid response
- AliPIDCombined* fPidCombined; //combined PID object 
+ AliPIDResponse *fPidResponse; //! pid response
+ AliPIDCombined* fPidCombined; //! combined PID object 
 
- AliTPCPIDResponse* fTPCResponse; // TPC response 
+ AliTPCPIDResponse* fTPCResponse; //! TPC response 
 
- ClassDef(AliAODPidHF,16) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,17) // AliAODPid for heavy flavor PID
 
 };
 
