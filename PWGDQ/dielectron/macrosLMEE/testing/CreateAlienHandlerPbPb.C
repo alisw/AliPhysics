@@ -68,10 +68,11 @@ plugin->AddRunNumber(170040);
 // Declare the output file names separated by blancs.
 // (can be like: file.root or file.root@ALICE::Niham::File)
 //   plugin->SetOutputFiles("Output.root");
-   //plugin->SetDefaultOutputs(); 
-   plugin->SetDefaultOutputs(kFALSE);
-     plugin->SetOutputFiles("cbaumann_LMEEPbPb2011_out.root"); 
+   plugin->SetDefaultOutputs(); 
+   //or specify files:
+   //plugin->SetDefaultOutputs(kFALSE);
      //plugin->SetOutputFiles("cbaumann_LMEEpp2010_out.root"); 
+     
 //   plugin->SetOutputFiles("cbaumann_lowmass_out.root cbaumann_lowmass_CF.root");
 // Optionally define the files to be archived.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@disk=2 root_archive.zip:*.root@disk=2");
