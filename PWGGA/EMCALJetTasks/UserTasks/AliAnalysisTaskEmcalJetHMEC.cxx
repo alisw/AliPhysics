@@ -25,7 +25,9 @@
 #include "AliAnalysisTaskEmcalJetHMEC.h"
 #include "TVector3.h"
 
+#include "AliEventPoolManager.h"
 ClassImp(AliAnalysisTaskEmcalJetHMEC)
+ClassImp( AliDPhiBasicParticleMEC )
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() : 
@@ -37,13 +39,21 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fEtamin(-0.9), 
   fEtamax(0.9),
   fAreacut(0.0),
+  fDoEventMixing(0),
+  fMixingTracks(50000),
   fESD(0), 
-  fOutputList(0), 
+  fPoolMgr(0x0), 
+  fOutputList(0),
   fHistTrackPt(0),
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistTrackEtaPhi(0), 
-  fHistJetHEtaPhi(0) 
+  fHistJetHEtaPhi(0),
+  fNevents(0),
+  fTindex(0),
+  fTrigBufferIndex(0),
+  fCountAgain(0),
+  fhnMixedEvents(0x0)
 {
   // Default Constructor
 
@@ -51,7 +61,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
     fHistJetPtTT[icent]=0;
-    for(Int_t iptjet = 0; iptjet<3; ++iptjet){
+    for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
 	fHistJetH[icent][iptjet][ieta]=0;
 	fHistJetHBias[icent][iptjet][ieta]=0;
@@ -72,13 +82,21 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fEtamin(-0.9), 
   fEtamax(0.9),
   fAreacut(0.0),
+  fDoEventMixing(0),
+  fMixingTracks(50000),
   fESD(0), 
+  fPoolMgr(0x0), 
   fOutputList(0), 
   fHistTrackPt(0),
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistTrackEtaPhi(0), 
-  fHistJetHEtaPhi(0) 
+  fHistJetHEtaPhi(0),
+  fNevents(0),
+  fTindex(0),
+  fTrigBufferIndex(0),
+  fCountAgain(0), 
+  fhnMixedEvents(0x0)
 {
   // Constructor
   for(Int_t icent = 0; icent<6; ++icent){
@@ -93,6 +111,13 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
       }
     }
   }
+
+    for(Int_t i=0; i<10; i++) {
+       for(Int_t j=0; j<6; j++) {
+	    fTrigBuffer[i][j]=0;
+		}				
+    }	
+
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -115,8 +140,9 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner();
 
-  // Create histograms
 
+
+  // Create histograms
   fHistTrackPt = new TH1F("fHistTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
 
 
@@ -161,6 +187,12 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
     }
   }
 
+  if(fDoEventMixing){    
+     UInt_t cifras = 0; // bit coded, see GetDimParams() below 
+     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7; 
+     fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
+     }
+
 
 
   fOutputList->Add(fHistTrackPt);
@@ -168,9 +200,35 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
   fOutputList->Add(fHistJetEtaPhi);
   fOutputList->Add(fHistTrackEtaPhi);
   fOutputList->Add(fHistJetHEtaPhi);
+   fOutputList->Add(fhnMixedEvents);
 
 
   PostData(1, fOutputList);
+
+
+  //Event Mixing
+  Int_t trackDepth = fMixingTracks; 
+  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+ 
+  Int_t nZvtxBins  = 7+1+7;
+  // bins for second buffer are shifted by 100 cm
+  Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7, 93, 95, 97, 99, 101, 103, 105, 107 };
+  Double_t* zvtxbin = vertexBins;
+
+  Int_t nCentralityBins  = 100;
+  Double_t centralityBins[nCentralityBins];
+  for(Int_t ic=0; ic<nCentralityBins; ic++){
+    centralityBins[ic]=1.0*ic;
+  }
+  //Double_t* centbin = centralityBins;
+
+  //cout << "filling centrality bins" <<endl;
+  //Int_t nCentralityBins  = fHistCentrality->GetNbinsX();
+  //Double_t* centralityBins = (Double_t*)fHistCentrality->GetXaxis()->GetXbins()->GetArray();
+
+  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
+
+  
 
 }
 
@@ -369,8 +427,9 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
   if(ijethi>-1){
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijethi)); 
     
-    float jetphi = jet->Phi();
+    Double_t jetphi = jet->Phi();
     Double_t jetPt = jet->Pt();
+    Double_t jeteta=jet->Eta();
 
       fHistJetPt[centbin]->Fill(jet->Pt());
 
@@ -414,8 +473,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	    trackphi = trackphi-2*TMath::Pi();
 
 	  Double_t tracketa=track->Eta();
-	  Double_t jeteta=jet->Eta();
-
+      
 	  Double_t deta=tracketa-jeteta;
 	  Int_t ieta=GetEtaBin(deta);
 
@@ -439,6 +497,82 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
 	} //track loop
   }//jet pt cut
+
+  
+  // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
+  TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
+  //delete tracks;
+
+  Double_t fvertex[3]={0,0,0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(fvertex);
+  Double_t zVtx=fvertex[3];
+  
+  if(fDoEventMixing>0){
+    
+    // event mixing
+    
+    // 1. First get an event pool corresponding in mult (cent) and
+    //    zvertex to the current event. Once initialized, the pool
+    //    should contain nMix (reduced) events. This routine does not
+    //    pre-scan the chain. The first several events of every chain
+    //    will be skipped until the needed pools are filled to the
+    //    specified depth. If the pool categories are not too rare, this
+    //    should not be a problem. If they are rare, you could lose
+    //    statistics.
+
+    // 2. Collect the whole pool's content of tracks into one TObjArray
+    //    (bgTracks), which is effectively a single background super-event.
+
+    // 3. The reduced and bgTracks arrays must both be passed into
+    //    FillCorrelations(). Also nMix should be passed in, so a weight
+    //    of 1./nMix can be applied.
+
+
+
+
+
+    AliEventPool* pool = fPoolMgr->GetEventPool(fcent, zVtx);
+
+    pool->PrintInfo();
+
+    
+    if (!pool)
+      AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fcent, zVtx));
+
+
+    if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
+    {
+      
+      Int_t nMix = pool->GetCurrentNEvents();
+      //cout << "good pool with nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
+      
+    
+      // Fill mixed-event histos here  
+      for (Int_t jMix=0; jMix<nMix; jMix++) 
+      {
+	TObjArray* bgTracks = pool->GetEvent(jMix);
+	const Int_t Nbgtrks = bgTracks->GetEntries();
+	for(Int_t ibg=0; ibg<Nbgtrks; ibg++){
+	  AliDPhiBasicParticleMEC *part = static_cast<AliDPhiBasicParticleMEC*>(bgTracks->At(ibg));         
+	  if(!part) continue;
+
+	  Double_t DPhi = jetphi - part->Phi();
+	  Double_t DEta = jeteta - part->Eta();
+	  Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
+	  if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
+	  if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
+	  Double_t triggerEntries[7] = {fcent,jetPt,part->Pt(),DR,DEta,DPhi,0.0};                      
+	  fhnMixedEvents->Fill(triggerEntries,1./nMix);
+	}
+ 
+      }
+    }
+    pool->UpdatePool(tracksClone);
+  
+  }
+
+
+
   }
 
   PostData(1, fOutputList);
@@ -450,5 +584,142 @@ void AliAnalysisTaskEmcalJetHMEC::Terminate(Option_t *)
   //just terminate
 
 }
+
+THnSparse* AliAnalysisTaskEmcalJetHMEC::NewTHnSparseF(const char* name, UInt_t entries)
+{
+   // generate new THnSparseF, axes are defined in GetDimParams()
+
+   Int_t count = 0;
+   UInt_t tmp = entries;
+   while(tmp!=0){
+      count++;
+      tmp = tmp &~ -tmp;  // clear lowest bit
+   }
+
+   TString hnTitle(name);
+   const Int_t dim = count;
+   Int_t nbins[dim];
+   Double_t xmin[dim];
+   Double_t xmax[dim];
+
+   Int_t i=0;
+   Int_t c=0;
+   while(c<dim && i<32){
+      if(entries&(1<<i)){
+      
+         TString label("");
+         GetDimParams(i, label, nbins[c], xmin[c], xmax[c]);
+         hnTitle += Form(";%s",label.Data());
+         c++;
+      }
+      
+      i++;
+   }
+   hnTitle += ";";
+
+   return new THnSparseF(name, hnTitle.Data(), dim, nbins, xmin, xmax);
+}
+
+void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
+{
+   // stores label and binning of axis for THnSparse
+
+   const Double_t pi = TMath::Pi();
+   
+   switch(iEntry){
+      
+   case 0:
+      label = "V0 centrality (%)";
+     
+         nbins = 10;
+         xmin = 0.;
+         xmax = 100.;
+         break;
+      
+      
+   case 1:
+      label = "corrected jet pt";
+         nbins = 20;
+         xmin = 0.;
+         xmax = 200.;
+          break;
+      
+      
+   case 2:
+      label = "track pT";
+     
+         nbins = 100;
+         xmin = 0.;
+         xmax = 10;
+         break;
+      
+      
+    case 3:
+      label = "deltaR";
+      nbins = 15;
+      xmin = 0.;
+      xmax = 1.5;
+      break;
+
+
+
+   case 4:
+      label = "deltaEta";
+      nbins = 8;
+      xmin = -1.6;
+      xmax = 1.6;
+      break;
+
+
+  case 5:
+      label = "deltaPhi";
+      nbins = 90;
+      xmin = -0.5*pi;
+      xmax = 1.5*pi;
+      break;   
+   
+      
+        
+    case 6:
+      label = "leading track";
+      nbins = 13;
+      xmin = 0;
+      xmax = 50;
+      break;
+           
+     case 7:
+    
+      label = "trigger track";
+      nbins =10;
+      xmin = 0;
+      xmax = 50;
+      break;
+
+
+  
+
+   }
+
+}
+
+
+//_________________________________________________
+// From CF event mixing code PhiCorrelations
+TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList(TObjArray* tracks)
+{
+  // clones a track list by using AliDPhiBasicParticle which uses much less memory (used for event mixing)
+  
+  TObjArray* tracksClone = new TObjArray;
+  tracksClone->SetOwner(kTRUE);
+  
+  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
+  {
+    AliVParticle* particle = (AliVParticle*) tracks->At(i);
+    tracksClone->Add(new AliDPhiBasicParticleMEC(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
+  }
+  
+  return tracksClone;
+}
+
 
 
