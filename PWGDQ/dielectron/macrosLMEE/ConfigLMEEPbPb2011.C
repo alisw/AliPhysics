@@ -249,6 +249,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  500,0.0,5.00,AliDielectronVarManager::kM);
   histos->UserHistogram("Pair","Rapidity","Rapidity;Rapidity;#pairs",
 	  100,-2.,2.,AliDielectronVarManager::kY);
+  histos->UserHistogram("Pair","DeltaEta","DeltaEta;DeltaEta",
+	  100,0.,3.15,AliDielectronVarManager::kDeltaEta);
+  histos->UserHistogram("Pair","DeltaPhi","DeltaPhi;DeltaPhi",
+	  100,0.,3.15,AliDielectronVarManager::kDeltaPhi);
   histos->UserHistogram("Pair","OpeningAngle","Opening angle;angle",
 	  100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
   //2D Histo Plot
@@ -295,6 +299,8 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   cf->AddVariable(AliDielectronVarManager::kPt,200,0,20);
   cf->AddVariable(AliDielectronVarManager::kM,201,-0.01,4.01); //20Mev Steps
   cf->AddVariable(AliDielectronVarManager::kY,100,-2.,2.);
+  cf->AddVariable(AliDielectronVarManager::kDeltaEta,200,-2.,2.);
+  cf->AddVariable(AliDielectronVarManager::kDeltaPhi,100,0.,3.2);
   cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
 
   cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,10.0,30.0,40.0,60.,80.,100.");
