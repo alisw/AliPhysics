@@ -225,24 +225,88 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-Bool_t AliJetResponseMaker::Run()
+void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc)
 {
-  // Find the closest jets
+  // Do the jet loop.
 
-  fHistEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
+  Int_t nJets1 = jets1->GetEntriesFast();
+  Int_t nJets2 = jets2->GetEntriesFast();
 
-  if (TMath::Abs(fVertex[2]) > fVertexCut)
-    return kFALSE;
-  
-  fHistAcceptedEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
-  fHistNTrials->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + fNTrials);
+  for (Int_t i = 0; i < nJets1; i++) {
 
-  DoJetLoop(fJets, fMCJets, kFALSE);
-  DoJetLoop(fMCJets, fJets, kTRUE);
+    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(jets1->At(i));
 
-  return kTRUE;
+    if (!jet1) {
+      AliError(Form("Could not receive jet %d", i));
+      continue;
+    }  
+
+    if (!AcceptJet(jet1, kTRUE, mc))
+      continue;
+
+    for (Int_t j = 0; j < nJets2; j++) {
+      
+      AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(jets2->At(j));
+      
+      if (!jet2) {
+	AliError(Form("Could not receive jet %d", j));
+	continue;
+      }  
+      
+      if (!AcceptJet(jet2, kTRUE, !mc))
+	continue;
+      
+      Double_t deta = jet2->Eta() - jet1->Eta();
+      Double_t dphi = jet2->Phi() - jet1->Phi();
+      Double_t d = TMath::Sqrt(deta * deta + dphi * dphi);
+
+      if (d < jet1->ClosestJetDistance()) {
+	jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
+	jet1->SetClosestJet(jet2, d);
+      }
+      else if (d < jet1->SecondClosestJetDistance()) {
+	jet1->SetSecondClosestJet(jet2, d);
+      }
+    }
+  }
 }
 
+//________________________________________________________________________
+void AliJetResponseMaker::ExecOnce()
+{
+  // Execute once.
+
+  if (!fMCJetsName.IsNull() && !fMCJets) {
+    fMCJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCJetsName));
+    if (!fMCJets) {
+      AliError(Form("%s: Could not retrieve mc jets %s!", GetName(), fMCJetsName.Data()));
+      return;
+    }
+    else if (!fMCJets->GetClass()->GetBaseClass("AliEmcalJet")) {
+      AliError(Form("%s: Collection %s does not contain AliEmcalJet objects!", GetName(), fMCJetsName.Data())); 
+      fMCJets = 0;
+      return;
+    }
+  }
+
+  if (!fMCTracksName.IsNull() && !fMCTracks) {
+    fMCTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCTracksName));
+    if (!fMCTracks) {
+      AliError(Form("%s: Could not retrieve mc tracks %s!", GetName(), fMCTracksName.Data())); 
+      return;
+    }
+    else {
+      TClass *cl = fMCTracks->GetClass();
+      if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
+	AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fMCTracksName.Data())); 
+	fMCTracks = 0;
+	return;
+      }
+    }
+  }
+
+  AliAnalysisTaskEmcalJet::ExecOnce();
+}
 
 //________________________________________________________________________
 Bool_t AliJetResponseMaker::FillHistograms()
@@ -352,55 +416,10 @@ Bool_t AliJetResponseMaker::FillHistograms()
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc)
-{
-  // Do the jet loop.
-
-  Int_t nJets1 = jets1->GetEntriesFast();
-  Int_t nJets2 = jets2->GetEntriesFast();
-
-  for (Int_t i = 0; i < nJets1; i++) {
-
-    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(jets1->At(i));
-
-    if (!jet1) {
-      AliError(Form("Could not receive jet %d", i));
-      continue;
-    }  
-
-    if (!AcceptJet(jet1, kTRUE, mc))
-      continue;
-
-    for (Int_t j = 0; j < nJets2; j++) {
-      
-      AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(jets2->At(j));
-      
-      if (!jet2) {
-	AliError(Form("Could not receive jet %d", j));
-	continue;
-      }  
-      
-      if (!AcceptJet(jet2, kTRUE, !mc))
-	continue;
-      
-      Double_t deta = jet2->Eta() - jet1->Eta();
-      Double_t dphi = jet2->Phi() - jet1->Phi();
-      Double_t d = TMath::Sqrt(deta * deta + dphi * dphi);
-
-      if (d < jet1->ClosestJetDistance()) {
-	jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
-	jet1->SetClosestJet(jet2, d);
-      }
-      else if (d < jet1->SecondClosestJetDistance()) {
-	jet1->SetSecondClosestJet(jet2, d);
-      }
-    }
-  }
-}
-
-//________________________________________________________________________
 Bool_t AliJetResponseMaker::RetrieveEventObjects()
 {
+  // Retrieve event objects.
+
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
   
@@ -430,44 +449,21 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::ExecOnce()
+Bool_t AliJetResponseMaker::Run()
 {
-  // Retrieve event objects.
+  // Find the closest jets
 
-  if (!fMCJetsName.IsNull() && !fMCJets) {
-    fMCJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCJetsName));
-    if (!fMCJets) {
-      AliError(Form("%s: Could not retrieve mc jets %s!", GetName(), fMCJetsName.Data()));
-      return;
-    }
-    else if (!fMCJets->GetClass()->GetBaseClass("AliEmcalJet")) {
-      AliError(Form("%s: Collection %s does not contain AliEmcalJet objects!", GetName(), fMCJetsName.Data())); 
-      fMCJets = 0;
-      return;
-    }
-  }
+  fHistEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
 
-  if (!fMCTracksName.IsNull() && !fMCTracks) {
-    fMCTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCTracksName));
-    if (!fMCTracks) {
-      AliError(Form("%s: Could not retrieve mc tracks %s!", GetName(), fMCTracksName.Data())); 
-      return;
-    }
-    else {
-      TClass *cl = fMCTracks->GetClass();
-      if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
-	AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fMCTracksName.Data())); 
-	fMCTracks = 0;
-	return;
-      }
-    }
-  }
+  if (TMath::Abs(fVertex[2]) > fVertexCut)
+    return kFALSE;
+  
+  fHistAcceptedEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
+  fHistNTrials->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + fNTrials);
 
-  AliAnalysisTaskEmcalJet::ExecOnce();
+  DoJetLoop(fJets, fMCJets, kFALSE);
+  DoJetLoop(fMCJets, fJets, kTRUE);
+
+  return kTRUE;
 }
 
-//________________________________________________________________________
-void AliJetResponseMaker::Terminate(Option_t *) 
-{
-  // Called once at the end of the analysis.
-}
