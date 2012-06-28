@@ -372,3 +372,9 @@ void AliAnalysisTaskFlowD2H::SetCommonConstants(Int_t massBins, Double_t minMass
   fMaxMass = maxMass;
   fPtBinWidth = ptWidth;
 }
+
+//=======================================================================
+void AliAnalysisTaskFlowD2H::Terminate(Option_t *)
+{
+  //terminate
+}
