@@ -837,6 +837,7 @@ void AliAODPidHF::SetBetheBloch() {
 //-----------------------
 Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
 
+  if(!CheckTOFPIDStatus(track)) return 0;
 
   Double_t nsigma;
   if(GetnSigmaTOF(track,3,nsigma)==1){
