@@ -42,7 +42,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
 //AliCFContainer *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -345,6 +345,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(Int_t decayOption=AliCFVertex
 		nameContainer="CFHFccontainer0allD_3Prong_CommonFramework";          
 	}
 	nameContainer+=suffixDecayType.Data();
+	nameContainer+=suffixName.Data();
 	
 	AliCFContainer* container;
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -610,6 +611,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(Int_t decayOption=AliCFVertex
 		nameCorr="CFHFcorr0allD_3Prong_CommonFramework";		
 	}
 	nameCorr+=suffixDecayType.Data();
+	nameCorr+=suffixName.Data();
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
         Double_t** binEdges = new Double_t[2];
@@ -660,6 +662,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(Int_t decayOption=AliCFVertex
 	outputfile += suffixDecayType.Data();
 	output1name+= suffixDecayType.Data();
 	output4name+= suffixDecayType.Data();
+	
+	outputfile += suffixName.Data();
+	output1name+= suffixName.Data();
+	output4name+= suffixName.Data();
 
 	//now comes user's output objects :
 	// output TH1I for event counting
