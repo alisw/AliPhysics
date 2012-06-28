@@ -17,9 +17,10 @@ class AliTrackPointArray;
 class AliITSSumTP : public TObject
 {
  public:
-  enum {kCrvTPC,kCrvTPCErr,kCrvGlo,kCrvGloErr,kTPCInX,kTPCInY,kTPCInZ,kNVarPerTrack};
+  enum {kCrvTPC,kCrvTPCErr,kCrvGlo,kCrvGloErr,kNVarPerTrack};
+  enum {kTPCInX,kTPCInY,kTPCInZ,kTPCSpare};
   //
-  AliITSSumTP() : fTracks(0),fVertex(),fNVars(0),fCrvVars(0) {fTracks.SetOwner(kTRUE);}
+  AliITSSumTP() : fTracks(0),fVertex(),fNVars(0),fCrvVars(0),fTPCVars(0) {fTracks.SetOwner(kTRUE);}
   AliITSSumTP(const AliITSSumTP& src);
   virtual ~AliITSSumTP() {Reset();}
   AliITSSumTP &operator=(const  AliITSSumTP& src);
@@ -51,8 +52,10 @@ class AliITSSumTP : public TObject
   AliESDVertex fVertex;               // ESD Vertex
   Int_t        fNVars;                // Ntracks*kNVarPerTrack
   Double32_t*  fCrvVars;               //[fNVars];
+  Double32_t*  fTPCVars;               //[fNVars];
 
-  ClassDef(AliITSSumTP,1)
+
+  ClassDef(AliITSSumTP,2)
 };
 
 
@@ -60,18 +63,20 @@ class AliITSSumTP : public TObject
 inline void AliITSSumTP::GetTPCInnerXYZ(int i, double* xyz) const
 {
   // get tpc inner coordinates
-  xyz[0] = fCrvVars[i*kNVarPerTrack+kTPCInX];
-  xyz[1] = fCrvVars[i*kNVarPerTrack+kTPCInY];
-  xyz[2] = fCrvVars[i*kNVarPerTrack+kTPCInZ];
+  if (!fTPCVars) {xyz[0]=xyz[1]=xyz[2]=0; return;}  // for BWD compatibility
+  xyz[0] = fTPCVars[i*kNVarPerTrack+kTPCInX];
+  xyz[1] = fTPCVars[i*kNVarPerTrack+kTPCInY];
+  xyz[2] = fTPCVars[i*kNVarPerTrack+kTPCInZ];
 }
 
 //---------------------------------------------------------------
 inline void AliITSSumTP::SetTPCInnerXYZ(int i, const double* xyz)
 {
   // Set tpc inner coordinates
-  fCrvVars[i*kNVarPerTrack+kTPCInX] = xyz[0];
-  fCrvVars[i*kNVarPerTrack+kTPCInY] = xyz[1];
-  fCrvVars[i*kNVarPerTrack+kTPCInZ] = xyz[2];
+  if (!fTPCVars) return; // for BWD compatibility
+  fTPCVars[i*kNVarPerTrack+kTPCInX] = xyz[0];
+  fTPCVars[i*kNVarPerTrack+kTPCInY] = xyz[1];
+  fTPCVars[i*kNVarPerTrack+kTPCInZ] = xyz[2];
 }
 
 
