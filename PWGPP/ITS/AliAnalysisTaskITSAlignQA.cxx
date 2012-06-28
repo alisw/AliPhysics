@@ -143,7 +143,6 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
     fITSSumTP = new AliITSSumTP();
     fTPTree = new TTree("ITSSumTP","ITS TP Summary");
     fTPTree->Branch("AliITSSumTP","AliITSSumTP",&fITSSumTP);
-    CreateUserInfo();
     PostData(2,fTPTree);
   }
   //
@@ -701,6 +700,9 @@ void AliAnalysisTaskITSAlignQA::Terminate(Option_t */*option*/)
   }else{
     printf("Warning: pointer to fHistNEvents is NULL\n");
   }
+  //
+  if (fDoFillTPTree) CreateUserInfo();
+  //
   return;
 }
 
@@ -810,7 +812,10 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
   while((pair = dynamic_cast<TPair*> (iter.Next()))){	 
     TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
     TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
-    if (keyStr && valStr) cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+    if (keyStr && valStr) {
+      cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+      AliInfo(Form("Add %s : %s to cdbMap of ITSTPUserInfo",keyStr->GetName(),valStr->GetName()));
+    }
   }	 
   
   TList *cdbListCopy = new TList();	 
@@ -821,6 +826,7 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
   AliCDBId* id=0;
   while((id = dynamic_cast<AliCDBId*> (iter2.Next()))){	 
     cdbListCopy->Add(new TObjString(id->ToString().Data()));	 
+    AliInfo(Form("Add %s to cdbList of ITSTPUserInfo",id->ToString().Data()));
   }	 
   // 
   fTPTree->GetUserInfo()->Add(cdbMapCopy);	 
