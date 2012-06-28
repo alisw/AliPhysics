@@ -442,7 +442,7 @@ void AliAnalysisTaskElecV2::UserExec(Option_t*)
 	    TParticle *mother = stack->Particle(idMother);
 	    Int_t motherPDG = mother->GetPdgCode();
 	    
-	    Double_t mc[4]={partPt,fFlagPhotonicElec,IsElec,cent};
+	    Double_t mc[9]={partPt,fFlagPhotonicElec,fFlagLS,fFlagULS,IsElec,openingAngle,mass,cent,pt};
 	    
 	    if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// gamma, pi0, eta
 	  }
@@ -598,10 +598,10 @@ void AliAnalysisTaskElecV2::UserCreateOutputObjects()
   feTPCV2 = new THnSparseD ("feTPCV2","inclusive electron v2 (TPC)",5,binsv6,xminv6,xmaxv6);
   fOutputList->Add(feTPCV2);
   
-  Int_t binsv7[4]={100,3,3,90}; // pt, IsPhotonicElectron, IsElectron,centrality
-  Double_t xminv7[4]={0,-1,-1,0};
-  Double_t xmaxv7[4]={50,2,2,90}; 
-  fMCphotoElecPt = new THnSparseD ("fMCphotoElecPt", "pt distribution (MC)",4,binsv7,xminv7,xmaxv7);
+  Int_t binsv7[9]={100,3,3,3,3,100,100,90,100}; // partPt,  fFlagPhotonicElec,  fFlagLS,  fFlagULS,  IsElec,  openingAngle,  mass,  cent,  pt
+  Double_t xminv7[9]={0,-1,-1,-1,-1,0,0,0,0};
+  Double_t xmaxv7[9]={50,2,2,2,2,1,0.5,90,50}; 
+  fMCphotoElecPt = new THnSparseD ("fMCphotoElecPt", "pt distribution (MC)",9,binsv7,xminv7,xmaxv7);
   fOutputList->Add(fMCphotoElecPt);
    
   PostData(1,fOutputList);
