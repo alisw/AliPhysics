@@ -221,6 +221,9 @@ public:
     kv0ArpH2,                  // VZERO-A reaction plane of the Q vector for 2nd harmonic
     kv0CrpH2,                  //         reaction plane
     kv0ACrpH2,                 // VZERO-AC reaction plane of the Q vector for 2nd harmonic
+    kDeltaPhiv0ArpH2,          // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A
+    kDeltaPhiv0CrpH2,          // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-C
+    kDeltaPhiv0ACrpH2,         // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-AC
     kv0ATPCDiffH2,             // V0A-TPC reaction plane difference for 2nd harmonic
     kv0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
     kv0Av0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
@@ -1092,6 +1095,26 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(delta<-1.0*TMath::Pi()) delta += 2.0*TMath::Pi();
   values[AliDielectronVarManager::kV0ACrpH2FlowV2] = TMath::Cos(2.0*delta);  // 2nd harmonic flow coefficient
   values[AliDielectronVarManager::kDeltaPhiV0ACrpH2] = delta;
+
+
+  // quantities using the values of  AliEPSelectionTask
+  values[AliDielectronVarManager::kDeltaPhiv0ArpH2] = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ArpH2];
+  values[AliDielectronVarManager::kDeltaPhiv0CrpH2] = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0CrpH2];
+  values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] = values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kv0ACrpH2];
+  // keep the interval [-pi,+pi]                                                                                 
+  if ( values[AliDielectronVarManager::kDeltaPhiv0ArpH2] > TMath::Pi() ) 
+    values[AliDielectronVarManager::kDeltaPhiv0ArpH2] -= TMath::TwoPi(); 
+  if ( values[AliDielectronVarManager::kDeltaPhiv0CrpH2] > TMath::Pi() ) 
+    values[AliDielectronVarManager::kDeltaPhiv0CrpH2] -= TMath::TwoPi(); 
+  if ( values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] > TMath::Pi() ) 
+    values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] -= TMath::TwoPi(); 
+
+  if ( values[AliDielectronVarManager::kDeltaPhiv0ArpH2] < -1.*TMath::Pi() ) 
+    values[AliDielectronVarManager::kDeltaPhiv0ArpH2] += TMath::TwoPi(); 
+  if ( values[AliDielectronVarManager::kDeltaPhiv0CrpH2] < -1.*TMath::Pi() ) 
+    values[AliDielectronVarManager::kDeltaPhiv0CrpH2] += TMath::TwoPi(); 
+  if ( values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] < -1.*TMath::Pi() )
+    values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] += TMath::TwoPi(); 
 
              
   AliDielectronMC *mc=AliDielectronMC::Instance();
