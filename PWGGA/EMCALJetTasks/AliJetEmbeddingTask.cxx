@@ -4,6 +4,8 @@
 //
 // Author: S.Aiola, C.Loizides
 
+#include "AliJetEmbeddingTask.h"
+
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
@@ -16,8 +18,6 @@
 #include "AliPicoTrack.h"
 #include "AliEMCALGeometry.h"
 #include "AliLog.h"
-
-#include "AliJetEmbeddingTask.h"
 
 ClassImp(AliJetEmbeddingTask)
 
