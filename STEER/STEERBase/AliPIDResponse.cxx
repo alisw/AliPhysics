@@ -660,6 +660,7 @@ void AliPIDResponse::SetRecoInfo()
   
 
   TPRegexp reg(".*(LHC1[1-2][a-z]+[0-9]+[a-z_]*)/.*");
+  TPRegexp reg12a17(".*(LHC12a17[a-z]+)/.*");
 
   //find the period by run number (UGLY, but not stored in ESD and AOD... )
   if (fRun>=114737&&fRun<=117223)      { fLHCperiod="LHC10B"; fMCperiodTPC="LHC10D1";  }
@@ -682,6 +683,7 @@ void AliPIDResponse::SetRecoInfo()
     fLHCperiod="LHC11H";
     fMCperiodTPC="LHC11A10";
     fBeamType="PBPB";
+    if (reg12a17.MatchB(fCurrentFile)) fMCperiodTPC="LHC12A17";
   }
 
 
