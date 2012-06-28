@@ -4148,6 +4148,38 @@ Int_t AliITSAlignMille2::LoadSDDCorrMap(TString& path, AliITSCorrectSDDPoints *&
 }
 
 //________________________________________________________________________________________________________
+Int_t AliITSAlignMille2::LoadPreSDDCalib()
+{
+  // Load SDD correction map for prealignment from current CDB
+  //
+  AliInfo(Form("Loading SDD Calibration set for run %d",fRunID));
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetRun(fRunID);
+  AliCDBEntry *entry = man->Get("ITS/Calib/MapsTimeSDD");
+  delete fPreCorrMapSDD;
+  TObjArray* arr = (TObjArray*) entry->GetObject();
+  entry->SetObject(NULL);
+  entry->SetOwner(kTRUE);
+  arr->SetOwner(kTRUE);
+  fPreCorrMapSDD = new AliITSCorrectSDDPoints(arr);
+  //
+  entry = man->Get("ITS/Calib/RespSDD");
+  delete fPreRespSDD;
+  fPreRespSDD = (AliITSresponseSDD*) entry->GetObject();
+  entry->SetObject(NULL);
+  entry->SetOwner(kTRUE);
+  //
+  entry = man->Get("ITS/Calib/DriftSpeedSDD");
+  delete fPreVDriftSDD;
+  fPreVDriftSDD = (TObjArray*) entry->GetObject();
+  entry->SetObject(NULL);
+  entry->SetOwner(kTRUE);
+  delete entry;
+  //
+  return 0;
+}
+
+//________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::LoadDiamond(TString& path)
 {
   // load vertex constraint
@@ -4273,7 +4305,7 @@ Int_t AliITSAlignMille2::CacheMatricesOrig()
   // build arrays for the fast access to sensor original matrices (used for production)
   //
   TGeoHMatrix mdel;
-  AliInfo("Building sensors original matrices cache");
+  AliInfo(Form("Building sensors original matrices cache. InitDeltaPath: %s",fIniDeltaPath.Data()));
   //
   /*if (fIniGeomPath!=fGeometryPath)*/ if (LoadGeometry(fIniGeomPath)) {AliInfo("Failed to re-load ideal geometry");exit(1);}
   //
@@ -4563,6 +4595,7 @@ Int_t AliITSAlignMille2::ReloadInitCalib()
   // Load the initial calib parameters (geometry, SDD response...)
   // Can be used if set of data was processed with different calibration
   //
+  AliInfo(Form("SameInitDelta: %d | SameInitGeom: %d",TestBit(kSameInitDeltasBit), TestBit(kSameInitGeomBit)));
   // 1st cache original matrices
   if (!(TestBit(kSameInitDeltasBit) && TestBit(kSameInitGeomBit))) { // need to reload geometry
     //

@@ -242,6 +242,7 @@ class AliITSAlignMille2: public TObject
   void       SetBug(Int_t bug) {fBug=bug;}                             // 1:SSD inversion sens.18-19
   static     AliITSAlignMille2* GetInstance()                          {return fgInstance;}
 
+  Int_t      LoadPreSDDCalib();
   // pepo270809
   Int_t      GetExtraClustersMode() const {return fExtraClustersMode;}
   void       SetExtraClustersMode(Int_t mode) {fExtraClustersMode=mode;}  
