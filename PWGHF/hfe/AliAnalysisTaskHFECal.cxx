@@ -371,7 +371,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          double calInfo[5];
          calInfo[0] = emcphi; calInfo[1] = emceta; calInfo[2] = clustE; calInfo[3] = cent; calInfo[4] = clust->Chi2(); 
          //if(clustE>1.5)fEMCAccE->Fill(calInfo); 
-         if(fqahist==1 && clustE>1.5)fEMCAccE->Fill(calInfo); 
+         //if(fqahist==1 && clustE>1.5)fEMCAccE->Fill(calInfo); 
         }
    }
 
@@ -387,11 +387,13 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     Bool_t mcDtoE= kFALSE;
     Bool_t mcBtoE= kFALSE;
     double mcele = -1.;
+    double mcpT = 0.0;
     if(fmcData && fMC && stack)
       {
        Int_t label = TMath::Abs(track->GetLabel());
        TParticle* particle = stack->Particle(label);
        int mcpid = particle->GetPdgCode();
+       mcpT = particle->Pt();
        //printf("MCpid = %d",mcpid);
        if(particle->GetFirstMother()>-1)
          {
@@ -481,7 +483,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
 		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = dEdx; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
-		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = m02; valdedx[9] = m20; valdedx[10] = disp;
+		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = m02; valdedx[9] = m20; valdedx[10] = mcpT;
 		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = clust->Chi2();
                   valdedx[15] = mcele;
                   if(fqahist==1)fEleInfo->Fill(valdedx);
@@ -549,15 +551,20 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          }
        if(mcPho)
         {
-         fIncpTMCpho->Fill(cent,pt);    
-         if(fFlagPhotonicElec) fPhoElecPtMC->Fill(cent,pt);
-         if(fFlagConvinatElec) fSameElecPtMC->Fill(cent,pt);
+         double phoval[3];
+         phoval[0] = cent;
+         phoval[1] = pt;
+         phoval[2] = fTPCnSigma;
+
+         fIncpTMCpho->Fill(phoval);    
+         if(fFlagPhotonicElec) fPhoElecPtMC->Fill(phoval);
+         if(fFlagConvinatElec) fSameElecPtMC->Fill(phoval);
 
          if(m20>0.0 && m20<0.3) 
            {
-            fIncpTMCM20pho->Fill(cent,pt);    
-            if(fFlagPhotonicElec) fPhoElecPtMCM20->Fill(cent,pt);
-            if(fFlagConvinatElec) fSameElecPtMCM20->Fill(cent,pt);
+            fIncpTMCM20pho->Fill(phoval);    
+            if(fFlagPhotonicElec) fPhoElecPtMCM20->Fill(phoval);
+            if(fFlagConvinatElec) fSameElecPtMCM20->Fill(phoval);
            }
         } 
       } 
@@ -708,16 +715,16 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fCent);
  
   // Make common binning
-  const Double_t kMinP = 2.;
+  const Double_t kMinP = 0.;
   const Double_t kMaxP = 50.;
   const Double_t kTPCSigMim = 40.;
   const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
-  Int_t nBins[16] =  {  480,        200,   60,    20,   600,  300, 100,   40,   200, 200, 200, 100,    3,    5,   10,    8};
-  Double_t min[16] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -8.0,    0,   0,    0,   0.0, 0.0, 0.0,   0, -1.5, -0.5, -0.5, -1.5};
-  Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 2.0, 100,  1.5,  4.5,  9.5,  6.5};
-  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;Disp;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
+  Int_t nBins[16] =  {  250,        200,   60,    20,   100,  300,  50,   40,   200, 200,  250, 100,    3,    5,   10,    8};
+  Double_t min[16] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -6.0,    0,   0,    0,   0.0, 0.0,  0.0,   0, -1.5, -0.5, -0.5, -1.5};
+  Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 50.0, 100,  1.5,  4.5,  9.5,  6.5};
+  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
   if(fqahist==1)fOutputList->Add(fEleInfo);
 
   //<---  Trigger info
@@ -772,22 +779,27 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpTMCM20hfeAll = new TH2F("fIncpTMCM20hfeAll","MC Alle pid electro vs. centrality with M20",100,0,100,100,0,50);
   fOutputList->Add(fIncpTMCM20hfeAll);
 
-  fIncpTMCpho = new TH2F("fIncpTMCpho","MC Pho pid electro vs. centrality",100,0,100,100,0,50);
+
+  Int_t nBinspho2[3] =  { 100, 100,    7};
+  Double_t minpho2[3] = {  0.,  0., -2.5};   
+  Double_t maxpho2[3] = {100., 50.,  4.5};   
+
+  fIncpTMCpho = new THnSparseD("fIncpTMCpho","MC Pho pid electro vs. centrality",3,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fIncpTMCpho);
 
-  fIncpTMCM20pho = new TH2F("fIncpTMCM20pho","MC Pho pid electro vs. centrality with M20",100,0,100,100,0,50);
+  fIncpTMCM20pho = new THnSparseD("fIncpTMCM20pho","MC Pho pid electro vs. centrality with M20",3,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fIncpTMCM20pho);
 
-  fPhoElecPtMC = new TH2F("fPhoElecPtMC", "MC Pho-inclusive electron pt",100,0,100,100,0,50);
+  fPhoElecPtMC = new THnSparseD("fPhoElecPtMC", "MC Pho-inclusive electron pt",3,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fPhoElecPtMC);
   
-  fPhoElecPtMCM20 = new TH2F("fPhoElecPtMCM20", "MC Pho-inclusive electron pt with M20",100,0,100,100,0,50);
+  fPhoElecPtMCM20 = new THnSparseD("fPhoElecPtMCM20", "MC Pho-inclusive electron pt with M20",3,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fPhoElecPtMCM20);
 
-  fSameElecPtMC = new TH2F("fSameElecPtMC", "MC Same-inclusive electron pt",100,0,100,100,0,50);
+  fSameElecPtMC = new THnSparseD("fSameElecPtMC", "MC Same-inclusive electron pt",3,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fSameElecPtMC);
 
-  fSameElecPtMCM20 = new TH2F("fSameElecPtMCM20", "MC Same-inclusive electron pt with M20",100,0,100,100,0,50);
+  fSameElecPtMCM20 = new THnSparseD("fSameElecPtMCM20", "MC Same-inclusive electron pt with M20",3,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fSameElecPtMCM20);
 
 
