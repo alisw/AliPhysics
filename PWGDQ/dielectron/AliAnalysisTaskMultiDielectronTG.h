@@ -50,7 +50,7 @@ class AliDielectronSingleTG : public TObject
     fTheta(0),
     fConv(0),
     fGst(0),
-    Obj(0x0)
+    fObj(0x0)
       {;
       }
     
@@ -73,48 +73,53 @@ class AliDielectronSingleTG : public TObject
       fPhi(phi),
       fTheta(theta),
       fConv(conv),
-      fGst(ghost), Obj(0x0)
+      fGst(ghost), fObj(0x0)
 	{
 	  SetTrack(trk);
 	  ;
 	}
 
+      AliDielectronSingleTG(const AliDielectronSingleTG&);
+      AliDielectronSingleTG &operator=(const AliDielectronSingleTG&);
+	
+
+
       ~AliDielectronSingleTG() {;}
 
       
-      void SetTrack(AliVTrack *trk) { Obj = trk;}
-      Int_t Charge(void){ return fCharge;}
-      Double_t  Phi(void){ return fPhi;}
-      Double_t  Theta(void){ return fTheta;}
-      Double_t  Px(void){ return fPx;}
-      Double_t  Py(void){ return fPy;}
-      Double_t  Pz(void){ return fPz;}
-      Double_t  Xv(void){ return fPx;}
-      Double_t  Yv(void){ return fPy;}
-      Double_t  Zv(void){ return fPz;}
-      Double_t  Pt(void){ return fPt;}
-      AliVTrack *GetTrack(void){ return Obj;}
+      void SetTrack(AliVTrack * const trk) { fObj = trk;}
+      virtual Int_t Charge(void) const { return fCharge;}
+      Double_t  Phi(void) const { return fPhi;}
+      Double_t  Theta(void) const { return fTheta;}
+      Double_t  Px(void) const { return fPx;}
+      Double_t  Py(void) const { return fPy;}
+      Double_t  Pz(void) const { return fPz;}
+      Double_t  Xv(void) const { return fPx;}
+      Double_t  Yv(void) const { return fPy;}
+      Double_t  Zv(void) const { return fPz;}
+      Double_t  Pt(void) const { return fPt;}
+      AliVTrack *GetTrack(void) const { return fObj;}
       void SetConvFlag(Int_t val){ fConv = val;}
       void SetGstFlag(Int_t val){ fGst = val;}
-      Int_t GetConvFlag(void){ return fConv;}
-      Int_t GetGstFlag(void){ return fGst;}
+      Int_t GetConvFlag(void) const { return fConv;}
+      Int_t GetGstFlag(void) const { return fGst;}
       
  protected:
-      Int_t fCharge; 
-      Double_t fCentrality; 
-      Double_t fXv; 
-      Double_t fYv;
-      Double_t fZv;
-      Double_t fPx;
-      Double_t fPy;
-      Double_t fPz;
-      Double_t fPt;
-      Double_t fEta;
-      Double_t fPhi;
-      Double_t fTheta;
-      Int_t fConv;
-      Int_t fGst;
-      AliVTrack *Obj;
+      Int_t fCharge;     ///charge of track
+      Double_t fCentrality;  // centrality 
+      Double_t fXv;  // vertex in X
+      Double_t fYv;  // vertex in Y
+      Double_t fZv;  // vertex in Z
+      Double_t fPx;  // Momentum in X
+      Double_t fPy;  // Momentum in Y
+      Double_t fPz;  // Momentum in Z
+      Double_t fPt;  // Momentum in Transverse
+      Double_t fEta; // Particle Eta
+      Double_t fPhi; // Particle Phi
+      Double_t fTheta; //Particle Theta
+      Int_t fConv; /// Conversion Flag
+      Int_t fGst;  /// Ghost flag
+      AliVTrack *fObj;  ///AliVTrack
       
       ClassDef(AliDielectronSingleTG, 2) // Event pool class              
 
@@ -151,24 +156,24 @@ public:
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
 
 
-  void reject_conversion(double val){d_conv_phiv = val;}
-  void enable_v0mixing(Bool_t val){d_v0_mixing = val;}
-  void check_ghost_pairs(vector<AliDielectronSingleTG*> e1);
-  void fill_pair(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, int type, AliDielectron *die);
-  bool PairTrackcut(double var1);
-  void calc_vars(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, 
+  void RejectConversion(double val){fdconvphiv = val;} ///To reject conversions
+  void EnableV0mixing(Bool_t val){fdv0mixing = val;}   ///Enable V0 mixing  
+  void CheckGhostPairs(vector<AliDielectronSingleTG*> e1); ///identify ghost pairs in like sign pais
+  void FillPair(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, int type, AliDielectron *die); /// Fill Pairs
+  bool PairTrackcut(double var1); /// Pair cuts
+  void CalcVars(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, 
 		 double &mass, double &phiv, double &px, double &py, double&pz,
-		 double &pt, double &e, double &phi, double &eta, double &cos, double &psi);
-  void calc_pair(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2, AliDielectron *die, Int_t idie);
-  void randomize_pool(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2);        
-  void reshuffle_buffer(vector<AliDielectronSingleTG*> ve, deque<AliDielectronSingleTG*> pool);
+		double &pt, double &e, double &phi, double &eta, double &cos, double &psi); /// Calcualate kinematic variables
+  void CalcPair(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2, AliDielectron *die, Int_t idie);  ///Process Pairs
+  void RandomizePool(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2);         ///Randimize pairs
+  void ReshuffleBuffer(vector<AliDielectronSingleTG*> ve, deque<AliDielectronSingleTG*> pool);  ///ReshuffleBuffer
 
 protected:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
   TList fListDielectron;             // List of dielectron framework instances
   TList fListHistos;                 //! List of histogram manager lists in the framework classes
   TList fListCF;                     //! List with CF Managers
-  TList *tQAElectron;                     //! List with CF Managers
+  TList *fQAElectron;                     //! List with CF Managers
   
 
   Bool_t fSelectPhysics;             // Whether to use physics selection
@@ -183,49 +188,49 @@ protected:
 
   AliAnalysisCuts *fEventFilter;     // event filter
 
-  AliESDtrackCuts *fCutsMother;   
+  AliESDtrackCuts *fCutsMother;    /// Mother Cuts for QA
 
   TH1D *fEventStat;                  //! Histogram with event statistics
-  TH1D *fEvent;
-  TH2D *fdEdXvsPt;
-  TH2D *fdEdXnSigmaElecvsPt;
-  TH2D *fdEdXvsPtTOF;
-  TH2D *fdEdXnSigmaElecvsPtTOF;
-  TH2D *fTOFbetavsPt;
-  TH2D *fTOFnSigmaElecvsPt;
-  TH2F *hNCrossedRowsTPC; 
-  TH2F *hChi2ClusTPC;
-  TH2F *hRatioCrossClusTPC;
+  TH1D *fEvent;                      // Centrality
+  TH2D *fdEdXvsPt;                   // TPC dE/dx 
+  TH2D *fdEdXnSigmaElecvsPt;         // TPC nSigmaEle vs. pt
+  TH2D *fdEdXvsPtTOF;                // TPC dE/dx with TOF cut
+  TH2D *fdEdXnSigmaElecvsPtTOF;      // TPC nSigmaEle vs. pt with TOF Cuts
+  TH2D *fTOFbetavsPt;                // TOF beta vs. pT
+  TH2D *fTOFnSigmaElecvsPt;          // TOF nSigma Electron vs. pT
+  TH2F *fNCrossedRowsTPC;            // TPC NCrossedRows vs. pT
+  TH2F *fChi2ClusTPC;                // TPC Chi2 Per Cluster 
+  TH2F *fRatioCrossClusTPC;          // TPC Crossed rows per finable Clusters
 
-  Double_t fgValues[AliDielectronVarManager::kNMaxValues];
-  std::vector<AliDielectronSingleTG*>  vem;
-  std::vector<AliDielectronSingleTG*>  vep;
-  std::vector<AliDielectronSingleTG*>  vem_tmp;
-  std::vector<AliDielectronSingleTG*>  vep_tmp;
-  Double_t d_conv_phiv; 
-  Double_t bz;
-  Bool_t d_v0_mixing;
+  Double_t fgValues[AliDielectronVarManager::kNMaxValues];   /// Track/Pair information from AliDielectronVarManager
+  std::vector<AliDielectronSingleTG*>  fVem;      /// Lists of electrons
+  std::vector<AliDielectronSingleTG*>  fVep;      /// Lists of positions
+  std::vector<AliDielectronSingleTG*>  fVemtmp;   /// template for electron lists
+  std::vector<AliDielectronSingleTG*>  fVeptmp;   /// template for positron lists
+  Double_t fdconvphiv;      /// PhiCut
+  Double_t fbz;            /// Magnetic field
+  Bool_t fdv0mixing;       /// Mixing using V0 
 
 
   //Buffer for event mixing
-  static const int NBUF=100; //depth of buffer
-  static const int NMix=40; //# of events mixed (for +-)
+  static const int fgkNBUF=100; //depth of buffer
+  static const int fgkNMix=40; //# of events mixed (for +-)
   //static const int NMix=2; //# of events mixed (for +-)
   
   
-  static const int NRPBIN=12;
-  static const int NZBIN=10;
-  static const int NCENT=10;
-  static const int NDIE=10;
-  int d_ibuf[NDIE][NZBIN][NCENT][NRPBIN];
-  std::vector<AliDielectronSingleTG*> d_vep[NBUF][NDIE][NZBIN][NCENT][NRPBIN];
-  std::vector<AliDielectronSingleTG*> d_vem[NBUF][NDIE][NZBIN][NCENT][NRPBIN];
-  
-  static const unsigned int MAXPOOL=500;
+  static const int fgkNRPBIN=12;    ///Number of RPbin for mixed event 
+  static const int fgkNZBIN=10;     ///Number of zbin for mixed event 
+  static const int fgkNCENT=10;     ///Number of centrality for mixed event 
+  static const int fgkNDIE=10;      ///maximum number of cuts for AliDielectron
+  int fibuf[fgkNDIE][fgkNZBIN][fgkNCENT][fgkNRPBIN];    ///buffer occupation for mixed event
+  std::vector<AliDielectronSingleTG*> fvep[fgkNBUF][fgkNDIE][fgkNZBIN][fgkNCENT][fgkNRPBIN];   //// positron buffer for mixing
+  std::vector<AliDielectronSingleTG*> fvem[fgkNBUF][fgkNDIE][fgkNZBIN][fgkNCENT][fgkNRPBIN];   //// electron buffer for mixing
+    
+  static const unsigned int fgkMAXPOOL=500;   ////maximum pool for mixing
   //static const unsigned int MAXPOOL=50;
-  static const int MAX_TRY=3;
-  std::deque<AliDielectronSingleTG*> d_poolp[NDIE][NZBIN][NCENT][NRPBIN];
-  std::deque<AliDielectronSingleTG*> d_poolm[NDIE][NZBIN][NCENT][NRPBIN]; 
+  static const int fgkMAXTRY=3;    ///try to shuffle 
+  std::deque<AliDielectronSingleTG*> fpoolp[fgkNDIE][fgkNZBIN][fgkNCENT][fgkNRPBIN]; ///pool for positrons
+  std::deque<AliDielectronSingleTG*> fpoolm[fgkNDIE][fgkNZBIN][fgkNCENT][fgkNRPBIN]; ///pool for electrons
   
   AliAnalysisTaskMultiDielectronTG(const AliAnalysisTaskMultiDielectronTG &c);
   AliAnalysisTaskMultiDielectronTG& operator= (const AliAnalysisTaskMultiDielectronTG &c);

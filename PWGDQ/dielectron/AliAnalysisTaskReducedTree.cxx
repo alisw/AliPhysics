@@ -329,7 +329,7 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
   AliESDZDC* zdc = (isESD ? (static_cast<AliESDEvent*>(event))->GetESDZDC() : 0x0);
   if(zdc) {
     for(Int_t i=0; i<4; ++i)  fReducedEvent->fZDCnEnergy[i]   = zdc->GetZN1TowerEnergy()[i];
-    for(Int_t i=4; i<8; ++i)  fReducedEvent->fZDCnEnergy[i]   = zdc->GetZN2TowerEnergy()[i-5];
+    for(Int_t i=4; i<8; ++i)  fReducedEvent->fZDCnEnergy[i]   = zdc->GetZN2TowerEnergy()[i-4];
   }
   
   // EMCAL/PHOS clusters

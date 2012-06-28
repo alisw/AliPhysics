@@ -222,7 +222,7 @@ AliMCParticle* AliDielectronMC::GetMCTrack( const AliESDtrack* _track)
   Int_t nStack = fMCEvent->GetNumberOfTracks();
   Int_t label = TMath::Abs(_track->GetLabel());
   if(label>nStack)return NULL;
-
+  if(label<0) return NULL;
   AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
   return mctrack;
 }
@@ -262,6 +262,7 @@ AliMCParticle* AliDielectronMC::GetMCTrackMother(const AliESDtrack* _track)
   //
   AliMCParticle* mcpart = GetMCTrack(_track);
   if (!mcpart) return NULL;
+  if(mcpart->GetMother()<0) return NULL;
   AliMCParticle* mcmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mcpart->GetMother()));
   if (!mcmother) return NULL;
   return mcmother;
@@ -285,6 +286,7 @@ AliMCParticle* AliDielectronMC::GetMCTrackMother(const AliMCParticle* _particle)
   //
   // return MC track mother
   //
+  if(_particle->GetMother() < 0) return NULL;
   AliMCParticle* mcmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(_particle->GetMother()));
   return mcmother;
 }
