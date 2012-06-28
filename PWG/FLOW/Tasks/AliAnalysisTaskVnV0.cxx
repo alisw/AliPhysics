@@ -26,6 +26,13 @@
 //using namespace std;
 
 ClassImp(AliAnalysisTaskVnV0)
+Bool_t AliAnalysisTaskVnV0::fgIsPsiComputed = kFALSE;
+Float_t AliAnalysisTaskVnV0::fgPsi2v0a=999.;
+Float_t AliAnalysisTaskVnV0::fgPsi2v0c=999.;
+Float_t AliAnalysisTaskVnV0::fgPsi2tpc=999.;
+Float_t AliAnalysisTaskVnV0::fgPsi3v0a=999.;
+Float_t AliAnalysisTaskVnV0::fgPsi3v0c=999.;
+Float_t AliAnalysisTaskVnV0::fgPsi3tpc=999.;
 
 //_____________________________________________________________________________
 AliAnalysisTaskVnV0::AliAnalysisTaskVnV0():
@@ -680,6 +687,14 @@ void AliAnalysisTaskVnV0::UserExec(Option_t *)
     // Main loop
     // Called for each event
     
+    fgIsPsiComputed = kFALSE;
+    fgPsi2v0a=999.;
+    fgPsi2v0c=999.;
+    fgPsi2tpc=999.;
+    fgPsi3v0a=999.;
+    fgPsi3v0c=999.;
+    fgPsi3tpc=999.;
+
     fOutputAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fOutputAOD){
 	Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
@@ -760,6 +775,9 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
   
   Int_t iC = -1;    
   if (v0Centr >0 && v0Centr < 80){ // analysis only for 0-80% centrality classes
+
+    fgIsPsiComputed = kTRUE;
+
     // centrality bins
     if(v0Centr < 5) iC = 0;
     else if(v0Centr < 10) iC = 1;
@@ -957,6 +975,11 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
     evPlAngV0CCor2 = TMath::ATan2(QycCor2, QxcCor2)/2.;
     evPlAngV0ACor3 = TMath::ATan2(QyaCor3, QxaCor3)/3.;
     evPlAngV0CCor3 = TMath::ATan2(QycCor3, QxcCor3)/3.;
+
+    fgPsi2v0a = evPlAngV0ACor2;
+    fgPsi2v0c = evPlAngV0ACor2;
+    fgPsi3v0a = evPlAngV0ACor3;
+    fgPsi3v0c = evPlAngV0ACor3;
 				 
     //loop track and get pid
     for(Int_t iT = 0; iT < nAODTracks; iT++) { // loop on the tracks
@@ -1371,6 +1394,9 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
     
     evPlAng2 = TMath::ATan2(Qy2, Qx2)/2.;
     evPlAng3 = TMath::ATan2(Qy3, Qx3)/3.;
+
+    fgPsi2tpc = evPlAng2;
+    fgPsi3tpc = evPlAng3;
 
     // Fill histograms needed for resolution evaluation
     if(fV2) fHResTPCv0A2->Fill(Double_t(iC), TMath::Cos(2*(evPlAng2 - evPlAngV0ACor2)));
