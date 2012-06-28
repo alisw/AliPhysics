@@ -1,5 +1,4 @@
 class AliPID;
-#include "QAPlots.C"
 
 TString Charge[]={"Pos","Neg"};
 TString Sign[]={"Plus","Minus"};
@@ -38,14 +37,16 @@ void MainAnalysis()  {
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGLFSPECTRA");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  
+  gROOT->LoadMacro("QAPlots.C");
+
   // Set Masses
   Double_t mass[3];
   mass[0]   = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   mass[1]   = TDatabasePDG::Instance()->GetParticle("K+")->Mass();
   mass[2] = TDatabasePDG::Instance()->GetParticle("proton")->Mass();
   
-  TString fold="test";
+  //TString fold="test";
+  TString fold="LEGOTrain_20120625";
   
   //LOOP OVER SELECTION
   //                            0    1    2    3    4    5    6    7    8    9
@@ -67,15 +68,18 @@ void MainAnalysis()  {
   UInt_t minNclsTPC=70;
   Int_t nrebin=0;
   TString opt="";
- 
+  
   Int_t icut=0;
-  Int_t ibinToCompare=0;
+  if(icut==0)Int_t ibinToCompare=0;
+  else Int_t ibinToCompare=4;
   
   TString sname_data=Form("OutputAODSpectraTask_Data_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d",CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,trkbit);
-  TString sname_mc=Form("OutputAODSpectraTask_MC_Cent%.0fto%.0f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d",CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,trkbit);
+  //MC we do not use the cut on Qvector
+  TString sname_mc=Form("OutputAODSpectraTask_MC_Cent%.0fto%.0f_QVec0.0to100.0_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d",CentCutMin[icut],CentCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,trkbit);
   
   TString dataFile = Form("output/%s/AnalysisResultsDATA.root",fold.Data());
   TString mcFile = Form("output/%s/AnalysisResultsMC.root",fold.Data());
+  //TString mcFile = Form("output/%s/AnalysisResultsAMPT.root",fold.Data());
   
   Printf("\n\n-> Creating Output file Res_%s_%s.root",sname_data.Data(),fold.Data());
   TFile * fout=new TFile(Form("results/Res_%s_%s.root",sname_data.Data(),fold.Data()),"RECREATE");
@@ -252,10 +256,10 @@ void MainAnalysis()  {
   gPad->SetGridx();
   hMatcEffPos_data->DrawClone("lhist");
   hMatcEffNeg_data->DrawClone("lhistsame");
-  TF1 *pol0MatchPos_data=new TF1("pol0MatchPos_data","pol0",2.5,5);
+  TF1 *pol0MatchPos_data=new TF1("pol0MatchPos_data","pol0",.6,5);
   hMatcEffPos_data->Fit("pol0MatchPos_data","MNR");
   pol0MatchPos_data->DrawClone("same");
-  TF1 *pol0MatchNeg_data=new TF1("pol0MatchNeg_data","pol0",2.5,5);
+  TF1 *pol0MatchNeg_data=new TF1("pol0MatchNeg_data","pol0",.6,5);
   hMatcEffNeg_data->Fit("pol0MatchNeg_data","MNR");
   pol0MatchNeg_data->SetLineColor(2);
   pol0MatchNeg_data->DrawClone("same");
@@ -323,7 +327,6 @@ void MainAnalysis()  {
     }
   }
   
-    
   //comparison with charged hadron
   Printf("\n\n-> ChargedHadron comparison");
   TH1F *hChHad_data=(TH1F*)((TH1F*)hman_data->GetPtHistogram1D("hHistPtRec",-1,-1))->Clone();
