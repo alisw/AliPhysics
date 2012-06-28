@@ -149,8 +149,9 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 
     TString       fNonStdFile;         // outputName for replication
     TString       *fTriggerName;  //[fNTrigger] array of trigger names
-    TProfile*     fh1Xsec;             //! pythia cross section and trials
-    TH1F*         fh1Trials;           //! trials are added
+    TProfile*     fh1Xsec;             //! pythia cross section is averaged
+    TH1F*         fh1Trials;           //! trials are added per notify...
+    TH1F*         fh1AvgTrials;        //! average trials are added per event
     TH1F*         fh1PtHard;           //! Pt har of the event...       
     TH1F*         fh1PtHardTrials;     //! Number of trials 
     TH1F*         fh1SelectionInfoESD; //! Masks that satisfy fSelectionInfo
@@ -192,7 +193,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     static AliAODHeader*    fgAODHeader;        //! Header for replication
     static AliAODVZERO*    fgAODVZERO;        //! vzero for replication
     static TClonesArray*  fgAODVertices;        //! primary vertex for replication
-    ClassDef(AliAnalysisTaskJetServices,15)
+    ClassDef(AliAnalysisTaskJetServices,16)
 };
  
 #endif

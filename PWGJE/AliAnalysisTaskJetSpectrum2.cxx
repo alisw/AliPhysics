@@ -123,6 +123,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fTriggerName(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
+  fh1AvgTrials(0x0),
   fh1PtHard(0x0),
   fh1PtHardNoW(0x0),  
   fh1PtHardTrials(0x0),
@@ -227,6 +228,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fTriggerName(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
+  fh1AvgTrials(0x0),
   fh1PtHard(0x0),
   fh1PtHardNoW(0x0),  
   fh1PtHardTrials(0x0),
@@ -326,6 +328,7 @@ Bool_t AliAnalysisTaskJetSpectrum2::Notify()
     // construct a poor man average trials 
     Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
     if(ftrials>=nEntries && nEntries>0.)fAvgTrials = ftrials/nEntries;
+    fh1Trials->Fill("#sum{ntrials}",ftrials); 
   }  
 
   if(fDebug)Printf("Reading File %s",fInputHandler->GetTree()->GetCurrentFile()->GetName());
@@ -412,6 +415,9 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1Trials = new TH1F("fh1Trials","trials root file",1,0,1);
   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
   fHistList->Add(fh1Trials);
+  fh1AvgTrials = new TH1F("fh1AvgTrials","trials root file",1,0,1);
+  fh1AvgTrials->GetXaxis()->SetBinLabel(1,"#sum{avg ntrials}");
+  fHistList->Add(fh1AvgTrials);
   fh1PtHard = new TH1F("fh1PtHard","PYTHIA Pt hard;p_{T,hard}",nBinPt,binLimitsPt);
   fHistList->Add(fh1PtHard);
   fh1PtHardNoW = new TH1F("fh1PtHardNoW","PYTHIA Pt hard no weight;p_{T,hard}",nBinPt,binLimitsPt);
@@ -806,7 +812,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   Double_t eventW = 1;
   Double_t ptHard = 0; 
   Double_t nTrials = 1; // Trials for MC trigger 
-  fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+  fh1AvgTrials->Fill("#sum{avg ntrials}",fAvgTrials); 
 
   // Getting some global properties
   fCentrality = GetCentrality();

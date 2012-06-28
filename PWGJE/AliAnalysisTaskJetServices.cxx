@@ -108,6 +108,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices():
   fTriggerName(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
+  fh1AvgTrials(0x0),
   fh1PtHard(0x0),
   fh1PtHardTrials(0x0),
   fh1SelectionInfoESD(0x0),
@@ -181,6 +182,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fTriggerName(0x0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
+  fh1AvgTrials(0x0),
   fh1PtHard(0x0),
   fh1PtHardTrials(0x0),
   fh1SelectionInfoESD(0x0),
@@ -250,6 +252,7 @@ Bool_t AliAnalysisTaskJetServices::Notify()
     // construct a poor man average trials 
     Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
     if(ftrials>=nEntries && nEntries>0.)fAvgTrials = ftrials/nEntries;
+    fh1Trials->Fill("#sum{avg ntrials}",ftrials); 
   }  
   return kTRUE;
 }
@@ -278,6 +281,10 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   fh1Trials = new TH1F("fh1Trials","trials root file",1,0,1);
   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
   fHistList->Add(fh1Trials);
+
+  fh1AvgTrials = new TH1F("fh1AvgTrials","avg trials root file",1,0,1);
+  fh1AvgTrials->GetXaxis()->SetBinLabel(1,"#sum{avg ntrials}");
+  fHistList->Add(fh1AvgTrials);
 
   const Int_t nBinPt = 125;
   Double_t binLimitsPt[nBinPt+1];
@@ -687,7 +694,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   Double_t ptHard = 0; 
   Double_t nTrials = 1; // Trials for MC trigger 
 
-  fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+  fh1AvgTrials->Fill("#sum{avg ntrials}",fAvgTrials); 
   AliMCEvent* mcEvent = MCEvent();
   //    AliStack *pStack = 0; 
   if(mcEvent){

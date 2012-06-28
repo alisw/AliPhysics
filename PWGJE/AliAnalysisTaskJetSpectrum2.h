@@ -203,6 +203,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
 
     TProfile*     fh1Xsec;   //! pythia cross section and trials
     TH1F*         fh1Trials; //! trials are added
+    TH1F*         fh1AvgTrials; //! trials are added
     TH1F*         fh1PtHard;  //! Pt har of the event...       
     TH1F*         fh1PtHardNoW;  //! Pt har of the event without weigt       
     TH1F*         fh1PtHardTrials;  //! Number of trials 
@@ -254,7 +255,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 22); // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 23); // Analysis task for standard jet analysis
 };
  
 #endif
