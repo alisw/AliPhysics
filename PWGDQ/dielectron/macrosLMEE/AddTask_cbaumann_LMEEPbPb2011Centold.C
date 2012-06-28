@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_t setMC=kFALSE,Bool_t enableCF=kFALSE){
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011Centold(Bool_t runRejection=kFALSE, Bool_t setMC=kFALSE,Bool_t enableCF=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -36,7 +36,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
 
   LMEECutLib* cutlib = new LMEECutLib();
   cutlib->SetMCFlag(hasMC);
-  AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEDataPbPb2011All");
+  AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEDataPbPb2011Centold");
   if (!hasMC){ task->UsePhysicsSelection();
   }
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
@@ -53,46 +53,43 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_
   }
   else {
 
-    AliDielectron *lowmass3=ConfigLMEEPbPb2011(3,hasMC,enableCF);
-    task->AddDielectron(lowmass3);
-    printf("add: %s\n",lowmass3->GetName());
       AliDielectron *lowmass1=ConfigLMEEPbPb2011(1,hasMC,enableCF);
     task->AddDielectron(lowmass1);
     printf("add: %s\n",lowmass1->GetName());
-      AliDielectron *lowmass7=ConfigLMEEPbPb2011(7,hasMC,enableCF);
+/*      AliDielectron *lowmass7=ConfigLMEEPbPb2011(7,hasMC,enableCF);
     task->AddDielectron(lowmass7);
-    printf("add: %s\n",lowmass7->GetName());
+    printf("add: %s\n",lowmass7->GetName());*/
   }
 
   mgr->AddTask(task);
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("cbaumann_LMEEPbPb2011_tree",
+    mgr->CreateContainer("cbaumann_LMEEPbPb2011Centold_tree",
 	TTree::Class(),
 	AliAnalysisManager::kExchangeContainer,
-	"cbaumann_LMEEPbPb2011_default.root");
+	"cbaumann_LMEEPbPb2011Centold_default.root");
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("cbaumann_LMEEPbPb2011_out",
+    mgr->CreateContainer("cbaumann_LMEEPbPb2011Centold_out",
 	TList::Class(),
 	AliAnalysisManager::kOutputContainer,
-	"cbaumann_LMEEPbPb2011_out.root");
+	"cbaumann_LMEEPbPb2011Centold_out.root");
   
   AliAnalysisDataContainer *cOutputHist2 = 0x0;
   if (enableCF) {
     cOutputHist2 = 
-      mgr->CreateContainer("cbaumann_LMEEPbPb2011_CF",
+      mgr->CreateContainer("cbaumann_LMEEPbPb2011Centold_CF",
 	  TList::Class(),
 	  AliAnalysisManager::kOutputContainer,
-	  "cbaumann_LMEEPbPb2011_out.root");
+	  "cbaumann_LMEEPbPb2011Centold_out.root");
 
   }
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("cbaumann_EventStatPbPb2011",
 	TH1D::Class(),
 	AliAnalysisManager::kOutputContainer,
-	"cbaumann_LMEEPbPb2011_out.root");
+	"cbaumann_LMEEPbPb2011Centold_out.root");
 
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());

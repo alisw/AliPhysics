@@ -100,7 +100,9 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE, Boo
   die->SetPreFilterAllSigns();
 
 	if (rejectionStep) {
-		die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
+		//for Pb-Pb, only use tight PID (combinatorics) for rejection
+		die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
+		//die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
 		die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
 		die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts(selectedPID) );
 	}
@@ -321,7 +323,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   cf->SetStepsForSignal();
   die->SetCFManagerPair(cf);
 
-
+/*
  AliDielectronSignalMC* lowMassDiele=new
     AliDielectronSignalMC("lowMassDiele","low mass dielectron pairs");
   lowMassDiele->SetLegPDGs(11,-11);
@@ -347,7 +349,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   finalState->SetLegSources(AliDielectronSignalMC::kFinalState,
       AliDielectronSignalMC::kFinalState);
   die->AddSignalMC(finalState);
-
+*/
 
   AliDielectronSignalMC* eleFromConversions=new
 	AliDielectronSignalMC("eleFromConversions","conversion electrons");
@@ -368,6 +370,29 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   dalitzDecays->SetMotherPDGs(111,111);
   dalitzDecays->SetFillPureMCStep(kTRUE);
   die->AddSignalMC(dalitzDecays);
+
+
+  AliDielectronSignalMC* PhiDecays=new
+        AliDielectronSignalMC("PhiDecays","Phi Pairs");
+  PhiDecays->SetLegPDGs(11,-11);
+  PhiDecays->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  PhiDecays->SetLegSources(AliDielectronSignalMC::kFinalState,
+                AliDielectronSignalMC::kFinalState);
+  PhiDecays->SetMotherPDGs(333,333);
+  PhiDecays->SetMothersRelation(AliDielectronSignalMC::kSame);
+  PhiDecays->SetFillPureMCStep(kTRUE);
+  die->AddSignalMC(PhiDecays);
+
+  AliDielectronSignalMC* OmegaDecays=new
+        AliDielectronSignalMC("OmegaDecays","Omega Pairs");
+  OmegaDecays->SetLegPDGs(11,-11);
+  OmegaDecays->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  OmegaDecays->SetLegSources(AliDielectronSignalMC::kFinalState,
+                AliDielectronSignalMC::kFinalState);
+  OmegaDecays->SetMotherPDGs(223,223);
+  OmegaDecays->SetMothersRelation(AliDielectronSignalMC::kSame);
+  OmegaDecays->SetFillPureMCStep(kTRUE);
+  die->AddSignalMC(OmegaDecays);
 
 							 
 
