@@ -17,7 +17,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   virtual ~AliJetResponseMaker();
 
   void                        UserCreateOutputObjects();
-  void                        Terminate(Option_t *option);
 
   void                        SetMCJetsName(const char *n)       { fMCJetsName    = n; }
   void                        SetMCTracksName(const char *n)     { fMCTracksName  = n; }
