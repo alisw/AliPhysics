@@ -109,7 +109,8 @@ void AliTrackFixTenderSupply::ProcessEvent()
       continue;
     }
     parInner->GetXYZ(xyzTPCInner);
-    double phi = TMath::ATan2(xyzTPCInner[1],xyzTPCInner[0]) + TMath::Pi();
+    double phi = TMath::ATan2(xyzTPCInner[1],xyzTPCInner[0]);
+    if (phi<0) phi += 2*TMath::Pi();
     //
     if (fDebug>1) {
       AliInfo(Form("Tr:%4d kITSin:%d Phi=%+5.2f at X=%+7.2f | SideA fraction: %.3f",itr,trc->IsOn(AliESDtrack::kITSin),phi,parInner->GetX(),sideAfraction));
