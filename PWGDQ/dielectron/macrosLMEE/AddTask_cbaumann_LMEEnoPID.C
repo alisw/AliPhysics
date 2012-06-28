@@ -55,6 +55,10 @@ AliAnalysisTask *AddTask_cbaumann_LMEEnoPID(Bool_t withMC = kFALSE,Bool_t enable
   AliDielectron *lowmass1=ConfigLMEEnoPID(1,hasMC,enableCF);
   task->AddDielectron(lowmass1);
   printf("add: %s\n",lowmass1->GetName());
+
+   AliDielectron *lowmass2=ConfigLMEEnoPID(2,hasMC,enableCF);
+  task->AddDielectron(lowmass2);
+  printf("add: %s\n",lowmass2->GetName());
    
   mgr->AddTask(task);
 
