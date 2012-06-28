@@ -24,6 +24,7 @@ class AliT0TenderSupply: public AliTenderSupply {
   virtual void          ProcessEvent();
   void SetCorrectMeanTime (Bool_t flag=kFALSE){fCorrectMeanTime=flag;};
   void SetAmplutudeCorrection (Bool_t flag=kFALSE){fCorrectStartTimeOnAmplSatur=flag;};
+  void SetPass4LHC11aCorrection (Bool_t flag=kFALSE){fPass4LHC11aCorrection=flag;};
 
  private:
   
@@ -32,11 +33,12 @@ class AliT0TenderSupply: public AliTenderSupply {
 
 
   Bool_t  fCorrectMeanTime; //! mean time shift will be corrected
-  Float_t fTimeOffset[3]; //! time offset to be used for fCorrectMeanTime
+  Float_t fTimeOffset[4]; //! time offset to be used for fCorrectMeanTime
   Bool_t  fCorrectStartTimeOnAmplSatur; //!  fix start times suffering from saturated amplitude in pmts
   Float_t fAmplitudeThreshold; //! above this value pmt suffer from saturation
+  Bool_t fPass4LHC11aCorrection; //! above this value pmt suffer from saturation
 
-  ClassDef(AliT0TenderSupply, 1);  // T0 tender supply
+  ClassDef(AliT0TenderSupply, 2);  // T0 tender supply
 };
 
 #endif

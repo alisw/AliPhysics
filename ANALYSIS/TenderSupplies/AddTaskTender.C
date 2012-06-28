@@ -60,6 +60,7 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
   //========= Attach T0 supply ======
   if (useT0) {
     AliT0TenderSupply *t0Tender = new AliT0TenderSupply("T0tender");
+    t0Tender ->SetPass4LHC11aCorrection(kTRUE);
     tender->AddSupply(t0Tender);
   }   
 
