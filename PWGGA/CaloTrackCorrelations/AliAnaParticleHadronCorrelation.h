@@ -323,6 +323,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   //if the data is MC, fill MC information
   TH2F *       fh2phiLeadingParticle;          //! #phi resolution for triggers
   TH1F *       fhMCPtLeading;                  //! MC pure pT distribution of leading particles
+  TH2F *       fhMCPhiLeading;                 //! MC pure Phi distribution of leading particles
+  TH2F *       fhMCEtaLeading;                 //! MC pure Eta distribution of leading particles
   TH2F *       fhMCEtaCharged;                 //! MC pure particles charged primary pt vs eta (both associated) 
   TH2F *       fhMCPhiCharged;                 //! MC pure particles charged primary pt vs phi (both associated) 
   TH2F *       fhMCDeltaEtaCharged;            //! MC pure particles charged trigger primary pt vs delta eta (associated-trigger) 
@@ -346,6 +348,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *       fhNtracksMB;                    //! total number of tracks in MB events
   TH2F *       fhMixDeltaPhiCharged  ;         //! Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT
   TH2F *       fhMixDeltaPhiDeltaEtaCharged  ; //! Difference of charged particle phi and trigger particle  phi as function eta difference
+  TH2F *       fhMixXECharged;                 //! xE for mixed event
+  TH2F *       fhMixHbpXECharged;              //! ln(1/xE) for mixed event
   TH2F **      fhMixDeltaPhiChargedAssocPtBin; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins
   TH2F **      fhMixDeltaPhiChargedAssocPtBinDEta08; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins, delta eta > 0.8
   TH2F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin; //![fNAssocPtBins] Difference of charged particle phi and trigger particle  phi  as function eta difference, for different associated bins
@@ -356,7 +360,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,20)
+  ClassDef(AliAnaParticleHadronCorrelation,21)
 } ;
  
 
