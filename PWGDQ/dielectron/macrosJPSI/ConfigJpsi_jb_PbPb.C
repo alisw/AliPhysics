@@ -14,8 +14,10 @@ enum { kTPC=0, kTOF, kTRD, krec, kTOFTRD, kTOFTRD2, kITScls, kITSamy, kDCA, kChi
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
+Bool_t  isESD = kTRUE;
 Bool_t  hasMC = kFALSE;
 TString list  = gSystem->Getenv("LIST");
+
 
 AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 {
@@ -27,14 +29,9 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   if( list.IsNull()) list=prod;
   if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
   if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
-  
-
-  // MC event handler?
-  //  hasMC=isMC;
-  //(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);    
 
   //ESD handler?
-  Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
+  isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
   
   // switch off some configurations
   switch(cutDefinition) {
@@ -79,19 +76,24 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   AliDielectron *die = new AliDielectron(Form("%s",name.Data()), Form("Track cuts: %s",name.Data()));
   die->SetHasMC(hasMC);
 
+  printf(" Add %s %s config %s for %s \n",(isESD?"ESD":"AOD"),(hasMC?"MC":""),name.Data(),list.Data());
+
   // Monte Carlo Signals and TRD efficiency tables
   if(hasMC) {
     AddMCSignals(die);
+    printf(" Add %d MC signals \n",die->GetMCSignals()->GetEntriesFast());
     
     // trd tables
-    TString pidTab="$TRAIN_ROOT/util/dielectron/dielectron/TRDpidEff_eleProb07_TRDntr4_6.root";
-    TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-    if (trainRoot.IsNull()) pidTab="$ALICE_ROOT/PWGDQ/dielectron/files/TRDpidEff_eleProb07_TRDntr4_6.root";
+    /* if (list.Contains("LHC11a") ) {
+      TString pidTab="$TRAIN_ROOT/util/dielectron/dielectron/TRDpidEff_eleProb07_TRDntr4_6.root";
+      TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+      if (trainRoot.IsNull()) pidTab="$ALICE_ROOT/PWGDQ/dielectron/files/TRDpidEff_eleProb07_TRDntr4_6.root";
 
-    if (gSystem->AccessPathName(gSystem->ExpandPathName(pidTab.Data())))
-      Error("ConfigPbPb","PID table not found: %s",pidTab.Data());
-    else 
-      die->SetTRDcorrectionFilename(pidTab.Data());
+      if (gSystem->AccessPathName(gSystem->ExpandPathName(pidTab.Data())))
+	Error("ConfigPbPb","PID table not found: %s",pidTab.Data());
+      else 
+	die->SetTRDcorrectionFilename(pidTab.Data());
+	}*/
   }
   
   // cut setup
@@ -102,18 +104,26 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   if(cutDefinition == kTOFTRD  || 
      cutDefinition == kGam0    || 
      cutDefinition == kTOFTRD2 || 
-     cutDefinition >= kEtaGap01 ) 
+     cutDefinition >= kEtaGap01 ) {
     InitHistograms(die,cutDefinition);
-  
+    printf(" Add %d types and %03d histos to the manager \n",die->GetHistogramList()->GetEntries(),
+	   0/*die->GetHistoManager()->GetList()->GetEntries()*/);
+  }  
+
   // CF container setup
   if(cutDefinition <  kEtaGap01 || 
-     cutDefinition == kSubRndm  )
+     cutDefinition == kSubRndm  ) {
     InitCF(die,cutDefinition);
-  
+    printf(" Add %d pair, %d leg vars, %p steps and %p bins to the container \n",
+	   die->GetCFManagerPair()->GetNvarsPair(),die->GetCFManagerPair()->GetNvarsLeg(),
+	   die->GetCFManagerPair()->GetContainer(), die->GetCFManagerPair()->GetContainer() );
+  }
+
   // bgrd estimators
   if(!hasMC) {
-    
     if(cutDefinition == kTOFTRD) {  
+      printf(" Activate bgrd estimators: ME and ROT \n");
+ 
       // rotations
       AliDielectronTrackRotator *rot=new AliDielectronTrackRotator;
       rot->SetIterations(10);
@@ -163,7 +173,7 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
     die->SetPreFilterUnlikeOnly();
   
   // setup eta correction
-  if(isESD) SetEtaCorrection();
+  //  if(isESD && list.Contains("LHC10h")) SetEtaCorrection();
   
   // VZERO calibration
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
@@ -181,8 +191,6 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   //
   // Setup the track cuts
   //
-  //ESD handler?
-  Bool_t isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
 
   // Quality cuts
   AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
@@ -191,7 +199,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   // AOD track filter (needs to be first cut)
   AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
   trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDanyPIDele);
-  if(!isESD) cuts->AddCut(trkFilter);
+  //  if(!isESD) cuts->AddCut(trkFilter);
 
   //Pt cut, should make execution a bit faster
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
@@ -209,8 +217,6 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
-  if(isESD) 
-    varCuts->AddCut(AliDielectronVarManager::kTRDchi2,    0.0,   2.0);
   cuts->AddCut(varCuts);
   
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
@@ -223,9 +229,6 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
   cuts->AddCut(trkCuts);
-  
-  //Do we have an MC handler?
-  //  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   AliDielectronPID *pid = new AliDielectronPID("PID","PID");
@@ -301,7 +304,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
       
       //LHC11a10b
       if (list.Contains("LHC11a10b")) {
-        printf("LHC11a10b parameters\n");
+        printf(" LHC11a10b parameters\n");
         ffPro->SetParameters(BBpro[0],BBpro[1],BBpro[2],BBpro[3],BBpro[4]);
         ffPio->SetParameters(BBpio[0],BBpio[1],BBpio[2],BBpio[3],BBpio[4]);
         
@@ -386,7 +389,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //
   // Initialise the histograms
   //
-  //  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
   //Setup histogram Manager
   AliDielectronHistos *histos=new AliDielectronHistos(die->GetName(),die->GetTitle());
@@ -730,7 +732,6 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   //
   // Setup the CF Manager if needed
   //
-  //  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);  
   
   AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
   
@@ -749,6 +750,8 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
       if(hasMC) cf->AddVariable(AliDielectronVarManager::kNVtxContrib,20,0.,4000.);
       if(hasMC) cf->AddVariable(AliDielectronVarManager::kTRDpidEffPair,101,0.0,1.01);
       //cf->AddVariable(AliDielectronVarManager::kY,"-0.8,0.8");
+      cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2,4,-1.*TMath::Pi(),TMath::Pi()); 
+      cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0CrpH2,4,-1.*TMath::Pi(),TMath::Pi()); 
     }
     
     //leg variables
@@ -757,8 +760,10 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
       cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-3,-2.5,-2,2,2.5,3",kTRUE);
       cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"2.5,3.0,3.5,4.0,4.5,100",kTRUE);
       //    cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"3.5,4.0,4.5,5.0,100",kTRUE);
-      cf->AddVariable(AliDielectronVarManager::kTRDpidQuality,"3.5, 4.5, 5.5, 6.5",kTRUE);
-	
+      //    cf->AddVariable(AliDielectronVarManager::kTRDpidQuality,"3.5, 4.5, 5.5, 6.5",kTRUE);
+      if(!hasMC && isESD) cf->AddVariable(AliDielectronVarManager::kTRDchi2,"-1.,0.,2.,4.",kTRUE);
+      cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE); 
+      
       // standard vars
       if(cutDefinition<=kChi) {
         if(hasMC) cf->AddVariable(AliDielectronVarManager::kEta,"-0.9,0.9",kTRUE);
@@ -792,9 +797,10 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
   if(hasMC) {
     cf->AddVariable(AliDielectronVarManager::kRunNumber, GetRunNumbers() );
-    if(cutDefinition==kTOFTRD || cutDefinition==kGam0) cf->SetStepForMCtruth();
+    //if(cutDefinition==kTOFTRD || cutDefinition==kGam0)
+    cf->SetStepForMCtruth();
     //    if(cutDefinition!=kTOFTRD) 
-      cf->SetStepsForMCtruthOnly();  
+    cf->SetStepsForMCtruthOnly();  
     // cf->SetStepsForBackground();   
   }
   
@@ -803,7 +809,6 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
 void AddMCSignals(AliDielectron *die){
   //Do we have an MC handler?
-  //Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   if (!hasMC) return;
   
   AliDielectronSignalMC* inclusiveJpsi = new AliDielectronSignalMC("inclusiveJpsi","Inclusive J/psi");
@@ -877,7 +882,7 @@ void SetEtaCorrection()
     TString kName=keys->At(i)->GetName();
     TPRegexp reg(kName);
     if (reg.MatchB(list)){
-      printf("Using Eta Correction Function: %s\n",kName.Data());
+      printf(" Using Eta Correction Function: %s\n",kName.Data());
       AliDielectronPID::SetEtaCorrFunction((TF1*)f.Get(kName.Data()));
     }
   }
@@ -890,7 +895,7 @@ TVectorD *GetRunNumbers() {
   };
   
   Double_t runLHC11h[] = { // all good runs based on RCT 29.Mai
-    170593, 170572, 170388, 170387, 170315, 170313, 170312, 170311, 170309, 170308, 170306, 170270, 170269, 170268, 170230, 170228, 170207, 170204, 170203, 170193, 170163, 170159, 170155, 170091, 170089, 170088, 170085, 170084, 170083, 170081, 170040, 170027, 169965, 169923, 169859, 169858, 169855, 169846, 169838, 169837, 169835, 169591, 169588, 169586, 169557, 169554, 169550, 169512, 169504, 169498, 169475, 169419, 169418, 169417, 169415, 169411, 169238, 169167, 169160, 169156, 169148, 169145, 169144, 169138, 169099, 169094, 169091, 169044, 169035, 168992, 168988, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168460, 168458, 168362, 168361, 168342, 168341, 168325, 168322, 168311, 168310, 168115, 168108, 168107, 168105, 168076, 168069, 167988, 167987, 167985, 167920, 167915
+    170593, 170572, 170388, 170387, 170315, 170313, 170312, 170311, 170309, 170308, 170306, 170270, 170269, 170268, 170230, 170228, 170207, 170204, 170203, 170193, 170163, 170159, 170155, 170091, 170089, 170088, 170085, 170084, 170083, 170081, 170040, 170027, 169965, 169923, 169859, 169858, 169855, 169846, 169838, 169837, 169835, 169591, 169590, 169588, 169587, 169586, 169557, 169555, 169554, 169553, 169550, 169515, 169512, 169506, 169504, 169498, 169475, 169420, 169419, 169418, 169417, 169415, 169411, 169238, 169167, 169160, 169156, 169148, 169145, 169144, 169138, 169099, 169094, 169091, 169045, 169044, 169040, 169035, 168992, 168988, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168460, 168458, 168362, 168361, 168342, 168341, 168325, 168322, 168311, 168310, 168115, 168108, 168107, 168105, 168076, 168069, 167988, 167987, 167985, 167920, 167915
   };
   
   // selection via environement variable (works only for gsi trains)
@@ -920,5 +925,10 @@ TVectorD *GetRunNumbers() {
     //   vec->Print("");
     return vec;
   }
+
+  TVectorD *vec = new TVectorD(2);
+  (*vec)[0] = 0;
+  (*vec)[0] = 1;
+  return vec;
      
 }
