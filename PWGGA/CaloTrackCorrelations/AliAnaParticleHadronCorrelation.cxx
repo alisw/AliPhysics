@@ -2857,8 +2857,8 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
       if (lead) 
       	{
 	  fhMCPtLeading->Fill(ptprim);
-	  fhMCPhiLeading->Fill(ptprim);
-	  fhMCEtaLeading->Fill(ptprim);
+	  fhMCPhiLeading->Fill(ptprim,phiprim);
+	  fhMCEtaLeading->Fill(ptprim,etaprim);
 	}
     } //when the leading particles could trace back to MC
   }// AOD MC
