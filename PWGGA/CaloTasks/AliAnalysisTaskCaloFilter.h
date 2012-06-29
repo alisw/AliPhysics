@@ -120,6 +120,9 @@ class AliAnalysisTaskCaloFilter : public AliAnalysisTaskSE
   void    SwitchOnAcceptAllMBEvent()              { fAcceptAllMBEvent = kTRUE   ; }
   void    SwitchOffAcceptAllMBEvent()             { fAcceptAllMBEvent = kFALSE  ; }
 
+  void    SetMBTriggerMask(UInt_t mask)           { fMBTriggerMask    = mask    ; }
+
+  
   void    SetEMCALRecoUtils(AliEMCALRecoUtils* ru){ fEMCALRecoUtils = ru        ; }
   AliEMCALRecoUtils* GetEMCALRecoUtils()   const  { return fEMCALRecoUtils      ; }
 
@@ -149,7 +152,8 @@ private:
     
   Int_t               fCaloFilter;        // Calorimeter to filter
   Bool_t              fEventSelection[3]; // Define which detector is used to select the event
-  Bool_t              fAcceptAllMBEvent;    // Do not select the MB events with same cuts as other triggers
+  Bool_t              fAcceptAllMBEvent;  // Do not select the MB events with same cuts as other triggers
+  Bool_t              fMBTriggerMask;     // Do not select the MB events with same cuts as other triggers
   Int_t               fCorrect;           // Recalibrate or recalculate different cluster parameters
   
   //EMCAL specific
@@ -193,7 +197,7 @@ private:
   AliAnalysisTaskCaloFilter(           const AliAnalysisTaskCaloFilter&);
   AliAnalysisTaskCaloFilter& operator=(const AliAnalysisTaskCaloFilter&);
   
-  ClassDef(AliAnalysisTaskCaloFilter, 10); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskCaloFilter, 11); // Analysis task for standard ESD filtering
   
 };
 

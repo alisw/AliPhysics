@@ -54,7 +54,8 @@ ClassImp(AliAnalysisTaskCaloFilter)
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
 AliAnalysisTaskSE("CaloFilterTask"), 
 fCaloFilter(0),           fEventSelection(), 
-fAcceptAllMBEvent(kFALSE),  fCorrect(kFALSE), 
+fAcceptAllMBEvent(kFALSE),fMBTriggerMask(AliVEvent::kMB), 
+fCorrect(kFALSE), 
 fEMCALGeo(0x0),           fEMCALGeoName("EMCAL_COMPLETE12SMV1"), 
 fEMCALRecoUtils(new AliEMCALRecoUtils),
 fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
@@ -85,7 +86,8 @@ fESDEvent(0x0),           fAODEvent(0x0)
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter(const char* name):
 AliAnalysisTaskSE(name), 
 fCaloFilter(0),           fEventSelection(), 
-fAcceptAllMBEvent(kFALSE),  fCorrect(kFALSE),
+fAcceptAllMBEvent(kFALSE),fMBTriggerMask(AliVEvent::kMB), 
+fCorrect(kFALSE),
 fEMCALGeo(0x0),           fEMCALGeoName("EMCAL_COMPLETE12SMV1"), 
 fEMCALRecoUtils(new AliEMCALRecoUtils),
 fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
@@ -131,7 +133,7 @@ Bool_t AliAnalysisTaskCaloFilter::AcceptEvent()
   
   Bool_t eventSel = kFALSE;
   
-  Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fMBTriggerMask);
   
   if     ( isMB && fAcceptAllMBEvent )                eventSel = kTRUE; // accept any MB event
   
@@ -947,8 +949,8 @@ void AliAnalysisTaskCaloFilter::PrintInfo()
   printf("\t Fill: AOD file? %d Tracks? %d; all Vertex? %d; v0s? %d; VZERO ? %d\n", 
          fFillAODFile,fFillTracks,fFillAllVertices, fFillv0s, fFillVZERO);
   
-  printf("\t Event Selection based : EMCAL?  %d, PHOS?  %d Tracks? %d - Accept all MB? %d\n",
-         fEventSelection[0],fEventSelection[1],fEventSelection[2],fAcceptAllMBEvent);
+  printf("\t Event Selection based : EMCAL?  %d, PHOS?  %d Tracks? %d - Accept all MB with mask %d? %d\n",
+         fEventSelection[0],fEventSelection[1],fEventSelection[2],fMBTriggerMask, fAcceptAllMBEvent);
   
   printf("\t \t EMCAL E > %2.2f, EMCAL nCells >= %d, PHOS E > %2.2f, PHOS nCells >= %d, Track pT > %2.2f, |vz| < %2.2f\n",
          fEMCALEnergyCut,fEMCALNcellsCut,fPHOSEnergyCut,fPHOSNcellsCut, fTrackPtCut,fVzCut);
