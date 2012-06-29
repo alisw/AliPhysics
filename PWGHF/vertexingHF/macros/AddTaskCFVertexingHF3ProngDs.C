@@ -648,17 +648,19 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskDstoKKpi_CommonFramework";
 		output1name="CFHFchist0_3Prong_CommonFramework";
+		output4name= "CutsDdirect_3ProngDs_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskDstoKKpiKeepDfromBOnly_CommonFramework";
 		output1name="CFHFchist0DfromB_3Prong_CommonFramework";
+		output4name= "CutsDfromB_3ProngDs_CommonFramework";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskDstoKKpiKeepDfromB_CommonFramework";
 		output1name="CFHFchist0allD_3Prong_CommonFramework";
+		output4name= "CutsallD_3ProngDs_CommonFramework";
 	}
 
-	output4name= "Cuts_3Prong_CommonFramework";
 	outputfile += suffixDecayType.Data();
 	output1name+= suffixDecayType.Data();
 	output4name+= suffixDecayType.Data();
