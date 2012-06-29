@@ -42,6 +42,7 @@ private:
     AliAnalysisEtSelectorEmcal& operator=(const AliAnalysisEtSelectorEmcal& other); // Prohibited
     bool operator==(const AliAnalysisEtSelectorEmcal& other) const; // Prohibited
     
+    ClassDef(AliAnalysisEtSelectorEmcal, 1);
 };
 
 #endif // ALIANALYSISETSELECTOREMCAL_H
