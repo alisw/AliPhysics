@@ -60,13 +60,13 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
    :AliAnalysisTaskSE(),
     fOutput(0),
     fESD(0),
-    fcheckEP2sub(0),
+    fcheckEP2sub(1),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.), 
     fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
     fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
-    hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
+    hEvtCount(0), hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
     hEPTPC(0), hresoTPC(0),
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
@@ -85,13 +85,13 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
    :AliAnalysisTaskSE(name),
     fOutput(0),
     fESD(0),
-    fcheckEP2sub(0),
+    fcheckEP2sub(1),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.),
     fEPV0(-999.), fEPV0A(-999.), fEPV0C(-999.), fEPV0Ar(-999.), fEPV0Cr(-999.), fEPV0r(-999.),
     fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.), fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
-    hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
+    hEvtCount(0), hAllcentV0(0), hAllcentV0r(0), hAllcentV0A(0), hAllcentV0C(0), hAllcentTPC(0),
     hEPTPC(0), hresoTPC(0),
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
@@ -403,6 +403,15 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
         
     fOutput = new TList();
     fOutput->SetOwner();  // IMPORTANT!
+
+    hEvtCount = new TH1F("hEvtCount", " Event Plane", 10, 0.5, 10.5);
+    hEvtCount->GetXaxis()->SetBinLabel(1,"All");
+    hEvtCount->GetXaxis()->SetBinLabel(2,"vert");
+    hEvtCount->GetXaxis()->SetBinLabel(3,"cent");
+    hEvtCount->GetXaxis()->SetBinLabel(4,"EPtask");
+    hEvtCount->GetXaxis()->SetBinLabel(5,"EPvalue");
+    hEvtCount->GetXaxis()->SetBinLabel(6,"Pass");
+    fOutput->Add(hEvtCount);
     
     hEPTPC   = new TH2F("hEPTPC",   "EPTPC     vs cent", 100, 0., 100., 100, 0., TMath::Pi());
     hresoTPC = new TH2F("hresoTPC", "TPc reso  vs cent", 100, 0., 100., 100, 0., 1.);
@@ -507,16 +516,24 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
         AliError("Cannot get the ESD event");
         return;
     }  
-    const AliESDVertex* fvertex = fESD->GetPrimaryVertex();
 
+    hEvtCount->Fill(1);
+    
+    const AliESDVertex* fvertex = fESD->GetPrimaryVertex();
     if(TMath::Abs(fvertex->GetZ())>10.)
       return;
     Double_t vertex[3] = {fvertex->GetX(), fvertex->GetY(), fvertex->GetZ()};
 
+    hEvtCount->Fill(2);
+
     if(fESD->GetCentrality()) {
       fCentrality = 
 	fESD->GetCentrality()->GetCentralityPercentile("V0M");
+    } else{
+	   return;
     }
+
+    hEvtCount->Fill(3);
 
     AliEventplane *ep = fESD->GetEventplane();
       if (ep) {
@@ -550,12 +567,18 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 
     }
 //cout<<" fEPV0:"<<fEPV0<<" fEPV0A:"<<fEPV0A<<" fEPV0C:"<<fEPV0C<<" fEPV0Ar:"<<fEPV0Ar<<" fEPV0Cr:"<<fEPV0Cr<<" fEPV0r:"<<fEPV0AR4<<" fEPV0AR7:"<<fEPV0AR7<<" fEPV0CR0:"<<fEPV0CR0<<" fEPV0CR3:"<<fEPV0CR3<<"--------------------------------------------"<<endl;
+    
+    hEvtCount->Fill(4);
+
     if(fcheckEP2sub){
       if(fEPV0r<-2. || fEPV0Ar<-2. || fEPV0Cr<-2.) return; 
     }
     if(!fcheckEP2sub){
       if(fEPV0A<-2. || fEPV0C<-2. || fEPV0AR4<-2. || fEPV0AR7<-2. || fEPV0CR0<-2. || fEPV0CR3<-2. || fEPTPC<-2.) return;
     }
+
+    hEvtCount->Fill(5);
+
     fEPV0   = TVector2::Phi_0_2pi(fEPV0);    if(fEPV0>TMath::Pi())   fEPV0  = fEPV0  - TMath::Pi();
     fEPV0r  = TVector2::Phi_0_2pi(fEPV0r);   if(fEPV0r>TMath::Pi())  fEPV0r = fEPV0r - TMath::Pi();
     fEPV0A  = TVector2::Phi_0_2pi(fEPV0A);   if(fEPV0A>TMath::Pi())  fEPV0A = fEPV0A - TMath::Pi();
@@ -602,6 +625,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    hdifV0C_V0A->Fill(fCentrality, TMath::Cos(2*(fEPV0C - fEPV0A)));
     // Cluster loop for reconstructed event
    
+
     Int_t nCluster =  fESD->GetNumberOfCaloClusters(); 
     for(Int_t i=0; i<nCluster; ++i){
       AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
@@ -616,7 +640,6 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
         FillPion(p1, p2, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
       } 
     }
-
 
     Int_t nTrack = fESD->GetNumberOfTracks();
     for(Int_t i=0; i<nTrack; ++i){
@@ -636,6 +659,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 	}
 	hdifful_EP->Fill(fCentrality,   difTrack, tPt);
     }
+    hEvtCount->Fill(6);
 
     // NEW HISTO should be filled before this point, as PostData puts the
     // information for this iteration of the UserExec in the container

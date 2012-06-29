@@ -69,6 +69,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Double_t			fEPV0CR2;	//! EP V0C ring2 only	
     Double_t			fEPV0CR3;	//! EP V0C ring3 only	
 
+    TH1F			*hEvtCount;	//!
     TH1F			*hAllcentV0;	//!
     TH1F			*hAllcentV0r;	//!
     TH1F			*hAllcentV0A;	//!
@@ -113,7 +114,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     AliAnalysisTaskPi0V2(const AliAnalysisTaskPi0V2&); // not implemented
     AliAnalysisTaskPi0V2& operator=(const AliAnalysisTaskPi0V2&); // not implemented
     
-    ClassDef(AliAnalysisTaskPi0V2, 2); // example of analysis
+    ClassDef(AliAnalysisTaskPi0V2, 3); // example of analysis
 };
 
 #endif
