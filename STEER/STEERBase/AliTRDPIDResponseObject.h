@@ -63,8 +63,8 @@ public:
 
 private:
 
-      const AliTRDPIDParams *fkPIDParams[AliTRDPIDResponse::kNMethod]; // Contains Thresholds
-      const AliTRDPIDReference *fkPIDReference[AliTRDPIDResponse::kNMethod]; // Contains References
+      AliTRDPIDParams *fPIDParams[AliTRDPIDResponse::kNMethod]; // Contains Thresholds
+      AliTRDPIDReference *fPIDReference[AliTRDPIDResponse::kNMethod]; // Contains References
       Int_t fNSlicesQ0; // Number of Slices for Q0
 
     ClassDef(AliTRDPIDResponseObject, 1);

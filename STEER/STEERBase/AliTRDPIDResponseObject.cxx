@@ -50,8 +50,8 @@ AliTRDPIDResponseObject::AliTRDPIDResponseObject():
     SetBit(kIsOwner, kTRUE);
 
     for(Int_t method=0;method<AliTRDPIDResponse::kNMethod;method++){
-	fkPIDParams[method]=NULL;
-	fkPIDReference[method]=NULL;
+	fPIDParams[method]=NULL;
+	fPIDReference[method]=NULL;
     }
 }
 
@@ -66,8 +66,8 @@ fNSlicesQ0(4)
 	SetBit(kIsOwner, kTRUE);
 
 	for(Int_t method=0;method<AliTRDPIDResponse::kNMethod;method++){
-	    fkPIDParams[method]=NULL;
-	    fkPIDReference[method]=NULL;
+	    fPIDParams[method]=NULL;
+	    fPIDReference[method]=NULL;
 	}
 }
 
@@ -83,8 +83,8 @@ fNSlicesQ0(ref.fNSlicesQ0)
     SetBit(kIsOwner, kFALSE);
 
     for(Int_t method=0;method<AliTRDPIDResponse::kNMethod;method++){
-	fkPIDParams[method]=ref.fkPIDParams[method];       // new Object is not owner, copy only pointer
-	fkPIDReference[method]=ref.fkPIDReference[method];    // new Object is not owner, copy only pointer
+	fPIDParams[method]=ref.fPIDParams[method];       // new Object is not owner, copy only pointer
+	fPIDReference[method]=ref.fPIDReference[method];    // new Object is not owner, copy only pointer
     }
 }
 //____________________________________________________________
@@ -97,11 +97,11 @@ AliTRDPIDResponseObject &AliTRDPIDResponseObject::operator=(const AliTRDPIDRespo
 	    TNamed::operator=(ref);
 	    fNSlicesQ0=ref.fNSlicesQ0;
 	    for(Int_t method=0;method<AliTRDPIDResponse::kNMethod;method++){
-		if(TestBit(kIsOwner) && fkPIDParams[method])delete fkPIDParams[method];
-                if(TestBit(kIsOwner) && fkPIDReference[method])delete fkPIDReference[method];
+		if(TestBit(kIsOwner) && fPIDParams[method])delete fPIDParams[method];
+                if(TestBit(kIsOwner) && fPIDReference[method])delete fPIDReference[method];
 
-		fkPIDParams[method]=ref.fkPIDParams[method];       // new Object is not owner, copy only pointer
-		fkPIDReference[method]=ref.fkPIDReference[method];    // new Object is not owner, copy only pointer
+		fPIDParams[method]=ref.fPIDParams[method];       // new Object is not owner, copy only pointer
+		fPIDReference[method]=ref.fPIDReference[method];    // new Object is not owner, copy only pointer
 	    }
 	    SetBit(kIsOwner, kFALSE);
 	}
@@ -114,8 +114,8 @@ AliTRDPIDResponseObject::~AliTRDPIDResponseObject(){
 	// Destructor
 	// references are deleted if the object is the owner
 	//
-    if(fkPIDParams && TestBit(kIsOwner)) delete fkPIDParams;
-    if(fkPIDReference && TestBit(kIsOwner)) delete fkPIDReference;
+    if(fPIDParams && TestBit(kIsOwner)) delete [] fPIDParams;
+    if(fPIDReference && TestBit(kIsOwner)) delete [] fPIDReference;
 
 }
 
@@ -126,12 +126,12 @@ void AliTRDPIDResponseObject::SetPIDParams(AliTRDPIDParams *params,AliTRDPIDResp
 	AliError("Method does not exist");
 	return;
     }
-    if(fkPIDParams[method]){
-	delete fkPIDParams[method];
-        fkPIDParams[method]=NULL;
+    if(fPIDParams[method]){
+	delete fPIDParams[method];
+        fPIDParams[method]=NULL;
     }
 
-    fkPIDParams[method]=new AliTRDPIDParams(*params);
+    fPIDParams[method]=new AliTRDPIDParams(*params);
 }
 
 //____________________________________________________________
@@ -141,11 +141,11 @@ void AliTRDPIDResponseObject::SetPIDReference(AliTRDPIDReference *reference,AliT
         AliError("Method does not exist");
 	return;
     }
-    if(fkPIDReference[method]){
-	delete fkPIDReference[method];
-	fkPIDReference[method]=NULL;
+    if(fPIDReference[method]){
+	delete fPIDReference[method];
+	fPIDReference[method]=NULL;
     }
-    fkPIDReference[method]=new AliTRDPIDReference(*reference);
+    fPIDReference[method]=new AliTRDPIDReference(*reference);
 }
 
 //____________________________________________________________
@@ -156,8 +156,8 @@ TObject *AliTRDPIDResponseObject::GetUpperReference(AliPID::EParticleType spec, 
 	return NULL;
     }
    
-    if(fkPIDReference[method]){
-	return fkPIDReference[method]->GetUpperReference(spec,p,pUpper);
+    if(fPIDReference[method]){
+	return fPIDReference[method]->GetUpperReference(spec,p,pUpper);
     }
     return NULL;
 }
@@ -171,8 +171,8 @@ TObject *AliTRDPIDResponseObject::GetLowerReference(AliPID::EParticleType spec, 
 	return NULL;
     }
 
-     if(fkPIDReference[method]){
-	 return fkPIDReference[method]->GetLowerReference(spec,p,pLower);
+     if(fPIDReference[method]){
+	 return fPIDReference[method]->GetLowerReference(spec,p,pLower);
      }
     return NULL;
 }
@@ -185,8 +185,8 @@ Bool_t AliTRDPIDResponseObject::GetThresholdParameters(Int_t ntracklets, Double_
 	return kFALSE;
     }
 
-    if(fkPIDParams[method]){
-	return fkPIDParams[method]->GetThresholdParameters(ntracklets,efficiency,params);
+    if(fPIDParams[method]){
+	return fPIDParams[method]->GetThresholdParameters(ntracklets,efficiency,params);
     }
     return kFALSE;
 }
@@ -199,8 +199,8 @@ Int_t AliTRDPIDResponseObject::GetNumberOfMomentumBins(AliTRDPIDResponse::ETRDPI
 	return 0;
     }
 
-    if(fkPIDReference[method]){
-	return fkPIDReference[method]->GetNumberOfMomentumBins();
+    if(fPIDReference[method]){
+	return fPIDReference[method]->GetNumberOfMomentumBins();
     }
     return 0;
 }
@@ -213,7 +213,7 @@ void AliTRDPIDResponseObject::Print(const Option_t* opt) const{
     printf("Content of AliTRDPIDResponseObject \n\n");
    
     for(Int_t method=0;method<AliTRDPIDResponse::kNMethod;method++){
-	if(fkPIDReference[method])fkPIDReference[method]->Print(opt);
-	if(fkPIDParams[method])printf("+ Threshold Parameters \n");
+	if(fPIDReference[method])fPIDReference[method]->Print(opt);
+	if(fPIDParams[method])printf("+ Threshold Parameters \n");
     }
 }
