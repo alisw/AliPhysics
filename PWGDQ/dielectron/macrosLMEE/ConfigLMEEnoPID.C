@@ -3,7 +3,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairingNoPID;noPairingTOFonly,noPairingTPCTOFPbPb2011");
+TString names=("noPairingNoPID;noPairingTOFonly;noPairingTPCTOFPbPb2011");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
