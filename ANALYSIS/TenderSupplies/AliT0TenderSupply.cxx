@@ -28,7 +28,7 @@
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
 #include <AliT0CalibSeasonTimeShift.h>
-
+#include <AliESDInputHandler.h>
 
 ClassImp(AliT0TenderSupply)
 
@@ -70,11 +70,12 @@ AliT0TenderSupply::~AliT0TenderSupply(){
 
 //________________________________________________________________________
 void AliT0TenderSupply::Init(){
-  //
   // Init
   //
   Int_t run = fTender->GetRun();
-  if (run == 0) return;                // to skip first init, when we don't have yet a run number
+  if (run == 0) return;    // to skip first init, when we don't have yet a run number
+  fPass4LHC11aCorrection=kFALSE;
+  
 
   fCorrectMeanTime = kFALSE; //reset
   for(int i=0; i<4; i++) fTimeOffset[i]=0;
@@ -101,8 +102,20 @@ void AliT0TenderSupply::ProcessEvent(){
     if (!event) return;
 
     //Do something when the run number changed, like loading OCDB entries etc.
+    fPass4LHC11aCorrection=kFALSE;
     if(fTender->RunChanged()){
-        Init();
+      Init();
+      if (fTender->GetRun()>=139699&&  fTender->GetRun()<=146860){
+        AliESDInputHandler *esdIH = dynamic_cast<AliESDInputHandler*>  (fTender->GetESDhandler());
+        if (esdIH) {
+          TTree *tree= (TTree*)esdIH->GetTree();
+          TFile *file= (TFile*)tree->GetCurrentFile();
+          if (file){
+            TString fileName(file->GetName());
+            if (fileName.Contains("pass4") ) fPass4LHC11aCorrection=kTRUE;
+	  }
+	}
+      }
     }
 
     if(fPass4LHC11aCorrection) {
