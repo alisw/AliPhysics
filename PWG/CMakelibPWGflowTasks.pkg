@@ -63,4 +63,4 @@ set ( DHDR PWGflowTasksLinkDef.h)
 
 set ( EXPORT ${HDRS} )
 
-set ( EINCLUDE PWG/FLOW/Base PWG/FLOW/Tasks STEER/ESD STEER/STEERBase)
+set ( EINCLUDE PWG/FLOW/Base PWG/FLOW/Tasks STEER/ESD STEER/STEERBase PWG/muon)
