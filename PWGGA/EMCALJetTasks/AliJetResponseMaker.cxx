@@ -459,7 +459,7 @@ Bool_t AliJetResponseMaker::Run()
     return kFALSE;
   
   fHistAcceptedEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
-  fHistNTrials->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + fNTrials);
+  fHistNTrials->SetBinContent(fPtHardBin, fHistNTrials->GetBinContent(fPtHardBin) + fNTrials);
 
   DoJetLoop(fJets, fMCJets, kFALSE);
   DoJetLoop(fMCJets, fJets, kTRUE);
