@@ -28,6 +28,7 @@
 
 #include "AliHLTMUONProcessor.h"
 #include "AliHLTMUONConstants.h"
+#include "AliHLTMisc.h"
 #include "AliMUONRecoParam.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -290,21 +291,21 @@ int AliHLTMUONProcessor::FetchMappingStores() const
 	Int_t runUsed = cdbManager->GetRun();
 	
 	// Now we can try load the DDL and DE store objects.
-	if (cdbManager->GetId("MUON/Calib/MappingData", runUsed) == NULL)
+	if (AliHLTMisc::Instance().LoadOCDBEntry("MUON/Calib/MappingData", runUsed) == NULL)
 	{
 		HLTError("Could not find entry in CDB path '%s/MUON/Calib/MappingData' and run no. %d.",
 			cdbPathUsed, runUsed
 		);
 		return -ENOENT;
 	}
-	if (cdbManager->GetId("MUON/Calib/Gains", runUsed) == NULL)
+	if (AliHLTMisc::Instance().LoadOCDBEntry("MUON/Calib/Gains", runUsed) == NULL)
 	{
 		HLTError("Could not find entry in CDB path '%s/MUON/Calib/Gains' and run no. %d.",
 			cdbPathUsed, runUsed
 		);
 		return -ENOENT;
 	}
-	if (cdbManager->GetId("MUON/Calib/Pedestals", runUsed) == NULL)
+	if (AliHLTMisc::Instance().LoadOCDBEntry("MUON/Calib/Pedestals", runUsed) == NULL)
 	{
 		HLTError("Could not find entry in CDB path '%s/MUON/Calib/Pedestals' and run no. %d.",
 			cdbPathUsed, runUsed
