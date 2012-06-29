@@ -62,6 +62,9 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE,
     
     filter->SetTrackPtCut(minE);
 
+    //filter->SetMBTriggerMask(AliVEvent::kAnyINT);
+    filter->SetMBTriggerMask(AliVEvent::kMB); // not working for all productions
+    
     filter->SelectCollisionCandidates(AliVEvent::kAny) ;
     
     printf("--- Select events with 1 cluster with at least %2.2f GeV and N = %d ---\n",minE,minN);
