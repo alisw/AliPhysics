@@ -979,7 +979,7 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &e
   rigidAxis.SetPtEtaPhi(1, eta, phi);
   rigidAxis = rigidAxis.Unit();
 
-  if (fAnaType == kEMCAL && clusters) {
+  if ((fAnaType == kEMCAL || fAnaType == kEMCALOnly) && clusters) {
     Int_t nclusters =  clusters->GetEntriesFast();
     for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
       AliVCluster* cluster = static_cast<AliVCluster*>(clusters->At(iClusters));
@@ -1037,13 +1037,14 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &e
     }
   }
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::ExecOnce()
 {
   // Initialize the analysis.
 
   if (!fEmbJetsName.IsNull()) {
-    if (fEmbTracksName.IsNull()) {
+    if (fEmbTracksName.IsNull() && fAnaType != kEMCALOnly) {
       fEmbTracksName = fTracksName;
       fEmbTracksName += "Embedded";
     }
