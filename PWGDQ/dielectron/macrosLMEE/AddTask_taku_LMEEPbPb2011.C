@@ -31,7 +31,6 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_t se
   Bool_t hasMC=setMC;
   if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0){
     hasMC=kTRUE;
-    enableCF=kTRUE;
   }
   
 
@@ -50,8 +49,8 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_t se
   }
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
-  task->reject_conversion(2.0);
-  task->enable_v0mixing(kFALSE);
+  task->RejectConversion(2.0);
+  task->EnableV0mixing(kFALSE);
 
   //load dielectron configuration file
   //add dielectron analysis with different cuts to the task
