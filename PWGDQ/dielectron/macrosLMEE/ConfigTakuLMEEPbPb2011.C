@@ -39,9 +39,6 @@ AliDielectron* ConfigTakuLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE,
 
   if (MCenabled){
     die->SetHasMC(kTRUE);
-    if(CFenable==kFALSE){
-      CFenable=kTRUE;
-    }
   }
   
   //Setup AnalysisSelection:
@@ -133,6 +130,7 @@ AliDielectron* ConfigTakuLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE,
 
   // the last definition uses no cuts and only the QA histograms should be filled!
   if (CFenable) {
+    SetSignals(die);
     InitCF(die,cutDefinition);
   }
   return die;
@@ -398,6 +396,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 
   cf->SetStepsForSignal();
   die->SetCFManagerPair(cf);
+
 
 
   /*
