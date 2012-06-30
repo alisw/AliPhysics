@@ -598,15 +598,18 @@ void AliAnalysisTaskCaloFilter::FillAODCaloTrigger()
 {
   // AOD CaloTrigger copy
   
-  AliAODCaloTrigger* triggerEM = AODEvent()->GetCaloTrigger("EMCAL");
-  AliAODCaloTrigger* triggerPH = AODEvent()->GetCaloTrigger("PHOS");
+  AliAODCaloTrigger* triggerEM   = AODEvent()->GetCaloTrigger("EMCAL");
+  AliAODCaloTrigger* triggerPH   = AODEvent()->GetCaloTrigger("PHOS");
+
+  AliAODCaloTrigger* inTriggerEM = fAODEvent ->GetCaloTrigger("EMCAL");
+  AliAODCaloTrigger* inTriggerPH = fAODEvent ->GetCaloTrigger("PHOS");
   
   // Copy from AODs
   if(fAODEvent)
   {
-    if(fCaloFilter==kBoth || fCaloFilter==kPHOS)  *triggerPH = *(fAODEvent->GetCaloTrigger("PHOS"));
+    if(inTriggerPH && (fCaloFilter==kBoth || fCaloFilter==kPHOS))  *triggerPH = *inTriggerPH;
     
-    if(fCaloFilter==kBoth || fCaloFilter==kEMCAL) *triggerEM = *(fAODEvent->GetCaloTrigger("EMCAL"));
+    if(inTriggerEM && (fCaloFilter==kBoth || fCaloFilter==kEMCAL)) *triggerEM = *inTriggerEM;
     
     return;
   }
@@ -921,6 +924,7 @@ void AliAnalysisTaskCaloFilter::Init()
     fEventSelection[1] = filter->fEventSelection[1];
     fEventSelection[2] = filter->fEventSelection[2];
     fAcceptAllMBEvent  = filter->fAcceptAllMBEvent;
+    fMBTriggerMask     = filter->fMBTriggerMask;
     fCorrect           = filter->fCorrect;
     fEMCALEnergyCut    = filter->fEMCALEnergyCut;
     fEMCALNcellsCut    = filter->fEMCALNcellsCut;
