@@ -302,8 +302,8 @@ public:
   Int_t   GetLastCaloMixedEvent()                    const { return fLastMixedCaloEvent          ; }
   Int_t   GetLastTracksMixedEvent ()                 const { return fLastMixedTracksEvent        ; }
   
-  TList * GetListWithMixedEventsForCalo  (Int_t bi)  const { return fListMixedCaloEvents[bi]     ; }
-  TList * GetListWithMixedEventsForTracks(Int_t bi)  const { return fListMixedTracksEvents [bi]  ; }  
+  TList * GetListWithMixedEventsForCalo  (Int_t bi)  const { if(fListMixedCaloEvents)   return fListMixedCaloEvents[bi]     ; else return 0 ; }
+  TList * GetListWithMixedEventsForTracks(Int_t bi)  const { if(fListMixedTracksEvents) return fListMixedTracksEvents [bi]  ; else return 0 ; }  
    
   Bool_t  ListWithMixedEventsForCaloExists()         const { if(fListMixedCaloEvents) return kTRUE  ;
                                                              else                     return kFALSE ; }
