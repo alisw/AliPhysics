@@ -494,6 +494,5 @@ void AliHLTTPCHWClusterTransformComponent::GetOCDBObjectDescription( TMap* const
   targetMap->Add(new TObjString("TPC/Calib/Mapping"),     new TObjString("unknown content"));
   targetMap->Add(new TObjString("TPC/Calib/Goofie"),      new TObjString("Goofie values, not used at the moment (05.03.2010)"));
   targetMap->Add(new TObjString("TPC/Calib/HighVoltage"), new TObjString("high voltage values, not used"));
-  targetMap->Add(new TObjString("TPC/Calib/PreprocStatus"), new TObjString("not important"));
   targetMap->Add(new TObjString("TPC/Calib/Ref"),         new TObjString("unknown content"));
 }
