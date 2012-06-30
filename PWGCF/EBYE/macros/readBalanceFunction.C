@@ -6,7 +6,7 @@ const Double_t centralityArray[nrOfCentralities+1] = {0.,5.,10.,20.,30.,40.,50.,
 const Double_t cent[nrOfCentralities]  = {382.8,329.7,260.5,186.4,128.9,85.,52.8,30.,15.8};   // hard coded at the moment for centrality percentiles 
 const Double_t centE[nrOfCentralities] = {3.1,4.6,4.4,3.9,3.3,2.6,2.0,1.3,0.6};               // (0-5,5-10,10-20,20-30,...,70-80)
 
-void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 3, Int_t fRebin = 2,Int_t fStartBinBFWidthPhi = 2, Int_t fRebinPhi = 2,TString centEst = "V0M",Double_t etaWindow = -1) {
+void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 3, Int_t fRebin = 2,Int_t fStartBinBFWidthPhi = 2, Int_t fRebinPhi = 2,TString centEst = "V0M",Double_t etaWindow = -1, Int_t etaBins = -1) {
   // Macro to read the output of the BF analysis:  MW: CHANGE THIS!!!!
   //i) Prints and draws the final BF output
   //ii) Plots the QA part of the analysis
@@ -20,7 +20,7 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
   gSystem->Load("libPWGCFebye.so");
 
   //Draw BF       
-  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,centEst, "",  etaWindow);    
+  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,centEst, "",  etaWindow,etaBins);    
   
 
   //Merge the output
@@ -28,7 +28,7 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
 }
 
 //___________________________________________________________//
-void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, Int_t fStartBinBFWidthPhi = 1, Int_t fRebinPhi = 1, TString centEst = "V0M",TString extraString = "", Double_t etaWindow = -1) {
+void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, Int_t fStartBinBFWidthPhi = 1, Int_t fRebinPhi = 1, TString centEst = "V0M",TString extraString = "", Double_t etaWindow = -1, Int_t etaBins = -1) {
   //Function to draw the BF objects and write them into the output file
 
   Int_t maximumCanvases = 13;
@@ -337,11 +337,11 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
     	  if(!bHistos){
     	    gbf[iList][iCanvas][a]->DrawCopy("AP");
     	    if(a==1){
-	      GetWeightedMean(gbf[iList][iCanvas][a],fStartBinBFWidth,WM[iList][iCanvas],WME[iList][iCanvas]); // for eta recalculate width 
+	      GetWeightedMean(gbf[iList][iCanvas][a],fStartBinBFWidth,etaBins,WM[iList][iCanvas],WME[iList][iCanvas]); // for eta recalculate width 
 	      GetIntegral(gbf[iList][iCanvas][a],integ[iList][iCanvas],integE[iList][iCanvas]);
 	    }
 	    else if(a==6){
-	      GetWeightedMean(gbf[iList][iCanvas][a],fStartBinBFWidthPhi,WMP[iList][iCanvas],WMPE[iList][iCanvas]); // for phi calculate width 
+	      GetWeightedMean(gbf[iList][iCanvas][a],fStartBinBFWidthPhi,-1,WMP[iList][iCanvas],WMPE[iList][iCanvas]); // for phi calculate width 
 	      GetIntegral(gbf[iList][iCanvas][a],integP[iList][iCanvas],integPE[iList][iCanvas]);
 	    }
 	  }
@@ -439,11 +439,11 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
   	  if(!bHistos){
   	    gbfs[iList][iCanvas][a]->DrawCopy("AP");
   	    if(a==1){
-	      GetWeightedMean(gbfs[iList][iCanvas][a],fStartBinBFWidth,WMS[iList][iCanvas],WMSE[iList][iCanvas]); 
+	      GetWeightedMean(gbfs[iList][iCanvas][a],fStartBinBFWidth,etaBins,WMS[iList][iCanvas],WMSE[iList][iCanvas]); 
 	      GetIntegral(gbfs[iList][iCanvas][a],integS[iList][iCanvas],integSE[iList][iCanvas]); 
 	    }
 	    else if(a==6){
-	      GetWeightedMean(gbfs[iList][iCanvas][a],fStartBinBFWidthPhi,WMPS[iList][iCanvas],WMPSE[iList][iCanvas]); // for phi calculate width 
+	      GetWeightedMean(gbfs[iList][iCanvas][a],fStartBinBFWidthPhi,-1,WMPS[iList][iCanvas],WMPSE[iList][iCanvas]); // for phi calculate width 
 	      GetIntegral(gbfs[iList][iCanvas][a],integPS[iList][iCanvas],integPSE[iList][iCanvas]); 
 	    }
   	  }
@@ -531,7 +531,13 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
     }
   }
 
-  TFile *fOut = TFile::Open(Form("Histograms_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
+  TFile *fOut = NULL;
+  if(etaWindow > 0 || etaBins > -1){
+    fOut = TFile::Open(Form("Histograms_AccCorr_Window%.1f_Bins%d_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", etaWindow, etaBins, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
+  }
+  else{
+    fOut = TFile::Open(Form("Histograms_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
+  }
   fOut->cd();
   for(Int_t i = 0; i < iList+1; i++){
     cout<<"PROCESS LIST "<<i<<" NOW!"<<endl;
@@ -756,7 +762,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 }
 
 //____________________________________________________________________//
-void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1, Double_t &WM, Double_t &WME) {
+void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1, Int_t fStopBin = -1, Double_t &WM, Double_t &WME) {
 
   //Prints the calculated width of the BF and its error
   Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
@@ -767,6 +773,7 @@ void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1, Double_t &WM, Doub
 
   //Retrieve this variables from Histogram
   Int_t fNumberOfBins = gHistBalance->GetNbinsX();
+  if(fStopBin > -1) fNumberOfBins = fStopBin;
   Double_t fP2Step    = gHistBalance->GetBinWidth(1); // assume equal binning!
   
   cout<<"=================================================="<<endl;
