@@ -3,16 +3,15 @@
 
 #ifndef ALIHLTOUTHANDLERDETECTORDDL_H
 #define ALIHLTOUTHANDLERDETECTORDDL_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOUTHandlerDetectorDDL.h
-    @author Matthias Richter
-    @date   2008-09-09
-    @brief  Default HLTOUT handler returning equipment id from data type and
-            bit pattern in spec.
-*/
+/// @file   AliHLTOUTHandlerDetectorDDL.h
+/// @author Matthias Richter
+/// @date   2008-09-09
+/// @brief  Default HLTOUT handler returning equipment id from data type and
+///         bit pattern in spec.
 
 #include "AliHLTOUTHandlerEquId.h"
 

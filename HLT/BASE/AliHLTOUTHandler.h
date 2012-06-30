@@ -1,23 +1,17 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTOUTHANDLER_H
 #define ALIHLTOUTHANDLER_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+///* This file is property of and copyright by the                          * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOUTHandler.h
-    @author Matthias Richter
-    @date   
-    @brief  Base class declaration of HLTOUT handlers
+/// @file   AliHLTOUTHandler.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Base class declaration of HLTOUT handlers
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
 #include "AliHLTLogging.h"
 
 class AliHLTOUT;
@@ -95,7 +89,7 @@ class AliHLTOUTHandler : public AliHLTLogging {
    * Check state flag of the handler.
    * @return true if flag matches
    */
-  bool CheckStatus(unsigned int flag) {
+  bool CheckStatus(unsigned int flag) const {
     return (fState&flag)!=0;
   }
 

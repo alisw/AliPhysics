@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -453,7 +453,7 @@ const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::FindHandlerDesc(AliHLTUIn
   if (blockIndex<fBlockDescList.size()) {
     return fBlockDescList[blockIndex].GetHandlerDesc();
   }
-  return const_cast<AliHLTOUT::AliHLTOUTHandlerListEntry&>(AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry);
+  return const_cast<AliHLTOUT::AliHLTOUTHandlerListEntry&>(AliHLTOUT::AliHLTOUTHandlerListEntry::VoidHandlerListEntry());
 }
 
 AliHLTOUT::AliHLTOUTHandlerListEntry::AliHLTOUTHandlerListEntry()
@@ -541,10 +541,10 @@ bool AliHLTOUT::AliHLTOUTHandlerListEntry::operator==(const AliHLTModuleAgent::A
   return *fpHandlerDesc==desc;
 }
 
-void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(AliHLTOUT::AliHLTOUTHandlerListEntry &desc)
+void AliHLTOUT::AliHLTOUTHandlerListEntry::AddIndex(const AliHLTOUT::AliHLTOUTHandlerListEntry &desc)
 {
   // add block index, a handler can serve multiple blocks
-  AliHLTOUTIndexList::iterator element;
+  AliHLTOUTIndexList::const_iterator element;
   for (element=desc.fBlocks.begin(); element!=desc.fBlocks.end(); element++) {
     AddIndex(*element);
   }  
@@ -869,7 +869,7 @@ const AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTBlockDescriptor:
       element++;
     }
   }
-  return const_cast<AliHLTOUT::AliHLTOUTHandlerListEntry&>(AliHLTOUT::AliHLTOUTHandlerListEntry::fgkVoidHandlerListEntry);
+  return const_cast<AliHLTOUT::AliHLTOUTHandlerListEntry&>(AliHLTOUT::AliHLTOUTHandlerListEntry::VoidHandlerListEntry());
 }
 
 TObject* AliHLTOUT::GetDataObject()

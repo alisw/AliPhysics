@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTOUTHandlerDetectorDDL.cxx
-    @author Matthias Richter
-    @date   2008-09-09
-    @brief  HLTOUT handler returning equipment id from data type and spec.
-*/
+/// @file   AliHLTOUTHandlerDetectorDDL.cxx
+/// @author Matthias Richter
+/// @date   2008-09-09
+/// @brief  HLTOUT handler returning equipment id from data type and spec.
+///
 
 #include "AliHLTOUTHandlerDetectorDDL.h"
 #include "AliHLTOUT.h"
@@ -35,11 +35,13 @@ AliHLTOUTHandlerDetectorDDL::AliHLTOUTHandlerDetectorDDL(const char* detector, A
   fNumberOfDDLs(-1),
   fDt(dt)
 { 
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // A default handler class for DDL raw data redirection handlers.
+  //
+  // This class implements an AliHLTOUTHandlerEquId which extracts the
+  // equipment Id from the bit pattern in the specification. All detectors
+  // with up to 32 DDL links follow this convention. The bit no in the
+  // data specification word corresponds to the DDL number within the
+  // sub-detector.
   
   fDDLOffset=AliHLTDAQ::DdlIDOffset(detector);
   fNumberOfDDLs=AliHLTDAQ::NumberOfDdls(detector);
@@ -47,12 +49,14 @@ AliHLTOUTHandlerDetectorDDL::AliHLTOUTHandlerDetectorDDL(const char* detector, A
 
 AliHLTOUTHandlerDetectorDDL::~AliHLTOUTHandlerDetectorDDL()
 {
-  // see header file for class documentation
+  // destructor
 }
 
 int AliHLTOUTHandlerDetectorDDL::ProcessData(AliHLTOUT* pData)
 {
-  // see header file for class documentation
+  // extract the ddl no from the data specification of the data
+  // block and return it
+  // negative error code if failed
   if (!pData) return -EINVAL;
   if (fDDLOffset<0 || fNumberOfDDLs<0) return -ENODEV;
 

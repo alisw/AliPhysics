@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTOUT_H
 #define ALIHLTOUT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -43,6 +43,8 @@ class AliHLTOUT {
   AliHLTOUT();
   /** standard destructor */
   virtual ~AliHLTOUT();
+
+  typedef const AliHLTUInt8_t* AliConstExternalBuffer;
 
   /**
    * Create an AliHLTOUTRawReader instance.
@@ -255,7 +257,7 @@ class AliHLTOUT {
 
     ~AliHLTOUTHandlerListEntry();
 
-    static const AliHLTOUTHandlerListEntry fgkVoidHandlerListEntry; //! initializer
+    static const AliHLTOUTHandlerListEntry& VoidHandlerListEntry() {return fgkVoidHandlerListEntry;}
 
     operator AliHLTOUTHandler*() const {return fpHandler;}
 
@@ -295,7 +297,7 @@ class AliHLTOUT {
     /**
      * Add all indices of the descriptor.
      */
-    void AddIndex(AliHLTOUTHandlerListEntry &desc);
+    void AddIndex(const AliHLTOUTHandlerListEntry &desc);
 
     /**
      * Check if an index is served by this descriptor.
@@ -319,6 +321,8 @@ class AliHLTOUT {
   private:
     /** standard constructor prohibited */
     AliHLTOUTHandlerListEntry();
+
+    static const AliHLTOUTHandlerListEntry fgkVoidHandlerListEntry; //! initializer
 
     /** pointer to the handler */
     AliHLTOUTHandler* fpHandler; //! transient
@@ -385,7 +389,7 @@ class AliHLTOUT {
   /**
    * Get the current event id
    */
-  AliHLTUInt64_t EventId() {return fCurrentEventId;}
+  AliHLTUInt64_t EventId() const {return fCurrentEventId;}
 
   /**
    * Get number of data blocks in the HLTOUT data
@@ -639,7 +643,7 @@ class AliHLTOUT {
   /**
    * Print output or suppress.
    */
-  bool BeVerbose() {return fbVerbose;}
+  bool BeVerbose() const {return fbVerbose;}
 
   /**
    * Switch output.
@@ -797,7 +801,7 @@ class AliHLTOUT {
   unsigned int fCurrent; //!transient
 
   /** data buffer under processing */
-  const AliHLTUInt8_t* fpBuffer; //!transient
+  AliConstExternalBuffer fpBuffer; //!transient
 
   /** list of AliHLTOUTHandlers */
   AliHLTOUTHandlerListEntryVector fDataHandlers; // !transient
@@ -813,7 +817,7 @@ class AliHLTOUT {
 
   /** current buffer converted to a TObject */
   TObject* fpDataObject; //!
-  const AliHLTUInt8_t* fpObjectBuffer; //!
+  AliConstExternalBuffer fpObjectBuffer; //!
   AliHLTUInt32_t fObjectBufferSize; //!
 
   /** current event id */

@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTOUTHANDLERESDBRANCH_H
 #define ALIHLTOUTHANDLERESDBRANCH_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -32,7 +32,7 @@ class AliHLTEsdManager;
  * The method ExtractAndAddObjects() has to loop over all input blocks and
  * provide an appropriate conversion. If the data block simply contains a
  * streamed object it just needs to be extracted and added to the ESD using
- * the function Add(). Thhis case is covered by the default implementation.
+ * the function Add(). This case is covered by the default implementation.
  * Child classes can overload ExtractAndAddObjects() if there is further
  * conversion/formatting required.
  *

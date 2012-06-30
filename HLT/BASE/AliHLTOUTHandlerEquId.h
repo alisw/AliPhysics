@@ -3,15 +3,15 @@
 
 #ifndef ALIHLTOUTHANDLEREQUID_H
 #define ALIHLTOUTHANDLEREQUID_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOUTHandlerEquId.h
-    @author Matthias Richter
-    @date   
-    @brief  HLTOUT handler returning equipment id from data type and spec.
-*/
+/// @file   AliHLTOUTHandlerEquId.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  HLTOUT handler returning equipment id from data type and spec.
+///
 
 #include "AliHLTOUTHandler.h"
 

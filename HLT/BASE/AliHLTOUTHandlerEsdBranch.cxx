@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -45,16 +45,19 @@ AliHLTOUTHandlerEsdBranch::AliHLTOUTHandlerEsdBranch(const char* branchname)
   , fSize(0)
   , fManager(NULL)
 { 
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // The handler extracts objects from HLTOUT data blocks or converts
+  // data to objects to be added to hltEsd branches. The default implementation
+  // covers the first case right away, the class can be used directly for single
+  // objects streamed to the HLTOUT.
+  //
+  // The handler produces a partial ESD containing the data objects. The framework
+  // merges all the different partial ESDs in the AliHLTEsdManager, respectively the
+  // specific implementation AliHLTEsdManagerImplementation.
 }
 
 AliHLTOUTHandlerEsdBranch::~AliHLTOUTHandlerEsdBranch()
 {
-  // see header file for class documentation
+  // destructor
   if (fESD) fManager->DestroyEsdEvent(fESD);
   fESD=NULL;
   if (fpData) delete fpData;
@@ -65,7 +68,7 @@ AliHLTOUTHandlerEsdBranch::~AliHLTOUTHandlerEsdBranch()
 
 int AliHLTOUTHandlerEsdBranch::ProcessData(AliHLTOUT* pData)
 {
-  // see header file for class documentation
+  // data processing function
   if (!pData) return -EINVAL;
   int iResult=0;
 
@@ -163,7 +166,7 @@ int AliHLTOUTHandlerEsdBranch::ExtractAndAddObjects(AliHLTOUT* pData)
 
 int AliHLTOUTHandlerEsdBranch::GetProcessedData(const AliHLTUInt8_t* &pData)
 {
-  // see header file for class documentation
+  // get processed data
   if (!fpData) {
     pData=NULL;
     return 0;
@@ -175,7 +178,7 @@ int AliHLTOUTHandlerEsdBranch::GetProcessedData(const AliHLTUInt8_t* &pData)
 
 int AliHLTOUTHandlerEsdBranch::ReleaseProcessedData(const AliHLTUInt8_t* pData, int size)
 {
-  // see header file for class documentation
+  // release pointer instance
   int iResult=0;
   if (!fpData || size != fSize ||
       const_cast<AliHLTUInt8_t*>(pData) != reinterpret_cast<AliHLTUInt8_t*>(fpData->GetArray())) {

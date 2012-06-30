@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTOUTHandlerChain.cxx
-    @author Matthias Richter
-    @date   24.06.2008
-    @brief  HLTOUT handler of type kChain.
-*/
+/// @file   AliHLTOUTHandlerChain.cxx
+/// @author Matthias Richter
+/// @date   24.06.2008
+/// @brief  HLTOUT handler of type kChain.
+///
 
 #include "AliHLTOUTHandlerChain.h"
 #include "AliHLTOUT.h"
@@ -41,11 +41,13 @@ AliHLTOUTHandlerChain::AliHLTOUTHandlerChain(const char* arguments)
   fpSystem(NULL),
   fbHaveOutput(false)
 { 
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // The handler implements the kChain processing of HLTOUT data.
+  // The ids of the chains to be run during processing are provided
+  // as parameter to the constructor. The AliHLTModuleAgent
+  // can just create a new instance and specify the chains in order
+  // to define the HLTOUT handling of type kChain for a certain data
+  // block. The same instance can be returned for multiple data blocks.
+  // The handler will run once on all data blocks.
   if (arguments) {
     TString args=arguments;
     TObjArray* pTokens=args.Tokenize(" ");
@@ -68,7 +70,7 @@ AliHLTOUTHandlerChain::AliHLTOUTHandlerChain(const char* arguments)
 
 AliHLTOUTHandlerChain::~AliHLTOUTHandlerChain()
 {
-  // see header file for class documentation
+  // destructor
   if (fpSystem) {
     // TODO: the EOR is currenttly not send because the reconstruction
     // chian is not stopped. Trying it here gives an error, there is
@@ -84,7 +86,7 @@ AliHLTOUTHandlerChain::~AliHLTOUTHandlerChain()
 
 int AliHLTOUTHandlerChain::ProcessData(AliHLTOUT* pData)
 {
-  // see header file for class documentation
+  // data processing function
   if (!pData) return -EINVAL;
   int iResult=0;
 
@@ -151,7 +153,7 @@ int AliHLTOUTHandlerChain::CreateConfigurations(AliHLTConfigurationHandler* /*ha
 
 int AliHLTOUTHandlerChain::InitSystem()
 {
-  // see header file for class documentation
+  // initialize the AliHLTSystem instance
   int iResult=0;
   if (!fpSystem) {
     // init AliHLTSystem

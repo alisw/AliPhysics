@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -30,21 +30,22 @@ ClassImp(AliHLTOUTHandlerEquId)
 
 AliHLTOUTHandlerEquId::AliHLTOUTHandlerEquId()
 { 
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // Base class for DDL raw data redirection handlers.
+  //
+  // HLTOUT handlers of this type are used for the replacement of detector
+  // reconstruction input by the corresponding data from the HLT output.
+  // From the data type and specification of an HLT output block the
+  // corresponding equipment id of the original detector streams is determined.
 }
 
 AliHLTOUTHandlerEquId::~AliHLTOUTHandlerEquId()
 {
-  // see header file for class documentation
+  // destructor
 }
 
 int AliHLTOUTHandlerEquId::ProcessData(AliHLTOUT* pData)
 {
-  // see header file for class documentation
+  // process data
   if (!pData) return -EINVAL;
   AliHLTComponentDataType dt=kAliHLTVoidDataType;
   AliHLTUInt32_t spec=kAliHLTVoidDataSpec;

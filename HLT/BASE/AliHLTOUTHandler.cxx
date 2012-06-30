@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTOUTHandler.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Base class implementation of HLTOUT handlers.
-*/
+/// @file   AliHLTOUTHandler.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Base class implementation of HLTOUT handlers.
+///
 
 #include "AliHLTOUTHandler.h"
 
@@ -31,33 +31,33 @@ AliHLTOUTHandler::AliHLTOUTHandler()
   :
   fState(kHandlerOK)
 { 
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // Base class declaration of HLT output handlers.
+  // The library implementation of the AliHLTModuleAgent allows to generate
+  // handlers for data blocks of the HLT output. This can be the output of
+  // the real HLT coming from the HLTOUT nodes, or simulated HLT output.
+  // Note: The created instance of AliHLTOUTHandler is deleted by the framework.
 }
 
 AliHLTOUTHandler::~AliHLTOUTHandler()
 {
-  // see header file for class documentation
+  // destructor
 }
 
 int AliHLTOUTHandler::GetProcessedData(const AliHLTUInt8_t* &pData)
 {
-  // see header file for class documentation
+  // get pointer to processed data
   pData=NULL;
   return 0;
 }
 
 int AliHLTOUTHandler::ReleaseProcessedData(const AliHLTUInt8_t* /*pData*/, int /*size*/)
 {
-  // see header file for class documentation
+  // release the data pointer previously retrieved by GetProcessedData
   return 0;
 }
 
 int AliHLTOUTHandler::FinishEvent()
 {
-  // see header file for class documentation
+  // cleanup the current event processing.
   return 0;
 }

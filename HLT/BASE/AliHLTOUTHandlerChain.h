@@ -3,15 +3,15 @@
 
 #ifndef ALIHLTOUTHANDLERCHAIN_H
 #define ALIHLTOUTHANDLERCHAIN_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOUTHandlerChain.h
-    @author Matthias Richter
-    @date   24.06.2008
-    @brief  HLTOUT handler of type kChain.
-*/
+/// @file   AliHLTOUTHandlerChain.h
+/// @author Matthias Richter
+/// @date   24.06.2008
+/// @brief  HLTOUT handler of type kChain.
+///
 
 #include "AliHLTOUTHandler.h"
 #include "TString.h"
