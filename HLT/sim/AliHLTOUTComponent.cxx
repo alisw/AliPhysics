@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -22,10 +22,6 @@
 /// @brief  The HLTOUT data sink component similar to HLTOUT nodes
 /// @note   Used in the AliRoot environment only.
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include <cassert>
 //#include <iostream>
 #include "AliHLTOUTComponent.h"
@@ -42,11 +38,13 @@ using namespace std;
 #include <TArrayC.h>
 #include <TSystem.h>
 
+using namespace std;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUTComponent)
 
 AliHLTOUTComponent::AliHLTOUTComponent(EType type)
-  : AliHLTOfflineDataSink()
+  : AliHLTDataSink()
   , fWriters()
   , fNofDDLs(10)
   , fIdFirstDDL(7680) // 0x1e<<8
@@ -62,12 +60,11 @@ AliHLTOUTComponent::AliHLTOUTComponent(EType type)
   , fType(type)
   , fRoundRobinCounter(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
+  // The HLTOUT data sink component which models the behavior of the HLTOUT
+  // nodes of the HLT cluster.
+  // The HLTOUT component is attached at the end of a chain. It stores all input
+  // block in the HOMER format, distributed over a number of DDL link. The data
+  // is stored in a digit file or in raw ddl files.
   fIdFirstDDL=AliDAQ::DdlIDOffset("HLT");
   fNofDDLs=AliDAQ::NumberOfDdls("HLT");
   
@@ -98,7 +95,7 @@ const char* AliHLTOUTComponent::GetComponentID()
   return NULL;
 }
 
-void AliHLTOUTComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTOUTComponent::GetInputDataTypes( AliHLTComponentDataTypeList& list)
 {
   // overloaded from AliHLTComponent: indicate input data types
   list.clear();
@@ -376,7 +373,7 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
   }
 
   if (iResult>=0 && bIsDataEvent) {
-    iResult=Write(GetEventCount(), GetRunLoader());
+    iResult=Write(GetEventCount());
   }
 
   if (fRoundRobinCounter>=0) {
@@ -386,14 +383,7 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
   return iResult;
 }
 
-
-int AliHLTOUTComponent::FillESD(int /*eventNo*/, AliRunLoader* /*runLoader*/, AliESDEvent* /*esd*/)
-{
-  // Nop. The data is written at the end of DumpEvent
-  return 0;
-}
-
-int AliHLTOUTComponent::Write(int eventNo, AliRunLoader* runLoader)
+int AliHLTOUTComponent::Write(int eventNo)
 {
   // write digits and raw files for the current event
   int iResult=0;
@@ -402,7 +392,7 @@ int AliHLTOUTComponent::Write(int eventNo, AliRunLoader* runLoader)
 
   if (fReservedWriter>=0) {
     if (fOptions&kWriteDigits) WriteDigitArray(fReservedWriter, &fBuffer[0], fReservedData);
-    if (fOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, fReservedWriter, &fBuffer[0], fReservedData);
+    if (fOptions&kWriteRawFiles) WriteRawFile(eventNo, fReservedWriter, &fBuffer[0], fReservedData);
     fReservedData=0;
   }
 
@@ -431,12 +421,12 @@ int AliHLTOUTComponent::Write(int eventNo, AliRunLoader* runLoader)
       if (fOptions&kWriteDigits) WriteDigitArray(*ddlno, pBuffer, bufferSize);
       if (fOptions&kWriteRawFiles &&
 	  (fRoundRobinCounter<0 || fRoundRobinCounter==*ddlno))
-	WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
+	WriteRawFile(eventNo, *ddlno, pBuffer, bufferSize);
     }
     fWriters[*ddlno]->Clear();
     ddlno++;
   }
-  if (fOptions&kWriteDigits) WriteDigits(eventNo, runLoader);
+  if (fOptions&kWriteDigits) WriteDigits(eventNo);
   return iResult;
 }
 
@@ -576,7 +566,7 @@ int AliHLTOUTComponent::WriteDigitArray(int hltddl, const AliHLTUInt8_t* pBuffer
   return iResult;
 }
 
-int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/)
+int AliHLTOUTComponent::WriteDigits(int /*eventNo*/)
 {
   // fill tree with digit arrays and write to file
   // all links must be written, even in round robin mode, where all links but one
@@ -625,7 +615,7 @@ int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/
   return iResult;
 }
 
-int AliHLTOUTComponent::WriteRawFile(int eventNo, AliRunLoader* /*runLoader*/, int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int bufferSize)
+int AliHLTOUTComponent::WriteRawFile(int eventNo, int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int bufferSize)
 {
   // write buffer to raw file in the current directory
   // creates the event raw directories in the current directory

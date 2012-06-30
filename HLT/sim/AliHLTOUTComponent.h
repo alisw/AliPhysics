@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTOUTCOMPONENT_H
 #define ALIHLTOUTCOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -13,7 +13,7 @@
 /// @brief  The HLTOUT data sink component similar to HLTOUT nodes.
 /// @note   Used in the AliRoot environment only.
 
-#include "AliHLTOfflineDataSink.h"
+#include "AliHLTDataSink.h"
 
 class AliHLTHOMERLibManager;
 class AliHLTMonitoringWriter;
@@ -73,7 +73,7 @@ typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
  *
  * @ingroup alihlt_aliroot_simulation
  */
-class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
+class AliHLTOUTComponent : public AliHLTDataSink  {
  public:
   /// type of the HLTOUT component
   enum EType {
@@ -87,7 +87,7 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   virtual ~AliHLTOUTComponent();
 
   const char* GetComponentID();
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes( AliHLTComponentDataTypeList& list);
   AliHLTComponent* Spawn();
 
   /**
@@ -142,16 +142,6 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   using AliHLTDataSink::DumpEvent;
 
   /**
-   * Fill ESD for one event.
-   * Empty now, data written in Write() at the end of DumpEvent()
-   * @param eventNo       event No. \em Note: this is an internal enumeration of the
-   *                      processed events.
-   * @param runLoader     the AliRoot runloader
-   * @return neg. error code if failed 
-   */
-  int FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd);
-
-  /**
    * Write the ecoded HLTOUT data to raw and digits files.
    * Originally data was written in the FillESD function of the
    * AliHLTOfflineInterface. Mainly for the sake of availability of the
@@ -166,7 +156,7 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
    * @param runLoader     the AliRoot runloader
    * @return neg. error code if failed 
    */
-  int Write(int eventNo, AliRunLoader* runLoader);
+  int Write(int eventNo);
 
  private:
   /** copy constructor prohibited */
@@ -199,21 +189,19 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   /**
    * Write the digits for one DDL
    * @param eventNo    number of the event
-   * @param runLoader  AliRoot run loader instance
    * @return neg. error if failed
    */
-  int WriteDigits(int eventNo, AliRunLoader* runLoader);
+  int WriteDigits(int eventNo);
 
   /**
    * Write the raw file for one DDL
    * @param eventNo    number of the event
-   * @param runLoader  AliRoot run loader instance
    * @param hltddl     Number of DDL link within the range of HLT
    * @param pBuffer    buffer to write
    * @param size       size of the buffer
    * @return neg. error if failed
    */
-  int WriteRawFile(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int size);
+  int WriteRawFile(int eventNo, int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int size);
 
   /** list of HOMER writers */
   AliHLTMonitoringWriterPVector fWriters; //!transient
