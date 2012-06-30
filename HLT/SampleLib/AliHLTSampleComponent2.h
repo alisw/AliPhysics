@@ -1,14 +1,15 @@
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTSAMPLECOMPONENT2_H
 #define ALIHLTSAMPLECOMPONENT2_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTSampleComponent2.h
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  Another sample processing component for the HLT. */
+/// @file   AliHLTSampleComponent2.h
+/// @author Matthias Richter, Timm Steinbeck
+/// @date   
+/// @brief  Another sample processing component for the HLT.
+///
 
 #include "AliHLTProcessor.h"
 
@@ -26,7 +27,7 @@ public:
   virtual ~AliHLTSampleComponent2();
 
   const char* GetComponentID() { return "Sample-component2";}
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
+  void GetInputDataTypes( AliHLTComponentDataTypeList& list) {
     list.push_back(kAliHLTAnyDataType);
   }
   AliHLTComponentDataType GetOutputDataType() {return kAliHLTVoidDataType;}
@@ -41,7 +42,7 @@ public:
   int DoDeinit();
   int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+		       AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks );
 
   using AliHLTProcessor::DoEvent;
 

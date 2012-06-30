@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -78,7 +78,7 @@ const char* AliHLTSampleRawAnalysisComponent::GetComponentID()
   return "SampleRawAnalysis";
 }
 
-void AliHLTSampleRawAnalysisComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTSampleRawAnalysisComponent::GetInputDataTypes( AliHLTComponentDataTypeList& list)
 {
   // component property: list of input data types
   list.push_back(kAliHLTDataTypeDDLRaw);

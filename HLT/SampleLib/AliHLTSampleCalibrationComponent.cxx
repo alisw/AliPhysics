@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -22,10 +22,6 @@
 //  @brief  A sample calibration component for the HLT.
 //  @ingroup alihlt_tutorial
 
-#if __GNUC__== 3
-using namespace std;
-#endif
-
 #include "AliHLTSampleCalibrationComponent.h"
 #include "AliHLTReadoutList.h"
 #include "AliLog.h"
@@ -33,11 +29,10 @@ using namespace std;
 #include "TObjString.h"
 #include "TH1S.h"
 
+using namespace std;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSampleCalibrationComponent)
-
-/** one global instance used for registration */
-AliHLTSampleCalibrationComponent gAliHLTSampleCalibrationComponent;
 
 AliHLTSampleCalibrationComponent::AliHLTSampleCalibrationComponent()
   : AliHLTCalibrationProcessor()
@@ -70,7 +65,7 @@ const char* AliHLTSampleCalibrationComponent::GetComponentID()
   return "SampleCalibration";
 }
 
-void AliHLTSampleCalibrationComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTSampleCalibrationComponent::GetInputDataTypes( AliHLTComponentDataTypeList& list)
 {
   // component property: list of input data types
     list.push_back(kAliHLTAnyDataType);

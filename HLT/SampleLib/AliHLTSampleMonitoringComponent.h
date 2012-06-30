@@ -3,15 +3,15 @@
 #ifndef ALIHLTSAMPLEMONITORINGCOMPONENT_H
 #define ALIHLTSAMPLEMONITORINGCOMPONENT_H
 
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTSampleMonitoringComponent.h
-    @author Matthias Richter
-    @date   
-    @brief  A sample monitoring component for the HLT.
-*/
+/// @file   AliHLTSampleMonitoringComponent.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  A sample monitoring component for the HLT.
+///
 
 #include "AliHLTProcessor.h"
 
@@ -96,7 +96,7 @@ public:
 
   // AliHLTComponent interface functions
   const char* GetComponentID();
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes( AliHLTComponentDataTypeList& list);
   AliHLTComponentDataType GetOutputDataType();
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();

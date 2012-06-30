@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -24,20 +24,15 @@
 //          Component illustrates the basic functionality and component
 //          initialization. 
 
-#if __GNUC__== 3
-using namespace std;
-#endif
-
 #include "AliHLTSampleComponent1.h"
 #include "TString.h"
 #include "TObjString.h"
 #include "TMap.h"
 
+using namespace std;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSampleComponent1)
-
-/** one global instance used for registration */
-AliHLTSampleComponent1 gAliHLTSampleComponent1;
 
 AliHLTSampleComponent1::AliHLTSampleComponent1()
   : AliHLTProcessor()
@@ -47,11 +42,6 @@ AliHLTSampleComponent1::AliHLTSampleComponent1()
   // an example component which implements the ALICE HLT processor
   // interface and illustrates the basic interface methods
   //
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   //
   // NOTE: all helper classes should be instantiated in DoInit()
 }
@@ -191,7 +181,7 @@ int AliHLTSampleComponent1::DoDeinit()
 
 int AliHLTSampleComponent1::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 				      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-				      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ) {
+				      AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks ) {
   // see header file for class documentation
   HLTInfo("processing data");
   if (evtData.fStructSize==0 && blocks==NULL && trigData.fStructSize==0 &&

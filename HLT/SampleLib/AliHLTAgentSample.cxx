@@ -31,6 +31,7 @@
 #include "AliHLTSampleComponent1.h"
 #include "AliHLTSampleComponent2.h"
 #include "AliHLTSampleMonitoringComponent.h"
+#include "AliHLTSampleCalibrationComponent.h"
 
 // header file of the module preprocessor
 #include "AliHLTSamplePreprocessor.h"
@@ -134,6 +135,7 @@ int AliHLTAgentSample::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTSampleComponent1);
   pHandler->AddComponent(new AliHLTSampleComponent2);
   pHandler->AddComponent(new AliHLTSampleMonitoringComponent);
+  pHandler->AddComponent(new AliHLTSampleCalibrationComponent);
 
   return 0;
 }

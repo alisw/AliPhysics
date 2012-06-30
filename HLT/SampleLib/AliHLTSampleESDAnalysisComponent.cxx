@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -22,16 +22,14 @@
 /// @brief  A sample processing component for ESD analysis.
 /// @ingroup alihlt_tutorial
 
-#if __GNUC__== 3
-using namespace std;
-#endif
-
 #include "AliHLTSampleESDAnalysisComponent.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "TMap.h"
 #include "TObjString.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSampleESDAnalysisComponent)
@@ -72,7 +70,7 @@ const char* AliHLTSampleESDAnalysisComponent::GetComponentID()
   return "SampleESDAnalysis";
 }
 
-void AliHLTSampleESDAnalysisComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTSampleESDAnalysisComponent::GetInputDataTypes( AliHLTComponentDataTypeList& list)
 {
   // component property: list of input data types
   list.push_back(kAliHLTDataTypeESDObject);

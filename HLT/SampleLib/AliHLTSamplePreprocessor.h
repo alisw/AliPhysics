@@ -1,24 +1,17 @@
 //-*- Mode: C++ -*-
-// @(#) $Id: AliHLTSamplePreprocessor.h 23318 2008-01-14 12:43:28Z hristov $
+// $Id: AliHLTSamplePreprocessor.h 23318 2008-01-14 12:43:28Z hristov $
 
 #ifndef ALIHLTSAMPLEPREPROCESSOR_H
 #define ALIHLTSAMPLEPREPROCESSOR_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
-/**
- * @file   AliHLTSamplePreprocessor.h
- * @author Kenneth Aamodt, Sebastian Bablok
- * @date   2007-12-06
- * @brief  HLT Preprocessor plugin for the AliHLTSample library
- */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @file   AliHLTSamplePreprocessor.h
+/// @author Kenneth Aamodt, Sebastian Bablok
+/// @date   2007-12-06
+/// @brief  HLT Preprocessor plugin for the AliHLTSample library
+///
 
 #include "AliHLTModulePreprocessor.h"
 

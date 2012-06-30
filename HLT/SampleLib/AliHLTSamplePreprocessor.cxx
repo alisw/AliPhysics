@@ -1,7 +1,7 @@
 // $Id: AliHLTSamplePreprocessor.cxx 23039 2007-12-13 20:53:02Z richterm $
 
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the                          * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
  * Primary Authors: Sebastian Bablok <Sebastian.Bablok@ift.uib.no>        *
@@ -17,12 +17,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/**
- * @file   AliHLTSamplePreprocessor.cxx
- * @author Kenneth Aamodt, Sebastian Bablok
- * @date   2007-12-06
- * @brief  HLT Preprocessor plugin for the AliHLTComp library
- */
+/// @file   AliHLTSamplePreprocessor.cxx
+/// @author Kenneth Aamodt, Sebastian Bablok
+/// @date   2007-12-06
+/// @brief  HLT Preprocessor plugin for the AliHLTComp library
+/// 
 
 #include "AliHLTSamplePreprocessor.h"
 #include "AliPreprocessor.h"
@@ -77,23 +76,23 @@ UInt_t AliHLTSamplePreprocessor::GetTempHisto()
 
 	UInt_t retVal = 0;
     // get Temp Histogram map
-    TList* HLTlist = GetFileSources(AliPreprocessor::kHLT, fgkTempHistoFileName);
-    if (!HLTlist) {
+    TList* hltList = GetFileSources(AliPreprocessor::kHLT, fgkTempHistoFileName);
+    if (!hltList) {
         Log("Missing list for the HLT");
    
         return 1;
     }
 
-	if (HLTlist->GetSize() == 0) {
+	if (hltList->GetSize() == 0) {
 		Log("No Temperature histogram produced inside the HLT by a DA for this run.");
 		return retVal; 
 		// return no error -> DA might not have run, but other file shall be saved.
-	} else if (HLTlist->GetSize() > 1) {
-        Log(Form("Problem on the size of the list: %d (HLT)", HLTlist->GetSize()));
+	} else if (hltList->GetSize() > 1) {
+        Log(Form("Problem on the size of the list: %d (HLT)", hltList->GetSize()));
         return 0; // might have to be changed, when there will be more than one histogram file
     }
 
-    TObjString* location = (TObjString*) HLTlist->At(0);
+    TObjString* location = (TObjString*) hltList->At(0);
     if (location == 0) {
         Log("Error in location HLT list.");
         return 0;

@@ -3,7 +3,7 @@
 #ifndef ALIHLTSAMPLERAWANALYSISCOMPONENT_H
 #define ALIHLTSAMPLERAWANALYSISCOMPONENT_H
 
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
@@ -94,7 +94,7 @@ public:
 
   // AliHLTComponent interface functions
   const char* GetComponentID();
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes( AliHLTComponentDataTypeList& list);
   AliHLTComponentDataType GetOutputDataType();
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   void GetOCDBObjectDescription( TMap* const targetMap);

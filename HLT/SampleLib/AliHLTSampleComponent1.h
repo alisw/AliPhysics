@@ -3,7 +3,7 @@
 #ifndef ALIHLTSAMPLECOMPONENT1_H
 #define ALIHLTSAMPLECOMPONENT1_H
 
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
@@ -89,7 +89,7 @@ public:
 
   // AliHLTComponent interface functions
   const char* GetComponentID();
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes( AliHLTComponentDataTypeList& list);
   AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   void GetOCDBObjectDescription( TMap* const targetArray);
@@ -103,7 +103,7 @@ public:
   int DoDeinit();
   int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+		       AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks );
   int ScanConfigurationArgument(int argc, const char** argv);
   int Reconfigure(const char* cdbEntry, const char* chainId);
   int ReadPreprocessorValues(const char* modules);
