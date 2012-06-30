@@ -3,21 +3,15 @@
 
 #ifndef ALIHLTOFFLINEINTERFACE_H
 #define ALIHLTOFFLINEINTERFACE_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the                          * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOfflineInterface.h
-    @author Matthias Richter
-    @date   
-    @brief  the HLT interface to AliRoot
-*/
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+/// @file   AliHLTOfflineInterface.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  the HLT interface to AliRoot
+///
 
 #include <TObject.h>
 #include <TList.h>
@@ -164,18 +158,18 @@ protected:
   AliESDEvent* fpESD;                                                  //! transient
 
   /** the list of active interfaces */
-  static AliHLTOfflineInterface* fAnchor;                         //! transient
+  static AliHLTOfflineInterface* fgAnchor;                        //! transient
 
   /** next element in the list */
   AliHLTOfflineInterface* fpNext;                                 //! transient
 
   /** the current element */
-  static AliHLTOfflineInterface* fCurrent;                        //! transient
+  static AliHLTOfflineInterface* fgCurrent;                       //! transient
 
   /** number of interfaces */
-  static int fCount;                                              //! see above
+  static int fgCount;                                             //! see above
 
-  ClassDef(AliHLTOfflineInterface, 3);
+  ClassDef(AliHLTOfflineInterface, 0);
 };
 
 #endif

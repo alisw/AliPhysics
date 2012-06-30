@@ -1,7 +1,7 @@
 // $Id$
 
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the                          * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
  * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,11 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTOfflineDataSource.cxx
-    @author Matthias Richter
-    @date   
-    @brief  AliRoot data source component base class.
-*/
+/// @file   AliHLTOfflineDataSource.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  AliRoot data source component base class.
+///
 
 #include "AliHLTOfflineDataSource.h"
 
@@ -29,16 +29,16 @@ ClassImp(AliHLTOfflineDataSource)
 
 AliHLTOfflineDataSource::AliHLTOfflineDataSource()
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // The class implements an AliRoot data source component base class.
+  // Main purpose is to provide the access to RunLoader and RawReader
+  // of the AliRoot simulation/reconstruction
+  // Child classes implement the normal component functions to
+  // facilitate the interface
   Register(this);
 }
 
 AliHLTOfflineDataSource::~AliHLTOfflineDataSource()
 {
-  // see header file for class documentation
+  // destructor
   Unregister(this);
 }

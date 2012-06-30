@@ -3,21 +3,15 @@
 
 #ifndef ALIHLTOFFLINEDATASOURCE_H
 #define ALIHLTOFFLINEDATASOURCE_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+///* This file is property of and copyright by the                          * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOfflineDataSource.h
-    @author Matthias Richter
-    @date   
-    @brief  AliRoot data sink component base class.
-*/
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+/// @file   AliHLTOfflineDataSource.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  AliRoot data sink component base class.
+///
 
 #include "AliHLTDataSource.h"
 #include "AliHLTOfflineInterface.h"
@@ -61,7 +55,7 @@ class AliHLTOfflineDataSource
   /** assignment operator prohibited */
   AliHLTOfflineDataSource& operator=(const AliHLTOfflineDataSource&);
  
-  ClassDef(AliHLTOfflineDataSource, 1);
+  ClassDef(AliHLTOfflineDataSource, 0);
 };
 
 #endif

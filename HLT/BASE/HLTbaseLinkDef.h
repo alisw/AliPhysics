@@ -28,7 +28,6 @@
 #pragma link C++ class AliHLTDataSink+;
 #pragma link C++ class AliHLTOfflineInterface+;
 #pragma link C++ class AliHLTOfflineDataSource+;
-#pragma link C++ class AliHLTOfflineDataSink+;
 #pragma link C++ class AliHLTModuleAgent+;
 #pragma link C++ class AliHLTModulePreprocessor+;
 #pragma link C++ class AliHLTShuttleInterface+;

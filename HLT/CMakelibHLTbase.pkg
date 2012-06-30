@@ -52,7 +52,6 @@ set ( CLASS_HDRS
     AliHLTDataSink.h
     AliHLTOfflineInterface.h
     AliHLTOfflineDataSource.h
-    AliHLTOfflineDataSink.h
     AliHLTModuleAgent.h
     AliHLTModulePreprocessor.h
     AliHLTShuttleInterface.h
