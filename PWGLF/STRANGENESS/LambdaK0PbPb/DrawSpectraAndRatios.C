@@ -51,8 +51,9 @@ static Double_t sysErrK0s[]={
 };
 static Double_t sysErrLam[]={ 
   0.0,0.0,0.0,
-  0.20,0.12,0.05,0.04,  //Dominated by cos(PA)+FD
-  0.03,0.03,0.04,0.05,0.06,0.06, //Dominated by TPC crossed/findable
+  0.20,0.12,0.05, //Dominated by cos(PA)+FD
+  0.06,0.06,0.06,0.06,0.06,  //Dominated by c*tau
+  0.06,0.06, //Dominated by TPC crossed/findable
   0.07,0.09,0.09,0.10,0.10,0.11,0.11,0.11,0.10,0.10,0.09,
   0.08,0.08,0.07,0.07,0.07,0.06,0.07,0.06,0.07,0.05,
   0.06,0.08,0.04,
