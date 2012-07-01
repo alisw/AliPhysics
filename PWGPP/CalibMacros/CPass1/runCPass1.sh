@@ -78,7 +78,7 @@ time aliroot -l -b -q "../recCPass1.C(\"$fileName\", $nEvents, \"$ocdbPath\", \"
 mv syswatch.log syswatch_rec_Barrel.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."
-time aliroot -l -b -q ../runCalibTrain.C\(\""$runNum\",\"AliESDs.root\",\"$ocdbPath"\"\)   2>&1 | tee calib.log
+time aliroot -l -b -q "../runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"   2>&1 | tee calib.log
 mv syswatch.log syswatch_calib.log
 echo ">>>>>>> Doing ls -l"
 ls -l

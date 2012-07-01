@@ -131,7 +131,7 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
   Int_t trdStatus = (procesTRD) ?  procesTRD->GetStatus():0;
   Int_t tofStatus = (procesTOF) ?  procesTOF->GetStatus():0;
   Int_t t0Status  = (procesT0)  ?  procesT0->GetStatus():0;
-  Int_t tpcStatus = (procesTPC) ? ((procesTPC.ValidateTimeDrift() || procesTPC.ValidateTimeGain())==kFALSE):0;
+  Int_t tpcStatus = (procesTPC) ? ((procesTPC->ValidateTimeDrift() || procesTPC->ValidateTimeGain())==kFALSE):0;
   //
   printf("\n\n\n\n");
   printf("CPass1 calibration status\n");

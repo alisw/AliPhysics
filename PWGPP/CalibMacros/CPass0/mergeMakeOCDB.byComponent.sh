@@ -41,6 +41,15 @@ partialLocalFileListPrefix=${localFileList}_
 partialAlienFileListPrefix=${alienFileList}_
 runningMergeByComponentLockFile="runningMergeByComponent.lock"
 
+makeAbsolutePathsInList()
+{
+  #make sure the files in the list have absolute paths
+  rm -f $2
+  while read file; do
+    readlink -f $file >> $2
+  done < $1
+}
+
 mergeByComponent()
 {
   # process by component
@@ -50,49 +59,92 @@ mergeByComponent()
   #lock
   touch $runningMergeByComponentLockFile
 
-  previousResults=PREVIOUS_ITERATION_CalibObjects.root
-  if [[ -f CalibObjects.root ]]; then
-    mv CalibObjects.root $previousResults
-    echo "$previousResults" >> $1
-  fi
+  # run inside a dedicated running directory
+  # whic means copy the file list to process and prefic each line with ../
+  # since the file names have no absolute paths!
+  runningDirectory="${runningMergeByComponentLockFile}.${1}.dir"
+  parentDirectory=$PWD
+  fileList="$1.local"
+  mkdir -p $runningDirectory
+  makeAbsolutePathsInList $1 $runningDirectory/$fileList
+  cd $runningDirectory
 
-  echo "####DEBUG" | tee -a merge.log
-  echo "####processed list $1" | tee -a merge.log
-  cat $1
+  #copy the macro from $parentDirectory 
+  [[ -f $parentDirectory/mergeByComponent.C ]] && cp $parentDirectory/mergeByComponent.C $PWD
+
+  previousResults=PREVIOUS_ITERATION_CalibObjects.root
+  if [[ -f $parentDirectory/CalibObjects.root ]]; then
+    mv -f $parentDirectory/CalibObjects.root $previousResults
+    echo "$previousResults" >> $fileList
+  fi
 
   for det in $components; do
     # merge
-    echo "***********************" 2>&1 | tee -a merge.log
-    echo merging $det data 2>&1 | tee -a merge.log
-    echo "***********************" 2>&1 | tee -a merge.log
-    echo aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C(\"$det\", \"$1\")" 2>&1 | tee -a merge.log
-    aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C(\"$det\", \"$1\")" 2>&1 | tee -a merge.log
+    echo "***********************" 
+    echo merging $det data
+    echo "***********************"
+    echo aliroot -b -q "mergeByComponent.C(\"$det\", \"$fileList\")"
+    aliroot -b -q "mergeByComponent.C(\"$det\", \"$fileList\")"
     mv syswatch.log syswatch_merge_$det.log
     mv CalibObjects.root CalibObjects_$det.root
   done
   
-  rm -f $previousResults
-  
   # global merge
-  echo "***********************" 2>&1 | tee -a merge.log
-  echo merging ALL data 2>&1 | tee -a merge.log
-  echo "***********************" 2>&1 | tee -a merge.log
+  echo "***********************"
+  echo merging ALL data
+  echo "***********************"
   partialCalibObjectsList="objects.list.${1}"
   ls -1 CalibObjects_*.root > $partialCalibObjectsList
-  aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C(\"ALL\", \"$partialCalibObjectsList\")" 2>&1 | tee -a merge.log
+  echo aliroot -b -q "mergeByComponent.C(\"ALL\", \"$partialCalibObjectsList\")"
+  aliroot -b -q "mergeByComponent.C(\"ALL\", \"$partialCalibObjectsList\")"
   mv syswatch.log syswatch_ALL.log
+  rm $partialCalibObjectsList
   
-  #cleanup
+  #cleanup of the merged files
   if [[ "$2" == "doCleanup" ]]; then
     while read filename; do
-      echo rm -f $filename | tee -a merge.log
+      echo rm -f $filename 
       rm -f $filename
-    done < $1
+    done < $fileList
   fi
+  rm -f $fileList
   rm -f CalibObjects_*.root
+
+  #move stuff back to the parent dir and clean up
+  #merge the syswatch logs
+  for x in syswatch*log; do
+    if [[ -f $parentDirectory/$x ]]
+    then 
+      echo "sed '1d' $x  >> $parentDirectory/$x"
+      sed '1d' $x >> $parentDirectory/$x
+      rm -f $x
+    else 
+      echo mv -f $x $parentDirectory/$x
+      mv -f $x $parentDirectory/$x
+    fi
+  done
+  #merge the other logs
+  for x in *.log; do
+    if [[ -f $parentDirectory/$x ]]
+    then
+      echo "cat $x >> $parentDirectory/$x"
+      cat $x >> $parentDirectory/$x
+    else
+      echo mv -f $x $parentDirectory/$x
+      mv -f $x $parentDirectory/$x
+    fi
+  done
+  #move the CalibObjects
+  echo mv -f CalibObjects.root $parentDirectory
+  mv -f CalibObjects.root $parentDirectory
+
+  #final cleanup
+  cd $parentDirectory
+  rm -rf $runningDirectory
 
   #unlock
   rm -f $runningMergeByComponentLockFile
+  echo "***mergeByComponent() DONE"
 }
 
 waitIfLocked()
@@ -103,29 +155,51 @@ waitIfLocked()
   done
 }
 
+copyScripts()
+{
+    [[ ! -f mergeByComponent.C ]] && \
+      cp -f $ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C $PWD && \
+      echo "taking the default scripts from $ALICE_ROOT"
+    [[ ! -f makeOCDB.C ]] && \
+      cp -f $ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeOCDB.C $PWD && \
+      echo "taking the default scripts from $ALICE_ROOT"
+}
+
 if [ $isLocal -eq 0 ]; then
+    #first, make sure we have the scripts
+    copyScripts | tee -a copy.log
+    ls
     #with alien files copy them first to local
-    echo "***********************" 2>&1 | tee -a merge.log
-    echo copying files for run $run 2>&1 | tee -a merge.log
-    echo from $path 2>&1 | tee -a merge.log
-    echo "***********************" 2>&1 | tee -a merge.log
-    aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a merge.log
-    split --numeric-suffixes --suffix-length=4 --lines=100 ${alienFileList} ${partialAlienFileListPrefix}
-    counter=0
+    echo "***********************" 2>&1 | tee -a copy.log
+    echo copying files for run $run 2>&1 | tee -a copy.log
+    echo from $path 2>&1 | tee -a copy.log
+    echo "***********************" 2>&1 | tee -a copy.log
+    echo aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
+    aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
+    echo split --numeric-suffixes --suffix-length=4 --lines=20 ${alienFileList} ${partialAlienFileListPrefix} | tee -a copy.log
+    split --numeric-suffixes --suffix-length=4 --lines=20 ${alienFileList} ${partialAlienFileListPrefix}
     rm -f $runningMergeByComponentLockFile
     for partialAlienFileList in ${partialAlienFileListPrefix}*
     do
       #copy the alien files to local
       partialAlienFileListPostfix=${partialAlienFileList#$partialAlienFileListPrefix}
       partialLocalFileList=${partialLocalFileListPrefix}${partialAlienFileListPostfix}
-      aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/mergeByComponent.C(\"COPY\",\"$partialAlienFileList\",\"noPath\",\"noPattern\",10,\"$partialLocalFileList\")" 2>&1 | tee -a merge.log
-      [[ $counter -ne 0 ]] && sed -i '1d' syswatch.log && $(( $counter++ ))
-      cat syswatch.log >> syswatch_copy.log
-      rm syswatch.log
+      echo aliroot -b -q "mergeByComponent.C(\"COPY\",\"$partialAlienFileList\",\"noPath\",\"noPattern\",10,\"$partialLocalFileList\")" 2>&1 | tee -a copy.log
+      aliroot -b -q "mergeByComponent.C(\"COPY\",\"$partialAlienFileList\",\"noPath\",\"noPattern\",10,\"$partialLocalFileList\")" 2>&1 | tee -a copy.log
+      
+      #handle syswatch
+      if [[ -f syswatch_copy.log ]]
+      then
+        sed '1d' syswatch.log >> syswatch_copy.log
+        rm -f syswatch.log
+      else 
+        mv syswatch.log syswatch_copy.log
+      fi
 
       #merge in parallel, use a simple lockfile
+      echo "waitIfLocked $runningMergeByComponentLockFile" | tee -a merge.log
       waitIfLocked $runningMergeByComponentLockFile
-      mergeByComponent $partialLocalFileList "doCleanup" &
+      mergeByComponent $partialLocalFileList "doCleanup" 2>&1 | tee -a merge.log &
     done
 else
   #locally just use the list directly
@@ -133,7 +207,6 @@ else
 fi;
 
 #cleanup
-cat ${partialAlienFileListPrefix}* >> ${localFileList}
 rm -f ${partialAlienFileListPrefix}*
 rm -f ${partialLocalFileListPrefix}*
 
@@ -141,7 +214,8 @@ rm -f ${partialLocalFileListPrefix}*
 echo "***********************" 2>&1 | tee -a ocdb.log
 echo making $det OCDB 2>&1 | tee -a ocdb.log
 echo "***********************" 2>&1 | tee -a ocdb.log
-aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
+echo aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
+aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
 mv syswatch.log syswatch_makeOCDB.log
 
 # summary
