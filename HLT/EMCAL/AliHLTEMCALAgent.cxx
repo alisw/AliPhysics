@@ -26,6 +26,7 @@
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTOUT.h"
 #include "AliHLTOUTHandlerChain.h"
+#include "AliHLTErrorGuard.h"
 #include "AliRunLoader.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -52,12 +53,17 @@ AliHLTEMCALAgent gAliHLTEMCALAgent;
 #include "AliHLTEMCALRawAnalyzerPeakFinderComponent.h"
 //#include "AliHLTEMCALRcuCalibrationProcessorComponent.h"
 //#include "AliHLTEMCALRcuDAComponent.h"
+#include "AliHLTEMCALRawAnalyzerLMSComponent.h"
+#include "AliHLTEMCALRawAnalyzerFastFitComponent.h"
+#include "AliHLTEMCALRawAnalyzerNNComponent.h"
+#include "AliHLTEMCALClusterizerComponentNbyN.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTEMCALAgent)
 
-AliHLTEMCALAgent::AliHLTEMCALAgent() : AliHLTModuleAgent("EMCAL"),
-fRawDataHandler(NULL)
+AliHLTEMCALAgent::AliHLTEMCALAgent() : AliHLTModuleAgent("EMCAL")
+  , fRawDataHandler(NULL)
+  , fMappers()
 {
     // see header file for class documentation
     // or
@@ -193,8 +199,13 @@ int AliHLTEMCALAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
     if (!pHandler) return -EINVAL;
     
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerCrudeComponent);
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerLMSComponent);
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerPeakFinderComponent);
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerFastFitComponent);
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerNNComponent);
     pHandler->AddComponent(new AliHLTEMCALDigitMakerComponent);
     pHandler->AddComponent(new AliHLTEMCALClusterizerComponent);
+    pHandler->AddComponent(new AliHLTEMCALClusterizerComponentNbyN);
     //pHandler->AddComponent(new AliHLTCaloClusterAnalyserComponent);			 
     //pHandler->AddComponent(new AliHLTEMCALESDEntriesMakerComponent);
     
@@ -208,19 +219,21 @@ int AliHLTEMCALAgent::GetHandlerDescription(AliHLTComponentDataType dt,
 {
     // see header file for class documentation
 
-    // FIXME: there is memory allocated in the mapper, this happens for every event
-    // and is time consuming, think about initializing the mappers only once, or make
-    // the mapper class more flexible to handle more than one specification
-    AliHLTEMCALMapper mapper(spec);
-    
     // raw data blocks to be fed into offline reconstruction
     if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginEMCAL)) 
     {
-        if(mapper.GetDDLFromSpec(spec) >= 0)
+        AliHLTEMCALMapper* pMapper=GetMapper(spec);
+    
+        if(pMapper && pMapper->GetDDLFromSpec(spec) >= 0)
         {
             desc=AliHLTOUTHandlerDesc(kRawReader, dt, GetModuleId());
             return 1;
         } 
+	else if (pMapper==NULL)
+        {
+	    ALIHLTERRORGUARD(5, "failed to create EMCAL mapper");
+            return 0;
+        }
         else 
         {
             HLTWarning("Handler can not process data inconsistent with a single EMCAL DDL from specification % d", spec);
@@ -240,7 +253,7 @@ AliHLTOUTHandler* AliHLTEMCALAgent::GetOutputHandler(AliHLTComponentDataType dt,
     {
         if (!fRawDataHandler) 
         {
-            fRawDataHandler = new AliHLTEMCALAgent::AliHLTEMCALRawDataHandler;
+            fRawDataHandler = new AliHLTEMCALAgent::AliHLTEMCALRawDataHandler(this);
         }
         return fRawDataHandler;
     }
@@ -260,7 +273,8 @@ int AliHLTEMCALAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
     return 0;
 }
 
-AliHLTEMCALAgent::AliHLTEMCALRawDataHandler::AliHLTEMCALRawDataHandler()
+AliHLTEMCALAgent::AliHLTEMCALRawDataHandler::AliHLTEMCALRawDataHandler(AliHLTEMCALAgent* pAgent)
+  : fpAgent(pAgent)
 {
     // see header file for class documentation
 }
@@ -278,14 +292,17 @@ int AliHLTEMCALAgent::AliHLTEMCALRawDataHandler::ProcessData(AliHLTOUT* pData)
     AliHLTComponentDataType dt = kAliHLTVoidDataType;
     AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
     
-    AliHLTEMCALMapper mapper(spec);
-    mapper.InitDDLSpecificationMapping();
+    AliHLTEMCALMapper* pMapper=fpAgent?fpAgent->GetMapper(spec):NULL;
+    if (!pMapper) {
+      ALIHLTERRORGUARD(5, "%s", fpAgent?"can not retrieve EMCAL mapper from agent":"agent not available to retrieve EMCAL mapper");
+      return -ENODEV;
+    }
     
     int iResult = pData->GetDataBlockDescription(dt, spec);
     if (iResult>=0) 
     {
         int ddl = -1;
-        if((ddl = mapper.GetDDLFromSpec(spec)) >=0)
+        if((ddl = pMapper->GetDDLFromSpec(spec)) >=0)
         {
             iResult = ddl;
         }
@@ -296,4 +313,17 @@ int AliHLTEMCALAgent::AliHLTEMCALRawDataHandler::ProcessData(AliHLTOUT* pData)
         iResult=-EBADMSG;
     }
     return iResult;
+}
+
+AliHLTEMCALMapper* AliHLTEMCALAgent::GetMapper(AliHLTUInt32_t spec) const
+{
+  // get the mapper instance for a specification
+  std::map<AliHLTUInt32_t, AliHLTEMCALMapper*>::const_iterator element=fMappers.find(spec);
+  if (element!=fMappers.end()) return element->second;
+
+  AliHLTEMCALMapper* mapper=new AliHLTEMCALMapper(spec);
+  if (!mapper) return NULL;
+  mapper->InitDDLSpecificationMapping();
+  const_cast<AliHLTEMCALAgent*>(this)->fMappers[spec]=mapper;
+  return mapper;
 }

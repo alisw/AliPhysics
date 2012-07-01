@@ -42,9 +42,6 @@
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTCaloClusterizer.h"
 
-
-AliHLTEMCALClusterizerComponent gAliHLTEMCALClusterizerComponent;
-
 AliHLTEMCALClusterizerComponent::AliHLTEMCALClusterizerComponent(): 
   AliHLTCaloClusterizerComponent("EMCAL")
 {

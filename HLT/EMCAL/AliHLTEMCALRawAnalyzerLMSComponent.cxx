@@ -27,8 +27,6 @@
 //-----------
 
 
-AliHLTEMCALRawAnalyzerLMSComponent  gAliHLTEMCALRawAnalyzerLMSComponent;
-
 //AliHLTEMCALRawAnalyzerLMSComponent::AliHLTEMCALRawAnalyzerLMSComponent() : AliHLTEMCALRawAnalyzerComponent(kLMS)
 AliHLTEMCALRawAnalyzerLMSComponent::AliHLTEMCALRawAnalyzerLMSComponent() : AliHLTEMCALRawAnalyzerComponent(kStandard)
 {

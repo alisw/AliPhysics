@@ -27,9 +27,6 @@
 #include "AliCaloRawAnalyzerPeakFinder.h"
 
 
-AliHLTEMCALRawAnalyzerPeakFinderComponent  gAliHLTEMCALRawAnalyzerPeakFinderComponent;
-
-
 AliHLTEMCALRawAnalyzerPeakFinderComponent::AliHLTEMCALRawAnalyzerPeakFinderComponent (): AliHLTEMCALRawAnalyzerComponent(kPeakFinder)
 {
   // constructor

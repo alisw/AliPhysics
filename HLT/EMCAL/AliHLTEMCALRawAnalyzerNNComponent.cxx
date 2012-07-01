@@ -26,8 +26,6 @@
 //-----------
 
 
-AliHLTEMCALRawAnalyzerNNComponent  gAliHLTEMCALRawAnalyzerNNComponent;
-
 AliHLTEMCALRawAnalyzerNNComponent::AliHLTEMCALRawAnalyzerNNComponent() : AliHLTEMCALRawAnalyzerComponent(kNeuralNet)
 {
   // fAnalyzerPtr

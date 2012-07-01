@@ -12,8 +12,10 @@
 
 #include "AliHLTModuleAgent.h"
 #include "AliHLTOUTHandlerEquId.h"
+#include <map>
 
 class AliHLTOUTHandlerChain;
+class AliHLTEMCALMapper;
 
 /**
  * @class AliHLTEMCALAgent
@@ -102,7 +104,7 @@ class AliHLTEMCALAgent : public AliHLTModuleAgent {
   class AliHLTEMCALRawDataHandler : public AliHLTOUTHandlerEquId {
   public:
     /** constructor */
-    AliHLTEMCALRawDataHandler();
+    AliHLTEMCALRawDataHandler(AliHLTEMCALAgent* pAgent=NULL);
     /** destructor */
     ~AliHLTEMCALRawDataHandler();
 
@@ -115,6 +117,12 @@ class AliHLTEMCALAgent : public AliHLTModuleAgent {
     int ProcessData(AliHLTOUT* pData);
 
   private:
+    /// copy constructor prohibited
+    AliHLTEMCALRawDataHandler(const AliHLTEMCALRawDataHandler&);
+    /// assignment operator prohibited
+    AliHLTEMCALRawDataHandler& operator=(const AliHLTEMCALRawDataHandler&);
+
+    AliHLTEMCALAgent* fpAgent; //! agent instance to retrieve mapper
 
   };
 
@@ -126,10 +134,16 @@ class AliHLTEMCALAgent : public AliHLTModuleAgent {
   /** assignment operator prohibited */
   AliHLTEMCALAgent& operator=(const AliHLTEMCALAgent&);
 
+  /// get mapper for a specification
+  AliHLTEMCALMapper* GetMapper(AliHLTUInt32_t spec) const;
+
   /** handler for EMCAL raw data in the HLTOUT stream */
   AliHLTEMCALRawDataHandler* fRawDataHandler; //!transient
 
-  ClassDef(AliHLTEMCALAgent, 1);
+  // mappers for different specifications
+  std::map<AliHLTUInt32_t, AliHLTEMCALMapper*> fMappers; //! transient
+
+  ClassDef(AliHLTEMCALAgent, 0);
 };
 
 #endif

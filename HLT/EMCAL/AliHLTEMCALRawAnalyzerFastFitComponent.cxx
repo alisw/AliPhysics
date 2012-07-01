@@ -26,8 +26,6 @@
 //-----------
 
 
-AliHLTEMCALRawAnalyzerFastFitComponent  gAliHLTEMCALRawAnalyzerFastFitComponent;
-
 AliHLTEMCALRawAnalyzerFastFitComponent::AliHLTEMCALRawAnalyzerFastFitComponent() : AliHLTEMCALRawAnalyzerComponent(kFastFit)
 {
   // fAnalyzerPtr

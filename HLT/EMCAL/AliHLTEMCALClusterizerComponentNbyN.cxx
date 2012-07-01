@@ -20,8 +20,6 @@
 
 ClassImp(AliHLTEMCALClusterizerComponentNbyN);
 
-AliHLTEMCALClusterizerComponentNbyN gAliHLTEMCALClusterizerComponentNbyN;
-
 AliHLTEMCALClusterizerComponentNbyN::AliHLTEMCALClusterizerComponentNbyN() : AliHLTEMCALClusterizerComponent()
 {
 // Constructor

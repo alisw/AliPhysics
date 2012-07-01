@@ -30,9 +30,6 @@
 #include "AliCaloRawAnalyzerCrude.h"
 
 
-AliHLTEMCALRawAnalyzerCrudeComponent  gAliHLTEMCALRawAnalyzerCrudeComponent;
-
-
 //AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent : AliHLTEMCALRawAnalyzerComponent() 
 AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent() : AliHLTEMCALRawAnalyzerComponent( kCrude )
 {
