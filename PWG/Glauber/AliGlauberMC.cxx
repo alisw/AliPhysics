@@ -1388,6 +1388,7 @@ Double_t AliGlauberMC::GetEccentricityPartColl() const
 {
   //get participant eccentricity of binary collisions
   if (fNcoll<0) return 0.0;
+  if (fSy2Coll==0.0) return 0.0;
   return (TMath::Sqrt((fSy2Coll-fSx2Coll)*(fSy2Coll-fSx2Coll)+4*fSxyColl*fSxyColl)/(fSy2Coll+fSx2Coll));
 }
 
@@ -1411,6 +1412,7 @@ Double_t AliGlauberMC::GetEccentricityColl() const
 {
   //get standard eccentricity of binary collisions
   if (fNcoll<0) return 0.0;
+  if (fSy2Coll==0.0) return 0.0;
   return ((fSy2Coll-fSx2Coll)/(fSy2Coll+fSx2Coll));
 }
 
@@ -1485,6 +1487,7 @@ Double_t AliGlauberMC::GetEpsilon2Coll() const
 {
   //get epsilon2 of binary collisions
   if (fNcoll<0) return 0.0;
+  if (fMeanr2Coll==0.0) return 0.0;
   return (TMath::Sqrt(fMeanr2Cos2PhiColl*fMeanr2Cos2PhiColl+fMeanr2Sin2PhiColl*fMeanr2Sin2PhiColl)/fMeanr2Coll);
 }
 
@@ -1493,6 +1496,7 @@ Double_t AliGlauberMC::GetEpsilon3Coll() const
 {
   //get epsilon3 of binary collisions
   if (fNcoll<0) return 0.0;
+  if (fMeanr2Coll==0.0) return 0.0;
   return (TMath::Sqrt(fMeanr2Cos3PhiColl*fMeanr2Cos3PhiColl+fMeanr2Sin3PhiColl*fMeanr2Sin3PhiColl)/fMeanr2Coll);
   //return (TMath::Sqrt(fMeanr3Cos3PhiColl*fMeanr3Cos3PhiColl+fMeanr3Sin3PhiColl*fMeanr3Sin3PhiColl)/fMeanr3Coll);
 }
@@ -1502,6 +1506,7 @@ Double_t AliGlauberMC::GetEpsilon4Coll() const
 {
   //get epsilon4 of binary collisions
   if (fNcoll<0) return 0.0;
+  if (fMeanr2Coll==0.0) return 0.0;
   return (TMath::Sqrt(fMeanr2Cos4PhiColl*fMeanr2Cos4PhiColl+fMeanr2Sin4PhiColl*fMeanr2Sin4PhiColl)/fMeanr2Coll);
   //return (TMath::Sqrt(fMeanr4Cos4PhiColl*fMeanr4Cos4PhiColl+fMeanr4Sin4PhiColl*fMeanr4Sin4PhiColl)/fMeanr4Coll);
 }
@@ -1511,6 +1516,7 @@ Double_t AliGlauberMC::GetEpsilon5Coll() const
 {
   //get epsilon5 of binary collisions
   if (fNcoll<0) return 0.0;
+  if (fMeanr2Coll==0.0) return 0.0;
   return (TMath::Sqrt(fMeanr2Cos5PhiColl*fMeanr2Cos5PhiColl+fMeanr2Sin5PhiColl*fMeanr2Sin5PhiColl)/fMeanr2Coll);
   //return (TMath::Sqrt(fMeanr5Cos5PhiColl*fMeanr5Cos5PhiColl+fMeanr5Sin5PhiColl*fMeanr5Sin5PhiColl)/fMeanr5Coll);
 }
