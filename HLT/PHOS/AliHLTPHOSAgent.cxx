@@ -1,4 +1,4 @@
-
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -43,6 +43,7 @@ AliHLTPHOSAgent gAliHLTPHOSAgent;
 #include "AliHLTPHOSCalibrationComponent.h"
 #include "AliHLTPHOSClusterAnalyserComponent.h"
 #include "AliHLTPHOSClusterizerComponent.h"
+#include "AliHLTPHOSClusterizerComponentNbyN.h"
 #include "AliHLTPHOSDigitMakerComponent.h"
 #include "AliHLTPHOSESDEntriesMakerComponent.h"
 #include "AliHLTPHOSHistogramProducerComponent.h"
@@ -190,6 +191,7 @@ int AliHLTPHOSAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTPHOSRawAnalyzerCrudeComponentv2);
   pHandler->AddComponent(new AliHLTPHOSDigitMakerComponent);
   pHandler->AddComponent(new AliHLTPHOSClusterizerComponent);
+  pHandler->AddComponent(new AliHLTPHOSClusterizerComponentNbyN);
   pHandler->AddComponent(new AliHLTPHOSClusterAnalyserComponent);			 
   pHandler->AddComponent(new AliHLTPHOSESDEntriesMakerComponent);
 

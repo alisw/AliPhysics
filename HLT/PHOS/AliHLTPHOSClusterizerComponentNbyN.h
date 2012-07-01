@@ -1,4 +1,5 @@
-
+//-*- Mode: C++ -*-
+// $Id$
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *

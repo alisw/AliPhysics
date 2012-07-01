@@ -46,8 +46,6 @@
 
 ClassImp(AliHLTPHOSDigitMakerComponent);
 
-AliHLTPHOSDigitMakerComponent gAliHLTPHOSDigitMakerComponent;
-
 AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :
   AliHLTCaloProcessor(),
   AliHLTCaloConstantsHandler("PHOS"),

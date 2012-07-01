@@ -1,4 +1,4 @@
-
+// $Id$
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -18,8 +18,6 @@
 #include "AliHLTCaloClusterizerNbyN.h"
 
 ClassImp(AliHLTPHOSClusterizerComponentNbyN);
-
-AliHLTPHOSClusterizerComponentNbyN gAliHLTPHOSClusterizerComponentNbyN;
 
 AliHLTPHOSClusterizerComponentNbyN::AliHLTPHOSClusterizerComponentNbyN() : AliHLTPHOSClusterizerComponent()
 {

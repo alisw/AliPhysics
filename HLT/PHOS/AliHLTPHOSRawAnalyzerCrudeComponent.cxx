@@ -19,8 +19,6 @@
 
 #include "AliHLTPHOSRawAnalyzerCrudeComponent.h"
 
-AliHLTPHOSRawAnalyzerCrudeComponent gAliHLTPHOSRawAnalyzerCrudeComponent;
-
 //___________________________________________________________________________
 AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent() : AliHLTPHOSRawAnalyzerComponentv3(kCrude)
 {

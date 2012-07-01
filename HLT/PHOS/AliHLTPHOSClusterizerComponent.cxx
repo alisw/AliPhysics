@@ -41,8 +41,6 @@
 #include "AliHLTPHOSRecoParamHandler.h"
 #include "AliHLTCaloClusterizer.h"
 
-AliHLTPHOSClusterizerComponent gAliHLTPHOSClusterizerComponent;
-
 AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(): 
   AliHLTCaloClusterizerComponent("PHOS")
 {
