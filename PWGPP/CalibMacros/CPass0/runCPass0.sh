@@ -71,9 +71,12 @@ echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runNum..."
 
 aliroot -l -b -q "recCPass0.C(\"$fileName\", $nEvents, \"$ocdbPath\", \"$triggerOption\")" 2>&1 | tee rec.log
 mv syswatch.log syswatch_rec.log
+echo "directory contents:"
+ls
 
 echo ">>>>>>> Running AliRoot to make calibration..."
-aliroot -l -b -q runCalibTrain.C\(\""$runNum\",\"AliESDs.root\",\"$ocdbPath"\"\)   2>&1 | tee calib.log
+echo "aliroot -l -b -q runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"
+aliroot -l -b -q "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"   2>&1 | tee calib.log
 mv syswatch.log syswatch_calib.log
 
 echo ">>>>>>> Extracting system information..."

@@ -11,7 +11,7 @@
   runCalibTrain("104892");
 */
 
-void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.root", const char *ocdb="raw://")
+void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", const char *ocdb="raw://")
 {
   //
   // macro to run TPC calibration train 
@@ -37,7 +37,6 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
 
   // config calibration train
   // setting geometry and B-field from GRP
-  Int_t runNumber = runNumberString.Atoi();
   printf("runNumber from runCalibTrain = %d\n",runNumber);
   printf("ocdb from runCalibTrain = %s\n",ocdb);
   ConfigCalibTrain(runNumber, ocdb);
