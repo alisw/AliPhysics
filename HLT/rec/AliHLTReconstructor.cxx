@@ -210,7 +210,6 @@ void AliHLTReconstructor::Terminate()
   // indicate step 'Terminate'
   SetProcessingStep(kProcessingStepTerminate);
 
-  AliInfo("terminating");
   if (fpPluginBase) {
     AliHLTSystem* pSystem=fpPluginBase->GetInstance();
     if (pSystem) {
