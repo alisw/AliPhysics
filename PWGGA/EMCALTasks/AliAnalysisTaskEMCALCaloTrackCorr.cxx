@@ -766,14 +766,9 @@ void AliAnalysisTaskEMCALCaloTrackCorr::UserExec(Option_t *)
   fManager = AliAnalysisManager::GetAnalysisManager();
   fInputHandler = dynamic_cast<AliInputEventHandler*>(fManager->GetInputEventHandler());
 
-  if(!FillInputEvent()) return;  //select good event
+  if(!fInputHandler) return;
 
- /* fEvent=dynamic_cast<AliESDEvent*>(InputEvent());
-   if (!fEvent) {
-    Printf("ERROR: Could not retrieve event");
-    return ;
-   }
-*/
+  if(!FillInputEvent()) return;  //select good event
 
   fEventPlane = (dynamic_cast<AliVEvent*>(InputEvent()))->GetEventplane();
 
@@ -1077,17 +1072,18 @@ Bool_t AliAnalysisTaskEMCALCaloTrackCorr::FillInputEvent()
      return kFALSE;
     }
 
-    AliESDEvent * fESDEvent = dynamic_cast<AliESDEvent*> (InputEvent()); 
-     if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors() <= 0){
+    AliESDEvent * fESDEvent = dynamic_cast<AliESDEvent*> (InputEvent());
+    if(!fESDEvent) return kFALSE; 
+    if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors() <= 0){
      return kFALSE;
     }
 
-    if(IsDataMC()) return kTRUE;
-
-    if((TMath::Abs(fEvent->GetPrimaryVertex()->GetX()) < 1.e-6) &&
+    if(!IsDataMC()){;
+     if((TMath::Abs(fEvent->GetPrimaryVertex()->GetX()) < 1.e-6) &&
       (TMath::Abs(fEvent->GetPrimaryVertex()->GetY()) < 1.e-6) &&
       (TMath::Abs(fEvent->GetPrimaryVertex()->GetZ()) < 1.e-6))
      return kFALSE;
+    }
 
     fCentrality = fEvent->GetCentrality();
     if(fCentrality)
@@ -1838,11 +1834,9 @@ void AliAnalysisTaskEMCALCaloTrackCorr::MakeChargedMixCorrelation(Double_t ptTri
      }//end loop Associated pt bin
     }//end if Associated pt bins
      
-    track=0;
     delete track;
    }//end loop associated hadrons
 
-   bgTracks = 0;
    delete bgTracks;
  
   }//end loop Mixed event in pool 
