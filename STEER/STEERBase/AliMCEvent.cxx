@@ -683,7 +683,6 @@ void AliMCEvent::PreReadAll()
 {
     // Preread the MC information
     Int_t i;
-    AliInfo(Form("AliMCEvent::PreReadAll: %d tracks\n", fStack->GetNtrack()));
     // secondaries
     for (i = fStack->GetNprimary(); i < fStack->GetNtrack(); i++) 
     {
@@ -694,7 +693,6 @@ void AliMCEvent::PreReadAll()
     {
 	GetTrack(i);
     }
-    AliInfo("AliMCEvent::PreReadAll done\n");
 }
 
 const AliVVertex * AliMCEvent::GetPrimaryVertex() const 
