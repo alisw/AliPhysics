@@ -1,0 +1,53 @@
+AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP()
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    Error("AddTaskEMCALPi0V2hardCodeEP", "No analysis manager found.");
+    return NULL;
+  }
+
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskEMCALPi0V2hardCodeEP", "This task requires an input event handler");
+    return NULL;
+  }
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  if (type=="AOD"){
+    ::Error("AddTaskEMCALPi0V2hardCodeEP", "The tasks exits because AODs are in input");
+    return NULL;
+  }
+  
+  //Event plane task
+  AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
+  eventplaneTask->SetTrackType("TPC");
+  eventplaneTask->SetUsePtWeight();
+  eventplaneTask->SetUsePhiWeight();
+  eventplaneTask->SetSaveTrackContribution();
+  
+  AliESDtrackCuts* epTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "Standard");
+  epTrackCuts->SetPtRange(0.1, 4);
+  eventplaneTask->SetPersonalESDtrackCuts(epTrackCuts);
+
+  mgr->AddTask(eventplaneTask);
+
+  TString containerName3 = mgr->GetCommonFileName();
+  containerName3 += ":PWGGA_pi0v2CalEventPlane";
+  
+  AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("EPStatTPC",TList::Class(), AliAnalysisManager::kOutputContainer,containerName3.Data());
+  mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(eventplaneTask,1,coutput1);
+
+  //analysis task 
+
+ AliAnalysisTaskSE* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task"); 
+  
+  TString containerName = mgr->GetCommonFileName();
+  containerName += ":PWGGA_pi0v2CalSemiCentral";
+  
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histv2task", TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
+  mgr->ConnectInput(taskMB, 0, cinput);
+  mgr->ConnectOutput(taskMB, 1, coutput2);
+  
+  return NULL;
+}

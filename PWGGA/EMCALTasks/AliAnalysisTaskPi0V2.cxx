@@ -405,7 +405,7 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
     fOutput->SetOwner();  // IMPORTANT!
 
     hEvtCount = new TH1F("hEvtCount", " Event Plane", 10, 0.5, 10.5);
-    hEvtCount->GetXaxis()->SetBinLabel(1,"All");
+    hEvtCount->GetXaxis()->SetBinLabel(1,"SemiMB");
     hEvtCount->GetXaxis()->SetBinLabel(2,"vert");
     hEvtCount->GetXaxis()->SetBinLabel(3,"cent");
     hEvtCount->GetXaxis()->SetBinLabel(4,"EPtask");
@@ -505,10 +505,14 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     // Main loop
     // Called for each event
         
-        
     // Create pointer to reconstructed event
    AliVEvent *event = InputEvent();
    if (!event) { Printf("ERROR: Could not retrieve event"); return; }
+
+  Bool_t isSelected =0;      
+  isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral));
+    if(!isSelected )
+        return; 
 
     // create pointer to event
     fESD = dynamic_cast<AliESDEvent*>(event);
