@@ -52,7 +52,8 @@ class AliAnalysisTaskElecV2 : public AliAnalysisTaskSE {
   void SetInvariantMassCut (Double_t invmass) {fInvmassCut = invmass;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec,Bool_t &fFlagLS,Bool_t &fFlagULS, Double_t &openingAngle,Double_t &mass,Double_t &width);
+  void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG);
+  
   Double_t GetCos2DeltaPhi(Double_t phiA,Double_t phiB)		const;
   Double_t GetDeltaPhi(Double_t phiA,Double_t phiB)	const;
   Double_t GetclusterE(Int_t iTrack, Double_t clsPhi, Double_t clsEta) const;
