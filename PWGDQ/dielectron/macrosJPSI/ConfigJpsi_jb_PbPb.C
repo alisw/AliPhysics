@@ -203,10 +203,10 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   //Pt cut, should make execution a bit faster
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
-  if(cutDefinition >= kEtaGap01 )   
+  //  if(cutDefinition >= kEtaGap01 )   
     pt->AddCut(AliDielectronVarManager::kPt,1.1,1e30);
-  else   
-    pt->AddCut(AliDielectronVarManager::kPt,0.8,1e30);
+  //  else   
+    //    pt->AddCut(AliDielectronVarManager::kPt,0.8,1e30);
   cuts->AddCut(pt);
   
 	// track cuts ESD and AOD
