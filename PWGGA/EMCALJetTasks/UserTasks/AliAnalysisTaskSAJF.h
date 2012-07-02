@@ -27,7 +27,8 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        SetRandClusName(const char *n)                       { fRandCaloName            = n          ; }
   void                        SetEmbTracksName(const char *n)                      { fEmbTracksName           = n          ; }
   void                        SetEmbClusName(const char *n)                        { fEmbCaloName             = n          ; }
-  void                        SetRhoName(const char *n)                            { fRhoName                 = n          ; }        
+  void                        SetRhoName(const char *n)                            { fRhoName                 = n          ; }
+  void                        SetMC(Bool_t m)                                      { fMCAna                   = m          ; }
 
  protected:
   void                        ExecOnce()                                                                                    ;
@@ -41,6 +42,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &eta, Float_t &phi, 
 					   AliEmcalJet *jet = 0, TClonesArray* tracks = 0, TClonesArray* clusters = 0) const;
 
+  Bool_t                      fMCAna;                      // =true MC analysis (toy model)
   Float_t                     fMinRC2LJ;                   // Minimum distance random cone to leading jet
   TString                     fEmbJetsName;                // Name of embedded jet collection
   TString                     fEmbTracksName;              // Name of embedded track collection
