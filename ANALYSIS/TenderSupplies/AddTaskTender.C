@@ -5,7 +5,8 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
                                Bool_t usePID=kTRUE,
                                Bool_t useVTX=kTRUE,
                                Bool_t useT0=kTRUE,
-                               Bool_t useEmc=kFALSE)
+                               Bool_t useEmc=kFALSE,
+			       Bool_t usePtFix=kFALSE)
 {
   if (!(useV0 | useTPC | useTOF | useTRD | usePID | useVTX | useEmc)) {
      ::Error("AddTaskTender", "No supply added to tender, so tender not created");
@@ -55,6 +56,13 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
      tpcSupply->SetDebugLevel(2);
      //tpcSupply->SetMip(50.);
      tender->AddSupply(tpcSupply);
+  }   
+
+  //========= Attach track 1/pt correction supply ======
+  if (usePtFix) {
+     AliTrackFixTenderSupply *trfixSupply=new AliTrackFixTenderSupply("PTInvFix");
+     //trfixSupply->SetDebugLevel(2);
+     tender->AddSupply(trfixSupply);
   }   
 
   //========= Attach T0 supply ======
