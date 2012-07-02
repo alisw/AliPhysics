@@ -162,7 +162,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 
   
   fOutputList = new TList();
-  fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging) 
+  fOutputList->SetOwner(kTRUE);// Container cleans up all histos (avoids leaks in merging) 
   
   fGeom = AliEMCALGeometry::GetInstance(fGeoName);
   
