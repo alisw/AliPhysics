@@ -1235,16 +1235,14 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsLEDEvent(const Int_t run)
   if(!fRemoveLEDEvents) return kFALSE;
   
   //check events of LHC11a period
-  if(run < 140000  || run > 146860) return kFALSE ;
+  if(run < 146858 || run > 146860) return kFALSE ;
   
   // Count number of cells with energy larger than 0.1 in SM3, cut on this number
   Int_t ncellsSM3 = 0;
-  Int_t ncellsSM4 = 0;
   AliVCaloCells * cells = fEvent->GetEMCALCells();
   for(Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
   {
     if(cells->GetAmplitude(icell) > 0.1 && cells->GetCellNumber(icell)/(24*48)==3) ncellsSM3++;
-    if(cells->GetAmplitude(icell) > 0.1 && cells->GetCellNumber(icell)/(24*48)==4) ncellsSM4++;      
   }
   
   TString triggerclasses = "";
@@ -1256,9 +1254,9 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsLEDEvent(const Int_t run)
   Int_t ncellcut = 21;
   if(triggerclasses.Contains("EMC")) ncellcut = 35;
   
-  if( ncellsSM3 >= ncellcut || ncellsSM4 >= 100 )
+  if( ncellsSM3 >= ncellcut)
   {
-    printf("AliAnalysisTaksEMCALClusterize::IsLEDEvent() - reject event %d with ncells in SM3 %d and SM4 %d\n",(Int_t)Entry(),ncellsSM3, ncellsSM4);
+    printf("AliAnalysisTaksEMCALClusterize::IsLEDEvent() - reject event %d with ncells in SM3 %d\n",(Int_t)Entry(),ncellsSM3);
     if(fFillAODFile) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);;
     return kTRUE;
   }
