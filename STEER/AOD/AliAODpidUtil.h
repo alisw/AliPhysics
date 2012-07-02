@@ -53,11 +53,14 @@ inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliVParticle *vtrack, AliP
   Double_t tofTime=pidObj->GetTOFsignal();
   Double_t expTime=fTOFResponse.GetExpectedSignal((AliVTrack*)vtrack,type);
   AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
-  AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
-  if (tofH) { // new AOD
-    sigTOF=fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type)); //fTOFResponse is set in InitialiseEvent
-    tofTime -= fTOFResponse.GetStartTime(vtrack->P());
-  } else { // old AOD
+  if (event) {  // protection
+    AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
+    if (tofH) { // new AOD
+      sigTOF=fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type)); //fTOFResponse is set in InitialiseEvent
+      tofTime -= fTOFResponse.GetStartTime(vtrack->P());
+    } 
+  }
+  else { // old AOD
     if (type <= AliPID::kProton) {
       Double_t sigmaTOFPid[AliPID::kSPECIES];
       pidObj->GetTOFpidResolution(sigmaTOFPid);
