@@ -1,6 +1,6 @@
 // $Id: AddTaskEMCALPi0V2.C 56081 2012-05-01 08:57:08Z loizides $
 
-AliAnalysisTaskPi0V2 *AddTaskEMCALPi0V2()
+AliAnalysisTask *AddTaskEMCALPi0V2()
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -18,7 +18,6 @@ AliAnalysisTaskPi0V2 *AddTaskEMCALPi0V2()
   // Create the task and configure it.
   //===========================================================================
   AliAnalysisTaskPi0V2* ana = new  AliAnalysisTaskPi0V2("Pi0v2Task");
-  ana->SelectCollisionCandidates( AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral);
   
   mgr->AddTask(ana);
   
@@ -27,7 +26,7 @@ AliAnalysisTaskPi0V2 *AddTaskEMCALPi0V2()
   //==============================================================================
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histosEMCALP0v2", 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+							    Form("%s_v2task", AliAnalysisManager::GetCommonFileName()));
   
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (ana, 1, coutput1 );
