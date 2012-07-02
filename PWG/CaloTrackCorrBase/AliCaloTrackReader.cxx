@@ -468,41 +468,25 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   // If clusterzer NxN or V2 it does not help
   //-------------------------------------------------------------------------------------
   Int_t run = fInputEvent->GetRunNumber();
-  if( fRemoveLEDEvents && run > 140000  && run <= 146860 )
+  if( fRemoveLEDEvents && run > 146857  && run < 146861 )
   {
     //printf("Event %d\n",GetEventNumber());
-    for (Int_t i = 0; i < fInputEvent->GetNumberOfCaloClusters(); i++)
-    {
-      AliVCluster *clus = fInputEvent->GetCaloCluster(i);
-      if(clus->IsEMCAL())
-      {               
-        if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200) 
-        {
-          Int_t absID = clus->GetCellsAbsId()[0];
-          Int_t sm = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
-          if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent - reject event %d with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",GetEventNumber(),clus->E(),  clus->GetNCells(),absID, sm);
-          return kFALSE;
-        }
-      }
-    }
     
     // Count number of cells with energy larger than 0.1 in SM3, cut on this number
     Int_t ncellsSM3 = 0;
-    Int_t ncellsSM4 = 0;
     for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
     {
       Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
       Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
       if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncellsSM3++;
-      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==4) ncellsSM4++;
     }
     
     Int_t ncellcut = 21;
     if(fFiredTriggerClassName.Contains("EMC")) ncellcut = 35;
     
-    if(ncellsSM3 >= ncellcut || ncellsSM4 >= 100)
+    if(ncellsSM3 >= ncellcut)
     {
-      if(fDebug > 0) printf(" AliCaloTrackReader::FillInputEvent() - reject event with ncells in SM3 %d and SM4 %d\n",ncellsSM3, ncellsSM4);
+      if(fDebug > 0) printf(" AliCaloTrackReader::FillInputEvent() - reject event with ncells in SM3 %d\n",ncellsSM3);
       return kFALSE;
     }
   }// Remove LED events
