@@ -68,10 +68,10 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() :
        fHistZemvsPt[i][j]   = 0;
        fHistJetPt[i][j]     = 0;
        fHistNconsvsPt[i][j] = 0;
+       fHistJetPt3[i][j]    = 0;
        fHistJetPt5[i][j]    = 0;
-       fHistJetPt6[i][j]    = 0;
        fHistJetPt7[i][j]    = 0;
-       fHistJetPt8[i][j]    = 0;
+       fHistJetPt9[i][j]    = 0;
     }
   }
 }
@@ -115,10 +115,10 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name)
       fHistZemvsPt[i][j]   = 0;
       fHistJetPt[i][j]     = 0;
       fHistNconsvsPt[i][j] = 0;
+      fHistJetPt3[i][j]    = 0;
       fHistJetPt5[i][j]    = 0;
-      fHistJetPt6[i][j]    = 0;
       fHistJetPt7[i][j]    = 0;
-      fHistJetPt8[i][j]    = 0;
+      fHistJetPt9[i][j]    = 0;
     }
   }
   
@@ -178,18 +178,18 @@ void AliAnalysisTaskEmcalJetSpectra::UserCreateOutputObjects()
       TString name6(Form("fHistNconsvsPt_%i_%i",i,j));
       fHistNconsvsPt[i][j] = new TH2F(name6,name6,250,-250,250,500,0,500);
       fOutputList->Add(fHistNconsvsPt[i][j]);
-      TString name7(Form("fHistJetPt5_%i_%i",i,j));
-      fHistJetPt5[i][j] = new TH1F(name7,name7,250,-250,250);
+      TString name7(Form("fHistJetPt3_%i_%i",i,j));
+      fHistJetPt3[i][j] = new TH1F(name7,name7,250,-250,250);
+      fOutputList->Add(fHistJetPt3[i][j]);
+      TString name8(Form("fHistJetPt5_%i_%i",i,j));
+      fHistJetPt5[i][j] = new TH1F(name8,name8,250,-250,250);
       fOutputList->Add(fHistJetPt5[i][j]);
-      TString name8(Form("fHistJetPt6_%i_%i",i,j));
-      fHistJetPt6[i][j] = new TH1F(name8,name8,250,-250,250);
-      fOutputList->Add(fHistJetPt6[i][j]);
       TString name9(Form("fHistJetPt7_%i_%i",i,j));
       fHistJetPt7[i][j] = new TH1F(name9,name9,250,-250,250);
       fOutputList->Add(fHistJetPt7[i][j]);
-      TString name10(Form("fHistJetPt8_%i_%i",i,j));
-      fHistJetPt8[i][j] = new TH1F(name10,name10,250,-250,250);
-      fOutputList->Add(fHistJetPt8[i][j]);
+      TString name10(Form("fHistJetPt9_%i_%i",i,j));
+      fHistJetPt9[i][j] = new TH1F(name10,name10,250,-250,250);
+      fOutputList->Add(fHistJetPt9[i][j]);
     }
   }
   fOutputList->Add(fHistCentrality);
@@ -271,35 +271,32 @@ void AliAnalysisTaskEmcalJetSpectra::UserExec(Option_t *)
     AliError(Form("Pointer to tracks %s == 0", fTracksName.Data() ));
     return;
   }
-    
+  
   jets = dynamic_cast<TClonesArray*>(l->FindObject(fJetsName));
   if (!jets) {
     AliError(Form("Pointer to tracks %s == 0", fTracksName.Data() ));
     return;
   }
 
-  Double_t rho1 = -1;
+  Double_t rho1 = 0;
   TParameter<Double_t> *Rho1Param = dynamic_cast<TParameter<Double_t>*>(InputEvent()->FindListObject(fRhos1Name));
   if (Rho1Param)
     rho1 = Rho1Param->GetVal();
 
-  Double_t rho2 = -1;
+  Double_t rho2 = 0;
   TParameter<Double_t> *Rho2Param = dynamic_cast<TParameter<Double_t>*>(InputEvent()->FindListObject(fRhos2Name));
   if (Rho2Param)
     rho2 = Rho2Param->GetVal();
 
-  Double_t rho3 = -1;
+  Double_t rho3 = 0;
   TParameter<Double_t> *Rho3Param = dynamic_cast<TParameter<Double_t>*>(InputEvent()->FindListObject(fRhos3Name));
   if (Rho3Param)
     rho3 = Rho3Param->GetVal();
 
-  if (rho1>0)
-    fHistRho1vsCent->Fill(fCent,rho1);
-  if (rho2>0)
-    fHistRho2vsCent->Fill(fCent,rho2);
-  if (rho3>0)
-    fHistRho3vsCent->Fill(fCent,rho3);
-
+  fHistRho1vsCent->Fill(fCent,rho1);
+  fHistRho2vsCent->Fill(fCent,rho2);
+  fHistRho3vsCent->Fill(fCent,rho3);
+  
   if (( rho1>0 ) && ( rho2>0 )) 
     fHistDeltaRho12vsCent->Fill(fCent,rho1-rho2);
   if (( rho1>0 ) && ( rho3>0 )) 
@@ -327,6 +324,10 @@ void AliAnalysisTaskEmcalJetSpectra::UserExec(Option_t *)
     //prevents 0 area jets from sneaking by when area cut == 0
     if (jet->Area()==0)
       continue;
+    if (jet->Pt()==0)
+      continue;
+    if (jet->MaxTrackPt()>100)
+      continue;
     fHistRawJetPt[centbin]->Fill(jet->Pt());
     
     NjetAcc++;
@@ -334,12 +335,9 @@ void AliAnalysisTaskEmcalJetSpectra::UserExec(Option_t *)
     Double_t jetPt1 = -500;
     Double_t jetPt2 = -500;
     Double_t jetPt3 = -500;
-    if (rho1 > 0)
-      jetPt1 = jet->Pt()-jet->Area()*rho1;
-    if (rho2 > 0)
-      jetPt2 = jet->Pt()-jet->Area()*rho2;
-    if (rho3 > 0)
-      jetPt3 = jet->Pt()-jet->Area()*rho3;
+    jetPt1 = jet->Pt()-jet->Area()*rho1;
+    jetPt2 = jet->Pt()-jet->Area()*rho2;
+    jetPt3 = jet->Pt()-jet->Area()*rho3;
     if (( rho1>0 ) && ( rho2>0 )) 
       fHistDeltaJetPt12vsCent->Fill(fCent,jetPt1-jetPt2);
     if (( rho1>0 ) && ( rho3>0 )) 
@@ -351,75 +349,73 @@ void AliAnalysisTaskEmcalJetSpectra::UserExec(Option_t *)
       lJetPt= jetPt2;
       lJetPtun = jet->Pt();
     }
-
-    if (jet->MaxTrackPt()>jet->MaxClusterPt()) {
-      Z = jet->MaxTrackPt();
-    }
-    else{
-      Z = jet->MaxClusterPt();
-    }
-
+  
+    Z = jet->MaxTrackPt();   
+ 
     fHistNEFvsPt[centbin][0]->Fill(jet->Pt(),jet->NEF());
     fHistZvsPt[centbin][0]->Fill(jet->Pt(),Z/jet->Pt());
     fHistZchvsPt[centbin][0]->Fill(jet->Pt(),jet->MaxTrackPt()/jet->Pt());
     fHistZemvsPt[centbin][0]->Fill(jet->Pt(),jet->MaxClusterPt()/jet->Pt());
     fHistJetPt[centbin][0]->Fill(jet->Pt());
     fHistNconsvsPt[centbin][0]->Fill(jet->Pt(),jet->N());
-    if ((jet->MaxTrackPt()>5) || (jet->MaxClusterPt()>5))
+    if (jet->MaxTrackPt()>3)
+      fHistJetPt3[centbin][0]->Fill(jet->Pt());
+    if (jet->MaxTrackPt()>5)
       fHistJetPt5[centbin][0]->Fill(jet->Pt());
-    if ((jet->MaxTrackPt()>6) || (jet->MaxClusterPt()>6))
-      fHistJetPt6[centbin][0]->Fill(jet->Pt());
-    if ((jet->MaxTrackPt()>7) || (jet->MaxClusterPt()>7))
+    if (jet->MaxTrackPt()>7)
       fHistJetPt7[centbin][0]->Fill(jet->Pt());
-    if ((jet->MaxTrackPt()>8) || (jet->MaxClusterPt()>8))
-      fHistJetPt8[centbin][0]->Fill(jet->Pt());
+    if (jet->MaxTrackPt()>9)
+      fHistJetPt9[centbin][0]->Fill(jet->Pt());
 
-    fHistNEFvsPt[centbin][1]->Fill(jetPt1,jet->NEF());
-    fHistZvsPt[centbin][1]->Fill(jetPt1,Z/jetPt1);
-    fHistZchvsPt[centbin][1]->Fill(jetPt1,jet->MaxTrackPt()/jetPt1);
-    fHistZemvsPt[centbin][1]->Fill(jetPt1,jet->MaxClusterPt()/jetPt1);
-    fHistJetPt[centbin][1]->Fill(jetPt1);
-    fHistNconsvsPt[centbin][1]->Fill(jetPt1,jet->N());
-    if ((jet->MaxTrackPt()>5) || (jet->MaxClusterPt()>5))
-      fHistJetPt5[centbin][1]->Fill(jetPt1);
-    if ((jet->MaxTrackPt()>6) || (jet->MaxClusterPt()>6))
-      fHistJetPt6[centbin][1]->Fill(jetPt1);
-    if ((jet->MaxTrackPt()>7) || (jet->MaxClusterPt()>7))
-      fHistJetPt7[centbin][1]->Fill(jetPt1);
-    if ((jet->MaxTrackPt()>8) || (jet->MaxClusterPt()>8))
-      fHistJetPt8[centbin][1]->Fill(jetPt1);
-
-    fHistNEFvsPt[centbin][2]->Fill(jetPt2,jet->NEF());
-    fHistZvsPt[centbin][2]->Fill(jetPt2,Z/jetPt2);
-    fHistZchvsPt[centbin][2]->Fill(jetPt2,jet->MaxTrackPt()/jetPt2);
-    fHistZemvsPt[centbin][2]->Fill(jetPt2,jet->MaxClusterPt()/jetPt2);
-    fHistJetPt[centbin][2]->Fill(jetPt2);
-    fHistNconsvsPt[centbin][2]->Fill(jetPt2,jet->N());
-    if ((jet->MaxTrackPt()>5) || (jet->MaxClusterPt()>5))
-      fHistJetPt5[centbin][2]->Fill(jetPt2);
-    if ((jet->MaxTrackPt()>6) || (jet->MaxClusterPt()>6))
-      fHistJetPt6[centbin][2]->Fill(jetPt2);
-    if ((jet->MaxTrackPt()>7) || (jet->MaxClusterPt()>7))
-      fHistJetPt7[centbin][2]->Fill(jetPt2);
-    if ((jet->MaxTrackPt()>8) || (jet->MaxClusterPt()>8))
-      fHistJetPt8[centbin][2]->Fill(jetPt2);
-
-    fHistNEFvsPt[centbin][3]->Fill(jetPt3,jet->NEF());
-    fHistZvsPt[centbin][3]->Fill(jetPt3,Z/jetPt3);
-    fHistZchvsPt[centbin][3]->Fill(jetPt3,jet->MaxTrackPt()/jetPt3);
-    fHistZemvsPt[centbin][3]->Fill(jetPt3,jet->MaxClusterPt()/jetPt3);
-    fHistJetPt[centbin][3]->Fill(jetPt3);
-    fHistNconsvsPt[centbin][3]->Fill(jetPt3,jet->N());
-    if ((jet->MaxTrackPt()>5) || (jet->MaxClusterPt()>5))
-      fHistJetPt5[centbin][3]->Fill(jetPt3);
-    if ((jet->MaxTrackPt()>6) || (jet->MaxClusterPt()>6))
-      fHistJetPt6[centbin][3]->Fill(jetPt3);
-    if ((jet->MaxTrackPt()>7) || (jet->MaxClusterPt()>7))
-      fHistJetPt7[centbin][3]->Fill(jetPt3);
-    if ((jet->MaxTrackPt()>8) || (jet->MaxClusterPt()>8))
-      fHistJetPt8[centbin][3]->Fill(jetPt3);
+    if (jetPt1!=0){
+      fHistNEFvsPt[centbin][1]->Fill(jetPt1,jet->NEF());
+      fHistZvsPt[centbin][1]->Fill(jetPt1,Z/jetPt1);
+      fHistZchvsPt[centbin][1]->Fill(jetPt1,jet->MaxTrackPt()/jetPt1);
+      fHistZemvsPt[centbin][1]->Fill(jetPt1,jet->MaxClusterPt()/jetPt1);
+      fHistJetPt[centbin][1]->Fill(jetPt1);
+      fHistNconsvsPt[centbin][1]->Fill(jetPt1,jet->N());
+      if (jet->MaxTrackPt()>3) 
+	fHistJetPt3[centbin][1]->Fill(jetPt1);
+      if (jet->MaxTrackPt()>5) 
+	fHistJetPt5[centbin][1]->Fill(jetPt1);
+      if (jet->MaxTrackPt()>7) 
+	fHistJetPt7[centbin][1]->Fill(jetPt1);
+      if (jet->MaxTrackPt()>9) 
+	fHistJetPt9[centbin][1]->Fill(jetPt1);}
+    
+    if (jetPt2!=0){
+      fHistNEFvsPt[centbin][2]->Fill(jetPt2,jet->NEF());
+      fHistZvsPt[centbin][2]->Fill(jetPt2,Z/jetPt2);
+      fHistZchvsPt[centbin][2]->Fill(jetPt2,jet->MaxTrackPt()/jetPt2);
+      fHistZemvsPt[centbin][2]->Fill(jetPt2,jet->MaxClusterPt()/jetPt2);
+      fHistJetPt[centbin][2]->Fill(jetPt2);
+      fHistNconsvsPt[centbin][2]->Fill(jetPt2,jet->N());
+      if (jet->MaxTrackPt()>3)
+	fHistJetPt3[centbin][2]->Fill(jetPt2);
+      if (jet->MaxTrackPt()>5)
+	fHistJetPt5[centbin][2]->Fill(jetPt2);
+      if (jet->MaxTrackPt()>7)
+	fHistJetPt7[centbin][2]->Fill(jetPt2);
+      if (jet->MaxTrackPt()>9)
+	fHistJetPt9[centbin][2]->Fill(jetPt2);}
+    
+    if (jetPt3!=0){
+      fHistNEFvsPt[centbin][3]->Fill(jetPt3,jet->NEF());
+      fHistZvsPt[centbin][3]->Fill(jetPt3,Z/jetPt3);
+      fHistZchvsPt[centbin][3]->Fill(jetPt3,jet->MaxTrackPt()/jetPt3);
+      fHistZemvsPt[centbin][3]->Fill(jetPt3,jet->MaxClusterPt()/jetPt3);
+      fHistJetPt[centbin][3]->Fill(jetPt3);
+      fHistNconsvsPt[centbin][3]->Fill(jetPt3,jet->N());
+      if (jet->MaxTrackPt()>3)
+	fHistJetPt3[centbin][3]->Fill(jetPt3);
+      if (jet->MaxTrackPt()>5)
+	fHistJetPt5[centbin][3]->Fill(jetPt3);
+      if (jet->MaxTrackPt()>7)
+	fHistJetPt7[centbin][3]->Fill(jetPt3);
+      if (jet->MaxTrackPt()>9)
+	fHistJetPt9[centbin][3]->Fill(jetPt3);}
   }
-
+  
   PostData(1, fOutputList);
 }      
 
