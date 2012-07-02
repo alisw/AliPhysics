@@ -1,3 +1,7 @@
+// $Id: $
+
+#include "AliAnalysisTaskEmcalJetHMEC.h"
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TList.h"
@@ -22,12 +26,12 @@
 #include "AliAODJet.h"
 #include "AliEmcalJet.h"
 #include "AliESDtrackCuts.h"
-#include "AliAnalysisTaskEmcalJetHMEC.h"
-#include "TVector3.h"
 
+#include "TVector3.h"
+#include "AliPicoTrack.h"
 #include "AliEventPoolManager.h"
+
 ClassImp(AliAnalysisTaskEmcalJetHMEC)
-ClassImp( AliDPhiBasicParticleMEC )
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() : 
@@ -39,8 +43,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fEtamin(-0.9), 
   fEtamax(0.9),
   fAreacut(0.0),
-  fDoEventMixing(0),
-  fMixingTracks(50000),
   fESD(0), 
   fPoolMgr(0x0), 
   fOutputList(0),
@@ -48,12 +50,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistTrackEtaPhi(0), 
-  fHistJetHEtaPhi(0),
-  fNevents(0),
-  fTindex(0),
-  fTrigBufferIndex(0),
-  fCountAgain(0),
-  fhnMixedEvents(0x0)
+  fHistJetHEtaPhi(0) 
 {
   // Default Constructor
 
@@ -544,7 +541,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
     {
       
       Int_t nMix = pool->GetCurrentNEvents();
-      //cout << "good pool with nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
       
     
       // Fill mixed-event histos here  
@@ -553,7 +549,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	TObjArray* bgTracks = pool->GetEvent(jMix);
 	const Int_t Nbgtrks = bgTracks->GetEntries();
 	for(Int_t ibg=0; ibg<Nbgtrks; ibg++){
-	  AliDPhiBasicParticleMEC *part = static_cast<AliDPhiBasicParticleMEC*>(bgTracks->At(ibg));         
+	  AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));         
 	  if(!part) continue;
 
 	  Double_t DPhi = jetphi - part->Phi();
@@ -673,7 +669,7 @@ void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int
 
   case 5:
       label = "deltaPhi";
-      nbins = 90;
+      nbins = 64;
       xmin = -0.5*pi;
       xmax = 1.5*pi;
       break;   
@@ -715,7 +711,7 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList(TObjArray* track
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* particle = (AliVParticle*) tracks->At(i);
-    tracksClone->Add(new AliDPhiBasicParticleMEC(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
+    tracksClone->Add(new AliPicoTrack(particle->Pt(), particle->Eta(), particle->Phi(), particle->Charge(), 0, 0, 0, 0));
   }
   
   return tracksClone;

@@ -1,6 +1,7 @@
-#ifndef AliAnalysisTaskEmcalJetHMEC_cxx
-#define AliAnalysisTaskEmcalJetHMEC_cxx
+#ifndef AliAnalysisTaskEmcalJetHMEC_H
+#define AliAnalysisTaskEmcalJetHMEC_H
 
+// $Id: $
 
 class TList;
 class TH1;
@@ -9,10 +10,7 @@ class THnSparse;
 class AliESDEvent;
 class AliEventPoolManager;
 
-#include "AliLog.h"
-
 #include "AliAnalysisTaskSE.h"
-//#include "/project/projectdirs/alice/tschuste/AliceSoftware/aliroot/train_jet/ANALYSIS/AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
  public:
@@ -21,11 +19,11 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskEmcalJetHMEC() {}
   
   virtual void      UserCreateOutputObjects();
-  virtual Double_t   RelativePhi(Double_t mphi,Double_t vphi);
+  virtual Double_t   RelativePhi(Double_t mphi, Double_t vphi);
   virtual void      UserExec(Option_t *option);
   virtual void      Terminate(Option_t *);
-   virtual THnSparse* NewTHnSparseF(const char* name, UInt_t entries);
-   virtual void       GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+  virtual THnSparse* NewTHnSparseF(const char* name, UInt_t entries);
+  virtual void       GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
 
   virtual void      SetTracksName(const char *n) {fTracksName=n;}
   virtual void      SetJetsName(const char *jn) {fJetsName=jn;}
@@ -45,7 +43,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   virtual Int_t          GetEtaBin(Double_t eta) const;
   virtual Int_t          GetpTjetBin(Double_t pt) const;
 
- private:
   TString      fTracksName;  //name of tracks collection
   TString      fJetsName;  //name of Jet collection
   Double_t               fPhimin;                  // phi min
@@ -80,61 +77,11 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
    THnSparse *fhnMixedEvents;                //!mixed events matrix
    Double_t            fTrigBuffer[10][7];      //!buffer for triggers   
 
+ private:
    
   AliAnalysisTaskEmcalJetHMEC(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   AliAnalysisTaskEmcalJetHMEC& operator=(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetHMEC, 4); 
+  ClassDef(AliAnalysisTaskEmcalJetHMEC, 5); 
 };
-
-
-class AliDPhiBasicParticleMEC : public AliVParticle
-{
-  public:
-    AliDPhiBasicParticleMEC(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
-      : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
-    {
-    }
-    ~AliDPhiBasicParticleMEC() {}
-    
-    // kinematics
-    virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Pt() const { return fpT; }
-    virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
-    virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-
-    virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
-    virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-
-    virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t Phi()        const { return fPhi; }
-    virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
-
-
-    virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
-    virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
-    
-    virtual Double_t Eta()        const { return fEta; }
-    virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
-    
-    virtual Short_t Charge()      const { return fCharge; }
-    virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
-    // PID
-    virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }      
-    virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
-    
-  private:
-    Float_t fEta;      // eta
-    Float_t fPhi;      // phi
-    Float_t fpT;       // pT
-    Short_t fCharge;   // charge
-    
-    ClassDef( AliDPhiBasicParticleMEC, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
-};
-
-
 #endif

@@ -22,7 +22,7 @@
 #pragma link C++ class AliRhoParameter+;
 
 // user tasks
-//#pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
+#pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;

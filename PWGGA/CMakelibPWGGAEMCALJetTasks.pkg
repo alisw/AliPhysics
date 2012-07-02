@@ -40,13 +40,12 @@ set ( SRCS
  EMCALJetTasks/AliJetRandomizerTask.cxx
  EMCALJetTasks/AliJetResponseMaker.cxx
  EMCALJetTasks/AliRhoParameter.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
 )
-
-# EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
 
 set ( DHDR  PWGGAEMCALJetTasksLinkDef.h)
 
