@@ -1,0 +1,37 @@
+macro(vc_add_target_property _target _prop _value)
+   get_target_property(_oldprop "${_target}" ${_prop})
+   if(NOT _oldprop)
+      set_target_properties("${_target}" PROPERTIES ${_prop} "${_value}")
+   else(NOT _oldprop)
+      set_target_properties("${_target}" PROPERTIES ${_prop} "${_oldprop} ${_value}")
+   endif(NOT _oldprop)
+endmacro()
+
+include_directories("${Vc_INCLUDE_DIR}" "${Vc_INCLUDE_DIR}/Vc" "${Vc_INCLUDE_DIR}/Vc/avx")
+
+if(USE_AVX)
+   add_library(Vc STATIC src/vector.cpp src/cpuid.cpp src/support.cpp src/avx/sorthelper.cpp)
+else()
+   set(_srcs src/vector.cpp src/cpuid.cpp src/support.cpp)
+
+   if(NOT Vc_AVX_INTRINSICS_BROKEN)
+      # we'd still like to have avx/sorthelper.cpp built in, but that requires compilation with -mavx (or a comparable flag)
+      foreach(_flag "-xAVX" "-mavx" "-arch:AVX")
+         check_cxx_compiler_flag("${_flag}" check_cxx_compiler_flag_${_flag})
+         if(check_cxx_compiler_flag_${_flag})
+            if(_flag STREQUAL "-xAVX")
+               set(_flag "${_flag} -diag-disable 10121") # disable the warning "overriding -xSSE4.2 with -xAVX"
+            endif()
+            set(_srcs ${_srcs} src/avx/sorthelper.cpp)
+            set_source_files_properties(src/avx/sorthelper.cpp PROPERTIES COMPILE_FLAGS "${_flag}")
+            break()
+         endif()
+      endforeach()
+   endif()
+   add_library(Vc STATIC ${_srcs})
+endif()
+string(REPLACE "-Weffc++" "" CXXFLAGS "${CXXFLAGS}")
+vc_add_target_property(Vc COMPILE_FLAGS "-DVC_COMPILE_LIB ${CXXFLAGS} -O3 ${Vc_DEFINITIONS}")
+vc_add_target_property(Vc LABELS "other")
+
+# vim: ft=cmake sw=3 et
