@@ -243,9 +243,9 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fHistEvents[i]->GetXaxis()->SetTitle("Event state");
     fHistEvents[i]->GetYaxis()->SetTitle("counts");
     fHistEvents[i]->GetXaxis()->SetBinLabel(1, "No jets");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(2, "Max Jet not found");
+    fHistEvents[i]->GetXaxis()->SetBinLabel(2, "Max jet not found");
     fHistEvents[i]->GetXaxis()->SetBinLabel(3, "Rho == 0");
-    fHistEvents[i]->GetXaxis()->SetBinLabel(4, "Max Jet <= 0");
+    fHistEvents[i]->GetXaxis()->SetBinLabel(4, "Max jet <= 0");
     fHistEvents[i]->GetXaxis()->SetBinLabel(5, "OK");
     fOutput->Add(fHistEvents[i]);
 
@@ -517,7 +517,7 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 
   AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(maxJetIndex));
   if (!jet) {  // error, I cannot get the lead jet from collection (should never happen), skipping
-    fHistEvents[fCentBin]->Fill("Max Jet not found", 1);
+    fHistEvents[fCentBin]->Fill("Max jet not found", 1);
     return kTRUE;
   }
 
@@ -529,7 +529,7 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
   Float_t maxJetCorrPt = jet->Pt() - fRhoVal * jet->Area();
 
   if (maxJetCorrPt <= 0)
-    fHistEvents[fCentBin]->Fill("Max Jet <= 0", 1);
+    fHistEvents[fCentBin]->Fill("Max jet <= 0", 1);
 
   fHistEvents[fCentBin]->Fill("OK", 1);
 
@@ -921,7 +921,7 @@ void AliAnalysisTaskSAJF::DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &embPart)
       embJet = jet;
     }
 
-    return;  // MC jets found, exit
+    return;  // MC jet found, exit
   }
 }
 
@@ -984,11 +984,11 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &e
     for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
       AliVCluster* cluster = static_cast<AliVCluster*>(clusters->At(iClusters));
       if (!cluster) {
-	AliError(Form("Could not receive cluster %d", iClusters));
+	//AliError(Form("Could not receive cluster %d", iClusters));
 	continue;
       }  
       
-      if (!AcceptCluster(cluster, kTRUE))
+      if (!AcceptCluster(cluster))
 	continue;
       
       TLorentzVector nPart;
@@ -1015,7 +1015,7 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &e
 	continue; 
       }
       
-      if (!AcceptTrack(track, kTRUE)) 
+      if (!AcceptTrack(track)) 
 	continue;
       
       Float_t tracketa = track->Eta();
@@ -1042,17 +1042,6 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &e
 void AliAnalysisTaskSAJF::ExecOnce()
 {
   // Initialize the analysis.
-
-  if (!fEmbJetsName.IsNull()) {
-    if (fEmbTracksName.IsNull() && fAnaType != kEMCALOnly) {
-      fEmbTracksName = fTracksName;
-      fEmbTracksName += "Embedded";
-    }
-    if (fEmbCaloName.IsNull() && fAnaType == kEMCAL) {
-      fEmbCaloName = fCaloName;
-      fEmbCaloName += "Embedded";
-    }
-  }
 
   if (!fRhoName.IsNull() && !fRho) {
     fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));

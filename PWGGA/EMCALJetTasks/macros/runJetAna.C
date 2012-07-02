@@ -81,18 +81,25 @@ void runJetAna(
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalPicoTrackMaker.C");
   AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(tracksName, inputTracks, "LHC11h");
 
-  // Cluster-track matcher
   TString clusName("CaloClusters");
   if (dType == kAod)
     clusName = "caloClusters";
+
+  // EmcalParticle maker
+  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalParticleMaker.C");
+  AliEmcalParticleMaker *emcalParts = 
+    AddTaskEmcalParticleMaker(tracksName,clusName,"EmcalTracks","EmcalClusters");
+
+  // Cluster-track matcher
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalClusTrackMatcher.C");
-  AliEmcalClusTrackMatcherTask *matcherTask = AddTaskEmcalClusTrackMatcher(tracksName, clusName);
+  AliEmcalClusTrackMatcherTask *matcherTask = AddTaskEmcalClusTrackMatcher("EmcalTracks","EmcalClusters");
 
   // Hadronic correction task
   TString clusNameCorr(Form("%sCorr",clusName.Data()));
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskHadCorr.C");
-  AliHadCorrTask *hcorr = AddTaskHadCorr(tracksName, clusName, clusNameCorr);
+  AliHadCorrTask *hcorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",clusNameCorr);
 
+  if (0) {
   // Embedding task
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
   AliJetEmbeddingTask* jemb = AddTaskJetEmbedding(tracksName, clusNameCorr, "JetEmbeddingTask", 10, 10, -0.9, 0.9);
@@ -104,7 +111,7 @@ void runJetAna(
   // Scale task
   gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskScale.C");
   AliAnalysisTaskScale *scaleTask = AddTaskScale(tracksName, clusNameCorr);
-
+  }
   if (1) {
     UInt_t val = AliVEvent::kAny;
     //val = AliVEvent::kAnyINT | AliVEvent::kCentral| AliVEvent::kSemiCentral;
