@@ -730,11 +730,13 @@ void AliAnalysisTaskSAJF::DoClusterLoop()
       continue;
     }  
 
-    if (!AcceptCluster(cluster, fMCAna)) 
+    if (!AcceptCluster(cluster, kFALSE)) 
       continue;
 
-    if (cluster->Chi2() == 100)
+    if (cluster->Chi2() == 100) {
       fEmbeddedClusterId = iClusters;
+      continue;
+    }
 
     fHistClustersPt[fCentBin]->Fill(cluster->E());
   }
@@ -763,11 +765,13 @@ void AliAnalysisTaskSAJF::DoTrackLoop()
 
     AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track); 
     
-    if (vtrack && !AcceptTrack(vtrack, fMCAna)) 
+    if (vtrack && !AcceptTrack(vtrack, kFALSE)) 
       continue;
 
-    if (track->GetLabel() == 100)
+    if (track->GetLabel() == 100) {
       fEmbeddedTrackId = i;
+      continue;
+    }
     
     fHistTracksPt[fCentBin]->Fill(track->Pt());
   }
@@ -805,19 +809,17 @@ void AliAnalysisTaskSAJF::DoJetLoop()
     fHistCorrJetsPt[fCentBin]->Fill(corrPt);
     fHistCorrJetsPtArea[fCentBin]->Fill(corrPt, jet->Area());
 
-    if (fAnaType != kEMCALOnly)
-      fHistMaxTrackPtvsJetPt[fCentBin]->Fill(jet->Pt(), jet->MaxTrackPt());
-
-    fHistMaxPartPtvsJetPt[fCentBin]->Fill(jet->Pt(), jet->MaxPartPt());
-
-    if (fAnaType != kEMCALOnly)
-      fHistMaxTrackPtvsJetCorrPt[fCentBin]->Fill(corrPt, jet->MaxTrackPt());
-
-    fHistMaxPartPtvsJetCorrPt[fCentBin]->Fill(corrPt, jet->MaxPartPt());
-
     fHistJetPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());
 
-    if (fAnaType == kEMCAL) {
+    fHistMaxPartPtvsJetPt[fCentBin]->Fill(jet->Pt(), jet->MaxPartPt());
+    fHistMaxPartPtvsJetCorrPt[fCentBin]->Fill(corrPt, jet->MaxPartPt());
+
+    if (fAnaType != kEMCALOnly) {
+      fHistMaxTrackPtvsJetPt[fCentBin]->Fill(jet->Pt(), jet->MaxTrackPt());
+      fHistMaxTrackPtvsJetCorrPt[fCentBin]->Fill(corrPt, jet->MaxTrackPt());
+    }
+
+    if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
       fHistMaxClusPtvsJetPt[fCentBin]->Fill(jet->Pt(), jet->MaxClusterPt());
       fHistMaxClusPtvsJetCorrPt[fCentBin]->Fill(corrPt, jet->MaxClusterPt());
       fHistJetsNEFvsPt[fCentBin]->Fill(jet->NEF(), jet->Pt());
@@ -1066,7 +1068,7 @@ void AliAnalysisTaskSAJF::ExecOnce()
     }
   }
 
-  if (!fEmbCaloName.IsNull() && fAnaType == kEMCAL && !fEmbCaloClusters) {
+  if (!fEmbCaloName.IsNull() && (fAnaType == kEMCAL || fAnaType == kEMCALOnly) && !fEmbCaloClusters) {
     fEmbCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fEmbCaloName));
     if (!fEmbCaloClusters) {
       AliError(Form("%s: Could not retrieve embedded clusters %s!", GetName(), fEmbCaloName.Data()));
@@ -1079,7 +1081,7 @@ void AliAnalysisTaskSAJF::ExecOnce()
     }
   }
 
-  if (!fEmbTracksName.IsNull() && !fEmbTracks) {
+  if (!fEmbTracksName.IsNull() && fAnaType != kEMCALOnly && !fEmbTracks) {
     fEmbTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fEmbTracksName));
     if (!fEmbTracks) {
       AliError(Form("%s: Could not retrieve embedded tracks %s!", GetName(), fEmbTracksName.Data()));
@@ -1092,7 +1094,7 @@ void AliAnalysisTaskSAJF::ExecOnce()
     }
   }
 
-  if (!fRandCaloName.IsNull() && fAnaType == kEMCAL && !fRandCaloClusters) {
+  if (!fRandCaloName.IsNull() && (fAnaType == kEMCAL || fAnaType == kEMCALOnly) && !fRandCaloClusters) {
     fRandCaloClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fRandCaloName));
     if (!fRandCaloClusters) {
       AliError(Form("%s: Could not retrieve randomized clusters %s!", GetName(), fRandCaloName.Data()));
@@ -1105,7 +1107,7 @@ void AliAnalysisTaskSAJF::ExecOnce()
     }
   }
 
-  if (!fRandTracksName.IsNull() && !fRandTracks) {
+  if (!fRandTracksName.IsNull() && fAnaType != kEMCALOnly && !fRandTracks) {
     fRandTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fRandTracksName));
     if (!fRandTracks) {
       AliError(Form("%s: Could not retrieve randomized tracks %s!", GetName(), fRandTracksName.Data()));
