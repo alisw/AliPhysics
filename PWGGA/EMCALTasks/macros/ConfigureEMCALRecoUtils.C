@@ -21,9 +21,9 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
     reco->SwitchOnRejectExoticCell() ;
     reco->SwitchOnRejectExoticCluster(); 
     
-    reco->SetExoticCellDiffTimeCut(10000);    // Open  
-    reco->SetExoticCellFractionCut(0.95);     // 1-Ecross/Ecell > 0.95 -> out
-    reco->SetExoticCellMinAmplitudeCut(0.75); // 750 MeV    
+    reco->SetExoticCellDiffTimeCut(10000);  // Open  
+    reco->SetExoticCellFractionCut(0.97);   // 1-Ecross/Ecell > 0.97 -> out
+    reco->SetExoticCellMinAmplitudeCut(4.); // 4 GeV    
   }  
   
   //Recalibration factors
