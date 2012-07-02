@@ -60,9 +60,9 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
 
     AliFlowEvent *fTPCEvent; //!
     AliFlowEvent *fVZEEvent; //!
-    AliFlowTrackCuts *fCutsTPC; //!
-    AliFlowTrackCuts *fCutsVZE; //!
-    AliFlowTrackCuts *fNoPOIs; //!
+    AliFlowTrackCuts *fCutsTPC; 
+    AliFlowTrackCuts *fCutsVZE; 
+    AliFlowTrackCuts *fNoPOIs; 
 
     AliRDHFCuts *fCutsPOI; // cuts for POIs
     Int_t  fSource; // AliRDHFCuts::ESele
