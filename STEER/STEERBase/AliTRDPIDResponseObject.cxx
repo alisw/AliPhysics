@@ -97,11 +97,16 @@ AliTRDPIDResponseObject &AliTRDPIDResponseObject::operator=(const AliTRDPIDRespo
 	    TNamed::operator=(ref);
 	    fNSlicesQ0=ref.fNSlicesQ0;
 	    for(Int_t method=0;method<AliTRDPIDResponse::kNMethod;method++){
-		if(TestBit(kIsOwner) && fPIDParams[method])delete fPIDParams[method];
-                if(TestBit(kIsOwner) && fPIDReference[method])delete fPIDReference[method];
-
-		fPIDParams[method]=ref.fPIDParams[method];       // new Object is not owner, copy only pointer
-		fPIDReference[method]=ref.fPIDReference[method];    // new Object is not owner, copy only pointer
+	      if(TestBit(kIsOwner) && fPIDParams[method]){
+		delete fPIDParams[method];
+		fPIDParams[method]= 0;
+	      }
+	      if(TestBit(kIsOwner) && fPIDReference[method]){
+		delete fPIDReference[method];
+		fPIDReference[method] = 0;
+	      }
+	      fPIDParams[method]=ref.fPIDParams[method];       // new Object is not owner, copy only pointer
+	      fPIDReference[method]=ref.fPIDReference[method];    // new Object is not owner, copy only pointer
 	    }
 	    SetBit(kIsOwner, kFALSE);
 	}
@@ -114,9 +119,15 @@ AliTRDPIDResponseObject::~AliTRDPIDResponseObject(){
 	// Destructor
 	// references are deleted if the object is the owner
 	//
-    if(fPIDParams && TestBit(kIsOwner)) delete [] fPIDParams;
-    if(fPIDReference && TestBit(kIsOwner)) delete [] fPIDReference;
-
+    for(Int_t method=0;method<AliTRDPIDResponse::kNMethod;method++){
+      if(fPIDParams && TestBit(kIsOwner)){
+	delete fPIDParams[method];fPIDParams[method] = 0;
+      }
+      if(fPIDReference && TestBit(kIsOwner)){
+	delete fPIDReference[method];
+	fPIDReference[method] = 0;
+      }
+    }
 }
 
 //____________________________________________________________
