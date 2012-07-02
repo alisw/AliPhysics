@@ -31,6 +31,7 @@ ClassImp(AliAnalysisTaskSAJF)
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
+  fMCAna(kFALSE),
   fMinRC2LJ(1.0),
   fEmbJetsName("EmbJets"),
   fEmbTracksName(""),
@@ -100,6 +101,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 //________________________________________________________________________
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
+  fMCAna(kFALSE),
   fMinRC2LJ(1.0),
   fEmbJetsName("EmbJets"),
   fEmbTracksName(""),
@@ -728,7 +730,7 @@ void AliAnalysisTaskSAJF::DoClusterLoop()
       continue;
     }  
 
-    if (!AcceptCluster(cluster, kTRUE)) 
+    if (!AcceptCluster(cluster, fMCAna)) 
       continue;
 
     if (cluster->Chi2() == 100)
@@ -761,7 +763,7 @@ void AliAnalysisTaskSAJF::DoTrackLoop()
 
     AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track); 
     
-    if (vtrack && !AcceptTrack(vtrack, kTRUE)) 
+    if (vtrack && !AcceptTrack(vtrack, fMCAna)) 
       continue;
 
     if (track->GetLabel() == 100)
@@ -988,7 +990,7 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &e
 	continue;
       }  
       
-      if (!AcceptCluster(cluster))
+      if (!AcceptCluster(cluster, fMCAna))
 	continue;
       
       TLorentzVector nPart;
@@ -1015,7 +1017,7 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &e
 	continue; 
       }
       
-      if (!AcceptTrack(track)) 
+      if (!AcceptTrack(track, fMCAna)) 
 	continue;
       
       Float_t tracketa = track->Eta();
