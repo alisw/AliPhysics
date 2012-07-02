@@ -646,7 +646,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fNoEvents = new TH1F("fNoEvents","",4,-0.5,3.5) ;
   fOutputList->Add(fNoEvents);
   
-  Int_t binsE[5] =    {250, 100,  1000, 100,   10};
+  Int_t binsE[5] =    {250, 100,  1000, 200,   10};
   Double_t xminE[5] = {1.0,  -1,   0.0,   0, -0.5}; 
   Double_t xmaxE[5] = {3.5,   1, 100.0, 100,  9.5}; 
   fEMCAccE = new THnSparseD("fEMCAccE","EMC acceptance & E;#eta;#phi;Energy;Centrality;trugCondition;",5,binsE,xminE,xmaxE);
@@ -676,13 +676,13 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fdEdxAft = new TH2F("fdEdxAft","track dEdx vs p after HFE pid",100,0,50,200,-10,10);
   fOutputList->Add(fdEdxAft);
   
-  fIncpT = new TH2F("fIncpT","HFE pid electro vs. centrality",100,0,100,100,0,50);
+  fIncpT = new TH2F("fIncpT","HFE pid electro vs. centrality",200,0,100,100,0,50);
   fOutputList->Add(fIncpT);
 
-  fIncpTM20 = new TH2F("fIncpTM20","HFE pid electro vs. centrality with M20",100,0,100,100,0,50);
+  fIncpTM20 = new TH2F("fIncpTM20","HFE pid electro vs. centrality with M20",200,0,100,100,0,50);
   fOutputList->Add(fIncpTM20);
   
-  Int_t nBinspho[9] =  { 100, 100, 500, 12,   50,    4, 200,   8, 100};
+  Int_t nBinspho[9] =  { 200, 100, 500, 12,   50,    4, 200,   8, 100};
   Double_t minpho[9] = {  0.,  0.,  0., -2.5,  0, -0.5,   0,-1.5,   0};   
   Double_t maxpho[9] = {100., 50., 0.5, 3.5,   1,  3.5,   2, 6.5,  50};   
 
@@ -701,19 +701,19 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fPhotoElecPt = new TH1F("fPhotoElecPt", "photonic electron pt",100,0,50);
   fOutputList->Add(fPhotoElecPt);
   
-  fPhoElecPt = new TH2F("fPhoElecPt", "Pho-inclusive electron pt",100,0,100,100,0,50);
+  fPhoElecPt = new TH2F("fPhoElecPt", "Pho-inclusive electron pt",200,0,100,100,0,50);
   fOutputList->Add(fPhoElecPt);
   
-  fPhoElecPtM20 = new TH2F("fPhoElecPtM20", "Pho-inclusive electron pt with M20",100,0,100,100,0,50);
+  fPhoElecPtM20 = new TH2F("fPhoElecPtM20", "Pho-inclusive electron pt with M20",200,0,100,100,0,50);
   fOutputList->Add(fPhoElecPtM20);
 
-  fSameElecPt = new TH2F("fSameElecPt", "Same-inclusive electron pt",100,0,100,100,0,50);
+  fSameElecPt = new TH2F("fSameElecPt", "Same-inclusive electron pt",200,0,100,100,0,50);
   fOutputList->Add(fSameElecPt);
 
-  fSameElecPtM20 = new TH2F("fSameElecPtM20", "Same-inclusive electron pt with M20",100,0,100,100,0,50);
+  fSameElecPtM20 = new TH2F("fSameElecPtM20", "Same-inclusive electron pt with M20",200,0,100,100,0,50);
   fOutputList->Add(fSameElecPtM20);
 
-  fCent = new TH1F("fCent","Centrality",100,0,100) ;
+  fCent = new TH1F("fCent","Centrality",200,0,100) ;
   fOutputList->Add(fCent);
  
   // Make common binning
@@ -723,7 +723,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
-  Int_t nBins[16] =  {  250,        200,   60,    20,   100,  300,  50,   40,   200, 200,  250, 100,    3,    5,   10,    8};
+  Int_t nBins[16] =  {  250,        200,   60,    20,   100,  300,  50,   40,   200, 200,  250, 200,    3,    5,   10,    8};
   Double_t min[16] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -6.0,    0,   0,    0,   0.0, 0.0,  0.0,   0, -1.5, -0.5, -0.5, -1.5};
   Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 50.0, 100,  1.5,  4.5,  9.5,  6.5};
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
@@ -763,26 +763,26 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   */
   //<---------- MC
 
-  fInputHFEMC = new TH2F("fInputHFEMC","Input MC HFE pid electro vs. centrality",100,0,100,100,0,50);
+  fInputHFEMC = new TH2F("fInputHFEMC","Input MC HFE pid electro vs. centrality",200,0,100,100,0,50);
   fOutputList->Add(fInputHFEMC);
 
-  fInputAlle = new TH2F("fInputAlle","Input MC electro vs. centrality",100,0,100,100,0,50);
+  fInputAlle = new TH2F("fInputAlle","Input MC electro vs. centrality",200,0,100,100,0,50);
   fOutputList->Add(fInputAlle);
 
-  fIncpTMChfe = new TH2F("fIncpTMChfe","MC HFE pid electro vs. centrality",100,0,100,100,0,50);
+  fIncpTMChfe = new TH2F("fIncpTMChfe","MC HFE pid electro vs. centrality",200,0,100,100,0,50);
   fOutputList->Add(fIncpTMChfe);
 
-  fIncpTMChfeAll = new TH2F("fIncpTMChfeAll","MC Alle pid electro vs. centrality",100,0,100,100,0,50);
+  fIncpTMChfeAll = new TH2F("fIncpTMChfeAll","MC Alle pid electro vs. centrality",200,0,100,100,0,50);
   fOutputList->Add(fIncpTMChfeAll);
 
-  fIncpTMCM20hfe = new TH2F("fIncpTMCM20hfe","MC HFE pid electro vs. centrality with M20",100,0,100,100,0,50);
+  fIncpTMCM20hfe = new TH2F("fIncpTMCM20hfe","MC HFE pid electro vs. centrality with M20",200,0,100,100,0,50);
   fOutputList->Add(fIncpTMCM20hfe);
 
-  fIncpTMCM20hfeAll = new TH2F("fIncpTMCM20hfeAll","MC Alle pid electro vs. centrality with M20",100,0,100,100,0,50);
+  fIncpTMCM20hfeAll = new TH2F("fIncpTMCM20hfeAll","MC Alle pid electro vs. centrality with M20",200,0,100,100,0,50);
   fOutputList->Add(fIncpTMCM20hfeAll);
 
 
-  Int_t nBinspho2[3] =  { 100, 100,    7};
+  Int_t nBinspho2[3] =  { 200, 100,    7};
   Double_t minpho2[3] = {  0.,  0., -2.5};   
   Double_t maxpho2[3] = {100., 50.,  4.5};   
 
