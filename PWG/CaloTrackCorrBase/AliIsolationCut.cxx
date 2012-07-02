@@ -50,7 +50,8 @@ ClassImp(AliIsolationCut)
 AliIsolationCut::AliIsolationCut() : 
 TObject(),
 fConeSize(0.),
-fPtThreshold(0.), 
+fPtThreshold(0.),
+fPtThresholdMax(10000.), 
 fSumPtThreshold(0.), 
 fPtFraction(0.), 
 fICMethod(0),
@@ -184,7 +185,8 @@ void AliIsolationCut::InitParameters()
   //Initialize the parameters of the analysis.
   
   fConeSize       = 0.4 ; 
-  fPtThreshold    = 1.  ; 
+  fPtThreshold    = 1.  ;
+  fPtThresholdMax = 10000.  ;
   fSumPtThreshold = 0.5 ; 
   fPtFraction     = 0.1 ; 
   fPartInCone     = kOnlyCharged;
@@ -323,7 +325,7 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
         
         
         coneptsum+=pt;
-        if(pt > fPtThreshold )    n++;
+	if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
         if(pt > fPtFraction*ptC ) nfrac++;  
         
       } // Inside cone
@@ -444,7 +446,7 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
         }
         
         coneptsum+=pt;
-        if(pt > fPtThreshold )   n++;
+	if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
         //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
         if(fFracIsThresh){
 	  if( fPtFraction*ptC<fPtThreshold)
