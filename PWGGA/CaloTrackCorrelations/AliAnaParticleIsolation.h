@@ -52,7 +52,14 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillTrackMatchingShowerShapeControlHistograms(const Bool_t isolated,
                                                              const Int_t  clusterID, 
                                                              const Int_t  nLocMax,
-                                                             const Int_t  mcTag ) ;
+                                                             const Int_t  mcTag, 
+							     const TObjArray * plCTS,
+							     const TObjArray * plNe,
+							     AliAODPWG4ParticleCorrelation  * pCandidate,
+							     const AliCaloTrackReader * reader, 
+							     const AliCaloPID * pid) ;
+  
+
   
   void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph ) ; 
   
@@ -244,6 +251,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Shower Shape histograms
   TH2F *   fhELambda0[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
   TH2F *   fhELambda1[2];                         //! Shower shape of (non) isolated photons (do not apply SS cut previously)
+  TH2F *   fhELambda0SSBkg;                       //! Shower shape of non isolated photons close to isolation threshold (do not apply SS cut previously)
   TH2F *   fhELambda0TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   TH2F *   fhELambda1TRD[2];                      //! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously)
   

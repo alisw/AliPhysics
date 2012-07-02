@@ -94,7 +94,7 @@ fhEtaPhiFracPtSumIso(),           fhEtaPhiFracPtSumDecayIso(),
 // Cluster control histograms
 fhTrackMatchedDEta(),             fhTrackMatchedDPhi(),           fhTrackMatchedDEtaDPhi(),
 fhdEdx(),                         fhEOverP(),                     fhTrackMatchedMCParticle(),
-fhELambda0() ,                    fhELambda1(), 
+fhELambda0() ,                    fhELambda1(),                   fhELambda0SSBkg(),
 fhELambda0TRD(),                  fhELambda1TRD(),
 
 // Number of local maxima in cluster
@@ -194,11 +194,14 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
 void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(const Bool_t isolated,
                                                                             const Int_t  clusterID,
                                                                             const Int_t  nMaxima,
-                                                                            const Int_t  mcTag
-                                                                            )
+                                                                            const Int_t  mcTag,
+									    const TObjArray * plCTS, 
+									    const TObjArray * plNe, 
+									    AliAODPWG4ParticleCorrelation  *pCandidate,
+									    const AliCaloTrackReader * reader, 
+                                                                            const AliCaloPID * pid)
 {
-  // Fill Track matching and Shower Shape control histograms
-  
+  // Fill Track matching and Shower Shape control histograms  
   if(!fFillTMHisto &&  !fFillSSHisto) return;
   
   if(clusterID < 0 ) 
@@ -233,7 +236,26 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(cons
       if     (nMaxima==1) { fhELambda0LocMax1[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMax1[isolated]->Fill(energy,cluster->GetM20()); }
       else if(nMaxima==2) { fhELambda0LocMax2[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMax2[isolated]->Fill(energy,cluster->GetM20()); }
       else                { fhELambda0LocMaxN[isolated]->Fill(energy,cluster->GetM02()); fhELambda1LocMaxN[isolated]->Fill(energy,cluster->GetM20()); }
+
+      if(isolated==0)
+	{
+	  //Analyse non-isolated events
+	  Int_t   n = 0; 
+	  Int_t nfrac = 0;
+	  Bool_t  iso  = kFALSE ;
+	  Float_t coneptsum = 0 ;
+	  GetIsolationCut()->SetPtThresholdMax(1.);
+	  GetIsolationCut()->MakeIsolationCut(plCTS,   plNe, 
+					      reader, pid,
+					      kFALSE, pCandidate, "", 
+					      n,nfrac,coneptsum, iso);
+	  if (!iso) fhELambda0SSBkg->Fill(energy, cluster->GetM02());
+	  
       
+	  if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Energy Sum in Isolation Cone %2.2f\n", coneptsum);    
+	}
+      GetIsolationCut()->SetPtThresholdMax(10000.);
+
     } // SS histo fill        
     
     
@@ -415,6 +437,14 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   {
     TString hName [] = {"NoIso",""};
     TString hTitle[] = {"Not isolated"  ,"isolated"};
+   if(fFillSSHisto)
+      { 
+    	fhELambda0SSBkg  = new TH2F
+	  ("hELambda0SSBkg","Non isolated clusters : E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhELambda0SSBkg->SetYTitle("#lambda_{0}^{2}");
+        fhELambda0SSBkg->SetXTitle("E (GeV)");
+        outputContainer->Add(fhELambda0SSBkg) ;
+      }
     for(Int_t iso = 0; iso < 2; iso++)
     {
       if(fFillTMHisto)
@@ -496,7 +526,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          Form("%s cluster: E vs #lambda_{1}",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
         fhELambda1[iso]->SetYTitle("#lambda_{1}^{2}");
         fhELambda1[iso]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhELambda1[iso]) ;  
+        outputContainer->Add(fhELambda1[iso]) ;
         
         if(fCalorimeter=="EMCAL")
         {
@@ -1572,7 +1602,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     if(GetDebug() > 0) printf(" AliAnaParticleIsolation::MakeAnalysisFillHistograms() - pt %1.1f, eta %1.1f, phi %1.1f\n",pt, eta, phi);
     
-    FillTrackMatchingShowerShapeControlHistograms(isolation, clID,aod->GetFiducialArea(),mcTag);
+    FillTrackMatchingShowerShapeControlHistograms(isolation, clID,aod->GetFiducialArea(),mcTag,reftracks,refclusters,aod,GetReader(), GetCaloPID());
 
     if(isolation)
     {    
