@@ -248,7 +248,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(co
     if(TMath::Abs(deltaEta)> 0.8) 
       fhDeltaPhiAssocPtBinDEta08      [bin]->Fill(ptTrig, deltaPhi);
 
-    if(TMath::Abs(deltaEta)< 0.05) 
+    if(TMath::Abs(deltaEta)< 0.01) 
       fhDeltaPhiAssocPtBinDEta0       [bin]->Fill(ptTrig, deltaPhi);
     
     if (fFillBradHisto)
@@ -2689,7 +2689,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       
       if(TMath::Abs(deltaEta) > 0.8) 
         fhMixDeltaPhiChargedAssocPtBinDEta08  [bin]->Fill(ptTrig,   deltaPhi);
-      if(TMath::Abs(deltaEta) < 0.05) 
+      if(TMath::Abs(deltaEta) < 0.01) 
         fhMixDeltaPhiChargedAssocPtBinDEta0   [bin]->Fill(ptTrig,   deltaPhi);
       
         fhMixDeltaPhiChargedAssocPtBin        [bin]->Fill(ptTrig,   deltaPhi);
