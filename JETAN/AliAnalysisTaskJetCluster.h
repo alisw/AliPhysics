@@ -280,6 +280,11 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH2F*         fh2TracksLeadingJetPhiPtC[kMaxCent]; //! track correlation with leading Jet
     TH2F*         fh2TracksLeadingJetPhiPtWC[kMaxCent]; //! track correlation with leading Jet
 
+    TH3F*         fh3CentvsRhoLeadingTrackCorr;     //! centrality vs background density vs phi correlation leading track
+    TH3F*         fh3CentvsSigmaLeadingTrackCorr;   //! centrality vs background sigma vs phi correlation leading track 
+    TH3F*         fh3MultvsRhoLeadingTrackCorr;     //! event multiplicity vs background density vs phi correlation leading track 
+    TH3F*         fh3MultvsSigmaLeadingTrackCorr;   //! event multiplicity vs background sigma vs phi correlation leading track 
+
     //Histos for detector level effects from toy model
     TH2F *fh2PtGenPtSmeared;     //! Control histo smeared momentum
     TProfile *fp1Efficiency;     //! Control profile efficiency
