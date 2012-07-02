@@ -350,7 +350,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
   //cent = centrality->GetCentralityPercentile("V0M");
   fCent->Fill(cent);
   
-  if(cent>90.) return;
+  //if(cent>90.) return;
 	
  // Calorimeter info.
  
@@ -388,6 +388,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     Bool_t mcBtoE= kFALSE;
     double mcele = -1.;
     double mcpT = 0.0;
+    double mcMompT = 0.0;
     if(fmcData && fMC && stack)
       {
        Int_t label = TMath::Abs(track->GetLabel());
@@ -398,6 +399,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        if(particle->GetFirstMother()>-1)
          {
           int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();
+          mcMompT = stack->Particle(particle->GetFirstMother())->Pt();
           if((parentPID==22 || parentPID==111 || parentPID==221)&& fabs(mcpid)==11)mcPho = kTRUE;
           if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(mcpid)==11)mcDtoE = kTRUE;
           if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(mcpid)==11)mcBtoE = kTRUE;
@@ -680,14 +682,14 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fIncpTM20 = new TH2F("fIncpTM20","HFE pid electro vs. centrality with M20",100,0,100,100,0,50);
   fOutputList->Add(fIncpTM20);
   
-  Int_t nBinspho[8] =  { 100, 100, 500, 12,   50,    4, 200,   8};
-  Double_t minpho[8] = {  0.,  0.,  0., -2.5,  0, -0.5,   0,-1.5};   
-  Double_t maxpho[8] = {100., 50., 0.5, 3.5,   1,  3.5,   2, 6.5};   
+  Int_t nBinspho[9] =  { 100, 100, 500, 12,   50,    4, 200,   8, 100};
+  Double_t minpho[9] = {  0.,  0.,  0., -2.5,  0, -0.5,   0,-1.5,   0};   
+  Double_t maxpho[9] = {100., 50., 0.5, 3.5,   1,  3.5,   2, 6.5,  50};   
 
-  fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; Mcele;", 8, nBinspho,minpho, maxpho);
+  fInvmassLS = new THnSparseD("fInvmassLS", "Inv mass of LS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; Mcele;", 9, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassLS);
   
-  fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; MCele", 8, nBinspho,minpho, maxpho);
+  fInvmassULS = new THnSparseD("fInvmassULS", "Inv mass of ULS (e,e); cent; p_{T} (GeV/c); mass(GeV/c^2); nSigma; angle; m20cut; eop; MCele", 9, nBinspho,minpho, maxpho);
   fOutputList->Add(fInvmassULS);
   
   fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
@@ -861,7 +863,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     Int_t chargeAsso = trackAsso->Charge();
     Int_t charge = track->Charge();
     
-    //if(ptAsso <0.3) continue;
+
     if(ptAsso <0.5) continue;
     if(!fTrackCuts->AcceptTrack(trackAsso)) continue;
     if(dEdxAsso <65 || dEdxAsso>100) continue; //11a pass1
@@ -869,10 +871,16 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
     if(charge>0) fPDGe1 = -11;
     if(chargeAsso>0) fPDGe2 = -11;
-    
+ 
+    //printf("chargeAsso = %d\n",chargeAsso);
+    //printf("charge = %d\n",charge);
     if(charge == chargeAsso) fFlagLS = kTRUE;
     if(charge != chargeAsso) fFlagULS = kTRUE;
     
+    //printf("fFlagLS = %d\n",fFlagLS);
+    //printf("fFlagULS = %d\n",fFlagULS);
+    //printf("\n");
+
     AliKFParticle ge1(*track, fPDGe1);
     AliKFParticle ge2(*trackAsso, fPDGe2);
     AliKFParticle recg(ge1, ge2);
@@ -897,7 +905,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     double ishower = 0;
     if(shower>0.0 && shower<0.3)ishower = 1;
 
-    double phoinfo[8];
+    double phoinfo[9];
     phoinfo[0] = cent;
     phoinfo[1] = ptPrim;
     phoinfo[2] = mass;
@@ -906,10 +914,14 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     phoinfo[5] = ishower;
     phoinfo[6] = ep;
     phoinfo[7] = mce;
+    phoinfo[8] = ptAsso;
 
     if(fFlagLS) fInvmassLS->Fill(phoinfo);
     if(fFlagULS) fInvmassULS->Fill(phoinfo);
     
+    //printf("fInvmassCut %f\n",fInvmassCut);
+    //printf("openingAngle %f\n",fOpeningAngleCut);
+
     if(openingAngle > fOpeningAngleCut) continue;
       
     if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
