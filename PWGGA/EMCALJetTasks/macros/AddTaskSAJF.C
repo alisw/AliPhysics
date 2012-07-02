@@ -4,6 +4,8 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
+  const char *nembtracks         = "TracksEmbedded",
+  const char *nembclusters       = "CaloClustersEmbedded",
   const char *nembjets           = "EmbJets",
   const char *nrandtracks        = "TracksRandomized",
   const char *nrandclusters      = "CaloClustersRandomized",
@@ -66,6 +68,8 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   jetTask->SetTracksName(ntracks);
   jetTask->SetClusName(nclusters);
   jetTask->SetJetsName(njets);
+  jetTask->SetEmbTracksName(nembtracks);
+  jetTask->SetEmbClusName(nembclusters);
   jetTask->SetEmbJetsName(nembjets);
   jetTask->SetRandTracksName(nrandtracks);
   jetTask->SetRandClusName(nrandclusters);
