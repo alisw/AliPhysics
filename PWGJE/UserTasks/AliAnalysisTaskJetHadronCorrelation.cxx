@@ -40,6 +40,7 @@
 #include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "AliAODJet.h"
 #include "AliAODJetEventBackground.h"
 #include "AliMCParticle.h"
@@ -84,6 +85,8 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 								TrackPtcut(0.15),
 								SkipCone(0),
 								IsMC(kTRUE),
+								JetEScale(1.),
+								TrackEScale(1.),
 								fxsec(0.),
 								ftrial(1.),
 								fJetRecEtaWindow(0.5),       // eta window for rec jets
@@ -96,6 +99,12 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 								fH1Track_pt              (0x0),
 								fH1Track_phi             (0x0),
 								fH1Track_eta             (0x0),
+								fH1MCTrack_pt            (0x0),
+								fH1MCTrack_phi           (0x0),
+								fH1MCTrack_eta           (0x0),
+								fH1MCPrimTrack_pt        (0x0),
+								fH1MCPrimTrack_phi       (0x0),
+								fH1MCPrimTrack_eta       (0x0),
 								fH1Jet_pt                (0x0),
 								fH1Jet_phi               (0x0),
 								fH1Jet_eta               (0x0),
@@ -121,7 +130,11 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 								fH2Mult_Aj              (0x0),
 								fH2Mlead_Aj             (0x0),
 								fH2Jet_pt_Mlead         (0x0),
-								fH2Jet_pt_Munder        (0x0)
+								fH2Jet_pt_Munder        (0x0),
+								fH2leadJetMCptResolution(0x0),
+								fH2TrackMCptResolution(0x0),
+								fH2AjCorrelation_MCRec(0x0),
+								fH2MleadCorrelation_MCRec(0x0)
 {
 				for(int j=0;j<5;j++){
 								fH1ndiJ_ediv                             [j]=0;
@@ -135,6 +148,12 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 												fH1JetHadron_dphi_ediv           [j][k]=0;
 												fH1JetHadron_dphi_tptweight_ediv [j][k]=0;
 												fH1JetHadron_dphi_tJptweight_ediv[j][k]=0;
+												fH1JetHadronMC_dphi_ediv           [j][k]=0;
+												fH1JetHadronMC_dphi_tptweight_ediv [j][k]=0;
+												fH1JetHadronMC_dphi_tJptweight_ediv[j][k]=0;
+												fH1JetHadronMCPrim_dphi_ediv           [j][k]=0;
+												fH1JetHadronMCPrim_dphi_tptweight_ediv [j][k]=0;
+												fH1JetHadronMCPrim_dphi_tJptweight_ediv[j][k]=0;
 								}
 				}
 				for(int j=0;j<3;j++){
@@ -143,6 +162,10 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 								for(int k=0;k<5;k++){
 												fH1JetHadron_dphi_tptweight2040_Mleaddep[j][k]=0;
 												fH1JetHadron_dphi_tptweight2040_Ajdep   [j][k]=0;
+												fH1JetHadronMC_dphi_tptweight2040_Mleaddep[j][k]=0;
+												fH1JetHadronMC_dphi_tptweight2040_Ajdep   [j][k]=0;
+												fH1JetHadronMCPrim_dphi_tptweight2040_Mleaddep[j][k]=0;
+												fH1JetHadronMCPrim_dphi_tptweight2040_Ajdep   [j][k]=0;
 								}
 				}
 				// Default constructor
@@ -165,6 +188,8 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 				TrackPtcut(0.15),
 				SkipCone(0),
 				IsMC(kTRUE),
+				JetEScale(1.),
+				TrackEScale(1.),
 				fxsec(0.),
 				ftrial(1.),
 				fJetRecEtaWindow(0.5),       // eta window for rec jets
@@ -178,6 +203,12 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 				fH1Track_pt              (0x0),
 				fH1Track_phi             (0x0),
 				fH1Track_eta             (0x0),
+				fH1MCTrack_pt            (0x0),
+				fH1MCTrack_phi           (0x0),
+				fH1MCTrack_eta           (0x0),
+				fH1MCPrimTrack_pt        (0x0),
+				fH1MCPrimTrack_phi       (0x0),
+				fH1MCPrimTrack_eta       (0x0),
 				fH1Jet_pt                (0x0),
 				fH1Jet_phi               (0x0),
 				fH1Jet_eta               (0x0),
@@ -203,7 +234,11 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 				fH2Mult_Aj              (0x0),
 				fH2Mlead_Aj             (0x0),
 				fH2Jet_pt_Mlead         (0x0),
-				fH2Jet_pt_Munder        (0x0)
+				fH2Jet_pt_Munder        (0x0),
+				fH2leadJetMCptResolution(0x0),
+				fH2TrackMCptResolution(0x0),
+				fH2AjCorrelation_MCRec(0x0),
+				fH2MleadCorrelation_MCRec(0x0)
 {
 				for(int j=0;j<5;j++){
 								fH1ndiJ_ediv                             [j]=0;
@@ -217,6 +252,12 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 												fH1JetHadron_dphi_ediv           [j][k]=0;
 												fH1JetHadron_dphi_tptweight_ediv [j][k]=0;
 												fH1JetHadron_dphi_tJptweight_ediv[j][k]=0;
+												fH1JetHadronMC_dphi_ediv           [j][k]=0;
+												fH1JetHadronMC_dphi_tptweight_ediv [j][k]=0;
+												fH1JetHadronMC_dphi_tJptweight_ediv[j][k]=0;
+												fH1JetHadronMCPrim_dphi_ediv           [j][k]=0;
+												fH1JetHadronMCPrim_dphi_tptweight_ediv [j][k]=0;
+												fH1JetHadronMCPrim_dphi_tJptweight_ediv[j][k]=0;
 								}
 				}
 				for(int j=0;j<3;j++){
@@ -225,6 +266,10 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 								for(int k=0;k<5;k++){
 												fH1JetHadron_dphi_tptweight2040_Mleaddep[j][k]=0;
 												fH1JetHadron_dphi_tptweight2040_Ajdep   [j][k]=0;
+												fH1JetHadronMC_dphi_tptweight2040_Mleaddep[j][k]=0;
+												fH1JetHadronMC_dphi_tptweight2040_Ajdep   [j][k]=0;
+												fH1JetHadronMCPrim_dphi_tptweight2040_Mleaddep[j][k]=0;
+												fH1JetHadronMCPrim_dphi_tptweight2040_Ajdep   [j][k]=0;
 								}
 				}
 
@@ -275,6 +320,12 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 				fH1Track_pt                = new TH1F("Track_pt"          ,"Track_pt"          ,400,0,400);
 				fH1Track_phi               = new TH1F("Track_phi"         ,"Track_phi"         ,100,0,2*pi);
 				fH1Track_eta               = new TH1F("Track_eta"         ,"Track_eta"         ,100,-1.,1);
+				fH1MCTrack_pt              = new TH1F("MCTrack_pt"        ,"MCTrack_pt"        ,400,0,400);
+				fH1MCTrack_phi             = new TH1F("MCTrack_phi"       ,"MCTrack_phi"       ,100,0,2*pi);
+				fH1MCTrack_eta             = new TH1F("MCTrack_eta"       ,"MCTrack_eta"       ,100,-1.,1);
+				fH1MCPrimTrack_pt          = new TH1F("MCPrimTrack_pt"    ,"MCPrimTrack_pt"    ,400,0,400);
+				fH1MCPrimTrack_phi         = new TH1F("MCPrimTrack_phi"   ,"MCPrimTrack_phi"   ,100,0,2*pi);
+				fH1MCPrimTrack_eta         = new TH1F("MCPrimTrack_eta"   ,"MCPrimTrack_eta"   ,100,-1.,1);
 				fH1Jet_pt                  = new TH1F("Jet_pt"            ,"Jet_pt"            ,400,0,400);
 				fH1Jet_phi                 = new TH1F("Jet_phi"           ,"Jet_pt"            ,100,0,2*pi);
 				fH1Jet_eta                 = new TH1F("Jet_eta"           ,"Jet_pt"            ,100,-1.,1);
@@ -307,6 +358,14 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 				fH2Jet_pt_Mlead               = new TH2F(histname,histname,50,0,200,25,0,25);   
 				histname = Form("Jet_pt_Munder");                                               
 				fH2Jet_pt_Munder              = new TH2F(histname,histname,50,0,200,25,0,5);    
+				histname = Form("leadJetMCptResolution");                                               
+				fH2leadJetMCptResolution      = new TH2F(histname,histname,100,0,200,100,0,200);    
+				histname = Form("TrackMCptResolution");                                               
+				fH2TrackMCptResolution      = new TH2F(histname,histname,100,0,200,100,0,200);    
+				histname = Form("AjCorrelation_MCRec");                                               
+				fH2AjCorrelation_MCRec      = new TH2F(histname,histname,60,0,1.2,60,0,1.2);    
+				histname = Form("MleadCorrelation_MCRec");                                               
+				fH2MleadCorrelation_MCRec      = new TH2F(histname,histname,60,0,60,60,0,60);    
 
 				for(int j=0;j<5;j++){
 								histname = Form("ndiJ_ediv%d",j);
@@ -331,6 +390,20 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 												fH1JetHadron_dphi_tptweight_ediv   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
 												histname = Form("JetHadron_dphi_tJptweight_ediv%d%d",j,k);
 												fH1JetHadron_dphi_tJptweight_ediv  [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+
+												histname = Form("JetHadronMC_dphi_ediv%d%d",j,k);
+												fH1JetHadronMC_dphi_ediv             [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadronMC_dphi_tptweight_ediv%d%d",j,k);
+												fH1JetHadronMC_dphi_tptweight_ediv   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadronMC_dphi_tJptweight_ediv%d%d",j,k);
+												fH1JetHadronMC_dphi_tJptweight_ediv  [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+
+												histname = Form("JetHadronMCPrim_dphi_ediv%d%d",j,k);
+												fH1JetHadronMCPrim_dphi_ediv             [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadronMCPrim_dphi_tptweight_ediv%d%d",j,k);
+												fH1JetHadronMCPrim_dphi_tptweight_ediv   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadronMCPrim_dphi_tJptweight_ediv%d%d",j,k);
+												fH1JetHadronMCPrim_dphi_tJptweight_ediv  [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
 								}
 				}
 				for(int j=0;j<3;j++){
@@ -343,6 +416,14 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 												fH1JetHadron_dphi_tptweight2040_Mleaddep   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
 												histname = Form("JetHadron_dphi_tptweight2040_Ajdep%d%d",j,k);
 												fH1JetHadron_dphi_tptweight2040_Ajdep      [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadronMC_dphi_tptweight2040_Mleaddep%d%d",j,k);
+												fH1JetHadronMC_dphi_tptweight2040_Mleaddep   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadronMC_dphi_tptweight2040_Ajdep%d%d",j,k);
+												fH1JetHadronMC_dphi_tptweight2040_Ajdep      [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadronMCPrim_dphi_tptweight2040_Mleaddep%d%d",j,k);
+												fH1JetHadronMCPrim_dphi_tptweight2040_Mleaddep   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
+												histname = Form("JetHadronMCPrim_dphi_tptweight2040_Ajdep%d%d",j,k);
+												fH1JetHadronMCPrim_dphi_tptweight2040_Ajdep      [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
 								}
 				}
 
@@ -350,6 +431,15 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 				if(IsMC){
 								fHistList->Add(fH1Xsec);
 								fHistList->Add(fH1Trials);
+								fHistList->Add(fH1Track_pt        );
+								fHistList->Add(fH1Track_phi       );
+								fHistList->Add(fH1Track_eta       );
+								fHistList->Add(fH1MCTrack_pt      );
+								fHistList->Add(fH1MCTrack_phi     );
+								fHistList->Add(fH1MCTrack_eta     );
+								fHistList->Add(fH1MCPrimTrack_pt  );
+								fHistList->Add(fH1MCPrimTrack_phi );
+								fHistList->Add(fH1MCPrimTrack_eta );
 								fHistList->Add(fH1JetMC_pt          );
 								fHistList->Add(fH1leadJetMC_pt      );
 								fHistList->Add(fH1leadJetMC_pt_dijet);
@@ -368,6 +458,10 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 								fHistList->Add(fH2JetsJet_deta      );
 								fHistList->Add(fH2JetsJet_Aj        );
 								fHistList->Add(fH2JetsJet_pt        );
+								fHistList->Add(fH2leadJetMCptResolution);
+								fHistList->Add(fH2TrackMCptResolution);
+								fHistList->Add(fH2AjCorrelation_MCRec);
+								fHistList->Add(fH2MleadCorrelation_MCRec);
 								for(int j=0;j<5;j++){
 												fHistList->Add(fH1ndiJ_ediv                        [j]);
 												fHistList->Add(fH1leadJetMC_dphiResolution          [j]);
@@ -378,6 +472,24 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 																fHistList->Add(fH1JetHadron_dphi_ediv               [j][k]);
 																fHistList->Add(fH1JetHadron_dphi_tptweight_ediv     [j][k]);
 																fHistList->Add(fH1JetHadron_dphi_tJptweight_ediv    [j][k]);
+																fHistList->Add(fH1JetHadronMC_dphi_ediv               [j][k]);
+																fHistList->Add(fH1JetHadronMC_dphi_tptweight_ediv     [j][k]);
+																fHistList->Add(fH1JetHadronMC_dphi_tJptweight_ediv    [j][k]);
+																fHistList->Add(fH1JetHadronMCPrim_dphi_ediv               [j][k]);
+																fHistList->Add(fH1JetHadronMCPrim_dphi_tptweight_ediv     [j][k]);
+																fHistList->Add(fH1JetHadronMCPrim_dphi_tJptweight_ediv    [j][k]);
+												}
+								}
+								for(int j=0;j<3;j++){
+												fHistList->Add(fH1ndiJ_2040Mlead    [j]);
+												fHistList->Add(fH1ndiJ_2040Aj       [j]);
+												for(int k=0;k<5;k++){
+																fHistList->Add(fH1JetHadron_dphi_tptweight2040_Mleaddep     [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_tptweight2040_Ajdep        [j][k]);
+																fHistList->Add(fH1JetHadronMC_dphi_tptweight2040_Mleaddep     [j][k]);
+																fHistList->Add(fH1JetHadronMC_dphi_tptweight2040_Ajdep        [j][k]);
+																fHistList->Add(fH1JetHadronMCPrim_dphi_tptweight2040_Mleaddep     [j][k]);
+																fHistList->Add(fH1JetHadronMCPrim_dphi_tptweight2040_Ajdep        [j][k]);
 												}
 								}
 				}
@@ -404,11 +516,10 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 								fHistList->Add(fH2Mlead_Aj        );   
 								fHistList->Add(fH2Jet_pt_Mlead    );   
 								fHistList->Add(fH2Jet_pt_Munder   );  
-
 								for(int j=0;j<5;j++){
 												fHistList->Add(fH1ndiJ_ediv    [j]);
-												fHistList->Add(fH1Aj   [j]);
-												fHistList->Add(fH1Mlead[j]);
+												fHistList->Add(fH1Aj           [j]);
+												fHistList->Add(fH1Mlead        [j]);
 												for(int k=0;k<5;k++){
 																fHistList->Add(fH1JetHadron_dphi_ediv             [j][k]);
 																fHistList->Add(fH1JetHadron_dphi_tptweight_ediv   [j][k]);
@@ -547,20 +658,24 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 				Float_t pi=TMath::Pi();
 
 				Double_t Jet_n    [20];
-				Double_t Jet_pt   [20][1000];
-				Double_t Jet_phi  [20][1000];
-				Double_t Jet_eta  [20][1000];
-				Double_t Jet_area [20][1000];
+				Double_t Jet_pt   [20][5000];
+				Double_t Jet_phi  [20][5000];
+				Double_t Jet_eta  [20][5000];
+				Double_t Jet_area [20][5000];
 				Double_t subJet_n  [20];
-				Double_t subJet_pt [20][1000];
-				Double_t subJet_eta[20][1000];
-				Double_t subJet_phi[20][1000];
+				Double_t subJet_pt [20][5000];
+				Double_t subJet_eta[20][5000];
+				Double_t subJet_phi[20][5000];
 				Double_t Track_n  ;
-				Double_t Track_pt [1000];
-				Double_t Track_eta[1000];
-				Double_t Track_phi[1000];
+				Double_t Track_pt [5000];
+				Double_t Track_eta[5000];
+				Double_t Track_phi[5000];
+				Double_t MCTrack_n  ;
+				Double_t MCTrack_pt [5000];
+				Double_t MCTrack_eta[5000];
+				Double_t MCTrack_phi[5000];
 
-				Track_n=0;
+				Track_n=0;MCTrack_n=0;
 				for(int i=0;i<20;i++){
 								Jet_n[i]=0;
 								subJet_n[i]=0;
@@ -575,6 +690,9 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												Track_pt [j]=0.;
 												Track_phi[j]=999.;
 												Track_eta[j]=999.;
+												MCTrack_pt [j]=0.;
+												MCTrack_phi[j]=999.;
+												MCTrack_eta[j]=999.;
 								}
 				}
 
@@ -584,15 +702,15 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 				bool findLJetAOD=false;bool findsLJetAOD=false;
 				bool findLJetMC2=false;bool findsLJetMC2=false;
 				bool findLJetMC =false;bool findsLJetMC =false;
-				bool findDiJet=false;
+				bool findDiJet=false,findDiJetMC=false;
 				int nLJet = 999;
 				int nsLJet =999;
 				int Mjet_tot =0;
 				int Njet_tot =0;
 
-				double Aj=0;
-				double Mlead=0;
-				int    Munder=0;
+				double Aj=99.,AjMC=99.;
+				double Mlead=99.,MleadMC=99.;
+				int    Munder=99.;
 
 				//--------------------------------------------------------------------Init.
 
@@ -637,7 +755,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								//Find Leading Jet -------------------------------------------------------
 								for(int njet =0;njet<nj;njet++){
 												jetsAOD = (AliAODJet*) (jets->At(njet));
-												Jet_pt   [algorithm][njet] = jetsAOD->Pt();
+												Jet_pt   [algorithm][njet] = jetsAOD->Pt()*JetEScale;
 												Jet_phi  [algorithm][njet] = jetsAOD->Phi();  
 												Jet_eta  [algorithm][njet] = jetsAOD->Eta();
 												Jet_area [algorithm][njet] = jetsAOD->EffectiveAreaCharged();
@@ -678,13 +796,18 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												TRefArray *reftracks = jetsAOD->GetRefTracks();
 												Mlead = reftracks->GetEntriesFast();
 								}
+								if(findLJetAOD&&(algorithm==1)){
+												jetsAOD = (AliAODJet*) (jets->At(nLJet));
+												TRefArray *reftracks = jetsAOD->GetRefTracks();
+												MleadMC = reftracks->GetEntriesFast();
+								}
 								//----------------------------------------------------------- Leading Jet
 								if(nj<2)continue;
 								//Find Sub leading Jet ==================================================
 								for(int njet=0;njet<nj;njet++){
 												if(njet==nLJet)continue;
 												jetsAOD = (AliAODJet *)jets->At(njet);
-												subJet_pt [algorithm][njet] = jetsAOD->Pt();
+												subJet_pt [algorithm][njet] = jetsAOD->Pt()*JetEScale;
 												subJet_phi[algorithm][njet] = jetsAOD->Phi();
 												subJet_eta[algorithm][njet] = jetsAOD->Eta();
 												double eta_cut_Jet=0.5;
@@ -725,7 +848,8 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												fH2JetsJetMC_deta->Fill(Leading_pt,DEta);
 								}
 								if((TMath::Cos(DPhi)<-0.5)&&(Leading_pt>10.)&&(sLeading_pt>10.)){
-												Aj = (Leading_pt-sLeading_pt)/(Leading_pt+sLeading_pt);
+												if(algorithm==0)Aj   = (Leading_pt-sLeading_pt)/(Leading_pt+sLeading_pt);
+												if(algorithm==1)AjMC = (Leading_pt-sLeading_pt)/(Leading_pt+sLeading_pt);
 												if(algorithm==0){
 																fH1leadJet_pt_dijet->Fill(Leading_pt);
 																fH1subJet_pt_dijet ->Fill(sLeading_pt);
@@ -738,29 +862,94 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																								fH1Aj[eb]   ->Fill(Aj);
 																				}
 																}
-
 												}
 												if(algorithm==1){
 																fH1leadJetMC_pt_dijet->Fill(Leading_pt);
 																fH1subJetMC_pt_dijet ->Fill(sLeading_pt);
-																fH2JetsJetMC_Aj      ->Fill(Leading_pt,Aj);
+																fH2JetsJetMC_Aj      ->Fill(Leading_pt,AjMC);
 																fH2JetsJetMC_pt      ->Fill(Leading_pt,sLeading_pt);
+																findDiJetMC=true;
 												}
 												findDiJet=true;
+
 								}
 								////+++++++++++++++++++++++++++++++++++++++++++++++ Di-Jet event trigger 
+
+								//if(algorithm==1){//IDEAL Jet-Hadron Correlation
+								//				if((findDiJet)&&(Leading_pt>10.)&&(sLeading_pt>10.)){
+								//								double eta_cut_Jet=0.5;
+								//								if(TMath::Abs(Leading_eta)<eta_cut_Jet){
+								//												for(int eb=0;eb<5;eb++){
+								//																if(TMath::Abs(Leading_pt -10.-20.*(eb))<10.){
+								//																				//fH1ndiJMCIdeal_ediv[eb]->Fill(1);
+								//																				//if(eb==1){
+								//																				//				if((0<Mlead)&&Mlead<7)              {fH1ndiJ_2040Mlead[0]->Fill(1);}
+								//																				//				else if((7<=Mlead)&&(Mlead<10))     {fH1ndiJ_2040Mlead[1]->Fill(1);}
+								//																				//				else                                {fH1ndiJ_2040Mlead[2]->Fill(1);}
+								//																				//				if((0<Aj)&&(Aj<0.19))               {fH1ndiJ_2040Aj   [0]->Fill(1);}
+								//																				//				else if((0.19<=Aj)&&(Aj<0.38))      {fH1ndiJ_2040Aj   [1]->Fill(1);}
+								//																				//				else                                {fH1ndiJ_2040Aj   [2]->Fill(1);}
+								//																				//}
+								//																				//fH1MleadMCIdeal[eb]->Fill(Mlead);
+								//																				//fH1AjIdeal[eb]   ->Fill(Aj);
+
+								//																				//MC Track
+								//																				TClonesArray* mctracks = dynamic_cast <TClonesArray*> (fAODIn->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+								//																				if(!mctracks){
+								//																								if (fDebug > 1)  Printf("%s:%d could not get AODMCtracks", (char*)__FILE__,__LINE__);
+								//																								continue;
+								//																				}
+								//																				Int_t ntmc = mctracks->GetEntriesFast();
+								//																				AliAODMCParticle* trackMCAOD;
+								//																				int lastprim=0;
+								//																				for(int ntrack =0;ntrack<ntmc;ntrack++){
+								//																								trackMCAOD = (AliAODMCParticle*) (mctracks->At(ntrack));
+								//																								if((trackMCAOD->IsPhysicalPrimary())==1)lastprim=ntrack;
+								//																				}
+								//																				for(int ntrack =0;ntrack<ntmc;ntrack++){
+								//																								trackMCAOD = (AliAODMCParticle*) (mctracks->At(ntrack));
+								//																								if((trackMCAOD->IsPhysicalPrimary())&&(trackMCAOD->Charge())){// for Physical particles
+								//																												double DelPhi = DeltaPhi(Leading_phi,trackMCAOD->Phi());
+								//																												if(TMath::Abs(trackMCAOD->Era())<0.9){
+								//																																for(int teb=0;teb<5;teb++){
+								//																																				if(teb==0){if(!( trackMCAOD->Pt()>0.15))continue;}
+								//																																				if(teb==1){if(!((trackMCAOD->Pt()<1.5)&&(trackMCAOD->Pt()>0.15)))continue;}
+								//																																				if(teb==2){if(!((trackMCAOD->Pt()<3.0)&&(trackMCAOD->Pt()>1.5)))continue;}
+								//																																				if(teb==3){if(!((trackMCAOD->Pt()<4.5)&&(trackMCAOD->Pt()>3.0)))continue;}
+								//																																				if(teb==4){if(!( trackMCAOD->Pt()>4.5))continue;}
+								//																																				fH1JetHadronMCIdeal_dphi_ediv                [eb][teb]->Fill(DelPhi); 
+								//																																				fH1JetHadronMCIdeal_dphi_tptweight_ediv      [eb][teb]->Fill(DelPhi,trackMCAOD->Pt());
+								//																																				fH1JetHadronMCIdeal_dphi_tJptweight_ediv     [eb][teb]->Fill(DelPhi,trackMCAOD->Pt()/Leading_pt);
+								//																																				if(eb==1){
+								//																																								if((0<Mlead)&&Mlead<7)         {fH1JetHadronMCIdeal_dphi_tptweight2040_Mleaddep[0][teb]->Fill(DelPhi,trackMCAOD->Pt());}
+								//																																								else if((7<=Mlead)&&(Mlead<10)){fH1JetHadronMCIdeal_dphi_tptweight2040_Mleaddep[1][teb]->Fill(DelPhi,trackMCAOD->Pt());}
+								//																																								else                           {fH1JetHadronMCIdeal_dphi_tptweight2040_Mleaddep[2][teb]->Fill(DelPhi,trackMCAOD->Pt());}
+								//																																								if((0<Aj)&&(Aj<0.19))          {fH1JetHadronMCIdeal_dphi_tptweight2040_Ajdep   [0][teb]->Fill(DelPhi,trackMCAOD->Pt());}
+								//																																								else if((0.19<=Aj)&&(Aj<0.38)) {fH1JetHadronMCIdeal_dphi_tptweight2040_Ajdep   [1][teb]->Fill(DelPhi,trackMCAOD->Pt());}
+								//																																								else                           {fH1JetHadronMCIdeal_dphi_tptweight2040_Ajdep   [2][teb]->Fill(DelPhi,trackMCAOD->Pt());}
+								//																																				}
+								//																																}
+								//																												}
+								//																								}
+								//																				}//Track Loop
+								//																}
+								//												}
+								//								}
+								//				}
+								//}
 
 								if(algorithm!=0)continue;// for only data & reconstructed Jets
 
 								//count number of tracks@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
+								//Reconstructed Track
 								TClonesArray* tracks = dynamic_cast <TClonesArray*> (fAODIn->GetTracks());
 								if(!tracks){
 												if (fDebug > 1)  Printf("%s:%d could not get AODtracks", (char*)__FILE__,__LINE__);
 												continue;
 								}
-								Int_t nt = fAODIn->GetNumberOfTracks();
 
-								AliAODTrack* trackAOD;
+								Int_t nt = fAODIn->GetNumberOfTracks();
+								AliAODTrack* trackAOD=NULL;
 								for(int ntrack =0;ntrack<nt;ntrack++){
 												trackAOD = (AliAODTrack*) (tracks->At(ntrack));
 												Bool_t bgoodT=false;
@@ -769,33 +958,71 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												if(!bgoodT)continue;
 												if(TMath::Abs(trackAOD->Eta())<0.9){
 																Track_n++;
-																fH1Track_pt ->Fill(trackAOD->Pt());
+																fH1Track_pt ->Fill(trackAOD->Pt()*TrackEScale);
 																fH1Track_phi->Fill(trackAOD->Phi());
 																fH1Track_eta->Fill(trackAOD->Eta());
+
+																// track pt resplution-------------------
+																Int_t MCID = TMath::Abs(trackAOD->GetLabel());
+																TClonesArray* mctracks = dynamic_cast <TClonesArray*> (fAODIn->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+																if(!mctracks){
+																				if (fDebug > 1)  Printf("%s:%d could not get AODMCtracks", (char*)__FILE__,__LINE__);
+																				continue;
+																}
+																AliAODMCParticle *trackMCAOD = (AliAODMCParticle*) mctracks->At(MCID);
+																fH2TrackMCptResolution->Fill(trackMCAOD->Pt(),trackAOD->Pt());
+																// --------------------------------------
 												}
 								}
+								if(IsMC){// still under construction
+												//MC Track
+												TClonesArray* mctracks = dynamic_cast <TClonesArray*> (fAODIn->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+												if(!mctracks){
+																if (fDebug > 1)  Printf("%s:%d could not get AODMCtracks", (char*)__FILE__,__LINE__);
+																continue;
+												}
+												Int_t ntmc = mctracks->GetEntriesFast();
+												AliAODMCParticle* trackMCAOD;
+												int lastprim=0;
+												for(int ntrack =0;ntrack<ntmc;ntrack++){
+																trackMCAOD = (AliAODMCParticle*) (mctracks->At(ntrack));
+																if((trackMCAOD->IsPhysicalPrimary())==1)lastprim=ntrack;
+												}
+												for(int ntrack =0;ntrack<ntmc;ntrack++){
+																trackMCAOD = (AliAODMCParticle*) (mctracks->At(ntrack));
+																if((trackMCAOD->GetPdgCode()>10)&&((trackMCAOD->GetMother())>1)&&(ntrack>lastprim)&&(trackMCAOD->Charge())){// for Decay particles
+																				fH1MCTrack_pt ->Fill(trackAOD->Pt());
+																				fH1MCTrack_phi->Fill(trackAOD->Phi());
+																				fH1MCTrack_eta->Fill(trackAOD->Eta());
+																}
+																if((trackMCAOD->IsPhysicalPrimary())&&(trackMCAOD->Charge())){// for Physical particles
+																				MCTrack_n++;
+																				fH1MCTrack_pt ->Fill(trackAOD->Pt());
+																				fH1MCTrack_phi->Fill(trackAOD->Phi());
+																				fH1MCTrack_eta->Fill(trackAOD->Eta());
+																				fH1MCPrimTrack_pt ->Fill(trackAOD->Pt());
+																				fH1MCPrimTrack_phi->Fill(trackAOD->Phi());
+																				fH1MCPrimTrack_eta->Fill(trackAOD->Eta());
+																}
+												}
+								}//still under construction
 								//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  count number of tracks
 
 								//Jet-Hadron Correlation###############################################
 								if((findDiJet)&&(Leading_pt>10.)&&(sLeading_pt>10.)){
-												for(int eb=0;eb<5;eb++){//count number of Di-Jet in pt bin
-																if(TMath::Abs(Leading_pt -10.-20.*(eb))<10.){
-																				fH1ndiJ_ediv[eb]->Fill(1);
-																}
-																if(eb==1){
-																				if((0<Mlead)&&Mlead<8)              {fH1ndiJ_2040Mlead[0]->Fill(1);}
-																				else if((8<=Mlead)&&(Mlead<12))     {fH1ndiJ_2040Mlead[1]->Fill(1);}
-																				else                                {fH1ndiJ_2040Mlead[2]->Fill(1);}
-																				if((0<Aj)&&(Aj<0.2))                {fH1ndiJ_2040Aj   [0]->Fill(1);}
-																				else if((0.2<=Aj)&&(Aj<0.4))        {fH1ndiJ_2040Aj   [1]->Fill(1);}
-																				else                                {fH1ndiJ_2040Aj   [2]->Fill(1);}
-																}
-												}
-
 												double eta_cut_Jet=0.5;
 												if(TMath::Abs(Leading_eta)<eta_cut_Jet){
 																for(int eb=0;eb<5;eb++){
 																				if(TMath::Abs(Leading_pt -10.-20.*(eb))<10.){
+																								fH1ndiJ_ediv[eb]->Fill(1);
+																								if(eb==1){
+																												if((0<Mlead)&&Mlead<7)              {fH1ndiJ_2040Mlead[0]->Fill(1);}
+																												else if((7<=Mlead)&&(Mlead<10))     {fH1ndiJ_2040Mlead[1]->Fill(1);}
+																												else                                {fH1ndiJ_2040Mlead[2]->Fill(1);}
+																												if((0<Aj)&&(Aj<0.19))               {fH1ndiJ_2040Aj   [0]->Fill(1);}
+																												else if((0.19<=Aj)&&(Aj<0.38))      {fH1ndiJ_2040Aj   [1]->Fill(1);}
+																												else                                {fH1ndiJ_2040Aj   [2]->Fill(1);}
+																								}
 																								fH1Mlead[eb]->Fill(Mlead);
 																								for(int ntrack =0;ntrack<nt;ntrack++){
 																												trackAOD = (AliAODTrack*) (fAODIn->GetTrack(ntrack));
@@ -803,7 +1030,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																												if(Filtermask!=768){if(trackAOD->TestFilterMask(Filtermask))bgoodT=true;}
 																												else{               if(trackAOD->IsHybridGlobalConstrainedGlobal())bgoodT=true;} //for hybrid Track cuts
 																												if(!bgoodT)continue;
-																												Track_pt   [ntrack]      = trackAOD->Pt();
+																												Track_pt   [ntrack]      = trackAOD->Pt()*TrackEScale;
 																												Track_phi  [ntrack]      = trackAOD->Phi();
 																												Track_eta  [ntrack]      = trackAOD->Eta();
 																												double DelPhi = DeltaPhi(Leading_phi,Track_phi[ntrack]);
@@ -819,27 +1046,107 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																																				fH1JetHadron_dphi_tptweight_ediv      [eb][teb]->Fill(DelPhi,Track_pt[ntrack]);
 																																				fH1JetHadron_dphi_tJptweight_ediv     [eb][teb]->Fill(DelPhi,Track_pt[ntrack]/Leading_pt);
 																																				if(eb==1){
-																																								if((0<Mlead)&&Mlead<8)         {fH1JetHadron_dphi_tptweight2040_Mleaddep[0][teb]->Fill(DelPhi,Track_pt[ntrack]);}
-																																								else if((8<=Mlead)&&(Mlead<12)){fH1JetHadron_dphi_tptweight2040_Mleaddep[1][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								if((0<Mlead)&&Mlead<7)         {fH1JetHadron_dphi_tptweight2040_Mleaddep[0][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								else if((7<=Mlead)&&(Mlead<10)){fH1JetHadron_dphi_tptweight2040_Mleaddep[1][teb]->Fill(DelPhi,Track_pt[ntrack]);}
 																																								else                           {fH1JetHadron_dphi_tptweight2040_Mleaddep[2][teb]->Fill(DelPhi,Track_pt[ntrack]);}
-																																								if((0<Aj)&&(Aj<0.2))           {fH1JetHadron_dphi_tptweight2040_Ajdep   [0][teb]->Fill(DelPhi,Track_pt[ntrack]);}
-																																								else if((0.2<=Aj)&&(Aj<0.4))   {fH1JetHadron_dphi_tptweight2040_Ajdep   [1][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								if((0<Aj)&&(Aj<0.19))          {fH1JetHadron_dphi_tptweight2040_Ajdep   [0][teb]->Fill(DelPhi,Track_pt[ntrack]);}
+																																								else if((0.19<=Aj)&&(Aj<0.38)) {fH1JetHadron_dphi_tptweight2040_Ajdep   [1][teb]->Fill(DelPhi,Track_pt[ntrack]);}
 																																								else                           {fH1JetHadron_dphi_tptweight2040_Ajdep   [2][teb]->Fill(DelPhi,Track_pt[ntrack]);}
 																																				}
 																																}
 																												}
 																								}//Track Loop
+																								if(IsMC){// still under construction
+																												//MC Track
+																												TClonesArray* mctracks = dynamic_cast <TClonesArray*> (fAODIn->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+																												if(!mctracks){
+																																if (fDebug > 1)  Printf("%s:%d could not get AODMCtracks", (char*)__FILE__,__LINE__);
+																																continue;
+																												}
+																												Int_t ntmc = mctracks->GetEntriesFast();
+																												AliAODMCParticle* trackMCAOD;
+																												int lastprim=0;
+																												for(int ntrack =0;ntrack<ntmc;ntrack++){
+																																trackMCAOD = (AliAODMCParticle*) (mctracks->At(ntrack));
+																																if((trackMCAOD->IsPhysicalPrimary())==1)lastprim=ntrack;
+																												}
+																												for(int ntrack =0;ntrack<ntmc;ntrack++){
+																																trackMCAOD = (AliAODMCParticle*) (mctracks->At(ntrack));
+																																if((trackMCAOD->GetPdgCode()>10)&&((trackMCAOD->GetMother())>1)&&(ntrack>lastprim)&&(trackMCAOD->Charge())){// for Decay particles
+																																				MCTrack_pt   [ntrack]      = trackMCAOD->Pt();
+																																				MCTrack_phi  [ntrack]      = trackMCAOD->Phi();
+																																				MCTrack_eta  [ntrack]      = trackMCAOD->Eta();
+																																				double DelPhi = DeltaPhi(Leading_phi,MCTrack_phi[ntrack]);
+																																				if(TMath::Abs(MCTrack_eta[ntrack])<0.9){
+																																								for(int teb=0;teb<5;teb++){
+																																												if(teb==0){if(!( MCTrack_pt[ntrack]>0.15))continue;}
+																																												if(teb==1){if(!((MCTrack_pt[ntrack]<1.5)&&(MCTrack_pt[ntrack]>0.15)))continue;}
+																																												if(teb==2){if(!((MCTrack_pt[ntrack]<3.0)&&(MCTrack_pt[ntrack]>1.5)))continue;}
+																																												if(teb==3){if(!((MCTrack_pt[ntrack]<4.5)&&(MCTrack_pt[ntrack]>3.0)))continue;}
+																																												if(teb==4){if(!( MCTrack_pt[ntrack]>4.5))continue;}
+																																												fH1JetHadronMC_dphi_ediv                [eb][teb]->Fill(DelPhi); 
+																																												fH1JetHadronMC_dphi_tptweight_ediv      [eb][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);
+																																												fH1JetHadronMC_dphi_tJptweight_ediv     [eb][teb]->Fill(DelPhi,MCTrack_pt[ntrack]/Leading_pt);
+																																												if(eb==1){
+																																																if((0<Mlead)&&Mlead<7)         {fH1JetHadronMC_dphi_tptweight2040_Mleaddep[0][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else if((7<=Mlead)&&(Mlead<10)){fH1JetHadronMC_dphi_tptweight2040_Mleaddep[1][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else                           {fH1JetHadronMC_dphi_tptweight2040_Mleaddep[2][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																if((0<Aj)&&(Aj<0.19))          {fH1JetHadronMC_dphi_tptweight2040_Ajdep   [0][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else if((0.19<=Aj)&&(Aj<0.38)) {fH1JetHadronMC_dphi_tptweight2040_Ajdep   [1][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else                           {fH1JetHadronMC_dphi_tptweight2040_Ajdep   [2][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																												}
+																																								}
+																																				}
+																																}
+																																if((trackMCAOD->IsPhysicalPrimary())&&(trackMCAOD->Charge())){// for Physical particles
+																																				MCTrack_pt   [ntrack]      = trackMCAOD->Pt();
+																																				MCTrack_phi  [ntrack]      = trackMCAOD->Phi();
+																																				MCTrack_eta  [ntrack]      = trackMCAOD->Eta();
+																																				double DelPhi = DeltaPhi(Leading_phi,MCTrack_phi[ntrack]);
+																																				if(TMath::Abs(MCTrack_eta[ntrack])<0.9){
+																																								for(int teb=0;teb<5;teb++){
+																																												if(teb==0){if(!( MCTrack_pt[ntrack]>0.15))continue;}
+																																												if(teb==1){if(!((MCTrack_pt[ntrack]<1.5)&&(MCTrack_pt[ntrack]>0.15)))continue;}
+																																												if(teb==2){if(!((MCTrack_pt[ntrack]<3.0)&&(MCTrack_pt[ntrack]>1.5)))continue;}
+																																												if(teb==3){if(!((MCTrack_pt[ntrack]<4.5)&&(MCTrack_pt[ntrack]>3.0)))continue;}
+																																												if(teb==4){if(!( MCTrack_pt[ntrack]>4.5))continue;}
+																																												fH1JetHadronMC_dphi_ediv                [eb][teb]->Fill(DelPhi); 
+																																												fH1JetHadronMC_dphi_tptweight_ediv      [eb][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);
+																																												fH1JetHadronMC_dphi_tJptweight_ediv     [eb][teb]->Fill(DelPhi,MCTrack_pt[ntrack]/Leading_pt);
+																																												fH1JetHadronMCPrim_dphi_ediv                [eb][teb]->Fill(DelPhi); 
+																																												fH1JetHadronMCPrim_dphi_tptweight_ediv      [eb][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);
+																																												fH1JetHadronMCPrim_dphi_tJptweight_ediv     [eb][teb]->Fill(DelPhi,MCTrack_pt[ntrack]/Leading_pt);
+																																												if(eb==1){
+																																																if((0<Mlead)&&Mlead<7)         {fH1JetHadronMC_dphi_tptweight2040_Mleaddep[0][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else if((7<=Mlead)&&(Mlead<10)){fH1JetHadronMC_dphi_tptweight2040_Mleaddep[1][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else                           {fH1JetHadronMC_dphi_tptweight2040_Mleaddep[2][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																if((0<Aj)&&(Aj<0.19))          {fH1JetHadronMC_dphi_tptweight2040_Ajdep   [0][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else if((0.19<=Aj)&&(Aj<0.38)) {fH1JetHadronMC_dphi_tptweight2040_Ajdep   [1][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else                           {fH1JetHadronMC_dphi_tptweight2040_Ajdep   [2][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+
+																																																if((0<Mlead)&&Mlead<7)         {fH1JetHadronMCPrim_dphi_tptweight2040_Mleaddep[0][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else if((7<=Mlead)&&(Mlead<10)){fH1JetHadronMCPrim_dphi_tptweight2040_Mleaddep[1][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else                           {fH1JetHadronMCPrim_dphi_tptweight2040_Mleaddep[2][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																if((0<Aj)&&(Aj<0.19))          {fH1JetHadronMCPrim_dphi_tptweight2040_Ajdep   [0][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else if((0.19<=Aj)&&(Aj<0.38)) {fH1JetHadronMCPrim_dphi_tptweight2040_Ajdep   [1][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																																else                           {fH1JetHadronMCPrim_dphi_tptweight2040_Ajdep   [2][teb]->Fill(DelPhi,MCTrack_pt[ntrack]);}
+																																												}
+																																								}
+																																				}
+																																}
+																												}
+																								}//still under construction
 																				}
-																}
+																}// Momentum Loop Jet
+																fH2Jet_pt_Munder   ->Fill(Leading_pt,(double)Munder/(1.8*pi/2.)*Jet_area[0][nLJet]);
+																fH2Jet_pt_Mlead    ->Fill(Leading_pt,Mlead);
 												}//eta cut
-												fH2Jet_pt_Munder   ->Fill(Leading_pt,(double)Munder/(1.8*pi/2.)*Jet_area[0][nLJet]);
-												fH2Jet_pt_Mlead    ->Fill(Leading_pt,Mlead);
 								}// Di-Jet
 								//############################################### Jet-Hadron Correlation
 				}// algorithm LOOP
 				if(IsMC){
 								for(int eb=0;eb<5;eb++){
-												double DPhi;double DEta;
+												double DPhi,DEta;
 												if(TMath::Abs(ptLJetAOD -10.-20.*(eb))<10.){
 																DPhi = DeltaPhi(phiLJetMC,phiLJetAOD);
 																DEta = etaLJetMC-etaLJetAOD;
@@ -851,6 +1158,12 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																fH1subJetMC_dphiResolution[eb]->Fill(DPhi);
 																if(sqrt(pow(DPhi,2)+pow(DEta,2))<0.4)fH1subJetMC_Efficiency[eb]->Fill(1);
 																else                                 fH1subJetMC_Efficiency[eb]->Fill(0);
+																DPhi = DeltaPhi(phiLJetMC2,phiLJetAOD);
+																DEta = etaLJetMC2-etaLJetAOD;
+
+																if(sqrt(pow(DPhi,2)+pow(DEta,2))<0.4)fH2leadJetMCptResolution->Fill(ptLJetMC2,ptLJetAOD);
+																if(findDiJetMC)fH2AjCorrelation_MCRec   ->Fill(AjMC,Aj);
+																if(findDiJetMC)fH2MleadCorrelation_MCRec->Fill(MleadMC,Mlead);
 												}
 								}
 				}
@@ -871,18 +1184,6 @@ void AliAnalysisTaskJetHadronCorrelation::Terminate(Option_t *){
 				if (fDebug) printf("AnalysisTaskPt: Terminate() \n");
 }
 
-
-Bool_t  AliAnalysisTaskJetHadronCorrelation::JetSelected(AliAODJet *jet){
-				Bool_t selected = false;
-
-				if(!jet)return selected;
-
-				if(fabs(jet->Eta())<fJetRecEtaWindow&&jet->Pt()>fMinJetPt){
-								selected = kTRUE;
-				}
-				return selected;
-
-}
 Double_t AliAnalysisTaskJetHadronCorrelation::DeltaPhi(Double_t phi1,Double_t phi2){
 				Float_t pi=TMath::Pi();
 				Double_t dphi = phi1-phi2;
