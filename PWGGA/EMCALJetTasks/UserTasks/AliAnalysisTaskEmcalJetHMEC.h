@@ -1,7 +1,7 @@
 #ifndef AliAnalysisTaskEmcalJetHMEC_H
 #define AliAnalysisTaskEmcalJetHMEC_H
 
-// $Id: $
+// $Id$
 
 class TList;
 class TH1;
