@@ -58,6 +58,7 @@ class AliIsolationCut : public TObject {
   
   Float_t    GetConeSize()            const { return fConeSize       ; }
   Float_t    GetPtThreshold()         const { return fPtThreshold    ; }
+  Float_t    GetPtThresholdMax()      const { return fPtThresholdMax    ; }
   Float_t    GetSumPtThreshold()      const { return fSumPtThreshold ; }
   Float_t    GetPtFraction()          const { return fPtFraction     ; }
   Int_t      GetICMethod()            const { return fICMethod       ; }
@@ -66,6 +67,7 @@ class AliIsolationCut : public TObject {
 	
   void       SetConeSize(Float_t r)         { fConeSize       = r    ; }
   void       SetPtThreshold(Float_t pt)     { fPtThreshold    = pt   ; }
+  void       SetPtThresholdMax(Float_t pt)  { fPtThresholdMax    = pt   ; }
   void       SetSumPtThreshold(Float_t s)   { fSumPtThreshold = s    ; }
   void       SetPtFraction(Float_t pt)      { fPtFraction     = pt   ; }
   void       SetICMethod(Int_t i )          { fICMethod       = i    ; }
@@ -76,6 +78,7 @@ class AliIsolationCut : public TObject {
   
   Float_t    fConeSize ;       // Size of the isolation cone 
   Float_t    fPtThreshold ;    // Mimium pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
+  Float_t    fPtThresholdMax ; // Maximum pt of the particles outside the cone (needed to fit shower distribution isolated/non-isolated particles)
   Float_t    fSumPtThreshold ; // Minium of sum pt of the particles in the cone (UE sum in the forward region cone)
   Float_t    fPtFraction ;     // Fraction of the momentum of particles in cone or sum in cone
   Int_t      fICMethod ;       // Isolation cut method to be used
