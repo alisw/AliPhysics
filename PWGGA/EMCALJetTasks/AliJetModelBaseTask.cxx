@@ -207,25 +207,24 @@ void AliJetModelBaseTask::CopyClusters()
 
   Bool_t esdMode = (Bool_t)(fClusters->GetClass()->GetBaseClass("AliESDCaloCluster") != 0);
   const Int_t nClusters = fClusters->GetEntriesFast();
+  Int_t nCopiedClusters = 0;
   
   if (esdMode) {
     for (Int_t i = 0; i < nClusters; ++i) {
       AliESDCaloCluster *esdcluster = static_cast<AliESDCaloCluster*>(fClusters->At(i));
-      if (!esdcluster)
+      if (!esdcluster || !esdcluster->IsEMCAL())
 	continue;
-      if (!esdcluster->IsEMCAL())
-	continue;
-      new ((*fOutClusters)[i]) AliESDCaloCluster(*esdcluster);
+      new ((*fOutClusters)[nCopiedClusters]) AliESDCaloCluster(*esdcluster);
+      nCopiedClusters++;
     }
   }
   else {
     for (Int_t i = 0; i < nClusters; ++i) {
       AliAODCaloCluster *aodcluster = static_cast<AliAODCaloCluster*>(fClusters->At(i));
-      if (!aodcluster)
+      if (!aodcluster || !aodcluster->IsEMCAL())
 	continue;
-      if (!aodcluster->IsEMCAL())
-	continue;
-      new ((*fOutClusters)[i]) AliAODCaloCluster(*aodcluster);
+      new ((*fOutClusters)[nCopiedClusters]) AliAODCaloCluster(*aodcluster);
+      nCopiedClusters++;
     }
   }
 }
@@ -234,11 +233,13 @@ void AliJetModelBaseTask::CopyClusters()
 void AliJetModelBaseTask::CopyTracks()
 {
   const Int_t nTracks = fTracks->GetEntriesFast();
+  Int_t nCopiedTracks = 0;
   for (Int_t i = 0; i < nTracks; ++i) {
     AliPicoTrack *track = static_cast<AliPicoTrack*>(fTracks->At(i));
     if (!track)
       continue;
-    new ((*fOutTracks)[i]) AliPicoTrack(*track);
+    new ((*fOutTracks)[nCopiedTracks]) AliPicoTrack(*track);
+    nCopiedTracks++;
   }
 }
 
