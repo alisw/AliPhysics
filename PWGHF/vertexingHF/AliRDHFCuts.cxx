@@ -272,6 +272,8 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   // 
   //if(fTriggerMask && event->GetTriggerMask()!=fTriggerMask) return kFALSE;
 
+
+
   fWhyRejection=0;
   fEvRejectionBits=0;
   Bool_t accept=kTRUE;
@@ -330,6 +332,13 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
       fEvRejectionBits+=1<<kNotSelTrigger;
       accept=kFALSE;
     }
+  }
+
+  // TEMPORARY FIX FOR GetEvent
+  Int_t nTracks=((AliAODEvent*)event)->GetNTracks();
+  for(Int_t itr=0; itr<nTracks; itr++){
+    AliAODTrack* tr=(AliAODTrack*)((AliAODEvent*)event)->GetTrack(itr);
+    tr->SetAODEvent((AliAODEvent*)event);
   }
 
   // TEMPORARY FIX FOR REFERENCES
@@ -721,7 +730,7 @@ void AliRDHFCuts::PrintAll() const {
   printf("Minimum vtx contr %d\n",fMinVtxContr);
   printf("Max vtx red chi2 %f\n",fMaxVtxRedChi2);
   printf("Min SPD mult %d\n",fMinSPDMultiplicity);
-  printf("Use PID %d\n",(Int_t)fUsePID);
+  printf("Use PID %d  OldPid=%d\n",(Int_t)fUsePID,fPidHF ? fPidHF->GetOldPid() : -1);
   printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
   printf("Recompute primary vertex %d\n",(Int_t)fRecomputePrimVertex);
   printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
