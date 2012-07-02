@@ -61,7 +61,28 @@
 // AliGenMUONCocktailpp::SetCMSEnergy(int CMSEnergyCode), CMSEnergy codes are
 // defined in AliGenMUONCocktailpp.h.
 // - added functions to scale x-section of JPsi, Charmonia, Bottomonia, CCbar & BBbar
-// in Config.C, e.g. AliGenMUONCocktailpp::ScaleJPsi(2.5), to manage the statistics.
+// in Config.C to manage the statistics. Example of usage (in a cocktail with Hijing):
+/*
+  AliGenCocktail *cocktail = new AliGenCocktail();
+  cocktail->AddGenerator(hijing,"hijing",1);
+  TFormula *form[nb];  // nb - number of centrality bins with impact params bBins[i]
+  AliGenMUONCocktailpp *gen[nb];
+  for (Int_t i=0; i<nb; i++) {
+    form[i] = new TFormula(Form("f%d",i),"[0]+(x-[1])/([2]-[1])");
+    form[i]->SetParameters(i+1, bBins[i], bBins[i+1]);
+    gen[i] = MuonCocktail();
+    gen[i]->SetCentralityBin(i+1);
+    gen[i]->ScaleJPsi(100.);
+    gen[i]->CreateCocktail();
+    cocktail->AddGenerator(gen[i], Form("g%d",i), 101+i, form[i]);
+  }
+AliGenMUONCocktailpp* MuonCocktail() {
+  AliGenMUONCocktailpp *mc = new AliGenMUONCocktailpp();
+  ....................................
+  return mc;
+}
+*/
+// - a bug fixed in the function Generate()
 // S. Grigoryan
  
 #include <TObjArray.h>
@@ -670,9 +691,10 @@ void AliGenMUONCocktailpp::Generate()
 
     Bool_t primordialTrigger = kFALSE;
     while(!primordialTrigger) {
-	//Reseting stack
+	//Reseting stack (if fMuonMultiplicity > 0 : S. Grigoryan, June 2012)
 	AliRunLoader * runloader = AliRunLoader::Instance();
-	if (runloader)
+	//	if (runloader)
+	if (runloader && fMuonMultiplicity > 0)
 	    if (runloader->Stack())
 		runloader->Stack()->Clean();
 	// Loop over generators and generate events
