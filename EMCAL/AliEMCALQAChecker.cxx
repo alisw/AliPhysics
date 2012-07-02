@@ -162,6 +162,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
   Int_t nTowersPerSM = 24*48; // number of towers in a SuperModule; 24x48
   Double_t nTot = fgknSM * nTowersPerSM ;
   TList *lstF = 0;
+  Int_t calibSpecieId = (Int_t)TMath::Log2( AliRecoParam::kCalib );
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 0.0 ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) continue ; 
@@ -226,7 +227,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 			} // calib histo checking done
 
 			//now L1 checks:
-			if(hL1GammaPatch->GetEntries() !=0) {
+      if (specie != calibSpecieId) {
+			if(hL1GammaPatch->GetEntries() !=0 ) {
 				lstF = hL1GammaPatch->GetListOfFunctions();
 				CleanListOfFunctions(lstF);
 
@@ -315,6 +317,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 					}
 				}//fTextL1[1]
 			} // L1 Jet patch checking done
+      } // if (specie != calibSpecieId) ..
 
 			if(hFrameR->GetEntries() !=0) {
 				lstF = hFrameR->GetListOfFunctions();
@@ -348,9 +351,9 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 					}   
 				}//fTextL1[2]
 			} // Checker for link TRU-STU done
-		}	
+    }
 
-	}
+  } // specie
 }
 //______________________________________________________________________________
 
