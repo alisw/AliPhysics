@@ -53,6 +53,16 @@ TF1* Getv2Contamination_20_30(){
 
 }
 
+Double_t Contamination_40_50(const Double_t *x, const Double_t *par) 
+{
+  
+  if(x[0] < 2.5) return 0.0326072;
+  Double_t value = -0.00908646-0.00201815*x[0]+0.0026871*x[0]*x[0];
+  if(x[0] >= 2.5) return value;
+
+
+}
+
 
 AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix, Int_t tpcCls, Double_t tpcClsr,Int_t tpcClspid, Double_t tpcsharedfraction, Int_t itsCls, Double_t chi2peritscl, Int_t pixellayer, Double_t dcaxy, Double_t dcaz,  Double_t tofsig, Double_t *tpcdedx, Int_t vzero, Int_t debuglevel, Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE)
 {
@@ -210,25 +220,32 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix, In
   }
 
   // Define hadron contamination
-  TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]+[1]*x+[2]*x*x+[3]*x*x*x", 0., 200.);
+  //TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]+[1]*x+[2]*x*x+[3]*x*x*x", 0., 200.);
   // 20-30%
-  hBackground->SetParameter(0, -0.165789);
-  hBackground->SetParameter(1, 0.218694);
-  hBackground->SetParameter(2, -0.076635);
-  hBackground->SetParameter(3, 0.00947502);
-  task->SetContamination(hBackground,3);
-  TF1 *fv2_20_30 = Getv2Contamination_20_30();  
+  TF1 *hBackground_20_30 = new TF1("hadronicBackgroundFunction_20_30","[0]+[1]*x+[2]*x*x+[3]*x*x*x", 0., 200.);
+  hBackground_20_30->SetParameter(0, -0.165789);
+  hBackground_20_30->SetParameter(1, 0.218694);
+  hBackground_20_30->SetParameter(2, -0.076635);
+  hBackground_20_30->SetParameter(3, 0.00947502);
+  task->SetContamination(hBackground_20_30,3);
+  TF1 *fv2_20_30 = Getv2Contamination_20_30(); 
+  fv2_20_30->SetName("fv2_20_30"); 
   if(fv2_20_30) task->SetV2Contamination(fv2_20_30,3);
   // 30-40%
-  hBackground->SetParameter(0, -0.072222);
-  hBackground->SetParameter(1, 0.132098);
-  hBackground->SetParameter(2, -0.0561759);
-  hBackground->SetParameter(3, 0.00789356);
-  task->SetContamination(hBackground,4);
-  TF1 *fv2_30_40 = Getv2Contamination_30_40();  
+  TF1 *hBackground_30_40 = new TF1("hadronicBackgroundFunction_30_40","[0]+[1]*x+[2]*x*x+[3]*x*x*x", 0., 200.);
+  hBackground_30_40->SetParameter(0, -0.072222);
+  hBackground_30_40->SetParameter(1, 0.132098);
+  hBackground_30_40->SetParameter(2, -0.0561759);
+  hBackground_30_40->SetParameter(3, 0.00789356);
+  task->SetContamination(hBackground_30_40,4);
+  TF1 *fv2_30_40 = Getv2Contamination_30_40();
+  fv2_30_40->SetName("fv2_30_40");   
   if(fv2_30_40) task->SetV2Contamination(fv2_30_40,4);
   // 40-50%
-  TF1 *fv2_40_50 = Getv2Contamination_40_50();  
+  TF1 *hBackground_40_50 = new TF1("hadronicBackgroundFunction_40_50",Contamination_40_50,0.,200.,0);
+  task->SetContamination(hBackground_40_50,5);
+  TF1 *fv2_40_50 = Getv2Contamination_40_50(); 
+  fv2_40_50->SetName("fv2_40_50");  
   if(fv2_40_50) task->SetV2Contamination(fv2_40_50,5);
 
 
