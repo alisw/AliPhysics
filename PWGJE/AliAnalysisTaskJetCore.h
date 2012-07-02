@@ -81,7 +81,7 @@ public:
    virtual void     SetFlagEtaBkg(Int_t yesno){fFlagEtaBkg=yesno;}
    virtual void     SetFlagJetHadron(Int_t yesno){fFlagJetHadron=yesno;}
    virtual void     SetFlagRandom(Int_t yesno){fFlagRandom=yesno;}
- 
+   virtual void     SetFlagOnlyRecoil(Int_t yesno){fFlagRandom=yesno;}
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
    virtual void     SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
    virtual void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
@@ -130,6 +130,7 @@ private:
    Int_t   fFlagEtaBkg;
    Int_t   fFlagJetHadron;
    Int_t   fFlagRandom;
+   Int_t   fFlagOnlyRecoil;
    Int_t   fRPAngle;
    Int_t   fNRPBins;
    Float_t fJetEtaMin;        // lower bound on eta for found jets
@@ -187,8 +188,8 @@ private:
   
      TH2F*      fh2Ntriggers;              //triggers
      TH2F*      fh2Ntriggers2;             //centrality bias of triggers 
-     TH2F*      fh2JetDensity;             //jet density
-     TH2F*      fh2JetDensityA4;           //jet density
+     TH3F*      fh3JetDensity;             //jet density
+     TH3F*      fh3JetDensityA4;           //jet density
      TH2F*      fh2RPJets;                  //reaction plane from tracks
      TH3F*      fh3spectriggeredC4080;         //triggered spectra
      TH3F*      fh3spectriggeredC20;           //triggered spectra
