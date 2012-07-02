@@ -988,7 +988,7 @@ void SetDielectronMCSignals(AliDielectron *die)
 }
 
 //______________________________________________________________________________________
-void SetEtaCorrection()
+/*void SetEtaCorrection()
 {
 //
 // Eta equalization for the TPC response
@@ -1009,4 +1009,4 @@ void SetEtaCorrection()
       AliDielectronPID::SetEtaCorrFunction((TF1*)f.Get(kName.Data()));
     }
   }
-}
+}*/
