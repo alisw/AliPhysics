@@ -91,7 +91,11 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhZTPosCharged(0),              fhZTNegCharged(0),
     fhPtHbpZTCharged(0),            fhPtHbpZTUeCharged(0),
     fhDeltaPhiUeLeftCharged(0),     fhDeltaPhiUeRightCharged(0),
+    fhDeltaPhiUeLeftUpCharged(0),   fhDeltaPhiUeRightUpCharged(0),
+    fhDeltaPhiUeLeftDownCharged(0), fhDeltaPhiUeRightDownCharged(0),
     fhXEUeLeftCharged(0),           fhXEUeRightCharged(0),
+    fhXEUeLeftUpCharged(0),         fhXEUeRightUpCharged(0),
+    fhXEUeLeftDownCharged(0),       fhXEUeRightDownCharged(0),
     fhPtHbpXEUeLeftCharged(0),      fhPtHbpXEUeRightCharged(0), 
     fhZTUeLeftCharged(0),           fhZTUeRightCharged(0),
     fhPtHbpZTUeLeftCharged(0),      fhPtHbpZTUeRightCharged(0), 
@@ -99,8 +103,9 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhTrigDeltaPhiCharged(0x0),     fhTrigDeltaEtaCharged(0x0),
     fhTrigXECorr(0x0),              fhTrigXEUeCorr(0x0),
     fhTrigZTCorr(0x0),              fhTrigZTUeCorr(0x0),
-    fhAssocPtBkg(0),  
-    fhDeltaPhiAssocPtBin(0),        fhDeltaPhiAssocPtBinDEta08(0), 
+    fhAssocPtBkg(0),                fhDeltaPhiDeltaEtaAssocPtBin(0),
+    fhDeltaPhiAssocPtBin(0),        
+    fhDeltaPhiAssocPtBinDEta08(0),  fhDeltaPhiAssocPtBinDEta0(0),
     fhDeltaPhiAssocPtBinHMPID(0),   fhDeltaPhiAssocPtBinHMPIDAcc(0),
     fhDeltaPhiBradAssocPtBin(0),    fhDeltaPhiBrad(0),
     fhXEAssocPtBin(0),              fhZTAssocPtBin(0),             
@@ -137,13 +142,14 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhNtracksAll(0),                fhNtracksTrigger(0),            
     fhNtracksMB(0),               
     fhMixDeltaPhiCharged(0),        fhMixDeltaPhiDeltaEtaCharged(0),
-    fhMixXECharged(0), fhMixHbpXECharged(0),
+    fhMixXECharged(0),              fhMixHbpXECharged(0),
     fhMixDeltaPhiChargedAssocPtBin(),
     fhMixDeltaPhiChargedAssocPtBinDEta08(),
+    fhMixDeltaPhiChargedAssocPtBinDEta0(),
     fhMixDeltaPhiDeltaEtaChargedAssocPtBin(),
     fhEventBin(0),                  fhEventMixBin(0)
 { 
-  //Default Ctor
+  //Default Ctor 
     
   //Initialize parameters
   InitParameters();
@@ -196,7 +202,7 @@ AliAnaParticleHadronCorrelation::~AliAnaParticleHadronCorrelation()
 }
 
 //______________________________________________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(const Float_t ptAssoc,  const Float_t ptTrig,   const Int_t   assocBin,
+void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(const Float_t ptAssoc,  const Float_t ptTrig,   const Int_t   bin,
                                                                               const Float_t phiAssoc, const Float_t phiTrig,  Float_t &     deltaPhi,
                                                                               const Float_t etaAssoc, const Float_t etaTrig,  
                                                                               const Bool_t  decay,    const Float_t hmpidSignal, const Int_t nTracks)
@@ -233,31 +239,36 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(co
   }
   
   // Fill histograms in bins of associated particle pT
-  if(assocBin>=0)
+  if(bin>=0)
   {
-      fhDeltaPhiAssocPtBin            [assocBin]->Fill(ptTrig, deltaPhi);
+      fhDeltaPhiDeltaEtaAssocPtBin    [bin]->Fill(deltaPhi,deltaEta);
+
+      fhDeltaPhiAssocPtBin            [bin]->Fill(ptTrig, deltaPhi);
     
     if(TMath::Abs(deltaEta)> 0.8) 
-      fhDeltaPhiAssocPtBinDEta08      [assocBin]->Fill(ptTrig, deltaPhi);
+      fhDeltaPhiAssocPtBinDEta08      [bin]->Fill(ptTrig, deltaPhi);
+
+    if(TMath::Abs(deltaEta)< 0.05) 
+      fhDeltaPhiAssocPtBinDEta0       [bin]->Fill(ptTrig, deltaPhi);
     
     if (fFillBradHisto)
-      fhDeltaPhiBradAssocPtBin        [assocBin]->Fill(ptTrig, dphiBrad);
+      fhDeltaPhiBradAssocPtBin        [bin]->Fill(ptTrig, dphiBrad);
     
     if(fDecayTrigger && decay)
-      fhDeltaPhiDecayChargedAssocPtBin[assocBin]->Fill(ptTrig, deltaPhi);      
+      fhDeltaPhiDecayChargedAssocPtBin[bin]->Fill(ptTrig, deltaPhi);      
     
     if(fHMPIDCorrelation)
     {
       if( hmpidSignal > 0 )
       {
         //printf("Track pt %f with HMPID signal %f \n",pt,hmpidSignal);
-        fhDeltaPhiAssocPtBinHMPID[assocBin]->Fill(ptTrig, deltaPhi);        
+        fhDeltaPhiAssocPtBinHMPID[bin]->Fill(ptTrig, deltaPhi);        
       }
       
       if(phiAssoc > 5*TMath::DegToRad() && phiAssoc < 20*TMath::DegToRad())
       {
         //printf("Track pt %f in HMPID acceptance phi %f \n ",pt,phi*TMath::RadToDeg() );
-        fhDeltaPhiAssocPtBinHMPIDAcc[assocBin]->Fill(ptTrig, deltaPhi);        
+        fhDeltaPhiAssocPtBinHMPIDAcc[bin]->Fill(ptTrig, deltaPhi);        
       }
     }
   }
@@ -364,7 +375,7 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
                                                                              const Float_t zT,       const Float_t hbpZT, 
                                                                              const Float_t pout,     const Float_t deltaPhi,
                                                                              const Int_t   nTracks,  const Int_t   charge,
-                                                                             const Int_t   assocBin, const Bool_t  decay    )
+                                                                             const Int_t   bin, const Bool_t  decay    )
 
 {
   // Fill mostly momentum imbalance related histograms
@@ -383,15 +394,15 @@ void AliAnaParticleHadronCorrelation::FillChargedMomentumImbalanceHistograms(con
     fhZTDecayCharged->Fill(ptTrig,zT);
   } // photon decay pi0/eta trigger        
   
-  if(assocBin >= 0 )//away side 
+  if(bin >= 0 )//away side 
   {
-    fhXEAssocPtBin[assocBin]->Fill(ptTrig, xE) ;
-    fhZTAssocPtBin[assocBin]->Fill(ptTrig, zT) ;
+    fhXEAssocPtBin[bin]->Fill(ptTrig, xE) ;
+    fhZTAssocPtBin[bin]->Fill(ptTrig, zT) ;
     
     if(fDecayTrigger && decay)
     {          
-      fhXEDecayChargedAssocPtBin[assocBin]->Fill(ptTrig, xE); 
-      fhZTDecayChargedAssocPtBin[assocBin]->Fill(ptTrig, zT);
+      fhXEDecayChargedAssocPtBin[bin]->Fill(ptTrig, xE); 
+      fhZTDecayChargedAssocPtBin[bin]->Fill(ptTrig, zT);
     }
   }        
   
@@ -453,10 +464,9 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(const
   } //multiplicity events selection
 }
 
-//___________________________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(const Float_t ptTrig,   const Float_t ptAssoc, 
-                                                                                const Float_t xE,       const Float_t hbpXE, 
-                                                                                const Float_t zT,       const Float_t hbpZT, 
+//_____________________________________________________________________________________________________
+void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(const Float_t ptTrig, 
+                                                                                const Float_t ptAssoc, 
                                                                                 const Float_t deltaPhi)
 {
  // Fill underlying event histograms to the left and right of trigger
@@ -493,6 +503,50 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventSidesHistograms(
     if(uexE > 0) fhPtHbpZTUeRightCharged->Fill(ptTrig,TMath::Log(1/uezT));
     fhDeltaPhiUeRightCharged->Fill(ptAssoc, deltaPhi);
   }
+
+  if((deltaPhi<-fUeDeltaPhiMinCut) && (deltaPhi >-TMath::Pi()/2))
+  {  
+    fhDeltaPhiUeLeftDownCharged->Fill(ptAssoc,deltaPhi); 
+    Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
+    Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
+    
+    if(uexE < 0.) uexE = -uexE;
+    
+    fhXEUeLeftDownCharged->Fill(ptTrig,uexE);
+  }
+  
+  if((deltaPhi>2*fUeDeltaPhiMaxCut) && (deltaPhi <3*TMath::Pi()/2))
+  {  
+    fhDeltaPhiUeLeftUpCharged->Fill(ptAssoc,deltaPhi); 
+    Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
+    Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
+    
+    if(uexE < 0.) uexE = -uexE;
+    
+    fhXEUeLeftUpCharged->Fill(ptTrig,uexE);
+  }
+  
+  if((deltaPhi > TMath::Pi()/2) && (deltaPhi < fUeDeltaPhiMaxCut))
+  {  
+    fhDeltaPhiUeRightUpCharged->Fill(ptAssoc,deltaPhi); 
+    Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
+    Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
+    
+    if(uexE < 0.) uexE = -uexE;
+    
+    fhXEUeRightUpCharged->Fill(ptTrig,uexE);
+  }
+  
+  if((deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < TMath::Pi()/2))
+  {  
+    fhDeltaPhiUeRightDownCharged->Fill(ptAssoc,deltaPhi); 
+    Double_t randomphi = gRandom->Uniform(fDeltaPhiMinCut,fDeltaPhiMaxCut);
+    Double_t uexE = -(ptAssoc/ptTrig)*TMath::Cos(randomphi);
+    
+    if(uexE < 0.) uexE = -uexE;
+    
+    fhXEUeRightDownCharged->Fill(ptTrig,uexE);
+  }  
 } 
 
 //______________________________________________________________________________________________________________________________
@@ -1114,116 +1168,138 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       outputContainer->Add(fhDeltaPhiBrad) ;
     }
     
-    fhDeltaPhiAssocPtBin       = new TH2F*[fNAssocPtBins] ;
-    fhDeltaPhiAssocPtBinDEta08 = new TH2F*[fNAssocPtBins] ;
-    fhXEAssocPtBin             = new TH2F*[fNAssocPtBins] ;
-    fhZTAssocPtBin             = new TH2F*[fNAssocPtBins] ;
+    fhDeltaPhiDeltaEtaAssocPtBin = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+    fhDeltaPhiAssocPtBin       = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+    fhDeltaPhiAssocPtBinDEta08 = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+    fhDeltaPhiAssocPtBinDEta0  = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+    fhXEAssocPtBin             = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+    fhZTAssocPtBin             = new TH2F*[fNAssocPtBins*GetNZvertBin()];
     
     if(fFillBradHisto)  
-      fhDeltaPhiBradAssocPtBin = new TH2F*[fNAssocPtBins] ;
+      fhDeltaPhiBradAssocPtBin = new TH2F*[fNAssocPtBins*GetNZvertBin()];
     
     if(fPi0Trigger || fDecayTrigger)
     {
-      fhDeltaPhiAssocPtBin       = new TH2F*[fNAssocPtBins] ;
-      fhDeltaPhiAssocPtBinDEta08 = new TH2F*[fNAssocPtBins] ;
-      fhXEAssocPtBin             = new TH2F*[fNAssocPtBins] ;
-      fhZTAssocPtBin             = new TH2F*[fNAssocPtBins] ;
-      fhXEDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins] ;
-      fhZTDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins] ;
-      fhDeltaPhiDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins] ;
+      fhDeltaPhiAssocPtBin       = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+      fhDeltaPhiAssocPtBinDEta08 = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+      fhXEAssocPtBin             = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+      fhZTAssocPtBin             = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+      fhXEDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+      fhZTDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+      fhDeltaPhiDecayChargedAssocPtBin = new TH2F*[fNAssocPtBins*GetNZvertBin()];
     }
 
     if(fHMPIDCorrelation)
     {
-      fhDeltaPhiAssocPtBinHMPID   = new TH2F*[fNAssocPtBins] ;
-      fhDeltaPhiAssocPtBinHMPIDAcc= new TH2F*[fNAssocPtBins] ;
+      fhDeltaPhiAssocPtBinHMPID   = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+      fhDeltaPhiAssocPtBinHMPIDAcc= new TH2F*[fNAssocPtBins*GetNZvertBin()];
     }
     
     for(Int_t i = 0 ; i < fNAssocPtBins ; i++)
     {
-      fhDeltaPhiAssocPtBin[i] = new TH2F(Form("hDeltaPhiPtAssocPt%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                         Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                         nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
-      fhDeltaPhiAssocPtBin[i]->SetXTitle("p_{T trigger}");
-      fhDeltaPhiAssocPtBin[i]->SetYTitle("#Delta #phi");
-       
-      fhDeltaPhiAssocPtBinDEta08[i] = new TH2F(Form("hDeltaPhiDeltaEta0.8PtAssocPt%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                               Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], for #Delta #eta > 0.8", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                               nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
-      fhDeltaPhiAssocPtBinDEta08[i]->SetXTitle("p_{T trigger}");
-      fhDeltaPhiAssocPtBinDEta08[i]->SetYTitle("#Delta #phi");      
-      
-      fhXEAssocPtBin[i]       = new TH2F(Form("hXEAssocPtBin%1.f_%1.f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                         Form("x_{E} vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                         nptbins, ptmin, ptmax,200, 0.0, 2.0);
-      fhXEAssocPtBin[i]->SetXTitle("p_{T trigger}");
-      fhXEAssocPtBin[i]->SetYTitle("x_{E}");
-      
-      fhZTAssocPtBin[i]       = new TH2F(Form("hZTAssocPtBin%1.f_%1.f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                         Form("z_{T} vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                         nptbins, ptmin, ptmax,200, 0.0, 2.0);
-      fhZTAssocPtBin[i]->SetXTitle("p_{T trigger}");
-      fhZTAssocPtBin[i]->SetYTitle("z_{T}");
-      
-      outputContainer->Add(fhDeltaPhiAssocPtBin[i]) ;
-      outputContainer->Add(fhDeltaPhiAssocPtBinDEta08[i]) ;
-      outputContainer->Add(fhXEAssocPtBin[i]);
-      outputContainer->Add(fhZTAssocPtBin[i]);
-      
-      if(fPi0Trigger || fDecayTrigger) 
+      for(Int_t z = 0 ; z < GetNZvertBin() ; z++)
       {
-        fhDeltaPhiDecayChargedAssocPtBin[i] = new TH2F(Form("hDeltaPhiPtDecayChargedAssocPt%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                           Form("#Delta #phi vs p_{T trigger} tagged as decay for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+        Int_t bin = i*GetNZvertBin()+z;
+        //printf("iAssoc %d, Vz %d, bin %d	\n",i,z,bin);
+        
+        fhDeltaPhiDeltaEtaAssocPtBin[bin]  = new TH2F(Form("hDeltaPhiPtAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                 Form("#Delta #phi vs #Delta #eta for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                 ndeltaphibins ,deltaphimin,deltaphimax,ndeltaetabins,deltaetamin,deltaetamax); 
+        fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetXTitle("#Delta #phi");
+        fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetYTitle("#Delta #eta");  
+        
+        fhDeltaPhiAssocPtBin[bin] = new TH2F(Form("hDeltaPhiDeltaEtaPtAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                           Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
                                            nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
-        fhDeltaPhiDecayChargedAssocPtBin[i]->SetXTitle("p_{T trigger}");
-        fhDeltaPhiDecayChargedAssocPtBin[i]->SetYTitle("#Delta #phi");
+        fhDeltaPhiAssocPtBin[bin]->SetXTitle("p_{T trigger}");
+        fhDeltaPhiAssocPtBin[bin]->SetYTitle("#Delta #phi");
         
-        fhXEDecayChargedAssocPtBin[i]       = new TH2F(Form("hXEDecayChargedAssocPtBin%1.f_%1.f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                           Form("x_{E} vs p_{T trigger} tagged as decay for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                           nptbins, ptmin, ptmax,200, 0.0, 2.0);
-        fhXEDecayChargedAssocPtBin[i]->SetXTitle("p_{T trigger}");
-        fhXEDecayChargedAssocPtBin[i]->SetYTitle("x_{E}");
-        
-        fhZTDecayChargedAssocPtBin[i]       = new TH2F(Form("hZTDecayChargedAssocPtBin%1.f_%1.f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                           Form("z_{T} vs p_{T trigger} tagged as decay for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                           nptbins, ptmin, ptmax,200, 0.0, 2.0);
-        fhZTDecayChargedAssocPtBin[i]->SetXTitle("p_{T trigger}");
-        fhZTDecayChargedAssocPtBin[i]->SetYTitle("z_{T}");
-        
-        outputContainer->Add(fhDeltaPhiDecayChargedAssocPtBin[i]) ;
-        outputContainer->Add(fhXEDecayChargedAssocPtBin[i]);
-        outputContainer->Add(fhZTDecayChargedAssocPtBin[i]);
-        
-      }
-      
-      if(fFillBradHisto) 
-      {
-        fhDeltaPhiBradAssocPtBin[i] = new TH2F(Form("hDeltaPhiBradPtAssocPt%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                               Form("atan2(sin(#Delta #phi), cos(#Delta #phi))/#pi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                               nptbins, ptmin, ptmax,288, -1.0/3.0, 5.0/3.0);
-        fhDeltaPhiBradAssocPtBin[i]->SetXTitle("p_{T trigger}");
-        fhDeltaPhiBradAssocPtBin[i]->SetYTitle("atan2(sin(#Delta #phi), cos(#Delta #phi))/#pi");
-        outputContainer->Add(fhDeltaPhiBradAssocPtBin[i]) ;
-      }       
-      
-      if(fHMPIDCorrelation)
-      {
-        fhDeltaPhiAssocPtBinHMPID[i] = new TH2F(Form("hDeltaPhiPtAssocPt%2.1f_%2.1fHMPID", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], with track having HMPID signal", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
-        fhDeltaPhiAssocPtBinHMPID[i]->SetXTitle("p_{T trigger}");
-        fhDeltaPhiAssocPtBinHMPID[i]->SetYTitle("#Delta #phi");      
-        
-        fhDeltaPhiAssocPtBinHMPIDAcc[i] = new TH2F(Form("hDeltaPhiPtAssocPt%2.1f_%2.1fHMPIDAcc", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                   Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], with track within 5<phi<20 deg", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+        fhDeltaPhiAssocPtBinDEta08[bin] = new TH2F(Form("hDeltaPhiDeltaEta0.8PtAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                 Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], for #Delta #eta > 0.8", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                                 nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+        fhDeltaPhiAssocPtBinDEta08[bin]->SetXTitle("p_{T trigger}");
+        fhDeltaPhiAssocPtBinDEta08[bin]->SetYTitle("#Delta #phi");      
+
+        fhDeltaPhiAssocPtBinDEta0[bin] = new TH2F(Form("hDeltaPhiDeltaEta0PtAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                   Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], for #Delta #eta = 0.", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
                                                    nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
-        fhDeltaPhiAssocPtBinHMPIDAcc[i]->SetXTitle("p_{T trigger}");
-        fhDeltaPhiAssocPtBinHMPIDAcc[i]->SetYTitle("#Delta #phi"); 
+        fhDeltaPhiAssocPtBinDEta0[bin]->SetXTitle("p_{T trigger}");
+        fhDeltaPhiAssocPtBinDEta0[bin]->SetYTitle("#Delta #phi");    
         
-        outputContainer->Add(fhDeltaPhiAssocPtBinHMPID[i]) ;
-        outputContainer->Add(fhDeltaPhiAssocPtBinHMPIDAcc[i]) ;
+        fhXEAssocPtBin[bin]       = new TH2F(Form("hXEAssocPtBin%1.f_%1.f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                           Form("x_{E} vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                           nptbins, ptmin, ptmax,200, 0.0, 2.0);
+        fhXEAssocPtBin[bin]->SetXTitle("p_{T trigger}");
+        fhXEAssocPtBin[bin]->SetYTitle("x_{E}");
         
-      }      
+        fhZTAssocPtBin[bin]       = new TH2F(Form("hZTAssocPtBin%1.f_%1.f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                           Form("z_{T} vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                           nptbins, ptmin, ptmax,200, 0.0, 2.0);
+        fhZTAssocPtBin[bin]->SetXTitle("p_{T trigger}");
+        fhZTAssocPtBin[bin]->SetYTitle("z_{T}");
+        
+        outputContainer->Add(fhDeltaPhiDeltaEtaAssocPtBin[bin]) ;
+        outputContainer->Add(fhDeltaPhiAssocPtBin[bin]) ;
+        outputContainer->Add(fhDeltaPhiAssocPtBinDEta08[bin]) ;
+        outputContainer->Add(fhDeltaPhiAssocPtBinDEta0[bin]) ;
+        outputContainer->Add(fhXEAssocPtBin[bin]);
+        outputContainer->Add(fhZTAssocPtBin[bin]);
+
+        if(fPi0Trigger || fDecayTrigger) 
+        {
+          fhDeltaPhiDecayChargedAssocPtBin[bin] = new TH2F(Form("hDeltaPhiPtDecayChargedAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                         Form("#Delta #phi vs p_{T trigger} tagged as decay for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                         nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+          fhDeltaPhiDecayChargedAssocPtBin[bin]->SetXTitle("p_{T trigger}");
+          fhDeltaPhiDecayChargedAssocPtBin[bin]->SetYTitle("#Delta #phi");
+          
+          fhXEDecayChargedAssocPtBin[bin]       = new TH2F(Form("hXEDecayChargedAssocPtBin%1.f_%1.f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                         Form("x_{E} vs p_{T trigger} tagged as decay for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                         nptbins, ptmin, ptmax,200, 0.0, 2.0);
+          fhXEDecayChargedAssocPtBin[bin]->SetXTitle("p_{T trigger}");
+          fhXEDecayChargedAssocPtBin[bin]->SetYTitle("x_{E}");
+          
+          fhZTDecayChargedAssocPtBin[bin]       = new TH2F(Form("hZTDecayChargedAssocPtBin%1.f_%1.f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                         Form("z_{T} vs p_{T trigger} tagged as decay for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                         nptbins, ptmin, ptmax,200, 0.0, 2.0);
+          fhZTDecayChargedAssocPtBin[bin]->SetXTitle("p_{T trigger}");
+          fhZTDecayChargedAssocPtBin[bin]->SetYTitle("z_{T}");
+          
+          outputContainer->Add(fhDeltaPhiDecayChargedAssocPtBin[bin]) ;
+          outputContainer->Add(fhXEDecayChargedAssocPtBin[bin]);
+          outputContainer->Add(fhZTDecayChargedAssocPtBin[bin]);
+          
+        }
+        
+        if(fFillBradHisto) 
+        {
+          fhDeltaPhiBradAssocPtBin[bin] = new TH2F(Form("hDeltaPhiBradPtAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                 Form("atan2(sin(#Delta #phi), cos(#Delta #phi))/#pi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                 nptbins, ptmin, ptmax,288, -1.0/3.0, 5.0/3.0);
+          fhDeltaPhiBradAssocPtBin[bin]->SetXTitle("p_{T trigger}");
+          fhDeltaPhiBradAssocPtBin[bin]->SetYTitle("atan2(sin(#Delta #phi), cos(#Delta #phi))/#pi");
+          outputContainer->Add(fhDeltaPhiBradAssocPtBin[bin]) ;
+        }       
+        
+        if(fHMPIDCorrelation)
+        {
+          fhDeltaPhiAssocPtBinHMPID[i] = new TH2F(Form("hDeltaPhiPtAssocPt%2.1f_%2.1fHMPID", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                                  Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], with track having HMPID signal", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                                  nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+          fhDeltaPhiAssocPtBinHMPID[i]->SetXTitle("p_{T trigger}");
+          fhDeltaPhiAssocPtBinHMPID[i]->SetYTitle("#Delta #phi");      
+          
+          fhDeltaPhiAssocPtBinHMPIDAcc[i] = new TH2F(Form("hDeltaPhiPtAssocPt%2.1f_%2.1fHMPIDAcc", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                                     Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], with track within 5<phi<20 deg", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                                     nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+          fhDeltaPhiAssocPtBinHMPIDAcc[i]->SetXTitle("p_{T trigger}");
+          fhDeltaPhiAssocPtBinHMPIDAcc[i]->SetYTitle("#Delta #phi"); 
+          
+          outputContainer->Add(fhDeltaPhiAssocPtBinHMPID[i]) ;
+          outputContainer->Add(fhDeltaPhiAssocPtBinHMPIDAcc[i]) ;
+          
+        }      
+      }
     }
     
     if(fPi0Trigger || fDecayTrigger)
@@ -1277,6 +1353,34 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhDeltaPhiUeRightCharged->SetXTitle("p_{T h^{#pm}} (GeV/c)");
       outputContainer->Add(fhDeltaPhiUeRightCharged) ;
       
+      fhDeltaPhiUeLeftUpCharged  = new TH2F
+      ("hDeltaPhiUeLeftUpChargedPt","#phi_{trigger} - #phi_{#Ueh^{#pm}} vs p_{T Ueh^{#pm}} with UE left Up side range of trigger particles",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiUeLeftUpCharged->SetYTitle("#Delta #phi");
+      fhDeltaPhiUeLeftUpCharged->SetXTitle("p_{T h^{#pm}} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiUeLeftUpCharged) ;
+      
+      fhDeltaPhiUeRightUpCharged  = new TH2F
+      ("hDeltaPhiUeRightUpChargedPt","#phi_{trigger} - #phi_{#Ueh^{#pm}} vs p_{T Ueh^{#pm}} with UE right Up side range of trigger particles",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiUeRightUpCharged->SetYTitle("#Delta #phi");
+      fhDeltaPhiUeRightUpCharged->SetXTitle("p_{T h^{#pm}} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiUeRightUpCharged) ;
+      
+      fhDeltaPhiUeLeftDownCharged  = new TH2F
+      ("hDeltaPhiUeLeftDownChargedPt","#phi_{trigger} - #phi_{#Ueh^{#pm}} vs p_{T Ueh^{#pm}} with UE left Down side range of trigger particles",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiUeLeftDownCharged->SetYTitle("#Delta #phi");
+      fhDeltaPhiUeLeftDownCharged->SetXTitle("p_{T h^{#pm}} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiUeLeftDownCharged) ;
+      
+      fhDeltaPhiUeRightDownCharged  = new TH2F
+      ("hDeltaPhiUeRightDownChargedPt","#phi_{trigger} - #phi_{#Ueh^{#pm}} vs p_{T Ueh^{#pm}} with UE right Down side range of trigger particles",
+       nptbins,ptmin,ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
+      fhDeltaPhiUeRightDownCharged->SetYTitle("#Delta #phi");
+      fhDeltaPhiUeRightDownCharged->SetXTitle("p_{T h^{#pm}} (GeV/c)");
+      outputContainer->Add(fhDeltaPhiUeRightDownCharged) ;
+      
       fhXEUeLeftCharged  = 
       new TH2F("hXEUeChargedLeft","x_{E} with UE left side of trigger",
                nptbins,ptmin,ptmax,200,0.,2.); 
@@ -1290,6 +1394,34 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhXEUeRightCharged->SetYTitle("z_{trigger Ueh^{#pm}}");
       fhXEUeRightCharged->SetXTitle("p_{T trigger}");
       outputContainer->Add(fhXEUeRightCharged) ;
+      
+      fhXEUeLeftUpCharged  = 
+      new TH2F("hXEUeChargedLeftUp","x_{E} with UE left Up side of trigger",
+               nptbins,ptmin,ptmax,200,0.,2.); 
+      fhXEUeLeftUpCharged->SetYTitle("x_{E Ueh^{#pm}}");
+      fhXEUeLeftUpCharged->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhXEUeLeftUpCharged) ;
+      
+      fhXEUeRightUpCharged  = 
+      new TH2F("hXEUeChargedRightUp","x_{E h^{#pm}} with UE right Up side of trigger",
+               nptbins,ptmin,ptmax,200,0.,2.); 
+      fhXEUeRightUpCharged->SetYTitle("z_{trigger Ueh^{#pm}}");
+      fhXEUeRightUpCharged->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhXEUeRightUpCharged) ;
+      
+      fhXEUeLeftDownCharged  = 
+      new TH2F("hXEUeChargedLeftDown","x_{E} with UE left Down side of trigger",
+               nptbins,ptmin,ptmax,200,0.,2.); 
+      fhXEUeLeftDownCharged->SetYTitle("x_{E Ueh^{#pm}}");
+      fhXEUeLeftDownCharged->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhXEUeLeftDownCharged) ;
+      
+      fhXEUeRightDownCharged  = 
+      new TH2F("hXEUeChargedRightDown","x_{E h^{#pm}} with UE right Down side of trigger",
+               nptbins,ptmin,ptmax,200,0.,2.); 
+      fhXEUeRightDownCharged->SetYTitle("z_{trigger Ueh^{#pm}}");
+      fhXEUeRightDownCharged->SetXTitle("p_{T trigger}");
+      outputContainer->Add(fhXEUeRightDownCharged) ;
       
       fhPtHbpXEUeLeftCharged  = 
       new TH2F("hHbpXEUeChargedLeft","#xi = ln(1/x_{E}) with charged UE left side of trigger",
@@ -1333,7 +1465,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhPtHbpZTUeRightCharged->SetXTitle("p_{T trigger}");
       outputContainer->Add(fhPtHbpZTUeRightCharged) ;
       
-    }  
+    } 
   }  //Correlation with charged hadrons
 
   //Correlation with neutral hadrons
@@ -1810,34 +1942,46 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhMixHbpXECharged->SetXTitle("p_{T trigger}");
     outputContainer->Add(fhMixHbpXECharged);
 
-    fhMixDeltaPhiChargedAssocPtBin         = new TH2F*[fNAssocPtBins] ;
-    fhMixDeltaPhiChargedAssocPtBinDEta08   = new TH2F*[fNAssocPtBins] ;
-    fhMixDeltaPhiDeltaEtaChargedAssocPtBin = new TH2F*[fNAssocPtBins] ;
+    fhMixDeltaPhiChargedAssocPtBin         = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+    fhMixDeltaPhiChargedAssocPtBinDEta08   = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+    fhMixDeltaPhiChargedAssocPtBinDEta0    = new TH2F*[fNAssocPtBins*GetNZvertBin()];
+    fhMixDeltaPhiDeltaEtaChargedAssocPtBin = new TH2F*[fNAssocPtBins*GetNZvertBin()];
     
     for(Int_t i = 0 ; i < fNAssocPtBins ; i++)
-    {
-      fhMixDeltaPhiChargedAssocPtBin[i] = new TH2F(Form("hMixDeltaPhiChargedAssocPtBin%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                   Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                   nptbins, ptmin, ptmax,  ndeltaphibins ,deltaphimin,deltaphimax);
-      fhMixDeltaPhiChargedAssocPtBin[i]->SetXTitle("p_{T trigger}");
-      fhMixDeltaPhiChargedAssocPtBin[i]->SetYTitle("#Delta #phi");
-      
-      fhMixDeltaPhiChargedAssocPtBinDEta08[i] = new TH2F(Form("hMixDeltaPhiDeltaEta0.8ChargedAssocPtBin%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                         Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f] for #Delta #eta > 0.8", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                         nptbins, ptmin, ptmax,  ndeltaphibins ,deltaphimin,deltaphimax);
-      fhMixDeltaPhiChargedAssocPtBinDEta08[i]->SetXTitle("p_{T trigger}");
-      fhMixDeltaPhiChargedAssocPtBinDEta08[i]->SetYTitle("#Delta #phi");      
-      
-      fhMixDeltaPhiDeltaEtaChargedAssocPtBin[i] = new TH2F(Form("hMixDeltaPhiDeltaEtaChargedAssocPtBin%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                           Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
-                                                           ndeltaphibins ,deltaphimin,deltaphimax,ndeltaetabins ,deltaetamin,deltaetamax); 
-      fhMixDeltaPhiDeltaEtaChargedAssocPtBin[i]->SetXTitle("#Delta #phi");
-      fhMixDeltaPhiDeltaEtaChargedAssocPtBin[i]->SetYTitle("#Delta #eta");
-      
-      outputContainer->Add(fhMixDeltaPhiChargedAssocPtBin[i]);
-      outputContainer->Add(fhMixDeltaPhiChargedAssocPtBinDEta08[i]);
-      outputContainer->Add(fhMixDeltaPhiDeltaEtaChargedAssocPtBin[i]);
-      
+    {    
+      for(Int_t z = 0 ; z < GetNZvertBin() ; z++)
+      {
+        Int_t bin = i*GetNZvertBin()+z;
+        
+        fhMixDeltaPhiChargedAssocPtBin[bin] = new TH2F(Form("hMixDeltaPhiChargedAssocPtBin%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                     Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                     nptbins, ptmin, ptmax,  ndeltaphibins ,deltaphimin,deltaphimax);
+        fhMixDeltaPhiChargedAssocPtBin[bin]->SetXTitle("p_{T trigger}");
+        fhMixDeltaPhiChargedAssocPtBin[bin]->SetYTitle("#Delta #phi");
+        
+        fhMixDeltaPhiChargedAssocPtBinDEta08[bin] = new TH2F(Form("hMixDeltaPhiDeltaEta0.8ChargedAssocPtBin%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                           Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d, for #Delta #eta > 0.8", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                           nptbins, ptmin, ptmax,  ndeltaphibins ,deltaphimin,deltaphimax);
+        fhMixDeltaPhiChargedAssocPtBinDEta08[bin]->SetXTitle("p_{T trigger}");
+        fhMixDeltaPhiChargedAssocPtBinDEta08[bin]->SetYTitle("#Delta #phi");      
+        
+        fhMixDeltaPhiChargedAssocPtBinDEta0[bin] = new TH2F(Form("hMixDeltaPhiDeltaEta0ChargedAssocPtBin%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                             Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d, for #Delta #eta = 0", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                             nptbins, ptmin, ptmax,  ndeltaphibins ,deltaphimin,deltaphimax);
+        fhMixDeltaPhiChargedAssocPtBinDEta0[bin]->SetXTitle("p_{T trigger}");
+        fhMixDeltaPhiChargedAssocPtBinDEta0[bin]->SetYTitle("#Delta #phi");      
+        
+        fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin] = new TH2F(Form("hMixDeltaPhiDeltaEtaChargedAssocPtBin%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                             Form("Mixed event #Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+                                                             ndeltaphibins ,deltaphimin,deltaphimax,ndeltaetabins ,deltaetamin,deltaetamax); 
+        fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]->SetXTitle("#Delta #phi");
+        fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]->SetYTitle("#Delta #eta");
+        
+        outputContainer->Add(fhMixDeltaPhiChargedAssocPtBin[bin]);
+        outputContainer->Add(fhMixDeltaPhiChargedAssocPtBinDEta08[bin]);
+        outputContainer->Add(fhMixDeltaPhiChargedAssocPtBinDEta0[bin]);
+        outputContainer->Add(fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]);
+      }
     }          
   }
 
@@ -2271,9 +2415,13 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
         if(pt > fAssocPtBinLimit[i] && pt < fAssocPtBinLimit[i+1]) assocBin= i; 
       }      
       
+      // Assign to the histogram array a bin corresponding to a combination of pTa and vz bins
+      Int_t bin = assocBin*GetNZvertBin()+GetEventVzBin();
+      //printf("assoc Bin = %d, vZ bin  = %d, bin = %d \n", assocBin,GetEventVzBin(),bin);
+      
       // Azimuthal Angle
       // calculate deltaPhi for later, shift when needed
-      FillChargedAngularCorrelationHistograms(pt,  ptTrig,  assocBin, phi, phiTrig,  deltaPhi,
+      FillChargedAngularCorrelationHistograms(pt,  ptTrig,  bin, phi, phiTrig,  deltaPhi,
                                               eta, etaTrig, decay, track->GetHMPIDsignal(),nTracks);
       
       // Imbalance zT/xE/pOut
@@ -2293,7 +2441,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       {
         
         FillChargedMomentumImbalanceHistograms(ptTrig, pt, xE, hbpXE, zT, hbpZT, pout, deltaPhi, 
-                                               nTracks, track->Charge(), assocBin, decay);
+                                               nTracks, track->Charge(), bin, decay);
         
       } 
       if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) ) 
@@ -2309,7 +2457,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
         FillDecayPhotonCorrelationHistograms(pt, phi, decayMom1,decayMom2, kTRUE) ;
       
       //several UE calculation 
-      if(fMakeSeveralUE) FillChargedUnderlyingEventSidesHistograms(ptTrig,pt,xE,hbpXE,zT,hbpZT,deltaPhi);
+      if(fMakeSeveralUE) FillChargedUnderlyingEventSidesHistograms(ptTrig,pt,deltaPhi);
       
     } //Fill histogram 
     else
@@ -2378,12 +2526,12 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
   if(fUseMixStoredInReader) 
   {
     pool     = GetReader()->GetListWithMixedEventsForTracks(eventBin);
-    poolCalo = GetReader()->GetListWithMixedEventsForCalo  (eventBin);
+    if(OnlyIsolated()) poolCalo = GetReader()->GetListWithMixedEventsForCalo  (eventBin);
   }
   else
   {
     pool     = fListMixTrackEvents[eventBin];
-    poolCalo = fListMixCaloEvents [eventBin];
+    if(OnlyIsolated()) poolCalo = fListMixCaloEvents [eventBin];
   }
   
   if(!pool) return ;
@@ -2517,6 +2665,9 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
         if(ptAssoc > fAssocPtBinLimit[i] && ptAssoc < fAssocPtBinLimit[i+1]) assocBin= i; 
       }      
 
+      // Assign to the histogram array a bin corresponding to a combination of pTa and vz bins
+      Int_t bin = assocBin*GetNZvertBin()+GetEventVzBin();
+      
       fhMixDeltaPhiCharged        ->Fill(ptTrig,  deltaPhi);
       fhMixDeltaPhiDeltaEtaCharged->Fill(deltaPhi, deltaEta);
 
@@ -2534,13 +2685,15 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
 	fhMixHbpXECharged->Fill(ptTrig,hbpXE);
       }
 
-      if(assocBin < 0) continue ; // this pt bin was not considered
+      if(bin < 0) continue ; // this pt bin was not considered
       
       if(TMath::Abs(deltaEta) > 0.8) 
-        fhMixDeltaPhiChargedAssocPtBinDEta08  [assocBin]->Fill(ptTrig,   deltaPhi);
+        fhMixDeltaPhiChargedAssocPtBinDEta08  [bin]->Fill(ptTrig,   deltaPhi);
+      if(TMath::Abs(deltaEta) < 0.05) 
+        fhMixDeltaPhiChargedAssocPtBinDEta0   [bin]->Fill(ptTrig,   deltaPhi);
       
-        fhMixDeltaPhiChargedAssocPtBin        [assocBin]->Fill(ptTrig,   deltaPhi);
-        fhMixDeltaPhiDeltaEtaChargedAssocPtBin[assocBin]->Fill(deltaPhi, deltaEta);
+        fhMixDeltaPhiChargedAssocPtBin        [bin]->Fill(ptTrig,   deltaPhi);
+        fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]->Fill(deltaPhi, deltaEta);
       
     } // track loop
   } // mixed event loop
@@ -2661,7 +2814,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
       }
       
       //several UE calculation 
-      if(fMakeSeveralUE) FillChargedUnderlyingEventSidesHistograms(ptTrig,pt,xE,hbpXE,zT,hbpZT,deltaPhi);
+      if(fMakeSeveralUE) FillChargedUnderlyingEventSidesHistograms(ptTrig,pt,deltaPhi);
 
 	  }
     else
