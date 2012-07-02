@@ -95,13 +95,13 @@ void SetupElectronCuts(AliDielectron *die, Int_t cutDefinition)
   // track cuts ESD and AOD
   AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
+  varCuts->AddCut(AliDielectronVarManager::kP,             .75,  1e30);
+  varCuts->AddCut(AliDielectronVarManager::kTRDpidQuality,1.0,   6.0);
+  if(!isESD) varCuts->AddCut(AliDielectronVarManager::kV0Index0,     1.0);
   //  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   //  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     60.0, 160.0);
   //  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
-  if(!isESD) varCuts->AddCut(AliDielectronVarManager::kV0Index0,     1.0);
-  varCuts->AddCut(AliDielectronVarManager::kTRDpidQuality,1.0,   6.0);
-  //varCuts->AddCut(AliDielectronVarManager::kPt,           0.8,  1e30);
-  //  varCuts->AddCut(AliDielectronVarManager::kPOut,           1.0,  1e30);
+  //  varCuts->AddCut(AliDielectronVarManager::kPt,           0.8,  1e30);
   cuts->AddCut(varCuts);
   
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
@@ -322,10 +322,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           BinsToVector(60,0.,3000.), BinsToVector(40,-5.,5.),
                           AliDielectronVarManager::kNacc,
                           AliDielectronVarManager::kTPCnSigmaPio);
-    histos->UserHistogram("Track","TPCnSigmaEle_RunNumber",";run;n#sigma_{ele}^{TPC}",
-                          GetRunNumbers(), BinsToVector(40,-5.,5.),
-                          AliDielectronVarManager::kRunNumber,
-                          AliDielectronVarManager::kTPCnSigmaEle);
     
     histos->UserProfile("Track","TPCnSigmaPio-Nacc-RunNumber",";N_{acc};run;n#sigma_{pio}^{TPC}",
                         AliDielectronVarManager::kTPCnSigmaPio,
@@ -400,6 +396,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           100,0.2,20.,50,-10.,10.,AliDielectronVarManager::kP,AliDielectronVarManager::kTOFnSigmaEle,kTRUE);
 
     if(cutDefinition==knoPID || cutDefinition==kTPC) {
+      histos->UserHistogram("Track","dEdx_RunNumber",";run;TPC signal (arb units)",
+			    GetRunNumbers(), BinsToVector(200,0.,200.),
+			    AliDielectronVarManager::kRunNumber,
+			    AliDielectronVarManager::kTPCsignal);
       histos->UserHistogram("Track","dEdx_Eta",";#eta;TPC signal (arb units)",
 			    100,-1.,1.,200,0.,200.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal,kTRUE);
       histos->UserHistogram("Track","dEdx_Phi",";#phi;TPC signal (arb units)",
@@ -566,12 +566,12 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
   
   // leg variables
-  cf->AddVariable(AliDielectronVarManager::kPOut, "1.0,1.5,2.0,3.0,5.0,10.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kP, "1.0,1.5,2.0,3.0,5.0,10.0",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTRDphi,       45, -3.15, +3.15, kTRUE);
   cf->AddVariable(AliDielectronVarManager::kEta,          20, -1.0,   1.0,  kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTRDntracklets, 7, -0.5,   6.5,  kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTRDprobEle,   20,  0.0,   1.0,  kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle, "-3.5,-3.0,-2.5,-2.0,-1.5,+1.5,+2.0,+2.5,+3.0,+3.5",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle, 10.,-3.5,  +3.5,  kTRUE);
  
   die->SetCFManagerPair(cf);
 }
