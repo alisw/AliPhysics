@@ -62,10 +62,10 @@ class AliAnalysisTaskEmcalJetSpectra : public AliAnalysisTaskSE {
   TH2F                  *fHistZchvsPt[6][4];       //!z charged vs pt
   TH2F                  *fHistZemvsPt[6][4];       //!z neutral vs pt
   TH1F                  *fHistJetPt[6][4];         //!jet pt
+  TH1F                  *fHistJetPt3[6][4];        //!jet pt>3
   TH1F                  *fHistJetPt5[6][4];        //!jet pt>5
-  TH1F                  *fHistJetPt6[6][4];        //!jet pt>6
   TH1F                  *fHistJetPt7[6][4];        //!jet pt>7
-  TH1F                  *fHistJetPt8[6][4];        //!jet pt>8
+  TH1F                  *fHistJetPt9[6][4];        //!jet pt>9
   TH2F                  *fHistNconsvsPt[6][4];     //!constituents vs pt
   TH1F                  *fHistRawJetPt[6];         //!raw jet pt
   TH2F                  *fHistAreavsRawPt[6];      //!area vs raw pt
@@ -73,6 +73,6 @@ class AliAnalysisTaskEmcalJetSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalJetSpectra(const AliAnalysisTaskEmcalJetSpectra&); // not implemented
   AliAnalysisTaskEmcalJetSpectra& operator=(const AliAnalysisTaskEmcalJetSpectra&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetSpectra, 2); // Emcal jet spectra task
+  ClassDef(AliAnalysisTaskEmcalJetSpectra, 3); // Emcal jet spectra task
 };
 #endif
