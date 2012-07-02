@@ -38,14 +38,16 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		virtual Bool_t Notify();
 		virtual void   UserExec(Option_t *option);
 		virtual void   Terminate(Option_t *);
-		virtual void   SetDebug(Int_t debug = 0) {fDebug = debug;}
+		virtual void   SetDebug(Int_t debug = 0)        {fDebug = debug;}
 		virtual void   SetAlgorithm(TString jf="ANTIKT"){JFAlg=jf;}
-		virtual void   SetRadius(Float_t radius=0.4){Radius=radius;}
-		virtual void   SetFilterMask(UInt_t filter=256){Filtermask=filter;}
-		virtual void   SetBackSubMode(Int_t backM=0){BackM=backM;}
-		virtual void   SetTrackPtCut(Float_t tPtcut=0){TrackPtcut=tPtcut;}
-		virtual void   SetSkipCone(Int_t skipCone=0){SkipCone=skipCone;}
-		virtual void   SetMC(Bool_t ismc=true){IsMC=ismc;}
+		virtual void   SetRadius(Float_t radius=0.4)    {Radius=radius;}
+		virtual void   SetFilterMask(UInt_t filter=256) {Filtermask=filter;}
+		virtual void   SetBackSubMode(Int_t backM=0)    {BackM=backM;}
+		virtual void   SetTrackPtCut(Float_t tPtcut=0)  {TrackPtcut=tPtcut;}
+		virtual void   SetSkipCone(Int_t skipCone=0)    {SkipCone=skipCone;}
+		virtual void   SetMC(Bool_t ismc=true)          {IsMC=ismc;}
+		virtual void   SetJetEScale(Float_t EScale=1.)  {JetEScale=EScale;}
+		virtual void   SetTrackEScale(Float_t EScale=1.){TrackEScale=EScale;}
 		virtual void   FinishTaskOutput();
 
 		enum {kNPTBINS=10};
@@ -63,7 +65,6 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		AliAnalysisTaskJetHadronCorrelation(const AliAnalysisTaskJetHadronCorrelation &det); // not implemented
 		AliAnalysisTaskJetHadronCorrelation& operator=(const AliAnalysisTaskJetHadronCorrelation &det); // not implemented
 
-		Bool_t   JetSelected(AliAODJet *jet);
 		Double_t DeltaPhi(Double_t phi1,Double_t phi2);
 
 		Bool_t        fUseAODInput; // read jets from input AOD
@@ -81,6 +82,8 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		Float_t         TrackPtcut;
 		Int_t           SkipCone;
 		Bool_t          IsMC;
+		Float_t         JetEScale;
+		Float_t         TrackEScale;
 
 
 		Float_t       fxsec;
@@ -99,6 +102,12 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		TH1F         *fH1Track_pt          ;
 		TH1F         *fH1Track_phi         ;
 		TH1F         *fH1Track_eta         ;
+		TH1F         *fH1MCTrack_pt        ;
+		TH1F         *fH1MCTrack_phi       ;
+		TH1F         *fH1MCTrack_eta       ;
+		TH1F         *fH1MCPrimTrack_pt    ;
+		TH1F         *fH1MCPrimTrack_phi   ;
+		TH1F         *fH1MCPrimTrack_eta   ;
 		TH1F         *fH1Jet_pt            ;
 		TH1F         *fH1Jet_phi           ;
 		TH1F         *fH1Jet_eta           ;
@@ -127,6 +136,11 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		TH2F         *fH2Jet_pt_Mlead     ;
 		TH2F         *fH2Jet_pt_Munder    ;
 
+		TH2F         *fH2leadJetMCptResolution;
+		TH2F         *fH2TrackMCptResolution;
+		TH2F         *fH2AjCorrelation_MCRec;
+		TH2F         *fH2MleadCorrelation_MCRec;
+
 		TH1F         *fH1ndiJ_ediv                     [5];
 		TH1F         *fH1Aj                            [5];
 		TH1F         *fH1Mlead                         [5];
@@ -136,14 +150,29 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		TH1F         *fH1leadJetMC_Efficiency          [5];
 		TH1F         *fH1subJetMC_Efficiency           [5];
 
-		TH1F         *fH1JetHadron_dphi_ediv           [5][5];
-		TH1F         *fH1JetHadron_dphi_tptweight_ediv [5][5];
-		TH1F         *fH1JetHadron_dphi_tJptweight_ediv[5][5];
+		TH1F         *fH1JetHadron_dphi_ediv             [5][5];
+		TH1F         *fH1JetHadron_dphi_tptweight_ediv   [5][5];
+		TH1F         *fH1JetHadron_dphi_tJptweight_ediv  [5][5];
+		TH1F         *fH1JetHadronMC_dphi_ediv           [5][5];
+		TH1F         *fH1JetHadronMC_dphi_tptweight_ediv [5][5];
+		TH1F         *fH1JetHadronMC_dphi_tJptweight_ediv[5][5];
+		TH1F         *fH1JetHadronMCPrim_dphi_ediv           [5][5];
+		TH1F         *fH1JetHadronMCPrim_dphi_tptweight_ediv [5][5];
+		TH1F         *fH1JetHadronMCPrim_dphi_tJptweight_ediv[5][5];
+		TH1F         *fH1JetHadronMCIdeal_dphi_ediv             [5][5];
+		//TH1F         *fH1JetHadronMCIdeal_dphi_tptweight_ediv   [5][5];
+		//TH1F         *fH1JetHadronMCIdeal_dphi_tJptweight_ediv  [5][5];
 
-		TH1F         *fH1ndiJ_2040Mlead                       [3];
-		TH1F         *fH1ndiJ_2040Aj                          [3];
-		TH1F         *fH1JetHadron_dphi_tptweight2040_Mleaddep[3][5];
-		TH1F         *fH1JetHadron_dphi_tptweight2040_Ajdep   [3][5];
+		TH1F         *fH1ndiJ_2040Mlead                         [3];
+		TH1F         *fH1ndiJ_2040Aj                            [3];
+		TH1F         *fH1JetHadron_dphi_tptweight2040_Mleaddep  [3][5];
+		TH1F         *fH1JetHadron_dphi_tptweight2040_Ajdep     [3][5];
+		TH1F         *fH1JetHadronMC_dphi_tptweight2040_Mleaddep[3][5];
+		TH1F         *fH1JetHadronMC_dphi_tptweight2040_Ajdep   [3][5];
+		TH1F         *fH1JetHadronMCPrim_dphi_tptweight2040_Mleaddep[3][5];
+		TH1F         *fH1JetHadronMCPrim_dphi_tptweight2040_Ajdep   [3][5];
+		//TH1F         *fH1JetHadronMCIdeal_dphi_tptweight2040_Mleaddep[3][5];
+		//TH1F         *fH1JetHadronMCIdeal_dphi_tptweight2040_Ajdep   [3][5];
 
 		ClassDef(AliAnalysisTaskJetHadronCorrelation, 15); // Analysis task for JetHadronCorrelation
 };
