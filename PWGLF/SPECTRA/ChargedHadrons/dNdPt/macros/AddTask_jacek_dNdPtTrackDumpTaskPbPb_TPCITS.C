@@ -58,18 +58,19 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   // Create standard esd track cuts
   //
   Int_t cutMode = 154;
+  //Int_t cutMode = 156;
   //Int_t cutMode = 200;
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
+  gROOT->LoadMacro("/hera/alice/jacek/analysis/dNdPtPbPb/macros/CreatedNdPtTrackCuts.C");
   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
   if (!esdTrackCuts) {
     printf("ERROR: esdTrackCuts could not be created\n");
     return;
   } else {
     esdTrackCuts->SetHistogramsOn(kTRUE);
-    //esdTrackCuts->SetMaxChi2PerClusterITS(36.);
+    esdTrackCuts->SetRequireITSRefit(kFALSE); // no ITS refit
   }
-
 
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
@@ -78,10 +79,12 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   //
   AlidNdPtTrackDumpTask *task = new AlidNdPtTrackDumpTask("AlidNdPtTrackDumpTask");
   task->SetUseMCInfo(hasMC);
+  //task->SetLowPtTrackDownscaligF(1.e4);
+  //task->SetLowPtV0DownscaligF(1.e2);
   task->SetLowPtTrackDownscaligF(1.e7);
   task->SetLowPtV0DownscaligF(1.e4);
-  //task->SetLowPtTrackDownscaligF(1.e2);
-  //task->SetLowPtV0DownscaligF(1.e1);
+  //task->SetProcessAll(kTRUE);
+  task->SetProcessAll(kFALSE);
 
   // trigger
   //task->SelectCollisionCandidates(AliVEvent::kMB); 
@@ -108,7 +111,7 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("TrigEvents", TList::Class(), AliAnalysisManager::kOutputContainer, "jotwinow_TrigEvents_Trees.root");
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("TrigEvents", TList::Class(), AliAnalysisManager::kOutputContainer, "TrigEvents_Trees.root");
   mgr->ConnectOutput(task, 1, coutput1);
 }
 
