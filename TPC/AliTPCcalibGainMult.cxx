@@ -93,7 +93,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult()
   //
   // Empty default cosntructor
   //
-  AliInfo("Default Constructor");  
+  AliDebug(5,"Default Constructor");  
 }
 
 
@@ -207,7 +207,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
     fHistdEdxTot->GetAxis(iaxis)->SetTitle(axisTitleMax[iaxis]);
   }
   //
-  AliInfo("Non Default Constructor");  
+  AliDebug(5,"Non Default Constructor");  
 }
 
 

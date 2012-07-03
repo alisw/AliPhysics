@@ -201,7 +201,7 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain()
   //
   // Default constructor
   //
-  AliInfo("Default Constructor");  
+  AliDebug(5,"Default Constructor");  
 }
 
 
@@ -228,7 +228,7 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   SetName(name);
   SetTitle(title);
   
-  AliInfo("Non Default Constructor");
+  AliDebug(5,"Non Default Constructor");
   
   fIntegrationTimeDeDx = deltaIntegrationTimeGain;
   

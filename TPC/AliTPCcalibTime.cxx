@@ -94,7 +94,7 @@ AliTPCcalibTime::AliTPCcalibTime()
   //
   // default constructor
   //
-  AliInfo("Default Constructor");  
+  AliDebug(5,"Default Constructor");  
   for (Int_t i=0;i<3;i++) {
     fHistVdriftLaserA[i]=0;
     fHistVdriftLaserC[i]=0;
@@ -121,7 +121,7 @@ AliTPCcalibTime::AliTPCcalibTime()
   if (1) {
     TTimeStamp s;
     Int_t time=s;
-    AliInfo(Form("Counter Constructor\t%d\t%d",counter,time));
+    AliDebug(5,Form("Counter Constructor\t%d\t%d",counter,time));
     counter++;
   }
 
@@ -177,7 +177,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   }
 
 
-  AliInfo("Non Default Constructor");
+  AliDebug(5,"Non Default Constructor");
   fTimeBins   =(EndTime-StartTime)/deltaIntegrationTimeVdrift;
   fTimeStart  =StartTime; //(((TObjString*)(mapGRP->GetValue("fAliceStartTime")))->GetString()).Atoi();
   fTimeEnd    =EndTime;   //(((TObjString*)(mapGRP->GetValue("fAliceStopTime")))->GetString()).Atoi();
@@ -267,7 +267,7 @@ AliTPCcalibTime::~AliTPCcalibTime(){
   if (1) {
     TTimeStamp s;
     Int_t time=s;
-    AliInfo(Form("Counter Destructor\t%s\t%d\t%d",GetName(),counter,time));
+    AliDebug(5,Form("Counter Destructor\t%s\t%d\t%d",GetName(),counter,time));
     counter++;
   }
   for(Int_t i=0;i<3;i++){
