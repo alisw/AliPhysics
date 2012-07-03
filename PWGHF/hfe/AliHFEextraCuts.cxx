@@ -69,6 +69,8 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fTPCclusterRatioDef(0),
   fFractionTPCShared(-1.0),
   fAbsHFEImpactParamNsigmaR(kTRUE),
+  fTOFsignalDx(1.0),
+  fTOFsignalDz(1.0),
   fCheck(kFALSE),
   fQAlist(0x0) ,
   fDebugLevel(0)
@@ -99,6 +101,8 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fTPCclusterRatioDef(c.fTPCclusterRatioDef),
   fFractionTPCShared(c.fFractionTPCShared),
   fAbsHFEImpactParamNsigmaR(c.fAbsHFEImpactParamNsigmaR),
+  fTOFsignalDx(c.fTOFsignalDx),
+  fTOFsignalDz(c.fTOFsignalDz),
   fCheck(c.fCheck),
   fQAlist(0x0),
   fDebugLevel(0)
@@ -138,6 +142,8 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fTPCclusterRatioDef = c.fTPCclusterRatioDef;
     fFractionTPCShared = c.fFractionTPCShared;
     fAbsHFEImpactParamNsigmaR = c.fAbsHFEImpactParamNsigmaR;
+    fTOFsignalDx = c.fTOFsignalDx;
+    fTOFsignalDz = c.fTOFsignalDz;
     fCheck = c.fCheck;
     fDebugLevel = c.fDebugLevel;
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
@@ -226,6 +232,10 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   Int_t status2 = GetITSstatus(track, 1);
   Bool_t statusL0 = CheckITSstatus(status1);
   Bool_t statusL1 = CheckITSstatus(status2);
+  Double_t tofsignalDx = 0.0;
+  Double_t tofsignalDz = 0.0;
+  GetTOFsignalDxDz(track,tofsignalDx,tofsignalDz);
+
   if(TESTBIT(fRequirements, kTPCfractionShared)) {
     // cut on max fraction of shared TPC clusters
     if(TMath::Abs(fractionSharedClustersTPC) < fFractionTPCShared) SETBIT(survivedCut, kTPCfractionShared);    
@@ -422,6 +432,10 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     //printf("test mother\n");
     if(!IsKinkMother(track)) SETBIT(survivedCut, kRejectKinkMother);
     //else printf("Found kink mother\n");
+  }
+  if(TESTBIT(fRequirements, kTOFsignalDxy)){
+    // cut on TOF matching cluster
+    if((TMath::Abs(tofsignalDx) <= fTOFsignalDx) && (TMath::Abs(tofsignalDz) <= fTOFsignalDz)) SETBIT(survivedCut, kTOFsignalDxy);
   }
   
   if(fRequirements == survivedCut){
@@ -1022,4 +1036,19 @@ void AliHFEextraCuts::GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maxi
     }
     else maximpactRcut = 9999999999.0;
   }
+}
+//______________________________________________________
+void AliHFEextraCuts::GetTOFsignalDxDz(AliVTrack *track, Double_t &tofsignalDx, Double_t &tofsignalDz){
+  //
+  // TOF matching 
+  //
+  
+  TString type = track->IsA()->GetName();
+  if(!type.CompareTo("AliESDtrack")){
+    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+    if(!esdtrack) return;
+    tofsignalDx = esdtrack->GetTOFsignalDx();
+    tofsignalDz = esdtrack->GetTOFsignalDz();
+  }
+
 }
