@@ -2062,15 +2062,26 @@ void AliAnaParticleHadronCorrelation::InitParameters()
 
   fNAssocPtBins         = 9   ;
   fAssocPtBinLimit[0]   = 0.2 ; 
-  fAssocPtBinLimit[1]   = 2.0 ; 
-  fAssocPtBinLimit[2]   = 4.0 ; 
-  fAssocPtBinLimit[3]   = 6.0 ; 
-  fAssocPtBinLimit[4]   = 8.0 ; 
-  fAssocPtBinLimit[5]   = 10. ; 
-  fAssocPtBinLimit[6]   = 12. ;
-  fAssocPtBinLimit[7]   = 15. ;
-  fAssocPtBinLimit[8]   = 25. ;
-  fAssocPtBinLimit[9]   = 50. ;
+  fAssocPtBinLimit[1]   = 0.5 ; 
+  fAssocPtBinLimit[2]   = 1.0 ; 
+  fAssocPtBinLimit[3]   = 2.0 ; 
+  fAssocPtBinLimit[4]   = 3.0 ; 
+  fAssocPtBinLimit[5]   = 4.0 ; 
+  fAssocPtBinLimit[6]   = 5.0 ;
+  fAssocPtBinLimit[7]   = 6.0 ;
+  fAssocPtBinLimit[8]   = 7.0 ;
+  fAssocPtBinLimit[9]   = 8.0 ;
+  fAssocPtBinLimit[10]  = 9.0 ; 
+  fAssocPtBinLimit[11]  = 10.0 ; 
+  fAssocPtBinLimit[12]  = 12.0 ; 
+  fAssocPtBinLimit[13]  = 14.0 ; 
+  fAssocPtBinLimit[14]  = 16.0 ; 
+  fAssocPtBinLimit[15]  = 20.0 ; 
+  fAssocPtBinLimit[16]  = 30.0 ;
+  fAssocPtBinLimit[17]  = 40.0 ;
+  fAssocPtBinLimit[18]  = 50.0 ;
+  fAssocPtBinLimit[19]  = 200.0 ;
+  
   
   fUseMixStoredInReader = kTRUE;
   
@@ -3057,14 +3068,14 @@ void AliAnaParticleHadronCorrelation::SetNAssocPtBins(Int_t n)
   fNAssocPtBins  = n ; 
   
   
-  if(n < 10 && n > 0)
+  if(n < 20 && n > 0)
   {
     fNAssocPtBins  = n ; 
   }
   else 
   {
-    printf("n = larger than 9 or too small, set to 9 \n");
-    fNAssocPtBins = 9;
+    printf("n = larger than 19 or too small, set to 19 \n");
+    fNAssocPtBins = 19;
   }
 }
 

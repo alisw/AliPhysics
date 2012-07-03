@@ -192,7 +192,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fHMPIDCorrelation    ;          // Correlate with particles on HMPID or its acceptance
   Bool_t       fFillBradHisto ;                // DPhi histograms calculated differently
   Int_t        fNAssocPtBins ;                 // Number of associated pT bins under study
-  Float_t      fAssocPtBinLimit[10] ;          // Associated pT under study
+  Float_t      fAssocPtBinLimit[20] ;          // Associated pT under study
   
   TList **     fListMixTrackEvents ;           //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for tracks in stored events for mixing
   TList **     fListMixCaloEvents ;            //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for calo clusters in stored events for mixing
