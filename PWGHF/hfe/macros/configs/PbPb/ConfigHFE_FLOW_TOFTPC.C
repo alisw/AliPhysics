@@ -64,7 +64,7 @@ Double_t Contamination_40_50(const Double_t *x, const Double_t *par)
 }
 
 
-AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix, Int_t tpcCls, Double_t tpcClsr,Int_t tpcClspid, Double_t tpcsharedfraction, Int_t itsCls, Double_t chi2peritscl, Int_t pixellayer, Double_t dcaxy, Double_t dcaz,  Double_t tofsig, Double_t *tpcdedx, Int_t vzero, Int_t debuglevel, Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE)
+AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix, Int_t tpcCls, Double_t tpcClsr,Int_t tpcClspid, Double_t tpcsharedfraction, Int_t itsCls, Double_t chi2peritscl, Int_t pixellayer, Double_t dcaxy, Double_t dcaz,  Double_t tofsig, Double_t *tpcdedx, Int_t vzero, Double_t etarange,Int_t debuglevel, Bool_t algorithmMA=kFALSE, Bool_t massconstraint=kFALSE)
 {
   //
   // HFE flow task 
@@ -90,6 +90,7 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix, In
   printf("TPC min sigma cut 7: %f\n",tpcdedx[7]);
   printf("VZERO event plane %d\n",vzero);
   printf("Debug level %d\n",debuglevel);
+  printf("Etarange %f\n",etarange*0.1);
   printf("AlgorithmMA %d\n",(Int_t)algorithmMA);
   printf("Mass constraint %d\n",(Int_t)massconstraint);
 
@@ -99,6 +100,7 @@ AliAnalysisTaskHFEFlow* ConfigHFE_FLOW_TOFTPC(Bool_t useMC, TString appendix, In
   // Cut HFE
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCuts","HFE Standard Cuts");
   hfecuts->CreateStandardCuts();
+  hfecuts->SetEtaRange(etarange*0.1);
   hfecuts->SetMinNClustersTPC(tpcCls);
   hfecuts->SetMinNClustersTPCPID(tpcClspid);
   hfecuts->SetMinRatioTPCclusters(tpcClsr*0.01);

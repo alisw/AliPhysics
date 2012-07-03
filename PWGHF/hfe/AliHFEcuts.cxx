@@ -115,6 +115,7 @@ AliHFEcuts::AliHFEcuts():
   fRequirements(0),
   fTPCclusterDef(AliHFEextraCuts::kFound),
   fTPCratioDef(AliHFEextraCuts::kFoundOverFindable),
+  fEtaRange(0.8),
   fMinClustersTPC(0),
   fMinClustersTPCPID(0),
   fMinClustersITS(0),
@@ -136,6 +137,8 @@ AliHFEcuts::AliHFEcuts():
   fFractionOfSharedTPCClusters(-1.0),
   fMaxImpactParameterRpar(kFALSE),
   fAdditionalStatusRequirement(0),
+  fTOFsignaldx(-1.0),
+  fTOFsignaldz(-1.0),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -157,6 +160,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fRequirements(0),
   fTPCclusterDef(AliHFEextraCuts::kFound),
   fTPCratioDef(AliHFEextraCuts::kFoundOverFindable),
+  fEtaRange(0.8),
   fMinClustersTPC(0),
   fMinClustersTPCPID(0),
   fMinClustersITS(0),
@@ -178,6 +182,8 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fFractionOfSharedTPCClusters(-1.0),
   fMaxImpactParameterRpar(kFALSE),
   fAdditionalStatusRequirement(0),
+  fTOFsignaldx(-1.0),
+  fTOFsignaldz(-1.0),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -198,6 +204,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fRequirements(c.fRequirements),
   fTPCclusterDef(c.fTPCclusterDef),
   fTPCratioDef(c.fTPCratioDef),
+  fEtaRange(c.fEtaRange),
   fMinClustersTPC(0),
   fMinClustersTPCPID(0),
   fMinClustersITS(0),
@@ -219,6 +226,8 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fFractionOfSharedTPCClusters(-1.0),
   fMaxImpactParameterRpar(kFALSE),
   fAdditionalStatusRequirement(0),
+  fTOFsignaldx(-1.0),
+  fTOFsignaldz(-1.0),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -248,6 +257,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fRequirements = fRequirements;
   target.fTPCclusterDef = fTPCclusterDef;
   target.fTPCratioDef = fTPCratioDef;
+  target.fEtaRange = fEtaRange;
   target.fMinClustersTPC = fMinClustersTPC;
   target.fMinClustersTPCPID = fMinClustersTPCPID;
   target.fMinClustersITS = fMinClustersITS;
@@ -269,6 +279,8 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fFractionOfSharedTPCClusters = fFractionOfSharedTPCClusters;
   target.fMaxImpactParameterRpar = fMaxImpactParameterRpar;
   target.fAdditionalStatusRequirement = fAdditionalStatusRequirement;
+  target.fTOFsignaldx = fTOFsignaldx;
+  target.fTOFsignaldz = fTOFsignaldz;
   target.fDebugLevel = 0;
 
   memcpy(target.fProdVtx, fProdVtx, sizeof(Double_t) * 4);
@@ -478,7 +490,7 @@ void AliHFEcuts::SetParticleGenCutList(){
   // Initialize Particle Cuts for Monte Carlo Tracks
   // Production Vertex Radius: < 3cm
   // Particle Species: Electrons
-  // Eta: < 0.8
+  // Eta: < 0.8 (fEtaRange)
   //
   
   TObjArray *mcCuts = new TObjArray;
@@ -507,7 +519,8 @@ void AliHFEcuts::SetParticleGenCutList(){
   if(IsRequireKineMCCuts()) {  
     AliCFTrackKineCuts *kineMCcuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineMC", (Char_t *)"MC Kine Cuts");
     kineMCcuts->SetPtRange(fPtRange[0], fPtRange[1]);
-    kineMCcuts->SetEtaRange(-0.8, 0.8);
+    //kineMCcuts->SetEtaRange(-0.8, 0.8);
+    kineMCcuts->SetEtaRange(-TMath::Abs(fEtaRange),TMath::Abs(fEtaRange));
     if(IsQAOn()) kineMCcuts->SetQAOn(fHistQA);
     mcCuts->AddLast(kineMCcuts);
   }
@@ -585,7 +598,8 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineRec", (Char_t *)"REC Kine Cuts");
   kineCuts->SetPtRange(fPtRange[0], fPtRange[1]);
-  kineCuts->SetEtaRange(-0.8, 0.8);
+  //kineCuts->SetEtaRange(-0.8, 0.8);
+  kineCuts->SetEtaRange(-TMath::Abs(fEtaRange),TMath::Abs(fEtaRange));
   
   if(IsQAOn()){
     trackQuality->SetQAOn(fHistQA);
@@ -678,6 +692,7 @@ void AliHFEcuts::SetHFElectronTOFCuts(){
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTOF","Extra cuts from the HFE group on TOF PID");
   if(fTOFPIDStep) hfecuts->SetTOFPID(kTRUE);
   if(fTOFMISMATCHStep) hfecuts->SetTOFMISMATCH(kTRUE);
+  if((fTOFsignaldx > 0.0) && (fTOFsignaldz > 0.0)) hfecuts->SetTOFsignalDxz(fTOFsignaldx,fTOFsignaldz);
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
   

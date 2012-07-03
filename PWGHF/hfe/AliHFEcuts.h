@@ -148,6 +148,7 @@ class AliHFEcuts : public TNamed{
     inline void SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma, Bool_t isabs);
     void SetMinRatioTPCclusters(Double_t minRatioTPC) { fMinClusterRatioTPC = minRatioTPC; };
     void SetPtRange(Double_t ptmin, Double_t ptmax){fPtRange[0] = ptmin; fPtRange[1] = ptmax;};
+    void SetTOFsignaldxz(Double_t tofsignaldx, Double_t tofsignaldz){fTOFsignaldx = tofsignaldx; fTOFsignaldz = tofsignaldz;};
     inline void SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
     inline void SetSigmaToVertex(Double_t sig);
     inline void SetSigmaToVertexXY(Double_t sig);
@@ -156,6 +157,7 @@ class AliHFEcuts : public TNamed{
       fTPCclusterDef= clusterDef;
       fTPCratioDef = ratioDef;
     }
+    void SetEtaRange(Double_t etaRange){fEtaRange = etaRange;};
     void SetVertexRange(Double_t zrange){fVertexRangeZ = zrange;};
     void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};
     void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
@@ -217,6 +219,7 @@ class AliHFEcuts : public TNamed{
     ULong64_t fRequirements;  	  // Bitmap for requirements
     AliHFEextraCuts::ETPCclusterDef_t fTPCclusterDef;       // TPC cluster definition
     AliHFEextraCuts::ETPCclrDef_t fTPCratioDef;             // TPC cluster ratio Definition
+    Double_t fEtaRange;               // Eta range
     Double_t fDCAtoVtx[2];	      // DCA to Vertex
     Double_t fProdVtx[4];	        // Production Vertex
     Double_t fPtRange[2];	        // pt range
@@ -243,6 +246,8 @@ class AliHFEcuts : public TNamed{
     Double_t fFractionOfSharedTPCClusters; // Fraction of shared TPC clusters
     Bool_t   fMaxImpactParameterRpar;      // Max impact parameter
     Long_t   fAdditionalStatusRequirement; // Additional status bit requirement 
+    Double_t fTOFsignaldx;                 // TOF signal Dx
+    Double_t fTOFsignaldz;                 // TOF signal Dz
 
     
     TList *fHistQA;		            //! QA Histograms
@@ -250,7 +255,7 @@ class AliHFEcuts : public TNamed{
 
     Int_t fDebugLevel;            // Debug Level
     
-  ClassDef(AliHFEcuts, 2)         // Container for HFE cuts
+  ClassDef(AliHFEcuts, 4)         // Container for HFE cuts
 };
 
 //__________________________________________________________________

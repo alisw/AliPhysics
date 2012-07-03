@@ -80,6 +80,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { maxImpactParameterRpar ? SETBIT(fRequirements, kMaxImpactParameterRpar) : CLRBIT(fRequirements, kMaxImpactParameterRpar); }
     void SetFractionOfTPCSharedClusters(Double_t fractionShared) { fFractionTPCShared= fractionShared; SETBIT(fRequirements, kTPCfractionShared); }
     void SetMinNbITScls(UChar_t minNbITScls) { fMinNbITScls = minNbITScls; SETBIT(fRequirements, kMinNbITScls); }
+    void SetTOFsignalDxz(Double_t tofsignalDx,Double_t tofsignalDz) { fTOFsignalDx=tofsignalDx; fTOFsignalDz=tofsignalDz; SETBIT(fRequirements, kTOFsignalDxy); }
     void SetRejectKinkDaughter() { SETBIT(fRequirements, kRejectKinkDaughter);}; 
     void SetRejectKinkMother() { SETBIT(fRequirements, kRejectKinkMother);}; 
     void SetCheckITSstatus(Bool_t check) { fCheck = check; };
@@ -113,6 +114,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     //void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy);
     void GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut);
     void GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maximpactRcut);
+    void GetTOFsignalDxDz(AliVTrack *track, Double_t &tofsignalDx, Double_t &tofsignalDz);
     Float_t GetTPCsharedClustersRatio(AliVTrack *track);
     Int_t GetITSNbOfcls(AliVTrack *track);
     Bool_t IsKinkDaughter(AliVTrack *track);
@@ -141,7 +143,8 @@ class AliHFEextraCuts: public AliCFCutBase{
       kRejectKinkDaughter = 18,
       kRejectKinkMother = 19,
       kDriftITS = 20,
-      kNcuts = 21
+      kTOFsignalDxy = 21,
+      kNcuts = 22
     } Cut_t;
     enum{
       //
@@ -168,12 +171,14 @@ class AliHFEextraCuts: public AliCFCutBase{
     UChar_t fTPCclusterRatioDef;      // TPC cluster ratio definition Bitmap
     Double_t  fFractionTPCShared;     // Cut on fraction of shared clusters
     Bool_t fAbsHFEImpactParamNsigmaR; // flag to use abs ip cut
+    Double_t fTOFsignalDx;            // TOF signal dx
+    Double_t fTOFsignalDz;            // TOF signal dz
 
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms
     Int_t   fDebugLevel;                // Debug Level
   
-    ClassDef(AliHFEextraCuts, 4)      // Additional cuts implemented by the ALICE HFE group
+    ClassDef(AliHFEextraCuts, 5)      // Additional cuts implemented by the ALICE HFE group
 };
 
 //__________________________________________________________
