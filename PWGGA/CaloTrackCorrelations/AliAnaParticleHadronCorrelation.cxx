@@ -908,9 +908,10 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
   Int_t nMixBins = GetNCentrBin()*GetNZvertBin()*GetNRPBin();
   
-  fhPtLeading  = new TH1F ("hPtLeading","p_T distribution of leading particles", nptbins,ptmin,ptmax); 
+  fhPtLeading  = new TH2F("hPtLeading","p_T distribution of leading particles", nptbins,ptmin,ptmax,GetNZvertBin(),0,GetNZvertBin()); 
   fhPtLeading->SetXTitle("p_{T}^{trig} (GeV/c)");
-  
+  fhPtLeading->SetYTitle("v_{z} bin");
+
   fhPtLeadingBin  = new TH2F ("hPtLeadingBin","p_T distribution of leading particles", nptbins,ptmin,ptmax,nMixBins,0,nMixBins); 
   fhPtLeadingBin->SetXTitle("p_{T}^{trig} (GeV/c)");
   fhPtLeadingBin->SetYTitle("Bin");
@@ -1202,13 +1203,13 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         Int_t bin = i*GetNZvertBin()+z;
         //printf("iAssoc %d, Vz %d, bin %d	\n",i,z,bin);
         
-        fhDeltaPhiDeltaEtaAssocPtBin[bin]  = new TH2F(Form("hDeltaPhiPtAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+        fhDeltaPhiDeltaEtaAssocPtBin[bin]  = new TH2F(Form("hDeltaPhiDeltaEtaPtAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
                                                  Form("#Delta #phi vs #Delta #eta for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
                                                  ndeltaphibins ,deltaphimin,deltaphimax,ndeltaetabins,deltaetamin,deltaetamax); 
         fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetXTitle("#Delta #phi");
         fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetYTitle("#Delta #eta");  
         
-        fhDeltaPhiAssocPtBin[bin] = new TH2F(Form("hDeltaPhiDeltaEtaPtAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
+        fhDeltaPhiAssocPtBin[bin] = new TH2F(Form("hDeltaPhiPtAssocPt%2.1f_%2.1f_vz%d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
                                            Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], v_{Z} bin %d", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],z), 
                                            nptbins, ptmin, ptmax, ndeltaphibins ,deltaphimin,deltaphimax);
         fhDeltaPhiAssocPtBin[bin]->SetXTitle("p_{T trigger}");
@@ -1838,9 +1839,10 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       }    
     }
     
-    fhPtLeadingMixed  = new TH1F ("hPtLeadingMixed","p_T distribution of leading particles, used for mixing", nptbins,ptmin,ptmax); 
+    fhPtLeadingMixed  = new TH2F ("hPtLeadingMixed","p_T distribution of leading particles, used for mixing", nptbins,ptmin,ptmax,GetNZvertBin(),0,GetNZvertBin()); 
     fhPtLeadingMixed->SetXTitle("p_{T}^{trig} (GeV/c)");
-    
+    fhPtLeadingMixed->SetYTitle("v_{z} bin");
+
     fhPtLeadingMixedBin  = new TH2F ("hPtLeadingMixedBin","p_T distribution of leading particles vs mixing bin", nptbins,ptmin,ptmax,nMixBins,0,nMixBins); 
     fhPtLeadingMixedBin->SetXTitle("p_{T}^{trig} (GeV/c)");
     fhPtLeadingMixedBin->SetYTitle("Bin");
@@ -2278,7 +2280,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     if(okcharged && okneutral)
     {
       Float_t pt = particle->Pt();
-      fhPtLeading->Fill(pt);
+      fhPtLeading->Fill(pt,GetEventVzBin());
       fhPtLeadingBin->Fill(pt,GetEventMixBin());
 
       Float_t phi = particle->Phi();
@@ -2628,9 +2630,9 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliAODPWG4Partic
       if(!leading) continue; // not leading, check the next event in pool
     }
     
-    fhPtLeadingMixed ->Fill(ptTrig);
-    fhPhiLeadingMixed->Fill(ptTrig, phiTrig);
-    fhEtaLeadingMixed->Fill(ptTrig, etaTrig);
+    fhPtLeadingMixed   ->Fill(ptTrig, GetEventVzBin());
+    fhPhiLeadingMixed  ->Fill(ptTrig, phiTrig);
+    fhEtaLeadingMixed  ->Fill(ptTrig, etaTrig);
     fhPtLeadingMixedBin->Fill(ptTrig,eventBin);
 
     for(Int_t j1 = 0;j1 <nTracks; j1++ )
