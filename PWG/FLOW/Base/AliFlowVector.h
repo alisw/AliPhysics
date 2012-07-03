@@ -20,8 +20,11 @@ class AliFlowVector: public TVector2 {
   AliFlowVector(const TVector2 &p, const Double_t m);
   virtual ~AliFlowVector();
 
-  AliFlowVector& operator=(const AliFlowVector& aVector);
-  AliFlowVector& operator+=(const AliFlowVector& aVector);
+  void SetMagPhi(double size, double angle, double mult=1);       // Set vector and weighted multiplicity
+
+  AliFlowVector& operator=(const AliFlowVector& aVector);     // Assign 
+  AliFlowVector& operator+=(const AliFlowVector& aVector);    // Add to self
+  AliFlowVector& operator-=(const AliFlowVector& aVector);    // Subtract from self
 
   Bool_t  IsFolder() const {return kTRUE;};
 
@@ -39,6 +42,19 @@ inline  AliFlowVector operator+(const AliFlowVector& aVector,const AliFlowVector
   Double_t x = aVector.X() + bVector.X(); 
   Double_t y = aVector.Y() + bVector.Y(); 
   Double_t mult = aVector.GetMult() + bVector.GetMult();
+  cVector.Set(x,y);
+  cVector.SetMult(mult);
+  
+  return cVector;
+}
+
+inline  AliFlowVector operator-(const AliFlowVector& aVector,const AliFlowVector& bVector) 
+{
+   // Difference between two vectors
+  AliFlowVector cVector;
+  Double_t x = aVector.X() - bVector.X(); 
+  Double_t y = aVector.Y() - bVector.Y(); 
+  Double_t mult = aVector.GetMult() - bVector.GetMult();
   cVector.Set(x,y);
   cVector.SetMult(mult);
   
