@@ -185,8 +185,8 @@ void AliAnaChargedJetResponseMaker::SetFlatEfficiency(Double_t eff) {
 
   fEffFlat = eff;
   return;
-  /*
 
+  /*
   Int_t nbins[fDimensions];
   Double_t xmin[fDimensions]; 
   Double_t xmax[fDimensions];
@@ -718,7 +718,7 @@ TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *h
   TH2 *hRM2 = (TH2*)hRM->Clone("hRM2");
   hRM2->Reset();
 
-  //Forst normalize columns of input
+  //First normalize columns of input
   const Int_t nbinsNorm = hRM2->GetNbinsX();
   cout << "nbinsNorm: " << nbinsNorm << endl;
 
@@ -732,28 +732,31 @@ TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *h
     Int_t binxUpFine = hRMFine->GetXaxis()->FindBin(xUp)-1;
     //cout << "xLowFine: " << hRMFine->GetXaxis()->GetBinLowEdge(binxLowFine) << "\txUpFine: " << hRMFine->GetXaxis()->GetBinUpEdge(binxUpFine) << endl;
     normVector->SetAt(hRMFine->Integral(binxLowFine,binxUpFine,1,hRMFine->GetYaxis()->GetNbins()),ix-1);
+    if(fDebug) cout << "ix norm: " << normVector->At(ix-1) << endl;
   }
 
   Double_t content, oldcontent = 0.;
   Int_t ixNew = 0;
   Int_t iyNew = 0;
-  Double_t xval, yval;
+  Double_t xvalLo, xvalUp, yvalLo, yvalUp;
   Double_t xmin = hRM2->GetXaxis()->GetXmin();
   Double_t ymin = hRM2->GetYaxis()->GetXmin();
   Double_t xmax = hRM2->GetXaxis()->GetXmax();
   Double_t ymax = hRM2->GetYaxis()->GetXmax();
   for(int ix=1; ix<=hRMFine->GetXaxis()->GetNbins(); ix++) {
-    xval = hRMFine->GetXaxis()->GetBinCenter(ix);
-    if(xval<xmin || xval>xmax) continue;
-    ixNew = hRM2->GetXaxis()->FindBin(xval);
+    xvalLo = hRMFine->GetXaxis()->GetBinLowEdge(ix);
+    xvalUp = hRMFine->GetXaxis()->GetBinUpEdge(ix);
+    if(xvalLo<xmin || xvalUp>xmax) continue;
+    ixNew = hRM2->GetXaxis()->FindBin(hRMFine->GetXaxis()->GetBinCenter(ix));
     for(int iy=1; iy<=hRMFine->GetYaxis()->GetNbins(); iy++) {
-      yval = hRMFine->GetYaxis()->GetBinCenter(iy);
-      if(yval<ymin || yval>ymax) continue;
+      yvalLo = hRMFine->GetYaxis()->GetBinLowEdge(iy);
+      yvalUp = hRMFine->GetYaxis()->GetBinUpEdge(iy);
+      if(yvalLo<ymin || yvalUp>ymax) continue;
       content = hRMFine->GetBinContent(ix,iy);
-      iyNew = hRM2->GetYaxis()->FindBin(yval);
+      iyNew = hRM2->GetYaxis()->FindBin(hRMFine->GetYaxis()->GetBinCenter(iy));
       oldcontent = hRM2->GetBinContent(ixNew,iyNew);
 
-      // if(fDebug) cout << "ixNew: " << ixNew << " " << xval << " iyNew: " << iyNew << " " << yval << " content: " << content << " oldContent: " << oldcontent << " newContent: " << oldcontent+content << endl;
+      //if(fDebug) cout << "ixNew: " << ixNew << " " << xvalLo << " iyNew: " << iyNew << " " << yvalLo << " content: " << content << " oldContent: " << oldcontent << " newContent: " << oldcontent+content << endl;
       Double_t weight = 1.;
       if(normVector->At(ixNew-1)>0.) weight = 1./normVector->At(ixNew-1);
       hRM2->SetBinContent(ixNew,iyNew,oldcontent+content*weight);
@@ -766,6 +769,51 @@ TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *h
 
 }
 
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+TH2* AliAnaChargedJetResponseMaker::MultiplityResponseMatrices(TH2 *h2RMDeltaPt, TH2 *h2RMDetector) {
+
+  //
+  // Make combined response matrix (background flucutuations + detector effects)
+  //
+  // hRMDeltaPt is the response matrix for background fluctuations from \delta(p_t) measurement
+  // hRMDetector is the response matrix for detector effects: needs to be a squared matrix with on each axis the same bins as on the generated axis of the bkg fluctuations response matrix
+  //
+  // Function assumes that generated/unfolded axis is x-axis and reconstructed is on y-axis on both respone matrices
+
+
+  TH2D *h2ResponseMatrixCombined = (TH2D*)h2RMDeltaPt->Clone("h2ResponseMatrixCombined"); //h2ResponseMatrix is the bkg fluctuations RM which has the dimensions we want for the combined response matrix
+  h2ResponseMatrixCombined->SetTitle("h2ResponseMatrixCombined");
+  h2ResponseMatrixCombined->SetName("h2ResponseMatrixCombined");
+
+  // M = RM_deltaPt * RM_DetEffects * T   (M=measured T=truth)
+  // Dimensions:
+  // mx1 = mxd * dxt * tx1
+  // m = measured bins
+  // t = truth bins
+  // d = rec for RM_DetEffects and gen for RM_deltaPt
+  // RM_comb = RM_deltaPt * RM_DetEffects (dimensions mxt)
+  // RM_comb(m,t) = Sum_d RM_deltaPt(m,d)*RM_DetEffects(d,t)
+
+  if(fDebug) {
+    printf("Nt=%d",h2ResponseMatrixCombined->GetNbinsX());
+    printf("Nm=%d",h2ResponseMatrixCombined->GetNbinsY());
+    printf("Nd=%d",h2RMDetector->GetNbinsX());
+  }
+
+  for(Int_t t=1; t<=h2ResponseMatrixCombined->GetNbinsX();t++) { 
+    for(Int_t m=1; m<=h2ResponseMatrixCombined->GetNbinsY();m++) { 
+      Double_t valueSum = 0.;    
+      for(Int_t d=1; d<=h2RMDeltaPt->GetNbinsX();d++) { 
+	valueSum += h2RMDeltaPt->GetBinContent(d,m) * h2RMDetector->GetBinContent(t,d);
+      }//d-loop
+      //  cout << "t,m = " << t << "," << m << endl; 
+      h2ResponseMatrixCombined->SetBinContent(t,m,valueSum);
+    } //m-loop
+  }//t-loop
+
+  return h2ResponseMatrixCombined;
+
+}
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *hResponse,TH1 *hEfficiency,Bool_t bDrawSlices) {

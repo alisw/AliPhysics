@@ -94,7 +94,14 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Int_t   GetListOfTracks(TList *list);
 
 
-    enum { kAllTriggered = 0,kTriggeredVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexValid,kSelectedALICEVertexIn,kSelected,kConstraints};
+    enum { kAllTriggered = 0,
+	   kTriggeredVertex,          //1
+	   kTriggeredVertexIn,        //2
+	   kSelectedALICE,            //3
+	   kSelectedALICEVertexValid, //4
+	   kSelectedALICEVertexIn,    //5
+	   kSelected,                 //6
+	   kConstraints};             //7
     enum { kRPTracks = 0, kRPVZEROA,kRPVZEROC,kRPMethods};
 
     enum { kNoEventCut=1<<0,

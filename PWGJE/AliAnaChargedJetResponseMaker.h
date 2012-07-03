@@ -84,6 +84,8 @@ class AliAnaChargedJetResponseMaker {
 
   virtual TH2* MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *hRM);
 
+  virtual TH2* MultiplityResponseMatrices(TH2 *h2RMDeltaPt, TH2 *h2RMDetector);
+
  protected:
   Bool_t      fDebug;
   ResolutionType fResolutionType;
