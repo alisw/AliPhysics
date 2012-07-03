@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
-#define AliFlowVector_cxx
-
 #include "AliFlowVector.h"
 
 //********************************************************************
@@ -58,6 +56,12 @@ AliFlowVector::~AliFlowVector()
   // default constructor 
 }
 
+void AliFlowVector::SetMagPhi(double size, double angle, double mult)
+{
+   TVector2::SetMagPhi(size,angle);
+   SetMult(mult);
+}
+
 //________________________________________________________________________
 
 AliFlowVector& AliFlowVector::operator=(const AliFlowVector& aVector)
@@ -83,3 +87,12 @@ AliFlowVector& AliFlowVector::operator+=(const AliFlowVector& aVector)
   return *this;
 }
 
+AliFlowVector& AliFlowVector::operator-=(const AliFlowVector& aVector)
+{
+  // addition operator
+  fX -= aVector.X(); 
+  fY -= aVector.Y(); 
+  fMult -= aVector.GetMult();
+  
+  return *this;
+}
