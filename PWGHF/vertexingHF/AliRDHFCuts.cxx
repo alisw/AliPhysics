@@ -420,7 +420,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
 
   // PbPb2011 outliers in tracklets vs. VZERO
-  if(!isMC && event->GetRunNumber()>=167693 && event->GetRunNumber()<=170593){
+  if(event->GetRunNumber()>=167693 && event->GetRunNumber()<=170593){
     if(fRemoveTrackletOutliers){
       Double_t v0cent=GetCentrality((AliAODEvent*)event,kCentV0M);
       Double_t ntracklets=((AliAODEvent*)event)->GetTracklets()->GetNumberOfTracklets();
