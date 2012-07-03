@@ -104,7 +104,7 @@ void AliPHOSTriggerRawDigiProducer::ProcessEvent(TClonesArray* tdigits)
 		  }
 		}// end TimeBin loop
 		
-		if( triggered && truReader->HasSignal() ){
+		if( triggered ){
 		  // Get peak values
 		  const int TSmax = Get4x4Max(fTriggerReader, fParameters, mod, TRURow, branch, xIdx, zIdx);
 		  new((*tdigits)[iDigit]) AliPHOSTriggerRawDigit(mod,xIdx,zIdx,TRURow,branch,TSmax); 
@@ -141,8 +141,7 @@ int AliPHOSTriggerRawDigiProducer::Get2x2Signal(AliPHOSTriggerRawReader* reader,
   const int TRUX = xIdx % kN2x2XPrTRURow; // 2x2 coordinates
   const int TRUZ = zIdx % kN2x2ZPrBranch; // 2x2 coordinates
 
-  AliPHOSTRURawReader* truReader = reader->GetTRU(mod, TRURow, branch);
-  if( truReader->IsActive(timeBin) && truReader->HasSignal(timeBin)  ){
+  if( reader->GetTRU(mod, TRURow, branch)->IsActive() ){
     const int signal = reader->GetTRU(mod, TRURow, branch)->GetTriggerSignal( TRUX, TRUZ, timeBin);
     if( parameters )
       return signal - parameters->GetTRUPedestal(mod, TRURow, branch, TRUX, TRUZ);
