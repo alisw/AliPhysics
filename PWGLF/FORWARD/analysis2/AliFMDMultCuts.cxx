@@ -85,6 +85,7 @@ AliFMDMultCuts::GetMultCut(UShort_t d, Char_t r, Int_t ieta,
   //    Lower cut on multiplicity
   //
   Double_t rcut = GetFixedCut(d, r);
+ 
   if (rcut > 0) return rcut;
 
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
@@ -112,7 +113,8 @@ AliFMDMultCuts::GetMultCut(UShort_t d, Char_t r, Double_t eta,
   //
   AliForwardCorrectionManager&  fcm  = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*           fits = fcm.GetELossFit();
-  Int_t                         iEta = fits->FindEtaBin(eta);
+  Int_t                         iEta = 1;
+  if (fits)iEta=fits->FindEtaBin(eta);
   
   return GetMultCut(d, r, iEta, errors);
 }

@@ -221,7 +221,7 @@ AliFMDDensityCalculator::Init(const TAxis& axis)
   //   etaAxis   Not used
   DGUARD(fDebug, 1, "Initialize FMD density calculator");
   CacheMaxWeights();
-
+ 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
@@ -436,6 +436,8 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
   //    iEta  Eta bin 
   //
   DGUARD(fDebug, 3, "Find maximum weight in FMD density calculator");
+  if(!cor)
+		return -1;
   AliFMDCorrELossFit::ELossFit* fit = cor->GetFit(d,r,iEta);
   if (!fit) { 
     // AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
@@ -454,7 +456,9 @@ AliFMDDensityCalculator::CacheMaxWeights()
   DGUARD(fDebug, 2, "Cache maximum weights in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*           cor = fcm.GetELossFit();
-  const TAxis&                  eta = cor->GetEtaAxis();
+   TAxis defaultaxis(240,-6,6);
+	TAxis& eta=defaultaxis;
+	if(cor)eta = cor->GetEtaAxis();
 
   Int_t nEta = eta.GetNbins();
   fFMD1iMax.Set(nEta);
