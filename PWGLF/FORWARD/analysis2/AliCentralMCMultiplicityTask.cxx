@@ -116,10 +116,9 @@ void AliCentralMCMultiplicityTask::UserExec(Option_t* option)
   //  
   DGUARD(fDebug,1,"Process event in AliCentralMCMultiplicityTask");
   fAODMCCentral.Clear("");
-  
   // Call base class 
   AliCentralMultiplicityTask::UserExec(option);
-
+fAODMCCentral.Init(*(fAODCentral.GetHistogram().GetXaxis()));
   // check if we need this event 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 

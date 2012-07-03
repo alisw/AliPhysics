@@ -223,10 +223,20 @@ AliFMDSharingFilter::Init()
   // Get the high cut.  The high cut is defined as the 
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
-  AliFMDCorrELossFit* fits = fcm.GetELossFit();
-  const TAxis& eAxis = fits->GetEtaAxis();
+  
+  UShort_t nEta=240;
+  TAxis defaultaxis(nEta,-6,6);
+	TAxis& eAxis=defaultaxis;
 
-  UShort_t nEta = eAxis.GetNbins();
+	AliFMDCorrELossFit* fits = fcm.GetELossFit();
+
+	if(fits)
+	{
+		eAxis = fits->GetEtaAxis();
+		nEta = eAxis.GetNbins();
+	}
+		
+	
   fHighCuts->SetBins(nEta, eAxis.GetXmin(), eAxis.GetXmax(), 5, .5, 5.5);
   fHighCuts->GetYaxis()->SetBinLabel(1, "FMD1i");
   fHighCuts->GetYaxis()->SetBinLabel(2, "FMD2i");
@@ -249,8 +259,12 @@ AliFMDSharingFilter::Init()
       ybin++;
       for (UShort_t e = 1; e <= nEta; e++) { 
 	Double_t eta = eAxis.GetBinCenter(e);
+	
+	fHCuts.Print();
 	Double_t hcut = GetHighCut(d, r, eta, false);
+	
 	Double_t lcut = GetLowCut(d, r, eta);
+	
 	if (hcut > 0) fHighCuts->SetBinContent(e, ybin, hcut);
 	if (lcut > 0) fLowCuts ->SetBinContent(e, ybin, lcut);
       }

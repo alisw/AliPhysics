@@ -277,9 +277,15 @@ AliForwardQATask::InitializeSubs()
   const TAxis* pe = 0;
   const TAxis* pv = 0;
 
-  if (!ReadCorrections(pe,pv)) { 
-    AliWarning("Failed to read corrections");
-    return false;
+
+
+
+  if (!ReadCorrections(pe,pv)) 
+  { 
+    AliWarning("Used default binning");
+    pv=new TAxis(10,-10, 10);
+    pe=new TAxis(240,-6,6);
+    //return false;
   }
 
   fHistos.Init(*pe);
@@ -372,19 +378,20 @@ AliForwardQATask::UserExec(Option_t*)
     AliWarning("Energy fitter failed");
     return;
   }
-    
+  
   //  // Apply the sharing filter (or hit merging or clustering if you like)
   if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, vz)) { 
     AliWarning("Sharing filter failed!");
     return;
   }
-
+ 
   // Calculate the inclusive charged particle density 
   if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
     return;
   }
+  
   PostData(1, fList);
 }
 

@@ -323,6 +323,8 @@ void AliCentralMultiplicityTask::FindEtaLimits()
   hCoverage->SetZTitle("n_{bins}");
   fList->Add(hCoverage);
   
+  fAODCentral.Init(*(secMap->GetCorrection(s)->GetXaxis()));
+  
   for (Int_t v = 1; v <= vaxis.GetNbins(); v++) { 
     TH2D* corr = secMap->GetCorrection(UShort_t(v));
     TH1D* proj = corr->ProjectionX(Form("secCor%02d", v));
