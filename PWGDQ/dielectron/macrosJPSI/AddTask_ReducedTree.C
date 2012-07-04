@@ -3,15 +3,12 @@ AliAnalysisTask *AddTask_ReducedTree(){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_iarsene_dst", "No analysis manager found.");
+    Error("AddTask_ReducedTree", "No analysis manager found.");
     return 0;
   }
 
   //Do we have an MC handler?
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-  
-  //gROOT->LoadMacro("AliReducedEvent.cxx+g");
-  //gROOT->LoadMacro("AliAnalysisTaskReducedTree.cxx+g");
   
   //create task and add it to the manager
   AliAnalysisTaskReducedTree *task=new AliAnalysisTaskReducedTree("DSTTreeMaker");
@@ -22,7 +19,7 @@ AliAnalysisTask *AddTask_ReducedTree(){
   
   task->SetFillV0Info(kFALSE);
   task->SetFillCaloClusterInfo(kFALSE);
-  //task->SetFillFriendInfo(kFALSE);
+  task->SetFillFriendInfo(kFALSE);
   
   task->SetEventFilter(CreateEventFilter());
   task->SetTrackFilter(CreateGlobalTrackFilter());
@@ -70,11 +67,11 @@ AliAnalysisTask *AddTask_ReducedTree(){
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );
-  mgr->ConnectOutput(task, 1, cOutputHist1);
-  mgr->ConnectOutput(task, 2, cOutputHist2);
-  mgr->ConnectOutput(task, 3, cOutputHist3);
+  //mgr->ConnectOutput(task, 1, cOutputHist1);
+  //mgr->ConnectOutput(task, 2, cOutputHist2);
+  //mgr->ConnectOutput(task, 3, cOutputHist3);
   //mgr->ConnectOutput(task, 2, cOutputHist3);
-  
+  mgr->ConnectOutput(task, 1, cOutputHist2);
   return task;
 }
 

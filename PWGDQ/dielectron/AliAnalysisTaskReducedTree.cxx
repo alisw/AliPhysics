@@ -126,11 +126,12 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree(const char *name) :
   fLambdaMassRange[0] = 1.08; fLambdaMassRange[1] = 1.15;
   
   DefineInput(0,TChain::Class());
-  DefineOutput(1, TList::Class());   // QA histograms
-  DefineOutput(2, TTree::Class());   // reduced information tree
-  if(fFillFriendInfo) DefineOutput(3, TTree::Class());   // reduced information tree with friends
+  //DefineOutput(1, TList::Class());   // QA histograms
+  //DefineOutput(2, TTree::Class());   // reduced information tree
+  //if(fFillFriendInfo) DefineOutput(3, TTree::Class());   // reduced information tree with friends
   //DefineOutput(2, TTree::Class());   // reduced information tree with friends
-  
+  DefineOutput(1, TTree::Class());   // reduced information tree  
+
   fListHistos.SetName("QAhistograms");
   fListDielectron.SetOwner();
   fListHistos.SetOwner(kFALSE);
@@ -165,10 +166,11 @@ void AliAnalysisTaskReducedTree::UserCreateOutputObjects()
   fReducedEvent = new AliReducedEvent("DstEvent");
   fTree->Branch("Event",&fReducedEvent,16000,99);
     
-  PostData(1, &fListHistos);
-  PostData(2, fTree);
-  if(fFillFriendInfo) PostData(3, fFriendTree);
+  //PostData(1, &fListHistos);
+  //PostData(2, fTree);
+  //if(fFillFriendInfo) PostData(3, fFriendTree);
   //PostData(2, fFriendTree);
+  PostData(1, fTree);
 }
 
 //_________________________________________________________________________________
@@ -256,10 +258,11 @@ void AliAnalysisTaskReducedTree::UserExec(Option_t *option)
   if(fFillFriendInfo) fFriendTree->Fill();
       
   // if there are candidate pairs, add the information to the reduced tree
-  PostData(1, &fListHistos);
-  PostData(2, fTree);
-  if(fFillFriendInfo) PostData(3, fFriendTree);
+  //PostData(1, &fListHistos);
+  //PostData(2, fTree);
+  //if(fFillFriendInfo) PostData(3, fFriendTree);
   //PostData(2, fFriendTree);
+  PostData(1, fTree);
 }
 
 
