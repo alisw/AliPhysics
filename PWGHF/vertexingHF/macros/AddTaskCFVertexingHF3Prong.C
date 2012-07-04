@@ -42,7 +42,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
 //AliCFContainer *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -79,7 +79,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 
 	TFile* fileCuts = TFile::Open(cutFile);
 	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
-	  AliError("Wrong cut file");
+	  AliFatal(" Cut file not found");
 	  return 0x0;
 	}
 	AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("AnalysisCuts");
@@ -331,13 +331,16 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	TString nameContainer="";
 	if(!isKeepDfromB) {
 		nameContainer="CFHFccontainer0_3Prong_CommonFramework";
+		
 	}
 	else  if(isKeepDfromBOnly){
 		nameContainer="CFHFccontainer0DfromB_3Prong_CommonFramework";
+		
 	}
 	else  {
 		nameContainer="CFHFccontainer0allD_3Prong_CommonFramework";          
 	}
+
 	
 	AliCFContainer* container;
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -597,6 +600,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	else  {
 		nameCorr="CFHFcorr0allD_3Prong_CommonFramework";		
 	}
+	
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
         Double_t** binEdges = new Double_t[2];
@@ -645,7 +649,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 		output1name="CFHFchist0allD_3Prong_CommonFramework";
 		output4name= "CutsallD_3Prong_CommonFramework";
 	}
-
+	outputfile += suffixName.Data();
+	output1name += suffixName.Data();
+	output2name += suffixName.Data();
+	output3name += suffixName.Data();
+	output4name += suffixName.Data();
+	
 
 	//now comes user's output objects :
 	// output TH1I for event counting
