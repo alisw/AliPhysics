@@ -34,6 +34,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fCreateHisto(kTRUE),
   fTracksName(),
   fCaloName(),
+  fMinCent(-999),
+  fMaxCent(-999),
+  fMinVz(-999),
+  fMaxVz(-999),
+  fOffTrigger(AliVEvent::kAny),
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
@@ -66,6 +71,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fCreateHisto(histo),
   fTracksName(),
   fCaloName(),
+  fMinCent(-999),
+  fMaxCent(-999),
+  fMinVz(-999),
+  fMaxVz(-999),
+  fOffTrigger(AliVEvent::kAny),
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
@@ -114,13 +124,16 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *)
   if (!RetrieveEventObjects())
     return;
 
+  if (!IsEventSelected()) 
+    return;
+
   if (!Run())
     return;
 
   if (!FillHistograms())
     return;
     
-  if (fCreateHisto) {
+  if (fCreateHisto && fOutput) {
     // information for this iteration of the UserExec in the container
     PostData(1, fOutput);
   }
@@ -189,40 +202,11 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVTrack *track, Bool_t acceptMC) cons
   return kTRUE;
 }
 
-//_____________________________________________________
-AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
-{
-  // Get beam type : pp-AA-pA
-  // ESDs have it directly, AODs get it from hardcoded run number ranges
-
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (esd) {
-    const AliESDRun *run = esd->GetESDRun();
-    TString beamType = run->GetBeamType();
-    if (beamType == "p-p")
-      return kpp;
-    else if (beamType == "A-A")
-      return kAA;
-    else if (beamType == "p-A")
-      return kpA;
-    else
-      return kNA;
-  } else {
-    Int_t runNumber = InputEvent()->GetRunNumber();
-    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
-	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
-    {
-      return kAA;
-    } else {
-      return kpp;
-    }
-  }  
-}
-
 //________________________________________________________________________
 void AliAnalysisTaskEmcal::ExecOnce()
 {
   // Init the analysis.
+
   if (!InputEvent()) {
     AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
     return;
@@ -257,8 +241,66 @@ void AliAnalysisTaskEmcal::ExecOnce()
       }
     }
   }
-
   SetInitialized();
+}
+
+//_____________________________________________________
+AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
+{
+  // Get beam type : pp-AA-pA
+  // ESDs have it directly, AODs get it from hardcoded run number ranges
+
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (esd) {
+    const AliESDRun *run = esd->GetESDRun();
+    TString beamType = run->GetBeamType();
+    if (beamType == "p-p")
+      return kpp;
+    else if (beamType == "A-A")
+      return kAA;
+    else if (beamType == "p-A")
+      return kpA;
+    else
+      return kNA;
+  } else {
+    Int_t runNumber = InputEvent()->GetRunNumber();
+    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
+	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
+    {
+      return kAA;
+    } else {
+      return kpp;
+    }
+  }  
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEmcal::IsEventSelected() const
+{
+  // Check if event is selected
+
+  if (fOffTrigger != AliVEvent::kAny) {
+    UInt_t res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    if (res & fOfftrigger == 0)
+      return kFALSE;
+  }
+
+  if ((fMinCent != -999) && (fMaxCent != -999)) {
+    if (fCent<fMinCent)
+      return kFALSE;
+    if (fCent>fMaxCent)
+      return kFALSE;
+  }
+
+  if ((fMinVz != -999) && (fMaxVz != -999)) {
+    Double_t vz = fVertex[2];
+    if (vz<fMinVz)
+      return kFALSE;
+    if (vz>fMaxVz)
+      return kFALSE;
+  }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________
