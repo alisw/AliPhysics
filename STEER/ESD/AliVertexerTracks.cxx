@@ -446,7 +446,7 @@ void AliVertexerTracks::GetStrLinDerivMatrix(const Double_t *p0,const Double_t *
   m[1][1]=2-2/kk*y12*y12;
   m[1][2]=-2/kk*y12*z12;
   m[2][0]=-2/kk*x12*z12;
-  m[2][1]=-2*y12*z12;
+  m[2][1]=-2/kk*y12*z12;
   m[2][2]=2-2/kk*z12*z12;
   d[0]=2*p0[0]-2/kk*p0[0]*x12*x12-2/kk*p0[2]*x12*z12-2/kk*p0[1]*x12*y12;
   d[1]=2*p0[1]-2/kk*p0[1]*y12*y12-2/kk*p0[0]*x12*y12-2/kk*p0[2]*z12*y12;
