@@ -36,17 +36,18 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   void                        UserExec(Option_t *option);
 
-  void                        SetAnaType(EmcalAnaType type)                         { fAnaType        = type        ; }
+  void                        SetAnaType(EmcalAnaType type)                         { fAnaType        = type;         }
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent = min; fMaxCent = max; }
-  void                        SetClusName(const char *n)                            { fCaloName       = n           ; }
-  void                        SetClusPtCut(Double_t cut)                            { fClusPtCut      = cut         ; }
+  void                        SetClusName(const char *n)                            { fCaloName       = n;            }
+  void                        SetClusPtCut(Double_t cut)                            { fClusPtCut      = cut;          }
   void                        SetClusTimeCut(Double_t min, Double_t max)            { fClusTimeCutLow = min; fClusTimeCutUp = max;      }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max; }
-  void                        SetOffTrigger(UInt_t t)                               { fOffTrigger    = t;            }
+  void                        SetOffTrigger(UInt_t t)                               { fOffTrigger    = t;                               }
   void                        SetPtCut(Double_t cut)                                { SetClusPtCut(cut); SetTrackPtCut(cut);            }
-  void                        SetTrackPtCut(Double_t cut)                           { fTrackPtCut     = cut        ; }
-  void                        SetTracksName(const char *n)                          { fTracksName     = n          ; }
-  void                        SetVzRange(Double_t min, Double_t max)                { fMinVz = min; fMaxVz   = max;  }
+  void                        SetTrackPtCut(Double_t cut)                           { fTrackPtCut     = cut;          }
+  void                        SetTracksName(const char *n)                          { fTracksName     = n;            }
+  void                        SetTrigClass(const char *n)                           { fTrigClass = n;                 } 
+  void                        SetVzRange(Double_t min, Double_t max)                { fMinVz = min; fMaxVz   = max;   }
 
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE) const;
@@ -71,6 +72,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMinVz;                      // min vertex for event selection
   Double_t                    fMaxVz;                      // max vertex for event selection
   UInt_t                      fOffTrigger;                 // offline trigger for event selection
+  TString                     fTrigClass;                  // trigger class name for event selection
   Int_t                       fNbins;                      // no. of pt bins
   Double_t                    fMinBinPt;                   // min pt in histograms
   Double_t                    fMaxBinPt;                   // max pt in histograms
@@ -86,6 +88,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fEPV0A;                      //!event plane V0A
   Double_t                    fEPV0C;                      //!event plane V0C
   Double_t                    fVertex[3];                  //!event vertex
+  Int_t                       fNVertCont;                  //!event vertex number of contributors
   BeamType                    fBeamType;                   //!event beam type
   TList                      *fOutput;                     //!output list
 
@@ -93,6 +96,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 4) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 5) // EMCAL base analysis task
 };
 #endif
