@@ -216,7 +216,7 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
     if(fClusterizer || fIsTrain)
       fTree->Branch(fCaloClustersName, &fMyAltClusts, 8*16*1024, 99);
     fTree->Branch("cells", &fMyCells, 8*16*1024, 99);
-    fTree->Branch("HighPtTracks", &fMyTracks, 8*16*1024, 99);
+    fTree->Branch("IsoTracks", &fMyTracks, 8*16*1024, 99);
     if(fIsMC)
       fTree->Branch("mcparts", &fMyMcParts, 8*16*1024, 99);
     }
@@ -320,7 +320,7 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   FillMyClusters();
   if(fCaloClustersNew)
     FillMyAltClusters();
-  FillHighPtTracks();
+  FillIsoTracks();
   if(fIsMC)
     GetMcParts();
   
@@ -622,7 +622,7 @@ void AliAnalysisTaskEMCALPhoton::FillMyAltClusters()
   
 }
 //________________________________________________________________________
-void  AliAnalysisTaskEMCALPhoton::FillHighPtTracks()
+void  AliAnalysisTaskEMCALPhoton::FillIsoTracks()
 {
   // Fill high pt tracks.
 
@@ -634,12 +634,17 @@ void  AliAnalysisTaskEMCALPhoton::FillHighPtTracks()
     AliESDtrack *track = static_cast<AliESDtrack*>(fSelPrimTracks->At(it));
     if(!track)
       continue;
-    if(track->Pt()<3)
-      continue;
+    /*if(track->Pt()<3)
+      continue;*/
     AliPhotonTrackObj *mtr = static_cast<AliPhotonTrackObj*>(fMyTracks->New(imtr++));
+    if(track->Phi()<1.0 || track->Phi()>3.55)
+      continue;
+    if(TMath::Abs(track->Eta())>1.1)
+      continue;
     mtr->fPt = track->Pt();
     mtr->fEta = track->Eta();
     mtr->fPhi = track->Phi();
+    mtr->fCharge = track->Charge();
     mtr->fDedx = track->GetTPCsignal();
     mtr->fMcLabel = track->GetLabel();
   }
