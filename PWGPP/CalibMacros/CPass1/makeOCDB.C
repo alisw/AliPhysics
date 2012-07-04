@@ -15,8 +15,9 @@ void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream)
 void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstorage="raw://")
 {
   //
-  // extract TPC OCDB entries
+  // extract OCDB entries for detectors participating in the calibration for the current run
   //
+
   gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
 
@@ -26,8 +27,7 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
   // config GRP
   printf("runNumber from runCalibTrain = %d\n",runNumber);
   ConfigCalibTrain(runNumber, defaultOCDBstorage.Data());
-  //
-  //
+
   // check the presence of the detectors
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
@@ -36,67 +36,58 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
   TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
   printf("Detectors in the data:\n%s\n",detStr.Data());
 
-
-
   // Steering Tasks - set output storage
   // DefaultStorage set already before - in ConfigCalibTrain.C
   //ocdbStorage+="?se=ALICE::CERN::SE";
 
-  AliCDBManager::Instance()->SetSpecificStorage("*/*/*",ocdbStorage.Data());
+  AliCDBManager::Instance()->UnsetDefaultStorage();
+  AliCDBManager::Instance()->SetDefaultStorage(ocdbStorage.Data());
   if (gSystem->AccessPathName("TPC", kFileExists)==0) {  
     AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
   }
   // set OCDB storage
   if (ocdbStorage.Length()==0) ocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
   TString ocdbLocal = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+
   // TPC part
-  TFile fcalib("CalibObjects.root");
-  
-  
   AliTPCPreprocessorOffline* procesTPC=0;
   if (detStr.Contains("TPC")){
+    Printf("\n******* Calibrating TPC *******");
     procesTPC = new AliTPCPreprocessorOffline;
-
     // switch on parameter validation
     procesTPC->SetTimeGainRange(0.5,3.0);
     procesTPC->SwitchOnValidation();
-
     // Make timegain calibration
     //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),ocdbStorage);
     procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,ocdbLocal);
-
     // Make vdrift calibration
     //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),ocdbStorage);
     procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,ocdbLocal);
   }
-  //
+
   // TOF part
-  //
   AliTOFAnalysisTaskCalibPass0 *procesTOF=0;
   if ( detStr.Contains("TOF")){
     procesTOF = new AliTOFAnalysisTaskCalibPass0;
-
-    Printf("Calibrating TOF");
+    Printf("\n******* Calibrating TOF *******");
     procesTOF->ProcessOutput("CalibObjects.root", ocdbStorage);
   }
-  //
-  //
 
   // T0 part
   AliT0PreprocessorOffline *procesT0= 0;
   if ( detStr.Contains("T0")) {
+    Printf("\n******* Calibrating T0 *******");
     procesT0 = new AliT0PreprocessorOffline;
     // Make  calibration of channels offset
-    procesT0->setDArun(179000);
+    procesT0->setDArun(177000);
     procesT0->Process("CalibObjects.root",runNumber, runNumber, ocdbStorage);
   }
-  //
+
   //TRD part
-  //
   AliTRDPreprocessorOffline *procesTRD = 0;
   if ( detStr.Contains("TRD")){
+    Printf("\n******* Calibrating TRD *******");
     procesTRD = new  AliTRDPreprocessorOffline;
-
     procesTRD->SetLinearFitForVdrift(kTRUE);
     procesTRD->SetMinStatsVdriftT0PH(600*10);
     procesTRD->SetMinStatsVdriftLinear(50);
@@ -117,13 +108,16 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
     procesTRD->Process("CalibObjects.root",runNumber,runNumber,ocdbStorage);
   }
   
-
+  // switched OFF at CPass1 in any case
+  /*
   //Mean Vertex
   AliMeanVertexPreprocessorOffline * procesMeanVtx=0;
   if ( detStr.Contains("ITSSPD")) {
+    Printf("\n******* Calibrating MeanVertex *******");
     procesMeanVtx = new AliMeanVertexPreprocessorOffline;
     procesMeanVtx->ProcessOutput("CalibObjects.root", ocdbStorage, runNumber);
   }
+  */
 
   //
   // Print calibration status into the stdout
@@ -146,7 +140,11 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
   return;
 }
 
+
+// function to print statistics used to calibrate the various detectors
+
 void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream){
+
   //
   // Dump the statistical information about all histograms in the calibration files 
   //    into the statistical tree, print on the screen (log files) as well 
@@ -162,10 +160,11 @@ void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream)
   //                                      - First version implemented by MI 
   //  
   // 
+
   TFile *fin = TFile::Open(fname);
   if (!fin) return;
   const Double_t kMaxHis=10000;
-  //
+  
   TList * keyList = fin->GetListOfKeys();
   Int_t nkeys=keyList->GetEntries();
   Double_t *hisEntries = new Double_t[kMaxHis];
@@ -176,142 +175,149 @@ void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream)
   Int_t counter=0;
   
   if (pcstream) (*pcstream)<<"calibStatAll"<<"run="<<run;
-  {for (Int_t ikey=0; ikey<nkeys; ikey++){
-      TObject * object = fin->Get(keyList->At(ikey)->GetName());
-      if (!object) continue;
-      if (object->InheritsFrom("TCollection")==0) continue;
-      TSeqCollection *collection  = (TSeqCollection*)object; 
-      Int_t nentries= collection->GetEntries();
-      for (Int_t ihis=0; ihis<nentries; ihis++){
-        TObject * ohis = collection->At(ihis);
-        if (!ohis) continue;
-        if (ohis->InheritsFrom("TH1")==0) continue;
-        TH1* phis = (TH1*)ohis;
-        hisEntries[counter]=phis->GetEntries();
-        Int_t idim=1;
-        if (ohis->InheritsFrom("TH2")) idim=2;
-        if (ohis->InheritsFrom("TH3")) idim=3;        
-        hisMean[counter]=phis->GetMean(idim);
-        hisMeanError[counter]=phis->GetMeanError(idim);
-        hisRMS[counter]=phis->GetRMS(idim);
-        hisMaxBin[counter]=phis->GetBinCenter(phis->GetMaximumBin());
-        if (pcstream) (*pcstream)<<"calibStatAll"<<
-          Form("%s_%sEntries=",keyList->At(ikey)->GetName(), phis->GetName())<<hisEntries[counter]<<
-          Form("%s_%sMean=",keyList->At(ikey)->GetName(), phis->GetName())<<hisMean[counter]<<
-          Form("%s_%sMeanError=",keyList->At(ikey)->GetName(), phis->GetName())<<hisMeanError[counter]<<
-          Form("%s_%sRMS=",keyList->At(ikey)->GetName(), phis->GetName())<<hisRMS[counter]<<
-          Form("%s_%sMaxBin=",keyList->At(ikey)->GetName(), phis->GetName())<<hisMaxBin[counter];
-        //printf("Histo:\t%s_%s\t%f\t%d\n",keyList->At(ikey)->GetName(), phis->GetName(), hisEntries[counter],idim);
-        counter++;
-      }
-      delete object;
-    }    
-  }
+  for (Int_t ikey=0; ikey<nkeys; ikey++){
+    TObject * object = fin->Get(keyList->At(ikey)->GetName());
+    if (!object) continue;
+    if (object->InheritsFrom("TCollection")==0) continue;
+    TSeqCollection *collection  = (TSeqCollection*)object; 
+    Int_t nentries= collection->GetEntries();
+    for (Int_t ihis=0; ihis<nentries; ihis++){
+      TObject * ohis = collection->At(ihis);
+      if (!ohis) continue;
+      if (ohis->InheritsFrom("TH1")==0) continue;
+      TH1* phis = (TH1*)ohis;
+      hisEntries[counter]=phis->GetEntries();	
+      Int_t idim=1;
+      if (ohis->InheritsFrom("TH2")) idim=2;
+      if (ohis->InheritsFrom("TH3")) idim=3;        
+      hisMean[counter]=phis->GetMean(idim);	
+      hisMeanError[counter]=phis->GetMeanError(idim);	
+      hisRMS[counter]=phis->GetRMS(idim);	
+      hisMaxBin[counter]=phis->GetBinCenter(phis->GetMaximumBin());	
+      if (pcstream) (*pcstream)<<"calibStatAll"<<
+		      Form("%s_%sEntries=",keyList->At(ikey)->GetName(), phis->GetName())<<hisEntries[counter]<<	
+		      Form("%s_%sMean=",keyList->At(ikey)->GetName(), phis->GetName())<<hisMean[counter]<<	
+		      Form("%s_%sMeanError=",keyList->At(ikey)->GetName(), phis->GetName())<<hisMeanError[counter]<<	
+		      Form("%s_%sRMS=",keyList->At(ikey)->GetName(), phis->GetName())<<hisRMS[counter]<<	
+		      Form("%s_%sMaxBin=",keyList->At(ikey)->GetName(), phis->GetName())<<hisMaxBin[counter];	
+      //printf("Histo:\t%s_%s\t%f\t%d\n",keyList->At(ikey)->GetName(), phis->GetName(), hisEntries[counter],idim);
+      counter++;
+    }
+    delete object;
+  }    
+  
   //
-  //
-  // Expert dump example (MI first itteration):
+  // Expert dump example (MI first iteration):
   //
   // 0.)  TOF dump
   //
+
   Int_t tofEvents=0;
   Int_t tofTracks=0;
   TList * TOFCalib = (TList*)fin->Get("TOFHistos");      
-  {if (TOFCalib) {
-      TH1  *histoEvents = (TH1*) TOFCalib->FindObject("hHistoVertexTimestamp");
-      TH1  *histoTracks = (TH1*)TOFCalib->FindObject("hHistoDeltatTimestamp");
-      if (histoEvents && histoTracks){
-        tofEvents= histoEvents->GetEntries();
-        tofTracks= histoTracks->GetEntries();
-      }
-      delete TOFCalib;
-    }}
-  printf("Monalisa TOFevents\t%f\n",tofEvents);
+  if (TOFCalib) {
+    TH1 *histoEvents = (TH1*)TOFCalib->FindObject("hHistoVertexTimestamp");
+    TH1 *histoTracks = (TH1*)TOFCalib->FindObject("hHistoDeltatTimestamp");
+    if (histoEvents && histoTracks){
+      tofEvents = TMath::Nint(histoEvents->GetEntries());
+      tofTracks = TMath::Nint(histoTracks->GetEntries());
+    }
+    delete TOFCalib;
+  }
+  printf("Monalisa TOFevents\t%d\n",tofEvents);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"TOFevents="<<tofEvents;
-  printf("Monalisa TOFtracks\t%f\n",tofTracks);
+  printf("Monalisa TOFtracks\t%d\n",tofTracks);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"TOFtracks="<<tofTracks;
+
   //
   // 1.)  TPC  dump - usefull events/tracks  for the calibration
   //
   Int_t tpcEvents=0;
   Int_t tpcTracks=0;
   TList * TPCCalib = (TList*)fin->Get("TPCCalib");      
-  {if (TPCCalib) {
+  if (TPCCalib) {
     AliTPCcalibTime  * calibTime = (AliTPCcalibTime  *)TPCCalib->FindObject("calibTime");
     if (calibTime){
-      tpcEvents = calibTime->GetTPCVertexHisto(0)->GetEntries();
-      tpcTracks = calibTime->GetResHistoTPCITS(0)->GetEntries();
+      tpcEvents = TMath::Nint(calibTime->GetTPCVertexHisto(0)->GetEntries());
+      tpcTracks = TMath::Nint(calibTime->GetResHistoTPCITS(0)->GetEntries());
     }
-    }}
-  printf("Monalisa TPCevents\t%f\n",tpcEvents);
+  }
+  printf("Monalisa TPCevents\t%d\n",tpcEvents);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"TPCevents="<<tpcEvents;
-  printf("Monalisa TPCtracks\t%f\n",tpcTracks);
+  printf("Monalisa TPCtracks\t%d\n",tpcTracks);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"TPCtracks="<<tpcTracks;
+
   //
   // 2. TRD dump 
   //
   Int_t trdEvents=0;
   Int_t trdTracks=0;
   TList * TRDCalib = (TList*)fin->Get("TRDCalib");      
-  {if (TRDCalib) {
-      TH1  *histoEvents = (TH1*) TRDCalib->FindObject("NEventsInput_AliTRDCalibTask");
-      TH1  *histoTracks = (TH1*)TRDCalib->FindObject("AbsoluteGain_AliTRDCalibTask");
-      if (histoEvents && histoTracks){
-        trdEvents= histoEvents->GetEntries();
-        trdTracks= histoTracks->GetEntries();
-      }
-      delete TRDCalib;
-    }}
-  printf("Monalisa TRDevents\t%f\n",trdEvents);
+  if (TRDCalib) {
+    TH1  *histoEvents = (TH1*)TRDCalib->FindObject("NEventsInput_AliTRDCalibTask");
+    TH1  *histoTracks = (TH1*)TRDCalib->FindObject("AbsoluteGain_AliTRDCalibTask");
+    if (histoEvents && histoTracks){
+      trdEvents= TMath::Nint(histoEvents->GetEntries());
+      trdTracks= TMath::Nint(histoTracks->GetEntries());
+    }
+    delete TRDCalib;
+  }
+  printf("Monalisa TRDevents\t%d\n",trdEvents);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"TRDevents="<<trdEvents;
-  printf("Monalisa TRDtracks\t%f\n",trdTracks);
+  printf("Monalisa TRDtracks\t%d\n",trdTracks);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"TRDtracks="<<trdTracks;
+
   //
   // 3. T0 dump 
   //
   Int_t T0Events=0;
   TList * T0Calib = (TList*)fin->Get("T0Calib");      
-  {if (T0Calib) {
-      TH1  *histoEvents = (TH1*) T0Calib->FindObject("fTzeroORAplusORC");
-      if (histoEvents && histoTracks){
-        T0Events= histoEvents->GetEntries();
-      }
-      delete T0Calib;
-    }}
-  printf("Monalisa T0events\t%f\n",T0Events);
+  if (T0Calib) {
+    TH1  *histoEvents = (TH1*) T0Calib->FindObject("fTzeroORAplusORC");
+    if (histoEvents){
+      T0Events= TMath::Nint(histoEvents->GetEntries());
+    }
+    delete T0Calib;
+  }
+  printf("Monalisa T0events\t%d\n",T0Events);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"T0events="<<T0Events;
+
   //
-  // 3. Mean vertex -   dump 
+  // 4. Mean vertex -   dump 
+  // Not present in CPass1
+  /*
+    Int_t meanVertexEvents=0;
+  TList * meanVertexCalib = (TList*)fin->Get("MeanVertex");      
+  if (meanVertexCalib) {
+    TH1  *histoEvents = (TH1*) meanVertexCalib->FindObject("hSPDVertexX");
+    if (histoEvents && histoTracks){
+      meanVertexEvents = TMath::Nint(histoEvents->GetEntries());
+    }
+    delete meanVertexCalib;
+  }
+  printf("Monalisa MeanVertexevents\t%d\n",meanVertexEvents);
+  if (pcstream) (*pcstream)<<"calibStatAll"<<"MeanVertexevents="<<meanVertexEvents;
+  */
+
   //
-  Int_t MeanVertexEvents=0;
-  TList * MeanVertexCalib = (TList*)fin->Get("MeanVertex");      
-  {if (MeanVertexCalib) {
-      TH1  *histoEvents = (TH1*) MeanVertexCalib->FindObject("hSPDVertexX");
-      if (histoEvents && histoTracks){
-        MeanVertexEvents= histoEvents->GetEntries();
-      }
-      delete MeanVertexCalib;
-    }}
-  printf("Monalisa MeanVertexevents\t%f\n",MeanVertexEvents);
-  if (pcstream) (*pcstream)<<"calibStatAll"<<"MeanVertexevents="<<MeanVertexEvents;
-  //
-  // 4. SDD dump 
+  // 5. SDD dump 
   //
   Int_t sddEvents=0;
   Int_t sddTracks=0;
   TList * SDDCalib = (TList*)fin->Get("clistSDDCalib");      
-  {if (SDDCalib) {
-      TH1  *histoEvents = (TH1*) SDDCalib->FindObject("hNEvents");
-      if (histoEvents ){
-        sddEvents= histoEvents->GetBinContent(4);
-        sddTracks= histoEvents->GetBinContent(5);
-      }
-      delete SDDCalib;
-    }}
-  printf("Monalisa SDDevents\t%f\n",sddEvents);
+  if (SDDCalib) {
+    TH1  *histoEvents = (TH1*) SDDCalib->FindObject("hNEvents");
+    if (histoEvents ){
+      sddEvents = TMath::Nint(histoEvents->GetBinContent(4));
+      sddTracks = TMath::Nint(histoEvents->GetBinContent(5));
+    }
+    delete SDDCalib;
+  }
+  printf("Monalisa SDDevents\t%d\n",sddEvents);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"SDDevents="<<sddEvents;
-  printf("Monalisa SDDtracks\t%f\n",sddTracks);
+  printf("Monalisa SDDtracks\t%d\n",sddTracks);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"SDDtracks="<<sddTracks;
-  //
+
   //
   if (pcstream) (*pcstream)<<"calibStatAll"<<"\n";
   delete fin;
