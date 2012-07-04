@@ -86,6 +86,7 @@ class AliAODv0;
 #include "AliESDcascade.h"
 #include "AliAODcascade.h"
 #include "AliESDUtils.h"
+#include "AliGenEventHeader.h"
 
 #include "AliAnalysisTaskExtractPerformanceV0.h"
 
@@ -125,6 +126,9 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0()
    f3dHistPrimRawPtVsYVsMultLambda(0),
    f3dHistPrimRawPtVsYVsMultAntiLambda(0),
    f3dHistPrimRawPtVsYVsMultK0Short(0),
+   f3dHistPrimCloseToPVPtVsYVsMultLambda(0),
+   f3dHistPrimCloseToPVPtVsYVsMultAntiLambda(0),
+   f3dHistPrimCloseToPVPtVsYVsMultK0Short(0),
    f3dHistPrimRawPtVsYVsDecayLengthLambda(0),
    f3dHistPrimRawPtVsYVsDecayLengthAntiLambda(0),
    f3dHistPrimRawPtVsYVsDecayLengthK0Short(0),
@@ -176,6 +180,9 @@ AliAnalysisTaskExtractPerformanceV0::AliAnalysisTaskExtractPerformanceV0(const c
    f3dHistPrimRawPtVsYVsMultLambda(0),
    f3dHistPrimRawPtVsYVsMultAntiLambda(0),
    f3dHistPrimRawPtVsYVsMultK0Short(0),
+   f3dHistPrimCloseToPVPtVsYVsMultLambda(0),
+   f3dHistPrimCloseToPVPtVsYVsMultAntiLambda(0),
+   f3dHistPrimCloseToPVPtVsYVsMultK0Short(0),
    f3dHistPrimRawPtVsYVsDecayLengthLambda(0),
    f3dHistPrimRawPtVsYVsDecayLengthAntiLambda(0),
    f3dHistPrimRawPtVsYVsDecayLengthK0Short(0),
@@ -386,6 +393,22 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
       fListHistV0->Add(f3dHistPrimRawPtVsYVsMultK0Short);
    }
 
+//--- 3D Histo (Pt, Y, Multiplicity), close to PV criterion
+
+   if(! f3dHistPrimCloseToPVPtVsYVsMultLambda) {
+      f3dHistPrimCloseToPVPtVsYVsMultLambda = new TH3F( "f3dHistPrimCloseToPVPtVsYVsMultLambda", "Pt_{lambda} Vs Y_{#Lambda} Vs Multiplicity; Pt_{lambda} (GeV/c); Y_{#Lambda} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHistPrimCloseToPVPtVsYVsMultLambda);
+   }
+   if(! f3dHistPrimCloseToPVPtVsYVsMultAntiLambda) {
+      f3dHistPrimCloseToPVPtVsYVsMultAntiLambda = new TH3F( "f3dHistPrimCloseToPVPtVsYVsMultAntiLambda", "Pt_{antilambda} Vs Y_{#Lambda} Vs Multiplicity; Pt_{antilambda} (GeV/c); Y_{#Lambda} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHistPrimCloseToPVPtVsYVsMultAntiLambda);
+   }
+   if(! f3dHistPrimCloseToPVPtVsYVsMultK0Short) {
+      f3dHistPrimCloseToPVPtVsYVsMultK0Short = new TH3F( "f3dHistPrimCloseToPVPtVsYVsMultK0Short", "Pt_{K0S} Vs Y_{K0S} Vs Multiplicity; Pt_{K0S} (GeV/c); Y_{K0S} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHistV0->Add(f3dHistPrimCloseToPVPtVsYVsMultK0Short);
+   }
+
+
 //--- 3D Histo (Pt, Y, Proper Decay Length)
 
    if(! f3dHistPrimRawPtVsYVsDecayLengthLambda) {
@@ -545,6 +568,10 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
       return;
    }
+   TArrayF mcPrimaryVtx;
+   AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
+   if(!mcHeader) return;
+   mcHeader->PrimaryVertex(mcPrimaryVtx);
         
 //------------------------------------------------
 // Multiplicity Information Acquistion
@@ -660,6 +687,25 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
 	   {
          lRapCurrentPart   = MyRapidity(lCurrentParticleForLambdaCheck->Energy(),lCurrentParticleForLambdaCheck->Pz());
          lPtCurrentPart    = lCurrentParticleForLambdaCheck->Pt();
+
+          //Use Close to PV for filling CloseToPV histograms!
+         Double_t dx, dy, dz; 
+
+         dx = ( (mcPrimaryVtx.At(0)) - (lCurrentParticleForLambdaCheck->Vx()) ); 
+         dy = ( (mcPrimaryVtx.At(1)) - (lCurrentParticleForLambdaCheck->Vy()) );
+         dz = ( (mcPrimaryVtx.At(2)) - (lCurrentParticleForLambdaCheck->Vz()) );
+         Double_t lDistToPV = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+         if( lDistToPV <= 0.001){ 
+           if( lPdgcodeCurrentPart == 3122 ){
+              f3dHistPrimCloseToPVPtVsYVsMultLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+           }
+           if( lPdgcodeCurrentPart == -3122 ){
+              f3dHistPrimCloseToPVPtVsYVsMultAntiLambda->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+           }
+           if( lPdgcodeCurrentPart == 310 ){
+              f3dHistPrimCloseToPVPtVsYVsMultK0Short->Fill(lPtCurrentPart, lRapCurrentPart, lMultiplicity);
+           }
+         }
 
          //Use Physical Primaries only for filling PrimRaw Histograms!
          if ( lMCstack->IsPhysicalPrimary(iCurrentLabelStack)!=kTRUE ) continue;
@@ -1042,7 +1088,11 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
          if( TMath::Abs(fTreeVariablePID) == 3122 || fTreeVariablePID==310 ){
             fTreeVariableRapMC = pThisV0->Y(); //Perfect Y
          }
-         fTreeVariableV0CreationRadius = pThisV0->R(); // Creation Radius
+         fTreeVariableV0CreationRadius = TMath::Sqrt(
+          TMath::Power(  ( (mcPrimaryVtx.At(0)) - (pThisV0->Vx()) ) , 2) + 
+          TMath::Power(  ( (mcPrimaryVtx.At(1)) - (pThisV0->Vy()) ) , 2) + 
+          TMath::Power(  ( (mcPrimaryVtx.At(2)) - (pThisV0->Vz()) ) , 2) 
+         );
          if( lblMotherPosV0Dghter  < lNbMCPrimary ) fTreeVariableIndexStatus = 1; //looks primary
          if( lblMotherPosV0Dghter >= lNbMCPrimary ) fTreeVariableIndexStatus = 2; //looks secondary
          if( lMCstack->IsPhysicalPrimary       (lblMotherPosV0Dghter) ) fTreeVariablePrimaryStatus = 1; //Is Primary!
