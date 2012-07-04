@@ -1,0 +1,1048 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TFile.h"
+#include "TH1.h"
+#include "TH1D.h"
+#include "TH2.h"
+#include "TH2D.h"
+#include "TH3.h"
+#include "TH3D.h"
+#include "TNtuple.h"
+#include "TGraphAsymmErrors.h"
+#include "TMath.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TROOT.h"
+#include "TStyle.h"
+#include "TLine.h"
+#include "TLatex.h"
+
+#include "AliHFSystErr.h"
+#include <Riostream.h>
+#endif
+
+/* $Id$ */
+
+//enum centrality{ kpp, k010, k1020, k020, k2040, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp, k07half, k010, k1020, k020, k2040, k3050, k4060, k6080, k4080, k80100 };
+enum energy{ k276, k55 };
+enum BFDSubtrMethod { kfc, kNb };
+
+Bool_t printout = false;
+Double_t NormPPUnc = 0.035;
+Bool_t elossFDQuadSum = true;
+
+//____________________________________________________________
+Bool_t PbPbDataSyst(AliHFSystErr *syst, Double_t pt, Int_t cc, Double_t &dataSystUp, Double_t &dataSystDown);
+
+//____________________________________________________________
+Double_t ExtractFDSyst(Double_t total, Double_t fd) {
+  // total^2 = data^2 + fd^2
+  Double_t data2 = total*total - fd*fd ;
+  return TMath::Sqrt( data2 );
+}
+
+//
+//
+// R_AB =  [ ( dsigma/dpt )_AB / sigma_AB ]  / <TAB> *  ( dsigma/dpt )_pp
+//
+//
+//____________________________________________________________
+void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_230311_newsigma.root",
+		     const char *ABfile="HFPtSpectrum_D0Kpi_PbPbcuts_method2_rebinnedth_230311_newsigma.root",
+		     const char *outfile="HFPtSpectrumRaa.root",
+		     Int_t decay=1,
+		     Double_t sigmaABCINT1B=54.e9,
+		     Int_t fdMethod = kNb, Int_t cc=kpp, Int_t Energy=k276,
+		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0)
+{
+
+  gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
+
+  //
+  // Defining the Ncoll values for the given centrality class
+  //
+  Double_t Ncoll = 1., NcollSyst = 0.;
+  Double_t Tab = 1., TabSyst = 0.;
+  if ( Energy!=k276 ) {
+    printf("\n The Ncoll values for this cms energy have not yet been implemented, please do it ! \n");
+    return;
+  }
+  if ( cc == kpp ){
+    Tab = 1.;
+  }
+  // Values from Alberica's twiki:
+  //   https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
+  if ( cc == k07half ) {
+    Tab = 24.81; TabSyst = 0.8037;
+  } else if ( cc == k010 ) {
+    Ncoll =  1502.7; NcollSyst = 169.9;
+    Tab = 23.48; TabSyst = 0.97;
+  } else if ( cc == k1020 ) {
+    Ncoll =  923.26; NcollSyst = 99.6;
+    Tab = 14.4318; TabSyst = 0.573289;
+  } else if ( cc == k020 ) {
+    Ncoll =  1211.3; NcollSyst = 130.7;
+    Tab = 18.93; TabSyst = 0.74;
+  } else if ( cc == k2040 ) {
+    Ncoll =  438.8; NcollSyst = 43.9;
+    Tab = 6.86; TabSyst = 0.28;
+  } else if ( cc == k3050 ) {
+    Tab = 3.87011; TabSyst = 0.183847;
+  } else if ( cc == k4060 ) {
+    Ncoll = 128.2; NcollSyst = 12.7;
+    Tab = 2.00; TabSyst = 0.11;
+  } else if ( cc == k6080 ) {
+    Ncoll =  26.82; NcollSyst = 2.46;
+    Tab = 0.419; TabSyst = 0.033;
+  } else if ( cc == k4080 ) {
+    Ncoll =  77.1; NcollSyst = 8.0;
+    Tab = 1.20451; TabSyst = 0.071843;
+  } else if ( cc == k80100 ){
+    Ncoll =  4.42; NcollSyst = 0.30;
+    Tab = 0.0690; TabSyst = 0.0062;
+  }
+
+
+  //
+  // Reading the pp file 
+  //
+  TFile * ppf = new TFile(ppfile,"read");
+  TH1D * hSigmaPP = (TH1D*)ppf->Get("fhScaledData");
+  TGraphAsymmErrors * gSigmaPPSyst = (TGraphAsymmErrors*)ppf->Get("gScaledData");
+  TGraphAsymmErrors * gSigmaPPSystData = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystData");
+  TGraphAsymmErrors * gSigmaPPSystTheory = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystExtrap");
+  TGraphAsymmErrors * gSigmaPPSystFeedDown = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystFeedDown");
+  
+  // Call the systematics uncertainty class for a given decay
+  AliHFSystErr *systematicsPP = new AliHFSystErr();
+  systematicsPP->Init(decay);
+
+  //
+  // Reading the AB collisions file
+  // 
+  TFile * ABf = new TFile(ABfile,"read");
+  TH1D *hSigmaAB = (TH1D*)ABf->Get("histoSigmaCorr");
+  TH2D *hSigmaABRcb = (TH2D*)ABf->Get("histoSigmaCorrRcb");
+  TGraphAsymmErrors * gSigmaABSyst = (TGraphAsymmErrors*)ABf->Get("gSigmaCorr");
+  TGraphAsymmErrors * gSigmaABSystFeedDown = (TGraphAsymmErrors*)ABf->Get("gSigmaCorrConservative");
+  TNtuple * nSigmaAB = (TNtuple*)ABf->Get("fnSigma");
+  //
+  TH1D *hMassAB = (TH1D*)ABf->Get("hRECpt");
+  TH1D *hDirectEffptAB = (TH1D*)ABf->Get("hDirectEffpt");
+  TH1D *histofcAB = (TH1D*)ABf->Get("histofc");
+  //
+  TH1D* fhStatUncEffcSigmaAB = (TH1D*)ABf->Get("fhStatUncEffcSigma");
+  TH1D* fhStatUncEffbSigmaAB = (TH1D*)ABf->Get("fhStatUncEffbSigma");
+  TH1D* fhStatUncEffcFDAB = (TH1D*)ABf->Get("fhStatUncEffcFD");
+  TH1D* fhStatUncEffbFDAB = (TH1D*)ABf->Get("fhStatUncEffbFD");
+  //
+  TH1D* fhStatUncEffcSigmaAB_Raa = (TH1D*)fhStatUncEffcSigmaAB->Clone("fhStatUncEffcSigmaAB_Raa");
+  TH1D* fhStatUncEffbSigmaAB_Raa = (TH1D*)fhStatUncEffbSigmaAB->Clone("fhStatUncEffbSigmaAB_Raa");
+  TH1D* fhStatUncEffcFDAB_Raa = (TH1D*)fhStatUncEffcFDAB->Clone("fhStatUncEffcFDAB_Raa");
+  TH1D* fhStatUncEffbFDAB_Raa = (TH1D*)fhStatUncEffbFDAB->Clone("fhStatUncEffbFDAB_Raa");
+  fhStatUncEffcSigmaAB_Raa->Reset();
+  fhStatUncEffbSigmaAB_Raa->Reset();
+  fhStatUncEffcFDAB_Raa->Reset();
+  fhStatUncEffbFDAB_Raa->Reset();
+  fhStatUncEffcSigmaAB_Raa->SetName("fhStatUncEffcSigmaAB_Raa");
+  fhStatUncEffbSigmaAB_Raa->SetName("fhStatUncEffbSigmaAB_Raa");
+  fhStatUncEffcFDAB_Raa->SetName("fhStatUncEffcFDAB_Raa");
+  fhStatUncEffbFDAB_Raa->SetName("fhStatUncEffvFDAB_Raa");
+
+  //
+  // Call the systematics uncertainty class for a given decay
+  AliHFSystErr *systematicsAB = new AliHFSystErr();
+  systematicsAB->SetCollisionType(1);
+  if ( cc == k07half ) systematicsAB->SetCentrality("010");
+  else if ( cc == k010 ) systematicsAB->SetCentrality("010");
+  else if ( cc == k1020 ) systematicsAB->SetCentrality("1020");
+  else if ( cc == k020 ) systematicsAB->SetCentrality("020");
+  else if ( cc == k2040 ) {
+    systematicsAB->SetCentrality("2040");
+    systematicsAB->SetIsPbPb2010EnergyScan(true);
+  }
+  else if ( cc == k4060 ) systematicsAB->SetCentrality("4060");
+  else if ( cc == k6080 ) systematicsAB->SetCentrality("6080");
+  else if ( cc == k4080 ) systematicsAB->SetCentrality("4080");
+  else if ( cc == k3050 ) systematicsAB->SetCentrality("4080");
+  else { 
+    cout << " Systematics not yet implemented " << endl;
+    return;
+  } 
+  if(decay!=4) systematicsAB->Init(decay);
+  else systematicsAB->Init(2);
+  //
+  Int_t entries = nSigmaAB->GetEntries();
+  Float_t pt=0., signal=0., Rb=0., Rcb=0., fcAB=0., yieldAB=0., sigmaAB=0., statUncSigmaAB=0., sigmaABMin=0.,sigmaABMax=0.;
+  nSigmaAB->SetBranchAddress("pt",&pt);
+  nSigmaAB->SetBranchAddress("Signal",&signal);
+  if (fdMethod==kNb) nSigmaAB->SetBranchAddress("Rb",&Rb);
+  else if (fdMethod==kfc) nSigmaAB->SetBranchAddress("Rcb",&Rcb);
+  nSigmaAB->SetBranchAddress("fc",&fcAB);
+  nSigmaAB->SetBranchAddress("Yield",&yieldAB);
+  nSigmaAB->SetBranchAddress("Sigma",&sigmaAB);
+  nSigmaAB->SetBranchAddress("SigmaStatUnc",&statUncSigmaAB);
+  nSigmaAB->SetBranchAddress("SigmaMax",&sigmaABMax);
+  nSigmaAB->SetBranchAddress("SigmaMin",&sigmaABMin);
+	
+  
+  // define the binning
+  Int_t nbins = hSigmaAB->GetNbinsX();
+  Double_t binwidth = hSigmaAB->GetBinWidth(1);
+  Double_t *limits = new Double_t[nbins+1];
+  Double_t *binwidths = new Double_t[nbins];
+  Double_t xlow=0.;
+  for (Int_t i=1; i<=nbins; i++) {
+    binwidth = hSigmaAB->GetBinWidth(i);
+    xlow = hSigmaAB->GetBinLowEdge(i);
+    limits[i-1] = xlow;
+    binwidths[i-1] = binwidth;
+  }
+  limits[nbins] = xlow + binwidth;
+  //
+  // define the bins correspondence bw histos/files/graphs
+  //
+  //
+  TH2D * hRABvsRcb = new TH2D("hRABvsRcb"," R_{AB}(c) vs Rcb Eloss hypothesis; p_{T} [GeV/c] ;  R_{AB}(c) ; Rcb Eloss hypothesis  ",nbins,limits,800,0.,4.);
+  TH2D * hRABvsRb = new TH2D("hRABvsRb"," R_{AB}(c) vs Rb Eloss hypothesis; p_{T} [GeV/c] ;  R_{AB}(c) ; Rb Eloss hypothesis ",nbins,limits,800,0.,4.);
+  TH2D * hRABBeautyvsRCharm = new TH2D("hRABBeautyvsRCharm"," R_{AB}(c) vs Rb Eloss hypothesis; p_{T} [GeV/c] ;  R_{AB}(b) ;  R_{AB}(c) ",nbins,limits,800,0.,4.);
+  Int_t nbinsHypo=800;//200;
+  Double_t *limitsHypo = new Double_t[nbinsHypo+1];
+  for(Int_t i=1; i<=nbinsHypo+1; i++) limitsHypo[i-1]= i*4./800.;
+  TH3D * hRABCharmVsRBeautyVsPt = new TH3D("hRABCharmVsRBeautyVsPt"," R_{AB}(c) vs Rb vs p_{T} Eloss hypothesis; p_{T} [GeV/c] ;  R_{AB}(b) ;  R_{AB}(c) ",nbins,limits,nbinsHypo,limitsHypo,nbinsHypo,limitsHypo);
+  TH2D *hRCharmVsRBeauty[nbins];
+  for(Int_t i=0; i<=nbins; i++) hRCharmVsRBeauty[i] = new TH2D(Form("hRCharmVsRBeauty_%i",i),Form("RAB(c) vs RAB(b) for pt bin %i ; R_{AB}(b) ;  R_{AB}(c)",i),nbinsHypo,limitsHypo,nbinsHypo,limitsHypo);
+  TH2D *hRCharmVsElossHypo[nbins];
+  for(Int_t i=0; i<=nbins; i++) hRCharmVsElossHypo[i] = new TH2D(Form("hRCharmVsElossHypo_%i",i),Form("RAB(c) vs ElossHypo for pt bin %i ; Eloss Hypothesis (c/b) ;  R_{AB}(c)",i),nbinsHypo,limitsHypo,nbinsHypo,limitsHypo);
+  //
+  TH1D *hRABEloss00= new TH1D("hRABEloss00","hRABEloss00",nbins,limits);
+  TH1D *hRABEloss05= new TH1D("hRABEloss05","hRABEloss05",nbins,limits);
+  TH1D *hRABEloss10= new TH1D("hRABEloss10","hRABEloss10",nbins,limits);
+  TH1D *hRABEloss15= new TH1D("hRABEloss15","hRABEloss15",nbins,limits);
+  TH1D *hRABEloss20= new TH1D("hRABEloss20","hRABEloss20",nbins,limits);
+  //
+  TH2D * hRABvsRbFDlow = new TH2D("hRABvsRbFDlow"," R_{AB}(c) vs Rb Eloss hypothesis (FD low); p_{T} [GeV/c] ; Rb Eloss hypothesis ; R_{AB}(c) ",nbins,limits,800,0.,4.);
+  TH2D * hRABvsRbFDhigh = new TH2D("hRABvsRbFDhigh"," R_{AB}(c) vs Rb Eloss hypothesis (FD high); p_{T} [GeV/c] ; Rb Eloss hypothesis ; R_{AB}(c) ",nbins,limits,800,0.,4.);
+  //
+  TH1D * hRABvsRbFDhigh_proj = new TH1D("hRABvsRbFDhigh_proj","hRABvsRbFDhigh_proj",nbins,limits);
+  TH1D * hRABvsRbFDlow_proj = new TH1D("hRABvsRbFDlow_proj","hRABvsRbFDlow_proj",nbins,limits);
+  //
+  TNtuple *ntupleRAB=0x0 ;
+  if (fdMethod==kNb) {
+    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (Nb)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty");
+  } else if (fdMethod==kfc) {
+    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (fc)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:Rcb:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty:RABBeautyFDHigh:RABBeautyFDLow");
+  }
+  if(!ntupleRAB) printf("ERROR: Wrong method option");
+
+  TH1D * hYieldABvsPt = new TH1D("hYieldABvsPt"," Yield_{AB}(c) vs p_{T} (no Eloss hypothesis); p_{T} [GeV/c] ; Yield_{charm} ",nbins,limits);
+  TH1D * hRABvsPt = new TH1D("hRABvsPt"," R_{AB}(c) vs p_{T} (no Eloss hypothesis); p_{T} [GeV/c] ; R_{charm} ",nbins,limits);
+  TH1D * hRABvsPt_DataSystematics = new TH1D("hRABvsPt_DataSystematics"," Systematics of R_{AB} (c) vs p_{T} (no Eloss hypothesis); p_{T} [GeV/c] ; R_{charm} ",nbins,limits);
+  TGraphAsymmErrors *gRAB_ElossHypothesis = new TGraphAsymmErrors(nbins+1);
+  gRAB_ElossHypothesis->SetNameTitle("gRAB_ElossHypothesis","RAB Eloss systematics");
+  TGraphAsymmErrors *gRAB_FeedDownSystematics = new TGraphAsymmErrors(nbins+1);
+  gRAB_FeedDownSystematics->SetNameTitle("gRAB_FeedDownSystematics","RAB Feed-Down systematics");
+  TGraphAsymmErrors *gRAB_fcFeedDownOnly = new TGraphAsymmErrors(nbins+1);
+  gRAB_fcFeedDownOnly->SetNameTitle("gRAB_fcFeedDownOnly","RAB fc Feed-Down Only");
+  TGraphAsymmErrors *gRAB_FeedDownSystematicsElossHypothesis = new TGraphAsymmErrors(nbins+1);
+  gRAB_FeedDownSystematicsElossHypothesis->SetNameTitle("gRAB_FeedDownSystematicsElossHypothesis","RAB Feed-Down systematics considering Eloss hypothesis");
+  TGraphAsymmErrors *gRAB_DataSystematics = new TGraphAsymmErrors(nbins+1);
+  gRAB_DataSystematics->SetNameTitle("gRAB_DataSystematics","RAB Measurement (no FD, no Eloss) systematics");
+  TGraphAsymmErrors *gRAB_DataSystematicsPP = new TGraphAsymmErrors(nbins+1);
+  gRAB_DataSystematicsPP->SetNameTitle("gRAB_DataSystematicsPP","RAB Measurement PP meas. systematics (data+scaling)");
+  TGraphAsymmErrors *gRAB_DataSystematicsAB = new TGraphAsymmErrors(nbins+1);
+  gRAB_DataSystematicsAB->SetNameTitle("gRAB_DataSystematicsAB","RAB Measurement AB (no FD, no Eloss, no PP data) systematics");
+  TGraphAsymmErrors *gRAB_GlobalSystematics = new TGraphAsymmErrors(nbins+1);
+  gRAB_GlobalSystematics->SetNameTitle("gRAB_GlobalSystematics","RAB Measurement global (data, FD, Eloss) systematics");
+  Double_t ElossMax[nbins], ElossMin[nbins];
+  for(Int_t i=0; i<=nbins; i++) { ElossMax[i]=0.; ElossMin[i]=1.; }
+  Double_t fcElossMax[nbins], fcElossMin[nbins];
+  for(Int_t i=0; i<=nbins; i++) { fcElossMax[i]=0.; fcElossMin[i]=1.; }
+  Double_t FDElossMax[nbins], FDElossMin[nbins];
+  for(Int_t i=0; i<=nbins; i++) { FDElossMax[i]=0.; FDElossMin[i]=1.; }
+
+  TGraphAsymmErrors *gRAB_Norm = new TGraphAsymmErrors(1);
+  gRAB_Norm->SetNameTitle("gRAB_Norm","RAB Normalization systematics (pp norm + Tab)");
+  Double_t normUnc = TMath::Sqrt ( NormPPUnc*NormPPUnc + (TabSyst/Tab)*(TabSyst/Tab) );
+  gRAB_Norm->SetPoint(1,0.5,1.);
+  gRAB_Norm->SetPointError(1,0.25,0.25,normUnc,normUnc);
+
+  //
+  // R_AB =  ( dN/dpt )_AB  / <Ncoll_AB> *  ( dN/dpt )_pp ; <Ncoll> = <Tab> * sigma_NN^inel
+  // R_AB =  [ ( dsigma/dpt )_AB / sigma_AB ]  / <TAB> *  ( dsigma/dpt )_pp
+  //
+  Int_t istartPPfd=0, istartABfd=0, istartPPextr=0;
+  Double_t xPP=0., yPP=0., xAB=0., yAB=0.;
+  Double_t yPPh=0., yPPl=0., yABh=0., yABl=0.;
+  Double_t RaaCharm =0., RaaBeauty=0.;
+  Double_t RaaCharmFDhigh = 0., RaaCharmFDlow = 0.;
+  Double_t RaaBeautyFDhigh = 0., RaaBeautyFDlow = 0.;
+  Double_t systUp=0., systLow=0., systPPUp=0., systPPLow=0., systABUp=0., systABLow=0.;
+  //
+  //
+  // Search the central value of the energy loss hypothesis Rb = Rc (bin)
+  //
+  Double_t ElossCentral[nbins];
+  for(Int_t i=0; i<=nbins; i++) { ElossCentral[i]=0.; }
+  //
+  for(Int_t ientry=0; ientry<=entries; ientry++){
+
+    nSigmaAB->GetEntry(ientry);
+    if ( !(sigmaAB>0.) ) continue;
+
+    // Compute RAB and the statistical uncertainty
+    Int_t hppbin = hSigmaPP->FindBin( pt );
+    Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
+    if ( !(sigmapp>0.) ) continue;
+    RaaCharm =  ( sigmaAB / sigmaABCINT1B ) / ((Tab*1e3) * sigmapp *1e-12 ) ;
+    if (fdMethod==kNb) {
+      RaaBeauty = Rb ; 
+    }
+    else if (fdMethod==kfc) {
+      RaaBeauty = ( RaaCharm / Rcb ) ;
+    }
+
+    Double_t ElossHypo = 0.;
+    if (fdMethod==kfc) { ElossHypo = 1. / Rcb; }
+    else  { ElossHypo = 1. / (RaaCharm / RaaBeauty) ; }
+
+    //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo<<endl; 
+    //
+    // Find the bin for the central Eloss hypo
+    //
+    if( TMath::Abs( ElossHypo - 1.0 ) < 0.075 ){
+      Int_t hABbin = hSigmaAB->FindBin( pt );
+      Double_t DeltaIni = TMath::Abs( ElossCentral[ hABbin ] - 1.0 );
+      Double_t DeltaV = TMath::Abs( ElossHypo - 1.0 );
+      cout << " pt " << pt << " ECentral " << ElossCentral[ hABbin ] << " Ehypo "<< ElossHypo ;
+      if ( DeltaV < DeltaIni ) ElossCentral[ hABbin ] = ElossHypo;
+      cout << " final ECentral " << ElossCentral[ hABbin ] << endl;
+    }
+
+  }
+  //
+  // Calculation of the Raa and its uncertainties
+  //
+  for(Int_t ientry=0; ientry<entries; ientry++){
+
+    nSigmaAB->GetEntry(ientry);
+    if ( !(sigmaAB>0.) ) continue;
+    //    if ( pt<2 || pt>16) continue;
+
+    // Compute RAB and the statistical uncertainty
+    Int_t hppbin = hSigmaPP->FindBin( pt );
+    Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
+    if ( !(sigmapp>0.) ) continue;
+    RaaCharm =  ( sigmaAB / sigmaABCINT1B ) / ((Tab*1e3) * sigmapp *1e-12 );
+
+    //
+    // FONLL Feed-Down systematics
+    //
+    Int_t n = gSigmaPPSystFeedDown->GetN();
+    for(Int_t j=1; j<=n; j++){
+      gSigmaPPSystFeedDown->GetPoint(j,xPP,yPP);
+      if ( TMath::Abs ( xPP -pt ) < 0.4 ) { 
+	istartPPfd = j; 
+	break;
+      }
+    }
+    n = gSigmaABSystFeedDown->GetN();
+    for(Int_t j=1; j<=n; j++){
+      gSigmaABSystFeedDown->GetPoint(j,xAB,yAB);
+      if ( TMath::Abs ( xAB -pt ) < 0.4 ) { 
+	istartABfd = j; 
+	break;
+      }
+    }
+    //      cout << " Starting bin for pp is "<< istartPPfd <<", for AA is "<<istartABfd << endl;
+    yPPh = gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd);
+    yPPl = gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd);
+    yABh = gSigmaABSystFeedDown->GetErrorYhigh(istartABfd);
+    yABl = gSigmaABSystFeedDown->GetErrorYlow(istartABfd);
+    
+//     RaaCharmFDhigh = ( (yABh+sigmaAB) / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp+yPPh) *1e-12 ) ;
+//     RaaCharmFDlow =  ( (sigmaAB-yABl) / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp-yPPl) *1e-12 ) ;
+    RaaCharmFDhigh = ( sigmaABMax / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp+yPPh) *1e-12 ) ;
+    RaaCharmFDlow =  ( sigmaABMin / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp-yPPl) *1e-12 ) ;
+    if(printout) cout << endl<<" pt "<< pt << " Raa " << RaaCharm <<" high "<< RaaCharmFDhigh << " low "<< RaaCharmFDlow<<endl;
+
+
+    if (fdMethod==kNb) {
+      RaaBeauty = Rb ; 
+      RaaBeautyFDlow = Rb ;
+      RaaBeautyFDhigh = Rb ;
+      ntupleRAB->Fill( pt, Tab*1e3, sigmapp*1e-12, sigmaAB*1e-12, sigmaAB/sigmaABCINT1B,
+		       sigmaABMax / sigmaABCINT1B, sigmaABMin / sigmaABCINT1B,
+		       RaaCharm, RaaCharmFDhigh, RaaCharmFDlow, RaaBeauty);
+    }
+    else if (fdMethod==kfc) {
+      RaaBeauty = ( RaaCharm / Rcb ) ;
+      RaaBeautyFDlow = ( RaaCharmFDlow / Rcb ) ;
+      RaaBeautyFDhigh = ( RaaCharmFDhigh / Rcb ) ;
+      hRABvsRcb->Fill( pt, RaaCharm, RaaBeauty );
+      ntupleRAB->Fill( pt, Tab*1e3, sigmapp*1e-12, sigmaAB*1e-12, sigmaAB/sigmaABCINT1B,
+		       sigmaABMax / sigmaABCINT1B, sigmaABMin / sigmaABCINT1B,
+		       Rcb, RaaCharm, RaaCharmFDhigh, RaaCharmFDlow, RaaBeauty, RaaBeautyFDhigh, RaaBeautyFDlow);
+    }
+    hRABvsRb->Fill( pt, RaaCharm, RaaBeauty );
+    hRABvsRbFDlow->Fill( pt, RaaCharmFDlow, RaaBeautyFDlow );
+    hRABvsRbFDhigh->Fill( pt, RaaCharmFDhigh, RaaBeautyFDhigh );
+    if(printout) cout << " pt "<< pt << " Rb " << RaaBeauty <<" high "<< RaaBeautyFDhigh << " low "<< RaaBeautyFDlow <<endl;
+
+    hRABCharmVsRBeautyVsPt->Fill( pt, RaaBeauty, RaaCharm );
+    Int_t ptbin = hRABvsPt->FindBin( pt );
+    hRCharmVsRBeauty[ptbin]->Fill( RaaBeauty, RaaCharm );
+    hRCharmVsRBeauty[ptbin]->Fill( RaaBeautyFDlow, RaaCharmFDlow );
+    hRCharmVsRBeauty[ptbin]->Fill( RaaBeautyFDhigh, RaaCharmFDhigh );
+
+
+    if (fdMethod==kfc) {
+      if( TMath::Abs(Rcb-0.015)<0.009 ) hRABEloss00->Fill(pt,RaaCharm);
+      if( TMath::Abs(Rcb-0.5)<0.009 ) hRABEloss05->Fill(pt,RaaCharm);
+      if( TMath::Abs(Rcb-1.0)<0.009 ) {
+	hRABEloss10->Fill(pt,RaaCharm);
+	hRABvsRbFDhigh_proj->Fill(pt,RaaCharmFDhigh);
+	hRABvsRbFDlow_proj->Fill(pt,RaaCharmFDlow);
+      }
+      if( TMath::Abs(Rcb-1.5)<0.009 ) hRABEloss15->Fill(pt,RaaCharm);
+      if( TMath::Abs(Rcb-2.0)<0.009 ) hRABEloss20->Fill(pt,RaaCharm);
+    }
+    else if (fdMethod==kNb) {
+      if( TMath::Abs(RaaBeauty-0.015)<0.009 ) hRABEloss00->Fill(pt,RaaCharm);
+      if( TMath::Abs(RaaBeauty-0.5)<0.009 ) hRABEloss05->Fill(pt,RaaCharm);
+      if( TMath::Abs(RaaBeauty-1.0)<0.009 ) {
+	hRABEloss10->Fill(pt,RaaCharm);
+	hRABvsRbFDhigh_proj->Fill(pt,RaaCharmFDhigh);
+	hRABvsRbFDlow_proj->Fill(pt,RaaCharmFDlow);
+      }
+      if( TMath::Abs(RaaBeauty-1.5)<0.009 ) hRABEloss15->Fill(pt,RaaCharm);
+      if( TMath::Abs(RaaBeauty-2.0)<0.009 ) hRABEloss20->Fill(pt,RaaCharm);
+    }
+
+
+    Int_t hABbin = hMassAB->FindBin( pt );
+    if(printout)
+    if ( fdMethod==kNb && TMath::Abs(Rb -1.0)< 0.05) {
+      cout << " pt "<< pt <<", at bin "<<hABbin<<endl;
+      cout<<" entries "<<entries<<", i="<<ientry<<", pt="<<pt<<", Rb="<<Rb<<", Tab="<<Tab<<", sigmaAB="<<sigmaAB<<", sigmapp="<<sigmapp<<", Raacharm="<<RaaCharm<<", RaaBeauty="<<RaaBeauty<<endl;
+      cout << "  AB  basis: mass "<< hMassAB->GetBinContent(hABbin)<<", eff "<< hDirectEffptAB->GetBinContent(hABbin)<<endl;
+      cout<<"   FD low,  err low AB "<< (sigmaAB-sigmaABMin)<<"  err low PP "<< yPPl<<" Raacharm="<<RaaCharmFDlow<<", RaaBeauty="<<RaaBeautyFDlow<<endl;
+      cout<<"   FD high, err high AB "<< (sigmaABMax-sigmaAB)<<"  err high PP "<< yPPh<<" Raacharm="<<RaaCharmFDhigh<<", RaaBeauty="<<RaaBeautyFDhigh<<endl;
+    }
+    if(printout)
+    if ( fdMethod==kfc) if(TMath::Abs(Rcb -1.0)< 0.05 ){
+      cout << " pt "<< pt <<", at bin "<<hABbin<<endl;
+      cout<<" entries "<<entries<<", i="<<ientry<<", pt="<<pt<<", Rcb="<<Rcb<<", Tab="<<Tab<<", sigmaAB="<<sigmaAB<<", sigmapp="<<sigmapp<<", Raacharm="<<RaaCharm<<", RaaBeauty="<<RaaBeauty<<endl;
+      cout << "  AB  basis: mass "<< hMassAB->GetBinContent(hABbin)<<", eff "<< hDirectEffptAB->GetBinContent(hABbin)<<", fc "<<histofcAB->GetBinContent(hABbin)<< endl;       
+      cout<<"   FD low,  err low AB "<< (sigmaAB-sigmaABMin)<<"  err low PP "<< yPPl<<" Raacharm="<<RaaCharmFDlow<<", RaaBeauty="<<RaaBeautyFDlow<<endl;
+      cout<<"   FD high, err high AB "<< (sigmaABMax-sigmaAB)<<"  err high PP "<< yPPh<<" Raacharm="<<RaaCharmFDhigh<<", RaaBeauty="<<RaaBeautyFDhigh<<endl;
+    }
+
+
+    //
+    // Fill in the global properties ?
+    //
+    Double_t ElossHypo = 0.;
+    if (fdMethod==kfc) { ElossHypo = 1./ Rcb; }
+    else  { ElossHypo = 1. / (RaaCharm / RaaBeauty); }
+    hRCharmVsElossHypo[ptbin]->Fill( ElossHypo, RaaCharm );
+
+    //    cout <<" pt "<< pt << " Raa charm " << RaaCharm << " Raa beauty " << RaaBeauty << " eloss hypo "<< ElossHypo<<endl; 
+    //
+    // Fill in histos charm (null Eloss hypothesis)
+    //
+    Double_t minFdSyst = 0., maxFdSyst = 0.;
+    if ( ElossHypo == ElossCentral[ hABbin ] ) {
+
+      //
+      // Data stat uncertainty
+      //
+      Double_t sigmappStat = hSigmaPP->GetBinError( hppbin );
+      Int_t hRABbin = hRABvsPt->FindBin( pt );
+      Double_t stat = RaaCharm * TMath::Sqrt( (statUncSigmaAB/sigmaAB)*(statUncSigmaAB/sigmaAB) + 
+					      (sigmappStat/sigmapp)*(sigmappStat/sigmapp) ) ;
+      if ( RaaCharm==0 ) stat =0.;
+      if ( RaaCharm>0 ) {
+	hRABvsPt->SetBinContent( hRABbin, RaaCharm );
+	hRABvsPt->SetBinError( hRABbin, stat );
+	hYieldABvsPt->SetBinContent( hRABbin, sigmaAB/sigmaABCINT1B );
+	hYieldABvsPt->SetBinError( hRABbin, statUncSigmaAB/sigmaABCINT1B );
+	
+	if(printout) 
+	  cout << " Raa " << RaaCharm << " stat unc. "<< stat << " is "<< stat/RaaCharm * 100. <<
+	    "%, stat-pp "<< sigmappStat/sigmapp*100. <<"% stat-AB "<< statUncSigmaAB/sigmaAB*100.<<"%"<<endl;
+
+	Double_t errstatEff = fhStatUncEffcSigmaAB->GetBinError( hRABbin );
+	fhStatUncEffcSigmaAB_Raa->SetBinError( hRABbin, errstatEff*RaaCharm );
+	errstatEff = fhStatUncEffbSigmaAB->GetBinError( hRABbin );
+	fhStatUncEffbSigmaAB_Raa->SetBinError( hRABbin, errstatEff*RaaCharm );
+	errstatEff = fhStatUncEffcFDAB->GetBinError( hRABbin );
+	fhStatUncEffcFDAB_Raa->SetBinError( hRABbin, errstatEff*RaaCharm );
+	errstatEff = fhStatUncEffbFDAB->GetBinError( hRABbin );
+	fhStatUncEffbFDAB_Raa->SetBinError( hRABbin, errstatEff*RaaCharm );
+      }
+
+
+      //
+      //
+      // Data systematics (sigma syst-but FD + extrap) syst
+      //
+      //
+      // Data syst: a) Syst in p-p 
+      //
+      Double_t ptwidth = hSigmaAB->GetBinWidth(hABbin) / 2. ;
+      n = gSigmaPPSystTheory->GetN();
+      for(Int_t j=1; j<=n; j++){
+	gSigmaPPSystTheory->GetPoint(j,xPP,yPP);
+	if ( TMath::Abs ( xPP -pt ) < 0.4 ) { 
+	  istartPPextr = j; 
+	  break;
+	}
+      }
+//       systPPUp = TMath::Sqrt( (systematicsPP->GetTotalSystErr(pt) * sigmapp)*(systematicsPP->GetTotalSystErr(pt) * sigmapp)
+// 			      + gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
+//       systPPLow = TMath::Sqrt( (systematicsPP->GetTotalSystErr(pt) * sigmapp)*(systematicsPP->GetTotalSystErr(pt) * sigmapp)
+// 			       + gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
+      Double_t dataPPUp = ExtractFDSyst( gSigmaPPSystData->GetErrorYhigh(istartPPextr), gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd) );
+      systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
+      Double_t dataPPLow = ExtractFDSyst( gSigmaPPSystData->GetErrorYlow(istartPPextr), gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd) );
+      systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
+
+      //      if(printout) 
+	cout << " pt : "<< pt<<" Syst-pp-data "<< dataPPUp/sigmapp << "%, extr unc + "<< gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %"<<endl;
+      //
+      // Data syst: b) Syst in PbPb
+      //
+      Double_t dataSystUp=0., dataSystDown=0.;
+      Bool_t PbPbDataSystOk = PbPbDataSyst(systematicsAB,pt,cc,dataSystUp,dataSystDown);
+      if (!PbPbDataSystOk) { cout <<" There is some issue with the PbPb data systematics, please check and rerun"<<endl; return; }
+      systABUp = sigmaAB * TMath::Sqrt( dataSystUp*dataSystUp + 
+					(hDirectEffptAB->GetBinError(hABbin)/hDirectEffptAB->GetBinContent(hABbin))*(hDirectEffptAB->GetBinError(hABbin)/hDirectEffptAB->GetBinContent(hABbin)) );
+
+      systABLow = sigmaAB * TMath::Sqrt( dataSystDown*dataSystDown + 
+					(hDirectEffptAB->GetBinError(hABbin)/hDirectEffptAB->GetBinContent(hABbin))*(hDirectEffptAB->GetBinError(hABbin)/hDirectEffptAB->GetBinContent(hABbin)) );
+      //
+      // Data syst : c) combine pp & PbPb
+      //
+      systLow = sigmapp>0. ? 
+	RaaCharm * TMath::Sqrt( (systABLow/sigmaAB)*(systABLow/sigmaAB) + (systPPUp/sigmapp)*(systPPUp/sigmapp) )//+ (TabSyst/Tab)*(TabSyst/Tab) )
+	: 0.;
+
+      systUp = sigmapp>0. ? 
+	RaaCharm * TMath::Sqrt( (systABUp/sigmaAB)*(systABUp/sigmaAB) + (systPPLow/sigmapp)*(systPPLow/sigmapp) )//+ (TabSyst/Tab)*(TabSyst/Tab) )
+	: 0.;
+      if ( RaaCharm==0 ) { systPPUp =0.; systPPLow =0.; }
+      
+      //      if(printout) 
+	cout << " Syst-pp-up "<< systPPUp/sigmapp <<"%, syst-pp-low "<< systPPLow/sigmapp <<"%, syst-AB-up "<<systABUp/sigmaAB<<"%, syst-AB-low "<<systABLow/sigmaAB<<"%, tot-syst-up "<<systUp/RaaCharm<<"%, tot-syst-low "<<systLow/RaaCharm<<"%"<<endl;
+
+      if ( RaaCharm>0 ) {
+	hRABvsPt_DataSystematics->SetBinContent( hRABbin, RaaCharm );
+	hRABvsPt_DataSystematics->SetBinError( hRABbin, systUp );
+	gRAB_DataSystematics->SetPoint( hABbin, pt, RaaCharm ); // i, x, y
+	gRAB_DataSystematics->SetPointError( hABbin, ptwidth, ptwidth, systLow, systUp );
+	gRAB_DataSystematics->SetPointEXlow(hABbin, 0.4); gRAB_DataSystematics->SetPointEXhigh(hABbin,0.4);
+	gRAB_DataSystematicsPP->SetPoint( hABbin, pt, RaaCharm ); // i, x, y
+	gRAB_DataSystematicsPP->SetPointError( hABbin, ptwidth, ptwidth, RaaCharm *(systPPUp/sigmapp), RaaCharm *systPPLow/sigmapp );
+	gRAB_DataSystematicsAB->SetPoint( hABbin, pt, RaaCharm ); // i, x, y
+	gRAB_DataSystematicsAB->SetPointError( hABbin, ptwidth, ptwidth, RaaCharm *systABLow/sigmaAB, RaaCharm *systABUp/sigmaAB );
+      }
+
+      //
+      // Feed-down Systematics
+      //
+      Double_t FDL=0., FDH=0.;
+      if ( RaaCharmFDhigh > RaaCharmFDlow ){
+	FDH = RaaCharmFDhigh; FDL = RaaCharmFDlow;
+      } else {
+	FDL = RaaCharmFDhigh; FDH = RaaCharmFDlow;
+      } 
+      
+      if(printout) cout<<" Raa "<<RaaCharm<<", Raa-fd-low "<<RaaCharmFDlow <<", Raa-fd-high "<<RaaCharmFDhigh <<endl;
+      maxFdSyst = TMath::Abs(FDH - RaaCharm);
+      minFdSyst = TMath::Abs(RaaCharm - FDL);
+      if ( RaaCharm>0 ) {
+	gRAB_FeedDownSystematics->SetPoint( hABbin, pt, RaaCharm ); // i, x, y
+	gRAB_FeedDownSystematics->SetPointError( hABbin, 0.3, 0.3, minFdSyst, maxFdSyst ); // i, x, y
+	gRAB_fcFeedDownOnly->SetPoint( hABbin, pt,fcAB );
+	gRAB_fcFeedDownOnly->SetPointError(hABbin, 0.3, 0.3, fcAB-(sigmaABMin/sigmaAB*fcAB), (sigmaABMax/sigmaAB*fcAB)-fcAB );
+      }
+      
+      //      if(printout) { 
+	cout<<" FD syst  +"<< maxFdSyst/RaaCharm <<" - "<<minFdSyst/RaaCharm<<endl;
+	cout<<"  fc = "<<fcAB<<", ("<< sigmaABMax/sigmaAB * fcAB <<","<< sigmaABMin/sigmaAB * fcAB <<")"<<endl;
+	//      }
+
+      //
+      // Filling part of the Eloss scenarii information
+      //
+      if(RaaCharm>0 ) {
+	gRAB_ElossHypothesis->SetPoint( hABbin, pt, RaaCharm ); // i, x, y
+	gRAB_ElossHypothesis->SetPointEXlow( hABbin, ptwidth);
+	gRAB_ElossHypothesis->SetPointEXhigh( hABbin, ptwidth);
+	gRAB_FeedDownSystematicsElossHypothesis->SetPoint( hABbin, pt, RaaCharm ); // i, x, y
+	gRAB_FeedDownSystematicsElossHypothesis->SetPointEXlow( hABbin, ptwidth);
+	gRAB_FeedDownSystematicsElossHypothesis->SetPointEXhigh( hABbin, ptwidth);
+	gRAB_GlobalSystematics->SetPoint( hABbin, pt, RaaCharm ); // i, x, y
+	gRAB_GlobalSystematics->SetPointEXlow(hABbin,0.4); gRAB_GlobalSystematics->SetPointEXhigh(hABbin,0.4);
+      }
+    }
+
+    //
+    // Filling Eloss scenarii information
+    //
+    if( RaaCharm>0 && ElossHypo >= MinHypo && ElossHypo <=MaxHypo && RaaBeauty<=MaxRb ) {
+      Double_t Ehigh =  ElossMax[ hABbin ] ;
+      Double_t Elow =  ElossMin[ hABbin ] ;
+      if ( RaaCharm > Ehigh ) ElossMax[ hABbin ] = RaaCharm ;
+      if ( RaaCharm < Elow ) ElossMin[ hABbin ] = RaaCharm ;
+      if(printout) {
+	cout<<" Hypothesis " << ElossHypo << " sigma-AB "<< sigmaAB <<", Raa "<< RaaCharm <<", Raa Eloss max "<< ElossMax[hABbin] <<" Raa Eloss min "<< ElossMin[hABbin] << " Rb="<< RaaBeauty <<endl;
+	cout<<"  Rb="<< RaaBeauty <<" max "<< RaaBeautyFDhigh <<" min "<< RaaBeautyFDlow <<endl;
+      }
+      Double_t fcEhigh =  fcElossMax[ hABbin ] ;
+      Double_t fcElow =  fcElossMin[ hABbin ] ;
+      if ( fcAB > fcEhigh ) fcElossMax[ hABbin ] = fcAB ;
+      if ( fcAB < fcElow ) fcElossMin[ hABbin ] = fcAB ;
+      Double_t FDEhigh = FDElossMax[ hABbin ];
+      Double_t FDEmin = FDElossMin[ hABbin ];
+      Double_t RFDhigh = RaaCharmFDhigh>RaaCharmFDlow ? RaaCharmFDhigh : RaaCharmFDlow;
+      Double_t RFDlow = RaaCharmFDlow<RaaCharmFDhigh ? RaaCharmFDlow : RaaCharmFDhigh;
+      if ( RFDhigh > FDEhigh ) FDElossMax[ hABbin ] = RFDhigh ;
+      if ( RFDlow < FDEmin ) FDElossMin[ hABbin ] = RFDlow ;
+      if(printout) 
+	cout<<" Hypothesis " << ElossHypo << " sigma-AB "<< sigmaAB <<", Raa FD-max Eloss max "<< FDElossMax[hABbin] <<" Raa FD-min Eloss min "<< FDElossMin[hABbin] <<endl;
+    }
+
+
+  }
+  delete [] limits;
+  delete [] binwidths;
+
+
+  // Finish filling the y-uncertainties of the Eloss scenarii 
+  for (Int_t ibin=0; ibin<=nbins; ibin++){
+    Double_t ipt=0., value =0.;
+    gRAB_ElossHypothesis->GetPoint(ibin,ipt,value);
+    if(ipt<=0) continue;
+    //
+    // Uncertainty on Raa due to the Eloss hypothesis
+    Double_t elossYhigh = TMath::Abs( ElossMax[ibin] - value );
+    Double_t elossYlow = TMath::Abs( value - ElossMin[ibin] );
+    gRAB_ElossHypothesis->SetPointEYhigh(ibin, elossYhigh );
+    gRAB_ElossHypothesis->SetPointEYlow(ibin, elossYlow );
+    gRAB_ElossHypothesis->SetPointEXhigh(ibin, 0.2);
+    gRAB_ElossHypothesis->SetPointEXlow(ibin, 0.2);
+    cout << " pt "<< ipt << " Raa "<< value <<" max "<< ElossMax[ibin] << " min " <<ElossMin[ibin] <<endl;
+    cout<<" Eloss syst  +"<< elossYhigh <<" - "<< elossYlow <<endl; 
+    //    cout << " fc max "<< fcElossMax[ibin] << " fc min " <<fcElossMin[ibin] <<endl;   
+    //
+    // Uncertainty on Raa due to the FD unc & Eloss hypothesis
+    Double_t fdElossEYhigh = TMath::Abs( FDElossMax[ibin] - value );
+    Double_t fdElossEYlow = TMath::Abs( value - FDElossMin[ibin] );
+    if(elossFDQuadSum){
+      Double_t fdEYhigh = gRAB_FeedDownSystematics->GetErrorYhigh(ibin);
+      fdElossEYhigh = TMath::Sqrt( elossYhigh*elossYhigh + fdEYhigh*fdEYhigh );
+      Double_t fdEYlow = gRAB_FeedDownSystematics->GetErrorYlow(ibin);
+      fdElossEYlow = TMath::Sqrt( elossYlow*elossYlow + fdEYlow*fdEYlow );
+    }
+    gRAB_FeedDownSystematicsElossHypothesis->SetPointEYhigh(ibin, fdElossEYhigh );
+    gRAB_FeedDownSystematicsElossHypothesis->SetPointEYlow(ibin, fdElossEYlow );
+    gRAB_FeedDownSystematicsElossHypothesis->SetPointEXhigh(ibin, 0.25);
+    gRAB_FeedDownSystematicsElossHypothesis->SetPointEXlow(ibin, 0.25);
+    cout<<" FD & Eloss syst  +"<< fdElossEYhigh <<" - "<< fdElossEYlow 
+	<<" = + "<< fdElossEYhigh/value <<" - "<< fdElossEYlow/value <<" %" <<endl; 
+    //
+    // All uncertainty on Raa (FD unc & Eloss + data)
+    Double_t systdatal = gRAB_DataSystematics->GetErrorYlow(ibin);
+    Double_t systdatah = gRAB_DataSystematics->GetErrorYhigh(ibin);
+    Double_t systgbhUnc = TMath::Sqrt( systdatah*systdatah + fdElossEYhigh*fdElossEYhigh );
+    Double_t systgblUnc = TMath::Sqrt( systdatal*systdatal + fdElossEYlow*fdElossEYlow );
+    gRAB_GlobalSystematics->SetPointEYhigh(ibin,systgbhUnc);
+    gRAB_GlobalSystematics->SetPointEYlow(ibin,systgblUnc);
+    cout<<" Data syst  +"<< systdatah <<" - "<<  systdatal <<" = + "<< systdatah/value <<" - " <<  systdatal/value << " % "<<endl; 
+    cout<<" Global syst  +"<< systgbhUnc <<" - "<<  systgblUnc << " = + "<< systgbhUnc/value <<" - "<<  systgblUnc/value << " %" <<endl; 
+    //
+  }
+
+
+  gROOT->SetStyle("Plain");
+  gStyle->SetPalette(1);
+  gStyle->SetOptStat(0);
+
+
+  TCanvas *cRABvsRb = new TCanvas("RABvsRb","RAB vs Rb");
+  hRABvsRb->Draw("colz");
+  cRABvsRb->Update();
+
+  TCanvas *cRABvsRbvsPt = new TCanvas("cRABvsRbvsPt","RAB vs Rb vs pt");
+  hRABCharmVsRBeautyVsPt->Draw("lego3z");
+  cRABvsRbvsPt->Update();
+
+
+  TCanvas *cRABvsRbFDl = new TCanvas("RABvsRbFDl","RAB vs Rb (FD low)");
+  hRABvsRbFDlow->Draw("cont4z");
+  cRABvsRbFDl->Update();
+  TCanvas *cRABvsRbFDh = new TCanvas("RABvsRbFDh","RAB vs Rb (FD high)");
+  hRABvsRbFDhigh->Draw("cont4z");
+  cRABvsRbFDh->Update();
+
+  TCanvas * cSigmaABptEloss = new TCanvas("cSigmaABptEloss","SigmaAB vs pt, Eloss hypothesis");
+  TH1D *hSigmaABEloss00= new TH1D("hSigmaABEloss00","hSigmaABEloss00",nbins,limits);
+  TH1D *hSigmaABEloss05= new TH1D("hSigmaABEloss05","hSigmaABEloss05",nbins,limits);
+  TH1D *hSigmaABEloss10= new TH1D("hSigmaABEloss10","hSigmaABEloss10",nbins,limits);
+  TH1D *hSigmaABEloss15= new TH1D("hSigmaABEloss15","hSigmaABEloss15",nbins,limits);
+  TH1D *hSigmaABEloss20= new TH1D("hSigmaABEloss20","hSigmaABEloss20",nbins,limits);
+  for (Int_t i=0; i<=nSigmaAB->GetEntriesFast(); i++) {
+    nSigmaAB->GetEntry(i);
+    if (fdMethod==kfc) {
+      if( TMath::Abs(Rcb-0.015)<0.009 ) hSigmaABEloss00->Fill(pt,sigmaAB);
+      if( TMath::Abs(Rcb-0.5)<0.009 ) hSigmaABEloss05->Fill(pt,sigmaAB);
+      if( TMath::Abs(Rcb-1.0)<0.009 ) hSigmaABEloss10->Fill(pt,sigmaAB);
+      if( TMath::Abs(Rcb-1.5)<0.009 ) hSigmaABEloss15->Fill(pt,sigmaAB);
+      if( TMath::Abs(Rcb-2.0)<0.009 ) hSigmaABEloss20->Fill(pt,sigmaAB);
+    }
+    else if (fdMethod==kNb) {
+      if( TMath::Abs(Rb-0.015)<0.009 ) hSigmaABEloss00->Fill(pt,sigmaAB);
+      if( TMath::Abs(Rb-0.5)<0.009 ) hSigmaABEloss05->Fill(pt,sigmaAB);
+      if( TMath::Abs(Rb-1.0)<0.009 ) hSigmaABEloss10->Fill(pt,sigmaAB);
+      if( TMath::Abs(Rb-1.5)<0.009 ) hSigmaABEloss15->Fill(pt,sigmaAB);
+      if( TMath::Abs(Rb-2.0)<0.009 ) hSigmaABEloss20->Fill(pt,sigmaAB);
+    }
+  }
+  hSigmaABEloss00->SetLineColor(2);
+  hSigmaABEloss05->SetLineColor(3);
+  hSigmaABEloss10->SetLineColor(4);
+  hSigmaABEloss15->SetLineColor(kMagenta+1);
+  hSigmaABEloss20->SetLineColor(kGreen+2);
+  hSigmaABEloss00->SetMarkerStyle(22);
+  hSigmaABEloss05->SetMarkerStyle(26);
+  hSigmaABEloss10->SetMarkerStyle(20);
+  hSigmaABEloss15->SetMarkerStyle(25);
+  hSigmaABEloss20->SetMarkerStyle(21);
+  if (fdMethod==kNb) {
+    hSigmaABEloss05->Draw("ph");
+    hSigmaABEloss10->Draw("phsame");
+    hSigmaABEloss15->Draw("phsame");
+    hSigmaABEloss20->Draw("phsame");
+  }
+  else {
+    hSigmaABEloss20->Draw("p");
+    hSigmaABEloss00->Draw("phsame");
+    hSigmaABEloss05->Draw("phsame");
+    hSigmaABEloss10->Draw("phsame");
+    hSigmaABEloss15->Draw("phsame");
+    hSigmaABEloss20->Draw("phsame");
+  }
+  TLegend *legrcb = new TLegend(0.8,0.8,0.95,0.9);
+  legrcb->SetFillColor(0);
+  legrcb->AddEntry(hSigmaABEloss00,"Rc/b=0.0","lp");
+  legrcb->AddEntry(hSigmaABEloss05,"Rc/b=0.5","lp");
+  legrcb->AddEntry(hSigmaABEloss10,"Rc/b=1.0","lp");
+  legrcb->AddEntry(hSigmaABEloss15,"Rc/b=1.5","lp");
+  legrcb->AddEntry(hSigmaABEloss20,"Rc/b=2.0","lp");
+  legrcb->Draw();
+  cSigmaABptEloss->Update();
+
+
+  TCanvas * cRABptEloss = new TCanvas("cRABptEloss","RAB vs pt, Eloss hypothesis");
+  hRABEloss00->SetLineColor(2);
+  hRABEloss05->SetLineColor(3);
+  hRABEloss10->SetLineColor(4);
+  hRABEloss15->SetLineColor(kMagenta+1);
+  hRABEloss20->SetLineColor(kGreen+2);
+  hRABEloss00->SetMarkerStyle(22);
+  hRABEloss05->SetMarkerStyle(26);
+  hRABEloss10->SetMarkerStyle(20);
+  hRABEloss15->SetMarkerStyle(25);
+  hRABEloss20->SetMarkerStyle(21);
+  if (fdMethod==kNb) {
+    hRABEloss05->Draw("ph");
+    hRABEloss10->Draw("phsame");
+    hRABEloss15->Draw("phsame");
+    hRABEloss20->Draw("phsame");
+  }
+  else {
+    hRABEloss20->Draw("p");
+    hRABEloss00->Draw("phsame");
+    hRABEloss05->Draw("phsame");
+    hRABEloss10->Draw("phsame");
+    hRABEloss15->Draw("phsame");
+    hRABEloss20->Draw("phsame");
+  }
+  legrcb = new TLegend(0.8,0.8,0.95,0.9);
+  legrcb->SetFillColor(0);
+  if (fdMethod==kfc) {
+    legrcb->AddEntry(hRABEloss00,"Rc/b=0.0","lp");
+    legrcb->AddEntry(hRABEloss05,"Rc/b=0.5","lp");
+    legrcb->AddEntry(hRABEloss10,"Rc/b=1.0","lp");
+    legrcb->AddEntry(hRABEloss15,"Rc/b=0.5","lp");
+    legrcb->AddEntry(hRABEloss20,"Rc/b=2.0","lp");
+  }
+  else if (fdMethod==kNb) {
+    legrcb->AddEntry(hRABEloss00,"Rb=0.0","lp");
+    legrcb->AddEntry(hRABEloss05,"Rb=0.5","lp");
+    legrcb->AddEntry(hRABEloss10,"Rb=1.0","lp");
+    legrcb->AddEntry(hRABEloss15,"Rb=0.5","lp");
+    legrcb->AddEntry(hRABEloss20,"Rb=2.0","lp");
+  }	
+  legrcb->Draw();
+  cRABptEloss->Update();
+
+
+  TCanvas * cRABpt = new TCanvas("cRABpt","RAB vs pt, no hypothesis");
+  hRABEloss10->Draw("");
+  cRABpt->Update();
+
+  TCanvas * cRABptFDUnc = new TCanvas("cRABptFDUnc","RAB vs pt, FD Uncertainties");
+  hRABvsRbFDlow_proj->Draw("");
+  hRABEloss10->Draw("phsame");
+  hRABvsRbFDhigh_proj->SetLineColor(kMagenta+1);
+  hRABvsRbFDhigh_proj->Draw("same");
+  hRABvsRbFDlow_proj->SetLineColor(kGreen+2);
+  hRABvsRbFDlow_proj->Draw("same");
+  legrcb = new TLegend(0.8,0.8,0.95,0.9);
+  legrcb->SetFillColor(0);
+  legrcb->AddEntry(hRABEloss10,"FD Central","lp");
+  legrcb->AddEntry(hRABvsRbFDhigh_proj,"FD Upper unc.","l");
+  legrcb->AddEntry(hRABvsRbFDlow_proj,"FD Lower unc.","l");
+  legrcb->Draw();
+  cRABptFDUnc->Update();
+
+  TCanvas *RaaPlot = new TCanvas("RaaPlot","RAB vs pt, plot all");
+  RaaPlot->SetTopMargin(0.085);
+  RaaPlot->SetBottomMargin(0.1);
+  RaaPlot->SetTickx();
+  RaaPlot->SetTicky();
+  TH2D *hRaaCanvas = new TH2D("hRaaCanvas"," R_{AB}(c) vs p_{T} (no Eloss hypothesis); p_{t} [GeV/c] ; R_{AA} prompt D",25,0.,25.,100,0.,2.0);
+  hRaaCanvas->GetXaxis()->SetTitleSize(0.05);
+  hRaaCanvas->GetXaxis()->SetTitleOffset(0.9);
+  hRaaCanvas->GetYaxis()->SetTitleSize(0.05);
+  hRaaCanvas->GetYaxis()->SetTitleOffset(0.9);
+  hRaaCanvas->Draw();
+  gRAB_Norm->SetFillStyle(1001);
+  gRAB_Norm->SetFillColor(kGray+2);
+  gRAB_Norm->Draw("2");
+  TLine *line = new TLine(0.0172415,1.0,25.,1.0);
+  line->SetLineStyle(2);
+  line->Draw();
+  hRABvsPt->SetMarkerColor(kBlue);
+  hRABvsPt->SetMarkerColor(kBlue);
+  hRABvsPt->SetMarkerStyle(21);
+  hRABvsPt->SetMarkerSize(1.1);
+  hRABvsPt->SetLineWidth(2);
+  hRABvsPt->Draw("psame");
+  gRAB_DataSystematics->SetLineColor(kBlue);
+  gRAB_DataSystematics->SetLineWidth(3);
+  gRAB_DataSystematics->SetLineWidth(2);
+  gRAB_DataSystematics->SetFillColor(kRed);
+  gRAB_DataSystematics->SetFillStyle(0);
+  gRAB_DataSystematics->Draw("2");
+  gRAB_FeedDownSystematics->SetFillColor(kViolet+1);
+  gRAB_FeedDownSystematics->SetFillStyle(1001);
+  gRAB_FeedDownSystematics->Draw("2");
+  gRAB_ElossHypothesis->SetLineColor(kMagenta-7);
+  gRAB_ElossHypothesis->SetFillColor(kMagenta-7);
+  gRAB_ElossHypothesis->SetFillStyle(1001);
+  gRAB_ElossHypothesis->Draw("2");
+  hRABvsPt->Draw("psame");
+  gRAB_DataSystematics->Draw("2");
+  legrcb = new TLegend(0.5517241,0.6504237,0.8520115,0.8728814,NULL,"brNDC");
+  legrcb->SetBorderSize(0);
+  legrcb->SetTextSize(0.03389831);
+  legrcb->SetLineColor(1);
+  legrcb->SetLineStyle(1);
+  legrcb->SetLineWidth(1);
+  legrcb->SetFillColor(0);
+  legrcb->SetFillStyle(1001);
+  if(cc==k020) legrcb->AddEntry(hRABvsPt,"R_{AA} 0-20% CC","pe");
+  else if(cc==k4080) legrcb->AddEntry(hRABvsPt,"R_{AA} 40-80% CC","pe");
+  else legrcb->AddEntry(hRABvsPt,"R_{AA} and stat. unc.","pe");
+  legrcb->AddEntry(gRAB_DataSystematics,"Syst. from data","f");
+  legrcb->AddEntry(gRAB_ElossHypothesis,"Syst. from R_{AA}(B)","f");
+  legrcb->AddEntry(gRAB_FeedDownSystematics,"Syst. from B feed-down","f");
+  legrcb->Draw();
+  TLatex* tc;
+  if(decay==1) tc =new TLatex(0.18,0.82,"D^{0},  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
+  else if(decay==2) tc =new TLatex(0.18,0.82,"D^{+},  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
+  else if(decay==3) tc =new TLatex(0.18,0.82,"D^{*+},  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
+  else if(decay==4) tc =new TLatex(0.18,0.82,"D_{s}^{+},  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
+  else  tc =new TLatex(0.18,0.82,"any (?) D meson,  Pb-Pb    #sqrt{s_{NN}}=2.76 TeV");
+  tc->SetNDC();
+  tc->SetTextSize(0.038);
+  tc->SetTextFont(42);
+  tc->Draw();
+  RaaPlot->Update();
+
+
+  TCanvas *RaaPlotFDEloss = new TCanvas("RaaPlotFDEloss","RAB vs pt, plot FD & ElossUnc");
+  RaaPlotFDEloss->SetTopMargin(0.085);
+  RaaPlotFDEloss->SetBottomMargin(0.1);
+  hRaaCanvas->Draw();
+  line->Draw();
+  hRABvsPt->Draw("psame");
+  gRAB_FeedDownSystematics->SetFillColor(kViolet+1);
+  gRAB_FeedDownSystematics->SetFillStyle(1001);
+  gRAB_FeedDownSystematics->Draw("2");
+  gRAB_ElossHypothesis->SetLineColor(kMagenta-7);
+  gRAB_ElossHypothesis->SetFillColor(kMagenta-7);
+  gRAB_ElossHypothesis->SetFillStyle(1001);
+  gRAB_ElossHypothesis->Draw("2");
+  gRAB_FeedDownSystematicsElossHypothesis->SetLineColor(kBlack);
+  gRAB_FeedDownSystematicsElossHypothesis->SetFillStyle(0);
+  gRAB_FeedDownSystematicsElossHypothesis->SetFillColor(kViolet+1);
+  gRAB_FeedDownSystematicsElossHypothesis->Draw("2");
+  hRABvsPt->Draw("psame");
+  legrcb = new TLegend(0.6,0.6,0.9,0.9);
+  legrcb->SetBorderSize(0);
+  legrcb->SetTextSize(0.03389831);
+  legrcb->SetLineColor(1);
+  legrcb->SetLineStyle(1);
+  legrcb->SetLineWidth(1);
+  legrcb->SetFillColor(0);
+  legrcb->SetFillStyle(1001);
+  legrcb->AddEntry(hRABvsPt,"R_{PbPb} and stat. unc.","pe");
+  legrcb->AddEntry(gRAB_ElossHypothesis,"Energy loss syst.","f");
+  legrcb->AddEntry(gRAB_FeedDownSystematics,"Feed down syst.","f");
+  legrcb->AddEntry(gRAB_FeedDownSystematicsElossHypothesis,"Feed down & Eloss syst.","f");
+  legrcb->Draw();
+  RaaPlotFDEloss->Update();
+  
+
+  TCanvas *RaaPlotGlob = new TCanvas("RaaPlotGlob","RAB vs pt, plot Global unc");
+  RaaPlotGlob->SetTopMargin(0.085);
+  RaaPlotGlob->SetBottomMargin(0.1);
+  RaaPlotGlob->SetTickx();
+  RaaPlotGlob->SetTicky();
+  hRaaCanvas->Draw();
+  line->Draw();
+  hRABvsPt->Draw("psame");
+  gRAB_DataSystematics->Draw("2");
+  gRAB_FeedDownSystematicsElossHypothesis->Draw("2");
+  gRAB_GlobalSystematics->SetLineColor(kRed);
+  gRAB_GlobalSystematics->SetLineWidth(2);
+  gRAB_GlobalSystematics->SetFillColor(kRed);
+  gRAB_GlobalSystematics->SetFillStyle(3002);
+  gRAB_GlobalSystematics->Draw("2");
+  hRABvsPt->Draw("psame");
+  legrcb = new TLegend(0.6,0.6,0.9,0.9);
+  legrcb->SetBorderSize(0);
+  legrcb->SetTextSize(0.03389831);
+  legrcb->SetLineColor(1);
+  legrcb->SetLineStyle(1);
+  legrcb->SetLineWidth(1);
+  legrcb->SetFillColor(0);
+  legrcb->SetFillStyle(1001);
+  legrcb->AddEntry(hRABvsPt,"R_{PbPb} and stat. unc.","pe");
+  legrcb->AddEntry(gRAB_DataSystematics,"Data syst.","f");
+  legrcb->AddEntry(gRAB_FeedDownSystematicsElossHypothesis,"Feed down & Eloss syst.","f");
+  legrcb->AddEntry(gRAB_GlobalSystematics,"Global syst.","f");
+  legrcb->Draw();
+  RaaPlotGlob->Update();
+
+
+  
+  TCanvas *RaaPlotSimple = new TCanvas("RaaPlotSimple","RAB vs pt, plot Simple unc");
+  RaaPlotSimple->SetTopMargin(0.085);
+  RaaPlotSimple->SetBottomMargin(0.1);
+  RaaPlotSimple->SetTickx();
+  RaaPlotSimple->SetTicky();
+  hRaaCanvas->Draw();
+  line->Draw();
+  hRABvsPt->Draw("psame");
+  gRAB_GlobalSystematics->SetLineColor(kBlue);
+  gRAB_GlobalSystematics->SetLineWidth(2);
+  gRAB_GlobalSystematics->SetFillStyle(0);
+  gRAB_GlobalSystematics->Draw("2");
+  gRAB_Norm->Draw("2");
+  hRABvsPt->Draw("psame");
+  legrcb = new TLegend(0.5991379,0.6949153,0.8534483,0.8559322,NULL,"brNDC");
+  legrcb->SetBorderSize(0);
+  legrcb->SetTextSize(0.03389831);
+  legrcb->SetLineColor(1);
+  legrcb->SetLineStyle(1);
+  legrcb->SetLineWidth(1);
+  legrcb->SetFillColor(0);
+  legrcb->SetFillStyle(1001); 
+  if(cc==k020) legrcb->AddEntry(hRABvsPt,"R_{AA} 0-20% CC","pe");
+  else if(cc==k4080) legrcb->AddEntry(hRABvsPt,"R_{AA} 40-80% CC","pe");
+  else legrcb->AddEntry(hRABvsPt,"R_{AA} and stat. unc.","pe");
+  legrcb->AddEntry(gRAB_GlobalSystematics,"Systematics","f");
+  legrcb->Draw();
+  tc->Draw();
+  RaaPlotSimple->Update();
+
+
+  TCanvas *c = new TCanvas("c","");
+  systematicsAB->DrawErrors();
+  c->Update();
+
+  TCanvas *cStatUnc = new TCanvas("cStatUnc","stat unc");
+  cStatUnc->Divide(2,2);
+  cStatUnc->cd(1);
+  fhStatUncEffcSigmaAB_Raa->Draw("e");
+  cStatUnc->cd(2);
+  fhStatUncEffbSigmaAB_Raa->Draw("e");
+  cStatUnc->cd(3);
+  fhStatUncEffcFDAB_Raa->Draw("e");
+  cStatUnc->cd(4);
+  fhStatUncEffbFDAB_Raa->Draw("e");
+  cStatUnc->Update();
+
+  //
+  // Write the information to a file
+  //
+  TFile * out = new TFile(outfile,"recreate");
+
+  ntupleRAB->Write();
+  hRABvsRcb->Write();
+  hRABvsRb->Write();
+  hRABCharmVsRBeautyVsPt->Write();
+  for(Int_t j=0; j<=nbins; j++) hRCharmVsRBeauty[j]->Write();
+  //  for(Int_t j=0; j<=nbins; j++) hRCharmVsElossHypo[j]->Write();
+  hRABvsPt->Write();
+  hRABvsPt_DataSystematics->Write();
+  gRAB_ElossHypothesis->Write();
+  gRAB_FeedDownSystematics->Write();
+  gRAB_fcFeedDownOnly->Write();
+  gRAB_DataSystematics->Write();
+  gRAB_DataSystematicsPP->Write();
+  gSigmaPPSystTheory->Write();
+  gRAB_DataSystematicsAB->Write();
+  gRAB_Norm->Write();
+  gRAB_FeedDownSystematicsElossHypothesis->Write();
+  gRAB_GlobalSystematics->Write();
+
+  out->Write();
+
+}
+
+//____________________________________________________________
+Bool_t PbPbDataSyst(AliHFSystErr *syst, Double_t pt, Int_t cc, Double_t &dataSystUp, Double_t &dataSystDown)
+{
+
+  Double_t err=0., errUp=1., errDown=1.;
+  Bool_t isOk=false;
+  Double_t pidunc=0.;
+
+  err = syst->GetTotalSystErr(pt)*syst->GetTotalSystErr(pt);
+  errDown = err ;
+
+  if( cc==k07half || cc==k020 || cc==k010 || cc==k1020 || cc==k2040 ) {
+    if(pt<6) pidunc = 0.15;
+    else pidunc = 0.05;
+    errUp = err + pidunc*pidunc - syst->GetPIDEffErr(pt)*syst->GetPIDEffErr(pt);
+    isOk = true;
+  }
+  else if ( cc==k3050 || cc==k4080 || cc==k4060 || cc==k6080 ){
+    if(pt<3.1) pidunc = 0.10;
+    else pidunc = 0.05;
+    errUp = err + pidunc*pidunc - syst->GetPIDEffErr(pt)*syst->GetPIDEffErr(pt);
+    isOk = true;
+  }
+
+  dataSystUp = TMath::Sqrt(errUp);
+  dataSystDown = TMath::Sqrt(errDown);
+
+  return isOk;
+}
