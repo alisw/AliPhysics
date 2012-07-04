@@ -41,6 +41,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMinVz(-999),
   fMaxVz(-999),
   fOffTrigger(AliVEvent::kAny),
+  fTrigClass(),
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
@@ -55,6 +56,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fEPV0(-1.0),
   fEPV0A(-1.0),
   fEPV0C(-1.0),
+  fNVertCont(0),
   fBeamType(kNA),
   fOutput(0)
 {
@@ -78,6 +80,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMinVz(-999),
   fMaxVz(-999),
   fOffTrigger(AliVEvent::kAny),
+  fTrigClass(),
   fNbins(500),
   fMinBinPt(0),
   fMaxBinPt(250),
@@ -92,6 +95,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEPV0(-1.0),
   fEPV0A(-1.0),
   fEPV0C(-1.0),
+  fNVertCont(0),
   fBeamType(kNA),
   fOutput(0)
 {
@@ -292,7 +296,38 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
         res = aev->GetHeader()->GetOfflineTrigger();
       }
     }
-    if (res & fOffTrigger == 0)
+    if ((res & fOffTrigger) == 0)
+      return kFALSE;
+  }
+
+  if (!fTrigClass.IsNull()) {
+    TString fired;
+    const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
+    if (eev) {
+      fired = eev->GetFiredTriggerClasses();
+    } else {
+      const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
+      if (aev) {
+        fired = aev->GetFiredTriggerClasses();
+      }
+    }
+    if (!fired.Contains("-B-"))
+      return kFALSE;
+    TObjArray *arr = fTrigClass.Tokenize("|");
+    if (!arr)
+      return kFALSE;
+    Bool_t match = 0;
+    for (Int_t i=0;i<arr->GetEntriesFast();++i) {
+      TObject *obj = arr->At(i);
+      if (!obj)
+        continue;
+      if (fired.Contains(obj->GetName())) {
+        match = 1;
+        break;
+      }
+    }
+    delete arr;
+    if (!match)
       return kFALSE;
   }
 
@@ -304,6 +339,8 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   }
 
   if ((fMinVz != -999) && (fMaxVz != -999)) {
+    if (fNVertCont == 0 )
+      return kFALSE;
     Double_t vz = fVertex[2];
     if (vz<fMinVz)
       return kFALSE;
@@ -352,7 +389,13 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
-  InputEvent()->GetPrimaryVertex()->GetXYZ(fVertex);
+  fNVertCont = 0;
+
+  const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
+  if (vert) {
+    vert->GetXYZ(fVertex);
+    fNVertCont = vert->GetNContributors();
+  }
 
   fBeamType = GetBeamType();
 
