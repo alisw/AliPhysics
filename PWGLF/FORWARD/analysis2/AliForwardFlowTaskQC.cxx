@@ -153,7 +153,8 @@ void AliForwardFlowTaskQC::InitVertexBins()
       Int_t vL = Int_t(fVtxAxis->GetBinLowEdge(v));
       Int_t vH = Int_t(fVtxAxis->GetBinUpEdge(v));
       fBinsFMD.Add(new VertexBin(vL, vH, n, "FMD", (fgDispVtx ? kFALSE : kTRUE), fFMDCut));
-      fBinsSPD.Add(new VertexBin(vL, vH, n, "SPD", kFALSE, fSPDCut));
+//      fBinsSPD.Add(new VertexBin(vL, vH, n, "SPD", kFALSE, fSPDCut));
+      fBinsSPD.Add(new VertexBin(vL, vH, n, "SPD", kTRUE, fSPDCut));
     }
   }
 
@@ -261,7 +262,7 @@ Bool_t AliForwardFlowTaskQC::FillVtxBinList(const TList& list, const TH2D& h, In
   Int_t nVtxBins = fVtxAxis->GetNbins();
 
   while ((bin = static_cast<VertexBin*>(list.At(vtx+(nVtxBins*i))))) {
-    if (!bin->FillHists(h, fCent)) return kFALSE; 
+    if (!bin->FillHists(h, fCent)) return kFALSE;
     bin->CumulantsAccumulate(fCent);
     i++;
   }
@@ -587,8 +588,9 @@ void AliForwardFlowTaskQC::VertexBin::AddOutput(TList* outputlist)
   fCumuRef = new TH2D(Form("%s_v%d_%d_%d_ref", fType.Data(), fMoment, fVzMin, fVzMax),
                         Form("%s_v%d_%d_%d_ref", fType.Data(), fMoment, fVzMin, fVzMax),
                         48, -6., 6., 5, 0.5, 5.5);
-  TFile acc("$ALICE_ROOT/PWGLF/FORWARD/corrections/FlowCorrections/FlowAccMap.root", "READ");
-  TH1D* accMap = (TH1D*)acc.Get(Form("%saccVertex_%d_%d", fType.Data(), fVzMin, fVzMax));
+/*  TFile* acc = TFile::Open("$ALICE_ROOT/PWGLF/FORWARD/corrections/FlowCorrections/FlowAccMap.root", "READ");
+  TH1D* accMap = 0;
+  if (acc) accMap = (TH1D*)acc->Get(Form("%saccVertex_%d_%d", fType.Data(), fVzMin, fVzMax));
   if (accMap && !fType.EqualTo("FMD")) {
     Int_t nBins = accMap->GetNbinsX();
     Double_t eta[48] = { 0. };
@@ -607,11 +609,12 @@ void AliForwardFlowTaskQC::VertexBin::AddOutput(TList* outputlist)
     }
     eta[n] = 6.;
     fCumuRef->GetXaxis()->Set(n, eta);
-  } else {
+  } else {*/
     fCumuRef->RebinX(24);
-  }
-  acc.Close();
- 
+ /* }
+  acc->Close();
+  delete acc;
+ */
 
   fCumuRef->Sumw2();
   //list->Add(fCumuRef);
@@ -697,8 +700,8 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double
     nCurRefBin = fCumuRef->GetXaxis()->FindBin(eta);
     // If we have moved to a new bin in the flow hist, and less than half the eta
     // region has been covered by it we cut it away.
-    if (!nPrevBin) nPrevBin = nCurBin;
-    if (!nPrevRefBin) nPrevRefBin = nCurRefBin;
+    if (!nPrevBin == 0) nPrevBin = nCurBin;
+    if (!nPrevRefBin == 0) nPrevRefBin = nCurRefBin;
     if (nCurBin != nPrevBin) {
       if (nCurRefBin != nPrevRefBin) {
 	if (nInBin <= nBins/2) {
@@ -723,7 +726,6 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillHists(const TH2D& dNdetadphi, Double
 	else data = kTRUE;
 	continue;
       }
-      if (!data) continue;
       if (!AliForwardFlowTaskQC::fgDispVtx && (nCurBin == 34 || nCurBin == 35) && (phiBin == 17 || phiBin == 18)) continue;
       if ( AliForwardFlowTaskQC::fgDispVtx && eta < 0 && (phiBin == 17 || phiBin == 18)) continue;
       phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);

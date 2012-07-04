@@ -125,7 +125,7 @@ void AliForwardMCFlowTaskQC::InitVertexBins()
       Int_t vH = Int_t(fVtxAxis->GetBinUpEdge(v));
       fBinsFMDTR.Add(new VertexBin(vL, vH, n, "FMDTR", (fgDispVtx ? kFALSE : kTRUE), fFMDCut));
       fBinsSPDTR.Add(new VertexBin(vL, vH, n, "SPDTR", kTRUE, fSPDCut));
-      fBinsMC.Add(new VertexBin(vL, vH, n, "MC"));
+      fBinsMC.Add(new VertexBin(vL, vH, n, "MC", kTRUE));
     }
   }
 }
@@ -270,6 +270,8 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
     if (fAddFlow.Contains("eta"))  flowFlags |= AliForwardFlowWeights::kEta;
     if (fAddFlow.Contains("cent")) flowFlags |= AliForwardFlowWeights::kCent;
   }
+  Double_t b = -1.;
+  b = header->GetImpactParameter();
 
   // Track loop: chek how many particles will be accepted
   Double_t weight = 0;
@@ -288,10 +290,14 @@ Bool_t AliForwardMCFlowTaskQC::LoopAODMC()
     if (eta > -4. && eta < 5.) {
       // Add flow if it is in the argument
       if (flowFlags != 0) 
-	weight = fWeights.CalcWeight(eta, pT, phi, particle->PdgCode(), 
+/*	weight = fWeights.CalcWeight(eta, pT, phi, particle->PdgCode(), 
 				     rp, fCent, fAddType, fAddOrder, 
-				     flowFlags) + 1;
-      fdNdedpMC.Fill(eta, phi, weight);
+				     flowFlags) + 1;*/
+        weight = fWeights.CalcWeight(eta, pT, phi, particle->PdgCode(),
+                                    rp, b); 
+
+//        Printf("%f", weight);
+        fdNdedpMC.Fill(eta, phi, weight);
     }
   }
   Int_t sBin = fdNdedpMC.GetXaxis()->FindBin(-4.);
