@@ -56,7 +56,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              FillHistograms()                                     { return fCreateHisto; }
   BeamType                    GetBeamType();
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
-  virtual Bool_t              IsEventSelected() const;
+  virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
   virtual Bool_t              Run()                                                { return kTRUE                 ; }
   void                        SetInitialized(Bool_t ini = kTRUE)                   { fInitialized    = ini        ; }

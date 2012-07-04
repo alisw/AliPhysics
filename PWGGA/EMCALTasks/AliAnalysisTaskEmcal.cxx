@@ -11,13 +11,15 @@
 #include <TList.h>
 #include <TObject.h>
 
+#include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
-#include "AliEventplane.h"
 #include "AliEMCALGeometry.h"
 #include "AliESDEvent.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalParticle.h"
+#include "AliEventplane.h"
+#include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCParticle.h"
 #include "AliVCluster.h"
@@ -275,13 +277,22 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcal::IsEventSelected() const
+Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 {
   // Check if event is selected
 
   if (fOffTrigger != AliVEvent::kAny) {
-    UInt_t res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    if (res & fOfftrigger == 0)
+    UInt_t res = 0;
+    const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
+    if (eev) {
+      res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    } else {
+      const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
+      if (aev) {
+        res = aev->GetHeader()->GetOfflineTrigger();
+      }
+    }
+    if (res & fOffTrigger == 0)
       return kFALSE;
   }
 
