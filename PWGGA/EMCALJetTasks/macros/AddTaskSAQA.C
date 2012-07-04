@@ -7,7 +7,7 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   const char *ntrgclusters       = "",
   Double_t    jetradius          = 0.4,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.4,
+  Double_t    jetareacut         = 0.8,
   Double_t    ptcut              = 0.15,
   Double_t    jetBiasTrack       = 5,
   Double_t    jetBiasClus        = 5,
@@ -62,7 +62,7 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   qaTask->SetTrgClusName(ntrgclusters);
   qaTask->SetJetRadius(jetradius);
   qaTask->SetJetPtCut(jetptcut);
-  qaTask->SetJetAreaCut(jetareacut);
+  qaTask->SetPercAreaCut(jetareacut);
   qaTask->SetPtCut(ptcut);
   qaTask->SetPtBiasJetTrack(jetBiasTrack);
   qaTask->SetPtBiasJetClus(jetBiasClus);

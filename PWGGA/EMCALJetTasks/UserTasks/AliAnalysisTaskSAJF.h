@@ -39,6 +39,8 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &embPart)                                         ;
   void                        DoTrackLoop()                                                                                 ;
   void                        DoClusterLoop()                                                                               ;
+  void                        DoEmbTrackLoop()                                                                              ;
+  void                        DoEmbClusterLoop()                                                                            ;
   void                        GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &eta, Float_t &phi, 
 					   AliEmcalJet *jet = 0, TClonesArray* tracks = 0, TClonesArray* clusters = 0) const;
 
@@ -102,7 +104,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistDeltaPtRCRand[4];       //!deltaPt = Pt(RC) - A * rho, randomzied particles
 
   // Jet embedding
-  TH2F                       *fHistEmbNotFoundPhiEta;      //!Phi-Eta of "not found" embedded particles
+  TH2F                       *fHistEmbNotFoundPhiEta[4];   //!Phi-Eta of "not found" embedded particles
   TH1F                       *fHistEmbJetsPt[4];           //!Pt distribution of embedded jets
   TH1F                       *fHistEmbJetsCorrPt[4];       //!Pt distribution of embedded jets
   TH1F                       *fHistEmbPart[4];             //!Pt distribution of embedded particle
