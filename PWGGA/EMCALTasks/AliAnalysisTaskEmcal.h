@@ -36,23 +36,27 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   void                        UserExec(Option_t *option);
 
-  void                        SetAnaType(EmcalAnaType type)                        { fAnaType        = type       ; }
-  void                        SetClusName(const char *n)                           { fCaloName       = n          ; }
-  void                        SetClusPtCut(Float_t cut)                            { fClusPtCut      = cut        ; }
-  void                        SetHistoBins(Int_t nbins, Float_t min, Float_t max)  { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max; }
-  void                        SetPtCut(Float_t cut)                                { SetClusPtCut(cut); SetTrackPtCut(cut); }
-  void                        SetTrackPtCut(Float_t cut)                           { fTrackPtCut     = cut        ; }
-  void                        SetTracksName(const char *n)                         { fTracksName     = n          ; }
-  void                        SetClusTimeCut(Float_t min, Float_t max)             { fClusTimeCutLow = min; fClusTimeCutUp = max; }
+  void                        SetAnaType(EmcalAnaType type)                         { fAnaType        = type        ; }
+  void                        SetCentRange(Double_t min, Double_t max)              { fMinCent = min; fMaxCent = max; }
+  void                        SetClusName(const char *n)                            { fCaloName       = n           ; }
+  void                        SetClusPtCut(Double_t cut)                            { fClusPtCut      = cut         ; }
+  void                        SetClusTimeCut(Double_t min, Double_t max)            { fClusTimeCutLow = min; fClusTimeCutUp = max;      }
+  void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max; }
+  void                        SetOffTrigger(UInt_t t)                               { fOffTrigger    = t;            }
+  void                        SetPtCut(Double_t cut)                                { SetClusPtCut(cut); SetTrackPtCut(cut);            }
+  void                        SetTrackPtCut(Double_t cut)                           { fTrackPtCut     = cut        ; }
+  void                        SetTracksName(const char *n)                          { fTracksName     = n          ; }
+  void                        SetVzRange(Double_t min, Double_t max)                { fMinVz = min; fMaxVz   = max;  }
 
  protected:
-  virtual void                ExecOnce()                                                                    ;
-  Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE)       const;
-  Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kFALSE)       const;
-  Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kFALSE)       const;
-  BeamType                    GetBeamType()                                                                 ;
+  Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE) const;
+  Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kFALSE) const;
+  Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kFALSE) const;
+  virtual void                ExecOnce();
   virtual Bool_t              FillHistograms()                                     { return fCreateHisto; }
+  BeamType                    GetBeamType();
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
+  virtual Bool_t              IsEventSelected() const;
   virtual Bool_t              RetrieveEventObjects();
   virtual Bool_t              Run()                                                { return kTRUE                 ; }
   void                        SetInitialized(Bool_t ini = kTRUE)                   { fInitialized    = ini        ; }
@@ -62,20 +66,25 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fCreateHisto;                // whether or not create histograms
   TString                     fTracksName;                 // name of track collection
   TString                     fCaloName;                   // name of calo cluster collection
+  Double_t                    fMinCent;                    // min centrality for event selection
+  Double_t                    fMaxCent;                    // max centrality for event selection
+  Double_t                    fMinVz;                      // min vertex for event selection
+  Double_t                    fMaxVz;                      // max vertex for event selection
+  UInt_t                      fOffTrigger;                 // offline trigger for event selection
   Int_t                       fNbins;                      // no. of pt bins
-  Float_t                     fMinBinPt;                   // min pt in histograms
-  Float_t                     fMaxBinPt;                   // max pt in histograms
-  Float_t                     fClusPtCut;                  // cut on cluster pt
-  Float_t                     fTrackPtCut;                 // cut on track pt
-  Float_t                     fClusTimeCutLow;             // low time cut for clusters
-  Float_t                     fClusTimeCutUp;              // up time cut for clusters
+  Double_t                    fMinBinPt;                   // min pt in histograms
+  Double_t                    fMaxBinPt;                   // max pt in histograms
+  Double_t                    fClusPtCut;                  // cut on cluster pt
+  Double_t                    fTrackPtCut;                 // cut on track pt
+  Double_t                    fClusTimeCutLow;             // low time cut for clusters
+  Double_t                    fClusTimeCutUp;              // up time cut for clusters
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
-  Float_t                     fCent;                       //!event centrality
+  Double_t                    fCent;                       //!event centrality
   Int_t                       fCentBin;                    //!event centrality bin
-  Float_t                     fEPV0;                       //!event plane V0
-  Float_t                     fEPV0A;                      //!event plane V0A
-  Float_t                     fEPV0C;                      //!event plane V0C
+  Double_t                    fEPV0;                       //!event plane V0
+  Double_t                    fEPV0A;                      //!event plane V0A
+  Double_t                    fEPV0C;                      //!event plane V0C
   Double_t                    fVertex[3];                  //!event vertex
   BeamType                    fBeamType;                   //!event beam type
   TList                      *fOutput;                     //!output list
@@ -84,6 +93,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 3) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 4) // EMCAL base analysis task
 };
 #endif
