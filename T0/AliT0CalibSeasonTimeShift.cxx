@@ -128,7 +128,7 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
   gFile = TFile::Open(filePhys);
   if(!gFile) {
     AliError("No input PHYS data found ");
-    ok = 2000;
+    return 2000;
   }
   else {
     //    gFile->ls();
@@ -144,28 +144,25 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	  cfd =  (TH1F*)gFile ->Get(histname[i].Data());
 
 	if(!cfd) {
-	  ok=300;
 	  AliError(Form("no histograms collected for %s", histname[i].Data()));
-	  return ok;
+	  return 300;
 	}
 	if(cfd) {
 	  if( cfd->GetEntries() == 0) {
-	  ok=300;
 	  AliError(Form("%s histogram is empty", histname[i].Data()));
-	  return ok;
+	  return 300;
 	  }
-	    GetMeanAndSigma(cfd, mean, sigma);
-	    if (sigma == 0 || sigma > 500 || cfd->GetEntries()<200 ){
-	      ok = -100;
-	      fMeanPar[i] = cdbtime[i];
-	      fSigmaPar[i] = -1;
+	  GetMeanAndSigma(cfd, mean, sigma);
+	  if (sigma == 0 || sigma > 500 || cfd->GetEntries()<200 ){
+	    AliError(Form("%s loe statsitics or bad histogram", histname[i].Data()));
+	    return 400;
+	  }
+	  if ( sigma > 0 && sigma < 500 && cfd->GetEntries()>200)
+	    { 
+	      fMeanPar[i] =   mean;
+	      fSigmaPar[i] = sigma;
 	    }
-	    if ( sigma > 0 && sigma < 500 && cfd->GetEntries()>200)
-	      { 
-		fMeanPar[i] =   mean;
-		fSigmaPar[i] = sigma;
-	      }
-	  }
+	}
       } 
   }
   gFile->Close();
