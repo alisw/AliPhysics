@@ -12,7 +12,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.4,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.4,
+  Double_t    jetareacut         = 0.8,
   Double_t    ptcut              = 0.15,
   Double_t    jetBiasTrack       = 5,
   Double_t    jetBiasClus        = 5,
@@ -77,7 +77,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   jetTask->SetPtCut(ptcut);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
-  jetTask->SetJetAreaCut(jetareacut);
+  jetTask->SetPercAreaCut(jetareacut);
   jetTask->SetPtBiasJetTrack(jetBiasTrack);
   jetTask->SetPtBiasJetClus(jetBiasClus);
   

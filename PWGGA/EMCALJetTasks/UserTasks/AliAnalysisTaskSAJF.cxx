@@ -32,7 +32,7 @@ ClassImp(AliAnalysisTaskSAJF)
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
   fMCAna(kFALSE),
-  fMinRC2LJ(1.0),
+  fMinRC2LJ(-1),
   fEmbJetsName("EmbJets"),
   fEmbTracksName(""),
   fEmbCaloName(""),
@@ -54,7 +54,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
   fHistRhoVSRCPt(0),
-  fHistEmbNotFoundPhiEta(0),
   fHistEmbJetPhiEta(0),
   fHistEmbPartPhiEta(0),
   fHistRhoVSEmbBkg(0)
@@ -91,6 +90,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistDeltaPtRC[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
+    fHistEmbNotFoundPhiEta[i] = 0;
     fHistEmbJetsPt[i] = 0;
     fHistEmbJetsCorrPt[i] = 0;
     fHistEmbPart[i] = 0;
@@ -102,7 +102,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fMCAna(kFALSE),
-  fMinRC2LJ(1.0),
+  fMinRC2LJ(-1),
   fEmbJetsName("EmbJets"),
   fEmbTracksName(""),
   fEmbCaloName(""),
@@ -124,7 +124,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   fHistRCPhiEta(0),
   fHistRCPtExLJVSDPhiLJ(0),
   fHistRhoVSRCPt(0),
-  fHistEmbNotFoundPhiEta(0),
   fHistEmbJetPhiEta(0),
   fHistEmbPartPhiEta(0),
   fHistRhoVSEmbBkg(0)
@@ -160,6 +159,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistDeltaPtRC[i] = 0;
     fHistDeltaPtRCExLJ[i] = 0;
     fHistDeltaPtRCRand[i] = 0;
+    fHistEmbNotFoundPhiEta[i] = 0;
     fHistEmbJetsPt[i] = 0;
     fHistEmbJetsCorrPt[i] = 0;
     fHistEmbPart[i] = 0;
@@ -215,11 +215,6 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fOutput->Add(fHistRhoVSRCPt);
 
   if (!fEmbJetsName.IsNull()) {
-    fHistEmbNotFoundPhiEta = new TH2F("fHistEmbNotFoundPhiEta","Phi-Eta distribution of not found embedded particles", 40, -2, 2, 64, 0, 6.4);
-    fHistEmbNotFoundPhiEta->GetXaxis()->SetTitle("#eta");
-    fHistEmbNotFoundPhiEta->GetYaxis()->SetTitle("#phi");
-    fOutput->Add(fHistEmbNotFoundPhiEta);
-
     fHistEmbJetPhiEta = new TH2F("fHistEmbJetPhiEta","Phi-Eta distribution of embedded jets", 40, -2, 2, 64, 0, 6.4);
     fHistEmbJetPhiEta->GetXaxis()->SetTitle("#eta");
     fHistEmbJetPhiEta->GetYaxis()->SetTitle("#phi");
@@ -475,6 +470,13 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fHistEmbPart[i]->GetXaxis()->SetTitle("embedded particle p_{T}^{emb} [GeV/c]");
       fHistEmbPart[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbPart[i]);
+
+      histname = "fHistEmbNotFoundPhiEta_";
+      histname += i;
+      fHistEmbNotFoundPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 40, -2, 2, 64, 0, 6.4);
+      fHistEmbNotFoundPhiEta[i]->GetXaxis()->SetTitle("#eta");
+      fHistEmbNotFoundPhiEta[i]->GetYaxis()->SetTitle("#phi");
+      fOutput->Add(fHistEmbNotFoundPhiEta[i]);
       
       histname = "fHistDeltaPtEmb_";
       histname += i;
@@ -651,18 +653,21 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
     fHistDeltaPtEmb[fCentBin]->Fill(embJet->Pt() - embJet->Area() * fRhoVal - probePt);
     fHistRhoVSEmbBkg->Fill(embJet->Area() * fRhoVal, embJet->Pt() - probePt);
-
   }
   else {
+    if (fAnaType != kEMCALOnly)
+      DoEmbTrackLoop();
+    if (fAnaType == kEMCAL || fAnaType == kEMCALOnly)
+      DoEmbClusterLoop();
     if (fEmbeddedTrackId >= 0) {
-      AliVTrack *track2 = static_cast<AliVTrack*>(fTracks->At(fEmbeddedTrackId));
-      fHistEmbNotFoundPhiEta->Fill(track2->Eta(), track2->Phi());
+      AliVTrack *track2 = static_cast<AliVTrack*>(fEmbTracks->At(fEmbeddedTrackId));
+      fHistEmbNotFoundPhiEta[fCentBin]->Fill(track2->Eta(), track2->Phi());
     }
     else if (fEmbeddedClusterId >= 0) {
-      AliVCluster *cluster2 = static_cast<AliVCluster*>(fCaloClusters->At(fEmbeddedClusterId));
+      AliVCluster *cluster2 = static_cast<AliVCluster*>(fEmbCaloClusters->At(fEmbeddedClusterId));
       TLorentzVector nPart;
       cluster2->GetMomentum(nPart, fVertex);
-      fHistEmbNotFoundPhiEta->Fill(nPart.Eta(), nPart.Phi());
+      fHistEmbNotFoundPhiEta[fCentBin]->Fill(nPart.Eta(), nPart.Phi());
     }
     else {
       AliWarning(Form("%s - Embedded particle not found!", GetName()));
@@ -719,8 +724,6 @@ void AliAnalysisTaskSAJF::DoClusterLoop()
   if (!fCaloClusters)
     return;
 
-  fEmbeddedClusterId = -1;
-
   Int_t nclusters =  fCaloClusters->GetEntriesFast();
 
   for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
@@ -730,13 +733,8 @@ void AliAnalysisTaskSAJF::DoClusterLoop()
       continue;
     }  
 
-    if (!AcceptCluster(cluster, kFALSE)) 
+    if (!AcceptCluster(cluster)) 
       continue;
-
-    if (cluster->Chi2() == 100) {
-      fEmbeddedClusterId = iClusters;
-      continue;
-    }
 
     fHistClustersPt[fCentBin]->Fill(cluster->E());
   }
@@ -749,8 +747,6 @@ void AliAnalysisTaskSAJF::DoTrackLoop()
 
   if (!fTracks)
     return;
-
-  fEmbeddedTrackId = -1;
 
   Int_t ntracks = fTracks->GetEntriesFast();
 
@@ -765,18 +761,12 @@ void AliAnalysisTaskSAJF::DoTrackLoop()
 
     AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track); 
     
-    if (vtrack && !AcceptTrack(vtrack, kFALSE)) 
+    if (vtrack && !AcceptTrack(vtrack)) 
       continue;
-
-    if (track->GetLabel() == 100) {
-      fEmbeddedTrackId = i;
-      continue;
-    }
     
     fHistTracksPt[fCentBin]->Fill(track->Pt());
   }
 }
-
 
 //________________________________________________________________________
 void AliAnalysisTaskSAJF::DoJetLoop()
@@ -852,6 +842,68 @@ void AliAnalysisTaskSAJF::DoJetLoop()
 
     fHistDeltaVectorPt->Fill(scalarpt - jet->Pt());
   } //jet loop 
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSAJF::DoEmbTrackLoop()
+{
+  // Do track loop.
+
+  if (!fEmbTracks)
+    return;
+
+  fEmbeddedTrackId = -1;
+
+  Int_t ntracks = fEmbTracks->GetEntriesFast();
+
+  for (Int_t i = 0; i < ntracks; i++) {
+
+    AliVParticle* track = static_cast<AliVParticle*>(fEmbTracks->At(i)); // pointer to reconstructed to track  
+
+    if (!track) {
+      AliError(Form("Could not retrieve track %d",i)); 
+      continue; 
+    }
+
+    AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track); 
+    
+    if (vtrack && !AcceptTrack(vtrack, kTRUE)) 
+      continue;
+
+    if (track->GetLabel() == 100) {
+      fEmbeddedTrackId = i;
+      continue;
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSAJF::DoEmbClusterLoop()
+{
+  // Do cluster loop.
+
+  if (!fEmbCaloClusters)
+    return;
+
+  fEmbeddedClusterId = -1;
+
+  Int_t nclusters =  fEmbCaloClusters->GetEntriesFast();
+
+  for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
+    AliVCluster* cluster = static_cast<AliVCluster*>(fEmbCaloClusters->At(iClusters));
+    if (!cluster) {
+      AliError(Form("Could not receive cluster %d", iClusters));
+      continue;
+    }  
+
+    if (!AcceptCluster(cluster, kTRUE)) 
+      continue;
+
+    if (cluster->Chi2() == 100) {
+      fEmbeddedClusterId = iClusters;
+      continue;
+    }
+  }
 }
 
 //________________________________________________________________________
@@ -975,7 +1027,7 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &e
   } while (dLJ < fMinRC2LJ && repeats < 999);
 
   if (repeats == 999) {
-    AliWarning("Could not get random cone!");
+    AliWarning(Form("%s: Could not get random cone!", GetName()));
     return;
   }
 
@@ -988,7 +1040,7 @@ void AliAnalysisTaskSAJF::GetRigidCone(Float_t &pt, Float_t &ptrigid, Float_t &e
     for (Int_t iClusters = 0; iClusters < nclusters; iClusters++) {
       AliVCluster* cluster = static_cast<AliVCluster*>(clusters->At(iClusters));
       if (!cluster) {
-	//AliError(Form("Could not receive cluster %d", iClusters));
+	AliError(Form("Could not receive cluster %d", iClusters));
 	continue;
       }  
       
@@ -1129,6 +1181,12 @@ void AliAnalysisTaskSAJF::ExecOnce()
                     "Will use fMinRC2LJ = %f", fMinRC2LJ, semiDiag * 0.5));
     fMinRC2LJ = semiDiag * 0.5;
   }
+
+  if (fMinRC2LJ < 0)
+    fMinRC2LJ = semiDiag * 0.5;
+
+  if (fMinRC2LJ > 1)
+    fMinRC2LJ = 1;
 }
 
 //________________________________________________________________________
