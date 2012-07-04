@@ -105,6 +105,7 @@ AliTRDPIDResponseObject &AliTRDPIDResponseObject::operator=(const AliTRDPIDRespo
 		delete fPIDReference[method];
 		fPIDReference[method] = 0;
 	      }
+	      printf("Assignment");
 	      fPIDParams[method]=ref.fPIDParams[method];       // new Object is not owner, copy only pointer
 	      fPIDReference[method]=ref.fPIDReference[method];    // new Object is not owner, copy only pointer
 	    }
@@ -182,7 +183,7 @@ TObject *AliTRDPIDResponseObject::GetLowerReference(AliPID::EParticleType spec, 
 	return NULL;
     }
 
-     if(fPIDReference[method]){
+    if(fPIDReference[method]){
 	 return fPIDReference[method]->GetLowerReference(spec,p,pLower);
      }
     return NULL;

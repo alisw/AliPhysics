@@ -5,6 +5,8 @@
 #include "TMath.h"
 #include "TRandom.h"
 
+#include "AliLog.h"
+
 #include "iostream"
 using namespace std;
 
@@ -58,6 +60,7 @@ fUseWeights(ref.fUseWeights),
 fPDFMode(ref.fPDFMode)
 {
     // Copy constructor
+    this->Print("");
 }
 
 //____________________________________________________________
@@ -71,6 +74,8 @@ AliTRDTKDInterpolator &AliTRDTKDInterpolator::operator=(const AliTRDTKDInterpola
     // Make copy
     TObject::operator=(ref);
 
+    this->Print("");
+
     return *this;
 }
 
@@ -81,7 +86,7 @@ Bool_t AliTRDTKDInterpolator::Build()
     if(!fBoundaries) MakeBoundaries();
 
     // allocate interpolation nodes
-    fNDataNodes = fNPoints/fBucketSize + ((fNPoints%fBucketSize)?1:0);/*TKDTreeIF::GetNTNodes();*/
+    fNDataNodes = fNPoints/fBucketSize + ((fNPoints%fBucketSize)?1:0);
 
     if(fNodes){
 	Warning("AliTRDTKDInterpolator::Build()", "Data already allocated.");
@@ -153,36 +158,30 @@ Bool_t AliTRDTKDInterpolator::Build()
 //_________________________________________________________________
 Bool_t AliTRDTKDInterpolator::Eval(const Double_t *point, Double_t &result, Double_t &error)
 {
+    AliDebug(3,Form("Eval PDF Mode %d",fPDFMode));
+    if((AliLog::GetDebugLevel("",IsA()->GetName()))>0){
+	printf("Point [");
+	for(int idim=0; idim<fNDim; idim++) printf("%f ", point[idim]);
+	printf("] \n");
+    }
+
     Float_t pointF[fNDim]; // local Float_t conversion for "point"
     for(int idim=0; idim<fNDim; idim++) pointF[idim] = (Float_t)point[idim];
     Int_t nodeIndex = GetNodeIndex(pointF);
     if(nodeIndex<0){
-	Error("AliTRDTKDInterpolator::Eval()", "Can not retrive node for data point.");
+	AliError("Can not retrieve node for data point");
 	result = 0.;
 	error = 1.E10;
 	return kFALSE;
     }
     AliTRDTKDNodeInfo *node =GetNodeInfo(nodeIndex);
 
-    switch(fPDFMode){
-
-    case kInterpolation:
-	return node->CookPDF(point, result, error);
-    case kMinError:
-	node->CookPDF(point, result, error);
-	if(error<node->fVal[1]){
-	    return kTRUE;
-	}
-	error=node->fVal[1];
-	result=node->fVal[0];
-	return kTRUE;
-    case kNodeVal:
-	error=node->fVal[1];
-	result=node->fVal[0];
-	return kTRUE;
-    default:
-	return kFALSE;
+    if((AliLog::GetDebugLevel("",IsA()->GetName()))>0){
+	printf("Node Info: \n");
+	node->Print("a");
     }
+
+    return node->CookPDF(point, result, error,fPDFMode);
 }
 
 //__________________________________________________________________
@@ -199,12 +198,18 @@ void AliTRDTKDInterpolator::Print(const Option_t */*opt*/) const
 Int_t AliTRDTKDInterpolator::GetNodeIndex(const Float_t *p)
 {
     Int_t inode=FindNode(p)-fNDataNodes+1;
-    if(GetNodeInfo(inode)->Has(p))return inode;
+    if(GetNodeInfo(inode)->Has(p)){
+	AliDebug(2,Form("Find Node %d",inode));
+	return inode;
+    }
 
     // Search extra nodes
 
     for(inode=fNDataNodes;inode<GetNTNodes();inode++){
-	if(GetNodeInfo(inode)->Has(p)){return inode;}
+	if(GetNodeInfo(inode)->Has(p)){
+	    AliDebug(2,Form("Find Extra Node %d",inode));
+	    return inode;
+	}
     }
 
     // Search for nearest neighbor
@@ -220,6 +225,7 @@ Int_t AliTRDTKDInterpolator::GetNodeIndex(const Float_t *p)
 	dist=TMath::Sqrt(dist);
 	if(dist<closestdist){closestdist=dist;inode=ii;}
     }
+    AliDebug(2,Form("Find Nearest Neighbor Node %d",inode));
     return inode;
 }
 
@@ -278,6 +284,7 @@ TH2Poly *AliTRDTKDInterpolator::Projection(Int_t xdim,Int_t ydim)
 //_________________________________________________________________
 void AliTRDTKDInterpolator::BuildInterpolation()
 {
+    AliInfo("Build Interpolation");
 
     // Calculate Interpolation
 
@@ -341,6 +348,7 @@ void AliTRDTKDInterpolator::BuildInterpolation()
 	    }
 	}
 
+	AliDebug(2,Form("Calculate Interpolation for Node %d",nodeIndex));
 	fitter.Eval();
 
 	// retrive fitter results
@@ -403,7 +411,7 @@ void AliTRDTKDInterpolator::BuildBoundaryNodes(){
 	    }
 	}
     }
-    printf("%d Boundary Nodes Added \n",nnew);
+    AliInfo(Form("%d Boundary Nodes Added \n",nnew));
 }
 
 //_________________________________________________________________
@@ -412,7 +420,7 @@ AliTRDTKDInterpolator::AliTRDTKDNodeInfo::AliTRDTKDNodeInfo(Int_t ndim):
   ,fNDim(ndim)
   ,fNBounds(2*ndim)
   ,fNPar(1 + ndim + (ndim*(ndim+1)>>1))
-  ,fNCov(fNPar*fNPar)
+  ,fNCov(Int_t((fNPar+1)*fNPar/2))
   ,fData(NULL)
   ,fBounds(NULL)
   ,fPar(NULL)
@@ -513,12 +521,12 @@ void AliTRDTKDInterpolator::AliTRDTKDNodeInfo::Print(const Option_t *opt) const
 
   if(fPar){
     printf("Fit parameters : \n");
-    for(int ip=0; ip<fNPar; ip++) printf("p%d[%f] ", ip, fPar[ip]);
+    for(int ip=0; ip<fNPar; ip++) printf("p%d[%e] ", ip, fPar[ip]);
     printf("\n");
   }
   if(!fCov) return;
   for(int ip(0), n(0); ip<fNPar; ip++){
-    for(int jp(ip); jp<fNPar; jp++) printf("c(%d %d)[%f] ", ip, jp, fCov[n++]);
+    for(int jp(ip); jp<fNPar; jp++) printf("c(%d %d)[%e] ", ip, jp, fCov[n++]);
     printf("\n");
   }
 }
@@ -526,24 +534,42 @@ void AliTRDTKDInterpolator::AliTRDTKDNodeInfo::Print(const Option_t *opt) const
 //_________________________________________________________________
 void AliTRDTKDInterpolator::AliTRDTKDNodeInfo::Store(TVectorD const *par, TMatrixD const *cov)
 {
-// Store the parameters and the covariance in the node
+    // Store the parameters and the covariance in the node
 
-    if(!fPar){fPar = new Double_t[fNPar];}
-    for(int ip=0; ip<fNPar; ip++) fPar[ip] = (*par)[ip];
+    AliDebug(2,"Store Node Interpolation Parameters");
 
-    if(!cov) return;
-    if(!fCov){fCov = new Double_t[fNCov];}
-    for(int ip(0), np(0); ip<fNPar; ip++)
-	for(int jp=ip; jp<fNPar; jp++) fCov[np++] = (*cov)(ip,jp);
+     if((AliLog::GetDebugLevel("",IsA()->GetName()))>=10){
+	par->Print("");
+	cov->Print("");
+    }
+
+     if(!fPar){fPar = new Double_t[fNPar];}
+     for(int ip=0; ip<fNPar; ip++) fPar[ip] = (*par)[ip];
+     if(!cov) return;
+     if(!fCov){fCov = new Double_t[fNCov];}
+     for(int ip(0), np(0); ip<fNPar; ip++)
+	 for(int jp=ip; jp<fNPar; jp++) fCov[np++] = (*cov)(ip,jp);
+
+     if((AliLog::GetDebugLevel("",IsA()->GetName()))>10){this->Print("a");}
 }
 
 //_________________________________________________________________
-Bool_t AliTRDTKDInterpolator::AliTRDTKDNodeInfo::CookPDF(const Double_t *point, Double_t &result, Double_t &error) const
+Bool_t AliTRDTKDInterpolator::AliTRDTKDNodeInfo::CookPDF(const Double_t *point, Double_t &result, Double_t &error,TRDTKDMode mod) const
 {
     // Recalculate the PDF for one node from the results of interpolation (parameters and covariance matrix)
 
     result =0.; error = 1.;
-    if(!fPar) return kFALSE;
+
+    if(mod==kNodeVal){
+	error=fVal[1];
+	result=fVal[0];
+	return kTRUE;
+    }
+
+    if(!fPar){
+	AliDebug(1,"Requested Interpolation Parameters don't exist");
+	return kFALSE;
+    }
 
     Double_t fdfdp[fNDim];
     Int_t ipar = 0;
@@ -556,7 +582,10 @@ Bool_t AliTRDTKDInterpolator::AliTRDTKDNodeInfo::CookPDF(const Double_t *point, 
     // calculate estimation
     for(int i=0; i<fNPar; i++) result += fdfdp[i]*fPar[i];
 
-    if(!fCov)return kTRUE;
+    if(!fCov){
+	AliDebug(3,"Interpolation Error cannot be estimated, Covariance Parameters don't exist");
+	return kTRUE;
+    }
     // calculate error
     error=0;
 
@@ -567,11 +596,23 @@ Bool_t AliTRDTKDInterpolator::AliTRDTKDNodeInfo::CookPDF(const Double_t *point, 
     if(error>0)error = TMath::Sqrt(error);
     else{error=100;}
 
+    if(mod==kMinError){
+	if(error<fVal[1]){
+	    return kTRUE;
+	}
+	error=fVal[1];
+	result=fVal[0];
+	return kTRUE;
+    }
+
     // Boundary condition
     if(result<0){
+        AliDebug(2,"Using Node Value to ensure Boundary Condition");
 	result=fVal[0];
 	error=fVal[1];
     }
+
+    AliDebug(1,Form("Cook PDF Result: %e Error: %e",result,error));
 
     return kTRUE;
 }

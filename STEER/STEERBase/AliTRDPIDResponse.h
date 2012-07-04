@@ -42,15 +42,15 @@ class AliTRDPIDResponse : public TObject {
 	,kNPBins = 6
     };
     enum ETRDPIDMethod {
-      kNN   = 0,
-      kLQ2D = 1,
-      kLQ1D = 2
+	kNN   = 0,
+	kLQ2D = 1,
+	kLQ1D = 2
     };
     enum ETRDPIDNMethod {
 	kNMethod=3
     };
     enum ETRDNslices {
-      kNslicesLQ1D = 1,
+	kNslicesLQ1D = 1,
       kNslicesLQ2D = 2,
       kNslicesNN = 7
     };
@@ -69,8 +69,8 @@ class AliTRDPIDResponse : public TObject {
     void      SetPIDmethod(ETRDPIDMethod m) {fPIDmethod=m;}
     void      SetGainNormalisationFactor(Double_t gainFactor) { fGainNormalisationFactor = gainFactor; }
 
-    Bool_t    SetPIDResponseObject(const AliTRDPIDResponseObject * obj) { fkPIDResponseObject = obj; return kTRUE;}
-
+    Bool_t SetPIDResponseObject(const AliTRDPIDResponseObject * obj);
+    
     Bool_t    Load(const Char_t *filename = NULL);
   
     Bool_t    IdentifiedAsElectron(Int_t nTracklets, const Double_t *like, Double_t p, Double_t level) const;

@@ -878,10 +878,28 @@ void AliPIDResponse::InitializeTRDResponse(){
   // Set PID Params and references to the TRD PID response
   // 
     fTRDResponse.SetPIDResponseObject(fTRDPIDResponseObject);
-    if(fLHCperiod == "LHC10b" || fLHCperiod == "LHC10c" || fLHCperiod == "LHC10d" || fLHCperiod == "LHC10e"){
-	fTRDslicesForPID[0] = 0;
-	fTRDslicesForPID[1] = 7;
+    SetTRDPIDmethod();
+}
+
+void AliPIDResponse::SetTRDPIDmethod(AliTRDPIDResponse::ETRDPIDMethod method){
+  
+  fTRDResponse.SetPIDmethod(method);
+  if(fLHCperiod == "LHC10d" || fLHCperiod == "LHC10e"){
+    // backward compatibility for setting with 8 slices
+    fTRDslicesForPID[0] = 0;
+    fTRDslicesForPID[1] = 7;
+  }
+  else{
+    if(method==AliTRDPIDResponse::kLQ1D){
+      fTRDslicesForPID[0] = 0; // first Slice contains normalized dEdx
+      fTRDslicesForPID[1] = 0;
     }
+    if(method==AliTRDPIDResponse::kLQ2D){
+      fTRDslicesForPID[0] = 1;
+      fTRDslicesForPID[1] = 7;
+    }
+  }
+  AliDebug(1,Form("Slice Range set to %d - %d",fTRDslicesForPID[0],fTRDslicesForPID[1]));
 }
 
 //______________________________________________________________________________

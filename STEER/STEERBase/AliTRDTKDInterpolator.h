@@ -17,9 +17,6 @@ class TClonesArray;
 class AliTRDTKDInterpolator : public TKDTreeIF
 {
 
-
-
-  
 public:
     enum TRDTKDMode{
 	kInterpolation=0,
@@ -37,7 +34,7 @@ public:
 	AliTRDTKDNodeInfo(const AliTRDTKDInterpolator::AliTRDTKDNodeInfo &ref);
 	AliTRDTKDInterpolator::AliTRDTKDNodeInfo& operator=(const AliTRDTKDInterpolator::AliTRDTKDNodeInfo &ref);
 	virtual ~AliTRDTKDNodeInfo();
-	Bool_t        CookPDF(const Double_t *point, Double_t &result, Double_t &error) const;
+	Bool_t        CookPDF(const Double_t *point, Double_t &result, Double_t &error,TRDTKDMode mod=kInterpolation) const;
 	Bool_t Has(const Float_t *p) const;
 	void          Print(const Option_t * = "") const;
 	void          Store(TVectorD const *par, TMatrixD const *cov=NULL);
