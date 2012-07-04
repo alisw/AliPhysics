@@ -279,6 +279,10 @@ void AliAnalysisTaskExtractPerformanceV0::UserCreateOutputObjects()
 /*37*/   fTree->Branch("fTreeVariableIndexStatus",&fTreeVariableIndexStatus,"fTreeVariableIndexStatus/I");
 /*38*/   fTree->Branch("fTreeVariableIndexStatusMother",&fTreeVariableIndexStatusMother,"fTreeVariableIndexStatusMother/I");
 
+/*39*/ 	 fTree->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
+/*40*/   fTree->Branch("fTreeVariableEventNumber",&fTreeVariableEventNumber,"fTreeVariableEventNumber/l");
+
+
 //------------------------------------------------
 // Particle Identification Setup
 //------------------------------------------------
@@ -555,6 +559,12 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       return;
    }
         
+   fTreeVariableRunNumber = lESDevent->GetRunNumber();
+   fTreeVariableEventNumber =  
+    ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
+      ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
+        ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
+
    lMCevent = MCEvent();
    if (!lMCevent) {
       Printf("ERROR: Could not retrieve MC event \n");

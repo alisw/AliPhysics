@@ -80,6 +80,7 @@ class AliAODv0;
 #include "AliESDcascade.h"
 #include "AliAODcascade.h"
 #include "AliESDUtils.h"
+#include "AliESDHeader.h"
 
 #include "AliAnalysisTaskExtractV0.h"
 
@@ -212,6 +213,8 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
 /*22*/	fTree->Branch("fTreeVariableNSigmasNegPion",&fTreeVariableNSigmasNegPion,"fTreeVariableNSigmasNegPion/F");
 /*23*/	fTree->Branch("fTreeVariableNegEta",&fTreeVariableNegEta,"fTreeVariableNegEta/F");
 /*24*/	fTree->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
+/*25*/	fTree->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
+/*26*/	fTree->Branch("fTreeVariableEventNumber",&fTreeVariableEventNumber,"fTreeVariableEventNumber/l");
 
 //------------------------------------------------
 // Particle Identification Setup
@@ -362,6 +365,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
    // Called for each event
    //gObjectTable->Print();
    AliESDEvent *lESDevent = 0x0;
+
    //AliAODEvent *lAODevent = 0x0;
    Int_t    nV0s                        = -1;
 
@@ -379,6 +383,11 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       AliWarning("ERROR: lESDevent not available \n");
       return;
    }
+   fTreeVariableRunNumber = lESDevent->GetRunNumber();
+   fTreeVariableEventNumber =  
+    ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
+      ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
+        ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
 
    //REVISED multiplicity estimator after 'multiplicity day' (2011)
    Int_t lMultiplicity = -100; 
