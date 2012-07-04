@@ -134,8 +134,8 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
   fRequirePIDbit[fNcuts]=pidBitType;
   fActiveCuts[fNcuts]=(var==-1 ? AliDielectronVarManager::kP : var);
 
-  AliInfo(Form("Add PID cut %d: sigma [% .1f,% .1f] \t cut [% .1f,% .f] \t var %d->%s \n",
-	       fNcuts,nSigmaLow,nSigmaUp,min,max,fActiveCuts[fNcuts],AliDielectronVarManager::GetValueName(fActiveCuts[fNcuts])));  
+  //  AliInfo(Form("Add PID cut %d: sigma [% .1f,% .1f] \t cut [% .1f,% .f] \t var %d->%s \n",
+  //	       fNcuts,nSigmaLow,nSigmaUp,min,max,fActiveCuts[fNcuts],AliDielectronVarManager::GetValueName(fActiveCuts[fNcuts])));  
   
   ++fNcuts;
 
