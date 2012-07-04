@@ -22,6 +22,7 @@
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliHFMassFitter.h"
+#include "AliNormalizationCounter.h"
 #endif
 
 
@@ -45,6 +46,9 @@ Double_t ptlims[nPtBins+1]={2.,3.,4.,5.,6.,8.,12.};
 Int_t rebin[nPtBins]={2,4,4,4,4,4};
 Int_t firstUsedBin[nPtBins]={-1,-1,-1,-1,-1,-1}; // -1 uses all bins, >=1 to set the lower bin to be accepted from original histo
 
+TString suffix="Loose_SecondSet1236_ForCF08";
+
+
 //const Int_t nPtBins=7;//6;
 //Double_t ptlims[nPtBins+1]={1.,2.,3.,4.,5.,6.,8.,12.};
 //Int_t rebin[nPtBins+1]={8,6,10,10,10,10,10,10}; //for looser cuts
@@ -55,6 +59,7 @@ Int_t optPartAntiPart=kBoth;
 Int_t factor4refl=0;
 Float_t massRangeForCounting=0.05; // GeV
 TH2F* hPtMass=0x0;
+Double_t nEventsForNorm=0.;
 
 //for D0only
 Bool_t cutsappliedondistr=kTRUE;
@@ -352,8 +357,13 @@ void FitMassSpectra(Int_t analysisType=kDplusKpipi,
     if(analysisType==kDsKKpi) partname="Dsminus";
   }
 
+  printf("Events for norm = %f\n",nEventsForNorm);
+  TH1F* hNEvents=new TH1F("hNEvents","",1,0.,1.);
+  hNEvents->SetBinContent(1,nEventsForNorm);
+
   TFile* outf=new TFile(Form("RawYield%s.root",partname.Data()),"update");
   outf->cd();
+  hNEvents->Write();
   hMass->Write();
   hSigma->Write();
   hCntSig1->Write();
@@ -392,9 +402,9 @@ Bool_t LoadDplusHistos(TObjArray* listFiles, TH1F** hMass){
       printf("ERROR: directory PWG3_D2H_InvMassDplus not found in %s\n",fName.Data());
       continue;
     }
-    hlist[nReadFiles]=(TList*)dir->Get("coutputDplus");
-    TList *listcut = (TList*)dir->Get("coutputDplusCuts");
-    dcuts[nReadFiles]=(AliRDHFCutsDplustoKpipi*)listcut->At(1);
+    hlist[nReadFiles]=(TList*)dir->Get(Form("coutputDplus%s",suffix.Data()));
+    TList *listcut = (TList*)dir->Get(Form("coutputDplusCuts%s",suffix.Data()));
+    dcuts[nReadFiles]=(AliRDHFCutsDplustoKpipi*)listcut->At(0);
     if(nReadFiles>0){
       Bool_t sameCuts=dcuts[nReadFiles]->CompareCuts(dcuts[0]);
       if(!sameCuts){
@@ -402,6 +412,9 @@ Bool_t LoadDplusHistos(TObjArray* listFiles, TH1F** hMass){
 	return kFALSE;
       }
     }
+    AliNormalizationCounter* c=(AliNormalizationCounter*)dir->Get(Form("coutputDplusNorm%s",suffix.Data()));
+    printf("Events for normalization = %f\n",c->GetNEventsForNorm());
+    nEventsForNorm+=c->GetNEventsForNorm();
     nReadFiles++;
   }
   if(nReadFiles<nFiles){
