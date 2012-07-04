@@ -48,7 +48,7 @@ class AliAnalysisTaskEMCALPhoton : public AliAnalysisTaskSE {
   void         FillMyCells();
   void         FillMyClusters();
   void         FillMyAltClusters();
-  void         FillHighPtTracks();
+  void         FillIsoTracks();
   void         FillMcPart(TParticle *mcP, Int_t ipart, Int_t itrack);
   void         GetMcParts();
   Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)       const;
