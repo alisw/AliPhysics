@@ -225,53 +225,6 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc)
-{
-  // Do the jet loop.
-
-  Int_t nJets1 = jets1->GetEntriesFast();
-  Int_t nJets2 = jets2->GetEntriesFast();
-
-  for (Int_t i = 0; i < nJets1; i++) {
-
-    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(jets1->At(i));
-
-    if (!jet1) {
-      AliError(Form("Could not receive jet %d", i));
-      continue;
-    }  
-
-    if (!AcceptJet(jet1, kTRUE, mc))
-      continue;
-
-    for (Int_t j = 0; j < nJets2; j++) {
-      
-      AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(jets2->At(j));
-      
-      if (!jet2) {
-	AliError(Form("Could not receive jet %d", j));
-	continue;
-      }  
-      
-      if (!AcceptJet(jet2, kTRUE, !mc))
-	continue;
-      
-      Double_t deta = jet2->Eta() - jet1->Eta();
-      Double_t dphi = jet2->Phi() - jet1->Phi();
-      Double_t d = TMath::Sqrt(deta * deta + dphi * dphi);
-
-      if (d < jet1->ClosestJetDistance()) {
-	jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
-	jet1->SetClosestJet(jet2, d);
-      }
-      else if (d < jet1->SecondClosestJetDistance()) {
-	jet1->SetSecondClosestJet(jet2, d);
-      }
-    }
-  }
-}
-
-//________________________________________________________________________
 void AliJetResponseMaker::ExecOnce()
 {
   // Execute once.
@@ -307,6 +260,107 @@ void AliJetResponseMaker::ExecOnce()
 
   AliAnalysisTaskEmcalJet::ExecOnce();
 }
+
+//________________________________________________________________________
+Bool_t AliJetResponseMaker::RetrieveEventObjects()
+{
+  // Retrieve event objects.
+
+  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
+    return kFALSE;
+  
+  fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+
+  if (!fPythiaHeader)
+    return kFALSE;
+
+  if (fDoWeighting)
+    fEventWeight = fPythiaHeader->EventWeight();
+  else
+    fEventWeight = 1;
+
+  const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+  const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+
+  Double_t pthard = fPythiaHeader->GetPtHard();
+  
+  for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
+    if (pthard >= ptHardLo[fPtHardBin] && pthard < ptHardHi[fPtHardBin])
+      break;
+  }
+  fPtHardBin--;
+
+  fNTrials = fPythiaHeader->Trials();
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliJetResponseMaker::Run()
+{
+  // Find the closest jets
+
+  fHistEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
+
+  if (TMath::Abs(fVertex[2]) > fVertexCut)
+    return kFALSE;
+  
+  fHistAcceptedEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
+  fHistNTrials->SetBinContent(fPtHardBin, fHistNTrials->GetBinContent(fPtHardBin) + fNTrials);
+
+  DoJetLoop(fJets, fMCJets, kFALSE);
+  DoJetLoop(fMCJets, fJets, kTRUE);
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc)
+{
+  // Do the jet loop.
+
+  Int_t nJets1 = jets1->GetEntriesFast();
+  Int_t nJets2 = jets2->GetEntriesFast();
+
+  for (Int_t i = 0; i < nJets1; i++) {
+
+    AliEmcalJet* jet1 = static_cast<AliEmcalJet*>(jets1->At(i));
+
+    if (!jet1) {
+      AliError(Form("Could not receive jet %d", i));
+      continue;
+    }  
+
+    if (!AcceptJet(jet1, kTRUE, !mc))
+      continue;
+
+    for (Int_t j = 0; j < nJets2; j++) {
+      
+      AliEmcalJet* jet2 = static_cast<AliEmcalJet*>(jets2->At(j));
+      
+      if (!jet2) {
+	AliError(Form("Could not receive jet %d", j));
+	continue;
+      }  
+      
+      if (!AcceptJet(jet2, kTRUE, mc))
+	continue;
+      
+      Double_t deta = jet2->Eta() - jet1->Eta();
+      Double_t dphi = jet2->Phi() - jet1->Phi();
+      Double_t d = TMath::Sqrt(deta * deta + dphi * dphi);
+
+      if (d < jet1->ClosestJetDistance()) {
+	jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
+	jet1->SetClosestJet(jet2, d);
+      }
+      else if (d < jet1->SecondClosestJetDistance()) {
+	jet1->SetSecondClosestJet(jet2, d);
+      }
+    }
+  }
+}
+
 
 //________________________________________________________________________
 Bool_t AliJetResponseMaker::FillHistograms()
@@ -414,56 +468,3 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
   return kTRUE;
 }
-
-//________________________________________________________________________
-Bool_t AliJetResponseMaker::RetrieveEventObjects()
-{
-  // Retrieve event objects.
-
-  if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
-    return kFALSE;
-  
-  fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-
-  if (!fPythiaHeader)
-    return kFALSE;
-
-  if (fDoWeighting)
-    fEventWeight = fPythiaHeader->EventWeight();
-  else
-    fEventWeight = 1;
-
-  const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-  const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
-
-  Double_t pthard = fPythiaHeader->GetPtHard();
-  
-  for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
-    if (ptHardLo[fPtHardBin] < pthard && ptHardHi[fPtHardBin] > pthard)
-      break;
-  }
-
-  fNTrials = fPythiaHeader->Trials();
-
-  return kTRUE;
-}
-
-//________________________________________________________________________
-Bool_t AliJetResponseMaker::Run()
-{
-  // Find the closest jets
-
-  fHistEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
-
-  if (TMath::Abs(fVertex[2]) > fVertexCut)
-    return kFALSE;
-  
-  fHistAcceptedEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
-  fHistNTrials->SetBinContent(fPtHardBin, fHistNTrials->GetBinContent(fPtHardBin) + fNTrials);
-
-  DoJetLoop(fJets, fMCJets, kFALSE);
-  DoJetLoop(fMCJets, fJets, kTRUE);
-
-  return kTRUE;
-}
-
