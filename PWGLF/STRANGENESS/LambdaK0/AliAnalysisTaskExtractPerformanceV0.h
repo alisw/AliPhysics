@@ -148,6 +148,10 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH3F      *f3dHistPrimRawPtVsYVsMultAntiLambda; //! AntiLambda
    TH3F      *f3dHistPrimRawPtVsYVsMultK0Short;    //! K0Short
 
+   TH3F      *f3dHistPrimCloseToPVPtVsYVsMultLambda;     //! Lambda
+   TH3F      *f3dHistPrimCloseToPVPtVsYVsMultAntiLambda; //! AntiLambda
+   TH3F      *f3dHistPrimCloseToPVPtVsYVsMultK0Short;    //! K0Short
+
 //---> Filled vs Decay Length
 
    TH3F      *f3dHistPrimRawPtVsYVsDecayLengthLambda;     //! Lambda
