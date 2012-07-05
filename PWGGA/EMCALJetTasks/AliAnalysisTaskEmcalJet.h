@@ -33,7 +33,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
 
  
  protected:
-  Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)   const;
+  virtual Bool_t              AcceptJet(AliEmcalJet* jet, Bool_t bias = kTRUE, Bool_t upCut = kTRUE)   const;
   Bool_t                      AcceptBiasJet(AliEmcalJet* jet)                                          const;
   void                        ExecOnce()                                                                    ;
   AliRhoParameter            *GetRhoFromEvent(const char *name);

@@ -225,6 +225,17 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
+Bool_t AliJetResponseMaker::AcceptJet(AliEmcalJet *jet, Bool_t /*bias*/, Bool_t /*upCut*/) const
+{   
+  // Return true if jet is accepted.
+
+  if (jet->Pt() <= fJetPtCut)
+    return kFALSE;
+  if (jet->Area() <= fJetAreaCut)
+    return kFALSE;
+}
+
+//________________________________________________________________________
 void AliJetResponseMaker::ExecOnce()
 {
   // Execute once.
@@ -288,7 +299,6 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
     if (pthard >= ptHardLo[fPtHardBin] && pthard < ptHardHi[fPtHardBin])
       break;
   }
-  fPtHardBin--;
 
   fNTrials = fPythiaHeader->Trials();
 
@@ -331,8 +341,21 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
       continue;
     }  
 
-    if (!AcceptJet(jet1, kTRUE, !mc))
+    if (!AcceptJet(jet1))
       continue;
+
+    if (!mc) {
+      if (!AcceptBiasJet(jet1))
+	continue;
+      if (jet1->MaxTrackPt() > fMaxTrackPt || jet1->MaxClusterPt() > fMaxClusterPt)
+	continue;
+      if (jet1->Eta() < fMinEta || jet1->Eta() > fMaxEta || jet1->Phi() < fMinPhi || jet1->Phi() > fMaxPhi)
+	continue;
+    }
+    else {
+      if (jet1->Eta() < fMinEta - fJetRadius || jet1->Eta() > fMaxEta + fJetRadius || jet1->Phi() < fMinPhi - fJetRadius || jet1->Phi() > fMaxPhi + fJetRadius)
+	continue;
+    }
 
     for (Int_t j = 0; j < nJets2; j++) {
       
@@ -343,8 +366,21 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
 	continue;
       }  
       
-      if (!AcceptJet(jet2, kTRUE, mc))
+      if (!AcceptJet(jet2))
 	continue;
+
+      if (mc) {
+	if (!AcceptBiasJet(jet2))
+	  continue;
+	if (jet2->MaxTrackPt() > fMaxTrackPt || jet2->MaxClusterPt() > fMaxClusterPt)
+	  continue;
+	if (jet2->Eta() < fMinEta || jet2->Eta() > fMaxEta || jet2->Phi() < fMinPhi || jet2->Phi() > fMaxPhi)
+	  continue;
+      }
+      else {
+	if (jet2->Eta() < fMinEta - fJetRadius || jet2->Eta() > fMaxEta + fJetRadius || jet2->Phi() < fMinPhi - fJetRadius || jet2->Phi() > fMaxPhi + fJetRadius)
+	  continue;
+      }
       
       Double_t deta = jet2->Eta() - jet1->Eta();
       Double_t dphi = jet2->Phi() - jet1->Phi();
@@ -378,7 +414,10 @@ Bool_t AliJetResponseMaker::FillHistograms()
       continue;
     }  
 
-    if (!AcceptJet(jet, kTRUE, kFALSE))
+    if (!AcceptJet(jet))
+      continue;
+
+    if (jet->Eta() < fMinEta - fJetRadius || jet->Eta() > fMaxEta + fJetRadius || jet->Phi() < fMinPhi - fJetRadius || jet->Phi() > fMaxPhi + fJetRadius)
       continue;
 
     if (jet->Pt() > fMaxBinPt)
@@ -412,7 +451,6 @@ Bool_t AliJetResponseMaker::FillHistograms()
     }
 
     fHistMCJetsPt->Fill(jet->Pt(), fEventWeight);
-
     fHistMCJetPhiEta->Fill(jet->Eta(), jet->Phi(), fEventWeight);
 
     if (fAnaType == kEMCAL)
@@ -423,6 +461,14 @@ Bool_t AliJetResponseMaker::FillHistograms()
       if (track)
 	fHistMCJetsZvsPt->Fill(track->Pt() / jet->Pt(), jet->Pt(), fEventWeight);
     }
+
+    if (!AcceptBiasJet(jet))
+      continue;
+    if (jet->Eta() < fMinEta || jet->Eta() > fMaxEta || jet->Phi() < fMinPhi || jet->Phi() > fMaxPhi)
+      continue;
+    
+    fHistMCJetsPtFiducial->Fill(jet->Pt(), fEventWeight);
+    fHistMCJetPhiEtaFiducial->Fill(jet->Eta(), jet->Phi(), fEventWeight);
   }
 
   const Int_t nJets = fJets->GetEntriesFast();

@@ -9,7 +9,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   const char *nmctracks          = "MCParticles",
   Double_t    jetradius          = 0.4,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.2,
+  Double_t    jetareacut         = 0.8,
   Double_t    ptcut              = 0.15,
   Double_t    jetBiasTrack       = 10,
   Double_t    jetBiasClus        = 10,
@@ -48,7 +48,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetPtCut(ptcut);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
-  jetTask->SetJetAreaCut(jetareacut);
+  jetTask->SetPercAreaCut(jetareacut);
   jetTask->SetPtBiasJetTrack(jetBiasTrack);
   jetTask->SetPtBiasJetClus(jetBiasClus);
   jetTask->SetMaxDistance(maxDistance);
