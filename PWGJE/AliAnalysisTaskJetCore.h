@@ -81,7 +81,9 @@ public:
    virtual void     SetFlagEtaBkg(Int_t yesno){fFlagEtaBkg=yesno;}
    virtual void     SetFlagJetHadron(Int_t yesno){fFlagJetHadron=yesno;}
    virtual void     SetFlagRandom(Int_t yesno){fFlagRandom=yesno;}
-   virtual void     SetFlagOnlyRecoil(Int_t yesno){fFlagRandom=yesno;}
+   virtual void     SetFlagOnlyRecoil(Int_t yesno){fFlagOnlyRecoil=yesno;}
+   virtual void     SetNRPBins(Int_t bins){fNRPBins=bins;}
+   virtual void     SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
    virtual void     SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
    virtual void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
@@ -91,7 +93,7 @@ public:
    virtual void     SetFillEvent(Bool_t b) { fbEvent = b; }
    virtual void     SetKeepJets(Bool_t b = kTRUE) { fKeepJets = b; }
    virtual void     SetNonStdFile(char* c){fNonStdFile = c;} 
-
+    enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
 
 private:
    // ESD/AOD events
@@ -99,7 +101,7 @@ private:
    AliAODEvent *fAODIn;    //! AOD event for AOD input tracks
     AliAODEvent *fAODOut;    //! AOD event 
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
-   Int_t   GetListOfTracks(TList *list);
+    Int_t   GetListOfTracks(TList *list);
    Int_t   GetHardestTrackBackToJet(AliAODJet *jet);
    Int_t   GetListOfTracksCloseToJet(TList *list,AliAODJet *jet);
    // jets to compare
@@ -131,6 +133,7 @@ private:
    Int_t   fFlagJetHadron;
    Int_t   fFlagRandom;
    Int_t   fFlagOnlyRecoil;
+   Int_t   fTrackTypeRec;
    Int_t   fRPAngle;
    Int_t   fNRPBins;
    Float_t fJetEtaMin;        // lower bound on eta for found jets
@@ -168,7 +171,6 @@ private:
    TH2F      *fh2JetCoreMethod2C60;          //Energy fraction in the core C60 method 2
      TH3F*      fh3JetTrackC3060;           //C3060 pt2
      TH3F*      fh3JetTrackC20;             //C10 pt2
-     TH3F*      fh3JetTrackC4080;           //C4080
      TH2F*      fh2AngStructpt1C10;         //Average 
      TH2F*      fh2AngStructpt2C10;         //C10 pt2
      TH2F*      fh2AngStructpt3C10;         //C10 pt3
@@ -190,8 +192,9 @@ private:
      TH2F*      fh2Ntriggers2;             //centrality bias of triggers 
      TH3F*      fh3JetDensity;             //jet density
      TH3F*      fh3JetDensityA4;           //jet density
-     TH2F*      fh2RPJets;                  //reaction plane from tracks
-     TH3F*      fh3spectriggeredC4080;         //triggered spectra
+     TH2F*      fh2RPJets;                  //reaction plane Jets
+     TH2F*      fh2RPT;                     //reaction plane TT 
+     TH3F*      fh3spectriggeredC20RP;       //spec wrt RP
      TH3F*      fh3spectriggeredC20;           //triggered spectra
      TH3F*      fh3spectriggeredC3060;         //triggered spectra
 

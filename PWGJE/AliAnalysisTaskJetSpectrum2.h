@@ -64,6 +64,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetNMatchJets(Short_t f){fNMatchJets = f;}
     virtual void SetMinJetPt(Float_t f){fMinJetPt = f;}
     virtual void SetNRPBins(Short_t i){fNRPBins = i;} 
+    virtual void SetNMultBins(Short_t i) {fNBinsMult=i;}
+    virtual void SetNPtLeadingBins(Short_t i) {fNBinsLeadingTrackPt=i;}
     virtual void SetFlagJetType(Int_t iType,Int_t iF){fFlagJetType[iType] = iF;}
     virtual void SetMinTrackPt(Float_t f){fMinTrackPt = f;}
     virtual void SetDeltaPhiWindow(Float_t f){fDeltaPhiWindow = f;}
@@ -178,6 +180,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Int_t         fNTrigger;              // number of triggers for selection
     UInt_t        *fTriggerBit;            //[fNTrigger] trigger bits 
     Int_t         fNAcceptance;            // number of triggers for selection
+    Short_t       fNBinsLeadingTrackPt;   // number of bins leading track pt in sparse. Two options: 1 or 10
+    Short_t       fNBinsMult;             // number of bins in multiplicity in sparse
     Int_t         fAnalysisType;          // Analysis type 
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
