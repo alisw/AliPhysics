@@ -7,7 +7,9 @@ class TClonesArray;
 class AliEMCALGeometry;
 class AliVCluster;
 class AliPicoTrack;
-class TF1;
+
+#include <TH1F.h>
+#include <TF1.h>
 
 #include "AliAnalysisTaskSE.h"
 
@@ -28,7 +30,9 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   SetNTracks(Int_t n)                   { fNTracks      = n;    }
   void                   SetPhiRange(Float_t min, Float_t max) { fPhiMin       = min;  fPhiMax = max; }
   void                   SetPtRange(Float_t min, Float_t max)  { fPtMin        = min;  fPtMax  = max;  }
-  void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = f;    }
+  void                   SetPtSpectrum(TH1 *f)                 { fPtSpectrum   = f;    }
+  void                   SetPtSpectrum(TF1 *f)                 { fPtSpectrum   = new TH1F("ptSpectrum","ptSpectrum",250,f->GetXmin(),f->GetXmax()); 
+                                                                 fPtSpectrum->Add(f); }
   void                   SetSuffix(const char *s)              { fSuffix       = s;    }
   void                   SetTracksName(const char *n)          { fTracksName   = n;    }
 
@@ -61,7 +65,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Int_t                  fNClusters;              // how many clusters are being processed
   Int_t                  fNTracks;                // how many tracks are being processed
   Bool_t                 fMarkMC;                 // whether or not mark new tracks/cluster as MC
-  TF1                   *fPtSpectrum;             // pt spectrum parametrization to extract random pt values
+  TH1                   *fPtSpectrum;             // pt spectrum parametrization to extract random pt values
   Bool_t                 fIsInit;                 //=true if initialized
   AliEMCALGeometry      *fGeom;                   //!pointer to EMCal geometry
   TClonesArray          *fClusters;               //!cluster collection
@@ -73,6 +77,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented
 
-  ClassDef(AliJetModelBaseTask, 3) // Jet modelling task
+  ClassDef(AliJetModelBaseTask, 4) // Jet modelling task
 };
 #endif
