@@ -25,6 +25,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetVertexCut(Double_t v)           { fVertexCut     = v; }
 
  protected:
+  Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t /*bias*/ = kFALSE, Bool_t /*upCut*/ = kFALSE)   const;
   void                        ExecOnce();
   void                        DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc);
   Bool_t                      FillHistograms();
@@ -50,6 +51,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   // Particle level jets
   TH2F                       *fHistMCJetPhiEta;           //!phi-eta distribution of jets
   TH1F                       *fHistMCJetsPt;              //!inclusive jet pt spectrum
+  TH2F                       *fHistMCJetPhiEtaFiducial;   //!phi-eta distribution of jets in fiducial acceptance (plus lead hadron bias)
+  TH1F                       *fHistMCJetsPtFiducial;      //!inclusive jet pt spectrum in fiducial acceptance (plus lead hadron bias)
   TH2F                       *fHistMCJetsNEFvsPt;         //!jet neutral energy fraction vs. jet pt
   TH2F                       *fHistMCJetsZvsPt;           //!constituent Pt over Jet Pt ratio vs. jet pt
   // Detector level jets
