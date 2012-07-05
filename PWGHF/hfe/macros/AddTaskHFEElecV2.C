@@ -26,16 +26,12 @@ AliAnalysisTask *AddTaskHFEElecV2()
   
   //Event plane task
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kEMCEGA);
 
   eventplaneTask->SetTrackType("TPC");
   eventplaneTask->SetUsePtWeight();
   eventplaneTask->SetUsePhiWeight();
   eventplaneTask->SetSaveTrackContribution();
-  
-  AliESDtrackCuts* epTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "Standard");
-  epTrackCuts->SetPtRange(0.1, 4);
-  eventplaneTask->SetPersonalESDtrackCuts(epTrackCuts);
 
   mgr->AddTask(eventplaneTask);
 
