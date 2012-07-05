@@ -41,14 +41,6 @@ AliAnalysisTaskSOH* AddTaskSOH()
   // Add task(s)
   mgr->AddTask(taskSOH); 
 
-  // ESD handler
-  AliESDInputHandler* esdH = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdH);
-  
-  // MC truth handler
-  AliMCEventHandler* mcEvtHdl = new AliMCEventHandler();
-  mcEvtHdl->SetReadTR(kTRUE);
-  mgr->SetMCtruthEventHandler(mcEvtHdl); 
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
