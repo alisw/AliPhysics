@@ -100,6 +100,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fNTrigger(0),
   fTriggerBit(0x0),
   fNAcceptance(0),
+  fNBinsLeadingTrackPt(10),
+  fNBinsMult(20),
   fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -205,6 +207,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fNTrigger(0),
   fTriggerBit(0x0),
   fNAcceptance(0),
+  fNBinsLeadingTrackPt(10),
+  fNBinsMult(20),
   fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -510,7 +514,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     const Int_t nBinsSparse1 = 9;
     const Int_t nBinsLeadingTrackPt = 10;
     const Int_t nBinsArea = 10;
-    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  20,    fNRPBins, nBinsArea,fNTrigger,nBinsLeadingTrackPt,fNAcceptance+1};
+    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  fNBinsMult,    fNRPBins, nBinsArea,fNTrigger,fNBinsLeadingTrackPt,fNAcceptance+1};
     if(cJetBranch.Contains("RandomCone")){
       nBins1[1] = 600;
       nBins1[5] = 1;
@@ -523,7 +527,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
     fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area;trigger;leading track p_{T};acceptance bin",nBinsSparse1,nBins1,xmin1,xmax1);
     fhnJetPt[ij]->SetBinEdges(5,binArrayArea);
-    fhnJetPt[ij]->SetBinEdges(7,binArrayLeadingTrackPt);
+    if(fNBinsLeadingTrackPt>1) fhnJetPt[ij]->SetBinEdges(7,binArrayLeadingTrackPt);
     fHistList->Add(fhnJetPt[ij]);
 
 
@@ -552,9 +556,10 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
     // Bins:track number  pTtrack, cent, mult, RP.   total bins = 224 k
     const Int_t nBinsSparse3 = 6;
-    const Int_t nBins3[nBinsSparse3] = {       2,    100,     10,   1,    fNRPBins,fNTrigger};
+    const Int_t nRPBinsSparse3 = 3;
+    const Int_t nBins3[nBinsSparse3] = {       2,    100,     10,   1,    nRPBinsSparse3,fNTrigger};
     const Double_t xmin3[nBinsSparse3]  = { -0.5,      0,   0,      0,        -0.5,-0.5};
-    const Double_t xmax3[nBinsSparse3]  = { 1.5,     200, 100,   4000,fNRPBins-0.5,fNTrigger-0.5};  
+    const Double_t xmax3[nBinsSparse3]  = { 1.5,     200, 100,   4000,nRPBinsSparse3-0.5,fNTrigger-0.5};  
     
       // change the binning ot the pT axis:
     Double_t *xPt3 = new Double_t[nBins3[1]+1];
