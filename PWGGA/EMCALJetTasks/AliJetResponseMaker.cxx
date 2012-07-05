@@ -168,6 +168,16 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistMCJetsPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
   fHistMCJetsPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistMCJetsPt);
+
+  fHistMCJetPhiEtaFiducial = new TH2F("fHistMCJetPhiEtaFiducial", "fHistMCJetPhiEtaFiducial", 20, -2, 2, 32, 0, 6.4);
+  fHistMCJetPhiEtaFiducial->GetXaxis()->SetTitle("#eta");
+  fHistMCJetPhiEtaFiducial->GetYaxis()->SetTitle("#phi");
+  fOutput->Add(fHistMCJetPhiEtaFiducial);
+  
+  fHistMCJetsPtFiducial = new TH1F("fHistMCJetsPtFiducial", "fHistMCJetsPtFiducial", fNbins, fMinBinPt, fMaxBinPt);
+  fHistMCJetsPtFiducial->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistMCJetsPtFiducial->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistMCJetsPtFiducial);
   
   fHistMCJetsZvsPt = new TH2F("fHistMCJetsZvsPt", "fHistMCJetsZvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
   fHistMCJetsZvsPt->GetXaxis()->SetTitle("Z");
