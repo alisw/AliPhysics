@@ -38,7 +38,8 @@ AliDielectronPair::AliDielectronPair() :
   fD1(),
   fD2(),
   fRefD1(),
-  fRefD2()
+  fRefD2(),
+  fKFUsage(kTRUE)
 {
   //
   // Default Constructor
@@ -56,7 +57,8 @@ AliDielectronPair::AliDielectronPair(AliVTrack * const particle1, Int_t pid1,
   fD1(),
   fD2(),
   fRefD1(),
-  fRefD2()
+  fRefD2(),
+  fKFUsage(kTRUE)
 {
   //
   // Constructor with tracks
@@ -76,7 +78,8 @@ AliDielectronPair::AliDielectronPair(const AliKFParticle * const particle1,
   fD1(),
   fD2(),
   fRefD1(),
-  fRefD2()
+  fRefD2(),
+  fKFUsage(kTRUE)
 {
   //
   // Constructor with tracks

@@ -103,6 +103,7 @@ AliDielectron::AliDielectron() :
   fPdgLeg2(11),
   fSignalsMC(0x0),
   fNoPairing(kFALSE),
+  fUseKF(kTRUE),
   fHistos(0x0),
   fPairCandidates(new TObjArray(11)),
   fCfManagerPair(0x0),
@@ -142,6 +143,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPdgLeg2(11),
   fSignalsMC(0x0),
   fNoPairing(kFALSE),
+  fUseKF(kTRUE),
   fHistos(0x0),
   fPairCandidates(new TObjArray(11)),
   fCfManagerPair(0x0),
@@ -693,6 +695,7 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
   Int_t ntrack1=arrTracks1.GetEntriesFast();
   Int_t ntrack2=arrTracks2.GetEntriesFast();
   AliDielectronPair candidate;
+  candidate.SetKFUsage(fUseKF);
   
   UInt_t selectedMask=(1<<fEventPlanePOIPreFilter.GetCuts()->GetEntries())-1;
   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
@@ -784,7 +787,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
   Int_t ntrack1=arrTracks1.GetEntriesFast();
   Int_t ntrack2=arrTracks2.GetEntriesFast();
   AliDielectronPair candidate;
-
+  candidate.SetKFUsage(fUseKF);
   // flag arrays for track removal
   Bool_t *bTracks1 = new Bool_t[ntrack1];
   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1) bTracks1[itrack1]=kFALSE;
@@ -924,6 +927,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
   Int_t ntrack2=arrTracks2.GetEntriesFast();
 
   AliDielectronPair *candidate=new AliDielectronPair;
+  candidate->SetKFUsage(fUseKF);
 
   UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
   
@@ -952,6 +956,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       PairArray(pairIndex)->Add(candidate);
       //get a new candidate
       candidate=new AliDielectronPair;
+	  candidate->SetKFUsage(fUseKF);
     }
   }
   //delete the surplus candidate
@@ -968,6 +973,7 @@ void AliDielectron::FillPairArrayTR()
   
   while ( fTrackRotator->NextCombination() ){
     AliDielectronPair candidate;
+    candidate.SetKFUsage(fUseKF);
     candidate.SetTracks(&fTrackRotator->GetKFTrackP(), &fTrackRotator->GetKFTrackN(),
                         fTrackRotator->GetVTrackP(),fTrackRotator->GetVTrackN());
     candidate.SetType(kEv1PMRot);

@@ -115,7 +115,7 @@ public:
     kTrackLength,            // Track length
 
     kPdgCode,                // PDG code
-    kPdgCodeMother,          // PDG code of the mother
+	kPdgCodeMother, 
     kPdgCodeGrandMother,     // PDG code of the grandmother
     kNumberOfDaughters,      // number of daughters
     kHaveSameMother,         // check that particles have the same mother (MC)
@@ -1034,6 +1034,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kPdgCodeMother]=-1;
   values[AliDielectronVarManager::kPdgCodeGrandMother]=-1;
   
+  
+  Double_t errPseudoProperTime2 = -1;
   // Fill common AliVParticle interface information
   FillVarVParticle(pair, values);
 
@@ -1069,13 +1071,117 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kMerr]         = kfPair.GetErrMass()>1e-30&&kfPair.GetMass()>1e-30?kfPair.GetErrMass()/kfPair.GetMass():1000000;
   values[AliDielectronVarManager::kPairType]     = pair->GetType();
 
-  Double_t errPseudoProperTime2 = -1;
   values[AliDielectronVarManager::kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
   values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? kfPair.GetPseudoProperDecayTime(*(fgEvent->GetPrimaryVertex()), TDatabasePDG::Instance()->GetParticle(443)->Mass(), &errPseudoProperTime2 ) : -1e10;
   // values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetPseudoProperTime(fgEvent->GetPrimaryVertex()): -1e10;
   values[AliDielectronVarManager::kPseudoProperTimeErr] = (errPseudoProperTime2 > 0) ? TMath::Sqrt(errPseudoProperTime2) : -1e10;
 
-  // Flow quantities
+ 
+  if (!(pair->GetKFUsage())) {
+	//if KF Pairing is not enabled, overwrite values that can be easily derived from legs
+	//use the INDIVIDUAL KF particles as source, which should be a copy of the corresponding properties
+	//the ESDtrack, the reference to the ESDtrack is not (always) accessible in Mixing, while KF
+	//particles are copied in the Pair-Object
+	static const Double_t mElectron = AliPID::ParticleMass(AliPID::kElectron); // MeV
+
+	const AliKFParticle& fD1 = pair->GetKFFirstDaughter();
+	const AliKFParticle& fD2 = pair->GetKFSecondDaughter();
+
+	//Define local buffer variables for leg properties
+	Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+	Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+	Double_t e1 =-9999.,e2 =-9999.;
+	Double_t feta1=-9999.,fphi1=-9999.;
+	Double_t feta2=-9999.,fphi2=-9999.;
+
+	px1 = fD1.GetPx(); 
+	py1 = fD1.GetPy(); 
+	pz1 = fD1.GetPz(); 
+	feta1 = fD1.GetEta();
+	fphi1 = fD1.GetPhi();
+
+	px2 = fD2.GetPx(); 
+	py2 = fD2.GetPy(); 
+	pz2 = fD2.GetPz(); 
+	feta2 = fD2.GetEta();
+	fphi2 = fD2.GetPhi();
+
+	//Calculate Energy per particle by hand
+	e1 = TMath::Sqrt(mElectron*mElectron+px1*px1+py1*py1+pz1*pz1);
+	e2 = TMath::Sqrt(mElectron*mElectron+px2*px2+py2*py2+pz2*pz2);
+
+	//Now Create TLorentzVector:
+	TLorentzVector lv1,lv2;
+	lv1.SetPxPyPzE(px1,py1,pz1,e1);
+	lv2.SetPxPyPzE(px2,py2,pz2,e2);
+
+	values[AliDielectronVarManager::kPx]        = (lv1+lv2).Px();
+	values[AliDielectronVarManager::kPy]        = (lv1+lv2).Py();
+	values[AliDielectronVarManager::kPz]        = (lv1+lv2).Pz();
+
+	values[AliDielectronVarManager::kPt]        =  (lv1+lv2).Pt();
+
+	values[AliDielectronVarManager::kP]         =  (lv1+lv2).P();
+
+	//Not overwritten, could take event vertex in next iteration
+	values[AliDielectronVarManager::kXv]        = (lv1+lv2).X(); 
+	values[AliDielectronVarManager::kYv]        = (lv1+lv2).Y();
+	values[AliDielectronVarManager::kZv]        = (lv1+lv2).Z();
+
+	values[AliDielectronVarManager::kE]         = (lv1+lv2).E();
+
+
+	values[AliDielectronVarManager::kM]         = (lv1+lv2).M();
+
+	values[AliDielectronVarManager::kOpeningAngle] =  lv1.Angle(lv2.Vect());
+
+	values[AliDielectronVarManager::kOneOverPt] = (values[AliDielectronVarManager::kPt]>0. ? 1./values[AliDielectronVarManager::kPt] : -9999.);
+	values[AliDielectronVarManager::kPhi]       = (lv1+lv2).Phi();
+	values[AliDielectronVarManager::kEta]       = (lv1+lv2).Eta();
+
+	values[AliDielectronVarManager::kY]       = (lv1+lv2).Rapidity();
+
+	for (Int_t i=AliDielectronVarManager::kPairMax; i<AliDielectronVarManager::kNMaxValues; ++i)
+	  values[i]=fgData[i];
+
+	// Fill AliDielectronPair specific information
+	values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
+	values[AliDielectronVarManager::kDeltaPhi]     = lv1.DeltaPhi(lv2);
+	values[AliDielectronVarManager::kPairType]     = pair->GetType();
+
+	/*
+	//Also not overwritten, still coming from KF particle
+	//where needed to be replaced by independent determination
+	values[AliDielectronVarManager::kCharge]    = 0.;
+	values[AliDielectronVarManager::kPdgCode]   = 0.;
+	values[AliDielectronVarManager::kChi2NDF]      = 0.;
+	values[AliDielectronVarManager::kDecayLength]  = 0.;
+	values[AliDielectronVarManager::kR]            = 0.;
+	values[AliDielectronVarManager::kCosPointingAngle] = 0.;
+	values[AliDielectronVarManager::kThetaHE]      = 0.;
+	values[AliDielectronVarManager::kPhiHE]        = 0.;
+	values[AliDielectronVarManager::kThetaSqHE]    = 0.;
+	values[AliDielectronVarManager::kCos2PhiHE]    = 0.;
+	values[AliDielectronVarManager::kCosTilPhiHE]  = 0.;
+	values[AliDielectronVarManager::kThetaCS]      = 0.;
+	values[AliDielectronVarManager::kPhiCS]        = 0.;
+	values[AliDielectronVarManager::kThetaSqCS]    = 0.;
+	values[AliDielectronVarManager::kCos2PhiCS]    = 0.;
+	values[AliDielectronVarManager::kCosTilPhiCS]  = 0.;
+	values[AliDielectronVarManager::kLegDist]      = 0.;
+	values[AliDielectronVarManager::kLegDistXY]    = 0.;
+	values[AliDielectronVarManager::kMerr]         = 0.;
+	values[AliDielectronVarManager::kPseudoProperTime] = 0.;
+	values[AliDielectronVarManager::kPseudoProperTimeErr] = 0.;
+	//Fill in Taku's PhiV?
+	values[AliDielectronVarManager::kPsiPair]      = 0.;
+
+	 */
+
+
+  }
+  //common, regardless of calculation method 
+   // Flow quantities
   Double_t delta=0.0;
   // v2 with respect to VZERO-A event plane
   delta = values[AliDielectronVarManager::kPhi] - fgData[AliDielectronVarManager::kV0ArpH2];
