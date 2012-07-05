@@ -79,6 +79,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetMaxTrackPtInJet(Float_t x){fMaxTrackPtInJet = x;}
     virtual void SetJetOutputMinPt(Float_t x){fJetOutputMinPt = x;}
     virtual void SetBackgroundCalc(Bool_t b){fUseBackgroundCalc = b;} 
+    virtual void SetStoreRhoLeadingTrackCorr(Bool_t b) {fStoreRhoLeadingTrackCorr=b;}
 
     //Setters for detector level effects
     virtual void SetUseTrResolutionFromOADB(Bool_t b=kTRUE, TString path="$ALICE_ROOT/OADB/PWGJE/Resolution/PtResol_LHCh_Cent0-10_v1.root") {fUseTrPtResolutionFromOADB = b; fPathTrPtResolution=path;}
@@ -168,6 +169,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Float_t       fVtxR2Cut;              // R vtx cut (squared) 
     Float_t       fCentCutUp;             // upper limit on centrality
     Float_t       fCentCutLo;             // lower limit on centrality
+
+    Bool_t       fStoreRhoLeadingTrackCorr; //store histos with rho correlation to leading track in event
+
     // output configurartion
     TString       fNonStdBranch;      // the name of the non-std branch name, if empty no branch is filled
     TString       fBackgroundBranch;  // name of the branch used for background subtraction
@@ -280,10 +284,30 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH2F*         fh2TracksLeadingJetPhiPtC[kMaxCent]; //! track correlation with leading Jet
     TH2F*         fh2TracksLeadingJetPhiPtWC[kMaxCent]; //! track correlation with leading Jet
 
-    TH3F*         fh3CentvsRhoLeadingTrackCorr;     //! centrality vs background density vs phi correlation leading track
-    TH3F*         fh3CentvsSigmaLeadingTrackCorr;   //! centrality vs background sigma vs phi correlation leading track 
-    TH3F*         fh3MultvsRhoLeadingTrackCorr;     //! event multiplicity vs background density vs phi correlation leading track 
-    TH3F*         fh3MultvsSigmaLeadingTrackCorr;   //! event multiplicity vs background sigma vs phi correlation leading track 
+    TH2F*         fh2CentvsRho;       //! centrality vs background density full event
+    TH2F*         fh2CentvsSigma;     //! centrality vs sigma full event
+    TH2F*         fh2MultvsRho;       //! multiplicity vs background density full event
+    TH2F*         fh2MultvsSigma;     //! multiplicity vs sigma full event
+
+    TH3F*         fh3CentvsRhoLeadingTrackPtQ1;     //! centrality vs background density vs pt leading track near side
+    TH3F*         fh3CentvsRhoLeadingTrackPtQ2;     //! centrality vs background density vs pt leading track perpendicular (+0.5*\pi)
+    TH3F*         fh3CentvsRhoLeadingTrackPtQ3;     //! centrality vs background density vs pt leading track away side
+    TH3F*         fh3CentvsRhoLeadingTrackPtQ4;     //! centrality vs background density vs pt leading track perpendicular (-0.5*\pi)
+
+    TH3F*         fh3CentvsSigmaLeadingTrackPtQ1;     //! centrality vs sigma vs pt leading track near side
+    TH3F*         fh3CentvsSigmaLeadingTrackPtQ2;     //! centrality vs sigma vs pt leading track perpendicular (+0.5*\pi)
+    TH3F*         fh3CentvsSigmaLeadingTrackPtQ3;     //! centrality vs sigma vs pt leading track away side
+    TH3F*         fh3CentvsSigmaLeadingTrackPtQ4;     //! centrality vs sigma vs pt leading track perpendicular (-0.5*\pi)
+
+    TH3F*         fh3MultvsRhoLeadingTrackPtQ1;    //! multiplicity vs background density vs pt leading track near side
+    TH3F*         fh3MultvsRhoLeadingTrackPtQ2;    //! multiplicity vs background density vs pt leading track perpendicular (+0.5*\pi)
+    TH3F*         fh3MultvsRhoLeadingTrackPtQ3;    //! multiplicity vs background density vs pt leading track away side
+    TH3F*         fh3MultvsRhoLeadingTrackPtQ4;    //! multiplicity vs background density vs pt leading track perpendicular (-0.5*\pi)
+
+    TH3F*         fh3MultvsSigmaLeadingTrackPtQ1;     //! multiplicity vs sigma vs pt leading track near side
+    TH3F*         fh3MultvsSigmaLeadingTrackPtQ2;     //! multiplicity vs sigma vs pt leading track perpendicular (+0.5*\pi)
+    TH3F*         fh3MultvsSigmaLeadingTrackPtQ3;     //! multiplicity vs sigma vs pt leading track away side
+    TH3F*         fh3MultvsSigmaLeadingTrackPtQ4;     //! multiplicity vs sigma vs pt leading track perpendicular (-0.5*\pi)
 
     //Histos for detector level effects from toy model
     TH2F *fh2PtGenPtSmeared;     //! Control histo smeared momentum
