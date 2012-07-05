@@ -23,6 +23,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetMaxDistance(Double_t d)         { fMaxDistance   = d; }
   void                        SetDoWeighting(Bool_t d = kTRUE)   { fDoWeighting   = d; }
   void                        SetVertexCut(Double_t v)           { fVertexCut     = v; }
+  void                        SetMCFiducial(Bool_t f = kTRUE)    { fMCFiducial    = f; }
 
  protected:
   Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t /*bias*/ = kFALSE, Bool_t /*upCut*/ = kFALSE)   const;
@@ -37,6 +38,11 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Double_t                    fMaxDistance;               // maximum distance between matched particle and detector level jets
   Bool_t                      fDoWeighting;               // = true, weight using trials and given x section
   Double_t                    fVertexCut;                 // z vertex cut
+  Bool_t                      fMCFiducial;                // = true MC jets in fiducial acceptance
+  Double_t                    fMCminEta;                  // MC jets minimum eta
+  Double_t                    fMCmaxEta;                  // MC jets maximum eta
+  Double_t                    fMCminPhi;                  // MC jets minimum phi
+  Double_t                    fMCmaxPhi;                  // MC jets maximum phi
 
   AliGenPythiaEventHeader    *fPythiaHeader;              //!event Pythia header
   Double_t                    fEventWeight;               //!event weight
