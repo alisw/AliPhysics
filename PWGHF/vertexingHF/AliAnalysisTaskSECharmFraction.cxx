@@ -5638,13 +5638,16 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   
     signallevel=-1;
     
+   
 
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);
-   //  Bool_t unsetvtx=kFALSE;
-//     if(!d->GetOwnPrimaryVtx()) {
-//       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-//       unsetvtx=kTRUE;
-//     }
+   
+ 
+    //  Bool_t unsetvtx=kFALSE;
+    //     if(!d->GetOwnPrimaryVtx()) {
+    //       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+    //       unsetvtx=kTRUE;
+    //     }
 
     //recalculate vertex w/o daughters
     AliAODVertex *origownvtx=0x0;
@@ -6505,6 +6508,11 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
     return aodDMC;    
   }
 
+  if(labMum<0){
+    signaltype=-1;
+    return aodDMC;    
+  }
+
   // get daughter AOD tracks
   AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
   AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
@@ -6514,9 +6522,14 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
   
     signaltype=-1;
     return aodDMC;
-   
+    
   }
-
+  if(trk0->GetLabel()<0||trk1->GetLabel()<0){
+    AliDebug(2,"Fake tracks? \n");
+    signaltype=-1;
+    return aodDMC;
+  }
+  
   b1=(AliAODMCParticle*)arrayMC->At(trk0->GetLabel());
   b2=(AliAODMCParticle*)arrayMC->At(trk1->GetLabel());
   mum1=(AliAODMCParticle*)arrayMC->At(labMum);  
@@ -6529,8 +6542,11 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
   }
 
   Bool_t isfromDstar=kFALSE;
-  grandmoth1=(AliAODMCParticle*)arrayMC->At(mum1->GetMother());
-  if(TMath::Abs(grandmoth1->GetPdgCode())==413||TMath::Abs(grandmoth1->GetPdgCode())==423)isfromDstar=kTRUE;// D0 COMING FROM A D*
+ 
+  if(mum1->GetMother()>=0){
+     grandmoth1=(AliAODMCParticle*)arrayMC->At(mum1->GetMother());
+    if(TMath::Abs(grandmoth1->GetPdgCode())==413||TMath::Abs(grandmoth1->GetPdgCode())==423)isfromDstar=kTRUE;// D0 COMING FROM A D*
+  }
   
   Int_t origin=CheckOrigin(arrayMC,mum1);
   if(origin==4){
