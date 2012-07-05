@@ -54,6 +54,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011Cent(Bool_t runRejection=kFALSE, B
   else {
 
       AliDielectron *lowmass1=ConfigLMEEPbPb2011(1,hasMC,enableCF);
+	  lowmass1->SetUseKF(kFALSE);
     task->AddDielectron(lowmass1);
     printf("add: %s\n",lowmass1->GetName());
 /*      AliDielectron *lowmass7=ConfigLMEEPbPb2011(7,hasMC,enableCF);

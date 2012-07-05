@@ -188,10 +188,10 @@ class LMEECutLib {
 	  //___________________________________________
 
 	  AliDielectronVarCuts *pTPC = new AliDielectronVarCuts("P>.4","P>.4");
-	  pTPC->AddCut(AliDielectronVarManager::kP,.4,5.);
+	  pTPC->AddCut(AliDielectronVarManager::kPt,.4,5.);
 	  
 	  AliDielectronVarCuts *pMin = new AliDielectronVarCuts("P>.2","P>.2");
-	  pMin->AddCut(AliDielectronVarManager::kP,.2,5.);
+	  pMin->AddCut(AliDielectronVarManager::kPt,.2,5.);
 
 	  switch (cutSet) {
 		case kPbPb2011TPCandTOF :
