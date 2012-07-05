@@ -135,6 +135,10 @@ echo "*! Exit code of runCalibTrain.C(\"$runNum\"): $exitcode"
 
 mv syswatch.log syswatch_calib.log
 
-echo ">>>>>>> Extracting system information..."
-echo aliroot -b -q $ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeSyswatchCPass0.C\(\"AliESDfriends_v1.root\"\)
-aliroot -b -q $ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeSyswatchCPass0.C\(\"AliESDfriends_v1.root\"\)
+if [[ -f $ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeSyswatchCPass0.C ]]; then
+  echo ">>>>>>> Extracting system information..."
+  echo executing aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeSyswatchCPass0.C(\"AliESDfriends_v1.root\")"
+  aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeSyswatchCPass0.C(\"AliESDfriends_v1.root\")"
+else
+  echo $ALICE_ROOT/PWGPP/CalibMacros/CPass0/makeSyswatchCPass0.C not there
+fi
