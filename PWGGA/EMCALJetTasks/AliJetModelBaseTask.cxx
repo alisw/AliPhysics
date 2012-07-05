@@ -7,7 +7,7 @@
 #include "AliJetModelBaseTask.h"
 
 #include <TClonesArray.h>
-#include <TF1.h>
+#include <TH1.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
 

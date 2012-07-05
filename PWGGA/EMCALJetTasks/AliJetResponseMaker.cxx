@@ -48,6 +48,8 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistEvents(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
+  fHistMCJetPhiEtaFiducial(0),
+  fHistMCJetsPtFiducial(0),
   fHistMCJetsNEFvsPt(0),
   fHistMCJetsZvsPt(0),
   fHistJetPhiEta(0),
@@ -90,6 +92,8 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistEvents(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
+  fHistMCJetPhiEtaFiducial(0),
+  fHistMCJetsPtFiducial(0),
   fHistMCJetsNEFvsPt(0),
   fHistMCJetsZvsPt(0),
   fHistJetPhiEta(0),
@@ -253,6 +257,8 @@ Bool_t AliJetResponseMaker::AcceptJet(AliEmcalJet *jet, Bool_t /*bias*/, Bool_t 
     return kFALSE;
   if (jet->Area() <= fJetAreaCut)
     return kFALSE;
+
+  return kTRUE;
 }
 
 //________________________________________________________________________

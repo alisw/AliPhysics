@@ -80,6 +80,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 4) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 5) // Jet response matrix producing task
 };
 #endif
