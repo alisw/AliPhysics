@@ -279,7 +279,11 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
           break;
         case 7:
 	  // Online gain table ID 7
-          return CacheCDBEntry(kIDOnlineGainFactor  ,"TRD/Calib/Gaintbl_Uniform_FGAN8_2012-01"); 
+          return CacheCDBEntry(kIDOnlineGainFactor  ,"TRD/Calib/Gaintbl_Uniform_FGAN8_2012-01");
+          break; 
+        case 8:
+	  // Online gain table ID 8
+          return CacheCDBEntry(kIDOnlineGainFactor  ,"TRD/Calib/Krypton_2012-01"); 
           break;
       }
       break;
@@ -1030,6 +1034,10 @@ Int_t AliTRDcalibDB::GetOnlineGainTableID()
     }
     if (tableName.CompareTo("Gaintbl_Uniform_FGAN8_2012-01") == 0) {
       fOnlineGainTableID = 7;
+      return fOnlineGainTableID;
+    }
+    if (tableName.CompareTo("Krypton_2011-03")               == 0) {
+      fOnlineGainTableID = 8;
       return fOnlineGainTableID;
     }
 
