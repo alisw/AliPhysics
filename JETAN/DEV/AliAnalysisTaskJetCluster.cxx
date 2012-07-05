@@ -1428,14 +1428,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
    }// if(fNRandomCones
   
    //background estimates:all bckg jets(0) & wo the 2 hardest(1)
- 
-
-
-
 
    if(fAODJetBackgroundOut){
      vector<fastjet::PseudoJet> jets2=sortedJets;
      if(jets2.size()>2) jets2.erase(jets2.begin(),jets2.begin()+2); 
+
      Double_t bkg1=0;
      Double_t sigma1=0.;
      Double_t meanarea1=0.;
@@ -1454,85 +1451,94 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      //  fh1BiARandomCones[1]->Fill(ptRandomCone-(bkg2*areaRandomCone));    
      //   fh1BiARandomConesRan[1]->Fill(ptRandomConeRan-(bkg2*areaRandomCone));    
 
-     if(fStoreRhoLeadingTrackCorr) {
-       fh2CentvsRho->Fill(cent,bkg2);
-       fh2CentvsSigma->Fill(cent,sigma2);
-       fh2MultvsRho->Fill(nCh,bkg2);
-       fh2MultvsSigma->Fill(nCh,sigma2);
+   }
+  }
+
+  if(fStoreRhoLeadingTrackCorr) {
+    vector<fastjet::PseudoJet> jets3=sortedJets;
+    if(jets3.size()>2) jets3.erase(jets3.begin(),jets3.begin()+2); 
+
+    Double_t bkg2=0;
+    Double_t sigma2=0.;
+    Double_t meanarea2=0.;
+
+    clustSeq.get_median_rho_and_sigma(jets3, range, false, bkg2, sigma2, meanarea2, true);
+    fAODJetBackgroundOut->SetBackground(1,bkg2,sigma2,meanarea2);
+
+    fh2CentvsRho->Fill(cent,bkg2);
+    fh2CentvsSigma->Fill(cent,sigma2);
+    fh2MultvsRho->Fill(nCh,bkg2);
+    fh2MultvsSigma->Fill(nCh,sigma2);
      
 
-       //Calculate rho with 4-vector area method for different quadrants with respect to the leading track in the event
-       //exclude 2 leading jets from event
-       //Quadrant 1: |phi_leadingTrack - phi_bkgCluster| < pi/2./2. - R  (Near side to leading track)
-       //Quadrant 2: pi/2 - (pi/2./2. - R) < |phi_leadingTrack - phi_bkgCluster| < pi/2 + (pi/2./2. - R) (Orthogonal to leading track)
-       //Quadrant 3: pi - (pi/2/2 - R) < |phi_leadingTrack - phi_bkgCluster| < pi + (pi/2./2. - R)  (Away side to leading track)
-       //Quadrant 4: 3/2*pi - (pi/2./2. - R) < |phi_leadingTrack - phi_bkgCluster| < 3/2*pi + (pi/2./2. - R)   (Orthogonal to leading track)
+    //Calculate rho with 4-vector area method for different quadrants with respect to the leading track in the event
+    //exclude 2 leading jets from event
+    //Quadrant 1: |phi_leadingTrack - phi_bkgCluster| < pi/2./2. - R  (Near side to leading track)
+    //Quadrant 2: pi/2 - (pi/2./2. - R) < |phi_leadingTrack - phi_bkgCluster| < pi/2 + (pi/2./2. - R) (Orthogonal to leading track)
+    //Quadrant 3: pi - (pi/2/2 - R) < |phi_leadingTrack - phi_bkgCluster| < pi + (pi/2./2. - R)  (Away side to leading track)
+    //Quadrant 4: 3/2*pi - (pi/2./2. - R) < |phi_leadingTrack - phi_bkgCluster| < 3/2*pi + (pi/2./2. - R)   (Orthogonal to leading track)
 
-       //Assuming R=0.2 for background clusters
+    //Assuming R=0.2 for background clusters
 
-       Double_t bkg2Q[4]      = {0.};
-       Double_t sigma2Q[4]    = {0.};
-       Double_t meanarea2Q[4] = {0.};
+    Double_t bkg2Q[4]      = {0.};
+    Double_t sigma2Q[4]    = {0.};
+    Double_t meanarea2Q[4] = {0.};
 
-       //Get phi of leading track in event
-       AliVParticle *leading = (AliVParticle*)recParticles.At(0);
-       Float_t phiLeadingTrack = leading->Phi();
-       Float_t phiStep = (TMath::Pi()/2./2. - 0.2);
+    //Get phi of leading track in event
+    AliVParticle *leading = (AliVParticle*)recParticles.At(0);
+    Float_t phiLeadingTrack = leading->Phi();
+    Float_t phiStep = (TMath::Pi()/2./2. - 0.2);
 
-       //Quadrant1 - near side
-       phiMin = phiLeadingTrack - phiStep;
-       phiMax = phiLeadingTrack + phiStep;
-       fastjet::RangeDefinition rangeQ1(rapMin,rapMax, phiMin, phiMax);
-       clustSeq.get_median_rho_and_sigma(jets2, rangeQ1, false, bkg2Q[0], sigma2Q[0], meanarea2Q[0], true);
+    //Quadrant1 - near side
+    phiMin = phiLeadingTrack - phiStep;
+    phiMax = phiLeadingTrack + phiStep;
+    fastjet::RangeDefinition rangeQ1(rapMin,rapMax, phiMin, phiMax);
+    clustSeq.get_median_rho_and_sigma(jets3, rangeQ1, false, bkg2Q[0], sigma2Q[0], meanarea2Q[0], true);
 
-       //Quadrant2 - orthogonal
-       Double_t phiQ2 = phiLeadingTrack + TMath::Pi()/2.;
-       if(phiQ2>TMath::TwoPi()) phiQ2 = phiQ2 - TMath::TwoPi();
-       phiMin = phiQ2 - phiStep;
-       phiMax = phiQ2 + phiStep;
-       fastjet::RangeDefinition rangeQ2(rapMin,rapMax, phiMin, phiMax);
-       clustSeq.get_median_rho_and_sigma(jets2, rangeQ2, false, bkg2Q[1], sigma2Q[1], meanarea2Q[1], true);
+    //Quadrant2 - orthogonal
+    Double_t phiQ2 = phiLeadingTrack + TMath::Pi()/2.;
+    if(phiQ2>TMath::TwoPi()) phiQ2 = phiQ2 - TMath::TwoPi();
+    phiMin = phiQ2 - phiStep;
+    phiMax = phiQ2 + phiStep;
+    fastjet::RangeDefinition rangeQ2(rapMin,rapMax, phiMin, phiMax);
+    clustSeq.get_median_rho_and_sigma(jets3, rangeQ2, false, bkg2Q[1], sigma2Q[1], meanarea2Q[1], true);
 
-       //Quadrant3 - away side
-       Double_t phiQ3 = phiLeadingTrack + TMath::Pi();
-       if(phiQ3>TMath::TwoPi()) phiQ3 = phiQ3 - TMath::TwoPi();
-       phiMin = phiQ3 - phiStep;
-       phiMax = phiQ3 + phiStep;
-       fastjet::RangeDefinition rangeQ3(rapMin,rapMax, phiMin, phiMax);
-       clustSeq.get_median_rho_and_sigma(jets2, rangeQ3, false, bkg2Q[2], sigma2Q[2], meanarea2Q[2], true);
+    //Quadrant3 - away side
+    Double_t phiQ3 = phiLeadingTrack + TMath::Pi();
+    if(phiQ3>TMath::TwoPi()) phiQ3 = phiQ3 - TMath::TwoPi();
+    phiMin = phiQ3 - phiStep;
+    phiMax = phiQ3 + phiStep;
+    fastjet::RangeDefinition rangeQ3(rapMin,rapMax, phiMin, phiMax);
+    clustSeq.get_median_rho_and_sigma(jets3, rangeQ3, false, bkg2Q[2], sigma2Q[2], meanarea2Q[2], true);
 
-       //Quadrant4 - othogonal
-       Double_t phiQ4 = phiLeadingTrack + 3./2.*TMath::Pi();
-       if(phiQ3>TMath::TwoPi()) phiQ4 = phiQ4 - TMath::TwoPi();
-       phiMin = phiQ4 - phiStep;
-       phiMax = phiQ4 + phiStep;
-       fastjet::RangeDefinition rangeQ4(rapMin,rapMax, phiMin, phiMax);
-       clustSeq.get_median_rho_and_sigma(jets2, rangeQ4, false, bkg2Q[3], sigma2Q[3], meanarea2Q[3], true);
+    //Quadrant4 - othogonal
+    Double_t phiQ4 = phiLeadingTrack + 3./2.*TMath::Pi();
+    if(phiQ4>TMath::TwoPi()) phiQ4 = phiQ4 - TMath::TwoPi();
+    phiMin = phiQ4 - phiStep;
+    phiMax = phiQ4 + phiStep;
+    fastjet::RangeDefinition rangeQ4(rapMin,rapMax, phiMin, phiMax);
+    clustSeq.get_median_rho_and_sigma(jets3, rangeQ4, false, bkg2Q[3], sigma2Q[3], meanarea2Q[3], true);
 
-       fh3CentvsRhoLeadingTrackPtQ1->Fill(cent,bkg2Q[0],leading->Pt());
-       fh3CentvsRhoLeadingTrackPtQ2->Fill(cent,bkg2Q[1],leading->Pt());
-       fh3CentvsRhoLeadingTrackPtQ3->Fill(cent,bkg2Q[2],leading->Pt());
-       fh3CentvsRhoLeadingTrackPtQ4->Fill(cent,bkg2Q[3],leading->Pt());
+    fh3CentvsRhoLeadingTrackPtQ1->Fill(cent,bkg2Q[0],leading->Pt());
+    fh3CentvsRhoLeadingTrackPtQ2->Fill(cent,bkg2Q[1],leading->Pt());
+    fh3CentvsRhoLeadingTrackPtQ3->Fill(cent,bkg2Q[2],leading->Pt());
+    fh3CentvsRhoLeadingTrackPtQ4->Fill(cent,bkg2Q[3],leading->Pt());
 
-       fh3CentvsSigmaLeadingTrackPtQ1->Fill(cent,sigma2Q[0],leading->Pt());
-       fh3CentvsSigmaLeadingTrackPtQ2->Fill(cent,sigma2Q[1],leading->Pt());
-       fh3CentvsSigmaLeadingTrackPtQ3->Fill(cent,sigma2Q[2],leading->Pt());
-       fh3CentvsSigmaLeadingTrackPtQ4->Fill(cent,sigma2Q[3],leading->Pt());
+    fh3CentvsSigmaLeadingTrackPtQ1->Fill(cent,sigma2Q[0],leading->Pt());
+    fh3CentvsSigmaLeadingTrackPtQ2->Fill(cent,sigma2Q[1],leading->Pt());
+    fh3CentvsSigmaLeadingTrackPtQ3->Fill(cent,sigma2Q[2],leading->Pt());
+    fh3CentvsSigmaLeadingTrackPtQ4->Fill(cent,sigma2Q[3],leading->Pt());
 
-       fh3MultvsRhoLeadingTrackPtQ1->Fill(nCh,bkg2Q[0],leading->Pt());
-       fh3MultvsRhoLeadingTrackPtQ2->Fill(nCh,bkg2Q[1],leading->Pt());
-       fh3MultvsRhoLeadingTrackPtQ3->Fill(nCh,bkg2Q[2],leading->Pt());
-       fh3MultvsRhoLeadingTrackPtQ4->Fill(nCh,bkg2Q[3],leading->Pt());
+    fh3MultvsRhoLeadingTrackPtQ1->Fill(nCh,bkg2Q[0],leading->Pt());
+    fh3MultvsRhoLeadingTrackPtQ2->Fill(nCh,bkg2Q[1],leading->Pt());
+    fh3MultvsRhoLeadingTrackPtQ3->Fill(nCh,bkg2Q[2],leading->Pt());
+    fh3MultvsRhoLeadingTrackPtQ4->Fill(nCh,bkg2Q[3],leading->Pt());
 
-       fh3MultvsSigmaLeadingTrackPtQ1->Fill(nCh,sigma2Q[0],leading->Pt());
-       fh3MultvsSigmaLeadingTrackPtQ2->Fill(nCh,sigma2Q[1],leading->Pt());
-       fh3MultvsSigmaLeadingTrackPtQ3->Fill(nCh,sigma2Q[2],leading->Pt());
-       fh3MultvsSigmaLeadingTrackPtQ4->Fill(nCh,sigma2Q[3],leading->Pt());
+    fh3MultvsSigmaLeadingTrackPtQ1->Fill(nCh,sigma2Q[0],leading->Pt());
+    fh3MultvsSigmaLeadingTrackPtQ2->Fill(nCh,sigma2Q[1],leading->Pt());
+    fh3MultvsSigmaLeadingTrackPtQ3->Fill(nCh,sigma2Q[2],leading->Pt());
+    fh3MultvsSigmaLeadingTrackPtQ4->Fill(nCh,sigma2Q[3],leading->Pt());
 
-     }
-
-
-   }
   }
    
 
