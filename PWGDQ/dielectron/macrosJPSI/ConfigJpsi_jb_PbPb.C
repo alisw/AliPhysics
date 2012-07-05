@@ -203,10 +203,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   //Pt cut, should make execution a bit faster
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
-  //  if(cutDefinition >= kEtaGap01 )   
-    pt->AddCut(AliDielectronVarManager::kPt,1.1,1e30);
-  //  else   
-    //    pt->AddCut(AliDielectronVarManager::kPt,0.8,1e30);
+  pt->AddCut(AliDielectronVarManager::kPt,0.8,1e30);
   cuts->AddCut(pt);
   
 	// track cuts ESD and AOD
@@ -220,12 +217,10 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   cuts->AddCut(varCuts);
   
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
-  switch(cutDefinition) {
-  case kTOFTRD2: trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
-    break;
-  default:       trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kAny);
-    break;
-  }
+  // trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kAny);
+  // trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
+  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 7); // ITS-3 = 1+2+4
+  trkCuts->SetMaxWaivedITSNcls(1);
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
   cuts->AddCut(trkCuts);
@@ -330,7 +325,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   
   ////////////////////////////////// DATA + MC
   // pid cuts TPC + TOF & TRD
-  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.);
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.5,3.);
   if(cutDefinition==kTOF || cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2) 
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE,AliDielectronPID::kIfAvailable);
   
@@ -733,73 +728,44 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   // Setup the CF Manager if needed
   //
   
-  AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
-  
-  // pair variables
-  cf->AddVariable(AliDielectronVarManager::kM,125,0.,125*.04); //40Mev Steps
-  if(cutDefinition!=kSubRndm) cf->AddVariable(AliDielectronVarManager::kPairType,11,0,11);
-  
-  if(cutDefinition <  kGam0 || cutDefinition == kSubRndm) {
-    
-    // pair and event vars
-    if(cutDefinition <= kChi || cutDefinition == kSubRndm) {
-      cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,5.,10.,20.,40.,50.,60.,80.");
-      cf->AddVariable(AliDielectronVarManager::kPt,"0., 1., 2.5, 5., 100.0");
-      if(!hasMC) cf->AddVariable(AliDielectronVarManager::kZvPrim,20, -10., 10.);
-      if(hasMC) cf->AddVariable(AliDielectronVarManager::kNacc,20,0.,3000.0);
-      if(hasMC) cf->AddVariable(AliDielectronVarManager::kNVtxContrib,20,0.,4000.);
-      if(hasMC) cf->AddVariable(AliDielectronVarManager::kTRDpidEffPair,101,0.0,1.01);
-      //cf->AddVariable(AliDielectronVarManager::kY,"-0.8,0.8");
-      cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2,4,-1.*TMath::Pi(),TMath::Pi()); 
-      cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0CrpH2,4,-1.*TMath::Pi(),TMath::Pi()); 
-    }
-    
-    //leg variables
-    if(cutDefinition!=kSubRndm) {
-      cf->AddVariable(AliDielectronVarManager::kPt,"0.8, 1.0, 1.1, 1.2, 1.5, 100.0",kTRUE);
-      cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-3,-2.5,-2,2,2.5,3",kTRUE);
-      cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"2.5,3.0,3.5,4.0,4.5,100",kTRUE);
-      //    cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"3.5,4.0,4.5,5.0,100",kTRUE);
-      //    cf->AddVariable(AliDielectronVarManager::kTRDpidQuality,"3.5, 4.5, 5.5, 6.5",kTRUE);
-      if(!hasMC && isESD) cf->AddVariable(AliDielectronVarManager::kTRDchi2,"-1.,0.,2.,4.",kTRUE);
-      cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE); 
-      
-      // standard vars
-      if(cutDefinition<=kChi) {
-        if(hasMC) cf->AddVariable(AliDielectronVarManager::kEta,"-0.9,0.9",kTRUE);
-        //cf->AddVariable(AliDielectronVarManager::kNclsTPC,"70, 90, 100, 120, 160",kTRUE);
-      }
-    }
-    
-    switch(cutDefinition) {
-      case kTPC:
-      case krec:
-      case kTOF: //cf->AddVariable(AliDielectronVarManager::kTOFnSigmaEle,"-3,-2,2,3",kTRUE); break;
-      case kTRD: 
-      case kTOFTRD: 
-        // if(hasMC) cf->AddVariable(AliDielectronVarManager::kThetaCS,15,-1.,1.);
-        //cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE); break;
-	break;
-      case kITScls: cf->AddVariable(AliDielectronVarManager::kNclsITS,"1,2,3,4,5,6",kTRUE);       break;
-      case kITSamy: cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE); break;
-      case kDCA:
-        cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE); 
-        cf->AddVariable(AliDielectronVarManager::kImpactParXY,8,-2.,2.,kTRUE);
-        cf->AddVariable(AliDielectronVarManager::kImpactParZ,8,-4.,4.,kTRUE); 
-        break;
-      case kChi:    cf->AddVariable(AliDielectronVarManager::kChi2NDF,"0,1,2,3,4,5",kTRUE); break;
-        //    cf->AddVariable(AliDielectronVarManager::kTOFnSigmaEle,"-3,-2,2,3",kTRUE);
-        //    cf->AddVariable(AliDielectronVarManager::kTOFPIDBit,"-.5,.5,1.5",kTRUE);
-    }
-    
-  }
-  
 
+  AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
+
+  // event variables
+  cf->AddVariable(AliDielectronVarManager::kCentrality,"0.,5.,10.,20.,40.,50.,60.,80.");
+  //    if(!hasMC) cf->AddVariable(AliDielectronVarManager::kZvPrim,20, -10., 10.);
+  if(hasMC)  cf->AddVariable(AliDielectronVarManager::kNacc,20,0.,3000.0);
+  if(hasMC)  cf->AddVariable(AliDielectronVarManager::kNVtxContrib,20,0.,4000.);
+  if(hasMC)  cf->AddVariable(AliDielectronVarManager::kRunNumber, GetRunNumbers() );
+
+  // pair variables
+  //    cf->AddVariable(AliDielectronVarManager::kY,"-0.8,0.8");
+  cf->AddVariable(AliDielectronVarManager::kM,125,0.,125*.04); //40Mev Steps
+  cf->AddVariable(AliDielectronVarManager::kPairType,11,0,11);
+  cf->AddVariable(AliDielectronVarManager::kPt,"0., 1., 2.5, 5., 100.0");
+  if(hasMC) cf->AddVariable(AliDielectronVarManager::kTRDpidEffPair,101,0.0,1.01);
+  //    if(hasMC) cf->AddVariable(AliDielectronVarManager::kThetaCS,15,-1.,1.);
+
+  // flow variables  
+  cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2,4,-1.*TMath::Pi(),TMath::Pi()); 
+  cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0CrpH2,4,-1.*TMath::Pi(),TMath::Pi()); 
+
+  // leg variables
+  cf->AddVariable(AliDielectronVarManager::kPt,"0.8, 1.0, 1.1, 1.2, 1.5, 100.0",kTRUE);
+  if(hasMC) cf->AddVariable(AliDielectronVarManager::kEta,"-0.9,0.9",kTRUE);
+  //    cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE); 
+  //    cf->AddVariable(AliDielectronVarManager::kNclsITS,"1,2,3,4,5,6",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-3,-2.5,-2,2,2.5,3",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"2.5,3.0,3.5,4.0,4.5,100",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kNclsTPC,"70, 90, 100, 120, 160",kTRUE);
+  //    cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"3.5,4.0,4.5,5.0,100",kTRUE);
+  //    cf->AddVariable(AliDielectronVarManager::kTOFnSigmaEle,"-3,-2,2,3",kTRUE); break;
+  //    cf->AddVariable(AliDielectronVarManager::kTRDpidQuality,"3.5, 4.5, 5.5, 6.5",kTRUE);
+  //    if(!hasMC && isESD) cf->AddVariable(AliDielectronVarManager::kTRDchi2,"-1.,0.,2.,4.",kTRUE);
+  
+  // mc steps
   if(hasMC) {
-    cf->AddVariable(AliDielectronVarManager::kRunNumber, GetRunNumbers() );
-    //if(cutDefinition==kTOFTRD || cutDefinition==kGam0)
     cf->SetStepForMCtruth();
-    //    if(cutDefinition!=kTOFTRD) 
     cf->SetStepsForMCtruthOnly();  
     // cf->SetStepsForBackground();   
   }

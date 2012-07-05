@@ -217,7 +217,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   }
 	////////////////////////////////// DATA + MC
   // pid cuts TPC + TOF & TRD
-  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.);
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.5,3.);
   if(cutDefinition==kTOF || cutDefinition==kTOFTRD) 
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE,AliDielectronPID::kIfAvailable);
   if(cutDefinition==kTRD || cutDefinition==kTOFTRD) 
@@ -400,6 +400,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 			    GetRunNumbers(), BinsToVector(200,0.,200.),
 			    AliDielectronVarManager::kRunNumber,
 			    AliDielectronVarManager::kTPCsignal);
+      histos->UserHistogram("Track","TPCnSigmaEle_RunNumber",";run;TPC signal (arb units)",
+			    GetRunNumbers(), BinsToVector(100,-5.,5.),
+			    AliDielectronVarManager::kRunNumber,
+			    AliDielectronVarManager::kTPCnSigmaEle);
       histos->UserHistogram("Track","dEdx_Eta",";#eta;TPC signal (arb units)",
 			    100,-1.,1.,200,0.,200.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal,kTRUE);
       histos->UserHistogram("Track","dEdx_Phi",";#phi;TPC signal (arb units)",
@@ -474,7 +478,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserProfile("Track","TRDprobPio-TRDpidQuality",";N_{trkl}^{TRD};P_{pio}^{TRD}", 
                         AliDielectronVarManager::kTRDprobPio,
                         "0,1,2,3,4,5,6,7",    AliDielectronVarManager::kTRDpidQuality);
-    
+    // TPC track quality
+    histos->UserHistogram("Track","NclsTPC",";N_{cls}^{TPC};#tracks", 
+                          160,0.,160.,   AliDielectronVarManager::kNclsTPC);
+
   } // end TRD eff
   
   if(1) {    
@@ -508,6 +515,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           "0,1,2,3,4,5,6,7",          AliDielectronVarManager::kNclsITS);
     histos->UserHistogram("Track","ITSLayerFirstCls",";ITS layer first cls;#tracks", 
                           "-1,0,1,2,3,4,5,6",          AliDielectronVarManager::kITSLayerFirstCls);
+    histos->UserHistogram("Track","NclsITS_ITSLayerFirstCls",";N_{cls}^{ITS};ITS layer first cls;#tracks", 
+                          7, 0., 7., 7, -1., 6.,
+			  AliDielectronVarManager::kNclsITS, AliDielectronVarManager::kITSLayerFirstCls);
     // TPC
     histos->UserHistogram("Track","NclsTPC",";N_{cls}^{TPC};#tracks", 
                           "70, 90, 100, 120, 160",   AliDielectronVarManager::kNclsTPC);
@@ -519,6 +529,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           "-100,3.5,4.0,4.5,5.0,5.5,100",AliDielectronVarManager::kTPCnSigmaPio);
     histos->UserHistogram("Track","TPC_nSigma_Protons",";n#sigma_{pro}^{TPC};#tracks", 
                           "-100,3.5,4.0,4.5,5.0,5.5,100",AliDielectronVarManager::kTPCnSigmaPro);
+
+    histos->UserProfile("Track","NclsTPC-Eta-Phi",";#eta;#phi;N_{cls}^{TPC}",
+			AliDielectronVarManager::kNclsTPC,
+			BinsToVector(100,-2.,2.),      BinsToVector(360,0.,6.285),
+			AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi, "i;1;160");
     // TRD
     histos->UserHistogram("Track","TRDpidQuality",";N_{trkl}^{TRD};#tracks", 
                           "0,1,2,3,4,5,6,7",            AliDielectronVarManager::kTRDpidQuality);
