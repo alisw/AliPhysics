@@ -75,14 +75,14 @@ class AliAODMCParticle: public AliVParticle {
     virtual Int_t GetPdgCode() const { return fPdgCode;}
     virtual Int_t PdgCode()    const { return GetPdgCode();}
     
-    enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1 };
-    void SetFlag(UInt_t flag){fFlag = flag;}
+    enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1, kSecondaryFromWeakDecay = 1<<2, kSecondaryFromMaterial = 1 <<3}; // use only the first 8bits!
+    void SetFlag(UInt_t flag){fFlag = flag;} // carefull flag encodes three different types of information 
     UInt_t GetFlag() const {return fFlag;}
 
 
     // for the status we use the upper 16 bits/2 bytes of the flag word
     void SetStatus(Int_t status){
-      if(status<0)return; // a TParticle can have a negative stuts, catch this here and do nothing
+      if(status<0)return; // a TParticle can have a negative status, catch this here and do nothing
       fFlag &= 0xffff;   // reset the upper bins keep the lower bins
       fFlag |= (((UInt_t)status)<<16); // bit shift by 16
     }
@@ -103,6 +103,34 @@ class AliAODMCParticle: public AliVParticle {
      else fFlag &= ~kPhysicalPrim; 
     } 
     Bool_t IsPhysicalPrimary() const {return ((fFlag&kPhysicalPrim)==kPhysicalPrim);} 
+
+    void SetSecondaryFromWeakDecay(Bool_t b = kTRUE){
+     if(b)fFlag |= kSecondaryFromWeakDecay;
+     else fFlag &= ~kSecondaryFromWeakDecay; 
+    } 
+    Bool_t IsSecondaryFromWeakDecay() const {return ((fFlag&kSecondaryFromWeakDecay)==kSecondaryFromWeakDecay);} 
+
+    void SetSecondaryFromMaterial(Bool_t b = kTRUE){
+     if(b)fFlag |= kSecondaryFromMaterial;
+     else fFlag &= ~kSecondaryFromMaterial; 
+    } 
+    Bool_t IsSecondaryFromMaterial() const {return ((fFlag&kSecondaryFromMaterial)==kSecondaryFromMaterial);} 
+
+
+    void SetMCProcessCode(UInt_t mcProcess){
+      if(mcProcess>1<<7)return; // should not be larger than 46 (see TMCProcess) allow up to 128
+      fFlag &= 0xffff00ff; // keep the upper bins and the lower bins just reset 9-16
+      fFlag |= (mcProcess<<8); // bit shift by 8
+    }
+
+    UInt_t GetMCProcessCode(){
+      return (fFlag&0xff00); // just return bits 9-16
+    }
+    
+
+    
+    
+
     static const char* StdBranchName(){return fgkStdBranchName.Data();}
 
  private:
@@ -111,7 +139,7 @@ class AliAODMCParticle: public AliVParticle {
 
 
   Int_t            fPdgCode;              // PDG code of the particle
-  UInt_t           fFlag;                 // Flag for indication of primary etc
+  UInt_t           fFlag;                 // Flag for indication of primary etc, Status code in the upper 16 bits 17-32, MC process id (AKA UniqueID) in bins 16-9)  
   Int_t            fLabel;                // Label of the original MCParticle 
   Int_t            fMother;               // Index of the mother particles
   Int_t            fDaughter[2];          // Indices of the daughter particles
@@ -142,7 +170,7 @@ class AliAODMCParticle: public AliVParticle {
     };
   */
 
-  ClassDef(AliAODMCParticle,5)  // AliVParticle realisation for AODMCParticles
+  ClassDef(AliAODMCParticle,6)  // AliVParticle realisation for AODMCParticles
 
 };
 

@@ -305,7 +305,9 @@ void AliAODHandler::StoreMCParticles(){
 	  if(i<nprim)flag |= AliAODMCParticle::kPrimary;
 	  
 	  if(mcEvent->IsPhysicalPrimary(i))flag |= AliAODMCParticle::kPhysicalPrim;
-	  
+	  if(mcEvent->Stack()->IsSecondaryFromWeakDecay(i))flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
+	  if(mcEvent->Stack()->IsSecondaryFromMaterial(i))flag |= AliAODMCParticle::kSecondaryFromMaterial;
+
 	  if(fMCEventH->GetNewLabel(i)!=j){
 	      AliError(Form("MISMATCH New label %d j: %d",fMCEventH->GetNewLabel(i),j));
 	  }
@@ -313,6 +315,7 @@ void AliAODHandler::StoreMCParticles(){
 	  AliAODMCParticle mcpartTmp(mcpart,i,flag);
 	  
 	  mcpartTmp.SetStatus(mcpart->Particle()->GetStatusCode());
+	  mcpartTmp.SetMCProcessCode(mcpart->Particle()->GetUniqueID());
 	  // 
 	  Int_t d0 =  mcpartTmp.GetDaughter(0);
 	  Int_t d1 =  mcpartTmp.GetDaughter(1);
