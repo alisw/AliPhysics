@@ -148,6 +148,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPhoElecPtMCM20(0)
   ,fSameElecPtMC(0)
   ,fSameElecPtMCM20(0)
+  ,CheckNclust(0)
+  ,CheckNits(0)
 {
   //Named constructor
   
@@ -231,6 +233,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPhoElecPtMCM20(0)
   ,fSameElecPtMC(0)
   ,fSameElecPtMCM20(0)
+  ,CheckNclust(0)
+  ,CheckNits(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -256,6 +260,7 @@ AliAnalysisTaskHFECal::~AliAnalysisTaskHFECal()
   delete fOutputList;
   delete fGeom;
   delete fPID;
+  delete fCuts;
   delete fCFM;
   delete fPIDqa;
   delete fTrackCuts;
@@ -430,6 +435,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     // HFE cuts: TPC PID cleanup
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
 
+    int nTPCcl = track->GetTPCNcls();
+    int nITS = track->GetNcls(0);
     
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
@@ -484,16 +491,22 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		if(fFlagPhotonicElec && fFlagConvinatElec)oppstatus = 3.0;
 
 		  double valdedx[16];
-		  valdedx[0] = pt; valdedx[1] = dEdx; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
+		  valdedx[0] = pt; valdedx[1] = nITS; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = m02; valdedx[9] = m20; valdedx[10] = mcpT;
-		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = clust->Chi2();
+		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
                   if(fqahist==1)fEleInfo->Fill(valdedx);
                  
 
       }
     }
-        
+     
+    if(nITS<2.5)continue;
+    if(nTPCcl<100)continue;
+   
+    CheckNclust->Fill(nTPCcl); 
+    CheckNits->Fill(nITS); 
+
     fdEdxBef->Fill(mom,fTPCnSigma);
     fTPCnsigma->Fill(mom,fTPCnSigma);
     if(fTPCnSigma >= -1.0 && fTPCnSigma <= 3)fTrkEovPBef->Fill(pt,eop);
@@ -623,7 +636,23 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fPID->SortDetectors(); 
   fPIDqa = new AliHFEpidQAmanager();
   fPIDqa->Initialize(fPID);
-  
+ 
+  //------- fcut --------------  
+  fCuts = new AliHFEcuts();
+  fCuts->CreateStandardCuts();
+  //fCuts->SetMinNClustersTPC(100);
+  fCuts->SetMinNClustersTPC(90);
+  fCuts->SetMinRatioTPCclusters(0.6);
+  fCuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
+  //fCuts->SetMinNClustersITS(3);
+  fCuts->SetMinNClustersITS(2);
+  fCuts->SetCutITSpixel(AliHFEextraCuts::kAny);
+  fCuts->SetCheckITSLayerStatus(kFALSE);
+  fCuts->SetVertexRange(10.);
+  fCuts->SetTOFPIDStep(kFALSE);
+  fCuts->SetPtRange(2, 50);
+  fCuts->SetMaxImpactParam(3.,3.);
+
   //--------Initialize correction Framework and Cuts
   fCFM = new AliCFManager;
   const Int_t kNcutSteps = AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack + AliHFEcuts::kNcutStepsDETrack;
@@ -719,13 +748,13 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   // Make common binning
   const Double_t kMinP = 0.;
   const Double_t kMaxP = 50.;
-  const Double_t kTPCSigMim = 40.;
-  const Double_t kTPCSigMax = 140.;
+  //const Double_t kTPCSigMim = 40.;
+  //const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
-  Int_t nBins[16] =  {  250,        200,   60,    20,   100,  300,  50,   40,   200, 200,  250, 200,    3,    5,   10,    8};
-  Double_t min[16] = {kMinP,  kTPCSigMim, 1.0,  -1.0,  -6.0,    0,   0,    0,   0.0, 0.0,  0.0,   0, -1.5, -0.5, -0.5, -1.5};
-  Double_t max[16] = {kMaxP,  kTPCSigMax, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 50.0, 100,  1.5,  4.5,  9.5,  6.5};
+  Int_t nBins[16] =  {  250,    10,   60,    20,   100,  300,  50,   40,   200, 200,  250, 200,    3,    5, 100,    8};
+  Double_t min[16] = {kMinP,  -0.5, 1.0,  -1.0,  -6.0,    0,   0,    0,   0.0, 0.0,  0.0,   0, -1.5, -0.5,  80, -1.5};
+  Double_t max[16] = {kMaxP,   9.5, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 50.0, 100,  1.5,  4.5, 180,  6.5};
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
   if(fqahist==1)fOutputList->Add(fEleInfo);
 
@@ -804,6 +833,11 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fSameElecPtMCM20 = new THnSparseD("fSameElecPtMCM20", "MC Same-inclusive electron pt with M20",3,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fSameElecPtMCM20);
 
+  CheckNclust = new TH1D("CheckNclust","cluster check",200,0,200);
+  fOutputList->Add(CheckNclust);
+
+  CheckNits = new TH1D("CheckNits","ITS cluster check",8,-0.5,7.5);
+  fOutputList->Add(CheckNits);
 
   PostData(1,fOutputList);
 }
