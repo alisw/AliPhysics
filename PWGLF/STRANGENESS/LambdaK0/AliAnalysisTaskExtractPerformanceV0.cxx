@@ -1148,13 +1148,13 @@ void AliAnalysisTaskExtractPerformanceV0::UserExec(Option_t *)
       fTreeVariableNSigmasNegPion   = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion );
 
 //tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]
-      fTreeVariableDistOverTotMom = TMath::Sqrt(
+      Double_t lDistanceTravelled = TMath::Sqrt(
 						TMath::Power( tDecayVertexV0[0] - lBestPrimaryVtxPos[0] , 2) +
 						TMath::Power( tDecayVertexV0[1] - lBestPrimaryVtxPos[1] , 2) +
 						TMath::Power( tDecayVertexV0[2] - lBestPrimaryVtxPos[2] , 2)
 					);
       fTreeVariableDistOverTotMom = 1e+5;
-      if( lV0TotalMomentum + 1e-10 != 0 ) fTreeVariableDistOverTotMom /= (lV0TotalMomentum + 1e-10); //avoid division by zero, to be sure
+      if( lV0TotalMomentum + 1e-10 != 0 ) fTreeVariableDistOverTotMom = lDistanceTravelled / (lV0TotalMomentum + 1e-10); //avoid division by zero, to be sure
 
       Double_t lMomentumPosTemp[3];
       pTrack->GetPxPyPz(lMomentumPosTemp);
