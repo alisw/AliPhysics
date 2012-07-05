@@ -1,5 +1,10 @@
 // $Id$
 
+//////////
+//Measure Jet-hadron correlations
+//Does event Mixing using AliEventPoolManager
+/////////
+
 #include "AliAnalysisTaskEmcalJetHMEC.h"
 
 #include "TChain.h"
@@ -43,6 +48,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fEtamin(-0.9), 
   fEtamax(0.9),
   fAreacut(0.0),
+  fDoEventMixing(0),
+  fMixingTracks(50000),
   fESD(0), 
   fPoolMgr(0x0), 
   fOutputList(0),
@@ -50,7 +57,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistTrackEtaPhi(0), 
-  fHistJetHEtaPhi(0) 
+  fHistJetHEtaPhi(0), 
+  fhnMixedEvents(0x0)
 {
   // Default Constructor
 
@@ -89,10 +97,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fHistJetEtaPhi(0), 
   fHistTrackEtaPhi(0), 
   fHistJetHEtaPhi(0),
-  fNevents(0),
-  fTindex(0),
-  fTrigBufferIndex(0),
-  fCountAgain(0), 
   fhnMixedEvents(0x0)
 {
   // Constructor
@@ -108,12 +112,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
       }
     }
   }
-
-    for(Int_t i=0; i<10; i++) {
-       for(Int_t j=0; j<6; j++) {
-	    fTrigBuffer[i][j]=0;
-		}				
-    }	
 
 
   DefineInput(0, TChain::Class());
@@ -190,14 +188,14 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
      fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
      }
 
-
+  fhnMixedEvents->Sumw2();
 
   fOutputList->Add(fHistTrackPt);
   fOutputList->Add(fHistCentrality);
   fOutputList->Add(fHistJetEtaPhi);
   fOutputList->Add(fHistTrackEtaPhi);
   fOutputList->Add(fHistJetHEtaPhi);
-   fOutputList->Add(fhnMixedEvents);
+  fOutputList->Add(fhnMixedEvents);
 
 
   PostData(1, fOutputList);
@@ -217,11 +215,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
   for(Int_t ic=0; ic<nCentralityBins; ic++){
     centralityBins[ic]=1.0*ic;
   }
-  //Double_t* centbin = centralityBins;
-
-  //cout << "filling centrality bins" <<endl;
-  //Int_t nCentralityBins  = fHistCentrality->GetNbinsX();
-  //Double_t* centralityBins = (Double_t*)fHistCentrality->GetXaxis()->GetXbins()->GetArray();
 
   fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
 
@@ -342,6 +335,9 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
   fHistCentrality->Fill(fcent);
   Int_t centbin = GetCentBin(fcent);
 
+  if(centbin<0)
+    return;
+    
   TClonesArray *jets = 0;
   TClonesArray *tracks = 0;
 
@@ -495,7 +491,11 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	} //track loop
   }//jet pt cut
 
+  }//jet index > -1
   
+
+  //Prepare to do event mixing
+
   // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
   TObjArray* tracksClone = CloneAndReduceTrackList(tracks);
   //delete tracks;
@@ -529,48 +529,58 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
 
     AliEventPool* pool = fPoolMgr->GetEventPool(fcent, zVtx);
-
-    pool->PrintInfo();
-
     
     if (!pool)
       AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fcent, zVtx));
 
 
-    if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
-    {
-      
-      Int_t nMix = pool->GetCurrentNEvents();
-      
-    
-      // Fill mixed-event histos here  
-      for (Int_t jMix=0; jMix<nMix; jMix++) 
-      {
-	TObjArray* bgTracks = pool->GetEvent(jMix);
-	const Int_t Nbgtrks = bgTracks->GetEntries();
-	for(Int_t ibg=0; ibg<Nbgtrks; ibg++){
-	  AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));         
-	  if(!part) continue;
+    //check for a trigger jet
+    if(ijethi>-1){
 
-	  Double_t DPhi = jetphi - part->Phi();
-	  Double_t DEta = jeteta - part->Eta();
-	  Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
-	  if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
-	  if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
-	  Double_t triggerEntries[7] = {fcent,jetPt,part->Pt(),DR,DEta,DPhi,0.0};                      
-	  fhnMixedEvents->Fill(triggerEntries,1./nMix);
+      if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
+	{
+	  
+	  AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijethi)); 
+	  
+	  Double_t jetphi = jet->Phi();
+	  Double_t jetPt = jet->Pt();
+	  Double_t jeteta=jet->Eta();
+	  
+	  
+	  Int_t nMix = pool->GetCurrentNEvents();
+	  
+	  
+	  // Fill mixed-event histos here  
+	  for (Int_t jMix=0; jMix<nMix; jMix++) 
+	    {
+	      TObjArray* bgTracks = pool->GetEvent(jMix);
+	      const Int_t Nbgtrks = bgTracks->GetEntries();
+	      for(Int_t ibg=0; ibg<Nbgtrks; ibg++){
+		AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));         
+		if(!part) continue;
+		
+		Double_t DPhi = jetphi - part->Phi();
+		Double_t DEta = jeteta - part->Eta();
+		Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
+		if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
+		if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
+		Double_t triggerEntries[7] = {fcent,jetPt,part->Pt(),DR,DEta,DPhi,0.0};                      
+		fhnMixedEvents->Fill(triggerEntries,1./nMix);
+	      }
+	      
+	    }
 	}
- 
-      }
     }
+
+    //update pool if jet in event or not
     pool->UpdatePool(tracksClone);
+    
+  }
+
   
-  }
-
-
-
-  }
-
+  
+  
+  
   PostData(1, fOutputList);
 }      
 
