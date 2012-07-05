@@ -19,7 +19,8 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   AliReconstruction rec;
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
-    rec.SetFromCDBSnapshot("OCDB.root");
+    //rec.SetFromCDBSnapshot("OCDB.root");
+    rec.SetCDBSnapshotMode("OCDB.root");
   }
   // All friends
   rec.SetFractionFriends(1.0);
@@ -54,8 +55,6 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   rec.SetUseTrackingErrorsForAlignment("ITS");
   rec.SetRunReconstruction("ALL");
   rec.SetFillESD("ALL");
-  rec.SetRunReconstruction("ITS TPC TRD TOF EMCAL PHOS HMPID T0");
-  rec.SetFillESD("ITS TPC TRD TOF EMCAL PHOS HMPID T0");
   rec.SetCleanESD(kFALSE);
 
   // Specific reco params for ZDC (why isn't this automatic?)
