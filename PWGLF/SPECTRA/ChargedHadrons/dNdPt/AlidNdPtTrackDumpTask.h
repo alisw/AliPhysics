@@ -55,6 +55,7 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   void ProcessdEdx(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   void ProcessLaser(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   void ProcessMCEff(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  void ProcessCosmics(AliESDEvent *const esdEvent=0); 
 
   void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
   void SetAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts)    { fdNdPtAcceptanceCuts = cuts; }
@@ -100,6 +101,9 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
 
   void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
   void SetLowPtV0DownscaligF(Double_t fact)    { fLowPtV0DownscaligF = fact; }
+  
+  void   SetProcessCosmics(Bool_t flag) { fProcessCosmics = flag; }
+  Bool_t GetProcessCosmics() { return fProcessCosmics; }
 
   void SetProcessAll(Bool_t proc) { fProcessAll = proc; }
 
@@ -128,11 +132,14 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   Double_t fLowPtTrackDownscaligF; // low pT track downscaling factor
   Double_t fLowPtV0DownscaligF; // low pT V0 downscaling factor
   Double_t fProcessAll; // Calculate all track properties including MC
+  
+  Bool_t fProcessCosmics; // look for cosmic pairs from random trigger
+  
 
   AlidNdPtTrackDumpTask(const AlidNdPtTrackDumpTask&); // not implemented
   AlidNdPtTrackDumpTask& operator=(const AlidNdPtTrackDumpTask&); // not implemented
   
-  ClassDef(AlidNdPtTrackDumpTask, 1); // example of analysis
+  ClassDef(AlidNdPtTrackDumpTask, 2); // example of analysis
 };
 
 #endif
