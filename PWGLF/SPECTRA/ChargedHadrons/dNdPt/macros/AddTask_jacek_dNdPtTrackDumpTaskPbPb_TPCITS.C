@@ -61,8 +61,7 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   //Int_t cutMode = 156;
   //Int_t cutMode = 200;
 
-  //gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-  gROOT->LoadMacro("/hera/alice/jacek/analysis/dNdPtPbPb/macros/CreatedNdPtTrackCuts.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
   if (!esdTrackCuts) {
     printf("ERROR: esdTrackCuts could not be created\n");
@@ -83,8 +82,9 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   //task->SetLowPtV0DownscaligF(1.e2);
   task->SetLowPtTrackDownscaligF(1.e7);
   task->SetLowPtV0DownscaligF(1.e4);
-  //task->SetProcessAll(kTRUE);
-  task->SetProcessAll(kFALSE);
+  task->SetProcessAll(kTRUE);
+  task->SetProcessCosmics(kTRUE);
+  //task->SetProcessAll(kFALSE);
 
   // trigger
   //task->SelectCollisionCandidates(AliVEvent::kMB); 
@@ -111,7 +111,7 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("TrigEvents", TList::Class(), AliAnalysisManager::kOutputContainer, "TrigEvents_Trees.root");
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("FilterEvents", TList::Class(), AliAnalysisManager::kOutputContainer, "FilterEvents_Trees.root");
   mgr->ConnectOutput(task, 1, coutput1);
 }
 

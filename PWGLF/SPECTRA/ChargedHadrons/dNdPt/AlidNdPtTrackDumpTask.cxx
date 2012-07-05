@@ -85,6 +85,7 @@ AlidNdPtTrackDumpTask::AlidNdPtTrackDumpTask(const char *name)
   , fLowPtTrackDownscaligF(0)
   , fLowPtV0DownscaligF(0)
   , fProcessAll(kFALSE)
+  , fProcessCosmics(kFALSE)
 {
   // Constructor
 
@@ -167,24 +168,165 @@ void AlidNdPtTrackDumpTask::UserExec(Option_t *)
   //
   if(fProcessAll) { 
     ProcessAll(fESD,fMC,fESDfriend); // all track stages and MC
-    ProcessV0(fESD,fMC,fESDfriend);
-    ProcessLaser(fESD,fMC,fESDfriend);
-    ProcessdEdx(fESD,fMC,fESDfriend);
-    if(IsUseMCInfo())
-      ProcessMCEff(fESD,fMC,fESDfriend);
   }
   else {
-    Process(fESD,fMC,fESDfriend);
-    ProcessV0(fESD,fMC,fESDfriend);
-    ProcessLaser(fESD,fMC,fESDfriend);
-    ProcessdEdx(fESD,fMC,fESDfriend);
-    if(IsUseMCInfo())
-      ProcessMCEff(fESD,fMC,fESDfriend);
+    Process(fESD,fMC,fESDfriend);    // only global and TPC tracks
   }
+
+  //
+  ProcessV0(fESD,fMC,fESDfriend);
+  ProcessLaser(fESD,fMC,fESDfriend);
+  ProcessdEdx(fESD,fMC,fESDfriend);
+
+  if (fProcessCosmics) { ProcessCosmics(fESD); }
+  if(IsUseMCInfo()) { ProcessMCEff(fESD,fMC,fESDfriend); }
 
   // Post output data.
   PostData(1, fOutput);
 }
+
+//_____________________________________________________________________________
+void AlidNdPtTrackDumpTask::ProcessCosmics(AliESDEvent *const event)
+{
+  //
+  // Select real events with high-pT tracks 
+  //
+  if(!event) {
+    AliDebug(AliLog::kError, "event not available");
+    return;
+  }
+
+  // 
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return;
+  }
+   
+  // get file name
+  TTree *chain = (TChain*)GetInputData(0);
+  if(!chain) { 
+    Printf("ERROR: Could not receive input chain");
+    return;
+  }
+  TObjString fileName(chain->GetCurrentFile()->GetName());
+
+
+    // check for cosmic pairs
+    //
+    // find cosmic pairs trigger by random trigger
+    //
+    //
+    AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
+    AliESDVertex *vertexTPC =  (AliESDVertex *)event->GetPrimaryVertexTPC(); 
+    const Double_t kMinPt=0.8;
+    const Double_t kMinPtMax=0.8;
+    const Double_t kMinNcl=50;
+    const Double_t kMaxDelta[5]={2,600,0.02,0.02,0.1};
+    Int_t ntracks=event->GetNumberOfTracks(); 
+    //  Float_t dcaTPC[2]={0,0};
+    // Float_t covTPC[3]={0,0,0};
+
+    UInt_t specie = event->GetEventSpecie();  // skip laser events
+    if (specie==AliRecoParam::kCalib) return;
+  
+
+
+    for (Int_t itrack0=0;itrack0<ntracks;itrack0++) {
+      AliESDtrack *track0 = event->GetTrack(itrack0);
+      if (!track0) continue;
+      if (!track0->IsOn(AliESDtrack::kTPCrefit)) continue;
+
+      if (TMath::Abs(AliTracker::GetBz())>1 && track0->Pt() < kMinPt) continue;
+      if (track0->Pt() < kMinPt) continue;
+      if (track0->GetTPCncls() < kMinNcl) continue;
+      if (TMath::Abs(track0->GetY())<kMaxDelta[0]) continue; 
+      if (track0->GetKinkIndex(0)>0) continue;
+      const Double_t * par0=track0->GetParameter(); //track param at rhe DCA
+      //rm primaries
+      //
+      //track0->GetImpactParametersTPC(dcaTPC,covTPC);
+      //if (TMath::Abs(dcaTPC[0])<kMaxDelta[0]) continue;
+      //if (TMath::Abs(dcaTPC[1])<kMaxDelta[0]*2) continue;
+      //    const AliExternalTrackParam * trackIn0 = track0->GetInnerParam();
+      for (Int_t itrack1=itrack0+1;itrack1<ntracks;itrack1++) {
+        AliESDtrack *track1 = event->GetTrack(itrack1);
+        if (!track1) continue;  
+        if (!track1->IsOn(AliESDtrack::kTPCrefit)) continue;
+        if (track1->GetKinkIndex(0)>0) continue;
+        if ((TMath::Abs(AliTracker::GetBz())>1) && (track1->Pt() < kMinPt)) continue;
+        if (track1->Pt() < kMinPt) continue;
+        if (track1->GetTPCncls()<kMinNcl) continue;
+        if (TMath::Abs(AliTracker::GetBz())>1 && TMath::Max(track1->Pt(), track0->Pt())<kMinPtMax) continue;
+        if (TMath::Abs(track1->GetY())<kMaxDelta[0]) continue;
+        //track1->GetImpactParametersTPC(dcaTPC,covTPC);
+        //      if (TMath::Abs(dcaTPC[0])<kMaxDelta[0]) continue;
+        //if (TMath::Abs(dcaTPC[1])<kMaxDelta[0]*2) continue;
+        //
+        const Double_t* par1=track1->GetParameter(); //track param at rhe DCA
+        //
+        Bool_t isPair=kTRUE;
+        for (Int_t ipar=0; ipar<5; ipar++){
+          if (ipar==4&&TMath::Abs(AliTracker::GetBz())<1) continue; // 1/pt not defined for B field off
+          if (TMath::Abs(TMath::Abs(par0[ipar])-TMath::Abs(par1[ipar]))>kMaxDelta[ipar]) isPair=kFALSE;
+        }
+        if (!isPair) continue;
+        if (TMath::Abs(TMath::Abs(track0->GetAlpha()-track1->GetAlpha())-TMath::Pi())>kMaxDelta[2]) isPair=kFALSE;
+        //delta with correct sign
+        /*
+        TCut cut0="abs(t1.fP[0]+t0.fP[0])<2"
+        TCut cut3="abs(t1.fP[3]+t0.fP[3])<0.02"
+        TCut cut4="abs(t1.fP[4]+t0.fP[4])<0.2"
+        */
+        if  (TMath::Abs(par0[0]+par1[0])>kMaxDelta[0]) isPair=kFALSE; //delta y   opposite sign
+        if  (TMath::Abs(par0[3]+par1[3])>kMaxDelta[3]) isPair=kFALSE; //delta tgl opposite sign
+        if  (TMath::Abs(AliTracker::GetBz())>1 && TMath::Abs(par0[4]+par1[4])>kMaxDelta[4]) isPair=kFALSE; //delta 1/pt opposite sign
+        if (!isPair) continue;
+        TString filename(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
+        Int_t eventNumber = event->GetEventNumberInFile(); 
+        //Bool_t hasFriend = kFALSE;
+        //Bool_t hasITS=(track0->GetNcls(0)+track1->GetNcls(0)>4);
+        //printf("DUMPHPTCosmic:%s|%f|%d|%d|%d\n",filename.Data(),(TMath::Min(track0->Pt(),track1->Pt())), eventNumber,hasFriend,hasITS);
+        //      const AliExternalTrackParam * trackIn1 = track1->GetInnerParam();      
+        //
+        //               
+        Int_t ntracksSPD = vertexSPD->GetNContributors();
+        Int_t ntracksTPC = vertexTPC->GetNContributors();        
+        Int_t runNumber     = event->GetRunNumber();        
+        Int_t timeStamp    = event->GetTimeStamp();
+        ULong64_t triggerMask = event->GetTriggerMask();
+        Float_t magField    = event->GetMagneticField();
+        TObjString triggerClass = event->GetFiredTriggerClasses().Data();
+        
+       //
+      // Dump to the tree 
+      // vertex
+      // TPC-ITS tracks
+      //
+      if(!fTreeSRedirector) return;
+	  (*fTreeSRedirector)<<"CosmicPairs"<<
+	    "fileName.="<<&fileName<<         // file name
+	    "runNumber="<<runNumber<<              //  run number	    
+	    "evtTimeStamp="<<timeStamp<<            //  time stamp of event
+            "evtNumberInFile="<<eventNumber<<          //  event number	    
+	    "trigger="<<triggerMask<<      //  trigger
+	    "triggerClass="<<&triggerClass<<      //  trigger
+	    "Bz="<<magField<<             //  magnetic field
+	    //
+	    "multSPD="<<ntracksSPD<<
+	    "multTPC="<<ntracksTPC<<
+	    "vertSPD.="<<vertexSPD<<         //primary vertex -SPD
+	    "vertTPC.="<<vertexTPC<<         //primary vertex -TPC
+	    "t0.="<<track0<<              //track0
+	    "t1.="<<track1<<              //track1
+	    "\n";      
+        }
+      }
+
+  PostData(1, fOutput);
+}
+
 
 //_____________________________________________________________________________
 void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * const mcEvent, AliESDfriend *const /*esdFriend*/)
@@ -294,12 +436,12 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
 
   // get reconstructed vertex  
   //const AliESDVertex* vtxESD = 0; 
-  const AliESDVertex* vtxESD = 0; 
+  AliESDVertex* vtxESD = 0; 
   if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
-        vtxESD = esdEvent->GetPrimaryVertexTPC();
+        vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
   }
   else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
-     vtxESD = esdEvent->GetPrimaryVertexTracks();
+     vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTracks();
   }
   else {
     	return;
@@ -308,7 +450,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
   if(!vtxESD) return;
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
-  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
+  //printf("isEventOK %d, isEventTriggered %d, status %d, vz %f \n",isEventOK, isEventTriggered, vtxESD->GetStatus(), vtxESD->GetZv());
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
 
@@ -375,9 +517,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
         "evtTimeStamp="<<evtTimeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
         "Bz="<<bz<<
-	"vertX="<<vert[0]<<
-	"vertY="<<vert[1]<<
-	"vertZ="<<vert[2]<<
+        "vtxESD.="<<vtxESD<<
 	"IRtot="<<ir1<<
 	"IRint2="<<ir2<<
         "mult="<<mult<<
@@ -563,12 +703,12 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
 
   // get reconstructed vertex  
   //const AliESDVertex* vtxESD = 0; 
-  const AliESDVertex* vtxESD = 0; 
+  AliESDVertex* vtxESD = 0; 
   if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
-        vtxESD = esdEvent->GetPrimaryVertexTPC();
+        vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
   }
   else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
-     vtxESD = esdEvent->GetPrimaryVertexTracks();
+     vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTracks();
   }
   else {
     	return;
@@ -915,9 +1055,7 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
           "evtTimeStamp="<<evtTimeStamp<<
           "evtNumberInFile="<<evtNumberInFile<<
           "Bz="<<bz<<
-	  "vertX="<<vert[0]<<
-	  "vertY="<<vert[1]<<
-	  "vertZ="<<vert[2]<<
+          "vtxESD.="<<vtxESD<<
 	  "IRtot="<<ir1<<
 	  "IRint2="<<ir2<<
           "mult="<<mult<<
@@ -1081,12 +1219,12 @@ void AlidNdPtTrackDumpTask::ProcessMCEff(AliESDEvent *const esdEvent, AliMCEvent
 
   // get reconstructed vertex  
   //const AliESDVertex* vtxESD = 0; 
-  const AliESDVertex* vtxESD = 0; 
+  AliESDVertex* vtxESD = 0; 
   if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
-        vtxESD = esdEvent->GetPrimaryVertexTPC();
+        vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
   }
   else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
-     vtxESD = esdEvent->GetPrimaryVertexTracks();
+     vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTracks();
   }
   else {
     	return;
@@ -1197,9 +1335,7 @@ void AlidNdPtTrackDumpTask::ProcessMCEff(AliESDEvent *const esdEvent, AliMCEvent
            "evtTimeStamp="<<evtTimeStamp<<
            "evtNumberInFile="<<evtNumberInFile<<
            "Bz="<<bz<<
-	   "vertX="<<vert[0]<<
-	   "vertY="<<vert[1]<<
-	   "vertZ="<<vert[2]<<
+           "vtxESD.="<<vtxESD<<
            "mult="<<mult<<
            "esdTrack.="<<recTrack<<
            "isRec="<<isRec<<
@@ -1305,12 +1441,12 @@ void AlidNdPtTrackDumpTask::ProcessV0(AliESDEvent *const esdEvent, AliMCEvent * 
 
   // get reconstructed vertex  
   //const AliESDVertex* vtxESD = 0; 
-  const AliESDVertex* vtxESD = 0; 
+  AliESDVertex* vtxESD = 0; 
   if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
-        vtxESD = esdEvent->GetPrimaryVertexTPC();
+        vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
   }
   else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
-     vtxESD = esdEvent->GetPrimaryVertexTracks();
+     vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTracks();
   }
   else {
     	return;
@@ -1433,12 +1569,12 @@ void AlidNdPtTrackDumpTask::ProcessdEdx(AliESDEvent *const esdEvent, AliMCEvent 
   }
 
   // get reconstructed vertex  
-  const AliESDVertex* vtxESD = 0; 
+  AliESDVertex* vtxESD = 0; 
   if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
-        vtxESD = esdEvent->GetPrimaryVertexTPC();
+        vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTPC();
   }
   else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
-     vtxESD = esdEvent->GetPrimaryVertexTracks();
+     vtxESD = (AliESDVertex*)esdEvent->GetPrimaryVertexTracks();
   }
   else {
     	return;
@@ -1481,9 +1617,7 @@ void AlidNdPtTrackDumpTask::ProcessdEdx(AliESDEvent *const esdEvent, AliMCEvent 
       "evtTimeStamp="<<evtTimeStamp<<
       "evtNumberInFile="<<evtNumberInFile<<
       "Bz="<<bz<<
-      "vertX="<<vert[0]<<
-      "vertY="<<vert[1]<<
-      "vertZ="<<vert[2]<<
+      "vtxESD.="<<vtxESD<<
       "mult="<<mult<<
       "esdTrack.="<<track<<
       "\n";
@@ -1672,7 +1806,6 @@ if(!vtx) return NULL;
   }
 
   if(fTreeSRedirector) {
-    (*fTreeSRedirector)<<"dNdPtTree"<<
     (*fTreeSRedirector)<<"dNdPtTree"<<
     "esdTrack.="<<track<<
     "extTPCInnerC.="<<tpcInnerC<<
@@ -2265,6 +2398,7 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
   TTree* tree3 = 0;
   TTree* tree4 = 0;
   TTree* tree5 = 0;
+  TTree* tree6 = 0;
   //
   chain = new TChain("dNdPtTree");
   if(chain) { 
@@ -2310,6 +2444,15 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
   }
   if(tree5) tree5->Print();
 
+  //
+  chain = new TChain("CosmicPairs");
+  if(chain) { 
+    chain->Add("jotwinow_Temp_Trees.root");
+    tree6 = chain->CopyTree("1");
+    delete chain; chain=0; 
+  }
+  if(tree6) tree6->Print();  
+
 
   OpenFile(1);
 
@@ -2318,6 +2461,7 @@ void AlidNdPtTrackDumpTask::FinishTaskOutput()
   if(tree3) fOutput->Add(tree3);
   if(tree4) fOutput->Add(tree4);
   if(tree5) fOutput->Add(tree5);
+  if(tree6) fOutput->Add(tree6);
   
   // Post output data.
   PostData(1, fOutput);
