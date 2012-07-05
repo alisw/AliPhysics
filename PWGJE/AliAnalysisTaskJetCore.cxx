@@ -693,7 +693,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 
 
                    if(centValue<20.) fh2RPJets->Fill(phiBin, ptcorr);
-                   if(centValue<20.) fh2RPT->Fill(phiBinT,phiBin);
+                
                    Double_t dismin=100.;
                    Double_t ptmax=-10.; 
                    Int_t index1=-1;
