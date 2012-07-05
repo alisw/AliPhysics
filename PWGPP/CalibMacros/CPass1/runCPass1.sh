@@ -239,6 +239,10 @@ for file in QAresults_outer.root EventStat_temp_outer.root; do
     fi
 done
 
-echo ">>>>>>> Extracting system information..."
-echo executing aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C(\"AliESDfriends_v1.root\")"
-aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C(\"AliESDfriends_v1.root\")"
+if [[ -f $ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C ]]; then
+  echo ">>>>>>> Extracting system information..."
+  echo executing aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C(\"AliESDfriends_v1.root\")"
+  aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C(\"AliESDfriends_v1.root\")"
+else
+  echo $ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C not there
+fi
