@@ -32,6 +32,11 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fMaxDistance(0.25),
   fDoWeighting(kFALSE),
   fVertexCut(10),
+  fMCFiducial(kFALSE),
+  fMCminEta(0),
+  fMCmaxEta(0),
+  fMCminPhi(0),
+  fMCmaxPhi(0),
   fPythiaHeader(0),
   fEventWeight(0),
   fPtHardBin(0),
@@ -69,6 +74,11 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fMaxDistance(0.25),
   fDoWeighting(kFALSE),
   fVertexCut(10),
+  fMCFiducial(kFALSE),
+  fMCminEta(0),
+  fMCmaxEta(0),
+  fMCminPhi(0),
+  fMCmaxPhi(0),
   fPythiaHeader(0),
   fEventWeight(0),
   fPtHardBin(0),
@@ -280,6 +290,19 @@ void AliJetResponseMaker::ExecOnce()
   }
 
   AliAnalysisTaskEmcalJet::ExecOnce();
+
+  if (fMCFiducial) {
+    fMCminEta = fMinEta;
+    fMCmaxEta = fMaxEta;
+    fMCminPhi = fMinPhi;
+    fMCmaxPhi = fMaxPhi;
+  }
+  else {
+    fMCminEta = fMinEta - fJetRadius;
+    fMCmaxEta = fMaxEta + fJetRadius;
+    fMCminPhi = fMinPhi - fJetRadius;
+    fMCmaxPhi = fMaxPhi + fJetRadius;
+  }
 }
 
 //________________________________________________________________________
@@ -304,8 +327,8 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
   const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
 
   Double_t pthard = fPythiaHeader->GetPtHard();
-  
-  for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
+
+  for (fPtHardBin = 0; fPtHardBin <= 11; fPtHardBin++) {
     if (pthard >= ptHardLo[fPtHardBin] && pthard < ptHardHi[fPtHardBin])
       break;
   }
@@ -320,13 +343,13 @@ Bool_t AliJetResponseMaker::Run()
 {
   // Find the closest jets
 
-  fHistEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
+  fHistEvents->SetBinContent(fPtHardBin + 1, fHistEvents->GetBinContent(fPtHardBin + 1) + 1);
 
   if (TMath::Abs(fVertex[2]) > fVertexCut)
     return kFALSE;
   
-  fHistAcceptedEvents->SetBinContent(fPtHardBin, fHistEvents->GetBinContent(fPtHardBin) + 1);
-  fHistNTrials->SetBinContent(fPtHardBin, fHistNTrials->GetBinContent(fPtHardBin) + fNTrials);
+  fHistAcceptedEvents->SetBinContent(fPtHardBin + 1, fHistEvents->GetBinContent(fPtHardBin + 1) + 1);
+  fHistNTrials->SetBinContent(fPtHardBin + 1, fHistNTrials->GetBinContent(fPtHardBin + 1) + fNTrials);
 
   DoJetLoop(fJets, fMCJets, kFALSE);
   DoJetLoop(fMCJets, fJets, kTRUE);
@@ -363,7 +386,7 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
 	continue;
     }
     else {
-      if (jet1->Eta() < fMinEta - fJetRadius || jet1->Eta() > fMaxEta + fJetRadius || jet1->Phi() < fMinPhi - fJetRadius || jet1->Phi() > fMaxPhi + fJetRadius)
+      if (jet1->Eta() < fMCminEta || jet1->Eta() > fMCmaxEta || jet1->Phi() < fMCminPhi || jet1->Phi() > fMCmaxPhi)
 	continue;
     }
 
@@ -388,7 +411,7 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
 	  continue;
       }
       else {
-	if (jet2->Eta() < fMinEta - fJetRadius || jet2->Eta() > fMaxEta + fJetRadius || jet2->Phi() < fMinPhi - fJetRadius || jet2->Phi() > fMaxPhi + fJetRadius)
+	if (jet1->Eta() < fMCminEta || jet1->Eta() > fMCmaxEta || jet1->Phi() < fMCminPhi || jet1->Phi() > fMCmaxPhi)
 	  continue;
       }
       
@@ -427,7 +450,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
     if (!AcceptJet(jet))
       continue;
 
-    if (jet->Eta() < fMinEta - fJetRadius || jet->Eta() > fMaxEta + fJetRadius || jet->Phi() < fMinPhi - fJetRadius || jet->Phi() > fMaxPhi + fJetRadius)
+    if (jet->Eta() < fMCminEta || jet->Eta() > fMCmaxEta || jet->Phi() < fMCminPhi || jet->Phi() > fMCmaxPhi)
       continue;
 
     if (jet->Pt() > fMaxBinPt)
@@ -493,6 +516,12 @@ Bool_t AliJetResponseMaker::FillHistograms()
     }  
     
     if (!AcceptJet(jet))
+      continue;
+    if (!AcceptBiasJet(jet))
+      continue;
+    if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
+      continue;
+    if (jet->Eta() < fMinEta || jet->Eta() > fMaxEta || jet->Phi() < fMinPhi || jet->Phi() > fMaxPhi)
       continue;
 
     if (!jet->MatchedJet()) {
