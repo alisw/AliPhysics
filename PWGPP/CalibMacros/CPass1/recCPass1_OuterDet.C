@@ -19,7 +19,8 @@ void recCPass1_OuterDet(const char *filename="raw.root",Int_t nevents=-1, const 
   AliReconstruction rec;
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
-    rec.SetFromCDBSnapshot("OCDB.root");
+    //rec.SetFromCDBSnapshot("OCDB.root");
+    rec.SetCDBSnapshotMode("OCDB.root");
   }
   if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {        
     gROOT->LoadMacro("localOCDBaccessConfig.C");
@@ -42,7 +43,6 @@ void recCPass1_OuterDet(const char *filename="raw.root",Int_t nevents=-1, const 
   rec.SetDeleteRecPoints("ITS MUON EMCAL PHOS VZERO T0");
 
   // Switch off the V0 finder - saves time!
-  rec.SetRunMultFinder(kFALSE);
   rec.SetRunV0Finder(kFALSE); 
 
   //
@@ -52,7 +52,7 @@ void recCPass1_OuterDet(const char *filename="raw.root",Int_t nevents=-1, const 
   rec.SetRunGlobalQA(kFALSE);
 
   // AliReconstruction settings
-  rec.SetWriteESDfriend(kTRUE);
+  rec.SetWriteESDfriend(kFALSE);
   rec.SetWriteAlignmentData();
   rec.SetUseTrackingErrorsForAlignment("ITS");
   rec.SetRunReconstruction("ITS MUON EMCAL PHOS VZERO T0");

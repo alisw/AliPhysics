@@ -12,7 +12,7 @@
 
 void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream);
 
-void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstorage="raw://")
+void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDBstorage="raw://")
 {
   //
   // extract OCDB entries for detectors participating in the calibration for the current run
@@ -26,7 +26,7 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
 
   // config GRP
   printf("runNumber from runCalibTrain = %d\n",runNumber);
-  ConfigCalibTrain(runNumber, defaultOCDBstorage.Data());
+  ConfigCalibTrain(runNumber, sourceOCDBstorage.Data());
 
   // check the presence of the detectors
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
@@ -38,15 +38,18 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
 
   // Steering Tasks - set output storage
   // DefaultStorage set already before - in ConfigCalibTrain.C
-  //ocdbStorage+="?se=ALICE::CERN::SE";
+  //targetOCDBstorage+="?se=ALICE::CERN::SE";
 
-  AliCDBManager::Instance()->UnsetDefaultStorage();
-  AliCDBManager::Instance()->SetDefaultStorage(ocdbStorage.Data());
+  // for tests, the target OCDB has to be different from raw://, but since the calibration procedure may need to read the OCDB,
+  // one cannot set the target OCDB as new default storage, since it could it that it does not contain all the necessary entries. 
+  // This is true only if the target OCDB storage is different from the one used as default source and to configure the train
+  if (targetOCDBstorage != sourceOCDBstorage) AliCDBManager::Instance()->SetSpecificStorage("*/*/*", targetOCDBstorage.Data());
+
   if (gSystem->AccessPathName("TPC", kFileExists)==0) {  
     AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/Correction","local://");
   }
   // set OCDB storage
-  if (ocdbStorage.Length()==0) ocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  if (targetOCDBstorage.Length()==0) targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
   TString ocdbLocal = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
 
   // TPC part
@@ -58,10 +61,10 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
     procesTPC->SetTimeGainRange(0.5,3.0);
     procesTPC->SwitchOnValidation();
     // Make timegain calibration
-    //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),ocdbStorage);
+    //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
     procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,ocdbLocal);
     // Make vdrift calibration
-    //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),ocdbStorage);
+    //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
     procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,ocdbLocal);
   }
 
@@ -70,7 +73,7 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
   if ( detStr.Contains("TOF")){
     procesTOF = new AliTOFAnalysisTaskCalibPass0;
     Printf("\n******* Calibrating TOF *******");
-    procesTOF->ProcessOutput("CalibObjects.root", ocdbStorage);
+    procesTOF->ProcessOutput("CalibObjects.root", targetOCDBstorage);
   }
 
   // T0 part
@@ -80,7 +83,7 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
     procesT0 = new AliT0PreprocessorOffline;
     // Make  calibration of channels offset
     procesT0->setDArun(177000);
-    procesT0->Process("CalibObjects.root",runNumber, runNumber, ocdbStorage);
+    procesT0->Process("CalibObjects.root",runNumber, runNumber, targetOCDBstorage);
   }
 
   //TRD part
@@ -105,7 +108,7 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
     printf("version and subversion vdrift %d and %d\n",versionVdriftUsed,subversionVdriftUsed);
     printf("version and subversion gain %d and %d\n",versionGainUsed,subversionGainUsed);
     printf("version and subversion exb %d and %d\n",versionExBUsed,subversionExBUsed);
-    procesTRD->Process("CalibObjects.root",runNumber,runNumber,ocdbStorage);
+    procesTRD->Process("CalibObjects.root",runNumber,runNumber,targetOCDBstorage);
   }
   
   // switched OFF at CPass1 in any case
@@ -115,7 +118,7 @@ void makeOCDB(Int_t runNumber, TString  ocdbStorage="", TString defaultOCDBstora
   if ( detStr.Contains("ITSSPD")) {
     Printf("\n******* Calibrating MeanVertex *******");
     procesMeanVtx = new AliMeanVertexPreprocessorOffline;
-    procesMeanVtx->ProcessOutput("CalibObjects.root", ocdbStorage, runNumber);
+    procesMeanVtx->ProcessOutput("CalibObjects.root", targetOCDBstorage, runNumber);
   }
   */
 
@@ -290,7 +293,7 @@ void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream)
   TList * meanVertexCalib = (TList*)fin->Get("MeanVertex");      
   if (meanVertexCalib) {
     TH1  *histoEvents = (TH1*) meanVertexCalib->FindObject("hSPDVertexX");
-    if (histoEvents && histoTracks){
+    if (histoEvents){
       meanVertexEvents = TMath::Nint(histoEvents->GetEntries());
     }
     delete meanVertexCalib;

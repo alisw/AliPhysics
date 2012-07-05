@@ -1,33 +1,33 @@
-Executable="runCPass0_zampolli_ITS.sh";
+Executable="runCPass0_zampolli_20120704.sh";
 
-Packages= { "VO_ALICE@AliRoot::v5-02-Rev-06",
-	    "VO_ALICE@ROOT::v5-33-02a",	
+Packages= { "VO_ALICE@AliRoot::v5-02-Rev-15",
+	    "VO_ALICE@ROOT::v5-33-02b",	
             "VO_ALICE@APISCONFIG::V1.1x"
 };
 
-Jobtag = { "Test CPass0 Calibration Train" };
+Jobtag = { "CPass0 reco + calibration + QA train" };
 
 GUIDFILE="guid.txt";
 TTL = "28000";
 
-Validationcommand ="/alice/cern.ch/user/a/alidaq/zampolli/CPass0_176701/CalibMacros/validation.sh";
+Validationcommand ="/alice/cern.ch/user/a/alidaq/zampolli/20120704/CPass0/validation.sh";
 
 Split="file";
 
 JDLVariables={"Packages", "OutputDir"};
 GUIDFILE="guid.txt";
 
-SplitArguments = {"/alice/data/2012/LHC12a/$1/raw/#alienfilename#"};
+SplitArguments = {"/alice/data/2012/LHC12c/$1/raw/#alienfilename#"};
 Workdirectorysize={"6000MB"};
 
-InputFile={"LF:/alice/cern.ch/user/a/alidaq/zampolli/CPass0_176701/CalibMacros/recCPass0.C",
-           "LF:/alice/cern.ch/user/a/alidaq/zampolli/CPass0_176701/CalibMacros/runCalibTrain.C"
+InputFile={"LF:/alice/cern.ch/user/a/alidaq/zampolli/20120704/CPass0/recCPass0.C",
+           "LF:/alice/cern.ch/user/a/alidaq/zampolli/20120704/CPass0/runCalibTrain.C"
 };
 
-InputDataCollection="LF:/alice/data/2012/LHC12a/$1/collection,nodownload";
+InputDataCollection="LF:/alice/data/2012/LHC12c/$1/collection,nodownload";
 
-OutputDir="/alice/cern.ch/user/a/alidaq/zampolli/CPass0_176701/output_ITS/$1/#alienfilename/.root//#";
+OutputDir="/alice/cern.ch/user/a/alidaq/zampolli/20120704/CPass0/output/$1/#alienfilename/.root//#";
 
 OutputArchive={"log_archive:*.log@disk=1",
-              "root_archive.zip:AliESDfriends_v1.root,AliESDs.root,AODtpITS.root,@disk=1"};
+              "root_archive.zip:AliESDfriends_v1.root,AODtpITS.root,@disk=1"};
 
