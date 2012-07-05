@@ -138,6 +138,10 @@ public:
   AliVParticle* GetFirstDaughter()   const { return dynamic_cast<AliVParticle*>(fRefD1.GetObject()); }
   AliVParticle* GetSecondDaughter()  const { return dynamic_cast<AliVParticle*>(fRefD2.GetObject()); }
 
+  void SetKFUsage(Bool_t KFUsage) {fKFUsage = KFUsage;}
+  Bool_t GetKFUsage() const {return fKFUsage;}
+
+
   
 private:
   Char_t   fType;         // type of the pair e.g. like sign SE, unlike sign SE, ... see AliDielectron
@@ -150,6 +154,8 @@ private:
   
   TRef fRefD1;           // Reference to first daughter
   TRef fRefD2;           // Reference to second daughter
+
+  Bool_t fKFUsage;
   
   ClassDef(AliDielectronPair,4)
 };

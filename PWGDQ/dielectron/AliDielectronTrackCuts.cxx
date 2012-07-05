@@ -43,7 +43,8 @@ AliDielectronTrackCuts::AliDielectronTrackCuts() :
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
   fTPCNclRobustCut(-1),
-  fAODFilterBit(kSwitchOff)
+  fAODFilterBit(kSwitchOff),
+  fWaiveITSNcls(-1)
 {
   //
   // Default Constructor
@@ -64,7 +65,8 @@ AliDielectronTrackCuts::AliDielectronTrackCuts(const char* name, const char* tit
   fRequireITSRefit(kFALSE),
   fRequireTPCRefit(kFALSE),
   fTPCNclRobustCut(-1),
-  fAODFilterBit(kSwitchOff)
+  fAODFilterBit(kSwitchOff),
+  fWaiveITSNcls(-1)
 {
   //
   // Named Constructor
@@ -110,6 +112,19 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
 
   //more flexible ITS cluster cut
   if (fITSclusterBitMap) accept*=CheckITSClusterCut(vtrack->GetITSClusterMap());
+
+  //different its cluster cut
+  if (fWaiveITSNcls > -1) {
+    Int_t nITScls      = 0;
+    Int_t requiredNcls = 7;
+    for(Int_t i=5; i>=0; i--) {
+      if(TESTBIT(vtrack->GetITSClusterMap(),i)) {
+	nITScls++;
+	requiredNcls=6-fWaiveITSNcls-i; 
+      }
+    }
+    accept*=(requiredNcls<=nITScls);
+  }
 
   //its and tpc refit
   if (fRequireITSRefit) accept*=(vtrack->GetStatus()&AliVTrack::kITSrefit)>0;

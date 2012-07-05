@@ -74,6 +74,7 @@ public:
   Int_t GetLeg2Pdg()   const { return fPdgLeg2;   }
 
   void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
+  void SetUseKF(Bool_t useKF=kTRUE) { fUseKF=useKF; }
   const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
   const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<11)?
       static_cast<TObjArray*>(fPairCandidates->UncheckedAt(i)):0;}
@@ -142,6 +143,7 @@ private:
   TObjArray* fSignalsMC;      // array of AliDielectronSignalMC
 
   Bool_t fNoPairing;    // if to skip pairing, can be used for track QA only
+  Bool_t fUseKF;    // if to skip pairing, can be used for track QA only
     
   AliDielectronHistos *fHistos;   // Histogram manager
                                   //  Streaming and merging should be handled

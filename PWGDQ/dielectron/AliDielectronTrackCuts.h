@@ -51,6 +51,7 @@ public:
   void SetITSclusterCut(ITSclusterCutType type, UChar_t map) { fITSclusterBitMap=map; fITSclusterCutType=type; }
 
   void SetAODFilterBit(EFilterBit type) { fAODFilterBit = type; }
+  void SetMaxWaivedITSNcls(Int_t max) { fWaiveITSNcls = max; }
 
   //
   //Analysis cuts interface
@@ -76,6 +77,7 @@ private:
 
   Int_t fTPCNclRobustCut;                              // TPC Ncl cut, Robust
   Int_t fAODFilterBit;                                 // Filter bit for AOD analysis
+  Int_t fWaiveITSNcls;                                 // max number of waived ITS clusters after first hit 
 
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
   Bool_t CheckITSClusterCut(UChar_t itsBits) const;
