@@ -638,6 +638,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);
   SetUsePID(kTRUE);
+  fPidHF->SetOldPid(kTRUE);
   SetRemoveDaughtersFromPrim(kTRUE);
   
   PrintAll();
@@ -769,6 +770,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);
   SetUsePID(kTRUE);
+  fPidHF->SetOldPid(kTRUE);
   SetMinCentrality(1E-10);
   SetMaxCentrality(20.);
   SetUseCentrality(AliRDHFCuts::kCentV0M);
@@ -798,6 +800,9 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2011() {
   ResetMaskAndEnableMBTrigger();
   EnableCentralTrigger();
   EnableSemiCentralTrigger();
+
+  // new PID
+  fPidHF->SetOldPid(kFALSE);
 
 } 
 //--------------------------------------------------------------------------
