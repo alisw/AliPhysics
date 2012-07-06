@@ -944,7 +944,7 @@ void AliRDHFCutsDstoKKpi::SetStandardCutsPP2010() {
   anacutsval[15][2]=1.;
   anacutsval[15][3]=0.95;     
   
-  
+  fPidHF->SetOldPid(kTRUE);
   SetUsePID(kTRUE); 
   SetPidOption(1);
   SetMaxPtStrongPid(9999.);
