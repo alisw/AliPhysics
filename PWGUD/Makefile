@@ -11,8 +11,9 @@ ifndef PACKCXXFLAGS
    PACKCXXFLAGS = $(CXXFLAGS)
 endif
 
+# For local includes in the PWGUDbase and PWGUDbase/base dirs (G.Ganis, July 2012)
 ALICEINC = -I.
-ALICEINC += -I./$(PACKAGE)/
+ALICEINC += -Ibase
 
 ifneq ($(STEERBase_INCLUDE),)
    ALICEINC += -I../$(STEERBase_INCLUDE) 
@@ -28,9 +29,6 @@ ifneq ($(ANALYSIS_INCLUDE),)
 endif
 ifneq ($(ANALYSISalice_INCLUDE),)
    ALICEINC += -I../$(ANALYSISalice_INCLUDE) 
-endif
-ifneq ($(PWGUDbase_INCLUDE),)
-   ALICEINC += -I../$(PWGUDbase_INCLUDE) 
 endif
 ifneq ($(PWGUDdep_INCLUDE),)
    ALICEINC += -I../$(PWGUDdep_INCLUDE) 
