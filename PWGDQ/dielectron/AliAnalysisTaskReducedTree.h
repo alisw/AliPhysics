@@ -91,12 +91,12 @@ public:
   Double_t fLambdaMassRange[2];        // mass range for allowed Lambda pairs
   AliDielectronHistos* fV0Histos;    // histogram manager for V0s
 
-  TFile *fTreeFile;                  // output file containing the tree
+  TFile *fTreeFile;                  //! output file containing the tree
   TTree *fTree;                      //! Reduced event tree
-  TTree *fFriendTreeFile;            // output file containing the friend tree
+  TTree *fFriendTreeFile;            //! output file containing the friend tree
   TTree *fFriendTree;                //! Reduced event tree with friend info (event plane, etc.)
-  AliReducedEvent *fReducedEvent;    // reduced event wise information
-  AliReducedEventFriend *fReducedEventFriend;    // friend reduced event wise information
+  AliReducedEvent *fReducedEvent;    //! reduced event wise information
+  AliReducedEventFriend *fReducedEventFriend;    //! friend reduced event wise information
   
   void FillEventInfo();                     // fill reduced event information
   void FillFriendEventInfo();               // fill reduced event friend information

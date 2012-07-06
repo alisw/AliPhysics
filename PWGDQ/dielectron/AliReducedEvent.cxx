@@ -288,9 +288,9 @@ void AliReducedEvent::ClearEvent() {
   //
   // clear the event
   //
-  fTracks->Clear("C");
-  fCandidates->Clear("C");
-  fCaloClusters->Clear("C");
+  if(fTracks) fTracks->Clear("C");
+  if(fCandidates) fCandidates->Clear("C");
+  if(fCaloClusters) fCaloClusters->Clear("C");
   fRunNo = 0;
   fBC = 0;
   fTriggerMask = 0;
