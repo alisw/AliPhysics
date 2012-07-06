@@ -45,11 +45,17 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   virtual void   FinishTaskOutput();
   void SetUseMCInfo(Bool_t info)           { fUseMCInfo = info; }
   Bool_t IsUseMCInfo() const               { return fUseMCInfo; }
+  void SetUseESDfriends(Bool_t friends)    { fUseESDfriends = friends; }
+  Bool_t IsUseESDfriends() const              { return fUseESDfriends; }
   
   // Process events
-  virtual void ProcessAll(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
-  virtual void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
-  virtual void ProcessV0(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  void ProcessAll(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  void Process(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  void ProcessV0(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  void ProcessdEdx(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  void ProcessLaser(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  void ProcessMCEff(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
+  void ProcessCosmics(AliESDEvent *const esdEvent=0); 
 
   void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
   void SetAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts)    { fdNdPtAcceptanceCuts = cuts; }
@@ -83,6 +89,9 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
 
   void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
   void SetLowPtV0DownscaligF(Double_t fact)    { fLowPtV0DownscaligF = fact; }
+  
+  void   SetProcessCosmics(Bool_t flag) { fProcessCosmics = flag; }
+  Bool_t GetProcessCosmics() { return fProcessCosmics; }
 
   void SetProcessAll(Bool_t proc) { fProcessAll = proc; }
 
@@ -95,6 +104,7 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   TIterator *fPitList;  //! iterator over the output objetcs  
 
   Bool_t fUseMCInfo;        // use MC information
+  Bool_t fUseESDfriends;        // use esd friends
 
   AlidNdPtEventCuts      *fdNdPtEventCuts;      // event cuts
   AlidNdPtAcceptanceCuts *fdNdPtAcceptanceCuts; // acceptance cuts  
@@ -110,11 +120,14 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   Double_t fLowPtTrackDownscaligF; // low pT track downscaling factor
   Double_t fLowPtV0DownscaligF; // low pT V0 downscaling factor
   Double_t fProcessAll; // Calculate all track properties including MC
+  
+  Bool_t fProcessCosmics; // look for cosmic pairs from random trigger
+  
 
   AlidNdPtTrackDumpTask(const AlidNdPtTrackDumpTask&); // not implemented
   AlidNdPtTrackDumpTask& operator=(const AlidNdPtTrackDumpTask&); // not implemented
   
-  ClassDef(AlidNdPtTrackDumpTask, 1); // example of analysis
+  ClassDef(AlidNdPtTrackDumpTask, 2); // example of analysis
 };
 
 #endif
