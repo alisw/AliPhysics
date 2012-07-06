@@ -34,18 +34,18 @@ AliAnalysisTaskJetHadronCorrelation *AddTaskJetHadronCorrelation(Char_t *jf="ANT
 	 mgr->AddTask(jethadron); 
 
 	 TString cAdd = "";
-	 cAdd += Form("%02d_",(int)((radius+0.01)*10.));
-	 cAdd += Form("B%d",(int)backM);
-	 cAdd += Form("_Filter%05d",filter);
-	 cAdd += Form("_Cut%05d",(int)(1000.*tPtcut));
-	 cAdd += Form("_Skip%02d",skipCone);
-	 cAdd += Form("_JetEScale%03d",JetEScale*100.);
-	 cAdd += Form("_TrackEScale%03d",TrackEScale*100.);
+	 cAdd += Form("%02d_"           ,(int)((radius+0.01)*10.));
+	 cAdd += Form("B%d"             ,(int)backM);
+	 cAdd += Form("_Filter%05d"     ,filter);
+	 cAdd += Form("_Cut%05d"        ,(int)(1000.*tPtcut));
+	 cAdd += Form("_Skip%02d"       ,skipCone);
+	 cAdd += Form("_JetEScale%03d"  ,(int)(JetEScale*100.));
+	 cAdd += Form("_TrackEScale%03d",(int)(TrackEScale*100.));
 	 TString Branch;
 	 if(IsMC)Branch = Form("MC_clustersAOD_%s%s",jf,cAdd.Data());
 	 else    Branch = Form("Data_clustersAOD_%s%s",jf,cAdd.Data());
 
-   AliAnalysisDataContainer *cout_jetsqamc = mgr->CreateContainer(Form("JHC_%s%s",jf,cAdd.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_JHC_%s",AliAnalysisManager::GetCommonFileName(),Branch.Data()));
+   AliAnalysisDataContainer *cout_JHC = mgr->CreateContainer(Form("JHC_%s%s",jf,cAdd.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWGJE_JHC_%s",AliAnalysisManager::GetCommonFileName(),Branch.Data()));
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
@@ -53,7 +53,7 @@ AliAnalysisTaskJetHadronCorrelation *AddTaskJetHadronCorrelation(Char_t *jf="ANT
 
    mgr->ConnectInput (jethadron,0, mgr->GetCommonInputContainer());  
    mgr->ConnectOutput(jethadron,0, mgr->GetCommonOutputContainer());
-   mgr->ConnectOutput(jethadron,1, cout_jetsqamc);
+   mgr->ConnectOutput(jethadron,1, cout_JHC);
 
 
    return jethadron;

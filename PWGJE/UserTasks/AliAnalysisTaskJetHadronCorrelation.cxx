@@ -133,6 +133,7 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 								fH2Jet_pt_Munder        (0x0),
 								fH2leadJetMCptResolution(0x0),
 								fH2TrackMCptResolution(0x0),
+								fH2TrackMCptEfficiency(0x0),
 								fH2AjCorrelation_MCRec(0x0),
 								fH2MleadCorrelation_MCRec(0x0)
 {
@@ -237,6 +238,7 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 				fH2Jet_pt_Munder        (0x0),
 				fH2leadJetMCptResolution(0x0),
 				fH2TrackMCptResolution(0x0),
+				fH2TrackMCptEfficiency(0x0),
 				fH2AjCorrelation_MCRec(0x0),
 				fH2MleadCorrelation_MCRec(0x0)
 {
@@ -359,9 +361,11 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 				histname = Form("Jet_pt_Munder");                                               
 				fH2Jet_pt_Munder              = new TH2F(histname,histname,50,0,200,25,0,5);    
 				histname = Form("leadJetMCptResolution");                                               
-				fH2leadJetMCptResolution      = new TH2F(histname,histname,100,0,200,100,0,200);    
+				fH2leadJetMCptResolution      = new TH2F(histname,histname,200,0,200,200,0,200);    
 				histname = Form("TrackMCptResolution");                                               
-				fH2TrackMCptResolution      = new TH2F(histname,histname,100,0,200,100,0,200);    
+				fH2TrackMCptResolution      = new TH2F(histname,histname,200,0,200,200,0,200);    
+				histname = Form("TrackMCptEfficiency");                                               
+				fH2TrackMCptEfficiency      = new TH2F(histname,histname,200,0,200,100,0,1.2);    
 				histname = Form("AjCorrelation_MCRec");                                               
 				fH2AjCorrelation_MCRec      = new TH2F(histname,histname,60,0,1.2,60,0,1.2);    
 				histname = Form("MleadCorrelation_MCRec");                                               
@@ -460,6 +464,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 								fHistList->Add(fH2JetsJet_pt        );
 								fHistList->Add(fH2leadJetMCptResolution);
 								fHistList->Add(fH2TrackMCptResolution);
+								fHistList->Add(fH2TrackMCptEfficiency);
 								fHistList->Add(fH2AjCorrelation_MCRec);
 								fHistList->Add(fH2MleadCorrelation_MCRec);
 								for(int j=0;j<5;j++){
@@ -796,8 +801,8 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												TRefArray *reftracks = jetsAOD->GetRefTracks();
 												Mlead = reftracks->GetEntriesFast();
 								}
-								if(findLJetAOD&&(algorithm==1)){
-												jetsAOD = (AliAODJet*) (jets->At(nLJet));
+								if(findLJetMC2&&(algorithm==1)){
+												jetsAOD = (AliAODJet*) (jets->At(nLJetMC2));
 												TRefArray *reftracks = jetsAOD->GetRefTracks();
 												MleadMC = reftracks->GetEntriesFast();
 								}
@@ -880,19 +885,18 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								//								double eta_cut_Jet=0.5;
 								//								if(TMath::Abs(Leading_eta)<eta_cut_Jet){
 								//												for(int eb=0;eb<5;eb++){
-								//																if(TMath::Abs(Leading_pt -10.-20.*(eb))<10.){
-								//																				//fH1ndiJMCIdeal_ediv[eb]->Fill(1);
-								//																				//if(eb==1){
-								//																				//				if((0<Mlead)&&Mlead<7)              {fH1ndiJ_2040Mlead[0]->Fill(1);}
-								//																				//				else if((7<=Mlead)&&(Mlead<10))     {fH1ndiJ_2040Mlead[1]->Fill(1);}
-								//																				//				else                                {fH1ndiJ_2040Mlead[2]->Fill(1);}
-								//																				//				if((0<Aj)&&(Aj<0.19))               {fH1ndiJ_2040Aj   [0]->Fill(1);}
-								//																				//				else if((0.19<=Aj)&&(Aj<0.38))      {fH1ndiJ_2040Aj   [1]->Fill(1);}
-								//																				//				else                                {fH1ndiJ_2040Aj   [2]->Fill(1);}
-								//																				//}
-								//																				//fH1MleadMCIdeal[eb]->Fill(Mlead);
-								//																				//fH1AjIdeal[eb]   ->Fill(Aj);
-
+								//																if(TMath::Abs(Leading_pt -10.-20.*(eb))<10.){   //<------------------------- Change Condition
+								//																				fH1ndiJMCIdeal_ediv[eb]->Fill(1);
+								//																				if(eb==1){
+								//																								if((0<Mlead)&&Mlead<7)              {fH1ndiJMCIdeal_2040Mlead[0]->Fill(1);}
+								//																								else if((7<=Mlead)&&(Mlead<10))     {fH1ndiJMCIdeal_2040Mlead[1]->Fill(1);}
+								//																								else                                {fH1ndiJMCIdeal_2040Mlead[2]->Fill(1);}
+								//																								if((0<Aj)&&(Aj<0.19))               {fH1ndiJMCIdeal_2040Aj   [0]->Fill(1);}
+								//																								else if((0.19<=Aj)&&(Aj<0.38))      {fH1ndiJMCIdeal_2040Aj   [1]->Fill(1);}
+								//																								else                                {fH1ndiJMCIdeal_2040Aj   [2]->Fill(1);}
+								//																				}
+								//																				fH1MleadMCIdeal[eb]->Fill(Mlead);
+								//																				fH1AjIdeal[eb]   ->Fill(Aj);
 								//																				//MC Track
 								//																				TClonesArray* mctracks = dynamic_cast <TClonesArray*> (fAODIn->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
 								//																				if(!mctracks){
@@ -948,6 +952,10 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												continue;
 								}
 
+								Bool_t TrackEff[5000];
+								for(int i=0;i<5000;i++){
+												TrackEff[i]=false;
+								}
 								Int_t nt = fAODIn->GetNumberOfTracks();
 								AliAODTrack* trackAOD=NULL;
 								for(int ntrack =0;ntrack<nt;ntrack++){
@@ -962,16 +970,19 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																fH1Track_phi->Fill(trackAOD->Phi());
 																fH1Track_eta->Fill(trackAOD->Eta());
 
-																// track pt resplution-------------------
-																Int_t MCID = TMath::Abs(trackAOD->GetLabel());
-																TClonesArray* mctracks = dynamic_cast <TClonesArray*> (fAODIn->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-																if(!mctracks){
-																				if (fDebug > 1)  Printf("%s:%d could not get AODMCtracks", (char*)__FILE__,__LINE__);
-																				continue;
+																if(IsMC){
+																				// track pt resplution-------------------
+																				Int_t MCID = TMath::Abs(trackAOD->GetLabel());
+																				TClonesArray* mctracks = dynamic_cast <TClonesArray*> (fAODIn->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+																				if(!mctracks){
+																								if (fDebug > 1)  Printf("%s:%d could not get AODMCtracks", (char*)__FILE__,__LINE__);
+																								continue;
+																				}
+																				AliAODMCParticle *trackMCAOD = (AliAODMCParticle*) mctracks->At(MCID);
+																				fH2TrackMCptResolution->Fill(trackMCAOD->Pt(),trackAOD->Pt());
+																				TrackEff[MCID]=true;
+																				// --------------------------------------
 																}
-																AliAODMCParticle *trackMCAOD = (AliAODMCParticle*) mctracks->At(MCID);
-																fH2TrackMCptResolution->Fill(trackMCAOD->Pt(),trackAOD->Pt());
-																// --------------------------------------
 												}
 								}
 								if(IsMC){// still under construction
@@ -991,18 +1002,22 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												for(int ntrack =0;ntrack<ntmc;ntrack++){
 																trackMCAOD = (AliAODMCParticle*) (mctracks->At(ntrack));
 																if((trackMCAOD->GetPdgCode()>10)&&((trackMCAOD->GetMother())>1)&&(ntrack>lastprim)&&(trackMCAOD->Charge())){// for Decay particles
-																				fH1MCTrack_pt ->Fill(trackAOD->Pt());
-																				fH1MCTrack_phi->Fill(trackAOD->Phi());
-																				fH1MCTrack_eta->Fill(trackAOD->Eta());
+																				fH1MCTrack_pt ->Fill(trackMCAOD->Pt());
+																				fH1MCTrack_phi->Fill(trackMCAOD->Phi());
+																				fH1MCTrack_eta->Fill(trackMCAOD->Eta());
+																				if(TrackEff[ntrack])fH2TrackMCptEfficiency->Fill(trackMCAOD->Pt(),1);
+																				else                fH2TrackMCptEfficiency->Fill(trackMCAOD->Pt(),0);
 																}
 																if((trackMCAOD->IsPhysicalPrimary())&&(trackMCAOD->Charge())){// for Physical particles
 																				MCTrack_n++;
-																				fH1MCTrack_pt ->Fill(trackAOD->Pt());
-																				fH1MCTrack_phi->Fill(trackAOD->Phi());
-																				fH1MCTrack_eta->Fill(trackAOD->Eta());
-																				fH1MCPrimTrack_pt ->Fill(trackAOD->Pt());
-																				fH1MCPrimTrack_phi->Fill(trackAOD->Phi());
-																				fH1MCPrimTrack_eta->Fill(trackAOD->Eta());
+																				fH1MCTrack_pt ->Fill(trackMCAOD->Pt());
+																				fH1MCTrack_phi->Fill(trackMCAOD->Phi());
+																				fH1MCTrack_eta->Fill(trackMCAOD->Eta());
+																				fH1MCPrimTrack_pt ->Fill(trackMCAOD->Pt());
+																				fH1MCPrimTrack_phi->Fill(trackMCAOD->Phi());
+																				fH1MCPrimTrack_eta->Fill(trackMCAOD->Eta());
+																				if(TrackEff[ntrack])fH2TrackMCptEfficiency->Fill(trackMCAOD->Pt(),1);
+																				else                fH2TrackMCptEfficiency->Fill(trackMCAOD->Pt(),0);
 																}
 												}
 								}//still under construction

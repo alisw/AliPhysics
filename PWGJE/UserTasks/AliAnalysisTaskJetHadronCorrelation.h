@@ -46,8 +46,8 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		virtual void   SetTrackPtCut(Float_t tPtcut=0)  {TrackPtcut=tPtcut;}
 		virtual void   SetSkipCone(Int_t skipCone=0)    {SkipCone=skipCone;}
 		virtual void   SetMC(Bool_t ismc=true)          {IsMC=ismc;}
-		virtual void   SetJetEScale(Float_t EScale=1.)  {JetEScale=EScale;}
-		virtual void   SetTrackEScale(Float_t EScale=1.){TrackEScale=EScale;}
+		virtual void   SetJetEScale(Float_t JEScale=1.)  {JetEScale=JEScale;}
+		virtual void   SetTrackEScale(Float_t TEScale=1.){TrackEScale=TEScale;}
 		virtual void   FinishTaskOutput();
 
 		enum {kNPTBINS=10};
@@ -138,6 +138,7 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 
 		TH2F         *fH2leadJetMCptResolution;
 		TH2F         *fH2TrackMCptResolution;
+		TH2F         *fH2TrackMCptEfficiency;
 		TH2F         *fH2AjCorrelation_MCRec;
 		TH2F         *fH2MleadCorrelation_MCRec;
 
@@ -174,7 +175,7 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		//TH1F         *fH1JetHadronMCIdeal_dphi_tptweight2040_Mleaddep[3][5];
 		//TH1F         *fH1JetHadronMCIdeal_dphi_tptweight2040_Ajdep   [3][5];
 
-		ClassDef(AliAnalysisTaskJetHadronCorrelation, 15); // Analysis task for JetHadronCorrelation
+		ClassDef(AliAnalysisTaskJetHadronCorrelation, 16); // Analysis task for JetHadronCorrelation
 };
 
 #endif
