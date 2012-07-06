@@ -59,7 +59,7 @@ AliAODPidHF::AliAODPidHF():
   fppLowEn2011(kFALSE),
   fPbPb(kFALSE),
   fTOFdecide(kFALSE),
-  fOldPid(kTRUE),
+  fOldPid(kFALSE),
   fPtThresholdTPC(999999.),
   fPidResponse(0),
   fPidCombined(new AliPIDCombined()),
