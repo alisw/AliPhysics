@@ -11,10 +11,12 @@ cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 #Retrieve Compiler Version
 
 
-execute_process (COMMAND ${CMAKE_C_COMPILER} -dumpversion | cut -d. -f1 
+execute_process (COMMAND ${CMAKE_C_COMPILER} -dumpversion
+                 COMMAND cut -d. -f1
                  OUTPUT_VARIABLE CCMAJORV
                  OUTPUT_STRIP_TRAILING_WHITESPACE) 
-execute_process (COMMAND ${CMAKE_C_COMPILER} -dumpversion | cut -d. -f2
+execute_process (COMMAND ${CMAKE_C_COMPILER} -dumpversion
+                 COMMAND cut -d. -f2
                  OUTPUT_VARIABLE CCMINORV
                  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
