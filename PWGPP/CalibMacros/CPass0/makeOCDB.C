@@ -290,7 +290,7 @@ void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream)
     Int_t meanVertexEvents=0;
   TList * meanVertexCalib = (TList*)fin->Get("MeanVertex");      
   if (meanVertexCalib) {
-    TH1  *histoEvents = (TH1*) meanVertexCalib->FindObject("hSPDVertexX");
+    TH1  *histoEvents = (TH1*) meanVertexCalib->FindObject("hTRKVertexX");
     if (histoEvents){
       meanVertexEvents = TMath::Nint(histoEvents->GetEntries());
     }
