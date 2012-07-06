@@ -4,6 +4,7 @@ set ( SRCS
   AliOADBPhysicsSelection.cxx 
   AliOADBFillingScheme.cxx 
   AliOADBTriggerAnalysis.cxx 
+  AliOADBTrackFix.cxx 
   )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
