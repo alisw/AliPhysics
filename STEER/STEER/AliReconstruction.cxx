@@ -862,6 +862,7 @@ Bool_t AliReconstruction::SetRunNumberFromData()
   	AliWarning("Run number is taken from raw-event header! Ignoring settings in AliCDBManager!");
       } 
       man->SetRun(fRawReader->GetRunNumber());
+      GetEventInfo();
       fRawReader->RewindEvents();
     }
     else {
@@ -3963,10 +3964,12 @@ Bool_t AliReconstruction::GetEventInfo()
     aCTP->SetClassMask(mask);
     aCTP->SetClusterMask(clmask);
 
-    AliCentralTrigger* rlCTP = fRunLoader->GetTrigger();
-    if (rlCTP) {
-      rlCTP->SetClassMask(mask);
-      rlCTP->SetClusterMask(clmask);
+    if (fRunLoader) {
+      AliCentralTrigger* rlCTP = fRunLoader->GetTrigger();
+      if (rlCTP) {
+	rlCTP->SetClassMask(mask);
+	rlCTP->SetClusterMask(clmask);
+      }
     }
   }
   else {
@@ -4027,7 +4030,7 @@ Bool_t AliReconstruction::GetEventInfo()
     AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
     if (trclass && trclass->GetMask()>0) {
       Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
-      fesd->SetTriggerClass(trclass->GetName(),trindex);
+      if (fesd) fesd->SetTriggerClass(trclass->GetName(),trindex);
       if (fRawReader) fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
       if (trmask & (1ull << trindex)) {
 	trclasses += " ";
@@ -4056,17 +4059,22 @@ Bool_t AliReconstruction::GetEventInfo()
     AliTriggerInput* trginput = (AliTriggerInput*)inputsArray.At(iinput);
     if (trginput && trginput->GetMask()>0) {
       Int_t inputIndex = (Int_t)TMath::Nint(TMath::Log2(trginput->GetMask()));
-      AliESDHeader* headeresd = fesd->GetHeader();
-      Int_t trglevel = (Int_t)trginput->GetLevel();
-      if (trglevel == 0) headeresd->SetActiveTriggerInputs(trginput->GetInputName(), inputIndex);
-      if (trglevel == 1) headeresd->SetActiveTriggerInputs(trginput->GetInputName(), inputIndex+24);
-      if (trglevel == 2) headeresd->SetActiveTriggerInputs(trginput->GetInputName(), inputIndex+48);
+      AliESDHeader* headeresd = 0x0;
+      if (fesd) headeresd = fesd->GetHeader();
+      if (headeresd) {
+	Int_t trglevel = (Int_t)trginput->GetLevel();
+	if (trglevel == 0) headeresd->SetActiveTriggerInputs(trginput->GetInputName(), inputIndex);
+	if (trglevel == 1) headeresd->SetActiveTriggerInputs(trginput->GetInputName(), inputIndex+24);
+	if (trglevel == 2) headeresd->SetActiveTriggerInputs(trginput->GetInputName(), inputIndex+48);
+      }
     }
   }
 
   // Set the information in ESD
-  fesd->SetTriggerMask(trmask);
-  fesd->SetTriggerCluster(clustmask);
+  if (fesd) {
+    fesd->SetTriggerMask(trmask);
+    fesd->SetTriggerCluster(clustmask);
+  }
 
   if (!aCTP->CheckTriggeredDetectors()) {
     if (fRawReader) delete aCTP;

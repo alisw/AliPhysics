@@ -533,7 +533,7 @@ Bool_t AliRawReader::IsEventSelected() const
     TString expr(fSelectTriggerExpr);
     ULong64_t mask = GetClassMask();
     for(Int_t itrigger = 0; itrigger < 50; itrigger++) {
-      if (mask & (1 << itrigger)) {
+      if (mask & ((ULong64_t)1 << itrigger)) {
 	expr.ReplaceAll(Form("[%d]",itrigger),"1");
       }
       else {
