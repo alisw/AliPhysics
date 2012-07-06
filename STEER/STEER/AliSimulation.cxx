@@ -115,6 +115,7 @@
 #include <TVirtualMC.h>
 #include <TVirtualMCApplication.h>
 #include <TDatime.h>
+#include <TInterpreter.h>
 
 #include "AliAlignObj.h"
 #include "AliCDBEntry.h"
@@ -1022,8 +1023,12 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
 //
 // Execute Config.C
+  TInterpreter::EErrorCode interpreterError=TInterpreter::kNoError;
   gROOT->LoadMacro(fConfigFileName.Data());
-  gInterpreter->ProcessLine(gAlice->GetConfigFunction());
+  Long_t interpreterResult=gInterpreter->ProcessLine(gAlice->GetConfigFunction(), &interpreterError);
+  if (interpreterResult!=0 || interpreterError!=TInterpreter::kNoError) {
+    AliFatal(Form("execution of config file \"%s\" failed with error %d", fConfigFileName.Data(), (int)interpreterError));
+  }
   AliSysInfo::AddStamp("RunSimulation_Config");
 
 //
