@@ -235,6 +235,9 @@ add_custom_command(TARGET htmldoc
 		   	    aliroot -q -b \"mkhtml.C(0,1)\"
 		   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+# Include Vc, which provides the static libVc and the relevant CMake macros
+include(Vc/Vc.cmake)
+add_subdirectory(Vc)
 
 # Add Modules	
 # ------------------------------
