@@ -11,7 +11,7 @@
   runCalibTrain("104892");
 */
 
-void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.root", const char *ocdb="raw://")
+void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", const char *ocdb="raw://")
 {
   //
   // macro to run TPC calibration train 
@@ -37,7 +37,6 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
 
   // config calibration train
   // setting geometry and B-field from GRP
-  Int_t runNumber = runNumberString.Atoi();
   printf("runNumber from runCalibTrain = %d\n",runNumber);
   printf("ocdb from runCalibTrain = %s\n",ocdb);
   ConfigCalibTrain(runNumber, ocdb);
@@ -69,11 +68,14 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   mgr->SetCommonFileName(outFile);
   //  
   // Detector Tasks
-  AliAnalysisTask* tTPC = AddTaskTPCCalib(runNumber);
-  AliAnalysisTask* tTRD = AddTaskTRDCalib(runNumber);
-  AliTOFAnalysisTaskCalibPass0 *thisTask = AddTOFAnalysisTaskCalibPass0();
-  AliAnalysisTask* tT0 = AddTaskT0Calib(runNumber);
-  AliMeanVertexCalibTask *tMeanVtx = AddTaskMeanVertexCalib();
+  //
+  if ( detStr.Contains("TPC"))    AddTaskTPCCalib(runNumber);
+  if ( detStr.Contains("TRD"))    AddTaskTRDCalib(runNumber);
+  if ( detStr.Contains("TOF"))    AddTOFAnalysisTaskCalibPass0();
+  if ( detStr.Contains("T0"))     AddTaskT0Calib(runNumber);
+  if ( detStr.Contains("ITSSPD")) AddTaskMeanVertexCalib();
+
+
   //
   Bool_t okTPC = detStr.Contains("TPC");
   Bool_t useTPCcrv=kTRUE;

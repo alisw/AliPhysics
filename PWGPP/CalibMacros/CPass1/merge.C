@@ -13,7 +13,7 @@
 void mergeInChunksTXT(const char* mlist, const char* dest, int maxFiles=700);
 
 
-void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE)
+void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE, const char* outputFileName="CalibObjects.root")
 {
   //
   // load libraries
@@ -28,7 +28,7 @@ void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE)
   Long_t id, size, flags, modtime;
   Bool_t outputDirFailure = gSystem->GetPathInfo(outputDir, &id, &size, &flags, &modtime);
   printf("st: %i, flags: %i, patt: %s\n",outputDirFailure,flags,patternStr.Data());
-  if (!outputDirFailure && (flags==0) && patternStr.IsNull()) 
+  if (!outputDirFailure && (flags==0)) 
   { 
     printf("### processing local fileList: %s\n",outputDir);
     listFileName=outputDir;
@@ -41,7 +41,7 @@ void merge(const char* outputDir, const char* pattern, Bool_t copyLocal=kFALSE)
 
   //
   // local
-  mergeInChunksTXT(listFileName.Data(),"CalibObjects.root");
+  mergeInChunksTXT(listFileName.Data(),outputFileName);
   //  AliFileMerger merger;
   //  merger.AddReject("esdFriend"); // do not merge
   //  merger.SetMaxFilesOpen(700);
@@ -113,7 +113,8 @@ void cpTimeOut(const char * searchdir, const char* pattern, Int_t timeOut=10, Bo
 void mergeInChunksTXT(const char* mlist, const char* dest, int maxFiles)
 {
   TH1::AddDirectory(0);
-  AliFileMerger merger;
+  AliFileMerger merger; 
+  merger.SetNoTrees(kFALSE);
   //  merger.SetMaxFilesOpen(999);
   merger.AddReject("esdFriend"); // do not merge
   //

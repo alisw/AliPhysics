@@ -5,25 +5,25 @@
 # Parameters for macro:
 # 1  -   alien user dir name                 - e.g  /m/miranov/
 # 2  -   input directory with raw data       - e.g /alice/data/2011/LHC11a/
-# 3  -   run number                          - e.g run number 000146807
+# 3  -   run number                          - e.g run number 146807
 # Example:
-# Run=000146807
+# RunNumber=146807
 # AlienName=/m/miranov/
 # RawPath=/alice/data/2011/LHC11a/
-# $ALICE_ROOT/PWGPP/CalibMacros/CPass0/test/runCPass0User.sh  $AlienName $RawPath  $Run 
+# $ALICE_ROOT/PWGPP/CalibMacros/CPass0/test/runCPass0User.sh  $AlienName $RawPath  $RunNumber 
 #
 # authors:   marian.ivanov#cern.ch, mikolaj.krzewicki@cern.ch 
 
 AlienName=$1
 RawPath=$2
-Run=$3
+RunNumber=$3
 InputMacros=$ALICE_ROOT/PWGPP/CalibMacros/CPass0/
 
 echo xxxxxxxxxxxxxxxxxxxxxxxxxx
 echo SETUP
 echo AlienName=$1
 echo RawPath=$2
-echo Run=$3 
+echo RunNumber=$3
 echo InputMacros=$ALICE_ROOT/PWGPP/CalibMacros/CPass0/
 echo xxxxxxxxxxxxxxxxxxxxxxxxxx
 
@@ -59,7 +59,7 @@ alien_cp  -n validation.sh  alien:///$OutputMacros/validation.sh
 #
 # 4. Submit job
 #
-echo nohup alien_submit alien:///$OutputMacros/CPass0.jdl $Run 
-nohup alien_submit alien:///$OutputMacros/CPass0.jdl $Run  >submitJob$Run.txt
+echo nohup alien_submit alien:///$OutputMacros/CPass0.jdl $RunNumber 
+nohup alien_submit alien:///$OutputMacros/CPass0.jdl "000"$RunNumber  >submitJob$RunNumber.txt
 #echo Alien job submitted $!
 

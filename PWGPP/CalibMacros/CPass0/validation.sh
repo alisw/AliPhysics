@@ -1,25 +1,42 @@
-#!/bin/sh
-##################################################
+#!/bin/bash
+
 validateout=`dirname $0`
-validatetime=`date`
 validated="0";
 error=1
 
-if [ -z $validateout ]
-then
+if [ -z "$validateout" ]; then
     validateout="."
 fi
-cd $validateout;
-validateworkdir=`pwd`;
 
-echo "*******************************************************" >> stdout;
-echo "* AliRoot Validation Script V1.0                      *" >> stdout;
-echo "* Time:    $validatetime " >> stdout;
-echo "* Dir:     $validateout" >> stdout;
-echo "* Workdir: $validateworkdir" >> stdout;
-echo "* ----------------------------------------------------*" >> stdout;
-ls -la ./ >> stdout;
-echo "* ----------------------------------------------------*" >> stdout;
+cd "$validateout"
+validateworkdir=`pwd`
+
+(
+echo "*******************************************************"
+echo "* AliRoot Validation Script V2.0                      *"
+echo "* Time:    `date`"
+echo "* Dir:     $validateout"
+echo "* Workdir: $validateworkdir"
+echo "* ----------------------------------------------------*"
+ls -lA .
+echo "* ----------------------------------------------------*"
+) >> stdout
+
+if [ -f OCDB.generating.job ]; then
+    echo "* This was a special OCDB.root job for which I'll skip the rest of the validation" >> stdout
+
+    mv stdout stdout.ocdb.log 2>/dev/null
+    mv stderr stderr.ocdb.log 2>/dev/null
+    mv rec.log stdrec.ocdb.log 2>/dev/null
+
+    if [ -f OCDB.root ]; then
+        echo "* ODCB.root found" >> stdout.ocdb.log
+        exit 0
+    else
+        echo "* OCDB.root NOT found! Failing validation" >> stdout.ocdb.log
+        exit 1
+    fi
+fi
 
 cp stdout stdout.log
 cp stderr stderr.log
@@ -70,6 +87,5 @@ if [ "$error" = "1" ]
 fi
 echo "* ----------------------------------------------------*" >> stdout;
 echo "*******************************************************" >> stdout;
-sleep 15;
-cd -
+
 exit $error

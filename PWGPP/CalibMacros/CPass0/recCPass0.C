@@ -9,7 +9,7 @@
    aliroot -b -q 'recCPass0.C("raw.root",100)'
 */
 
-void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://")
+void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://", const char* options="?Trigger=kCalibBarrel")
 {
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location
@@ -19,7 +19,8 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   AliReconstruction rec;
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
-    rec.SetFromCDBSnapshot("OCDB.root");
+    //rec.SetFromCDBSnapshot("OCDB.root");
+    rec.SetCDBSnapshotMode("OCDB.root");
   }
   // All friends
   rec.SetFractionFriends(1.0);
@@ -27,14 +28,16 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
  // AliReconstruction settings - hardwired MB trigger for calibration
 
   TString newfilename = filename;
-  newfilename += "?Trigger=kCalibBarrel";
+  newfilename += options;
   rec.SetInput(newfilename.Data());
 
   // Set protection against too many events in a chunk (should not happen)
   if (nevents>0) rec.SetEventRange(0,nevents);
 
   // Remove recpoints after each event
-  rec.SetDeleteRecPoints("TPC TRD ITS");
+  rec.SetDeleteRecPoints("TPC TRD ITS"); 
+  //
+
 
   // Switch off the V0 finder - saves time!
   //  rec.SetRunMultFinder(kFALSE);
