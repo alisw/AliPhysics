@@ -326,23 +326,32 @@ void DrawSpectraAndRatios() {
   }
 
   Float_t offx=0.15, offy=0.16, sizx=0.22, sizy=0.22;
-  TLegend *leg=c1->BuildLegend(0.68,0.52,0.88,0.88,"Centrality:");
+  TLegend *leg=c1->BuildLegend(0.67,0.42,0.87,0.78,"Centrality:");
+  leg->SetBorderSize(0);
   leg->SetFillColor(0);
   c1->cd(); 
-  TLatex *   tex = new TLatex(5.5,19.,"#Lambda");
+  TLatex *   tex = new TLatex(5.5,5.0,"#Lambda");
   tex->SetTextFont(42);
   tex->SetTextSize(0.11);
   tex->SetLineWidth(2);
   tex->Draw();
+  tex = new TLatex(2.18,200.,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+  tex->SetTextFont(42);
+  tex->SetLineWidth(2);
+  tex->Draw();
   DrawALICELogo(offx,offy,offx+sizx,offy+sizy);
 
-  //c2->BuildLegend(0.74,0.62,0.88,0.88);
-  leg=c2->BuildLegend(0.68,0.52,0.88,0.88,"Centrality:");
+  leg=c2->BuildLegend(0.67,0.42,0.87,0.78,"Centrality:");
+  leg->SetBorderSize(0);
   leg->SetFillColor(0);
   c2->cd(); 
-  tex = new TLatex(5.5,19.,"K^{0}_{S}");
+  tex = new TLatex(5.5,5.0,"K^{0}_{S}");
   tex->SetTextFont(42);
   tex->SetTextSize(0.089);
+  tex->SetLineWidth(2);
+  tex->Draw();
+  tex = new TLatex(2.18,200.,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+  tex->SetTextFont(42);
   tex->SetLineWidth(2);
   tex->Draw();
   DrawALICELogo(offx,offy,offx+sizx,offy+sizy);
