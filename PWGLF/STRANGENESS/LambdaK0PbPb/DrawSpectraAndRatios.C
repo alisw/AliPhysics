@@ -29,9 +29,8 @@ static Double_t xBins[]={
    1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
    2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,
    4.5,5.0,5.5,6.5,8.0,10.0,12.0
-   //4.5,5.0,5.5,6.5,8.0,12.0
 };
-static Int_t nBins=sizeof(xBins)/sizeof(Double_t) - 1;
+const Int_t nBins=sizeof(xBins)/sizeof(Double_t) - 1; //37
 
 static Bool_t gFlag=kFALSE;
 
@@ -40,27 +39,48 @@ static Bool_t gFlag=kFALSE;
 // cos(PA)
 // DCA between V0 daughters
 // TPC crossed pad rows
-static Double_t sysErrK0s[]={ 
+// DCA daughters <-> PV
+// c*tau
+static 
+Double_t sysEffK0s[nBins]={//Efficiency, combined over cuts mentioned above
   0.0,
   0.05,0.05,0.04,0.03,  //Dominated by cos(PA)
   0.04,0.05,0.06,0.07,0.08,0.09, //Dominated by TPC crossed/findable
   0.10,0.10,0.11,0.12,0.12,0.13,0.13,0.13,0.14,0.14,0.14,
   0.14,0.13,0.13,0.12,0.11,0.11,0.11,0.10,0.09,0.08,
-  0.08,0.05,0.04,0.03,
-  0.3,0.3,0.3 // "trailers"
+  0.08,0.05,0.04,0.03,0.3
 };
-static Double_t sysErrLam[]={ 
+static Double_t sysSigK0s[nBins]={//Signal extraction
+  0.00728589, 0.00728589, 0.00728539, 0.0073469, 0.00737846, 0.00741705,
+  0.00750887, 0.00753641, 0.00769012, 0.00789154, 0.00796624, 0.00822856,
+  0.00838203, 0.00864603, 0.00906498, 0.00923208, 0.00931179, 0.0100081,
+  0.0100768, 0.0105292, 0.0112067, 0.0122143, 0.0130162, 0.0139799, 0.0155215,
+  0.0158903, 0.0168517, 0.0189316, 0.0188103, 0.020233, 0.0223704, 0.0260327,
+  0.0260327, 0.0260327, 0.0260327, 0.0260327, 0.0260327
+};
+
+static 
+Double_t sysEffLam[nBins]={//Efficiency, combined over cuts mentioned above
   0.0,0.0,0.0,
   0.20,0.12,0.05, //Dominated by cos(PA)+FD
   0.06,0.06,0.06,0.06,0.06,  //Dominated by c*tau
   0.06,0.06, //Dominated by TPC crossed/findable
   0.07,0.09,0.09,0.10,0.10,0.11,0.11,0.11,0.10,0.10,0.09,
   0.08,0.08,0.07,0.07,0.07,0.06,0.07,0.06,0.07,0.05,
-  0.06,0.08,0.04,
-  0.3,0.3,0.3 // "trailers"
+  0.06,0.08,0.04
 };
+static Double_t sysSigLam[nBins]={//Signal extraction
+  0.0447214, 0.0447214, 0.0447214, 0.0447214, 0.0447214,
+  0.0447214, 0.0447214, 0.0447214, 0.0447214, 0.0447214,
+  0.0447214, 0.0447214, 0.0447214, 0.0447214, 0.0447214,
+  0.0447214, 0.0447214, 0.0447214, 0.0447214, 0.0447214,
+  0.0447214, 0.0447214, 0.0447214, 0.0447214, 0.0447214,
+  0.0447214, 0.0447214, 0.0447214, 0.0447214, 0.0465862,
+  0.0472600, 0.0488576, 0.0526797, 0.0575355, 0.0651647,
+  0.0721110, 0.072111
+};
+
 const Double_t sysPID=0.02; //PID
-const Double_t sysSig=0.03; //Signal extraction
 const Double_t sysArm=0.01; //Armenteros cut
 
 
@@ -137,16 +157,19 @@ void SetAttributes(TH1 *h,const Char_t *tit,Int_t col,Int_t mar,Float_t siz) {
   h->SetMinimum(1e-5);
 }
 
-void DrawHisto(TH1 *h, const Option_t *option, Double_t *sysErr) {
+void 
+DrawHisto(TH1 *h, const Option_t *option, Double_t *sysEff, Double_t *sysSig) {
   TH1F *hh=new TH1F(*((TH1F*)h));
   Int_t nb=hh->GetNbinsX();
   for (Int_t i=1; i<=nb; i++) {
       Double_t c=hh->GetBinContent(i);
       Double_t e=hh->GetBinError(i);
-      e = c*TMath::Sqrt(sysErr[i]*sysErr[i] + 
-                        sysPID*sysPID + 
-                        sysSig*sysSig +
+      e = c*TMath::Sqrt(sysEff[i]*sysEff[i] + 
+                        sysSig[i]*sysSig[i] + 
                         sysArm*sysArm);
+
+      if ((sysEff==sysEffLam)&&(i<13)) e += c*sysPID; 
+
       hh->SetBinError(i,e);
   }
   hh->SetFillColor(17);
@@ -181,7 +204,7 @@ void DrawSpectraAndRatios() {
   const Int_t nCent=5;
 
   const Char_t *title[nCent]={
-    "00-05 %",
+    "0-5 %",
     "20-40 %",
     "40-60 %",
     "60-80 %",
@@ -268,7 +291,7 @@ void DrawSpectraAndRatios() {
       SetAttributes(rawHl,title[cent],colour[cent],marker[cent],masize[cent]);
       c1->cd();
       //rawHl->Draw(option.Data());
-      DrawHisto(rawHl, option.Data(), sysErrLam);
+      DrawHisto(rawHl, option.Data(), sysEffLam, sysSigLam);
 
       // K0s
     if (cent==nCent-1) gFlag=kTRUE;
@@ -279,7 +302,7 @@ void DrawSpectraAndRatios() {
       SetAttributes(rawHk,title[cent],colour[cent],marker[cent],masize[cent]);
       c2->cd();
       //rawHk->Draw(option.Data());
-      DrawHisto(rawHk, option.Data(), sysErrK0s);
+      DrawHisto(rawHk, option.Data(), sysEffK0s, sysSigK0s);
 
       // Lambda/K0s
       TH1 *rawHlk=(TH1*)rawHl->Clone();
