@@ -31,8 +31,8 @@
 #include <fcntl.h>
 #include <fstream>
 
-#define _DUMP_EQ_BEFORE_
-#define _DUMP_EQ_AFTER_
+//#define _DUMP_EQ_BEFORE_
+//#define _DUMP_EQ_AFTER_
 
 //#define _DUMPEQ_BEFORE_
 //#define _DUMPEQ_AFTER_ 
@@ -1365,13 +1365,19 @@ Bool_t AliMillePede2::IsRecordAcceptable()
       prevAns = kTRUE;
       for (int i=n;i--;) if (runID == (*fRejRunList)[i]) {
 	  prevAns = kFALSE; 
-	  printf("New Run to reject: %ld -> %d\n",runID,prevAns);
+	  AliInfo(Form("New Run to reject: %ld",runID));
 	  break;
 	}
     }
     else if (fAccRunList && (n=fAccRunList->GetSize())) {     // is run specifically selected
       prevAns = kFALSE;
-      for (int i=n;i--;) if (runID == (*fAccRunList)[i]) {prevAns = kTRUE; fRunWgh = (*fAccRunListWgh)[i]; break;}
+      for (int i=n;i--;) if (runID == (*fAccRunList)[i]) {
+        prevAns = kTRUE; 
+	if (fAccRunListWgh) fRunWgh = (*fAccRunListWgh)[i]; 
+        AliInfo(Form("New Run to accept explicitly: %ld, weight=%f",runID,fRunWgh));
+	break;
+      }
+      if (!prevAns) AliInfo(Form("New Run is not in the list to accept: %ld",runID)); 
     }
   }
   //
