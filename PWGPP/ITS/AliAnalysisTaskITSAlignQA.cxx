@@ -143,7 +143,6 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
     fITSSumTP = new AliITSSumTP();
     fTPTree = new TTree("ITSSumTP","ITS TP Summary");
     fTPTree->Branch("AliITSSumTP","AliITSSumTP",&fITSSumTP);
-    CreateUserInfo();
     PostData(2,fTPTree);
   }
   //
@@ -405,6 +404,7 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
   }
   //
   if (fITSSumTP) { // store vertex and mometum info
+    double xyz[3]={0,0,0};
     fITSSumTP->SetVertex(vtx);
     TObjArray& tps = fITSSumTP->GetTracks();
     int ntp = tps.GetEntriesFast();
@@ -417,12 +417,17 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
       double crve = TMath::Sqrt(esdTr->GetSigma1Pt2()) * esd->GetMagneticField()*kB2C;
       fITSSumTP->SetCrvGlo(it,crv);
       fITSSumTP->SetCrvGloErr(it,crve);
-      const AliExternalTrackParam* inTPC =  esdTr->GetTPCInnerParam();
+      const AliExternalTrackParam* inTPC =  esdTr->GetTPCInnerParam(); // TPC track at vtx
       if (inTPC) {
 	 crv =  inTPC->GetC(esd->GetMagneticField());
-	 crve = TMath::Sqrt(inTPC->GetSigma1Pt2()) * esd->GetMagneticField()*kB2C;
+	 crve = TMath::Sqrt(inTPC->GetSigma1Pt2()) * TMath::Abs(esd->GetMagneticField()*kB2C);
 	 fITSSumTP->SetCrvTPC(it,crv);
 	 fITSSumTP->SetCrvTPCErr(it,crve);
+      }
+      inTPC = esdTr->GetInnerParam();  // TPC track at the inner wall
+      if (inTPC) {
+	inTPC->GetXYZ(xyz);
+	fITSSumTP->SetTPCInnerXYZ(it,xyz);
       }
     }
     fITSSumTP->SetUniqueID(fCurrentRunNumber);
@@ -695,6 +700,9 @@ void AliAnalysisTaskITSAlignQA::Terminate(Option_t */*option*/)
   }else{
     printf("Warning: pointer to fHistNEvents is NULL\n");
   }
+  //
+  if (fDoFillTPTree) CreateUserInfo();
+  //
   return;
 }
 
@@ -804,7 +812,10 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
   while((pair = dynamic_cast<TPair*> (iter.Next()))){	 
     TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
     TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
-    if (keyStr && valStr) cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+    if (keyStr && valStr) {
+      cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+      AliInfo(Form("Add %s : %s to cdbMap of ITSTPUserInfo",keyStr->GetName(),valStr->GetName()));
+    }
   }	 
   
   TList *cdbListCopy = new TList();	 
@@ -815,6 +826,7 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
   AliCDBId* id=0;
   while((id = dynamic_cast<AliCDBId*> (iter2.Next()))){	 
     cdbListCopy->Add(new TObjString(id->ToString().Data()));	 
+    AliInfo(Form("Add %s to cdbList of ITSTPUserInfo",id->ToString().Data()));
   }	 
   // 
   fTPTree->GetUserInfo()->Add(cdbMapCopy);	 
