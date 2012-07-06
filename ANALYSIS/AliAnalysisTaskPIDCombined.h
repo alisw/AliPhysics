@@ -62,6 +62,10 @@ private:
   AliESDtrackCuts      *fTrackCuts;            //! track selection
   AliAnalysisFilter    *fTrackFilter;         //! track filter
 
+  TH2D *fDeDx;                              //! histo with the dedx
+  TH2D *fDeDxTuned;                         //! histo to check the dedx tuning in MC
+
+
   AliAnalysisTaskPIDCombined(const AliAnalysisTaskPIDCombined &c);
   AliAnalysisTaskPIDCombined& operator= (const AliAnalysisTaskPIDCombined &c);
 

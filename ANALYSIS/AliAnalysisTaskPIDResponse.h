@@ -40,6 +40,7 @@ public:
 
   void SetOADBPath(const char* path) {fOADBPath=path;}
   const char* GetOADBPath() const { return fOADBPath.Data(); }
+  void SetTuneOnData(Bool_t flag,Int_t recopass){fIsTunedOnData=flag;fRecoPassTuned=recopass;};
 
 private:
   Bool_t fIsMC;                        //  If we run on MC data
@@ -49,6 +50,9 @@ private:
   Int_t   fRun;                        //! current run number
   Int_t   fOldRun;                     //! current run number
   Int_t   fRecoPass;                   //! reconstruction pass
+
+  Bool_t  fIsTunedOnData;              // flag to tune MC on data (dE/dx)
+  Int_t   fRecoPassTuned;              // Reco pass tuned on data for MC
   
   //
   void SetRecoInfo();

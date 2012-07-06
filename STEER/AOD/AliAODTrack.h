@@ -271,6 +271,8 @@ class AliAODTrack : public AliVTrack {
   //pid signal interface
   Double_t  GetITSsignal()       const { return fDetPid?fDetPid->GetITSsignal():0.;    }
   Double_t  GetTPCsignal()       const { return fDetPid?fDetPid->GetTPCsignal():0.;    }
+  Double_t  GetTPCsignalTunedOnData() const { return fTPCsignalTuned;}
+  void      SetTPCsignalTunedOnData(Double_t signal) {fTPCsignalTuned = signal;}
   UShort_t  GetTPCsignalN()      const { return fDetPid?fDetPid->GetTPCsignalN():0;    }
   virtual AliTPCdEdxInfo* GetTPCdEdxInfo() const {return fDetPid?fDetPid->GetTPCdEdxInfo():0;}
   Double_t  GetTPCmomentum()     const { return fDetPid?fDetPid->GetTPCmomentum():0.;  }
@@ -284,7 +286,7 @@ class AliAODTrack : public AliVTrack {
   UChar_t   GetTRDntrackletsPID() const;
   void      GetHMPIDpid(Double_t */*p*/) const { return; } // TODO: To be implemented properly with the new HMPID object
 
-  const AliAODEvent* GetAODEvent(){return fAODEvent;}
+  const AliAODEvent* GetAODEvent() const {return fAODEvent;}
   void SetAODEvent(const AliAODEvent* ptr){fAODEvent = ptr;}
 
   AliAODPid    *GetDetPid() const { return fDetPid; }
@@ -411,9 +413,11 @@ class AliAODTrack : public AliVTrack {
   Double_t      fTrackPhiOnEMCal;   // phi of track after being propagated to 430cm
   Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to 430cm
 
+  Double_t      fTPCsignalTuned;    //! TPC signal tuned on data when using MC
+
   const AliAODEvent* fAODEvent;     //! 
 
-  ClassDef(AliAODTrack, 17);
+  ClassDef(AliAODTrack, 18);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

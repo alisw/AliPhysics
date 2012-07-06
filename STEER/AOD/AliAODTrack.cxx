@@ -55,6 +55,7 @@ AliAODTrack::AliAODTrack() :
   fProdVertex(NULL),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
+  fTPCsignalTuned(0),
   fAODEvent(NULL)
 {
   // default constructor
@@ -106,6 +107,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fProdVertex(prodVertex),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
+  fTPCsignalTuned(0),
   fAODEvent(NULL)
 {
   // constructor
@@ -161,6 +163,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fProdVertex(prodVertex),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
+  fTPCsignalTuned(0),
   fAODEvent(NULL)
 {
   // constructor
@@ -210,6 +213,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fProdVertex(trk.fProdVertex),
   fTrackPhiOnEMCal(trk.fTrackPhiOnEMCal),
   fTrackEtaOnEMCal(trk.fTrackEtaOnEMCal),
+  fTPCsignalTuned(trk.fTPCsignalTuned),
   fAODEvent(trk.fAODEvent)
 {
   // Copy constructor
@@ -257,6 +261,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fCaloIndex         = trk.fCaloIndex;
     fTrackPhiOnEMCal   = trk.fTrackPhiOnEMCal;
     fTrackEtaOnEMCal   = trk.fTrackEtaOnEMCal;
+    fTPCsignalTuned    = trk.fTPCsignalTuned;
 
     delete fCovMatrix;
     if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<6>(*trk.fCovMatrix);

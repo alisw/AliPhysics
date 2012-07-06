@@ -72,7 +72,8 @@ fTOFtail(1.1),
 fTOFPIDParams(0x0),
 fEMCALPIDParams(0x0),
 fCurrentEvent(0x0),
-fCurrCentrality(0.0)
+fCurrCentrality(0.0),
+fTuneMConData(kFALSE)
 {
   //
   // default ctor
@@ -123,7 +124,8 @@ fTOFtail(1.1),
 fTOFPIDParams(0x0),
 fEMCALPIDParams(0x0),
 fCurrentEvent(0x0),
-fCurrCentrality(0.0)
+fCurrCentrality(0.0),
+fTuneMConData(kFALSE)
 {
   //
   // copy ctor
@@ -370,6 +372,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTPCProbability  (const AliV
 
   Double_t dedx=track->GetTPCsignal();
   Bool_t mismatch=kTRUE/*, heavy=kTRUE*/;
+
+  if(fTuneMConData) dedx = this->GetTPCsignalTunedOnData(track);
 
   for (Int_t j=0; j<AliPID::kSPECIES; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
@@ -750,8 +754,9 @@ void AliPIDResponse::SetTPCParametrisation()
   TString datatype="DATA";
   //in case of mc fRecoPass is per default 1
   if (fIsMC) {
-    datatype="MC";
-    fRecoPass=1;
+      datatype="MC";
+      if(!fTuneMConData) datatype="MC";
+      fRecoPass=1;
   }
   
   //
@@ -763,7 +768,7 @@ void AliPIDResponse::SetTPCParametrisation()
 
   // period
   TString period=fLHCperiod;
-  if (fIsMC) period=fMCperiodTPC;
+  if (fIsMC && !fTuneMConData) period=fMCperiodTPC;
 
   AliInfo(Form("Searching splines for: %s %s PASS%d %s",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
   Bool_t found=kFALSE;
@@ -771,13 +776,15 @@ void AliPIDResponse::SetTPCParametrisation()
   //set the new PID splines
   //
   if (fArrPidResponseMaster){
+    Int_t recopass = fRecoPass;
+    if(fTuneMConData) recopass = fRecoPassUser;
     TObject *grAll=0x0;
     //for MC don't use period information
 //     if (fIsMC) period="[A-Z0-9]*";
     //for MC use MC period information
 //pattern for the default entry (valid for all particles)
-    TPRegexp reg(Form("TSPLINE3_%s_([A-Z]*)_%s_PASS%d_%s_MEAN",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
-    
+    TPRegexp reg(Form("TSPLINE3_%s_([A-Z]*)_%s_PASS%d_%s_MEAN",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
+   
     //loop over entries and filter them
     for (Int_t iresp=0; iresp<fArrPidResponseMaster->GetEntriesFast();++iresp){
       TObject *responseFunction=fArrPidResponseMaster->At(iresp);

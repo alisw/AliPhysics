@@ -125,7 +125,7 @@ Double_t AliTPCPIDResponse::GetExpectedSignal(const Float_t mom,
   // assigned clusters and/or the track dip angle, for example.  
   //
   
-  Double_t mass=AliPID::ParticleMass(n);
+  Double_t mass=AliPID::ParticleMassZ(n);
   if (!fUseDatabase||fResponseFunctions.GetEntriesFast()>AliPID::kUnknown) return Bethe(mom/mass);
   //
   TSpline3 * responseFunction = (TSpline3 *) fResponseFunctions.UncheckedAt(n);

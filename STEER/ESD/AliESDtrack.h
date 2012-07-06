@@ -218,10 +218,14 @@ public:
   void    SetTPCsignal(Float_t signal, Float_t sigma, UChar_t npoints){ 
      fTPCsignal = signal; fTPCsignalS = sigma; fTPCsignalN = npoints;
   }
+  void    SetTPCsignalTunedOnData(Float_t signal){
+      fTPCsignalTuned = signal;
+  }
   void  SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo); 
 
   AliTPCdEdxInfo * GetTPCdEdxInfo() const {return fTPCdEdxInfo;}
   Double_t GetTPCsignal() const {return fTPCsignal;}
+  Double_t GetTPCsignalTunedOnData() const {return fTPCsignalTuned;}
   Double_t GetTPCsignalSigma() const {return fTPCsignalS;}
   UShort_t GetTPCsignalN() const {return fTPCsignalN;}
   Double_t GetTPCmomentum() const {return fIp?fIp->GetP():GetP();}
@@ -477,6 +481,7 @@ protected:
   Double32_t  fITSdEdxSamples[4]; // [0.,0.,10] ITS dE/dx samples
 
   Double32_t  fTPCsignal;        // [0.,0.,10] detector's PID signal
+  Double32_t  fTPCsignalTuned;   //! [0.,0.,10] detector's PID signal tuned on data when using MC
   Double32_t  fTPCsignalS;       // [0.,0.,10] RMS of dEdx measurement
   AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
   Double32_t  fTPCPoints[4];     // [0.,0.,10] TPC points -first, max. dens, last and max density
@@ -536,7 +541,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,65)  //ESDtrack 
+  ClassDef(AliESDtrack,66)  //ESDtrack 
 };
 
 

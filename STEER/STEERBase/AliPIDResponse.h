@@ -100,6 +100,10 @@ public:
   void SetTOFtail(Float_t tail=1.1){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
   void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
 
+  virtual Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const {return t->GetTPCsignal();};
+  Bool_t IsTunedOnData() const {return fTuneMConData;};
+  void SetTunedOnData(Bool_t flag=kTRUE,Int_t recoPass=0){fTuneMConData = flag; if(recoPass>0) fRecoPassUser = recoPass;};
+
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
 
@@ -144,6 +148,8 @@ private:
 
   Float_t fCurrCentrality;             //! current centrality
   
+  Bool_t fTuneMConData;                // switch to force the MC to be similar to data (dE/dx)
+
   void ExecNewRun();
   
   //
@@ -173,7 +179,7 @@ private:
   //
   void SetRecoInfo();
   
-  ClassDef(AliPIDResponse, 7);  //PID response handling
+  ClassDef(AliPIDResponse, 8);  //PID response handling
 };
 
 inline Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EParticleType type) const {
@@ -181,6 +187,8 @@ inline Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, Ali
   Double_t mom  = track->GetTPCmomentum();
   Double_t sig  = track->GetTPCsignal();
   UInt_t   sigN = track->GetTPCsignalN();
+
+  if(fTuneMConData) sig = GetTPCsignalTunedOnData(track);
 
   Double_t nSigma = -999.;
   if (sigN>0) nSigma=fTPCResponse.GetNumberOfSigmas(mom,sig,sigN,type);

@@ -43,6 +43,8 @@ public:
   void SetNMaxSigmaTOFTPCMismatch(Float_t range) {fRangeTOFMismatch=range;}
   Float_t GetNMaxSigmaTOFTPCMismatch() const {return fRangeTOFMismatch;}
 
+  Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
+
 private:
   Float_t           fRangeTOFMismatch; // nSigma max for TOF matching with TPC
 

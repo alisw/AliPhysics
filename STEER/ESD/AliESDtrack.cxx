@@ -200,6 +200,7 @@ AliESDtrack::AliESDtrack() :
   fGlobalChi2(0),
   fITSsignal(0),
   fTPCsignal(0),
+  fTPCsignalTuned(0),
   fTPCsignalS(0),
   fTPCdEdxInfo(0),
   fTRDsignal(0),
@@ -314,6 +315,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fGlobalChi2(track.fGlobalChi2),
   fITSsignal(track.fITSsignal),
   fTPCsignal(track.fTPCsignal),
+  fTPCsignalTuned(track.fTPCsignalTuned),
   fTPCsignalS(track.fTPCsignalS),
   fTPCdEdxInfo(0),
   fTRDsignal(track.fTRDsignal),
@@ -440,6 +442,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fGlobalChi2(0),
   fITSsignal(0),
   fTPCsignal(0),
+  fTPCsignalTuned(0),
   fTPCsignalS(0),
   fTPCdEdxInfo(0),
   fTRDsignal(0),
@@ -586,6 +589,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fGlobalChi2(0),
   fITSsignal(0),
   fTPCsignal(0),
+  fTPCsignalTuned(0),
   fTPCsignalS(0),
   fTPCdEdxInfo(0),
   fTRDsignal(0),
@@ -916,6 +920,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fITSsignal  = source.fITSsignal;     
   for (Int_t i=0;i<4;i++) {fITSdEdxSamples[i]=source.fITSdEdxSamples[i];}
   fTPCsignal  = source.fTPCsignal;     
+  fTPCsignalTuned  = source.fTPCsignalTuned;
   fTPCsignalS = source.fTPCsignalS;    
   for(int i = 0; i< 4;++i){
     fTPCPoints[i] = source.fTPCPoints[i];  
@@ -1065,6 +1070,7 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fTPCchi2 = fTPCchi2; 
   track.fTPCchi2Iter1 = fTPCchi2Iter1; 
   track.fTPCsignal = fTPCsignal;
+  track.fTPCsignalTuned = fTPCsignalTuned;
   track.fTPCsignalS = fTPCsignalS;
   for(int i = 0;i<4;++i)track.fTPCPoints[i] = fTPCPoints[i];
 
@@ -1144,6 +1150,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTPCClusterMap = 0;  
   fTPCSharedMap = 0;  
   fTPCsignal= 0;      
+  fTPCsignalTuned= 0;
   fTPCsignalS= 0;      
   fTPCsignalN= 0;      
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=0; 

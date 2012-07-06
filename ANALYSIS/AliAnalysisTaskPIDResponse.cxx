@@ -38,7 +38,9 @@ fOADBPath(),
 fPIDResponse(0x0),
 fRun(0),
 fOldRun(0),
-fRecoPass(0)
+fRecoPass(0),
+fIsTunedOnData(kFALSE),
+fRecoPassTuned(0)  
 {
   //
   // Dummy constructor
@@ -53,7 +55,9 @@ fOADBPath(),
 fPIDResponse(0x0),
 fRun(0),
 fOldRun(0),
-fRecoPass(0)
+fRecoPass(0),
+fIsTunedOnData(kFALSE),
+fRecoPassTuned(0)
 {
   //
   // Default constructor
@@ -90,6 +94,8 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
 
   fPIDResponse->SetOADBPath(AliAnalysisManager::GetOADBPath());
   if (!fOADBPath.IsNull()) fPIDResponse->SetOADBPath(fOADBPath.Data());
+
+  if(fIsTunedOnData) fPIDResponse->SetTunedOnData(kTRUE,fRecoPassTuned);
 }
 
 //______________________________________________________________________________

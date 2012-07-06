@@ -64,7 +64,9 @@ AliAnalysisTaskPIDCombined::AliAnalysisTaskPIDCombined() :
   fPIDResponse(0x0),
   fPIDCombined(0x0),
   fTrackCuts(0x0),
-  fTrackFilter(0x0)
+  fTrackFilter(0x0),
+  fDeDx(NULL),
+  fDeDxTuned(NULL)
 {
   //
   // Constructor
@@ -89,7 +91,9 @@ AliAnalysisTaskPIDCombined::AliAnalysisTaskPIDCombined(const char *name) :
   fPIDResponse(0x0),
   fPIDCombined(0x0),
   fTrackCuts(0x0),
-  fTrackFilter(0x0)
+  fTrackFilter(0x0),
+  fDeDx(NULL),
+  fDeDxTuned(NULL)
 {
   //
   // Constructor
@@ -221,6 +225,10 @@ void AliAnalysisTaskPIDCombined::UserCreateOutputObjects()
   }
 
 
+  fDeDx = new TH2D("hDeDx",";p_{TPC};dE/dx (a.u.)",500,0,5,500,0,500);
+  fHistList.Add(fDeDx);
+  fDeDxTuned = new TH2D("hDeDxTuned",";p_{TPC};dE/dx (a.u.)",500,0,5,500,0,500);
+  fHistList.Add(fDeDxTuned);
 
   fHistList.SetOwner();
   PostData(1,&fHistList);
@@ -301,6 +309,10 @@ void AliAnalysisTaskPIDCombined::UserExec(Option_t *)
 
       }
 
+      fPIDResponse->GetTPCsignalTunedOnData(track);
+
+      fDeDx->Fill(mom,track->GetTPCsignal());
+      fDeDxTuned->Fill(mom,track->GetTPCsignalTunedOnData());
 
     }
   }

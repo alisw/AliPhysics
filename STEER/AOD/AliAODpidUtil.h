@@ -41,6 +41,8 @@ public:
 
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const;
   
+  Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
+
 private:
   
   ClassDef(AliAODpidUtil,3)  // PID calculation class
