@@ -79,20 +79,8 @@ class AlidNdPtTrackDumpTask : public AliAnalysisTaskSE {
   Bool_t IsFromStrangeness(const Int_t label, AliStack *const stack);
   TParticle *GetMother(TParticle *const particle, AliStack *const stack);
 
-  //AliExternalTrackParam * MakeTPCInnerC(AliESDtrack *const track, const AliESDVertex* vtx, Double_t b[3]);
   Bool_t ConstrainTPCInner(AliExternalTrackParam *const tpcInnerC, const AliESDVertex* vtx, Double_t b[3]);
-
-  //Double_t CalculateChi2(AliESDtrack *const track, AliExternalTrackParam *const trackParam);
-  //Double_t CalculateChi2(AliExternalTrackParam *const trackParam1, AliExternalTrackParam *const trackParam2);
-  //AliExternalTrackParam * PropagateInnerParam(AliESDtrack *const track, Double_t radius=85, Double_t step=1);
-  //AliExternalTrackParam * PropagateITSOut(Int_t iTrack, AliExternalTrackParam * trackParam, AliESDfriend * const esdFriend, Double_t b[3], Double_t radius, Double_t step);
-  
-  //AliExternalTrackParam * MakeTrackInnerC(AliESDtrack *const track, const AliESDVertex* vtx, Double_t b[3]);
   Bool_t ConstrainTrackInner(AliExternalTrackParam *const trackInnerC, const AliESDVertex* vtx, Double_t mass, Double_t b[3]);
-
-  //Bool_t PropagateITSOutAndDump(Int_t iTrack, AliESDtrack *const track, AliESDfriend *const esdFriend, const AliESDVertex* vtx, Double_t b[3]);
-  //Bool_t UseMCInfoAndDump(AliMCEvent *const mcEvent, AliESDtrack *const track, AliStack *const stack);
-  //Bool_t DumpEventInfo();
 
   // v0s selection
   Int_t  GetKFParticle(AliESDv0 *const v0, AliESDEvent * const event, AliKFParticle & kfparticle);
