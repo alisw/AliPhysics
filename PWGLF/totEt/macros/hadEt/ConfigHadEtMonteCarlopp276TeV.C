@@ -7,7 +7,7 @@ AliAnalysisHadEtMonteCarlo * ConfigHadEtMonteCarlo(){
   hadEtMC->InvestigateSmearing(kTRUE);
 
   //Turns off O(100) histograms that we do not normally use
-  hadEtMC->RunLightweight(kTRUE);
+  hadEtMC->RunLightweight(kFALSE);
 
   //Whether or not to look at Et(sim)-Et(reco) for full acceptance
   hadEtMC->InvestigateFull(kTRUE);
@@ -30,6 +30,9 @@ AliAnalysisHadEtMonteCarlo * ConfigHadEtMonteCarlo(){
 
   //Turn baryon enhancement on and off
   hadEtMC->EnhanceBaryons(kTRUE);
+
+  //Do trigger checks
+  hadEtMC->DoTriggerChecks();
 
   hadEtMC->Init();
   return hadEtMC;

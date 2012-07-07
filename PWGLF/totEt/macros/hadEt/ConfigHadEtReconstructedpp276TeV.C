@@ -11,6 +11,9 @@ AliAnalysisHadEtReconstructed * ConfigHadEtReconstructed(){
   cout<<"eta cut is "<<corrections->GetEtaCut()<<endl;
   hadEtReco->SetCorrections(corrections);
 
+  //Do trigger checks
+  hadEtReco->DoTriggerChecks();
+
   hadEtReco->Init();
   return hadEtReco;
 }

@@ -24,6 +24,7 @@
 #include "AliAnalysisHadEtReconstructed.h"
 #include "AliAnalysisHadEtMonteCarlo.h"
 #include "AliPWG0Helper.h"
+#include "AliTriggerAnalysis.h"
 
 #include <iostream>
 #include "AliLog.h"
@@ -40,6 +41,7 @@ ClassImp(AliAnalysisTaskHadEt)
 	,fRecAnalysis(0)
 	,fMCAnalysis(0)
 	,fIsSim(isMc)
+	,kIsOfflineV0AND(0)
 {
     // Constructor
   fMCConfigFile = mcConfigFile;
@@ -174,7 +176,11 @@ if (!fESDEvent) {
 
 //if(res == 0 && cent){
 //if(cent){
-  
+ AliTriggerAnalysis *fTriggerAnalysis = new AliTriggerAnalysis();
+
+  kIsOfflineV0AND = fTriggerAnalysis->IsOfflineTriggerFired(fESDEvent, AliTriggerAnalysis::kV0AND);  
+  fRecAnalysis->SetIsOfflineV0AND(kIsOfflineV0AND);
+  fMCAnalysis->SetIsOfflineV0AND(kIsOfflineV0AND);
 
   Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
   if(fIsSim && fRecAnalysis->DataSet()!=20100) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(MCEvent()->Header());
@@ -242,6 +248,7 @@ if (!fESDEvent) {
     }
   }
   }
+  delete fTriggerAnalysis;
   //}
 //cout<<"End Event"<<endl<<endl;
 // Post output data.
