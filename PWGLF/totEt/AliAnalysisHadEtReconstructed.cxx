@@ -83,6 +83,9 @@ AliAnalysisHadEtReconstructed::AliAnalysisHadEtReconstructed() :
   ,fRawEtEMCALAcceptanceITSNoPID(0)
   ,fRawEtPHOSAcceptanceTPCNoPID(0)
   ,fRawEtPHOSAcceptanceITSNoPID(0)
+  ,kIsOfflineV0AND(0)
+  ,kDoTriggerChecks(0)
+  ,kDoTriggerChecksOnly(0)
 {
 }
 
@@ -93,6 +96,8 @@ AliAnalysisHadEtReconstructed::~AliAnalysisHadEtReconstructed()
 
 Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype)
 { // analyse ESD event
+  if(kDoTriggerChecksOnly){return 1;}//In this case we are just after trigger efficiencies and don't care about the ET reconstructed.
+  if(kDoTriggerChecks && !kIsOfflineV0AND){return 1;}//In this case we are just after trigger efficiencies and don't care about the ET reconstructed.
   ResetEventValues();
   if(!ev){
     AliFatal("ERROR: Event does not exist");   
@@ -584,6 +589,7 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
 }
 void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and adding them to the output TList
 
+  if(kDoTriggerChecksOnly){return;}//In this case we are just after trigger efficiencies and don't care about the ET reconstructed.
   //TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
   TString *strTPCITS = new TString("TPCITS");

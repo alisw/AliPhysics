@@ -4,7 +4,8 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = true, Int_t dataset = 20111, Bool_t test = kTRUE, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE) {
+void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20111, Bool_t test = kTRUE, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE
+) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -34,8 +35,6 @@ void runHadEt(bool submit = false, bool data = true, Int_t dataset = 20111, Bool
       gROOT->ProcessLine(".L AliAnalysisHadEt.cxx+g");
       gROOT->ProcessLine(".L AliAnalysisHadEtMonteCarlo.cxx+g");
       gROOT->ProcessLine(".L AliAnalysisHadEtReconstructed.cxx+g");
-      gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
-      gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
       gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
       gROOT->ProcessLine(".L AliAnalysisTaskHadEt.cxx+g");
     }
@@ -70,10 +69,12 @@ void runHadEt(bool submit = false, bool data = true, Int_t dataset = 20111, Bool
     if(data){
       cout<<"Yes I am analyzing the correct file"<<endl;
       //chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
-      chain->Add("/data/LHC11a/11000146856042.90/AliESDs.root");//data
+      //chain->Add("/data/LHC11a/11000146856042.90/AliESDs.root");//data pp 2.76 TeV w/SDD pass 2
+      chain->Add("/data/LHC11a/11000146860043.90/AliESDs.root");//data pp 2.76 TeV w/SDD pass 3
     }
     else{
-      chain->Add("/data/LHC10d15/1821/AliESDs.root");//simulation p+p
+      //chain->Add("/data/LHC10d15/1821/AliESDs.root");//simulation p+p
+      chain->Add("/data/LHC11b10a/001/AliESDs.root");
     }
   }
 
@@ -97,11 +98,10 @@ void runHadEt(bool submit = false, bool data = true, Int_t dataset = 20111, Bool
 
 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  //if(data)  AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(!data);
-  AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(0);
+  AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(!data);
   if(!physSelTask) { Printf("no physSelTask"); return; }
   AliPhysicsSelection *physSel = physSelTask->GetPhysicsSelection();
-  physSel->AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL");// #3119 #769");
+  //physSel->AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL");// #3119 #769");
 
 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
@@ -151,7 +151,7 @@ void runHadEt(bool submit = false, bool data = true, Int_t dataset = 20111, Bool
    if(!data) task2->SetMcData();
    //Add thing here to select collision type!!
    //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
-   //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
+   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
    mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");

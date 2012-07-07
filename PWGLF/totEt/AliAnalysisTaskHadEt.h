@@ -38,7 +38,7 @@ private:
     AliAnalysisHadEtReconstructed *fRecAnalysis; // Rec
     AliAnalysisHadEtMonteCarlo *fMCAnalysis; // MC
     Bool_t fIsSim;//Boolean to keep track of whether or not this is running on simulations
-
+    Bool_t kIsOfflineV0AND;//Boolean to keep track of whether or not this matches the offline trigger
     ClassDef(AliAnalysisTaskHadEt, 2); // example of analysis
 };
 

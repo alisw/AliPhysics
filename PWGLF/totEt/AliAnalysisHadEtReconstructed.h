@@ -80,6 +80,9 @@ public:
 /*     Float_t GetCorrectedPiKPEtFullAcceptanceTPCNoPID() const {return fCorrectedHadEtFullAcceptanceTPCNoPID;} */
 /*     Float_t GetCorrectedPiKPEtFullAcceptanceITSNoPID() const {return fCorrectedHadEtFullAcceptanceITSNoPID+fCorrectedHadEtFullAcceptanceTPCNoPID;} */
     void SetCorrections(AliAnalysisHadEtCorrections *corr){fCorrections = corr;}
+    void DoTriggerChecks(){kDoTriggerChecks=kTRUE;}
+    void DoTriggerChecksOnly(){kDoTriggerChecks=kTRUE;}
+    void SetIsOfflineV0AND(Bool_t val){kIsOfflineV0AND = val;}
     AliAnalysisHadEtCorrections *GetCorrections(){return fCorrections;}
 
     void CreateHistograms();
@@ -140,6 +143,9 @@ protected:
     Float_t fRawEtPHOSAcceptanceTPCNoPID;//uncorrected Et for PHOS acceptance, pT > 0.15 GeV/c
     Float_t fRawEtPHOSAcceptanceITSNoPID;//uncorrected Et for PHOS acceptance, pT > 0.10 GeV/c
 
+    Bool_t kIsOfflineV0AND;//Boolean to keep track of whether or not this matches the offline trigger
+    Bool_t kDoTriggerChecks;//Boolean to keep track of whether or not I want to let the physics selection do the work
+    Bool_t kDoTriggerChecksOnly;//Boolean to keep track of whether or not I want to let the physics selection do the work
 
  private:
     //Declare it private to avoid compilation warning
