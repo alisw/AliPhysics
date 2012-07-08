@@ -34,8 +34,6 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliMCEvent.h"
-#include "AliMCEventHandler.h"
-#include "AliAnalysisManager.h"
 
 
 ClassImp(AliESDpid)
@@ -83,8 +81,7 @@ Float_t AliESDpid::GetTPCsignalTunedOnData(const AliVTrack *t) const {
 
     AliPID::EParticleType type = AliPID::kPion;
 
-    AliMCEventHandler* eventHandler=NULL;
-    eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    AliMCEventHandler* eventHandler=dynamic_cast<AliMCEventHandler*>(fEventHandler);
     if (eventHandler) {
 	AliMCEvent* mcEvent = eventHandler->MCEvent();
 	if(mcEvent){

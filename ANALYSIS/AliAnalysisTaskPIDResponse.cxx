@@ -25,6 +25,8 @@
 #include <AliVTrack.h>
 #include <AliLog.h>
 #include <AliPIDResponse.h>
+#include <AliESDpid.h>
+
 
 #include "AliAnalysisTaskPIDResponse.h"
 
@@ -79,9 +81,8 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   //
   // Create the output QA objects
   //
-  
+    
   AliLog::SetClassDebugLevel("AliAnalysisTaskPIDResponse",10);
-  
   //input hander
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
@@ -113,6 +114,10 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
   }
 
   fPIDResponse->InitialiseEvent(event,fRecoPass);
+  AliESDpid *pidresp = dynamic_cast<AliESDpid*>(fPIDResponse);
+  if(pidresp && AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
+      pidresp->SetEventHandler(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  }
 }
 
 //______________________________________________________________________________

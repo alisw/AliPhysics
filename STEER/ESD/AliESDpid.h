@@ -13,6 +13,7 @@
 //-------------------------------------------------------
 #include <Rtypes.h>
 #include "AliESDtrack.h" // Needed for inline functions
+#include "AliMCEventHandler.h"
 
 //#include "HMPID/AliHMPID.h"
 //#include "TRD/AliTRDpidESD.h"
@@ -25,7 +26,9 @@ class AliVParticle;
 
 class AliESDpid : public AliPIDResponse  {
 public:
-  AliESDpid(Bool_t forMC=kFALSE): AliPIDResponse(forMC), fRangeTOFMismatch(5.) {;}
+  AliESDpid(Bool_t forMC=kFALSE): AliPIDResponse(forMC), fRangeTOFMismatch(5.), fEventHandler(NULL) {;}
+AliESDpid(const AliESDpid&a): AliPIDResponse(a), fRangeTOFMismatch(a.fRangeTOFMismatch), fEventHandler(NULL){;};
+    AliESDpid& operator=(const AliESDpid& a){AliPIDResponse::operator=(a); fRangeTOFMismatch=a.fRangeTOFMismatch; fEventHandler=NULL; return *this;};
   virtual ~AliESDpid() {}
   
   Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t timeZeroTOF=9999) const;
@@ -45,10 +48,14 @@ public:
 
   Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
 
-private:
-  Float_t           fRangeTOFMismatch; // nSigma max for TOF matching with TPC
+  void SetEventHandler(AliVEventHandler *event){fEventHandler=event;};
 
-  ClassDef(AliESDpid,6)  // PID calculation class
+private:
+
+  Float_t           fRangeTOFMismatch; // nSigma max for TOF matching with TPC
+  AliVEventHandler *fEventHandler; //! MC event handler
+  
+  ClassDef(AliESDpid,7)  // PID calculation class
 };
 
 
