@@ -346,7 +346,7 @@ public:
   
   //Filtered kinematics in AOD	
   virtual TClonesArray*     GetAODMCParticles(Int_t input = 0) const ;
-  virtual AliAODMCHeader*   GetAODMCHeader(Int_t input = 0)    const ;
+  virtual AliAODMCHeader*   GetAODMCHeader()         const ;
 	
   virtual AliVEvent*        GetInputEvent()          const { return fInputEvent            ; }
   virtual AliVEvent*        GetOriginalInputEvent()  const { return 0x0                    ; }
