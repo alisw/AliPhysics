@@ -159,7 +159,8 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
 {
   // Check the event, if the requested ptHard is much larger than the jet pT, then there is a problem.
   // Only for PYTHIA.
-  if(!fReadStack) return kTRUE; //Information not filtered to AOD
+  
+  //printf("AliCaloTrackReader::ComparePtHardAndJetPt() - GenHeaderName : %s\n",GetGenEventHeader()->ClassName());
   
   if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
   {
@@ -168,21 +169,27 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
     Int_t nTriggerJets =  pygeh->NTriggerJets();
     Float_t ptHard = pygeh->GetPtHard();
     
-    //if(fDebug > 1) printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %f\n",nTriggerJets, ptHard);
+    if(fDebug > 1) 
+      printf("AliCaloTrackReader::ComparePtHardAndJetPt() - Njets: %d, pT Hard %f\n",nTriggerJets, ptHard);
+    
     Float_t tmpjet[]={0,0,0,0};
     for(Int_t ijet = 0; ijet< nTriggerJets; ijet++)
     {
       pygeh->TriggerJet(ijet, tmpjet);
       jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+      
+      if(fDebug > 1) 
+        printf("AliCaloTrackReader::ComparePtHardAndJetPt() - jet %d; pycell jet pT %f\n",ijet, jet->Pt());
+      
       //Compare jet pT and pt Hard
-      //if(fDebug > 1) printf("AliMCAnalysisUtils:: %d pycell jet pT %f\n",ijet, jet->Pt());
       if(jet->Pt() > fPtHardAndJetPtFactor * ptHard)
       {
-        printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
-               nTriggerJets, ptHard, jet->Pt(), fPtHardAndJetPtFactor);
+        printf("AliCaloTrackReader::ComparePtHardAndJetPt() - Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
+                ptHard, jet->Pt(), fPtHardAndJetPtFactor);
         return kFALSE;
       }
     }
+    
     if(jet) delete jet; 
   }
   
@@ -241,9 +248,20 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
     return fMC->GenEventHeader();
   }
   else
-  {
-    printf("AliCaloTrackReader::GenEventHeader is not available\n"); 
-    return 0x0 ;
+  {    
+    if(GetAODMCHeader())
+    {
+      //printf("AliCaloTrackReader::GetGenEventHeader() - N headers %d\n",GetAODMCHeader()->GetNCocktailHeaders());
+      if( GetAODMCHeader()->GetNCocktailHeaders() > 0)
+        return GetAODMCHeader()->GetCocktailHeader(0) ;
+      else 
+        return 0x0;
+    }
+    else 
+    {
+      return 0;
+      printf("AliCaloTrackReader::GetGenEventHeader() - MC header not available!n");
+    }
   }
 }
 
@@ -274,8 +292,8 @@ TClonesArray* AliCaloTrackReader::GetAODMCParticles(Int_t input) const
   return rv ; 
 }
 
-//___________________________________________________________________
-AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const 
+//________________________________________________________
+AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader() const 
 {
   //Return MC header in AOD. Do it for the corresponding input event.
   
@@ -283,15 +301,8 @@ AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const
   
   if(fDataType == kAOD)
   {
-    //Normal input AOD
-    if(input == 0) 
-    {
-      mch = (AliAODMCHeader*)((AliAODEvent*)fInputEvent)->FindListObject("mcheader");
-    }
-    else 
-    {
-      printf("AliCaloTrackReader::GetAODMCHeader() - wrong AOD input index, %d\n",input);
-    }
+    AliAODEvent * aod = dynamic_cast<AliAODEvent*> (fInputEvent);
+    if(aod) mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
   }
   else 
   {
@@ -526,7 +537,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   }
   
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
-  if(fComparePtHardAndJetPt && GetStack()) 
+  if(fComparePtHardAndJetPt) 
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
   }
