@@ -48,8 +48,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fEtamin(-0.9), 
   fEtamax(0.9),
   fAreacut(0.0),
-  fDoEventMixing(0),
-  fMixingTracks(50000),
+  fTrkBias(5),
+  fClusBias(5),
   fESD(0), 
   fPoolMgr(0x0), 
   fOutputList(0),
@@ -57,8 +57,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistTrackEtaPhi(0), 
-  fHistJetHEtaPhi(0), 
-  fhnMixedEvents(0x0)
+  fHistJetHEtaPhi(0) 
 {
   // Default Constructor
 
@@ -87,6 +86,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fEtamin(-0.9), 
   fEtamax(0.9),
   fAreacut(0.0),
+  fTrkBias(5),
+  fClusBias(5),
   fDoEventMixing(0),
   fMixingTracks(50000),
   fESD(0), 
@@ -186,9 +187,10 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
      UInt_t cifras = 0; // bit coded, see GetDimParams() below 
      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7; 
      fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
-     }
 
-  fhnMixedEvents->Sumw2();
+     fhnMixedEvents->Sumw2();
+  }
+  
 
   fOutputList->Add(fHistTrackPt);
   fOutputList->Add(fHistCentrality);
@@ -403,6 +405,9 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
       //prevents 0 area jets from sneaking by when area cut == 0
       if (jet->Area()==0)
 	continue;
+      //exclude jets with extremely high pt tracks which are likely misreconstructed
+      if(jet->MaxTrackPt()>100)
+	continue;
 
       Double_t jetPt = jet->Pt();
 
@@ -424,10 +429,10 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
     Double_t jetPt = jet->Pt();
     Double_t jeteta=jet->Eta();
 
-      fHistJetPt[centbin]->Fill(jet->Pt());
-
-      if ((jet->MaxTrackPt()>6) || (jet->MaxClusterPt()>6))
-	fHistJetPtBias[centbin]->Fill(jet->Pt());
+    fHistJetPt[centbin]->Fill(jet->Pt());
+    
+    if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias))
+      fHistJetPtBias[centbin]->Fill(jet->Pt());
 
 
       fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
@@ -503,7 +508,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
   Double_t fvertex[3]={0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(fvertex);
   Double_t zVtx=fvertex[3];
-  
+
   if(fDoEventMixing>0){
     
     // event mixing
@@ -549,26 +554,30 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	  
 	  Int_t nMix = pool->GetCurrentNEvents();
 	  
-	  
-	  // Fill mixed-event histos here  
-	  for (Int_t jMix=0; jMix<nMix; jMix++) 
-	    {
-	      TObjArray* bgTracks = pool->GetEvent(jMix);
-	      const Int_t Nbgtrks = bgTracks->GetEntries();
-	      for(Int_t ibg=0; ibg<Nbgtrks; ibg++){
-		AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));         
-		if(!part) continue;
-		
-		Double_t DPhi = jetphi - part->Phi();
-		Double_t DEta = jeteta - part->Eta();
-		Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
-		if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
-		if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
-		Double_t triggerEntries[7] = {fcent,jetPt,part->Pt(),DR,DEta,DPhi,0.0};                      
-		fhnMixedEvents->Fill(triggerEntries,1./nMix);
+	  //Fill for biased jet triggers only
+	  if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
+
+	    // Fill mixed-event histos here  
+	    for (Int_t jMix=0; jMix<nMix; jMix++) 
+	      {
+		TObjArray* bgTracks = pool->GetEvent(jMix);
+		const Int_t Nbgtrks = bgTracks->GetEntries();
+		for(Int_t ibg=0; ibg<Nbgtrks; ibg++){
+		  AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));         
+		  if(!part) continue;
+  
+		  Double_t DPhi = jetphi - part->Phi();
+		  Double_t DEta = jeteta - part->Eta();
+		  Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
+		  if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
+		  if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
+		  Double_t triggerEntries[7] = {fcent,jetPt,part->Pt(),DR,DEta,DPhi,0.0};                      
+		  fhnMixedEvents->Fill(triggerEntries,1./nMix);
+		  
+		  
+		}
 	      }
-	      
-	    }
+	  }
 	}
     }
 
@@ -721,6 +730,9 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList(TObjArray* track
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* particle = (AliVParticle*) tracks->At(i);
+    if(TMath::Abs(particle->Eta())>0.9) continue;
+    if(particle->Pt()<0.15)continue;
+
     tracksClone->Add(new AliPicoTrack(particle->Pt(), particle->Eta(), particle->Phi(), particle->Charge(), 0, 0, 0, 0));
   }
   
