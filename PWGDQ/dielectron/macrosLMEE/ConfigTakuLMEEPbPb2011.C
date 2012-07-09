@@ -3,7 +3,35 @@ void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 void SetSignals(AliDielectron *die);
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFPeri;TPCTOFCentnoRejTight;TPCTOFCentTight");
+//////////////////////////////////////////////////////
+///// lists of cuts 
+////  |cutDefinition | CENT | PID | Pair |
+///// | 0 | - | - | - |
+///// | 1 | 0-10 | kPbPb2011TPCandTOFwide | - | 
+///// | 2 | 10-30 | kPbPb2011TPCandTOFwide | - | 
+///// | 3 | 30-50 | kPbPb2011TPCandTOFwide | - | 
+///// | 4 | 0-10 | kPbPb2011TPCandTOFwide | OP & SetPreFilterAllSigns | 
+///// | 5 | 10-30 | kPbPb2011TPCandTOFwide | OP & SetPreFilterAllSigns | 
+///// | 6 | 30-50 | kPbPb2011TPCandTOFwide | OP & SetPreFilterAllSigns | 
+///// | 7 | 0-10 | kPbPb2011TPCandTOFwide | Phiv & SetPreFilterAllSigns | 
+///// | 8 | 10-30 | kPbPb2011TPCandTOFwide | Phiv & SetPreFilterAllSigns | 
+///// | 9 | 30-50 | kPbPb2011TPCandTOFwide | Phiv & SetPreFilterAllSigns | 
+///// | 10 | 0-10 | kPbPb2011TPCandTOFwide | OP & No SetPreFilterAllSigns | 
+///// | 11 | 10-30 | kPbPb2011TPCandTOFwide | OP & No SetPreFilterAllSigns | 
+///// | 12 | 30-50 | kPbPb2011TPCandTOFwide | OP & No SetPreFilterAllSigns | 
+///// | 13 | 0-10 | kPbPb2011TPCandTOFwide | Phiv & No SetPreFilterAllSigns | 
+///// | 14 | 10-30 | kPbPb2011TPCandTOFwide | Phiv & No SetPreFilterAllSigns | 
+///// | 15 | 30-50 | kPbPb2011TPCandTOFwide | Phiv & No SetPreFilterAllSigns | 
+//////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+TString names=("noPairing;TPCTOFCentnoPair;TPCTOFSemiCent1noPair;TPCTOFSemiCent2noPair;TPCTOFCentOpPair;TPCTOFSemiCent1OpPair;TPCTOFSemiCent2OpPair;TPCTOFCentPvPair;TPCTOFSemiCent1PvPair;TPCTOFSemiCent2PvPair;TPCTOFCentOpPair2;TPCTOFSemiCent1OpPair2;TPCTOFSemiCent2OpPair2;TPCTOFCentPvPair2;TPCTOFSemiCent1PvPair2;TPCTOFSemiCent2PvPair2");
+                
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -15,7 +43,9 @@ AliDielectron* ConfigTakuLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE,
 
   Int_t selectedPID=-1;
   Int_t selectedCentrality=-1;
+  Int_t selectedPairCut=-1;
   Bool_t rejectionStep=kFALSE;
+  Bool_t HasPairCut = kFALSE;
   LMEECutLib*  LMCL = new LMEECutLib();
 
   //
@@ -27,56 +57,137 @@ AliDielectron* ConfigTakuLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE,
 
   TString name=Form("%02d",cutDefinition);
   if ((cutDefinition)<arrNames->GetEntriesFast()){
-	name=arrNames->At((cutDefinition))->GetName();
+    name=arrNames->At((cutDefinition))->GetName();
   }
-
+  
   //thisCut only relevant for MC:
   AliDielectron *die =
-	new AliDielectron(Form
-			  ("%s",name.Data()),
-			  Form("Track cuts: %s",name.Data()));
+    new AliDielectron(Form
+		      ("%s",name.Data()),
+		      Form("Track cuts: %s",name.Data()));
   
-
+  
   if (MCenabled){
     die->SetHasMC(kTRUE);
   }
   
   //Setup AnalysisSelection:
   if (cutDefinition==0) {
-	//not yet implemented
+    //not yet implemented
   }
+  //////////////////////////////////////////////
   else if (cutDefinition==1) {
     selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
     selectedCentrality = LMEECutLib::kPbPb2011Central;
     rejectionStep = kFALSE;
+    HasPairCut = kFALSE;
   }
   else if (cutDefinition==2) {
     selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
     rejectionStep = kFALSE;
+    HasPairCut = kFALSE;
   }
   else if (cutDefinition==3) {
     selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011Peripheral;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
     rejectionStep = kFALSE;
+    HasPairCut = kFALSE;
   }
+  //////////////////////////////////////////////
   else if (cutDefinition==4) {
     selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
     selectedCentrality = LMEECutLib::kPbPb2011Central;
+    selectedPairCut = LMEECutLib::kPbPb2011OP;
     rejectionStep = kTRUE;
+    HasPairCut =  kTRUE;
   }
   else if (cutDefinition==5) {
     selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
+    selectedPairCut = LMEECutLib::kPbPb2011OP;
     rejectionStep = kTRUE;
+    HasPairCut =  kTRUE;
   }
   else if (cutDefinition==6) {
     selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011Peripheral;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
+    selectedPairCut = LMEECutLib::kPbPb2011OP;
     rejectionStep = kTRUE;
+    HasPairCut =  kTRUE;
   }
+  //////////////////////////////////////////////
+  else if (cutDefinition==7) {
+    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLib::kPbPb2011Central;
+    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    rejectionStep = kTRUE;
+    HasPairCut =  kTRUE;
+  }
+  else if (cutDefinition==8) {
+    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
+    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    rejectionStep = kTRUE;
+    HasPairCut =  kTRUE;
+  }
+  else if (cutDefinition==9) {
+    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
+    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    rejectionStep = kTRUE;
+    HasPairCut =  kTRUE;
+  }
+  //////////////////////////////////////////////
+  else if (cutDefinition==10) {
+    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLib::kPbPb2011Central;
+    selectedPairCut = LMEECutLib::kPbPb2011OP;
+    rejectionStep = kFALSE;
+    HasPairCut =  kTRUE;
+  }
+  else if (cutDefinition==11) {
+    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
+    selectedPairCut = LMEECutLib::kPbPb2011OP;
+    rejectionStep = kFALSE;
+    HasPairCut =  kTRUE;
+  }
+  else if (cutDefinition==12) {
+    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
+    selectedPairCut = LMEECutLib::kPbPb2011OP;
+    rejectionStep = kFALSE;
+    HasPairCut =  kTRUE;
+  }
+  //////////////////////////////////////////////
+  else if (cutDefinition==13) {
+    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLib::kPbPb2011Central;
+    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    rejectionStep = kFALSE;
+    HasPairCut =  kTRUE;
+  }
+  else if (cutDefinition==14) {
+    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
+    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    rejectionStep = kFALSE;
+    HasPairCut =  kTRUE;
+  }
+  else if (cutDefinition==15) {
+    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
+    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    rejectionStep = kFALSE;    
+    HasPairCut =  kTRUE;
+  }
+  //////////////////////////////////////////////
 
-//Legacy cuts, check consistence w/ 1 & 4, then remove
+
+
+  //Legacy cuts, check consistence w/ 1 & 4, then remove
+  /*
   else if (cutDefinition==7) {
     selectedPID = LMEECutLib::kPbPb2011TPCandTOF;
     selectedCentrality = LMEECutLib::kPbPb2011Central;
@@ -87,7 +198,7 @@ AliDielectron* ConfigTakuLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE,
     selectedCentrality = LMEECutLib::kPbPb2011Central;
     rejectionStep = kTRUE;
   }
-
+  */
   else Semi{
     cout << " =============================== " << endl;
     cout << " ==== INVALID CONFIGURATION ==== " << endl;
@@ -97,20 +208,32 @@ AliDielectron* ConfigTakuLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE,
 
   //Now configure task
 
-  //Apply correct Pre-Filter Scheme, if necessary
-  die->SetPreFilterAllSigns();
-  //die->SetNoPairing(kTRUE);
-
+  /*
   if (rejectionStep) {
     die->GetTrackFilter().AddCuts(LMCL->GetPIDCutsPre(selectedPID) );
     die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
     die->GetPairPreFilter().AddCuts(LMCL->GetPairCuts(selectedPID) );
   }
   else { //No Prefilter, no Pairfilter
-    die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
   }
-  //Introduce NULL-check for pp?
+  */
+
+
+  //Apply correct Pre-Filter Scheme, if necessary
+  die->SetPreFilterAllSigns(rejectionStep);
+
+  die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
   die->GetEventFilter().AddCuts(LMCL->GetCentralityCuts(selectedCentrality));
+
+  if(HasPairCut==kTRUE){
+    if(rejectionStep==kTRUE){
+      die->GetPairPreFilterLegs().AddCuts(LMCL->GetPIDCutsAna(selectedPID) );
+      die->GetPairPreFilter().AddCuts( LMCL->GetPairPreFilterCuts(selectedPairCut));
+      die->GetPairFilter().AddCuts( LMCL->GetPairCuts(selectedPairCut));
+    }else{
+      die->GetPairFilter().AddCuts( LMCL->GetPairCuts(selectedPairCut));
+    }
+  }
 
 
 
@@ -277,9 +400,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 			100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
   //2D Histo Plot
   histos->UserHistogram("Pair","InvMassPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
-			1000,0.0,5.0,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
-
-  histos->UserHistogram("Pair","InvMassOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
+			1000,0.0,5.0,200,0.,20.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
+  histos->UserHistogram("Pair","InvMassPhivPair","PhivPair vs Inv. Mass;Inv. Mass [GeV]; Phiv",
+			1000,0.0,5.0,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
+  histos->UserHistogram("Pair","InvMassOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV] ; OpeningAngle[rad]",
 			1000,0.0,5.0,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
 
   //add histograms to Track classes
@@ -325,6 +449,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("MyPair","InvMyMassPsiPair","PsiPair vs Inv.MyMass;Inv. MyMass [GeV]; Phiv",
 			1000,0.0,5.0,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPsiPair);
 
+  histos->UserHistogram("MyPair","InvMyMassPhivPair","PhivPair vs Inv.MyMass;Inv. MyMass [GeV]; Phiv",
+			1000,0.0,5.0,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
+
   histos->UserHistogram("MyPair","InvMyMassR","R vs Inv.MyMass;Inv. MyMass [GeV]; R[cm]",
 			1000,0.0,5.0,200,0.,30,AliDielectronVarManager::kM,AliDielectronVarManager::kR);
 
@@ -340,6 +467,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   histos->UserHistogram("MyPairV0","InvV0MyMassPsiPair","PsiPair vs Inv.MyMass;Inv. MyMass [GeV]; Psi[rad]",
 			1000,0.0,5.0,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPsiPair);
+
+  histos->UserHistogram("MyPairV0","InvV0MyMassPhivPair","PhivPair vs Inv.MyMass;Inv. MyMass [GeV]; Phiv [rad]",
+			1000,0.0,5.0,200,0.,4,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
 
   histos->UserHistogram("MyPairV0","InvV0MyMassR","R vs Inv.MyMass;Inv. MyMass [GeV]; R[cm]",
 			1000,0.0,5.0,200,0.,30,AliDielectronVarManager::kM,AliDielectronVarManager::kR);
