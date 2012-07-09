@@ -287,7 +287,6 @@ void AliAnalysisTaskTriggeredBF::UserCreateOutputObjects() {
   Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
   Double_t* vtxbins     = vertexBins;
   Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
-  cout<<nCentralityBins<<" "<<nVertexBins<<endl;
 
   fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
 
@@ -305,7 +304,7 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
   // Called for each event
 
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
-  Float_t fCentrality = 0.;  
+  Float_t fCentrality = -1.;  
 
   // -------------------------------------------------------------		     
   // AOD analysis (vertex and track cuts also here!!!!)
