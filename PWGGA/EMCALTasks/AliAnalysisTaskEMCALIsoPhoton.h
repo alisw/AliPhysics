@@ -5,6 +5,7 @@
 
 class TH1F;
 class TH2F;
+class THnSparse;
 class TObjArray;
 class AliEMCALGeometry;
 class AliESDCaloCells;
@@ -50,6 +51,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Bool_t                 fIsTrain;               // variable to set train mode
   Double_t               fExoticCut;             // variable to set the cut on exotic clusters
   Double_t               fIsoConeR;              // variable to set the isolation cone radius
+  Int_t                  fNDimensions;           // variable to set the number of dimensions of n-sparse
+  Double_t               fECut;                  // variable to set the minimum E of a cluster
   
  private:
   AliESDEvent *fESD;      //! ESD object
@@ -92,7 +95,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fCeIsoVsEtPi0TM;          //!Track-matched Neutral isolation Et vs. cluster Et, pi0 selection (BG)
   TH2F        *fTrIsoVsEtPi0TM;          //!Track-matched Charged isolation Et vs. cluster Et, pi0 selection (BG)
   TH2F        *fAllIsoVsEtPi0TM;         //!Track-matched Total isolation Et vs. cluster Et, pi0 selection (BG)
-   
+  THnSparse   *fHnOutput;                //!Output matrix with 7 dimensions
+
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
   AliAnalysisTaskEMCALIsoPhoton& operator=(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
   

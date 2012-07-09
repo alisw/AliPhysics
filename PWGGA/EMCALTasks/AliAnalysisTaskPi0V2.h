@@ -28,8 +28,8 @@ class THnSparse;
 
 class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
  public:
-    AliAnalysisTaskPi0V2();
     AliAnalysisTaskPi0V2(const char *name);
+    AliAnalysisTaskPi0V2();
     virtual ~AliAnalysisTaskPi0V2();
     
     virtual void     UserCreateOutputObjects();

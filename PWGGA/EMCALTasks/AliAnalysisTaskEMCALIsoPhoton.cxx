@@ -7,6 +7,7 @@
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <THnSparse.h>
 #include <TLorentzVector.h>
 #include <TTree.h>
 
@@ -47,6 +48,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fIsTrain(0),
   fExoticCut(0.97),
   fIsoConeR(0.4),
+  fNDimensions(7),
+  fECut(3.),
   fESD(0),
   fOutputList(0),
   fEvtSel(0),
@@ -84,7 +87,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fAllIsoVsEtPhoTM(0),    
   fCeIsoVsEtPi0TM(0),        
   fTrIsoVsEtPi0TM(0),        
-  fAllIsoVsEtPi0TM(0)    
+  fAllIsoVsEtPi0TM(0),
+  fHnOutput(0)
 {
   // Default constructor.
 }
@@ -103,6 +107,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fIsTrain(0),
   fExoticCut(0.97),
   fIsoConeR(0.4),
+  fNDimensions(7),
+  fECut(3.),
   fESD(0),
   fOutputList(0),
   fEvtSel(0),
@@ -140,7 +146,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fAllIsoVsEtPhoTM(0),       
   fCeIsoVsEtPi0TM(0),        
   fTrIsoVsEtPi0TM(0),        
-  fAllIsoVsEtPi0TM(0)    
+  fAllIsoVsEtPi0TM(0),    
+  fHnOutput(0)
 {
   // Constructor
 
@@ -307,6 +314,16 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fAllIsoVsEtPi0TM->Sumw2();
   fOutputList->Add(fAllIsoVsEtPi0TM);
 
+  const Int_t ndims =   fNDimensions;
+  Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000, nTrClDphi=200, nTrClDeta=100;
+  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nTrClDphi, nTrClDeta};
+  Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -0.1,-0.05};
+  Double_t xmax[] = { 100., 4., 190., 190., 190., 0.1, 0.05};
+  fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, d#phi_{trk},d#eta_{trk}", ndims, bins, xmin, xmax);
+  fOutputList->Add(fHnOutput);
+
+
+
   PostData(1, fOutputList);
 }
 
@@ -396,6 +413,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       continue;
     if(!c->IsEMCAL())
       continue;
+    if(c->E()<fECut)
+      continue;
     Short_t id;
     Double_t Emax = GetMaxCellEnergy( c, id);
     Double_t Ecross = GetCrossEnergy( c, id);
@@ -418,7 +437,17 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     Float_t ceisoue =  cephiband/phibandArea*netConeArea;
     Float_t trisoue =  trphiband/phibandArea*netConeArea;
     Float_t allisoue =  allphiband/phibandArea*netConeArea;
-    Double_t dR = TMath::Sqrt(pow(c->GetTrackDx(),2)+pow(c->GetTrackDz(),2));
+    const Int_t ndims =   fNDimensions;
+    Double_t outputValues[ndims];
+    outputValues[0] = Et;
+    outputValues[1] = c->GetM02();
+    outputValues[2] = ceiso-cecore-ceisoue;
+    outputValues[3] = triso-trisoue;
+    outputValues[4] = alliso-cecore-allisoue;
+    outputValues[5] = c->GetTrackDx();
+    outputValues[6] = c->GetTrackDz();
+    fHnOutput->Fill(outputValues);
+    /* Double_t dR = TMath::Sqrt(pow(c->GetTrackDx(),2)+pow(c->GetTrackDz(),2));
     Double_t M02u;
     if(Et<12)
       M02u = 0.02486*Et*Et - 0.7289*Et + 6.266;
@@ -491,7 +520,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
 	fTrIsoVsEtPi0TM->Fill(Et, triso - trcore - trisoue);
 	fAllIsoVsEtPi0TM->Fill(Et, alliso - allcore - allisoue);
       }
-    }
+    }*/
     if(c->E()>maxE)
       maxE = c->E();
   }

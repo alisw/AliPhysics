@@ -55,9 +55,9 @@ using std::endl;
 ClassImp(AliAnalysisTaskPi0V2)
 
 //________________________________________________________________________
-AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initialised here
- //  :AliAnalysisTaskSE(),
-   :AliAnalysisTaskSE(),
+//AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initialised here
+AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members should be initialised here
+   :AliAnalysisTaskSE(name),
     fOutput(0),
     fESD(0),
     fcheckEP2sub(1),
@@ -81,8 +81,9 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
 }
 
 //________________________________________________________________________
-AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members should be initialised here
-   :AliAnalysisTaskSE(name),
+//AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members should be initialised here
+AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initialised here
+   :AliAnalysisTaskSE(),
     fOutput(0),
     fESD(0),
     fcheckEP2sub(1),
@@ -168,7 +169,7 @@ Double_t AliAnalysisTaskPi0V2::GetCrossEnergy(const AliVCluster *cluster, Short_
   Int_t iphis   = -1;
   Int_t ietas   = -1;
 
-  Double_t crossEnergy = 0;
+  Double_t crossEnergy = 0.;
 
   geom->GetCellIndex(idmax,iSupMod,iTower,iIphi,iIeta);
   geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphis,ietas);
@@ -259,8 +260,9 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodCluster(const AliESDCaloCluster *c) const
 
   Short_t id = -1;
   Double_t maxE = GetMaxCellEnergy(c, id); 
-  if((1. - GetCrossEnergy(c,id) / maxE) > 0.97)
+     if((1. - double(GetCrossEnergy(c,id))/maxE) > 0.97)
     return kFALSE;
+
 
   Float_t pos1[3];
   c->GetPosition(pos1);
@@ -538,7 +540,6 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     }
 
     hEvtCount->Fill(3);
-
     AliEventplane *ep = fESD->GetEventplane();
       if (ep) {
       if (ep->GetQVector())
@@ -572,6 +573,8 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     }
 //cout<<" fEPV0:"<<fEPV0<<" fEPV0A:"<<fEPV0A<<" fEPV0C:"<<fEPV0C<<" fEPV0Ar:"<<fEPV0Ar<<" fEPV0Cr:"<<fEPV0Cr<<" fEPV0r:"<<fEPV0AR4<<" fEPV0AR7:"<<fEPV0AR7<<" fEPV0CR0:"<<fEPV0CR0<<" fEPV0CR3:"<<fEPV0CR3<<"--------------------------------------------"<<endl;
     
+//cout<<" EPTPC: "<<fEPTPC<<" resoTPC: "<<fEPTPCreso<<"---------------"<<endl;
+
     hEvtCount->Fill(4);
 
     if(fcheckEP2sub){
@@ -633,9 +636,11 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     Int_t nCluster =  fESD->GetNumberOfCaloClusters(); 
     for(Int_t i=0; i<nCluster; ++i){
       AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
+      if(!c1->IsEMCAL()) continue;
       if(!IsGoodCluster(c1)) continue;
       for(Int_t j=i+1; j<nCluster; ++j){
 	AliESDCaloCluster *c2 = fESD->GetCaloCluster(j);
+        if(!c2->IsEMCAL()) continue;
         if(!IsGoodCluster(c2)) continue;
         TLorentzVector p1;
         GetMom(p1, c1, vertex);
