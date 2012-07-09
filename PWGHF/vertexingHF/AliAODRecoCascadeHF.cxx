@@ -147,10 +147,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     Int_t lab = trk->GetLabel();
     if(lab==-1) { // this daughter is the 2prong
       lab=lab2Prong;
-    } else if(lab<-1) {
-      printf("daughter with negative label\n");
-      continue;
-    }
+    } else if(lab<-1) continue;
     dgLabels[i] = lab;
   }
 
@@ -306,3 +303,4 @@ Bool_t AliAODRecoCascadeHF::TrigonometricalCut() const {
   if((phi01>phi00) || (phi02>phi00)) return kFALSE;
   return kTRUE;
 }
+
