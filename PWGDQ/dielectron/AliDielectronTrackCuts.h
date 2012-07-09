@@ -81,7 +81,7 @@ private:
 
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
   Bool_t CheckITSClusterCut(UChar_t itsBits) const;
-  
+
   ClassDef(AliDielectronTrackCuts,2)         // Dielectron TrackCuts
 };
 
