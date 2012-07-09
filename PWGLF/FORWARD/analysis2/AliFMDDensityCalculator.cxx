@@ -220,7 +220,7 @@ AliFMDDensityCalculator::Init(const TAxis& axis)
   // Parameters:
   //   etaAxis   Not used
   DGUARD(fDebug, 1, "Initialize FMD density calculator");
-  CacheMaxWeights();
+  CacheMaxWeights(axis);
  
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -448,7 +448,7 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
   
 //_____________________________________________________________________
 void
-AliFMDDensityCalculator::CacheMaxWeights()
+AliFMDDensityCalculator::CacheMaxWeights(const TAxis& axis)
 {
   // 
   // Find the max weights and cache them 
@@ -456,7 +456,7 @@ AliFMDDensityCalculator::CacheMaxWeights()
   DGUARD(fDebug, 2, "Cache maximum weights in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*           cor = fcm.GetELossFit();
-  TAxis eta(240,-6,6);
+  TAxis eta(axis); // Set to default from parent task 
   if(cor) 
     eta.Set(cor->GetEtaAxis().GetNbins(), 
 	    cor->GetEtaAxis().GetXmin(), 

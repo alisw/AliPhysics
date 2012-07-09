@@ -245,8 +245,9 @@ protected:
   /** 
    * Find the max weights and cache them 
    * 
+   * @param axis Default @f$\eta@f$ axis from parent task 
    */  
-  void CacheMaxWeights();
+  void CacheMaxWeights(const TAxis& axis);
   /** 
    * Find the (cached) maximum weight for FMD<i>dr</i> in 
    * @f$\eta@f$ bin @a iEta

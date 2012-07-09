@@ -377,6 +377,7 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   DGUARD(fDebug,2,"Store information from AliFMDEventInspector");
   if (!fList) return;
 
+#if 0
   TNamed* sys = new TNamed("sys", "");
   TNamed* sNN = new TNamed("sNN", "");
   TNamed* fld = new TNamed("field", "");
@@ -388,6 +389,17 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   sys->SetTitle(AliForwardUtil::CollisionSystemString(fCollisionSystem));
   sNN->SetTitle(AliForwardUtil::CenterOfMassEnergyString(fEnergy));
   fld->SetTitle(AliForwardUtil::MagneticFieldString(fField));
+#else
+  TParameter<int>*  sys = new TParameter<int>("sys", fCollisionSystem);
+  TParameter<int>*  sNN = new TParameter<int>("sNN", fEnergy);
+  TParameter<int>*  fld = new TParameter<int>("field", fField);
+  TParameter<int>*  run = new TParameter<int>("runNo", runNo);
+  TParameter<int>*  low = new TParameter<int>("lowFlux", fLowFluxCut);
+  TParameter<bool>* fpv = new TParameter<bool>("fpVtx",fUseFirstPhysicsVertex);
+  TParameter<bool>* v0a = new TParameter<bool>("v0and",fUseV0AND);
+  TParameter<int>*  ncp = new TParameter<int>("nPileUp", fMinPileupContrib);
+  
+#endif
   sys->SetUniqueID(fCollisionSystem);
   sNN->SetUniqueID(fEnergy);
   fld->SetUniqueID(fField);
