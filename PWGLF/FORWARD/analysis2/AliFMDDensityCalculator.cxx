@@ -436,8 +436,8 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
   //    iEta  Eta bin 
   //
   DGUARD(fDebug, 3, "Find maximum weight in FMD density calculator");
-  if(!cor)
-		return -1;
+  if(!cor) return -1; 
+
   AliFMDCorrELossFit::ELossFit* fit = cor->GetFit(d,r,iEta);
   if (!fit) { 
     // AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
@@ -456,9 +456,11 @@ AliFMDDensityCalculator::CacheMaxWeights()
   DGUARD(fDebug, 2, "Cache maximum weights in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*           cor = fcm.GetELossFit();
-   TAxis defaultaxis(240,-6,6);
-	TAxis& eta=defaultaxis;
-	if(cor)eta = cor->GetEtaAxis();
+  TAxis eta(240,-6,6);
+  if(cor) 
+    eta.Set(cor->GetEtaAxis().GetNbins(), 
+	    cor->GetEtaAxis().GetXmin(), 
+	    cor->GetEtaAxis().GetXmax());
 
   Int_t nEta = eta.GetNbins();
   fFMD1iMax.Set(nEta);
