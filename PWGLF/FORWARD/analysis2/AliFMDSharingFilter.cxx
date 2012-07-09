@@ -213,7 +213,7 @@ AliFMDSharingFilter::GetRingHistos(UShort_t d, Char_t r) const
 
 //____________________________________________________________________
 void
-AliFMDSharingFilter::Init()
+AliFMDSharingFilter::Init(const TAxis& axis)
 {
   // Initialise 
   DGUARD(fDebug,1, "Initialize for AliFMDSharingFilter");
@@ -224,7 +224,7 @@ AliFMDSharingFilter::Init()
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
   
-  TAxis eAxis(240,-6,6);
+  TAxis eAxis(axis);
   if(fits) 
     eAxis.Set(fits->GetEtaAxis().GetNbins(), 
 	      fits->GetEtaAxis().GetXmin(),

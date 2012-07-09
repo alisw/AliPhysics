@@ -240,7 +240,7 @@ AliForwardMCMultiplicityTask::InitializeSubs()
 
 
   fEventInspector.Init(*pv);
-  fSharingFilter.Init();
+  fSharingFilter.Init(*pe);
   fDensityCalculator.Init(*pe);
   fCorrections.Init(*pe);
   fHistCollector.Init(*pv,*pe);

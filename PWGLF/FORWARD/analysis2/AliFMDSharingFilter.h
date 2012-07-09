@@ -98,8 +98,9 @@ public:
   /** 
    * Initialize 
    * 
+   * @param default eta axis from parent task 
    */
-  void Init();
+  void Init(const TAxis& axis);
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
