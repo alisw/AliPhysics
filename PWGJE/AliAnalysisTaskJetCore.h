@@ -68,6 +68,7 @@ public:
    virtual void     SetEvtClassMin(Int_t evtClass) { fEvtClassMin = evtClass; }
    virtual void     SetEvtClassMax(Int_t evtClass) { fEvtClassMax = evtClass; }
    virtual void     SetFilterMask(UInt_t i){fFilterMask = i;}
+   virtual void     SetFilterMaskBestPt(UInt_t i){fFilterMaskBestPt = i;}
    virtual void     SetFilterType(Int_t iType){fFilterType=iType;}
    virtual void     SetRadioFrac(Float_t radiofrac) { fRadioFrac = radiofrac; }
    virtual void     SetMinDist(Float_t minDist) { fMinDist = minDist; }
@@ -120,7 +121,8 @@ private:
    Int_t   fEvtClassMin;	  // lower bound on event class
    Int_t   fEvtClassMax;	  // upper bound on event class
    UInt_t  fFilterMask;            // filter bit for slecected tracks
-   Int_t   fFilterType;               
+   UInt_t  fFilterMaskBestPt;      // filter bit for selected hig pt tracks (best quality)
+   UInt_t  fFilterType;           // type of slected tracks parrallel to filtermask
    Float_t fRadioFrac;                          //!size of the concentric cone
    Float_t fMinDist;   
    Float_t fCentMin;	  // lower bound on centrality
@@ -206,7 +208,7 @@ private:
    AliAnalysisTaskJetCore(const AliAnalysisTaskJetCore&); // not implemented
    AliAnalysisTaskJetCore& operator=(const AliAnalysisTaskJetCore&); // not implemented
 
-   ClassDef(AliAnalysisTaskJetCore, 4);
+   ClassDef(AliAnalysisTaskJetCore, 5);
 };
 
 #endif
