@@ -45,6 +45,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistTracksPt(0),
   fHistTrPhiEta(0),
   fHistTrEmcPhiEta(0),
+  fHistDeltaEtaPt(0),
+  fHistDeltaPhiPt(0),
   fHistClusPhiEtaEnergy(0),
   fHistNCellsEnergy(0),
   fHistClusTimeEnergy(0),
@@ -91,6 +93,8 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistTracksPt(0),
   fHistTrPhiEta(0),
   fHistTrEmcPhiEta(0),
+  fHistDeltaEtaPt(0),
+  fHistDeltaPhiPt(0),
   fHistClusPhiEtaEnergy(0),
   fHistNCellsEnergy(0),
   fHistClusTimeEnergy(0),
@@ -206,6 +210,16 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTrEmcPhiEta->GetXaxis()->SetTitle("#eta");
   fHistTrEmcPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistTrEmcPhiEta);
+
+  fHistDeltaEtaPt = new TH2F("fHistDeltaEtaPt","fHistDeltaEtaPt", fNbins, fMinBinPt, fMaxBinPt, 80, -0.5, 0.5);
+  fHistDeltaEtaPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistDeltaEtaPt->GetYaxis()->SetTitle("#eta");
+  fOutput->Add(fHistDeltaEtaPt);
+
+  fHistDeltaPhiPt = new TH2F("fHistDeltaPhiPt","fHistDeltaPhiPt", fNbins, fMinBinPt, fMaxBinPt, 256, -1.6, 4.8);
+  fHistDeltaPhiPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  fHistDeltaPhiPt->GetYaxis()->SetTitle("#phi");
+  fOutput->Add(fHistDeltaPhiPt);
 
   if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
     fHistClusPhiEtaEnergy = new TH3F("fHistClusPhiEtaEnergy","Phi-Eta-Energy distribution of clusters", fNbins, fMinBinPt, fMaxBinPt, 80, -2, 2, 128, 0, 6.4);
@@ -527,6 +541,8 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
       continue;
 
     fHistTrEmcPhiEta->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());
+    fHistDeltaEtaPt->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
+    fHistDeltaPhiPt->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
   }
   
   return sum;
