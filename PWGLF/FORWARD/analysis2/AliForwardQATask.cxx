@@ -277,15 +277,10 @@ AliForwardQATask::InitializeSubs()
   const TAxis* pe = 0;
   const TAxis* pv = 0;
 
-
-
-
-  if (!ReadCorrections(pe,pv)) 
-  { 
-    AliWarning("Used default binning");
-    pv=new TAxis(10,-10, 10);
-    pe=new TAxis(240,-6,6);
-    //return false;
+  if (!ReadCorrections(pe,pv))  { 
+    AliWarning("Using default binning");
+    pv = new TAxis(10,-10, 10);
+    pe = new TAxis(240,-6,6);
   }
 
   fHistos.Init(*pe);
