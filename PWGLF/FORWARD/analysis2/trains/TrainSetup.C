@@ -933,6 +933,9 @@ protected:
     // Production mode - not used here 
     // plugin->SetProductionMode();
     
+    // Do not test copying 
+    plugin->SetCheckCopy(false);
+    
     // Set output to be per run 
     plugin->SetOutputToRunNo(true); 
 
@@ -2233,7 +2236,8 @@ public:
       if (!fArg.IsNull()) arg.Append(Form("=%s", fArg.Data()));
       o << "  " << (prefix ? prefix : "") 
 	<< std::left << std::setw(30) << arg 
-	<< " " << fDesc << std::endl;
+	<< " " << std::setw(30) << fDesc 
+	<< " [" << std::right << fValue << "]" << std::endl;
     }
     /** 
      * Print the setting 
@@ -2445,6 +2449,7 @@ public:
     void PrintHelp(std::ostream& out, const char* prefix="") const
     {
       Option** ptr = fOptions;
+      if (fTrain) fTrain->SetOptionDefaults(const_cast<Runner&>(*this));
       while (*ptr) { 
 	(*ptr)->PrintHelp(out, prefix);
 	ptr++;
@@ -2557,6 +2562,50 @@ protected:
     r.Add(new Option("per-run", "Per run merge"));
   } 
   //------------------------------------------------------------------
+  /** 
+   * Set the option values on the train.  Sub-classes can overload 
+   * this to set custom options on the train. 
+   */
+  virtual void SetOptionDefaults(Runner& r)
+  {
+    Option* debug	= r.FindOption("debug");
+    Option* date	= r.FindOption("date");
+    Option* cluster	= r.FindOption("cluster");
+    Option* dataSet	= r.FindOption("dataSet");
+    Option* dataDir	= r.FindOption("dataDir");
+    Option* pattern	= r.FindOption("pattern");
+    Option* par         = r.FindOption("par");
+    Option* type        = r.FindOption("type");
+    Option* mode        = r.FindOption("mode");
+    Option* oper        = r.FindOption("oper");
+    Option* mc          = r.FindOption("mc");
+    Option* verb        = r.FindOption("verb");
+    Option* root        = r.FindOption("root");
+    Option* aliroot     = r.FindOption("aliroot");
+    Option* alien       = r.FindOption("alien");
+    Option* overwrite   = r.FindOption("overwrite");
+    Option* run_merge   = r.FindOption("per-run");
+    
+    if (date    && !date->IsSet())    date->fValue    = fDatime.AsString();
+    if (cluster && !cluster->IsSet()) cluster->fValue = fProofServer;
+    if (dataSet && !dataSet->IsSet()) dataSet->fValue = fDataSet;
+    if (dataDir && !dataDir->IsSet()) dataDir->fValue = fDataSet;
+    if (pattern && !pattern->IsSet()) pattern->fValue = fDataPattern;
+    if (debug   && !debug->IsSet())   debug->fValue   = fUseGDB ? "1" : "";
+    if (type    && !type->IsSet())    type->fValue    = TypeString(fExecType);
+    if (mode    && !mode->IsSet())    mode->fValue    = ModeString(fExecMode);
+    if (oper    && !oper->IsSet())    oper->fValue    = OperString(fExecOper);
+    if (par     && !par->IsSet())     par->fValue     = fUsePar ? "1" : "";
+    if (mc      && !mc->IsSet())      mc->fValue      = fMC ? "1" : "";
+    if (verb    && !verb->IsSet())    verb->fValue    = Form("%d", fVerbose);
+    if (root    && !root->IsSet())    root->fValue    = fRootVersion;
+    if (aliroot && !aliroot->IsSet()) aliroot->fValue = fAliRootVersion;
+    if (alien   && !alien->IsSet())   alien->fValue   = fAliEnAPIVersion;
+    if (overwrite && !overwrite->IsSet()) 
+      overwrite->fValue = fAllowOverwrite ? "1" : "";
+    if (run_merge && !run_merge->IsSet()) 
+      run_merge->fValue = fPerRunMerge ? "1" : "";
+  }
   /** 
    * Set the option values on the train.  Sub-classes can overload 
    * this to set custom options on the train. 

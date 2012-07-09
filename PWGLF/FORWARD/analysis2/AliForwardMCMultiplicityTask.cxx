@@ -237,8 +237,6 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   fMCRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
   fMCRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
 
-
-
   fEventInspector.Init(*pv);
   fSharingFilter.Init(*pe);
   fDensityCalculator.Init(*pe);

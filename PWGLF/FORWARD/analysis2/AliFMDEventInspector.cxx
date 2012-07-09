@@ -383,7 +383,8 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   TNamed* fld = new TNamed("field", "");
   TNamed* run = new TNamed("runNo", Form("%d", runNo));
   TNamed* low = new TNamed("lowFlux", Form("%d", fLowFluxCut));
-  TNamed* fpv = new TNamed("fpVtx", Form("%s", fUseFirstPhysicsVertex ? "true" : "false"));
+  TNamed* fpv = new TNamed("fpVtx", Form("%s", fUseFirstPhysicsVertex ? 
+					 "true" : "false"));
   TNamed* v0a = new TNamed("v0and", Form("%s", fUseV0AND ? "true" : "false"));
   TNamed* nCp = new TNamed("nPileup", Form("%d", fMinPileupContrib));
   sys->SetTitle(AliForwardUtil::CollisionSystemString(fCollisionSystem));
@@ -397,8 +398,9 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   TParameter<int>*  low = new TParameter<int>("lowFlux", fLowFluxCut);
   TParameter<bool>* fpv = new TParameter<bool>("fpVtx",fUseFirstPhysicsVertex);
   TParameter<bool>* v0a = new TParameter<bool>("v0and",fUseV0AND);
-  TParameter<int>*  ncp = new TParameter<int>("nPileUp", fMinPileupContrib);
-  
+  TParameter<int>*  nCp = new TParameter<int>("nPileUp", fMinPileupContrib);
+  TParameter<Double_t>* dP = new TParameter<Double_t>("dPileup", 
+						      fMinPileupDistance);
 #endif
   sys->SetUniqueID(fCollisionSystem);
   sNN->SetUniqueID(fEnergy);
@@ -409,7 +411,6 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   v0a->SetUniqueID(fUseV0AND ? 1  : 0);
   nCp->SetUniqueID(fMinPileupContrib);
 
-  TParameter<Double_t>* dP = new TParameter<Double_t>("dPileup", fMinPileupDistance);
   fList->Add(sys);
   fList->Add(sNN);
   fList->Add(fld);
@@ -419,8 +420,6 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   fList->Add(v0a);
   fList->Add(nCp);
   fList->Add(dP);
-  
-
 }
 
 //____________________________________________________________________
