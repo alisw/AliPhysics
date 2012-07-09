@@ -6,6 +6,7 @@
 class TH1F;
 class TH2F;
 class THnSparse;
+class TList;
 class TObjArray;
 class AliEMCALGeometry;
 class AliESDCaloCells;
@@ -62,39 +63,6 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fPVtxZ;                   //!primary vertex Z before cut
   TH2F        *fCellAbsIdVsAmpl;         //!cell abs id vs cell amplitude (energy)
   TH2F        *fNClusHighClusE;          //!total number of clusters vs. highest clus energy in the event
-  TH2F        *fM02Et;                   //!M02 vs Et for all clusters
-  TH2F        *fM02EtTM;                 //!M02 vs Et for clusters with track-match (dEta=0.01 && dPhi=0.025)
-  TH2F        *fM02EtCeIso1;             //!M02 vs Et for clusters with isolation neutral Et<1GeV
-  TH2F        *fM02EtCeIso2;             //!M02 vs Et for clusters with isolation neutral Et<2GeV
-  TH2F        *fM02EtCeIso5;             //!M02 vs Et for clusters with isolation neutral Et<5GeV
-  TH2F        *fM02EtTrIso1;             //!M02 vs Et for clusters with isolation charged Et<1GeV
-  TH2F        *fM02EtTrIso2;             //!M02 vs Et for clusters with isolation charged Et<2GeV
-  TH2F        *fM02EtTrIso5;             //!M02 vs Et for clusters with isolation charged Et<5GeV
-  TH2F        *fM02EtAllIso1;            //!M02 vs Et for clusters with isolation total Et<1GeV
-  TH2F        *fM02EtAllIso2;            //!M02 vs Et for clusters with isolation total Et<2GeV
-  TH2F        *fM02EtAllIso5;            //!M02 vs Et for clusters with isolation total Et<5GeV
-  TH2F        *fCeIsoVsEtPho;            //!Neutral isolation Et vs. cluster Et, 0.10<M02<0.30
-  TH2F        *fTrIsoVsEtPho;            //!Charged isolation Et vs. cluster Et, 0.10<M02<0.30
-  TH2F        *fAllIsoVsEtPho;           //!Total isolation Et vs. cluster Et, 0.10<M02<0.30
-  TH2F        *fCeIsoVsEtPi0;            //!Neutral isolation Et vs. cluster Et, pi0 selection (BG)
-  TH2F        *fTrIsoVsEtPi0;            //!Charged isolation Et vs. cluster Et, pi0 selection (BG)
-  TH2F        *fAllIsoVsEtPi0;           //!Total isolation Et vs. cluster Et, pi0 selection (BG)
-  //track matched stuff
-  TH2F        *fM02EtCeIso1TM;           //!Track-matched M02 vs Et for clusters with isolation neutral Et<1GeV
-  TH2F        *fM02EtCeIso2TM;           //!Track-matched M02 vs Et for clusters with isolation neutral Et<2GeV
-  TH2F        *fM02EtCeIso5TM;           //!Track-matched M02 vs Et for clusters with isolation neutral Et<5GeV
-  TH2F        *fM02EtTrIso1TM;           //!Track-matched M02 vs Et for clusters with isolation charged Et<1GeV
-  TH2F        *fM02EtTrIso2TM;           //!Track-matched M02 vs Et for clusters with isolation charged Et<2GeV
-  TH2F        *fM02EtTrIso5TM;           //!Track-matched M02 vs Et for clusters with isolation charged Et<5GeV
-  TH2F        *fM02EtAllIso1TM;          //!Track-matched M02 vs Et for clusters with isolation total Et<1GeV
-  TH2F        *fM02EtAllIso2TM;          //!Track-matched M02 vs Et for clusters with isolation total Et<2GeV
-  TH2F        *fM02EtAllIso5TM;          //!Track-matched M02 vs Et for clusters with isolation total Et<5GeV
-  TH2F        *fCeIsoVsEtPhoTM;          //!Track-matched Neutral isolation Et vs. cluster Et, 0.10<M02<0.30
-  TH2F        *fTrIsoVsEtPhoTM;          //!Track-matched Charged isolation Et vs. cluster Et, 0.10<M02<0.30
-  TH2F        *fAllIsoVsEtPhoTM;         //!Track-matched Total isolation Et vs. cluster Et, 0.10<M02<0.30
-  TH2F        *fCeIsoVsEtPi0TM;          //!Track-matched Neutral isolation Et vs. cluster Et, pi0 selection (BG)
-  TH2F        *fTrIsoVsEtPi0TM;          //!Track-matched Charged isolation Et vs. cluster Et, pi0 selection (BG)
-  TH2F        *fAllIsoVsEtPi0TM;         //!Track-matched Total isolation Et vs. cluster Et, pi0 selection (BG)
   THnSparse   *fHnOutput;                //!Output matrix with 7 dimensions
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented

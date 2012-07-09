@@ -9,7 +9,7 @@
 #include <TH2F.h>
 #include <THnSparse.h>
 #include <TLorentzVector.h>
-#include <TTree.h>
+#include <TList.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
@@ -56,38 +56,6 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fPVtxZ(0),                 
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),        
-  fM02Et(0),                 
-  fM02EtTM(0),               
-  fM02EtCeIso1(0),           
-  fM02EtCeIso2(0),           
-  fM02EtCeIso5(0),           
-  fM02EtTrIso1(0),           
-  fM02EtTrIso2(0),           
-  fM02EtTrIso5(0),           
-  fM02EtAllIso1(0),          
-  fM02EtAllIso2(0),          
-  fM02EtAllIso5(0),          
-  fCeIsoVsEtPho(0),          
-  fTrIsoVsEtPho(0),          
-  fAllIsoVsEtPho(0),         
-  fCeIsoVsEtPi0(0),          
-  fTrIsoVsEtPi0(0),          
-  fAllIsoVsEtPi0(0),         
-  fM02EtCeIso1TM(0),         
-  fM02EtCeIso2TM(0),         
-  fM02EtCeIso5TM(0),         
-  fM02EtTrIso1TM(0),         
-  fM02EtTrIso2TM(0),         
-  fM02EtTrIso5TM(0),         
-  fM02EtAllIso1TM(0),        
-  fM02EtAllIso2TM(0),        
-  fM02EtAllIso5TM(0),        
-  fCeIsoVsEtPhoTM(0),        
-  fTrIsoVsEtPhoTM(0),        
-  fAllIsoVsEtPhoTM(0),    
-  fCeIsoVsEtPi0TM(0),        
-  fTrIsoVsEtPi0TM(0),        
-  fAllIsoVsEtPi0TM(0),
   fHnOutput(0)
 {
   // Default constructor.
@@ -115,38 +83,6 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fPVtxZ(0),            
   fCellAbsIdVsAmpl(0),  
   fNClusHighClusE(0),   
-  fM02Et(0),            
-  fM02EtTM(0),          
-  fM02EtCeIso1(0),      
-  fM02EtCeIso2(0),      
-  fM02EtCeIso5(0),      
-  fM02EtTrIso1(0),      
-  fM02EtTrIso2(0),      
-  fM02EtTrIso5(0),      
-  fM02EtAllIso1(0),     
-  fM02EtAllIso2(0),     
-  fM02EtAllIso5(0),     
-  fCeIsoVsEtPho(0),     
-  fTrIsoVsEtPho(0),     
-  fAllIsoVsEtPho(0),    
-  fCeIsoVsEtPi0(0),          
-  fTrIsoVsEtPi0(0),          
-  fAllIsoVsEtPi0(0),         
-  fM02EtCeIso1TM(0),
-  fM02EtCeIso2TM(0),        
-  fM02EtCeIso5TM(0),        
-  fM02EtTrIso1TM(0),        
-  fM02EtTrIso2TM(0),        
-  fM02EtTrIso5TM(0),        
-  fM02EtAllIso1TM(0),       
-  fM02EtAllIso2TM(0),       
-  fM02EtAllIso5TM(0),       
-  fCeIsoVsEtPhoTM(0),       
-  fTrIsoVsEtPhoTM(0),       
-  fAllIsoVsEtPhoTM(0),       
-  fCeIsoVsEtPi0TM(0),        
-  fTrIsoVsEtPi0TM(0),        
-  fAllIsoVsEtPi0TM(0),    
   fHnOutput(0)
 {
   // Constructor
@@ -169,7 +105,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
 
   
   fOutputList = new TList();
-  fOutputList->SetOwner(kTRUE);// Container cleans up all histos (avoids leaks in merging) 
+  fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging) 
   
   fGeom = AliEMCALGeometry::GetInstance(fGeoName);
   
@@ -181,138 +117,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fOutputList->Add(fPVtxZ);
   
   fCellAbsIdVsAmpl = new TH2F("hCellAbsIdVsAmpl","cell abs id vs cell amplitude (energy);E (GeV);ID",200,0,100,24*48*10,-0.5,24*48*10-0.5);
-  fOutputList->Add(fPVtxZ);
+  fOutputList->Add(fCellAbsIdVsAmpl);
 
   fNClusHighClusE = new TH2F("hNClusHighClusE","total number of clusters vs. highest clus energy in the event;E (GeV);NClus",200,0,100,301,-0.5,300.5);
   fOutputList->Add(fNClusHighClusE);
-
-  fM02Et = new TH2F("fM02Et","M02 vs Et for all clusters;E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02Et->Sumw2();
-  fOutputList->Add(fM02Et);
-
-  fM02EtTM = new TH2F("fM02EtTM","M02 vs Et for all track-matched clusters;E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtTM->Sumw2();
-  fOutputList->Add(fM02EtTM);
-
-  fM02EtCeIso1 = new TH2F("fM02EtCeIso1","M02 vs Et for all clusters (ISO_{EMC}<1GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtCeIso1->Sumw2();
-  fOutputList->Add(fM02EtCeIso1);
-
-  fM02EtCeIso2 = new TH2F("fM02EtCeIso2","M02 vs Et for all clusters (ISO_{EMC}<2GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtCeIso2->Sumw2();
-  fOutputList->Add(fM02EtCeIso2);
-
-  fM02EtCeIso5 = new TH2F("fM02EtCeIso5","M02 vs Et for all clusters (ISO_{EMC}<5GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtCeIso5->Sumw2();
-  fOutputList->Add(fM02EtCeIso5);
-
-  fM02EtTrIso1 = new TH2F("fM02EtTrIso1","M02 vs Et for all clusters (ISO_{TRK}<1GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtTrIso1->Sumw2();
-  fOutputList->Add(fM02EtTrIso1);
-
-  fM02EtTrIso2 = new TH2F("fM02EtTrIso2","M02 vs Et for all clusters (ISO_{TRK}<1GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtTrIso2->Sumw2();
-  fOutputList->Add(fM02EtTrIso2);
-
-  fM02EtTrIso5 = new TH2F("fM02EtTrIso5","M02 vs Et for all clusters (ISO_{TRK}<5GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtTrIso5->Sumw2();
-  fOutputList->Add(fM02EtTrIso5);
-
-  fM02EtAllIso1 = new TH2F("fM02EtAllIso1","M02 vs Et for all clusters (ISO_{EMC+TRK}<2GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtAllIso1->Sumw2();
-  fOutputList->Add(fM02EtAllIso1);
-
-  fM02EtAllIso2 = new TH2F("fM02EtAllIso2","M02 vs Et for all clusters (ISO_{EMC+TRK}<2GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtAllIso2->Sumw2();
-  fOutputList->Add(fM02EtAllIso2);
-
-  fM02EtAllIso5 = new TH2F("fM02EtAllIso5","M02 vs Et for all clusters (ISO_{EMC+TRK}<2GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtAllIso5->Sumw2();
-  fOutputList->Add(fM02EtAllIso5);
-
-  fCeIsoVsEtPho = new TH2F("fCeIsoVsEtPho","ISO_{EMC} vs. E_{T}^{clus} (0.1<#lambda_{0}^{2}<0.3);E_{T} (GeV);ISO_{EMC}",1000,0,100,1000,-10,190);
-  fCeIsoVsEtPho->Sumw2();
-  fOutputList->Add(fCeIsoVsEtPho);
-
-  fTrIsoVsEtPho = new TH2F("fTrIsoVsEtPho","ISO_{TRK} vs. E_{T}^{clus} (0.1<#lambda_{0}^{2}<0.3);E_{T} (GeV);ISO_{TRK}",1000,0,100,1000,-10,190);
-  fTrIsoVsEtPho->Sumw2();
-  fOutputList->Add(fTrIsoVsEtPho);
-
-  fAllIsoVsEtPho = new TH2F("fAllIsoVsEtPho","ISO_{EMC+TRK} vs. E_{T}^{clus} (0.1<#lambda_{0}^{2}<0.3);E_{T} (GeV);ISO_{EMC+TRK}",1000,0,100,1000,-10,190);
-  fAllIsoVsEtPho->Sumw2();
-  fOutputList->Add(fAllIsoVsEtPho);
-
-  fCeIsoVsEtPi0 = new TH2F("fCeIsoVsEtPi0","ISO_{EMC} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{EMC}",1000,0,100,1000,-10,190);
-  fCeIsoVsEtPi0->Sumw2();
-  fOutputList->Add(fCeIsoVsEtPi0);
-
-  fTrIsoVsEtPi0 = new TH2F("fTrIsoVsEtPi0","ISO_{TRK} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{TRK}",1000,0,100,1000,-10,190);
-  fTrIsoVsEtPi0->Sumw2();
-  fOutputList->Add(fTrIsoVsEtPi0);
-
-  fAllIsoVsEtPi0 = new TH2F("fAllIsoVsEtPi0","ISO_{EMC+TRK} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{EMC+TRK}",1000,0,100,1000,-10,190);
-  fAllIsoVsEtPi0->Sumw2();
-  fOutputList->Add(fAllIsoVsEtPi0);
-
-  fM02EtCeIso1TM = new TH2F("fM02EtCeIso1TM","M02 vs Et for all clusters (ISO_{EMC}<1GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtCeIso1TM->Sumw2();
-  fOutputList->Add(fM02EtCeIso1TM);
-
-  fM02EtCeIso2TM = new TH2F("fM02EtCeIso2TM","M02 vs Et for all clusters (ISO_{EMC}<2GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtCeIso2TM->Sumw2();
-  fOutputList->Add(fM02EtCeIso2TM);
-
-  fM02EtCeIso5TM = new TH2F("fM02EtCeIso5TM","M02 vs Et for all clusters (ISO_{EMC}<5GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtCeIso5TM->Sumw2();
-  fOutputList->Add(fM02EtCeIso5TM);
-
-  fM02EtTrIso1TM = new TH2F("fM02EtTrIso1TM","M02 vs Et for all clusters (ISO_{TRK}<1GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtTrIso1TM->Sumw2();
-  fOutputList->Add(fM02EtTrIso1TM);
-
-  fM02EtTrIso2TM = new TH2F("fM02EtTrIso2TM","M02 vs Et for all clusters (ISO_{TRK}<1GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtTrIso2TM->Sumw2();
-  fOutputList->Add(fM02EtTrIso2TM);
-
-  fM02EtTrIso5TM = new TH2F("fM02EtTrIso5TM","M02 vs Et for all clusters (ISO_{TRK}<5GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtTrIso5TM->Sumw2();
-  fOutputList->Add(fM02EtTrIso5TM);
-
-  fM02EtAllIso1TM = new TH2F("fM02EtAllIso1TM","M02 vs Et for all clusters (ISO_{EMC+TRK}<2GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtAllIso1TM->Sumw2();
-  fOutputList->Add(fM02EtAllIso1TM);
-
-  fM02EtAllIso2TM = new TH2F("fM02EtAllIso2TM","M02 vs Et for all clusters (ISO_{EMC+TRK}<2GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtAllIso2TM->Sumw2();
-  fOutputList->Add(fM02EtAllIso2TM);
-
-  fM02EtAllIso5TM = new TH2F("fM02EtAllIso5TM","M02 vs Et for all clusters (ISO_{EMC+TRK}<2GeV);E_{T} (GeV);M02",1000,0,100,400,0,4);
-  fM02EtAllIso5TM->Sumw2();
-  fOutputList->Add(fM02EtAllIso5TM);
-
-  fCeIsoVsEtPhoTM = new TH2F("fCeIsoVsEtPhoTM","ISO_{EMC} vs. E_{T}^{clus} (0.1<#lambda_{0}^{2}<0.3);E_{T} (GeV);ISO_{EMC}",1000,0,100,1000,-10,190);
-  fCeIsoVsEtPhoTM->Sumw2();
-  fOutputList->Add(fCeIsoVsEtPhoTM);
-
-  fTrIsoVsEtPhoTM = new TH2F("fTrIsoVsEtPhoTM","ISO_{TRK} vs. E_{T}^{clus} (0.1<#lambda_{0}^{2}<0.3);E_{T} (GeV);ISO_{TRK}",1000,0,100,1000,-10,190);
-  fTrIsoVsEtPhoTM->Sumw2();
-  fOutputList->Add(fTrIsoVsEtPhoTM);
-
-  fAllIsoVsEtPhoTM = new TH2F("fAllIsoVsEtPhoTM","ISO_{EMC+TRK} vs. E_{T}^{clus} (0.1<#lambda_{0}^{2}<0.3);E_{T} (GeV);ISO_{EMC+TRK}",1000,0,100,1000,-10,190);
-  fAllIsoVsEtPhoTM->Sumw2();
-  fOutputList->Add(fAllIsoVsEtPhoTM);
-
-  fCeIsoVsEtPi0TM = new TH2F("fCeIsoVsEtPi0TM","ISO_{EMC} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{EMC}",1000,0,100,1000,-10,190);
-  fCeIsoVsEtPi0TM->Sumw2();
-  fOutputList->Add(fCeIsoVsEtPi0TM);
-
-  fTrIsoVsEtPi0TM = new TH2F("fTrIsoVsEtPi0TM","ISO_{TRK} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{TRK}",1000,0,100,1000,-10,190);
-  fTrIsoVsEtPi0TM->Sumw2();
-  fOutputList->Add(fTrIsoVsEtPi0TM);
-
-  fAllIsoVsEtPi0TM = new TH2F("fAllIsoVsEtPi0TM","ISO_{EMC+TRK} vs. E_{T}^{clus} (#pi^{0} selection for BG);E_{T} (GeV);ISO_{EMC+TRK}",1000,0,100,1000,-10,190);
-  fAllIsoVsEtPi0TM->Sumw2();
-  fOutputList->Add(fAllIsoVsEtPi0TM);
 
   const Int_t ndims =   fNDimensions;
   Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000, nTrClDphi=200, nTrClDeta=100;
@@ -447,80 +255,6 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     outputValues[5] = c->GetTrackDx();
     outputValues[6] = c->GetTrackDz();
     fHnOutput->Fill(outputValues);
-    /* Double_t dR = TMath::Sqrt(pow(c->GetTrackDx(),2)+pow(c->GetTrackDz(),2));
-    Double_t M02u;
-    if(Et<12)
-      M02u = 0.02486*Et*Et - 0.7289*Et + 6.266;
-    else
-      M02u = 14.32/Et - 0.09863;
-    if(M02u<0.65)
-      M02u = 0.65;
-    Double_t M02l = 12.88/Et - 0.3194;
-    if(M02l<0.4)
-      M02l = 0.4;
-    if(dR>0.028){
-      fM02Et->Fill(Et, c->GetM02());
-      if(ceiso-cecore<1)
-	fM02EtCeIso1->Fill(Et, c->GetM02());
-      if(ceiso-cecore<2)
-	fM02EtCeIso2->Fill(Et, c->GetM02());
-      if(ceiso-cecore<5)
-	fM02EtCeIso5->Fill(Et, c->GetM02());
-      if(triso-trcore<1)
-	fM02EtTrIso1->Fill(Et, c->GetM02());
-      if(triso-trcore<2)
-	fM02EtTrIso2->Fill(Et, c->GetM02());
-      if(triso-trcore<5)
-	fM02EtTrIso5->Fill(Et, c->GetM02());
-      if(alliso-allcore<1)
-	fM02EtAllIso1->Fill(Et, c->GetM02());
-      if(alliso-allcore<2)
-	fM02EtAllIso2->Fill(Et, c->GetM02());
-      if(alliso-allcore<5)
-	fM02EtAllIso5->Fill(Et, c->GetM02());
-      if(c->GetM02()>0.1 && c->GetM02()<0.3){
-	fCeIsoVsEtPho->Fill(Et, ceiso - cecore - ceisoue);
-	fTrIsoVsEtPho->Fill(Et, triso - trcore - trisoue);
-	fAllIsoVsEtPho->Fill(Et, alliso - allcore - allisoue);
-      }
-      if(c->GetM02()>M02l && c->GetM02()<M02u){
-	fCeIsoVsEtPi0->Fill(Et, ceiso - cecore - ceisoue);
-	fTrIsoVsEtPi0->Fill(Et, triso - trcore - trisoue);
-	fAllIsoVsEtPi0->Fill(Et, alliso - allcore - allisoue);
-      }
-    }
-    else
-      {
-      fM02EtTM->Fill(Et, c->GetM02());
-      if(ceiso-cecore<1)
-	fM02EtCeIso1TM->Fill(Et, c->GetM02());
-      if(ceiso-cecore<2)
-	fM02EtCeIso2TM->Fill(Et, c->GetM02());
-      if(ceiso-cecore<5)
-	fM02EtCeIso5TM->Fill(Et, c->GetM02());
-      if(triso-trcore<1)
-	fM02EtTrIso1TM->Fill(Et, c->GetM02());
-      if(triso-trcore<2)
-	fM02EtTrIso2TM->Fill(Et, c->GetM02());
-      if(triso-trcore<5)
-	fM02EtTrIso5TM->Fill(Et, c->GetM02());
-      if(alliso-allcore<1)
-	fM02EtAllIso1TM->Fill(Et, c->GetM02());
-      if(alliso-allcore<2)
-	fM02EtAllIso2TM->Fill(Et, c->GetM02());
-      if(alliso-allcore<5)
-	fM02EtAllIso5TM->Fill(Et, c->GetM02());
-      if(c->GetM02()>0.1 && c->GetM02()<0.3){
-	fCeIsoVsEtPhoTM->Fill(Et, ceiso - cecore - ceisoue);
-	fTrIsoVsEtPhoTM->Fill(Et, triso - trcore - trisoue);
-	fAllIsoVsEtPhoTM->Fill(Et, alliso - allcore - allisoue);
-      }
-      if(c->GetM02()>M02l && c->GetM02()<M02u){
-	fCeIsoVsEtPi0TM->Fill(Et, ceiso - cecore - ceisoue);
-	fTrIsoVsEtPi0TM->Fill(Et, triso - trcore - trisoue);
-	fAllIsoVsEtPi0TM->Fill(Et, alliso - allcore - allisoue);
-      }
-    }*/
     if(c->E()>maxE)
       maxE = c->E();
   }
