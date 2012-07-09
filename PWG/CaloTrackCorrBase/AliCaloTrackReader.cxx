@@ -63,6 +63,7 @@ TObject(),                   fEventNumber(-1), //fCurrentFileName(""),
 fDataType(0),                fDebug(0), 
 fFiducialCut(0x0),           fCheckFidCut(kFALSE), 
 fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
+fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0), 
 fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0), 
 fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
@@ -157,7 +158,7 @@ AliCaloTrackReader::~AliCaloTrackReader()
 //________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
 {
-  // Check the event, if the requested ptHard is much larger than the jet pT, then there is a problem.
+  // Check the event, if the requested ptHard is much smaller than the jet pT, then there is a problem.
   // Only for PYTHIA.
   
   //printf("AliCaloTrackReader::ComparePtHardAndJetPt() - GenHeaderName : %s\n",GetGenEventHeader()->ClassName());
@@ -191,6 +192,37 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
     }
     
     if(jet) delete jet; 
+  }
+  
+  return kTRUE ;
+  
+}
+
+//____________________________________________________________________
+Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
+{
+  // Check the event, if the requested ptHard is smaller than the calorimeter cluster E, then there is a problem.
+  // Only for PYTHIA.
+  
+  if(!strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+  {
+    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
+    Float_t ptHard = pygeh->GetPtHard();
+    
+    Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
+    for (Int_t iclus =  0; iclus <  nclusters; iclus++) 
+    {
+      AliVCluster * clus = fInputEvent->GetCaloCluster(iclus) ; 
+      Float_t ecluster = clus->E();
+      
+      if(ecluster > fPtHardAndClusterPtFactor*ptHard) 
+      {
+        printf("AliCaloTrackReader::ComparePtHardAndClusterPt() - Reject : ecluster %2.2f, calo %d, factor %2.2f, ptHard %f\n",ecluster,clus->GetType(),fPtHardAndClusterPtFactor,ptHard);
+
+        return kFALSE;
+      }
+    }
+    
   }
   
   return kTRUE ;
@@ -385,8 +417,9 @@ void AliCaloTrackReader::InitParameters()
   
   fNMixedEvent = 1;
   
-  fPtHardAndJetPtFactor = 7;
-  
+  fPtHardAndJetPtFactor     = 7.;
+  fPtHardAndClusterPtFactor = 1.;
+
   //Centrality
   fCentralityClass  = "V0M";
   fCentralityOpt    = 10;
@@ -437,8 +470,11 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use Triggers selected in SE base class %d; If not what trigger Mask? %d; Trigger max for mixed %d \n", 
          fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   
-  if(fComparePtHardAndJetPt)
+  if(fComparePtHardAndClusterPt)
 	  printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
+  
+  if(fComparePtHardAndClusterPt)
+	  printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
   
   printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
@@ -540,6 +576,11 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   if(fComparePtHardAndJetPt) 
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
+  }
+  
+  if(fComparePtHardAndClusterPt) 
+  {
+    if(!ComparePtHardAndClusterPt()) return kFALSE ;
   }
   
   //Fill Vertex array
