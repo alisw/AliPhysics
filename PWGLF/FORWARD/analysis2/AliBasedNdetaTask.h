@@ -14,6 +14,7 @@
  * 
  */
 #include <AliAnalysisTaskSE.h>
+#include <TParameter.h>
 class TAxis;
 class TList;
 class TH2D;
@@ -178,6 +179,22 @@ public:
    * @param h Correction
    */
   void SetShapeCorrection(const TH2F* h);
+  /** 
+   * Get a string representing the normalization scheme 
+   * 
+   * @param scheme Normalization scheme bits 
+   * 
+   * @return String representation 
+   */
+  static const Char_t* NormalizationSchemeString(UShort_t scheme);
+  /** 
+   * Parse a string representing the normalization scheme 
+   * 
+   * @param what String of the normalization scheme 
+   * 
+   * @return normalization scheme bits
+   */
+  static UShort_t ParseNormalizationScheme(const Char_t* what);
   /** 
    * Setthe normalisation scheme to use 
    * 
@@ -844,16 +861,26 @@ protected:
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
   TH2F*           fShapeCorr;    // Shape correction 
   TObjArray*      fListOfCentralities; // Centrality bins 
+#if 0
   TNamed*         fSNNString;    // sqrt(s_NN) string 
   TNamed*         fSysString;    // Collision system string 
+#else
+  TParameter<int>* fSNNString;    // sqrt(s_NN) string 
+  TParameter<int>* fSysString;    // Collision system string 
+#endif
   TH1D*           fCent;         // Centrality distribution 
   TAxis*          fCentAxis;     // Centrality axis
   UShort_t        fNormalizationScheme; // Normalization scheme
+#if 0
   TNamed*         fSchemeString;     // Normalization scheme string
   TNamed*         fTriggerString;    // Trigger string 
+#else 
+  TParameter<int>* fSchemeString;    // Normalization scheme string
+  TParameter<int>* fTriggerString;    // Trigger string 
+#endif
   TString         fFinalMCCorrFile; //Filename for final MC corr
   
-  ClassDef(AliBasedNdetaTask,6); // Determine multiplicity in base area
+  ClassDef(AliBasedNdetaTask,7); // Determine multiplicity in base area
 };
 
 #endif

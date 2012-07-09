@@ -287,7 +287,7 @@ AliForwardQATask::InitializeSubs()
 
   fEventInspector.Init(*pv);
   fEnergyFitter.Init(*pe);
-  fSharingFilter.Init();
+  fSharingFilter.Init(*pe);
   fDensityCalculator.Init(*pe);
 
   this->Print();

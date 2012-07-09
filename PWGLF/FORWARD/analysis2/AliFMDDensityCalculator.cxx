@@ -456,7 +456,11 @@ AliFMDDensityCalculator::CacheMaxWeights(const TAxis& axis)
   DGUARD(fDebug, 2, "Cache maximum weights in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*           cor = fcm.GetELossFit();
-  TAxis eta(axis); // Set to default from parent task 
+
+  TAxis eta(axis.GetNbins(),
+	    axis.GetXmin(),
+	    axis.GetXmax());
+
   if(cor) 
     eta.Set(cor->GetEtaAxis().GetNbins(), 
 	    cor->GetEtaAxis().GetXmin(), 

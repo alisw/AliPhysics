@@ -224,7 +224,9 @@ AliFMDSharingFilter::Init(const TAxis& axis)
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
   
-  TAxis eAxis(axis);
+  TAxis eAxis(axis.GetNbins(),
+	      axis.GetXmin(),
+	      axis.GetXmax());
   if(fits) 
     eAxis.Set(fits->GetEtaAxis().GetNbins(), 
 	      fits->GetEtaAxis().GetXmin(),

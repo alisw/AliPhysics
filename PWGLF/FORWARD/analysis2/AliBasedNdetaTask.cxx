@@ -199,14 +199,37 @@ AliBasedNdetaTask::MakeCentralityBin(const char* name,
   DGUARD(fDebug,3,"Make a centrality bin [%f,%f]: %s", low, high, name);
   return new CentralityBin(name, low, high);
 }
+
+#define TESTAPPEND(SCHEME,BIT,STRING) \
+  do { if (!(SCHEME & BIT)) break;					\
+    if (!s.IsNull()) s.Append(","); s.Append(STRING); } while(false) 
+  
 //________________________________________________________________________
-void 
-AliBasedNdetaTask::SetNormalizationScheme(const char* what)
+const Char_t*
+AliBasedNdetaTask::NormalizationSchemeString(UShort_t scheme)
 {
-  // 
-  // Set normalisation scheme 
-  // 
-  DGUARD(fDebug,3,"Set the normalization scheme: %s", what);
+  // Create a string from normalization scheme bits 
+  static TString s;
+  s = "";
+
+  if (scheme == kNone) 
+    return s.Data();
+  if (scheme == kFull) { 
+    s = "FULL";
+    return s.Data();
+  }
+  TESTAPPEND(scheme, kEventLevel, 	 "EVENT");
+  TESTAPPEND(scheme, kShape, 		 "SHAPE");
+  TESTAPPEND(scheme, kBackground, 	 "BACKGROUND");
+  TESTAPPEND(scheme, kTriggerEfficiency, "TRIGGER");
+  TESTAPPEND(scheme, kZeroBin, 		 "ZEROBIN");
+
+  return s.Data();
+}
+//________________________________________________________________________
+UShort_t
+AliBasedNdetaTask::ParseNormalizationScheme(const char* what)
+{
   UShort_t    scheme = 0;
   TString     twhat(what);
   twhat.ToUpper();
@@ -229,11 +252,21 @@ AliBasedNdetaTask::SetNormalizationScheme(const char* what)
     else if (s.CompareTo("NONE")      == 0) bit = kNone;
     else if (s.CompareTo("ZEROBIN")   == 0) bit = kZeroBin;
     else 
-      Warning("SetNormalizationScheme", "Unknown option %s", s.Data());
+      ::Warning("SetNormalizationScheme", "Unknown option %s", s.Data());
     if (add) scheme |= bit;
     else     scheme ^= bit;
   }
-  SetNormalizationScheme(scheme);
+  return scheme;
+}  
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::SetNormalizationScheme(const char* what)
+{
+  // 
+  // Set normalisation scheme 
+  // 
+  DGUARD(fDebug,3,"Set the normalization scheme: %s", what);
+  SetNormalizationScheme(ParseNormalizationScheme(what));
 }
 //________________________________________________________________________
 void 
@@ -241,19 +274,16 @@ AliBasedNdetaTask::SetNormalizationScheme(UShort_t scheme)
 {
   DGUARD(fDebug,3,"Set the normalization scheme: 0x%x", scheme);
   fNormalizationScheme = scheme; 
-  TString tit = "";
-  if (scheme == kFull) tit = "FULL"; 
-  else {
-    if (scheme & kEventLevel)        tit.Append("EVENT ");
-    if (scheme & kShape)             tit.Append("SHAPE ");
-    if (scheme & kBackground)        tit.Append("BACKGROUND ");
-    if (scheme & kTriggerEfficiency) tit.Append("TRIGGER ");
-    if (scheme & kZeroBin)           tit.Append("ZEROBIN ");
-  }
-  tit = tit.Strip(TString::kBoth);
+#if 0
+  const Char_t* tit = NormalizationSchemeString(scheme);
   if (!fSchemeString) fSchemeString = new TNamed("scheme", "");
   fSchemeString->SetTitle(tit);
   fSchemeString->SetUniqueID(fNormalizationScheme);
+#else 
+  if (!fSchemeString) 
+    fSchemeString = new TParameter<int>("scheme", scheme);
+  fSchemeString->SetUniqueID(fNormalizationScheme);
+#endif
 }
 //________________________________________________________________________
 void 
@@ -274,11 +304,17 @@ AliBasedNdetaTask::SetTriggerMask(UShort_t mask)
 { 
   DGUARD(fDebug,3,"Set the trigger mask: 0x%0x", mask);
   fTriggerMask = mask; 
+#if 0
   TString tit(AliAODForwardMult::GetTriggerString(mask));
   tit = tit.Strip(TString::kBoth);
   if (!fTriggerString) fTriggerString = new TNamed("trigger", "");
   fTriggerString->SetTitle(tit);
   fTriggerString->SetUniqueID(fTriggerMask);
+#else 
+  if (!fTriggerString) 
+    fTriggerString = new TParameter<int>("trigger", fTriggerMask);
+  fTriggerString->SetUniqueID(fTriggerMask);  
+#endif
 }
 
 //________________________________________________________________________
@@ -403,6 +439,7 @@ AliBasedNdetaTask::UserExec(Option_t *)
   }
 
   // Here, we get the update 
+#if 0
   if (!fSNNString) { 
     UShort_t sNN = forward->GetSNN();
     fSNNString = new TNamed("sNN", "");
@@ -421,7 +458,25 @@ AliBasedNdetaTask::UserExec(Option_t *)
 
     // Print();
   }
+#else
+  if (!fSNNString) { 
+    UShort_t sNN = forward->GetSNN();
+    fSNNString = new TParameter<int>("sNN", sNN);
+    fSNNString->SetUniqueID(sNN);
+    fSums->Add(fSNNString);
   
+    UShort_t sys = forward->GetSystem();
+    fSysString = new TParameter<int>("sys", sys);
+    fSysString->SetUniqueID(sys);
+    fSums->Add(fSysString);
+
+    fSums->Add(fSchemeString);
+    fSums->Add(fTriggerString);
+
+    // Print();
+  }
+
+#endif
   PostData(1, fSums);
 }
 
@@ -597,11 +652,11 @@ AliBasedNdetaTask::Terminate(Option_t *)
   fOutput->SetName(Form("%s_result", GetName()));
   fOutput->SetOwner();
   
-  fSNNString     = static_cast<TNamed*>(fSums->FindObject("sNN"));
-  fSysString     = static_cast<TNamed*>(fSums->FindObject("sys"));
+  fSNNString     = static_cast<TParameter<int>*>(fSums->FindObject("sNN"));
+  fSysString     = static_cast<TParameter<int>*>(fSums->FindObject("sys"));
   fCentAxis      = static_cast<TAxis*>(fSums->FindObject("centAxis"));
-  fSchemeString  = static_cast<TNamed*>(fSums->FindObject("scheme"));
-  fTriggerString = static_cast<TNamed*>(fSums->FindObject("trigger"));
+  fSchemeString  = static_cast<TParameter<int>*>(fSums->FindObject("scheme"));
+  fTriggerString = static_cast<TParameter<int>*>(fSums->FindObject("trigger"));
 
   if(fSysString && fSNNString && 
      fSysString->GetUniqueID() == AliForwardUtil::kPP)
@@ -696,19 +751,43 @@ AliBasedNdetaTask::Terminate(Option_t *)
   if (dndetaMCStackRebin) fOutput->Add(dndetaMCStackRebin);
 
   // Output collision energy string 
-  if (fSNNString) fOutput->Add(fSNNString->Clone());
+  if (fSNNString) { 
+    UShort_t sNN = fSNNString->GetUniqueID();
+    TNamed* sNNObj = new TNamed(fSNNString->GetName(),
+				AliForwardUtil::CenterOfMassEnergyString(sNN));
+    sNNObj->SetUniqueID(sNN);
+    fOutput->Add(sNNObj); // fSNNString->Clone());
+  }
 
   // Output collision system string 
-  if (fSysString) fOutput->Add(fSysString->Clone());
+  if (fSysString) { 
+    UShort_t sys = fSysString->GetUniqueID();
+    TNamed* sysObj = new TNamed(fSysString->GetName(),
+				AliForwardUtil::CollisionSystemString(sys));
+    sysObj->SetUniqueID(sys);
+    fOutput->Add(sysObj); // fSysString->Clone());
+  }
 
   // Output centrality axis 
   if (fCentAxis) fOutput->Add(fCentAxis);
 
   // Output trigger string 
-  if (fTriggerString) fOutput->Add(fTriggerString->Clone());
+  if (fTriggerString) { 
+    UShort_t mask = fTriggerString->GetUniqueID();
+    TNamed* maskObj = new TNamed(fTriggerString->GetName(), 
+				 AliAODForwardMult::GetTriggerString(mask));
+    maskObj->SetUniqueID(mask);
+    fOutput->Add(maskObj); // fTriggerString->Clone());
+  }
   
   // Normalization string 
-  if (fSchemeString) fOutput->Add(fSchemeString->Clone());
+  if (fSchemeString) {
+    UShort_t scheme = fSchemeString->GetUniqueID();
+    TNamed* schemeObj = new TNamed(fSchemeString->GetName(), 
+				   NormalizationSchemeString(scheme));
+    schemeObj->SetUniqueID(scheme);
+    fOutput->Add(schemeObj); // fSchemeString->Clone());
+  }
 
   // Output vertex axis 
   TAxis* vtxAxis = new TAxis(1,fVtxMin,fVtxMax);
