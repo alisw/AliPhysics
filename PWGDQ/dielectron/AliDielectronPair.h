@@ -125,6 +125,7 @@ public:
 			                       const Bool_t isHE, const Bool_t isTheta);
 
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
+  Double_t PhivPair(Double_t MagField)const; //Angle of ee plane w.r.t. to magnetic field
   Double_t GetCosPointingAngle(const AliVVertex *primVtx) const;
   // internal KF particle
   const AliKFParticle& GetKFParticle()       const { return fPair; }

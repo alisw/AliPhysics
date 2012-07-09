@@ -443,3 +443,108 @@ Double_t AliDielectronPair::GetCosPointingAngle(const AliVVertex *primVtx) const
 //   Double_t psProperDecayLength = lxy*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/Pt();
 //   return psProperDecayLength;
 // }
+
+
+//______________________________________________
+Double_t AliDielectronPair::PhivPair(Double_t MagField) const
+{
+  //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
+  //to ID conversions. Angle between ee plane and magnetic field is calculated.
+
+  //Define local buffer variables for leg properties                                                                                                               
+  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+
+  if(MagField>0){
+    if(fD1.GetQ()>0){
+      px1 = fD1.GetPx();
+      py1 = fD1.GetPy();
+      pz1 = fD1.GetPz();
+
+      px2 = fD2.GetPx();
+      py2 = fD2.GetPy();
+      pz2 = fD2.GetPz();
+    }else{
+      px1 = fD2.GetPx();
+      py1 = fD2.GetPy();
+      pz1 = fD2.GetPz();
+
+      px2 = fD1.GetPx();
+      py2 = fD1.GetPy();
+      pz2 = fD1.GetPz();
+    }
+  }else{
+    if(fD1.GetQ()>0){
+      px1 = fD2.GetPx();
+      py1 = fD2.GetPy();
+      pz1 = fD2.GetPz();
+
+      px2 = fD1.GetPx();
+      py2 = fD1.GetPy();
+      pz2 = fD1.GetPz();
+    }else{
+      px1 = fD1.GetPx();
+      py1 = fD1.GetPy();
+      pz1 = fD1.GetPz();
+
+      px2 = fD2.GetPx();
+      py2 = fD2.GetPy();
+      pz2 = fD2.GetPz();
+    }
+  }    
+
+  Double_t px = px1+px2;
+  Double_t py = py1+py2;
+  Double_t pz = pz1+pz2;
+  Double_t dppair = TMath::Sqrt(px*px+py*py+pz*pz);
+
+  //unit vector of (pep+pem) 
+  Double_t pl = dppair;
+  Double_t ux = px/pl;
+  Double_t uy = py/pl;
+  Double_t uz = pz/pl;
+  Double_t ax = uy/TMath::Sqrt(ux*ux+uy*uy);
+  Double_t ay = -ux/TMath::Sqrt(ux*ux+uy*uy); 
+  
+  //momentum of e+ and e- in (ax,ay,az) axis. Note that az=0 by 
+  //definition. 
+  //Double_t ptep = iep->Px()*ax + iep->Py()*ay; 
+  //Double_t ptem = iem->Px()*ax + iem->Py()*ay; 
+  
+  Double_t pxep = px1;
+  Double_t pyep = py1;
+  Double_t pzep = pz1;
+  Double_t pxem = px2;
+  Double_t pyem = py2;
+  Double_t pzem = pz2;
+  
+  //vector product of pep X pem 
+  Double_t vpx = pyep*pzem - pzep*pyem; 
+  Double_t vpy = pzep*pxem - pxep*pzem; 
+  Double_t vpz = pxep*pyem - pyep*pxem; 
+  Double_t vp = sqrt(vpx*vpx+vpy*vpy+vpz*vpz); 
+  //Double_t thev = acos(vpz/vp); 
+  
+  //unit vector of pep X pem 
+  Double_t vx = vpx/vp; 
+  Double_t vy = vpy/vp; 
+  Double_t vz = vpz/vp; 
+
+  //The third axis defined by vector product (ux,uy,uz)X(vx,vy,vz) 
+  Double_t wx = uy*vz - uz*vy; 
+  Double_t wy = uz*vx - ux*vz; 
+  //Double_t wz = ux*vy - uy*vx; 
+  //Double_t wl = sqrt(wx*wx+wy*wy+wz*wz); 
+  // by construction, (wx,wy,wz) must be a unit vector. 
+  // measure angle between (wx,wy,wz) and (ax,ay,0). The angle between them 
+  // should be small if the pair is conversion 
+  //
+  Double_t cosPhiV = wx*ax + wy*ay; 
+  Double_t phiv = TMath::ACos(cosPhiV); 
+
+  return phiv;
+
+}
+
+
+

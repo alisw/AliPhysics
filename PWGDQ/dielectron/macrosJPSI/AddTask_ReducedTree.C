@@ -1,3 +1,4 @@
+
 //__________________________________________________________________________________________
 AliAnalysisTask *AddTask_ReducedTree(){
   //get the current analysis manager
@@ -47,7 +48,7 @@ AliAnalysisTask *AddTask_ReducedTree(){
     mgr->CreateContainer("qaHistos",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "dst_qaHistos.root");
+                         "dstTree.root");
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("dstTree",
@@ -55,11 +56,11 @@ AliAnalysisTask *AddTask_ReducedTree(){
                          AliAnalysisManager::kOutputContainer,
                          "dstTree.root");
   
-  AliAnalysisDataContainer *cOutputHist3 =
+  /*AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("friendTree",
                          TTree::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "dstTree_friend.root");
+                         "dstTree_friend.root");*/
   /*  cout << "output containers: " << endl
        << cOutputHist1 << endl
        << cOutputHist2 << endl
@@ -67,11 +68,11 @@ AliAnalysisTask *AddTask_ReducedTree(){
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );
-  //mgr->ConnectOutput(task, 1, cOutputHist1);
-  //mgr->ConnectOutput(task, 2, cOutputHist2);
+  mgr->ConnectOutput(task, 1, cOutputHist1);
+  mgr->ConnectOutput(task, 2, cOutputHist2);
   //mgr->ConnectOutput(task, 3, cOutputHist3);
   //mgr->ConnectOutput(task, 2, cOutputHist3);
-  mgr->ConnectOutput(task, 1, cOutputHist2);
+  //mgr->ConnectOutput(task, 1, cOutputHist2);
   return task;
 }
 
