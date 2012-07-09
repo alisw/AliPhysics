@@ -765,7 +765,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   
   // mc steps
   if(hasMC) {
-    cf->SetStepForMCtruth();
+    if(cutDefinition==kTOFTRD) cf->SetStepForMCtruth();
     cf->SetStepsForMCtruthOnly();  
     // cf->SetStepsForBackground();   
   }
