@@ -26,14 +26,15 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
 
  protected:
 
-  Bool_t                      FillHistograms()                                          ;
-  Bool_t                      RetrieveEventObjects()                                    ;
-  Int_t                       DoCellLoop(Float_t &sum, Float_t &sum_cut)                ;
-  void                        DoTriggerPrimitives(Int_t &maxL1amp, Int_t &maxL1thr)     ;
-  Float_t                     DoTriggerClusLoop()                                       ;
-  Float_t                     DoTrackLoop()                                             ;
-  Float_t                     DoClusterLoop()                                           ;
-  void                        DoJetLoop()                                               ;
+  Bool_t                      FillHistograms()                                              ;
+  Bool_t                      RetrieveEventObjects()                                        ;
+  Int_t                       DoCellLoop(Float_t &sum, Float_t &sum_cut)                    ;
+  void                        DoTriggerPrimitives(Int_t &maxL1amp, Int_t &maxL1thr)         ;
+  Float_t                     DoTriggerClusLoop()                                           ;
+  Float_t                     DoTrackLoop()                                                 ;
+  Float_t                     DoClusterLoop()                                               ;
+  void                        DoJetLoop()                                                   ;
+  void                        PropagateTrack(AliVTrack *track, Float_t &eta, Float_t &phi)  ;
 
   Float_t                     fCellEnergyCut;            // Energy cell cut
   Bool_t                      fDoTrigger;                // Make trigger qa plots
@@ -56,8 +57,11 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistTracksPt;             //!Pt spectrum of tracks
   TH2F                       *fHistTrPhiEta;             //!Phi-Eta distribution of tracks
   TH2F                       *fHistTrEmcPhiEta;          //!Phi-Eta emcal propagated distribution of tracks
+  TH2F                       *fHistTrPhiEtaNonProp;      //!Phi-Eta distribution of non emcal propagated tracks
   TH2F                       *fHistDeltaEtaPt;           //!Eta-EtaProp vs. Pt
   TH2F                       *fHistDeltaPhiPt;           //!Phi-PhiProp vs. Pt
+  TH1F                       *fHistDeltaEtaNewProp;      //!NewEtaProp-EtaProp
+  TH1F                       *fHistDeltaPhiNewProp;      //!NewPhiProp-PhiProp
   // Clusters
   TH3F                       *fHistClusPhiEtaEnergy;     //!Phi-Eta-Energy distribution of clusters
   TH2F                       *fHistNCellsEnergy;         //!Number of cells vs. energy of cluster

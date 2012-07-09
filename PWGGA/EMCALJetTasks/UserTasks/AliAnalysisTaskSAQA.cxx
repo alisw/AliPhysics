@@ -19,6 +19,9 @@
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
 #include "AliVEventHandler.h"
+#include "AliAODEvent.h"
+#include "AliExternalTrackParam.h"
+#include "AliTrackerBase.h"
 #include "AliLog.h"
 
 #include "AliAnalysisTaskSAQA.h"
@@ -45,8 +48,11 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistTracksPt(0),
   fHistTrPhiEta(0),
   fHistTrEmcPhiEta(0),
+  fHistTrPhiEtaNonProp(0),
   fHistDeltaEtaPt(0),
   fHistDeltaPhiPt(0),
+  fHistDeltaEtaNewProp(0),
+  fHistDeltaPhiNewProp(0),
   fHistClusPhiEtaEnergy(0),
   fHistNCellsEnergy(0),
   fHistClusTimeEnergy(0),
@@ -93,8 +99,11 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistTracksPt(0),
   fHistTrPhiEta(0),
   fHistTrEmcPhiEta(0),
+  fHistTrPhiEtaNonProp(0),
   fHistDeltaEtaPt(0),
   fHistDeltaPhiPt(0),
+  fHistDeltaEtaNewProp(0),
+  fHistDeltaPhiNewProp(0),
   fHistClusPhiEtaEnergy(0),
   fHistNCellsEnergy(0),
   fHistClusTimeEnergy(0),
@@ -211,15 +220,30 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTrEmcPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistTrEmcPhiEta);
 
+  fHistTrPhiEtaNonProp = new TH2F("fHistTrPhiEtaNonProp","fHistTrPhiEtaNonProp", 80, -2, 2, 128, 0, 6.4);
+  fHistTrPhiEtaNonProp->GetXaxis()->SetTitle("#eta");
+  fHistTrPhiEtaNonProp->GetYaxis()->SetTitle("#phi");
+  fOutput->Add(fHistTrPhiEtaNonProp);
+
   fHistDeltaEtaPt = new TH2F("fHistDeltaEtaPt","fHistDeltaEtaPt", fNbins, fMinBinPt, fMaxBinPt, 80, -0.5, 0.5);
   fHistDeltaEtaPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistDeltaEtaPt->GetYaxis()->SetTitle("#eta");
+  fHistDeltaEtaPt->GetYaxis()->SetTitle("#delta#eta");
   fOutput->Add(fHistDeltaEtaPt);
 
   fHistDeltaPhiPt = new TH2F("fHistDeltaPhiPt","fHistDeltaPhiPt", fNbins, fMinBinPt, fMaxBinPt, 256, -1.6, 4.8);
   fHistDeltaPhiPt->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  fHistDeltaPhiPt->GetYaxis()->SetTitle("#phi");
+  fHistDeltaPhiPt->GetYaxis()->SetTitle("#delta#phi");
   fOutput->Add(fHistDeltaPhiPt);
+
+  fHistDeltaEtaNewProp = new TH1F("fHistDeltaEtaNewProp","fHistDeltaEtaNewProp", 80, -0.5, 0.5);
+  fHistDeltaEtaNewProp->GetXaxis()->SetTitle("#delta#eta");
+  fHistDeltaEtaNewProp->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistDeltaEtaNewProp);
+
+  fHistDeltaPhiNewProp = new TH1F("fHistDeltaPhiNewProp","fHistDeltaPhiNewProp", 256, -1.6, 4.8);
+  fHistDeltaPhiNewProp->GetXaxis()->SetTitle("#delta#phi");
+  fHistDeltaPhiNewProp->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistDeltaPhiNewProp);
 
   if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
     fHistClusPhiEtaEnergy = new TH3F("fHistClusPhiEtaEnergy","Phi-Eta-Energy distribution of clusters", fNbins, fMinBinPt, fMaxBinPt, 80, -2, 2, 128, 0, 6.4);
@@ -540,12 +564,59 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     if (!vtrack)
       continue;
 
+    if (vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999)
+      fHistTrPhiEtaNonProp->Fill(vtrack->Eta(), vtrack->Phi());
+
     fHistTrEmcPhiEta->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());
     fHistDeltaEtaPt->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
     fHistDeltaPhiPt->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
+    
+    Float_t propeta = -999, propphi = -999;
+    PropagateTrack(vtrack, propeta, propphi);
+    fHistDeltaEtaNewProp->Fill(propeta - vtrack->GetTrackEtaOnEMCal());
+    fHistDeltaPhiNewProp->Fill(propphi - vtrack->GetTrackPhiOnEMCal());
   }
   
   return sum;
+}
+
+//____________________________________________________________________________
+void AliAnalysisTaskSAQA::PropagateTrack(AliVTrack *track, Float_t &eta, Float_t &phi)
+{
+  eta = -999;
+  phi = -999;
+
+  if (!track)
+    return;
+
+  // init the magnetic field if not already on
+  if(!TGeoGlobalMagField::Instance()->GetField()) {
+    AliInfo("Init the magnetic field\n");
+    AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
+    if (aodevent) {
+      Double_t curSol = 30000*aodevent->GetMagneticField()/5.00668;
+      Double_t curDip = 6000 *aodevent->GetMuonMagFieldScale();
+      AliMagF *field  = AliMagF::CreateFieldMap(curSol,curDip);
+      TGeoGlobalMagField::Instance()->SetField(field);
+    }
+  }
+    
+  Double_t cv[21];
+  for (Int_t i = 0; i < 21; i++) cv[i] = 0;
+
+  Double_t pos[3], mom[3];
+  track->GetXYZ(pos);
+  track->GetPxPyPz(mom);
+  AliExternalTrackParam *trackParam = new AliExternalTrackParam(pos, mom, cv, track->Charge());
+ 
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trackParam, 430., 0, 20, kTRUE, 0.8, -1)) return;
+  Double_t trkPos[3] = {0., 0., 0.};
+  if(!trackParam->GetXYZ(trkPos)) return;
+  TVector3 trkPosVec(trkPos[0], trkPos[1], trkPos[2]);
+  eta = trkPosVec.Eta();
+  phi = trkPosVec.Phi();
+  if(phi < 0)
+    phi += 2 * TMath::Pi();
 }
 
 //________________________________________________________________________
