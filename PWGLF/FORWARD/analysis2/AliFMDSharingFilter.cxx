@@ -1,4 +1,3 @@
-
 //
 // Class to do the sharing correction.  That is, a filter that merges 
 // adjacent strip signals presumably originating from a single particle 
@@ -218,24 +217,20 @@ AliFMDSharingFilter::Init()
 {
   // Initialise 
   DGUARD(fDebug,1, "Initialize for AliFMDSharingFilter");
-  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
+  AliForwardCorrectionManager& fcm  = AliForwardCorrectionManager::Instance();
+  AliFMDCorrELossFit*          fits = fcm.GetELossFit();
  
   // Get the high cut.  The high cut is defined as the 
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
   
-  UShort_t nEta=240;
-  TAxis defaultaxis(nEta,-6,6);
-	TAxis& eAxis=defaultaxis;
+  TAxis eAxis(240,-6,6);
+  if(fits) 
+    eAxis.Set(fits->GetEtaAxis().GetNbins(), 
+	      fits->GetEtaAxis().GetXmin(),
+	      fits->GetEtaAxis().GetXmax());
 
-	AliFMDCorrELossFit* fits = fcm.GetELossFit();
-
-	if(fits)
-	{
-		eAxis = fits->GetEtaAxis();
-		nEta = eAxis.GetNbins();
-	}
-		
+  UShort_t nEta = eAxis.GetNbins();
 	
   fHighCuts->SetBins(nEta, eAxis.GetXmin(), eAxis.GetXmax(), 5, .5, 5.5);
   fHighCuts->GetYaxis()->SetBinLabel(1, "FMD1i");
