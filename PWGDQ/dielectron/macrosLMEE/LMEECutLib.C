@@ -32,15 +32,13 @@ class LMEECutLib {
 	AliAnalysisCuts* GetPIDCutsAna(Int_t cutSet);  
 	AliAnalysisCuts* GetPIDCutsPre(Int_t cutSet);  
 
+	AliAnalysisCuts* GetPairCuts2(Int_t cutSet);  
 	AliAnalysisCuts* GetPairCuts(Int_t cutSet);  
 
 	AliAnalysisCuts* GetTrackCutsAna(Int_t cutSet);  
 	AliAnalysisCuts* GetTrackCutsPre(Int_t cutSet);  
 
 	void SetMCFlag( Bool_t isMC=kTRUE) {useMC=isMC;}
-
-
-
 
 	AliDielectronEventCuts* GetEventCuts(Int_t cutSet) {
 	  AliDielectronEventCuts* eventCuts = 0x0;
@@ -184,7 +182,7 @@ class LMEECutLib {
 	  }
 	  //___________________________________________
 	  AliDielectronVarCuts *pidTPCsignalWide = new AliDielectronVarCuts("pidTPCsignalWide","cut on the TPC signal");
-	  pidTPCsignalWide->AddCut(AliDielectronVarManager::kTPCsignal,65.,90.); 
+	  pidTPCsignalWide->AddCut(AliDielectronVarManager::kTPCsignal,70.,90.); 
 	  //___________________________________________
 
 	  AliDielectronVarCuts *pTPC = new AliDielectronVarCuts("P>.4","P>.4");
@@ -270,6 +268,25 @@ class LMEECutLib {
 	  return anaCuts;
 	}
 
+
+	AliAnalysisCuts* GetPairCuts2(Int_t cutSet)  {  
+	  AliDielectronVarCuts* pairCuts=0x0;
+	  switch (cutSet) {
+		case kPbPb2011TPCorTOF  :
+		case kpp2010TPCandTOF :
+		  pairCuts = new AliDielectronVarCuts("InvMass","InvMass > 150 MeV");
+		  pairCuts->AddCut(AliDielectronVarManager::kM,0.15,100.,kTRUE);
+		  break;
+		case kPbPb2011TPCandTOF :
+		case kPbPb2011TPCandTOFwide :
+		case kpp2010TPCorTOF  :
+		  pairCuts =new AliDielectronVarCuts("Phiv Cuts","Phiv<2.0rad");
+		  pairCuts->AddCut(AliDielectronVarManager::kPhivPair, 2.0, TMath::ACos(-1.0), kTRUE); //exclude
+		  break;
+		default: cout << "No Pair Cuts defined " << endl;
+	  } 
+	  return pairCuts;
+	}
 
 	AliAnalysisCuts* GetPairCuts(Int_t cutSet)  {  
 	  AliDielectronVarCuts* pairCuts=0x0;

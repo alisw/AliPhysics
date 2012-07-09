@@ -2,7 +2,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFPeri;TPCTOFCentnoRejTight;TPCTOFCentTight");
+TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFPeri;TPCTOFCentnoRejTight;TPCTOFCentTight;TPCTOFCentPhiV;TPCTOFSemiCentPhiV;TPCTOFPeriPhiV");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -87,6 +87,22 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE, Boo
 	rejectionStep = kTRUE;
   }
 
+  else if (cutDefinition==9) {
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedCentrality = LMEECutLib::kPbPb2011Central;
+	rejectionStep = kFALSE;
+  }
+  else if (cutDefinition==10) {
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
+	rejectionStep = kFALSE;
+  }
+  else if (cutDefinition==11) {
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedCentrality = LMEECutLib::kPbPb2011Peripheral;
+	rejectionStep = kFALSE;
+  }
+
   else Semi{
 	cout << " =============================== " << endl;
 	cout << " ==== INVALID CONFIGURATION ==== " << endl;
@@ -108,6 +124,9 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE, Boo
 	}
 	else { //No Prefilter, no Pairfilter
 		die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
+		if ((cutDefinition >=9) &&  (cutDefinition <=11)) {
+		die->GetPairFilter().AddCuts(LMCL->GetPairCuts2(selectedPID));
+		}
 	}
 	//Introduce NULL-check for pp?
 	die->GetEventFilter().AddCuts(LMCL->GetCentralityCuts(selectedCentrality));
@@ -253,12 +272,26 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  100,0.,3.15,AliDielectronVarManager::kDeltaEta);
   histos->UserHistogram("Pair","DeltaPhi","DeltaPhi;DeltaPhi",
 	  100,0.,3.15,AliDielectronVarManager::kDeltaPhi);
+  histos->UserHistogram("Pair","PhivPair","PhivPair;angle",
+	  100,0.,3.15,AliDielectronVarManager::kPhivPair);
+  histos->UserHistogram("Pair","PsiPair","PsiPair;angle",
+	  100,0.,3.15,AliDielectronVarManager::kPsiPair);
   histos->UserHistogram("Pair","OpeningAngle","Opening angle;angle",
 	  100,0.,3.15,AliDielectronVarManager::kOpeningAngle);
   //2D Histo Plot
   histos->UserHistogram("Pair","InvMassPairPt","Inv.Mass vs PairPt;Inv. Mass [GeV], pT [GeV];#pairs",
 	  500,0.0,5.0,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
 
+
+  histos->UserHistogram("Pair","PsiPairPhivPair","PhivPair vs PsiPair;PsiPair ;#pairs",
+	  200,0.0,6.3,200,0.,6.3,AliDielectronVarManager::kPsiPair,AliDielectronVarManager::kPhivPair);
+ 
+  histos->UserHistogram("Pair","PhivPairOpeningAngle","Opening Angle vs PhivPair;PhivPair [GeV];#pairs",
+	  200,0.0,6.3,200,0.,6.3,AliDielectronVarManager::kPhivPair,AliDielectronVarManager::kOpeningAngle);
+
+  histos->UserHistogram("Pair","PsiPairOpeningAngle","Opening Angle vs PsiPair;PsiPair [GeV];#pairs",
+	  200,0.0,6.3,200,0.,6.3,AliDielectronVarManager::kPsiPair,AliDielectronVarManager::kOpeningAngle);
+ 
   histos->UserHistogram("Pair","InvMassOpeningAngle","Opening Angle vs Inv.Mass;Inv. Mass [GeV];#pairs",
 	  500,0.0,5.0,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
 
