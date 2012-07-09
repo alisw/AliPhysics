@@ -213,10 +213,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fh2PtNchNRan(0x0),
   fh2TracksLeadingJetPhiPtRan(0x0),
   fh2TracksLeadingJetPhiPtWRan(0x0),
-  fh2CentvsRho(0x0),
-  fh2CentvsSigma(0x0),
-  fh2MultvsRho(0x0),
-  fh2MultvsSigma(0x0),
+  fh3CentvsRhoLeadingTrackPt(0x0),
+  fh3CentvsSigmaLeadingTrackPt(0x0),
+  fh3MultvsRhoLeadingTrackPt(0x0),
+  fh3MultvsSigmaLeadingTrackPt(0x0),
   fh3CentvsRhoLeadingTrackPtQ1(0x0),
   fh3CentvsRhoLeadingTrackPtQ2(0x0),
   fh3CentvsRhoLeadingTrackPtQ3(0x0),
@@ -233,6 +233,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fh3MultvsSigmaLeadingTrackPtQ2(0x0),
   fh3MultvsSigmaLeadingTrackPtQ3(0x0),
   fh3MultvsSigmaLeadingTrackPtQ4(0x0),
+  fh3CentvsDeltaRhoLeadingTrackPtQ1(0x0),
+  fh3CentvsDeltaRhoLeadingTrackPtQ2(0x0),
+  fh3CentvsDeltaRhoLeadingTrackPtQ3(0x0),
+  fh3CentvsDeltaRhoLeadingTrackPtQ4(0x0),
   fh2PtGenPtSmeared(0x0),
   fp1Efficiency(0x0),
   fp1PtResolution(0x0),
@@ -372,10 +376,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh2PtNchNRan(0x0),
   fh2TracksLeadingJetPhiPtRan(0x0),
   fh2TracksLeadingJetPhiPtWRan(0x0),
-  fh2CentvsRho(0x0),
-  fh2CentvsSigma(0x0),
-  fh2MultvsRho(0x0),
-  fh2MultvsSigma(0x0),
+  fh3CentvsRhoLeadingTrackPt(0x0),
+  fh3CentvsSigmaLeadingTrackPt(0x0),
+  fh3MultvsRhoLeadingTrackPt(0x0),
+  fh3MultvsSigmaLeadingTrackPt(0x0),
   fh3CentvsRhoLeadingTrackPtQ1(0x0),
   fh3CentvsRhoLeadingTrackPtQ2(0x0),
   fh3CentvsRhoLeadingTrackPtQ3(0x0),
@@ -392,6 +396,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh3MultvsSigmaLeadingTrackPtQ2(0x0),
   fh3MultvsSigmaLeadingTrackPtQ3(0x0),
   fh3MultvsSigmaLeadingTrackPtQ4(0x0),
+  fh3CentvsDeltaRhoLeadingTrackPtQ1(0x0),
+  fh3CentvsDeltaRhoLeadingTrackPtQ2(0x0),
+  fh3CentvsDeltaRhoLeadingTrackPtQ3(0x0),
+  fh3CentvsDeltaRhoLeadingTrackPtQ4(0x0),
   fh2PtGenPtSmeared(0x0),
   fp1Efficiency(0x0),
   fp1PtResolution(0x0),
@@ -653,10 +661,10 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 				       nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
   if(fStoreRhoLeadingTrackCorr) {
-    fh2CentvsRho = new TH2F("fh2CentvsRho","centrality vs background density full event; centrality; #rho", 50,0.,100.,500,0.,250.);
-    fh2CentvsSigma = new TH2F("fh2CentvsSigma","centrality vs sigma full event; centrality; #sigma(#rho)", 50,0.,100.,50,0.,50.);
-    fh2MultvsRho = new TH2F("fh2MultvsRho","multiplicity vs background density full event; multiplicity; #rho", 100,0.,5000.,500,0.,250.);
-    fh2MultvsSigma = new TH2F("fh2MultvsSigma","multiplicity vs sigma full event; multiplicity; #sigma(#rho)", 100,0.,5000.,50,0.,50.);
+    fh3CentvsRhoLeadingTrackPt = new TH3F("fh3CentvsRhoLeadingTrackPt","centrality vs background density full event; centrality; #rho", 50,0.,100.,500,0.,250.,100,0.,100.);
+    fh3CentvsSigmaLeadingTrackPt = new TH3F("fh3CentvsSigmaLeadingTrackPt","centrality vs sigma full event; centrality; #sigma(#rho)", 50,0.,100.,50,0.,50.,100,0.,100.);
+    fh3MultvsRhoLeadingTrackPt = new TH3F("fh3MultvsRhoLeadingTrackPt","multiplicity vs background density full event; multiplicity; #rho", 100,0.,5000.,500,0.,250.,100,0.,100.);
+    fh3MultvsSigmaLeadingTrackPt = new TH3F("fh3MultvsSigmaLeadingTrackPt","multiplicity vs sigma full event; multiplicity; #sigma(#rho)", 100,0.,5000.,50,0.,50.,100,0.,100.);
 
 
     fh3CentvsRhoLeadingTrackPtQ1 = new TH3F("fh3CentvsRhoLeadingTrackPtQ1","centrality vs background density Q1; centrality; #rho; leading p_{t}^{track}", 50,0.,100.,500,0.,250.,100,0.,100.);
@@ -679,10 +687,16 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     fh3MultvsSigmaLeadingTrackPtQ3 = new TH3F("fh3MultvsSigmaLeadingTrackPtQ3","multiplicity vs background density Q3; multiplicity; #sigma(#rho); leading p_{t}^{track}", 100,0.,5000.,50,0.,50.,100,0.,100.);
     fh3MultvsSigmaLeadingTrackPtQ4 = new TH3F("fh3MultvsSigmaLeadingTrackPtQ4","multiplicity vs background density Q4; multiplicity; #sigma(#rho); leading p_{t}^{track}", 100,0.,5000.,50,0.,50.,100,0.,100.);
 
-    fHistList->Add(fh2CentvsRho);
-    fHistList->Add(fh2CentvsSigma);
-    fHistList->Add(fh2MultvsRho);
-    fHistList->Add(fh2MultvsSigma);
+
+    fh3CentvsDeltaRhoLeadingTrackPtQ1 = new TH3F("fh3CentvsDeltaRhoLeadingTrackPtQ1","centrality vs background density Q1; centrality; #rho_{quadrant}-#rho_{full event}; leading p_{t}^{track}", 50,0.,100.,200,-10.,10.,100,0.,100.);
+    fh3CentvsDeltaRhoLeadingTrackPtQ2 = new TH3F("fh3CentvsDeltaRhoLeadingTrackPtQ2","centrality vs background density Q2; centrality; #rho_{quadrant}-#rho_{full event}; leading p_{t}^{track}", 50,0.,100.,200,-10.,10.,100,0.,100.);
+    fh3CentvsDeltaRhoLeadingTrackPtQ3 = new TH3F("fh3CentvsDeltaRhoLeadingTrackPtQ3","centrality vs background density Q3; centrality; #rho_{quadrant}-#rho_{full event}; leading p_{t}^{track}", 50,0.,100.,200,-10.,10.,100,0.,100.);
+    fh3CentvsDeltaRhoLeadingTrackPtQ4 = new TH3F("fh3CentvsDeltaRhoLeadingTrackPtQ4","centrality vs background density Q4; centrality; #rho_{quadrant}-#rho_{full event}; leading p_{t}^{track}", 50,0.,100.,200,-10.,10.,100,0.,100.);
+
+    fHistList->Add(fh3CentvsRhoLeadingTrackPt);
+    fHistList->Add(fh3CentvsSigmaLeadingTrackPt);
+    fHistList->Add(fh3MultvsRhoLeadingTrackPt);
+    fHistList->Add(fh3MultvsSigmaLeadingTrackPt);
 
     fHistList->Add(fh3CentvsRhoLeadingTrackPtQ1);
     fHistList->Add(fh3CentvsRhoLeadingTrackPtQ2);
@@ -703,6 +717,11 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     fHistList->Add(fh3MultvsSigmaLeadingTrackPtQ2);
     fHistList->Add(fh3MultvsSigmaLeadingTrackPtQ3);
     fHistList->Add(fh3MultvsSigmaLeadingTrackPtQ4);
+
+    fHistList->Add(fh3CentvsDeltaRhoLeadingTrackPtQ1);
+    fHistList->Add(fh3CentvsDeltaRhoLeadingTrackPtQ2);
+    fHistList->Add(fh3CentvsDeltaRhoLeadingTrackPtQ3);
+    fHistList->Add(fh3CentvsDeltaRhoLeadingTrackPtQ4);
 
   }
   
@@ -1465,10 +1484,13 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     clustSeq.get_median_rho_and_sigma(jets3, range, false, bkg2, sigma2, meanarea2, true);
     fAODJetBackgroundOut->SetBackground(1,bkg2,sigma2,meanarea2);
 
-    fh2CentvsRho->Fill(cent,bkg2);
-    fh2CentvsSigma->Fill(cent,sigma2);
-    fh2MultvsRho->Fill(nCh,bkg2);
-    fh2MultvsSigma->Fill(nCh,sigma2);
+    //Get leading track in event
+    AliVParticle *leading = (AliVParticle*)recParticles.At(0);
+
+    fh3CentvsRhoLeadingTrackPt->Fill(cent,bkg2,leading->Pt());
+    fh3CentvsSigmaLeadingTrackPt->Fill(cent,sigma2,leading->Pt());
+    fh3MultvsRhoLeadingTrackPt->Fill(nCh,bkg2,leading->Pt());
+    fh3MultvsSigmaLeadingTrackPt->Fill(nCh,sigma2,leading->Pt());
      
 
     //Calculate rho with 4-vector area method for different quadrants with respect to the leading track in the event
@@ -1485,7 +1507,6 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     Double_t meanarea2Q[4] = {0.};
 
     //Get phi of leading track in event
-    AliVParticle *leading = (AliVParticle*)recParticles.At(0);
     Float_t phiLeadingTrack = leading->Phi();
     Float_t phiStep = (TMath::Pi()/2./2. - 0.2);
 
@@ -1538,6 +1559,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     fh3MultvsSigmaLeadingTrackPtQ2->Fill(nCh,sigma2Q[1],leading->Pt());
     fh3MultvsSigmaLeadingTrackPtQ3->Fill(nCh,sigma2Q[2],leading->Pt());
     fh3MultvsSigmaLeadingTrackPtQ4->Fill(nCh,sigma2Q[3],leading->Pt());
+
+    fh3CentvsDeltaRhoLeadingTrackPtQ1->Fill(cent,bkg2Q[0]-bkg2,leading->Pt());
+    fh3CentvsDeltaRhoLeadingTrackPtQ2->Fill(cent,bkg2Q[1]-bkg2,leading->Pt());
+    fh3CentvsDeltaRhoLeadingTrackPtQ3->Fill(cent,bkg2Q[2]-bkg2,leading->Pt());
+    fh3CentvsDeltaRhoLeadingTrackPtQ4->Fill(cent,bkg2Q[3]-bkg2,leading->Pt());
 
   }
    

@@ -284,10 +284,10 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH2F*         fh2TracksLeadingJetPhiPtC[kMaxCent]; //! track correlation with leading Jet
     TH2F*         fh2TracksLeadingJetPhiPtWC[kMaxCent]; //! track correlation with leading Jet
 
-    TH2F*         fh2CentvsRho;       //! centrality vs background density full event
-    TH2F*         fh2CentvsSigma;     //! centrality vs sigma full event
-    TH2F*         fh2MultvsRho;       //! multiplicity vs background density full event
-    TH2F*         fh2MultvsSigma;     //! multiplicity vs sigma full event
+    TH3F*         fh3CentvsRhoLeadingTrackPt;       //! centrality vs background density full event
+    TH3F*         fh3CentvsSigmaLeadingTrackPt;     //! centrality vs sigma full event
+    TH3F*         fh3MultvsRhoLeadingTrackPt;       //! multiplicity vs background density full event
+    TH3F*         fh3MultvsSigmaLeadingTrackPt;     //! multiplicity vs sigma full event
 
     TH3F*         fh3CentvsRhoLeadingTrackPtQ1;     //! centrality vs background density vs pt leading track near side
     TH3F*         fh3CentvsRhoLeadingTrackPtQ2;     //! centrality vs background density vs pt leading track perpendicular (+0.5*\pi)
@@ -308,6 +308,11 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH3F*         fh3MultvsSigmaLeadingTrackPtQ2;     //! multiplicity vs sigma vs pt leading track perpendicular (+0.5*\pi)
     TH3F*         fh3MultvsSigmaLeadingTrackPtQ3;     //! multiplicity vs sigma vs pt leading track away side
     TH3F*         fh3MultvsSigmaLeadingTrackPtQ4;     //! multiplicity vs sigma vs pt leading track perpendicular (-0.5*\pi)
+
+    TH3F*         fh3CentvsDeltaRhoLeadingTrackPtQ1;     //! centrality vs delta background density vs pt leading track near side
+    TH3F*         fh3CentvsDeltaRhoLeadingTrackPtQ2;     //! centrality vs delta background density vs pt leading track perpendicular (+0.5*\pi)
+    TH3F*         fh3CentvsDeltaRhoLeadingTrackPtQ3;     //! centrality vs delta background density vs pt leading track away side
+    TH3F*         fh3CentvsDeltaRhoLeadingTrackPtQ4;     //! centrality vs delta background density vs pt leading track perpendicular (-0.5*\pi)
 
     //Histos for detector level effects from toy model
     TH2F *fh2PtGenPtSmeared;     //! Control histo smeared momentum
