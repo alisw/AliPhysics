@@ -71,6 +71,7 @@ fVtxZMax(10.),
 fEvtClassMin(0),
 fEvtClassMax(4),
 fFilterMask(0),
+fFilterType(2),
 fRadioFrac(0.2),
 fMinDist(0.1),
 fCentMin(0.),
@@ -182,6 +183,7 @@ fVtxZMax(10.),
 fEvtClassMin(0),
 fEvtClassMax(4),
 fFilterMask(0),
+fFilterType(2),
 fRadioFrac(0.2),
 fMinDist(0.1),
 fCentMin(0.),
@@ -364,8 +366,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
     fh2JetCoreMethod1C60 = new TH2F("JetCoreMethod1C60","",150, 0., 150.,100, 0., 1.5);
     fh2JetCoreMethod2C60 = new TH2F("JetCoreMethod2C60","",150, 0., 150.,100, 0., 1.5);}
 
-    fh3JetTrackC3060=new TH3F("JetTrackC3060","",50,0,50,150,0.,150.,35,-0.5,3.5);
-    fh3JetTrackC20=new TH3F("JetTrackC20","",50,0,50,150,0.,150.,35,-0.5,3.5);
+    fh3JetTrackC3060=new TH3F("JetTrackC3060","",50,0,50,150,0.,150.,35,0.,3.5);
+    fh3JetTrackC20=new TH3F("JetTrackC20","",50,0,50,150,0.,150.,35,0.,3.5);
     if(fAngStructCloseTracks>0){
     fh2AngStructpt1C10 = new TH2F("Ang struct pt1 C10","",15,0.,1.5,150,0.,10.);
     fh2AngStructpt2C10 = new TH2F("Ang struct pt2 C10","",15,0.,1.5,150,0.,10.);
@@ -391,8 +393,8 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
 
     fh3JetDensity=new TH3F("Jet density vs mutliplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
     fh3JetDensityA4=new TH3F("Jet density vs multiplicity A>0.4","",100,0.,4000.,100,0.,5.,10,0.,50.);
-    fh2RPJets=new TH2F("RPJet","",fNRPBins,0.,3.15,150,0.,150.);
-    fh2RPT=new TH2F("RPTrigger","",fNRPBins,0.,3.15,150,0.,150.); 
+    fh2RPJets=new TH2F("RPJet","",fNRPBins,0.,fNRPBins,150,0.,150.);
+    fh2RPT=new TH2F("RPTrigger","",fNRPBins,0.,fNRPBins,150,0.,150.); 
     fh3spectriggeredC20RP = new TH3F("Triggered spectrumC20RP","",3,0.,3.,140,-80.,200.,10,0.,50.);
     fh3spectriggeredC20 = new TH3F("Triggered spectrumC20","",100,0.,1.,140,-80.,200.,10,0.,50.);
     fh3spectriggeredC3060 = new TH3F("Triggered spectrumC3060","",100,0.,1.,140,-80.,200.,10,0.,50.);
@@ -453,7 +455,7 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
         fOutputList->Add(fh3JetDensityA4);
         fOutputList->Add(fh2RPJets);
         fOutputList->Add(fh2RPT);
-      
+        fOutputList->Add(fh3spectriggeredC20RP); 
        fOutputList->Add(fh3spectriggeredC20); 
        fOutputList->Add(fh3spectriggeredC3060);   
 
@@ -654,7 +656,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    return;}
 
    fh2Ntriggers->Fill(centValue,partback->Pt());
-   Int_t phiBinT = GetPhiBin(partback->Phi()-fRPAngle);
+   Int_t phiBinT = GetPhiBin(RelativePhi(partback->Phi(),fRPAngle));
    if(centValue<20.) fh2RPT->Fill(phiBinT,partback->Pt()); 
 
    Double_t accep=2.*TMath::Pi()*1.8;
@@ -666,7 +668,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
            phibig  = jetbig->Phi();
            ptbig   = jetbig->Pt();
            if(ptbig==0) continue; 
-           Int_t phiBin = GetPhiBin(phibig-fRPAngle);       
+           Int_t phiBin = GetPhiBin(RelativePhi(phibig,fRPAngle));       
            areabig = jetbig->EffectiveAreaCharged();
            Double_t ptcorr=ptbig-rho*areabig;
       	   if((etabig<fJetEtaMin)||(etabig>fJetEtaMax)) continue;
@@ -981,7 +983,12 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
     
      for(int it = 0;it < aod->GetNumberOfTracks();++it){
       AliAODTrack *tr = aod->GetTrack(it);
+      Bool_t bGood = false;
+      if(fFilterType == 0)bGood = true;
+      else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
+      else if(fFilterType == 2)bGood = tr->IsHybridGlobalConstrainedGlobal();       
       if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+      if(bGood==false) continue;
       if(TMath::Abs(tr->Eta())>0.9)continue;
       if(tr->Pt()<0.15)continue;
       list->Add(tr);

@@ -68,6 +68,7 @@ public:
    virtual void     SetEvtClassMin(Int_t evtClass) { fEvtClassMin = evtClass; }
    virtual void     SetEvtClassMax(Int_t evtClass) { fEvtClassMax = evtClass; }
    virtual void     SetFilterMask(UInt_t i){fFilterMask = i;}
+   virtual void     SetFilterType(Int_t iType){fFilterType=iType;}
    virtual void     SetRadioFrac(Float_t radiofrac) { fRadioFrac = radiofrac; }
    virtual void     SetMinDist(Float_t minDist) { fMinDist = minDist; }
    virtual void     SetCentMin(Float_t cent) { fCentMin = cent; }
@@ -119,6 +120,7 @@ private:
    Int_t   fEvtClassMin;	  // lower bound on event class
    Int_t   fEvtClassMax;	  // upper bound on event class
    UInt_t  fFilterMask;            // filter bit for slecected tracks
+   Int_t   fFilterType;               
    Float_t fRadioFrac;                          //!size of the concentric cone
    Float_t fMinDist;   
    Float_t fCentMin;	  // lower bound on centrality
