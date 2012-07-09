@@ -98,6 +98,7 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG() :
   fVemtmp(0x0),
   fVeptmp(0x0),
   fdconvphiv(acos(-1.0)),
+  fdop(0),
   fbz(0),
   fdv0mixing(kTRUE)
 {
@@ -138,6 +139,7 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG(const char *n
   fVemtmp(0x0),
   fVeptmp(0x0),
   fdconvphiv(acos(-1.0)),
+  fdop(0),
   fbz(0),
   fdv0mixing(kTRUE)
 {
@@ -318,6 +320,13 @@ void AliAnalysisTaskMultiDielectronTG::UserCreateOutputObjects()
   fCutsMother->SetRequireTPCRefit(kTRUE);
 
 
+  AliInfo(Form("PairCutType = %d %d %d %d %d",
+	       fRejectPairFlag[0],
+	       fRejectPairFlag[1],
+	       fRejectPairFlag[2],
+	       fRejectPairFlag[3],
+	       fRejectPairFlag[4]));
+
 }
 
 //_________________________________________________________________________________
@@ -369,12 +378,12 @@ void AliAnalysisTaskMultiDielectronTG::UserExec(Option_t *)
 
   //V0and
   if(fTriggerOnV0AND){
-  if(isESD){if (!fTriggerAnalysis->IsOfflineTriggerFired(static_cast<AliESDEvent*>(InputEvent()), AliTriggerAnalysis::kV0AND))
+    if(isESD){if (!fTriggerAnalysis->IsOfflineTriggerFired(static_cast<AliESDEvent*>(InputEvent()), AliTriggerAnalysis::kV0AND))
             return;}
-  if(isAOD){if(!((static_cast<AliAODEvent*>(InputEvent()))->GetVZEROData()->GetV0ADecision() == AliVVZERO::kV0BB &&
-            (static_cast<AliAODEvent*>(InputEvent()))->GetVZEROData()->GetV0CDecision() == AliVVZERO::kV0BB) )
-            return;}
-   }
+    if(isAOD){if(!((static_cast<AliAODEvent*>(InputEvent()))->GetVZEROData()->GetV0ADecision() == AliVVZERO::kV0BB &&
+		   (static_cast<AliAODEvent*>(InputEvent()))->GetVZEROData()->GetV0CDecision() == AliVVZERO::kV0BB) )
+	return;}
+  }
   
 
   fEventStat->Fill(kV0andEvents);
@@ -426,7 +435,7 @@ void AliAnalysisTaskMultiDielectronTG::UserExec(Option_t *)
   //   AliDielectron *die=0;
   Int_t idie=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
-    //AliInfo(" **************** die->Process(InputEvent()) **************************");
+    //AliInfo(Form(" **************** die->Process(InputEvent()) : %d **************************", idie));
     die->SetDontClearArrays(kTRUE);
     die->Process(InputEvent());
     if (die->HasCandidates()){
@@ -485,6 +494,9 @@ void AliAnalysisTaskMultiDielectronTG::UserExec(Option_t *)
 
     CheckGhostPairs(fVeptmp);
     CheckGhostPairs(fVemtmp);
+    if(fRejectPairFlag[idie]==1 || fRejectPairFlag[idie]==2){
+      RejectPairs(fVeptmp, fVemtmp, idie);
+    }
     RandomizePool(fVeptmp, fVemtmp);    
     CalcPair(fVep, fVem, die, idie);
 
@@ -701,19 +713,19 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
 
   for(int i1=0; i1<(int)ve1.size(); i1++){
     for(int i2=0; i2<(int)ve2.size(); i2++){
-      FillPair(ve1[i1], ve2[i2], 0, die);  
+      FillPair(ve1[i1], ve2[i2], 0, die, idie);  
     }    
   }
 
   for(int i1=0; i1<(int)ve1.size(); i1++){
     for(int i2=i1+1; i2<(int)ve1.size(); i2++){
-      FillPair(ve1[i1], ve1[i2], 1, die);  
+      FillPair(ve1[i1], ve1[i2], 1, die, idie);  
     }    
   }
 
   for(int i1=0; i1<(int)ve2.size(); i1++){
     for(int i2=i1+1; i2<(int)ve2.size(); i2++){
-      FillPair(ve2[i1], ve2[i2], 2, die);  
+      FillPair(ve2[i1], ve2[i2], 2, die, idie );  
     }    
   }
 
@@ -747,7 +759,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
       }
       for(int i1=0; i1<(int)ve1.size(); i1++){
 	for(int i2=0; i2<(int)fvem[ibuf][idie][izbin][icent][irp].size(); i2++){
-          FillPair(ve1[i1],fvem[ibuf][idie][izbin][icent][irp][i2], 3, die);
+          FillPair(ve1[i1],fvem[ibuf][idie][izbin][icent][irp][i2], 3, die, idie);
         }
       }
       ++nmixed;
@@ -755,7 +767,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
   }
   if(ve2.size()>0) {
     //
-    // Now mixed event for +- pairs
+    // Now mixed event for -+ pairs
     //
     nmixed = 0;
     for(int ibuf=0;(nmixed<fgkNMix);ibuf++) {
@@ -766,7 +778,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
       }
       for(int i1=0; i1<(int)ve2.size(); i1++){
         for(int i2=0; i2<(int)fvep[ibuf][idie][izbin][icent][irp].size(); i2++){
-          FillPair(ve2[i1],fvep[ibuf][idie][izbin][icent][irp][i2],4, die);
+	  FillPair(fvep[ibuf][idie][izbin][icent][irp][i2],ve2[i1],4, die, idie);
         }
       }
       ++nmixed;
@@ -786,7 +798,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
       }
       for(int i1=0; i1<(int)ve1.size(); i1++){
         for(int i2=0;i2<(int)fvep[ibuf][idie][izbin][icent][irp].size(); i2++){
-          FillPair(ve1[i1],fvep[ibuf][idie][izbin][icent][irp][i2], 5, die);
+          FillPair(ve1[i1],fvep[ibuf][idie][izbin][icent][irp][i2], 5, die, idie);
         }
       }
       ++nmixed;
@@ -806,7 +818,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
       }
       for(int i1=0; i1<(int)ve2.size(); i1++){
         for(int i2=0; i2<(int)fvem[ibuf][idie][izbin][icent][irp].size(); i2++){
-          FillPair(ve2[i1],fvem[ibuf][idie][izbin][icent][irp][i2],6, die);
+          FillPair(ve2[i1],fvem[ibuf][idie][izbin][icent][irp][i2],6, die, idie);
         }
       }
       ++nmixed;
@@ -818,7 +830,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
 
 //_________________________________________________________________________________
 void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep, 
-						AliDielectronSingleTG *iem, int type, AliDielectron *die)
+						AliDielectronSingleTG *iem, int type, AliDielectron *die, Int_t idie)
 {                      
 
   //
@@ -848,6 +860,7 @@ void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep,
   double dv0etapair = -9999;
   double dv0rpair = -9999;
   double dpsipair =  -9999;
+  double dphivpair =  -9999;
 
   ////////////////////////////
   ///// calculate v0 ////////
@@ -881,8 +894,13 @@ void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep,
       AliInfo("Same Objects!!");
       return; 
     }
+
+    //const AliKFParticle &kfPairLeg1 = candidate.GetKFFirstDaughter();
+    //const AliKFParticle &kfPairLeg2 = candidate.GetKFSecondDaughter();
+    
     const AliKFParticle &kfPair = candidate.GetKFParticle();
-    dopeningangle = candidate.OpeningAngle();
+
+    /*
     dv0mass = candidate.M();
     dv0pxpair = candidate.Px();
     dv0pypair = candidate.Py();
@@ -893,11 +911,26 @@ void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep,
     dv0yvpair = candidate.Yv();
     dv0zvpair = candidate.Zv();
     dv0phipair = candidate.Phi();
-    // dv0theta_pair = candidate.Theta();
     dv0etapair = candidate.Eta();
+    */
+    dv0mass = kfPair.GetMass();
+    dv0pxpair = kfPair.GetPx();
+    dv0pypair = kfPair.GetPy();
+    dv0pzpair = kfPair.GetPz();
+    dv0ptpair = kfPair.GetPt();
+    dv0epair = kfPair.GetE();
+    dv0xvpair = kfPair.GetX();
+    dv0yvpair = kfPair.GetY();
+    dv0zvpair = kfPair.GetZ();
+    dv0phipair = kfPair.GetPhi();
+    dv0etapair = kfPair.GetEta();
     dv0rpair =  kfPair.GetR();
-    
+
+    dopeningangle = candidate.OpeningAngle();    
     dpsipair = candidate.PsiPair(fbz);
+    dphivpair = candidate.PhivPair(fbz);
+
+
   }
 
   Double_t values[AliDielectronVarManager::kNMaxValues];
@@ -910,7 +943,7 @@ void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep,
   Bool_t pairClass1=fHistos->GetHistogramList()->FindObject(className1.Data())!=0x0;
   Bool_t pairClass2=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
 
-  if (pairClass1 && PairTrackcut(dphiv)==true){
+  if (pairClass1 && PairTrackcut(dphiv, dcos, idie)==true){
     ///import pair variables to values!!
     values[AliDielectronVarManager::kPx] = dpxpair;
     values[AliDielectronVarManager::kPy] = dpypair;
@@ -924,13 +957,14 @@ void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep,
     values[AliDielectronVarManager::kEta] = detapair;
     values[AliDielectronVarManager::kM] = dmass;
     values[AliDielectronVarManager::kPsiPair] = dphiv;
+    values[AliDielectronVarManager::kPhivPair] = dphiv;
     values[AliDielectronVarManager::kPhi]  = dphipair;
     values[AliDielectronVarManager::kOpeningAngle]  = dcos;
     fHistos->FillClass(className1, AliDielectronVarManager::kNMaxValues, values);
   }
 
 
-  if (pairClass2 && PairTrackcut(dphiv)==true){
+  if (pairClass2 && PairTrackcut(dphiv, dopeningangle, idie)==true){
     values[AliDielectronVarManager::kPx] = dv0pxpair;
     values[AliDielectronVarManager::kPy] = dv0pypair;
     values[AliDielectronVarManager::kPz] = dv0pzpair;
@@ -943,6 +977,7 @@ void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep,
     values[AliDielectronVarManager::kEta] = dv0etapair;
     values[AliDielectronVarManager::kM] = dv0mass;
     values[AliDielectronVarManager::kPsiPair] = dpsipair;
+    values[AliDielectronVarManager::kPhivPair] = dphivpair;
     values[AliDielectronVarManager::kPhi]  = dv0phipair;
     values[AliDielectronVarManager::kOpeningAngle]  = dopeningangle;
     fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
@@ -953,7 +988,7 @@ void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep,
 }
 
 //_________________________________________________________________________________
-bool AliAnalysisTaskMultiDielectronTG::PairTrackcut(double phiv)
+bool AliAnalysisTaskMultiDielectronTG::PairTrackcut(double phiv, double op, int idie)
 {
 
   //
@@ -963,11 +998,19 @@ bool AliAnalysisTaskMultiDielectronTG::PairTrackcut(double phiv)
 
   bool pairOK = true;
 
-  //var is phiv for the moment 
-  if(fbz>0 && phiv>fdconvphiv){
-    pairOK = false;
-  }else if(fbz<0 && phiv<acos(-1.0)-fdconvphiv){
-    pairOK = false;
+  if(fRejectPairFlag[idie] == 1 || fRejectPairFlag[idie] == 2 ||
+     fRejectPairFlag[idie] == 3 || fRejectPairFlag[idie] == 4 ){
+    if(fRejectPairFlag[idie] == 2 || fRejectPairFlag[idie] == 4 ){
+      if(fbz>0 && phiv>fdconvphiv){
+	pairOK = false;
+      }else if(fbz<0 && phiv<acos(-1.0)-fdconvphiv){
+	pairOK = false;
+      }
+    }else if(fRejectPairFlag[idie] == 1 || fRejectPairFlag[idie] == 3){
+      if(op<fdop){
+	pairOK = false;
+      }
+    }
   }
 
   return pairOK;
@@ -1090,4 +1133,114 @@ void AliAnalysisTaskMultiDielectronTG::ReshuffleBuffer(vector<AliDielectronSingl
     used[j]=1;
   }
 
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskMultiDielectronTG::RejectPairs(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2, Int_t idie){
+
+  ////////////////////////////////////
+  ///// to reject pairs from track arrays 
+  ///// conversions, ghost ..
+  ///////////////////////////////////
+  if(e1.size()>0 && e2.size()>0){
+    for(int i1=0; i1<(int)e1.size(); i1++){
+      for(int i2=0; i2<(int)e2.size(); i2++){
+	if(fRejectPairFlag[idie]==1){
+	  Double_t cosine = GetOpeningAngle(e1[i1], e2[i2]);
+	  if(cosine<fdop){
+	    e1[i1]->SetConvFlag(0);
+	    e2[i2]->SetConvFlag(0);
+	  }
+	}else if(fRejectPairFlag[idie]==2){
+	  Double_t phiv = GetPhiv(e1[i1], e2[i2]);
+	  if(fbz>0 && phiv>fdconvphiv){
+	    e1[i1]->SetConvFlag(0);
+	    e2[i2]->SetConvFlag(0);
+	  }else if(fbz<0 && phiv<acos(-1.0)-fdconvphiv){
+	    e1[i1]->SetConvFlag(0);
+	    e2[i2]->SetConvFlag(0);
+	  }
+	}
+      }
+    }
+  }
+
+  if(e1.size()>0){
+    for(int i1=0; i1<(int)e1.size(); i1++){
+      for(int i2=i1+1; i2<(int)e1.size(); i2++){
+	if(fRejectPairFlag[idie]==1){
+	  Double_t cosine = GetOpeningAngle(e1[i1], e1[i2]);
+	  if(cosine<fdop){
+	    e1[i1]->SetConvFlag(0);
+	    e1[i2]->SetConvFlag(0);
+	  }
+	}else if(fRejectPairFlag[idie]==2){
+	  Double_t phiv = GetPhiv(e1[i1], e1[i2]);
+	  if(fbz>0 && phiv>fdconvphiv){
+	    e1[i1]->SetConvFlag(0);
+	    e1[i2]->SetConvFlag(0);
+	  }else if(fbz<0 && phiv<acos(-1.0)-fdconvphiv){
+	    e1[i1]->SetConvFlag(0);
+	    e1[i2]->SetConvFlag(0);
+	  }
+	}
+      }
+    }
+  }
+
+  if(e2.size()>0){
+    for(int i1=0; i1<(int)e2.size(); i1++){
+      for(int i2=i1+1; i2<(int)e2.size(); i2++){
+	if(fRejectPairFlag[idie]==1){
+	  Double_t cosine = GetOpeningAngle(e2[i1], e2[i2]);
+	  if(cosine<fdop){
+	    e2[i1]->SetConvFlag(0);
+	    e2[i2]->SetConvFlag(0);
+	  }
+	}else if(fRejectPairFlag[idie]==2){
+	  Double_t phiv = GetPhiv(e2[i1], e2[i2]);
+	  if(fbz>0 && phiv>fdconvphiv){
+	    e2[i1]->SetConvFlag(0);
+	    e2[i2]->SetConvFlag(0);
+	  }else if(fbz<0 && phiv<acos(-1.0)-fdconvphiv){
+	    e2[i1]->SetConvFlag(0);
+	    e2[i2]->SetConvFlag(0);
+	  }
+	}
+      }
+    }
+  }
+}
+
+
+//_________________________________________________________________________________
+Double_t AliAnalysisTaskMultiDielectronTG::GetOpeningAngle(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2){
+
+  //////////////////////
+  //////// calculate pairs and get opening angle 
+  //////////////////////
+
+  double dmass, dphiv, dpxpair, dpypair, dpzpair;
+  double dptpair, depair, dphipair, detapair, dcos, dpsi;
+
+  CalcVars(e1, e2, dmass, dphiv, dpxpair, dpypair, dpzpair, 
+            dptpair, depair, dphipair, detapair, dcos, dpsi);
+
+  return dcos;
+}
+
+//_________________________________________________________________________________
+Double_t AliAnalysisTaskMultiDielectronTG::GetPhiv(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2){
+
+  //////////////////////
+  //////// calculate pairs and get opening angle 
+  //////////////////////
+
+  double dmass, dphiv, dpxpair, dpypair, dpzpair;
+  double dptpair, depair, dphipair, detapair, dcos, dpsi;
+
+  CalcVars(e1, e2, dmass, dphiv, dpxpair, dpypair, dpzpair, 
+            dptpair, depair, dphipair, detapair, dcos, dpsi);
+
+  return dphiv;
 }

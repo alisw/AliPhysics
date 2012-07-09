@@ -156,17 +156,28 @@ public:
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
 
 
+  void RejectOP(double val){fdop = val;} ///To reject conversions
   void RejectConversion(double val){fdconvphiv = val;} ///To reject conversions
   void EnableV0mixing(Bool_t val){fdv0mixing = val;}   ///Enable V0 mixing  
   void CheckGhostPairs(vector<AliDielectronSingleTG*> e1); ///identify ghost pairs in like sign pais
-  void FillPair(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, int type, AliDielectron *die); /// Fill Pairs
-  bool PairTrackcut(double var1); /// Pair cuts
+  void RejectPairs(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2, Int_t idie); ///identify conversions for the rejection
+  void FillPair(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, int type, AliDielectron *die, Int_t idie); /// Fill Pairs
+  bool PairTrackcut(double var1, double var2, int idie); /// Pair cuts
   void CalcVars(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, 
 		 double &mass, double &phiv, double &px, double &py, double&pz,
 		double &pt, double &e, double &phi, double &eta, double &cos, double &psi); /// Calcualate kinematic variables
   void CalcPair(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2, AliDielectron *die, Int_t idie);  ///Process Pairs
   void RandomizePool(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2);         ///Randimize pairs
   void ReshuffleBuffer(vector<AliDielectronSingleTG*> ve, deque<AliDielectronSingleTG*> pool);  ///ReshuffleBuffer
+
+  Double_t GetPhiv(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2); /// calculate phiv
+  Double_t GetOpeningAngle(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2); /// calculate opening angle 
+  void SetPairCuts(Int_t Types[20]){
+    for(int i=0;i<20;i++){
+      fRejectPairFlag[i] = Types[i];
+    }
+  }
+
 
 protected:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
@@ -181,6 +192,10 @@ protected:
   UInt_t fExcludeTriggerMask;        // Triggers to exclude from the analysis
   Bool_t fTriggerOnV0AND;            // if to trigger on V0and
   Bool_t fRejectPileup;              // pileup rejection wanted
+
+  enum PairRejType { NoRej=0, RejPairOp, RejPairPv, CutPairOp, CutPairPv};
+  
+  Int_t fRejectPairFlag[20];
 
   ETriggerLogig fTriggerLogic;       // trigger logic: any or all bits need to be matching
   
@@ -208,6 +223,7 @@ protected:
   std::vector<AliDielectronSingleTG*>  fVemtmp;   /// template for electron lists
   std::vector<AliDielectronSingleTG*>  fVeptmp;   /// template for positron lists
   Double_t fdconvphiv;      /// PhiCut
+  Double_t fdop;      /// Opening angle Cut
   Double_t fbz;            /// Magnetic field
   Bool_t fdv0mixing;       /// Mixing using V0 
 
@@ -221,7 +237,7 @@ protected:
   static const int fgkNRPBIN=12;    ///Number of RPbin for mixed event 
   static const int fgkNZBIN=10;     ///Number of zbin for mixed event 
   static const int fgkNCENT=10;     ///Number of centrality for mixed event 
-  static const int fgkNDIE=10;      ///maximum number of cuts for AliDielectron
+  static const int fgkNDIE=20;      ///maximum number of cuts for AliDielectron
   int fibuf[fgkNDIE][fgkNZBIN][fgkNCENT][fgkNRPBIN];    ///buffer occupation for mixed event
   std::vector<AliDielectronSingleTG*> fvep[fgkNBUF][fgkNDIE][fgkNZBIN][fgkNCENT][fgkNRPBIN];   //// positron buffer for mixing
   std::vector<AliDielectronSingleTG*> fvem[fgkNBUF][fgkNDIE][fgkNZBIN][fgkNCENT][fgkNRPBIN];   //// electron buffer for mixing
