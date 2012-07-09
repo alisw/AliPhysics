@@ -336,13 +336,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	//one "container" for MC
 	TString nameContainer="";
 	if(!isKeepDfromB) {
-		nameContainer="CFHFccontainer0_3Prong_CommonFramework";
+		nameContainer="CFHFccontainer0_3ProngDstoKKpi_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
-		nameContainer="CFHFccontainer0DfromB_3Prong_CommonFramework";
+		nameContainer="CFHFccontainer0DfromB_3ProngDstoKKpi_CommonFramework";
 	}
 	else  {
-		nameContainer="CFHFccontainer0allD_3Prong_CommonFramework";          
+		nameContainer="CFHFccontainer0allD_3ProngDstoKKpi_CommonFramework";          
 	}
 	nameContainer+=suffixDecayType.Data();
 	nameContainer+=suffixName.Data();
@@ -602,13 +602,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 
 	TString nameCorr="";
 	if(!isKeepDfromB) {
-		nameCorr="CFHFcorr0_3Prong_CommonFramework";
+		nameCorr="CFHFcorr0_3ProngDstoKKpi_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
-		nameCorr= "CFHFcorr0KeepDfromBOnly_3Prong_CommonFramework";
+		nameCorr= "CFHFcorr0KeepDfromBOnly_3ProngDstoKKpi_CommonFramework";
 	}
 	else  {
-		nameCorr="CFHFcorr0allD_3Prong_CommonFramework";		
+		nameCorr="CFHFcorr0allD_3ProngDstoKKpi_CommonFramework";		
 	}
 	nameCorr+=suffixDecayType.Data();
 	nameCorr+=suffixName.Data();
@@ -647,17 +647,20 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	output3name=nameCorr;
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskDstoKKpi_CommonFramework";
-		output1name="CFHFchist0_3Prong_CommonFramework";
+		output1name="CFHFchist0_3ProngDstoKKpi_CommonFramework";
+		output3name+="_cOnly";
 		output4name= "CutsDdirect_3ProngDs_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskDstoKKpiKeepDfromBOnly_CommonFramework";
-		output1name="CFHFchist0DfromB_3Prong_CommonFramework";
+		output1name="CFHFchist0DfromB_3ProngDstoKKpi_CommonFramework";
+		output3name+="_bOnly";
 		output4name= "CutsDfromB_3ProngDs_CommonFramework";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskDstoKKpiKeepDfromB_CommonFramework";
-		output1name="CFHFchist0allD_3Prong_CommonFramework";
+		output1name="CFHFchist0allD_3ProngDstoKKpi_CommonFramework";
+		output3name+="_all";
 		output4name= "CutsallD_3ProngDs_CommonFramework";
 	}
 
@@ -667,6 +670,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	
 	outputfile += suffixName.Data();
 	output1name+= suffixName.Data();
+	output2name+= suffixName.Data();
+	output3name+= suffixName.Data();
 	output4name+= suffixName.Data();
 
 	//now comes user's output objects :
@@ -688,4 +693,3 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 
 	return task;
 }
-
