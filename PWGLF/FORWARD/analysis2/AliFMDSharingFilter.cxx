@@ -255,9 +255,9 @@ AliFMDSharingFilter::Init()
       for (UShort_t e = 1; e <= nEta; e++) { 
 	Double_t eta = eAxis.GetBinCenter(e);
 	
-	fHCuts.Print();
+	if (fDebug > 3) fHCuts.Print();
+
 	Double_t hcut = GetHighCut(d, r, eta, false);
-	
 	Double_t lcut = GetLowCut(d, r, eta);
 	
 	if (hcut > 0) fHighCuts->SetBinContent(e, ybin, hcut);
