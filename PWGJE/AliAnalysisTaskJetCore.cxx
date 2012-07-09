@@ -71,6 +71,7 @@ fVtxZMax(10.),
 fEvtClassMin(0),
 fEvtClassMax(4),
 fFilterMask(0),
+fFilterMaskBestPt(16),
 fFilterType(2),
 fRadioFrac(0.2),
 fMinDist(0.1),
@@ -183,6 +184,7 @@ fVtxZMax(10.),
 fEvtClassMin(0),
 fEvtClassMax(4),
 fFilterMask(0),
+fFilterMaskBestPt(16),
 fFilterType(2),
 fRadioFrac(0.2),
 fMinDist(0.1),
@@ -993,9 +995,20 @@ Int_t  AliAnalysisTaskJetCore::GetListOfTracks(TList *list){
       if(tr->Pt()<0.15)continue;
       list->Add(tr);
       iCount++;
-      if(tr->Pt()>ptmax){ ptmax=tr->Pt();
-      index=iCount-1;}
-      
+      if(fFilterMaskBestPt>0){// only set the trigger track index for good quality tracks
+	if(tr->TestFilterBit(fFilterMaskBestPt)){
+	  if(tr->Pt()>ptmax){ 
+	    ptmax=tr->Pt();	
+	    index=iCount-1;
+	  }
+	}
+      }
+      else{
+	if(tr->Pt()>ptmax){ 
+	  ptmax=tr->Pt();	
+	  index=iCount-1;
+	}
+      }
      }
   
    
