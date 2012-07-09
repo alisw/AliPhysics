@@ -24,6 +24,7 @@ Options:
 	-p,--production IDENTIFIER Production identifier [$prodfull]
 	-P,--pass       IDENTIFIER Pass identifier [$passfull]
 	-l,--log-file              Log file output [$redir]
+	-b,--barrel     NUMBER     ? [$barrel]
 
 Note the option -j and the options -p and -P are mutually exclusive,
 The option -Q is only used if the options -p and -P are given.
@@ -206,15 +207,13 @@ get_filelist()
     
     local datd=data
     local esdd=ESDs/
-    if [ ${barrel} -gt 0 ];
-	then
-		esdd=
-	fi;
-	if [ ${barrel} -gt 1 ];
-	then 	
-		file=trending_barrel.root
-		other=QAresults_barrel.root
-	fi;
+    if test ${barrel} -gt 0 ; then
+	esdd=
+    fi
+    if test ${barrel} -gt 1 ; then 	
+	file=trending_barrel.root
+	other=QAresults_barrel.root
+    fi
     case x$prodpost in 
 	x_*) ;; 
 	x) ;; 
