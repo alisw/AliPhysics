@@ -95,6 +95,7 @@ fIsCandTrackSPDFirst(kFALSE),
 fMaxPtCandTrackSPDFirst(0.),
 fApplySPDDeadPbPb2011(kFALSE),
 fRemoveTrackletOutliers(kFALSE),
+fCutOnzVertexSPD(0),
 fKinkReject(kFALSE)
 {
   //
@@ -149,6 +150,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxPtCandTrackSPDFirst(source.fMaxPtCandTrackSPDFirst),
   fApplySPDDeadPbPb2011(source.fApplySPDDeadPbPb2011),
   fRemoveTrackletOutliers(source.fRemoveTrackletOutliers),
+  fCutOnzVertexSPD(source.fCutOnzVertexSPD),
   fKinkReject(source.fKinkReject)
 {
   //
@@ -216,6 +218,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMaxPtCandTrackSPDFirst=source.fMaxPtCandTrackSPDFirst;
   fApplySPDDeadPbPb2011=source.fApplySPDDeadPbPb2011;
   fRemoveTrackletOutliers=source.fRemoveTrackletOutliers;
+  fCutOnzVertexSPD=source.fCutOnzVertexSPD;
   fKinkReject=source.fKinkReject;
 
   if(source.GetTrackCuts()) {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*(source.GetTrackCuts()));}
@@ -397,6 +400,24 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     } 
   }
 
+  if(fCutOnzVertexSPD>0){
+    const AliVVertex *vSPD = ((AliAODEvent*)event)->GetPrimaryVertexSPD();
+    if(!vSPD || (vSPD && vSPD->GetNContributors()<fMinVtxContr)){
+      accept=kFALSE;
+      fEvRejectionBits+=1<<kBadSPDVertex;
+    }else{
+      if(fCutOnzVertexSPD==1 && TMath::Abs(vSPD->GetZ())>12.) {
+	fEvRejectionBits+=1<<kZVtxSPDOutFid;
+	if(accept) fWhyRejection=6;
+	accept=kFALSE;
+      } 
+      if(fCutOnzVertexSPD==2 && TMath::Abs(vSPD->GetZ()-vertex->GetZ())>0.5) {
+	fEvRejectionBits+=1<<kZVtxSPDOutFid;
+	if(accept) fWhyRejection=6;
+	accept=kFALSE;
+      } 
+    }
+  }
 
   // pile-up rejection
   if(fOptPileup==kRejectPileupEvent){
@@ -900,7 +921,7 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
       cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
       if(cent<0){
 	Int_t quality = centrality->GetQuality();
-	if(quality<=1){
+	if(quality<=1){ // fQuality==1 means rejected by zVertex cut that we apply a part and we want to keep separate (Giacomo)
 	  cent=(Float_t)centrality->GetCentralityPercentileUnchecked("V0M");
 	}else{
 	  Int_t runnum=aodEvent->GetRunNumber();
