@@ -369,6 +369,13 @@ public:
   virtual Float_t  GetPtHardAndJetFactor()               const { return  fPtHardAndJetPtFactor    ; }
   virtual void     SetPtHardAndJetPtFactor(Float_t factor)     { fPtHardAndJetPtFactor = factor   ; }		
   
+  virtual Bool_t   ComparePtHardAndClusterPt() ;
+  virtual Bool_t   IsPtHardAndClusterPtComparisonSet()       const { return  fComparePtHardAndClusterPt   ; }
+  virtual void     SetPtHardAndClusterPtComparison(Bool_t compare) { fComparePtHardAndClusterPt = compare ; }	
+  virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
+  virtual void     SetPtHardAndClusterPtFactor(Float_t factor)     { fPtHardAndClusterPtFactor = factor   ; }		
+  
+  
   //MC reader methods, declared there to allow compilation, they are only used in the MC reader:
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/) { ; }  
@@ -398,6 +405,9 @@ public:
   Bool_t           fComparePtHardAndJetPt;  // In MonteCarlo, jet events, reject fake events with wrong jet energy.
   Float_t          fPtHardAndJetPtFactor;   // Factor between ptHard and jet pT to reject/accept event.
 
+  Bool_t           fComparePtHardAndClusterPt;  // In MonteCarlo, jet events, reject events with too large cluster energy
+  Float_t          fPtHardAndClusterPtFactor;   // Factor between ptHard and cluster pT to reject/accept event.
+  
   Float_t          fCTSPtMin;               // pT Threshold on charged particles 
   Float_t          fEMCALPtMin;             // pT Threshold on emcal clusters
   Float_t          fPHOSPtMin;              // pT Threshold on phos clusters
@@ -488,7 +498,7 @@ public:
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,42)
+  ClassDef(AliCaloTrackReader,43)
   
 } ;
 
