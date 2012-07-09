@@ -323,7 +323,7 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
   }
   
   fReducedEvent->fNtracks[0] = event->GetNumberOfTracks();
-  fReducedEvent->fSPDntracklets = values[AliDielectronVarManager::kNaccTrckltsEsd10Corr];
+  fReducedEvent->fSPDntracklets = (UChar_t)values[AliDielectronVarManager::kNaccTrckltsEsd10Corr];
 
   AliVVZERO* vzero = event->GetVZEROData();
   for(Int_t i=0;i<64;++i) 
@@ -485,7 +485,7 @@ void AliAnalysisTaskReducedTree::FillDielectronPairInfo(AliDielectron* die, Shor
          new (tracks[fReducedEvent->fNV0candidates[1]+fReducedEvent->fNDielectronCandidates]) AliReducedPair();
       // !!! hardcoded flag for dielectron id 
       reducedParticle->fCandidateId  = (iDie==0 ? AliReducedPair::kJpsiToEE : AliReducedPair::kPhiToKK);
-      reducedParticle->fPairType     = values[AliDielectronVarManager::kPairType];
+      reducedParticle->fPairType     = (Char_t)values[AliDielectronVarManager::kPairType];
       reducedParticle->fLegIds[0]    = (UShort_t)(static_cast<AliVTrack*>(pair->GetFirstDaughter()))->GetID();
       reducedParticle->fLegIds[1]    = (UShort_t)(static_cast<AliVTrack*>(pair->GetSecondDaughter()))->GetID();
       reducedParticle->fMass[0]      = values[AliDielectronVarManager::kM];
