@@ -116,7 +116,7 @@ public:
   void SetNMaxMissingMFTClusters(Int_t nMaxMissingMFTClusters) { fNMaxMissingMFTClusters = nMaxMissingMFTClusters; }
   void SetMandatoryPlane(Int_t iPlane) { if (0<=iPlane && iPlane<AliMFTConstants::fNMaxPlanes) fIsPlaneMandatory[iPlane] = kTRUE; }
 
-  void FindClusterInPlane(Int_t planeId);
+  Int_t FindClusterInPlane(Int_t planeId);
   void AttachGoodClusterInPlane(Int_t planeId);
   void FillPlanesWithTrackHistory();
   Double_t TryOneCluster(const AliMUONTrackParam &trackParam, AliMFTCluster *cluster);
@@ -151,10 +151,13 @@ protected:
 
   static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;        // max number of MFT planes
   static const Double_t fRadLengthSi;
+  static const Int_t fMaxNCandidates = 1000;
 
   Int_t fRun; 
   Int_t fNEventsToAnalyze;           // events to analyze
   Double_t fSigmaClusterCut;         // to select the clusters in the MFT planes which are compatible with the extrapolated muon track
+  Double_t fScaleSigmaClusterCut;    // to tune the cut on the compatible clusters in case of too many candidates
+  Bool_t fGlobalTrackingDiverged;    // to keep memory of a possible divergence in the global tracking finding
   Double_t fChi2GlobalCut;           // cut on the final chi2 of the global muon track
   Double_t fSigmaSpectrometerCut;    // for the selection of the tracks in the muon spectrometer
   Double_t fVertexErrorX;            // uncertainty on the x position of the muon's origin

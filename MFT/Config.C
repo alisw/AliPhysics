@@ -47,8 +47,8 @@ enum PDCProc_t {kGenBox,
 		kGenCorrHF,
                 kPythia6,
 		kPythiaPerugia0, 
-		kPythiaPerugia0Jpsi2e, 
-		kPythiaPerugia0BtoJpsi2e, 
+		kPythiaPerugia0Jpsi2mu, 
+		kPythiaPerugia0BtoJpsi2mu, 
 		kHijing, 
 		kHijing2500,
 		kHijing2500Cocktail};
@@ -60,8 +60,8 @@ const Char_t* pprRunName[] = {"kGenBox",
 			      "kGenCorrHF",
 			      "kPythia6",
 			      "kPythiaPerugia0", 
-			      "kPythiaPerugia0Jpsi2e", 
-			      "kPythiaPerugia0BtoJpsi2e", 
+			      "kPythiaPerugia0Jpsi2mu", 
+			      "kPythiaPerugia0BtoJpsi2mu", 
 			      "kHijing", 
 			      "kHijing2500", 
 			      "kHijing2500Cocktail"};
@@ -76,7 +76,7 @@ void LoadLibs();
 static PDCProc_t     proc     = kGenBox;
 static PDCProc_t     signal   = kGenBox;    // only in case kHijing2500Cocktail is the proc
 static Mag_t         mag      = k5kG;
-static Float_t       energy   = 14000.; // energy in CMS
+static Float_t       energy   = 5500.; // energy in CMS
 static Float_t       bMin     = 0.;
 static Float_t       bMax =   = 5.; // 0-5 fm corresponds to around 0-10% (see https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies#Tables_with_centrality_bins_for)
 static Double_t      JpsiPol  = 0; // Jpsi polarisation
@@ -150,16 +150,17 @@ void Config() {
   
   // Generator
   AliGenerator* gener = 0x0;
-  if (proc == kPythia6)                   gener = MbPythia(); 
-  else if (proc == kPythiaPerugia0)       gener = MbPythiaTunePerugia0();
-  else if (proc == kHijing)               gener = Hijing();	
-  else if (proc == kHijing2500)           gener = Hijing2500();	
-  else if (proc == kHijing2500Cocktail)   gener = Hijing2500Cocktail();
-  else if (proc == kGenBox)               gener = GenBox();
-  else if (proc == kGenMuonLMR)           gener = GenMuonLMR();
-  else if (proc == kGenParamJpsi)         gener = GenParamJpsi();
-  else if (proc == kGenCorrHF)            gener = GenCorrHF();
-  else if (proc == kGenPionKaon)          gener = GenParamPionKaon();
+  if (proc == kPythia6)                        gener = MbPythia(); 
+  else if (proc == kPythiaPerugia0)            gener = MbPythiaTunePerugia0();
+  else if (proc == kHijing)                    gener = Hijing();	
+  else if (proc == kHijing2500)                gener = Hijing2500();	
+  else if (proc == kHijing2500Cocktail)        gener = Hijing2500Cocktail();
+  else if (proc == kGenBox)                    gener = GenBox();
+  else if (proc == kGenMuonLMR)                gener = GenMuonLMR();
+  else if (proc == kGenParamJpsi)              gener = GenParamJpsi();
+  else if (proc == kGenCorrHF)                 gener = GenCorrHF();
+  else if (proc == kGenPionKaon)               gener = GenParamPionKaon();
+  else if (proc == kPythiaPerugia0BtoJpsi2mu)  gener = MbPythiaTunePerugia0BtoJpsi2mu();
 
   // Size of the interaction diamond
   Float_t sigmaz  = 5.4 / TMath::Sqrt(2.);     // [cm]
@@ -249,9 +250,6 @@ void Config() {
   }
   if (iMFT) {
     AliMFT *MFT = new AliMFT("MFT", "normal MFT");
-    MFT->SetNSlices(1);
-    MFT->SetChargeDispersion(20.e-4);
-    MFT->SetNStepForChargeDispersion(4);
   }
 
   TIter next(gAlice->Modules());
@@ -283,13 +281,13 @@ AliGenerator* GenMuonLMR() {
   AliGenMUONLMR *gener = new AliGenMUONLMR();
   gener->SetMomentumRange(0,999);
   gener->SetPtRange(0,100.);
-  gener->SetYRange(-4.0, -2.5);
-  gener->SetChildThetaRange(171.0,177.0);
-  gener->SetChildMomentumRange(5.0, 999.);
+  gener->SetYRange(-4.5, -2.0);
+  gener->SetChildThetaRange(171.0,178.0);
+  gener->SetChildMomentumRange(4.0, 999.);
   gener->SetOrigin(0.0, 0.0, 0.0);             // vertex position
   gener->SetSigma(0.0, 0.0, 0.0);              // vertex position smearing
   enum {kEta2Body, kEtaDalitz, kRho2Body, kOmega2Body, kOmegaDalitz, kPhi2Body, kEtaPrimeDalitz, kPionLMR, kKaonLMR}; 
-  gener->GenerateSingleProcess(kPhi2Body, 10);
+  gener->GenerateSingleProcess(kOmega2Body, 10);
   gener->SetCutOnChild(1);
 
   return gener;
@@ -337,12 +335,13 @@ AliGenerator* GenParamPionKaon() {
 
 AliGenerator* GenCorrHF() {
   
-  AliGenCorrHF *gener = new AliGenCorrHF(1, 4, 14);  // for charm, 1 pair per event
-  // AliGenCorrHF *gener = new AliGenCorrHF(1, 5, 14);  // for beauty, 1 pair per event
+  AliGenCorrHF *gener = new AliGenCorrHF(1, 4, 6);  // for charm, 1 pair per event
+  // AliGenCorrHF *gener = new AliGenCorrHF(1, 5, 6);  // for beauty, 1 pair per event
   
   gener->SetMomentumRange(0,9999);
   gener->SetCutOnChild(1);          // 1/0 means cuts on children enable/disable
-  gener->SetChildThetaRange(170.0,179.0);
+  gener->SetChildThetaRange(171.0,178.0);
+  gener->SetChildMomentumRange(4.0, 999.);
   gener->SetOrigin(0,0,0);          //vertex position    
   gener->SetForceDecay(kSemiMuonic);
   gener->SetTrackingFlag(1);
@@ -396,31 +395,31 @@ AliGenerator* MbPythiaTunePerugia0() {
 
 //====================================================================================================================================================
 
-AliGenerator* MbPythiaTunePerugia0Jpsi2e() {
+AliGenerator* MbPythiaTunePerugia0Jpsi2mu() {
   
-  comment = comment.Append("Jpsi forced to dielectrons");
+  comment = comment.Append("Jpsi forced to dimuons");
   AliGenParam *jpsi=0x0;
-  if(JpsiHarderPt) jpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp 8.8", "Jpsi");  // 8.8 TeV
+  if (JpsiHarderPt) jpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp 8.8", "Jpsi");  // 8.8 TeV
   else jpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp 7", "Jpsi");  // 7 TeV
   jpsi->SetPtRange(0.,999.);
   jpsi->SetYRange(-1.0, 1.0);
   jpsi->SetPhiRange(0.,360.);
-  jpsi->SetForceDecay(kDiElectron);
+  jpsi->SetOrigin(0,0,0);
+  jpsi->SetForceDecay(kDiMuon);
   return jpsi;
 
 }
 
 //====================================================================================================================================================
 
-AliGenerator* MbPythiaTunePerugia0BtoJpsi2e() {
+AliGenerator* MbPythiaTunePerugia0BtoJpsi2mu() {
 
-  comment = comment.Append(" pp: Pythia (Perugia0) BtoJpsi (1 bbbar per event, 1 b-hadron in |y|<2, 1 J/psi in |y|<2");
+  comment = comment.Append(" pp: Pythia (Perugia0) BtoJpsi (1 bbbar per event, 1 b-hadron, 1 J/psi");
   
   //    Pythia
   AliGenPythia* pythia = new AliGenPythia(-1);
   pythia->SetMomentumRange(0, 999999.);
-  pythia->SetThetaRange(0., 180.);
-  pythia->SetYRange(-2.,2.);
+  pythia->SetYRange(-4.5, -2.0);
   pythia->SetPtRange(0,1000.);
   pythia->SetProcess(kPyBeautyppMNRwmi);
   pythia->SetEnergyCMS(energy);
@@ -432,13 +431,14 @@ AliGenerator* MbPythiaTunePerugia0BtoJpsi2e() {
   //    decays
   pythia->SetCutOnChild(1);
   pythia->SetPdgCodeParticleforAcceptanceCut(443);
-  pythia->SetChildYRange(-2,2);
+  pythia->SetChildYRange(-4.5, -2.0);
   pythia->SetChildPtRange(0,10000.);
   //
   //    decays
-  pythia->SetForceDecay(kBJpsiDiElectron);
+  pythia->SetForceDecay(kBJpsiDiMuon);
   
   return pythia;
+
 }
 
 //====================================================================================================================================================

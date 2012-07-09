@@ -35,7 +35,6 @@ public:
   
   virtual ~AliMuonForwardTrackPair() { fMuonForwardTracks->Delete(); delete fMuonForwardTracks; }
 
-  void SetTrack(Int_t iTrack, AliMuonForwardTrack *track);
   AliMuonForwardTrack* GetTrack(Int_t iTrack) { 
     if (iTrack==0 || iTrack==1) return (AliMuonForwardTrack*) fMuonForwardTracks->At(iTrack); 
     else return NULL; 
@@ -44,6 +43,13 @@ public:
   void SetKinemMC();
   void SetKinem(Double_t z, Int_t nClusters=-1);
   Bool_t IsKinemSet() { return fIsKinemSet; }
+
+  void SetPointOfClosestApproach();
+  void GetPointOfClosestApproach(Double_t *xyz) { 
+    xyz[0] = fXPointOfClosestApproach; 
+    xyz[1] = fYPointOfClosestApproach; 
+    xyz[2] = fZPointOfClosestApproach; 
+  }
 
   Double_t GetWeightedOffset(Double_t x, Double_t y, Double_t z);
   Double_t GetMassWithoutMFT(Double_t x, Double_t y, Double_t z, Int_t nClusters=-1);
@@ -61,6 +67,8 @@ protected:
   TClonesArray *fMuonForwardTracks;
   TLorentzVector fKinemMC, fKinem;
   Bool_t fIsKinemSet;
+
+  Double_t fXPointOfClosestApproach, fYPointOfClosestApproach, fZPointOfClosestApproach;
 
   ClassDef(AliMuonForwardTrackPair,1)
     

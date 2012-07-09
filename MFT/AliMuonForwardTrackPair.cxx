@@ -41,7 +41,10 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair():
   fMuonForwardTracks(0),
   fKinemMC(0,0,0,0),
   fKinem(0,0,0,0),
-  fIsKinemSet(kFALSE)
+  fIsKinemSet(kFALSE),
+  fXPointOfClosestApproach(9999),
+  fYPointOfClosestApproach(9999),
+  fZPointOfClosestApproach(9999)
 {
 
   // default constructor
@@ -57,7 +60,10 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair(AliMuonForwardTrack *track0, Al
   fMuonForwardTracks(0),
   fKinemMC(0,0,0,0),
   fKinem(0,0,0,0),
-  fIsKinemSet(kFALSE)
+  fIsKinemSet(kFALSE),
+  fXPointOfClosestApproach(9999),
+  fYPointOfClosestApproach(9999),
+  fZPointOfClosestApproach(9999)
 {
 
   fMuonForwardTracks = new TClonesArray("AliMuonForwardTrack", 2);
@@ -66,6 +72,7 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair(AliMuonForwardTrack *track0, Al
   new ((*fMuonForwardTracks)[1]) AliMuonForwardTrack(*track1);
 
   SetKinemMC();
+  SetPointOfClosestApproach();
 
 }
 
@@ -76,7 +83,10 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair(const AliMuonForwardTrackPair& 
   fMuonForwardTracks(trackPair.fMuonForwardTracks),
   fKinemMC(trackPair.fKinemMC),
   fKinem(trackPair.fKinem),
-  fIsKinemSet(trackPair.fIsKinemSet)
+  fIsKinemSet(trackPair.fIsKinemSet),
+  fXPointOfClosestApproach(trackPair.fXPointOfClosestApproach),
+  fYPointOfClosestApproach(trackPair.fYPointOfClosestApproach),
+  fZPointOfClosestApproach(trackPair.fZPointOfClosestApproach)
 {
 
   // copy constructor
@@ -102,18 +112,11 @@ AliMuonForwardTrackPair& AliMuonForwardTrackPair::operator=(const AliMuonForward
   fKinemMC = trackPair.fKinemMC;
   fKinem = trackPair.fKinem;
   fIsKinemSet = trackPair.fIsKinemSet;
+  fXPointOfClosestApproach = trackPair.fXPointOfClosestApproach;
+  fYPointOfClosestApproach = trackPair.fYPointOfClosestApproach;
+  fZPointOfClosestApproach = trackPair.fZPointOfClosestApproach;
 
   return *this;
-
-}
-
-//====================================================================================================================================================
-
-void AliMuonForwardTrackPair::SetTrack(Int_t iTrack, AliMuonForwardTrack *track) {
-
-  if (iTrack==0 || iTrack==1) {
-    new ((*fMuonForwardTracks)[iTrack]) AliMuonForwardTrack(*track);
-  }
 
 }
 
@@ -255,8 +258,90 @@ void AliMuonForwardTrackPair::SetKinem(Double_t z, Int_t nClusters) {
 
   fIsKinemSet = kTRUE;
 
-  //  return fKinem.M();
+}
 
+//====================================================================================================================================================
+
+void AliMuonForwardTrackPair::SetPointOfClosestApproach() {
+  
+  AliMUONTrackParam *param0 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(0))->GetTrackParamAtMFTCluster(0);
+  AliMUONTrackParam *param1 = ((AliMuonForwardTrack*) fMuonForwardTracks->At(1))->GetTrackParamAtMFTCluster(0);
+  
+  Double_t step = 1.;  // in cm
+  Double_t startPoint = 0.;
+
+  Double_t r[3]={0}, z[3]={startPoint, startPoint+step, startPoint+2*step};
+  
+  for (Int_t i=0; i<3; i++) {
+    AliMUONTrackExtrap::ExtrapToZCov(param0, z[i]);
+    AliMUONTrackExtrap::ExtrapToZCov(param1, z[i]);
+    Double_t dX = param0->GetNonBendingCoor() - param1->GetNonBendingCoor();
+    Double_t dY = param0->GetBendingCoor()    - param1->GetBendingCoor();
+    r[i] = TMath::Sqrt(dX*dX + dY*dY);
+  }
+  
+  Double_t researchDirection=0.;
+  
+  if      (r[0]>r[1] && r[1]>r[2]) researchDirection = +1.;   // towards z positive
+  else if (r[0]<r[1] && r[1]<r[2]) researchDirection = -1.;   // towards z negative
+  else if (r[0]<r[1] && r[1]>r[2]) { 
+    AliError("Point of closest approach cannot be found for dimuon (no minima)");
+    return;
+  }
+  
+  while (TMath::Abs(researchDirection)>0.5) {
+    if (researchDirection>0.) {
+      z[0] = z[1];
+      z[1] = z[2];
+      z[2] = z[1]+researchDirection*step;
+    }
+    else {
+      z[2] = z[1];
+      z[1] = z[0];
+      z[0] = z[1]+researchDirection*step;
+    }
+    if (TMath::Abs(z[0])>900.) {
+      AliError("Point of closest approach cannot be found for dimuon (no minima)");
+      return;
+    }
+    for (Int_t i=0; i<3; i++) {
+      AliMUONTrackExtrap::ExtrapToZCov(param0, z[i]);
+      AliMUONTrackExtrap::ExtrapToZCov(param1, z[i]);
+      Double_t dX = param0->GetNonBendingCoor() - param1->GetNonBendingCoor();
+      Double_t dY = param0->GetBendingCoor()    - param1->GetBendingCoor();
+      r[i] = TMath::Sqrt(dX*dX + dY*dY);
+    }
+    researchDirection=0.;
+    if      (r[0]>r[1] && r[1]>r[2]) researchDirection = +1.;   // towards z positive
+    else if (r[0]<r[1] && r[1]<r[2]) researchDirection = -1.;   // towards z negative
+  }
+  
+  AliDebug(2,"Minimum region has been found");
+  
+  step *= 0.5;
+  while (step>AliMFTConstants::fPrecisionPointOfClosestApproach) {
+    z[0] = z[1]-step;
+    z[2] = z[1]+step;
+    for (Int_t i=0; i<3; i++) {
+      AliMUONTrackExtrap::ExtrapToZCov(param0, z[i]);
+      AliMUONTrackExtrap::ExtrapToZCov(param1, z[i]);
+      Double_t dX = param0->GetNonBendingCoor() - param1->GetNonBendingCoor();
+      Double_t dY = param0->GetBendingCoor()    - param1->GetBendingCoor();
+      r[i] = TMath::Sqrt(dX*dX + dY*dY);
+    }
+    if      (r[0]<r[1]) z[1] = z[0];
+    else if (r[2]<r[1]) z[1] = z[2];
+    else step *= 0.5;
+  }
+  
+  fZPointOfClosestApproach = z[1];
+  AliMUONTrackExtrap::ExtrapToZCov(param0, fZPointOfClosestApproach);
+  AliMUONTrackExtrap::ExtrapToZCov(param1, fZPointOfClosestApproach);  
+  fXPointOfClosestApproach = 0.5*(param0->GetNonBendingCoor() + param1->GetNonBendingCoor());
+  fYPointOfClosestApproach = 0.5*(param0->GetBendingCoor()    + param1->GetBendingCoor());
+  
+  AliDebug(2,Form("Point of Closest Approach: (%f, %f, %f)",fXPointOfClosestApproach,fYPointOfClosestApproach,fZPointOfClosestApproach));
+  
 }
 
 //====================================================================================================================================================

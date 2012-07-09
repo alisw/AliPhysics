@@ -51,7 +51,8 @@ public:
   
   // ------- framework part -----------------------------------------------------------------------------------
   void CreateMaterials();                       // from AliModule invoked from AliMC
-  void CreateGeometry();                        // from AliModule invoked from AliMC                     
+  void CreateGeometry();                        // from AliModule invoked from AliMC
+  void AddAlignableVolumes();                     
   void StepManager();                           // from AliModule invoked from AliMC::Stepping()
   void Hits2SDigits();
   void Hits2SDigitsLocal(TClonesArray *hits, const TObjArray *pSDig, Int_t track);

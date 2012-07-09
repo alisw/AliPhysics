@@ -71,6 +71,8 @@ AliMuonForwardTrackFinder::AliMuonForwardTrackFinder():
   fRun(0),
   fNEventsToAnalyze(0),
   fSigmaClusterCut(0),
+  fScaleSigmaClusterCut(1.),
+  fGlobalTrackingDiverged(kFALSE),
   fChi2GlobalCut(0),
   fSigmaSpectrometerCut(0),
   fVertexErrorX(0.015),
@@ -462,21 +464,18 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
   // load next muon track from the reconstructed event
 
-  if (fCountRealTracksAnalyzed>fMaxNTracksToBeAnalyzed) return kFALSE;
-
+  if (fCountRealTracksAnalyzed>=fMaxNTracksToBeAnalyzed) return kFALSE;
   if (!fCountRealTracksAnalyzed) if (!LoadNextEvent()) return kFALSE;
-  if (fCountRealTracksAnalyzed==fMaxNTracksToBeAnalyzed) {
-    fCountRealTracksAnalyzed++;
-    if (!LoadNextEvent()) return kFALSE;
-  }
 
-  while ( !(fMuonTrackReco = static_cast<AliMUONTrack*>(fNextTrack->Next())) ) if (!LoadNextEvent()) return kFALSE;
+  if (!fGlobalTrackingDiverged) {
+    while ( !(fMuonTrackReco = static_cast<AliMUONTrack*>(fNextTrack->Next())) ) if (!LoadNextEvent()) return kFALSE;
+    fCountRealTracksAnalyzed++;
+    fCountRealTracksAnalyzedOfEvent++;
+  }
 
   AliDebug(1, "**************************************************************************************\n");
   AliDebug(1, Form("***************************   MUON TRACK %3d   ***************************************\n", fCountRealTracksAnalyzedOfEvent));
   AliDebug(1, "**************************************************************************************\n");
-
-  fCountRealTracksAnalyzed++;
 
   fCandidateTracks -> Delete();
 
@@ -507,7 +506,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
   Int_t motherPdg=0;
   if (fLabelMC>=0) {
-    fCountRealTracksWithRefMC++;
+    if (!fGlobalTrackingDiverged) fCountRealTracksWithRefMC++;
     if (fStack->Particle(fLabelMC)->GetFirstMother() != -1) {
       motherPdg = fStack->Particle(fStack->Particle(fLabelMC)->GetFirstMother())->GetPdgCode();
     }
@@ -515,7 +514,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
   CheckCurrentMuonTrackable();
 
-  if (fMuonTrackReco->GetMatchTrigger()) fCountRealTracksWithRefMC_andTrigger++;
+  if (!fGlobalTrackingDiverged) if (fMuonTrackReco->GetMatchTrigger()) fCountRealTracksWithRefMC_andTrigger++;
   
   // the track we are going to build, starting from fMuonTrackReco and adding the MFT clusters
   AliMuonForwardTrack *track = new ((*fCandidateTracks)[0]) AliMuonForwardTrack();
@@ -577,7 +576,11 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 	fCurrentTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iTrack);
 	// if the old track is compatible with the new cluster, the track is updated and inserted as new track in the array 
 	// (several new tracks can be created for one old track)
-	FindClusterInPlane(iPlane);   
+	if (FindClusterInPlane(iPlane) == 2) {
+	  fGlobalTrackingDiverged = kTRUE;
+	  if (fScaleSigmaClusterCut>0) fScaleSigmaClusterCut -= 0.1;
+	  return 6;
+	}
 	if ((fNPlanesMFTAnalyzed-fCurrentTrack->GetNMFTClusters())>fNMaxMissingMFTClusters || fIsPlaneMandatory[iPlane]) {
 	  fCandidateTracks->Remove(fCurrentTrack);     // the old track is removed after the check;
 	}
@@ -600,6 +603,9 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   
   // -------------------------- END OF THE CYCLE OVER THE MFT PLANES --------------------------------------------
   
+  fGlobalTrackingDiverged = kFALSE;
+  fScaleSigmaClusterCut = 1.0;
+
   AliDebug(1, "Finished cycle over planes");
 
   Double_t momentum = pt * TMath::CosH(eta);
@@ -798,15 +804,13 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   fCandidateTracks->Delete();
   fFinalBestCandidate = NULL;
   
-  fCountRealTracksAnalyzedOfEvent++;
-
   return 5;
   
 }
 
 //===========================================================================================================================================
 
-void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) { 
+Int_t AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) { 
   
   AliDebug(2, Form(">>>> executing AliMuonForwardTrackFinder::FindClusterInPlane(%d)\n", planeId));
 
@@ -888,7 +892,7 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
 
   //---------------------------------------------------------------------------------------
 
-  Double_t chi2cut = 2.*fSigmaClusterCut*fSigmaClusterCut;     // depends on the number of variables (here, 2)
+  Double_t chi2cut = 2.*fScaleSigmaClusterCut*fScaleSigmaClusterCut*fSigmaClusterCut*fSigmaClusterCut;     // depends on the number of variables (here, 2)
   
   // Analyizing the clusters: FRONT ACTIVE ELEMENTS
   
@@ -923,6 +927,7 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     if (isGoodChi2) {
       AliDebug(3, Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
+      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return 2;
       newTrack->AddTrackParamAtMFTCluster(currentParamFront, *cluster);    // creating new track param and attaching the cluster
       AliDebug(2, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
 		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
@@ -976,6 +981,7 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     if (isGoodChi2) {
       AliDebug(3,Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
+      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return 2;
       newTrack->AddTrackParamAtMFTCluster(currentParamBack, *cluster);    // creating new track param and attaching the cluster
       AliDebug(2, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
 		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
@@ -1006,6 +1012,8 @@ void AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
       fHistDistanceGoodClusterFromTrackAtLastPlane -> Fill(fDistanceFromGoodClusterAndTrackAtLastPlane);
     }
   }
+
+  return 0;
   
 }
 

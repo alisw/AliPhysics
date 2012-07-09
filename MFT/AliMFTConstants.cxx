@@ -44,4 +44,6 @@ const Double_t AliMFTConstants::fRadLengthSi = 9.37;
 
 const Double_t AliMFTConstants::fWidthChip = 1.0;
 
+const Double_t AliMFTConstants::fPrecisionPointOfClosestApproach = 10.e-4;  // 10 micron
+
 //====================================================================================================================================================

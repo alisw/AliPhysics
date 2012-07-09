@@ -201,6 +201,23 @@ void AliMFT::CreateGeometry() {
 
 //====================================================================================================================================================
 
+void AliMFT::AddAlignableVolumes() {
+
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+
+  TString sysName = "MFT";
+  TString volPath = "/ALIC_1/MFT_0";
+  
+  if (!gGeoManager->SetAlignableEntry(sysName.Data(),volPath.Data())) {
+    AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", sysName.Data(), volPath.Data()));
+  }  
+
+}
+
+//====================================================================================================================================================
+
 void AliMFT::StepManager() {
 
   // Full Step Manager

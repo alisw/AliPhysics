@@ -47,6 +47,8 @@ public:
 
   static const Double_t fWidthChip;      ///< expressed in cm
 
+  static const Double_t fPrecisionPointOfClosestApproach;  ///< precision (along z) for the research of the point of closest approach for a dimuon
+
 protected:
 
   AliMFTConstants() : TObject() {}
