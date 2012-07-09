@@ -58,6 +58,7 @@ AliT0TenderSupply::AliT0TenderSupply(const char *name, const AliTender *tender):
   // constructor
   //
   for(int i=0; i<3; i++) fTimeOffset[i]=0;
+
 }
 
 //________________________________________________________________________
@@ -100,9 +101,8 @@ void AliT0TenderSupply::ProcessEvent(){
 
     AliESDEvent *event=fTender->GetEvent();
     if (!event) return;
-
-    //Do something when the run number changed, like loading OCDB entries etc.
-    fPass4LHC11aCorrection=kFALSE;
+     //...........................................
+   //Do something when the run number changed, like loading OCDB entries etc.
     if(fTender->RunChanged()){
       Init();
       if (fTender->GetRun()>=139699&&  fTender->GetRun()<=146860){
@@ -110,19 +110,20 @@ void AliT0TenderSupply::ProcessEvent(){
         if (esdIH) {
           TTree *tree= (TTree*)esdIH->GetTree();
           TFile *file= (TFile*)tree->GetCurrentFile();
-          if (file){
+         if (file){
             TString fileName(file->GetName());
             if (fileName.Contains("pass4") ) fPass4LHC11aCorrection=kTRUE;
 	  }
 	}
       }
     }
-
+    
     if(fPass4LHC11aCorrection) {
       const Double32_t* mean = event->GetT0TOF();
       event->SetT0TOF(0, (mean[1]+mean[2])/2.);
-
+ 
     }
+    //...........................................
     if(fCorrectStartTimeOnAmplSatur){
         //correct A side ORA on amplitude saturation
         const Double32_t* time = event->GetT0time();
@@ -151,27 +152,29 @@ void AliT0TenderSupply::ProcessEvent(){
 
     //...........................................
     Float_t *t0means=0x0;
-     if(fCorrectMeanTime){
+    if(fCorrectMeanTime) {
       AliCDBManager* ocdbMan = AliCDBManager::Instance();
       ocdbMan->SetRun(fTender->GetRun());    
       AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/");
       if(entry) {
 	AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*) entry->GetObject();
 	t0means= clb->GetT0Means();
-     } else {
+      } else {
 	for (Int_t i=0;i<4;i++) t0means[i]=0;
 	AliWarning("T0Tender no T0 entry found T0shift set to 0");
       }
-    } else {
-      for (Int_t i=0;i<4;i++) t0means=0;
+      
+      // correct mean time offsets  
+      const Double32_t* mean = event->GetT0TOF();
+      for(int it0=0; it0<3; it0++){
+	if(-2000 < mean[it0]){
+	  event->SetT0TOF(it0, mean[it0] - t0means[it0]); 
+	}
+      }
     }
-       // correct mean time offsets  
-     const Double32_t* mean = event->GetT0TOF();
-     for(int it0=0; it0<3; it0++){
-       if(-2000 < mean[it0]){
-	 event->SetT0TOF(it0, mean[it0] - t0means[it0]); 
-       }
-     }
+    //...........................................
+
+
 }
 
 
