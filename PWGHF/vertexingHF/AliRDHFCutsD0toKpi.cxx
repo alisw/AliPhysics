@@ -1248,7 +1248,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
   pidObj->SetPCompatTOF(1.5);
   pidObj->SetSigmaForTPCCompat(3.);
   pidObj->SetSigmaForTOFCompat(3.);
-  
+  pidObj->SetOldPid(kTRUE);
 
   SetPidHF(pidObj);
   SetUsePID(kTRUE);
@@ -1359,6 +1359,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
   pidObj->SetCompat(compat);
   pidObj->SetTPC(kTRUE);
   pidObj->SetTOF(kTRUE);
+  pidObj->SetOldPid(kTRUE);
   SetPidHF(pidObj);
 
   SetUseDefaultPID(kFALSE); //to use the AliAODPidHF
@@ -1512,6 +1513,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   pidObj->SetPCompatTOF(2.);
   pidObj->SetSigmaForTPCCompat(3.);
   pidObj->SetSigmaForTOFCompat(3.);  
+  pidObj->SetOldPid(kTRUE);
 
 
   SetPidHF(pidObj);
@@ -1646,6 +1648,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010Peripherals() {
   pidObj->SetPCompatTOF(2.);
   pidObj->SetSigmaForTPCCompat(3.);
   pidObj->SetSigmaForTOFCompat(3.);  
+  pidObj->SetOldPid(kTRUE);
 
   SetPidHF(pidObj);
   SetUsePID(kTRUE);
