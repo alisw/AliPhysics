@@ -7,28 +7,33 @@
     @brief Read raw data into a TClonesArray - for testing 
  */
 void
-ReadRaw(const char* src=0, Int_t nEv=0, Int_t skip=0)
+ReadRaw(const char* src=0, Int_t nEv=0, Int_t skip=0, Bool_t verb=false)
 {
-  AliLog::SetModuleDebugLevel("FMD", 10);
+  // AliLog::SetModuleDebugLevel("FMD", 10);
 
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetRun(0);
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  cdb->SetRun(0);
 
   AliRawReader*    reader    = AliRawReader::Create(src);
   AliFMDRawReader* fmdReader = new AliFMDRawReader(reader, 0);
   TClonesArray*    array     = new TClonesArray("AliFMDDigit", 0);
+  fmdReader->SetVerbose(verb);
 
   Int_t evCnt = 0;
   while (reader->NextEvent()) {
-    if (nEv > 0 && (evCnt-skip) > nEv) break;
     evCnt++;
+    if (skip > 0 && (evCnt-skip) < 0) { 
+      continue;
+    }
+    if (nEv > 0 && (evCnt-skip) > nEv) { 
+      break;
+    }
     array->Clear();
     fmdReader->ReadAdcs(array);
 
-    std::cout << "Event # " << evCnt << std::endl;
-
-    std::cout << "Read " << array->GetEntriesFast() << " digits" << std::endl;
+    std::cout << "Event # " << std::setw(6) << evCnt 
+	      << ": read " << array->GetEntriesFast() << " digits" << std::endl;
   
 #if 0
     AliFMDBoolMap read(0);
