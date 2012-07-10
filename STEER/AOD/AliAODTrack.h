@@ -284,6 +284,7 @@ class AliAODTrack : public AliVTrack {
   Double_t  GetTRDmomentum(Int_t plane, Double_t */*sp*/=0x0) const;
   UChar_t   GetTRDncls(Int_t layer = -1) const;
   UChar_t   GetTRDntrackletsPID() const;
+  Int_t     GetNumberOfTRDslices() const { return fDetPid?fDetPid->GetTRDnSlices():0; }
   void      GetHMPIDpid(Double_t */*p*/) const { return; } // TODO: To be implemented properly with the new HMPID object
 
   const AliAODEvent* GetAODEvent() const {return fAODEvent;}
