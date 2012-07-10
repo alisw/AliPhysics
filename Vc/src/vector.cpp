@@ -25,9 +25,9 @@
 # endif
 #endif
 
-#include "common/const.h"
-#include "avx/const_data.h"
-#include "sse/const_data.h"
+#include "Vc/common/const.h"
+#include "Vc/avx/const_data.h"
+#include "Vc/sse/const_data.h"
 #include <Vc/version.h>
 
 #include <cstdio>

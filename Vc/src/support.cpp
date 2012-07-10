@@ -19,7 +19,7 @@
 
 #include <Vc/global.h>
 #include <Vc/cpuid.h>
-#include "common/support.h"
+#include "Vc/common/support.h"
 
 #ifdef VC_MSVC
 #include <intrin.h>
