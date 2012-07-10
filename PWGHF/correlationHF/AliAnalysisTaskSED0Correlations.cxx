@@ -74,7 +74,11 @@ AliAnalysisTaskSE(),
   fNentries(0), 
   fCutsD0(0),
   fCutsTracks(0),
+  fCorrelatorTr(0),
+  fCorrelatorKc(0),
+  fCorrelatorK0(0),
   fReadMC(0),
+  fMixing(kFALSE),
   fCounter(0),
   fNPtBins(1),
   fFillOnlyD0D0bar(0),
@@ -102,7 +106,11 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fNentries(0),
   fCutsD0(0),
   fCutsTracks(cutsTrk),
+  fCorrelatorTr(0),
+  fCorrelatorKc(0),
+  fCorrelatorK0(0),
   fReadMC(0),
+  fMixing(kFALSE),
   fCounter(0),
   fNPtBins(1),
   fFillOnlyD0D0bar(0),
@@ -148,7 +156,11 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fNentries(source.fNentries), 
   fCutsD0(source.fCutsD0),
   fCutsTracks(source.fCutsTracks),
+  fCorrelatorTr(source.fCorrelatorTr),
+  fCorrelatorKc(source.fCorrelatorKc),
+  fCorrelatorK0(source.fCorrelatorK0),
   fReadMC(source.fReadMC),
+  fMixing(source.fMixing),
   fCounter(source.fCounter),
   fNPtBins(source.fNPtBins),
   fFillOnlyD0D0bar(source.fFillOnlyD0D0bar),
@@ -183,7 +195,19 @@ AliAnalysisTaskSED0Correlations::~AliAnalysisTaskSED0Correlations()
     delete fNentries;
     fNentries = 0;
   }
-  if(fCounter){
+  if (fCorrelatorTr) {
+    delete fCorrelatorTr;
+    fCorrelatorTr = 0;
+  }
+  if (fCorrelatorKc) {
+    delete fCorrelatorKc;
+    fCorrelatorKc = 0;
+  }
+  if (fCorrelatorK0) {
+    delete fCorrelatorK0;
+    fCorrelatorK0 = 0;
+  }
+  if (fCounter){
     delete fCounter;
     fCounter=0;
   }
@@ -208,7 +232,11 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fNentries = orig.fNentries; 
   fCutsD0 = orig.fCutsD0;
   fCutsTracks = orig.fCutsTracks;
+  fCorrelatorTr = orig.fCorrelatorTr;
+  fCorrelatorKc = orig.fCorrelatorKc;
+  fCorrelatorK0 = orig.fCorrelatorK0;
   fReadMC = orig.fReadMC;
+  fMixing = orig.fMixing;
   fCounter = orig.fCounter;
   fNPtBins = orig.fNPtBins;
   fFillOnlyD0D0bar = orig.fFillOnlyD0D0bar;
@@ -232,6 +260,7 @@ void AliAnalysisTaskSED0Correlations::Init()
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
   copyfCutsD0->SetName(nameoutput);
 
+  //needer to clear completely the objects inside with Clear() method
   // Post the data
   PostData(3,copyfCutsD0);
   PostData(7,fCutsTracks);
@@ -246,6 +275,33 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   // Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskSED0Correlations::UserCreateOutputObjects() \n");
+
+  //HFCorrelator creation and definition
+  fCorrelatorTr = new AliHFCorrelator("CorrelatorTr",fCutsTracks,fSys);
+  fCorrelatorKc = new AliHFCorrelator("CorrelatorKc",fCutsTracks,fSys);
+  fCorrelatorK0 = new AliHFCorrelator("CorrelatorK0",fCutsTracks,fSys);
+  fCorrelatorTr->SetDeltaPhiInterval(-1.57,4.71);// set the Delta Phi Interval you want (in this case -0.5Pi to 1.5 Pi)
+  fCorrelatorKc->SetDeltaPhiInterval(-1.57,4.71);
+  fCorrelatorK0->SetDeltaPhiInterval(-1.57,4.71);
+  fCorrelatorTr->SetEventMixing(fMixing);// sets the analysis on a single event (kFALSE) or mixed events (kTRUE)
+  fCorrelatorKc->SetEventMixing(fMixing);
+  fCorrelatorK0->SetEventMixing(fMixing);
+  fCorrelatorTr->SetAssociatedParticleType(1);// set 1 for correlations with hadrons, 2 with kaons, 3 with KZeros
+  fCorrelatorKc->SetAssociatedParticleType(2);// set 1 for correlations with hadrons, 2 with kaons, 3 with KZeros
+  fCorrelatorK0->SetAssociatedParticleType(3);// set 1 for correlations with hadrons, 2 with kaons, 3 with KZeros
+  fCorrelatorTr->SetApplyDisplacementCut(2); //0: don't calculate d0; 1: return d0; 2: return d0/d0err
+  fCorrelatorKc->SetApplyDisplacementCut(2);
+  fCorrelatorK0->SetApplyDisplacementCut(0);
+  fCorrelatorTr->SetUseMC(fReadMC);// sets Montecarlo flag
+  fCorrelatorKc->SetUseMC(fReadMC);
+  fCorrelatorK0->SetUseMC(fReadMC);
+  fCorrelatorKc->SetPIDmode(2); //switch for K+/- PID option
+  Bool_t pooldefTr = fCorrelatorTr->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
+  Bool_t pooldefKc = fCorrelatorKc->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
+  Bool_t pooldefK0 = fCorrelatorK0->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
+  if(!pooldefTr) AliInfo("Warning:: Event pool not defined properly");
+  if(!pooldefKc) AliInfo("Warning:: Event pool not defined properly");
+  if(!pooldefK0) AliInfo("Warning:: Event pool not defined properly");
 
   // Several histograms are more conveniently managed in a TList
   fOutputMass = new TList();
@@ -405,7 +461,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       return;
     }
   }
-  
+
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
   fCounter->StoreEvent(aod,fCutsD0,fReadMC); 
@@ -439,9 +495,25 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     if (skipEvent) return;
   }
   
+  //HFCorrelators initialization (for this event)
+  fCorrelatorTr->SetAODEvent(aod); // set the AOD event from which you are processing
+  fCorrelatorKc->SetAODEvent(aod);
+  fCorrelatorK0->SetAODEvent(aod);
+  Bool_t correlatorONTr = fCorrelatorTr->Initialize(); // initialize the pool for event mixing
+  Bool_t correlatorONKc = fCorrelatorKc->Initialize();
+  Bool_t correlatorONK0 = fCorrelatorK0->Initialize();
+  if(!correlatorONTr) {AliInfo("AliHFCorrelator (tracks) didn't initialize the pool correctly or processed a bad event"); return;}
+  if(!correlatorONKc) {AliInfo("AliHFCorrelator (charged K) didn't initialize the pool correctly or processed a bad event"); return;}
+  if(!correlatorONK0) {AliInfo("AliHFCorrelator (K0) didn't initialize the pool correctly or processed a bad event"); return;}
+
+  if(fReadMC) {
+    fCorrelatorTr->SetMCArray(mcArray); // set the TClonesArray *fmcArray for analysis on monte carlo
+    fCorrelatorKc->SetMCArray(mcArray);
+    fCorrelatorK0->SetMCArray(mcArray);
+  }
+
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-
   Bool_t isGoodVtx=kFALSE;
 
   //vtx1->Print();
@@ -454,7 +526,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   //Reset flag for tracks distributions fill
   fAlreadyFilled=kFALSE;
 
-  // loop over candidates
+  //***** Loop over D0 candidates *****
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
   if(fDebug>2) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
 
@@ -467,7 +539,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       for(int j=0; j<2; j++) {idArrayV0[iV0][j]=-2;}
       AliAODv0 *v0 = (AliAODv0*)v0array->UncheckedAt(iV0);
       if(SelectV0(v0,vtx1,2,idArrayV0)) { //option 2 = for mass inv plots only
-        if(fReadMC && (v0->MatchToMC(311,mcArray,2,pdgCodes)<0)) continue;
+        if(fReadMC && (v0->MatchToMC(310,mcArray,2,pdgCodes)<0)) continue; //310 = K0s, 311 = K0 generico!!
         ((TH2F*)fOutputStudy->FindObject("hK0MassInv"))->Fill(v0->MassK0Short(),v0->Pt()); //invariant mass plot
         ((TH1F*)fOutputStudy->FindObject("hist_Pt_K0_AllEv"))->Fill(v0->Pt()); //pT distribution (in all events), K0 case
       }
@@ -478,7 +550,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       //rejection of tracks
       if(track->GetID() < 0) continue; //discard negative ID tracks
       if(track->Pt() < fPtThreshLow.at(0) || track->Pt() > fPtThreshUp.at(0)) continue; //discard tracks outside pt range for hadrons/K
-      if(!fCutsTracks->IsHadronSelected(track,vtx1,aod->GetMagneticField())) continue;
+      if(!fCutsTracks->IsHadronSelected(track) || !fCutsTracks->CheckHadronKinematic(track->Pt(),0.1)) continue; //0.1 = dummy (d0 value, no cut on it for me)
       //pT distribution (in all events), charg and hadr cases
       ((TH1F*)fOutputStudy->FindObject("hist_Pt_Charg_AllEv"))->Fill(track->Pt()); 
       if(fCutsTracks->CheckKaonCompatibility(track,kFALSE,0,2)) ((TH1F*)fOutputStudy->FindObject("hist_Pt_Kcharg_AllEv"))->Fill(track->Pt());
@@ -504,20 +576,42 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       Int_t ptbin=fCutsD0->PtBin(d->Pt());
       if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds
 
-      fIsSelectedCandidate=fCutsD0->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
+      fIsSelectedCandidate=fCutsD0->IsSelected(d,AliRDHFCuts::kAll,aod); //D0 selected
       if(!fIsSelectedCandidate) continue;
 
-      if(!fReadMC) CalculateCorrelations(aod,d); //correlations on real data
-      else { //correlations on MC -> association of selected D0 to MCinfo with MCtruth
+      //D0 infos
+      Double_t phiD0 = fCorrelatorTr->SetCorrectPhiRange(d->Phi());
+               phiD0 = fCorrelatorKc->SetCorrectPhiRange(d->Phi());  //bad usage, but returns a Double_t...
+               phiD0 = fCorrelatorK0->SetCorrectPhiRange(d->Phi());
+      fCorrelatorTr->SetTriggerParticleProperties(d->Pt(),phiD0,d->Eta()); // sets the parameters of the trigger particles that are needed
+      fCorrelatorKc->SetTriggerParticleProperties(d->Pt(),phiD0,d->Eta());
+      fCorrelatorK0->SetTriggerParticleProperties(d->Pt(),phiD0,d->Eta());
+      fCorrelatorTr->SetD0Properties(d,fIsSelectedCandidate); //sets special properties for D0
+      fCorrelatorKc->SetD0Properties(d,fIsSelectedCandidate);
+      fCorrelatorK0->SetD0Properties(d,fIsSelectedCandidate);
+
+      if(!fReadMC) {
+        CalculateCorrelations(d); //correlations on real data
+      } else { //correlations on MC -> association of selected D0 to MCinfo with MCtruth
         Int_t pdgDgD0toKpi[2]={321,211};
 	Int_t labD0 = d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not
-        if (labD0>-1) CalculateCorrelations(aod,d,labD0,mcArray);
+        if (labD0>-1) {
+          CalculateCorrelations(d,labD0,mcArray);
+        }
       }
       
       FillMassHists(d,mcArray,fCutsD0,fOutputMass);
     }
 
   } //end for prongs
+
+  if(fMixing /* && fAlreadyFilled*/) { // update the pool for Event Mixing, if: enabled,  event is ok, at least a SelD0 found! (fAlreadyFilled's role!)
+    Bool_t updatedTr = fCorrelatorTr->PoolUpdate();
+    Bool_t updatedKc = fCorrelatorKc->PoolUpdate();
+    Bool_t updatedK0 = fCorrelatorK0->PoolUpdate();
+    if(!updatedTr || !updatedKc || !updatedK0) AliInfo("Pool was not updated");
+  }
+
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);  
 
@@ -666,7 +760,7 @@ Int_t AliAnalysisTaskSED0Correlations::CheckD0Origin(TClonesArray* arrayMC, AliA
   //
   // checking whether the mother of the particles come from a charm or a bottom quark
   //
-  printf(" AliAnalysisTaskSED0Correlations::CheckD0Origin() \n");
+  printf("AliAnalysisTaskSED0Correlations::CheckD0Origin() \n");
 	
   Int_t pdgGranma = 0;
   Int_t mother = 0;
@@ -705,276 +799,201 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   TString namePlot = "";
 
   //These for limits in THnSparse (one per bin, same limits). 
-  //Vars: DeltaPhi, InvMass, PtTrack
+  //Vars: DeltaPhi, InvMass, PtTrack, Displacement, DeltaEta
   Int_t nBinsPhi[5] = {32,150,30,3,16};
   Double_t binMinPhi[5] = {-1.6,1.6,0.,0.,-1.6};  //is the minimum for all the bins
   Double_t binMaxPhi[5] = {4.8,2.2,3.0,3.,1.6};  //is the maximum for all the bins
 
+  //Vars: DeltaPhi, InvMass, DeltaEta
+  Int_t nBinsMix[3] = {32,150,16};
+  Double_t binMinMix[3] = {-1.6,1.6,-1.6};  //is the minimum for all the bins
+  Double_t binMaxMix[3] = {4.8,2.2,1.6};  //is the maximum for all the bins
+
   for(Int_t i=0;i<fNPtBinsCorr;i++){
 
-    //THnSparse plots: correlations for various invariant mass (MC and data)
-    namePlot="hPhi_K0_Bin";
-    namePlot+=i;
-
-    THnSparseI *hPhiK = new THnSparseI(namePlot.Data(), "Azimuthal correlation; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-    hPhiK->Sumw2();
-    fOutputCorr->Add(hPhiK);
-
-    namePlot="hPhi_Kcharg_Bin";
-    namePlot+=i;
-
-    THnSparseI *hPhiH = new THnSparseI(namePlot.Data(), "Azimuthal correlation; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-    hPhiH->Sumw2();
-    fOutputCorr->Add(hPhiH);
-
-    namePlot="hPhi_Charg_Bin";
-    namePlot+=i;
-
-    THnSparseI *hPhiC = new THnSparseI(namePlot.Data(), "Azimuthal correlation; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-    hPhiC->Sumw2();
-    fOutputCorr->Add(hPhiC);
-
-    //histos for c/b origin for D0 (MC only)
-    if (fReadMC) {
-
-      //generic origin for tracks
-      namePlot="hPhi_K0_From_c_Bin";
+    if(!fMixing) {
+      //THnSparse plots: correlations for various invariant mass (MC and data)
+      namePlot="hPhi_K0_Bin";
       namePlot+=i;
 
-      THnSparseI *hPhiK_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiK_c->Sumw2();
-      fOutputCorr->Add(hPhiK_c);
+      THnSparseI *hPhiK = new THnSparseI(namePlot.Data(), "Azimuthal correlation; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+      hPhiK->Sumw2();
+      fOutputCorr->Add(hPhiK);
 
-      namePlot="hPhi_Kcharg_From_c_Bin";
+      namePlot="hPhi_Kcharg_Bin";
       namePlot+=i;
 
-      THnSparseI *hPhiH_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiH_c->Sumw2();
-      fOutputCorr->Add(hPhiH_c);
+      THnSparseI *hPhiH = new THnSparseI(namePlot.Data(), "Azimuthal correlation; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+      hPhiH->Sumw2();
+      fOutputCorr->Add(hPhiH);
 
-      namePlot="hPhi_Charg_From_c_Bin";
+      namePlot="hPhi_Charg_Bin";
       namePlot+=i;
 
-      THnSparseI *hPhiC_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiC_c->Sumw2();
-      fOutputCorr->Add(hPhiC_c);
+      THnSparseI *hPhiC = new THnSparseI(namePlot.Data(), "Azimuthal correlation; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+      hPhiC->Sumw2();
+      fOutputCorr->Add(hPhiC);
   
-      namePlot="hPhi_K0_From_b_Bin";
+      //histos for c/b origin for D0 (MC only)
+      if (fReadMC) {
+
+        //generic origin for tracks
+        namePlot="hPhi_K0_From_c_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiK_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiK_c->Sumw2();
+        fOutputCorr->Add(hPhiK_c);
+
+        namePlot="hPhi_Kcharg_From_c_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiH_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiH_c->Sumw2();
+        fOutputCorr->Add(hPhiH_c);
+
+        namePlot="hPhi_Charg_From_c_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiC_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiC_c->Sumw2();
+        fOutputCorr->Add(hPhiC_c);
+  
+        namePlot="hPhi_K0_From_b_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiK_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiK_b->Sumw2();
+        fOutputCorr->Add(hPhiK_b);
+
+        namePlot="hPhi_Kcharg_From_b_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiH_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiH_b->Sumw2();
+        fOutputCorr->Add(hPhiH_b);
+
+        namePlot="hPhi_Charg_From_b_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiC_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiC_b->Sumw2();
+        fOutputCorr->Add(hPhiC_b);
+
+        //HF-only tracks (c for c->D0, b for b->D0)
+        namePlot="hPhi_K0_HF_From_c_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiK_HF_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiK_HF_c->Sumw2();
+        fOutputCorr->Add(hPhiK_HF_c);
+
+        namePlot="hPhi_Kcharg_HF_From_c_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiH_HF_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiH_HF_c->Sumw2();
+        fOutputCorr->Add(hPhiH_HF_c);
+
+        namePlot="hPhi_Charg_HF_From_c_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiC_HF_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiC_HF_c->Sumw2();
+        fOutputCorr->Add(hPhiC_HF_c);
+
+        namePlot="hPhi_K0_HF_From_b_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiK_HF_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiK_HF_b->Sumw2();
+        fOutputCorr->Add(hPhiK_HF_b);
+
+        namePlot="hPhi_Kcharg_HF_From_b_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiH_HF_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiH_HF_b->Sumw2();
+        fOutputCorr->Add(hPhiH_HF_b);
+
+        namePlot="hPhi_Charg_HF_From_b_Bin";
+        namePlot+=i;
+
+        THnSparseI *hPhiC_HF_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
+        hPhiC_HF_b->Sumw2();
+        fOutputCorr->Add(hPhiC_HF_b);
+      }
+
+      //leading hadron correlations
+      namePlot="hPhi_Lead_Bin";
       namePlot+=i;
 
-      THnSparseI *hPhiK_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiK_b->Sumw2();
-      fOutputCorr->Add(hPhiK_b);
+      TH2F *hCorrLead = new TH2F(namePlot.Data(), "Leading particle correlation; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+      hCorrLead->Sumw2();
+      fOutputCorr->Add(hCorrLead);
 
-      namePlot="hPhi_Kcharg_From_b_Bin";
+      if (fReadMC) {
+        namePlot="hPhi_Lead_From_c_Bin";
+        namePlot+=i;
+
+        TH2F *hCorrLead_c = new TH2F(namePlot.Data(), "Leading particle correlation - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+        hCorrLead_c->Sumw2();
+        fOutputCorr->Add(hCorrLead_c);
+  
+        namePlot="hPhi_Lead_From_b_Bin";
+        namePlot+=i;
+  
+        TH2F *hCorrLead_b = new TH2F(namePlot.Data(), "Leading particle correlation - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+        hCorrLead_b->Sumw2();
+        fOutputCorr->Add(hCorrLead_b);
+  
+        namePlot="hPhi_Lead_HF_From_c_Bin";
+        namePlot+=i;
+  
+        TH2F *hCorrLead_HF_c = new TH2F(namePlot.Data(), "Leading particle correlation HF - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+        hCorrLead_HF_c->Sumw2();
+        fOutputCorr->Add(hCorrLead_HF_c);
+  
+        namePlot="hPhi_Lead_HF_From_b_Bin";
+        namePlot+=i;
+  
+        TH2F *hCorrLead_HF_b = new TH2F(namePlot.Data(), "Leading particle correlation HF - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+        hCorrLead_HF_b->Sumw2();
+        fOutputCorr->Add(hCorrLead_HF_b);
+      }
+      
+      //pT weighted correlations
+      namePlot="hPhi_Weig_Bin";
       namePlot+=i;
-
-      THnSparseI *hPhiH_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiH_b->Sumw2();
-      fOutputCorr->Add(hPhiH_b);
-
-      namePlot="hPhi_Charg_From_b_Bin";
-      namePlot+=i;
-
-      THnSparseI *hPhiC_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiC_b->Sumw2();
-      fOutputCorr->Add(hPhiC_b);
-
-      //HF-only tracks (c for c->D0, b for b->D0)
-      namePlot="hPhi_K0_HF_From_c_Bin";
-      namePlot+=i;
-
-      THnSparseI *hPhiK_HF_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiK_HF_c->Sumw2();
-      fOutputCorr->Add(hPhiK_HF_c);
-
-      namePlot="hPhi_Kcharg_HF_From_c_Bin";
-      namePlot+=i;
-
-      THnSparseI *hPhiH_HF_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiH_HF_c->Sumw2();
-      fOutputCorr->Add(hPhiH_HF_c);
-
-      namePlot="hPhi_Charg_HF_From_c_Bin";
-      namePlot+=i;
-      THnSparseI *hPhiC_HF_c = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiC_HF_c->Sumw2();
-      fOutputCorr->Add(hPhiC_HF_c);
-
-      namePlot="hPhi_K0_HF_From_b_Bin";
-      namePlot+=i;
-
-      THnSparseI *hPhiK_HF_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiK_HF_b->Sumw2();
-      fOutputCorr->Add(hPhiK_HF_b);
-
-      namePlot="hPhi_Kcharg_HF_From_b_Bin";
-      namePlot+=i;
-
-      THnSparseI *hPhiH_HF_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiH_HF_b->Sumw2();
-      fOutputCorr->Add(hPhiH_HF_b);
-
-      namePlot="hPhi_Charg_HF_From_b_Bin";
-      namePlot+=i;
-
-      THnSparseI *hPhiC_HF_b = new THnSparseI(namePlot.Data(), "Azimuthal correlation HF - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-      hPhiC_HF_b->Sumw2();
-      fOutputCorr->Add(hPhiC_HF_b);
-    }
-
-    //leading hadron correlations
-    namePlot="hPhi_Lead_Bin";
-    namePlot+=i;
-
-    TH2F *hCorrLead = new TH2F(namePlot.Data(), "Leading particle correlation; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-    hCorrLead->Sumw2();
-    fOutputCorr->Add(hCorrLead);
-
-    if (fReadMC) {
-      namePlot="hPhi_Lead_From_c_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrLead_c = new TH2F(namePlot.Data(), "Leading particle correlation - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      hCorrLead_c->Sumw2();
-      fOutputCorr->Add(hCorrLead_c);
-
-      namePlot="hPhi_Lead_From_b_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrLead_b = new TH2F(namePlot.Data(), "Leading particle correlation - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      hCorrLead_b->Sumw2();
-      fOutputCorr->Add(hCorrLead_b);
-
-      namePlot="hPhi_Lead_HF_From_c_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrLead_HF_c = new TH2F(namePlot.Data(), "Leading particle correlation HF - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      hCorrLead_HF_c->Sumw2();
-      fOutputCorr->Add(hCorrLead_HF_c);
-
-      namePlot="hPhi_Lead_HF_From_b_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrLead_HF_b = new TH2F(namePlot.Data(), "Leading particle correlation HF - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      hCorrLead_HF_b->Sumw2();
-      fOutputCorr->Add(hCorrLead_HF_b);
-    }
-    
-    //pT weighted correlations
-    namePlot="hPhi_Weig_Bin";
-    namePlot+=i;
-
-    TH2F *hCorrWeig = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted); #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-    fOutputCorr->Add(hCorrWeig);
-
-    if (fReadMC) {
-      namePlot="hPhi_Weig_From_c_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeig_c = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted) - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeig_c);
-
-      namePlot="hPhi_Weig_From_b_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeig_b = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted) - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeig_b);
-
-      namePlot="hPhi_Weig_HF_From_c_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeig_HF_c = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted) HF - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeig_HF_c);
-
-      namePlot="hPhi_Weig_HF_From_b_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeig_HF_b = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted) HF - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeig_HF_b);
-    }
-
-    //pT weighted correlations (squared weights)
-    namePlot="hPhi_WeigSqr_Bin";
-    namePlot+=i;
-
-    TH2F *hCorrWeigSqr = new TH2F(namePlot.Data(), "Charged particle correlation (pT Weighted - squared); #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-    fOutputCorr->Add(hCorrWeigSqr);
-
-    if (fReadMC) {
-      namePlot="hPhi_WeigSqr_From_c_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeigSqr_c = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted - squared) - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeigSqr_c);
-
-      namePlot="hPhi_WeigSqr_From_b_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeigSqr_b = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted - squared) - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeigSqr_b);
-
-      namePlot="hPhi_WeigSqr_HF_From_c_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeigSqr_HF_c = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted - squared) HF - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeigSqr_HF_c);
-
-      namePlot="hPhi_WeigSqr_HF_From_b_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeigSqr_HF_b = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted - squared) HF - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeigSqr_HF_b);
-    }
-
-    //pT weighted correlations (inverse of pT distribution weights)
-    namePlot="hPhi_WeigDist_Bin";
-    namePlot+=i;
-
-    TH2F *hCorrWeigDist = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted - inv.dis.); #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-    fOutputCorr->Add(hCorrWeigDist);
-
-    if (fReadMC) {
-      namePlot="hPhi_WeigDist_From_c_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeigDist_c = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted - inv.dis.) - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeigDist_c);
-
-      namePlot="hPhi_WeigDist_From_b_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeigDist_b = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted - inv.dis.) - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeigDist_b);
-
-      namePlot="hPhi_WeigDist_HF_From_c_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeigDist_HF_c = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted - inv.dis.) HF - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeigDist_HF_c);
-
-      namePlot="hPhi_WeigDist_HF_From_b_Bin";
-      namePlot+=i;
-
-      TH2F *hCorrWeigDist_HF_b = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted - inv.dis.) HF - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
-      fOutputCorr->Add(hCorrWeigDist_HF_b);
-    }
-
-    //counters
-    namePlot = "hist_Count_Charg_Bin"; namePlot+=i;
-    TH1F *hCountC = new TH1F(namePlot.Data(), "Charged track counter; # Tracks",100,0.,100.);
-    hCountC->SetMinimum(0);
-    fOutputStudy->Add(hCountC);
-
-    namePlot = "hist_Count_Kcharg_Bin"; namePlot+=i;
-    TH1F *hCountH = new TH1F(namePlot.Data(), "Hadrons counter; # Tracks",100,0.,100.);
-    hCountH->SetMinimum(0);
-    fOutputStudy->Add(hCountH);
-
-    namePlot = "hist_Count_K0_Bin"; namePlot+=i;
-    TH1F *hCountK = new TH1F(namePlot.Data(), "Kaons counter; # Tracks",10,0.,10.);
-    hCountK->SetMinimum(0);
-    fOutputStudy->Add(hCountK);
+  
+      TH2F *hCorrWeig = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted); #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+      fOutputCorr->Add(hCorrWeig);
+  
+      if (fReadMC) {
+        namePlot="hPhi_Weig_From_c_Bin";
+        namePlot+=i;
+  
+        TH2F *hCorrWeig_c = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted) - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+        fOutputCorr->Add(hCorrWeig_c);
+  
+        namePlot="hPhi_Weig_From_b_Bin";
+        namePlot+=i;
+  
+        TH2F *hCorrWeig_b = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted) - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+        fOutputCorr->Add(hCorrWeig_b);
+  
+        namePlot="hPhi_Weig_HF_From_c_Bin";
+        namePlot+=i;
+  
+        TH2F *hCorrWeig_HF_c = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted) HF - c origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+        fOutputCorr->Add(hCorrWeig_HF_c);
+  
+        namePlot="hPhi_Weig_HF_From_b_Bin";
+        namePlot+=i;
+  
+        TH2F *hCorrWeig_HF_b = new TH2F(namePlot.Data(), "Charged particle correlation (pT weighted) HF - b origin; #Delta#phi",32,-1.6,4.8,300,1.6,2.2);
+        fOutputCorr->Add(hCorrWeig_HF_b);
+      }
 
     //pT distribution histos
     namePlot = "hist_Pt_Charg_Bin"; namePlot+=i;
@@ -998,7 +1017,33 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     hDstarPions->GetXaxis()->SetBinLabel(1,"Not rejected");
     hDstarPions->GetXaxis()->SetBinLabel(2,"Rejected");
     hDstarPions->SetMinimum(0);
-    fOutputStudy->Add(hDstarPions);
+    fOutputStudy->Add(hDstarPions); 
+ 
+    }
+
+    if(fMixing) {
+      //THnSparse plots for event mixing!
+      namePlot="hPhi_K0_Bin";
+      namePlot+=i;namePlot+="_EvMix";
+
+      THnSparseI *hPhiK_EvMix = new THnSparseI(namePlot.Data(), "Az. corr. EvMix; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",3,nBinsMix,binMinMix,binMaxMix);
+      hPhiK_EvMix->Sumw2();
+      fOutputCorr->Add(hPhiK_EvMix);
+
+      namePlot="hPhi_Kcharg_Bin";
+      namePlot+=i;namePlot+="_EvMix";
+  
+      THnSparseI *hPhiH_EvMix = new THnSparseI(namePlot.Data(), "Az. corr. EvMix; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",3,nBinsMix,binMinMix,binMaxMix);
+      hPhiH_EvMix->Sumw2();
+      fOutputCorr->Add(hPhiH_EvMix);
+
+      namePlot="hPhi_Charg_Bin";
+      namePlot+=i;namePlot+="_EvMix";
+
+      THnSparseI *hPhiC_EvMix = new THnSparseI(namePlot.Data(), "Az. corr. EvMix; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",3,nBinsMix,binMinMix,binMaxMix);
+      hPhiC_EvMix->Sumw2();
+      fOutputCorr->Add(hPhiC_EvMix);
+    }
   }
 
   //out of bin loop
@@ -1007,6 +1052,18 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   hRejTracks->GetXaxis()->SetBinLabel(1,"Accepted");
   hRejTracks->GetXaxis()->SetBinLabel(2,"Rejected");
   fOutputStudy->Add(hRejTracks);
+
+  TH1F *hCountC = new TH1F("hist_Count_Charg", "Charged track counter; # Tracks",100,0.,100.);
+  hCountC->SetMinimum(0);
+  fOutputStudy->Add(hCountC);
+
+  TH1F *hCountH = new TH1F("hist_Count_Kcharg", "Hadrons counter; # Tracks",20,0.,20.);
+  hCountH->SetMinimum(0);
+  fOutputStudy->Add(hCountH);
+
+  TH1F *hCountK = new TH1F("hist_Count_K0", "Kaons counter; # Tracks",20,0.,20.);
+  hCountK->SetMinimum(0);
+  fOutputStudy->Add(hCountK);
 
   if (fFillGlobal) { //all-events plots
     //pt distributions
@@ -1018,9 +1075,26 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     hPtHAll->SetMinimum(0);
     fOutputStudy->Add(hPtHAll);
 
-    TH1F *hPtKAll = new TH1F("hist_Pt_K0_AllEv", "Kaons  pT (All); p_{T} (GeV/c)",240,0.,12.);
+    TH1F *hPtKAll = new TH1F("hist_Pt_K0_AllEv", "Kaons pT (All); p_{T} (GeV/c)",240,0.,12.);
     hPtKAll->SetMinimum(0);
     fOutputStudy->Add(hPtKAll);
+
+    //phi distributions
+    TH1F *hPhiDistCAll = new TH1F("hist_PhiDistr_Charg", "Charged track phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+    hPhiDistCAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiDistCAll);
+
+    TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Hadrons phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+    hPhiDistHAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiDistHAll);
+
+    TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "Kaons phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+    hPhiDistKAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiDistKAll);
+
+    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+    hPhiDistDAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiDistDAll);
 
     //K0 Invariant Mass plots
     TH2F *hK0MassInv = new TH2F("hK0MassInv", "K0 invariant mass; Invariant mass (MeV/c^{2}); pT (GeV/c)",200,0.4,0.6,100,0.,10.);
@@ -1178,142 +1252,34 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     }
   }
 
+  if(fMixing) { //check for event mixing (events in bins)
+    TH2I* EventMixingCheckTr = new TH2I("EventMixingCheckTr","EventMixingCheckTr",5,-0.5,4.5,7,-0.5,6.5);
+    fOutputStudy->Add(EventMixingCheckTr);
+
+    TH2I* EventMixingCheckK0 = new TH2I("EventMixingCheckK0","EventMixingCheckK0",5,-0.5,4.5,7,-0.5,6.5);
+    fOutputStudy->Add(EventMixingCheckK0);
+  }
+
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODEvent* aod, AliAODRecoDecayHF2Prong* d, Int_t labD0, TClonesArray* mcArray) {
+void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Prong* d, Int_t labD0, TClonesArray* mcArray) {
 //
 // Method for correlations D0-hadrons study
 //
-
-  Double_t mD0, mD0bar, deltaphi, d0, d0err, deltaeta;
+  Int_t N_Charg = 0, N_KCharg = 0, N_Kaons = 0;
+  Double_t mD0, mD0bar;
+  Int_t origD0 = 0, PDGD0 = 0;
   d->InvMassD0(mD0,mD0bar);
   Int_t ptbin = PtBinCorr(d->Pt());
   if(ptbin < 0) return;
-  AliAODVertex *vtx = (AliAODVertex*)aod->GetPrimaryVertex();
 
-  Int_t N_Charg = 0, N_Kcharg = 0, N_Kaons = 0;
-
-  if(fReadMC == 0) {
-    Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
-    Double_t highPt = 0; Double_t lead[2] = {0,0};  //infos for leading particle (pt,deltaphi)
-
-    for(Int_t itrack=0; itrack<aod->GetNTracks(); itrack++) { // loop on tracks
-      AliAODTrack * track = aod->GetTrack(itrack);
-     
-      if(!TrackSelectedInLoop(track,d,aod,ptbin,idDaughs)) continue; //rejection of track (daughter of D0/quality cuts not passed/soft pion/negative ID
-
-      GetImpParameter(track,aod,d0,d0err); //evaluates d0 and sigma_d0
-
-      ((TH1F*)fOutputStudy->FindObject("hRejTracks"))->Fill(0); //track accepted by quality cuts
-      deltaphi = d->Phi()-track->Phi();
-      deltaeta = d->Eta()-track->Eta();
-      if (deltaphi < -1.571) deltaphi+=6.283;
-      if (deltaphi > 4.712) deltaphi-=6.283;
-      Double_t pttrack = track->Pt();
-
-      if (pttrack > highPt) {highPt = pttrack; lead[0] = pttrack; lead[1] = deltaphi;}  //for leading particle
-
-      //Lines needed to include overflow into THnSparse projections!
-      Double_t ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(2)->GetXmax(); //all plots have same axes...
-      Double_t displLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(3)->GetXmax();
-      Double_t EtaLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(4)->GetXmax();
-      if(pttrack > ptLim_Sparse) pttrack = ptLim_Sparse-0.01;
-      if(d0/d0err > displLim_Sparse) d0 = (displLim_Sparse-0.001)*d0err;
-      if(deltaeta > EtaLim_Sparse) deltaeta = EtaLim_Sparse-0.01;
-      if(deltaeta < -EtaLim_Sparse) deltaeta = -EtaLim_Sparse+0.01;
-
-      //variables for filling histos
-      Double_t fillSpPhiD0[5] = {deltaphi,mD0,pttrack,d0/d0err,deltaeta};
-      Double_t fillSpPhiD0bar[5] = {deltaphi,mD0bar,pttrack,d0/d0err,deltaeta};
-   
-      //generic charged tracks (NO PID selection)
-      if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) { //D0
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->Fill(fillSpPhiD0);
-      }
-      if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) { //D0bar
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->Fill(fillSpPhiD0bar);
-      }
-      if(!fAlreadyFilled) ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_Charg_Bin%d",ptbin)))->Fill(track->Pt());
-      N_Charg++;
-        //pT_weighted track correlations fill
-        if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) { //D0
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_Bin%d",ptbin)))->Fill(deltaphi,mD0,pttrack);
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr_Bin%d",ptbin)))->Fill(deltaphi,mD0,pow(pttrack,2.));
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist_Bin%d",ptbin)))->Fill(deltaphi,mD0,PtWeig(ptbin,pttrack));
-        }
-        if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) { //D0bar
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_Bin%d",ptbin)))->Fill(deltaphi,mD0bar,pttrack);
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr_Bin%d",ptbin)))->Fill(deltaphi,mD0bar,pow(pttrack,2.));
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist_Bin%d",ptbin)))->Fill(deltaphi,mD0bar,PtWeig(ptbin,pttrack));
-        }       
-
-      //Charged Kaon identification
-      if(fCutsTracks->CheckKaonCompatibility(track,kFALSE,0,2)) {
-        if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) { //D0
-           ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d",ptbin)))->Fill(fillSpPhiD0);
-        }
-        if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) { //D0bar
-           ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d",ptbin)))->Fill(fillSpPhiD0bar);
-        }
-        if(!fAlreadyFilled) ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_Kcharg_Bin%d",ptbin)))->Fill(track->Pt());
-        N_Kcharg++;
-      } //end hadron case
-
-    } //end tracks loop
-
-    //kaon identification
-    TClonesArray *v0array = (TClonesArray*)aod->GetList()->FindObject("v0s");
-    Int_t idArrayV0[v0array->GetEntriesFast()][2]; //array for skipping K0 double-counting
-    for(int iV0=0; iV0<v0array->GetEntriesFast(); iV0++) {
-      for(int j=0; j<2; j++) {idArrayV0[iV0][j]=-2;}
-
-      AliAODv0 *v0 = (AliAODv0*)v0array->UncheckedAt(iV0);
-      if(v0->Pt() < fPtThreshLow.at(ptbin) || v0->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
-      if(!SelectV0(v0,vtx,1,idArrayV0)) continue; //option 1 = for correlations
-
-      Double_t ptV0=v0->Pt(), deltaphiV0, deltaetaV0;
-      Double_t ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(2)->GetXmax(); //all plots have same axes...
-      Double_t EtaLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(4)->GetXmax();
-      if (ptV0 > ptLim_Sparse) ptV0 = ptLim_Sparse-0.01;
-      deltaphiV0 = d->Phi()-v0->Phi();
-      deltaetaV0 = d->Eta()-v0->Eta();
-      if (deltaphiV0 < -1.571) deltaphiV0+=6.283;
-      if (deltaphiV0 > 4.712) deltaphiV0-=6.283;
-      if(deltaetaV0 > EtaLim_Sparse) deltaetaV0 = EtaLim_Sparse-0.01;
-      if(deltaetaV0 < -EtaLim_Sparse) deltaetaV0 = -EtaLim_Sparse+0.01;
-
-      Double_t fillSpPhiD0K0[5] = {deltaphiV0,mD0,ptV0,0.,deltaetaV0};
-      Double_t fillSpPhiD0barK0[5] = {deltaphiV0,mD0bar,ptV0,0.,deltaetaV0};
-
-      if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) { //D0
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d",ptbin)))->Fill(fillSpPhiD0K0);
-      }
-      if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) { //D0bar
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d",ptbin)))->Fill(fillSpPhiD0barK0);
-      }
-      if(!fAlreadyFilled) ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_K0_Bin%d",ptbin)))->Fill(v0->Pt());
-      N_Kaons++;
-    } // end kaon case
-
-    //Leading track correlations fill
-    if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) { //D0
-     ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[1],mD0);
-    }
-    if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) { //D0bar
-     ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[1],mD0bar);
-    }
-
-  } //end fReadMC = 0
-
-  if(fReadMC == 1) {
-    Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
-    Double_t highPt = 0; Double_t lead[3] = {0,0,0};  //infos for leading particle (pt,deltaphi,origtrack)
-
-    //Origin of D0
-    TString orig=""; Int_t origD0=CheckD0Origin(mcArray,(AliAODMCParticle*)mcArray->At(labD0));
-    switch (CheckD0Origin(mcArray,(AliAODMCParticle*)mcArray->At(labD0)))
-    {
+  //Origin of D0
+  TString orig="";
+  if(fReadMC) {
+    origD0=CheckD0Origin(mcArray,(AliAODMCParticle*)mcArray->At(labD0));
+    PDGD0 = ((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode();
+    switch (CheckD0Origin(mcArray,(AliAODMCParticle*)mcArray->At(labD0))) {
       case 4:
         orig = "_From_c";
         ((TH1F*)fOutputStudy->FindObject(Form("histOrig_D0_Bin%d",ptbin)))->Fill(0.);
@@ -1325,198 +1291,278 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODEvent* aod, Al
       default:
         return;
     }
+  }
 
-    for(Int_t itrack=0; itrack<aod->GetNTracks(); itrack++) { // loop on tracks
-      AliAODTrack * track = aod->GetTrack(itrack);
+  Double_t highPt = 0; Double_t lead[3] = {0,0,0};  //infos for leading particle (pt,deltaphi)
 
-      if(!TrackSelectedInLoop(track,d,aod,ptbin,idDaughs)) continue; //rejection of track (daughter of D0/quality cuts not passed/soft pion/negative ID
+  //loop over the tracks in the pool 
+  Bool_t execPool = fCorrelatorTr->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
+		
+  if(fMixing && !execPool) {
+    AliInfo("Mixed event analysis: pool is not ready");
+    return;
+  }
+		
+  Int_t NofEventsinPool = 1;
+  if(fMixing) NofEventsinPool = fCorrelatorTr->GetNofEventsInPool();
+		
+  for (Int_t jMix =0; jMix < NofEventsinPool; jMix++) {// loop on events in the pool; if it is SE analysis, stops at one (index not needed there)
+    Bool_t analyzetracksTr = fCorrelatorTr->ProcessAssociatedTracks(jMix);// process all the tracks in the aodEvent, by applying the selection cuts
+    Bool_t analyzetracksKc = fCorrelatorKc->ProcessAssociatedTracks(jMix);
+    Bool_t analyzetracksK0 = fCorrelatorK0->ProcessAssociatedTracks(jMix);
+    if(!analyzetracksTr || !analyzetracksKc || !analyzetracksK0) {
+      AliInfo("AliHFCorrelator::Cannot process the track array");
+      continue;
+    }
 
-      Int_t label = track->GetLabel();
-      if (label<0) continue; //discard negative label tracks
-      Int_t PDGtrack = ((AliAODMCParticle*)mcArray->At(label))->GetPdgCode();
+    //Charged tracks		
+    for(Int_t iTrack = 0; iTrack<fCorrelatorTr->GetNofTracks(); iTrack++){ // looping on track candidates
 
-      GetImpParameter(track,aod,d0,d0err); //evaluates d0 and sigma_d0
+      Bool_t runcorrelation = fCorrelatorTr->Correlate(iTrack);
+      if(!runcorrelation) continue;
+      
+      AliReducedParticle* track = fCorrelatorTr->GetAssociatedParticle();
 
-      //Infos on track (origin, phi, eta)
-      Int_t origTr = CheckTrackOrigin(mcArray,(AliAODMCParticle*)mcArray->At(label));
-      deltaphi = d->Phi()-track->Phi();
-      deltaeta = d->Eta()-track->Eta();
-      if (deltaphi < -1.571) deltaphi+=6.283;
-      if (deltaphi > 4.712) deltaphi-=6.283;
-      Double_t pttrack = track->Pt();
-
-      if (pttrack > highPt) {highPt = pttrack; lead[0] = pttrack; lead[1] = deltaphi; lead[2] = origTr;}  //for leading particle
-
-      //Lines needed to include overflow into THnSparse projections!
-      Double_t d0orig = d0;
-      Double_t ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(2)->GetXmax(); //all plots have same axes...
-      Double_t displLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(3)->GetXmax();
-      Double_t EtaLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(4)->GetXmax();
-      if(pttrack > ptLim_Sparse) pttrack = ptLim_Sparse-0.01;
-      if(d0/d0err > displLim_Sparse) d0 = (displLim_Sparse-0.001)*d0err;
-      if(deltaeta > EtaLim_Sparse) deltaeta = EtaLim_Sparse-0.01;
-      if(deltaeta < -EtaLim_Sparse) deltaeta = -EtaLim_Sparse+0.01;
-
-      //variables for filling histos
-      Double_t fillSpPhiD0[5] = {deltaphi,mD0,pttrack,d0/d0err,deltaeta};
-      Double_t fillSpPhiD0bar[5] = {deltaphi,mD0bar,pttrack,d0/d0err,deltaeta};
-
-      //generic charged tracks case
-      if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==421) { //D0 (from MCTruth)
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->Fill(fillSpPhiD0);
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0);
-         if(origD0==4&&origTr>=1&&origTr<=2) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0);//c tr
-         if(origD0==5&&origTr>=3&&origTr<=6) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0);//b tr
-      }
-      if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==-421) { //D0bar
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->Fill(fillSpPhiD0bar);
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0bar);
-         if(origD0==4&&origTr>=1&&origTr<=2) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0bar);
-         if(origD0==5&&origTr>=3&&origTr<=6) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0bar); 
-      }
-      if(!fAlreadyFilled) {
-	((TH1F*)fOutputStudy->FindObject(Form("histDispl_Charg_Bin%d",ptbin)))->Fill(d0orig); //Fills displacement histos
-        if (origTr>=1&&origTr<=6) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_Charg_HF_Bin%d",ptbin)))->Fill(d0orig);
-        if (origTr>=1&&origTr<=6) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_Charg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(d0orig);
-	((TH1F*)fOutputStudy->FindObject(Form("histDispl_Charg%s_Bin%d",orig.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
-        ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_Charg_Bin%d",ptbin)))->Fill(track->Pt());
-        ((TH1F*)fOutputStudy->FindObject(Form("histOrig_Charg_Bin%d",ptbin)))->Fill(origTr);
-      }
-      N_Charg++;
-        //pT_weighted track correlations fill
-        if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==421) { //D0
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_Bin%d",ptbin)))->Fill(deltaphi,mD0,pttrack);
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,pttrack);
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr_Bin%d",ptbin)))->Fill(deltaphi,mD0,pow(pttrack,2.));
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,pow(pttrack,2.));
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist_Bin%d",ptbin)))->Fill(deltaphi,mD0,PtWeig(ptbin,pttrack));
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,PtWeig(ptbin,pttrack));
-           if(origD0==4&&origTr>=1&&origTr<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,pttrack);//c tr
-           if(origD0==5&&origTr>=3&&origTr<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,pttrack);//b tr
-           if(origD0==4&&origTr>=1&&origTr<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,pow(pttrack,2.));//c tr
-           if(origD0==5&&origTr>=3&&origTr<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,pow(pttrack,2.));//b tr
-           if(origD0==4&&origTr>=1&&origTr<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,PtWeig(ptbin,pttrack));//c tr
-           if(origD0==5&&origTr>=3&&origTr<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,PtWeig(ptbin,pttrack));//b tr
+      if(!fMixing) {      
+  	if(!track->CheckSoftPi()) { //removal of soft pions
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0bar);
+          continue;
+        } else { //not a soft pion
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0bar);
         }
-        if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==-421) { //D0bar
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_Bin%d",ptbin)))->Fill(deltaphi,mD0bar,pttrack);
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,pttrack);
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr_Bin%d",ptbin)))->Fill(deltaphi,mD0bar,pow(pttrack,2.));
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,pow(pttrack,2.));
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist_Bin%d",ptbin)))->Fill(deltaphi,mD0bar,PtWeig(ptbin,pttrack));
-           ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,PtWeig(ptbin,pttrack));
-           if(origD0==4&&origTr>=1&&origTr<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,pttrack);//c tr
-           if(origD0==5&&origTr>=3&&origTr<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,pttrack);//b tr
-           if(origD0==4&&origTr>=1&&origTr<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,pow(pttrack,2.));//c tr
-           if(origD0==5&&origTr>=3&&origTr<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigSqr_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,pow(pttrack,2.));//b tr
-           if(origD0==4&&origTr>=1&&origTr<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,PtWeig(ptbin,pttrack));//c tr
-           if(origD0==5&&origTr>=3&&origTr<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_WeigDist_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,PtWeig(ptbin,pttrack));//b tr
-        } 
+      }
+      if(track->Pt() < fPtThreshLow.at(ptbin) || track->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
 
-      //Charged Kaon identification (K from MCTruth)
-      if(TMath::Abs(PDGtrack) == 321) {  
-        if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==421) { //D0 (from MCTruth)
-           ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d",ptbin)))->Fill(fillSpPhiD0);
-           ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0);
-           if(origD0==4&&origTr>=1&&origTr<=2) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0);
-           if(origD0==5&&origTr>=3&&origTr<=6) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0);
+      Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
+      if(track->GetID() == idDaughs[0] || track->GetID() == idDaughs[1]) continue; //discards daughters of candidate
+   
+      FillSparsePlots(mcArray,d,origD0,PDGD0,track,kTrack); //fills for charged tracks
+
+      if(!fMixing) N_Charg++;
+
+      //retrieving leading info...
+      if(track->Pt() > highPt) {
+        lead[0] = fCorrelatorTr->GetDeltaPhi();
+        lead[1] = fCorrelatorTr->GetDeltaEta();
+        lead[2] = fReadMC ? CheckTrackOrigin(mcArray,(AliAODMCParticle*)mcArray->At(track->GetLabel())) : 0;
+        highPt = track->Pt();
+      }
+
+    } // end of tracks loop
+
+    //Charged Kaons loop
+    for(Int_t iTrack = 0; iTrack<fCorrelatorKc->GetNofTracks(); iTrack++){ // looping on charged kaons candidates
+
+      Bool_t runcorrelation = fCorrelatorKc->Correlate(iTrack);
+      if(!runcorrelation) continue;
+      
+      AliReducedParticle* kCharg = fCorrelatorKc->GetAssociatedParticle();
+
+      if(!fMixing) {      
+  	if(kCharg->CheckSoftPi()) { //removal of soft pions
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0bar);
+          continue;
+        } else {
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0bar);
         }
-        if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==-421) { //D0bar
-           ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d",ptbin)))->Fill(fillSpPhiD0bar);
-           ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0bar);
-           if(origD0==4&&origTr>=1&&origTr<=2) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0bar);
-           if(origD0==5&&origTr>=3&&origTr<=6) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0bar); 
-        }
-        if(!fAlreadyFilled) {
-	  ((TH1F*)fOutputStudy->FindObject(Form("histDispl_Kcharg_Bin%d",ptbin)))->Fill(d0orig); //Fills displacement histos
-  	  if (origTr>=1&&origTr<=6) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_Kcharg_HF_Bin%d",ptbin)))->Fill(d0orig);
-          if (origTr>=1&&origTr<=6) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_Kcharg_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(d0orig);
-	  ((TH1F*)fOutputStudy->FindObject(Form("histDispl_Kcharg%s_Bin%d",orig.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
-          ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_Kcharg_Bin%d",ptbin)))->Fill(track->Pt());
-          ((TH1F*)fOutputStudy->FindObject(Form("histOrig_Kcharg_Bin%d",ptbin)))->Fill(origTr);
-	}
-        N_Kcharg++;
-
-      } //end hadron case
-
-    } //end tracks loop
-
-    //Kaon identification
-    TClonesArray *v0array = (TClonesArray*)aod->GetList()->FindObject("v0s");
-    Int_t idArrayV0[v0array->GetEntriesFast()][2]; //array for skipping K0 double-counting
-    for(int iV0=0; iV0<v0array->GetEntriesFast();iV0++) {
-      for(int j=0; j<2; j++) {idArrayV0[iV0][j]=-2;}
-      AliAODv0 *v0 = (AliAODv0*)v0array->UncheckedAt(iV0);
-
-      if(v0->Pt() < fPtThreshLow.at(ptbin) || v0->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
-      if(!SelectV0(v0,vtx,1,idArrayV0)) continue; //option 1 = for correlations
-      Int_t pdgCodes[2] = {211,211};
-      Int_t labV0 = v0->MatchToMC(311,mcArray,2,pdgCodes);
-      if(labV0<=0) continue;
-
-      Double_t ptV0=v0->Pt(), deltaphiV0, deltaetaV0;
-      Double_t ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(2)->GetXmax(); //all plots have same axes...
-      Double_t EtaLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(4)->GetXmax();
-      deltaphiV0 = d->Phi()-v0->Phi();
-      deltaetaV0 = d->Eta()-v0->Eta();
-      if (deltaphiV0 < -1.571) deltaphiV0+=6.283;
-      if (deltaphiV0 > 4.712) deltaphiV0-=6.283;
-      if (ptV0 > ptLim_Sparse) ptV0 = ptLim_Sparse-0.01;
-      if(deltaetaV0 > EtaLim_Sparse) deltaetaV0 = EtaLim_Sparse-0.01;
-      if(deltaetaV0 < -EtaLim_Sparse) deltaetaV0 = -EtaLim_Sparse+0.01;
-
-      Double_t fillSpPhiD0K0[5] = {deltaphiV0,mD0,ptV0,0.,deltaetaV0};
-      Double_t fillSpPhiD0barK0[5] = {deltaphiV0,mD0bar,ptV0,0.,deltaetaV0};
-
-      Int_t origV0 = CheckTrackOrigin(mcArray,(AliAODMCParticle*)mcArray->At(labV0));
-
-      if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==421) { //D0 (from MCTruth)
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d",ptbin)))->Fill(fillSpPhiD0K0);
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0K0);
-         if(origD0==4&&origV0>=1&&origV0<=2) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0K0);  
-         if(origD0==5&&origV0>=3&&origV0<=6) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0K0);  
       }
-      if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==-421) { //D0bar
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d",ptbin)))->Fill(fillSpPhiD0barK0);
-         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0barK0);
-         if(origD0==4&&origV0>=1&&origV0<=2) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0barK0);  
-         if(origD0==5&&origV0>=3&&origV0<=6) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_K0_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpPhiD0barK0); 
-      }
-      if(!fAlreadyFilled) {
-         ((TH1F*)fOutputStudy->FindObject(Form("histDispl_K0_Bin%d",ptbin)))->Fill(0.); //Fills displacement histos
-	 if (origV0>=1&&origV0<=6) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_K0_HF_Bin%d",ptbin)))->Fill(0.);
-         if (origV0>=1&&origV0<=6) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_K0_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(0.);
-	 ((TH1F*)fOutputStudy->FindObject(Form("histDispl_K0%s_Bin%d",orig.Data(),ptbin)))->Fill(0.); //Fills displacement histos
-         ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_K0_Bin%d",ptbin)))->Fill(v0->Pt());
-         ((TH1F*)fOutputStudy->FindObject(Form("histOrig_K0_Bin%d",ptbin)))->Fill(origV0);
-      }
-      N_Kaons++;
-    } // end kaon case
+      if(kCharg->Pt() < fPtThreshLow.at(ptbin) || kCharg->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
 
-    //leading track correlations fill
+      Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
+      if(kCharg->GetID() == idDaughs[0] || kCharg->GetID() == idDaughs[1]) continue; //discards daughters of candidate
+   
+      FillSparsePlots(mcArray,d,origD0,PDGD0,kCharg,kKCharg); //fills for charged tracks
+
+      if(!fMixing) N_KCharg++;
+
+    } // end of charged kaons loop
+
+    //K0 loop
+    for(Int_t iTrack = 0; iTrack<fCorrelatorK0->GetNofTracks(); iTrack++){ // looping on k0 candidates
+
+      Bool_t runcorrelation = fCorrelatorK0->Correlate(iTrack);
+      if(!runcorrelation) continue;
+      
+      AliReducedParticle* k0 = fCorrelatorK0->GetAssociatedParticle();
+
+      if(k0->Pt() < fPtThreshLow.at(ptbin) || k0->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
+
+      Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
+      if(k0->GetID() == idDaughs[0] || k0->GetID() == idDaughs[1]) continue; //discards daughters of candidate
+   
+      FillSparsePlots(mcArray,d,origD0,PDGD0,k0,kK0); //fills for charged tracks
+
+      if(!fMixing) N_Kaons++;
+
+    } // end of charged kaons loop
+
+  } //end of events loop
+
+  //leading track correlations fill
+  if(fReadMC) {
     if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==421) { //D0
       ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[1],mD0); //c and b D0
-      ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[1],mD0); //c or b D0
-      if(origD0==4&&(int)lead[2]>=1&&(int)lead[2]<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[1],mD0);  
-      if(origD0==5&&(int)lead[2]>=3&&(int)lead[2]<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[1],mD0);  
+      ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0); //c or b D0
+      if(origD0==4&&(int)lead[2]>=1&&(int)lead[2]<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0);  
+      if(origD0==5&&(int)lead[2]>=3&&(int)lead[2]<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0);  
     }
     if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==-421) { //D0bar
       ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[1],mD0bar);
-      ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[1],mD0bar); //c or b D0
-      if(origD0==4&&(int)lead[2]>=1&&(int)lead[2]<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[1],mD0bar);  
-      if(origD0==5&&(int)lead[2]>=3&&(int)lead[2]<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[1],mD0bar); 
+      ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0bar); //c or b D0
+      if(origD0==4&&(int)lead[2]>=1&&(int)lead[2]<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0bar);  
+      if(origD0==5&&(int)lead[2]>=3&&(int)lead[2]<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0bar); 
     }
-
-  } //end fReadMC = 1
-
-  if (!fAlreadyFilled) {
-    ((TH1F*)fOutputStudy->FindObject(Form("hist_Count_Charg_Bin%d",ptbin)))->Fill(N_Charg);
-    ((TH1F*)fOutputStudy->FindObject(Form("hist_Count_Kcharg_Bin%d",ptbin)))->Fill(N_Kcharg);
-    ((TH1F*)fOutputStudy->FindObject(Form("hist_Count_K0_Bin%d",ptbin)))->Fill(N_Kaons);
+  } else {
+      if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[0],mD0); //c and b D0
+      if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[0],mD0bar);
   }
 
-  fAlreadyFilled=kTRUE; //distribution plots for tracks filled  
+  //Fill of count histograms
+  if (!fAlreadyFilled) { 
+    ((TH1F*)fOutputStudy->FindObject("hist_Count_Charg"))->Fill(N_Charg);
+    ((TH1F*)fOutputStudy->FindObject("hist_Count_Kcharg"))->Fill(N_KCharg);
+    ((TH1F*)fOutputStudy->FindObject("hist_Count_K0"))->Fill(N_Kaons);
+  }
 
+  fAlreadyFilled=kTRUE; //at least a D0 analyzed in the event; distribution plots already filled
+
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, AliAODRecoDecayHF2Prong *d, Int_t origD0, Int_t PdgD0, AliReducedParticle* track, Int_t type) {
+  //
+  //fills the THnSparse for correlations, calculating the variables
+  //
+
+  //Initialization of variables
+  Int_t ptbin = PtBinCorr(d->Pt());
+  if(ptbin < 0) return;
+  Double_t mD0, mD0bar, deltaphi = 0., deltaeta = 0.;
+  d->InvMassD0(mD0,mD0bar);
+
+  Double_t ptTrack = track->Pt();
+  Double_t d0Track = type!=kK0 ? track->GetImpPar() : 0.;
+  Double_t phiTr = track->Phi();
+  Double_t origTr = fReadMC ? CheckTrackOrigin(mcArray,(AliAODMCParticle*)mcArray->At(track->GetLabel())) : 0;
+
+  TString part = "", orig = "";
+
+  switch (type) {
+    case(kTrack): {
+      part = "Charg";
+      deltaphi = fCorrelatorTr->GetDeltaPhi();
+      deltaeta = fCorrelatorTr->GetDeltaEta();
+      break;
+    }
+    case(kKCharg): {
+      part = "Kcharg";
+      deltaphi = fCorrelatorKc->GetDeltaPhi();
+      deltaeta = fCorrelatorKc->GetDeltaEta();
+      break;
+    }
+    case(kK0): {
+      part = "K0";
+      deltaphi = fCorrelatorK0->GetDeltaPhi();
+      deltaeta = fCorrelatorK0->GetDeltaEta();
+      break;
+    }
+  }
+
+  //Fixes limits; needed to include overflow into THnSparse projections!
+  Double_t pTorig = track->Pt();
+  Double_t d0orig = track->GetImpPar();
+  Double_t ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(2)->GetXmax(); //all plots have same axes...
+  Double_t displLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(3)->GetXmax();
+  Double_t EtaLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(4)->GetXmax();
+  if(ptTrack > ptLim_Sparse) ptTrack = ptLim_Sparse-0.01;
+  if(d0Track > displLim_Sparse) d0Track = (displLim_Sparse-0.001);
+  if(deltaeta > EtaLim_Sparse) deltaeta = EtaLim_Sparse-0.01;
+  if(deltaeta < -EtaLim_Sparse) deltaeta = -EtaLim_Sparse+0.01;
+  
+  if(fMixing == kSE) {
+
+  //variables for filling histos
+  Double_t fillSpPhiD0[5] = {deltaphi,mD0,ptTrack,d0Track,deltaeta};
+  Double_t fillSpPhiD0bar[5] = {deltaphi,mD0bar,ptTrack,d0Track,deltaeta};
+
+    if(fReadMC == 0) {
+      //sparse fill for data (tracks, K+-, K0) + weighted
+      if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) { //D0
+        ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_Bin%d",part.Data(),ptbin)))->Fill(fillSpPhiD0);
+        ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_Bin%d",ptbin)))->Fill(deltaphi,mD0,pTorig);
+      }
+      if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) { //D0bar
+        ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_Bin%d",part.Data(),ptbin)))->Fill(fillSpPhiD0bar);
+        ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_Bin%d",ptbin)))->Fill(deltaphi,mD0bar,pTorig);
+      }
+      if(!fAlreadyFilled) {
+ 	((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_%s_Bin%d",part.Data(),ptbin)))->Fill(pTorig);
+ 	((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
+      }
+    }
+
+    if(fReadMC) {
+
+      if(origD0==4) {orig = "_From_c";} else {orig = "_From_b";}
+
+      //sparse fill for data (tracks, K+-, K0) + weighted
+      if(PdgD0==421) { //D0 (from MCTruth)
+         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_Bin%d",part.Data(),ptbin)))->Fill(fillSpPhiD0);
+         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(fillSpPhiD0);
+         if(origD0==4&&origTr>=1&&origTr<=2) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_HF%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(fillSpPhiD0);
+         if(origD0==5&&origTr>=3&&origTr<=6) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_HF%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(fillSpPhiD0);
+         ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_Bin%d",ptbin)))->Fill(deltaphi,mD0,pTorig);
+         ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,pTorig);
+         if(origD0==4&&origTr>=1&&origTr<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,pTorig);
+         if(origD0==5&&origTr>=3&&origTr<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0,pTorig);
+      }
+      if(PdgD0==-421) { //D0bar
+         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_Bin%d",part.Data(),ptbin)))->Fill(fillSpPhiD0bar);
+         ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(fillSpPhiD0bar);
+         if(origD0==4&&origTr>=1&&origTr<=2) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_HF%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(fillSpPhiD0bar);
+         if(origD0==5&&origTr>=3&&origTr<=6) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_HF%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(fillSpPhiD0bar); 
+         ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_Bin%d",ptbin)))->Fill(deltaphi,mD0bar,pTorig);
+         ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,pTorig);
+         if(origD0==4&&origTr>=1&&origTr<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,pTorig);
+         if(origD0==5&&origTr>=3&&origTr<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Weig_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(deltaphi,mD0bar,pTorig);
+      } 
+      if(!fAlreadyFilled) {
+	((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_Bin%d",part.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
+        if (origTr>=1&&origTr<=6) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_HF_Bin%d",part.Data(),ptbin)))->Fill(d0orig);
+        if (origTr>=1&&origTr<=6) ((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s_HF%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(d0orig);
+	((TH1F*)fOutputStudy->FindObject(Form("histDispl_%s%s_Bin%d",part.Data(),orig.Data(),ptbin)))->Fill(d0orig); //Fills displacement histos
+        ((TH1F*)fOutputStudy->FindObject(Form("hist_Pt_%s_Bin%d",part.Data(),ptbin)))->Fill(pTorig);
+        ((TH1F*)fOutputStudy->FindObject(Form("histOrig_%s_Bin%d",part.Data(),ptbin)))->Fill(origTr);
+ 	((TH1F*)fOutputStudy->FindObject(Form("hist_PhiDistr_%s",part.Data())))->Fill(phiTr);
+      }
+    }//end MC case
+
+  } //end of SE fill
+
+  if(fMixing == kME) {
+
+  //variables for filling histos
+  Double_t fillSpPhiD0[3] = {deltaphi,mD0,deltaeta};
+  Double_t fillSpPhiD0bar[3] = {deltaphi,mD0bar,deltaeta};
+
+    if(fReadMC == 0) {
+      //sparse fill for data (tracks, K+-, K0)
+      if(fIsSelectedCandidate == 1||fIsSelectedCandidate == 3) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_Bin%d_EvMix",part.Data(),ptbin)))->Fill(fillSpPhiD0);
+      if(fIsSelectedCandidate == 2||fIsSelectedCandidate == 3) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_Bin%d_EvMix",part.Data(),ptbin)))->Fill(fillSpPhiD0bar);
+    }
+    if(fReadMC == 1) {
+      //sparse fill for data (tracks, K+-, K0)
+      if(PdgD0==421)  ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_Bin%d_EvMix",part.Data(),ptbin)))->Fill(fillSpPhiD0);
+      if(PdgD0==-421) ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_%s_Bin%d_EvMix",part.Data(),ptbin)))->Fill(fillSpPhiD0bar);
+    }//end MC case
+
+  } //end of ME fill
+  
+  return;
 }
 
 //_________________________________________________________________________________________________
@@ -1533,7 +1579,7 @@ Int_t AliAnalysisTaskSED0Correlations::CheckTrackOrigin(TClonesArray* arrayMC, A
   // 7) c hadronization
   // 8) b hadronization
   //
-  printf(" AliAnalysisTaskSED0Correlations::CheckD0Origin() \n");
+  if(fDebug>2) printf("AliAnalysisTaskSED0Correlations::CheckTrkOrigin() \n");
 	
   Int_t pdgGranma = 0;
   Int_t mother = 0;
@@ -1591,7 +1637,6 @@ Int_t AliAnalysisTaskSED0Correlations::CheckTrackOrigin(TClonesArray* arrayMC, A
   else return 0; //no HF quark
 }
 
-
 //________________________________________________________________________
 Int_t AliAnalysisTaskSED0Correlations::PtBinCorr(Double_t pt) const {
   //
@@ -1604,62 +1649,6 @@ Int_t AliAnalysisTaskSED0Correlations::PtBinCorr(Double_t pt) const {
   while(pt>fBinLimsCorr.at(i)) {ptbin=i; i++;}
   
   return ptbin;
-}
-
-//________________________________________________________________________
-Double_t AliAnalysisTaskSED0Correlations::PtWeig(Int_t ptbin, Double_t x) const {
-  //
-  //gives the weight for Weighted Corrs (inverse of pT distribution, from 3 D0 pt bins)
-  //
-  if(x>11.5) x=11.5; if(x<0.3) x=0.3; //bounds for fit of distributions!
-  if(ptbin >= 3 && ptbin <= 5)  return 1/(0.22958*(1.507e+03-5.035e+02*x+5.681e+01*x*x-2.186e+00*x*x*x+exp(1.336e+01-2.146e+00*x+1.206e-01*x*x)));
-  if(ptbin >= 6 && ptbin <= 8)  return 1/(1.71828*(1.984e+02-6.113e+01*x+6.444e+00*x*x-2.342e-01*x*x*x+exp(1.023e+01-2.059e+00*x+1.194e-01*x*x)));
-  if(ptbin >= 9 && ptbin <= 10) return 1/(1.25905*(1.990e+02-6.306e+01*x+6.995e+00*x*x-2.681e-01*x*x*x+exp(9.125e+00-2.053e+00*x+1.276e-01*x*x)));
-
-  return 0; //for other bins plot is disabled!
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskSED0Correlations::GetImpParameter(AliAODTrack *track, AliAODEvent* aod, Double_t &d0, Double_t &d0err) const {
-  //
-  //calculates d0 and error on d0 for the track
-  //      
-  Double_t  d0z0[2],covd0z0[3];
-  AliESDtrack esdTrack(track);  // AliESDTrack conversion of AOD track
-  esdTrack.PropagateToDCA(aod->GetPrimaryVertex(),aod->GetMagneticField(),10000.,d0z0,covd0z0); 
-  d0 = TMath::Abs(d0z0[0]); // impact parameter
-  d0err = TMath::Sqrt(covd0z0[0]); // resolution of impact parameter
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskSED0Correlations::TrackSelectedInLoop(AliAODTrack* track, AliAODRecoDecayHF2Prong *d, AliAODEvent *aod, Int_t ptbin, Int_t idDaughs[]) const {
-  //
-  //rejection of tracks in loop for correlations
-  //      
-  Bool_t output = kTRUE;
-  AliAODVertex *vtx = (AliAODVertex*)aod->GetPrimaryVertex();
-  Double_t bz = aod->GetMagneticField();
-  Double_t mD0, mD0bar;
-  d->InvMassD0(mD0,mD0bar);
-  
-  if(track->GetID() == idDaughs[0] || track->GetID() == idDaughs[1] || track->GetID() < 0) output = kFALSE; //discards daughters of candidate
-  if(track->Pt() < fPtThreshLow.at(ptbin) || track->Pt() > fPtThreshUp.at(ptbin)) output = kFALSE; //discard tracks outside pt range for hadrons/K
-  if(!fCutsTracks->IsHadronSelected(track,vtx,bz)) { //track discarded by quality cuts
-    ((TH1F*)fOutputStudy->FindObject("hRejTracks"))->Fill(1);
-    output = kFALSE;
-  } else ((TH1F*)fOutputStudy->FindObject("hRejTracks"))->Fill(0); //track accepted by quality cuts
-  if(!fCutsTracks->InvMassDstarRejection(d,track,fIsSelectedCandidate)) {
-    if (fReadMC == 0 && (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0);
-    if (fReadMC == 0 && fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0bar);
-    if (fReadMC == 1) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,1.864);
-    output = kFALSE; 
-  } else {
-    if (fReadMC == 0 && (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0); 
-    if (fReadMC == 0 && fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0bar); 
-    if (fReadMC == 1) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,1.864);
-  }
-
-  return output;
 }
 
 //---------------------------------------------------------------------------
@@ -1676,9 +1665,7 @@ Bool_t AliAnalysisTaskSED0Correlations::SelectV0(AliAODv0* v0, AliAODVertex *vtx
   AliAODTrack *v0Daug2 = (AliAODTrack*)v0->GetDaughter(1);
 
   if(opt==1) { //additional cuts for correlations (V0 has to be closer than 3 sigma from K0 mass)
-    if(v0->Pt() < 3. && TMath::Abs(v0->MassK0Short()-0.4976) > 3*0.0040) return kFALSE;
-    if(v0->Pt() > 3. && v0->Pt() < 6. && TMath::Abs(v0->MassK0Short()-0.4976) > 3*0.0052) return kFALSE;
-    if(v0->Pt() > 6. && TMath::Abs(v0->MassK0Short()-0.4976) > 3*0.0075) return kFALSE;
+    if(TMath::Abs(v0->MassK0Short()-0.4976) > 3*0.004) return kFALSE;
   }
 
   //This part removes double counting for swapped tracks!
@@ -1714,6 +1701,8 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   }
   cout << "\n--------------------------\n";
   cout << "MC Truth = "<<fReadMC<<"\n";
+  cout << "--------------------------\n";
+  cout << "Ev Mixing = "<<fMixing<<"\n";
   cout << "--------------------------\n";
 }
 

@@ -30,12 +30,28 @@
 #include "AliVParticle.h"
 #include "AliReducedParticle.h"
 
-AliReducedParticle::AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t McLabel, Int_t trackid) : 
+AliReducedParticle::AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi) : 
 fEta(eta), 
 fPhi(phi), 
 fpT(pt), 
-fMcLabel(McLabel), 
-fid(trackid)
+fMcLabel(mcLabel), 
+fid(trackid),
+fImpPar(impPar),
+fCheckSoftPi(checkSoftPi)
+{
+	//
+	// default constructor
+	//
+}
+
+AliReducedParticle::AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t McLabel) : 
+fEta(eta), 
+fPhi(phi), 
+fpT(pt), 
+fMcLabel(McLabel),
+fid(0),
+fImpPar(0.),
+fCheckSoftPi(kFALSE)
 {
 	//
 	// default constructor
@@ -48,5 +64,5 @@ AliReducedParticle::~AliReducedParticle() {
 	// destructor
 	//
 	
-	Info("AliReducedParticle","Calling Destructor");
+	//Info("AliReducedParticle","Calling Destructor");
 }

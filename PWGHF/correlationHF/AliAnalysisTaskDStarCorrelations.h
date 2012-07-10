@@ -37,6 +37,7 @@
 #include "AliAODRecoCascadeHF.h"
 #include "AliHFAssociatedTrackCuts.h"
 #include "AliNormalizationCounter.h"
+#include "AliHFCorrelator.h"
 
 class TParticle ;
 class TClonesArray ;
@@ -66,22 +67,17 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
 	virtual void UserExec(Option_t *option);
 	virtual void Terminate(Option_t *option);
 	
-	
-	// methods to get the tracks to correlate
-	TObjArray*  AcceptAndReduceTracks(AliAODEvent* inputEvent);
-	TObjArray*  AcceptAndReduceKZero(AliAODEvent* inputEvent, Int_t loopindex, Int_t plotassociation);
 
 	void DefineHistoForAnalysis();
 	
 	// correlators
-	void FillCorrelations(Double_t ptTrig, Double_t phiTrig, Double_t etaTrig, Double_t phiTrack, Double_t etaTrack);
-	void FillSideBandCorrelations(Double_t ptTrig, Double_t phiTrig, Double_t etaTrig, Double_t phiTrack, Double_t etaTrack);
-	void FillMCTagCorrelations(Double_t ptTrig, Double_t phiTrig,  Double_t etaTrig, Double_t ptTrack, Double_t phiTrack, Double_t etaTrack, Int_t mcSource);
-	
+	void FillMCTagCorrelations(Double_t ptTrig, Double_t DelPhi,  Double_t DelEta, Double_t ptTrack, Int_t mcSource);	
 	// setters
 	void SetMonteCarlo(Bool_t k) {fmontecarlo = k;}
 	void SetUseMixing (Bool_t j) {fmixing = j;}
-	void SetCorrelator(Int_t l) {fselect = l;}
+	void SetCorrelator(Int_t l) {fselect = l;} // select 1 for hadrons, 2 for Kaons, 3 for Kzeros
+	void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
+	void SetRunPbPb(Bool_t system){fSystem=system;} // select between pp (kFALSE) or PbPb (kTRUE)
 	
 
 
@@ -91,23 +87,27 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
 	AliAnalysisTaskDStarCorrelations& operator=(const AliAnalysisTaskDStarCorrelations& source); 
 
 	TObject* fhandler; //! Analysis Handler
-	AliEventPoolManager*     fPoolMgr;         //! event pool manager
+	//	AliEventPoolManager*     fPoolMgr;         //! event pool manager
 	TClonesArray* fmcArray; //mcarray
 	AliNormalizationCounter *fCounter; // counter
+    AliHFCorrelator * fCorrelator; // object for correlations
+
 	
 	
 	Int_t fselect; // select what to correlate with a D* 1-chargedtracks,2-chargedkaons,3-k0s
 	Bool_t fmontecarlo;//switch for MC
 	Bool_t fmixing;// switch for event mixing
+	Bool_t fSystem; // pp or PbPb
 	Int_t fEvents; //! number of event
 	Int_t fDebug; //! debug level
+	Int_t fDisplacement; // set 0 for no displacement cut, 1 for absolute d0, 2 for d0/sigma_d0
 	
 	
 	TList *fOutput;                  //! user output data
 	AliRDHFCutsDStartoKpipi *fCuts;  // Cuts D*
 	AliHFAssociatedTrackCuts *fCuts2; // cuts for associated 
 					  
-	ClassDef(AliAnalysisTaskDStarCorrelations,1); // class for D meson correlations				  
+	ClassDef(AliAnalysisTaskDStarCorrelations,2); // class for D meson correlations				  
 };
 
 #endif

@@ -51,11 +51,22 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t IsSelected(TList*  list) {if(list) return kTRUE; return kFALSE;};
 	Bool_t IsSelected(TObject*  obj) {if(obj) return kTRUE; return kFALSE;};
 	Bool_t IsInAcceptance();
-	Bool_t IsHadronSelected(AliAODTrack * track, AliAODVertex *vtx1, Double_t bz);
+	Bool_t IsHadronSelected(AliAODTrack * track);
+	Bool_t CheckHadronKinematic(Double_t pt, Double_t d0); 
 	Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray, Int_t method=1);
 	Bool_t IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *vtx1);
 	Int_t IsMCpartFromHF(Int_t label, TClonesArray*mcArray);
 	Bool_t InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliAODTrack *track, Int_t hypD0) const;	
+	
+	//getters
+	Int_t GetMaxNEventsInPool() {return fPoolMaxNEvents;}
+	Int_t GetMinNTracksInPool() {return fPoolMinNTracks;}
+	Int_t GetMinEventsToMix(){return fMinEventsToMix;}
+	Int_t GetNZvtxPoolBins() {return fNzVtxBins;}
+	Double_t *GetZvtxPoolBins(){return fZvtxBins;}
+	Int_t GetNCentPoolBins() {return fNCentBins;}
+	Double_t *GetCentPoolBins(){return fCentBins;}
+	
 	
 	
 	void AddTrackCuts(const AliESDtrackCuts *cuts) {
@@ -63,13 +74,32 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 		fESDTrackCuts=new AliESDtrackCuts(*cuts); 
 		return;
 	}
+	//setters
+	//event pool settings
+	void SetMaxNEventsInPool(Int_t events){fPoolMaxNEvents=events;}
+	void SetMinNTracksInPool(Int_t tracks){fPoolMinNTracks=tracks;}
+	void SetMinEventsToMix(Int_t events){fMinEventsToMix=events;}
 	
+	void SetNofPoolBins(Int_t Nzvtxbins, Int_t Ncentbins){
+		fNzVtxBins=Nzvtxbins;
+		fNzVtxBinsDim=Nzvtxbins+1;
+		
+	    fNCentBins=Ncentbins;
+		fNCentBinsDim=Ncentbins+1;
+	}
+	
+	void SetPoolBins(Double_t *ZvtxBins, Double_t* CentBins){
+		fZvtxBins=ZvtxBins; 
+		fCentBins=CentBins;
+	}
+	//cut settings
 	void SetAODTrackCuts(Float_t *cutsarray);
 	void SetTrackCutsNames(/*TString *namearray*/);
 	void SetAODvZeroCuts(Float_t *cutsarray);
 	void SetvZeroCutsNames(/*TString *namearray*/);
 	void SetPidHF(AliAODPidHF* pid) {fPidObj = pid; return;}
 	virtual void PrintAll();
+	virtual void PrintPoolParameters();
 	Int_t GetNVarsTrack(){return fNTrackCuts;}
 	
 	
@@ -81,6 +111,20 @@ private:
 	//AliESDtrackCuts *fTrackCuts;
 	AliESDtrackCuts *fESDTrackCuts; // track cut object
 	AliAODPidHF * fPidObj;     /// PID object
+	
+	Int_t fPoolMaxNEvents; // set maximum number of events in the pool
+	Int_t fPoolMinNTracks; // se minimum number of tracks in the pool
+	Int_t fMinEventsToMix; // set the minimum number of events you wanna mix
+	
+	Int_t fNzVtxBins; // number of z vrtx bins
+	Int_t fNzVtxBinsDim; // number of z vrtx bins +1 : necessary to initialize correctly the array
+	Double_t* fZvtxBins; // [fNzVtxBinsDim]
+	
+	
+	Int_t fNCentBins; //number of centrality bins
+	Int_t fNCentBinsDim; //number of centrality bins bins +1 : necessary to initialize correctly the array
+	Double_t* fCentBins; // [fNCentBinsDim]
+	
 	Int_t fNTrackCuts;     // array dimension
 	Float_t* fAODTrackCuts;//[fNTrackCuts]
 	TString * fTrackCutsNames;//[fNTrackCuts]
@@ -89,7 +133,7 @@ private:
 	TString * fvZeroCutsNames;//[fNvZeroCuts]
 	
 	
-	ClassDef(AliHFAssociatedTrackCuts,1);
+	ClassDef(AliHFAssociatedTrackCuts,2);
 };
 
 

@@ -38,20 +38,22 @@
 
 // class to get the reduced hadron candidate
 class AliReducedParticle : public AliVParticle
-//class AliReducedParticle : public AliAODTrack
 {
 public:
-    AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t McLabel, Int_t trackid);
+    AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi);
+    AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel);
 
     ~AliReducedParticle();
     
     // kinematics
 	
     virtual Double_t Pt()         const { return fpT; }
-	virtual Double_t Phi()        const { return fPhi; }
-	virtual Double_t Eta()        const { return fEta; }
-	virtual Int_t   GetLabel()    const { return fMcLabel; }
-	virtual Int_t  GetID()		const{return fid;}
+    virtual Double_t Phi()        const { return fPhi; }
+    virtual Double_t Eta()        const { return fEta; }
+    virtual Int_t   GetLabel()    const { return fMcLabel; }
+    virtual Int_t  GetID()		const{return fid;}
+    virtual Double_t GetImpPar() const{return fImpPar;}
+    virtual Bool_t CheckSoftPi() const{return fCheckSoftPi;}
 	
 	// kinematics
     virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
@@ -89,10 +91,11 @@ private:
     Double_t fEta;      // eta
     Double_t fPhi;      // phi
     Double_t fpT;       // pT
-	Int_t fMcLabel; //mclabel
-	Int_t fid;
-
+    Int_t fMcLabel; //mclabel
+    Int_t fid; // track ID
+    Double_t fImpPar; // impact parameter
+    Bool_t fCheckSoftPi; // check if the track is compatible with a softpion from D*
     
-    ClassDef(AliReducedParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+    ClassDef(AliReducedParticle, 2); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 #endif
