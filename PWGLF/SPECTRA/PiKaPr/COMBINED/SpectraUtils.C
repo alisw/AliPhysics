@@ -129,11 +129,46 @@ BGBlastWave_Func(const Double_t *x, const Double_t *p)
   return norm * pt * integral;
 }
 
+Double_t
+BGBlastWave_Func_OneOverPt(const Double_t *x, const Double_t *p)
+{
+  /* 1/pt dN/dpt */
+  
+  Double_t pt = x[0];
+  Double_t mass = p[0];
+  Double_t mt = TMath::Sqrt(pt * pt + mass * mass);
+  Double_t beta_max = p[1];
+  Double_t temp = p[2];
+  Double_t n = p[3];
+  Double_t norm = p[4];
+  
+  if (!fBGBlastWave_Integrand)
+    fBGBlastWave_Integrand = new TF1("fBGBlastWave_Integrand", BGBlastWave_Integrand, 0., 1., 5);
+  fBGBlastWave_Integrand->SetParameters(mt, pt, beta_max, temp, n);
+  Double_t integral = fBGBlastWave_Integrand->Integral(0., 1.);
+
+  return norm * integral;
+}
+
+
 TF1 *
 BGBlastWave(const Char_t *name, Double_t mass, Double_t beta_max = 0.9, Double_t temp = 0.1, Double_t n = 1., Double_t norm = 1.e6)
 {
   
   TF1 *fBGBlastWave = new TF1(name, BGBlastWave_Func, 0., 10., 5);
+  fBGBlastWave->SetParameters(mass, beta_max, temp, n, norm);
+  fBGBlastWave->SetParNames("mass", "beta_max", "T", "n", "norm");
+  fBGBlastWave->FixParameter(0, mass);
+  fBGBlastWave->SetParLimits(1, 0.01, 0.99);
+  fBGBlastWave->SetParLimits(2, 0.01, 1.);
+  fBGBlastWave->SetParLimits(3, 0.01, 10.);
+  return fBGBlastWave;
+}
+
+TF1 * BGBlastWave_OneOverPT(const Char_t *name, Double_t mass, Double_t beta_max = 0.9, Double_t temp = 0.1, Double_t n = 1., Double_t norm = 1.e6)
+{
+  
+  TF1 *fBGBlastWave = new TF1(name, BGBlastWave_Func_OneOverPt, 0., 10., 5);
   fBGBlastWave->SetParameters(mass, beta_max, temp, n, norm);
   fBGBlastWave->SetParNames("mass", "beta_max", "T", "n", "norm");
   fBGBlastWave->FixParameter(0, mass);
@@ -379,7 +414,7 @@ BGBlastWave_GlobalFit(TObjArray *data, Double_t *mass, Double_t profile = .7, Bo
   /* 1-sigma contour */
   minuit->SetErrorDef(1);
   TGraph *gCont1 = NULL;
-  //  gCont1 = (TGraph *) minuit->Contour(50, nBW + 0, nBW + 1);
+  gCont1 = (TGraph *) minuit->Contour(50, nBW + 0, nBW + 1);
   if (gCont1) gCont1->SetName("gCont1");
 
   /* 2-sigma contour */
