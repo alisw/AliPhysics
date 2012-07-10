@@ -82,6 +82,7 @@ static Double_t sysSigLam[nBins]={//Signal extraction
 
 const Double_t sysPID=0.02; //PID
 const Double_t sysArm=0.01; //Armenteros cut
+const Double_t sysFD=0.05;  //Feed down
 
 
 TH1 *MapHisto(const TH1 *h) {
@@ -147,14 +148,17 @@ GetHistos(const Char_t *rName[], const Char_t *eName[], TH1 *&raw, TH1 *&eff) {
   return kTRUE;
 }
 
-void SetAttributes(TH1 *h,const Char_t *tit,Int_t col,Int_t mar,Float_t siz) {
+void SetAttributes(TH1 *h,const Char_t *tit,Int_t col,Int_t mar,Float_t siz,
+Float_t max=1000., Float_t min=1e-6, Float_t factor=1, Int_t range=nBins) {
   h->SetTitle(tit);
   h->SetLineColor(col); 
   h->SetMarkerColor(col);
   h->SetMarkerStyle(mar);
   h->SetMarkerSize(siz);
-  h->SetMaximum(1000);
-  h->SetMinimum(1e-5);
+  h->Scale(factor);
+  h->SetMaximum(max);
+  h->SetMinimum(min);
+  h->GetXaxis()->SetRange(1,range);
 }
 
 void 
@@ -164,11 +168,16 @@ DrawHisto(TH1 *h, const Option_t *option, Double_t *sysEff, Double_t *sysSig) {
   for (Int_t i=1; i<=nb; i++) {
       Double_t c=hh->GetBinContent(i);
       Double_t e=hh->GetBinError(i);
-      e = c*TMath::Sqrt(sysEff[i]*sysEff[i] + 
-                        sysSig[i]*sysSig[i] + 
-                        sysArm*sysArm);
+      e = sysEff[i]*sysEff[i] + sysSig[i]*sysSig[i];
 
-      if ((sysEff==sysEffLam)&&(i<13)) e += c*sysPID; 
+      if (sysEff==sysEffLam) {// for Lambda
+         e += sysFD*sysFD;
+         if (i<13) e += sysPID*sysPID;
+      } else {// for K0s
+         e += sysArm*sysArm;
+      }
+
+      e=c*TMath::Sqrt(e); 
 
       hh->SetBinError(i,e);
   }
@@ -213,6 +222,7 @@ void DrawSpectraAndRatios() {
   const Int_t   colour[nCent]={2  , 419, 4  , 6 , 1  };
   const Int_t   marker[nCent]={22 , 21 , 23 , 33, 20 };
   const Float_t masize[nCent]={1.6, 1.3, 1.6, 2 , 1.3};
+  const Float_t factor[nCent]={1., 1.5, 2.0, 3.0, 00.0}; //scale for drawing
   
   const Char_t *rNameL[2*nCent]={ // file name, histo name
     "luke/DataYields_5sigCubic_070512.root", "YieldLambda0005", 
@@ -259,11 +269,6 @@ void DrawSpectraAndRatios() {
     "marian/combined/EFF_K0s_PbPb_80_90.root", "Efficiency"
   };
 
-//   const Char_t *fdName[nCent]={
-//     "fd_0005", "fd_2040", "fd_4060", "fd_6080", "fd_8090"
-//   };
-//   TFile *fdFile=TFile::Open("lambda_fd.root");  
-
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   gStyle->SetLegendFillColor(0);
@@ -274,24 +279,39 @@ void DrawSpectraAndRatios() {
 
   TCanvas *c1=new TCanvas; c1->SetLogy();
   c1->SetLeftMargin(0.13); c1->SetBottomMargin(0.13);
+  TCanvas *c1lin=new TCanvas;
+  c1lin->SetLeftMargin(0.13); c1lin->SetBottomMargin(0.13);
 
   TCanvas *c2=new TCanvas; c2->SetLogy();
   c2->SetLeftMargin(0.13); c2->SetBottomMargin(0.13);
+  TCanvas *c2lin=new TCanvas;
+  c2lin->SetLeftMargin(0.13); c2lin->SetBottomMargin(0.13);
 
   TCanvas *c3=new TCanvas;
-  //TCanvas *c4=new TCanvas;
-
 
   for (Int_t cent=0; cent<nCent; cent++) {
+      const Char_t *tit=title[cent];
+      Int_t col=colour[cent];
+      Int_t mar=marker[cent];
+      Float_t siz=masize[cent];
+      Float_t fac=factor[cent];
+ 
       // Lambda
       if (!GetHistos(rNameL+2*cent, eNameL+2*cent, raw, eff)) return;
       TH1 *rawHl=MapHisto(raw);
       TH1 *effHl=MapHisto(eff);
+
+      effHl->Scale(1/0.81); //Feed down
+
       rawHl->Divide(effHl);
-      SetAttributes(rawHl,title[cent],colour[cent],marker[cent],masize[cent]);
+      SetAttributes(rawHl,tit,col,mar,siz);
       c1->cd();
-      //rawHl->Draw(option.Data());
       DrawHisto(rawHl, option.Data(), sysEffLam, sysSigLam);
+
+      TH1 *linHl=(TH1*)rawHl->Clone();
+      SetAttributes(linHl,tit,col,mar,siz,25.0*0.81,0.,fac,32); 
+      c1lin->cd();
+      DrawHisto(linHl, option.Data(), sysEffLam, sysSigLam);
 
       // K0s
     if (cent==nCent-1) gFlag=kTRUE;
@@ -299,25 +319,20 @@ void DrawSpectraAndRatios() {
       TH1 *rawHk=MapHisto(raw);
       TH1 *effHk=MapHisto(eff);
       rawHk->Divide(effHk);
-      SetAttributes(rawHk,title[cent],colour[cent],marker[cent],masize[cent]);
+      SetAttributes(rawHk,tit,col,mar,siz);
       c2->cd();
-      //rawHk->Draw(option.Data());
       DrawHisto(rawHk, option.Data(), sysEffK0s, sysSigK0s);
+
+      TH1 *linHk=(TH1*)rawHk->Clone();
+      SetAttributes(linHk,tit,col,mar,siz,120.,0.,fac,32); 
+      c2lin->cd();
+      DrawHisto(linHk, option.Data(), sysEffK0s, sysSigK0s);
 
       // Lambda/K0s
       TH1 *rawHlk=(TH1*)rawHl->Clone();
-      //FD
-      rawHlk->Scale(0.8);
-//       fdFile->cd();
-//       TH1 *fd=(TH1*)gFile->Get(fdName[cent]);
-//       TH1 *fdM=MapHisto(fd);
-//       SetAttributes(fdM,title[cent],colour[cent],marker[cent],masize[cent]);
-//       c4->cd();
-//       fdM->Draw(option.Data());
-//       rawHlk->Add(fdM,-1);
-      //
       TString name=ratio+rawHlk->GetName();
       rawHlk->SetName(name.Data());      
+      rawHlk->SetMaximum(1.7);      
       rawHlk->Divide(rawHk);
       c3->cd();
       rawHlk->Draw(option.Data());
@@ -326,7 +341,7 @@ void DrawSpectraAndRatios() {
   }
 
   Float_t offx=0.15, offy=0.16, sizx=0.22, sizy=0.22;
-  TLegend *leg=c1->BuildLegend(0.67,0.42,0.87,0.78,"Centrality:");
+  TLegend *leg=c1->BuildLegend(0.68,0.46,0.88,0.82,"Centrality:");
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
   c1->cd(); 
@@ -341,7 +356,28 @@ void DrawSpectraAndRatios() {
   tex->Draw();
   DrawALICELogo(offx,offy,offx+sizx,offy+sizy);
 
-  leg=c2->BuildLegend(0.67,0.42,0.87,0.78,"Centrality:");
+   leg=c1lin->BuildLegend(0.69,0.43,0.88,0.80,"Centrality:");
+   leg->SetBorderSize(0);
+   leg->SetFillColor(0);
+   c1lin->cd();
+      tex = new TLatex(1.07,11.4*0.81,"x1.5");
+   tex->Draw();
+      tex = new TLatex(1.07,6.02*0.81,"x2.0");
+   tex->Draw();
+      tex = new TLatex(1.07,2.58*0.81,"x3.0");
+   tex->Draw();
+      tex = new TLatex(1.04,22.7*0.81,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+   tex->Draw();
+      tex = new TLatex(2.38,18.5*0.81,"#Lambda");  
+   tex->SetTextSize(0.11);
+   tex->Draw();
+   Float_t offx1=0.70, offy1=0.18;
+   DrawALICELogo(offx1,offy1,offx1+sizx,offy1+sizy);
+       
+
+
+
+  leg=c2->BuildLegend(0.68,0.46,0.88,0.82,"Centrality:");
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
   c2->cd(); 
@@ -356,6 +392,24 @@ void DrawSpectraAndRatios() {
   tex->Draw();
   DrawALICELogo(offx,offy,offx+sizx,offy+sizy);
 
+   leg=c2lin->BuildLegend(0.69,0.43,0.88,0.80,"Centrality:");
+   leg->SetBorderSize(0);
+   leg->SetFillColor(0);
+   c2lin->cd();
+      tex = new TLatex(0.37,53.41838,"x1.5");
+   tex->Draw();
+      tex = new TLatex(0.37,29.51268,"x2.0");
+   tex->Draw();
+      tex = new TLatex(0.37,13.48499,"x3.0");
+   tex->Draw();
+      tex = new TLatex(1.04,109.,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+   tex->Draw();
+      tex = new TLatex(2.122705,87.70856,"K^{0}_{S}");  
+   tex->SetTextSize(0.089);
+   tex->Draw();
+   DrawALICELogo(offx1,offy1,offx1+sizx,offy1+sizy);
+       
+   
   c3->BuildLegend(0.74,0.62,0.88,0.88);
 
   return;
