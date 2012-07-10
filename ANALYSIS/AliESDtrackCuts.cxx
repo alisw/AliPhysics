@@ -2239,13 +2239,13 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
       track->SetBit(kSecBit);
       continue;
     }
-    
+    /* done via proper DCA cut
     //secondary?
     if (track->IsOn(AliESDtrack::kMultSec)) {
       track->SetBit(kSecBit);
       continue;
     }
-
+    */
     // check tracks with ITS part
     //*******************************************************************************************************
     if (track->IsOn(AliESDtrack::kITSin) && !track->IsOn(AliESDtrack::kITSpureSA) && trackType == kTrackletsITSTPC) { // track has ITS part but is not an ITS_SA
