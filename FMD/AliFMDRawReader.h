@@ -20,9 +20,8 @@
     @brief   Class to read raw data 
     @ingroup FMD_rec
 */
-#ifndef ROOT_TTask
-# include <TTask.h>
-#endif
+#include <TTask.h>
+#include <TClonesArray.h>
 #include "AliFMDUShortMap.h"
 
 //____________________________________________________________________
@@ -67,6 +66,7 @@ public:
    * DTOR 
    */
   virtual ~AliFMDRawReader() {}
+  void SetVerbose(Bool_t verb=kTRUE) { fVerbose = verb; }
   /** 
    * Read in, and store in output tree 
    *
@@ -210,7 +210,11 @@ protected:
       fMinStrip(0), 
       fMaxStrip(127),
       fPreSamp(14+5),
-      fSeen(0)
+      fSeen(0),
+      fVerbose(o.fVerbose), 
+      fErrors(o.fErrors), 
+      fNErrChanLen(o.fNErrChanLen), 
+      fNErrAddress(o.fNErrAddress)
   {}
   /** 
    * Assignment operator
@@ -296,6 +300,9 @@ protected:
    * @return 
    */
   Int_t GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board) const;
+  void AddError(Int_t ddl, Int_t hwaddr);
+  void ReadbackError(const AliAltroRawStreamV3& input, const char* format, ...);
+
   TTree*          fTree;             //! Pointer to tree to read into 
   AliRawReader*   fReader;           //! Pointer to raw reader 
   UShort_t        fSampleRate[kNDDL];// The sample rate (if 0,infer from data)
@@ -309,6 +316,10 @@ protected:
   AliFMDUShortMap fSeen;            // Seen strips 
   UShort_t        fNErrors[kNDDL];  // Number of errors per DDL
   UShort_t        fL1Phase[kNDDL];  // Number of errors per DDL
+  Bool_t          fVerbose;         // Whether to be verbose 
+  TClonesArray    fErrors;          // Clones array of channels with errors 
+  UShort_t        fNErrChanLen;     // Number of channel length errors 
+  UShort_t        fNErrAddress;     // Number of address errors 
   
   ClassDef(AliFMDRawReader, 0) // Read FMD raw data into a cache 
 };

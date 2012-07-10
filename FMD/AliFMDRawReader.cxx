@@ -86,7 +86,11 @@ AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree)
     fMinStrip(0),
     fMaxStrip(127), 
     fPreSamp(14+5),
-    fSeen(0)
+    fSeen(0), 
+    fVerbose(false), 
+    fErrors("TObject"),
+    fNErrChanLen(0), 
+    fNErrAddress(0)
 {
   // Default CTOR
   for (Int_t i = 0; i < 3; i++) { 
@@ -116,6 +120,41 @@ AliFMDRawReader::Exec(Option_t*)
   AliDebug(1,Form("Got a grand total of %d digits, wrote %d bytes to tree", 
 		   array->GetEntriesFast(), nWrite));
   delete array;
+}
+
+//____________________________________________________________________
+void
+AliFMDRawReader::AddError(Int_t ddl, Int_t hwaddr)
+{
+  Int_t nErr = fErrors.GetEntries();
+  TObject* o = new (fErrors[nErr]) TObject;
+  o->SetUniqueID((ddl & 0xFF) << 12 & (hwaddr & 0xFFF));
+}
+//____________________________________________________________________
+void
+AliFMDRawReader::ReadbackError(const AliAltroRawStreamV3& input,
+			       const char* format, ...)
+{
+  static char buf[512];
+  va_list ap;
+  va_start(ap, format);
+  vsnprintf(buf, 511, format, ap);
+  buf[511] = '\0';
+  va_end(ap);
+
+  // { AliWarning(buf); }
+  if (AliDebugLevel() > 10) {
+    AliLog::Flush();
+    AliWarning(buf);
+    input.HexDumpChannel();
+  }
+
+  Int_t    ddl    = input.GetDDLNumber();
+  Int_t    hwaddr = input.GetHWAddress();
+  
+  fReader->AddMinorErrorLog(AliAltroRawStreamV3::kAltroPayloadErr,buf);
+  AddError(ddl, hwaddr); 
+  fNErrors[ddl]++;
 }
 
 //____________________________________________________________________
@@ -222,12 +261,18 @@ AliFMDRawReader::NewDDL(AliAltroRawStreamV3& input, UShort_t& det)
   // Get Errors seen 
   Int_t nChAddrMismatch = input.GetNChAddrMismatch();
   Int_t nChLenMismatch  = input.GetNChLengthMismatch();
-  if (nChAddrMismatch != 0) 
-    AliWarning(Form("Got %d channels with address mis-matches for 0x%03x",
-		    nChAddrMismatch, ddl));
-  if (nChLenMismatch != 0) 
-    AliWarning(Form("Got %d channels with length mis-matches for 0x%03x",
-		    nChLenMismatch, ddl));
+  if (nChAddrMismatch != 0) {
+    ReadbackError(input, 
+		  "Got %d channels with address mis-matches for 0x%03x",
+		  nChAddrMismatch, ddl);
+    fNErrAddress += nChAddrMismatch;
+  }
+  if (nChLenMismatch != 0) {
+    ReadbackError(input, 
+		  "Got %d channels with length mis-matches for 0x%03x",
+		  nChLenMismatch, ddl);
+    fNErrChanLen += nChLenMismatch;
+  }
 
   // Map DDL number to the detector number 
   AliFMDParameters*    pars   = AliFMDParameters::Instance();
@@ -262,12 +307,8 @@ AliFMDRawReader::NewChannel(const AliAltroRawStreamV3& input,  UShort_t det,
   Int_t    ddl    = input.GetDDLNumber();
   Int_t    hwaddr = input.GetHWAddress();
   if (input.IsChannelBad()) { 
-    const char* msg = Form("Ignoring channel %03d/0x%03x with errors", 
-			   ddl, hwaddr); 
-    AliWarning(msg); 
-    if (AliDebugLevel() > 10) input.HexDumpChannel();
-    fReader->AddMinorErrorLog(AliAltroRawStreamV3::kAltroPayloadErr,msg);
-    fNErrors[ddl] += 1;
+    ReadbackError(input, "Ignoring channel %03d/0x%03x with errors", 
+		  ddl, hwaddr); 
     return 0xFFFF;
   }
   
@@ -312,33 +353,24 @@ AliFMDRawReader::NewBunch(const AliAltroRawStreamV3& input,
   length            = input.GetBunchLength();
 
   if (tstart >= nSamples) {
-    const char* msg = Form("Bunch in %03d/0x%03x has an start time greater "
-			   "than number of samples: 0x%x >= 0x%x", 
-			   ddl, hwaddr, tstart, nSamples);
-    AliWarning(msg);
-    if (AliDebugLevel() > 10) input.HexDumpChannel();
-    fReader->AddMinorErrorLog(AliAltroRawStreamV3::kAltroPayloadErr,msg);
-    fNErrors[ddl]++;
+    ReadbackError(input, 
+		  "Bunch in %03d/0x%03x has an start time greater "
+		  "than number of samples: 0x%x >= 0x%x", 
+		  ddl, hwaddr, tstart, nSamples);
     return false;
   }
   if ((int(tstart) - length + 1) < 0) { 
-    const char* msg = Form("Bunch in %03d/0x%03x has an invalid length and "
-			   "start time: 0x%x,0x%x (%d-%d+1=%d<0)", 
-			   ddl, hwaddr, length, tstart, tstart, length, 
-			   int(tstart)-length+1);
-    AliWarning(msg);
-    if (AliDebugLevel() > 10) input.HexDumpChannel();
-    fReader->AddMinorErrorLog(AliAltroRawStreamV3::kAltroPayloadErr,msg);
-    fNErrors[ddl]++;				
+    ReadbackError(input, 
+		  "Bunch in %03d/0x%03x has an invalid length and "
+		  "start time: 0x%x,0x%x (%d-%d+1=%d<0)", 
+		  ddl, hwaddr, length, tstart, tstart, length, 
+		  int(tstart)-length+1);
     return false;
   }
   if (tstart >= start) { 
-    const char* msg = Form("Bunch in %03d/0x%03x has early start time: "
-			   "0x%x >= 0x%x", ddl, hwaddr, tstart, start);
-    AliWarning(msg);
-    if (AliDebugLevel() > 10) input.HexDumpChannel();
-    fReader->AddMinorErrorLog(AliAltroRawStreamV3::kAltroPayloadErr,msg);
-    fNErrors[ddl]++;
+    ReadbackError(input, 
+		  "Bunch in %03d/0x%03x has early start time: "
+		  "0x%x >= 0x%x", ddl, hwaddr, tstart, start);
     return false;
   }
   start = tstart;
@@ -619,8 +651,12 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     AliError("No TClonesArray passed");
     return kFALSE;
   }
+  // static ULong_t unique = 0;
   const UShort_t kUShortMax = (1 << 16) - 1;
   fSeen.Reset(kUShortMax);
+  fErrors.Clear();
+  fNErrChanLen = 0;
+  fNErrAddress = 0;
   for (Int_t ddl = 0; ddl < kNDDL; ddl++) fNErrors[ddl] = 0;
 
   AliAltroRawStreamV3  input(fReader);
@@ -711,6 +747,29 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
       // if (errors && (AliDebugLevel() > 0)) input.HexDumpChannel();
     } // while (channel)
   } // while (ddl)
+  if (fNErrors[0] > 0 || fNErrors[1] > 0 || fNErrors[2] > 0 || 
+      fNErrChanLen > 0 || fNErrAddress > 0) {
+    // AliLog::Flush();
+    AliLog::SetPrintRepetitions(false);
+    AliWarningF("R/O errors: FMD1=%d, FMD2=%d, FMD3=%d, "
+		"Channel Length=%d, address=%d", 
+		fNErrors[0], fNErrors[1], fNErrors[2], 
+		fNErrChanLen, fNErrAddress);
+    AliLog::SetPrintRepetitions(true);
+  }
+  if (fVerbose && fErrors.GetEntries() > 0) {
+    TString msg;
+    Int_t   nErr = fErrors.GetEntries();
+    for (Int_t i = 0; i < nErr; i++) {
+      UInt_t where = fErrors.At(i)->GetUniqueID();
+      if (i % 6 == 0) msg.Append("\n");
+      msg.Append(Form("  %3d/0x%03x", (where >> 12) & 0xFF, (where & 0xFFF)));
+    }
+    // AliLog::Flush();
+    AliLog::SetPrintRepetitions(false);
+    AliWarningF("Got %d errors in channels %s", nErr, msg.Data());
+    AliLog::SetPrintRepetitions(true);
+  }
   return kTRUE;
 }
 //____________________________________________________________________
