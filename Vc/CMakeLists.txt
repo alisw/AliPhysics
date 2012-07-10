@@ -7,7 +7,7 @@ macro(vc_add_target_property _target _prop _value)
    endif(NOT _oldprop)
 endmacro()
 
-include_directories("${Vc_INCLUDE_DIR}" "${Vc_INCLUDE_DIR}/Vc" "${Vc_INCLUDE_DIR}/Vc/avx")
+include_directories("${Vc_INCLUDE_DIR}" "${Vc_INCLUDE_DIR}/Vc")
 
 if(USE_AVX)
    add_library(Vc STATIC src/vector.cpp src/cpuid.cpp src/support.cpp src/avx/sorthelper.cpp)
