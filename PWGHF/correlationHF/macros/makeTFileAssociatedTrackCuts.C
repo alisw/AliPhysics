@@ -3,24 +3,21 @@
 #include "AliHFAssociatedTrackCuts.h"
 #include <TClonesArray.h>
 #include <TParameter.h>
-//#include "AliAODPidHF.h"
+#include "AliAODPidHF.h"
 
 /* $Id$ */
 
 void makeInputHFCorrelation(){
 	
-	
 	AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
 	HFCorrelationCuts->SetName("AssociatedCuts");
 	HFCorrelationCuts->SetTitle("Cuts for associated track");
 	Float_t eta = 0.9;
-
 	//______________________________ set ESD track cuts
 	AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
 
-	
 	esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-	//esdTrackCuts->SetDCAToVertex2D(kFALSE);
+	esdTrackCuts->SetDCAToVertex2D(kFALSE);
 	
 	esdTrackCuts->SetRequireTPCRefit(kTRUE);
 	esdTrackCuts->SetRequireITSRefit(kTRUE);
@@ -30,24 +27,42 @@ void makeInputHFCorrelation(){
 	// default is kBoth, otherwise kAny
 	esdTrackCuts->SetPtRange(0.3,1.e10);
 	esdTrackCuts->SetEtaRange(-eta,eta);
-	
-	 
 	HFCorrelationCuts->AddTrackCuts(esdTrackCuts);
+	//______________________________ set Pool for event mixing 
 	
+	
+	
+	HFCorrelationCuts->SetMaxNEventsInPool(200);
+	HFCorrelationCuts->SetMinNTracksInPool(1000);
+	HFCorrelationCuts->SetMinEventsToMix(8);
+	
+	HFCorrelationCuts->SetNofPoolBins(3,5);
+	
+	//Double_t MBins[]={0,20,40,60,80,500};
+	Double_t MBins[]={0,1,2,3,4,500};
+	Double_t * MultiplicityBins = MBins;
+	
+	//Double_t ZBins[]={-10,-5,-2.5,2.5,5,10};
+	Double_t ZBins[]={-10,-2.5,2.5,10};
+	Double_t *ZVrtxBins = ZBins;
+	
+	HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
+	cout << "Crash 1 " << endl;
 	//______________________________ set kinematics cuts for AOD track 
 	const int nofcuts = 4;
 	Float_t* trackcutsarray;
 	trackcutsarray=new Float_t[nofcuts];
+	cout << "Crash 1.1 " << endl;
 	trackcutsarray[0] = 0.3;//track min pt
 	trackcutsarray[1] = 100.;//track max pt
 	trackcutsarray[2] = 0.;//track min impact parameter
 	trackcutsarray[3] = 100.;//track max impact parameter
-	
+	cout << "Crash 1.2 " << endl;
 	HFCorrelationCuts->SetNVarsTrack(nofcuts);
+	cout << "Crash 1.3 " << endl;
 	HFCorrelationCuts->SetAODTrackCuts(trackcutsarray);
 	
-	
-	
+	cout << "Crash 2 " << endl;
 	//______________________________ set kinematics cuts for AOD v0 
 	
 	const int nofcuts2 = 7;
@@ -64,9 +79,9 @@ void makeInputHFCorrelation(){
 
 	HFCorrelationCuts->SetNVarsVzero(nofcuts2);
 	HFCorrelationCuts->SetAODvZeroCuts(vzerocutsarray);
-	
 	//______________________________ set PID
-	 
+	cout << "Crash 3 " << endl;
+
 	Int_t mode =1;
 	AliAODPidHF* pidObj=new AliAODPidHF();
 	pidObj->SetMatch(mode);
@@ -77,8 +92,8 @@ void makeInputHFCorrelation(){
 	pidObj->SetCompat(kTRUE);
 	
 	HFCorrelationCuts->SetPidHF(pidObj);
-	
-	
+	cout << "Crash 4 " << endl;
+
     //______________________________ save to *.root file
 	HFCorrelationCuts->PrintAll();
 	
@@ -86,6 +101,6 @@ void makeInputHFCorrelation(){
 	fout->cd();
 	HFCorrelationCuts->Write();
 	fout->Close();
-
+	cout << "Crash 5 " << endl;
 
 }

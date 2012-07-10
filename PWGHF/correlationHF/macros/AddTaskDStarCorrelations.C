@@ -3,21 +3,21 @@
 
 /* $Id$ */
 
-AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Int_t theMCon =5, Int_t mixing=4, Int_t trackselect =1)
+AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Bool_t runOnPbPb,Bool_t theMCon, Bool_t mixing, Int_t trackselect =1, Int_t usedispl =0, TString DCutObjName = "DStartoKpipiCuts_corr.root", TString TrackCutObjName = "AssocPartCuts.root")
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AliAnalysisTaskDStarCorrelations", "No analysis manager to connect to.");
+    ::Error(" AliAnalysisTaskDStarCorrelations", "No analysis manager to connect to.");
     return NULL;
   } 
 
-  TFile* filecuts=new TFile("DStartoKpipiCuts_corr.root");
+  TFile* filecuts=new TFile(DCutObjName.Data());
   if(!filecuts->IsOpen()){
     cout<<"Input file not found: exit"<<endl;
     return;
   }  
-	  TFile* filecuts2=new TFile("AssocPartCuts.root");
+	  TFile* filecuts2=new TFile(TrackCutObjName.Data());
 	  if(!filecuts2->IsOpen()){
 		  cout<<"Input file2 not found: exit"<<endl;
 		  return;
@@ -42,22 +42,24 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Int_t theMCon =5, Int
   //CREATE THE TASK
   printf("CREATE TASK \n");
   // create the task
-  AliAnalysisTaskDStarCorrelations *task = new AliAnalysisTaskDStarCorrelations("AliAnalysisTaskDStarCorrelations",RDHFDStartoKpipi,corrCuts);
+  AliAnalysisTaskDStarCorrelations *task = new AliAnalysisTaskDStarCorrelations(" AliAnalysisTaskDStarCorrelations",RDHFDStartoKpipi,corrCuts);
 	
 	// Setters
 
 	task->SetMonteCarlo(theMCon);
 	task->SetUseMixing(mixing);
 	task->SetCorrelator(trackselect) ;
+	task->SetUseDisplacement(usedispl);
+	task->SetRunPbPb(runOnPbPb);
 	//task->SetDebugLevel(0);
 	
 
-	if(trackselect == 1) Info("AliAnalysisTaskDStarCorrelations","Correlating D* with charged hadrons \n");
-	else if(trackselect == 2) Info("AliAnalysisTaskDStarCorrelations","Correlating D* with charged kaons \n");
-	else if(trackselect == 3) Info("AliAnalysisTaskDStarCorrelations","Correlating D* with reconstructed K0s \n");
-	else Fatal("AliAnalysisTaskDStarCorrelations","Nothing to correlate with!");
-	if(mixing) Info ("AliAnalysisTaskDStarCorrelations","Event Mixing Analysis\n");
-	if(!mixing) Info ("AliAnalysisTaskDStarCorrelations","Single Event Analysis \n");
+	if(trackselect == 1) Info(" AliAnalysisTaskDStarCorrelations","Correlating D* with charged hadrons \n");
+	else if(trackselect == 2) Info(" AliAnalysisTaskDStarCorrelations","Correlating D* with charged kaons \n");
+	else if(trackselect == 3) Info(" AliAnalysisTaskDStarCorrelations","Correlating D* with reconstructed K0s \n");
+	else Fatal(" AliAnalysisTaskDStarCorrelations","Nothing to correlate with!");
+	if(mixing) Info (" AliAnalysisTaskDStarCorrelations","Event Mixing Analysis\n");
+	if(!mixing) Info (" AliAnalysisTaskDStarCorrelations","Single Event Analysis \n");
 
   // Create and connect containers for input/output
 	//TString dcavalue = " ";
@@ -94,7 +96,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Int_t theMCon =5, Int
 	counter+= particle;
 
 	
-	//cout << "Contname = " << contname << endl;
+	cout << "Contname = " << contname << endl;
   mgr->AddTask(task);
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
