@@ -442,15 +442,16 @@ AliEveFMDLoader::AddDigit(TEveDigitSet* signals,
   // @param ref    Reference object
   if (fUseBoxDigits) { 
     TEveBoxSet* boxes = static_cast<TEveBoxSet*>(signals);
+    Float_t fw   = w;
     Float_t zc   = (z > 0 ? -1 : 1) * scaled + z;
-    Float_t vs[] = { -w, -5*w, zc-scaled,   // Lower back  left
-		     +w, -5*w, zc-scaled,   // Lower back  right
-		     +w, +5*w, zc-scaled,   // Lower front right
-		     -w, +5*w, zc-scaled,   // Lower front left 
-		     -w, -5*w, zc+scaled,   // Upper back  left
-		     +w, -5*w, zc+scaled,   // Upper back  right
-		     +w, +5*w, zc+scaled,   // Upper front right
-		     -w, +5*w, zc+scaled }; // Upper front left
+    Float_t vs[] = { -fw, -5*fw, zc-scaled,   // Lower back  left
+		     +fw, -5*fw, zc-scaled,   // Lower back  right
+		     +fw, +5*fw, zc-scaled,   // Lower front right
+		     -fw, +5*fw, zc-scaled,   // Lower front left 
+		     -fw, -5*fw, zc+scaled,   // Upper back  left
+		     +fw, -5*fw, zc+scaled,   // Upper back  right
+		     +fw, +5*fw, zc+scaled,   // Upper front right
+		     -fw, +5*fw, zc+scaled }; // Upper front left
     Float_t ang  = TMath::ATan2(y,x);
     for (size_t i = 0; i < 8; i++) { 
       Float_t bx = vs[3*i+0];
