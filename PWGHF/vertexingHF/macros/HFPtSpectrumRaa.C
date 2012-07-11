@@ -21,8 +21,32 @@
 #endif
 
 /* $Id$ */
+///////////////////////////////////////////////////////////////////////////////
+//
+// Macro to compute the Raa, taking as inputs the output of the corrected yields
+//  and the pp reference
+//
+// R_AB =  [ ( dsigma/dpt )_AB / sigma_AB ]  / <TAB> *  ( dsigma/dpt )_pp
+//
+// 
+// Parameters: 
+//      1. ppfile = reference pp in the same pt binning
+//	2. ABfile = corrected AB yields 
+// 	3. outfile = output file name
+//	4. decay = decay as in HFSystErr class
+//      5. sigmaABCINT1B = cross section for normalization (**USE THE SAME AS ON 2.**)
+//	6. fdMethod = feed-down subtraction method (kNb, kfc)
+//      7. cc = centrality class
+//      8. Energy = colliding energy (k276,k55)
+//      9. MinHypo  = minimum energy loss hypothesis (Default 1./3.)
+//      10. MaxHypo = maximum energy loss hypothesis (Default 3.0)
+//      11. MaxRb = maximum Raa(b) hypothesis (Default 6.0, won't do anything)
+//      11. kRaavsEP = flag to compute the Raa IN/OUT of plane, divides the reference by 2.0
+//
+//  Complains to : Zaida Conesa del Valle
+//
+///////////////////////////////////////////////////////////////////////////////
 
-//enum centrality{ kpp, k010, k1020, k020, k2040, k4060, k6080, k4080, k80100 };
 enum centrality{ kpp, k07half, k010, k1020, k020, k2040, k3050, k4060, k6080, k4080, k80100 };
 enum energy{ k276, k55 };
 enum BFDSubtrMethod { kfc, kNb };
@@ -53,18 +77,17 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     Int_t decay=1,
 		     Double_t sigmaABCINT1B=54.e9,
 		     Int_t fdMethod = kNb, Int_t cc=kpp, Int_t Energy=k276,
-		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0)
+		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0, Bool_t kRaavsEP=kFALSE)
 {
 
   gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
   //
-  // Defining the Ncoll values for the given centrality class
+  // Defining the TAB values for the given centrality class
   //
-  Double_t Ncoll = 1., NcollSyst = 0.;
   Double_t Tab = 1., TabSyst = 0.;
   if ( Energy!=k276 ) {
-    printf("\n The Ncoll values for this cms energy have not yet been implemented, please do it ! \n");
+    printf("\n The Tab values for this cms energy have not yet been implemented, please do it ! \n");
     return;
   }
   if ( cc == kpp ){
@@ -75,30 +98,22 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   if ( cc == k07half ) {
     Tab = 24.81; TabSyst = 0.8037;
   } else if ( cc == k010 ) {
-    Ncoll =  1502.7; NcollSyst = 169.9;
     Tab = 23.48; TabSyst = 0.97;
   } else if ( cc == k1020 ) {
-    Ncoll =  923.26; NcollSyst = 99.6;
     Tab = 14.4318; TabSyst = 0.573289;
   } else if ( cc == k020 ) {
-    Ncoll =  1211.3; NcollSyst = 130.7;
     Tab = 18.93; TabSyst = 0.74;
   } else if ( cc == k2040 ) {
-    Ncoll =  438.8; NcollSyst = 43.9;
     Tab = 6.86; TabSyst = 0.28;
   } else if ( cc == k3050 ) {
     Tab = 3.87011; TabSyst = 0.183847;
   } else if ( cc == k4060 ) {
-    Ncoll = 128.2; NcollSyst = 12.7;
     Tab = 2.00; TabSyst = 0.11;
   } else if ( cc == k6080 ) {
-    Ncoll =  26.82; NcollSyst = 2.46;
     Tab = 0.419; TabSyst = 0.033;
   } else if ( cc == k4080 ) {
-    Ncoll =  77.1; NcollSyst = 8.0;
     Tab = 1.20451; TabSyst = 0.071843;
   } else if ( cc == k80100 ){
-    Ncoll =  4.42; NcollSyst = 0.30;
     Tab = 0.0690; TabSyst = 0.0062;
   }
 
@@ -293,6 +308,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     // Compute RAB and the statistical uncertainty
     Int_t hppbin = hSigmaPP->FindBin( pt );
     Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
+    if (kRaavsEP) sigmapp = 0.5*sigmapp;
     if ( !(sigmapp>0.) ) continue;
     RaaCharm =  ( sigmaAB / sigmaABCINT1B ) / ((Tab*1e3) * sigmapp *1e-12 ) ;
     if (fdMethod==kNb) {
@@ -332,6 +348,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     // Compute RAB and the statistical uncertainty
     Int_t hppbin = hSigmaPP->FindBin( pt );
     Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
+    if (kRaavsEP) sigmapp = 0.5*sigmapp;
     if ( !(sigmapp>0.) ) continue;
     RaaCharm =  ( sigmaAB / sigmaABCINT1B ) / ((Tab*1e3) * sigmapp *1e-12 );
 
@@ -356,12 +373,13 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     }
     //      cout << " Starting bin for pp is "<< istartPPfd <<", for AA is "<<istartABfd << endl;
     yPPh = gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd);
+    if (kRaavsEP) yPPh = yPPh*0.5;
     yPPl = gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd);
+    if (kRaavsEP) yPPl = yPPl*0.5;
     yABh = gSigmaABSystFeedDown->GetErrorYhigh(istartABfd);
     yABl = gSigmaABSystFeedDown->GetErrorYlow(istartABfd);
     
-//     RaaCharmFDhigh = ( (yABh+sigmaAB) / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp+yPPh) *1e-12 ) ;
-//     RaaCharmFDlow =  ( (sigmaAB-yABl) / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp-yPPl) *1e-12 ) ;
+
     RaaCharmFDhigh = ( sigmaABMax / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp+yPPh) *1e-12 ) ;
     RaaCharmFDlow =  ( sigmaABMin / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp-yPPl) *1e-12 ) ;
     if(printout) cout << endl<<" pt "<< pt << " Raa " << RaaCharm <<" high "<< RaaCharmFDhigh << " low "<< RaaCharmFDlow<<endl;
@@ -458,6 +476,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       // Data stat uncertainty
       //
       Double_t sigmappStat = hSigmaPP->GetBinError( hppbin );
+      if (kRaavsEP) sigmappStat = sigmappStat*0.5;
       Int_t hRABbin = hRABvsPt->FindBin( pt );
       Double_t stat = RaaCharm * TMath::Sqrt( (statUncSigmaAB/sigmaAB)*(statUncSigmaAB/sigmaAB) + 
 					      (sigmappStat/sigmapp)*(sigmappStat/sigmapp) ) ;
@@ -499,17 +518,23 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 	  break;
 	}
       }
-//       systPPUp = TMath::Sqrt( (systematicsPP->GetTotalSystErr(pt) * sigmapp)*(systematicsPP->GetTotalSystErr(pt) * sigmapp)
-// 			      + gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
-//       systPPLow = TMath::Sqrt( (systematicsPP->GetTotalSystErr(pt) * sigmapp)*(systematicsPP->GetTotalSystErr(pt) * sigmapp)
-// 			       + gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
-      Double_t dataPPUp = ExtractFDSyst( gSigmaPPSystData->GetErrorYhigh(istartPPextr), gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd) );
-      systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
-      Double_t dataPPLow = ExtractFDSyst( gSigmaPPSystData->GetErrorYlow(istartPPextr), gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd) );
-      systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
 
-      //      if(printout) 
-	cout << " pt : "<< pt<<" Syst-pp-data "<< dataPPUp/sigmapp << "%, extr unc + "<< gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %"<<endl;
+      Double_t dataPPUp = ExtractFDSyst( gSigmaPPSystData->GetErrorYhigh(istartPPextr), gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd) );
+      if (kRaavsEP) dataPPUp = ExtractFDSyst( 0.5*gSigmaPPSystData->GetErrorYhigh(istartPPextr), 0.5*gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd) );
+      systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
+      if (kRaavsEP) systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + 0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
+  
+      Double_t dataPPLow = ExtractFDSyst( gSigmaPPSystData->GetErrorYlow(istartPPextr), gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd) );
+      if (kRaavsEP) dataPPLow = ExtractFDSyst( 0.5*gSigmaPPSystData->GetErrorYlow(istartPPextr), 0.5*gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd) );
+      systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
+      if (kRaavsEP) systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + 0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
+
+
+      if(printout) {
+	if (kRaavsEP) cout << " pt : "<< pt<<" Syst-pp-data "<< dataPPUp/sigmapp << "%, extr unc + "<< 0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< 0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %"<<endl;
+	else cout << " pt : "<< pt<<" Syst-pp-data "<< dataPPUp/sigmapp << "%, extr unc + "<< gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %"<<endl;
+      }
+
       //
       // Data syst: b) Syst in PbPb
       //
