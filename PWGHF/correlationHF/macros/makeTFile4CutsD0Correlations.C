@@ -156,6 +156,7 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
   HFCorrelationCuts->SetName("AssociatedTrkCuts");
   HFCorrelationCuts->SetTitle("Cuts for associated track");
+  Float_t eta = 0.9;
 
   // Set quality cuts on tracks
   AliESDtrackCuts *esdHadrCuts = new AliESDtrackCuts("AliESDHadrCuts","default");
@@ -164,9 +165,9 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   esdHadrCuts->SetRequireITSRefit(kTRUE);
   esdHadrCuts->SetMinNClustersITS(2); //as for D*
   esdHadrCuts->SetMinNClustersTPC(80); //as for D*
-  esdHadrCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+//esdHadrCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdHadrCuts->SetMinDCAToVertexXY(0.);
-  esdHadrCuts->SetEtaRange(-0.8,0.8);
+  esdHadrCuts->SetEtaRange(-eta,eta);
   esdHadrCuts->SetPtRange(0.,1.e10);
   HFCorrelationCuts->AddTrackCuts(esdHadrCuts);
 
@@ -214,6 +215,19 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   pidObj->SetTOF(kTRUE);
   pidObj->SetCompat(kTRUE);
   HFCorrelationCuts->SetPidHF(pidObj);
+
+  //Event Mixing settings
+  HFCorrelationCuts->SetMaxNEventsInPool(200);
+  HFCorrelationCuts->SetMinNTracksInPool(1000);
+  HFCorrelationCuts->SetMinEventsToMix(8);
+  HFCorrelationCuts->SetNofPoolBins(5,5);
+
+  Double_t MBins[]={0,20,40,60,80,500};
+  Double_t * MultiplicityBins = MBins;
+  Double_t ZBins[]={-10,-5,-2.5,2.5,5,10};
+  Double_t *ZVrtxBins = ZBins;
+
+  HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
 
   // Save to *.root file
   HFCorrelationCuts->PrintAll();
