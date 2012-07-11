@@ -1047,12 +1047,6 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   }
 
   //out of bin loop
-  TH1F *hRejTracks = new TH1F("hRejTracks", "Tracks accepted/rejected; # Tracks",2,0.,2.);
-  hRejTracks->SetMinimum(0);
-  hRejTracks->GetXaxis()->SetBinLabel(1,"Accepted");
-  hRejTracks->GetXaxis()->SetBinLabel(2,"Rejected");
-  fOutputStudy->Add(hRejTracks);
-
   TH1F *hCountC = new TH1F("hist_Count_Charg", "Charged track counter; # Tracks",100,0.,100.);
   hCountC->SetMinimum(0);
   fOutputStudy->Add(hCountC);
@@ -1252,14 +1246,6 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     }
   }
 
-  if(fMixing) { //check for event mixing (events in bins)
-    TH2I* EventMixingCheckTr = new TH2I("EventMixingCheckTr","EventMixingCheckTr",5,-0.5,4.5,7,-0.5,6.5);
-    fOutputStudy->Add(EventMixingCheckTr);
-
-    TH2I* EventMixingCheckK0 = new TH2I("EventMixingCheckK0","EventMixingCheckK0",5,-0.5,4.5,7,-0.5,6.5);
-    fOutputStudy->Add(EventMixingCheckK0);
-  }
-
 }
 
 //________________________________________________________________________
@@ -1296,26 +1282,27 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
   Double_t highPt = 0; Double_t lead[3] = {0,0,0};  //infos for leading particle (pt,deltaphi)
 
   //loop over the tracks in the pool 
-  Bool_t execPool = fCorrelatorTr->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
-		
-  if(fMixing && !execPool) {
-    AliInfo("Mixed event analysis: pool is not ready");
-    return;
-  }
+  Bool_t execPoolTr = fCorrelatorTr->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
+  Bool_t execPoolKc = fCorrelatorKc->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
+  Bool_t execPoolK0 = fCorrelatorK0->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
 		
   Int_t NofEventsinPool = 1;
-  if(fMixing) NofEventsinPool = fCorrelatorTr->GetNofEventsInPool();
-		
+  if(fMixing) {
+    NofEventsinPool = fCorrelatorTr->GetNofEventsInPool(); 
+    if(!execPoolTr) {
+      AliInfo("Mixed event analysis: track pool is not ready");
+      NofEventsinPool = 0;
+    }
+  }
+
+  //Charged tracks
   for (Int_t jMix =0; jMix < NofEventsinPool; jMix++) {// loop on events in the pool; if it is SE analysis, stops at one (index not needed there)
     Bool_t analyzetracksTr = fCorrelatorTr->ProcessAssociatedTracks(jMix);// process all the tracks in the aodEvent, by applying the selection cuts
-    Bool_t analyzetracksKc = fCorrelatorKc->ProcessAssociatedTracks(jMix);
-    Bool_t analyzetracksK0 = fCorrelatorK0->ProcessAssociatedTracks(jMix);
-    if(!analyzetracksTr || !analyzetracksKc || !analyzetracksK0) {
+    if(!analyzetracksTr) {
       AliInfo("AliHFCorrelator::Cannot process the track array");
       continue;
     }
-
-    //Charged tracks		
+	
     for(Int_t iTrack = 0; iTrack<fCorrelatorTr->GetNofTracks(); iTrack++){ // looping on track candidates
 
       Bool_t runcorrelation = fCorrelatorTr->Correlate(iTrack);
@@ -1332,11 +1319,10 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
           if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0);
           if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0bar);
         }
-      }
-      if(track->Pt() < fPtThreshLow.at(ptbin) || track->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
-
       Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
       if(track->GetID() == idDaughs[0] || track->GetID() == idDaughs[1]) continue; //discards daughters of candidate
+      }
+      if(track->Pt() < fPtThreshLow.at(ptbin) || track->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
    
       FillSparsePlots(mcArray,d,origD0,PDGD0,track,kTrack); //fills for charged tracks
 
@@ -1351,8 +1337,24 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
       }
 
     } // end of tracks loop
+  } //end of event loop for fCorrelatorTr
 
-    //Charged Kaons loop
+  if(fMixing) {
+    NofEventsinPool = fCorrelatorKc->GetNofEventsInPool(); 
+    if(!execPoolKc) {
+      AliInfo("Mixed event analysis: K+/- pool is not ready");
+      NofEventsinPool = 0;
+    }
+  }
+
+  //Charged Kaons loop
+  for (Int_t jMix =0; jMix < NofEventsinPool; jMix++) {// loop on events in the pool; if it is SE analysis, stops at one (index not needed there)
+    Bool_t analyzetracksKc = fCorrelatorKc->ProcessAssociatedTracks(jMix);
+    if(!analyzetracksKc) {
+      AliInfo("AliHFCorrelator::Cannot process the K+/- array");
+      continue;
+    }  
+
     for(Int_t iTrack = 0; iTrack<fCorrelatorKc->GetNofTracks(); iTrack++){ // looping on charged kaons candidates
 
       Bool_t runcorrelation = fCorrelatorKc->Correlate(iTrack);
@@ -1361,7 +1363,7 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
       AliReducedParticle* kCharg = fCorrelatorKc->GetAssociatedParticle();
 
       if(!fMixing) {      
-  	if(kCharg->CheckSoftPi()) { //removal of soft pions
+  	if(!kCharg->CheckSoftPi()) { //removal of soft pions
           if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0);
           if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0bar);
           continue;
@@ -1369,19 +1371,34 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
           if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0);
           if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0bar);
         }
-      }
-      if(kCharg->Pt() < fPtThreshLow.at(ptbin) || kCharg->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
-
       Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
       if(kCharg->GetID() == idDaughs[0] || kCharg->GetID() == idDaughs[1]) continue; //discards daughters of candidate
-   
+      }
+      if(kCharg->Pt() < fPtThreshLow.at(ptbin) || kCharg->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
+ 
       FillSparsePlots(mcArray,d,origD0,PDGD0,kCharg,kKCharg); //fills for charged tracks
 
       if(!fMixing) N_KCharg++;
 
     } // end of charged kaons loop
+  } //end of event loop for fCorrelatorKc
 
-    //K0 loop
+  if(fMixing) {
+    NofEventsinPool = fCorrelatorK0->GetNofEventsInPool(); 
+    if(!execPoolK0) {
+      AliInfo("Mixed event analysis: K0 pool is not ready");
+      NofEventsinPool = 0;
+    }
+  }
+
+  //K0 loop
+  for (Int_t jMix =0; jMix < NofEventsinPool; jMix++) {// loop on events in the pool; if it is SE analysis, stops at one (index not needed there)
+    Bool_t analyzetracksK0 = fCorrelatorK0->ProcessAssociatedTracks(jMix);
+    if(!analyzetracksK0) {
+      AliInfo("AliHFCorrelator::Cannot process the K0 array");
+      continue;
+    }  
+
     for(Int_t iTrack = 0; iTrack<fCorrelatorK0->GetNofTracks(); iTrack++){ // looping on k0 candidates
 
       Bool_t runcorrelation = fCorrelatorK0->Correlate(iTrack);
@@ -1390,42 +1407,40 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
       AliReducedParticle* k0 = fCorrelatorK0->GetAssociatedParticle();
 
       if(k0->Pt() < fPtThreshLow.at(ptbin) || k0->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
-
-      Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
-      if(k0->GetID() == idDaughs[0] || k0->GetID() == idDaughs[1]) continue; //discards daughters of candidate
    
       FillSparsePlots(mcArray,d,origD0,PDGD0,k0,kK0); //fills for charged tracks
 
       if(!fMixing) N_Kaons++;
 
     } // end of charged kaons loop
-
-  } //end of events loop
+  } //end of event loop for fCorrelatorK0
 
   //leading track correlations fill
-  if(fReadMC) {
-    if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==421) { //D0
-      ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[1],mD0); //c and b D0
-      ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0); //c or b D0
-      if(origD0==4&&(int)lead[2]>=1&&(int)lead[2]<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0);  
-      if(origD0==5&&(int)lead[2]>=3&&(int)lead[2]<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0);  
+  if(!fMixing) {
+    if(fReadMC) {
+      if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==421) { //D0
+        ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[1],mD0); //c and b D0
+        ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0); //c or b D0
+        if(origD0==4&&(int)lead[2]>=1&&(int)lead[2]<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0);  
+        if(origD0==5&&(int)lead[2]>=3&&(int)lead[2]<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0);  
+      }
+      if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==-421) { //D0bar
+        ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[1],mD0bar);
+        ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0bar); //c or b D0
+        if(origD0==4&&(int)lead[2]>=1&&(int)lead[2]<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0bar);  
+        if(origD0==5&&(int)lead[2]>=3&&(int)lead[2]<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0bar); 
+      }
+    } else {
+        if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[0],mD0); //c and b D0
+        if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[0],mD0bar);
     }
-    if(((AliAODMCParticle*)mcArray->At(labD0))->GetPdgCode()==-421) { //D0bar
-      ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[1],mD0bar);
-      ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0bar); //c or b D0
-      if(origD0==4&&(int)lead[2]>=1&&(int)lead[2]<=2) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0bar);  
-      if(origD0==5&&(int)lead[2]>=3&&(int)lead[2]<=6) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(lead[0],mD0bar); 
-    }
-  } else {
-      if(fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[0],mD0); //c and b D0
-      if(fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) ((TH2F*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(lead[0],mD0bar);
-  }
 
-  //Fill of count histograms
-  if (!fAlreadyFilled) { 
-    ((TH1F*)fOutputStudy->FindObject("hist_Count_Charg"))->Fill(N_Charg);
-    ((TH1F*)fOutputStudy->FindObject("hist_Count_Kcharg"))->Fill(N_KCharg);
-    ((TH1F*)fOutputStudy->FindObject("hist_Count_K0"))->Fill(N_Kaons);
+    //Fill of count histograms
+    if (!fAlreadyFilled) { 
+      ((TH1F*)fOutputStudy->FindObject("hist_Count_Charg"))->Fill(N_Charg);
+      ((TH1F*)fOutputStudy->FindObject("hist_Count_Kcharg"))->Fill(N_KCharg);
+      ((TH1F*)fOutputStudy->FindObject("hist_Count_K0"))->Fill(N_Kaons);
+    }
   }
 
   fAlreadyFilled=kTRUE; //at least a D0 analyzed in the event; distribution plots already filled
@@ -1471,23 +1486,23 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Ali
       break;
     }
   }
-
-  //Fixes limits; needed to include overflow into THnSparse projections!
-  Double_t pTorig = track->Pt();
-  Double_t d0orig = track->GetImpPar();
-  Double_t ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(2)->GetXmax(); //all plots have same axes...
-  Double_t displLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(3)->GetXmax();
-  Double_t EtaLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(4)->GetXmax();
-  if(ptTrack > ptLim_Sparse) ptTrack = ptLim_Sparse-0.01;
-  if(d0Track > displLim_Sparse) d0Track = (displLim_Sparse-0.001);
-  if(deltaeta > EtaLim_Sparse) deltaeta = EtaLim_Sparse-0.01;
-  if(deltaeta < -EtaLim_Sparse) deltaeta = -EtaLim_Sparse+0.01;
   
   if(fMixing == kSE) {
 
-  //variables for filling histos
-  Double_t fillSpPhiD0[5] = {deltaphi,mD0,ptTrack,d0Track,deltaeta};
-  Double_t fillSpPhiD0bar[5] = {deltaphi,mD0bar,ptTrack,d0Track,deltaeta};
+    //Fixes limits; needed to include overflow into THnSparse projections!
+    Double_t pTorig = track->Pt();
+    Double_t d0orig = track->GetImpPar();
+    Double_t ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(2)->GetXmax(); //all plots have same axes...
+    Double_t displLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(3)->GetXmax();
+    Double_t EtaLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d",ptbin)))->GetAxis(4)->GetXmax();
+    if(ptTrack > ptLim_Sparse) ptTrack = ptLim_Sparse-0.01;
+    if(d0Track > displLim_Sparse) d0Track = (displLim_Sparse-0.001);
+    if(deltaeta > EtaLim_Sparse) deltaeta = EtaLim_Sparse-0.01;
+    if(deltaeta < -EtaLim_Sparse) deltaeta = -EtaLim_Sparse+0.01;
+  
+    //variables for filling histos
+    Double_t fillSpPhiD0[5] = {deltaphi,mD0,ptTrack,d0Track,deltaeta};
+    Double_t fillSpPhiD0bar[5] = {deltaphi,mD0bar,ptTrack,d0Track,deltaeta};
 
     if(fReadMC == 0) {
       //sparse fill for data (tracks, K+-, K0) + weighted
@@ -1545,9 +1560,14 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Ali
 
   if(fMixing == kME) {
 
-  //variables for filling histos
-  Double_t fillSpPhiD0[3] = {deltaphi,mD0,deltaeta};
-  Double_t fillSpPhiD0bar[3] = {deltaphi,mD0bar,deltaeta};
+    //Fixes limits; needed to include overflow into THnSparse projections!
+    Double_t EtaLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_EvMix",ptbin)))->GetAxis(2)->GetXmax();
+    if(deltaeta > EtaLim_Sparse) deltaeta = EtaLim_Sparse-0.01;
+    if(deltaeta < -EtaLim_Sparse) deltaeta = -EtaLim_Sparse+0.01;
+
+    //variables for filling histos
+    Double_t fillSpPhiD0[3] = {deltaphi,mD0,deltaeta};
+    Double_t fillSpPhiD0bar[3] = {deltaphi,mD0bar,deltaeta};
 
     if(fReadMC == 0) {
       //sparse fill for data (tracks, K+-, K0)
