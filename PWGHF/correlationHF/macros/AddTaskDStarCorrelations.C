@@ -3,7 +3,7 @@
 
 /* $Id$ */
 
-AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Bool_t runOnPbPb,Bool_t theMCon, Bool_t mixing, Int_t trackselect =1, Int_t usedispl =0, TString DCutObjName = "DStartoKpipiCuts_corr.root", TString TrackCutObjName = "AssocPartCuts.root")
+AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Bool_t runOnPbPb,Bool_t theMCon, Bool_t mixing, Int_t trackselect =1, Int_t usedispl =0, TString DCutObjName = "DStartoKpipiCuts_corr.root", TString TrackCutObjNamePrefix = "")
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,6 +17,11 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Bool_t runOnPbPb,Bool
     cout<<"Input file not found: exit"<<endl;
     return;
   }  
+	
+	TString TrackCutObjName = "AssocPartCuts";
+	TrackCutObjName += TrackCutObjNamePrefix;
+	TrackCutObjName += ".root";
+	
 	  TFile* filecuts2=new TFile(TrackCutObjName.Data());
 	  if(!filecuts2->IsOpen()){
 		  cout<<"Input file2 not found: exit"<<endl;
@@ -94,6 +99,13 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(Bool_t runOnPbPb,Bool
 	cutname2 += particle;
 	contname += particle;
 	counter+= particle;
+	
+	outputfile += TrackCutObjNamePrefix;
+	cutname += TrackCutObjNamePrefix;
+	cutname2 += TrackCutObjNamePrefix;
+	contname += TrackCutObjNamePrefix;
+	counter+= TrackCutObjNamePrefix;
+	
 
 	
 	cout << "Contname = " << contname << endl;

@@ -53,6 +53,7 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t IsInAcceptance();
 	Bool_t IsHadronSelected(AliAODTrack * track);
 	Bool_t CheckHadronKinematic(Double_t pt, Double_t d0); 
+	Bool_t Charge(Short_t charge, AliAODTrack* track);
 	Bool_t CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray, Int_t method=1);
 	Bool_t IsKZeroSelected(AliAODv0 *vzero, AliAODVertex *vtx1);
 	Int_t IsMCpartFromHF(Int_t label, TClonesArray*mcArray);
@@ -98,6 +99,8 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	void SetAODvZeroCuts(Float_t *cutsarray);
 	void SetvZeroCutsNames(/*TString *namearray*/);
 	void SetPidHF(AliAODPidHF* pid) {fPidObj = pid; return;}
+	void SetCharge(Short_t charge) {fCharge = charge;}
+	void SetFilterBit(Int_t bit) {fBit = bit;}
 	virtual void PrintAll();
 	virtual void PrintPoolParameters();
 	Int_t GetNVarsTrack(){return fNTrackCuts;}
@@ -131,9 +134,11 @@ private:
 	Int_t fNvZeroCuts;// array dimension
 	Float_t *fAODvZeroCuts;//[fNvZeroCuts]
 	TString * fvZeroCutsNames;//[fNvZeroCuts]
+	Int_t fBit; // filterBit
+	Short_t fCharge; // charge (+1 or -1)
 	
 	
-	ClassDef(AliHFAssociatedTrackCuts,2);
+	ClassDef(AliHFAssociatedTrackCuts,3);
 };
 
 

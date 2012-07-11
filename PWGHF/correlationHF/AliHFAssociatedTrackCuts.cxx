@@ -57,7 +57,9 @@ fAODTrackCuts(0),
 fTrackCutsNames(0),
 fNvZeroCuts(0),
 fAODvZeroCuts(0),
-fvZeroCutsNames(0)
+fvZeroCutsNames(0),
+fBit(0),
+fCharge(0) 
 
 {
 	//
@@ -90,7 +92,9 @@ fAODTrackCuts(0),
 fTrackCutsNames(0),
 fNvZeroCuts(0),
 fAODvZeroCuts(0),
-fvZeroCutsNames(0)
+fvZeroCutsNames(0),
+fBit(0),
+fCharge(0)
 
 {
 	//
@@ -119,7 +123,9 @@ fAODTrackCuts(source.fAODTrackCuts),
 fTrackCutsNames(source.fTrackCutsNames),
 fNvZeroCuts(source.fNvZeroCuts),
 fAODvZeroCuts(source.fAODvZeroCuts),
-fvZeroCutsNames(source.fvZeroCutsNames)
+fvZeroCutsNames(source.fvZeroCutsNames),
+fBit(source.fBit),
+fCharge(source.fCharge)
 {
 	//
 	// copy constructor
@@ -149,6 +155,8 @@ AliHFAssociatedTrackCuts &AliHFAssociatedTrackCuts::operator=(const AliHFAssocia
 	fNvZeroCuts=source.fNvZeroCuts;
 	fAODvZeroCuts=source.fAODvZeroCuts;
 	fvZeroCutsNames=source.fvZeroCutsNames;
+	fBit=source.fBit;
+	fCharge=source.fCharge;
 	
 	return *this;
 
@@ -179,6 +187,9 @@ Bool_t AliHFAssociatedTrackCuts::IsHadronSelected(AliAODTrack * track)
 {
 	AliESDtrack esdtrack(track);
 	if(!fESDTrackCuts->IsSelected(&esdtrack)) return kFALSE;
+	
+	if(fBit && !track->TestFilterBit(fBit)) return kFALSE; // check the filter bit
+ 
 	return kTRUE;
 	
 }
@@ -198,6 +209,16 @@ Bool_t AliHFAssociatedTrackCuts::CheckHadronKinematic(Double_t pt, Double_t d0)
 
 	
 }
+//--------------------------------------------------------------------------
+
+Bool_t AliHFAssociatedTrackCuts::Charge(Short_t charge, AliAODTrack* track) 
+{// charge is the charge to compare to (for example, a daughter of a D meson)
+	
+	if(!fCharge) return kTRUE; // if fCharge is set to 0 (no selection on the charge), returns always true
+	if(track->Charge()!= fCharge*charge) return kFALSE;
+	return kTRUE;
+}
+
 //--------------------------------------------------------------------------
 Bool_t AliHFAssociatedTrackCuts::CheckKaonCompatibility(AliAODTrack * track, Bool_t useMc, TClonesArray* mcArray, Int_t method)
 {
@@ -417,6 +438,9 @@ void AliHFAssociatedTrackCuts::PrintAll()
 	if(spd==5) cout <<  "SPD..............................................: kSecond"  << endl;
 	if(spd==6) cout <<  "SPD..............................................: kOnlySecond"  << endl;
 	if(spd==7) cout <<  "SPD..............................................: kBoth"  << endl;
+	
+	cout <<  "Filter Bit.......................................: " << fBit  << endl;
+	cout <<  "Charge...........................................: " << fCharge  << endl;
 		
 	for(Int_t j=0;j<fNTrackCuts;j++){
 		cout << fTrackCutsNames[j] << fAODTrackCuts[j] << endl;
@@ -440,13 +464,13 @@ void AliHFAssociatedTrackCuts::PrintPoolParameters()
 	printf("\nzVtx Bins:\n");
 	//Double_t zVtxbinLims[fNzVtxBins+1] = fNzVtxBins;
 	for(Int_t k=0; k<fNzVtxBins; k++){
-		printf("Bin %d..............................................: %.1f - %.1f cm\n ", k, fZvtxBins[k], fZvtxBins[k+1]);	
+		printf("Bin %d..............................................: %.1f - %.1f cm\n", k, fZvtxBins[k], fZvtxBins[k+1]);	
 	}
 	
 	printf("\nNumber of Centrality(multiplicity) Bins: %d\n", fNCentBins);
 	printf("\nCentrality(multiplicity) Bins:\n");
 	for(Int_t k=0; k<fNCentBins; k++){
-		printf("Bin %d..............................................: %.1f - %.1f\n ", k, fCentBins[k], fCentBins[k+1]);
+		printf("Bin %d..............................................: %.1f - %.1f\n", k, fCentBins[k], fCentBins[k+1]);
 	}
 	
 	
