@@ -235,7 +235,6 @@ void AliOnlineReco::StartAliEve(mIntInt_i& mi)
              Form("%s(\"mem://@*:\")", gSystem->ExpandPathName(recMacroPath.Data())),
              (char*) 0);
 
-        gSystem->Exec(Form("rm -rf %s/reco/run%d_%d",gSystem->Getenv("ONLINERECO_BASE_DIR"),run,(Int_t)procPID));
       }
 
       if (s == -1)
@@ -383,6 +382,10 @@ void AliOnlineReco::ChildProcTerm(Int_t pid, Int_t status)
   {
     Int_t run = i->first;
     fRunList->RemoveEntry(run);
+    
+    // clean (remove) run's reconstructed directory
+    gSystem->Exec(Form("rm -rf %s/reco/run%d_%d",gSystem->Getenv("ONLINERECO_BASE_DIR"),run,pid));
+      
     if (status == 0)
     {
       fRunList->AddEntrySort(TString::Format("%-20d -- PROCESSED", run), run);
