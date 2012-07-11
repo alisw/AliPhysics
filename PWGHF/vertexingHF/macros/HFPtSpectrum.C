@@ -160,12 +160,12 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   }
   else if (isDsKKpi){
     decay = 4;
-    hDirectMCpt = (TH1D*)mcfile->Get("hDsKkpipred_central");
-    hFeedDownMCpt = (TH1D*)mcfile->Get("hDsKkpifromBpred_central");
-    hDirectMCptMax = (TH1D*)mcfile->Get("hDsKkpipred_max");
-    hDirectMCptMin = (TH1D*)mcfile->Get("hDsKkpipred_min");
-    hFeedDownMCptMax = (TH1D*)mcfile->Get("hDsKkpifromBpred_max");
-    hFeedDownMCptMin = (TH1D*)mcfile->Get("hDsKkpifromBpred_min");
+    hDirectMCpt = (TH1D*)mcfile->Get("hDsPhipitoKkpipred_central");
+    hFeedDownMCpt = (TH1D*)mcfile->Get("hDsPhipitoKkpifromBpred_central_corr");
+    hDirectMCptMax = (TH1D*)mcfile->Get("hDsPhipitoKkpipred_max");
+    hDirectMCptMin = (TH1D*)mcfile->Get("hDsPhipitoKkpipred_min");
+    hFeedDownMCptMax = (TH1D*)mcfile->Get("hDsPhipitoKkpifromBpred_max_corr");
+    hFeedDownMCptMin = (TH1D*)mcfile->Get("hDsPhipitoKkpifromBpred_min_corr");
   }
   //
   hDirectMCpt->SetNameTitle("hDirectMCpt","direct MC spectra");
@@ -309,7 +309,9 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       return;
     }
   } else { systematics->SetCollisionType(0); }
-  systematics->Init(decay);
+  if(decay!=4)
+    systematics->Init(decay);
+  else systematics->Init(3);
   spectra->ComputeSystUncertainties(systematics,combineFeedDown);
 
   //
