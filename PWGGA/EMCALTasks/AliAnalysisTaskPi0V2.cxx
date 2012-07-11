@@ -597,8 +597,8 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     fEPV0CR0   = TVector2::Phi_0_2pi(fEPV0CR0);    if(fEPV0CR0>TMath::Pi())   fEPV0CR0  = fEPV0CR0 - TMath::Pi();
     fEPV0CR3   = TVector2::Phi_0_2pi(fEPV0CR3);    if(fEPV0CR3>TMath::Pi())   fEPV0CR3  = fEPV0CR3 - TMath::Pi();
 
-//cout<<" EPTPC: "<<fEPTPC<<" reso: "<<fEPTPCreso<<" -------------------"<<endl;
-//cout<<" cent: "<<fCentrality<<" fEPV0:"<<fEPV0<<" fEPV0A:"<<fEPV0A<<" fEPV0C:"<<fEPV0C<<" fEPV0Ar:"<<fEPV0Ar<<" fEPV0Cr:"<<fEPV0Cr<<" fEPV0r:"<<fEPV0AR4<<" fEPV0AR7:"<<fEPV0AR7<<" fEPV0CR0:"<<fEPV0CR0<<" fEPV0CR3:"<<fEPV0CR3<<"--------------------------------------------"<<endl;
+cout<<" EPTPC: "<<fEPTPC<<" reso: "<<fEPTPCreso<<" -------------------"<<endl;
+cout<<" cent: "<<fCentrality<<" fEPV0:"<<fEPV0<<" fEPV0A:"<<fEPV0A<<" fEPV0C:"<<fEPV0C<<" fEPV0Ar:"<<fEPV0Ar<<" fEPV0Cr:"<<fEPV0Cr<<" fEPV0r:"<<fEPV0AR4<<" fEPV0AR7:"<<fEPV0AR7<<" fEPV0CR0:"<<fEPV0CR0<<" fEPV0CR3:"<<fEPV0CR3<<"--------------------------------------------"<<endl;
 
    hEPTPC->Fill(fCentrality,  fEPTPC); 
    if(fEPTPCreso!=-1) hresoTPC->Fill(fCentrality, fEPTPCreso);
