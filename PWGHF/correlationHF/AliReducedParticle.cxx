@@ -37,7 +37,23 @@ fpT(pt),
 fMcLabel(mcLabel), 
 fid(trackid),
 fImpPar(impPar),
-fCheckSoftPi(checkSoftPi)
+fCheckSoftPi(checkSoftPi),
+fCharge(0)
+{
+	//
+	// default constructor
+	//
+}
+
+AliReducedParticle::AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge) : 
+fEta(eta), 
+fPhi(phi), 
+fpT(pt), 
+fMcLabel(mcLabel), 
+fid(trackid),
+fImpPar(impPar),
+fCheckSoftPi(checkSoftPi),
+fCharge(charge)
 {
 	//
 	// default constructor
@@ -51,7 +67,8 @@ fpT(pt),
 fMcLabel(McLabel),
 fid(0),
 fImpPar(0.),
-fCheckSoftPi(kFALSE)
+fCheckSoftPi(kFALSE),
+fCharge(0)
 {
 	//
 	// default constructor

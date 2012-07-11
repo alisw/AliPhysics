@@ -40,7 +40,6 @@
 #include "AliAODRecoCascadeHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODPidHF.h"
-//#include "AliEventPoolManager.h"
 #include "AliVParticle.h"
 #include "AliAnalysisManager.h"
 #include "AliAODInputHandler.h"
@@ -85,7 +84,6 @@ AliAnalysisTaskDStarCorrelations::AliAnalysisTaskDStarCorrelations(const Char_t*
 AliAnalysisTaskSE(name),
 
 fhandler(0x0),
-//fPoolMgr(0x0),   
 fmcArray(0x0),
 fCounter(0x0),
 fCorrelator(0x0),
@@ -148,6 +146,8 @@ void AliAnalysisTaskDStarCorrelations::Init(){
 	// Post the hadron cuts
 	PostData(4,fCuts2);
 	
+
+	
 	return;
 }
 
@@ -169,7 +169,6 @@ void AliAnalysisTaskDStarCorrelations::UserCreateOutputObjects(){
     Double_t Pi = TMath::Pi();
 	fCorrelator = new AliHFCorrelator("Correlator",fCuts2,fSystem); // fCuts2 is the hadron cut object, fSystem to switch between pp or PbPb
 	fCorrelator->SetDeltaPhiInterval((-0.5-1./32)*Pi,(1.5-1./32)*Pi); // set correct phi interval
-	//fCorrelator->SetDeltaPhiInterval(-1.57,4.71);
 	fCorrelator->SetEventMixing(fmixing); //set kFALSE/kTRUE for mixing Off/On
 	fCorrelator->SetAssociatedParticleType(fselect); // set 1/2/3 for hadron/kaons/kzeros
 	fCorrelator->SetApplyDisplacementCut(fDisplacement); //set kFALSE/kTRUE for using the displacement cut
@@ -179,14 +178,13 @@ void AliAnalysisTaskDStarCorrelations::UserCreateOutputObjects(){
 	if(!pooldef) AliInfo("Warning:: Event pool not defined properly");
 
 	
-	
+	PostData(1,fOutput); // set the outputs
+	PostData(3,fCounter); // set the outputs
 }
 //_________________________________________________
 void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 
-	cout << "USER EXEC CHECKPOINT 1" << endl;
 	
-	//Double_t pi = TMath::Pi();
 	
 	cout << " " << endl;
 	cout << "=================================================================================" << endl;
@@ -230,10 +228,10 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 		AliInfo("AliHFCorrelator didn't initialize the pool correctly or processed a bad event");
 		return;
 	}
+	((TH1D*)fOutput->FindObject("NofEvents"))->Fill(2);
 	
 	if(fmontecarlo) fCorrelator->SetMCArray(fmcArray);
 	// D* reconstruction
-	cout << "USER EXEC CHECKPOINT 2" << endl;
 	TClonesArray *arrayDStartoD0pi=0;
 
 	
@@ -268,13 +266,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	
 	Double_t mPDGD0=1.8648;//TDatabasePDG::Instance()->GetParticle(421)->Mass();
 	Double_t mPDGDstar=2.01022;//TDatabasePDG::Instance()->GetParticle(413)->Mass();
-	
-	cout << "USER EXEC CHECKPOINT 3" << endl;
-	
-	//if(fselect ==3){// check the K0 invariant mass
-	//TObjArray * fillkzerospectra = AcceptAndReduceKZero(aodEvent, 0,0);
-	//delete fillkzerospectra;
-	//}
+		
 	
 	//MC tagging for DStar
 	//D* and D0 prongs needed to MatchToMC method
@@ -391,7 +383,9 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 		
 		
 	    fCorrelator->SetTriggerParticleProperties(ptDStar,phiDStar,etaDStar); // pass to the object the necessary trigger part parameters
-				
+		
+		Short_t daughtercharge = ((AliAODTrack*)theD0particle->GetDaughter(0))->Charge();
+		fCorrelator->SetTriggerParticleDaughterCharge(daughtercharge);
 		
 		
 		Int_t trackiddaugh0 = ((AliAODTrack*)theD0particle->GetDaughter(0))->GetID();
@@ -479,14 +473,12 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 		} // end loop on events in the pool
 				
 	}// end loop on D* candidates		
-	cout << "USER EXEC CHECKPOINT 4" << endl;
 	Bool_t updated = fCorrelator->PoolUpdate();
 	if(!updated) AliInfo("Pool was not updated");
 	
 		//cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> END OF THE EVENT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
 	
-	PostData(1,fOutput); // set the outputs
-	PostData(3,fCounter); // set the outputs
+	
 		
 } //end the exec
 
@@ -520,7 +512,7 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
 	// ========================= histograms for both Data and MonteCarlo
 	
 	
-	TH1D * NofEvents = new TH1D("NofEvents","NofEvents",1,0,1);
+	TH1D * NofEvents = new TH1D("NofEvents","NofEvents",3,0,3);
 	fOutput->Add(NofEvents);
 		
 	TH2F *D0InvMass = new TH2F("D0InvMass","K#pi invariant mass distribution",300,0,30,1500,0.5,3.5);

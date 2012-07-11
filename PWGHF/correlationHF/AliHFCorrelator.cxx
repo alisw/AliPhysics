@@ -54,6 +54,7 @@ fmcArray(0x0),
 fReducedPart(0x0),
 fD0cand(0x0), 
 fhypD0(0), 
+fDCharge(0),
 
 fmixing(kFALSE),
 fmontecarlo(kFALSE),
@@ -95,6 +96,7 @@ fmcArray(0x0),
 fReducedPart(0x0),
 fD0cand(0x0), 
 fhypD0(0),
+fDCharge(0),
 
 fmixing(kFALSE),
 fmontecarlo(kFALSE),
@@ -197,24 +199,11 @@ Bool_t AliHFCorrelator::Initialize(){
 	Double_t * CentBins = fhadcuts->GetCentPoolBins();
 	Double_t poolmin=CentBins[0];
 	Double_t poolmax=CentBins[fhadcuts->GetNCentPoolBins()];
-	cout << "pool limits in centr/multipl " << poolmin << " - " << poolmax << endl; 
-/*	for (Int_t iM=0; iM<nMultBins; iM++) {
-		std::vector<AliEventPool*> evp;
-		for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
-			evp.push_back(new AliEventPool(depth, 
-										   multbin[iM], multbin[iM+1], 
-										   zvtxbin[iZ], zvtxbin[iZ+1] ));
-		}
-		fEvPool.push_back(evp);
-*/	
-//	if(TMath::Abs(zvertex)>=10 || multip>500 || multip == 0) {
-//		AliInfo(Form("Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",zvertex,multip));
-//		return kFALSE;
-//	}
+
 	
 		if(TMath::Abs(zvertex)>=10 || MultipOrCent>poolmax || MultipOrCent < poolmin) {
 		if(!fsystem)AliInfo(Form("pp Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",zvertex,MultipOrCent));
-		else AliInfo(Form("PbPb Event with Zvertex = %.2f cm and centrality = %.1f  out of pool bounds, SKIPPING",zvertex,MultipOrCent));
+		if(fsystem) AliInfo(Form("PbPb Event with Zvertex = %.2f cm and centrality = %.1f  out of pool bounds, SKIPPING",zvertex,MultipOrCent));
 
 			return kFALSE;
 		}
@@ -225,18 +214,18 @@ Bool_t AliHFCorrelator::Initialize(){
 		AliInfo(Form("No pool found for multiplicity = %f, zVtx = %f cm", MultipOrCent, zvertex));
 	    return kFALSE;
 	}
-	fPool->PrintInfo();
+	//fPool->PrintInfo();
 	return kTRUE;
 }
 
 //_____________________________________________________
 Bool_t AliHFCorrelator::ProcessEventPool(){
 	 // analysis on Mixed Events
-	cout << "AliHFCorrelator::ProcessEventPool"<< endl;
+	//cout << "AliHFCorrelator::ProcessEventPool"<< endl;
 		if(!fmixing) return kFALSE;
 		if(!fPool->IsReady()) return kFALSE;
 		if(fPool->GetCurrentNEvents()<fhadcuts->GetMinEventsToMix()) return kFALSE;
-		fPool->PrintInfo();
+	//	fPool->PrintInfo();
 		fPoolContent = fPool->GetCurrentNEvents();
 		
 		return kTRUE;
@@ -297,11 +286,14 @@ Bool_t AliHFCorrelator::PoolUpdate(){
 	if(!fmixing) return kFALSE;
 	if(!fPool) return kFALSE;
 	if(fmixing) { // update the pool for Event Mixing
-		if(fselect==1 || fselect==2)fPool->UpdatePool(AcceptAndReduceTracks(fAODEvent)); // updating the pool for hadrons
-		if(fselect==3) fPool->UpdatePool(AcceptAndReduceKZero(fAODEvent)); // updating the pool for K0s
+		TObjArray* objArr = NULL;
+		if(fselect==1 || fselect==2) objArr = (TObjArray*)AcceptAndReduceTracks(fAODEvent);
+		if(fselect==3) objArr = (TObjArray*)AcceptAndReduceKZero(fAODEvent);
+		if(objArr->GetEntriesFast()>0) fPool->UpdatePool(objArr); // updating the pool only if there are entries in the array
 	}
-
+		
 	return kTRUE;
+	
 }
 		
 //_____________________________________________________
@@ -329,7 +321,8 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
 		AliAODTrack* track = inputEvent->GetTrack(iTrack);
 		if (!track) continue;
 		if(!fhadcuts->IsHadronSelected(track)) continue; // apply ESD level selections
-
+        if(!fhadcuts->Charge(fDCharge,track)) continue; // apply selection on charge, if required
+		
 		Double_t pT = track->Pt();
 		
 		//compute impact parameter
@@ -345,10 +338,10 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
 			
 		}
 		
-
+        
 		
 		
-		if(!fhadcuts->CheckHadronKinematic(pT,d0))continue; // apply kinematic cuts
+		if(!fhadcuts->CheckHadronKinematic(pT,d0)) continue; // apply kinematic cuts
 		Bool_t rejectsoftpi = kFALSE;
 		if(fD0cand) rejectsoftpi = fhadcuts->InvMassDstarRejection(fD0cand,track,fhypD0);
 		
@@ -357,8 +350,7 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
 			if(!fhadcuts->CheckKaonCompatibility(track,fmontecarlo,fmcArray,fPIDmode)) continue; // check if it is a Kaon - data and MC
 		}
 		
-		//AliVParticle * part = (AliVParticle*)track;
-		tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi));
+		tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge()));
 	}
 	
 	
@@ -401,8 +393,11 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceKZero(AliAODEvent* inputEvent){
 			}//end if
 		} // end for
 		
-		if(DoubleCounting) {cout << "SKIPPING DOUBLE COUNTING" << endl;continue;}
-		else{ prevposID[iv0] = posID; prevnegID[iv0] = negID;}
+		if(DoubleCounting) continue;
+		else{ 
+			prevposID[iv0] = posID; 
+			prevnegID[iv0] = negID;
+		}
 		
 		if(fmontecarlo)	v0label = v0->MatchToMC(310,fmcArray, 0, pdgDgK0toPipi); //match a K0 short
 		Double_t k0pt = v0->Pt();

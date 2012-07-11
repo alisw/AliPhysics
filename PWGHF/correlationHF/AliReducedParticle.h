@@ -41,6 +41,7 @@ class AliReducedParticle : public AliVParticle
 {
 public:
     AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi);
+	AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge);
     AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel);
 
     ~AliReducedParticle();
@@ -78,7 +79,7 @@ public:
 
     virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
     
-    virtual Short_t Charge()      const { AliFatal("Not implemented"); return 0; }
+    virtual Short_t Charge()      const { return fCharge;}
    
     // PID
     virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }      
@@ -95,7 +96,8 @@ private:
     Int_t fid; // track ID
     Double_t fImpPar; // impact parameter
     Bool_t fCheckSoftPi; // check if the track is compatible with a softpion from D*
+    Short_t fCharge; // charge of the associated track
     
-    ClassDef(AliReducedParticle, 2); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+    ClassDef(AliReducedParticle, 3); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 #endif

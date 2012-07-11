@@ -53,6 +53,7 @@ class AliHFCorrelator : public TNamed
 	void SetEventMixing(Bool_t mixON){fmixing=mixON;}
 	void SetTriggerParticleProperties(Double_t ptTrig, Double_t phiTrig, Double_t etaTrig)
 	{fPtTrigger = ptTrig; fPhiTrigger = phiTrig; fEtaTrigger = etaTrig;}
+	void SetTriggerParticleDaughterCharge(Short_t charge) {fDCharge=charge;}
 	
 	
 	void SetAssociatedParticleType(Int_t type){fselect = type;}
@@ -83,15 +84,7 @@ class AliHFCorrelator : public TNamed
 	
 	Int_t GetNofTracks(){return fNofTracks;}
 	Int_t GetNofEventsInPool(){return fPoolContent;}
-	
-	/*Double_t GetAssociatedTrackPt() {return fPtAssoc;} // pt of the associated track
-	Double_t GetAssociatedTrackPhi() {return fPhiAssoc;} // phi of the associated track
-    Double_t GetAssociatedTrackEta() {return fEtaAssoc;} // Eta of the associated track
-    Int_t GetAssociatedTrackLabel() {return fTrackLabel;} // tracklabel associated track
-	Int_t GetAssociatedTrackID() {return fTrackID;} // trackID associated track
-	Double_t GetAssociatedTrackImpPar() {return fTrackImpPar;} // impact parameter of the track
-	Bool_t GetAssociatedTrackSoftPiCompatibility() {return fIsSoftPiCand;}
-	*/
+
 	Double_t GetDeltaPhi(){return fDeltaPhi;} // Delta Phi, needs to be called after the method correlate 
 	Double_t GetDeltaEta(){return fDeltaEta;} // Delta Eta
 	
@@ -118,6 +111,7 @@ class AliHFCorrelator : public TNamed
 	AliReducedParticle * fReducedPart; // reduced AOD particle;
 	AliAODRecoDecayHF2Prong* fD0cand; //D0 candidate
 	Int_t fhypD0; //hypothesis necessary for
+	Int_t fDCharge; // charge of a daughter of the D meson
 	
 	Bool_t fmixing;// switch for event mixing
 	Bool_t fmontecarlo; // switch for MonteCarlo
@@ -135,14 +129,7 @@ class AliHFCorrelator : public TNamed
 	Double_t fPtTrigger; // pt of the trigger D meson
 	Double_t fPhiTrigger; // phi of the trigger D meson
 	Double_t fEtaTrigger; // Eta of the trigger D meson
-	
-//  Double_t fPtAssoc; // pt of the trigger D meson
-//	Double_t fPhiAssoc; // phi of the trigger D meson
-//	Double_t fEtaAssoc; // Eta of the trigger D meson
-//	Int_t fTrackLabel; // tracklabel
-//	Int_t fTrackID; // trackID
-//	Double_t fTrackImpPar; // Impact parameter of the track in respect to the vertex
-//	Bool_t fIsSoftPiCand; // is kTRUE if the track  is compatible with a soft pion hypothesis (necessary for D0 analysis)
+
 	
 	Double_t fDeltaPhi; // delta phi between D meson and associated track
 	Double_t fDeltaEta; // delta eta between D meson and associated track
@@ -150,7 +137,7 @@ class AliHFCorrelator : public TNamed
 	Double_t fk0InvMass; // KZero invariant mass
 	
 	
-	ClassDef(AliHFCorrelator,1); // class for HF correlations	
+	ClassDef(AliHFCorrelator,2); // class for HF correlations	
 };
 
 

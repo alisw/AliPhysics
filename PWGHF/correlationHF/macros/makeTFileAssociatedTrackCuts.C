@@ -36,35 +36,33 @@ void makeInputHFCorrelation(){
 	HFCorrelationCuts->SetMinNTracksInPool(1000);
 	HFCorrelationCuts->SetMinEventsToMix(8);
 	
-	HFCorrelationCuts->SetNofPoolBins(3,5);
+	HFCorrelationCuts->SetNofPoolBins(5,5);
 	
-	//Double_t MBins[]={0,20,40,60,80,500};
-	Double_t MBins[]={0,1,2,3,4,500};
+	Double_t MBins[]={0,20,40,60,80,500};
 	Double_t * MultiplicityBins = MBins;
 	
-	//Double_t ZBins[]={-10,-5,-2.5,2.5,5,10};
-	Double_t ZBins[]={-10,-2.5,2.5,10};
+	Double_t ZBins[]={-10,-5,-2.5,2.5,5,10};
 	Double_t *ZVrtxBins = ZBins;
 	
 	HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
-	cout << "Crash 1 " << endl;
+	
+	
 	//______________________________ set kinematics cuts for AOD track 
 	const int nofcuts = 4;
 	Float_t* trackcutsarray;
 	trackcutsarray=new Float_t[nofcuts];
-	cout << "Crash 1.1 " << endl;
 	trackcutsarray[0] = 0.3;//track min pt
 	trackcutsarray[1] = 100.;//track max pt
-	trackcutsarray[2] = 0.;//track min impact parameter
+	trackcutsarray[2] = -1000000000.;//track min impact parameter
 	trackcutsarray[3] = 100.;//track max impact parameter
-	cout << "Crash 1.2 " << endl;
 	HFCorrelationCuts->SetNVarsTrack(nofcuts);
-	cout << "Crash 1.3 " << endl;
 	HFCorrelationCuts->SetAODTrackCuts(trackcutsarray);
 	
-	cout << "Crash 2 " << endl;
-	//______________________________ set kinematics cuts for AOD v0 
+	HFCorrelationCuts->SetCharge(0); // -1/+1 to look for opposite/same charge, 0 no charge selection 
+	HFCorrelationCuts->SetFilterBit(0); // set 0 for analysis with AOD from 2010
 	
+	
+	//______________________________ set kinematics cuts for AOD v0 
 	const int nofcuts2 = 7;
 	
 	Float_t* vzerocutsarray;
@@ -79,8 +77,8 @@ void makeInputHFCorrelation(){
 
 	HFCorrelationCuts->SetNVarsVzero(nofcuts2);
 	HFCorrelationCuts->SetAODvZeroCuts(vzerocutsarray);
+	
 	//______________________________ set PID
-	cout << "Crash 3 " << endl;
 
 	Int_t mode =1;
 	AliAODPidHF* pidObj=new AliAODPidHF();
@@ -92,7 +90,6 @@ void makeInputHFCorrelation(){
 	pidObj->SetCompat(kTRUE);
 	
 	HFCorrelationCuts->SetPidHF(pidObj);
-	cout << "Crash 4 " << endl;
 
     //______________________________ save to *.root file
 	HFCorrelationCuts->PrintAll();
@@ -101,6 +98,5 @@ void makeInputHFCorrelation(){
 	fout->cd();
 	HFCorrelationCuts->Write();
 	fout->Close();
-	cout << "Crash 5 " << endl;
 
 }
