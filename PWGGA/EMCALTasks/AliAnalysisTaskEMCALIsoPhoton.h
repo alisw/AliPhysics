@@ -43,6 +43,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
  protected:
   TRefArray             *fCaloClusters;          //!pointer to EMCal clusters
   TObjArray             *fSelPrimTracks;         //!pointer to ESD primary tracks
+  TClonesArray          *fTracks;                //!track input array
   AliESDCaloCells       *fEMCalCells;            //!pointer to EMCal cells
   AliESDtrackCuts       *fPrTrCuts;              //!pointer to hold the prim track cuts
   AliEMCALGeometry      *fGeom;                  // geometry utils
