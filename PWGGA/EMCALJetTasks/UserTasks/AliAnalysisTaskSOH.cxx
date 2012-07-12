@@ -58,8 +58,6 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
 {
   // Constructor
 
-  // Output slot #1 writes into a TH1 container
-  DefineOutput(1, TList::Class());
 }
 
 
