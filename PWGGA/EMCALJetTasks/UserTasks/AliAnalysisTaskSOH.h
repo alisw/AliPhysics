@@ -73,6 +73,6 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   AliAnalysisTaskSOH(const AliAnalysisTaskSOH&); // not implemented
   AliAnalysisTaskSOH& operator=(const AliAnalysisTaskSOH&); // not implemented
   
-  ClassDef(AliAnalysisTaskSOH, 1); // Analysis task Saehanseul Oh
+  ClassDef(AliAnalysisTaskSOH, 2); // Analysis task Saehanseul Oh
 };
 #endif
