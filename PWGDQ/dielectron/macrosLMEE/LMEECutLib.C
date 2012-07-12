@@ -32,7 +32,7 @@ class LMEECutLib {
 	AliAnalysisCuts* GetPIDCutsAna(Int_t cutSet);  
 	AliAnalysisCuts* GetPIDCutsPre(Int_t cutSet);  
 
-	AliAnalysisCuts* GetPairCuts2(Int_t cutSet);  
+	AliAnalysisCuts* GetPairCuts2(Int_t cutSet,Bool_t tooglePC=kFALSE);  
 	AliAnalysisCuts* GetPairCuts(Int_t cutSet);  
 
 	AliAnalysisCuts* GetTrackCutsAna(Int_t cutSet);  
@@ -269,7 +269,7 @@ class LMEECutLib {
 	}
 
 
-	AliAnalysisCuts* GetPairCuts2(Int_t cutSet)  {  
+	AliAnalysisCuts* GetPairCuts2(Int_t cutSet, Bool_t togglePC /*=kFALSE*/)  {  
 	  AliDielectronVarCuts* pairCuts=0x0;
 	  switch (cutSet) {
 		case kPbPb2011TPCorTOF  :
@@ -280,8 +280,14 @@ class LMEECutLib {
 		case kPbPb2011TPCandTOF :
 		case kPbPb2011TPCandTOFwide :
 		case kpp2010TPCorTOF  :
+		  if (!togglePC) {
 		  pairCuts =new AliDielectronVarCuts("Phiv Cuts","Phiv<2.0rad");
 		  pairCuts->AddCut(AliDielectronVarManager::kPhivPair, 2.0, TMath::ACos(-1.0), kTRUE); //exclude
+		  }
+		  else {
+			pairCuts =new AliDielectronVarCuts("OpeningAngle","Opening angle > .035rad");
+			pairCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0. , 0.035,kTRUE); //Logic inverted with pre-cut
+		  }
 		  break;
 		default: cout << "No Pair Cuts defined " << endl;
 	  } 

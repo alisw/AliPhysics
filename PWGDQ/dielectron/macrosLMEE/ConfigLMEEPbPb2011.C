@@ -2,7 +2,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
 void EnableMC();
 
-TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFPeri;TPCTOFCentnoRejTight;TPCTOFCentTight;TPCTOFCentPhiV;TPCTOFSemiCentPhiV;TPCTOFPeriPhiV");
+TString names=("noPairing;TPCTOFCentnoRej;TPCTOFSemiCentnoRej;TPCTOFPerinoRej;TPCTOFCent;TPCTOFSemiCent;TPCTOFPeri;TPCTOFCentnoRejTight;TPCTOFCentTight;TPCTOFCentPhiV;TPCTOFSemiCentPhiV;TPCTOFPeriPhiV;TPCTOFCentOA;TPCTOFSemiCentOA;TPCTOFPeriOA");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
@@ -102,6 +102,22 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE, Boo
 	selectedCentrality = LMEECutLib::kPbPb2011Peripheral;
 	rejectionStep = kFALSE;
   }
+//OA:
+  else if (cutDefinition==12) {
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedCentrality = LMEECutLib::kPbPb2011Central;
+	rejectionStep = kFALSE;
+  }
+  else if (cutDefinition==13) {
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedCentrality = LMEECutLib::kPbPb2011SemiCentral;
+	rejectionStep = kFALSE;
+  }
+  else if (cutDefinition==14) {
+	selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
+	selectedCentrality = LMEECutLib::kPbPb2011Peripheral;
+	rejectionStep = kFALSE;
+  }
 
   else Semi{
 	cout << " =============================== " << endl;
@@ -125,7 +141,10 @@ AliDielectron* ConfigLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE, Boo
 	else { //No Prefilter, no Pairfilter
 		die->GetTrackFilter().AddCuts( LMCL->GetPIDCutsAna(selectedPID) );
 		if ((cutDefinition >=9) &&  (cutDefinition <=11)) {
-		die->GetPairFilter().AddCuts(LMCL->GetPairCuts2(selectedPID));
+		die->GetPairFilter().AddCuts(LMCL->GetPairCuts2(selectedPID,kFALSE));
+		}
+		if ((cutDefinition >=12) &&  (cutDefinition <=14)) {
+		die->GetPairFilter().AddCuts(LMCL->GetPairCuts2(selectedPID,kTRUE));
 		}
 	}
 	//Introduce NULL-check for pp?
