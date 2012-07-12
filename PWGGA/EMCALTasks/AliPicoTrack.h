@@ -22,6 +22,7 @@ class AliPicoTrack: public AliVTrack {
   Double_t Pt()                        const { return fPt;                   }
   Double_t P()                         const { return fPt*TMath::CosH(fEta); }
   Bool_t   PxPyPz(Double_t p[3])       const { p[0]=Px();p[1]=Py();p[2]=Pz(); return 1;         }
+  Bool_t   GetPxPyPz(Double_t p[3])    const { p[0]=Px();p[1]=Py();p[2]=Pz(); return 1;         }
   Double_t Xv()                        const { return 0.;      }
   Double_t Yv()                        const { return 0.;      }
   Double_t Zv()                        const { return 0.;      }
