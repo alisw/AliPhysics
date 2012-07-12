@@ -230,7 +230,11 @@ AliForwardQATask::GetESDEvent()
   //
   // Get the ESD event. IF this is the first event, initialise
   //
-  if (IsZombie()) return 0;
+  DGUARD(fDebug,2,"Get the ESD event");
+  if (IsZombie()) {
+    DMSG(fDebug,3,"We're a Zombie - bailing out");
+    return 0;
+  }
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) {
     AliWarning("No ESD event found for input event");
@@ -323,6 +327,7 @@ AliForwardQATask::UserExec(Option_t*)
   // Parameters:
   //    option Not used
   //  
+  DGUARD(fDebug,1,"Process the input event");
 
   // static Int_t cnt = 0;
   // cnt++;
@@ -353,13 +358,20 @@ AliForwardQATask::UserExec(Option_t*)
   UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
 					       ivz, vz, cent, nClusters);
   
-  if (found & AliFMDEventInspector::kNoEvent)    return;
-  if (found & AliFMDEventInspector::kNoTriggers) return;
-  if (found & AliFMDEventInspector::kNoSPD)      return;
-  if (found & AliFMDEventInspector::kNoFMD)      return;
-  if (found & AliFMDEventInspector::kNoVertex)   return;
-  if (triggers & AliAODForwardMult::kPileUp)     return;
-  if (found & AliFMDEventInspector::kBadVertex)  return;
+  Bool_t ok = true;
+  if (found & AliFMDEventInspector::kNoEvent)    ok = false;
+  if (found & AliFMDEventInspector::kNoTriggers) ok = false;
+  if (found & AliFMDEventInspector::kNoSPD)      ok = false;
+  if (found & AliFMDEventInspector::kNoFMD)      ok = false;
+  if (found & AliFMDEventInspector::kNoVertex)   ok = false;
+  if (triggers & AliAODForwardMult::kPileUp)     ok = false;
+  if (found & AliFMDEventInspector::kBadVertex)  ok = false;
+  if (!ok) { 
+    DMSG(fDebug,2,"Event failed selection: %s", 
+	 AliFMDEventInspector::CodeString(found));
+    return;
+  }
+  DMSG(fDebug,2,"Event triggers: %s", AliAODForwardMult::GetTriggerString(triggers));
 
   // We we do not want to use low flux specific code, we disable it here. 
   if (!fEnableLowFlux) lowFlux = false;

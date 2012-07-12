@@ -5,7 +5,6 @@
 #include <TH1D.h>
 #include <THStack.h>
 #include <TList.h>
-#include <TParameter.h>
 #include <AliAnalysisManager.h>
 #include <AliAODEvent.h>
 #include <AliAODHandler.h>
@@ -280,9 +279,8 @@ AliBasedNdetaTask::SetNormalizationScheme(UShort_t scheme)
   fSchemeString->SetTitle(tit);
   fSchemeString->SetUniqueID(fNormalizationScheme);
 #else 
-  if (!fSchemeString) 
-    fSchemeString = new TParameter<int>("scheme", scheme);
-  fSchemeString->SetUniqueID(fNormalizationScheme);
+  if (fSchemeString) delete fSchemeString;
+  fSchemeString = AliForwardUtil::MakeParameter("scheme", scheme);
 #endif
 }
 //________________________________________________________________________
@@ -311,9 +309,8 @@ AliBasedNdetaTask::SetTriggerMask(UShort_t mask)
   fTriggerString->SetTitle(tit);
   fTriggerString->SetUniqueID(fTriggerMask);
 #else 
-  if (!fTriggerString) 
-    fTriggerString = new TParameter<int>("trigger", fTriggerMask);
-  fTriggerString->SetUniqueID(fTriggerMask);  
+  if (fTriggerString) delete fTriggerString;
+  fTriggerString = AliForwardUtil::MakeParameter("trigger", fTriggerMask);
 #endif
 }
 
@@ -460,16 +457,11 @@ AliBasedNdetaTask::UserExec(Option_t *)
   }
 #else
   if (!fSNNString) { 
-    UShort_t sNN = forward->GetSNN();
-    fSNNString = new TParameter<int>("sNN", sNN);
-    fSNNString->SetUniqueID(sNN);
-    fSums->Add(fSNNString);
-  
-    UShort_t sys = forward->GetSystem();
-    fSysString = new TParameter<int>("sys", sys);
-    fSysString->SetUniqueID(sys);
-    fSums->Add(fSysString);
+    fSNNString = AliForwardUtil::MakeParameter("sNN", forward->GetSNN());
+    fSysString = AliForwardUtil::MakeParameter("sys", forward->GetSystem());
 
+    fSums->Add(fSNNString);
+    fSums->Add(fSysString);
     fSums->Add(fSchemeString);
     fSums->Add(fTriggerString);
 
@@ -652,11 +644,11 @@ AliBasedNdetaTask::Terminate(Option_t *)
   fOutput->SetName(Form("%s_result", GetName()));
   fOutput->SetOwner();
   
-  fSNNString     = static_cast<TParameter<int>*>(fSums->FindObject("sNN"));
-  fSysString     = static_cast<TParameter<int>*>(fSums->FindObject("sys"));
+  fSNNString     = fSums->FindObject("sNN");
+  fSysString     = fSums->FindObject("sys");
   fCentAxis      = static_cast<TAxis*>(fSums->FindObject("centAxis"));
-  fSchemeString  = static_cast<TParameter<int>*>(fSums->FindObject("scheme"));
-  fTriggerString = static_cast<TParameter<int>*>(fSums->FindObject("trigger"));
+  fSchemeString  = fSums->FindObject("scheme");
+  fTriggerString = fSums->FindObject("trigger");
 
   if(fSysString && fSNNString && 
      fSysString->GetUniqueID() == AliForwardUtil::kPP)
@@ -796,7 +788,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   fOutput->Add(vtxAxis);
 
   // Output trigger efficiency and shape correction 
-  fOutput->Add(new TParameter<Double_t>("triggerEff", fTriggerEff)); 
+  fOutput->Add(AliForwardUtil::MakeParameter("triggerEff", fTriggerEff));
   if (fShapeCorr) fOutput->Add(fShapeCorr);
 
   TNamed* options = new TNamed("options","");
@@ -863,10 +855,12 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
 		       fTriggerMask == AliAODForwardMult::kNSD ? "nsd" :
 		       fTriggerMask == AliAODForwardMult::kInelGt0 ?
 		       "inelgt0" : "all"));
-  TParameter<float>* eff = 0;
-  if (fNormalizationScheme & kTriggerEfficiency) 
-    eff = static_cast<TParameter<float>*>(fin->Get(effName));
-  Double_t trigEff = eff ? eff->GetVal() : 1;
+
+  Double_t trigEff = 1; 
+  if (fNormalizationScheme & kTriggerEfficiency) { 
+    TObject* eff = fin->Get(effName);
+    if (eff) AliForwardUtil::GetParameter(eff, trigEff);
+  }
   if (fTriggerEff != 1) SetTriggerEff(trigEff);
   if (fTriggerEff < 0)  fTriggerEff = 1;
 

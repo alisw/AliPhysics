@@ -162,6 +162,21 @@ public:
    */
   static Bool_t CheckForTask(const char* clsOrName, Bool_t cls=true);
 
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Member functions to store and retrieve analysis parameters 
+   */
+  static TObject* MakeParameter(const char* name, UShort_t value);
+  static TObject* MakeParameter(const char* name, Int_t value);
+  static TObject* MakeParameter(const char* name, Double_t value);
+  static TObject* MakeParameter(const char* name, Bool_t value);
+  static void GetParameter(TObject* o, UShort_t& value);
+  static void GetParameter(TObject* o, Int_t& value);
+  static void GetParameter(TObject* o, Double_t& value);
+  static void GetParameter(TObject* o, Bool_t& value);
+  /* @} */
+
   /** 
    * @{ 
    * @name Energy stragling functions 

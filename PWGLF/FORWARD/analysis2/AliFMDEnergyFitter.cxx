@@ -49,7 +49,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter()
   // 
   // Default Constructor - do not use 
   //
-  DGUARD(fDebug, 0, "Default CTOR of AliFMDEnergyFitter");
+  DGUARD(fDebug, 1, "Default CTOR of AliFMDEnergyFitter");
 }
 
 //____________________________________________________________________
@@ -78,7 +78,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
   // Parameters:
   //    title Title of object  - not significant 
   //
-  DGUARD(fDebug, 0, "Named CTOR of AliFMDEnergyFitter: %s", title);
+  DGUARD(fDebug, 1, "Named CTOR of AliFMDEnergyFitter: %s", title);
   fEtaAxis.SetName("etaAxis");
   fEtaAxis.SetTitle("#eta");
   fCentralityAxis.SetName("centralityAxis");
@@ -116,7 +116,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const AliFMDEnergyFitter& o)
   // Parameters:
   //    o Object to copy from 
   //
-  DGUARD(fDebug, 0, "Copy CTOR of AliFMDEnergyFitter");
+  DGUARD(fDebug, 1, "Copy CTOR of AliFMDEnergyFitter");
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -293,6 +293,7 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
   Int_t icent = fCentralityAxis.FindBin(cent);
   if (icent < 1 || icent > fCentralityAxis.GetNbins()) icent = 0;
 
+  UShort_t nFills = 0;
   for(UShort_t d = 1; d <= 3; d++) {
     Int_t nRings = (d == 1 ? 1 : 2);
     for (UShort_t q = 0; q < nRings; q++) {
@@ -316,12 +317,14 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
 	  if (ieta < 1 || ieta >  fEtaAxis.GetNbins()) continue; 
 
 	  histos->Fill(empty, ieta-1, icent, mult);
-
+	  nFills++;
 	} // for strip
       } // for sector
     } // for ring 
   } // for detector
 
+  DMSG(fDebug, 1, "Found a total of %d signals for c=%f, and %sempty event", 
+       nFills, cent, (empty ? "" : "non-"));
   return kTRUE;
 }
 
@@ -610,7 +613,7 @@ AliFMDEnergyFitter::RingHistos::Fill(Bool_t empty, Int_t ieta,
   //    icent  Centrality bin (1-based)
   //    mult   Signal 
   //
-  DGUARD(fDebug, 2, "Filling in AliFMDEnergyFitter::RingHistos");
+  DGUARD(fDebug, 10, "Filling in AliFMDEnergyFitter::RingHistos");
   if (empty) { 
     fEmpty->Fill(mult);
     return;

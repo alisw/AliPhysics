@@ -341,6 +341,13 @@ AliFMDCorrector::DefineOutput(TList* dir)
   TList* d = new TList;
   d->SetName(GetName());
   dir->Add(d);
+
+  d->Add(AliForwardUtil::MakeParameter("secondary", fUseSecondaryMap));
+  d->Add(AliForwardUtil::MakeParameter("vertexBias", fUseVertexBias));
+  d->Add(AliForwardUtil::MakeParameter("acceptance", fUseAcceptance));
+  d->Add(AliForwardUtil::MakeParameter("merging", fUseMergingEfficiency));
+  
+
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {

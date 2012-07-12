@@ -39,21 +39,6 @@ namespace {
   {
     return Form("nEvents%s%s", (tr ? "Tr" : ""), (vtx ? "Vtx" : ""));
   }
-  /*const char* GetHitsName(UShort_t d, Char_t r) 
-  {
-    return Form("hitsSPD%d%c", d, r);
-  }
-  const char* GetStripsName(UShort_t d, Char_t r)
-  {
-    return Form("stripsSPD%d%c", d, r);
-  }
-  const char* GetPrimaryName(Char_t r, Bool_t trVtx)
-  {
-    return Form("primaries%s%s", 
-		((r == 'I' || r == 'i') ? "Inner" : "Outer"), 
-		(trVtx ? "TrVtx" : "All"));
-		}
-  */
 }
 
 //====================================================================
@@ -391,6 +376,7 @@ AliCentralMCCorrectionsTask::UserExec(Option_t*)
   UShort_t iVzMc;    // Vertex bin from MC
   Double_t vZMc;     // Z coordinate of IP vertex from MC
   Double_t b;        // Impact parameter
+  Double_t cMC;      // Centrality estimate from b
   Int_t    nPart;    // Number of participants 
   Int_t    nBin;     // Number of binary collisions 
   Double_t phiR;     // Reaction plane from MC
@@ -399,7 +385,7 @@ AliCentralMCCorrectionsTask::UserExec(Option_t*)
   UInt_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, vZ, 
 				     cent, nClusters);
   fInspector.ProcessMC(mcEvent, triggers, iVzMc, vZMc, 
-		       b, nPart, nBin, phiR);
+		       b, cMC, nPart, nBin, phiR);
 
   Bool_t isInel   = triggers & AliAODForwardMult::kInel;
   Bool_t hasVtx   = retESD == AliFMDMCEventInspector::kOk;

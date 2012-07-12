@@ -86,6 +86,7 @@ public:
    *                  means outside of the defined vertex range
    * @param vz        On return, the z position of the interaction
    * @param b         On return, impact parameter [fm] (if available)
+   * @param b         On return, centrality estimate [%] (if available)
    * @param npart     On return, number of participants (if available)
    * @param nbin      On return, number of binary collisions (if available)
    * @param phiR      On return, reaction plane angle (if available)
@@ -97,6 +98,7 @@ public:
 		   UShort_t&         ivz, 
 		   Double_t&         vz,
 		   Double_t&         b,
+		   Double_t&         c,
 		   Int_t&            npart, 
 		   Int_t&            nbin,
 		   Double_t&         phiR);
@@ -137,17 +139,6 @@ public:
   virtual void ReadProductionDetails(AliMCEvent* event);
 protected:
   /** 
-   * Read centrality from event 
-   * 
-   * @param esd  Event 
-   * @param cent On return, the centrality or negative if not found
-   * @param qual Quality flag 
-   * 
-   * @return False on error, true otherwise 
-   */
-  virtual Bool_t ReadCentrality(const AliESDEvent* esd, Double_t& cent,
-				UShort_t& qual) const;
-  /** 
    * Check if the event is single diffractive 
    * 
    * @param stack  Stack of MC particles 
@@ -159,6 +150,8 @@ protected:
   Bool_t IsSingleDiffractive(AliStack* stack,
 			     Double_t xiMin=0, 
 			     Double_t xiMax=1./81) const;
+  virtual Bool_t CheckFastPartition(bool) const { return false; }
+
   TH1F* fHVertex;  // Histogram of vertex 
   TH1F* fHPhiR;    // Histogram of event plane 
   TH1F* fHB;       // Histogram of impact parameter 
