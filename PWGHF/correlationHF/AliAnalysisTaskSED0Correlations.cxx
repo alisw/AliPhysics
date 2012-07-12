@@ -1047,17 +1047,19 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   }
 
   //out of bin loop
-  TH1F *hCountC = new TH1F("hist_Count_Charg", "Charged track counter; # Tracks",100,0.,100.);
-  hCountC->SetMinimum(0);
-  fOutputStudy->Add(hCountC);
+  if(!fMixing) {
+    TH1F *hCountC = new TH1F("hist_Count_Charg", "Charged track counter; # Tracks",100,0.,100.);
+    hCountC->SetMinimum(0);
+    fOutputStudy->Add(hCountC);
 
-  TH1F *hCountH = new TH1F("hist_Count_Kcharg", "Hadrons counter; # Tracks",20,0.,20.);
-  hCountH->SetMinimum(0);
-  fOutputStudy->Add(hCountH);
+    TH1F *hCountH = new TH1F("hist_Count_Kcharg", "Hadrons counter; # Tracks",20,0.,20.);
+    hCountH->SetMinimum(0);
+    fOutputStudy->Add(hCountH);
 
-  TH1F *hCountK = new TH1F("hist_Count_K0", "Kaons counter; # Tracks",20,0.,20.);
-  hCountK->SetMinimum(0);
-  fOutputStudy->Add(hCountK);
+    TH1F *hCountK = new TH1F("hist_Count_K0", "Kaons counter; # Tracks",20,0.,20.);
+    hCountK->SetMinimum(0);
+    fOutputStudy->Add(hCountK);
+  }
 
   if (fFillGlobal) { //all-events plots
     //pt distributions
@@ -1073,22 +1075,24 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     hPtKAll->SetMinimum(0);
     fOutputStudy->Add(hPtKAll);
 
-    //phi distributions
-    TH1F *hPhiDistCAll = new TH1F("hist_PhiDistr_Charg", "Charged track phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
-    hPhiDistCAll->SetMinimum(0);
-    fOutputStudy->Add(hPhiDistCAll);
+    if(!fMixing) {
+      //phi distributions
+      TH1F *hPhiDistCAll = new TH1F("hist_PhiDistr_Charg", "Charged track phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+      hPhiDistCAll->SetMinimum(0);
+      fOutputStudy->Add(hPhiDistCAll);
 
-    TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Hadrons phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
-    hPhiDistHAll->SetMinimum(0);
-    fOutputStudy->Add(hPhiDistHAll);
+      TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Hadrons phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+      hPhiDistHAll->SetMinimum(0);
+      fOutputStudy->Add(hPhiDistHAll);
 
-    TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "Kaons phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
-    hPhiDistKAll->SetMinimum(0);
-    fOutputStudy->Add(hPhiDistKAll);
+      TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "Kaons phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+      hPhiDistKAll->SetMinimum(0);
+      fOutputStudy->Add(hPhiDistKAll);
 
-    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
-    hPhiDistDAll->SetMinimum(0);
-    fOutputStudy->Add(hPhiDistDAll);
+      TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+      hPhiDistDAll->SetMinimum(0);
+      fOutputStudy->Add(hPhiDistDAll);
+    }
 
     //K0 Invariant Mass plots
     TH2F *hK0MassInv = new TH2F("hK0MassInv", "K0 invariant mass; Invariant mass (MeV/c^{2}); pT (GeV/c)",200,0.4,0.6,100,0.,10.);
@@ -1097,9 +1101,9 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   }
 
   //for MC analysis only
-  if (fReadMC) {
+  for(Int_t i=0;i<fNPtBinsCorr;i++) {
 
-    for(Int_t i=0;i<fNPtBinsCorr;i++){
+    if (fReadMC && !fMixing) {
 
       //displacement histos
       namePlot="histDispl_K0_Bin"; namePlot+=i;
@@ -1235,7 +1239,9 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
       hOrigin_K->GetXaxis()->SetBinLabel(8,"c hadr.");
       hOrigin_K->GetXaxis()->SetBinLabel(9,"b hadr.");
       fOutputStudy->Add(hOrigin_K);
+    }
 
+    if (fReadMC) {
       //origin of D0 histos
       namePlot="histOrig_D0_Bin";  namePlot+=i;
       TH1F *hOrigin_D0 = new TH1F(namePlot.Data(), "Origin of D0",2,0.,2.);
@@ -1245,7 +1251,6 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
       fOutputStudy->Add(hOrigin_D0);
     }
   }
-
 }
 
 //________________________________________________________________________
@@ -1330,6 +1335,8 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
 
       //retrieving leading info...
       if(track->Pt() > highPt) {
+        if(fReadMC && track->GetLabel()<1) continue;
+        if(fReadMC && !(AliAODMCParticle*)mcArray->At(track->GetLabel())) return;
         lead[0] = fCorrelatorTr->GetDeltaPhi();
         lead[1] = fCorrelatorTr->GetDeltaEta();
         lead[2] = fReadMC ? CheckTrackOrigin(mcArray,(AliAODMCParticle*)mcArray->At(track->GetLabel())) : 0;
@@ -1459,6 +1466,8 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Ali
   Double_t mD0, mD0bar, deltaphi = 0., deltaeta = 0.;
   d->InvMassD0(mD0,mD0bar);
 
+  if (fReadMC && track->GetLabel()<1) return;
+  if (fReadMC && !(AliAODMCParticle*)mcArray->At(track->GetLabel())) return;
   Double_t ptTrack = track->Pt();
   Double_t d0Track = type!=kK0 ? track->GetImpPar() : 0.;
   Double_t phiTr = track->Phi();
