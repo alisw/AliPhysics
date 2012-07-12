@@ -14,7 +14,6 @@
 #include <TProfile.h>
 #include <THStack.h>
 #include <TROOT.h>
-#include <TParameter.h>
 #include <iostream>
 #include <iomanip>
 
@@ -435,7 +434,7 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
   //    r     Ring 
   //    iEta  Eta bin 
   //
-  DGUARD(fDebug, 3, "Find maximum weight in FMD density calculator");
+  DGUARD(fDebug, 10, "Find maximum weight in FMD density calculator");
   if(!cor) return -1; 
 
   AliFMDCorrELossFit::ELossFit* fit = cor->GetFit(d,r,iEta);
@@ -657,7 +656,7 @@ AliFMDDensityCalculator::Correction(UShort_t d,
   // Return:
   //    
   //
-  DGUARD(fDebug, 3, "Apply correction in FMD density calculator");
+  DGUARD(fDebug, 10, "Apply correction in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
 
   Float_t correction = 1; 
@@ -833,6 +832,7 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
 
   // TNamed* sigma  = new TNamed("sigma",
   // (fIncludeSigma ? "included" : "excluded"));
+#if 0
   TNamed* maxP   = new TNamed("maxParticle", Form("%d", fMaxParticles));
   TNamed* method = new TNamed("method", 
 			      (fUsePoisson ? "Poisson" : "Energy loss"));
@@ -843,7 +843,14 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   TNamed* etaL   = new TNamed("etaLumping", Form("%d", fEtaLumping));
   TNamed* phiL   = new TNamed("phiLumping", Form("%d", fPhiLumping));
   // TParameter<double>* nxi = new TParameter<double>("nXi", fNXi);
-
+#else
+  TObject* maxP   = AliForwardUtil::MakeParameter("maxParticle", fMaxParticles);
+  TObject* method = AliForwardUtil::MakeParameter("method", fUsePoisson);
+  TObject* phiA   = AliForwardUtil::MakeParameter("phiAcceptance", 
+						  fUsePhiAcceptance);
+  TObject* etaL   = AliForwardUtil::MakeParameter("etaLumping", fEtaLumping);
+  TObject* phiL   = AliForwardUtil::MakeParameter("phiLumping", fPhiLumping);
+#endif
   // d->Add(sigma);
   d->Add(maxP);
   d->Add(method);
@@ -1137,8 +1144,7 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
   y.SetTitle("sector");
   fPoisson.Define(x, y);
 
-  TParameter<double>* cut = new TParameter<double>("cut", fMultCut);
-  d->Add(cut);
+  d->Add(AliForwardUtil::MakeParameter("cut", fMultCut));
 }
 
 //____________________________________________________________________

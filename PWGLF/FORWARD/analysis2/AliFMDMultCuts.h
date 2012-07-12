@@ -100,6 +100,15 @@ public:
    */
   void Output(TList* l, const char* name=0) const;
   /** 
+   * Read in cuts stored in file 
+   * 
+   * @param l      List to read from 
+   * @param name   Name of possible sub-list
+   * 
+   * @return true on success
+   */
+  Bool_t Input(TList* l, const char* name);
+  /** 
    * Get a fixed cut value 
    * 
    * @param d Detector

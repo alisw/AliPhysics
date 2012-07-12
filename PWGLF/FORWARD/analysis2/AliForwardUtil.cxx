@@ -15,6 +15,7 @@
 #include <AliPhysicsSelection.h>
 #include <AliTriggerAnalysis.h>
 #include <AliMultiplicity.h>
+#include <TParameter.h>
 #include <TH2D.h>
 #include <TH1I.h>
 #include <TF1.h>
@@ -212,7 +213,62 @@ Bool_t AliForwardUtil::CheckForTask(const char* clsOrName, Bool_t cls)
   return false;
 }
 
-  
+//_____________________________________________________________________
+TObject* AliForwardUtil::MakeParameter(const Char_t* name, UShort_t value)
+{
+  TParameter<int>* ret = new TParameter<int>(name, value);
+  ret->SetUniqueID(value);
+  return ret;
+}
+//_____________________________________________________________________
+TObject* AliForwardUtil::MakeParameter(const Char_t* name, Int_t value)
+{
+  TParameter<int>* ret = new TParameter<int>(name, value);
+  ret->SetUniqueID(value);
+  return ret;
+}
+//_____________________________________________________________________
+TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
+{
+  TParameter<double>* ret = new TParameter<double>(name, value);
+  Float_t v = value;
+  ret->SetUniqueID(*reinterpret_cast<UInt_t*>(&v));
+  return ret;
+}
+//_____________________________________________________________________
+TObject* AliForwardUtil::MakeParameter(const Char_t* name, Bool_t value)
+{
+  TParameter<bool>* ret = new TParameter<bool>(name, value);
+  ret->SetUniqueID(value);
+  return ret;
+}
+
+//_____________________________________________________________________
+void AliForwardUtil::GetParameter(TObject* o, UShort_t& value)
+{
+  if (!o) return;
+  value = o->GetUniqueID();
+}
+//_____________________________________________________________________
+void AliForwardUtil::GetParameter(TObject* o, Int_t& value)
+{
+  if (!o) return;
+  value = o->GetUniqueID();
+}
+//_____________________________________________________________________
+void AliForwardUtil::GetParameter(TObject* o, Double_t& value)
+{
+  if (!o) return;
+  UInt_t  i = o->GetUniqueID();
+  Float_t v = *reinterpret_cast<Float_t*>(&i);
+  value = v;
+}
+//_____________________________________________________________________
+void AliForwardUtil::GetParameter(TObject* o, Bool_t& value)
+{
+  if (!o) return;
+  value = o->GetUniqueID();
+}
   
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Double_t zvtx)

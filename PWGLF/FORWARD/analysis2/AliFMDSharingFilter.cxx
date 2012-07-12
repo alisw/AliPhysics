@@ -68,7 +68,7 @@ AliFMDSharingFilter::AliFMDSharingFilter()
   // 
   // Default Constructor - do not use 
   //
-  DGUARD(fDebug,0, "Default CTOR for AliFMDSharingFilter");
+  DGUARD(fDebug,1, "Default CTOR for AliFMDSharingFilter");
 }
 
 //____________________________________________________________________
@@ -94,7 +94,7 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   // Parameters:
   //    title Title of object  - not significant 
   //
-  DGUARD(fDebug,0, "Named CTOR for AliFMDSharingFilter: %s", title);
+  DGUARD(fDebug,1, "Named CTOR for AliFMDSharingFilter: %s", title);
   fRingHistos.SetName(GetName());
   fRingHistos.SetOwner();
   
@@ -132,7 +132,7 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
   // Parameters:
   //    o Object to copy from 
   //
-  DGUARD(fDebug,0, "Copy CTOR for AliFMDSharingFilter");
+  DGUARD(fDebug,1, "Copy CTOR for AliFMDSharingFilter");
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -270,6 +270,9 @@ AliFMDSharingFilter::Init(const TAxis& axis)
 }
 
 //____________________________________________________________________
+#define ETA2COS(ETA) \
+  TMath::Cos(2*TMath::ATan(TMath::Exp(-TMath::Abs(ETA))))
+
 Bool_t
 AliFMDSharingFilter::Filter(const AliESDFMD& input, 
 			    Bool_t           lowFlux,
@@ -299,6 +302,9 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
   Int_t nCandidate = 0;
   Int_t nMerged    = 0;
   Int_t nSummed    = 0;
+  Int_t nSingle    = 0;
+  Int_t nDouble    = 0;
+  Int_t nTriple    = 0;
 
   Status status[512];
   
@@ -319,8 +325,8 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	Bool_t usedPrev   = kFALSE;
 #endif	
 	//For simple merging
-	Bool_t used = kFALSE;
-	Double_t eTotal = -1;
+	Bool_t   used            = kFALSE;
+	Double_t eTotal          = -1;
 	Int_t    nDistanceBefore = -1;
 	Int_t    nDistanceAfter  = -1;
 	Bool_t   twoLow = kFALSE;
@@ -329,38 +335,31 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  nDistanceAfter++;
 	  
 	  output.SetMultiplicity(d,r,s,t,0.);
-	  Float_t mult = SignalInStrip(input,d,r,s,t);
-	  //For simple merging
-	  Float_t multNext     = 0;
-	  Float_t multNextNext = 0;
-	  
-	  if(t<nstr-1) multNext = SignalInStrip(input,d,r,s,t+1);
-	  if(t<nstr-2) multNextNext = SignalInStrip(input,d,r,s,t+2);
-	  if(multNext ==  AliESDFMD::kInvalidMult) multNext = 0;
-	  if(multNextNext ==  AliESDFMD::kInvalidMult) multNextNext = 0;
+	  Float_t mult         = SignalInStrip(input,d,r,s,t);
+	  Float_t multNext     = (t<nstr-1) ? SignalInStrip(input,d,r,s,t+1) :0;
+	  Float_t multNextNext = (t<nstr-2) ? SignalInStrip(input,d,r,s,t+2) :0;
+	  if (multNext     ==  AliESDFMD::kInvalidMult) multNext     = 0;
+	  if (multNextNext ==  AliESDFMD::kInvalidMult) multNextNext = 0;
 	  if(!fThreeStripSharing) multNextNext = 0;
+
 	  // Get the pseudo-rapidity 
 	  Double_t eta = input.Eta(d,r,s,t);
 	  Double_t phi = input.Phi(d,r,s,t) * TMath::Pi() / 180.;
 	  if (s == 0) output.SetEta(d,r,s,t,eta);
 	  
-	  Double_t etaOld  = eta;
-	  Double_t etaCalc = 0;
 	  if(fRecalculateEta) { 
-	    etaCalc = AliForwardUtil::GetEtaFromStrip(d,r,s,t,zvtx);
-	    eta = etaCalc;
-	  }
-	  if(fRecalculateEta && mult > 0 && mult != AliESDFMD::kInvalidMult ) {
-	    Double_t cosOld = TMath::Cos(2*TMath::ATan(TMath::Exp(-1*TMath::Abs(etaOld))));
-	    Double_t cosNew = TMath::Cos(2*TMath::ATan(TMath::Exp(-1*TMath::Abs(etaCalc))));	    
-	    if(mult > 0) mult = (mult/cosOld)*cosNew;
-	    if(multNext > 0) multNext = (multNext/cosOld)*cosNew;
-	    if(multNextNext > 0) multNextNext = (multNextNext/cosOld)*cosNew;
+	    Double_t etaOld  = eta;
+	    Double_t etaCalc = AliForwardUtil::GetEtaFromStrip(d,r,s,t,zvtx);
+	    eta              = etaCalc;
 	    
-	    //No corrections beyond this point
-	    //  if(eta < -4) {
-	    //  mult = 0; multNext = 0; multNextNext = 0;
-	    // }
+	    if (mult > 0 && mult != AliESDFMD::kInvalidMult ) {
+	      Double_t cosOld =  ETA2COS(etaOld);
+	      Double_t cosNew =  ETA2COS(etaCalc);
+	      Double_t corr   =  cosNew / cosOld;
+	      mult            *= corr;
+	      multNext        *= corr;
+	      multNextNext    *= corr;
+	    }
 	  }
 	  
 	  // Keep dead-channel information. 
@@ -393,11 +392,13 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 		eTotal = eTotal + multNext;
 		used = kTRUE;
 		histos->fTriple->Fill(eTotal);
+		nTriple++;
 		twoLow = kFALSE;
 	      }
 	      else {
 		used = kFALSE;
 		histos->fDouble->Fill(eTotal);
+		nDouble++;
 	      }
 	      etot   = eTotal;
 	      eTotal = -1;
@@ -420,6 +421,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 		    etot = mult + multNext;
 		    used=kTRUE;
 		    histos->fDouble->Fill(etot);
+		    nDouble++;
 		  }
 		else {
 		  etot   = 0;
@@ -430,6 +432,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 		if(etot > 0) {
 		  histos->fSingle->Fill(etot);
 		  histos->fSinglePerStrip->Fill(etot,t);
+		  nSingle++;
 		}
 	      }
 	    }
@@ -441,8 +444,8 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	    }
 	    //if(mult>0 && multNext >0)
 	    //  std::cout<<mult<<"  "<<multNext<<"  "<<mergedEnergy<<std::endl;
-	  }
-	  else {
+	  } // End of simple merge 
+	  else { // Not simple 
 	    // Get next and previous signal - if any 
 	    Double_t prevE = 0;
 	    Double_t nextE = 0;
@@ -479,7 +482,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 #endif
 	    // If we're processing on non-angle corrected data, we
 	    // should do the angle correction here
-	  }
+	  } // End of non-simple
 	  if (!fCorrectAngles)
 	    mergedEnergy = AngleCorrect(mergedEnergy, eta);
 	  if (mergedEnergy > 0) histos->Incr();
@@ -511,8 +514,8 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
   fSummed->Fill(kMergedWithOther, nMerged);
   fSummed->Fill(kMergedInto,      nSummed);
 
-  DBGL(5, Form("none=%9d, candidate=%9d, merged=%9d, summed=%9d", 
-	       nNone, nCandidate, nMerged, nSummed));
+  DMSG(fDebug, 3,"single=%9d, double=%9d, triple=%9d", 
+       nSingle, nDouble, nTriple);
   next.Reset();
   while ((o = static_cast<RingHistos*>(next())))
     o->Finish();
@@ -946,21 +949,13 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   fLowCuts->SetDirectory(0);
   d->Add(fLowCuts);
 
-  TNamed* angle  = new TNamed("angle", fCorrectAngles ? 
-			      "corrected" : "uncorrected");
-  angle->SetUniqueID(fCorrectAngles);
-  TNamed* low = new TNamed("lowSignal", fZeroSharedHitsBelowThreshold ? 
-			   "zeroed" : "kept");
-  low->SetUniqueID(fZeroSharedHitsBelowThreshold);
-  TNamed* simple = new TNamed("simple", fUseSimpleMerging ? "yes" : "no");
-  simple->SetUniqueID(fUseSimpleMerging);
-  
   // d->Add(lowCut);
   // d->Add(nXi);
   // d->Add(sigma);
-  d->Add(angle);
-  d->Add(low);
-  d->Add(simple);
+  d->Add(AliForwardUtil::MakeParameter("angle", fCorrectAngles));
+  d->Add(AliForwardUtil::MakeParameter("lowSignal", 
+				       fZeroSharedHitsBelowThreshold));
+  d->Add(AliForwardUtil::MakeParameter("simple", fUseSimpleMerging));
   fLCuts.Output(d,"lCuts");
   fHCuts.Output(d,"hCuts");
 

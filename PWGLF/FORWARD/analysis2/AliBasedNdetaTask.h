@@ -14,7 +14,6 @@
  * 
  */
 #include <AliAnalysisTaskSE.h>
-#include <TParameter.h>
 class TAxis;
 class TList;
 class TH2D;
@@ -865,8 +864,8 @@ protected:
   TNamed*         fSNNString;    // sqrt(s_NN) string 
   TNamed*         fSysString;    // Collision system string 
 #else
-  TParameter<int>* fSNNString;    // sqrt(s_NN) string 
-  TParameter<int>* fSysString;    // Collision system string 
+  TObject* fSNNString;    // sqrt(s_NN) string 
+  TObject* fSysString;    // Collision system string 
 #endif
   TH1D*           fCent;         // Centrality distribution 
   TAxis*          fCentAxis;     // Centrality axis
@@ -875,12 +874,12 @@ protected:
   TNamed*         fSchemeString;     // Normalization scheme string
   TNamed*         fTriggerString;    // Trigger string 
 #else 
-  TParameter<int>* fSchemeString;    // Normalization scheme string
-  TParameter<int>* fTriggerString;    // Trigger string 
+  TObject*        fSchemeString;    // Normalization scheme string
+  TObject*        fTriggerString;    // Trigger string 
 #endif
   TString         fFinalMCCorrFile; //Filename for final MC corr
   
-  ClassDef(AliBasedNdetaTask,7); // Determine multiplicity in base area
+  ClassDef(AliBasedNdetaTask,8); // Determine multiplicity in base area
 };
 
 #endif

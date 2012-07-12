@@ -286,6 +286,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
 				  UShort_t&         ivz, 
 				  Double_t&         vz,
 				  Double_t&         b,
+				  Double_t&         c,
 				  Int_t&            npart, 
 				  Int_t&            nbin,
 				  Double_t&         phiR)
@@ -300,6 +301,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   //                  means outside of the defined vertex range
   //   vz        On return, the z position of the interaction
   //   b         On return, the impact parameter - < 0 if not available
+  //   c         On return, centrality estimate - < 0 if not available 
   //   phiR      On return, the event plane angle - < 0 if not available 
   // 
   // Return:
@@ -338,6 +340,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   npart          = 0;
   nbin           = 0;
   b              = -1;
+  c              = -1;
   if (colGeometry) { 
     b     = colGeometry->ImpactParameter();
     phi   = colGeometry->ReactionPlaneAngle();
@@ -353,6 +356,15 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     b     = pythiaHeader->GetImpactParameter();
     npart = 2; // Always 2 protons
     nbin  = 1; // Always 1 binary collision 
+  }
+  if (b >= 0) { 
+    if      (b <  3.5)  c = 2.5; //0-5%
+    else if (b <  4.95) c = 7.5; //5-10%
+    else if (b <  6.98) c = 15; //10-20%
+    else if (b <  8.55) c = 25; //20-30%
+    else if (b <  9.88) c = 35; //30-40%
+    else if (b < 11.04) c = 45; //40-50%
+    else                c = 55; //50-60%
   }
   if(dpmHeader) { // Also an AliCollisionGeometry 
     Int_t processType = dpmHeader->ProcessType();
@@ -413,6 +425,18 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   fHB->Fill(b);
   fHBvsPart->Fill(b, npart);
   fHBvsBin->Fill(b, nbin);
+
+  if(fUseDisplacedVertices) {
+    // Put the vertex at fixed locations 
+    Double_t zvtx  = vz;
+    Double_t ratio = zvtx/37.5;
+    if(ratio > 0) ratio = ratio + 0.5;
+    if(ratio < 0) ratio = ratio - 0.5;
+    Int_t ratioInt = Int_t(ratio);
+    zvtx = 37.5*((Double_t)ratioInt);
+    if(TMath::Abs(zvtx) > 999) 
+      return kBadVertex;
+  }
 
   // Check for the vertex bin 
   ivz = fVtxAxis.FindBin(vz);
@@ -525,66 +549,6 @@ AliFMDMCEventInspector::IsSingleDiffractive(AliStack* stack,
   if (arm == 1 && m12s > xiMin && m12s < xiMax) return true;
     
   return false;
-}
-//____________________________________________________________________
-Bool_t
-AliFMDMCEventInspector::ReadCentrality(const AliESDEvent* esd, 
-				       Double_t& cent, 
-				       UShort_t& qual) const
-{
-  // 
-  // Read centrality from event 
-  // 
-  // Parameters:
-  //    esd  Event 
-  //    cent On return, the centrality or negative if not found
-  // 
-  // Return:
-  //    False on error, true otherwise 
-  //
-  cent = -1;
-  qual = 0;
-  AliCentrality* centObj = const_cast<AliESDEvent*>(esd)->GetCentrality();
-  if (!centObj) return true;
-AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  Bool_t isMC = am->GetMCtruthEventHandler() != 0;
-  
-  //std::cout<<fUseDisplacedVertices<<"  "<<isMC<<std::endl;
-  
-  if(fUseDisplacedVertices && isMC) {
-    
-    
-    AliMCEventHandler* mchandler = static_cast<AliMCEventHandler*>(am->GetMCtruthEventHandler());
-    AliMCEvent* mcevent          = mchandler->MCEvent();
-    
-    AliHeader*               header          = mcevent->Header();
-    AliGenEventHeader*       genHeader       = header->GenEventHeader();
-    AliCollisionGeometry*    colGeometry     = 
-      dynamic_cast<AliCollisionGeometry*>(genHeader);
-    Double_t b              = -1;
-    if (colGeometry)  
-      b     = colGeometry->ImpactParameter();
-    //std::cout<<"Hallo!!  "<<b<<std::endl;
-    cent = -1;
-    if(b<3.5 && b >0) cent = 2.5; //0-5%
-    if(b>3.5 && b<4.95) cent = 7.5; //5-10%
-    if(b>4.95 && b<6.98) cent = 15; //10-20%
-    if(b>6.98 && b<8.55) cent = 25; //20-30%
-    if(b>8.55 && b<9.88) cent = 35; //30-40%
-    if(b>9.88 && b<11.04) cent = 45; //40-50%
-    if(b>11.04) cent = 55; //50-60%
-    //cent = 10;
-    qual = 0;
-  }
-  else {
-    
-    qual = centObj->GetQuality();
-    if (qual == 0x8) // Ignore ZDC outliers 
-      cent = centObj->GetCentralityPercentileUnchecked("V0M");  
-    else
-      cent = centObj->GetCentralityPercentile("V0M");        
-  }
-  return true;
 }
 
 //____________________________________________________________________

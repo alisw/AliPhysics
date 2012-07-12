@@ -41,6 +41,17 @@ public:
    */
   void Print(Option_t* option="") const;
   /** 
+   * Process an ESD event to get the information 
+   * 
+   * @param esd ESD event 
+   * 
+   * @return true on success
+   */
+  Bool_t Process(const AliESDEvent* esd);
+
+  Double_t GetVertexZ() const { return fVertexZ; }
+  Double_t GetCentralityPercentile() const { return fCent; }
+  /** 
    * Check for displaced vertices (M.Guilbaud) 
    * 
    * @param esd  Event 
@@ -58,7 +69,8 @@ public:
   Double_t CalculateDisplacedVertexCent(const AliESDEvent* esd) const;
   
 protected:
-  
+  Double_t fVertexZ;
+  Double_t fCent;
   
   ClassDef(AliDisplacedVertexSelection,1); // Cuts on ESD Mult 
 };
