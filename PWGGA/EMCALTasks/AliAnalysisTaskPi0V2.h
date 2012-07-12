@@ -28,8 +28,8 @@ class THnSparse;
 
 class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
  public:
-    AliAnalysisTaskPi0V2(const char *name);
     AliAnalysisTaskPi0V2();
+    AliAnalysisTaskPi0V2(const char *name);
     virtual ~AliAnalysisTaskPi0V2();
     
     virtual void     UserCreateOutputObjects();
@@ -52,14 +52,14 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Bool_t 			fcheckEP2sub;	// do 2 sub event method
     // NEW HISTO to be declared here
     Double_t			fCentrality;	//! Centrality
-    Double_t			fEPTPC;	//! Evt plane TPC
+    Double_t			fEPTPC;		//! Evt plane TPC
     Double_t			fEPTPCreso;	//! resolution of TPC method
     Double_t			fEPV0;		//! EP V0
-    Double_t			fEPV0A;	//! EP V0A
-    Double_t			fEPV0C;	//! EP V0C
+    Double_t			fEPV0A;		//! EP V0A
+    Double_t			fEPV0C;		//! EP V0C
     Double_t			fEPV0Ar;	//! EP V0A reduced
     Double_t			fEPV0Cr;	//! EP V0C reduced
-    Double_t			fEPV0r;	//! EP V0 reduced
+    Double_t			fEPV0r;		//! EP V0 reduced
     Double_t			fEPV0AR4;	//! EP V0A ring4 only
     Double_t			fEPV0AR5;	//! EP V0A ring5 only
     Double_t			fEPV0AR6;	//! EP V0A ring6 only
@@ -104,10 +104,10 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH3F			*hdifful_EP;		//! 2-D histo dif phi in full with EP
     TH3F			*hdifout_EP;		//! 2-D histo dif phi NOT in EMC with EP
 
-    THnSparse                   *fHEPV0r;         //! Flow 4-D Histo
-    THnSparse                   *fHEPV0A;        //! Flow 4-D Histo
-    THnSparse                   *fHEPV0C;        //! Flow 4-D Histo
-    THnSparse                   *fHEPTPC;        //! Flow 4-D Histo
+    THnSparse                   *fHEPV0r;	        //! Flow 4-D Histo
+    THnSparse                   *fHEPV0A;	        //! Flow 4-D Histo
+    THnSparse                   *fHEPV0C;	        //! Flow 4-D Histo
+    THnSparse                   *fHEPTPC;	        //! Flow 4-D Histo
 
     
     
