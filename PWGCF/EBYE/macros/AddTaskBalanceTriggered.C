@@ -11,6 +11,7 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
 						 Double_t centrMax=80.,
 						 Bool_t gRunShuffling=kFALSE,
 						 Bool_t gRunMixing=kFALSE,
+						 Bool_t gRunV0=kFALSE,
 						 TString centralityEstimator="V0M",
 						 Double_t vertexZ=10.,
 						 Double_t DCAxy=-1,
@@ -55,6 +56,7 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
   centralityName+="_Bit";
   centralityName+=Form("%d",AODfilterBit);
   if(bCentralTrigger)   centralityName+="_withCentralTrigger";
+  if(gRunV0)   centralityName+="_V0";
 
 
 
@@ -113,6 +115,9 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
     taskTriggeredBF->SetMixingObject(bfm);
     taskTriggeredBF->SetMixingTracks(50000);
   }
+  if(gRunV0){
+    taskTriggeredBF->SetRunV0(kTRUE);
+  }
 
   taskTriggeredBF->SetCentralityPercentileRange(centrMin,centrMax);
   if(analysisType == "AOD") {
@@ -153,12 +158,14 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
   AliAnalysisDataContainer *coutTriggeredBF = mgr->CreateContainer(Form("listTriggeredBF_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(gRunShuffling) AliAnalysisDataContainer *coutTriggeredBFS = mgr->CreateContainer(Form("listTriggeredBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(gRunMixing) AliAnalysisDataContainer *coutTriggeredBFM = mgr->CreateContainer(Form("listTriggeredBFMixed_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(gRunV0) AliAnalysisDataContainer *coutQAV0 = mgr->CreateContainer(Form("listQAV0_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskTriggeredBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskTriggeredBF, 1, coutQA);
   mgr->ConnectOutput(taskTriggeredBF, 2, coutTriggeredBF);
   if(gRunShuffling) mgr->ConnectOutput(taskTriggeredBF, 3, coutTriggeredBFS);
   if(gRunMixing) mgr->ConnectOutput(taskTriggeredBF, 4, coutTriggeredBFM);
+  if(gRunV0) mgr->ConnectOutput(taskTriggeredBF, 5, coutQAV0);
 
   return taskTriggeredBF;
 }

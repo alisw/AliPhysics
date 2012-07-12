@@ -7,6 +7,8 @@
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliBalanceTriggered.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
 
 class TList;
 class TH1F;
@@ -41,6 +43,7 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   }
   void SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
 
+  void SetRunV0(Bool_t runV0 = kTRUE) { fRunV0 = runV0; }
  
   void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
     fVxMax = vx;
@@ -97,6 +100,7 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
  private:
   Float_t    IsEventAccepted(AliVEvent* event);
   TObjArray* GetAcceptedTracks(AliVEvent* event);
+  TObjArray* GetAcceptedV0s(AliVEvent* event);
   TObjArray* GetShuffledTracks(TObjArray* tracks);
 
   AliBalanceTriggered *fBalance; //TriggeredBF object
@@ -106,13 +110,17 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   Int_t  fMixingTracks;
   AliBalanceTriggered *fMixedBalance; //TriggeredBF object (mixed)
   AliEventPoolManager*     fPoolMgr;         //! event pool manager
-    
+  Bool_t fRunV0;
+
+  AliPIDResponse       *fPIDResponse;     //! PID response object
+  AliPIDCombined       *fPIDCombined;     //! combined PID object
 
   TList *fList; //fList object
   TList *fListTriggeredBF; //fList object
   TList *fListTriggeredBFS; //fList object (shuffling)
   TList *fListTriggeredBFM; //fList object (mixing)
   TList *fHistListPIDQA;  //! list of histograms
+  TList *fHistListV0; // list of V0 histograms
 
   TH1F *fHistEventStats; //event stats
   TH2F *fHistCentStats; //centrality stats
@@ -133,6 +141,30 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   TH2F *fHistV0M;//
   TH2F *fHistRefTracks;//
 
+  // V0 histograms
+  TH1F    *fHistV0MultiplicityBeforeTrigSel;             //! V0 multiplicity distribution
+  TH1F    *fHistV0MultiplicityForTrigEvt;                //! V0 multiplicity distribution
+  TH1F    *fHistV0MultiplicityForSelEvt;                 //! V0 multiplicity distribution
+  TH1F    *fHistV0MultiplicityForSelEvtNoTPCOnly;        //! V0 multiplicity distribution
+  TH1F    *fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup;//! V0 multiplicity distribution
+  
+  TH1F    *fHistMultiplicityBeforeTrigSel; 	        //! multiplicity distribution    
+  TH1F    *fHistMultiplicityForTrigEvt;  		        //! multiplicity distribution
+  TH1F    *fHistMultiplicity;     					        //! multiplicity distribution
+  TH1F    *fHistMultiplicityNoTPCOnly;			        //! multiplicity distribution
+  TH1F    *fHistMultiplicityNoTPCOnlyNoPileup;			//! multiplicity distribution
+
+  //before selection
+  TH1F* fHistV0InvMassK0;                           // Invariant mass K0
+  TH1F* fHistV0InvMassLambda;                       // Invariant mass Lambda
+  TH1F* fHistV0InvMassAntiLambda;                   // Invariant mass AntiLambda
+  TH2F* fHistV0Armenteros;                          // Armenteros plot
+
+  //after selection
+  TH1F* fHistV0SelInvMassK0;                           // Invariant mass K0
+  TH1F* fHistV0SelInvMassLambda;                       // Invariant mass Lambda
+  TH1F* fHistV0SelInvMassAntiLambda;                   // Invariant mass AntiLambda
+  TH2F* fHistV0SelArmenteros;                          // Armenteros plot
  
   TString fCentralityEstimator;      //"V0M","TRK","TKL","ZDC","FMD"
   Bool_t fUseCentrality;//use the centrality (PbPb) or not (pp)
