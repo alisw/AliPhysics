@@ -76,6 +76,7 @@ AliAnalysisTaskSE(),
   fLowerImpPar(-2000.),
   fHigherImpPar(2000.),
   fDoLS(0),
+  fEtaSelection(0),
   fSystem(0)
 {
   // Default constructor
@@ -154,6 +155,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fLowerImpPar(-2000.),
   fHigherImpPar(2000.),
   fDoLS(0),
+  fEtaSelection(0),
   fSystem(0)
 {
   // 
@@ -684,7 +686,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     OpenFile(4); // 4 is the slot number of the ntuple
    
     
-    fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:piddau0:piddau1:piddau2:Ptpi:PtK:Ptpi2:mompi:momK:mompi2:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber");
+    fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:charge:piddau0:piddau1:piddau2:Ptpi:PtK:Ptpi2:mompi:momK:mompi2:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber");
 
   }
   
@@ -812,14 +814,22 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	fHistNEvents->Fill(8);
 	continue;
       }
+    
+      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
+
+      if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
+
+      if(fEtaSelection!=0){
+	Double_t etaD=d->Eta();
+	if(fEtaSelection==1 && etaD<0) continue;
+	if(fEtaSelection==-1 && etaD>0) continue;
+      }
+
       Bool_t unsetvtx=kFALSE;
       if(!d->GetOwnPrimaryVtx()){
 	d->SetOwnPrimaryVtx(vtx1);
 	unsetvtx=kTRUE;
       }
-    
-      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
-      if(!fRDCutsAnalysis->GetIsSelectedCuts())continue;//filling loose cuts histos with no-pid informations
 
       Double_t ptCand = d->Pt();
       Int_t iPtBin = fRDCutsAnalysis->PtBin(ptCand);     
@@ -881,38 +891,39 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Double_t arrayForSparseTrue[6]={invMass,ptCand,trueImpParXY,cosp,dlen,tracklets};
 
       //Ntuple
-      Float_t tmp[29];
+      Float_t tmp[30];
       if(fFillNtuple){
 	tmp[0]=pdgCode;
 	tmp[1]=d->Px();
 	tmp[2]=d->Py();
 	tmp[3]=d->Pz();
 	tmp[4]=d->Pt();
+	tmp[5]=d->GetCharge();
 	//	tmp[5]=fRDCutsAnalysis->GetPIDBitMask(d);	  
-	tmp[5]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(0));
-	tmp[6]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(1));
-	tmp[7]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(2));
-	tmp[8]=d->PtProng(0);
-	tmp[9]=d->PtProng(1);
-	tmp[10]=d->PtProng(2);
-	tmp[11]=d->PProng(0);
-	tmp[12]=d->PProng(1);
-	tmp[13]=d->PProng(2);
-	tmp[14]=cosp;
-	tmp[15]=cxy;
-	tmp[16]=dlen;
-	tmp[17]=d->NormalizedDecayLength();
-	tmp[18]=d->DecayLengthXY();
-	tmp[19]=dlxy;
-	tmp[20]=d->InvMassDplus();
-	tmp[21]=sigvert;
-	tmp[22]=d->Getd0Prong(0);
-	tmp[23]=d->Getd0Prong(1);
-	tmp[24]=d->Getd0Prong(2);
-	tmp[25]=maxdca;
-	tmp[26]=ntracks;
-	tmp[27]=fRDCutsAnalysis->GetCentrality(aod);
-	tmp[28]=runNumber;
+	tmp[6]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(0));
+	tmp[7]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(1));
+	tmp[8]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(2));
+	tmp[9]=d->PtProng(0);
+	tmp[10]=d->PtProng(1);
+	tmp[11]=d->PtProng(2);
+	tmp[12]=d->PProng(0);
+	tmp[13]=d->PProng(1);
+	tmp[14]=d->PProng(2);
+	tmp[15]=cosp;
+	tmp[16]=cxy;
+	tmp[17]=dlen;
+	tmp[18]=d->NormalizedDecayLength();
+	tmp[19]=d->DecayLengthXY();
+	tmp[20]=dlxy;
+	tmp[21]=d->InvMassDplus();
+	tmp[22]=sigvert;
+	tmp[23]=d->Getd0Prong(0);
+	tmp[24]=d->Getd0Prong(1);
+	tmp[25]=d->Getd0Prong(2);
+	tmp[26]=maxdca;
+	tmp[27]=ntracks;
+	tmp[28]=fRDCutsAnalysis->GetCentrality(aod);
+	tmp[29]=runNumber;
 	fNtupleDplus->Fill(tmp);
 	PostData(4,fNtupleDplus);
       }

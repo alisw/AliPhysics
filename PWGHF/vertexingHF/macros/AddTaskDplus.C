@@ -5,7 +5,8 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Bool_t readMC=kFALSE,
 				     TString finDirname="Loose",
 				     TString filename="",
-				     TString finAnObjname="AnalysisCuts")
+				     TString finAnObjname="AnalysisCuts",
+				     Int_t etaRange=0)
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for D+ candidates 
@@ -58,6 +59,8 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   dplusTask->SetUseBit(kTRUE);
   dplusTask->SetSystem(system);
   if (doSparse) dplusTask->SetDoImpactParameterHistos(kTRUE);
+  if(etaRange==1) dplusTask->SetUseOnlyPositiveEta();
+  if(etaRange==-1) dplusTask->SetUseOnlyNegativeEta();
 
   mgr->AddTask(dplusTask);
   
