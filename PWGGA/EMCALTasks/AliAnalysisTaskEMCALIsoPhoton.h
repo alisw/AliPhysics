@@ -45,7 +45,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TObjArray             *fSelPrimTracks;         //!pointer to ESD primary tracks
   TClonesArray          *fTracks;                //!track input array
   AliESDCaloCells       *fEMCalCells;            //!pointer to EMCal cells
-  AliESDtrackCuts       *fPrTrCuts;              //!pointer to hold the prim track cuts
+  AliESDtrackCuts       *fPrTrCuts;              //pointer to hold the prim track cuts
   AliEMCALGeometry      *fGeom;                  // geometry utils
   TString                fGeoName;               // geometry name (def = EMCAL_FIRSTYEARV1)
   TString                fPeriod;                // string to the LHC period
