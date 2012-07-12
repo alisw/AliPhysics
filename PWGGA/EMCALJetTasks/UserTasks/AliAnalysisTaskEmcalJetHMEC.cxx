@@ -452,7 +452,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	fHistJetPtTT[centbin]->Fill(jet->Pt());
    
 
-  if (highestjetpt>10) {
+  if (highestjetpt>15) {
    
     for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++) 
       {
