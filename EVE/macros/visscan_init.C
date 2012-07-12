@@ -6,8 +6,10 @@
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-
+ 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <AliQAHistViewer.h>
+#endif
 
 class AliEveMacroExecutor;
 class TEveProjectionManager;
