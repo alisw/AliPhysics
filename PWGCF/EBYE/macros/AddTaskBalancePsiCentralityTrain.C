@@ -18,6 +18,7 @@ Double_t gMinAcceptedProbability = 0.7;
 AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Double_t centrMax=100.,
 						       Bool_t gRunShuffling=kFALSE,
+						       Bool_t gRunMixing=kFALSE,
 						       TString centralityEstimator="V0M",
 						       Double_t vertexZ=10.,
 						       Double_t DCAxy=-1,
@@ -58,18 +59,22 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
   AliBalancePsi *bf  = 0;  // Balance Function object
   AliBalancePsi *bfs = 0;  // shuffled Balance function object
+  AliBalancePsi *bfm = 0;  // mixing Balance function object
 
   if (analysisType=="ESD"){
     bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax);
     if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kTRUE);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE);
   }
   else if (analysisType=="AOD"){
     bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax);
     if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE);
   }
   else if (analysisType=="MC"){
     bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax);
     if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kTRUE);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE);
   }
   else{
     ::Error("AddTaskBF", "analysis type NOT known.");
@@ -81,6 +86,10 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   AliAnalysisTaskBFPsi *taskBF = new AliAnalysisTaskBFPsi("TaskBFPsi");
   taskBF->SetAnalysisObject(bf);
   if(gRunShuffling) taskBF->SetShufflingObject(bfs);
+  if(gRunMixing){
+    taskBF->SetMixingObject(bfm);
+    taskBF->SetMixingTracks(50000);
+  }
 
   taskBF->SetCentralityPercentileRange(centrMin,centrMax);
   if(analysisType == "ESD") {
@@ -137,13 +146,15 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer("listQAPsi", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutBF = mgr->CreateContainer("listBFPsi", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(gRunShuffling) AliAnalysisDataContainer *coutBFS = mgr->CreateContainer("listBFPsiShuffled", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(gRunMixing) AliAnalysisDataContainer *coutBFM = mgr->CreateContainer("listBFPsiMixed", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   if(kUsePID) AliAnalysisDataContainer *coutQAPID = mgr->CreateContainer("listQAPIDPsi", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 1, coutQA);
   mgr->ConnectOutput(taskBF, 2, coutBF);
   if(gRunShuffling) mgr->ConnectOutput(taskBF, 3, coutBFS);
-  if(kUsePID && analysisType == "ESD") mgr->ConnectOutput(taskBF, 4, coutQAPID);
+  if(gRunMixing) mgr->ConnectOutput(taskBF, 4, coutBFM);
+  if(kUsePID && analysisType == "ESD") mgr->ConnectOutput(taskBF, 5, coutQAPID);
 
   return taskBF;
 }
