@@ -36,7 +36,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTrgClusters(0),
   fHistCentrality(0),
-  fHistVertex(0),
+  fHistZVertex(0),
   fHistTracksCent(0),
   fHistClusCent(0),
   fHistClusTracks(0),
@@ -87,7 +87,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTrgClusters(0),
   fHistCentrality(0),
-  fHistVertex(0),
+  fHistZVertex(0),
   fHistTracksCent(0),
   fHistClusCent(0),
   fHistClusTracks(0),
@@ -150,11 +150,10 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistCentrality->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistCentrality);
 
-  fHistVertex = new TH3F("fHistVertex","Vertex position", 6, -3, 3, 6, -3, 3, 60, -30, 30);
-  fHistVertex->GetXaxis()->SetTitle("x");
-  fHistVertex->GetYaxis()->SetTitle("y");
-  fHistVertex->GetZaxis()->SetTitle("z");
-  fOutput->Add(fHistVertex);
+  fHistZVertex = new TH1F("fHistZVertex","Z vertex position", 60, -30, 30);
+  fHistZVertex->GetXaxis()->SetTitle("z");
+  fHistZVertex->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistZVertex);
 
   fHistTracksCent = new TH2F("fHistTracksCent","Tracks vs. centrality", 100, 0, 100, fNbins, 0, 4000);
   fHistTracksCent->GetXaxis()->SetTitle("Centrality (%)");
@@ -235,12 +234,12 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistDeltaPhiPt->GetYaxis()->SetTitle("#delta#phi");
   fOutput->Add(fHistDeltaPhiPt);
 
-  fHistDeltaEtaNewProp = new TH1F("fHistDeltaEtaNewProp","fHistDeltaEtaNewProp", 80, -0.5, 0.5);
+  fHistDeltaEtaNewProp = new TH1F("fHistDeltaEtaNewProp","fHistDeltaEtaNewProp", 800, -0.4, 0.4);
   fHistDeltaEtaNewProp->GetXaxis()->SetTitle("#delta#eta");
   fHistDeltaEtaNewProp->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistDeltaEtaNewProp);
 
-  fHistDeltaPhiNewProp = new TH1F("fHistDeltaPhiNewProp","fHistDeltaPhiNewProp", 256, -1.6, 4.8);
+  fHistDeltaPhiNewProp = new TH1F("fHistDeltaPhiNewProp","fHistDeltaPhiNewProp", 2560, -1.6, 3.2);
   fHistDeltaPhiNewProp->GetXaxis()->SetTitle("#delta#phi");
   fHistDeltaPhiNewProp->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistDeltaPhiNewProp);
@@ -409,7 +408,7 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   if (fCaloClusters)
     fHistClusCent->Fill(fCent, fCaloClusters->GetEntriesFast());
 
-  fHistVertex->Fill(fVertex[0], fVertex[1], fVertex[2]);
+  fHistZVertex->Fill(fVertex[2]);
 
   Float_t trackSum = DoTrackLoop();
 
@@ -570,11 +569,13 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     fHistTrEmcPhiEta->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());
     fHistDeltaEtaPt->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
     fHistDeltaPhiPt->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
-    
-    Float_t propeta = -999, propphi = -999;
-    PropagateTrack(vtrack, propeta, propphi);
-    fHistDeltaEtaNewProp->Fill(propeta - vtrack->GetTrackEtaOnEMCal());
-    fHistDeltaPhiNewProp->Fill(propphi - vtrack->GetTrackPhiOnEMCal());
+
+    if (vtrack->GetTrackEtaOnEMCal() > -2) {    
+      Float_t propeta = -999, propphi = -999;
+      PropagateTrack(vtrack, propeta, propphi);
+      fHistDeltaEtaNewProp->Fill(propeta - vtrack->GetTrackEtaOnEMCal());
+      fHistDeltaPhiNewProp->Fill(propphi - vtrack->GetTrackPhiOnEMCal());
+    }
   }
   
   return sum;
@@ -587,6 +588,9 @@ void AliAnalysisTaskSAQA::PropagateTrack(AliVTrack *track, Float_t &eta, Float_t
   phi = -999;
 
   if (!track)
+    return;
+
+  if (track->Pt() == 0) 
     return;
 
   // init the magnetic field if not already on
@@ -609,7 +613,7 @@ void AliAnalysisTaskSAQA::PropagateTrack(AliVTrack *track, Float_t &eta, Float_t
   track->GetPxPyPz(mom);
   AliExternalTrackParam *trackParam = new AliExternalTrackParam(pos, mom, cv, track->Charge());
  
-  if(!AliTrackerBase::PropagateTrackToBxByBz(trackParam, 430., 0, 20, kTRUE, 0.8, -1)) return;
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trackParam, 430., 0.139, 20, kTRUE, 0.8, -1)) return;
   Double_t trkPos[3] = {0., 0., 0.};
   if(!trackParam->GetXYZ(trkPos)) return;
   TVector3 trkPosVec(trkPos[0], trkPos[1], trkPos[2]);

@@ -43,7 +43,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
 
   // General histograms
   TH1F                       *fHistCentrality;           //!Event centrality distribution
-  TH3F                       *fHistVertex;               //!Vertex position
+  TH1F                       *fHistZVertex;              //!Z vertex position
   TH2F                       *fHistTracksCent;           //!Number of tracks vs. centrality
   TH2F                       *fHistClusCent;             //!Number of clusters vs. centrality
   TH2F                       *fHistClusTracks;           //!Number of clusters vs. number of tracks

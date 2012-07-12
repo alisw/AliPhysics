@@ -86,9 +86,9 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   // Rho
   TH1F                       *fHistRho[4];                    //!Rho distribution
   TH2F                       *fHistRhoVSleadJetPt;            //!Area(leadjetarea) * rho vs. leading jet pt
-  TH1F                       *fHistCorrJetsPt[4];             //!Corrected inclusive jet pt spectrum
-  TH2F                       *fHistCorrJetsPtArea[4];         //!Jet pt vs. area
-  TH1F                       *fHistCorrLeadingJetPt[4];       //!Corrected leading jet pt spectrum
+  TH1F                       *fHistJetsCorrPt[4];             //!Corrected inclusive jet pt spectrum
+  TH2F                       *fHistJetsCorrPtArea[4];         //!Jet pt vs. area
+  TH1F                       *fHistLeadingJetCorrPt[4];       //!Corrected leading jet pt spectrum
 
   // Random cones
   TH2F                       *fHistRCPhiEta;               //!Phi-Eta distribution of random cones
@@ -107,9 +107,10 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistEmbNotFoundPhiEta[4];   //!Phi-Eta of "not found" embedded particles
   TH1F                       *fHistEmbJetsPt[4];           //!Pt distribution of embedded jets
   TH1F                       *fHistEmbJetsCorrPt[4];       //!Pt distribution of embedded jets
-  TH1F                       *fHistEmbPart[4];             //!Pt distribution of embedded particle
+  TH1F                       *fHistEmbPartPt[4];           //!Pt distribution of embedded particle
   TH2F                       *fHistEmbJetPhiEta;           //!Phi-Eta distribution of embedded jets
   TH2F                       *fHistEmbPartPhiEta;          //!Phi-Eta distribution of embedded particles
+  TH1F                       *fHistDistEmbPartJetAxis[4];  //!Distance between embedded particle and jet axis
   TH2F                       *fHistRhoVSEmbBkg;            //!Area(embjet) * rho vs. Pt(embjet) - Pt(embtrack)
   TH1F                       *fHistDeltaPtEmb[4];          //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack)
 

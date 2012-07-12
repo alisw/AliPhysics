@@ -79,9 +79,9 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistMaxClusPtvsJetCorrPt[i] = 0;
     fHistMaxPartPtvsJetCorrPt[i] = 0;
     fHistRho[i] = 0;
-    fHistCorrJetsPt[i] = 0;
-    fHistCorrJetsPtArea[i] = 0;
-    fHistCorrLeadingJetPt[i] = 0;
+    fHistJetsCorrPt[i] = 0;
+    fHistJetsCorrPtArea[i] = 0;
+    fHistLeadingJetCorrPt[i] = 0;
     fHistRCPtRigid[i] = 0;
     fHistRCPt[i] = 0;
     fHistRCPtExLJ[i] = 0;
@@ -93,7 +93,8 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistEmbNotFoundPhiEta[i] = 0;
     fHistEmbJetsPt[i] = 0;
     fHistEmbJetsCorrPt[i] = 0;
-    fHistEmbPart[i] = 0;
+    fHistEmbPartPt[i] = 0;
+    fHistDistEmbPartJetAxis[i] = 0;
     fHistDeltaPtEmb[i] = 0;
   }
 }
@@ -148,9 +149,9 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistMaxClusPtvsJetCorrPt[i] = 0;
     fHistMaxPartPtvsJetCorrPt[i] = 0;
     fHistRho[i] = 0;
-    fHistCorrJetsPt[i] = 0;
-    fHistCorrJetsPtArea[i] = 0;
-    fHistCorrLeadingJetPt[i] = 0;
+    fHistJetsCorrPt[i] = 0;
+    fHistJetsCorrPtArea[i] = 0;
+    fHistLeadingJetCorrPt[i] = 0;
     fHistRCPtRigid[i] = 0;
     fHistRCPt[i] = 0;
     fHistRCPtExLJ[i] = 0;
@@ -162,7 +163,8 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistEmbNotFoundPhiEta[i] = 0;
     fHistEmbJetsPt[i] = 0;
     fHistEmbJetsCorrPt[i] = 0;
-    fHistEmbPart[i] = 0;
+    fHistEmbPartPt[i] = 0;
+    fHistDistEmbPartJetAxis[i] = 0;
     fHistDeltaPtEmb[i] = 0;
   }
 }
@@ -210,7 +212,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fOutput->Add(fHistRCPtExLJVSDPhiLJ);
 
   fHistRhoVSRCPt = new TH2F("fHistRhoVSRCPt","fHistRhoVSRCPt", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
-  fHistRhoVSRCPt->GetXaxis()->SetTitle("#rho * area [GeV/c]");
+  fHistRhoVSRCPt->GetXaxis()->SetTitle("A#rho [GeV/c]");
   fHistRhoVSRCPt->GetYaxis()->SetTitle("rigid cone p_{T} [GeV/c]");
   fOutput->Add(fHistRhoVSRCPt);
 
@@ -226,7 +228,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fOutput->Add(fHistEmbPartPhiEta);
     
     fHistRhoVSEmbBkg = new TH2F("fHistRhoVSEmbBkg","fHistRhoVSEmbBkg", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
-    fHistRhoVSEmbBkg->GetXaxis()->SetTitle("rho * area [GeV/c]");
+    fHistRhoVSEmbBkg->GetXaxis()->SetTitle("A#rho [GeV/c]");
     fHistRhoVSEmbBkg->GetYaxis()->SetTitle("background of embedded track [GeV/c]");
     fOutput->Add(fHistRhoVSEmbBkg);
   }
@@ -372,26 +374,26 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fHistRho[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistRho[i]);
 
-    histname = "fHistCorrJetsPt_";
+    histname = "fHistJetsCorrPt_";
     histname += i;
-    fHistCorrJetsPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-    fHistCorrJetsPt[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
-    fHistCorrJetsPt[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistCorrJetsPt[i]);
+    fHistJetsCorrPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
+    fHistJetsCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
+    fHistJetsCorrPt[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistJetsCorrPt[i]);
 
-    histname = "fHistCorrJetsPtArea_";
+    histname = "fHistJetsCorrPtArea_";
     histname += i;
-    fHistCorrJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
-    fHistCorrJetsPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
-    fHistCorrJetsPtArea[i]->GetYaxis()->SetTitle("area");
-    fOutput->Add(fHistCorrJetsPtArea[i]);
+    fHistJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistJetsCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
+    fHistJetsCorrPtArea[i]->GetYaxis()->SetTitle("area");
+    fOutput->Add(fHistJetsCorrPtArea[i]);
 
-    histname = "fHistCorrLeadingJetPt_";
+    histname = "fHistLeadingJetCorrPt_";
     histname += i;
-    fHistCorrLeadingJetPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-    fHistCorrLeadingJetPt[i]->GetXaxis()->SetTitle("p_{T}^{RC} [GeV/c]");
-    fHistCorrLeadingJetPt[i]->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistCorrLeadingJetPt[i]);
+    fHistLeadingJetCorrPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
+    fHistLeadingJetCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{RC} [GeV/c]");
+    fHistLeadingJetCorrPt[i]->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistLeadingJetCorrPt[i]);
 
     histname = "fHistRCPtRigid_";
     histname += i;
@@ -464,12 +466,19 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fHistEmbJetsCorrPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbJetsCorrPt[i]);
       
-      histname = "fHistEmbPart_";
+      histname = "fHistEmbPartPt_";
       histname += i;
-      fHistEmbPart[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
-      fHistEmbPart[i]->GetXaxis()->SetTitle("embedded particle p_{T}^{emb} [GeV/c]");
-      fHistEmbPart[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistEmbPart[i]);
+      fHistEmbPartPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
+      fHistEmbPartPt[i]->GetXaxis()->SetTitle("embedded particle p_{T}^{emb} [GeV/c]");
+      fHistEmbPartPt[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistEmbPartPt[i]);
+
+      histname = "fHistDistEmbPartJetAxis_";
+      histname += i;
+      fHistDistEmbPartJetAxis[i] = new TH1F(histname.Data(), histname.Data(), 50, 0, 0.5);
+      fHistDistEmbPartJetAxis[i]->GetXaxis()->SetTitle("distance");
+      fHistDistEmbPartJetAxis[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistDistEmbPartJetAxis[i]);
 
       histname = "fHistEmbNotFoundPhiEta_";
       histname += i;
@@ -551,7 +560,7 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
   if (jet) {
     fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
     fHistRhoVSleadJetPt->Fill(fRhoVal * jet->Area(), jet->Pt());
-    fHistCorrLeadingJetPt[fCentBin]->Fill(maxJetCorrPt);
+    fHistLeadingJetCorrPt[fCentBin]->Fill(maxJetCorrPt);
   }
   
   AliEmcalJet* jet2 = 0;
@@ -626,31 +635,41 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 
   if (embJet) {
     Double_t probePt = 0;
+    Double_t probeEta = 0;
+    Double_t probePhi = 0;
 
     AliVCluster *cluster = dynamic_cast<AliVCluster*>(embPart);
     if (cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
-      
-      fHistEmbPartPhiEta->Fill(nPart.Eta(), nPart.Phi());
+
+      probeEta = nPart.Eta();
+      probePhi = nPart.Phi();
       probePt = nPart.Pt();
     }
     else {
       AliVTrack *track = dynamic_cast<AliVTrack*>(embPart);
       if (track) {
-	fHistEmbPartPhiEta->Fill(track->Eta(), track->Phi());
+	probeEta = track->Eta();
+	probePhi = track->Phi();
 	probePt = track->Pt();
       }
       else {
-	  AliWarning(Form("%s - Embedded jet found but embedded particle not found (wrong type?)!", GetName()));
+	AliWarning(Form("%s - Embedded jet found but embedded particle not found (wrong type?)!", GetName()));
 	return kTRUE;
       }
     }
+    Double_t distProbeJet = TMath::Sqrt((embJet->Eta() - probeEta) * (embJet->Eta() - probeEta) + (embJet->Phi() - probePhi) * (embJet->Phi() - probePhi));
+
+    fHistEmbPartPt[fCentBin]->Fill(probePt);
+    fHistEmbPartPhiEta->Fill(probeEta, probePhi);
+    
+    fHistDistEmbPartJetAxis[fCentBin]->Fill(distProbeJet);
 
     fHistEmbJetsPt[fCentBin]->Fill(embJet->Pt());
     fHistEmbJetsCorrPt[fCentBin]->Fill(embJet->Pt() - fRhoVal * embJet->Area());
-    fHistEmbPart[fCentBin]->Fill(probePt);
     fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
+
     fHistDeltaPtEmb[fCentBin]->Fill(embJet->Pt() - embJet->Area() * fRhoVal - probePt);
     fHistRhoVSEmbBkg->Fill(embJet->Area() * fRhoVal, embJet->Pt() - probePt);
   }
@@ -796,8 +815,8 @@ void AliAnalysisTaskSAJF::DoJetLoop()
 
     fHistJetsPt[fCentBin]->Fill(jet->Pt());
     fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
-    fHistCorrJetsPt[fCentBin]->Fill(corrPt);
-    fHistCorrJetsPtArea[fCentBin]->Fill(corrPt, jet->Area());
+    fHistJetsCorrPt[fCentBin]->Fill(corrPt);
+    fHistJetsCorrPtArea[fCentBin]->Fill(corrPt, jet->Area());
 
     fHistJetPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());
 
