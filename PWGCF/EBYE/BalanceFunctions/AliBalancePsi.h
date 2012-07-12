@@ -62,7 +62,8 @@ class AliBalancePsi : public TObject {
   Int_t GetNumberOfAnalyzedEvent() {return fAnalyzedEvents;}
 
   void CalculateBalance(Double_t gReactionPlane, 
-			vector<Double_t> **chargeVector);
+			TObjArray* particles,
+			TObjArray* particlesMixed);
   
   TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax);
   TH2D   *GetCorrelationFunctionNP(Double_t psiMin, Double_t psiMax);

@@ -27,7 +27,9 @@
 #include "AliStack.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventplane.h"
-#include "AliTHn.h"              
+#include "AliTHn.h"    
+
+#include "AliEventPoolManager.h"           
 
 #include "AliPID.h"                
 #include "AliPIDResponse.h"        
@@ -35,6 +37,7 @@
 
 #include "AliAnalysisTaskBFPsi.h"
 #include "AliBalancePsi.h"
+#include "AliAnalysisTaskTriggeredBF.h"
 
 
 // Analysis task for the BF vs Psi code
@@ -51,9 +54,14 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fBalance(0),
   fRunShuffling(kFALSE),
   fShuffledBalance(0),
+  fRunMixing(kFALSE),
+  fMixingTracks(50000),
+  fMixedBalance(0),
+  fPoolMgr(0),
   fList(0),
   fListBF(0),
   fListBFS(0),
+  fListBFM(0),
   fHistListPIDQA(0),
   fHistEventStats(0),
   fHistCentStats(0),
@@ -138,6 +146,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
   DefineOutput(4, TList::Class());
+  DefineOutput(5, TList::Class());
 }
 
 //________________________________________________________________________
@@ -182,6 +191,12 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
       //fShuffledBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6,15.);
     }
   }
+  if(fRunMixing) {
+    if(!fMixedBalance) {
+      fMixedBalance = new AliBalancePsi();
+      fMixedBalance->SetAnalysisLevel("ESD");
+    }
+  }
 
   //QA list
   fList = new TList();
@@ -199,6 +214,12 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fListBFS->SetOwner();
   }
 
+  if(fRunMixing) {
+    fListBFM = new TList();
+    fListBFM->SetName("listTriggeredBFMixed");
+    fListBFM->SetOwner();
+  }
+
   //PID QA list
   if(fUsePID) {
     fHistListPIDQA = new TList();
@@ -207,12 +228,12 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   }
 
   //Event stats.
-  TString gCutName[4] = {"Total","Offline trigger",
-                         "Vertex","Analyzed"};
+  TString gCutName[5] = {"Total","Offline trigger",
+                         "Vertex","Analyzed","sel. Centrality"};
   fHistEventStats = new TH2F("fHistEventStats",
                              "Event statistics;;Centrality percentile;N_{events}",
-                             4,0.5,4.5,220,-5,105);
-  for(Int_t i = 1; i <= 4; i++)
+                             5,0.5,5.5,220,-5,105);
+  for(Int_t i = 1; i <= 5; i++)
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
 
@@ -308,7 +329,32 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fListBFS->Add(fShuffledBalance->GetHistNpp());
     fListBFS->Add(fShuffledBalance->GetHistNnp());
   }  
+
+  if(fRunMixing) {
+    fListBFM->Add(fMixedBalance->GetHistNp());
+    fListBFM->Add(fMixedBalance->GetHistNn());
+    fListBFM->Add(fMixedBalance->GetHistNpn());
+    fListBFM->Add(fMixedBalance->GetHistNnn());
+    fListBFM->Add(fMixedBalance->GetHistNpp());
+    fListBFM->Add(fMixedBalance->GetHistNnp());
+  }  
   //}
+
+
+  // Event Mixing
+  Int_t trackDepth = fMixingTracks; 
+  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+   
+  Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+  Double_t* centbins        = centralityBins;
+  Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
+  
+  // bins for second buffer are shifted by 100 cm
+  Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+  Double_t* vtxbins     = vertexBins;
+  Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
+
+  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
 
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
@@ -365,849 +411,729 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   PostData(1, fList);
   PostData(2, fListBF);
   if(fRunShuffling) PostData(3, fListBFS);
-  if(fUsePID) PostData(4, fHistListPIDQA);       //PID
+  if(fRunMixing) PostData(4, fListBFM);
+  if(fUsePID) PostData(5, fHistListPIDQA);       //PID
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   // Main loop
   // Called for each event
+
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
-
-  AliESDtrack *track_TPC   = NULL;
-
   Int_t gNumberOfAcceptedTracks = 0;
-  Float_t fCentrality           = 0.;
-  Double_t gReactionPlane       = 0.;
+  Double_t fCentrality          = -1.;
+  Double_t gReactionPlane       = -1.; 
 
-  // vector holding the charges/kinematics of all tracks (charge,y,eta,phi,p0,p1,p2,pt,E)
-  vector<Double_t> *chargeVectorShuffle[9];   // this will be shuffled
-  vector<Double_t> *chargeVector[9];          // original charge
-  for(Int_t i = 0; i < 9; i++){
-    chargeVectorShuffle[i] = new vector<Double_t>;
-    chargeVector[i]        = new vector<Double_t>;
+  // get the event (for generator level: MCEvent())
+  AliVEvent* eventMain = NULL;
+  if(gAnalysisLevel == "MC") {
+    eventMain = dynamic_cast<AliVEvent*>(MCEvent()); 
+  }
+  else{
+    eventMain = dynamic_cast<AliVEvent*>(InputEvent()); 
+ 
+  }
+  if(!eventMain) {
+    AliError("eventMain not available");
+    return;
   }
 
-  Double_t v_charge;
-  Double_t v_y;
-  Double_t v_eta;
-  Double_t v_phi;
-  Double_t v_p[3];
-  Double_t v_pt;
-  Double_t v_E;
-
+  // PID Response task active?
   if(fUsePID) {
     fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
     if (!fPIDResponse) AliFatal("This Task needs the PID response attached to the inputHandler");
   }
- 
-  //ESD analysis
-  if(gAnalysisLevel == "ESD") {
-    AliESDEvent* gESD = dynamic_cast<AliESDEvent*>(InputEvent()); // from TaskSE
-    if (!gESD) {
-      Printf("ERROR: gESD not available");
-      return;
-    }
-
-    // store offline trigger bits
-    fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
-
-    // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    fHistEventStats->Fill(1,fCentrality); //all events
-    Bool_t isSelected = kTRUE;
-    if(fUseOfflineTrigger)
-      isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    if(isSelected) {
-      fHistEventStats->Fill(2,fCentrality); //triggered events
-
-      if(fUseCentrality) {
-	//Centrality stuff
-	AliCentrality *centrality = gESD->GetCentrality();
-	
-	fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-	
-	// take only events inside centrality class
-	if(!centrality->IsEventInCentralityClass(fCentralityPercentileMin,
-						 fCentralityPercentileMax,
-						 fCentralityEstimator.Data()))
-	  return;
-	
-	// centrality QA (V0M)
-	fHistV0M->Fill(gESD->GetVZEROData()->GetMTotV0A(), gESD->GetVZEROData()->GetMTotV0C());
-      }
-	
-      const AliESDVertex *vertex = gESD->GetPrimaryVertex();
-      if(vertex) {
-	if(vertex->GetNContributors() > 0) {
-	  if(vertex->GetZRes() != 0) {
-	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
-	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
-	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
-		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
-		  fHistEventStats->Fill(4,fCentrality); //analayzed events
-		  fHistVx->Fill(vertex->GetXv());
-		  fHistVy->Fill(vertex->GetYv());
-		  fHistVz->Fill(vertex->GetZv(),fCentrality);
-		  
-		  //========Get the VZERO event plane========//
-		  Double_t gVZEROEventPlane = -10.0;
-		  Double_t qxTot = 0.0, qyTot = 0.0;
-		  AliEventplane *ep = gESD->GetEventplane();
-		  if(ep) 
-		    gVZEROEventPlane = ep->CalculateVZEROEventPlane(gESD,10,2,qxTot,qyTot);
-		  if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
-		  gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
-		  fHistEventPlane->Fill(gReactionPlane,fCentrality);
-		  //========Get the VZERO event plane========//
-
-		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
-		  for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {
-		    AliESDtrack* track = dynamic_cast<AliESDtrack *>(gESD->GetTrack(iTracks));
-		    if (!track) {
-		      Printf("ERROR: Could not receive track %d", iTracks);
-		      continue;
-		    }	
-		    
-		    // take only TPC only tracks
-		    track_TPC   = new AliESDtrack();
-		    if(!track->FillTPCOnlyTrack(*track_TPC)) continue;
-		    
-		    //ESD track cuts
-		    if(fESDtrackCuts) 
-		      if(!fESDtrackCuts->AcceptTrack(track_TPC)) continue;
-		    
-		    // fill QA histograms
-		    Float_t b[2];
-		    Float_t bCov[3];
-		    track_TPC->GetImpactParameters(b,bCov);
-		    if (bCov[0]<=0 || bCov[2]<=0) {
-		      AliDebug(1, "Estimated b resolution lower or equal zero!");
-		      bCov[0]=0; bCov[2]=0;
-		    }
-		    
-		    Int_t nClustersTPC = -1;
-		    nClustersTPC = track_TPC->GetTPCNclsIter1();   // TPC standalone
-		    //nClustersTPC = track->GetTPCclusters(0);   // global track
-		    Float_t chi2PerClusterTPC = -1;
-		    if (nClustersTPC!=0) {
-		      chi2PerClusterTPC = track_TPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
-		      //chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);     // global track
-		    }
-
-		    //===========================PID===============================//		    
-		    if(fUsePID) {
-		      Double_t prob[AliPID::kSPECIES]={0.};
-		      Double_t probTPC[AliPID::kSPECIES]={0.};
-		      Double_t probTOF[AliPID::kSPECIES]={0.};
-		      Double_t probTPCTOF[AliPID::kSPECIES]={0.};
-
-		      Double_t nSigma = 0.;
-                      UInt_t detUsedTPC = 0;
-		      UInt_t detUsedTOF = 0;
-                      UInt_t detUsedTPCTOF = 0;
-
-		      //Decide what detector configuration we want to use
-		      switch(fPidDetectorConfig) {
-		      case kTPCpid:
-			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-			nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest));
-			detUsedTPC = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
-			for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
-			  prob[iSpecies] = probTPC[iSpecies];
-			break;
-		      case kTOFpid:
-			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
-			nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest));
-			detUsedTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTOF);
-			for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
-			  prob[iSpecies] = probTOF[iSpecies];
-			break;
-		      case kTPCTOF:
-			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
-			detUsedTPCTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
-			for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
-			  prob[iSpecies] = probTPCTOF[iSpecies];
-			break;
-		      default:
-			break;
-		      }//end switch: define detector mask
-		      
-		      //Filling the PID QA
-		      Double_t tofTime = -999., length = 999., tof = -999.;
-		      Double_t c = TMath::C()*1.E-9;// m/ns
-		      Double_t beta = -999.;
-		      Double_t  nSigmaTOFForParticleOfInterest = -999.;
-		      if ( (track->IsOn(AliESDtrack::kTOFin)) &&
-			   (track->IsOn(AliESDtrack::kTIME))  ) { 
-			tofTime = track->GetTOFsignal();//in ps
-			length = track->GetIntegratedLength();
-			tof = tofTime*1E-3; // ns	
-			
-			if (tof <= 0) {
-			  //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
-			  continue;
-			}
-			if (length <= 0){
-			  //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
-			  continue;
-			}
-			
-			length = length*0.01; // in meters
-			tof = tof*c;
-			beta = length/tof;
-			
-			nSigmaTOFForParticleOfInterest = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest);
-			fHistBetavsPTOFbeforePID ->Fill(track->P()*track->Charge(),beta);
-			fHistProbTOFvsPtbeforePID ->Fill(track->Pt(),probTOF[fParticleOfInterest]);
-			fHistNSigmaTOFvsPtbeforePID ->Fill(track->Pt(),nSigmaTOFForParticleOfInterest);
-		      }//TOF signal 
-		      
-		      
-		      Double_t  nSigmaTPCForParticleOfInterest = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest);
-		      fHistdEdxVsPTPCbeforePID -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
-		      fHistProbTPCvsPtbeforePID -> Fill(track->Pt(),probTPC[fParticleOfInterest]); 
-		      fHistNSigmaTPCvsPtbeforePID -> Fill(track->Pt(),nSigmaTPCForParticleOfInterest); 
-		      fHistProbTPCTOFvsPtbeforePID -> Fill(track->Pt(),probTPCTOF[fParticleOfInterest]);
-		      //end of QA-before pid
-		      
-		      if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
-			//Make the decision based on the n-sigma
-			if(fUsePIDnSigma) {
-			  if(nSigma > fPIDNSigma) continue;}
-			
-			//Make the decision based on the bayesian
-			else if(fUsePIDPropabilities) {
-			  if(fParticleOfInterest != TMath::LocMax(AliPID::kSPECIES,prob)) continue;
-			  if (prob[fParticleOfInterest] < fMinAcceptedPIDProbability) continue;      
-			}
-			
-			//Fill QA after the PID
-			fHistBetavsPTOFafterPID ->Fill(track->P()*track->Charge(),beta);
-			fHistProbTOFvsPtafterPID ->Fill(track->Pt(),probTOF[fParticleOfInterest]);
-			fHistNSigmaTOFvsPtafterPID ->Fill(track->Pt(),nSigmaTOFForParticleOfInterest);
-			
-			fHistdEdxVsPTPCafterPID -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
-			fHistProbTPCvsPtafterPID -> Fill(track->Pt(),probTPC[fParticleOfInterest]); 
-			fHistProbTPCTOFvsPtafterPID -> Fill(track->Pt(),probTPCTOF[fParticleOfInterest]);
-			fHistNSigmaTPCvsPtafterPID -> Fill(track->Pt(),nSigmaTPCForParticleOfInterest); 
-		      }
-		      
-		      PostData(4, fHistListPIDQA);
-		    }
-                    //===========================PID===============================//
-		    v_charge = track_TPC->Charge();
-		    v_y      = track_TPC->Y();
-		    v_eta    = track_TPC->Eta();
-		    v_phi    = track_TPC->Phi() * TMath::RadToDeg();
-		    v_E      = track_TPC->E();
-		    v_pt     = track_TPC->Pt();
-		    track_TPC->PxPyPz(v_p);
-		    fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
-		    fHistDCA->Fill(b[1],b[0]);
-		    fHistChi2->Fill(chi2PerClusterTPC,fCentrality);
-		    fHistPt->Fill(v_pt,fCentrality);
-		    fHistEta->Fill(v_eta,fCentrality);
-		    fHistPhi->Fill(v_phi,fCentrality);
-		    fHistRapidity->Fill(v_y,fCentrality);
-		    if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
-		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
-
-		    // fill charge vector
-		    chargeVector[0]->push_back(v_charge);
-		    chargeVector[1]->push_back(v_y);
-		    chargeVector[2]->push_back(v_eta);
-		    chargeVector[3]->push_back(v_phi);
-		    chargeVector[4]->push_back(v_p[0]);
-		    chargeVector[5]->push_back(v_p[1]);
-		    chargeVector[6]->push_back(v_p[2]);
-		    chargeVector[7]->push_back(v_pt);
-		    chargeVector[8]->push_back(v_E);
-
-		    if(fRunShuffling) {
-		      chargeVectorShuffle[0]->push_back(v_charge);
-		      chargeVectorShuffle[1]->push_back(v_y);
-		      chargeVectorShuffle[2]->push_back(v_eta);
-		      chargeVectorShuffle[3]->push_back(v_phi);
-		      chargeVectorShuffle[4]->push_back(v_p[0]);
-		      chargeVectorShuffle[5]->push_back(v_p[1]);
-		      chargeVectorShuffle[6]->push_back(v_p[2]);
-		      chargeVectorShuffle[7]->push_back(v_pt);
-		      chargeVectorShuffle[8]->push_back(v_E);
-		    }
-		    
-		    delete track_TPC;
-		    
-		  } //track loop
-		}//Vz cut
-	      }//Vy cut
-	    }//Vx cut
-	  }//proper vertex resolution
-	}//proper number of contributors
-      }//vertex object valid
-    }//triggered event 
-  }//ESD analysis
   
-  //AOD analysis (vertex and track cuts also here!!!!)
-  else if(gAnalysisLevel == "AOD") {
-    AliAODEvent* gAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
-    if(!gAOD) {
-      Printf("ERROR: gAOD not available");
-      return;
-    }
+  // check event cuts and fill event histograms
+  if((fCentrality = IsEventAccepted(eventMain)) < 0){
+    return;
+  }
 
-    AliAODHeader *aodHeader = gAOD->GetHeader();
-
-    // store offline trigger bits
-    fHistTriggerStats->Fill(aodHeader->GetOfflineTrigger());
-    
-    // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    fHistEventStats->Fill(1,fCentrality); //all events
-    Bool_t isSelected = kTRUE;
-    if(fUseOfflineTrigger)
-      isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    if(isSelected) {
-      fHistEventStats->Fill(2,fCentrality); //triggered events
-		  
-      //Centrality stuff (centrality in AOD header)
-      if(fUseCentrality) {
-    	fCentrality = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
- 	
-    	// QA for centrality estimators
-    	fHistCentStats->Fill(0.,aodHeader->GetCentralityP()->GetCentralityPercentile("V0M"));
-    	fHistCentStats->Fill(1.,aodHeader->GetCentralityP()->GetCentralityPercentile("FMD"));
-    	fHistCentStats->Fill(2.,aodHeader->GetCentralityP()->GetCentralityPercentile("TRK"));
-    	fHistCentStats->Fill(3.,aodHeader->GetCentralityP()->GetCentralityPercentile("TKL"));
-    	fHistCentStats->Fill(4.,aodHeader->GetCentralityP()->GetCentralityPercentile("CL0"));
-    	fHistCentStats->Fill(5.,aodHeader->GetCentralityP()->GetCentralityPercentile("CL1"));
-    	fHistCentStats->Fill(6.,aodHeader->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
-    	fHistCentStats->Fill(7.,aodHeader->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
-    	fHistCentStats->Fill(8.,aodHeader->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
-	
-    	// take only events inside centrality class
-    	if((fCentrality < fCentralityPercentileMin) || (fCentrality > fCentralityPercentileMax)) 
-    	  return;
-	
-    	// centrality QA (V0M)
-    	fHistV0M->Fill(gAOD->GetVZEROData()->GetMTotV0A(), gAOD->GetVZEROData()->GetMTotV0C());
-	
-    	// centrality QA (reference tracks)
-    	fHistRefTracks->Fill(0.,aodHeader->GetRefMultiplicity());
-    	fHistRefTracks->Fill(1.,aodHeader->GetRefMultiplicityPos());
-    	fHistRefTracks->Fill(2.,aodHeader->GetRefMultiplicityNeg());
-    	fHistRefTracks->Fill(3.,aodHeader->GetTPConlyRefMultiplicity());
-    	fHistRefTracks->Fill(4.,aodHeader->GetNumberOfITSClusters(0));
-    	fHistRefTracks->Fill(5.,aodHeader->GetNumberOfITSClusters(1));
-    	fHistRefTracks->Fill(6.,aodHeader->GetNumberOfITSClusters(2));
-    	fHistRefTracks->Fill(7.,aodHeader->GetNumberOfITSClusters(3));
-    	fHistRefTracks->Fill(8.,aodHeader->GetNumberOfITSClusters(4));
-      }
-
-      const AliAODVertex *vertex = gAOD->GetPrimaryVertex();
-      
-      if(vertex) {
-      	Double32_t fCov[6];
-      	vertex->GetCovarianceMatrix(fCov);
-	
-      	if(vertex->GetNContributors() > 0) {
-      	  if(fCov[5] != 0) {
-      	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
-      	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
-      	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
-      		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-      		  fHistEventStats->Fill(4,fCentrality); //analyzed events
-      		  fHistVx->Fill(vertex->GetX());
-      		  fHistVy->Fill(vertex->GetY());
-      		  fHistVz->Fill(vertex->GetZ(),fCentrality);
-	
-		  //========Get the VZERO event plane========//
-		  Double_t gVZEROEventPlane = -10.0;
-		  Double_t qxTot = 0.0, qyTot = 0.0;
-		  AliEventplane *ep = gAOD->GetEventplane();
-		  if(ep) 
-		    gVZEROEventPlane = ep->CalculateVZEROEventPlane(gAOD,10,2,qxTot,qyTot);
-		  if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
-		  gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
-		  fHistEventPlane->Fill(gReactionPlane,fCentrality);
-		  //========Get the VZERO event plane========//
-
-      		  //Printf("There are %d tracks in this event", gAOD->GetNumberOfTracks());
-      		  for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
-      		    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(iTracks));
-      		    if (!aodTrack) {
-      		      Printf("ERROR: Could not receive track %d", iTracks);
-      		      continue;
-      		    }
-		    
-      		    // AOD track cuts
-		    
-      		    // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
-      		    // take only TPC only tracks 
-      		    fHistTrackStats->Fill(aodTrack->GetFilterMap());
-      		    if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
-		    
-      		    v_charge = aodTrack->Charge();
-      		    v_y      = aodTrack->Y();
-      		    v_eta    = aodTrack->Eta();
-      		    v_phi    = aodTrack->Phi() * TMath::RadToDeg();
-      		    v_E      = aodTrack->E();
-      		    v_pt     = aodTrack->Pt();
-      		    aodTrack->PxPyPz(v_p);
-		    
-      		    Float_t DCAxy = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
-      		    Float_t DCAz  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
-		    
-		    
-      		    // Kinematics cuts from ESD track cuts
-      		    if( v_pt < fPtMin || v_pt > fPtMax)      continue;
-		    if (!fUsePID) {
-		      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
-		    }
-		    else if (fUsePID){
-		      if( v_y < fEtaMin || v_y > fEtaMax)  continue;
-		    }
-
-      		    // Extra DCA cuts (for systematic studies [!= -1])
-      		    if( fDCAxyCut != -1 && fDCAzCut != -1){
-      		      if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
-      			continue;  // 2D cut
-      		      }
-      		    }
-		    
-      		    // Extra TPC cuts (for systematic studies [!= -1])
-      		    if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
-      		      continue;
-      		    }
-      		    if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
-      		      continue;
-      		    }
-		    
-      		    // fill QA histograms
-      		    fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
-      		    fHistDCA->Fill(DCAz,DCAxy);
-      		    fHistChi2->Fill(aodTrack->Chi2perNDF(),fCentrality);
-      		    fHistPt->Fill(v_pt,fCentrality);
-      		    fHistEta->Fill(v_eta,fCentrality);
-      		    fHistPhi->Fill(v_phi,fCentrality);
-		    fHistRapidity->Fill(v_y,fCentrality);
-		    if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
-		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
-
-      		    // fill charge vector
-      		    chargeVector[0]->push_back(v_charge);
-      		    chargeVector[1]->push_back(v_y);
-      		    chargeVector[2]->push_back(v_eta);
-      		    chargeVector[3]->push_back(v_phi);
-      		    chargeVector[4]->push_back(v_p[0]);
-      		    chargeVector[5]->push_back(v_p[1]);
-      		    chargeVector[6]->push_back(v_p[2]);
-      		    chargeVector[7]->push_back(v_pt);
-      		    chargeVector[8]->push_back(v_E);
-
-      		    if(fRunShuffling) {
-      		      chargeVectorShuffle[0]->push_back(v_charge);
-      		      chargeVectorShuffle[1]->push_back(v_y);
-      		      chargeVectorShuffle[2]->push_back(v_eta);
-      		      chargeVectorShuffle[3]->push_back(v_phi);
-      		      chargeVectorShuffle[4]->push_back(v_p[0]);
-      		      chargeVectorShuffle[5]->push_back(v_p[1]);
-      		      chargeVectorShuffle[6]->push_back(v_p[2]);
-      		      chargeVectorShuffle[7]->push_back(v_pt);
-      		      chargeVectorShuffle[8]->push_back(v_E);
-      		    }
-		    		    
-      		    gNumberOfAcceptedTracks += 1;
-		    
-      		  } //track loop
-      		}//Vz cut
-      	      }//Vy cut
-      	    }//Vx cut
-      	  }//proper vertex resolution
-	}//proper number of contributors
-      }//vertex object valid
-    }//triggered event 
-  }//AOD analysis
-
-  //MC-ESD analysis
-  if(gAnalysisLevel == "MCESD") {
-    AliMCEvent*  mcEvent = MCEvent(); 
-    if (!mcEvent) {
-      Printf("ERROR: mcEvent not available");
-      return;
-    }
-
-    AliESDEvent* gESD = dynamic_cast<AliESDEvent*>(InputEvent()); // from TaskSE
-    if (!gESD) {
-      Printf("ERROR: gESD not available");
-      return;
-    }
-
-    // store offline trigger bits
-    fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
-
-    // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    fHistEventStats->Fill(1,fCentrality); //all events
-    Bool_t isSelected = kTRUE;
-    if(fUseOfflineTrigger)
-      isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    if(isSelected) {
-      fHistEventStats->Fill(2,fCentrality); //triggered events
-
-      if(fUseCentrality) {
-	//Centrality stuff
-	AliCentrality *centrality = gESD->GetCentrality();
-
-	fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-	
-	// take only events inside centrality class
-	if(!centrality->IsEventInCentralityClass(fCentralityPercentileMin,
-						 fCentralityPercentileMax,
-						 fCentralityEstimator.Data()))
-	  return;
-	
-	// centrality QA (V0M)
-	fHistV0M->Fill(gESD->GetVZEROData()->GetMTotV0A(), gESD->GetVZEROData()->GetMTotV0C());
-      }
-	
-      const AliESDVertex *vertex = gESD->GetPrimaryVertex();
-      if(vertex) {
-	if(vertex->GetNContributors() > 0) {
-	  if(vertex->GetZRes() != 0) {
-	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
-	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
-	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
-		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
-		  fHistEventStats->Fill(4,fCentrality); //analayzed events
-		  fHistVx->Fill(vertex->GetXv());
-		  fHistVy->Fill(vertex->GetYv());
-		  fHistVz->Fill(vertex->GetZv(),fCentrality);
-		  
-		  //========Get the VZERO event plane========//
-		  Double_t gVZEROEventPlane = -10.0;
-		  Double_t qxTot = 0.0, qyTot = 0.0;
-		  AliEventplane *ep = gESD->GetEventplane();
-		  if(ep) 
-		    gVZEROEventPlane = ep->CalculateVZEROEventPlane(gESD,10,2,qxTot,qyTot);
-		  if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
-		  gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
-		  fHistEventPlane->Fill(gReactionPlane,fCentrality);
-		  //========Get the VZERO event plane========//
-
-		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
-		  for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {
-		    AliESDtrack* track = dynamic_cast<AliESDtrack *>(gESD->GetTrack(iTracks));
-		    if (!track) {
-		      Printf("ERROR: Could not receive track %d", iTracks);
-		      continue;
-		    }	
-		    
-		    Int_t label = TMath::Abs(track->GetLabel());
-		    if(label > mcEvent->GetNumberOfTracks()) continue;
-		    if(label > mcEvent->GetNumberOfPrimaries()) continue;
-		    
-		    AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(label));
-		    if(!mcTrack) continue;
-
-		    // take only TPC only tracks
-		    track_TPC   = new AliESDtrack();
-		    if(!track->FillTPCOnlyTrack(*track_TPC)) continue;
-		    
-		    //ESD track cuts
-		    if(fESDtrackCuts) 
-		      if(!fESDtrackCuts->AcceptTrack(track_TPC)) continue;
-		    
-		    // fill QA histograms
-		    Float_t b[2];
-		    Float_t bCov[3];
-		    track_TPC->GetImpactParameters(b,bCov);
-		    if (bCov[0]<=0 || bCov[2]<=0) {
-		      AliDebug(1, "Estimated b resolution lower or equal zero!");
-		      bCov[0]=0; bCov[2]=0;
-		    }
-		    
-		    Int_t nClustersTPC = -1;
-		    nClustersTPC = track_TPC->GetTPCNclsIter1();   // TPC standalone
-		    //nClustersTPC = track->GetTPCclusters(0);   // global track
-		    Float_t chi2PerClusterTPC = -1;
-		    if (nClustersTPC!=0) {
-		      chi2PerClusterTPC = track_TPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
-		      //chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);     // global track
-		    }
-		    
-		    v_charge = track_TPC->Charge();
-		    v_y      = track_TPC->Y();
-		    v_eta    = track_TPC->Eta();
-		    v_phi    = track_TPC->Phi() * TMath::RadToDeg();
-		    v_E      = track_TPC->E();
-		    v_pt     = track_TPC->Pt();
-		    track_TPC->PxPyPz(v_p);
-
-		    fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
-		    fHistDCA->Fill(b[1],b[0]);
-		    fHistChi2->Fill(chi2PerClusterTPC,fCentrality);
-		    fHistPt->Fill(v_pt,fCentrality);
-		    fHistEta->Fill(v_eta,fCentrality);
-		    fHistPhi->Fill(v_phi,fCentrality);
-		    fHistRapidity->Fill(v_y,fCentrality);
-		    if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
-		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
-
-		    // fill charge vector
-		    chargeVector[0]->push_back(v_charge);
-		    chargeVector[1]->push_back(v_y);
-		    chargeVector[2]->push_back(v_eta);
-		    chargeVector[3]->push_back(v_phi);
-		    chargeVector[4]->push_back(v_p[0]);
-		    chargeVector[5]->push_back(v_p[1]);
-		    chargeVector[6]->push_back(v_p[2]);
-		    chargeVector[7]->push_back(v_pt);
-		    chargeVector[8]->push_back(v_E);
-
-		    if(fRunShuffling) {
-		      chargeVectorShuffle[0]->push_back(v_charge);
-		      chargeVectorShuffle[1]->push_back(v_y);
-		      chargeVectorShuffle[2]->push_back(v_eta);
-		      chargeVectorShuffle[3]->push_back(v_phi);
-		      chargeVectorShuffle[4]->push_back(v_p[0]);
-		      chargeVectorShuffle[5]->push_back(v_p[1]);
-		      chargeVectorShuffle[6]->push_back(v_p[2]);
-		      chargeVectorShuffle[7]->push_back(v_pt);
-		      chargeVectorShuffle[8]->push_back(v_E);
-		    }
-		    
-		    delete track_TPC;
-      		    gNumberOfAcceptedTracks += 1;
-		    
-		  } //track loop
-		}//Vz cut
-	      }//Vy cut
-	    }//Vx cut
-	  }//proper vertex resolution
-	}//proper number of contributors
-      }//vertex object valid
-    }//triggered event 
-  }//MC-ESD analysis
-
-  //MC analysis
-  else if(gAnalysisLevel == "MC") {
-    AliMCEvent*  mcEvent = MCEvent(); 
-    if (!mcEvent) {
-      Printf("ERROR: mcEvent not available");
-      return;
-    }
-    fHistEventStats->Fill(1,fCentrality); //total events
-    fHistEventStats->Fill(2,fCentrality); //offline trigger
-
-    Double_t gImpactParameter = 0.;
-    if(fUseCentrality) {
-      //Get the MC header
-      AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
-      if (headerH) {
-	//Printf("=====================================================");
-	//Printf("Reaction plane angle: %lf",headerH->ReactionPlaneAngle());
-	//Printf("Impact parameter: %lf",headerH->ImpactParameter());
-	//Printf("=====================================================");
-	gReactionPlane = headerH->ReactionPlaneAngle();
-	gImpactParameter = headerH->ImpactParameter();
-	fCentrality = gImpactParameter;
-      }
-      fCentrality = gImpactParameter;
-      fHistEventPlane->Fill(gReactionPlane*TMath::RadToDeg(),fCentrality);
-
-      // take only events inside centrality class (DIDN'T CHANGE THIS UP TO NOW)
-      if((fImpactParameterMin > gImpactParameter) || (fImpactParameterMax < gImpactParameter))
-	return;
-    }
-    
-    AliGenEventHeader *header = mcEvent->GenEventHeader();
-    if(!header) return;
-    
-    TArrayF gVertexArray;
-    header->PrimaryVertex(gVertexArray);
-    //Printf("Vertex: %lf (x) - %lf (y) - %lf (z)",
-    //gVertexArray.At(0),
-    //gVertexArray.At(1),
-    //gVertexArray.At(2));
-    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
-    if(TMath::Abs(gVertexArray.At(0)) < fVxMax) {
-      if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
-	if(TMath::Abs(gVertexArray.At(2)) < fVzMax) {
-	  fHistEventStats->Fill(4,fCentrality); //analayzed events
-	  fHistVx->Fill(gVertexArray.At(0));
-	  fHistVy->Fill(gVertexArray.At(1));
-	  fHistVz->Fill(gVertexArray.At(2),fCentrality);
-	  
-	  Printf("There are %d tracks in this event", mcEvent->GetNumberOfPrimaries());
-	  for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfPrimaries(); iTracks++) {
-	    AliMCParticle* track = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iTracks));
-	    if (!track) {
-	      Printf("ERROR: Could not receive particle %d", iTracks);
-	      continue;
-	    }
-	    
-	    //exclude non stable particles
-	    if(!mcEvent->IsPhysicalPrimary(iTracks)) continue;
-
-	    v_eta    = track->Eta();
-	    v_pt     = track->Pt();
-	    v_y      = track->Y();
-
-	    if( v_pt < fPtMin || v_pt > fPtMax)      
-	      continue;
-	    if (!fUsePID) {
-	      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
-	    }
-	    else if (fUsePID){
-	      if( v_y < fEtaMin || v_y > fEtaMax)  continue;
-	    }
-
-	    //analyze one set of particles
-	    if(fUseMCPdgCode) {
-	      TParticle *particle = track->Particle();
-	      if(!particle) continue;
-	      
-	      Int_t gPdgCode = particle->GetPdgCode();
-	      if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
-		continue;
-	    }
-	    
-	    //Use the acceptance parameterization
-	    if(fAcceptanceParameterization) {
-	      Double_t gRandomNumber = gRandom->Rndm();
-	      if(gRandomNumber > fAcceptanceParameterization->Eval(track->Pt())) 
-		continue;
-	    }
-	    
-	    //Exclude resonances
-	    if(fExcludeResonancesInMC) {
-	      TParticle *particle = track->Particle();
-	      if(!particle) continue;
-	      
-	      Bool_t kExcludeParticle = kFALSE;
-	      Int_t gMotherIndex = particle->GetFirstMother();
-	      if(gMotherIndex != -1) {
-		AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(gMotherIndex));
-		if(motherTrack) {
-		  TParticle *motherParticle = motherTrack->Particle();
-		  if(motherParticle) {
-		    Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
-		    //if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
-		    if(pdgCodeOfMother == 113) {
-		      kExcludeParticle = kTRUE;
-		    }
-		  }
-		}
-	      }
-	      
-	      //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
-	      if(kExcludeParticle) continue;
-	    }
-
-	    v_charge = track->Charge();
-	    v_phi    = track->Phi();
-	    v_E      = track->E();
-	    track->PxPyPz(v_p);
-	    //Printf("phi (before): %lf",v_phi);
-
-	    fHistPt->Fill(v_pt,fCentrality);
-	    fHistEta->Fill(v_eta,fCentrality);
-	    fHistPhi->Fill(v_phi*TMath::RadToDeg(),fCentrality);
-	    fHistRapidity->Fill(v_y,fCentrality);
-	    if(v_charge > 0) fHistPhiPos->Fill(v_phi*TMath::RadToDeg(),fCentrality);
-	    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi*TMath::RadToDeg(),fCentrality);
-
-	    //Flow after burner
-	    if(fUseFlowAfterBurner) {
-	      Double_t precisionPhi = 0.001;
-	      Int_t maxNumberOfIterations = 100;
-
-	      Double_t phi0 = v_phi;
-	      Double_t gV2 = fDifferentialV2->Eval(v_pt);
-
-	      for (Int_t j = 0; j < maxNumberOfIterations; j++) {
-		Double_t phiprev = v_phi;
-		Double_t fl = v_phi - phi0 + gV2*TMath::Sin(2.*(v_phi - gReactionPlane));
-		Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(v_phi - gReactionPlane)); 
-		v_phi -= fl/fp;
-		if (TMath::AreEqualAbs(phiprev,v_phi,precisionPhi)) break;
-	      }
-	      //Printf("phi (after): %lf\n",v_phi);
-	      	      Double_t v_DeltaphiBefore = phi0 - gReactionPlane;
-	      if(v_DeltaphiBefore < 0) v_DeltaphiBefore += 2*TMath::Pi();
-	      fHistPhiBefore->Fill(v_DeltaphiBefore,fCentrality);
-
-	      Double_t v_DeltaphiAfter = v_phi - gReactionPlane;
-	      if(v_DeltaphiAfter < 0) v_DeltaphiAfter += 2*TMath::Pi();
-	      fHistPhiAfter->Fill(v_DeltaphiAfter,fCentrality);
-	    }
-	    
-	    v_phi *= TMath::RadToDeg();
-
-	    // fill charge vector
-	    chargeVector[0]->push_back(v_charge);
-	    chargeVector[1]->push_back(v_y);
-	    chargeVector[2]->push_back(v_eta);
-	    chargeVector[3]->push_back(v_phi);
-	    chargeVector[4]->push_back(v_p[0]);
-	    chargeVector[5]->push_back(v_p[1]);
-	    chargeVector[6]->push_back(v_p[2]);
-	    chargeVector[7]->push_back(v_pt);
-	    chargeVector[8]->push_back(v_E);
-	    
-	    if(fRunShuffling) {
-	      chargeVectorShuffle[0]->push_back(v_charge);
-	      chargeVectorShuffle[1]->push_back(v_y);
-	      chargeVectorShuffle[2]->push_back(v_eta);
-	      chargeVectorShuffle[3]->push_back(v_phi);
-	      chargeVectorShuffle[4]->push_back(v_p[0]);
-	      chargeVectorShuffle[5]->push_back(v_p[1]);
-	      chargeVectorShuffle[6]->push_back(v_p[2]);
-	      chargeVectorShuffle[7]->push_back(v_pt);
-	      chargeVectorShuffle[8]->push_back(v_E);
-	    }
-	    gNumberOfAcceptedTracks += 1;
-		    
-	  } //track loop
-	  gReactionPlane *= TMath::RadToDeg();
-	}//Vz cut
-      }//Vy cut
-    }//Vx cut
-  }//MC analysis
+  // get the reaction plane
+  gReactionPlane = GetEventPlane(eventMain);
+  fHistEventPlane->Fill(gReactionPlane,fCentrality);
+  if(gReactionPlane < 0){
+    return;
+  }
   
+  // get the accepted tracks in main event
+  TObjArray *tracksMain = GetAcceptedTracks(eventMain,fCentrality,gReactionPlane);
+  gNumberOfAcceptedTracks = tracksMain->GetEntriesFast();
+
   //multiplicity cut (used in pp)
+  fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks,fCentrality);
   if(fUseMultiplicity) {
     if((gNumberOfAcceptedTracks < fNumberOfAcceptedTracksMin)||(gNumberOfAcceptedTracks > fNumberOfAcceptedTracksMax))
       return;
   }
-  fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks,fCentrality);
+
+  // store charges of all accepted tracks, shuffle and reassign (two extra loops!)
+  TObjArray* tracksShuffled = NULL;
+  if(fRunShuffling){
+    tracksShuffled = GetShuffledTracks(tracksMain);
+  }
+  
+  // Event mixing 
+  if (fRunMixing)
+    {
+      // 1. First get an event pool corresponding in mult (cent) and
+      //    zvertex to the current event. Once initialized, the pool
+      //    should contain nMix (reduced) events. This routine does not
+      //    pre-scan the chain. The first several events of every chain
+      //    will be skipped until the needed pools are filled to the
+      //    specified depth. If the pool categories are not too rare, this
+      //    should not be a problem. If they are rare, you could lose`
+      //    statistics.
+      
+      // 2. Collect the whole pool's content of tracks into one TObjArray
+      //    (bgTracks), which is effectively a single background super-event.
+      
+      // 3. The reduced and bgTracks arrays must both be passed into
+      //    FillCorrelations(). Also nMix should be passed in, so a weight
+      //    of 1./nMix can be applied.
+      
+      AliEventPool* pool = fPoolMgr->GetEventPool(fCentrality, eventMain->GetPrimaryVertex()->GetZ());
+      
+      if (!pool){
+	AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, eventMain->GetPrimaryVertex()->GetZ()));
+      }
+      else{
+	
+	//pool->SetDebug(1);
+	
+	if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5){ 
+	  
+	  
+	  Int_t nMix = pool->GetCurrentNEvents();
+	  //cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
+	  
+	  //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+	  //((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+	  //if (pool->IsReady())
+	  //((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
+	  
+	  // Fill mixed-event histos here  
+	  for (Int_t jMix=0; jMix<nMix; jMix++) 
+	    {
+	      TObjArray* tracksMixed = pool->GetEvent(jMix);
+	      fMixedBalance->CalculateBalance(gReactionPlane,tracksMain,tracksMixed); 
+	    }
+	}
+	
+	// Update the Event pool
+	pool->UpdatePool(tracksMain);
+	//pool->PrintInfo();
+	
+      }//pool NULL check  
+    }//run mixing
   
   // calculate balance function
-  if(fUseMultiplicity) 
-    //fBalance->CalculateBalance(gNumberOfAcceptedTracks,gReactionPlane,chargeVector);
-    fBalance->CalculateBalance(gReactionPlane,chargeVector);
-  else                 
-    fBalance->CalculateBalance(gReactionPlane,chargeVector);
-
-  if(fRunShuffling) {
-    // shuffle charges
-    random_shuffle( chargeVectorShuffle[0]->begin(), chargeVectorShuffle[0]->end() );
-    if(fUseMultiplicity) 
-      fShuffledBalance->CalculateBalance(gReactionPlane,chargeVectorShuffle);
-    else                 
-      fShuffledBalance->CalculateBalance(gReactionPlane,chargeVectorShuffle);
+  fBalance->CalculateBalance(gReactionPlane,tracksMain,NULL);
+  
+  // calculate shuffled balance function
+  if(fRunShuffling && tracksShuffled != NULL) {
+    fShuffledBalance->CalculateBalance(gReactionPlane,tracksShuffled,NULL);
   }
 }      
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
+  // Checks the Event cuts
+  // Fills Event statistics histograms
+  
+  Bool_t isSelectedMain = kTRUE;
+  Float_t fCentrality = -1.;
+  TString gAnalysisLevel = fBalance->GetAnalysisLevel();
+
+  fHistEventStats->Fill(1,fCentrality); //all events
+
+  // Event trigger bits
+  fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+  if(fUseOfflineTrigger)
+    isSelectedMain = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  
+  if(isSelectedMain) {
+    fHistEventStats->Fill(2,fCentrality); //triggered events
+    
+    //Centrality stuff 
+    if(fUseCentrality) {
+      if(gAnalysisLevel == "AOD") { //centrality in AOD header
+	AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+	if(header){
+	  fCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+	  
+	  // QA for centrality estimators
+	  fHistCentStats->Fill(0.,header->GetCentralityP()->GetCentralityPercentile("V0M"));
+	  fHistCentStats->Fill(1.,header->GetCentralityP()->GetCentralityPercentile("FMD"));
+	  fHistCentStats->Fill(2.,header->GetCentralityP()->GetCentralityPercentile("TRK"));
+	  fHistCentStats->Fill(3.,header->GetCentralityP()->GetCentralityPercentile("TKL"));
+	  fHistCentStats->Fill(4.,header->GetCentralityP()->GetCentralityPercentile("CL0"));
+	  fHistCentStats->Fill(5.,header->GetCentralityP()->GetCentralityPercentile("CL1"));
+	  fHistCentStats->Fill(6.,header->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
+	  fHistCentStats->Fill(7.,header->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
+	  fHistCentStats->Fill(8.,header->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
+	  
+	  // centrality QA (V0M)
+	  fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());
+	  
+	  // centrality QA (reference tracks)
+	  fHistRefTracks->Fill(0.,header->GetRefMultiplicity());
+	  fHistRefTracks->Fill(1.,header->GetRefMultiplicityPos());
+	  fHistRefTracks->Fill(2.,header->GetRefMultiplicityNeg());
+	  fHistRefTracks->Fill(3.,header->GetTPConlyRefMultiplicity());
+	  fHistRefTracks->Fill(4.,header->GetNumberOfITSClusters(0));
+	  fHistRefTracks->Fill(5.,header->GetNumberOfITSClusters(1));
+	  fHistRefTracks->Fill(6.,header->GetNumberOfITSClusters(2));
+	  fHistRefTracks->Fill(7.,header->GetNumberOfITSClusters(3));
+	  fHistRefTracks->Fill(8.,header->GetNumberOfITSClusters(4));
+	}//AOD header
+      }//AOD
+
+      else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD"){ // centrality class for ESDs or MC-ESDs
+ 	AliCentrality *centrality = event->GetCentrality();
+	fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+
+	// QA for centrality estimators
+	fHistCentStats->Fill(0.,centrality->GetCentralityPercentile("V0M"));
+	fHistCentStats->Fill(1.,centrality->GetCentralityPercentile("FMD"));
+	fHistCentStats->Fill(2.,centrality->GetCentralityPercentile("TRK"));
+	fHistCentStats->Fill(3.,centrality->GetCentralityPercentile("TKL"));
+	fHistCentStats->Fill(4.,centrality->GetCentralityPercentile("CL0"));
+	fHistCentStats->Fill(5.,centrality->GetCentralityPercentile("CL1"));
+	fHistCentStats->Fill(6.,centrality->GetCentralityPercentile("V0MvsFMD"));
+	fHistCentStats->Fill(7.,centrality->GetCentralityPercentile("TKLvsV0M"));
+	fHistCentStats->Fill(8.,centrality->GetCentralityPercentile("ZEMvsZDC"));
+
+	// centrality QA (V0M)
+	fHistV0M->Fill(event->GetVZEROData()->GetMTotV0A(), event->GetVZEROData()->GetMTotV0C());
+      }//ESD
+      else if(gAnalysisLevel == "MC"){
+	Double_t gImpactParameter = 0.;
+	AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
+	if(headerH){
+	  gImpactParameter = headerH->ImpactParameter();
+	  fCentrality      = gImpactParameter;
+	}//MC header
+      }//MC
+      else{
+	fCentrality = -1.;
+      }
+    }
+    
+    // Event Vertex MC
+    if(gAnalysisLevel == "MC"){
+      AliGenEventHeader *header = dynamic_cast<AliMCEvent*>(event)->GenEventHeader();
+      if(header){  
+	TArrayF gVertexArray;
+	header->PrimaryVertex(gVertexArray);
+	//Printf("Vertex: %lf (x) - %lf (y) - %lf (z)",
+	//gVertexArray.At(0),
+	//gVertexArray.At(1),
+	//gVertexArray.At(2));
+	fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
+	if(TMath::Abs(gVertexArray.At(0)) < fVxMax) {
+	  if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
+	    if(TMath::Abs(gVertexArray.At(2)) < fVzMax) {
+	      fHistEventStats->Fill(4,fCentrality); //analayzed events
+	      fHistVx->Fill(gVertexArray.At(0));
+	      fHistVy->Fill(gVertexArray.At(1));
+	      fHistVz->Fill(gVertexArray.At(2),fCentrality);
+	      
+	      // take only events inside centrality class
+	      if((fImpactParameterMin < fCentrality) && (fImpactParameterMax > fCentrality)){
+		return fCentrality;	    
+	      }//centrality class
+	    }//Vz cut
+	  }//Vy cut
+	}//Vx cut
+      }//header    
+    }//MC
+    
+    // Event Vertex AOD, ESD, ESDMC
+    else{
+      const AliVVertex *vertex = event->GetPrimaryVertex();
+      
+      if(vertex) {
+	Double32_t fCov[6];
+	vertex->GetCovarianceMatrix(fCov);
+	if(vertex->GetNContributors() > 0) {
+	  if(fCov[5] != 0) {
+	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
+	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
+	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
+		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
+		  fHistEventStats->Fill(4,fCentrality); //analyzed events
+		  fHistVx->Fill(vertex->GetX());
+		  fHistVy->Fill(vertex->GetY());
+		  fHistVz->Fill(vertex->GetZ(),fCentrality);
+		  
+		  // take only events inside centrality class
+		  if((fCentrality > fCentralityPercentileMin) && (fCentrality < fCentralityPercentileMax)){
+		    fHistEventStats->Fill(5,fCentrality); //events with correct centrality
+		    return fCentrality;		
+		  }//centrality class
+		}//Vz cut
+	      }//Vy cut
+	    }//Vx cut
+	  }//proper vertex resolution
+	}//proper number of contributors
+      }//vertex object valid
+    }//triggered event 
+  }//AOD,ESD,ESDMC
+  
+  // in all other cases return -1 (event not accepted)
+  return -1;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
+  // Get the event plane
+
+  TString gAnalysisLevel = fBalance->GetAnalysisLevel();
+
+  Float_t gVZEROEventPlane    = -10.;
+  Float_t gReactionPlane      = -10.;
+  Double_t qxTot = 0.0, qyTot = 0.0;
+
+  //MC: from reaction plane
+  if(gAnalysisLevel == "MC"){
+   
+    AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
+    if (headerH) {
+      gReactionPlane = headerH->ReactionPlaneAngle();
+      gReactionPlane *= TMath::RadToDeg();
+    }
+  }//MC
+  
+  // AOD,ESD,ESDMC: from VZERO Event Plane
+  else{  
+   
+    AliEventplane *ep = event->GetEventplane();
+    if(ep){ 
+      gVZEROEventPlane = ep->CalculateVZEROEventPlane(event,10,2,qxTot,qyTot);
+      if(gVZEROEventPlane < 0.) gVZEROEventPlane += TMath::Pi();
+      gReactionPlane = gVZEROEventPlane*TMath::RadToDeg();
+    }
+    }//AOD,ESD,ESDMC
+
+  return gReactionPlane;
+}
+
+//________________________________________________________________________
+TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fCentrality, Double_t gReactionPlane){
+  // Returns TObjArray with tracks after all track cuts (only for AOD!)
+  // Fills QA histograms
+
+  TString gAnalysisLevel = fBalance->GetAnalysisLevel();
+
+  //output TObjArray holding all good tracks
+  TObjArray* tracksAccepted = new TObjArray;
+  tracksAccepted->SetOwner(kTRUE);
+
+  Double_t v_charge;
+  Double_t v_eta;
+  Double_t v_y;
+  Double_t v_phi;
+  Double_t v_pt;
+
+
+  if(gAnalysisLevel == "AOD") { // handling of TPC only tracks different in AOD and ESD
+  
+    // Loop over tracks in event
+    for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
+      if (!aodTrack) {
+	AliError(Form("Could not receive track %d", iTracks));
+	continue;
+      }
+      
+      // AOD track cuts
+      
+      // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
+      // take only TPC only tracks 
+      fHistTrackStats->Fill(aodTrack->GetFilterMap());
+      if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+      
+      v_charge = aodTrack->Charge();
+      v_eta    = aodTrack->Eta();
+      v_y      = aodTrack->Y();
+      v_phi    = aodTrack->Phi() * TMath::RadToDeg();
+      v_pt     = aodTrack->Pt();
+      
+      Float_t DCAxy = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+      Float_t DCAz  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+      
+      
+      // Kinematics cuts from ESD track cuts
+      if( v_pt < fPtMin || v_pt > fPtMax)      continue;
+      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+      
+      // Extra DCA cuts (for systematic studies [!= -1])
+      if( fDCAxyCut != -1 && fDCAzCut != -1){
+	if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
+	  continue;  // 2D cut
+	}
+      }
+      
+      // Extra TPC cuts (for systematic studies [!= -1])
+      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
+	continue;
+      }
+      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
+	continue;
+      }
+      
+      // fill QA histograms
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(DCAz,DCAxy);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),fCentrality);
+      fHistPt->Fill(v_pt,fCentrality);
+      fHistEta->Fill(v_eta,fCentrality);
+      fHistRapidity->Fill(v_y,fCentrality);
+      if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
+      else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
+      fHistPhi->Fill(v_phi,fCentrality);
+      
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));
+    }//track loop
+  }// AOD analysis
+
+
+  else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD") { // handling of TPC only tracks different in AOD and ESD
+
+    AliESDtrack *track_TPC   = NULL;
+    AliMCParticle *mcTrack   = NULL;
+
+    AliMCEvent*  mcEvent     = NULL;
+    
+    // for MC ESDs use also MC information
+    if(gAnalysisLevel == "MCESD"){
+      mcEvent = MCEvent(); 
+      if (!mcEvent) {
+	AliError("mcEvent not available");
+	return tracksAccepted;
+      }
+    }
+    
+    // Loop over tracks in event
+    for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
+      AliESDtrack* track = dynamic_cast<AliESDtrack *>(event->GetTrack(iTracks));
+      if (!track) {
+	AliError(Form("Could not receive track %d", iTracks));
+	continue;
+      }	
+
+      // for MC ESDs use also MC information --> MC track not used further???
+      if(gAnalysisLevel == "MCESD"){
+	Int_t label = TMath::Abs(track->GetLabel());
+	if(label > mcEvent->GetNumberOfTracks()) continue;
+	if(label > mcEvent->GetNumberOfPrimaries()) continue;
+	
+	mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(label));
+	if(!mcTrack) continue;
+      }
+
+      // take only TPC only tracks
+      track_TPC   = new AliESDtrack();
+      if(!track->FillTPCOnlyTrack(*track_TPC)) continue;
+      
+      //ESD track cuts
+      if(fESDtrackCuts) 
+	if(!fESDtrackCuts->AcceptTrack(track_TPC)) continue;
+      
+      // fill QA histograms
+      Float_t b[2];
+      Float_t bCov[3];
+      track_TPC->GetImpactParameters(b,bCov);
+      if (bCov[0]<=0 || bCov[2]<=0) {
+	AliDebug(1, "Estimated b resolution lower or equal zero!");
+	bCov[0]=0; bCov[2]=0;
+      }
+      
+      Int_t nClustersTPC = -1;
+      nClustersTPC = track_TPC->GetTPCNclsIter1();   // TPC standalone
+      //nClustersTPC = track->GetTPCclusters(0);   // global track
+      Float_t chi2PerClusterTPC = -1;
+      if (nClustersTPC!=0) {
+	chi2PerClusterTPC = track_TPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
+	//chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);     // global track
+      }
+      
+      //===========================PID===============================//		    
+      if(fUsePID) {
+	Double_t prob[AliPID::kSPECIES]={0.};
+	Double_t probTPC[AliPID::kSPECIES]={0.};
+	Double_t probTOF[AliPID::kSPECIES]={0.};
+	Double_t probTPCTOF[AliPID::kSPECIES]={0.};
+	
+	Double_t nSigma = 0.;
+	UInt_t detUsedTPC = 0;
+	UInt_t detUsedTOF = 0;
+	UInt_t detUsedTPCTOF = 0;
+	
+	//Decide what detector configuration we want to use
+	switch(fPidDetectorConfig) {
+	case kTPCpid:
+	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+	  nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest));
+	  detUsedTPC = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
+	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+	    prob[iSpecies] = probTPC[iSpecies];
+	  break;
+	case kTOFpid:
+	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+	  nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest));
+	  detUsedTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTOF);
+	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+	    prob[iSpecies] = probTOF[iSpecies];
+	  break;
+	case kTPCTOF:
+	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+	  detUsedTPCTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
+	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+	    prob[iSpecies] = probTPCTOF[iSpecies];
+	  break;
+	default:
+	  break;
+	}//end switch: define detector mask
+	
+	//Filling the PID QA
+	Double_t tofTime = -999., length = 999., tof = -999.;
+	Double_t c = TMath::C()*1.E-9;// m/ns
+	Double_t beta = -999.;
+	Double_t  nSigmaTOFForParticleOfInterest = -999.;
+	if ( (track->IsOn(AliESDtrack::kTOFin)) &&
+	     (track->IsOn(AliESDtrack::kTIME))  ) { 
+	  tofTime = track->GetTOFsignal();//in ps
+	  length = track->GetIntegratedLength();
+	  tof = tofTime*1E-3; // ns	
+	  
+	  if (tof <= 0) {
+	    //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	    continue;
+	  }
+	  if (length <= 0){
+	    //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+	    continue;
+	  }
+	  
+	  length = length*0.01; // in meters
+	  tof = tof*c;
+	  beta = length/tof;
+	  
+	  nSigmaTOFForParticleOfInterest = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest);
+	  fHistBetavsPTOFbeforePID ->Fill(track->P()*track->Charge(),beta);
+	  fHistProbTOFvsPtbeforePID ->Fill(track->Pt(),probTOF[fParticleOfInterest]);
+	  fHistNSigmaTOFvsPtbeforePID ->Fill(track->Pt(),nSigmaTOFForParticleOfInterest);
+	}//TOF signal 
+	
+	
+	Double_t  nSigmaTPCForParticleOfInterest = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest);
+	fHistdEdxVsPTPCbeforePID -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
+	fHistProbTPCvsPtbeforePID -> Fill(track->Pt(),probTPC[fParticleOfInterest]); 
+	fHistNSigmaTPCvsPtbeforePID -> Fill(track->Pt(),nSigmaTPCForParticleOfInterest); 
+	fHistProbTPCTOFvsPtbeforePID -> Fill(track->Pt(),probTPCTOF[fParticleOfInterest]);
+	//end of QA-before pid
+	
+	if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
+	  //Make the decision based on the n-sigma
+	  if(fUsePIDnSigma) {
+	    if(nSigma > fPIDNSigma) continue;}
+	  
+	  //Make the decision based on the bayesian
+	  else if(fUsePIDPropabilities) {
+	    if(fParticleOfInterest != TMath::LocMax(AliPID::kSPECIES,prob)) continue;
+	    if (prob[fParticleOfInterest] < fMinAcceptedPIDProbability) continue;      
+	  }
+	  
+	  //Fill QA after the PID
+	  fHistBetavsPTOFafterPID ->Fill(track->P()*track->Charge(),beta);
+	  fHistProbTOFvsPtafterPID ->Fill(track->Pt(),probTOF[fParticleOfInterest]);
+	  fHistNSigmaTOFvsPtafterPID ->Fill(track->Pt(),nSigmaTOFForParticleOfInterest);
+	  
+	  fHistdEdxVsPTPCafterPID -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
+	  fHistProbTPCvsPtafterPID -> Fill(track->Pt(),probTPC[fParticleOfInterest]); 
+	  fHistProbTPCTOFvsPtafterPID -> Fill(track->Pt(),probTPCTOF[fParticleOfInterest]);
+	  fHistNSigmaTPCvsPtafterPID -> Fill(track->Pt(),nSigmaTPCForParticleOfInterest); 
+	}
+      }
+      //===========================PID===============================//
+      v_charge = track_TPC->Charge();
+      v_y      = track_TPC->Y();
+      v_eta    = track_TPC->Eta();
+      v_phi    = track_TPC->Phi() * TMath::RadToDeg();
+      v_pt     = track_TPC->Pt();
+      fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
+      fHistDCA->Fill(b[1],b[0]);
+      fHistChi2->Fill(chi2PerClusterTPC,fCentrality);
+      fHistPt->Fill(v_pt,fCentrality);
+      fHistEta->Fill(v_eta,fCentrality);
+      fHistPhi->Fill(v_phi,fCentrality);
+      fHistRapidity->Fill(v_y,fCentrality);
+      if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
+      else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
+      
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));      
+
+      delete track_TPC;
+    }//track loop
+  }// ESD analysis
+
+  else if(gAnalysisLevel = "MC"){
+    
+    // Loop over tracks in event
+    for (Int_t iTracks = 0; iTracks < dynamic_cast<AliMCEvent*>(event)->GetNumberOfPrimaries(); iTracks++) {
+      AliMCParticle* track = dynamic_cast<AliMCParticle *>(event->GetTrack(iTracks));
+      if (!track) {
+	AliError(Form("Could not receive particle %d", iTracks));
+	continue;
+      }
+	    
+      //exclude non stable particles
+      if(!(dynamic_cast<AliMCEvent*>(event)->IsPhysicalPrimary(iTracks))) continue;
+
+      v_eta    = track->Eta();
+      v_pt     = track->Pt();
+      v_y      = track->Y();
+      
+      if( v_pt < fPtMin || v_pt > fPtMax)      
+	continue;
+      if (!fUsePID) {
+	if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+      }
+      else if (fUsePID){
+	if( v_y < fEtaMin || v_y > fEtaMax)  continue;
+      }
+      
+      //analyze one set of particles
+      if(fUseMCPdgCode) {
+	TParticle *particle = track->Particle();
+	if(!particle) continue;
+	
+	Int_t gPdgCode = particle->GetPdgCode();
+	if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+	  continue;
+      }
+      
+      //Use the acceptance parameterization
+      if(fAcceptanceParameterization) {
+	Double_t gRandomNumber = gRandom->Rndm();
+	if(gRandomNumber > fAcceptanceParameterization->Eval(track->Pt())) 
+	  continue;
+      }
+      
+      //Exclude resonances
+      if(fExcludeResonancesInMC) {
+	TParticle *particle = track->Particle();
+	if(!particle) continue;
+	
+	Bool_t kExcludeParticle = kFALSE;
+	Int_t gMotherIndex = particle->GetFirstMother();
+	if(gMotherIndex != -1) {
+	  AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
+	  if(motherTrack) {
+	    TParticle *motherParticle = motherTrack->Particle();
+	    if(motherParticle) {
+	      Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
+	      //if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
+	      if(pdgCodeOfMother == 113) {
+		kExcludeParticle = kTRUE;
+	      }
+	    }
+	  }
+	}
+	
+	//Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
+	if(kExcludeParticle) continue;
+      }
+      
+      v_charge = track->Charge();
+      v_phi    = track->Phi();
+      //Printf("phi (before): %lf",v_phi);
+      
+      fHistPt->Fill(v_pt,fCentrality);
+      fHistEta->Fill(v_eta,fCentrality);
+      fHistPhi->Fill(v_phi*TMath::RadToDeg(),fCentrality);
+      fHistRapidity->Fill(v_y,fCentrality);
+      if(v_charge > 0) fHistPhiPos->Fill(v_phi*TMath::RadToDeg(),fCentrality);
+      else if(v_charge < 0) fHistPhiNeg->Fill(v_phi*TMath::RadToDeg(),fCentrality);
+      
+      //Flow after burner
+      if(fUseFlowAfterBurner) {
+	Double_t precisionPhi = 0.001;
+	Int_t maxNumberOfIterations = 100;
+	
+	Double_t phi0 = v_phi;
+	Double_t gV2 = fDifferentialV2->Eval(v_pt);
+	
+	for (Int_t j = 0; j < maxNumberOfIterations; j++) {
+	  Double_t phiprev = v_phi;
+	  Double_t fl = v_phi - phi0 + gV2*TMath::Sin(2.*(v_phi - gReactionPlane));
+	  Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(v_phi - gReactionPlane)); 
+	  v_phi -= fl/fp;
+	  if (TMath::AreEqualAbs(phiprev,v_phi,precisionPhi)) break;
+	}
+	//Printf("phi (after): %lf\n",v_phi);
+	Double_t v_DeltaphiBefore = phi0 - gReactionPlane;
+	if(v_DeltaphiBefore < 0) v_DeltaphiBefore += 2*TMath::Pi();
+	fHistPhiBefore->Fill(v_DeltaphiBefore,fCentrality);
+	
+	Double_t v_DeltaphiAfter = v_phi - gReactionPlane;
+	if(v_DeltaphiAfter < 0) v_DeltaphiAfter += 2*TMath::Pi();
+	fHistPhiAfter->Fill(v_DeltaphiAfter,fCentrality);
+      }
+      
+      v_phi *= TMath::RadToDeg();
+          
+      tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));
+      
+    } //track loop
+  }//MC
+  
+  return tracksAccepted;  
+}
+//________________________________________________________________________
+TObjArray* AliAnalysisTaskBFPsi::GetShuffledTracks(TObjArray *tracks){
+  // Clones TObjArray and returns it with tracks after shuffling the charges
+
+  TObjArray* tracksShuffled = new TObjArray;
+  tracksShuffled->SetOwner(kTRUE);
+
+  vector<Short_t> *chargeVector = new vector<Short_t>;   //original charge of accepted tracks 
+
+  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
+  {
+    AliVParticle* track = (AliVParticle*) tracks->At(i);
+    chargeVector->push_back(track->Charge());
+  }  
+ 
+  random_shuffle(chargeVector->begin(), chargeVector->end());
+  
+  for(Int_t i = 0; i < tracks->GetEntriesFast(); i++){
+    AliVParticle* track = (AliVParticle*) tracks->At(i);
+    tracksShuffled->Add(new AliBFBasicParticle(track->Eta(), track->Phi(), track->Pt(),chargeVector->at(i)));
+  }
+
+  delete chargeVector;
+   
+  return tracksShuffled;
+}
+
 
 //________________________________________________________________________
 void  AliAnalysisTaskBFPsi::FinishTaskOutput(){
   //Printf("END BF");
 
   if (!fBalance) {
-    Printf("ERROR: fBalance not available");
+    AliError("fBalance not available");
     return;
   }  
   if(fRunShuffling) {
     if (!fShuffledBalance) {
-      Printf("ERROR: fShuffledBalance not available");
+      AliError("fShuffledBalance not available");
       return;
     }
   }

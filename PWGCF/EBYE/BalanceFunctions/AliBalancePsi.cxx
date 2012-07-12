@@ -220,15 +220,15 @@ void AliBalancePsi::InitHistograms() {
     fHistNN->SetBinLimits(j, dBinsPair[j]);
     fHistNN->SetVarTitle(j, axisTitlePair[j]);
   }
-  Printf("Finished setting up the AliTHn");
+  AliInfo("Finished setting up the AliTHn");
 }
 
 //____________________________________________________________________//
-void AliBalancePsi::CalculateBalance(Double_t gReactionPlane, 
-				     vector<Double_t> **chargeVector) {
+void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
+				     TObjArray *particles, 
+				     TObjArray *particlesMixed ) {
   // Calculates the balance function
   fAnalyzedEvents++;
-  Int_t i = 0 , j = 0;
   
   // Initialize histograms if not done yet
   if(!fHistPN){
@@ -237,153 +237,106 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     InitHistograms();
   }
 
-  Double_t trackVarsSingle[nTrackVariablesSingle];
-  Double_t trackVarsPair[nTrackVariablesPair];
+  Double_t trackVariablesSingle[nTrackVariablesSingle];
+  Double_t trackVariablesPair[nTrackVariablesPair];
 
-  Int_t gNtrack = chargeVector[0]->size();
-  //Printf("(AliBalancePsi) Number of tracks: %d",gNtrack);
-  Double_t gPsiMinusPhi = 0.;
-  Double_t dy = 0., deta = 0.;
-  Double_t qLong = 0., qOut = 0., qSide = 0., qInv = 0.;
-  Double_t dphi = 0.;
-
-  Double_t charge1  = 0;
-  Double_t eta1 = 0., rap1 = 0.;
-  Double_t px1 = 0., py1 = 0., pz1 = 0.;
-  Double_t pt1 = 0.;
-  Double_t energy1 = 0.;
-  Double_t phi1    = 0.;
-
-  Double_t charge2  = 0;
-  Double_t eta2 = 0., rap2 = 0.;
-  Double_t px2 = 0., py2 = 0., pz2 = 0.;
-  Double_t pt2 = 0.;
-  Double_t energy2 = 0.;
-  Double_t phi2    = 0.;
-  Double_t gPsiMinusPhiBin = -10.;
+  if (!particles){
+    AliWarning("particles TObjArray is NULL pointer --> return");
+    return;
+  }
   
-  for(i = 0; i < gNtrack; i++) {
-    gPsiMinusPhiBin = -10.;
-    charge1 = chargeVector[0]->at(i);
-    rap1    = chargeVector[1]->at(i);
-    eta1    = chargeVector[2]->at(i);
-    phi1    = chargeVector[3]->at(i);
-    px1     = chargeVector[4]->at(i);
-    py1     = chargeVector[5]->at(i);
-    pz1     = chargeVector[6]->at(i);
-    pt1     = chargeVector[7]->at(i);
-    energy1 = chargeVector[8]->at(i);
-    gPsiMinusPhi   = TMath::Abs(phi1 - gReactionPlane);
-    if((gPsiMinusPhi <= 7.5)||
-       ((172.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 187.5)))
-      gPsiMinusPhiBin = 0.0;
-    else if(((37.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 52.5))||
-	    ((127.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 142.5))||
-	    ((217.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 232.5))||
-	    ((307.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 322.5)))
-      gPsiMinusPhiBin = 1.0;
-    else if(((82.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 97.5))||
-	    ((262.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 277.5)))
-      gPsiMinusPhiBin = 2.0;
-    else continue;
-    //cout<<"phi: "<<phi1<<" - Psi: "<<gReactionPlane<<" - phi - Psi: "<<gPsiMinusPhi<<" - Bin: "<<gPsiMinusPhiBin<<endl; 
- 
-    //if(gPsiMinusPhi > 180.) gPsiMinusPhi = 360. - gPsiMinusPhi;
-    //if(gPsiMinusPhi < -fPsiInterval/2) gPsiMinusPhi = 360. + gPsiMinusPhi;
-    
-    //trackVarsSingle[0]    =  fCentrality;
-    trackVarsSingle[0]    =  gPsiMinusPhiBin;
-    //trackVarsSingle[2]    =  eta1;
-    //trackVarsSingle[3]    =  rap1;
-    //trackVarsSingle[3]    =  phi1;  
-    trackVarsSingle[1]    =  pt1;  
+  // define end of particle loops
+  Int_t iMax = particles->GetEntriesFast();
+  Int_t jMax = iMax;
+  if (particlesMixed)
+    jMax = particlesMixed->GetEntriesFast();
 
-    //Printf("Track(a) %d - phi-Psi: %lf",i+1,trackVarsSingle[1]);
-    //fill single particle histograms
-    if(charge1 > 0)  
-      fHistP->Fill(trackVarsSingle,0,1.); 
-    else if(charge1 < 0)            
-      fHistN->Fill(trackVarsSingle,0,1.); 
+  // Eta() is extremely time consuming, therefore cache it for the inner loop here:
+  TObjArray* particlesSecond = (particlesMixed) ? particlesMixed : particles;
 
-    for(j = 0; j < i; j++) {
-      charge2 = chargeVector[0]->at(j);
-      rap2    = chargeVector[1]->at(j);
-      eta2    = chargeVector[2]->at(j);
-      phi2    = chargeVector[3]->at(j);
-      px2     = chargeVector[4]->at(j);
-      py2     = chargeVector[5]->at(j);
-      pz2     = chargeVector[6]->at(j);
-      pt2     = chargeVector[7]->at(j);
-      energy2 = chargeVector[8]->at(j);
-      //Printf("Track(b) %d - pt: %lf",j+1,pt2);
+  TArrayF secondEta(jMax);
+  TArrayF secondPhi(jMax);
+  TArrayF secondPt(jMax);
+
+  for (Int_t i=0; i<jMax; i++){
+    secondEta[i] = ((AliVParticle*) particlesSecond->At(i))->Eta();
+    secondPhi[i] = ((AliVParticle*) particlesSecond->At(i))->Phi();
+    secondPt[i]  = ((AliVParticle*) particlesSecond->At(i))->Pt();
+  }
+  
+  // 1st particle loop
+  for (Int_t i=0; i<iMax; i++)
+    {
       
-      // filling the arrays
-      // RAPIDITY 
-      dy = rap1 - rap2;
+      AliVParticle* firstParticle = (AliVParticle*) particles->At(i);
       
-      // Eta
-      deta = eta1 - eta2;
+      // some optimization
+      Float_t firstEta = firstParticle->Eta();
+      Float_t firstPhi = firstParticle->Phi();
+      Float_t firstPt  = firstParticle->Pt();
+
+      // Event plane (determine psi bin)
+      Double_t gPsiMinusPhi    =   0.;
+      Double_t gPsiMinusPhiBin = -10.;
+      gPsiMinusPhi   = TMath::Abs(firstPhi - gReactionPlane);
+      if((gPsiMinusPhi <= 7.5)||
+	 ((172.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 187.5)))
+	gPsiMinusPhiBin = 0.0;
+      else if(((37.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 52.5))||
+	      ((127.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 142.5))||
+	      ((217.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 232.5))||
+	      ((307.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 322.5)))
+	gPsiMinusPhiBin = 1.0;
+      else if(((82.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 97.5))||
+	      ((262.5 <= gPsiMinusPhi)&&(gPsiMinusPhi <= 277.5)))
+	gPsiMinusPhiBin = 2.0;
+      else continue;
+
       
-      //qlong
-      Double_t eTot = energy1 + energy2;
-      Double_t pxTot = px1 + px2;
-      Double_t pyTot = py1 + py2;
-      Double_t pzTot = pz1 + pz2;
-      Double_t q0Tot = energy1 - energy2;
-      Double_t qxTot = px1 - px2;
-      Double_t qyTot = py1 - py2;
-      Double_t qzTot = pz1 - pz2;
+      Short_t  charge = (Short_t) firstParticle->Charge();
+
+      trackVariablesSingle[0]    =  gPsiMinusPhiBin;
+      trackVariablesSingle[1]    =  firstPt;  
       
-      Double_t eTot2 = eTot*eTot;
-      Double_t pTot2 = pxTot*pxTot + pyTot*pyTot + pzTot*pzTot;
-      Double_t pzTot2 = pzTot*pzTot;
+      //fill single particle histograms
+      if(charge > 0)      fHistP->Fill(trackVariablesSingle,0,1.); 
+      else if(charge < 0) fHistN->Fill(trackVariablesSingle,0,1.);  
       
-      Double_t q0Tot2 = q0Tot*q0Tot;
-      Double_t qTot2  = qxTot*qxTot + qyTot*qyTot + qzTot*qzTot;
+
       
-      Double_t snn    = eTot2 - pTot2;
-      Double_t ptTot2 = pTot2 - pzTot2 ;
-      Double_t ptTot  = TMath::Sqrt( ptTot2 );
-      
-      qLong = TMath::Abs(eTot*qzTot - pzTot*q0Tot)/TMath::Sqrt(snn + ptTot2);
-      
-      //qout
-      qOut = TMath::Sqrt(snn/(snn + ptTot2)) * TMath::Abs(pxTot*qxTot + pyTot*qyTot)/ptTot;
-      
-      //qside
-      qSide = TMath::Abs(pxTot*qyTot - pyTot*qxTot)/ptTot;
-      
-      //qinv
-      qInv = TMath::Sqrt(TMath::Abs(-q0Tot2 + qTot2 ));
-      
-      //phi
-      dphi = phi2 - phi1;
-      if(dphi < -180.) dphi += 360.;  //dphi should be between -180 and 180!
-      else if(dphi > 180.) dphi -= 360.; //dphi should be between -180 and 180!
-      
-      //trackVarsPair[0]    =  fCentrality;             
-      trackVarsPair[0]    =  gPsiMinusPhiBin;
-      //trackVarsPair[2]    =  eta1;
-      //trackVarsPair[3]    =  rap1;
-      //trackVarsPair[4]    =  phi1;
-      trackVarsPair[1]    =  deta;
-      //trackVarsPair[8]    =  dy;
-      trackVarsPair[2]    =  dphi;
-      trackVarsPair[3]    =  pt1;
-      trackVarsPair[4]    =  pt2;
-      //trackVarsPair[10]   =  qSide;
-      //trackVarsPair[11]   =  qOut;
-      //trackVarsPair[12]   =  qLong;
-      //trackVarsPair[13]   =  qInv;
-      
-      if( charge1 > 0 && charge2 < 0)  fHistPN->Fill(trackVarsPair,0,1.); 
-      else if( charge1 < 0 && charge2 > 0)  fHistNP->Fill(trackVarsPair,0,1.); 
-      else if( charge1 > 0 && charge2 > 0)  fHistPP->Fill(trackVarsPair,0,1.); 
-      else if( charge1 < 0 && charge2 < 0)  fHistNN->Fill(trackVarsPair,0,1.); 
-      else AliWarning("Wrong charge combination!");
-      
-    }//end of 2nd particle loop
-  }//end of 1st particle loop
+      // 2nd particle loop (only for j < i for non double counting in the same pT region)
+      // --> SAME pT region for trigger and assoc: NO double counting with this
+      // --> DIFF pT region for trigger and assoc: Missing assoc. particles with j > i to a trigger i 
+      //                          --> can be handled afterwards by using assoc. as trigger as well ?!     
+      for(Int_t j = 0; j < i; j++) {   // or go to full here (everything prepared)?
+	
+	if (particlesMixed && jMax < i)  // if the mixed track number is smaller than the main event one (could be done better if one loops over all tracks)
+	  break;
+
+	AliVParticle* secondParticle = (AliVParticle*) particlesSecond->At(j);
+
+	Short_t charge2 = (Short_t) secondParticle->Charge();
+	
+	trackVariablesPair[0]    =  gPsiMinusPhiBin;
+	trackVariablesPair[1]    =  firstEta - secondEta[j];  // delta eta
+	trackVariablesPair[2]    =  firstPhi - secondPhi[j];  // delta phi
+	if (trackVariablesPair[2] > 180.)   // delta phi between -180 and 180 
+	  trackVariablesPair[2] -= 360.;
+	if (trackVariablesPair[2] <  - 180.) 
+	  trackVariablesPair[2] += 360.;
+	
+	trackVariablesPair[3]    =  firstPt;      // pt trigger
+	trackVariablesPair[4]    =  secondPt[j];  // pt
+	//	trackVariablesPair[5]    =  fCentrality;  // centrality
+	
+	if( charge > 0 && charge2 < 0)  fHistPN->Fill(trackVariablesPair,0,1.); 
+	else if( charge < 0 && charge2 > 0)  fHistNP->Fill(trackVariablesPair,0,1.); 
+	else if( charge > 0 && charge2 > 0)  fHistPP->Fill(trackVariablesPair,0,1.); 
+	else if( charge < 0 && charge2 < 0)  fHistNN->Fill(trackVariablesPair,0,1.); 
+	else AliWarning(Form("Wrong charge combination: charge1 = %d and charge2 = %d",charge,charge2));
+	
+      }//end of 2nd particle loop
+    }//end of 1st particle loop
 }  
 
 //____________________________________________________________________//
@@ -468,7 +421,7 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin,
   fHistPP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
   fHistNN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax); 
 
-  Printf("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0));
+  AliInfo(Form("P:%lf - N:%lf - PN:%lf - NP:%lf - PP:%lf - NN:%lf",fHistP->GetEntries(0),fHistN->GetEntries(0),fHistPN->GetEntries(0),fHistNP->GetEntries(0),fHistPP->GetEntries(0),fHistNN->GetEntries(0)));
 
   // Project into the wanted space (1st: analysis step, 2nd: axis)
   TH2D* hTemp1 = (TH2D*)fHistPN->Project(0,1,2);
@@ -529,9 +482,9 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
     return gHist;
   }
 
-  Printf("Entries (test): %lf",(Double_t)(gHistTest->GetEntries()));
-  Printf("Entries (1D): %lf",(Double_t)(fHistP->Project(0,1)->GetEntries()));
-  Printf("Entries (2D): %lf",(Double_t)(fHistPN->Project(0,1,2)->GetEntries()));
+  AliInfo(Form("Entries (test): %lf",(Double_t)(gHistTest->GetEntries())));
+  AliInfo(Form("Entries (1D): %lf",(Double_t)(fHistP->Project(0,1)->GetEntries())));
+  AliInfo(Form("Entries (2D): %lf",(Double_t)(fHistPN->Project(0,1,2)->GetEntries())));
   
   TCanvas *c2 = new TCanvas("c2","");
   c2->cd();

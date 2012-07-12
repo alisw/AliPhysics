@@ -11,6 +11,8 @@ class TF1;
 
 class AliBalancePsi;
 class AliESDtrackCuts;
+class AliEventPoolManager;
+
 
 #include "AliAnalysisTaskSE.h"
 #include "AliBalancePsi.h"
@@ -38,6 +40,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fRunShuffling = kTRUE;
     fShuffledBalance = analysisShuffled;
   }
+  void SetMixingObject(AliBalancePsi *const analysisMixed) {
+    fRunMixing = kTRUE;
+    fMixedBalance = analysisMixed;
+  }
+  void SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
   void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
     fESDtrackCuts = trackCuts;}
   void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
@@ -130,12 +137,23 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fPidDetectorConfig = detConfig;}
 
  private:
+  Double_t    IsEventAccepted(AliVEvent* event);
+  Double_t    GetEventPlane(AliVEvent* event);
+  TObjArray* GetAcceptedTracks(AliVEvent* event, Double_t fCentrality, Double_t gReactionPlane);
+  TObjArray* GetShuffledTracks(TObjArray* tracks);
+
   AliBalancePsi *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
   AliBalancePsi *fShuffledBalance; //BF object (shuffled)
+  Bool_t fRunMixing;//run mixing or not
+  Int_t  fMixingTracks;
+  AliBalancePsi *fMixedBalance; //TriggeredBF object (mixed)
+  AliEventPoolManager*     fPoolMgr;         //! event pool manager
+
   TList *fList; //fList object
   TList *fListBF; //fList object
   TList *fListBFS; //fList object
+  TList *fListBFM; //fList object
   TList *fHistListPIDQA;  //! list of histograms
 
   TH2F *fHistEventStats; //event stats
@@ -240,5 +258,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   
   ClassDef(AliAnalysisTaskBFPsi, 5); // example of analysis
 };
+
+
 
 #endif
