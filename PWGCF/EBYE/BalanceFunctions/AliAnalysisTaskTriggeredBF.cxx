@@ -40,6 +40,13 @@
 // Analysis task for the TriggeredBF code
 // Authors: Panos.Christakoglou@nikhef.nl, m.weber@cern.ch
 
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// For the V0 part:
+// --> AliAnalysisTaskExtractV0AOD (by david.chinellato@gmail.com)
+//
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
 using std::cout;
 using std::endl;
 using std::vector;
@@ -56,11 +63,15 @@ AliAnalysisTaskTriggeredBF::AliAnalysisTaskTriggeredBF(const char *name)
   fMixingTracks(50000),
   fMixedBalance(0),
   fPoolMgr(0),
+  fRunV0(kFALSE),
+  fPIDResponse(0),
+  fPIDCombined(0),
   fList(0),
   fListTriggeredBF(0),
   fListTriggeredBFS(0),
   fListTriggeredBFM(0),
   fHistListPIDQA(0),
+  fHistListV0(0),
   fHistEventStats(0),
   fHistCentStats(0),
   fHistTriggerStats(0),
@@ -78,6 +89,24 @@ AliAnalysisTaskTriggeredBF::AliAnalysisTaskTriggeredBF(const char *name)
   fHistPhiAfter(0),
   fHistV0M(0),
   fHistRefTracks(0),
+  fHistV0MultiplicityBeforeTrigSel(0),
+  fHistV0MultiplicityForTrigEvt(0),
+  fHistV0MultiplicityForSelEvt(0),
+  fHistV0MultiplicityForSelEvtNoTPCOnly(0),
+  fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup(0),
+  fHistMultiplicityBeforeTrigSel(0),
+  fHistMultiplicityForTrigEvt(0),
+  fHistMultiplicity(0),
+  fHistMultiplicityNoTPCOnly(0),
+  fHistMultiplicityNoTPCOnlyNoPileup(0),
+  fHistV0InvMassK0(0),
+  fHistV0InvMassLambda(0),
+  fHistV0InvMassAntiLambda(0),
+  fHistV0Armenteros(0),
+  fHistV0SelInvMassK0(0),
+  fHistV0SelInvMassLambda(0),
+  fHistV0SelInvMassAntiLambda(0),
+  fHistV0SelArmenteros(0),
   fCentralityEstimator("V0M"),
   fUseCentrality(kFALSE),
   fCentralityPercentileMin(0.), 
@@ -111,6 +140,7 @@ AliAnalysisTaskTriggeredBF::AliAnalysisTaskTriggeredBF(const char *name)
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
   DefineOutput(4, TList::Class());
+  DefineOutput(5, TList::Class());
 }
 
 //________________________________________________________________________
@@ -223,8 +253,140 @@ void AliAnalysisTaskTriggeredBF::UserCreateOutputObjects() {
     fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
   fList->Add(fHistRefTracks);
 
+  //------------------------------------------------
+  // V0 Multiplicity Histograms
+  //------------------------------------------------
+  if(fRunV0){
+    fHistListV0 = new TList();
+    fHistListV0->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
+    
+    if(! fHistV0MultiplicityBeforeTrigSel) {
+      fHistV0MultiplicityBeforeTrigSel = new TH1F("fHistV0MultiplicityBeforeTrigSel", 
+						  "V0s per event (before Trig. Sel.);Nbr of V0s/Evt;Events", 
+						  25, 0, 25);
+      fHistListV0->Add(fHistV0MultiplicityBeforeTrigSel);
+    }
+    
+    if(! fHistV0MultiplicityForTrigEvt) {
+      fHistV0MultiplicityForTrigEvt = new TH1F("fHistV0MultiplicityForTrigEvt", 
+					       "V0s per event (for triggered evt);Nbr of V0s/Evt;Events", 
+					       25, 0, 25);
+      fHistListV0->Add(fHistV0MultiplicityForTrigEvt);
+    }
+    
+    if(! fHistV0MultiplicityForSelEvt) {
+      fHistV0MultiplicityForSelEvt = new TH1F("fHistV0MultiplicityForSelEvt", 
+					      "V0s per event;Nbr of V0s/Evt;Events", 
+					      25, 0, 25);
+      fHistListV0->Add(fHistV0MultiplicityForSelEvt);
+    }
+    
+    if(! fHistV0MultiplicityForSelEvtNoTPCOnly) {
+    fHistV0MultiplicityForSelEvtNoTPCOnly = new TH1F("fHistV0MultiplicityForSelEvtNoTPCOnly", 
+						     "V0s per event;Nbr of V0s/Evt;Events", 
+						     25, 0, 25);
+    fHistListV0->Add(fHistV0MultiplicityForSelEvtNoTPCOnly);
+    }
+    
+    if(! fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup) {
+      fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup = new TH1F("fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup", 
+							     "V0s per event;Nbr of V0s/Evt;Events", 
+							       25, 0, 25);
+      fHistListV0->Add(fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup);
+    }
+    
+    //------------------------------------------------
+    // Track Multiplicity Histograms
+    //------------------------------------------------
+    
+    if(! fHistMultiplicityBeforeTrigSel) {
+      fHistMultiplicityBeforeTrigSel = new TH1F("fHistMultiplicityBeforeTrigSel", 
+					      "Tracks per event;Nbr of Tracks;Events", 
+						200, 0, 200); 		
+      fHistListV0->Add(fHistMultiplicityBeforeTrigSel);
+    }
+    if(! fHistMultiplicityForTrigEvt) {
+      fHistMultiplicityForTrigEvt = new TH1F("fHistMultiplicityForTrigEvt", 
+					     "Tracks per event;Nbr of Tracks;Events", 
+					     200, 0, 200); 		
+      fHistListV0->Add(fHistMultiplicityForTrigEvt);
+    }
+    if(! fHistMultiplicity) {
+      fHistMultiplicity = new TH1F("fHistMultiplicity", 
+				   "Tracks per event;Nbr of Tracks;Events", 
+				   200, 0, 200); 		
+      fHistListV0->Add(fHistMultiplicity);
+    }
+    if(! fHistMultiplicityNoTPCOnly) {
+      fHistMultiplicityNoTPCOnly = new TH1F("fHistMultiplicityNoTPCOnly", 
+					    "Tracks per event;Nbr of Tracks;Events", 
+					    200, 0, 200); 		
+    fHistListV0->Add(fHistMultiplicityNoTPCOnly);
+    }
+    if(! fHistMultiplicityNoTPCOnlyNoPileup) {
+      fHistMultiplicityNoTPCOnlyNoPileup = new TH1F("fHistMultiplicityNoTPCOnlyNoPileup", 
+						    "Tracks per event;Nbr of Tracks;Events", 
+						    200, 0, 200); 		
+      fHistListV0->Add(fHistMultiplicityNoTPCOnlyNoPileup);
+    }
 
-
+    //------------------------------------------------
+    // V0 selection Histograms (before)
+    //------------------------------------------------
+    if(!fHistV0InvMassK0) {
+      fHistV0InvMassK0 = new TH1F("fHistV0InvMassK0",
+				  "Invariant Mass for K0;Mass (GeV/c^{2});Events",
+				  200,0,2);
+      fHistListV0->Add(fHistV0InvMassK0);
+    }
+    if(!fHistV0InvMassLambda) {
+      fHistV0InvMassLambda = new TH1F("fHistV0InvMassLambda",
+				  "Invariant Mass for Lambda;Mass (GeV/c^{2});Events",
+				  200,0,2);
+      fHistListV0->Add(fHistV0InvMassLambda);
+    }
+    if(!fHistV0InvMassAntiLambda) {
+      fHistV0InvMassAntiLambda = new TH1F("fHistV0InvMassAntiLambda",
+				  "Invariant Mass for AntiLambda;Mass (GeV/c^{2});Events",
+				  200,0,2);
+      fHistListV0->Add(fHistV0InvMassAntiLambda);
+    }
+    if(!fHistV0Armenteros) {
+      fHistV0Armenteros = new TH2F("fHistV0Armenteros",
+				  "Armenteros plot;#alpha;q_{t}",
+				   200,-1,1,200,0,0.5);
+      fHistListV0->Add(fHistV0Armenteros);
+    }
+    
+    //------------------------------------------------
+    // V0 selection Histograms (after)
+    //------------------------------------------------
+    if(!fHistV0SelInvMassK0) {
+      fHistV0SelInvMassK0 = new TH1F("fHistV0SelInvMassK0",
+				  "Invariant Mass for K0;Mass (GeV/c^{2});Events",
+				  200,0,2);
+      fHistListV0->Add(fHistV0SelInvMassK0);
+    }
+    if(!fHistV0SelInvMassLambda) {
+      fHistV0SelInvMassLambda = new TH1F("fHistV0SelInvMassLambda",
+				  "Invariant Mass for Lambda;Mass (GeV/c^{2});Events",
+				  200,0,2);
+      fHistListV0->Add(fHistV0SelInvMassLambda);
+    }
+    if(!fHistV0SelInvMassAntiLambda) {
+      fHistV0SelInvMassAntiLambda = new TH1F("fHistV0SelInvMassAntiLambda",
+				  "Invariant Mass for AntiLambda;Mass (GeV/c^{2});Events",
+				  200,0,2);
+      fHistListV0->Add(fHistV0SelInvMassAntiLambda);
+    }
+    if(!fHistV0SelArmenteros) {
+      fHistV0SelArmenteros = new TH2F("fHistV0SelArmenteros",
+				  "Armenteros plot;#alpha;q_{t}",
+				   200,-1,1,200,0,0.5);
+      fHistListV0->Add(fHistV0SelArmenteros);
+    }
+  }//V0
+    
   // Balance function histograms
   // Initialize histograms if not done yet
   if(!fBalance->GetHistNp()){
@@ -274,6 +436,11 @@ void AliAnalysisTaskTriggeredBF::UserCreateOutputObjects() {
     fListTriggeredBFM->Add(fMixedBalance->GetHistNnp());
   }  
 
+  // PID Response task active?
+  if(fRunV0) {
+    fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+    if (!fPIDResponse) AliFatal("This Task needs the PID response attached to the inputHandler");
+  }
 
   // Event Mixing
   Int_t trackDepth = fMixingTracks; 
@@ -296,6 +463,7 @@ void AliAnalysisTaskTriggeredBF::UserCreateOutputObjects() {
   PostData(2, fListTriggeredBF);
   if(fRunShuffling) PostData(3, fListTriggeredBFS);
   if(fRunMixing) PostData(4, fListTriggeredBFM);
+  if(fRunV0) PostData(5,fHistListV0);
 }
 
 //________________________________________________________________________
@@ -321,7 +489,9 @@ void AliAnalysisTaskTriggeredBF::UserExec(Option_t *) {
     }
     
     // get the accepted tracks in main event
-    TObjArray *tracksMain = GetAcceptedTracks(eventMain);
+    TObjArray *tracksMain = NULL;
+    if(fRunV0) tracksMain = GetAcceptedV0s(eventMain);
+    else       tracksMain = GetAcceptedTracks(eventMain);
 
     // store charges of all accepted tracks, shuffle and reassign (two extra loops!)
     TObjArray* tracksShuffled = NULL;
@@ -407,10 +577,17 @@ Float_t AliAnalysisTaskTriggeredBF::IsEventAccepted(AliVEvent *event){
 
   Bool_t isSelectedMain = kTRUE;
   Float_t fCentrality = -1.;
+  Int_t nV0s          = event->GetNumberOfV0s();
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
   
   if(fUseOfflineTrigger)
     isSelectedMain = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  
+  //V0 QA histograms (before trigger selection)
+  if(fRunV0){
+    fHistMultiplicityBeforeTrigSel->Fill ( -1 );
+    fHistV0MultiplicityBeforeTrigSel->Fill ( nV0s );
+  }
   
   if(isSelectedMain) {
     fHistEventStats->Fill(2); //triggered events
@@ -445,6 +622,12 @@ Float_t AliAnalysisTaskTriggeredBF::IsEventAccepted(AliVEvent *event){
 	fHistRefTracks->Fill(6.,header->GetNumberOfITSClusters(2));
 	fHistRefTracks->Fill(7.,header->GetNumberOfITSClusters(3));
 	fHistRefTracks->Fill(8.,header->GetNumberOfITSClusters(4));
+
+	//V0 QA histograms (after trigger selection)
+	if(fRunV0){
+	  fHistMultiplicityForTrigEvt->Fill ( fCentrality );
+	  fHistV0MultiplicityForTrigEvt->Fill ( nV0s );
+	}
       }
     }
     
@@ -465,6 +648,31 @@ Float_t AliAnalysisTaskTriggeredBF::IsEventAccepted(AliVEvent *event){
 		fHistVy->Fill(vertex->GetY());
 		fHistVz->Fill(vertex->GetZ());
 
+
+
+		//V0 QA histograms (vertex Z check)
+		if(fRunV0){
+		  fHistV0MultiplicityForSelEvt ->Fill( nV0s );
+		  fHistMultiplicity->Fill(fCentrality);
+
+		  //V0 QA histograms (Only look at events with well-established PV)
+		  const AliAODVertex *lPrimarySPDVtx = ((AliAODEvent*)event)->GetPrimaryVertexSPD();
+		  if(lPrimarySPDVtx){
+		    fHistMultiplicityNoTPCOnly->Fill ( fCentrality );
+		    fHistV0MultiplicityForSelEvtNoTPCOnly->Fill ( nV0s );
+		    
+		    //V0 QA histograms (Pileup Rejection)
+		    // FIXME : quality selection regarding pile-up rejection 
+		    fHistMultiplicityNoTPCOnlyNoPileup->Fill(fCentrality);
+		    fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup ->Fill( nV0s );
+
+		  }
+		  else{
+		    return -1;
+		  }
+		}
+		
+		
 		// take only events inside centrality class
 		if((fCentrality > fCentralityPercentileMin) && (fCentrality < fCentralityPercentileMax)){
 		  return fCentrality;		
@@ -550,6 +758,289 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedTracks(AliVEvent *event){
     tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));
   }
 
+  return tracksAccepted;
+}
+
+//________________________________________________________________________
+TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedV0s(AliVEvent *event){
+  // Returns TObjArray with tracks after all track cuts (only for AOD!)
+  // Fills QA histograms
+
+  //output TObjArray holding all good tracks
+  TObjArray* tracksAccepted = new TObjArray;
+  tracksAccepted->SetOwner(kTRUE);
+
+  Double_t v_charge;
+  Double_t v_eta;
+  Double_t v_phi;
+  Double_t v_pt;
+  
+  //------------------------------------------------
+  // MAIN LAMBDA LOOP STARTS HERE (basically a copy of AliAnalysisTaskExtractV0AOD)
+  //------------------------------------------------
+
+  // parameters (for the time being hard coded here) --> from David for EbyE Lambdas
+  Bool_t fkUseOnTheFly = kFALSE;
+  Double_t fRapidityBoundary  = 0.5; 
+  Double_t fCutDaughterEta    = 0.8;
+  Double_t fCutV0Radius       = 0.9;
+  Double_t fCutDCANegToPV     = 0.1;
+  Double_t fCutDCAPosToPV     = 0.1;
+  Double_t fCutDCAV0Daughters = 1.0;
+  Double_t fCutV0CosPA        = 0.9995;
+  Double_t fMassLambda        = 1.115683;
+  Double_t fCutMassLambda     = 0.007;
+  Double_t fCutProperLifetime = 3*7.9;
+  Double_t fCutLeastNumberOfCrossedRows = 70;
+  Double_t fCutLeastNumberOfCrossedRowsOverFindable = 0.8;
+  Double_t fCutTPCPIDNSigmasProton  = 3.0;
+  Double_t fCutTPCPIDNSigmasPion    = 5.0;
+
+
+  //Variable definition
+  Int_t    lOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
+  Double_t lChi2V0 = 0;
+  Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
+  Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
+  Double_t lV0CosineOfPointingAngle = 0;
+  Double_t lV0Radius = 0, lPt = 0;
+  Double_t lEta = 0, lPhi = 0;
+  Double_t lRap = 0, lRapK0Short = 0, lRapLambda = 0;
+  Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
+  Double_t lAlphaV0 = 0, lPtArmV0 = 0;
+  
+  Double_t fMinV0Pt = 0; 
+  Double_t fMaxV0Pt = 100; 
+  
+
+  
+  // some event observables
+  Int_t nv0s = event->GetNumberOfV0s();
+  Double_t tPrimaryVtxPosition[3];
+  const AliVVertex *primaryVtx = event->GetPrimaryVertex();
+  tPrimaryVtxPosition[0] = primaryVtx->GetX();
+  tPrimaryVtxPosition[1] = primaryVtx->GetY();
+  tPrimaryVtxPosition[2] = primaryVtx->GetZ();
+
+
+  //loop over V0s  
+  for (Int_t iV0 = 0; iV0 < nv0s; iV0++) 
+    {// This is the begining of the V0 loop
+      AliAODv0 *v0 = ((AliAODEvent*)event)->GetV0(iV0);
+      if (!v0) continue;
+
+      //Obsolete at AOD level... 
+      //---> Fix On-the-Fly candidates, count how many swapped
+      //if( v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0 ){
+      //  fHistSwappedV0Counter -> Fill( 1 );
+      //}else{
+      //  fHistSwappedV0Counter -> Fill( 0 ); 
+      //}
+      //if ( fkUseOnTheFly ) CheckChargeV0(v0); 
+      
+      Double_t tDecayVertexV0[3]; v0->GetXYZ(tDecayVertexV0); 
+      Double_t tV0mom[3];
+      v0->GetPxPyPz( tV0mom ); 
+      Double_t lV0TotalMomentum = TMath::Sqrt(
+					      tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
+      
+      lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+      lPt = v0->Pt();
+      lEta = v0->Eta();
+      lPhi = v0->Phi()*TMath::RadToDeg();
+      lRapK0Short = v0->RapK0Short();
+      lRapLambda  = v0->RapLambda();
+      lRap        = lRapLambda;//v0->Y(); //FIXME!!!
+      if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
+      
+      //UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPosID());
+      //UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetPosID());
+
+      Double_t lMomPos[3]; //v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
+      Double_t lMomNeg[3]; //v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
+      lMomPos[0] = v0->MomPosX();
+      lMomPos[1] = v0->MomPosY();
+      lMomPos[2] = v0->MomPosZ();
+      lMomNeg[0] = v0->MomNegX();
+      lMomNeg[1] = v0->MomNegY();
+      lMomNeg[2] = v0->MomNegZ();
+      
+      AliAODTrack *pTrack=(AliAODTrack *)v0->GetDaughter(0); //0->Positive Daughter
+      AliAODTrack *nTrack=(AliAODTrack *)v0->GetDaughter(1); //1->Negative Daughter
+      if (!pTrack || !nTrack) {
+	Printf("ERROR: Could not retreive one of the daughter track");
+	continue;
+      }
+
+      //Daughter Eta for Eta selection, afterwards
+      Double_t lNegEta = nTrack->Eta();
+      Double_t lPosEta = pTrack->Eta();
+      
+      // Filter like-sign V0 (next: add counter and distribution)
+      if ( pTrack->Charge() == nTrack->Charge()){
+	continue;
+      } 
+      
+      //Quick test this far! 
+      
+
+      //________________________________________________________________________
+      // Track quality cuts 
+      Float_t lPosTrackCrossedRows = pTrack->GetTPCClusterInfo(2,1);
+      Float_t lNegTrackCrossedRows = nTrack->GetTPCClusterInfo(2,1);
+      Float_t lLeastNbrCrossedRows =  (lPosTrackCrossedRows>lNegTrackCrossedRows) ? lNegTrackCrossedRows : lPosTrackCrossedRows;
+
+      // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
+      if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+      if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+      
+      if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+      
+      //Findable clusters > 0 condition
+      if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 ) continue;
+      
+      //Compute ratio Crossed Rows / Findable clusters
+      //Note: above test avoids division by zero! 
+      Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF())); 
+      Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF())); 
+      Float_t lLeastNbrCrossedRowsOverFindable = (lPosTrackCrossedRowsOverFindable>lNegTrackCrossedRowsOverFindable) ? lNegTrackCrossedRowsOverFindable : lPosTrackCrossedRowsOverFindable;
+
+      //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
+      if ( lLeastNbrCrossedRowsOverFindable < 0.8) continue;
+      
+      //End track Quality Cuts
+      //________________________________________________________________________
+      
+      
+      lDcaPosToPrimVertex = v0->DcaPosToPrimVertex();
+      lDcaNegToPrimVertex = v0->DcaNegToPrimVertex();
+          
+      lOnFlyStatus = v0->GetOnFlyStatus();
+      lChi2V0 = v0->Chi2V0();
+      lDcaV0Daughters = v0->DcaV0Daughters();
+      lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
+      lV0CosineOfPointingAngle = v0->CosPointingAngle(tPrimaryVtxPosition);
+      
+      // Distance over total momentum
+      Double_t lDistOverTotMom = TMath::Sqrt(
+				    TMath::Power( tDecayVertexV0[0] - tPrimaryVtxPosition[0] , 2) +
+				    TMath::Power( tDecayVertexV0[1] - tPrimaryVtxPosition[1] , 2) +
+				    TMath::Power( tDecayVertexV0[2] - tPrimaryVtxPosition[2] , 2)
+				    );
+      lDistOverTotMom /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
+      
+      
+      // Getting invariant mass infos directly from ESD
+      lInvMassK0s        = v0->MassK0Short();
+      lInvMassLambda     = v0->MassLambda();
+      lInvMassAntiLambda = v0->MassAntiLambda();
+      lAlphaV0 = v0->AlphaV0();
+      lPtArmV0 = v0->PtArmV0();
+
+      //Official means of acquiring N-sigmas 
+      Double_t lNSigmasPosProton = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton );
+      Double_t lNSigmasPosPion   = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion );
+      Double_t lNSigmasNegProton = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton );
+      Double_t lNSigmasNegPion   = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion );
+
+      //V0 QA histograms (before V0 selection)
+      fHistV0InvMassK0->Fill(lInvMassK0s);
+      fHistV0InvMassLambda->Fill(lInvMassLambda);
+      fHistV0InvMassAntiLambda->Fill(lInvMassAntiLambda);
+      fHistV0Armenteros->Fill(lAlphaV0,lPtArmV0);
+      
+      
+      //First Selection: Reject OnFly
+      if( (lOnFlyStatus == 0 && fkUseOnTheFly == kFALSE) || (lOnFlyStatus != 0 && fkUseOnTheFly == kTRUE ) ){
+	
+
+      	//Second Selection: rough 20-sigma band, parametric. 	
+      	//K0Short: Enough to parametrize peak broadening with linear function.    
+      	Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*lPt; 
+      	Double_t lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02)*lPt;
+	
+      	//Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
+      	//[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
+      	Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03)*lPt + (8.42220e-02)*TMath::Exp(-(3.80595e+00)*lPt); 
+      	Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03)*lPt - (7.52690e-02)*TMath::Exp(-(3.46339e+00)*lPt);
+	
+      	//Do Selection      
+      	if( (lInvMassLambda     < lUpperLimitLambda  && lInvMassLambda     > lLowerLimitLambda     ) || 
+      	    (lInvMassAntiLambda < lUpperLimitLambda  && lInvMassAntiLambda > lLowerLimitLambda     ) || 
+      	    (lInvMassK0s        < lUpperLimitK0Short && lInvMassK0s        > lLowerLimitK0Short    ) ){
+
+
+      // 	  //Pre-selection in case this is AA...
+      // 	  //if( fkIsNuclear == kFALSE ) fTree->Fill();
+      // 	  //if( fkIsNuclear == kTRUE){ 
+      // 	  //If this is a nuclear collision___________________
+      // 	  // ... pre-filter with TPC, daughter eta selection
+
+	  
+	  if( (lInvMassLambda     < lUpperLimitLambda  && lInvMassLambda     > lLowerLimitLambda 
+      	       && TMath::Abs(lNSigmasPosProton) < 6.0 && TMath::Abs(lNSigmasNegPion) < 6.0 ) || 
+      	      (lInvMassAntiLambda < lUpperLimitLambda  && lInvMassAntiLambda > lLowerLimitLambda 
+      	       && TMath::Abs(lNSigmasNegProton) < 6.0 && TMath::Abs(lNSigmasPosPion) < 6.0 ) ||  
+      	      (lInvMassK0s        < lUpperLimitK0Short && lInvMassK0s        > lLowerLimitK0Short 
+      	       && TMath::Abs(lNSigmasNegPion)   < 6.0 && TMath::Abs(lNSigmasPosPion) < 6.0 ) ){
+	    
+      	    //insane test
+      	    if ( TMath::Abs(lNegEta)<0.8 && TMath::Abs(lPosEta)<0.8 ){
+
+	      // start the fine selection (usually done in post processing, but we don't have time to waste) --> Lambdas!
+	      if(
+		 TMath::Abs(lRap)<fRapidityBoundary &&
+		 TMath::Abs(lNegEta)       <= fCutDaughterEta               &&                   
+		 TMath::Abs(lPosEta)       <= fCutDaughterEta               &&
+		 lV0Radius                 >= fCutV0Radius                  &&
+		 lDcaNegToPrimVertex       >= fCutDCANegToPV                &&
+		 lDcaPosToPrimVertex       >= fCutDCAPosToPV                &&
+		 lDcaV0Daughters           <= fCutDCAV0Daughters            &&
+		 lV0CosineOfPointingAngle  >= fCutV0CosPA                   && 
+		 fMassLambda*lDistOverTotMom    <= fCutProperLifetime       &&
+		 lLeastNbrCrossedRows             >= fCutLeastNumberOfCrossedRows             &&
+		 lLeastNbrCrossedRowsOverFindable >= fCutLeastNumberOfCrossedRowsOverFindable &&
+		 lPtArmV0 * 5 < TMath::Abs(lAlphaV0)                        && 
+		 ((TMath::Abs(lNSigmasNegPion)   <= fCutTPCPIDNSigmasPion     &&
+		  TMath::Abs(lNSigmasPosProton) <= fCutTPCPIDNSigmasProton) ||
+		  (TMath::Abs(lNSigmasPosPion)   <= fCutTPCPIDNSigmasPion     &&
+		   TMath::Abs(lNSigmasNegProton) <= fCutTPCPIDNSigmasProton)) 		 
+		 )
+		{
+
+		  //V0 QA histograms (after V0 selection)
+		  fHistV0SelInvMassK0->Fill(lInvMassK0s);
+		  fHistV0SelInvMassLambda->Fill(lInvMassLambda);
+		  fHistV0SelInvMassAntiLambda->Fill(lInvMassAntiLambda);
+
+		  // this means a V0 candidate is found
+		  if(TMath::Abs(lInvMassLambda-fMassLambda) < fCutMassLambda ||
+		     TMath::Abs(lInvMassAntiLambda-fMassLambda) < fCutMassLambda){
+
+		    fHistV0SelArmenteros->Fill(lAlphaV0,lPtArmV0);		  
+
+		    v_eta    = lEta;
+		    v_phi    = lPhi;
+		    v_pt     = lPt;
+		    if(lAlphaV0 > 0) v_charge = 1;
+		    if(lAlphaV0 < 0) v_charge = -1;
+
+		    // fill QA histograms
+		    fHistPt->Fill(v_pt);
+		    fHistEta->Fill(v_eta);
+		    fHistPhi->Fill(v_phi);
+		    
+		    // add the track to the TObjArray
+		    tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));
+		  }
+		}
+	      }
+	  }
+	  //}//end nuclear_____________________________________
+	}
+      }
+    }//V0 loop
+  
   return tracksAccepted;
 }
 
