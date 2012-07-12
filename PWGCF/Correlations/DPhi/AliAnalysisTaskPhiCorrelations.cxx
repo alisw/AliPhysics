@@ -111,7 +111,7 @@ fTrackEtaCut(0.8),
 fOnlyOneEtaSide(0),
 fPtMin(0.5),
 fFilterBit(0xFF),
-fSelectBit(0),
+fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
 fUseChargeHadrons(kFALSE),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
@@ -196,6 +196,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fPtMin);
   fAnalyseUE->SetDebug(fDebug); 
   fAnalyseUE->DefineESDCuts(fFilterBit);
+  fAnalyseUE->SetEventSelection(fSelectBit);
 
   // Initialize output list of containers
   if (fListOfHistos != NULL){
