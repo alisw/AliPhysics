@@ -181,9 +181,11 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   trackcutsarray[3] = 10000.;//track max impact parameter
   HFCorrelationCuts->SetNVarsTrack(nofcuts);
   HFCorrelationCuts->SetAODTrackCuts(trackcutsarray);
+
+  HFCorrelationCuts->SetCharge(0); // -1/+1 to look for opposite/same charge, 0 no charge selection 
+  HFCorrelationCuts->SetFilterBit(0); // set 0 for analysis with AOD from 2010
 	
   // Set kinematics cuts for AOD v0 
-	
   const int nofcuts2 = 7;
   Float_t* vzerocutsarray;
   vzerocutsarray=new Float_t[nofcuts2];
