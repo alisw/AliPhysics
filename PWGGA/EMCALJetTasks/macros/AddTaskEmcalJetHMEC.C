@@ -44,7 +44,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   correlationtask->SetAreaCut(minArea);
   correlationtask->SetEventMixing(EvtMix);
   correlationtask->SetTrkBias(TrkBias);
-  correlationtask->SetClusBias(TrkBias);
+  correlationtask->SetClusBias(ClusBias);
 
  
   //-------------------------------------------------------

@@ -50,6 +50,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fAreacut(0.0),
   fTrkBias(5),
   fClusBias(5),
+  fDoEventMixing(0),
+  fMixingTracks(50000),
   fESD(0), 
   fPoolMgr(0x0), 
   fOutputList(0),
@@ -57,7 +59,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistTrackEtaPhi(0), 
-  fHistJetHEtaPhi(0) 
+  fHistJetHEtaPhi(0), 
+  fhnMixedEvents(0x0)
 {
   // Default Constructor
 
@@ -283,15 +286,15 @@ Int_t AliAnalysisTaskEmcalJetHMEC::GetpTjetBin(Double_t pt) const
   // Get jet pt  bin for histos.
 
   Int_t ptbin = -1;
-  if (pt>=10 && pt<15)
+  if (pt>=15 && pt<20)
     ptbin = 0;
-  else if (pt>=15 && pt<20)
-    ptbin = 1;
   else if (pt>=20 && pt<25)
-    ptbin = 2;
+    ptbin = 1;
   else if (pt>=25 && pt<30)
+    ptbin = 2;
+  else if (pt>=30 && pt<60)
     ptbin = 3;
-  else if (pt>=30)
+  else if (pt>=60)
     ptbin = 4;
 
 
