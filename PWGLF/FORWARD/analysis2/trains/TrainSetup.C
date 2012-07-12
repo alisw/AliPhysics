@@ -126,8 +126,8 @@ struct TrainSetup
   TrainSetup(const char* name)
     : fName(name),
       fEscapedName(name),
-      fRootVersion("v5-28-00a"),
-      fAliRootVersion("v4-21-18-AN"),
+      fRootVersion("last"),
+      fAliRootVersion("last"),
       fAliEnAPIVersion("V1.1x"),
       fProofServer("alicecaf.cern.ch"),
       fDataDir("/alice/data/2010/LHC10c"),
@@ -462,6 +462,8 @@ struct TrainSetup
   Bool_t Init()
   {
     if (fExecMode == kProof) fUsePar    = true;
+
+    if (!CheckSoftware()) return false;
 
     // Info("Init", "Connecting in mode=%d", mode);
     if (!Connect()) return false;
@@ -1570,6 +1572,7 @@ protected:
       }
       return mgr->StartAnalysis(mode, fDataSet);
     case kGrid: 
+      Info("StartAnalysis", "Analysing %d events", nEvents);
       if (nEvents < 0)
 	return mgr->StartAnalysis(mode);
       return mgr->StartAnalysis(mode, nEvents);
@@ -1578,6 +1581,95 @@ protected:
     return -1;
   }
   //------------------------------------------------------------------
+  virtual Bool_t CheckSoftware()
+  {
+    if (fExecMode != kGrid) return true;
+
+    // Figure out what to do.  
+    // If mode == 0, then do nothing. 
+    // If bit 0 is set in mode (0x1), then list and exit 
+    // If bit 1 is set in mode (0x2), select last AliROOT/ROOT version 
+    // If bit 2 is set in mode (0x4), select ROOT corresponding to AliROOT
+    UShort_t mode = 0; 
+    
+    if (fAliRootVersion.EqualTo("last", TString::kIgnoreCase) ||
+	fRootVersion.EqualTo("last", TString::kIgnoreCase)) 
+      mode |= 0x2;
+    if (fAliRootVersion.EqualTo("list", TString::kIgnoreCase) ||
+	fRootVersion.EqualTo("list", TString::kIgnoreCase) || 
+	fAliRootVersion.IsNull())
+      mode |= 0x1;
+    if (!fAliRootVersion.IsNull() && fRootVersion.IsNull()) 
+      mode |= 0x4; 
+
+    // Nothing to do 
+    if (mode == 0) return true; 
+    
+    // If we need to inspect the packages here, make a temporary file 
+    TString base("gridPackages");
+    if (mode & 0x6) {  
+      FILE* tmp = gSystem->TempFileName(base);
+      fclose(tmp);
+    }
+
+    TString c("wget -q http://alimonitor.cern.ch/packages/ -O - | "
+	      "sed -n -e '/<tr/,/<\\/tr>/ p' | "
+	      "sed -n '/<a.*VO_ALICE@AliRoot::/,/VO_ALICE@ROOT::/ p' | "
+	      "sed -n -e 's/.*VO_ALICE@AliRoot::\\([-0-9a-zA-Z]*\\).*/%\\1%/p' "
+	      "  -e 's/.*VO_ALICE@ROOT::\\([-0-9a-zA-Z]*\\).*/\\1@/p' | "
+	      "tr -d '\\n' | tr '@' '\\n' | tr '%' '\\t' ");
+    
+    // If we need to inspect, append a redirect to the command 
+    if (mode & 0x6) c.Append(Form("> %s", base.Data()));
+      
+    if (mode & 0x1) 
+      Warning("CheckSoftware", "No AliROOT/ROOT version specified, "
+	      "available packages are:\n" 
+	      "\tAliROOT \tROOT:");
+
+    // Now execute the command. 
+    gSystem->Exec(c);
+
+    // If just asked to list, get out here and stop job 
+    if (!(mode & 0x6)) return false;
+
+    // Open the temporary file, read in the data, and tokenize 
+    std::ifstream in(base.Data());
+    TString values;
+    values.ReadFile(in);
+    TObjArray* tokens = values.Tokenize(" \t\n");
+    Int_t      n      = tokens->GetEntries();
+
+    // If we asked to select the last possible version, do so here and get out
+    if (mode & 0x2) { 
+      fAliRootVersion = tokens->At(n-2)->GetName();
+      fRootVersion    = tokens->At(n-1)->GetName();
+      AliInfoF("Selecting lastest possible AliROOT/ROOT: %s/%s", 
+	       fAliRootVersion.Data(), fRootVersion.Data());
+      delete tokens;
+      return true;
+    }
+    
+    // We get here if we're asked to find a ROOT version compatible
+    // with the selected AliROOT version. 
+    for (Int_t i = 0; i < n; i += 2) {
+      if (fAliRootVersion.EqualTo(tokens->At(i)->GetName(), 
+				  TString::kIgnoreCase)) { 
+	fRootVersion = tokens->At(i+1)->GetName();
+	AliInfoF("Found ROOT version compatible with AliROOT %s: %s",
+		 fAliRootVersion.Data(), fRootVersion.Data());
+	delete tokens;
+	return true;
+      }
+    }
+    // If we get here, then we didn't find a ROOT version compatible
+    // with the selected AliROOT, and we should fail. 
+    AliWarningF("Didn't find a ROOT version compatible with AliROOT %s", 
+		fAliRootVersion.Data());
+    delete tokens; 
+    return false;
+  }
+    
   /** 
    * Connect to external services (Proof and/or grid)
    * 
@@ -2642,11 +2734,11 @@ protected:
     if (par)                   SetUsePar(par->AsBool());
     if (mc)                    SetMC(mc->AsBool());
     if (verb)                  SetVerbose(verb->AsInt());
-    if (root)                  SetROOTVersion(root->AsString());
-    if (aliroot)               SetAliROOTVersion(aliroot->AsString());
-    if (alien)                 SetAliEnAPIVersion(alien->AsString());
-    if (overwrite)             SetAllowOverwrite(overwrite->AsBool());
-    if (run_merge)             SetPerRunMerge(run_merge->AsBool());
+    if (root    && root->IsSet())    SetROOTVersion(root->AsString());
+    if (aliroot && aliroot->IsSet()) SetAliROOTVersion(aliroot->AsString());
+    if (alien   && alien->IsSet())   SetAliEnAPIVersion(alien->AsString());
+    if (overwrite)                   SetAllowOverwrite(overwrite->AsBool());
+    if (run_merge)                   SetPerRunMerge(run_merge->AsBool());
   }
   //------------------------------------------------------------------
   /** 
