@@ -140,4 +140,62 @@ protected:
    ClassDef(AliAnalysisDataWrapper, 1) // Data wrapper class for exchange via the net
 };
 
+//==============================================================================
+//   AliAnalysisFileDescriptor - A simple wrapper for data related to accessing
+//      an analysis input file.
+//==============================================================================
+class TStopwatch;
+
+class AliAnalysisFileDescriptor : public TObject {
+
+public:
+   AliAnalysisFileDescriptor();
+   AliAnalysisFileDescriptor(const TFile *file);
+   AliAnalysisFileDescriptor(const AliAnalysisFileDescriptor &other);
+   virtual ~AliAnalysisFileDescriptor();
+
+   // Assignment
+   AliAnalysisFileDescriptor &operator=(const AliAnalysisFileDescriptor &other);
+   
+   void         Done();
+   
+   const char  *GetGUID() const  {return fGUID;}
+   Int_t        GetImage() const {return fImage;}
+   const char  *GetLfn() const   {return fLfn;}
+   Int_t        GetNreplicas() const {return fNreplicas;}
+   Long64_t     GetOpenAt() const {return fOpenedAt;}
+   Double_t     GetOpenTime() const {return fOpenTime;}
+   const char  *GetPfn() const   {return fPfn;}
+   Long64_t     GetReadBytes() const {return fReadBytes;}
+   Long64_t     GetSize() const   {return fSize;}
+   const char  *GetSE() const     {return fSE;}
+   Double_t     GetThroughput() const {return fThroughput;}
+   Double_t     GetProcessingTime() const {return fProcessingTime;}
+   const char  *GetUrl() const    {return fUrl;}
+   Bool_t       IsArchive() const {return fIsArchive;}
+   virtual void Print(Option_t *option="") const;
+   virtual void SavePrimitive(ostream &out, Option_t *option = "");
+   void         SetOpenTime(Double_t time) {fOpenTime = time;}
+   
+
+protected:   
+   TString      fLfn;       // logical file name
+   TString      fGUID;      // GUID
+   TString      fUrl;       // url for the opened copy
+   TString      fPfn;       // physical file name
+   TString      fSE;        // Storage element
+   Bool_t       fIsArchive; // Archive flag
+   Int_t        fImage;     // Image number
+   Int_t        fNreplicas; // Number of replicas
+   Long64_t     fStartBytes;// Total number of read bytes at start
+   Long64_t     fReadBytes; // Number of bytes read
+   Long64_t     fSize;      // Size of the file in bytes
+   Long64_t     fOpenedAt;  // Absolute value for time when opened
+   Double_t     fOpenTime;  // Time elapsed to open file
+   Double_t     fProcessingTime; // Processing
+   Double_t     fThroughput; // Throughput
+   
+   ClassDef(AliAnalysisFileDescriptor,1)  // Class describing a a file processed in the analysis
+};
+
 #endif

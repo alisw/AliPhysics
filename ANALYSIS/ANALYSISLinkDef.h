@@ -13,5 +13,6 @@
 #pragma link C++ class  AliAnalysisGrid+;
 #pragma link C++ class  AliAnalysisStatistics+;
 #pragma link C++ class  AliAnalysisTaskCfg+;
+#pragma link C++ class  AliAnalysisFileDescriptor+;
 
 #endif

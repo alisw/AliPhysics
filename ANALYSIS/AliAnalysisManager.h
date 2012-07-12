@@ -30,6 +30,7 @@ class TStopwatch;
 class TMap;
 class AliAnalysisSelector;
 class AliAnalysisDataContainer;
+class AliAnalysisFileDescriptor;
 class AliAnalysisTask;
 class AliVEventHandler;
 class AliVEventPool;
@@ -64,8 +65,9 @@ enum EAliAnalysisFlags {
    kSkipTerminate    = BIT(19),
    kUseProgressBar   = BIT(20),
    kTrueNotify       = BIT(21),
-   kTasksInitialized = BIT(22)
-};   
+   kTasksInitialized = BIT(22),
+   kCollectThroughput= BIT(23)
+};
 
    AliAnalysisManager(const char *name = "mgr", const char *title="");
    virtual            ~AliAnalysisManager();
@@ -107,6 +109,7 @@ enum EAliAnalysisFlags {
    TString             GetExtraFiles() const      {return fExtraFiles;}
    AliVEventPool*      GetEventPool()  const      {return fEventPool;}
    Bool_t              GetFileFromWrapper(const char *filename, const TList *source);
+   const char         *GetFileInfoLog() const     {return fFileInfoLog.Data();}
    static Int_t        GetRunFromAlienPath(const char *path);
    AliAnalysisGrid*    GetGridHandler()           {return fGridHandler;}
    TObjArray          *GetInputs() const          {return fInputs;}
@@ -129,6 +132,7 @@ enum EAliAnalysisFlags {
    static Bool_t       IsPipe(std::ostream &out);
    Bool_t              IsProofMode() const        {return (fMode==kProofAnalysis)?kTRUE:kFALSE;}
    Bool_t              IsRemote() const           {return fIsRemote;}
+   Bool_t              IsCollectThroughput()      {return TObject::TestBit(kCollectThroughput);}
    Bool_t              IsUsingDataSet() const     {return TObject::TestBit(kUseDataSet);}
    void                LoadBranch(const char *n)  { if(fAutoBranchHandling) return; DoLoadBranch(n); }
    void                RunLocalInit();
@@ -136,11 +140,13 @@ enum EAliAnalysisFlags {
    void                SetAutoBranchLoading(Bool_t b) { fAutoBranchHandling = b; }
    void                SetCurrentEntry(Long64_t entry)            {fCurrentEntry = entry;}
    void                SetCollectSysInfoEach(Int_t nevents=0)     {fNSysInfo = nevents;}
+   void                SetCollectThroughput(Bool_t flag)          {TObject::SetBit(kCollectThroughput,flag);}
    static void         SetCommonFileName(const char *name)        {fgCommonFileName = name;}
    void                SetDebugLevel(UInt_t level);
    void                SetDisableBranches(Bool_t disable=kTRUE)   {TObject::SetBit(kDisableBranches,disable);}
    void                SetExternalLoop(Bool_t flag)               {TObject::SetBit(kExternalLoop,flag);}
    void                SetEventPool(AliVEventPool* const epool)   {fEventPool = epool;}
+   void                SetFileInfoLog(const char *name) {TObject::SetBit(kCollectThroughput,kTRUE); fFileInfoLog = name;}
    void                SetGridHandler(AliAnalysisGrid * const handler) {fGridHandler = handler;}
    void                SetInputEventHandler(AliVEventHandler* const handler);
    void                SetMCtruthEventHandler(AliVEventHandler* const handler) {fMCtruthEventHandler = handler;}
@@ -234,11 +240,14 @@ private:
    TObjArray              *fOutputs;             // List of containers with results
    TObjArray              *fParamCont;           // List of containers with results
    TObjArray              *fDebugOptions;        // List of debug options
+   TObjArray              *fFileDescriptors;     //! List of file descriptors
+   AliAnalysisFileDescriptor *fCurrentDescriptor; //! Current file descriptor
    AliAnalysisDataContainer *fCommonInput;       // Common input container
    AliAnalysisDataContainer *fCommonOutput;      // Common output container
    AliAnalysisSelector    *fSelector;            //! Current selector
    AliAnalysisGrid        *fGridHandler;         //! Grid handler plugin
    TString                 fExtraFiles;          // List of extra files to be merged
+   TString                 fFileInfoLog;         // File name for fileinfo logs
    Bool_t                  fAutoBranchHandling;  // def=kTRUE, turn off if you use LoadBranch
    THashTable              fTable;               // keep branch ptrs in case of manual branch loading
    Int_t                   fRunFromPath;         // Run number retrieved from path to input data
@@ -251,6 +260,6 @@ private:
    TMap                   *fGlobals;             // Map with global variables
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,16)  // Analysis manager class
+   ClassDef(AliAnalysisManager,17)  // Analysis manager class
 };   
 #endif
