@@ -44,6 +44,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   											     fOnlyHadrons = onlyhadrons;
 										             fTrackEtaCut = etacut;     
 										             fTrackPtMin = ptMin;}
+  void SetEventSelection(UInt_t bits) { fEventSelection = bits; }
   void  SetDebug(Int_t debug) { fDebug = debug; } 
   Bool_t         ApplyCuts(TObject* track);                       // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
   void           DefineESDCuts(Int_t filterbit);                                 // Emulate filterbit
@@ -63,6 +64,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   Bool_t         fOnlyHadrons;       // consider only charged Pions, Protons and Kaons 
   Double_t       fTrackEtaCut;       // pseudo-rapidity limit of transverse regions     
   Double_t       fTrackPtMin;        // pt limit for selecting particles
+  UInt_t         fEventSelection;    // bit for physics selection
   AliESDtrackCuts *fEsdTrackCuts;    // set of cuts when reading ESD
   AliESDtrackCuts *fEsdTrackCutsSPD;    // set of cuts when reading ESD
   AliESDtrackCuts *fEsdTrackCutsSDD;    // set of cuts when reading ESD

@@ -75,6 +75,7 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fOnlyHadrons(kFALSE),
   fTrackEtaCut(0.8),
   fTrackPtMin(0),
+  fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
   fEsdTrackCuts(0x0), 
   fEsdTrackCutsSPD(0x0), 
   fEsdTrackCutsSDD(0x0) 
@@ -658,7 +659,7 @@ Bool_t  AliAnalyseLeadingTrackUE::TriggerSelection(const TObject* obj)
     return kFALSE;
 
   // Use AliPhysicsSelection to select good events, works for ESD and AOD
-  if (!(((AliInputEventHandler*)obj)->IsEventSelected()&(AliVEvent::kMB|AliVEvent::kUserDefined)))
+  if (!(((AliInputEventHandler*)obj)->IsEventSelected()&(fEventSelection)))
     return kFALSE;
 
   return kTRUE;
