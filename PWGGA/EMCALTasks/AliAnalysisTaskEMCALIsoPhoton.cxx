@@ -39,6 +39,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   AliAnalysisTaskSE(), 
   fCaloClusters(0),
   fSelPrimTracks(0),
+  fTracks(0),
   fEMCalCells(0),
   fPrTrCuts(0),
   fGeom(0x0),
@@ -66,6 +67,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   AliAnalysisTaskSE(name), 
   fCaloClusters(0),
   fSelPrimTracks(0),
+  fTracks(0),
   fEMCalCells(0),
   fPrTrCuts(0),
   fGeom(0x0),
@@ -174,9 +176,14 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
 
   fEvtSel->Fill(1);
 
+  if (!fTracks)  
+    fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
   // Track loop to fill a pT spectrum
-  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    AliESDtrack* track = (AliESDtrack*)fESD->GetTrack(iTracks);
+  const Int_t Ntracks = fTracks->GetEntriesFast();
+  for (Int_t iTracks = 0;  iTracks < Ntracks; ++iTracks) {
+    //  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
+    //AliESDtrack* track = (AliESDtrack*)fESD->GetTrack(iTracks);
+    AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(iTracks));
     if (!track)
       continue;
     if (fPrTrCuts && fPrTrCuts->IsSelected(track)){
@@ -322,7 +329,7 @@ void AliAnalysisTaskEMCALIsoPhoton::GetTrIso(TVector3 vec, Float_t &iso, Float_t
   if(phicl<0)
     phicl+=TMath::TwoPi();
   for(int itrack=0;itrack<ntracks;itrack++){
-    AliESDtrack *track = static_cast<AliESDtrack*> (fSelPrimTracks->At(itrack));
+    AliVTrack *track = static_cast<AliVTrack*> (fSelPrimTracks->At(itrack));
     if(!track)
       continue;
     Double_t dphi = TMath::Abs(track->Phi()-phicl);
