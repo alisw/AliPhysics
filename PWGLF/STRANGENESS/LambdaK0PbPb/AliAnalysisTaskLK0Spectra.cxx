@@ -2120,7 +2120,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 	  if (lPdgcodeCurrentPart==-3122) {
 	   // fHistMCProdRadiusAntiLambda->Fill(mcPosR);
 
-	   // fHistMCPtAntiLambda->Fill(lPtCurrentPart);	  
+	    fHistMCPtAntiLambda->Fill(lPtCurrentPart);	  
 
 	//if (TMath::Abs(lRapCurrentPart) < 0.3) fHistMCPtAntiLambdaRap3->Fill(lPtCurrentPart);
 
