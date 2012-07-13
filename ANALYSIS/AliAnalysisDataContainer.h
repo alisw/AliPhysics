@@ -23,6 +23,10 @@
 #include "TString.h"
 #endif
 
+#ifndef ROOT_TStopwatch
+#include "TStopwatch.h"
+#endif
+
 class TClass;
 class TFile;
 class TObjArray;
@@ -144,8 +148,6 @@ protected:
 //   AliAnalysisFileDescriptor - A simple wrapper for data related to accessing
 //      an analysis input file.
 //==============================================================================
-class TStopwatch;
-
 class AliAnalysisFileDescriptor : public TObject {
 
 public:
@@ -194,6 +196,7 @@ protected:
    Double_t     fOpenTime;  // Time elapsed to open file
    Double_t     fProcessingTime; // Processing
    Double_t     fThroughput; // Throughput
+   TStopwatch   fTimer;     //! Processing time
    
    ClassDef(AliAnalysisFileDescriptor,1)  // Class describing a a file processed in the analysis
 };

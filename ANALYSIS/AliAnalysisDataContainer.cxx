@@ -51,7 +51,6 @@
 #include <TTree.h>
 #include <TH1.h>
 #include <TROOT.h>
-#include <TStopwatch.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
@@ -505,7 +504,7 @@ AliAnalysisFileDescriptor::AliAnalysisFileDescriptor()
                           :TObject(), fLfn(), fGUID(), fUrl(), fPfn(), fSE(),
                            fIsArchive(kFALSE), fImage(0), fNreplicas(0), 
                            fStartBytes(0), fReadBytes(0), fSize(0), fOpenedAt(0), 
-                           fOpenTime(0.), fProcessingTime(0.), fThroughput(0.)
+                           fOpenTime(0.), fProcessingTime(0.), fThroughput(0.), fTimer()
 {
 // I/O constructor
 }
@@ -515,7 +514,7 @@ AliAnalysisFileDescriptor::AliAnalysisFileDescriptor(const TFile *file)
                           :TObject(), fLfn(), fGUID(), fUrl(), fPfn(), fSE(),
                            fIsArchive(kFALSE), fImage(0), fNreplicas(0), 
                            fStartBytes(0), fReadBytes(0), fSize(0), fOpenedAt(0), 
-                           fOpenTime(0.), fProcessingTime(0.), fThroughput(0.)
+                           fOpenTime(0.), fProcessingTime(0.), fThroughput(0.), fTimer()
 {
 // Normal constructor
    if (file->InheritsFrom("TAlienFile")) {
@@ -548,7 +547,7 @@ AliAnalysisFileDescriptor::AliAnalysisFileDescriptor(const AliAnalysisFileDescri
                            fIsArchive(other.fIsArchive), fImage(other.fImage),
                            fNreplicas(other.fNreplicas), fStartBytes(other.fStartBytes), fReadBytes(other.fReadBytes),
                            fSize(other.fSize), fOpenedAt(other.fOpenedAt), fOpenTime(other.fOpenTime),
-                           fProcessingTime(other.fProcessingTime), fThroughput(other.fThroughput)
+                           fProcessingTime(other.fProcessingTime), fThroughput(other.fThroughput), fTimer()
 {
 // CC
 }
@@ -587,10 +586,12 @@ AliAnalysisFileDescriptor::~AliAnalysisFileDescriptor()
 void AliAnalysisFileDescriptor::Done()
 {
 // Must be called at the end of processing, providing file->GetBytesRead() as argument.
+   fTimer.Stop();
    const Double_t megabyte = 1048576.;
-   Long64_t stampnow = time(0);
+//   Long64_t stampnow = time(0);
    fReadBytes = TFile::GetFileBytesRead()-fStartBytes;
-   fProcessingTime = stampnow-fOpenedAt;
+//   fProcessingTime = stampnow-fOpenedAt;
+   fProcessingTime = fTimer.RealTime();
    Double_t readsize = fReadBytes/megabyte;
    fThroughput = readsize/fProcessingTime;
 }   
