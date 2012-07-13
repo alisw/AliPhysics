@@ -57,10 +57,8 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   }
 
   void SetKinematicsCutsAOD(Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax){
-    fPtMin  = ptmin;
-    fPtMax  = ptmax;
-    fEtaMin = etamin;
-    fEtaMax = etamax;
+    fPtMin  = ptmin;  fPtMax  = ptmax;
+    fEtaMin = etamin; fEtaMax = etamax;
 
   }
 
@@ -76,7 +74,7 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
 
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
-  const char* GetCentralityEstimator(void)                     {return fCentralityEstimator;}
+  const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
   void SetCentralityPercentileRange(Double_t min, Double_t max) { 
     fUseCentrality = kTRUE;
     fCentralityPercentileMin=min;
@@ -107,7 +105,7 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   Bool_t fRunShuffling;//run shuffling or not
   AliBalanceTriggered *fShuffledBalance; //TriggeredBF object (shuffled)
   Bool_t fRunMixing;//run mixing or not
-  Int_t  fMixingTracks;
+  Int_t  fMixingTracks;//number of tracks to mix
   AliBalanceTriggered *fMixedBalance; //TriggeredBF object (mixed)
   AliEventPoolManager*     fPoolMgr;         //! event pool manager
   Bool_t fRunV0;
@@ -130,16 +128,16 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH1F *fHistVz; //z coordinate of the primary vertex
 
-  TH2F *fHistClus;//
-  TH2F *fHistDCA;//
-  TH1F *fHistChi2;//
-  TH1F *fHistPt;//
-  TH1F *fHistEta;//
-  TH1F *fHistPhi;//
-  TH1F *fHistPhiBefore;//
-  TH1F *fHistPhiAfter;//
-  TH2F *fHistV0M;//
-  TH2F *fHistRefTracks;//
+  TH2F *fHistClus;//number of clusters (QA histogram)
+  TH2F *fHistDCA;//DCA  (QA histogram)
+  TH1F *fHistChi2;//track chi2 (QA histogram)
+  TH1F *fHistPt;//transverse momentum (QA histogram)
+  TH1F *fHistEta;//pseudorapidity (QA histogram)
+  TH1F *fHistPhi;//phi (QA histogram)
+  TH1F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
+  TH1F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
+  TH2F *fHistV0M;//V0 multiplicities (QA histogram)
+  TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
 
   // V0 histograms
   TH1F    *fHistV0MultiplicityBeforeTrigSel;             //! V0 multiplicity distribution
@@ -149,10 +147,10 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
   TH1F    *fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup;//! V0 multiplicity distribution
   
   TH1F    *fHistMultiplicityBeforeTrigSel; 	        //! multiplicity distribution    
-  TH1F    *fHistMultiplicityForTrigEvt;  		        //! multiplicity distribution
-  TH1F    *fHistMultiplicity;     					        //! multiplicity distribution
-  TH1F    *fHistMultiplicityNoTPCOnly;			        //! multiplicity distribution
-  TH1F    *fHistMultiplicityNoTPCOnlyNoPileup;			//! multiplicity distribution
+  TH1F    *fHistMultiplicityForTrigEvt;  		//! multiplicity distribution
+  TH1F    *fHistMultiplicity;     			//! multiplicity distribution
+  TH1F    *fHistMultiplicityNoTPCOnly;			//! multiplicity distribution
+  TH1F    *fHistMultiplicityNoTPCOnlyNoPileup;		//! multiplicity distribution
 
   //before selection
   TH1F* fHistV0InvMassK0;                           // Invariant mass K0

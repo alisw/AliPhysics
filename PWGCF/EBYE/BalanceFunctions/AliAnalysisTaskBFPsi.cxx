@@ -731,11 +731,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
   TObjArray* tracksAccepted = new TObjArray;
   tracksAccepted->SetOwner(kTRUE);
 
-  Double_t v_charge;
-  Double_t v_eta;
-  Double_t v_y;
-  Double_t v_phi;
-  Double_t v_pt;
+  Double_t vCharge;
+  Double_t vEta;
+  Double_t vY;
+  Double_t vPhi;
+  Double_t vPt;
 
 
   if(gAnalysisLevel == "AOD") { // handling of TPC only tracks different in AOD and ESD
@@ -755,23 +755,23 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
       fHistTrackStats->Fill(aodTrack->GetFilterMap());
       if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
       
-      v_charge = aodTrack->Charge();
-      v_eta    = aodTrack->Eta();
-      v_y      = aodTrack->Y();
-      v_phi    = aodTrack->Phi() * TMath::RadToDeg();
-      v_pt     = aodTrack->Pt();
+      vCharge = aodTrack->Charge();
+      vEta    = aodTrack->Eta();
+      vY      = aodTrack->Y();
+      vPhi    = aodTrack->Phi() * TMath::RadToDeg();
+      vPt     = aodTrack->Pt();
       
-      Float_t DCAxy = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
-      Float_t DCAz  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+      Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+      Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
       
       
       // Kinematics cuts from ESD track cuts
-      if( v_pt < fPtMin || v_pt > fPtMax)      continue;
-      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+      if( vPt < fPtMin || vPt > fPtMax)      continue;
+      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
       
       // Extra DCA cuts (for systematic studies [!= -1])
       if( fDCAxyCut != -1 && fDCAzCut != -1){
-	if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
+	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
 	  continue;  // 2D cut
 	}
       }
@@ -786,24 +786,24 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
       
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
-      fHistDCA->Fill(DCAz,DCAxy);
+      fHistDCA->Fill(dcaZ,dcaXY);
       fHistChi2->Fill(aodTrack->Chi2perNDF(),fCentrality);
-      fHistPt->Fill(v_pt,fCentrality);
-      fHistEta->Fill(v_eta,fCentrality);
-      fHistRapidity->Fill(v_y,fCentrality);
-      if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
-      else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
-      fHistPhi->Fill(v_phi,fCentrality);
+      fHistPt->Fill(vPt,fCentrality);
+      fHistEta->Fill(vEta,fCentrality);
+      fHistRapidity->Fill(vY,fCentrality);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,fCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,fCentrality);
+      fHistPhi->Fill(vPhi,fCentrality);
       
       // add the track to the TObjArray
-      tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge));
     }//track loop
   }// AOD analysis
 
 
   else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD") { // handling of TPC only tracks different in AOD and ESD
 
-    AliESDtrack *track_TPC   = NULL;
+    AliESDtrack *trackTPC   = NULL;
     AliMCParticle *mcTrack   = NULL;
 
     AliMCEvent*  mcEvent     = NULL;
@@ -836,28 +836,28 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
       }
 
       // take only TPC only tracks
-      track_TPC   = new AliESDtrack();
-      if(!track->FillTPCOnlyTrack(*track_TPC)) continue;
+      trackTPC   = new AliESDtrack();
+      if(!track->FillTPCOnlyTrack(*trackTPC)) continue;
       
       //ESD track cuts
       if(fESDtrackCuts) 
-	if(!fESDtrackCuts->AcceptTrack(track_TPC)) continue;
+	if(!fESDtrackCuts->AcceptTrack(trackTPC)) continue;
       
       // fill QA histograms
       Float_t b[2];
       Float_t bCov[3];
-      track_TPC->GetImpactParameters(b,bCov);
+      trackTPC->GetImpactParameters(b,bCov);
       if (bCov[0]<=0 || bCov[2]<=0) {
 	AliDebug(1, "Estimated b resolution lower or equal zero!");
 	bCov[0]=0; bCov[2]=0;
       }
       
       Int_t nClustersTPC = -1;
-      nClustersTPC = track_TPC->GetTPCNclsIter1();   // TPC standalone
+      nClustersTPC = trackTPC->GetTPCNclsIter1();   // TPC standalone
       //nClustersTPC = track->GetTPCclusters(0);   // global track
       Float_t chi2PerClusterTPC = -1;
       if (nClustersTPC!=0) {
-	chi2PerClusterTPC = track_TPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
+	chi2PerClusterTPC = trackTPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
 	//chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);     // global track
       }
       
@@ -960,25 +960,25 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
 	}
       }
       //===========================PID===============================//
-      v_charge = track_TPC->Charge();
-      v_y      = track_TPC->Y();
-      v_eta    = track_TPC->Eta();
-      v_phi    = track_TPC->Phi() * TMath::RadToDeg();
-      v_pt     = track_TPC->Pt();
-      fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
+      vCharge = trackTPC->Charge();
+      vY      = trackTPC->Y();
+      vEta    = trackTPC->Eta();
+      vPhi    = trackTPC->Phi() * TMath::RadToDeg();
+      vPt     = trackTPC->Pt();
+      fHistClus->Fill(trackTPC->GetITSclusters(0),nClustersTPC);
       fHistDCA->Fill(b[1],b[0]);
       fHistChi2->Fill(chi2PerClusterTPC,fCentrality);
-      fHistPt->Fill(v_pt,fCentrality);
-      fHistEta->Fill(v_eta,fCentrality);
-      fHistPhi->Fill(v_phi,fCentrality);
-      fHistRapidity->Fill(v_y,fCentrality);
-      if(v_charge > 0) fHistPhiPos->Fill(v_phi,fCentrality);
-      else if(v_charge < 0) fHistPhiNeg->Fill(v_phi,fCentrality);
+      fHistPt->Fill(vPt,fCentrality);
+      fHistEta->Fill(vEta,fCentrality);
+      fHistPhi->Fill(vPhi,fCentrality);
+      fHistRapidity->Fill(vY,fCentrality);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,fCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,fCentrality);
       
       // add the track to the TObjArray
-      tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));      
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge));      
 
-      delete track_TPC;
+      delete trackTPC;
     }//track loop
   }// ESD analysis
 
@@ -995,17 +995,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
       //exclude non stable particles
       if(!(dynamic_cast<AliMCEvent*>(event)->IsPhysicalPrimary(iTracks))) continue;
 
-      v_eta    = track->Eta();
-      v_pt     = track->Pt();
-      v_y      = track->Y();
+      vEta    = track->Eta();
+      vPt     = track->Pt();
+      vY      = track->Y();
       
-      if( v_pt < fPtMin || v_pt > fPtMax)      
+      if( vPt < fPtMin || vPt > fPtMax)      
 	continue;
       if (!fUsePID) {
-	if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+	if( vEta < fEtaMin || vEta > fEtaMax)  continue;
       }
       else if (fUsePID){
-	if( v_y < fEtaMin || v_y > fEtaMax)  continue;
+	if( vY < fEtaMin || vY > fEtaMax)  continue;
       }
       
       //analyze one set of particles
@@ -1050,45 +1050,45 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
 	if(kExcludeParticle) continue;
       }
       
-      v_charge = track->Charge();
-      v_phi    = track->Phi();
-      //Printf("phi (before): %lf",v_phi);
+      vCharge = track->Charge();
+      vPhi    = track->Phi();
+      //Printf("phi (before): %lf",vPhi);
       
-      fHistPt->Fill(v_pt,fCentrality);
-      fHistEta->Fill(v_eta,fCentrality);
-      fHistPhi->Fill(v_phi*TMath::RadToDeg(),fCentrality);
-      fHistRapidity->Fill(v_y,fCentrality);
-      if(v_charge > 0) fHistPhiPos->Fill(v_phi*TMath::RadToDeg(),fCentrality);
-      else if(v_charge < 0) fHistPhiNeg->Fill(v_phi*TMath::RadToDeg(),fCentrality);
+      fHistPt->Fill(vPt,fCentrality);
+      fHistEta->Fill(vEta,fCentrality);
+      fHistPhi->Fill(vPhi*TMath::RadToDeg(),fCentrality);
+      fHistRapidity->Fill(vY,fCentrality);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi*TMath::RadToDeg(),fCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi*TMath::RadToDeg(),fCentrality);
       
       //Flow after burner
       if(fUseFlowAfterBurner) {
 	Double_t precisionPhi = 0.001;
 	Int_t maxNumberOfIterations = 100;
 	
-	Double_t phi0 = v_phi;
-	Double_t gV2 = fDifferentialV2->Eval(v_pt);
+	Double_t phi0 = vPhi;
+	Double_t gV2 = fDifferentialV2->Eval(vPt);
 	
 	for (Int_t j = 0; j < maxNumberOfIterations; j++) {
-	  Double_t phiprev = v_phi;
-	  Double_t fl = v_phi - phi0 + gV2*TMath::Sin(2.*(v_phi - gReactionPlane));
-	  Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(v_phi - gReactionPlane)); 
-	  v_phi -= fl/fp;
-	  if (TMath::AreEqualAbs(phiprev,v_phi,precisionPhi)) break;
+	  Double_t phiprev = vPhi;
+	  Double_t fl = vPhi - phi0 + gV2*TMath::Sin(2.*(vPhi - gReactionPlane));
+	  Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(vPhi - gReactionPlane)); 
+	  vPhi -= fl/fp;
+	  if (TMath::AreEqualAbs(phiprev,vPhi,precisionPhi)) break;
 	}
-	//Printf("phi (after): %lf\n",v_phi);
-	Double_t v_DeltaphiBefore = phi0 - gReactionPlane;
-	if(v_DeltaphiBefore < 0) v_DeltaphiBefore += 2*TMath::Pi();
-	fHistPhiBefore->Fill(v_DeltaphiBefore,fCentrality);
+	//Printf("phi (after): %lf\n",vPhi);
+	Double_t vDeltaphiBefore = phi0 - gReactionPlane;
+	if(vDeltaphiBefore < 0) vDeltaphiBefore += 2*TMath::Pi();
+	fHistPhiBefore->Fill(vDeltaphiBefore,fCentrality);
 	
-	Double_t v_DeltaphiAfter = v_phi - gReactionPlane;
-	if(v_DeltaphiAfter < 0) v_DeltaphiAfter += 2*TMath::Pi();
-	fHistPhiAfter->Fill(v_DeltaphiAfter,fCentrality);
+	Double_t vDeltaphiAfter = vPhi - gReactionPlane;
+	if(vDeltaphiAfter < 0) vDeltaphiAfter += 2*TMath::Pi();
+	fHistPhiAfter->Fill(vDeltaphiAfter,fCentrality);
       }
       
-      v_phi *= TMath::RadToDeg();
+      vPhi *= TMath::RadToDeg();
           
-      tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge));
       
     } //track loop
   }//MC

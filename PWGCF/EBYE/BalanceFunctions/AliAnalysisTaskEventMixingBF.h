@@ -54,10 +54,8 @@ class AliAnalysisTaskEventMixingBF : public AliAnalysisTaskSE {
   }
 
   void SetKinematicsCutsAOD(Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax){
-    fPtMin  = ptmin;
-    fPtMax  = ptmax;
-    fEtaMin = etamin;
-    fEtaMax = etamax;
+    fPtMin  = ptmin;  fPtMax  = ptmax;
+    fEtaMin = etamin; fEtaMax = etamax;
 
   }
 
@@ -90,7 +88,7 @@ class AliAnalysisTaskEventMixingBF : public AliAnalysisTaskSE {
 
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
-  const char* GetCentralityEstimator(void)                     {return fCentralityEstimator;}
+  const char* GetCentralityEstimator(void)    const            {return fCentralityEstimator;}
   void SetCentralityPercentileRange(Double_t min, Double_t max) { 
     fUseCentrality = kTRUE;
     fCentralityPercentileMin=min;
@@ -148,44 +146,44 @@ class AliAnalysisTaskEventMixingBF : public AliAnalysisTaskSE {
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH1F *fHistVz; //z coordinate of the primary vertex
 
-  TH2F *fHistClus;//
-  TH2F *fHistDCA;//
-  TH1F *fHistChi2;//
-  TH1F *fHistPt;//
-  TH1F *fHistEta;//
-  TH1F *fHistPhi;//
-  TH1F *fHistPhiBefore;//
-  TH1F *fHistPhiAfter;//
-  TH2F *fHistV0M;//
-  TH2F *fHistRefTracks;//
+  TH2F *fHistClus;//number of clusters (QA histogram)
+  TH2F *fHistDCA;//DCA  (QA histogram)
+  TH1F *fHistChi2;//track chi2 (QA histogram)
+  TH1F *fHistPt;//transverse momentum (QA histogram)
+  TH1F *fHistEta;//pseudorapidity (QA histogram)
+  TH1F *fHistPhi;//phi (QA histogram)
+  TH1F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
+  TH1F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
+  TH2F *fHistV0M;//V0 multiplicities (QA histogram)
+  TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
 
   //============PID============//
-  TH2D *fHistdEdxVsPTPCbeforePID;//
-  TH2D *fHistBetavsPTOFbeforePID;//
-  TH2D *fHistProbTPCvsPtbeforePID; //
-  TH2D *fHistProbTOFvsPtbeforePID;//
-  TH2D *fHistProbTPCTOFvsPtbeforePID;//
-  TH2D *fHistNSigmaTPCvsPtbeforePID;//
-  TH2D *fHistNSigmaTOFvsPtbeforePID;//
-  TH2D *fHistdEdxVsPTPCafterPID;//
-  TH2D *fHistBetavsPTOFafterPID;//
-  TH2D *fHistProbTPCvsPtafterPID;//
-  TH2D *fHistProbTOFvsPtafterPID;//
-  TH2D *fHistProbTPCTOFvsPtafterPID;//
-  TH2D *fHistNSigmaTPCvsPtafterPID;//
-  TH2D *fHistNSigmaTOFvsPtafterPID; //
+  TH2D *fHistdEdxVsPTPCbeforePID;//TPC dEdx vs momentum before PID cuts (QA histogram)
+  TH2D *fHistBetavsPTOFbeforePID;//beta vs momentum before PID cuts (QA histogram)
+  TH2D *fHistProbTPCvsPtbeforePID; //TPC probability vs pT before PID cuts (QA histogram)
+  TH2D *fHistProbTOFvsPtbeforePID;//TOF probability vs pT before PID cuts (QA histogram)
+  TH2D *fHistProbTPCTOFvsPtbeforePID;//TOF/TPC probability vs pT before PID cuts (QA histogram)
+  TH2D *fHistNSigmaTPCvsPtbeforePID;//TPC nsigma vs pT before PID cuts (QA histogram)
+  TH2D *fHistNSigmaTOFvsPtbeforePID;//TOF nsigma vs pT before PID cuts (QA histogram)
+  TH2D *fHistdEdxVsPTPCafterPID;//TPC dEdx vs momentum after PID cuts (QA histogram)
+  TH2D *fHistBetavsPTOFafterPID;//beta vs momentum after PID cuts (QA histogram)
+  TH2D *fHistProbTPCvsPtafterPID; //TPC probability vs pT after PID cuts (QA histogram)
+  TH2D *fHistProbTOFvsPtafterPID;//TOF probability vs pT after PID cuts (QA histogram)
+  TH2D *fHistProbTPCTOFvsPtafterPID;//TOF/TPC probability vs pT after PID cuts (QA histogram)
+  TH2D *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
+  TH2D *fHistNSigmaTOFvsPtafterPID;//TOF nsigma vs pT after PID cuts (QA histogram)
 
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliPIDCombined       *fPIDCombined;     //! combined PID object
   
-  kParticleOfInterest  fParticleOfInterest;
-  kDetectorUsedForPID   fPidDetectorConfig;
+  kParticleOfInterest  fParticleOfInterest;//analyzed particle
+  kDetectorUsedForPID   fPidDetectorConfig;//used detector for PID
 
-  Bool_t fUsePID; //
-  Bool_t fUsePIDnSigma;//
-  Bool_t fUsePIDPropabilities;//
-  Double_t fPIDNSigma;//
-  Double_t fMinAcceptedPIDProbability;//
+  Bool_t fUsePID; //flag to use PID 
+  Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
+  Bool_t fUsePIDPropabilities;//flag to use probability method for PID
+  Double_t fPIDNSigma;//nsigma cut for PID
+  Double_t fMinAcceptedPIDProbability;//probability cut for PID
   //============PID============//
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
@@ -231,8 +229,8 @@ class AliAnalysisTaskEventMixingBF : public AliAnalysisTaskSE {
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
 
   // Event Mixing
-  AliVEvent       *fMainEvent;
-  AliVEvent       *fMixEvent;
+  AliVEvent       *fMainEvent;//main event in the event mixing loop
+  AliVEvent       *fMixEvent;//second event in the event mixing loop
 
   AliMixInputEventHandler *SetupEventsForMixing();  
 

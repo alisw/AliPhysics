@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKBFPSI_CXX
-#define ALIANALYSISTASKBFPSI_CXX
+#ifndef ALIANALYSISTASKBFPSI_H
+#define ALIANALYSISTASKBFPSI_H
 
 // Analysis task for the BF vs Psi code
 // Authors: Panos Cristakoglou@cern.ch
@@ -59,11 +59,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   }
 
   void SetKinematicsCutsAOD(Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax){
-    fPtMin  = ptmin;
-    fPtMax  = ptmax;
-    fEtaMin = etamin;
-    fEtaMax = etamax;
-
+    fPtMin  = ptmin;  fPtMax  = ptmax;
+    fEtaMin = etamin; fEtaMax = etamax;
   }
 
   void SetExtraDCACutsAOD(Double_t DCAxy, Double_t DCAz){
@@ -95,7 +92,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
-  const char* GetCentralityEstimator(void)                     {return fCentralityEstimator;}
+  const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
   void SetCentralityPercentileRange(Double_t min, Double_t max) { 
     fUseCentrality = kTRUE;
     fCentralityPercentileMin=min;
@@ -166,47 +163,47 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TH2F *fHistEventPlane; //event plane distribution
 
-  TH2F *fHistClus;//
-  TH2F *fHistDCA;//
-  TH2F *fHistChi2;//
-  TH2F *fHistPt;//
-  TH2F *fHistEta;//
-  TH2F *fHistRapidity;//
-  TH2F *fHistPhi;//
-  TH2F *fHistPhiBefore;//
-  TH2F *fHistPhiAfter;//
-  TH2F *fHistPhiPos;//
-  TH2F *fHistPhiNeg;//
-  TH2F *fHistV0M;//
-  TH2F *fHistRefTracks;//
+  TH2F *fHistClus;//number of clusters (QA histogram)
+  TH2F *fHistDCA;//DCA  (QA histogram)
+  TH2F *fHistChi2;//track chi2 (QA histogram)
+  TH2F *fHistPt;//transverse momentum (QA histogram)
+  TH2F *fHistEta;//pseudorapidity (QA histogram)
+  TH2F *fHistRapidity;//rapidity (QA histogram)
+  TH2F *fHistPhi;//phi (QA histogram)
+  TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
+  TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
+  TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
+  TH2F *fHistPhiNeg;//phi for negative particles (QA histogram)
+  TH2F *fHistV0M;//V0 multiplicities (QA histogram)
+  TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
 
   //============PID============//
-  TH2D *fHistdEdxVsPTPCbeforePID;//
-  TH2D *fHistBetavsPTOFbeforePID;//
-  TH2D *fHistProbTPCvsPtbeforePID; //
-  TH2D *fHistProbTOFvsPtbeforePID;//
-  TH2D *fHistProbTPCTOFvsPtbeforePID;//
-  TH2D *fHistNSigmaTPCvsPtbeforePID;//
-  TH2D *fHistNSigmaTOFvsPtbeforePID;//
-  TH2D *fHistdEdxVsPTPCafterPID;//
-  TH2D *fHistBetavsPTOFafterPID;//
-  TH2D *fHistProbTPCvsPtafterPID;//
-  TH2D *fHistProbTOFvsPtafterPID;//
-  TH2D *fHistProbTPCTOFvsPtafterPID;//
-  TH2D *fHistNSigmaTPCvsPtafterPID;//
-  TH2D *fHistNSigmaTOFvsPtafterPID; //
+  TH2D *fHistdEdxVsPTPCbeforePID;//TPC dEdx vs momentum before PID cuts (QA histogram)
+  TH2D *fHistBetavsPTOFbeforePID;//beta vs momentum before PID cuts (QA histogram)
+  TH2D *fHistProbTPCvsPtbeforePID; //TPC probability vs pT before PID cuts (QA histogram)
+  TH2D *fHistProbTOFvsPtbeforePID;//TOF probability vs pT before PID cuts (QA histogram)
+  TH2D *fHistProbTPCTOFvsPtbeforePID;//TOF/TPC probability vs pT before PID cuts (QA histogram)
+  TH2D *fHistNSigmaTPCvsPtbeforePID;//TPC nsigma vs pT before PID cuts (QA histogram)
+  TH2D *fHistNSigmaTOFvsPtbeforePID;//TOF nsigma vs pT before PID cuts (QA histogram)
+  TH2D *fHistdEdxVsPTPCafterPID;//TPC dEdx vs momentum after PID cuts (QA histogram)
+  TH2D *fHistBetavsPTOFafterPID;//beta vs momentum after PID cuts (QA histogram)
+  TH2D *fHistProbTPCvsPtafterPID; //TPC probability vs pT after PID cuts (QA histogram)
+  TH2D *fHistProbTOFvsPtafterPID;//TOF probability vs pT after PID cuts (QA histogram)
+  TH2D *fHistProbTPCTOFvsPtafterPID;//TOF/TPC probability vs pT after PID cuts (QA histogram)
+  TH2D *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
+  TH2D *fHistNSigmaTOFvsPtafterPID;//TOF nsigma vs pT after PID cuts (QA histogram)
 
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliPIDCombined       *fPIDCombined;     //! combined PID object
   
-  kParticleOfInterest  fParticleOfInterest;
-  kDetectorUsedForPID   fPidDetectorConfig;
+  kParticleOfInterest  fParticleOfInterest;//analyzed particle
+  kDetectorUsedForPID   fPidDetectorConfig;//used detector for PID
 
-  Bool_t fUsePID; //
-  Bool_t fUsePIDnSigma;//
-  Bool_t fUsePIDPropabilities;//
-  Double_t fPIDNSigma;//
-  Double_t fMinAcceptedPIDProbability;//
+  Bool_t fUsePID; //flag to use PID 
+  Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
+  Bool_t fUsePIDPropabilities;//flag to use probability method for PID
+  Double_t fPIDNSigma;//nsigma cut for PID
+  Double_t fMinAcceptedPIDProbability;//probability cut for PID
   //============PID============//
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts

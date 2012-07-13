@@ -45,9 +45,9 @@ class AliBalanceEventMixing : public TObject {
   
   void SetAnalysisLevel(const char* analysisLevel) {
     fAnalysisLevel = analysisLevel;}
-  void SetShuffle(Bool_t shuffle) {bShuffle = shuffle;}
-  void SetHBTcut(Bool_t HBTcut) {bHBTcut = HBTcut;}
-  void SetConversionCut(Bool_t ConversionCut) {bConversionCut = ConversionCut;}
+  void SetShuffle(Bool_t shuffle) {fShuffle = shuffle;}
+  void SetHBTcut(Bool_t HBTcut) {fHBTcut = HBTcut;}
+  void SetConversionCut(Bool_t ConversionCut) {fConversionCut = ConversionCut;}
   void SetInterval(Int_t iAnalysisType, Double_t p1Start, Double_t p1Stop,
 		   Int_t ibins, Double_t p2Start, Double_t p2Stop);
   void SetCentralityInterval(Double_t cStart, Double_t cStop)  { fCentStart = cStart; fCentStop = cStop;};
@@ -61,13 +61,13 @@ class AliBalanceEventMixing : public TObject {
   void InitHistograms(void);
 
   const char* GetAnalysisLevel() {return fAnalysisLevel.Data();}
-  Int_t GetNumberOfAnalyzedEvent() {return fAnalyzedEvents;}
+  Int_t GetNumberOfAnalyzedEvent()  const {return fAnalyzedEvents;}
 
-  Int_t GetNumberOfBins(Int_t ibin) {return fNumberOfBins[ibin];}
-  Double_t GetP1Start(Int_t ibin){return fP1Start[ibin];}
-  Double_t GetP1Stop(Int_t ibin){return fP1Stop[ibin];}   
-  Double_t GetP2Start(Int_t ibin){return fP2Start[ibin];}
-  Double_t GetP2Stop(Int_t ibin){return fP2Stop[ibin];}    
+  Int_t GetNumberOfBins(Int_t ibin) const {return fNumberOfBins[ibin];}
+  Double_t GetP1Start(Int_t ibin)   const {return fP1Start[ibin];}
+  Double_t GetP1Stop(Int_t ibin)    const {return fP1Stop[ibin];}   
+  Double_t GetP2Start(Int_t ibin)   const {return fP2Start[ibin];}
+  Double_t GetP2Stop(Int_t ibin)    const {return fP2Stop[ibin];}    
  
   Double_t GetNp(Int_t analysisType) const { return 1.0*fNp[analysisType]; }
   Double_t GetNn(Int_t analysisType) const { return 1.0*fNn[analysisType]; }
@@ -85,12 +85,12 @@ class AliBalanceEventMixing : public TObject {
   Double_t GetBalance(Int_t a, Int_t p2);
   Double_t GetError(Int_t a, Int_t p2);
 
-  TH2D *GetHistNp(Int_t iAnalysisType) { return fHistP[iAnalysisType];}
-  TH2D *GetHistNn(Int_t iAnalysisType) { return fHistN[iAnalysisType];}
-  TH2D *GetHistNpn(Int_t iAnalysisType) { return fHistPN[iAnalysisType];}
-  TH2D *GetHistNnp(Int_t iAnalysisType) { return fHistNP[iAnalysisType];}
-  TH2D *GetHistNpp(Int_t iAnalysisType) { return fHistPP[iAnalysisType];}
-  TH2D *GetHistNnn(Int_t iAnalysisType) { return fHistNN[iAnalysisType];}
+  TH2D *GetHistNp(Int_t iAnalysisType)  const { return fHistP[iAnalysisType];}
+  TH2D *GetHistNn(Int_t iAnalysisType)  const { return fHistN[iAnalysisType];}
+  TH2D *GetHistNpn(Int_t iAnalysisType) const { return fHistPN[iAnalysisType];}
+  TH2D *GetHistNnp(Int_t iAnalysisType) const { return fHistNP[iAnalysisType];}
+  TH2D *GetHistNpp(Int_t iAnalysisType) const { return fHistPP[iAnalysisType];}
+  TH2D *GetHistNnn(Int_t iAnalysisType) const { return fHistNN[iAnalysisType];}
 
   void PrintAnalysisSettings();
   TGraphErrors *DrawBalance(Int_t fAnalysisType);
@@ -112,11 +112,11 @@ class AliBalanceEventMixing : public TObject {
   void PrintResults(Int_t iAnalysisType, TH1D *gHist);
 
  private:
-  inline Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
+  inline Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign); 
 
-  Bool_t bShuffle; //shuffled balance function object
-  Bool_t bHBTcut;  // apply HBT like cuts
-  Bool_t bConversionCut;  // apply conversion cuts
+  Bool_t fShuffle; //shuffled balance function object
+  Bool_t fHBTcut;  // apply HBT like cuts
+  Bool_t fConversionCut;  // apply conversion cuts
 
   TString fAnalysisLevel; //ESD, AOD or MC
   Int_t fAnalyzedEvents; //number of events that have been analyzed
@@ -124,13 +124,13 @@ class AliBalanceEventMixing : public TObject {
   TString fCentralityId;//Centrality identifier to be used for the histo naming
 
   Int_t fNumberOfBins[ANALYSIS_TYPES];//number of bins of the analyzed interval
-  Double_t fP1Start[ANALYSIS_TYPES];
-  Double_t fP1Stop[ANALYSIS_TYPES];
-  Double_t fP2Start[ANALYSIS_TYPES];
-  Double_t fP2Stop[ANALYSIS_TYPES];
-  Double_t fP2Step[ANALYSIS_TYPES]; 
-  Double_t fCentStart;
-  Double_t fCentStop;
+  Double_t fP1Start[ANALYSIS_TYPES];//lower boundaries for single particle histograms 
+  Double_t fP1Stop[ANALYSIS_TYPES];//upper boundaries for single particle histograms 
+  Double_t fP2Start[ANALYSIS_TYPES];//lower boundaries for pair histograms 
+  Double_t fP2Stop[ANALYSIS_TYPES];//upper boundaries for pair histograms 
+  Double_t fP2Step[ANALYSIS_TYPES];//bin size for pair histograms 
+  Double_t fCentStart;//lower boundary for centrality
+  Double_t fCentStop;//upper boundary for centrality
 
  	
   Double_t fNnn[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(--)

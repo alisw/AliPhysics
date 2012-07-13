@@ -305,13 +305,13 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
 void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
   // Main loop
   // Called for each event
-  Double_t v_charge = 0;
-  Double_t v_y = 0.0;
-  Double_t v_eta = 0.0;
-  Double_t v_phi = 0.0;
-  Double_t v_p[3] = {0.,0.,0.};
-  Double_t v_pt = 0.0;
-  Double_t v_E = 0.0;
+  Double_t vCharge = 0;
+  Double_t vY = 0.0;
+  Double_t vEta = 0.0;
+  Double_t vPhi = 0.0;
+  Double_t vP[3] = {0.,0.,0.};
+  Double_t vPt = 0.0;
+  Double_t vE = 0.0;
   Bool_t isPion = kFALSE, isKaon = kFALSE, isProton = kFALSE;
 
   if(fUseAllCharges) {
@@ -401,112 +401,112 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	Printf("Generating positive: %d(%d)",iParticleCount+1,nGeneratedPositive);
 
       //Pseudo-rapidity sampled from a Gaussian centered @ 0
-      v_eta = gRandom->Gaus(0.0,4.0);
+      vEta = gRandom->Gaus(0.0,4.0);
 
       //Fill QA histograms (full phase space)
-      fHistEtaTotal->Fill(v_eta);
+      fHistEtaTotal->Fill(vEta);
 
-      v_charge = 1.0;
+      vCharge = 1.0;
       //nGeneratedPositive += 1;
       
       //Acceptance
-      if((v_eta < fEtaMin) || (v_eta > fEtaMax)) continue;
+      if((vEta < fEtaMin) || (vEta > fEtaMax)) continue;
 
       if(!fUseAllCharges) {
 	//Decide the specie
 	Double_t randomNumberSpecies = gRandom->Rndm();
 	if((randomNumberSpecies >= 0.0)&&(randomNumberSpecies < fPionPercentage)) {
 	  nGeneratedPions += 1;
-	  v_pt = fPtSpectraPions->GetRandom();
-	  v_phi = fAzimuthalAnglePions->GetRandom();
+	  vPt = fPtSpectraPions->GetRandom();
+	  vPhi = fAzimuthalAnglePions->GetRandom();
 	  fParticleMass = fPionMass;
 	  isPion = kTRUE;
 	}
 	else if((randomNumberSpecies >= fPionPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage)) {
 	  nGeneratedKaons += 1;
-	  v_pt = fPtSpectraKaons->GetRandom();
-	  v_phi = fAzimuthalAngleKaons->GetRandom();
+	  vPt = fPtSpectraKaons->GetRandom();
+	  vPhi = fAzimuthalAngleKaons->GetRandom();
 	  fParticleMass = fKaonMass;
 	  isKaon = kTRUE;
 	}
 	else if((randomNumberSpecies >= fPionPercentage + fKaonPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage + fProtonPercentage)) {
 	  nGeneratedProtons += 1;
-	  v_pt = fPtSpectraProtons->GetRandom();
-	  v_phi = fAzimuthalAngleProtons->GetRandom();
+	  vPt = fPtSpectraProtons->GetRandom();
+	  vPhi = fAzimuthalAngleProtons->GetRandom();
 	  fParticleMass = fProtonMass;
 	  isProton = kTRUE;
 	}
       }
       else {
-	v_pt = fPtSpectraAllCharges->GetRandom();
-	v_phi = fAzimuthalAngleAllCharges->GetRandom();
+	vPt = fPtSpectraAllCharges->GetRandom();
+	vPhi = fAzimuthalAngleAllCharges->GetRandom();
       }
       
-      v_p[0] = v_pt*TMath::Cos(v_phi);
-      v_p[1] = v_pt*TMath::Sin(v_phi);
-      v_p[2] = v_pt*TMath::SinH(v_eta);
-      v_E = TMath::Sqrt(TMath::Power(fParticleMass,2) +
-			TMath::Power(v_p[0],2) +
-			TMath::Power(v_p[1],2) +
-			TMath::Power(v_p[2],2));
+      vP[0] = vPt*TMath::Cos(vPhi);
+      vP[1] = vPt*TMath::Sin(vPhi);
+      vP[2] = vPt*TMath::SinH(vEta);
+      vE = TMath::Sqrt(TMath::Power(fParticleMass,2) +
+			TMath::Power(vP[0],2) +
+			TMath::Power(vP[1],2) +
+			TMath::Power(vP[2],2));
       
-      v_y = 0.5*TMath::Log((v_E + v_p[2])/(v_E - v_p[2]));
+      vY = 0.5*TMath::Log((vE + vP[2])/(vE - vP[2]));
       
       //pt coverage
-      if((v_pt < fPtMin) || (v_pt > fPtMax)) continue;
-      //Printf("pt: %lf - mins: %lf - max: %lf",v_pt,fPtMin,fPtMax);
+      if((vPt < fPtMin) || (vPt > fPtMax)) continue;
+      //Printf("pt: %lf - mins: %lf - max: %lf",vPt,fPtMin,fPtMax);
 
       //acceptance filter
       if(fUseAcceptanceParameterization) {
 	Double_t gRandomNumberForAcceptance = gRandom->Rndm();
-	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(v_pt)) 
+	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(vPt)) 
 	  continue;
       }
 
       gNumberOfAcceptedPositiveParticles += 1;
 
       //Fill QA histograms (acceptance);
-      fHistEta->Fill(v_eta);
-      fHistRapidity->Fill(v_y);
-      fHistPhi->Fill(v_phi);
-      fHistPt->Fill(v_pt);
+      fHistEta->Fill(vEta);
+      fHistRapidity->Fill(vY);
+      fHistPhi->Fill(vPhi);
+      fHistPt->Fill(vPt);
       if(isPion) {
-	fHistRapidityPions->Fill(v_y);
-	fHistPhiPions->Fill(v_phi);
-	fHistPtPions->Fill(v_pt);
+	fHistRapidityPions->Fill(vY);
+	fHistPhiPions->Fill(vPhi);
+	fHistPtPions->Fill(vPt);
       }
       else if(isKaon) {
-	fHistRapidityKaons->Fill(v_y);
-	fHistPhiKaons->Fill(v_phi);
-	fHistPtKaons->Fill(v_pt);
+	fHistRapidityKaons->Fill(vY);
+	fHistPhiKaons->Fill(vPhi);
+	fHistPtKaons->Fill(vPt);
       }
       else if(isProton) {
-	fHistRapidityProtons->Fill(v_y);
-	fHistPhiProtons->Fill(v_phi);
-	fHistPtProtons->Fill(v_pt);
+	fHistRapidityProtons->Fill(vY);
+	fHistPhiProtons->Fill(vPhi);
+	fHistPtProtons->Fill(vPt);
       }
 
       // fill charge vector
-      chargeVector[0]->push_back(v_charge);
-      chargeVector[1]->push_back(v_y);
-      chargeVector[2]->push_back(v_eta);
-      chargeVector[3]->push_back(TMath::RadToDeg()*v_phi);
-      chargeVector[4]->push_back(v_p[0]);
-      chargeVector[5]->push_back(v_p[1]);
-      chargeVector[6]->push_back(v_p[2]);
-      chargeVector[7]->push_back(v_pt);
-      chargeVector[8]->push_back(v_E);
+      chargeVector[0]->push_back(vCharge);
+      chargeVector[1]->push_back(vY);
+      chargeVector[2]->push_back(vEta);
+      chargeVector[3]->push_back(TMath::RadToDeg()*vPhi);
+      chargeVector[4]->push_back(vP[0]);
+      chargeVector[5]->push_back(vP[1]);
+      chargeVector[6]->push_back(vP[2]);
+      chargeVector[7]->push_back(vPt);
+      chargeVector[8]->push_back(vE);
       
       if(fRunShuffling) {
-	chargeVectorShuffle[0]->push_back(v_charge);
-	chargeVectorShuffle[1]->push_back(v_y);
-	chargeVectorShuffle[2]->push_back(v_eta);
-	chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*v_phi);
-	chargeVectorShuffle[4]->push_back(v_p[0]);
-	chargeVectorShuffle[5]->push_back(v_p[1]);
-	chargeVectorShuffle[6]->push_back(v_p[2]);
-	chargeVectorShuffle[7]->push_back(v_pt);
-	chargeVectorShuffle[8]->push_back(v_E);
+	chargeVectorShuffle[0]->push_back(vCharge);
+	chargeVectorShuffle[1]->push_back(vY);
+	chargeVectorShuffle[2]->push_back(vEta);
+	chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*vPhi);
+	chargeVectorShuffle[4]->push_back(vP[0]);
+	chargeVectorShuffle[5]->push_back(vP[1]);
+	chargeVectorShuffle[6]->push_back(vP[2]);
+	chargeVectorShuffle[7]->push_back(vPt);
+	chargeVectorShuffle[8]->push_back(vE);
       }
       gNumberOfAcceptedParticles += 1;
     }//generated positive particle loop
@@ -518,124 +518,124 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	Printf("Generating negative: %d(%d)",iParticleCount+1,nGeneratedNegative);
 
       //Pseudo-rapidity sampled from a Gaussian centered @ 0
-      v_eta = gRandom->Gaus(0.0,4.0);
+      vEta = gRandom->Gaus(0.0,4.0);
 
       //Fill QA histograms (full phase space)
-      fHistEtaTotal->Fill(v_eta);
+      fHistEtaTotal->Fill(vEta);
 
-      v_charge = -1.0;
+      vCharge = -1.0;
       //nGeneratedNegative += 1;
       
       //Acceptance
-      if((v_eta < fEtaMin) || (v_eta > fEtaMax)) continue;
+      if((vEta < fEtaMin) || (vEta > fEtaMax)) continue;
 
       if(!fUseAllCharges) {
 	//Decide the specie
 	Double_t randomNumberSpecies = gRandom->Rndm();
 	if((randomNumberSpecies >= 0.0)&&(randomNumberSpecies < fPionPercentage)) {
 	  nGeneratedPions += 1;
-	  v_pt = fPtSpectraPions->GetRandom();
-	  v_phi = fAzimuthalAnglePions->GetRandom();
+	  vPt = fPtSpectraPions->GetRandom();
+	  vPhi = fAzimuthalAnglePions->GetRandom();
 	  fParticleMass = fPionMass;
 	  isPion = kTRUE;
 	}
 	else if((randomNumberSpecies >= fPionPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage)) {
 	  nGeneratedKaons += 1;
-	  v_pt = fPtSpectraKaons->GetRandom();
-	  v_phi = fAzimuthalAngleKaons->GetRandom();
+	  vPt = fPtSpectraKaons->GetRandom();
+	  vPhi = fAzimuthalAngleKaons->GetRandom();
 	  fParticleMass = fKaonMass;
 	  isKaon = kTRUE;
 	}
 	else if((randomNumberSpecies >= fPionPercentage + fKaonPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage + fProtonPercentage)) {
 	  nGeneratedProtons += 1;
-	  v_pt = fPtSpectraProtons->GetRandom();
-	  v_phi = fAzimuthalAngleProtons->GetRandom();
+	  vPt = fPtSpectraProtons->GetRandom();
+	  vPhi = fAzimuthalAngleProtons->GetRandom();
 	  fParticleMass = fProtonMass;
 	  isProton = kTRUE;
 	}
       }
       else {
-	v_pt = fPtSpectraAllCharges->GetRandom();
-	v_phi = fAzimuthalAngleAllCharges->GetRandom();
+	vPt = fPtSpectraAllCharges->GetRandom();
+	vPhi = fAzimuthalAngleAllCharges->GetRandom();
       }
       
-      v_p[0] = v_pt*TMath::Cos(v_phi);
-      v_p[1] = v_pt*TMath::Sin(v_phi);
-      v_p[2] = v_pt*TMath::SinH(v_eta);
-      v_E = TMath::Sqrt(TMath::Power(fParticleMass,2) +
-			TMath::Power(v_p[0],2) +
-			TMath::Power(v_p[1],2) +
-			TMath::Power(v_p[2],2));
+      vP[0] = vPt*TMath::Cos(vPhi);
+      vP[1] = vPt*TMath::Sin(vPhi);
+      vP[2] = vPt*TMath::SinH(vEta);
+      vE = TMath::Sqrt(TMath::Power(fParticleMass,2) +
+			TMath::Power(vP[0],2) +
+			TMath::Power(vP[1],2) +
+			TMath::Power(vP[2],2));
       
-      v_y = 0.5*TMath::Log((v_E + v_p[2])/(v_E - v_p[2]));
+      vY = 0.5*TMath::Log((vE + vP[2])/(vE - vP[2]));
       
       //pt coverage
-      if((v_pt < fPtMin) || (v_pt > fPtMax)) continue;
-      //Printf("pt: %lf - mins: %lf - max: %lf",v_pt,fPtMin,fPtMax);
+      if((vPt < fPtMin) || (vPt > fPtMax)) continue;
+      //Printf("pt: %lf - mins: %lf - max: %lf",vPt,fPtMin,fPtMax);
 
      //acceptance filter
       if(fUseAcceptanceParameterization) {
 	Double_t gRandomNumberForAcceptance = gRandom->Rndm();
-	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(v_pt)) 
+	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(vPt)) 
 	  continue;
       }
 
       gNumberOfAcceptedNegativeParticles += 1;
 
       //Fill QA histograms (acceptance);
-      fHistEta->Fill(v_eta);
-      fHistRapidity->Fill(v_y);
-      fHistPhi->Fill(v_phi);
-      fHistPt->Fill(v_pt);
+      fHistEta->Fill(vEta);
+      fHistRapidity->Fill(vY);
+      fHistPhi->Fill(vPhi);
+      fHistPt->Fill(vPt);
       if(isPion) {
-	fHistRapidityPions->Fill(v_y);
-	fHistPhiPions->Fill(v_phi);
-	fHistPtPions->Fill(v_pt);
+	fHistRapidityPions->Fill(vY);
+	fHistPhiPions->Fill(vPhi);
+	fHistPtPions->Fill(vPt);
       }
       else if(isKaon) {
-	fHistRapidityKaons->Fill(v_y);
-	fHistPhiKaons->Fill(v_phi);
-	fHistPtKaons->Fill(v_pt);
+	fHistRapidityKaons->Fill(vY);
+	fHistPhiKaons->Fill(vPhi);
+	fHistPtKaons->Fill(vPt);
       }
       else if(isProton) {
-	fHistRapidityProtons->Fill(v_y);
-	fHistPhiProtons->Fill(v_phi);
-	fHistPtProtons->Fill(v_pt);
+	fHistRapidityProtons->Fill(vY);
+	fHistPhiProtons->Fill(vPhi);
+	fHistPtProtons->Fill(vPt);
       }
 
       // fill charge vector
-      chargeVector[0]->push_back(v_charge);
-      chargeVector[1]->push_back(v_y);
-      chargeVector[2]->push_back(v_eta);
-      chargeVector[3]->push_back(TMath::RadToDeg()*v_phi);
-      chargeVector[4]->push_back(v_p[0]);
-      chargeVector[5]->push_back(v_p[1]);
-      chargeVector[6]->push_back(v_p[2]);
-      chargeVector[7]->push_back(v_pt);
-      chargeVector[8]->push_back(v_E);
+      chargeVector[0]->push_back(vCharge);
+      chargeVector[1]->push_back(vY);
+      chargeVector[2]->push_back(vEta);
+      chargeVector[3]->push_back(TMath::RadToDeg()*vPhi);
+      chargeVector[4]->push_back(vP[0]);
+      chargeVector[5]->push_back(vP[1]);
+      chargeVector[6]->push_back(vP[2]);
+      chargeVector[7]->push_back(vPt);
+      chargeVector[8]->push_back(vE);
       
       if(fRunShuffling) {
-	chargeVectorShuffle[0]->push_back(v_charge);
-	chargeVectorShuffle[1]->push_back(v_y);
-	chargeVectorShuffle[2]->push_back(v_eta);
-	chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*v_phi);
-	chargeVectorShuffle[4]->push_back(v_p[0]);
-	chargeVectorShuffle[5]->push_back(v_p[1]);
-	chargeVectorShuffle[6]->push_back(v_p[2]);
-	chargeVectorShuffle[7]->push_back(v_pt);
-	chargeVectorShuffle[8]->push_back(v_E);
+	chargeVectorShuffle[0]->push_back(vCharge);
+	chargeVectorShuffle[1]->push_back(vY);
+	chargeVectorShuffle[2]->push_back(vEta);
+	chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*vPhi);
+	chargeVectorShuffle[4]->push_back(vP[0]);
+	chargeVectorShuffle[5]->push_back(vP[1]);
+	chargeVectorShuffle[6]->push_back(vP[2]);
+	chargeVectorShuffle[7]->push_back(vPt);
+	chargeVectorShuffle[8]->push_back(vE);
       }
       gNumberOfAcceptedParticles += 1;
     }//generated negative particle loop
     
     //Dynamical correlations
-    Double_t v_chargePrime = 0;
-    Double_t v_yPrime = 0.0;
-    Double_t v_etaPrime = 0.0;
-    Double_t v_phiPrime = 0.0;
-    Double_t v_pPrime[3] = {0.,0.,0.};
-    Double_t v_ptPrime = 0.0;
-    Double_t v_EPrime = 0.0;
+    Double_t vChargePrime = 0;
+    Double_t vYPrime = 0.0;
+    Double_t vEtaPrime = 0.0;
+    Double_t vPhiPrime = 0.0;
+    Double_t vPPrime[3] = {0.,0.,0.};
+    Double_t vPtPrime = 0.0;
+    Double_t vEPrime = 0.0;
     Int_t nGeneratedPositiveDynamicalCorrelations = 0;
     Int_t nGeneratedNegativeDynamicalCorrelations = 0;
     //Generate "correlated" particles 
@@ -645,130 +645,130 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	isPion = kFALSE; isKaon = kFALSE; isProton = kFALSE;
 	
 	//Pseudo-rapidity sampled from a Gaussian centered @ 0
-	v_eta = gRandom->Gaus(0.0,0.1);
-	v_charge = 1.0;
+	vEta = gRandom->Gaus(0.0,0.1);
+	vCharge = 1.0;
 	nGeneratedPositiveDynamicalCorrelations += 1;
 	
-	v_etaPrime = -v_eta;
-	v_chargePrime = -1.0;
+	vEtaPrime = -vEta;
+	vChargePrime = -1.0;
 	nGeneratedNegativeDynamicalCorrelations += 1;
 	  
 	//Acceptance
-	if((v_eta < fEtaMin) || (v_eta > fEtaMax)) continue;
-	if((v_etaPrime < fEtaMin) || (v_etaPrime > fEtaMax)) continue;
+	if((vEta < fEtaMin) || (vEta > fEtaMax)) continue;
+	if((vEtaPrime < fEtaMin) || (vEtaPrime > fEtaMax)) continue;
       
 	if(!fUseAllCharges) {
 	  //Decide the specie
 	  Double_t randomNumberSpecies = gRandom->Rndm();
 	  if((randomNumberSpecies >= 0.0)&&(randomNumberSpecies < fPionPercentage)) {
 	    nGeneratedPions += 1;
-	    v_pt = fPtSpectraPions->GetRandom();
-	    v_phi = fAzimuthalAnglePions->GetRandom();
+	    vPt = fPtSpectraPions->GetRandom();
+	    vPhi = fAzimuthalAnglePions->GetRandom();
 	    fParticleMass = fPionMass;
 	    isPion = kTRUE;
 	  }
 	  else if((randomNumberSpecies >= fPionPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage)) {
 	    nGeneratedKaons += 1;
-	    v_pt = fPtSpectraKaons->GetRandom();
-	    v_phi = fAzimuthalAngleKaons->GetRandom();
+	    vPt = fPtSpectraKaons->GetRandom();
+	    vPhi = fAzimuthalAngleKaons->GetRandom();
 	    fParticleMass = fKaonMass;
 	    isKaon = kTRUE;
 	  }
 	  else if((randomNumberSpecies >= fPionPercentage + fKaonPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage + fProtonPercentage)) {
 	    nGeneratedProtons += 1;
-	    v_pt = fPtSpectraProtons->GetRandom();
-	    v_ptPrime = v_pt;
-	    v_phi = fAzimuthalAngleProtons->GetRandom();
+	    vPt = fPtSpectraProtons->GetRandom();
+	    vPtPrime = vPt;
+	    vPhi = fAzimuthalAngleProtons->GetRandom();
 	    fParticleMass = fProtonMass;
 	    isProton = kTRUE;
 	  }
 	}
 	else {
-	  v_pt = fPtSpectraAllCharges->GetRandom();
-	  v_phi = fAzimuthalAngleAllCharges->GetRandom();
+	  vPt = fPtSpectraAllCharges->GetRandom();
+	  vPhi = fAzimuthalAngleAllCharges->GetRandom();
 	}
-	v_ptPrime = v_pt;
-	v_phiPrime = v_phi;
+	vPtPrime = vPt;
+	vPhiPrime = vPhi;
 
-	v_p[0] = v_pt*TMath::Cos(v_phi);
-	v_p[1] = v_pt*TMath::Sin(v_phi);
-	v_p[2] = v_pt*TMath::SinH(v_eta);
-	v_E = TMath::Sqrt(TMath::Power(fParticleMass,2) +
-			  TMath::Power(v_p[0],2) +
-			  TMath::Power(v_p[1],2) +
-			  TMath::Power(v_p[2],2));
+	vP[0] = vPt*TMath::Cos(vPhi);
+	vP[1] = vPt*TMath::Sin(vPhi);
+	vP[2] = vPt*TMath::SinH(vEta);
+	vE = TMath::Sqrt(TMath::Power(fParticleMass,2) +
+			  TMath::Power(vP[0],2) +
+			  TMath::Power(vP[1],2) +
+			  TMath::Power(vP[2],2));
 	
-	v_y = 0.5*TMath::Log((v_E + v_p[2])/(v_E - v_p[2]));
+	vY = 0.5*TMath::Log((vE + vP[2])/(vE - vP[2]));
 
-	v_pPrime[0] = v_ptPrime*TMath::Cos(v_phiPrime);
-	v_pPrime[1] = v_ptPrime*TMath::Sin(v_phiPrime);
-	v_pPrime[2] = v_ptPrime*TMath::SinH(v_etaPrime);
-	v_EPrime = TMath::Sqrt(TMath::Power(fParticleMass,2) +
-			  TMath::Power(v_pPrime[0],2) +
-			  TMath::Power(v_pPrime[1],2) +
-			  TMath::Power(v_pPrime[2],2));
+	vPPrime[0] = vPtPrime*TMath::Cos(vPhiPrime);
+	vPPrime[1] = vPtPrime*TMath::Sin(vPhiPrime);
+	vPPrime[2] = vPtPrime*TMath::SinH(vEtaPrime);
+	vEPrime = TMath::Sqrt(TMath::Power(fParticleMass,2) +
+			  TMath::Power(vPPrime[0],2) +
+			  TMath::Power(vPPrime[1],2) +
+			  TMath::Power(vPPrime[2],2));
 	
-	v_yPrime = 0.5*TMath::Log((v_EPrime + v_pPrime[2])/(v_EPrime - v_pPrime[2]));
+	vYPrime = 0.5*TMath::Log((vEPrime + vPPrime[2])/(vEPrime - vPPrime[2]));
       
 	//pt coverage
-	if((v_pt < fPtMin) || (v_pt > fPtMax)) continue;
-	if((v_ptPrime < fPtMin) || (v_ptPrime > fPtMax)) continue;
+	if((vPt < fPtMin) || (vPt > fPtMax)) continue;
+	if((vPtPrime < fPtMin) || (vPtPrime > fPtMax)) continue;
 
 	//acceptance filter
 	if(fUseAcceptanceParameterization) {
 	  Double_t gRandomNumberForAcceptance = gRandom->Rndm();
-	  if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(v_pt)) 
+	  if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(vPt)) 
 	    continue;
 	  
 	  Double_t gRandomNumberForAcceptancePrime = gRandom->Rndm();
-	  if(gRandomNumberForAcceptancePrime > fAcceptanceParameterization->Eval(v_ptPrime)) 
+	  if(gRandomNumberForAcceptancePrime > fAcceptanceParameterization->Eval(vPtPrime)) 
 	    continue;
 	}
       
 	// fill charge vector (positive)
-	chargeVector[0]->push_back(v_charge);
-	chargeVector[1]->push_back(v_y);
-	chargeVector[2]->push_back(v_eta);
-	chargeVector[3]->push_back(TMath::RadToDeg()*v_phi);
-	chargeVector[4]->push_back(v_p[0]);
-	chargeVector[5]->push_back(v_p[1]);
-	chargeVector[6]->push_back(v_p[2]);
-	chargeVector[7]->push_back(v_pt);
-	chargeVector[8]->push_back(v_E);
+	chargeVector[0]->push_back(vCharge);
+	chargeVector[1]->push_back(vY);
+	chargeVector[2]->push_back(vEta);
+	chargeVector[3]->push_back(TMath::RadToDeg()*vPhi);
+	chargeVector[4]->push_back(vP[0]);
+	chargeVector[5]->push_back(vP[1]);
+	chargeVector[6]->push_back(vP[2]);
+	chargeVector[7]->push_back(vPt);
+	chargeVector[8]->push_back(vE);
 	
 	if(fRunShuffling) {
-	  chargeVectorShuffle[0]->push_back(v_charge);
-	  chargeVectorShuffle[1]->push_back(v_y);
-	  chargeVectorShuffle[2]->push_back(v_eta);
-	  chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*v_phi);
-	  chargeVectorShuffle[4]->push_back(v_p[0]);
-	  chargeVectorShuffle[5]->push_back(v_p[1]);
-	  chargeVectorShuffle[6]->push_back(v_p[2]);
-	  chargeVectorShuffle[7]->push_back(v_pt);
-	  chargeVectorShuffle[8]->push_back(v_E);
+	  chargeVectorShuffle[0]->push_back(vCharge);
+	  chargeVectorShuffle[1]->push_back(vY);
+	  chargeVectorShuffle[2]->push_back(vEta);
+	  chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*vPhi);
+	  chargeVectorShuffle[4]->push_back(vP[0]);
+	  chargeVectorShuffle[5]->push_back(vP[1]);
+	  chargeVectorShuffle[6]->push_back(vP[2]);
+	  chargeVectorShuffle[7]->push_back(vPt);
+	  chargeVectorShuffle[8]->push_back(vE);
 	}
 
 	// fill charge vector (negative)
-	chargeVector[0]->push_back(v_chargePrime);
-	chargeVector[1]->push_back(v_yPrime);
-	chargeVector[2]->push_back(v_etaPrime);
-	chargeVector[3]->push_back(TMath::RadToDeg()*v_phiPrime);
-	chargeVector[4]->push_back(v_pPrime[0]);
-	chargeVector[5]->push_back(v_pPrime[1]);
-	chargeVector[6]->push_back(v_pPrime[2]);
-	chargeVector[7]->push_back(v_ptPrime);
-	chargeVector[8]->push_back(v_EPrime);
+	chargeVector[0]->push_back(vChargePrime);
+	chargeVector[1]->push_back(vYPrime);
+	chargeVector[2]->push_back(vEtaPrime);
+	chargeVector[3]->push_back(TMath::RadToDeg()*vPhiPrime);
+	chargeVector[4]->push_back(vPPrime[0]);
+	chargeVector[5]->push_back(vPPrime[1]);
+	chargeVector[6]->push_back(vPPrime[2]);
+	chargeVector[7]->push_back(vPtPrime);
+	chargeVector[8]->push_back(vEPrime);
 	
 	if(fRunShuffling) {
-	  chargeVectorShuffle[0]->push_back(v_chargePrime);
-	  chargeVectorShuffle[1]->push_back(v_yPrime);
-	  chargeVectorShuffle[2]->push_back(v_etaPrime);
-	  chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*v_phiPrime);
-	  chargeVectorShuffle[4]->push_back(v_pPrime[0]);
-	  chargeVectorShuffle[5]->push_back(v_pPrime[1]);
-	  chargeVectorShuffle[6]->push_back(v_pPrime[2]);
-	  chargeVectorShuffle[7]->push_back(v_ptPrime);
-	  chargeVectorShuffle[8]->push_back(v_EPrime);
+	  chargeVectorShuffle[0]->push_back(vChargePrime);
+	  chargeVectorShuffle[1]->push_back(vYPrime);
+	  chargeVectorShuffle[2]->push_back(vEtaPrime);
+	  chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*vPhiPrime);
+	  chargeVectorShuffle[4]->push_back(vPPrime[0]);
+	  chargeVectorShuffle[5]->push_back(vPPrime[1]);
+	  chargeVectorShuffle[6]->push_back(vPPrime[2]);
+	  chargeVectorShuffle[7]->push_back(vPtPrime);
+	  chargeVectorShuffle[8]->push_back(vEPrime);
 	}
 
 	gNumberOfAcceptedParticles += 2;
