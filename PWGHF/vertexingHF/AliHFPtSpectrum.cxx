@@ -100,6 +100,7 @@ AliHFPtSpectrum::AliHFPtSpectrum(const char* name, const char* title, Int_t opti
   fPbPbElossHypothesis(kFALSE),
   fIsStatUncEff(kTRUE),
   fParticleAntiParticle(2),
+  fIsEventPlane(kFALSE),
   fhStatUncEffcSigma(NULL),
   fhStatUncEffbSigma(NULL),
   fhStatUncEffcFD(NULL),
@@ -162,6 +163,7 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
   fPbPbElossHypothesis(rhs.fPbPbElossHypothesis),
   fIsStatUncEff(rhs.fIsStatUncEff),
   fParticleAntiParticle(rhs.fParticleAntiParticle),
+  fIsEventPlane(rhs.fIsEventPlane),
   fhStatUncEffcSigma(NULL),
   fhStatUncEffbSigma(NULL),
   fhStatUncEffcFD(NULL),
@@ -227,6 +229,7 @@ AliHFPtSpectrum &AliHFPtSpectrum::operator=(const AliHFPtSpectrum &source){
   fPbPbElossHypothesis = source.fPbPbElossHypothesis;
   fIsStatUncEff = source.fIsStatUncEff;
   fParticleAntiParticle = source.fParticleAntiParticle;
+  fIsEventPlane = source.fIsEventPlane;
   
   for(Int_t i=0; i<2; i++){
     fLuminosity[i] = source.fLuminosity[i];
@@ -1431,7 +1434,8 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     //
     Double_t frac = 1.0, errfrac =0.;
     if(fPbPbElossHypothesis) {
-      frac = fTab[0]*fNevts; 
+      frac = fTab[0]*fNevts;
+      if(fIsEventPlane) frac = frac/2.0;
       errfrac = frac * TMath::Sqrt( (fTab[1]/fTab[0])*(fTab[1]/fTab[0]) + (1/fNevts) );
     } else {
       frac = fLuminosity[0]; 
@@ -1440,7 +1444,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     
     value = ( fhRECpt->GetBinContent(ibin)>0. && fhRECpt->GetBinContent(ibin)!=0. && 
 	      fhFeedDownMCpt->GetBinContent(ibin)>0. && fhFeedDownEffpt->GetBinContent(ibin)>0. ) ?
-      fhRECpt->GetBinContent(ibin) - frac*(deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) ) 
+      fhRECpt->GetBinContent(ibin) - frac*(deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) )
       : 0. ;
     value /= fhRECpt->GetBinWidth(ibin);
     if (value<0.) value =0.;
@@ -1456,6 +1460,8 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     correction = (value>0.) ? 
       1 - (frac*deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) ) / fhRECpt->GetBinContent(ibin)  : 0. ;
     if (correction<0.) correction = 0.;
+
+    //    cout << " pt="<< fhRECpt->GetBinCenter(ibin) << " rec="<< fhRECpt->GetBinContent(ibin) << ", corr="<<correction<<" = 1 - "<<  (frac*deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) ) / fhRECpt->GetBinContent(ibin) << endl;
 
     // Systematic uncertainties
     //     (syst but feed-down)  delta_physics = sqrt ( (delta_reco_syst)^2 )  / bin-width
@@ -1512,13 +1518,14 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     //
     // Estimate how the result varies vs charm/beauty Eloss hypothesis
     //
-    if ( correction>0.0001 && fPbPbElossHypothesis){
+    if ( correction>1.0e-16 && fPbPbElossHypothesis){
       // Loop over the Eloss hypothesis
       //      Int_t rbin=0;
       for (Float_t rval=0.0025; rval<4.0; rval+=0.005){
 	// correction =  [ 1  - (Tab *Nevt * delta_y * BR_b * eff_trig * eff_b * Nb_th *binwidth )* (rval) /reco ] 
 	Double_t fcRcbvalue = 1 - (fTab[0]*fNevts*deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin)*fhRECpt->GetBinWidth(ibin) * rval ) / fhRECpt->GetBinContent(ibin) ;
-	if(fcRcbvalue<0.) fcRcbvalue=0.;
+	//	cout << " rval="<<rval <<" , fc="<<fcRcbvalue<<"    ";
+	if(fcRcbvalue<1.e-16) fcRcbvalue=0.;
 	fhFcRcb->Fill( fhRECpt->GetBinCenter(ibin) , rval, fcRcbvalue );
 	//    physics = reco * fcRcb / bin-width
 	Double_t Rcbvalue = (fhRECpt->GetBinContent(ibin) && fcRcbvalue) ? 

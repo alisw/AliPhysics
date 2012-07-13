@@ -46,7 +46,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *recofilename="Reconstructed.root", const char *recohistoname="hRawSpectrumD0",
 		    const char *outfilename="HFPtSpectrum.root",
 		    Int_t fdMethod=kNb, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[nb]
-		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false ) {
+		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false, Bool_t kRaavsEP=kFALSE) {
 
 
   gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
@@ -257,6 +257,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   spectra->SetLuminosity(lumi,lumiUnc);
   Double_t effTrig = 1.0;
   spectra->SetTriggerEfficiency(effTrig,0.);
+  if(kRaavsEP) spectra->SetIsEventPlaneAnalysis(kTRUE);
 
   // Set the global uncertainties on the efficiencies (in percent)
   Double_t globalEffUnc = 0.15; 
@@ -286,10 +287,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     systematics->SetIsLowEnergy(true);
   } else if( cc!=kpp7 )  {
     systematics->SetCollisionType(1);
-    if ( cc == k07half ) { 
-      cout<<endl<<" Beware, you're using the systematics of the 0-10% of 2010 data !! FIX ME !!"<<endl<<endl; 
-      systematics->SetCentrality("010"); 
-    }
+    if ( cc == k07half ) systematics->SetCentrality("07half");
     else if ( cc == k010 )  systematics->SetCentrality("010");
     else if ( cc == k1020 )  systematics->SetCentrality("1020");
     else if ( cc == k020 )  systematics->SetCentrality("020");

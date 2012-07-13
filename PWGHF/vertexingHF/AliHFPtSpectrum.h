@@ -78,6 +78,7 @@ class AliHFPtSpectrum: public TNamed
     if (flag) { fParticleAntiParticle = 2; AliInfo(" Setting for particle + anti-particle yields"); }
     else { fParticleAntiParticle = 1; AliInfo(" Setting for only (anti)particle yields, not the sum of both"); }
   }
+  void SetIsEventPlaneAnalysis(Bool_t flag){ fIsEventPlane = flag; }
   //
   void SetfIsStatUncEff(Bool_t flag){ fIsStatUncEff = flag; }
   // Set if the calculation has to consider Ratio(c/b eloss) hypothesis 
@@ -293,6 +294,7 @@ class AliHFPtSpectrum: public TNamed
   Bool_t fPbPbElossHypothesis;      // flag: whether to do estimates vs Ratio(c/b eloss) hypothesis
   Bool_t fIsStatUncEff;             // flag : consider (1) or not (0) the stat unc on the efficiencies
   Int_t fParticleAntiParticle;      // 1: only one sign, 2: yield is for particle+anti-particle
+  Bool_t fIsEventPlane;             // flag : when the analysis is done for In/Out of plane, divide the B-prediction by two
 
   //
   TH1D *fhStatUncEffcSigma;       // Uncertainty on the cross-section due to the prompt efficiency statistical uncertainty
@@ -300,7 +302,7 @@ class AliHFPtSpectrum: public TNamed
   TH1D *fhStatUncEffcFD;          // Uncertainty on the feed-down correction due to the prompt efficiency statistical uncertainty
   TH1D *fhStatUncEffbFD;          // Uncertainty on the feed-down correction due to the feed-down efficiency statistical uncertainty
 
-  ClassDef(AliHFPtSpectrum,3) // Class for Heavy Flavor spectra corrections
+  ClassDef(AliHFPtSpectrum,4) // Class for Heavy Flavor spectra corrections
 };
 
 #endif
