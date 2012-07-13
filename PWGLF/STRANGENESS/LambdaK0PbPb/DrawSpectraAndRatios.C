@@ -48,7 +48,7 @@ Double_t sysEffK0s[nBins]={//Efficiency, combined over cuts mentioned above
   0.04,0.05,0.06,0.07,0.08,0.09, //Dominated by TPC crossed/findable
   0.10,0.10,0.11,0.12,0.12,0.13,0.13,0.13,0.14,0.14,0.14,
   0.14,0.13,0.13,0.12,0.11,0.11,0.11,0.10,0.09,0.08,
-  0.08,0.05,0.04,0.03,0.3
+  0.08,0.05,0.04,0.03,0.03
 };
 static Double_t sysSigK0s[nBins]={//Signal extraction
   0.00728589, 0.00728589, 0.00728539, 0.0073469, 0.00737846, 0.00741705,
@@ -168,7 +168,8 @@ DrawHisto(TH1 *h, const Option_t *option, Double_t *sysEff, Double_t *sysSig) {
   for (Int_t i=1; i<=nb; i++) {
       Double_t c=hh->GetBinContent(i);
       Double_t e=hh->GetBinError(i);
-      e = sysEff[i]*sysEff[i] + sysSig[i]*sysSig[i];
+      Int_t j=i-1;
+      e = sysEff[j]*sysEff[j] + sysSig[j]*sysSig[j];
 
       if (sysEff==sysEffLam) {// for Lambda
          e += sysFD*sysFD;
