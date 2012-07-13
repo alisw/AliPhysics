@@ -13,6 +13,7 @@
 #pragma link C++ class AliAnalysisTaskBFPsi+;
 #pragma link C++ class AliAnalysisTaskEventMixingBF+;
 #pragma link C++ class AliAnalysisTaskTriggeredBF+;
+#pragma link C++ class AliAnalysisTaskEfficiencyBF+;
 
 #pragma link C++ class AliAnalysisTaskToyModel+;
 
