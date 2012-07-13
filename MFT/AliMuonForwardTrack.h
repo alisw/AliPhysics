@@ -43,6 +43,8 @@ public:
   AliMUONTrack* GetMUONTrack() { return fMUONTrack; }
   TParticle* GetMCTrackRef() { return fMCTrackRef; }
 
+  Int_t GetCharge() { return TMath::Nint(GetTrackParamAtMUONCluster(0)->GetCharge()); }
+
   AliMUONVCluster* GetMUONCluster(Int_t iMUONCluster);
   AliMFTCluster*   GetMFTCluster(Int_t iMFTCluster);
   

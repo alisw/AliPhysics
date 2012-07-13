@@ -40,6 +40,8 @@ public:
     else return NULL; 
   }
 
+  Int_t GetCharge() { return GetTrack(0)->GetCharge() + GetTrack(1)->GetCharge(); }
+
   void SetKinemMC();
   void SetKinem(Double_t z, Int_t nClusters=-1);
   Bool_t IsKinemSet() { return fIsKinemSet; }
