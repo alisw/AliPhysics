@@ -20,9 +20,10 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
 
-  void                        SetTrgClusName(const char *n)                        { fTrgClusName   = n          ; }
-  void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut = cut        ; }
-  void                        SetDoTrigger(Bool_t trg = kTRUE)                     { fDoTrigger     = trg        ; }
+  void                        SetTrgClusName(const char *n)                        { fTrgClusName        = n          ; }
+  void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut        ; }
+  void                        SetDoTrigger(Bool_t trg = kTRUE)                     { fDoTrigger          = trg        ; }
+  void                        SetDoRepropagateTracks(Bool_t p = kTRUE)             { fRepropagateTracks  = p          ; }
 
  protected:
 
@@ -38,6 +39,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
 
   Float_t                     fCellEnergyCut;            // Energy cell cut
   Bool_t                      fDoTrigger;                // Make trigger qa plots
+  Bool_t                      fRepropagateTracks;        // Repropagate tracks to the EMCal surface
   TString                     fTrgClusName;              // Name of trg clus name
   TClonesArray               *fTrgClusters;              //!Trg Clusters
 
@@ -88,6 +90,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 10) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 11) // Quality task for Emcal analysis
 };
 #endif

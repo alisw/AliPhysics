@@ -33,6 +33,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA", kTRUE),
   fCellEnergyCut(0.1),
   fDoTrigger(kFALSE),
+  fRepropagateTracks(kFALSE),
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTrgClusters(0),
   fHistCentrality(0),
@@ -84,6 +85,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fCellEnergyCut(0.1),
   fDoTrigger(kFALSE),
+  fRepropagateTracks(kFALSE),
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTrgClusters(0),
   fHistCentrality(0),
@@ -234,15 +236,17 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistDeltaPhiPt->GetYaxis()->SetTitle("#delta#phi");
   fOutput->Add(fHistDeltaPhiPt);
 
-  fHistDeltaEtaNewProp = new TH1F("fHistDeltaEtaNewProp","fHistDeltaEtaNewProp", 800, -0.4, 0.4);
-  fHistDeltaEtaNewProp->GetXaxis()->SetTitle("#delta#eta");
-  fHistDeltaEtaNewProp->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistDeltaEtaNewProp);
-
-  fHistDeltaPhiNewProp = new TH1F("fHistDeltaPhiNewProp","fHistDeltaPhiNewProp", 2560, -1.6, 3.2);
-  fHistDeltaPhiNewProp->GetXaxis()->SetTitle("#delta#phi");
-  fHistDeltaPhiNewProp->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistDeltaPhiNewProp);
+  if (fRepropagateTracks) {
+    fHistDeltaEtaNewProp = new TH1F("fHistDeltaEtaNewProp","fHistDeltaEtaNewProp", 800, -0.4, 0.4);
+    fHistDeltaEtaNewProp->GetXaxis()->SetTitle("#delta#eta");
+    fHistDeltaEtaNewProp->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaEtaNewProp);
+    
+    fHistDeltaPhiNewProp = new TH1F("fHistDeltaPhiNewProp","fHistDeltaPhiNewProp", 2560, -1.6, 3.2);
+    fHistDeltaPhiNewProp->GetXaxis()->SetTitle("#delta#phi");
+    fHistDeltaPhiNewProp->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistDeltaPhiNewProp);
+  }
 
   if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
     fHistClusPhiEtaEnergy = new TH3F("fHistClusPhiEtaEnergy","Phi-Eta-Energy distribution of clusters", fNbins, fMinBinPt, fMaxBinPt, 80, -2, 2, 128, 0, 6.4);
@@ -570,7 +574,7 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     fHistDeltaEtaPt->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
     fHistDeltaPhiPt->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
 
-    if (vtrack->GetTrackEtaOnEMCal() > -2) {    
+    if (fRepropagateTracks && vtrack->GetTrackEtaOnEMCal() > -2) {    
       Float_t propeta = -999, propphi = -999;
       PropagateTrack(vtrack, propeta, propphi);
       fHistDeltaEtaNewProp->Fill(propeta - vtrack->GetTrackEtaOnEMCal());

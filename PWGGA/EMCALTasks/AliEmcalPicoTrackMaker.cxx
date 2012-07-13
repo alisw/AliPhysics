@@ -5,6 +5,8 @@
 // Author: S.Aiola, C.Loizides
 
 #include <TClonesArray.h>
+#include <TRandom3.h>
+
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAnalysisManager.h"
@@ -23,7 +25,8 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fESDtrackCuts(0),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
-  fMaxTrackPt(100),
+  fMaxTrackPt(1000),
+  fTrackEfficiency(1),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -39,7 +42,8 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   fESDtrackCuts(0),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
-  fMaxTrackPt(100),
+  fMaxTrackPt(1000),
+  fTrackEfficiency(1),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -113,6 +117,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 
     if (track->Pt() > fMaxTrackPt)
       continue;
+
     Bool_t isEmc = kFALSE;
     Int_t label = -1;
     if (esdMode) {
@@ -138,7 +143,12 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
 	isEmc = kTRUE;
     }
 
-    
+    if (fTrackEfficiency < 1) {
+      Double_t r = gRandom->Rndm();
+      if (fTrackEfficiency < r) 
+	continue;
+    }
+
     /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(track->Pt(), 
                                                                      track->Eta(), 
                                                                      track->Phi(), 
