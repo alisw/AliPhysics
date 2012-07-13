@@ -90,7 +90,7 @@ class AliHFEdisplacedElectrons : public TObject{
   void SetNitsCluster(Int_t nITScls){ fNclustersITS = nITScls;};
   void SetMinPrimVtxContrib(Int_t nContrib){fMinNprimVtxContributor = nContrib;};
 
-  void PostAnalysis() const;
+  //void PostAnalysis() const;
 
 
  private:
