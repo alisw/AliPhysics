@@ -81,7 +81,7 @@ class AliHFEtrdPIDqa : public TNamed{
     TGraph *GetThreshold(Int_t ntracklets, Int_t eleffpercent, Int_t centrality = -1);
 
     void DrawTracklet(Int_t tracklet, Double_t pmin = -1., Double_t pmax = -1., Int_t centrality = -1, Bool_t doFit = kFALSE);
-    void DrawTrackletsame(Int_t tracklet, Double_t pmin = -1., Double_t pmax = -1., Bool_t doFit = kFALSE);
+    //void DrawTrackletsame(Int_t tracklet, Double_t pmin = -1., Double_t pmax = -1., Bool_t doFit = kFALSE);
     void ClearLists();
 
     Double_t EvalPionEfficiency(Int_t ntls, Int_t eEff, Double_t p, Int_t centrality = -1);

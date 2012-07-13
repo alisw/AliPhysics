@@ -67,7 +67,6 @@ class AliHFEdca : public TObject{
   AliHFEdca &operator=(const AliHFEdca &ref); // assignment operator
   virtual ~AliHFEdca(); // destructor
 
-  void Initialize();
   void CreateHistogramsPull(TList *pullList);  
   void CreateHistogramsResidual(TList *residualList);  
   void CreateHistogramsDca(TList *dcaList);  

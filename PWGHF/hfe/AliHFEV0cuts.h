@@ -61,7 +61,7 @@ class AliHFEV0cuts : public TObject {
 
   void Init(const char* name);
   
-  void RunQA();
+  //void RunQA();
   void SetMCEvent(AliMCEvent* const mce)      { fMCEvent = mce; };
   void SetInputEvent(AliVEvent* const e)      { fInputEvent = e; };
   void SetPrimaryVertex(AliKFVertex* const v) { fPrimaryVertex = v; };

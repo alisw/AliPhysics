@@ -48,7 +48,7 @@ class AliHFEemcalPIDqa : public AliHFEdetPIDqa{
     virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
     //void HistEnergyMomMatch(double pT, double eop);
-    void HistEnergyMomMatch(const AliHFEpidObject *track, double eop);
+    //void HistEnergyMomMatch(const AliHFEpidObject *track, double eop);
     TH1 *GetHistogram(const char *name); 
     AliHFEcollection *GetHistoCollection() const { return fHistos; }
 
