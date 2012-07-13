@@ -46,9 +46,9 @@ ClassImp(AliBalanceEventMixing)
 //____________________________________________________________________//
 AliBalanceEventMixing::AliBalanceEventMixing() :
   TObject(), 
-  bShuffle(kFALSE),
-  bHBTcut(kFALSE),
-  bConversionCut(kFALSE),
+  fShuffle(kFALSE),
+  fHBTcut(kFALSE),
+  fConversionCut(kFALSE),
   fAnalysisLevel("ESD"),
   fAnalyzedEvents(0) ,
   fCentralityId(0) ,
@@ -102,9 +102,9 @@ AliBalanceEventMixing::AliBalanceEventMixing() :
 
 //____________________________________________________________________//
 AliBalanceEventMixing::AliBalanceEventMixing(const AliBalanceEventMixing& balance):
-  TObject(balance), bShuffle(balance.bShuffle),
-  bHBTcut(balance.bHBTcut), 
-  bConversionCut(balance.bConversionCut),  
+  TObject(balance), fShuffle(balance.fShuffle),
+  fHBTcut(balance.fHBTcut), 
+  fConversionCut(balance.fConversionCut),  
   fAnalysisLevel(balance.fAnalysisLevel),
   fAnalyzedEvents(balance.fAnalyzedEvents), 
   fCentralityId(balance.fCentralityId),
@@ -195,33 +195,33 @@ void AliBalanceEventMixing::InitHistograms() {
   //Initialize the histograms
   TString histName;
   for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
-    histName = "fHistP"; histName += gBFAnalysisType[iAnalysisType]; 
-    if(bShuffle) histName.Append("_shuffle");
+    histName = "fHistP"; histName += kBFAnalysisType[iAnalysisType]; 
+    if(fShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
 
-    histName = "fHistN"; histName += gBFAnalysisType[iAnalysisType]; 
-    if(bShuffle) histName.Append("_shuffle");
+    histName = "fHistN"; histName += kBFAnalysisType[iAnalysisType]; 
+    if(fShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
   
-    histName = "fHistPN"; histName += gBFAnalysisType[iAnalysisType]; 
-    if(bShuffle) histName.Append("_shuffle");
+    histName = "fHistPN"; histName += kBFAnalysisType[iAnalysisType]; 
+    if(fShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistPN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
-    histName = "fHistNP"; histName += gBFAnalysisType[iAnalysisType]; 
-    if(bShuffle) histName.Append("_shuffle");
+    histName = "fHistNP"; histName += kBFAnalysisType[iAnalysisType]; 
+    if(fShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistNP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
-    histName = "fHistPP"; histName += gBFAnalysisType[iAnalysisType]; 
-    if(bShuffle) histName.Append("_shuffle");
+    histName = "fHistPP"; histName += kBFAnalysisType[iAnalysisType]; 
+    if(fShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistPP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
-    histName = "fHistNN"; histName += gBFAnalysisType[iAnalysisType]; 
-    if(bShuffle) histName.Append("_shuffle");
+    histName = "fHistNN"; histName += kBFAnalysisType[iAnalysisType]; 
+    if(fShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistNN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
   }
@@ -229,6 +229,7 @@ void AliBalanceEventMixing::InitHistograms() {
 
 //____________________________________________________________________//
 void AliBalanceEventMixing::PrintAnalysisSettings() {
+  //prints the analysis settings
   
   Printf("======================================");
   Printf("Analysis level: %s",fAnalysisLevel.Data());
@@ -409,7 +410,7 @@ void AliBalanceEventMixing::CalculateBalance(Float_t fCentrality,vector<Double_t
 	if(dphi>180) dphi = 360 - dphi;  //dphi should be between 0 and 180!
 
 	// HBT like cut
-	if(bHBTcut && charge1 * charge2 > 0){
+	if(fHBTcut && charge1 * charge2 > 0){
 	  //if( dphi < 3 || deta < 0.01 ){   // VERSION 1
 	  //  continue;
 	  
@@ -458,7 +459,7 @@ void AliBalanceEventMixing::CalculateBalance(Float_t fCentrality,vector<Double_t
 	}
 	
 	// conversions
-	if(bConversionCut){
+	if(fConversionCut){
 	  if (charge1 * charge2 < 0)
 	    {
 
@@ -795,7 +796,7 @@ void AliBalanceEventMixing::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance
   
   Double_t delta = gSumBiXi / gSumBi;
   Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
-  cout<<"Analysis type: "<<gBFAnalysisType[iAnalysisType].Data()<<endl;
+  cout<<"Analysis type: "<<kBFAnalysisType[iAnalysisType].Data()<<endl;
   cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
   cout<<"New error: "<<deltaErrorNew<<endl;
   cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;

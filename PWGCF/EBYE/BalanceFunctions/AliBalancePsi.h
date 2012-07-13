@@ -28,8 +28,8 @@ class TH1D;
 class TH2D;
 class TH3D;
 
-const Int_t nTrackVariablesSingle = 2;       // track variables in histogram (centrality, phi-Psi2, eta, phi, pTtrig)
-const Int_t nTrackVariablesPair   = 5;       // track variables in histogram (centrality, phi-Psi2, dEta, dPhi, pTtrig, ptAssociated)
+const Int_t kTrackVariablesSingle = 2;       // track variables in histogram (centrality, phi-Psi2, eta, phi, pTtrig)
+const Int_t kTrackVariablesPair   = 5;       // track variables in histogram (centrality, phi-Psi2, dEta, dPhi, pTtrig, ptAssociated)
 const TString gBFPsiAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
 class AliBalancePsi : public TObject {
@@ -53,7 +53,7 @@ class AliBalancePsi : public TObject {
   
   void SetAnalysisLevel(const char* analysisLevel) {
     fAnalysisLevel = analysisLevel;}
-  void SetShuffle(Bool_t shuffle) {bShuffle = shuffle;}
+  void SetShuffle(Bool_t shuffle) {fShuffle = shuffle;}
   void SetCentralityInterval(Double_t cStart, Double_t cStop)  { fCentStart = cStart; fCentStop = cStop;};
 
   void InitHistograms(void);
@@ -97,7 +97,7 @@ class AliBalancePsi : public TObject {
   TH2D *GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin, Double_t psiMax);
   
  private:
-  Bool_t bShuffle; //shuffled balance function object
+  Bool_t fShuffle; //shuffled balance function object
   TString fAnalysisLevel; //ESD, AOD or MC
   Int_t fAnalyzedEvents; //number of events that have been analyzed
 

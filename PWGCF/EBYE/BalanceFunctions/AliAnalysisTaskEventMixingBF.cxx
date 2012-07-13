@@ -387,6 +387,7 @@ void AliAnalysisTaskEventMixingBF::Terminate(Option_t *) {
 
 void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 {
+  // Main loop for event mixing
 
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
@@ -403,13 +404,13 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
     chargeVector[i]        = new vector<Double_t>;
   }
   
-  Double_t v_charge;
-  Double_t v_y;
-  Double_t v_eta;
-  Double_t v_phi;
-  Double_t v_p[3];
-  Double_t v_pt;
-  Double_t v_E;
+  Double_t vCharge;
+  Double_t vY;
+  Double_t vEta;
+  Double_t vPhi;
+  Double_t vP[3];
+  Double_t vPt;
+  Double_t vE;
 
   Int_t iMainTrackUsed = -1;
 
@@ -520,25 +521,25 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   		      fHistTrackStats->Fill(aodTrackMain->GetFilterMap());
   		      if(!aodTrackMain->TestFilterBit(nAODtrackCutBit)) continue;
 		      
-  		      v_charge = aodTrackMain->Charge();
-  		      v_y      = aodTrackMain->Y();
-  		      v_eta    = aodTrackMain->Eta();
-  		      v_phi    = aodTrackMain->Phi() * TMath::RadToDeg();
-  		      v_E      = aodTrackMain->E();
-  		      v_pt     = aodTrackMain->Pt();
-  		      aodTrackMain->PxPyPz(v_p);
+  		      vCharge = aodTrackMain->Charge();
+  		      vY      = aodTrackMain->Y();
+  		      vEta    = aodTrackMain->Eta();
+  		      vPhi    = aodTrackMain->Phi() * TMath::RadToDeg();
+  		      vE      = aodTrackMain->E();
+  		      vPt     = aodTrackMain->Pt();
+  		      aodTrackMain->PxPyPz(vP);
 		      
-  		      Float_t DCAxyMain = aodTrackMain->DCA();      // this is the DCA from global track (not exactly what is cut on)
-  		      Float_t DCAzMain  = aodTrackMain->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+  		      Float_t dcaXYMain = aodTrackMain->DCA();      // this is the DCA from global track (not exactly what is cut on)
+  		      Float_t dcaZMain  = aodTrackMain->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
 		      
 		      
   		      // Kinematics cuts from ESD track cuts
-  		      if( v_pt < fPtMin || v_pt > fPtMax)      continue;
-  		      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+  		      if( vPt < fPtMin || vPt > fPtMax)      continue;
+  		      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
 		      
   		      // Extra DCA cuts (for systematic studies [!= -1])
   		      if( fDCAxyCut != -1 && fDCAzCut != -1){
-  			if(TMath::Sqrt((DCAxyMain*DCAxyMain)/(fDCAxyCut*fDCAxyCut)+(DCAzMain*DCAzMain)/(fDCAzCut*fDCAzCut)) > 1 ){
+  			if(TMath::Sqrt((dcaXYMain*dcaXYMain)/(fDCAxyCut*fDCAxyCut)+(dcaZMain*dcaZMain)/(fDCAzCut*fDCAzCut)) > 1 ){
   			  continue;  // 2D cut
   			}
   		      }
@@ -553,22 +554,22 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 		      
   		      // fill QA histograms
   		      fHistClus->Fill(aodTrackMain->GetITSNcls(),aodTrackMain->GetTPCNcls());
-  		      fHistDCA->Fill(DCAzMain,DCAxyMain);
+  		      fHistDCA->Fill(dcaZMain,dcaXYMain);
   		      fHistChi2->Fill(aodTrackMain->Chi2perNDF());
-  		      fHistPt->Fill(v_pt);
-  		      fHistEta->Fill(v_eta);
-  		      fHistPhi->Fill(v_phi);
+  		      fHistPt->Fill(vPt);
+  		      fHistEta->Fill(vEta);
+  		      fHistPhi->Fill(vPhi);
 		      
   		      // fill charge vector
-  		      chargeVector[0]->push_back(v_charge);
-  		      chargeVector[1]->push_back(v_y);
-  		      chargeVector[2]->push_back(v_eta);
-  		      chargeVector[3]->push_back(v_phi);
-  		      chargeVector[4]->push_back(v_p[0]);
-  		      chargeVector[5]->push_back(v_p[1]);
-  		      chargeVector[6]->push_back(v_p[2]);
-  		      chargeVector[7]->push_back(v_pt);
-  		      chargeVector[8]->push_back(v_E);
+  		      chargeVector[0]->push_back(vCharge);
+  		      chargeVector[1]->push_back(vY);
+  		      chargeVector[2]->push_back(vEta);
+  		      chargeVector[3]->push_back(vPhi);
+  		      chargeVector[4]->push_back(vP[0]);
+  		      chargeVector[5]->push_back(vP[1]);
+  		      chargeVector[6]->push_back(vP[2]);
+  		      chargeVector[7]->push_back(vPt);
+  		      chargeVector[8]->push_back(vE);
 
   		      // -------------------------------------------------------------		     
   		      // for each track in main event loop over all tracks in mix event
@@ -587,25 +588,25 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
   			fHistTrackStats->Fill(aodTrackMix->GetFilterMap());
   			if(!aodTrackMix->TestFilterBit(nAODtrackCutBit)) continue;
 			
-  			v_charge = aodTrackMix->Charge();
-  			v_y      = aodTrackMix->Y();
-  			v_eta    = aodTrackMix->Eta();
-  			v_phi    = aodTrackMix->Phi() * TMath::RadToDeg();
-  			v_E      = aodTrackMix->E();
-  			v_pt     = aodTrackMix->Pt();
-  			aodTrackMix->PxPyPz(v_p);
+  			vCharge = aodTrackMix->Charge();
+  			vY      = aodTrackMix->Y();
+  			vEta    = aodTrackMix->Eta();
+  			vPhi    = aodTrackMix->Phi() * TMath::RadToDeg();
+  			vE      = aodTrackMix->E();
+  			vPt     = aodTrackMix->Pt();
+  			aodTrackMix->PxPyPz(vP);
 		      
-  			Float_t DCAxyMix = aodTrackMix->DCA();      // this is the DCA from global track (not exactly what is cut on)
-  			Float_t DCAzMix  = aodTrackMix->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+  			Float_t dcaXYMix = aodTrackMix->DCA();      // this is the DCA from global track (not exactly what is cut on)
+  			Float_t dcaZMix  = aodTrackMix->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
 			
 			
   			// Kinematics cuts from ESD track cuts
-  			if( v_pt < fPtMin || v_pt > fPtMax)      continue;
-  			if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+  			if( vPt < fPtMin || vPt > fPtMax)      continue;
+  			if( vEta < fEtaMin || vEta > fEtaMax)  continue;
 			
   			// Extra DCA cuts (for systematic studies [!= -1])
   			if( fDCAxyCut != -1 && fDCAxyCut != -1){
-  			  if(TMath::Sqrt((DCAxyMix*DCAxyMix)/(fDCAxyCut*fDCAxyCut)+(DCAzMix*DCAzMix)/(fDCAzCut*fDCAzCut)) > 1 ){
+  			  if(TMath::Sqrt((dcaXYMix*dcaXYMix)/(fDCAxyCut*fDCAxyCut)+(dcaZMix*dcaZMix)/(fDCAzCut*fDCAzCut)) > 1 ){
   			    continue;  // 2D cut
   			  }
   			}
@@ -620,22 +621,22 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 			
   			// fill QA histograms
   			fHistClus->Fill(aodTrackMix->GetITSNcls(),aodTrackMix->GetTPCNcls());
-  			fHistDCA->Fill(DCAzMix,DCAxyMix);
+  			fHistDCA->Fill(dcaZMix,dcaXYMix);
   			fHistChi2->Fill(aodTrackMix->Chi2perNDF());
-  			fHistPt->Fill(v_pt);
-  			fHistEta->Fill(v_eta);
-  			fHistPhi->Fill(v_phi);
+  			fHistPt->Fill(vPt);
+  			fHistEta->Fill(vEta);
+  			fHistPhi->Fill(vPhi);
 			
   			// fill charge vector
-  			chargeVector[0]->push_back(v_charge);
-  			chargeVector[1]->push_back(v_y);
-  			chargeVector[2]->push_back(v_eta);
-  			chargeVector[3]->push_back(v_phi);
-  			chargeVector[4]->push_back(v_p[0]);
-  			chargeVector[5]->push_back(v_p[1]);
-  			chargeVector[6]->push_back(v_p[2]);
-  			chargeVector[7]->push_back(v_pt);
-  			chargeVector[8]->push_back(v_E);
+  			chargeVector[0]->push_back(vCharge);
+  			chargeVector[1]->push_back(vY);
+  			chargeVector[2]->push_back(vEta);
+  			chargeVector[3]->push_back(vPhi);
+  			chargeVector[4]->push_back(vP[0]);
+  			chargeVector[5]->push_back(vP[1]);
+  			chargeVector[6]->push_back(vP[2]);
+  			chargeVector[7]->push_back(vPt);
+  			chargeVector[8]->push_back(vE);
 			
 			
 			
@@ -664,6 +665,7 @@ void AliAnalysisTaskEventMixingBF::UserExecMix(Option_t *)
 }
 
 AliMixInputEventHandler *AliAnalysisTaskEventMixingBF::SetupEventsForMixing() {
+  //sets the input handlers for event mixing
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());

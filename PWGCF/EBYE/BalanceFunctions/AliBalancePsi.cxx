@@ -45,7 +45,7 @@ ClassImp(AliBalancePsi)
 //____________________________________________________________________//
 AliBalancePsi::AliBalancePsi() :
   TObject(), 
-  bShuffle(kFALSE),
+  fShuffle(kFALSE),
   fAnalysisLevel("ESD"),
   fAnalyzedEvents(0) ,
   fCentralityId(0) ,
@@ -63,7 +63,7 @@ AliBalancePsi::AliBalancePsi() :
 
 //____________________________________________________________________//
 AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
-  TObject(balance), bShuffle(balance.bShuffle), 
+  TObject(balance), fShuffle(balance.fShuffle), 
   fAnalysisLevel(balance.fAnalysisLevel),
   fAnalyzedEvents(balance.fAnalyzedEvents), 
   fCentralityId(balance.fCentralityId),
@@ -94,14 +94,14 @@ AliBalancePsi::~AliBalancePsi() {
 void AliBalancePsi::InitHistograms() {
   // single particle histograms
   Int_t anaSteps   = 1;       // analysis steps
-  Int_t iBinSingle[nTrackVariablesSingle];        // binning for track variables
-  Double_t* dBinsSingle[nTrackVariablesSingle];   // bins for track variables  
-  TString axisTitleSingle[nTrackVariablesSingle]; // axis titles for track variables
+  Int_t iBinSingle[kTrackVariablesSingle];        // binning for track variables
+  Double_t* dBinsSingle[kTrackVariablesSingle];   // bins for track variables  
+  TString axisTitleSingle[kTrackVariablesSingle]; // axis titles for track variables
   
   // two particle histograms
-  Int_t iBinPair[nTrackVariablesPair];         // binning for track variables
-  Double_t* dBinsPair[nTrackVariablesPair];    // bins for track variables  
-  TString axisTitlePair[nTrackVariablesPair];  // axis titles for track variables
+  Int_t iBinPair[kTrackVariablesPair];         // binning for track variables
+  Double_t* dBinsPair[kTrackVariablesPair];    // bins for track variables  
+  TString axisTitlePair[kTrackVariablesPair];  // axis titles for track variables
 
   //centrality
   /*const Int_t kNCentralityBins = 9;
@@ -163,60 +163,60 @@ void AliBalancePsi::InitHistograms() {
   TString histName;
   //+ triggered particles
   histName = "fHistP"; 
-  if(bShuffle) histName.Append("_shuffle");
+  if(fShuffle) histName.Append("_shuffle");
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistP = new AliTHn(histName.Data(),histName.Data(),anaSteps,nTrackVariablesSingle,iBinSingle);
-  for (Int_t j=0; j<nTrackVariablesSingle; j++) {
+  fHistP = new AliTHn(histName.Data(),histName.Data(),anaSteps,kTrackVariablesSingle,iBinSingle);
+  for (Int_t j=0; j<kTrackVariablesSingle; j++) {
     fHistP->SetBinLimits(j, dBinsSingle[j]);
     fHistP->SetVarTitle(j, axisTitleSingle[j]);
   }
 
   //- triggered particles
   histName = "fHistN"; 
-  if(bShuffle) histName.Append("_shuffle");
+  if(fShuffle) histName.Append("_shuffle");
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistN = new AliTHn(histName.Data(),histName.Data(),anaSteps,nTrackVariablesSingle,iBinSingle);
-  for (Int_t j=0; j<nTrackVariablesSingle; j++) {
+  fHistN = new AliTHn(histName.Data(),histName.Data(),anaSteps,kTrackVariablesSingle,iBinSingle);
+  for (Int_t j=0; j<kTrackVariablesSingle; j++) {
     fHistN->SetBinLimits(j, dBinsSingle[j]);
     fHistN->SetVarTitle(j, axisTitleSingle[j]);
   }
   
   //+- pairs
   histName = "fHistPN";
-  if(bShuffle) histName.Append("_shuffle");
+  if(fShuffle) histName.Append("_shuffle");
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistPN = new AliTHn(histName.Data(),histName.Data(),anaSteps, nTrackVariablesPair, iBinPair);
-  for (Int_t j=0; j<nTrackVariablesPair; j++) {
+  fHistPN = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair, iBinPair);
+  for (Int_t j=0; j<kTrackVariablesPair; j++) {
     fHistPN->SetBinLimits(j, dBinsPair[j]);
     fHistPN->SetVarTitle(j, axisTitlePair[j]);
   }
 
   //-+ pairs
   histName = "fHistNP";
-  if(bShuffle) histName.Append("_shuffle");
+  if(fShuffle) histName.Append("_shuffle");
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistNP = new AliTHn(histName.Data(),histName.Data(),anaSteps, nTrackVariablesPair, iBinPair);
-  for (Int_t j=0; j<nTrackVariablesPair; j++) {
+  fHistNP = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair, iBinPair);
+  for (Int_t j=0; j<kTrackVariablesPair; j++) {
     fHistNP->SetBinLimits(j, dBinsPair[j]);
     fHistNP->SetVarTitle(j, axisTitlePair[j]);
   }
 
   //++ pairs
   histName = "fHistPP";
-  if(bShuffle) histName.Append("_shuffle");
+  if(fShuffle) histName.Append("_shuffle");
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistPP = new AliTHn(histName.Data(),histName.Data(),anaSteps, nTrackVariablesPair, iBinPair);
-  for (Int_t j=0; j<nTrackVariablesPair; j++) {
+  fHistPP = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair, iBinPair);
+  for (Int_t j=0; j<kTrackVariablesPair; j++) {
     fHistPP->SetBinLimits(j, dBinsPair[j]);
     fHistPP->SetVarTitle(j, axisTitlePair[j]);
   }
 
   //-- pairs
   histName = "fHistNN";
-  if(bShuffle) histName.Append("_shuffle");
+  if(fShuffle) histName.Append("_shuffle");
   if(fCentralityId) histName += fCentralityId.Data();
-  fHistNN = new AliTHn(histName.Data(),histName.Data(),anaSteps, nTrackVariablesPair, iBinPair);
-  for (Int_t j=0; j<nTrackVariablesPair; j++) {
+  fHistNN = new AliTHn(histName.Data(),histName.Data(),anaSteps, kTrackVariablesPair, iBinPair);
+  for (Int_t j=0; j<kTrackVariablesPair; j++) {
     fHistNN->SetBinLimits(j, dBinsPair[j]);
     fHistNN->SetVarTitle(j, axisTitlePair[j]);
   }
@@ -237,8 +237,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     InitHistograms();
   }
 
-  Double_t trackVariablesSingle[nTrackVariablesSingle];
-  Double_t trackVariablesPair[nTrackVariablesPair];
+  Double_t trackVariablesSingle[kTrackVariablesSingle];
+  Double_t trackVariablesPair[kTrackVariablesPair];
 
   if (!particles){
     AliWarning("particles TObjArray is NULL pointer --> return");

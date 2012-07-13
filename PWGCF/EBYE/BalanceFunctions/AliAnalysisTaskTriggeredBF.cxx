@@ -698,10 +698,10 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedTracks(AliVEvent *event){
   TObjArray* tracksAccepted = new TObjArray;
   tracksAccepted->SetOwner(kTRUE);
 
-  Double_t v_charge;
-  Double_t v_eta;
-  Double_t v_phi;
-  Double_t v_pt;
+  Double_t vCharge;
+  Double_t vEta;
+  Double_t vPhi;
+  Double_t vPt;
   
   // Loop over tracks in event
   for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
@@ -718,22 +718,22 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedTracks(AliVEvent *event){
     fHistTrackStats->Fill(aodTrack->GetFilterMap());
     if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
     
-    v_charge = aodTrack->Charge();
-    v_eta    = aodTrack->Eta();
-    v_phi    = aodTrack->Phi() * TMath::RadToDeg();
-    v_pt     = aodTrack->Pt();
+    vCharge = aodTrack->Charge();
+    vEta    = aodTrack->Eta();
+    vPhi    = aodTrack->Phi() * TMath::RadToDeg();
+    vPt     = aodTrack->Pt();
     
-    Float_t DCAxy = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
-    Float_t DCAz  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+    Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+    Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
     
     
     // Kinematics cuts from ESD track cuts
-    if( v_pt < fPtMin || v_pt > fPtMax)      continue;
-    if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+    if( vPt < fPtMin || vPt > fPtMax)      continue;
+    if( vEta < fEtaMin || vEta > fEtaMax)  continue;
     
     // Extra DCA cuts (for systematic studies [!= -1])
     if( fDCAxyCut != -1 && fDCAzCut != -1){
-      if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
+      if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
 	continue;  // 2D cut
       }
     }
@@ -748,14 +748,14 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedTracks(AliVEvent *event){
     
     // fill QA histograms
     fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
-    fHistDCA->Fill(DCAz,DCAxy);
+    fHistDCA->Fill(dcaZ,dcaXY);
     fHistChi2->Fill(aodTrack->Chi2perNDF());
-    fHistPt->Fill(v_pt);
-    fHistEta->Fill(v_eta);
-    fHistPhi->Fill(v_phi);
+    fHistPt->Fill(vPt);
+    fHistEta->Fill(vEta);
+    fHistPhi->Fill(vPhi);
     
     // add the track to the TObjArray
-    tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));
+    tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge));
   }
 
   return tracksAccepted;
@@ -770,10 +770,10 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedV0s(AliVEvent *event){
   TObjArray* tracksAccepted = new TObjArray;
   tracksAccepted->SetOwner(kTRUE);
 
-  Double_t v_charge;
-  Double_t v_eta;
-  Double_t v_phi;
-  Double_t v_pt;
+  Double_t vCharge;
+  Double_t vEta;
+  Double_t vPhi;
+  Double_t vPt;
   
   //------------------------------------------------
   // MAIN LAMBDA LOOP STARTS HERE (basically a copy of AliAnalysisTaskExtractV0AOD)
@@ -1019,19 +1019,19 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetAcceptedV0s(AliVEvent *event){
 
 		    fHistV0SelArmenteros->Fill(lAlphaV0,lPtArmV0);		  
 
-		    v_eta    = lEta;
-		    v_phi    = lPhi;
-		    v_pt     = lPt;
-		    if(lAlphaV0 > 0) v_charge = 1;
-		    if(lAlphaV0 < 0) v_charge = -1;
+		    vEta    = lEta;
+		    vPhi    = lPhi;
+		    vPt     = lPt;
+		    if(lAlphaV0 > 0) vCharge = 1;
+		    if(lAlphaV0 < 0) vCharge = -1;
 
 		    // fill QA histograms
-		    fHistPt->Fill(v_pt);
-		    fHistEta->Fill(v_eta);
-		    fHistPhi->Fill(v_phi);
+		    fHistPt->Fill(vPt);
+		    fHistEta->Fill(vEta);
+		    fHistPhi->Fill(vPhi);
 		    
 		    // add the track to the TObjArray
-		    tracksAccepted->Add(new AliBFBasicParticle(v_eta, v_phi, v_pt, v_charge));
+		    tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge));
 		  }
 		}
 	      }
@@ -1073,7 +1073,7 @@ TObjArray* AliAnalysisTaskTriggeredBF::GetShuffledTracks(TObjArray *tracks){
 
 //________________________________________________________________________
 void  AliAnalysisTaskTriggeredBF::FinishTaskOutput(){
-
+  //checks if Balance Function objects are there (needed to write the histograms)
   if (!fBalance) {
     AliError("fBalance not available");
     return;

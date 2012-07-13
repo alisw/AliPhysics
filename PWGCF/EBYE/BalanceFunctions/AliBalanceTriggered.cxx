@@ -96,14 +96,14 @@ void AliBalanceTriggered::InitHistograms() {
   Int_t anaSteps   = 1;       // analysis steps
 
   // single particle histograms
-  Int_t iBinSingle[nTrackVarsSingle];         // binning for track variables
-  Double_t* dBinsSingle[nTrackVarsSingle];    // bins for track variables  
-  TString axisTitleSingle[nTrackVarsSingle];  // axis titles for track variables
+  Int_t iBinSingle[kTrackVarsSingle];         // binning for track variables
+  Double_t* dBinsSingle[kTrackVarsSingle];    // bins for track variables  
+  TString axisTitleSingle[kTrackVarsSingle];  // axis titles for track variables
   
   // two particle histograms
-  Int_t iBinPair[nTrackVarsPair];         // binning for track variables
-  Double_t* dBinsPair[nTrackVarsPair];    // bins for track variables  
-  TString axisTitlePair[nTrackVarsPair];  // axis titles for track variables
+  Int_t iBinPair[kTrackVarsPair];         // binning for track variables
+  Double_t* dBinsPair[kTrackVarsPair];    // bins for track variables  
+  TString axisTitlePair[kTrackVarsPair];  // axis titles for track variables
 
    
   //-----------------------------------------------------------
@@ -191,48 +191,48 @@ void AliBalanceTriggered::InitHistograms() {
   // Histogram creation
 
   // histogram for negative particles
-  fHistN = new AliTHn(Form("fHistN"), Form("%s_N",title.Data()), anaSteps, nTrackVarsSingle, iBinSingle);
-  for (Int_t j=0; j<nTrackVarsSingle; j++)
+  fHistN = new AliTHn(Form("fHistN"), Form("%s_N",title.Data()), anaSteps, kTrackVarsSingle, iBinSingle);
+  for (Int_t j=0; j<kTrackVarsSingle; j++)
     {
       fHistN->SetBinLimits(j, dBinsSingle[j]);
       fHistN->SetVarTitle(j, axisTitleSingle[j]);
     }
 
   // histogram for positive particles
-  fHistP = new AliTHn(Form("fHistP"), Form("%s_P",title.Data()), anaSteps, nTrackVarsSingle, iBinSingle);
-  for (Int_t j=0; j<nTrackVarsSingle; j++)
+  fHistP = new AliTHn(Form("fHistP"), Form("%s_P",title.Data()), anaSteps, kTrackVarsSingle, iBinSingle);
+  for (Int_t j=0; j<kTrackVarsSingle; j++)
     {
       fHistP->SetBinLimits(j, dBinsSingle[j]);
       fHistP->SetVarTitle(j, axisTitleSingle[j]);
     }
 
   // histogram for +- pairs
-  fHistPN = new AliTHn(Form("fHistPN"), Form("%s_PN",title.Data()), anaSteps, nTrackVarsPair, iBinPair);
-  for (Int_t j=0; j<nTrackVarsPair; j++)
+  fHistPN = new AliTHn(Form("fHistPN"), Form("%s_PN",title.Data()), anaSteps, kTrackVarsPair, iBinPair);
+  for (Int_t j=0; j<kTrackVarsPair; j++)
     {
       fHistPN->SetBinLimits(j, dBinsPair[j]);
       fHistPN->SetVarTitle(j, axisTitlePair[j]);
     }
 
   // histogram for -+ pairs
-  fHistNP = new AliTHn(Form("fHistNP"), Form("%s_NP",title.Data()), anaSteps, nTrackVarsPair, iBinPair);
-  for (Int_t j=0; j<nTrackVarsPair; j++)
+  fHistNP = new AliTHn(Form("fHistNP"), Form("%s_NP",title.Data()), anaSteps, kTrackVarsPair, iBinPair);
+  for (Int_t j=0; j<kTrackVarsPair; j++)
     {
       fHistNP->SetBinLimits(j, dBinsPair[j]);
       fHistNP->SetVarTitle(j, axisTitlePair[j]);
     }
 
   // histogram for ++ pairs
-  fHistPP = new AliTHn(Form("fHistPP"), Form("%s_PP",title.Data()), anaSteps, nTrackVarsPair, iBinPair);
-  for (Int_t j=0; j<nTrackVarsPair; j++)
+  fHistPP = new AliTHn(Form("fHistPP"), Form("%s_PP",title.Data()), anaSteps, kTrackVarsPair, iBinPair);
+  for (Int_t j=0; j<kTrackVarsPair; j++)
     {
       fHistPP->SetBinLimits(j, dBinsPair[j]);
       fHistPP->SetVarTitle(j, axisTitlePair[j]);
     }
 
   // histogram for -- pairs
-  fHistNN = new AliTHn(Form("fHistNN"), Form("%s_NN",title.Data()), anaSteps, nTrackVarsPair, iBinPair);
-  for (Int_t j=0; j<nTrackVarsPair; j++)
+  fHistNN = new AliTHn(Form("fHistNN"), Form("%s_NN",title.Data()), anaSteps, kTrackVarsPair, iBinPair);
+  for (Int_t j=0; j<kTrackVarsPair; j++)
     {
       fHistNN->SetBinLimits(j, dBinsPair[j]);
       fHistNN->SetVarTitle(j, axisTitlePair[j]);
@@ -256,8 +256,8 @@ void AliBalanceTriggered::FillBalance(Float_t fCentrality,TObjArray *particles, 
     InitHistograms();
   }
 
-  Double_t trackVarsSingle[nTrackVarsSingle];
-  Double_t trackVarsPair[nTrackVarsPair];
+  Double_t trackVarsSingle[kTrackVarsSingle];
+  Double_t trackVarsPair[kTrackVarsPair];
 
   if (!particles){
     AliWarning("particles TObjArray is NULL pointer --> return");

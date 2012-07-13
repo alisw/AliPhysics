@@ -107,7 +107,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fVxMax(0.3),
   fVyMax(0.3),
   fVzMax(10.),
-  nAODtrackCutBit(128),
+  fAODtrackCutBit(128),
   fPtMin(0.3),
   fPtMax(1.5),
   fEtaMin(-0.8),
@@ -369,7 +369,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   // Called for each event
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
-  AliESDtrack *track_TPC   = NULL;
+  AliESDtrack *trackTPC   = NULL;
 
   Int_t gNumberOfAcceptedTracks = 0;
   Float_t fCentrality           = 0.;
@@ -385,13 +385,13 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     chargeVector[i]        = new vector<Double_t>;
   }
 
-  Double_t v_charge;
-  Double_t v_y;
-  Double_t v_eta;
-  Double_t v_phi;
-  Double_t v_p[3];
-  Double_t v_pt;
-  Double_t v_E;
+  Double_t vCharge;
+  Double_t vY;
+  Double_t vEta;
+  Double_t vPhi;
+  Double_t vP[3];
+  Double_t vPt;
+  Double_t vE;
 
   if(fUsePID) {
     fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
@@ -455,28 +455,28 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    }	
 		    
 		    // take only TPC only tracks
-		    track_TPC   = new AliESDtrack();
-		    if(!track->FillTPCOnlyTrack(*track_TPC)) continue;
+		    trackTPC   = new AliESDtrack();
+		    if(!track->FillTPCOnlyTrack(*trackTPC)) continue;
 		    
 		    //ESD track cuts
 		    if(fESDtrackCuts) 
-		      if(!fESDtrackCuts->AcceptTrack(track_TPC)) continue;
+		      if(!fESDtrackCuts->AcceptTrack(trackTPC)) continue;
 		    
 		    // fill QA histograms
 		    Float_t b[2];
 		    Float_t bCov[3];
-		    track_TPC->GetImpactParameters(b,bCov);
+		    trackTPC->GetImpactParameters(b,bCov);
 		    if (bCov[0]<=0 || bCov[2]<=0) {
 		      AliDebug(1, "Estimated b resolution lower or equal zero!");
 		      bCov[0]=0; bCov[2]=0;
 		    }
 		    
 		    Int_t nClustersTPC = -1;
-		    nClustersTPC = track_TPC->GetTPCNclsIter1();   // TPC standalone
+		    nClustersTPC = trackTPC->GetTPCNclsIter1();   // TPC standalone
 		    //nClustersTPC = track->GetTPCclusters(0);   // global track
 		    Float_t chi2PerClusterTPC = -1;
 		    if (nClustersTPC!=0) {
-		      chi2PerClusterTPC = track_TPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
+		      chi2PerClusterTPC = trackTPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
 		      //chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);     // global track
 		    }
 
@@ -581,47 +581,47 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      PostData(4, fHistListPIDQA);
 		    }
                     //===========================PID===============================//
-		    v_charge = track_TPC->Charge();
-		    v_y      = track_TPC->Y();
-		    v_eta    = track_TPC->Eta();
-		    v_phi    = track_TPC->Phi() * TMath::RadToDeg();
-		    v_E      = track_TPC->E();
-		    v_pt     = track_TPC->Pt();
-		    track_TPC->PxPyPz(v_p);
-		    fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
+		    vCharge = trackTPC->Charge();
+		    vY      = trackTPC->Y();
+		    vEta    = trackTPC->Eta();
+		    vPhi    = trackTPC->Phi() * TMath::RadToDeg();
+		    vE      = trackTPC->E();
+		    vPt     = trackTPC->Pt();
+		    trackTPC->PxPyPz(vP);
+		    fHistClus->Fill(trackTPC->GetITSclusters(0),nClustersTPC);
 		    fHistDCA->Fill(b[1],b[0]);
 		    fHistChi2->Fill(chi2PerClusterTPC);
-		    fHistPt->Fill(v_pt);
-		    fHistEta->Fill(v_eta);
-		    fHistPhi->Fill(v_phi);
-		    fHistRapidity->Fill(v_y);
-		    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
-		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
+		    fHistPt->Fill(vPt);
+		    fHistEta->Fill(vEta);
+		    fHistPhi->Fill(vPhi);
+		    fHistRapidity->Fill(vY);
+		    if(vCharge > 0) fHistPhiPos->Fill(vPhi);
+		    else if(vCharge < 0) fHistPhiNeg->Fill(vPhi);
 
 		    // fill charge vector
-		    chargeVector[0]->push_back(v_charge);
-		    chargeVector[1]->push_back(v_y);
-		    chargeVector[2]->push_back(v_eta);
-		    chargeVector[3]->push_back(v_phi);
-		    chargeVector[4]->push_back(v_p[0]);
-		    chargeVector[5]->push_back(v_p[1]);
-		    chargeVector[6]->push_back(v_p[2]);
-		    chargeVector[7]->push_back(v_pt);
-		    chargeVector[8]->push_back(v_E);
+		    chargeVector[0]->push_back(vCharge);
+		    chargeVector[1]->push_back(vY);
+		    chargeVector[2]->push_back(vEta);
+		    chargeVector[3]->push_back(vPhi);
+		    chargeVector[4]->push_back(vP[0]);
+		    chargeVector[5]->push_back(vP[1]);
+		    chargeVector[6]->push_back(vP[2]);
+		    chargeVector[7]->push_back(vPt);
+		    chargeVector[8]->push_back(vE);
 
 		    if(fRunShuffling) {
-		      chargeVectorShuffle[0]->push_back(v_charge);
-		      chargeVectorShuffle[1]->push_back(v_y);
-		      chargeVectorShuffle[2]->push_back(v_eta);
-		      chargeVectorShuffle[3]->push_back(v_phi);
-		      chargeVectorShuffle[4]->push_back(v_p[0]);
-		      chargeVectorShuffle[5]->push_back(v_p[1]);
-		      chargeVectorShuffle[6]->push_back(v_p[2]);
-		      chargeVectorShuffle[7]->push_back(v_pt);
-		      chargeVectorShuffle[8]->push_back(v_E);
+		      chargeVectorShuffle[0]->push_back(vCharge);
+		      chargeVectorShuffle[1]->push_back(vY);
+		      chargeVectorShuffle[2]->push_back(vEta);
+		      chargeVectorShuffle[3]->push_back(vPhi);
+		      chargeVectorShuffle[4]->push_back(vP[0]);
+		      chargeVectorShuffle[5]->push_back(vP[1]);
+		      chargeVectorShuffle[6]->push_back(vP[2]);
+		      chargeVectorShuffle[7]->push_back(vPt);
+		      chargeVectorShuffle[8]->push_back(vE);
 		    }
 		    
-		    delete track_TPC;
+		    delete trackTPC;
 		    
 		  } //track loop
 		}//Vz cut
@@ -721,7 +721,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      continue;
 		    }
 		    Int_t gID = aodTrack->GetID();
-		    //if (!aodTrack->TestFilterBit(nAODtrackCutBit)) trackMap->Add(gID, iTracks);
+		    //if (!aodTrack->TestFilterBit(fAODtrackCutBit)) trackMap->Add(gID, iTracks);
 		    if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, iTracks);
 		  }
 		  AliAODTrack* newAodTrack; 
@@ -740,7 +740,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    //===========================================//
 		    // take only TPC only tracks 
 		    fHistTrackStats->Fill(aodTrack->GetFilterMap());
-		    if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+		    if(!aodTrack->TestFilterBit(fAODtrackCutBit)) continue;
 
 		    Int_t gID = aodTrack->GetID();
 		    newAodTrack = gID >= 0 ? aodTrack : gAOD->GetTrack(trackMap->GetValue(-1-gID));
@@ -748,34 +748,34 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
                     //===========================================//
 
 		    //fHistTrackStats->Fill(aodTrack->GetFilterMap());
-      		    //if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+      		    //if(!aodTrack->TestFilterBit(fAODtrackCutBit)) continue;
 		    
-      		    v_charge = aodTrack->Charge();
-      		    v_y      = aodTrack->Y();
-      		    v_eta    = aodTrack->Eta();
-      		    v_phi    = aodTrack->Phi() * TMath::RadToDeg();
-      		    v_E      = aodTrack->E();
-      		    v_pt     = aodTrack->Pt();
-      		    aodTrack->PxPyPz(v_p);
+      		    vCharge = aodTrack->Charge();
+      		    vY      = aodTrack->Y();
+      		    vEta    = aodTrack->Eta();
+      		    vPhi    = aodTrack->Phi() * TMath::RadToDeg();
+      		    vE      = aodTrack->E();
+      		    vPt     = aodTrack->Pt();
+      		    aodTrack->PxPyPz(vP);
 		    
-      		    Float_t DCAxy = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
-      		    Float_t DCAz  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+      		    Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+      		    Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
 		    
 		    
       		    // Kinematics cuts from ESD track cuts
-      		    if( v_pt < fPtMin || v_pt > fPtMax)      continue;
+      		    if( vPt < fPtMin || vPt > fPtMax)      continue;
 
 		    if (!fUsePID) {
-		      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+		      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
 		    }
 
 		    else if (fUsePID){
-		      if( v_y < fEtaMin || v_y > fEtaMax)  continue;
+		      if( vY < fEtaMin || vY > fEtaMax)  continue;
 		    }
 
       		    // Extra DCA cuts (for systematic studies [!= -1])
       		    if( fDCAxyCut != -1 && fDCAzCut != -1){
-      		      if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
+      		      if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
       			continue;  // 2D cut
       		      }
       		    }
@@ -896,36 +896,36 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    		    
       		    // fill QA histograms
       		    fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
-      		    fHistDCA->Fill(DCAz,DCAxy);
+      		    fHistDCA->Fill(dcaZ,dcaXY);
       		    fHistChi2->Fill(aodTrack->Chi2perNDF());
-      		    fHistPt->Fill(v_pt);
-      		    fHistEta->Fill(v_eta);
-      		    fHistPhi->Fill(v_phi);
-		    fHistRapidity->Fill(v_y);
-		    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
-		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
+      		    fHistPt->Fill(vPt);
+      		    fHistEta->Fill(vEta);
+      		    fHistPhi->Fill(vPhi);
+		    fHistRapidity->Fill(vY);
+		    if(vCharge > 0) fHistPhiPos->Fill(vPhi);
+		    else if(vCharge < 0) fHistPhiNeg->Fill(vPhi);
 
       		    // fill charge vector
-      		    chargeVector[0]->push_back(v_charge);
-      		    chargeVector[1]->push_back(v_y);
-      		    chargeVector[2]->push_back(v_eta);
-      		    chargeVector[3]->push_back(v_phi);
-      		    chargeVector[4]->push_back(v_p[0]);
-      		    chargeVector[5]->push_back(v_p[1]);
-      		    chargeVector[6]->push_back(v_p[2]);
-      		    chargeVector[7]->push_back(v_pt);
-      		    chargeVector[8]->push_back(v_E);
+      		    chargeVector[0]->push_back(vCharge);
+      		    chargeVector[1]->push_back(vY);
+      		    chargeVector[2]->push_back(vEta);
+      		    chargeVector[3]->push_back(vPhi);
+      		    chargeVector[4]->push_back(vP[0]);
+      		    chargeVector[5]->push_back(vP[1]);
+      		    chargeVector[6]->push_back(vP[2]);
+      		    chargeVector[7]->push_back(vPt);
+      		    chargeVector[8]->push_back(vE);
 
       		    if(fRunShuffling) {
-      		      chargeVectorShuffle[0]->push_back(v_charge);
-      		      chargeVectorShuffle[1]->push_back(v_y);
-      		      chargeVectorShuffle[2]->push_back(v_eta);
-      		      chargeVectorShuffle[3]->push_back(v_phi);
-      		      chargeVectorShuffle[4]->push_back(v_p[0]);
-      		      chargeVectorShuffle[5]->push_back(v_p[1]);
-      		      chargeVectorShuffle[6]->push_back(v_p[2]);
-      		      chargeVectorShuffle[7]->push_back(v_pt);
-      		      chargeVectorShuffle[8]->push_back(v_E);
+      		      chargeVectorShuffle[0]->push_back(vCharge);
+      		      chargeVectorShuffle[1]->push_back(vY);
+      		      chargeVectorShuffle[2]->push_back(vEta);
+      		      chargeVectorShuffle[3]->push_back(vPhi);
+      		      chargeVectorShuffle[4]->push_back(vP[0]);
+      		      chargeVectorShuffle[5]->push_back(vP[1]);
+      		      chargeVectorShuffle[6]->push_back(vP[2]);
+      		      chargeVectorShuffle[7]->push_back(vPt);
+      		      chargeVectorShuffle[8]->push_back(vE);
       		    }
 		    		    
       		    gNumberOfAcceptedTracks += 1;
@@ -1010,73 +1010,73 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    if(!mcTrack) continue;
 
 		    // take only TPC only tracks
-		    track_TPC   = new AliESDtrack();
-		    if(!track->FillTPCOnlyTrack(*track_TPC)) continue;
+		    trackTPC   = new AliESDtrack();
+		    if(!track->FillTPCOnlyTrack(*trackTPC)) continue;
 		    
 		    //ESD track cuts
 		    if(fESDtrackCuts) 
-		      if(!fESDtrackCuts->AcceptTrack(track_TPC)) continue;
+		      if(!fESDtrackCuts->AcceptTrack(trackTPC)) continue;
 		    
 		    // fill QA histograms
 		    Float_t b[2];
 		    Float_t bCov[3];
-		    track_TPC->GetImpactParameters(b,bCov);
+		    trackTPC->GetImpactParameters(b,bCov);
 		    if (bCov[0]<=0 || bCov[2]<=0) {
 		      AliDebug(1, "Estimated b resolution lower or equal zero!");
 		      bCov[0]=0; bCov[2]=0;
 		    }
 		    
 		    Int_t nClustersTPC = -1;
-		    nClustersTPC = track_TPC->GetTPCNclsIter1();   // TPC standalone
+		    nClustersTPC = trackTPC->GetTPCNclsIter1();   // TPC standalone
 		    //nClustersTPC = track->GetTPCclusters(0);   // global track
 		    Float_t chi2PerClusterTPC = -1;
 		    if (nClustersTPC!=0) {
-		      chi2PerClusterTPC = track_TPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
+		      chi2PerClusterTPC = trackTPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
 		      //chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);     // global track
 		    }
 		    
-		    v_charge = track_TPC->Charge();
-		    v_y      = track_TPC->Y();
-		    v_eta    = track_TPC->Eta();
-		    v_phi    = track_TPC->Phi() * TMath::RadToDeg();
-		    v_E      = track_TPC->E();
-		    v_pt     = track_TPC->Pt();
-		    track_TPC->PxPyPz(v_p);
+		    vCharge = trackTPC->Charge();
+		    vY      = trackTPC->Y();
+		    vEta    = trackTPC->Eta();
+		    vPhi    = trackTPC->Phi() * TMath::RadToDeg();
+		    vE      = trackTPC->E();
+		    vPt     = trackTPC->Pt();
+		    trackTPC->PxPyPz(vP);
 
-		    fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
+		    fHistClus->Fill(trackTPC->GetITSclusters(0),nClustersTPC);
 		    fHistDCA->Fill(b[1],b[0]);
 		    fHistChi2->Fill(chi2PerClusterTPC);
-		    fHistPt->Fill(v_pt);
-		    fHistEta->Fill(v_eta);
-		    fHistPhi->Fill(v_phi);
-		    fHistRapidity->Fill(v_y);
-		    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
-		    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
+		    fHistPt->Fill(vPt);
+		    fHistEta->Fill(vEta);
+		    fHistPhi->Fill(vPhi);
+		    fHistRapidity->Fill(vY);
+		    if(vCharge > 0) fHistPhiPos->Fill(vPhi);
+		    else if(vCharge < 0) fHistPhiNeg->Fill(vPhi);
 
 		    // fill charge vector
-		    chargeVector[0]->push_back(v_charge);
-		    chargeVector[1]->push_back(v_y);
-		    chargeVector[2]->push_back(v_eta);
-		    chargeVector[3]->push_back(v_phi);
-		    chargeVector[4]->push_back(v_p[0]);
-		    chargeVector[5]->push_back(v_p[1]);
-		    chargeVector[6]->push_back(v_p[2]);
-		    chargeVector[7]->push_back(v_pt);
-		    chargeVector[8]->push_back(v_E);
+		    chargeVector[0]->push_back(vCharge);
+		    chargeVector[1]->push_back(vY);
+		    chargeVector[2]->push_back(vEta);
+		    chargeVector[3]->push_back(vPhi);
+		    chargeVector[4]->push_back(vP[0]);
+		    chargeVector[5]->push_back(vP[1]);
+		    chargeVector[6]->push_back(vP[2]);
+		    chargeVector[7]->push_back(vPt);
+		    chargeVector[8]->push_back(vE);
 
 		    if(fRunShuffling) {
-		      chargeVectorShuffle[0]->push_back(v_charge);
-		      chargeVectorShuffle[1]->push_back(v_y);
-		      chargeVectorShuffle[2]->push_back(v_eta);
-		      chargeVectorShuffle[3]->push_back(v_phi);
-		      chargeVectorShuffle[4]->push_back(v_p[0]);
-		      chargeVectorShuffle[5]->push_back(v_p[1]);
-		      chargeVectorShuffle[6]->push_back(v_p[2]);
-		      chargeVectorShuffle[7]->push_back(v_pt);
-		      chargeVectorShuffle[8]->push_back(v_E);
+		      chargeVectorShuffle[0]->push_back(vCharge);
+		      chargeVectorShuffle[1]->push_back(vY);
+		      chargeVectorShuffle[2]->push_back(vEta);
+		      chargeVectorShuffle[3]->push_back(vPhi);
+		      chargeVectorShuffle[4]->push_back(vP[0]);
+		      chargeVectorShuffle[5]->push_back(vP[1]);
+		      chargeVectorShuffle[6]->push_back(vP[2]);
+		      chargeVectorShuffle[7]->push_back(vPt);
+		      chargeVectorShuffle[8]->push_back(vE);
 		    }
 		    
-		    delete track_TPC;
+		    delete trackTPC;
       		    gNumberOfAcceptedTracks += 1;
 		    
 		  } //track loop
@@ -1148,17 +1148,17 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	    //exclude non stable particles
 	    if(!mcEvent->IsPhysicalPrimary(iTracks)) continue;
 
-	    v_eta    = track->Eta();
-	    v_pt     = track->Pt();
-	    v_y      = track->Y();
+	    vEta    = track->Eta();
+	    vPt     = track->Pt();
+	    vY      = track->Y();
 
-	    if( v_pt < fPtMin || v_pt > fPtMax)      
+	    if( vPt < fPtMin || vPt > fPtMax)      
 	      continue;
 	    if (!fUsePID) {
-	      if( v_eta < fEtaMin || v_eta > fEtaMax)  continue;
+	      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
 	    }
 	    else if (fUsePID){
-	      if( v_y < fEtaMin || v_y > fEtaMax)  continue;
+	      if( vY < fEtaMin || vY > fEtaMax)  continue;
 	    }
 
 	    //analyze one set of particles
@@ -1203,67 +1203,67 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	      if(kExcludeParticle) continue;
 	    }
 
-	    v_charge = track->Charge();
-	    v_phi    = track->Phi();
-	    v_E      = track->E();
-	    track->PxPyPz(v_p);
-	    //Printf("phi (before): %lf",v_phi);
+	    vCharge = track->Charge();
+	    vPhi    = track->Phi();
+	    vE      = track->E();
+	    track->PxPyPz(vP);
+	    //Printf("phi (before): %lf",vPhi);
 
-	    fHistPt->Fill(v_pt);
-	    fHistEta->Fill(v_eta);
-	    fHistPhi->Fill(v_phi);
-	    fHistRapidity->Fill(v_y);
-	    if(v_charge > 0) fHistPhiPos->Fill(v_phi);
-	    else if(v_charge < 0) fHistPhiNeg->Fill(v_phi);
+	    fHistPt->Fill(vPt);
+	    fHistEta->Fill(vEta);
+	    fHistPhi->Fill(vPhi);
+	    fHistRapidity->Fill(vY);
+	    if(vCharge > 0) fHistPhiPos->Fill(vPhi);
+	    else if(vCharge < 0) fHistPhiNeg->Fill(vPhi);
 
 	    //Flow after burner
 	    if(fUseFlowAfterBurner) {
 	      Double_t precisionPhi = 0.001;
 	      Int_t maxNumberOfIterations = 100;
 
-	      Double_t phi0 = v_phi;
-	      Double_t gV2 = fDifferentialV2->Eval(v_pt);
+	      Double_t phi0 = vPhi;
+	      Double_t gV2 = fDifferentialV2->Eval(vPt);
 
 	      for (Int_t j = 0; j < maxNumberOfIterations; j++) {
-		Double_t phiprev = v_phi;
-		Double_t fl = v_phi - phi0 + gV2*TMath::Sin(2.*(v_phi - gReactionPlane));
-		Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(v_phi - gReactionPlane)); 
-		v_phi -= fl/fp;
-		if (TMath::AreEqualAbs(phiprev,v_phi,precisionPhi)) break;
+		Double_t phiprev = vPhi;
+		Double_t fl = vPhi - phi0 + gV2*TMath::Sin(2.*(vPhi - gReactionPlane));
+		Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(vPhi - gReactionPlane)); 
+		vPhi -= fl/fp;
+		if (TMath::AreEqualAbs(phiprev,vPhi,precisionPhi)) break;
 	      }
-	      //Printf("phi (after): %lf\n",v_phi);
-	      	      Double_t v_DeltaphiBefore = phi0 - gReactionPlane;
-	      if(v_DeltaphiBefore < 0) v_DeltaphiBefore += 2*TMath::Pi();
-	      fHistPhiBefore->Fill(v_DeltaphiBefore);
+	      //Printf("phi (after): %lf\n",vPhi);
+	      	      Double_t vDeltaphiBefore = phi0 - gReactionPlane;
+	      if(vDeltaphiBefore < 0) vDeltaphiBefore += 2*TMath::Pi();
+	      fHistPhiBefore->Fill(vDeltaphiBefore);
 
-	      Double_t v_DeltaphiAfter = v_phi - gReactionPlane;
-	      if(v_DeltaphiAfter < 0) v_DeltaphiAfter += 2*TMath::Pi();
-	      fHistPhiAfter->Fill(v_DeltaphiAfter);
+	      Double_t vDeltaphiAfter = vPhi - gReactionPlane;
+	      if(vDeltaphiAfter < 0) vDeltaphiAfter += 2*TMath::Pi();
+	      fHistPhiAfter->Fill(vDeltaphiAfter);
 	    }
 	    
-	    v_phi *= TMath::RadToDeg();
+	    vPhi *= TMath::RadToDeg();
 
 	    // fill charge vector
-	    chargeVector[0]->push_back(v_charge);
-	    chargeVector[1]->push_back(v_y);
-	    chargeVector[2]->push_back(v_eta);
-	    chargeVector[3]->push_back(v_phi);
-	    chargeVector[4]->push_back(v_p[0]);
-	    chargeVector[5]->push_back(v_p[1]);
-	    chargeVector[6]->push_back(v_p[2]);
-	    chargeVector[7]->push_back(v_pt);
-	    chargeVector[8]->push_back(v_E);
+	    chargeVector[0]->push_back(vCharge);
+	    chargeVector[1]->push_back(vY);
+	    chargeVector[2]->push_back(vEta);
+	    chargeVector[3]->push_back(vPhi);
+	    chargeVector[4]->push_back(vP[0]);
+	    chargeVector[5]->push_back(vP[1]);
+	    chargeVector[6]->push_back(vP[2]);
+	    chargeVector[7]->push_back(vPt);
+	    chargeVector[8]->push_back(vE);
 	    
 	    if(fRunShuffling) {
-	      chargeVectorShuffle[0]->push_back(v_charge);
-	      chargeVectorShuffle[1]->push_back(v_y);
-	      chargeVectorShuffle[2]->push_back(v_eta);
-	      chargeVectorShuffle[3]->push_back(v_phi);
-	      chargeVectorShuffle[4]->push_back(v_p[0]);
-	      chargeVectorShuffle[5]->push_back(v_p[1]);
-	      chargeVectorShuffle[6]->push_back(v_p[2]);
-	      chargeVectorShuffle[7]->push_back(v_pt);
-	      chargeVectorShuffle[8]->push_back(v_E);
+	      chargeVectorShuffle[0]->push_back(vCharge);
+	      chargeVectorShuffle[1]->push_back(vY);
+	      chargeVectorShuffle[2]->push_back(vEta);
+	      chargeVectorShuffle[3]->push_back(vPhi);
+	      chargeVectorShuffle[4]->push_back(vP[0]);
+	      chargeVectorShuffle[5]->push_back(vP[1]);
+	      chargeVectorShuffle[6]->push_back(vP[2]);
+	      chargeVectorShuffle[7]->push_back(vPt);
+	      chargeVectorShuffle[8]->push_back(vE);
 	    }
 	    gNumberOfAcceptedTracks += 1;
 		    
