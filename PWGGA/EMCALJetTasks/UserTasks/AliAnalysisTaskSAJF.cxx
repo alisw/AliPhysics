@@ -282,7 +282,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistJetsPtArea_";
     histname += i;
-    fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 100, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
     fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T}^{raw} [GeV/c]");
     fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
     fOutput->Add(fHistJetsPtArea[i]);
@@ -383,7 +383,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistJetsCorrPtArea_";
     histname += i;
-    fHistJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, 20, 0, fJetRadius * fJetRadius * TMath::Pi() * 1.5);
+    fHistJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, 100, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
     fHistJetsCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
     fHistJetsCorrPtArea[i]->GetYaxis()->SetTitle("area");
     fOutput->Add(fHistJetsCorrPtArea[i]);
@@ -465,7 +465,14 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fHistEmbJetsCorrPt[i]->GetXaxis()->SetTitle("embedded jet p_{T}^{corr} [GeV/c]");
       fHistEmbJetsCorrPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbJetsCorrPt[i]);
-      
+
+      histname = "fHistEmbJetsArea_";
+      histname += i;
+      fHistEmbJetsArea[i] = new TH1F(histname.Data(), histname.Data(), 100, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+      fHistEmbJetsArea[i]->GetXaxis()->SetTitle("area");
+      fHistEmbJetsArea[i]->GetYaxis()->SetTitle("counts");
+      fOutput->Add(fHistEmbJetsArea[i]);
+
       histname = "fHistEmbPartPt_";
       histname += i;
       fHistEmbPartPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt);
@@ -668,6 +675,7 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 
     fHistEmbJetsPt[fCentBin]->Fill(embJet->Pt());
     fHistEmbJetsCorrPt[fCentBin]->Fill(embJet->Pt() - fRhoVal * embJet->Area());
+    fHistEmbJetsArea[fCentBin]->Fill(embJet->Area());
     fHistEmbJetPhiEta->Fill(embJet->Eta(), embJet->Phi());
 
     fHistDeltaPtEmb[fCentBin]->Fill(embJet->Pt() - embJet->Area() * fRhoVal - probePt);

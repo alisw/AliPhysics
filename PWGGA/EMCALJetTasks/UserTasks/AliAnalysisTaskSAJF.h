@@ -107,6 +107,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistEmbNotFoundPhiEta[4];   //!Phi-Eta of "not found" embedded particles
   TH1F                       *fHistEmbJetsPt[4];           //!Pt distribution of embedded jets
   TH1F                       *fHistEmbJetsCorrPt[4];       //!Pt distribution of embedded jets
+  TH1F                       *fHistEmbJetsArea[4];         //!Area distribution of embedded jets
   TH1F                       *fHistEmbPartPt[4];           //!Pt distribution of embedded particle
   TH2F                       *fHistEmbJetPhiEta;           //!Phi-Eta distribution of embedded jets
   TH2F                       *fHistEmbPartPhiEta;          //!Phi-Eta distribution of embedded particles
