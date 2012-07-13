@@ -118,7 +118,8 @@ void AliHFSystErr::Init(Int_t decay){
       if (fIsLowEnergy) InitDplustoKpipi2010ppLowEn();
       else InitDplustoKpipi2010pp();
     } else if (fCollisionType==1) {
-      if (fCentralityClass=="010") InitDplustoKpipi2010PbPb010CentScan();
+      if (fCentralityClass=="07half") InitDplustoKpipi2011PbPb07half();
+      else if (fCentralityClass=="010") InitDplustoKpipi2010PbPb010CentScan();
       else if (fCentralityClass=="1020") InitDplustoKpipi2010PbPb1020CentScan();
       else if (fCentralityClass=="020") InitDplustoKpipi2010PbPb020();
       else if (fCentralityClass=="2040") InitDplustoKpipi2010PbPb2040CentScan();
@@ -568,6 +569,66 @@ void AliHFSystErr::InitDstoKKpi2010pp() {
 }
    
  
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2011PbPb07half() {
+  // 
+  // D+->Kpipi syst errors. Responsible: E. Bruna
+  //  2011 PbPb sample, 0-7.5% CC
+  //
+
+ // Normalization
+  fNorm = new TH1F("fNorm","fNorm",36,0,36);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
+
+  // Branching ratio 
+  fBR = new TH1F("fBR","fBR",36,0,36);
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.021); // 2.1% PDG2010
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
+  for(Int_t i=1;i<=36;i++) fTrackingEff->SetBinContent(i,0.15); // Jacek, 5% per track
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  for(Int_t i=1;i<=36;i++) fRawYield->SetBinContent(i,.10);  //5 to 10%
+  fRawYield->SetBinContent(4,0.20);
+  fRawYield->SetBinContent(5,0.15);
+  fRawYield->SetBinContent(6,0.15);
+  for(Int_t i=7; i<=8; i++) fRawYield->SetBinContent(i,0.12);
+  for(Int_t i=9; i<=12; i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=13; i<=16; i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i,0.07);
+  for(Int_t i=25; i<=36; i++) fRawYield->SetBinContent(i,0.20);
+
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+  for(Int_t i=1;i<=36;i++) fCutsEff->SetBinContent(i,0.15); // 15%
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.05); // 5%
+
+  // MC dN/dpt  (2/2/2012)
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0.);
+  for(Int_t iBin=7; iBin<=8; iBin++) fMCPtShape->SetBinContent(iBin,0.01);
+  for(Int_t iBin=9; iBin<=12; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
+  for(Int_t iBin=13; iBin<=36; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
+
+
+  // particle-antiparticle
+  /*
+  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
+  fPartAntipart->SetBinContent(1,1);
+  fPartAntipart->SetBinContent(2,1);
+  fPartAntipart->SetBinContent(3,0.12);
+  for(Int_t i=4;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
+  */
+
+  return;
+}
+
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
   // 
@@ -1310,8 +1371,8 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   cSystErr->SetRightMargin(0.318);
   cSystErr->SetFillColor(0);
 
-  TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{t} (GeV/c); Relative Error",30,0,30,100,-1,+1);
-  hFrame->SetAxisRange(1.,24.9,"X");
+  TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{t} (GeV/c); Relative Error",40,0,40,100,-1,+1);
+  hFrame->SetAxisRange(1.,35.9,"X");
   hFrame->SetAxisRange(-0.5,0.5,"Y");
   hFrame->Draw();
 
@@ -1320,10 +1381,10 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
   
-  TH1F *hTotErr=new TH1F("hTotErr","",24,0,24);
+  TH1F *hTotErr=new TH1F("hTotErr","",36,0,36);
   Int_t nbins = fNorm->GetNbinsX();
   TGraphAsymmErrors *gTotErr = new TGraphAsymmErrors(nbins);
-  for(Int_t i=1;i<=24;i++) {
+  for(Int_t i=1;i<=36;i++) {
     Double_t pt = hTotErr->GetBinCenter(i);
     Double_t ptwidth = hTotErr->GetBinWidth(i);
 
