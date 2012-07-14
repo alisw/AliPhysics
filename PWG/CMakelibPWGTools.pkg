@@ -32,6 +32,7 @@ set ( SRCS
     Tools/AliPWGHistoTools.cxx
     Tools/AliPWGFunc.cxx
     Tools/AliLatexTable.cxx
+    Tools/AliFigure.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
