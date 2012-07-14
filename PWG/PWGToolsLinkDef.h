@@ -9,6 +9,6 @@
 #pragma link C++ class AliPWGHistoTools+;
 #pragma link C++ class AliPWGFunc+;
 #pragma link C++ class AliLatexTable+;
-
+#pragma link C++ class AliFigure+;
 
 #endif
