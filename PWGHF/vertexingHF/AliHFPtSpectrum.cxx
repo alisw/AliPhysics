@@ -1523,7 +1523,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       //      Int_t rbin=0;
       for (Float_t rval=0.0025; rval<4.0; rval+=0.005){
 	// correction =  [ 1  - (Tab *Nevt * delta_y * BR_b * eff_trig * eff_b * Nb_th *binwidth )* (rval) /reco ] 
-	Double_t fcRcbvalue = 1 - (fTab[0]*fNevts*deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin)*fhRECpt->GetBinWidth(ibin) * rval ) / fhRECpt->GetBinContent(ibin) ;
+	Double_t fcRcbvalue = 1 - (frac*deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin)*fhRECpt->GetBinWidth(ibin) * rval ) / fhRECpt->GetBinContent(ibin) ;
 	//	cout << " rval="<<rval <<" , fc="<<fcRcbvalue<<"    ";
 	if(fcRcbvalue<1.e-16) fcRcbvalue=0.;
 	fhFcRcb->Fill( fhRECpt->GetBinCenter(ibin) , rval, fcRcbvalue );
