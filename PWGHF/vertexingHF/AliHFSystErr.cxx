@@ -292,7 +292,8 @@ void AliHFSystErr::InitD0toKpi2011PbPb07half() {
   fRawYield->SetBinContent(1,0);
   fRawYield->SetBinContent(2,0.1);
   fRawYield->SetBinContent(3,0.05);
-  for(Int_t i=4;i<=16;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=4;i<=12;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.10);
   for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.30);
   for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.);// OUT OF MEASUREMENT RANGE
 
