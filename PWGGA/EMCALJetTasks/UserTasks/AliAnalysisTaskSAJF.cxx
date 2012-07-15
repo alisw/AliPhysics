@@ -282,7 +282,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistJetsPtArea_";
     histname += i;
-    fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 100, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+    fHistJetsPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt, 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
     fHistJetsPtArea[i]->GetXaxis()->SetTitle("p_{T}^{raw} [GeV/c]");
     fHistJetsPtArea[i]->GetYaxis()->SetTitle("area");
     fOutput->Add(fHistJetsPtArea[i]);
@@ -383,7 +383,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistJetsCorrPtArea_";
     histname += i;
-    fHistJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, 100, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+    fHistJetsCorrPtArea[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
     fHistJetsCorrPtArea[i]->GetXaxis()->SetTitle("p_{T}^{corr} [GeV/c]");
     fHistJetsCorrPtArea[i]->GetYaxis()->SetTitle("area");
     fOutput->Add(fHistJetsCorrPtArea[i]);
@@ -468,7 +468,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
       histname = "fHistEmbJetsArea_";
       histname += i;
-      fHistEmbJetsArea[i] = new TH1F(histname.Data(), histname.Data(), 100, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+      fHistEmbJetsArea[i] = new TH1F(histname.Data(), histname.Data(), 40, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
       fHistEmbJetsArea[i]->GetXaxis()->SetTitle("area");
       fHistEmbJetsArea[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistEmbJetsArea[i]);

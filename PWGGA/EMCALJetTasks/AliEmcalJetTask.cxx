@@ -152,9 +152,9 @@ void AliEmcalJetTask::FindJets()
       AliVParticle *t = static_cast<AliVParticle*>(fTracks->At(iTracks));
       if (!t)
         continue;
-      if (fType == 1 && t->Charge() == 0)
+      if (fIsMcPart && fType == 1 && t->Charge() == 0)
 	continue;
-      if (fType == 2 && t->Charge() != 0)
+      if (fIsMcPart && fType == 2 && t->Charge() != 0)
 	continue;
       if (t->Pt() < fMinJetTrackPt) 
         continue;
