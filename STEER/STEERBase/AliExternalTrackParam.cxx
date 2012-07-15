@@ -213,14 +213,16 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
   // protection:  avoid alpha being too close to 0 or +-pi/2
   if (TMath::Abs(sn)<kSafe) {
-    fAlpha = kSafe;
+    if (fAlpha>0) fAlpha += fAlpha< TMath::Pi()/2. ?  kSafe : -kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? -kSafe :  kSafe;
     cs=TMath::Cos(fAlpha);
     sn=TMath::Sin(fAlpha);
   }
-  else if (cs<kSafe) {
-    fAlpha -= TMath::Sign(kSafe, fAlpha);
+  else if (TMath::Abs(cs)<kSafe) {
+    if (fAlpha>0) fAlpha += fAlpha> TMath::Pi()/2. ? kSafe : -kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? kSafe : -kSafe;
     cs=TMath::Cos(fAlpha);
-    sn=TMath::Sin(fAlpha);    
+    sn=TMath::Sin(fAlpha);
   }
   // Get the vertex of origin and the momentum
   TVector3 ver(xyz[0],xyz[1],xyz[2]);
