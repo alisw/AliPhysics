@@ -54,7 +54,9 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
   fHEMCalRecdPhidEtaM_Truth(0x0),
   fHEMCalRecdPhidEtaposEta(0x0),
   fHEMCalRecdPhidEtanegEta(0x0),
-  fHPhotonEdiff100HC(0x0)
+  fHPhotonEdiff100HC(0x0),
+  fHPhotonEdiff0HC(0x0),
+  fHPhotonEVsClsE(0x0)
 {
   // Constructor
 
@@ -91,7 +93,9 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH(const char *name) :
   fHEMCalRecdPhidEtaM_Truth(0x0),
   fHEMCalRecdPhidEtaposEta(0x0),
   fHEMCalRecdPhidEtanegEta(0x0),
-  fHPhotonEdiff100HC(0x0)
+  fHPhotonEdiff100HC(0x0),
+  fHPhotonEdiff0HC(0x0),
+  fHPhotonEVsClsE(0x0)
 {
   // Constructor
 
@@ -135,13 +139,13 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   fHEventStat->GetXaxis()->SetBinLabel(8,"cls/>3-truth");
   fOutputList->Add(fHEventStat);
 
-  fHTrkEffParGenPt = new TH1F("fHTrkEffParGenPt", "Particle level truth p_{T} distribution of generated primary charged pions;p_{T}^{gen} (GeV/c)",15,0.15,3.1);
+  fHTrkEffParGenPt = new TH1F("fHTrkEffParGenPt", "Particle level truth p_{T} distribution of generated primary charged pions;p_{T}^{gen} (GeV/c)",500,0.0,50.0);
   fOutputList->Add(fHTrkEffParGenPt);
 
-  fHTrkEffDetGenPt = new TH1F("fHTrkEffDetGenPt", "Detector level truth p_{T} distribution of primary charged pions;p_{T}^{gen} (GeV/c)",15,0.15,3.1);
+  fHTrkEffDetGenPt = new TH1F("fHTrkEffDetGenPt", "Detector level truth p_{T} distribution of primary charged pions;p_{T}^{gen} (GeV/c)",500,0.0,50.0);
   fOutputList->Add(fHTrkEffDetGenPt);
 
-  fHTrkEffDetRecPt = new TH1F("fHTrkEffDetRecPt", "Reconstructed track p_{T} distribution of primary charged pions;p_{T}^{rec} (GeV/c)",15,0.15,3.1);
+  fHTrkEffDetRecPt = new TH1F("fHTrkEffDetRecPt", "Reconstructed track p_{T} distribution of primary charged pions;p_{T}^{rec} (GeV/c)",500,0.0,50.0);
   fOutputList->Add(fHTrkEffDetRecPt);
 
   fHScaleFactor = new TH1F("fHScaleFactor", "Scale factor distribution without hadronic correction;Scale factor",100,0,10);
@@ -188,6 +192,12 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
 
   fHPhotonEdiff100HC = new TH2F("fHPhotonEdiff100HC","Photon (E_{Truth}- E_{calc,100% HC})/E_{Truth} vs. E_{Truth}; E_{Truth} (GeV); (E_{Truth}- E_{calc,100% HC})/E_{Truth}",500,0,5,500,0,1.1);
   fOutputList->Add(fHPhotonEdiff100HC);
+
+  fHPhotonEdiff0HC = new TH2F("fHPhotonEdiff0HC","Photon (E_{Truth}- E_{calc,0% HC})/E_{Truth} vs. E_{Truth}; E_{Truth} (GeV); (E_{Truth}- E_{cls})/E_{Truth}",500,0,5,500,-5.1,1.1);
+  fOutputList->Add(fHPhotonEdiff0HC);
+
+  fHPhotonEVsClsE = new TH2F("fHPhotonEVsClsE","Cluster E vs. photon E_{Truth}; photon E_{Truth} (GeV); Cluster E (GeV)",500,0,5,500,0,5);
+  fOutputList->Add(fHPhotonEVsClsE);
 
   fTrackIndices = new TArrayI();
   fClusterIndices = new TArrayI();
@@ -414,17 +424,22 @@ void AliAnalysisTaskSOH::ProcessMc()
     if(!IsGoodMcParticle(vParticle, ipart)) continue;
     Int_t pdgCode = vParticle->PdgCode();
       
-    //tracking effciency
-    if(TMath::Abs(vParticle->Eta())<0.9 && TMath::Abs(pdgCode==211))
+   //tracking effciency
+    if(TMath::Abs(vParticle->Eta())<0.9)
     {
-      fHTrkEffParGenPt->Fill(vParticle->Pt());
+      if(TMath::Abs(pdgCode==211)) fHTrkEffParGenPt->Fill(vParticle->Pt());
       for(Int_t j=0; j<fTrackIndices->GetSize(); j++)
       {
         AliESDtrack *esdtrack = fESD->GetTrack(fTrackIndices->At(j));
         if(esdtrack && esdtrack->GetLabel()==ipart)
         {
-          fHTrkEffDetGenPt->Fill(vParticle->Pt());
-          fHTrkEffDetRecPt->Fill(esdtrack->Pt());
+	  if(TMath::Abs(pdgCode==211))
+	  {
+	    fHTrkEffDetGenPt->Fill(vParticle->Pt());
+	    fHTrkEffDetRecPt->Fill(esdtrack->Pt());
+	  }
+
+    //cluster E vs. truth photon energy
 	  for(Int_t k=0; k<fClusterIndices->GetSize(); k++)
 	  {
 	    AliESDCaloCluster *cluster = fESD->GetCaloCluster(fClusterIndices->At(k));
@@ -435,12 +450,16 @@ void AliAnalysisTaskSOH::ProcessMc()
 	    
 	    if(vParticle1->PdgCode()==22 && vParticle2 == vParticle)
 	    {
+	      fHPhotonEdiff0HC->Fill(vParticle1->E(), (vParticle1->E() - clsE)/vParticle1->E());
+	      fHPhotonEVsClsE->Fill(vParticle1->E(), clsE);
 	      if((clsE - esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle1->E(), 1);
 	      else  fHPhotonEdiff100HC->Fill(vParticle1->E(), (vParticle1->E() + esdtrack->E() - clsE)/vParticle1->E());
 	      continue;
 	    }
 	    if(vParticle2->PdgCode()==22 && vParticle1 == vParticle)
 	    {
+	      fHPhotonEdiff0HC->Fill(vParticle2->E(), (vParticle2->E() - clsE)/vParticle2->E());
+	      fHPhotonEVsClsE->Fill(vParticle2->E(), clsE);
 	      if((clsE-esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle2->E(), 1);
 	      else fHPhotonEdiff100HC->Fill(vParticle2->E(), (vParticle2->E() + esdtrack->E() - clsE)/vParticle2->E());
 	    }

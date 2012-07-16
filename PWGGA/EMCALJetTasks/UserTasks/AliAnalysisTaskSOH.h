@@ -67,12 +67,14 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   TH2F               *fHEMCalRecdPhidEtaM_Truth; //!same as above with negative truth charge matching
   TH2F               *fHEMCalRecdPhidEtaposEta;  //!same as above for positive eta
   TH2F               *fHEMCalRecdPhidEtanegEta;  //!same as above for negative eta
-  TH2F               *fHPhotonEdiff100HC;        //!(truth E - calculated E in 100% HC) vs. truth E with photon
- 
+  TH2F               *fHPhotonEdiff100HC;        //!(truth E - calculated E in 100% HC)/truth E vs. truth E with photon
+  TH2F               *fHPhotonEdiff0HC;          //!(truth E - cluster E)/truth E vs. truth E with photon
+  TH2F               *fHPhotonEVsClsE;           //!cluster E vs. truth photon E
+
 
   AliAnalysisTaskSOH(const AliAnalysisTaskSOH&); // not implemented
   AliAnalysisTaskSOH& operator=(const AliAnalysisTaskSOH&); // not implemented
   
-  ClassDef(AliAnalysisTaskSOH, 2); // Analysis task Saehanseul Oh
+  ClassDef(AliAnalysisTaskSOH, 3); // Analysis task Saehanseul Oh
 };
 #endif
