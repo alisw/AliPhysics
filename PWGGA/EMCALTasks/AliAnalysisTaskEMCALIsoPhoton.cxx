@@ -125,10 +125,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fOutputList->Add(fNClusHighClusE);
 
   const Int_t ndims =   fNDimensions;
-  Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000, nTrClDphi=200, nTrClDeta=100;
-  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nTrClDphi, nTrClDeta};
-  Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -0.1,-0.05};
-  Double_t xmax[] = { 100., 4., 190., 190., 190., 0.1, 0.05};
+  Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128;
+  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nTrClDphi, nTrClDeta,nClEta,nClPhi};
+  Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -0.1,-0.05, -0.7, 1.4};
+  Double_t xmax[] = { 100., 4., 190., 190., 190., 0.1, 0.05, 0.7, 3.192};
   fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, d#phi_{trk},d#eta_{trk}", ndims, bins, xmin, xmax);
   fOutputList->Add(fHnOutput);
 
@@ -261,6 +261,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     outputValues[4] = alliso-cecore-allisoue;
     outputValues[5] = c->GetTrackDx();
     outputValues[6] = c->GetTrackDz();
+    outputValues[7] = clsVec.Eta();
+    outputValues[8] = clsVec.Phi();
     fHnOutput->Fill(outputValues);
     if(c->E()>maxE)
       maxE = c->E();
