@@ -1,4 +1,4 @@
-AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet=1,Int_t centRange=0, Bool_t mcMode=kFALSE, Bool_t mcTruthMode=kFALSE,Bool_t onFly=kTRUE,Bool_t usePID=kFALSE,Double_t etaCut,Bool_t mcEtaCut){
+AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet=1,Int_t centRange=0, Bool_t mcMode=kFALSE, Bool_t mcTruthMode=kFALSE,Bool_t onFly=kTRUE,Bool_t usePID=kFALSE,Double_t etaCut,Bool_t mcEtaCut,const Char_t * addname){
    
   
   
@@ -58,6 +58,9 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t
       outname  += cent; 
    }
 
+   cutsname += addname;
+   taskname += addname;
+   outname  += addname;
    
    
    AliAnalysisTaskV0ForRAA *task = new AliAnalysisTaskV0ForRAA(taskname);
@@ -91,7 +94,7 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t
    task->SetPrimVertexZCut(10.0,kTRUE);
    task->SetCosOfPointingAngleK(0.99,1000.0);
    task->SetCosOfPointingAngleL(0.99,1000.0);
-   task->SetRapidityCutMother(kTRUE,0.6);
+   task->SetRapidityCutMother(kTRUE,0.5);
    task->SetDoEtaOfMCDaughtersCut(mcEtaCut,etaCut);
    
    //--- centrality ---//
