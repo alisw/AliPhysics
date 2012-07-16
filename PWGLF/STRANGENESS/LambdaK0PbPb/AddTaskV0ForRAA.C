@@ -113,7 +113,7 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t
 
    AliAnalysisDataContainer *coutput1 = 
       mgr->CreateContainer(outname, TList::Class(),
-			   AliAnalysisManager::kOutputContainer,Form("%s:foldername", AliAnalysisManager::GetCommonFileName()));
+			   AliAnalysisManager::kOutputContainer,Form("%s:simones", AliAnalysisManager::GetCommonFileName()));
    
    //--- connect containers ---//
    mgr->ConnectInput  (task,  0, cinput );
