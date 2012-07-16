@@ -649,7 +649,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   static Bool_t init=kFALSE;
   if (!init){
     init = kTRUE;  // way around for PROOF - to be investigated
-    MakeFitHistos();
+    UpdateFitHistos();
   }
   //
   for (Int_t id=0; id<336; id++){    
@@ -678,7 +678,7 @@ void AliTPCcalibLaser::MakeDistHisto(Int_t id){
     //
     //
     TH1F * hisdz = (TH1F*)fDeltaZ.At(id);
-    if (!hisdz) MakeFitHistos();
+    if (!hisdz) UpdateFitHistos();
     hisdz = (TH1F*)fDeltaZ.At(id);
     TH1F * hisP3 = (TH1F*)fDeltaP3.At(id);
     TH1F * hisP4 = (TH1F*)fDeltaP4.At(id);
@@ -2102,7 +2102,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       //==========================//
       // Fill Residual Histograms //
       //==========================//
-      if (!fHisNclIn) MakeFitHistos(); 
+      if (!fHisNclIn) UpdateFitHistos(); 
 
       TH2F *profy = (TH2F*)fDeltaYres.UncheckedAt(id);
       TH2F *profz = (TH2F*)fDeltaZres.UncheckedAt(id);
@@ -3373,7 +3373,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
   return 0;
 }
 
-void   AliTPCcalibLaser::MakeFitHistos(){
+void AliTPCcalibLaser::MakeFitHistos(){
   //
   // Make a fit histograms
   // 
@@ -3598,10 +3598,6 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     }
   }
 
-  SetBeamParameters(fBeamOffsetZOuter, fBeamSlopeZOuter, fBeamSectorOuter,2);
-  SetBeamParameters(fBeamOffsetZInner, fBeamSlopeZInner, fBeamSectorInner,3);
-  SetBeamParameters(fBeamOffsetYOuter, fBeamSlopeYOuter, fBeamSectorOuter,0);
-  SetBeamParameters(fBeamOffsetYInner, fBeamSlopeYInner, fBeamSectorInner,1);
   //
   // Make THnSparse
   //
@@ -3698,6 +3694,15 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     fHisLaserPad->GetAxis(iaxis)->SetName(axisName[iaxis]);
     fHisLaserTime->GetAxis(iaxis)->SetTitle(axisName[iaxis]);
   }
+}
+
+void AliTPCcalibLaser::UpdateFitHistos(){
+  //create the fit histos and set the beam parameters(needs OCDB access)
+  MakeFitHistos();
+  SetBeamParameters(fBeamOffsetZOuter, fBeamSlopeZOuter, fBeamSectorOuter,2);
+  SetBeamParameters(fBeamOffsetZInner, fBeamSlopeZInner, fBeamSectorInner,3);
+  SetBeamParameters(fBeamOffsetYOuter, fBeamSlopeYOuter, fBeamSectorOuter,0);
+  SetBeamParameters(fBeamOffsetYInner, fBeamSlopeYInner, fBeamSectorInner,1);
 }
 
 void AliTPCcalibLaser::MergeFitHistos(AliTPCcalibLaser * laser){

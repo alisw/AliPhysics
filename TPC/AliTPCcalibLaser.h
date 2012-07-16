@@ -58,6 +58,7 @@ public:
   Bool_t AcceptLaser(Int_t id);
   Float_t GetDistance(AliExternalTrackParam *track, AliTPCLaserTrack *ltrp);
   void   MakeFitHistos();
+  void   UpdateFitHistos();
   void   MergeFitHistos(AliTPCcalibLaser * add);
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
