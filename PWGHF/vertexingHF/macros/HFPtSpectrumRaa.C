@@ -41,7 +41,7 @@
 //      9. MinHypo  = minimum energy loss hypothesis (Default 1./3.)
 //      10. MaxHypo = maximum energy loss hypothesis (Default 3.0)
 //      11. MaxRb = maximum Raa(b) hypothesis (Default 6.0, won't do anything)
-//      11. kRaavsEP = flag to compute the Raa IN/OUT of plane, divides the reference by 2.0
+//      12. isRaavsEP = flag to compute the Raa IN/OUT of plane, divides the reference by 2.0
 //
 //  Complains to : Zaida Conesa del Valle
 //
@@ -50,6 +50,7 @@
 enum centrality{ kpp, k07half, k010, k1020, k020, k2040, k3050, k4060, k6080, k4080, k80100 };
 enum energy{ k276, k55 };
 enum BFDSubtrMethod { kfc, kNb };
+enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 
 Bool_t printout = false;
 Double_t NormPPUnc = 0.035;
@@ -65,6 +66,23 @@ Double_t ExtractFDSyst(Double_t total, Double_t fd) {
   return TMath::Sqrt( data2 );
 }
 
+//____________________________________________________________
+Int_t FindGraphBin(TGraphAsymmErrors *gr, Double_t pt)
+{
+  Int_t istart =0;
+  Int_t npoints = gr->GetN();
+  for(Int_t i=0; i<=npoints; i++){
+    Double_t x=0.,y=0.;
+    gr->GetPoint(i,x,y);
+    if ( TMath::Abs ( x - pt ) < 0.4 ) { 
+      istart = i; 
+      break;
+    }
+  }
+  return istart;
+}
+
+
 //
 //
 // R_AB =  [ ( dsigma/dpt )_AB / sigma_AB ]  / <TAB> *  ( dsigma/dpt )_pp
@@ -77,7 +95,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     Int_t decay=1,
 		     Double_t sigmaABCINT1B=54.e9,
 		     Int_t fdMethod = kNb, Int_t cc=kpp, Int_t Energy=k276,
-		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0, Bool_t kRaavsEP=kFALSE)
+		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0, 
+		     Int_t isRaavsEP=kPhiIntegrated, Bool_t isScaledAndExtrapRef=kFALSE)
 {
 
   gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
@@ -122,11 +141,22 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   // Reading the pp file 
   //
   TFile * ppf = new TFile(ppfile,"read");
-  TH1D * hSigmaPP = (TH1D*)ppf->Get("fhScaledData");
-  TGraphAsymmErrors * gSigmaPPSyst = (TGraphAsymmErrors*)ppf->Get("gScaledData");
+  TH1D * hSigmaPP;// = (TH1D*)ppf->Get("fhScaledData");
+  TGraphAsymmErrors * gSigmaPPSyst;// = (TGraphAsymmErrors*)ppf->Get("gScaledData");
   TGraphAsymmErrors * gSigmaPPSystData = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystData");
   TGraphAsymmErrors * gSigmaPPSystTheory = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystExtrap");
   TGraphAsymmErrors * gSigmaPPSystFeedDown = (TGraphAsymmErrors*)ppf->Get("gScaledDataSystFeedDown");
+  TH1I * hCombinedReferenceFlag;
+  TGraphAsymmErrors * gReferenceFdSyst;
+  if(isScaledAndExtrapRef){
+    hCombinedReferenceFlag = (TH1I*)ppf->Get("hCombinedReferenceFlag");
+    hSigmaPP = (TH1D*)ppf->Get("hReference");
+    gSigmaPPSyst = (TGraphAsymmErrors*)ppf->Get("gReferenceSyst");
+    gReferenceFdSyst = (TGraphAsymmErrors*)ppf->Get("gReferenceFdSyst");
+  } else { 
+    hSigmaPP = (TH1D*)ppf->Get("fhScaledData");
+    gSigmaPPSyst = (TGraphAsymmErrors*)ppf->Get("gScaledData");
+  }
   
   // Call the systematics uncertainty class for a given decay
   AliHFSystErr *systematicsPP = new AliHFSystErr();
@@ -164,11 +194,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   fhStatUncEffcFDAB_Raa->SetName("fhStatUncEffcFDAB_Raa");
   fhStatUncEffbFDAB_Raa->SetName("fhStatUncEffvFDAB_Raa");
 
+
   //
   // Call the systematics uncertainty class for a given decay
   AliHFSystErr *systematicsAB = new AliHFSystErr();
   systematicsAB->SetCollisionType(1);
-  if ( cc == k07half ) systematicsAB->SetCentrality("010");
+  if ( cc == k07half ) systematicsAB->SetCentrality("07half");
   else if ( cc == k010 ) systematicsAB->SetCentrality("010");
   else if ( cc == k1020 ) systematicsAB->SetCentrality("1020");
   else if ( cc == k020 ) systematicsAB->SetCentrality("020");
@@ -179,7 +210,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   else if ( cc == k4060 ) systematicsAB->SetCentrality("4060");
   else if ( cc == k6080 ) systematicsAB->SetCentrality("6080");
   else if ( cc == k4080 ) systematicsAB->SetCentrality("4080");
-  else if ( cc == k3050 ) systematicsAB->SetCentrality("4080");
+  else if ( cc == k3050 ) {
+    if (isRaavsEP == kPhiIntegrated) systematicsAB->SetCentrality("4080");
+    else if (isRaavsEP == kInPlane) systematicsAB->SetCentrality("3050InPlane");
+    else if (isRaavsEP == kOutOfPlane) systematicsAB->SetCentrality("3050OutOfPlane");
+  }
   else { 
     cout << " Systematics not yet implemented " << endl;
     return;
@@ -225,9 +260,9 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   Double_t *limitsHypo = new Double_t[nbinsHypo+1];
   for(Int_t i=1; i<=nbinsHypo+1; i++) limitsHypo[i-1]= i*4./800.;
   TH3D * hRABCharmVsRBeautyVsPt = new TH3D("hRABCharmVsRBeautyVsPt"," R_{AB}(c) vs Rb vs p_{T} Eloss hypothesis; p_{T} [GeV/c] ;  R_{AB}(b) ;  R_{AB}(c) ",nbins,limits,nbinsHypo,limitsHypo,nbinsHypo,limitsHypo);
-  TH2D *hRCharmVsRBeauty[nbins];
+  TH2D *hRCharmVsRBeauty[nbins+1];
   for(Int_t i=0; i<=nbins; i++) hRCharmVsRBeauty[i] = new TH2D(Form("hRCharmVsRBeauty_%i",i),Form("RAB(c) vs RAB(b) for pt bin %i ; R_{AB}(b) ;  R_{AB}(c)",i),nbinsHypo,limitsHypo,nbinsHypo,limitsHypo);
-  TH2D *hRCharmVsElossHypo[nbins];
+  TH2D *hRCharmVsElossHypo[nbins+1];
   for(Int_t i=0; i<=nbins; i++) hRCharmVsElossHypo[i] = new TH2D(Form("hRCharmVsElossHypo_%i",i),Form("RAB(c) vs ElossHypo for pt bin %i ; Eloss Hypothesis (c/b) ;  R_{AB}(c)",i),nbinsHypo,limitsHypo,nbinsHypo,limitsHypo);
   //
   TH1D *hRABEloss00= new TH1D("hRABEloss00","hRABEloss00",nbins,limits);
@@ -244,9 +279,9 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   TNtuple *ntupleRAB=0x0 ;
   if (fdMethod==kNb) {
-    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (Nb)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty");
+    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (Nb)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty:fc");
   } else if (fdMethod==kfc) {
-    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (fc)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:Rcb:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty:RABBeautyFDHigh:RABBeautyFDLow");
+    ntupleRAB = new TNtuple("ntupleRAB","ntupleRAB (fc)","pt:TAB:sigmaPP:sigmaAB:invyieldAB:invyieldABFDHigh:invyieldABFDLow:Rcb:RABCharm:RABCharmFDHigh:RABCharmFDLow:RABBeauty:RABBeautyFDHigh:RABBeautyFDLow:fc");
   }
   if(!ntupleRAB) printf("ERROR: Wrong method option");
 
@@ -269,11 +304,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   gRAB_DataSystematicsAB->SetNameTitle("gRAB_DataSystematicsAB","RAB Measurement AB (no FD, no Eloss, no PP data) systematics");
   TGraphAsymmErrors *gRAB_GlobalSystematics = new TGraphAsymmErrors(nbins+1);
   gRAB_GlobalSystematics->SetNameTitle("gRAB_GlobalSystematics","RAB Measurement global (data, FD, Eloss) systematics");
-  Double_t ElossMax[nbins], ElossMin[nbins];
+  Double_t ElossMax[nbins+1], ElossMin[nbins+1];
   for(Int_t i=0; i<=nbins; i++) { ElossMax[i]=0.; ElossMin[i]=1.; }
-  Double_t fcElossMax[nbins], fcElossMin[nbins];
+  Double_t fcElossMax[nbins+1], fcElossMin[nbins+1];
   for(Int_t i=0; i<=nbins; i++) { fcElossMax[i]=0.; fcElossMin[i]=1.; }
-  Double_t FDElossMax[nbins], FDElossMin[nbins];
+  Double_t FDElossMax[nbins+1], FDElossMin[nbins+1];
   for(Int_t i=0; i<=nbins; i++) { FDElossMax[i]=0.; FDElossMin[i]=1.; }
 
   TGraphAsymmErrors *gRAB_Norm = new TGraphAsymmErrors(1);
@@ -286,8 +321,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   // R_AB =  ( dN/dpt )_AB  / <Ncoll_AB> *  ( dN/dpt )_pp ; <Ncoll> = <Tab> * sigma_NN^inel
   // R_AB =  [ ( dsigma/dpt )_AB / sigma_AB ]  / <TAB> *  ( dsigma/dpt )_pp
   //
-  Int_t istartPPfd=0, istartABfd=0, istartPPextr=0;
-  Double_t xPP=0., yPP=0., xAB=0., yAB=0.;
+  Int_t istartPPfd=0, istartPPsyst=0, istartABfd=0, istartPPextr=0;
   Double_t yPPh=0., yPPl=0., yABh=0., yABl=0.;
   Double_t RaaCharm =0., RaaBeauty=0.;
   Double_t RaaCharmFDhigh = 0., RaaCharmFDlow = 0.;
@@ -297,18 +331,20 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   // Search the central value of the energy loss hypothesis Rb = Rc (bin)
   //
-  Double_t ElossCentral[nbins];
+  Double_t ElossCentral[nbins+1];
   for(Int_t i=0; i<=nbins; i++) { ElossCentral[i]=0.; }
   //
   for(Int_t ientry=0; ientry<=entries; ientry++){
 
     nSigmaAB->GetEntry(ientry);
+    //    cout << " pt="<< pt<<" sigma-AB="<<sigmaAB<<endl;
     if ( !(sigmaAB>0.) ) continue;
 
     // Compute RAB and the statistical uncertainty
     Int_t hppbin = hSigmaPP->FindBin( pt );
     Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
-    if (kRaavsEP) sigmapp = 0.5*sigmapp;
+    //    cout << " pt="<< pt<<", sigma-pp="<< sigmapp<<endl;
+    if (isRaavsEP>0.) sigmapp = 0.5*sigmapp;
     if ( !(sigmapp>0.) ) continue;
     RaaCharm =  ( sigmaAB / sigmaABCINT1B ) / ((Tab*1e3) * sigmapp *1e-12 ) ;
     if (fdMethod==kNb) {
@@ -330,11 +366,10 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       Int_t hABbin = hSigmaAB->FindBin( pt );
       Double_t DeltaIni = TMath::Abs( ElossCentral[ hABbin ] - 1.0 );
       Double_t DeltaV = TMath::Abs( ElossHypo - 1.0 );
-      cout << " pt " << pt << " ECentral " << ElossCentral[ hABbin ] << " Ehypo "<< ElossHypo ;
+      //      cout << " pt " << pt << " ECentral " << ElossCentral[ hABbin ] << " Ehypo "<< ElossHypo ;
       if ( DeltaV < DeltaIni ) ElossCentral[ hABbin ] = ElossHypo;
-      cout << " final ECentral " << ElossCentral[ hABbin ] << endl;
+      //      cout << " final ECentral " << ElossCentral[ hABbin ] << endl;
     }
-
   }
   //
   // Calculation of the Raa and its uncertainties
@@ -345,40 +380,45 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     if ( !(sigmaAB>0.) ) continue;
     //    if ( pt<2 || pt>16) continue;
 
+
     // Compute RAB and the statistical uncertainty
     Int_t hppbin = hSigmaPP->FindBin( pt );
     Double_t sigmapp = hSigmaPP->GetBinContent( hppbin );
-    if (kRaavsEP) sigmapp = 0.5*sigmapp;
+    if (isRaavsEP>0.) sigmapp = 0.5*sigmapp;
     if ( !(sigmapp>0.) ) continue;
     RaaCharm =  ( sigmaAB / sigmaABCINT1B ) / ((Tab*1e3) * sigmapp *1e-12 );
+
+    // Flag to know if it is an scaled or extrapolated point of the pp reference
+    Bool_t isExtrapolatedBin = kFALSE;
+    if(isScaledAndExtrapRef) isExtrapolatedBin = hCombinedReferenceFlag->GetBinContent( hppbin );
+    istartPPsyst = -1;
+    istartPPsyst = FindGraphBin(gSigmaPPSyst,pt);
 
     //
     // FONLL Feed-Down systematics
     //
-    Int_t n = gSigmaPPSystFeedDown->GetN();
-    for(Int_t j=1; j<=n; j++){
-      gSigmaPPSystFeedDown->GetPoint(j,xPP,yPP);
-      if ( TMath::Abs ( xPP -pt ) < 0.4 ) { 
-	istartPPfd = j; 
-	break;
-      }
-    }
-    n = gSigmaABSystFeedDown->GetN();
-    for(Int_t j=1; j<=n; j++){
-      gSigmaABSystFeedDown->GetPoint(j,xAB,yAB);
-      if ( TMath::Abs ( xAB -pt ) < 0.4 ) { 
-	istartABfd = j; 
-	break;
-      }
-    }
+    istartPPfd = -1;
+    if(!isExtrapolatedBin) istartPPfd = FindGraphBin(gSigmaPPSystFeedDown,pt);
+    istartABfd = -1;
+    istartABfd = FindGraphBin(gSigmaABSystFeedDown,pt);
+
     //      cout << " Starting bin for pp is "<< istartPPfd <<", for AA is "<<istartABfd << endl;
-    yPPh = gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd);
-    if (kRaavsEP) yPPh = yPPh*0.5;
-    yPPl = gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd);
-    if (kRaavsEP) yPPl = yPPl*0.5;
+    if(isExtrapolatedBin){
+      Int_t ibinfd = FindGraphBin(gReferenceFdSyst,pt);
+      yPPh = gReferenceFdSyst->GetErrorYhigh(ibinfd);
+      yPPl = gReferenceFdSyst->GetErrorYlow(ibinfd);
+    } else { 
+      yPPh = gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd);
+      yPPl = gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd);
+    }
+    if (isRaavsEP>0.) {
+      yPPh = yPPh*0.5;
+      yPPl = yPPl*0.5;
+    }
+
     yABh = gSigmaABSystFeedDown->GetErrorYhigh(istartABfd);
     yABl = gSigmaABSystFeedDown->GetErrorYlow(istartABfd);
-    
+
 
     RaaCharmFDhigh = ( sigmaABMax / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp+yPPh) *1e-12 ) ;
     RaaCharmFDlow =  ( sigmaABMin / sigmaABCINT1B ) / ((Tab*1e3) * (sigmapp-yPPl) *1e-12 ) ;
@@ -391,7 +431,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       RaaBeautyFDhigh = Rb ;
       ntupleRAB->Fill( pt, Tab*1e3, sigmapp*1e-12, sigmaAB*1e-12, sigmaAB/sigmaABCINT1B,
 		       sigmaABMax / sigmaABCINT1B, sigmaABMin / sigmaABCINT1B,
-		       RaaCharm, RaaCharmFDhigh, RaaCharmFDlow, RaaBeauty);
+		       RaaCharm, RaaCharmFDhigh, RaaCharmFDlow, RaaBeauty, fcAB );
     }
     else if (fdMethod==kfc) {
       RaaBeauty = ( RaaCharm / Rcb ) ;
@@ -400,7 +440,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       hRABvsRcb->Fill( pt, RaaCharm, RaaBeauty );
       ntupleRAB->Fill( pt, Tab*1e3, sigmapp*1e-12, sigmaAB*1e-12, sigmaAB/sigmaABCINT1B,
 		       sigmaABMax / sigmaABCINT1B, sigmaABMin / sigmaABCINT1B,
-		       Rcb, RaaCharm, RaaCharmFDhigh, RaaCharmFDlow, RaaBeauty, RaaBeautyFDhigh, RaaBeautyFDlow);
+		       Rcb, RaaCharm, RaaCharmFDhigh, RaaCharmFDlow, RaaBeauty, RaaBeautyFDhigh, RaaBeautyFDlow, fcAB );
     }
     hRABvsRb->Fill( pt, RaaCharm, RaaBeauty );
     hRABvsRbFDlow->Fill( pt, RaaCharmFDlow, RaaBeautyFDlow );
@@ -476,7 +516,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       // Data stat uncertainty
       //
       Double_t sigmappStat = hSigmaPP->GetBinError( hppbin );
-      if (kRaavsEP) sigmappStat = sigmappStat*0.5;
+      if (isRaavsEP>0.) sigmappStat = sigmappStat*0.5;
       Int_t hRABbin = hRABvsPt->FindBin( pt );
       Double_t stat = RaaCharm * TMath::Sqrt( (statUncSigmaAB/sigmaAB)*(statUncSigmaAB/sigmaAB) + 
 					      (sigmappStat/sigmapp)*(sigmappStat/sigmapp) ) ;
@@ -510,29 +550,41 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       // Data syst: a) Syst in p-p 
       //
       Double_t ptwidth = hSigmaAB->GetBinWidth(hABbin) / 2. ;
-      n = gSigmaPPSystTheory->GetN();
-      for(Int_t j=1; j<=n; j++){
-	gSigmaPPSystTheory->GetPoint(j,xPP,yPP);
-	if ( TMath::Abs ( xPP -pt ) < 0.4 ) { 
-	  istartPPextr = j; 
-	  break;
+      istartPPextr = -1;
+      if(!isExtrapolatedBin) istartPPextr = FindGraphBin(gSigmaPPSystTheory,pt);
+
+      Double_t dataPPUp=0., dataPPLow=0.;
+      if(isExtrapolatedBin) {
+	dataPPUp = gSigmaPPSyst->GetErrorYhigh(istartPPsyst);
+	dataPPLow = gSigmaPPSyst->GetErrorYlow(istartPPsyst);
+	systPPUp = dataPPUp;
+	systPPLow = dataPPLow;
+      } else { 
+	dataPPUp = ExtractFDSyst( gSigmaPPSystData->GetErrorYhigh(istartPPextr), gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd) );
+	dataPPLow = ExtractFDSyst( gSigmaPPSystData->GetErrorYlow(istartPPextr), gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd) );
+	systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
+	systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
+      }
+      if (isRaavsEP>0.) {
+	dataPPUp = dataPPUp*0.5;
+	dataPPLow = dataPPLow*0.5;
+	if(isExtrapolatedBin) {
+	  systPPUp = dataPPUp;
+	  systPPLow = dataPPLow;
+	} else {  
+	  systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + 0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
+	  systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + 0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
 	}
       }
 
-      Double_t dataPPUp = ExtractFDSyst( gSigmaPPSystData->GetErrorYhigh(istartPPextr), gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd) );
-      if (kRaavsEP) dataPPUp = ExtractFDSyst( 0.5*gSigmaPPSystData->GetErrorYhigh(istartPPextr), 0.5*gSigmaPPSystFeedDown->GetErrorYhigh(istartPPfd) );
-      systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
-      if (kRaavsEP) systPPUp = TMath::Sqrt( dataPPUp*dataPPUp + 0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)*0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr) );
-  
-      Double_t dataPPLow = ExtractFDSyst( gSigmaPPSystData->GetErrorYlow(istartPPextr), gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd) );
-      if (kRaavsEP) dataPPLow = ExtractFDSyst( 0.5*gSigmaPPSystData->GetErrorYlow(istartPPextr), 0.5*gSigmaPPSystFeedDown->GetErrorYlow(istartPPfd) );
-      systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
-      if (kRaavsEP) systPPLow = TMath::Sqrt( dataPPLow*dataPPLow + 0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr)*0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr) );
-
 
       if(printout) {
-	if (kRaavsEP) cout << " pt : "<< pt<<" Syst-pp-data "<< dataPPUp/sigmapp << "%, extr unc + "<< 0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< 0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %"<<endl;
-	else cout << " pt : "<< pt<<" Syst-pp-data "<< dataPPUp/sigmapp << "%, extr unc + "<< gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %"<<endl;
+	cout << " pt : "<< pt<<" Syst-pp-data "<< dataPPUp/sigmapp << "%, ";
+	if(!isExtrapolatedBin){
+	  if (isRaavsEP>0.) cout <<" extr unc + "<< 0.5*gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< 0.5*gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %";
+	  else cout <<" extr unc + "<< gSigmaPPSystTheory->GetErrorYhigh(istartPPextr)/sigmapp <<" - "<< gSigmaPPSystTheory->GetErrorYlow(istartPPextr)/sigmapp <<" %";
+	}
+	cout << endl;
       }
 
       //
@@ -550,11 +602,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       // Data syst : c) combine pp & PbPb
       //
       systLow = sigmapp>0. ? 
-	RaaCharm * TMath::Sqrt( (systABLow/sigmaAB)*(systABLow/sigmaAB) + (systPPUp/sigmapp)*(systPPUp/sigmapp) )//+ (TabSyst/Tab)*(TabSyst/Tab) )
+	RaaCharm * TMath::Sqrt( (systABLow/sigmaAB)*(systABLow/sigmaAB) + (systPPUp/sigmapp)*(systPPUp/sigmapp) )
 	: 0.;
 
       systUp = sigmapp>0. ? 
-	RaaCharm * TMath::Sqrt( (systABUp/sigmaAB)*(systABUp/sigmaAB) + (systPPLow/sigmapp)*(systPPLow/sigmapp) )//+ (TabSyst/Tab)*(TabSyst/Tab) )
+	RaaCharm * TMath::Sqrt( (systABUp/sigmaAB)*(systABUp/sigmaAB) + (systPPLow/sigmapp)*(systPPLow/sigmapp) )
 	: 0.;
       if ( RaaCharm==0 ) { systPPUp =0.; systPPLow =0.; }
       
@@ -839,7 +891,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   RaaPlot->SetBottomMargin(0.1);
   RaaPlot->SetTickx();
   RaaPlot->SetTicky();
-  TH2D *hRaaCanvas = new TH2D("hRaaCanvas"," R_{AB}(c) vs p_{T} (no Eloss hypothesis); p_{t} [GeV/c] ; R_{AA} prompt D",25,0.,25.,100,0.,2.0);
+  TH2D *hRaaCanvas = new TH2D("hRaaCanvas"," R_{AB}(c) vs p_{T} (no Eloss hypothesis); p_{t} [GeV/c] ; R_{AA} prompt D",40,0.,40.,100,0.,2.0);
   hRaaCanvas->GetXaxis()->SetTitleSize(0.05);
   hRaaCanvas->GetXaxis()->SetTitleOffset(0.9);
   hRaaCanvas->GetYaxis()->SetTitleSize(0.05);
@@ -848,7 +900,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   gRAB_Norm->SetFillStyle(1001);
   gRAB_Norm->SetFillColor(kGray+2);
   gRAB_Norm->Draw("2");
-  TLine *line = new TLine(0.0172415,1.0,25.,1.0);
+  TLine *line = new TLine(0.0172415,1.0,40.,1.0);
   line->SetLineStyle(2);
   line->Draw();
   hRABvsPt->SetMarkerColor(kBlue);
@@ -1037,6 +1089,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   gRAB_Norm->Write();
   gRAB_FeedDownSystematicsElossHypothesis->Write();
   gRAB_GlobalSystematics->Write();
+  if(isScaledAndExtrapRef) hCombinedReferenceFlag->Write();
 
   out->Write();
 
@@ -1068,6 +1121,9 @@ Bool_t PbPbDataSyst(AliHFSystErr *syst, Double_t pt, Int_t cc, Double_t &dataSys
 
   dataSystUp = TMath::Sqrt(errUp);
   dataSystDown = TMath::Sqrt(errDown);
+
+  /// << ------------------------- PATCH FOR 2011 LHC11h data ------------------------------
+  dataSystUp = dataSystDown;
 
   return isOk;
 }

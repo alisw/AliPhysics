@@ -1112,7 +1112,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
       fhFeedDownEffpt->GetBinContent(ibin) / fhDirectEffpt->GetBinContent(ibin) : 1.0 ;
 
     //   fc = 1 / ( 1 + (eff_b/eff_c)*(N_b/N_c) ) 
-    if( TMath::Abs(effRatio - 1.0)<0.01 || TMath::Abs(theoryRatio - 1.0)<0.01 ) {
+    if( TMath::Abs(effRatio - 1.0)<0.0001 || TMath::Abs(theoryRatio - 1.0)<0.0001 ) {
       correction = 1.0;
       correctionExtremeA = 1.0;
       correctionExtremeB = 1.0;
@@ -1161,7 +1161,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
     //
     // Estimate how the result varies vs charm/beauty Eloss hypothesis
     //
-    if ( TMath::Abs(correction-1.0)>0.0001 && fPbPbElossHypothesis){
+    if ( correction>1.0e-16 && fPbPbElossHypothesis){
       // Loop over the Eloss hypothesis
       //      Int_t rbin=0;
       for (Float_t rval=0.0025; rval<4.0; rval+=0.005){

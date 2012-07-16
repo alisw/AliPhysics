@@ -40,13 +40,15 @@
 
 enum centrality{ kpp7, kpp276, k07half, k010, k1020, k020, k2040, k3050, k4060, k6080, k4080, k80100 };
 enum BFDSubtrMethod { knone, kfc, kNb };
+enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
 		    const char *recofilename="Reconstructed.root", const char *recohistoname="hRawSpectrumD0",
 		    const char *outfilename="HFPtSpectrum.root",
 		    Int_t fdMethod=kNb, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[nb]
-		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false, Bool_t kRaavsEP=kFALSE) {
+		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false, 
+		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="") {
 
 
   gROOT->Macro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
@@ -188,6 +190,27 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   hRECpt->SetNameTitle("hRECpt","Reconstructed spectra");
 
   //
+  // Read the file of the EP resolution correction
+  TFile *EPf;
+  TH1D *hEPresolCorr;
+  if(isRaavsEP>0.){
+    EPf = new TFile(epResolfile,"read");
+    if(isRaavsEP==kInPlane) hEPresolCorr = (TH1D*)EPf->Get("hCorrEPresol_InPlane");
+    else if(isRaavsEP==kOutOfPlane) hEPresolCorr = (TH1D*)EPf->Get("hCorrEPresol_OutOfPlane");
+    for(Int_t i=1; i<=hRECpt->GetNbinsX(); i++) {
+      Double_t value = hRECpt->GetBinContent(i);
+      Double_t error = hRECpt->GetBinError(i);
+      Double_t pt = hRECpt->GetBinCenter(i);
+      Int_t epbin = hEPresolCorr->FindBin( pt );
+      Double_t epcorr = hEPresolCorr->GetBinContent( epbin );
+      value = value*epcorr;
+      error = error*epcorr;
+      hRECpt->SetBinContent(i,value);
+      hRECpt->SetBinError(i,error);
+    }
+  }
+
+  //
   // Define the output histograms
   //
   TFile *out = new TFile(outfilename,"recreate");
@@ -257,7 +280,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   spectra->SetLuminosity(lumi,lumiUnc);
   Double_t effTrig = 1.0;
   spectra->SetTriggerEfficiency(effTrig,0.);
-  if(kRaavsEP) spectra->SetIsEventPlaneAnalysis(kTRUE);
+  if(isRaavsEP>0.) spectra->SetIsEventPlaneAnalysis(kTRUE);
 
   // Set the global uncertainties on the efficiencies (in percent)
   Double_t globalEffUnc = 0.15; 
@@ -296,8 +319,9 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       systematics->SetIsPbPb2010EnergyScan(true);
     }
     else if ( cc == k3050 ) {
-      cout<<endl<<" Beware, you're using the systematics of the 40-80% of 2010 data !! FIX ME !!"<<endl<<endl; 
-      systematics->SetCentrality("4080");
+      if (isRaavsEP == kPhiIntegrated) systematics->SetCentrality("4080");
+      else if (isRaavsEP == kInPlane) systematics->SetCentrality("3050InPlane");
+      else if (isRaavsEP == kOutOfPlane) systematics->SetCentrality("3050OutOfPlane");
     }
     else if ( cc == k4060 )  systematics->SetCentrality("4060");
     else if ( cc == k6080 )  systematics->SetCentrality("6080");
