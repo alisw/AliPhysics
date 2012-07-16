@@ -36,6 +36,7 @@
 #include "AliLog.h"
 
 #include "AliTRDPIDReference.h"
+#include "AliTRDPIDResponseObject.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDtrapConfig.h"
 #include "AliTRDtrapConfigHandler.h"
@@ -1543,23 +1544,27 @@ AliTRDPIDResponse *AliTRDcalibDB::GetPIDResponse(AliTRDPIDResponse::ETRDPIDMetho
     fPIDResponse = new AliTRDPIDResponse;
 
     // Load Reference Histos from OCDB
-    fPIDResponse->SetPIDmethod(method);
-    const TObjArray *references = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDPIDLQ1D));
+    if(method == AliTRDPIDResponse::kLQ1D){
+      fPIDResponse->SetPIDmethod(method);
+      const TObjArray *references = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDPIDLQ1D));
 
-    TIter refs(references);
-    TObject *obj = NULL;
-    AliTRDPIDReference *ref = NULL;
-    Bool_t hasReference = kFALSE;
-    while ((obj = refs())){
-      if ((ref = dynamic_cast<AliTRDPIDReference *>(obj))){
-        //fPIDResponse->Load(ref);
-        hasReference = kTRUE;
-        break;
+      TIter refs(references);
+      TObject *obj = NULL;
+      AliTRDPIDReference *ref = NULL;
+      Bool_t hasReference = kFALSE;
+      while ((obj = refs())){
+        if ((ref = dynamic_cast<AliTRDPIDReference *>(obj))){
+          AliTRDPIDResponseObject *ro = new AliTRDPIDResponseObject;
+          ro->SetPIDReference(ref);
+          fPIDResponse->SetPIDResponseObject(ro);
+          hasReference = kTRUE;
+          break;
+        }
       }
-    }
 
-    if (!hasReference) {
-      AliError("Reference histograms not found in the OCDB");
+      if (!hasReference) {
+        AliError("Reference histograms not found in the OCDB");
+      }
     }
 
   }
