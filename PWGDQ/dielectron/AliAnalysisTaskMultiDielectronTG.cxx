@@ -100,7 +100,9 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG() :
   fdconvphiv(acos(-1.0)),
   fdop(0),
   fbz(0),
-  fdv0mixing(kTRUE)
+  fdv0mixing(kTRUE),
+  fBGRejUnlike(kFALSE),
+  fBGRejLike(kTRUE)
 {
   //
   // Constructor
@@ -141,7 +143,9 @@ AliAnalysisTaskMultiDielectronTG::AliAnalysisTaskMultiDielectronTG(const char *n
   fdconvphiv(acos(-1.0)),
   fdop(0),
   fbz(0),
-  fdv0mixing(kTRUE)
+  fdv0mixing(kTRUE),
+  fBGRejUnlike(kFALSE),
+  fBGRejLike(kTRUE)
 {
   //
   // Constructor
@@ -637,7 +641,9 @@ void AliAnalysisTaskMultiDielectronTG::CheckGhostPairs(vector<AliDielectronSingl
     for(int i1=0; i1<(int)e1.size(); i1++){
       reject = false;
       for(int i2=i1+1; i2<(int)e1.size(); i2++){
-        if( fabs(e1[i1]->Phi() - e1[i2]->Phi())<0.01 ){
+        if( fabs(e1[i1]->Phi() - e1[i2]->Phi())<0.01 && 
+	    fabs(e1[i1]->Eta() - e1[i2]->Eta())<0.005
+	    ){
           reject = true;
           e1[i2]->SetGstFlag(0);
         }
@@ -645,6 +651,25 @@ void AliAnalysisTaskMultiDielectronTG::CheckGhostPairs(vector<AliDielectronSingl
       if(reject==true)e1[i1]->SetGstFlag(0);
     }
   }
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskMultiDielectronTG::CheckGhost(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2)
+{
+  ////// To be sure whether there are no ghost pairs in h event mixing 
+
+  if(e1.size()>0 && e2.size()>0){
+    for(int i1=0; i1<(int)e1.size(); i1++){
+      for(int i2=0; i2<(int)e2.size(); i2++){
+        if( fabs(e1[i1]->Phi() - e2[i2]->Phi())<0.01 && 
+	    fabs(e1[i1]->Eta() - e2[i2]->Eta())<0.005
+	    ){
+	  return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 //_________________________________________________________________________________
@@ -753,7 +778,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
     nmixed = 0;
     for(int ibuf=0;(nmixed<fgkNMix);ibuf++) {
       int ntry = 0;
-      while(ntry<fgkMAXTRY) {
+      while((fBGRejUnlike && CheckGhost(ve1, fvem[ibuf][idie][izbin][icent][irp])) &&  ntry<fgkMAXTRY) {
         ReshuffleBuffer(fvem[ibuf][idie][izbin][icent][irp],fpoolm[idie][izbin][icent][irp]);
         ntry++;
       }
@@ -772,7 +797,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
     nmixed = 0;
     for(int ibuf=0;(nmixed<fgkNMix);ibuf++) {
       int ntry = 0;
-      while(ntry<fgkMAXTRY) {
+      while((fBGRejUnlike && CheckGhost(ve2, fvep[ibuf][idie][izbin][icent][irp])) &&  ntry<fgkMAXTRY) {
         ReshuffleBuffer(fvep[ibuf][idie][izbin][icent][irp],fpoolp[idie][izbin][icent][irp]);
         ntry++;
       }
@@ -792,7 +817,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
     nmixed = 0;
     for(int ibuf=0;(nmixed<fgkNMix);ibuf++) {
       int ntry = 0;
-      while(ntry<fgkMAXTRY) {
+      while((fBGRejLike && CheckGhost(ve1, fvep[ibuf][idie][izbin][icent][irp])) &&  ntry<fgkMAXTRY) {
         ReshuffleBuffer(fvep[ibuf][idie][izbin][icent][irp],fpoolp[idie][izbin][icent][irp]);
         ntry++;
       }
@@ -812,7 +837,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcPair(vector<AliDielectronSingleTG*> v
     nmixed = 0;
     for(int ibuf=0;(nmixed<fgkNMix);ibuf++) {
       int ntry = 0;
-      while(ntry<fgkMAXTRY) {
+      while((fBGRejLike && CheckGhost(ve2, fvem[ibuf][idie][izbin][icent][irp])) &&  ntry<fgkMAXTRY) {
         ReshuffleBuffer(fvem[ibuf][idie][izbin][icent][irp],fpoolm[idie][izbin][icent][irp]);
         ntry++;
       }
@@ -960,6 +985,7 @@ void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep,
     values[AliDielectronVarManager::kPhivPair] = dphiv;
     values[AliDielectronVarManager::kPhi]  = dphipair;
     values[AliDielectronVarManager::kOpeningAngle]  = dcos;
+    values[AliDielectronVarManager::kCosPointingAngle]  = TMath::Abs(TMath::ATan2(TMath::Sin(iep->Phi()-iem->Phi()),TMath::Cos(iep->Phi()-iem->Phi())));
     fHistos->FillClass(className1, AliDielectronVarManager::kNMaxValues, values);
   }
 
@@ -980,6 +1006,7 @@ void AliAnalysisTaskMultiDielectronTG::FillPair(AliDielectronSingleTG *iep,
     values[AliDielectronVarManager::kPhivPair] = dphivpair;
     values[AliDielectronVarManager::kPhi]  = dv0phipair;
     values[AliDielectronVarManager::kOpeningAngle]  = dopeningangle;
+    values[AliDielectronVarManager::kCosPointingAngle]  = TMath::Abs(TMath::ATan2(TMath::Sin(iep->Phi()-iem->Phi()),TMath::Cos(iep->Phi()-iem->Phi())));
     fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
   }
 
@@ -1164,7 +1191,7 @@ void AliAnalysisTaskMultiDielectronTG::RejectPairs(vector<AliDielectronSingleTG*
       }
     }
   }
-
+  /////// this is really necessary??????
   if(e1.size()>0){
     for(int i1=0; i1<(int)e1.size(); i1++){
       for(int i2=i1+1; i2<(int)e1.size(); i2++){

@@ -319,6 +319,7 @@ class LMEECutLib {
     case kPbPb2011Phiv:
       pairCuts =new AliDielectronVarCuts("Phiv Cuts","Phiv<2.0rad"); 
       pairCuts->AddCut(AliDielectronVarManager::kPhivPair, 2.0, TMath::ACos(-1.0), kTRUE); //exclude
+      pairCuts->AddCut(AliDielectronVarManager::kM, 0, 0.15,kTRUE);          ///exclude
       break;
     default: cout << "No Pair Cuts defined " << endl;                                                                        
     }                                                                                                                       
@@ -341,8 +342,9 @@ class LMEECutLib {
       pairCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0. , 0.035);
       break;
     case kPbPb2011Phiv:
-      pairCuts =new AliDielectronVarCuts("Phiv Cuts","Phiv<2.0rad"); 
+      pairCuts =new AliDielectronVarCuts("Phiv Cut and Mee Cut","Phiv<2.0rad"); 
       pairCuts->AddCut(AliDielectronVarManager::kPhivPair, 2.0, TMath::ACos(-1.0));
+      pairCuts->AddCut(AliDielectronVarManager::kM, 0, 0.15);          
       break;
     default: cout << "No Pair Cuts defined " << endl;                                                                        
     }                                                                                                                       

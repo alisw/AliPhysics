@@ -40,7 +40,7 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011SemiCent1(Bool_t runRejection=kFALSE, 
 
   LMEECutLib* cutlib = new LMEECutLib();
   cutlib->SetMCFlag(hasMC);
-  AliAnalysisTaskMultiDielectronTG *task=new AliAnalysisTaskMultiDielectronTG("MultiDiEData");
+  AliAnalysisTaskMultiDielectronTG *task=new AliAnalysisTaskMultiDielectronTG("MultiDiEDataSemiCent1");
 
   ////default cutter defined in ConfigTakuLMEEPbPb2011.C
   Int_t PairCutTypeDef[20]={0,
@@ -68,6 +68,7 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011SemiCent1(Bool_t runRejection=kFALSE, 
   task->RejectOP(0.035);
   task->SetPairCuts(PairCutType);
   task->EnableV0mixing(kFALSE);
+  task->SetRejBGPairs(kFALSE, kTRUE);
 
   //load dielectron configuration file
   //add dielectron analysis with different cuts to the task
@@ -122,13 +123,13 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011SemiCent1(Bool_t runRejection=kFALSE, 
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("taku_LMEEPbPb2011_tree",
+    mgr->CreateContainer("taku_LMEEPbPb2011_semicent1_tree",
 	TTree::Class(),
 	AliAnalysisManager::kExchangeContainer,
 	"taku_LMEEPbPb2011_semicent1_default.root");
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("taku_LMEEPbPb2011_out",
+    mgr->CreateContainer("taku_LMEEPbPb2011_semicent1_out",
 	TList::Class(),
 	AliAnalysisManager::kOutputContainer,
 	"taku_LMEEPbPb2011_semicent1_out.root");
@@ -136,14 +137,14 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011SemiCent1(Bool_t runRejection=kFALSE, 
   AliAnalysisDataContainer *cOutputHist2 = 0x0;
   if (enableCF) {
     cOutputHist2 = 
-      mgr->CreateContainer("taku_LMEEPbPb2011_CF",
+      mgr->CreateContainer("taku_LMEEPbPb2011_semicent1_CF",
 	  TList::Class(),
 	  AliAnalysisManager::kOutputContainer,
 	  "taku_LMEEPbPb2011_semicent1_out.root");
 
   }
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("taku_EventStatPbPb2011",
+    mgr->CreateContainer("taku_EventStatPbPb2011_semicent1",
 	TH1D::Class(),
 	AliAnalysisManager::kOutputContainer,
 	"taku_LMEEPbPb2011_semicent1_out.root");

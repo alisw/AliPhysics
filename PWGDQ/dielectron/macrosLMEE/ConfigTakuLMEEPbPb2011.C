@@ -381,7 +381,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  400,0.0,20.,100,-5.,5.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro,kTRUE);
 
   histos->UserHistogram("Track","Eta_Phi","Eta Phi Map; Eta; Phi;#tracks",
-	  200,-2,2,200,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
+			200,-1,1,200,0,6.3,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
   histos->UserHistogram("Track","dXY","dXY;dXY [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
 
@@ -416,7 +416,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  400,0.0,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,kTRUE);
 
   histos->UserHistogram("Pre","Eta_Phi","Eta Phi Map; Eta; Phi;#tracks",
-	  200,-2,2,200,0,3.15,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
+			200,-1,1,200,0,6.3,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
   histos->UserHistogram("Pre","dXY","dXY;dXY [cm];#tracks",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
 
@@ -455,6 +455,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("MyPair","InvMyMassR","R vs Inv.MyMass;Inv. MyMass [GeV]; R[cm]",
 			1000,0.0,5.0,200,0.,30,AliDielectronVarManager::kM,AliDielectronVarManager::kR);
 
+  histos->UserHistogram("MyPair","InvMyMassdPhi","dPhi of pairs vs Inv.MyMass;Inv. MyMass [GeV]; dPhi[rad]",
+			1000,0.0,5.0,200,0.,3.1415,AliDielectronVarManager::kM,AliDielectronVarManager::kCosPointingAngle);
+
   histos->UserHistogram("MyPair","PhivR","R vs Phiv; R[cm]; Phiv[rad]",
 			200,0.,30, 200,0,4, AliDielectronVarManager::kR,AliDielectronVarManager::kPsiPair);
   
@@ -475,6 +478,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 			1000,0.0,5.0,200,0.,30,AliDielectronVarManager::kM,AliDielectronVarManager::kR);
   histos->UserHistogram("MyPairV0","PsiPairR","R vs PsiPair; R[cm]; PsiPair[rad]",
 			200,0.,30, 200,0,4, AliDielectronVarManager::kR,AliDielectronVarManager::kPsiPair);
+  histos->UserHistogram("MyPairV0","InvV0MyMassdPhi","dPhi of pairs vs Inv.MyMass;Inv. MyMass [GeV]; dPhi[rad]",
+			1000,0.0,5.0,200,0.,3.1415,AliDielectronVarManager::kM,AliDielectronVarManager::kCosPointingAngle);
   
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
