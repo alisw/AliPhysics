@@ -42,7 +42,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
 //AliCFContainer *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -59,9 +59,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	       
 	gSystem->Sleep(2000);
 
-	// isSign = 0 --> D0 only
-	// isSign = 1 --> D0bar only
-	// isSign = 2 --> D0 + D0bar
+	// isSign = 0 --> D+ only
+	// isSign = 1 --> D- only
+	// isSign = 2 --> both
 	
 	TString expected;
 	if (isSign == 0 && pdgCode < 0){
@@ -330,15 +330,15 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	//one "container" for MC
 	TString nameContainer="";
 	if(!isKeepDfromB) {
-		nameContainer="CFHFccontainer0_3ProngDplustoKpipi_CommonFramework";
+		nameContainer="CFHFcontainer_DplustoKpipi_Prompt";
 		
 	}
 	else  if(isKeepDfromBOnly){
-		nameContainer="CFHFccontainer0DfromB_3ProngDplustoKpipi_CommonFramework";
+		nameContainer="CFHFcontainer_DplustoKpipi_FromB";
 		
 	}
 	else  {
-		nameContainer="CFHFccontainer0allD_3ProngDplustoKpipi_CommonFramework";          
+	  nameContainer="CFHFcontainer_DplustoKpipi_All";
 	}
 
 	
@@ -592,13 +592,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 
 	TString nameCorr="";
 	if(!isKeepDfromB) {
-		nameCorr="CFHFcorr0_3ProngDplustoKpipi_CommonFramework";
+		nameCorr="CFHFcorr_DplustoKpipi_Prompt";
 	}
 	else  if(isKeepDfromBOnly){
-		nameCorr= "CFHFcorr0KeepDfromBOnly_3ProngDplustoKpipi_CommonFramework";
+		nameCorr="CFHFcorr_DplustoKpipi_FromB";
 	}
 	else  {
-		nameCorr="CFHFcorr0allD_3ProngDplustoKpipi_CommonFramework";		
+	        nameCorr="CFHFcorr_DplustoKpipi_All";
 	}
 	
 
@@ -635,22 +635,19 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	output2name=nameContainer;
 	output3name=nameCorr;
 	if(!isKeepDfromB) {
-		outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_CommonFramework";
-		output1name="CFHFchist0_3ProngDplustoKpipi_CommonFramework";
-		output3name+="_cOnly";
-		output4name= "Cuts_3ProngDplustoKpipi_CommonFramework";
+		outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_Prompt";
+		output1name="CFHFhist_DplustoKpipi_Prompt";
+		output4name= "Cuts_DplustoKpipi_Prompt";
 	}
 	else  if(isKeepDfromBOnly){
-		outputfile += ":PWG3_D2H_CFtaskDplustoKpipiKeepDfromBOnly_CommonFramework";
-		output1name="CFHFchist0DfromB_3ProngDplustoKpipi_CommonFramework";
-		output3name+="_bOnly";
-		output4name= "CutsDfromB_3ProngDplustoKpipi_CommonFramework";
+   	        outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_FromB";
+	        output1name="CFHFhist_DplustoKpipi_FromB";
+		output4name= "Cuts_DplustoKpipi_FromB";
 	}
 	else{
-		outputfile += ":PWG3_D2H_CFtaskDplustoKpipiKeepDfromB_CommonFramework";
-		output1name="CFHFchist0allD_3ProngDplustoKpipi_CommonFramework";
-		output3name+="_all";
-		output4name= "CutsallD_3ProngDplustoKpipi_CommonFramework";
+        	outputfile += ":PWG3_D2H_CFtaskDplustoKpipi_All";
+		output1name="CFHFhist_DplustoKpipi_All";
+		output4name= "Cuts_DplustoKpipi_All";
 	}
 	outputfile += suffixName.Data();
 	output1name += suffixName.Data();
