@@ -120,9 +120,7 @@ class AliAnalysisTaskCaloFilter : public AliAnalysisTaskSE
   void    SwitchOnAcceptAllMBEvent()              { fAcceptAllMBEvent = kTRUE   ; }
   void    SwitchOffAcceptAllMBEvent()             { fAcceptAllMBEvent = kFALSE  ; }
 
-  void    SetMBTriggerMask(UInt_t mask)           { fMBTriggerMask    = mask    ; 
-  printf("MB mask set to %d - %d\n",fMBTriggerMask,mask);}
-
+  void    SetMBTriggerMask(UInt_t mask)           { fMBTriggerMask    = mask    ; }
   
   void    SetEMCALRecoUtils(AliEMCALRecoUtils* ru){ fEMCALRecoUtils = ru        ; }
   AliEMCALRecoUtils* GetEMCALRecoUtils()   const  { return fEMCALRecoUtils      ; }
