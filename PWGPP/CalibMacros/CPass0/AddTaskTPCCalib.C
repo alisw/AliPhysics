@@ -42,7 +42,6 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
   AliTPCAnalysisTaskcalib *task1=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
   SetupCalibTaskTrain1(task1);
   mgr->AddTask(task1);
-  //
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
@@ -51,28 +50,6 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
 
   mgr->ConnectInput(task1,0,cinput1);
   mgr->ConnectOutput(task1,0,coutput1);
-  //
-  //
-  //
-  AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-  SetupCalibTaskTrainAlign(taskAlign);
-  mgr->AddTask(taskAlign);
-  AliAnalysisDataContainer *cinputAlign = mgr->GetCommonInputContainer();
-  if (!cinputAlign) cinputAlign = mgr->CreateContainer("cchain",TChain::Class(), 
-                                      AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutputAlign = mgr->CreateContainer("TPCAlign",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");  
-  mgr->ConnectInput(taskAlign,0,cinputAlign);
-  mgr->ConnectOutput(taskAlign,0,coutputAlign);
-  //
-  AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
-  SetupCalibTaskTrainCluster(taskCluster);
-  mgr->AddTask(taskCluster);
-  AliAnalysisDataContainer *coutputAlign = mgr->CreateContainer("TPCCluster",TObjArray::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");  
-  mgr->ConnectInput(taskCluster,0,cinput1);
-  mgr->ConnectOutput(taskCluster,0,coutputAlign);
-
-
-
   return task1;
 }
 
@@ -189,8 +166,8 @@ void AddCalibTime(TObject* task){
   calibTime->SetStreamLevel(0);
   calibTime->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
 
-  // max 5000 tracks per event
-  calibTime->SetCutTracks(5000);
+  // max 600 tracks per event
+  calibTime->SetCutTracks(600);
 
   myTask->AddJob(calibTime);
 }
@@ -215,51 +192,6 @@ void AddCalibTracks(TObject* task){
 }
 
 
-void AddCalibAlign(TObject* task){
-  //
-  // Responsible: Marian Ivanov
-  // Description:
-  //
-  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task; 
-  AliTPCcalibAlign *calibAlign = new AliTPCcalibAlign("alignTPC","Alignment of the TPC sectors");
-  calibAlign->SetDebugLevel(debugLevel);
-  calibAlign->SetStreamLevel(streamLevel);
-  calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
-  myTask->AddJob(calibAlign);
-}
-
-
-void AddCalibLaser(TObject* task){
-  //
-  // Responsible: Marian Ivanov
-  // Description:
-  //
-  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
-  AliTPCcalibLaser *calibLaser = new AliTPCcalibLaser("laserTPC","laserTPC");
-  calibLaser->SetDebugLevel(debugLevel);
-  calibLaser->SetStreamLevel(streamLevel);
-  calibLaser->SetTriggerMask(-1,-1,kFALSE);        //accept everything
-  myTask->AddJob(calibLaser);
-}
-
-
-void AddCalibCosmic(TObject* task){
-  //
-  // Responsible: Marian Ivanov
-  // Description:
-  // Histogram residuals and pulls of the track parameters in bins of track parameters
-  // Dump cosmic tracks to the tree
-  //
-  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
-  AliTPCcalibCosmic *calibCosmic = new AliTPCcalibCosmic("cosmicTPC","cosmicTPC");
-  calibCosmic->SetDebugLevel(debugLevel);
-  calibCosmic->SetStreamLevel(1);
-  calibCosmic->SetTriggerMask(-1,-1,kTRUE);        //accept everything
-  myTask->AddJob(calibCosmic);
-}
-
-
-
 //_____________________________________________________________________________
 void SetupCalibTaskTrain1(TObject* task){
   //
@@ -268,22 +200,7 @@ void SetupCalibTaskTrain1(TObject* task){
   AddCalibCalib(task);
   AddCalibTimeGain(task);
   AddCalibTime(task);
-}
-
-void SetupCalibTaskTrainAlign(TObject* task){
-  //
-  // Setup tasks for calibration train
-  //
-  AddCalibAlign(task);
-  AddCalibLaser(task);
-  //AddCalibCosmic(task);
-}
-
-void SetupCalibTaskTrainCluster(TObject* task){
-  //
-  // Setup tasks for calibration train
-  //
-  AddCalibTracks(task);
+  //AddCalibTracks(task);
 }
 
 //_____________________________________________________________________________
