@@ -186,17 +186,17 @@ protected:
 		     Double_t low, Double_t high) const;
   UShort_t CheckFit(TH1* hist, const TFitResultPtr& res, 
 		    Double_t low, Double_t high, Int_t& color) const;
-  Bool_t   fDoScale;         // Whether to scale all histograms 
-  Bool_t   fDidExternal;     // Whether we've processed the external params 
-  Bool_t   fShowFitResults;  // Whether to put the fit result on the plots
-  Double_t fELossLowCut;     // Low cut on ELoss fits 
-  Double_t fELossNRMS;       // Number of RMS to fit upward
-  Double_t fELossBadChi2Nu;  // Cut on bad chi2/nu
-  Double_t fELossFkupChi2Nu; // Cut on F**ked up chi2/nu
-  Int_t    fELossMinEntries; // Least number of entries before fitting
+  Bool_t   fDoScale;           // Whether to scale all histograms 
+  Bool_t   fDidExternal;       // Whether we've processed the external params 
+  Bool_t   fShowFitResults;    // Whether to put the fit result on the plots
+  Double_t fELossLowCut;       // Low cut on ELoss fits 
+  Double_t fELossNRMS;         // Number of RMS to fit upward
+  Double_t fELossBadChi2Nu;    // Cut on bad chi2/nu
+  Double_t fELossFkupChi2Nu;   // Cut on F**ked up chi2/nu
+  Int_t    fELossMinEntries;   // Least number of entries before fitting
   Double_t fELossGoodParError; // Least relative error
-  Double_t fROErrorsBad;     // Cut on read-out errors 
-  Double_t fROErrorsFkup;    // Cut on read-out errors 
+  Double_t fROErrorsBad;       // Cut on read-out errors 
+  Double_t fROErrorsFkup;      // Cut on read-out errors 
 private:
   /** 
    * Copy constructor - not implemented 
