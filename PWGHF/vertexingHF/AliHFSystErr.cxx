@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -1007,24 +1008,20 @@ void AliHFSystErr::InitDstartoD0pi2011PbPb07half() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
   for(Int_t i=1;i<=36;i++) fRawYield->SetBinContent(i,0.05);  //4%
-  fRawYield->SetBinContent(3,0.2);
-  fRawYield->SetBinContent(4,0.10);
+  fRawYield->SetBinContent(4,0.2);
   fRawYield->SetBinContent(5,0.10);
-  fRawYield->SetBinContent(6,0.08);
+  fRawYield->SetBinContent(6,0.10);
+  fRawYield->SetBinContent(7,0.08);
   for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.15);  //4%
-
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
   for(Int_t i=1;i<=36;i++) fCutsEff->SetBinContent(i,0.10); // 10%
-  fCutsEff->SetBinContent(4,0.1);
-  fCutsEff->SetBinContent(5,0.05);
-  fCutsEff->SetBinContent(6,0.1);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
   for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.05); // 3%
-  fPIDEff->SetBinContent(3,0.09);
+  fPIDEff->SetBinContent(4,0.09);
 
   // MC dN/dpt  (from study on D* pt shape)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
@@ -1524,4 +1521,6 @@ TH1F* AliHFSystErr::ReflectHisto(TH1F *hin) const {
 
   return hout;
 }
+
+
 
