@@ -193,6 +193,9 @@ void AliGenEMCocktail::Generate()
   
 // Loop over generators and generate events
   Int_t igen = 0;
+  Float_t evPlane;
+  Rndm(&evPlane,1);
+  evPlane*=TMath::Pi()*2;
   while((entry = (AliGenCocktailEntry*)next())) {
     gen = entry->Generator();
     gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
@@ -202,6 +205,7 @@ void AliGenEMCocktail::Generate()
       igen++;	
       if (igen == 1) entry->SetFirst(0);		
       else  entry->SetFirst((partArray->GetEntriesFast())+1);
+      gen->SetEventPlane(evPlane);
       gen->SetNumberParticles(fNPart);		
       gen->Generate();
       entry->SetLast(partArray->GetEntriesFast());

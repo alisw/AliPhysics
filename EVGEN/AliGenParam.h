@@ -24,13 +24,14 @@ typedef enum { kAnalog, kNonAnalog} Weighting_t;
 //-------------------------------------------------------------
 class AliGenParam : public AliGenMC
 {
- public:
+public:
     AliGenParam();
     AliGenParam(Int_t npart, const AliGenLib * Library, Int_t param,   const char*  tname = 0);
     AliGenParam(Int_t npart, Int_t param, const char* tname = 0, const char*  name  = 0);
     AliGenParam(Int_t npart, Int_t param,
 		Double_t (*PtPara)(const Double_t*, const Double_t*),
 		Double_t (*YPara )(const Double_t*, const Double_t*),
+	      Double_t (*V2Para)(const Double_t*, const Double_t*),
 		Int_t    (*IpPara)(TRandom*)           );
      
     virtual ~AliGenParam();
@@ -49,12 +50,15 @@ class AliGenParam : public AliGenMC
     TF1 *  GetY() {return fYPara;}
     Float_t GetRelativeArea(Float_t ptMin, Float_t ptMax, Float_t yMin, Float_t yMax, Float_t phiMin, Float_t phiMax);
 
- protected:
+protected:
     Double_t (*fPtParaFunc)(const Double_t*, const Double_t*); //! Pointer to Pt parametrisation function
     Double_t (*fYParaFunc )(const Double_t*, const Double_t*); //! Pointer to Y parametrisation function
     Int_t    (*fIpParaFunc )(TRandom*);    //! Pointer to particle type parametrisation function
+  Double_t (*fV2ParaFunc )(const Double_t*, const Double_t*);//! Pointer to V2 parametrisation function
     TF1* fPtPara;              // Transverse momentum parameterisation
     TF1* fYPara;               // Rapidity parameterisation
+  TF1*        fV2Para;       // v2 parametrization
+  TF1*        fdNdPhi;       // Phi distribution depending on v2
     Int_t       fParam;        // Parameterisation type 
     Float_t     fdNdy0;        // central multiplicity per event
     Float_t     fYWgt;         // Y-weight
@@ -65,7 +69,7 @@ class AliGenParam : public AliGenMC
     Bool_t      fSelectAll;    // Flag for transportation of Background while using SetForceDecay()
     AliDecayer  *fDecayer;     // ! Pointer to pythia object for decays
 
- private:
+private:
     AliGenParam(const AliGenParam &Param);
     AliGenParam & operator=(const AliGenParam & rhs);
 

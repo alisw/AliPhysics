@@ -12,21 +12,16 @@ class TRandom;
 class AliGenLib :
   public TObject
 {
- public:
-//
+public:
+  //
     virtual ~AliGenLib(){}
     typedef Double_t (*GenFunc)  (const Double_t *, const Double_t *);
     typedef Int_t    (*GenFuncIp)(TRandom *);    
     virtual GenFunc   GetPt(Int_t param, const char *tname) const   = 0;
     virtual GenFunc   GetY (Int_t param, const char *tname) const   = 0;
     virtual GenFuncIp GetIp(Int_t param, const char *tname) const   = 0;    
+  virtual GenFunc   GetV2(Int_t, const char *) const { return NoV2; }
+  static  Double_t  NoV2(const Double_t *, const Double_t *) { return 0; }
     ClassDef(AliGenLib,0) // Library providing y and pT parameterisations
 };
 #endif
-
-
-
-
-
-
-

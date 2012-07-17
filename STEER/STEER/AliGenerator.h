@@ -79,6 +79,7 @@ class AliGenerator : public TNamed, public AliRndm
     virtual TGenerator* GetMC() const {return fMCEvGen;}
     virtual void AddHeader(AliGenEventHeader* /*header*/) {;}
     virtual void SetContainer(AliGenerator* container) {fContainer = container;}
+    virtual void SetEventPlane(Float_t evPlane) {fEvPlane = evPlane; }
 
   // Getters
 
@@ -150,6 +151,7 @@ class AliGenerator : public TNamed, public AliRndm
     
     Float_t     fTimeOrigin; // Time0 origin in a run or event sample
     Float_t     fTime;       // Event time smeared around time0 origin using sigma vertex
+    Float_t     fEvPlane;    // the event plane 
 
     AliStack*   fStack;         //! Local pointer to stack
     AliGenerator* fContainer;   //! Local pointer to container
