@@ -26,6 +26,7 @@
 ...
 */
 
+#include "TFile.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TRandom.h"
@@ -63,7 +64,7 @@
 #include "../ITS/AliITSRecPoint.h"
 #include "../ITS/AliITSgeomTGeo.h"
 #include "../ITS/AliITSMultReconstructor.h" 
-#include "../ITS/AliITSsegmentationSPD.h"
+
 #include "AliLog.h"
 
 #include "AliPhysicsSelection.h"
@@ -77,11 +78,11 @@
 ClassImp(AliTrackletTaskMulti)
 
 // centrality percentile (inverted: 100% - most central)
-const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,100};//{0,5,10,20,30};
-//const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,5,10,20,30,40};
+//const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,100};//{0,5,10,20,30};
+const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,5,10,20,30,40,50,60,70,80,90};
   //{0,10,20,30,40,50,60,70,80,90,95,101};
 
-const char* AliTrackletTaskMulti::fgkCentSelName[] = {"V0M","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","TKLvsV0M","ZENvsZDC"};
+const char* AliTrackletTaskMulti::fgCentSelName[] = {"V0M","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","TKLvsV0M","ZEMvsZDC"};
 
 const char*  AliTrackletTaskMulti::fgkPDGNames[] = {
 "#pi^{+}",
@@ -185,6 +186,8 @@ const int AliTrackletTaskMulti::fgkPDGCodes[] = {
 // unknown
 };
 
+const double kEtaBinWidth=0.25;
+
 //________________________________________________________________________
 /*//Default constructor
 AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name)
@@ -243,7 +246,7 @@ AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name)
   fRPTree(0),
   fRPTreeMix(0),
   fStack(0),
-  fMCevent(0),
+  fMCEvent(0),
   //
   fNPart(0),
   fNBColl(0),
@@ -273,9 +276,10 @@ AliTrackletTaskMulti::~AliTrackletTaskMulti()
   // Destructor
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {  //RRR
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {  //RRR
     printf("Deleteing output\n");
     delete fOutput;
+    fOutput = 0;
   }
   //
   delete fMultReco;
@@ -297,7 +301,8 @@ AliTrackletTaskMulti::~AliTrackletTaskMulti()
 //________________________________________________________________________
 void AliTrackletTaskMulti::UserCreateOutputObjects() 
 {
-  // create output
+  //
+  OpenFile(1);
   fOutput = new TList();
   fOutput->SetOwner(); 
   //
@@ -366,7 +371,7 @@ void AliTrackletTaskMulti::UserCreateOutputObjects()
     printf("Wrong centrality type %d\n",fUseCentralityVar);
     exit(1);
   }
-  AliInfo(Form("Centrality type selected: %s\n",fgkCentSelName[fUseCentralityVar]));
+  AliInfo(Form("Centrality type selected: %s\n",fgCentSelName[fUseCentralityVar]));
   PostData(1, fOutput);
   //
 }
@@ -375,6 +380,12 @@ void AliTrackletTaskMulti::UserCreateOutputObjects()
 void AliTrackletTaskMulti::UserExec(Option_t *) 
 {
   // Main loop
+  //
+  static Bool_t statOK = kFALSE;
+  if (!statOK) {
+    RegisterStat();
+    statOK = kTRUE;
+  }
   //
   Bool_t needRecPoints = GetDoNormalReco() || GetDoInjection() || GetDoRotation() || GetDoMixing();
   //
@@ -442,9 +453,10 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   }
   ((TH2*)fHistosCustom->UncheckedAt(kHZDCZEMNoSel))->Fill(zemEnergy,zdcEnergy);
   //
-  Float_t centPercentile = centrality->GetCentralityPercentileUnchecked(fgkCentSelName[fUseCentralityVar]);
+  Float_t centPercentile = centrality->GetCentralityPercentileUnchecked(fgCentSelName[fUseCentralityVar]);
 
   // temporary >>>>>>>>>>>>>>>>>>>>>>>>
+  /*
   if (fUseCentralityVar==kCentZEMvsZDC) {
     float zdcEn = zdcEnergy;
     float zemEn = zemEnergy;
@@ -459,11 +471,27 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
     else zdcPercentile = 100;
     centPercentile = zdcPercentile;
   }
+  else if (fUseMC && fUseCentralityVar==kCentV0M) {
+    static TH1* fHtempV0M = 0;
+    if (!fHtempV0M) {
+      TString flcp = Form("%s/COMMON/CENTRALITY/data/pass%d/AliCentralityBy1D_%d.root", AliAnalysisManager::GetOADBPath(), 2, 139172);
+      gSystem->ExpandPathName(flcp);
+      TFile* flc  = TFile::Open(flcp);
+      fHtempV0M  = (TH1*) (flc->Get("hmultV0_percentile"));
+      fHtempV0M->SetDirectory(0);
+      flc->Close();
+      delete flc;
+      printf("Getting V0 centrality histo from %s -> %p\n",flcp.Data(),fHtempV0M);
+    }
+    if (!fHtempV0M) AliFatal("No V0 centrality histo");
+    centPercentile = fHtempV0M->GetBinContent(fHtempV0M->FindBin((multV0)));
+  }
+  */
   // temporary >>>>>>>>>>>>>>>>>>>>>>>>
   
   fCurrCentBin = GetCentralityBin(centPercentile);
   //
-  //  printf("CentPerc: %f : Bin %d\n",centPercentile, fCurrCentBin);
+  printf("CentPerc: %f : Bin %d ZDC: %f ZEM: %f\n",centPercentile, fCurrCentBin, zdcEnergy,zemEnergy);
   if (fCurrCentBin<0) {
     //printf("Reject: %.1f : V0:%.1f V0Cor:%.1f V0CR:%.1f SPD2c:%.1f\n",mltTst, multV0,multV0Corr,multV0CorrResc,nSPD2Corr);
     return;
@@ -473,15 +501,15 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   ((TH1*)fHistosCustom->UncheckedAt(kHStatCent))->Fill(centPercentile);
   //
   AliMCEventHandler* eventHandler = 0;
-  fMCevent = 0;
+  fMCEvent = 0;
   fStack = 0;
   //
   if (fUseMC) {
     eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
     if (!eventHandler) { printf("ERROR: Could not retrieve MC event handler\n"); return; }
-    fMCevent = eventHandler->MCEvent();
-    if (!fMCevent) { printf("ERROR: Could not retrieve MC event\n"); return; }
-    fStack = fMCevent->Stack();
+    fMCEvent = eventHandler->MCEvent();
+    if (!fMCEvent) { printf("ERROR: Could not retrieve MC event\n"); return; }
+    fStack = fMCEvent->Stack();
     if (!fStack) { printf("Stack not available\n"); return; }
   }
   //
@@ -496,7 +524,7 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   fNPart  = 0;
   fNBColl = 0;
   if (fUseMC) {
-    mcGenH = fMCevent->GenEventHeader();
+    mcGenH = fMCEvent->GenEventHeader();
     if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) {
       AliGenHijingEventHeader* hHijing = (AliGenHijingEventHeader*)mcGenH;
       fNPart  = (hHijing->ProjectileParticipants()+hHijing->TargetParticipants())/2.;
@@ -599,12 +627,10 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
 
 
 //________________________________________________________________________
-void AliTrackletTaskMulti::Terminate(Option_t *) 
+void AliTrackletTaskMulti::RegisterStat() 
 {
-  Printf("Terminating...");
   TH1* hstat;
   TList *lst = dynamic_cast<TList*>(GetOutputData(1));
-  printf("Term: %p %p %p\n",fOutput,lst,fHistosCustom);
   if (lst && (hstat=(TH1*)lst->FindObject("hStat"))) {
     Info("Terminate","Registering used settings");
     // fill used settings
@@ -633,7 +659,14 @@ void AliTrackletTaskMulti::Terminate(Option_t *)
     //
   }
   //
-  //  AliAnalysisTaskSE::Terminate();
+}
+
+
+//________________________________________________________________________
+void AliTrackletTaskMulti::Terminate(Option_t *) 
+{
+  Printf("Terminating...");
+  RegisterStat();
 }
 
 
@@ -667,12 +700,12 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   int nbs = kBinEntries + fNCentBins*kEntriesPerBin;
   hstat = new TH1F("hStat","Run statistics",nbs,0.5,nbs+0.5);
   //
-  hstat->GetXaxis()->SetBinLabel(kEvTot, "Ev.Tot0");
+  hstat->GetXaxis()->SetBinLabel(kEvTot0, "Ev.Tot0");
   hstat->GetXaxis()->SetBinLabel(kEvTot, "Ev.Tot");
   hstat->GetXaxis()->SetBinLabel(kOneUnit,"ScaleMerge");
   hstat->GetXaxis()->SetBinLabel(kNWorkers,"Workers");
   //
-  hstat->GetXaxis()->SetBinLabel(kCentVar,  fgkCentSelName[fUseCentralityVar]);
+  hstat->GetXaxis()->SetBinLabel(kCentVar,  fgCentSelName[fUseCentralityVar]);
   hstat->GetXaxis()->SetBinLabel(kDPhi,  "#Delta#varphi");
   hstat->GetXaxis()->SetBinLabel(kDTht,  "#Delta#theta");
   hstat->GetXaxis()->SetBinLabel(kNStd,  "N.std");
@@ -719,10 +752,10 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   //  
   // ------------ job parameters, statistics ------------------------------<<<
   //
-  double etaMn=-3,etaMx=3;
+  //  double etaMn=-3,etaMx=3;
   double zMn=-30, zMx=30;  
-  int nEtaBins = int((etaMx-etaMn)/0.1);
-  if (nEtaBins<1) nEtaBins = 1;
+  //  int nEtaBins = int((etaMx-etaMn)/kEtaBinWidth);
+  //  if (nEtaBins<1) nEtaBins = 1;
   //
   int nZVBins = int(zMx-zMn);
   if (nZVBins<1) nZVBins = 1;
@@ -779,8 +812,8 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   AddHisto(histos,hzdczem,kHZDCZEM);
   //
   //----------------------------------------------------------------------
-  int nEtaBinsS = int((fEtaMax-fEtaMin)/0.1);
-  if (nEtaBinsS<1) nEtaBins = 1;
+  int nEtaBinsS = int((fEtaMax-fEtaMin)/kEtaBinWidth);
+  if (nEtaBinsS<1) nEtaBinsS = 1;
   //
   int nZVBinsS = int(fZVertexMax-fZVertexMin);
   if (nZVBinsS<1) nZVBinsS = 1;
@@ -907,7 +940,7 @@ TObjArray* AliTrackletTaskMulti::BookHistosSet(const char* pref, UInt_t selHisto
   const int kNDThtBins = 100;
   int nDistBins = int(fNStdDev)*5;
   //
-  int nEtaBins = int((fEtaMax-fEtaMin)/0.1);
+  int nEtaBins = int((fEtaMax-fEtaMin)/kEtaBinWidth);
   if (nEtaBins<1) nEtaBins = 1;
   //
   int nZVBins = int(fZVertexMax-fZVertexMin);
@@ -1006,7 +1039,7 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
   AliGenHijingEventHeader* pyHeader = 0;
   //
   if (fUseMC) {
-    pyHeader = (AliGenHijingEventHeader*) fMCevent->GenEventHeader();//header->GenEventHeader();
+    pyHeader = (AliGenHijingEventHeader*) fMCEvent->GenEventHeader();//header->GenEventHeader();
     pyHeader->PrimaryVertex(vtxMC);
   }
   //---------------------------------------- CHECK ------------------------------<<<
@@ -1102,14 +1135,14 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
 void AliTrackletTaskMulti::FillMCPrimaries()
 {
   // fill all MC primaries Zv vs Eta
-  if (!fStack || !fMCevent) return;
+  if (!fStack || !fMCEvent) return;
 
   //---------------------------------------- CHECK ------------------------------>>>
   TArrayF vtxMC;
   AliGenHijingEventHeader* pyHeader = 0;
   //
   if (fUseMC) {
-    pyHeader = (AliGenHijingEventHeader*) fMCevent->GenEventHeader();//header->GenEventHeader();
+    pyHeader = (AliGenHijingEventHeader*) fMCEvent->GenEventHeader();//header->GenEventHeader();
     pyHeader->PrimaryVertex(vtxMC);
   }
   //---------------------------------------- CHECK ------------------------------<<<
@@ -1119,7 +1152,7 @@ void AliTrackletTaskMulti::FillMCPrimaries()
   int nprim = 0;
   for (int itr=ntr;itr--;) {
     if (!fStack->IsPhysicalPrimary(itr)) continue;
-    AliMCParticle *part  = (AliMCParticle*)fMCevent->GetTrack(itr);
+    AliMCParticle *part  = (AliMCParticle*)fMCEvent->GetTrack(itr);
     if (!part->Charge()) continue;
     //
     //---------------------------------------- CHECK ------------------------------>>>
@@ -1245,25 +1278,18 @@ Bool_t AliTrackletTaskMulti::HaveCommonParent(const float* clLabs0,const float* 
   int npars[2]={0,0};
   const float *labs[2] = {clLabs0,clLabs1};
   int ntr = fStack->GetNtrack();
-  //  printf("\nHaveCommonParent \n");
   for (int il=0;il<2;il++) {
-    
     for (int ilb=0;ilb<3;ilb++) {
       int lbl = (int)labs[il][ilb];
-      if (lbl<2 || lbl>=ntr) continue;
+      if (lbl<0 || lbl>=ntr) continue;
       //
       while (npars[il]<kMaxPar-1) {
+	pars[il][ npars[il]++ ] = lbl;
 	TParticle* part = fStack->Particle(lbl);
 	if (!part) break;
-	int code = TMath::Abs(part->GetPdgCode());
-	int q = (int)TMath::Abs(part->GetPDG()->Charge());
-	if (code==21 || code<10 || q==1 || q==2 || q==4 ) break;
-	//printf("%d/%d/%d: %4d (%d)%s|",il,ilb,npars[il],lbl,part->GetStatusCode(),part->GetName());
-	pars[il][ npars[il]++ ] = lbl;
 	lbl = part->GetFirstMother();
 	if (lbl<1 || lbl>=ntr) break;
       }
-      //      printf("\n");
     }
   }
   // compare array of parents
