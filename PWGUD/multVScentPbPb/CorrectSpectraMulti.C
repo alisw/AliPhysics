@@ -45,6 +45,7 @@ enum { kSclWghMean,         // normalize bg tails to data using weighted mean of
 
 
 const char* figDir = "figMult";
+const char* resDir = "resMult";
 TString  useBgType    = "Inj";
 Int_t    useShapeType = kNormShapeDist;    // which distribution to use for bg normalization
 Bool_t   useMCLB      = 0;//kFALSE;             // use Comb MC Labels as a template for Bg.
@@ -94,7 +95,7 @@ enum {kBitNormPerEvent=BIT(14)};
 
 enum {kSigCorr,kMCPrim,kRawDtCut,kSignalEst,kSignalEstMC,kBgEst,k1MBeta,k1MBetaMC,kAlpha,kAlphaMC,kBgMC,kBgRescFc,kDataDist,kBgDist,kBgMCDist, kMCShift=20, kNHistos=kMCShift+kMCShift};
 
-void    CorrectSpectraMulti(const char* flNameData, const char* flNameMC,const char* unique="");
+void    CorrectSpectraMulti(const char* flNameData, const char* flNameMC,const char* unique="",int maxBins=6);
 Bool_t  PrepareHistos(int bin, TList* lst, Bool_t isMC);
 void    ProcessHistos(int bin);
 TH1*    NormalizeBg(TH1* dataH, TH1* bgH, double &scl, double &scle);
@@ -128,9 +129,9 @@ Bool_t creatDnDEtaCMacro = kFALSE;
 Bool_t creatAlphaBetaCMacro = kFALSE;
 Bool_t creatSpeciesCMacro = kFALSE;
 
-void CorrectSpectraMulti(const char* flNameData, const char* flNameMC, const char* uniqueNm)
+void CorrectSpectraMulti(const char* flNameData, const char* flNameMC, const char* uniqueNm,int maxBin) 
 {
-  //
+ //
   uniqueName = uniqueNm;
   listDt = LoadList(flNameData,"dt_");
   listMC = LoadList(flNameMC,"mc_");
@@ -138,13 +139,16 @@ void CorrectSpectraMulti(const char* flNameData, const char* flNameMC, const cha
   resArr.Clear();
   //
   TH1* hstat = (TH1*)FindObject(-1,kHStatName,listDt,kFALSE);
+  //TH1* hstat = (TH1*)FindObject(-1,kHStatName,listMC,kFALSE);
   //
   int nbstat = hstat->GetNbinsX();
   nCentBins = (nbstat - kBinEntries)/kEntriesPerBin;
+  nCentBins = nCentBins>maxBin ? maxBin : nCentBins;
   printf("%d bins will be processed\n",nCentBins);
   if (nCentBins<1) return;
   myMergeFactor = hstat->GetBinContent(kOneUnit);
   printf("Detected %f mergings\n",myMergeFactor);
+  if (myMergeFactor<1) myMergeFactor = 1.;
   //
   dNdEta.Set(nCentBins);
   dNdEtaErr.Set(nCentBins);
@@ -178,7 +182,16 @@ void CorrectSpectraMulti(const char* flNameData, const char* flNameMC, const cha
   for (int i=nCentBins;i--;) printf("%.2f,",dNdEta[i]); printf("\n");
   printf("dNdEtaErr: "); 
   for (int i=nCentBins;i--;) printf("%.2f,",dNdEtaErr[i]); printf("\n");
-
+  //
+  TString rtnm1 = resDir; rtnm1 += "/"; rtnm1 += uniqueName; 
+  rtnm1 += "_"; rtnm1 += nCentBins; rtnm1+= "bins_";
+  rtnm1 += outStr; rtnm1 += ".root";
+  TFile* flRes = TFile::Open(rtnm1.Data(),"recreate");
+  flRes->WriteObject(&resDnDeta, "TObjArray", "kSingleKey");
+  flRes->Close();
+  delete flRes;
+  printf("Stored result in %s\n",rtnm1.Data());
+  //
 }
 
 //_____________________________________________________________________
@@ -287,7 +300,9 @@ Bool_t PrepareHistos(int bin, TList* lst, Bool_t isMC)
     h1mBetaMC = (TH2F*) hBgMC->Clone(buffn);
     h1mBetaMC->SetTitle(bufft);
     res->AddAtAndExpand(h1mBetaMC, k1MBetaMC+shift);
+    printf(">>Here1\n");
     h1mBetaMC->Divide(hRawDtCut);
+    printf("<<Here1\n");
     for (int ib0=1;ib0<=nbEta;ib0++) 
       for (int ib1=1;ib1<=nbZV;ib1++) 
 	h1mBetaMC->SetBinContent(ib0,ib1, 1.- h1mBetaMC->GetBinContent(ib0,ib1));
@@ -390,16 +405,24 @@ void ProcessHistos(int bin)
   TH2* halp = (TH2*)res->At(shift + kMCShift + kMCPrim);
   halp = (TH2*) halp->Clone(prefN+"Alpha");
   halp->SetTitle(prefN+"#alpha");
+  printf(">>Here2\n");
+  printf("Halp: %p %d %d\n",halp,halp->GetNbinsX(),halp->GetNbinsY()); halp->Print();
+  TH2* xxx = (TH2*)res->At(shift + kMCShift + k1MBeta);
+  printf("other: %p %d %d\n",xxx,xxx->GetNbinsX(),xxx->GetNbinsY()); xxx->Print();
   halp->Divide( (TH2*)res->At(shift + kMCShift + k1MBeta) );
+  printf(">>Here2a\n");
   halp->Divide( (TH2*)res->At(shift + kMCShift + kRawDtCut) );
+  printf("<<Here2\n");
   res->AddAtAndExpand(halp, shift + kAlpha);
   //
   // build alpha matrix with MC labels bg
   TH2* halpMC = (TH2*)res->At(shift + kMCShift + kMCPrim);
   halpMC = (TH2*) halpMC->Clone(prefN + "AlphaMC");
   halpMC->SetTitle(prefT + "#alpha MC labels");
+  printf(">>Here3\n");
   halpMC->Divide( (TH2*)res->At(shift + kMCShift + k1MBetaMC) );
   halpMC->Divide( (TH2*)res->At(shift + kMCShift + kRawDtCut) );
+  printf("<<Here3\n");
   res->AddAtAndExpand(halpMC, shift + kAlphaMC);
   //
   // build corrected signal
@@ -442,7 +465,9 @@ void PlotResults()
   //
   canvFin->Print(psnm0.Data());
   //
+  printf(">>Here4\n");
   canvFin->Divide(1,2);
+  printf("<<Here4\n");
   canvFin->cd(1);
   gPad->SetLeftMargin(0.15);
   TGraphErrors* grp = new TGraphErrors(nCentBins);

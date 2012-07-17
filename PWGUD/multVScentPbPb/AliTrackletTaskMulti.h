@@ -18,8 +18,8 @@ class TNtuple;
 class AliMCParticle;
 class AliITSMultRecBg;
 class AliESDTrackCuts;
-class AliITSsegmentationSPD;
 
+#include "../ITS/AliITSsegmentationSPD.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliTriggerAnalysis.h" 
 #include <TMath.h>
@@ -127,6 +127,7 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
+  void       RegisterStat();
 
   void       SetUseCentralityVar(Int_t v=kCentV0M)     {fUseCentralityVar = v;}
   void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}
@@ -189,8 +190,8 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   Bool_t       fDoRotation;                // do rotation
   Bool_t       fDoMixing;                  // do mixing
   //
-  Bool_t       fUseMC;                     // flag of MC processing
-  Bool_t       fCheckReconstructables;     // request check
+  Bool_t       fUseMC; 
+  Bool_t       fCheckReconstructables;
   //
   TObjArray*   fHistosTrData;              //! all tracklets in data
   TObjArray*   fHistosTrInj;               //! injected
@@ -233,7 +234,7 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   TTree*       fRPTree;                    //! tree of recpoints
   TTree*       fRPTreeMix;                 //! tree of recpoints for mixing
   AliStack*    fStack;                     //! MC stack
-  AliMCEvent*  fMCevent;                   //! MC Event
+  AliMCEvent*  fMCEvent;                   //! MC Event
   Float_t      fESDVtx[3];                 //  ESD vertex
   //
   Float_t fNPart;                          // number of participant pairs from MC
@@ -244,7 +245,7 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   //
   static const Float_t fgkCentPerc[];               //! centrality in percentiles
   //
-  static const char*  fgkCentSelName[];             //!centrality types
+  static const char*  fgCentSelName[];              //!centrality types
   static const char*  fgkPDGNames[];                //!pdg names
   static const Int_t  fgkPDGCodes[];                //!pdg codes
   //

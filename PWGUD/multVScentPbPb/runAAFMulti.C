@@ -7,7 +7,7 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
 		 Float_t zMin       = -7,         // process events with Z vertex min
 		 Float_t zMax       =  7,         //                     max positions
 		 Int_t   useCentVar = 0,          // centrality variable to use: enum {kCentSPD2, kCentV0,  kCentV0CR, kCentTrTPC}
-		 Float_t scaleMCV0  = 0.7520,     // rescale MC V0 to match data
+		 Float_t scaleMCV0  = 0.8,     // rescale MC V0 to match data
 		 //
 		 //
 		 Float_t cutSigNStd  = 1.5,       // cut on weighed distance used to extract signal
@@ -41,9 +41,8 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
 		 //
 		 Bool_t checkReconstructables = kFALSE,//kTRUE, // fill histos for reconstructable (needs useMC and doRec) 
 		 //
-		 //TString alirootVer = "VO_ALICE@AliRoot::v4-21-17-AN",
-		 TString alirootVer = "VO_ALICE@AliRoot::v4-21-20-AN",
-		 TString rootVer    = "VO_ALICE@ROOT::v5-28-00a",
+		 TString alirootVer = "VO_ALICE@AliRoot::v5-03-24-AN",
+		 TString rootVer    = "VO_ALICE@ROOT::v5-33-02b",
 		 //
 		 //TString proofCluster="shahoian@skaf.saske.sk"
 		 TString proofCluster="shahoian@alice-caf.cern.ch"
@@ -53,9 +52,10 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
   Bool_t runLocal = kFALSE;//kTRUE; // true only for local test mode
   if (runLocal) {
     //    dataset = "/default/shahoian/test_pp";//"/default/shahoian/test";
-    dataset = "default/shahoian/test_pp130850";
+    dataset = "default/shahoian/test137366";
     proofCluster = "";
-    alirootVer = "AliRootProofLite";
+    alirootVer = "$ALICE_ROOT/ANALYSIS/macros/AliRootProofLite";
+    gSystem->ExpandPathName(alirootVer);
     nEvents = 500;
   }
   //
@@ -72,7 +72,7 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
   TString alirootMode="REC";
   TString extraLibs = "ITSrec:CDB:Geom:"; // not needed in default aliroot mode
   //extraLibs+= "ANALYSIS:ANALYSISalice";
-  extraLibs+= "ANALYSIS:ANALYSISalice:EventMixing";
+  extraLibs+= "ANALYSIS:OADB:ANALYSISalice:EventMixing";
   TList *list = new TList();
   // sets $ALIROOT_MODE on each worker to let proof to know to run in special mode
   list->Add(new TNamed("ALIROOT_MODE"      , alirootMode.Data()));
@@ -88,12 +88,13 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
     Error("runAAFMulti.C","Connection to AF failed.");
     return;
   }
-  gProof->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\");"
-	       "gEnv->GetTable()->Remove(o);", kTRUE);
+  //  gProof->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\");"
+  //	       "gEnv->GetTable()->Remove(o);", kTRUE);
   gProof->SetParameter("PROOF_UseMergers", 0);
   // Lets enable aliroot + extra libs on proof cluster
   if (runLocal) gProof->UploadPackage(alirootVer.Data());
   gProof->EnablePackage(alirootVer.Data(), list);
+  //  gProof->EnablePackage(alirootVer.Data());
   //
   if (runLocal) {
     Int_t numWorkers = gProof->GetParallel();
