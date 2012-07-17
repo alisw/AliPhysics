@@ -62,10 +62,10 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     procesTPC->SwitchOnValidation();
     // Make timegain calibration
     //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
-    procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,ocdbLocal);
+    //procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,ocdbLocal);
     // Make vdrift calibration
     //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
-    procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,ocdbLocal);
+    //procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,ocdbLocal);
   }
 
   // TOF part
