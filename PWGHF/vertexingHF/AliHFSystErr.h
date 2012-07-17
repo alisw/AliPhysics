@@ -87,6 +87,7 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2010PbPb2040CentScan();
   void InitDstartoD0pi2010PbPb4060CentScan();
   void InitDstartoD0pi2010PbPb6080CentScan();
+  
 
  private:
 
@@ -97,6 +98,7 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2010pp();
   void InitDstartoD0pi2010pp();
   void InitDstoKKpi2010pp();
+  void InitDstoKKpi2011PbPb07half();
 
   void InitD0toKpi2010PbPb020();
   void InitD0toKpi2011PbPb07half();
