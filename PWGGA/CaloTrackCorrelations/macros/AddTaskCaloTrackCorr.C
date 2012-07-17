@@ -1009,7 +1009,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
 
 //___________________________________________________________________________________
 AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle, 
-                                                                    Int_t bIsolated                                                                    
+                                                                    Int_t bIsolated,                                                                    
                                                                     Int_t  partInCone = AliIsolationCut::kOnlyCharged,
                                                                     Int_t  thresType  = AliIsolationCut::kSumPtFracIC,
                                                                     Float_t cone = 0.3,
