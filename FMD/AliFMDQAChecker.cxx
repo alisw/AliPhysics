@@ -27,6 +27,7 @@
 // --- ROOT system ---
 #include <TClass.h>
 #include <TH1F.h> 
+#include <TF1.h> 
 #include <TH2.h> 
 #include <TH1I.h> 
 #include <TIterator.h> 
@@ -37,6 +38,9 @@
 #include <TPaveText.h>
 #include <TStyle.h>
 #include <TLatex.h>
+#include <TFitResult.h>
+#include <TParameter.h>
+#include <TMacro.h>
 
 // --- AliRoot header files ---
 #include "AliLog.h"
@@ -44,14 +48,344 @@
 #include "AliQAChecker.h"
 #include "AliFMDQAChecker.h"
 #include "AliRecoParam.h"
+#include <AliCDBManager.h>
+#include <AliCDBEntry.h>
+#include <AliCDBId.h>
+#include <AliQAThresholds.h>
 
 ClassImp(AliFMDQAChecker)
 #if 0
 ; // This is for Emacs! - do not delete
 #endif
 
+namespace {
+  void addFitsMacro(TList* l) {
+    TMacro* m = new TMacro("fits");
+    m->AddLine("void fits() {");
+    m->AddLine("  if (!gPad) { Printf(\"No gPad\"); return; }");
+    m->AddLine("  TList* lp = gPad->GetListOfPrimitives();");
+    m->AddLine("  if (!lp) return;");
+    m->AddLine("  TObject* po = 0;");
+    m->AddLine("  TIter next(lp);");
+    m->AddLine("  while ((po = next())) {");
+    m->AddLine("    if (!po->IsA()->InheritsFrom(TH1::Class())) continue;");
+    m->AddLine("    TH1*   htmp = dynamic_cast<TH1*>(po);");
+    m->AddLine("    TList* lf   = htmp->GetListOfFunctions();");
+    m->AddLine("    TObject* pso = (lf ? lf->FindObject(\"stats\") : 0);");
+    m->AddLine("    if (!pso) continue;");
+    m->AddLine("    TPaveStats* ps = static_cast<TPaveStats*>(pso);");
+    m->AddLine("    ps->SetOptFit(111);");
+    m->AddLine("    UShort_t qual = htmp->GetUniqueID();");
+    m->AddLine("    ps->SetFillColor(qual >= 3 ? kRed-4 : qual >= 2 ? kOrange-4 : qual >= 1 ? kYellow-4 : kGreen-4);");
+    // m->AddLine("    lf->Remove(lf->FindObject(\"fits\"));");
+    // m->AddLine("    ps->Paint();");
+    m->AddLine("    break;");
+    m->AddLine("  }");
+    // m->AddLine("  gPad->Modified(); gPad->Update(); gPad->cd();");
+    m->AddLine("}");
+
+    TObject* old = l->FindObject(m->GetName());
+    if (old) l->Remove(old);
+    l->Add(m);
+  }
+  
+  const Double_t kROErrorsLabelY    = 30.;
+  
+  const Int_t    kConvolutionSteps  = 100;
+  const Double_t kConvolutionNSigma = 5;
+
+  // 
+  // The shift of the most probable value for the ROOT function TMath::Landau 
+  //
+  const Double_t  kMpShift  = -0.22278298;
+  // 
+  // Integration normalisation 
+  //
+  const Double_t  kInvSq2Pi = 1. / TMath::Sqrt(2*TMath::Pi());
+
+  Double_t landau(Double_t x, Double_t delta, Double_t xi)
+  {
+    // 
+    // Calculate the shifted Landau
+    // @f[
+    //    f'_{L}(x;\Delta,\xi) = f_L(x;\Delta+0.22278298\xi)
+    // @f]
+    //
+    // where @f$ f_{L}@f$ is the ROOT implementation of the Landau
+    // distribution (known to have @f$ \Delta_{p}=-0.22278298@f$ for
+    // @f$\Delta=0,\xi=1@f$.
+    // 
+    // Parameters:
+    //    x      Where to evaluate @f$ f'_{L}@f$ 
+    //    delta  Most probable value 
+    //    xi     The 'width' of the distribution 
+    //
+    // Return:
+    //    @f$ f'_{L}(x;\Delta,\xi) @f$
+    //
+    return TMath::Landau(x, delta - xi * kMpShift, xi);
+  }
+  Double_t landauGaus(Double_t x, Double_t delta, Double_t xi,
+		      Double_t sigma, Double_t sigmaN)
+  {
+    // 
+    // Calculate the value of a Landau convolved with a Gaussian 
+    // 
+    // @f[ 
+    // f(x;\Delta,\xi,\sigma') = \frac{1}{\sigma' \sqrt{2 \pi}}
+    //    \int_{-\infty}^{+\infty} d\Delta' f'_{L}(x;\Delta',\xi)
+    //    \exp{-\frac{(\Delta-\Delta')^2}{2\sigma'^2}}
+    // @f]
+    // 
+    // where @f$ f'_{L}@f$ is the Landau distribution, @f$ \Delta@f$
+    // the energy loss, @f$ \xi@f$ the width of the Landau, and @f$
+    // \sigma'^2=\sigma^2-\sigma_n^2 @f$.  Here, @f$\sigma@f$ is the
+    // variance of the Gaussian, and @f$\sigma_n@f$ is a parameter
+    // modelling noise in the detector.
+    //
+    // Note that this function uses the constants kConvolutionSteps and
+    // kConvolutionNSigma
+    // 
+    // References: 
+    //  - <a href="http://dx.doi.org/10.1016/0168-583X(84)90472-5">Nucl.Instrum.Meth.B1:16</a>
+    //  - <a href="http://dx.doi.org/10.1103/PhysRevA.28.615">Phys.Rev.A28:615</a>
+    //  - <a href="http://root.cern.ch/root/htmldoc/tutorials/fit/langaus.C.html">ROOT implementation</a>
+    // 
+    // Parameters:
+    //    x         where to evaluate @f$ f@f$
+    //    delta     @f$ \Delta@f$ of @f$ f(x;\Delta,\xi,\sigma')@f$
+    //    xi        @f$ \xi@f$ of @f$ f(x;\Delta,\xi,\sigma')@f$
+    //    sigma     @f$ \sigma@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f$
+    //    sigma_n   @f$ \sigma_n@f$ of @f$\sigma'^2=\sigma^2-\sigma_n^2 @f$
+    // 
+    // Return:
+    //    @f$ f@f$ evaluated at @f$ x@f$.  
+    //
+    Double_t deltap = delta - xi * kMpShift;
+    Double_t sigma2 = sigmaN*sigmaN + sigma*sigma;
+    Double_t sigma1 = sigmaN == 0 ? sigma : TMath::Sqrt(sigma2);
+    Double_t xlow   = x - kConvolutionNSigma * sigma1;
+    Double_t xhigh  = x + kConvolutionNSigma * sigma1;
+    Double_t step   = (xhigh - xlow) / kConvolutionSteps;
+    Double_t sum    = 0;
+  
+    for (Int_t i = 0; i <= kConvolutionSteps/2; i++) { 
+      Double_t x1 = xlow  + (i - .5) * step;
+      Double_t x2 = xhigh - (i - .5) * step;
+    
+      sum += TMath::Landau(x1, deltap, xi, kTRUE) * TMath::Gaus(x, x1, sigma1);
+      sum += TMath::Landau(x2, deltap, xi, kTRUE) * TMath::Gaus(x, x2, sigma1);
+    }
+    return step * sum * kInvSq2Pi / sigma1;
+  }
+
+  // 
+  // Utility function to use in TF1 defintition 
+  //
+  Double_t landauGaus1(Double_t* xp, Double_t* pp) 
+  {
+    Double_t x        = xp[0];
+    Double_t constant = pp[0];
+    Double_t delta    = pp[1];
+    Double_t xi       = pp[2];
+    Double_t sigma    = pp[3];
+    Double_t sigmaN   = pp[4];
+
+    return constant * landauGaus(x, delta, xi, sigma, sigmaN);
+  }
+
+  //____________________________________________________________________
+  TF1* makeLandauGaus(const char* , 
+		      Double_t  c=1, 
+		      Double_t  delta=.5,  Double_t xi=0.07, 
+		      Double_t  sigma=.1,  Double_t sigmaN=-1, 
+		      Double_t  xmin=0,    Double_t xmax=15)
+  {
+    // 
+    // Generate a TF1 object of @f$ f_I@f$ 
+    // 
+    // Parameters:
+    //    c        Constant
+    //    delta    @f$ \Delta@f$ 
+    //    xi       @f$ \xi_1@f$	       
+    //    sigma    @f$ \sigma_1@f$ 	       
+    //    sigma_n  @f$ \sigma_n@f$ 	       
+    //    xmin     Least value of range
+    //    xmax     Largest value of range
+    // 
+    // Return:
+    //    Newly allocated TF1 object
+    //
+    Int_t npar     = 5;
+    TF1*  func     = new TF1("landauGaus", 
+			     &landauGaus1,xmin,xmax,npar);
+    // func->SetLineStyle(((i-2) % 10)+2); // start at dashed
+    func->SetLineColor(kBlack); 
+    func->SetLineWidth(2);
+    func->SetNpx(500);
+    func->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}");
+
+    // Set the initial parameters from the seed fit 
+    func->SetParameter(0,      c);       
+    func->SetParameter(1,  delta);   
+    func->SetParameter(2,     xi);      
+    func->SetParameter(3,  sigma);   
+    func->SetParameter(4, sigmaN); 
+
+    func->SetParLimits(1, 0,    xmax);
+    func->SetParLimits(2, 0,    xmax);
+    func->SetParLimits(3, 0.01, 0.4);
+    
+    if (sigmaN < 0) func->FixParameter(4, 0);
+    else            func->SetParLimits(4, 0, xmax);
+
+    return func;
+  }
+}
+  
 //__________________________________________________________________
-Double_t 
+AliFMDQAChecker::AliFMDQAChecker() 
+  : AliQACheckerBase("FMD","FMD Quality Assurance Checker") ,
+    fDoScale(false),
+    fDidExternal(false), 
+    fShowFitResults(true),
+    fELossLowCut(0.2), 
+    fELossNRMS(3), 
+    fELossBadChi2Nu(10), 
+    fELossFkupChi2Nu(100), 
+    fELossMinEntries(1000),
+    fELossGoodParError(0.1),
+    fROErrorsBad(0.3), 
+    fROErrorsFkup(0.5)
+{
+}          
+
+//__________________________________________________________________
+void
+AliFMDQAChecker::ProcessExternalParams()
+{
+  ProcessExternalParam("ELossLowCut",		fELossLowCut);
+  ProcessExternalParam("ELossNRMS",		fELossNRMS);
+  ProcessExternalParam("ELossBadChi2Nu",	fELossBadChi2Nu);
+  ProcessExternalParam("ELossFkupChi2Nu",	fELossFkupChi2Nu);
+  ProcessExternalParam("ELossGoodParError",	fELossGoodParError);
+  ProcessExternalParam("ROErrorsBad",		fROErrorsBad);
+  ProcessExternalParam("ROErrorsFkup",		fROErrorsFkup);
+  Double_t tmp = 0;
+  ProcessExternalParam("CommonScale",		tmp);
+  fDoScale = tmp > 0;
+  ProcessExternalParam("ELossMinEntries",	tmp);
+  fELossMinEntries = tmp;
+
+  GetThresholds();
+
+  fDidExternal = true;
+}
+//__________________________________________________________________
+void
+AliFMDQAChecker::ProcessExternalParam(const char* name, Double_t& v)
+{
+  TObject* o = fExternParamList->FindObject(name);
+  if (!o) return; 
+  TParameter<double>* p = static_cast<TParameter<double>*>(o);
+  v = p->GetVal();
+  AliDebugF(3, "External parameter: %-20s=%lf", name, v);
+}
+
+//__________________________________________________________________
+void
+AliFMDQAChecker::GetThresholds()
+{
+  const char*    path   = "GRP/Calib/QAThresholds";
+  AliCDBManager* cdbMan = AliCDBManager::Instance();
+  AliCDBEntry*   cdbEnt = cdbMan->Get(path);
+  if (!cdbEnt) { 
+    AliWarningF("Failed to get CDB entry at %s", path);
+    return;
+  }
+  
+  TObjArray*     cdbObj = static_cast<TObjArray*>(cdbEnt->GetObject());
+  if (!cdbObj) { 
+    AliWarningF("Failed to get CDB object at %s", path);
+    return;
+  }
+  
+  TObject*       fmdObj = cdbObj->FindObject("FMD");
+  if (!fmdObj) { 
+    AliWarningF("Failed to get FMD object at from CDB %s", path);
+    return;
+  }
+  
+  AliQAThresholds* qaThr = static_cast<AliQAThresholds*>(fmdObj);
+  Int_t nThr = qaThr->GetSize();
+  for (Int_t i = 0; i < nThr; i++) { 
+    TObject* thr = qaThr->GetThreshold(i);
+    if (!thr) continue; 
+
+    TParameter<double>* d = dynamic_cast<TParameter<double>*>(thr);
+    if (!d) { 
+      AliWarningF("Parameter %s not of type double", thr->GetName());
+      continue;
+    }
+    Double_t val = d->GetVal();
+    TString  name(thr->GetName());
+    if      (name.EqualTo("ELossBadChi2Nu"))     fELossBadChi2Nu    = val;
+    else if (name.EqualTo("ELossFkupChi2Nu"))    fELossFkupChi2Nu   = val;
+    else if (name.EqualTo("ELossGoodParError"))  fELossGoodParError = val;
+    else if (name.EqualTo("ROErrorsBad"))        fROErrorsBad       = val;
+    else if (name.EqualTo("ROErrorsFkup"))       fROErrorsFkup      = val;    
+    AliDebugF(3, "Threshold %s=%f", name.Data(), val);
+  }
+}
+
+//__________________________________________________________________
+AliQAv1::QABIT_t
+AliFMDQAChecker::Quality2Bit(UShort_t value) const
+{
+  AliQAv1::QABIT_t  ret   = AliQAv1::kINFO; // Assume success 
+  if      (value >= kWhatTheFk) ret = AliQAv1::kFATAL;
+  else if (value >= kBad)       ret = AliQAv1::kERROR;
+  else if (value >= kProblem)   ret = AliQAv1::kWARNING;
+  
+  return ret;
+}
+
+//__________________________________________________________________
+void
+AliFMDQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t* values) const
+{
+  AliQAv1 * qa = AliQAv1::Instance(index) ;
+
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    // Check if specie is defined 
+    if (!qa->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)))
+      continue ;
+    
+    // No checker is implemented, set all QA to Fatal
+    if (!values) { 
+      qa->Set(AliQAv1::kFATAL, specie) ; 
+      continue;
+    }
+    
+    UShort_t          value = values[specie];
+    AliQAv1::QABIT_t  ret   = Quality2Bit(value);
+    
+    qa->Set(ret, AliRecoParam::ConvertIndex(specie));
+    AliDebugF(3, "Quality of %s: %d -> %d", 
+	      AliRecoParam::GetEventSpecieName(specie), value, ret);
+  }
+}
+
+//__________________________________________________________________
+UShort_t
+AliFMDQAChecker::BasicCheck(TH1* hist) const
+{
+  if (hist->GetEntries() <= 0) return kOK;
+  return (hist->GetMean() > 0 ? kOK : kProblem);
+}
+
+//__________________________________________________________________
+UShort_t
 AliFMDQAChecker::CheckOne(AliQAv1::ALITASK_t          what,
 			  AliRecoParam::EventSpecie_t specie, 
 			  TH1*                        hist) const
@@ -63,32 +397,303 @@ AliFMDQAChecker::CheckOne(AliQAv1::ALITASK_t          what,
   return 0;
 }
 //__________________________________________________________________
-Double_t 
+UShort_t 
 AliFMDQAChecker::CheckESD(AliRecoParam::EventSpecie_t /* specie*/, 
 			  TH1*                        hist) const
 {
-  return (hist->GetMean() > 0 ? 1 : 0);
+  return BasicCheck(hist);
 }
 //__________________________________________________________________
-Double_t 
+UShort_t
+AliFMDQAChecker::CheckFit(TH1* hist, const TFitResultPtr& res, 
+			  Double_t low, Double_t high, Int_t& color) const
+{
+  color = kGreen+4;
+
+  UShort_t   ret   = 0;
+  Int_t      nPar  = res->NPar();
+  Double_t   dy    = .06;
+  Double_t   x     = .2;
+  Double_t   y     = .9-dy;
+  Double_t   chi2  = res->Chi2();
+  Int_t      nu    = res->Ndf();
+  Double_t   red   = (nu == 0 ? fELossFkupChi2Nu : chi2 / nu);
+  TObjArray* lines = 0;
+  TLatex*    lRed  = 0;
+  TLatex*    ltx   = 0;
+  if (fShowFitResults) { 
+    lines = new TObjArray(nPar+3);
+    lines->SetName("lines");
+    lines->SetOwner(true);
+    
+    ltx = new TLatex(x, y, Form("#chi^{2}/#nu: %7.3f",red));
+    ltx->SetNDC(true);
+    ltx->SetTextColor(color);
+    ltx->SetTextSize(dy-.01);
+    lines->Add(ltx);
+    lRed = ltx;
+    
+    Double_t x1 = .85;
+    Double_t y1 = .5;
+    ltx = new TLatex(x1, y1, Form("[thresholds: %6.2f, %6.2f]", 
+				fELossBadChi2Nu, fELossFkupChi2Nu));
+    ltx->SetTextColor(kGray+3);
+    ltx->SetTextSize(dy-.01);
+    ltx->SetNDC(true);
+    ltx->SetTextAlign(31);
+    lines->Add(ltx);    
+
+    y1 -= dy;
+    ltx = new TLatex(x1, y1, Form("Fit range: [%6.2f,%6.2f]", low, high));
+    ltx->SetTextColor(kGray+3);
+    ltx->SetTextSize(dy-.01);
+    ltx->SetTextAlign(31);
+    ltx->SetNDC(true);
+    lines->Add(ltx);
+
+    y1 -= dy;
+    ltx = new TLatex(x1, y1, Form("Entries: %d", 
+				   Int_t(hist->GetEffectiveEntries())));
+    ltx->SetTextColor(kGray+3);
+    ltx->SetTextSize(dy-.01);
+    ltx->SetTextAlign(31);
+    ltx->SetNDC(true);
+    lines->Add(ltx);
+  }
+  
+  if (red > fELossBadChi2Nu) { // || res->Prob() < .01) { 
+    AliWarningF("Fit gave chi^2/nu=%f/%d=%f>%f (%f)", 
+		res->Chi2(), res->Ndf(), red, fELossBadChi2Nu, 
+		fELossFkupChi2Nu);
+    if (lRed) lRed->SetTextColor(kOrange+2);
+    res->Print();
+    ret++;
+    if (red > fELossFkupChi2Nu) { 
+      if (lRed) lRed->SetTextColor(kRed+2);
+      ret++;
+    }
+  }
+  // Now check the relative error on the fit parameters 
+  Int_t parsOk = 0;
+  for (Int_t i = 0; i < nPar; i++) { 
+    if (res->IsParameterFixed(i)) continue; 
+    Double_t pv  = res->Parameter(i);
+    Double_t pe  = res->ParError(i);
+    Double_t rel = (pv == 0 ? 100 : pe / pv);
+    if (lines) {
+      y -= dy;
+      ltx = new TLatex(x, y, Form("#delta%s/%s: %7.3f", 
+				  res->ParName(i).c_str(),
+				  res->ParName(i).c_str(),
+				  /*pv, pe,*/ rel));
+      ltx->SetNDC(true);
+      ltx->SetTextColor(color);
+      ltx->SetTextSize(dy-.01);
+      lines->Add(ltx);
+    }
+    if (i == 3) continue; // Skip sigma 
+    Double_t thr = fELossGoodParError;
+    if (rel < thr) parsOk++;
+    else if (ltx) ltx->SetLineColor(kOrange+2);
+  }
+  if (parsOk > 0) 
+    ret = TMath::Max(ret-(parsOk-1),0);
+  if (ret > 1) color = kRed+2;
+  if (ret > 0) color = kOrange+2;
+
+  TList*   lf  = hist->GetListOfFunctions();
+  TObject* old = lf->FindObject(lines->GetName());
+  if (old) {
+    lf->Remove(old);
+    delete old;
+  }
+  lf->Add(lines);
+  hist->SetStats(false);
+    
+  return ret;
+}
+
+//__________________________________________________________________
+void
+AliFMDQAChecker::AddFitResults(TH1* hist, const TFitResultPtr& res, 
+			       Int_t color, Double_t low, Double_t high) const
+{
+  if (!fShowFitResults) return; 
+
+  Int_t      nPar  = res->NPar();
+  TObjArray* lines = new TObjArray(nPar+1);
+  lines->SetOwner(kTRUE);
+  lines->SetName("fitResults");
+
+  Double_t   dy    = .06;
+  Double_t   x     = .2;
+  Double_t   y     = .9-dy;
+  Double_t   chi2  = res->Chi2();
+  Int_t      nu    = res->Ndf();
+  Double_t   red   = (nu == 0 ? fELossFkupChi2Nu : chi2 / nu);
+  
+  TLatex* ltx = new TLatex(x, y, Form("#chi^{2}/#nu: %7.3f",red));
+  ltx->SetNDC(true);
+  ltx->SetTextColor(color);
+  ltx->SetTextSize(dy-.01);
+  lines->Add(ltx);
+  
+  y -= dy;
+  ltx = new TLatex(x, y, Form("[thresholds: %6.2f, %6.2f]", 
+			      fELossBadChi2Nu, fELossFkupChi2Nu));
+  ltx->SetTextColor(kGray+3);
+  ltx->SetTextSize(dy-.01);
+  ltx->SetNDC(true);
+  lines->Add(ltx);
+
+  y -= dy;
+  ltx = new TLatex(x, y, Form("Fit range: [%6.2f,%6.2f]", low, high));
+  ltx->SetTextColor(kGray+3);
+  ltx->SetTextSize(dy-.01);
+  ltx->SetNDC(true);
+  lines->Add(ltx);
+
+  for (Int_t i = 0; i < nPar; i++) { 
+    if (res->IsParameterFixed(i)) continue; 
+    y -= dy;
+    Double_t pv  = res->Parameter(i);
+    Double_t pe  = res->ParError(i);
+    Double_t rel = (pv == 0 ? 100 : pe / pv);
+    ltx = new TLatex(x, y, Form("#delta%s/%s: %7.3f", 
+				res->ParName(i).c_str(),
+				res->ParName(i).c_str(),
+				/*pv, pe,*/ rel));
+    ltx->SetNDC(true);
+    ltx->SetTextColor(color);
+    ltx->SetTextSize(dy-.01);
+    lines->Add(ltx);
+  }
+  TList*   lf  = hist->GetListOfFunctions();
+  TObject* old = lf->FindObject(lines->GetName());
+  if (old) {
+    lf->Remove(old);
+    delete old;
+  }
+  lf->Add(lines);
+  hist->SetStats(false);
+}
+
+//__________________________________________________________________
+UShort_t
 AliFMDQAChecker::CheckRaw(AliRecoParam::EventSpecie_t /* specie*/, 
 			  TH1*                        hist) const
 {
-  return (hist->GetMean() > 0 ? 1 : 0);
+  Int_t ret = BasicCheck(hist);
+  TString name(hist->GetName());
+  if (name.Contains("readouterrors", TString::kIgnoreCase)) { 
+    // Check the mean number of errors per event 
+    TH2*  roErrors = static_cast<TH2*>(hist);
+    Int_t nY       = roErrors->GetNbinsY();
+
+    TLatex* ltx = new TLatex(.15, .8, Form("Thresholds: %5.2f,%5.2f",
+					   fROErrorsBad, fROErrorsFkup));
+    ltx->SetName("thresholds");
+    ltx->SetTextColor(kGray+3);
+    ltx->SetNDC();
+
+    TList* ll = hist->GetListOfFunctions(); 
+    TObject* old = ll->FindObject(ltx->GetName());
+    if (old) { 
+      ll->Remove(old);
+      delete old;
+    }
+    ll->Add(ltx);
+    
+    for (Int_t i = 1; i <= 3; i++) {
+      Double_t sum = 0;
+      Int_t    cnt = 0;
+      for (Int_t j = 1; j <= nY; j++) {
+	Int_t n =  roErrors->GetBinContent(i, j);
+	sum     += n * roErrors->GetYaxis()->GetBinCenter(j);
+	cnt     += n;
+      }
+      Double_t mean = sum / cnt;
+
+      ltx = new TLatex(i, kROErrorsLabelY, Form("Mean: %6.3f", mean));
+      ltx->SetName(Form("FMD%d", i));
+      ltx->SetTextAngle(90);
+      ltx->SetTextColor(kGreen+4);
+      old = ll->FindObject(ltx->GetName());
+      if (old) { 
+	ll->Remove(old);
+	delete old;
+      }
+      ll->Add(ltx);
+
+      if (mean > fROErrorsBad) { 
+	AliWarningF("Mean of readout errors for FMD%d = %f > %f (%f)", 
+		    i, mean, fROErrorsBad, fROErrorsFkup);
+	ret++;
+	ltx->SetTextColor(kOrange+2);
+	if (mean > fROErrorsFkup) {
+	  ret++;
+	  ltx->SetTextColor(kRed+2);
+	}
+      }
+    }
+  }
+  else if (name.Contains("eloss",TString::kIgnoreCase)) { 
+    // Try to fit a function to the histogram 
+    if (hist->GetEntries() < 1000) return ret;
+
+    Double_t xMin  = hist->GetXaxis()->GetXmin();
+    Double_t xMax  = hist->GetXaxis()->GetXmax();
+
+    hist->GetXaxis()->SetRangeUser(fELossLowCut, xMax);
+    Int_t    bMaxY = hist->GetMaximumBin();
+    Double_t xMaxY = hist->GetXaxis()->GetBinCenter(bMaxY);
+    Double_t rms   = hist->GetRMS();
+    Double_t low   = hist->GetXaxis()->GetBinCenter(bMaxY-4);
+    hist->GetXaxis()->SetRangeUser(0.2, xMaxY+(fELossNRMS+1)*rms);
+    rms  = hist->GetRMS();
+    hist->GetXaxis()->SetRange(0,-1);
+    TF1*          func = makeLandauGaus(name);
+    func->SetParameter(1, xMaxY);
+    func->SetLineColor(kGreen+4);
+    // func->SetLineStyle(2);
+    Double_t high = xMax; // xMaxY+fELossNRMS*rms;
+
+    TFitResultPtr res  = hist->Fit(func, "QS", "", low, high);
+
+    Int_t    color = func->GetLineColor();
+    UShort_t qual  = CheckFit(hist, res, low, high, color);
+
+    // Make sure we save the function in the full range of the histogram
+    func = hist->GetFunction("landauGaus");
+    func->SetRange(xMin, xMax);
+    // func->SetParent(hist);
+    func->Save(xMin, xMax, 0, 0, 0, 0);
+    func->SetLineColor(color);
+    
+    if (qual > 0) { 
+      func->SetLineWidth(3);
+      func->SetLineStyle(1);
+      if (qual > 1) 
+	func->SetLineWidth(4);
+    }
+    ret += qual;
+  }
+
+  return ret;
 }
 //__________________________________________________________________
-Double_t 
+UShort_t
 AliFMDQAChecker::CheckSim(AliRecoParam::EventSpecie_t /* specie*/, 
 			  TH1*                        hist) const
 {
-  return (hist->GetMean() > 0 ? 1 : 0);
+  return BasicCheck(hist);
 }
 //__________________________________________________________________
-Double_t 
+UShort_t
 AliFMDQAChecker::CheckRec(AliRecoParam::EventSpecie_t /* specie*/, 
 			  TH1*                        hist) const
 {
-  return (hist->GetMean() > 0 ? 1 : 0);
+  return BasicCheck(hist);
 }
 
 //__________________________________________________________________
@@ -107,8 +712,17 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
   //         each 'specie'
   //    t    Reconstruction parameters - not used. 
   //
-  
+  // The bounds defined for RV are 
+  // 
+  //   FATAL:      [-1,   0.0]
+  //   ERROR:      (0.0,  0.002]
+  //   WARNING:    (0.002,0.5]
+  //   INFO:       (0.5,  1.0]
+  //
   // Double_t* rv = new Double_t[AliRecoParam::kNSpecies] ; 
+
+  if (!fDidExternal) ProcessExternalParams();
+
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     // Int_t count   = 0;
     rv[specie]    = 0.; 
@@ -120,12 +734,20 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
     
     TH1* hist  = 0;
     Int_t nHist = list[specie]->GetEntriesFast();
+    UShort_t ret = 0;
     for(Int_t i= 0; i< nHist; i++) {
-      
       if (!(hist = static_cast<TH1*>(list[specie]->At(i)))) continue;
-      
-      rv[specie] += CheckOne(what, AliRecoParam::ConvertIndex(specie), hist);
+      Int_t qual = CheckOne(what, AliRecoParam::ConvertIndex(specie), hist);
+      hist->SetUniqueID(Quality2Bit(qual));
+      ret += qual;
     } // for (int i ...)
+    rv[specie] = ret;
+    // if      (ret > kWhatTheFk) rv[specie] = fLowTestValue[AliQAv1::kFATAL];
+    // else if (ret > kBad)       rv[specie] = fUpTestValue[AliQAv1::kERROR]; 
+    // else if (ret > kProblem)   rv[specie] = fUpTestValue[AliQAv1::kWARNING]; 
+    // else                       rv[specie] = fUpTestValue[AliQAv1::kINFO]; 
+    AliDebugF(3, "Combined sum is %d -> %f", ret, rv[specie]);
+
     // if (count != 0) rv[specie] /= count;
   }
   // return rv;
@@ -219,13 +841,13 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 	FindMinMax(hist, hMin, hMax);
 	max = TMath::Max(max, hMax);
 	min = TMath::Min(min, hMin);
-	AliInfoF("Min/max of %40s: %f/%f, global -> %f/%f", 
-		 hist->GetName(), hMin, hMax, min, max);
+	// AliInfoF("Min/max of %40s: %f/%f, global -> %f/%f", 
+	//          hist->GetName(), hMin, hMax, min, max);
       }
     }
     break ; 
   }
-  AliInfoF("Global min/max=%f/%f", min, max);
+  // AliInfoF("Global min/max=%f/%f", min, max);
   min = TMath::Max(1e-1, min);
   max = TMath::Max(1e5,  max);
 
@@ -273,7 +895,6 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 			 AliQAChecker::Instance()->GetRunNumber(), 
 			 AliQAv1::GetImageFileFormat()));
     fImage[specie]->Print(outName, "ps") ; 
-
 
     // Now set some parameters on the canvas 
     fImage[specie]->Clear(); 
@@ -327,7 +948,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
       logOpts |= CheckForLog(hist->GetZaxis(), pad, 3);
 
       // Figure out special cases 
-      TString opt;
+      TString opt("");
       TString name(hist->GetName());
       if (name.Contains("readouterrors", TString::kIgnoreCase)) {
 	pad->SetRightMargin(0.15);
@@ -349,17 +970,19 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
       }
       // Draw (As a copy)
       hist->DrawCopy(opt);
-
+      
       // Special cases 
       if (name.Contains("readouterrors", TString::kIgnoreCase)) {
+#if 0
 	for (Int_t kk = 1; kk <= 3; kk++) {
 	  TH1* proj = static_cast<TH2*>(hist)->ProjectionY("",kk,kk);
-	Double_t m = proj->GetMean(); 
-	TLatex* l = new TLatex(kk, 30, Form("Mean: %f", m));
-	l->SetTextAngle(90);
-	l->SetTextColor(m > 10 ? kRed+1 : m > .7 ? kOrange+2 :kGreen+2);
-	l->Draw();
-      }
+	  Double_t m = proj->GetMean(); 
+	  TLatex* l = new TLatex(kk, 30, Form("Mean: %f", m));
+	  l->SetTextAngle(90);
+	  l->SetTextColor(m > 10 ? kRed+1 : m > .7 ? kOrange+2 :kGreen+2);
+	  l->Draw();
+	}
+#endif
       }
       else {
 	gStyle->SetOptTitle(0);
@@ -390,6 +1013,11 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
     }
     // Print to a post-script file 
     fImage[specie]->Print(outName, "ps");
+#if 0
+    fImage[specie]->Print(Form("%s_%d.png", 
+			       AliRecoParam::GetEventSpecieName(specie), 
+			       AliQAChecker::Instance()->GetRunNumber()));
+#endif
   }
 }
 

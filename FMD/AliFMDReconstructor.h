@@ -32,6 +32,7 @@ class TTree;
 class TClonesArray;
 class AliFMDDigit;
 class AliRawReader;
+class AliFMDRawReader;
 class AliESDEvent;
 class AliESDFMD;
 class AliFMDRecoParam;
@@ -103,6 +104,7 @@ public:
    *       TClonesArray of AliFMDDigits
    */
   virtual void   Reconstruct(AliRawReader *, TTree*) const;
+  virtual void Reconstruct(AliFMDRawReader& reader) const;
   /** 
    * Put in the ESD data, the FMD ESD data.  The object created by
    * the Reconstruct member function is copied to the ESD object. 
@@ -119,7 +121,12 @@ public:
    */
   virtual void   FillESD(AliRawReader*, TTree* clusterTree, 
 			 AliESDEvent* esd) const;
-
+  /** 
+   * Return the filled FMD ESD object
+   * 
+   * @return FMD ESD object
+   */
+  AliESDFMD* GetESDObject() const { return fESDObj; }
   /** 
    * Create SDigits from raw data
    * 
@@ -161,6 +168,17 @@ public:
    * @param use If true, make the diagnostics file 
    */
   void SetDiagnose(Bool_t use=kTRUE) { fDiagnostics = use; }
+  /** 
+   * Process AliFMDDigit objects in @a digits.  For each digit, find
+   * the psuedo-rapidity @f$ \eta@f$, azimuthal angle @f$ \varphi@f$,
+   * energy deposited @f$ E@f$, and psuedo-inclusive multiplicity @f$
+   * M@f$.
+   * 
+   * @param digits  Array of digits. 
+   * @param rawRead Raw reader used 
+   */
+  virtual void ProcessDigits(TClonesArray* digits,
+			     const AliFMDRawReader& rawRead) const;
     
 protected:
   /** 
@@ -186,6 +204,14 @@ protected:
    */
   virtual void GetVertex(AliESDEvent* esd) const;
   /** 
+   * Set-up reconstructor to use values from reconstruction
+   * parameters, if present, for this event.   If the argument @a set
+   * is @c false, then restore preset values. 
+   * 
+   * @param set 
+   */  
+  virtual void UseRecoParam(Bool_t set=kTRUE) const;
+  /** 
    * Process AliFMDDigit objects in @a digits.  For each digit, find
    * the psuedo-rapidity @f$ \eta@f$, azimuthal angle @f$ \varphi@f$,
    * energy deposited @f$ E@f$, and psuedo-inclusive multiplicity @f$
@@ -193,7 +219,7 @@ protected:
    * 
    * @param digits Array of digits. 
    */
-  virtual void     ProcessDigits(TClonesArray* digits) const;
+  virtual void ProcessDigits(TClonesArray* digits) const;
   /** 
    * Process a single digit 
    * 
@@ -373,14 +399,6 @@ protected:
    */
   void MarkDeadChannels(AliESDFMD* esd) const;
 
-  /** 
-   * Set-up reconstructor to use values from reconstruction
-   * parameters, if present, for this event.   If the argument @a set
-   * is @c false, then restore preset values. 
-   * 
-   * @param set 
-   */  
-  virtual void UseRecoParam(Bool_t set=kTRUE) const;
   /** 
    * Utility member function to get the reconstruction parameters for 
    * this event

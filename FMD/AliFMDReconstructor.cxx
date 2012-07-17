@@ -314,16 +314,9 @@ AliFMDReconstructor::MarkDeadChannels(AliESDFMD* esd) const
 
 //____________________________________________________________________
 void 
-AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
+AliFMDReconstructor::Reconstruct(AliFMDRawReader& rawReader) const
 {
-  // Reconstruct directly from raw data (no intermediate output on
-  // digit tree or rec point tree).  
-  // 
-  // Parameters: 
-  //   reader	Raw event reader 
-  //   ctree    Not used - 'cluster tree' to store rec-points in. 
-  AliFMDDebug(1, ("Reconstructing from raw reader"));
-  AliFMDRawReader rawReader(reader, 0);
+  AliFMDDebug(1, ("Reconstructing from FMD raw reader"));
   fBad.Reset(false);
   UShort_t det, sec, str, fac;
   Short_t  adc, oldDet = -1;
@@ -340,7 +333,22 @@ AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
     ProcessSignal(det, rng, sec, str, adc);
   }
   UseRecoParam(kFALSE);
-  
+
+}
+
+//____________________________________________________________________
+void 
+AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
+{
+  // Reconstruct directly from raw data (no intermediate output on
+  // digit tree or rec point tree).  
+  // 
+  // Parameters: 
+  //   reader	Raw event reader 
+  //   ctree    Not used - 'cluster tree' to store rec-points in. 
+  AliFMDDebug(1, ("Reconstructing from raw reader"));
+  AliFMDRawReader rawReader(reader, 0);
+  Reconstruct(rawReader);
 }
 
 //____________________________________________________________________
@@ -424,6 +432,28 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   // delete digits;
 }
  
+
+//____________________________________________________________________
+void
+AliFMDReconstructor::ProcessDigits(TClonesArray* digits, 
+				   const AliFMDRawReader& rawRead) const
+{
+  // For each digit, find the pseudo rapdity, azimuthal angle, and
+  // number of corrected ADC counts, and pass it on to the algorithms
+  // used. 
+  // 
+  // Parameters: 
+  //    digits	Array of digits
+  // 
+  AliFMDAltroMapping* map = AliFMDParameters::Instance()->GetAltroMap();
+  for (size_t i = 1; i <= 3; i++) { 
+    fZS[i-1]       = rawRead.IsZeroSuppressed(map->Detector2DDL(i));
+    fZSFactor[i-1] = rawRead.NoiseFactor(map->Detector2DDL(i));
+  }
+  UseRecoParam(kTRUE);
+  ProcessDigits(digits);
+  UseRecoParam(kFALSE);
+}
 
 //____________________________________________________________________
 void

@@ -19,10 +19,12 @@
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2I.h> 
+#include <TGeoManager.h>
 
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
 #include "AliLog.h"
+#include "AliGeomManager.h"
 #include "AliFMDQADataMakerRec.h"
 #include "AliFMDDigit.h"
 #include "AliFMDRecPoint.h"
@@ -30,6 +32,7 @@
 #include "AliESDFMD.h"
 #include "AliFMDParameters.h"
 #include "AliFMDRawReader.h"
+#include "AliFMDReconstructor.h"
 #include "AliRawReader.h"
 #include "AliFMDAltroMapping.h"
 #include "AliFMDDebug.h"
@@ -54,10 +57,12 @@ ClassImp(AliFMDQADataMakerRec)
 #endif
            
 //_____________________________________________________________________
-AliFMDQADataMakerRec::AliFMDQADataMakerRec() : 
-  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kFMD), 
-		    "FMD Quality Assurance Data Maker"),
-  fRecPointsArray("AliFMDRecPoint", 1000)
+AliFMDQADataMakerRec::AliFMDQADataMakerRec() 
+  : AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kFMD), 
+		      "FMD Quality Assurance Data Maker"),
+    fRecPointsArray("AliFMDRecPoint", 1000), 
+    fReconstructor(0),
+    fUseReconstructor(true)
 {
   // ctor
  
@@ -67,7 +72,9 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec() :
 AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm) 
   : AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kFMD), 
 		      "FMD Quality Assurance Data Maker"),
-    fRecPointsArray(qadm.fRecPointsArray)
+    fRecPointsArray(qadm.fRecPointsArray), 
+    fReconstructor(qadm.fReconstructor),
+    fUseReconstructor(qadm.fUseReconstructor)
 {
   // copy ctor 
   // Parameters: 
@@ -87,8 +94,9 @@ AliFMDQADataMakerRec::operator = (const AliFMDQADataMakerRec& qadm )
   // Return:
   //    Reference to this
   //
-  fRecPointsArray = qadm.fRecPointsArray;
-  
+  fRecPointsArray   = qadm.fRecPointsArray;
+  fReconstructor    = qadm.fReconstructor;
+  fUseReconstructor = qadm.fUseReconstructor;
   return *this;
 }
 //_____________________________________________________________________
@@ -159,13 +167,14 @@ TH1* AliFMDQADataMakerRec::MakeELossHist(UShort_t d, Char_t r, Short_t b)
       title.Append(Form("[0x%02x]", b));
     }
   }
-  TH1* hist = new TH1F(name, title,300,0, 15);
-  hist->SetXTitle("#Delta E/#Delta_{mip}");
+  TH1* hist = new TH1F(name, title,600,0, 15);
+  hist->SetXTitle("#Delta/#Delta_{mip}");
   hist->SetYTitle("Events [log]");
   hist->SetFillStyle(3001);
   hist->SetFillColor(color);
   hist->SetLineColor(color);
   hist->SetMarkerColor(color);
+  hist->Sumw2();
   hist->SetDirectory(0);
   // hist->SetStats(0);
 
@@ -177,6 +186,7 @@ TH1* AliFMDQADataMakerRec::MakeELossHist(UShort_t d, Char_t r, Short_t b)
 void AliFMDQADataMakerRec::InitESDs()
 {
   // create Digits histograms in Digits subdir
+  Info("InitESDs", "Initializing ESDs");
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
@@ -189,6 +199,7 @@ void AliFMDQADataMakerRec::InitESDs()
 void AliFMDQADataMakerRec::InitDigits()
 {
   // create Digits histograms in Digits subdir
+  Info("InitDigits", "Initializing Digits");
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
@@ -201,6 +212,7 @@ void AliFMDQADataMakerRec::InitDigits()
 void AliFMDQADataMakerRec::InitRecPoints()
 {
   // create Reconstructed Points histograms in RecPoints subdir
+  Info("InitRecPoints", "Initializing RecPoints");
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
@@ -213,6 +225,7 @@ void AliFMDQADataMakerRec::InitRecPoints()
 void AliFMDQADataMakerRec::InitRaws()
 {
   // create Raws histograms in Raws subdir  
+  Info("InitRaws", "Initializing Raws");
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
@@ -227,18 +240,38 @@ void AliFMDQADataMakerRec::InitRaws()
   Add2RawsList(hErrors, 1, !expert, image, !saveCorr);
   //AliInfo(Form("Adding %30s to raw list @ %2d", hErrors->GetName(), 1));
 
+  if (fUseReconstructor && !fReconstructor) {
+    // Int_t oldDbg = AliLog::GetDebugLevel("FMD","");
+    // AliLog::SetModuleDebugLevel("FMD", 5);
+
+    if (!gGeoManager) {
+      Info("InitRaws", "Loading the geometry");
+      AliGeomManager::LoadGeometry();
+    }
+
+    fReconstructor = new AliFMDReconstructor();
+    fReconstructor->SetDiagnose(false);
+    fReconstructor->Init();
+    // AliLog::SetModuleDebugLevel("FMD", oldDbg);
+  }
+
   TH1* hist;
   Int_t idx = 0;
   for(UShort_t d = 1; d<=3; d++) {
     UShort_t nR = (d == 1 ? 1 : 2); 
     for(UShort_t q = 0; q < nR; q++) {
       Char_t r = (q == 1 ? 'O' : 'I');
-      hist = MakeADCHist(d, r, -1);
+      hist = (fUseReconstructor ? 
+	      MakeELossHist(d, r, -1) : 
+	      MakeADCHist(d, r, -1));
 
       Int_t index1 = GetHalfringIndex(d, r, 0, 1);
       idx          = TMath::Max(index1, idx);
       Add2RawsList(hist, index1, !expert, image, !saveCorr);
       //AliInfo(Form("Adding %30s to raw list @ %2d", hist->GetName(), index1));
+      
+      // If we're using the reconstructor, do not make expert histograms 
+      if (fUseReconstructor) continue;
       
       for(UShort_t b = 0; b <= 1; b++) {
 	//Hexadecimal board numbers 0x0, 0x1, 0x10, 0x11;
@@ -374,40 +407,65 @@ void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // Parameters:
   //    rawReader Raw reader
   //
- 
   AliFMDRawReader fmdReader(rawReader,0);
-  
-  if (fDigitsArray) 
-    fDigitsArray->Clear();
-  else 
-    fDigitsArray = new TClonesArray("AliFMDDigit", 1000);
-
+  if (fDigitsArray) fDigitsArray->Clear();
+  else              fDigitsArray = new TClonesArray("AliFMDDigit", 1000);
+    
   TClonesArray* digitsAddress = fDigitsArray;
-  
+    
   rawReader->Reset();
-		
+    
   digitsAddress->Clear();
   fmdReader.ReadAdcs(digitsAddress);
-  for(Int_t i=0;i<digitsAddress->GetEntriesFast();i++) {
-    //Raw ADC counts
-    AliFMDDigit*      digit = static_cast<AliFMDDigit*>(digitsAddress->At(i));
-    UShort_t          det   = digit->Detector();
-    Char_t            ring  = digit->Ring();
-    UShort_t          sec   = digit->Sector();
-    // UShort_t strip = digit->Strip();
-    AliFMDParameters* pars  = AliFMDParameters::Instance();
-    Short_t           board = pars->GetAltroMap()->Sector2Board(ring, sec);
-    
-    Int_t index1 = GetHalfringIndex(det, ring, 0, 1);
-    FillRawsData(index1,digit->Counts());
-    Int_t index2 = GetHalfringIndex(det, ring, board/16,0);
-    FillRawsData(index2,digit->Counts());
-    
-  }
   //
   FillRawsData(1,1, fmdReader.GetNErrors(0));
   FillRawsData(1,2, fmdReader.GetNErrors(1));
   FillRawsData(1,3, fmdReader.GetNErrors(2));
+
+  if (fUseReconstructor) { 
+    AliESDFMD* fmd = fReconstructor->GetESDObject();
+    fmd->Clear();
+    
+    // AliLog::SetModuleDebugLevel("FMD", 15);
+    fReconstructor->ProcessDigits(digitsAddress, fmdReader);
+
+    if (!fmd) AliFatal("No ESD object from reconstructor");
+
+    for(UShort_t det=1;det<=3;det++) {
+      UShort_t nrng = (det == 1 ? 1 : 2);
+      for (UShort_t ir = 0; ir < nrng; ir++) {
+	Char_t   ring = (ir == 0 ? 'I' : 'O');
+	UShort_t nsec = (ir == 0 ? 20  : 40);
+	UShort_t nstr = (ir == 0 ? 512 : 256);
+	for(UShort_t sec =0; sec < nsec;  sec++)  {
+	  for(UShort_t strip = 0; strip < nstr; strip++) {
+	    Float_t mult = fmd->Multiplicity(det,ring,sec,strip);
+	    if(mult == AliESDFMD::kInvalidMult) continue;
+	    
+	    Int_t index1 = GetHalfringIndex(det, ring, 0, 1);
+	    FillRawsData(index1,mult);
+	  }
+	}
+      }
+    }
+  }
+  else {
+    for(Int_t i=0;i<digitsAddress->GetEntriesFast();i++) {
+      //Raw ADC counts
+      AliFMDDigit*      digit = static_cast<AliFMDDigit*>(digitsAddress->At(i));
+      UShort_t          det   = digit->Detector();
+      Char_t            ring  = digit->Ring();
+      UShort_t          sec   = digit->Sector();
+      // UShort_t strip = digit->Strip();
+      AliFMDParameters* pars  = AliFMDParameters::Instance();
+      Short_t           board = pars->GetAltroMap()->Sector2Board(ring, sec);
+      
+      Int_t index1 = GetHalfringIndex(det, ring, 0, 1);
+      FillRawsData(index1,digit->Counts());
+      Int_t index2 = GetHalfringIndex(det, ring, board/16,0);
+      FillRawsData(index2,digit->Counts());
+    }
+  }
   //
   IncEvCountCycleRaws();
   IncEvCountTotalRaws();

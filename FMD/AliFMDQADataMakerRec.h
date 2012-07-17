@@ -10,7 +10,7 @@
 class TH1F; 
 class TH1I; 
 class TList; 
-
+class AliFMDReconstructor;
 
 //_____________________________________________________________________
 // This class implements the AliQADataMakerRec for the FMD. Some
@@ -116,6 +116,8 @@ private:
   Int_t GetHalfringIndex(UShort_t det, Char_t ring, 
 			 UShort_t board, UShort_t monitor = 0) const;
   TClonesArray fRecPointsArray; // Rec points
+  AliFMDReconstructor* fReconstructor;
+  Bool_t               fUseReconstructor;
 
   ClassDef(AliFMDQADataMakerRec,0)  // description 
 };
