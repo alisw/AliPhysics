@@ -654,23 +654,34 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
     case kPi0MC:
     {
       //Non-Linearity correction (from MC with function ([0]*exp(-[1]/E))+(([2]/([3]*2.*TMath::Pi())*exp(-(E-[4])^2/(2.*[3]^2)))))
-      //Double_t fNonLinearityParams[0] = 1.014;
-      //Double_t fNonLinearityParams[1] = -0.03329;
-      //Double_t fNonLinearityParams[2] = -0.3853;
-      //Double_t fNonLinearityParams[3] = 0.5423;
-      //Double_t fNonLinearityParams[4] = -0.4335;
+      //fNonLinearityParams[0] = 1.014;
+      //fNonLinearityParams[1] =-0.03329;
+      //fNonLinearityParams[2] =-0.3853;
+      //fNonLinearityParams[3] = 0.5423;
+      //fNonLinearityParams[4] =-0.4335;
        energy *= (fNonLinearityParams[0]*exp(-fNonLinearityParams[1]/energy))+
                   ((fNonLinearityParams[2]/(fNonLinearityParams[3]*2.*TMath::Pi())*
                     exp(-(energy-fNonLinearityParams[4])*(energy-fNonLinearityParams[4])/(2.*fNonLinearityParams[3]*fNonLinearityParams[3]))));
       break;
     }
      
+    case kPi0MCv2:
+    {
+      //Non-Linearity correction (from MC with function [0]/((x+[1])^[2]))+1;
+      //fNonLinearityParams[0] = 3.11111e-02;
+      //fNonLinearityParams[1] =-5.71666e-02; 
+      //fNonLinearityParams[2] = 5.67995e-01;      
+      
+      energy *= fNonLinearityParams[0]/TMath::Power(energy+fNonLinearityParams[1],fNonLinearityParams[2])+1;
+      break;
+    }
+      
     case kPi0GammaGamma:
     {
       //Non-Linearity correction (from Olga Data with function p0+p1*exp(-p2*E))
-      //Double_t fNonLinearityParams[0] = 1.04;
-      //Double_t fNonLinearityParams[1] = -0.1445;
-      //Double_t fNonLinearityParams[2] = 1.046;
+      //fNonLinearityParams[0] = 1.04;
+      //fNonLinearityParams[1] = -0.1445;
+      //fNonLinearityParams[2] = 1.046;
       energy /= (fNonLinearityParams[0]+fNonLinearityParams[1]*exp(-fNonLinearityParams[2]*energy)); //Olga function
       break;
     }
