@@ -49,7 +49,7 @@ public:
   void     Print(const Option_t*) const;
 
   //enums
-  enum     NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5,kPi0MCv2=6};
+  enum     NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5,kPi0MCv2=6,kPi0MCv3=7};
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum     ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
   enum     { kNCuts = 11 }; //track matching

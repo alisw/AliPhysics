@@ -675,6 +675,22 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       energy *= fNonLinearityParams[0]/TMath::Power(energy+fNonLinearityParams[1],fNonLinearityParams[2])+1;
       break;
     }
+    
+    case kPi0MCv3:
+    {
+      //Same as beam test corrected, change parameters
+      //fNonLinearityParams[0] =  9.81039e-01
+      //fNonLinearityParams[1] =  1.13508e-01;
+      //fNonLinearityParams[2] =  1.00173e+00; 
+      //fNonLinearityParams[3] =  9.67998e-02;
+      //fNonLinearityParams[4] =  2.19381e+02;
+      //fNonLinearityParams[5] =  6.31604e+01;
+      //fNonLinearityParams[6] =  1;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
       
     case kPi0GammaGamma:
     {
@@ -746,6 +762,24 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[2] = -0.3853;
     fNonLinearityParams[3] = 0.5423;
     fNonLinearityParams[4] = -0.4335;
+  }
+  
+  if(fNonLinearityFunction == kPi0MCv2) 
+  {
+    fNonLinearityParams[0] = 3.11111e-02;
+    fNonLinearityParams[1] =-5.71666e-02; 
+    fNonLinearityParams[2] = 5.67995e-01;      
+  }
+  
+  if(fNonLinearityFunction == kPi0MCv3) 
+  {
+    fNonLinearityParams[0] =  9.81039e-01;
+    fNonLinearityParams[1] =  1.13508e-01;
+    fNonLinearityParams[2] =  1.00173e+00; 
+    fNonLinearityParams[3] =  9.67998e-02;
+    fNonLinearityParams[4] =  2.19381e+02;
+    fNonLinearityParams[5] =  6.31604e+01;
+    fNonLinearityParams[6] =  1;
   }
   
   if(fNonLinearityFunction == kPi0GammaGamma) 
