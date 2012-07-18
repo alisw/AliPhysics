@@ -6,6 +6,7 @@
    #include <TColor.h>
    #include <TLatex.h>
    #include <TLegend.h>
+   #include <TLegendEntry.h>
 
    #include <TStyle.h>
    #include <TString.h>
@@ -102,8 +103,8 @@ TH1 *MapHisto(const TH1 *h) {
   TString name("m");
   name = name + h->GetName(); 
   TH1F *mh=new TH1F(name.Data(),h->GetTitle(),nBins,xBins);
-  mh->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  mh->GetYaxis()->SetTitle("1/N_{ev}dN/dp_{T}/dy (GeV/c)^{-1}");
+  mh->GetXaxis()->SetTitle("p_{t} (GeV/c)");
+  mh->GetYaxis()->SetTitle("1/N_{ev}d^{2}N/dp_{t}/dy (GeV/c)^{-1}");
 
   Double_t xh=h->GetBinCenter(1), xmh=0.;
 
@@ -366,6 +367,14 @@ void DrawSpectraAndRatios() {
   TLegend *leg=c1->BuildLegend(0.68,0.46,0.88,0.82,"Centrality:");
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
+
+  TLegendEntry *entry=leg->AddEntry("NULL","systematic uncertainty","lpf");
+  Int_t ci = TColor::GetColor("#cccccc");
+  entry->SetLineColor(ci);
+  entry->SetLineStyle(1);
+  entry->SetLineWidth(10);
+  entry->SetMarkerColor(ci);
+
   c1->cd(); 
   TLatex *   tex = new TLatex(5.5,5.0,"#Lambda");
   tex->SetTextFont(42);
@@ -381,16 +390,22 @@ void DrawSpectraAndRatios() {
    leg=c1lin->BuildLegend(0.69,0.43,0.88,0.80,"Centrality:");
    leg->SetBorderSize(0);
    leg->SetFillColor(0);
+
+   entry=leg->AddEntry("NULL","systematic uncertainty","lpf");
+   entry->SetLineColor(ci);
+   entry->SetLineStyle(1);
+   entry->SetLineWidth(10);
+   entry->SetMarkerColor(ci);
+   entry=leg->AddEntry("NULL","BGBW fit","l");
+   entry->SetLineColor(1);
+   entry->SetLineStyle(1);
+   entry->SetLineWidth(1);
+   entry->SetMarkerColor(1);
+   entry->SetMarkerStyle(21);
+   entry->SetMarkerSize(1);
+
    c1lin->cd();
-   /*
-      tex = new TLatex(1.07,11.4*fdCorr,"x1.5");
-   tex->Draw();
-      tex = new TLatex(1.07,6.02*fdCorr,"x2.0");
-   tex->Draw();
-      tex = new TLatex(1.07,2.58*fdCorr,"x3.0");
-   tex->Draw();
-   */
-      tex = new TLatex(1.04,22.7*fdCorr,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
+   tex=new TLatex(1.04,22.7*fdCorr,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
    tex->Draw();
       tex = new TLatex(2.38,18.5*fdCorr,"#Lambda");  
    tex->SetTextSize(0.11);
@@ -413,6 +428,13 @@ void DrawSpectraAndRatios() {
   leg=c2->BuildLegend(0.68,0.46,0.88,0.82,"Centrality:");
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
+
+  entry=leg->AddEntry("NULL","systematic uncertainty","lpf");
+  entry->SetLineColor(ci);
+  entry->SetLineStyle(1);
+  entry->SetLineWidth(10);
+  entry->SetMarkerColor(ci);
+
   c2->cd(); 
   tex = new TLatex(5.5,5.0,"K^{0}_{S}");
   tex->SetTextFont(42);
@@ -428,15 +450,21 @@ void DrawSpectraAndRatios() {
    leg=c2lin->BuildLegend(0.69,0.43,0.88,0.80,"Centrality:");
    leg->SetBorderSize(0);
    leg->SetFillColor(0);
+
+   entry=leg->AddEntry("NULL","systematic uncertainty","lpf");
+   entry->SetLineColor(ci);
+   entry->SetLineStyle(1);
+   entry->SetLineWidth(10);
+   entry->SetMarkerColor(ci);
+   entry=leg->AddEntry("NULL","BGBW fit","l");
+   entry->SetLineColor(1);
+   entry->SetLineStyle(1);
+   entry->SetLineWidth(1);
+   entry->SetMarkerColor(1);
+   entry->SetMarkerStyle(21);
+   entry->SetMarkerSize(1);
+
    c2lin->cd();
-   /*
-      tex = new TLatex(0.37,53.41838,"x1.5");
-   tex->Draw();
-      tex = new TLatex(0.37,29.51268,"x2.0");
-   tex->Draw();
-      tex = new TLatex(0.37,13.48499,"x3.0");
-   tex->Draw();
-   */
       tex = new TLatex(1.04,109.,"Pb-Pb at #sqrt{s_{NN}}=2.76 TeV, |y|<0.5");
    tex->Draw();
       tex = new TLatex(2.122705,87.70856,"K^{0}_{S}");  
