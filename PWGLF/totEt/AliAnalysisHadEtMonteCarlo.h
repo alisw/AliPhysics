@@ -125,6 +125,7 @@ public:
     void DoTriggerChecks(){kDoTriggerChecks=kTRUE;}
     void DoTriggerChecksOnly(){kDoTriggerChecksOnly=kTRUE;}
     void SetIsOfflineV0AND(Bool_t val){kIsOfflineV0AND = val;}
+    void SetIsOfflineMB(Bool_t val){kIsOfflineMB = val;}
  protected:
 
  private:
@@ -150,6 +151,7 @@ public:
     Bool_t fBaryonEnhancement;//Turns on and off baryon enhancement
     Bool_t fUseRecoPt;//Switch to decide whether to use reconstructed or simulated pT for reconstructed tracks
     Bool_t kIsOfflineV0AND;//Boolean to keep track of whether or not this matches the offline trigger
+    Bool_t kIsOfflineMB;//Boolean to keep track of whether or not this matches the offline trigger
     Bool_t kDoTriggerChecks;//Boolean to keep track of whether or not I want to let the physics selection do the work
     Bool_t kDoTriggerChecksOnly;//Boolean to keep track of whether or not I want to let the physics selection do the work
 
