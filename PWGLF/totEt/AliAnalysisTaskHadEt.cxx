@@ -42,6 +42,7 @@ ClassImp(AliAnalysisTaskHadEt)
 	,fMCAnalysis(0)
 	,fIsSim(isMc)
 	,kIsOfflineV0AND(0)
+	,kIsOfflineMB(0)
 {
     // Constructor
   fMCConfigFile = mcConfigFile;
@@ -179,8 +180,10 @@ if (!fESDEvent) {
  AliTriggerAnalysis *fTriggerAnalysis = new AliTriggerAnalysis();
 
   kIsOfflineV0AND = fTriggerAnalysis->IsOfflineTriggerFired(fESDEvent, AliTriggerAnalysis::kV0AND);  
+  kIsOfflineMB = fTriggerAnalysis->IsOfflineTriggerFired(fESDEvent, AliTriggerAnalysis::kMB1);  
   fRecAnalysis->SetIsOfflineV0AND(kIsOfflineV0AND);
   fMCAnalysis->SetIsOfflineV0AND(kIsOfflineV0AND);
+  fMCAnalysis->SetIsOfflineMB(kIsOfflineMB);
 
   Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
   if(fIsSim && fRecAnalysis->DataSet()!=20100) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(MCEvent()->Header());

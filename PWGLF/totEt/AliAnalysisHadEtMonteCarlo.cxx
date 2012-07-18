@@ -58,6 +58,7 @@ AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 							,fBaryonEnhancement(0)
 							,fUseRecoPt(0)
 							,kIsOfflineV0AND(0)
+							,kIsOfflineMB(0)
 							,kDoTriggerChecks(0)
 							,kDoTriggerChecksOnly(0)
 							,fPtSmearer(0)
@@ -99,7 +100,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   AnalyseEvent(ev);
   if(kDoTriggerChecksOnly) return 1;//If we are only doing trigger checks, don't bother with all of the reconstructed stuff
   //for PID
-  if(kDoTriggerChecks && !kIsOfflineV0AND){return 1;}//In this case we are just after trigger efficiencies and don't care about the ET reconstructed.
+  if(kDoTriggerChecks && (!kIsOfflineV0AND ||!kIsOfflineMB ) ){return 1;}//In this case we are just after trigger efficiencies and don't care about the ET reconstructed.
   AliESDpid *pID = new AliESDpid();//This is identified as a memory leak in valgrind but I delete this object so I think it may be a problem with AliESDpid.
 
   //=============================================
@@ -1671,6 +1672,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	FillHisto1D("NEventsNDV0AND",0.5,1);
 	FillHisto1D("SimPiKPEtNDV0AND",fSimPiKPEt,1.0);
       }
+      if(kIsOfflineMB){
+	FillHisto1D("SimHadEtNDMB",fSimHadEt,1.0);
+	FillHisto1D("SimTotEtNDMB",fSimHadEt,1.0);
+	FillHisto1D("NEventsNDMB",0.5,1);
+	FillHisto1D("SimPiKPEtNDMB",fSimPiKPEt,1.0);
+      }
     }
     if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kSD){
       FillHisto1D("SimHadEtSD",fSimHadEt,1.0);
@@ -1683,6 +1690,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	FillHisto1D("NEventsSDV0AND",0.5,1);
 	FillHisto1D("SimPiKPEtSDV0AND",fSimPiKPEt,1.0);
       }
+      if(kIsOfflineMB){
+	FillHisto1D("SimHadEtSDMB",fSimHadEt,1.0);
+	FillHisto1D("SimTotEtSDMB",fSimHadEt,1.0);
+	FillHisto1D("NEventsSDMB",0.5,1);
+	FillHisto1D("SimPiKPEtSDMB",fSimPiKPEt,1.0);
+      }
     }
     if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kDD){
       FillHisto1D("SimHadEtDD",fSimHadEt,1.0);
@@ -1694,6 +1707,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	FillHisto1D("SimTotEtDDV0AND",fSimHadEt,1.0);
 	FillHisto1D("NEventsDDV0AND",0.5,1);
 	FillHisto1D("SimPiKPEtDDV0AND",fSimPiKPEt,1.0);
+      }
+      if(kIsOfflineMB){
+	FillHisto1D("SimHadEtDDMB",fSimHadEt,1.0);
+	FillHisto1D("SimTotEtDDMB",fSimHadEt,1.0);
+	FillHisto1D("NEventsDDMB",0.5,1);
+	FillHisto1D("SimPiKPEtDDMB",fSimPiKPEt,1.0);
       }
     }
     if(fCentBin != -1){//if we have Pb+Pb and a centrality bin was found
@@ -2104,20 +2123,29 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateHisto1D("SimPiKPEtNDV0AND","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
   CreateHisto1D("SimPiKPEtDDV0AND","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
   CreateHisto1D("SimPiKPEtSDV0AND","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimPiKPEtNDMB","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimPiKPEtDDMB","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimPiKPEtSDMB","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
   CreateHisto1D("SimTotEt","Simulated Total E_{T}","Simulated Total E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtND","Simulated Total E_{T}","Simulated Total E_{T} for non-diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEtND","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for non-diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtNDV0AND","Simulated Total E_{T}","Simulated Total E_{T} for non-diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEtNDV0AND","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for non-diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
+  CreateHisto1D("SimTotEtNDMB","Simulated Total E_{T}","Simulated Total E_{T} for non-diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
+  CreateHisto1D("SimHadEtNDMB","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for non-diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtSD","Simulated Total E_{T}","Simulated Total E_{T} for singly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEtSD","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for singly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtSDV0AND","Simulated Total E_{T}","Simulated Total E_{T} for singly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEtSDV0AND","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for singly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
+  CreateHisto1D("SimTotEtSDMB","Simulated Total E_{T}","Simulated Total E_{T} for singly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
+  CreateHisto1D("SimHadEtSDMB","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for singly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtDD","Simulated Total E_{T}","Simulated Total E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEtDD","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtDDV0AND","Simulated Total E_{T}","Simulated Total E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEtDDV0AND","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
+  CreateHisto1D("SimTotEtDDMB","Simulated Total E_{T}","Simulated Total E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
+  CreateHisto1D("SimHadEtDDMB","Simulated Hadronic E_{T}","Simulated Hadronic E_{T} for doubly diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
   if(fDataSet==20100){
     Int_t width = 5;
     if(fNCentBins<21) width = 10;
@@ -2313,6 +2341,9 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateIntHisto1D("NEventsSDV0AND","Number of events","number of singly diffractive events","Number of events",1,0,1);
   CreateIntHisto1D("NEventsDDV0AND","Number of events","number of doubly diffractive events","Number of events",1,0,1);
   CreateIntHisto1D("NEventsNDV0AND","Number of events","number of non-diffractive events","Number of events",1,0,1);
+  CreateIntHisto1D("NEventsSDMB","Number of events","number of singly diffractive events","Number of events",1,0,1);
+  CreateIntHisto1D("NEventsDDMB","Number of events","number of doubly diffractive events","Number of events",1,0,1);
+  CreateIntHisto1D("NEventsNDMB","Number of events","number of non-diffractive events","Number of events",1,0,1);
   if( !fRunLightweight){
     CreateResolutionPtHisto2D("presolutionTPC","p resolution","p^{rec}","(p^{sim}-p^{rec})/p^{rec}");
     CreateResolutionPtHisto2D("pTresolutionTPC","p_{T} resolution","p_{T}^{rec}","(p_{T}^{sim}-p_{T}^{rec})/p_{T}^{rec}");
