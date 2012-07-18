@@ -133,7 +133,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow() :
   fArraytrack(NULL),
   fCounterPoolBackground(0),
   fHFEVZEROEventPlane(0x0),
-  fHistEV(0),
+  fMultEv(0),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
@@ -239,7 +239,7 @@ AliAnalysisTaskHFEFlow:: AliAnalysisTaskHFEFlow(const char *name) :
   fArraytrack(NULL),
   fCounterPoolBackground(0),
   fHFEVZEROEventPlane(0x0),
-  fHistEV(0),
+  fMultEv(0),
   fEventPlane(0x0),
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
@@ -367,7 +367,7 @@ AliAnalysisTaskHFEFlow::AliAnalysisTaskHFEFlow(const AliAnalysisTaskHFEFlow &ref
   fArraytrack(NULL),
   fCounterPoolBackground(ref.fCounterPoolBackground),
   fHFEVZEROEventPlane(NULL),
-  fHistEV(NULL),
+  fMultEv(NULL),
   fEventPlane(NULL),
   fEventPlaneaftersubtraction(NULL),
   fFractionContamination(NULL),
@@ -772,7 +772,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   // Minimum histos
 
   // Histos
-  fHistEV = new TH2D("fHistEV", "events", 3, 0, 3, 3, 0,3);
+  fMultEv = new TH1D("fMultEv", "", 5000, 0, 10000.);
   
   AliDebug(2,"AliAnalysisTaskHFEFlow: histev");
 
@@ -1125,7 +1125,7 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   // Add to the list
   //******************************
 
-  fListHist->Add(fHistEV);
+  fListHist->Add(fMultEv);
   fListHist->Add(fEventPlane);
   fListHist->Add(fFractionContamination);
   fListHist->Add(fCosRes);
@@ -1344,7 +1344,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   fPIDTOFOnly->SetPIDResponse(pidResponse);
   fPIDBackground->SetPIDResponse(pidResponse);
 
-  fHistEV->Fill(binctt,0.0);
+  //fMultEv->Fill(binctt,0.0);
  
 
   //////////////////
@@ -1356,7 +1356,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
     return;
   }
 
-  fHistEV->Fill(binctt,1.0);
+  //fMultEv->Fill(binctt,1.0);
 
   ////////////////////////////////////  
   // First method event plane
@@ -1537,7 +1537,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
 
   if(eventplanedefined) {
     
-    fHistEV->Fill(binctt,2.0);
+    //fMultEv->Fill(binctt,2.0);
     
     // Fill
     valuensparsea[0] = eventPlaneV0A;
@@ -1684,6 +1684,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
   //////////////////////////
   // Loop over track
   //////////////////////////
+  Double_t nboftrackTPCcut = 0.0;
   
   for(Int_t k = 0; k < nbtracks; k++){
       
@@ -1710,6 +1711,7 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       // RecKine: ITSTPC cuts  
       if(!fHFECuts->CheckParticleCuts(AliHFEcuts::kStepRecKineITSTPC + AliHFEcuts::kNcutStepsMCTrack, (TObject *)track)) continue;
       if(fMonitorTrackCuts) fTrackingCuts->Fill(&valuetrackingcuts[0]);
+      nboftrackTPCcut++;
       
       // Reject kink mother
       if(fAODAnalysis) {
@@ -2037,6 +2039,8 @@ void AliAnalysisTaskHFEFlow::UserExec(Option_t */*option*/)
       fArraytrack = NULL;
     }
   }
+
+  if((cntr>20) && (cntr<40)) fMultEv->Fill(nboftrackTPCcut);
   
   PostData(1, fListHist);
 
