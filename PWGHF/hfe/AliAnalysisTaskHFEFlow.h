@@ -221,7 +221,7 @@ private:
   AliHFEVZEROEventPlane *fHFEVZEROEventPlane; // VZERO event plane calibrated
   
   // Histos
-  TH2D *fHistEV;               //! Number of events
+  TH1D *fMultEv;               //! Multiplicity in the event
   
   // A Event plane as function of phiepa, phiepb, phiepc, phiepd centrality 
   // a V0A, b V0C, c TPC,
