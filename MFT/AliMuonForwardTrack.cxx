@@ -75,6 +75,7 @@ AliMuonForwardTrack::AliMuonForwardTrack(AliMUONTrack *MUONTrack):
     fParentPDGCode[iParent] =  0;
   }
   fMFTClusters = new TClonesArray("AliMFTCluster");
+  fMFTClusters->SetOwner(kTRUE);
 
 }
 
