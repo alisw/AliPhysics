@@ -331,9 +331,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
       return;
     }
   } else { systematics->SetCollisionType(0); }
-  if(decay!=4)
-    systematics->Init(decay);
-  else systematics->Init(3);
+  systematics->Init(decay);
   spectra->ComputeSystUncertainties(systematics,combineFeedDown);
 
   //
