@@ -62,6 +62,9 @@ class AliMCAnalysisUtils : public TObject {
   void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, AliStack * stack, Int_t & tag); // ESD
   void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, const TClonesArray* mcparticles, Int_t & tag); // AOD
   
+  TLorentzVector GetMother(const Int_t label,const AliCaloTrackReader* reader);
+  TLorentzVector GetMotherWithPDG(const Int_t label, const Int_t pdg,const AliCaloTrackReader* reader);
+  
   //Check or set the bits produced in the above methods
   void    SetTagBit(Int_t &tag, const UInt_t set) const {
     // Set bit of type set (mcTypes) in tag

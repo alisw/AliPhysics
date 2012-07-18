@@ -1115,6 +1115,129 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
   return fJetsList;
 }
 
+//_____________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetMother(const Int_t label, const AliCaloTrackReader* reader) 
+{
+  //Return the kinematics of the particle that generated the signal
+  
+  TLorentzVector mom;
+  
+  if(reader->ReadStack())
+  {
+    if(!reader->GetStack()) {
+      if (fDebug >=0) 
+        printf("AliMCAnalysisUtils::GetMother() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+      return -1;
+    }
+    if(label >= 0 && label < reader->GetStack()->GetNtrack())
+    {
+      TParticle * momP = reader->GetStack()->Particle(label);
+      momP->Momentum(mom);
+    }
+  }
+  else if(reader->ReadAODMCParticles())
+  {
+    TClonesArray* mcparticles = reader->GetAODMCParticles(0);
+    if(!mcparticles) 
+    {
+      if(fDebug >= 0)
+        printf("AliMCAnalysisUtils::GetMother() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+      return -1;
+    }
+    
+    Int_t nprimaries = mcparticles->GetEntriesFast();
+    if(label >= 0 && label < nprimaries)
+    {
+      AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
+      mom.SetPxPyPzE(momP->Px(),momP->Py(),momP->Pz(),momP->E());
+    }
+  }
+  
+  return mom;
+}
+
+//_____________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(const Int_t label, const Int_t pdg, const AliCaloTrackReader* reader) 
+{
+  //Return the kinematics of the particle that generated the signal
+  
+  TLorentzVector grandmom;
+  
+  
+  if(reader->ReadStack())
+  {
+    if(!reader->GetStack())
+    {
+      if (fDebug >=0) 
+        printf("AliMCAnalysisUtils::GetMotherWithPDG() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+      return -1;
+    }
+    if(label >= 0 && label < reader->GetStack()->GetNtrack())
+    {
+      TParticle * momP = reader->GetStack()->Particle(label);
+
+      Int_t grandmomLabel = momP->GetFirstMother();
+      Int_t grandmomPDG   = -1;
+      TParticle * grandmomP = 0x0;
+      while (grandmomLabel >=0 ) 
+      {
+        grandmomP   = reader->GetStack()->Particle(grandmomLabel);
+        grandmomPDG = grandmomP->GetPdgCode();
+        if(grandmomPDG==pdg)
+        {
+          grandmom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->Energy());
+          break;
+        }
+        
+        grandmomLabel =  grandmomP->GetFirstMother();
+        
+      }
+      
+      if(grandmomPDG!=pdg) printf("AliMCAnalysisUtils::GetMotherWithPDG(ESD) - mother with PDG %d, not found! \n",pdg);
+    }
+  }
+  else if(reader->ReadAODMCParticles())
+  {
+    TClonesArray* mcparticles = reader->GetAODMCParticles(0);
+    if(!mcparticles) 
+    {
+      if(fDebug >= 0)
+        printf("AliMCAnalysisUtils::GetMotherWithPDG() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+      return -1;
+    }
+    
+    Int_t nprimaries = mcparticles->GetEntriesFast();
+    if(label >= 0 && label < nprimaries)
+    {
+      AliAODMCParticle * momP = (AliAODMCParticle *) mcparticles->At(label);
+      
+      Int_t grandmomLabel = momP->GetMother();
+      Int_t grandmomPDG   = -1;
+      AliAODMCParticle * grandmomP = 0x0;
+      while (grandmomLabel >=0 ) 
+      {
+        grandmomP   = (AliAODMCParticle *) mcparticles->At(grandmomLabel);
+        grandmomPDG = grandmomP->GetPdgCode();
+        if(grandmomPDG==pdg)
+        {
+          //printf("AliMCAnalysisUtils::GetMotherWithPDG(AOD) - mother with PDG %d FOUND! \n",pdg);
+
+          grandmom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
+          break;
+        }
+        
+        grandmomLabel =  grandmomP->GetMother();
+        
+      }
+      
+      if(grandmomPDG!=pdg) printf("AliMCAnalysisUtils::GetMotherWithPDG(AOD) - mother with PDG %d, NOT found! \n",pdg);
+            
+    }
+  }
+  
+  
+  return grandmom;
+}
 
 //________________________________________________________
 void AliMCAnalysisUtils::Print(const Option_t * opt) const
