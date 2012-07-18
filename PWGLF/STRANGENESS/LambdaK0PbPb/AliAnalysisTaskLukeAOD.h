@@ -75,9 +75,6 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	TH2F			*fHistBBLaNeg;		//PID of the negative daughter of lambda candidates
 	TH2F			*fHistBBLbPos;		//PID of the positive daughter of antilambda candidates
 	TH2F			*fHistBBLbNeg;		//PID of the negative daughter of antilambda candidates
-	TH2F			*fHistArmPodK0;		//Armenteros plot for K0 candidates.
-	TH2F			*fHistArmPodLa;		//Armenteros plot for Lambda candidates.
-	TH2F			*fHistArmPodLb;		//Armenteros plot for Antilambda candidates.
 	
 	TH2F			*fHistBB3SigProton;	//Bethe Bloch plot of protons @3sigma
 	TH2F			*fHistMK0Pt;			//	Mass of 'K0' vs transverse momentum
@@ -95,6 +92,9 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	TH2F			*fHistMcPMK0PtCent0005;			//	Transverse momentum distribution vs reconstructed K0 mass of primary K0s in MC for centrality 0-5%
 	TH2F			*fHistMcPMLaPtCent0005;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary Lambda in MC for centrality 0-5%
 	TH2F			*fHistMcPMLbPtCent0005;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary Antilambda in MC for centrality 0-5%
+	TH2F			*fHistMcAsMK0PtCent0005;			//	Transverse momentum distribution vs reconstructed K0 mass of primary reconstructed K0s in MC for centrality 0-5%
+	TH2F			*fHistMcAsMLaPtCent0005;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary reconstructed Lambda in MC for centrality 0-5%
+	TH2F			*fHistMcAsMLbPtCent0005;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary reconstructed Antilambda in MC for centrality 0-5%
 	TH1F			*fHistZVertexCent0005;					//	Z coordinate of primary vertex for centrality 0-5%
 	TH1F			*fHistMCZVertexCent0005;				//	Z coordinate of MC primary vertex for centrality 0-5%
 	
@@ -104,6 +104,9 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	TH2F			*fHistMcPMK0PtCent0510;			//	Transverse momentum distribution vs reconstructed K0 mass of primary K0s in MC for centrality 5-10%
 	TH2F			*fHistMcPMLaPtCent0510;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary Lambda in MC for centrality 5-10%
 	TH2F			*fHistMcPMLbPtCent0510;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary Antilambda in MC for centrality 5-10%
+	TH2F			*fHistMcAsMK0PtCent0510;			//	Transverse momentum distribution vs reconstructed K0 mass of primary reconstructed K0s in MC for centrality 5-10%
+	TH2F			*fHistMcAsMLaPtCent0510;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary reconstructed Lambda in MC for centrality 5-10%
+	TH2F			*fHistMcAsMLbPtCent0510;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary reconstructed Antilambda in MC for centrality 5-10%
 	TH1F			*fHistZVertexCent0510;					//	Z coordinate of primary vertex for centrality 5-10%
 	TH1F			*fHistMCZVertexCent0510;				//	Z coordinate of MC primary vertex for centrality 5-10%
 	
@@ -114,6 +117,9 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	TH2F			*fHistMcPMK0PtCent1020;			//	Transverse momentum distribution vs reconstructed K0 mass of primary K0s in MC for centrality 10-20%
 	TH2F			*fHistMcPMLaPtCent1020;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary Lambda in MC for centrality 10-20%
 	TH2F			*fHistMcPMLbPtCent1020;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary Antilambda in MC for centrality 10-20%
+	TH2F			*fHistMcAsMK0PtCent1020;			//	Transverse momentum distribution vs reconstructed K0 mass of primary reconstructed K0s in MC for centrality 10-20%
+	TH2F			*fHistMcAsMLaPtCent1020;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary reconstructed Lambda in MC for centrality 10-20%
+	TH2F			*fHistMcAsMLbPtCent1020;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary reconstructed Antilambda in MC for centrality 10-20%
 	TH1F			*fHistZVertexCent1020;					//	Z coordinate of primary vertex for centrality 10-20%
 	TH1F			*fHistMCZVertexCent1020;				//	Z coordinate of MC primary vertex for centrality 10-20%
 	
@@ -124,6 +130,9 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	TH2F			*fHistMcPMK0PtCent2040;			//	Transverse momentum distribution vs reconstructed K0 mass of primary K0s in MC for centrality 20-40%
 	TH2F			*fHistMcPMLaPtCent2040;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary Lambda in MC for centrality 20-40%
 	TH2F			*fHistMcPMLbPtCent2040;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary Antilambda in MC for centrality 20-40%
+	TH2F			*fHistMcAsMK0PtCent2040;			//	Transverse momentum distribution vs reconstructed K0 mass of primary reconstructed K0s in MC for centrality 20-40%
+	TH2F			*fHistMcAsMLaPtCent2040;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary reconstructed Lambda in MC for centrality 20-40%
+	TH2F			*fHistMcAsMLbPtCent2040;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary reconstructed Antilambda in MC for centrality 20-40%
 	TH1F			*fHistZVertexCent2040;					//	Z coordinate of primary vertex for centrality 20-40%
 	TH1F			*fHistMCZVertexCent2040;				//	Z coordinate of MC primary vertex for centrality 20-40%
 	
@@ -134,6 +143,9 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	TH2F			*fHistMcPMK0PtCent4060;			//	Transverse momentum distribution vs reconstructed K0 mass of primary K0s in MC for centrality 40-60%
 	TH2F			*fHistMcPMLaPtCent4060;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary Lambda in MC for centrality 40-60%
 	TH2F			*fHistMcPMLbPtCent4060;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary Antilambda in MC for centrality 40-60%
+	TH2F			*fHistMcAsMK0PtCent4060;			//	Transverse momentum distribution vs reconstructed K0 mass of primary reconstructed K0s in MC for centrality 40-60%
+	TH2F			*fHistMcAsMLaPtCent4060;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary reconstructed Lambda in MC for centrality 40-60%
+	TH2F			*fHistMcAsMLbPtCent4060;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary reconstructed Antilambda in MC for centrality 40-60%
 	TH1F			*fHistZVertexCent4060;					//	Z coordinate of primary vertex for centrality 40-60%
 	TH1F			*fHistMCZVertexCent4060;				//	Z coordinate of MC primary vertex for centrality 40-60%
 	
@@ -144,6 +156,9 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	TH2F			*fHistMcPMK0PtCent6090;			//	Transverse momentum distribution vs reconstructed K0 mass of primary K0s in MC for centrality 60-90%
 	TH2F			*fHistMcPMLaPtCent6090;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary Lambda in MC for centrality 60-90%
 	TH2F			*fHistMcPMLbPtCent6090;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary Antilambda in MC for centrality 60-90%
+	TH2F			*fHistMcAsMK0PtCent6090;			//	Transverse momentum distribution vs reconstructed K0 mass of primary reconstructed K0s in MC for centrality 60-90%
+	TH2F			*fHistMcAsMLaPtCent6090;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary reconstructed Lambda in MC for centrality 60-90%
+	TH2F			*fHistMcAsMLbPtCent6090;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary reconstructed Antilambda in MC for centrality 60-90%
 	TH1F			*fHistZVertexCent6090;					//	Z coordinate of primary vertex for centrality 60-90%
 	TH1F			*fHistMCZVertexCent6090;				//	Z coordinate of MC primary vertex for centrality 60-90%
 	
@@ -154,69 +169,105 @@ class AliAnalysisTaskLukeAOD : public AliAnalysisTaskSE {
 	TH2F			*fHistMcPMK0PtCent0090;			//	Transverse momentum distribution vs reconstructed K0 mass of primary K0s in MC for centrality 0-90%
 	TH2F			*fHistMcPMLaPtCent0090;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary Lambda in MC for centrality 0-90%
 	TH2F			*fHistMcPMLbPtCent0090;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary Antilambda in MC for centrality 0-90%
+	TH2F			*fHistMcAsMK0PtCent0090;			//	Transverse momentum distribution vs reconstructed K0 mass of primary reconstructed K0s in MC for centrality 0-90%
+	TH2F			*fHistMcAsMLaPtCent0090;			//	Transverse momentum distribution vs reconstructed Lambda mass of primary reconstructed Lambda in MC for centrality 0-90%
+	TH2F			*fHistMcAsMLbPtCent0090;			//	Transverse momentum distribution vs reconstructed Antilambd mass of primary reconstructed Antilambda in MC for centrality 0-90%
 	TH1F			*fHistZVertexCent0090;					//	Z coordinate of primary vertex for centrality 0-90%
 	TH1F			*fHistMCZVertexCent0090;				//	Z coordinate of MC primary vertex for centrality 0-90%
 		
 	
-	TH2F			*fHistCosPaLaPt;		//	Transverse momentum distribution vs CosPa for Lambda Candidates
-	TH2F			*fHistCosPaLbPt;		//	Transverse momentum distribution vs CosPa for AntiLambda Candidates
-	TH2F			*fHistCosPaK0Pt;		//	Transverse momentum distribution vs CosPa for K0Short Candidates
-	TH2F			*fHistMcCosPaAllLaPt;	//	Transverse momentum distribution vs CosPa for all MC primary Lambda
-	TH2F			*fHistMcCosPaAllLbPt;	//	Transverse momentum distribution vs CosPa for all MC primary AntiLambda
-	TH2F			*fHistMcCosPaAllK0Pt;	//	Transverse momentum distribution vs CosPa for all MC primary K0Short
-	TH2F			*fHistMcCosPaFoundLaPt;	//	Transverse momentum distribution vs CosPa for reconstructed MC primary Lambda
-	TH2F			*fHistMcCosPaFoundLbPt;	//	Transverse momentum distribution vs CosPa for reconstructed MC primary AntiLambda
-	TH2F			*fHistMcCosPaAFoundK0Pt;//	Transverse momentum distribution vs CosPa for reconstructed MC primary K0Short
+	TH2F			*fHistCosPaMLa;		//	Transverse momentum distribution vs CosPa for Lambda Candidates
+	TH2F			*fHistCosPaMLb;		//	Transverse momentum distribution vs CosPa for AntiLambda Candidates
+	TH2F			*fHistCosPaMK0;		//	Transverse momentum distribution vs CosPa for K0Short Candidates
+	TH2F			*fHistMcGenCosPaMLa;	//	Transverse momentum distribution vs MC-Truth CosPa for all MC primary Lambda
+	TH2F			*fHistMcGenCosPaMLb;	//	Transverse momentum distribution vs MC-Truth CosPa for all MC primary AntiLambda
+	TH2F			*fHistMcGenCosPaMK0;	//	Transverse momentum distribution vs MC-Truth CosPa for all MC primary K0Short
+	TH2F			*fHistMcAsReconCosPaMLa;	//	Transverse momentum distribution vs CosPa for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsReconCosPaMLb;	//	Transverse momentum distribution vs CosPa for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsReconCosPaMK0;//	Transverse momentum distribution vs CosPa for reconstructed MC primary K0Short
+	TH2F			*fHistMcAsTruthCosPaMLa;	//	Transverse momentum distribution vs MC-Truth CosPa for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsTruthCosPaMLb;	//	Transverse momentum distribution vs MC-Truth CosPa for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsTruthCosPaMK0;//	Transverse momentum distribution vs MC-Truth CosPa for reconstructed MC primary K0Short
 	
-	TH2F			*fHistcTauLaPt;		//	Transverse momentum distribution vs cTau for Lambda Candidates
-	TH2F			*fHistcTauLbPt;		//	Transverse momentum distribution vs cTau for AntiLambda Candidates
-	TH2F			*fHistcTauK0Pt;		//	Transverse momentum distribution vs cTau for K0Short Candidates
-	TH2F			*fHistMccTauAllLaPt;	//	Transverse momentum distribution vs cTau for all MC primary Lambda
-	TH2F			*fHistMccTauAllLbPt;	//	Transverse momentum distribution vs cTau for all MC primary AntiLambda
-	TH2F			*fHistMccTauAllK0Pt;	//	Transverse momentum distribution vs cTau for all MC primary K0Short
-	TH2F			*fHistMccTauFoundLaPt;	//	Transverse momentum distribution vs cTau for reconstructed MC primary Lambda
-	TH2F			*fHistMccTauFoundLbPt;	//	Transverse momentum distribution vs cTau for reconstructed MC primary AntiLambda
-	TH2F			*fHistMccTauAFoundK0Pt;//	Transverse momentum distribution vs cTau for reconstructed MC primary K0Short
+	TH2F			*fHistcTauMLa;		//	Transverse momentum distribution vs cTau for Lambda Candidates
+	TH2F			*fHistcTauMLb;		//	Transverse momentum distribution vs cTau for AntiLambda Candidates
+	TH2F			*fHistcTauMK0;		//	Transverse momentum distribution vs cTau for K0Short Candidates
+	TH2F			*fHistMcGencTauMLa;	//	Transverse momentum distribution vs MC-Truth cTau for all MC primary Lambda
+	TH2F			*fHistMcGencTauMLb;	//	Transverse momentum distribution vs MC-Truth cTau for all MC primary AntiLambda
+	TH2F			*fHistMcGencTauMK0;	//	Transverse momentum distribution vs MC-Truth cTau for all MC primary K0Short
+	TH2F			*fHistMcAsReconcTauMLa;	//	Transverse momentum distribution vs cTau for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsReconcTauMLb;	//	Transverse momentum distribution vs cTau for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsReconcTauMK0;//	Transverse momentum distribution vs cTau for reconstructed MC primary K0Short
+	TH2F			*fHistMcAsTruthcTauMLa;	//	Transverse momentum distribution vs MC-Truth cTau for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsTruthcTauMLb;	//	Transverse momentum distribution vs MC-Truth cTau for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsTruthcTauMK0;//	Transverse momentum distribution vs MC-Truth cTau for reconstructed MC primary K0Short
 	
-	TH2F			*fHistDcaLaPt;		//	Transverse momentum distribution vs Dca for Lambda Candidates
-	TH2F			*fHistDcaLbPt;		//	Transverse momentum distribution vs Dca for AntiLambda Candidates
-	TH2F			*fHistDcaK0Pt;		//	Transverse momentum distribution vs Dca for K0Short Candidates
-	TH2F			*fHistMcDcaAllLaPt;	//	Transverse momentum distribution vs Dca for all MC primary Lambda
-	TH2F			*fHistMcDcaAllLbPt;	//	Transverse momentum distribution vs Dca for all MC primary AntiLambda
-	TH2F			*fHistMcDcaAllK0Pt;	//	Transverse momentum distribution vs Dca for all MC primary K0Short
-	TH2F			*fHistMcDcaFoundLaPt;	//	Transverse momentum distribution vs Dca for reconstructed MC primary Lambda
-	TH2F			*fHistMcDcaFoundLbPt;	//	Transverse momentum distribution vs Dca for reconstructed MC primary AntiLambda
-	TH2F			*fHistMcDcaAFoundK0Pt;//	Transverse momentum distribution vs Dca for reconstructed MC primary K0Short
+	TH2F			*fHistDcaMLa;		//	Transverse momentum distribution vs Dca for Lambda Candidates
+	TH2F			*fHistDcaMLb;		//	Transverse momentum distribution vs Dca for AntiLambda Candidates
+	TH2F			*fHistDcaMK0;		//	Transverse momentum distribution vs Dca for K0Short Candidates
+	TH2F			*fHistMcGenDcaMLa;	//	Transverse momentum distribution vs MC-Truth Dca for all MC primary Lambda
+	TH2F			*fHistMcGenDcaMLb;	//	Transverse momentum distribution vs MC-Truth Dca for all MC primary AntiLambda
+	TH2F			*fHistMcGenDcaMK0;	//	Transverse momentum distribution vs MC-Truth Dca for all MC primary K0Short
+	TH2F			*fHistMcAsReconDcaMLa;	//	Transverse momentum distribution vs Dca for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsReconDcaMLb;	//	Transverse momentum distribution vs Dca for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsReconDcaMK0;//	Transverse momentum distribution vs Dca for reconstructed MC primary K0Short
+	TH2F			*fHistMcAsTruthDcaMLa;	//	Transverse momentum distribution vs MC-Truth Dca for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsTruthDcaMLb;	//	Transverse momentum distribution vs MC-Truth Dca for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsTruthDcaMK0;//	Transverse momentum distribution vs MC-Truth Dca for reconstructed MC primary K0Short
 	
-	TH2F			*fHistNSigmaLaPt;		//	Transverse momentum distribution vs NSigma for Lambda Candidates
-	TH2F			*fHistNSigmaLbPt;		//	Transverse momentum distribution vs NSigma for AntiLambda Candidates
-	TH2F			*fHistNSigmaK0Pt;		//	Transverse momentum distribution vs NSigma for K0Short Candidates
-	TH2F			*fHistMcNSigmaAllLaPt;	//	Transverse momentum distribution vs NSigma for all MC primary Lambda
-	TH2F			*fHistMcNSigmaAllLbPt;	//	Transverse momentum distribution vs NSigma for all MC primary AntiLambda
-	TH2F			*fHistMcNSigmaAllK0Pt;	//	Transverse momentum distribution vs NSigma for all MC primary K0Short
-	TH2F			*fHistMcNSigmaFoundLaPt;	//	Transverse momentum distribution vs NSigma for reconstructed MC primary Lambda
-	TH2F			*fHistMcNSigmaFoundLbPt;	//	Transverse momentum distribution vs NSigma for reconstructed MC primary AntiLambda
-	TH2F			*fHistMcNSigmaAFoundK0Pt;//	Transverse momentum distribution vs NSigma for reconstructed MC primary K0Short
+	TH2F			*fHistNSigmaMLa;		//	Transverse momentum distribution vs NSigma for Lambda Candidates
+	TH2F			*fHistNSigmaMLb;		//	Transverse momentum distribution vs NSigma for AntiLambda Candidates
+	TH2F			*fHistNSigmaMK0;		//	Transverse momentum distribution vs NSigma for K0Short Candidates
+	TH2F			*fHistMcGenNSigmaMLa;	//	Transverse momentum distribution vs MC-Truth NSigma for all MC primary Lambda
+	TH2F			*fHistMcGenNSigmaMLb;	//	Transverse momentum distribution vs MC-Truth NSigma for all MC primary AntiLambda
+	TH2F			*fHistMcGenNSigmaMK0;	//	Transverse momentum distribution vs MC-Truth NSigma for all MC primary K0Short
+	TH2F			*fHistMcAsReconNSigmaMLa;	//	Transverse momentum distribution vs NSigma for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsReconNSigmaMLb;	//	Transverse momentum distribution vs NSigma for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsReconNSigmaMK0;//	Transverse momentum distribution vs NSigma for reconstructed MC primary K0Short
+	TH2F			*fHistMcAsTruthNSigmaMLa;	//	Transverse momentum distribution vs MC-Truth NSigma for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsTruthNSigmaMLb;	//	Transverse momentum distribution vs MC-Truth NSigma for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsTruthNSigmaMK0;//	Transverse momentum distribution vs MC-Truth NSigma for reconstructed MC primary K0Short
 	
-	TH2F			*fHistEtaLaPt;		//	Transverse momentum distribution vs Eta for Lambda Candidates
-	TH2F			*fHistEtaLbPt;		//	Transverse momentum distribution vs Eta for AntiLambda Candidates
-	TH2F			*fHistEtaK0Pt;		//	Transverse momentum distribution vs Eta for K0Short Candidates
-	TH2F			*fHistMcEtaAllLaPt;	//	Transverse momentum distribution vs Eta for all MC primary Lambda
-	TH2F			*fHistMcEtaAllLbPt;	//	Transverse momentum distribution vs Eta for all MC primary AntiLambda
-	TH2F			*fHistMcEtaAllK0Pt;	//	Transverse momentum distribution vs Eta for all MC primary K0Short
-	TH2F			*fHistMcEtaFoundLaPt;	//	Transverse momentum distribution vs Eta for reconstructed MC primary Lambda
-	TH2F			*fHistMcEtaFoundLbPt;	//	Transverse momentum distribution vs Eta for reconstructed MC primary AntiLambda
-	TH2F			*fHistMcEtaAFoundK0Pt;//	Transverse momentum distribution vs Eta for reconstructed MC primary K0Short
+	TH2F			*fHistEtaMLa;		//	Transverse momentum distribution vs Eta for Lambda Candidates
+	TH2F			*fHistEtaMLb;		//	Transverse momentum distribution vs Eta for AntiLambda Candidates
+	TH2F			*fHistEtaMK0;		//	Transverse momentum distribution vs Eta for K0Short Candidates
+	TH2F			*fHistMcGenEtaMLa;	//	Transverse momentum distribution vs MC-Truth Eta for all MC primary Lambda
+	TH2F			*fHistMcGenEtaMLb;	//	Transverse momentum distribution vs MC-Truth Eta for all MC primary AntiLambda
+	TH2F			*fHistMcGenEtaMK0;	//	Transverse momentum distribution vs MC-Truth Eta for all MC primary K0Short
+	TH2F			*fHistMcAsReconEtaMLa;	//	Transverse momentum distribution vs Eta for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsReconEtaMLb;	//	Transverse momentum distribution vs Eta for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsReconEtaMK0;//	Transverse momentum distribution vs Eta for reconstructed MC primary K0Short
+	TH2F			*fHistMcAsTruthEtaMLa;	//	Transverse momentum distribution vs MC-Truth Eta for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsTruthEtaMLb;	//	Transverse momentum distribution vs MC-Truth Eta for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsTruthEtaMK0;//	Transverse momentum distribution vs MC-Truth Eta for reconstructed MC primary K0Short
 	
-	TH2F			*fHistRapLaPt;		//	Transverse momentum distribution vs Rap for Lambda Candidates
-	TH2F			*fHistRapLbPt;		//	Transverse momentum distribution vs Rap for AntiLambda Candidates
-	TH2F			*fHistRapK0Pt;		//	Transverse momentum distribution vs Rap for K0Short Candidates
-	TH2F			*fHistMcRapAllLaPt;	//	Transverse momentum distribution vs Rap for all MC primary Lambda
-	TH2F			*fHistMcRapAllLbPt;	//	Transverse momentum distribution vs Rap for all MC primary AntiLambda
-	TH2F			*fHistMcRapAllK0Pt;	//	Transverse momentum distribution vs Rap for all MC primary K0Short
-	TH2F			*fHistMcRapFoundLaPt;	//	Transverse momentum distribution vs Rap for reconstructed MC primary Lambda
-	TH2F			*fHistMcRapFoundLbPt;	//	Transverse momentum distribution vs Rap for reconstructed MC primary AntiLambda
-	TH2F			*fHistMcRapAFoundK0Pt;//	Transverse momentum distribution vs Rap for reconstructed MC primary K0Short
+	TH2F			*fHistRapMLa;		//	Transverse momentum distribution vs Rap for Lambda Candidates
+	TH2F			*fHistRapMLb;		//	Transverse momentum distribution vs Rap for AntiLambda Candidates
+	TH2F			*fHistRapMK0;		//	Transverse momentum distribution vs Rap for K0Short Candidates
+	TH2F			*fHistMcGenRapMLa;	//	Transverse momentum distribution vs MC-Truth Rap for all MC primary Lambda
+	TH2F			*fHistMcGenRapMLb;	//	Transverse momentum distribution vs MC-Truth Rap for all MC primary AntiLambda
+	TH2F			*fHistMcGenRapMK0;	//	Transverse momentum distribution vs MC-Truth Rap for all MC primary K0Short
+	TH2F			*fHistMcAsReconRapMLa;	//	Transverse momentum distribution vs Rap for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsReconRapMLb;	//	Transverse momentum distribution vs Rap for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsReconRapMK0;//	Transverse momentum distribution vs Rap for reconstructed MC primary K0Short
+	TH2F			*fHistMcAsTruthRapMLa;	//	Transverse momentum distribution vs MC-Truth Rap for reconstructed MC primary Lambda
+	TH2F			*fHistMcAsTruthRapMLb;	//	Transverse momentum distribution vs MC-Truth Rap for reconstructed MC primary AntiLambda
+	TH2F			*fHistMcAsTruthRapMK0;//	Transverse momentum distribution vs MC-Truth Rap for reconstructed MC primary K0Short
+	
+	
+	TH2F			*fHistArmPodK0;		//Armenteros plot for K0 candidates.
+	TH2F			*fHistArmPodLa;		//Armenteros plot for Lambda candidates.
+	TH2F			*fHistArmPodLb;		//Armenteros plot for Antilambda candidates.
+	TH2F			*fHistMcGenArmPodK0;		//Armenteros plot for K0 candidates.
+	TH2F			*fHistMcGenArmPodLa;		//Armenteros plot for Lambda candidates.
+	TH2F			*fHistMcGenArmPodLb;		//Armenteros plot for Antilambda candidates.
+	TH2F			*fHistMcAsReconArmPodK0;		//Armenteros plot for K0 candidates.
+	TH2F			*fHistMcAsReconArmPodLa;		//Armenteros plot for Lambda candidates.
+	TH2F			*fHistMcAsReconArmPodLb;		//Armenteros plot for Antilambda candidates.
+	TH2F			*fHistMcAsTruthArmPodK0;		//Armenteros plot for K0 candidates.
+	TH2F			*fHistMcAsTruthArmPodLa;		//Armenteros plot for Lambda candidates.
+	TH2F			*fHistMcAsTruthArmPodLb;		//Armenteros plot for Antilambda candidates.
+	
 	
     // NEW HISTO to be declared here
     
