@@ -218,9 +218,9 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   else { 
     cout << " Systematics not yet implemented " << endl;
     return;
-  } 
-  if(decay!=4) systematicsAB->Init(decay);
-  else systematicsAB->Init(2);
+  }
+  systematicsAB->Init(decay);
+
   //
   Int_t entries = nSigmaAB->GetEntries();
   Float_t pt=0., signal=0., Rb=0., Rcb=0., fcAB=0., yieldAB=0., sigmaAB=0., statUncSigmaAB=0., sigmaABMin=0.,sigmaABMax=0.;
