@@ -170,6 +170,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SetM02Cut(Float_t min=0, Float_t max=10)  { fM02MinCut   = min ; fM02MaxCut  = max ; }
 
+  void         SwitchOnCorrelationVzBin()        { fCorrelVzBin         = kTRUE  ; }
+  void         SwitchOffCorrelationVzBin()       { fCorrelVzBin         = kFALSE ; }  
   
  private:
   
@@ -193,6 +195,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillBradHisto ;                // DPhi histograms calculated differently
   Int_t        fNAssocPtBins ;                 // Number of associated pT bins under study
   Float_t      fAssocPtBinLimit[20] ;          // Associated pT under study
+  Bool_t       fCorrelVzBin ;                  // Fill one histogram per vz bin
   
   TList **     fListMixTrackEvents ;           //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for tracks in stored events for mixing
   TList **     fListMixCaloEvents ;            //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for calo clusters in stored events for mixing
@@ -205,7 +208,10 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   //Histograms
 
   //leading particles 
-  TH2F *       fhPtLeading;                    //! pT distribution of leading particles vs vz bin
+  TH1F *       fhPtInput;                      //! pT distribution of trigger particles before selection
+  TH1F *       fhPtFidCut;                     //! pT distribution of trigger particles before leading selection, after fiducial selection
+  TH1F *       fhPtLeading;                    //! pT distribution of leading particles
+  TH2F *       fhPtLeadingVzBin;               //! pT distribution of leading particles vs vz bin
   TH2F *       fhPtLeadingBin;                 //! pT distribution of leading particles, vs mixing bin
   TH2F *       fhPhiLeading;                   //! phi distribution vs pT of leading particles
   TH2F *       fhEtaLeading;                   //! eta distribution vs pT of leading particles
@@ -214,7 +220,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhPtLeadingEventPlane;          //! pT distribution of leading particles vs centrality
   TH2F *       fhLeadingEventPlaneCentrality;  //! event plane vs centrality for leading particles
   
-  TH2F *       fhPtLeadingMixed;               //! pT distribution of leading particles, used in mixing, vs vz bin
+  TH1F *       fhPtLeadingMixed;               //! pT distribution of leading particles, used in mixing
+  TH2F *       fhPtLeadingMixedVzBin;          //! pT distribution of leading particles, used in mixing, vs vz bin
   TH2F *       fhPtLeadingMixedBin;            //! pT distribution of leading particles vs mixing bin
   TH2F *       fhPhiLeadingMixed;              //! phi distribution vs pT of leading particles, used in mixing
   TH2F *       fhEtaLeadingMixed;              //! eta distribution vs pT of leading particles, used in mixing  
@@ -369,7 +376,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ; // cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,22)
+  ClassDef(AliAnaParticleHadronCorrelation,23)
 } ;
  
 
