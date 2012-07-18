@@ -124,6 +124,7 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
     die->Init();
     if (die->GetHistogramList()) fListHistos.Add(const_cast<THashList*>(die->GetHistogramList()));
+    if (die->GetHistogramArray()) fListHistos.Add(const_cast<TObjArray*>(die->GetHistogramArray()));
     if (die->GetCFManagerPair()) fListCF.Add(const_cast<AliCFContainer*>(die->GetCFManagerPair()->GetContainer()));
   }
 

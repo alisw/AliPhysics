@@ -410,7 +410,7 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
     reducedParticle->fDCA[0]        = values[AliDielectronVarManager::kImpactParXY];
     reducedParticle->fDCA[1]        = values[AliDielectronVarManager::kImpactParZ];
     
-    reducedParticle->fITSclusterMap = values[AliDielectronVarManager::kITSclusterMap];
+    reducedParticle->fITSclusterMap = (UChar_t)values[AliDielectronVarManager::kITSclusterMap];
     reducedParticle->fITSsignal     = values[AliDielectronVarManager::kITSsignal];
     
     reducedParticle->fTPCNcls      = (UChar_t)values[AliDielectronVarManager::kNclsTPC];
