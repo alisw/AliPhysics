@@ -104,6 +104,7 @@ AliDielectron::AliDielectron() :
   fSignalsMC(0x0),
   fNoPairing(kFALSE),
   fUseKF(kTRUE),
+  fHistoArray(0x0),
   fHistos(0x0),
   fPairCandidates(new TObjArray(11)),
   fCfManagerPair(0x0),
@@ -144,6 +145,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fSignalsMC(0x0),
   fNoPairing(kFALSE),
   fUseKF(kTRUE),
+  fHistoArray(0x0),
   fHistos(0x0),
   fPairCandidates(new TObjArray(11)),
   fCfManagerPair(0x0),
@@ -174,6 +176,7 @@ AliDielectron::~AliDielectron()
   //
   // Default destructor
   //
+  if (fHistoArray) delete fHistoArray;
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
   if (fDebugTree) delete fDebugTree;
@@ -208,6 +211,7 @@ void AliDielectron::Init()
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
   
   if (fMixing) fMixing->Init(this);
+  if (fHistoArray) fHistoArray->Init();
 } 
 
 //________________________________________________________________
@@ -948,6 +952,8 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
       
       //CF manager for the pair
       if (fCfManagerPair) fCfManagerPair->Fill(cutMask,candidate);
+      //histogram array for the pair
+      if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
 
       //apply cut
       if (cutMask!=selectedMask) continue;
@@ -983,6 +989,8 @@ void AliDielectron::FillPairArrayTR()
     
     //CF manager for the pair
     if (fCfManagerPair) fCfManagerPair->Fill(cutMask,&candidate);
+    //histogram array for the pair
+    if (fHistoArray) fHistoArray->Fill((Int_t)kEv1PMRot,&candidate);
     
     //apply cut
     if (cutMask==selectedMask) {

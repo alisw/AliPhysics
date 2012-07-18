@@ -23,6 +23,7 @@
 #include <AliKFParticle.h>
 
 #include "AliDielectronHistos.h"
+#include "AliDielectronHF.h"
 
 class AliEventplane;
 class AliVEvent;
@@ -80,7 +81,9 @@ public:
       static_cast<TObjArray*>(fPairCandidates->UncheckedAt(i)):0;}
 
   TObjArray** GetPairArraysPointer() { return &fPairCandidates; }
-  
+  void SetHistogramArray(AliDielectronHF * const histoarray) { fHistoArray=histoarray; }
+  const TObjArray * GetHistogramArray() const { return fHistoArray?fHistoArray->GetHistArray():0x0; }
+
   void SetHistogramManager(AliDielectronHistos * const histos) { fHistos=histos; }
   AliDielectronHistos* GetHistoManager() const { return fHistos; }
   const THashList * GetHistogramList() const { return fHistos?fHistos->GetHistogramList():0x0; }
@@ -144,7 +147,8 @@ private:
 
   Bool_t fNoPairing;    // if to skip pairing, can be used for track QA only
   Bool_t fUseKF;    // if to skip pairing, can be used for track QA only
-    
+
+  AliDielectronHF *fHistoArray;   // Histogram framework
   AliDielectronHistos *fHistos;   // Histogram manager
                                   //  Streaming and merging should be handled
                                   //  by the analysis framework
