@@ -32,6 +32,8 @@ set ( SRCS
       dielectron/AliDielectronHistos.cxx
       dielectron/AliDielectronCF.cxx
       dielectron/AliDielectronCFdraw.cxx
+      dielectron/AliDielectronHF.cxx
+      dielectron/AliDielectronHFhelper.cxx
       dielectron/AliDielectronMC.cxx
       dielectron/AliDielectronVarManager.cxx
       dielectron/AliAnalysisTaskDielectronSE.cxx
