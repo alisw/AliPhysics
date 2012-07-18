@@ -32,6 +32,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   TList      *   GetCreateOutputObjects();
   
+  Int_t          GetMCIndex(const Int_t aodTag);
+  
   void           Init();
   
   void           InitParameters();
@@ -153,37 +155,40 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   //MC histograms
   
-  TH2F         * fhEMCLambda0[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle
-  TH2F         * fhEMCLambda1[6] ;         //! E vs lambda1 of pi0 pairs but really from MC particle
-  TH2F         * fhEMCDispersion[6] ;      //! E vs dispersion of pi0 pairs but really from MC particle
+  TH2F         * fhEMCLambda0[6] ;            //! E vs lambda0 of pi0 pairs but really from MC particle
+  TH2F         * fhEMCLambda1[6] ;            //! E vs lambda1 of pi0 pairs but really from MC particle
+  TH2F         * fhEMCDispersion[6] ;         //! E vs dispersion of pi0 pairs but really from MC particle
   TH2F         * fhEMCLambda0NoTRD[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle, not behind TRD
   TH2F         * fhEMCLambda0FracMaxCellCut[6] ;//! E vs lambda0 of pi0 pairs but really from MC particle, fraction of cluster energy in max cell cut
-  TH2F         * fhEMCFracMaxCell[6] ;     //! E vs fraction of max cell 
+  TH2F         * fhEMCFracMaxCell[6] ;        //! E vs fraction of max cell 
   
-  TH2F         * fhMCEDispEta[6] ;         //! shower dispersion in eta direction
-  TH2F         * fhMCEDispPhi[6] ;         //! shower dispersion in phi direction
-  TH2F         * fhMCLambda0DispEta[7][6] ;//! shower shape correlation l0 vs disp eta
-  TH2F         * fhMCLambda0DispPhi[7][6] ;//! shower shape correlation l0 vs disp phi
-  TH2F         * fhMCESumEtaPhi[6] ;       //! shower dispersion in eta vs phi direction
-  TH2F         * fhMCEDispEtaPhiDiff[6] ;  //! shower dispersion in eta -phi direction
-  TH2F         * fhMCESphericity[6] ;      //! shower sphericity, eta vs phi
-  TH2F         * fhMCDispEtaDispPhi[7][6] ;//! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F         * fhMCEDispEta[6] ;            //! shower dispersion in eta direction
+  TH2F         * fhMCEDispPhi[6] ;            //! shower dispersion in phi direction
+  TH2F         * fhMCLambda0DispEta[7][6] ;   //! shower shape correlation l0 vs disp eta
+  TH2F         * fhMCLambda0DispPhi[7][6] ;   //! shower shape correlation l0 vs disp phi
+  TH2F         * fhMCESumEtaPhi[6] ;          //! shower dispersion in eta vs phi direction
+  TH2F         * fhMCEDispEtaPhiDiff[6] ;     //! shower dispersion in eta -phi direction
+  TH2F         * fhMCESphericity[6] ;         //! shower sphericity, eta vs phi
+  TH2F         * fhMCDispEtaDispPhi[7][6] ;   //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
   TH2F         * fhMCEAsymmetry[6] ;          //! E asymmetry of 2 splitted clusters vs cluster E
   TH2F         * fhMCAsymmetryLambda0[7][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   TH2F         * fhMCAsymmetryDispEta[7][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   TH2F         * fhMCAsymmetryDispPhi[7][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   
-  TH1F         * fhPtMCNo;                 //! Number of identified pi0, not coming from pi0/eta
-  TH2F         * fhPhiMCNo;                //! Phi of identified pi0, not coming from pi0/eta
-  TH2F         * fhEtaMCNo;                //! eta of identified  pi0, not coming from pi0/eta
-  TH1F         * fhPtMC;                   //! Number of identified pi0, coming from pi0/eta
-  TH2F         * fhPhiMC;                  //! Phi of identified pi0, coming from pi0/eta
-  TH2F         * fhEtaMC;                  //! eta of identified pi0, coming from pi0/eta
+  TH1F         * fhMCPt[6];                   //! Number of identified as pi0, coming from X
+  TH2F         * fhMCPhi[6];                  //! Phi of identified as pi0, coming from X
+  TH2F         * fhMCEta[6];                  //! eta of identified as pi0, coming from X
 
-  TH2F         * fhMassPairMCPi0;          //! pair mass, origin is same pi0
-  TH2F         * fhMassPairMCEta;          //! pair mass, origin is same eta
-  TH2F         * fhAnglePairMCPi0;         //! pair opening angle, origin is same pi0
-  TH2F         * fhAnglePairMCEta;         //! pair opening angle, origin is same eta
+  TH1F         * fhMCPi0DecayPt;              //! SS id, clusters id as pi0, coming from single photon, pi0 decay, pt
+  TH2F         * fhMCPi0DecayPtFraction;      //! SS id, clusters id as pi0, coming from single photon, pi0 decay, pt vs pt decay / pt mother
+  TH1F         * fhMCEtaDecayPt;              //! SS id, clusters id as pi0, coming from single photon, eta decay, pt
+  TH2F         * fhMCEtaDecayPtFraction;      //! SS id, clusters id as pi0, coming from single photon, eta decay, pt vs pt decay / pt mother  
+  TH1F         * fhMCOtherDecayPt;            //! SS id, clusters id as pi0, coming from single photon, other decay, pt
+
+  TH2F         * fhMassPairMCPi0;             //! pair mass, origin is same pi0
+  TH2F         * fhMassPairMCEta;             //! pair mass, origin is same eta
+  TH2F         * fhAnglePairMCPi0;            //! pair opening angle, origin is same pi0
+  TH2F         * fhAnglePairMCEta;            //! pair opening angle, origin is same eta
   
   // Weight studies
   
@@ -220,7 +225,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,17)
+  ClassDef(AliAnaPi0EbE,18)
 } ;
 
 

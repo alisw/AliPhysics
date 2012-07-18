@@ -66,8 +66,10 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhDispEtaPhiDiffE(0),          fhSphericityE(0),             fhAsymmetryE(0), 
 
     // MC histos
-    fhPtMCNo(0),                   fhPhiMCNo(0),                 fhEtaMCNo(0), 
-    fhPtMC(0),                     fhPhiMC(0),                   fhEtaMC(0),
+    fhMCPt(),                      fhMCPhi(),                    fhMCEta(),
+    fhMCPi0DecayPt(0),             fhMCPi0DecayPtFraction(0),
+    fhMCEtaDecayPt(0),             fhMCEtaDecayPtFraction(0),
+    fhMCOtherDecayPt(0),           
     fhMassPairMCPi0(0),            fhMassPairMCEta(0),
     fhAnglePairMCPi0(0),           fhAnglePairMCEta(0),
     // Weight studies
@@ -83,6 +85,9 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
   
   for(Int_t i = 0; i < 6; i++)
   {
+    fhMCPt             [i] = 0;
+    fhMCPhi            [i] = 0;                   
+    fhMCEta            [i] = 0;
     fhEMCLambda0       [i] = 0;
     fhEMCLambda0NoTRD  [i] = 0;
     fhEMCLambda0FracMaxCellCut[i]= 0;
@@ -313,33 +318,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster,
   
   if(IsDataMC()) 
   {
-    Int_t mcIndex = 0;
-    
-    if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )
-    {
-      mcIndex = kmcPi0 ;      
-    }//pi0
-    else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  )
-    {
-      mcIndex = kmcEta ; 
-    }//eta          
-    else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
-               GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
-    {
-      mcIndex = kmcConversion ; 
-    }//conversion photon
-    else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )
-    {
-      mcIndex = kmcPhoton ; 
-    }//photon   no conversion
-    else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))
-    {
-      mcIndex = kmcElectron ; 
-    }//electron
-    else 
-    {
-      mcIndex = kmcHadron ; 
-    }//other particles 
+    Int_t mcIndex = GetMCIndex(tag);
     
     fhEMCLambda0[mcIndex]    ->Fill(e, l0);
     fhEMCLambda1[mcIndex]    ->Fill(e, l1);
@@ -487,95 +466,6 @@ TObjString * AliAnaPi0EbE::GetAnalysisCuts()
   
   return new TObjString(parList) ;
 }
-
-//__________________________________________________________________
-void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1, 
-                                       AliAODPWG4Particle * photon2, 
-                                       Int_t & label, Int_t & tag)
-{
-  // Check the labels of pare in case mother was same pi0 or eta
-  // Set the new AOD accordingly
-  
-  Int_t  label1 = photon1->GetLabel();
-  Int_t  label2 = photon2->GetLabel();
-  
-  if(label1 < 0 || label2 < 0 ) return ;
-  
-  //Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), photon1->GetInputFileIndex());
-  //Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), photon2->GetInputFileIndex());
-  Int_t tag1 = photon1->GetTag();
-  Int_t tag2 = photon2->GetTag();
-
-  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
-  if( (GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && 
-       GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)    ) ||
-      (GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCEtaDecay) && 
-       GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCEtaDecay)    )
-     )
-  {
-    
-    //Check if pi0/eta mother is the same
-    if(GetReader()->ReadStack())
-    { 
-      if(label1>=0)
-      {
-        TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
-        label1 = mother1->GetFirstMother();
-        //mother1 = GetMCStack()->Particle(label1);//pi0
-      }
-      if(label2>=0)
-      {
-        TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
-        label2 = mother2->GetFirstMother();
-        //mother2 = GetMCStack()->Particle(label2);//pi0
-      }
-    } // STACK
-    else if(GetReader()->ReadAODMCParticles())
-    {//&& (input > -1)){
-      if(label1>=0)
-      {
-        AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
-        label1 = mother1->GetMother();
-        //mother1 = GetMCStack()->Particle(label1);//pi0
-      }
-      if(label2>=0)
-      {
-        AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon2->GetInputFileIndex()))->At(label2);//photon in kine tree
-        label2 = mother2->GetMother();
-        //mother2 = GetMCStack()->Particle(label2);//pi0
-      }
-    }// AOD
-    
-    //printf("mother1 %d, mother2 %d\n",label1,label2);
-    if( label1 == label2 && label1>=0 )
-    {
-      
-      label = label1;
-
-      TLorentzVector mom1 = *(photon1->Momentum());
-      TLorentzVector mom2 = *(photon2->Momentum());
-      
-      Double_t angle = mom2.Angle(mom1.Vect());
-      Double_t mass  = (mom1+mom2).M();
-      Double_t epair = (mom1+mom2).E();
-
-      if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay))
-      {
-        fhMassPairMCPi0 ->Fill(epair,mass);
-        fhAnglePairMCPi0->Fill(epair,angle);
-        GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
-      }
-      else 
-      {
-        fhMassPairMCEta ->Fill(epair,mass);
-        fhAnglePairMCEta->Fill(epair,angle);
-        GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCEta);
-      }
-      
-    } // same label
-  } // both from eta or pi0 decay
-  
-}   
 
 //_____________________________________________
 TList *  AliAnaPi0EbE::GetCreateOutputObjects()
@@ -991,43 +881,41 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   if(IsDataMC()) 
   {
+    
+    if(GetReader()->GetDataType() != AliCaloTrackReader::kMC && fAnaType==kSSCalo)
+    {
+      fhMCPi0DecayPt = new TH1F("hMCPi0DecayPt","Number of #gamma from #pi^{0} decay  identified as #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
+      fhMCPi0DecayPt->SetYTitle("N");
+      fhMCPi0DecayPt->SetXTitle("p^{rec}_{T} (GeV/c)");
+      outputContainer->Add(fhMCPi0DecayPt) ; 
+      
+      fhMCPi0DecayPtFraction = new TH2F("hMCPi0DecayPtFraction","Number of #gamma from #pi^{0} decay  identified as #pi^{0} (#eta), pT versus pT / pT mother",
+                                        nptbins,ptmin,ptmax,100,0,1); 
+      fhMCPi0DecayPtFraction->SetXTitle("p^{rec}_{T} (GeV/c)");
+      fhMCPi0DecayPtFraction->SetYTitle("E^{gen}_{T} / E^{gen-mother}_{T}");
+      outputContainer->Add(fhMCPi0DecayPtFraction) ; 
+      
+      fhMCEtaDecayPt = new TH1F("hMCEtaDecayPt","Number of #gamma from #pi^{0} decay  identified as #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
+      fhMCEtaDecayPt->SetYTitle("N");
+      fhMCEtaDecayPt->SetXTitle("p^{rec}_{T} (GeV/c)");
+      outputContainer->Add(fhMCEtaDecayPt) ; 
+      
+      fhMCEtaDecayPtFraction = new TH2F("hMCEtaDecayPtFraction","Number of #gamma from #pi^{0} decay  identified as #pi^{0} (#eta), pT versus pT / pT mother",
+                                        nptbins,ptmin,ptmax,100,0,1); 
+      fhMCEtaDecayPtFraction->SetXTitle("p^{rec}_{T} (GeV/c)");
+      fhMCEtaDecayPtFraction->SetYTitle("E^{gen}_{T} / E^{gen-mother}_{T}");
+      outputContainer->Add(fhMCEtaDecayPtFraction) ; 
+      
+      fhMCOtherDecayPt = new TH1F("hMCOtherDecayPt","Number of #gamma from #pi^{0} decay  identified as #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
+      fhMCOtherDecayPt->SetYTitle("N");
+      fhMCOtherDecayPt->SetXTitle("p^{rec}_{T} (GeV/c)");
+      outputContainer->Add(fhMCOtherDecayPt) ; 
+      
+    }
+       
     if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
        GetReader()->GetDataType() != AliCaloTrackReader::kMC)
     {
-      
-      fhPtMC  = new TH1F("hPtMC","Identified #pi^{0} (#eta) from #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
-      fhPtMC->SetYTitle("N");
-      fhPtMC->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhPtMC) ; 
-      
-      fhPhiMC  = new TH2F
-      ("hPhiMC","Identified #pi^{0} (#eta) from #pi^{0} (#eta)",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
-      fhPhiMC->SetYTitle("#phi");
-      fhPhiMC->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhPhiMC) ; 
-      
-      fhEtaMC  = new TH2F
-      ("hEtaMC","Identified #pi^{0} (#eta) from #pi^{0} (#eta)",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-      fhEtaMC->SetYTitle("#eta");
-      fhEtaMC->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhEtaMC) ;
-      
-      fhPtMCNo  = new TH1F("hPtMCNo","Identified #pi^{0} (#eta) not from #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
-      fhPtMCNo->SetYTitle("N");
-      fhPtMCNo->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhPtMCNo) ; 
-      
-      fhPhiMCNo  = new TH2F
-      ("hPhiMCNo","Identified #pi^{0} (#eta) not from #pi^{0} (#eta)",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
-      fhPhiMCNo->SetYTitle("#phi");
-      fhPhiMCNo->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhPhiMCNo) ; 
-      
-      fhEtaMCNo  = new TH2F
-      ("hEtaMCNo","Identified #pi^{0} (#eta) not from #pi^{0} (#eta)",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-      fhEtaMCNo->SetYTitle("#eta");
-      fhEtaMCNo->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhEtaMCNo) ;
       
       fhAnglePairMCPi0  = new TH2F
       ("AnglePairMCPi0",
@@ -1060,10 +948,37 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
         outputContainer->Add(fhMassPairMCEta) ; 
       }
       
-      if( fFillSelectClHisto )
-      {
-        for(Int_t i = 0; i < 6; i++)
-        { 
+      for(Int_t i = 0; i < 6; i++)
+      { 
+        
+        fhMCPt[i]  = new TH1F
+        (Form("hPt_MC%s",pname[i].Data()),
+         Form("Identified as #pi^{0} (#eta), cluster from %s",
+              ptype[i].Data()),
+         nptbins,ptmin,ptmax); 
+        fhMCPt[i]->SetYTitle("N");
+        fhMCPt[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCPt[i]) ; 
+        
+        fhMCPhi[i]  = new TH2F
+        (Form("hPhi_MC%s",pname[i].Data()),
+         Form("Identified as #pi^{0} (#eta), cluster from %s",ptype[i].Data()),
+         nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+        fhMCPhi[i]->SetYTitle("#phi");
+        fhMCPhi[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCPhi[i]) ; 
+        
+        fhMCEta[i]  = new TH2F
+        (Form("hEta_MC%s",pname[i].Data()),
+         Form("Identified as #pi^{0} (#eta), cluster from %s",
+              ptype[i].Data()),nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+        fhMCEta[i]->SetYTitle("#eta");
+        fhMCEta[i]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhMCEta[i]) ;
+        
+        
+        if( fFillSelectClHisto )
+        {
           fhEMCLambda0[i]  = new TH2F(Form("hELambda0_MC%s",pname[i].Data()),
                                       Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}",ptype[i].Data()),
                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
@@ -1276,6 +1191,129 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   return outputContainer ;
   
 }
+
+//_____________________________________________
+Int_t AliAnaPi0EbE::GetMCIndex(const Int_t tag)
+{ 
+  
+  // Assign mc index depending on MC bit set
+  
+  if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )
+  {
+    return kmcPi0 ;      
+  }//pi0
+  else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  )
+  {
+    return kmcEta ; 
+  }//eta          
+  else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
+            GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
+  {
+    return kmcConversion ; 
+  }//conversion photon
+  else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )
+  {
+    return kmcPhoton ; 
+  }//photon   no conversion
+  else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))
+  {
+    return kmcElectron ; 
+  }//electron
+  else 
+  {
+    return kmcHadron ; 
+  }//other particles 
+  
+}
+
+//__________________________________________________________________
+void AliAnaPi0EbE::HasPairSameMCMother(AliAODPWG4Particle * photon1, 
+                                       AliAODPWG4Particle * photon2, 
+                                       Int_t & label, Int_t & tag)
+{
+  // Check the labels of pare in case mother was same pi0 or eta
+  // Set the new AOD accordingly
+  
+  Int_t  label1 = photon1->GetLabel();
+  Int_t  label2 = photon2->GetLabel();
+  
+  if(label1 < 0 || label2 < 0 ) return ;
+  
+  //Int_t tag1 = GetMCAnalysisUtils()->CheckOrigin(label1, GetReader(), photon1->GetInputFileIndex());
+  //Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(label2, GetReader(), photon2->GetInputFileIndex());
+  Int_t tag1 = photon1->GetTag();
+  Int_t tag2 = photon2->GetTag();
+  
+  if(GetDebug() > 0) printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Origin of: photon1 %d; photon2 %d \n",tag1, tag2);
+  if( (GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay) && 
+       GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0Decay)    ) ||
+     (GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCEtaDecay) && 
+      GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCEtaDecay)    )
+     )
+  {
+    
+    //Check if pi0/eta mother is the same
+    if(GetReader()->ReadStack())
+    { 
+      if(label1>=0)
+      {
+        TParticle * mother1 = GetMCStack()->Particle(label1);//photon in kine tree
+        label1 = mother1->GetFirstMother();
+        //mother1 = GetMCStack()->Particle(label1);//pi0
+      }
+      if(label2>=0)
+      {
+        TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
+        label2 = mother2->GetFirstMother();
+        //mother2 = GetMCStack()->Particle(label2);//pi0
+      }
+    } // STACK
+    else if(GetReader()->ReadAODMCParticles())
+    {//&& (input > -1)){
+      if(label1>=0)
+      {
+        AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
+        label1 = mother1->GetMother();
+        //mother1 = GetMCStack()->Particle(label1);//pi0
+      }
+      if(label2>=0)
+      {
+        AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon2->GetInputFileIndex()))->At(label2);//photon in kine tree
+        label2 = mother2->GetMother();
+        //mother2 = GetMCStack()->Particle(label2);//pi0
+      }
+    }// AOD
+    
+    //printf("mother1 %d, mother2 %d\n",label1,label2);
+    if( label1 == label2 && label1>=0 )
+    {
+      
+      label = label1;
+      
+      TLorentzVector mom1 = *(photon1->Momentum());
+      TLorentzVector mom2 = *(photon2->Momentum());
+      
+      Double_t angle = mom2.Angle(mom1.Vect());
+      Double_t mass  = (mom1+mom2).M();
+      Double_t epair = (mom1+mom2).E();
+      
+      if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0Decay))
+      {
+        fhMassPairMCPi0 ->Fill(epair,mass);
+        fhAnglePairMCPi0->Fill(epair,angle);
+        GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
+      }
+      else 
+      {
+        fhMassPairMCEta ->Fill(epair,mass);
+        fhAnglePairMCEta->Fill(epair,angle);
+        GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCEta);
+      }
+      
+    } // same label
+  } // both from eta or pi0 decay
+  
+}   
 
 //____________________________________________________________________________
 void AliAnaPi0EbE::Init()
@@ -1796,19 +1834,41 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
 
     if(IsDataMC())
     {
-      if(GetMCAnalysisUtils()->CheckTagBit(pi0->GetTag(), AliMCAnalysisUtils::kMCPi0))
+      Int_t tag     = pi0->GetTag();
+      Int_t mcIndex = GetMCIndex(tag);
+
+      fhMCPt [mcIndex] ->Fill(pt);
+      fhMCPhi[mcIndex] ->Fill(pt,phi);
+      fhMCEta[mcIndex] ->Fill(pt,eta);
+      
+      if(mcIndex==kmcPhoton && fAnaType==kSSCalo)
       {
-        fhPtMC  ->Fill(pt);
-        fhPhiMC ->Fill(pt,phi);
-        fhEtaMC ->Fill(pt,eta);
-      }
-      else
-      {
-        fhPtMCNo  ->Fill(pt);
-        fhPhiMCNo ->Fill(pt,phi);
-        fhEtaMCNo ->Fill(pt,eta);
+        Float_t efracMC = 0;
+        Int_t label = pi0->GetLabel();
+        TLorentzVector mom   = GetMCAnalysisUtils()->GetMother(label,GetReader()); 
+
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+        {
+          fhMCPi0DecayPt->Fill(pt);
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,111,GetReader()); 
+          if(grandmom.E()>0) efracMC =  mom.E()/grandmom.E();
+          fhMCPi0DecayPtFraction ->Fill(pt,efracMC);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
+        {
+          fhMCEtaDecayPt->Fill(pt);
+          
+          TLorentzVector grandmom = GetMCAnalysisUtils()->GetMotherWithPDG(label,221,GetReader()); 
+          if(grandmom.E()>0) efracMC =  mom.E()/grandmom.E();
+          fhMCEtaDecayPtFraction ->Fill(pt,efracMC);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
+        {
+          fhMCOtherDecayPt->Fill(pt);
+        }
         
       }
+      
     }//Histograms with MC
     
   }// aod loop
