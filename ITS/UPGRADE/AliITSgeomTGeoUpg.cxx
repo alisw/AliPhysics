@@ -510,7 +510,7 @@ Bool_t AliITSgeomTGeoUpg::ReadVersionString(const Char_t *str,
   //   TDatime         dt   The date and time of the cvs commit
   // Return:
   //   kTRUE if no errors
-  enum {kv11=11,kvUpgrade=20}; // RS: to make consistent global numbering scheme
+  enum {kv11=11,kv110=110,kvUpgrade=20}; // RS: to make consistent global numbering scheme
   
   Bool_t ok;
   Char_t cvsRevision[10],cvsDate[11],cvsTime[9];
@@ -533,6 +533,7 @@ Bool_t AliITSgeomTGeoUpg::ReadVersionString(const Char_t *str,
   dt.Set(year,month,day,hours,minuts,seconds);
   //
   switch (i){
+  case kv110:
   case kv11:{
     maj = kITSVOld;
   } break;

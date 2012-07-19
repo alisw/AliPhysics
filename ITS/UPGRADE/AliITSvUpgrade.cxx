@@ -354,7 +354,8 @@ void AliITSvUpgrade::AddAlignableVolumes() const{
 	//printf("SetAlignable (UID=%d, ModNum=%d): %s %s\n",modUID,modNum-1,snmM.Data(),pthM.Data());
 	gGeoManager->SetAlignableEntry(snmM.Data(),pthM.Data(),modUID);
 	//
-	SetT2Lmatrix(modUID,0, kFALSE,kFALSE); // RS: do we need here special matrix, ask MS
+	double yshift = -(fUpGeom[lr]->GetSensorThick()-fUpGeom[lr]->GetLadderThick())/2;
+	SetT2Lmatrix(modUID,yshift, kTRUE,kTRUE); // RS: do we need here special matrix, ask MS
 	//
       }
     }
