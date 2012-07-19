@@ -597,19 +597,23 @@ void AliHFSystErr::InitDplustoKpipi2011PbPb07half() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
   for(Int_t i=1;i<=36;i++) fRawYield->SetBinContent(i,.10);  //5 to 10%
-  fRawYield->SetBinContent(4,0.20);
-  fRawYield->SetBinContent(5,0.15);
-  fRawYield->SetBinContent(6,0.15);
-  for(Int_t i=7; i<=8; i++) fRawYield->SetBinContent(i,0.12);
-  for(Int_t i=9; i<=12; i++) fRawYield->SetBinContent(i,0.10);
+  fRawYield->SetBinContent(4,0.30);
+  fRawYield->SetBinContent(5,0.20);
+  fRawYield->SetBinContent(6,0.20);
+  for(Int_t i=7; i<=8; i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=9; i<=12; i++) fRawYield->SetBinContent(i,0.08);
   for(Int_t i=13; i<=16; i++) fRawYield->SetBinContent(i,0.05);
-  for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i,0.07);
+  for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i,0.08);
   for(Int_t i=25; i<=36; i++) fRawYield->SetBinContent(i,0.20);
 
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fCutsEff->SetBinContent(i,0.15); // 15%
+  for(Int_t i=1;i<=36;i++) fCutsEff->SetBinContent(i,0.10); // 15%
+
+  fCutsEff->SetBinContent(4,0.15);
+  //fCutsEff->SetBinContent(4,0.15);
+
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
