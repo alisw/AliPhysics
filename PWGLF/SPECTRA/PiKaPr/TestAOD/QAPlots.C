@@ -2,7 +2,8 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
 	      AliSpectraAODEventCuts* ecuts_data, AliSpectraAODEventCuts* ecuts_mc,
 	      AliSpectraAODTrackCuts* tcuts_data, AliSpectraAODTrackCuts* tcuts_mc,
 	      TFile * fout){
-   
+  gSystem->Load("libPWGLFSPECTRA");
+
   //vtx distr in data and MC before and after event selection
   TCanvas *cVtx=new TCanvas("Vtxdistr","Vtxdistr",700,500);
   TH1F *hVtxBef_data=ecuts_data->GetHistoVtxBefSel();
@@ -93,7 +94,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   hQVector_mc->SetTitle(Form("%s - mc",hQVector_mc->GetTitle()));
   hQVector_mc->SetLineColor(2);
   hQVector_data->DrawClone("lhist");
-  hQVector_mc->DrawClone("lhistsame");
+  //hQVector_mc->DrawClone("lhistsame");
   gPad->BuildLegend()->SetFillColor(0);
   cQVector->cd(2);
   gPad->SetGridy();
@@ -116,7 +117,7 @@ void QAPlots( AliSpectraAODHistoManager* hman_data, AliSpectraAODHistoManager* h
   hQVectorIntegral_mc->SetTitle(Form("%s - mc",hQVectorIntegral_mc->GetTitle()));
   hQVectorIntegral_mc->SetLineColor(2);
   hQVectorIntegral_data->DrawClone("lhist");
-  hQVectorIntegral_mc->DrawClone("lhistsame");
+  //hQVectorIntegral_mc->DrawClone("lhistsame");
   gPad->BuildLegend()->SetFillColor(0);
   
 
