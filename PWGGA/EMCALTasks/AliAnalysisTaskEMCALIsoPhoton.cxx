@@ -124,12 +124,13 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fNClusHighClusE = new TH2F("hNClusHighClusE","total number of clusters vs. highest clus energy in the event;E (GeV);NClus",200,0,100,301,-0.5,300.5);
   fOutputList->Add(fNClusHighClusE);
 
-  const Int_t ndims =   fNDimensions;
   Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128;
   Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nTrClDphi, nTrClDeta,nClEta,nClPhi};
+  fNDimensions = sizeof(bins)/sizeof(Int_t);
+  const Int_t ndims =   fNDimensions;
   Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -0.1,-0.05, -0.7, 1.4};
   Double_t xmax[] = { 100., 4., 190., 190., 190., 0.1, 0.05, 0.7, 3.192};
-  fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, d#phi_{trk},d#eta_{trk}", ndims, bins, xmin, xmax);
+  fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus}", ndims, bins, xmin, xmax);
   fOutputList->Add(fHnOutput);
 
 
