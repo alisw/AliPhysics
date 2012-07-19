@@ -120,8 +120,8 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
         TH3D    *f3dHistGenPtVsGenYvsNtracksXiMinusNat;
 	TH3D    *f3dHistGenPtVsGenYvsCentXiMinusInj;
         TH3D    *f3dHistGenPtVsGenYvsNtracksXiMinusInj;
-        TH3D    *f3dHistGenPtVsGenctauvsYXiMinusNat;
-        TH3D    *f3dHistGenPtVsGenctauvsYXiMinusInj;	
+        TH3D    *f3dHistGenPtVsGenctauvsCentXiMinusNat;
+        TH3D    *f3dHistGenPtVsGenctauvsCentXiMinusInj;	
 
         TH1F    *fHistThetaGenCascXiMinusNat;           //! MC Theta angle of the generated Xi-
         TH1F    *fHistThetaGenCascXiMinusInj;           //! MC Theta angle of the injected Xi-
@@ -151,8 +151,8 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
         TH3D    *f3dHistGenPtVsGenYvsNtracksXiPlusNat;
         TH3D    *f3dHistGenPtVsGenYvsCentXiPlusInj;
         TH3D    *f3dHistGenPtVsGenYvsNtracksXiPlusInj;
-        TH3D    *f3dHistGenPtVsGenctauvsYXiPlusNat;
-        TH3D    *f3dHistGenPtVsGenctauvsYXiPlusInj;
+        TH3D    *f3dHistGenPtVsGenctauvsCentXiPlusNat;
+        TH3D    *f3dHistGenPtVsGenctauvsCentXiPlusInj;
 	
         TH1F    *fHistThetaGenCascXiPlusNat;            //! MC Theta angle of the generated Xi+
         TH1F    *fHistThetaGenCascXiPlusInj;            //! MC Theta angle of the injected Xi+
@@ -178,8 +178,8 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
         TH3D    *f3dHistGenPtVsGenYvsNtracksOmegaMinusNat;
         TH3D    *f3dHistGenPtVsGenYvsCentOmegaMinusInj;
         TH3D    *f3dHistGenPtVsGenYvsNtracksOmegaMinusInj;
-        TH3D    *f3dHistGenPtVsGenctauvsYOmegaMinusNat;
-        TH3D    *f3dHistGenPtVsGenctauvsYOmegaMinusInj;
+        TH3D    *f3dHistGenPtVsGenctauvsCentOmegaMinusNat;
+        TH3D    *f3dHistGenPtVsGenctauvsCentOmegaMinusInj;
 
         TH1F    *fHistThetaGenCascOmegaMinusNat;        //! MC Theta angle of the generated Omega-
         TH1F    *fHistThetaGenCascOmegaMinusInj;        //! MC Theta angle of the injected Omega-
@@ -205,8 +205,8 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
         TH3D    *f3dHistGenPtVsGenYvsNtracksOmegaPlusNat;
         TH3D    *f3dHistGenPtVsGenYvsCentOmegaPlusInj;
         TH3D    *f3dHistGenPtVsGenYvsNtracksOmegaPlusInj;
-        TH3D    *f3dHistGenPtVsGenctauvsYOmegaPlusNat;
-        TH3D    *f3dHistGenPtVsGenctauvsYOmegaPlusInj;
+        TH3D    *f3dHistGenPtVsGenctauvsCentOmegaPlusNat;
+        TH3D    *f3dHistGenPtVsGenctauvsCentOmegaPlusInj;
 	
         TH1F    *fHistThetaGenCascOmegaPlusNat;         //! MC Theta angle of the generated Omega+
         TH1F    *fHistThetaGenCascOmegaPlusInj;         //! MC Theta angle of the injected Omega+
@@ -317,7 +317,7 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckPerformanceCascadePbPb(const AliAnalysisTaskCheckPerformanceCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascadePbPb& operator=(const AliAnalysisTaskCheckPerformanceCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 6);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 7);
 };
 
 #endif

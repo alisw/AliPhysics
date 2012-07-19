@@ -142,8 +142,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    f3dHistGenPtVsGenYvsNtracksXiMinusNat(0),
    f3dHistGenPtVsGenYvsCentXiMinusInj(0),
    f3dHistGenPtVsGenYvsNtracksXiMinusInj(0),
-   f3dHistGenPtVsGenctauvsYXiMinusNat(0),
-   f3dHistGenPtVsGenctauvsYXiMinusInj(0),
+   f3dHistGenPtVsGenctauvsCentXiMinusNat(0),
+   f3dHistGenPtVsGenctauvsCentXiMinusInj(0),
    
     fHistThetaGenCascXiMinusNat(0),
     fHistThetaGenCascXiMinusInj(0), 
@@ -169,8 +169,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    f3dHistGenPtVsGenYvsNtracksXiPlusNat(0),
    f3dHistGenPtVsGenYvsCentXiPlusInj(0),
    f3dHistGenPtVsGenYvsNtracksXiPlusInj(0),
-   f3dHistGenPtVsGenctauvsYXiPlusNat(0),
-   f3dHistGenPtVsGenctauvsYXiPlusInj(0),
+   f3dHistGenPtVsGenctauvsCentXiPlusNat(0),
+   f3dHistGenPtVsGenctauvsCentXiPlusInj(0),
    
     fHistThetaGenCascXiPlusNat(0), 
     fHistThetaGenCascXiPlusInj(0),
@@ -192,8 +192,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    f3dHistGenPtVsGenYvsNtracksOmegaMinusNat(0),
    f3dHistGenPtVsGenYvsCentOmegaMinusInj(0),
    f3dHistGenPtVsGenYvsNtracksOmegaMinusInj(0),
-   f3dHistGenPtVsGenctauvsYOmegaMinusNat(0),
-   f3dHistGenPtVsGenctauvsYOmegaMinusInj(0),
+   f3dHistGenPtVsGenctauvsCentOmegaMinusNat(0),
+   f3dHistGenPtVsGenctauvsCentOmegaMinusInj(0),
    
     fHistThetaGenCascOmegaMinusNat(0),
     fHistThetaGenCascOmegaMinusInj(0),
@@ -215,8 +215,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    f3dHistGenPtVsGenYvsNtracksOmegaPlusNat(0),
    f3dHistGenPtVsGenYvsCentOmegaPlusInj(0),
    f3dHistGenPtVsGenYvsNtracksOmegaPlusInj(0),
-   f3dHistGenPtVsGenctauvsYOmegaPlusNat(0),
-   f3dHistGenPtVsGenctauvsYOmegaPlusInj(0),
+   f3dHistGenPtVsGenctauvsCentOmegaPlusNat(0),
+   f3dHistGenPtVsGenctauvsCentOmegaPlusInj(0),
    
     fHistThetaGenCascOmegaPlusNat(0),
     fHistThetaGenCascOmegaPlusInj(0),
@@ -379,8 +379,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    f3dHistGenPtVsGenYvsNtracksXiMinusNat(0),
    f3dHistGenPtVsGenYvsCentXiMinusInj(0),
    f3dHistGenPtVsGenYvsNtracksXiMinusInj(0),
-   f3dHistGenPtVsGenctauvsYXiMinusNat(0),
-   f3dHistGenPtVsGenctauvsYXiMinusInj(0),
+   f3dHistGenPtVsGenctauvsCentXiMinusNat(0),
+   f3dHistGenPtVsGenctauvsCentXiMinusInj(0),
    
     fHistThetaGenCascXiMinusNat(0),
     fHistThetaGenCascXiMinusInj(0),
@@ -406,8 +406,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
   f3dHistGenPtVsGenYvsNtracksXiPlusNat(0),
   f3dHistGenPtVsGenYvsCentXiPlusInj(0),
   f3dHistGenPtVsGenYvsNtracksXiPlusInj(0),
-  f3dHistGenPtVsGenctauvsYXiPlusNat(0),
-  f3dHistGenPtVsGenctauvsYXiPlusInj(0),
+  f3dHistGenPtVsGenctauvsCentXiPlusNat(0),
+  f3dHistGenPtVsGenctauvsCentXiPlusInj(0),
 
     fHistThetaGenCascXiPlusNat(0), 
     fHistThetaGenCascXiPlusInj(0),
@@ -429,8 +429,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    f3dHistGenPtVsGenYvsNtracksOmegaMinusNat(0),
    f3dHistGenPtVsGenYvsCentOmegaMinusInj(0),
    f3dHistGenPtVsGenYvsNtracksOmegaMinusInj(0),
-   f3dHistGenPtVsGenctauvsYOmegaMinusNat(0),
-   f3dHistGenPtVsGenctauvsYOmegaMinusInj(0),
+   f3dHistGenPtVsGenctauvsCentOmegaMinusNat(0),
+   f3dHistGenPtVsGenctauvsCentOmegaMinusInj(0),
  
     fHistThetaGenCascOmegaMinusNat(0),
     fHistThetaGenCascOmegaMinusInj(0),
@@ -452,8 +452,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
    f3dHistGenPtVsGenYvsNtracksOmegaPlusNat(0),
    f3dHistGenPtVsGenYvsCentOmegaPlusInj(0),
    f3dHistGenPtVsGenYvsNtracksOmegaPlusInj(0),
-   f3dHistGenPtVsGenctauvsYOmegaPlusNat(0),
-   f3dHistGenPtVsGenctauvsYOmegaPlusInj(0),
+   f3dHistGenPtVsGenctauvsCentOmegaPlusNat(0),
+   f3dHistGenPtVsGenctauvsCentOmegaPlusInj(0),
    
     fHistThetaGenCascOmegaPlusNat(0),
     fHistThetaGenCascOmegaPlusInj(0),
@@ -795,14 +795,14 @@ if( !fPaveTextBookKeeping){
     f3dHistGenPtVsGenYvsNtracksXiMinusInj = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinusInj", "MC P_{t} Vs MC Y of Gen #Xi^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
     fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiMinusInj);
   }
-  if (!f3dHistGenPtVsGenctauvsYXiMinusNat) {
-     f3dHistGenPtVsGenctauvsYXiMinusNat = new TH3D("f3dHistGenPtVsGenctauvsYXiMinusNat", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiMinusNat);
+  if (!f3dHistGenPtVsGenctauvsCentXiMinusNat) {
+     f3dHistGenPtVsGenctauvsCentXiMinusNat = new TH3D("f3dHistGenPtVsGenctauvsCentXiMinusNat", "MC P_{t} Vs MC ctau Vs Centrality of Gen #Xi^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsCentXiMinusNat);
   }
 
-  if (!f3dHistGenPtVsGenctauvsYXiMinusInj) {
-     f3dHistGenPtVsGenctauvsYXiMinusInj = new TH3D("f3dHistGenPtVsGenctauvsYXiMinusInj", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiMinusInj);
+  if (!f3dHistGenPtVsGenctauvsCentXiMinusInj) {
+     f3dHistGenPtVsGenctauvsCentXiMinusInj = new TH3D("f3dHistGenPtVsGenctauvsCentXiMinusInj", "MC P_{t} Vs MC ctau Vs Centrality of Gen #Xi^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsCentXiMinusInj);
   }
   
 
@@ -905,13 +905,13 @@ if( !fPaveTextBookKeeping){
     f3dHistGenPtVsGenYvsNtracksXiPlusInj = new TH3D("f3dHistGenPtVsGenYvsNtracksXiPlusInj", "MC P_{t} Vs MC Y of Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
     fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiPlusInj);
   }
-  if (!f3dHistGenPtVsGenctauvsYXiPlusNat) {
-     f3dHistGenPtVsGenctauvsYXiPlusNat = new TH3D("f3dHistGenPtVsGenctauvsYXiPlusNat", "MC P_{t} Vs MC ctau Vs Yof Gen #Xi^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiPlusNat);
+  if (!f3dHistGenPtVsGenctauvsCentXiPlusNat) {
+     f3dHistGenPtVsGenctauvsCentXiPlusNat = new TH3D("f3dHistGenPtVsGenctauvsCentXiPlusNat", "MC P_{t} Vs MC ctau Vs Centrality of Gen #Xi^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsCentXiPlusNat);
   }
-  if (!f3dHistGenPtVsGenctauvsYXiPlusInj) {
-     f3dHistGenPtVsGenctauvsYXiPlusInj = new TH3D("f3dHistGenPtVsGenctauvsYXiPlusInj", "MC P_{t} Vs MC ctau Vs Yof Gen #Xi^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiPlusInj);
+  if (!f3dHistGenPtVsGenctauvsCentXiPlusInj) {
+     f3dHistGenPtVsGenctauvsCentXiPlusInj = new TH3D("f3dHistGenPtVsGenctauvsCentXiPlusInj", "MC P_{t} Vs MC ctau Vs Centrality of Gen #Xi^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsCentXiPlusInj);
   }
 
   
@@ -996,13 +996,13 @@ if( !fPaveTextBookKeeping){
      f3dHistGenPtVsGenYvsNtracksOmegaMinusInj = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaMinusInj", "MC P_{t} Vs MC Y of Gen #Omega^{-} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
      fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaMinusInj);
   }
-  if (!f3dHistGenPtVsGenctauvsYOmegaMinusNat) { 
-     f3dHistGenPtVsGenctauvsYOmegaMinusNat = new TH3D("f3dHistGenPtVsGenctauvsYOmegaMinusNat", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaMinusNat);
+  if (!f3dHistGenPtVsGenctauvsCentOmegaMinusNat) { 
+     f3dHistGenPtVsGenctauvsCentOmegaMinusNat = new TH3D("f3dHistGenPtVsGenctauvsCentOmegaMinusNat", "MC P_{t} Vs MC ctau Vs Centrality of Gen #Omega^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsCentOmegaMinusNat);
   }
-  if (!f3dHistGenPtVsGenctauvsYOmegaMinusInj) {
-     f3dHistGenPtVsGenctauvsYOmegaMinusInj = new TH3D("f3dHistGenPtVsGenctauvsYOmegaMinusInj", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaMinusInj);
+  if (!f3dHistGenPtVsGenctauvsCentOmegaMinusInj) {
+     f3dHistGenPtVsGenctauvsCentOmegaMinusInj = new TH3D("f3dHistGenPtVsGenctauvsCentOmegaMinusInj", "MC P_{t} Vs MC ctau Vs Centrality of Gen #Omega^{-} ", 100, ptBinLimits, 111, ctauBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsCentOmegaMinusInj);
   }
 
 
@@ -1089,13 +1089,13 @@ if( !fPaveTextBookKeeping){
      f3dHistGenPtVsGenYvsNtracksOmegaPlusInj = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlusInj", "MC P_{t} Vs MC Y of Gen #Omega^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 100, 0., 4000.);
      fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlusInj);
   }
-  if (!f3dHistGenPtVsGenctauvsYOmegaPlusNat) {
-     f3dHistGenPtVsGenctauvsYOmegaPlusNat = new TH3D("f3dHistGenPtVsGenctauvsYOmegaPlusNat", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlusNat);
+  if (!f3dHistGenPtVsGenctauvsCentOmegaPlusNat) {
+     f3dHistGenPtVsGenctauvsCentOmegaPlusNat = new TH3D("f3dHistGenPtVsGenctauvsCentOmegaPlusNat", "MC P_{t} Vs MC ctau Vs Centrality of Gen #Omega^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsCentOmegaPlusNat);
   }
-  if (!f3dHistGenPtVsGenctauvsYOmegaPlusInj) {
-     f3dHistGenPtVsGenctauvsYOmegaPlusInj = new TH3D("f3dHistGenPtVsGenctauvsYOmegaPlusInj", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-     fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlusInj);
+  if (!f3dHistGenPtVsGenctauvsCentOmegaPlusInj) {
+     f3dHistGenPtVsGenctauvsCentOmegaPlusInj = new TH3D("f3dHistGenPtVsGenctauvsCentOmegaPlusInj", "MC P_{t} Vs MC ctau Vs Centrality of Gen #Omega^{+} ", 100, ptBinLimits, 111, ctauBinLimits, 11, centBinLimits);
+     fListHistCascade->Add(f3dHistGenPtVsGenctauvsCentOmegaPlusInj);
   }
  
   
@@ -2097,8 +2097,8 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
         TH3D *l3dHistGenPtVsGenYvsNtracksNat = 0;
         TH3D *l3dHistGenPtVsGenYvsCentInj = 0;
         TH3D *l3dHistGenPtVsGenYvsNtracksInj = 0;
-        TH3D *l3dHistGenPtVsGenctauvsYNat = 0;
-        TH3D *l3dHistGenPtVsGenctauvsYInj = 0; 
+        TH3D *l3dHistGenPtVsGenctauvsCentNat = 0;
+        TH3D *l3dHistGenPtVsGenctauvsCentInj = 0; 
 
 	TH1F *lHistThetaGenCascNat    = 0;
         TH1F *lHistThetaGenCascInj    = 0;
@@ -2135,8 +2135,8 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
          l3dHistGenPtVsGenYvsNtracksNat = f3dHistGenPtVsGenYvsNtracksXiMinusNat;
          l3dHistGenPtVsGenYvsCentInj = f3dHistGenPtVsGenYvsCentXiMinusInj;
          l3dHistGenPtVsGenYvsNtracksInj = f3dHistGenPtVsGenYvsNtracksXiMinusInj;
-         l3dHistGenPtVsGenctauvsYNat = f3dHistGenPtVsGenctauvsYXiMinusNat;
-         l3dHistGenPtVsGenctauvsYInj = f3dHistGenPtVsGenctauvsYXiMinusInj;
+         l3dHistGenPtVsGenctauvsCentNat = f3dHistGenPtVsGenctauvsCentXiMinusNat;
+         l3dHistGenPtVsGenctauvsCentInj = f3dHistGenPtVsGenctauvsCentXiMinusInj;
 
 	 	// cascades generated within acceptance (cut in pt + theta)
 	 lHistThetaGenCascNat      = fHistThetaGenCascXiMinusNat;
@@ -2164,8 +2164,8 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
          l3dHistGenPtVsGenYvsNtracksNat = f3dHistGenPtVsGenYvsNtracksXiPlusNat;
          l3dHistGenPtVsGenYvsCentInj = f3dHistGenPtVsGenYvsCentXiPlusInj;
          l3dHistGenPtVsGenYvsNtracksInj = f3dHistGenPtVsGenYvsNtracksXiPlusInj;
-         l3dHistGenPtVsGenctauvsYNat = f3dHistGenPtVsGenctauvsYXiPlusNat;
-         l3dHistGenPtVsGenctauvsYInj = f3dHistGenPtVsGenctauvsYXiPlusInj;
+         l3dHistGenPtVsGenctauvsCentNat = f3dHistGenPtVsGenctauvsCentXiPlusNat;
+         l3dHistGenPtVsGenctauvsCentInj = f3dHistGenPtVsGenctauvsCentXiPlusInj;
 	
 	 	// cascades generated within acceptance (cut in pt + theta)	 
 	 lHistThetaGenCascNat      = fHistThetaGenCascXiPlusNat;
@@ -2193,8 +2193,8 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
          l3dHistGenPtVsGenYvsNtracksNat = f3dHistGenPtVsGenYvsNtracksOmegaMinusNat;
          l3dHistGenPtVsGenYvsCentInj = f3dHistGenPtVsGenYvsCentOmegaMinusInj;
          l3dHistGenPtVsGenYvsNtracksInj = f3dHistGenPtVsGenYvsNtracksOmegaMinusInj; 
-         l3dHistGenPtVsGenctauvsYNat = f3dHistGenPtVsGenctauvsYOmegaMinusNat;
-         l3dHistGenPtVsGenctauvsYInj = f3dHistGenPtVsGenctauvsYOmegaMinusInj;
+         l3dHistGenPtVsGenctauvsCentNat = f3dHistGenPtVsGenctauvsCentOmegaMinusNat;
+         l3dHistGenPtVsGenctauvsCentInj = f3dHistGenPtVsGenctauvsCentOmegaMinusInj;
 	
 	 	// cascades generated within acceptance (cut in pt + theta)
 	 lHistThetaGenCascNat      = fHistThetaGenCascOmegaMinusNat;
@@ -2222,8 +2222,8 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
          l3dHistGenPtVsGenYvsNtracksNat = f3dHistGenPtVsGenYvsNtracksOmegaPlusNat;
          l3dHistGenPtVsGenYvsCentInj = f3dHistGenPtVsGenYvsCentOmegaPlusInj;
          l3dHistGenPtVsGenYvsNtracksInj = f3dHistGenPtVsGenYvsNtracksOmegaPlusInj;
-         l3dHistGenPtVsGenctauvsYNat = f3dHistGenPtVsGenctauvsYOmegaPlusNat;
-         l3dHistGenPtVsGenctauvsYInj = f3dHistGenPtVsGenctauvsYOmegaPlusInj;
+         l3dHistGenPtVsGenctauvsCentNat = f3dHistGenPtVsGenctauvsCentOmegaPlusNat;
+         l3dHistGenPtVsGenctauvsCentInj = f3dHistGenPtVsGenctauvsCentOmegaPlusInj;
 
 	 	
 	 	// cascades generated within acceptance (cut in pt + theta)
@@ -2367,13 +2367,13 @@ for (Int_t iCascType = 1; iCascType < 5; iCascType++) {
     if (kIsNaturalPart) {
       l3dHistGenPtVsGenYvsCentNat   ->Fill( partPt, lRapXiMC, lcentrality );
       l3dHistGenPtVsGenYvsNtracksNat->Fill( partPt, lRapXiMC, lPrimaryTrackMultiplicity );     
-      l3dHistGenPtVsGenctauvsYNat->Fill( partPt, lctau, lRapXiMC );
-      lHistThetaGenCascNat       ->Fill( lRadToDeg * partTheta );
+      if (TMath::Abs(lRapXiMC)<0.5) l3dHistGenPtVsGenctauvsCentNat->Fill( partPt, lctau, lcentrality );
+      lHistThetaGenCascNat          ->Fill( lRadToDeg * partTheta );
     } else {
       l3dHistGenPtVsGenYvsCentInj   ->Fill( partPt, lRapXiMC, lcentrality );
       l3dHistGenPtVsGenYvsNtracksInj->Fill( partPt, lRapXiMC, lPrimaryTrackMultiplicity );
-      l3dHistGenPtVsGenctauvsYInj->Fill( partPt, lctau, lRapXiMC );
-      lHistThetaGenCascInj       ->Fill( lRadToDeg * partTheta );
+      if (TMath::Abs(lRapXiMC)<0.5) l3dHistGenPtVsGenctauvsCentInj->Fill( partPt, lctau, lcentrality );
+      lHistThetaGenCascInj          ->Fill( lRadToDeg * partTheta );
     }
 
     // Check the emission of particle stays within the acceptance of the detector (cut in theta)
@@ -2617,8 +2617,8 @@ l3dHistGenPtVsGenYvsCentNat = 0x0;
 l3dHistGenPtVsGenYvsNtracksNat = 0x0;
 l3dHistGenPtVsGenYvsCentInj = 0x0;
 l3dHistGenPtVsGenYvsNtracksInj = 0x0;
-l3dHistGenPtVsGenctauvsYNat = 0x0;
-l3dHistGenPtVsGenctauvsYInj = 0x0;
+l3dHistGenPtVsGenctauvsCentNat = 0x0;
+l3dHistGenPtVsGenctauvsCentInj = 0x0;
 
 lHistThetaGenCascNat    = 0x0;
 lHistThetaGenCascInj    = 0x0;
