@@ -30,10 +30,34 @@
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliESDInputHandler.h"
+#include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisManager.h"
+#include "AliVertexerTracks.h"
+#include "AliAODHandler.h"
+#include "AliInputEventHandler.h"
+#include "AliAODEvent.h"
+#include "AliAODVertex.h"
+#include "AliAODTrack.h"
+#include "AliAODMCHeader.h"
+#include "AliAODMCParticle.h"
+#include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODRecoCascadeHF.h"
+#include "AliRDHFCutsD0toKpi.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
+#include "AliHFEcontainer.h"
+#include "AliHFEpid.h"
+#include "AliHFEpidBase.h"
+#include "AliHFEcuts.h"
+#include "AliHFEtools.h"
+#include "TObject.h"
 #include "TChain.h"
 #include "TSystem.h"
 #include "TFile.h"
 #include <memory>
+
+using namespace std;
 
 /// ROOT macro for the implementation of ROOT specific class methods
 ClassImp(AliAnalysisTaskDxHFECorrelation)
@@ -45,12 +69,18 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fCorrelation(NULL)
   , fD0s(NULL)
   , fElectrons(NULL)
+  , fCutsD0(NULL)
+  , fCutsHFE(NULL)
+  , fPID(NULL)
+  , fFillOnlyD0D0bar(0)
+  , fUseMC(kFALSE)
 {
   // constructor
   //
   //
-
   DefineSlots();
+  fPID = new AliHFEpid("hfePid");
+
 }
 
 int AliAnalysisTaskDxHFECorrelation::DefineSlots()
@@ -58,6 +88,7 @@ int AliAnalysisTaskDxHFECorrelation::DefineSlots()
   // define the data slots
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2,AliRDHFCutsD0toKpi::Class());
   return 0;
 }
 
@@ -80,56 +111,209 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   fElectrons=NULL;
   if (fCorrelation) delete fCorrelation;
   fCorrelation=NULL;
+  if (fCutsD0) delete fCutsD0;
+  fCutsD0=NULL;
+  if (fCutsHFE) delete fCutsHFE;
+  fCutsHFE=NULL;
+  if(fPID) delete fPID;
+  fPID=NULL;
+
+
 }
 
 void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
 {
   // create result objects and add to output list
 
-  std::auto_ptr<TList> Output(new TList);
-  std::auto_ptr<AliDxHFEParticleSelection> D0s(new AliDxHFEParticleSelectionD0);
-  std::auto_ptr<AliDxHFEParticleSelection> Electrons(new AliDxHFEParticleSelectionEl);
-  std::auto_ptr<AliDxHFECorrelation> Correlation(new AliDxHFECorrelation);
+  //Initialize PID for electron selection
+  if(!fPID->GetNumberOfPIDdetectors()) { 
+    fPID->AddDetector("TOF",0);
+    fPID->AddDetector("TPC",1);
+  }
+  fPID->InitializePID();
 
-  if (!Output     .get() ||
-      !D0s        .get() ||
-      !Electrons  .get() ||
-      !Correlation.get()) {
-    AliFatal("allocation of worker classes failed");
-    return;
+  fOutput = new TList;
+  fOutput->SetOwner();
+
+  // setting up for D0s
+  TString selectionD0Options;
+  switch (fFillOnlyD0D0bar) {
+  case 1: selectionD0Options+="FillOnlyD0 "; break;
+  case 2: selectionD0Options+="FillOnlyD0bar "; break;
+  default: selectionD0Options+="FillD0D0bar ";
   }
 
-  fOutput      = Output     .release();
-  fD0s         = D0s        .release();
-  fElectrons   = Electrons  .release();
-  fCorrelation = Correlation.release();
+  fD0s=new AliDxHFEParticleSelectionD0(selectionD0Options);
+  fD0s->SetCuts(fCutsD0);
+  fD0s->InitControlObjects();
 
-  fOutput->SetOwner();
+  //Electrons
+  fElectrons=new AliDxHFEParticleSelectionEl;
+  fElectrons->SetCuts(fPID, AliDxHFEParticleSelectionEl::kCutPID);
+  fElectrons->SetCuts(fCutsHFE, AliDxHFEParticleSelectionEl::kCutHFE);
+  fElectrons->InitControlObjects();
+
+  //Correlation
+  fCorrelation=new AliDxHFECorrelation;
+  fCorrelation->SetCuts(dynamic_cast<AliRDHFCutsD0toKpi*>(fCutsD0));
+  fCorrelation->Init();
+
+  // Fix for merging:
+  // Retrieving the individual objects created
+  // and storing them instead of fD0s,fElectrons etc.. 
+  TList *list =(TList*)fD0s->GetControlObjects();
+  TObject *obj=NULL;
+
+  TIter next(list);
+  while((obj = next())){
+    fOutput->Add(obj);
+  }
+
+  list=(TList*)fCorrelation->GetControlObjects();
+  next=TIter(list);
+  while((obj= next())){
+    fOutput->Add(obj);
+  }
+
+  list=(TList*)fElectrons->GetControlObjects();
+  next=TIter(list);
+  while((obj = next()))
+    fOutput->Add(obj);
+
+  if (fCutsD0) {
+    AliRDHFCutsD0toKpi* cuts=dynamic_cast<AliRDHFCutsD0toKpi*>(fCutsD0);
+    if (!cuts) {
+      AliFatal(Form("cut object %s is of incorrect type %s, expecting AliRDHFCutsD0toKpi", fCutsD0->GetName(), fCutsD0->ClassName()));
+      return;
+    }
+  }
+
+  // TODO: why copy? cleanup?
+  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
+  const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
+  copyfCuts->SetName(nameoutput);
 
   // all tasks must post data once for all outputs
   PostData(1, fOutput);
+  PostData(2,copyfCuts);
+
 }
 
 void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
 {
   // process the event
-
-  // TODO: implement correct input, this is likely not to be the
-  // ESD
   TObject* pInput=InputEvent();
   if (!pInput) {
     AliError("failed to get input");
     return;
   }
   AliVEvent *pEvent = dynamic_cast<AliVEvent*>(pInput);
-  if(!pEvent){
-    AliError(Form("input of wrong class type %s, expecting AliVEvent", pInput->ClassName()));
+  TClonesArray *inputArray=0;
+
+  if(!pEvent && AODEvent() && IsStandardAOD()) { //Not sure if this is needed.. Keep it for now. 
+    // In case there is an AOD handler writing a standard AOD, use the AOD 
+    // event in memory rather than the input (ESD) event.    
+    pEvent = dynamic_cast<AliAODEvent*> (AODEvent());
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent* aodFromExt = ext->GetAOD();
+      inputArray=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+    }
+  } else if(pEvent) {
+    inputArray=(TClonesArray*)pEvent->GetList()->FindObject("D0toKpi");
+  }
+  if(!inputArray || !pEvent) {
+    AliError("Input branch not found!\n");
+    return;
+  }
+  // fix for temporary bug in ESDfilter
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if(!pEvent->GetPrimaryVertex() || TMath::Abs(pEvent->GetMagneticField())<0.001){
+    AliDebug(2,"Rejected at GetPrimaryvertex");
     return;
   }
 
-  std::auto_ptr<TObjArray> pSelectedD0s(fD0s->Select(pEvent));
+  fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsAll);
+  AliRDHFCuts* cutsd0=dynamic_cast<AliRDHFCuts*>(fCutsD0);
+  if (!cutsd0) return; // Fatal thrown already in initialization
+
+  if(!cutsd0->IsEventSelected(pEvent)) {
+    AliDebug(2,"rejected at IsEventSelected");
+    return;
+  }
+
+  if(!fPID->IsInitialized()){ 
+    // Initialize PID with the given run number
+    AliWarning("PID not initialised, get from Run no");
+    fPID->InitializePID(pEvent->GetRunNumber());
+  }
+
+  AliPIDResponse *pidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetPIDResponse();
+  if(!pidResponse){
+    AliDebug(1, "Using default PID Response");
+    pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
+  }
+ 
+  fPID->SetPIDResponse(pidResponse);
+
+
+  Int_t nInD0toKpi = inputArray->GetEntriesFast();
+
+  fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsSel);
+
+  //TODO: pSelectedD0s will now contain both D0 and D0bar. Probably add argument to Select
+  // which determines which ones to return. 
+  std::auto_ptr<TObjArray> pSelectedD0s(fD0s->Select(inputArray,pEvent));
+  if(! pSelectedD0s.get()) {
+    return;
+  }
+  Int_t nD0Selected = pSelectedD0s->GetEntriesFast();
+
+  // No need to go further if no D0s are found. Not sure if this is the best way though..
+  // At the moment this means no control histos can be implemented in AliDxHFECorrelation
+  if(nD0Selected==0){
+    //AliInfo("No D0s found in this event");
+    return;
+  }
+  fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsD0);
+
+
   std::auto_ptr<TObjArray> pSelectedElectrons(fElectrons->Select(pEvent));
+
+  // TODO: use the array of selected track for something, right now
+  // only the control histograms of the selection class are filled
+  // note: the pointer is deleted automatically once the scope is left
+  // if the array should be published, the auto pointer must be released
+  // first, however some other cleanup will be necessary in that case
+  // probably a clone with a reduced AliVParticle implementation is
+  // appropriate.
+
+
+  if(! pSelectedElectrons.get()) {
+    return;
+  }
+
+  Int_t nElSelected =  pSelectedElectrons->GetEntriesFast();
+
+  // No need to go further if no electrons are found. Not sure if this is the best way though..
+  // At the moment this means no control histos can be implemented in AliDxHFECorrelation
+  if(nElSelected==0){
+    //AliInfo("No electrons found in this event");
+    return;
+  }
+
+  AliDebug(4,Form("Number of D0->Kpi Start: %d , End: %d    Electrons Selected: %d\n", nInD0toKpi, nD0Selected, nElSelected));
+
+  fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsD0e);
+
+  //This is only called if there are electrons and D0s present.
   int iResult=fCorrelation->Fill(pSelectedD0s.get(), pSelectedElectrons.get());
+
   if (iResult<0) {
     AliError(Form("%s processing failed with error %d", fCorrelation->GetName(), iResult));
   }

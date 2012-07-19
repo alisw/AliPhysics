@@ -27,12 +27,20 @@
 #include "AliDxHFEParticleSelection.h"
 #include "AliDxHFEParticleSelectionD0.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisCuts.h"
 #include "AliLog.h"
+#include "TH1F.h"
 #include "AliESDInputHandler.h"
+#include "AliAODHandler.h"
+#include "AliAODRecoDecayHF2Prong.h"
+#include "AliRDHFCutsD0toKpi.h"
 #include "TChain.h"
 #include "TSystem.h"
 #include "TFile.h"
+#include "TObjArray.h"
 #include <memory>
+
+using namespace std;
 
 /// ROOT macro for the implementation of ROOT specific class methods
 ClassImp(AliAnalysisTaskDxHFEParticleSelection)
@@ -41,7 +49,9 @@ AliAnalysisTaskDxHFEParticleSelection::AliAnalysisTaskDxHFEParticleSelection(con
   : AliAnalysisTaskSE("AliAnalysisTaskDxHFEParticleSelection")
   , fOutput(0)
   , fOption(opt)
+  , fCuts(NULL)
   , fSelector(NULL)
+  , fUseMC(kFALSE)
 {
   // constructor
   //
@@ -77,6 +87,11 @@ AliAnalysisTaskDxHFEParticleSelection::~AliAnalysisTaskDxHFEParticleSelection()
     delete fSelector;
     fSelector=NULL;
   }
+
+  if (fCuts) {
+    delete fCuts;
+    fCuts=NULL;
+  }
 }
 
 void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
@@ -86,10 +101,34 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
-  fSelector=new AliDxHFEParticleSelectionD0;
-  fSelector->InitControlObjects();
-  fOutput->Add(fSelector);
-  
+  std::auto_ptr<AliDxHFEParticleSelection> selector(new AliDxHFEParticleSelectionD0);
+  if (!selector.get()) return;
+  if (fCuts) {
+    AliRDHFCutsD0toKpi* cuts=dynamic_cast<AliRDHFCutsD0toKpi*>(fCuts);
+    if (!cuts) {
+      AliFatal(Form("cut object %s is of incorrect type %s, expecting AliRDHFCutsD0toKpi", fCuts->GetName(), fCuts->ClassName()));
+      return;
+    }
+    selector->SetCuts(fCuts);
+    AliInfo(Form("Initializing particle selection %s, using %d pt bins", selector->GetName(), cuts->GetNPtBins()));
+  } else {
+    AliWarning("no cut object available for particle selection");
+  }
+  selector->InitControlObjects();
+
+  fSelector=selector.release();
+
+  // Retrieving the list containing histos and THnSparse
+  // and storing them instead of fSelector
+  // Fix to be able to merge
+  TList *list =(TList*)fSelector->GetControlObjects();
+  TObject *obj=NULL;
+
+  TIter next(list);
+  while((obj = next())){
+    fOutput->Add(obj);
+  }
+
   // all tasks must post data once for all outputs
   PostData(1, fOutput);
 }
@@ -105,13 +144,53 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
     AliError("failed to get input");
     return;
   }
+
+  // check if input is an ESD
   AliVEvent *pEvent = dynamic_cast<AliVEvent*>(pInput);
-  if(!pEvent){
-    AliError(Form("input of wrong class type %s, expecting AliVEvent", pInput->ClassName()));
+  TClonesArray *inputArray=0;
+
+  if(!pEvent && AODEvent() && IsStandardAOD()) { //Not sure if this is needed.. Keep it for now. 
+    // In case there is an AOD handler writing a standard AOD, use the AOD 
+    // event in memory rather than the input (ESD) event.    
+    pEvent = AODEvent();
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent* aodFromExt = ext->GetAOD();
+      inputArray=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+    }
+  } else if(pEvent) {
+    inputArray=(TClonesArray*)pEvent->GetList()->FindObject("D0toKpi");
+  }
+  if(!inputArray || !pEvent) {
+    AliError("Input branch not found!\n");
+    return;
+  }
+  // fix for temporary bug in ESDfilter
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if(!pEvent->GetPrimaryVertex() || TMath::Abs(pEvent->GetMagneticField())<0.001){
+    AliDebug(2,"Rejected at GetPrimaryvertex");
     return;
   }
 
-  std::auto_ptr<TObjArray> selectedTracks(fSelector->Select(pEvent));
+  fSelector->HistogramEventProperties(AliDxHFEParticleSelection::kEventsAll);
+  AliRDHFCuts* cuts=dynamic_cast<AliRDHFCuts*>(fCuts);
+  if (!cuts) return; // Fatal thrown already in initialization
+
+  if(!cuts->IsEventSelected(pEvent)) {
+    AliDebug(2,"rejected at IsEventSelected");
+    return;
+  }
+
+  Int_t nInD0toKpi = inputArray->GetEntriesFast();
+
+  fSelector->HistogramEventProperties(AliDxHFEParticleSelection::kEventsSel);
+             
+  std::auto_ptr<TObjArray> selectedTracks(fSelector->Select(inputArray,pEvent));
   // TODO: use the array of selected track for something, right now
   // only the control histograms of the selection class are filled
   // note: the pointer is deleted automatically once the scope is left
@@ -119,7 +198,22 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
   // first, however some other cleanup will be necessary in that case
   // probably a clone with a reduced AliVParticle implementation is
   // appropriate.
-  if (selectedTracks.get()) {
+
+  if(! selectedTracks.get()) {
+    cout << "No selected D0s in this event" << endl; 
+    return;
+  }
+
+  //Test to see if I have read in D0s and retrieved them after selection
+  Int_t nD0Selected = selectedTracks->GetEntriesFast();
+  printf("Number of D0->Kpi Start: %d , End: %d\n",nInD0toKpi,nD0Selected);
+
+  fSelector->HistogramEventProperties(AliDxHFEParticleSelection::kEventsD0);
+
+  for(Int_t iD0toKpi = 0; iD0toKpi < nD0Selected; iD0toKpi++) {
+    AliAODRecoDecayHF2Prong *particle = (AliAODRecoDecayHF2Prong*)selectedTracks->UncheckedAt(iD0toKpi);
+    if (!particle) continue;
+    cout << "D0s inv mass: " << particle->InvMassD0() << endl;
   }
 
   PostData(1, fOutput);

@@ -16,9 +16,17 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
+
+class AliPID;
+class AliPIDResponse;
 class TList;
 class AliDxHFEParticleSelection;
+class AliDxHFEParticleSelectionD0;
+class AliDxHFEParticleSelectionEl;
 class AliDxHFECorrelation;
+class AliAnalysisCuts;
+class AliHFEpid;
+class AliHFEcuts;
 
 /**
  * @class AliAnalysisTaskDxHFECorrelation
@@ -47,8 +55,15 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
 
   /// set options
   void SetOption(const char* opt) { fOption = opt; }
+  void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
+  virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
+  virtual void SetCutsD0(AliAnalysisCuts* cuts){fCutsD0=cuts;}
+  virtual void SetCutsHFE(AliHFEcuts* cuts){fCutsHFE=cuts;}
+
   /// overloaded from TObject: get option
   virtual Option_t* GetOption() const { return fOption;}
+  Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
+  Bool_t GetUseMC() const {return fUseMC;}
 
  protected:
 
@@ -61,12 +76,18 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   int DefineSlots();
 
   TList* fOutput;                        //! list send on output slot 1
-  TString fOption;                       // option string
-  AliDxHFECorrelation* fCorrelation;     // correlation worker class
-  AliDxHFEParticleSelection* fD0s;       // selection of D0s
-  AliDxHFEParticleSelection* fElectrons; // selection of electrons
+  TString fOption;                       //  option string
+  AliDxHFECorrelation* fCorrelation;     //  correlation worker class
+  AliDxHFEParticleSelection* fD0s;       //  selection of D0s
+  AliDxHFEParticleSelection* fElectrons; //  selection of electrons
+  AliAnalysisCuts *fCutsD0;              //  Cuts D0 
+  AliHFEcuts *fCutsHFE;                  //  Cuts HFE
+  AliHFEpid *fPID;                       //  dummy
+  Int_t     fFillOnlyD0D0bar;            // flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
+  Bool_t fUseMC;                 // use MC info
 
-  ClassDef(AliAnalysisTaskDxHFECorrelation, 1);
+
+  ClassDef(AliAnalysisTaskDxHFECorrelation, 2);
 };
 
 #endif

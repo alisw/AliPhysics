@@ -42,6 +42,13 @@ class AliDxHFEParticleSelection : public TNamed {
   /// destructor
   virtual ~AliDxHFEParticleSelection();
 
+  enum {
+    kEventsAll = 0,
+    kEventsSel,
+    kEventsD0,
+    kNEventPropertyLabels
+  };
+
   /// set options
   void SetOption(const char* opt) { fOption = opt; }
   /// overloaded from TObject: get option
@@ -50,28 +57,42 @@ class AliDxHFEParticleSelection : public TNamed {
   /// init the control objects
   virtual int InitControlObjects();
 
-  /// create selection, array contains only pointers but does not own the objects
+  /// create selection from 'Tracks' member of the event,
+  /// array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
   virtual TObjArray* Select(const AliVEvent* pEvent);
-
-  /// create selection, array contains only pointers but does not own the objects
+  /// create selection from the array of particles,
+  /// array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
-  virtual TObjArray* Select(TObjArray* pTracks);
+  virtual TObjArray* Select(TObjArray* particles, const AliVEvent* pEvent);
+
+  // Get the list fControlObjects. 
+  const TList* GetControlObjects() const {return fControlObjects;}
+
+  /// histogram event properties
+  virtual int HistogramEventProperties(int bin);
 
   /// check and add track to internal array
   int CheckAndAdd(AliVParticle* p);
+
+  /// set cuts object: general TObject pointer is used as argument to support
+  // different types; a type cast check is implemented in the method
+  virtual void SetCuts(TObject* /*cuts*/, int /*level*/=0) {}
+
+  Bool_t GetUseMC() const {return fUseMC;}
+
   /// get selected tracks
   const TObjArray* GetSelected() const {return fSelectedTracks;}
 
   /// check particle if it passes the selection criteria
-  virtual bool IsSelected(AliVParticle* p);
+  virtual int IsSelected(AliVParticle* p, const AliVEvent *pEvent=NULL);
 
   /// inherited from TObject: cleanup
   virtual void Clear(Option_t * option ="");
   /// inherited from TObject: print info
   virtual void Print(Option_t *option="") const;
   /// inherited from TObject: safe selection criteria
-  virtual void SaveAs(const char *filename="",Option_t *option="") const;
+  virtual void SaveAs(const char *filename="", Option_t *option="") const;
   /// inherited from TObject: draw content
   virtual void Draw(Option_t *option="");
   /// inherited from TObject: find object by name
@@ -79,12 +100,23 @@ class AliDxHFEParticleSelection : public TNamed {
   /// inherited from TObject: find object by pointer
   virtual TObject* FindObject(const TObject *obj) const;
 
+  /// set verbosity
+  void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
+  /// get verbosity
+  int GetVerbosity() const {return fVerbosity;}
+
  protected:
   /// add control object to list, the base class becomes owner of the object
   int AddControlObject(TObject* pObj);
 
   /// histogram particle properties
-  virtual int HistogramParticleProperties(AliVParticle* p, bool selected=true);
+  virtual int HistogramParticleProperties(AliVParticle* p, int selected=1);
+
+  /// set from the specific child class implementation
+  /// TODO: think about removing this function
+  /// in principle that should not be necessary, the analysis should
+  /// be blind after the particle selection
+  void SetUseMC(bool useMC=true) {fUseMC=useMC;}
 
  private:
   /// copy contructor prohibited
@@ -99,8 +131,13 @@ class AliDxHFEParticleSelection : public TNamed {
   TList* fControlObjects; // list of control objects
   TH1* fhEventControl; //! event control histogram
   TH1* fhTrackControl; //! track control histogram
+  bool fUseMC;         // specific implementation for MC selection
+  int fVerbosity;      //! verbosity
 
-  ClassDef(AliDxHFEParticleSelection, 1);
+  static const char* fgkEventControlBinNames[]; //! bin labels for event control histogram
+
+  ClassDef(AliDxHFEParticleSelection, 2);
+
 };
 
 #endif

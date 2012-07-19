@@ -15,13 +15,16 @@
 #if defined(__CINT__) && !defined(__MAKECINT__)
 {
   //----------- Loading the required libraries ---------//
+  gInterpreter->ExecuteMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
-  gSystem->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include");
+  gSystem->Load("libPWGHFhfe.so");
+  gSystem->Load("libCORRFW");
+  gSystem->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/hfe ");
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/correlationHF/AliDxHFEParticleSelection.cxx+");
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/correlationHF/AliDxHFEParticleSelectionD0.cxx+");
   gROOT->LoadMacro("$ALICE_ROOT/PWGHF/correlationHF/AliDxHFEParticleSelectionEl.cxx+");

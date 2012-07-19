@@ -16,8 +16,10 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
-class TList;
+
 class AliDxHFEParticleSelection;
+class AliAnalysisCuts;
+class TList;
 
 /**
  * @class AliAnalysisTaskDxHFEParticleSelection
@@ -47,6 +49,9 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t*);
 
   void SetOption(const char* opt) { fOption = opt; }
+  virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
+  virtual void SetCuts(AliAnalysisCuts* cuts){fCuts=cuts;}
+  Bool_t GetUseMC() const {return fUseMC;}
 
  protected:
 
@@ -58,11 +63,13 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
 
   int DefineSlots();
 
-  TList* fOutput;                  //! list send on output slot 1
-  TString fOption;                 // option string
+  TList* fOutput;                       // list send on output slot 1
+  TString fOption;                      //  option string
+  AliAnalysisCuts* fCuts;               //  Cuts 
   AliDxHFEParticleSelection* fSelector; // selector instance
+  bool fUseMC;                          // use MC info
 
-  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 1);
+  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 2);
 };
 
 #endif

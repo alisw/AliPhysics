@@ -49,6 +49,8 @@ AliDxHFEParticleSelection::AliDxHFEParticleSelection(const char* name, const cha
   , fControlObjects(NULL)
   , fhEventControl(NULL)
   , fhTrackControl(NULL)
+  , fUseMC(false)
+  , fVerbosity(0)
 {
   // constructor
   // 
@@ -57,6 +59,12 @@ AliDxHFEParticleSelection::AliDxHFEParticleSelection(const char* name, const cha
   // 
 }
 
+const char* AliDxHFEParticleSelection::fgkEventControlBinNames[]={
+  "nEventsAll",
+  "nEventsSelected",
+  "nEventsD0"
+};
+
 AliDxHFEParticleSelection::~AliDxHFEParticleSelection()
 {
   // destructor
@@ -64,16 +72,25 @@ AliDxHFEParticleSelection::~AliDxHFEParticleSelection()
   fSelectedTracks=NULL;
   if (fControlObjects) delete fControlObjects;
   fControlObjects=NULL;
+  fhEventControl=NULL;
+  fhTrackControl=NULL;
 }
 
 int AliDxHFEParticleSelection::InitControlObjects()
 {
+  // init control objects
+  if (fVerbosity>0) {
+    AliInfo("Setting up control objects");
+  }
+
   /// init the control objects, can be overloaded by childs which should
   /// call AliDxHFEParticleSelection::InitControlObjects() explicitly
   std::auto_ptr<TH1D> hEventControl(new TH1D("hEventControl", "hEventControl", 10, 0, 10));
   std::auto_ptr<TH1D> hTrackControl(new TH1D("hTrackControl", "hTrackControl", 10, 0, 10));
 
   fhEventControl=hEventControl.release();
+  for (int iLabel=0; iLabel<kNEventPropertyLabels; iLabel++)
+    fhEventControl->GetXaxis()->SetBinLabel(iLabel, fgkEventControlBinNames[iLabel]);
   AddControlObject(fhEventControl);
   fhTrackControl=hTrackControl.release();
   AddControlObject(fhTrackControl);
@@ -94,11 +111,25 @@ int AliDxHFEParticleSelection::AddControlObject(TObject* pObj)
     AliError(Form("ignoring duplicate object '%s' of type %s", pObj->GetName(), pObj->ClassName()));
     return -EEXIST;
   }
+  if (GetVerbosity()>0) {
+    AliInfo(Form("Adding object '%s' of type %s",pObj->GetName(),pObj->ClassName()));
+  }
   fControlObjects->Add(pObj);
   return 0;
 }
 
-int AliDxHFEParticleSelection::HistogramParticleProperties(AliVParticle* p, bool selected)
+int AliDxHFEParticleSelection::HistogramEventProperties(int bin)
+{
+  /// histogram event properties
+  if (!fControlObjects) return 0;
+
+  // TODO: use enums for the bins of the control histogram
+  // for now: 0=all, 1=events with D0s, 2=events with correlated D0s
+  fhEventControl->Fill(bin);
+  return 0;
+}
+
+int AliDxHFEParticleSelection::HistogramParticleProperties(AliVParticle* p, int selected)
 {
   /// histogram particle properties
   if (!p) return -EINVAL;
@@ -112,7 +143,8 @@ int AliDxHFEParticleSelection::HistogramParticleProperties(AliVParticle* p, bool
 
 TObjArray* AliDxHFEParticleSelection::Select(const AliVEvent* pEvent)
 {
-  /// create selection, array contains only pointers but does not own the objects
+  /// create selection from 'Tracks' member of the event,
+  /// array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
   if (!pEvent) return NULL;
   TObjArray* selectedTracks=new TObjArray;
@@ -120,29 +152,30 @@ TObjArray* AliDxHFEParticleSelection::Select(const AliVEvent* pEvent)
   int nofTracks=pEvent->GetNumberOfTracks();
   for (int itrack=0; itrack<nofTracks; itrack++) {
     AliVParticle* track=pEvent->GetTrack(itrack);
-    bool selected=IsSelected(track);
-    HistogramParticleProperties(track, selected);
-    if (!selected) continue;
+    int selectionCode=IsSelected(track);
+    HistogramParticleProperties(track, selectionCode);
+    if (selectionCode==0) continue;
     selectedTracks->Add(track);
   }
   return selectedTracks;
 }
 
-TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pTracks)
+TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, const AliVEvent* pEvent)
 {
-  /// create selection, array contains only pointers but does not own the objects
+  /// create selection from the array of particles,
+  /// array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
-  if (!pTracks) return NULL;
+  if (!pParticles) return NULL;
   TObjArray* selectedTracks=new TObjArray;
   if (!selectedTracks) return NULL;
-  TIter itrack(pTracks);
+  TIter next(pParticles);
   TObject* pObj=NULL;
-  while ((pObj=itrack())!=NULL) {
+  while ((pObj=next())) {
     AliVParticle* track=dynamic_cast<AliVParticle*>(pObj);
     if (!track) continue;
-    bool selected=IsSelected(track);
-    HistogramParticleProperties(track, selected);
-    if (!selected) continue;
+    int selectionCode=IsSelected(track, pEvent);
+    HistogramParticleProperties(track, selectionCode);
+    if (selectionCode ==0) continue;
     selectedTracks->Add(track);
   }
   return selectedTracks;
@@ -155,11 +188,11 @@ int AliDxHFEParticleSelection::CheckAndAdd(AliVParticle* /*p*/)
   return -ENOSYS;
 }
 
-bool AliDxHFEParticleSelection::IsSelected(AliVParticle* /*p*/)
+int AliDxHFEParticleSelection::IsSelected(AliVParticle* /*p*/, const AliVEvent* /*e*/)
 {
   /// check particle if it passes the selection criteria
   /// childs can overload, by default all tracks are selected
-  return true;
+  return 1;
 }
 
 void AliDxHFEParticleSelection::AliDxHFEParticleSelection::Clear(Option_t * /*option*/)
@@ -175,10 +208,15 @@ void AliDxHFEParticleSelection::Print(Option_t */*option*/) const
   if (fControlObjects) fControlObjects->Print();
 }
  
-void AliDxHFEParticleSelection::SaveAs(const char* filename,Option_t */*option*/) const
+void AliDxHFEParticleSelection::SaveAs(const char* filename, Option_t */*option*/) const
 {
   /// inherited from TObject: save selection criteria
-  std::auto_ptr<TFile> output(TFile::Open(filename, "RECREATE"));
+  TString fileoption;
+  // TODO: options recreate
+  fileoption="RECREATE";
+  //else fileoption="UPDATE";
+
+  std::auto_ptr<TFile> output(TFile::Open(filename,fileoption));
   if (!output.get() || output->IsZombie()) {
     AliError(Form("can not open file %s from writing", filename));
     return;
