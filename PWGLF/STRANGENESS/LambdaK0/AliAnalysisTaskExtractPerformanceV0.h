@@ -63,7 +63,8 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
         // your data member object is created on the worker nodes and streaming is not needed.
         // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
   TList  *fListHistV0;  //! List of Cascade histograms
-  TTree  *fTree;              //! Output Tree
+  TTree  *fTree;              //! Output Tree, V0
+  TTree  *fTreeCascade;              //! Output Tree, Cascades
 
   AliPIDResponse *fPIDResponse;     // PID response object
 
@@ -73,7 +74,9 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
   Bool_t fkLowEnergyPP; //if true, skip FASTOnly (default FALSE)
   Bool_t fkUseOnTheFly; //if true, will use On-the-fly V0s instead of Offline V0s (default FALSE)
 
-  //Variables for Tree
+//===========================================================================================
+//   Variables for Tree, V0s
+//===========================================================================================
    Int_t    fTreeVariablePrimaryStatus;      //!
    Int_t    fTreeVariablePrimaryStatusMother;      //!
    Float_t fTreeVariableChi2V0;             //!
@@ -127,6 +130,46 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
    Int_t fTreeVariableMultiplicity;//!
 
+//===========================================================================================
+//   Variables for tree, cascades
+//===========================================================================================
+
+  Int_t fTreeCascVarCharge;         //! 
+  Float_t fTreeCascVarMassAsXi;     //! 
+  Float_t fTreeCascVarMassAsOmega;  //! 
+  Float_t fTreeCascVarPt;           //!
+  Float_t fTreeCascVarRapXi;        //!
+  Float_t fTreeCascVarRapOmega;     //!
+  Float_t fTreeCascVarNegEta;       //!
+  Float_t fTreeCascVarPosEta;       //!
+  Float_t fTreeCascVarBachEta;      //!
+  Float_t fTreeCascVarDCACascDaughters; //!
+  Float_t fTreeCascVarDCABachToPrimVtx; //!
+  Float_t fTreeCascVarDCAV0Daughters;   //!
+  Float_t fTreeCascVarDCAV0ToPrimVtx;   //!
+  Float_t fTreeCascVarDCAPosToPrimVtx;  //!
+  Float_t fTreeCascVarDCANegToPrimVtx;  //!
+  Float_t fTreeCascVarCascCosPointingAngle; //!
+  Float_t fTreeCascVarCascRadius;           //!
+  Float_t fTreeCascVarV0Mass;               //!
+  Float_t fTreeCascVarV0CosPointingAngle;   //!
+  Float_t fTreeCascVarV0Radius;             //!
+  Int_t   fTreeCascVarLeastNbrClusters;     //!
+  Int_t   fTreeCascVarMultiplicity;         //!
+  Float_t fTreeCascVarDistOverTotMom;       //!
+  Int_t   fTreeCascVarPID;         //!
+  Int_t   fTreeCascVarPIDBachelor; //!  
+  Int_t   fTreeCascVarPIDNegative; //!
+  Int_t   fTreeCascVarPIDPositive; //!
+  Float_t fTreeCascVarPosTransMom;   //!
+  Float_t fTreeCascVarNegTransMom;   //!
+  Float_t fTreeCascVarPosTransMomMC; //!
+  Float_t fTreeCascVarNegTransMomMC; //!
+
+//===========================================================================================
+//   Histograms
+//===========================================================================================
+
    TH1F      *fHistV0MultiplicityBeforeTrigSel;              //! V0 multiplicity distribution
    TH1F      *fHistV0MultiplicityForTrigEvt;                 //! V0 multiplicity distribution
    TH1F      *fHistV0MultiplicityForSelEvt;                  //! V0 multiplicity distribution
@@ -165,6 +208,13 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
 
    TH3F      *f3dHistGenPtVsYVsMultXiMinus;      //! Generated Xi- Distrib
    TH3F      *f3dHistGenPtVsYVsMultXiPlus;       //! Generated Xi+ Distrib
+   TH3F      *f3dHistGenPtVsYVsMultOmegaMinus;      //! Generated Omega- Distrib
+   TH3F      *f3dHistGenPtVsYVsMultOmegaPlus;       //! Generated Omega+ Distrib
+
+   TH3F      *f3dHistGenSelectedPtVsYVsMultXiMinus;      //! Generated Xi- Distrib, at event selection level
+   TH3F      *f3dHistGenSelectedPtVsYVsMultXiPlus;       //! Generated Xi+ Distrib, at event selection level
+   TH3F      *f3dHistGenSelectedPtVsYVsMultOmegaMinus;      //! Generated Omega- Distrib, at event selection level
+   TH3F      *f3dHistGenSelectedPtVsYVsMultOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
 
    TH1F      *fHistPVx;                      //! PVx distrib
    TH1F      *fHistPVy;                      //! PVy distrib
