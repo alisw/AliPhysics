@@ -1,8 +1,9 @@
-void runAODProof(Int_t c=4, const char * proofMode = "full")
+void runAODProof(Int_t c=3, const char * proofMode = "full")
 { //1 data AOD049
   //2 MC AOD048
   //3 data AOD086
   //4 MC AOD090
+  //5 MC_AMPT AOD081
   
   //  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
   
@@ -34,7 +35,7 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   handler->SetOverwriteMode();
   handler->SetRunMode(proofMode);
   handler->SetProofReset(0);
-  handler->SetAliROOTVersion("v5-03-33-AN");
+  handler->SetAliROOTVersion("v5-03-36-AN");
   
   //handler->SetNproofWorkers(80);
   //handler->SetNproofWorkersPerSlave(4);
@@ -52,6 +53,8 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   }
   if (c == 4){
     handler->SetProofDataSet("/default/lmilano/LHC11a10a_bis_138653_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138666_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139107_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138275_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139465_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_139437_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138442_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138396_AOD090#aodTree|/default/lmilano/LHC11a10a_bis_138364_AOD090#aodTree");        }
+  if (c == 5){
+    handler->SetProofDataSet("/default/lmilano/LHC12a11e_137686_AOD081#aodTree|/default/lmilano/LHC12a11e_138534_AOD081#aodTree|/default/lmilano/LHC12a11e_138653_AOD081#aodTree|/default/lmilano/LHC12a11e_139038_AOD081#aodTree|/default/lmilano/LHC12a11e_139437_AOD081#aodTree|");        }
 
   handler->SetAliRootMode("default");
   handler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/TOF -I$ALICE_ROOT/PWGLF");
@@ -73,15 +76,10 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   
   // Add PID task
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  Bool_t isMC = kFALSE;
-  if (c == 2 || c == 4) isMC = kTRUE;   
   Printf("-------------------------------adding in runAOD AddTaskPIDResponse");
   // Add PID task
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse();
-  // Printf("OADB PATH:::::%s",taskPID->GetOADBPath());
-  // taskPID->SetOADBPath("alien:///alice/cern.ch/user/a/akalweit/ForLeornado/OADB");
-  // Printf("OADB PATH:::::%s",taskPID->GetOADBPath());
   
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
   AliVZEROEPSelectionTask *selTask = AddTaskVZEROEPSelection();
@@ -92,6 +90,8 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   //                            0    1    2    3    4    5    6    7    8    9
   Double_t CentCutMin[4]= {     0,  30,  30,  30};
   Double_t CentCutMax[4]= {     5,  40,  40,  40};
+  // Double_t CentCutMin[4]= {     0,   0,   0,   0};
+  // Double_t CentCutMax[4]= {     5, 100, 100, 100};
   Double_t QvecCutMin[4]={      0,   0,   0, 1.5};
   Double_t QvecCutMax[4]={    100, 100, 0.4, 100};
   Double_t EtaMin[4]={       -0.8,-0.8,-0.8,-0.8};
@@ -106,13 +106,13 @@ void runAODProof(Int_t c=4, const char * proofMode = "full")
   Bool_t UseCentPatchAOD049=kFALSE;
   Double_t DCA=100000;
   UInt_t minNclsTPC=70;
-  Int_t nrebin=10;
+  Int_t nrebin=30;
   TString opt="";
   
-  if(c==2||c==4)mc=kTRUE;
+  if(c==2||c==4||c==5)mc=kTRUE;
   if(c==1)UseCentPatchAOD049=kTRUE;
   
-  for(Int_t icut=0;icut<4;icut++){
+  for(Int_t icut=1;icut<4;icut++){
     //if(icut!=0)continue;
     AliAnalysisTaskSpectraAOD *taskAOD =AddTaskSpectraAOD(mc,CentCutMin[icut],CentCutMax[icut],QvecCutMin[icut],QvecCutMax[icut],EtaMin[icut],EtaMax[icut],Nsigmapid,pt,p,y,ptTofMatch,trkbit,trkbitQVector,UseCentPatchAOD049,DCA,minNclsTPC,nrebin,opt);
     taskAOD->GetOutputSlot(1)->GetContainer()->SetName(Form("%s_%s",taskAOD->GetOutputSlot(1)->GetContainer()->GetName(),taskAOD->GetName()));

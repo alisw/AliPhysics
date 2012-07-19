@@ -25,12 +25,14 @@ class AliSpectraAODEventCuts : public TNamed
   enum {  kProcessedEvents = 0,kPhysSelEvents,kAcceptedEvents, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector, kNVtxCuts};
 
   // Constructors
- AliSpectraAODEventCuts() : TNamed(), fAOD(0), fTrackBits(0), fIsMC(0), fUseCentPatchAOD049(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0) {}
+ AliSpectraAODEventCuts() : TNamed(), fAOD(0), fTrackBits(0), fIsMC(0), fCentFromV0(0), fUseCentPatchAOD049(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0) {}
   AliSpectraAODEventCuts(const char *name);
   virtual  ~AliSpectraAODEventCuts() {}
   
   void SetIsMC(Bool_t isMC = kFALSE)    {fIsMC = isMC; };
   Bool_t GetIsMC()           const           { return fIsMC;};
+  void SetCentFromV0(Bool_t centFromV0 = kFALSE)    {fCentFromV0 = centFromV0; };
+  Bool_t GetCentFromV0()           const           { return fCentFromV0;};
   
   void SetUseCentPatchAOD049(Bool_t useCentPatchAOD049 = kFALSE)    {fUseCentPatchAOD049 = useCentPatchAOD049; };
   Bool_t GetUseCentPatchAOD049()           const           { return fUseCentPatchAOD049;};
@@ -88,6 +90,7 @@ class AliSpectraAODEventCuts : public TNamed
   AliAODEvent     *fAOD;              //! AOD event
   UInt_t           fTrackBits;       // Type of track to be used in the Qvector calculation
   Bool_t          fIsMC;// true if processing MC
+  Bool_t          fCentFromV0;// default centrality with tracks
   Bool_t          fUseCentPatchAOD049;// Patch for centrality selection on AOD049
   AliSpectraAODTrackCuts     *fTrackCuts;              //! track cuts
   Bool_t          fIsSelected;        // True if cuts are selected

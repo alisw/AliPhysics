@@ -42,7 +42,7 @@ using namespace std;
 
 ClassImp(AliSpectraAODEventCuts)
 
-AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fTrackBits(0),fIsMC(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
+AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, "AOD Event Cuts"), fAOD(0), fTrackBits(0),fIsMC(0),fCentFromV0(0), fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0)
 {
   // Constructor
@@ -69,6 +69,7 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : TNamed(name, 
   fMultiplicityCutMin=0.0;
   fMultiplicityCutMax=10000.0;
   fTrackBits=1;
+  fCentFromV0=kFALSE;
 }
 
 //______________________________________________________
@@ -112,6 +113,8 @@ Bool_t AliSpectraAODEventCuts::CheckVtxRange()
 {
   // reject events outside of range
   AliAODVertex * vertex = fAOD->GetPrimaryVertex();
+  //when moving to 2011 wìone has to add a cut using SPD vertex.
+  //The point is that for events with |z|>20 the vertexer tracks is not working (only 2011!). One has to put a safety cut using SPD vertex large e.g. 15cm
   if (!vertex)
     {
       fHistoCuts->Fill(kVtxNoEvent);
@@ -130,7 +133,9 @@ Bool_t AliSpectraAODEventCuts::CheckCentralityCut()
 {
   // Check centrality cut
   Double_t cent=0;
-  if(!fUseCentPatchAOD049)cent=fAOD->GetCentrality()->GetCentralityPercentile("V0M");
+  TString CentEstimator="TRK";
+  if(fCentFromV0)CentEstimator="V0M";
+  if(!fUseCentPatchAOD049)cent=fAOD->GetCentrality()->GetCentralityPercentile(CentEstimator.Data());
   else cent=ApplyCentralityPatchAOD049();
   
   if ( (cent <= fCentralityCutMax)  &&  (cent >= fCentralityCutMin) )  return kTRUE;   
