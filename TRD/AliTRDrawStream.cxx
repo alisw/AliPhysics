@@ -430,8 +430,14 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr)
     while ((fCurrSlot < fgkNstacks) &&
 	   (((fCurrStackMask & (1 << fCurrSlot)) == 0) ||
 	    ((fCurrLinkMask[fCurrSlot] & (1 << fCurrLink))) == 0)) {
+      if ((fCurrStackMask & (1 << fCurrSlot)) == 0) {
+	++fCurrSlot;
+	fCurrSlot = 0;
+	continue;
+      }
       fCurrLink++;
       if (fCurrLink >= fgkNlinks) {
+	SeekNextStack();
 	fCurrLink = 0;
 	fCurrSlot++;
       }
