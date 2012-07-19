@@ -36,7 +36,6 @@ AliAnalysisTaskExtractPerformanceV0 *AddTaskExtractPerformanceV0( Bool_t lSwitch
    //if (lSwitchIsNuclear) outputFileName += "_AA";
    outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
-   if (lSwitchUseOnTheFly==kTRUE) outputFileName += "_OnTheFly";
    //if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
    
    Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
@@ -49,13 +48,20 @@ AliAnalysisTaskExtractPerformanceV0 *AddTaskExtractPerformanceV0( Bool_t lSwitch
 							     TTree::Class(),
 							     AliAnalysisManager::kOutputContainer,
 							     outputFileName );
+   AliAnalysisDataContainer *coutputTreeCascade = mgr->CreateContainer("cTreeCascadeMC",
+							     TTree::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputFileName );
    
    //This one you should merge in file-resident ways...
    coutputTree->SetSpecialOutput();
+   coutputTreeCascade->SetSpecialOutput();
 
+   //Recommendation: Tree as a single output slot
    mgr->ConnectInput( taskv0extractperformance, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskv0extractperformance, 1, coutputList);
    mgr->ConnectOutput(taskv0extractperformance, 2, coutputTree);
+   mgr->ConnectOutput(taskv0extractperformance, 3, coutputTreeCascade);
    
    return taskv0extractperformance;
 }   
