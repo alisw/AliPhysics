@@ -164,7 +164,7 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   fOutputList->Add(fHEMCalResponseElec);
 
   fHEMCalResponseProton = new TH2F("fHEMCalResponseProton", "Proton E/P vs track p_{T};  p_{T} (GeV/c); E/P", 100 , 0, 4, 100, 0, 3.2);
-  fOutputList->Add(fHEMCalResponseElec);
+  fOutputList->Add(fHEMCalResponseProton);
 
   fHEMCalRecdPhidEta = new TH2F("fHEMCalRecdPhidEta","EMCAL Cluster-Track #Delta#phi-#Delta#eta; #Delta#eta; #Delta#phi",1000,-0.1,0.1,1000,-0.5,0.5);
   fOutputList->Add(fHEMCalRecdPhidEta);
