@@ -14,5 +14,6 @@
 #pragma link C++ class  AliITSRecPointU+;
 #pragma link C++ class  AliITSInitGeometryUpg+;
 #pragma link C++ class  AliITSLoaderUpg+;
+#pragma link C++ class  AliITSgeomTGeoUpg+;
 
 #endif

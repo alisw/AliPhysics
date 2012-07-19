@@ -324,7 +324,42 @@ void AliITSvUpgrade::AddAlignableVolumes() const{
     AliFatal("TGeoManager doesn't exist !");
     return;
   }
-  // To be done - dummy for the time being
+  // RS: to be checked with MS
+  if( !gGeoManager->SetAlignableEntry("ITS","ALIC_1/ITSV_2") )
+    AliFatal(Form("Unable to set alignable entry ! %s :: %s","ITS","ALIC_1/ITSV_2"));    
+  //
+  TString pth,snm;
+  for (int lr=0; lr<fNumberOfLayers; lr++) {
+    //
+    pth = Form("ALIC_1/ITSV_2/ITSupgLayer%d_1",lr);
+    snm = Form("ITS/LrUpg%d",lr);
+    //printf("SetAlignable: %s %s\n",snm.Data(),pth.Data());
+    gGeoManager->SetAlignableEntry(snm.Data(),pth.Data());
+    int modNum = 0;
+    //
+    for (int ld=0; ld<fLaddPerLay[lr]; ld++) {
+      //
+      TString pthL = Form("%s/ITSupgLadder%d_%d",pth.Data(),lr,ld+1);
+      TString snmL = Form("%s/LaddUpg%d",snm.Data(),ld+1);
+      //printf("SetAlignable: %s %s\n",snmL.Data(),pthL.Data());
+      gGeoManager->SetAlignableEntry(snmL.Data(),pthL.Data());
+      //
+      for (int md=0; md<fModPerLadd[lr]; md++) {
+	//
+	TString pthM = Form("%s/ITSupgModule%d_%d",pthL.Data(),lr,md+1);
+	TString snmM = Form("%s/ModUpg%d",snmL.Data(),md+1);
+	//
+	int modUID = AliGeomManager::LayerToVolUID(lr+1,modNum++);
+	//
+	//printf("SetAlignable (UID=%d, ModNum=%d): %s %s\n",modUID,modNum-1,snmM.Data(),pthM.Data());
+	gGeoManager->SetAlignableEntry(snmM.Data(),pthM.Data(),modUID);
+	//
+	SetT2Lmatrix(modUID,0, kFALSE,kFALSE); // RS: do we need here special matrix, ask MS
+	//
+      }
+    }
+  }
+  //
 }
 
 //______________________________________________________________________

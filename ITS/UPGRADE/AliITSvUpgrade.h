@@ -66,8 +66,7 @@ class AliITSvUpgrade : public AliITSUpg {
     virtual void   StepManager();
 
  protected:
-    void SetT2Lmatrix(Int_t uid, Double_t yShift,
-		      Bool_t yFlip, Bool_t yRot180=kFALSE) const; // Set T2L matrix in TGeoPNEntries
+    void SetT2Lmatrix(Int_t uid, Double_t yShift,Bool_t yFlip, Bool_t yRot180=kFALSE) const; // Set T2L matrix in TGeoPNEntries
 
  private:
     AliITSvUpgrade(const AliITSvUpgrade &source); // copy constructor
