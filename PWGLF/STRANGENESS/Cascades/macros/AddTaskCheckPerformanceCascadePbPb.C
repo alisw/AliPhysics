@@ -1,18 +1,19 @@
-AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( Int_t    minnTPCcls          = 80,
-                                                                                Float_t  centrlowlim         = 0.,
-                                                                                Float_t  centruplim          = 90.,
-                                                                                TString  centrest            = "V0M",
-                                                                                Bool_t   kusecleaning        = kTRUE,
-                                                                                Float_t  vtxlim              = 10.,
-                                                                                Bool_t   kextrasel           = kFALSE,
-                                                                                Bool_t   kacccut             = kFALSE,
-                                                                                Bool_t   krelaunchvertexers  = kFALSE) {
+AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( Int_t    minnTPCcls           = 80,
+                                                                                Float_t  centrlowlim          = 0.,
+                                                                                Float_t  centruplim           = 90.,
+                                                                                TString  centrest             = "V0M",
+                                                                                Bool_t   kusecleaning         = kTRUE,
+                                                                                Float_t  vtxlim               = 10.,
+                                                                                Bool_t   kextrasel            = kFALSE,
+                                                                                Bool_t   kacccut              = kFALSE,
+                                                                                Bool_t   krelaunchvertexers   = kFALSE,
+                                                                                Float_t   minptondaughtertracks= 0.     ) {
 // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddTaskCheckPerformanceCascade", "No analysis manager to connect to.");
+      ::Error("AddCheckPerformanceCascade", "No analysis manager to connect to.");
       return NULL;
    }   
 
@@ -25,7 +26,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-        AliAnalysisTaskCheckPerformanceCascadePbPb *taskCheckPerfCascadePbPb = new AliAnalysisTaskCheckPerformanceCascadePbPb("TaskCheckPerfCascadePbPb");
+   AliAnalysisTaskCheckPerformanceCascadePbPb *taskCheckPerfCascadePbPb = new AliAnalysisTaskCheckPerformanceCascadePbPb("TaskCheckPerfCascadePbPb");
 
    taskCheckPerfCascadePbPb-> SetAnalysisType                (type);
    taskCheckPerfCascadePbPb-> SetRelaunchV0CascVertexers    (krelaunchvertexers);     
@@ -42,8 +43,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
    taskCheckPerfCascadePbPb-> SetCentralityEst              (centrest);
    taskCheckPerfCascadePbPb-> SetUseCleaning                (kusecleaning);
    taskCheckPerfCascadePbPb-> SetVertexRange                (vtxlim);
- 
-   taskCheckPerfCascadePbPb->SelectCollisionCandidates();   
+   taskCheckPerfCascadePbPb-> SetMinptCutOnDaughterTracks   (minptondaughtertracks); 
+   taskCheckPerfCascadePbPb-> SelectCollisionCandidates();   
  
    mgr->AddTask(taskCheckPerfCascadePbPb);
 
@@ -63,8 +64,40 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
 							     AliAnalysisManager::kOutputContainer,
 							     outputFileName );
 
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontPIDXiM",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
+   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontPIDXiP",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
+   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cfcontPIDOmegaM",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
+   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("cfcontPIDOmegaP",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
+   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("cfcontCuts",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
+
+
    mgr->ConnectInput( taskCheckPerfCascadePbPb, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskCheckPerfCascadePbPb, 1, coutput1);
+   mgr->ConnectOutput(taskCheckPerfCascadePbPb, 2, coutput2);
+   mgr->ConnectOutput(taskCheckPerfCascadePbPb, 3, coutput3);
+   mgr->ConnectOutput(taskCheckPerfCascadePbPb, 4, coutput4);
+   mgr->ConnectOutput(taskCheckPerfCascadePbPb, 5, coutput5);
+   mgr->ConnectOutput(taskCheckPerfCascadePbPb, 6, coutput6);
    
    return taskCheckPerfCascadePbPb;
 }   

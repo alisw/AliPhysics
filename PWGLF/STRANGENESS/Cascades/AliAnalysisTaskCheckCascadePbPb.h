@@ -62,6 +62,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   void SetCentralityEst              (TString   centrest                = "V0M") { fCentrEstimator              = centrest;                   }
   void SetUseCleaning                (Bool_t   usecleaning              = kTRUE) { fkUseCleaning                = usecleaning;                }
   void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                    = vtxrange;                   }
+  void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks            = 0.   ) { fMinPtCutOnDaughterTracks    = minptdaughtrks;             }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -86,7 +87,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         TString         fCentrEstimator;                // string for the centrality estimator
         Bool_t          fkUseCleaning;                  // Boolean : kTRUE = uses all the cleaning criteria of centrality selections (vertex cut + outliers) otherwise only outliers
         Float_t         fVtxRange;                      // to select events with |zvtx|<fVtxRange cm
-
+        Float_t         fMinPtCutOnDaughterTracks;      // minimum pt cut on daughter tracks
        
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
@@ -94,8 +95,8 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         TList      *fListHistCascade;                   //! List of Cascade histograms
         
         // - General histos (filled before the trigger selection)
-        TH2F    *fHistEvtsInCentralityBinsvsNtracks;  //! Events in centrality bins vs N ESDtracks
-        TH1F    *fHistCascadeMultiplicityBeforeEvSel; //! Cascade multiplicity distribution
+        TH2F    *fHistEvtsInCentralityBinsvsNtracks;    //! Events in centrality bins vs N ESDtracks
+        TH1F    *fHistCascadeMultiplicityBeforeEvSel;   //! Cascade multiplicity distribution
          
         // - General histos (filled for any triggered event)
         TH1F    *fHistCascadeMultiplicityForCentrEvt;              //! Cascade multiplicity distribution
@@ -174,6 +175,8 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
 	
 	TH1F	*fHistBachTransvMomXi;                  //! bachelor transverse momentum, for cand. around the mass peak of Xi-/+
 	TH1F	*fHistBachTotMomXi;                     //! bachelor momentum norm, for cand. around the mass peak of Xi-/+
+        TH1F    *fHistPosTransvMomXi;                   //! positive daughter transverse momentum, for cand. around the mass peak of Xi-/+
+        TH1F    *fHistNegTransvMomXi;                   //! negative daughter transverse momentum, for cand. around the mass peak of Xi-/+
 
 	TH1F	*fHistChargeXi;				//! Charge sign of the cascade candidate
 	TH1F	*fHistV0toXiCosineOfPointingAngle;	//! Cos. of Pointing angle between the V0 mom and the Xi-V0 vtx line
@@ -238,7 +241,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascadePbPb(const AliAnalysisTaskCheckCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckCascadePbPb& operator=(const AliAnalysisTaskCheckCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadePbPb, 5);
+  ClassDef(AliAnalysisTaskCheckCascadePbPb, 6);
 };
 
 #endif
