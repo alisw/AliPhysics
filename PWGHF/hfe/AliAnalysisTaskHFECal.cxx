@@ -436,6 +436,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
 
     int nTPCcl = track->GetTPCNcls();
+    int nTPCclF = track->GetTPCNclsF();
     int nITS = track->GetNcls(0);
     
     fTrackPtAftTrkCuts->Fill(track->Pt());		
@@ -492,7 +493,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
 		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = nITS; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
-		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = m02; valdedx[9] = m20; valdedx[10] = mcpT;
+		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nTPCclF; valdedx[9] = m20; valdedx[10] = mcpT;
 		  valdedx[11] = cent; valdedx[12] = charge; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
                   if(fqahist==1)fEleInfo->Fill(valdedx);
@@ -754,8 +755,8 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  ,match, cell, M02, M20, Disp, Centrality, select)
   Int_t nBins[16] =  {  250,    10,   60,    20,   100,  300,  50,   40,   200, 200,  250, 200,    3,    5, 100,    8};
   Double_t min[16] = {kMinP,  -0.5, 1.0,  -1.0,  -6.0,    0,   0,    0,   0.0, 0.0,  0.0,   0, -1.5, -0.5,  80, -1.5};
-  Double_t max[16] = {kMaxP,   9.5, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   2.0, 2.0, 50.0, 100,  1.5,  4.5, 180,  6.5};
-  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;M02;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
+  Double_t max[16] = {kMaxP,   9.5, 4.0,   1.0,   4.0,  3.0, 0.1,   40,   200, 2.0, 50.0, 100,  1.5,  4.5, 180,  6.5};
+  fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;clsF;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
   if(fqahist==1)fOutputList->Add(fEleInfo);
 
   //<---  Trigger info
