@@ -19,5 +19,6 @@
 #pragma link C++ class AliAnaPhotonConvInCalo+;
 #pragma link C++ class AliAnaInsideClusterInvariantMass+;
 #pragma link C++ class AliAnaRandomTrigger+;
+#pragma link C++ class AliAnaGeneratorKine+;
 
 #endif
