@@ -175,9 +175,9 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   const int nofcuts = 4;
   Float_t* trackcutsarray;
   trackcutsarray=new Float_t[nofcuts];
-  trackcutsarray[0] = 0.;//track min pt
+  trackcutsarray[0] = 0.3;//track min pt
   trackcutsarray[1] = 10000.;//track max pt
-  trackcutsarray[2] = 0.;//track min impact parameter
+  trackcutsarray[2] = -99999999.;//track min impact parameter. DON'T put 0 since default value is -999999. and it would skip all tracks if d0 is not calculated!
   trackcutsarray[3] = 10000.;//track max impact parameter
   HFCorrelationCuts->SetNVarsTrack(nofcuts);
   HFCorrelationCuts->SetAODTrackCuts(trackcutsarray);

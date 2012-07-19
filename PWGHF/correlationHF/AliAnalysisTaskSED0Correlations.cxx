@@ -800,7 +800,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
 
   //These for limits in THnSparse (one per bin, same limits). 
   //Vars: DeltaPhi, InvMass, PtTrack, Displacement, DeltaEta
-  Int_t nBinsPhi[5] = {32,150,30,3,16};
+  Int_t nBinsPhi[5] = {32,150,6,3,16};
   Double_t binMinPhi[5] = {-1.6,1.6,0.,0.,-1.6};  //is the minimum for all the bins
   Double_t binMaxPhi[5] = {4.8,2.2,3.0,3.,1.6};  //is the maximum for all the bins
 
@@ -1077,19 +1077,19 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
 
     if(!fMixing) {
       //phi distributions
-      TH1F *hPhiDistCAll = new TH1F("hist_PhiDistr_Charg", "Charged track phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+      TH1F *hPhiDistCAll = new TH1F("hist_PhiDistr_Charg", "Charged track phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
       hPhiDistCAll->SetMinimum(0);
       fOutputStudy->Add(hPhiDistCAll);
 
-      TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Hadrons phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+      TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Hadrons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
       hPhiDistHAll->SetMinimum(0);
       fOutputStudy->Add(hPhiDistHAll);
 
-      TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "Kaons phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+      TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "Kaons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
       hPhiDistKAll->SetMinimum(0);
       fOutputStudy->Add(hPhiDistKAll);
 
-      TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); p_{T} (GeV/c)",32,-1.6,4.8);
+      TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
       hPhiDistDAll->SetMinimum(0);
       fOutputStudy->Add(hPhiDistDAll);
     }
@@ -1264,6 +1264,9 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
   d->InvMassD0(mD0,mD0bar);
   Int_t ptbin = PtBinCorr(d->Pt());
   if(ptbin < 0) return;
+
+  //Fill of D0 phi distribution
+  if (!fMixing) ((TH1F*)fOutputStudy->FindObject("hist_PhiDistr_D0"))->Fill(d->Phi());
 
   //Origin of D0
   TString orig="";

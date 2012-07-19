@@ -333,7 +333,7 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
 		
 		if(fUseImpactParameter==1) d0 = TMath::Abs(d0z0[0]); // use impact parameter
 		if(fUseImpactParameter==2) { // use impact parameter over resolution
-		  if(TMath::Abs(covd0z0[0])>0.00000001) d0 = TMath::Abs(d0z0[0])/TMath::Abs(covd0z0[0]); 
+		  if(TMath::Abs(covd0z0[0])>0.00000001) d0 = TMath::Abs(d0z0[0])/TMath::Sqrt(covd0z0[0]); 
 		  else d0 = -1.; // if the resoultion is Zero, rejects the track - to be on the safe side
 			
 		}
