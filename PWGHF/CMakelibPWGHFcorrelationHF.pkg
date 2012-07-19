@@ -49,8 +49,8 @@ set ( MODULE_DHDR )
 set ( EINCLUDE  PWGHF/vertexingHF PWGHF/hfe include)
 
 set ( ELIBS  
-#   PWGHFhfe            # likely to be linked later
-#   PWGHFvertexingHF    # likely to be linked later
+    PWGHFhfe
+    PWGHFvertexingHF
     ANALYSIS
     ANALYSISalice
     )

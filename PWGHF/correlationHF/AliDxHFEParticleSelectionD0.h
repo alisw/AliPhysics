@@ -16,6 +16,9 @@
 
 #include "AliDxHFEParticleSelection.h"
 
+class AliVEvent;
+class AliRDHFCuts;
+
 /**
  * @class AliDxHFEParticleSelectionD0
  * D0 selection for D-HFE correlations, implements the specific
@@ -31,12 +34,25 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   /// overloaded from AliDxHFEParticleSelection: init the control objects
   virtual int InitControlObjects();
 
+  //Function for daughter control objects
+  //TODO: move to AliDxHFEParticleSelection to be used for several particles?
+  virtual int InitControlObjectsDaughters(TString name, int daughter);
+
+  //Overloaded from AliDxHFEParticleSelection
+  virtual TObjArray* Select(TObjArray* particles, const AliVEvent* pEvent);
+  using AliDxHFEParticleSelection::Select;
+
   /// overloaded from AliDxHFEParticleSelection: check particle
-  virtual bool IsSelected(AliVParticle* p);
+  virtual int IsSelected(AliVParticle* p, const AliVEvent *pEvent=NULL);
+  /// overloaded from AliDxHFEParticleSelection: set cuts
+  virtual void SetCuts(TObject* /*cuts*/, int level=0);
+
+  //AliRDHFCutsD0toKpi GetCuts()const {return fCuts;}
+  Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
 
  protected:
   /// overloaded from AliDxHFEParticleSelection: histogram particle properties
-  virtual int HistogramParticleProperties(AliVParticle* p, bool selected=true);
+  virtual int HistogramParticleProperties(AliVParticle* p, int selected=1);
 
  private:
   /// copy contructor prohibited
@@ -44,12 +60,17 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   /// assignment operator prohibited
   AliDxHFEParticleSelectionD0& operator=(const AliDxHFEParticleSelectionD0&);
 
-  THnSparse* fD0Properties; //! the particle properties of selected particles
+  THnSparse* fD0Properties;     //  the particle properties of selected particles
+  THnSparse* fD0Daughter0;      //  the particle properties of selected particles
+  THnSparse* fD0Daughter1;      //  the particle properties of selected particles
+  AliRDHFCuts* fCuts;           //! pointer to external cuts object 
+  Int_t     fFillOnlyD0D0bar;   //  flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
+
   // TODO: at the moment the dimensions of the different THnSparse objects are different
   // needs to be consolidated
   // TODO: one might need particle properties of all and/or at different cut stages
 
-  ClassDef(AliDxHFEParticleSelectionD0, 1);
+  ClassDef(AliDxHFEParticleSelectionD0, 2);
 };
 
 #endif

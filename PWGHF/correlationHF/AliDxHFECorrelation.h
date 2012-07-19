@@ -16,8 +16,11 @@
 
 #include "TNamed.h"
 
-class TH1F;
-class TH2F;
+class AliRDHFCutsD0toKpi;
+class TH1;
+class THnSparse;
+class TObject;
+class TList;
 
 class AliDxHFECorrelation : public TNamed {
  public:
@@ -26,11 +29,23 @@ class AliDxHFECorrelation : public TNamed {
   /// destructor
   virtual ~AliDxHFECorrelation();
 
+  // event control histogram
+  enum {
+    kEventsAll = 0, // all events
+    kEventsSel,     // selected events
+    kEventsD0 ,     // events with D0s
+    kEventsD0e,     // events with correlated D0s
+    kNEventControlLabels
+  };
+
   // init
   int Init();
 
   /// fill histograms from particles
   int Fill(const TObjArray* candidatesD0, const TObjArray* candidatesElectron);
+
+  /// histogram event properties
+  virtual int HistogramEventProperties(int bin);
 
   /// overloaded from TObject: cleanup
   virtual void Clear(Option_t * option ="");
@@ -45,8 +60,18 @@ class AliDxHFECorrelation : public TNamed {
   /// overloaded from TObject: save to file
   virtual void     SaveAs(const char *filename="",Option_t *option="") const; // *MENU*
 
+  virtual void SetCuts(AliRDHFCutsD0toKpi* cuts) {fCuts=cuts;}
+  virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
+
+  Bool_t GetUseMC() const {return fUseMC;}
+  const TList* GetControlObjects() const {return fControlObjects;}
+
+
   AliDxHFECorrelation& operator+=(const AliDxHFECorrelation& other);
 
+
+  // Probably not needed anymore, since code was changed to THnSparse
+  // but keep here in case we need it later
   enum {
     khD0pT,         // TH1F
     khD0Phi,        // TH1F
@@ -54,19 +79,29 @@ class AliDxHFECorrelation : public TNamed {
     khElectronpT,   // TH1F
     khElectronPhi,  // TH1F
     khElectronEta,  // TH1F
-    khDeltaPhi,        // TH1F
     kNofHistograms
   };
 
  protected:
+  /// add control object to list, the base class becomes owner of the object
+  int AddControlObject(TObject* pObj);
+
  private:
   /// copy constructor
   AliDxHFECorrelation(const AliDxHFECorrelation& other);
   /// assignment operator
   AliDxHFECorrelation& operator=(const AliDxHFECorrelation& other);
 
-  TObjArray* fHistograms; // the histograms
+  TObjArray* fHistograms;     // the histograms - for the moment not in use. 
+  TList* fControlObjects;     // list of control objects
+  THnSparse* fCorrProperties; // the Correlation properties of selected particles
+  TH1* fhEventControlCorr;    // event control histogram
+  AliRDHFCutsD0toKpi *fCuts;  //  Cuts 
+  Bool_t fUseMC;              // use MC info
 
-  ClassDef(AliDxHFECorrelation, 1)
+  static const char* fgkEventControlBinNames[];
+  static const char* fgkCorrControlBinNames[];
+
+  ClassDef(AliDxHFECorrelation, 2)
 };
 #endif
