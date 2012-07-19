@@ -823,7 +823,7 @@ Double_t AliCaloTrackReader::GetEventPlaneAngle() const
   }
   else
   {
-    printf("AliCaloTrackReader::GetEventPlaneAngle() -  No EP pointer\n");
+    if(fDataType!=kMC) printf("AliCaloTrackReader::GetEventPlaneAngle() -  No EP pointer\n");
     return -1000;
   } 
   

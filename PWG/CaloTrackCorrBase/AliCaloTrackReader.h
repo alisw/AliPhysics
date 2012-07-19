@@ -278,7 +278,8 @@ public:
   //--------------------------
   // Centrality / Event Plane
   //--------------------------
-  virtual AliCentrality* GetCentrality()             const { return fInputEvent->GetCentrality() ; } //Look in AOD reader, different there
+  virtual AliCentrality* GetCentrality()             const { if(fDataType!=kMC) return fInputEvent->GetCentrality() ; 
+                                                             else               return 0x0       ; } 
   virtual void     SetCentralityClass(TString name)        { fCentralityClass   = name           ; }
   virtual void     SetCentralityOpt(Int_t opt)             { fCentralityOpt     = opt            ; }
   virtual TString  GetCentralityClass()              const { return fCentralityClass             ; }
@@ -290,7 +291,8 @@ public:
   virtual Float_t  GetCentralityBin(Int_t i)         const { if(i < 0 || i > 1) return 0 ; 
                                                              else return fCentralityBin[i]              ; }
   
-  virtual AliEventplane* GetEventPlane()             const { return fInputEvent->GetEventplane() ; }  
+  virtual AliEventplane* GetEventPlane()             const { if(fDataType!=kMC) return fInputEvent->GetEventplane() ;
+                                                             else               return 0x0       ; }  
   virtual Double_t       GetEventPlaneAngle()        const ;          
   virtual void           SetEventPlaneMethod(TString m)    { fEventPlaneMethod = m               ; }
   virtual TString        GetEventPlaneMethod()       const { return fEventPlaneMethod            ; }
