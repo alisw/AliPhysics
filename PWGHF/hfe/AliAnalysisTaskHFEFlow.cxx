@@ -660,10 +660,9 @@ void AliAnalysisTaskHFEFlow::UserCreateOutputObjects()
   for(Int_t i=0; i<=nBinsPt; i++) binLimPt[i]=(Double_t)TMath::Power(10,binLimLogPt[i]);
   */
 
-  Int_t nBinsPt = 24;
-  Double_t binLimPt[25] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
-			   1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 5.,
-			   6.};
+  Int_t nBinsPt = 20;
+  Double_t binLimPt[21] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
+			   1.3, 1.4, 1.5, 2., 2.5, 3., 4., 6.};
 
 
   Int_t nBinsPtPlus = fNbBinsPtQCumulant;
