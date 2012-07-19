@@ -1,7 +1,7 @@
 void runProofCascadePbPb(
                      TString  proofCluster      = "mnicassi@alice-caf.cern.ch",//kiaf.sdfarm.kr", //skaf.saske.sk"
-                     TString  alirootVer        = "VO_ALICE@AliRoot::v5-30-01-AN",
-                     TString  rootVer           = "VO_ALICE@ROOT::v5-30-06-1", 
+                     TString  alirootVer        = "VO_ALICE@AliRoot::v5-03-32-AN",
+                     TString  rootVer           = "VO_ALICE@ROOT::v5-33-02b", 
                      TString  dataset           = "/alice/sim/LHC11f5_000139514", 
                      TString  outFileMC         = "CascadePerformance.root",
                      TString  outFileData       = "CascadeAna.root",
@@ -14,6 +14,7 @@ void runProofCascadePbPb(
                      Bool_t   kusecleaning      = kTRUE,
                      Float_t  vtxlim            = 10., 
                      Int_t    minnTPCcls        = 70,     
+                     Float_t  minptondaughtertracks = 0.,
                      Bool_t   kextrasel         = kFALSE,
                      Bool_t   kacccut            = kFALSE,
                      Bool_t   krelaunchvertexers= kFALSE,
@@ -26,7 +27,7 @@ void runProofCascadePbPb(
   TString extraLibs;
   TList *list = new TList();
   alirootMode="ALIROOT";
-  extraLibs+= "ANALYSIS:OADB:ANALYSISalice:CORRFW";  
+  extraLibs+= "ANALYSIS:OADB:ANALYSISalice:CORRFW";//:PWGLFSTRANGENESS";  
   // sets $ALIROOT_MODE on each worker to let proof to know to run in special mode
   list->Add(new TNamed("ALIROOT_MODE", alirootMode.Data()));
   list->Add(new TNamed("ALIROOT_EXTRA_LIBS", extraLibs.Data()));
@@ -52,7 +53,7 @@ void runProofCascadePbPb(
            useMC, nEvents, nEventsSkip,
            minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning,
            vtxlim, kextrasel,
-           runperformancetask, kacccut, krelaunchvertexers);
+           runperformancetask, kacccut, krelaunchvertexers, minptondaughtertracks);
 
 }
 
@@ -61,7 +62,7 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
               Bool_t useMC, Int_t nEvents, Int_t nEventsSkip, 
               Int_t minnTPCcls, Float_t centrlowlim, Float_t centruplim, TString centrest, Bool_t kusecleaning,
               Float_t vtxlim, 
-              Bool_t kextrasel, Bool_t runperformancetask, Bool_t kacccut, Bool_t krelaunchvertexers) {
+              Bool_t kextrasel, Bool_t runperformancetask, Bool_t kacccut, Bool_t krelaunchvertexers, Float_t  minptondaughtertracks) {
 
 
   TString format = GetFormatFromDataSet(dataset);
@@ -72,10 +73,6 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
   if (!mgr) mgr = new AliAnalysisManager("Test train");
 
   InputHandlerSetup(format,runperformancetask);
-
-  // compile analysis task
-  if (runperformancetask) gProof->Load("AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++");
-  else gProof->Load("AliAnalysisTaskCheckCascadePbPb.cxx++");
 
   cout<<"Format"<<format.Data()<<endl;
   
@@ -100,27 +97,18 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
 
   // create task
   if (runperformancetask) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckPerformanceCascadePbPb.C");
-    AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,kacccut ,krelaunchvertexers);
+//    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
+//    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckPerformanceCascadePbPb.C");
+    gProof->Load("AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++");
+    gProof->Load("AddTaskCheckPerformanceCascadePbPb.C");
+    AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,kacccut ,krelaunchvertexers,minptondaughtertracks);
   
   } else {
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx++g");
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckCascadePbPb.C");
-    AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,krelaunchvertexers);
+    AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,krelaunchvertexers,minptondaughtertracks);
 
   }
-
-  // create output container
-  if (runperformancetask) AliAnalysisDataContainer *output = mgr->CreateContainer("clist", TList::Class(), AliAnalysisManager::kOutputContainer, outFileMC);
-  else       AliAnalysisDataContainer *output = mgr->CreateContainer("clist", TList::Class(), AliAnalysisManager::kOutputContainer, outFileData);
-
-  // add task to the manager
-  mgr->AddTask(task);
-
-  // connect input and output
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, output);
 
   // run analysis
   mgr->InitAnalysis();

@@ -40,6 +40,8 @@
 //                - AOD analysis part completed 
 //               March2012
 //                - min number of TPC clusters for track selection as a parameter      
+//               July2012
+//                - cut on min pt for daughter tracks as a parameter
 //-----------------------------------------------------------------
 
 class TTree;
@@ -108,6 +110,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
     fCentrEstimator             (0),
     fkUseCleaning               (0),
     fVtxRange                   (0),
+    fMinPtCutOnDaughterTracks   (0),
 
 
     	// - Cascade part initialisation
@@ -144,6 +147,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
 
     fHistXiTransvMom(0),    fHistXiTotMom(0),
     fHistBachTransvMomXi(0),   fHistBachTotMomXi(0),
+    fHistPosTransvMomXi(0), fHistNegTransvMomXi(0),
 
     fHistChargeXi(0),
     fHistV0toXiCosineOfPointingAngle(0),
@@ -199,6 +203,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
     fCentrEstimator             (0),
     fkUseCleaning               (0),
     fVtxRange                   (0),
+    fMinPtCutOnDaughterTracks   (0),
      
     	// - Cascade part initialisation
     fListHistCascade(0),
@@ -233,6 +238,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
 
     fHistXiTransvMom(0),    fHistXiTotMom(0),
     fHistBachTransvMomXi(0),   fHistBachTotMomXi(0),
+    fHistPosTransvMomXi(0), fHistNegTransvMomXi(0),
 
     fHistChargeXi(0),
     fHistV0toXiCosineOfPointingAngle(0),
@@ -292,6 +298,12 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
 
   // Output slot #0 writes into a TList container (Cascade)
   DefineOutput(1, TList::Class());
+  DefineOutput(2, AliCFContainer::Class());
+  DefineOutput(3, AliCFContainer::Class());
+  DefineOutput(4, AliCFContainer::Class());
+  DefineOutput(5, AliCFContainer::Class());
+  DefineOutput(6, AliCFContainer::Class());
+
   /*DefineOutput(2, TPaveText::Class());*/
   AliLog::SetClassDebugLevel("AliAnalysisTaskCheckCascadePbPb",1); // MN this should (?) enable only AliFatal
 }
@@ -307,6 +319,12 @@ AliAnalysisTaskCheckCascadePbPb::~AliAnalysisTaskCheckCascadePbPb() {
   // Because of TList::SetOwner() ...
         
   if (fListHistCascade && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())         { delete fListHistCascade;     fListHistCascade = 0x0;    }
+    if (fCFContCascadePIDXiMinus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDXiMinus;     fCFContCascadePIDXiMinus = 0x0;  }
+  if (fCFContCascadePIDXiPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDXiPlus;     fCFContCascadePIDXiPlus = 0x0;  }
+  if (fCFContCascadePIDOmegaMinus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDOmegaMinus;     fCFContCascadePIDOmegaMinus = 0x0;  }
+  if (fCFContCascadePIDOmegaPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDOmegaPlus;     fCFContCascadePIDOmegaPlus = 0x0;  }
+  if (fCFContCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDOmegaPlus;     fCFContCascadeCuts = 0x0;  }
+
   if (fESDtrackCuts)         { delete fESDtrackCuts;        fESDtrackCuts = 0x0; }
   //if (fPaveTextBookKeeping)     { delete fPaveTextBookKeeping; fPaveTextBookKeeping = 0x0;} // fPaveTextBookKeeping is not strored in the TList
 }
@@ -720,6 +738,17 @@ if(! fHistBachTotMomXi ){
 	fListHistCascade->Add(fHistBachTotMomXi);
 }
 
+if(! fHistPosTransvMomXi ){
+        fHistPosTransvMomXi  = new TH1F( "fHistPosTransvMomXi" , "#Xi Bach. transverse momentum (cand. around the mass peak) ; p_{t}(Bach.) (GeV/c); Counts", 100, 0.0, 5.0);
+        fListHistCascade->Add(fHistPosTransvMomXi);
+}
+  
+if(! fHistNegTransvMomXi ){
+        fHistNegTransvMomXi  = new TH1F( "fHistNegTransvMomXi" , "#Xi Bach. transverse momentum (cand. around the mass peak) ; p_{t}(Bach.) (GeV/c); Counts", 100, 0.0, 5.0);
+        fListHistCascade->Add(fHistNegTransvMomXi);
+}
+
+
 
 if(! fHistChargeXi ){
 	fHistChargeXi  = new TH1F( "fHistChargeXi" , "Charge of casc. candidates ; Sign ; Counts", 5, -2.0, 3.0);
@@ -854,9 +883,6 @@ if(!fCFContCascadePIDXiMinus)  {
   fCFContCascadePIDXiMinus->SetVarTitle(1, "M( #Lambda , #pi^{-} ) (GeV/c^{2})");
   fCFContCascadePIDXiMinus->SetVarTitle(2, "Y_{#Xi}");
   fCFContCascadePIDXiMinus->SetVarTitle(3, "Centrality");
-  
-  fListHistCascade->Add(fCFContCascadePIDXiMinus);
-  
 }
 
 if (!fCFContCascadePIDXiPlus) {
@@ -898,9 +924,6 @@ if (!fCFContCascadePIDXiPlus) {
   fCFContCascadePIDXiPlus->SetVarTitle(1, "M( #Lambda , #pi^{+} ) (GeV/c^{2})");
   fCFContCascadePIDXiPlus->SetVarTitle(2, "Y_{#Xi}");
   fCFContCascadePIDXiPlus->SetVarTitle(3, "Centrality");
-  
-  fListHistCascade->Add(fCFContCascadePIDXiPlus);
-  
 }
 
 
@@ -943,9 +966,6 @@ if(!fCFContCascadePIDOmegaMinus)  {
   fCFContCascadePIDOmegaMinus->SetVarTitle(1, "M( #Lambda , K^{-} ) (GeV/c^{2})");
   fCFContCascadePIDOmegaMinus->SetVarTitle(2, "Y_{#Omega}");
   fCFContCascadePIDOmegaMinus->SetVarTitle(3, "Centrality"); 
-  
-  fListHistCascade->Add(fCFContCascadePIDOmegaMinus);
-  
 }
 
 if(!fCFContCascadePIDOmegaPlus)  {
@@ -988,9 +1008,6 @@ if(!fCFContCascadePIDOmegaPlus)  {
   fCFContCascadePIDOmegaPlus->SetVarTitle(1, "M( #Lambda , K^{+} ) (GeV/c^{2})");
   fCFContCascadePIDOmegaPlus->SetVarTitle(2, "Y_{#Omega}");
   fCFContCascadePIDOmegaPlus->SetVarTitle(3, "SPD tracklets Multiplicity"); 
-  
-  fListHistCascade->Add(fCFContCascadePIDOmegaPlus);
-  
 }
 
 
@@ -1146,7 +1163,6 @@ if(! fCFContCascadeCuts) {
   fCFContCascadeCuts->SetVarTitle(20, "Proper time V0");
   fCFContCascadeCuts->SetVarTitle(21, "Distance V0-Xi in transverse plane");
   
-  fListHistCascade->Add(fCFContCascadeCuts);
 }
 
   fV0Ampl = new TH1F("fV0Ampl","",500,0.,30000);
@@ -1167,6 +1183,12 @@ if(! fCFContCascadeCuts) {
         fListHistCascade->Add(fHistDcaV0ToPrimVertexXivsInvMass);
 
 PostData(1, fListHistCascade);
+PostData(2, fCFContCascadePIDXiMinus);
+PostData(3, fCFContCascadePIDXiPlus);
+PostData(4, fCFContCascadePIDOmegaMinus);
+PostData(5, fCFContCascadePIDOmegaPlus);
+PostData(6, fCFContCascadeCuts);
+
 /* PostData(2, fPaveTextBookKeeping);*/
 }// end UserCreateOutputObjects
 
@@ -1299,11 +1321,23 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     lcentrality = centrality->GetCentralityPercentileUnchecked(fCentrEstimator.Data());
     if (centrality->GetQuality()>1) {
       PostData(1, fListHistCascade);
+      PostData(2, fCFContCascadePIDXiMinus);
+      PostData(3, fCFContCascadePIDXiPlus);
+      PostData(4, fCFContCascadePIDOmegaMinus);
+      PostData(5, fCFContCascadePIDOmegaPlus);
+      PostData(6, fCFContCascadeCuts);
+
       return;
     }
   }
   if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim) { 
     PostData(1, fListHistCascade);
+    PostData(2, fCFContCascadePIDXiMinus);
+    PostData(3, fCFContCascadePIDXiPlus);
+    PostData(4, fCFContCascadePIDOmegaMinus);
+    PostData(5, fCFContCascadePIDOmegaPlus);
+    PostData(6, fCFContCascadeCuts);
+
     return;
   }
 
@@ -1341,6 +1375,12 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() ){
         AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
         PostData(1, fListHistCascade); 
+        PostData(2, fCFContCascadePIDXiMinus);
+        PostData(3, fCFContCascadePIDXiPlus);
+        PostData(4, fCFContCascadePIDOmegaMinus);
+        PostData(5, fCFContCascadePIDOmegaPlus);
+        PostData(6, fCFContCascadeCuts);
+
         return;
       }
     }
@@ -1362,6 +1402,12 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     if (!lPrimaryBestAODVtx){
         AliWarning("No prim. vertex in AOD... return!");
         PostData(1, fListHistCascade);
+        PostData(2, fCFContCascadePIDXiMinus);
+        PostData(3, fCFContCascadePIDXiPlus);
+        PostData(4, fCFContCascadePIDOmegaMinus);
+        PostData(5, fCFContCascadePIDOmegaPlus);
+        PostData(6, fCFContCascadeCuts);
+
         return;
     }
 	
@@ -1382,6 +1428,12 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange ) {
       AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
       PostData(1, fListHistCascade);
+      PostData(2, fCFContCascadePIDXiMinus);
+      PostData(3, fCFContCascadePIDXiPlus);
+      PostData(4, fCFContCascadePIDOmegaMinus);
+      PostData(5, fCFContCascadePIDOmegaPlus);
+      PostData(6, fCFContCascadeCuts);
+
       return;
     }
   }
@@ -1486,6 +1538,9 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     Double_t lBachMomX       = 0., lBachMomY  = 0., lBachMomZ   = 0.;
     Double_t lBachTransvMom  = 0.;
     Double_t lBachTotMom     = 0.;
+
+    Double_t lpTrackTransvMom  = 0.;
+    Double_t lnTrackTransvMom  = 0.;
 	
     Short_t  lChargeXi = -2;
 	
@@ -1755,6 +1810,10 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       lBachTransvMom  = TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
       lBachTotMom  	= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY  +  lBachMomZ*lBachMomZ  );
 
+      lnTrackTransvMom = TMath::Sqrt( lV0NMomX*lV0NMomX   + lV0NMomY*lV0NMomY );
+      lpTrackTransvMom = TMath::Sqrt( lV0PMomX*lV0PMomX   + lV0PMomY*lV0PMomY );
+
+
       lChargeXi = xi->Charge();
 
       lV0toXiCosineOfPointingAngle = xi->GetV0CosineOfPointingAngle( lPosXi[0], lPosXi[1], lPosXi[2] );
@@ -1961,6 +2020,13 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       lBachTransvMom  = TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
       lBachTotMom  	= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY  +  lBachMomZ*lBachMomZ  );
 
+      lV0NMomX = xi->MomNegX();
+      lV0NMomY = xi->MomNegY();
+      lV0PMomX = xi->MomPosX();
+      lV0PMomY = xi->MomPosY(); 
+
+      lnTrackTransvMom = TMath::Sqrt( lV0NMomX*lV0NMomX   + lV0NMomY*lV0NMomY );
+      lpTrackTransvMom = TMath::Sqrt( lV0PMomX*lV0PMomX   + lV0PMomY*lV0PMomY );
 	
       lV0toXiCosineOfPointingAngle = xi->CosPointingAngle( xi->GetDecayVertexXi() );
 
@@ -1976,6 +2042,11 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
 	// TPC clusters
 	
     }// end of AOD treatment
+
+    // Cut on pt of the three daughter tracks
+    if (lBachTransvMom<fMinPtCutOnDaughterTracks) continue;
+    if (lpTrackTransvMom<fMinPtCutOnDaughterTracks) continue;
+    if (lnTrackTransvMom<fMinPtCutOnDaughterTracks) continue;
 
 
     // Calculate proper time for cascade
@@ -2110,6 +2181,8 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
         fHistXiTotMom           ->Fill( lXiTotMom      );
         
         fHistBachTransvMomXi    ->Fill( lBachTransvMom );
+        fHistPosTransvMomXi    ->Fill( lpTrackTransvMom );
+        fHistNegTransvMomXi    ->Fill( lnTrackTransvMom );
         fHistBachTotMomXi       ->Fill( lBachTotMom    );
         
         fHistRapXi              ->Fill( lRapXi         );
@@ -2381,6 +2454,11 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
   
   // Post output data.
  PostData(1, fListHistCascade);
+ PostData(2, fCFContCascadePIDXiMinus);
+ PostData(3, fCFContCascadePIDXiPlus);
+ PostData(4, fCFContCascadePIDOmegaMinus);
+ PostData(5, fCFContCascadePIDOmegaPlus);   
+ PostData(6, fCFContCascadeCuts); 
 }
 
 //________________________________________________________________________

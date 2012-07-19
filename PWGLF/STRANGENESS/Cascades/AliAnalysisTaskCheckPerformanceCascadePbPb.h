@@ -35,20 +35,21 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
   
   void SetAnalysisType     (const char* analysisType    = "ESD") { fAnalysisType     = analysisType;}
   
-  void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers         =  rerunV0CascVertexers;      }
-  void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos        =  qualityCutZprimVtxPos;     }
-  void SetRejectEventPileUp          (Bool_t rejectPileUp               = kTRUE) { fkRejectEventPileUp            =  rejectPileUp;              }
-  void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx   =  qualityCutNoTPConlyPrimVtx;}
-  void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit           =  qualityCutTPCrefit;        }
-  void SetQualityCutnTPCcls          (Bool_t qualityCutnTPCcls          = kTRUE) { fkQualityCutnTPCcls            = qualityCutnTPCcls;          }
-  void SetQualityCutMinnTPCcls       (Int_t minnTPCcls                  = 70   ) { fMinnTPCcls                    = minnTPCcls;                 }
-  void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections              =  extraSelections;           }
-  void SetCentralityLowLim           (Float_t centrlowlim               = 0.   ) { fCentrLowLim                   = centrlowlim;                }
-  void SetCentralityUpLim            (Float_t centruplim                = 100. ) { fCentrUpLim                    = centruplim;                 }
-  void SetCentralityEst              (TString centrest                  = "V0M") { fCentrEstimator                = centrest;                   }  
-  void SetUseCleaning                (Bool_t   usecleaning              = kTRUE) { fkUseCleaning                = usecleaning;                }
-  void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                      = vtxrange;                   }
-  void SetApplyAccCut                (Bool_t acccut                     = kFALSE){ fApplyAccCut                   = acccut;                     }    
+  void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers         = rerunV0CascVertexers;      }
+  void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos        = qualityCutZprimVtxPos;     }
+  void SetRejectEventPileUp          (Bool_t rejectPileUp               = kTRUE) { fkRejectEventPileUp            = rejectPileUp;              }
+  void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx   = qualityCutNoTPConlyPrimVtx;}
+  void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit           = qualityCutTPCrefit;        }
+  void SetQualityCutnTPCcls          (Bool_t qualityCutnTPCcls          = kTRUE) { fkQualityCutnTPCcls            = qualityCutnTPCcls;         }
+  void SetQualityCutMinnTPCcls       (Int_t minnTPCcls                  = 70   ) { fMinnTPCcls                    = minnTPCcls;                }
+  void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections              = extraSelections;           }
+  void SetCentralityLowLim           (Float_t centrlowlim               = 0.   ) { fCentrLowLim                   = centrlowlim;               }
+  void SetCentralityUpLim            (Float_t centruplim                = 100. ) { fCentrUpLim                    = centruplim;                }
+  void SetCentralityEst              (TString centrest                  = "V0M") { fCentrEstimator                = centrest;                  }  
+  void SetUseCleaning                (Bool_t   usecleaning              = kTRUE) { fkUseCleaning                  = usecleaning;               }
+  void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                      = vtxrange;                  }
+  void SetApplyAccCut                (Bool_t acccut                     = kFALSE){ fApplyAccCut                   = acccut;                    }    
+  void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks            = 0.   ) { fMinPtCutOnDaughterTracks      = minptdaughtrks;            }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -74,7 +75,8 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
         Bool_t          fkUseCleaning;                  // Boolean : kTRUE = uses all the cleaning criteria of centrality selections (vertex cut + outliers) otherwise only outliers
         Float_t         fVtxRange;                      // to select events with |zvtx|<fVtxRange cm
         Bool_t          fApplyAccCut;                   // flag to apply acceptance cuts to MC cascades        
-        
+        Float_t         fMinPtCutOnDaughterTracks;      // minimum pt to cut daughter tracks    
+
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
 	
@@ -137,6 +139,9 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
 	TH1F	*fHistPtMesDghterXiMinus;		//! MC Pt of the meson daughter of the 'Lambda0', pi-   (Control Plot)
 	TH1F	*fHistPtBarDghterXiMinus;		//! MC Pt of the baryon daughter of the 'Lambda0', p+   (Control Plot)
 	
+        TH1F    *fHistPtRecBachXiMinus;                 //! Rec Pt of the Bachelor (for Xi-)                    (Control Plot)
+        TH1F    *fHistPtRecMesDghterXiMinus;            //! Rec Pt of the meson daughter of the 'Lambda0', pi-   (Control Plot)
+        TH1F    *fHistPtRecBarDghterXiMinus;            //! Rec Pt of the baryon daughter of the 'Lambda0', p+   (Control Plot)
 	
 	
 	//--------------
@@ -312,7 +317,7 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckPerformanceCascadePbPb(const AliAnalysisTaskCheckPerformanceCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascadePbPb& operator=(const AliAnalysisTaskCheckPerformanceCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 5);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 6);
 };
 
 #endif

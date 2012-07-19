@@ -32,6 +32,8 @@
 //                        - cos of PA V0 wrt Xi vertex and not primary vertex  
 //                        - distance xi-V0 added in the container
 //                        - AOD analysis developed (January 2012)
+//                        - cut on TPC clusters as a parameter
+//                        - cut on min pt of daughter tracks added (parameter)  
 //-----------------------------------------------------------------
 
 
@@ -98,7 +100,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fCentrLowLim(0),    fCentrUpLim(0), fCentrEstimator(0), fkUseCleaning(0),
     fVtxRange                      (0),
     fApplyAccCut                   (0),
-
+    fMinPtCutOnDaughterTracks      (0),
     
 	// - Cascade part initialisation
     fListHistCascade(0),
@@ -157,7 +159,10 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fHistPtMesDghterXiMinus(0),
     fHistPtBarDghterXiMinus(0),
    
-   
+    fHistPtRecBachXiMinus(0),
+    fHistPtRecMesDghterXiMinus(0),
+    fHistPtRecBarDghterXiMinus(0),
+
    // Xi+
    fHistEtaGenCascXiPlus(0),
    f3dHistGenPtVsGenYvsCentXiPlusNat(0),
@@ -180,7 +185,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fHistPtBachXiPlus(0),
     fHistPtMesDghterXiPlus(0),
     fHistPtBarDghterXiPlus(0),
-   
+  
    // Omega-
    fHistEtaGenCascOmegaMinus(0),
    f3dHistGenPtVsGenYvsCentOmegaMinusNat(0),
@@ -203,7 +208,6 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fHistPtBachOmegaMinus(0),
     fHistPtMesDghterOmegaMinus(0),
     fHistPtBarDghterOmegaMinus(0),
-   
    
    // Omega+
    fHistEtaGenCascOmegaPlus(0),
@@ -334,7 +338,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fCentrLowLim(0), fCentrUpLim(0), fCentrEstimator(0), fkUseCleaning(0),
     fVtxRange                      (0),
     fApplyAccCut                   (0),
-
+    fMinPtCutOnDaughterTracks      (0),
       
     	// - Cascade part initialisation
     fListHistCascade(0),
@@ -392,7 +396,10 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fHistPtMesDghterXiMinus(0),
     fHistPtBarDghterXiMinus(0),
    
-   
+    fHistPtRecBachXiMinus(0),
+    fHistPtRecMesDghterXiMinus(0),
+    fHistPtRecBarDghterXiMinus(0),
+ 
    // Xi+
    fHistEtaGenCascXiPlus(0),
   f3dHistGenPtVsGenYvsCentXiPlusNat(0),
@@ -438,7 +445,6 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fHistPtBachOmegaMinus(0),
     fHistPtMesDghterOmegaMinus(0),
     fHistPtBarDghterOmegaMinus(0),
-   
    
    // Omega+
    fHistEtaGenCascOmegaPlus(0),
@@ -572,7 +578,12 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
         
         
   DefineOutput(1, TList::Class());
- 
+  DefineOutput(2, AliCFContainer::Class());
+  DefineOutput(3, AliCFContainer::Class());
+  DefineOutput(4, AliCFContainer::Class());
+  DefineOutput(5, AliCFContainer::Class());
+  DefineOutput(6, AliCFContainer::Class()); 
+
 }
 
 
@@ -587,6 +598,12 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::~AliAnalysisTaskCheckPerformanceCasc
   // Because of TList::SetOwner()
 
   if (fListHistCascade && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())      { delete fListHistCascade;     fListHistCascade = 0x0;  }  
+  if (fCFContCascadePIDAsXiMinus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDAsXiMinus;     fCFContCascadePIDAsXiMinus = 0x0;  }
+  if (fCFContCascadePIDAsXiPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDAsXiPlus;     fCFContCascadePIDAsXiPlus = 0x0;  }
+  if (fCFContCascadePIDAsOmegaMinus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDAsOmegaMinus;     fCFContCascadePIDAsOmegaMinus = 0x0;  }
+  if (fCFContCascadePIDAsOmegaPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDAsOmegaPlus;     fCFContCascadePIDAsOmegaPlus = 0x0;  }
+  if (fCFContAsCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDAsOmegaPlus;     fCFContAsCascadeCuts = 0x0;  }
+
   if (fESDtrackCuts)         { delete fESDtrackCuts;        fESDtrackCuts = 0x0; }
   /*if (fPaveTextBookKeeping)  { delete fPaveTextBookKeeping; fPaveTextBookKeeping = 0x0; } // fPaveTextBookKeeping is not stored into the TList*/
 }
@@ -846,7 +863,24 @@ if( !fPaveTextBookKeeping){
      fListHistCascade->Add(fHistPtBarDghterXiMinus);
   }
   
-  
+  if (!fHistPtRecBachXiMinus) {
+     fHistPtRecBachXiMinus = new TH1F("fHistPtRecBachXiMinus", "p_{t} of Bach.;pt_{Bach};Number of Bach.", 200, 0, 10);
+     fListHistCascade->Add(fHistPtRecBachXiMinus);
+  }
+
+  if (!fHistPtRecMesDghterXiMinus) {
+     fHistPtRecMesDghterXiMinus = new TH1F("fHistPtRecMesDghterXiMinus", "p_{t} of Meson #Lambda dghter;pt_{MesDght};Number of Mes.", 200, 0, 10);
+     fListHistCascade->Add(fHistPtRecMesDghterXiMinus);
+  }
+
+  if (!fHistPtRecBarDghterXiMinus) {
+     fHistPtRecBarDghterXiMinus = new TH1F("fHistPtRecBarDghterXiMinus", "p_{t} of Baryon #Lambda dghter;pt_{BarDght};Number of Bar.", 200, 0, 10);
+     fListHistCascade->Add(fHistPtRecBarDghterXiMinus);
+  }
+ 
+
+
+ 
   
   //--------
   // II - Xi+ 
@@ -1437,9 +1471,6 @@ if(! fCFContCascadePIDAsXiMinus)  {
   fCFContCascadePIDAsXiMinus->SetVarTitle(1, "M( #Lambda , #pi^{-} ) (GeV/c^{2})");
   fCFContCascadePIDAsXiMinus->SetVarTitle(2, "Y_{#Xi}");
   fCFContCascadePIDAsXiMinus->SetVarTitle(3, "Centrality");
-
-  fListHistCascade->Add(fCFContCascadePIDAsXiMinus);
-  
 }
 
 if(! fCFContCascadePIDAsXiPlus)  {
@@ -1481,9 +1512,6 @@ if(! fCFContCascadePIDAsXiPlus)  {
   fCFContCascadePIDAsXiPlus->SetVarTitle(1, "M( #Lambda , #pi^{+} ) (GeV/c^{2})");
   fCFContCascadePIDAsXiPlus->SetVarTitle(2, "Y_{#Xi}");
   fCFContCascadePIDAsXiPlus->SetVarTitle(3, "Centrality");
-  
-  fListHistCascade->Add(fCFContCascadePIDAsXiPlus);
-  
 }
 
 
@@ -1526,9 +1554,6 @@ if(! fCFContCascadePIDAsOmegaMinus)  {
   fCFContCascadePIDAsOmegaMinus->SetVarTitle(1, "M( #Lambda , K^{-} ) (GeV/c^{2})");
   fCFContCascadePIDAsOmegaMinus->SetVarTitle(2, "Y_{#Omega}");
   fCFContCascadePIDAsOmegaMinus->SetVarTitle(3, "Centrality");
-  
-  fListHistCascade->Add(fCFContCascadePIDAsOmegaMinus);
-  
 }
 
 if(! fCFContCascadePIDAsOmegaPlus)  {
@@ -1571,7 +1596,7 @@ if(! fCFContCascadePIDAsOmegaPlus)  {
   fCFContCascadePIDAsOmegaPlus->SetVarTitle(2, "Y_{#Omega}");
   fCFContCascadePIDAsOmegaPlus->SetVarTitle(3, "Centrality");
   
-  fListHistCascade->Add(fCFContCascadePIDAsOmegaPlus);
+//  fListHistCascade->Add(fCFContCascadePIDAsOmegaPlus);
   
 }
 
@@ -1722,8 +1747,6 @@ if(! fCFContAsCascadeCuts){
   fCFContAsCascadeCuts->SetVarTitle(19, "Proper time cascade");
   fCFContAsCascadeCuts->SetVarTitle(20, "Proper time V0"); 
   fCFContAsCascadeCuts->SetVarTitle(21, "Distance V0-Xi in the transverse plane");
-
-  fListHistCascade->Add(fCFContAsCascadeCuts);
 }
 
   fV0Ampl = new TH1F("fV0Ampl","",500,0.,30000);
@@ -1731,6 +1754,12 @@ if(! fCFContAsCascadeCuts){
 
 
 PostData(1, fListHistCascade); 
+PostData(2, fCFContCascadePIDAsXiMinus);
+PostData(3, fCFContCascadePIDAsXiPlus);
+PostData(4, fCFContCascadePIDAsOmegaMinus);
+PostData(5, fCFContCascadePIDAsOmegaPlus);
+PostData(6, fCFContAsCascadeCuts);
+
 }// end CreateOutputObjects
 
 
@@ -1849,7 +1878,13 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
           if (fkRejectEventPileUp) {
             if (lESDevent->IsPileupFromSPD() ) {// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
               AliWarning("Pb / Event tagged as pile-up by SPD... return !"); 
-              PostData(1, fListHistCascade); 
+              PostData(1, fListHistCascade);
+              PostData(2, fCFContCascadePIDAsXiMinus);
+              PostData(3, fCFContCascadePIDAsXiPlus);
+              PostData(4, fCFContCascadePIDAsOmegaMinus);
+              PostData(5, fCFContCascadePIDAsOmegaPlus);
+              PostData(6, fCFContAsCascadeCuts);
+ 
               return; 
             }
           }
@@ -1858,6 +1893,12 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
             if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingVtx->GetStatus() ){
               AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
               PostData(1, fListHistCascade); 
+              PostData(2, fCFContCascadePIDAsXiMinus);
+              PostData(3, fCFContCascadePIDAsXiPlus);
+              PostData(4, fCFContCascadePIDAsOmegaMinus);
+              PostData(5, fCFContCascadePIDAsOmegaPlus);
+              PostData(6, fCFContAsCascadeCuts);
+   
               return;
             }
           }
@@ -1886,6 +1927,12 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
           if (!lPrimaryBestAODVtx) {
             AliWarning("No prim. vertex in AOD... return!");
             PostData(1, fListHistCascade);
+            PostData(2, fCFContCascadePIDAsXiMinus);
+            PostData(3, fCFContCascadePIDAsXiPlus);
+            PostData(4, fCFContCascadePIDAsOmegaMinus);
+            PostData(5, fCFContCascadePIDAsOmegaPlus);
+            PostData(6, fCFContAsCascadeCuts);
+ 
             return;
           }
 
@@ -1919,6 +1966,12 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
           if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange ) {
             AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
             PostData(1, fListHistCascade);
+            PostData(2, fCFContCascadePIDAsXiMinus);
+            PostData(3, fCFContCascadePIDAsXiPlus);
+            PostData(4, fCFContCascadePIDAsOmegaMinus);
+            PostData(5, fCFContCascadePIDAsOmegaPlus);
+            PostData(6, fCFContAsCascadeCuts);
+
             return;
           }
         }
@@ -1934,6 +1987,12 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
           lcentrality = centrality->GetCentralityPercentileUnchecked(fCentrEstimator.Data());
           if (centrality->GetQuality()>1) {
             PostData(1, fListHistCascade);
+            PostData(2, fCFContCascadePIDAsXiMinus);
+            PostData(3, fCFContCascadePIDAsXiPlus);
+            PostData(4, fCFContCascadePIDAsOmegaMinus);
+            PostData(5, fCFContCascadePIDAsOmegaPlus);
+            PostData(6, fCFContAsCascadeCuts);
+
             return;
           } 
         }
@@ -1944,6 +2003,12 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::UserExec(Option_t *) {
 
         if (nNumberOfMCPrimaries < 1) {
           PostData(1, fListHistCascade);
+          PostData(2, fCFContCascadePIDAsXiMinus);
+          PostData(3, fCFContCascadePIDAsXiPlus);
+          PostData(4, fCFContCascadePIDAsOmegaMinus);
+          PostData(5, fCFContCascadePIDAsOmegaPlus);
+          PostData(6, fCFContAsCascadeCuts);
+  
           return; // should be useless because we require vertex and centrality selection 
         }
 
@@ -2617,6 +2682,11 @@ Double_t lrecoTransvRadius = -1000.;
 
 Double_t lDeltaPhiMcReco = -1.;
 
+
+Double_t lBachTransvMom = 0.;
+Double_t lpTrackTransvMom  = 0.;
+Double_t lnTrackTransvMom  = 0.;
+
 Double_t lmcPtPosV0Dghter = -100.;
 Double_t lmcPtNegV0Dghter = -100.;
 Double_t lrecoP = -100.;
@@ -3135,7 +3205,15 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
         xiESD->GetNPxPyPz(nV0mom[0],nV0mom[1],nV0mom[2]);    
         xiESD->GetPPxPyPz(pV0mom[0],pV0mom[1],pV0mom[2]);
 
-        lV0mom = TMath::Sqrt(TMath::Power(nV0mom[0]+pV0mom[0],2)+TMath::Power(nV0mom[1]+pV0mom[1],2)+TMath::Power(nV0mom[2]+pV0mom[2],2)); 
+        lV0mom = TMath::Sqrt(TMath::Power(nV0mom[0]+pV0mom[0],2)+TMath::Power(nV0mom[1]+pV0mom[1],2)+TMath::Power(nV0mom[2]+pV0mom[2],2));
+
+        Double_t lBachMomX = 0.; Double_t lBachMomY = 0.; Double_t lBachMomZ = 0.;
+        xiESD->GetBPxPyPz(  lBachMomX,  lBachMomY,  lBachMomZ );
+        lBachTransvMom   = TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
+
+        lnTrackTransvMom = TMath::Sqrt( nV0mom[0]*nV0mom[0] + nV0mom[1]*nV0mom[1] );
+        lpTrackTransvMom = TMath::Sqrt( pV0mom[0]*pV0mom[0] + pV0mom[1]*pV0mom[1] );
+ 
 
       } else if ( fAnalysisType == "AOD" ) {
 
@@ -3453,10 +3531,31 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
         Double_t lV0momZ = xiAOD->MomV0Z();
         lV0mom = TMath::Sqrt(TMath::Power(lV0momX,2)+TMath::Power(lV0momY,2)+TMath::Power(lV0momZ,2));
 
+
+        Double_t lBachMomX = xiAOD->MomBachX();
+        Double_t lBachMomY = xiAOD->MomBachY();
+        lBachTransvMom  = TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
+  
+        Double_t lV0NMomX = xiAOD->MomNegX();
+        Double_t lV0NMomY = xiAOD->MomNegY();
+        Double_t lV0PMomX = xiAOD->MomPosX();
+        Double_t lV0PMomY = xiAOD->MomPosY();
+
+        lnTrackTransvMom = TMath::Sqrt( lV0NMomX*lV0NMomX   + lV0NMomY*lV0NMomY );
+        lpTrackTransvMom = TMath::Sqrt( lV0PMomX*lV0PMomX   + lV0PMomY*lV0PMomY );
+
+
       }
 
       lXiRadius                       = TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
       lV0RadiusXi                     = TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] ); 
+
+
+      // Cut on pt of the three daughter tracks
+      if (lBachTransvMom<fMinPtCutOnDaughterTracks) continue;
+      if (lpTrackTransvMom<fMinPtCutOnDaughterTracks) continue;
+      if (lnTrackTransvMom<fMinPtCutOnDaughterTracks) continue;
+
 
       // Extra-selection for cascade candidates
                 // Towards optimisation of AA selection
@@ -3508,7 +3607,14 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
 
 
       if(!lAssoXiMinus && !lAssoXiPlus && !lAssoOmegaMinus && !lAssoOmegaPlus) continue; // no association, skip the rest of the code
-         
+        
+      // - Fill pt histos. xim only!!
+      if (lAssoXiMinus) {
+        fHistPtRecBachXiMinus->Fill(lBachTransvMom);
+        fHistPtRecMesDghterXiMinus->Fill(lpTrackTransvMom);
+        fHistPtRecBarDghterXiMinus->Fill(lnTrackTransvMom);
+      }
+ 
         // Calculate proper time for cascade (reconstructed)
          
         Double_t lctau =  TMath::Sqrt(TMath::Power((lPosXi[0]-lBestPrimaryVtxPos[0]),2)+TMath::Power((lPosXi[1]-lBestPrimaryVtxPos[1]),2)+TMath::Power((lPosXi[2]-lBestPrimaryVtxPos[2]),2));
@@ -3805,6 +3911,12 @@ fHistnAssoOmegaPlus->Fill(nAssoOmegaPlus);
  
   // Post output data.
  PostData(1, fListHistCascade);
+ PostData(2, fCFContCascadePIDAsXiMinus);
+ PostData(3, fCFContCascadePIDAsXiPlus);
+ PostData(4, fCFContCascadePIDAsOmegaMinus);
+ PostData(5, fCFContCascadePIDAsOmegaPlus);
+ PostData(6, fCFContAsCascadeCuts);
+
 }      
 
 
@@ -3827,7 +3939,7 @@ void AliAnalysisTaskCheckPerformanceCascadePbPb::Terminate(Option_t *) {
   }
   
    
-  TCanvas *canCheckPerformanceCascade = new TCanvas("AliAnalysisTaskCheckPerformanceCascadePbPb","Multiplicity",10,10,510,510);
+  TCanvas *canCheckPerformanceCascade = new TCanvas("CheckPerformanceCascadePbPb","Multiplicity",10,10,510,510);
   canCheckPerformanceCascade->cd(1)->SetLogy();
 
   fHistMCTrackMultiplicity->SetMarkerStyle(22);

@@ -5,7 +5,9 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Int_t    minnTPCcls   
                                                           Bool_t   kusecleaning        = kTRUE, 
                                                           Float_t  vtxlim              = 10.,
                                                           Bool_t   kextrasel           = kFALSE,
-                                                          Bool_t   krelaunchvertexers  = kFALSE) {
+                                                          Bool_t   krelaunchvertexers  = kFALSE,
+                                                          Float_t  minptondaughtertracks = 1.) {
+
    // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -39,7 +41,7 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Int_t    minnTPCcls   
    taskcheckcascadepbpb->SetCentralityEst              (centrest);
    taskcheckcascadepbpb->SetUseCleaning                (kusecleaning);
    taskcheckcascadepbpb->SetVertexRange                (vtxlim);
-
+   taskcheckcascadepbpb->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  
    taskcheckcascadepbpb->SelectCollisionCandidates();
 
    mgr->AddTask(taskcheckcascadepbpb);
@@ -61,9 +63,40 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Int_t    minnTPCcls   
 							     AliAnalysisManager::kOutputContainer,
 							     outputFileName );
    
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontPIDXiM",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
+   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontPIDXiP",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
+   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cfcontPIDOmegaM",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
+   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("cfcontPIDOmegaP",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
+   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("cfcontCuts",
+                                                             AliCFContainer::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputFileName );
+
    
    mgr->ConnectInput( taskcheckcascadepbpb, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskcheckcascadepbpb, 1, coutput1);
+   mgr->ConnectOutput(taskcheckcascadepbpb, 1, coutput1);
+   mgr->ConnectOutput(taskcheckcascadepbpb, 2, coutput2);
+   mgr->ConnectOutput(taskcheckcascadepbpb, 3, coutput3);
+   mgr->ConnectOutput(taskcheckcascadepbpb, 4, coutput4);
+   mgr->ConnectOutput(taskcheckcascadepbpb, 5, coutput5);
+   mgr->ConnectOutput(taskcheckcascadepbpb, 6, coutput6);
    
    return taskcheckcascadepbpb;
 }   
