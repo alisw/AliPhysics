@@ -595,7 +595,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
     
   // skip not selected events here (the AOD is not updated for those)
-  if (!(fInputHandler->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kUserDefined)))
+  if (!(fInputHandler->IsEventSelected() & fSelectBit))
     return;
 
   Double_t centrality = 0;
