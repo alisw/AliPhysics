@@ -53,6 +53,7 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   TH1F               *fHTrkEffParGenPt;          //!mc truth pt spectrum
   TH1F               *fHTrkEffDetGenPt;          //!mc detector level pt spectrum
   TH1F               *fHTrkEffDetRecPt;          //!reconstructed detector level pt spectrum
+  TH1F               *fHTrkEffDetRecFakePt;      //!fake and secondary tracks pt spectrum
   TH1F               *fHScaleFactor;             //!scale factor spectrum
   TH1F               *fHScaleFactor100HC;        //!scale factor with 100% HC spectrum
   TH2F               *fHEOverPVsPt;              //!(cluster energy over reconstructed track p) vs. track pt

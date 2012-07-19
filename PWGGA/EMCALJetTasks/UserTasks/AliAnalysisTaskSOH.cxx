@@ -39,7 +39,8 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
   fHEventStat(0),      
   fHTrkEffParGenPt(0), 
   fHTrkEffDetGenPt(0), 
-  fHTrkEffDetRecPt(0), 
+  fHTrkEffDetRecPt(0),
+  fHTrkEffDetRecFakePt(0), 
   fHScaleFactor(0),
   fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
@@ -79,6 +80,7 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH(const char *name) :
   fHTrkEffParGenPt(0), 
   fHTrkEffDetGenPt(0), 
   fHTrkEffDetRecPt(0), 
+  fHTrkEffDetRecFakePt(0),
   fHScaleFactor(0),
   fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
@@ -147,6 +149,9 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
 
   fHTrkEffDetRecPt = new TH1F("fHTrkEffDetRecPt", "Reconstructed track p_{T} distribution of primary charged pions;p_{T}^{rec} (GeV/c)",500,0.0,50.0);
   fOutputList->Add(fHTrkEffDetRecPt);
+
+  fHTrkEffDetRecFakePt = new TH1F("fHTrkEffDetRecFakePt", "Reconstructed fake track p_{T} distribution of pions;p_{T}^{rec} (GeV/c)",500,0.0,50.0);
+  fOutputList->Add(fHTrkEffDetRecFakePt);
 
   fHScaleFactor = new TH1F("fHScaleFactor", "Scale factor distribution without hadronic correction;Scale factor",100,0,10);
   fOutputList->Add(fHScaleFactor);
@@ -333,6 +338,11 @@ void  AliAnalysisTaskSOH::ProcessTrack()
         }
       }
     }
+
+ // fake and secondary tracks
+    if(newTrack->GetLabel()<0 && newTrack->GetPID()==2) fHTrkEffDetRecFakePt->Fill(newTrack->Pt());
+
+ // Track Indices
     fTrackIndices->AddAt(itr,nTracks);
     nTracks++;
   }
