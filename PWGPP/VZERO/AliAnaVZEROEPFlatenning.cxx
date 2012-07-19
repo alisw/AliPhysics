@@ -192,14 +192,14 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
   Bool_t goodEvent = kTRUE;
   Bool_t isSelected;
   if (fUsePhysSel)
-    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral));
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral));
   else
     isSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
 
   if (!isSelected) goodEvent = kFALSE;
 
   AliCentrality *centrality = fEvent->GetCentrality();
-  //  Float_t percentile = centrality->GetCentralityPercentile("V0M");
+  //  Float_t spdPercentile = centrality->GetCentralityPercentile("V0M");
   Float_t spdPercentile = centrality->GetCentralityPercentile("CL1");
 
   TString inputDataType = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -301,12 +301,14 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
       fX2[8]->Fill(spdPercentile,c2A);
       fY2[8]->Fill(spdPercentile,s2A);
       fX2Y2[8]->Fill(spdPercentile,c2A*s2A);
-      fX2Corr[8]->Fill(spdPercentile,qxA);
-      fY2Corr[8]->Fill(spdPercentile,qyA);
-      fX2Y2Corr[8]->Fill(spdPercentile,qxA*qyA);
       Double_t psiA = TMath::ATan2(qyA,qxA)/2.;
       fPsiAFlatCentr->Fill(spdPercentile,psiA);
-      Double_t psiAOrg = fEvent->GetEventplane()->GetEventplane("V0A",fEvent,2);
+      //      Double_t psiAOrg = fEvent->GetEventplane()->GetEventplane("V0A",fEvent,2);
+      Double_t qxEP = 0, qyEP = 0;
+      Double_t psiAOrg = fEvent->GetEventplane()->CalculateVZEROEventPlane(fEvent,8,2,qxEP,qyEP);
+      fX2Corr[8]->Fill(spdPercentile,qxEP);
+      fY2Corr[8]->Fill(spdPercentile,qyEP);
+      fX2Y2Corr[8]->Fill(spdPercentile,qxEP*qyEP);
       fPsiARawCentr->Fill(spdPercentile,psiAOrg);
       fCos8Psi[8]->Fill(spdPercentile, 2./4.*TMath::Cos(2.*4.*psiAOrg));
     }
@@ -314,12 +316,14 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
       fX2[9]->Fill(spdPercentile,c2C);
       fY2[9]->Fill(spdPercentile,s2C);
       fX2Y2[9]->Fill(spdPercentile,c2C*s2C);
-      fX2Corr[9]->Fill(spdPercentile,qxC);
-      fY2Corr[9]->Fill(spdPercentile,qyC);
-      fX2Y2Corr[9]->Fill(spdPercentile,qxC*qyC);
       Double_t psiC = TMath::ATan2(qyC,qxC)/2.;
       fPsiCFlatCentr->Fill(spdPercentile,psiC);
-      Double_t psiCOrg = fEvent->GetEventplane()->GetEventplane("V0C",fEvent,2);
+      //      Double_t psiCOrg = fEvent->GetEventplane()->GetEventplane("V0C",fEvent,2);
+      Double_t qxEP = 0, qyEP = 0;
+      Double_t psiCOrg = fEvent->GetEventplane()->CalculateVZEROEventPlane(fEvent,9,2,qxEP,qyEP);
+      fX2Corr[9]->Fill(spdPercentile,qxEP);
+      fY2Corr[9]->Fill(spdPercentile,qyEP);
+      fX2Y2Corr[9]->Fill(spdPercentile,qxEP*qyEP);
       fPsiCRawCentr->Fill(spdPercentile,psiCOrg);
       fCos8Psi[9]->Fill(spdPercentile, 2./4.*TMath::Cos(2.*4.*psiCOrg));
    }
@@ -327,12 +331,14 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
       fX2[10]->Fill(spdPercentile,c2A+c2C);
       fY2[10]->Fill(spdPercentile,s2A+s2C);
       fX2Y2[10]->Fill(spdPercentile,(c2A+c2C)*(s2A+s2C));
-      fX2Corr[10]->Fill(spdPercentile,qxA+qxC);
-      fY2Corr[10]->Fill(spdPercentile,qyA+qyC);
-      fX2Y2Corr[10]->Fill(spdPercentile,(qxA+qxC)*(qyA+qyC));
       Double_t psiAC = TMath::ATan2(qyA+qyC,qxA+qxC)/2.;
       fPsiACFlatCentr->Fill(spdPercentile,psiAC);
-      Double_t psiACOrg = fEvent->GetEventplane()->GetEventplane("V0",fEvent,2);
+      //      Double_t psiACOrg = fEvent->GetEventplane()->GetEventplane("V0",fEvent,2);
+      Double_t qxEP = 0, qyEP = 0;
+      Double_t psiACOrg = fEvent->GetEventplane()->CalculateVZEROEventPlane(fEvent,10,2,qxEP,qyEP);
+      fX2Corr[10]->Fill(spdPercentile,qxEP);
+      fY2Corr[10]->Fill(spdPercentile,qyEP);
+      fX2Y2Corr[10]->Fill(spdPercentile,qxEP*qyEP);
       fPsiACRawCentr->Fill(spdPercentile,psiACOrg);
       fCos8Psi[10]->Fill(spdPercentile, 2./4.*TMath::Cos(2.*4.*psiACOrg));
     }
