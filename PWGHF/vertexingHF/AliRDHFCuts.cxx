@@ -446,7 +446,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
       Double_t v0cent=GetCentrality((AliAODEvent*)event,kCentV0M);
       Double_t ntracklets=((AliAODEvent*)event)->GetTracklets()->GetNumberOfTracklets();
       Double_t cutval=60.-0.08*ntracklets+1./50000.*ntracklets*ntracklets;
-      if(v0cent<cutval){
+      if(ntracklets<1000. && v0cent<cutval){
 	if(accept) fWhyRejection=2;      
 	fEvRejectionBits+=1<<kOutsideCentrality;
 	 accept=kFALSE;
