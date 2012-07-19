@@ -6,9 +6,9 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
                                Bool_t useVTX=kTRUE,
                                Bool_t useT0=kTRUE,
                                Bool_t useEmc=kFALSE,
-			       Bool_t usePtFix=kFALSE)
+                               Bool_t usePtFix=kFALSE)
 {
-  if (!(useV0 | useTPC | useTOF | useTRD | usePID | useVTX | useEmc)) {
+  if (!(useV0 | useTPC | useTOF | useTRD | usePID | useVTX | | useT0 | useEmc | usePtFix)) {
      ::Error("AddTaskTender", "No supply added to tender, so tender not created");
      return 0;
   }   
