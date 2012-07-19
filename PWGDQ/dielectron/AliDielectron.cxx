@@ -211,7 +211,10 @@ void AliDielectron::Init()
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
   
   if (fMixing) fMixing->Init(this);
-  if (fHistoArray) fHistoArray->Init();
+  if (fHistoArray) {
+    fHistoArray->SetSignalsMC(fSignalsMC);
+    fHistoArray->Init();
+  }
 } 
 
 //________________________________________________________________
@@ -385,13 +388,15 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
     // mix the particles which satisfy only one of the signal branches
     for(Int_t i1=0;i1<indexes1[isig];++i1) {
       for(Int_t i2=0;i2<indexes2[isig];++i2) {
-	fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
+	if(fCfManagerPair) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
+	//	fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
       }
     }
     // mix the particles which satisfy both branches
     for(Int_t i1=0;i1<indexes12[isig];++i1) {
       for(Int_t i2=0; i2<i1; ++i2) {
-	fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
+	if(fCfManagerPair) fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
+	//	fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
       }
     }
   }    // end loop over signals

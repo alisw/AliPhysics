@@ -28,11 +28,15 @@ Detailed description
 #include <TVectorD.h>
 #include <TH1.h>
 #include <TAxis.h>
+#include <AliVParticle.h>
 
 #include <AliLog.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronHelper.h"
+#include "AliDielectronMC.h"
+#include "AliDielectronPair.h"
+#include "AliDielectronSignalMC.h"
 
 #include "AliDielectronHF.h"
 
@@ -42,9 +46,11 @@ AliDielectronHF::AliDielectronHF() :
   TNamed(),
   fArrPairType(0x0),
   fPairType(kOSonly),
+  fSignalsMC(0x0),
   fAxes(kMaxCuts),
   fVarBinLimits(0x0),
-  fVar(0)
+  fVar(0),
+  fHasMC(kFALSE)
 {
   //
   // Default Constructor
@@ -62,9 +68,11 @@ AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   TNamed(name, title),
   fArrPairType(0x0),
   fPairType(kOSonly),
+  fSignalsMC(0x0),
   fAxes(kMaxCuts),
   fVarBinLimits(0x0),
-  fVar(0)
+  fVar(0),
+  fHasMC(kFALSE)
 {
   //
   // Named Constructor
@@ -169,20 +177,60 @@ void AliDielectronHF::AddCutVariable(AliDielectronVarManager::ValueTypes type,
 }
 
 //______________________________________________
+void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal) 
+{
+  //
+  // fill the pure MC part of the container starting from a pair of 2 particles (part1 and part2 are legs)
+  //
+
+  AliVParticle* part1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label1);
+  AliVParticle* part2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label2);
+
+  AliDielectronMC* dieMC = AliDielectronMC::Instance();
+  
+  Int_t mLabel1 = dieMC->GetMothersLabel(label1);    // should work for both ESD and AOD
+  Int_t mLabel2 = dieMC->GetMothersLabel(label2);
+
+  // check the same mother option
+  AliDielectronSignalMC* sigMC = (AliDielectronSignalMC*)fSignalsMC->At(nSignal);
+  if(sigMC->GetMothersRelation()==AliDielectronSignalMC::kSame && mLabel1!=mLabel2) return;
+  if(sigMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent && mLabel1==mLabel2) return;
+    
+  // fill the leg variables
+  Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
+  Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::Fill(part1,valuesLeg1);
+  AliDielectronVarManager::Fill(part2,valuesLeg2);
+    
+  // fill the pair and event variables
+  Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::Fill(dieMC->GetMCEvent(), valuesPair);
+  AliDielectronVarManager::FillVarMCParticle2(part1,part2,valuesPair);
+
+  if(part1->Charge()*part2->Charge()<0) {
+    //    valuesPair[AliDielectronVarManager::kPairType]=1;
+    Fill(nSignal, valuesPair,  valuesLeg1, valuesLeg2);
+  }
+  // on OS at the moment
+  // else if(part1->Charge()>0)
+  //   valuesPair[AliDielectronVarManager::kPairType]=0;
+  // else
+  //   valuesPair[AliDielectronVarManager::kPairType]=2; // if one of the two particles is neutral, the pair will go here
+
+  return;
+}
+//______________________________________________
 void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
 {
   //
   // fill histograms for event, pair and daughter cuts and pair types
   //
-
-  // only selected pair types
-  if(!IsPairTypeSelected(pairIndex)) return;
-
-  TObjArray *histArr = static_cast<TObjArray*>(fArrPairType.At(pairIndex));
-  if(!histArr) return;
-
-  Int_t size  = GetNumberOfBins();
   
+  // only OS pairs in case of MC
+  if(fHasMC && pairIndex!=AliDielectron::kEv1PM) return;
+
+  // only selected pair types in case of data
+  if(!IsPairTypeSelected(pairIndex)) return;
 
   // get event and pair variables
   Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
@@ -194,6 +242,30 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
   Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues]={0};
   AliDielectronVarManager::Fill(particle->GetSecondDaughter(),valuesLeg2);
 
+  // fill
+  if(!fHasMC) { Fill(pairIndex, valuesPair,  valuesLeg1, valuesLeg2); }
+  if(fHasMC && fSignalsMC) {
+    for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
+      if(AliDielectronMC::Instance()->IsMCTruth(particle, (AliDielectronSignalMC*)fSignalsMC->At(i))) 
+	Fill(i, valuesPair,  valuesLeg1, valuesLeg2);
+    }
+  }
+  
+  return;
+  
+}
+
+//______________________________________________
+void AliDielectronHF::Fill(Int_t Index, Double_t * const valuesPair, Double_t * const valuesLeg1, Double_t * const valuesLeg2)
+{
+  //
+  // main fill function using index and values as input
+  //
+
+  TObjArray *histArr = static_cast<TObjArray*>(fArrPairType.At(Index));
+  if(!histArr) return;
+
+  Int_t size  = GetNumberOfBins();
   // loop over all histograms
   for(Int_t ihist=0; ihist<size; ihist++) {
 
@@ -220,9 +292,9 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
 	if(ibin>=((Double_t)(nbins+1))/2) upEdge=(*bins)[nbins]; // to avoid low>up
 	break;
       }
-      
+
       // leg variable
-      if(fVarCutType) {
+      if(fVarCutType[ivar]) {
 	if( (valuesLeg1[fVarCuts[ivar]] < lowEdge || valuesLeg1[fVarCuts[ivar]] >= upEdge) ||
 	    (valuesLeg2[fVarCuts[ivar]] < lowEdge || valuesLeg2[fVarCuts[ivar]] >= upEdge) ) {
 	  selected=kFALSE;
@@ -247,6 +319,7 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
     TString title = tmp->GetTitle();
     AliDebug(10,title.Data());
     
+    AliDebug(10,Form("Fill var %d %s value %f in %s \n",fVar,AliDielectronVarManager::GetValueName(fVar),valuesPair[fVar],tmp->GetName()));
     tmp->Fill(valuesPair[fVar]);
   
   } //end of hist loop
@@ -260,9 +333,13 @@ void AliDielectronHF::Init()
   // initialise event buffers
   //
 
+  // has MC signals
+  fHasMC=AliDielectronMC::Instance()->HasMC();
+
   // init pair type array
   fArrPairType.SetName(Form("%s_HF",GetName()));
-  fArrPairType.Expand(AliDielectron::kEv1PMRot+1);
+  if(fHasMC) fArrPairType.Expand(fSignalsMC->GetEntries());
+  else fArrPairType.Expand(AliDielectron::kEv1PMRot+1);
 
   TH1F *hist  = 0x0;
   Int_t size  = GetNumberOfBins();
@@ -318,10 +395,17 @@ void AliDielectronHF::Init()
     sizeAdd*=nbins;
   }
 
-  // copy array to the selected pair types
-  for(Int_t i=0; i<AliDielectron::kEv1PMRot+1; i++) {
-    if(IsPairTypeSelected(i)) fArrPairType[i]=(TObjArray*)histArr->Clone(Form("%s",AliDielectron::PairClassName(i)));
-    else fArrPairType[i]=0x0;
+  // copy array to the selected pair types/ MC sources
+  if(fHasMC) {
+    for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
+      fArrPairType[i]=(TObjArray*)histArr->Clone(Form("MC truth (Signal: %s)", fSignalsMC->At(i)->GetTitle()));
+    }
+  }
+  else {
+    for(Int_t i=0; i<AliDielectron::kEv1PMRot+1; i++) {
+      if(IsPairTypeSelected(i)) fArrPairType[i]=(TObjArray*)histArr->Clone(Form("%s",AliDielectron::PairClassName(i)));
+      else fArrPairType[i]=0x0;
+    }
   }
   
   // clean up

@@ -33,18 +33,19 @@ public:
 
   void SetRangeUser(const char *varname, Double_t min, Double_t max, Bool_t leg=kFALSE);
   void SetRangeUser(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max, Bool_t leg=kFALSE);
+
+  TObjArray* CollectHistos();
   
   TH1F* GetHistogram(const char *step);
   TH1F* FindHistograms(TObjArray *histos);
   TH1F* MergeHistos(TObjArray *arr);
 
   void CheckCuts(TObjArray *arr);
-  void Print();
+  virtual void Print(const Option_t* option ="") const ;
   void PrintCuts();
 
 private:
-  TObjArray *fArrPairType;             // array of pair types, sources or steps
-  //static const char *fCutVars[kMaxCuts];      // array for cut variables
+  TObjArray *fArrPairType;         // array of pair types, sources or steps
   TObjArray *fCutVars;             // array for cut variables
   TVectorD fCutLowLimits;
   TVectorD fCutUpLimits;

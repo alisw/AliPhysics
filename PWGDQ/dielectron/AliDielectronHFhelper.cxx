@@ -44,6 +44,7 @@
 
 #include <AliLog.h>
 
+#include "AliDielectron.h"
 #include "AliDielectronHFhelper.h"
 #include "AliDielectronHF.h"
 
@@ -146,6 +147,25 @@ void AliDielectronHFhelper::SetRangeUser(AliDielectronVarManager::ValueTypes typ
   // Set range from AliDielectronVarManager 
   //
   SetRangeUser(AliDielectronVarManager::GetValueName(type), min, max, leg);
+}
+
+//________________________________________________________________
+TObjArray* AliDielectronHFhelper::CollectHistos() 
+{
+  //
+  // collect histograms for all kind of pair types or sources
+  //
+  
+  TObjArray *collection = new TObjArray(AliDielectron::kEv1PMRot+1);
+
+  // loop over max. available pair types
+  for(Int_t i=0; i<AliDielectron::kEv1PMRot+1; i++) {
+
+    collection->AddAt(GetHistogram(AliDielectron::PairClassName(i)),i);
+    
+  }
+
+  return collection;
 }
 
 //________________________________________________________________
@@ -325,7 +345,7 @@ void AliDielectronHFhelper::CheckCuts(TObjArray *arr)
 }
 
 //________________________________________________________________
-void AliDielectronHFhelper::Print()
+void AliDielectronHFhelper::Print(const Option_t* /*option*/) const
 {
 
   //

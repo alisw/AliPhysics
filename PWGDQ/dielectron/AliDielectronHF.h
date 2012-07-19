@@ -18,7 +18,7 @@
 
 #include "AliDielectronVarManager.h"
 
-class AliDielectron;
+#include "AliDielectron.h"
 
 class AliDielectronHF : public TNamed {
 public:
@@ -37,6 +37,9 @@ public:
   AliDielectronHF(const char*name, const char* title);
 
   virtual ~AliDielectronHF();
+
+  void Init();
+  void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
   void SetPairTypes(EPairType ptype=kOSonly) { fPairType=ptype; }
   void SetVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins,
                    Double_t min, Double_t max, Bool_t log=kFALSE);
@@ -48,15 +51,22 @@ public:
   void AddCutVariable(AliDielectronVarManager::ValueTypes type, 
 		      TVectorD * binLimits, Bool_t leg=kFALSE, EBinType btype=kStdBin);
 
-  Bool_t IsPairTypeSelected(Int_t itype);
-  Int_t GetNumberOfBins() const;
   void Fill(Int_t pairIndex, const AliDielectronPair *particle);
-  void Init();
+  void Fill(Int_t label1, Int_t label2, Int_t nSignal);
+  void Fill(Int_t Index, Double_t * const valuesPair, Double_t * const valuesLeg1, Double_t * const valuesLeg2);
+
+  Bool_t IsPairTypeSelected(Int_t itype);
+
+  Int_t GetNumberOfBins() const;
   const TObjArray * GetHistArray() const { return &fArrPairType; }
+
+
+
   
 private:
   TObjArray fArrPairType;           //-> array of pair types
   EPairType fPairType;              // which pair combinations to include
+  TObjArray* fSignalsMC;            //! array of MC signals to be studied
 
   UShort_t  fVarCuts[kMaxCuts];     // cut variables
   Bool_t    fVarCutType[kMaxCuts];  // array to store leg booleans
@@ -65,6 +75,7 @@ private:
   
   TVectorD *fVarBinLimits;          // binning of the main pair variable
   UShort_t  fVar;                   // main pair variable for xaxis
+  Bool_t    fHasMC;
 
   AliDielectronHF(const AliDielectronHF &c);
   AliDielectronHF &operator=(const AliDielectronHF &c);

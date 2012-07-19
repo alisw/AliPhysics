@@ -1,5 +1,6 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void InitCF(AliDielectron* die, Int_t cutDefinition);
+void InitHF(AliDielectron* die, Int_t cutDefinition);
 
 void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
 void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
@@ -110,14 +111,20 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 	   0/*die->GetHistoManager()->GetList()->GetEntries()*/);
   }  
 
-  // CF container setup
+  // CF container setup, switched off
   if(cutDefinition <  kEtaGap01 || 
      cutDefinition == kSubRndm  ) {
-    InitCF(die,cutDefinition);
-    printf(" Add %d pair, %d leg vars, %p steps and %p bins to the container \n",
-	   die->GetCFManagerPair()->GetNvarsPair(),die->GetCFManagerPair()->GetNvarsLeg(),
-	   die->GetCFManagerPair()->GetContainer(), die->GetCFManagerPair()->GetContainer() );
+    if(0) InitCF(die,cutDefinition);
+    if(0) printf(" Add %d pair, %d leg vars, %p steps and %p bins to the container \n",
+		 die->GetCFManagerPair()->GetNvarsPair(),die->GetCFManagerPair()->GetNvarsLeg(),
+		 die->GetCFManagerPair()->GetContainer(), die->GetCFManagerPair()->GetContainer() );
   }
+
+  // HF arrays setup
+  if(cutDefinition <  kEtaGap01 ) {
+    InitHF(die,cutDefinition);
+  }
+
 
   // bgrd estimators
   if(!hasMC) {
@@ -721,6 +728,26 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   die->SetHistogramManager(histos);
 }
 
+void InitHF(AliDielectron* die, Int_t cutDefinition)
+{
+  //
+  // Setup the HF arrays (not yet working for MC)
+  //
+  //  if(hasMC) return;
+
+  AliDielectronHF *hf=new AliDielectronHF(die->GetName(),die->GetTitle());
+  hf->SetPairTypes(AliDielectronHF::kAll);
+  hf->SetVariable(AliDielectronVarManager::kM, 125, 0.0, 0.04*125);
+  
+  hf->AddCutVariable(AliDielectronVarManager::kCentrality,  "0.,5.,10.,20.,40.,50.,60.,80.");
+  hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.,3.5,4.,100.",                 kTRUE, AliDielectronHF::kBinToMax);
+  hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.8, 1.0, 1.1, 1.2, 1.5, 100.0", kTRUE, AliDielectronHF::kBinToMax);
+  hf->AddCutVariable(AliDielectronVarManager::kNclsTPC,     "70,90,100,120,160",              kTRUE, AliDielectronHF::kBinToMax);
+  hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4,-3,-2.5,-2,2,2.5,3,4",        kTRUE, AliDielectronHF::kSymBin);
+  //  hf->AddCutVariable(AliDielectronVarManager::kRunNumber,  GetRunNumbers());
+
+  die->SetHistogramArray(hf);
+}
 
 void InitCF(AliDielectron* die, Int_t cutDefinition)
 {
