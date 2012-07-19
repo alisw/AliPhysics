@@ -759,7 +759,7 @@ Float_t AliTRDcalibDB::GetOnlineGainFactor(Int_t det, Int_t col, Int_t row)
   //
 
   if (!HasOnlineFilterGain()) {
-    return 0x0;
+    return -1;
   }
   
   const AliTRDCalOnlineGainTable *calOnline 
@@ -909,13 +909,10 @@ Float_t AliTRDcalibDB::GetPRFWidth(Int_t det, Int_t col, Int_t row)
 //_____________________________________________________________________________
 Int_t AliTRDcalibDB::ExtractTimeBinsFromString(TString tbstr)
 {
-  // default value - has not been set
-  Int_t nUndef = -1;
-
   // Check if there is any content in the string first
   if (tbstr.Length() == 0) {
     AliError("Parameter for number of timebins is empty!");
-    return nUndef;
+    return -1;
   }
 
   // Check if we have the correct config parameter
@@ -923,14 +920,14 @@ Int_t AliTRDcalibDB::ExtractTimeBinsFromString(TString tbstr)
   TString tbsubstr = tbstr(0,2);
   if (!tbsubstr.EqualTo(tbident)) {
     AliError(Form("Parameter for number of timebins is corrupted (%s)!", tbstr.Data()));
-    return nUndef;
+    return -1;
   }
 
   tbstr.Remove(0,2);
   // check if there is more than a number
   if (!tbstr.IsDigit()) {
     AliError(Form("Parameter for number of timebins is corrupted (%s)!", tbstr.Data()));
-    return nUndef;
+    return -1;
   }
 
   return tbstr.Atoi();
@@ -947,8 +944,11 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
   // Get the corresponding parameter
   TString cfgstr = "", cfgname = "";
   GetGlobalConfiguration(cfgname);
+  if(cfgname.Length()==0)
+    return -1;
   GetDCSConfigParOption(cfgname, kTimebin, 0, cfgstr);
-
+  if(cfgstr.Length()==0)
+    return -1;
   return ExtractTimeBinsFromString(cfgstr);
 
 }
