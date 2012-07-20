@@ -33,7 +33,7 @@ public:
                                 const Bool_t  isolated[4], 
                                 Int_t & iparton) ; 
   
-    TList * GetCreateOutputObjects() ;
+  TList * GetCreateOutputObjects() ;
   
   void    GetPartonsAndJets() ;
     

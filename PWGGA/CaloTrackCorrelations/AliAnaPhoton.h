@@ -60,6 +60,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms = kFALSE ; }  
   
+  void         SwitchOnOnlySimpleSSHistoFill()        { fFillOnlySimpleSSHisto = kTRUE  ; }
+  void         SwitchOffOnlySimpleHistoFill()         { fFillOnlySimpleSSHisto = kFALSE ; }
+  
   void         FillTrackMatchingResidualHistograms(AliVCluster* calo, const Int_t cut);
   
   void         SwitchOnTMHistoFill()                  { fFillTMHisto      = kTRUE  ; }
@@ -118,6 +121,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Double_t fTimeCutMax  ;                // Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                  // Accept for the analysis clusters with more than fNCellsCut cells
   Bool_t   fFillSSHistograms ;           // Fill shower shape histograms
+  Bool_t   fFillOnlySimpleSSHisto;       // Fill selected cluster histograms, selected SS histograms
   Int_t    fNOriginHistograms;           // Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;          // Fill only NPrimaryHistograms of the 7 defined types
 
@@ -270,7 +274,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,25)
+  ClassDef(AliAnaPhoton,26)
 
 } ;
  

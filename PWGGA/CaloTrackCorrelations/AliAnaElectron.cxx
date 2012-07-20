@@ -50,13 +50,14 @@ ClassImp(AliAnaElectron)
   
 //________________________________
 AliAnaElectron::AliAnaElectron() : 
-    AliAnaCaloTrackCorrBaseClass(),            fCalorimeter(""), 
+    AliAnaCaloTrackCorrBaseClass(),       fCalorimeter(""), 
     fMinDist(0.),                         fMinDist2(0.),                         fMinDist3(0.), 
     fTimeCutMin(-1),                      fTimeCutMax(999999),         
-    fNCellsCut(0),                        fFillSSHistograms(kFALSE),             
+    fNCellsCut(0),                        fFillSSHistograms(kFALSE),             fFillOnlySimpleSSHisto(1),        
     fFillWeightHistograms(kFALSE),        fNOriginHistograms(8), 
     fdEdxMin(0.),                         fdEdxMax (200.), 
     fEOverPMin(0),                        fEOverPMax (2),
+    fAODParticle(0),
     // Histograms
     fhdEdxvsE(0),                         fhdEdxvsP(0),                 
     fhEOverPvsE(0),                       fhEOverPvsP(0),
@@ -225,6 +226,10 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
   Float_t lambda1 = cluster->GetM20();
   Float_t disp    = cluster->GetDispersion()*cluster->GetDispersion();
   
+  Float_t l0   = 0., l1   = 0.;
+  Float_t dispp= 0., dEta = 0., dPhi    = 0.; 
+  Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;    
+  
   TLorentzVector mom;
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
   {
@@ -249,40 +254,40 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
     fhDispETRD[pidIndex]->Fill(energy,disp);
   }
   
-  if(energy < 2)
+  if(!fFillOnlySimpleSSHisto)
   {
-    fhNCellsLam0LowE[pidIndex] ->Fill(ncells,lambda0);
-    fhEtaLam0LowE[pidIndex]    ->Fill(eta,   lambda0);
-    fhPhiLam0LowE[pidIndex]    ->Fill(phi,   lambda0);
-  }
-  else 
-  {
-    fhNCellsLam0HighE[pidIndex]->Fill(ncells,lambda0);
-    fhEtaLam0HighE[pidIndex]   ->Fill(eta,   lambda0);
-    fhPhiLam0HighE[pidIndex]   ->Fill(phi,   lambda0);
-  }
+    if(energy < 2)
+    {
+      fhNCellsLam0LowE[pidIndex] ->Fill(ncells,lambda0);
+      fhEtaLam0LowE[pidIndex]    ->Fill(eta,   lambda0);
+      fhPhiLam0LowE[pidIndex]    ->Fill(phi,   lambda0);
+    }
+    else 
+    {
+      fhNCellsLam0HighE[pidIndex]->Fill(ncells,lambda0);
+      fhEtaLam0HighE[pidIndex]   ->Fill(eta,   lambda0);
+      fhPhiLam0HighE[pidIndex]   ->Fill(phi,   lambda0);
+    }
     
-  Float_t l0   = 0., l1   = 0.;
-  Float_t dispp= 0., dEta = 0., dPhi    = 0.; 
-  Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;  
-  if(fCalorimeter == "EMCAL")
-  {
-    GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), GetReader()->GetInputEvent()->GetEMCALCells(), cluster,
-                                                                                 l0, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
-    fhDispEtaE        [pidIndex]-> Fill(energy,dEta);
-    fhDispPhiE        [pidIndex]-> Fill(energy,dPhi);
-    fhSumEtaE         [pidIndex]-> Fill(energy,sEta);
-    fhSumPhiE         [pidIndex]-> Fill(energy,sPhi);
-    fhSumEtaPhiE      [pidIndex]-> Fill(energy,sEtaPhi);
-    fhDispEtaPhiDiffE [pidIndex]-> Fill(energy,dPhi-dEta);
-    if(dEta+dPhi>0)fhSphericityE     [pidIndex]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));
-    
-    if      (energy < 2 ) fhDispEtaDispPhiEBin[pidIndex][0]->Fill(dEta,dPhi);
-    else if (energy < 4 ) fhDispEtaDispPhiEBin[pidIndex][1]->Fill(dEta,dPhi);
-    else if (energy < 6 ) fhDispEtaDispPhiEBin[pidIndex][2]->Fill(dEta,dPhi);
-    else if (energy < 10) fhDispEtaDispPhiEBin[pidIndex][3]->Fill(dEta,dPhi);
-    else                  fhDispEtaDispPhiEBin[pidIndex][4]->Fill(dEta,dPhi);
-    
+    if(fCalorimeter == "EMCAL")
+    {
+      GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), GetReader()->GetInputEvent()->GetEMCALCells(), cluster,
+                                                                                   l0, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
+      fhDispEtaE        [pidIndex]-> Fill(energy,dEta);
+      fhDispPhiE        [pidIndex]-> Fill(energy,dPhi);
+      fhSumEtaE         [pidIndex]-> Fill(energy,sEta);
+      fhSumPhiE         [pidIndex]-> Fill(energy,sPhi);
+      fhSumEtaPhiE      [pidIndex]-> Fill(energy,sEtaPhi);
+      fhDispEtaPhiDiffE [pidIndex]-> Fill(energy,dPhi-dEta);
+      if(dEta+dPhi>0)fhSphericityE     [pidIndex]-> Fill(energy,(dPhi-dEta)/(dEta+dPhi));
+      
+      if      (energy < 2 ) fhDispEtaDispPhiEBin[pidIndex][0]->Fill(dEta,dPhi);
+      else if (energy < 4 ) fhDispEtaDispPhiEBin[pidIndex][1]->Fill(dEta,dPhi);
+      else if (energy < 6 ) fhDispEtaDispPhiEBin[pidIndex][2]->Fill(dEta,dPhi);
+      else if (energy < 10) fhDispEtaDispPhiEBin[pidIndex][3]->Fill(dEta,dPhi);
+      else                  fhDispEtaDispPhiEBin[pidIndex][4]->Fill(dEta,dPhi);
+      
+    }
   }
   
   if(IsDataMC())
@@ -401,7 +406,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
     
     fhMCELambda0[pidIndex][index]    ->Fill(energy, lambda0);
     
-    if(fCalorimeter == "EMCAL")
+    if(fCalorimeter == "EMCAL" && !fFillOnlySimpleSSHisto)
     {
       fhMCEDispEta        [pidIndex][index]-> Fill(energy,dEta);
       fhMCEDispPhi        [pidIndex][index]-> Fill(energy,dPhi);
@@ -585,112 +590,115 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
         outputContainer->Add(fhDispETRD[pidIndex]);   
       } 
       
-      fhNCellsLam0LowE[pidIndex]  = new TH2F (Form("h%sNCellsLam0LowE",pidParticle[pidIndex].Data()),
-                                              Form("%s: N_{cells} in cluster vs #lambda_{0}^{2}, E < 2 GeV",pidParticle[pidIndex].Data()),
-                                              nbins,nmin, nmax, ssbins,ssmin,ssmax); 
-      fhNCellsLam0LowE[pidIndex]->SetXTitle("N_{cells}");
-      fhNCellsLam0LowE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhNCellsLam0LowE[pidIndex]);  
-      
-      fhNCellsLam0HighE[pidIndex]  = new TH2F (Form("h%sNCellsLam0HighE",pidParticle[pidIndex].Data()),
-                                               Form("%s: N_{cells} in cluster vs #lambda_{0}^{2}, E > 2 GeV",pidParticle[pidIndex].Data()), 
-                                               nbins,nmin, nmax, ssbins,ssmin,ssmax); 
-      fhNCellsLam0HighE[pidIndex]->SetXTitle("N_{cells}");
-      fhNCellsLam0HighE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
-      outputContainer->Add(fhNCellsLam0HighE[pidIndex]);  
-      
-      
-      fhEtaLam0LowE[pidIndex]  = new TH2F (Form("h%sEtaLam0LowE",pidParticle[pidIndex].Data()),
-                                           Form("%s: #eta vs #lambda_{0}^{2}, E < 2 GeV",pidParticle[pidIndex].Data()), 
-                                           netabins,etamin,etamax, ssbins,ssmin,ssmax); 
-      fhEtaLam0LowE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
-      fhEtaLam0LowE[pidIndex]->SetXTitle("#eta");
-      outputContainer->Add(fhEtaLam0LowE[pidIndex]);  
-      
-      fhPhiLam0LowE[pidIndex]  = new TH2F (Form("h%sPhiLam0LowE",pidParticle[pidIndex].Data()),
-                                           Form("%s: #phi vs #lambda_{0}^{2}, E < 2 GeV",pidParticle[pidIndex].Data()), 
-                                           nphibins,phimin,phimax, ssbins,ssmin,ssmax); 
-      fhPhiLam0LowE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
-      fhPhiLam0LowE[pidIndex]->SetXTitle("#phi");
-      outputContainer->Add(fhPhiLam0LowE[pidIndex]);  
-      
-      fhEtaLam0HighE[pidIndex]  = new TH2F (Form("h%sEtaLam0HighE",pidParticle[pidIndex].Data()),
-                                            Form("%s: #eta vs #lambda_{0}^{2}, E > 2 GeV",pidParticle[pidIndex].Data()),
-                                            netabins,etamin,etamax, ssbins,ssmin,ssmax); 
-      fhEtaLam0HighE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
-      fhEtaLam0HighE[pidIndex]->SetXTitle("#eta");
-      outputContainer->Add(fhEtaLam0HighE[pidIndex]);  
-      
-      fhPhiLam0HighE[pidIndex]  = new TH2F (Form("h%sPhiLam0HighE",pidParticle[pidIndex].Data()),
-                                            Form("%s: #phi vs #lambda_{0}^{2}, E > 2 GeV",pidParticle[pidIndex].Data()), 
-                                            nphibins,phimin,phimax, ssbins,ssmin,ssmax); 
-      fhPhiLam0HighE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
-      fhPhiLam0HighE[pidIndex]->SetXTitle("#phi");
-      outputContainer->Add(fhPhiLam0HighE[pidIndex]);  
-      
-      if(fCalorimeter == "EMCAL")
+      if(!fFillOnlySimpleSSHisto)
       {
-        fhDispEtaE[pidIndex]  = new TH2F (Form("h%sDispEtaE",pidParticle[pidIndex].Data()),
-                                          Form("%s: #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",pidParticle[pidIndex].Data()),  
-                                          nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
-        fhDispEtaE[pidIndex]->SetXTitle("E (GeV)");
-        fhDispEtaE[pidIndex]->SetYTitle("#sigma^{2}_{#eta #eta}");
-        outputContainer->Add(fhDispEtaE[pidIndex]);     
         
-        fhDispPhiE[pidIndex]  = new TH2F (Form("h%sDispPhiE",pidParticle[pidIndex].Data()),
-                                          Form("%s: #sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i} - <#phi>)^{2} / #Sigma w_{i} vs E",pidParticle[pidIndex].Data()),  
-                                          nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
-        fhDispPhiE[pidIndex]->SetXTitle("E (GeV)");
-        fhDispPhiE[pidIndex]->SetYTitle("#sigma^{2}_{#phi #phi}");
-        outputContainer->Add(fhDispPhiE[pidIndex]);  
+        fhNCellsLam0LowE[pidIndex]  = new TH2F (Form("h%sNCellsLam0LowE",pidParticle[pidIndex].Data()),
+                                                Form("%s: N_{cells} in cluster vs #lambda_{0}^{2}, E < 2 GeV",pidParticle[pidIndex].Data()),
+                                                nbins,nmin, nmax, ssbins,ssmin,ssmax); 
+        fhNCellsLam0LowE[pidIndex]->SetXTitle("N_{cells}");
+        fhNCellsLam0LowE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
+        outputContainer->Add(fhNCellsLam0LowE[pidIndex]);  
         
-        fhSumEtaE[pidIndex]  = new TH2F (Form("h%sSumEtaE",pidParticle[pidIndex].Data()),
-                                         Form("%s: #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i})^{2} / #Sigma w_{i} - <#eta>^{2} vs E",pidParticle[pidIndex].Data()),  
-                                         nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
-        fhSumEtaE[pidIndex]->SetXTitle("E (GeV)");
-        fhSumEtaE[pidIndex]->SetYTitle("#delta^{2}_{#eta #eta}");
-        outputContainer->Add(fhSumEtaE[pidIndex]);     
+        fhNCellsLam0HighE[pidIndex]  = new TH2F (Form("h%sNCellsLam0HighE",pidParticle[pidIndex].Data()),
+                                                 Form("%s: N_{cells} in cluster vs #lambda_{0}^{2}, E > 2 GeV",pidParticle[pidIndex].Data()), 
+                                                 nbins,nmin, nmax, ssbins,ssmin,ssmax); 
+        fhNCellsLam0HighE[pidIndex]->SetXTitle("N_{cells}");
+        fhNCellsLam0HighE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
+        outputContainer->Add(fhNCellsLam0HighE[pidIndex]);  
         
-        fhSumPhiE[pidIndex]  = new TH2F (Form("h%sSumPhiE",pidParticle[pidIndex].Data()),
-                                         Form("%s: #sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i})^{2}/ #Sigma w_{i} - <#phi>^{2} vs E",pidParticle[pidIndex].Data()),  
-                                         nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
-        fhSumPhiE[pidIndex]->SetXTitle("E (GeV)");
-        fhSumPhiE[pidIndex]->SetYTitle("#delta^{2}_{#phi #phi}");
-        outputContainer->Add(fhSumPhiE[pidIndex]);  
         
-        fhSumEtaPhiE[pidIndex]  = new TH2F (Form("h%sSumEtaPhiE",pidParticle[pidIndex].Data()),
-                                            Form("%s: #delta^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",pidParticle[pidIndex].Data()),  
-                                            nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax); 
-        fhSumEtaPhiE[pidIndex]->SetXTitle("E (GeV)");
-        fhSumEtaPhiE[pidIndex]->SetYTitle("#delta^{2}_{#eta #phi}");
-        outputContainer->Add(fhSumEtaPhiE[pidIndex]);
+        fhEtaLam0LowE[pidIndex]  = new TH2F (Form("h%sEtaLam0LowE",pidParticle[pidIndex].Data()),
+                                             Form("%s: #eta vs #lambda_{0}^{2}, E < 2 GeV",pidParticle[pidIndex].Data()), 
+                                             netabins,etamin,etamax, ssbins,ssmin,ssmax); 
+        fhEtaLam0LowE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
+        fhEtaLam0LowE[pidIndex]->SetXTitle("#eta");
+        outputContainer->Add(fhEtaLam0LowE[pidIndex]);  
         
-        fhDispEtaPhiDiffE[pidIndex]  = new TH2F (Form("h%sDispEtaPhiDiffE",pidParticle[pidIndex].Data()),
-                                                 Form("%s: #sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta} vs E",pidParticle[pidIndex].Data()), 
-                                                 nptbins,ptmin,ptmax,200, -10,10); 
-        fhDispEtaPhiDiffE[pidIndex]->SetXTitle("E (GeV)");
-        fhDispEtaPhiDiffE[pidIndex]->SetYTitle("#sigma^{2}_{#phi #phi}-#sigma^{2}_{#eta #eta}");
-        outputContainer->Add(fhDispEtaPhiDiffE[pidIndex]);    
+        fhPhiLam0LowE[pidIndex]  = new TH2F (Form("h%sPhiLam0LowE",pidParticle[pidIndex].Data()),
+                                             Form("%s: #phi vs #lambda_{0}^{2}, E < 2 GeV",pidParticle[pidIndex].Data()), 
+                                             nphibins,phimin,phimax, ssbins,ssmin,ssmax); 
+        fhPhiLam0LowE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
+        fhPhiLam0LowE[pidIndex]->SetXTitle("#phi");
+        outputContainer->Add(fhPhiLam0LowE[pidIndex]);  
         
-        fhSphericityE[pidIndex]  = new TH2F (Form("h%sSphericityE",pidParticle[pidIndex].Data()),
-                                             Form("%s: (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi}) vs E",pidParticle[pidIndex].Data()),  
-                                             nptbins,ptmin,ptmax, 200, -1,1); 
-        fhSphericityE[pidIndex]->SetXTitle("E (GeV)");
-        fhSphericityE[pidIndex]->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
-        outputContainer->Add(fhSphericityE[pidIndex]);
+        fhEtaLam0HighE[pidIndex]  = new TH2F (Form("h%sEtaLam0HighE",pidParticle[pidIndex].Data()),
+                                              Form("%s: #eta vs #lambda_{0}^{2}, E > 2 GeV",pidParticle[pidIndex].Data()),
+                                              netabins,etamin,etamax, ssbins,ssmin,ssmax); 
+        fhEtaLam0HighE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
+        fhEtaLam0HighE[pidIndex]->SetXTitle("#eta");
+        outputContainer->Add(fhEtaLam0HighE[pidIndex]);  
         
-        Int_t bin[] = {0,2,4,6,10,1000};
-        for(Int_t i = 0; i < 5; i++)
+        fhPhiLam0HighE[pidIndex]  = new TH2F (Form("h%sPhiLam0HighE",pidParticle[pidIndex].Data()),
+                                              Form("%s: #phi vs #lambda_{0}^{2}, E > 2 GeV",pidParticle[pidIndex].Data()), 
+                                              nphibins,phimin,phimax, ssbins,ssmin,ssmax); 
+        fhPhiLam0HighE[pidIndex]->SetYTitle("#lambda_{0}^{2}");
+        fhPhiLam0HighE[pidIndex]->SetXTitle("#phi");
+        outputContainer->Add(fhPhiLam0HighE[pidIndex]);  
+        
+        if(fCalorimeter == "EMCAL")
         {
-          fhDispEtaDispPhiEBin[pidIndex][i] = new TH2F (Form("h%sDispEtaDispPhi_EBin%d",pidParticle[pidIndex].Data(),i),
-                                                        Form("%s: #sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pidParticle[pidIndex].Data(),bin[i],bin[i+1]), 
-                                                        ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
-          fhDispEtaDispPhiEBin[pidIndex][i]->SetXTitle("#sigma^{2}_{#eta #eta}");
-          fhDispEtaDispPhiEBin[pidIndex][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
-          outputContainer->Add(fhDispEtaDispPhiEBin[pidIndex][i]); 
+          fhDispEtaE[pidIndex]  = new TH2F (Form("h%sDispEtaE",pidParticle[pidIndex].Data()),
+                                            Form("%s: #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",pidParticle[pidIndex].Data()),  
+                                            nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
+          fhDispEtaE[pidIndex]->SetXTitle("E (GeV)");
+          fhDispEtaE[pidIndex]->SetYTitle("#sigma^{2}_{#eta #eta}");
+          outputContainer->Add(fhDispEtaE[pidIndex]);     
+          
+          fhDispPhiE[pidIndex]  = new TH2F (Form("h%sDispPhiE",pidParticle[pidIndex].Data()),
+                                            Form("%s: #sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i} - <#phi>)^{2} / #Sigma w_{i} vs E",pidParticle[pidIndex].Data()),  
+                                            nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
+          fhDispPhiE[pidIndex]->SetXTitle("E (GeV)");
+          fhDispPhiE[pidIndex]->SetYTitle("#sigma^{2}_{#phi #phi}");
+          outputContainer->Add(fhDispPhiE[pidIndex]);  
+          
+          fhSumEtaE[pidIndex]  = new TH2F (Form("h%sSumEtaE",pidParticle[pidIndex].Data()),
+                                           Form("%s: #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i})^{2} / #Sigma w_{i} - <#eta>^{2} vs E",pidParticle[pidIndex].Data()),  
+                                           nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
+          fhSumEtaE[pidIndex]->SetXTitle("E (GeV)");
+          fhSumEtaE[pidIndex]->SetYTitle("#delta^{2}_{#eta #eta}");
+          outputContainer->Add(fhSumEtaE[pidIndex]);     
+          
+          fhSumPhiE[pidIndex]  = new TH2F (Form("h%sSumPhiE",pidParticle[pidIndex].Data()),
+                                           Form("%s: #sigma^{2}_{#phi #phi} = #Sigma w_{i}(#phi_{i})^{2}/ #Sigma w_{i} - <#phi>^{2} vs E",pidParticle[pidIndex].Data()),  
+                                           nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
+          fhSumPhiE[pidIndex]->SetXTitle("E (GeV)");
+          fhSumPhiE[pidIndex]->SetYTitle("#delta^{2}_{#phi #phi}");
+          outputContainer->Add(fhSumPhiE[pidIndex]);  
+          
+          fhSumEtaPhiE[pidIndex]  = new TH2F (Form("h%sSumEtaPhiE",pidParticle[pidIndex].Data()),
+                                              Form("%s: #delta^{2}_{#eta #phi} = #Sigma w_{i}(#phi_{i} #eta_{i} ) / #Sigma w_{i} - <#phi><#eta> vs E",pidParticle[pidIndex].Data()),  
+                                              nptbins,ptmin,ptmax, 2*ssbins,-ssmax,ssmax); 
+          fhSumEtaPhiE[pidIndex]->SetXTitle("E (GeV)");
+          fhSumEtaPhiE[pidIndex]->SetYTitle("#delta^{2}_{#eta #phi}");
+          outputContainer->Add(fhSumEtaPhiE[pidIndex]);
+          
+          fhDispEtaPhiDiffE[pidIndex]  = new TH2F (Form("h%sDispEtaPhiDiffE",pidParticle[pidIndex].Data()),
+                                                   Form("%s: #sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta} vs E",pidParticle[pidIndex].Data()), 
+                                                   nptbins,ptmin,ptmax,200, -10,10); 
+          fhDispEtaPhiDiffE[pidIndex]->SetXTitle("E (GeV)");
+          fhDispEtaPhiDiffE[pidIndex]->SetYTitle("#sigma^{2}_{#phi #phi}-#sigma^{2}_{#eta #eta}");
+          outputContainer->Add(fhDispEtaPhiDiffE[pidIndex]);    
+          
+          fhSphericityE[pidIndex]  = new TH2F (Form("h%sSphericityE",pidParticle[pidIndex].Data()),
+                                               Form("%s: (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi}) vs E",pidParticle[pidIndex].Data()),  
+                                               nptbins,ptmin,ptmax, 200, -1,1); 
+          fhSphericityE[pidIndex]->SetXTitle("E (GeV)");
+          fhSphericityE[pidIndex]->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
+          outputContainer->Add(fhSphericityE[pidIndex]);
+          
+          Int_t bin[] = {0,2,4,6,10,1000};
+          for(Int_t i = 0; i < 5; i++)
+          {
+            fhDispEtaDispPhiEBin[pidIndex][i] = new TH2F (Form("h%sDispEtaDispPhi_EBin%d",pidParticle[pidIndex].Data(),i),
+                                                          Form("%s: #sigma^{2}_{#phi #phi} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pidParticle[pidIndex].Data(),bin[i],bin[i+1]), 
+                                                          ssbins,ssmin,ssmax , ssbins,ssmin,ssmax); 
+            fhDispEtaDispPhiEBin[pidIndex][i]->SetXTitle("#sigma^{2}_{#eta #eta}");
+            fhDispEtaDispPhiEBin[pidIndex][i]->SetYTitle("#sigma^{2}_{#phi #phi}");
+            outputContainer->Add(fhDispEtaDispPhiEBin[pidIndex][i]); 
+          }
         }
       }
-      
     } // Shower shape
         
     if(IsDataMC())
@@ -711,7 +719,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
           fhMCELambda0[pidIndex][i]->SetXTitle("E (GeV)");
           outputContainer->Add(fhMCELambda0[pidIndex][i]) ; 
           
-          if(fCalorimeter=="EMCAL")
+          if(fCalorimeter=="EMCAL" && !fFillOnlySimpleSSHisto)
           {
             fhMCEDispEta[pidIndex][i]  = new TH2F (Form("h%sEDispEtaE_MC%s",pidParticle[pidIndex].Data(),pnamess[i].Data()),
                                                    Form("cluster from %s : %s like, #sigma^{2}_{#eta #eta} = #Sigma w_{i}(#eta_{i} - <#eta>)^{2}/ #Sigma w_{i} vs E",ptypess[i].Data(),pidParticle[pidIndex].Data()),
@@ -747,14 +755,13 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
             fhMCESphericity[pidIndex][i]->SetXTitle("E (GeV)");
             fhMCESphericity[pidIndex][i]->SetYTitle("s = (#sigma^{2}_{#phi #phi} - #sigma^{2}_{#eta #eta}) / (#sigma^{2}_{#eta #eta} + #sigma^{2}_{#phi #phi})");
             outputContainer->Add(fhMCESphericity[pidIndex][i]);
-                      
           }
           
         }// loop    
       }   
     }
     
-    if(IsCaloPIDOn() && pidIndex > 0) continue;
+    //if(IsCaloPIDOn() && pidIndex > 0) continue;
     
     fhNCellsE[pidIndex]  = new TH2F (Form("h%sNCellsE",pidParticle[pidIndex].Data()),
                                      Form("N cells in %s cluster vs E ",pidParticle[pidIndex].Data()),
@@ -1059,34 +1066,35 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //----------------------------
     //Create AOD for analysis
     //----------------------------
-    AliAODPWG4Particle aodph = AliAODPWG4Particle(mom);
+    AliAODPWG4Particle aodpart = AliAODPWG4Particle(mom);
     
     //...............................................
     //Set the indeces of the original caloclusters (MC, ID), and calorimeter  
     Int_t label = calo->GetLabel();
-    aodph.SetLabel(label);
-    aodph.SetCaloLabel(calo->GetID(),-1);
-    aodph.SetDetector(fCalorimeter);
+    aodpart.SetLabel(label);
+    aodpart.SetCaloLabel(calo->GetID(),-1);
+    aodpart.SetDetector(fCalorimeter);
     //printf("Index %d, Id %d, iaod %d\n",icalo, calo->GetID(),GetOutputAODBranch()->GetEntriesFast());
     
     //...............................................
     //Set bad channel distance bit
     Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
-    if     (distBad > fMinDist3) aodph.SetDistToBad(2) ;
-    else if(distBad > fMinDist2) aodph.SetDistToBad(1) ; 
-    else                         aodph.SetDistToBad(0) ;
-    //printf("DistBad %f Bit %d\n",distBad, aodph.DistToBad());
+    if     (distBad > fMinDist3) aodpart.SetDistToBad(2) ;
+    else if(distBad > fMinDist2) aodpart.SetDistToBad(1) ; 
+    else                         aodpart.SetDistToBad(0) ;
+    //printf("DistBad %f Bit %d\n",distBad, aodpart.DistToBad());
     
     //--------------------------------------------------------------------------------------
     //Play with the MC stack if available
     //--------------------------------------------------------------------------------------
     
     //Check origin of the candidates
-    if(IsDataMC()){
-      aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodph.GetInputFileIndex()));
+    if(IsDataMC())
+    {
+      aodpart.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodpart.GetInputFileIndex()));
       
       if(GetDebug() > 0)
-        printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
+        printf("AliAnaElectron::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodpart.GetTag());
     }//Work with stack also   
     
     
@@ -1120,7 +1128,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       
     }// dEdx
     
-    aodph.SetIdentifiedParticleType(pid);    
+    aodpart.SetIdentifiedParticleType(pid);    
     
     Int_t pidIndex = 0;// Electron
     if(pid == AliCaloPID::kChargedHadron) pidIndex = 1;
@@ -1129,7 +1137,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //Fill some shower shape histograms
     //---------------------------------
 
-    FillShowerShapeHistograms(calo,aodph.GetTag(),pid);
+    FillShowerShapeHistograms(calo,aodpart.GetTag(),pid);
     
     if(pid == AliCaloPID::kElectron)
       WeightHistograms(calo);
@@ -1144,14 +1152,16 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       // Get most probable PID, 2 options check bayesian PID weights or redo PID
       // By default, redo PID
     
-      if(GetCaloPID()->GetIdentifiedParticleType(calo)!=AliCaloPID::kPhoton) continue;
-      
-      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());
+      if(GetCaloPID()->GetIdentifiedParticleType(calo)!=AliCaloPID::kPhoton)
+      {
+        continue;
+      }
+      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodpart.GetIdentifiedParticleType());
       
     }
         
     if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",
-                              aodph.Pt(), aodph.GetIdentifiedParticleType());
+                              aodpart.Pt(), aodpart.GetIdentifiedParticleType());
     
     //FIXME, this to MakeAnalysisFillHistograms ...
     Int_t absID             = 0; 
@@ -1162,14 +1172,16 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     else                        cells = GetPHOSCells();
     
     absID = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
-    
-    fhMaxCellDiffClusterE[pidIndex]->Fill(aodph.E(),maxCellFraction);
-    fhNCellsE[pidIndex]            ->Fill(aodph.E(),calo->GetNCells());
-    fhTimeE[pidIndex]              ->Fill(aodph.E(),calo->GetTOF()*1.e9);
+    fhMaxCellDiffClusterE[pidIndex]->Fill(aodpart.E(),maxCellFraction);
+    fhNCellsE[pidIndex]            ->Fill(aodpart.E(),calo->GetNCells());
+    fhTimeE[pidIndex]              ->Fill(aodpart.E(),calo->GetTOF()*1.e9);
 
-    //Add AOD with photon object to aod branch
-    AddAODParticle(aodph);
-    
+    //Add AOD with electron/hadron object to aod branch
+    if ( pid == fAODParticle || fAODParticle == 0 ) 
+    {
+      AddAODParticle(aodpart);
+    }
+
   }//loop
   
   if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD()  End fill AODs, with %d entries \n",GetOutputAODBranch()->GetEntriesFast());  

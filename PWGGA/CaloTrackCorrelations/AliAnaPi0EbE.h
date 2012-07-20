@@ -67,31 +67,35 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   //Analysis types
   enum anaTypes  {kIMCalo, kSSCalo, kIMCaloTracks};  
-  anaTypes       GetAnalysisType()                     const { return fAnaType                ; }
-  void           SetAnalysisType(anaTypes ana)               { fAnaType = ana                 ; }
+  anaTypes       GetAnalysisType()                     const { return fAnaType                 ; }
+  void           SetAnalysisType(anaTypes ana)               { fAnaType = ana                  ; }
   
-  TString        GetInputAODGammaConvName()            const { return fInputAODGammaConvName  ; }
-  void           SetInputAODGammaConvName(TString name)      { fInputAODGammaConvName = name  ; }	
+  TString        GetInputAODGammaConvName()            const { return fInputAODGammaConvName   ; }
+  void           SetInputAODGammaConvName(TString name)      { fInputAODGammaConvName = name   ; }	
   
   //Only for pi0 SS identification case
-  void           SetCalorimeter(TString & det)               { fCalorimeter = det             ; }
+  void           SetCalorimeter(TString & det)               { fCalorimeter = det              ; }
   
   void           SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
                   fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3                               ; }
   
   void           SetTimeCut(Double_t min, Double_t max)      { fTimeCutMin = min; 
-                                                               fTimeCutMax = max              ; }
-  Double_t       GetTimeCutMin()                       const { return fTimeCutMin             ; }
-  Double_t       GetTimeCutMax()                       const { return fTimeCutMax             ; }	
-
-  void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms = kTRUE  ; }
-  void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms = kFALSE ; }  
+                                                               fTimeCutMax = max               ; }
+  Double_t       GetTimeCutMin()                       const { return fTimeCutMin              ; }
+  Double_t       GetTimeCutMax()                       const { return fTimeCutMax              ; }	
   
-  void           SwitchOnTMHistoFill()                       { fFillTMHisto          = kTRUE  ; }
-  void           SwitchOffTMHistoFill()                      { fFillTMHisto          = kFALSE ; }
+  void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms  = kTRUE  ; }
+  void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms  = kFALSE ; }  
+  
+  void           SwitchOnTMHistoFill()                       { fFillTMHisto           = kTRUE  ; }
+  void           SwitchOffTMHistoFill()                      { fFillTMHisto           = kFALSE ; }
 
-  void           SwitchOnSelectedClusterHistoFill()          { fFillSelectClHisto    = kTRUE  ; }
-  void           SwitchOffSelectedClusterHistoFill()         { fFillSelectClHisto    = kFALSE ; }
+  void           SwitchOnSelectedClusterHistoFill()          { fFillSelectClHisto     = kTRUE  ; }
+  void           SwitchOffSelectedClusterHistoFill()         { fFillSelectClHisto     = kFALSE ; }
+  
+  void           SwitchOnOnlySimpleSSHistoFill()             { fFillOnlySimpleSSHisto = kTRUE  ; }
+  void           SwitchOffOnlySimpleHistoFill()              { fFillOnlySimpleSSHisto = kFALSE ; }
+
   
   //For histograms
   enum mcTypes   { kmcPhoton = 0, kmcConversion = 1, kmcPi0    = 2,  
@@ -112,6 +116,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   Bool_t         fFillTMHisto;             // Fill track matching plots
   Bool_t         fFillSelectClHisto;       // Fill selected cluster histograms
+  Bool_t         fFillOnlySimpleSSHisto;   // Fill selected cluster histograms, selected SS histograms
 
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks
   TString        fInputAODGammaConvName;   //  Name of AOD branch with conversion photons
@@ -225,7 +230,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,18)
+  ClassDef(AliAnaPi0EbE,19)
 } ;
 
 
