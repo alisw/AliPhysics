@@ -1,11 +1,9 @@
 {
 
-  cout << "Loading libraries ..." << endl;
-  gROOT->LoadMacro("${ALICE_ROOT}/MUON/loadlibs.C");
-  gInterpreter->ProcessLine("loadlibs()");
-  
   TString includePath = "-I${ROOTSYS}/include ";
-  includePath        += "-I${ALICE_ROOT}/STEER/STEER ";
+  
+  printf("\nLoading ALICE settings...\n\n");
+  includePath        += "-I${ALICE_ROOT}/STEER ";
   includePath        += "-I${ALICE_ROOT}/STEER/STEERBase ";
   includePath        += "-I${ALICE_BUILD}/include ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
@@ -13,14 +11,15 @@
   includePath        += "-I${ALICE_ROOT}/EVGEN ";
   includePath        += "-I${ALICE_ROOT}/SHUTTLE/TestShuttle ";
   includePath        += "-I${ALICE_ROOT}/ITS ";
-  includePath        += "-I${ALICE_ROOT}/MUON ";
   includePath        += "-I${ALICE_ROOT}/MFT ";
+  includePath        += "-I${ALICE_ROOT}/MUON ";
   includePath        += "-I${ALICE_ROOT}/MUON/mapping ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
   includePath        += "-I${ALICE_ROOT}/CORRFW ";
   includePath        += "-I${ROOTSYS}/net/alien/inc ";
+
   gSystem->SetIncludePath(includePath.Data());
-  
+
   gSystem->Load("libCore.so"); 
   gSystem->Load("libTree.so");
   gSystem->Load("libGeom.so");
