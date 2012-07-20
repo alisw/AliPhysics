@@ -248,8 +248,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(cons
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEtaDecay))      fhELambda0MCEtaDecay  [isolated]->Fill(energy, cluster->GetM02());
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCOtherDecay))    fhELambda0MCOtherDecay[isolated]->Fill(energy, cluster->GetM02());
        
-        //        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))    fhPtNoIsoConversion   ->Fill(energy);
-        else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))     fhELambda0MCHadron    [isolated]->Fill(energy);        
+        //        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))    fhPtNoIsoConversion   ->Fill(energy, cluster->GetM02());
+        else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))     fhELambda0MCHadron    [isolated]->Fill(energy, cluster->GetM02());        
       
       }
       
