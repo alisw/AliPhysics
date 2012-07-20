@@ -42,8 +42,9 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   virtual void   FinishTaskOutput();
 
   void SetCentralityClasses(Int_t nCentralityBins = -1, Double_t* centralityBins = 0x0);
+  Bool_t SetCentralityClassesFromOutput();
 
-  void SetTrigClassPatterns(TString pattern = "CINT CMU !CMUP CMBAC CPBI !-ACE- !-AC- !-E- !WU !EGA !EJE");
+  void SetTrigClassPatterns(TString pattern = "CINT CMU !CMUP CMBAC CPBI !-ACE- !-AC- !-E- !WU !EGA !EJE !PHS");
   void SetTrigClassLevels(TString pattern = "MSL:Lpt MSH:Hpt MUL:Lpt MLL:Lpt");
   void SetTerminateOptions(TString physSel="All", TString trigClass="ANY", TString centralityRange="", TString furtherOpts="");
   
