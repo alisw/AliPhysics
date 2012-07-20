@@ -8,7 +8,7 @@ echo $CURDIR
 OUTDIR=${CURDIR}/test
 echo $OUTDIR
 mkdir $OUTDIR
-RUN=130850  # run number for OCDB access
+RUN=169099  # run number for OCDB access
 SEED=12345  # random number generator seed should be used
 SIMDIR="generated" # sub-directory where to move simulated files prior to reco
 # Copy *ALL* the macros we need in the output directory, not to mess

@@ -36,7 +36,8 @@ public:
   AliMuonForwardTrack(const AliMuonForwardTrack&);
   AliMuonForwardTrack &operator=(const AliMuonForwardTrack&);
   
-  virtual ~AliMuonForwardTrack();
+  virtual ~AliMuonForwardTrack(); 
+  virtual void Clear(const Option_t* /*opt*/);
 
   void SetMUONTrack(AliMUONTrack *MUONTrack);
   void SetMCTrackRef(TParticle *MCTrackRef);

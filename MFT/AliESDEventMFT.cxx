@@ -60,12 +60,14 @@ AliESDEventMFT::AliESDEventMFT(AliESDEvent &esdEvent):
 
 AliESDEventMFT::AliESDEventMFT(const AliESDEventMFT &esdEventMFT): 
   AliESDEvent(esdEventMFT),
-  fMuonForwardTracks(esdEventMFT.fMuonForwardTracks)
+  fMuonForwardTracks(NULL)
 {
 
   // copy constructor
+  fMuonForwardTracks      = new TClonesArray(*(esdEventMFT.fMuonForwardTracks));
+  fMuonForwardTracks->SetOwner(kTRUE);
   AddObject(fMuonForwardTracks);
-  
+
 }
 
 //====================================================================================================================================================
@@ -81,9 +83,11 @@ AliESDEventMFT& AliESDEventMFT::operator=(const AliESDEventMFT &esdEventMFT) {
   AliESDEvent::operator=(esdEventMFT);
   
   // clear memory
-  Clear();
+  Clear("");
   
-  fMuonForwardTracks = esdEventMFT.fMuonForwardTracks;
+  fMuonForwardTracks      = new TClonesArray(*(esdEventMFT.fMuonForwardTracks));
+  fMuonForwardTracks->SetOwner(kTRUE);
+  AddObject(fMuonForwardTracks);
 
   return *this;
 
@@ -95,10 +99,7 @@ AliESDEventMFT::~AliESDEventMFT() {
 
   // destructor
 
-  if (fMuonForwardTracks) {
-    //    fMuonForwardTracks->Delete();
-    delete fMuonForwardTracks;
-  }
+  delete fMuonForwardTracks;
 
 }
 

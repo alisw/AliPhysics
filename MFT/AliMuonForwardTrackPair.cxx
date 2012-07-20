@@ -50,7 +50,8 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair():
   // default constructor
 
   fMuonForwardTracks = new TClonesArray("AliMuonForwardTrack", 2);
-
+  fMuonForwardTracks -> SetOwner(kTRUE);
+  
 }
 
 //====================================================================================================================================================
@@ -67,7 +68,7 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair(AliMuonForwardTrack *track0, Al
 {
 
   fMuonForwardTracks = new TClonesArray("AliMuonForwardTrack", 2);
-
+  fMuonForwardTracks->SetOwner(kTRUE);
   new ((*fMuonForwardTracks)[0]) AliMuonForwardTrack(*track0);
   new ((*fMuonForwardTracks)[1]) AliMuonForwardTrack(*track1);
 
@@ -80,7 +81,7 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair(AliMuonForwardTrack *track0, Al
 
 AliMuonForwardTrackPair::AliMuonForwardTrackPair(const AliMuonForwardTrackPair& trackPair): 
   TObject(trackPair),
-  fMuonForwardTracks(trackPair.fMuonForwardTracks),
+  fMuonForwardTracks(NULL),
   fKinemMC(trackPair.fKinemMC),
   fKinem(trackPair.fKinem),
   fIsKinemSet(trackPair.fIsKinemSet),
@@ -90,7 +91,9 @@ AliMuonForwardTrackPair::AliMuonForwardTrackPair(const AliMuonForwardTrackPair& 
 {
 
   // copy constructor
-  
+  fMuonForwardTracks = new TClonesArray(*(trackPair.fMuonForwardTracks));
+  fMuonForwardTracks -> SetOwner(kTRUE);
+
 }
 
 //====================================================================================================================================================
@@ -106,9 +109,11 @@ AliMuonForwardTrackPair& AliMuonForwardTrackPair::operator=(const AliMuonForward
   AliMuonForwardTrackPair::operator=(trackPair);
   
   // clear memory
-  Clear();
+  Clear("");
   
-  fMuonForwardTracks = trackPair.fMuonForwardTracks;
+  fMuonForwardTracks      = new TClonesArray(*(trackPair.fMuonForwardTracks));
+  fMuonForwardTracks->SetOwner(kTRUE);
+  
   fKinemMC = trackPair.fKinemMC;
   fKinem = trackPair.fKinem;
   fIsKinemSet = trackPair.fIsKinemSet;

@@ -31,6 +31,7 @@ public:
   AliESDEventMFT &operator=(const AliESDEventMFT&);
 
   virtual ~AliESDEventMFT();
+  virtual void  Clear(const Option_t* /*opt*/) { delete fMuonForwardTracks; fMuonForwardTracks = 0x0; }
 
   AliMuonForwardTrack *GetMuonForwardTrack(Int_t i) const { 
     return (AliMuonForwardTrack*)(fMuonForwardTracks?fMuonForwardTracks->UncheckedAt(i):0x0); 

@@ -10,31 +10,37 @@ void runReconstruction(Int_t seed, const Char_t *recOptions) {
   // GRP from local OCDB
   reco->SetSpecificStorage("GRP/GRP/Data",Form("local://%s",gSystem->pwd()));
   
-  // MUON Tracker -> local:///$OCDB should reflect the content of alien://folder=/alice
-  reco->SetDefaultStorage("alien://folder=/alice/simulation/2008/v4-15-Release/Ideal");
-  reco->SetSpecificStorage("MUON/Align/Data",     "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
-  reco->SetSpecificStorage("MFT/Align/Data",      "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
-  reco->SetSpecificStorage("MFT/Calib/RecoParam", "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  reco->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB");
 
-  AliMUONRecoParam *param = AliMUONRecoParam::GetLowFluxParam();
-  param->SetPadGoodnessMask(0x8080);      
-  for (Int_t iCh=0; iCh<10; iCh++) {
-    param->SetDefaultNonBendingReso(iCh,0.2);
-    param->SetDefaultBendingReso(iCh,0.2);
-  }
-  param->SetSigmaCutForTracking(5.);
-  param->ImproveTracks(kTRUE, 4.);
-  param->SetStripCutForTrigger(1.5);
-  param->SetSigmaCutForTrigger(4.);
-  param->Print("FULL");
-  reco->SetRecoParam("MUON", param);
+  reco->SetSpecificStorage("MUON/Align/Data",                      "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/Capacitances",              "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/Config",                    "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/Gain",                      "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/GlobalTriggerBoardMasks",   "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/GlobalTriggerCrateConfig",  "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/HV",                        "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/LocalTriggerBoardMasks",    "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/MappingData",               "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/MappingRunData",            "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/Neighbours",                "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/OccupancyMap",              "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/Pedestals",                 "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/RegionalTriggerBoardMasks", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/RegionalTriggerConfig",     "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/RejectList",                "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/TriggerDCS",                "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/TriggerEfficiency",         "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco->SetSpecificStorage("MUON/Calib/TriggerLut",                "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+
+  reco->SetSpecificStorage("MUON/Calib/RecoParam", "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  reco->SetSpecificStorage("MFT/Align/Data",       "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
+  reco->SetSpecificStorage("MFT/Calib/RecoParam",  "alien://folder=/alice/cern.ch/user/a/auras/OCDB/");
 
   reco->SetRunReconstruction("MUON MFT");
   reco->SetRunLocalReconstruction("MUON MFT");
   reco->SetOption("MUON MFT",recOptions);
   reco->SetRunQA("MUON:ALL");
   reco->SetQAWriteExpert(AliQAv1::kMUON);
-  reco->SetQARefDefaultStorage("local://$ALICE_ROOT/QAref");
 
   reco->SetWriteESDfriend(kFALSE);
   reco->SetStopOnError(kFALSE);

@@ -28,9 +28,10 @@ public:
   AliMFTCluster();
   AliMFTCluster(const AliMFTCluster&);
   AliMFTCluster& operator=(const AliMFTCluster&);
+  virtual ~AliMFTCluster() { fDigitsInCluster->Delete(); delete fDigitsInCluster; }
 
-  virtual ~AliMFTCluster() { ; }  // destructor
-
+  virtual void Clear(const Option_t* /*opt*/) { delete fDigitsInCluster; fDigitsInCluster = 0x0; }
+  
   void SetXYZ(Double_t x, Double_t y, Double_t z) { fX=x; fY=y; fZ=z; }
 
   void SetX(Double_t x) { if(fIsClusterEditable) fX = x; }

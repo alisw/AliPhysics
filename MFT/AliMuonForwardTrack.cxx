@@ -54,6 +54,7 @@ AliMuonForwardTrack::AliMuonForwardTrack():
     fParentPDGCode[iParent] =  0;
   }
   fMFTClusters = new TClonesArray("AliMFTCluster");
+  fMFTClusters -> SetOwner(kTRUE);
 
 }
 
@@ -75,7 +76,7 @@ AliMuonForwardTrack::AliMuonForwardTrack(AliMUONTrack *MUONTrack):
     fParentPDGCode[iParent] =  0;
   }
   fMFTClusters = new TClonesArray("AliMFTCluster");
-  fMFTClusters->SetOwner(kTRUE);
+  fMFTClusters -> SetOwner(kTRUE);
 
 }
 
@@ -94,6 +95,7 @@ AliMuonForwardTrack::AliMuonForwardTrack(const AliMuonForwardTrack& track):
   fMUONTrack        = new AliMUONTrack(*(track.fMUONTrack));
   if (track.fMCTrackRef) fMCTrackRef = new TParticle(*(track.fMCTrackRef));
   fMFTClusters      = new TClonesArray(*(track.fMFTClusters));
+  fMFTClusters->SetOwner(kTRUE);
   for (Int_t iPlane=0; iPlane<AliMFTConstants::fNMaxPlanes; iPlane++) fPlaneExists[iPlane] = (track.fPlaneExists)[iPlane];
   for (Int_t iParent=0; iParent<fgkNParentsMax; iParent++) {
     fParentMCLabel[iParent] = (track.fParentMCLabel)[iParent];
@@ -115,11 +117,12 @@ AliMuonForwardTrack& AliMuonForwardTrack::operator=(const AliMuonForwardTrack& t
   AliMUONTrack::operator=(track);
   
   // clear memory
-  Clear();
+  Clear("");
   
   fMUONTrack        = new AliMUONTrack(*(track.fMUONTrack));
   if (track.fMCTrackRef) fMCTrackRef = new TParticle(*(track.fMCTrackRef));
   fMFTClusters      = new TClonesArray(*(track.fMFTClusters));
+  fMFTClusters->SetOwner(kTRUE);
   fNWrongClustersMC = track.fNWrongClustersMC;
   fTrackMCId        = track.fTrackMCId;
 
@@ -131,6 +134,17 @@ AliMuonForwardTrack& AliMuonForwardTrack::operator=(const AliMuonForwardTrack& t
   
   return *this;
 
+}
+
+//====================================================================================================================================================
+
+void AliMuonForwardTrack::Clear(const Option_t* /*opt*/) {
+
+  // Clear arrays
+  delete fMUONTrack;   fMUONTrack   = 0x0;
+  delete fMCTrackRef;  fMCTrackRef  = 0x0;
+  delete fMFTClusters; fMFTClusters = 0x0;
+  
 }
 
 //====================================================================================================================================================

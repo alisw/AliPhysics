@@ -56,7 +56,7 @@ AliMFTCluster::AliMFTCluster():
   for (Int_t iTrack=0; iTrack<fNMaxMCTracks; iTrack++) fMCLabel[iTrack] = -1;
 
   fDigitsInCluster = new TClonesArray("AliMFTDigit", fNMaxDigitsPerCluster);
-
+  fDigitsInCluster -> SetOwner(kTRUE);
 }
 
 //====================================================================================================================================================
@@ -76,13 +76,15 @@ AliMFTCluster::AliMFTCluster(const AliMFTCluster& cluster):
   fSize(cluster.fSize),
   fTrackChi2(cluster.fTrackChi2),
   fLocalChi2(cluster.fLocalChi2),
-  fDigitsInCluster(cluster.fDigitsInCluster),
+  fDigitsInCluster(NULL),
   fIsClusterEditable(cluster.fIsClusterEditable)
 {
 
   // copy constructor
   for (Int_t iTrack=0; iTrack<fNMaxMCTracks; iTrack++) fMCLabel[iTrack] = (cluster.fMCLabel)[iTrack];
-  
+  fDigitsInCluster = new TClonesArray(*(cluster.fDigitsInCluster));
+  fDigitsInCluster -> SetOwner(kTRUE);
+ 
 }
 
 //====================================================================================================================================================
@@ -98,7 +100,7 @@ AliMFTCluster& AliMFTCluster::operator=(const AliMFTCluster& cluster) {
   TObject::operator=(cluster);
   
   // clear memory
-  Clear();
+  Clear("");
   
   fX                 = cluster.fX; 
   fY                 = cluster.fY; 
@@ -113,11 +115,12 @@ AliMFTCluster& AliMFTCluster::operator=(const AliMFTCluster& cluster) {
   fSize              = cluster.fSize;
   fTrackChi2         = cluster.fTrackChi2;
   fLocalChi2         = cluster.fLocalChi2;
-  fDigitsInCluster   = cluster.fDigitsInCluster;
   fIsClusterEditable = cluster.fIsClusterEditable;
 
   for (Int_t iTrack=0; iTrack<fNMaxMCTracks; iTrack++) fMCLabel[iTrack] = (cluster.fMCLabel)[iTrack];
-  
+  fDigitsInCluster      = new TClonesArray(*(cluster.fDigitsInCluster));
+  fDigitsInCluster->SetOwner(kTRUE);
+
   return *this;
 
 }
