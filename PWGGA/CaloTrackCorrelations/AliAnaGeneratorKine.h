@@ -37,12 +37,12 @@ public:
   
   void    GetPartonsAndJets() ;
     
-  void GetXE(const TLorentzVector trigger,  
-             const Int_t   indexTrig,                     
-             const Int_t   pdgTrig, 
-             const Bool_t  leading[4], 
-             const Bool_t  isolated[4], 
-             const Int_t   iparton) ;    
+  void    GetXE(const TLorentzVector trigger,  
+                const Int_t   indexTrig,                     
+                const Int_t   pdgTrig, 
+                const Bool_t  leading[4], 
+                const Bool_t  isolated[4], 
+                const Int_t   iparton) ;    
   
   void    InitParameters() ;
   
@@ -88,6 +88,16 @@ private:
   TH1F      * fhPtPhotonLeadingIsolated[4]; //! Leading photon, isolated
   TH1F      * fhPtPi0LeadingIsolated[4];    //! Leading pi0, isolated
 
+  TH2F      * fhPtPartonTypeNearPhotonLeading[4];           //! Leading photon, particle pt versus originating parton type
+  TH2F      * fhPtPartonTypeNearPi0Leading[4];              //! Leading pi0, particle pt versus originating parton type
+  TH2F      * fhPtPartonTypeNearPhotonLeadingIsolated[4];   //! Leading photon, particle pt versus originating parton type
+  TH2F      * fhPtPartonTypeNearPi0LeadingIsolated[4];      //! Leading pi0, particle pt versus originating parton type
+  
+  TH2F      * fhPtPartonTypeAwayPhotonLeading[4];           //! Leading photon, particle pt versus away side parton type
+  TH2F      * fhPtPartonTypeAwayPi0Leading[4];              //! Leading pi0, particle pt versus away side parton type
+  TH2F      * fhPtPartonTypeAwayPhotonLeadingIsolated[4];   //! Leading photon, isolated, particle pt versus away side parton type 
+  TH2F      * fhPtPartonTypeAwayPi0LeadingIsolated[4];      //! Leading pi0, isolated, particle pt versus away side parton type
+  
   TH2F      * fhZHardPhotonLeading[4];           //! Leading photon, zHard
   TH2F      * fhZHardPi0Leading[4];              //! Leading pi0, zHard
   TH2F      * fhZHardPhotonLeadingIsolated[4];   //! Leading photon, isolated, zHard

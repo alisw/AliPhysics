@@ -65,6 +65,13 @@ fhPtPhoton(0),       fhPtPi0(0)
     fhXEPhotonLeadingIsolated[i]      = fhXEPi0LeadingIsolated[i]      = 0; 
     fhXEUEPhotonLeading[i]            = fhXEUEPi0Leading[i]            = 0;            
     fhXEUEPhotonLeadingIsolated[i]    = fhXEUEPi0LeadingIsolated[i]    = 0; 
+
+    fhPtPartonTypeNearPhotonLeading[i]         = fhPtPartonTypeNearPi0Leading[i]         = 0;            
+    fhPtPartonTypeNearPhotonLeadingIsolated[i] = fhPtPartonTypeNearPi0LeadingIsolated[i] = 0; 
+
+    fhPtPartonTypeAwayPhotonLeading[i]         = fhPtPartonTypeAwayPi0Leading[i]         = 0;            
+    fhPtPartonTypeAwayPhotonLeadingIsolated[i] = fhPtPartonTypeAwayPi0LeadingIsolated[i] = 0; 
+
   }
   
 }
@@ -105,6 +112,66 @@ void  AliAnaGeneratorKine::CorrelateWithPartonOrJet(const TLorentzVector trigger
     jetPt    = fJet6.Pt();
   }
   
+  //Get id of parton in near and away side
+  
+  Int_t away = -1;
+  Int_t near = -1;
+  Int_t nearPDG = -1;
+  Int_t awayPDG = -1;
+  
+  //printf("parton 6 pdg = %d, parton 7 pdg = %d\n",fParton6->GetPdgCode(),fParton7->GetPdgCode());
+  
+  if(iparton==6)
+  {
+    nearPDG = fParton6->GetPdgCode();
+    awayPDG = fParton7->GetPdgCode();
+  }
+  else 
+  {
+    nearPDG = fParton7->GetPdgCode();
+    awayPDG = fParton6->GetPdgCode();
+  }
+
+  if     (nearPDG == 22) near = 0;
+  else if(nearPDG == 21) near = 1;
+  else                   near = 2;
+  
+  if     (awayPDG == 22) away = 0;
+  else if(awayPDG == 21) away = 1;
+  else                   away = 2;
+  
+  for( Int_t i = 0; i < 4; i++ )
+  {
+    if(pdgTrig==111)
+    {
+      if(leading[i])
+      { 
+        fhPtPartonTypeNearPi0Leading[i]->Fill(ptTrig,near);
+        fhPtPartonTypeAwayPi0Leading[i]->Fill(ptTrig,away);
+        if(isolated[i])
+        {
+          fhPtPartonTypeNearPi0LeadingIsolated[i]->Fill(ptTrig,near);
+          fhPtPartonTypeAwayPi0LeadingIsolated[i]->Fill(ptTrig,away);
+        }
+      }
+    }// pi0
+    else if(pdgTrig==22)
+    {
+      if(leading[i])
+      { 
+        fhPtPartonTypeNearPhotonLeading[i]->Fill(ptTrig,near);
+        fhPtPartonTypeAwayPhotonLeading[i]->Fill(ptTrig,away);
+        if(isolated[i])
+        {
+          fhPtPartonTypeNearPhotonLeadingIsolated[i]->Fill(ptTrig,near);
+          fhPtPartonTypeAwayPhotonLeadingIsolated[i]->Fill(ptTrig,away);
+        }
+      }
+    } // photon
+  } // conditions loop  
+  
+  
+  // RATIOS
   
   fhPtPartonPtHard->Fill(fPtHard, partonPt/fPtHard);
   fhPtJetPtHard   ->Fill(fPtHard, jetPt/fPtHard);
@@ -236,7 +303,90 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
     fhPtPi0LeadingIsolated[i]->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtPi0LeadingIsolated[i]);  
     
+    // Near side parton
+        
+    fhPtPartonTypeNearPhotonLeading[i]  = new TH2F(Form("hPtPartonTypeNearPhotonLeading%s",name[i].Data()),
+                                     Form("Photon : Leading of all particles%s",title[i].Data()),
+                                     nptbins,ptmin,ptmax,3,0,3); 
+    fhPtPartonTypeNearPhotonLeading[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPartonTypeNearPhotonLeading[i]->SetYTitle("Parton type");
+    fhPtPartonTypeNearPhotonLeading[i]->GetYaxis()->SetBinLabel(1,"#gamma");
+    fhPtPartonTypeNearPhotonLeading[i]->GetYaxis()->SetBinLabel(2,"g");
+    fhPtPartonTypeNearPhotonLeading[i]->GetYaxis()->SetBinLabel(3,"q");
+    outputContainer->Add(fhPtPartonTypeNearPhotonLeading[i]);
     
+    fhPtPartonTypeNearPi0Leading[i]  = new TH2F(Form("hPtPartonTypeNearPi0Leading%s",name[i].Data()),
+                                  Form("Pi0 : Leading of all particles%s",title[i].Data()),
+                                  nptbins,ptmin,ptmax,3,0,3); 
+    fhPtPartonTypeNearPi0Leading[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPartonTypeNearPi0Leading[i]->SetYTitle("Parton type");
+    fhPtPartonTypeNearPi0Leading[i]->GetYaxis()->SetBinLabel(1,"#gamma");
+    fhPtPartonTypeNearPi0Leading[i]->GetYaxis()->SetBinLabel(2,"g");
+    fhPtPartonTypeNearPi0Leading[i]->GetYaxis()->SetBinLabel(3,"q");    
+    outputContainer->Add(fhPtPartonTypeNearPi0Leading[i]);  
+    
+    fhPtPartonTypeNearPhotonLeadingIsolated[i]  = new TH2F(Form("hPtPartonTypeNearPhotonLeadingIsolated%s",name[i].Data()),
+                                             Form("Photon : Leading of all particles%s, isolated",title[i].Data()),
+                                             nptbins,ptmin,ptmax,3,0,3); 
+    fhPtPartonTypeNearPhotonLeadingIsolated[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPartonTypeNearPhotonLeadingIsolated[i]->SetYTitle("Parton type");
+    fhPtPartonTypeNearPhotonLeadingIsolated[i]->GetYaxis()->SetBinLabel(1,"#gamma");
+    fhPtPartonTypeNearPhotonLeadingIsolated[i]->GetYaxis()->SetBinLabel(2,"g");
+    fhPtPartonTypeNearPhotonLeadingIsolated[i]->GetYaxis()->SetBinLabel(3,"q");    
+    outputContainer->Add(fhPtPartonTypeNearPhotonLeadingIsolated[i]);
+    
+    fhPtPartonTypeNearPi0LeadingIsolated[i]  = new TH2F(Form("hPtPartonTypeNearPi0LeadingIsolated%s",name[i].Data()),
+                                          Form("Pi0 : Leading of all particles%s, isolated",title[i].Data()),
+                                          nptbins,ptmin,ptmax,3,0,3); 
+    fhPtPartonTypeNearPi0LeadingIsolated[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPartonTypeNearPi0LeadingIsolated[i]->SetYTitle("Parton type");
+    fhPtPartonTypeNearPi0LeadingIsolated[i]->GetYaxis()->SetBinLabel(1,"#gamma");
+    fhPtPartonTypeNearPi0LeadingIsolated[i]->GetYaxis()->SetBinLabel(2,"g");
+    fhPtPartonTypeNearPi0LeadingIsolated[i]->GetYaxis()->SetBinLabel(3,"q");    
+    outputContainer->Add(fhPtPartonTypeNearPi0LeadingIsolated[i]);  
+    
+    
+    // Away side parton
+    
+    fhPtPartonTypeAwayPhotonLeading[i]  = new TH2F(Form("hPtPartonTypeAwayPhotonLeading%s",name[i].Data()),
+                                                   Form("Photon : Leading of all particles%s",title[i].Data()),
+                                                   nptbins,ptmin,ptmax,3,0,3); 
+    fhPtPartonTypeAwayPhotonLeading[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPartonTypeAwayPhotonLeading[i]->SetYTitle("Parton type");
+    fhPtPartonTypeAwayPhotonLeading[i]->GetYaxis()->SetBinLabel(1,"#gamma");
+    fhPtPartonTypeAwayPhotonLeading[i]->GetYaxis()->SetBinLabel(2,"g");
+    fhPtPartonTypeAwayPhotonLeading[i]->GetYaxis()->SetBinLabel(3,"q");
+    outputContainer->Add(fhPtPartonTypeAwayPhotonLeading[i]);
+    
+    fhPtPartonTypeAwayPi0Leading[i]  = new TH2F(Form("hPtPartonTypeAwayPi0Leading%s",name[i].Data()),
+                                                Form("Pi0 : Leading of all particles%s",title[i].Data()),
+                                                nptbins,ptmin,ptmax,3,0,3); 
+    fhPtPartonTypeAwayPi0Leading[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPartonTypeAwayPi0Leading[i]->SetYTitle("Parton type");
+    fhPtPartonTypeAwayPi0Leading[i]->GetYaxis()->SetBinLabel(1,"#gamma");
+    fhPtPartonTypeAwayPi0Leading[i]->GetYaxis()->SetBinLabel(2,"g");
+    fhPtPartonTypeAwayPi0Leading[i]->GetYaxis()->SetBinLabel(3,"q");    
+    outputContainer->Add(fhPtPartonTypeAwayPi0Leading[i]);  
+    
+    fhPtPartonTypeAwayPhotonLeadingIsolated[i]  = new TH2F(Form("hPtPartonTypeAwayPhotonLeadingIsolated%s",name[i].Data()),
+                                                           Form("Photon : Leading of all particles%s, isolated",title[i].Data()),
+                                                           nptbins,ptmin,ptmax,3,0,3); 
+    fhPtPartonTypeAwayPhotonLeadingIsolated[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPartonTypeAwayPhotonLeadingIsolated[i]->SetYTitle("Parton type");
+    fhPtPartonTypeAwayPhotonLeadingIsolated[i]->GetYaxis()->SetBinLabel(1,"#gamma");
+    fhPtPartonTypeAwayPhotonLeadingIsolated[i]->GetYaxis()->SetBinLabel(2,"g");
+    fhPtPartonTypeAwayPhotonLeadingIsolated[i]->GetYaxis()->SetBinLabel(3,"q");    
+    outputContainer->Add(fhPtPartonTypeAwayPhotonLeadingIsolated[i]);
+    
+    fhPtPartonTypeAwayPi0LeadingIsolated[i]  = new TH2F(Form("hPtPartonTypeAwayPi0LeadingIsolated%s",name[i].Data()),
+                                                        Form("Pi0 : Leading of all particles%s, isolated",title[i].Data()),
+                                                        nptbins,ptmin,ptmax,3,0,3); 
+    fhPtPartonTypeAwayPi0LeadingIsolated[i]->SetXTitle("p_{T} (GeV/c)");
+    fhPtPartonTypeAwayPi0LeadingIsolated[i]->SetYTitle("Parton type");
+    fhPtPartonTypeAwayPi0LeadingIsolated[i]->GetYaxis()->SetBinLabel(1,"#gamma");
+    fhPtPartonTypeAwayPi0LeadingIsolated[i]->GetYaxis()->SetBinLabel(2,"g");
+    fhPtPartonTypeAwayPi0LeadingIsolated[i]->GetYaxis()->SetBinLabel(3,"q");    
+    outputContainer->Add(fhPtPartonTypeAwayPi0LeadingIsolated[i]);   
     
     // zHard
     
@@ -501,10 +651,10 @@ void AliAnaGeneratorKine::GetXE(const TLorentzVector trigger,
   //Loop on primaries, start from position 8, no partons
   for(Int_t ipr = 8; ipr < fStack->GetNprimary(); ipr ++ )
   {
-    
     TParticle * particle = fStack->Particle(ipr) ;
     
     if(ipr==indexTrig) continue;
+    
     
     Int_t   pdg    = particle->GetPdgCode();
     Int_t   status = particle->GetStatusCode();
@@ -524,7 +674,7 @@ void AliAnaGeneratorKine::GetXE(const TLorentzVector trigger,
     if( pt < ptThresTrack)    continue ;
     
     if(TMath::Abs(eta) > 0.8) continue ; // TPC acceptance cut
-    
+
     //Isolation
     Double_t radius = GetIsolationCut()->Radius(etaTrig, phiTrig, eta , phi) ;
     
@@ -532,10 +682,12 @@ void AliAnaGeneratorKine::GetXE(const TLorentzVector trigger,
     
     //Get the index of the mother
     Int_t ipartonAway =  particle->GetFirstMother();
+    if(ipartonAway < 0) return;
     TParticle * mother = fStack->Particle(ipartonAway);
     while (ipartonAway > 7) 
     {
       ipartonAway   = mother->GetFirstMother();
+      if(ipartonAway < 0) break;
       mother = fStack->Particle(ipartonAway);
     }
     
@@ -849,7 +1001,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     
     Int_t iparton = -1;
     CorrelateWithPartonOrJet(trigger, ipr, pdgTrig, leading, isolated, iparton); 
-    
+        
     GetXE(trigger,ipr,pdgTrig,leading,isolated,iparton) ;    
     
   }
