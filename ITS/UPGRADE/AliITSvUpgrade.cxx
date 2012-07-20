@@ -744,8 +744,6 @@ void AliITSvUpgrade::StepManager(){
     //   none.
     // Return:
     //   none.
-  static TLorentzVector positionRS;
-  gMC->TrackPosition(positionRS);
     if(!(this->IsActive())) return;
     if(!(gMC->TrackCharge())) return;
 

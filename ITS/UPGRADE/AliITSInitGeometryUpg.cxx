@@ -871,7 +871,7 @@ void AliITSInitGeometryUpg::DecodeDetectorvUpgrade(Int_t &mod,Int_t layer,
     //    none.
     // MS 23jun11
   Int_t lad=-1,det=-1;
-
+  layer--; // starts from 1!
   lad = cpn0;
   det = cpn1;
   mod = 0;
