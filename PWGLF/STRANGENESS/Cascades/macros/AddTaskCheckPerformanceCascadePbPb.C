@@ -13,22 +13,22 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddCheckPerformanceCascade", "No analysis manager to connect to.");
+      ::Error("AddTaskCheckPerformanceCascadePbPb", "No analysis manager to connect to.");
       return NULL;
    }   
 
    // Check the analysis type using the event handlers connected to the analysis manager.
    //==============================================================================
    if (!mgr->GetInputEventHandler()) {
-      ::Error("AddTaskCheckPerformanceCascade", "This task requires an input event handler");
+      ::Error("AddTaskCheckPerformanceCascadePbPb", "This task requires an input event handler");
       return NULL;
    }   
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-   AliAnalysisTaskCheckPerformanceCascadePbPb *taskCheckPerfCascadePbPb = new AliAnalysisTaskCheckPerformanceCascadePbPb("TaskCheckPerfCascadePbPb");
+   AliAnalysisTaskCheckPerformanceCascadePbPb *taskCheckPerfCascadePbPb = new AliAnalysisTaskCheckPerformanceCascadePbPb("TaskCheckPerformanceCascadePbPb");
 
-   taskCheckPerfCascadePbPb-> SetAnalysisType                (type);
+   taskCheckPerfCascadePbPb-> SetAnalysisType               (type);
    taskCheckPerfCascadePbPb-> SetRelaunchV0CascVertexers    (krelaunchvertexers);     
    taskCheckPerfCascadePbPb-> SetQualityCutZprimVtxPos      (kTRUE);
    taskCheckPerfCascadePbPb-> SetRejectEventPileUp          (kFALSE);
@@ -57,34 +57,34 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    outputFileName += ":PWGLFStrangeness.outputCheckPerformanceCascadePbPb";
    
-   Printf("AddTaskCheckPerfCascadePbPb - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   Printf("AddTaskCheckPerformanceCascadePbPb - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clistCascPerf",
 							     TList::Class(),
 							     AliAnalysisManager::kOutputContainer,
 							     outputFileName );
 
-   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontPIDXiM",
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cfcontPIDAsXiM",
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
 
-   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontPIDXiP",
+   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cfcontPIDAsXiP",
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
 
-   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cfcontPIDOmegaM",
+   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("cfcontPIDAsOmegaM",
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
 
-   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("cfcontPIDOmegaP",
+   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("cfcontPIDAsOmegaP",
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
 
-   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("cfcontCuts",
+   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("cfcontAsCuts",
                                                              AliCFContainer::Class(),
                                                              AliAnalysisManager::kOutputContainer,
                                                              outputFileName );
