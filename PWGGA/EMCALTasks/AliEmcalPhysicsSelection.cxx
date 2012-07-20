@@ -127,7 +127,7 @@ UInt_t AliEmcalPhysicsSelection::GetSelectionMask(const TObject* obj)
     // also check on vertex z if requested
     if (fZvertexDiff && (dvertex>0.1))
       fIsGoodEvent = kFALSE;
-    if ((fZvertex>0) && (TMath::Abs(dvertex)>fZvertex))
+    if ((fZvertex>0) && (TMath::Abs(vzPRI)>fZvertex))
       fIsGoodEvent = kFALSE;
   }
 
