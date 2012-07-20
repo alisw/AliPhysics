@@ -1023,7 +1023,7 @@ void AliITSInitGeometryUpg::DecodeDetectorLayersvUpgrade(Int_t  mod,Int_t &lay,
   if(det>GetNumberOfModules(lay-1)||det<1) Error("DecodeDetectorLayers",
 
 				      "det=%d not in the correct range",det);
-  lay--;
+  //  lay--;
   lad++;
 }
 
@@ -1233,7 +1233,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfLadders(const Int_t lay) const {
     }
 
     char laynam[15];
-    snprintf(laynam, 15, "ITSupgLayer%d", lay);
+    snprintf(laynam, 15, "ITSupgLayer%d", lay+1);
     if (!gGeoManager->GetVolume(laynam)) {
       AliError(Form("can't find %s volume",laynam));
       return 0;
@@ -1280,7 +1280,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfModules(const Int_t lay) const {
     }
 
     char laddnam[15];
-    snprintf(laddnam, 15, "ITSupgLadder%d", lay);
+    snprintf(laddnam, 15, "ITSupgLadder%d", lay+1);
     if (!gGeoManager->GetVolume(laddnam)) {
       AliError(Form("can't find %s volume",laddnam));
       return 0;

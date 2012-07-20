@@ -198,7 +198,7 @@ AliITSvUpgrade::AliITSvUpgrade(const char *name, const char *title,
   fIdName = new TString[fIdN];
 
   for (Int_t j=0; j<fIdN; j++)
-    fIdName[j].Form("ITSupgSensor%d",j); // See AliITSv11GeometryUpgrade
+    fIdName[j].Form("ITSupgSensor%d",j+1); // See AliITSv11GeometryUpgrade
 
   (void) name; // removes warning message
 
@@ -331,22 +331,22 @@ void AliITSvUpgrade::AddAlignableVolumes() const{
   TString pth,snm;
   for (int lr=0; lr<fNumberOfLayers; lr++) {
     //
-    pth = Form("ALIC_1/ITSV_2/ITSupgLayer%d_1",lr);
-    snm = Form("ITS/LrUpg%d",lr);
+    pth = Form("ALIC_1/ITSV_2/ITSupgLayer%d_1",lr+1);
+    snm = Form("ITS/LrUpg%d",lr+1);
     //printf("SetAlignable: %s %s\n",snm.Data(),pth.Data());
     gGeoManager->SetAlignableEntry(snm.Data(),pth.Data());
     int modNum = 0;
     //
     for (int ld=0; ld<fLaddPerLay[lr]; ld++) {
       //
-      TString pthL = Form("%s/ITSupgLadder%d_%d",pth.Data(),lr,ld+1);
+      TString pthL = Form("%s/ITSupgLadder%d_%d",pth.Data(),lr+1,ld+1);
       TString snmL = Form("%s/LaddUpg%d",snm.Data(),ld+1);
       //printf("SetAlignable: %s %s\n",snmL.Data(),pthL.Data());
       gGeoManager->SetAlignableEntry(snmL.Data(),pthL.Data());
       //
       for (int md=0; md<fModPerLadd[lr]; md++) {
 	//
-	TString pthM = Form("%s/ITSupgModule%d_%d",pthL.Data(),lr,md+1);
+	TString pthM = Form("%s/ITSupgModule%d_%d",pthL.Data(),lr+1,md+1);
 	TString snmM = Form("%s/ModUpg%d",snmL.Data(),md+1);
 	//
 	int modUID = AliGeomManager::LayerToVolUID(lr+1,modNum++);
@@ -465,12 +465,12 @@ void AliITSvUpgrade::CreateGeometry() {
   // Now create the actual geometry
   for (Int_t j=0; j<fNumberOfLayers; j++) {
     if (fLayTurbo[j]) {
-      fUpGeom[j] = new AliITSv11GeometryUpgrade(j,kTRUE,kFALSE);
+      fUpGeom[j] = new AliITSv11GeometryUpgrade(j+1,kTRUE,kFALSE);
       fUpGeom[j]->SetLadderWidth(fLadWidth[j]);
       fUpGeom[j]->SetLadderTilt(fLadTilt[j]);
     }
     else
-      fUpGeom[j] = new AliITSv11GeometryUpgrade(j,kFALSE);
+      fUpGeom[j] = new AliITSv11GeometryUpgrade(j+1,kFALSE);
     fUpGeom[j]->SetRadius(fLayRadii[j]);
     fUpGeom[j]->SetZLength(fLayZLength[j]);
     fUpGeom[j]->SetNLadders(fLaddPerLay[j]);
@@ -744,7 +744,8 @@ void AliITSvUpgrade::StepManager(){
     //   none.
     // Return:
     //   none.
-
+  static TLorentzVector positionRS;
+  gMC->TrackPosition(positionRS);
     if(!(this->IsActive())) return;
     if(!(gMC->TrackCharge())) return;
 
@@ -753,6 +754,8 @@ void AliITSvUpgrade::StepManager(){
 
     Bool_t notSens = kFALSE;
     while ((lay<fIdN)  && (notSens = id != fIdSens[lay])) ++lay;
+    //printf("R: %.1f | Lay: %d  NotSens: %d\n",positionRS.Pt(), lay, notSens);
+	   
     if (notSens) return;
 
     if(gMC->IsTrackExiting()) {
@@ -777,7 +780,7 @@ void AliITSvUpgrade::StepManager(){
     //
     // retrieve the indices with the volume path
     //
-    if (lay < 0 || lay > fIdN) {
+    if (lay < 0 || lay >= fIdN) {
       AliError(Form("Invalid value: lay=%d. Not an ITS sensitive volume",lay));
       return; // not an ITS sensitive volume.
     } else {
@@ -786,7 +789,7 @@ void AliITSvUpgrade::StepManager(){
       gMC->CurrentVolOffID(2,cpn0);
     } //
 
-    fInitGeom.DecodeDetector(mod,lay,cpn0,cpn1,copy);
+    fInitGeom.DecodeDetector(mod,lay+1,cpn0,cpn1,copy);
     // We should not need to pass by the switch !
     // This is time consuming...
     // therefore DecodeDetectorv11Upgrade(...) shouldn't be private !

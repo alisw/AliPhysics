@@ -488,8 +488,8 @@ void AliITSgeomTGeoUpg::BuildITSUpg()
   fgNDetectors = new Int_t[fgNLayers];
   fgNModules = 0;
   for (int i=0;i<fgNLayers;i++) {
-    fgNLadders[i]   = ExtractNumberOfLadders(i);
-    fgNDetectors[i] = ExtractNumberOfDetectors(i);
+    fgNLadders[i]   = ExtractNumberOfLadders(i+1);
+    fgNDetectors[i] = ExtractNumberOfDetectors(i+1);
     fgNModules     += fgNLadders[i]*fgNDetectors[i];
   }
   //
@@ -579,7 +579,7 @@ Int_t AliITSgeomTGeoUpg::ExtractNumberOfLadders(const Int_t lay)
   // Determines the number of layers in the Upgrade Geometry
   //
   // Inputs:
-  //   lay: layer number
+  //   lay: layer number, starting from 1
   // Outputs:
   //   none
   // Return:
@@ -606,7 +606,7 @@ Int_t AliITSgeomTGeoUpg::ExtractNumberOfDetectors(const Int_t lay)
   // Determines the number of detectors per ladder in the Upgrade Geometry
   //
   // Inputs:
-  //   lay: layer number
+  //   lay: layer number from 1
   // Outputs:
   //   none
   // Return:
