@@ -128,7 +128,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   Bool_t isOk = kTRUE;
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     histoName = GetHistoName(kHchamberEff, icount, -1, -1, -1);
-    histoPattern = Form("%s&%s", histoName.Data(), trackSelection.Data());
+    histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
     histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
     if ( histo ) {
       histo->SetName(histoName.Data());
@@ -141,7 +141,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     for ( Int_t ich=0; ich<4; ++ich ) {
       histoName = GetHistoName(kHslatEff, icount, ich, -1, -1);
-      histoPattern = Form("%s&%s", histoName.Data(), trackSelection.Data());
+      histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
       histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
       if ( histo ) {
         histo->SetName(histoName.Data());
@@ -155,7 +155,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   for ( Int_t icount=0; icount<kNcounts; ++icount ) {
     for ( Int_t ich=0; ich<4; ++ich ) {
       histoName = GetHistoName(kHboardEff, icount, ich, -1, -1);
-      histoPattern = Form("%s&%s", histoName.Data(), trackSelection.Data());
+      histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
       histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
       if ( histo ) {
         histo->SetName(histoName.Data());
@@ -168,7 +168,7 @@ Bool_t AliAnalysisTaskTrigChEff::FillEffHistoList(TString physSel, TString trigC
   }
   
   histoName = GetHistoName(kHcheckBoard, -1, -1, -1, -1);
-  histoPattern = Form("%s&%s", histoName.Data(), trackSelection.Data());
+  histoPattern = Form("%s%s", histoName.Data(), trackSelection.Data());
   histo = (TH1*)GetSum(physSel, trigClassNames, centrality, histoPattern);
   if ( histo ) {
     histo->SetName(histoName.Data());
@@ -220,7 +220,7 @@ void AliAnalysisTaskTrigChEff::FinishTaskOutput()
   TString physSel = fPhysSelKeys->At(kPhysSelPass)->GetName();
   TString trigClass = "ANY";
   TString centrality = "all";
-  TString histoPattern = Form("%s&%s",fTrackSelKeys->At(kMatchApt)->GetName(),fEffMethodKeys->At(kEffFromTrack)->GetName());
+  TString histoPattern = Form("%s%s",fTrackSelKeys->At(kMatchApt)->GetName(),fEffMethodKeys->At(kEffFromTrack)->GetName());
   
   FillEffHistoList(physSel, trigClass, centrality, histoPattern, fList);
 
@@ -473,6 +473,7 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
   AliVAnalysisMuon::Terminate("");
   
   if ( ! fMergeableCollection ) return;
+  
 
   Int_t xshift = 100;
   Int_t yshift = 20;
@@ -539,11 +540,11 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *)
             for ( Int_t imethodSel=0; imethodSel<methodSel.GetEntries(); ++imethodSel ) {
               for ( Int_t itrackSel=0; itrackSel<trackSel.GetEntries(); ++itrackSel ) {
                 histoName = GetHistoName(chosenType, kAllTracks, ich, -1, -1); // partial name
-                histoName += Form("&%s&%s",trackSel.At(itrackSel)->GetName(),methodSel.At(imethodSel)->GetName());
+                histoName += Form("%s%s",trackSel.At(itrackSel)->GetName(),methodSel.At(imethodSel)->GetName());
                 den = (TH1*)GetSum(physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), histoName.Data());
                 if ( ! den ) continue;
                 histoName = GetHistoName(chosenType, icount, ich, -1, -1); // partial name
-                histoName += Form("&%s&%s",trackSel.At(itrackSel)->GetName(),methodSel.At(imethodSel)->GetName());
+                histoName += Form("%s%s",trackSel.At(itrackSel)->GetName(),methodSel.At(imethodSel)->GetName());
                 num = (TH1*)GetSum(physSel->At(isel)->GetName(), trigClasses->At(itrig)->GetName(), centrality->At(icent)->GetName(), histoName.Data());
                 if ( ! num ) continue;
                 effGraph = new TGraphAsymmErrors(num, den);

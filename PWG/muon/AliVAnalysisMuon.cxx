@@ -38,6 +38,7 @@
 #include "TStyle.h"
 //#include "TMCProcess.h"
 #include "TLorentzVector.h"
+#include "TRegexp.h"
 
 // STEER includes
 #include "AliInputEventHandler.h"
@@ -378,6 +379,7 @@ void AliVAnalysisMuon::Terminate(Option_t *)
     TString sopt = fTerminateOptions->At(3)->GetName();
     if ( sopt.Contains("verbose") ) fMergeableCollection->Print("*"); 
   }
+  SetCentralityClassesFromOutput();
 }
 
 
@@ -645,8 +647,9 @@ TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TStri
   /// Sum objects
   /// - physSel, trigClassNames must be in the form: key1,key2
   /// - centrality must be in the form minValue_maxValue
-  /// - objectPattern must be in the form match1&match2&match3,match4
-  ///   meaning that the object name must contain match1 and match2 and either one of match3 and match4
+  /// - objectPattern must be in the form match1,match2
+  ///   meaning that the object name must contain match1 and match2 (and either one of match3 and match4
+  ///   wildcard * is allowed
   
   if ( ! fMergeableCollection ) return 0x0;
   
@@ -671,15 +674,15 @@ TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TStri
     sumCentralityString += fCentralityClasses->GetBinLabel(icent);
   }
   
-  objectPattern.ReplaceAll(" ","");
-  TObjArray* objPatternList = objectPattern.Tokenize("&");
-  TObjArray objPatternMatrix(objPatternList->GetEntries());
-  objPatternMatrix.SetOwner();
-  for ( Int_t ikey=0; ikey<objPatternList->GetEntries(); ikey++ ) {
-    TObjArray* subKeyList = ((TObjString*)objPatternList->At(ikey))->GetString().Tokenize(",");
-    objPatternMatrix.AddAt(subKeyList, ikey);
-  }
-  delete objPatternList;
+//  objectPattern.ReplaceAll(" ","");
+//  TObjArray* objPatternList = objectPattern.Tokenize("&");
+//  TObjArray objPatternMatrix(objPatternList->GetEntries());
+//  objPatternMatrix.SetOwner();
+//  for ( Int_t ikey=0; ikey<objPatternList->GetEntries(); ikey++ ) {
+//    TObjArray* subKeyList = ((TObjString*)objPatternList->At(ikey))->GetString().Tokenize(",");
+//    objPatternMatrix.AddAt(subKeyList, ikey);
+//  }
+//  delete objPatternList;
   
 
   TObjArray objectNameInCollection;
@@ -703,30 +706,53 @@ TObject* AliVAnalysisMuon::GetSum(TString physSel, TString trigClassNames, TStri
   delete physSelList;
   delete trigClassList;
   delete centralityList;
+  
+  TObjArray* objPatternList = objectPattern.Tokenize(",");
 
   TString matchingObjectNames = "";
   for ( Int_t iobj=0; iobj<objectNameInCollection.GetEntries(); iobj++ ) {
     TString objName = objectNameInCollection.At(iobj)->GetName();
-    Bool_t matchAnd = kTRUE;
-    for ( Int_t ikey=0; ikey<objPatternMatrix.GetEntries(); ikey++ ) {
-      TObjArray*  subKeyList = (TObjArray*)objPatternMatrix.At(ikey);
-      Bool_t matchOr = kFALSE;
-      for ( Int_t isub=0; isub<subKeyList->GetEntries(); isub++ ) {
-        TString subKeyString = ((TObjString*)subKeyList->At(isub))->GetString();
-        if ( objName.Contains(subKeyString.Data()) ) {
-          matchOr = kTRUE;
-          break;
-        }
+    for ( Int_t ipat=0; ipat<objPatternList->GetEntries(); ipat++ ) {
+      TString currPattern = ((TObjString*)objPatternList->At(ipat))->GetString();
+      if ( currPattern.Contains("*") ) {
+        if ( ! objName.Contains(TRegexp(currPattern.Data(),kTRUE)) ) continue;
       }
-      if ( ! matchOr ) {
-        matchAnd = kFALSE;
-        break;
-      }
+      else if ( objName != currPattern ) continue;
+
+      if ( ! matchingObjectNames.IsNull() ) matchingObjectNames.Append(",");
+      matchingObjectNames += objName;
     }
-    if ( ! matchAnd ) continue;
-    if ( ! matchingObjectNames.IsNull() ) matchingObjectNames.Append(",");
-    matchingObjectNames += objName;
   }
+  delete objPatternList;
+  
+//  for ( Int_t iobj=0; iobj<objectNameInCollection.GetEntries(); iobj++ ) {
+//    TString objName = objectNameInCollection.At(iobj)->GetName();
+//    Bool_t matchAnd = kTRUE;
+//    for ( Int_t ikey=0; ikey<objPatternMatrix.GetEntries(); ikey++ ) {
+//      TObjArray*  subKeyList = (TObjArray*)objPatternMatrix.At(ikey);
+//      Bool_t matchOr = kFALSE;
+//      for ( Int_t isub=0; isub<subKeyList->GetEntries(); isub++ ) {
+//        TString subKeyString = ((TObjString*)subKeyList->At(isub))->GetString();
+//        if ( subKeyString.Contains("*") ) {
+//          if ( objName.Contains(TRegexp(subKeyString.Data())) ) {
+//            matchOr = kTRUE;
+//            break;
+//          }
+//        }
+//        else if ( objName == subKeyString ) {
+//          matchOr = kTRUE;
+//          break;
+//        }
+//      }
+//      if ( ! matchOr ) {
+//        matchAnd = kFALSE;
+//        break;
+//      }
+//    }
+//    if ( ! matchAnd ) continue;
+//    if ( ! matchingObjectNames.IsNull() ) matchingObjectNames.Append(",");
+//    matchingObjectNames += objName;
+//  }
 
   TString idPattern = Form("/%s/%s/%s/%s", physSel.Data(), trigClassNames.Data(), sumCentralityString.Data(), matchingObjectNames.Data());
   idPattern.ReplaceAll(" ","");
@@ -897,6 +923,47 @@ void AliVAnalysisMuon::SetCentralityClasses(Int_t nCentralityBins, Double_t* cen
     currClass = Form("%.0f_%.0f",fCentralityClasses->GetBinLowEdge(ibin),fCentralityClasses->GetBinUpEdge(ibin));
     fCentralityClasses->SetBinLabel(ibin, currClass.Data());
   }
+}
+
+//________________________________________________________________________
+Bool_t AliVAnalysisMuon::SetCentralityClassesFromOutput()
+{
+  //
+  /// Get axis of centrality classes from output key
+  //
+  if ( ! fMergeableCollection ) return kFALSE;
+  TList* centrKeyList = fMergeableCollection->CreateListOfKeys(2);
+  TObjArray centrLimitsList;
+  centrLimitsList.SetOwner();
+  if ( ! centrKeyList ) return kFALSE;
+  for ( Int_t ikey=0; ikey<centrKeyList->GetEntries(); ikey++ ) {
+    TString centr = static_cast<TObjString*>(centrKeyList->At(ikey))->GetString();
+    TObjArray* array = centr.Tokenize("_");
+    for ( Int_t ilim=0; ilim<array->GetEntries(); ilim++ ) {
+      TString currLim = static_cast<TObjString*>(array->At(ilim))->GetString();
+      if ( ! centrLimitsList.FindObject(currLim.Data()) ) centrLimitsList.Add(new TObjString(currLim));
+    }
+    delete array;
+  }
+  delete centrKeyList;
+  
+  // Get unsorted array
+  TArrayD bins(centrLimitsList.GetEntries());
+  for ( Int_t ibin=0; ibin<centrLimitsList.GetEntries(); ibin++ ) {
+    bins[ibin] = static_cast<TObjString*>(centrLimitsList.At(ibin))->GetString().Atof();
+  }
+  
+  // Sort it
+  Int_t index[bins.GetSize()];
+  TMath::Sort(bins.GetSize(),bins.GetArray(),index, kFALSE);
+  
+  TArrayD sortedBins(bins.GetSize());
+  for ( Int_t ibin=0; ibin<centrLimitsList.GetEntries(); ibin++ ) {
+    sortedBins[ibin] = bins[index[ibin]];
+  }
+  
+  SetCentralityClasses(sortedBins.GetSize()-1, sortedBins.GetArray());
+  return kTRUE;
 }
 
 //________________________________________________________________________
