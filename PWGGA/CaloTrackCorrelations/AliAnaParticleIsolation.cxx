@@ -69,21 +69,26 @@ fhPtIsoPrompt(0),                 fhPhiIsoPrompt(0),               fhEtaIsoPromp
 fhPtThresIsolatedPrompt(),        fhPtFracIsolatedPrompt(),        fhPtSumIsolatedPrompt(),
 fhPtIsoFragmentation(0),          fhPhiIsoFragmentation(0),        fhEtaIsoFragmentation(0), 
 fhPtThresIsolatedFragmentation(), fhPtFracIsolatedFragmentation(), fhPtSumIsolatedFragmentation(),
+fhPtIsoPi0(0),                    fhPhiIsoPi0(0),                  fhEtaIsoPi0(0),
+fhPtThresIsolatedPi0(),           fhPtFracIsolatedPi0(),           fhPtSumIsolatedPi0(),
 fhPtIsoPi0Decay(0),               fhPhiIsoPi0Decay(0),             fhEtaIsoPi0Decay(0),
 fhPtThresIsolatedPi0Decay(),      fhPtFracIsolatedPi0Decay(),      fhPtSumIsolatedPi0Decay(),
 fhPtIsoEtaDecay(0),               fhPhiIsoEtaDecay(0),             fhEtaIsoEtaDecay(0),
 fhPtThresIsolatedEtaDecay(),      fhPtFracIsolatedEtaDecay(),      fhPtSumIsolatedEtaDecay(),
 fhPtIsoOtherDecay(0),             fhPhiIsoOtherDecay(0),           fhEtaIsoOtherDecay(0), 
 fhPtThresIsolatedOtherDecay(),    fhPtFracIsolatedOtherDecay(),    fhPtSumIsolatedOtherDecay(),
-fhPtIsoConversion(0),             fhPhiIsoConversion(0),           fhEtaIsoConversion(0), 
-fhPtThresIsolatedConversion(),    fhPtFracIsolatedConversion(),    fhPtSumIsolatedConversion(),
-fhPtIsoUnknown(0),                fhPhiIsoUnknown(0),              fhEtaIsoUnknown(0), 
-fhPtThresIsolatedUnknown(),       fhPtFracIsolatedUnknown(),       fhPtSumIsolatedUnknown(),
-fhPtNoIsoPi0Decay(0),             fhPtNoIsoEtaDecay(0),            fhPtNoIsoOtherDecay(0),
+//fhPtIsoConversion(0),             fhPhiIsoConversion(0),           fhEtaIsoConversion(0), 
+//fhPtThresIsolatedConversion(),    fhPtFracIsolatedConversion(),    fhPtSumIsolatedConversion(),
+fhPtIsoHadron(0),                 fhPhiIsoHadron(0),               fhEtaIsoHadron(0), 
+fhPtThresIsolatedHadron(),        fhPtFracIsolatedHadron(),        fhPtSumIsolatedHadron(),
+fhPtNoIsoPi0(0),                  fhPtNoIsoPi0Decay(0),             
+fhPtNoIsoEtaDecay(0),             fhPtNoIsoOtherDecay(0),
 fhPtNoIsoPrompt(0),               fhPtIsoMCPhoton(0),              fhPtNoIsoMCPhoton(0),
-fhPtNoIsoConversion(0),           fhPtNoIsoFragmentation(0),       fhPtNoIsoUnknown(0),
+//fhPtNoIsoConversion(0),           
+fhPtNoIsoFragmentation(0),        fhPtNoIsoHadron(0),
 // Hist several IC
-fhSumPtLeadingPt(),fhPtLeadingPt(),fhFRSumPtLeadingPt(),fhFRPtLeadingPt(),
+fhSumPtLeadingPt(),               fhPtLeadingPt(), 
+fhFRSumPtLeadingPt(),             fhFRPtLeadingPt(),
 fhPtThresIsolated(),              fhPtFracIsolated(),              fhPtSumIsolated(),
 fhEtaPhiPtThresIso(),             fhEtaPhiPtThresDecayIso(),       fhPtPtThresDecayIso(),
 fhEtaPhiPtFracIso(),              fhEtaPhiPtFracDecayIso(),        fhPtPtFracDecayIso(),
@@ -96,7 +101,8 @@ fhTrackMatchedDEta(),             fhTrackMatchedDPhi(),           fhTrackMatched
 fhdEdx(),                         fhEOverP(),                     fhTrackMatchedMCParticle(),
 fhELambda0() ,                    fhELambda1(),                   fhELambda0SSBkg(),
 fhELambda0TRD(),                  fhELambda1TRD(),
-
+fhELambda0MCPhoton(),             fhELambda0MCPi0(),              fhELambda0MCPi0Decay(),
+fhELambda0MCEtaDecay(),           fhELambda0MCOtherDecay(),       fhELambda0MCHadron(),
 // Number of local maxima in cluster
 fhNLocMax(),
 fhELambda0LocMax1(),              fhELambda1LocMax1(),
@@ -118,10 +124,11 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
     fhPtSumIsolatedPrompt       [i] = 0 ;  
     fhPtSumIsolatedFragmentation[i] = 0 ;  
     fhPtSumIsolatedPi0Decay     [i] = 0 ;  
+    fhPtSumIsolatedPi0          [i] = 0 ;  
     fhPtSumIsolatedEtaDecay     [i] = 0 ;  
     fhPtSumIsolatedOtherDecay   [i] = 0 ;  
-    fhPtSumIsolatedConversion   [i] = 0 ;  
-    fhPtSumIsolatedUnknown      [i] = 0 ;  
+//    fhPtSumIsolatedConversion   [i] = 0 ;  
+    fhPtSumIsolatedHadron      [i] = 0 ;  
     
     for(Int_t j = 0; j < 5 ; j++)
     { 
@@ -149,18 +156,20 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
       fhPtThresIsolatedPrompt       [i][j] = 0 ;  
       fhPtThresIsolatedFragmentation[i][j] = 0 ; 
       fhPtThresIsolatedPi0Decay     [i][j] = 0 ; 
-      fhPtThresIsolatedEtaDecay     [i][j] = 0 ;  
+      fhPtThresIsolatedPi0          [i][j] = 0 ; 
+      fhPtThresIsolatedEtaDecay     [i][j] = 0 ; 
       fhPtThresIsolatedOtherDecay   [i][j] = 0 ;  
-      fhPtThresIsolatedConversion   [i][j] = 0 ;  
-      fhPtThresIsolatedUnknown      [i][j] = 0 ;  
+//      fhPtThresIsolatedConversion   [i][j] = 0 ;  
+      fhPtThresIsolatedHadron      [i][j] = 0 ;  
       
       fhPtFracIsolatedPrompt        [i][j] = 0 ;  
       fhPtFracIsolatedFragmentation [i][j] = 0 ;  
+      fhPtFracIsolatedPi0           [i][j] = 0 ;  
       fhPtFracIsolatedPi0Decay      [i][j] = 0 ;  
       fhPtFracIsolatedEtaDecay      [i][j] = 0 ;  
       fhPtFracIsolatedOtherDecay    [i][j] = 0 ;  
-      fhPtFracIsolatedConversion    [i][j] = 0 ;
-      fhPtFracIsolatedUnknown       [i][j] = 0 ;  
+//      fhPtFracIsolatedConversion    [i][j] = 0 ;
+      fhPtFracIsolatedHadron       [i][j] = 0 ;  
       
     }  
   } 
@@ -180,6 +189,10 @@ fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInCon
     fhELambda0        [i] = 0 ;             fhELambda1        [i] = 0 ; 
     fhELambda0TRD     [i] = 0 ;             fhELambda1TRD     [i] = 0 ;
     
+    fhELambda0MCPhoton  [i] = 0 ;           fhELambda0MCPi0       [i] = 0 ;       fhELambda0MCPi0Decay[i] = 0 ;
+    fhELambda0MCEtaDecay[i] = 0 ;           fhELambda0MCOtherDecay[i] = 0 ;       fhELambda0MCHadron  [i] = 0 ;
+
+    
     // Number of local maxima in cluster
     fhNLocMax        [i] = 0 ;
     fhELambda0LocMax1[i] = 0 ;              fhELambda1LocMax1[i] = 0 ;
@@ -195,10 +208,10 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(cons
                                                                             const Int_t  clusterID,
                                                                             const Int_t  nMaxima,
                                                                             const Int_t  mcTag,
-									    const TObjArray * plCTS, 
-									    const TObjArray * plNe, 
-									    AliAODPWG4ParticleCorrelation  *pCandidate,
-									    const AliCaloTrackReader * reader, 
+                                                                            const TObjArray * plCTS, 
+                                                                            const TObjArray * plNe, 
+                                                                            AliAODPWG4ParticleCorrelation  *pCandidate,
+                                                                            const AliCaloTrackReader * reader, 
                                                                             const AliCaloPID * pid)
 {
   // Fill Track matching and Shower Shape control histograms  
@@ -225,6 +238,20 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(cons
     {
       fhELambda0[isolated]->Fill(energy, cluster->GetM02() );  
       fhELambda1[isolated]->Fill(energy, cluster->GetM20() );  
+      
+      if(IsDataMC())
+      {
+        if     (GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt) ||        
+                GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation)) fhELambda0MCPhoton    [isolated]->Fill(energy, cluster->GetM02());
+        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0))           fhELambda0MCPi0       [isolated]->Fill(energy, cluster->GetM02());
+        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay))      fhELambda0MCPi0Decay  [isolated]->Fill(energy, cluster->GetM02());
+        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEtaDecay))      fhELambda0MCEtaDecay  [isolated]->Fill(energy, cluster->GetM02());
+        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCOtherDecay))    fhELambda0MCOtherDecay[isolated]->Fill(energy, cluster->GetM02());
+       
+        //        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))    fhPtNoIsoConversion   ->Fill(energy);
+        else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))     fhELambda0MCHadron    [isolated]->Fill(energy);        
+      
+      }
       
       if(fCalorimeter == "EMCAL" && GetModuleNumber(cluster) > 5) // TO DO: CHANGE FOR 2012
       {
@@ -437,14 +464,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   {
     TString hName [] = {"NoIso",""};
     TString hTitle[] = {"Not isolated"  ,"isolated"};
-   if(fFillSSHisto)
-      { 
+    if(fFillSSHisto)
+    { 
     	fhELambda0SSBkg  = new TH2F
-	  ("hELambda0SSBkg","Non isolated clusters : E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhELambda0SSBkg->SetYTitle("#lambda_{0}^{2}");
-        fhELambda0SSBkg->SetXTitle("E (GeV)");
-        outputContainer->Add(fhELambda0SSBkg) ;
-      }
+      ("hELambda0SSBkg","Non isolated clusters : E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda0SSBkg->SetYTitle("#lambda_{0}^{2}");
+      fhELambda0SSBkg->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda0SSBkg) ;
+    }
+    
     for(Int_t iso = 0; iso < 2; iso++)
     {
       if(fFillTMHisto)
@@ -520,6 +548,51 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhELambda0[iso]->SetYTitle("#lambda_{0}^{2}");
         fhELambda0[iso]->SetXTitle("E (GeV)");
         outputContainer->Add(fhELambda0[iso]) ; 
+        
+        if(IsDataMC())
+        {
+          fhELambda0MCPhoton[iso]  = new TH2F
+          (Form("hELambda0%s_MCPhoton",hName[iso].Data()),
+           Form("%s cluster : E vs #lambda_{0}: Origin is final state photon",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhELambda0MCPhoton[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0MCPhoton[iso]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhELambda0MCPhoton[iso]) ; 
+          
+          fhELambda0MCPi0[iso]  = new TH2F
+          (Form("hELambda0%s_MCPi0",hName[iso].Data()),
+           Form("%s cluster : E vs #lambda_{0}: Origin is pi0 (2 #gamma)",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhELambda0MCPi0[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0MCPi0[iso]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhELambda0MCPi0[iso]) ; 
+          
+          fhELambda0MCPi0Decay[iso]  = new TH2F
+          (Form("hELambda0%s_MCPi0Decay",hName[iso].Data()),
+           Form("%s cluster : E vs #lambda_{0}: Origin is pi0 decay",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhELambda0MCPi0Decay[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0MCPi0Decay[iso]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhELambda0MCPi0Decay[iso]) ; 
+          
+          fhELambda0MCEtaDecay[iso]  = new TH2F
+          (Form("hELambda0%s_MCEtaDecay",hName[iso].Data()),
+           Form("%s cluster : E vs #lambda_{0}: Origin is eta decay",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhELambda0MCEtaDecay[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0MCEtaDecay[iso]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhELambda0MCEtaDecay[iso]) ; 
+          
+          fhELambda0MCOtherDecay[iso]  = new TH2F
+          (Form("hELambda0%s_MCOtherDecay",hName[iso].Data()),
+           Form("%s cluster : E vs #lambda_{0}: Origin is other decay",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhELambda0MCOtherDecay[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0MCOtherDecay[iso]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhELambda0MCOtherDecay[iso]) ; 
+          
+          fhELambda0MCHadron[iso]  = new TH2F
+          (Form("hELambda0%s_MCHadron",hName[iso].Data()),
+           Form("%s cluster : E vs #lambda_{0}: Origin is hadron",hTitle[iso].Data()),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhELambda0MCHadron[iso]->SetYTitle("#lambda_{0}^{2}");
+          fhELambda0MCHadron[iso]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhELambda0MCHadron[iso]) ; 
+        } 
         
         fhELambda1[iso]  = new TH2F
         (Form("hELambda1%s",hName[iso].Data()),
@@ -597,7 +670,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
       }
     } // control histograms for isolated and non isolated objects
-                                                                                                                                                                                                                                                                                                                                                                            
+    
     fhConeSumPt  = new TH2F("hConePtSum",
                             Form("#Sigma p_{T} in isolation cone for R = %2.2f",r),
                             nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
@@ -611,10 +684,10 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtInCone->SetYTitle("p_{T in cone} (GeV/c)");
     fhPtInCone->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtInCone) ;
-
+    
     fhPtInConeCent  = new TH2F("hPtInConeCent",
-                           Form("p_{T} in isolation cone for R = %2.2f",r),
-                           100,0,100,nptinconebins,ptinconemin,ptinconemax);
+                               Form("p_{T} in isolation cone for R = %2.2f",r),
+                               100,0,100,nptinconebins,ptinconemin,ptinconemax);
     fhPtInConeCent->SetYTitle("p_{T in cone} (GeV/c)");
     fhPtInConeCent->SetXTitle("centrality");
     outputContainer->Add(fhPtInConeCent) ;
@@ -632,49 +705,49 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtInFRCone->SetYTitle("p_{T in cone} (GeV/c)");
     fhPtInFRCone->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtInFRCone) ; 
-
+    
     fhPhiUEConeSumPt  = new TH2F("hPhiUEConeSumPt",
-                             Form("p_{T} in phi band around isolation cone for R = %2.2f",r),
-                             nptbins,ptmin,ptmax,4*nptinconebins,ptinconemin,4*ptinconemax);
+                                 Form("p_{T} in phi band around isolation cone for R = %2.2f",r),
+                                 nptbins,ptmin,ptmax,4*nptinconebins,ptinconemin,4*ptinconemax);
     fhPhiUEConeSumPt->SetYTitle("p_{T in band} (GeV/c)");
     fhPhiUEConeSumPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPhiUEConeSumPt) ; 
-
+    
     fhEtaUEConeSumPt  = new TH2F("hEtaUEConeSumPt",
-                             Form("p_{T} in eta band around isolation cone for R = %2.2f",r),
-                             nptbins,ptmin,ptmax,4*nptinconebins,ptinconemin,4*ptinconemax);
+                                 Form("p_{T} in eta band around isolation cone for R = %2.2f",r),
+                                 nptbins,ptmin,ptmax,4*nptinconebins,ptinconemin,4*ptinconemax);
     fhEtaUEConeSumPt->SetYTitle("p_{T in band} (GeV/c)");
     fhEtaUEConeSumPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhEtaUEConeSumPt) ; 
-
+    
     fhEtaBand  = new TH2F("fhEtaBand",
-                             Form("Eta/Phi of particle in Eta band isolation cone for R = %2.2f",r),
-			    netabins,etamin,etamax,nphibins,phimin,phimax); 
+                          Form("Eta/Phi of particle in Eta band isolation cone for R = %2.2f",r),
+                          netabins,etamin,etamax,nphibins,phimin,phimax); 
     fhEtaBand->SetXTitle("#eta");
     fhEtaBand->SetYTitle("#phi");
     outputContainer->Add(fhEtaBand) ; 
-
+    
     fhPhiBand  = new TH2F("fhPhiBand",
-                             Form("Eta/Phi of particle in Phi band isolation cone for R = %2.2f",r),
-			    netabins,etamin,etamax,nphibins,phimin,phimax); 
+                          Form("Eta/Phi of particle in Phi band isolation cone for R = %2.2f",r),
+                          netabins,etamin,etamax,nphibins,phimin,phimax); 
     fhPhiBand->SetXTitle("#eta");
     fhPhiBand->SetYTitle("#phi");
     outputContainer->Add(fhPhiBand) ;
-
+    
     fhConeSumPtEtaUESub  = new TH2F("hConeSumPtEtaUESub",
-                              Form("#Sigma p_{T} after bkg subtraction from eta band in the isolation cone for R = %2.2f",r),
-				    nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
+                                    Form("#Sigma p_{T} after bkg subtraction from eta band in the isolation cone for R = %2.2f",r),
+                                    nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
     fhConeSumPtEtaUESub->SetYTitle("#Sigma p_{T}");
     fhConeSumPtEtaUESub->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhConeSumPtEtaUESub) ;
-
+    
     fhConeSumPtPhiUESub  = new TH2F("hConeSumPtPhiUESub",
-                              Form("#Sigma p_{T} after bkg subtraction from phi band in the isolation cone for R = %2.2f",r),
-				    nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
+                                    Form("#Sigma p_{T} after bkg subtraction from phi band in the isolation cone for R = %2.2f",r),
+                                    nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
     fhConeSumPtPhiUESub->SetYTitle("#Sigma p_{T}");
     fhConeSumPtPhiUESub->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhConeSumPtPhiUESub) ;
-                                
+    
     fhEIso   = new TH1F("hE",
                         Form("Number of isolated particles vs E for R = %2.2f, p_{T}^{th} = %2.2f, p_{T}^{fr} = %2.2f",r,ptthre,ptfrac),
                         nptbins,ptmin,ptmax); 
@@ -760,6 +833,23 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhEtaIsoFragmentation->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhEtaIsoFragmentation) ;
       
+      fhPtIsoPi0  = new TH1F("hPtMCPi0","Number of isolated #gamma from #pi^{0} (2 #gamma)",nptbins,ptmin,ptmax); 
+      fhPtIsoPi0->SetYTitle("N");
+      fhPtIsoPi0->SetXTitle("p_{T #gamma}(GeV/c)");
+      outputContainer->Add(fhPtIsoPi0) ; 
+      
+      fhPhiIsoPi0  = new TH2F
+      ("hPhiMCPi0","Number of isolated #gamma from #pi^{0} (2 #gamma)",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      fhPhiIsoPi0->SetYTitle("#phi");
+      fhPhiIsoPi0->SetXTitle("p_{T #gamma} (GeV/c)");
+      outputContainer->Add(fhPhiIsoPi0) ; 
+      
+      fhEtaIsoPi0  = new TH2F
+      ("hEtaMCPi0","Number of isolated #gamma from #pi^{0} (2 #gamma)",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      fhEtaIsoPi0->SetYTitle("#eta");
+      fhEtaIsoPi0->SetXTitle("p_{T #gamma} (GeV/c)");
+      outputContainer->Add(fhEtaIsoPi0) ;
+      
       fhPtIsoPi0Decay  = new TH1F("hPtMCPi0Decay","Number of isolated #gamma from #pi^{0} decay",nptbins,ptmin,ptmax); 
       fhPtIsoPi0Decay->SetYTitle("N");
       fhPtIsoPi0Decay->SetXTitle("p_{T #gamma}(GeV/c)");
@@ -811,39 +901,39 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhEtaIsoOtherDecay->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhEtaIsoOtherDecay) ;
       
-      fhPtIsoConversion  = new TH1F("hPtMCConversion","Number of isolated converted #gamma",nptbins,ptmin,ptmax); 
-      fhPtIsoConversion->SetYTitle("N");
-      fhPtIsoConversion->SetXTitle("p_{T #gamma}(GeV/c)");
-      outputContainer->Add(fhPtIsoConversion) ; 
+      //      fhPtIsoConversion  = new TH1F("hPtMCConversion","Number of isolated converted #gamma",nptbins,ptmin,ptmax); 
+      //      fhPtIsoConversion->SetYTitle("N");
+      //      fhPtIsoConversion->SetXTitle("p_{T #gamma}(GeV/c)");
+      //      outputContainer->Add(fhPtIsoConversion) ; 
+      //      
+      //      fhPhiIsoConversion  = new TH2F
+      //      ("hPhiMCConversion","Number of isolated converted #gamma",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      //      fhPhiIsoConversion->SetYTitle("#phi");
+      //      fhPhiIsoConversion->SetXTitle("p_{T #gamma} (GeV/c)");
+      //      outputContainer->Add(fhPhiIsoConversion) ; 
+      //      
+      //      fhEtaIsoConversion  = new TH2F
+      //      ("hEtaMCConversion","Number of isolated converted #gamma",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      //      fhEtaIsoConversion->SetYTitle("#eta");
+      //      fhEtaIsoConversion->SetXTitle("p_{T #gamma} (GeV/c)");
+      //      outputContainer->Add(fhEtaIsoConversion) ;
       
-      fhPhiIsoConversion  = new TH2F
-      ("hPhiMCConversion","Number of isolated converted #gamma",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
-      fhPhiIsoConversion->SetYTitle("#phi");
-      fhPhiIsoConversion->SetXTitle("p_{T #gamma} (GeV/c)");
-      outputContainer->Add(fhPhiIsoConversion) ; 
+      fhPtIsoHadron  = new TH1F("hPtMCHadron","Number of isolated non-#gamma particles",nptbins,ptmin,ptmax); 
+      fhPtIsoHadron->SetYTitle("N");
+      fhPtIsoHadron->SetXTitle("p_{T}(GeV/c)");
+      outputContainer->Add(fhPtIsoHadron) ; 
       
-      fhEtaIsoConversion  = new TH2F
-      ("hEtaMCConversion","Number of isolated converted #gamma",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-      fhEtaIsoConversion->SetYTitle("#eta");
-      fhEtaIsoConversion->SetXTitle("p_{T #gamma} (GeV/c)");
-      outputContainer->Add(fhEtaIsoConversion) ;
+      fhPhiIsoHadron  = new TH2F
+      ("hPhiMCHadron","Number of isolated non-#gamma particles",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      fhPhiIsoHadron->SetYTitle("#phi");
+      fhPhiIsoHadron->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPhiIsoHadron) ; 
       
-      fhPtIsoUnknown  = new TH1F("hPtMCUnknown","Number of isolated non-#gamma particles",nptbins,ptmin,ptmax); 
-      fhPtIsoUnknown->SetYTitle("N");
-      fhPtIsoUnknown->SetXTitle("p_{T}(GeV/c)");
-      outputContainer->Add(fhPtIsoUnknown) ; 
-      
-      fhPhiIsoUnknown  = new TH2F
-      ("hPhiMCUnknown","Number of isolated non-#gamma particles",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
-      fhPhiIsoUnknown->SetYTitle("#phi");
-      fhPhiIsoUnknown->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhPhiIsoUnknown) ; 
-      
-      fhEtaIsoUnknown  = new TH2F
-      ("hEtaMCUnknown","Number of isolated non-#gamma particles",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-      fhEtaIsoUnknown->SetYTitle("#eta");
-      fhEtaIsoUnknown->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhEtaIsoUnknown) ;
+      fhEtaIsoHadron  = new TH2F
+      ("hEtaMCHadron","Number of isolated non-#gamma particles",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      fhEtaIsoHadron->SetYTitle("#eta");
+      fhEtaIsoHadron->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhEtaIsoHadron) ;
       
     }//Histos with MC
     
@@ -884,6 +974,12 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
   if(IsDataMC())
   {
+    fhPtNoIsoPi0  = new TH1F
+    ("hPtNoIsoPi0","Number of not isolated leading #gamma from #pi^{0} (2 #gamma)",nptbins,ptmin,ptmax); 
+    fhPtNoIsoPi0->SetYTitle("N");
+    fhPtNoIsoPi0->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtNoIsoPi0) ;
+    
     fhPtNoIsoPi0Decay  = new TH1F
     ("hPtNoIsoPi0Decay","Number of not isolated leading #gamma from #pi^{0} decay",nptbins,ptmin,ptmax); 
     fhPtNoIsoPi0Decay->SetYTitle("N");
@@ -920,11 +1016,11 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtNoIsoMCPhoton->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtNoIsoMCPhoton) ;
     
-    fhPtNoIsoConversion  = new TH1F
-    ("hPtNoIsoConversion","Number of not isolated leading conversion #gamma",nptbins,ptmin,ptmax); 
-    fhPtNoIsoConversion->SetYTitle("N");
-    fhPtNoIsoConversion->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtNoIsoConversion) ;
+//    fhPtNoIsoConversion  = new TH1F
+//    ("hPtNoIsoConversion","Number of not isolated leading conversion #gamma",nptbins,ptmin,ptmax); 
+//    fhPtNoIsoConversion->SetYTitle("N");
+//    fhPtNoIsoConversion->SetXTitle("p_{T} (GeV/c)");
+//    outputContainer->Add(fhPtNoIsoConversion) ;
     
     fhPtNoIsoFragmentation  = new TH1F
     ("hPtNoIsoFragmentation","Number of not isolated leading fragmentation #gamma",nptbins,ptmin,ptmax); 
@@ -932,11 +1028,11 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtNoIsoFragmentation->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPtNoIsoFragmentation) ;
     
-    fhPtNoIsoUnknown  = new TH1F
-    ("hPtNoIsoUnknown","Number of not isolated leading hadrons",nptbins,ptmin,ptmax); 
-    fhPtNoIsoUnknown->SetYTitle("N");
-    fhPtNoIsoUnknown->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPtNoIsoUnknown) ;
+    fhPtNoIsoHadron  = new TH1F
+    ("hPtNoIsoHadron","Number of not isolated leading hadrons",nptbins,ptmin,ptmax); 
+    fhPtNoIsoHadron->SetYTitle("N");
+    fhPtNoIsoHadron->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtNoIsoHadron) ;
     
   }//Histos with MC
   
@@ -997,6 +1093,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtSumIsolatedFragmentation[icone]->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhPtSumIsolatedFragmentation[icone]) ; 
         
+        snprintf(name, buffersize,"hPtSumPi0_Cone_%d",icone);
+        snprintf(title, buffersize,"Candidate Pi0 cone sum p_{T} for R = %2.2f vs candidate p_{T}",fConeSizes[icone]);
+        fhPtSumIsolatedPi0[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhPtSumIsolatedPi0[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
+        fhPtSumIsolatedPi0[icone]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhPtSumIsolatedPi0[icone]) ; 
+        
         snprintf(name, buffersize,"hPtSumPi0Decay_Cone_%d",icone);
         snprintf(title, buffersize,"Candidate Pi0Decay cone sum p_{T} for R = %2.2f vs candidate p_{T}",fConeSizes[icone]);
         fhPtSumIsolatedPi0Decay[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
@@ -1018,19 +1121,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtSumIsolatedOtherDecay[icone]->SetXTitle("p_{T} (GeV/c)");
         outputContainer->Add(fhPtSumIsolatedOtherDecay[icone]) ; 
         
-        snprintf(name, buffersize,"hPtSumConversion_Cone_%d",icone);
-        snprintf(title, buffersize,"Candidate Conversion cone sum p_{T} for R = %2.2f vs candidate p_{T}",fConeSizes[icone]);
-        fhPtSumIsolatedConversion[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
-        fhPtSumIsolatedConversion[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
-        fhPtSumIsolatedConversion[icone]->SetXTitle("p_{T} (GeV/c)");
-        outputContainer->Add(fhPtSumIsolatedConversion[icone]) ; 
+//        snprintf(name, buffersize,"hPtSumConversion_Cone_%d",icone);
+//        snprintf(title, buffersize,"Candidate Conversion cone sum p_{T} for R = %2.2f vs candidate p_{T}",fConeSizes[icone]);
+//        fhPtSumIsolatedConversion[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+//        fhPtSumIsolatedConversion[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
+//        fhPtSumIsolatedConversion[icone]->SetXTitle("p_{T} (GeV/c)");
+//        outputContainer->Add(fhPtSumIsolatedConversion[icone]) ; 
         
-        snprintf(name, buffersize,"hPtSumUnknown_Cone_%d",icone);
-        snprintf(title, buffersize,"Candidate Unknown cone sum p_{T} for R = %2.2f vs candidate p_{T}",fConeSizes[icone]);
-        fhPtSumIsolatedUnknown[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
-        fhPtSumIsolatedUnknown[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
-        fhPtSumIsolatedUnknown[icone]->SetXTitle("p_{T} (GeV/c)");
-        outputContainer->Add(fhPtSumIsolatedUnknown[icone]) ; 
+        snprintf(name, buffersize,"hPtSumHadron_Cone_%d",icone);
+        snprintf(title, buffersize,"Candidate Hadron cone sum p_{T} for R = %2.2f vs candidate p_{T}",fConeSizes[icone]);
+        fhPtSumIsolatedHadron[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhPtSumIsolatedHadron[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
+        fhPtSumIsolatedHadron[icone]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhPtSumIsolatedHadron[icone]) ; 
         
       }//Histos with MC
       
@@ -1206,6 +1309,18 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhPtFracIsolatedFragmentation[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
           outputContainer->Add(fhPtFracIsolatedFragmentation[icone][ipt]) ; 
           
+          snprintf(name, buffersize,"hPtThresMCPi0_Cone_%d_Pt%d",icone,ipt);
+          snprintf(title, buffersize,"Isolated candidate Pi0 p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
+          fhPtThresIsolatedPi0[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
+          fhPtThresIsolatedPi0[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhPtThresIsolatedPi0[icone][ipt]) ; 
+          
+          snprintf(name, buffersize,"hPtFracMCPi0_Cone_%d_Pt%d",icone,ipt);
+          snprintf(title, buffersize,"Isolated candidate Pi0 p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
+          fhPtFracIsolatedPi0[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
+          fhPtFracIsolatedPi0[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhPtFracIsolatedPi0[icone][ipt]) ;
+          
           snprintf(name, buffersize,"hPtThresMCPi0Decay_Cone_%d_Pt%d",icone,ipt);
           snprintf(title, buffersize,"Isolated candidate Pi0Decay p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
           fhPtThresIsolatedPi0Decay[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
@@ -1243,29 +1358,29 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhPtFracIsolatedOtherDecay[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
           outputContainer->Add(fhPtFracIsolatedOtherDecay[icone][ipt]) ;
           
-          snprintf(name, buffersize,"hPtThresMCConversion_Cone_%d_Pt%d",icone,ipt);
-          snprintf(title, buffersize,"Isolated candidate Conversion p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
-          fhPtThresIsolatedConversion[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
-          fhPtThresIsolatedConversion[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
-          outputContainer->Add(fhPtThresIsolatedConversion[icone][ipt]) ; 
+//          snprintf(name, buffersize,"hPtThresMCConversion_Cone_%d_Pt%d",icone,ipt);
+//          snprintf(title, buffersize,"Isolated candidate Conversion p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
+//          fhPtThresIsolatedConversion[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
+//          fhPtThresIsolatedConversion[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
+//          outputContainer->Add(fhPtThresIsolatedConversion[icone][ipt]) ; 
           
-          snprintf(name, buffersize,"hPtFracMCConversion_Cone_%d_Pt%d",icone,ipt);
-          snprintf(title, buffersize,"Isolated candidate Conversion p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
-          fhPtFracIsolatedConversion[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
-          fhPtFracIsolatedConversion[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
-          outputContainer->Add(fhPtFracIsolatedConversion[icone][ipt]) ;
+//          snprintf(name, buffersize,"hPtFracMCConversion_Cone_%d_Pt%d",icone,ipt);
+//          snprintf(title, buffersize,"Isolated candidate Conversion p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
+//          fhPtFracIsolatedConversion[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
+//          fhPtFracIsolatedConversion[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
+//          outputContainer->Add(fhPtFracIsolatedConversion[icone][ipt]) ;
           
-          snprintf(name, buffersize,"hPtThresMCUnknown_Cone_%d_Pt%d",icone,ipt);
-          snprintf(title, buffersize,"Isolated candidate Unknown p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
-          fhPtThresIsolatedUnknown[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
-          fhPtThresIsolatedUnknown[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
-          outputContainer->Add(fhPtThresIsolatedUnknown[icone][ipt]) ; 
+          snprintf(name, buffersize,"hPtThresMCHadron_Cone_%d_Pt%d",icone,ipt);
+          snprintf(title, buffersize,"Isolated candidate Hadron p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
+          fhPtThresIsolatedHadron[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
+          fhPtThresIsolatedHadron[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhPtThresIsolatedHadron[icone][ipt]) ; 
           
-          snprintf(name, buffersize,"hPtFracMCUnknown_Cone_%d_Pt%d",icone,ipt);
-          snprintf(title, buffersize,"Isolated candidate Unknown p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
-          fhPtFracIsolatedUnknown[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
-          fhPtFracIsolatedUnknown[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
-          outputContainer->Add(fhPtFracIsolatedUnknown[icone][ipt]) ;  
+          snprintf(name, buffersize,"hPtFracMCHadron_Cone_%d_Pt%d",icone,ipt);
+          snprintf(title, buffersize,"Isolated candidate Hadron p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
+          fhPtFracIsolatedHadron[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
+          fhPtFracIsolatedHadron[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
+          outputContainer->Add(fhPtFracIsolatedHadron[icone][ipt]) ;  
           
         }//Histos with MC
       }//icone loop
@@ -1640,6 +1755,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
           fhPhiIsoFragmentation ->Fill(pt,phi);
           fhEtaIsoFragmentation ->Fill(pt,eta);
         }
+        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0))
+        {
+          fhPtIsoPi0  ->Fill(pt);
+          fhPhiIsoPi0 ->Fill(pt,phi);
+          fhEtaIsoPi0 ->Fill(pt,eta);
+        }        
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay))
         {
           fhPtIsoPi0Decay  ->Fill(pt);
@@ -1658,17 +1779,17 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
           fhPhiIsoOtherDecay ->Fill(pt,phi);
           fhEtaIsoOtherDecay ->Fill(pt,eta);
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))
+//        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))
+//        {
+//          fhPtIsoConversion  ->Fill(pt);
+//          fhPhiIsoConversion ->Fill(pt,phi);
+//          fhEtaIsoConversion ->Fill(pt,eta);
+//        }
+        else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))// anything else but electrons
         {
-          fhPtIsoConversion  ->Fill(pt);
-          fhPhiIsoConversion ->Fill(pt,phi);
-          fhEtaIsoConversion ->Fill(pt,eta);
-        }
-        else // anything else
-        {
-          fhPtIsoUnknown  ->Fill(pt);
-          fhPhiIsoUnknown ->Fill(pt,phi);
-          fhEtaIsoUnknown ->Fill(pt,eta);
+          fhPtIsoHadron  ->Fill(pt);
+          fhPhiIsoHadron ->Fill(pt,phi);
+          fhEtaIsoHadron ->Fill(pt,eta);
         }
       }//Histograms with MC
       
@@ -1689,13 +1810,14 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       if(IsDataMC())
       {
         if     (GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))        fhPtNoIsoMCPhoton     ->Fill(pt);
-        if     (GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtNoIsoPi0Decay     ->Fill(pt);
+        if     (GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0))           fhPtNoIsoPi0          ->Fill(pt);
+        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtNoIsoPi0Decay     ->Fill(pt);
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEtaDecay))      fhPtNoIsoEtaDecay     ->Fill(pt);
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCOtherDecay))    fhPtNoIsoOtherDecay   ->Fill(pt);
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPrompt))        fhPtNoIsoPrompt       ->Fill(pt);
         else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCFragmentation)) fhPtNoIsoFragmentation->Fill(pt);
-        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))    fhPtNoIsoConversion   ->Fill(pt);
-        else                                                                                   fhPtNoIsoUnknown      ->Fill(pt);        
+//        else if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))    fhPtNoIsoConversion   ->Fill(pt);
+        else if(!GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))     fhPtNoIsoHadron      ->Fill(pt);        
       }
     }
   }// aod loop
@@ -1735,13 +1857,14 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   if(IsDataMC())
   {
     if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))        fhPtNoIsoMCPhoton     ->Fill(ptC);
-    if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtNoIsoPi0Decay     ->Fill(ptC);
+    if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))           fhPtNoIsoPi0          ->Fill(ptC);
+    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtNoIsoPi0Decay     ->Fill(ptC);
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))      fhPtNoIsoEtaDecay     ->Fill(ptC);
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))    fhPtNoIsoOtherDecay   ->Fill(ptC);
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))        fhPtNoIsoPrompt       ->Fill(ptC);
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtNoIsoFragmentation->Fill(ptC);
-    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtNoIsoConversion   ->Fill(ptC);
-    else                                                                                 fhPtNoIsoUnknown      ->Fill(ptC);
+//    else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtNoIsoConversion   ->Fill(ptC);
+    else if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))    fhPtNoIsoHadron      ->Fill(ptC);
   }
   
   if(decay) 
@@ -1879,12 +2002,13 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
         if(IsDataMC())
         {
           if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))        fhPtThresIsolatedPrompt[icone][ipt]       ->Fill(ptC) ;
-          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtThresIsolatedConversion[icone][ipt]   ->Fill(ptC) ;
+//          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtThresIsolatedConversion[icone][ipt]   ->Fill(ptC) ;
           else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtThresIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))           fhPtThresIsolatedPi0[icone][ipt]           ->Fill(ptC) ;
           else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtThresIsolatedPi0Decay[icone][ipt]     ->Fill(ptC) ;
           else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))      fhPtThresIsolatedEtaDecay[icone][ipt]     ->Fill(ptC) ;
           else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))    fhPtThresIsolatedOtherDecay[icone][ipt]   ->Fill(ptC) ;
-          else                                                                                  fhPtThresIsolatedUnknown[icone][ipt]      ->Fill(ptC) ;
+          else if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))      fhPtThresIsolatedHadron[icone][ipt]      ->Fill(ptC) ;
         }
       }
       
@@ -1904,12 +2028,13 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
         if(IsDataMC())
         {
           if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))        fhPtFracIsolatedPrompt[icone][ipt]       ->Fill(ptC) ;
-          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtFracIsolatedConversion[icone][ipt]   ->Fill(ptC) ;
+//          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtFracIsolatedConversion[icone][ipt]   ->Fill(ptC) ;
           else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtFracIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))           fhPtFracIsolatedPi0[icone][ipt]          ->Fill(ptC) ;
           else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtFracIsolatedPi0Decay[icone][ipt]     ->Fill(ptC) ;
           else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))      fhPtFracIsolatedEtaDecay[icone][ipt]     ->Fill(ptC) ;
           else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))    fhPtFracIsolatedOtherDecay[icone][ipt]   ->Fill(ptC) ;
-          else  fhPtFracIsolatedUnknown[icone][ipt]->Fill(ptC) ;
+          else if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))      fhPtFracIsolatedHadron[icone][ipt]->Fill(ptC) ;
         }
       }
       
@@ -1964,12 +2089,13 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
     if(IsDataMC())
     {
       if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))        fhPtSumIsolatedPrompt[icone]       ->Fill(ptC,coneptsum) ;
-      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtSumIsolatedConversion[icone]   ->Fill(ptC,coneptsum) ;
+//      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtSumIsolatedConversion[icone]   ->Fill(ptC,coneptsum) ;
       else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtSumIsolatedFragmentation[icone]->Fill(ptC,coneptsum) ;
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))           fhPtSumIsolatedPi0[icone]          ->Fill(ptC,coneptsum) ;
       else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtSumIsolatedPi0Decay[icone]     ->Fill(ptC,coneptsum) ;
       else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))      fhPtSumIsolatedEtaDecay[icone]     ->Fill(ptC,coneptsum) ;
       else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))    fhPtSumIsolatedOtherDecay[icone]   ->Fill(ptC,coneptsum) ;
-      else  fhPtSumIsolatedUnknown[icone]->Fill(ptC,coneptsum) ;
+      else if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))      fhPtSumIsolatedHadron[icone]->Fill(ptC,coneptsum) ;
     }
     
   }//cone size loop

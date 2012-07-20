@@ -96,8 +96,16 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   Double_t     GetNCellCut()                    const { return fNCellsCut          ; }
     
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
-    if(n > 10) fNOriginHistograms = 10; }
+                                                        if(n > 10) fNOriginHistograms = 10; }
 
+  
+  void         FillAODWithElectrons()                 { fAODParticle = AliCaloPID::kElectron      ; }
+  void         FillAODWithHadrons()                   { fAODParticle = AliCaloPID::kChargedHadron ; }
+  void         FillAODWithAny()                       { fAODParticle = 0 ; }
+
+  void         SwitchOnOnlySimpleSSHistoFill()        { fFillOnlySimpleSSHisto = kTRUE  ; }
+  void         SwitchOffOnlySimpleHistoFill()         { fFillOnlySimpleSSHisto = kFALSE ; }
+  
   // For histograms in arrays, index in the array, corresponding to a particle
   enum mcTypes    { kmcPhoton = 0,        kmcPi0Decay = 1,       kmcOtherDecay = 2,  
                     kmcPi0 = 3,           kmcEta = 4,            kmcElectron = 5,       
@@ -117,6 +125,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   Double_t fTimeCutMax  ;                      // Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                        // Accept for the analysis clusters with more than fNCellsCut cells
   Bool_t   fFillSSHistograms ;                 // Fill shower shape histograms
+  Bool_t   fFillOnlySimpleSSHisto;   // Fill selected cluster histograms, selected SS histograms
   Bool_t   fFillWeightHistograms ;             // Fill weigth histograms
   Int_t    fNOriginHistograms;                 // Fill only NOriginHistograms of the 14 defined types
 
@@ -125,6 +134,8 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fEOverPMin;                         // Max E/p for electrons, after dEdx cut
   Float_t  fEOverPMax;                         // Min E/p for electrons, after dEdx cut
 
+  Int_t    fAODParticle;                       // Select the type of particle to put in AODs for other analysis
+  
   //Histograms 
   TH2F * fhdEdxvsE;                            //! matched track dEdx vs cluster E 
   TH2F * fhdEdxvsP;                            //! matched track dEdx vs track P
@@ -210,10 +221,10 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEmbedElectronELambda0MostlyBkg ;     //!  Lambda0 vs E for embedded electrons with 50%<fraction<10% 
   TH2F * fhEmbedElectronELambda0FullBkg ;       //!  Lambda0 vs E for embedded electrons with less than 10% of the cluster energy
   
-  AliAnaElectron(              const AliAnaElectron & g) ; // cpy ctor  
-  AliAnaElectron & operator = (const AliAnaElectron & g) ; // cpy assignment
+  AliAnaElectron(              const AliAnaElectron & el) ; // cpy ctor  
+  AliAnaElectron & operator = (const AliAnaElectron & el) ; // cpy assignment
   
-  ClassDef(AliAnaElectron,3)
+  ClassDef(AliAnaElectron,4)
 
 } ;
  
