@@ -42,5 +42,6 @@
 #pragma link C++ class AliMergeableCollection+;
 #pragma link C++ class AliMergeableCollectionIterator+;
 #pragma link C++ class AliVAnalysisMuon+;
+#pragma link C++ class AliAnalysisTaskFlowSingleMu+;
 #endif
 
