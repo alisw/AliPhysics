@@ -11,7 +11,8 @@
 class AliGenMUONLMR : public AliGenMC { 
  public:
   enum parttype_t {kPionLMR, kKaonLMR, kEtaLMR, kRhoLMR, kOmegaLMR, kPhiLMR, kEtaPrimeLMR};
-  AliGenMUONLMR(Double_t energy=7.0); 
+  enum CMSEnergies { kCMS2760GeV, kCMS7000GeV, kNCMSEnergies };    
+  AliGenMUONLMR(); 
   AliGenMUONLMR(AliGenMUONLMR &gen); 
   AliGenMUONLMR &operator=(const AliGenMUONLMR &gen);  
   ~AliGenMUONLMR(); 
@@ -32,9 +33,11 @@ class AliGenMUONLMR : public AliGenMC {
   virtual void FinishRun(); 
   virtual TF1* GetRapidity(Int_t iproc) { return fY[iproc]; }
   virtual TF1* GetPt(Int_t iproc) { return fPt[iproc]; }
+  void SetCMSEnergy(CMSEnergies energy);
  private: 
   static const Int_t fgkNpart = 7; // number of particles to be generated 
   Int_t fNMuMin;                   // min. number of muons to accept the event for writing
+  CMSEnergies fCMSEnergy;          // CMS Energy 
   Int_t fGenSingleProc;            // flag to generate a single process (1) or the whole cocktail (0)
   Int_t fPDG[7];                   // pdg code of particle to be generated 
   Double_t fScaleMult[7];          // multiplicity scaling factor (w.r.t. pythia@7TeV)
@@ -53,3 +56,4 @@ class AliGenMUONLMR : public AliGenMC {
 }; 
 
 #endif
+

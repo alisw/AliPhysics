@@ -6,13 +6,14 @@
 #include "AliGenMUONLMR.h" 
 #include "AliMC.h" 
 #include "AliRun.h" 
+#include "AliLog.h" 
 #include "AliGenEventHeader.h"
 
 ClassImp(AliGenMUONLMR)
 
-
-AliGenMUONLMR::AliGenMUONLMR (Double_t energy) : AliGenMC(), 
+AliGenMUONLMR::AliGenMUONLMR () : AliGenMC(), 
 						 fNMuMin(2), 
+						 fCMSEnergy(kNCMSEnergies),
 						 fGenSingleProc(-1),
 						 fCosTheta(0x0), 
 						 fRhoLineShape(0x0),  
@@ -21,193 +22,213 @@ AliGenMUONLMR::AliGenMUONLMR (Double_t energy) : AliGenMC(),
   //
   // default constructor 
   //
-  // initialize pt and y distributions according to a fit to 
-  // Pythia simulation at sqrt(s) = 7 TeV
-  for (Int_t ipart=0; ipart < fgkNpart; ipart++) fScaleMult[ipart] = 1; 
-  fScaleMult[kPionLMR] = 0; // set pion multiplicity to zero 
-  fScaleMult[kKaonLMR] = 0; // set kaon multiplicity to zero
-  Int_t pdg[7] = {211, 321, 221, 113, 223, 333, 331}; 
-  const char* fptname[7] = {"fPtPion","fPtKaon","fPtEta","fPtRho","fPtOmega","fPtPhi","fPtEtaPrime"};
-  const char* fyname[7] = {"fYPion","fYKaon","fYEta","fYRho","fYOmega","fYPhi","fYEtaPrime"}; 
-  const char* fnname[7] = {"fMultPion","fMultKaon","fMultEta","fMultRho","fMultOmega","fMultPhi","fMultEtaPrime"};
-  const char* fdname[2] = {"fDecPion","fDecKaon"};
-  Double_t ctau[2] = {7.8045, 3.712};  
-  Double_t ptparam[7][9];
-  Double_t yparam[7][9];
-  Double_t nparam[7][9];
-
-  // parameters for 7 TeV generation
-  if (energy==7.0) {
-    printf ("AliGenMUONLMR: using pp parameterization at 7 TeV\n");  
-    Double_t ptparam7000[7][9] = {{1,0.427,2.52,0,0,0,0,0,0}, // pions from Pythia
-				  {1,0.58,2.57,0,0,0,0,0,0},  // kaons from Pythia
-				  {1,0.641,2.62,0,0,0,0,0,0}, // eta from Pythia
-				  {1,1.44,3.16,0,0,0,0,0,0},  // rho+omega from ALICE muon  
-				  {1,1.44,3.16,0,0,0,0,0,0},  // rho+omega from ALICE muon  
-				  {1,1.16,2.74,0,0,0,0,0,0},  // phi from ALICE muon  
-				  {1,0.72,2.5,0,0,0,0,0,0}};  // etaPrime from Pythia    
-    
-    Double_t yparam7000[7][9] = {{1,0.8251,3.657,0,0,0,0,0,0}, // pions from pythia
-				 {1,1.83,2.698,0,0,0,0,0,0},   // kaons from pythia
-				 {1,1.169,3.282,0,0,0,0,0,0},  // eta from pythia
-				 {1,1.234,3.264,0,0,0,0,0,0},  // rho from pythia
-				 {1,1.311,3.223,0,0,0,0,0,0},  // omega from pythia
-				 {1,2.388,2.129,0,0,0,0,0,0},  // phi from pythia
-				 {1,1.13,3.3,0,0,0,0,0,0}};    // eta prime from pythia
-    
-    // multiplicity parameters from pythia
-    Double_t nparam7000[7][9] = {{353.582, 6.76263, 1.66979, 998.445, 9.73281, 12.6704, 175.187, 29.08, 40.2531},
-				 {1.e4,  0.2841, 0,0,0,0,0,0,0},
-				 {1.e4,  0.2647, 0,0,0,0,0,0,0},
-				 {7055,  0.1786, 0,0,0,0,0,0,0},
-				 {7500,  0.1896, 0,0,0,0,0,0,0},
-				 {5.e4,  1.167,  0,0,0,0,0,0,0}, 
-				 {2.9e4, 0.714,  0,0,0,0,0,0,0}};
-    
-    for (Int_t i=0; i<fgkNpart; i++) { 
-      for (Int_t j=0; j<9; j++) {
-	ptparam[i][j] = ptparam7000[i][j];
-	yparam[i][j] = yparam7000[i][j];
-	nparam[i][j] = nparam7000[i][j];	
-      }
-    }
-  }  
-  
-  // parameters for 2.76 generation
-  // pt params has been determined as <pt>ALICE_2.76 = <pt>ALICE_7 * <pt>PYTHIA_2.76 / <pt>PYTHIA_7
-  if (energy == 2.76){
-    printf ("AliGenMUONLMR: using pp parameterization at 2.76 TeV\n");  
-    Double_t yparam2760[7][9] = {{1,0.8251,3.657,0,0,0,0,0,0},      // pions from pythia
-				 {1,1.83,2.698,0,0,0,0,0,0},        // kaons from pythia
-				 {1,0.011,3.474,0,0,0,0,0,0},       // eta from pythia
-				 {1,-0.01,3.409,0,0,0,0,0,0},       // rho from pythia
-				 {1,-0.037,3.294,0,0,0,0,0,0},      // omega from pythia
-				 {1,-0.016,2.717,0,0,0,0,0,0},      // phi from pythia
-				 {1,-0.010,3.312,0,0,0,0,0,0}};     // eta prime from pythia  
-    
-    Double_t ptparam2760[7][9] = {{1,0.1665,8.878,0,0,0,0,0,0},  // pions from Pythia
-				  {1,0.1657,8.591,0,0,0,0,0,0},  // kaons from Pythia
-				  {1,0.641,2.62,0,0,0,0,0,0},    // eta from ALICE 7 TeV
-				  {1,1.3551,3.16,0,0,0,0,0,0},   // rho with <pt> scaled 
-				  {1,1.3551,3.16,0,0,0,0,0,0},   // omega with <pt> scaled 
-				  {1,1.0811,2.74,0,0,0,0,0,0},   // phi with <pt> scaled 
-				  {1,0.72,2.5,0,0,0,0,0,0}};     // etaPrime from ALICE 7 TeV
-    
-    Double_t nparam2760[7][9] = {{9752,-2.693,3.023,9.5e9,-84.68,16.75,-14.06,635.3,-423.2}, // pions
-				 {1.e5, 1.538,  0,0,0,0,0,0,0},                              // kaons
-				 {1.e4, 0.351,  0,0,0,0,0,0,0},                              // eta
-				 {1.e4, 0.2471, 0,0,0,0,0,0,0},                              // rho
-				 {1.e4, 0.2583, 0,0,0,0,0,0,0},                              // omega
-				 {1.e5, 1.393,  0,0,0,0,0,0,0},                              // phi
-				 {1.e4, 0.9005, 0,0,0,0,0,0,0}};                             // etaPrime
-
-    for (Int_t i=0; i<fgkNpart; i++) { 
-      for (Int_t j=0; j<9; j++) {
-	ptparam[i][j] = ptparam2760[i][j];
-	yparam[i][j] = yparam2760[i][j];
-	nparam[i][j] = nparam2760[i][j];	
-      }
-    }
-  }
-  
-    for (Int_t i=0; i<fgkNpart; i++) { 
-      fPDG[i] = pdg[i]; 
-      if (i!=0) { 
-        fMult[i] = new TF1(fnname[i],"[0]*exp(-[1]*x)",0,30);
-        fMult[i]->SetParameters(nparam[i][0],nparam[i][1]);  
-      }
-      else { 
-        fMult[i] = new TF1(fnname[i],"gaus(0)+gaus(3)+gaus(6)",0,150);
-        for (Int_t j=0; j<9; j++) fMult[i]->SetParameter(j,nparam[i][j]);
-      }
-  
-      fPt[i] = new TF1(fptname[i],AliGenMUONLMR::PtDistr,0,20,3);
-      fPt[i]->SetParameters(ptparam[i][0], ptparam[i][1], ptparam[i][2]);  
-      fY[i] = new TF1(fyname[i],AliGenMUONLMR::YDistr,-10,10,3);
-      fY[i]->SetParameters(yparam[i][0], yparam[i][1], yparam[i][2]); 
-    }
-  
-  for(Int_t i = 0; i<2; i++){
-    fDecay[i] = new TF1(fdname[i],"exp(-x/[0])",0,150);
-    fDecay[i]->SetParameter(0,ctau[i]);
-  }
-  
-  for (Int_t ipart = 0; ipart < fgkNpart; ipart++) { 
-    fParticle[ipart] = new TParticle(); 
-    fParticle[ipart]->SetPdgCode(fPDG[ipart]); 
-  }
-
-  TDatabasePDG *pdgdb = TDatabasePDG::Instance(); 
-  Double_t mumass = pdgdb->GetParticle(13)->Mass();
-  fMu[0] = new TParticle(); 
-  fMu[0]->SetPdgCode(-13); 
-  fMu[0]->SetCalcMass(mumass); 
-  fMu[1] = new TParticle(); 
-  fMu[1]->SetPdgCode(13); 
-  fMu[1]->SetCalcMass(mumass); 
-  
-  // function for polarized theta distributions
-  fCosTheta = new TF1 ("fCosTheta","1+[0]*x*x",-1,1);
-  fCosTheta->SetParameter(0,1);
-
-  // Dalitz decays 
-  Int_t nbins = 1000;
-  Double_t xmin = 0, xmax = 2; 
-  fDalitz[0] = new TH1F("hDalitzEta","",nbins,xmin,xmax);
-  fDalitz[1] = new TH1F("hDalitzOmega","",nbins,xmin,xmax);
-  fDalitz[2] = new TH1F("hDalitzEtaPrime","",nbins,xmin,xmax);
-  
-  Double_t meta   = pdgdb->GetParticle("eta")->Mass(); 
-  Double_t momega = pdgdb->GetParticle("omega")->Mass(); 
-  Double_t metaPrime = pdgdb->GetParticle("eta'")->Mass(); 
-  Double_t mpi0   = pdgdb->GetParticle("pi0")->Mass(); 
-  Double_t md3 = 0, mres = 0; 
-  
-  for (Int_t index = 0; index < 3; index++) { 
-    if (index == 0) { 
-      mres = meta; 
-      md3 = 0; 
-    }
-    else if (index == 1) { 
-      mres = momega; 
-      md3 = mpi0; 
-    }
-    else if (index == 2) { 
-      mres = metaPrime; 
-      md3 = 0; 
-    }
-    Double_t delta   = md3 * md3 / (mres * mres);
-    Double_t epsilon = mumass * mumass / (mres * mres);
-    nbins = fDalitz[index]->GetNbinsX();
-    xmin = fDalitz[index]->GetXaxis()->GetXmin(); 
-    Double_t deltax =  fDalitz[index]->GetBinWidth(1);
-    Double_t xd = xmin - deltax/2.; 
-    for (Int_t ibin = 0; ibin< nbins; ibin++) { 
-      Double_t dalval = 0; 
-      xd += deltax; 
-      if (xd > 4. *epsilon) { 
-	Double_t bracket = TMath::Power(1. + xd/(1. - delta),2)      
-	  - 4. * xd / ((1. - delta) * (1. - delta));
-	if (bracket > 0) { 
-	  dalval = TMath::Power(bracket,1.5) /xd *
-	    TMath::Sqrt(1 - 4 * epsilon / xd) * (1 + 2 * epsilon / xd) * 
-	    FormFactor(xd * mres * mres, index);
-	  fDalitz[index]->Fill(xd,dalval); 
-	}
-      }
-    }
-  }
-
-  fRhoLineShape = new TF1("fRhoLineShape",RhoLineShapeNew,0,2,2); 
-  fHMultMu = new TH1D("fHMultMu","Muon multiplicity",20,-0.5,19.5); 
-  fHNProc = new TH1D("fHNProc","Number of gen. evts. per process in 4 pi",9,-0.5,8.5); 
+ for (int i=0; i<fgkNpart; i++) {
+	 fPDG[i] = 0;
+	 fScaleMult[i] = 1.;
+	 fPt[i] = NULL;
+	 fY[i] = NULL;
+	 fMult[i] = NULL;
+	 fDecay[i] = NULL;
+	 fParticle[i] = NULL;
+ }
+for (int i=0; i<3; i++) fDalitz[i] = NULL;
+for (int i=0; i<3; i++) fMu[i] = NULL;
+						 
 }
 
 //-----------------------------------------------------------
 
+void AliGenMUONLMR::SetCMSEnergy(CMSEnergies energy){
+	fCMSEnergy = energy;
+	// initialize pt and y distributions according to a fit to 
+	// Pythia simulation at sqrt(s) = 7 TeV
+	for (Int_t ipart=0; ipart < fgkNpart; ipart++) fScaleMult[ipart] = 1; 
+	fScaleMult[kPionLMR] = 0; // set pion multiplicity to zero 
+	fScaleMult[kKaonLMR] = 0; // set kaon multiplicity to zero
+	const char* fdname[2] = {"fDecPion","fDecKaon"};
+	Double_t ctau[2] = {7.8045, 3.712};  
+	Int_t pdg[7] = {211, 321, 221, 113, 223, 333, 331}; 
+	const char* fptname[7] = {"fPtPion","fPtKaon","fPtEta","fPtRho","fPtOmega","fPtPhi","fPtEtaPrime"};
+	const char* fyname[7] = {"fYPion","fYKaon","fYEta","fYRho","fYOmega","fYPhi","fYEtaPrime"}; 
+	const char* fnname[7] = {"fMultPion","fMultKaon","fMultEta","fMultRho","fMultOmega","fMultPhi","fMultEtaPrime"};
+	Double_t ptparam[7][9];
+	Double_t yparam[7][9];
+	Double_t nparam[7][9];
+	
+	// parameters for 7 TeV generation
+	if (fCMSEnergy==kCMS7000GeV) {
+		AliInfo ("Using pp parameterization at 7 TeV\n");  
+		Double_t ptparam7000[7][9] = {{1,0.427,2.52,0,0,0,0,0,0}, // pions from Pythia
+			{1,0.58,2.57,0,0,0,0,0,0},  // kaons from Pythia
+			{1,0.641,2.62,0,0,0,0,0,0}, // eta from Pythia
+			{1,1.44,3.16,0,0,0,0,0,0},  // rho+omega from ALICE muon  
+			{1,1.44,3.16,0,0,0,0,0,0},  // rho+omega from ALICE muon  
+			{1,1.16,2.74,0,0,0,0,0,0},  // phi from ALICE muon  
+			{1,0.72,2.5,0,0,0,0,0,0}};  // etaPrime from Pythia    
+		
+		Double_t yparam7000[7][9] = {{1,0.8251,3.657,0,0,0,0,0,0}, // pions from pythia
+			{1,1.83,2.698,0,0,0,0,0,0},   // kaons from pythia
+			{1,1.169,3.282,0,0,0,0,0,0},  // eta from pythia
+			{1,1.234,3.264,0,0,0,0,0,0},  // rho from pythia
+			{1,1.311,3.223,0,0,0,0,0,0},  // omega from pythia
+			{1,2.388,2.129,0,0,0,0,0,0},  // phi from pythia
+			{1,1.13,3.3,0,0,0,0,0,0}};    // eta prime from pythia
+		
+		// multiplicity parameters from pythia
+		Double_t nparam7000[7][9] = {{353.582, 6.76263, 1.66979, 998.445, 9.73281, 12.6704, 175.187, 29.08, 40.2531},
+			{1.e4,  0.2841, 0,0,0,0,0,0,0},
+			{1.e4,  0.2647, 0,0,0,0,0,0,0},
+			{7055,  0.1786, 0,0,0,0,0,0,0},
+			{7500,  0.1896, 0,0,0,0,0,0,0},
+			{5.e4,  1.167,  0,0,0,0,0,0,0}, 
+			{2.9e4, 0.714,  0,0,0,0,0,0,0}};
+		
+		for (Int_t i=0; i<fgkNpart; i++) { 
+			for (Int_t j=0; j<9; j++) {
+				ptparam[i][j] = ptparam7000[i][j];
+				yparam[i][j] = yparam7000[i][j];
+				nparam[i][j] = nparam7000[i][j];	
+			}
+		}
+	}  
+	
+	// parameters for 2.76 generation
+	// pt params has been determined as <pt>ALICE_2.76 = <pt>ALICE_7 * <pt>PYTHIA_2.76 / <pt>PYTHIA_7
+	else if (fCMSEnergy==kCMS2760GeV){
+		AliInfo ("Using pp parameterization at 2.76 TeV\n");  
+		Double_t yparam2760[7][9] = {{1,0.8251,3.657,0,0,0,0,0,0},      // pions from pythia
+			{1,1.83,2.698,0,0,0,0,0,0},        // kaons from pythia
+			{1,0.011,3.474,0,0,0,0,0,0},       // eta from pythia
+			{1,-0.01,3.409,0,0,0,0,0,0},       // rho from pythia
+			{1,-0.037,3.294,0,0,0,0,0,0},      // omega from pythia
+			{1,-0.016,2.717,0,0,0,0,0,0},      // phi from pythia
+			{1,-0.010,3.312,0,0,0,0,0,0}};     // eta prime from pythia  
+		
+		Double_t ptparam2760[7][9] = {{1,0.1665,8.878,0,0,0,0,0,0},  // pions from Pythia
+			{1,0.1657,8.591,0,0,0,0,0,0},  // kaons from Pythia
+			{1,0.641,2.62,0,0,0,0,0,0},    // eta from ALICE 7 TeV
+			{1,1.3551,3.16,0,0,0,0,0,0},   // rho with <pt> scaled 
+			{1,1.3551,3.16,0,0,0,0,0,0},   // omega with <pt> scaled 
+			{1,1.0811,2.74,0,0,0,0,0,0},   // phi with <pt> scaled 
+			{1,0.72,2.5,0,0,0,0,0,0}};     // etaPrime from ALICE 7 TeV
+		
+		Double_t nparam2760[7][9] = {{9752,-2.693,3.023,9.5e9,-84.68,16.75,-14.06,635.3,-423.2}, // pions
+			{1.e5, 1.538,  0,0,0,0,0,0,0},                              // kaons
+			{1.e4, 0.351,  0,0,0,0,0,0,0},                              // eta
+			{1.e4, 0.2471, 0,0,0,0,0,0,0},                              // rho
+			{1.e4, 0.2583, 0,0,0,0,0,0,0},                              // omega
+			{1.e5, 1.393,  0,0,0,0,0,0,0},                              // phi
+			{1.e4, 0.9005, 0,0,0,0,0,0,0}};                             // etaPrime
+		
+		for (Int_t i=0; i<fgkNpart; i++) { 
+			for (Int_t j=0; j<9; j++) {
+				ptparam[i][j] = ptparam2760[i][j];
+				yparam[i][j] = yparam2760[i][j];
+				nparam[i][j] = nparam2760[i][j];	
+			}
+		}
+	} else 
+		AliFatal("Energy not correctly defined");
+	
+    for (Int_t i=0; i<fgkNpart; i++) { 
+		fPDG[i] = pdg[i]; 
+		if (i!=0) { 
+			fMult[i] = new TF1(fnname[i],"[0]*exp(-[1]*x)",0,30);
+			fMult[i]->SetParameters(nparam[i][0],nparam[i][1]);  
+		}
+		else { 
+			fMult[i] = new TF1(fnname[i],"gaus(0)+gaus(3)+gaus(6)",0,150);
+			for (Int_t j=0; j<9; j++) fMult[i]->SetParameter(j,nparam[i][j]);
+		}
+		
+		fPt[i] = new TF1(fptname[i],AliGenMUONLMR::PtDistr,0,20,3);
+		fPt[i]->SetParameters(ptparam[i][0], ptparam[i][1], ptparam[i][2]);  
+		fY[i] = new TF1(fyname[i],AliGenMUONLMR::YDistr,-10,10,3);
+		fY[i]->SetParameters(yparam[i][0], yparam[i][1], yparam[i][2]); 
+    }
+	
+	for(Int_t i = 0; i<2; i++){
+		fDecay[i] = new TF1(fdname[i],"exp(-x/[0])",0,150);
+		fDecay[i]->SetParameter(0,ctau[i]);
+	}
+	
+	for (Int_t ipart = 0; ipart < fgkNpart; ipart++) { 
+		fParticle[ipart] = new TParticle(); 
+		fParticle[ipart]->SetPdgCode(fPDG[ipart]); 
+	}
+	
+	TDatabasePDG *pdgdb = TDatabasePDG::Instance(); 
+	Double_t mumass = pdgdb->GetParticle(13)->Mass();
+	fMu[0] = new TParticle(); 
+	fMu[0]->SetPdgCode(-13); 
+	fMu[0]->SetCalcMass(mumass); 
+	fMu[1] = new TParticle(); 
+	fMu[1]->SetPdgCode(13); 
+	fMu[1]->SetCalcMass(mumass); 
+	
+	// function for polarized theta distributions
+	fCosTheta = new TF1 ("fCosTheta","1+[0]*x*x",-1,1);
+	fCosTheta->SetParameter(0,1);
+	
+	// Dalitz decays 
+	Int_t nbins = 1000;
+	Double_t xmin = 0, xmax = 2; 
+	fDalitz[0] = new TH1F("hDalitzEta","",nbins,xmin,xmax);
+	fDalitz[1] = new TH1F("hDalitzOmega","",nbins,xmin,xmax);
+	fDalitz[2] = new TH1F("hDalitzEtaPrime","",nbins,xmin,xmax);
+	
+	Double_t meta   = pdgdb->GetParticle("eta")->Mass(); 
+	Double_t momega = pdgdb->GetParticle("omega")->Mass(); 
+	Double_t metaPrime = pdgdb->GetParticle("eta'")->Mass(); 
+	Double_t mpi0   = pdgdb->GetParticle("pi0")->Mass(); 
+	Double_t md3 = 0, mres = 0; 
+	
+	for (Int_t index = 0; index < 3; index++) { 
+		if (index == 0) { 
+			mres = meta; 
+			md3 = 0; 
+		}
+		else if (index == 1) { 
+			mres = momega; 
+			md3 = mpi0; 
+		}
+		else if (index == 2) { 
+			mres = metaPrime; 
+			md3 = 0; 
+		}
+		Double_t delta   = md3 * md3 / (mres * mres);
+		Double_t epsilon = mumass * mumass / (mres * mres);
+		nbins = fDalitz[index]->GetNbinsX();
+		xmin = fDalitz[index]->GetXaxis()->GetXmin(); 
+		Double_t deltax =  fDalitz[index]->GetBinWidth(1);
+		Double_t xd = xmin - deltax/2.; 
+		for (Int_t ibin = 0; ibin< nbins; ibin++) { 
+			Double_t dalval = 0; 
+			xd += deltax; 
+			if (xd > 4. *epsilon) { 
+				Double_t bracket = TMath::Power(1. + xd/(1. - delta),2)      
+				- 4. * xd / ((1. - delta) * (1. - delta));
+				if (bracket > 0) { 
+					dalval = TMath::Power(bracket,1.5) /xd *
+					TMath::Sqrt(1 - 4 * epsilon / xd) * (1 + 2 * epsilon / xd) * 
+					FormFactor(xd * mres * mres, index);
+					fDalitz[index]->Fill(xd,dalval); 
+				}
+			}
+		}
+	}
+	
+	fRhoLineShape = new TF1("fRhoLineShape",RhoLineShapeNew,0,2,2); 
+	fHMultMu = new TH1D("fHMultMu","Muon multiplicity",20,-0.5,19.5); 
+	fHNProc = new TH1D("fHNProc","Number of gen. evts. per process in 4 pi",9,-0.5,8.5); 
+	
+}
+//-----------------------------------------------------------
+
 AliGenMUONLMR::AliGenMUONLMR (AliGenMUONLMR &gen) : AliGenMC(), 
 						    fNMuMin(gen.fNMuMin), 
-						    fGenSingleProc(gen.fGenSingleProc),
+							fCMSEnergy(gen.fCMSEnergy), 
+							fGenSingleProc(gen.fGenSingleProc),
 						    fCosTheta(gen.fCosTheta), 
 						    fRhoLineShape(gen.fRhoLineShape),  
 						    fHMultMu(gen.fHMultMu), 
@@ -229,9 +250,10 @@ AliGenMUONLMR::AliGenMUONLMR (AliGenMUONLMR &gen) : AliGenMC(),
 //-----------------------------------------------------------
 
 AliGenMUONLMR& AliGenMUONLMR::operator=(const AliGenMUONLMR &gen) {
-  // Assignment operator
+ // Assignment operator
   if (this!=&gen) {
     fNMuMin = gen.fNMuMin; 
+	fCMSEnergy = gen.fCMSEnergy; 
     fGenSingleProc = gen.fGenSingleProc; 
     fCosTheta = (TF1*) gen.fCosTheta->Clone();  
     fRhoLineShape = (TF1*) gen.fRhoLineShape->Clone();
@@ -285,8 +307,8 @@ AliGenMUONLMR::~AliGenMUONLMR()
 void AliGenMUONLMR::FinishRun(){ 
   // save some histograms to an output file 
   Int_t nbins = fHNProc->GetNbinsX(); 
-  for (Int_t ibin=1; ibin <= nbins; ibin++) printf ("ibin = %d nEvProc = %g\n",
-						      ibin,fHNProc->GetBinContent(ibin));
+  for (Int_t ibin=1; ibin <= nbins; ibin++) AliInfo (Form("ibin = %d nEvProc = %g",
+						      ibin,fHNProc->GetBinContent(ibin)));
     TFile *fout = new TFile("AliGenMUONLMR_histos.root","recreate"); 
   fHMultMu->Write(); 
   fHNProc->Write(); 
@@ -337,7 +359,6 @@ void AliGenMUONLMR::Generate() {
     for (Int_t j=0;j<3;j++) origin0[j]=fVertex[j];
   }
   
-  printf ("In Generate()\n");
   TParticle *mother; 
   TDatabasePDG* pdg = TDatabasePDG::Instance();
 
@@ -589,7 +610,7 @@ void AliGenMUONLMR::DalitzDecay(TParticle *mother){
   Double_t e1 = TMath::Sqrt(mvirt2)/2.; // energy of mu1 in the virtual photon frame
   Double_t psquare = (e1 + mumass)*(e1 - mumass); 
   if (psquare<0) {
-    printf("Error in AliGenMUONLMR::DalitzDecay: sqrt of psquare = %f put to 0\n",psquare); 
+    AliError(Form("sqrt of psquare = %f put to 0\n",psquare)); 
     psquare = 0;
   }
   Double_t p1 = TMath::Sqrt(psquare);
@@ -620,7 +641,7 @@ void AliGenMUONLMR::DalitzDecay(TParticle *mother){
   Double_t e3 = (mres * mres + md3 * md3 - mvirt2) / (2.*mres);
   Double_t psquare3 = (e3 + md3)*(e3 - md3); 
   if (psquare3<0) {
-    printf("Error in AliGenMUONLMR::DalitzDecay: sqrt of psquare3 = %f put to 0\n",psquare3); 
+    AliError(Form("Sqrt of psquare3 = %f put to 0\n",psquare3)); 
     psquare3 = 0;
   }
   Double_t p3 = TMath::Sqrt(psquare3);
@@ -725,7 +746,7 @@ Double_t AliGenMUONLMR::FormFactor(Double_t q2, Int_t decay){
     else ff2 = 0; 
     break;
   default:
-    printf ("FormFactor: Decay not found\n"); 
+    AliError ("FormFactor: Decay not found"); 
     return 0; 
     break; 
   }
@@ -773,3 +794,4 @@ Double_t AliGenMUONLMR::RhoLineShapeNew(Double_t *x, Double_t */*para*/){
 
   return r;
 }
+
