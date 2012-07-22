@@ -345,13 +345,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	//one "container" for MC
 	TString nameContainer="";
 	if(!isKeepDfromB) {
-		nameContainer="CFHFccontainer0_CommonFramework";
+		nameContainer="CFHFccontainer0";
 	}
 	else  if(isKeepDfromBOnly){
-		nameContainer="CFHFccontainer0DfromB_CommonFramework";
+		nameContainer="CFHFccontainer0DfromB";
 	}
 	else  {
-		nameContainer="CFHFccontainer0allD_CommonFramework";	  
+		nameContainer="CFHFccontainer0allD";	  
 	}
 
 	//Setting up the container grid... 
@@ -612,13 +612,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 	TString nameCorr="";
 	if(!isKeepDfromB) {
-		nameCorr="CFHFcorr0_CommonFramework";
+		nameCorr="CFHFcorr0";
 	}
 	else  if(isKeepDfromBOnly){
-		nameCorr= "CFHFcorr0KeepDfromBOnly_CommonFramework";
+		nameCorr= "CFHFcorr0KeepDfromBOnly";
 	}
 	else  {
-		nameCorr="CFHFcorr0allD_CommonFramework";
+		nameCorr="CFHFcorr0allD";
 
 	}
 
@@ -654,22 +654,22 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	TString output1name="", output2name="", output3name="",output4name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
-	output4name= "Cuts_CommonFramework";
+	output4name= "Cuts";
 	if(!isKeepDfromB) {
-		outputfile += ":PWG3_D2H_CFtaskD0toKpi_CommonFramework";
-		output1name="CFHFchist0_CommonFramework";
+		outputfile += ":PWG3_D2H_CFtaskD0toKpi";
+		output1name="CFHFchist0";
 		output3name+="_cOnly";
 		output4name+="_cOnly";
 	}
 	else  if(isKeepDfromBOnly){
-		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly_CommonFramework";
-		output1name="CFHFchist0DfromB_CommonFramework";
+		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly";
+		output1name="CFHFchist0DfromB";
 		output3name+="_bOnly";
 		output4name+="_bOnly";
 	}
 	else{
-		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB_CommonFramework";
-		output1name="CFHFchist0allD_CommonFramework";
+		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB";
+		output1name="CFHFchist0allD";
 		output3name+="_all";
 		output4name+="_all";
 	}
