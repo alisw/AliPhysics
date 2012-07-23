@@ -759,16 +759,15 @@ void AliAnalysisTaskSESignificance::FillDstar(AliAODRecoCascadeHF* dstarD0pi,TCl
     
     Double_t mass = dstarD0pi->DeltaInvMass();
 
-    if((isSel==1 || isSel==3) && fPartOrAndAntiPart>=0) fMassHist[index]->Fill(mass);
-    if(isSel>=2 && fPartOrAndAntiPart<=0) fMassHist[index]->Fill(mass);
+    if((isSel>0) && TMath::Abs(fPartOrAndAntiPart)>=0) fMassHist[index]->Fill(mass);
 	
     if(fReadMC) {
        Int_t matchtoMC = -1; 
        matchtoMC = dstarD0pi->MatchToMC(413,421,fPDGDStarToD0pi, fPDGD0ToKpi, arrayMC);
 
-       Int_t prongPdgDStarPlus=413,prongPdgDStarMinus=(-1)*413;
+       Int_t prongPdgDStarPlus=413;//,prongPdgDStarMinus=(-1)*413;
 	
-       if ((isSel==1 || isSel==3) && fPartOrAndAntiPart>=0) { 
+       if ((isSel>1) && TMath::Abs(fPartOrAndAntiPart)>=0) { 
           //D*+
       	  if(matchtoMC>=0) {
              AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
@@ -784,25 +783,7 @@ void AliAnalysisTaskSESignificance::FillDstar(AliAODRecoCascadeHF* dstarD0pi,TCl
       	    } 
 	  else fBkgHist[index]->Fill(mass);
         }
-    
-	if (isSel>=2 && fPartOrAndAntiPart<=0) { 
-           //D*-
-      	   if (matchtoMC>=0) {
-	      AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
-	      Int_t pdgMC = dMC->GetPdgCode();
-	
-	      if (pdgMC==prongPdgDStarMinus) fSigHist[index]->Fill(mass);
-	      else {
-		 dstarD0pi->SetCharge(-1*dstarD0pi->GetCharge());
-		 mass =	dstarD0pi->DeltaInvMass();
-		 fRflHist[index]->Fill(mass);
-		 dstarD0pi->SetCharge(-1*dstarD0pi->GetCharge());
-	      }
-      	    } 
-	    else fBkgHist[index]->Fill(mass);
-    	  }
-       }
-
+    }
 }
 
 
