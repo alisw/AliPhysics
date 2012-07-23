@@ -199,6 +199,88 @@ TObjArray*  AliAnalyseLeadingTrackUE::FindLeadingObjects(TObject *obj)
   }
 
 
+void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject* mcObj, Int_t maxLabel)
+{
+  // remove injected signals (primaries above <maxLabel>)
+  // <tracks> can be the following cases:
+  // a. tracks: in this case the label is taken and then case b.
+  // b. particles: the first stable mother is searched and checked if it is <= <maxLabel>
+  // <mcObj> can be AOD (TClonesArray) or ESD (AliMCEvent)
+  
+  TClonesArray* arrayMC = 0;
+  AliMCEvent* mcEvent = 0;
+  if (mcObj->InheritsFrom("AliMCEvent"))
+    mcEvent = static_cast<AliMCEvent*>(mcObj);
+  else if (mcObj->InheritsFrom("TClonesArray"))
+    arrayMC = static_cast<TClonesArray*>(mcObj);
+  else
+  {
+    arrayMC->Dump();
+    AliFatal("Invalid object passed");
+  }
+  
+  Int_t before = tracks->GetEntriesFast();
+
+  for (Int_t i=0; i<before; ++i) 
+  {
+    AliVParticle* part = (AliVParticle*) tracks->At(i);
+    
+    if (part->InheritsFrom("AliESDtrack") || part->InheritsFrom("AliAODTrack"))
+      part = ((mcEvent) ? mcEvent->GetTrack(TMath::Abs(part->GetLabel())) : (AliVParticle*)arrayMC->At(TMath::Abs(part->GetLabel())));
+      
+    AliVParticle* mother = part;
+    if (mcEvent)
+    {
+      while (!mcEvent->IsPhysicalPrimary(mother->GetLabel()))
+      {
+	if (((AliMCParticle*)mother)->GetMother() < 0)
+	{
+	  mother = 0;
+	  break;
+	}
+
+	mother = (AliMCParticle*) mcEvent->GetTrack(((AliMCParticle*)mother)->GetMother());
+	if (!mother)
+	  break;
+      }
+    }
+    else
+    {
+      // find the primary mother
+      while (!((AliAODMCParticle*)mother)->IsPhysicalPrimary())
+      {
+	if (((AliAODMCParticle*)mother)->GetMother() < 0)
+	{
+	  mother = 0;
+	  break;
+	}
+	  
+	mother = (AliVParticle*) arrayMC->At(((AliAODMCParticle*)mother)->GetMother());
+	if (!mother)
+	  break;
+      }
+    }
+    
+    if (!mother)
+    {
+      Printf("WARNING: No mother found for particle %d:", part->GetLabel());
+      continue;
+    }
+   
+    if (mother->GetLabel() > maxLabel)
+    {
+//       Printf("Removing %d with label %d", i, part->GetLabel()); part->Dump();
+      TObject* object = tracks->RemoveAt(i);
+      if (tracks->IsOwner())
+	delete object;
+    }
+  }
+ 
+  tracks->Compress();
+  
+  AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast())); 
+}
+
 //-------------------------------------------------------------------
 TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts)
 {
