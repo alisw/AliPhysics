@@ -68,6 +68,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual	void	SetTwoTrackEfficiencyCut(Float_t value = 0.02) { fTwoTrackEfficiencyCut = value; }
     virtual	void	SetUseVtxAxis(Bool_t flag) { fUseVtxAxis = flag; }
     virtual     void    SetSkipTrigger(Bool_t flag) { fSkipTrigger = flag; }
+    virtual     void    SetInjectedSignals(Bool_t flag) { fInjectedSignals = flag; }
     
     // histogram settings
     void SetTrackingEfficiency( const TH1D* hist) { fkTrackingEfficiency = hist; }
@@ -116,6 +117,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Float_t		fTwoTrackEfficiencyCut;   // enable two-track efficiency cut
     Bool_t		fUseVtxAxis;              // use z vtx as axis (needs 7 times more memory!)
     Bool_t		fSkipTrigger;		  // skip trigger selection
+    Bool_t		fInjectedSignals;	  // check header to skip injected signals in MC
     
     // Pointers to external UE classes
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
@@ -161,7 +163,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 12); // Analysis task for delta phi correlations
+    ClassDef( AliAnalysisTaskPhiCorrelations, 13); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle

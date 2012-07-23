@@ -57,7 +57,8 @@ class AliAnalyseLeadingTrackUE : public TObject {
   TObjArray*     GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1, Bool_t useEtaPtCuts = kFALSE); 
   Bool_t         TriggerSelection(const TObject* obj);                                   // Select good triggers with AliPhysicsSelection class
   Bool_t         VertexSelection(const TObject* obj, Int_t ntracks, Double_t zed);       // Vertex selection: see implementation
-
+  void 		 RemoveInjectedSignals(TObjArray* tracks, TObject* arrayMC, Int_t maxLabel);
+  
  private:
   Int_t          fDebug;             // debug flag
   Int_t          fFilterBit;         // track selection cuts

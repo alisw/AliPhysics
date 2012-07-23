@@ -45,6 +45,8 @@
 #include "AliCentrality.h"
 #include "AliStack.h"
 #include "AliAODMCHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenEventHeader.h"
 
 #include "AliEventPoolManager.h"
 
@@ -87,6 +89,7 @@ fTwoTrackEfficiencyStudy(kFALSE),
 fTwoTrackEfficiencyCut(0),
 fUseVtxAxis(kFALSE),
 fSkipTrigger(kFALSE),
+fInjectedSignals(kFALSE),
 // pointers to UE classes
 fAnalyseUE(0x0),
 fHistos(0x0),
@@ -326,6 +329,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
   settingsTree->Branch("fSkipTrigger", &fSkipTrigger,"SkipTrigger/O");
+  settingsTree->Branch("fInjectedSignals", &fInjectedSignals,"SkipTrigger/O");
   settingsTree->Branch("fRejectCentralityOutliers", &fRejectCentralityOutliers,"RejectCentralityOutliers/O");
   
   settingsTree->Fill();
@@ -398,12 +402,57 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   Float_t weight = 1;
   if (fFillpT)
     weight = -1;
+  
+  // For productions with injected signals, figure out above which label to skip particles/tracks
+  Int_t skipParticlesAbove = 0;
+  if (fInjectedSignals)
+  {
+    AliGenEventHeader* eventHeader = 0;
+    Int_t headers = 0;
+
+    if (fMcEvent)
+    {
+      // ESD
+      AliHeader* header = (AliHeader*) fMcEvent->Header();
+      if (!header)
+	AliFatal("fInjectedSignals set but no MC header found");
+	
+      AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (header->GenEventHeader());
+      if (!cocktailHeader)
+      {
+	header->Dump();
+	AliFatal("fInjectedSignals set but no MC cocktail header found");
+      }
+
+      headers = cocktailHeader->GetHeaders()->GetEntries();
+      eventHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+    }
+    else
+    {
+      // AOD
+      AliAODMCHeader* header = (AliAODMCHeader*) fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      if (!header)
+	AliFatal("fInjectedSignals set but no MC header found");
+      
+      headers = header->GetNCocktailHeaders();
+      eventHeader = header->GetCocktailHeader(0);
+    }
     
+    if (!eventHeader)
+      AliFatal("First event header not found");
+    
+    skipParticlesAbove = eventHeader->NProduced();
+    AliInfo(Form("Injected signals in this event (%d headers). Keeping events of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
+  }
+  
   // Get MC primaries
   TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
+  if (fInjectedSignals)
+    fAnalyseUE->RemoveInjectedSignals(tmpList, mc, skipParticlesAbove);
   TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
   delete tmpList;
   
+  /*
   if (fAOD)
   {
     for (Int_t i=0; i<fArrayMC->GetEntriesFast(); i++)
@@ -414,6 +463,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     for (Int_t i=0; i<fMcEvent->GetNumberOfTracks(); i++)
       ((TH1F*) fListOfHistos->FindObject("pids"))->Fill(fMcEvent->GetTrack(i)->PdgCode());
   }
+  */
   
   if (fFillOnlyStep0)
     zVtx = 0;
@@ -461,6 +511,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
         TObjArray* primMCParticles = fAnalyseUE->GetAcceptedParticles(mc, 0x0, kTRUE, particleSpecies, kTRUE);
         TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE);
         TObjArray* allRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE);
+	
+	if (fInjectedSignals)
+	{
+	  fAnalyseUE->RemoveInjectedSignals(primMCParticles, mc, skipParticlesAbove);
+	  fAnalyseUE->RemoveInjectedSignals(primRecoTracksMatched, mc, skipParticlesAbove);
+	  fAnalyseUE->RemoveInjectedSignals(allRecoTracksMatched, mc, skipParticlesAbove);
+	}
       
         fHistos->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, particleSpecies, centrality);
         
@@ -480,6 +537,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get MC primaries that match reconstructed track
       TObjArray* tracksRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, -1, kTRUE);
+      if (fInjectedSignals)
+	fAnalyseUE->RemoveInjectedSignals(tracksRecoMatchedPrim, mc, skipParticlesAbove);
       
       // (RECO-matched (quantities from MC particle) primary particles)
       // STEP 4
@@ -487,6 +546,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get MC primaries + secondaries that match reconstructed track
       TObjArray* tracksRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, -1, kTRUE);
+      if (fInjectedSignals)
+	fAnalyseUE->RemoveInjectedSignals(tracksRecoMatchedAll, mc, skipParticlesAbove);
       
       // (RECO-matched (quantities from MC particle) all particles)
       // STEP 5
@@ -494,7 +555,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // Get RECO tracks
       TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
-      
+      if (fInjectedSignals)
+	fAnalyseUE->RemoveInjectedSignals(tracks, mc, skipParticlesAbove);
+     
       // (RECO all tracks)
       // STEP 6
       if (!fSkipStep6)
