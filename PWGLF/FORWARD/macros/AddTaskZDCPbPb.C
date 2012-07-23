@@ -1,4 +1,4 @@
-AliAnalysisTaskSE* AddTaskZDCPbPb(Bool_t  applyPS = kFALSE,
+AliAnalysisTaskSE* AddTaskZDCPbPb(Bool_t  applyPS = kTRUE,
 				  Float_t centrlowlim = 0.,
                                   Float_t centruplim = 100.,
                                   TString centrest = "V0M",
@@ -30,18 +30,17 @@ AliAnalysisTaskSE* AddTaskZDCPbPb(Bool_t  applyPS = kFALSE,
 
    if(inputDataType.CompareTo("ESD")==0){
       task->SetInput(1);
-      printf("  AliAnalysisTaskZDCPbPb initialized for ESD analysis\n");
+      //printf("  AliAnalysisTaskZDCPbPb initialized for ESD analysis\n");
+      //
+      // apply physics selection
+      if(applyPS) task->SelectCollisionCandidates();
    }
    else if(inputDataType.CompareTo("AOD")==0){
       task->SetInput(2);
-      printf("  AliAnalysisTaskZDCPbPb initialized for AOD analysis\n");
+      //printf("  AliAnalysisTaskZDCPbPb initialized for AOD analysis\n");
    }
    task->SetCentralityRange(centrlowlim, centruplim);
    task->SetCentralityEstimator(centrest);
-
-   
-   // apply physics selection
-   if(applyPS) task->SelectCollisionCandidates();
    
    if(isMC==kTRUE) task->SetMCInput();
 

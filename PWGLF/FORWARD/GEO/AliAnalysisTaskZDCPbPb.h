@@ -101,11 +101,16 @@ class AliAnalysisTaskZDCPbPb : public AliAnalysisTaskSE {
   TH2F *fhZPAvscentrality;	//! ZPA vs. centrality
   //
   TH2F *fhZNCpmcvscentr;	//! ZNC vs. centrality
-  TH2F *fhZNApmcvscentr;   //! ZNA vs. centrality
-  TH2F *fhZPCpmcvscentr;   //! ZPC vs. centrality
-  TH2F *fhZPApmcvscentr;   //! ZPA vs. centrality
+  TH2F *fhZNApmcvscentr;   	//! ZNA vs. centrality
+  TH2F *fhZPCpmcvscentr;   	//! ZPC vs. centrality
+  TH2F *fhZPApmcvscentr;   	//! ZPA vs. centrality
+  //
+  TH1F *fhZNCpmcLR;		//! ZPA PMC low res. chain 
+  TH1F *fhZNApmcLR;		//! ZNA PMC low res. chain 
+  TH1F *fhZPCpmcLR;		//! ZPC  PMC low res. chain
+  TH1F *fhZPApmcLR;		//! ZPA PMC low res. chain
  
-  ClassDef(AliAnalysisTaskZDCPbPb,2); 
+  ClassDef(AliAnalysisTaskZDCPbPb,3); 
 
 };
 
