@@ -243,6 +243,12 @@ Float_t  AliPIDResponse::NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EPa
   Double_t pt      = -1.; 
   Double_t EovP    = -1.;
   Double_t fClsE   = -1.;
+
+  // initialize eop and shower shape parameters
+  eop = -1.;
+  for(Int_t i = 0; i < 4; i++){
+    showershape[i] = -1.;
+  }
   
   Int_t nMatchClus = -1;
   Int_t charge     = 0;
