@@ -37,6 +37,7 @@
 #include "AliMultiplicity.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
+#include "AliAODHeader.h"
 #include "AliAODVertex.h"
 #include "AliAODVZERO.h"
 #include "AliAODZDC.h"
@@ -95,8 +96,11 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb():
     fhZNCpmcvscentr(0x0),
     fhZNApmcvscentr(0x0),
     fhZPCpmcvscentr(0x0),
-    fhZPApmcvscentr(0x0)
-    
+    fhZPApmcvscentr(0x0),
+    fhZNCpmcLR(0x0),    
+    fhZNApmcLR(0x0),    
+    fhZPCpmcLR(0x0),    
+    fhZPApmcLR(0x0)    
 {   
    // Default constructor
    for(int i=0; i<5; i++){
@@ -160,8 +164,11 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const char *name):
     fhZNCpmcvscentr(0x0),
     fhZNApmcvscentr(0x0),
     fhZPCpmcvscentr(0x0),
-    fhZPApmcvscentr(0x0)
-
+    fhZPApmcvscentr(0x0),
+    fhZNCpmcLR(0x0),    
+    fhZNApmcLR(0x0),    
+    fhZPCpmcLR(0x0),    
+    fhZPApmcLR(0x0)    
 {
 
    for(int i=0; i<5; i++){
@@ -241,7 +248,12 @@ AliAnalysisTaskZDCPbPb::AliAnalysisTaskZDCPbPb(const AliAnalysisTaskZDCPbPb& ana
     fhZNCpmcvscentr(ana.fhZNCpmcvscentr),
     fhZNApmcvscentr(ana.fhZNApmcvscentr),
     fhZPCpmcvscentr(ana.fhZPCpmcvscentr),
-    fhZPApmcvscentr(ana.fhZPApmcvscentr)
+    fhZPApmcvscentr(ana.fhZPApmcvscentr),
+    fhZNCpmcLR(ana.fhZNCpmcLR),    
+    fhZNApmcLR(ana.fhZNApmcLR),    
+    fhZPCpmcLR(ana.fhZPCpmcLR),    
+    fhZPApmcLR(ana.fhZPApmcLR)    
+    
 
 {
   //
@@ -456,6 +468,15 @@ void AliAnalysisTaskZDCPbPb::UserCreateOutputObjects()
   fhZPApmcvscentr = new TH2F("hZPApmcvscentr","ZPA PMC vs. centrality",100,0.,100.,100,0.,100.);
   fOutput->Add(fhZPApmcvscentr);
   
+  fhZNCpmcLR = new TH1F("hZNCpmcLR","ZNC PMC lr", 100, 0., 10.);
+  fOutput->Add(fhZNCpmcLR);
+  fhZNApmcLR = new TH1F("hZNApmcLR","ZNA PMC lr", 100, 0., 10.);
+  fOutput->Add(fhZNApmcLR);
+  fhZPCpmcLR = new TH1F("hZPCpmcLR","ZPC PMC lr", 100, 0., 10.);
+  fOutput->Add(fhZPCpmcLR);
+  fhZPApmcLR = new TH1F("hZPApmcLR","ZPA PMC lr", 100, 0., 10.);
+  fOutput->Add(fhZPApmcLR);
+  
   PostData(1, fOutput);
 }
 
@@ -464,12 +485,12 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event:
 
-  if (!InputEvent()) {
+  if(!InputEvent()){
     printf("ERROR: InputEvent not available");
     return;
   }
   
-   if(fAnalysisInput==kESD){
+  if(fAnalysisInput==kESD){
       
       AliESDEvent* esd = dynamic_cast<AliESDEvent*> (InputEvent());
       if(!esd) return;
@@ -493,9 +514,11 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       }*/
       // ****************************************************
      
-     //AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-     // use response of AliPhysicsSelection
-//     if(((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT){      
+     // PHYSICS SELECTION
+//     AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+//     AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
+//     printf("  PS selection %d\n",hdr->IsEventSelected());
+//     if(hdr->IsEventSelected() & AliVEvent::kAnyINT){      
       
       AliCentrality *centrality = esd->GetCentrality();
       Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
@@ -539,8 +562,8 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       Bool_t zna  = tdcMult[4];
       Bool_t zpa  = tdcMult[5];
       if(znc && zna){
-	tdcSum = Int_t(esdZDC->GetZNTDCSum(0));
-	tdcDiff = Int_t(esdZDC->GetZNTDCDiff(0));
+	tdcSum = esdZDC->GetZNTDCSum(0);
+	tdcDiff = esdZDC->GetZNTDCDiff(0);
 	fhDebunch->Fill(tdcDiff, tdcSum);	   
       }
       
@@ -581,6 +604,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 	   if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
 	}
 	fhPMCvsPMQ[0]->Fill(towZNC[1]+towZNC[2]+towZNC[3]+towZNC[4], towZNC[0]);
+	fhZNCpmcLR->Fill(towZNClg[0]/1000.);
       }
       if(zpc){
         for(int i=0; i<5; i++){
@@ -589,6 +613,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 	   if(((i<4) && towZPC[0]>0.)) fhZPCPMQiPMC[i]->Fill(towZPC[i+1]/towZPC[0]);
 	}
 	fhPMCvsPMQ[1]->Fill(towZPC[1]+towZPC[2]+towZPC[3]+towZPC[4], towZPC[0]);
+	fhZPCpmcLR->Fill(towZPClg[0]/1000.);
       }
       if(zna){
         for(int i=0; i<5; i++){
@@ -597,6 +622,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 	   if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
 	}
 	fhPMCvsPMQ[2]->Fill(towZNA[1]+towZNA[2]+towZNA[3]+towZNA[4], towZNA[0]);
+	fhZNApmcLR->Fill(towZNAlg[0]/1000.);
       }
       if(zpa){
         for(int i=0; i<5; i++){
@@ -605,6 +631,7 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 	   if(((i<4) && towZPA[0]>0.)) fhZPAPMQiPMC[i]->Fill(towZPA[i+1]/towZPA[0]);
 	}
 	fhPMCvsPMQ[3]->Fill(towZPA[1]+towZPA[2]+towZPA[3]+towZPA[4], towZPA[0]);
+	fhZPApmcLR->Fill(towZPAlg[0]/1000.);
       }
       if(zem1) fhZEM[0]->Fill(energyZEM1);
       if(zem2) fhZEM[1]->Fill(energyZEM2);
@@ -626,7 +653,8 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
 	fhZDCvsNclu1->Fill((Float_t) (nClusterslay1), energyZNA+energyZPA+energyZNC+energyZPC);
 	fhVZEROvsZEM->Fill(energyZEM1+energyZEM2, multV0A+multV0C);	
         
-	Double_t asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
+	Double_t asymmetry = -999.;
+        if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
 	fhAsymm->Fill(asymmetry);
         fhZNAvsAsymm->Fill(asymmetry, energyZNA/1000.);
         fhZNCvsAsymm->Fill(asymmetry, energyZNC/1000.);
@@ -647,21 +675,29 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
   }   
   else if(fAnalysisInput==kAOD){
       
-     AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
-     if(!aod) return;
-     
-     // Select PHYSICS events (type=7, for data)
-     if(!fIsMCInput && aod->GetEventType()!=7) return; 
-     
-     // AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();	 
-     // use response of AliPhysicsSelection
-     //if(((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT){     
-      
-      AliCentrality *centrality = aod->GetCentrality();
+    AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
+    if(!aod){
+       printf("AODs not available");
+       return;
+    }
+    
+    // Select PHYSICS events (type=7, for data)
+    //if(!fIsMCInput && aod->GetEventType()!=7) return; 
+    
+    // PHYSICS SELECTION
+    AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
+    if(hdr->IsEventSelected() & AliVEvent::kAnyINT){	  
+           
+      AliCentrality* centrality = aod->GetCentrality();
       Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
-      if(centrperc<fCentrLowLim || centrperc>fCentrUpLim) { 
-         return;
-      }
+      
+      /*AliAODHeader *aodheader =  aod->GetHeader();
+      AliCentrality *centralityp = aodheader->GetCentralityP();
+      Float_t centrperc = centralityp->GetCentralityPercentile(fCentrEstimator.Data());
+      */
+
+      if(centrperc<fCentrLowLim || centrperc>fCentrUpLim)  return;
      
       // ***** Trigger selection
       /*TString triggerClass = aod->GetFiredTriggerClasses();
@@ -715,24 +751,28 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
          fhZNCPM[i]->Fill(towZNC[i]);
          fhZNCPMlg[i]->Fill(towZNClg[i]);
 	 if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
+	 fhZNCpmcLR->Fill(towZNClg[0]/1000.);
       }
       fhPMCvsPMQ[0]->Fill(towZNC[1]+towZNC[2]+towZNC[3]+towZNC[4], towZNC[0]);
       for(int i=0; i<5; i++){
          fhZPCPM[i]->Fill(towZPC[i]);
          fhZPCPMlg[i]->Fill(towZPClg[i]);
 	 if(((i<4) && towZPC[0]>0.)) fhZPCPMQiPMC[i]->Fill(towZPC[i+1]/towZPC[0]);
+	 fhZPCpmcLR->Fill(towZPClg[0]/1000.);
       }
       fhPMCvsPMQ[1]->Fill(towZPC[1]+towZPC[2]+towZPC[3]+towZPC[4], towZPC[0]);
       for(int i=0; i<5; i++){
          fhZNAPM[i]->Fill(towZNA[i]);
          fhZNAPMlg[i]->Fill(towZNAlg[i]);
 	 if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
+	 fhZNApmcLR->Fill(towZNAlg[0]/1000.);
       }
       fhPMCvsPMQ[2]->Fill(towZNA[1]+towZNA[2]+towZNA[3]+towZNA[4], towZNA[0]);
       for(int i=0; i<5; i++){
          fhZPAPM[i]->Fill(towZPA[i]);
          fhZPAPMlg[i]->Fill(towZPAlg[i]);
 	 if(((i<4) && towZPA[0]>0.)) fhZPAPMQiPMC[i]->Fill(towZPA[i+1]/towZPA[0]);
+	 fhZPApmcLR->Fill(towZPAlg[0]/1000.);
       }
       fhPMCvsPMQ[3]->Fill(towZPA[1]+towZPA[2]+towZPA[3]+towZPA[4], towZPA[0]);
       fhZEM[0]->Fill(energyZEM1);
@@ -752,7 +792,8 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       fhZDCvsTracklets->Fill((Float_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
       fhVZEROvsZEM->Fill(energyZEM1+energyZEM2, multV0A+multV0C);     
       
-      Double_t asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
+      Double_t asymmetry = -999.;
+      if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
       fhAsymm->Fill(asymmetry);
       fhZNAvsAsymm->Fill(asymmetry, energyZNA/1000.);
       fhZNCvsAsymm->Fill(asymmetry, energyZNC/1000.);
@@ -766,7 +807,8 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
       fhZNApmcvscentr->Fill(centrperc, towZNA[0]/1000.);
       fhZPCpmcvscentr->Fill(centrperc, towZPC[0]/1000.);
       fhZPApmcvscentr->Fill(centrperc, towZPA[0]/1000.);
-    //}
+
+    } // PHYSICS SELECTION
   }
   
   PostData(1, fOutput);
