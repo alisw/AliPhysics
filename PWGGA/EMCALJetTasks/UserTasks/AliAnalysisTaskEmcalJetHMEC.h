@@ -32,6 +32,8 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   virtual void            SetTrkBias(Double_t b)                   { fTrkBias    = b; }  //require a track with pt > b in jet
   virtual void            SetClusBias(Double_t b)                  { fClusBias   = b; }  //require a cluster with pt > b in jet
 
+  virtual void            SetTrkEta(Double_t e)                    { fTrkEta   = e; }  //eta range of the associated tracks
+
   virtual void            SetJetEta(Double_t emin, Double_t emax)  { fEtamin = emin; fEtamax = emax; }
   virtual void            SetJetPhi(Double_t pmin, Double_t pmax)  { fPhimin = pmin; fPhimax = pmax; }
   virtual void            SetEventMixing(Int_t yesno)              { fDoEventMixing=yesno;}
@@ -48,15 +50,16 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
 
   TString                fTracksName;              //name of tracks collection
   TString                fJetsName;                //name of Jet collection
-  Double_t               fPhimin;                  // phi min
-  Double_t               fPhimax;                  // phi max
-  Double_t               fEtamin;                  // eta min
-  Double_t               fEtamax;                  // eta max
-  Double_t               fAreacut;                 // area cut
+  Double_t               fPhimin;                  // phi min of jet
+  Double_t               fPhimax;                  // phi max of jet
+  Double_t               fEtamin;                  // eta min of jet
+  Double_t               fEtamax;                  // eta max of jet
+  Double_t               fAreacut;                 // area cut of jet
   Double_t               fTrkBias;
   Double_t               fClusBias;
-  Int_t                  fDoEventMixing;
-  Int_t  		 fMixingTracks;		// size of track buffer for event mixing
+  Double_t               fTrkEta;                  // eta min/max of tracks
+  Int_t                  fDoEventMixing;           // flag to do evt mixing
+  Int_t  		 fMixingTracks;		   // size of track buffer for event mixing
   TObjArray*             CloneAndReduceTrackList(TObjArray* tracks);
 
   AliESDEvent           *fESD;    //! ESD object
@@ -65,7 +68,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   TH1                   *fHistTrackPt; //! Pt spectrum
   TH1                   *fHistCentrality;
   TH2                   *fHistJetEtaPhi;
-  TH2                   *fHistTrackEtaPhi;
+  TH2                   *fHistTrackEtaPhi[7];
   TH2                   *fHistJetHEtaPhi;
 
   TH1                   *fHistJetPt[6];
@@ -75,12 +78,13 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   TH2                   *fHistJetHBias[6][5][3];
   TH2                   *fHistJetHTT[6][5][3];
   THnSparse             *fhnMixedEvents;      //!mixed events matrix
+  THnSparse             *fhnJH;      //Fg events matrix
 
  private:
    
   AliAnalysisTaskEmcalJetHMEC(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   AliAnalysisTaskEmcalJetHMEC& operator=(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetHMEC, 6); 
+  ClassDef(AliAnalysisTaskEmcalJetHMEC, 8); 
 };
 #endif

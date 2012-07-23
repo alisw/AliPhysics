@@ -50,6 +50,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fAreacut(0.0),
   fTrkBias(5),
   fClusBias(5),
+  fTrkEta(0.9),
   fDoEventMixing(0),
   fMixingTracks(50000),
   fESD(0), 
@@ -58,11 +59,16 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fHistTrackPt(0),
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
-  fHistTrackEtaPhi(0), 
   fHistJetHEtaPhi(0), 
-  fhnMixedEvents(0x0)
+  fhnMixedEvents(0x0),
+  fhnJH(0x0)
 {
   // Default Constructor
+
+  for(Int_t ipta=0; ipta<7; ipta++){
+    fHistTrackEtaPhi[ipta]=0;
+  }
+
 
   for(Int_t icent = 0; icent<6; ++icent){
     fHistJetPt[icent]=0;
@@ -91,6 +97,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fAreacut(0.0),
   fTrkBias(5),
   fClusBias(5),
+  fTrkEta(0.9),
   fDoEventMixing(0),
   fMixingTracks(50000),
   fESD(0), 
@@ -99,11 +106,14 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fHistTrackPt(0),
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
-  fHistTrackEtaPhi(0), 
   fHistJetHEtaPhi(0),
-  fhnMixedEvents(0x0)
+  fhnMixedEvents(0x0),
+  fhnJH(0x0)
 {
   // Constructor
+  for(Int_t ipta=0; ipta<7; ipta++){
+    fHistTrackEtaPhi[ipta]=0;
+  }
   for(Int_t icent = 0; icent<6; ++icent){
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
@@ -149,11 +159,16 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
   fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
 
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,640,-3.2,3.2);
-  fHistTrackEtaPhi = new TH2F("fHistTrackEtaPhi","Track eta-phi",900,-1.8,1.8,640,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,640,-1.6,4.8);
 
   char name[200];
 
+  for(Int_t ipta=0; ipta<7; ++ipta){
+    sprintf(name, "fHistTrackEtaPhi_%i", ipta);
+    fHistTrackEtaPhi[ipta] = new TH2F(name,name,400,-1,1,640,0.0,2*TMath::Pi());
+    fOutputList->Add(fHistTrackEtaPhi[ipta]);
+
+  }
  
   for(Int_t icent = 0; icent<6; ++icent){
     sprintf(name,"fHistJetPt_%i",icent);   
@@ -186,21 +201,32 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
     }
   }
 
+
+
+  UInt_t cifras = 0; // bit coded, see GetDimParams() below 
+  cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7; 
+  fhnJH = NewTHnSparseF("fhnJH", cifras);
+  
+  fhnJH->Sumw2();
+
+  fOutputList->Add(fhnJH);
+
+
   if(fDoEventMixing){    
-     UInt_t cifras = 0; // bit coded, see GetDimParams() below 
      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7; 
      fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
 
      fhnMixedEvents->Sumw2();
+     
+     fOutputList->Add(fhnMixedEvents);
+
   }
   
 
   fOutputList->Add(fHistTrackPt);
   fOutputList->Add(fHistCentrality);
   fOutputList->Add(fHistJetEtaPhi);
-  fOutputList->Add(fHistTrackEtaPhi);
   fOutputList->Add(fHistJetHEtaPhi);
-  fOutputList->Add(fhnMixedEvents);
 
 
   PostData(1, fOutputList);
@@ -462,7 +488,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	  continue;
 	}
 	
-	  if(TMath::Abs(track->Eta())>0.9) continue;
+	  if(TMath::Abs(track->Eta())>fTrkEta) continue;
 
 	  fHistTrackPt->Fill(track->Pt());
 	  	  
@@ -474,26 +500,34 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	    trackphi = trackphi-2*TMath::Pi();
 
 	  Double_t tracketa=track->Eta();
-      
+	  Double_t trackpt=track->Pt();
 	  Double_t deta=tracketa-jeteta;
 	  Int_t ieta=GetEtaBin(deta);
 
 	  //Jet pt, track pt, dPhi,deta,fcent
 	  Double_t dphijh = RelativePhi(jetphi,trackphi);
 	  if (dphijh < -0.5*TMath::Pi())
-	    dphijh= dphijh+ 2*TMath::Pi();
+	    dphijh+= 2*TMath::Pi();
+	  if (dphijh > 1.5*TMath::Pi()) dphijh-=2.*TMath::Pi();
+
 
 	  Int_t iptjet=-1;
 	  iptjet=GetpTjetBin(jetPt);
 
 	  fHistJetH[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
 	  fHistJetHEtaPhi->Fill(deta,dphijh);
-	  fHistTrackEtaPhi->Fill(tracketa,trackphi);
-	  if ((jet->MaxTrackPt()>6) || (jet->MaxClusterPt()>6))
-	    fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
-	  
+
+	  Double_t dR=sqrt(deta*deta+dphijh*dphijh);
+
+	  if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
+	    fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,trackpt);
+
+	    Double_t triggerEntries[7] = {fcent,jetPt,track->Pt(),dR,deta,dphijh,0.0};                      
+	    fhnJH->Fill(triggerEntries);
+	  }
+
 	  if(passedTTcut)
-	  fHistJetHTT[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
+	    fHistJetHTT[centbin][iptjet][ieta]->Fill(dphijh,trackpt);
 
 
 	} //track loop
@@ -591,8 +625,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
   
   
-  
-  
+   
   PostData(1, fOutputList);
 }      
 
@@ -683,9 +716,9 @@ void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int
 
    case 4:
       label = "deltaEta";
-      nbins = 8;
-      xmin = -1.6;
-      xmax = 1.6;
+      nbins = 24;
+      xmin = -1.2;
+      xmax = 1.2;
       break;
 
 
@@ -725,7 +758,7 @@ void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int
 // From CF event mixing code PhiCorrelations
 TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList(TObjArray* tracks)
 {
-  // clones a track list by using AliDPhiBasicParticle which uses much less memory (used for event mixing)
+  // clones a track list by using AliPicoTrack which uses much less memory (used for event mixing)
   
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
@@ -733,8 +766,22 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList(TObjArray* track
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* particle = (AliVParticle*) tracks->At(i);
-    if(TMath::Abs(particle->Eta())>0.9) continue;
+    if(TMath::Abs(particle->Eta())>fTrkEta) continue;
     if(particle->Pt()<0.15)continue;
+
+    Double_t trackpt=particle->Pt();
+
+    Int_t hadbin=-1;
+    if(trackpt<0.5) hadbin=0;
+    else if(trackpt<1) hadbin=1;
+    else if(trackpt<2) hadbin=2;
+    else if(trackpt<3) hadbin=3;
+    else if(trackpt<5) hadbin=4;
+    else if(trackpt<8) hadbin=5;
+    else if(trackpt<20) hadbin=6;
+
+    if(hadbin>-1) fHistTrackEtaPhi[hadbin]->Fill(particle->Eta(),particle->Phi());
+
 
     tracksClone->Add(new AliPicoTrack(particle->Pt(), particle->Eta(), particle->Phi(), particle->Charge(), 0, 0, 0, 0));
   }
