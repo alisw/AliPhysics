@@ -87,6 +87,7 @@ fFlagEtaBkg(0),
 fFlagJetHadron(0),
 fFlagRandom(0),
 fFlagOnlyRecoil(0),
+fFlagOnlyHardest(0),
 fTrackTypeRec(kTrackUndef),
 fRPAngle(0),
 fNRPBins(100),
@@ -200,6 +201,7 @@ fFlagEtaBkg(0),
 fFlagJetHadron(0),
 fFlagRandom(0),
 fFlagOnlyRecoil(0),
+fFlagOnlyHardest(0),
 fTrackTypeRec(kTrackUndef),
 fRPAngle(0),
 fNRPBins(100),
@@ -518,7 +520,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    // physics selection
    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-	 std::cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<std::endl;
+   cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<endl;
    if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
       if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
       fHistEvtSelection->Fill(2);
@@ -652,11 +654,17 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    Int_t trigBBTrack=-1;
    Int_t trigInTrack=-1;
    fRPAngle = aod->GetHeader()->GetEventplane();     
-   AliVParticle *partback = (AliVParticle*)ParticleList.At(nT);     
-   if(!partback){  
-   PostData(1, fOutputList);
-   return;}
 
+   //   AliVParticle *partback = (AliVParticle*)ParticleList.At(nT);     
+   //if(!partback){  
+   //PostData(1, fOutputList);
+   //return;}
+
+
+   for(Int_t tt=0;tt<ParticleList.GetEntries();tt++){
+
+   if(fFlagOnlyHardest!=0){if(tt!=nT) continue;}
+   AliVParticle *partback = (AliVParticle*)ParticleList.At(tt);     
    fh2Ntriggers->Fill(centValue,partback->Pt());
    Int_t phiBinT = GetPhiBin(RelativePhi(partback->Phi(),fRPAngle));
    if(centValue<20.) fh2RPT->Fill(phiBinT,partback->Pt()); 
@@ -702,6 +710,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                    Double_t ptmax=-10.; 
                    Int_t index1=-1;
                    Int_t index2=-1;
+	   
            if(centValue<20.)  fh3spectriggeredC20RP->Fill(phiBin,ptcorr,partback->Pt());
            if(centValue<20.)  fh3spectriggeredC20->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
            if(centValue>30. && centValue<60.)  fh3spectriggeredC3060->Fill(jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt());
@@ -772,23 +781,23 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
 	
                   
         
-	 for(int it = 0;it<ParticleList.GetEntries();++it){
-	  AliVParticle *part = (AliVParticle*)ParticleList.At(it);
-       	  Double_t deltaR = jetbig->DeltaR(part);
-          Double_t deltaEta = etabig-part->Eta();
-          if(centValue<20.) fh2Ntriggers2->Fill(partback->Pt(),part->Pt());
-          if(fDoEventMixing==0 && fFlagOnlyRecoil==0){ 
-          Double_t deltaPhi=phibig-part->Phi();
-          if(deltaPhi<-0.5*TMath::Pi()) deltaPhi+=2.*TMath::Pi();
-          if(deltaPhi>3./2.*TMath::Pi()) deltaPhi-=2.*TMath::Pi();
-	  Double_t pTcont=0;
-          if(fFlagJetHadron==0) pTcont=leadtrack->Pt();
-          if(fFlagJetHadron!=0) pTcont=leadtrackb->Pt(); 
-	   Double_t jetEntries[8] = {centValue,ptcorr,part->Pt(),deltaR,deltaEta,deltaPhi,pTcont,partback->Pt()};  
-           fhnDeltaR->Fill(jetEntries);}
+	 // for(int it = 0;it<ParticleList.GetEntries();++it){
+	 //  AliVParticle *part = (AliVParticle*)ParticleList.At(it);
+       	 //  Double_t deltaR = jetbig->DeltaR(part);
+         //  Double_t deltaEta = etabig-part->Eta();
+         //  if(centValue<20.) fh2Ntriggers2->Fill(partback->Pt(),part->Pt());
+         //  if(fDoEventMixing==0 && fFlagOnlyRecoil==0){ 
+         //  Double_t deltaPhi=phibig-part->Phi();
+         //  if(deltaPhi<-0.5*TMath::Pi()) deltaPhi+=2.*TMath::Pi();
+         //  if(deltaPhi>3./2.*TMath::Pi()) deltaPhi-=2.*TMath::Pi();
+	 //  Double_t pTcont=0;
+         //  if(fFlagJetHadron==0) pTcont=leadtrack->Pt();
+         //  if(fFlagJetHadron!=0) pTcont=leadtrackb->Pt(); 
+	 //   Double_t jetEntries[8] = {centValue,ptcorr,part->Pt(),deltaR,deltaEta,deltaPhi,pTcont,partback->Pt()};  
+         //   fhnDeltaR->Fill(jetEntries);}
 
 
-}
+	 // }
 	 
 	 
           //end of track loop, we only do it if EM is switched off
@@ -806,7 +815,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    if(injet4>0)fh3JetDensityA4->Fill(ParticleList.GetEntries(),injet4/accep,partback->Pt());
           //end of jet loop
 
-
+   }
 
 
           if(fDoEventMixing>0){

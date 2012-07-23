@@ -84,6 +84,7 @@ public:
    virtual void     SetFlagJetHadron(Int_t yesno){fFlagJetHadron=yesno;}
    virtual void     SetFlagRandom(Int_t yesno){fFlagRandom=yesno;}
    virtual void     SetFlagOnlyRecoil(Int_t yesno){fFlagOnlyRecoil=yesno;}
+   virtual void     SetFlagOnlyHardest(Int_t yesno){fFlagOnlyHardest=yesno;} 
    virtual void     SetNRPBins(Int_t bins){fNRPBins=bins;}
    virtual void     SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
    virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
@@ -137,6 +138,7 @@ private:
    Int_t   fFlagJetHadron;
    Int_t   fFlagRandom;
    Int_t   fFlagOnlyRecoil;
+   Int_t   fFlagOnlyHardest;
    Int_t   fTrackTypeRec;
    Int_t   fRPAngle;
    Int_t   fNRPBins;
@@ -208,7 +210,7 @@ private:
    AliAnalysisTaskJetCore(const AliAnalysisTaskJetCore&); // not implemented
    AliAnalysisTaskJetCore& operator=(const AliAnalysisTaskJetCore&); // not implemented
 
-   ClassDef(AliAnalysisTaskJetCore, 5);
+   ClassDef(AliAnalysisTaskJetCore, 6);
 };
 
 #endif
