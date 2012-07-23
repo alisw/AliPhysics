@@ -72,7 +72,6 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 				AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation():
 								AliAnalysisTaskSE(),
 								fUseAODInput(kFALSE),
-								fFillAOD(kFALSE),
 								fJetBranch("jets"),
 								fNonStdFile(""),
 								fAODIn(0x0),
@@ -89,10 +88,7 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 								TrackEScale(1.),
 								fxsec(0.),
 								ftrial(1.),
-								fJetRecEtaWindow(0.5),       // eta window for rec jets
-								fMinJetPt(10), 
 								fHistList(0x0), // Output list
-								fIfiles(0),
 								fH1Events(0x0),
 								fH1Xsec(0x0),
 								fH1Trials(0x0),
@@ -111,30 +107,30 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 								fH1leadJet_pt            (0x0),
 								fH1leadJet_pt_dijet      (0x0),
 								fH1subJet_pt_dijet       (0x0),
-								fH2JetsJet_dphi          (0x0),
-								fH2JetsJet_deta          (0x0),
-								fH2JetsJet_Aj            (0x0),
-								fH2JetsJet_pt            (0x0),
 								fH1JetMC_pt              (0x0),
 								fH1leadJetMC_pt          (0x0),
 								fH1leadJetMC_pt_dijet    (0x0),
 								fH1subJetMC_pt_dijet     (0x0),
+								fH2JetsJet_dphi          (0x0),
+								fH2JetsJet_deta          (0x0),
+								fH2JetsJet_Aj            (0x0),
+								fH2JetsJet_pt            (0x0),
 								fH2JetsJetMC_dphi        (0x0),
 								fH2JetsJetMC_deta        (0x0),
 								fH2JetsJetMC_Aj          (0x0),
 								fH2JetsJetMC_pt          (0x0),
-								fH2Mult_Mtrack          (0x0),
-								fH2Mult_Mlead           (0x0),
-								fH2Mult_Mjet            (0x0),
-								fH2Mult_Njet            (0x0),
-								fH2Mult_Aj              (0x0),
-								fH2Mlead_Aj             (0x0),
-								fH2Jet_pt_Mlead         (0x0),
-								fH2Jet_pt_Munder        (0x0),
-								fH2leadJetMCptResolution(0x0),
-								fH2TrackMCptResolution(0x0),
-								fH2TrackMCptEfficiency(0x0),
-								fH2AjCorrelation_MCRec(0x0),
+								fH2Mult_Mtrack           (0x0),
+								fH2Mult_Mlead            (0x0),
+								fH2Mult_Mjet             (0x0),
+								fH2Mult_Njet             (0x0),
+								fH2Mult_Aj               (0x0),
+								fH2Mlead_Aj              (0x0),
+								fH2Jet_pt_Mlead          (0x0),
+								fH2Jet_pt_Munder         (0x0),
+								fH2leadJetMCptResolution (0x0),
+								fH2TrackMCptResolution   (0x0),
+								fH2TrackMCptEfficiency   (0x0),
+								fH2AjCorrelation_MCRec   (0x0),
 								fH2MleadCorrelation_MCRec(0x0)
 {
 				for(int j=0;j<5;j++){
@@ -176,7 +172,6 @@ ClassImp(AliAnalysisTaskJetHadronCorrelation)
 AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const char *name):
 				AliAnalysisTaskSE(name),
 				fUseAODInput(kFALSE),
-				fFillAOD(kFALSE),
 				fJetBranch("jets"),
 				fNonStdFile(""),
 				fAODIn(0x0), 
@@ -193,10 +188,7 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 				TrackEScale(1.),
 				fxsec(0.),
 				ftrial(1.),
-				fJetRecEtaWindow(0.5),       // eta window for rec jets
-				fMinJetPt(10), 
 				fHistList(0x0), // Output list
-				fIfiles(0),
 
 				fH1Events(0x0),
 				fH1Xsec(0x0),
@@ -216,32 +208,33 @@ AliAnalysisTaskJetHadronCorrelation::AliAnalysisTaskJetHadronCorrelation(const c
 				fH1leadJet_pt            (0x0),
 				fH1leadJet_pt_dijet      (0x0),
 				fH1subJet_pt_dijet       (0x0),
-				fH2JetsJet_dphi          (0x0),
-				fH2JetsJet_deta          (0x0),
-				fH2JetsJet_Aj            (0x0),
-				fH2JetsJet_pt            (0x0),
 				fH1JetMC_pt              (0x0),
 				fH1leadJetMC_pt          (0x0),
 				fH1leadJetMC_pt_dijet    (0x0),
 				fH1subJetMC_pt_dijet     (0x0),
+				fH2JetsJet_dphi          (0x0),
+				fH2JetsJet_deta          (0x0),
+				fH2JetsJet_Aj            (0x0),
+				fH2JetsJet_pt            (0x0),
 				fH2JetsJetMC_dphi        (0x0),
 				fH2JetsJetMC_deta        (0x0),
 				fH2JetsJetMC_Aj          (0x0),
 				fH2JetsJetMC_pt          (0x0),
-				fH2Mult_Mtrack          (0x0),
-				fH2Mult_Mlead           (0x0),
-				fH2Mult_Mjet            (0x0),
-				fH2Mult_Njet            (0x0),
-				fH2Mult_Aj              (0x0),
-				fH2Mlead_Aj             (0x0),
-				fH2Jet_pt_Mlead         (0x0),
-				fH2Jet_pt_Munder        (0x0),
-				fH2leadJetMCptResolution(0x0),
-				fH2TrackMCptResolution(0x0),
-				fH2TrackMCptEfficiency(0x0),
-				fH2AjCorrelation_MCRec(0x0),
+				fH2Mult_Mtrack           (0x0),
+				fH2Mult_Mlead            (0x0),
+				fH2Mult_Mjet             (0x0),
+				fH2Mult_Njet             (0x0),
+				fH2Mult_Aj               (0x0),
+				fH2Mlead_Aj              (0x0),
+				fH2Jet_pt_Mlead          (0x0),
+				fH2Jet_pt_Munder         (0x0),
+				fH2leadJetMCptResolution (0x0),
+				fH2TrackMCptResolution   (0x0),
+				fH2TrackMCptEfficiency   (0x0),
+				fH2AjCorrelation_MCRec   (0x0),
 				fH2MleadCorrelation_MCRec(0x0)
 {
+
 				for(int j=0;j<5;j++){
 								fH1ndiJ_ediv                             [j]=0;
 								fH1Aj                                    [j]=0;
@@ -301,79 +294,58 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 
 				char *histname;
 
-				fH1Events                   = new TH1F    ("Events"             ,"Events"                 ,1,0,1);
-				fH1Xsec                     = new TProfile("Xsec"               ,"Xsec"                   ,1,0,1);
-				fH1Trials                   = new TH1F    ("Trials"             ,"Trials"                 ,1,0,1);
+				fH1Events                  = new TH1F    ("Events"        ,"Events"            ,1,0,1);
+				fH1Xsec                    = new TProfile("Xsec"          ,"Xsec"              ,1,0,1);
+				fH1Trials                  = new TH1F    ("Trials"        ,"Trials"            ,1,0,1);
 
-				fH1JetMC_pt                = new TH1F("JetMC_pt"          ,"JetMC_pt"          ,400,0,400);
-				fH1leadJetMC_pt            = new TH1F("leadJetMC_pt"      ,"leadJetMC_pt"      ,400,0,400);
-				fH1leadJetMC_pt_dijet      = new TH1F("leadJetMC_pt_dijet","leadJetMC_pt_dijet",400,0,400);
-				fH1subJetMC_pt_dijet       = new TH1F("subJetMC_pt_dijet" ,"subJetMC_pt_dijet" ,400,0,400);
-
-				histname = Form("JetsJetMC_dphi");
-				fH2JetsJetMC_dphi          = new TH2F(histname,histname,200,0,400,100,-2*pi,2*pi);
-				histname = Form("JetsJetMC_deta");
-				fH2JetsJetMC_deta          = new TH2F(histname,histname,200,0,400,100,-1.5,1.5);
-				histname = Form("JetsJetMC_Aj");
-				fH2JetsJetMC_Aj            = new TH2F(histname,histname,200,0,400,100,0,1.2);
-				histname = Form("JetsJetMC_pt");
-				fH2JetsJetMC_pt            = new TH2F(histname,histname,200,0,400,200,0,400);
-
-				fH1Track_pt                = new TH1F("Track_pt"          ,"Track_pt"          ,400,0,400);
+				fH1Track_pt                = new TH1F("Track_pt"          ,"Track_pt"          ,200,0,200);
 				fH1Track_phi               = new TH1F("Track_phi"         ,"Track_phi"         ,100,0,2*pi);
 				fH1Track_eta               = new TH1F("Track_eta"         ,"Track_eta"         ,100,-1.,1);
-				fH1MCTrack_pt              = new TH1F("MCTrack_pt"        ,"MCTrack_pt"        ,400,0,400);
+				fH1MCTrack_pt              = new TH1F("MCTrack_pt"        ,"MCTrack_pt"        ,200,0,200);
 				fH1MCTrack_phi             = new TH1F("MCTrack_phi"       ,"MCTrack_phi"       ,100,0,2*pi);
 				fH1MCTrack_eta             = new TH1F("MCTrack_eta"       ,"MCTrack_eta"       ,100,-1.,1);
-				fH1MCPrimTrack_pt          = new TH1F("MCPrimTrack_pt"    ,"MCPrimTrack_pt"    ,400,0,400);
+				fH1MCPrimTrack_pt          = new TH1F("MCPrimTrack_pt"    ,"MCPrimTrack_pt"    ,200,0,200);
 				fH1MCPrimTrack_phi         = new TH1F("MCPrimTrack_phi"   ,"MCPrimTrack_phi"   ,100,0,2*pi);
 				fH1MCPrimTrack_eta         = new TH1F("MCPrimTrack_eta"   ,"MCPrimTrack_eta"   ,100,-1.,1);
-				fH1Jet_pt                  = new TH1F("Jet_pt"            ,"Jet_pt"            ,400,0,400);
+				fH1Jet_pt                  = new TH1F("Jet_pt"            ,"Jet_pt"            ,200,0,200);
 				fH1Jet_phi                 = new TH1F("Jet_phi"           ,"Jet_pt"            ,100,0,2*pi);
 				fH1Jet_eta                 = new TH1F("Jet_eta"           ,"Jet_pt"            ,100,-1.,1);
-				fH1leadJet_pt              = new TH1F("leadJet_pt"        ,"leadJet_pt"        ,400,0,400);
-				fH1leadJet_pt_dijet        = new TH1F("leadJet_pt_dijet"  ,"leadJet_pt_dijet"  ,400,0,400);
-				fH1subJet_pt_dijet         = new TH1F("subJet_pt_dijet"   ,"subJet_pt_dijet"   ,400,0,400);
-				histname = Form("JetsJet_dphi");
-				fH2JetsJet_dphi            = new TH2F(histname,histname,200,0,400,100,-2*pi,2*pi);
-				histname = Form("JetsJet_deta");
-				fH2JetsJet_deta            = new TH2F(histname,histname,200,0,400,100,-1.5,1.5);
-				histname = Form("JetsJet_Aj");
-				fH2JetsJet_Aj              = new TH2F(histname,histname,200,0,400,100,0,1.2);
-				histname = Form("JetsJet_pt");
-				fH2JetsJet_pt              = new TH2F(histname,histname,200,0,400,200,0,400);
-
-
-				histname = Form("Mult_Mtrack");                                             
-				fH2Mult_Mtrack             = new TH2F(histname,histname,50,0,250,50,0,250); 
-				histname = Form("Mult_Mlead");                                              
-				fH2Mult_Mlead             = new TH2F(histname,histname,50,0,250,25,0,25);   
-				histname = Form("Mult_Mjet");                                               
-				fH2Mult_Mjet              = new TH2F(histname,histname,50,0,250,50,0,100);  
-				histname = Form("Mult_Njet");                                               
-				fH2Mult_Njet              = new TH2F(histname,histname,50,0,250,50,0,50);   
-				histname = Form("Mult_Aj");                                                 
-				fH2Mult_Aj                = new TH2F(histname,histname,50,0,250,25,0,1.2);  
-				histname = Form("Mlead_Aj");                                                
-				fH2Mlead_Aj               = new TH2F(histname,histname,25,0,25,25,0,1.2);   
-				histname = Form("Jet_pt_Mlead");                                                
-				fH2Jet_pt_Mlead               = new TH2F(histname,histname,50,0,200,25,0,25);   
-				histname = Form("Jet_pt_Munder");                                               
-				fH2Jet_pt_Munder              = new TH2F(histname,histname,50,0,200,25,0,5);    
-				histname = Form("leadJetMCptResolution");                                               
-				fH2leadJetMCptResolution      = new TH2F(histname,histname,200,0,200,200,0,200);    
-				histname = Form("TrackMCptResolution");                                               
-				fH2TrackMCptResolution      = new TH2F(histname,histname,200,0,200,200,0,200);    
-				histname = Form("TrackMCptEfficiency");                                               
-				fH2TrackMCptEfficiency      = new TH2F(histname,histname,200,0,200,100,0,1.2);    
-				histname = Form("AjCorrelation_MCRec");                                               
-				fH2AjCorrelation_MCRec      = new TH2F(histname,histname,60,0,1.2,60,0,1.2);    
-				histname = Form("MleadCorrelation_MCRec");                                               
-				fH2MleadCorrelation_MCRec      = new TH2F(histname,histname,60,0,60,60,0,60);    
+				fH1leadJet_pt              = new TH1F("leadJet_pt"        ,"leadJet_pt"        ,200,0,200);
+				fH1leadJet_pt_dijet        = new TH1F("leadJet_pt_dijet"  ,"leadJet_pt_dijet"  ,200,0,200);
+				fH1subJet_pt_dijet         = new TH1F("subJet_pt_dijet"   ,"subJet_pt_dijet"   ,200,0,200);
+				fH1JetMC_pt                = new TH1F("JetMC_pt"          ,"JetMC_pt"          ,200,0,200);
+				fH1leadJetMC_pt            = new TH1F("leadJetMC_pt"      ,"leadJetMC_pt"      ,200,0,200);
+				fH1leadJetMC_pt_dijet      = new TH1F("leadJetMC_pt_dijet","leadJetMC_pt_dijet",200,0,200);
+				fH1subJetMC_pt_dijet       = new TH1F("subJetMC_pt_dijet" ,"subJetMC_pt_dijet" ,200,0,200);
+				fH2JetsJet_dphi            = new TH2F("JetsJet_dphi"      ,"JetsJet_dphi"      ,200,0,200,100,-2*pi,2*pi);
+				fH2JetsJet_deta            = new TH2F("JetsJet_deta"      ,"JetsJet_deta"      ,200,0,200,100,-1.5,1.5);
+				fH2JetsJet_Aj              = new TH2F("JetsJet_Aj"        ,"JetsJet_Aj"        ,200,0,200,100,0,1.2);
+				fH2JetsJet_pt              = new TH2F("JetsJet_pt"        ,"JetsJet_pt"        ,200,0,200,200,0,200);
+				fH2JetsJetMC_dphi          = new TH2F("JetsJetMC_dphi"    ,"JetsJetMC_dphi"    ,200,0,200,100,-2*pi,2*pi);
+				fH2JetsJetMC_deta          = new TH2F("JetsJetMC_deta"    ,"JetsJetMC_deta"    ,200,0,200,100,-1.5,1.5);
+				fH2JetsJetMC_Aj            = new TH2F("JetsJetMC_Aj"      ,"JetsJetMC_Aj"      ,200,0,200,100,0,1.2);
+				fH2JetsJetMC_pt            = new TH2F("JetsJetMC_pt"      ,"JetsJetMC_pt"      ,200,0,200,200,0,200);
+				fH2Mult_Mtrack             = new TH2F("Mult_Mtrack"       ,"Mult_Mtrack"       ,50,0,250,50,0,250); 
+				fH2Mult_Mlead              = new TH2F("Mult_Mlead"        ,"Mult_Mlead"        ,50,0,250,25,0,25);   
+				fH2Mult_Mjet               = new TH2F("Mult_Mjet"         ,"Mult_Mjet"         ,50,0,250,50,0,100);  
+				fH2Mult_Njet               = new TH2F("Mult_Njet"         ,"Mult_Njet"         ,50,0,250,50,0,50);   
+				fH2Mult_Aj                 = new TH2F("Mult_Aj"           ,"Mult_Aj"           ,50,0,250,25,0,1.2);  
+				fH2Mlead_Aj                = new TH2F("Mlead_Aj"          ,"Mlead_Aj"          ,25,0,25,25,0,1.2);   
+				fH2Jet_pt_Mlead            = new TH2F("Jet_pt_Mlead"      ,"Jet_pt_Mlead"      ,50,0,200,25,0,25);   
+				fH2Jet_pt_Munder           = new TH2F("Jet_pt_Munder"     ,"Jet_pt_Munder"     ,50,0,200,25,0,5);    
+				fH2leadJetMCptResolution   = new TH2F("leadJetMCptResolution" ,"leadJetMCptResolution" ,200,0,200,200,0,200);    
+				fH2TrackMCptResolution     = new TH2F("TrackMCptResolution"   ,"TrackMCptResolution"   ,200,0,200,200,0,200);    
+				fH2TrackMCptEfficiency     = new TH2F("TrackMCptEfficiency"   ,"TrackMCptEfficiency"   ,200,0,200,100,0,1.2);    
+				fH2AjCorrelation_MCRec     = new TH2F("AjCorrelation_MCRec"   ,"AjCorrelation_MCRec"   ,60,0,1.2,60,0,1.2);    
+				fH2MleadCorrelation_MCRec  = new TH2F("MleadCorrelation_MCRec","MleadCorrelation_MCRec",60,0,60,60,0,60);    
 
 				for(int j=0;j<5;j++){
 								histname = Form("ndiJ_ediv%d",j);
 								fH1ndiJ_ediv[j]= new TH1F(histname,histname,1,1,2);
+								histname        = Form("Aj%d",j);                    
+								fH1Aj[j]    = new TH1F(histname,histname,50,0,1.2);  
+								histname        = Form("Mlead%d",j);                 
+								fH1Mlead[j] = new TH1F(histname,histname,50,0,50);   
 								histname = Form("leadJetMC_dphiResolution%d",j);
 								fH1leadJetMC_dphiResolution[j] = new TH1F(histname,histname,200,-2*pi,2*pi);
 								histname = Form("subJetMC_dphiResolution%d",j);
@@ -382,11 +354,6 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 								fH1leadJetMC_Efficiency[j] = new TH1F(histname,histname,100,0,1.2);
 								histname = Form("subJetMC_Efficiency%d",j);
 								fH1subJetMC_Efficiency[j] = new TH1F(histname,histname,100,0,1.2);
-
-								histname        = Form("Aj%d",j);                    
-								fH1Aj[j]    = new TH1F(histname,histname,50,0,1.2);  
-								histname        = Form("Mlead%d",j);                 
-								fH1Mlead[j] = new TH1F(histname,histname,50,0,50);   
 								for(int k=0;k<5;k++){
 												histname = Form("JetHadron_dphi_ediv%d%d",j,k);
 												fH1JetHadron_dphi_ediv             [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
@@ -394,14 +361,12 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 												fH1JetHadron_dphi_tptweight_ediv   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
 												histname = Form("JetHadron_dphi_tJptweight_ediv%d%d",j,k);
 												fH1JetHadron_dphi_tJptweight_ediv  [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
-
 												histname = Form("JetHadronMC_dphi_ediv%d%d",j,k);
 												fH1JetHadronMC_dphi_ediv             [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
 												histname = Form("JetHadronMC_dphi_tptweight_ediv%d%d",j,k);
 												fH1JetHadronMC_dphi_tptweight_ediv   [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
 												histname = Form("JetHadronMC_dphi_tJptweight_ediv%d%d",j,k);
 												fH1JetHadronMC_dphi_tJptweight_ediv  [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
-
 												histname = Form("JetHadronMCPrim_dphi_ediv%d%d",j,k);
 												fH1JetHadronMCPrim_dphi_ediv             [j][k]= new TH1F(histname,histname,200,-1./2.*pi,3./2.*pi);
 												histname = Form("JetHadronMCPrim_dphi_tptweight_ediv%d%d",j,k);
@@ -433,46 +398,57 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 
 
 				if(IsMC){
-								fHistList->Add(fH1Xsec);
-								fHistList->Add(fH1Trials);
-								fHistList->Add(fH1Track_pt        );
-								fHistList->Add(fH1Track_phi       );
-								fHistList->Add(fH1Track_eta       );
-								fHistList->Add(fH1MCTrack_pt      );
-								fHistList->Add(fH1MCTrack_phi     );
-								fHistList->Add(fH1MCTrack_eta     );
-								fHistList->Add(fH1MCPrimTrack_pt  );
-								fHistList->Add(fH1MCPrimTrack_phi );
-								fHistList->Add(fH1MCPrimTrack_eta );
-								fHistList->Add(fH1JetMC_pt          );
-								fHistList->Add(fH1leadJetMC_pt      );
-								fHistList->Add(fH1leadJetMC_pt_dijet);
-								fHistList->Add(fH1subJetMC_pt_dijet );
+								fHistList->Add(fH1Events            );
+								fHistList->Add(fH1Xsec              );
+								fHistList->Add(fH1Trials            );
+								fHistList->Add(fH1Track_pt          );
+								fHistList->Add(fH1Track_phi         );
+								fHistList->Add(fH1Track_eta         );
+								fHistList->Add(fH1MCTrack_pt        );
+								fHistList->Add(fH1MCTrack_phi       );
+								fHistList->Add(fH1MCTrack_eta       );
+								fHistList->Add(fH1MCPrimTrack_pt    );
+								fHistList->Add(fH1MCPrimTrack_phi   );
+								fHistList->Add(fH1MCPrimTrack_eta   );
 								fHistList->Add(fH1Jet_pt            );
 								fHistList->Add(fH1Jet_phi           );
 								fHistList->Add(fH1Jet_eta           );
 								fHistList->Add(fH1leadJet_pt        );
 								fHistList->Add(fH1leadJet_pt_dijet  );
 								fHistList->Add(fH1subJet_pt_dijet   );
-								fHistList->Add(fH2JetsJetMC_dphi    );
-								fHistList->Add(fH2JetsJetMC_deta    );
-								fHistList->Add(fH2JetsJetMC_Aj      );
-								fHistList->Add(fH2JetsJetMC_pt      );
+								fHistList->Add(fH1JetMC_pt          );
+								fHistList->Add(fH1leadJetMC_pt      );
+								fHistList->Add(fH1leadJetMC_pt_dijet);
+								fHistList->Add(fH1subJetMC_pt_dijet );
 								fHistList->Add(fH2JetsJet_dphi      );
 								fHistList->Add(fH2JetsJet_deta      );
 								fHistList->Add(fH2JetsJet_Aj        );
 								fHistList->Add(fH2JetsJet_pt        );
-								fHistList->Add(fH2leadJetMCptResolution);
-								fHistList->Add(fH2TrackMCptResolution);
-								fHistList->Add(fH2TrackMCptEfficiency);
-								fHistList->Add(fH2AjCorrelation_MCRec);
+								fHistList->Add(fH2JetsJetMC_dphi    );
+								fHistList->Add(fH2JetsJetMC_deta    );
+								fHistList->Add(fH2JetsJetMC_Aj      );
+								fHistList->Add(fH2JetsJetMC_pt      );
+								fHistList->Add(fH2Mult_Mtrack       );
+								fHistList->Add(fH2Mult_Mlead        ); 
+								fHistList->Add(fH2Mult_Mjet         );  
+								fHistList->Add(fH2Mult_Njet         );  
+								fHistList->Add(fH2Mult_Aj           );    
+								fHistList->Add(fH2Mlead_Aj          );   
+								fHistList->Add(fH2Jet_pt_Mlead      );   
+								fHistList->Add(fH2Jet_pt_Munder     );  
+								fHistList->Add(fH2leadJetMCptResolution );
+								fHistList->Add(fH2TrackMCptResolution   );
+								fHistList->Add(fH2TrackMCptEfficiency   );
+								fHistList->Add(fH2AjCorrelation_MCRec   );
 								fHistList->Add(fH2MleadCorrelation_MCRec);
 								for(int j=0;j<5;j++){
 												fHistList->Add(fH1ndiJ_ediv                        [j]);
-												fHistList->Add(fH1leadJetMC_dphiResolution          [j]);
-												fHistList->Add(fH1subJetMC_dphiResolution           [j]);
-												fHistList->Add(fH1leadJetMC_Efficiency              [j]);
-												fHistList->Add(fH1subJetMC_Efficiency               [j]);
+												fHistList->Add(fH1Aj                               [j]);
+												fHistList->Add(fH1Mlead                            [j]);
+												fHistList->Add(fH1leadJetMC_dphiResolution         [j]);
+												fHistList->Add(fH1subJetMC_dphiResolution          [j]);
+												fHistList->Add(fH1leadJetMC_Efficiency             [j]);
+												fHistList->Add(fH1subJetMC_Efficiency              [j]);
 												for(int k=0;k<5;k++){
 																fHistList->Add(fH1JetHadron_dphi_ediv               [j][k]);
 																fHistList->Add(fH1JetHadron_dphi_tptweight_ediv     [j][k]);
@@ -499,36 +475,36 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 								}
 				}
 				else{
-								fHistList->Add(fH1Events);
-								fHistList->Add(fH1Track_pt        );
-								fHistList->Add(fH1Track_phi       );
-								fHistList->Add(fH1Track_eta       );
-								fHistList->Add(fH1Jet_pt          );
-								fHistList->Add(fH1Jet_phi         );
-								fHistList->Add(fH1Jet_eta         );
-								fHistList->Add(fH1leadJet_pt      );
-								fHistList->Add(fH1leadJet_pt_dijet);
-								fHistList->Add(fH1subJet_pt_dijet );
-								fHistList->Add(fH2JetsJet_dphi    );
-								fHistList->Add(fH2JetsJet_deta    );
-								fHistList->Add(fH2JetsJet_Aj      );
-								fHistList->Add(fH2JetsJet_pt      );
-								fHistList->Add(fH2Mult_Mtrack     );
-								fHistList->Add(fH2Mult_Mlead      ); 
-								fHistList->Add(fH2Mult_Mjet       );  
-								fHistList->Add(fH2Mult_Njet       );  
-								fHistList->Add(fH2Mult_Aj         );    
-								fHistList->Add(fH2Mlead_Aj        );   
-								fHistList->Add(fH2Jet_pt_Mlead    );   
-								fHistList->Add(fH2Jet_pt_Munder   );  
+								fHistList->Add(fH1Events            );
+								fHistList->Add(fH1Track_pt          );
+								fHistList->Add(fH1Track_phi         );
+								fHistList->Add(fH1Track_eta         );
+								fHistList->Add(fH1Jet_pt            );
+								fHistList->Add(fH1Jet_phi           );
+								fHistList->Add(fH1Jet_eta           );
+								fHistList->Add(fH1leadJet_pt        );
+								fHistList->Add(fH1leadJet_pt_dijet  );
+								fHistList->Add(fH1subJet_pt_dijet   );
+								fHistList->Add(fH2JetsJet_dphi      );
+								fHistList->Add(fH2JetsJet_deta      );
+								fHistList->Add(fH2JetsJet_Aj        );
+								fHistList->Add(fH2JetsJet_pt        );
+								fHistList->Add(fH2Mult_Mtrack       );
+								fHistList->Add(fH2Mult_Mlead        ); 
+								fHistList->Add(fH2Mult_Mjet         );  
+								fHistList->Add(fH2Mult_Njet         );  
+								fHistList->Add(fH2Mult_Aj           );    
+								fHistList->Add(fH2Mlead_Aj          );   
+								fHistList->Add(fH2Jet_pt_Mlead      );   
+								fHistList->Add(fH2Jet_pt_Munder     );  
 								for(int j=0;j<5;j++){
-												fHistList->Add(fH1ndiJ_ediv    [j]);
-												fHistList->Add(fH1Aj           [j]);
-												fHistList->Add(fH1Mlead        [j]);
+												fHistList->Add(fH1ndiJ_ediv                        [j]);
+												fHistList->Add(fH1Aj                               [j]);
+												fHistList->Add(fH1Mlead                            [j]);
 												for(int k=0;k<5;k++){
-																fHistList->Add(fH1JetHadron_dphi_ediv             [j][k]);
-																fHistList->Add(fH1JetHadron_dphi_tptweight_ediv   [j][k]);
-																fHistList->Add(fH1JetHadron_dphi_tJptweight_ediv  [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_ediv               [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_tptweight_ediv     [j][k]);
+																fHistList->Add(fH1JetHadron_dphi_tJptweight_ediv    [j][k]);
 												}
 								}
 								for(int j=0;j<3;j++){
@@ -558,6 +534,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserCreateOutputObjects()
 				PostData(1,fHistList);
 }
 
+
 //----------------------------------------------------------------------                                                 
 void AliAnalysisTaskJetHadronCorrelation::Init()
 {
@@ -570,7 +547,6 @@ Bool_t AliAnalysisTaskJetHadronCorrelation::Notify()
 {
 
 
-				fIfiles++;
 				fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
 				fAODOut = AODEvent();
 				if(fNonStdFile.Length()!=0){
@@ -646,11 +622,11 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 
 				AliInputEventHandler* inputHandler = (AliInputEventHandler*)
 								((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-				if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)){
+				if(!(inputHandler->IsEventSelected() & AliVEvent::kAny)){
 								if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
 								return;
 				}
-				if(!IsMC)fH1Events->Fill(0);
+				fH1Events->Fill(0);
 
 				AliAODHeader* aliH = dynamic_cast <AliAODHeader*> (fAODIn->GetHeader());
 				if(!aliH){
@@ -662,15 +638,12 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 				// start jet analysis  -------------------------Init.
 				Float_t pi=TMath::Pi();
 
-				Double_t Jet_n    [20];
 				Double_t Jet_pt   [20][5000];
 				Double_t Jet_phi  [20][5000];
 				Double_t Jet_eta  [20][5000];
 				Double_t Jet_area [20][5000];
-				Double_t subJet_n  [20];
 				Double_t subJet_pt [20][5000];
 				Double_t subJet_eta[20][5000];
-				Double_t subJet_phi[20][5000];
 				Double_t Track_n  ;
 				Double_t Track_pt [5000];
 				Double_t Track_eta[5000];
@@ -682,15 +655,12 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 
 				Track_n=0;MCTrack_n=0;
 				for(int i=0;i<20;i++){
-								Jet_n[i]=0;
-								subJet_n[i]=0;
 								for(int j=0;j<1000;j++){
 												Jet_pt[i][j]=0.;
 												Jet_phi[i][j]=999.;
 												Jet_eta[i][j]=999.;
 												Jet_area[i][j]=999.;
 												subJet_pt[i][j]=0.;
-												subJet_phi[i][j]=999.;
 												subJet_eta[i][j]=999.;
 												Track_pt [j]=0.;
 												Track_phi[j]=999.;
@@ -701,15 +671,13 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								}
 				}
 
-				int nLJetAOD=999; double ptLJetAOD=0;double phiLJetAOD=999.;double etaLJetAOD=999.;int nsLJetAOD=900;double ptsLJetAOD=0;double phisLJetAOD=900.;double etasLJetAOD=900.;
-				int nLJetMC2=999; double ptLJetMC2=0;double phiLJetMC2=999.;double etaLJetMC2=999.;int nsLJetMC2=900;double ptsLJetMC2=0;double phisLJetMC2=900.;double etasLJetMC2=900.;
-				int nLJetMC =999; double ptLJetMC =0;double phiLJetMC =999.;double etaLJetMC =999.;int nsLJetMC =900;double ptsLJetMC =0;double phisLJetMC =900.;double etasLJetMC =900.;
-				bool findLJetAOD=false;bool findsLJetAOD=false;
-				bool findLJetMC2=false;bool findsLJetMC2=false;
-				bool findLJetMC =false;bool findsLJetMC =false;
+				int nLJetAOD=999; double ptLJetAOD=0;double phiLJetAOD=999.;double etaLJetAOD=999.;double ptsLJetAOD=0;double phisLJetAOD=900.;double etasLJetAOD=900.;
+				int nLJetMC2=999; double ptLJetMC2=0;double phiLJetMC2=999.;double etaLJetMC2=999.;double ptsLJetMC2=0;double phisLJetMC2=900.;double etasLJetMC2=900.;
+				int nLJetMC =999; double ptLJetMC =0;double phiLJetMC =999.;double etaLJetMC =999.;double ptsLJetMC =0;double phisLJetMC =900.;double etasLJetMC =900.;
+				bool findLJetAOD=false;
+				bool findLJetMC2=false;
 				bool findDiJet=false,findDiJetMC=false;
 				int nLJet = 999;
-				int nsLJet =999;
 				int Mjet_tot =0;
 				int Njet_tot =0;
 
@@ -717,7 +685,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 				double Mlead=99.,MleadMC=99.;
 				int    Munder=99.;
 
-				//--------------------------------------------------------------------Init.
+				////--------------------------------------------------------------------Init.
 
 
 				TString cAdd = "";
@@ -748,15 +716,6 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								Int_t nj = jets->GetEntriesFast();
 								if (fDebug) printf("There are %5d jets in the event \n", nj);
 								AliAODJet* jetsAOD;
-								Jet_n[algorithm] = nj;
-								int nLjet_in05_pthdiv[20][20];
-								int nsLjet_in05_pthdiv[20][20];
-								for(int i=0;i<20;i++){
-												for(int j=0;j<20;j++){
-																nLjet_in05_pthdiv [i][j]=0;
-																nsLjet_in05_pthdiv[i][j]=0;
-												}
-								}
 								//Find Leading Jet -------------------------------------------------------
 								for(int njet =0;njet<nj;njet++){
 												jetsAOD = (AliAODJet*) (jets->At(njet));
@@ -787,7 +746,6 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																}
 																if(algorithm==2){
 																				if(Jet_pt[algorithm][njet]>ptLJetMC){
-																								findLJetMC=true;
 																								nLJetMC=njet;ptLJetMC=Jet_pt[algorithm][njet];phiLJetMC=Jet_phi[algorithm][njet];etaLJetMC=Jet_eta[algorithm][njet];
 																				}
 																}
@@ -813,27 +771,20 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												if(njet==nLJet)continue;
 												jetsAOD = (AliAODJet *)jets->At(njet);
 												subJet_pt [algorithm][njet] = jetsAOD->Pt()*JetEScale;
-												subJet_phi[algorithm][njet] = jetsAOD->Phi();
 												subJet_eta[algorithm][njet] = jetsAOD->Eta();
 												double eta_cut_Jet=0.5;
 												if((TMath::Abs(subJet_eta[algorithm][njet])<eta_cut_Jet) && (subJet_pt[algorithm][njet]>10.)){
 																if(subJet_pt[algorithm][njet]>ptsLJetAOD&&algorithm==0){
-																				findsLJetAOD=true;
-																				nsLJetAOD=njet;ptsLJetAOD=Jet_pt[algorithm][njet];phisLJetAOD=Jet_phi[algorithm][njet];etasLJetAOD=Jet_eta[algorithm][njet];
+																				ptsLJetAOD=Jet_pt[algorithm][njet];phisLJetAOD=Jet_phi[algorithm][njet];etasLJetAOD=Jet_eta[algorithm][njet];
 																}
 																if(subJet_pt[algorithm][njet]>ptsLJetMC2 &&algorithm==1){
-																				findsLJetMC2=true;
-																				nsLJetMC2=njet;ptsLJetMC2=Jet_pt[algorithm][njet];phisLJetMC2=Jet_phi[algorithm][njet];etasLJetMC2=Jet_eta[algorithm][njet];
+																				ptsLJetMC2=Jet_pt[algorithm][njet];phisLJetMC2=Jet_phi[algorithm][njet];etasLJetMC2=Jet_eta[algorithm][njet];
 																}
 																if(subJet_pt[algorithm][njet]>ptsLJetMC &&algorithm==2){
-																				findsLJetMC=true;
-																				nsLJetMC =njet;ptsLJetMC =Jet_pt[algorithm][njet];phisLJetMC =Jet_phi[algorithm][njet];etasLJetMC =Jet_eta[algorithm][njet];
+																				ptsLJetMC =Jet_pt[algorithm][njet];phisLJetMC =Jet_phi[algorithm][njet];etasLJetMC =Jet_eta[algorithm][njet];
 																}
 												}
 								}
-								if(algorithm==0){nsLJet=nsLJetAOD;}
-								if(algorithm==1){nsLJet=nsLJetMC2;}
-								if(algorithm==2){nsLJet=nsLJetMC ;}
 								//====================================================== Sub leading Jet 
 
 								double Leading_pt=0.;double Leading_phi=999.;double Leading_eta=999.;double sLeading_pt=0.;double sLeading_phi=999.;double sLeading_eta=999.;
@@ -856,8 +807,8 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 												if(algorithm==0)Aj   = (Leading_pt-sLeading_pt)/(Leading_pt+sLeading_pt);
 												if(algorithm==1)AjMC = (Leading_pt-sLeading_pt)/(Leading_pt+sLeading_pt);
 												if(algorithm==0){
-																fH1leadJet_pt_dijet->Fill(Leading_pt);
 																fH1subJet_pt_dijet ->Fill(sLeading_pt);
+																fH1leadJet_pt_dijet->Fill(Leading_pt);
 																fH2JetsJet_Aj      ->Fill(Leading_pt,Aj);
 																fH2JetsJet_pt      ->Fill(Leading_pt,sLeading_pt);
 																fH2Mult_Aj         ->Fill(Mult,Aj); 
@@ -961,7 +912,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 								for(int ntrack =0;ntrack<nt;ntrack++){
 												trackAOD = (AliAODTrack*) (tracks->At(ntrack));
 												Bool_t bgoodT=false;
-												if(Filtermask!=768){if(trackAOD->TestFilterMask(Filtermask))bgoodT=true;}
+												if(Filtermask!=272){if(trackAOD->TestFilterMask(Filtermask))bgoodT=true;}
 												else               {if(trackAOD->IsHybridGlobalConstrainedGlobal())bgoodT=true;} //for hybrid Track cuts
 												if(!bgoodT)continue;
 												if(TMath::Abs(trackAOD->Eta())<0.9){
@@ -969,7 +920,6 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																fH1Track_pt ->Fill(trackAOD->Pt()*TrackEScale);
 																fH1Track_phi->Fill(trackAOD->Phi());
 																fH1Track_eta->Fill(trackAOD->Eta());
-
 																if(IsMC){
 																				// track pt resplution-------------------
 																				Int_t MCID = TMath::Abs(trackAOD->GetLabel());
@@ -1042,7 +992,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																								for(int ntrack =0;ntrack<nt;ntrack++){
 																												trackAOD = (AliAODTrack*) (fAODIn->GetTrack(ntrack));
 																												Bool_t bgoodT=false;
-																												if(Filtermask!=768){if(trackAOD->TestFilterMask(Filtermask))bgoodT=true;}
+																												if(Filtermask!=272){if(trackAOD->TestFilterMask(Filtermask))bgoodT=true;}
 																												else{               if(trackAOD->IsHybridGlobalConstrainedGlobal())bgoodT=true;} //for hybrid Track cuts
 																												if(!bgoodT)continue;
 																												Track_pt   [ntrack]      = trackAOD->Pt()*TrackEScale;
