@@ -1,4 +1,4 @@
-// $Id: AddTaskEmcalJetHMECadron.C 57095 2012-06-27 18:50:07Z mconnors $
+// $Id: AddTaskEmcalJetHMECadron.C 57095 2012-07-23 3:50:07Z mconnors $
 
 AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const char *outfilename    = "AnalysisOutput.root",
@@ -9,9 +9,11 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const Double_t minEta      = -0.3,
    const Double_t maxEta      = 0.3,
    const Double_t minArea     = 0.4,
-   const Int_t EvtMix         = 0,
+   const Int_t EvtMix         = 0, 
    const Double_t TrkBias     = 5,
-   const Double_t ClusBias    = 5                                                 
+   const Double_t ClusBias    = 5,
+   const Double_t TrkEta     = 0.9
+                                                 
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -45,6 +47,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   correlationtask->SetEventMixing(EvtMix);
   correlationtask->SetTrkBias(TrkBias);
   correlationtask->SetClusBias(ClusBias);
+  correlationtask->SetTrkEta(TrkEta);
 
  
   //-------------------------------------------------------
