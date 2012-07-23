@@ -60,7 +60,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     Printf("\n******* Calibrating TPC *******");
     procesTPC = new AliTPCPreprocessorOffline; 
     // switch on parameter validation
-    procesTPC->SetTimeGainRange(0.5,3.0);
+    procesTPC->SetTimeGainRange(0.5,4.0);
     procesTPC->SwitchOnValidation();
 
     // Make timegain calibration
