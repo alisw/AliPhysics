@@ -269,8 +269,8 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
   AliAODRecoDecayHF2Prong* d0toKpi = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
   
 
-  if (dstarD0pi->GetPrimaryVtx())printf("dstarD0pi has primary vtx\n");
-  if (fRecoCandidate->GetPrimaryVtx())printf("fRecoCandidateDstar has primary vtx\n");
+  //if (dstarD0pi->GetPrimaryVtx())printf("dstarD0pi has primary vtx\n");
+  //if (fRecoCandidate->GetPrimaryVtx())printf("fRecoCandidateDstar has primary vtx\n");
 
   Double_t pt =  dstarD0pi->Pt();
   Double_t rapidity =  dstarD0pi->YDstar();
