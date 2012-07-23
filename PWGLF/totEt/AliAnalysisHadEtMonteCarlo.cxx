@@ -1663,54 +1663,54 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     FillHisto1D("SimPiKPEt",fSimPiKPEt,1.0);
     if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){
       FillHisto1D("SimHadEtND",fSimHadEt,1.0);
-      FillHisto1D("SimTotEtND",fSimHadEt,1.0);
+      FillHisto1D("SimTotEtND",fSimTotEt,1.0);
       FillHisto1D("NEventsND",0.5,1);
       FillHisto1D("SimPiKPEtND",fSimPiKPEt,1.0);
       if(kIsOfflineV0AND){
 	FillHisto1D("SimHadEtNDV0AND",fSimHadEt,1.0);
-	FillHisto1D("SimTotEtNDV0AND",fSimHadEt,1.0);
+	FillHisto1D("SimTotEtNDV0AND",fSimTotEt,1.0);
 	FillHisto1D("NEventsNDV0AND",0.5,1);
 	FillHisto1D("SimPiKPEtNDV0AND",fSimPiKPEt,1.0);
       }
       if(kIsOfflineMB){
 	FillHisto1D("SimHadEtNDMB",fSimHadEt,1.0);
-	FillHisto1D("SimTotEtNDMB",fSimHadEt,1.0);
+	FillHisto1D("SimTotEtNDMB",fSimTotEt,1.0);
 	FillHisto1D("NEventsNDMB",0.5,1);
 	FillHisto1D("SimPiKPEtNDMB",fSimPiKPEt,1.0);
       }
     }
     if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kSD){
       FillHisto1D("SimHadEtSD",fSimHadEt,1.0);
-      FillHisto1D("SimTotEtSD",fSimHadEt,1.0);
+      FillHisto1D("SimTotEtSD",fSimTotEt,1.0);
       FillHisto1D("NEventsSD",0.5,1);
       FillHisto1D("SimPiKPEtSD",fSimPiKPEt,1.0);
       if(kIsOfflineV0AND){
 	FillHisto1D("SimHadEtSDV0AND",fSimHadEt,1.0);
-	FillHisto1D("SimTotEtSDV0AND",fSimHadEt,1.0);
+	FillHisto1D("SimTotEtSDV0AND",fSimTotEt,1.0);
 	FillHisto1D("NEventsSDV0AND",0.5,1);
 	FillHisto1D("SimPiKPEtSDV0AND",fSimPiKPEt,1.0);
       }
       if(kIsOfflineMB){
 	FillHisto1D("SimHadEtSDMB",fSimHadEt,1.0);
-	FillHisto1D("SimTotEtSDMB",fSimHadEt,1.0);
+	FillHisto1D("SimTotEtSDMB",fSimTotEt,1.0);
 	FillHisto1D("NEventsSDMB",0.5,1);
 	FillHisto1D("SimPiKPEtSDMB",fSimPiKPEt,1.0);
       }
     }
     if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kDD){
       FillHisto1D("SimHadEtDD",fSimHadEt,1.0);
-      FillHisto1D("SimTotEtDD",fSimHadEt,1.0);
+      FillHisto1D("SimTotEtDD",fSimTotEt,1.0);
       FillHisto1D("NEventsDD",0.5,1);
       FillHisto1D("SimPiKPEtDD",fSimPiKPEt,1.0);
       if(kIsOfflineV0AND){
 	FillHisto1D("SimHadEtDDV0AND",fSimHadEt,1.0);
-	FillHisto1D("SimTotEtDDV0AND",fSimHadEt,1.0);
+	FillHisto1D("SimTotEtDDV0AND",fSimTotEt,1.0);
 	FillHisto1D("NEventsDDV0AND",0.5,1);
 	FillHisto1D("SimPiKPEtDDV0AND",fSimPiKPEt,1.0);
       }
       if(kIsOfflineMB){
 	FillHisto1D("SimHadEtDDMB",fSimHadEt,1.0);
-	FillHisto1D("SimTotEtDDMB",fSimHadEt,1.0);
+	FillHisto1D("SimTotEtDDMB",fSimTotEt,1.0);
 	FillHisto1D("NEventsDDMB",0.5,1);
 	FillHisto1D("SimPiKPEtDDMB",fSimPiKPEt,1.0);
       }
