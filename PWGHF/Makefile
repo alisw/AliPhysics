@@ -61,7 +61,11 @@ PARFILE       = $(PACKAGE).par
 lib$(PACKAGE).so: $(OBJS_PWGHF)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
+ifeq ($(PLATFORM),macosx)
+	$(LD) $(SOFLAGS) -flat_namespace -undefined suppress $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+else
 	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+endif
 	@chmod a+x $@
 	@echo "done"
 
