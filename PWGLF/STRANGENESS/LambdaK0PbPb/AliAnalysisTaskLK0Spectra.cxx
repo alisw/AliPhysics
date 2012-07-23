@@ -1739,6 +1739,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
   // Called for each event
 
   AliStack* stack = NULL;
+	AliMCEvent* mcEvent = NULL;
   //  TClonesArray *mcArray = NULL;
   TArrayF mcPrimaryVtx;
 
@@ -1818,6 +1819,8 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
   // Cut Rapidity:
   Double_t lCutRap  = 0.5;
 
+	Int_t selectInjected = -1; //1 for just injected, -1 for just pure; 0 for both.
+	
   // cut Pseudorapidity:
 
   Double_t lCutPseudorap = 0.8;
@@ -1867,7 +1870,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 	Printf("ERROR: Could not retrieve MC event handler");
 	return;
       }    
-      AliMCEvent* mcEvent = eventHandler->MCEvent();
+      mcEvent = eventHandler->MCEvent();
       if (!mcEvent) {
 	Printf("ERROR: Could not retrieve MC event");
 	return;
@@ -2086,8 +2089,16 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 	  //if (lPtCurrentPart < 0.7 && lPtCurrentPart < 3.0) fHistMCRapInPtRangePhi->Fill(lRapCurrentPart);
 	}
  
-	// Rapidity Cut
-	if (TMath::Abs(lRapCurrentPart) > lCutRap) continue;
+	// Rapidity Cut & Injected Selection
+		  
+	Bool_t kIsNaturalPart = mcEvent->IsFromBGEvent(iMc); // this technique from Maria Nicassio
+		  if (!kIsNaturalPart) 
+		  {
+			  if (!(p0->GetFirstMother()<0)) 
+			  {kIsNaturalPart = kTRUE;} // because there are primaries (ALICE definition) not produced in the collision
+			}
+		  
+	if (TMath::Abs(lRapCurrentPart) > lCutRap || (!kIsNaturalPart && selectInjected == -1) || (kIsNaturalPart && selectInjected == 1) ) continue;
  
 	if (lPdgcodeCurrentPart==310) {
 	  //fHistMCProdRadiusK0s->Fill(mcPosR);
@@ -2617,6 +2628,16 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
 	  mcPosMotherZ = lMCESDMother->Vz();
 	  mcPosMotherR = TMath::Sqrt(mcPosMotherX*mcPosMotherX+mcPosMotherY*mcPosMotherY);
 	
+		Bool_t kIsNaturalPart_McAs = mcEvent->IsFromBGEvent(lIndexPosMother); // this technique from Maria Nicassio
+		if (!kIsNaturalPart_McAs) 
+		{
+			if (!(lMCESDMother->GetFirstMother()<0)) 
+			{kIsNaturalPart_McAs = kTRUE;} // because there are primaries (ALICE definition) not produced in the collision
+		}
+		
+		if ((!kIsNaturalPart_McAs && selectInjected == -1) || (kIsNaturalPart_McAs && selectInjected == 1) ) 
+		{ continue;}
+		
 	  mcMotherPt   = lMCESDMother->Pt();
 	}
       }
@@ -2663,7 +2684,6 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
        dz = ( (mcPrimaryVtx.At(2)) - (mcPosMotherZ) );
 
        ProdDistance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
-
        	if (ProdDistance < 0.001) lCheckMcK0Short  = 1;
 		else lCheckSecondaryK0s = 1;
 
@@ -2697,7 +2717,8 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
        dy = ( (mcPrimaryVtx.At(1)) - (mcPosMotherY) );
        dz = ( (mcPrimaryVtx.At(2)) - (mcPosMotherZ) );
 
-       ProdDistance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+		ProdDistance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+		
 
        	if (ProdDistance < 0.001) lCheckMcLambda  = 1;
 		else lCheckSecondaryLambda = 1;
@@ -2732,7 +2753,8 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
        dy = ( (mcPrimaryVtx.At(1)) - (mcPosMotherY) );
        dz = ( (mcPrimaryVtx.At(2)) - (mcPosMotherZ) );
 
-       ProdDistance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+		ProdDistance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+		
 
        	if (ProdDistance < 0.001) lCheckMcAntiLambda = 1;
 		else lCheckSecondaryAntiLambda = 1;
