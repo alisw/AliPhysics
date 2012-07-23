@@ -57,6 +57,8 @@
 #include "AliGenEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 
+
+
 #include "AliAnalysisTaskCheckSingleTrackJetRejection.h"
 #include "AliAnalysisTaskPhiCorrelations.h"
 #include "AliAnalysisHelperJetTasks.h"
@@ -65,6 +67,7 @@
 
 using std::cout;
 using std::endl;
+
 
 ClassImp(AliAnalysisTaskCheckSingleTrackJetRejection)
 
@@ -410,7 +413,7 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 																				AliAODTrack *AODtrack = dynamic_cast<AliAODTrack*>(reftracks->At(ntr));
 																				if(AODtrack){
 																								Bool_t bgoodT=false;
-																								if(Filtermask!=768){
+																								if(Filtermask!=272){
 																												if(AODtrack->TestFilterMask(Filtermask))bgoodT=true;
 																								}
 																								else{

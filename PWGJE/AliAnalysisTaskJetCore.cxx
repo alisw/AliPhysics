@@ -518,7 +518,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
    // physics selection
    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-   cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<endl;
+	 std::cout<<inputHandler->IsEventSelected()<<" "<<fOfflineTrgMask<<std::endl;
    if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
       if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
       fHistEvtSelection->Fill(2);
