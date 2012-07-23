@@ -6,7 +6,7 @@ const Double_t centralityArray[nrOfCentralities+1] = {0.,5.,10.,20.,30.,40.,50.,
 const Double_t cent[nrOfCentralities]  = {382.8,329.7,260.5,186.4,128.9,85.,52.8,30.,15.8};   // hard coded at the moment for centrality percentiles 
 const Double_t centE[nrOfCentralities] = {3.1,4.6,4.4,3.9,3.3,2.6,2.0,1.3,0.6};               // (0-5,5-10,10-20,20-30,...,70-80)
 
-void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 3, Int_t fRebin = 2,Int_t fStartBinBFWidthPhi = 2, Int_t fRebinPhi = 2,TString centEst = "V0M",Double_t etaWindow = -1, Int_t etaBins = -1) {
+void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 3, Int_t fRebin = 2,Int_t fStartBinBFWidthPhi = 2, Int_t fRebinPhi = 2,TString centEst = "V0M",Double_t etaWindow = -1, Int_t etaBins = -1, Bool_t correctWithEfficiency = kFALSE) {
   // Macro to read the output of the BF analysis:  MW: CHANGE THIS!!!!
   //i) Prints and draws the final BF output
   //ii) Plots the QA part of the analysis
@@ -20,7 +20,7 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
   gSystem->Load("libPWGCFebye.so");
 
   //Draw BF       
-  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,centEst, "",  etaWindow,etaBins);    
+  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,centEst, "",  etaWindow,etaBins, correctWithEfficiency);    
   
 
   //Merge the output
@@ -28,7 +28,7 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
 }
 
 //___________________________________________________________//
-void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, Int_t fStartBinBFWidthPhi = 1, Int_t fRebinPhi = 1, TString centEst = "V0M",TString extraString = "", Double_t etaWindow = -1, Int_t etaBins = -1) {
+void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, Int_t fStartBinBFWidthPhi = 1, Int_t fRebinPhi = 1, TString centEst = "V0M",TString extraString = "", Double_t etaWindow = -1, Int_t etaBins = -1, Bool_t correctWithEfficiency = kFALSE) {
   //Function to draw the BF objects and write them into the output file
 
   Int_t maximumCanvases = 13;
@@ -328,7 +328,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
     	for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
 
-    	  gbf[iList][iCanvas][a] = bf[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow);
+    	  gbf[iList][iCanvas][a] = bf[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow,correctWithEfficiency);
     	  gbf[iList][iCanvas][a]->SetName(Form("BF_%s_Cent_%.0f_%.0f_%d",gBFAnalysisType[a].Data(),centralityArray[iCanvas],centralityArray[iCanvas+1],iList));
 
     	  cBF[iList][iCanvas]->cd(a+1);
@@ -431,7 +431,7 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
   	for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
 	  
-  	  gbfs[iList][iCanvas][a] = bfs[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow);
+  	  gbfs[iList][iCanvas][a] = bfs[iList][a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1],etaWindow, correctWithEfficiency);
   	  gbfs[iList][iCanvas][a]->SetName(Form("BFS_%s_Cent_%.0f_%.0f_%d",gBFAnalysisType[a].Data(),centralityArray[iCanvas],centralityArray[iCanvas+1],iList));
 	  
   	  cBFS[iList][iCanvas]->cd(a+1);
