@@ -1178,6 +1178,10 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     aodTrack->SetFlags(track->GetStatus());
     aodTrack->SetTPCPointsF(track->GetTPCNclsF());
 
+    //Perform progagation of tracks if needed
+    if(fDoPropagateTrackToEMCal) PropagateTrackToEMCal(esdTrack);
+    aodTrack->SetTrackPhiEtaOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal());
+
     // do not duplicate PID information 
     //    aodTrack->ConvertAliPIDtoAODPID();
     //    SetAODPID(esdTrack,aodTrack,detpid);
@@ -1187,7 +1191,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
   
 }
 
-
+//______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent& esd)
 {
 
@@ -1325,6 +1329,10 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
       aodTrack->ConvertAliPIDtoAODPID();
       SetAODPID(esdTrack,aodTrack,detpid);
     }
+
+    //Perform progagation of tracks if needed
+    if(fDoPropagateTrackToEMCal) PropagateTrackToEMCal(esdTrack);
+    aodTrack->SetTrackPhiEtaOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal());
   } // end of loop on tracks
   
 }
@@ -1342,7 +1350,6 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
   const AliESDVertex *vtx = esd.GetPrimaryVertex();
   Double_t p[3] = { 0. };
   Double_t pos[3] = { 0. };
-  Double_t trkPos[3] = {0.,0.,0.};
   Double_t covTr[21] = { 0. };
   Double_t pid[10] = { 0. };
   AliAODTrack* aodTrack(0x0);
@@ -1393,28 +1400,7 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
     if(esdTrack->IsPHOS())  aodTrack->SetPHOScluster(esdTrack->GetPHOScluster());
 
     //Perform progagation of tracks if needed
-    if(fDoPropagateTrackToEMCal)
-      {
-	Double_t EMCalEta, EMCalPhi;
-	Double_t trkphi = esdTrack->Phi()*TMath::RadToDeg();
-	if(TMath::Abs(esdTrack->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
-	  {
-	    AliExternalTrackParam *trkParam = const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());
-	    if(trkParam)
-	      {
-		AliExternalTrackParam trkParamTmp(*trkParam);
-		if(AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, 430, esdTrack->GetMass(), 20, kTRUE, 0.8, -1))
-		  {
-		    trkParamTmp.GetXYZ(trkPos);
-		    TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-		    EMCalEta = trkPosVec.Eta();
-		    EMCalPhi = trkPosVec.Phi();
-		    if(EMCalPhi<0)  EMCalPhi += 2*TMath::Pi();
-		    esdTrack->SetTrackPhiEtaOnEMCal(EMCalPhi,EMCalEta);
-		  }
-	      }
-	  }
-      }
+    if(fDoPropagateTrackToEMCal) PropagateTrackToEMCal(esdTrack);
     aodTrack->SetTrackPhiEtaOnEMCal(esdTrack->GetTrackPhiOnEMCal(),esdTrack->GetTrackEtaOnEMCal());
 
     fAODTrackRefs->AddAt(aodTrack, nTrack);
@@ -1425,6 +1411,31 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
     aodTrack->ConvertAliPIDtoAODPID();
     SetAODPID(esdTrack,aodTrack,detpid);
   } // end of loop on tracks
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskESDfilter::PropagateTrackToEMCal(AliESDtrack *esdTrack)
+{
+  Double_t trkPos[3] = {0.,0.,0.};
+  Double_t EMCalEta=-999, EMCalPhi=-999;
+  Double_t trkphi = esdTrack->Phi()*TMath::RadToDeg();
+  if(TMath::Abs(esdTrack->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
+    {
+      AliExternalTrackParam *trkParam = const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());
+      if(trkParam)
+	{
+	  AliExternalTrackParam trkParamTmp(*trkParam);
+	  if(AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, 430, esdTrack->GetMass(), 20, kTRUE, 0.8, -1))
+	    {
+	      trkParamTmp.GetXYZ(trkPos);
+	      TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+	      EMCalEta = trkPosVec.Eta();
+	      EMCalPhi = trkPosVec.Phi();
+	      if(EMCalPhi<0)  EMCalPhi += 2*TMath::Pi();
+	      esdTrack->SetTrackPhiEtaOnEMCal(EMCalPhi,EMCalEta);
+	    }
+	}
+    }
 }
 
 //______________________________________________________________________________

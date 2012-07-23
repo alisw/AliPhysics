@@ -112,7 +112,8 @@ private:
   void ConvertVZERO(const AliESDEvent& esd);
   void ConvertTZERO(const AliESDEvent& esd);
   void ConvertZDC(const AliESDEvent& esd);
- 
+  void PropagateTrackToEMCal(AliESDtrack *esdTrack);
+
   TClonesArray& Tracks();
   TClonesArray& V0s();
   TClonesArray& Vertices();
