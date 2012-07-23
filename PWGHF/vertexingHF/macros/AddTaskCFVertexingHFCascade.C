@@ -82,7 +82,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 	}
 
 	TFile* fileCuts = TFile::Open(cutFile);
-	AliRDHFCutsDStartoKpipi *cutsD0toKpi = (AliRDHFCutsDStartoKpipi*)fileCuts->Get("DStartoKpipiCuts");
+	AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = (AliRDHFCutsDStartoKpipi*)fileCuts->Get("DStartoKpipiCuts");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
@@ -229,7 +229,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 	
 	//OPTION 2: ...or from the cuts file
 	
-	const Int_t nbinpt = cutsD0toKpi->GetNPtBins(); // bins in pT
+	const Int_t nbinpt = cutsDStartoKpipi->GetNPtBins(); // bins in pT
 	iBin[ipT]=nbinpt;
 	iBin[ipTpi]=nbinpt;
 	iBin[ipTk]=nbinpt;
@@ -237,7 +237,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 	Double_t *binLimpTpi=new Double_t[iBin[ipTpi]+1];
 	Double_t *binLimpTk=new Double_t[iBin[ipTk]+1];
 	// values for bin lower bounds
-	Float_t* floatbinLimpT = cutsD0toKpi->GetPtBinLimits();
+	Float_t* floatbinLimpT = cutsDStartoKpipi->GetPtBinLimits();
 	for (Int_t ibin0 = 0 ; ibin0<iBin[ipT]+1; ibin0++){
 		binLimpT[ibin0] = (Double_t)floatbinLimpT[ibin0];
 		binLimpTpi[ibin0] = (Double_t)floatbinLimpT[ibin0];
@@ -340,13 +340,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 	//one "container" for MC
 	TString nameContainer="";
 	if(!isKeepDfromB) {
-		nameContainer="CFHFccontainer0_CommonFramework_"+usercomment;
+		nameContainer="CFHFccontainer0_"+usercomment;
 	}
 	else  if(isKeepDfromBOnly){
-		nameContainer="CFHFccontainer0DfromB_CommonFramework_"+usercomment;
+		nameContainer="CFHFccontainer0DfromB_"+usercomment;
 	}
 	else  {
-		nameContainer="CFHFccontainer0allD_CommonFramework_"+usercomment;	  
+		nameContainer="CFHFccontainer0allD_"+usercomment;	  
 	}
 
 	//Setting up the container grid... 
@@ -540,7 +540,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 	printf("CREATE TASK\n");
 
 	// create the task
-	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsD0toKpi);
+	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsDStartoKpipi);
 	task->SetConfiguration(configuration);
 	task->SetFillFromGenerated(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
@@ -605,13 +605,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 
 	TString nameCorr="";
 	if(!isKeepDfromB) {
-		nameCorr="CFHFcorr0_CommonFramework_"+usercomment;
+		nameCorr="CFHFcorr0_"+usercomment;
 	}
 	else  if(isKeepDfromBOnly){
-		nameCorr= "CFHFcorr0KeepDfromBOnly_CommonFramework_"+usercomment;
+		nameCorr= "CFHFcorr0KeepDfromBOnly_"+usercomment;
 	}
 	else  {
-		nameCorr="CFHFcorr0allD_CommonFramework_"+usercomment;
+		nameCorr="CFHFcorr0allD_"+usercomment;
 
 	}
 
@@ -648,19 +648,19 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 	output2name=nameContainer;
 	output3name=nameCorr;
 	if(!isKeepDfromB) {
-		outputfile += ":PWG3_D2H_CFtaskD0toKpi_CommonFramework_"+usercomment;
-		output1name="CFHFchist0_CommonFramework_"+usercomment;
-		output4name= "Cuts_CommonFramework_"+usercomment;
+		outputfile += ":PWG3_D2H_CFtaskDStartoKpipi_"+usercomment;
+		output1name="CFHFchist0_"+usercomment;
+		output4name= "Cuts_"+usercomment;
 	}
 	else  if(isKeepDfromBOnly){
-		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly_CommonFramework_"+usercomment;
-		output1name="CFHFchist0DfromB_CommonFramework_"+usercomment;
-		output4name= "Cuts_CommonFramework_DfromB_"+usercomment;
+		outputfile += ":PWG3_D2H_CFtaskDStartoKpipiKeepDfromBOnly_"+usercomment;
+		output1name="CFHFchist0DfromB_"+usercomment;
+		output4name= "Cuts_DfromB_"+usercomment;
 	}
 	else{
-		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB_CommonFramework_"+usercomment;
-		output1name="CFHFchist0allD_CommonFramework_"+usercomment;
-		output4name= "Cuts_CommonFramework_allD_"+usercomment;
+		outputfile += ":PWG3_D2H_CFtaskDStartoKpipiKeepDfromB_"+usercomment;
+		output1name="CFHFchist0allD_"+usercomment;
+		output4name= "Cuts_allD_"+usercomment;
 	}
 	
 
