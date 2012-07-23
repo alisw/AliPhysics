@@ -340,6 +340,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	else  {
 	  nameContainer="CFHFcontainer_DplustoKpipi_All";
 	}
+	nameContainer += suffixName.Data();
 
 	
 	AliCFContainer* container;
@@ -600,6 +601,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	else  {
 	        nameCorr="CFHFcorr_DplustoKpipi_All";
 	}
+	nameCorr += suffixName.Data();
 	
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
@@ -651,8 +653,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	}
 	outputfile += suffixName.Data();
 	output1name += suffixName.Data();
-	output2name += suffixName.Data();
-	output3name += suffixName.Data();
 	output4name += suffixName.Data();
 	
 

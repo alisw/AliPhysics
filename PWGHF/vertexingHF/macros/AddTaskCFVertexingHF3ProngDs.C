@@ -670,8 +670,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	
 	outputfile += suffixName.Data();
 	output1name+= suffixName.Data();
-	output2name+= suffixName.Data();
-	output3name+= suffixName.Data();
 	output4name+= suffixName.Data();
 
 	//now comes user's output objects :
