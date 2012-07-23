@@ -2,7 +2,7 @@
 
 # Script to run:
 #    1. reconstruction
-#    2. calibration 
+#    2. calibration
 #
 # Files assumed to be in working directory:
 # recCPass1.C          - reconstruction macro
@@ -11,32 +11,32 @@
 #    1  - raw data file name
 #    2  - number of events to be processed
 #    3  - run number 
-#    4  - OCDBPath
-#    5  - optional trigger mask
+
 # example:
-# runCPass1.sh raw.root  50  104892 raw://
+# runCPass1.sh raw.root  50  104892
 
 #ALIEN setting
 # $1 = raw input filename
 runNum=`echo $1 | cut -d "/" -f 6 | sed 's/^0*//'`
-if [ $# -eq 1 ] ; then
-  # alien Setup
-  nEvents=99999999
-  fileName="alien://"$1
-  ocdbPath="raw://"
-  triggerOptions="?Trigger=kCalibBarrel"
-fi;
-if [ $# -ge 4 ] ; then
-  # local setup
-  fileName=$1
-  nEvents=$2
-  runNum=$3
-  ocdbPath=$4
-  triggerOptions="?Trigger=kCalibBarrel"
+
+if [ $# -eq 1 ]; then
+    # alien Setup
+    nEvents=99999999
+    ocdbPath="raw://"
+    triggerOptions="?Trigger=kCalibBarrel"
 fi
-if [ $# -eq 5 ] ; then
-  # local setup in case we specify the trigger mask
-  triggerOptions=$5
+
+if [ $# -ge 4 ]; then
+    # local setup
+    nEvents=$2
+    runNum=$3
+    ocdbPath=$4
+    triggerOptions="?Trigger=kCalibBarrel"
+fi
+
+if [ $# -eq 5 ]; then
+    # local setup in case we specify the trigger mask
+    triggerOptions=$5
 fi
 
 CHUNKNAME="$1"
@@ -58,19 +58,17 @@ if [ -f "wn.xml" ]; then
     CHUNKNAME="collection://wn.xml"
 fi
 
-echo xxxxxxxxxxxxxxxxxxxxxxxxxxx
-echo runCPass1.sh Input arguments
-echo fileName=$fileName
-echo nEvents=$nEvents
-echo runNum=$runNum
-echo ocdbPath=$ocdbPath
-echo triggerOptions=$triggerOptions
-echo xxxxxxxxxxxxxxxxxxxxxxxxxxx
 echo "* ************************"
 echo "* runCPass1.sh $*"
 echo "* Chunk name: $CHUNKNAME"
 echo "* Run number: $runNum"
+echo "* nEvents: $nEvents"
+echo "* runNum: $runNum"
+echo "* ocdbPath: $ocdbPath"
+echo "* triggerOptions: $triggerOptions"
 echo "* ************************"
+
+mkdir Barrel OuterDet
 
 if [ -f Run0_999999999_v3_s0.root ]; then
     echo "* TPC correction file found"
@@ -78,11 +76,10 @@ if [ -f Run0_999999999_v3_s0.root ]; then
     mkdir -p TPC/Calib/Correction
     mv Run0_999999999_v3_s0.root TPC/Calib/Correction/
 
-    mkdir -p Barrel/TPC/Calib/Correction
-    ln -s ../../../../TPC/Calib/Correction/Run0_999999999_v3_s0.root Barrel/TPC/Calib/Correction/Run0_999999999_v3_s0.root
-
-    mkdir -p OuterDet/TPC/Calib/Correction
-    ln -s ../../../../TPC/Calib/Correction/Run0_999999999_v3_s0.root OuterDet/TPC/Calib/Correction/Run0_999999999_v3_s0.root
+    for DIR in Barrel OuterDet; do
+        mkdir -p $DIR/TPC/Calib/Correction
+        ln -s ../../../../TPC/Calib/Correction/Run0_999999999_v3_s0.root $DIR/TPC/Calib/Correction/Run0_999999999_v3_s0.root
+    done
 fi
 
 echo "* PATH: $PATH"
@@ -113,27 +110,20 @@ if [ "$2" == "OCDB" ]; then
     exit $exitcode
 fi
 
-mkdir Barrel OuterDet
+for COMMON_FILE in wn.xml localOCDBaccessConfig.C AddTaskTPCCalib.C OCDB.root QAtrain_duo.C; do
+    if [ -f $COMMON_FILE ]; then
+        ln -s ../$COMMON_FILE Barrel/$COMMON_FILE
+        ln -s ../$COMMON_FILE OuterDet/$COMMON_FILE
+    fi
+done
 
-[[ -f localOCDBaccessConfig.C ]] && cp localOCDBaccessConfig.C Barrel
-[[ -f localOCDBaccessConfig.C ]] && cp localOCDBaccessConfig.C OuterDet
+for BARREL_FILE in recCPass1.C runCalibTrain.C; do
+    ln -s ../$BARREL_FILE Barrel/$BARREL_FILE
+done
 
-cp recCPass1.C Barrel/
-cp runCalibTrain.C Barrel/
-cp QAtrain_duo.C Barrel/
-
-cp recCPass1_OuterDet.C OuterDet/
-cp QAtrain_duo.C OuterDet/
-
-if [ -f wn.xml ]; then
-    cp wn.xml Barrel/
-    cp wn.xml OuterDet/
-fi
-
-if [ -f OCDB.root ]; then
-    ln -s ../OCDB.root Barrel/OCDB.root
-    ln -s ../OCDB.root OuterDet/OCDB.root
-fi
+for OUTER_FILE in recCPass1_OuterDet.C; do
+    ln -s ../$OUTER_FILE OuterDet/$OUTER_FILE
+done
 
 ####################################   Barrel   #######################################
 
@@ -141,9 +131,8 @@ cd Barrel
 
 echo "* Running AliRoot to reconstruct barrel of $CHUNKNAME"
 
-echo "Barrel/recCPass1.C" >&2
-echo executing time aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")"
-time aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")" &> ../rec_Barrel.log
+echo executing aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")"
+time aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")" &> ../rec.log
 exitcode=$?
 echo "Exit code: $exitcode"
 
@@ -155,8 +144,7 @@ mv syswatch.log ../syswatch_rec_Barrel.log
 
 echo "* Running AliRoot to make calibration..."
 
-echo "Barrel/recCalibTrain.C" >&2
-echo executing time aliroot -l -b -q "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"
+echo executing aliroot -l -b -q "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"
 time aliroot -l -b -q "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")" &> ../calib.log
 exitcode=$?
 echo "Exit code: $exitcode"
@@ -170,9 +158,12 @@ mv syswatch.log ../syswatch_calib.log
 if [ -f QAtrain_duo.C ]; then
     echo "* Running the QA train (barrel) ..."
 
-    echo "Barrel/QAtrain_duo.C" >&2
-    echo executing time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")"
-    time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")" &> ../qa_barrel.log
+#    echo executing aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")"
+#    time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")" &> ../qa_barrel.log
+
+    echo executing aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum)"
+    time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum)" &> ../qa_barrel.log
+
     exitcode=$?
     echo "Exit code: $exitcode"
 
@@ -200,7 +191,6 @@ cd ../OuterDet
 
 echo "* Running AliRoot to reconstruct outer of $CHUNKNAME"
 
-echo "OuterDet/recCPass1_OuterDet" >&2
 echo executing aliroot -l -b -q "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")"
 time aliroot -l -b -q "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")" &> ../rec_Outer.log
 exitcode=$?
@@ -215,9 +205,12 @@ mv syswatch.log ../syswatch_rec_Outer.log
 if [ -f QAtrain_duo.C ]; then
     echo "* Running the QA train (outer) ..."
 
-    echo "OuterDet/QAtrain_duo.C" >&2
-    echo executing time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")"
-    time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")" &> ../qa_outer.log
+#    echo executing aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")"
+#    time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")" &> ../qa_outer.log
+
+    echo executing aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum)"
+    time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum)" &> ../qa_outer.log
+
     exitcode=$?
     echo "Exit code: $exitcode"
 
@@ -239,10 +232,4 @@ for file in QAresults_outer.root EventStat_temp_outer.root; do
     fi
 done
 
-if [[ -f $ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C ]]; then
-  echo ">>>>>>> Extracting system information..."
-  echo executing aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C(\"AliESDfriends_v1.root\")"
-  aliroot -b -q "$ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C(\"AliESDfriends_v1.root\")"
-else
-  echo $ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeSyswatchCPass1.C not there
-fi
+exit $exitcode
