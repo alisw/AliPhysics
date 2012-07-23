@@ -33,6 +33,7 @@
 #include "AliAODDimuon.h"
 #include "AliAODTZERO.h"
 #include "AliAODVZERO.h"
+#include "AliAODHMPIDrings.h"
 #include "AliAODZDC.h"
 #ifdef MFT_UPGRADE
 #include "AliAODMFT.h"
@@ -60,11 +61,12 @@ class AliAODEvent : public AliVEvent {
 	           kAODPHOSTrigger,
 		       kAODFmdClusters,
 		       kAODPmdClusters,
+                       kAODHMPIDrings,
 		       kAODDimuons,
 		       kAODTZERO,
 		       kAODVZERO,
 		       kAODZDC,
-		       kTOFHeader,
+		       kTOFHeader,                       
 		       kAODListN
 	           #ifdef MFT_UPGRADE
 	           ,kAODVZERO
@@ -210,6 +212,16 @@ class AliAODEvent : public AliVEvent {
   Int_t         AddPmdCluster(const AliAODPmdCluster* clus)
   {new((*fPmdClusters)[fPmdClusters->GetEntriesFast()]) AliAODPmdCluster(*clus); return fPmdClusters->GetEntriesFast()-1;}
 
+  // -- HMPID objects 
+  TClonesArray *GetHMPIDrings()       const { return fHMPIDrings; } 
+  Int_t         GetNHMPIDrings();
+  AliAODHMPIDrings *GetHMPIDring(Int_t nRings);
+  Int_t         AddHMPIDrings(const  AliAODHMPIDrings* ring) 
+  {new((*fHMPIDrings)[fHMPIDrings->GetEntriesFast()]) AliAODHMPIDrings(*ring); return fHMPIDrings->GetEntriesFast()-1;}
+  
+  AliAODHMPIDrings *GetHMPIDringForTrackID(Int_t trackID);
+  
+  
   // -- Jet
   TClonesArray *GetJets()            const { return fJets; }
   Int_t         GetNJets()           const { return fJets?fJets->GetEntriesFast():0; }
@@ -248,6 +260,7 @@ class AliAODEvent : public AliVEvent {
 		   Int_t caloClusSize = 0, 
 		   Int_t fmdClusSize = 0, 
 		   Int_t pmdClusSize = 0,
+                   Int_t hmpidRingsSize = 0,
 		   Int_t dimuonArrsize =0
 		   );
   void    ClearStd();
@@ -308,6 +321,7 @@ class AliAODEvent : public AliVEvent {
   AliAODCaloTrigger *fPHOSTrigger;  //! PHOS Trigger information
   TClonesArray    *fFmdClusters;  //! FMDclusters
   TClonesArray    *fPmdClusters;  //! PMDclusters
+  TClonesArray    *fHMPIDrings;   //! HMPID signals
   TClonesArray    *fDimuons;      //! dimuons
   AliAODTZERO     *fAODTZERO;     //! TZERO AOD
   AliAODVZERO     *fAODVZERO;     //! VZERO AOD
@@ -322,7 +336,7 @@ class AliAODEvent : public AliVEvent {
   
   static const char* fAODListName[kAODListN]; //!
 
-  ClassDef(AliAODEvent,90);
+  ClassDef(AliAODEvent,91);
 };
 
 #endif

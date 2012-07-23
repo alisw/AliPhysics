@@ -60,6 +60,7 @@
 #pragma link C++ class AliAODTZERO+;
 #pragma link C++ class AliAODVZERO+;
 #pragma link C++ class AliAODZDC+;
+#pragma link C++ class AliAODHMPIDrings+;
 
 #pragma link C++ method AliAODTrack::SetPosition<double>(double const*, bool);
 

@@ -44,6 +44,7 @@ set ( SRCS
     AOD/AliAODTZERO.cxx
     AOD/AliAODVZERO.cxx
     AOD/AliAODZDC.cxx	
+    AOD/AliAODHMPIDrings.cxx	
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")

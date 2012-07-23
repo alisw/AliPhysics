@@ -82,6 +82,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void DisableCells() { fAreEMCALCellsEnabled = fArePHOSCellsEnabled = kFALSE; }
   void DisableCaloTrigger(TString calo = "PHOS") { if (calo.Contains("EMCAL")) fAreEMCALTriggerEnabled = kFALSE; else fArePHOSTriggerEnabled = kFALSE; }
   void DisableTracklets() { fAreTrackletsEnabled = kFALSE; }
+  void DisableHMPID()  { fIsHMPIDEnabled = kFALSE; } 
 
   void EnableV0CascadeVerticesReco() { fIsV0CascadeRecoEnabled = kTRUE; }
 
@@ -112,6 +113,7 @@ private:
   void ConvertVZERO(const AliESDEvent& esd);
   void ConvertTZERO(const AliESDEvent& esd);
   void ConvertZDC(const AliESDEvent& esd);
+  Int_t ConvertHMPID(const AliESDEvent& esd);
   void PropagateTrackToEMCal(AliESDtrack *esdTrack);
 
   TClonesArray& Tracks();
@@ -154,6 +156,7 @@ private:
   Bool_t fIsVZEROEnabled; // whether or not to fill the vzero branch (true by default)
   Bool_t fIsTZEROEnabled; // whether or not to fill the tzero branch (true by default)
   Bool_t fIsZDCEnabled; // whether or not to fill the zdc branch (true by default)
+  Bool_t fIsHMPIDEnabled; // whether or not to fill the hmpid branch (true by default) 
   Bool_t fIsV0CascadeRecoEnabled; // whether or not to reconstruct again V0s and cascades (false by default)
   Bool_t fAreCascadesEnabled; // whether or not to fill the cascades branch (true by default)
   Bool_t fAreV0sEnabled; // whether or not to fill the v0 branch (true by default)
@@ -175,7 +178,7 @@ private:
   Bool_t fDoPropagateTrackToEMCal;  // whether or not to propagate the tracks to EMCal surface (430cm) -- true by default
   
   
-  ClassDef(AliAnalysisTaskESDfilter, 14); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 15); // Analysis task for standard ESD filtering
 };
 
 #endif

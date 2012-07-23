@@ -51,6 +51,7 @@
 #include "AliCodeTimer.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDpid.h"
+#include "AliAODHMPIDrings.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
 #include "Riostream.h"
@@ -98,6 +99,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fIsVZEROEnabled(kTRUE),
   fIsTZEROEnabled(kTRUE),
   fIsZDCEnabled(kTRUE),
+  fIsHMPIDEnabled(kTRUE), 
   fIsV0CascadeRecoEnabled(kFALSE),
   fAreCascadesEnabled(kTRUE),
   fAreV0sEnabled(kTRUE),
@@ -169,6 +171,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fIsVZEROEnabled(kTRUE),
     fIsTZEROEnabled(kTRUE),
     fIsZDCEnabled(kTRUE),
+    fIsHMPIDEnabled(kTRUE), 
     fIsV0CascadeRecoEnabled(kFALSE),
     fAreCascadesEnabled(kTRUE),
     fAreV0sEnabled(kTRUE),
@@ -2012,6 +2015,72 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
 
 }
 
+//_______________________________________________________________________________________________________________________________________
+Int_t AliAnalysisTaskESDfilter::ConvertHMPID(const AliESDEvent& esd) // clm
+{
+  //
+  // Convtert ESD HMPID info to AOD and return the number of good tracks with HMPID signal.
+  // We need to return an int since there is no signal counter in the ESD.
+  //
+  
+  AliCodeTimerAuto("",0);
+  
+  Int_t cntHmpidGoodTracks = 0;
+  
+  Float_t  xMip = 0;
+  Float_t  yMip = 0;
+  Int_t    qMip = 0;
+  Int_t    nphMip = 0;
+  
+  Float_t xTrk = 0;
+  Float_t yTrk = 0;
+  Float_t thetaTrk = 0;
+  Float_t phiTrk = 0;
+  
+  Double_t hmpPid[5]={0};
+  Double_t hmpMom[3]={0};
+  
+  TClonesArray &hmpidRings = *(AODEvent()->GetHMPIDrings());
+  
+ for (Int_t iTrack=0; iTrack<esd.GetNumberOfTracks(); ++iTrack) 
+  {
+    if(! esd.GetTrack(iTrack) ) continue;
+      
+    if(esd.GetTrack(iTrack)->GetHMPIDsignal() > -20 ) {                  // 
+       
+      (esd.GetTrack(iTrack))->GetHMPIDmip(xMip, yMip, qMip, nphMip);     // Get MIP properties
+      (esd.GetTrack(iTrack))->GetHMPIDtrk(xTrk,yTrk,thetaTrk,phiTrk);
+      (esd.GetTrack(iTrack))->GetHMPIDpid(hmpPid);
+      if((esd.GetTrack(iTrack))->GetOuterHmpParam()) (esd.GetTrack(iTrack))->GetOuterHmpPxPyPz(hmpMom);
+      
+     if(esd.GetTrack(iTrack)->GetHMPIDsignal() == 0 && thetaTrk == 0 && qMip == 0 && nphMip ==0 ) continue;  //
+      
+     new(hmpidRings[cntHmpidGoodTracks++]) AliAODHMPIDrings(
+                                                                 (esd.GetTrack(iTrack))->GetID(),             // Unique track id to attach the ring to
+                                                                 1000000*nphMip+qMip,                         // MIP charge and number of photons
+                                                                 (esd.GetTrack(iTrack))->GetHMPIDcluIdx(),    // 1000000*chamber id + cluster idx of the assigned MIP cluster  
+                                                                 thetaTrk,                                    // track inclination angle theta
+                                                                 phiTrk,                                      // track inclination angle phi
+                                                                 (esd.GetTrack(iTrack))->GetHMPIDsignal(),    // Cherenkov angle
+                                                                 (esd.GetTrack(iTrack))->GetHMPIDoccupancy(), // Occupancy claculated for the given chamber 
+                                                                 (esd.GetTrack(iTrack))->GetHMPIDchi2(),      // Ring resolution squared
+                                                                  xTrk,                                       // Track x coordinate (LORS)
+                                                                  yTrk,                                       // Track y coordinate (LORS)
+                                                                  xMip,                                       // MIP x coordinate (LORS)
+                                                                  yMip,                                       // MIP y coordinate (LORS)
+                                                                  hmpPid,                                     // PID probablities from ESD, remove later once it is in CombinedPid
+                                                                  hmpMom                                      // Track momentum in HMPID at ring reconstruction
+                                                               );  
+     
+      //  Printf(Form("+++++++++ yes/no: %d  %lf %lf %lf %lf %lf %lf ",(esd.GetTrack(iTrack))->IsHMPID(),thetaTrk, (esd.GetTrack(iTrack))->GetHMPIDchi2(),xTrk, yTrk , xMip, yMip));
+     
+                                                                
+   }// HMPID signal > -20
+  }//___esd track loop
+  
+  return cntHmpidGoodTracks;
+}
+
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertESDtoAOD() 
 {
@@ -2080,10 +2149,11 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   Int_t nCaloClus = esd->GetNumberOfCaloClusters();
   Int_t nFmdClus  = 0;
   Int_t nPmdClus  = esd->GetNumberOfPmdTracks();
+  Int_t nHmpidRings = 0;  
     
   AliDebug(1,Form("   NV0=%d  NCASCADES=%d  NKINKS=%d", nV0s, nCascades, nKinks));
        
-  AODEvent()->ResetStd(nTracks, nVertices, nV0s, nCascades, nJets, nCaloClus, nFmdClus, nPmdClus);
+  AODEvent()->ResetStd(nTracks, nVertices, nV0s, nCascades, nJets, nCaloClus, nFmdClus, nPmdClus,nHmpidRings);
 
   if (nV0s > 0) 
   {
@@ -2178,6 +2248,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   if ( fAreTrackletsEnabled ) ConvertTracklets(*esd);
   if ( fIsZDCEnabled ) ConvertZDC(*esd);
   
+  if(fIsHMPIDEnabled) nHmpidRings = ConvertHMPID(*esd); 
+
   delete fAODTrackRefs; fAODTrackRefs=0x0;
   delete fAODV0VtxRefs; fAODV0VtxRefs=0x0;
   delete fAODV0Refs; fAODV0Refs=0x0;
@@ -2295,7 +2367,7 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
   }
   aodpid->SetTOFpidResolution(tofRes);
 
-//  aodpid->SetHMPIDsignal(track->GetHMPIDsignal());
+//  aodpid->SetHMPIDsignal(0); // set to zero for compression but it will be removed later
 
 }
 
