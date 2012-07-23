@@ -1106,7 +1106,8 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
 	
 	//slot #1
 	OpenFile(1);
-	fHistEventsProcessed = new TH1I("CFHFchist0","",1,0,1) ;
+	const char* nameoutput=GetOutputSlot(1)->GetContainer()->GetName();
+	fHistEventsProcessed = new TH1I(nameoutput,"",1,0,1) ;
 
 	PostData(1,fHistEventsProcessed) ;
 	PostData(2,fCFManager->GetParticleContainer()) ;
