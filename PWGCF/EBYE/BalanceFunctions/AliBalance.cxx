@@ -24,6 +24,7 @@
 #include <Riostream.h>
 #include <TMath.h>
 #include <TAxis.h>
+#include <TF1.h>
 #include <TH2D.h>
 #include <TLorentzVector.h>
 #include <TObjArray.h>
@@ -812,7 +813,7 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
 }
  
 //____________________________________________________________________//
-TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t etaWindow) {
+TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax, Double_t etaWindow,Bool_t correctWithEfficiency) {
   //Returns the BF histogram, extracted from the 6 TH2D objects 
   //(private members) of the AliBalance class.
   //
@@ -878,6 +879,24 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   TH1D *hTemp4 = dynamic_cast<TH1D *>(fHistPP[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistPP[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
   TH1D *hTemp5 = dynamic_cast<TH1D *>(fHistN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
   TH1D *hTemp6 = dynamic_cast<TH1D *>(fHistP[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistP[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
+  
+  // do correction with the efficiency calculated from HIJING (for two particle correlations)
+  if(iAnalysisType == kEta && etaWindow > 0 && correctWithEfficiency){
+
+    TF1 *fPP = new TF1("fPP","pol2",0,1.6);  // phase space factor + efficiency for ++
+    fPP->SetParameters(0.143919,-0.0521531,-0.0234203);
+    TF1 *fNN = new TF1("fNN","pol2",0,1.6);  // phase space factor + efficiency for --
+    fNN->SetParameters(0.14103,-0.0516936,-0.0226052);
+    TF1 *fPN = new TF1("fPN","pol2",0,1.6);  // phase space factor + efficiency for +-
+    fPN->SetParameters(0.142484,-0.0519515,-0.0229989);
+
+    for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
+      hTemp1->SetBinContent(iBin+1,hTemp1->GetBinContent(iBin+1)/fPN->Eval(hTemp1->GetBinCenter(iBin+1)));
+      hTemp2->SetBinContent(iBin+1,hTemp2->GetBinContent(iBin+1)/fPN->Eval(hTemp1->GetBinCenter(iBin+1)));
+      hTemp3->SetBinContent(iBin+1,hTemp3->GetBinContent(iBin+1)/fNN->Eval(hTemp1->GetBinCenter(iBin+1)));
+      hTemp4->SetBinContent(iBin+1,hTemp4->GetBinContent(iBin+1)/fPP->Eval(hTemp1->GetBinCenter(iBin+1)));
+    }
+  }
 
   if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)) {
     hTemp1->Sumw2();
@@ -893,7 +912,7 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   }
 
   // do the acceptance correction (only for Eta and etaWindow > 0)
-  if(iAnalysisType == kEta && etaWindow > 0){
+  if(iAnalysisType == kEta && etaWindow > 0 && !correctWithEfficiency){
     for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
       
       Double_t notCorrected = gHistBalanceFunctionHistogram->GetBinContent(iBin+1);
