@@ -353,7 +353,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	else  {
 		nameContainer="CFHFccontainer0allD";	  
 	}
-
+	nameContainer += suffix;
 	//Setting up the container grid... 
 
 	AliCFContainer* container;
@@ -621,6 +621,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		nameCorr="CFHFcorr0allD";
 
 	}
+	nameCorr += suffix;
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
         Double_t** binEdges = new Double_t[2];
@@ -676,8 +677,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 	outputfile += suffix;
 	output1name += suffix;
-	output2name += suffix;
-	output3name += suffix;
 	output4name += suffix;
 
 	//now comes user's output objects :
