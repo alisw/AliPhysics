@@ -70,7 +70,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
 
   // TOF part
   AliTOFAnalysisTaskCalibPass0 *procesTOF=0;
-  if ( detStr.Contains("TOF")){
+  if ( detStr.Contains("TOF") && detStr.Contains("TPC")){
     procesTOF = new AliTOFAnalysisTaskCalibPass0;
     Printf("\n******* Calibrating TOF *******");
     procesTOF->ProcessOutput("CalibObjects.root", targetOCDBstorage);
