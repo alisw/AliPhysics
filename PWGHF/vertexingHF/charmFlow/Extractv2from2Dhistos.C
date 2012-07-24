@@ -668,7 +668,7 @@ void LoadMassHistos(TList* lst, TH2F** hMassDphi){
   for(Int_t iHisC=minCent; iHisC<=maxCent-5; iHisC+=5){    
     for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
       for(Int_t iPtBin=minPtBin[iFinalPtBin]; iPtBin<=maxPtBin[iFinalPtBin]; iPtBin++){
-    	TString hisname=Form("hMc2phi_pt%dcentr%d_%d",iPtBin,iHisC,iHisC+5);
+    	TString hisname=Form("hMc2deltaphi_pt%dcentr%d_%d",iPtBin,iHisC,iHisC+5);
     	TH2F* htmp=(TH2F*)lst->FindObject(hisname.Data());
 	if(hMassDphi[iFinalPtBin]==0x0){
 	  hMassDphi[iFinalPtBin]=(TH2F*)htmp->Clone(Form("hMassCos2DphiBin%d",iFinalPtBin));
