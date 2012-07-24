@@ -95,6 +95,8 @@ const Double_t sysPID=0.02; //PID
 const Double_t sysArm=0.01; //Armenteros cut
 const Double_t sysFD=0.05;  //Feed down
 
+const Double_t sysRatio=0.05;//Efficiency systematics for the L/K ratio
+
 const Double_t fdCorr=0.81;  //Feed down correction value 
 
 
@@ -207,6 +209,32 @@ DrawHisto(TH1 *h, const Option_t *option, Double_t *sysEff, Double_t *sysSig) {
   h->Draw("e x0 same");
 }
 
+void DrawRatio(TH1 *h, const Option_t *option) {
+  TH1F *hh=new TH1F(*((TH1F*)h));
+  Int_t nb=hh->GetNbinsX();
+
+  for (Int_t i=1; i<=nb; i++) {
+      Double_t c=hh->GetBinContent(i);
+      Double_t e=hh->GetBinError(i);
+      Int_t j=i-1;
+      e = sysSigK0s[j]*sysSigK0s[j] + sysSigLam[j]*sysSigLam[j];
+
+      e += sysRatio*sysRatio;
+
+      e += sysArm*sysArm;
+      e += sysFD*sysFD;
+      if (i<13) e += sysPID*sysPID;
+ 
+      e=c*TMath::Sqrt(e); 
+
+      hh->SetBinError(i,e);
+  }
+  hh->SetFillColor(17);
+  TString opt("E5"); opt+=option;
+  hh->Draw(opt.Data());
+  h->Draw("e x0 same");
+}
+
 void DrawALICELogo(Float_t x1, Float_t y1, Float_t x2, Float_t y2)
 {
 // Correct for aspect ratio of figure plus aspect ratio of pad.
@@ -311,6 +339,7 @@ void DrawSpectraAndRatios() {
   c2lin->SetLeftMargin(0.13); c2lin->SetBottomMargin(0.13);
 
   TCanvas *c3=new TCanvas;
+  c3->SetLeftMargin(0.13); c3->SetBottomMargin(0.13);
 
   for (Int_t cent=0; cent<nCent1; cent++) {
       const Char_t *tit=title[cent];
@@ -357,8 +386,10 @@ void DrawSpectraAndRatios() {
       rawHlk->SetName(name.Data());      
       rawHlk->SetMaximum(1.7);      
       rawHlk->Divide(rawHk);
+      rawHlk->GetYaxis()->SetTitle("#Lambda/K^{0}_{S}");
       c3->cd();
-      rawHlk->Draw(option.Data());
+      if (cent!=1)
+      DrawRatio(rawHlk,option.Data());
 
       option+="same";
   }
@@ -481,7 +512,16 @@ void DrawSpectraAndRatios() {
    DrawALICELogo(offx1,offy1,offx1+sizx,offy1+sizy);
        
    
-  c3->BuildLegend(0.74,0.62,0.88,0.88);
+   //leg=c3->BuildLegend(0.74,0.62,0.88,0.88,"Centrality:");
+  leg=c3->BuildLegend(0.55,0.55,0.88,0.88,"Centrality:");
+  leg->SetBorderSize(0);
+  leg->SetFillColor(0);
+
+  entry=leg->AddEntry("NULL","systematic uncertainty","lpf");
+  entry->SetLineColor(ci);
+  entry->SetLineStyle(1);
+  entry->SetLineWidth(10);
+  entry->SetMarkerColor(ci);
 
   return;
 }
