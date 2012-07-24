@@ -42,6 +42,7 @@ public:
     ULong_t     GetStatus() const                { return fStatus;}
     Int_t       GetKinkIndex() const             { return fKinkIndex;}
     Short_t     GetTOFbc() const                 { return fTOFbc;}
+    Float_t     GetTOFbeta() const               { return fTOFbeta;}
     UShort_t    GetTPCncls() const               { return fTPCncls;}
     Float_t     GetTPCdedx() const               { return fTPCdedx;}
     AliTrackPointArray* GetTrackPointArray() const      { return fTPArray; }
@@ -69,6 +70,7 @@ public:
     Int_t       fKinkIndex;               // ESD kink index
     UShort_t    fTPCncls;                 // Number of Clusters inside TPC
     Float_t     fTPCdedx;                 // dEdx in TPC
+    Float_t     fTOFbeta;                 // time of flight in TOF
     Short_t     fTOFbc;                   // TOF bunch crossing index
     Double32_t  fTRDr[AliPID::kSPECIES];  // TRD radial position
     UChar_t     fTRDpidQuality;           // TRD PID quality
@@ -165,6 +167,7 @@ public:
   void               SetStatus(ULong_t stat)          { fESD.fStatus = stat;}
   void               SetKinkIndex(Int_t kinkIndex)    { fESD.fKinkIndex = kinkIndex;}
   void               SetTOFbc(Int_t bc)               { fESD.fTOFbc = bc;}
+  void               SetTOFbeta(Float_t b)            { fESD.fTOFbeta = b;}
   void               SetTPCncls(UShort_t TPCncls)     { fESD.fTPCncls = TPCncls;}
   void               SetTPCdedx(Float_t dedx)         { fESD.fTPCdedx = dedx;}
   void               SetTrackId(Int_t id)             { fESD.fId = id;}

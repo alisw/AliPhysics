@@ -363,7 +363,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // load misalignment
     fgGeo = new AliTRDgeometry;
     fgGeo->CreateClusterMatrixArray();
-    MakeChambers();
+    //MakeChambers();
     // load reco param list from OCDB
     AliInfo("Initializing TRD reco params ...");
     fgReconstructor = new AliTRDReconstructor();
@@ -591,6 +591,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
     fTrackInfo->SetKinkIndex(esdTrack->GetKinkIndex(0));
     fTrackInfo->SetTPCncls(static_cast<UShort_t>(esdTrack->GetNcls(1)));
     fTrackInfo->SetTPCdedx(esdTrack->GetTPCsignal());
+    Float_t tofTime = esdTrack->GetTOFsignal() - fESDev->GetT0TOF(0);
+    fTrackInfo->SetTOFbeta(tofTime>0.?((esdTrack->GetIntegratedLength()/(tofTime*TMath::C()))*10e9):-999.);
     fTrackInfo->SetTOFbc(esdTrack->GetTOFBunchCrossing()==AliVTrack::kTOFBCNA?0:esdTrack->GetTOFBunchCrossing());
     nclsTrklt = 0;
   

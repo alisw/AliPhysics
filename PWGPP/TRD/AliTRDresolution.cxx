@@ -111,7 +111,7 @@ Double_t const AliTRDresolution::fgkMin[kNdim] = {
   -TMath::Pi(),
   -1.,
   -1.5,
-  -10.,
+  -5.,
   -2.5,
   -1.5,
   -0.5
@@ -121,7 +121,7 @@ Double_t const AliTRDresolution::fgkMax[kNdim] = {
   TMath::Pi(),
   1.,
   1.5,
-  10.,
+  5.,
   2.5,
   1.5,
   kNpt-0.5
@@ -580,6 +580,67 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
 // Additionally the momentum resolution/pulls are calculated for usage in the
 // PID calculation.
   //printf("AliTRDresolution::PlotTrackIn() :: track[%p]\n", (void*)track);
+  const Int_t np(27);
+  Float_t vp[np] = {
+    0.3375, 0.3625, 0.3875, 0.4125, 0.4375, 0.4625, 0.4875, 0.5125, 0.5375, 0.5625, 0.5875, 0.6125, 0.6375, 0.6625, 0.6875, 0.7125, 0.7375, 0.7625, 0.7875, 0.8125, 0.8375, 0.8625, 0.8875, 0.9125, 0.9375, 0.9625, 0.9875};
+  Float_t vpar[np][7] = {
+    {1620.77, 1637.76, 1033.49,  219.90,  300.00, 11234.87, 1113.33},
+    {1761.62, 1772.56, 1002.12,  219.44,  300.00, 9247.25, 1180.65},
+    {1759.54, 1805.76, 1011.67,  226.35,   54.74, 7739.81, 1120.52},
+    {1785.01, 1847.86,  993.53,  225.54,   48.02, 6575.87, 1001.27},
+    {1816.10, 1893.11,  993.37,  219.72,   70.20, 5860.19,  924.65},
+    {1745.73, 1769.14,  984.64,  217.80,   99.74, 4987.99,  729.97},
+    {1630.73, 1739.22,  987.80,  210.79,  140.88, 4404.52,  661.83},
+    {1532.09, 1637.25,  969.80,  208.23,  183.06, 4023.80,  593.95},
+    {1406.39, 1457.61,  973.71,  214.04,  221.52, 3684.11,  568.14},
+    {1319.60, 1363.47,  973.81,  214.03,  213.82, 3358.99,  602.18},
+    {1204.52, 1286.62,  975.00,  213.85,  249.08, 3086.86,  451.61},
+    {1108.89, 1172.44,  969.34,  209.29,  234.00, 2857.36,  512.79},
+    {1080.99, 1119.23,  956.90,  199.72,  232.16, 2662.46,  511.70},
+    { 932.87, 1022.37,  996.10,  211.59,  191.86, 2495.88,  472.64},
+    { 870.37,  927.52,  979.59,  211.22,  185.93, 2352.64,  471.50},
+    { 813.63,  862.36,  976.39,  208.70,  170.30, 2228.81,  543.72},
+    { 719.08,  764.51,  979.11,  216.24,  159.93, 2121.21,  483.85},
+    { 686.97,  746.95,  981.91,  208.64,  172.86, 2027.26,  428.23},
+    { 657.16,  660.34,  979.22,  220.23,  146.15, 1874.18,  418.02},
+    { 586.85,  617.01,  994.70,  225.71,  151.23, 1816.44,  317.01},
+    { 590.84,  553.40,  973.50,  208.46,  153.81, 1608.13,  407.54},
+    { 548.43,  501.37,  979.41,  209.70,  130.38, 1551.19,  422.07},
+    { 500.07,  476.37,  969.69,  209.10,  159.85, 1500.49,  321.93},
+    { 484.45,  476.31,  990.48,  204.98,  117.53, 1608.40,  304.42},
+    { 448.54,  447.14,  981.36,  205.21,  128.96, 1513.62,  244.57},
+    { 412.45,  398.59,  999.26,  201.71,  164.19, 1441.81,  196.49},
+    { 385.75,  390.55,  983.29,  214.26,  117.22, 1360.23,  174.48}
+  };
+  Float_t vqq[np][2] = {
+    {10.1500, 0.0050},
+    {37.4500, 0.0050},
+    {39.8500, 0.0050},
+    {37.1500, 0.0050},
+    {39.5500, 0.0050},
+    {38.9500, 0.0050},
+    {37.1500, 0.0050},
+    {32.6500, 0.0250},
+    {22.1500, 0.0250},
+    {10.1500, 0.0750},
+    {15.5500, 0.0650},
+    {10.1500, 0.1150},
+    {11.0500, 0.1750},
+    {10.1500, 0.1050},
+    {10.1500, 0.1150},
+    {10.1500, 0.1750},
+    {10.7500, 0.1950},
+    {11.0500, 0.2050},
+    {11.3500, 0.1950},
+    {12.8500, 0.1950},
+    {10.1500, 0.2650},
+    {10.1500, 0.2950},
+    {10.1500, 0.3050},
+    {10.1500, 0.2350},
+    {11.6500, 0.2750},
+    {10.7500, 0.2750},
+    {10.1500, 0.2450}
+  };
 
   if(track) fkTrack = track;
   if(!fkTrack){
@@ -626,7 +687,71 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
     return H->Projection(kYrez);
   }
 
-  Int_t bc(fkESD?fkESD->GetTOFbc()/2:0);
+  // down scale PID resolution
+  Int_t spc(fSpecies); if(spc==3) spc=2; if(spc==-3) spc=-2; if(spc>3) spc=3; if(spc<-3) spc=-3;
+
+  //identify high dEdx component
+  Int_t xid(0);
+  if(!fTracklet->IsRowCross()){
+    TF1 fl1("fl1", "landau", 5.5e2, 6.5e3);
+    TF1 fl2("fl2", "landau", 5.5e2, 6.5e3);
+    TF1 fg("fg", "gausn", -100, 100);
+    fg.SetParameter(0, 1.);
+    fg.SetParameter(1, -20.88);
+    fg.SetParameter(2,  14.47);
+    Double_t  ang(TMath::DegToRad()*50.), cs[2] = {TMath::Cos(ang), TMath::Sin(ang)};
+    Float_t p(fTracklet->GetMomentum()),
+            dqdl(fTracklet->GetdQdl());
+    if(p>vp[0] && p<vp[np-1]){
+      Int_t jp(0); while(jp<np && p>vp[jp]) jp++;
+      Int_t imin=TMath::Max(0, jp-1), imax=TMath::Min(jp, np-1);
+      //if(spc==2) printf("p[%6.4f] [%6.4f %6.4f]\n", p, vp[imin], vp[imax]);
+      for(Int_t ip(0); ip<3; ip++){
+        fl1.SetParameter(ip, 0.5*(vpar[imin][ip+1] + vpar[imax][ip+1]));
+        fl2.SetParameter(ip, 0.5*(vpar[imin][ip+4] + vpar[imax][ip+4]));
+      }
+      Float_t q0=fl1.Eval(dqdl), q1=fl2.Eval(dqdl);
+      q1/=(q0+q1); q1*=1.e2;
+
+      // calculate shape
+      AliTRDcluster *c(NULL);
+      Int_t ntb=0, q[26];Float_t qm(0.), qs(0.);
+      for(Int_t itb(0); itb<26/*AliTRDseedV1::kNtb*/; itb++){
+        q[itb]=0;
+        if(!(c=fTracklet->GetClusters(itb))) continue;
+        //Int_t col(c->GetPadCol());
+        Short_t *sig = c->GetSignals();
+        for(Int_t ipad(0); ipad<7; ipad++){
+          if(sig[ipad]<0) continue; // avoid signals below baseline
+          q[itb]+=sig[ipad];
+        }
+        if(!q[itb]) continue;
+        qm+=q[itb]; ntb++;
+      }
+      if(ntb) qm/=ntb;
+      for(Int_t itb(0); itb<26/*AliTRDseedV1::kNtb*/; itb++) qs += (q[itb]-qm)*(q[itb]-qm);
+      if(ntb) qs/=ntb;
+      if(qs>0.) qs=TMath::Sqrt(qs);
+      Float_t qsm = cs[0]*qm-cs[1]*qs;
+      Float_t q2 = 1.e2*fg.Eval(qsm);
+      if(q1>0.5*(vqq[imin][0]+vqq[imax][0])&&q2<=0.5*(vqq[imin][1]+vqq[imax][1])) xid = 1;
+    }
+  }
+
+  if(DebugLevel()>=3){
+    Float_t tpc(fkESD->GetTPCdedx());
+    Float_t tof(fkESD->GetTOFbeta());
+    (*DebugStream()) << "trackIn"
+      <<"xid="        << xid
+      <<"spc="        << spc
+      <<"tpc="        << tpc
+      <<"tof="        << tof
+      <<"tracklet.="  << fTracklet
+      <<"trackIn.="   << tin
+      << "\n";
+  }
+
+  //Int_t bc(fkESD?fkESD->GetTOFbc()/2:0);
   const Double_t *parR(tin->GetParameter());
   Double_t dyt(fTracklet->GetYfit(0)-parR[0]), dzt(fTracklet->GetZfit(0)-parR[1]),
             phit(fTracklet->GetYfit(1)),
@@ -640,31 +765,23 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   phit       += tilt*parR[3];
   Double_t dphi = TMath::ATan(phit) - TMath::ASin(parR[2]);
 
-  Double_t val[kNdim+3];
-  val[kBC]          = bc==0?0:(bc<0?-1.:1.);
+  Double_t val[kNdim+2];
+  val[kBC]          = xid;//bc==0?0:(bc<0?-1.:1.);
   Double_t alpha = (0.5+AliTRDgeometry::GetSector(fTracklet->GetDetector()))*AliTRDgeometry::GetAlpha(),
            cs    = TMath::Cos(alpha),
            sn    = TMath::Sin(alpha);
-  val[kPhi] = TMath::ATan2(fTracklet->GetX()*sn + fTracklet->GetY()*cs, fTracklet->GetX()*cs - fTracklet->GetY()*sn);
-  Float_t tgl = fTracklet->GetZ()/fTracklet->GetX()/TMath::Sqrt(1.+fTracklet->GetY()*fTracklet->GetY()/fTracklet->GetX()/fTracklet->GetX());
-  val[kEta] = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
+  val[kPhi]         = TMath::ATan2(fTracklet->GetX()*sn + fTracklet->GetY()*cs, fTracklet->GetX()*cs - fTracklet->GetY()*sn);
+  Float_t tgl       = fTracklet->GetZ()/fTracklet->GetX()/TMath::Sqrt(1.+fTracklet->GetY()*fTracklet->GetY()/fTracklet->GetX()/fTracklet->GetX());
+  val[kEta]         = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
   val[kYrez]        = dy;
   val[kZrez]        = fTracklet->IsRowCross()?dz:(fTracklet->GetdQdl()*5.e-4 - 2.5);
   val[kPrez]        = dphi*TMath::RadToDeg();
-  // down scale PID resolution
-  Int_t spc(fSpecies); if(spc==3) spc=2; if(spc==-3) spc=-2; 
   val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:spc;
-  val[kPt]          = GetPtBinSignificant(fPt);
-  val[kNdim]        = GetPtBinSignificant(fTracklet->GetMomentum());
+  val[kPt]          = DebugLevel()>=1?GetPtBin(fPt):GetPtBinSignificant(fPt);
+  val[kNdim]        = DebugLevel()>=1?GetPtBin(fTracklet->GetMomentum()):GetPtBinSignificant(fTracklet->GetMomentum());
   val[kNdim+1]      = dx;
-  val[kNdim+2]      = fEvent?fEvent->GetBunchFill():0;
+  //val[kNdim+2]      = fEvent?fEvent->GetBunchFill():0;
   H->Fill(val);
-  if(DebugLevel()>=3){
-    (*DebugStream()) << "trackIn"
-      <<"tracklet.="  << fTracklet
-      <<"trackIn.="   << tin
-      << "\n";
-  }
 
   if(!track) return NULL;
   // special care for EVE usage
@@ -2115,6 +2232,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
     if(v<1.) continue;
     if(fBCbinTOF>0 && coord[kBC]!=fBCbinTOF) continue; // TOF bunch cross cut
     if(fBCbinFill>0 && abf && coord[kNdim+2]!=fBCbinTOF) continue; // Fill bunch cut
+    if(coord[kBC]==3) continue;
     // charge selection
     ch = 0; sp=1;// [pi-] track
     if(rcBin>0){ // debug mode in which species are also saved
@@ -2211,7 +2329,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         specPh[idx].H()->SetNameTitle(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[ich], isp),
                               Form("TrackIn[%s%c]:: #Delta#phi", spcName[isp], chSgn[ich]));
         specPh[idx].SetShowRange(-1.5, 1.5);
-        PutTrendValue(Form("TrkInPh%c%c%d", chName[ich], ptName[0], isp), specPh[idx].GetTrendValue(1));
+        PutTrendValue(Form("TrkInPh%c%c%d", chName[ich], ptName[0], isp), pr0->GetTrendValue(1));
         for(Int_t ipt(1); ipt<nPt; ipt++){
           if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
           PutTrendValue(Form("TrkInPh%c%c%d", chName[ich], ptName[ipt], isp), pr1->GetTrendValue(1));
@@ -2230,7 +2348,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
                               Form("TrackIn[%s%c]:: dQdl", spcName[isp], chSgn[ich]));
         specQ[idx].SetShowRange(-2.2, -1.75);
         specQ[idx].H()->GetZaxis()->SetTitle("dQdl [a.u.]");
-        if((trend = specQ[idx].GetTrendValue(2, &m))>-100.){
+        if((trend = pr0->GetTrendValue(2, &m))>-100.){
           PutTrendValue(Form("TrkInQ%c%c%d", chName[ich], ptName[0], isp), trend);
           PutTrendValue(Form("TrkInQS%c%c%d", chName[ich], ptName[0], isp), m);
         }
@@ -2946,15 +3064,16 @@ TObjArray* AliTRDresolution::Histos()
   snprintf(hn, nhn, "h%s", fgPerformanceName[kTrackIn]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
     // set specific fields
-    const Int_t mdim(kNdim+3);
+    const Int_t mdim(kNdim+2);
     Char_t *trinTitle[mdim]; memcpy(trinTitle, fgkTitle, kNdim*sizeof(Char_t*));
     Int_t trinNbins[mdim];   memcpy(trinNbins, fgkNbins, kNdim*sizeof(Int_t));
     Double_t trinMin[mdim];  memcpy(trinMin, fgkMin, kNdim*sizeof(Double_t));
     Double_t trinMax[mdim];  memcpy(trinMax, fgkMax, kNdim*sizeof(Double_t));
     trinNbins[kSpeciesChgRC] = Int_t(kNcharge)*(kNspc-1)+1; trinMin[kSpeciesChgRC] = -kNspc+0.5; trinMax[kSpeciesChgRC] = kNspc-0.5;
-    trinTitle[kNdim]=StrDup("bin_p"); trinNbins[kNdim] = kNpt; trinMin[kNdim] = -0.5; trinMax[kNdim] = kNpt-.5;
+    if(DebugLevel()>=1){trinNbins[kPt]=24; trinMax[kPt] = 23.5;}
+    trinTitle[kNdim]=StrDup("bin_p"); trinNbins[kNdim] = (DebugLevel()>=1?24:kNpt); trinMin[kNdim] = -0.5; trinMax[kNdim] = trinNbins[kNdim]-.5;
     trinTitle[kNdim+1]=StrDup("dx [cm]"); trinNbins[kNdim+1]=48; trinMin[kNdim+1]=-2.4; trinMax[kNdim+1]=2.4;
-    trinTitle[kNdim+2]=StrDup("Fill Bunch"); trinNbins[kNdim+2]=3500; trinMin[kNdim+2]=-0.5; trinMax[kNdim+2]=3499.5;
+    //trinTitle[kNdim+2]=StrDup("Fill Bunch"); trinNbins[kNdim+2]=3500; trinMin[kNdim+2]=-0.5; trinMax[kNdim+2]=3499.5;
     st = "r-#phi/z/angular residuals @ TRD entry;";
     // define minimum info to be saved in non debug mode
     Int_t ndim=(DebugLevel()>=1?mdim:(kNdim+1));//kNdimTrkIn;
