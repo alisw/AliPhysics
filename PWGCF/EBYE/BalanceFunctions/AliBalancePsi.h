@@ -65,10 +65,26 @@ class AliBalancePsi : public TObject {
 			TObjArray* particles,
 			TObjArray* particlesMixed);
   
-  TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax);
-  TH2D   *GetCorrelationFunctionNP(Double_t psiMin, Double_t psiMax);
-  TH2D   *GetCorrelationFunctionPP(Double_t psiMin, Double_t psiMax);
-  TH2D   *GetCorrelationFunctionNN(Double_t psiMin, Double_t psiMax);
+  TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax,
+				   Double_t ptTriggerMin=-1.,
+				   Double_t ptTriggerMax=-1.,
+				   Double_t ptAssociatedMin=-1.,
+				   Double_t ptAssociatedMax=-1);
+  TH2D   *GetCorrelationFunctionNP(Double_t psiMin, Double_t psiMax,
+				   Double_t ptTriggerMin=-1.,
+				   Double_t ptTriggerMax=-1.,
+				   Double_t ptAssociatedMin=-1.,
+				   Double_t ptAssociatedMax=-1);
+  TH2D   *GetCorrelationFunctionPP(Double_t psiMin, Double_t psiMax,
+				   Double_t ptTriggerMin=-1.,
+				   Double_t ptTriggerMax=-1.,
+				   Double_t ptAssociatedMin=-1.,
+				   Double_t ptAssociatedMax=-1);
+  TH2D   *GetCorrelationFunctionNN(Double_t psiMin, Double_t psiMax,
+				   Double_t ptTriggerMin=-1.,
+				   Double_t ptTriggerMax=-1.,
+				   Double_t ptAssociatedMin=-1.,
+				   Double_t ptAssociatedMax=-1);
 
   AliTHn *GetHistNp() {return fHistP;}
   AliTHn *GetHistNn() {return fHistN;}
@@ -92,9 +108,17 @@ class AliBalancePsi : public TObject {
 
   TH1D *GetBalanceFunctionHistogram(Int_t iVariableSingle,
 				    Int_t iVariablePair,
-				    Double_t psiMin, Double_t psiMax);
+				    Double_t psiMin, Double_t psiMax,
+				    Double_t ptTriggerMin=-1.,
+				    Double_t ptTriggerMax=-1.,
+				    Double_t ptAssociatedMin=-1.,
+				    Double_t ptAssociatedMax=-1);
 
-  TH2D *GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin, Double_t psiMax);
+  TH2D *GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin, Double_t psiMax,
+					   Double_t ptTriggerMin=-1.,
+					   Double_t ptTriggerMax=-1.,
+					   Double_t ptAssociatedMin=-1.,
+					   Double_t ptAssociatedMax=-1);
   
  private:
   Bool_t fShuffle; //shuffled balance function object
