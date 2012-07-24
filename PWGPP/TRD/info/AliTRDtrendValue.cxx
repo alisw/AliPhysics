@@ -54,6 +54,8 @@ AliTRDtrendValue::AliTRDtrendValue(const AliTRDtrendValue &ref)
   ,fSigma(ref.fSigma)
   ,fResponsible(NULL)
 {
+// Copy constructor
+
   if(ref.fResponsible) fResponsible = new TNamed(*ref.fResponsible);
   //memset(fAlarmMessage, 0, kNlevels*sizeof(Char_t*));
   //for(Int_t ia(0); ia<kNlevels; ia++) SetAlarm(ia, ref.fAlarmMessage[ia]);

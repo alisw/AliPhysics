@@ -216,7 +216,7 @@ void makeTrendingDB(const Char_t *fl)
         Warning("makeTrendingDB()", "Missing %s from %s", tvn[it][0], sfp.Data());
         continue;
       }
-      if((strstr(tvn[it][0], "QS") || strstr(tvn[it][0], "YS")) &&tv->GetVal() < 1.e-5){
+      if((strstr(tvn[it][0], "TRDcheckDET") || strstr(tvn[it][0], "QS") || strstr(tvn[it][0], "YS")) && TMath::Abs(tv->GetVal()) < 1.e-5){
         Info("makeTrendingDB()", "Found bad value for %s[%f] in %s", tvn[it][0], tv->GetVal(), sfp.Data());
         continue;
       }
@@ -272,7 +272,9 @@ void makeTrendingDB(const Char_t *fl)
     // write trending value to manager
     Info("makeTrendingDB", "%s [%f - %f] %f[%f]", tvn[it][0], xmin, xmax, f.GetParameter(1), f.GetParameter(2));
     Double_t m(0.), s(0.);
-    if(strstr(tvn[it][0], "TrkInY")) {
+    if(strstr(tvn[it][0], "TrkInYS")) {
+      m=0.4; s=0.06;
+    } else if(strstr(tvn[it][0], "TrkInY")) {
       m=0.; s=0.1;
     } else if(strstr(tvn[it][0], "TrkInPh")) {
       m=0.; s=0.35;

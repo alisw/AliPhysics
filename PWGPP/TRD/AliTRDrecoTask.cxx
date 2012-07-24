@@ -660,12 +660,12 @@ Double_t AliTRDrecoTask::AliTRDrecoProjection::GetTrendValue(const Int_t mid, Do
     return -999.;
   }
   TH1 *h1s(NULL);
-  if(!(h1s = (TH2D*)fH->Project3D("z"))){
+  if(!(h1s = (TH1D*)fH->Project3D("z"))){
     AliDebug(1, Form("Failed Project3D(\"z\") in %s", GetName()));
     return -999.;
   }
   Int_t ne((Int_t)h1s->Integral());
-  if(ne<100){
+  if(ne<30){
     AliDebug(1, Form("Statistics too low[%2d] in %s", ne, GetName()));
     return -999.;
   }
@@ -684,6 +684,8 @@ Double_t AliTRDrecoTask::AliTRDrecoProjection::GetTrendValue(const Int_t mid, Do
   }
   if(m) *m = vm;
   if(s) *s = ve;
+  AliDebug(2, Form("%s[%d]:: %f {%f %f} Entries[%d]", fH->GetName(), mid, v, m?(*m):0., s?(*s):0., (Int_t)h1s->Integral()));
+
   return v;
 }
 
