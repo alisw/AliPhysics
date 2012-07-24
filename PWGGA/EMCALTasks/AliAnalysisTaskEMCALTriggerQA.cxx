@@ -25,6 +25,9 @@
 #include <TH2F.h>
 #include <TF1.h>
 #include <TProfile2D.h> 
+#include <TDirectory.h>
+#include <TStreamerInfo.h>
+#include <TFile.h>
 
 #include "AliLog.h"
 #include "AliVCluster.h"
@@ -1257,7 +1260,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   int kBitEGA = 4, kBitEJE = 5;	
 
-  if (trg.IsA()->GetClassVersion() >= 5) {
+  TList *clist = gDirectory->GetFile()->GetStreamerInfoList();
+  TStreamerInfo *cinfo = (TStreamerInfo*)clist->FindObject("AliESDCaloTrigger");
+  Int_t classversionid = cinfo->GetClassVersion();
+
+  if (classversionid >= 5) {
 	  kBitEGA = 6;
 	  kBitEJE = 8;
   }
