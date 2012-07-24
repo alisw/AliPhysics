@@ -79,7 +79,7 @@ TList *LoadMassHistos(TList *inputlist,Int_t minCent,Int_t maxCent,Bool_t inouta
       TH1F *hMass=0x0;//=new TH1F();
       for(Int_t iPtBin=minPtBin[iFinalPtBin]; iPtBin<=maxPtBin[iFinalPtBin];iPtBin++){
 	for(Int_t iHisC=minCent; iHisC<=maxCent-5; iHisC+=5){    
-	  TString hisname=Form("hMphi_pt%dcentr%d_%d",iPtBin,iHisC,iHisC+5);
+	  TString hisname=Form("hMdeltaphi_pt%dcentr%d_%d",iPtBin,iHisC,iHisC+5);
 	  TH2F* htmp=(TH2F*)inputlist->FindObject(hisname.Data());
 	  Int_t startX=htmp->FindBin(phibinslim[iphi]);
 	  Int_t endX=htmp->FindBin(phibinslim[iphi+1]);
