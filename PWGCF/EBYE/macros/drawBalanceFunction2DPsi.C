@@ -5,12 +5,12 @@ Double_t gMaxCentrality[numberOfCentralityBins] = {5.,10.,20.,30.,40.,50.,60.,70
 TString gAnalysisType[7] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
 const Int_t gRebin = 1;
-void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root", 
-			    Double_t psiMin = -0.5, Double_t psiMax = 0.5,
-			    Double_t ptTriggerMin = -1.,
-			    Double_t ptTriggerMax = -1.,
-			    Double_t ptAssociatedMin = -1.,
-			    Double_t ptAssociatedMax = -1.) {
+void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root", 
+			      Double_t psiMin = 0., Double_t psiMax = 7.5,
+			      Double_t ptTriggerMin = -1.,
+			      Double_t ptTriggerMax = -1.,
+			      Double_t ptAssociatedMin = -1.,
+			      Double_t ptAssociatedMax = -1.) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
@@ -191,8 +191,8 @@ void draw(TList *listBF, TList *listBFShuffled,
   bShuffled->SetHistNpp(hPPShuffled);
   bShuffled->SetHistNnn(hNNShuffled);
 
-  TH1D *gHistBalanceFunction;
-  TH1D *gHistBalanceFunctionShuffled;
+  TH2D *gHistBalanceFunction;
+  TH2D *gHistBalanceFunctionShuffled;
   TCanvas *c1;
   TString histoTitle, pngName;
   TLegend *legend;
@@ -205,20 +205,18 @@ void draw(TList *listBF, TList *listBFShuffled,
   histoTitle += " | "; histoTitle += psiMin; 
   histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
   
-  gHistBalanceFunction = b->GetBalanceFunctionHistogram(0,2,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  gHistBalanceFunction->SetMarkerStyle(20);
+  gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistBalanceFunction->SetTitle(histoTitle.Data());
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
   
-  gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram(0,2,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  gHistBalanceFunctionShuffled->SetMarkerStyle(24);
+  gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   
   c1 = new TCanvas(histoTitle.Data(),"",0,0,600,500);
   c1->SetFillColor(10); 
   c1->SetHighLightColor(10);
   c1->SetLeftMargin(0.15);
-  gHistBalanceFunction->DrawCopy("E");
-  gHistBalanceFunctionShuffled->DrawCopy("ESAME");
+  gHistBalanceFunction->Draw("lego2");
+  //gHistBalanceFunctionShuffled->Draw("ESAME");
   
   legend = new TLegend(0.18,0.6,0.45,0.82,"","brNDC");
   legend->SetTextSize(0.045); 
@@ -237,44 +235,6 @@ void draw(TList *listBF, TList *listBFShuffled,
   pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
   pngName += ".png";
   c1->SaveAs(pngName.Data());
-  
-  GetWeightedMean(gHistBalanceFunction);
-  GetWeightedMean(gHistBalanceFunctionShuffled);
-  
-  TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
-  meanLatex = "#mu = "; 
-  meanLatex += Form("%.3f",gHistBalanceFunction->GetMean());
-  meanLatex += " #pm "; 
-  meanLatex += Form("%.3f",gHistBalanceFunction->GetMeanError());
-  
-  rmsLatex = "#sigma = "; 
-  rmsLatex += Form("%.3f",gHistBalanceFunction->GetRMS());
-  rmsLatex += " #pm "; 
-  rmsLatex += Form("%.3f",gHistBalanceFunction->GetRMSError());
-  
-  skewnessLatex = "S = "; 
-  skewnessLatex += Form("%.3f",gHistBalanceFunction->GetSkewness(1));
-  skewnessLatex += " #pm "; 
-  skewnessLatex += Form("%.3f",gHistBalanceFunction->GetSkewness(11));
-  
-  kurtosisLatex = "K = "; 
-  kurtosisLatex += Form("%.3f",gHistBalanceFunction->GetKurtosis(1));
-  kurtosisLatex += " #pm "; 
-  kurtosisLatex += Form("%.3f",gHistBalanceFunction->GetKurtosis(11));
-  
-  TLatex *latex = new TLatex();
-  latex->SetNDC();
-  latex->SetTextSize(0.035);
-  latex->SetTextColor(1);
-  latex->DrawLatex(0.64,0.85,meanLatex.Data());
-  latex->DrawLatex(0.64,0.81,rmsLatex.Data());
-  latex->DrawLatex(0.64,0.77,skewnessLatex.Data());
-  latex->DrawLatex(0.64,0.73,kurtosisLatex.Data());
-  Printf("Mean: %lf - Error: %lf",gHistBalanceFunction->GetMean(),gHistBalanceFunction->GetMeanError());
-  Printf("RMS: %lf - Error: %lf",gHistBalanceFunction->GetRMS(),gHistBalanceFunction->GetRMSError());
-  Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunction->GetSkewness(1),gHistBalanceFunction->GetSkewness(11));
-  Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunction->GetKurtosis(1),gHistBalanceFunction->GetKurtosis(11));
-  //}
 }
 
 //____________________________________________________________________//
@@ -295,6 +255,7 @@ void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1) {
   cout<<"HISTOGRAM has "<<fNumberOfBins<<" bins with bin size of "<<fP2Step<<endl;
   cout<<"=================================================="<<endl;
   for(Int_t i = 1; i <= fNumberOfBins; i++) {
+
     // this is to simulate |Delta eta| or |Delta phi|
     if(fNumberOfBins/2 - fStartBin + 1 < i && i < fNumberOfBins/2 + fStartBin ) continue;
 

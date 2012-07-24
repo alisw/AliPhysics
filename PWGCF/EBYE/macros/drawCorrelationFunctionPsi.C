@@ -6,7 +6,12 @@ TString gAnalysisType[7] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
 const Int_t gRebin = 1;
 void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root", 
-				Double_t psiMin = 0., Double_t psiMax = 7.5) {
+				Double_t psiMin = -0.5, 
+				Double_t psiMax = 0.5,
+				Double_t ptTriggerMin = -1.,
+				Double_t ptTriggerMax = -1.,
+				Double_t ptAssociatedMin = -1.,
+				Double_t ptAssociatedMax = -1.) {
   //Macro that draws the correlation functions from the balance function
   //analysis vs the reaction plane
   //Author: Panos.Christakoglou@nikhef.nl
@@ -25,7 +30,8 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResults.root",
     return;
   }
   else 
-    draw(list,psiMin,psiMax);
+    draw(list,psiMin,psiMax,
+	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
 }
 
 //______________________________________________________//
@@ -43,14 +49,14 @@ TList *GetListOfObjects(const char* filename) {
   }
   //f->ls();
   
-  TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(f->Get("PWGCFEbyE.outputBalanceFunctionAnalysis"));
+  TDirectoryFile *dir = dynamic_cast<TDirectoryFile *>(f->Get("PWGCFEbyE.outputBalanceFunctionPsiAnalysis"));
   if(!dir) {   
     Printf("The TDirectoryFile is not found. Aborting...",filename);
     return listBF;
   }
   //dir->ls();
   
-  TString listBFName = "listBF_0-100_V0M_vZ10.0_DCAxy-1.0_DCAz-1.0_Pt0.3-5.0_Eta-0.8-0.8_Chi-1.0_nClus-1_Bit1_withCentralTrigger";
+  TString listBFName = "listBFPsi";
   listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
   //listBF->ls();
 
@@ -107,7 +113,9 @@ TList *GetListOfObjects(const char* filename) {
 }
 
 //______________________________________________________//
-void draw(TList *list, Double_t psiMin, Double_t psiMax) {
+void draw(TList *list, Double_t psiMin, Double_t psiMax,
+	  Double_t ptTriggerMin, Double_t ptTriggerMax,
+	  Double_t ptAssociatedMin, Double_t ptAssociatedMax) {
   //Draws the correlation functions for every centrality bin
   //(+-), (-+), (++), (--)
   gROOT->LoadMacro("~/SetPlotStyle.C");
@@ -136,89 +144,90 @@ void draw(TList *list, Double_t psiMin, Double_t psiMax) {
   b->SetHistNnp(hNP);
   b->SetHistNpp(hPP);
   b->SetHistNnn(hNN);
-  TH2D *gHistPN[numberOfCentralityBins];
-  TH2D *gHistNP[numberOfCentralityBins];
-  TH2D *gHistPP[numberOfCentralityBins];
-  TH2D *gHistNN[numberOfCentralityBins];
+  TH2D *gHistPN;
+  TH2D *gHistNP;
+  TH2D *gHistPP;
+  TH2D *gHistNN;
   
-  TCanvas *cPN[numberOfCentralityBins];
-  TCanvas *cNP[numberOfCentralityBins];
-  TCanvas *cPP[numberOfCentralityBins];
-  TCanvas *cNN[numberOfCentralityBins];
+  TCanvas *cPN;
+  TCanvas *cNP;
+  TCanvas *cPP;
+  TCanvas *cNN;
   TString histoTitle, pngName;
   //loop over the centrality bins
-  for(Int_t iCentralityBin = 0; iCentralityBin < numberOfCentralityBins; iCentralityBin++) {
-    histoTitle = "(+-) | Centrality: "; 
-    histoTitle += centralityArray[iCentralityBin]; 
-    histoTitle += "%";
-    histoTitle += " | "; histoTitle += psiMin; 
-    histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
-    gHistPN[iCentralityBin] = b->GetCorrelationFunctionPN(gMinCentrality[iCentralityBin],gMaxCentrality[iCentralityBin],psiMin,psiMax);
-    gHistPN[iCentralityBin]->GetYaxis()->SetTitleOffset(1.5);
-    gHistPN[iCentralityBin]->SetTitle(histoTitle.Data());
-    cPN[iCentralityBin] = new TCanvas(histoTitle.Data(),"",0,0,400,400);
-    cPN[iCentralityBin]->SetFillColor(10); 
-    cPN[iCentralityBin]->SetHighLightColor(10);
-    gHistPN[iCentralityBin]->DrawCopy("lego2");
-    pngName = "DeltaPhiDeltaEta.Centrality"; 
-    pngName += centralityArray[iCentralityBin]; 
-    pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
-    pngName += ".PositiveNegative.png";
-    cPN[iCentralityBin]->SaveAs(pngName.Data());
-
-    histoTitle = "(-+) | Centrality: "; 
-    histoTitle += centralityArray[iCentralityBin]; 
-    histoTitle += "%";
-    histoTitle += " | "; histoTitle += psiMin; 
-    histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
-   gHistNP[iCentralityBin] = b->GetCorrelationFunctionNP(gMinCentrality[iCentralityBin],gMaxCentrality[iCentralityBin],psiMin,psiMax);
-    gHistNP[iCentralityBin]->GetYaxis()->SetTitleOffset(1.5);
-    gHistNP[iCentralityBin]->SetTitle(histoTitle.Data());
-    cNP[iCentralityBin] = new TCanvas(histoTitle.Data(),"",400,0,400,400);
-    cNP[iCentralityBin]->SetFillColor(10); 
-    cNP[iCentralityBin]->SetHighLightColor(10);
-    gHistNP[iCentralityBin]->DrawCopy("lego2");
-    pngName = "DeltaPhiDeltaEta.Centrality"; 
-    pngName += centralityArray[iCentralityBin]; 
-    pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
-    pngName += ".NegativePositive.png";
-    cNP[iCentralityBin]->SaveAs(pngName.Data());
-
-    histoTitle = "(++) | Centrality: "; 
-    histoTitle += centralityArray[iCentralityBin]; 
-    histoTitle += "%";
-    histoTitle += " | "; histoTitle += psiMin; 
-    histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
-    gHistPP[iCentralityBin] = b->GetCorrelationFunctionPP(gMinCentrality[iCentralityBin],gMaxCentrality[iCentralityBin],psiMin,psiMax);
-    gHistPP[iCentralityBin]->GetYaxis()->SetTitleOffset(1.5);
-    gHistPP[iCentralityBin]->SetTitle(histoTitle.Data());
-    cPP[iCentralityBin] = new TCanvas(histoTitle.Data(),"",0,400,400,400);
-    cPP[iCentralityBin]->SetFillColor(10); 
-    cPP[iCentralityBin]->SetHighLightColor(10);
-    gHistPP[iCentralityBin]->DrawCopy("lego2");
-    pngName = "DeltaPhiDeltaEta.Centrality"; 
-    pngName += centralityArray[iCentralityBin]; 
-    pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
-    pngName += ".PositivePositive.png";
-    cPP[iCentralityBin]->SaveAs(pngName.Data());
-
-    histoTitle = "(--) | Centrality: "; 
-    histoTitle += centralityArray[iCentralityBin]; 
-    histoTitle += "%";
-    histoTitle += " | "; histoTitle += psiMin; 
-    histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
-    gHistNN[iCentralityBin] = b->GetCorrelationFunctionNN(gMinCentrality[iCentralityBin],gMaxCentrality[iCentralityBin],psiMin,psiMax);
-    gHistNN[iCentralityBin]->GetYaxis()->SetTitleOffset(1.5);
-    gHistNN[iCentralityBin]->SetTitle(histoTitle.Data());
-    cNN[iCentralityBin] = new TCanvas(histoTitle.Data(),"",400,400,400,400);
-    cNN[iCentralityBin]->SetFillColor(10); 
-    cNN[iCentralityBin]->SetHighLightColor(10);
-    gHistNN[iCentralityBin]->DrawCopy("lego2");
-    pngName = "DeltaPhiDeltaEta.Centrality"; 
-    pngName += centralityArray[iCentralityBin]; 
-    pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
-    pngName += ".NegativeNegative.png";
-    cNN[iCentralityBin]->SaveAs(pngName.Data());
-  }//end of loop over centralities
+  //for(Int_t iCentralityBin = 0; iCentralityBin < numberOfCentralityBins; iCentralityBin++) {
+  
+  histoTitle = "(+-) | Centrality: "; 
+  histoTitle += centralityArray[6]; 
+  histoTitle += "%";
+  histoTitle += " | "; histoTitle += psiMin; 
+  histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
+  gHistPN = b->GetCorrelationFunctionPN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistPN->GetYaxis()->SetTitleOffset(1.5);
+  gHistPN->SetTitle(histoTitle.Data());
+  cPN = new TCanvas(histoTitle.Data(),"",0,0,400,400);
+  cPN->SetFillColor(10); 
+  cPN->SetHighLightColor(10);
+  gHistPN->DrawCopy("lego2");
+  pngName = "DeltaPhiDeltaEta.Centrality"; 
+  pngName += centralityArray[6]; 
+  pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
+  pngName += ".PositiveNegative.png";
+  cPN->SaveAs(pngName.Data());
+  
+  histoTitle = "(-+) | Centrality: "; 
+  histoTitle += centralityArray[6]; 
+  histoTitle += "%";
+  histoTitle += " | "; histoTitle += psiMin; 
+  histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
+  gHistNP = b->GetCorrelationFunctionNP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistNP->GetYaxis()->SetTitleOffset(1.5);
+  gHistNP->SetTitle(histoTitle.Data());
+  cNP = new TCanvas(histoTitle.Data(),"",400,0,400,400);
+  cNP->SetFillColor(10); 
+  cNP->SetHighLightColor(10);
+  gHistNP->DrawCopy("lego2");
+  pngName = "DeltaPhiDeltaEta.Centrality"; 
+  pngName += centralityArray[6]; 
+  pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
+  pngName += ".NegativePositive.png";
+  cNP->SaveAs(pngName.Data());
+  
+  histoTitle = "(++) | Centrality: "; 
+  histoTitle += centralityArray[6]; 
+  histoTitle += "%";
+  histoTitle += " | "; histoTitle += psiMin; 
+  histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
+  gHistPP = b->GetCorrelationFunctionPP(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistPP->GetYaxis()->SetTitleOffset(1.5);
+  gHistPP->SetTitle(histoTitle.Data());
+  cPP = new TCanvas(histoTitle.Data(),"",0,400,400,400);
+  cPP->SetFillColor(10); 
+  cPP->SetHighLightColor(10);
+  gHistPP->DrawCopy("lego2");
+  pngName = "DeltaPhiDeltaEta.Centrality"; 
+  pngName += centralityArray[6]; 
+  pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
+  pngName += ".PositivePositive.png";
+  cPP->SaveAs(pngName.Data());
+  
+  histoTitle = "(--) | Centrality: "; 
+  histoTitle += centralityArray[6]; 
+  histoTitle += "%";
+  histoTitle += " | "; histoTitle += psiMin; 
+  histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
+  gHistNN = b->GetCorrelationFunctionNN(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistNN->GetYaxis()->SetTitleOffset(1.5);
+  gHistNN->SetTitle(histoTitle.Data());
+  cNN = new TCanvas(histoTitle.Data(),"",400,400,400,400);
+  cNN->SetFillColor(10); 
+  cNN->SetHighLightColor(10);
+  gHistNN->DrawCopy("lego2");
+  pngName = "DeltaPhiDeltaEta.Centrality"; 
+  pngName += centralityArray[6]; 
+  pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
+  pngName += ".NegativeNegative.png";
+  cNN->SaveAs(pngName.Data());
+  //}//end of loop over centralities
 }
 
