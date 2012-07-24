@@ -649,7 +649,7 @@ void AliHFSystErr::InitDstoKKpi2011PbPb07half() {
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,06); // 0.14/2.32 PDG2010
+  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.053); // 0.12/2.28 PDG2012
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
