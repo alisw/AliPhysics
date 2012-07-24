@@ -1,4 +1,4 @@
-void makeTrending(const Char_t *fl, const Char_t *db = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root", Bool_t relative=kFALSE)
+void makeTrending(const Char_t *fl, Bool_t relative=kFALSE, const Char_t *db = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root")
 {
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
