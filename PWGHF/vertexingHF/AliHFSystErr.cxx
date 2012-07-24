@@ -584,7 +584,7 @@ void AliHFSystErr::InitDplustoKpipi2011PbPb07half() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",36,0,36);
-  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.047); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",36,0,36);
@@ -609,20 +609,17 @@ void AliHFSystErr::InitDplustoKpipi2011PbPb07half() {
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fCutsEff->SetBinContent(i,0.10); // 15%
-
-  fCutsEff->SetBinContent(4,0.15);
-  //fCutsEff->SetBinContent(4,0.15);
+  for(Int_t i=1; i<=12; i++) fCutsEff->SetBinContent(i,0.10);
+  for(Int_t i=13; i<=36; i++) fCutsEff->SetBinContent(i,0.08);
 
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
   for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.05); // 5%
 
-  // MC dN/dpt  (2/2/2012)
+  // MC dN/dpt  (24/7/2012)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
-  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0.);
-  for(Int_t iBin=7; iBin<=8; iBin++) fMCPtShape->SetBinContent(iBin,0.01);
+  for(Int_t iBin=1; iBin<=8; iBin++) fMCPtShape->SetBinContent(iBin,0.01);
   for(Int_t iBin=9; iBin<=12; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
   for(Int_t iBin=13; iBin<=36; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
 
