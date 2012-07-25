@@ -619,9 +619,9 @@ void AliHFSystErr::InitDplustoKpipi2011PbPb07half() {
 
   // MC dN/dpt  (24/7/2012)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
-  for(Int_t iBin=1; iBin<=8; iBin++) fMCPtShape->SetBinContent(iBin,0.01);
-  for(Int_t iBin=9; iBin<=12; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
-  for(Int_t iBin=13; iBin<=36; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
+  for(Int_t iBin=1; iBin<=5; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
+  for(Int_t iBin=6; iBin<=36; iBin++) fMCPtShape->SetBinContent(iBin,0.03);
+  //  for(Int_t iBin=13; iBin<=36; iBin++) fMCPtShape->SetBinContent(iBin,0.05);
 
 
   // particle-antiparticle
