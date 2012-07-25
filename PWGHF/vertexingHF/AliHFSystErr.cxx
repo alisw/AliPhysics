@@ -281,7 +281,7 @@ void AliHFSystErr::InitD0toKpi2011PbPb07half() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",36,0,36);
-  for(Int_t i=1;i<36;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
+  for(Int_t i=1;i<36;i++) fNorm->SetBinContent(i,0.048); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",36,0,36);
@@ -584,7 +584,7 @@ void AliHFSystErr::InitDplustoKpipi2011PbPb07half() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",36,0,36);
-  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.047); // TAA and pp norm
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.048); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",36,0,36);
@@ -645,7 +645,7 @@ void AliHFSystErr::InitDstoKKpi2011PbPb07half() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0,12);
-  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
+  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.048); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",12,0,12);
@@ -1053,7 +1053,7 @@ void AliHFSystErr::InitDstartoD0pi2011PbPb07half() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",36,0,36);
-  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.048); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",36,0,36);
