@@ -760,7 +760,6 @@ void AliPIDResponse::SetTPCParametrisation()
   TString datatype="DATA";
   //in case of mc fRecoPass is per default 1
   if (fIsMC) {
-      datatype="MC";
       if(!fTuneMConData) datatype="MC";
       fRecoPass=1;
   }
