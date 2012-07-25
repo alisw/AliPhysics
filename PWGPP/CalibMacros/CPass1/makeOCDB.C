@@ -88,7 +88,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
 
   //TRD part
   AliTRDPreprocessorOffline *procesTRD = 0;
-  if ( detStr.Contains("TRD")){
+  if ( detStr.Contains("TRD") && detStr.Contains("TPC")){
     Printf("\n******* Calibrating TRD *******");
     procesTRD = new  AliTRDPreprocessorOffline;
     procesTRD->SetLinearFitForVdrift(kTRUE);
