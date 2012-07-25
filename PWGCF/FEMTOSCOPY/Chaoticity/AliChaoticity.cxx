@@ -517,18 +517,22 @@ AliChaoticity::~AliChaoticity()
   if(fPIDResponse) delete fPIDResponse;
   if(fEC) delete fEC;
   if(fEvt) delete fEvt;
-  if(fTempStruct) delete fTempStruct;
+  if(fTempStruct) delete [] fTempStruct;
   if(fRandomNumber) delete fRandomNumber;
   
-  if(fPairLocationSE) delete fPairLocationSE;
-  if(fPairLocationME) delete fPairLocationME;
-  if(fTripletSkip1) delete fTripletSkip1;
-  if(fTripletSkip2) delete fTripletSkip2;
-  if(fOtherPairLocation1) delete fOtherPairLocation1;
-  if(fOtherPairLocation2) delete fOtherPairLocation2;
-  if(fNormPairSwitch) delete fNormPairSwitch;
-  if(fPairSplitCut) delete fPairSplitCut;
-  if(fNormPairs) delete fNormPairs;
+  for(int i=0; i<fMultLimit; i++){
+    if(fPairLocationSE[i]) delete [] fPairLocationSE[i];
+    if(fPairLocationME[i]) delete [] fPairLocationME[i];
+    for(int j=0; j<2; j++){
+      if(fOtherPairLocation1[j][i]) delete [] fOtherPairLocation1[j][i];
+      if(fOtherPairLocation2[j][i]) delete [] fOtherPairLocation2[j][i];
+    }
+    for(int j=0; j<3; j++) if(fNormPairSwitch[j][i]) delete [] fNormPairSwitch[j][i];
+    for(int j=0; j<4; j++) if(fPairSplitCut[j][i]) delete [] fPairSplitCut[j][i];
+  }
+  for(int i=0; i<kPairLimit; i++) if(fTripletSkip1[i]) delete [] fTripletSkip1[i];
+  for(int i=0; i<2*kPairLimit; i++) if(fTripletSkip2[i]) delete [] fTripletSkip2[i];
+  for(int i=0; i<3; i++) if(fNormPairs[i]) delete [] fNormPairs[i];
   //
   for(Int_t mb=0; mb<fMbins; mb++){
     for(Int_t edB=0; edB<kEDbins; edB++){
