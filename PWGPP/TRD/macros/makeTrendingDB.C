@@ -272,17 +272,17 @@ void makeTrendingDB(const Char_t *fl)
     // write trending value to manager
     Info("makeTrendingDB", "%s [%f - %f] %f[%f]", tvn[it][0], xmin, xmax, f.GetParameter(1), f.GetParameter(2));
     Double_t m(0.), s(0.);
-    if(strstr(tvn[it][0], "TrkInYS")) {
+/*    if(strstr(tvn[it][0], "TrkInYS")) {
       m=0.4; s=0.06;
     } else if(strstr(tvn[it][0], "TrkInY")) {
-      m=0.; s=0.1;
-    } else if(strstr(tvn[it][0], "TrkInPh")) {
-      m=0.; s=0.35;
-    } else if(strstr(tvn[it][0], "TrkInQ") || strstr(tvn[it][0], "TrkInQS")) {
-      m=-2.; s=0.2;
-    } else {
+      m=0.; s=0.1;*/
+/*    } else if(strstr(tvn[it][0], "TrkInPh")) {
+      m=0.; s=0.35;*/
+/*    } else if(strstr(tvn[it][0], "TrkInQ") || strstr(tvn[it][0], "TrkInQS")) {
+      m=-2.; s=0.2;*/
+//    } else {
       m=f.GetParameter(1); s=f.GetParameter(2);
-    }
+//    }
     tm->AddValue(tvn[it][0], m, s, tvn[it][1], res[it>13], notifiable);
   }
   tm->Terminate();
