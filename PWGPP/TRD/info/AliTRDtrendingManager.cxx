@@ -168,7 +168,8 @@ Bool_t AliTRDtrendingManager::MakeTrends(const char *fileList)
     AliWarning(Form("Can not open file list \"%s\"", fileList));
     return kFALSE;
   }
-
+  Float_t *lm = new Float_t[ntv]; for(Int_t im(0); im<ntv; im++) lm[im] = 1.e5;
+  Float_t *lM = new Float_t[ntv]; for(Int_t im(0); im<ntv; im++) lM[im] = -1.e5;
   TGraph **g = new TGraph*[ntv]; memset(g, 0, ntv*sizeof(TGraph*));
   AliTRDtrendValue *TV(NULL), *tv(NULL);
   TString sfp; Int_t run[10000], nr(0);
@@ -193,6 +194,10 @@ Bool_t AliTRDtrendingManager::MakeTrends(const char *fileList)
         g[it]->SetMarkerStyle(4);g[it]->SetMarkerSize(0.8);
       }
       g[it]->SetPoint(g[it]->GetN(), nr, tv->GetVal());
+      if(!IsRelativeMeanSigma() && tv->GetVal()>-999.){
+        if(tv->GetVal()<lm[it]) lm[it]=tv->GetVal();
+        if(tv->GetVal()>lM[it]) lM[it]=tv->GetVal();
+      }
     }
     nr++;
   }
@@ -215,8 +220,7 @@ Bool_t AliTRDtrendingManager::MakeTrends(const char *fileList)
       ay->SetRangeUser(-5, 5);
       ay->SetTitle(Form("#bf{%s [#sigmau]}", g[it]->GetTitle()));
     } else {
-      if(!(TV = (AliTRDtrendValue*)fEntries->At(it))) continue;
-      ay->SetRangeUser(TV->GetVal()-3*TV->GetErr(), TV->GetVal()+3*TV->GetErr());
+      ay->SetRangeUser(lm[it]-0.1*(lM[it]-lm[it]), lM[it]+0.1*(lM[it]-lm[it]));
       ay->SetTitle(Form("#bf{%s}", g[it]->GetTitle()));
     }
     hT->Draw("p");
@@ -225,6 +229,8 @@ Bool_t AliTRDtrendingManager::MakeTrends(const char *fileList)
     delete g[it];
   }
   delete [] g;
+  delete [] lm;
+  delete [] lM;
   return kTRUE;
 }
 
