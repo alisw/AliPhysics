@@ -33,14 +33,17 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011SemiCent2(Bool_t runRejection=kFALSE, 
     hasMC=kTRUE;
   }
   
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
-    gROOT->LoadMacro(configLMEECutLibPath.Data());
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())){
+    if(!gROOT->GetClass("LMEECutLibTaku")){
+      gROOT->LoadMacro(configLMEECutLibPath.Data());
+    }
+  }
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data())){
     gROOT->LoadMacro(configFilePath.Data());
-
-  LMEECutLib* cutlib = new LMEECutLib();
+  }
+  LMEECutLibTaku* cutlib = new LMEECutLibTaku();
   cutlib->SetMCFlag(hasMC);
-  AliAnalysisTaskMultiDielectronTG *task=new AliAnalysisTaskMultiDielectronTG("MultiDiEDataSemiCent2");
+  AliAnalysisTaskMultiDielectronTG *task=new AliAnalysisTaskMultiDielectronTG("MultiDiETGDataSemiCent2");
 
   ////default cutter defined in ConfigTakuLMEEPbPb2011.C
   Int_t PairCutTypeDef[20]={0,
@@ -63,8 +66,8 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011SemiCent2(Bool_t runRejection=kFALSE, 
     task->UsePhysicsSelection();
   }
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
-  task->RejectConversion(2.0);
+  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLibTaku::kPbPb2011TPCandTOF)); //
+  task->RejectConversion(2.0, 0.3);
   task->RejectOP(0.035);
   task->SetPairCuts(PairCutType);
   task->EnableV0mixing(kFALSE);

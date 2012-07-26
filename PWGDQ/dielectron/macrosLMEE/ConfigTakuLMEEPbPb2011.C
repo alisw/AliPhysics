@@ -25,11 +25,6 @@ void SetSignals(AliDielectron *die);
 //////////////////////////////////////////////////////////
 
 
-
-
-
-
-
 TString names=("noPairing;TPCTOFCentnoPair;TPCTOFSemiCent1noPair;TPCTOFSemiCent2noPair;TPCTOFCentOpPair;TPCTOFSemiCent1OpPair;TPCTOFSemiCent2OpPair;TPCTOFCentPvPair;TPCTOFSemiCent1PvPair;TPCTOFSemiCent2PvPair;TPCTOFCentOpPair2;TPCTOFSemiCent1OpPair2;TPCTOFSemiCent2OpPair2;TPCTOFCentPvPair2;TPCTOFSemiCent1PvPair2;TPCTOFSemiCent2PvPair2");
                 
 TObjArray *arrNames=names.Tokenize(";");
@@ -46,7 +41,7 @@ AliDielectron* ConfigTakuLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE,
   Int_t selectedPairCut=-1;
   Bool_t rejectionStep=kFALSE;
   Bool_t HasPairCut = kFALSE;
-  LMEECutLib*  LMCL = new LMEECutLib();
+  LMEECutLibTaku*  LMCL = new LMEECutLibTaku();
 
   //
   // Setup the instance of AliDielectron
@@ -77,108 +72,108 @@ AliDielectron* ConfigTakuLMEEPbPb2011(Int_t cutDefinition, Bool_t withMC=kFALSE,
   }
   //////////////////////////////////////////////
   else if (cutDefinition==1) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011Central;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011Central;
     rejectionStep = kFALSE;
     HasPairCut = kFALSE;
   }
   else if (cutDefinition==2) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral1;
     rejectionStep = kFALSE;
     HasPairCut = kFALSE;
   }
   else if (cutDefinition==3) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral2;
     rejectionStep = kFALSE;
     HasPairCut = kFALSE;
   }
   //////////////////////////////////////////////
   else if (cutDefinition==4) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011Central;
-    selectedPairCut = LMEECutLib::kPbPb2011OP;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011Central;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011OP;
     rejectionStep = kTRUE;
     HasPairCut =  kTRUE;
   }
   else if (cutDefinition==5) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
-    selectedPairCut = LMEECutLib::kPbPb2011OP;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral1;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011OP;
     rejectionStep = kTRUE;
     HasPairCut =  kTRUE;
   }
   else if (cutDefinition==6) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
-    selectedPairCut = LMEECutLib::kPbPb2011OP;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral2;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011OP;
     rejectionStep = kTRUE;
     HasPairCut =  kTRUE;
   }
   //////////////////////////////////////////////
   else if (cutDefinition==7) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011Central;
-    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011Central;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011Phiv;
     rejectionStep = kTRUE;
     HasPairCut =  kTRUE;
   }
   else if (cutDefinition==8) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
-    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral1;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011Phiv;
     rejectionStep = kTRUE;
     HasPairCut =  kTRUE;
   }
   else if (cutDefinition==9) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
-    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral2;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011Phiv;
     rejectionStep = kTRUE;
     HasPairCut =  kTRUE;
   }
   //////////////////////////////////////////////
   else if (cutDefinition==10) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011Central;
-    selectedPairCut = LMEECutLib::kPbPb2011OP;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011Central;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011OP;
     rejectionStep = kFALSE;
     HasPairCut =  kTRUE;
   }
   else if (cutDefinition==11) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
-    selectedPairCut = LMEECutLib::kPbPb2011OP;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral1;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011OP;
     rejectionStep = kFALSE;
     HasPairCut =  kTRUE;
   }
   else if (cutDefinition==12) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
-    selectedPairCut = LMEECutLib::kPbPb2011OP;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral2;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011OP;
     rejectionStep = kFALSE;
     HasPairCut =  kTRUE;
   }
   //////////////////////////////////////////////
   else if (cutDefinition==13) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011Central;
-    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011Central;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011Phiv;
     rejectionStep = kFALSE;
     HasPairCut =  kTRUE;
   }
   else if (cutDefinition==14) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral1;
-    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral1;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011Phiv;
     rejectionStep = kFALSE;
     HasPairCut =  kTRUE;
   }
   else if (cutDefinition==15) {
-    selectedPID = LMEECutLib::kPbPb2011TPCandTOFwide;
-    selectedCentrality = LMEECutLib::kPbPb2011SemiCentral2;
-    selectedPairCut = LMEECutLib::kPbPb2011Phiv;
+    selectedPID = LMEECutLibTaku::kPbPb2011TPCandTOFwide;
+    selectedCentrality = LMEECutLibTaku::kPbPb2011SemiCentral2;
+    selectedPairCut = LMEECutLibTaku::kPbPb2011Phiv;
     rejectionStep = kFALSE;    
     HasPairCut =  kTRUE;
   }

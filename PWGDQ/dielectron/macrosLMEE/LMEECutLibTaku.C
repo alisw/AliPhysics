@@ -1,4 +1,4 @@
-class LMEECutLib {
+class LMEECutLibTaku {
 
   public:
   static  enum LMMECutSet {
@@ -318,8 +318,9 @@ class LMEECutLib {
       break;
     case kPbPb2011Phiv:
       pairCuts =new AliDielectronVarCuts("Phiv Cuts","Phiv<2.0rad"); 
-      pairCuts->AddCut(AliDielectronVarManager::kPhivPair, 2.0, TMath::ACos(-1.0), kTRUE); //exclude
-      pairCuts->AddCut(AliDielectronVarManager::kM, 0, 0.15,kTRUE);          ///exclude
+      pairCuts->SetCutType(AliDielectronVarCuts::kAny);
+      pairCuts->AddCut(AliDielectronVarManager::kPhivPair, 0.0, 2.0);
+      pairCuts->AddCut(AliDielectronVarManager::kM, 0.15, 100.0);
       break;
     default: cout << "No Pair Cuts defined " << endl;                                                                        
     }                                                                                                                       
