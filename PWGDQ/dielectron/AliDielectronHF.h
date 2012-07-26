@@ -40,6 +40,7 @@ public:
 
   void Init();
   void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
+  void SetStepForMCGenerated(Bool_t switcher=kTRUE)    {fStepGenerated = switcher;}
   void SetPairTypes(EPairType ptype=kOSonly) { fPairType=ptype; }
   void SetVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins,
                    Double_t min, Double_t max, Bool_t log=kFALSE);
@@ -59,7 +60,7 @@ public:
 
   Int_t GetNumberOfBins() const;
   const TObjArray * GetHistArray() const { return &fArrPairType; }
-
+  Bool_t GetStepForMCGenerated() const   { return fStepGenerated; }
 
 
   
@@ -76,6 +77,7 @@ private:
   TVectorD *fVarBinLimits;          // binning of the main pair variable
   UShort_t  fVar;                   // main pair variable for xaxis
   Bool_t    fHasMC;
+  Bool_t    fStepGenerated;         // switcher for generated particles
 
   AliDielectronHF(const AliDielectronHF &c);
   AliDielectronHF &operator=(const AliDielectronHF &c);

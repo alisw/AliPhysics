@@ -150,6 +150,57 @@ void AliDielectronHFhelper::SetRangeUser(AliDielectronVarManager::ValueTypes typ
 }
 
 //________________________________________________________________
+void AliDielectronHFhelper::UnsetRangeUser(const char *varname, Bool_t leg)
+{
+  //
+  // unset range from variable name
+  //
+  Int_t size=fCutLowLimits.GetNrows();
+  PrintCuts();
+  TVectorD newlow;
+  TVectorD newup;
+
+  Int_t ientries = 0;
+  for(Int_t icut=0; icut<size; icut++) {
+
+    TString cutName = fCutVars->At(icut)->GetName();
+    if(cutName.Contains(Form("%s%s",(leg?"Leg":""),varname))) { 
+      fCutVars->AddAt(0x0,icut);
+      continue;
+    }
+    
+    // fill new vectors
+    newlow.ResizeTo(ientries+1);
+    newup.ResizeTo(ientries+1);
+    newlow(ientries) = fCutLowLimits(icut);
+    newup(ientries)  = fCutUpLimits(icut);
+    
+    ientries++;
+  }
+  
+  // adapt new arrays/vectors
+  fCutVars->Compress();
+
+  fCutLowLimits.ResizeTo(ientries);
+  fCutUpLimits.ResizeTo(ientries);
+  for(Int_t icut=0; icut<ientries; icut++) {
+    fCutLowLimits(icut) = newlow(icut);
+    fCutUpLimits(icut)  = newup(icut);
+  }
+  PrintCuts();
+ 
+}
+
+//________________________________________________________________
+void AliDielectronHFhelper::UnsetRangeUser(AliDielectronVarManager::ValueTypes type, Bool_t leg)
+{
+  //
+  // Unset range from AliDielectronVarManager 
+  //
+  UnsetRangeUser(AliDielectronVarManager::GetValueName(type), leg);
+}
+
+//________________________________________________________________
 TObjArray* AliDielectronHFhelper::CollectHistos() 
 {
   //

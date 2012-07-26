@@ -33,6 +33,8 @@ public:
 
   void SetRangeUser(const char *varname, Double_t min, Double_t max, Bool_t leg=kFALSE);
   void SetRangeUser(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max, Bool_t leg=kFALSE);
+  void UnsetRangeUser(const char* varname, Bool_t leg=kFALSE);
+  void UnsetRangeUser(AliDielectronVarManager::ValueTypes type, Bool_t leg=kFALSE);
 
   TObjArray* CollectHistos();
   

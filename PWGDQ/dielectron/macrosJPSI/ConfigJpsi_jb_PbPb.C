@@ -226,8 +226,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
   // trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kAny);
   // trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
-  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 7); // ITS-3 = 1+2+4
-  trkCuts->SetMaxWaivedITSNcls(1);
+  //  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 7); // ITS-3 = 1+2+4
+  //  trkCuts->SetMaxWaivedITSNcls(1);
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
   cuts->AddCut(trkCuts);
@@ -731,20 +731,23 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 void InitHF(AliDielectron* die, Int_t cutDefinition)
 {
   //
-  // Setup the HF arrays (not yet working for MC)
+  // Setup the HF arrays
   //
-  //  if(hasMC) return;
 
   AliDielectronHF *hf=new AliDielectronHF(die->GetName(),die->GetTitle());
+  //if(hasMC) hf->SetStepForMCGenerated();
   hf->SetPairTypes(AliDielectronHF::kAll);
   hf->SetVariable(AliDielectronVarManager::kM, 125, 0.0, 0.04*125);
   
   hf->AddCutVariable(AliDielectronVarManager::kCentrality,  "0.,5.,10.,20.,40.,50.,60.,80.");
-  hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.,3.5,4.,100.",                 kTRUE, AliDielectronHF::kBinToMax);
   hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.8, 1.0, 1.1, 1.2, 1.5, 100.0", kTRUE, AliDielectronHF::kBinToMax);
   hf->AddCutVariable(AliDielectronVarManager::kNclsTPC,     "70,90,100,120,160",              kTRUE, AliDielectronHF::kBinToMax);
-  hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4,-3,-2.5,-2,2,2.5,3,4",        kTRUE, AliDielectronHF::kSymBin);
+  hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4,-3,-2.5,-2,2,2.5,3,4",        kTRUE, AliDielectronHF::kSymBin);  
+  hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.,3.5,4.,100.",                 kTRUE, AliDielectronHF::kBinToMax);
+  hf->AddCutVariable(AliDielectronVarManager::kITSLayerFirstCls,4,0.,4.,                      kTRUE);
   //  hf->AddCutVariable(AliDielectronVarManager::kRunNumber,  GetRunNumbers());
+
+
 
   die->SetHistogramArray(hf);
 }
