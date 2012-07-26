@@ -25,6 +25,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender()
 
     AliTender* alitender = new  AliTender("AliTender");
     alitender->AddSupply(EMCALSupply);
+    alitender->SetDefaultCDBStorage("raw://"); 
     ana = alitender;
   }
   else if (evhand->InheritsFrom("AliAODInputHandler")) {
