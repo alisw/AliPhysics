@@ -308,7 +308,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
   }
   delete optArray;
 
-  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kGreen, kBlue, kViolet, 7, kOrange};
+  Int_t srcColors[kNtrackSources] = {kBlack, kRed, kSpring, kTeal, kBlue, kViolet, kMagenta, kOrange};
 
   TCanvas* can = 0x0;
   Int_t xshift = 100;
@@ -423,7 +423,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
   // Fit pDCA //
   //////////////
   Double_t nSigmaCut = fMuonTrackCuts->GetNSigmaPdca(); //6.;
-  Double_t sigmaMeasCut[2] = { fMuonTrackCuts->GetSigmaPdca(AliMuonTrackCuts::kThetaAbs23), fMuonTrackCuts->GetSigmaPdca(AliMuonTrackCuts::kThetaAbs23)}; //{99., 54.}; //{120., 63.};
+  Double_t sigmaMeasCut[2] = { fMuonTrackCuts->GetSigmaPdca(505.*TMath::Tan(2.5 * TMath::DegToRad())), fMuonTrackCuts->GetSigmaPdca(505.*TMath::Tan(4.5 * TMath::DegToRad()))}; //{99., 54.}; //{120., 63.};
   Double_t relPResolution = fMuonTrackCuts->GetRelPResolution(); //4.5e-4; //6.e-3;//8.e-4;
   Double_t angleResolution = 535.*fMuonTrackCuts->GetSlopeResolution(); //6.e-4;
   Double_t pMinCut = 0.1;
@@ -474,7 +474,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
       Int_t ican = 0;
 
       for ( Int_t ibin=2; ibin<=nPbins; ++ibin ) {
-        currName = Form("hPDCA_%s_%s_%s", fSrcKeys->At(isrc)->GetName(), physSel.Data(), trigClassName.Data());
+        currName = Form("hPDCA_%s_%s_%s_%s", fSrcKeys->At(isrc)->GetName(), physSel.Data(), trigClassName.Data(), fThetaAbsKeys->At(itheta)->GetName());
         Int_t minBin = ( ibin == 0 ) ? 1 : ibin;
         Int_t maxBin = ( ibin == 0 ) ? nPbins : ibin;
         if ( ibin > 0 ) currName += Form("_pBin%i", ibin);
@@ -535,7 +535,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
       histoCheck->Draw("COLZ");
 
       for ( Int_t icut=0; icut<nShowFuncs; ++icut ) {
-        currName = Form("%s_cutFunc%i", histo->GetName(), icut);
+        currName = Form("%s_cutFunc%i", histoCheck->GetName(), icut);
         TF1* cutFunction = new TF1(currName.Data(),cutFormula.Data(), pMinCut, pMaxCut);
         cutParam[icut][0] = sigmaMeasCut[itheta];
         cutParam[icut][1] = nSigmaCut;
@@ -617,7 +617,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
       Int_t ican = 0;
 
       for ( Int_t ibin=0; ibin<=nPbins; ++ibin ) {
-        currName = Form("hChiProb_%s_%s_%s", fSrcKeys->At(isrc)->GetName(), physSel.Data(), trigClassName.Data());
+        currName = Form("hChiProb_%s_%s_%s_%s", fSrcKeys->At(isrc)->GetName(), physSel.Data(), trigClassName.Data(), fThetaAbsKeys->At(itheta)->GetName());
         Int_t minBin = ( ibin == 0 ) ? 1 : ibin;
         Int_t maxBin = ( ibin == 0 ) ? nPbins : ibin;
         if ( ibin > 0 ) currName += Form("_pBin%i", ibin);
