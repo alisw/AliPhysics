@@ -517,8 +517,6 @@ void AliEMCALTenderSupply::ProcessEvent()
       if (fInitRunDepRecalib>1)
         AliWarning(Form("No Temperature recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
       
-      fReCalibCluster = kFALSE;
-      
     }
     
     
