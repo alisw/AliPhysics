@@ -1201,19 +1201,15 @@ void AliAnalysisTaskSAJF::ExecOnce()
 
   AliAnalysisTaskEmcalJet::ExecOnce();
 
-  const Float_t semiDiag = TMath::Sqrt((fMaxPhi - fMinPhi) * (fMaxPhi - fMinPhi) + 
-                                       (fMaxEta - fMinEta) * (fMaxEta - fMinEta)) / 2;
-  if (fMinRC2LJ > semiDiag * 0.5) {
-    AliWarning(Form("The parameter fMinRC2LJ = %f is too large for the considered acceptance. "
-                    "Will use fMinRC2LJ = %f", fMinRC2LJ, semiDiag * 0.5));
-    fMinRC2LJ = semiDiag * 0.5;
-  }
-
   if (fMinRC2LJ < 0)
-    fMinRC2LJ = semiDiag * 0.5;
+    fMinRC2LJ = fJetRadius * 1.5;
 
-  if (fMinRC2LJ > 1)
-    fMinRC2LJ = 1;
+  const Float_t maxDist = TMath::Max(fMaxPhi - fMinPhi, fMaxEta - fMinEta) / 2;
+  if (fMinRC2LJ > maxDist) {
+    AliWarning(Form("The parameter fMinRC2LJ = %f is too large for the considered acceptance. "
+                    "Will use fMinRC2LJ = %f", fMinRC2LJ, maxDist));
+    fMinRC2LJ = maxDist;
+  }
 }
 
 //________________________________________________________________________
