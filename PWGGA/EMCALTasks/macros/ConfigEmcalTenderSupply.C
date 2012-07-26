@@ -8,6 +8,7 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   Bool_t nonLinearCorr = kTRUE, 
   Bool_t remExotic     = kTRUE,
   Bool_t fidRegion     = kFALSE,
+  Bool_t calibEnergy   = kTRUE,
   Bool_t calibTime     = kTRUE)
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
@@ -29,10 +30,14 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   else
     EMCALSupply->SwitchOffRecalDistBadChannel();
   
-  if (recalibClus)
+  if (recalibClus) {
     EMCALSupply->SwitchOnReCalibrateCluster();
-  else
+    EMCALSupply->SwitchOnUpdateCell();
+  }
+  else {
     EMCALSupply->SwitchOffReCalibrateCluster();
+    EMCALSupply->SwitchOffUpdateCell();
+  }
   
   if (recalcClusPos)
     EMCALSupply->SwitchOnRecalculateClusPos();
@@ -61,6 +66,11 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     EMCALSupply->SwitchOnCalibrateTime();
   else
     EMCALSupply->SwitchOffCalibrateTime();
+
+  if (calibEnergy)
+    EMCALSupply->SwitchOnCalibrateEnergy();
+  else
+    EMCALSupply->SwitchOffCalibrateEnergy();
 
   EMCALSupply->SetMass(0.139);
   EMCALSupply->SwitchOnCutEtaPhiSeparate();
