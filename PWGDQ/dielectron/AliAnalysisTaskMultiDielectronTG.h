@@ -90,6 +90,7 @@ class AliDielectronSingleTG : public TObject
       void SetTrack(AliVTrack * const trk) { fObj = trk;}
       virtual Int_t Charge(void) const { return fCharge;}
       Double_t  Phi(void) const { return fPhi;}
+      Double_t  Eta(void) const { return fEta;}
       Double_t  Theta(void) const { return fTheta;}
       Double_t  Px(void) const { return fPx;}
       Double_t  Py(void) const { return fPy;}
@@ -157,12 +158,13 @@ public:
 
 
   void RejectOP(double val){fdop = val;} ///To reject conversions
-  void RejectConversion(double val){fdconvphiv = val;} ///To reject conversions
+  void RejectConversion(double val, double mass){fdconvphiv = val; fdconvMee = mass;} ///To reject conversions
   void EnableV0mixing(Bool_t val){fdv0mixing = val;}   ///Enable V0 mixing  
   void CheckGhostPairs(vector<AliDielectronSingleTG*> e1); ///identify ghost pairs in like sign pais
+  Bool_t CheckGhost(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2); ///check ghost pairs for like sign and mixed like-sign pais
   void RejectPairs(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2, Int_t idie); ///identify conversions for the rejection
   void FillPair(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, int type, AliDielectron *die, Int_t idie); /// Fill Pairs
-  bool PairTrackcut(double var1, double var2, int idie); /// Pair cuts
+  bool PairTrackcut(double var1, double var2, double var3, int idie); /// Pair cuts
   void CalcVars(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, 
 		 double &mass, double &phiv, double &px, double &py, double&pz,
 		double &pt, double &e, double &phi, double &eta, double &cos, double &psi); /// Calcualate kinematic variables
@@ -172,12 +174,13 @@ public:
 
   Double_t GetPhiv(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2); /// calculate phiv
   Double_t GetOpeningAngle(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2); /// calculate opening angle 
+  Double_t GetMass(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2); /// calculate Mass 
+  void SetRejBGPairs(bool Val1, bool Val2){ fBGRejUnlike = Val1 ; fBGRejLike = Val2 ; } /// SetFlag to Enable Rejection of ghost BG pairs 
   void SetPairCuts(Int_t Types[20]){
     for(int i=0;i<20;i++){
       fRejectPairFlag[i] = Types[i];
     }
   }
-
 
 protected:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
@@ -223,10 +226,12 @@ protected:
   std::vector<AliDielectronSingleTG*>  fVemtmp;   /// template for electron lists
   std::vector<AliDielectronSingleTG*>  fVeptmp;   /// template for positron lists
   Double_t fdconvphiv;      /// PhiCut
+  Double_t fdconvMee;      /// MassCut
   Double_t fdop;      /// Opening angle Cut
   Double_t fbz;            /// Magnetic field
   Bool_t fdv0mixing;       /// Mixing using V0 
-
+  Bool_t fBGRejUnlike;     //// Ghost rejection flag for event mixing (unlike pairs)
+  Bool_t fBGRejLike;     //// Ghost rejection flag for event mixing (like pairs)
 
   //Buffer for event mixing
   static const int fgkNBUF=100; //depth of buffer
