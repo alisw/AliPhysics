@@ -560,16 +560,7 @@ Bool_t AliMixInputEventHandler::IsEventCurrentSelected()
       AliMultiInputEventHandler *mh = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
       if (mh) {
          AliInputEventHandler *ih =  mh->GetFirstInputEventHandler();
-         AliVEvent *ev = ih->GetEvent();
-         ULong64_t triggerMask = ev->GetTriggerMask();
-         if (triggerMask) {
-            isSelected = fOfflineTriggerMask & triggerMask;
-         } else if (mh->GetEventSelection()) {
-            isSelected = fOfflineTriggerMask & mh->IsEventSelected();
-         } else {
-            // not selected because it is not AliVEvent::kAny
-            isSelected = kFALSE;
-         }
+         isSelected = fOfflineTriggerMask & ih->IsEventSelected();
       }
    }
    AliDebug(AliLog::kDebug + 1, Form("isSelected=%d", isSelected));
