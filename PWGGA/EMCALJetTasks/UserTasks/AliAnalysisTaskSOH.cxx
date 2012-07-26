@@ -56,8 +56,14 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
   fHEMCalRecdPhidEtaposEta(0x0),
   fHEMCalRecdPhidEtanegEta(0x0),
   fHPhotonEdiff100HC(0x0),
+  fHPhotonEdiff70HC(0),
+  fHPhotonEdiff30HC(0),
   fHPhotonEdiff0HC(0x0),
-  fHPhotonEVsClsE(0x0)
+  fHPhotonEVsClsE(0x0),
+  fHistEsub1Pch(0x0),
+  fHistEsub2Pch(0x0),
+  fHistEsub1PchRat(0x0),
+  fHistEsub2PchRat(0x0)
 {
   // Constructor
 
@@ -96,8 +102,14 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH(const char *name) :
   fHEMCalRecdPhidEtaposEta(0x0),
   fHEMCalRecdPhidEtanegEta(0x0),
   fHPhotonEdiff100HC(0x0),
+  fHPhotonEdiff70HC(0),
+  fHPhotonEdiff30HC(0),
   fHPhotonEdiff0HC(0x0),
-  fHPhotonEVsClsE(0x0)
+  fHPhotonEVsClsE(0x0),
+  fHistEsub1Pch(0x0),
+  fHistEsub2Pch(0x0),
+  fHistEsub1PchRat(0x0),
+  fHistEsub2PchRat(0x0)
 {
   // Constructor
 
@@ -195,14 +207,32 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   fHEMCalRecdPhidEtanegEta = new TH2F("fHEMCalRecdPhidEtanegEta","(-eta track) EMCAL Cluster-Track #Delta#phi-#Delta#eta; #Delta#eta; #Delta#phi",1000,-0.1,0.1,1000,-0.5,0.5);
   fOutputList->Add(fHEMCalRecdPhidEtanegEta);
 
-  fHPhotonEdiff100HC = new TH2F("fHPhotonEdiff100HC","Photon (E_{Truth}- E_{calc,100% HC})/E_{Truth} vs. E_{Truth}; E_{Truth} (GeV); (E_{Truth}- E_{calc,100% HC})/E_{Truth}",500,0,5,500,0,1.1);
+  fHPhotonEdiff100HC = new TH2F("fHPhotonEdiff100HC","Photon (E_{Truth}- E_{calc,100% HC})/E_{Truth} vs. E_{Truth}; E_{Truth} (GeV); (E_{Truth}- E_{calc,100% HC})/E_{Truth}",1000,0,10,600,-4.9,1.1);
   fOutputList->Add(fHPhotonEdiff100HC);
 
-  fHPhotonEdiff0HC = new TH2F("fHPhotonEdiff0HC","Photon (E_{Truth}- E_{calc,0% HC})/E_{Truth} vs. E_{Truth}; E_{Truth} (GeV); (E_{Truth}- E_{cls})/E_{Truth}",500,0,5,500,-5.1,1.1);
+  fHPhotonEdiff70HC = new TH2F("fHPhotonEdiff70HC","Photon (E_{Truth}- E_{calc,70% HC})/E_{Truth} vs. E_{Truth}; E_{Truth} (GeV); (E_{Truth}- E_{calc,30% HC})/E_{Truth}",1000,0,10,600,-4.9,1.1);
+  fOutputList->Add(fHPhotonEdiff70HC);
+
+  fHPhotonEdiff30HC = new TH2F("fHPhotonEdiff30HC","Photon (E_{Truth}- E_{calc,30% HC})/E_{Truth} vs. E_{Truth}; E_{Truth} (GeV); (E_{Truth}- E_{calc,30% HC})/E_{Truth}",1000,0,10,600,-4.9,1.1);
+  fOutputList->Add(fHPhotonEdiff30HC);
+
+  fHPhotonEdiff0HC = new TH2F("fHPhotonEdiff0HC","Photon (E_{Truth}- E_{calc,0% HC})/E_{Truth} vs. E_{Truth}; E_{Truth} (GeV); (E_{Truth}- E_{cls})/E_{Truth}",1000,0,10,600,-4.9,1.1);
   fOutputList->Add(fHPhotonEdiff0HC);
 
   fHPhotonEVsClsE = new TH2F("fHPhotonEVsClsE","Cluster E vs. photon E_{Truth}; photon E_{Truth} (GeV); Cluster E (GeV)",500,0,5,500,0,5);
   fOutputList->Add(fHPhotonEVsClsE);
+
+  fHistEsub1Pch =new  TH2F("fHistEsub1Pch", "(subtracted E in 100% HC) vs. total track P, clusters with 1 matching track; total track P (GeV/c); E_{sub}(GeV)" , 1000, 0., 10, 1000, 0., 10.);
+  fOutputList->Add(fHistEsub1Pch);
+
+  fHistEsub2Pch =new  TH2F("fHistEsub2Pch", "(subtracted E in 100% HC) vs. total track P, clusters with 2 matching tracks; total track P (GeV/c); E_{sub}(GeV)" , 1000, 0., 10, 1000, 0., 10.);
+  fOutputList->Add(fHistEsub2Pch);
+
+  fHistEsub1PchRat =new  TH2F("fHistEsub1PchRat", "(subtracted E in 100% HC)/total track P vs. total track P, clusters with 1 matching track; total track P (GeV/c); E_{sub}/P_{tot}" , 1000, 0., 10, 1100, 0., 1.1);
+  fOutputList->Add(fHistEsub1PchRat);
+
+  fHistEsub2PchRat =new  TH2F("fHistEsub2PchRat", "(subtracted E in 100% HC)/total track P vs. total track P, clusters with 2 matching tracks; total track P (GeV/c); E_{sub}/P_{tot}" , 1000, 0., 10, 1100, 0., 1.1);
+  fOutputList->Add(fHistEsub2PchRat);
 
   fTrackIndices = new TArrayI();
   fClusterIndices = new TArrayI();
@@ -371,6 +401,51 @@ void AliAnalysisTaskSOH::ProcessCluster()
     if (gamma.Pt() < 0.15) continue;
     fHEventStat->Fill(2.5);
 
+    TArrayI *TrackLabels = cluster->GetTracksMatched();
+    
+    if(TrackLabels->GetSize() == 1)
+    {
+      AliESDtrack *esdtrack = fESD->GetTrack(TrackLabels->GetAt(0));
+      AliESDtrack *newTrack = GetAcceptTrack(esdtrack);
+      if(newTrack && TMath::Abs(newTrack->Eta())<0.7)
+      {
+	Double_t Esub = newTrack->P();
+	if (Esub > cluster->E()) Esub = cluster->E();
+	fHistEsub1Pch->Fill(newTrack->P(), Esub);
+	fHistEsub1PchRat->Fill(newTrack->P(), Esub/newTrack->P());
+      }
+    }
+
+    if(TrackLabels->GetSize() == 2)
+    {
+      AliESDtrack *esdtrack1 = fESD->GetTrack(TrackLabels->GetAt(0));
+      AliESDtrack *esdtrack2 = fESD->GetTrack(TrackLabels->GetAt(1));
+      AliESDtrack *newTrack1 = GetAcceptTrack(esdtrack1);
+      AliESDtrack *newTrack2 = GetAcceptTrack(esdtrack2);
+      if(newTrack1 && newTrack2 && TMath::Abs(newTrack1->Eta())<0.7  && TMath::Abs(newTrack2->Eta())<0.7)
+      {
+	Double_t Esub = newTrack1->P() + newTrack2->P();
+	if (Esub > cluster->E()) Esub = cluster->E();
+	fHistEsub2Pch->Fill(newTrack1->P() + newTrack2->P(), Esub);
+	fHistEsub2PchRat->Fill(newTrack1->P() + newTrack2->P(), Esub/(newTrack1->P() + newTrack2->P()));
+      }
+      else if(newTrack1 && !(newTrack2) && TMath::Abs(newTrack1->Eta())<0.7)
+      {
+	Double_t Esub = newTrack1->P();
+	if (Esub > cluster->E()) Esub = cluster->E();
+	fHistEsub1Pch->Fill(newTrack1->P(), Esub);
+	fHistEsub1PchRat->Fill(newTrack1->P(), Esub/newTrack1->P());
+      }
+      else if (!(newTrack1) && newTrack2 && TMath::Abs(newTrack2->Eta())<0.7)
+      {
+	Double_t Esub = newTrack2->P();
+	if (Esub > cluster->E()) Esub = cluster->E();
+	fHistEsub1Pch->Fill(newTrack2->P(), Esub);
+	fHistEsub1PchRat->Fill(newTrack2->P(), Esub/newTrack2->P());
+      }
+      else {;}
+    }
+
     TArrayI *MCLabels = cluster->GetLabelsArray();
 
     if(MCLabels->GetSize() == 0) fHEventStat->Fill(3.5);
@@ -462,6 +537,13 @@ void AliAnalysisTaskSOH::ProcessMc()
 	    {
 	      fHPhotonEdiff0HC->Fill(vParticle1->E(), (vParticle1->E() - clsE)/vParticle1->E());
 	      fHPhotonEVsClsE->Fill(vParticle1->E(), clsE);
+
+	      if((clsE - 0.3*esdtrack->E())<0) fHPhotonEdiff30HC->Fill(vParticle1->E(), 1);
+	      else  fHPhotonEdiff30HC->Fill(vParticle1->E(), (vParticle1->E() + 0.3*esdtrack->E() - clsE)/vParticle1->E());
+
+	      if((clsE - 0.7*esdtrack->E())<0) fHPhotonEdiff70HC->Fill(vParticle1->E(), 1);
+	      else  fHPhotonEdiff70HC->Fill(vParticle1->E(), (vParticle1->E() + 0.7*esdtrack->E() - clsE)/vParticle1->E());
+
 	      if((clsE - esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle1->E(), 1);
 	      else  fHPhotonEdiff100HC->Fill(vParticle1->E(), (vParticle1->E() + esdtrack->E() - clsE)/vParticle1->E());
 	      continue;
@@ -470,6 +552,13 @@ void AliAnalysisTaskSOH::ProcessMc()
 	    {
 	      fHPhotonEdiff0HC->Fill(vParticle2->E(), (vParticle2->E() - clsE)/vParticle2->E());
 	      fHPhotonEVsClsE->Fill(vParticle2->E(), clsE);
+
+	      if((clsE - 0.3*esdtrack->E())<0) fHPhotonEdiff30HC->Fill(vParticle2->E(), 1);
+	      else fHPhotonEdiff30HC->Fill(vParticle2->E(), (vParticle2->E() + 0.3*esdtrack->E() - clsE)/vParticle2->E());
+
+	      if((clsE - 0.7*esdtrack->E())<0) fHPhotonEdiff70HC->Fill(vParticle2->E(), 1);
+	      else fHPhotonEdiff70HC->Fill(vParticle2->E(), (vParticle2->E() + 0.7*esdtrack->E() - clsE)/vParticle2->E());
+
 	      if((clsE-esdtrack->E())<0) fHPhotonEdiff100HC->Fill(vParticle2->E(), 1);
 	      else fHPhotonEdiff100HC->Fill(vParticle2->E(), (vParticle2->E() + esdtrack->E() - clsE)/vParticle2->E());
 	    }

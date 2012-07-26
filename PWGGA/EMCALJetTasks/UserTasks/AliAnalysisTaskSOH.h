@@ -69,13 +69,19 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   TH2F               *fHEMCalRecdPhidEtaposEta;  //!same as above for positive eta
   TH2F               *fHEMCalRecdPhidEtanegEta;  //!same as above for negative eta
   TH2F               *fHPhotonEdiff100HC;        //!(truth E - calculated E in 100% HC)/truth E vs. truth E with photon
+  TH2F               *fHPhotonEdiff70HC;         //!(truth E - calculated E in 70% HC)/truth E vs. truth E with photon
+  TH2F               *fHPhotonEdiff30HC;         //!(truth E - calculated E in 30% HC)/truth E vs. truth E with photon
   TH2F               *fHPhotonEdiff0HC;          //!(truth E - cluster E)/truth E vs. truth E with photon
   TH2F               *fHPhotonEVsClsE;           //!cluster E vs. truth photon E
-
+  TH2F               *fHistEsub1Pch;       //!(subtracted E in 100% HC) vs. total track P, clusters with 1 matching track
+  TH2F               *fHistEsub2Pch;        //!(subtracted E in 100% HC) vs. total track P, clusters with 2 matching tracks
+  TH2F               *fHistEsub1PchRat;    //!(subtracted E in 100% HC)/total track P vs. total track P, clusters with 1 matching track
+  TH2F               *fHistEsub2PchRat;     //!(subtracted E in 100% HC)/total track P vs. total track P, clusters with 2 matching tracks
+ 
 
   AliAnalysisTaskSOH(const AliAnalysisTaskSOH&); // not implemented
   AliAnalysisTaskSOH& operator=(const AliAnalysisTaskSOH&); // not implemented
   
-  ClassDef(AliAnalysisTaskSOH, 3); // Analysis task Saehanseul Oh
+  ClassDef(AliAnalysisTaskSOH, 5); // Analysis task Saehanseul Oh
 };
 #endif
