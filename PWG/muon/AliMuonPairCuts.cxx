@@ -210,9 +210,9 @@ void AliMuonPairCuts::Print(Option_t* option) const
     if ( filterMask & kBothMuMatchApt ) printf("  mu1 && mu2 match Apt\n");
     if ( filterMask & kBothMuMatchLpt ) printf("  mu1 && mu2 match Lpt\n");
     if ( filterMask & kBothMuMatchHpt ) printf("  mu1 && mu2 match Hpt\n");
-    if ( filterMask & kBothMuMatchApt ) printf("  mu1 || mu2 match Apt\n");
-    if ( filterMask & kBothMuMatchLpt ) printf("  mu1 || mu2 match Lpt\n");
-    if ( filterMask & kBothMuMatchHpt ) printf("  mu1 || mu2 match Hpt\n");
+    if ( filterMask & kOneMuMatchApt ) printf("  mu1 || mu2 match Apt\n");
+    if ( filterMask & kOneMuMatchLpt ) printf("  mu1 || mu2 match Lpt\n");
+    if ( filterMask & kOneMuMatchHpt ) printf("  mu1 || mu2 match Hpt\n");
     if ( filterMask & kDimuUnlikeSign ) printf("  Unlike sign\n");
     if ( filterMask & kDimuRapidity ) printf("  -4 < y_{mumu} < -2.5\n");
     printf(" ******************** \n");
