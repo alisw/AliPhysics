@@ -101,9 +101,14 @@ Double_t AliHMPIDPid::Resolution(Double_t thetaCerTh, AliESDtrack *pTrk)
   AliHMPIDParam *pParam = AliHMPIDParam::Instance();
       
   AliHMPIDRecon rec;
-  Float_t xRa,yRa,thRa,phRa;
-  pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);
+  Float_t xPc,yPc,thRa,phRa;
+  pTrk->GetHMPIDtrk(xPc,yPc,thRa,phRa);
+  
+  Double_t xRa = xPc - (pParam->RadThick()+pParam->WinThick()+pParam->GapThick())*TMath::Cos(phRa)*TMath::Tan(thRa); //just linear extrapolation back to RAD
+  Double_t yRa = yPc - (pParam->RadThick()+pParam->WinThick()+pParam->GapThick())*TMath::Sin(phRa)*TMath::Tan(thRa); //just linear extrapolation back to RAD
   rec.SetTrack(xRa,yRa,thRa,phRa);
+  
+  Double_t occupancy = pTrk->GetHMPIDoccupancy();
   Double_t thetaMax = TMath::ACos(1./pParam->MeanIdxRad());
   Int_t nPhots = (Int_t)(21.*TMath::Sin(thetaCerTh)*TMath::Sin(thetaCerTh)/(TMath::Sin(thetaMax)*TMath::Sin(thetaMax))+0.01);
 
@@ -125,5 +130,5 @@ Double_t AliHMPIDPid::Resolution(Double_t thetaCerTh, AliESDtrack *pTrk)
     }      
     if(invSigma!=0) sigmatot += 1./TMath::Sqrt(invSigma);  
   }
-  return sigmatot/nTrks;
+  return (sigmatot/nTrks)*pParam->SigmaCorrFact(occupancy);
 }
