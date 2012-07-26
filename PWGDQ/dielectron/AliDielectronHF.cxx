@@ -50,7 +50,8 @@ AliDielectronHF::AliDielectronHF() :
   fAxes(kMaxCuts),
   fVarBinLimits(0x0),
   fVar(0),
-  fHasMC(kFALSE)
+  fHasMC(kFALSE),
+  fStepGenerated(kFALSE)
 {
   //
   // Default Constructor
@@ -72,7 +73,8 @@ AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   fAxes(kMaxCuts),
   fVarBinLimits(0x0),
   fVar(0),
-  fHasMC(kFALSE)
+  fHasMC(kFALSE),
+  fStepGenerated(kFALSE)
 {
   //
   // Named Constructor
@@ -182,6 +184,8 @@ void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
   //
   // fill the pure MC part of the container starting from a pair of 2 particles (part1 and part2 are legs)
   //
+  // fill only if we have asked for these steps
+  if(!fStepGenerated) return;
 
   AliVParticle* part1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label1);
   AliVParticle* part2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(label2);
@@ -335,10 +339,13 @@ void AliDielectronHF::Init()
 
   // has MC signals
   fHasMC=AliDielectronMC::Instance()->HasMC();
+  Int_t steps = 0;
+  if(fHasMC) steps=fSignalsMC->GetEntries();
+  if(fStepGenerated) steps*=2; 
 
   // init pair type array
   fArrPairType.SetName(Form("%s_HF",GetName()));
-  if(fHasMC) fArrPairType.Expand(fSignalsMC->GetEntries());
+  if(fHasMC) fArrPairType.Expand(steps);
   else fArrPairType.Expand(AliDielectron::kEv1PMRot+1);
 
   TH1F *hist  = 0x0;
@@ -398,10 +405,15 @@ void AliDielectronHF::Init()
   // copy array to the selected pair types/ MC sources
   if(fHasMC) {
     for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
-      fArrPairType[i]=(TObjArray*)histArr->Clone(Form("MC truth (Signal: %s)", fSignalsMC->At(i)->GetTitle()));
-    }
-  }
-  else {
+	TString title = Form("(Signal: %s)",fSignalsMC->At(i)->GetTitle());
+	fArrPairType[i]=(TObjArray*)histArr->Clone(title.Data());
+	if(fStepGenerated)  {
+	  title+=" MC truth";
+	  fArrPairType[i+fSignalsMC->GetEntries()]=(TObjArray*)histArr->Clone(title.Data());
+	}
+      }
+   }
+   else {
     for(Int_t i=0; i<AliDielectron::kEv1PMRot+1; i++) {
       if(IsPairTypeSelected(i)) fArrPairType[i]=(TObjArray*)histArr->Clone(Form("%s",AliDielectron::PairClassName(i)));
       else fArrPairType[i]=0x0;
