@@ -217,7 +217,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   fSPDhRawsTask++;
 // 5
   
-   TH2I *hSPDChipsMEB = new TH2I("SPDChipsMEB_OnlineSPD","Chips with MEB problem - SPD",60,-0.5,59.5,20,-0.2,19.5);
+   TH2I *hSPDChipsMEB = new TH2I("SPDChipsMEB_OnlineSPD","Chips with MEB problem - SPD",60,0,60,20,0,20);
   // hSPDChipsMEB->GetXaxis()->SetTitle("Stave");
    hSPDChipsMEB->GetXaxis()->SetNdivisions(60,kFALSE);
    hSPDChipsMEB->GetYaxis()->SetTitle("SIDE C   ->   SIDE A           Chip");
@@ -360,7 +360,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   fSPDhRawsTask++;
 // 28
   TH2F *hFastOrMapStaveChip 
-         = new TH2F("SPDFastOrMapStaveChip_SPD","FastOr map per Stave per Chip - SPD",60,-0.5,59.5,20,-0.5,19.5);
+         = new TH2F("SPDFastOrMapStaveChip_SPD","FastOr map per Stave per Chip - SPD",60,0.,60,20,0,20);
 //  hFastOrMapStaveChip->GetXaxis()->SetTitle("Stave");
   hFastOrMapStaveChip->GetYaxis()->SetTitle("SIDE C   ->   SIDE A           Chip");
   for(Int_t ibinx =0; ibinx< hFastOrMapStaveChip->GetNbinsX(); ibinx++){
