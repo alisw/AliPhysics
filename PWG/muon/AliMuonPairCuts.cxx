@@ -170,7 +170,7 @@ UInt_t AliMuonPairCuts::GetSelectionMask( const TObject* track1, const TObject* 
 Double_t AliMuonPairCuts::MuonMass2() const
 {
   /// A usefull constant
-  static Double_t m2 = 1.11636129640000012e-02; // using a constant here as the line below is a problem for CINT...
+  static Double_t m2 = 1.11636129640000012e-02;
   return m2;
 }
 
@@ -198,7 +198,7 @@ void AliMuonPairCuts::Print(Option_t* option) const
   
   TString sopt(option);
   sopt.ToLower();
-  if ( sopt.IsNull() || sopt.Contains("*") || sopt.Contains("all") ) sopt += " pair track";
+  if ( sopt.IsNull() || sopt.Contains("*") || sopt.Contains("all") ) sopt += " pair trackparam trackmask";
   if ( sopt.Contains("pair") ) {
     UInt_t filterMask = GetFilterMask();
     printf(" *** Muon pair filter mask: *** \n");
