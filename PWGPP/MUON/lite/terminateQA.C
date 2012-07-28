@@ -27,7 +27,7 @@ Int_t GetRunNumber(TString filePath)
   Int_t runNum = -1;
   for ( Int_t ientry=0; ientry<array->GetEntries(); ientry++ ) {
     auxString = array->At(ientry)->GetName();
-    if ( auxString.Contains("000") ) {
+    if ( auxString.Length() == 9 && auxString.IsDigit() ) {
       runNum = auxString.Atoi();
       break;
     }
