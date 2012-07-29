@@ -54,7 +54,9 @@ if [[ $# -ne 3 || "$EXIT" -eq 1 ]]; then
     exit 4
 fi
 
-loadLibs="gSystem->Load(\"libANALYSIS.so\");gSystem->Load(\"libOADB.so\");gSystem->Load(\"libANALYSISalice.so\");gSystem->Load(\"libCORRFW.so\");gSystem->Load(\"libPWGmuon.so\");"
+loadAnalysisLibs="gSystem->Load(\"libANALYSIS.so\");gSystem->Load(\"libOADB.so\");gSystem->Load(\"libANALYSISalice.so\");gSystem->Load(\"libCORRFW.so\");gSystem->Load(\"libPWGmuon.so\");"
+includeAliroot=" gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include\");"
+includeMuon=" gSystem->AddIncludePath(\"-I${ALICE_ROOT}/MUON\");"
 
 function mergePerRun()
 {
@@ -78,8 +80,7 @@ function mergeRuns()
     fileListName=$1
     outFilename=$2
     aliroot -b <<EOF &> logMergeAll.txt
-${loadLibs}
-gSystem->Load("libANALYSIS.so");gSystem->Load("libOADB.so");gSystem->Load("libANALYSISalice.so");gSystem->Load("libCORRFW.so");gSystem->Load("libPWGmuon.so");
+${includeAliroot} ${loadAnalysisLibs}
 .x $qaMacroDir/mergeGridFiles.C+("${outFilename}","${fileListName}","");
 .q
 EOF
@@ -97,25 +98,29 @@ function terminateRuns()
     for file in $currList; do
 	cd $terminateDir
 	aliroot -b <<EOF &> logCopy.txt
+${includeAliroot} ${loadAnalysisLibs}
 .L $qaMacroDir/terminateQA.C+
 CopyFile("$file","$terminateDir",1,"${outTaskName}")
 .q 
 EOF
-	outDir=`grep outDir logCopy.txt | cut -d ":" -f 2`
+	outDir=`grep outDir logCopy.txt | cut -d ":" -f 2 | xargs`
 	#outFile=`grep outFile logCopy.txt | cut -d ":" -f 2`
 	forceTerminate=`grep -c "run number not found" logCopy.txt`
 
-	rm logCopy.txt
+  if [ "`pwd`" != "${outDir}" ]; then
+    mv logCopy.txt $outDir/
+  fi
 
 	cd $outDir
 	#ln -s $qaMacroDir/SetAlienHandler.C
 
 
 	aliroot -b <<EOF &> logTerminate.txt
+${includeAliroot} ${loadAnalysisLibs}
 .x $qaMacroDir/terminateQA.C("${outTaskName}",$forceTerminate)
 .q
 EOF
-	rm logTerminate.txt
+	#rm logTerminate.txt
 	#.x $qaMacroDir/runAnalysisTask.C("terminate","grid terminate","",kFALSE,"${outTaskName}");
 
 	#if [ -L "SetAlienHandler.C" ]; then
@@ -134,6 +139,7 @@ function runTrigQA() {
     runListName="$1"
     outFileName="$2"
     aliroot -b <<EOF &> logTrigEffQA.txt
+${includeAliroot} ${includeMuon} ${loadAnalysisLibs}
 .x $qaMacroDir/trigEffQA.C+("${runListName}","${outFileName}");
 .q
 EOF
@@ -146,7 +152,7 @@ function runTrackQA() {
     alienBaseDir="$2"
     lhcPeriod=`echo ${alienBaseDir%"/"} | awk -F "/" ' { print $NF } '`
     aliroot -b <<EOF &> logTrackQA.txt
-${loadLibs}
+${includeAliroot} ${loadAnalysisLibs}
 .x $qaMacroDir/PlotMuonQA.C+("${terminateDir}",0x0,${inputTriggerList},${physSel},"${lhcPeriod}","${outTaskName}");
 .q
 EOF
