@@ -57,7 +57,7 @@
 #include "AliTRDdEdxCalibHistArray.h"
 #include "AliTRDdEdxCalibUtils.h"
 
-#define EPSILON 1e-12
+#define EPSILON 1e-8
 
 AliTRDdEdxCalibHistArray * AliTRDdEdxCalibUtils::fgHistArray = 0x0;
 TObjArray * AliTRDdEdxCalibUtils::fgObjArray = 0x0;

@@ -48,7 +48,7 @@
 
 #include "AliTRDdEdxBaseUtils.h"
 
-#define EPSILON 1e-12
+#define EPSILON 1e-8
 
 Double_t AliTRDdEdxBaseUtils::fgQ0Frac = 0.55;
 Double_t AliTRDdEdxBaseUtils::fgQ1Frac = 0.5;

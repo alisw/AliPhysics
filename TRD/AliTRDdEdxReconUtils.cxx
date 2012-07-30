@@ -54,7 +54,7 @@
 #include "AliTRDdEdxBaseUtils.h"
 #include "AliTRDdEdxReconUtils.h"
 
-#define EPSILON 1e-12
+#define EPSILON 1e-8
 
 Int_t AliTRDdEdxReconUtils::ApplyCalib(const Int_t nc0, TVectorD *arrayQ, TVectorD *arrayX, const TObjArray *cobj)
 {
