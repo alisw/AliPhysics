@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTCONSUMERDESCRIPTOR_H
 #define ALIHLTCONSUMERDESCRIPTOR_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -89,10 +89,10 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
   AliHLTConsumerDescriptor& operator=(const AliHLTConsumerDescriptor&);
 
   /** consumer object */
-  AliHLTComponent* fpConsumer;                                     //! transient
+  AliHLTComponent* fpConsumer;                        //! transient
 
   /** list of data segments */
-  vector<AliHLTDataBuffer::AliHLTDataSegment> fSegments;           // see above
+  AliHLTDataBuffer::AliHLTDataSegmentList fSegments;  // list of data segments
 
   ClassDef(AliHLTConsumerDescriptor, 0)
 };

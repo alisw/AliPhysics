@@ -1,22 +1,17 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTPROCESSOR_H
 #define ALIHLTPROCESSOR_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+///* This file is property of and copyright by the                          * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTProcessor.h
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  Base class declaration for HLT analysis components. */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+/// @file   AliHLTProcessor.h
+/// @author Matthias Richter, Timm Steinbeck
+/// @date   
+/// @brief  Base class declaration for HLT analysis components.
+///
 
 #include "AliHLTComponent.h"
 

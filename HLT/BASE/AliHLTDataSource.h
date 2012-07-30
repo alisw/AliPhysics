@@ -1,24 +1,18 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTDATASOURCE_H
 #define ALIHLTDATASOURCE_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+///* This file is property of and copyright by the                          * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTDataSource.h
-    @author Matthias Richter
-    @date   
-    @brief  Base class declaration for HLT data source components.
-    @note   The class is used in Offline (AliRoot) context
-*/
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+/// @file   AliHLTDataSource.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Base class declaration for HLT data source components.
+/// @note   The class is used in Offline (AliRoot) context
+///
 
 #include "AliHLTComponent.h"
 
@@ -56,7 +50,7 @@ class AliHLTDataSource : public AliHLTComponent {
 		    AliHLTComponentTriggerData& trigData,
 		    AliHLTUInt8_t* outputPtr, 
 		    AliHLTUInt32_t& size,
-		    vector<AliHLTComponentBlockData>& outputBlocks,
+		    AliHLTComponentBlockDataList& outputBlocks,
 		    AliHLTComponentEventDoneData*& edd );
 
   // Information member functions for registration.
@@ -71,7 +65,7 @@ class AliHLTDataSource : public AliHLTComponent {
    * Default implementation for all data sources.
    * There are no input data types.
    */
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes( AliHLTComponentDataTypeList& list);
 
 protected:
 
@@ -91,7 +85,7 @@ protected:
 		AliHLTComponentTriggerData& trigData,
 		AliHLTUInt8_t* outputPtr, 
 		AliHLTUInt32_t& size,
-		vector<AliHLTComponentBlockData>& outputBlocks );
+		AliHLTComponentBlockDataList& outputBlocks );
 
   /**
    * The high-level data processing method.

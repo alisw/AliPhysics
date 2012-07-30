@@ -26,6 +26,8 @@ class TTree;
 
 #define AliHLTOUTInvalidIndex (~(AliHLTUInt32_t)0)
 
+using std::vector;
+
 typedef vector<AliHLTUInt32_t> AliHLTOUTIndexList;
 
 /**

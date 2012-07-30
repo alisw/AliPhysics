@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTControlTask.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Special task to produce the control events.
-*/
+/// @file   AliHLTControlTask.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Special task to produce the control events.
+///
 
 #include "AliHLTControlTask.h"
 #include "AliHLTComponentHandler.h"
@@ -35,22 +35,22 @@ AliHLTControlTask::AliHLTControlTask()
   , fpData(NULL)
   , fSize(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // constructor
+  //
+  // This task is automatically added to the beginning of each chain and
+  // produces the special steering events. The first component in every
+  // branch get the special events from the task.
 }
 
 AliHLTControlTask::~AliHLTControlTask()
 {
-  // see header file for class documentation
+  // destructor
   ResetBlocks();
 }
 
 int AliHLTControlTask::CreateComponent(AliHLTConfiguration* /*pConf*/, AliHLTComponentHandler* pCH, AliHLTComponent*& pComponent) const
 {
-  // see header file for class documentation
+  // create component
   int iResult=0;
   if ((pComponent=new AliHLTControlEventComponent(this))) {
     const AliHLTAnalysisEnvironment* pEnv=pCH->GetEnvironment();

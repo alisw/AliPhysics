@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -22,16 +22,6 @@
 //  @brief  Handling of Data Buffers for HLT components.
 //  @note   Only used in the AliRoot framework
 
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTDataBuffer.h"
 #include "AliHLTConsumerDescriptor.h"
 #include "AliHLTComponent.h"
@@ -41,9 +31,7 @@ using namespace std;
 //#include <string>
 //#include "AliHLTSystem.h"
 
-#define USE_ALIHLTRAWPAGE
-
-typedef vector<AliHLTDataBuffer::AliHLTDataSegment> AliHLTDataSegmentList;
+using std::cout;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataBuffer)
@@ -136,7 +124,7 @@ int AliHLTDataBuffer::FindMatchingDataBlocks(const AliHLTComponent* pConsumer, A
 }
 
 int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* /*pConsumer*/,
-					       vector<AliHLTDataBuffer::AliHLTDataSegment>& tgtList)
+					       AliHLTDataSegmentList& tgtList)
 {
   // see header file for function documentation
   int iResult=0;
@@ -387,9 +375,7 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 	  }
 	}
 	// to be enabled if unit test is ready
-#ifdef USE_ALIHLTRAWPAGE
 	iResult=SetRawBufferDataSize(fpBuffer, maxSize);	
-#endif //USE_ALIHLTRAWPAGE
       } else {
 	HLTError("this data buffer (%p) does not match the internal data buffer %p of raw buffer %p", pTgt, fpBuffer->GetPointer(), fpBuffer);
 	iResult=-EINVAL;
@@ -445,43 +431,10 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
   // see header file for function documentation
   AliHLTRawBuffer* pRawBuffer=NULL;
   unsigned int reqSize=size+fgkSafetyPatternSize;
-#ifndef USE_ALIHLTRAWPAGE
-  AliHLTRawBufferPList::iterator buffer=fgFreeBuffers.begin();
-  while (buffer!=fgFreeBuffers.end() && pRawBuffer==NULL) {
-    if ((*buffer)->CheckSize(reqSize)) {
-      // assign this element
-      pRawBuffer=*buffer;
-      pRawBuffer->UseBuffer(size);
-      fgFreeBuffers.erase(buffer);
-      fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "raw buffer container %p provided for request of %d bytes (total %d available in buffer %p)", pRawBuffer, size, pRawBuffer->GetTotalSize(), pRawBuffer->GetPointer());
-      fgActiveBuffers.push_back(pRawBuffer);
-      break;
-    }
-    buffer++;
-  }
-  if (pRawBuffer==NULL) {
-    // no buffer found, create a new one
-    pRawBuffer=new AliHLTRawBuffer(reqSize);
-    if (pRawBuffer) {
-      if (pRawBuffer->GetPointer()) {
-	pRawBuffer->UseBuffer(size);
-	fgActiveBuffers.push_back(pRawBuffer);
-	fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "new raw buffer %p of size %d created (container %p)", pRawBuffer->GetPointer(), pRawBuffer->GetTotalSize(), pRawBuffer);
-      } else {
-	delete pRawBuffer;
-	pRawBuffer=NULL;
-	fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "memory allocation failed");
-      } 
-    } else {
-      fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "memory allocation failed");
-    }
-  }
-#else
   pRawBuffer=AliHLTDataBuffer::AliHLTRawPage::GlobalAlloc(reqSize);
   if (pRawBuffer) {
     pRawBuffer->UseBuffer(size);
   }
-#endif
   if (pRawBuffer!=NULL && fgkSafetyPatternSize>0) {
     //fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "writing safety pattern to %p offset %d", (*buffer)->GetPointer(), (*buffer)->GetUsedSize());
     pRawBuffer->WritePattern(fgkSafetyPattern, fgkSafetyPatternSize);
@@ -504,7 +457,6 @@ int AliHLTDataBuffer::SetRawBufferDataSize(AliHLTRawBuffer* pBuffer, AliHLTUInt3
     }
   }
   // shrink the buffer and write new pattern at the end
-#ifdef USE_ALIHLTRAWPAGE
   AliHLTDataBuffer::AliHLTRawPage* rawpage=AliHLTDataBuffer::AliHLTRawPage::FindPage(pBuffer);
   if (rawpage) {
     pBuffer->UseBuffer(size);
@@ -518,9 +470,6 @@ int AliHLTDataBuffer::SetRawBufferDataSize(AliHLTRawBuffer* pBuffer, AliHLTUInt3
     fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::SetRawBufferDataSize", "data buffer handling", "can not find raw page for buffer %p", pBuffer);
     iResult=-ENOENT;
   }
-#else //!USE_ALIHLTRAWPAGE
-  pBuffer->UseBuffer(size);
-#endif //USE_ALIHLTRAWPAGE
   if (fgkSafetyPatternSize>0) {
     pBuffer->WritePattern(fgkSafetyPattern, fgkSafetyPatternSize);
   }
@@ -532,16 +481,8 @@ int AliHLTDataBuffer::ReleaseRawBuffer(AliHLTRawBuffer* pBuffer)
   // see header file for function documentation
   int iResult=0;
   if (pBuffer) {
-#ifdef USE_ALIHLTRAWPAGE
     AliHLTDataBuffer::AliHLTRawPage* rawpage=AliHLTDataBuffer::AliHLTRawPage::FindPage(pBuffer);
     if (rawpage)
-#else //!USE_ALIHLTRAWPAGE
-    AliHLTRawBufferPList::iterator buffer=fgActiveBuffers.begin();
-    while (buffer!=fgActiveBuffers.end() && (*buffer)!=pBuffer) {
-      buffer++;
-    }
-    if (buffer!=fgActiveBuffers.end())
-#endif //USE_ALIHLTRAWPAGE
     {
       if (fgkSafetyPatternSize>0) {
 	//fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "comparing safety pattern at %p offset %d", pBuffer->GetPointer(), reinterpret_cast<AliHLTUInt32_t>(pBuffer));
@@ -550,21 +491,12 @@ int AliHLTDataBuffer::ReleaseRawBuffer(AliHLTRawBuffer* pBuffer)
 	}
       }
       pBuffer->Reset();
-#ifdef USE_ALIHLTRAWPAGE
       if (rawpage->Free(pBuffer)==0) {
       } else {
 	fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "failed to release raw buffer %p", pBuffer);
       }
-#else //!USE_ALIHLTRAWPAGE
-      fgFreeBuffers.push_back(pBuffer);
-      fgActiveBuffers.erase(buffer);
-#endif //USE_ALIHLTRAWPAGE
     } else {
-#ifdef USE_ALIHLTRAWPAGE
       fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "can not find raw page for buffer %p", pBuffer);
-#else //!USE_ALIHLTRAWPAGE
-      fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "can not find raw buffer container %p in the list of active containers", pBuffer);
-#endif //USE_ALIHLTRAWPAGE
       iResult=-ENOENT;
     }
   } else {
@@ -609,7 +541,6 @@ int AliHLTDataBuffer::PrintStatistics()
 {
   // see header file for function documentation
   int iResult=0;
-#ifdef USE_ALIHLTRAWPAGE
   int nofPages=0;
   AliHLTUInt32_t totalSize=0;
   for (AliHLTDataBuffer::AliHLTRawPage* rawpage=AliHLTDataBuffer::AliHLTRawPage::NextPage(NULL);
@@ -622,18 +553,6 @@ int AliHLTDataBuffer::PrintStatistics()
   //if (rawpage) rawpage->Print("global");
   fgLogging.Logging(kHLTLogInfo, "AliHLTDataBuffer::PrintStatistics", "data buffer handling", "total number of memory pages: %d   total size %d", nofPages, totalSize);
 
-#else //! USE_ALIHLTRAWPAGE
-  int iFree=0;
-  int iActive=0;
-  AliHLTRawBufferPList::iterator buffer;;
-  for (buffer=fgFreeBuffers.begin(); buffer!=fgFreeBuffers.end(); buffer++) {
-    iFree+=(*buffer)->GetTotalSize();
-  }
-  for (buffer=fgActiveBuffers.begin(); buffer!=fgActiveBuffers.end(); buffer++) {
-    iActive+=(*buffer)->GetTotalSize();
-  }
-  fgLogging.Logging(kHLTLogInfo, "AliHLTDataBuffer::PrintStatistics", "data buffer handling", "Total memory allocation: %d byte; %d free buffers (%d byte) - %d active buffers (%d byte) ", iFree+iActive, fgFreeBuffers.size(), iFree, fgActiveBuffers.size(), iActive);
-#endif // USE_ALIHLTRAWPAGE
   return iResult;
 }
 
@@ -916,8 +835,6 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawBuffer::Split(AliH
       fTotalSize=size;
     }
     return part2;
-  } else {
-    //cout << "can not split fTotalSize=" << fTotalSize << "  fSize=" << fSize << "  at size=" << size << endl; 
   }
   return NULL;
 }

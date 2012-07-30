@@ -3,15 +3,15 @@
 
 #ifndef ALIHLTLOGGING_H
 #define ALIHLTLOGGING_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+///* This file is property of and copyright by the                          * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///* See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTLogging.h
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  HLT module logging primitives.
-*/
+/// @file   AliHLTLogging.h
+/// @author Matthias Richter, Timm Steinbeck
+/// @date   
+/// @brief  HLT module logging primitives.
+///
 
 #include "AliHLTDataTypes.h"
 #include "AliHLTStdIncludes.h"

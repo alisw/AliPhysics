@@ -3,21 +3,15 @@
 
 #ifndef ALIHLTTASK_H
 #define ALIHLTTASK_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+///* This file is property of and copyright by the                          * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTask.h
-    @author Matthias Richter
-    @date   
-    @brief  base class for HLT tasks
-*/
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+/// @file   AliHLTTask.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  base class for HLT tasks
+///
 
 #include <vector>
 #include <TObject.h>
@@ -25,6 +19,8 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
 #include "AliHLTDataBuffer.h"
+
+using std::vector;
 
 struct AliHLTComponentBlockData;
 class AliHLTComponent;

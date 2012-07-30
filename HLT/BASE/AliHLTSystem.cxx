@@ -1,6 +1,6 @@
 // $Id$
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -15,15 +15,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTSystem.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Implementation of HLT module management.
-*/
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTSystem.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Implementation of HLT module management.
+///
 
 #include <cassert>
 #include "AliHLTStdIncludes.h"

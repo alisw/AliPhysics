@@ -26,12 +26,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#if __GNUC__>= 3
-   using namespace std;
-#endif
-
 #include "AliHLTHOMERSourceDesc.h"
-
 
 ClassImp(AliHLTHOMERSourceDesc)
 

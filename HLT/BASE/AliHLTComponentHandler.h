@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTCOMPONENTHANDLER_H
 #define ALIHLTCOMPONENTHANDLER_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -14,16 +14,11 @@
 /// @note   The handler is part of the interface and both used in the
 ///         Online (PubSub) and Offline (AliRoot) context.
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
-
 #include <vector>
-//#include "TObject.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
+
+using std::vector;
 
 class AliHLTComponent;
 class AliHLTModuleAgent;

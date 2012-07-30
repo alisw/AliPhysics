@@ -16,21 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTEventStatistics.cxx
-    @author Jochen Thaeder
-    @date   
-    @brief  Base class for event statistics, for all detectors
-*/
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
-
-#if __GNUC__ >= 3
-using namespace std;
-#endif
+/// @file   AliHLTEventStatistics.cxx
+/// @author Jochen Thaeder
+/// @date   
+/// @brief  Base class for event statistics, for all detectors
+///
 
 #include "AliHLTEventStatistics.h"
 

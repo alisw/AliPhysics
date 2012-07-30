@@ -1,29 +1,26 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the                          * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
-/** @file   AliHLTDataSource.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Base class implementation for HLT data source components. */
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTDataSource.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Base class implementation for HLT data source components.
+///
 
 #include "AliHLTDataSource.h"
 
@@ -31,22 +28,22 @@ using namespace std;
 ClassImp(AliHLTDataSource)
 
 AliHLTDataSource::AliHLTDataSource()
-{ 
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+{
+  // Base class of HLT data source components.
+  // The class provides a common interface for the implementation of HLT data
+  // source components.
+  // Source components do not consume any input consequently the processing
+  // function is called 'GetEvent'.
 }
 
 AliHLTDataSource::~AliHLTDataSource()
 { 
-  // see header file for class documentation
+  // destructor
 }
 
-void AliHLTDataSource::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTDataSource::GetInputDataTypes( AliHLTComponentDataTypeList& list)
 {
-  // see header file for class documentation
+  // default method as source components do not consume input
   list.clear(); // there are no input data types
 }
 
@@ -56,10 +53,10 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
 				    AliHLTComponentTriggerData& trigData,
 				    AliHLTUInt8_t* outputPtr, 
 				    AliHLTUInt32_t& size,
-				    vector<AliHLTComponentBlockData>& outputBlocks,
+				    AliHLTComponentBlockDataList& outputBlocks,
 				    AliHLTComponentEventDoneData*& edd )
 {
-  // see header file for class documentation
+  // Processing method, calls child's GetEvent
   int iResult=0;
   if (evtData.fBlockCnt > 0) {
     int unknown=-1;
@@ -92,7 +89,7 @@ int AliHLTDataSource::GetEvent( const AliHLTComponentEventData& evtData,
 				AliHLTComponentTriggerData& trigData,
 				AliHLTUInt8_t* /*outputPtr*/, 
 				AliHLTUInt32_t& size,
-				vector<AliHLTComponentBlockData>& /*outputBlocks*/ )
+				AliHLTComponentBlockDataList& /*outputBlocks*/ )
 {
   // we just forward to the high level method, all other parameters already
   // have been stored internally
@@ -102,6 +99,7 @@ int AliHLTDataSource::GetEvent( const AliHLTComponentEventData& evtData,
 
 int AliHLTDataSource::GetEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
+  // default method: one of GetEvent methods must be implemented
   HLTFatal("no processing method implemented");
   return -ENOSYS;
 }

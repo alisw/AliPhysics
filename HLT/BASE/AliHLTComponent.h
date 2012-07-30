@@ -89,6 +89,8 @@ class AliHLTMemoryFile;
 class AliHLTCTPData;
 class AliHLTReadoutList;
 
+using std::vector;
+
 /** list of component data type structures */
 typedef vector<AliHLTComponentDataType>   AliHLTComponentDataTypeList;
 /** list of component block data structures */

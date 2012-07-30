@@ -1,23 +1,17 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTDATASINK_H
 #define ALIHLTDATASINK_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTDataSink.h
-    @author Matthias Richter
-    @date   
-    @brief  Base class declaration for HLT data sink components.
-    @note   The class is used in Offline (AliRoot) context
-*/
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+/// @file   AliHLTDataSink.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Base class declaration for HLT data sink components.
+/// @note   The class is used in Offline (AliRoot) context
+///
 
 #include "AliHLTComponent.h"
 
@@ -53,7 +47,7 @@ class AliHLTDataSink : public AliHLTComponent {
 		    AliHLTComponentTriggerData& trigData,
 		    AliHLTUInt8_t* outputPtr, 
 		    AliHLTUInt32_t& size,
-		    vector<AliHLTComponentBlockData>& outputBlocks,
+		    AliHLTComponentBlockDataList& outputBlocks,
 		    AliHLTComponentEventDoneData*& edd );
 
   // Information member functions for registration.

@@ -1,6 +1,6 @@
 // $Id$
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -21,16 +21,6 @@
 /// @brief  Implementation of HLT tasks.
 ///
 
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include <cerrno>
 #include <cassert>
 #include <iostream>
@@ -43,6 +33,8 @@ using namespace std;
 #include "AliHLTComponentHandler.h"
 #include "TList.h"
 #include "AliHLTErrorGuard.h"
+
+using std::cout;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTask)

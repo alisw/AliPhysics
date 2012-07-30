@@ -24,15 +24,13 @@
 //  @note   This interface is deprecated, the new interface is defined
 //          in HLT/BASE/AliHLTExternalInterface
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLT_C_Component_WrapperInterface.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
 #include "AliHLTMisc.h"
 #include <errno.h>
+
+using namespace std;
 
 static AliHLTComponentHandler *gComponentHandler_C = NULL;
 static AliHLTRunDesc gRunDesc=kAliHLTVoidRunDesc;

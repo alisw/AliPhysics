@@ -1,36 +1,26 @@
 // $Id$
-// splitted from AliHLTConfiguration.cxx,v 1.25 2007/10/12 13:24:47
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+// split from AliHLTConfiguration.cxx,v 1.25 2007/10/12 13:24:47
+///**************************************************************************
+///* This file is property of and copyright by the                          * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///*                                                                        *
+///* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+///*                  for The ALICE HLT Project.                            *
+///*                                                                        *
+///* Permission to use, copy, modify and distribute this software and its   *
+///* documentation strictly for non-commercial purposes is hereby granted   *
+///* without fee, provided that the above copyright notice appears in all   *
+///* copies and that both the copyright notice and this permission notice   *
+///* appear in the supporting documentation. The authors make no claims     *
+///* about the suitability of this software for any purpose. It is          *
+///* provided "as is" without express or implied warranty.                  *
+///**************************************************************************/
 
-/** @file   AliHLTConfigurationHandler.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Implementation of HLT tasks.
-*/
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTConfigurationHandler.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Implementation of HLT tasks.
+///
 
 #include <cerrno>
 #include <iostream>
@@ -50,17 +40,20 @@ AliHLTConfigurationHandler::AliHLTConfigurationHandler()
   , fgListScheduledRegistrations()
   , fFlags(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // constructor
+  //
+  // Global Handling of HLT configurations.
+  //
+  // This class implements the global handling of @ref AliHLTConfiguration objects.
+  // It is a list of all configuration descriptors currently available in the system.
+  // Each @ref AliHLTConfiguration object is registered automatically with the
+  // handler and put into the list.
   SetLocalLoggingLevel(kHLTLogInfo);
 }
 
 AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
 {
-  // see header file for function documentation
+  // destructor
   TObjLink* lnk=NULL;
   while ((lnk=fgListConfigurations.FirstLink())!=NULL) {
     AliHLTConfiguration* pConf=(AliHLTConfiguration*)lnk->GetObject();
@@ -77,7 +70,7 @@ TMap* AliHLTConfigurationHandler::fgpSubstitutions=NULL;
 
 AliHLTConfigurationHandler* AliHLTConfigurationHandler::CreateHandler()
 {
-  // see header file for class documentation
+  // create global handler instance
   if (!fgpInstance) fgpInstance=new AliHLTConfigurationHandler;
   fgNofInstances++;
   return fgpInstance;
@@ -85,7 +78,7 @@ AliHLTConfigurationHandler* AliHLTConfigurationHandler::CreateHandler()
 
 int AliHLTConfigurationHandler::Destroy()
 {
-  // see header file for class documentation
+  // destroy instance
   int nofInstances=0;
   if (fgpInstance==this) {
     nofInstances=--fgNofInstances;
@@ -102,7 +95,7 @@ int AliHLTConfigurationHandler::Destroy()
 
 int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf)
 {
-  // see header file for function documentation
+  // register a configuration
   int iResult=0;
   if (pConf) {
     AliHLTConfiguration* pClone=new AliHLTConfiguration(*pConf);
@@ -138,7 +131,7 @@ int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf
 
 int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* component, const char* sources, const char* arguments)
 {
-  // see header file for function documentation
+  // create configuration
   int iResult=0;
   // if this handler is the global instance the configuration is added
   // automatically in the creation of the AliHLTConfiguration object
@@ -175,7 +168,7 @@ int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* 
 
 void AliHLTConfigurationHandler::PrintConfigurations()
 {
-  // see header file for function documentation
+  // print information
   HLTLogKeyword("configuration listing");
   HLTMessage("registered configurations:");
   TObjLink *lnk = fgListConfigurations.FirstLink();
@@ -208,7 +201,7 @@ void AliHLTConfigurationHandler::Print(const char* option)
 
 int AliHLTConfigurationHandler::RemoveConfiguration(const char* id)
 {
-  // see header file for function documentation
+  // remove configuration from registry
   int iResult=0;
   if (id) {
     AliHLTConfiguration* pConf=NULL;
@@ -228,7 +221,7 @@ int AliHLTConfigurationHandler::RemoveConfiguration(const char* id)
 
 int AliHLTConfigurationHandler::RemoveConfiguration(AliHLTConfiguration* pConf)
 {
-  // see header file for function documentation
+  // remove configuration from registry
   int iResult=0;
   if (pConf) {
     // remove the configuration from the list
@@ -251,7 +244,7 @@ int AliHLTConfigurationHandler::RemoveConfiguration(AliHLTConfiguration* pConf)
 
 AliHLTConfiguration* AliHLTConfigurationHandler::FindConfiguration(const char* id)
 {
-  // see header file for function documentation
+  // find configuration by id
   AliHLTConfiguration* pConf=NULL;
   if (id) {
     pConf=(AliHLTConfiguration*)fgListConfigurations.FindObject(id); 
@@ -259,16 +252,18 @@ AliHLTConfiguration* AliHLTConfigurationHandler::FindConfiguration(const char* i
   return pConf;
 }
 
-int AliHLTConfigurationHandler::Deactivate(bool schedule) {
-  // see header file for function documentation
+int AliHLTConfigurationHandler::Deactivate(bool schedule)
+{
+  // deactivate handler
   fFlags|=kInactive;
   if (schedule)
     fFlags|=kScheduling;
   return 0;
 }
 
-int AliHLTConfigurationHandler::Activate() {
-  // see header file for function documentation
+int AliHLTConfigurationHandler::Activate()
+{
+  // activate handler
   fFlags&=~kInactive;
   if (IsScheduling()) {
     fFlags&=~kScheduling;

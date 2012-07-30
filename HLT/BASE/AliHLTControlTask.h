@@ -2,15 +2,15 @@
 // $Id$
 #ifndef ALIHLTCONTROLTASK_H
 #define ALIHLTCONTROLTASK_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTControlTask.h
-    @author Matthias Richter
-    @date   
-    @brief  Special task to produce the control events.
-*/
+/// @file   AliHLTControlTask.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Special task to produce the control events.
+///
 
 #include "AliHLTTask.h"
 #include "AliHLTDataSource.h"

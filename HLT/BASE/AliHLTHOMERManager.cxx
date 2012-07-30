@@ -28,10 +28,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#if __GNUC__>= 3
-   using namespace std;
-#endif
-
 #define EVE_DEBUG 0
 
 #include "AliHLTHOMERManager.h"
@@ -43,6 +39,8 @@
 #include "AliHLTGlobalTriggerDecision.h"
 #include "AliHLTTriggerDecision.h"
 //---------------------------
+
+using std::cout;
 
 ClassImp(AliHLTHOMERManager)
 

@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTDATABUFFER_H
 #define ALIHLTDATABUFFER_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -13,17 +13,13 @@
 //  @brief  Handling of Data Buffers for HLT components.
 //  @note   The class is used in Offline (AliRoot) context
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
 #include <vector>
 #include "TObject.h"
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTComponent.h"
+
+using std::vector;
 
 class AliHLTConsumerDescriptor;
 class AliHLTTask;
@@ -393,6 +389,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     AliHLTTask* fParentTask;                                       //!transient
   };
 
+  typedef vector<AliHLTDataBuffer::AliHLTDataSegment> AliHLTDataSegmentList;
+
   class AliHLTRawBuffer;
   typedef vector<AliHLTRawBuffer*>  AliHLTRawBufferPList;
 
@@ -592,7 +590,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    *          -EINVAL       invalid parameter <br>
    */
   int FindMatchingDataSegments(const AliHLTComponent* pConsumer, 
-			       vector<AliHLTDataBuffer::AliHLTDataSegment>& tgtList);
+			       AliHLTDataSegmentList& tgtList);
 
  protected:
   // 2010-02-01 make function protected in order to be used from unit test

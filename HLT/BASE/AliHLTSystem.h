@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTSYSTEM_H
 #define ALIHLTSYSTEM_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 

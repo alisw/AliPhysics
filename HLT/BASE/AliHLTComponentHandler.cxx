@@ -1,21 +1,21 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the                          * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 /// @file   AliHLTComponentHandler.cxx
 /// @author Matthias Richter, Timm Steinbeck
@@ -23,15 +23,6 @@
 /// @brief  Implementation of HLT component handler.
 ///
 
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
 //#undef HAVE_DLFCN_H
 #ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
@@ -39,7 +30,6 @@ using namespace std;
 //#include <Riostream.h>
 #include <TSystem.h>
 #endif //HAVE_DLFCN_H
-//#include "AliHLTStdIncludes.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
 #include "AliHLTDataTypes.h"
@@ -82,7 +72,7 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTAnalysisEnvironment* pEnv)
   fRunDesc(kAliHLTVoidRunDesc),
   fRunType(NULL)
 {
-  // see header file for class documentation
+  // constructor with environment
   if (pEnv) {
     memcpy(&fEnvironment, pEnv, sizeof(AliHLTAnalysisEnvironment));
     if (pEnv->fLoggingFunc) {
@@ -107,7 +97,7 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTAnalysisEnvironment* pEnv)
 
 AliHLTComponentHandler::~AliHLTComponentHandler()
 {
-  // see header file for class documentation
+  // destructor
   DeleteOwnedComponents();
   UnloadLibraries();
   if (fRunType) delete [] fRunType;
@@ -119,7 +109,7 @@ int AliHLTComponentHandler::fgNofInstances=0;
 
 AliHLTComponentHandler* AliHLTComponentHandler::CreateHandler()
 {
-  // see header file for class documentation
+  // create global instance of handler
   if (!fgpInstance) fgpInstance=new AliHLTComponentHandler;
   fgNofInstances++;
   return fgpInstance;
@@ -141,7 +131,7 @@ int AliHLTComponentHandler::Destroy()
 
 int AliHLTComponentHandler::AnnounceVersion()
 {
-  // see header file for class documentation
+  // printout for version
   int iResult=0;
 #ifdef PACKAGE_STRING
   extern void HLTbaseCompileInfo( const char*& date, const char*& time);
@@ -159,7 +149,7 @@ int AliHLTComponentHandler::AnnounceVersion()
 
 Int_t AliHLTComponentHandler::AddComponent(AliHLTComponent* pSample)
 {
-  // see header file for class documentation
+  // add and register a component, handler becomes owner
   Int_t iResult=0;
   if (pSample==NULL) return -EINVAL;
   if ((iResult=RegisterComponent(pSample))>=0) {
@@ -171,7 +161,7 @@ Int_t AliHLTComponentHandler::AddComponent(AliHLTComponent* pSample)
 
 Int_t AliHLTComponentHandler::RegisterComponent(AliHLTComponent* pSample)
 {
-  // see header file for class documentation
+  // register a component, handler creates clone of sample
   Int_t iResult=0;
   if (pSample) {
     if (FindComponent(pSample->GetComponentID())==NULL) {
@@ -192,7 +182,7 @@ Int_t AliHLTComponentHandler::RegisterComponent(AliHLTComponent* pSample)
 
 int AliHLTComponentHandler::DeregisterComponent( const char* componentID )
 {
-  // see header file for class documentation
+  // deregister component
 
   int iResult=0;
   if (componentID) {
@@ -205,7 +195,7 @@ int AliHLTComponentHandler::DeregisterComponent( const char* componentID )
 
 Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
 {
-  // see header file for class documentation
+  // schedule registration
   Int_t iResult=0;
   if (pSample) {
     fScheduleList.push_back(pSample);
@@ -217,7 +207,7 @@ Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
 
 int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvParam, int argc, const char** argv, AliHLTComponent*& component)
 {
-  // see header file for class documentation
+  // create a component
   int iResult=CreateComponent(componentID, component);
   if (iResult>=0 && component) {
 	HLTDebug("component \"%s\" created (%p)", componentID, component);
@@ -232,7 +222,7 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnvP
 
 int AliHLTComponentHandler::CreateComponent(const char* componentID, AliHLTComponent*& component )
 {
-  // see header file for class documentation
+  // create a component
   int iResult=0;
   if (componentID) {
     AliHLTComponent* pSample=FindComponent(componentID);
@@ -256,7 +246,7 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, AliHLTCompo
 
 Int_t AliHLTComponentHandler::FindComponentIndex(const char* componentID)
 {
-  // see header file for class documentation
+  // find component by ID in the list and return index
   Int_t iResult=0;
   if (componentID) {
     AliHLTComponentPList::iterator element=fComponentList.begin();
@@ -276,7 +266,7 @@ Int_t AliHLTComponentHandler::FindComponentIndex(const char* componentID)
 
 AliHLTComponent* AliHLTComponentHandler::FindComponent(const char* componentID)
 {
-  // see header file for class documentation
+  // find component sample by ID
   AliHLTComponent* pSample=NULL;
   Int_t index=FindComponentIndex(componentID);
   if (index>=0) {
@@ -287,7 +277,7 @@ AliHLTComponent* AliHLTComponentHandler::FindComponent(const char* componentID)
 
 Int_t AliHLTComponentHandler::InsertComponent(AliHLTComponent* pSample)
 {
-  // see header file for class documentation
+  // insert a component sample in the list
   Int_t iResult=0;
   if (pSample!=NULL) {
     fComponentList.push_back(pSample);
@@ -299,7 +289,8 @@ Int_t AliHLTComponentHandler::InsertComponent(AliHLTComponent* pSample)
 
 void AliHLTComponentHandler::List() 
 {
-  // see header file for class documentation
+  // print list content
+  // TODO: implement Print()
   AliHLTComponentPList::iterator element=fComponentList.begin();
   int index=0;
   while (element!=fComponentList.end()) {
@@ -309,7 +300,7 @@ void AliHLTComponentHandler::List()
 
 int AliHLTComponentHandler::HasOutputData( const char* componentID)
 {
-  // see header file for class documentation
+  // check if a component has output data
   int iResult=0;
   AliHLTComponent* pSample=FindComponent(componentID);
   if (pSample) {
@@ -324,7 +315,7 @@ int AliHLTComponentHandler::HasOutputData( const char* componentID)
 
 void AliHLTComponentHandler::SetEnvironment(AliHLTAnalysisEnvironment* pEnv) 
 {
-  // see header file for class documentation
+  // set global environment
   if (pEnv) {
     memset(&fEnvironment, 0, sizeof(AliHLTAnalysisEnvironment));
     memcpy(&fEnvironment, pEnv, pEnv->fStructSize<sizeof(AliHLTAnalysisEnvironment)?pEnv->fStructSize:sizeof(AliHLTAnalysisEnvironment));
@@ -341,7 +332,7 @@ void AliHLTComponentHandler::SetEnvironment(AliHLTAnalysisEnvironment* pEnv)
 
 AliHLTComponentHandler::TLibraryMode AliHLTComponentHandler::SetLibraryMode(TLibraryMode mode)
 {
-  // see header file for class documentation
+  // set library mode
   TLibraryMode old=fLibraryMode;
   fLibraryMode=mode;
   return old;
@@ -349,7 +340,7 @@ AliHLTComponentHandler::TLibraryMode AliHLTComponentHandler::SetLibraryMode(TLib
 
 int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateAgents)
 {
-  // see header file for class documentation
+  // load a library
   int iResult=0;
   if (libraryPath) {
     TString libName=libraryPath;
@@ -458,7 +449,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
 
 int AliHLTComponentHandler::UnloadLibrary( const char* libraryPath )
 {
-  // see header file for class documentation
+  // unload a library
   int iResult=0;
   if (libraryPath) {
     vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
@@ -479,7 +470,7 @@ int AliHLTComponentHandler::UnloadLibrary( const char* libraryPath )
 
 int AliHLTComponentHandler::UnloadLibrary(AliHLTComponentHandler::AliHLTLibHandle &handle)
 {
-  // see header file for class documentation
+  // unload a library
   int iResult=0;
   fgAliLoggingFunc=NULL;
   TString* pName=reinterpret_cast<TString*>(handle.fName);
@@ -543,7 +534,7 @@ int AliHLTComponentHandler::UnloadLibrary(AliHLTComponentHandler::AliHLTLibHandl
 
 int AliHLTComponentHandler::UnloadLibraries()
 {
-  // see header file for class documentation
+  // unload all libraries
   int iResult=0;
   vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
   while (element!=fLibraryList.end()) {
@@ -556,7 +547,7 @@ int AliHLTComponentHandler::UnloadLibraries()
 
 AliHLTfctVoid AliHLTComponentHandler::FindSymbol(const char* library, const char* symbol)
 {
-  // see header file for class documentation
+  // find symbol in library
   AliHLTLibHandle* hLib=FindLibrary(library);
   if (hLib==NULL) return NULL;
   void (*pFunc)()=NULL;
@@ -571,7 +562,7 @@ AliHLTfctVoid AliHLTComponentHandler::FindSymbol(const char* library, const char
 
 AliHLTComponentHandler::AliHLTLibHandle* AliHLTComponentHandler::FindLibrary(const char* library)
 {
-  // see header file for class documentation
+  // find a library by name
   AliHLTLibHandle* hLib=NULL;
   vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
   while (element!=fLibraryList.end()) {
@@ -587,7 +578,7 @@ AliHLTComponentHandler::AliHLTLibHandle* AliHLTComponentHandler::FindLibrary(con
 
 int AliHLTComponentHandler::AddStandardComponents()
 {
-  // see header file for class documentation
+  // TODO: not quite clear what was the meaning behind this function
   int iResult=0;
   AliHLTComponent::SetGlobalComponentHandler(this);
   AliHLTComponent::UnsetGlobalComponentHandler();
@@ -597,7 +588,7 @@ int AliHLTComponentHandler::AddStandardComponents()
 
 int AliHLTComponentHandler::RegisterScheduledComponents()
 {
-  // see header file for class documentation
+  // register all scheduled components
   int iResult=0;
   AliHLTComponentPList::iterator element=fScheduleList.begin();
   int iLocalResult=0;
@@ -612,7 +603,7 @@ int AliHLTComponentHandler::RegisterScheduledComponents()
 
 int AliHLTComponentHandler::ActivateAgents(const char* library, const char* blackList)
 {
-  // see header file for class documentation
+  // activate module agents
   vector<AliHLTModuleAgent*> agents;
   for (AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent(); 
        pAgent!=NULL;
@@ -650,7 +641,7 @@ int AliHLTComponentHandler::ActivateAgents(const char* library, const char* blac
 
 int AliHLTComponentHandler::DeleteOwnedComponents()
 {
-  // see header file for class documentation
+  // delete all component samples owned by the handler
   int iResult=0;
   AliHLTComponentPList::iterator element=fOwnedComponents.begin();
   while (element!=fOwnedComponents.end()) {
@@ -674,7 +665,7 @@ int AliHLTComponentHandler::DeleteOwnedComponents()
 
 int AliHLTComponentHandler::SetRunDescription(const AliHLTRunDesc* desc, const char* runType)
 {
-  // see header file for class documentation
+  // set global run description
   if (!desc) return -EINVAL;
   if (desc->fStructSize!=sizeof(AliHLTRunDesc)) {
     HLTError("invalid size of RunDesc struct (%ul)", desc->fStructSize);

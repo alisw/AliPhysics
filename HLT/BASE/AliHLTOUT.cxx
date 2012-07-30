@@ -32,7 +32,8 @@
 #include "TROOT.h"
 #include <sstream>
 #include <iomanip>
-using namespace std;
+
+using std::cout;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUT)
