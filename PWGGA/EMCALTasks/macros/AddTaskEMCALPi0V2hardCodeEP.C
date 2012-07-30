@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP()
+AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=1)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -24,7 +24,14 @@ AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP()
   eventplaneTask->SetSaveTrackContribution();
   
   AliESDtrackCuts* epTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "Standard");
-  epTrackCuts->SetPtRange(0.1, 4);
+  epTrackCuts->SetRequireTPCStandAlone(kTRUE); // to get chi2 and ncls of kTPCin
+  epTrackCuts->SetMinNClustersTPC(50);
+  epTrackCuts->SetMaxChi2PerClusterTPC(4);
+  epTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  epTrackCuts->SetRequireTPCRefit(kTRUE);
+  epTrackCuts->SetMaxDCAToVertexZ(3.2);
+  epTrackCuts->SetMaxDCAToVertexXY(2.4);
+  epTrackCuts->SetPtRange(0.15, 20);
   eventplaneTask->SetPersonalESDtrackCuts(epTrackCuts);
 
   mgr->AddTask(eventplaneTask);
@@ -40,6 +47,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP()
   //analysis task 
 
  AliAnalysisTaskSE* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task"); 
+ taskMB->SetEventMethod(EvtMthod);
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGGA_pi0v2CalSemiCentral";

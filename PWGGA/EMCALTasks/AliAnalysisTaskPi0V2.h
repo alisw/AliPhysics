@@ -10,8 +10,8 @@
  * Based on tutorial example from offline pages
  * Edited by Arvinder Palaha
  */
-#ifndef ALIANALYSISTASKEX01_H
-#define ALIANALYSISTASKEX01_H
+#ifndef ALIANALYSISTASKPI0V2_H
+#define ALIANALYSISTASKPI0V2_H
 
 class TH1F;
 class TH2F;
@@ -42,14 +42,14 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Bool_t		IsGoodPion(const TLorentzVector& p1, const TLorentzVector& p2) const;
     void		FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
     void 		GetMom(TLorentzVector& p, const AliESDCaloCluster *c, Double_t *vertex);		
-    void		SetsubEventMethod(Bool_t b )	{ fcheckEP2sub =b ;}
+    void		SetEventMethod(Double_t b )	{ fEvtSelect =b ;}
 
     
  private:
     TList           		*fOutput;        //! Output list
     AliESDEvent			*fESD;          //!ESD object
 
-    Bool_t 			fcheckEP2sub;	// do 2 sub event method
+    Double_t 			fEvtSelect;	// 1 = MB+Semi+Central, 2 = MB+Semi;
     // NEW HISTO to be declared here
     Double_t			fCentrality;	//! Centrality
     Double_t			fEPTPC;		//! Evt plane TPC
