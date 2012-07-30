@@ -800,14 +800,14 @@ Double_t AliCaloTrackReader::GetEventPlaneAngle() const
     
     if(GetEventPlaneMethod()=="Q" && (ep < 0 || ep > TMath::Pi())) 
     {
-      printf("AliCaloTrackReader::GetEventPlaneAngle() -  Bad EP for <Q> method : %f\n",ep);
+      if(fDebug > 0 ) printf("AliCaloTrackReader::GetEventPlaneAngle() -  Bad EP for <Q> method : %f\n",ep);
       return -1000;
     }
     else if(GetEventPlaneMethod().Contains("V0")  ) 
     {
       if((ep > TMath::Pi()/2 || ep < -TMath::Pi()/2))
       {
-        printf("AliCaloTrackReader::GetEventPlaneAngle() -  Bad EP for <%s> method : %f\n",GetEventPlaneMethod().Data(), ep);
+        if(fDebug > 0 ) printf("AliCaloTrackReader::GetEventPlaneAngle() -  Bad EP for <%s> method : %f\n",GetEventPlaneMethod().Data(), ep);
         return -1000;
       }
       
@@ -816,14 +816,17 @@ Double_t AliCaloTrackReader::GetEventPlaneAngle() const
     }
   
     //printf("AliCaloTrackReader::GetEventPlaneAngle() = %f\n",ep);
-    if     (ep > TMath::Pi()) printf("AliCaloTrackReader::GetEventPlaneAngle() - Too large angle = %f\n",ep);
-    else if(ep < 0          ) printf("AliCaloTrackReader::GetEventPlaneAngle() - Negative angle = %f\n" ,ep);
+    if(fDebug > 0 )
+    {
+      if     (ep > TMath::Pi()) printf("AliCaloTrackReader::GetEventPlaneAngle() - Too large angle = %f\n",ep);
+      else if(ep < 0          ) printf("AliCaloTrackReader::GetEventPlaneAngle() - Negative angle = %f\n" ,ep);
+    }
     
     return ep;
   }
   else
   {
-    if(fDataType!=kMC) printf("AliCaloTrackReader::GetEventPlaneAngle() -  No EP pointer\n");
+    if(fDataType!=kMC && fDebug > 0) printf("AliCaloTrackReader::GetEventPlaneAngle() -  No EP pointer\n");
     return -1000;
   } 
   
