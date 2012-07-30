@@ -3,16 +3,16 @@
 
 #ifndef ALIHLTDATAGENERATOR_H
 #define ALIHLTDATAGENERATOR_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTDataGenerator.h
-    @author Matthias Richter
-    @date   
-    @brief  An HLT file publishing (data source) component.
-    @note   The class is used in Offline (AliRoot) context
-*/
+/// @file   AliHLTDataGenerator.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  An HLT file publishing (data source) component.
+/// @note   The class is used in Offline (AliRoot) context
+///
 
 #include "AliHLTProcessor.h"
 

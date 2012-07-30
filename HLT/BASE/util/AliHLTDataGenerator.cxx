@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,25 +16,17 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTDataGenerator.cxx
-    @author Matthias Richter
-    @date   
-    @brief  HLT file publisher component implementation. */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTDataGenerator.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  HLT file publisher component implementation.
 
 #include "AliHLTDataGenerator.h"
 #include "TString.h"
 #include "TRandom.h"
 #include "TDatime.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataGenerator)
@@ -66,32 +58,32 @@ AliHLTDataGenerator::AliHLTDataGenerator()
 
 AliHLTDataGenerator::~AliHLTDataGenerator()
 {
-  // see header file for class documentation
+  // destructor
 
 }
 
 const char* AliHLTDataGenerator::GetComponentID()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   return "DataGenerator";
 }
 
 void AliHLTDataGenerator::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   list.clear();
   list.push_back(kAliHLTAnyDataType);
 }
 
 AliHLTComponentDataType AliHLTDataGenerator::GetOutputDataType()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   return fDataType;
 }
 
 int AliHLTDataGenerator::GetOutputDataTypes(vector<AliHLTComponentDataType>& tgtList)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   int count=0;
   tgtList.clear();
   tgtList.push_back(fDataType);
@@ -100,7 +92,7 @@ int AliHLTDataGenerator::GetOutputDataTypes(vector<AliHLTComponentDataType>& tgt
 
 void AliHLTDataGenerator::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   if (fSize>0)
     constBase=(unsigned long)(fCurrSize+fRange);
   else
@@ -110,13 +102,13 @@ void AliHLTDataGenerator::GetOutputDataSize( unsigned long& constBase, double& i
 
 AliHLTComponent* AliHLTDataGenerator::Spawn()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   return new AliHLTDataGenerator;
 }
 
 int AliHLTDataGenerator::DoInit( int argc, const char** argv )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: component initialization
 
   //HLTDebug("%d %s", argc, argv[0]);
   int iResult=0;
@@ -255,7 +247,8 @@ int AliHLTDataGenerator::DoInit( int argc, const char** argv )
 
 int AliHLTDataGenerator::ScanSizeArgument(AliHLTUInt32_t &size, const char* arg)
 {
-  // see header file for class documentation
+  // helper function to scan an integer argument
+  // TODO: think about a common framework utility
   int iResult=0;
   if (arg) {
     TString parameter(arg);
@@ -281,7 +274,8 @@ int AliHLTDataGenerator::ScanSizeArgument(AliHLTUInt32_t &size, const char* arg)
 
 int AliHLTDataGenerator::ScanFloatArgument(float &value, const char* arg)
 {
-  // see header file for class documentation
+  // helper function to scan a float argument
+  // TODO: think about a common framework utility
   int iResult=0;
   if (arg) {
     TString parameter(arg);
@@ -299,7 +293,7 @@ int AliHLTDataGenerator::ScanFloatArgument(float &value, const char* arg)
 
 int AliHLTDataGenerator::ScanArgument(int argc, const char** argv)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
 
   // there are no other arguments than the standard ones
   if (argc==0 && argv==NULL) {
@@ -310,7 +304,7 @@ int AliHLTDataGenerator::ScanArgument(int argc, const char** argv)
 
 int AliHLTDataGenerator::DoDeinit()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: cleanup
   int iResult=0;
   if (fpDice) delete fpDice;
   fpDice=NULL;
@@ -325,7 +319,7 @@ int AliHLTDataGenerator::DoEvent( const AliHLTComponentEventData& evtData,
 				  AliHLTUInt32_t& size,
 				  AliHLTComponentBlockDataList& outputBlocks )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTProcessor: event processing
   int iResult=0;
 
   AliHLTUInt32_t space=size;

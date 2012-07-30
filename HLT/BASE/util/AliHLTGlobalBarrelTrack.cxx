@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,17 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTGlobalBarrelTrack.cxx
-    @author Matthias Richter
-    @date   2009-06-24
-    @brief  An AliKalmanTrack implementation for global HLT barrel tracks.
-*/
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @file   AliHLTGlobalBarrelTrack.cxx
+/// @author Matthias Richter
+/// @date   2009-06-24
+/// @brief  An AliKalmanTrack implementation for global HLT barrel tracks.
+///
 
 #include <cassert>
 #include <memory>
@@ -42,11 +36,13 @@
 #include "TMarker.h"
 #include "TArc.h"
 
+using namespace std;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalBarrelTrack)
 
 AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack()
-: AliKalmanTrack()
+  : AliKalmanTrack()
   , fPoints()
   , fLastX(0.0)
   , fLastY(0.0)
@@ -57,11 +53,11 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack()
   , fSpacePoints(NULL)
   , fTrackPoints(NULL)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  //  constructor
+  //
+  //  An AliKalmanTrack implementation for global HLT barrel tracks.
+  //
+  //
 }
 
 AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTGlobalBarrelTrack& t)
@@ -76,7 +72,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTGlobalBarrelTrack& 
   , fSpacePoints(NULL)
   , fTrackPoints(NULL)
 {
-  // see header file for class documentation
+  // copy constructor
   fPoints.assign(t.fPoints.begin(), t.fPoints.end());
 }
 
@@ -92,7 +88,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam&
   , fSpacePoints(NULL)
   , fTrackPoints(NULL)
 {
-  // see header file for class documentation
+  // constructor from AliHLTExternalTrackParam
 
   // the 5 track parameters are named in the AliHLTExternalTrackParam
   // while AliExternalTrackParam just uses an array[5]
@@ -115,13 +111,13 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliExternalTrackParam& p 
   , fSpacePoints(NULL)
   , fTrackPoints(NULL)
 {
-  // see header file for class documentation
+  // constructor from AliExternalTrackParam
   *(dynamic_cast<AliExternalTrackParam*>(this))=p;
 }
 
 AliHLTGlobalBarrelTrack::~AliHLTGlobalBarrelTrack()
 {
-  // see header file for class documentation
+  // destructor
 }
 
 
@@ -164,7 +160,7 @@ Double_t AliHLTGlobalBarrelTrack::GetPathLengthTo( Double_t x, Double_t b ) cons
 
 int AliHLTGlobalBarrelTrack::ConvertTrackDataArray(const AliHLTTracksData* pTracks, unsigned sizeInByte, vector<AliHLTGlobalBarrelTrack> &tgtArray )
 {
-  // see header file for class documentation
+  // convert a binary data block to array of tracks
   int iResult=0;
   if (!pTracks || sizeInByte<sizeof(AliHLTTracksData) || pTracks->fCount==0) return 0;
 
@@ -191,20 +187,20 @@ int AliHLTGlobalBarrelTrack::ConvertTrackDataArray(const AliHLTTracksData* pTrac
 
 UInt_t AliHLTGlobalBarrelTrack::GetNumberOfPoints() const
 {
-  // see header file for class documentation
+  // get number of assigned points
   return fPoints.size();
 }
 
 const UInt_t* AliHLTGlobalBarrelTrack::GetPoints() const
 {
-  // see header file for class documentation
+  // get array of points
   if (fPoints.size()==0) return NULL;
   return &fPoints[0];
 }
 
 int AliHLTGlobalBarrelTrack::SetPoints(const UInt_t* pArray, UInt_t arraySize)
 {
-  // see header file for class documentation
+  // copy the array of points to internal memory
   if (!pArray || arraySize==0) return 0;
   fPoints.resize(arraySize);
   for (unsigned i=0; i<arraySize; i++) fPoints[i]=pArray[i];

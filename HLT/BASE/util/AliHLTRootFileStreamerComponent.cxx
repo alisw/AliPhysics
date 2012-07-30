@@ -1,7 +1,7 @@
-// @(#) $Id$
+// $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,12 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTRootFileStreamerComponent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Save objects in a ROOT memory file
-
-                                                                          */
+/// @file   AliHLTRootFileStreamerComponent.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Save objects in a ROOT memory file
+///
 
 #include "AliHLTRootFileStreamerComponent.h"
 #include "TString.h"
@@ -35,57 +34,47 @@ AliHLTRootFileStreamerComponent::AliHLTRootFileStreamerComponent()
   fDataType(kAliHLTVoidDataType),
   fSpecification(~(AliHLTUInt32_t)0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-}
-
-AliHLTRootFileStreamerComponent::AliHLTRootFileStreamerComponent(const AliHLTRootFileStreamerComponent&)
-  :
-  AliHLTProcessor(),
-  fDataType(kAliHLTVoidDataType),
-  fSpecification(~(AliHLTUInt32_t)0)
-{
-  // see header file for class documentation
-}
-
-AliHLTRootFileStreamerComponent& AliHLTRootFileStreamerComponent::operator=(const AliHLTRootFileStreamerComponent&)
-{
-  // see header file for class documentation
-  return *this;
+  // The RootFileStreamer provides a stand alone component to write incoming
+  // TObject like structures into a ROOT memory file. A ROOT memory file is
+  // a ROOT file stored in memory instead on disk (AliHLTMemoryFile) The file
+  // is published via the output stream. On the receiver side the file can
+  // be directly written to disk and appears like a normal root file.
+  //
+  // Component ID: \b ROOTFileStreamer                                    <br>
+  // Library: \b libAliHLTUtil.so                                         <br>
+  // Input Data Types: ::kAliHLTAnyDataType                               <br>
+  // Output Data Types: according to component arguments,
+  //                    ::kAliHLTVoidDataType by default                  <br>
 }
 
 AliHLTRootFileStreamerComponent::~AliHLTRootFileStreamerComponent()
 {
-  // see header file for class documentation
+  // destructor
 }
 
-void AliHLTRootFileStreamerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTRootFileStreamerComponent::GetInputDataTypes( AliHLTComponentDataTypeList& list)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   list.clear();
   list.push_back(kAliHLTAllDataTypes);
 }
 
 AliHLTComponentDataType AliHLTRootFileStreamerComponent::GetOutputDataType()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   return fDataType;
 }
 
 void AliHLTRootFileStreamerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   constBase=500;
   inputMultiplier=5.0;
 }
 
 int AliHLTRootFileStreamerComponent::DoInit( int argc, const char** argv )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: initialization
 
   int iResult=0;
   TString argument="";
@@ -130,7 +119,7 @@ int AliHLTRootFileStreamerComponent::DoInit( int argc, const char** argv )
 int AliHLTRootFileStreamerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
 					    AliHLTComponentTriggerData& /*trigData*/ )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTProcessor: event processing
   int iResult=0;
   AliHLTMemoryFile* pFile=CreateMemoryFile(fDataType,fSpecification);
   if (pFile) {

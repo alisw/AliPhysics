@@ -3,15 +3,15 @@
 
 #ifndef ALIHLTROOTFILEWRITERCOMPONENT_H
 #define ALIHLTROOTFILEWRITERCOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTRootFileWriterComponent.h
-    @author Matthias Richter
-    @date   
-    @brief  Base class for writer components to store data in a ROOT file
-*/
+/// @file   AliHLTRootFileWriterComponent.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Base class for writer components to store data in a ROOT file
+///
 
 #include "AliHLTFileWriter.h"
 

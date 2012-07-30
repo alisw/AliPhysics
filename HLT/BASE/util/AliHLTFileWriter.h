@@ -3,15 +3,15 @@
 
 #ifndef ALIHLTFILEWRITER_H
 #define ALIHLTFILEWRITER_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTFileWriter.h
-    @author Matthias Richter
-    @date   
-    @brief  An HLT file dump (data sink) component.
-*/
+/// @file   AliHLTFileWriter.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  An HLT file dump (data sink) component.
+///
 
 #include "AliHLTDataSink.h"
 #include <TString.h>
@@ -147,7 +147,7 @@ class AliHLTFileWriter : public AliHLTDataSink  {
   virtual ~AliHLTFileWriter();
 
   virtual const char* GetComponentID();
-  virtual void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  virtual void GetInputDataTypes( AliHLTComponentDataTypeList& list);
   virtual AliHLTComponent* Spawn();
 
  protected:

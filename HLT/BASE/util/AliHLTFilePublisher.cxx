@@ -1,7 +1,7 @@
 // $Id$
 
 ///**************************************************************************
-///* This file is property of and copyright by the ALICE HLT Project        * 
+///* This file is property of and copyright by the                          * 
 ///* ALICE Experiment at CERN, All rights reserved.                         *
 ///*                                                                        *
 ///* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -22,22 +22,13 @@
 /// @brief  HLT file publisher component implementation. */
 ///
 
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTFilePublisher.h"
 #include "AliHLTErrorGuard.h"
 #include "AliLog.h"
 #include <TMath.h>
 #include <TFile.h>
 
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTFilePublisher)
@@ -65,7 +56,7 @@ AliHLTFilePublisher::AliHLTFilePublisher()
 
 AliHLTFilePublisher::~AliHLTFilePublisher()
 {
-  // see header file for class documentation
+  // destructor
 
   // file list and file name list are owner of their objects and
   // delete all the objects
@@ -73,13 +64,13 @@ AliHLTFilePublisher::~AliHLTFilePublisher()
 
 const char* AliHLTFilePublisher::GetComponentID()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   return "FilePublisher";
 }
 
 AliHLTComponentDataType AliHLTFilePublisher::GetOutputDataType()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   if (fOutputDataTypes.size()==0) return kAliHLTVoidDataType;
   else if (fOutputDataTypes.size()==1) return fOutputDataTypes[0];
   return kAliHLTMultipleDataType;
@@ -87,7 +78,7 @@ AliHLTComponentDataType AliHLTFilePublisher::GetOutputDataType()
 
 int AliHLTFilePublisher::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   tgtList.assign(fOutputDataTypes.begin(), fOutputDataTypes.end());
   HLTInfo("%s %p provides %d output data types", GetComponentID(), this, fOutputDataTypes.size());
   return fOutputDataTypes.size();
@@ -95,20 +86,20 @@ int AliHLTFilePublisher::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList
 
 void AliHLTFilePublisher::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   constBase=fMaxSize;
   inputMultiplier=1.0;
 }
 
 AliHLTComponent* AliHLTFilePublisher::Spawn()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   return new AliHLTFilePublisher;
 }
 
 int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: initialization
   int iResult=0;
   fOpenFilesAtStart = false;
   if ((iResult=ConfigureFromArgumentString(argc, argv))<0) return iResult;
@@ -126,7 +117,7 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 
 int AliHLTFilePublisher::ScanConfigurationArgument(int argc, const char** argv)
 {
-  // argument scan
+  // overloaded from AliHLTComponent: argument scan
   //HLTDebug("%d %s", argc, argv[0]);
   int iResult=0;
   TString argument="";
@@ -265,7 +256,7 @@ int AliHLTFilePublisher::ScanConfigurationArgument(int argc, const char** argv)
 
 int AliHLTFilePublisher::InsertFile(EventFiles* &pCurrEvent, FileDesc* pDesc)
 {
-  // see header file for class documentation
+  // add file to event descriptor
   int iResult=0;
   if (pDesc) {
     if (pCurrEvent==NULL) {
@@ -287,7 +278,7 @@ int AliHLTFilePublisher::InsertFile(EventFiles* &pCurrEvent, FileDesc* pDesc)
 
 int AliHLTFilePublisher::InsertEvent(EventFiles* &pEvent)
 {
-  // see header file for class documentation
+  // insert eventfiles descriptor to publishing list
   int iResult=0;
   if (pEvent) {
     HLTDebug("Inserted event %p", pEvent);
@@ -299,7 +290,7 @@ int AliHLTFilePublisher::InsertEvent(EventFiles* &pEvent)
 
 int AliHLTFilePublisher::ScanArgument(int argc, const char** argv)
 {
-  // see header file for class documentation
+  // scan argument
 
   // there are no other arguments than the standard ones
   if (argc==0 && argv==NULL) {
@@ -310,7 +301,7 @@ int AliHLTFilePublisher::ScanArgument(int argc, const char** argv)
 
 int AliHLTFilePublisher::OpenFiles(bool keepOpen)
 {
-  // see header file for class documentation
+  // open files for consistency check, and keep optionally open
   int iResult=0;
   TObjLink *lnk=fEvents.FirstLink();
   while (lnk && iResult>=0) {
@@ -347,7 +338,7 @@ int AliHLTFilePublisher::OpenFiles(bool keepOpen)
 
 int AliHLTFilePublisher::DoDeinit()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: cleanup
   int iResult=0;
   fEvents.Clear();
   return iResult;
@@ -359,7 +350,7 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 				   AliHLTUInt32_t& size,
 				   AliHLTComponentBlockDataList& outputBlocks )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTDataSource: event processing
 
   // process data events only
   if (!IsDataEvent()) return 0;
@@ -437,16 +428,6 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
   return iResult;
 }
 
-// AliHLTComponentDataType AliHLTFilePublisher::GetCurrentDataType() const
-// {
-//   return kAliHLTVoidDataType;
-// }
-
-// AliHLTUInt32_t          AliHLTFilePublisher::GetCurrentSpecification() const
-// {
-//   return 0;
-// }
-
 AliHLTFilePublisher::FileDesc::FileDesc(const char* name, AliHLTComponentDataType dt, AliHLTUInt32_t spec, Bool_t isRaw)
   :
   TObject(),
@@ -456,22 +437,18 @@ AliHLTFilePublisher::FileDesc::FileDesc(const char* name, AliHLTComponentDataTyp
   fDataType(dt),
   fSpecification(spec)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // file descriptor helper structure
 }
 
 AliHLTFilePublisher::FileDesc::~FileDesc()
 {
-  // see header file for class documentation
+  // destructor
   CloseFile();
 }
 
 void AliHLTFilePublisher::FileDesc::CloseFile()
 {
-  // see header file for class documentation
+  // close file
   if (fpInstance)
   {
     // Unfortunately had to use AliLog mechanisms rather that AliHLTLogging because
@@ -489,7 +466,7 @@ void AliHLTFilePublisher::FileDesc::CloseFile()
 
 int AliHLTFilePublisher::FileDesc::OpenFile()
 {
-  // see header file for class documentation
+  // open file
   int iResult=0;
   
   TString fullFN="";

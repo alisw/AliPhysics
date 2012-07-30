@@ -43,7 +43,7 @@ AliHLTRawReaderPublisherComponent::AliHLTRawReaderPublisherComponent()
   fSpecification(kAliHLTVoidDataSpec),
   fSkipEmpty(kFALSE)
 {
-  // contructor
+  // constructor
 }
 
 AliHLTRawReaderPublisherComponent::~AliHLTRawReaderPublisherComponent()

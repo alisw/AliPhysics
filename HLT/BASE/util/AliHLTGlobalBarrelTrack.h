@@ -2,21 +2,21 @@
 // $Id$
 #ifndef ALIHLTGLOBALBARRELTRACK_H
 #define ALIHLTGLOBALBARRELTRACK_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTGlobalBarrelTrack.h
-    @author Matthias Richter
-    @date   2009-06-24
-    @brief  An AliKalmanTrack implementation for global HLT barrel tracks.
-*/
+/// @file   AliHLTGlobalBarrelTrack.h
+/// @author Matthias Richter
+/// @date   2009-06-24
+/// @brief  An AliKalmanTrack implementation for global HLT barrel tracks.
+///
 
 #include "AliKalmanTrack.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTExternalTrackParam.h"
 #include <vector>
-using namespace std;
+using std::vector;
 
 class TClonesArray;
 class AliHLTSpacePointContainer;

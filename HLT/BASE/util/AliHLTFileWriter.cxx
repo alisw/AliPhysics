@@ -1,29 +1,25 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+///**************************************************************************
+///* This file is property of and copyright by the                          * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///*                                                                        *
+///* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+///*                  for The ALICE HLT Project.                            *
+///*                                                                        *
+///* Permission to use, copy, modify and distribute this software and its   *
+///* documentation strictly for non-commercial purposes is hereby granted   *
+///* without fee, provided that the above copyright notice appears in all   *
+///* copies and that both the copyright notice and this permission notice   *
+///* appear in the supporting documentation. The authors make no claims     *
+///* about the suitability of this software for any purpose. It is          *
+///* provided "as is" without express or implied warranty.                  *
+///**************************************************************************/
 
-/** @file   AliHLTFileWriter.cxx
-    @author Matthias Richter
-    @date   
-    @brief  HLT file writer component implementation. */
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTFileWriter.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  HLT file writer component implementation.
 
 #include "AliHLTFileWriter.h"
 #include "AliHLTBlockDataCollection.h"
@@ -34,22 +30,23 @@ using namespace std;
 //#include <TFile.h>
 #include <cassert>
 
+using namespace std;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTFileWriter)
 
 AliHLTFileWriter::AliHLTFileWriter()
-  :
-  AliHLTDataSink(),
-  fpBlockDataCollection(NULL),
-  fBaseName(""),
-  fExtension(""),
-  fDirectory(""),
-  fSubDirFormat(""),
-  fIdFormat("_0x%08x"),
-  fSpecFormat(""),
-  fBlcknoFormat("_0x%02x"),
-  fCurrentFileName(""),
-  fMode(0)
+  : AliHLTDataSink()
+  , fpBlockDataCollection(NULL)
+  , fBaseName("")
+  , fExtension("")
+  , fDirectory("")
+  , fSubDirFormat("")
+  , fIdFormat("_0x%08x")
+  , fSpecFormat("")
+  , fBlcknoFormat("_0x%02x")
+  , fCurrentFileName("")
+  , fMode(0)
   , fpBurstBuffer(NULL)
   , fBurstBufferSize(0)
   , fBurstBlocks()
@@ -57,16 +54,17 @@ AliHLTFileWriter::AliHLTFileWriter()
   , fPublisherConfName()
   , fPublisherConfEvent(-1)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // An HLT data sink component which writes data to file(s).
+  //
+  // Component ID: \b FileWriter      <br>
+  // Library: \b libAliHLTUtil.so     <br>
+  // Input Data Types: ::kAliHLTAllDataTypes <br>
+  // Output Data Types: none <br>
 }
 
 AliHLTFileWriter::~AliHLTFileWriter()
 {
-  // see header file for class documentation
+  // destructor
 
   // file list and file name list are owner of their objects and
   // delete all the objects
@@ -74,7 +72,7 @@ AliHLTFileWriter::~AliHLTFileWriter()
 
 int AliHLTFileWriter::SetDefaults()
 {
-  // see header file for class documentation
+  // init members with default values
   fBaseName="";
   fExtension="";
   fDirectory="";
@@ -94,26 +92,26 @@ int AliHLTFileWriter::SetDefaults()
 
 const char* AliHLTFileWriter::GetComponentID()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   return "FileWriter";
 }
 
-void AliHLTFileWriter::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTFileWriter::GetInputDataTypes( AliHLTComponentDataTypeList& list)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   list.clear();
   list.push_back(kAliHLTAllDataTypes);
 }
 
 AliHLTComponent* AliHLTFileWriter::Spawn()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   return new AliHLTFileWriter;
 }
 
 int AliHLTFileWriter::DoInit( int argc, const char** argv )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: initialization
   int iResult=0;
   fpBlockDataCollection=new AliHLTBlockDataCollection;
   TString argument="";
@@ -295,7 +293,7 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
 
 int AliHLTFileWriter::InitWriter()
 {
-  // see header file for class documentation
+  // internal initialization for child classes
   
   // fCurrentFileName is used in dump event, just touched her to avoid
   // coding convention violation RC11. The function can not be declared
@@ -307,7 +305,7 @@ int AliHLTFileWriter::InitWriter()
 
 int AliHLTFileWriter::ScanArgument(int /*argc*/, const char** /*argv*/)
 {
-  // see header file for class documentation
+  // scan argument
 
   // there are no other arguments than the standard ones
   // fCurrentFileName is used in dump event, just touched her to avoid
@@ -320,7 +318,7 @@ int AliHLTFileWriter::ScanArgument(int /*argc*/, const char** /*argv*/)
 
 int AliHLTFileWriter::DoDeinit()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: cleanup
   int iResult=0;
   if (fpBurstBuffer) {
     if ((iResult=BurstWrite())<0) {
@@ -345,7 +343,7 @@ int AliHLTFileWriter::DoDeinit()
 
 int AliHLTFileWriter::CloseWriter()
 {
-  // see header file for class documentation
+  // initernal cleanup, can be overloaded by child classes
 
   // fCurrentFileName is used in dump event, just touched her to avoid
   // coding convention violation RC11. The function can not be declared
@@ -358,7 +356,7 @@ int AliHLTFileWriter::CloseWriter()
 int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
 			 AliHLTComponentTriggerData& /*trigData*/ )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTDataSink: event processing
   int iResult=0;
   if (!IsDataEvent() && !CheckMode(kWriteAllEvents)) return 0;
 
@@ -397,7 +395,7 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
 				    const AliHLTUInt32_t specification,
 				    TString& filename)
 {
-  // see header file for class documentation
+  // build file name from current event parameters
   int iResult=0;
   //HLTDebug("build file name for event %d block %d", eventID, blockID);
   filename="";
@@ -456,7 +454,7 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
 
 int AliHLTFileWriter::SetMode(Short_t mode) 
 {
-  // see header file for class documentation
+  // set mode flag
   fMode|=mode;
   //HLTDebug("mode set to 0x%x", fMode);
   return fMode;
@@ -464,7 +462,7 @@ int AliHLTFileWriter::SetMode(Short_t mode)
 
 int AliHLTFileWriter::ClearMode(Short_t mode)
 {
-  // see header file for class documentation
+  // clear mode flag
   fMode&=~mode;
   //HLTDebug("mode set to 0x%x", fMode);
   return fMode;
@@ -472,7 +470,7 @@ int AliHLTFileWriter::ClearMode(Short_t mode)
 
 int AliHLTFileWriter::CheckMode(Short_t mode) const
 {
-  // see header file for class documentation
+  // check mode flag
 
   //HLTDebug("check mode 0x%x for flag 0x%x: %d", fMode, mode, (fMode&mode)!=0);
   return (fMode&mode)!=0;
@@ -481,7 +479,8 @@ int AliHLTFileWriter::CheckMode(Short_t mode) const
 int AliHLTFileWriter::ScheduleBlock(int blockno, const AliHLTEventID_t& eventID,
 				    const AliHLTComponentBlockData* pDesc)
 {
-  // see header file for class documentation
+  // schedule a block for writing, depending on the mode it is either
+  // written directly or postponed
   int iResult=0;
   if (fpBurstBuffer==NULL ||
       (fBurstBlocks.size()==0 && pDesc->fSize>fBurstBufferSize) ) {
@@ -509,7 +508,7 @@ int AliHLTFileWriter::ScheduleBlock(int blockno, const AliHLTEventID_t& eventID,
 
 int AliHLTFileWriter::BurstWrite()
 {
-  // see header file for class documentation
+  // write postponed block in one burst
   int iResult=0;
   if (fBurstBlocks.size()==0) return 0;
   assert(fBurstBlocks.size()==fBurstBlockEvents.size());
@@ -559,7 +558,7 @@ int AliHLTFileWriter::BurstWrite()
 int AliHLTFileWriter::WriteBlock(int blockno, const AliHLTEventID_t& eventID,
 				 const AliHLTComponentBlockData* pDesc)
 {
-  // see header file for class documentation
+  // write a block
   int iResult=0;
   TString filename;
   HLTDebug("dataspec 0x%x", pDesc->fSpecification);

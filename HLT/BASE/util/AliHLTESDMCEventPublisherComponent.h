@@ -175,7 +175,7 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
 		AliHLTComponentTriggerData& trigData,
 		AliHLTUInt8_t* outputPtr, 
 		AliHLTUInt32_t& size,
-		vector<AliHLTComponentBlockData>& outputBlocks);
+		AliHLTComponentBlockDataList& outputBlocks);
 
   using AliHLTFilePublisher::GetEvent;
 

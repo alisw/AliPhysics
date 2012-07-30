@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -39,41 +39,45 @@ AliHLTMonitoringRelay::AliHLTMonitoringRelay()
   , fOutputSize()
   , fFlags(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // A relay component for monitoring data objects.
+  // It keeps a copy of the last block of every parent and forwards all
+  // the blocks together. By that, the output of histograms (rarely to
+  // be published but for every event filled.
+  //
+  // Component ID: \b MonitoringRelay
+  // Library: \b libAliHLTUtil.so
+  // Input Data Types: kAliHLTAnyDataType
+  // Output Data Types: according to input blocks
 }
 
 AliHLTMonitoringRelay::~AliHLTMonitoringRelay()
 {
-  // see header file for class documentation
+  // destructor
 }
 
 void AliHLTMonitoringRelay::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   list.clear();
   list.push_back(kAliHLTAnyDataType);
 }
 
 AliHLTComponentDataType AliHLTMonitoringRelay::GetOutputDataType()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   return kAliHLTAnyDataType;
 }
 
 void AliHLTMonitoringRelay::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   constBase=fOutputSize;
   inputMultiplier=1.0;
 }
 
 int AliHLTMonitoringRelay::DoInit( int argc, const char** argv )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: initialization
   int iResult=0;
   fOutputSize=0;
 
@@ -84,7 +88,7 @@ int AliHLTMonitoringRelay::DoInit( int argc, const char** argv )
 
 int AliHLTMonitoringRelay::ScanConfigurationArgument(int argc, const char** argv)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: argument scan
   if (argc<=0) return 0;
   int i=0;
   TString argument=argv[i];
@@ -103,7 +107,7 @@ int AliHLTMonitoringRelay::ScanConfigurationArgument(int argc, const char** argv
 
 int AliHLTMonitoringRelay::DoDeinit()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: cleanup
   int iResult=0;
   AliHLTMonitoringItemPList::iterator element=fItems.begin();
   while (element!=fItems.end()) {
@@ -119,7 +123,7 @@ int AliHLTMonitoringRelay::DoDeinit()
 int AliHLTMonitoringRelay::DoEvent(const AliHLTComponentEventData& /*evtData*/,
 				   AliHLTComponentTriggerData& /*trigData*/)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTProcessor: event processing
   int iResult=0;
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock();
        pBlock!=NULL; 

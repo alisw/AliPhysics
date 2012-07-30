@@ -3,16 +3,15 @@
 
 #ifndef ALIHLTROOTFILEPUBLISHERCOMPONENT_H
 #define ALIHLTROOTFILEPUBLISHERCOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTRootFilePublisherComponent.h
-    @author Matthias Richter, Jochen Thaeder
-    @date   
-    @brief  component for publishing of Root objects from a root file.
-    @note   The class is used in Offline (AliRoot) context
-*/
+/// @file   AliHLTRootFilePublisherComponent.h
+/// @author Matthias Richter, Jochen Thaeder
+/// @date   
+/// @brief  component for publishing of Root objects from a root file.
+/// @note   The class is used in Offline (AliRoot) context
 
 #include "AliHLTFilePublisher.h"
 #include <TList.h>

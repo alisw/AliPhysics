@@ -1,7 +1,7 @@
 // $Id$
 
 ///**************************************************************************
-///* This file is property of and copyright by the ALICE HLT Project        * 
+///* This file is property of and copyright by the                          * 
 ///* ALICE Experiment at CERN, All rights reserved.                         *
 ///*                                                                        *
 ///* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -41,23 +41,24 @@ ClassImp(AliHLTRootFilePublisherComponent)
 
 // #################################################################################
 AliHLTRootFilePublisherComponent::AliHLTRootFilePublisherComponent()
-  :
-  AliHLTFilePublisher(),
-  fpCurrentEvent(NULL),
-  fObjectName("") {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  : AliHLTFilePublisher()
+  , fpCurrentEvent(NULL)
+  , fObjectName("")
+{
+  // publisher component for root file content
+  // Component ID: \b ROOTFilePublisher <br>
+  // Library: \b libAliHLTUtil.so     <br>
+  // Input Data Types: none <br>
+  // Output Data Types: according to arguments <br>
 
   // Set file to ROOT-File
   SetIsRawFile( kFALSE );
 }
 
 // #################################################################################
-AliHLTRootFilePublisherComponent::~AliHLTRootFilePublisherComponent() {
-  // see header file for class documentation
+AliHLTRootFilePublisherComponent::~AliHLTRootFilePublisherComponent()
+{
+  // destructor
 
   // file list and file name list are owner of their objects and
   // delete all the objects
@@ -71,14 +72,16 @@ AliHLTRootFilePublisherComponent::~AliHLTRootFilePublisherComponent() {
  */
 
 // #################################################################################
-const char* AliHLTRootFilePublisherComponent::GetComponentID() {
-  // see header file for class documentation
+const char* AliHLTRootFilePublisherComponent::GetComponentID()
+{
+  // overloaded from AliHLTComponent
   return "ROOTFilePublisher";
 }
 
 // #################################################################################
-AliHLTComponent* AliHLTRootFilePublisherComponent::Spawn() {
-  // see header file for class documentation
+AliHLTComponent* AliHLTRootFilePublisherComponent::Spawn()
+{
+  // overloaded from AliHLTComponent
   return new AliHLTRootFilePublisherComponent;
 }
 
@@ -91,8 +94,9 @@ AliHLTComponent* AliHLTRootFilePublisherComponent::Spawn() {
  */
 
 // #################################################################################
-Int_t AliHLTRootFilePublisherComponent::ScanArgument(Int_t argc, const char** argv) {
-  // see header file for class documentation
+Int_t AliHLTRootFilePublisherComponent::ScanArgument(Int_t argc, const char** argv)
+{
+  // scan configuration arguments
 
   Int_t iResult = 0;
 
@@ -130,8 +134,9 @@ Int_t AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData
 						AliHLTComponentTriggerData& /*trigData*/,
 						AliHLTUInt8_t* /*outputPtr*/, 
 						AliHLTUInt32_t& size,
-						vector<AliHLTComponentBlockData>& /*outputBlocks*/ ) {
-  // see header file for class documentation
+						AliHLTComponentBlockDataList& /*outputBlocks*/ )
+{
+  // overloaded from AliHLTDataSource: event processing
 
   if ( !IsDataEvent() ) return 0;
 

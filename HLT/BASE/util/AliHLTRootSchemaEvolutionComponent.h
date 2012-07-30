@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTROOTSCHEMAEVOLUTIONCOMPONENT_H
 #define ALIHLTROOTSCHEMAEVOLUTIONCOMPONENT_H
-//* This file is property of and copyright by the ALICE                    * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -21,6 +21,8 @@ class TObjArray;
 class TObject;
 class TStopwatch;
 class AliHLTMessage;
+
+using std::vector;
 
 /**
  * @class AliHLTRootSchemaEvolutionComponent

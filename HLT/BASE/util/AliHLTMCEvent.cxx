@@ -28,10 +28,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
 #include "TList.h"
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
@@ -39,6 +35,8 @@ using namespace std;
 #include "AliGenCocktailEventHeader.h"
 
 #include "AliHLTMCEvent.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMCEvent)

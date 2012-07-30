@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTBlockFilterComponent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  A simple data block filter and merger, merges block descriptors
-*/
+/// @file   AliHLTBlockFilterComponent.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  A simple data block filter and merger, merges block descriptors
+///
 
 #include <cstdlib>
 #include "AliHLTBlockFilterComponent.h"
@@ -35,28 +35,31 @@ AliHLTBlockFilterComponent::AliHLTBlockFilterComponent()
   , fPrescalar(0)
   , fFirstEvent(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // A data block merger and filter.
+  // It merges data block descriptors fulfilling the filtering rules and
+  // forwards the descriptors to the output. The actual data is not touched.
+  //
+  // Component ID: \b BlockFilter
+  // Library: \b libAliHLTUtil.so
+  // Input Data Types: kAliHLTAnyDataType
+  // Output Data Types: according to parameter and input blocks
 }
 
 AliHLTBlockFilterComponent::~AliHLTBlockFilterComponent()
 {
-  // see header file for class documentation
+  // destructor
 }
 
 void AliHLTBlockFilterComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   list.clear();
   list.push_back(kAliHLTAnyDataType);
 }
 
 AliHLTComponentDataType AliHLTBlockFilterComponent::GetOutputDataType()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   if (fFilterRules.size()==1) return fFilterRules[0].fDataType;
   if (fFilterRules.size()==0) return kAliHLTAnyDataType;
   return kAliHLTMultipleDataType;
@@ -64,7 +67,7 @@ AliHLTComponentDataType AliHLTBlockFilterComponent::GetOutputDataType()
 
 int AliHLTBlockFilterComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   tgtList.clear();
   AliHLTComponentBlockDataList::iterator desc=fFilterRules.begin();
   while (desc!=fFilterRules.end()) {
@@ -81,7 +84,7 @@ int AliHLTBlockFilterComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& 
 
 void AliHLTBlockFilterComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent
   constBase=0;
   inputMultiplier=0.0; // there is no new data, just forwarded descriptors
 }
@@ -196,7 +199,7 @@ int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& /*evtDa
 					 AliHLTUInt32_t& size,
 					 AliHLTComponentBlockDataList& /*outputBlocks*/ )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTProcessor: event processing
   int iResult=0;
   if ((fPrescalar==0 || ((GetEventCount())%fPrescalar)==0) &&
       GetEventCount()>=(int)fFirstEvent) {
@@ -219,7 +222,7 @@ int AliHLTBlockFilterComponent::DoEvent( const AliHLTComponentEventData& /*evtDa
 
 int AliHLTBlockFilterComponent::IsSelected(const AliHLTComponentBlockData& block)
 {
-  // see header file for class documentation
+  // check if a data is selected by the configured criteria
   AliHLTComponentBlockDataList::iterator desc=fFilterRules.begin();
   //HLTDebug("check block: %s spec %#x", DataType2Text(block.fDataType, 1).c_str(), block.fSpecification);
   if (desc==fFilterRules.end()) return 1; // no filter rules

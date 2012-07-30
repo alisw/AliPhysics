@@ -3,15 +3,15 @@
 
 #ifndef ALIHLTBLOCKFILTERCOMPONENT_H
 #define ALIHLTBLOCKFILTERCOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTBlockFilterComponent.h
-    @author Matthias Richter
-    @date   
-    @brief  A simple data block filter and merger, merges block descriptors
-*/
+/// @file   AliHLTBlockFilterComponent.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  A simple data block filter and merger, merges block descriptors
+///
 
 #include "AliHLTProcessor.h"
 

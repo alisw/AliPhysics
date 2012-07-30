@@ -1,7 +1,7 @@
-// @(#) $Id$
+// $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -16,12 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTRootFileWriterComponent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Base class for writer components to store data in a ROOT file
-
-                                                                          */
+/// @file   AliHLTRootFileWriterComponent.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Base class for writer components to store data in a ROOT file
+///
 
 #include "AliHLTRootFileWriterComponent.h"
 #include "TFile.h"
@@ -38,11 +37,13 @@ AliHLTRootFileWriterComponent::AliHLTRootFileWriterComponent()
   fCurrentFile(NULL),
   fOptions(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // The RootFileWriter provides a stand alone component to write incoming
+  // TObject like structures into a Root file. Furthermore it provides a
+  // base class for customized writers.
+  // Component ID: \b ROOTFileWriter                                      <br>
+  // Library: \b libAliHLTUtil.so						<br>
+  // Input Data Types: ::kAliHLTAnyDataType				<br>
+  // Output Data Types: none						<br>
 
   // all blocks of one event go into the same file
   SetMode(kConcatenateBlocks);
@@ -52,12 +53,12 @@ AliHLTRootFileWriterComponent::AliHLTRootFileWriterComponent()
 
 AliHLTRootFileWriterComponent::~AliHLTRootFileWriterComponent()
 {
-  // see header file for class documentation
+  // destructor
 }
 
 int AliHLTRootFileWriterComponent::InitWriter()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTFileWriter: local initialization
 
   // choose .root as default extension
   if (GetExtension().IsNull()) SetExtension("root");
@@ -66,7 +67,7 @@ int AliHLTRootFileWriterComponent::InitWriter()
 
 int AliHLTRootFileWriterComponent::CloseWriter()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTFileWriter: local cleanup
   if (fCurrentFile!=NULL) {
     HLTDebug("close root file");
     TFile* pFile=fCurrentFile; fCurrentFile=NULL;
@@ -79,7 +80,7 @@ int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& ev
 					      const AliHLTComponentBlockData* /*blocks*/, 
 					      AliHLTComponentTriggerData& /*trigData*/ )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTDataSink: event processing
   int iResult=0;
   if (!IsDataEvent() && !CheckMode(kWriteAllEvents)) return 0;
 
@@ -99,7 +100,7 @@ int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& ev
 
 int AliHLTRootFileWriterComponent::ScanArgument(int argc, const char** argv)
 {
-  // see header file for class documentation
+  // configuration
   int iResult=0;
   if (argc<=0) return 0;
   TString argument=argv[0];
@@ -124,7 +125,7 @@ int AliHLTRootFileWriterComponent::ScanArgument(int argc, const char** argv)
 
 int AliHLTRootFileWriterComponent::WriteObject(const AliHLTEventID_t eventID, const TObject *pOb)
 {
-  // see header file for class documentation
+  // write an object
   int iResult=0;
   if (pOb) {
     HLTDebug("write object %p (%s)", pOb, pOb->GetName());
@@ -149,7 +150,7 @@ int AliHLTRootFileWriterComponent::WriteObject(const AliHLTEventID_t eventID, co
 
 TFile* AliHLTRootFileWriterComponent::OpenFile(const AliHLTEventID_t eventID, const int blockID, const char* option)
 {
-  // see header file for class documentation
+  // open file for writing
   TFile* pFile=NULL;
   TString filename("");
   if ((BuildFileName(eventID, blockID, kAliHLTVoidDataType, 0, filename))>=0 && filename.IsNull()==0) {
