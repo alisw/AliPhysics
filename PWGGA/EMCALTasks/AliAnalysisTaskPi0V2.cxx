@@ -59,7 +59,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
    :AliAnalysisTaskSE(name),
     fOutput(0),
     fESD(0),
-    fcheckEP2sub(1),
+    fEvtSelect(1),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.), 
@@ -84,7 +84,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
    :AliAnalysisTaskSE("default_name"),
     fOutput(0),
     fESD(0),
-    fcheckEP2sub(1),
+    fEvtSelect(1),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.),
@@ -508,8 +508,12 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    if (!event) { Printf("ERROR: Could not retrieve event"); return; }
 
   Bool_t isSelected =0;      
-  isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral));
-    if(!isSelected )
+  if(fEvtSelect == 2){
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral));
+  } else if (fEvtSelect == 1){
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral));
+  }
+  if(!isSelected )
         return; 
 
     // create pointer to event
@@ -573,12 +577,10 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 
     hEvtCount->Fill(4);
 
-    if(fcheckEP2sub){
-      if(fEPV0r<-2. || fEPV0Ar<-2. || fEPV0Cr<-2.) return; 
-    }
-    if(!fcheckEP2sub){
-      if(fEPV0A<-2. || fEPV0C<-2. || fEPV0AR4<-2. || fEPV0AR7<-2. || fEPV0CR0<-2. || fEPV0CR3<-2. || fEPTPC<-2.) return;
-    }
+      if( fEPV0A<-2. || fEPV0C<-2. || fEPV0AR4<-2. 
+	  || fEPV0AR7<-2. || fEPV0CR0<-2. || fEPV0CR3<-2. 
+	  || fEPTPC<-2. || fEPV0r<-2. || fEPV0Ar<-2. 
+	  || fEPV0Cr<-2.) return;
 
     hEvtCount->Fill(5);
 
@@ -596,6 +598,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 //cout<<" EPTPC: "<<fEPTPC<<" reso: "<<fEPTPCreso<<" -------------------"<<endl;
 //cout<<" cent: "<<fCentrality<<" fEPV0:"<<fEPV0<<" fEPV0A:"<<fEPV0A<<" fEPV0C:"<<fEPV0C<<" fEPV0Ar:"<<fEPV0Ar<<" fEPV0Cr:"<<fEPV0Cr<<" fEPV0r:"<<fEPV0AR4<<" fEPV0AR7:"<<fEPV0AR7<<" fEPV0CR0:"<<fEPV0CR0<<" fEPV0CR3:"<<fEPV0CR3<<"--------------------------------------------"<<endl;
 
+   if(fEPTPC != -999.)
    hEPTPC->Fill(fCentrality,  fEPTPC); 
    if(fEPTPCreso!=-1) hresoTPC->Fill(fCentrality, fEPTPCreso);
    hEPV0->Fill(fCentrality,   fEPV0);
