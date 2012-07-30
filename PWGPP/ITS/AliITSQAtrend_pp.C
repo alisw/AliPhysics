@@ -23,11 +23,16 @@
 
 TString pdfFileNames="";
 void MakePlot(Int_t run1=-1,Int_t run2=999999,TString ntupleFileName="TrendingITS.root");
-void PlotITSSA(TFile *fil,Int_t *myIndex,Int_t kRunsToPlot);
+void PlotITSSA(TFile *fil,Int_t run1, Int_t run2);
 void FillITSSAntuple(TFile* f,TNtuple* nt, Int_t nrun);
-void AliITSQAtrend(TString runListFile="LHC12a.txt",TString ntupleFileName="TrendingITS.root");
+void FillSDDntuple(TFile* f,TNtuple* nt, Int_t iRun, Float_t *xnt);
+void FillSSDntuple(TFile* f,TNtuple* ntssd, Int_t iRun, Float_t *xntSSD);
+void FillMatchntuple(TFile* f,TNtuple* ntmatching, Int_t iRun, Float_t *xntMatching);
+void FillVTXntuple(TFile* f,TNtuple* ntvertex, Int_t iRun, Float_t *xntVertex);
+void AliITSQAtrend(TString runListFile="LHC12d.txt",TString ntupleFileName="TrendingITS.root");
 Double_t LangausFun(Double_t *x, Double_t *par);
 Bool_t WriteInputTextFileFromMonalisaListOfRuns(TString outtxtfilename,Int_t* listofrunsfromMonalisa,Int_t nruns,TString pathbeforRunN="alice/data/2012/LHC12a/",TString pathafterRunN="cpass1/QAresults_barrel.root");
+Int_t RunsToPlot(Int_t run1, Int_t run2,Int_t nr,Int_t *noRuns, Int_t *myIndex);
 
 ////////////////////////////////////////////////////////////////
 //    THIS VERSION OPTIMIZED FOR PP
@@ -60,6 +65,7 @@ Bool_t WriteInputTextFileFromMonalisaListOfRuns(TString outtxtfilename,Int_t* li
 /*
 /alice/data/2012/LHC12a/000176661/cpass1/QAresults_barrel.root  2469
 /alice/data/2012/LHC12a/000176701/cpass1/QAresults_barrel.root  2470
+/alice/data/2012/LHC12d/000184780/ESDs/high_lumi/QAresults.root 2848
 */
 //
 //   Function MakePlot(run1,run2):
@@ -145,30 +151,16 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
   ntsdd->SetBranchAddress("errMPVdEdxLay4",&errMPVdEdxLay4);
 
   // Sort entries according to run number in the chosen range
-  // Same order is assumed for all the subsequent ntuples
   Int_t nr=ntsdd->GetEntries();
   Int_t *myIndex = new Int_t [nr];
   Int_t *noRuns = new Int_t [nr];
-  Int_t kRunsToPlot=0;
-  printf("Processing runs from %d up to %d\n",run1,run2);
   for(Int_t i=0; i<nr;i++){
-    printf("Run %f\n",nrun);
     ntsdd->GetEvent(i);
     Int_t intrun = static_cast<Int_t>(nrun+0.01);
-    if(intrun>=run1 && intrun<=run2){
-      printf("Accepting run number %d in position %d\n",intrun,kRunsToPlot);
-      noRuns[i]=intrun;
-      kRunsToPlot++;
-    }
-    else {
-      noRuns[i]=run2+10;  
-      printf("Rejecting run number %d - out of range\n",intrun);
-    }
+    noRuns[i]=intrun;
   }
-  TMath::Sort(nr,noRuns,myIndex,kFALSE);
-  printf("Total number of runs accepted fot display %d\n",kRunsToPlot);
-  if(kRunsToPlot==0)return;
-  for(Int_t i=0;i<kRunsToPlot;i++)printf("Position %d ) Run: %d\n",i,noRuns[myIndex[i]]);
+  printf("\n ======== PROCESSING SDD NTUPLE \n");
+  Int_t kRunsToPlot = RunsToPlot(run1,run2,nr,noRuns,myIndex);
 
   TH1F* histotrp3=new TH1F("histotrp3","",kRunsToPlot,0.,kRunsToPlot);
   TH1F* histotrp4=new TH1F("histotrp4","",kRunsToPlot,0.,kRunsToPlot);
@@ -276,6 +268,19 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
   ntssd->SetBranchAddress("ChargeRatioL6",&ChargeRatioL6);
   ntssd->SetBranchAddress("errChargeratioL6",&errChargeratioL6);
   ntssd->SetBranchAddress("moduleOff",&moduleOff);
+
+  nr=ntssd->GetEntries();
+  delete []myIndex;
+  delete []noRuns;
+  myIndex = new Int_t [nr];
+  noRuns = new Int_t [nr];
+  for(Int_t i=0; i<nr;i++){
+    ntssd->GetEvent(i);
+    Int_t intrun = static_cast<Int_t>(nrunSSD+0.01);
+    noRuns[i]=intrun;
+  }
+  printf("\n ======== PROCESSING SSD NTUPLE \n");
+  kRunsToPlot = RunsToPlot(run1,run2,nr,noRuns,myIndex);
 
   TH1F* histodEdxLay5=new TH1F("histodEdxLay5","",kRunsToPlot,0.,kRunsToPlot);
   TH1F* histodEdxLay6=new TH1F("histodEdxLay6","",kRunsToPlot,0.,kRunsToPlot);
@@ -423,6 +428,18 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
   ntmatching->SetBranchAddress("EffTOTPt10",&EffTOTPt10);
   ntmatching->SetBranchAddress("errEffTOTPt10",&errEffTOTPt10);
 
+  nr=ntmatching->GetEntries();
+  delete []myIndex;
+  delete []noRuns;
+  myIndex = new Int_t [nr];
+  noRuns = new Int_t [nr];
+  for(Int_t i=0; i<nr;i++){
+    ntmatching->GetEvent(i);
+    Int_t intrun = static_cast<Int_t>(nrunMatch+0.01);
+    noRuns[i]=intrun;
+  }
+  printf("\n ======== PROCESSING NTMATCHING NTUPLE \n");
+  kRunsToPlot = RunsToPlot(run1,run2,nr,noRuns,myIndex);
 
   TH1F *hFracSPD1 = new TH1F("hFracSPD1","SPD inner; run number; Fraction of HSs",kRunsToPlot,0.,kRunsToPlot);
   hFracSPD1->SetLineColor(kGreen+2);
@@ -720,6 +737,19 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
   ntvertex->SetBranchAddress("errVzSPD",&errVzSPD);
   ntvertex->SetBranchAddress("sigmaVzSPD",&sigmaVzSPD);
   ntvertex->SetBranchAddress("errsigmaVzSPD",&errsigmaVzSPD);
+
+  nr=ntvertex->GetEntries();
+  delete []myIndex;
+  delete []noRuns;
+  myIndex = new Int_t [nr];
+  noRuns = new Int_t [nr];
+  for(Int_t i=0; i<nr;i++){
+    ntvertex->GetEvent(i);
+    Int_t intrun = static_cast<Int_t>(nrunVertex+0.01);
+    noRuns[i]=intrun;
+  }
+  printf("\n ======== PROCESSING VERTEX NTUPLE \n");
+  kRunsToPlot = RunsToPlot(run1,run2,nr,noRuns,myIndex);
 
 
   TH1F *hVx = new TH1F("hVx","Track Vertex Vx Distribution",kRunsToPlot,0.,kRunsToPlot);
@@ -1179,7 +1209,7 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
   cpt02->Update();
 
   //-----------  ITS SA -----------
-  PlotITSSA(fil,myIndex,kRunsToPlot);
+  PlotITSSA(fil,run1,run2);
  // merge the pdf files
   TString command("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=merged");
   command=command+"ITS_trend.pdf "+pdfFileNames;
@@ -1190,7 +1220,7 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
 }
 
 //____________________________________________________________________________
-void PlotITSSA(TFile *fil,Int_t *myIndex,Int_t kRunsToPlot){
+void PlotITSSA(TFile *fil, Int_t run1, Int_t run2){
   Double_t Lowbin[3]={0.1,0.5,0.9};
   Double_t Upbin[3]={0.2,0.6,1};
   gROOT->SetStyle("Plain");
@@ -1200,8 +1230,7 @@ void PlotITSSA(TFile *fil,Int_t *myIndex,Int_t kRunsToPlot){
   gStyle->SetTextFont(32);
   
   TNtuple* nt = (TNtuple*)fil->Get("ntITSsa");
-  Int_t nruns=nt->GetEntries();
-  printf("Events = %d - Runs to be processed %d\n",nruns,kRunsToPlot);
+
   Float_t ITSA[3];
   Float_t TPIT[3];
   Float_t RAT[3];
@@ -1219,6 +1248,17 @@ void PlotITSSA(TFile *fil,Int_t *myIndex,Int_t kRunsToPlot){
   nt->SetBranchAddress("ratioPtBin0",&RAT[0]);
   nt->SetBranchAddress("ratioPtBin1",&RAT[1]);
   nt->SetBranchAddress("ratioPtBin2",&RAT[2]);
+
+  Int_t nr=nt->GetEntries();
+  Int_t *myIndex = new Int_t [nr];
+  Int_t *noRuns = new Int_t [nr];
+  for(Int_t i=0; i<nr;i++){
+    nt->GetEvent(i);
+    Int_t intrun = static_cast<Int_t>(run+0.01);
+    noRuns[i]=intrun;
+  }
+  printf("\n ======== PROCESSING ITS SA NTUPLE \n");
+  Int_t kRunsToPlot = RunsToPlot(run1,run2,nr,noRuns,myIndex);
   TH1F *h0=new TH1F("h0","h0",kRunsToPlot,-0.5,kRunsToPlot-0.5);
   TH1F *h1=new TH1F("h1","h1",kRunsToPlot,-0.5,kRunsToPlot-0.5);
   TH1F *h2=new TH1F("h2","h2",kRunsToPlot,-0.5,kRunsToPlot-0.5);
@@ -1597,6 +1637,7 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     TString aux(strings[j]);
     TString auxrun(strings[j]);
     TString auxfill(strings[j]);
+    TString aux2(strings[j]);
     Int_t lentrail=0;
     Int_t lenfill=0;
     if(aux.Contains("LHC11h/")){
@@ -1610,14 +1651,15 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     }
     else if(aux.Contains("LHC12b/")){
       lentrail = 27;
-      lenfill=30;
+      lenfill=36;
     }
-    else if(aux.Contains("LHC12c/")){
+    else if(aux.Contains("LHC12c/")  || aux.Contains("LHC12d/") ){
       lentrail = 27;
+      lenfill=36;
     }
     else if(aux.Contains("LHC12a/")){
       lentrail = 27;
-      lenfill=30;
+      lenfill=36;
     }
   
     
@@ -1628,13 +1670,11 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     if(goout)break;
     if(aux.Length()<lentrail)continue;
     auxrun=aux.Remove(0,lentrail);
-    auxfill=aux.Remove(0,36);
-    // cout<<" auxfill= "<<auxfill<<endl;
-    aux=aux.Remove(6,aux.Length());
-    //    aux=aux.Remove();
+    auxfill=aux.Remove(0,lenfill);
     runNumb[j]=atoi(auxrun.Data());
     fillNumb[j]=atoi(auxfill.Data());
-    printf("%d ) - fill %d - path %s \n",runNumb[j],fillNumb[j],strings[j]);
+    aux2.Remove(aux2.Length()-5);
+    printf("%d ) - fill %d - path %s \n",runNumb[j],fillNumb[j],aux2.Data());
     j++;
     nrun++;
   }
@@ -1646,433 +1686,518 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     Int_t iRun=runNumb[jru];
     if(readRun->TestBitNumber(iRun))printf("Run %d - already processed\n",iRun);
     if(readRun->TestBitNumber(iRun))continue;
-    //cout << "Value from file is " <<t << endl;
-    
-    //    printf("%s\n",strings[jru]);
-  
-  
+
     if(!gGrid||!gGrid->IsConnected()) {
       printf("gGrid not found! exit macro\n");
       return;
     }
-    
-    TFile *f=TFile::Open(Form("alien://%s",strings[jru])); 
+    TString aux(strings[jru]);
+    aux.Remove(aux.Length()-5);
+    TFile *f=TFile::Open(Form("alien://%s",aux.Data())); 
     if(!f) {
       printf("File not found, continue with next one\n");
       filenotfound++;
       continue;
     }
     
-    TDirectoryFile* df=(TDirectoryFile*)f->Get("SDD_Performance");
-    if(!df){
-      printf("Run %d SDD_Performance MISSING -> Exit\n",iRun);
-      continue;
-    }
-    
-    TList* l=(TList*)df->Get("coutputRP");
-    if(!df){
-      printf("Run %d coutputRP TList MISSING -> Exit\n",iRun);
-      continue;
-    }  
-    
-    //-------------------
-
-    
-    //------------SDD
-
-    cout<<"SDD - QA"<<endl;
-
-    TH1F* hcllay=(TH1F*)l->FindObject("hCluInLay");
-    
-    if(hcllay->GetEntries()==0){
-
-      printf("Run %d hcllay EMPTY -> Continue\n",iRun);
-      continue;
-      
-    }
-
-    Float_t fracT[6]={0.,0.,0.,0.,0.,0.};
-    Float_t efracT[6]={0.,0.,0.,0.,0.,0.};
-    if(hcllay->GetBinContent(1)>0){
-      for(Int_t iLay=0; iLay<6; iLay++){
-	fracT[iLay]=hcllay->GetBinContent(iLay+2)/hcllay->GetBinContent(1);
-	efracT[iLay]=TMath::Sqrt(fracT[iLay]*(1-fracT[iLay])/hcllay->GetBinContent(1));
-      }
-    }
-    
-    TH1F* hmodT=(TH1F*)l->FindObject("hTPMod");
-    
-    if(hmodT->GetEntries()==0){
-      printf("Run %d hmodT EMPTY -> Continue\n",iRun);
-      continue;
-    }
-    
-    TH1F* hgamod=(TH1F*)l->FindObject("hGAMod");
-    
-    if(hgamod->GetEntries()==0){
-      printf("Run %d hgamod EMPTY -> Continue\n",iRun);
-      continue;
-    }
-
-    Int_t bestMod=0;
-    for(Int_t iMod=0; iMod<260;iMod++){
-      Int_t gda=(Int_t)hgamod->GetBinContent(iMod+1);
-      if(gda>bestMod) bestMod=gda;
-    }
-    Int_t nChunks=1;
-    if(bestMod>512){
-      nChunks=(Int_t)(bestMod/512.+0.5);
-    }
-    hgamod->Scale(1./nChunks);
-    
-    TH1F* hev=(TH1F*)l->FindObject("hNEvents");
-
-    if(hev->GetEntries()==0){
-      printf("Run %d hev EMPTY -> Continue\n",iRun);
-      continue;
-    }
-    
-    Int_t nTotEvents=hev->GetBinContent(2);
-    Int_t nTrigEvents=hev->GetBinContent(3);
-    Int_t nEvents=nTotEvents;
-    printf("Run %d Number of Events = %d Triggered=%d\n",iRun,nTotEvents,nTrigEvents);
-    if(nTrigEvents>0){ 
-      nEvents=nTrigEvents;
-    }
-    if(nTotEvents==0) continue;
-    Int_t nModGood3=0;
-    Int_t nModGood4=0;
-    Int_t nModBadAn=0;
-    Float_t sumtp3=0;
-    Float_t sumtp4=0;
-    Float_t sumEtp3=0;
-    Float_t sumEtp4=0;
-    for(Int_t iMod=0; iMod<260; iMod++){
-      Float_t tps=hmodT->GetBinContent(iMod+1);
-      Float_t ga=hgamod->GetBinContent(iMod+1);
-      if(ga<500) nModBadAn++;
-      Float_t tpsN=0.;
-      Float_t etpsN=0.;
-      if(ga>0){
-	tpsN=tps/ga/(Float_t)nEvents;
-	etpsN=TMath::Sqrt(tps)/ga/(Float_t)nEvents;
-	if(iMod<84){
-	  sumtp3+=tpsN;
-	  sumEtp3+=(etpsN*etpsN);
-	  nModGood3++;
-	}
-	else{
-	  sumtp4+=tpsN;
-	  sumEtp4+=(etpsN*etpsN);
-	  nModGood4++;
-	}
-      }
-    }
-
-    TH1F* hapmod=(TH1F*)l->FindObject("hAllPmod");
-      
-    if(hapmod->GetEntries()==0){
-      printf("Run %d hapmod EMPTY -> Continue\n",iRun);
-      continue;
-    }
-
-
-    TH1F* hgpmod=(TH1F*)l->FindObject("hGoodPmod");
-    if(hgpmod->GetEntries()==0){
-      printf("Run %d hgpmod EMPTY -> Continue\n",iRun);
-      continue;
-    }
-      
-    //     TH1F* hmpmod=(TH1F*)l->FindObject("hMissPmod");
-    TH1F* hbrmod=(TH1F*)l->FindObject("hBadRegmod");
-    if(hbrmod->GetEntries()==0){
-      printf("Run %d hbrmod EMPTY -> Continue\n",iRun);
-      continue;
-    }
-
-    TH1F* hskmod=(TH1F*)l->FindObject("hSkippedmod");
-    TH1F* hoamod=(TH1F*)l->FindObject("hOutAccmod");
-    TH1F* hnrmod=(TH1F*)l->FindObject("hNoRefitmod");
-
-    Int_t nBelow95=0;
-    Int_t nBelow80=0;
-    Int_t nBelow60=0;
-    Int_t nZeroP=0;
-    for(Int_t imod=0; imod<260;imod++){
-      Float_t numer=hgpmod->GetBinContent(imod+1)+hbrmod->GetBinContent(imod+1)+hoamod->GetBinContent(imod+1)+hnrmod->GetBinContent(imod+1)+hskmod->GetBinContent(imod+1);
-      Float_t denom=hapmod->GetBinContent(imod+1);
-      if(denom>0){
-	Float_t eff=numer/denom;
-	if(eff<0.95) nBelow95++;
-	if(eff<0.80) nBelow80++;
-	if(eff<0.60) nBelow60++;
-      }
-      if(hmodT->GetBinContent(imod+1)<1.){
-	nZeroP++;
-      }	
-    }
-
-    TH1F* htimT=(TH1F*)l->FindObject("hDrTimTPAll");
-
-    if(htimT->GetEntries()==0){
-      printf("Run %d htimT EMPTY -> Continue\n",iRun);
-      continue;
-    }
-
-    TH1F* htimTe=(TH1F*)l->FindObject("hDrTimTPExtra");
-      
-    if(htimTe->GetEntries()==0){
-      printf("Run %d htimTe EMPTY -> Continue\n",iRun);
-      continue;
-    }
-
-    Double_t fracExtra=0.;
-    Double_t errFracExtra=0.;
-    if(htimT->GetEntries()>0){
-      fracExtra=htimTe->GetEntries()/htimT->GetEntries();
-      errFracExtra=TMath::Sqrt(htimTe->GetEntries())/htimT->GetEntries();
-    }
-    Double_t averPoints=0.;
-    Double_t cntBins=0.;
-    for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
-      Float_t tim=htimT->GetBinCenter(iBin);
-      if(tim>2000. && tim<4000.){
-	averPoints+=htimT->GetBinContent(iBin);
-	cntBins+=1;
-      }
-    }
-    Double_t minTime=-999.;
-    Double_t errMinTime=0.;
-    if(cntBins>0){ 
-      averPoints/=cntBins;
-      for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
-	if(htimT->GetBinContent(iBin)>0.5*averPoints){
-	  minTime=htimT->GetBinCenter(iBin);
-	  errMinTime=0.5*htimT->GetBinWidth(iBin);
-	  break;
-	}
-      }
-    }
-
-    TH2F* hdedxmod=(TH2F*)l->FindObject("hdEdxVsMod");
-
-    if(hdedxmod->GetEntries()==0){
-      printf("Run %d hdedxmod EMPTY -> Continue\n",iRun);
-      continue;
-    }
-
-    TH1D* hdedxLay3=hdedxmod->ProjectionY("hdedxLay3",1,84);
-    TH1D* hdedxLay4=hdedxmod->ProjectionY("hdedxLay4",85,260);
-      
-    TH1F* hSigTim0=(TH1F*)l->FindObject("hSigTimeInt0");
-    if(hSigTim0->GetEntries()==0){
-      printf("Run %d hSigTim0 EMPTY -> Continue\n",iRun);
-      continue;
-    }
-
-    TH1F* hSigTim5=(TH1F*)l->FindObject("hSigTimeInt5");
-    if(hSigTim5->GetEntries()==0){
-      printf("Run %d hSigTim5  EMPTY -> Continue\n",iRun);
-      continue;
-    }
-    //Fitting the same distributions in order to have the MPV
-    TF1 *lfunLay3 = new TF1("LangausFunLay3",LangausFun,50.,300.,4); 
-    lfunLay3->SetParameter(0,5.);
-    lfunLay3->SetParameter(1,80.);
-    lfunLay3->SetParameter(2,hdedxLay3->GetEntries()/10.);
-    lfunLay3->SetParameter(3,10.);
-    lfunLay3->SetParLimits(3,0.,20);
-    hdedxLay3->Fit(lfunLay3,"NQLR");
-    TF1 *lfunLay4 = new TF1("LangausFunLay4",LangausFun,50.,300.,4); 
-    lfunLay4->SetParameter(0,5.);
-    lfunLay4->SetParameter(1,80.);
-    lfunLay4->SetParameter(2,hdedxLay4->GetEntries()/10.);
-    lfunLay4->SetParameter(3,10.);
-    lfunLay4->SetParLimits(3,0.,20);
-    hdedxLay4->Fit(lfunLay4,"NQLR");
-    TF1 *lfunTim0 = new TF1("LangausFunTim0",LangausFun,50.,300.,4); 
-    lfunTim0->SetParameter(0,5.);
-    lfunTim0->SetParameter(1,80.);
-    lfunTim0->SetParameter(2,hSigTim0->GetEntries()/10.);
-    lfunTim0->SetParameter(3,10.);
-    lfunTim0->SetParLimits(3,0.,20);
-    hSigTim0->Fit(lfunTim0,"NQLR");
-    TF1 *lfunTim5 = new TF1("LangausFunTim5",LangausFun,50.,300.,4); 
-    lfunTim5->SetParameter(0,5.);
-    lfunTim5->SetParameter(1,80.);
-    lfunTim5->SetParameter(2,hSigTim5->GetEntries()/10.);
-    lfunTim5->SetParameter(3,10.);
-    lfunTim5->SetParLimits(3,0.,20);
-    hSigTim5->Fit(lfunTim5,"NQLR");
-     
-    Int_t index=0;
-    xnt[index++]=iRun;
-    xnt[index++]=fracT[0];
-    xnt[index++]=efracT[0];
-    xnt[index++]=fracT[1];
-    xnt[index++]=efracT[1];
-    xnt[index++]=fracT[2];
-    xnt[index++]=efracT[2];
-    xnt[index++]=fracT[3];
-    xnt[index++]=efracT[3];
-    xnt[index++]=fracT[4];
-    xnt[index++]=efracT[4];
-    xnt[index++]=fracT[5];
-    xnt[index++]=efracT[5];
-    xnt[index++]=sumtp3/nModGood3;
-    xnt[index++]=TMath::Sqrt(sumEtp3)/nModGood3;
-    xnt[index++]=sumtp4/nModGood4;
-    xnt[index++]=TMath::Sqrt(sumEtp4)/nModGood4;
-    xnt[index++]=minTime;
-    xnt[index++]=errMinTime;
-    xnt[index++]=htimT->GetMean();
-    xnt[index++]=htimT->GetMeanError();
-    xnt[index++]=fracExtra;
-    xnt[index++]=errFracExtra;
-    xnt[index++]=hdedxLay3->GetMean();
-    xnt[index++]=hdedxLay3->GetMeanError();
-    xnt[index++]=hdedxLay4->GetMean();
-    xnt[index++]=hdedxLay4->GetMeanError();
-    xnt[index++]=hSigTim0->GetMean();
-    xnt[index++]=hSigTim0->GetMeanError();
-    xnt[index++]=hSigTim5->GetMean();
-    xnt[index++]=hSigTim5->GetMeanError();
-    xnt[index++]=lfunLay3->GetParameter(1);
-    xnt[index++]=lfunLay3->GetParError(1);
-    xnt[index++]=lfunLay4->GetParameter(1);
-    xnt[index++]=lfunLay4->GetParError(1);
-    xnt[index++]=lfunTim0->GetParameter(1);
-    xnt[index++]=lfunTim0->GetParError(1);
-    xnt[index++]=lfunTim5->GetParameter(1);
-    xnt[index++]=lfunTim5->GetParError(1);
-    xnt[index++]=(Float_t)nBelow95;
-    xnt[index++]=(Float_t)nBelow80;
-    xnt[index++]=(Float_t)nBelow60;
-    xnt[index++]=(Float_t)nZeroP;
-    ntsdd->Fill(xnt);
-
-    //    cout<<"\n\nirun sDD"<<iRun<<endl<<endl;
+    //-------SDD
+    FillSDDntuple(f,ntsdd,iRun,xnt);
+  
 
     //-------SSD
 
-    cout<<"SSD - QA"<<endl;
+    FillSSDntuple(f,ntssd,iRun,xntSSD);
 
-    //TFile* fSSD=TFile::Open(fileNameLong.Data());  
-    
-    //      TDirectoryFile* dfSSD=(TDirectoryFile*)f->Get("PWG1dEdxSSDQA");
-    TDirectoryFile* dfSSD=(TDirectoryFile*)f->Get("PWGPPdEdxSSDQA");
-    if(!dfSSD){
-      printf("Run %d SSD_Performance MISSING -> Exit\n",iRun);
-      continue;
-    }
-      
-    TList* lSSD=(TList*)dfSSD->Get("SSDdEdxQA");
-    if(!dfSSD){
-      printf("Run %d coutputRP TList MISSING -> Exit\n",iRun);
-      continue;
-    }
-    //
-      
-    TH2F* QAchargeRatio=(TH2F*)lSSD->FindObject("QAChargeRatio");
-      
-    if(QAchargeRatio->GetEntries()==0){
-      printf("Run %d QAchargeRatio EMPTY -> Continue\n",iRun);
-      continue;
-    }
-
-    TH2F* QAcharge=(TH2F*)lSSD->FindObject("QACharge");
-      
-    if(QAcharge->GetEntries()==0){
-      printf("Run %d QAcharge EMPTY -> Continue\n",iRun);
-      continue;
-    }
  
-    Int_t biny = QAcharge->GetXaxis()->FindBin(747);
-    Int_t maxy = QAcharge->GetXaxis()->GetXmax();
-    //     Int_t miny = QAcharge->GetXaxis()->GetXmin();
-    
-    Int_t  contEmpty=0;
-    Int_t  contFull=0;
-    
-    TH1D *hChargeL5=QAcharge->ProjectionY("hChargeL5",0,biny);
-    TH1D *hChargeL6=QAcharge->ProjectionY("hChargeL6",biny,maxy);
-    
-//     cout<<  hChargeL5->GetMean()<< " " <<  hChargeL5->GetRMS()<<endl;
-//     cout<<  hChargeL6->GetMean()<< " " <<  hChargeL6->GetRMS()<<endl;
-    
-    TH1D *hChargeRatioL5=QAchargeRatio->ProjectionY("hChargeRatioL5",0,biny);
-    TH1D *hChargeRatioL6=QAchargeRatio->ProjectionY("hChargeRatioL6",biny,maxy);
-    
-//     cout<<  hChargeRatioL5->GetMean()<< " " <<  hChargeRatioL5->GetRMS()<<endl;
-//     cout<<  hChargeRatioL6->GetMean()<< " " <<  hChargeRatioL6->GetRMS()<<endl;
-    
-    if(QAcharge->GetEntries()< 45000)
-      contEmpty=1;
-      
-    else{
-      for(Int_t i =0;i<1698;i++){
-	  
-	TString tmpQ("Q");
-	tmpQ+=i;
-	  
-	TH1D* fHist1DQ= QAcharge->ProjectionY(tmpQ,i+1,i+1);
-	Double_t mean=fHist1DQ->GetMean();
-
-	if(TMath::Abs(mean)<1.0 ||fHist1DQ->GetEntries()<10)
-	  contEmpty++;
-	  
-	else 
-	  contFull++;
-	  
-      }
-    }
-
-//     cout<<"contFull: " <<contFull<<" contEmpty: "<<contEmpty<<endl;
-//     cout<<hChargeL5->GetMean()<<endl;
-
-    //Fitting dE/dx Distr in order to have the MPV
-    TF1 *lfunLay5 = new TF1("LangausFunLay5",LangausFun,50.,300.,4); 
-    lfunLay5->SetParameter(0,5.);
-    lfunLay5->SetParameter(1,80.);
-    lfunLay5->SetParameter(2,hChargeL5->GetEntries()/10.);
-    lfunLay5->SetParameter(3,10.);
-    lfunLay5->SetParLimits(3,0.,20);
-    hChargeL5->Fit(lfunLay5,"NQLR");
-    TF1 *lfunLay6 = new TF1("LangausFunLay6",LangausFun,50.,300.,4); 
-    lfunLay6->SetParameter(0,5.);
-    lfunLay6->SetParameter(1,80.);
-    lfunLay6->SetParameter(2,hChargeL6->GetEntries()/10.);
-    lfunLay6->SetParameter(3,10.);
-    lfunLay6->SetParLimits(3,0.,20);
-    hChargeL6->Fit(lfunLay6,"NQLR");
-      
-    Int_t indexSSD=0;
-    xntSSD[indexSSD++]=iRun;
-    xntSSD[indexSSD++]=(Float_t)hChargeL5->GetMean();
-    xntSSD[indexSSD++]=(Float_t)hChargeL5->GetMeanError();
-    xntSSD[indexSSD++]=(Float_t)hChargeL6->GetMean();
-    xntSSD[indexSSD++]=(Float_t)hChargeL6->GetMeanError();
-    xntSSD[indexSSD++]=(Float_t)lfunLay5->GetParameter(1);
-    xntSSD[indexSSD++]=(Float_t)lfunLay5->GetParError(1);
-    xntSSD[indexSSD++]=(Float_t)lfunLay6->GetParameter(1);
-    xntSSD[indexSSD++]=(Float_t)lfunLay6->GetParError(1);
-    xntSSD[indexSSD++]=(Float_t)hChargeRatioL5->GetMean();
-    xntSSD[indexSSD++]=(Float_t)hChargeRatioL5->GetMeanError();
-    xntSSD[indexSSD++]=(Float_t)hChargeRatioL6->GetMean();
-    xntSSD[indexSSD++]=(Float_t)hChargeRatioL6->GetMeanError();
-    xntSSD[indexSSD++]=(Float_t)contEmpty;
-    ntssd->Fill(xntSSD);						
-
-    //    cout<<xnt<<endl<<endl;
-
-//     cout<<"irun ssd "<<iRun<<endl;
-
-//     cout<< iRun<<" "<<hChargeL5->GetMean()<<" "<< hChargeL5->GetRMS()<<" "<<hChargeL6->GetMean()<<" "<<hChargeRatioL5->GetMean()<<" "<<" "<<hChargeRatioL5->GetRMS()<<" "<<hChargeRatioL6->GetMean()<<" "<<hChargeRatioL6->GetRMS()<<" "<<contEmpty<<endl;
-
-//     cout<<xntSSD[0]<<" "<<xntSSD[1]<<" "<<xntSSD[2]<<" "<<xntSSD[3]<<endl;;
-      
     //--------------matching
 
+    FillMatchntuple(f,ntmatching,iRun,xntMatching);
+
+    //------------- Vertex
+    FillVTXntuple(f,ntvertex,iRun,xntVertex);
+	
+  
+    //---------------------------
+
+    //--------------   ITS SA ---------------
+    cout<<"ITS - SA"<<endl;
+    //    cout<<f<<" "<<ntSA<<" "<<iRun<<endl;
+    FillITSSAntuple(f,ntSA,iRun);
+
+  } // loop on runs
+
+  printf("%d runs skipped because QA file not found\n",filenotfound);
+  TFile* outfil=new TFile(ntupleFileName.Data(),"recreate");
+  outfil->cd();
+  ntsdd->Write();
+  ntssd->Write();
+  ntmatching->Write();
+  ntvertex->Write();
+  ntSA->Write();
+  outfil->Close();
+  delete outfil;
+  delete ntsdd;
+  delete ntssd;
+  delete ntmatching;
+  delete ntvertex;
+  delete ntSA;
+
+}
+
+//____________________________________________________________________________
+void FillITSSAntuple(TFile* f,TNtuple* nt, Int_t nrun){
+  static const Int_t nVariables=13;
+  static Float_t xnt[nVariables];
+  TH1F *hPtTPCITS=0x0;
+  TH1F *hPtITSsa=0x0;
+  TH1F *hPtITSpureSA=0x0;
+  Double_t Lowbin[3]={0.1,0.5,0.9};
+  Double_t Upbin[3]={0.2,0.6,1};
+  Double_t NTPCITS[3];
+  Double_t NITSsa[3];
+  Double_t NITSpureSA[3];
+  Double_t Ratio[3];
+  TDirectory *dirFile=(TDirectory*)f->Get("ITSsaTracks");
+  TList *cOutput = (TList*)dirFile->Get("clistITSsaTracks"); 
+  // histogram with number of events: in the first cell there is the number of the events
+  // in the second, the number of events with SPD vertex.
+  // normalization will be done to the second number
+  TH1F *hnev =(TH1F*)cOutput->FindObject("hNEvents");
+  Double_t noEvents = hnev->GetBinContent(1);
+  if(noEvents<1.)noEvents=1.;   // protection to avoid division by zero
+  hPtTPCITS=(TH1F*)cOutput->FindObject("hPtTPCITS");
+  hPtITSsa=(TH1F*)cOutput->FindObject("hPtITSsa");
+  hPtITSpureSA=(TH1F*)cOutput->FindObject("hPtITSpureSA");
+
+  for(Int_t ibin=0;ibin<=2;ibin++){
+    NTPCITS[ibin]=hPtTPCITS->Integral(hPtTPCITS->FindBin(Lowbin[ibin]),hPtTPCITS->FindBin(Upbin[ibin]))/noEvents;
+    NITSsa[ibin]=hPtITSsa->Integral(hPtITSsa->FindBin(Lowbin[ibin]),hPtITSsa->FindBin(Upbin[ibin]))/noEvents;
+    NITSpureSA[ibin]=hPtITSpureSA->Integral(hPtITSpureSA->FindBin(Lowbin[ibin]),hPtITSpureSA->FindBin(Upbin[ibin]))/noEvents;
+    //    if(NTPCITS[ibin]!=0 && NITSsa[ibin]!=0)Ratio[ibin]=NTPCITS[ibin]/NITSsa[ibin];
+    Double_t totaltrks=NTPCITS[ibin]+NITSsa[ibin];
+  if(totaltrks!=0 && NITSpureSA[ibin]!=0 )Ratio[ibin]=totaltrks/NITSpureSA[ibin];
+    else Ratio[ibin]=0;
+  }
+ 
+  Int_t index=0;
+  xnt[index++]=(Float_t)nrun;
+  xnt[index++]=NTPCITS[0];
+  xnt[index++]=NTPCITS[1];
+  xnt[index++]=NTPCITS[2];
+  xnt[index++]=NITSsa[0];
+  xnt[index++]=NITSsa[1];
+  xnt[index++]=NITSsa[2];
+  xnt[index++]=NITSpureSA[0];
+  xnt[index++]=NITSpureSA[1];
+  xnt[index++]=NITSpureSA[2];
+  xnt[index++]=Ratio[0];
+  xnt[index++]=Ratio[1];
+  xnt[index++]=Ratio[2];
+  nt->Fill(xnt);
+}
+
+//_____________________________________________________________________________
+void FillSDDntuple(TFile* f,TNtuple* nt, Int_t iRun, Float_t *xnt){
+  TDirectoryFile* df=(TDirectoryFile*)f->Get("SDD_Performance");
+  if(!df){
+    printf("Run %d SDD_Performance MISSING -> Exit\n",iRun);
+    return;
+  } 
+   
+    
+  TList* l=(TList*)df->Get("coutputRP");
+  if(!l){
+    printf("Run %d coutputRP TList MISSING -> Exit\n",iRun);
+    return;
+  }  
+    
+
+
+  cout<<"SDD - QA"<<endl;
+
+  TH1F* hcllay=(TH1F*)l->FindObject("hCluInLay");
+    
+  if(hcllay->GetEntries()==0){
+
+    printf("Run %d hcllay EMPTY -> Return\n",iRun);
+    return;
+      
+  }
+
+  Float_t fracT[6]={0.,0.,0.,0.,0.,0.};
+  Float_t efracT[6]={0.,0.,0.,0.,0.,0.};
+  if(hcllay->GetBinContent(1)>0){
+    for(Int_t iLay=0; iLay<6; iLay++){
+      fracT[iLay]=hcllay->GetBinContent(iLay+2)/hcllay->GetBinContent(1);
+      efracT[iLay]=TMath::Sqrt(fracT[iLay]*(1-fracT[iLay])/hcllay->GetBinContent(1));
+    }
+  }
+    
+  TH1F* hmodT=(TH1F*)l->FindObject("hTPMod");
+    
+  if(hmodT->GetEntries()==0){
+    printf("Run %d hmodT EMPTY -> Continue\n",iRun);
+    return;
+  }
+    
+  TH1F* hgamod=(TH1F*)l->FindObject("hGAMod");
+    
+  if(hgamod->GetEntries()==0){
+    printf("Run %d hgamod EMPTY -> Continue\n",iRun);
+    return;
+  }
+
+  Int_t bestMod=0;
+  for(Int_t iMod=0; iMod<260;iMod++){
+    Int_t gda=(Int_t)hgamod->GetBinContent(iMod+1);
+    if(gda>bestMod) bestMod=gda;
+  }
+  Int_t nChunks=1;
+  if(bestMod>512){
+    nChunks=(Int_t)(bestMod/512.+0.5);
+  }
+  hgamod->Scale(1./nChunks);
+    
+  TH1F* hev=(TH1F*)l->FindObject("hNEvents");
+
+  if(hev->GetEntries()==0){
+    printf("Run %d hev EMPTY -> Continue\n",iRun);
+    return;
+  }
+    
+  Int_t nTotEvents=hev->GetBinContent(2);
+  Int_t nTrigEvents=hev->GetBinContent(3);
+  Int_t nEvents=nTotEvents;
+  printf("Run %d Number of Events = %d Triggered=%d\n",iRun,nTotEvents,nTrigEvents);
+  if(nTrigEvents>0){ 
+    nEvents=nTrigEvents;
+  }
+  if(nTotEvents==0) return;
+  Int_t nModGood3=0;
+  Int_t nModGood4=0;
+  Int_t nModBadAn=0;
+  Float_t sumtp3=0;
+  Float_t sumtp4=0;
+  Float_t sumEtp3=0;
+  Float_t sumEtp4=0;
+  for(Int_t iMod=0; iMod<260; iMod++){
+    Float_t tps=hmodT->GetBinContent(iMod+1);
+    Float_t ga=hgamod->GetBinContent(iMod+1);
+    if(ga<500) nModBadAn++;
+    Float_t tpsN=0.;
+    Float_t etpsN=0.;
+    if(ga>0){
+      tpsN=tps/ga/(Float_t)nEvents;
+      etpsN=TMath::Sqrt(tps)/ga/(Float_t)nEvents;
+      if(iMod<84){
+	sumtp3+=tpsN;
+	sumEtp3+=(etpsN*etpsN);
+	nModGood3++;
+      }
+      else{
+	sumtp4+=tpsN;
+	sumEtp4+=(etpsN*etpsN);
+	nModGood4++;
+      }
+    }
+  }
+
+  TH1F* hapmod=(TH1F*)l->FindObject("hAllPmod");
+      
+  if(hapmod->GetEntries()==0){
+    printf("Run %d hapmod EMPTY -> Continue\n",iRun);
+    return;
+  }
+
+
+  TH1F* hgpmod=(TH1F*)l->FindObject("hGoodPmod");
+  if(hgpmod->GetEntries()==0){
+    printf("Run %d hgpmod EMPTY -> Continue\n",iRun);
+    return;
+  }
+      
+  //     TH1F* hmpmod=(TH1F*)l->FindObject("hMissPmod");
+  TH1F* hbrmod=(TH1F*)l->FindObject("hBadRegmod");
+  if(hbrmod->GetEntries()==0){
+    printf("Run %d hbrmod EMPTY -> Continue\n",iRun);
+    return;
+  }
+
+  TH1F* hskmod=(TH1F*)l->FindObject("hSkippedmod");
+  TH1F* hoamod=(TH1F*)l->FindObject("hOutAccmod");
+  TH1F* hnrmod=(TH1F*)l->FindObject("hNoRefitmod");
+
+  Int_t nBelow95=0;
+  Int_t nBelow80=0;
+  Int_t nBelow60=0;
+  Int_t nZeroP=0;
+  for(Int_t imod=0; imod<260;imod++){
+    Float_t numer=hgpmod->GetBinContent(imod+1)+hbrmod->GetBinContent(imod+1)+hoamod->GetBinContent(imod+1)+hnrmod->GetBinContent(imod+1)+hskmod->GetBinContent(imod+1);
+    Float_t denom=hapmod->GetBinContent(imod+1);
+    if(denom>0){
+      Float_t eff=numer/denom;
+      if(eff<0.95) nBelow95++;
+      if(eff<0.80) nBelow80++;
+      if(eff<0.60) nBelow60++;
+    }
+    if(hmodT->GetBinContent(imod+1)<1.){
+      nZeroP++;
+    }	
+  }
+
+  TH1F* htimT=(TH1F*)l->FindObject("hDrTimTPAll");
+
+  if(htimT->GetEntries()==0){
+    printf("Run %d htimT EMPTY -> Continue\n",iRun);
+    return;
+  }
+
+  TH1F* htimTe=(TH1F*)l->FindObject("hDrTimTPExtra");
+      
+  if(htimTe->GetEntries()==0){
+    printf("Run %d htimTe EMPTY -> Continue\n",iRun);
+    return;
+  }
+
+  Double_t fracExtra=0.;
+  Double_t errFracExtra=0.;
+  if(htimT->GetEntries()>0){
+    fracExtra=htimTe->GetEntries()/htimT->GetEntries();
+    errFracExtra=TMath::Sqrt(htimTe->GetEntries())/htimT->GetEntries();
+  }
+  Double_t averPoints=0.;
+  Double_t cntBins=0.;
+  for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
+    Float_t tim=htimT->GetBinCenter(iBin);
+    if(tim>2000. && tim<4000.){
+      averPoints+=htimT->GetBinContent(iBin);
+      cntBins+=1;
+    }
+  }
+  Double_t minTime=-999.;
+  Double_t errMinTime=0.;
+  if(cntBins>0){ 
+    averPoints/=cntBins;
+    for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
+      if(htimT->GetBinContent(iBin)>0.5*averPoints){
+	minTime=htimT->GetBinCenter(iBin);
+	errMinTime=0.5*htimT->GetBinWidth(iBin);
+	break;
+      }
+    }
+  }
+
+  TH2F* hdedxmod=(TH2F*)l->FindObject("hdEdxVsMod");
+
+  if(hdedxmod->GetEntries()==0){
+    printf("Run %d hdedxmod EMPTY -> Continue\n",iRun);
+    return;
+  }
+
+  TH1D* hdedxLay3=hdedxmod->ProjectionY("hdedxLay3",1,84);
+  TH1D* hdedxLay4=hdedxmod->ProjectionY("hdedxLay4",85,260);
+      
+  TH1F* hSigTim0=(TH1F*)l->FindObject("hSigTimeInt0");
+  if(hSigTim0->GetEntries()==0){
+    printf("Run %d hSigTim0 EMPTY -> Continue\n",iRun);
+    return;
+  }
+
+  TH1F* hSigTim5=(TH1F*)l->FindObject("hSigTimeInt5");
+  if(hSigTim5->GetEntries()==0){
+    printf("Run %d hSigTim5  EMPTY -> Continue\n",iRun);
+    return;
+  }
+  //Fitting the same distributions in order to have the MPV
+  TF1 *lfunLay3 = new TF1("LangausFunLay3",LangausFun,50.,300.,4); 
+  lfunLay3->SetParameter(0,5.);
+  lfunLay3->SetParameter(1,80.);
+  lfunLay3->SetParameter(2,hdedxLay3->GetEntries()/10.);
+  lfunLay3->SetParameter(3,10.);
+  lfunLay3->SetParLimits(3,0.,20);
+  hdedxLay3->Fit(lfunLay3,"NQLR");
+  TF1 *lfunLay4 = new TF1("LangausFunLay4",LangausFun,50.,300.,4); 
+  lfunLay4->SetParameter(0,5.);
+  lfunLay4->SetParameter(1,80.);
+  lfunLay4->SetParameter(2,hdedxLay4->GetEntries()/10.);
+  lfunLay4->SetParameter(3,10.);
+  lfunLay4->SetParLimits(3,0.,20);
+  hdedxLay4->Fit(lfunLay4,"NQLR");
+  TF1 *lfunTim0 = new TF1("LangausFunTim0",LangausFun,50.,300.,4); 
+  lfunTim0->SetParameter(0,5.);
+  lfunTim0->SetParameter(1,80.);
+  lfunTim0->SetParameter(2,hSigTim0->GetEntries()/10.);
+  lfunTim0->SetParameter(3,10.);
+  lfunTim0->SetParLimits(3,0.,20);
+  hSigTim0->Fit(lfunTim0,"NQLR");
+  TF1 *lfunTim5 = new TF1("LangausFunTim5",LangausFun,50.,300.,4); 
+  lfunTim5->SetParameter(0,5.);
+  lfunTim5->SetParameter(1,80.);
+  lfunTim5->SetParameter(2,hSigTim5->GetEntries()/10.);
+  lfunTim5->SetParameter(3,10.);
+  lfunTim5->SetParLimits(3,0.,20);
+  hSigTim5->Fit(lfunTim5,"NQLR");
+     
+  Int_t index=0;
+  xnt[index++]=iRun;
+  xnt[index++]=fracT[0];
+  xnt[index++]=efracT[0];
+  xnt[index++]=fracT[1];
+  xnt[index++]=efracT[1];
+  xnt[index++]=fracT[2];
+  xnt[index++]=efracT[2];
+  xnt[index++]=fracT[3];
+  xnt[index++]=efracT[3];
+  xnt[index++]=fracT[4];
+  xnt[index++]=efracT[4];
+  xnt[index++]=fracT[5];
+  xnt[index++]=efracT[5];
+  xnt[index++]=sumtp3/nModGood3;
+  xnt[index++]=TMath::Sqrt(sumEtp3)/nModGood3;
+  xnt[index++]=sumtp4/nModGood4;
+  xnt[index++]=TMath::Sqrt(sumEtp4)/nModGood4;
+  xnt[index++]=minTime;
+  xnt[index++]=errMinTime;
+  xnt[index++]=htimT->GetMean();
+  xnt[index++]=htimT->GetMeanError();
+  xnt[index++]=fracExtra;
+  xnt[index++]=errFracExtra;
+  xnt[index++]=hdedxLay3->GetMean();
+  xnt[index++]=hdedxLay3->GetMeanError();
+  xnt[index++]=hdedxLay4->GetMean();
+  xnt[index++]=hdedxLay4->GetMeanError();
+  xnt[index++]=hSigTim0->GetMean();
+  xnt[index++]=hSigTim0->GetMeanError();
+  xnt[index++]=hSigTim5->GetMean();
+  xnt[index++]=hSigTim5->GetMeanError();
+  xnt[index++]=lfunLay3->GetParameter(1);
+  xnt[index++]=lfunLay3->GetParError(1);
+  xnt[index++]=lfunLay4->GetParameter(1);
+  xnt[index++]=lfunLay4->GetParError(1);
+  xnt[index++]=lfunTim0->GetParameter(1);
+  xnt[index++]=lfunTim0->GetParError(1);
+  xnt[index++]=lfunTim5->GetParameter(1);
+  xnt[index++]=lfunTim5->GetParError(1);
+  xnt[index++]=(Float_t)nBelow95;
+  xnt[index++]=(Float_t)nBelow80;
+  xnt[index++]=(Float_t)nBelow60;
+  xnt[index++]=(Float_t)nZeroP;
+  nt->Fill(xnt);
+  
+
+}
+
+//_____________________________________________________________________________
+void FillSSDntuple(TFile* f,TNtuple* ntssd, Int_t iRun, Float_t *xntSSD){
+
+  cout<<"SSD - QA"<<endl;
+
+  TDirectoryFile* dfSSD=(TDirectoryFile*)f->Get("PWGPPdEdxSSDQA");
+  if(!dfSSD){
+    printf("Run %d SSD_Performance MISSING -> Exit\n",iRun);
+    return;
+  }
+      
+  TList* lSSD=(TList*)dfSSD->Get("SSDdEdxQA");
+  if(!dfSSD){
+    printf("Run %d coutputRP TList MISSING -> Exit\n",iRun);
+    return;
+  }
+  //
+      
+  TH2F* QAchargeRatio=(TH2F*)lSSD->FindObject("QAChargeRatio");
+      
+  if(QAchargeRatio->GetEntries()==0){
+    printf("Run %d QAchargeRatio EMPTY -> Return\n",iRun);
+    return;
+  }
+
+  TH2F* QAcharge=(TH2F*)lSSD->FindObject("QACharge");
+      
+  if(QAcharge->GetEntries()==0){
+    printf("Run %d QAcharge EMPTY -> Return\n",iRun);
+    return;
+  }
+ 
+  Int_t biny = QAcharge->GetXaxis()->FindBin(747);
+  Int_t maxy = QAcharge->GetXaxis()->GetXmax();
+  //     Int_t miny = QAcharge->GetXaxis()->GetXmin();
+    
+  Int_t  contEmpty=0;
+  Int_t  contFull=0;
+    
+  TH1D *hChargeL5=QAcharge->ProjectionY("hChargeL5",0,biny);
+  TH1D *hChargeL6=QAcharge->ProjectionY("hChargeL6",biny,maxy);
+    
+  //     cout<<  hChargeL5->GetMean()<< " " <<  hChargeL5->GetRMS()<<endl;
+  //     cout<<  hChargeL6->GetMean()<< " " <<  hChargeL6->GetRMS()<<endl;
+    
+  TH1D *hChargeRatioL5=QAchargeRatio->ProjectionY("hChargeRatioL5",0,biny);
+  TH1D *hChargeRatioL6=QAchargeRatio->ProjectionY("hChargeRatioL6",biny,maxy);
+    
+  //     cout<<  hChargeRatioL5->GetMean()<< " " <<  hChargeRatioL5->GetRMS()<<endl;
+  //     cout<<  hChargeRatioL6->GetMean()<< " " <<  hChargeRatioL6->GetRMS()<<endl;
+    
+  if(QAcharge->GetEntries()< 45000)
+    contEmpty=1;
+      
+  else{
+    for(Int_t i =0;i<1698;i++){
+	  
+      TString tmpQ("Q");
+      tmpQ+=i;
+	  
+      TH1D* fHist1DQ= QAcharge->ProjectionY(tmpQ,i+1,i+1);
+      Double_t mean=fHist1DQ->GetMean();
+
+      if(TMath::Abs(mean)<1.0 ||fHist1DQ->GetEntries()<10)
+	contEmpty++;
+	  
+      else 
+	contFull++;
+	  
+    }
+  }
+
+  //     cout<<"contFull: " <<contFull<<" contEmpty: "<<contEmpty<<endl;
+  //     cout<<hChargeL5->GetMean()<<endl;
+
+  //Fitting dE/dx Distr in order to have the MPV
+  TF1 *lfunLay5 = new TF1("LangausFunLay5",LangausFun,50.,300.,4); 
+  lfunLay5->SetParameter(0,5.);
+  lfunLay5->SetParameter(1,80.);
+  lfunLay5->SetParameter(2,hChargeL5->GetEntries()/10.);
+  lfunLay5->SetParameter(3,10.);
+  lfunLay5->SetParLimits(3,0.,20);
+  hChargeL5->Fit(lfunLay5,"NQLR");
+  TF1 *lfunLay6 = new TF1("LangausFunLay6",LangausFun,50.,300.,4); 
+  lfunLay6->SetParameter(0,5.);
+  lfunLay6->SetParameter(1,80.);
+  lfunLay6->SetParameter(2,hChargeL6->GetEntries()/10.);
+  lfunLay6->SetParameter(3,10.);
+  lfunLay6->SetParLimits(3,0.,20);
+  hChargeL6->Fit(lfunLay6,"NQLR");
+      
+  Int_t indexSSD=0;
+  xntSSD[indexSSD++]=iRun;
+  xntSSD[indexSSD++]=(Float_t)hChargeL5->GetMean();
+  xntSSD[indexSSD++]=(Float_t)hChargeL5->GetMeanError();
+  xntSSD[indexSSD++]=(Float_t)hChargeL6->GetMean();
+  xntSSD[indexSSD++]=(Float_t)hChargeL6->GetMeanError();
+  xntSSD[indexSSD++]=(Float_t)lfunLay5->GetParameter(1);
+  xntSSD[indexSSD++]=(Float_t)lfunLay5->GetParError(1);
+  xntSSD[indexSSD++]=(Float_t)lfunLay6->GetParameter(1);
+  xntSSD[indexSSD++]=(Float_t)lfunLay6->GetParError(1);
+  xntSSD[indexSSD++]=(Float_t)hChargeRatioL5->GetMean();
+  xntSSD[indexSSD++]=(Float_t)hChargeRatioL5->GetMeanError();
+  xntSSD[indexSSD++]=(Float_t)hChargeRatioL6->GetMean();
+  xntSSD[indexSSD++]=(Float_t)hChargeRatioL6->GetMeanError();
+  xntSSD[indexSSD++]=(Float_t)contEmpty;
+  ntssd->Fill(xntSSD);						
+}
+
+//_____________________________________________________________________________
+void FillMatchntuple(TFile* f,TNtuple* ntmatching, Int_t iRun, Float_t *xntMatching){
     cout<<"Tracking"<<endl;
 
     TDirectoryFile *dirMatch=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
@@ -2101,8 +2226,8 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     TH1F *hFiredChip = (TH1F*)listSPD->FindObject("hFiredChip");
 
     if(hFiredChip->GetEntries()==0){
-      printf("Run %d hFiredChip EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d hFiredChip EMPTY -> Return\n",iRun);
+      return;
     }
 
     Int_t nHSsInner=0,nHSsOuter=0;
@@ -2119,51 +2244,51 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
 
     if(fHistPtTPCInAcc->GetEntries()==0){
-      printf("Run %dfHistPtTPCInAcc  EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %dfHistPtTPCInAcc  EMPTY -> Return\n",iRun);
+      return;
     }
 
     TH1F *fHistPtITSMI6InAcc = (TH1F*)list->FindObject("fHistPtITSMI6InAcc");
 
     if(fHistPtITSMI6InAcc->GetEntries()==0){
-      printf("Run %d fHistPtITSMI6InAcc EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d fHistPtITSMI6InAcc EMPTY -> Return\n",iRun);
+      return;
     }
 
     TH1F *fHistPtITSMI5InAcc = (TH1F*)list->FindObject("fHistPtITSMI5InAcc");
     if(fHistPtITSMI5InAcc->GetEntries()==0){
-      printf("Run %d fHistPtITSMI5InAcc EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d fHistPtITSMI5InAcc EMPTY -> Return\n",iRun);
+      return;
     }
       
     TH1F *fHistPtITSMI4InAcc = (TH1F*)list->FindObject("fHistPtITSMI4InAcc");
     if(fHistPtITSMI5InAcc->GetEntries()==0){
-      printf("Run %d fHistPtITSMI5InAcc EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d fHistPtITSMI5InAcc EMPTY -> Return\n",iRun);
+      return;
     }
       
     TH1F *fHistPtITSMI3InAcc = (TH1F*)list->FindObject("fHistPtITSMI3InAcc");
     if(fHistPtITSMI3InAcc->GetEntries()==0){
-      printf("Run %d fHistPtITSMI3InAcc EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d fHistPtITSMI3InAcc EMPTY -> Return\n",iRun);
+      return;
     }
     TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
       
     if(fHistPtITSMI2InAcc->GetEntries()==0){
-      printf("Run %d fHistPtITSMI2InAcc EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d fHistPtITSMI2InAcc EMPTY -> Return\n",iRun);
+      return;
     }
     TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
     if(fHistPtITSMISPDInAcc->GetEntries()==0){
-      printf("Run %d fHistPtITSMISPDInAcc EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d fHistPtITSMISPDInAcc EMPTY -> Return\n",iRun);
+      return;
     }
       
     TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
       
     if(fHistPtITSMIoneSPDInAcc->GetEntries()==0){
-      printf("Run %d fHistPtITSMIoneSPDInAcc  EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d fHistPtITSMIoneSPDInAcc  EMPTY -> Return\n",iRun);
+      return;
     }
 
     TH1F *fHistPtITSMIge2InAcc = (TH1F*)fHistPtITSMI6InAcc->Clone("fHistPtITSMIge2InAcc");
@@ -2326,10 +2451,11 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     xntMatching[indexMatching++]=ioErrors[26];
   
     ntmatching->Fill(xntMatching);						
+}
 
-    //---------------------------
-
-    cout<<"Primary Vertex"<<endl;
+//_____________________________________________________________________________
+void FillVTXntuple(TFile* f,TNtuple* ntvertex, Int_t iRun, Float_t *xntVertex){
+   cout<<"Primary Vertex"<<endl;
 
     TDirectoryFile *dirVertex = (TDirectoryFile*)f->Get("Vertex_Performance");
     if(!dirVertex){
@@ -2341,43 +2467,43 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     TH1F *xVtxTRK = (TH1F*)lt->FindObject("fhTRKVertexX");
 
     if(xVtxTRK->GetEntries()==0){
-      printf("Run %d xVtxTRK EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d xVtxTRK EMPTY -> Return\n",iRun);
+      return;
     }
 
     TH1F *yVtxTRK = (TH1F*)lt->FindObject("fhTRKVertexY");
 
     if(yVtxTRK->GetEntries()==0){
-      printf("Run %d yVtxTRK EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d yVtxTRK EMPTY -> Return\n",iRun);
+      return;
     }
 
     TH1F *zVtxTRK = (TH1F*)lt->FindObject("fhTRKVertexZ");
 
     if(zVtxTRK->GetEntries()==0){
-      printf("Run %d zVtxTRK EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d zVtxTRK EMPTY -> Return\n",iRun);
+      return;
     }
 
  TH1F *xVtxSPD = (TH1F*)lt->FindObject("fhSPDVertexX");
 
     if(xVtxSPD->GetEntries()==0){
-      printf("Run %d xVtxSOD EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d xVtxSOD EMPTY -> Return\n",iRun);
+      return;
     }
 
     TH1F *yVtxSPD = (TH1F*)lt->FindObject("fhSPDVertexY");
 
     if(yVtxSPD->GetEntries()==0){
-      printf("Run %d yVtxSPD EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d yVtxSPD EMPTY -> Return\n",iRun);
+      return;
     }
 
     TH1F *zVtxSPD = (TH1F*)lt->FindObject("fhSPDVertexZ");
 
     if(zVtxSPD->GetEntries()==0){
-      printf("Run %d zVtxSPD EMPTY -> Continue\n",iRun);
-      continue;
+      printf("Run %d zVtxSPD EMPTY -> Return\n",iRun);
+      return;
     }
 
     TF1 *fxTRK = new TF1("gausx", "gaus", -1, 1);
@@ -2424,7 +2550,7 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     xntVertex[indexVertex++]=(Float_t)fzTRK->GetParError(1);
     xntVertex[indexVertex++]=(Float_t)fzTRK->GetParameter(2);
     xntVertex[indexVertex++]=(Float_t)fzTRK->GetParError(2);
- xntVertex[indexVertex++]=(Float_t)fxSPD->GetParameter(1);
+    xntVertex[indexVertex++]=(Float_t)fxSPD->GetParameter(1);
     xntVertex[indexVertex++]=(Float_t)fxSPD->GetParError(1);
     xntVertex[indexVertex++]=(Float_t)fxSPD->GetParameter(2);
     xntVertex[indexVertex++]=(Float_t)fxSPD->GetParError(2);
@@ -2438,88 +2564,9 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
     xntVertex[indexVertex++]=(Float_t)fzSPD->GetParError(2);
     ntvertex->Fill(xntVertex);	
 
-					
-  
-    //---------------------------
-
-    //--------------   ITS SA ---------------
-    cout<<"ITS - SA"<<endl;
-    //    cout<<f<<" "<<ntSA<<" "<<iRun<<endl;
-    FillITSSAntuple(f,ntSA,iRun);
-
-  } // loop on runs
-
-  printf("%d runs skipped because QA file not found\n",filenotfound);
-  TFile* outfil=new TFile(ntupleFileName.Data(),"recreate");
-  outfil->cd();
-  ntsdd->Write();
-  ntssd->Write();
-  ntmatching->Write();
-  ntvertex->Write();
-  ntSA->Write();
-  outfil->Close();
-  delete outfil;
-  delete ntsdd;
-  delete ntssd;
-  delete ntmatching;
-  delete ntvertex;
-  delete ntSA;
-
 }
 
-//____________________________________________________________________________
-void FillITSSAntuple(TFile* f,TNtuple* nt, Int_t nrun){
-  static const Int_t nVariables=13;
-  static Float_t xnt[nVariables];
-  TH1F *hPtTPCITS=0x0;
-  TH1F *hPtITSsa=0x0;
-  TH1F *hPtITSpureSA=0x0;
-  Double_t Lowbin[3]={0.1,0.5,0.9};
-  Double_t Upbin[3]={0.2,0.6,1};
-  Double_t NTPCITS[3];
-  Double_t NITSsa[3];
-  Double_t NITSpureSA[3];
-  Double_t Ratio[3];
-  TDirectory *dirFile=(TDirectory*)f->Get("ITSsaTracks");
-  TList *cOutput = (TList*)dirFile->Get("clistITSsaTracks"); 
-  // histogram with number of events: in the first cell there is the number of the events
-  // in the second, the number of events with SPD vertex.
-  // normalization will be done to the second number
-  TH1F *hnev =(TH1F*)cOutput->FindObject("hNEvents");
-  Double_t noEvents = hnev->GetBinContent(1);
-  if(noEvents<1.)noEvents=1.;   // protection to avoid division by zero
-  hPtTPCITS=(TH1F*)cOutput->FindObject("hPtTPCITS");
-  hPtITSsa=(TH1F*)cOutput->FindObject("hPtITSsa");
-  hPtITSpureSA=(TH1F*)cOutput->FindObject("hPtITSpureSA");
-
-  for(Int_t ibin=0;ibin<=2;ibin++){
-    NTPCITS[ibin]=hPtTPCITS->Integral(hPtTPCITS->FindBin(Lowbin[ibin]),hPtTPCITS->FindBin(Upbin[ibin]))/noEvents;
-    NITSsa[ibin]=hPtITSsa->Integral(hPtITSsa->FindBin(Lowbin[ibin]),hPtITSsa->FindBin(Upbin[ibin]))/noEvents;
-    NITSpureSA[ibin]=hPtITSpureSA->Integral(hPtITSpureSA->FindBin(Lowbin[ibin]),hPtITSpureSA->FindBin(Upbin[ibin]))/noEvents;
-    //    if(NTPCITS[ibin]!=0 && NITSsa[ibin]!=0)Ratio[ibin]=NTPCITS[ibin]/NITSsa[ibin];
-    Double_t totaltrks=NTPCITS[ibin]+NITSsa[ibin];
-  if(totaltrks!=0 && NITSpureSA[ibin]!=0 )Ratio[ibin]=totaltrks/NITSpureSA[ibin];
-    else Ratio[ibin]=0;
-  }
- 
-  Int_t index=0;
-  xnt[index++]=(Float_t)nrun;
-  xnt[index++]=NTPCITS[0];
-  xnt[index++]=NTPCITS[1];
-  xnt[index++]=NTPCITS[2];
-  xnt[index++]=NITSsa[0];
-  xnt[index++]=NITSsa[1];
-  xnt[index++]=NITSsa[2];
-  xnt[index++]=NITSpureSA[0];
-  xnt[index++]=NITSpureSA[1];
-  xnt[index++]=NITSpureSA[2];
-  xnt[index++]=Ratio[0];
-  xnt[index++]=Ratio[1];
-  xnt[index++]=Ratio[2];
-  nt->Fill(xnt);
-}
-
-
+//_____________________________________________________________________________
 Double_t LangausFun(Double_t *x, Double_t *par) {
   
   //Fit parameters:
@@ -2589,5 +2636,28 @@ Bool_t WriteInputTextFileFromMonalisaListOfRuns(TString outtxtfilename,Int_t* li
   cout<<"Done"<<endl;
   outfile.close();
   return kTRUE;
+}
+
+//______________________________________________________________________
+Int_t RunsToPlot(Int_t run1, Int_t run2,Int_t nr,Int_t *noRuns, Int_t *myIndex){
+  // Sort entries according to run number in the chosen range
+  Int_t kRunsToPlot=0;
+  printf("Processing runs from %d up to %d\n",run1,run2);
+  for(Int_t i=0; i<nr;i++){
+    printf("Run %d\n",noRuns[i]);
+    if(noRuns[i]>=run1 && noRuns[i]<=run2){
+      printf("Accepting run number %d in position %d\n",noRuns[i],kRunsToPlot);
+      kRunsToPlot++;
+    }
+    else { 
+      printf("Rejecting run number %d - out of range\n",noRuns[i]);
+      noRuns[i]=run2+10; 
+    }
+  }
+  TMath::Sort(nr,noRuns,myIndex,kFALSE);
+  printf("Total number of runs accepted fot display %d\n",kRunsToPlot);
+  if(kRunsToPlot==0)return 0;
+  for(Int_t i=0;i<kRunsToPlot;i++)printf("Position %d ) Run: %d\n",i,noRuns[myIndex[i]]);
+  return kRunsToPlot;
 }
 
