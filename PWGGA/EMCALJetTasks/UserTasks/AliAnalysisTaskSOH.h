@@ -6,6 +6,7 @@
 class TList;
 class TH1F;
 class TH2F;
+class TH3F;
 class TArrayI;
 class AliESDEvent;
 class AliMCEvent;
@@ -50,10 +51,10 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   
   TList              *fOutputList;               //!output list
   TH1F               *fHEventStat;               //!statistics histo
-  TH1F               *fHTrkEffParGenPt;          //!mc truth pt spectrum
-  TH1F               *fHTrkEffDetGenPt;          //!mc detector level pt spectrum
-  TH1F               *fHTrkEffDetRecPt;          //!reconstructed detector level pt spectrum
-  TH1F               *fHTrkEffDetRecFakePt;      //!fake and secondary tracks pt spectrum
+  TH3F               *fHTrkEffParGenPtEtaPhi;    //!mc truth pt spectrum
+  TH3F               *fHTrkEffDetGenPtEtaPhi;    //!mc detector level pt spectrum
+  TH3F               *fHTrkEffDetRecPtEtaPhi;    //!reconstructed detector level pt spectrum
+  TH3F               *fHTrkEffDetRecFakePtEtaPhi;//!fake and secondary tracks pt spectrum
   TH1F               *fHScaleFactor;             //!scale factor spectrum
   TH1F               *fHScaleFactor100HC;        //!scale factor with 100% HC spectrum
   TH2F               *fHEOverPVsPt;              //!(cluster energy over reconstructed track p) vs. track pt
@@ -82,6 +83,6 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   AliAnalysisTaskSOH(const AliAnalysisTaskSOH&); // not implemented
   AliAnalysisTaskSOH& operator=(const AliAnalysisTaskSOH&); // not implemented
   
-  ClassDef(AliAnalysisTaskSOH, 5); // Analysis task Saehanseul Oh
+  ClassDef(AliAnalysisTaskSOH, 6); // Analysis task Saehanseul Oh
 };
 #endif
