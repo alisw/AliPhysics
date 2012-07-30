@@ -929,13 +929,19 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     if     (esdevent) triggerClass = esdevent->GetFiredTriggerClasses();
     else if(aodevent) triggerClass = aodevent->GetFiredTriggerClasses();
     
-    if(triggerClass.Contains(fTriggerName)) 
-    {
-      //printf("Reject Event %d, FiredClass %s\n",(Int_t)Entry(),(((AliESDEvent*)InputEvent())->GetFiredTriggerClasses()).Data());
-      return;
-    }
-  }
+    if(DebugLevel() > 1) 
+      printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - Event %d, FiredClass %s",
+             (Int_t)Entry(),(((AliESDEvent*)InputEvent())->GetFiredTriggerClasses()).Data());
     
+    if(!triggerClass.Contains(fTriggerName)) 
+    {
+       if(DebugLevel() > 1) printf("Reject event! \n");
+       return;
+    }  
+    else 
+       if(DebugLevel() > 1) printf("Accept Event! \n");
+  }
+  
   //Get the input event
   AliVEvent* event = 0;
   if(fFilteredInput) event = AODEvent();
