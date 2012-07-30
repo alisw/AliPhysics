@@ -39,6 +39,7 @@
 #include "AliESDVertex.h"
 #include "AliVertexerTracks.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliTPCPIDResponse.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
@@ -720,10 +721,19 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hCentVsMultRPS->GetYaxis()->SetTitle("Centrality");
     fOutputFlowObs->Add(hCentVsMultRPS);
   }
-//  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-//  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-//  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
-//  fCuts->GetPidHF()->SetPidResponse(pidResp);
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+  if (fCuts->GetIsUsePID() && fDecayChannel==kLambdactoV0) {
+    fCuts->GetPidHF()->SetPidResponse(pidResp);
+    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0pos()->SetPidResponse(pidResp);
+    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0neg()->SetPidResponse(pidResp);
+    fCuts->GetPidHF()->SetOldPid(kFALSE);
+    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0pos()->SetOldPid(kFALSE);
+    (dynamic_cast<AliRDHFCutsLctoV0*>(fCuts))->GetPidV0neg()->SetOldPid(kFALSE);
+  }
+
   // Post the data
   PostData(1,fNEntries);
 
@@ -835,7 +845,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	}
 	break; 
       case kLambdactoV0:
-	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadeHF");
+	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
 	pdg=4122;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[3];
@@ -909,7 +919,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       break; 
       case kLambdactoV0:
-	arrayProng=(TClonesArray*)aod->GetList()->FindObject("CascadeHF");
+	arrayProng=(TClonesArray*)aod->GetList()->FindObject("CascadesHF");
 	pdg=4122;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[3];
@@ -1394,7 +1404,28 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	}
 
 	if(fReadMC){ 
-	  Int_t labD = d->MatchToMC(pdg,mcArray,ndaugh,pdgdaughters);
+
+	  Int_t labD = -1;
+	  if (fDecayChannel==AliAnalysisTaskSEHFQA::kLambdactoV0 && (dynamic_cast<AliAODRecoCascadeHF*>(d))->Getv0()) {
+
+	    Int_t pdgDgLctoV0bachelor[2]={310,2212};
+	    Int_t pdgDgV0toDaughters[2]={211,211};
+	    Int_t mcLabelK0S = (dynamic_cast<AliAODRecoCascadeHF*>(d))->MatchToMC(pdg,pdgDgLctoV0bachelor[0],pdgDgLctoV0bachelor,pdgDgV0toDaughters,mcArray,kTRUE); // Lc->K0S+p and cc
+	    pdgDgLctoV0bachelor[0]=3122, pdgDgLctoV0bachelor[1]=211;
+	    pdgDgV0toDaughters[0]=2212,  pdgDgV0toDaughters[1]=211;
+	    Int_t mcLabelLambda = (dynamic_cast<AliAODRecoCascadeHF*>(d))->MatchToMC(pdg,pdgDgLctoV0bachelor[0],pdgDgLctoV0bachelor,pdgDgV0toDaughters,mcArray,kTRUE); // Lc->Lambda+pi and cc
+	    if (mcLabelK0S!=-1 || mcLabelLambda!=-1) AliInfo(Form("mcLabelK0S=%d - mcLabelLambda=%d",mcLabelK0S,mcLabelLambda));
+
+	    if (mcLabelK0S!=-1 && mcLabelLambda!=-1)
+	      AliInfo("Strange: current Lc->V0+bachelor candidate has two MC different labels!");
+	    else if (mcLabelK0S>-1 && mcLabelLambda==-1)
+	      labD = mcLabelK0S;
+	    else if (mcLabelLambda>-1 && mcLabelK0S==-1)
+	      labD = mcLabelLambda;
+	  }
+	  else
+	    labD = d->MatchToMC(pdg,mcArray,ndaugh,pdgdaughters);
+
 	  if(labD>=0){
 	    AliAODMCParticle *partD = (AliAODMCParticle*)mcArray->At(labD);
 	    Int_t label=partD->GetMother();
@@ -1414,9 +1445,19 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	else fNEntries->Fill(6); //count the candidates (data)
 
 	for(Int_t id=0;id<ndaugh;id++){
-
 	  //other histograms to be filled when the cut object is given
-	  AliAODTrack* track=(AliAODTrack*)d->GetDaughter(id);
+	  AliAODTrack* track=0;
+
+	  if (fDecayChannel==AliAnalysisTaskSEHFQA::kLambdactoV0 && (dynamic_cast<AliAODRecoCascadeHF*>(d))->Getv0()) {
+	    if (id==0)
+	      track=(AliAODTrack*)(dynamic_cast<AliAODRecoCascadeHF*>(d))->GetBachelor();
+	    else if (id==1)
+	      track=(AliAODTrack*)(dynamic_cast<AliAODRecoCascadeHF*>(d))->Getv0PositiveTrack();
+	    else if (id==2)
+	      track=(AliAODTrack*)(dynamic_cast<AliAODRecoCascadeHF*>(d))->Getv0NegativeTrack();
+	  }
+	  else 
+	    track=(AliAODTrack*)d->GetDaughter(id);
 
 	  //track quality
 

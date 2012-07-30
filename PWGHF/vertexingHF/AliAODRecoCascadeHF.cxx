@@ -126,7 +126,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     AliError("No daughters available");
     return -1;
   }
-  
+
   Int_t lab2Prong = -1;
 
   if (!isV0) {
@@ -138,6 +138,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
   }
 
   if(lab2Prong<0) return -1;
+  if (isV0) AliDebug(1,Form(" LabelV0=%d (%d -> %d %d)",lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
 
   Int_t dgLabels[10]={0,0,0,0,0,0,0,0,0,0};
 
@@ -151,7 +152,23 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
     dgLabels[i] = lab;
   }
 
-  return AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels,2,2,pdgDg);
+  Int_t finalLabel = AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels,2,2,pdgDg);
+  if ( isV0 && (dgLabels[0]!=-1 || dgLabels[1]!=-1) ) {
+    if ( (pdgDg[0]==2212 && pdgDg[1]==310) ||
+	 (pdgDg[0]==211 && pdgDg[1]==3122) ) {
+      AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
+		      finalLabel,pdgabs,
+		      dgLabels[0],pdgDg[0],dgLabels[1],pdgDg[1]));
+    } else if ( (pdgDg[1]==2212 && pdgDg[0]==310) ||
+		(pdgDg[1]==211 && pdgDg[0]==3122) ) {
+      AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
+		      finalLabel,pdgabs,
+		      dgLabels[1],pdgDg[1],dgLabels[0],pdgDg[0]));
+    }
+  }
+
+  return finalLabel;
+
 }
 //-----------------------------------------------------------------------------
 Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,

@@ -110,6 +110,8 @@ class AliAODPidHF : public AliAODPid{
 
  Bool_t IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK);
 
+ Bool_t IsExcluded(AliAODTrack *track, Int_t labelTrack, Double_t nsigmaCut, TString detector);
+
  void GetTPCBetheBlochParams(Double_t alephParameters[5]) const;
  void SetBetheBloch();
   // method for AliPIDCombined object
@@ -117,11 +119,12 @@ class AliAODPidHF : public AliAODPid{
  void SetPriorDistribution(AliPID::EParticleType type,TH1F *prior);
  void DrawPrior(AliPID::EParticleType type);
 
- protected:
-
  Int_t ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const;
  Int_t ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const;
  Int_t ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const;
+
+ protected:
+
  void BayesianProbabilityITS(AliAODTrack *track,Double_t *prob) const;
  void BayesianProbabilityTPC(AliAODTrack *track,Double_t *prob) const;
  void BayesianProbabilityTOF(AliAODTrack *track,Double_t *prob) const;
