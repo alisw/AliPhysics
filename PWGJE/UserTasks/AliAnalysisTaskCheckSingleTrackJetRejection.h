@@ -102,7 +102,7 @@ class AliAnalysisTaskCheckSingleTrackJetRejection : public AliAnalysisTaskSE
 		TH2F         *fH2jetAKT04_Jetpt_maxpt  ;
 
 		TH2F         *fH2jetMCAKT04_Eratio       [6];
-		TH1F         *fH1jetMCAKT04_match        [6];
+		TH1F         *fH1jetMCAKT04_ptmatch        [6];
 
 
 

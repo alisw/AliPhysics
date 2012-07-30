@@ -622,7 +622,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 
 				AliInputEventHandler* inputHandler = (AliInputEventHandler*)
 								((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-				if(!(inputHandler->IsEventSelected() & AliVEvent::kAny)){
+				if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)){
 								if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
 								return;
 				}
@@ -689,15 +689,26 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 
 
 				TString cAdd = "";
-				cAdd += Form("%02d_",(int)((Radius+0.01)*10.));
-				cAdd += Form("B%d",(int)BackM);
-				cAdd += Form("_Filter%05d",Filtermask);
-				cAdd += Form("_Cut%05d",(int)(1000.*TrackPtcut));
-				cAdd += Form("_Skip%02d",SkipCone);
 				TString Branchname_gen,Branchname_gen2,Branchname_rec;
-				Branchname_gen  = Form("clustersAODMC_%s%s",JFAlg.Data(),cAdd.Data());
-				Branchname_gen2 = Form("clustersAODMC2_%s%s",JFAlg.Data(),cAdd.Data());
-				Branchname_rec  = Form("clustersAOD_%s%s",JFAlg.Data(),cAdd.Data());
+				if((JFAlg=="ANTIKT")||(JFAlg=="KT")){
+								cAdd += Form("%02d_",(int)((Radius+0.01)*10.));
+								cAdd += Form("B%d",(int)BackM);
+								cAdd += Form("_Filter%05d",Filtermask);
+								cAdd += Form("_Cut%05d",(int)(1000.*TrackPtcut));
+								cAdd += Form("_Skip%02d",SkipCone);
+								Branchname_gen  = Form("clustersAODMC_%s%s",JFAlg.Data(),cAdd.Data());
+								Branchname_gen2 = Form("clustersAODMC2_%s%s",JFAlg.Data(),cAdd.Data());
+								Branchname_rec  = Form("clustersAOD_%s%s",JFAlg.Data(),cAdd.Data());
+				}
+				else{
+								cAdd += Form("%02d_",(int)((Radius+0.01)*10.));
+								cAdd += Form("B%d",(int)BackM);
+								cAdd += Form("_Filter%05d",Filtermask);
+								cAdd += Form("_Cut%05d",(int)(1000.*TrackPtcut));
+								Branchname_gen  = Form("jetsAODMC_%s%s",JFAlg.Data(),cAdd.Data());
+								Branchname_gen2 = Form("jetsAODMC2_%s%s",JFAlg.Data(),cAdd.Data());
+								Branchname_rec  = Form("jetsAOD_%s%s",JFAlg.Data(),cAdd.Data());
+				}
 
 
 				for(int algorithm=0;algorithm<3;algorithm++){
@@ -1131,6 +1142,10 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 																if(findDiJetMC)fH2MleadCorrelation_MCRec->Fill(MleadMC,Mlead);
 												}
 								}
+								fH2Mult_Mtrack->Fill(Mult,Track_n); 
+								fH2Mult_Mjet  ->Fill(Mult,Mjet_tot);
+								fH2Mult_Njet  ->Fill(Mult,Njet_tot);
+								if(findLJetAOD)fH2Mult_Mlead ->Fill(Mult,Mlead);   
 				}
 				else{
 								fH2Mult_Mtrack->Fill(Mult,Track_n); 

@@ -106,7 +106,7 @@ ClassImp(AliAnalysisTaskCheckSingleTrackJetRejection)
 								fH1jetAKT04_pt           [j]=0;
 
 								fH2jetMCAKT04_Eratio       [j]=0;
-								fH1jetMCAKT04_match        [j]=0;
+								fH1jetMCAKT04_ptmatch        [j]=0;
 				}
 
 				// Default constructor
@@ -147,7 +147,7 @@ AliAnalysisTaskCheckSingleTrackJetRejection::AliAnalysisTaskCheckSingleTrackJetR
 								fH1jetAKT04_pt           [j]=0;
 
 								fH2jetMCAKT04_Eratio       [j]=0;
-								fH1jetMCAKT04_match        [j]=0;
+								fH1jetMCAKT04_ptmatch        [j]=0;
 				}
 
 				// Constructor
@@ -182,13 +182,13 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserCreateOutputObjects()
 								for(int j=0;j<6;j++){
 												histname = Form("fH1jetMCAKT04_pt%d",j);
 												fH1jetMCAKT04_pt[j] = new TH1F(histname,histname,200,0,200);
-												histname = Form("fH2jetAKT04_pt%d",j);
+												histname = Form("fH1jetAKT04_pt%d",j);
 												fH1jetAKT04_pt[j] = new TH1F(histname,histname,200,0,200);
 
 												histname = Form("fH2jetMCAKT04_Eratio%d",j);
 												fH2jetMCAKT04_Eratio[j] = new TH2F(histname,histname,200,0,200,100,0,30);
-												histname = Form("fH1jetMCAKT04_match%d",j);
-												fH1jetMCAKT04_match[j] = new TH1F(histname,histname,200,0,200);
+												histname = Form("fH1jetMCAKT04_ptmatch%d",j);
+												fH1jetMCAKT04_ptmatch[j] = new TH1F(histname,histname,200,0,200);
 								}
 								fHistList->Add(fH1Xsec);
 								fHistList->Add(fH1Trials);
@@ -198,7 +198,7 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserCreateOutputObjects()
 												fHistList->Add(fH1jetAKT04_pt[j]);
 												fHistList->Add(fH1jetMCAKT04_pt[j]);
 												fHistList->Add(fH2jetMCAKT04_Eratio[j]);
-												fHistList->Add(fH1jetMCAKT04_match[j]);
+												fHistList->Add(fH1jetMCAKT04_ptmatch[j]);
 								}
 				}
 				else    {
@@ -206,7 +206,7 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserCreateOutputObjects()
 								histname = Form("fH2jetAKT04_Jetpt_maxpt");
 								fH2jetAKT04_Jetpt_maxpt = new TH2F(histname,histname,400,0,400,400,0,400);
 								for(int j=0;j<6;j++){
-												histname = Form("fH2jetAKT04_pt%d",j);
+												histname = Form("fH1jetAKT04_pt%d",j);
 												fH1jetAKT04_pt[j] = new TH1F(histname,histname,200,0,200);
 								}
 								fHistList->Add(fH1Events);
@@ -495,7 +495,7 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 												if(TMath::Abs(Jet_eta[0][njetMC])<eta_cut_Jet){
 																for(int cut=0;cut<6;cut++){
 																				if(fFIND[cut][njetMC]==true){
-																								fH1jetMCAKT04_match[cut]->Fill(Jet_pt[0][njetMC]);
+																								fH1jetMCAKT04_ptmatch[cut]->Fill(Jet_pt[0][njetMC]);
 																								fH2jetMCAKT04_Eratio[cut]->Fill(Jet_pt[0][njetMC],Jet_pt[1][nearrecID[njetMC]]/Jet_pt[0][njetMC]);
 																				}
 																}
