@@ -946,4 +946,40 @@ Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &nsig
   return 1;
 }
 
+//-----------------------
+Bool_t AliAODPidHF::IsExcluded(AliAODTrack *track, Int_t labelTrack, Double_t nsigmaCut,
+			       TString detectors) {
+
+  if (detectors.Contains("ITS")) {
+
+    AliInfo("Nothing to be done");
+    /*
+    Double_t nsigma=0.;
+    if (GetnSigmaITS(track,labelTrack,nsigma)==1){
+      if(nsigma>nsigmaCut) return kTRUE;
+    }
+    */
+    return kFALSE;
+
+  } else if (detectors.Contains("TPC")) {
+
+    Double_t nsigma=0.;
+    if (GetnSigmaTPC(track,labelTrack,nsigma)==1){
+      if(nsigma>nsigmaCut) return kTRUE;
+    }
+    return kFALSE;
+
+  } else if (detectors.Contains("TOF")) {
+
+    if (!(CheckTOFPIDStatus(track))) return kFALSE;
+    Double_t nsigma=0.;
+    if (GetnSigmaTOF(track,labelTrack,nsigma)==1){
+      if(nsigma>nsigmaCut) return kTRUE;
+    }
+    return kFALSE;
+
+  }
+  return kFALSE;
+
+}
 //-----------------------------

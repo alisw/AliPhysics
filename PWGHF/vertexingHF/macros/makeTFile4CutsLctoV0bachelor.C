@@ -33,6 +33,23 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetPtRange(0.3,1.e10);
 
+
+
+  AliESDtrackCuts* esdTrackCutsV0daughters=new AliESDtrackCuts();
+  esdTrackCutsV0daughters->SetRequireSigmaToVertex(kFALSE);
+  //default
+  esdTrackCutsV0daughters->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsV0daughters->SetRequireITSRefit(kTRUE);
+  esdTrackCutsV0daughters->SetMinNClustersITS(4); // default is 5
+  esdTrackCutsV0daughters->SetMinNClustersTPC(70);
+  esdTrackCutsV0daughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					      AliESDtrackCuts::kAny); 
+  // default is kBoth, otherwise kAny
+  esdTrackCutsV0daughters->SetMinDCAToVertexXY(0.);
+  esdTrackCutsV0daughters->SetPtRange(0.,1.e10);
+
+
+
   AliRDHFCutsLctoV0* RDHFLctoV0An=new AliRDHFCutsLctoV0();
   RDHFLctoV0An->SetName("LctoV0AnalysisCuts");
   RDHFLctoV0An->SetTitle("Analysis cuts for Lc analysis");
@@ -43,6 +60,12 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
   RDHFLctoV0Prod->AddTrackCuts(esdTrackCuts);
   RDHFLctoV0An->AddTrackCuts(esdTrackCuts);
+
+  RDHFLctoV0Prod->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
+  RDHFLctoV0An->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
+
+  RDHFLctoV0Prod->SetPidSelectionFlag(0); // TOF AND TPC
+  RDHFLctoV0An->SetPidSelectionFlag(0); // TOF AND TPC
 
   const Int_t nptbins=1;
   Float_t* ptbins;
@@ -58,13 +81,13 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   prodcutsval=new Float_t*[nvars];
   for(Int_t ic=0;ic<nvars;ic++){prodcutsval[ic]=new Float_t[nptbins];}
   for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
-   prodcutsval[0][ipt2]=1.; // inv. mass if K0S [GeV/c2]
-   prodcutsval[1][ipt2]=1.; // inv. mass if Lambda [GeV/c2]
-   prodcutsval[2][ipt2]=0.05; // inv. mass V0 if K0S [GeV/c2]
-   prodcutsval[3][ipt2]=0.05; // inv. mass V0 if Lambda [GeV/c2]
-   prodcutsval[4][ipt2]=0.3; // pT min bachelor track [GeV/c] // AOD by construction
-   prodcutsval[5][ipt2]=0.;  // pT min V0-positive track [GeV/c]
-   prodcutsval[6][ipt2]=0.;  // pT min V0-negative track [GeV/c]
+   prodcutsval[0][ipt2]=1.;    // inv. mass if K0S [GeV/c2]
+   prodcutsval[1][ipt2]=1.;    // inv. mass if Lambda [GeV/c2]
+   prodcutsval[2][ipt2]=0.05;  // inv. mass V0 if K0S [GeV/c2]
+   prodcutsval[3][ipt2]=0.05;  // inv. mass V0 if Lambda [GeV/c2]
+   prodcutsval[4][ipt2]=0.3;   // pT min bachelor track [GeV/c] // AOD by construction
+   prodcutsval[5][ipt2]=0.;    // pT min V0-positive track [GeV/c]
+   prodcutsval[6][ipt2]=0.;    // pT min V0-negative track [GeV/c]
    prodcutsval[7][ipt2]=1000.; // dca cascade cut [cm]
    prodcutsval[8][ipt2]=1000.; // dca V0 cut [nSigma] // it's 1.5 x offline V0s
   }
@@ -74,13 +97,13 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   anacutsval=new Float_t*[nvars];
   for(Int_t ic=0;ic<nvars;ic++){anacutsval[ic]=new Float_t[nptbins];}
   for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
-   anacutsval[0][ipt2]=0.25; // inv. mass if K0S [GeV/c2]
-   anacutsval[1][ipt2]=0.25; // inv. mass if Lambda [GeV/c2]
+   anacutsval[0][ipt2]=0.25;   // inv. mass if K0S [GeV/c2]
+   anacutsval[1][ipt2]=0.25;   // inv. mass if Lambda [GeV/c2]
    anacutsval[2][ipt2]=0.0075; // inv. mass V0 if K0S [GeV/c2]
    anacutsval[3][ipt2]=0.0030; // inv. mass V0 if Lambda [GeV/c2]
-   anacutsval[4][ipt2]=0.3; // pT min bachelor track [GeV/c] // AOD by construction
-   anacutsval[5][ipt2]=0.;  // pT min V0-positive track [GeV/c]
-   anacutsval[6][ipt2]=0.;  // pT min V0-negative track [GeV/c]
+   anacutsval[4][ipt2]=0.3;    // pT min bachelor track [GeV/c] // AOD by construction
+   anacutsval[5][ipt2]=0.;     // pT min V0-positive track [GeV/c]
+   anacutsval[6][ipt2]=0.;     // pT min V0-negative track [GeV/c]
    anacutsval[7][ipt2]=1000.; // dca cascade cut [cm]
    anacutsval[8][ipt2]=1.5;   // dca V0 cut [nSigma] // it's 1.5 x offline V0s
   }
@@ -110,7 +133,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   pidObjV0pos->SetTPC(kTRUE);
   pidObjV0pos->SetTOF(kTRUE);
   pidObjV0pos->SetTOFdecide(kFALSE);
-  RDHFLctoV0An->SetPidHF(pidObjV0pos);
+  RDHFLctoV0An->SetPidV0pos(pidObjV0pos);
 
   //2. V0neg
   AliAODPidHF* pidObjV0neg = new AliAODPidHF();
@@ -121,7 +144,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   pidObjV0neg->SetTPC(kTRUE);
   pidObjV0neg->SetTOF(kTRUE);
   pidObjV0neg->SetTOFdecide(kFALSE);
-  RDHFLctoV0An->SetPidHF(pidObjV0neg);
+  RDHFLctoV0An->SetPidV0neg(pidObjV0neg);
 
 
   // uncomment these lines for Baysian PID:
@@ -147,7 +170,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   RDHFLctoV0Prod->PrintAll();
   cout<<"This is the object I'm going to save:"<<endl;
   RDHFLctoV0An->PrintAll();
-  TFile* fout=new TFile("Lc2pK0SCuts.root","RECREATE"); 
+  TFile* fout=new TFile("LctoV0bachelorCuts.root","RECREATE"); 
   fout->cd();
   RDHFLctoV0Prod->Write();
   RDHFLctoV0An->Write();
@@ -184,7 +207,24 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   esdTrackCuts->SetEtaRange(-0.8,0.8);
   esdTrackCuts->SetPtRange(0.3,1.e10);
   
+  AliESDtrackCuts* esdTrackCutsV0daughters=new AliESDtrackCuts();
+  esdTrackCutsV0daughters->SetRequireSigmaToVertex(kFALSE);
+  //default
+  esdTrackCutsV0daughters->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsV0daughters->SetRequireITSRefit(kTRUE);
+  esdTrackCutsV0daughters->SetMinNClustersITS(4); // default is 5
+  esdTrackCutsV0daughters->SetMinNClustersTPC(70);
+  esdTrackCutsV0daughters->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny); 
+  // default is kBoth, otherwise kAny
+  esdTrackCutsV0daughters->SetMinDCAToVertexXY(0.);
+  esdTrackCutsV0daughters->SetPtRange(0.,1.e10);
+
   RDHFLctoV0->AddTrackCuts(esdTrackCuts);
+
+  RDHFLctoV0->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
+
+  RDHFLctoV0->SetPidSelectionFlag(0); // TOF AND TPC
 
   const Int_t nvars=9;
 
@@ -319,7 +359,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   pidObjV0pos->SetTPC(kTRUE);
   pidObjV0pos->SetTOF(kTRUE);
   pidObjV0pos->SetTOFdecide(kFALSE);
-  RDHFLctoV0->SetPidHF(pidObjV0pos);
+  RDHFLctoV0->SetPidV0pos(pidObjV0pos);
 
   //2. V0neg
   AliAODPidHF* pidObjV0neg = new AliAODPidHF();
@@ -330,7 +370,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   pidObjV0neg->SetTPC(kTRUE);
   pidObjV0neg->SetTOF(kTRUE);
   pidObjV0neg->SetTOFdecide(kFALSE);
-  RDHFLctoV0->SetPidHF(pidObjV0neg);
+  RDHFLctoV0->SetPidV0neg(pidObjV0neg);
 
   //activate pileup rejection (for pp)
   //RDHFLctoV0->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);

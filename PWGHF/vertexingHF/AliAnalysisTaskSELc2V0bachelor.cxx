@@ -28,9 +28,11 @@
 //-------------------------------------------------------------------------
 //
 //                 Authors: A.De Caro(a,b), P. Pagano(b)
-//  (a) Centro Fermi - Roma and Salerno INFN-University - decaro@sa.infn.it
-//  (b) Salerno INFN-University - paola.pagano@sa.infn.it
+//  (a) Centro 'E.Fermi' - Roma
+//  (b) INFN and University of Salerno
 //
+//  Contatcs: decaro@sa.infn.it
+//            paola.pagano@sa.infn.it
 //-------------------------------------------------------------------------
 
 #include <TSystem.h>
@@ -679,8 +681,10 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODVertex */*vtx
 
   //Lc prong needed to MatchToMC method
 
-  Int_t pdgDgLctoK0spr[2]={2212,310}; // bachelor+V0
-  Int_t pdgDgK0stopipi[2]={211,211};
+  Int_t pdgCand = 4122;
+  Int_t pdgDgLctoV0bachelorOld[2]={2212,310};
+  Int_t pdgDgLctoV0bachelor[2]={310,2212};
+  Int_t pdgDgV0toDaughters[2]={211,211};
 
   // loop over cascades to search for candidates Lc->p+K0S
   Int_t nCascades= arrayLctopKos->GetEntriesFast();
@@ -706,7 +710,9 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODVertex */*vtx
       Int_t pdgCode=-2;
 
       // find associated MC particle for Lc -> p+K0 and K0S->pi+pi
-      Int_t mcLabel = MatchToMC(lcK0spr,pdgDgLctoK0spr,pdgDgK0stopipi,mcArray);
+      Int_t mcLabelOld = MatchToMC(lcK0spr,pdgDgLctoV0bachelorOld,pdgDgV0toDaughters,mcArray);
+      Int_t mcLabel = lcK0spr->MatchToMC(pdgCand,pdgDgLctoV0bachelor[0],pdgDgLctoV0bachelor,pdgDgV0toDaughters,mcArray,kTRUE);
+      if (mcLabelOld!=mcLabel) AliInfo(Form(" Changed MC label: oldONE=%d wrt rightONE=%d",mcLabelOld,mcLabel));
       if (mcLabel>=0) {
 	AliInfo(Form(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cascade numero %d di %d", iLctopK0s,nCascades));
 
@@ -818,18 +824,17 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMC(AliAODRecoCascadeHF *lc2bacV0,
 void AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC)
 {
  
-  AliAODMCParticle *searchLc;
-  AliAODMCParticle *daugh;
-  AliAODMCParticle *daugh1;
-  AliAODMCParticle *daugh2;
-  AliAODMCParticle *daughK0;
-  AliAODMCParticle *daughK0s;
-  AliAODMCParticle *daughK0s1;
-  AliAODMCParticle *daughK0s2;
-  AliAODMCParticle *daughL1;
-  AliAODMCParticle *daughL2;
-  Int_t nDaughLc=0;
+  AliAODMCParticle *searchLc=0;
+  AliAODMCParticle *daugh=0;
+  AliAODMCParticle *daugh1=0;
+  AliAODMCParticle *daugh2=0;
+  AliAODMCParticle *daughK0=0;
+  AliAODMCParticle *daughK0s1=0;
+  AliAODMCParticle *daughK0s2=0;
+  AliAODMCParticle *daughL1=0;
+  AliAODMCParticle *daughL2=0;
 
+  Int_t nDaughLc=0;
   Int_t nDaughK0=0;
   Int_t nDaughK0s=0;
   Int_t searchLcpdg=0;
@@ -861,43 +866,70 @@ void AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC)
 	daughPdg2=daugh2->GetPdgCode();
 	if ( (daughPdg1==2212 && daughPdg2==-311) ||
 	     (daughPdg2==2212 && daughPdg1==-311) ) { // Lc+ -> p K0bar
+	  AliInfo(Form(" Ecco %d(%d) -> %d(%d) %d(%d)",
+		       iii,searchLcpdg,
+		       searchLc->GetDaughter(0),daughPdg1,
+		       searchLc->GetDaughter(1),daughPdg2));
 	  ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(2);
 	  if (daughPdg1==-311) {
-	    daughK0 = (AliAODMCParticle*)arrayMC->At(daugh1->GetDaughter(0));
 	    nDaughK0=daugh1->GetNDaughters();
+	    if (nDaughK0!=1) {
+	      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(4);
+	      continue;
+	    } else {
+	      daughK0 = (AliAODMCParticle*)arrayMC->At(daugh1->GetDaughter(0)); // K0S
+	    }
+	  } else {
+	    nDaughK0=daugh2->GetNDaughters();
+	    if (nDaughK0!=1) {
+	      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(4);
+	      continue;
+	    } else {
+	      daughK0 = (AliAODMCParticle*)arrayMC->At(daugh2->GetDaughter(0)); // K0S
+	    }
 	  }
-	  else {
-	    daughK0 = (AliAODMCParticle*)arrayMC->At(daugh2->GetDaughter(0));
-	    nDaughK0=daugh2->GetNDaughters();	 
+	  if (!daughK0) {
+	    //((TH1F*)(fOutput->FindObject(fillthis)))->Fill(4);
+	    continue;
 	  }
-	  if (nDaughK0==1) {
-	    daughK0Pdg=daughK0->GetPdgCode();
-	    if (daughK0Pdg!=310) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(4);
-	    else {
-	      if (daughK0->GetDaughter(0)<0) continue; // it is very strange
-	      daughK0s= (AliAODMCParticle*)arrayMC->At(daughK0->GetDaughter(0));
-	      cout << " daughK0s = " << daughK0s << endl;
-	      nDaughK0s=daughK0s->GetNDaughters();
-	      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(3);
-	      if (nDaughK0s!=2) continue;
-	      daughK0s1= (AliAODMCParticle*)arrayMC->At(daughK0s->GetDaughter(0));
-	      daughK0s2= (AliAODMCParticle*)arrayMC->At(daughK0s->GetDaughter(1));
-	      daughK0s1pdg=daughK0s1->GetPdgCode();
-	      daughK0s2pdg=daughK0s2->GetPdgCode();
+	  //cout << " positive daughK0 = " << daughK0 << endl;
+	  AliInfo(" Found positive daughK0 ");
+	  daughK0Pdg=daughK0->GetPdgCode();
+	  if (daughK0Pdg!=310) {
+	    ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(4);
+	    continue;
+	  } else {
+	    ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(3);
+	    nDaughK0s=daughK0->GetNDaughters();
+	    if (nDaughK0s!=2) {
+	      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(6);
+	      continue;
+	    }
+	    daughK0s1= (AliAODMCParticle*)arrayMC->At(daughK0->GetDaughter(0));
+	    daughK0s2= (AliAODMCParticle*)arrayMC->At(daughK0->GetDaughter(1));
+	    daughK0s1pdg=daughK0s1->GetPdgCode();
+	    daughK0s2pdg=daughK0s2->GetPdgCode();
 
-	      if ( ((daughK0s1pdg== 211) && (daughK0s2pdg==-211)) ||
-		   ((daughK0s2pdg==-211) && (daughK0s1pdg== 211)) ) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(5);
-	      else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(6);
-	    }//else (if (nDaughK0!=1))
-	  } // if (nDaughK0==1)
-	  else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(4);
-	}//if ((daughPdg1==2212 && daughPdg2==311)||(daughPdg2==2212 && daughPdg1==311))
+	    if ( ((daughK0s1pdg==211) && (daughK0s2pdg==-211)) ||
+		 ((daughK0s2pdg==211) && (daughK0s1pdg==-211)) ) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(5);
+	    else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(6);
+	  } // else if (daughK0Pdg==310)
+	}//if ((daughPdg1==2212 && daughPdg2==-311)||(daughPdg2==2212 && daughPdg1==-311))
 
 	else if ( (daughPdg1==3122 && daughPdg2==211) ||
 		  (daughPdg2==3122 && daughPdg1==211) ) { // Lc+ -> pi+ Lambda
+	  AliInfo(Form(" Ecco %d(%d) -> %d(%d) %d(%d)",
+		       iii,searchLcpdg,
+		       searchLc->GetDaughter(0),daughPdg1,
+		       searchLc->GetDaughter(1),daughPdg2));
 	  ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(7);
-	  if (daughPdg1==3122) daugh = (AliAODMCParticle*)arrayMC->At(searchLc->GetDaughter(0));
-	  else daugh = (AliAODMCParticle*)arrayMC->At(searchLc->GetDaughter(1));
+	  if (daughPdg1==3122)
+	    daugh = (AliAODMCParticle*)arrayMC->At(searchLc->GetDaughter(0)); // Lambda
+	  else
+	    daugh = (AliAODMCParticle*)arrayMC->At(searchLc->GetDaughter(1)); // Lambda
+	  if (!daugh) continue;
+	  //cout << " positive daughL = " << daugh << endl;
+	  AliInfo(" Found positive daughL ");
 	  nDaughL=daugh->GetNDaughters();
 	  if (nDaughL==2) {
 	    daughL1= (AliAODMCParticle*)arrayMC->At(daugh->GetDaughter(0));
@@ -905,7 +937,7 @@ void AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC)
 	    daughL1pdg=daughL1->GetPdgCode();
 	    daughL2pdg=daughL2->GetPdgCode();
 	    if ( ((daughL1pdg==-211) && (daughL2pdg==2212)) ||
-		((daughL1pdg==2212) && (daughL2pdg==-211))) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(8);
+		 ((daughL2pdg==-211) && (daughL1pdg==2212)) ) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(8);
 	    else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(9);
 	  }//if (nDaughL==2) 
 	  else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(9);
@@ -917,7 +949,6 @@ void AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC)
 
       if (searchLcpdg == -4122) { // It is Lc+
 	((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-1);
-
 	if (nDaughLc!=2) continue;
 	daugh1 = (AliAODMCParticle*)arrayMC->At(searchLc->GetDaughter(0));
 	daughPdg1=daugh1->GetPdgCode();
@@ -926,48 +957,76 @@ void AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC)
 	if ( (daughPdg1==-2212 && daughPdg2==311) ||
 	     (daughPdg2==-2212 && daughPdg1==311) ) { // Lc- -> pbar K0
 	  ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-2);
+	  AliInfo(Form(" Ecco %d(%d) -> %d(%d) %d(%d)",
+		       iii,searchLcpdg,
+		       searchLc->GetDaughter(0),daughPdg1,
+		       searchLc->GetDaughter(1),daughPdg2));
 	  if (daughPdg1==311) {
-	    daughK0 = (AliAODMCParticle*)arrayMC->At(daugh1->GetDaughter(0));
 	    nDaughK0=daugh1->GetNDaughters();
+	    if (nDaughK0!=1) {
+	      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-4);
+	      continue;
+	    } else {
+	      daughK0 = (AliAODMCParticle*)arrayMC->At(daugh1->GetDaughter(0));
+	    }
+	  } else {
+	    nDaughK0=daugh2->GetNDaughters();
+	    if (nDaughK0!=1) {
+	      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-4);
+	      continue;
+	    } else {
+	      daughK0 = (AliAODMCParticle*)arrayMC->At(daugh2->GetDaughter(0));
+	    }
 	  }
-	  else {
-	    daughK0 = (AliAODMCParticle*)arrayMC->At(daugh2->GetDaughter(0));
-	    nDaughK0 = daugh2->GetNDaughters();	 
-	  }	
-	  if (nDaughK0==1) {
-	    daughK0Pdg=daughK0->GetPdgCode();
-	    if (daughK0Pdg!=310) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-4);
-	    else {
-	      if (daughK0->GetDaughter(0)<0) continue; // it is very strange
-
-	      daughK0s= (AliAODMCParticle*)arrayMC->At(daughK0->GetDaughter(0));
-	      nDaughK0s=daughK0s->GetNDaughters();
-	      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-3);
-	      if (nDaughK0s!=2) continue;
-	      daughK0s1= (AliAODMCParticle*)arrayMC->At(daughK0s->GetDaughter(0));
-	      daughK0s2= (AliAODMCParticle*)arrayMC->At(daughK0s->GetDaughter(1));
-	      daughK0s1pdg=daughK0s1->GetPdgCode();
-	      daughK0s2pdg=daughK0s2->GetPdgCode();
-	      if ( ((daughK0s1pdg== 211) && (daughK0s2pdg==-211)) ||
-		   ((daughK0s2pdg==-211) && (daughK0s1pdg== 211)) ) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-5);
-	      else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-6);
-	    }//else (if (nDaughK0!=1))
-	  } // if (nDaughK0==1)
-	  else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-4);
+	  if (!daughK0) {
+            //((TH1F*)(fOutput->FindObject(fillthis)))->Fill(4);
+	    continue;
+	  }
+	  //cout << " negative daughK0 = " << daughK0 << endl;
+	  AliInfo(" Found negative daughK0 ");
+	  daughK0Pdg=daughK0->GetPdgCode();
+	  if (daughK0Pdg!=310) {
+	    ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-4);
+	    continue;
+	  } else {
+	    ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-3);
+	    nDaughK0s=daughK0->GetNDaughters();
+	    if (nDaughK0s!=2) {
+	      ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-6);
+	      continue;
+	    }
+	    daughK0s1= (AliAODMCParticle*)arrayMC->At(daughK0->GetDaughter(0));
+	    daughK0s2= (AliAODMCParticle*)arrayMC->At(daughK0->GetDaughter(1));
+	    daughK0s1pdg=daughK0s1->GetPdgCode();
+	    daughK0s2pdg=daughK0s2->GetPdgCode();
+	    if ( ((daughK0s1pdg==211) && (daughK0s2pdg==-211)) ||
+		 ((daughK0s2pdg==211) && (daughK0s1pdg==-211)) ) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-5);
+	    else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-6);
+	  } // else if (daughK0Pdg==310)
 	}//if ((daughPdg1==-2212 && daughPdg2==-311)||(daughPdg2==-2212 && daughPdg1==-311))
 
-	else if ( (daughPdg1==-3122 && daughPdg2==-211) || (daughPdg2==-3122 && daughPdg1==-211) ) {
+	else if ( (daughPdg1==-3122 && daughPdg2==-211) ||
+		  (daughPdg2==-3122 && daughPdg1==-211) ) {
+	  AliInfo(Form(" Ecco %d(%d) -> %d(%d) %d(%d)",
+		       iii,searchLcpdg,
+		       searchLc->GetDaughter(0),daughPdg1,
+		       searchLc->GetDaughter(1),daughPdg2));
 	  ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-7);
-	  if (daughPdg1==-3122) daugh = (AliAODMCParticle*)arrayMC->At(searchLc->GetDaughter(0));
-	  else daugh = (AliAODMCParticle*)arrayMC->At(searchLc->GetDaughter(1));
+	  if (daughPdg1==-3122)
+	    daugh = (AliAODMCParticle*)arrayMC->At(searchLc->GetDaughter(0));
+	  else
+	    daugh = (AliAODMCParticle*)arrayMC->At(searchLc->GetDaughter(1));
+	  if (!daugh) continue;
+	  //cout << " negative daughL = " << daugh << endl;
+	  AliInfo(" Found negative daughL ");
 	  nDaughL=daugh->GetNDaughters();
 	  if (nDaughL==2) {
 	    daughL1 = (AliAODMCParticle*)arrayMC->At(daugh->GetDaughter(0));
 	    daughL2 = (AliAODMCParticle*)arrayMC->At(daugh->GetDaughter(1));
 	    daughL1pdg=daughL1->GetPdgCode();
 	    daughL2pdg= daughL2->GetPdgCode();
-	    if ( ((daughL1pdg==  211) && (daughL2pdg==-2212)) ||
-		((daughL1pdg==-2212) && (daughL2pdg==  211)) ) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-8);
+	    if ( ((daughL1pdg==211) && (daughL2pdg==-2212)) ||
+		 ((daughL2pdg==211) && (daughL1pdg==-2212)) ) ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-8);
 	    else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-9);
 	  }//if (nDaughL==2) 
 	  else ((TH1F*)(fOutput->FindObject(fillthis)))->Fill(-9);
@@ -1244,9 +1303,9 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
   
     nameSgn="histcosOAK0SpSgnvsp";
     nameBkg="histcosOAK0SpBkgvsp";
-    TH2F* cosOpeningAngleK0SpSgnvsp= new TH2F(nameSgn.Data(),"#Lambda_{C}  Signal : K^{0}_{S} - p Opening Angle  vs p - MC ; Cos(Opening Angle);  p ",
+    TH2F* cosOpeningAngleK0SpSgnvsp= new TH2F(nameSgn.Data(),"#Lambda_{C} SGN : K^{0}_{S} - p Opening Angle  vs p - MC ; Cos(Opening Angle);  p ",
 					      200,-1.,1.,200,0.,20.);
-    TH2F* cosOpeningAngleK0SpBkgvsp= new TH2F(nameBkg.Data(),"#Lambda_{C}  Background : K^{0}_{S} - p Opening Angle  vs p - MC;  Cos(Opening Angle);  p ",
+    TH2F* cosOpeningAngleK0SpBkgvsp= new TH2F(nameBkg.Data(),"#Lambda_{C} BKG : K^{0}_{S} - p Opening Angle  vs p - MC;  Cos(Opening Angle);  p ",
 					      200,-1.,1.,200,0.,20.);
 
     TH2F* allcosOpeningAngleK0SpSgnvsp= (TH2F*)cosOpeningAngleK0SpSgnvsp->Clone(); 
@@ -1263,9 +1322,9 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
     nameSgn="histcosOAK0SpSgnvspOffline";
     nameBkg="histcosOAK0SpBkgvspOffline";
-    TH2F* cosOpeningAngleK0SpSgnvspOffline= new TH2F(nameSgn.Data(),"#Lambda_{C}  Signal : K^{0}_{S} - p Opening Angle  vs p  -  Offline  - MC ; Cos(Opening Angle);  p ",
+    TH2F* cosOpeningAngleK0SpSgnvspOffline= new TH2F(nameSgn.Data(),"#Lambda_{C} SGN : K^{0}_{S} - p Opening Angle  vs p  -  Offline  - MC ; Cos(Opening Angle);  p ",
 						     200,-1.,1.,200,0.,20.);
-    TH2F* cosOpeningAngleK0SpBkgvspOffline= new TH2F(nameBkg.Data(),"#Lambda_{C}  Background : K^{0}_{S} - p Opening Angle  vs p  -  Offline  - MC;  Cos(Opening Angle);  p ",
+    TH2F* cosOpeningAngleK0SpBkgvspOffline= new TH2F(nameBkg.Data(),"#Lambda_{C} BKG : K^{0}_{S} - p Opening Angle  vs p  -  Offline  - MC;  Cos(Opening Angle);  p ",
 						     200,-1.,1.,200,0.,20.);
     
 
@@ -1283,9 +1342,9 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
     nameSgn="histpK0SvspSgn";
     nameBkg="histpK0SvspBkg";
-    TH2F* momentumDistributionK0SvspSgn= new TH2F(nameSgn.Data(),"#Lambda_{C}  Signal : K^{0}_{S} vs p Total Momentum Distribution - MC; p_{p};  p_{K^{0}_{S}}   ",
+    TH2F* momentumDistributionK0SvspSgn= new TH2F(nameSgn.Data(),"#Lambda_{C} SGN : K^{0}_{S} vs p Total Momentum Distribution - MC; p_{p}; p_{K^{0}_{S}}",
 						  200,0.,20.,200,0.,20.);
-    TH2F* momentumDistributionK0SvspBkg= new TH2F(nameBkg.Data(),"#Lambda_{C}  Background : K^{0}_{S} vs p Total Momentum Distribution - MC;  p_{p}; p_{K^{0}_{S}}   ",
+    TH2F* momentumDistributionK0SvspBkg= new TH2F(nameBkg.Data(),"#Lambda_{C} BKG : K^{0}_{S} vs p Total Momentum Distribution - MC; p_{p}; p_{K^{0}_{S}}",
 						  200,0.,20.,200,0.,20.);
 
     TH2F* allmomentumDistributionK0SvspSgn= (TH2F*)momentumDistributionK0SvspSgn->Clone(); 
@@ -1300,9 +1359,9 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
     nameSgn="histpK0SvspOfflineSgn";
     nameBkg="histpK0SvspOfflineBkg";
-    TH2F* momentumDistributionK0SvspOfflineSgn= new TH2F(nameSgn.Data(),"#Lambda_{C}  Signal : K^{0}_{S} vs p Total Momentum Distribution - Offline  - MC; p_{p};  p_{K^{0}_{S}}   ",
+    TH2F* momentumDistributionK0SvspOfflineSgn= new TH2F(nameSgn.Data(),"#Lambda_{C} SGN : K^{0}_{S} vs p Total Momentum Distribution - Offline  - MC; p_{p};  p_{K^{0}_{S}}",
 							 200,0.,20.,200,0.,20.);
-    TH2F* momentumDistributionK0SvspOfflineBkg= new TH2F(nameBkg.Data(),"#Lambda_{C}  Background : K^{0}_{S} vs p Total Momentum Distribution - Offline  - MC;  p_{p}; p_{K^{0}_{S}}   ",
+    TH2F* momentumDistributionK0SvspOfflineBkg= new TH2F(nameBkg.Data(),"#Lambda_{C} BKG : K^{0}_{S} vs p Total Momentum Distribution - Offline  - MC;  p_{p}; p_{K^{0}_{S}}",
 							 200,0.,20.,200,0.,20.);
 
 
@@ -1358,12 +1417,12 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 
     nameSgn="histoDCAtoPVvsinvmassK0sSgn";
     nameBkg="histoDCAtoPVvsinvmassK0sBkg";
-    TH2F *dcatoPVvspK0sSgn=new TH2F(nameSgn.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass (sgn) ; M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
+    TH2F *dcatoPVvspK0sSgn=new TH2F(nameSgn.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass (sgn); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
     TH2F *dcatoPVvspK0sBkg=new TH2F(nameBkg.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass (bkg); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
     
     nameSgn="histoDCAtoPVvsinvmassK0sOfflineSgn";
     nameBkg="histoDCAtoPVvsinvmassK0sOfflineBkg";
-    TH2F *dcatoPVvspK0sOfflineSgn=new TH2F(nameSgn.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass  -offline - (sgn) ; M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
+    TH2F *dcatoPVvspK0sOfflineSgn=new TH2F(nameSgn.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass  -offline - (sgn); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
     TH2F *dcatoPVvspK0sOfflineBkg=new TH2F(nameBkg.Data(),"K^{0}_{S}: DCA to Primary Vertex vs  K^{0}_{S} invariant mass  -offline - (bkg); M(K^{0}_{S}) [GeV/c^{2}]; DCA to Primary Vertex []; Entries",520,0.43,0.56,100,0.,10.0);
     
 

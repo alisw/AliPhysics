@@ -17,11 +17,16 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 {
  public:
 
-  enum {
+  enum ELctoV0channel {
     kLcToK0Spr=0x0001,
     kLcToLBarpi=0x0002,
     kLcToLpi=0x0004
   };
+
+ enum ELctoV0pidStrategy {
+  kTOFandTPC=0,
+  kTOForTPCveto=1
+ };
 
   AliRDHFCutsLctoV0(const char* name="CutsLctoV0", Short_t v0channel=0);
   
@@ -45,6 +50,13 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(7,iPtBin)] : 1.e6);}
 
+  void SetPidSelectionFlag(Int_t a) {fPidSelectionFlag=a;}
+  Int_t GetPidSelectionFlag() {return fPidSelectionFlag;}
+
+  virtual void SetStandardCutsPP2010();
+  virtual void SetStandardCutsPbPb2010();
+  virtual void SetStandardCutsPbPb2011();
+
   void SetPidV0pos(AliAODPidHF* pidV0pos) {
     if (fPidHFV0pos) delete fPidHFV0pos;
     fPidHFV0pos = new AliAODPidHF(*pidV0pos);
@@ -57,15 +69,25 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   AliAODPidHF * GetPidV0pos() { return fPidHFV0pos; }
   AliAODPidHF * GetPidV0neg() { return fPidHFV0neg; }
 
+  void AddTrackCutsV0daughters(AliESDtrackCuts* v0daug) {
+    fV0daughtersCuts = new AliESDtrackCuts(*v0daug);
+  }
+  virtual AliESDtrackCuts *GetTrackCutsV0daughters() const {return fV0daughtersCuts;}
+
  protected:
+
+  void CheckPID(AliAODTrack *bachelor, AliAODTrack *v0Neg, AliAODTrack *v0Pos,
+		Bool_t &isBachelorID1, Bool_t &isV0NegID2, Bool_t &isV0PosID4);
 
  private:
 
+  Int_t fPidSelectionFlag;
   AliAODPidHF *fPidHFV0pos;
   AliAODPidHF *fPidHFV0neg;
+  AliESDtrackCuts *fV0daughtersCuts; // cuts for v0 daughters (AOD converted to ESD on the flight!)
   //UShort_t fV0channel;
 
-  ClassDef(AliRDHFCutsLctoV0,2);  // class for cuts on AOD reconstructed Lc->V0+bachelor
+  ClassDef(AliRDHFCutsLctoV0,3);  // class for cuts on AOD reconstructed Lc->V0+bachelor
 };
 
 #endif

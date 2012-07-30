@@ -154,6 +154,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t  *GetIsUpperCut() const {return fIsUpperCut;}
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
   virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return 0;}
+  virtual AliESDtrackCuts *GetTrackCutsV0daughters() const {return 0;}
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) = 0;
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent * /*aod*/)
             {return GetCutVarsForOpt(d,vars,nvars,pdgdaughters);}
