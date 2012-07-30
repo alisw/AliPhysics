@@ -25,7 +25,12 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
   fESDtrackCuts(0),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
+  fMinTrackPt(0),
   fMaxTrackPt(1000),
+  fMinTrackEta(-0.9),
+  fMaxTrackEta(0.9),
+  fMinTrackPhi(-10),
+  fMaxTrackPhi(10),
   fTrackEfficiency(1),
   fTracksIn(0),
   fTracksOut(0)
@@ -42,7 +47,12 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
   fESDtrackCuts(0),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
+  fMinTrackPt(0),
   fMaxTrackPt(1000),
+  fMinTrackEta(-0.9),
+  fMaxTrackEta(0.9),
+  fMinTrackPhi(-10),
+  fMaxTrackPhi(10),
   fTrackEfficiency(1),
   fTracksIn(0),
   fTracksOut(0)
@@ -115,7 +125,11 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
     if (!track)
       continue;
 
-    if (track->Pt() > fMaxTrackPt)
+    if (track->Pt() > fMaxTrackPt || track->Pt() < fMinTrackPt)
+      continue;
+
+    if (track->Eta() < fMinTrackEta || track->Eta() > fMaxTrackEta || 
+	track->Phi() < fMinTrackPhi || track->Phi() > fMaxTrackPhi)
       continue;
 
     Bool_t isEmc = kFALSE;

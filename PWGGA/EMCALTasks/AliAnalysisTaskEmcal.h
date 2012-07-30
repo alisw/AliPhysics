@@ -45,6 +45,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetOffTrigger(UInt_t t)                               { fOffTrigger    = t;                               }
   void                        SetPtCut(Double_t cut)                                { SetClusPtCut(cut); SetTrackPtCut(cut);            }
   void                        SetTrackPtCut(Double_t cut)                           { fTrackPtCut     = cut;          }
+  void                        SetTrackEtaLimits(Double_t min, Double_t max)         { fMaxTrackEta      = max ; fMinTrackEta      = min ; }
+  void                        SetTrackPhiLimits(Double_t min, Double_t max)         { fMaxTrackPhi      = max ; fMinTrackPhi      = min ; }
   void                        SetTracksName(const char *n)                          { fTracksName     = n;            }
   void                        SetTrigClass(const char *n)                           { fTrigClass = n;                 } 
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz = min; fMaxVz   = max;   }
@@ -78,6 +80,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMaxBinPt;                   // max pt in histograms
   Double_t                    fClusPtCut;                  // cut on cluster pt
   Double_t                    fTrackPtCut;                 // cut on track pt
+  Double_t                    fMinTrackEta;                // cut on track eta
+  Double_t                    fMaxTrackEta;                // cut on track eta
+  Double_t                    fMinTrackPhi;                // cut on track phi
+  Double_t                    fMaxTrackPhi;                // cut on track phi
   Double_t                    fClusTimeCutLow;             // low time cut for clusters
   Double_t                    fClusTimeCutUp;              // up time cut for clusters
   TClonesArray               *fTracks;                     //!tracks
@@ -96,6 +102,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 5) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 6) // EMCAL base analysis task
 };
 #endif

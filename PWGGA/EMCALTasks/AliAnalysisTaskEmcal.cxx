@@ -47,6 +47,10 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMaxBinPt(250),
   fClusPtCut(0.15),
   fTrackPtCut(0.15),
+  fMinTrackEta(-0.9),
+  fMaxTrackEta(0.9),
+  fMinTrackPhi(-10),
+  fMaxTrackPhi(10),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fTracks(0),
@@ -86,6 +90,10 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMaxBinPt(250),
   fClusPtCut(0.15),
   fTrackPtCut(0.15),
+  fMinTrackEta(-0.9),
+  fMaxTrackEta(0.9),
+  fMinTrackPhi(-10),
+  fMaxTrackPhi(10),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fTracks(0),
@@ -203,6 +211,10 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVTrack *track, Bool_t acceptMC) cons
     return kFALSE;
 
   if (track->Pt() < fTrackPtCut)
+    return kFALSE;
+
+  if (track->Eta() < fMinTrackEta || track->Eta() > fMaxTrackEta || 
+      track->Phi() < fMinTrackPhi || track->Phi() > fMaxTrackPhi)
     return kFALSE;
   
   return kTRUE;

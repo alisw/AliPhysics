@@ -8,6 +8,7 @@
 
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
@@ -37,10 +38,10 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
   fClusterArray(0x0),
   fOutputList(0x0),        
   fHEventStat(0),      
-  fHTrkEffParGenPt(0), 
-  fHTrkEffDetGenPt(0), 
-  fHTrkEffDetRecPt(0),
-  fHTrkEffDetRecFakePt(0), 
+  fHTrkEffParGenPtEtaPhi(0), 
+  fHTrkEffDetGenPtEtaPhi(0), 
+  fHTrkEffDetRecPtEtaPhi(0),
+  fHTrkEffDetRecFakePtEtaPhi(0), 
   fHScaleFactor(0),
   fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
@@ -83,10 +84,10 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH(const char *name) :
   fClusterArray(0x0),
   fOutputList(0x0),        
   fHEventStat(0),      
-  fHTrkEffParGenPt(0), 
-  fHTrkEffDetGenPt(0), 
-  fHTrkEffDetRecPt(0), 
-  fHTrkEffDetRecFakePt(0),
+  fHTrkEffParGenPtEtaPhi(0), 
+  fHTrkEffDetGenPtEtaPhi(0), 
+  fHTrkEffDetRecPtEtaPhi(0), 
+  fHTrkEffDetRecFakePtEtaPhi(0),
   fHScaleFactor(0),
   fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
@@ -153,17 +154,29 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   fHEventStat->GetXaxis()->SetBinLabel(8,"cls/>3-truth");
   fOutputList->Add(fHEventStat);
 
-  fHTrkEffParGenPt = new TH1F("fHTrkEffParGenPt", "Particle level truth p_{T} distribution of generated primary charged pions;p_{T}^{gen} (GeV/c)",500,0.0,50.0);
-  fOutputList->Add(fHTrkEffParGenPt);
+  fHTrkEffParGenPtEtaPhi = new TH3F("fHTrkEffParGenPtEtaPhi","Particle level truth Phi-Eta-p_{T} distribution of primary charged pions", 500, 0, 50, 60, -1.5, 1.5, 128, 0, 6.4);
+  fHTrkEffParGenPtEtaPhi->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
+  fHTrkEffParGenPtEtaPhi->GetYaxis()->SetTitle("#eta");
+  fHTrkEffParGenPtEtaPhi->GetZaxis()->SetTitle("#phi");
+  fOutputList->Add(fHTrkEffParGenPtEtaPhi);
+  
+  fHTrkEffDetGenPtEtaPhi = new TH3F("fHTrkEffDetGenPtEtaPhi","Detector level truth Phi-Eta-p_{T} distribution of primary charged pions", 500, 0, 50, 60, -1.5, 1.5, 128, 0, 6.4);
+  fHTrkEffDetGenPtEtaPhi->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
+  fHTrkEffDetGenPtEtaPhi->GetYaxis()->SetTitle("#eta");
+  fHTrkEffDetGenPtEtaPhi->GetZaxis()->SetTitle("#phi");
+  fOutputList->Add(fHTrkEffDetGenPtEtaPhi);
 
-  fHTrkEffDetGenPt = new TH1F("fHTrkEffDetGenPt", "Detector level truth p_{T} distribution of primary charged pions;p_{T}^{gen} (GeV/c)",500,0.0,50.0);
-  fOutputList->Add(fHTrkEffDetGenPt);
+  fHTrkEffDetRecPtEtaPhi = new TH3F("fHTrkEffDetRecPtEtaPhi","Reconstructed track Phi-Eta-p_{T} distribution of primary charged pions", 500, 0, 50, 60, -1.5, 1.5, 128, 0, 6.4);
+  fHTrkEffDetRecPtEtaPhi->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
+  fHTrkEffDetRecPtEtaPhi->GetYaxis()->SetTitle("#eta");
+  fHTrkEffDetRecPtEtaPhi->GetZaxis()->SetTitle("#phi");
+  fOutputList->Add(fHTrkEffDetRecPtEtaPhi);
 
-  fHTrkEffDetRecPt = new TH1F("fHTrkEffDetRecPt", "Reconstructed track p_{T} distribution of primary charged pions;p_{T}^{rec} (GeV/c)",500,0.0,50.0);
-  fOutputList->Add(fHTrkEffDetRecPt);
-
-  fHTrkEffDetRecFakePt = new TH1F("fHTrkEffDetRecFakePt", "Reconstructed fake track p_{T} distribution of pions;p_{T}^{rec} (GeV/c)",500,0.0,50.0);
-  fOutputList->Add(fHTrkEffDetRecFakePt);
+  fHTrkEffDetRecFakePtEtaPhi = new TH3F("fHTrkEffDetRecFakePtEtaPhi","Reconstructed fake track Phi-Eta-p_{T} distribution of pions", 500, 0, 50, 60, -1.5, 1.5, 128, 0, 6.4);
+  fHTrkEffDetRecFakePtEtaPhi->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
+  fHTrkEffDetRecFakePtEtaPhi->GetYaxis()->SetTitle("#eta");
+  fHTrkEffDetRecFakePtEtaPhi->GetZaxis()->SetTitle("#phi");
+  fOutputList->Add(fHTrkEffDetRecFakePtEtaPhi);
 
   fHScaleFactor = new TH1F("fHScaleFactor", "Scale factor distribution without hadronic correction;Scale factor",100,0,10);
   fOutputList->Add(fHScaleFactor);
@@ -370,7 +383,7 @@ void  AliAnalysisTaskSOH::ProcessTrack()
     }
 
  // fake and secondary tracks
-    if(newTrack->GetLabel()<0 && newTrack->GetPID()==2) fHTrkEffDetRecFakePt->Fill(newTrack->Pt());
+    if(newTrack->GetLabel()<0 && newTrack->GetPID()==2) fHTrkEffDetRecFakePtEtaPhi->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
 
  // Track Indices
     fTrackIndices->AddAt(itr,nTracks);
@@ -512,7 +525,7 @@ void AliAnalysisTaskSOH::ProcessMc()
    //tracking effciency
     if(TMath::Abs(vParticle->Eta())<0.9)
     {
-      if(TMath::Abs(pdgCode==211)) fHTrkEffParGenPt->Fill(vParticle->Pt());
+      if(TMath::Abs(pdgCode==211)) fHTrkEffParGenPtEtaPhi->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
       for(Int_t j=0; j<fTrackIndices->GetSize(); j++)
       {
         AliESDtrack *esdtrack = fESD->GetTrack(fTrackIndices->At(j));
@@ -520,8 +533,8 @@ void AliAnalysisTaskSOH::ProcessMc()
         {
 	  if(TMath::Abs(pdgCode==211))
 	  {
-	    fHTrkEffDetGenPt->Fill(vParticle->Pt());
-	    fHTrkEffDetRecPt->Fill(esdtrack->Pt());
+	    fHTrkEffDetGenPtEtaPhi->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
+	    fHTrkEffDetRecPtEtaPhi->Fill(esdtrack->Pt(), esdtrack->Eta(), esdtrack->Phi());
 	  }
 
     //cluster E vs. truth photon energy
