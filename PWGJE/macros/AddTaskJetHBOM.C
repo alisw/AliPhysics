@@ -1,4 +1,4 @@
-AliAnalysisTaskJetHBOM *AddTaskJetHBOM(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 272, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,TString effLoc = "$ALICE_ROOT/OADB/PWGJE/HBOM/fastMCInput_LHC10h_110719a.root",Int_t fNHBOM = 0);
+AliAnalysisTaskJetHBOM *AddTaskJetHBOM(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 272, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,TString effLoc = "$ALICE_ROOT/OADB/PWGJE/HBOM/fastMCInput_LHC10h_110719a.root",Int_t fNHBOM = 0, Int_t constCone = kFALSE, Float_t constConePhi = 0, Float_t constConeEta = 0);
 
 Int_t kBackgroundModeCl = 0;
 Float_t kPtTrackCutCl = 0.15;
@@ -6,8 +6,10 @@ Float_t kTrackEtaWindowCl = 0.8;
 Float_t kVertexWindowCl = 10;
 
 
-AliAnalysisTaskJetHBOM *AddTaskJetHBOM(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,TString effLoc,Int_t fNHBOM)
+AliAnalysisTaskJetHBOM *AddTaskJetHBOM(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,TString effLoc,Int_t fNHBOM, Int_t constCone, Float_t constConePhi,Float_t constConeEta)
  {
+   //if constCone is true, the random Cone positon is set to constConePhi and constConeEta. Else the cone is random set and the parameters constConePhi and constConeEta are irrelevant
+
  // Creates a jet fider task, configures it and adds it to the analysis manager.
    kPtTrackCutCl = ptTrackCut;
    kTrackEtaWindowCl = etaTrackWindow;
@@ -47,6 +49,9 @@ AliAnalysisTaskJetHBOM *AddTaskJetHBOM(char* bRec,char* bGen ,UInt_t filterMask,
     cAdd += Form("_Filter%05d",filterMask);
     cAdd += Form("_Cut%05d",(int)(1000.*kPtTrackCutCl));
     cAdd += Form("_hbom%02d",fNHBOM);
+    if(constCone){
+      cAdd += Form("_constConePhi%02dEta%02d",constConePhi,constConeEta);
+    }
     Printf("%s %E",cAdd.Data(),kPtTrackCutCl);
     AliAnalysisTaskJetHBOM* hbom = new  AliAnalysisTaskJetHBOM(Form("JetHBOM%s_%s%s",bRec,jf,cAdd.Data()));
       
@@ -108,6 +113,11 @@ AliAnalysisTaskJetHBOM *AddTaskJetHBOM(char* bRec,char* bGen ,UInt_t filterMask,
    default:
      ::Error("AddTaskJetHBOM", "Wrong jet finder selected\n");
      return 0;
+   }
+
+   //Constant Cone analysis
+   if(constCone){
+     hbom->SetRandConePos(constConeEta,constConePhi);
    }
 
    
