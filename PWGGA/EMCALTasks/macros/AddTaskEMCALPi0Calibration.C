@@ -47,8 +47,6 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   
   // Cluster recalculation, Reco Utils configuration
   
-  pi0calib->SwitchOnClusterCorrection();
-
   
   AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
   
@@ -60,10 +58,15 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
                           nonlin,
                           recalE, 
                           rmBad,
-                          recalT);   
+                          recalT); 
   
   reco->SetNumberOfCellsFromEMCALBorder(0); // Do not remove clusters in borders!
-
+  
+  // recalibrate energy and do corrections because of Temperature corrections 
+  pi0calib->SwitchOnClusterCorrection();
+  reco->SwitchOnRecalibration();
+  reco->SwitchOnRunDepCorrection();
+  
   //reco->Print("");
   
   //---------------------
@@ -82,7 +85,6 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString outpu
   
   if(recalE)
   {
-    reco->SwitchOnRecalibration();
     TFile * f = new TFile("RecalibrationFactors.root","read");
     for(Int_t ism = 0; ism < 12; ism++)
     {
