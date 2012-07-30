@@ -1089,7 +1089,7 @@ void AliChaoticity::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
-  cout<<"===========  Event # "<<fEventCounter+1<<"  ==========="<<endl;
+  //cout<<"===========  Event # "<<fEventCounter+1<<"  ==========="<<endl;
   fEventCounter++;
 
   if(fAODcase) fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
@@ -1103,12 +1103,12 @@ void AliChaoticity::Exec(Option_t *)
   // Trigger Cut
   if(fAOD->GetRunNumber() >= 136851 && fAOD->GetRunNumber() <= 139517){// 10h data
   Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
-  if(!isSelected1 && !fMCcase) {cout<<"Event Rejected"<<endl; return;}
+  if(!isSelected1 && !fMCcase) {/*cout<<"Event Rejected"<<endl;*/ return;}
   }if(fAOD->GetRunNumber() >= 167693 && fAOD->GetRunNumber() <= 170593){// 11h data
     Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
     Bool_t isSelected2 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
-    if(!isSelected1 && !isSelected2 && !fMCcase) {cout<<"Event Rejected"<<endl; return;}
-  }else {cout<<"Event Rejected"<<endl; return;}
+    if(!isSelected1 && !isSelected2 && !fMCcase) {/*cout<<"Event Rejected"<<endl;*/ return;}
+  }else {/*cout<<"Event Rejected"<<endl;*/ return;}
 
   ///////////////////////////////////////////////////////////
   const AliAODVertex *primaryVertexAOD;

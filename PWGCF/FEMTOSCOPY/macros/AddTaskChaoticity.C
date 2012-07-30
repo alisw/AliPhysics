@@ -10,7 +10,7 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
   //____________________________________________//
   // Create tasks
   AliChaoticity *ChaoticityTask = new AliChaoticity("ChaoticityTask", MCcase, Tabulatecase, PbPbcase, CentLow, CentHigh);
-  if(!XiStarTask) exit(-1);
+  if(!ChaoticityTask) exit(-1);
   mgr->AddTask(ChaoticityTask);
 
 
@@ -19,7 +19,7 @@ AliChaoticity *AddTaskChaoticity(bool MCcase=kFALSE, bool Tabulatecase=kFALSE, b
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGCF.outputChaoticityAnalysis.root";
-  AliAnalysisDataContainer *coutXiStar = mgr->CreateContainer("ChaoticityOutput", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutChaoticity = mgr->CreateContainer("ChaoticityOutput", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(ChaoticityTask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(ChaoticityTask, 1, coutChaoticity);
   
