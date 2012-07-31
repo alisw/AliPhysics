@@ -21,10 +21,6 @@
 /// @brief  Component to run offline clusterfinders
 ///
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTITSClusterFinderComponent.h" 
 
 #include "AliCDBEntry.h"
@@ -50,6 +46,8 @@ using namespace std;
 #include "TString.h"
 #include "TObjString.h"
 #include <sys/time.h>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTITSClusterFinderComponent);

@@ -29,10 +29,6 @@
 //                                                 //
 /////////////////////////////////////////////////////
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTITSTrackerComponent.h"
 #include "AliHLTArray.h"
 #include "AliExternalTrackParam.h"
@@ -52,6 +48,8 @@ using namespace std;
 #include "AliGeomManager.h"
 #include "AliHLTTrackMCLabel.h"
 #include <map>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp( AliHLTITSTrackerComponent )

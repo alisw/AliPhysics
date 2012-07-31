@@ -29,10 +29,6 @@
 //                                                 //
 /////////////////////////////////////////////////////
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTITSVertexerSPDComponent.h"
 #include "AliHLTArray.h"
 #include "AliExternalTrackParam.h"
@@ -51,6 +47,8 @@ using namespace std;
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliGeomManager.h"
 #include "AliESDVertex.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp( AliHLTITSVertexerSPDComponent )

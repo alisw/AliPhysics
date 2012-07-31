@@ -20,10 +20,6 @@
     @brief  Component for plotting charge in clusters
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTITSClusterHistoComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliCDBEntry.h"
@@ -35,6 +31,8 @@ using namespace std;
 #include <TString.h>
 #include "TObjString.h"
 #include "TObjArray.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTITSClusterHistoComponent)

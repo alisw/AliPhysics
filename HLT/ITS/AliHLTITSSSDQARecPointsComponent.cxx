@@ -20,10 +20,6 @@
     @brief  Component for the SSD clusters QA
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTITSSSDQARecPointsComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliCDBEntry.h"
@@ -41,6 +37,8 @@ using namespace std;
 
 //#include <stdlib.h>
 //#include <cerrno>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTITSSSDQARecPointsComponent)

@@ -22,11 +22,6 @@
     @brief  Component to run data compression for SDD
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
-
 #include "AliHLTITSCompressRawDataSDDComponent.h" 
 
 #include "AliCDBEntry.h"
@@ -37,6 +32,8 @@ using namespace std;
 #include "TString.h"
 #include "TObjString.h"
 #include <sys/time.h>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTITSCompressRawDataSDDComponent);

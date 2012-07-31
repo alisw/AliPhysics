@@ -20,10 +20,6 @@
 /// @date   2009-07-03
 /// @brief  Interface component to the ITS QA
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTITSQAComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliCDBEntry.h"
@@ -34,9 +30,10 @@ using namespace std;
 #include "TObjString.h"
 #include "TObjArray.h"
 
-
 //#include <stdlib.h>
 //#include <cerrno>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTITSQAComponent)

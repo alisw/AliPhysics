@@ -21,10 +21,6 @@
     @brief  Component to run offline clusterfinders
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include <TSystem.h>
 #include <TROOT.h>
 #include "AliHLTITSDigitPublisherComponent.h" 
@@ -38,6 +34,9 @@ using namespace std;
 #include "TTree.h"
 #include "TObjArray.h"
 #include "TClonesArray.h"
+
+using namespace std;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTITSDigitPublisherComponent);
 
