@@ -70,6 +70,7 @@ AliAnalysisTaskSE(),
   fHistNtrCorrVsNchMCPhysicalPrimary(0),
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
+  fHistNtrUnCorrEvSel(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -91,7 +92,7 @@ AliAnalysisTaskSE(),
   fReadMC(kFALSE),
   fMCOption(0),
   fUseBit(kTRUE),
-  fRefMult(9.5),
+  fRefMult(9.26),
   fPdgMeson(411)
 {
    // Default constructor
@@ -119,6 +120,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fHistNtrCorrVsNchMCPhysicalPrimary(0),
   fHistGenPrimaryParticlesInelGt0(0),
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
+  fHistNtrUnCorrEvSel(0),
   fHistNtrCorrEvSel(0),
   fHistNtrCorrEvWithCand(0),
   fHistNtrCorrEvWithD(0),
@@ -140,7 +142,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fReadMC(kFALSE),
   fMCOption(0),
   fUseBit(kTRUE),
-  fRefMult(9.5),
+  fRefMult(9.26),
   fPdgMeson(pdgMeson)
 {
   // 
@@ -251,11 +253,12 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Tracklets multiplicity for selected events; Tracklets ; Entries",200,0.,200.);
-  fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", "Tracklets multiplicity for events with D candidates; Tracklets ; Entries",200,0.,200.);// Total multiplicity
-  fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD", "Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",200,0.,200.); // 
+  fHistNtrUnCorrEvSel = new TH1F("hNtrCorrEvSel","Tracklets multiplicity for selected events; Tracklets ; Entries",200,-0.5,199.5);
+  fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Tracklets multiplicity for selected events; Tracklets ; Entries",200,-0.5,199.5);
+  fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand", "Tracklets multiplicity for events with D candidates; Tracklets ; Entries",200,-0.5,199.5);// Total multiplicity
+  fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD", "Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",200,-0.5,199.5); // 
   fHistNtrEta16vsNtrEta1 = new TH2F("hNtrEta16vsNtrEta1","Uncorrected Eta1.6 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<1.6",200,-0.5,199.5,200,-0.5,199.5); //eta 1.6 vs eta 1.0 histogram 
-  fHistNtrCorrEta1vsNtrRawEta1 = new TH2F("hNtrCorrEta1vsNtrRawEta1","Corrected Eta1 vs Eta1.0; Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",200,-0.,200.,200,-0.5,199.5); //eta 1.6 vs eta 1.0 histogram 
+  fHistNtrCorrEta1vsNtrRawEta1 = new TH2F("hNtrCorrEta1vsNtrRawEta1","Corrected Eta1 vs Eta1.0; Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",200,-0.5,199.5,200,-0.5,199.5); //eta 1.6 vs eta 1.0 histogram 
   fHistNtrVsZvtx = new TH2F("hNtrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
   fHistNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
 
@@ -270,7 +273,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   
   fHistGenPrimaryParticlesInelGt0 = new TH1F("hGenPrimaryParticlesInelGt0","Multiplcity of generated charged particles ; Nparticles ; Entries",200,-0.5,199.5);
 
-  fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",200,0.,200.,200,0.,200.,200,0.,200.);
+  fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",200,-0.5,199.5,200,-0.5,199.5,200,-0.5,199.5);
 
   fHistNtrCorrEvSel->Sumw2();
   fHistNtrCorrEvWithCand->Sumw2();
@@ -311,15 +314,15 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fPtVsMassVsMult=new TH3F("hPtVsMassvsMult", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMult=new TH3F("hPtVsMassvsMult", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,-0.5,199.5,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
  
-  fPtVsMassVsMultNoPid=new TH3F("hPtVsMassvsMultNoPid", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.); 
+  fPtVsMassVsMultNoPid=new TH3F("hPtVsMassvsMultNoPid", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,-0.5,199.5,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.); 
 
   fPtVsMassVsMultUncorr=new TH3F("hPtVsMassvsMultUncorr", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,-0.5,199.5,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
 
-  fPtVsMassVsMultPart=new TH3F("hPtVsMassvsMultPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMultPart=new TH3F("hPtVsMassvsMultPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,-0.5,199.5,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
 
-  fPtVsMassVsMultAntiPart=new TH3F("hPtVsMassvsMultAntiPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,0.,200.,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
+  fPtVsMassVsMultAntiPart=new TH3F("hPtVsMassvsMultAntiPart", "D candidates: p_{t} vs mass vs tracklets multiplicity; Tracklets; Mass M [GeV/c^{2}]; p_{t} [GeV/c]",200,-0.5,199.5,fNMassBins,fLowmasslimit,fUpmasslimit,48,0.,24.);
 
   fOutput->Add(fPtVsMassVsMult);
   fOutput->Add(fPtVsMassVsMultUncorr);
