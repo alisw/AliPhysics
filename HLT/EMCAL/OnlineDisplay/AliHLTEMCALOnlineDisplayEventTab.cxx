@@ -33,13 +33,11 @@
 #include "AliHLTCaloCoordinate.h"
 //#include "AliHLTCaloChannelRawDataStruct.h"
 
-
-using namespace std;
-
 // MT Crap
 #include <TMath.h>
 #include "AliHLTEMCALOnlineDisplayTH2D.h"
 
+using namespace std;
 
 //#include <TEveManager.h>
 //#include <TEveBoxSet.h>

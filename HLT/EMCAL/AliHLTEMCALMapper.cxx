@@ -65,6 +65,7 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
   int tmpXCol = 0;
   int tmpGain = 0;
   int res = 0; 
+  fIsInitializedMapping = false;
   
   if(!base.IsNull())
     {
@@ -75,7 +76,9 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
       if(fp != 0)
 	{
 	  res = fscanf(fp, "%d\n", &nChannels);
+	  if (res!=1) return false;
 	  res = fscanf(fp, "%d\n", &maxaddr);
+	  if (res!=1) return false;
 	  //	  fHw2geomapPtr = new fAltromap[maxaddr +1]; 
 	  fHw2geomapPtr = new fAltromap[MAXHWADDR +1];
 	
@@ -92,6 +95,7 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 	      for(int i=0; i<nChannels; i ++)
 		{
 		  res = fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
+		  if (res!=4) return false;
 		  
 		  if(tmpGain < 2)
 		    {
