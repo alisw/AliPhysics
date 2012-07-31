@@ -362,7 +362,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // load misalignment
     fgGeo = new AliTRDgeometry;
     fgGeo->CreateClusterMatrixArray();
-    MakeChambers();
+    //PH    MakeChambers();
     // load reco param list from OCDB
     AliInfo("Initializing TRD reco params ...");
     fgReconstructor = new AliTRDReconstructor();
