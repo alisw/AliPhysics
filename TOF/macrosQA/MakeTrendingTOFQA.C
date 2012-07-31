@@ -358,7 +358,10 @@ Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool
 		hMatchEffVsRun->SetLineColor(kRed);
 		hMatchEffVsRun->SetLineWidth(2);
 
-		hMatchEffVsRunNormToGoodCh->SetBinContent(irun+1,matchEffLinFit1Gev/goodChannelRatio);
+		if (goodChannelRatio>0)
+		  hMatchEffVsRunNormToGoodCh->SetBinContent(irun+1,matchEffLinFit1Gev/goodChannelRatio);
+		else 
+		  hMatchEffVsRunNormToGoodCh->SetBinContent(irun+1, 0.0);
 		hMatchEffVsRunNormToGoodCh->SetBinError(irun+1,matchEffLinFit1GevErr);
 		hMatchEffVsRunNormToGoodCh->GetXaxis()->SetBinLabel(irun+1,runlabel);
 		hMatchEffVsRunNormToGoodCh->SetLineColor(kBlue);
@@ -1340,14 +1343,15 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 	TH1F * hKaonDiff=(TH1F*)pidList->FindObject("hTOFmatchedExpTimeKa"); 
 	TH1F * hProtonDiff=(TH1F*)pidList->FindObject("hTOFmatchedExpTimePro"); 
  
-
+	TH2F * hDiffTimeT0TOFPion1GeV=(TH2F*)pidList->FindObject("hTOFmatchedTimePion1GeV"); 
+	
 	fout->cd();
 	hPionDiff->Write();
 	hKaonDiff->Write();
 	hProtonDiff->Write();
-
 	hBetaP->Write();
 	hMass->Write();
+	hDiffTimeT0TOFPion1GeV->Write();
 	hDiffTimePi->Write();
 	profDiffTimePi->Write();
 	hDiffTimeKa->Write();
