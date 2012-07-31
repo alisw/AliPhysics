@@ -1,7 +1,3 @@
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 // see header file for class documentation
 // or
 // refer to README to build package
@@ -18,6 +14,8 @@ using namespace std;
 //#include "AliHLTTPCDigitReader.h"
 //#include <vector>
 #include "AliHLTTPCClusters.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusters)

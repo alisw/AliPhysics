@@ -38,15 +38,12 @@
 #include "AliTPCCalROC.h"
 #include "TMath.h"
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include <cstdlib>
 #include <algorithm>
 #include <cerrno>
 #include <sys/time.h>
 
+using namespace std;
 
 AliHLTTPCHWCFSupport::AliHLTTPCHWCFSupport()
   : 

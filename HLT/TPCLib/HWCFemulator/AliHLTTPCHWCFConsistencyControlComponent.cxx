@@ -24,9 +24,6 @@
 //  @note
 
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
 #include "AliHLTTPCHWCFConsistencyControlComponent.h"
 
 #include "AliHLTTPCDefinitions.h"
@@ -46,6 +43,8 @@ using namespace std;
 
 #include <sys/time.h>
 #include "TFile.h"
+
+using namespace std;
 
 AliHLTTPCHWCFConsistencyControlComponent::AliHLTTPCHWCFConsistencyControlComponent()
   :

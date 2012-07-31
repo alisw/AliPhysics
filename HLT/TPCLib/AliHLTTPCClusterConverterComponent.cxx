@@ -28,10 +28,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTTPCClusterConverterComponent.h"
 #include "AliHLTTPCOfflineCluster.h"
 #include "AliTPCclusterMI.h"
@@ -53,6 +49,8 @@ using namespace std;
 //#include "AliHLTTPC.h"
 //#include <stdlib.h>
 //#include <cerrno>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterConverterComponent)

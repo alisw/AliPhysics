@@ -24,16 +24,14 @@
     @brief  A digit reader implementation for unpacked TPC data.
 */
 
-#if __GNUC__== 3
-using namespace std;
-#endif
-
 #include <cassert>
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTStdIncludes.h"
 #include "AliHLTTPCMapping.h"
+
+using namespace std;
 
 ClassImp(AliHLTTPCDigitReaderUnpacked)
 

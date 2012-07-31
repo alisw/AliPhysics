@@ -22,11 +22,6 @@
 /// @brief  Component for reading ESD from chain and produce a dEdx monitoring plot
 ///
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
-
 #include "TSystem.h"
 #include "AliESDtrackCuts.h"
 #include <AliHLTDAQ.h>
@@ -43,6 +38,8 @@ using namespace std;
 #include "TH2F.h"
 
 #include "AliHLTTPCdEdxMonitoringComponent.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp( AliHLTTPCdEdxMonitoringComponent )

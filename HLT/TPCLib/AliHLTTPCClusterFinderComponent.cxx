@@ -23,9 +23,6 @@
     @brief  The TPC cluster finder processing component
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
 #include "AliHLTTPCClusterFinderComponent.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitReader32Bit.h"
@@ -59,6 +56,8 @@ using namespace std;
 #include "AliGeomManager.h"
 
 #include <sys/time.h>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterFinderComponent)

@@ -27,10 +27,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTTPCAnalysisTaskcalib.h"
 #include "AliTPCcalibBase.h"
 #include "AliESDEvent.h"
@@ -46,6 +42,8 @@ using namespace std;
 #include "TSystem.h"
 #include "TTimeStamp.h"
 #include "TChain.h"
+
+using namespace std;
 
 ClassImp(AliHLTTPCAnalysisTaskcalib)
 

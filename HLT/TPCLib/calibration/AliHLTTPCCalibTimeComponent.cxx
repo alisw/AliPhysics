@@ -27,11 +27,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
-
 #include "AliHLTTPCCalibTimeComponent.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTMisc.h"
@@ -64,6 +59,8 @@ using namespace std;
 #include <cerrno>
 
 #include "AliHLTReadoutList.h"
+
+using namespace std;
 
 ClassImp(AliHLTTPCCalibTimeComponent) // ROOT macro for the implementation of ROOT specific class methods
 

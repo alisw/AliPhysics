@@ -21,9 +21,6 @@
     @brief  The Histogram Handler component
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
 #include "AliHLTTPCHistogramHandlerComponent.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliCDBEntry.h"
@@ -41,6 +38,8 @@ using namespace std;
 #include "TH2.h"
 #include "TLine.h"
 #include "TMath.h"
+
+using namespace std;
 
 ClassImp(AliHLTTPCHistogramHandlerComponent) //ROOT macro for the implementation of ROOT specific class methods
 

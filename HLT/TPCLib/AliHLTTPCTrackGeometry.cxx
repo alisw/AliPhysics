@@ -121,6 +121,9 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(const AliHLTExternalTrackParam&
 int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track)
 {
   /// calculate the track points, expects the global magnetic field to be initialized
+  /// depending on the x coordinate of the first track point the corresponding padrow
+  /// is searched and the points are calculated outwards. Eventually the points are
+  /// calculated inwards as a second step.
   int iResult=0;
   int firstpadrow=0;
   for (;
@@ -128,8 +131,10 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track)
 	 AliHLTTPCTransform::Row2X(firstpadrow)+AliHLTTPCTransform::GetPadLength(firstpadrow)<track.GetX();
        firstpadrow++);
   if (firstpadrow>=AliHLTTPCTransform::GetNRows()) return 0;
+  // first calculated outwards
   iResult=CalculateTrackPoints(track, firstpadrow, 1);
   if (iResult>=0 && firstpadrow>0)
+    // now calculate inwards
     iResult=CalculateTrackPoints(track, firstpadrow-1, -1);
   return iResult;
 }

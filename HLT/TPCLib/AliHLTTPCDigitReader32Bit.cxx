@@ -23,16 +23,14 @@
 /// @brief  DigitReader implementation for the 32 bit offline decoder
 ///
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include <cassert>
 #include "AliHLTTPCDigitReader32Bit.h"
 #include "AliHLTTPCMapping.h"
 #include "AliRawReader.h"
 #include "AliRawReaderMemory.h"
 #include "AliAltroRawStreamV3.h"
+
+using namespace std;
 
 ClassImp(AliHLTTPCDigitReader32Bit)
 

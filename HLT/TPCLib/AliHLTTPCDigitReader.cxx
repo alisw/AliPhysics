@@ -30,13 +30,11 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTTPCDigitReader.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTStdIncludes.h"
+
+using namespace std;
 
 ClassImp(AliHLTTPCDigitReader)
 

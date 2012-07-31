@@ -22,9 +22,6 @@
     @brief 
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
 #include "AliHLTTPCHWClusterTransformComponent.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTransform.h"
@@ -45,6 +42,8 @@ using namespace std;
 #include <cstdlib>
 #include <cerrno>
 #include <sys/time.h>
+
+using namespace std;
 
 ClassImp(AliHLTTPCHWClusterTransformComponent) //ROOT macro for the implementation of ROOT specific class methods
 

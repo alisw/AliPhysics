@@ -27,9 +27,6 @@
 // or                                                                        //
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt                          //
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
 #include "AliHLTTPCHWCFDataReverterComponent.h"
 #include "AliHLTTPCDigitReader32Bit.h"
 #include "AliHLTTPCTransform.h"
@@ -43,6 +40,8 @@ using namespace std;
 #include <sys/time.h>
 #include "AliHLTAltroEncoder.h"
 #include "AliRawDataHeader.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCHWCFDataReverterComponent)

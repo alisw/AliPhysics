@@ -28,10 +28,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTTPCCalibTracksComponent.h"
 
 #include "AliHLTTPCLogging.h"
@@ -56,6 +52,8 @@ using namespace std;
 #include <stdlib.h>
 #include <errno.h>
 #include "TString.h"
+
+using namespace std;
 
 //AliHLTTPCCalibTracksComponent gAliHLTTPCCalibTracksComponent;
 

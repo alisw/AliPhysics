@@ -22,10 +22,6 @@
     @brief  
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include <map>
 
 #include "AliHLTTPCCalibSeedMakerComponent.h"
@@ -59,6 +55,8 @@ using namespace std;
 #include "TH2F.h"
 
 #include <sys/time.h>
+
+using namespace std;
 
 ClassImp(AliHLTTPCCalibSeedMakerComponent) //ROOT macro for the implementation of ROOT specific class methods
 

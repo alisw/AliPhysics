@@ -29,10 +29,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTTPCRawDataUnpackerComponent.h"
 #include "AliTPCRawStream.h"
 #include "AliRawDataHeader.h"
@@ -42,6 +38,8 @@ using namespace std;
 #include "AliHLTTPCDefinitions.h"
 #include <cstdlib>
 #include <cerrno>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCRawDataUnpackerComponent);
