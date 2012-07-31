@@ -230,6 +230,8 @@ public:
   Bool_t IsTriggerOrBits(UInt_t bits) const;
   /** 
    * Whether we have any trigger bits 
+   *
+   * @return true if we have some trigger 
    */
   Bool_t HasTrigger() const { return fTriggers != 0; } // Check for triggers
   /** 
@@ -420,13 +422,19 @@ public:
    */
   static UInt_t MakeTriggerMask(const char* what);
 protected: 
+  /** From MC or not */
   Bool_t   fIsMC;       // Whether this is from MC 
+  /** Histogram of @f$d^2N_{ch}/(d\eta d\phi)@f$ for this event */
   TH2D     fHist;       // Histogram of d^2N_{ch}/(deta dphi) for this event
+  /** Trigger bits */
   UInt_t   fTriggers;   // Trigger bit mask 
+  /** Interaction point @f$z@f$ coordinate */
   Float_t  fIpZ;        // Z coordinate of the interaction point
+  /** Centrality */
   Float_t  fCentrality; // Event centrality 
+  /** Number of clusters in @f$|\eta|<1@f$ */
   UShort_t fNClusters;  // Number of SPD clusters in |eta|<1
-
+  /** Invalid value for interaction point @f$z@f$ coordiante */
   static const Float_t fgkInvalidIpZ; // Invalid IpZ value 
   ClassDef(AliAODForwardMult,3); // AOD forward multiplicity 
 };

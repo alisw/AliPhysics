@@ -12,29 +12,117 @@
 
 #include "TNamed.h"
 
+/** 
+ * Class to hold the centrality for ESDs 
+ */
 class AliESDCentrality : public TNamed
 {
  public:
+  /** 
+   * constructor
+   */
+  AliESDCentrality();  
+  /** 
+   * Destructor
+   */
+  ~AliESDCentrality();  
+  /** 
+   * Copy constructor 
+   * 
+   * @param cnt Object to copy from
+   */
+  AliESDCentrality(const AliESDCentrality& cnt); 
+  /** 
+   * Assignment operator
+   * 
+   * @param cnt Object to assign from
+   * 
+   * @return Reference to this object
+   */
+  AliESDCentrality& operator=(const AliESDCentrality& cnt);   
 
-  AliESDCentrality();  /// constructor
-  ~AliESDCentrality();  /// destructor
-  AliESDCentrality(const AliESDCentrality& cnt); /// copy constructor
-  AliESDCentrality& operator=(const AliESDCentrality& cnt);   /// assignment operator
-
-  /// set centrality result
+  /** 
+   * set centrality result
+   * 
+   * @param cent Centrality result
+   */
   void SetCentralityV0M(Float_t cent) {fCentralityV0M = cent;} 
+  /** 
+   * set centrality result
+   * 
+   * @param cent Centrality result
+   */
   void SetCentralityFMD(Float_t cent) {fCentralityFMD = cent;}
+  /** 
+   * set centrality result
+   * 
+   * @param cent Centrality result
+   */
   void SetCentralityTRK(Float_t cent) {fCentralityTRK = cent;}
+  /** 
+   * set centrality result
+   * 
+   * @param cent Centrality result
+   */
   void SetCentralityTKL(Float_t cent) {fCentralityTKL = cent;}
+  /** 
+   * set centrality result
+   * 
+   * @param cent Centrality result
+   */
   void SetCentralityCL0(Float_t cent) {fCentralityCL0 = cent;}
+  /** 
+   * set centrality result
+   * 
+   * @param cent Centrality result
+   */
   void SetCentralityV0MvsFMD(Float_t cent) {fCentralityV0MvsFMD = cent;}
+  /** 
+   * set centrality result
+   * 
+   * @param cent Centrality result
+   */
   void SetCentralityTKLvsV0M(Float_t cent) {fCentralityTKLvsV0M = cent;}
+  /** 
+   * set centrality result
+   * 
+   * @param cent Centrality result
+   */
   void SetCentralityZEMvsZDC(Float_t cent) {fCentralityZEMvsZDC = cent;}
 
-  /// get centrality result
+  /** 
+   * Get the centrality result 
+   * 
+   * @param method Method to use 
+   * 
+   * @return Centrality 
+   */
   Float_t GetCentralityPercentile(const char *method);
+  /** 
+   * Get the centrality class for 10% bins 
+   * 
+   * @param method Method
+   * 
+   * @return Bin number
+   */
   Int_t   GetCentralityClass10(const char *method);
+  /** 
+   * Get the centrality class for 5% bins 
+   * 
+   * @param method Method
+   * 
+   * @return Bin number
+   */
   Int_t   GetCentralityClass5(const char *method);
+  /** 
+   * Check if event is in a given centrality class
+   * 
+   * @param a       Lower bound
+   * @param b       Upper bound
+   * @param method  Method
+   * 
+   * @return true if so. 
+   */
   Bool_t  IsEventInCentralityClass(Float_t a, Float_t b, const char *method);
 
  private:

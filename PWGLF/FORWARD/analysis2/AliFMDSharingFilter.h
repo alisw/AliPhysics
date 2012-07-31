@@ -55,10 +55,15 @@ class AliFMDFloatMap;
 class AliFMDSharingFilter : public TNamed
 {
 public: 
+  /** Status of a strip */
   enum Status { 
+    /** Nothing yet */
     kNone             = 1, 
+    /** Candidate for merging */
     kCandidate        = 2, 
+    /** This was merged into other strip */
     kMergedWithOther  = 3, 
+    /** Other strips was merged into this */
     kMergedInto       = 4
   };
   /** 
@@ -93,14 +98,15 @@ public:
   /** 
    * Initialize 
    * 
+   * @param default eta axis from parent task 
    */
-  void Init();
+  void Init(const TAxis& axis);
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
    * @param dbg Debug level 
    */
-  void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+  virtual void SetDebug(Int_t dbg=1) { fDebug = dbg; }
 
   /** 
    * Enable use of angle corrected signals in the algorithm 
@@ -132,18 +138,29 @@ public:
    * 
    */
   void SetAllow3Strips(Bool_t use) { fThreeStripSharing = use; }
+  
+  /** 
+   * In case of a displaced vertices recalculate eta and angle correction
+   * 
+   * @param use recalculate or not
+   * 
+   */
+  void SetRecalculateEta(Bool_t use) { fRecalculateEta = use; }
+  
   /** 
    * Filter the input AliESDFMD object
    * 
    * @param input     Input 
    * @param lowFlux   If this is a low-flux event 
    * @param output    Output AliESDFMD object 
+   * @param zvtx      Vertex position 
    * 
    * @return True on success, false otherwise 
    */
   Bool_t Filter(const AliESDFMD& input, 
 		Bool_t           lowFlux, 
-		AliESDFMD&       output);
+		AliESDFMD&       output, 
+		Double_t         zvtx);
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -167,11 +184,41 @@ public:
    */
   virtual void Print(Option_t* option="") const;
 
+  /** 
+   * Get the low cuts 
+   * 
+   * @return Reference to low cuts
+   */
   AliFMDMultCuts& GetLCuts() { return fLCuts; }
+  /** 
+   * Get the high cuts 
+   * 
+   * @return Reference to high cuts
+   */
   AliFMDMultCuts& GetHCuts() { return fHCuts; }
+  /** 
+   * Get the low cuts 
+   * 
+   * @return Reference to low cuts
+   */
   const AliFMDMultCuts& GetLCuts() const { return fLCuts; }
+  /** 
+   * Get the high cuts 
+   * 
+   * @return Reference to high cuts
+   */
   const AliFMDMultCuts& GetHCuts() const { return fHCuts; }
+  /** 
+   * Set the low cuts 
+   * 
+   * @param c Cuts object
+   */  
   void SetLCuts(const AliFMDMultCuts& c) { fLCuts = c; }
+  /** 
+   * Set the high cuts 
+   * 
+   * @param c Cuts object
+   */  
   void SetHCuts(const AliFMDMultCuts& c) { fHCuts = c; }
 protected:
   /** 
@@ -304,7 +351,24 @@ protected:
 			       UShort_t t,
 			       Bool_t&  usedPrev, 
 			       Bool_t&  usedThis) const;
-  Double_t MultiplicityOfStrip(Double_t thisE,
+  /** 
+   * The actual algorithm 
+   * 
+   * @param thisE      This strips energy 
+   * @param prevE      Previous strip enery 
+   * @param nextE      Next strip energy 
+   * @param eta        Psuedo-rapidity
+   * @param lowFlux    Whether to use low flux settings
+   * @param d          Detector
+   * @param r          Ring 
+   * @param s          Sector 
+   * @param t          Strip
+   * @param prevStatus Previous status
+   * @param thisStatus This status 
+   * @param nextStatus Next status
+   * 
+   * @return The filtered signal in the strip
+   */  Double_t MultiplicityOfStrip(Double_t thisE,
 			       Double_t prevE,
 			       Double_t nextE,
 			       Double_t eta,
@@ -375,6 +439,7 @@ protected:
   AliFMDMultCuts fHCuts;    //Cuts object for high cuts
   Bool_t   fUseSimpleMerging; //enable simple sharing by HHD
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
+  Bool_t   fRecalculateEta; //Whether to recalculate eta and angle correction (disp vtx)
   ClassDef(AliFMDSharingFilter,4); //
 };
 

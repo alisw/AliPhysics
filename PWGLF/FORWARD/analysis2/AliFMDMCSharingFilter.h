@@ -142,6 +142,8 @@ public:
    * @param option Not used 
    */
   void Print(Option_t* option="") const;
+
+  virtual void SetDebug(Int_t dbg=1);
 protected:
   AliFMDMCTrackDensity fTrackDensity;
   TH2D* fFMD1i;      // ESD-MC correlation 

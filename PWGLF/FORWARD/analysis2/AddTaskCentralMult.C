@@ -12,11 +12,22 @@
 /**
  * This is the macro to include the Central multiplicity in a train.  
  * 
+ * @param mc       If true, assume MC input 
+ * @param sys      Pre-set collision system
+ * @param sNN      Pre-set collition energy
+ * @param field    Pre-set magnetic field
+ * @param config   Configuration file to use 
+ * 
+ * @return Newly created task 
+ *
  * @ingroup pwglf_forward_aod
  */
 AliAnalysisTask* 
-AddTaskCentralMult(Bool_t mc=false, 
-		   UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
+AddTaskCentralMult(Bool_t      mc=false, 
+		   UShort_t    sys=0, 
+		   UShort_t    sNN=0, 
+		   Short_t     field=0, 
+		   const char* config="CentralAODConfig.C")
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -32,28 +43,16 @@ AddTaskCentralMult(Bool_t mc=false,
   AliCentralMultiplicityTask* task = 0;
   if (!mc) task = new AliCentralMultiplicityTask("Central");
   else     task = new AliCentralMCMultiplicityTask("Central");
-  if(sys>0 && sNN > 0)
+  if(sys>0 && sNN > 0) {
     task->GetManager().Init(sys, sNN, field);
+    if (!task->GetManager().HasSecondaryCorrection()) 
+      Fatal("AddTaskCentralMult", "No secondary correction defined!");
+    if (!task->GetManager().HasAcceptanceCorrection()) 
+      Fatal("AddTaskCentralMult", "No acceptance correction defined!");
+  }
+  task->Configure(config);
   mgr->AddTask(task);
 
-  // --- Configure the task ------------------------------------------
-  TString macroPath(gROOT->GetMacroPath());
-  if (!macroPath.Contains("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2")) { 
-    macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
-    gROOT->SetMacroPath(macroPath);
-  }
-  const char* config = gSystem->Which(gROOT->GetMacroPath(),
-				      "CentralAODConfig.C");
-  if (!config) 
-    Warning("AddTaskCentralMult", "CentralAODConfig.C not found in %s",
-	    gROOT->GetMacroPath());
-  else {
-    Info("AddTaskCentralMult", 
-	 "Loading configuration of '%s' from %s",
-	 task->ClassName(), config);
-    gROOT->Macro(Form("%s((AliCentralMultiplicityTask*)%p)", config, task));
-    delete config;
-  }
 
   // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();

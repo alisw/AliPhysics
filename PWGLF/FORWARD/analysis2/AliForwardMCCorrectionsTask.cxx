@@ -383,6 +383,7 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
   UShort_t iVzMc;    // Vertex bin from MC
   Double_t vZMc;     // Z coordinate of IP vertex from MC
   Double_t b;        // Impact parameter
+  Double_t cMC;      // Centrality estimate from b
   Int_t    nPart;    // Number of participants 
   Int_t    nBin;     // Number of binary collisions 
   Double_t phiR;     // Reaction plane from MC
@@ -391,7 +392,7 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
   UInt_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, vZ, 
 				     cent, nClusters);
   fInspector.ProcessMC(mcEvent, triggers, iVzMc, vZMc, 
-		       b, nPart, nBin, phiR);
+		       b, cMC, nPart, nBin, phiR);
 
   Bool_t isInel   = triggers & AliAODForwardMult::kInel;
   Bool_t hasVtx   = retESD == AliFMDMCEventInspector::kOk;

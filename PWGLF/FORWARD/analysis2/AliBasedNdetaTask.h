@@ -17,6 +17,7 @@
 class TAxis;
 class TList;
 class TH2D;
+class TH2F;
 class TH1D;
 class TH1I;
 class AliAODEvent;
@@ -25,6 +26,9 @@ class TObjArray;
 
 /** 
  * @defgroup pwglf_forward_tasks_dndeta dN/deta tasks 
+ *
+ * Code to produce @f$ dN/d\eta@f$
+ *
  * @ingroup pwglf_forward_tasks 
  */
 /**
@@ -100,6 +104,12 @@ public:
    * @name Task configuration 
    */
   /** 
+   * Set the debug level 
+   * 
+   * @param level Debug level
+   */
+  virtual void SetDebugLevel(Int_t level);
+  /** 
    * Set the vertex range to use 
    * 
    * @param min Minimum (in centermeter)
@@ -167,7 +177,23 @@ public:
    * 
    * @param h Correction
    */
-  void SetShapeCorrection(const TH1* h);
+  void SetShapeCorrection(const TH2F* h);
+  /** 
+   * Get a string representing the normalization scheme 
+   * 
+   * @param scheme Normalization scheme bits 
+   * 
+   * @return String representation 
+   */
+  static const Char_t* NormalizationSchemeString(UShort_t scheme);
+  /** 
+   * Parse a string representing the normalization scheme 
+   * 
+   * @param what String of the normalization scheme 
+   * 
+   * @return normalization scheme bits
+   */
+  static UShort_t ParseNormalizationScheme(const Char_t* what);
   /** 
    * Setthe normalisation scheme to use 
    * 
@@ -310,8 +336,29 @@ public:
     kCross        = 0x00c,
     kStar         = 0x00e
   };
+  /** 
+   * Get the marker style from option bits
+   * 
+   * @param bits Option bits 
+   * 
+   * @return Marker style 
+   */
   static Int_t GetMarkerStyle(UShort_t bits);
+  /** 
+   * Get the marker option bits from a style 
+   * 
+   * @param style Style
+   * 
+   * @return option bits
+   */
   static UShort_t GetMarkerBits(Int_t style);
+  /** 
+   * Flip an option bit 
+   * 
+   * @param style Style parameter
+   * 
+   * @return New style 
+   */
   static Int_t FlipHollowStyle(Int_t style);
 protected:
   /** 
@@ -327,7 +374,11 @@ protected:
   AliBasedNdetaTask& operator=(const AliBasedNdetaTask&) { return *this; }
   // Forward declaration 
   class CentralityBin;
-
+  /** 
+   * Create the CentralityBin objects if not already done.
+   * 
+   */
+  virtual void InitializeCentBins();
   /** 
    * Retrieve the histogram 
    * 
@@ -380,10 +431,11 @@ protected:
     TH2D* fSum;     // Sum of non-zero events
     TH2D* fSum0;    // Sum of zero events 
     TH1I* fEvents;  // Distribution of events 
+    Int_t fDebug;   // Debug level
     /** 
      * I/O Constructor - do not use
      */    
-    Sum() : fSum(0), fSum0(0), fEvents(0) {}
+    Sum() : fSum(0), fSum0(0), fEvents(0), fDebug(0) {}
     /** 
      * Constructor 
      * 
@@ -394,7 +446,8 @@ protected:
       : TNamed(name,postfix), 
 	fSum(0), 
 	fSum0(0), 
-	fEvents(0) 
+	fEvents(0), 
+	fDebug(0) 
     {}
     /** 
      * Copy constructor
@@ -405,7 +458,8 @@ protected:
       : TNamed(o), 
 	fSum(o.fSum), 
 	fSum0(o.fSum0), 
-	fEvents(o.fEvents) 
+	fEvents(o.fEvents), 
+	fDebug(o.fDebug) 
     {}
     /** 
      * Assignment operator 
@@ -440,6 +494,17 @@ protected:
     /** 
      * Get the histogram name 
      * 
+     * @param name Base name 
+     * @param what Which one 
+     * @param post Possible postfix
+     * 
+     * @return Name 
+     */
+    static TString GetHistName(const char* name, Int_t what=0, 
+			       const char* post=0);
+    /** 
+     * Get the histogram name 
+     * 
      * @param what Which one 
      * 
      * @return Name 
@@ -448,7 +513,6 @@ protected:
     /** 
      * Get the sum 
      * 
-     * @param l          List to get histograms from 
      * @param o          Output list
      * @param ntotal     On return, the total number of events
      * @param zeroEff    Zero-bin efficiency
@@ -459,9 +523,9 @@ protected:
      * 
      * @return The total sum histogram 
      */
-    TH2D* GetSum(const TList* l, TList* o, Double_t& ntotal,
-		 Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
-		 Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
+    TH2D* CalcSum(TList* o, Double_t& ntotal,
+		  Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
+		  Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
   };
     
   //==================================================================
@@ -620,7 +684,7 @@ protected:
 			    const char* postfix, 
 			    bool        rootProj, 
 			    bool        corrEmpty,
-			    const TH1*  shapeCorr,
+			    const TH2F* shapeCorr,
 			    Double_t    scaler,
 			    bool        symmetrice, 
 			    Int_t       rebin, 
@@ -651,7 +715,7 @@ protected:
     virtual void End(TList*      sums, 
 		     TList*      results,
 		     UShort_t    scheme,
-		     const TH1*  shapeCorr, 
+		     const TH2F* shapeCorr, 
 		     Double_t    trigEff,
 		     Bool_t      symmetrice,
 		     Int_t       rebin, 
@@ -700,14 +764,16 @@ protected:
     /** 
      * Get the color of the markers
      *
-     * @return 
+     * @param fallback Fall-back color 
+     *
+     * @return Color for this centrality bin 
      */
     Int_t GetColor(Int_t fallback=kRed+2) const;
     /** 
      * Get list of results 
      * 
      * 
-     * @return 
+     * @return List of results
      */
     TList* GetResults() const { return fOutput; }
     /** 
@@ -732,8 +798,22 @@ protected:
      */
     TH1* GetResult(Int_t rebin, Bool_t sym, 
 		   const char* postfix="") const;
-
+    /** 
+     * Set the debug level
+     * 
+     * @param lvl Debug level
+     */
+    void SetDebugLevel(Int_t lvl);
   protected:
+    /** 
+     * Read in sum hisotgram from list 
+     * 
+     * @param list List to read from 
+     * @param mc   True for MC input 
+     * 
+     * @return true if sum histogram is found
+     */
+    virtual Bool_t ReadSum(TList* list, bool mc=false);
     /** 
      * Create sum histogram 
      * 
@@ -763,8 +843,9 @@ protected:
     UShort_t fLow;       // Lower limit (inclusive)
     UShort_t fHigh;      // Upper limit (exclusive)
     Bool_t   fDoFinalMCCorrection; //Do final MC correction
-    
-    ClassDef(CentralityBin,1); // A centrality bin 
+    Int_t    fDebug;    // Debug level 
+
+    ClassDef(CentralityBin,2); // A centrality bin 
   };
   TList*          fSums;         // Container of sums 
   TList*          fOutput;       // Container of outputs 
@@ -777,18 +858,28 @@ protected:
   Bool_t          fCorrEmpty;    // Correct for empty bins 
   Bool_t          fUseROOTProj;  // Whether to use ROOT's ProjectionX
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
-  TH1*            fShapeCorr;    // Shape correction 
+  TH2F*           fShapeCorr;    // Shape correction 
   TObjArray*      fListOfCentralities; // Centrality bins 
+#if 0
   TNamed*         fSNNString;    // sqrt(s_NN) string 
   TNamed*         fSysString;    // Collision system string 
+#else
+  TObject* fSNNString;    // sqrt(s_NN) string 
+  TObject* fSysString;    // Collision system string 
+#endif
   TH1D*           fCent;         // Centrality distribution 
   TAxis*          fCentAxis;     // Centrality axis
   UShort_t        fNormalizationScheme; // Normalization scheme
-  TNamed*         fSchemeString;     
-  TNamed*         fTriggerString; 
+#if 0
+  TNamed*         fSchemeString;     // Normalization scheme string
+  TNamed*         fTriggerString;    // Trigger string 
+#else 
+  TObject*        fSchemeString;    // Normalization scheme string
+  TObject*        fTriggerString;    // Trigger string 
+#endif
   TString         fFinalMCCorrFile; //Filename for final MC corr
   
-  ClassDef(AliBasedNdetaTask,4); // Determine multiplicity in base area
+  ClassDef(AliBasedNdetaTask,8); // Determine multiplicity in base area
 };
 
 #endif

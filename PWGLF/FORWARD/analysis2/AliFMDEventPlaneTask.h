@@ -19,10 +19,6 @@ class AliAODForwardMult;
 class TH1D;
 class TH2D;
 
- /**
- * @defgroup pwg2_forward_tasks_flow Flow tasks 
- * @ingroup pwg2_forward_tasks
- */
 /**
  * Calculate the event plane in the forward regions using the FMD
  *
@@ -78,11 +74,11 @@ public:
    * @param option Not used 
    */
   virtual void Terminate(Option_t *option);
- /**
+  /**
   * Check AODForwardMult object for trigger, vertex and centrality
   * returns true if event is OK
   * 
-  * @param const aodfm
+  * @param aodfm Output object
   * 
   * @return Bool_t 
   */

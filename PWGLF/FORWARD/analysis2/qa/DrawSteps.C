@@ -7,6 +7,9 @@
  * 
  * 
  * @defgroup pwglf_forward_scripts_qa Quality Assurance scripts
+ * 
+ * Quality assurance scripts and functions 
+ * 
  * @ingroup pwglf_forward_scripts
  */
 /** 

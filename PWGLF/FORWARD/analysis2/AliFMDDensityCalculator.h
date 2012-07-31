@@ -101,12 +101,17 @@ public:
    * @param hists    Histogram cache
    * @param vtxBin   Vertex bin 
    * @param lowFlux  Low flux flag. 
+   * @param cent     Centrality 
+   * @param vz       Vertex Z position
    * 
    * @return true on successs 
    */
-  virtual Bool_t Calculate(const AliESDFMD& fmd, 
+  virtual Bool_t Calculate(const AliESDFMD&        fmd, 
 			   AliForwardUtil::Histos& hists, 
-			   UShort_t vtxBin, Bool_t lowFlux, Double_t cent=-1);
+			   UShort_t 		   vtxBin, 
+			   Bool_t   		   lowFlux, 
+			   Double_t  		   cent=-1, 
+			   Double_t  		   vz=0);
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -148,6 +153,13 @@ public:
    */
   void SetUsePoisson(Bool_t u) { fUsePoisson = u; }
   /** 
+   * In case of a displaced vertices recalculate eta and angle correction
+   * 
+   * @param use recalculate or not
+   * 
+   */
+  void SetRecalculateEta(Bool_t use) { fRecalculateEta = use; }
+  /** 
    * Set whether to use the phi acceptance correction. 
    * 
    * How the phi acceptance is used depends on the value passed.  
@@ -157,6 +169,7 @@ public:
    *
    * @param u If >0, use the phi acceptance (default is false)
    */
+   
   void SetUsePhiAcceptance(UShort_t u=kPhiCorrectNch) { fUsePhiAcceptance = u; }
   /** 
    * Set the luming factors used in the Poisson method
@@ -173,6 +186,11 @@ public:
    * SetMultCut) then that value is used.  If not, then the lower
    * value of the fit range for the enery loss fits is returned.
    * 
+   * @param d      Detector 
+   * @param r      Ring 
+   * @param eta    Psuedo-rapidity
+   * @param errors Factor in errors
+   *
    * @return Lower cut on multiplicity
    */
   Double_t GetMultCut(UShort_t d, Char_t r, Double_t eta, 
@@ -182,6 +200,11 @@ public:
    * SetMultCut) then that value is used.  If not, then the lower
    * value of the fit range for the enery loss fits is returned.
    * 
+   * @param d      Detector 
+   * @param r      Ring 
+   * @param ieta   Psuedo-rapidity bin
+   * @param errors Factor in errors
+   *
    * @return Lower cut on multiplicity
    */
   Double_t GetMultCut(UShort_t d, Char_t r, Int_t ieta, 
@@ -213,6 +236,8 @@ protected:
    * @param d     Detector 
    * @param r     Ring 
    * @param iEta  Eta bin 
+   *
+   * @return The maximum weight 
    */
   Int_t FindMaxWeight(const AliFMDCorrELossFit* cor,
 		      UShort_t d, Char_t r, Int_t iEta) const;
@@ -220,8 +245,9 @@ protected:
   /** 
    * Find the max weights and cache them 
    * 
+   * @param axis Default @f$\eta@f$ axis from parent task 
    */  
-  void CacheMaxWeights();
+  void CacheMaxWeights(const TAxis& axis);
   /** 
    * Find the (cached) maximum weight for FMD<i>dr</i> in 
    * @f$\eta@f$ bin @a iEta
@@ -394,6 +420,7 @@ protected:
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
   AliFMDMultCuts fCuts;    // Cuts
+  Bool_t fRecalculateEta;  //  //Whether to recalculate eta and angle correction (disp vtx)
 
   ClassDef(AliFMDDensityCalculator,7); // Calculate Nch density 
 };

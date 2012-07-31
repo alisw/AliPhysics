@@ -9,39 +9,34 @@
  * @ingroup pwglf_forward_scripts_tasks
  */
 /** 
- * @defgroup pwglf_forward_flow Flow 
- * @ingroup pwglf_forward_topical
- */
-/** 
- * Add Flow task to train 
+ * Add FMD event plane task to train 
  * 
- * @param type 
- * @param etabins 
  * @param mc 
- * @param addFlow 
- * @param addFType 
- * @param addFOrder 
  *
  * @ingroup pwglf_forward_flow
  */
 void AddTaskFMDEventPlane(Bool_t mc = kFALSE)
 {
+  // --- Get the analysis manager ------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
-    Error("AddTaskFMDEventPlane", "No analysis manager to connect to.");
-    return NULL;
-  }   
+  if (!mgr) Fatal("","No analysis manager to connect to.");
 
-  AliAODInputHandler* aodInput = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-   
-  Bool_t aod = kFALSE;
-  if (aodInput) aod = kTRUE;
-  if (!aod) {
-    Error("AddTaskFMDEventPlane", "No analysis manager to connect to.");
-    return NULL;
-  }
+  // --- Check that we have an AOD input handler ---------------------
+  UShort_t aodInput = 0;
+  if (!(aodInput = AliForwardUtil::CheckForAOD())) 
+    Fatal("","Cannot proceed without and AOD handler");
+  if (aodInput == 2 &&
+      !AliForwardUtil::CheckForTask("AliForwardMultiplicityBase")) 
+    Fatal("","The relevant task wasn't added to the train");
 
-  // --- Create containers for output --- //
+
+  // --- Make the event plane task -----------------------------------
+  AliFMDEventPlaneTask* task = new AliFMDEventPlaneTask("FMDEventPlane");
+  task->GetEventPlaneFinder().SetUsePhiWeights(false);
+  if (mc) task->SetMCInput(true);
+  mgr->AddTask(task);
+
+  // --- Create containers for output --------------------------------
   AliAnalysisDataContainer* sums = 
     mgr->CreateContainer("FMDEventPlaneSums", TList::Class(), 
 			 AliAnalysisManager::kOutputContainer, 
@@ -50,17 +45,12 @@ void AddTaskFMDEventPlane(Bool_t mc = kFALSE)
     mgr->CreateContainer("FMDEventPlaneResults", TList::Class(), 
 			 AliAnalysisManager::kParamContainer, 
 			 AliAnalysisManager::GetCommonFileName());
-
-  // --- For the selected flow tasks the input and output is set --- //
-  
-  AliFMDEventPlaneTask* task = new AliFMDEventPlaneTask("FMDEventPlane");
-  task->GetEventPlaneFinder().SetUsePhiWeights(false);
-
-  if (mc) task->SetMCInput(true);
-
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, sums);
   mgr->ConnectOutput(task, 2, output);
 
   return;
 }
+/*
+ * EOF
+ */

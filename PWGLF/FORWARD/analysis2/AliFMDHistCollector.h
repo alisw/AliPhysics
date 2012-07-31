@@ -94,6 +94,19 @@ public:
      */
     kDistance 
   };
+  /**
+   * FMD ring bits for skipping 
+   */
+   enum FMDRingBits { 
+     kFMD1I=0x01,
+     kFMD1 =0x01,
+     kFMD2I=0x02,
+     kFMD2O=0x04,
+     kFMD2 =0x06,
+     kFMD3I=0x08,
+     kFMD3O=0x10,
+     kFMD3 =0x18
+  };
   /** 
    * Constructor 
    */
@@ -179,10 +192,24 @@ public:
    */
   void SetCorrectionCut(Float_t cut=0.5) { fCorrectionCut = cut; }
   /** 
-   * Set the debug level.  The higher the value the more output 
+   * Set FMD rings to skip. Argument should be kFirstRingToSkip|kSecondRingToSkip...   
+   * 
+   * @param mask bit pattern
+   */
+  void SetFMDRingsToSkip(UShort_t mask) { fSkipFMDRings = mask; }
+ /** 
+   * Set whether to make bg maps or not
+   * 
+   * @param use make them
+   */
+  void SetMakeBGHitMaps(Bool_t use) { fBgAndHitMaps = use; }
+ 
+  /** 
+   * Set the debug level. The higher the value the more output 
    * 
    * @param dbg Debug level 
    */
+
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
   /** 
    * Print information 
@@ -348,8 +375,10 @@ protected:
   TH2D*       fCoverage;        // Sum per ring (on y-axis)
   MergeMethod fMergeMethod;     // Merge methiod for overlapping bins 
   FiducialMethod fFiducialMethod; // Fidicual method
-
-  ClassDef(AliFMDHistCollector,1); // Calculate Nch density 
+  UShort_t    fSkipFMDRings;    // FMD rings to ignore     
+  Bool_t      fBgAndHitMaps;    // Make hit/bg maps or not
+  
+  ClassDef(AliFMDHistCollector,2); // Calculate Nch density 
 };
 
 //____________________________________________________________________

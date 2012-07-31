@@ -78,6 +78,14 @@ public:
    */
   AliCentralMultiplicityTask& operator=(const AliCentralMultiplicityTask& o);
   /** 
+   * Configure this task via a macro 
+   * 
+   * @param macro Macro to configure va 
+   * 
+   * @return true on success, false otherwise
+   */
+  virtual Bool_t Configure(const char* macro="CentralAODConfig.C");
+  /** 
    * Create output objects 
    * 
    */
@@ -163,10 +171,22 @@ public:
     /** 
      * Is initialized 
      * 
+     * @return true if initialized 
      */
     Bool_t IsInit() { return fIsInit; }
-    
-    
+    /** 
+     * Check if we have the secondary correction
+     * 
+     * @return true if it is read in
+     */
+    Bool_t HasSecondaryCorrection() const { return fSecmap != 0; }
+    /** 
+     * Check if we have the acceptance correction
+     * 
+     * @return true if it is read in
+     */
+    Bool_t HasAcceptanceCorrection() const { return fAcceptance != 0; }
+
     /** 
      * Get the acceptance path
      * 
@@ -266,6 +286,8 @@ public:
     TH1D* GetAcceptanceCorrection(UShort_t vtxbin) const;
     /** 
      * Get the secondary correction map object 
+     *
+     * @return The secondary correction map 
      */
     AliCentralCorrSecondaryMap* GetSecMap() const { return fSecmap; }
     /** 
@@ -282,7 +304,11 @@ public:
      */
     Bool_t WriteFile(UShort_t what, UShort_t sys, UShort_t cms, Short_t field, 
 		     TObject* o, Bool_t full) const;
-
+    /** 
+     * Print the object 
+     * 
+     * @param option Not used
+     */
     void Print(Option_t* option="") const;
   private:
     

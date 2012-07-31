@@ -187,8 +187,9 @@ protected:
   /** 
    * Initialise the sub objects and stuff.  Called on first event 
    * 
+   * @return false on errors 
    */
-  virtual void   InitializeSubs();
+  virtual Bool_t InitializeSubs();
 
   TH2D*                  fHData;        // Summed 1/Nd^2N_{ch}/dphideta
   AliESDFMD              fESDFMD;       // Sharing corrected ESD object

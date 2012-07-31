@@ -1,20 +1,20 @@
+/**
+ * @file   MakedNdetaTrain.C
+ * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @date   Fri Jun  1 13:51:26 2012
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_trains
+ * 
+ */
+
 #include "TrainSetup.C"
 
 //====================================================================
 /**
  * Analysis train to make @f$ dN/d\eta@f$
  * 
- * To run, do 
- * @code 
- * gROOT->LoadMacro("TrainSetup.C");
- * // Make train 
- * MakedNdetaTrain t("My Analysis");
- * // Set variaous parameters on the train 
- * t.SetDataDir("/home/of/data");
- * t.AddRun(118506)
- * // Run it 
- * t.Run("LOCAL", "FULL", -1, false, false);
- * @endcode 
  *
  * @ingroup pwglf_forward_dndeta
  * @ingroup pwglf_forward_trains
@@ -27,62 +27,16 @@ public:
    * in Termiante mode on Grid
    * 
    * @param name     Name of train (free form)
-   * @param trig     Trigger to use 
-   * @param vzMin    Least @f$ v_z@f$
-   * @param vzMax    Largest @f$ v_z@f$
-   * @param scheme   Normalisation scheme 
-   * @param useCent  Whether to use centrality 
-   * @param dateTime Append date and time to name 
-   * @param year     Year     - if not specified, current year
-   * @param month    Month    - if not specified, current month
-   * @param day      Day      - if not specified, current day
-   * @param hour     Hour     - if not specified, current hour
-   * @param min      Minutes  - if not specified, current minutes
    */
-  MakedNdetaTrain(const char* name, 
-		  const char* trig="INEL", 
-		  Double_t    vzMin=-10, 
-		  Double_t    vzMax=10, 
-		  const char* scheme="FULL", 
-		  Bool_t      useCent=false,
-		  Bool_t      dateTime=false,
-		  UShort_t    year  = 0, 
-		  UShort_t    month = 0, 
-		  UShort_t    day   = 0, 
-		  UShort_t    hour  = 0, 
-		  UShort_t    min   = 0) 
-    : TrainSetup(name, dateTime, year, month, day, hour, min),
-      fTrig(trig), 
-      fVzMin(vzMin), 
-      fVzMax(vzMax),
-      fScheme(scheme),
-      fUseCent(useCent)
-  {}
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode - see TrainSetup::EMode
-   * @param oper     Operation - see TrainSetup::EOperation
-   * @param nEvents  Number of events (negative means all)
-   * @param usePar   If true, use PARs 
-   */
-  void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t usePar=false)
+  MakedNdetaTrain(const char* name)
+  : TrainSetup(name),
+      fTrig("INEL"), 
+      fVzMin(-10), 
+      fVzMax(+10),
+      fScheme(""),
+      fUseCent(false)
   {
-    Exec("AOD", mode, oper, nEvents, false, usePar);
-  }
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode - see TrainSetup::EMode
-   * @param oper     Operation - see TrainSetup::EOperation
-   * @param nEvents  Number of events (negative means all)
-   * @param usePar   If true, use PARs 
-   */
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1, 
-	   Bool_t usePar=false)
-  {
-    Exec(kAOD, mode, oper, nEvents, false, usePar);
+    SetType(kAOD);
   }
   /** 
    * Set the trigger to use (INEL, INEL>0, NSD)
@@ -102,7 +56,7 @@ public:
    * 
    * @param scheme Normalisation scheme options 
    */
-  void SetScheme(const char* scheme) { fScheme = scheme; }
+  void SetNormalizationScheme(const char* scheme) { fScheme = scheme; }
   /** 
    * Whether to use centrality or not 
    * 
@@ -113,16 +67,15 @@ protected:
   /** 
    * Create the tasks 
    * 
-   * @param mode Processing mode
    * @param par  Whether to use par files 
    */
-  void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager*)
+  void CreateTasks(EMode /*mode*/, Bool_t par, AliAnalysisManager*)
   {
     // --- Output file name ------------------------------------------
     AliAnalysisManager::SetCommonFileName("forward_dndeta.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWGLFforward2", mode, par, true);
+    LoadLibrary("PWGLFforward2", par, true);
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -148,6 +101,35 @@ protected:
    * @return 0
    */
   AliVEventHandler* CreateOutputHandler(EType) { return 0; }
+  //__________________________________________________________________
+  const char* ClassName() const { return "MakedNdetaTrain"; }
+  //__________________________________________________________________
+  void MakeOptions(Runner& r) 
+  {
+    TrainSetup::MakeOptions(r);
+    r.Add(new Option("trig", "Trigger class", "INEL|INEL>0|NSD"));
+    r.Add(new Option("vzmin", "Low cut on IP z", "CENTIMETER"));
+    r.Add(new Option("vzmax", "High cut on IP z", "CENTIMETER"));
+    r.Add(new Option("scheme", "Normalization scheme", "NONE|FULL"));
+    r.Add(new Option("cent",   "Use centrality"));
+  }
+  //__________________________________________________________________
+  void SetOptions(Runner& r)
+  {
+    TrainSetup::SetOptions(r);
+    Option* trig	= r.FindOption("trig");
+    Option* vzmin	= r.FindOption("vzmin");
+    Option* vzmax	= r.FindOption("vzmax");
+    Option* scheme	= r.FindOption("scheme");
+    Option* cent	= r.FindOption("cent");
+
+    if (trig   && trig->IsSet())   fTrig     = trig->AsString();
+    if (vzmin  && vzmin->IsSet())  fVzMin    = vzmin->AsDouble();
+    if (vzmax  && vzmax->IsSet())  fVzMax    = vzmax->AsDouble();
+    if (scheme && scheme->IsSet()) fScheme   = scheme->AsString();
+    if (cent)                      fUseCent  = cent->AsBool();
+  }
+  //__________________________________________________________________
   TString  fTrig;      // Trigger to use 
   Double_t fVzMin;     // Least v_z
   Double_t fVzMax;     // Largest v_z

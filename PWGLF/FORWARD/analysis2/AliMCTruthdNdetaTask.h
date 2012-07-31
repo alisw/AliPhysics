@@ -54,6 +54,8 @@ public:
 protected:
   /** 
    * Copy constructor 
+   *
+   * @param o Object to copy from 
    */
   AliMCTruthdNdetaTask(const AliMCTruthdNdetaTask& o);
   /** 
@@ -178,7 +180,7 @@ protected:
     virtual void End(TList*      sums, 
 		     TList*      results,
 		     UShort_t    scheme,
-		     const TH1*  shapeCorr, 
+		     const TH2F* shapeCorr, 
 		     Double_t    trigEff,
 		     Bool_t      symmetrice,
 		     Int_t       rebin, 

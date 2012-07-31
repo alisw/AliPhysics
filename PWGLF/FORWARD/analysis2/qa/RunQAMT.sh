@@ -24,6 +24,7 @@ Options:
 	-p,--production IDENTIFIER Production identifier [$prodfull]
 	-P,--pass       IDENTIFIER Pass identifier [$passfull]
 	-l,--log-file              Log file output [$redir]
+	-b,--barrel     NUMBER     ? [$barrel]
 
 Note the option -j and the options -p and -P are mutually exclusive,
 The option -Q is only used if the options -p and -P are given.
@@ -133,6 +134,7 @@ prodletter=
 prodpost=
 remainder=
 qanumber=0
+barrel=0
 get_parts()
 {
     mess 1 "Parsing information from job $@" 
@@ -205,6 +207,13 @@ get_filelist()
     
     local datd=data
     local esdd=ESDs/
+    if test ${barrel} -gt 0 ; then
+	esdd=
+    fi
+    if test ${barrel} -gt 1 ; then 	
+	file=trending_barrel.root
+	other=QAresults_barrel.root
+    fi
     case x$prodpost in 
 	x_*) ;; 
 	x) ;; 
@@ -555,11 +564,12 @@ while test $# -gt 0 ; do
 	    parse_pass 
 	    ;;
 	-l|--log-file) redir= ; shift ;; 
+	-b|--barrel) barrel=$2; shift ;;
+	
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift
 done
-
 # --- Initial setup --------------------------------------------------
 # First, check we have a valid AliEn token, then retrieve the job 
 # information to parse out the location of the files we need, and 

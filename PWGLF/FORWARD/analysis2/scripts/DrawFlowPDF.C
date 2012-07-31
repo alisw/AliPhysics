@@ -10,6 +10,9 @@
 #include <TLatex.h>
 /**
  * @defgroup pwglf_forward_scripts_flow Flow scripts
+ *
+ * Various functions to do stuff on flow 
+ *
  * @ingroup pwglf_forward_scripts
  * 
  */

@@ -34,6 +34,10 @@
 #include <TParameter.h>
 #include <iostream>
 #include <iomanip>
+#include "AliMCEvent.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
 
 //====================================================================
 AliFMDEventInspector::AliFMDEventInspector()
@@ -44,9 +48,10 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHEventsAcceptedXY(0),
     fHTriggers(0),
     fHType(0),
-    fHWords(0),
+  fHWords(0),
     fHCent(0),
-    fHCentVsQual(0),
+  fHCentVsQual(0),
+  fHStatus(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.2),
     fList(0),
@@ -59,11 +64,16 @@ AliFMDEventInspector::AliFMDEventInspector()
     fUseFirstPhysicsVertex(true),
     fUseV0AND(false),
     fMinPileupContrib(3), 
-    fMinPileupDistance(0.8)
+    fMinPileupDistance(0.8),
+    fUseDisplacedVertices(false),
+  fDisplacedVertex(),
+  fCollWords(),
+  fBgWords()
 {
   // 
   // Constructor 
   //
+  DGUARD(fDebug,1,"Default CTOR of AliFMDEventInspector");
 }
 
 //____________________________________________________________________
@@ -78,6 +88,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHWords(0),
     fHCent(0),
     fHCentVsQual(0),
+    fHStatus(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.2),
     fList(0),
@@ -90,7 +101,11 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fUseFirstPhysicsVertex(true),
     fUseV0AND(false),
     fMinPileupContrib(3), 
-    fMinPileupDistance(0.8)
+    fMinPileupDistance(0.8),
+    fUseDisplacedVertices(false),
+  fDisplacedVertex(),
+  fCollWords(),
+  fBgWords()
 {
   // 
   // Constructor 
@@ -98,6 +113,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   // Parameters:
   //   name Name of object
   //
+  DGUARD(fDebug,1,"Named CTOR of AliFMDEventInspector: %s", name);
 }
 
 //____________________________________________________________________
@@ -112,6 +128,7 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fHWords(o.fHWords),
     fHCent(o.fHCent),
     fHCentVsQual(o.fHCentVsQual),
+    fHStatus(o.fHStatus),
     fLowFluxCut(o.fLowFluxCut),
     fMaxVzErr(o.fMaxVzErr),
     fList(o.fList),
@@ -124,7 +141,11 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fUseFirstPhysicsVertex(o.fUseFirstPhysicsVertex),
     fUseV0AND(o.fUseV0AND),
     fMinPileupContrib(o.fMinPileupContrib), 
-    fMinPileupDistance(o.fMinPileupDistance)
+    fMinPileupDistance(o.fMinPileupDistance),
+    fUseDisplacedVertices(o.fUseDisplacedVertices),
+    fDisplacedVertex(o.fDisplacedVertex),
+  fCollWords(),
+  fBgWords()
 {
   // 
   // Copy constructor 
@@ -132,6 +153,7 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
   // Parameters:
   //   o Object to copy from 
   //
+  DGUARD(fDebug,1,"Copy CTOR of AliFMDEventInspector");
 }
 
 //____________________________________________________________________
@@ -155,6 +177,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   // Return:
   //    Reference to this object
   //
+  DGUARD(fDebug,3,"Assignment of AliFMDEventInspector");
   if (&o == this) return *this; 
   TNamed::operator=(o);
   fHEventsTr         = o.fHEventsTr;
@@ -166,6 +189,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fHWords            = o.fHWords;
   fHCent             = o.fHCent;
   fHCentVsQual       = o.fHCentVsQual;
+  fHStatus           = o.fHStatus;
   fLowFluxCut        = o.fLowFluxCut;
   fMaxVzErr          = o.fMaxVzErr;
   fDebug             = o.fDebug;
@@ -180,7 +204,8 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fUseV0AND              = o.fUseV0AND;
   fMinPileupContrib      = o.fMinPileupContrib;
   fMinPileupDistance     = o.fMinPileupDistance;
-  
+  fUseDisplacedVertices  = o.fUseDisplacedVertices;
+  fDisplacedVertex       = o.fDisplacedVertex;
   if (fList) { 
     fList->SetName(GetName());
     if (fHEventsTr)    fList->Add(fHEventsTr);
@@ -190,6 +215,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
     if (fHWords)       fList->Add(fHWords);
     if (fHCent)        fList->Add(fHCent);
     if (fHCentVsQual)  fList->Add(fHCentVsQual);
+    if (fHStatus)      fList->Add(fHStatus);
   }
   return *this;
 }
@@ -213,6 +239,7 @@ AliFMDEventInspector::FetchHistograms(const TList* d,
   // Return:
   //    true on success, false otherwise 
   //
+  DGUARD(fDebug,3,"Fetch histograms in AliFMDEventInspector");
   hEventsTr    = 0;
   hEventsTrVtx = 0;
   hTriggers    = 0;
@@ -228,14 +255,100 @@ AliFMDEventInspector::FetchHistograms(const TList* d,
 }
 //____________________________________________________________________
 void
+AliFMDEventInspector::CacheConfiguredTriggerClasses(TList& cache, 
+						    const TList* classes,
+						    AliOADBPhysicsSelection* o)
+{
+  TIter nextClass(classes);
+  TObjString* trigClass = 0;
+  // Loop over all trigger classes.  Trigger classes have the format 
+  //
+  //   class          := positive_words SPACE(s) negative_words 
+  //   positive_words := 
+  //                  |  '+' words
+  //   negative_words := 
+  //                  |  '-' words
+  //   words          := word 
+  //                  |  word ',' words 
+  //   
+  while ((trigClass = static_cast<TObjString*>(nextClass()))) {
+    // Tokenize on space to get positive and negative parts 
+    TString     side   = o->GetBeamSide(trigClass->String());
+    TObjArray*  parts  = trigClass->String().Tokenize(" ");
+    TObjString* part   = 0;
+    TIter       nextPart(parts);
+    while ((part = static_cast<TObjString*>(nextPart()))) {
+      // We only care about the positive ones 
+      if (part->GetName()[0] != '+') continue;
+      part->String().Remove(0,1);
+	
+      // Tokenize on a comma to get the words 
+      TObjArray*  words = part->String().Tokenize(",");
+      TObjString* word  = 0;
+      TIter       nextWord(words);
+      while ((word = static_cast<TObjString*>(nextWord()))) {
+	TNamed* store = new TNamed(word->String(), side);
+	cache.Add(store);
+	DMSG(fDebug,3,"Caching %s trigger word %s", 
+	     store->GetTitle(), store->GetName());
+      } // while (word)
+      delete words;
+    }
+    delete parts;
+  }
+}
+
+//____________________________________________________________________
+void
 AliFMDEventInspector::Init(const TAxis& vtxAxis)
 {
   // 
-  // Initialize the object 
+  // Initialize the object - this is called on the first seen event. 
   // 
   // Parameters:
   //   vtxAxis Vertex axis in use 
   //
+  DGUARD(fDebug,1,"Initialize in AliFMDEventInspector");
+
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+
+  // Get the input handler - should always be there 
+  AliInputEventHandler* ih = 
+    static_cast<AliInputEventHandler*>(am->GetInputEventHandler());
+  if (!ih) { 
+    AliWarning("No input handler");
+    return;
+  }
+  // Get the physics selection - should always be there 
+  AliPhysicsSelection* ps = 
+    static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+  if (!ps) {
+    AliWarning("No physics selection");
+    return;
+  }
+  // Get the configured triggers
+  AliOADBPhysicsSelection* oadb = 
+    const_cast<AliOADBPhysicsSelection*>(ps->GetOADBPhysicsSelection());
+  if (!oadb) {
+    AliWarning("No OADB physics selection object");
+    return;
+  }
+  // Get the configured trigger words from the physics selection 
+  const TList* collTriggClasses = ps->GetCollisionTriggerClasses();
+  const TList* bgTriggClasses   = ps->GetBGTriggerClasses();
+  if (!collTriggClasses) { 
+    AliWarning("No configured collision trigger classes");
+    return;
+  }
+  if (!bgTriggClasses) { 
+    AliWarning("No configured background trigger classes");
+    return;
+  }
+  CacheConfiguredTriggerClasses(fCollWords, collTriggClasses, oadb);
+  CacheConfiguredTriggerClasses(fBgWords,   bgTriggClasses,   oadb);
+  // fCollWords.ls();
+  // fBgWords.ls();
+  
   
   // -1.5 -0.5 0.5 1.5 ... 89.5 ... 100.5
   // ----- 92 number --------- ---- 1 ---
@@ -349,6 +462,20 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHCentVsQual->GetXaxis()->SetBinLabel(4, "V0 vs TPC outlier");
   fHCentVsQual->GetXaxis()->SetBinLabel(5, "V0 vs ZDC outlier");
   fList->Add(fHCentVsQual);
+
+  fHStatus = new TH1I("status", "Status", 7, 1, 8);
+  fHStatus->SetFillColor(kRed+1);
+  fHStatus->SetFillStyle(3001);
+  fHStatus->SetStats(0);
+  fHStatus->SetDirectory(0);
+  fHStatus->GetXaxis()->SetBinLabel(1, "OK");
+  fHStatus->GetXaxis()->SetBinLabel(2, "No event");
+  fHStatus->GetXaxis()->SetBinLabel(3, "No triggers");
+  fHStatus->GetXaxis()->SetBinLabel(4, "No SPD");
+  fHStatus->GetXaxis()->SetBinLabel(5, "No FMD");
+  fHStatus->GetXaxis()->SetBinLabel(6, "No vertex");
+  fHStatus->GetXaxis()->SetBinLabel(7, "Bad vertex");
+  fList->Add(fHStatus);
 }
 
 //____________________________________________________________________
@@ -357,40 +484,19 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
 {
   // Write TNamed objects to output list containing information about
   // the running conditions 
+  DGUARD(fDebug,2,"Store information from AliFMDEventInspector");
   if (!fList) return;
 
-  TNamed* sys = new TNamed("sys", "");
-  TNamed* sNN = new TNamed("sNN", "");
-  TNamed* fld = new TNamed("field", "");
-  TNamed* run = new TNamed("runNo", Form("%d", runNo));
-  TNamed* low = new TNamed("lowFlux", Form("%d", fLowFluxCut));
-  TNamed* fpv = new TNamed("fpVtx", Form("%s", fUseFirstPhysicsVertex ? "true" : "false"));
-  TNamed* v0a = new TNamed("v0and", Form("%s", fUseV0AND ? "true" : "false"));
-  TNamed* nCp = new TNamed("nPileup", Form("%d", fMinPileupContrib));
-  sys->SetTitle(AliForwardUtil::CollisionSystemString(fCollisionSystem));
-  sNN->SetTitle(AliForwardUtil::CenterOfMassEnergyString(fEnergy));
-  fld->SetTitle(AliForwardUtil::MagneticFieldString(fField));
-  sys->SetUniqueID(fCollisionSystem);
-  sNN->SetUniqueID(fEnergy);
-  fld->SetUniqueID(fField);
-  run->SetUniqueID(runNo);
-  low->SetUniqueID(fLowFluxCut);
-  fpv->SetUniqueID(fUseFirstPhysicsVertex ? 1 : 0);
-  v0a->SetUniqueID(fUseV0AND ? 1  : 0);
-  nCp->SetUniqueID(fMinPileupContrib);
-
-  TParameter<Double_t>* dP = new TParameter<Double_t>("dPileup", fMinPileupDistance);
-  fList->Add(sys);
-  fList->Add(sNN);
-  fList->Add(fld);
-  fList->Add(run);				
-  fList->Add(low);
-  fList->Add(fpv);
-  fList->Add(v0a);
-  fList->Add(nCp);
-  fList->Add(dP);
   
-
+  fList->Add(AliForwardUtil::MakeParameter("sys", fCollisionSystem));
+  fList->Add(AliForwardUtil::MakeParameter("sNN", fEnergy));
+  fList->Add(AliForwardUtil::MakeParameter("field", fField));
+  fList->Add(AliForwardUtil::MakeParameter("runNo", runNo));
+  fList->Add(AliForwardUtil::MakeParameter("lowFlux", fLowFluxCut));
+  fList->Add(AliForwardUtil::MakeParameter("fpVtx",fUseFirstPhysicsVertex));
+  fList->Add(AliForwardUtil::MakeParameter("v0and",fUseV0AND));
+  fList->Add(AliForwardUtil::MakeParameter("nPileUp", fMinPileupContrib));
+  fList->Add(AliForwardUtil::MakeParameter("dPileup", fMinPileupDistance));
 }
 
 //____________________________________________________________________
@@ -404,6 +510,7 @@ AliFMDEventInspector::DefineOutput(TList* dir)
   // 
   //   dir Directory to add to 
   //
+  DGUARD(fDebug,1,"Define output from AliFMDEventInspector");
   fList = new TList;
   fList->SetName(GetName());
   dir->Add(fList);
@@ -435,17 +542,20 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   // Return:
   //    0 (or kOk) on success, otherwise a bit mask of error codes 
   //
+  DGUARD(fDebug,1,"Process event in AliFMDEventInspector");
 
   // --- Check that we have an event ---------------------------------
   if (!event) { 
     AliWarning("No ESD event found for input event");
+    fHStatus->Fill(2);
     return kNoEvent;
   }
 
   // --- Read trigger information from the ESD and store in AOD object
-  if (!ReadTriggers(event, triggers, nClusters)) { 
+  if (!ReadTriggers(*event, triggers, nClusters)) { 
     if (fDebug > 2) {
       AliWarning("Failed to read triggers from ESD"); }
+    fHStatus->Fill(3);
     return kNoTriggers;
   }
 
@@ -459,11 +569,17 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     lowFlux = testmult->GetNumberOfTracklets() < fLowFluxCut;
 
   fHType->Fill(lowFlux ? 0 : 1);
+
+  // --- Process satellite event information is requested ------------
+  if (fUseDisplacedVertices) { 
+    if (!fDisplacedVertex.Process(event)) 
+      AliWarning("Failed to process satellite event");
+  }
   
   // --- Read centrality information 
   cent          = -10;
   UShort_t qual = 0;
-  if (!ReadCentrality(event, cent, qual)) {
+  if (!ReadCentrality(*event, cent, qual)) {
     if (fDebug > 3) 
       AliWarning("Failed to get centrality");
   }
@@ -475,17 +591,17 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   }
 
   // --- Get the vertex information ----------------------------------
-  
   Double_t vx = 0;
   Double_t vy = 0;
   vz          = 0;
   
-  Bool_t vzOk = ReadVertex(event, vz,vx,vy);
+  Bool_t vzOk = ReadVertex(*event, vz,vx,vy);
 
   fHEventsTr->Fill(vz);
   if (!vzOk) { 
     if (fDebug > 3) {
       AliWarning("Failed to read vertex from ESD"); }
+    fHStatus->Fill(6);
     return kNoVertex;
   }
   fHEventsTrVtx->Fill(vz);
@@ -498,6 +614,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 		      vz, fVtxAxis.GetXmin(), fVtxAxis.GetXmax())); 
     }
     ivz = 0;
+    fHStatus->Fill(7);
     return kBadVertex;
   }
   fHEventsAccepted->Fill(vz);
@@ -507,16 +624,17 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   if (!event->GetFMDData()) { 
     if (fDebug > 3) {
       AliWarning("No FMD data found in ESD"); }
+    fHStatus->Fill(5);
     return kNoFMD;
   }
 
-  
+  fHStatus->Fill(1);
   return kOk;
 }
 
 //____________________________________________________________________
 Bool_t
-AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd, 
+AliFMDEventInspector::ReadCentrality(const AliESDEvent& esd, 
 				     Double_t& cent, 
 				     UShort_t& qual) const
 {
@@ -530,16 +648,24 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd,
   // Return:
   //    False on error, true otherwise 
   //
+  DGUARD(fDebug,2,"Read the centrality in AliFMDEventInspector");
+
+  if(fUseDisplacedVertices) {
+    Double_t zvtx = fDisplacedVertex.GetVertexZ();
+    qual          = 1;
+    if(TMath::Abs(zvtx) < 999) {
+      cent = fDisplacedVertex.GetCentralityPercentile();
+      qual = 0;
+    }
+    return true;
+  }
+  
   cent = -1;
   qual = 0;
-  AliCentrality* centObj = const_cast<AliESDEvent*>(esd)->GetCentrality();
+  AliCentrality* centObj = const_cast<AliESDEvent&>(esd).GetCentrality();
   if (!centObj)  return true;
 
-  // AliInfo(Form("Got centrality object %p with quality %d", 
-  //              centObj, centObj->GetQuality()));
-  // centObj->Print();
   cent = centObj->GetCentralityPercentile("V0M");  
-  //cent = centObj->GetCentralityPercentile("ZEMvsZDC");  
   qual = centObj->GetQuality();
 
   return true;
@@ -547,7 +673,7 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd,
 
 //____________________________________________________________________
 Bool_t
-AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
+AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
 				   UShort_t& nClusters)
 {
   // 
@@ -560,10 +686,12 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   // Return:
   //    @c true on success, @c false otherwise 
   //
+  DGUARD(fDebug,2,"Read the triggers in AliFMDEventInspector");
   triggers = 0;
 
   // Get the analysis manager - should always be there 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  DMSG(fDebug,10,"Got analysis manager %p", am);
   if (!am) { 
     AliWarning("No analysis manager defined!");
     return kFALSE;
@@ -572,20 +700,9 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   // Get the input handler - should always be there 
   AliInputEventHandler* ih = 
     static_cast<AliInputEventHandler*>(am->GetInputEventHandler());
+  DMSG(fDebug,10,"Got input handler %p", ih);
   if (!ih) { 
     AliWarning("No input handler");
-    return kFALSE;
-  }
-  AliPhysicsSelection* ps = 
-    static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
-  if (!ps) {
-    AliWarning("No physics selection");
-    return kFALSE;
-  }
-  AliOADBPhysicsSelection* oadb = 
-    const_cast<AliOADBPhysicsSelection*>(ps->GetOADBPhysicsSelection());
-  if (!oadb) {
-    AliWarning("No OADB physics selection object");
     return kFALSE;
   }
 
@@ -595,227 +712,44 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   // on the AliPhysicsSelection obejct.  If we called the latter
   // then the AliPhysicsSelection object would overcount by a 
   // factor of 2! :-(
-  Bool_t offline  = ih->IsEventSelected() ;
-  Bool_t fastonly = (ih->IsEventSelected() & AliVEvent::kFastOnly);
-  TString trigStr = esd->GetFiredTriggerClasses();
-  
-  //If we have the MC input handler,  this must be MC
-  Bool_t isMC = am->GetMCtruthEventHandler() != 0;
+  Bool_t  offline  = ih->IsEventSelected() ;
+  Bool_t  fastonly = (ih->IsEventSelected() & AliVEvent::kFastOnly);
+  TString trigStr  = esd.GetFiredTriggerClasses();
 
-  // For the 2.76 TeV p+p run, the FMD ran in the slow partition 
-  // so it received no triggers from the fast partition. Therefore
-  // the fast triggers are removed here but not for MC where all 
-  // triggers are fast.
-  if(TMath::Abs(fEnergy - 2750.) < 20 && 
-     fCollisionSystem == AliForwardUtil::kPP &&
-     !isMC)
-    if (fastonly) offline = false;
-  nClusters = 0;
+  if (fHWords) fHWords->Fill(trigStr.Data(), 1);
   
-  // MUON triggers are not strictly minimum bias (MB) so they are removed (HHD)
+  if(fUseDisplacedVertices) {
+    DMSG(fDebug,3,"Using displaced vertex stuff");
+    if (TMath::Abs(fDisplacedVertex.GetVertexZ()) >= 999) offline = false;
+  }
   
-  if(offline && trigStr.Contains("CMUS1")) offline = false;
-    
+  if (CheckFastPartition(fastonly))     offline = false;
+  if (offline && CheckCosmics(trigStr)) offline = false;
+
+  DMSG(fDebug,2,"Event is %striggered by off-line", offline ? "" : "NOT ");
+
   if (offline) {
     triggers |= AliAODForwardMult::kOffline;
     triggers |= AliAODForwardMult::kInel;
+    if (!fHTriggers) { 
+      AliWarning("Histogram of triggers not defined - has init been called");
+      return false;
+    }
     fHTriggers->Fill(kOffline+0.5);
-
-    // If this is inel, see if we have a tracklet 
-    const AliMultiplicity* spdmult = esd->GetMultiplicity();
-    if (!spdmult) {
-      AliWarning("No SPD multiplicity");
-    }
-    else { 
-      // Check if we have one or more tracklets 
-      // in the range -1 < eta < 1 to set the INEL>0 
-      // trigger flag. 
-      // 
-      // Also count tracklets as a single cluster 
-      Int_t n = spdmult->GetNumberOfTracklets();
-      for (Int_t j = 0; j < n; j++) { 
-	if(TMath::Abs(spdmult->GetEta(j)) < 1) { 
-	  triggers |= AliAODForwardMult::kInelGt0;
-	  nClusters++;
-	}
-      }
-      n = spdmult->GetNumberOfSingleClusters();
-      for (Int_t j = 0; j < n; j++) { 
-	Double_t eta = -TMath::Log(TMath::Tan(spdmult->GetThetaSingle(j)/2.));
-	if (TMath::Abs(eta) < 1) nClusters++;
-      }
-    }
-    if (nClusters > 0) triggers |= AliAODForwardMult::kNClusterGt0;
+    
+    CheckINELGT0(esd, nClusters, triggers);
   }
   
-  // Analyse some trigger stuff 
-  AliTriggerAnalysis ta;
-  if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND)) {
-    triggers |= AliAODForwardMult::kV0AND;
-    if (fUseV0AND) 
-      triggers |= AliAODForwardMult::kNSD;
-  }
-  if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kNSD1)) 
-    triggers |= AliAODForwardMult::kNSD;
-  
-  // Check for multiple vertices (pile-up) with at least 3
-  // contributors and at least 0.8cm from the primary vertex
-  Bool_t pileup = kFALSE;
-  if(fCollisionSystem == AliForwardUtil::kPP)
-    pileup =  esd->IsPileupFromSPD(fMinPileupContrib,fMinPileupDistance);
-  if (pileup) {
-    triggers |= AliAODForwardMult::kPileUp;
-    fHTriggers->Fill(kPileUp+.5);
-  }
-  
-  // Get trigger stuff 
-  
-  //TString trigStr = esd->GetFiredTriggerClasses();
-  // AliWarning(Form("Fired trigger classes: %s", trigStr.Data()));
-  if (fHWords) fHWords->Fill(trigStr.Data(), 1);
-#if 0
-  if (trigStr.Contains("MB1") || trigStr.Contains("MBBG3"))
-    triggers |= AliAOODForwardMult::kB;
-  if (trigStr.Contains("COTA")) 
-    triggers |= AliAODForwardMult::kA;
-  if (trigStr.Contains("COTC")) 
-    triggers |= AliAODForwardMult::kC;
-#endif
-  if (trigStr.Contains("CBEAMB-ABCE-NOPF-ALL")) {
-    triggers |= AliAODForwardMult::kEmpty;
-    fHTriggers->Fill(kEmpty+.5);
-  }
-#if 0 
-  // Check for B triggers
-  if (trigStr.Contains("CINT1B-ABCE-NOPF-ALL")   ||   // Early pp
-      trigStr.Contains("CINT1-B-NOPF-ALLNOTRD")  ||   // Late pp 
-      trigStr.Contains("CINT1-B-NOPF-FASTNOTRD") ||   // Late pp
-      //trigStr.Contains("CMUS1-B-NOPF-MUON")      ||   // Late pp -- HHD 160811
-      trigStr.Contains("CSMBB-ABCE-NOPF-ALL")    ||   // pp
-      trigStr.Contains("CMBACS2-B-NOPF-ALL")     ||   // PbPb
-      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
-      trigStr.Contains("CMBS2A-B-NOPF-ALL")      ||   // PbPb
-      trigStr.Contains("CMBS2C-B-NOPF-ALL")      ||   // PbPb
-      trigStr.Contains("CMBAC-B-NOPF-ALL")       ||   // PbPb
-      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
-      trigStr.Contains("CMBACS2-B-NOPF-ALLNOTRD")     // PbPb
-      // trigStr.Contains("C0SMH-B-NOPF-ALLNOTRD")    // PbPb - high mult
-      ) {
-    Bool_t bTrigger = kTRUE;
-    if ( trigStr.Contains("CINT1-B-NOPF-FASTNOTRD") && 
-	 !trigStr.Contains("CINT1-B-NOPF-ALLNOTRD") && 
-	 TMath::Abs(fEnergy - 2750.) < 20 && 
-	 fCollisionSystem == AliForwardUtil::kPP)
-      bTrigger = kFALSE;
-    if(bTrigger) {
-      triggers |= AliAODForwardMult::kB;
-      fHTriggers->Fill(kB+.5);
-    }
-  }
-  
-  // Check for A triggers
-  if (trigStr.Contains("CINT1A-ABCE-NOPF-ALL")    ||   // Early pp
-      trigStr.Contains("CINT1-AC-NOPF-ALLNOTRD")  ||   // Late pp
-      trigStr.Contains("CINT1-AC-NOPF-FASTNOTRD") ||   // Late pp
-      (trigStr.Contains("CSMBA-ABCE-NOPF-ALL") && 
-       !(triggers & AliAODForwardMult::kB))       ||   // pp
-      trigStr.Contains("CMBACS2-A-NOPF-ALL")      ||   // PbPb
-      // trigStr.Contains("C0SMH-A-NOPF-ALL")     ||   // PbPb - high mult
-      trigStr.Contains("CMBS2A-A-NOPF-ALL")       ||   // PbPb
-      trigStr.Contains("CMBS2C-A-NOPF-ALL")       ||   // PbPb
-      trigStr.Contains("CMBAC-A-NOPF-ALL")        ||   // PbPb
-      // trigStr.Contains("C0SMH-A-NOPF-ALL")     ||   // PbPb - high mult
-      trigStr.Contains("CMBACS2-A-NOPF-ALLNOTRD")     // PbPb
-      // trigStr.Contains("C0SMH-A-NOPF-ALLNOTRD")    // PbPb - high mult
-      ) {
-    triggers |= AliAODForwardMult::kA;
-    fHTriggers->Fill(kA+.5);
-  }
+  CheckNSD(esd,triggers);
+  if (CheckPileup(esd, triggers)) fHTriggers->Fill(kPileUp+.5);
+  if (CheckEmpty(trigStr, triggers)) fHTriggers->Fill(kEmpty+.5);
 
-  // Check for C triggers
-  if (trigStr.Contains("CINT1C-ABCE-NOPF-ALL")   ||  // Early pp
-      (trigStr.Contains("CSMBC-ABCE-NOPF-ALL") && 
-       !(triggers & AliAODForwardMult::kB))      ||   // pp
-      trigStr.Contains("CMBACS2-C-NOPF-ALL")     ||   // PbPb
-      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
-      trigStr.Contains("CMBS2A-C-NOPF-ALL")      ||   // PbPb
-      trigStr.Contains("CMBS2C-C-NOPF-ALL")      ||   // PbPb
-      trigStr.Contains("CMBAC-C-NOPF-ALL")       ||   // PbPb
-      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
-      trigStr.Contains("CMBACS2-C-NOPF-ALLNOTRD")     // PbPb
-      // trigStr.Contains("C0SMH-B-NOPF-ALLNOTRD")    // PbPb - high mult
-      ) {
-    triggers |= AliAODForwardMult::kC;
-    fHTriggers->Fill(kC+.5);
-  }
-
-  // Check for E triggers 
-  if (trigStr.Contains("CINT1-E-NOPF-ALL")       ||   // Early pp 
-      trigStr.Contains("CINT1-E-NOPF-ALLNOTRD")  ||   // Late pp 
-      trigStr.Contains("CINT1-E-NOPF-FASTNOTRD") ||   // Late pp 
-      trigStr.Contains("CMBACS2-E-NOPF-ALL")     ||   // PbPb
-      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
-      trigStr.Contains("CMBS2A-E-NOPF-ALL")      ||   // PbPb
-      trigStr.Contains("CMBS2C-E-NOPF-ALL")      ||   // PbPb
-      trigStr.Contains("CMBAC-E-NOPF-ALL")       ||   // PbPb
-      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
-      trigStr.Contains("CMBACS2-E-NOPF-ALLNOTRD")     // PbPb
-      // trigStr.Contains("C0SMH-B-NOPF-ALLNOTRD")    // PbPb - high mult
-      ) {
-    triggers |= AliAODForwardMult::kE;
-    fHTriggers->Fill(kE+.5);
-  }
-#endif
-
-  const TList* collTriggClasses = ps->GetCollisionTriggerClasses();
-  const TList* bgTriggClasses = ps->GetBGTriggerClasses();
-
-  TIter nextColl(collTriggClasses);
-  TObjString* oadbString = 0;
-  TObjArray* tokens = 0;
-  while ((oadbString = static_cast<TObjString*>(nextColl()))) {
-    tokens = oadbString->String().Tokenize(" ");
-    for (Int_t i = 0; i < tokens->GetEntries(); i++) {
-      TString string = (((TObjString*)tokens->At(i))->String());
-      if (string[0] != '+') continue;
-      string.Remove(0,1);
-      if (trigStr.Contains(string.Data())) {
-        TString beamSide = oadb->GetBeamSide(oadbString->String().Data());
-        if (beamSide.EqualTo("B")) {
-          triggers |= AliAODForwardMult::kB;
-          fHTriggers->Fill(kB+.5);
-        }
-      }
-    }
-  }
-  TIter nextBG(bgTriggClasses);
-  while ((oadbString = static_cast<TObjString*>(nextBG()))) {
-    tokens = oadbString->String().Tokenize(" ");
-    for (Int_t i = 0; i < tokens->GetEntries(); i++) {
-      TString string = (((TObjString*)tokens->At(i))->String());
-      if (string[0] != '+') continue;
-      string.Remove(0,1);
-      if (trigStr.Contains(string.Data())) {
-        TString beamSide = oadb->GetBeamSide(oadbString->String().Data());
-        if (beamSide.Contains("A")) {
-          triggers |= AliAODForwardMult::kA;
-          fHTriggers->Fill(kA+.5);
-        }
-        if (beamSide.Contains("C")) {
-          triggers |= AliAODForwardMult::kC;
-          fHTriggers->Fill(kC+.5);
-        }
-        if (beamSide.Contains("E")) {
-          triggers |= AliAODForwardMult::kE;
-          fHTriggers->Fill(kE+.5);
-        }
-      }
-    }
-  }
+  CheckWords(esd, triggers);
 
   // Now check - if we have a collision - for offline triggers and
   // fill histogram.
   if (triggers & AliAODForwardMult::kB) {
+    fHTriggers->Fill(kB+.5);
     if (triggers & AliAODForwardMult::kInel) 
       fHTriggers->Fill(kInel);
     
@@ -828,12 +762,161 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
     if (triggers & AliAODForwardMult::kV0AND)
       fHTriggers->Fill(kV0AND+.5);
   }
+  if (triggers & AliAODForwardMult::kA) fHTriggers->Fill(kA+.5);
+  if (triggers & AliAODForwardMult::kC) fHTriggers->Fill(kC+.5);
+  if (triggers & AliAODForwardMult::kE) fHTriggers->Fill(kE+.5);
   
   return kTRUE;
 }
+
 //____________________________________________________________________
 Bool_t
-AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, 
+AliFMDEventInspector::CheckFastPartition(bool fastonly) const
+{
+  // For the 2.76 TeV p+p run, the FMD ran in the slow partition 
+  // so it received no triggers from the fast partition. Therefore
+  // the fast triggers are removed here but not for MC where all 
+  // triggers are fast.
+  if (TMath::Abs(fEnergy - 2750.) > 20) return false;
+  if (fCollisionSystem != AliForwardUtil::kPP) return false;
+  if (fastonly)
+    DMSG(fDebug,1,"Fast trigger in pp @ sqrt(s)=2.76TeV removed");
+
+  return fastonly;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::CheckCosmics(const TString& trigStr) const
+{
+  // MUON triggers are not strictly minimum bias (MB) so they are
+  // removed (HHD)
+  if(trigStr.Contains("CMUS1")) {
+    DMSG(fDebug,1,"Cosmic trigger ins't min-bias, removed");
+    return true;
+  }
+  return false;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::CheckINELGT0(const AliESDEvent& esd, 
+				   UShort_t& nClusters, 
+				   UInt_t& triggers) const
+{
+  nClusters = 0;
+
+  // If this is inel, see if we have a tracklet 
+  const AliMultiplicity* spdmult = esd.GetMultiplicity();
+  if (!spdmult) {
+    AliWarning("No SPD multiplicity");
+    return false;
+  }
+
+  // Check if we have one or more tracklets 
+  // in the range -1 < eta < 1 to set the INEL>0 
+  // trigger flag. 
+  // 
+  // Also count tracklets as a single cluster 
+  Int_t n = spdmult->GetNumberOfTracklets();
+  for (Int_t j = 0; j < n; j++) { 
+    if(TMath::Abs(spdmult->GetEta(j)) < 1) { 
+      triggers |= AliAODForwardMult::kInelGt0;
+      nClusters++;
+    }
+  }
+  n = spdmult->GetNumberOfSingleClusters();
+  for (Int_t j = 0; j < n; j++) { 
+    Double_t eta = -TMath::Log(TMath::Tan(spdmult->GetThetaSingle(j)/2.));
+    if (TMath::Abs(eta) < 1) nClusters++;
+  }
+  if (nClusters > 0) triggers |= AliAODForwardMult::kNClusterGt0;
+
+  return triggers & AliAODForwardMult::kNClusterGt0;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::CheckNSD(const AliESDEvent& esd, UInt_t& triggers) const
+{
+  // Analyse some trigger stuff 
+  AliTriggerAnalysis ta;
+  if (ta.IsOfflineTriggerFired(&esd, AliTriggerAnalysis::kV0AND)) {
+    triggers |= AliAODForwardMult::kV0AND;
+    if (fUseV0AND) 
+      triggers |= AliAODForwardMult::kNSD;
+  }
+  if (ta.IsOfflineTriggerFired(&esd, AliTriggerAnalysis::kNSD1)) 
+    triggers |= AliAODForwardMult::kNSD;
+  return triggers & AliAODForwardMult::kNSD;
+}
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::CheckPileup(const AliESDEvent& esd, 
+				  UInt_t& triggers) const
+{
+  // Check for multiple vertices (pile-up) with at least 3
+  // contributors and at least 0.8cm from the primary vertex
+  if(fCollisionSystem != AliForwardUtil::kPP) return false;
+
+  Bool_t pileup =  esd.IsPileupFromSPD(fMinPileupContrib,fMinPileupDistance);
+  if (pileup) triggers |= AliAODForwardMult::kPileUp;
+  return pileup;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::CheckEmpty(const TString& trigStr, UInt_t& triggers) const
+{
+  if (trigStr.Contains("CBEAMB-ABCE-NOPF-ALL")) {
+    triggers |= AliAODForwardMult::kEmpty;
+    return true;
+  }
+  return false;
+}
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::CheckWords(const AliESDEvent& esd, UInt_t& triggers) const
+{
+  TObject* word = 0;
+  TIter nextColl(&fCollWords);
+  while ((word = nextColl())) {
+    DMSG(fDebug,10,"Checking if %s trigger %s is fired", 
+	 word->GetTitle(), word->GetName());
+    if (!esd.IsTriggerClassFired(word->GetName())) continue;
+
+    TString beamSide = word->GetTitle();
+    DMSG(fDebug,10,"Found it - this is a %s trigger", beamSide.Data());
+
+    if (!beamSide.EqualTo("B")) continue;
+    triggers |= AliAODForwardMult::kB;
+    break; // No more to do here
+  }
+  TIter nextBg(&fBgWords);
+  UInt_t all = (AliAODForwardMult::kA | 
+		AliAODForwardMult::kC | 
+		AliAODForwardMult::kE);
+  while ((word = nextBg())) {
+    DMSG(fDebug,10,"Checking if %s trigger %s is fired", 
+	 word->GetTitle(), word->GetName());
+    if (!esd.IsTriggerClassFired(word->GetName())) continue;
+    
+    TString beamSide = word->GetTitle();
+    DMSG(fDebug,10,"Found it - this is a %s trigger", beamSide.Data());
+
+    if (beamSide.Contains("A")) triggers |= AliAODForwardMult::kA;
+    if (beamSide.Contains("C")) triggers |= AliAODForwardMult::kC;
+    if (beamSide.Contains("E")) triggers |= AliAODForwardMult::kE;
+
+    if ((triggers & all) == all) break; // No more to do
+  }
+  return true;
+}
+
+
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::ReadVertex(const AliESDEvent& esd, 
 				 Double_t& vz, 
 				 Double_t& vx, 
 				 Double_t& vy)
@@ -848,86 +931,107 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd,
   // Return:
   //    @c true on success, @c false otherwise 
   //
+  DGUARD(fDebug,2,"Read the vertex in AliFMDEventInspector");
   vz = 0;
   vx = 1024;
   vy = 1024;
-  if(fUseFirstPhysicsVertex) {
-    // This is the code used by the 1st physics people 
-    const AliESDVertex* vertex    = esd->GetPrimaryVertex();
-    if (!vertex  || !vertex->GetStatus()) {
-      if (fDebug > 2) {
-	AliWarning(Form("No primary vertex (%p) or bad status %d", 
-			vertex, (vertex ? vertex->GetStatus() : -1)));
-      }
-      return false;
-    }
-    const AliESDVertex* vertexSPD = esd->GetPrimaryVertexSPD();
-    if (!vertexSPD || !vertexSPD->GetStatus()) {
-      if (fDebug > 2) {
-	AliWarning(Form("No primary SPD vertex (%p) or bad status %d", 
-			vertexSPD, (vertexSPD ? vertexSPD->GetStatus() : -1)));
-      }
-      return false;
-    }
-    
-    // if vertex is from SPD vertexZ, require more stringent cuts 
-    if (vertex->IsFromVertexerZ()) { 
-      if (vertex->GetDispersion() > fMaxVzErr || 
-	  vertex->GetZRes() > 1.25 * fMaxVzErr) {
-	if (fDebug > 2) {
-	  AliWarning(Form("Dispersion %f > %f or resolution %f > %f",
-			  vertex->GetDispersion(), fMaxVzErr,
-			  vertex->GetZRes(), 1.25 * fMaxVzErr)); 
-	}
-	return false;
-      }
-    }
-    vz = vertex->GetZ();
-    
-    if(!vertex->IsFromVertexerZ()) {
-      vx = vertex->GetX();
-      vy = vertex->GetY();
-    }
-    return true;
-  }
-  else { //Use standard SPD vertex (perhaps preferable for Pb+Pb)
-   
-    // Get the vertex 
-    const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
-    if (!vertex) { 
-      if (fDebug > 2) {
-	AliWarning("No SPD vertex found in ESD"); }
-      return kFALSE;
-    }
-    
-    // Check that enough tracklets contributed 
-    if(vertex->GetNContributors() <= 0) {
-      if (fDebug > 2) {
-	AliWarning(Form("Number of contributors to vertex is %d<=0",
-			vertex->GetNContributors())); }
-      vz = 0;
-      return kFALSE;
-    } 
-    // Check that the uncertainty isn't too large 
-    if (vertex->GetZRes() > fMaxVzErr) { 
-      if (fDebug > 2) {
-	AliWarning(Form("Uncertaintity in Z of vertex is too large %f > %f", 
-		      vertex->GetZRes(), fMaxVzErr)); }
-      return kFALSE;
-    }
-    
-    // Get the z coordiante 
-    vz = vertex->GetZ();
-    const AliESDVertex* vertexXY = esd->GetPrimaryVertex();
-    
-    if(!vertexXY->IsFromVertexerZ()) {
-      vx = vertexXY->GetX();
-      vy = vertexXY->GetY();
-    }
-    return kTRUE;
-  } 
-}
   
+  if(fUseDisplacedVertices) {
+    Double_t zvtx = fDisplacedVertex.GetVertexZ();
+      
+    if(TMath::Abs(zvtx) < 999) {
+      vz = zvtx;
+      return true;
+    }
+    return false;
+  }
+
+  if(fUseFirstPhysicsVertex) return CheckPWGUDVertex(esd, vz, vx, vy);
+  
+  
+  return CheckVertex(esd, vz, vx, vy);
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::CheckPWGUDVertex(const AliESDEvent& esd, 
+				       Double_t& vz, 
+				       Double_t& vx, 
+				       Double_t& vy) const
+{
+  // This is the code used by the 1st physics people 
+  const AliESDVertex* vertex    = esd.GetPrimaryVertex();
+  if (!vertex  || !vertex->GetStatus()) {
+    DMSG(fDebug,2,"No primary vertex (%p) or bad status %d", 
+	 vertex, (vertex ? vertex->GetStatus() : -1));
+    return false;
+  }
+  const AliESDVertex* vertexSPD = esd.GetPrimaryVertexSPD();
+  if (!vertexSPD || !vertexSPD->GetStatus()) {
+    DMSG(fDebug,2,"No primary SPD vertex (%p) or bad status %d", 
+	 vertexSPD, (vertexSPD ? vertexSPD->GetStatus() : -1));
+    return false;
+  }
+    
+  // if vertex is from SPD vertexZ, require more stringent cuts 
+  if (vertex->IsFromVertexerZ()) { 
+    if (vertex->GetDispersion() > fMaxVzErr || 
+	vertex->GetZRes() > 1.25 * fMaxVzErr) {
+      DMSG(fDebug,2,"Dispersion %f > %f or resolution %f > %f",
+	   vertex->GetDispersion(), fMaxVzErr,
+	   vertex->GetZRes(), 1.25 * fMaxVzErr);
+      return false;
+    }
+  }
+  vz = vertex->GetZ();
+  
+  if(!vertex->IsFromVertexerZ()) {
+    vx = vertex->GetX();
+    vy = vertex->GetY();
+  }
+  return true;
+}
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::CheckVertex(const AliESDEvent& esd, 
+				  Double_t& vz, 
+				  Double_t& vx, 
+				  Double_t& vy) const
+{
+  // Use standard SPD vertex (perhaps preferable for Pb+Pb)
+  // Get the vertex 
+  const AliESDVertex* vertex = esd.GetPrimaryVertexSPD();
+  if (!vertex) { 
+    if (fDebug > 2) {
+      AliWarning("No SPD vertex found in ESD"); }
+    return false;
+  }
+    
+  // Check that enough tracklets contributed 
+  if(vertex->GetNContributors() <= 0) {
+    DMSG(fDebug,2,"Number of contributors to vertex is %d<=0",
+	 vertex->GetNContributors());
+    vz = 0;
+    return false;
+  } 
+  // Check that the uncertainty isn't too large 
+  if (vertex->GetZRes() > fMaxVzErr) { 
+    DMSG(fDebug,2,"Uncertaintity in Z of vertex is too large %f > %f", 
+	 vertex->GetZRes(), fMaxVzErr);
+    return false;
+  }
+    
+  // Get the z coordiante 
+  vz = vertex->GetZ();
+  const AliESDVertex* vertexXY = esd.GetPrimaryVertex();
+    
+  if(!vertexXY->IsFromVertexerZ()) {
+    vx = vertexXY->GetX();
+    vy = vertexXY->GetY();
+  }
+  return true;
+}
+
 //____________________________________________________________________
 Bool_t
 AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
@@ -945,6 +1049,7 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
   // AliInfo(Form("Parameters from 1st ESD event: cms=%s, sNN=%f, field=%f",
   // 	       esd->GetBeamType(), 2*esd->GetBeamEnergy(), 
   // 	       esd->GetMagneticField()));
+  DGUARD(fDebug,2,"Read the run details in AliFMDEventInspector");
   fCollisionSystem = 
     AliForwardUtil::ParseCollisionSystem(esd->GetBeamType());
   fEnergy          = 
@@ -962,6 +1067,21 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
   return kTRUE;
 }
 
+
+//____________________________________________________________________
+const Char_t*
+AliFMDEventInspector::CodeString(UInt_t code)
+{
+  static TString s;
+  s = "";
+  if (code & kNoEvent)    s.Append("NOEVENT ");
+  if (code & kNoTriggers) s.Append("NOTRIGGERS ");
+  if (code & kNoSPD)      s.Append("NOSPD ");
+  if (code & kNoFMD)      s.Append("NOFMD ");
+  if (code & kNoVertex)   s.Append("NOVERTEX ");
+  if (code & kBadVertex)  s.Append("BADVERTEX ");
+  return s.Data();
+}
 //____________________________________________________________________
 void
 AliFMDEventInspector::Print(Option_t*) const
@@ -982,7 +1102,8 @@ AliFMDEventInspector::Print(Option_t*) const
   field.ReplaceAll("m",  "-");
   field.ReplaceAll("kG", " kG");
   
-  std::cout << ind << ClassName() << ": " << GetName() << '\n'
+  std::cout << std::boolalpha 
+	    << ind << ClassName() << ": " << GetName() << '\n'
 	    << ind << " Vertex bins:            " << fVtxAxis.GetNbins() << '\n'
 	    << ind << " Vertex range:           [" << fVtxAxis.GetXmin() 
 	    << "," << fVtxAxis.GetXmax() << "]\n"
@@ -993,7 +1114,9 @@ AliFMDEventInspector::Print(Option_t*) const
 	    << ind << " System:                 " 
 	    << AliForwardUtil::CollisionSystemString(fCollisionSystem) << '\n'
 	    << ind << " CMS energy per nucleon: " << sNN << '\n'
-	    << ind << " Field:                  " <<  field << '\n';
+	    << ind << " Field:                  " <<  field << '\n'
+	    << ind << " Satellite events:       " << fUseDisplacedVertices 
+	    << "\n" << std::noboolalpha;
   if (!fCentAxis) { std::cout << std::flush; return; }
   Int_t nBin = fCentAxis->GetNbins();
   std::cout << ind << " Centrality axis:        " << nBin << " bins"

@@ -14,7 +14,6 @@
 #include <TProfile.h>
 #include <THStack.h>
 #include <TROOT.h>
-#include <TParameter.h>
 #include <iostream>
 #include <iomanip>
 
@@ -45,12 +44,13 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fEtaLumping(32), 
     fPhiLumping(4),    
     fDebug(0),
-    fCuts()
+    fCuts(),
+    fRecalculateEta(false)
 {
   // 
   // Constructor 
   //
-   
+  DGUARD(fDebug, 0, "Default CTOR of FMD density calculator");
 }
 
 //____________________________________________________________________
@@ -75,7 +75,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fEtaLumping(32), 
     fPhiLumping(4),
     fDebug(0),
-    fCuts()
+    fCuts(),
+    fRecalculateEta(false)
 {
   // 
   // Constructor 
@@ -83,6 +84,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   // Parameters:
   //    name Name of object
   //
+  DGUARD(fDebug, 0, "Named CTOR of FMD density calculator: %s", title);
   fRingHistos.SetName(GetName());
   fRingHistos.SetOwner();
   fRingHistos.Add(new RingHistos(1, 'I'));
@@ -140,7 +142,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fEtaLumping(o.fEtaLumping), 
     fPhiLumping(o.fPhiLumping),
     fDebug(o.fDebug),
-    fCuts(o.fCuts)
+    fCuts(o.fCuts),
+    fRecalculateEta(o.fRecalculateEta)
 {
   // 
   // Copy constructor 
@@ -148,6 +151,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
   // Parameters:
   //    o Object to copy from 
   //
+  DGUARD(fDebug, 0, "Copy CTOR of FMD density calculator");
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
@@ -159,6 +163,7 @@ AliFMDDensityCalculator::~AliFMDDensityCalculator()
   // 
   // Destructor 
   //
+  DGUARD(fDebug, 3, "DTOR of FMD density calculator");
   fRingHistos.Delete();
 }
 
@@ -175,6 +180,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   // Return:
   //    Reference to this object
   //
+  DGUARD(fDebug, 3, "Assignment of FMD density calculator");
   if (&o == this) return *this; 
   TNamed::operator=(o);
 
@@ -194,6 +200,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fEtaLumping         = o.fEtaLumping;
   fPhiLumping         = o.fPhiLumping;
   fCuts               = o.fCuts;
+  fRecalculateEta     = o.fRecalculateEta;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -211,8 +218,9 @@ AliFMDDensityCalculator::Init(const TAxis& axis)
   //
   // Parameters:
   //   etaAxis   Not used
-  CacheMaxWeights();
-
+  DGUARD(fDebug, 1, "Initialize FMD density calculator");
+  CacheMaxWeights(axis);
+ 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
@@ -288,7 +296,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 				   AliForwardUtil::Histos& hists,
 				   UShort_t                vtxbin, 
 				   Bool_t                  lowFlux,
-				   Double_t                /* cent */)
+				   Double_t                /*cent*/, 
+				   Double_t                zvtx)
 {
   // 
   // Do the calculations 
@@ -301,8 +310,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
   // 
   // Return:
   //    true on successs 
-
-  
+  DGUARD(fDebug, 1, "Calculate density in FMD density calculator");
   
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
@@ -327,6 +335,10 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Float_t  mult = fmd.Multiplicity(d,r,s,t);
 	  Float_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Float_t  eta  = fmd.Eta(d,r,s,t);
+	 
+	  
+	  if(fRecalculateEta)  
+	    eta = AliForwardUtil::GetEtaFromStrip(d,r,s,t,zvtx);
 	  
 	  if (mult == AliESDFMD::kInvalidMult || mult > 20) {
 	    rh->fPoisson.Fill(t , s, false);
@@ -373,11 +385,13 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Double_t poissonV = poisson->GetBinContent(t+1,s+1);
 	  Double_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Double_t  eta  = fmd.Eta(d,r,s,t);
+	  if(fRecalculateEta)  
+	    eta = AliForwardUtil::GetEtaFromStrip(d,r,s,t,zvtx);
 	  if (fUsePoisson)
 	    h->Fill(eta,phi,poissonV);
 	  else
 	    hclone->Fill(eta,phi,poissonV);
-	  rh->fDensity->Fill(eta, phi, poissonV);
+	  if (fUsePoisson) rh->fDensity->Fill(eta, phi, poissonV);
 	}
       }
       
@@ -402,7 +416,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
       
     } // for q
   } // for d
-  
+
   return kTRUE;
 }
 
@@ -420,6 +434,9 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
   //    r     Ring 
   //    iEta  Eta bin 
   //
+  DGUARD(fDebug, 10, "Find maximum weight in FMD density calculator");
+  if(!cor) return -1; 
+
   AliFMDCorrELossFit::ELossFit* fit = cor->GetFit(d,r,iEta);
   if (!fit) { 
     // AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
@@ -430,14 +447,23 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
   
 //_____________________________________________________________________
 void
-AliFMDDensityCalculator::CacheMaxWeights()
+AliFMDDensityCalculator::CacheMaxWeights(const TAxis& axis)
 {
   // 
   // Find the max weights and cache them 
   // 
+  DGUARD(fDebug, 2, "Cache maximum weights in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*           cor = fcm.GetELossFit();
-  const TAxis&                  eta = cor->GetEtaAxis();
+
+  TAxis eta(axis.GetNbins(),
+	    axis.GetXmin(),
+	    axis.GetXmax());
+
+  if(cor) 
+    eta.Set(cor->GetEtaAxis().GetNbins(), 
+	    cor->GetEtaAxis().GetXmin(), 
+	    cor->GetEtaAxis().GetXmax());
 
   Int_t nEta = eta.GetNbins();
   fFMD1iMax.Set(nEta);
@@ -572,6 +598,7 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
   //    The number of particles 
   //
   // if (mult <= GetMultCut()) return 0;
+  DGUARD(fDebug, 3, "Calculate Nch in FMD density calculator");
   if (lowFlux) return 1;
   
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
@@ -629,6 +656,7 @@ AliFMDDensityCalculator::Correction(UShort_t d,
   // Return:
   //    
   //
+  DGUARD(fDebug, 10, "Apply correction in FMD density calculator");
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
 
   Float_t correction = 1; 
@@ -663,6 +691,7 @@ AliFMDDensityCalculator::GenerateAcceptanceCorrection(Char_t r) const
   // Return:
   //    Newly allocated histogram of acceptance corrections
   //
+  DGUARD(fDebug, 3, "Make acceptance correction in FMD density calculator");
   const Double_t ic1[] = { 4.9895, 15.3560 };
   const Double_t ic2[] = { 1.8007, 17.2000 };
   const Double_t oc1[] = { 4.2231, 26.6638 };
@@ -757,6 +786,7 @@ AliFMDDensityCalculator::ScaleHistograms(const TList* dir, Int_t nEvents)
   //    dir     where to put the output
   //    nEvents Number of events 
   //
+  DGUARD(fDebug, 1, "Scale histograms in FMD density calculator");
   if (nEvents <= 0) return;
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) return;
@@ -787,6 +817,7 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   // Parameters:
   //    dir List to write in
   //  
+  DGUARD(fDebug, 1, "Define output FMD density calculator");
   TList* d = new TList;
   d->SetOwner();
   d->SetName(GetName());
@@ -801,6 +832,7 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
 
   // TNamed* sigma  = new TNamed("sigma",
   // (fIncludeSigma ? "included" : "excluded"));
+#if 0
   TNamed* maxP   = new TNamed("maxParticle", Form("%d", fMaxParticles));
   TNamed* method = new TNamed("method", 
 			      (fUsePoisson ? "Poisson" : "Energy loss"));
@@ -811,7 +843,14 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   TNamed* etaL   = new TNamed("etaLumping", Form("%d", fEtaLumping));
   TNamed* phiL   = new TNamed("phiLumping", Form("%d", fPhiLumping));
   // TParameter<double>* nxi = new TParameter<double>("nXi", fNXi);
-
+#else
+  TObject* maxP   = AliForwardUtil::MakeParameter("maxParticle", fMaxParticles);
+  TObject* method = AliForwardUtil::MakeParameter("method", fUsePoisson);
+  TObject* phiA   = AliForwardUtil::MakeParameter("phiAcceptance", 
+						  fUsePhiAcceptance);
+  TObject* etaL   = AliForwardUtil::MakeParameter("etaLumping", fEtaLumping);
+  TObject* phiL   = AliForwardUtil::MakeParameter("phiLumping", fPhiLumping);
+#endif
   // d->Add(sigma);
   d->Add(maxP);
   d->Add(method);
@@ -1105,8 +1144,7 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
   y.SetTitle("sector");
   fPoisson.Define(x, y);
 
-  TParameter<double>* cut = new TParameter<double>("cut", fMultCut);
-  d->Add(cut);
+  d->Add(AliForwardUtil::MakeParameter("cut", fMultCut));
 }
 
 //____________________________________________________________________

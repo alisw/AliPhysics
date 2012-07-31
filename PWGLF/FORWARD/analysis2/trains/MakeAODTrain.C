@@ -1,5 +1,3 @@
-#include "TrainSetup.C"
-
 /**
  * @file   MakeAODTrain.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
@@ -9,22 +7,12 @@
  * 
  * @ingroup pwglf_forward_trains
  */
-//====================================================================
+#include "TrainSetup.C"
 
+//====================================================================
 /**
  * Analysis train to make Forward and Central multiplicity
  * 
- * To run, do 
- * @code 
- * gROOT->LoadMacro("TrainSetup.C");
- * // Make train 
- * MakeAODTrain t("My Analysis");
- * // Set variaous parameters on the train 
- * t.SetDataDir("/home/of/data");
- * t.AddRun(118506)
- * // Run it 
- * t.Run("LOCAL", "FULL", -1, false, false);
- * @endcode 
  *
  * @ingroup pwglf_forward_aod
  * @ingroup pwglf_forward_trains
@@ -37,83 +25,64 @@ public:
    * in Termiante mode on Grid
    * 
    * @param name     Name of train (free form)
-   * @param sys      Collision system (1: pp, 2: PbPb)
-   * @param sNN      Center of mass energy [GeV]
-   * @param field    L3 magnetic field - one of {-5,0,+5} kG
-   * @param useCent  Whether to use centrality 
-   * @param dateTime Append date and time to name 
-   * @param year     Year     - if not specified, current year
-   * @param month    Month    - if not specified, current month
-   * @param day      Day      - if not specified, current day
-   * @param hour     Hour     - if not specified, current hour
-   * @param min      Minutes  - if not specified, current minutes
    */
-  MakeAODTrain(const  char* name, 
-	       UShort_t     sys      = 0, 
-	       UShort_t     sNN      = 0, 
-	       Short_t      field    = 0, 
-	       Bool_t       useCent  = false, 
-	       Bool_t       dateTime = false, 
-	       UShort_t     year     = 0, 
-	       UShort_t     month    = 0, 
-	       UShort_t     day      = 0, 
-	       UShort_t     hour     = 0, 
-	       UShort_t     min      = 0) 
-    : TrainSetup(name, dateTime, 
-		 year, month, day, hour, min),
-      fSys(sys), 
-      fSNN(sNN), 
-      fField(field),
-      fUseCent(useCent)
-  {}
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode - see TrainSetup::EMode
-   * @param oper     Operation - see TrainSetup::EOperation
-   * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
-   * @param usePar   If true, use PARs 
-   */
-  void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t mc=false,
-	   Bool_t usePar=false)
+  MakeAODTrain(const  char* name) 
+    : TrainSetup(name),
+      fSys(0), 
+      fSNN(0), 
+      fField(0),
+      fUseCent(true), 
+      fUseTPCEventPlane(false),
+      fForwardConfig("ForwardAODConfig.C"), 
+      fCentralConfig("CentralAODConfig.C")
   {
-    Info("Run", "Running in mode=%s, oper=%s, events=%d, MC=%d, Par=%d", 
-	 mode, oper, nEvents, mc, usePar);
-    Exec("ESD", mode, oper, nEvents, mc, usePar);
+    SetType(kESD);
   }
   /** 
-   * Run this analysis 
+   * Set the collision system 
    * 
-   * @param mode     Mode - see TrainSetup::EMode
-   * @param oper     Operation - see TrainSetup::EOperation
-   * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
-   * @param usePar   If true, use PARs 
+   * @param sys 1: pp, 2: PbPb, 3: pPb 
    */
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false, 
-	   Bool_t usePar = false)
-  {
-    Info("Run", "Running in mode=%d, oper=%d, events=%d, MC=%d, Par=%d", 
-	 mode, oper, nEvents, mc, usePar);
-    Exec(kESD, mode, oper, nEvents, mc, usePar);
-  }
+  void SetCollisionSystem(UShort_t sys) { fSys = sys; }
+  /** 
+   * Set the collision energy in GeV
+   * 
+   * @param sNN @f$\sqrt{s_{NN}}@f$ for PbPb and pPb, @f$\sqrt{s}@f$
+   * for pp
+   */
+  void SetCollisionEnergy(UShort_t sNN) { fSNN = sNN; }
+  /** 
+   * Set the L3 magnetic field in kilo Gaus
+   * 
+   * @param fld Field value 
+   */
+  void SetL3Field(Short_t fld) { fField = fld; }
+  /** 
+   * If set to true, add TPC event plane task. 
+   * 
+   * @param use Wheter to include TPC event plane task 
+   */
+  void SetUseTPCEventPlane(Bool_t use) { fUseTPCEventPlane = use; }
+  /** 
+   * Whether to process per centrality bin
+   * 
+   * @param use 
+   */
+  void SetUseCentrality(Bool_t use) { fUseCent = use; }
 protected:
   /** 
    * Create the tasks 
    * 
-   * @param mode Processing mode
    * @param par  Whether to use par files 
    * @param mgr  Analysis manager 
    */
-  void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
+  void CreateTasks(EMode /*mode*/, Bool_t par, AliAnalysisManager* mgr)
   {
     // --- Output file name ------------------------------------------
     AliAnalysisManager::SetCommonFileName("forward.root");
 
     // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWGLFforward2", mode, par, true);
+    LoadLibrary("PWGLFforward2", par, true);
     
     // --- Set load path ---------------------------------------------
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
@@ -125,20 +94,20 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
     
     // --- Add TPC eventplane task
-    gROOT->Macro("AddTaskEventplane.C");
+    if (fUseTPCEventPlane) gROOT->Macro("AddTaskEventplane.C");
 
     // --- Task to copy header information ---------------------------
     gROOT->Macro("AddTaskCopyHeader.C");
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d)", 
-		      mc, fSys, fSNN, fField));
-    AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), "ForwardAODConfig.C"));
+    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d,\"%s\")", 
+		      mc, fSys, fSNN, fField, fForwardConfig.Data()));
+    AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), fForwardConfig));
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d)", 
-		      mc, fSys, fSNN, fField));
-    AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), "CentralAODConfig.C"));
+    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d,\"%s\")", 
+		      mc, fSys, fSNN, fField, fCentralConfig.Data()));
+    AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), fCentralConfig));
 
     // --- Add MC particle task --------------------------------------
     if (mc) gROOT->Macro("AddTaskMCParticleFilter.C");
@@ -151,8 +120,7 @@ protected:
    * @param mc Whether this is for MC 
    * @param mgr Manager 
    */
-  void CreatePhysicsSelection(Bool_t mc,
-			      AliAnalysisManager* mgr)
+  void CreatePhysicsSelection(Bool_t mc, AliAnalysisManager* mgr)
   {
     TrainSetup::CreatePhysicsSelection(mc, mgr);
 
@@ -171,41 +139,6 @@ protected:
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
     // ps->SetSkipTriggerClassSelection(true);
-/*
-    if (mc) {
-      AliOADBPhysicsSelection * oadbDefaultPbPb = new AliOADBPhysicsSelection("oadbDefaultPbPb");
-      oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+C0SMH-B-NOPF-ALLNOTRD","B",0);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-A-NOPF-ALLNOTRD","A",0);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-C-NOPF-ALLNOTRD","C",0);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-E-NOPF-ALLNOTRD","E",0);  
-      oadbDefaultPbPb->SetHardwareTrigger         ( 0,"SPDGFO >= 100");
-      oadbDefaultPbPb->SetOfflineTrigger          ( 0,"SPDGFO >= 100 && !V0ABG && !V0CBG");
-  
-      oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CMBACS2-B-NOPF-ALLNOTRD","B",1);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-A-NOPF-ALLNOTRD","A",1);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-C-NOPF-ALLNOTRD","C",1);
-      oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-E-NOPF-ALLNOTRD","E",1);
-      oadbDefaultPbPb->SetHardwareTrigger         ( 1,"(V0A && V0C && SPDGFO > 1)");
-      oadbDefaultPbPb->SetOfflineTrigger          ( 1,"(V0A && V0C && SPDGFO > 1) && !V0ABG && !V0CBG");
-    // LHC10h8
-      AliOADBPhysicsSelection * oadbLHC10h8 = new AliOADBPhysicsSelection("oadbLHC10h8");
-      oadbLHC10h8->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+C0SMH-B-NOPF-ALL","B",0);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-A-NOPF-ALL","A",0);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-C-NOPF-ALL","C",0);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-E-NOPF-ALL","E",0);  
-      oadbLHC10h8->SetHardwareTrigger         ( 0,"SPDGFO >= 100");
-      oadbLHC10h8->SetOfflineTrigger          ( 0,"SPDGFO >= 100 && !V0ABG && !V0CBG");
-  
-      oadbLHC10h8->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CMBACS2-B-NOPF-ALL","B",1);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-A-NOPF-ALL","A",1);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-C-NOPF-ALL","C",1);
-      oadbLHC10h8->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-E-NOPF-ALL","E",1);
-      oadbLHC10h8->SetHardwareTrigger         ( 1,"(V0A && V0C && SPDGFOL1 > 1)");
-      oadbLHC10h8->SetOfflineTrigger          ( 1,"(V0A && V0C && SPDGFOL1 > 1) && !V0ABG && !V0CBG");
-
-      ps->SetCustomOADBObjects(oadbDefaultPbPb, 0, 0);
-      ps->SetCustomOADBObjects(oadbLHC10h8, 0, 0);
-    }*/
   }
   //__________________________________________________________________
   /** 
@@ -219,10 +152,133 @@ protected:
     if (!fUseCent) return;
     TrainSetup::CreateCentralitySelection(mc, mgr);
   }
-  UShort_t fSys;
-  UShort_t fSNN;
-  Short_t  fField;
-  Bool_t   fUseCent;
+  //__________________________________________________________________
+  const char* ClassName() const { return "MakeAODTrain"; }
+  //__________________________________________________________________
+ void MakeOptions(Runner& r) 
+  {
+    TrainSetup::MakeOptions(r);
+    r.Add(new Option("sys", "Collision system",    "1|2|3"));
+    r.Add(new Option("sNN", "Collision energy",    "GEV"));
+    r.Add(new Option("field", "L3 magnetic field", "kG"));
+    r.Add(new Option("cent",  "Use centrality"));
+    r.Add(new Option("tep",   "Use TPC event plance"));
+    r.Add(new Option("forward-config","Forward configuration script","SCRIPT"));
+    r.Add(new Option("central-config","Central configuration script","SCRIPT"));
+  }
+  //__________________________________________________________________
+  void SetOptions(Runner& r)
+  {
+    TrainSetup::SetOptions(r);
+    Option* sys		= r.FindOption("sys");
+    Option* sNN		= r.FindOption("sNN");
+    Option* field	= r.FindOption("field");
+    Option* cent	= r.FindOption("cent");
+    Option* tep		= r.FindOption("tep");
+    Option* fwdConfig   = r.FindOption("forward-config");
+    Option* cenConfig   = r.FindOption("central-config");
+    
+    if (sys)   SetCollisionSystem(sys->AsInt());
+    if (sNN)   SetCollisionEnergy(sNN->AsInt());
+    if (field) SetL3Field(field->AsInt());
+    if (cent)  SetUseCentrality(cent->AsBool());
+    if (tep)   SetUseTPCEventPlane(tep->AsBool());
+    if (fwdConfig && fwdConfig->IsSet()) 
+      fForwardConfig = fwdConfig->AsString(); 
+    if (cenConfig && cenConfig->IsSet()) 
+      fCentralConfig = cenConfig->AsString(); 
+  }
+  //__________________________________________________________________
+  void SaveOptions(std::ostream& o, const char* str, Runner& r)
+  {
+    TrainSetup::SaveOptions(o, str, r);
+    Option* sys		= r.FindOption("sys");
+    Option* sNN		= r.FindOption("sNN");
+    Option* field	= r.FindOption("field");
+    Option* cent	= r.FindOption("cent");
+    Option* tep		= r.FindOption("tep");
+    Option* fwdConfig   = r.FindOption("forward-config");
+    Option* cenConfig   = r.FindOption("central-config");
+
+    if (sys)   sys->Save(o, str, fSys);
+    if (sNN)   sNN->Save(o, str, fSNN);
+    if (field) field->Save(o, str, fField);
+    if (cent)  cent->Save(o, str, fUseCent);
+    if (tep)   tep->Save(o, str, fUseTPCEventPlane);
+    if (fwdConfig) fwdConfig->Save(o, str, fForwardConfig);
+    if (cenConfig) cenConfig->Save(o, str, fCentralConfig);
+    
+  }
+  //__________________________________________________________________
+  void SaveSetupShell(Runner& r, Int_t nEvents)
+  {
+    TrainSetup::SaveSetupShell(r, nEvents);
+    
+    std::ofstream o("dNdeta.sh");
+    o << "#!/bin/bash\n\n"
+      << "oper=$1\n"
+      << "if test x$oper = x ; then oper=full ; fi\n\n"
+      << "class=MakedNdetaTrain\n"
+      << "name=" << fName << "_dNdeta\n"
+      << "nev=" << nEvents << "\n\n"
+      << "opts=(--class=$class \\\n"
+      << "  --name=$name \\\n"
+      << "  --events=$nev \\\n";
+    for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
+      o << "  --run=" << fRunNumbers.At(i) << " \\\n";
+    TrainSetup::SaveOptions(o, "--", r);
+    if (fUseCent) o << "  --cent \\\n"
+      << "  --type=AOD \\\n"
+      << "  --trig=INEL \\\n"
+      << "  --vzMin=-10 \\\n"
+      << "  --vzMax=10 \\\n"
+      << "  --scheme=full \\\n"
+      << "  --datadir=" << GetOutputDirectory(fExecMode) << " \\\n"
+      << "  --oper=$oper)\n\n"
+      << "echo \"Running runTrain ${opts[@]}\"\n"
+      << "runTrain \"${opts[@]}\"\n\n"
+      << "# EOF\n" << std::endl;
+    o.close();
+    gSystem->Exec("chmod a+x dNdeta.sh");
+  }
+  //__________________________________________________________________
+  void SaveSetupROOT(Runner& r, Int_t nEvents)
+  {
+    TrainSetup::SaveSetupROOT(r, nEvents);
+    
+    std::ofstream o("dNdeta.C");
+    o << "void dNdeta()\n"
+      << "{\n"
+      << "  TString opts;\n";
+    TrainSetup::SaveOptions(o, "opts", r);
+    o << "  // Note, `type' from above overwritten here\n"
+      << "  opts.Append(\"type=AOD,\");\n"
+      << "  opts.Append(\"trig=INEL,\");\n"
+      << "  opts.Append(\"vzMin=-10,\");\n"
+      << "  opts.Append(\"vzMax=10,\");\n"
+      << "  opts.Append(\"scheme=full,\");\n"
+      << "  opts.Append(\"datadir=" << GetOutputDirectory(fExecMode) 
+      << ":\");\n\n"
+      << "  TString runs(\"";
+    for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
+      o << (i == 0 ? "" : ", ") << fRunNumbers.At(i);
+    o << "\");\n\n"
+      << "  Int_t   nEvents = " << nEvents << ";\n\n"
+      << "  gROOT->LoadMacro(\"$ALICE_ROOT/PWGLF/FORWARD/analysis2/trains/RunTrain.C\");\n"
+      << "  RunTrain(\"MakedNdetaTrain\",\"dndeta_" << fName << "\",opts,runs,nEvents);\n"
+      << "}\n"
+      << "// EOF" << std::endl;
+    o.close();
+  }
+
+  UShort_t fSys;                // Pre-set collision system
+  UShort_t fSNN;                // Pre-set collision energy 
+  Short_t  fField;              // Pre-set magnetic field
+  Bool_t   fUseCent;            // Whether to use centrality 
+  Bool_t   fUseTPCEventPlane;   // Whether to use TPC event plane 
+  TString  fForwardConfig;      // Forward configuration script 
+  TString  fCentralConfig;      // Central configuration script 
+
 };
 //
 // EOF

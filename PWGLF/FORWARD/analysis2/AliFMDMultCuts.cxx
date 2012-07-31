@@ -1,6 +1,7 @@
 #include "AliFMDMultCuts.h"
 #include "AliForwardCorrectionManager.h"
 #include "AliFMDCorrELossFit.h"
+#include "AliForwardUtil.h"
 #include <iostream>
 #include <TROOT.h>
 #include <TParameter.h>
@@ -85,6 +86,7 @@ AliFMDMultCuts::GetMultCut(UShort_t d, Char_t r, Int_t ieta,
   //    Lower cut on multiplicity
   //
   Double_t rcut = GetFixedCut(d, r);
+ 
   if (rcut > 0) return rcut;
 
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
@@ -112,7 +114,7 @@ AliFMDMultCuts::GetMultCut(UShort_t d, Char_t r, Double_t eta,
   //
   AliForwardCorrectionManager&  fcm  = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*           fits = fcm.GetELossFit();
-  Int_t                         iEta = fits->FindEtaBin(eta);
+  Int_t                         iEta = fits ? fits->FindEtaBin(eta) : 1;
   
   return GetMultCut(d, r, iEta, errors);
 }
@@ -128,14 +130,30 @@ AliFMDMultCuts::Output(TList* l, const char* name) const
     l->Add(ll);
   }
     
-  TParameter<double>* nXi    = new TParameter<double>("nXi", fNXi);
-  TParameter<double>* frac   = new TParameter<double>("frac", fMPVFraction);
-  TNamed*             sigma  = new TNamed("sigma", fIncludeSigma ? 
-					  "included" : "excluded");
-  sigma->SetUniqueID(fIncludeSigma);
-  ll->Add(nXi);
-  ll->Add(frac);
-  ll->Add(sigma);
+  ll->Add(AliForwardUtil::MakeParameter("nXi", fNXi));
+  ll->Add(AliForwardUtil::MakeParameter("frac", fMPVFraction));
+  ll->Add(AliForwardUtil::MakeParameter("sigma", fIncludeSigma));
+}
+//____________________________________________________________________
+Bool_t
+AliFMDMultCuts::Input(TList* l, const char* name)
+{
+  if (!l) return false;
+  TList* ll = l;
+  if (name && name[0] != '\0') { 
+    ll = static_cast<TList*>(l->FindObject(name));
+  }
+  if (!ll) return false;
+  
+  TObject* nXi   = ll->FindObject("nXi");
+  TObject* frac  = ll->FindObject("frac");
+  TObject* sigma = ll->FindObject("sigma");
+  if (!nXi || !frac || !sigma) return false;
+  AliForwardUtil::GetParameter(nXi, fNXi);
+  AliForwardUtil::GetParameter(frac, fMPVFraction);
+  AliForwardUtil::GetParameter(sigma, fIncludeSigma);
+  
+  return true;
 }
   
 //____________________________________________________________________

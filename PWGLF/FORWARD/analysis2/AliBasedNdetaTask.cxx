@@ -5,7 +5,6 @@
 #include <TH1D.h>
 #include <THStack.h>
 #include <TList.h>
-#include <TParameter.h>
 #include <AliAnalysisManager.h>
 #include <AliAODEvent.h>
 #include <AliAODHandler.h>
@@ -43,6 +42,7 @@ AliBasedNdetaTask::AliBasedNdetaTask()
   // 
   // Constructor
   // 
+  DGUARD(0,0,"Default construction of AliBasedNdetaTask");
 }
 
 //____________________________________________________________________
@@ -73,6 +73,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
   // 
   // Constructor
   // 
+  DGUARD(0,0,"Named construction of AliBasedNdetaTask: %s", name);
   fListOfCentralities = new TObjArray(1);
   
   // Set the normalisation scheme 
@@ -110,7 +111,9 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fSchemeString(o.fSchemeString), 
     fTriggerString(o.fTriggerString),
     fFinalMCCorrFile(o.fFinalMCCorrFile)
-{}
+{
+  DGUARD(0,0,"Copy construction of AliBasedNdetaTask");
+}
 
 //____________________________________________________________________
 AliBasedNdetaTask::~AliBasedNdetaTask()
@@ -118,6 +121,7 @@ AliBasedNdetaTask::~AliBasedNdetaTask()
   // 
   // Destructor
   // 
+  DGUARD(fDebug,3,"Destruction of AliBasedNdetaTask");
   if (fSums) { 
     fSums->Delete();
     delete fSums;
@@ -132,8 +136,21 @@ AliBasedNdetaTask::~AliBasedNdetaTask()
 
 //________________________________________________________________________
 void 
+AliBasedNdetaTask::SetDebugLevel(Int_t lvl)
+{
+  AliAnalysisTaskSE::SetDebugLevel(lvl);
+  for (Int_t i = 0; i < fListOfCentralities->GetEntries(); i++) { 
+    CentralityBin* bin = 
+      static_cast<CentralityBin*>(fListOfCentralities->At(i));
+    bin->SetDebugLevel(lvl);
+  }
+}
+
+//________________________________________________________________________
+void 
 AliBasedNdetaTask::SetCentralityAxis(UShort_t n, Short_t* bins)
 {
+  DGUARD(fDebug,3,"Set centrality axis, %d bins", n);
   if (!fCentAxis) { 
     fCentAxis = new TAxis();
     fCentAxis->SetName("centAxis");
@@ -156,7 +173,9 @@ AliBasedNdetaTask::AddCentralityBin(UShort_t at, Short_t low, Short_t high)
   //    low  Low cut
   //    high High cut
   //
+  DGUARD(fDebug,3,"Add a centrality bin [%f,%f] @ %d", low, high, at);
   CentralityBin* bin = MakeCentralityBin(GetName(), low, high);
+  bin->SetDebugLevel(fDebug);
   fListOfCentralities->AddAtAndExpand(bin, at);
 }
 
@@ -176,15 +195,40 @@ AliBasedNdetaTask::MakeCentralityBin(const char* name,
   // Return:
   //    A newly created centrality bin 
   //
+  DGUARD(fDebug,3,"Make a centrality bin [%f,%f]: %s", low, high, name);
   return new CentralityBin(name, low, high);
 }
+
+#define TESTAPPEND(SCHEME,BIT,STRING) \
+  do { if (!(SCHEME & BIT)) break;					\
+    if (!s.IsNull()) s.Append(","); s.Append(STRING); } while(false) 
+  
 //________________________________________________________________________
-void 
-AliBasedNdetaTask::SetNormalizationScheme(const char* what)
+const Char_t*
+AliBasedNdetaTask::NormalizationSchemeString(UShort_t scheme)
 {
-  // 
-  // Set normalisation scheme 
-  // 
+  // Create a string from normalization scheme bits 
+  static TString s;
+  s = "";
+
+  if (scheme == kNone) 
+    return s.Data();
+  if (scheme == kFull) { 
+    s = "FULL";
+    return s.Data();
+  }
+  TESTAPPEND(scheme, kEventLevel, 	 "EVENT");
+  TESTAPPEND(scheme, kShape, 		 "SHAPE");
+  TESTAPPEND(scheme, kBackground, 	 "BACKGROUND");
+  TESTAPPEND(scheme, kTriggerEfficiency, "TRIGGER");
+  TESTAPPEND(scheme, kZeroBin, 		 "ZEROBIN");
+
+  return s.Data();
+}
+//________________________________________________________________________
+UShort_t
+AliBasedNdetaTask::ParseNormalizationScheme(const char* what)
+{
   UShort_t    scheme = 0;
   TString     twhat(what);
   twhat.ToUpper();
@@ -207,30 +251,37 @@ AliBasedNdetaTask::SetNormalizationScheme(const char* what)
     else if (s.CompareTo("NONE")      == 0) bit = kNone;
     else if (s.CompareTo("ZEROBIN")   == 0) bit = kZeroBin;
     else 
-      Warning("SetNormalizationScheme", "Unknown option %s", s.Data());
+      ::Warning("SetNormalizationScheme", "Unknown option %s", s.Data());
     if (add) scheme |= bit;
     else     scheme ^= bit;
   }
-  SetNormalizationScheme(scheme);
+  return scheme;
+}  
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::SetNormalizationScheme(const char* what)
+{
+  // 
+  // Set normalisation scheme 
+  // 
+  DGUARD(fDebug,3,"Set the normalization scheme: %s", what);
+  SetNormalizationScheme(ParseNormalizationScheme(what));
 }
 //________________________________________________________________________
 void 
 AliBasedNdetaTask::SetNormalizationScheme(UShort_t scheme) 
 {
+  DGUARD(fDebug,3,"Set the normalization scheme: 0x%x", scheme);
   fNormalizationScheme = scheme; 
-  TString tit = "";
-  if (scheme == kFull) tit = "FULL"; 
-  else {
-    if (scheme & kEventLevel)        tit.Append("EVENT ");
-    if (scheme & kShape)             tit.Append("SHAPE ");
-    if (scheme & kBackground)        tit.Append("BACKGROUND ");
-    if (scheme & kTriggerEfficiency) tit.Append("TRIGGER ");
-    if (scheme & kZeroBin)           tit.Append("ZEROBIN ");
-  }
-  tit = tit.Strip(TString::kBoth);
+#if 0
+  const Char_t* tit = NormalizationSchemeString(scheme);
   if (!fSchemeString) fSchemeString = new TNamed("scheme", "");
   fSchemeString->SetTitle(tit);
   fSchemeString->SetUniqueID(fNormalizationScheme);
+#else 
+  if (fSchemeString) delete fSchemeString;
+  fSchemeString = AliForwardUtil::MakeParameter("scheme", scheme);
+#endif
 }
 //________________________________________________________________________
 void 
@@ -242,23 +293,30 @@ AliBasedNdetaTask::SetTriggerMask(const char* mask)
   // Parameters:
   //    mask Trigger mask
   //
+  DGUARD(fDebug,3,"Set the trigger mask: %s", mask);
   SetTriggerMask(AliAODForwardMult::MakeTriggerMask(mask));
 }
 //________________________________________________________________________
 void 
 AliBasedNdetaTask::SetTriggerMask(UShort_t mask) 
 { 
+  DGUARD(fDebug,3,"Set the trigger mask: 0x%0x", mask);
   fTriggerMask = mask; 
+#if 0
   TString tit(AliAODForwardMult::GetTriggerString(mask));
   tit = tit.Strip(TString::kBoth);
   if (!fTriggerString) fTriggerString = new TNamed("trigger", "");
   fTriggerString->SetTitle(tit);
   fTriggerString->SetUniqueID(fTriggerMask);
+#else 
+  if (fTriggerString) delete fTriggerString;
+  fTriggerString = AliForwardUtil::MakeParameter("trigger", fTriggerMask);
+#endif
 }
 
 //________________________________________________________________________
 void 
-AliBasedNdetaTask::SetShapeCorrection(const TH1* c)
+AliBasedNdetaTask::SetShapeCorrection(const TH2F* c)
 {
   // 
   // Set the shape correction (a.k.a., track correction) for selected
@@ -267,9 +325,26 @@ AliBasedNdetaTask::SetShapeCorrection(const TH1* c)
   // Parameters:
   //    h Correction
   //
+  DGUARD(fDebug,3,"Set the shape correction: %p", c);
   if (!c) return;
-  fShapeCorr = static_cast<TH1*>(c->Clone());
+  fShapeCorr = static_cast<TH2F*>(c->Clone());
   fShapeCorr->SetDirectory(0);
+}
+
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::InitializeCentBins()
+{
+  if (fListOfCentralities->GetEntries() > 0) return;
+
+  // Automatically add 'all' centrality bin if nothing has been defined. 
+  AddCentralityBin(0, 0, 0);
+  if (fCentAxis && fCentAxis->GetNbins() > 0 && fCentAxis->GetXbins()) { 
+    const TArrayD* bins = fCentAxis->GetXbins();
+    Int_t          nbin = fCentAxis->GetNbins(); 
+    for (Int_t i = 0; i < nbin; i++) 
+      AddCentralityBin(i+1,  Short_t((*bins)[i]), Short_t((*bins)[i+1]));
+  }
 }
 
 //________________________________________________________________________
@@ -281,18 +356,12 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   //
   // This is called once per slave process 
   //
+  DGUARD(fDebug,1,"Create user ouput object");
   fSums = new TList;
   fSums->SetName(Form("%s_sums", GetName()));
   fSums->SetOwner();
 
-  // Automatically add 'all' centrality bin if nothing has been defined. 
-  AddCentralityBin(0, 0, 0);
-  if (fCentAxis && fCentAxis->GetNbins() > 0 && fCentAxis->GetXbins()) { 
-    const TArrayD* bins = fCentAxis->GetXbins();
-    Int_t          nbin = fCentAxis->GetNbins(); 
-    for (Int_t i = 0; i < nbin; i++) 
-      AddCentralityBin(i+1,  Short_t((*bins)[i]), Short_t((*bins)[i+1]));
-  }
+  InitializeCentBins();
   if (fCentAxis) fSums->Add(fCentAxis);
 
 
@@ -307,16 +376,13 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   CentralityBin* bin = 0;
   while ((bin = static_cast<CentralityBin*>(next()))) 
     bin->CreateOutputObjects(fSums);
+  
 
-  // Check that we have an AOD input handler 
-  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
-  AliAODInputHandler* ah = 
-    dynamic_cast<AliAODInputHandler*>(am->GetInputEventHandler());
-  if (!ah) AliFatal("No AOD input handler set in analysis manager");
-
-  // Post data for ALL output slots >0 here, to get at least an empty histogram
+  // Post data for ALL output slots >0 here, to get at least an empty
+  // histogram
   PostData(1, fSums); 
 }
+  
 //____________________________________________________________________
 void 
 AliBasedNdetaTask::UserExec(Option_t *) 
@@ -328,11 +394,10 @@ AliBasedNdetaTask::UserExec(Option_t *)
   //    option Not used
   //
   // Main loop
-  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (!aod) {
-    AliError("Cannot get the AOD event");
-    return;
-  }  
+  DGUARD(fDebug,1,"Analyse the AOD event");
+  AliAODEvent* aod = AliForwardUtil::GetAODEvent(this);
+  if (!aod) return;
+
   
   TObject* obj = aod->FindListObject("Forward");
   if (!obj) { 
@@ -371,6 +436,7 @@ AliBasedNdetaTask::UserExec(Option_t *)
   }
 
   // Here, we get the update 
+#if 0
   if (!fSNNString) { 
     UShort_t sNN = forward->GetSNN();
     fSNNString = new TNamed("sNN", "");
@@ -389,7 +455,20 @@ AliBasedNdetaTask::UserExec(Option_t *)
 
     // Print();
   }
-  
+#else
+  if (!fSNNString) { 
+    fSNNString = AliForwardUtil::MakeParameter("sNN", forward->GetSNN());
+    fSysString = AliForwardUtil::MakeParameter("sys", forward->GetSystem());
+
+    fSums->Add(fSNNString);
+    fSums->Add(fSysString);
+    fSums->Add(fSchemeString);
+    fSums->Add(fTriggerString);
+
+    // Print();
+  }
+
+#endif
   PostData(1, fSums);
 }
 
@@ -553,6 +632,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   //
   // Draw result to screen, or perform fitting, normalizations Called
   // once at the end of the query
+  DGUARD(fDebug,1,"Process final merged results");
 
   fSums = dynamic_cast<TList*> (GetOutputData(1));
   if(!fSums) {
@@ -564,16 +644,19 @@ AliBasedNdetaTask::Terminate(Option_t *)
   fOutput->SetName(Form("%s_result", GetName()));
   fOutput->SetOwner();
   
-  fSNNString     = static_cast<TNamed*>(fSums->FindObject("sNN"));
-  fSysString     = static_cast<TNamed*>(fSums->FindObject("sys"));
+  fSNNString     = fSums->FindObject("sNN");
+  fSysString     = fSums->FindObject("sys");
   fCentAxis      = static_cast<TAxis*>(fSums->FindObject("centAxis"));
-  fSchemeString  = static_cast<TNamed*>(fSums->FindObject("scheme"));
-  fTriggerString = static_cast<TNamed*>(fSums->FindObject("trigger"));
+  fSchemeString  = fSums->FindObject("scheme");
+  fTriggerString = fSums->FindObject("trigger");
 
   if(fSysString && fSNNString && 
      fSysString->GetUniqueID() == AliForwardUtil::kPP)
     LoadNormalizationData(fSysString->GetUniqueID(),
 			  fSNNString->GetUniqueID());
+
+  InitializeCentBins();
+
   // Print before we loop
   Print();
 
@@ -660,19 +743,43 @@ AliBasedNdetaTask::Terminate(Option_t *)
   if (dndetaMCStackRebin) fOutput->Add(dndetaMCStackRebin);
 
   // Output collision energy string 
-  if (fSNNString) fOutput->Add(fSNNString->Clone());
+  if (fSNNString) { 
+    UShort_t sNN = fSNNString->GetUniqueID();
+    TNamed* sNNObj = new TNamed(fSNNString->GetName(),
+				AliForwardUtil::CenterOfMassEnergyString(sNN));
+    sNNObj->SetUniqueID(sNN);
+    fOutput->Add(sNNObj); // fSNNString->Clone());
+  }
 
   // Output collision system string 
-  if (fSysString) fOutput->Add(fSysString->Clone());
+  if (fSysString) { 
+    UShort_t sys = fSysString->GetUniqueID();
+    TNamed* sysObj = new TNamed(fSysString->GetName(),
+				AliForwardUtil::CollisionSystemString(sys));
+    sysObj->SetUniqueID(sys);
+    fOutput->Add(sysObj); // fSysString->Clone());
+  }
 
   // Output centrality axis 
   if (fCentAxis) fOutput->Add(fCentAxis);
 
   // Output trigger string 
-  if (fTriggerString) fOutput->Add(fTriggerString->Clone());
+  if (fTriggerString) { 
+    UShort_t mask = fTriggerString->GetUniqueID();
+    TNamed* maskObj = new TNamed(fTriggerString->GetName(), 
+				 AliAODForwardMult::GetTriggerString(mask));
+    maskObj->SetUniqueID(mask);
+    fOutput->Add(maskObj); // fTriggerString->Clone());
+  }
   
   // Normalization string 
-  if (fSchemeString) fOutput->Add(fSchemeString->Clone());
+  if (fSchemeString) {
+    UShort_t scheme = fSchemeString->GetUniqueID();
+    TNamed* schemeObj = new TNamed(fSchemeString->GetName(), 
+				   NormalizationSchemeString(scheme));
+    schemeObj->SetUniqueID(scheme);
+    fOutput->Add(schemeObj); // fSchemeString->Clone());
+  }
 
   // Output vertex axis 
   TAxis* vtxAxis = new TAxis(1,fVtxMin,fVtxMax);
@@ -681,7 +788,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   fOutput->Add(vtxAxis);
 
   // Output trigger efficiency and shape correction 
-  fOutput->Add(new TParameter<Double_t>("triggerEff", fTriggerEff)); 
+  fOutput->Add(AliForwardUtil::MakeParameter("triggerEff", fTriggerEff));
   if (fShapeCorr) fOutput->Add(fShapeCorr);
 
   TNamed* options = new TNamed("options","");
@@ -699,6 +806,8 @@ void
 AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
 {
   // Load the normalisation data for dN/deta for pp INEL, INEL>0, and NSD
+  DGUARD(fDebug,1,"Load the normalization data for sys=%d, energy=%d",
+	 sys, energy);
   TString type("pp");
   TString snn("900");
   if(energy == 7000) snn.Form("7000");
@@ -746,10 +855,12 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
 		       fTriggerMask == AliAODForwardMult::kNSD ? "nsd" :
 		       fTriggerMask == AliAODForwardMult::kInelGt0 ?
 		       "inelgt0" : "all"));
-  TParameter<float>* eff = 0;
-  if (fNormalizationScheme & kTriggerEfficiency) 
-    eff = static_cast<TParameter<float>*>(fin->Get(effName));
-  Double_t trigEff = eff ? eff->GetVal() : 1;
+
+  Double_t trigEff = 1; 
+  if (fNormalizationScheme & kTriggerEfficiency) { 
+    TObject* eff = fin->Get(effName);
+    if (eff) AliForwardUtil::GetParameter(eff, trigEff);
+  }
   if (fTriggerEff != 1) SetTriggerEff(trigEff);
   if (fTriggerEff < 0)  fTriggerEff = 1;
 
@@ -977,6 +1088,7 @@ AliBasedNdetaTask::FlipHollowStyle(Int_t style)
 void
 AliBasedNdetaTask::Sum::Init(TList* list, const TH2D* data, Int_t col)
 {
+  DGUARD(fDebug,1,"Initializing sums with %s", data->GetName());
   TString n(GetHistName(0));
   TString n0(GetHistName(1));
   const char* postfix = GetTitle();
@@ -1009,21 +1121,27 @@ AliBasedNdetaTask::Sum::Init(TList* list, const TH2D* data, Int_t col)
 
 //____________________________________________________________________
 TString
-AliBasedNdetaTask::Sum::GetHistName(Int_t what) const
+AliBasedNdetaTask::Sum::GetHistName(const char* name, Int_t what, const char* post)
 {
-  TString n(GetName());
+  TString n(name);
   if      (what == 1) n.Append("0");
   else if (what == 2) n.Append("Events");
-  const char* postfix = GetTitle();
-  if (postfix && postfix[0] != '\0')  n.Append(postfix);
+  if (post && post[0] != '\0')  n.Append(post);
   return n;
+}
+
+//____________________________________________________________________
+TString
+AliBasedNdetaTask::Sum::GetHistName(Int_t what) const
+{
+  return GetHistName(GetName(), what, GetTitle());
 }
 
 //____________________________________________________________________
 void
 AliBasedNdetaTask::Sum::Add(const TH2D* data, Bool_t isZero)
 {
-
+  DGUARD(fDebug,2,"Adding %s to sums", data->GetName());
   if (isZero) fSum0->Add(data);
   else        fSum->Add(data);
   fEvents->Fill(isZero ? 1 : 0);
@@ -1031,37 +1149,28 @@ AliBasedNdetaTask::Sum::Add(const TH2D* data, Bool_t isZero)
 
 //____________________________________________________________________
 TH2D*
-AliBasedNdetaTask::Sum::GetSum(const TList* input, 
-			       TList*       output, 
-			       Double_t&    ntotal,
-			       Double_t     epsilon0, 
-			       Double_t     epsilon,
-			       Int_t        marker,
-			       Bool_t       rootProj, 
-			       Bool_t       corrEmpty) const
+AliBasedNdetaTask::Sum::CalcSum(TList*       output, 
+				Double_t&    ntotal,
+				Double_t     epsilon0, 
+				Double_t     epsilon,
+				Int_t        marker,
+				Bool_t       rootProj, 
+				Bool_t       corrEmpty) const
 {
-  TH2D* sum      = static_cast<TH2D*>(input->FindObject(GetHistName(0)));
-  TH2D* sum0     = static_cast<TH2D*>(input->FindObject(GetHistName(1)));
-  TH1I* events   = static_cast<TH1I*>(input->FindObject(GetHistName(2)));
-  if (!sum || !sum0 || !events) {
-    AliWarning(Form("Failed to find one or more histograms: "
-		    "%s (%p) %s (%p) %s (%p)", 
-		    GetHistName(0).Data(), sum, 
-		    GetHistName(1).Data(), sum0,
-		    GetHistName(2).Data(), events));
-    return 0;
-  }
+  DGUARD(fDebug,2,"Calculating final summed histogram %s", fSum->GetName());
 
-  TH2D* ret      = static_cast<TH2D*>(sum->Clone(sum->GetName()));
+  TH2D* ret      = static_cast<TH2D*>(fSum->Clone(fSum->GetName()));
   ret->SetDirectory(0);
   ret->Reset();
-  Int_t n        = Int_t(events->GetBinContent(1));
-  Int_t n0       = Int_t(events->GetBinContent(2));
+  Int_t n        = Int_t(fEvents->GetBinContent(1));
+  Int_t n0       = Int_t(fEvents->GetBinContent(2));
 
-  AliInfo(Form("Adding histograms %s and %s with weights %f and %f resp.",
-	       sum0->GetName(), sum->GetName(), 1./epsilon, 1./epsilon0));
+  AliInfoF("Adding histograms %s and %s with weights %f and %f resp.",
+	   fSum0->GetName(), fSum->GetName(), 1./epsilon, 1./epsilon0);
+  DMSG(fDebug,2, "Adding histograms %s and %s with weights %f and %f resp.",
+       fSum0->GetName(), fSum->GetName(), 1./epsilon, 1./epsilon0);
   // Generate merged histogram 
-  ret->Add(sum0, sum, 1. / epsilon0, 1. / epsilon); 
+  ret->Add(fSum0, fSum, 1. / epsilon0, 1. / epsilon); 
   ntotal = n / epsilon + n0 / epsilon0;
 
   TList* out = new TList;
@@ -1072,8 +1181,8 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   output->Add(out);
 
   // Now make copies, normalize them, and store in output list 
-  TH2D* sumCopy  = static_cast<TH2D*>(sum->Clone("sum"));
-  TH2D* sum0Copy = static_cast<TH2D*>(sum0->Clone("sum0"));
+  TH2D* sumCopy  = static_cast<TH2D*>(fSum->Clone("sum"));
+  TH2D* sum0Copy = static_cast<TH2D*>(fSum0->Clone("sum0"));
   TH2D* retCopy  = static_cast<TH2D*>(ret->Clone("sumAll"));
   sumCopy->SetMarkerStyle(FlipHollowStyle(marker));
   sumCopy->SetDirectory(0);
@@ -1082,9 +1191,9 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   retCopy->SetMarkerStyle(marker);
   retCopy->SetDirectory(0);
 
-  TH1D* norm    = ProjectX(sum,  "norm",    0, 0, rootProj, corrEmpty, false);
-  TH1D* norm0   = ProjectX(sum0, "norm0",   0, 0, rootProj, corrEmpty, false);
-  TH1D* normAll = ProjectX(ret,  "normAll", 0, 0, rootProj, corrEmpty, false);
+  TH1D* norm    = ProjectX(fSum,  "norm",    0, 0, rootProj, corrEmpty, false);
+  TH1D* norm0   = ProjectX(fSum0, "norm0",   0, 0, rootProj, corrEmpty, false);
+  TH1D* normAll = ProjectX(ret,   "normAll", 0, 0, rootProj, corrEmpty, false);
   norm->SetDirectory(0);
   norm0->SetDirectory(0);
   normAll->SetDirectory(0);
@@ -1093,7 +1202,7 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   ScaleToCoverage(sum0Copy, norm0);
   ScaleToCoverage(retCopy, normAll);
 
-  Int_t nY = sum->GetNbinsY();
+  Int_t nY = fSum->GetNbinsY();
   TH1D* sumCopyPx  = ProjectX(sumCopy,  "average",    1, nY,rootProj,corrEmpty);
   TH1D* sum0CopyPx = ProjectX(sum0Copy, "average0",   1, nY,rootProj,corrEmpty);
   TH1D* retCopyPx  = ProjectX(retCopy,  "averageAll", 1, nY,rootProj,corrEmpty);
@@ -1124,10 +1233,10 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   out->Add(norm0);
   out->Add(normAll);
 
-  AliInfo(Form("Returning  (1/%f * %s + 1/%f * %s), "
-	       "1/%f * %d + 1/%f * %d = %d", 
-	       epsilon0, sum0->GetName(), epsilon, sum->GetName(), 
-	       epsilon0, n0, epsilon, n, int(ntotal)));
+  AliInfoF("Returning  (1/%f * %s + 1/%f * %s), "
+	   "1/%f * %d + 1/%f * %d = %d", 
+	   epsilon0, fSum0->GetName(), epsilon, fSum->GetName(), 
+	   epsilon0, n0, epsilon, n, int(ntotal));
 #if 0
   for (Int_t i = 1; i <= ret->GetNbinsX(); i++) { 
     Double_t nc  = sum->GetBinContent(i, 0);
@@ -1149,11 +1258,13 @@ AliBasedNdetaTask::CentralityBin::CentralityBin()
     fTriggers(0), 
     fLow(0), 
     fHigh(0),
-    fDoFinalMCCorrection(false)
+    fDoFinalMCCorrection(false), 
+    fDebug(0)
 {
   // 
   // Constructor 
   //
+  DGUARD(0,0,"Centrality bin default construction");
 }
 //____________________________________________________________________
 AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name, 
@@ -1166,7 +1277,8 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name,
     fTriggers(0),
     fLow(low), 
     fHigh(high),
-    fDoFinalMCCorrection(false)
+    fDoFinalMCCorrection(false), 
+    fDebug(0)
 {
   // 
   // Constructor 
@@ -1176,6 +1288,7 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name,
   //    low  Lower centrality cut in percent 
   //    high Upper centrality cut in percent 
   //
+  DGUARD(0,0,"Named Centrality bin construction: %s [%d,%d]", name);
   if (low <= 0 && high <= 0) { 
     fLow  = 0; 
     fHigh = 0;
@@ -1197,7 +1310,8 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const CentralityBin& o)
     fTriggers(o.fTriggers), 
     fLow(o.fLow), 
     fHigh(o.fHigh),
-    fDoFinalMCCorrection(o.fDoFinalMCCorrection)
+    fDoFinalMCCorrection(o.fDoFinalMCCorrection), 
+    fDebug(o.fDebug)
 {
   // 
   // Copy constructor 
@@ -1205,6 +1319,7 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const CentralityBin& o)
   // Parameters:
   //    other Object to copy from 
   //
+  DGUARD(0,0,"Copy Centrality bin construction");
 }
 //____________________________________________________________________
 AliBasedNdetaTask::CentralityBin::~CentralityBin()
@@ -1212,6 +1327,7 @@ AliBasedNdetaTask::CentralityBin::~CentralityBin()
   // 
   // Destructor 
   //
+  DGUARD(fDebug,3,"Centrality bin desctruction");
   if (fSums) fSums->Delete();
   if (fOutput) fOutput->Delete();
 }
@@ -1229,6 +1345,7 @@ AliBasedNdetaTask::CentralityBin::operator=(const CentralityBin& o)
   // Return:
   //    Reference to this 
   //
+  DGUARD(fDebug,3,"Centrality bin assignment");
   if (&o == this) return *this; 
   SetName(o.GetName());
   SetTitle(o.GetTitle());
@@ -1277,6 +1394,7 @@ AliBasedNdetaTask::CentralityBin::CreateOutputObjects(TList* dir)
   // Parameters:
   //    dir   Parent list
   //
+  DGUARD(fDebug,1,"Create centrality bin output objects");
   fSums = new TList;
   fSums->SetName(GetListName());
   fSums->SetOwner();
@@ -1288,6 +1406,45 @@ AliBasedNdetaTask::CentralityBin::CreateOutputObjects(TList* dir)
 }
 //____________________________________________________________________
 void
+AliBasedNdetaTask::CentralityBin::SetDebugLevel(Int_t lvl)
+{
+  fDebug = lvl;
+  if (fSum) fSum->fDebug = lvl;
+  if (fSumMC) fSumMC->fDebug = lvl;
+}
+
+//____________________________________________________________________
+Bool_t
+AliBasedNdetaTask::CentralityBin::ReadSum(TList* list, bool mc)
+{
+  const char* post = (mc ? "MC" : "");
+  TString     sn   = Sum::GetHistName(GetName(),0,post);
+  TString     sn0  = Sum::GetHistName(GetName(),1,post);
+  TString     ev   = Sum::GetHistName(GetName(),2,post);
+  TH2D* sum      = static_cast<TH2D*>(list->FindObject(sn));
+  TH2D* sum0     = static_cast<TH2D*>(list->FindObject(sn0));
+  TH1I* events   = static_cast<TH1I*>(list->FindObject(ev));
+  if (!sum || !sum0 || !events) {
+    AliWarningF("Failed to find one or more histograms: "
+		"%s (%p) %s (%p) %s (%p)", 
+		sn.Data(), sum, 
+		sn0.Data(), sum0, 
+		ev.Data(), events); 
+    return false;
+  }
+  Sum* ret     = new Sum(GetName(), post);
+  ret->fSum    = sum;
+  ret->fSum0   = sum0;
+  ret->fEvents = events;
+  ret->fDebug  = fDebug;
+  if (mc) fSumMC = ret;
+  else    fSum   = ret;
+
+  return true;
+}
+
+//____________________________________________________________________
+void
 AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
 {
   // 
@@ -1297,9 +1454,12 @@ AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
   //    data  Data histogram to clone 
   //    mc    (optional) MC histogram to clone 
   //
+  DGUARD(fDebug,1,"Create centrality bin sums from %s", 
+	 data ? data->GetName() : "(null)");
   if (data) {
     fSum = new Sum(GetName(),"");
     fSum->Init(fSums, data, GetColor());
+    fSum->fDebug = fDebug;
   }
 
   // If no MC data is given, then do not create MC sum histogram 
@@ -1307,6 +1467,7 @@ AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
 
   fSumMC = new Sum(GetName(), "MC");
   fSumMC->Init(fSums, mc, GetColor());
+  fSumMC->fDebug = fDebug;
 }
 
 //____________________________________________________________________
@@ -1326,6 +1487,7 @@ AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
   //
   if (!forward) return false;
 
+  DGUARD(fDebug,2,"Check the event");
   // We do not check for centrality here - it's already done 
   return forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, fTriggers);
 }
@@ -1349,6 +1511,8 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
   //    data        Data histogram 
   //    mc          MC histogram
   //
+  DGUARD(fDebug,1,"Process one event for %s a given centrality bin", 
+	 data ? data->GetName() : "(null)");
   if (!CheckEvent(forward, triggerMask, vzMin, vzMax)) return;
   if (!data) return;
   if (!fSum) CreateSums(data, mc);
@@ -1373,6 +1537,7 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   //    trigEff From MC
   //    ntotal  On return, contains the number of events. 
   //
+  DGUARD(fDebug,1,"Normalize centrality bin with %s", t.GetName());
   Double_t nAll        = t.GetBinContent(AliAODForwardMult::kBinAll);
   Double_t nB          = t.GetBinContent(AliAODForwardMult::kBinB);
   Double_t nA          = t.GetBinContent(AliAODForwardMult::kBinA);
@@ -1521,7 +1686,7 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
 					     const char* postfix, 
 					     bool        rootProj, 
 					     bool        corrEmpty,
-					     const TH1*  shapeCorr,
+					     const TH2F* shapeCorr,
 					     Double_t    scaler,
 					     bool        symmetrice, 
 					     Int_t       rebin, 
@@ -1545,6 +1710,7 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   //     rebin      Whether to rebin
   //     cutEdges   Whether to cut edges when rebinning 
   //
+  DGUARD(fDebug,1,"Make centrality bin result from %s", sum->GetName());
   TH2D* copy    = static_cast<TH2D*>(sum->Clone(Form("d2Ndetadphi%s%s", 
 						     GetName(), postfix)));
   TH1D* accNorm = ProjectX(sum, Form("norm%s%s",GetName(), postfix), 0, 0, 
@@ -1619,7 +1785,7 @@ void
 AliBasedNdetaTask::CentralityBin::End(TList*      sums, 
 				      TList*      results,
 				      UShort_t    scheme,
-				      const TH1*  shapeCorr, 
+				      const TH2F* shapeCorr, 
 				      Double_t    trigEff,
 				      Bool_t      symmetrice,
 				      Int_t       rebin, 
@@ -1646,6 +1812,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   //    cutEdges    Whether to cut edges when rebinning
   //    triggerMask Trigger mask 
   //
+  DGUARD(fDebug,1,"End centrality bin procesing");
 
   fSums = dynamic_cast<TList*>(sums->FindObject(GetListName()));
   if(!fSums) {
@@ -1659,18 +1826,17 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   results->Add(fOutput);
 
   if (!fSum) { 
-    AliInfo("This task did not produce any output");
-    return;
+    if (!ReadSum(fSums, false)) {
+      AliInfo("This task did not produce any output");
+      return;
+    }
   }
+  if (!fSumMC) ReadSum(fSums, true);
 
   fTriggers = static_cast<TH1I*>(fSums->FindObject("triggers"));
 
   if (!fTriggers) { 
     AliError("Couldn't find histogram 'triggers' in list");
-    return;
-  }
-  if (!fSum) { 
-    AliError(Form("No sum object for %s", GetName()));
     return;
   }
 
@@ -1702,13 +1868,13 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   // Get our histograms 
   Double_t nSum   = 0;
-  TH2D*    sum    = fSum->GetSum(fSums, fOutput, nSum, epsilonT0, 1, 
+  TH2D*    sum    = fSum->CalcSum(fOutput, nSum, epsilonT0, 1, 
 				 marker, rootProj, corrEmpty);
   Double_t nSumMC = 0;
   TH2D*    sumMC  = 0;
-  if (fSumMC) sumMC = fSumMC->GetSum(fSums, fOutput, nSumMC, 
-				     epsilonT0, 1, marker,
-				     rootProj, corrEmpty);
+  if (fSumMC) sumMC = fSumMC->CalcSum(fOutput, nSumMC, 
+				      epsilonT0, 1, marker,
+				      rootProj, corrEmpty);
   if (!sum) { 
     AliError("Failed to get sum from summer - bailing out");
     return;

@@ -11,6 +11,8 @@
  * @param script Script to compile
  * @param option Compile option 
  * 
+ * @return true on success
+ * 
  * @ingroup pwglf_forward_scripts
  */
 Bool_t

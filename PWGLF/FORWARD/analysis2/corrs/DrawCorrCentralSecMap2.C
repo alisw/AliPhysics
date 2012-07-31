@@ -22,6 +22,10 @@ ClearCanvas(TCanvas* c)
   c->Clear();
 }
 
+/** 
+ * Load the needed libraries
+ * 
+ */
 void
 LoadLibraries()
 {

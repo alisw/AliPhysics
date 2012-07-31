@@ -43,9 +43,11 @@ AliAnalysisTaskSE(),
   fHitsByStrip(0),
   fZvtxCut(10),
   fNvtxBins(10),
-  fNbinsEta(200),
+  fNbinsEta(240),
   fBackground(0),
-  fEventSelectionEff(0)
+fEventSelectionEff(0),
+fEtaLow(-6),
+fEtaHigh(6)
 {
   // Default constructor
 }
@@ -60,9 +62,11 @@ AliFMDAnalysisTaskGenerateCorrection::AliFMDAnalysisTaskGenerateCorrection(const
   fHitsByStrip(0),
   fZvtxCut(10),
   fNvtxBins(10),
-  fNbinsEta(200),
+  fNbinsEta(240),
   fBackground(0),
-  fEventSelectionEff(0)
+  fEventSelectionEff(0),
+  fEtaLow(-6),
+  fEtaHigh(6)
 {
  
   DefineOutput(1, TList::Class());
@@ -84,18 +88,18 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
     
     TH2F* hSPDhits       = new TH2F(Form("hSPDhits_vtx%d",v),
 				    Form("hSPDhits_vtx%d",v),
-				    fNbinsEta, -4,6, 20, 0,2*TMath::Pi());
+				    fNbinsEta, fEtaLow,fEtaHigh, 20, 0,2*TMath::Pi());
     hSPDhits->Sumw2();
     fListOfHits.Add(hSPDhits);
     
     TH1F* hReadChannels  = new TH1F(Form("hFMDReadChannels_vtx%d",v),
 				    Form("hFMDReadChannels_vtx%d",v),
-				    fNbinsEta,-4,6);
+				    fNbinsEta,fEtaLow,fEtaHigh);
     hReadChannels->Sumw2();
     fListOfHits.Add(hReadChannels);
     TH1F* hAllChannels  = new TH1F(Form("hFMDAllChannels_vtx%d",v),
 				   Form("hFMDAllChannels_vtx%d",v),
-				   fNbinsEta,-4,6);
+				   fNbinsEta,fEtaLow,fEtaHigh);
     hAllChannels->Sumw2();
     fListOfHits.Add(hAllChannels);
     
@@ -107,12 +111,12 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
       
       TH2F* hPrimary       = new TH2F(Form("hPrimary_FMD_%c_vtx%d",ringChar,v),
 				      Form("hPrimary_FMD_%c_vtx%d",ringChar,v),
-				      fNbinsEta, -4,6, nSec, 0,2*TMath::Pi());
+				      fNbinsEta, fEtaLow,fEtaHigh, nSec, 0,2*TMath::Pi());
       hPrimary->Sumw2();
       fListOfPrimaries.Add(hPrimary);
       TH2F* hPrimaryNSD       = new TH2F(Form("hPrimaryNSD_FMD_%c_vtx%d",ringChar,v),
 					 Form("hPrimaryNSD_FMD_%c_vtx%d",ringChar,v),
-					 fNbinsEta, -4,6, nSec, 0,2*TMath::Pi());
+					 fNbinsEta, fEtaLow,fEtaHigh, nSec, 0,2*TMath::Pi());
       hPrimaryNSD->Sumw2();
       fListOfPrimaries.Add(hPrimaryNSD);
       
@@ -130,9 +134,9 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
       Int_t nSec = (ring == 1 ? 40 : 20);
       Char_t ringChar = (ring == 0 ? 'I' : 'O');
       TH1F* doubleHits = new TH1F(Form("DoubleHits_FMD%d%c",det,ringChar),
-				  Form("DoubleHits_FMD%d%c",det,ringChar),fNbinsEta, -4,6);
+				  Form("DoubleHits_FMD%d%c",det,ringChar),fNbinsEta, fEtaLow,fEtaHigh);
       TH1F* allHits = new TH1F(Form("allHits_FMD%d%c",det,ringChar),
-			       Form("allHits_FMD%d%c",det,ringChar), fNbinsEta, -4,6);
+			       Form("allHits_FMD%d%c",det,ringChar), fNbinsEta, fEtaLow,fEtaHigh);
       
       doubleHits->Sumw2();
       allHits->Sumw2();
@@ -142,12 +146,12 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
       for(Int_t v=0; v<fNvtxBins;v++) {
 	TH2F* hHits = new TH2F(Form("hHits_FMD%d%c_vtx%d", det,ringChar,v),
 			       Form("hHits_FMD%d%c_vtx%d", det,ringChar,v),
-			       fNbinsEta, -4,6, nSec, 0, 2*TMath::Pi());
+			       fNbinsEta, fEtaLow,fEtaHigh, nSec, 0, 2*TMath::Pi());
 	hHits->Sumw2();
 	fListOfHits.Add(hHits);
 	TH2F* hHitsNSD = new TH2F(Form("hHitsNSD_FMD%d%c_vtx%d", det,ringChar,v),
 			       Form("hHitsNSD_FMD%d%c_vtx%d", det,ringChar,v),
-			       fNbinsEta, -4,6, nSec, 0, 2*TMath::Pi());
+			       fNbinsEta, fEtaLow,fEtaHigh, nSec, 0, 2*TMath::Pi());
 	hHitsNSD->Sumw2();
 	fListOfHits.Add(hHitsNSD);
 	
@@ -194,28 +198,28 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
       Int_t nSec = (iring == 1 ? 40 : 20);
       TH2F* hAnalysed       = new TH2F(Form("Analysed_FMD%c_vtx%d",ringChar,v),
 				       Form("Analysed_FMD%c_vtx%d",ringChar,v),
-				       fNbinsEta, -4,6, nSec, 0,2*TMath::Pi());
+				       fNbinsEta, fEtaLow,fEtaHigh, nSec, 0,2*TMath::Pi());
       
       hAnalysed->Sumw2();
       fListOfPrimaries.Add(hAnalysed);
       
       TH2F* hAnalysedNSD       = new TH2F(Form("AnalysedNSD_FMD%c_vtx%d",ringChar,v),
 					  Form("AnalysedNSD_FMD%c_vtx%d",ringChar,v),
-					  fNbinsEta, -4,6, nSec, 0,2*TMath::Pi());
+					  fNbinsEta, fEtaLow,fEtaHigh, nSec, 0,2*TMath::Pi());
       
       hAnalysedNSD->Sumw2();
       fListOfPrimaries.Add(hAnalysedNSD);
       
       TH2F* hInel           = new TH2F(Form("Inel_FMD%c_vtx%d",ringChar,v),
 				       Form("Inel_FMD%c_vtx%d",ringChar,v),
-				       fNbinsEta, -4,6, nSec, 0,2*TMath::Pi());
+				       fNbinsEta, fEtaLow,fEtaHigh, nSec, 0,2*TMath::Pi());
       
       hInel->Sumw2();
       fListOfPrimaries.Add(hInel);
       
       TH2F* hNSD           = new TH2F(Form("NSD_FMD%c_vtx%d",ringChar,v),
 				      Form("NSD_FMD%c_vtx%d",ringChar,v),
-				      fNbinsEta, -4,6, nSec, 0,2*TMath::Pi());
+				      fNbinsEta, fEtaLow,fEtaHigh, nSec, 0,2*TMath::Pi());
       
       hNSD->Sumw2();
       fListOfPrimaries.Add(hNSD);

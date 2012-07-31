@@ -168,7 +168,7 @@ GetListOfFiles(const char* input=".")
  *              run will be processed 
  * @param input Input directory 
  * @param what  (expert) Flag of what to do 
- * @param max   (expert) Maximum number of files to process. 
+ * @param keep  
  * 
  * @ingroup pwglf_forward_qa_scripts
  */

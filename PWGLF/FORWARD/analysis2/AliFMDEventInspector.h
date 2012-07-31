@@ -15,14 +15,17 @@
  */
 #include <TNamed.h>
 #include <TAxis.h>
+#include <TList.h>
+#include "AliDisplacedVertexSelection.h"
 class AliESDEvent;
+class AliOADBPhysicsSelection;
 class TH2D;
 class TH1D;
 class TH1I;
 class TH1F;
 class TH2F;
 class TAxis;
-class TList;
+// class TList;
 
 /** 
  * This class inspects the event 
@@ -50,19 +53,19 @@ public:
    * Return codes 
    */
   enum ECodes {
-    /** all ok */
+    /** all ok - bin 1 */
     kOk = 0,
-    /** No ESD event */
+    /** No ESD event - bin 2 */
     kNoEvent = 0x1, 
-    /** No triggers found */
+    /** No triggers found - bin 3 */
     kNoTriggers = 0x2, 
-    /** No SPD data */ 
+    /** No SPD data - bin 4 */ 
     kNoSPD = 0x4, 
-    /** No FMD data */
+    /** No FMD data - bin 5 */
     kNoFMD = 0x8, 
-    /** No vertex found */
+    /** No vertex found - bin 6 */
     kNoVertex = 0x10, 
-    /** Vertex out of range */
+    /** Vertex out of range - bin 7 */
     kBadVertex = 0x20
   };
   /** 
@@ -200,6 +203,16 @@ public:
     fMinPileupDistance = cm;
   }
   /** 
+   * Enable selection of displaced vertices. 
+   * 
+   * @param use whether to use
+   */
+  void SetUseDisplacedVertices(Bool_t use=true)
+  {
+    fUseDisplacedVertices = use;
+  }  
+  
+  /** 
    * Set the debug level.  The higher the value the more output 
    * 
    * @param dbg Debug level 
@@ -267,7 +280,25 @@ public:
    * @param runNo Run number - read off from ESD event
    */
   virtual void StoreInformation(Int_t runNo);
+  /** 
+   * Return a string representing the return code 
+   * 
+   * @param mask Code 
+   * 
+   * @return String representation 
+   */
+  static const char* CodeString(UInt_t mask);
 protected:
+  /** 
+   * Cache the configure trigger classes from the physis selection.  
+   * 
+   * @param cache   where to cache the trigger class. 
+   * @param classes List of configured classes. 
+   * @param o       Object from OADB with config
+   */
+  void CacheConfiguredTriggerClasses(TList& cache, 
+				     const TList* classes,
+				     AliOADBPhysicsSelection* o);
   /** 
    * Read the trigger information from the ESD event 
    * 
@@ -277,17 +308,124 @@ protected:
    * 
    * @return @c true on success, @c false otherwise 
    */
-  Bool_t ReadTriggers(const AliESDEvent* esd, UInt_t& triggers, 
+  Bool_t ReadTriggers(const AliESDEvent& esd, UInt_t& triggers, 
 		      UShort_t& nClusters);
+  /** 
+   * Check, for the @f$\sqrt{s}=2.76GeV@f$ pp run wether this event
+   * was in the fast partition, and if so, filter it out.
+   * 
+   * @param fastonly Event was in fast-only partition 
+   * 
+   * @return true if event was in the fast-only partition, for the run
+   * period.
+   */
+  virtual Bool_t CheckFastPartition(bool fastonly) const;
+  /** 
+   * Check if we have an NSD trigger for pp runs 
+   * 
+   * @param esd      Data
+   * @param triggers Trigger mask to be filled 
+   * 
+   * @return true if we have an NSD trigger 
+   */
+  virtual Bool_t CheckNSD(const AliESDEvent& esd, UInt_t& triggers) const;
+  /** 
+   * Check if we have an INEL&gt;0 trigger 
+   *  
+   * @param esd        Data 
+   * @param nClusters  On return, number of clusters
+   * @param triggers   Trigger mask to be filled
+   * 
+   * @return true if we have an INEL&gt;0 trigger 
+   */
+  virtual Bool_t CheckINELGT0(const AliESDEvent& esd, UShort_t& nClusters, 
+			      UInt_t& triggers) const;
+  /** 
+   * Check if this is a pile-up event
+   * 
+   * @param esd       Data
+   * @param triggers Trigger mask to be filled
+   * 
+   * @return true if this is a pile-up event
+   */
+  virtual Bool_t CheckPileup(const AliESDEvent& esd, UInt_t& triggers) const;
+  /** 
+   * Check if we have a cosmic trigger.  These should be filtered out. 
+   * 
+   * @param trigStri Trigger string 
+   * 
+   * @return true if we have a cosmic trigger
+   */
+  virtual Bool_t CheckCosmics(const TString& trigStri) const;
+  /** 
+   * Check if the trigger string corresponds to an empty event 
+   * 
+   * @param trigStr  Trigger string 
+   * @param triggers Trigger mask to be filled
+   * 
+   * @return true if the trigger string corresponds to an empty event 
+   */
+  virtual Bool_t CheckEmpty(const TString& trigStr, UInt_t& triggers) const;
+  /** 
+   * Check the trigger words to see if we have a B, A, C, or E event. 
+   * 
+   * @param esd       Data
+   * @param triggers  Trigger mask to be filled
+   * 
+   * @return always true
+   */
+  virtual Bool_t CheckWords(const AliESDEvent& esd, UInt_t& triggers) const;
   /** 
    * Read the vertex information from the ESD event 
    * 
    * @param esd  ESD event 
    * @param vz   On return, the vertex Z position 
+   * @param vx   On return, the vertex X position 
+   * @param vy   On return, the vertex Y position 
    * 
    * @return @c true on success, @c false otherwise 
    */
-  Bool_t ReadVertex(const AliESDEvent* esd, Double_t& vz, Double_t& vx, Double_t& vy);
+  Bool_t ReadVertex(const AliESDEvent& esd, 
+		    Double_t& vz, 
+		    Double_t& vx, 
+		    Double_t& vy);
+  /** 
+   * Check the vertex using the method used in PWG-UD.  That is 
+   *
+   * - Check we have a vertex and status is OK
+   * - Check if we have an SPD vertex and that it's status is OK 
+   * - Check if the vertex is from the Z-vertexer, and if it is, 
+   *   - Check that the dispersion and resolution is OK 
+   * 
+   * @param esd Data 
+   * @param vz  On return, the Z coordinate of the IP
+   * @param vx  On return, possibly the X coordinate of the IP
+   * @param vy  On return, possibly the Y coordinate of the IP 
+   * 
+   * @return true if the vertex was found and met the requirements
+   */
+  virtual Bool_t CheckPWGUDVertex(const AliESDEvent& esd, 
+				  Double_t& vz, 
+				  Double_t& vx, 
+				  Double_t& vy) const;
+  /** 
+   * Check the vertex. That is
+   *
+   * - Check if we have an SPD vertex and that it's status is OK 
+   * - Check that we have enough contributors 
+   * - Check that the reslution is OK 
+   * 
+   * @param esd Data 
+   * @param vz  On return, the Z coordinate of the IP
+   * @param vx  On return, possibly the X coordinate of the IP
+   * @param vy  On return, possibly the Y coordinate of the IP 
+   * 
+   * @return true if the vertex was found and met the requirements
+   */
+  virtual Bool_t CheckVertex(const AliESDEvent& esd, 
+				  Double_t& vz, 
+				  Double_t& vx, 
+				  Double_t& vy) const;
   /** 
    * Read centrality from event 
    * 
@@ -297,8 +435,8 @@ protected:
    * 
    * @return False on error, true otherwise 
    */
-  virtual Bool_t ReadCentrality(const AliESDEvent* esd, Double_t& cent,
-				UShort_t& qual) const;
+  Bool_t ReadCentrality(const AliESDEvent& esd, Double_t& cent,
+			UShort_t& qual) const;
 
   TH1I*    fHEventsTr;    //! Histogram of events w/trigger
   TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 
@@ -309,6 +447,7 @@ protected:
   TH1I*    fHWords;       //! Trigger words 
   TH1F*    fHCent;        //! Centrality 
   TH2F*    fHCentVsQual;  //! Centrality vs quality 
+  TH1I*    fHStatus;      //! Event processing status 
   Int_t    fLowFluxCut;   //  Low flux cut
   Double_t fMaxVzErr;     //  Maximum error on v_z
   TList*   fList;         //! Histogram container 
@@ -324,6 +463,10 @@ protected:
 			      // pile-up vertex
   Double_t fMinPileupDistance; // Minimum distance of 2nd pile-up
 			       // vertex 
+  Bool_t   fUseDisplacedVertices; //Analyze displaced vertices?
+  AliDisplacedVertexSelection fDisplacedVertex; //Displaced vertex selector
+  TList    fCollWords;     //! Configured collision words 
+  TList    fBgWords;       //! Configured background words 
   ClassDef(AliFMDEventInspector,4); // Inspect the event 
 };
 

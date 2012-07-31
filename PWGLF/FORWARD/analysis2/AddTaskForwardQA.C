@@ -9,6 +9,9 @@
  */
 /**
  * @defgroup pwglf_forward_qa Quality Assurance
+ * 
+ * Code to deal with Quality Assurance 
+ *
  * @ingroup pwglf_forward_topical
  */
 /**
@@ -16,6 +19,8 @@
  * 
  * @param mc       Monte-carlo input 
  * @param useCent  Use centrality 
+ *
+ * @return newly constructured task object 
  *
  * @ingroup pwglf_forward_eloss
  */
@@ -44,14 +49,14 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   // High cuts for sharing filter
   AliFMDMultCuts cHigh;
   cHigh.SetMPVFraction(0.7);
-  cHigh.SetMultCuts(-1);
+  cHigh.SetMultCuts(100);
   // Low cuts for sharing and density calculator
   AliFMDMultCuts cLow;
   cLow.SetMultCuts(0.1, 0.1, 0.12, 0.1, 0.12);
   // Density cuts
   AliFMDMultCuts cDensity;
   cDensity.SetMPVFraction(0.7);
-  cDensity.SetMultCuts(-1);
+  cDensity.SetMultCuts(100);
 
   
   // --- Set parameters on the algorithms ----------------------------

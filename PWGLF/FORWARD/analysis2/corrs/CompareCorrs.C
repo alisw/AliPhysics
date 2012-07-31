@@ -21,7 +21,7 @@
 
 //======================================================================
 /**
- * 
+ * A canvas 
  * 
  *
  * @ingroup pwglf_forward_scripts_corr
@@ -29,6 +29,14 @@
 struct Canvas 
 {
   //____________________________________________________________________
+  /** 
+   * CTOR
+   * 
+   * @param name  Name 
+   * @param title Title 
+   * @param n1    N1, 
+   * @param n2    N2 
+   */  
   Canvas(const char* name, const char* title,
 	 const char* n1,   const char* n2)
     : fName(name),
@@ -47,6 +55,10 @@ struct Canvas
     gStyle->SetTitleBorderSize(0);
   }
   //____________________________________________________________________
+  /** 
+   * Open it
+   * 
+   */
   void Open() 
   {
     fCanvas = new TCanvas(fName, fTitle, 800, TMath::Sqrt(2)*800);
@@ -55,6 +67,15 @@ struct Canvas
     fCanvas->Print("comparison.pdf[", "pdf");
   }
   //____________________________________________________________________
+  /** 
+   * Clear pad 
+   * 
+   * @param nPad Pad number 
+   * @param d    Detector
+   * @param r    Ring 
+   * 
+   * @return Pointer to pad 
+   */
   TPad* 
   Clear(UShort_t nPad, UShort_t d, Char_t r)
   {
@@ -80,6 +101,13 @@ struct Canvas
     return fBody;
   }  
   //____________________________________________________________________
+  /** 
+   * Change to pad 
+   * 
+   * @param i Pad number 
+   * 
+   * @return Pointer to pad 
+   */
   TVirtualPad* cd(Int_t i) 
   {
     if (!fBody) return 0;
@@ -87,22 +115,39 @@ struct Canvas
     return fBody->cd(i);
   }
   //____________________________________________________________________
+  /** 
+   * Print information
+   * 
+   * @param d Detector
+   * @param r Ring 
+   * @param extra  more stuff
+   */
   void Print(UShort_t d, Char_t r, const char* extra="")
   {
     fCanvas->Print("comparison.pdf", 
 		   Form("Title:FMD%d%c %s", d, r, extra));
   }
   //____________________________________________________________________
+  /** 
+   * Close it 
+   * 
+   */
   void Close()
   {
     fCanvas->Print("comparison.pdf]", "pdf");
   }    
   //____________________________________________________________________
+  /// NAme 
   const char* fName;
+  /// Title
   const char* fTitle;
+  /// N1
   const char* fN1;
+  /// N2
   const char* fN2;
+  /// Canvas
   TCanvas*    fCanvas;
+  /// Body 
   TPad*       fBody;
 };
 

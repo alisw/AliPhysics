@@ -7,16 +7,22 @@
 #include "AliAODForwardMult.h"
 #include <AliLog.h>
 #include <AliInputEventHandler.h>
+#include <AliAODInputHandler.h>
+#include <AliAODHandler.h>
+#include <AliAODEvent.h>
 #include <AliESDEvent.h>
+#include <AliAnalysisTaskSE.h>
 #include <AliPhysicsSelection.h>
 #include <AliTriggerAnalysis.h>
 #include <AliMultiplicity.h>
+#include <TParameter.h>
 #include <TH2D.h>
 #include <TH1I.h>
 #include <TF1.h>
 #include <TFitResult.h>
 #include <TMath.h>
 #include <TError.h>
+#include <TROOT.h>
 
 //====================================================================
 UShort_t
@@ -93,6 +99,7 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t /* sys */, Float_t v)
   if (TMath::Abs(energy - 4400.)  < 10)  return 4400;
   if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
   if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
+  if (TMath::Abs(energy - 8000.)  < 10)  return 8000;
   if (TMath::Abs(energy - 10000.) < 10)  return 10000;
   if (TMath::Abs(energy - 14000.) < 10)  return 14000;
   return 0;
@@ -144,6 +151,160 @@ AliForwardUtil::MagneticFieldString(Short_t f)
   //    String representation of the magnetic field
   //
   return Form("%01dkG", f);
+}
+//_____________________________________________________________________
+AliAODEvent* AliForwardUtil::GetAODEvent(AliAnalysisTaskSE* task)
+{
+  // Check if AOD is the output event
+  AliAODEvent* ret = task->AODEvent();
+  if (ret) return ret; 
+  
+  // Check if AOD is the input event 
+  ret = dynamic_cast<AliAODEvent*>(task->InputEvent());
+  if (!ret) ::Warning("GetAODEvent", "No AOD event found");
+  
+  return ret; 
+}
+//_____________________________________________________________________
+UShort_t AliForwardUtil::CheckForAOD()
+{
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  if (dynamic_cast<AliAODInputHandler*>(am->GetInputEventHandler())) {
+    ::Info("CheckForAOD", "Found AOD Input handler");
+    return 1;
+  }
+  if (dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler())) {
+    ::Info("CheckForAOD", "Found AOD Output handler");
+    return 2;
+  }
+
+  ::Warning("CheckForAOD", 
+	    "Neither and input nor output AOD handler is specified");
+  return 0;
+}
+//_____________________________________________________________________
+Bool_t AliForwardUtil::CheckForTask(const char* clsOrName, Bool_t cls)
+{
+  AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
+  if (!cls) { 
+    AliAnalysisTask* t = am->GetTask(clsOrName);
+    if (!t) { 
+      ::Warning("CheckForTask", "Task %s not found in manager", clsOrName);
+      return false;
+    }
+    ::Info("CheckForTask", "Found task %s", clsOrName);
+    return true;
+  }
+  TClass* dep = gROOT->GetClass(clsOrName);
+  if (!dep) { 
+    ::Warning("CheckForTask", "Unknown class %s for needed task", clsOrName);
+    return false;
+  }
+  TIter next(am->GetTasks());
+  TObject* o = 0;
+  while ((o = next())) { 
+    if (o->IsA()->InheritsFrom(dep)) {
+      ::Info("CheckForTask", "Found task of class %s: %s", 
+	     clsOrName, o->GetName());
+      return true;
+    }
+  }
+  ::Warning("CheckForTask", "No task of class %s was found", clsOrName);
+  return false;
+}
+
+//_____________________________________________________________________
+TObject* AliForwardUtil::MakeParameter(const Char_t* name, UShort_t value)
+{
+  TParameter<int>* ret = new TParameter<int>(name, value);
+  ret->SetUniqueID(value);
+  return ret;
+}
+//_____________________________________________________________________
+TObject* AliForwardUtil::MakeParameter(const Char_t* name, Int_t value)
+{
+  TParameter<int>* ret = new TParameter<int>(name, value);
+  ret->SetUniqueID(value);
+  return ret;
+}
+//_____________________________________________________________________
+TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
+{
+  TParameter<double>* ret = new TParameter<double>(name, value);
+  Float_t v = value;
+  ret->SetUniqueID(*reinterpret_cast<UInt_t*>(&v));
+  return ret;
+}
+//_____________________________________________________________________
+TObject* AliForwardUtil::MakeParameter(const Char_t* name, Bool_t value)
+{
+  TParameter<bool>* ret = new TParameter<bool>(name, value);
+  ret->SetUniqueID(value);
+  return ret;
+}
+
+//_____________________________________________________________________
+void AliForwardUtil::GetParameter(TObject* o, UShort_t& value)
+{
+  if (!o) return;
+  value = o->GetUniqueID();
+}
+//_____________________________________________________________________
+void AliForwardUtil::GetParameter(TObject* o, Int_t& value)
+{
+  if (!o) return;
+  value = o->GetUniqueID();
+}
+//_____________________________________________________________________
+void AliForwardUtil::GetParameter(TObject* o, Double_t& value)
+{
+  if (!o) return;
+  UInt_t  i = o->GetUniqueID();
+  Float_t v = *reinterpret_cast<Float_t*>(&i);
+  value = v;
+}
+//_____________________________________________________________________
+void AliForwardUtil::GetParameter(TObject* o, Bool_t& value)
+{
+  if (!o) return;
+  value = o->GetUniqueID();
+}
+  
+//_____________________________________________________________________
+Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Double_t zvtx)
+{
+  //Calculate eta from strip with vertex (redundant with AliESDFMD::Eta but support displaced vertices)
+  
+  //Get max R of ring
+  Double_t maxR = 0;
+  Double_t minR = 0;
+  Bool_t inner = false;
+  switch (ring) { 
+  case 'i': case 'I': maxR = 17.2; minR =  4.5213; inner = true;  break;
+  case 'o': case 'O': maxR = 28.0; minR = 15.4;    inner = false; break;
+  default: 
+    return -99999;
+  }
+
+  Double_t   rad       =  maxR- minR;
+  Double_t   nStrips   = (ring == 'I' ? 512 : 256);
+  Double_t   segment   = rad / nStrips;
+  Double_t   r         =  minR + segment*strip;
+  Int_t hybrid = sec / 2;
+  
+  Double_t z = 0;
+  switch (det) { 
+  case 1: z = 320.266; break;
+  case 2: z = (inner ? 83.666 : 74.966); break;
+  case 3: z = (inner ? -63.066 : -74.966); break; 
+  default: return -999999;
+  }
+  if ((hybrid % 2) == 0) z -= .5;
+  
+  Double_t   theta = TMath::ATan2(r,z-zvtx);
+  Double_t   eta   = -1*TMath::Log(TMath::Tan(0.5*theta));
+  
+  return eta;
 }
 
 
@@ -887,6 +1048,61 @@ AliForwardUtil::RingHistos::GetOutputHist(const TList* d, const char* name) cons
   //
   return static_cast<TH1*>(d->FindObject(name));
 }
+
+//====================================================================
+AliForwardUtil::DebugGuard::DebugGuard(Int_t lvl, Int_t msgLvl, 
+				       const char* format, ...)
+  : fMsg("")
+{
+  if (lvl < msgLvl) return; 
+  va_list ap;
+  va_start(ap, format);
+  Format(fMsg, format, ap);
+  va_end(ap);
+  Output(+1, fMsg);
+}
+//____________________________________________________________________
+AliForwardUtil::DebugGuard::~DebugGuard()
+{
+  if (fMsg.IsNull()) return;
+  Output(-1, fMsg);
+}
+//____________________________________________________________________
+void
+AliForwardUtil::DebugGuard::Message(Int_t lvl, Int_t msgLvl, 
+				    const char* format, ...)
+{
+  if (lvl < msgLvl) return; 
+  TString msg;
+  va_list ap;
+  va_start(ap, format);
+  Format(msg, format, ap);
+  va_end(ap);
+  Output(0, msg);
+}
+
+//____________________________________________________________________
+void
+AliForwardUtil::DebugGuard::Format(TString& out, const char* format, va_list ap)
+{
+  static char buf[512];
+  Int_t n = gROOT->GetDirLevel() + 2;
+  for (Int_t i = 0; i < n; i++) buf[i] = ' ';
+  vsnprintf(&(buf[n]), 511-n, format, ap);
+  buf[511] = '\0';
+  out = buf;  
+}
+//____________________________________________________________________
+void
+AliForwardUtil::DebugGuard::Output(int in, TString& msg)
+{
+  msg[0] = (in > 0 ? '>' :  in < 0 ? '<' : '=');
+  AliLog::Message(AliLog::kInfo, msg, 0, 0, "PWGLF/forward", 0, 0);
+  if      (in > 0) gROOT->IncreaseDirLevel();
+  else if (in < 0) gROOT->DecreaseDirLevel();
+}
+
+
 
 //
 // EOF

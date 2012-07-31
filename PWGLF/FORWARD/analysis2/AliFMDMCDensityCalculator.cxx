@@ -213,6 +213,9 @@ AliFMDMCDensityCalculator::Make(UShort_t d, Char_t r, Int_t max) const
 		       Form("ESD-MC difference for FMD%d%c", d, r),
 		       20*max,-max, max);
   ret->GetXaxis()->SetTitle("MC - ESD");
+  ret->SetFillColor(AliForwardUtil::RingColor(d,r));
+  ret->SetLineColor(AliForwardUtil::RingColor(d,r));
+  ret->SetFillStyle(3001);
   ret->SetDirectory(0);
   return ret;
 }

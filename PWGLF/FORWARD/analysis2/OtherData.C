@@ -2,6 +2,8 @@
 /**
  * @defgroup pwglf_forward_otherdata  External data 
  *
+ * Collection of external data points for comparisons and the like 
+ *
  * @ingroup pwglf_forward_scripts
  */
 /**
@@ -122,6 +124,12 @@ SetGraphAttributes(TGraph* g, Int_t trig, Int_t exp, bool mirror,
 }
 
 //____________________________________________________________________
+/** 
+ * Get PYTHIA 900GeV INEL data 
+ * 
+ * 
+ * @return Data graph
+ */
 TGraphAsymmErrors*
 Pythia900INEL()
 {
@@ -334,6 +342,12 @@ Pythia900INEL()
 }
 
 //____________________________________________________________________
+/** 
+ * Get PYTHIA 900GeV NSD data 
+ * 
+ * 
+ * @return Data graph
+ */
 TGraphAsymmErrors*
 Pythia900NSD()
 {
@@ -1166,6 +1180,18 @@ TGraphAsymmErrors* CMSNsd7000()
 }
 
 //____________________________________________________________________
+/** 
+ * Get a single data graph 
+ * 
+ * @param which    Which type
+ * @param sys      Collisition system
+ * @param energy   Collision energy
+ * @param type     Trigger type 
+ * @param centLow  Low cut on centrality 
+ * @param centHigh Up cut on centraltiy
+ * 
+ * @return Data graph 
+ */
 TGraphAsymmErrors*
 GetSingle(UShort_t which, 
 	  UShort_t sys, 
@@ -1253,6 +1279,15 @@ GetSingle(UShort_t which,
 }
 
 //____________________________________________________________________
+/** 
+ * Append an item to a list 
+ * 
+ * @param s      List to append to 
+ * @param delim  Delimiter 
+ * @param what   What to append 
+ * 
+ * @return New string value 
+ */
 TString&
 AppendItem(TString& s, char delim, const char* what)	  
 {

@@ -39,7 +39,6 @@ ClassImp(AliFMDMCSharingFilter)
 ; // This is for Emacs
 #endif 
 
-
 //____________________________________________________________________
 AliFMDMCSharingFilter::AliFMDMCSharingFilter(const char* title)
   : AliFMDSharingFilter(title), 
@@ -247,6 +246,14 @@ AliFMDMCSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
   //    nEvents Number of events 
   //
   AliFMDSharingFilter::ScaleHistograms(dir, nEvents);
+}
+
+//____________________________________________________________________
+void
+AliFMDMCSharingFilter::SetDebug(Int_t dbg)
+{
+  AliFMDSharingFilter::SetDebug(dbg);
+  fTrackDensity.SetDebug(dbg > 2);
 }
 
 //____________________________________________________________________

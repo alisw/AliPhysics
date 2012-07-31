@@ -153,6 +153,11 @@ public:
    * @param dbg Debug level
    */
   void SetDebug(Int_t dbg);
+  /** 
+   * Print information 
+   * 
+   * @param option Not used
+   */
   void Print(Option_t* option="") const;
 protected: 
   /** 
@@ -164,9 +169,15 @@ protected:
    * @return true if all present, false otherwise
    */  
   Bool_t CheckCorrections(UInt_t what) const;
-  /**
+  /** 
    * Read corrections
-   *
+   * 
+   * 
+   * @param pe  On return, the eta axis
+   * @param pv  On return ,the vertex axis 
+   * @param mc  True assume MC input
+   * 
+   * @return true ons succcss
    */
   virtual Bool_t ReadCorrections(const TAxis*& pe, 
 				 const TAxis*& pv,
@@ -174,6 +185,8 @@ protected:
   /**
    * Get the ESD event. IF this is the first event, initialise.  If
    * initialisation failes, return a null pointer. 
+   *
+   * @return Pointer to ESD event structure, or null
    */
   virtual AliESDEvent* GetESDEvent();
   /** 

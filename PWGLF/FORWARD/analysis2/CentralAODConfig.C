@@ -15,6 +15,8 @@
  * directory up-front in your ROOT macro path, and edit it to suit your
  * needs.
  * 
+ * @param task  Task to configure 
+ *
  * @ingroup pwglf_forward_aod
  */
 void

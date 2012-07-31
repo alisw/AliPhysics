@@ -75,6 +75,7 @@ class TH1D;
  * Only minimum bias events with a @f$v_z@f$ within the defined cut
  * are analysed.
  *
+ * @deprecated This class is deprecated 
  * @ingroup pwglf_forward_aod
  */
 class CentralMultTask : public AliAnalysisTaskSE
@@ -104,6 +105,11 @@ public:
    * 
    */
   virtual ~CentralMultTask();
+  /** 
+   * Whether to use tracklets
+   * 
+   * @param use IF true, use tracklets
+   */
   void SetUseTracklets(Bool_t use) { fUseTracklets = use; }
   /** 
    * Initialise on master - does nothing
@@ -586,6 +592,12 @@ CentralMultTask::Terminate(Option_t *)
 }
 
 //========================================================================
+/** 
+ * Add task to do central dN/deta from tracks/tracklets 
+ * 
+ * @deprecated This function is deprecated 
+ * @return Newly created task
+ */
 inline AliAnalysisTask*
 AddTaskCentralTracks()
 {

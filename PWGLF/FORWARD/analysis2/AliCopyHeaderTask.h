@@ -20,13 +20,33 @@
 class AliCopyHeaderTask : public AliAnalysisTaskSE
 {
 public:
+  /** 
+   * Constructor
+   * 
+   * @param name Name
+   */
   AliCopyHeaderTask(const char* name="header") 
     : AliAnalysisTaskSE(name)
   {}
+  /** 
+   * Copy constructor 
+   * 
+   * @param other Object to copy from 
+   */
   AliCopyHeaderTask(const AliCopyHeaderTask& other) 
     : AliAnalysisTaskSE(other)
   {}
+  /** 
+   * Destructor
+   */
   virtual ~AliCopyHeaderTask() {}
+  /** 
+   * Assignmen operator 
+   * 
+   * @param other Object to assing from 
+   * 
+   * @return Reference to this object 
+   */
   AliCopyHeaderTask& operator=(const AliCopyHeaderTask& other) 
   {
     AliAnalysisTaskSE::operator=(other);
@@ -43,7 +63,7 @@ public:
   virtual void   Terminate(Option_t *option);
   /* @} */
 
-  ClassDef(AliCopyHeaderTask,1);
+  ClassDef(AliCopyHeaderTask,1); // Task to copy header from ESD to AOD
 };
 
 #endif

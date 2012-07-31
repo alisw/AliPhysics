@@ -1,15 +1,9 @@
 #ifndef ALIFMDMCTRACKDENSITY_MC
 #define ALIFMDMCTRACKDENSITY_MC
 #include "AliForwardUtil.h"
-#include <TNamed.h>
-class TList;
+#include "AliBaseMCTrackDensity.h"
 class TH1D;
-class TH2D;
-class AliMCEvent;
 class AliESDFMD;
-class AliMCParticle;
-class AliTrackReference;
-class AliStack;
 
 /**
  * A class to calculate the particle density from track references.
@@ -35,7 +29,7 @@ class AliStack;
  * @ingroup pwglf_forward_mc
  * @ingroup pwglf_forward_aod
  */
-class AliFMDMCTrackDensity : public TNamed
+class AliFMDMCTrackDensity : public AliBaseMCTrackDensity 
 {
 public:
   /** 
@@ -74,20 +68,6 @@ public:
    */
   void SetMaxConsequtiveStrips(UShort_t n) { fMaxConsequtiveStrips = n; }
   /** 
-   * Set whether to only consider primaries 
-   * 
-   * @param use If true, consider only primaries
-   */
-  void SetUseOnlyPrimary(Bool_t use) { fUseOnlyPrimary = use; }
-  
-  /** 
-   * Set whether to print debug messages.  Please note this will
-   * produce a lot of output. 
-   * 
-   * @param debug Whether to enable debug messages or not 
-   */
-  void SetDebug(Bool_t debug=true) { fDebug = debug; }
-  /** 
    * Loops over all the particles in the passed event.  If @a primary
    * is not null, then that histogram is filled with the primary
    * particle information - irrespective of whether the particle
@@ -121,69 +101,89 @@ public:
   void Print(Option_t* option="") const;
 protected:
   /** 
-   * Store a particle hit in FMD<i>dr</i>[<i>s,t</i>] in @a output
+   * Must be defined to return the track-reference ID for this detector
+   * 
+   * @return Detector id set on track references
+   */
+  Int_t GetDetectorId() const;
+  /** 
+   * Process a track reference 
+   * 
+   * @param particle Particle 
+   * @param mother   Ultimate mother (if not primary)
+   * @param ref      Reference 
+   * 
+   * @return 0 if no output should be generated for this reference, or
+   * pointer to track-reference to produce output for.
+   */
+  AliTrackReference* ProcessRef(AliMCParticle* particle, 
+				const AliMCParticle* mother, 
+				AliTrackReference* ref);
+  /** 
+   * Called at before loop over track references
+   * 
+   */
+  void BeginTrackRefs();
+  /** 
+   * Called at before loop over track references
+   * 
+   * @param nRefs Number of references 
+   */
+  void EndTrackRefs(Int_t nRefs);
+  /** 
+   * Store a particle hit in Base<i>dr</i>[<i>s,t</i>] in @a output
    * 
    * 
    * @param particle  Particle to store
    * @param mother    Ultimate mother of particle 
-   * @param longest   Longest track reference
-   * @param vz        Z coordinate of IP
-   * @param nC        Total number of track-references in this sector  
-   * @param nT 	      Number of distint strips hit in this sector
-   * @param output    Output structure 
+   * @param ref       Longest track reference
+   *
+   * @return weight
    */  
-  void StoreParticle(AliMCParticle* particle, 
-		     const AliMCParticle* mother,
-		     Int_t          longest,
-		     Double_t       vz,
-		     UShort_t       nC, 
-		     UShort_t       nT,
-		     AliESDFMD&     output,
-                     Double_t       w) const;
+  Double_t StoreParticle(AliMCParticle*       particle, 
+			 const AliMCParticle* mother,
+			 AliTrackReference*   ref) const;
   /** 
-   * Get incident angle of this track reference
+   * Structure holding the state of the `tracker' 
    * 
-   * @param ref Track reference
-   * @param vz  Z coordinate of the IP
-   * 
-   * @return incident angle (in radians)
    */
-  Double_t GetTrackRefTheta(const AliTrackReference* ref,
-			    Double_t vz) const;
-  /** 
-   * Get ultimate mother of a track 
-   * 
-   * @param iTr   Track number 
-   * @param event Event
-   * 
-   * @return Pointer to mother or null 
-   */
-  const AliMCParticle* GetMother(Int_t iTr, const AliMCEvent& event) const;
-  /** 
-   * Calculate flow weight 
-   *
-   * @param eta  Pseudo rapidity 
-   * @param pt   Transverse momemtum 
-   * @param b    Impact parameter
-   * @param phi  Azimuthal angle 
-   * @param rp   Reaction plance angle 
-   * @param id   Particle PDG code
-   *
-   * @return Flow weight for the particle
-   */
-  Double_t CalculateWeight(Double_t eta, Double_t pt, Double_t b, 
-			   Double_t phi, Double_t rp, Int_t id) const;
+  mutable struct State 
+  {
+    Double_t angle;            // Angle 
+    UShort_t oldDetector;      // Last detector
+    Char_t   oldRing;          // Last ring
+    UShort_t oldSector;        // Last sector
+    UShort_t oldStrip;         // Last strip 
+    UShort_t startStrip;       // First strip 
+    UShort_t nRefs;            // Number of references
+    UShort_t nStrips;          // Number of strips 
+    UShort_t count;            // Count of hit strips 
+    AliTrackReference* longest; //! Longest track through 
+    /** 
+     * Clear this state
+     * 
+     * @param alsoCount If true, also clear count 
+     */
+    void Clear(Bool_t alsoCount=false);
+    /** 
+     * Assignment operator 
+     * 
+     * @param o Object to assign from 
+     * 
+     * @return Reference to this object 
+     */
+    State& operator=(const State& o);
+  } fState; // State 
+  
+    
+  UShort_t   fMaxConsequtiveStrips; // Max 'cluster' size
+  TH1D*      fNr;                   // Number of track-refs per cluster
+  TH1D*      fNt;                   // Size of cluster in strips 
+  TH1D*      fNc;                   // Number of clusters per track
+  TH2D*      fNcr;                  // Number of clusters per track
+  AliESDFMD* fOutput;               //! Output ESD object
 
-  Bool_t   fUseOnlyPrimary;       // Only use primaries 
-  UShort_t fMaxConsequtiveStrips; // Max 'cluster' size
-  TH1D*    fNr;                   // Number of track-refs per cluster
-  TH1D*    fNt;                   // Size of cluster in strips 
-  TH2D*    fBinFlow;              // eta,phi bin flow 
-  TH2D*    fEtaBinFlow;           // dEta vs eta of strip
-  TH2D*    fPhiBinFlow;           // dPhi vs phi of strip
-  Bool_t   fDebug;                // Debug flag
-
-  ClassDef(AliFMDMCTrackDensity,1); // Calculate track-ref density
+  ClassDef(AliFMDMCTrackDensity,3); // Calculate track-ref density
 };
 
 #endif

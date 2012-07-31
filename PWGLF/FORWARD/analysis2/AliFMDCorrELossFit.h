@@ -22,6 +22,8 @@ class TBrowser;
 /** 
  * @defgroup pwglf_forward_corr Corrections 
  * 
+ * Correction objects used 
+ *
  * @ingroup pwglf_forward
  */
 /** 
@@ -166,6 +168,8 @@ public:
      */
     Double_t* GetAs() const { return fA; }
     /**
+     * @param i Which weight to get 
+     *
      * @return Weights 
      */
     Double_t GetA(UShort_t i) const;    
@@ -194,6 +198,8 @@ public:
      */
     Double_t* GetEAs() const { return fEA; }
     /**
+     * @param i Which weight to get 
+     *
      * @return Error on weights
      */
     Double_t GetEA(UShort_t i) const;
@@ -298,6 +304,8 @@ public:
      * - 0 otherwise 
      * 
      * @param o Other object to compare to 
+     *
+     * @return See above
      */
     Int_t Compare(const TObject* o) const;
     /* @} */
@@ -350,6 +358,10 @@ public:
     Double_t GetLowerBound(Double_t f) const;
     /** 
      * Calculate the quality 
+     * 
+     * @param maxChi2nu   Maximum reduced @f$\chi^2@f$
+     * @param maxRelError Maximum relative error 
+     * @param leastWeight Least weight to use 
      */
     void CalculateQuality(Double_t maxChi2nu=fgMaxChi2nu, 
 			  Double_t maxRelError=fgMaxRelError, 
@@ -393,6 +405,8 @@ public:
    * @param eta      Eta 
    * @param quality  Quality flag
    * @param f        Function from fit 
+   *
+   * @return true on success
    */  
   Bool_t SetFit(UShort_t d, Char_t r, Double_t eta, Int_t quality, 
 		const TF1& f);
@@ -403,6 +417,8 @@ public:
    * @param r    Ring 
    * @param eta  Eta 
    * @param f    ELoss fit result - note, the object will take ownership
+   *
+   * @return true on success
    */  
   Bool_t SetFit(UShort_t d, Char_t r, Double_t eta, ELossFit* f);
   /** 
@@ -412,6 +428,8 @@ public:
    * @param r       Ring 
    * @param etaBin  Eta (bin number, 1->nBins)
    * @param f       ELoss fit result - note, the object will take ownership
+   *
+   * @return true on success
    */  
   Bool_t SetFit(UShort_t d, Char_t r, Int_t etaBin, ELossFit* f);
   /** 
@@ -438,6 +456,8 @@ public:
    *                  @f$ i=2,\ldots@f$ 
    * @param ea        Array of @f$ N-1@f$ errors on weights @f$ a_i@f$ for 
    *                  @f$ i=2,\ldots@f$ 
+   *
+   * @return true on success
    */
   Bool_t SetFit(UShort_t  d,      Char_t    r, Double_t eta, 
 		Int_t     quality,UShort_t  n, 

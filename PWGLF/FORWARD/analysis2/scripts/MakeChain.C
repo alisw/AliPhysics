@@ -106,8 +106,9 @@ ScanDirectory(TSystemDirectory* dir, TChain* chain,
 /** 
  * Scan an input list of files 
  * 
- * @param chain Chain to add to 
- * @param path  file with list of files to add 
+ * @param chain    Chain to add to 
+ * @param path     File with list of files to add 
+ * @param treeName Name of tree in files 
  * 
  * @return true on success 
  */

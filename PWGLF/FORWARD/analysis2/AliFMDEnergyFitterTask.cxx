@@ -44,6 +44,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
   // 
   // Constructor
   //
+  DGUARD(fDebug,0,"Default CTOR of AliFMDEnergyFitterTask");
 }
 
 //____________________________________________________________________
@@ -62,6 +63,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
   // Parameters:
   //    name Name of task 
   //
+  DGUARD(fDebug,0,"Named CTOR of AliFMDEnergyFitterTask: %s", name);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
@@ -82,6 +84,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const AliFMDEnergyFitterTask& o)
   // Parameters:
   //    o Object to copy from 
   //
+  DGUARD(fDebug,0,"COPY CTOR of AliFMDEnergyFitterTask");
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
@@ -99,6 +102,7 @@ AliFMDEnergyFitterTask::operator=(const AliFMDEnergyFitterTask& o)
   // Return:
   //    Reference to this object 
   //
+  DGUARD(fDebug,3,"Assignment of AliFMDEnergyFitterTask");
   if (&o == this) return *this; 
   AliAnalysisTaskSE::operator=(o);
 
@@ -134,6 +138,7 @@ AliFMDEnergyFitterTask::Init()
   // Initialize the task 
   // 
   //
+  DGUARD(fDebug,1,"Initialize of AliFMDEnergyFitterTask");
   fFirstEvent = true;
 }
 
@@ -145,6 +150,7 @@ AliFMDEnergyFitterTask::InitializeSubs()
   // Initialise the sub objects and stuff.  Called on first event 
   // 
   //
+  DGUARD(fDebug,1,"Initialize subs of AliFMDEnergyFitterTask");
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   UShort_t sys = fEventInspector.GetCollisionSystem();
   UShort_t sNN = fEventInspector.GetEnergy();
@@ -165,6 +171,7 @@ AliFMDEnergyFitterTask::UserCreateOutputObjects()
   // Create output objects 
   // 
   //
+  DGUARD(fDebug,1,"Create output objects of AliFMDEnergyFitterTask");
   fList = new TList;
   fList->SetOwner();
 
@@ -187,6 +194,7 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   // static Int_t cnt = 0;
   // cnt++;
   // Get the input data 
+  DGUARD(fDebug,1,"Analyse event of AliFMDEnergyFitterTask");
   
   AliMCEvent* mcevent = MCEvent();
   if(mcevent) {
@@ -275,7 +283,8 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
   // Parameters:
   //    option Not used 
   //
-  AliInfo(Form("Running terminate of %s", GetName()));
+  DGUARD(fDebug,1,"Processing merged output of AliFMDEnergyFitterTask");
+
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {
     AliError(Form("No output list defined (%p)", GetOutputData(1)));

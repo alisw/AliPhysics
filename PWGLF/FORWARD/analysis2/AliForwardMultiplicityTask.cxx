@@ -47,6 +47,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
   // 
   // Constructor
   //
+  DGUARD(0,0,"Default construction of AliForwardMultiplicityTask");
 }
 
 //____________________________________________________________________
@@ -72,6 +73,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
   // Parameters:
   //    name Name of task 
   //
+  DGUARD(0,0,"named construction of AliForwardMultiplicityTask: %s", name);
   DefineOutput(1, TList::Class());
 }
 
@@ -98,6 +100,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
   // Parameters:
   //    o Object to copy from 
   //
+  DGUARD(0,0,"Copy construction of AliForwardMultiplicityTask");
   DefineOutput(1, TList::Class());
 }
 
@@ -114,6 +117,7 @@ AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
   // Return:
   //    Reference to this object 
   //
+  DGUARD(fDebug,3,"Assignment to AliForwardMultiplicityTask");
   if (&o == this) return *this;
   AliForwardMultiplicityBase::operator=(o);
 
@@ -152,17 +156,18 @@ AliForwardMultiplicityTask::SetDebug(Int_t dbg)
 }
 
 //____________________________________________________________________
-void
+Bool_t
 AliForwardMultiplicityTask::InitializeSubs()
 {
   // 
   // Initialise the sub objects and stuff.  Called on first event 
   // 
   //
+  DGUARD(fDebug,1,"Initialize sub-algorithms");
   const TAxis* pe = 0;
   const TAxis* pv = 0;
 
-  if (!ReadCorrections(pe,pv)) return;
+  if (!ReadCorrections(pe,pv)) return false;
 
   fHistos.Init(*pe);
   fAODFMD.Init(*pe);
@@ -191,13 +196,14 @@ AliForwardMultiplicityTask::InitializeSubs()
   fRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
 
   fEventInspector.Init(*pv);
-  fSharingFilter.Init();
+  fSharingFilter.Init(*pe);
   fDensityCalculator.Init(*pe);
   fCorrections.Init(*pe);
   fHistCollector.Init(*pv,*pe);
   fEventPlaneFinder.Init(*pe);
 
   this->Print();
+  return true;
 }
 
 //____________________________________________________________________
@@ -208,6 +214,7 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
   // Create output objects 
   // 
   //
+  DGUARD(fDebug,1,"Create user ouput");
   fList = new TList;
   fList->SetOwner();
 
@@ -242,10 +249,12 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   //    option Not used
   //  
 
+  DGUARD(fDebug,1,"Process the input event");
   // static Int_t cnt = 0;
   // cnt++;
   // Get the input data 
   AliESDEvent* esd = GetESDEvent();
+  if (!esd) return;
 
   // Clear stuff 
   fHistos.Clear();
@@ -289,13 +298,13 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   // Get FMD data 
   AliESDFMD* esdFMD = esd->GetFMDData();
   //  // Apply the sharing filter (or hit merging or clustering if you like)
-  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
+  if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, vz)) { 
     AliWarning("Sharing filter failed!");
     return;
   }
   
   // Calculate the inclusive charged particle density 
-  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux, cent)) { 
+  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux, cent,vz)) { 
     // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
     return;
@@ -334,6 +343,7 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
   // Parameters:
   //    option Not used 
   //
+  DGUARD(fDebug,1,"Processing the merged results");
 
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {

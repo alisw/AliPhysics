@@ -117,6 +117,13 @@ struct QABase
    * @return Output file name 
    */
   const char* OutputName() const { return fOutputName.Data(); }
+  /** 
+   * Make a tree 
+   * 
+   * @param read If true, read from file 
+   * 
+   * @return True on success 
+   */
   virtual Bool_t MakeTree(bool read)
   {
     if (!fSingle) { 
@@ -258,6 +265,11 @@ struct QABase
 
     PutCanvasTitle(title);
   }
+  /** 
+   * Put a title on the canvas
+   * 
+   * @param title Title 
+   */
   void PutCanvasTitle(const char* title)
   {
     // Put title on top 
@@ -320,6 +332,11 @@ struct QABase
     fCanvas->Write();
     d->cd();
   }
+  /** 
+   * Write out image footer 
+   * 
+   * @param o Output stream
+   */
   virtual void WriteImageFooter(std::ostream& o, const char* /*pngName*/)
   {
     TDatime now;
@@ -370,6 +387,10 @@ struct QABase
     gSystem->Exec(Form("chmod g+rw %s.pdf %s", base, 
 		       deletePNGs ? "" : fToDelete.Data()));
   }
+  /** 
+   * Output links 
+   * 
+   */
   virtual void WriteLinks() 
   {
     *fHtml << "<h3>Collection of plots</h3>\n" 

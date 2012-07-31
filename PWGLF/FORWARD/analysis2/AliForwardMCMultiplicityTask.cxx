@@ -179,7 +179,7 @@ AliForwardMCMultiplicityTask::SetOnlyPrimary(Bool_t use)
 }
 
 //____________________________________________________________________
-void
+Bool_t
 AliForwardMCMultiplicityTask::InitializeSubs()
 {
   // 
@@ -189,7 +189,7 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   const TAxis* pe = 0;
   const TAxis* pv = 0;
 
-  if (!ReadCorrections(pe,pv,true)) return;
+  if (!ReadCorrections(pe,pv,true)) return false;
 
   fHistos.Init(*pe);
   fAODFMD.Init(*pe);
@@ -237,16 +237,16 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   fMCRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
   fMCRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
 
-
-
   fEventInspector.Init(*pv);
-  fSharingFilter.Init();
+  fSharingFilter.Init(*pe);
   fDensityCalculator.Init(*pe);
   fCorrections.Init(*pe);
   fHistCollector.Init(*pv,*pe);
   fEventPlaneFinder.Init(*pe);
 
   this->Print();
+
+  return true;
 }
 
 //____________________________________________________________________
@@ -272,7 +272,7 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   TObject* mcobj = &fMCAODFMD;
   ah->AddBranch("AliAODForwardMult", &mcobj);
 
-  TObject* epobj = &fAODFMD;
+  TObject* epobj = &fAODEP;
   ah->AddBranch("AliAODForwardEP", &epobj);
   
   fPrimary = new TH2D("primary", "MC Primaries", 
@@ -312,6 +312,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   // Get the input data 
   AliESDEvent* esd     = GetESDEvent();
   AliMCEvent*  mcEvent = MCEvent();
+  if (!esd || !mcEvent) return;
 
   // Clear stuff 
   fHistos.Clear();
@@ -335,10 +336,11 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   Double_t vzMC     = 0;
   Double_t phiR     = 0;
   Double_t b        = 0;
+  Double_t cMC      = 0;
   Int_t    npart    = 0;
   Int_t    nbin     = 0;
   // UInt_t   foundMC  = 
-  fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, vzMC, b, 
+  fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, vzMC, b, cMC,
 			    npart, nbin, phiR);
   fEventInspector.CompareResults(vz, vzMC, cent, b, npart, nbin);
   
@@ -387,7 +389,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   AliESDFMD*  esdFMD  = esd->GetFMDData();
 
   // Apply the sharing filter (or hit merging or clustering if you like)
-  if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
+  if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD, vz)) { 
     AliWarning("Sharing filter failed!");
     return;
   }
@@ -402,7 +404,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fSharingFilter.CompareResults(fESDFMD, fMCESDFMD);
 
   // Calculate the inclusive charged particle density 
-  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux, cent)) { 
+  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux, cent, vz)) { 
     AliWarning("Density calculator failed!");
     return;
   }

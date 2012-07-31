@@ -27,6 +27,7 @@
 #include "AliFMDEventPlaneFinder.h"
 #include "AliESDEvent.h"
 #include <TROOT.h>
+#include <TSystem.h>
 #include <TAxis.h>
 #include <THStack.h>
 #include <iostream>
@@ -39,6 +40,7 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fFirstEvent(true),
     fCorrManager(0)
 {
+  DGUARD(0,0,"Named Construction of AliForwardMultiplicityBase %s",name);
   // Set our persistent pointer 
   fCorrManager = &AliForwardCorrectionManager::Instance();
   fBranchNames = 
@@ -50,11 +52,34 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
 AliForwardMultiplicityBase& 
 AliForwardMultiplicityBase::operator=(const AliForwardMultiplicityBase& o)
 {
+  DGUARD(fDebug,2,"Assignment to AliForwardMultiplicityBase");
   if (&o == this) return *this;
   fEnableLowFlux = o.fEnableLowFlux;
   fFirstEvent    = o.fFirstEvent;
   fCorrManager   = o.fCorrManager;
   return *this;
+}
+//____________________________________________________________________
+Bool_t 
+AliForwardMultiplicityBase::Configure(const char* macro)
+{
+  // --- Configure the task ------------------------------------------
+  TString macroPath(gROOT->GetMacroPath());
+  if (!macroPath.Contains("$(ALICE_ROOT)/PWGLF/FORWARD/analysis2")) { 
+    macroPath.Append(":$(ALICE_ROOT)/PWGLF/FORWARD/analysis2");
+    gROOT->SetMacroPath(macroPath);
+  }
+  const char* config = gSystem->Which(gROOT->GetMacroPath(), macro);
+  if (!config) {
+    AliWarningF("%s not found in %s", macro, gROOT->GetMacroPath());
+    return false;
+  }
+
+  AliInfoF("Loading configuration of '%s' from %s",  ClassName(), config);
+  gROOT->Macro(Form("%s((AliForwardMultiplicityBase*)%p)", config, this));
+  delete config;
+ 
+ return true;
 }
 
 //____________________________________________________________________
@@ -71,6 +96,7 @@ AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
   // Return:
   //    true if all present, false otherwise
   //  
+  DGUARD(fDebug,1,"Checking corrections 0x%x", what);
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   // Check that we have the energy loss fits, needed by 
@@ -127,6 +153,7 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe,
   // Read corrections
   //
   //
+
   UInt_t what = AliForwardCorrectionManager::kAll;
   if (!fEnableLowFlux)
     what ^= AliForwardCorrectionManager::kDoubleHit;
@@ -136,13 +163,17 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe,
     what ^= AliForwardCorrectionManager::kAcceptance;
   if (!GetCorrections().IsUseMergingEfficiency())
     what ^= AliForwardCorrectionManager::kMergingEfficiency;
+  DGUARD(fDebug,1,"Read corrections 0x%x", what);
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   if (!fcm.Init(GetEventInspector().GetCollisionSystem(),
 		GetEventInspector().GetEnergy(),
 		GetEventInspector().GetField(),
 		mc,
-		what)) return false;
+		what)) { 
+    AliWarning("Failed to read in some corrections, making task zombie");
+    return false;
+  }
   if (!CheckCorrections(what)) return false;
 
   // Sett our persistency pointer 
@@ -168,6 +199,8 @@ AliForwardMultiplicityBase::GetESDEvent()
   //
   // Get the ESD event. IF this is the first event, initialise
   //
+  DGUARD(fDebug,1,"Get the ESD event");
+  if (IsZombie()) return 0;
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) {
     AliWarning("No ESD event found for input event");
@@ -183,7 +216,7 @@ AliForwardMultiplicityBase::GetESDEvent()
                  "         AliESDEvent::GetBeamType()     ->%s\n"
                  "         AliESDEvent::GetCurrentL3()    ->%f\n"
                  "         AliESDEvent::GetMagneticField()->%f\n"
-                 "         AliESDEvent::GetRunNumber()    ->%d\n",
+                 "         AliESDEvent::GetRunNumber()    ->%d",
                  esd->GetBeamEnergy(),
                  esd->GetBeamType(),
                  esd->GetCurrentL3(),
@@ -193,7 +226,13 @@ AliForwardMultiplicityBase::GetESDEvent()
     fFirstEvent = false;
 
     GetEventPlaneFinder().SetRunNumber(esd->GetRunNumber());
-    InitializeSubs();
+    if (!InitializeSubs()) { 
+      AliError("Failed to initialize sub-algorithms, making this a zombie");
+      esd = 0; // Make sure we do nothing on this event
+      Info("GetESDEvent", "ESD event pointer %p", esd);
+      SetZombie(true);
+      // return 0;
+    }
   }
   return esd;
 }
@@ -202,6 +241,7 @@ void
 AliForwardMultiplicityBase::MarkEventForStore() const
 {
   // Make sure the AOD tree is filled 
+  DGUARD(fDebug,3,"Mark AOD event for storage");
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
     dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
@@ -225,6 +265,8 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
   // 
   // Note, that the distributions are normalised to the number of
   // observed events only - they should be corrected for 
+  DGUARD(fDebug,3,"Make first-shot ring dN/deta");
+
   if (!input) return;
   TList* list = static_cast<TList*>(input->FindObject(inName));
   if (!list) { 
@@ -274,9 +316,12 @@ AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input,
     res->SetTitle(*ptr);
     res->Scale(1., "width");
     copy->Scale(1., "width");
-    proj->Scale(1. / norm->GetMaximum(), "width");
-    norm->Scale(1. / norm->GetMaximum());
-
+    
+    if(norm->GetMaximum() > 0) {
+      proj->Scale(1. / norm->GetMaximum(), "width");
+      norm->Scale(1. / norm->GetMaximum());
+    }
+    
     res->SetMarkerStyle(style);
     norm->SetDirectory(0);
     res->SetDirectory(0);
