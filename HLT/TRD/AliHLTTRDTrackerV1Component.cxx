@@ -22,10 +22,6 @@
     @brief  A TRDTrackerV1 processing component for the HLT.
 */
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
 #include "AliHLTTRDTrackerV1Component.h"
 #include "AliHLTTRDDefinitions.h"
 #include "AliHLTTRDTrack.h"
@@ -50,6 +46,8 @@ using namespace std;
 #include <cstdlib>
 #include <cerrno>
 #include <string>
+
+using namespace std;
 
 ClassImp(AliHLTTRDTrackerV1Component)
 

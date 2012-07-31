@@ -21,10 +21,6 @@
 /// @brief A histogramming component for plotting the Y and Z track residual
 ///        
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include <algorithm>
 
 #include <TMath.h>
@@ -35,6 +31,8 @@ using namespace std;
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTDataTypes.h"
+
+using namespace std;
 
 ClassImp(AliHLTGlobalTrackResidualsComponent)
 

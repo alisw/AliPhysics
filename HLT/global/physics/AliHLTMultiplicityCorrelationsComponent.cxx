@@ -21,10 +21,6 @@
     @brief   Component for Multiplicty Correlations
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "TMap.h"
 #include "TSystem.h"
 #include "TTimeStamp.h"
@@ -41,6 +37,8 @@ using namespace std;
 #include "AliHLTDataTypes.h"
 #include "AliHLTMultiplicityCorrelationsComponent.h"
 #include "AliHLTITSClusterDataFormat.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMultiplicityCorrelationsComponent)

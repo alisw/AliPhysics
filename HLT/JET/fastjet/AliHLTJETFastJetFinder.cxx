@@ -28,10 +28,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
 //#include "fastjet/AreaDefinition.hh"
 //#include "fastjet/JetDefinition.hh"
 // get info on how fastjet was configured
@@ -52,6 +48,8 @@ using namespace std;
 //#include<sstream>  // needed for internal io
 //#include<vector> 
 //#include <cmath> 
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTJETFastJetFinder)

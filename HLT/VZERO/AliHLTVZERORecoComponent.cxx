@@ -20,10 +20,6 @@
     @brief   VZERO reconstruction component
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "TTree.h"
 #include "TMap.h"
 #include "TObjString.h"
@@ -41,6 +37,8 @@ using namespace std;
 #include "AliHLTErrorGuard.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTVZERORecoComponent.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTVZERORecoComponent)

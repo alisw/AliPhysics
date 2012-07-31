@@ -19,10 +19,6 @@
     @brief  Component for ploting charge in clusters
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTdNdPtAnalysisMergerComponent.h"
 #include "AlidNdPtAnalysisPbPb.h"
 
@@ -45,6 +41,7 @@ using namespace std;
 //#include <stdlib.h>
 //#include <cerrno>
 
+using namespace std;
 
 AliHLTdNdPtAnalysisMergerComponent::AliHLTdNdPtAnalysisMergerComponent() :
   fUID(0),

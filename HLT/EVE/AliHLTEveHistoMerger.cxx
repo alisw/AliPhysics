@@ -21,9 +21,6 @@
     @brief  The Histogram Handler component
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
 #include "AliHLTEveHistoMerger.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -34,6 +31,8 @@ using namespace std;
 #include "TTimeStamp.h"
 #include "TSystem.h"
 #include <iostream>
+
+using namespace std;
 
 AliHLTEveHistoMerger::AliHLTEveHistoMerger()
         :

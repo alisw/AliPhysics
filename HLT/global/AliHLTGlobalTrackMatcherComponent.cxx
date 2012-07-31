@@ -19,10 +19,6 @@
     @brief  Component to match TPC tracks to Calo Clusters
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTProcessor.h"
 #include "AliHLTGlobalTrackMatcherComponent.h"
 #include "AliHLTGlobalTrackMatcher.h"
@@ -38,6 +34,8 @@ using namespace std;
 #include "TRefArray.h"
 #include "TString.h"
 #include "TMap.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 AliHLTGlobalTrackMatcherComponent gAliHLTGlobalTrackMatcherComponent;

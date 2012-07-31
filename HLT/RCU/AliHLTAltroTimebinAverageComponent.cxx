@@ -24,9 +24,6 @@
     @brief  
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
 #include "AliHLTAltroTimebinAverageComponent.h"
 #include "AliHLTErrorGuard.h"
 #include "AliAltroRawStreamV3.h"
@@ -34,6 +31,8 @@ using namespace std;
 #include "AliRawReaderMemory.h"
 #include "AliRawDataHeader.h"
 #include <memory>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTAltroTimebinAverageComponent)

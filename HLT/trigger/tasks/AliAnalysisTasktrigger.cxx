@@ -1,9 +1,5 @@
 //-*- Mode: C++ -*-
 
-#if __GNUS__ >= 3
-using namespace std;
-#endif
-
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -24,6 +20,8 @@ using namespace std;
 #include "AliMCParticle.h"
 
 #include "AliAnalysisTasktrigger.h"
+
+using namespace std;
 
 // Study trigger efficiencies for high-pt trigger
 // Author: Jochen Thaeder <jochen@thaeder.de>

@@ -20,11 +20,6 @@
  * @brief  A physics histogram producer component for Calo HLT
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
-
 #include "AliHLTCaloHistoComponent.h"
 #include "AliHLTCaloHistoCellEnergy.h"
 #include "AliHLTCaloHistoClusterEnergy.h"
@@ -35,6 +30,8 @@ using namespace std;
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
 #include "TObjArray.h"
+
+using namespace std;
 
 // see below for class documentation
 // or

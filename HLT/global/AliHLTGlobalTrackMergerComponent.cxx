@@ -22,7 +22,6 @@
     @brief  HLT global track merger component.
 */
 
-using namespace std;
 #include <climits>
 #include <cassert>
 #include <cstdlib>
@@ -32,6 +31,8 @@ using namespace std;
 #include "AliTracker.h"
 #include "AliHLTGlobalTrackMerger.h"
 #include "AliHLTGlobalTrackMergerComponent.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalTrackMergerComponent)

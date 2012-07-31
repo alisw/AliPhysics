@@ -28,10 +28,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
 #include "TLorentzVector.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
@@ -40,6 +36,8 @@ using namespace std;
 #include "AliHLTJETReader.h"
 
 #include "AliHLTJETConeJetCandidate.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTJETReader)

@@ -33,14 +33,14 @@
 #include "AliHLTPHOSCoordinate.h"
 #include "AliHLTPHOSChannelRawDataStruct.h"
 
-using namespace std;
-
 // MT Crap
 #include <TMath.h>
 #include "AliHLTPHOSOnlineDisplayTH2D.h"
 
 #include <TEveManager.h>
 #include <TEveBoxSet.h>
+
+using namespace std;
 
 TEveBoxSet* gAliEveBoxSet = 0;
 

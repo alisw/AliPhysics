@@ -21,10 +21,6 @@
     @brief   ZDC reconstruction component
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTErrorGuard.h"
 #include "AliHLTSystem.h"
 #include "AliHLTZDCESDRecoComponent.h"
@@ -42,6 +38,8 @@ using namespace std;
 #include "AliHLTDataTypes.h"
 #include <cstdlib>
 #include <cerrno>
+
+using namespace std;
 
 ClassImp(AliHLTZDCESDRecoComponent)
     

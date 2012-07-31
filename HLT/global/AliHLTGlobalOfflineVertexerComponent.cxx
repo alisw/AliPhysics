@@ -22,10 +22,6 @@
 //  @brief  Component wrapping the offline vertexer
 //  @ingroup alihlt_global
 
-#if __GNUC__== 3
-using namespace std;
-#endif
-
 #include "AliHLTGlobalOfflineVertexerComponent.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -34,6 +30,8 @@ using namespace std;
 #include "AliGRPRecoParam.h"
 #include "AliLog.h"
 #include "TMap.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalOfflineVertexerComponent)

@@ -17,11 +17,6 @@
 ///  \author :Indranil Das, email : indra.das@saha.ac.in | indra.ehep@gmail.com , Saha Institute of Nuclear Physics
 //-----------------------------------------------------------------------------
 
-
-#if __GNUC__== 3
-using namespace std;
-#endif
-
 #include "AliHLTMUONFullTrackerComponent.h"
 #include "TString.h"
 #include "TObjString.h"
@@ -34,6 +29,8 @@ using namespace std;
 #include "AliHLTMUONConstants.h"
 
 #include "AliHLTMUONTracksBlockStruct.h"
+
+using namespace std;
 
 ClassImp(AliHLTMUONFullTrackerComponent)
 

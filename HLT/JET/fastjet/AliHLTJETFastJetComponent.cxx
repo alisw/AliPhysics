@@ -22,10 +22,6 @@
     @brief  Component to run the FastJet jetfinder
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include <cstdlib>
 #include <cerrno>
 #include <sys/time.h>
@@ -34,6 +30,8 @@ using namespace std;
 
 #include "TString.h"
 #include "TObjString.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTJETFastJetComponent)

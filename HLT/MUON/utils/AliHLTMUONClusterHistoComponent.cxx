@@ -20,10 +20,6 @@
     @brief  Component for onlinehistograms
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTMUONClusterHistoComponent.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -36,6 +32,7 @@ using namespace std;
 #include "TObjString.h"
 #include "TObjArray.h"
 
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMUONClusterHistoComponent);

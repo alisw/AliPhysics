@@ -21,9 +21,6 @@
     @brief  The Histogram Handler component
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
 #include "AliHLTGlobalHistoCollector.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -33,6 +30,8 @@ using namespace std;
 #include "TH1.h"
 #include "TTimeStamp.h"
 #include "TSystem.h"
+
+using namespace std;
 
 ClassImp(AliHLTGlobalHistoCollector) //ROOT macro for the implementation of ROOT specific class methods
 

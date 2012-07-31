@@ -19,10 +19,6 @@
     @brief  Component for ploting charge in clusters
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include <time.h>
 
 #include "AliHLTTRDTrackHistoComponent.h"
@@ -43,6 +39,8 @@ using namespace std;
 //#include "AliHLTTRD.h"
 //#include <stdlib.h>
 //#include <cerrno>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTRDTrackHistoComponent)

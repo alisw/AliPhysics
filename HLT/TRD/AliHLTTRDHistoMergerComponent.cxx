@@ -20,10 +20,6 @@
     @brief  Component for adding histos of partition wise working histo components
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "TFile.h"
 #include "TString.h"
 #include "TObjString.h"
@@ -39,6 +35,8 @@ using namespace std;
 //#include "AliHLTTRD.h"
 //#include <stdlib.h>
 //#include <cerrno>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTRDHistoMergerComponent)

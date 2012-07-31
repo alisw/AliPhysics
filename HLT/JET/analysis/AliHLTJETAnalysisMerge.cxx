@@ -27,15 +27,13 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#if __GNUC__>= 3
-   using namespace std;
-#endif
-
 #include "TCanvas.h"
 #include "TH2F.h"
 
 #include "AliHLTJETAnalysisMerge.h"
 #include "AliHLTJETAnalysisJets.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTJETAnalysisMerge)

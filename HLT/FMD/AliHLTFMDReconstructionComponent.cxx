@@ -1,8 +1,3 @@
-
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
 #include "AliHLTSystem.h"
 #include "AliRawReaderMemory.h"
 #include "AliFMDRawReader.h"
@@ -20,6 +15,8 @@ using namespace std;
 #include "AliFMDGeometry.h"
 #include <cstdlib>
 #include <cerrno>
+
+using namespace std;
 
 ClassImp(AliHLTFMDReconstructionComponent)
 

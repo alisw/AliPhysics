@@ -28,15 +28,13 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
 #include "AliHLTSystem.h"
 #include "AliHLTDummyComponent.h"
 #include "AliHLTDefinitions.h"
 #include <cstdlib>
 #include <cerrno>
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDummyComponent)

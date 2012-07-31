@@ -39,12 +39,12 @@
 
 #define SAMPLINGFREQUENCY 10
 
-using namespace std;
-
 // MT Crap
 #include <TMath.h>
 //#include <TEveManager.h>
 //#include <TEveBoxSet.h>
+
+using namespace std;
 
 //TEveBoxSet* gAliEveBoxSet = 0;
 

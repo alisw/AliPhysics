@@ -28,10 +28,6 @@
 // or                                                                        //
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt                          //
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
 #include "TTree.h"
 #include "TFile.h"
 #include "TBranch.h"
@@ -62,6 +58,8 @@ using namespace std;
 #include <cstdlib>
 #include <cerrno>
 #include <string>
+
+using namespace std;
 
 ClassImp(AliHLTTRDClusterizerComponent)
    

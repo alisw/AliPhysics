@@ -19,10 +19,6 @@
     @brief  Component for reconstruct primary vertex and V0's
 */
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTExternalTrackParam.h"
@@ -42,6 +38,8 @@ using namespace std;
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "TStopwatch.h"
+
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalVertexerComponent)
