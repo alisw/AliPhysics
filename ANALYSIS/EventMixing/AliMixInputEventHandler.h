@@ -25,7 +25,7 @@ class AliMixInputEventHandler : public AliMultiInputEventHandler {
 
 public:
    AliMixInputEventHandler(const Int_t size = 1, const Int_t mixNum = 1);
-
+   virtual ~AliMixInputEventHandler();
    // From the interface
    virtual Bool_t  Init(Option_t *opt) { return AliMultiInputEventHandler::Init(opt); }
    virtual Bool_t  Init(TTree *tree, Option_t *opt);

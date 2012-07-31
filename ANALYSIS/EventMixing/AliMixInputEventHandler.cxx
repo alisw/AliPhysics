@@ -25,6 +25,7 @@
 
 ClassImp(AliMixInputEventHandler)
 
+//_____________________________________________________________________________
 AliMixInputEventHandler::AliMixInputEventHandler(const Int_t size, const Int_t mixNum): AliMultiInputEventHandler(size),
    fMixTrees(),
    fTreeMap(size > 0 ? size : 1),
@@ -46,9 +47,16 @@ AliMixInputEventHandler::AliMixInputEventHandler(const Int_t size, const Int_t m
    // Default constructor.
    //
    AliDebug(AliLog::kDebug + 10, "<-");
-   fMixTrees.SetOwner(kTRUE);
    SetMixNumber(mixNum);
    AliDebug(AliLog::kDebug + 10, "->");
+}
+
+//_____________________________________________________________________________
+AliMixInputEventHandler::~AliMixInputEventHandler() {
+   //
+   // Destructor
+   //
+   fMixTrees.Clear();
 }
 
 //_____________________________________________________________________________
@@ -88,7 +96,7 @@ Bool_t AliMixInputEventHandler::Init(TTree *tree, Option_t *opt)
    }
 
    // clears array of input handlers
-   fMixTrees.Clear();
+   fMixTrees.Delete();
    // create AliMixInputHandlerInfo
    if (!fMixIntupHandlerInfoTmp) {
       // loads first file TChain (tree)
@@ -106,6 +114,7 @@ Bool_t AliMixInputEventHandler::Init(TTree *tree, Option_t *opt)
    AliDebug(AliLog::kDebug + 5, Form("->"));
    return kTRUE;
 }
+
 //_____________________________________________________________________________
 Bool_t AliMixInputEventHandler::Notify()
 {
