@@ -20,7 +20,15 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fEtaV0(0),
   fPtV0(0),
   fPtPosDaughter(0),
-  fPtNegDaughter(0)
+  fPtNegDaughter(0),
+  fdEdxPosDaughter(0),
+  fdEdxNegDaughter(0),
+  fTOFtimePosDaughter(0),
+  fTOFtimeNegDaughter(0),
+  fnsigmaPosL(0),
+  fnsigmaNegL(0),
+  fnsigmaPosAL(0),
+  fnsigmaNegAL(0)
 {
   // Default constructor
   fLambdaMass = new TH1F("LambdaMass", "Mass Assuming Lambda Hypothesis", 10000, 0, 5);
@@ -34,6 +42,15 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fPtPosDaughter = new TH1F("PtPosDaughter", "Pt distribution of positive daughters", 500, 0.0, 5.);
   fPtNegDaughter = new TH1F("PtNegDaughter", "Pt distribution of negative daughters", 500, 0.0, 5.);
 
+  fdEdxPosDaughter = new TH2D("dEdxPosDaughter","dEdx of positive daughters",200, 0.1, 4.0, 250, 0.0, 500.0);
+  fdEdxNegDaughter = new TH2D("dEdxNegDaughter","dEdx of negative daughters",200, 0.1, 4.0, 250, 0.0, 500.0);
+  fTOFtimePosDaughter = new TH2D("TOFtimePosDaughter","TOF time of positive daughters",100,0.,1.1,100,0.,3.0);
+  fTOFtimeNegDaughter = new TH2D("TOFtimeNegDaughter","TOF time of negative daughters",100,0.,1.1,100,0.,3.0);
+
+  fnsigmaPosL = new TH1D("fnsigmaPosL","Number of sigmas of positive Lambda daughters",200,-8,8);
+  fnsigmaNegL = new TH1D("fnsigmaNegL","Number of sigmas of negative Lambda daughters",200,-8,8);
+  fnsigmaPosAL = new TH1D("fnsigmaPosAL","Number of sigmas of positive AntiLambda daughters",200,-8,8);
+  fnsigmaNegAL = new TH1D("fnsigmaNegAL","Number of sigmas of negative AntiLambda daughters",200,-8,8);
 
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
@@ -44,7 +61,14 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
   fEtaV0->Sumw2();
   fPtPosDaughter->Sumw2();
   fPtNegDaughter->Sumw2();
-
+  fdEdxPosDaughter->Sumw2();
+  fdEdxNegDaughter->Sumw2();
+  fTOFtimePosDaughter->Sumw2();
+  fTOFtimeNegDaughter->Sumw2();
+  fnsigmaPosL->Sumw2();
+  fnsigmaNegL->Sumw2();
+  fnsigmaPosAL->Sumw2();
+  fnsigmaNegAL->Sumw2();
 }
 
 AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
@@ -58,7 +82,15 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fEtaV0(0),
   fPtV0(0),
   fPtPosDaughter(0),
-  fPtNegDaughter(0)
+  fPtNegDaughter(0),
+  fdEdxPosDaughter(0),
+  fdEdxNegDaughter(0),
+  fTOFtimePosDaughter(0),
+  fTOFtimeNegDaughter(0),
+  fnsigmaPosL(0),
+  fnsigmaNegL(0),
+  fnsigmaPosAL(0),
+  fnsigmaNegAL(0)
 {
   // Normal constructor
   char name[200];
@@ -82,6 +114,22 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fPtPosDaughter = new TH1F(name, "Pt distribution of positive daughters", 500, 0.0, 5.);
   snprintf(name, 200, "fPtNegDaughter%s", aName);
   fPtNegDaughter = new TH1F(name, "Pt distribution of negative daughters", 500, 0.0, 5.);
+  snprintf(name, 200, "fdEdxPosDaughter%s", aName);
+  fdEdxPosDaughter = new TH2D(name,"dEdx of positive daughters",200, 0.1, 4.0, 250, 0.0, 500.0);
+  snprintf(name, 200, "fdEdxNegDaughter%s", aName);
+  fdEdxNegDaughter = new TH2D(name,"dEdx of negative daughters",200, 0.1, 4.0, 250, 0.0, 500.0);
+  snprintf(name, 200, "fTOFtimePosDaughter%s", aName);
+  fTOFtimePosDaughter = new TH2D(name,"TOF time of positive daughters",190, 0.1, 2.0, 400, -4000.0, 4000.0);
+  snprintf(name, 200, " fTOFtimeNegDaughter%s", aName);
+  fTOFtimeNegDaughter = new TH2D(name,"TOF time of negative daughters",190, 0.1, 2.0, 400, -4000.0, 4000.0);
+  snprintf(name, 200, " fnsigmaPosL%s", aName);
+  fnsigmaPosL = new TH1D(name,"Number of sigmas of positive Lambda daughters",200,-10,10);
+  snprintf(name, 200, " fnsigmaNegL%s", aName);
+  fnsigmaNegL = new TH1D(name,"Number of sigmas of negative Lambda daughters",200,-10,10);
+  snprintf(name, 200, " fnsigmaPosAL%s", aName);
+  fnsigmaPosAL = new TH1D(name,"Number of sigmas of positive AntiLambda daughters",200,-10,10);
+  snprintf(name, 200, " fnsigmaNegAL%s", aName);
+  fnsigmaNegAL = new TH1D(name,"Number of sigmas of negative AntiLambda daughters",200,-10,10);
 
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
@@ -92,6 +140,14 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fEtaV0->Sumw2();
   fPtPosDaughter->Sumw2();
   fPtNegDaughter->Sumw2();
+  fdEdxPosDaughter->Sumw2();
+  fdEdxNegDaughter->Sumw2();
+  fTOFtimePosDaughter->Sumw2();
+  fTOFtimeNegDaughter->Sumw2();
+  fnsigmaPosL->Sumw2();
+  fnsigmaNegL->Sumw2();
+  fnsigmaPosAL->Sumw2();
+  fnsigmaNegAL->Sumw2();
 }
 
 AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
@@ -105,7 +161,15 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
   fEtaV0(0),
   fPtV0(0),
   fPtPosDaughter(0),
-  fPtNegDaughter(0)
+  fPtNegDaughter(0),
+  fdEdxPosDaughter(0),
+  fdEdxNegDaughter(0),
+  fTOFtimePosDaughter(0),
+  fTOFtimeNegDaughter(0),
+  fnsigmaPosL(0),
+  fnsigmaNegL(0),
+  fnsigmaPosAL(0),
+  fnsigmaNegAL(0)
 {
   // copy constructor
   if (fLambdaMass) delete fLambdaMass;
@@ -128,6 +192,22 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
   fPtPosDaughter = new TH1F(*aCut.fPtPosDaughter);
   if(fPtNegDaughter) delete fPtNegDaughter;
   fPtNegDaughter = new TH1F(*aCut.fPtNegDaughter);
+  if(fdEdxPosDaughter) delete fdEdxPosDaughter;
+  fdEdxNegDaughter = new TH2D(*aCut.fdEdxNegDaughter);
+  if(fdEdxNegDaughter) delete fdEdxNegDaughter;
+  fdEdxNegDaughter = new TH2D(*aCut.fdEdxNegDaughter);
+  if(fTOFtimePosDaughter) delete fTOFtimePosDaughter;
+  fTOFtimePosDaughter = new TH2D(*aCut.fTOFtimePosDaughter);
+  if(fTOFtimeNegDaughter) delete fTOFtimeNegDaughter;
+  fTOFtimeNegDaughter = new TH2D(*aCut.fTOFtimeNegDaughter);
+  if(fnsigmaPosL) delete fnsigmaPosL;
+  fnsigmaPosL = new TH1D(*aCut.fnsigmaPosL);
+  if(fnsigmaNegL) delete fnsigmaNegL;
+  fnsigmaNegL = new TH1D(*aCut.fnsigmaNegL);
+  if(fnsigmaPosAL) delete fnsigmaPosAL;
+  fnsigmaPosAL = new TH1D(*aCut.fnsigmaPosAL);
+  if(fnsigmaNegAL) delete fnsigmaNegAL;
+  fnsigmaNegAL = new TH1D(*aCut.fnsigmaNegAL);
 
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
@@ -138,6 +218,14 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const AliFemtoCutMonitorV0 &aCut):
   fEtaV0->Sumw2();
   fPtPosDaughter->Sumw2();
   fPtNegDaughter->Sumw2();
+  fdEdxPosDaughter->Sumw2();
+  fdEdxNegDaughter->Sumw2();
+  fTOFtimePosDaughter->Sumw2();
+  fTOFtimeNegDaughter->Sumw2();
+  fnsigmaPosL->Sumw2();
+  fnsigmaNegL->Sumw2();
+  fnsigmaPosAL->Sumw2();
+  fnsigmaNegAL->Sumw2();
 }
 
 AliFemtoCutMonitorV0::~AliFemtoCutMonitorV0()
@@ -153,6 +241,14 @@ AliFemtoCutMonitorV0::~AliFemtoCutMonitorV0()
   delete fPtV0;
   delete fPtPosDaughter;
   delete fPtNegDaughter;
+  delete fdEdxPosDaughter;
+  delete fdEdxNegDaughter;
+  delete fTOFtimePosDaughter;
+  delete fTOFtimeNegDaughter;
+  delete fnsigmaPosL;
+  delete fnsigmaNegL;
+  delete fnsigmaPosAL;
+  delete fnsigmaNegAL;
 }
 
 AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0& aCut)
@@ -181,6 +277,22 @@ AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0
   fPtPosDaughter = new TH1F(*aCut.fPtPosDaughter);
   if(fPtNegDaughter) delete fPtNegDaughter;
   fPtNegDaughter = new TH1F(*aCut.fPtNegDaughter);
+  if(fdEdxPosDaughter) delete fdEdxPosDaughter;
+  fdEdxNegDaughter = new TH2D(*aCut.fdEdxNegDaughter);
+  if(fdEdxNegDaughter) delete fdEdxNegDaughter;
+  fdEdxNegDaughter = new TH2D(*aCut.fdEdxNegDaughter);
+  if(fTOFtimePosDaughter) delete fTOFtimePosDaughter;
+  fTOFtimePosDaughter = new TH2D(*aCut.fTOFtimePosDaughter);
+  if(fTOFtimeNegDaughter) delete fTOFtimeNegDaughter;
+  fTOFtimeNegDaughter = new TH2D(*aCut.fTOFtimeNegDaughter);
+  if(fnsigmaPosL) delete fnsigmaPosL;
+  fnsigmaPosL = new TH1D(*aCut.fnsigmaPosL);
+  if(fnsigmaNegL) delete fnsigmaNegL;
+  fnsigmaNegL = new TH1D(*aCut.fnsigmaNegL);
+  if(fnsigmaPosAL) delete fnsigmaPosAL;
+  fnsigmaPosAL = new TH1D(*aCut.fnsigmaPosAL);
+  if(fnsigmaNegAL) delete fnsigmaNegAL;
+  fnsigmaNegAL = new TH1D(*aCut.fnsigmaNegAL);
 
   fLambdaMass->Sumw2();
   fAntiLambdaMass->Sumw2();
@@ -191,6 +303,14 @@ AliFemtoCutMonitorV0& AliFemtoCutMonitorV0::operator=(const AliFemtoCutMonitorV0
   fEtaV0->Sumw2();
   fPtPosDaughter->Sumw2();
   fPtNegDaughter->Sumw2();
+  fdEdxPosDaughter->Sumw2();
+  fdEdxNegDaughter->Sumw2();
+  fTOFtimePosDaughter->Sumw2();
+  fTOFtimeNegDaughter->Sumw2();
+  fnsigmaPosL->Sumw2();
+  fnsigmaNegL->Sumw2();
+  fnsigmaPosAL->Sumw2();
+  fnsigmaNegAL->Sumw2();
 
   return *this;
 }
@@ -215,6 +335,16 @@ void AliFemtoCutMonitorV0::Fill(const AliFemtoV0* aV0)
   fPtV0->Fill(aV0->PtV0());
   fPtPosDaughter->Fill(aV0->PtPos());
   fPtNegDaughter->Fill(aV0->PtNeg());
+  fdEdxPosDaughter->Fill(aV0->GetTPCMomentumPos(),aV0->DedxPos());
+  fdEdxNegDaughter->Fill(aV0->GetTPCMomentumNeg(),aV0->DedxNeg());
+
+  fTOFtimePosDaughter->Fill(aV0->PtPos(),aV0->TOFProtonTimePos()); //true only for lambdas
+  fTOFtimeNegDaughter->Fill(aV0->PtNeg(),aV0->TOFPionTimeNeg());
+  
+  fnsigmaPosL->Fill(aV0->PosNSigmaTPCP());
+  fnsigmaNegL->Fill(aV0->NegNSigmaTPCPi());
+  fnsigmaNegAL->Fill(aV0->NegNSigmaTPCP());
+  fnsigmaPosAL->Fill(aV0->PosNSigmaTPCPi());
 }
 
 void AliFemtoCutMonitorV0::Write()
@@ -230,6 +360,14 @@ void AliFemtoCutMonitorV0::Write()
   fPtV0->Write();
   fPtPosDaughter->Write();
   fPtNegDaughter->Write();
+  fdEdxPosDaughter->Write();
+  fdEdxNegDaughter->Write();
+  fTOFtimePosDaughter->Write();
+  fTOFtimeNegDaughter->Write();
+  fnsigmaPosL->Write();
+  fnsigmaNegL->Write();
+  fnsigmaPosAL->Write();
+  fnsigmaNegAL->Write();
 }
 
 TList *AliFemtoCutMonitorV0::GetOutputList()
@@ -246,6 +384,14 @@ TList *AliFemtoCutMonitorV0::GetOutputList()
   tOutputList->Add(fPtV0);
   tOutputList->Add(fPtPosDaughter);
   tOutputList->Add(fPtNegDaughter);
+  tOutputList->Add(fdEdxPosDaughter);
+  tOutputList->Add(fdEdxNegDaughter);
+  tOutputList->Add(fTOFtimePosDaughter);
+  tOutputList->Add(fTOFtimeNegDaughter);
+  tOutputList->Add(fnsigmaPosL);
+  tOutputList->Add(fnsigmaNegL);
+  tOutputList->Add(fnsigmaPosAL);
+  tOutputList->Add(fnsigmaNegAL);
 
   return tOutputList;
 }

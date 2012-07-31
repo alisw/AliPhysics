@@ -259,7 +259,8 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
       
       fAOD = aodH->GetEvent();
 
-      fAODpidUtil = aodH->GetAODpidUtil();
+      fAODpidUtil = aodH->GetAODpidUtil(); //correct way
+      //fAODpidUtil = new AliAODpidUtil(); //not correct way
       //      printf("aodH->GetAODpidUtil(): %x",aodH->GetAODpidUtil());
       femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
     }

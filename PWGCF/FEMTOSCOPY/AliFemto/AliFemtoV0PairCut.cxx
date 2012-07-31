@@ -36,7 +36,11 @@ AliFemtoV0PairCut::AliFemtoV0PairCut():
   fRemoveSameLabel(0),
   fDataType(kAOD),
   fDTPCMin(0),
-  fDTPCExitMin(0)
+  fDTPCExitMin(0),
+  fMinAvgSepPosPos(0),
+  fMinAvgSepPosNeg(0),
+  fMinAvgSepNegPos(0),
+  fMinAvgSepNegNeg(0)
 {
   // Default constructor
   // Nothing to do
@@ -59,6 +63,10 @@ AliFemtoV0PairCut& AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut& cut)
     fDataType = kAOD;
     fDTPCMin = 0;
     fDTPCExitMin = 0;
+    fMinAvgSepPosPos = 0;
+    fMinAvgSepPosNeg = 0;
+    fMinAvgSepNegPos = 0;
+    fMinAvgSepNegNeg = 0;
   }
 
   return *this;
@@ -113,8 +121,6 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair* pair){
       tempTPCExitNeg = distExitNeg > fDTPCExitMin;
     }
  
-  if(!tempTPCEntrancePos || !tempTPCEntranceNeg || !tempTPCExitPos || !tempTPCExitNeg) return false;
-
 
   if(!(pair->Track1()->V0() && pair->Track2()->V0()))
     {
@@ -125,7 +131,91 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair* pair){
 
       return false;
     }
-  
+
+  if(!tempTPCEntrancePos || !tempTPCEntranceNeg || !tempTPCExitPos || !tempTPCExitNeg) return false;  
+
+  double avgSep=0;
+  AliFemtoThreeVector first, second, tmp;
+  for(int i=0; i<8 ;i++)
+    {
+      tmp = pair->Track1()->V0()->NominalTpcPointPos(i);
+      //cout<<"X pos: "<<tmp.x()<<endl;
+      first.SetX((double)(tmp.x()));
+      first.SetY((double)tmp.y());
+      first.SetZ((double)tmp.z());
+      
+      tmp = pair->Track2()->V0()->NominalTpcPointPos(i);
+      second.SetX((double)tmp.x());
+      second.SetY((double)tmp.y());
+      second.SetZ((double)tmp.z()); 
+
+      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
+    }
+  avgSep /= 8;
+
+  if(avgSep<fMinAvgSepPosPos) return false;
+
+  avgSep = 0;
+      
+
+  for(int i=0; i<8 ;i++)
+    {
+      tmp = pair->Track1()->V0()->NominalTpcPointPos(i);
+      first.SetX((double)(tmp.x()));
+      first.SetY((double)tmp.y());
+      first.SetZ((double)tmp.z());
+      
+      tmp = pair->Track2()->V0()->NominalTpcPointNeg(i);
+      //cout<<"X neg: "<<tmp.x()<<endl;
+      second.SetX((double)tmp.x());
+      second.SetY((double)tmp.y());
+      second.SetZ((double)tmp.z()); 
+
+      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
+    }
+  avgSep /= 8;
+  if(avgSep<fMinAvgSepPosNeg) return false;
+
+  avgSep = 0;
+
+  for(int i=0; i<8 ;i++)
+    {
+      tmp = pair->Track1()->V0()->NominalTpcPointNeg(i);
+      first.SetX((double)(tmp.x()));
+      first.SetY((double)tmp.y());
+      first.SetZ((double)tmp.z());
+      
+      tmp = pair->Track2()->V0()->NominalTpcPointPos(i);
+      second.SetX((double)tmp.x());
+      second.SetY((double)tmp.y());
+      second.SetZ((double)tmp.z()); 
+
+      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
+    }
+  avgSep /= 8;
+  if(avgSep<fMinAvgSepNegPos) return false;
+      
+  avgSep = 0;
+ 
+  for(int i=0; i<8 ;i++)
+    {
+      tmp = pair->Track1()->V0()->NominalTpcPointNeg(i);
+      first.SetX((double)(tmp.x()));
+      first.SetY((double)tmp.y());
+      first.SetZ((double)tmp.z());
+      
+      tmp = pair->Track2()->V0()->NominalTpcPointNeg(i);
+      second.SetX((double)tmp.x());
+      second.SetY((double)tmp.y());
+      second.SetZ((double)tmp.z()); 
+
+      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
+    }
+  avgSep /= 8;
+  if(avgSep<fMinAvgSepNegNeg) return false;
+
+  avgSep = 0;
+
 
   return temp;
 }
@@ -178,4 +268,16 @@ void AliFemtoV0PairCut::SetTPCEntranceSepMinimum(double dtpc)
 void AliFemtoV0PairCut::SetTPCExitSepMinimum(double dtpc)
 {
   fDTPCExitMin = dtpc;
+}
+
+void AliFemtoV0PairCut::SetMinAvgSeparation(int type, double minSep)
+{
+  if(type == 0) //Pos-Pos
+    fMinAvgSepPosPos = minSep;
+  else if(type == 1) //Pos-Neg
+    fMinAvgSepPosNeg = minSep;
+  else if(type == 2) //Neg-Pos
+    fMinAvgSepNegPos = minSep;
+  else if(type == 3) //Neg-Neg
+    fMinAvgSepNegNeg = minSep;
 }

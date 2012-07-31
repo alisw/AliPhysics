@@ -215,18 +215,19 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       if(pdgcode==2212 || pdgcode==-2212)
         kinepid[4]=1000;
       //kaon
-      if(pdgcode==321 || pdgcode==-321 )
+      else if(pdgcode==321 || pdgcode==-321 )
         kinepid[3]=1000;
       //pion
-      if( pdgcode==211 || pdgcode==-211)
+      else if( pdgcode==211 || pdgcode==-211)
         kinepid[2]=1000;
       //electron
-      if(pdgcode==11 || pdgcode==-11)
+      else if(pdgcode==11 || pdgcode==-11)
         kinepid[0]=1000;
       //muon
-      if(pdgcode==13 || pdgcode==-13)
+      else if(pdgcode==13 || pdgcode==-13)
         kinepid[1]=1000;
-
+      else
+	continue;
       trackCopy->SetPidProbElectron(kinepid[0]);
       trackCopy->SetPidProbMuon(kinepid[1]);
       trackCopy->SetPidProbPion(kinepid[2]);

@@ -9,7 +9,7 @@ ClassImp(AliFemtoV0TrackCut)
 
 
 AliFemtoV0TrackCut::AliFemtoV0TrackCut() :
-fInvMassLambdaMin(0),fInvMassLambdaMax(99),fMinDcaDaughtersToVert(0),fMaxDcaV0Daughters(99),fMaxDcaV0(99), fMaxCosPointingAngle(0), fParticleType(99), fEta(0.8), fPtMin(0), fPtMax(100), fOnFlyStatus(kFALSE), fMaxEtaDaughters(100), fTPCNclsDaughters(0), fNdofDaughters(10), fStatusDaughters(0), fPtMinDaughters(0), fPtMaxDaughters(99)
+fInvMassLambdaMin(0),fInvMassLambdaMax(99),fMinDcaDaughtersToVert(0),fMaxDcaV0Daughters(99),fMaxDcaV0(99), fMaxCosPointingAngle(0), fParticleType(99), fEta(0.8), fPtMin(0), fPtMax(100), fOnFlyStatus(kFALSE), fMaxEtaDaughters(100), fTPCNclsDaughters(0), fNdofDaughters(10), fStatusDaughters(0), fPtMinPosDaughter(0), fPtMaxPosDaughter(99), fPtMinNegDaughter(0), fPtMaxNegDaughter(99),fMinAvgSepDaughters(0)
 {
   // Default constructor
  }
@@ -23,10 +23,10 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   // test the particle and return 
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
-
-    Float_t pt = aV0->PtV0();
-    Float_t eta = aV0->EtaV0();
-
+  
+     Float_t pt = aV0->PtV0();
+     Float_t eta = aV0->EtaV0();
+    
      //kinematic cuts
     if(TMath::Abs(eta) > fEta) return false;  //put in kinematic cuts by hand
     if(pt < fPtMin) return false;
@@ -34,11 +34,11 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
     if(TMath::Abs(aV0->EtaPos()) > fMaxEtaDaughters) return false;
     if(TMath::Abs(aV0->EtaNeg()) > fMaxEtaDaughters) return false;
 
-    if(aV0->PtPos()< fPtMinDaughters) return false;
-    if(aV0->PtNeg()< fPtMinDaughters) return false;
-    if(aV0->PtPos()> fPtMaxDaughters) return false;
-    if(aV0->PtNeg()> fPtMaxDaughters) return false;
-
+    if(aV0->PtPos()< fPtMinPosDaughter) return false;
+    if(aV0->PtNeg()< fPtMinNegDaughter) return false;
+    if(aV0->PtPos()> fPtMaxPosDaughter) return false;
+    if(aV0->PtNeg()> fPtMaxNegDaughter) return false;
+    
     //V0 from kinematics information
     if (fParticleType == kLambdaMC ) {
       if(!(aV0->MassLambda()>fInvMassLambdaMin && aV0->MassLambda()<fInvMassLambdaMax) || !(aV0->PosNSigmaTPCP()==0))
@@ -56,9 +56,9 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 	  return true;   
 	}
     }
-
+    
     //quality cuts
-    if(fOnFlyStatus) if(aV0->OnFlyStatusV0()) return false;
+    if(aV0->OnFlyStatusV0()!=fOnFlyStatus) return false;
     if(aV0->StatusNeg() == 999 || aV0->StatusPos() == 999) return false;
     if(aV0->TPCNclsPos()<fTPCNclsDaughters) return false;
     if(aV0->TPCNclsNeg()<fTPCNclsDaughters) return false;
@@ -67,6 +67,8 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
     if(!(aV0->StatusNeg()&fStatusDaughters)) return false;
     if(!(aV0->StatusPos()&fStatusDaughters)) return false;
     
+ 
+
   //DCA between daughter particles
     if(TMath::Abs(aV0->DcaV0Daughters())>fMaxDcaV0Daughters)
     return false;
@@ -85,12 +87,13 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 
   if(fParticleType == kAll)
     return true;
+    
 
   bool pid_check=false;
   // Looking for lambdas = proton + pim
   if (fParticleType == 0 ) {
-    if (IsProtonNSigma(aV0->PtotPos(), aV0->PosNSigmaTPCP(), aV0->PosNSigmaTOFP())) //proton
-      if (IsPionNSigma(aV0->PtotNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi())) //pion
+    if (IsProtonNSigma(aV0->PtPos(), aV0->PosNSigmaTPCP(), aV0->PosNSigmaTOFP())) //proton
+      if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi())) //pion
 	{
 	  pid_check=true;
 	  //invariant mass lambda
@@ -100,8 +103,8 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 
   }//Looking for antilambdas =  antiproton + pip
   else if (fParticleType == 1) {
-    if (IsProtonNSigma(aV0->PtotNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP())) //proton
-      if (IsPionNSigma(aV0->PtotPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) //pion
+    if (IsProtonNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP())) //proton
+      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) //pion
 	{
 	  pid_check=true;
 	  //invariant mass antilambda
@@ -109,12 +112,9 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 	    return false;
 	}
   }
-
-
   if(!pid_check) return false;
-
   
-
+  
   return true;
     
     
@@ -199,10 +199,16 @@ void AliFemtoV0TrackCut::SetStatusDaughters(unsigned long x)
 {
   fStatusDaughters=x;
 }
-void AliFemtoV0TrackCut::SetPtDaughters(float min,float max)
+void AliFemtoV0TrackCut::SetPtPosDaughter(float min,float max)
 {
-  fPtMinDaughters = min;
-  fPtMaxDaughters = max;
+  fPtMinPosDaughter = min;
+  fPtMaxPosDaughter = max;
+}
+
+void AliFemtoV0TrackCut::SetPtNegDaughter(float min,float max)
+{
+  fPtMinNegDaughter = min;
+  fPtMaxNegDaughter = max;
 }
 
 void AliFemtoV0TrackCut::SetOnFlyStatus(bool x)
@@ -217,12 +223,14 @@ void AliFemtoV0TrackCut::SetInvariantMassLambda(double min, double max)
 
 }
 
+void AliFemtoV0TrackCut::SetMinAvgSeparation(double minSep)
+{
+  fMinAvgSepDaughters = minSep;
+}
+
 //---------------------PID n Sigma ---------------------------------//
 bool AliFemtoV0TrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
 {
-  cout<<" AliFemtoV0TrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
-
-
   if(mom<0.35 && TMath::Abs(nsigmaK)<5.0)return true;
   if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaK)<3.0)return true; 
   if(mom>=0.5 && mom<0.7 && TMath::Abs(nsigmaK)<2.0)return true;
@@ -233,27 +241,34 @@ bool AliFemtoV0TrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
 
 bool AliFemtoV0TrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
 {
-  cout<<" AliFemtoV0TrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
   if(mom>=1.5 && TMath::Abs(nsigmaK)<2.0)return true; 
   return false;
 }
 
 bool AliFemtoV0TrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
 {
+  if(mom<0.4)
+    {
+      if(nsigmaTOFK<-999.)
+	{
+	  if(TMath::Abs(nsigmaTPCK)<1.0) return true;
+	}
+      else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+    }
+  else if(mom>=0.4 && mom<=0.6)
+    {
+      if(nsigmaTOFK<-999.)
+	{
+	  if(TMath::Abs(nsigmaTPCK)<2.0) return true;
+	}
+      else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+    }
+  else if(nsigmaTOFK<-999.)
+    {
+      return false;
+    }
+  else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
 
-      if(TMath::Abs(nsigmaTOFK)<3.0 && mom<=1.5 && TMath::Abs(nsigmaTPCK)<3.0)return true;
-      if(TMath::Abs(nsigmaTOFK)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCK)<3.0)return true;
-
-      //no TOF signal
- 
-      if(nsigmaTOFK<=-9999){
-	//cout <<"/////////////// AliFemtoV0TrackCut::IsKaonNSigma  NO TOF SIGNAL ////////////" <<endl;
-	if(TMath::Abs(nsigmaTPCK)<2.0) return true;
-	/*if(mom<0.4 && TMath::Abs(nsigmaTPCK)<1.0)return true;
-	if(mom>=0.4 && mom<0.5 && TMath::Abs(nsigmaTPCK)<2.0)return true;
-	if(mom>=0.5 && mom<0.6 && TMath::Abs(nsigmaTPCK)<2.0)return true;*/
-      }
- 
   return false;
 }
 
@@ -261,51 +276,85 @@ bool AliFemtoV0TrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
 
 bool AliFemtoV0TrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
-  //  mom = 1; //because of warning in the compilation
-  //  nsigmaTOFPi = 1;
-  // cout<<" AliFemtoV0TrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
+  if(TMath::Abs(nsigmaTPCPi)<3.0) return true;
 
-  //TOF signal
-  // if(TMath::Abs(nsigmaTOFPi)<2.0 && mom<=1.5 && TMath::Abs(nsigmaTPCPi)<2.0)return true;
-  //  if(TMath::Abs(nsigmaTOFPi)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCPi)<2.0)return true;
+  /*if(nsigmaTOFPi<-999.)
+    {
+      if(TMath::Abs(nsigmaTPCPi)<3.0) return true;
+    }
+  else
+    {
+      if(TMath::Abs(nsigmaTPCPi)<3.0 && TMath::Abs(nsigmaTOFPi)<4.0) return true;
+      }*/
 
-
-      //no TOF signal
-  //  if(nsigmaTOFPi<=-9999){
-  //	if(TMath::Abs(nsigmaTPCPi)<2.0) return true;
-	/*if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<2.0)return true;
-	if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaTPCPi)<2.0)return true;
-	if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0)return true;*/
-  //      }
-
-  if( TMath::Abs(nsigmaTPCPi)<3.0) return true;
-  
-  if (mom == nsigmaTOFPi) { };
+  /*if(mom<0.65)
+    {
+      if(nsigmaTOFPi<-999.)
+	{
+	  if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+	  else if(mom<0.5 && mom>=0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+	  else if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0) return true;
+	  else return false;	  
+	}
+	else if(TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+  if(TMath::Abs(nsigmaTPCPi)<3.0) return true;
+      else return false;
+    }
+  else if(nsigmaTOFPi<-999.)
+    {
+      return false;
+    }
+  else if(mom<1.5 && TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
+  else if(mom>=1.5 && TMath::Abs(nsigmaTOFPi)<2.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;*/
 
   return false;
 }
 
-
 bool AliFemtoV0TrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
-  //  mom = 1; //because of warning in the compilation
-  //  nsigmaTOFP = 1;
-  // cout<<" AliFemtoV0TrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
+  if(mom<0.8)
+    {
+      if(TMath::Abs(nsigmaTPCP)<3.0) return true;
+    }
+  else
+    {
+      if(nsigmaTOFP<-999.)
+	{
+	  if(TMath::Abs(nsigmaTPCP)<3.0) return true;
+	}
+      else
+	{
+	  if(TMath::Abs(nsigmaTPCP)<3.0 && TMath::Abs(nsigmaTOFP)<3.0) return true;
+	}
+    }
 
-      //TOF signal
-  //  if(TMath::Abs(nsigmaTOFP)<2.0 && mom<=1.5 && TMath::Abs(nsigmaTPCP)<2.0)return true;
-  //  if(TMath::Abs(nsigmaTOFP)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCP)<2.0)return true;
 
-      //no TOF signal
-  //  if(nsigmaTOFP<=-9999){
-  //	if(TMath::Abs(nsigmaTPCP)<2.0) return true;
-	/*if(mom<0.5 && TMath::Abs(nsigmaTPCP)<2.0)return true;
-	  if(mom>=0.5 && mom<0.8 && TMath::Abs(nsigmaTPCP)<2.0)return true;*/
-  //  }
+  /*if(nsigmaTOFP<-999.)
+    {
+      if(TMath::Abs(nsigmaTPCP)<3.0) return true;
+    }
+  else
+    {
+      if(TMath::Abs(nsigmaTPCP)<3.0 && TMath::Abs(nsigmaTOFP)<3.0) return true;
+      }*/
 
-  if( TMath::Abs(nsigmaTPCP)<3.0) return true;
 
-  if (mom == nsigmaTOFP) { };
+  /*if(mom<0.8)
+    {
+      if(nsigmaTOFP<-999.)
+	{
+	  if(TMath::Abs(nsigmaTPCP)<3.0) return true;
+	  else return false;
+	}
+	else if(TMath::Abs(nsigmaTOFP)<3.0 && TMath::Abs(nsigmaTPCP)<3.0) return true;
+  if(TMath::Abs(nsigmaTPCP)<3.0) return true;
+      else return false;
+    }
+  else if(nsigmaTOFP<-999.)
+    {
+      return false;
+    } 
+    else if(TMath::Abs(nsigmaTOFP)<3.0 && TMath::Abs(nsigmaTPCP)<3.0) return true;*/
 
   return false;
 }

@@ -73,6 +73,13 @@ AliFemtoTrack::AliFemtoTrack():
   fKinkIndexes[0] = 0;
   fKinkIndexes[1] = 0;
   fKinkIndexes[2] = 0;
+
+  for(int i=0;i<9;i++)
+    {
+      fNominalTpcPoints[i].SetX(0);
+      fNominalTpcPoints[i].SetY(0);
+      fNominalTpcPoints[i].SetZ(0);
+    }
   //  cout << "Created track " << this << endl;
 }
 
@@ -176,6 +183,9 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fYatDCA=t.fYatDCA;
   fZatDCA=t.fZatDCA;
 
+  for(int i=0;i<9;i++)
+    fNominalTpcPoints[i] = t.fNominalTpcPoints[i];
+
   //  cout << "Created track " << this << endl;
 }
 
@@ -230,6 +240,9 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fXatDCA=aTrack.fXatDCA;
   fYatDCA=aTrack.fYatDCA;
   fZatDCA=aTrack.fZatDCA;
+
+  for(int i=0;i<9;i++)
+    fNominalTpcPoints[i] = aTrack.fNominalTpcPoints[i];
 
   if (ValidHiddenInfo())
     delete fHiddenInfo;
@@ -391,6 +404,16 @@ const AliFemtoThreeVector& AliFemtoTrack::NominalTpcExitPoint() const
 {
   return fNominalTpcExitPoint;
 }
+
+const AliFemtoThreeVector& AliFemtoTrack::NominalTpcPoint(int i) const
+{
+  if(i<0)
+    return fNominalTpcPoints[0];
+  if(i>8)
+    return fNominalTpcPoints[8];
+  return fNominalTpcPoints[i];
+}
+
 const AliFemtoThreeVector& AliFemtoTrack::NominalTpcEntrancePoint() const
 {
   return fNominalTpcEntrancePoint;
@@ -406,6 +429,17 @@ void AliFemtoTrack::SetNominalTPCEntrancePoint(double *aXTPC)
   fNominalTpcEntrancePoint.SetX(aXTPC[0]);
   fNominalTpcEntrancePoint.SetY(aXTPC[1]);
   fNominalTpcEntrancePoint.SetZ(aXTPC[2]);
+}
+
+void AliFemtoTrack::SetNominalTPCPoints(double **aXTPC)
+{
+  // Store the nominal TPC points
+  for(int i=0;i<9;i++)
+    {
+      fNominalTpcPoints[i].SetX(aXTPC[i][0]);
+      fNominalTpcPoints[i].SetY(aXTPC[i][1]);
+      fNominalTpcPoints[i].SetZ(aXTPC[i][2]);
+    }
 }
 
 void AliFemtoTrack::SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC)
