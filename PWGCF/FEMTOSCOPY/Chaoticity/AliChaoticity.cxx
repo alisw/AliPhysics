@@ -44,7 +44,7 @@ AliChaoticity::AliChaoticity():
 AliAnalysisTaskSE(),
   fname(0),
   fAOD(0x0), 
-  fESD(0x0), 
+//fESD(0x0), 
   fOutputList(0x0),
   fPIDResponse(0x0),
   fEC(0x0),
@@ -183,7 +183,7 @@ AliChaoticity::AliChaoticity(const Char_t *name, Bool_t MCdecision, Bool_t Tabul
 : AliAnalysisTaskSE(name), 
   fname(name),
   fAOD(0x0), 
-  fESD(0x0), 
+  //fESD(0x0), 
   fOutputList(0x0),
   fPIDResponse(0x0),
   fEC(0x0),
@@ -334,7 +334,7 @@ AliChaoticity::AliChaoticity(const AliChaoticity &obj)
   : AliAnalysisTaskSE(obj.fname),
     fname(obj.fname),
     fAOD(obj.fAOD), 
-    fESD(obj.fESD), 
+    //fESD(obj.fESD), 
     fOutputList(obj.fOutputList),
     fPIDResponse(obj.fPIDResponse),
     fEC(obj.fEC),
@@ -432,7 +432,7 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
 
   fname = obj.fname;
   fAOD = obj.fAOD; 
-  fESD = obj.fESD; 
+  //fESD = obj.fESD; 
   fOutputList = obj.fOutputList;
   fPIDResponse = obj.fPIDResponse;
   fEC = obj.fEC;
@@ -512,7 +512,7 @@ AliChaoticity::~AliChaoticity()
 {
   // Destructor
   if(fAOD) delete fAOD; 
-  if(fESD) delete fESD; 
+  //if(fESD) delete fESD; 
   if(fOutputList) delete fOutputList;
   if(fPIDResponse) delete fPIDResponse;
   if(fEC) delete fEC;
@@ -1092,13 +1092,11 @@ void AliChaoticity::Exec(Option_t *)
   //cout<<"===========  Event # "<<fEventCounter+1<<"  ==========="<<endl;
   fEventCounter++;
 
-  if(fAODcase) fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
-  else fESD = dynamic_cast<AliESDEvent*> (InputEvent());
-  
-  if(fAODcase) {if (!fAOD) {Printf("ERROR: fAOD not available"); return;}}
-  else {if (!fESD) {Printf("ERROR: fESD not available"); return;}}
-  
   if(!fAODcase) {cout<<"ESDs not supported"<<endl; return;}
+  
+  fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
+  if (!fAOD) {Printf("ERROR: fAOD not available"); return;}
+  
   
   // Trigger Cut
   if(fAOD->GetRunNumber() >= 136851 && fAOD->GetRunNumber() <= 139517){// 10h data
@@ -1382,8 +1380,8 @@ void AliChaoticity::Exec(Option_t *)
   }
  
  
-  cout<<"There are "<<myTracks<<"  myTracks"<<endl;
-  cout<<"pionCount = "<<pionCount<<"   kaonCount = "<<kaonCount<<"   protonCount = "<<protonCount<<endl;
+  //cout<<"There are "<<myTracks<<"  myTracks"<<endl;
+  //cout<<"pionCount = "<<pionCount<<"   kaonCount = "<<kaonCount<<"   protonCount = "<<protonCount<<endl;
 
   /////////////////////////////////////////
   // Pion Multiplicity Cut (To ensure all Correlation orders are present in each event)
@@ -2066,7 +2064,7 @@ void AliChaoticity::Exec(Option_t *)
    
 
     //cout<<"pairCountSE = "<<pairCountSE<<"   pairCountME = "<<pairCountME<<endl;
-    cout<<"Start Main analysis"<<endl;
+    //cout<<"Start Main analysis"<<endl;
     
     ///////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////

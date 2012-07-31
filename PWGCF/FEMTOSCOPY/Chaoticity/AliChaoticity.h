@@ -101,7 +101,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   
   const char* fname;// name of class
   AliAODEvent            *fAOD; //!    // AOD object
-  AliESDEvent            *fESD; //!    // ESD object
+  //AliESDEvent            *fESD; //!    // ESD object
   TList                  *fOutputList; //! Compact Output list
   AliPIDResponse         *fPIDResponse; //! PID response object; equivalent to AliAODpidUtil
   
@@ -160,7 +160,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   struct St1 {
     struct St2 Charge2[2];
   };
-  struct St1 Charge1[2];
+  struct St1 Charge1[2];//!
 
 
   /////////////////////
@@ -171,7 +171,7 @@ class AliChaoticity : public AliAnalysisTaskSE {
   struct St_Kt {
     struct St_Ky KY[kKbinsY];
   };
-  struct St_Kt KT[kKbinsT];
+  struct St_Kt KT[kKbinsT];//!
   
  
   Bool_t fLEGO;
