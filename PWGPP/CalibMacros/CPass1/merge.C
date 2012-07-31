@@ -117,6 +117,8 @@ void mergeInChunksTXT(const char* mlist, const char* dest, int maxFiles)
   merger.SetNoTrees(kFALSE);
   //  merger.SetMaxFilesOpen(999);
   merger.AddReject("esdFriend"); // do not merge
+  merger.AddReject("syswatchRec"); // do not merge
+  merger.AddReject("syswatchCalib"); // do not merge
   //
   if (maxFiles<2) maxFiles = 2;
   TString filesToMerge = mlist, fileDest = dest;
