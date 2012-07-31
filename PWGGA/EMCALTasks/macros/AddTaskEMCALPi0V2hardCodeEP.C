@@ -46,7 +46,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2hardCodeEP(Double_t EvtMthod=1)
 
   //analysis task 
 
- AliAnalysisTaskSE* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task"); 
+ AliAnalysisTaskPi0V2* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task"); 
  taskMB->SetEventMethod(EvtMthod);
   
   TString containerName = mgr->GetCommonFileName();
