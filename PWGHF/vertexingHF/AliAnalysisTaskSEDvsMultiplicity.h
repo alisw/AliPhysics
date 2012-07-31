@@ -75,7 +75,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
     if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
     fMultEstimatorAvg[3]=new TProfile(*hprof);
   }
-
+  void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
 
@@ -116,6 +116,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH1F* fHistGenPrimaryParticlesInelGt0; //!hist. of geenrated multiplcity
   TH3F* fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary; //! hist of Nch (generated) vs Nch (Primary) vs Nch (Physical Primary) 
   
+  TH1F* fHistNtrUnCorrEvSel; //! hist. of ntracklets for selected events
   TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
   TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
