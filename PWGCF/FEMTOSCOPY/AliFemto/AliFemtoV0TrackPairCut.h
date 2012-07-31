@@ -32,6 +32,8 @@
 
 class AliFemtoV0TrackPairCut : public AliFemtoPairCut{
 public:
+  enum ParticleType {kLambda=0, kAntiLambda=1, kProton=2, kAntiProton=3};
+  typedef enum ParticleType AliFemtoParticleType;
   AliFemtoV0TrackPairCut();
   AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut& cut);
   virtual ~AliFemtoV0TrackPairCut();
@@ -50,6 +52,7 @@ public:
   void SetTPCEntranceSepMinimum(double dtpc);
   void SetTPCExitSepMinimum(double dtpc);
   void SetDataType(AliFemtoDataType type);
+  void SetKstarCut(double kstar, AliFemtoParticleType firstParticle, AliFemtoParticleType secondParticle);
 
  protected:
   long fNPairsPassed;          // Number of pairs consideered that passed the cut 
@@ -66,6 +69,9 @@ public:
   Double_t fDTPCMin;          // Minimum allowed pair nominal separation at the entrance to the TPC
   Double_t fDTPCExitMin;          // Minimum allowed pair nominal separation at the exit of the TPC
  
+  double fKstarCut; //do we want the K star cut, if yes (>0) then it is the minimum value of k*
+  AliFemtoParticleType fFirstParticleType;  //for kstar - first particle type (V0 type) 
+  AliFemtoParticleType fSecondParticleType; //for kstar - second particle type (primary track)
 
 
 #ifdef __ROOT__
@@ -84,7 +90,10 @@ inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairC
   fTrackTPCOnly(0),
   fDataType(kAOD),
   fDTPCMin(0),
-  fDTPCExitMin(0)
+  fDTPCExitMin(0),
+  fKstarCut(0),
+  fFirstParticleType(kLambda), 
+  fSecondParticleType(kProton)
 { /* no-op */ }
 
 inline AliFemtoPairCut* AliFemtoV0TrackPairCut::Clone() { AliFemtoV0TrackPairCut* c = new AliFemtoV0TrackPairCut(*this); return c;}

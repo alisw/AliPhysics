@@ -41,8 +41,10 @@ class AliFemtoV0TrackCut : public AliFemtoParticleCut
   void SetTPCnclsDaughters(int);
   void SetNdofDaughters(int);
   void SetStatusDaughters(unsigned long);
-  void SetPtDaughters(float,float);
+  void SetPtPosDaughter(float,float);
+  void SetPtNegDaughter(float,float);
   void SetOnFlyStatus(bool);
+  void SetMinAvgSeparation(double);
 
   //----n sigma----
   bool IsKaonTPCdEdxNSigma(float mom, float nsigmaK);
@@ -70,8 +72,11 @@ class AliFemtoV0TrackCut : public AliFemtoParticleCut
   int   fTPCNclsDaughters;			            // No. of cls of pos daughter
   int   fNdofDaughters;			                    // No. of degrees of freedom of the pos. daughter track
   unsigned long fStatusDaughters;			    // Status (tpc refit, its refit...)
-  float fPtMinDaughters;
-  float fPtMaxDaughters;
+  float fPtMinPosDaughter;
+  float fPtMaxPosDaughter;
+  float fPtMinNegDaughter;
+  float fPtMaxNegDaughter;
+  double fMinAvgSepDaughters;
 
 #ifdef __ROOT__ 
   ClassDef(AliFemtoV0TrackCut, 1)

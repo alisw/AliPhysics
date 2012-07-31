@@ -149,8 +149,10 @@ public:
 
 
   AliFemtoThreeVector NominalTpcEntrancePointPos() const;
+  AliFemtoThreeVector NominalTpcPointPos(int i);
   AliFemtoThreeVector NominalTpcExitPointPos() const;
   AliFemtoThreeVector NominalTpcEntrancePointNeg() const;
+  AliFemtoThreeVector NominalTpcPointNeg(int i);
   AliFemtoThreeVector NominalTpcExitPointNeg() const;                                   
 
   void UpdateV0(); // Fills derived info
@@ -252,9 +254,31 @@ public:
   void SetNegNSigmaTOFP(float x);
 
   void SetNominalTpcEntrancePointPos(AliFemtoThreeVector x);
+  void SetNominalTpcPointPos(AliFemtoThreeVector *x);
   void SetNominalTpcExitPointPos(AliFemtoThreeVector x);
   void SetNominalTpcEntrancePointNeg(AliFemtoThreeVector x);
+  void SetNominalTpcPointNeg(AliFemtoThreeVector *x);
   void SetNominalTpcExitPointNeg(AliFemtoThreeVector x);
+
+  void SetTPCMomentumPos(double x);
+  void SetTPCMomentumNeg(double x);
+  double GetTPCMomentumPos() const;
+  double GetTPCMomentumNeg() const;
+
+  void SetTOFProtonTimePos(double x);
+  void SetTOFPionTimePos(double x);
+  void SetTOFKaonTimePos(double x);
+  double TOFProtonTimePos() const;
+  double TOFPionTimePos() const;
+  double TOFKaonTimePos() const;
+
+  void SetTOFProtonTimeNeg(double x);
+  void SetTOFPionTimeNeg(double x);
+  void SetTOFKaonTimeNeg(double x);
+  double TOFProtonTimeNeg() const;
+  double TOFPionTimeNeg() const;
+  double TOFKaonTimeNeg() const;
+
 
   void SetprimaryVertex(const AliFemtoThreeVector v);//Gael 24 Sept 02
   /* Th stuff */
@@ -361,10 +385,21 @@ protected:
   int   fKeyPos;		    // Unique key positive
 
   AliFemtoThreeVector fNominalTpcEntrancePointPos; // Nominal positive daugther track entrance point into TPC
+  AliFemtoThreeVector fNominalTpcPointsPos[9];
   AliFemtoThreeVector fNominalTpcExitPointPos;     // Nominal positive daughter track exit point from TPC
   AliFemtoThreeVector fNominalTpcEntrancePointNeg; // Nominal positive daugther track entrance point into TPC
+  AliFemtoThreeVector fNominalTpcPointsNeg[9];
   AliFemtoThreeVector fNominalTpcExitPointNeg;     // Nominal positive daughter track exit point from TPC
 
+  double fTPCMomentumPos;
+  double fTPCMomentumNeg;
+
+  double fTOFProtonTimePos;
+  double fTOFPionTimePos;
+  double fTOFKaonTimePos;
+  double fTOFProtonTimeNeg;
+  double fTOFPionTimeNeg;
+  double fTOFKaonTimeNeg;
 
   /* Th stuff */			    
   // Fab private : add mutable		    
@@ -564,9 +599,30 @@ inline void AliFemtoV0::SetNegNSigmaTOFPi(float x)  {fNegNSigmaTOFPi = x;  }
 inline void AliFemtoV0::SetNegNSigmaTOFP(float x) { fNegNSigmaTOFP = x;  }
 
 inline void AliFemtoV0::SetNominalTpcEntrancePointPos(AliFemtoThreeVector x) {fNominalTpcEntrancePointPos=x;}
+inline void AliFemtoV0::SetNominalTpcPointPos(AliFemtoThreeVector *x) {for(int i=0;i<9;i++) fNominalTpcPointsPos[i]=x[i];}
 inline void AliFemtoV0::SetNominalTpcExitPointPos(AliFemtoThreeVector x) {fNominalTpcExitPointPos=x;}
 inline void AliFemtoV0::SetNominalTpcEntrancePointNeg(AliFemtoThreeVector x) {fNominalTpcEntrancePointNeg=x;}
+inline void AliFemtoV0::SetNominalTpcPointNeg(AliFemtoThreeVector *x) {for(int i=0;i<9;i++) fNominalTpcPointsNeg[i]=x[i];}
 inline void AliFemtoV0::SetNominalTpcExitPointNeg(AliFemtoThreeVector x) {fNominalTpcExitPointNeg=x;}
+
+inline void AliFemtoV0::SetTPCMomentumPos(double x) {fTPCMomentumPos = x;}
+inline void AliFemtoV0::SetTPCMomentumNeg(double x) {fTPCMomentumNeg = x;}
+inline double AliFemtoV0::GetTPCMomentumPos() const {return fTPCMomentumPos;}
+inline double AliFemtoV0::GetTPCMomentumNeg() const {return fTPCMomentumNeg;}
+
+inline void AliFemtoV0::SetTOFProtonTimePos(double x) {fTOFProtonTimePos = x;}
+inline void AliFemtoV0::SetTOFPionTimePos(double x) {fTOFPionTimePos = x;}
+inline void AliFemtoV0::SetTOFKaonTimePos(double x) {fTOFKaonTimePos = x;}
+inline double AliFemtoV0::TOFProtonTimePos() const {return fTOFProtonTimePos;}
+inline double AliFemtoV0::TOFPionTimePos() const {return fTOFPionTimePos;}
+inline double AliFemtoV0::TOFKaonTimePos() const {return fTOFKaonTimePos;}
+
+inline void AliFemtoV0::SetTOFProtonTimeNeg(double x) {fTOFProtonTimeNeg = x;}
+inline void AliFemtoV0::SetTOFPionTimeNeg(double x) {fTOFPionTimeNeg = x;}
+inline void AliFemtoV0::SetTOFKaonTimeNeg(double x) {fTOFKaonTimeNeg = x;}
+inline double AliFemtoV0::TOFProtonTimeNeg() const {return fTOFProtonTimeNeg;}
+inline double AliFemtoV0::TOFPionTimeNeg() const {return fTOFPionTimeNeg;}
+inline double AliFemtoV0::TOFKaonTimeNeg() const {return fTOFKaonTimeNeg;}
 
 #endif
 

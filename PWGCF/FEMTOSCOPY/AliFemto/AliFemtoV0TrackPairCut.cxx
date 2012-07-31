@@ -38,7 +38,10 @@ AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut():
   fTrackTPCOnly(0),
   fDataType(kAOD),
   fDTPCMin(0),
-  fDTPCExitMin(0)
+  fDTPCExitMin(0),
+  fKstarCut(0),
+  fFirstParticleType(kLambda), 
+  fSecondParticleType(kProton)
 {
   // Default constructor
   // Nothing to do
@@ -255,9 +258,82 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair* pair){
   //koniec kopii
 
 
+  //Qinv cut (we are trying to get rid of antiresidual correlation between primary protons)
+  if(fKstarCut > 0)
+    {
+
+      //2 daughters of first V0
+      double mom1PosX = pair->Track1()->V0()->MomPosX();
+      double mom1PosY = pair->Track1()->V0()->MomPosY();
+      double mom1PosZ = pair->Track1()->V0()->MomPosZ();
+      double mom1NegX = pair->Track1()->V0()->MomNegX();
+      double mom1NegY = pair->Track1()->V0()->MomNegY();
+      double mom1NegZ = pair->Track1()->V0()->MomNegZ();
 
 
+      //double PionMass = 0.13956995;
+      //double KaonMass = 0.493677;
+      double ProtonMass = 0.938272;
+      //double LambdaMass = 1.115683;
 
+      AliFemtoLorentzVector fFourMomentum1; // Particle momentum
+      AliFemtoLorentzVector fFourMomentum2; // Particle momentum
+
+      AliFemtoThreeVector temp1;
+      double ener1=0;
+      if(fFirstParticleType == 0) //lambda
+	{
+	  if(fSecondParticleType == 2) //proton
+	    {
+	      //temp1 = ::sqrt(mom1PosX*mom1PosX+mom1PosY*mom1PosY+mom1PosZ*mom1PosZ);
+	      temp1.SetX(mom1PosX);
+	      temp1.SetY(mom1PosY);
+	      temp1.SetZ(mom1PosZ);
+	      ener1 = ::sqrt(temp1.Mag2()+ProtonMass*ProtonMass);	  
+	    }
+	}
+      else if(fFirstParticleType == 1) //antilambda
+	{
+	  if(fSecondParticleType == 3) //antiproton
+	    {
+	      //temp1 = ::sqrt(mom1NegX*mom1NegX+mom1NegY*mom1NegY+mom1NegZ*mom1NegZ);
+	      temp1.SetX(mom1NegX);
+	      temp1.SetY(mom1NegY);
+	      temp1.SetZ(mom1NegZ);
+	      ener1 = ::sqrt(temp1.Mag2()+ProtonMass*ProtonMass);
+	    }
+	}
+      fFourMomentum1.SetVect(temp1);
+      fFourMomentum1.SetE(ener1);
+
+      //AliFemtoLorentzVector fFourMomentum2; // Particle momentum
+      AliFemtoThreeVector temp2;
+      double ener2=0;
+
+      //2 daughters of second V0
+      temp2 = pair->Track2()->Track()->P();
+ 
+ 
+      if(fSecondParticleType == 2 || fSecondParticleType == 3) //proton
+	{
+	    ener2 = ::sqrt(temp2.Mag2()+ProtonMass*ProtonMass);
+	}
+
+      fFourMomentum2.SetVect(temp2);
+      fFourMomentum2.SetE(ener2);
+
+      //QInv calculation
+      AliFemtoLorentzVector tDiff = (fFourMomentum1-fFourMomentum2);
+
+      double tQinv = fabs(-1.*tDiff.m());   // note - qInv() will be negative for identical pairs...
+   
+      //cout<<"tQinv/2: "<<tQinv/2<<endl;
+      if(tQinv/2 < fKstarCut)
+	{
+
+	  temp = false;
+	}
+    }
   return temp;
 }
 //__________________
@@ -322,4 +398,11 @@ void AliFemtoV0TrackPairCut::SetTPCEntranceSepMinimum(double dtpc)
 void AliFemtoV0TrackPairCut::SetTPCExitSepMinimum(double dtpc)
 {
   fDTPCExitMin = dtpc;
+}
+
+void AliFemtoV0TrackPairCut::SetKstarCut(double kstar, AliFemtoParticleType firstParticle, AliFemtoParticleType secondParticle)
+{
+  fKstarCut = kstar; 
+  fFirstParticleType = firstParticle;  //for kstar - first particle type (V0 type) 
+  fSecondParticleType = secondParticle;
 }

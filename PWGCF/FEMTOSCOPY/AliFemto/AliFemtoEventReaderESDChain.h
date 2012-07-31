@@ -21,6 +21,7 @@
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliPhysicsSelection.h"
+#include "AliESDtrackCuts.h"
 #include <list>
 
 #include "AliESDpid.h"
@@ -33,7 +34,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   enum TrackType {kGlobal=0, kTPCOnly=1, kITSOnly=2, kSPDTracklet=3};
   typedef enum TrackType ReadTrackType;
 
-  enum EventMult {kTracklet=0, kITSTPC=1, kITSPure=2, kGlobalCount=3, kSPDLayer1=4, kV0Centrality=5 };
+  enum EventMult {kTracklet=0, kITSTPC=1, kITSPure=2, kGlobalCount=3, kSPDLayer1=4, kV0Centrality=5, kReferenceITSTPC=6, kReferenceITSSA=7, kReferenceTracklets=8 };
   typedef enum EventMult EstEventMult;
 
   AliFemtoEventReaderESDChain();
@@ -49,7 +50,9 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   void SetUseTPCOnly(const bool usetpconly);
 
   virtual void CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 *tFemtoV0, AliESDEvent *fESDevent);
- void SetReadV0(bool a);
+  void SetReadV0(bool a);
+  void GetGlobalPositionAtGlobalRadiiThroughTPC(AliESDtrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
+  void SetMagneticFieldSign(int s);
 
   void SetUsePhysicsSelection(const bool usephysics);
   void SetUseMultiplicity(EstEventMult aType);
@@ -94,6 +97,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   AliESDpid *fESDpid;
   Bool_t fIsPidOwner;
   bool           fReadV0;           // Read V0 information from the AOD and put it into V0Collection
+  int    fMagFieldSign;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)

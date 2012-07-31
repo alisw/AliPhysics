@@ -29,6 +29,7 @@
 
 #include "AliAODpidUtil.h"
 
+
 ClassImp(AliFemtoEventReaderAOD)
 
 #if !(ST_NO_NAMESPACES)
@@ -304,7 +305,6 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 //     nofTracks=fPWG2AODTracks->GetEntries();
 //   else
     nofTracks=fEvent->GetNumberOfTracks();
-  cout<<"nofTracks: "<<nofTracks<<endl;
 
   AliCentrality *cent = fEvent->GetCentrality();
 
@@ -642,7 +642,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
   if(fReadV0)
     {
-
+      int count_pass = 0;
       for (Int_t i = 0; i < fEvent->GetNumberOfV0s(); i++) {
 	AliAODv0* aodv0 = fEvent->GetV0(i);
 	if (!aodv0) continue;
@@ -650,7 +650,9 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	if(aodv0->GetNProngs()>2) continue;
 	if(aodv0->GetCharge()!=0) continue;
 	if(aodv0->ChargeProng(0)==aodv0->ChargeProng(1)) continue;
+	if(aodv0->CosPointingAngle(fV1)<0.998) continue;
 	AliFemtoV0* trackCopyV0 = new AliFemtoV0();
+	count_pass++;
 	CopyAODtoFemtoV0(aodv0, trackCopyV0);
 	tEvent->V0Collection()->push_back(trackCopyV0);
 	//cout<<"Pushback v0 to v0collection"<<endl;
@@ -765,13 +767,25 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
   
-  double xtpc[3];
-  tAodTrack->GetXYZAt(84.6,5*fMagFieldSign,xtpc);
-  xtpc[2] -= fV1[2];
-  tFemtoTrack->SetNominalTPCEntrancePoint(xtpc);
-  tAodTrack->GetXYZAt(246.6,5*fMagFieldSign,xtpc);
-  xtpc[2] -= fV1[2];
-  tFemtoTrack->SetNominalTPCExitPoint(xtpc);
+
+  float globalPositionsAtRadii[9][3];
+  float bfield = 5*fMagFieldSign;
+  GetGlobalPositionAtGlobalRadiiThroughTPC(tAodTrack,bfield,globalPositionsAtRadii);
+  double tpcEntrance[3]={globalPositionsAtRadii[0][0],globalPositionsAtRadii[0][1],globalPositionsAtRadii[0][2]};
+  double **tpcPositions;
+  tpcPositions = new double*[9];
+  for(int i=0;i<9;i++)
+    tpcPositions[i] = new double[3];
+  double tpcExit[3]={globalPositionsAtRadii[8][0],globalPositionsAtRadii[8][1],globalPositionsAtRadii[8][2]};
+  for(int i=0;i<9;i++)
+    {
+      tpcPositions[i][0] = globalPositionsAtRadii[i][0];
+      tpcPositions[i][1] = globalPositionsAtRadii[i][1];
+      tpcPositions[i][2] = globalPositionsAtRadii[i][2];
+    }
+  tFemtoTrack->SetNominalTPCEntrancePoint(tpcEntrance);
+  tFemtoTrack->SetNominalTPCPoints(tpcPositions);
+  tFemtoTrack->SetNominalTPCExitPoint(tpcExit);
 
   //   }
   
@@ -787,7 +801,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
 
 void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFemtoV0)
 {
-  //tFemtoV0->SetdecayLengthV0(tAODv0->DecayLengthV0()); //wrocic do tego
+  tFemtoV0->SetdecayLengthV0(tAODv0->DecayLength(fV1));
   tFemtoV0->SetdecayVertexV0X(tAODv0->DecayVertexV0X());
   tFemtoV0->SetdecayVertexV0Y(tAODv0->DecayVertexV0Y());
   tFemtoV0->SetdecayVertexV0Z(tAODv0->DecayVertexV0Z());
@@ -835,12 +849,13 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
   //void SetcTauLambda( float x);   
   //void SetcTauK0Short( float x); 
   
-  tFemtoV0->SetptV0(::sqrt(tAODv0->Pt2V0())); //!
+  //tFemtoV0->SetptV0(::sqrt(tAODv0->Pt2V0())); //!
+  tFemtoV0->SetptV0(tAODv0->Pt());
   tFemtoV0->SetptotV0(::sqrt(tAODv0->Ptot2V0()));
-  tFemtoV0->SetptPos(::sqrt(tAODv0->MomPosX()*tAODv0->MomPosX()+tAODv0->MomPosY()*tAODv0->MomPosY()));
-  tFemtoV0->SetptotPos(::sqrt(tAODv0->Ptot2Pos()));
-  tFemtoV0->SetptNeg(::sqrt(tAODv0->MomNegX()*tAODv0->MomNegX()+tAODv0->MomNegY()*tAODv0->MomNegY()));
-  tFemtoV0->SetptotNeg(::sqrt(tAODv0->Ptot2Neg()));
+  //tFemtoV0->SetptPos(::sqrt(tAODv0->MomPosX()*tAODv0->MomPosX()+tAODv0->MomPosY()*tAODv0->MomPosY()));
+  //tFemtoV0->SetptotPos(::sqrt(tAODv0->Ptot2Pos()));
+  //tFemtoV0->SetptNeg(::sqrt(tAODv0->MomNegX()*tAODv0->MomNegX()+tAODv0->MomNegY()*tAODv0->MomNegY()));
+  //tFemtoV0->SetptotNeg(::sqrt(tAODv0->Ptot2Neg()));
   
   tFemtoV0->SetidNeg(tAODv0->GetNegID());
   //cout<<"tAODv0->GetNegID(): "<<tAODv0->GetNegID()<<endl;
@@ -859,14 +874,21 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
   //void SeterrdedxPos(float x);//Gael 04Fev2002
   //void SetlendedxPos(float x);//Gael 04Fev2002
 
-  tFemtoV0->SetEtaPos(tAODv0->PseudoRapPos());
-  tFemtoV0->SetEtaNeg(tAODv0->PseudoRapNeg());
+  //tFemtoV0->SetEtaPos(tAODv0->PseudoRapPos());
+  //tFemtoV0->SetEtaNeg(tAODv0->PseudoRapNeg());
 
   AliAODTrack *trackpos = (AliAODTrack*)tAODv0->GetDaughter(0);
   AliAODTrack *trackneg = (AliAODTrack*)tAODv0->GetDaughter(1);
 
   if(trackpos && trackneg)
     {
+      tFemtoV0->SetEtaPos(trackpos->Eta());
+      tFemtoV0->SetEtaNeg(trackneg->Eta());
+      tFemtoV0->SetptotPos(tAODv0->PProng(0));
+      tFemtoV0->SetptotNeg(tAODv0->PProng(1));
+      tFemtoV0->SetptPos(trackpos->Pt());
+      tFemtoV0->SetptNeg(trackneg->Pt());
+
       //tFemtoV0->SetEtaPos(trackpos->Eta()); //tAODv0->PseudoRapPos()
       //tFemtoV0->SetEtaNeg(trackneg->Eta()); //tAODv0->PseudoRapNeg()
       tFemtoV0->SetTPCNclsPos(trackpos->GetTPCNcls());
@@ -887,30 +909,64 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
       tFemtoV0->SetPosNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackpos,AliPID::kPion));
       tFemtoV0->SetNegNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackneg,AliPID::kPion));
 
-      double xtpc[3]; AliFemtoThreeVector tmpVec;
-      trackpos->GetXYZAt(84.6,5,xtpc); xtpc[2] -= fV1[2];
-      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+
+      float bfield = 5*fMagFieldSign;
+      float globalPositionsAtRadiiPos[9][3];
+      GetGlobalPositionAtGlobalRadiiThroughTPC(trackpos,bfield,globalPositionsAtRadiiPos);
+      double tpcEntrancePos[3]={globalPositionsAtRadiiPos[0][0],globalPositionsAtRadiiPos[0][1],globalPositionsAtRadiiPos[0][2]};
+      double tpcExitPos[3]={globalPositionsAtRadiiPos[8][0],globalPositionsAtRadiiPos[8][1],globalPositionsAtRadiiPos[8][2]};
+
+      float globalPositionsAtRadiiNeg[9][3];
+      GetGlobalPositionAtGlobalRadiiThroughTPC(trackneg,bfield,globalPositionsAtRadiiNeg);
+      double tpcEntranceNeg[3]={globalPositionsAtRadiiNeg[0][0],globalPositionsAtRadiiNeg[0][1],globalPositionsAtRadiiNeg[0][2]};
+      double tpcExitNeg[3]={globalPositionsAtRadiiNeg[8][0],globalPositionsAtRadiiNeg[8][1],globalPositionsAtRadiiNeg[8][2]};
+
+      AliFemtoThreeVector tmpVec;
+      tmpVec.SetX(tpcEntrancePos[0]); tmpVec.SetX(tpcEntrancePos[1]); tmpVec.SetX(tpcEntrancePos[2]);
       tFemtoV0->SetNominalTpcEntrancePointPos(tmpVec);
-      trackneg->GetXYZAt(84.6,5,xtpc); xtpc[2] -= fV1[2];
-      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
-      tFemtoV0->SetNominalTpcEntrancePointNeg(tmpVec);
-      trackpos->GetXYZAt(246.6,5,xtpc); xtpc[2] -= fV1[2];
-      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+
+      tmpVec.SetX(tpcExitPos[0]); tmpVec.SetX(tpcExitPos[1]); tmpVec.SetX(tpcExitPos[2]);
       tFemtoV0->SetNominalTpcExitPointPos(tmpVec);
-      trackneg->GetXYZAt(246.6,5,xtpc); xtpc[2] -= fV1[2];
-      tmpVec.SetX(xtpc[0]); tmpVec.SetY(xtpc[1]); tmpVec.SetZ(xtpc[2]);
+
+      tmpVec.SetX(tpcEntranceNeg[0]); tmpVec.SetX(tpcEntranceNeg[1]); tmpVec.SetX(tpcEntranceNeg[2]);
+      tFemtoV0->SetNominalTpcEntrancePointNeg(tmpVec);
+
+      tmpVec.SetX(tpcExitNeg[0]); tmpVec.SetX(tpcExitNeg[1]); tmpVec.SetX(tpcExitNeg[2]);
       tFemtoV0->SetNominalTpcExitPointNeg(tmpVec);
+
+      AliFemtoThreeVector vecTpcPos[9];
+      AliFemtoThreeVector vecTpcNeg[9];
+      for(int i=0;i<9;i++)
+	{
+	  vecTpcPos[i].SetX(globalPositionsAtRadiiPos[i][0]); vecTpcPos[i].SetY(globalPositionsAtRadiiPos[i][1]); vecTpcPos[i].SetZ(globalPositionsAtRadiiPos[i][2]);
+	  vecTpcNeg[i].SetX(globalPositionsAtRadiiNeg[i][0]); vecTpcNeg[i].SetY(globalPositionsAtRadiiNeg[i][1]); vecTpcNeg[i].SetZ(globalPositionsAtRadiiNeg[i][2]);
+	}
+      tFemtoV0->SetNominalTpcPointPos(vecTpcPos);
+      tFemtoV0->SetNominalTpcPointNeg(vecTpcNeg);
+
+      tFemtoV0->SetTPCMomentumPos(trackpos->GetTPCmomentum());
+      tFemtoV0->SetTPCMomentumNeg(trackneg->GetTPCmomentum());
+
+      tFemtoV0->SetdedxPos(trackpos->GetTPCsignal());
+      tFemtoV0->SetdedxNeg(trackneg->GetTPCsignal());
 
       if((tFemtoV0->StatusPos()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusPos()&AliESDtrack::kTOFmismatch)>0)
 	{
 	  if((tFemtoV0->StatusNeg()&AliESDtrack::kTOFpid)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTIME)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFout)==0 || (tFemtoV0->StatusNeg()&AliESDtrack::kTOFmismatch)>0)
 	    {
-	      tFemtoV0->SetPosNSigmaTOFK(-9999);
-	      tFemtoV0->SetNegNSigmaTOFK(-9999);
-	      tFemtoV0->SetPosNSigmaTOFP(-9999);
-	      tFemtoV0->SetNegNSigmaTOFP(-9999);
-	      tFemtoV0->SetPosNSigmaTOFPi(-9999);
-	      tFemtoV0->SetNegNSigmaTOFPi(-9999);
+	      tFemtoV0->SetPosNSigmaTOFK(-1000);
+	      tFemtoV0->SetNegNSigmaTOFK(-1000);
+	      tFemtoV0->SetPosNSigmaTOFP(-1000);
+	      tFemtoV0->SetNegNSigmaTOFP(-1000);
+	      tFemtoV0->SetPosNSigmaTOFPi(-1000);
+	      tFemtoV0->SetNegNSigmaTOFPi(-1000);
+
+	      tFemtoV0->SetTOFProtonTimePos(-1000);
+	      tFemtoV0->SetTOFPionTimePos(-1000);
+	      tFemtoV0->SetTOFKaonTimePos(-1000);
+	      tFemtoV0->SetTOFProtonTimeNeg(-1000);
+	      tFemtoV0->SetTOFPionTimeNeg(-1000);
+	      tFemtoV0->SetTOFKaonTimeNeg(-1000);
 	    }
 	}
       else
@@ -921,6 +977,20 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0, AliFemtoV0 *tFem
 	  tFemtoV0->SetNegNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kProton));
 	  tFemtoV0->SetPosNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackpos,AliPID::kPion));
 	  tFemtoV0->SetNegNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackneg,AliPID::kPion));
+
+	  double TOFSignalPos = trackpos->GetTOFsignal();
+	  double TOFSignalNeg = trackneg->GetTOFsignal();
+	  double pidPos[5];
+	  double pidNeg[5];
+	  trackpos->GetIntegratedTimes(pidPos);
+	  trackneg->GetIntegratedTimes(pidNeg);
+
+	  tFemtoV0->SetTOFPionTimePos(TOFSignalPos-pidPos[2]);
+	  tFemtoV0->SetTOFKaonTimePos(TOFSignalPos-pidPos[3]);
+	  tFemtoV0->SetTOFProtonTimePos(TOFSignalPos-pidPos[4]);
+	  tFemtoV0->SetTOFPionTimeNeg(TOFSignalNeg-pidNeg[2]);
+	  tFemtoV0->SetTOFKaonTimeNeg(TOFSignalNeg-pidNeg[3]);
+	  tFemtoV0->SetTOFProtonTimeNeg(TOFSignalNeg-pidNeg[4]);
 	}
     }
   else
@@ -982,21 +1052,21 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
 						 AliFemtoTrack *tFemtoTrack)
 {
 
-	// copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
+  // copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
 
-	double impact[2];
-	double covimpact[3];
-
-	if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-		//cout << "sth went wrong with dca propagation" << endl;
-		tFemtoTrack->SetImpactD(-1000.0);
-		tFemtoTrack->SetImpactZ(-1000.0);
-
-	}
-	else {
-		tFemtoTrack->SetImpactD(impact[0]);
-		tFemtoTrack->SetImpactZ(impact[1]);
-	}
+  double impact[2];
+  double covimpact[3];
+  
+  if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    //cout << "sth went wrong with dca propagation" << endl;
+    tFemtoTrack->SetImpactD(-1000.0);
+    tFemtoTrack->SetImpactZ(-1000.0);
+    
+  }
+  else {
+    tFemtoTrack->SetImpactD(impact[0]);
+    tFemtoTrack->SetImpactZ(impact[1]);
+  }
 
   double aodpid[10];
   tAodTrack->GetPID(aodpid);
@@ -1112,5 +1182,72 @@ void AliFemtoEventReaderAOD::SetMagneticFieldSign(int s)
 }
 
 
+void AliFemtoEventReaderAOD::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3])
+{
+  // Gets the global position of the track at nine different radii in the TPC
+  // track is the track you want to propagate
+  // bfield is the magnetic field of your event
+  // globalPositionsAtRadii is the array of global positions in the radii and xyz
+
+  // Initialize the array to something indicating there was no propagation
+  for(Int_t i=0;i<9;i++){
+    for(Int_t j=0;j<3;j++){
+      globalPositionsAtRadii[i][j]=-9999.;
+    }
+  }
+
+  // Make a copy of the track to not change parameters of the track
+  AliExternalTrackParam etp; etp.CopyFromVTrack(track);
+  //printf("\nAfter CopyFromVTrack\n");
+  //etp.Print();
+
+  // The global position of the the track
+  Double_t xyz[3]={-9999.,-9999.,-9999.};
+
+  // Counter for which radius we want
+  Int_t iR=0;
+  // The radii at which we get the global positions
+  // IROC (OROC) from 84.1 cm to 132.1 cm (134.6 cm to 246.6 cm)
+  Float_t Rwanted[9]={85.,105.,125.,145.,165.,185.,205.,225.,245.};
+  // The global radius we are at
+  Float_t globalRadius=0;
+
+  // Propagation is done in local x of the track
+  for (Float_t x = etp.GetX();x<247.;x+=1.){ // GetX returns local coordinates
+    // Starts at the tracks fX and goes outwards. x = 245 is the outer radial limit
+    // of the TPC when the track is straight, i.e. has inifinite pt and doesn't get bent.
+    // If the track's momentum is smaller than infinite, it will develop a y-component, which
+    // adds to the global radius
+
+    // Stop if the propagation was not succesful. This can happen for low pt tracks
+    // that don't reach outer radii
+    if(!etp.PropagateTo(x,bfield))break;
+    etp.GetXYZ(xyz); // GetXYZ returns global coordinates
+    globalRadius = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); //Idea to speed up: compare squared radii
+
+    // Roughly reached the radius we want
+    if(globalRadius > Rwanted[iR]){
+
+      // Bigger loop has bad precision, we're nearly one centimeter too far, go back in small steps.
+      while (globalRadius>Rwanted[iR]){
+	x-=.1;
+	//      printf("propagating to x %5.2f\n",x);
+	if(!etp.PropagateTo(x,bfield))break;
+	etp.GetXYZ(xyz); // GetXYZ returns global coordinates
+	globalRadius = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); //Idea to speed up: compare squared radii
+      }
+      //printf("At Radius:%05.2f (local x %5.2f). Setting position to x %4.1f y %4.1f z %4.1f\n",globalRadius,x,xyz[0],xyz[1],xyz[2]);
+      globalPositionsAtRadii[iR][0]=xyz[0];
+      globalPositionsAtRadii[iR][1]=xyz[1];
+      globalPositionsAtRadii[iR][2]=xyz[2];
+      // Indicate we want the next radius
+      iR+=1;
+    }
+    if(iR>=8){
+      // TPC edge reached
+      return;
+    }
+  }
+}
 
 

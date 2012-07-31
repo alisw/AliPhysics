@@ -316,6 +316,7 @@ AliFemtoString AliFemtoSimpleAnalysis::Report()
 //_________________________
 void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
   // Add event to processed events
+
   fPicoEvent=0; // we will get a new pico event, if not prevent corr. fctn to access old pico event
   AddEventProcessed();
   // startup for EbyE 
@@ -325,16 +326,16 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
   if (!tmpPassEvent) 
     fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
   if (tmpPassEvent) {
-//     cout << "AliFemtoSimpleAnalysis::ProcessEvent() - Event has passed cut - build picoEvent from " <<
+    //     cout << "AliFemtoSimpleAnalysis::ProcessEvent() - Event has passed cut - build picoEvent from " <<
 //       hbtEvent->TrackCollection()->size() << " tracks in TrackCollection" << endl;
-//    cout << "Event has passed cut with " << hbtEvent->TrackCollection()->size() << " tracks" << endl;
+    //  cout << "Event has passed cut with " << hbtEvent->TrackCollection()->size() << " tracks" << endl;
     // OK, analysis likes the event-- build a pico event from it, using tracks the analysis likes...
     fPicoEvent = new AliFemtoPicoEvent; // this is what we will make pairs from and put in Mixing Buffer
     // no memory leak. we will delete picoevents when they come out of the mixing buffer
     FillHbtParticleCollection(fFirstParticleCut,(AliFemtoEvent*)hbtEvent,fPicoEvent->FirstParticleCollection());
     if ( !(AnalyzeIdenticalParticles()) )
       FillHbtParticleCollection(fSecondParticleCut,(AliFemtoEvent*)hbtEvent,fPicoEvent->SecondParticleCollection());
-//     cout <<"AliFemtoSimpleAnalysis::ProcessEvent - #particles in First, Second Collections: " <<
+    //cout <<"AliFemtoSimpleAnalysis::ProcessEvent - #particles in First, Second Collections: " <<
 //       fPicoEvent->FirstParticleCollection()->size() << " " <<
 //       fPicoEvent->SecondParticleCollection()->size() << endl;
     

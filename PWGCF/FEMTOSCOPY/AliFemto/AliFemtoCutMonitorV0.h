@@ -12,6 +12,8 @@ class AliFemtoV0;
 class AliFemtoKink;
 class AliFemtoPair; // Gael 12/04/02
 class TH1F;
+class TH1D;
+class TH2D;
 class TList;
 #include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h"
@@ -52,6 +54,16 @@ private:
   TH1F *fPtV0;
   TH1F *fPtPosDaughter;
   TH1F *fPtNegDaughter;
+
+  TH2D *fdEdxPosDaughter;
+  TH2D *fdEdxNegDaughter;
+  TH2D *fTOFtimePosDaughter;
+  TH2D *fTOFtimeNegDaughter;
+
+  TH1D *fnsigmaPosL;
+  TH1D *fnsigmaNegL;
+  TH1D *fnsigmaPosAL;
+  TH1D *fnsigmaNegAL;
 };
 
 #endif

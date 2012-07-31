@@ -337,18 +337,18 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	if(fPIDMethod==0){
 	  // Looking for pions
 	  if (fMostProbable == 2) {
-	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+	    if (IsPionNSigma(track->Pt(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
 	      imost = 2;
 
 	  }
 	  else if (fMostProbable == 3) { 
-	    if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+	    if (IsKaonNSigma(track->Pt(), track->NSigmaTPCK(), track->NSigmaTOFK())){
 	      imost = 3;
 	    }
   
 	  }
 	  else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting
-	    if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal()))
+	    if (IsProtonNSigma(track->Pt(), track->NSigmaTPCP(), track->NSigmaTOFP()) && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal()))
 	      imost = 4;
 	  }
 
@@ -855,63 +855,74 @@ bool AliFemtoESDTrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
   return false;
 }
 
-//ML according with Roberto Preghenella talk
-
 bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
 {
-  //cout<<"//////// AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
-
-
-  if(TMath::Abs(nsigmaTOFK)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCK)<3.0)return true;
-  if(TMath::Abs(nsigmaTOFK)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCK)<3.0)return true;
-
-  //no TOF signal
- 
-
-  if(nsigmaTOFK<=-1000.){
-    //cout<<"//////// AliFemtoESDTrackCut::IsKaonNSigma P= "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
-    //cout <<"/////////////// AliFemtoESDTrackCut::IsKaonNSigma  NO TOF SIGNAL ////////////" <<endl;
-    if(mom<0.4 && TMath::Abs(nsigmaTPCK)<1.0)return true;
-    if(mom>=0.4 && mom<0.5 && TMath::Abs(nsigmaTPCK)<2.0)return true;
-    if(mom>=0.5 && mom<0.6 && TMath::Abs(nsigmaTPCK)<2.0)return true;
-  }
+  if(mom<0.4)
+    {
+      if(nsigmaTOFK<-999.)
+	{
+	  if(TMath::Abs(nsigmaTPCK)<1.0) return true;
+	}
+      else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+    }
+  else if(mom>=0.4 && mom<=0.6)
+    {
+      if(nsigmaTOFK<-999.)
+	{
+	  if(TMath::Abs(nsigmaTPCK)<2.0) return true;
+	}
+      else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+    }
+  else if(nsigmaTOFK<-999.)
+    {
+      return false;
+    }
+  else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
 
   return false;
 }
 
 
-
 bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
-  // cout<<" AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
-  //TOF signal
-  if(TMath::Abs(nsigmaTOFPi)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
-  if(TMath::Abs(nsigmaTOFPi)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
+  if(mom<0.65)
+    {
+      if(nsigmaTOFPi<-999.)
+	{
+	  if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+	  else if(mom<0.5 && mom>=0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+	  else if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0) return true;
+	  else return false;	  
+	}
+      else if(TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+    }
+  else if(nsigmaTOFPi<-999.)
+    {
+      return false;
+    }
+  else if(mom<1.5 && TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
+  else if(mom>=1.5 && TMath::Abs(nsigmaTOFPi)<2.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
 
-
-  //no TOF signal
-  if(nsigmaTOFPi<-999.){
-    if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
-    if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaTPCPi)<3.0)return true;
-    if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0)return true;
-  }
   return false;
 }
 
 
 bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
-  // cout<<" AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
-
-  //TOF signal
-  if(TMath::Abs(nsigmaTOFP)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCP)<3.0)return true;
-  if(TMath::Abs(nsigmaTOFP)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCP)<3.0)return true;
-
-  //no TOF signal
-  if(nsigmaTOFP<-999.){
-    if(mom<0.5 && TMath::Abs(nsigmaTPCP)<3.0)return true;
-    if(mom>=0.5 && mom<0.8 && TMath::Abs(nsigmaTPCP)<2.0)return true;
-  }
+  if(mom<0.8)
+    {
+      if(nsigmaTOFP<-999.)
+	{
+	  if(TMath::Abs(nsigmaTPCP)<3.0) return true;
+	  else return false;
+	}
+      else if(TMath::Abs(nsigmaTOFP)<3.0 && TMath::Abs(nsigmaTPCP)<3.0) return true;
+    }
+  else if(nsigmaTOFP<-999.)
+    {
+      return false;
+    } 
+  else if(TMath::Abs(nsigmaTOFP)<3.0 && TMath::Abs(nsigmaTPCP)<3.0) return true;
 
   return false;
 }

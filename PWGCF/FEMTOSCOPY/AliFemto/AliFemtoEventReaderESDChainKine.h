@@ -21,6 +21,9 @@
 #include <list>
 #include <AliGenEventHeader.h>
 
+#include "AliESDv0.h"
+#include "AliFemtoV0.h"
+
 #include "AliESDpid.h"
 
 class AliFemtoEvent;
@@ -60,6 +63,11 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
 
   void SetESDPid(AliESDpid *esdPid) { fESDpid = esdPid; }
 
+  void SetReadV0(bool a);
+  void CopyESDtoFemtoV0(AliESDv0 *tESDv0, AliFemtoV0 *tFemtoV0, AliESDEvent *tESDevent);
+  void GetGlobalPositionAtGlobalRadiiThroughTPC(AliESDtrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
+  void SetMagneticFieldSign(int s);
+
  protected:
 
  private:
@@ -82,6 +90,9 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
 
   AliESDpid *fESDpid;
   Bool_t fIsPidOwner;
+
+  int            fMagFieldSign;     // Magnetic field sign
+  bool           fReadV0;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChainKine, 1)

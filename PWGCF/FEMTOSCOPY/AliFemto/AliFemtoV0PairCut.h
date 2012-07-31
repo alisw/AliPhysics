@@ -47,6 +47,7 @@ public:
   void SetTPCEntranceSepMinimum(double dtpc);
   void SetTPCExitSepMinimum(double dtpc);
   void SetDataType(AliFemtoDataType type);
+  void SetMinAvgSeparation(int type, double minSep);
 
  protected:
   long fNPairsPassed;          // Number of pairs consideered that passed the cut 
@@ -58,6 +59,10 @@ public:
   AliFemtoDataType fDataType; //Use ESD / AOD / Kinematics.
   Double_t fDTPCMin;          // Minimum allowed pair nominal separation at the entrance to the TPC
   Double_t fDTPCExitMin;          // Minimum allowed pair nominal separation at the exit of the TPC
+  double   fMinAvgSepPosPos;
+  double   fMinAvgSepPosNeg;
+  double   fMinAvgSepNegPos;
+  double   fMinAvgSepNegNeg;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoV0PairCut, 0)
@@ -73,7 +78,11 @@ inline AliFemtoV0PairCut::AliFemtoV0PairCut(const AliFemtoV0PairCut& c) :
   fRemoveSameLabel(0),
   fDataType(kAOD),
   fDTPCMin(0),
-  fDTPCExitMin(0)		      
+  fDTPCExitMin(0),
+  fMinAvgSepPosPos(0),
+  fMinAvgSepPosNeg(0),
+  fMinAvgSepNegPos(0),
+  fMinAvgSepNegNeg(0)		      
 
 { /* no-op */ }
 

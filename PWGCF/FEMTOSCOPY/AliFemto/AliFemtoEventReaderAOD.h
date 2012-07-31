@@ -37,7 +37,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
 
   virtual AliFemtoEvent* ReturnHbtEvent();
   AliFemtoString Report();
-  void SetInputFile(const char* inputFile);
+  void SetInputFile(const char* inputfile);
   void SetFilterBit(UInt_t ibit);
   void SetReadMC(unsigned char a);
   void SetReadV0(unsigned char a);
@@ -45,6 +45,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetNoCentrality(bool anocent);
   void SetAODpidUtil(AliAODpidUtil *aAODpidUtil);
   void SetMagneticFieldSign(int s);
+  void GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
 
  protected:
   virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);

@@ -145,10 +145,13 @@ public:
   /***/
   
   const AliFemtoThreeVector& NominalTpcExitPoint() const;
+  const AliFemtoThreeVector& NominalTpcPoint(int i) const;
   const AliFemtoThreeVector& NominalTpcEntrancePoint() const;
     
   void SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCEntrancePoint(double *aXTPC);
+
+  void SetNominalTPCPoints(double **aXTPC);
 
   void SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCExitPoint(double *aXTPC);
@@ -216,6 +219,7 @@ public:
   TBits fClusters;       // Cluster per padrow map
   TBits fShared;         // Sharing per padrow map
   AliFemtoThreeVector fNominalTpcEntrancePoint; // Nominal track entrance point into TPC
+  AliFemtoThreeVector fNominalTpcPoints[9];
   AliFemtoThreeVector fNominalTpcExitPoint;     // Nominal track exit point from TPC
 
 

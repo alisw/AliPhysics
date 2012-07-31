@@ -39,6 +39,9 @@ AliFemtoV0::AliFemtoV0():
   fKeyNeg(0),   fKeyPos(0),
   fNominalTpcEntrancePointPos(0,0,0),fNominalTpcExitPointPos(0,0,0),
   fNominalTpcEntrancePointNeg(0,0,0),fNominalTpcExitPointNeg(0,0,0),
+  fTPCMomentumPos(0), fTPCMomentumNeg(0),
+  fTOFProtonTimePos(0), fTOFPionTimePos(0), fTOFKaonTimePos(0),
+  fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0),
   fHiddenInfo(0)  /***/
 { 
   // Default empty constructor
@@ -46,6 +49,17 @@ AliFemtoV0::AliFemtoV0():
   fTrackTopologyMapPos[1] = 0;
   fTrackTopologyMapNeg[0] = 0;
   fTrackTopologyMapNeg[1] = 0;
+
+  for(int i=0;i<9;i++)
+    {
+      fNominalTpcPointsPos[i].SetX(0);
+      fNominalTpcPointsPos[i].SetY(0);
+      fNominalTpcPointsPos[i].SetZ(0);
+      fNominalTpcPointsNeg[i].SetX(0);
+      fNominalTpcPointsNeg[i].SetY(0);
+      fNominalTpcPointsNeg[i].SetZ(0);
+
+    }
 }
 // -----------------------------------------------------------------------
 AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
@@ -76,6 +90,9 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fKeyNeg(0),   fKeyPos(0),
   fNominalTpcEntrancePointPos(0,0,0),fNominalTpcExitPointPos(0,0,0),
   fNominalTpcEntrancePointNeg(0,0,0),fNominalTpcExitPointNeg(0,0,0),
+  fTPCMomentumPos(0), fTPCMomentumNeg(0),
+  fTOFProtonTimePos(0), fTOFPionTimePos(0), fTOFKaonTimePos(0),
+  fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0),
   fHiddenInfo(0)  /***/
 { 
   // copy constructor
@@ -154,6 +171,23 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fNominalTpcExitPointPos = v.fNominalTpcExitPointPos;
   fNominalTpcEntrancePointNeg = v.fNominalTpcEntrancePointNeg;
   fNominalTpcExitPointNeg = v.fNominalTpcExitPointNeg;
+
+  fTPCMomentumPos = v.fTPCMomentumPos;
+  fTPCMomentumNeg = v.fTPCMomentumNeg;
+
+  fTOFProtonTimePos=v.fTOFProtonTimePos; fTOFPionTimePos=v.fTOFPionTimePos; fTOFKaonTimePos=v.fTOFKaonTimePos;
+  fTOFProtonTimeNeg=v.fTOFProtonTimeNeg; fTOFPionTimeNeg=v.fTOFPionTimeNeg; fTOFKaonTimeNeg=v.fTOFKaonTimeNeg;
+
+
+  for(int i=0;i<9;i++)
+    {
+      fNominalTpcPointsPos[i].SetX(v.fNominalTpcPointsPos[i].x());
+      fNominalTpcPointsPos[i].SetY(v.fNominalTpcPointsPos[i].y());
+      fNominalTpcPointsPos[i].SetZ(v.fNominalTpcPointsPos[i].z());
+      fNominalTpcPointsNeg[i].SetX(v.fNominalTpcPointsNeg[i].x());
+      fNominalTpcPointsNeg[i].SetY(v.fNominalTpcPointsNeg[i].y());
+      fNominalTpcPointsNeg[i].SetZ(v.fNominalTpcPointsNeg[i].z());
+    }
 
   fHiddenInfo = v.fHiddenInfo? v.fHiddenInfo->Clone() : 0;// GR 11 DEC 02
   UpdateV0();
@@ -240,6 +274,23 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
   fNominalTpcExitPointPos = aV0.fNominalTpcExitPointPos;
   fNominalTpcEntrancePointNeg = aV0.fNominalTpcEntrancePointNeg;
   fNominalTpcExitPointNeg = aV0.fNominalTpcExitPointNeg;
+
+  fTPCMomentumPos = aV0.fTPCMomentumPos;
+  fTPCMomentumNeg = aV0.fTPCMomentumNeg;
+
+  fTOFProtonTimePos=aV0.fTOFProtonTimePos; fTOFPionTimePos=aV0.fTOFPionTimePos; fTOFKaonTimePos=aV0.fTOFKaonTimePos;
+  fTOFProtonTimeNeg=aV0.fTOFProtonTimeNeg; fTOFPionTimeNeg=aV0.fTOFPionTimeNeg; fTOFKaonTimeNeg=aV0.fTOFKaonTimeNeg;
+ 
+  for(int i=0;i<9;i++)
+    {
+      fNominalTpcPointsPos[i].SetX(aV0.fNominalTpcPointsPos[i].x());
+      fNominalTpcPointsPos[i].SetY(aV0.fNominalTpcPointsPos[i].y());
+      fNominalTpcPointsPos[i].SetZ(aV0.fNominalTpcPointsPos[i].z());
+      fNominalTpcPointsNeg[i].SetX(aV0.fNominalTpcPointsNeg[i].x());
+      fNominalTpcPointsNeg[i].SetY(aV0.fNominalTpcPointsNeg[i].y());
+      fNominalTpcPointsNeg[i].SetZ(aV0.fNominalTpcPointsNeg[i].z());
+    }
+
 
   if (fHiddenInfo) delete fHiddenInfo;
   fHiddenInfo = aV0.fHiddenInfo? aV0.fHiddenInfo->Clone() : 0;// GR 11 DEC 02
@@ -383,3 +434,17 @@ void AliFemtoV0::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHi
 bool AliFemtoV0::ValidHiddenInfo() const { if (fHiddenInfo) return true; else return false; }
 AliFemtoHiddenInfo* AliFemtoV0::GetHiddenInfo() const {return fHiddenInfo;}
 
+AliFemtoThreeVector AliFemtoV0::NominalTpcPointPos(int i) { 
+  if(i<0) 
+    return fNominalTpcPointsPos[0]; 
+  if(i>8) 
+    return fNominalTpcPointsPos[8]; 
+  return fNominalTpcPointsPos[i];
+}
+AliFemtoThreeVector AliFemtoV0::NominalTpcPointNeg(int i) {
+  if(i<0) 
+    return fNominalTpcPointsNeg[0]; 
+  if(i>8) 
+    return fNominalTpcPointsNeg[8]; 
+  return fNominalTpcPointsNeg[i];
+}
