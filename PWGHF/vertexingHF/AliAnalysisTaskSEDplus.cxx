@@ -686,7 +686,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     OpenFile(4); // 4 is the slot number of the ntuple
    
     
-    fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:charge:piddau0:piddau1:piddau2:Ptpi:PtK:Ptpi2:mompi:momK:mompi2:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber");
+    fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:charge:piddau0:piddau1:piddau2:Ptpi:PtK:Ptpi2:mompi:momK:mompi2:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber:BadDau");
 
   }
   
@@ -891,9 +891,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Double_t arrayForSparseTrue[6]={invMass,ptCand,trueImpParXY,cosp,dlen,tracklets};
 
       //Ntuple
-      Float_t tmp[30];
+      Float_t tmp[31];
       if(fFillNtuple){
 	tmp[0]=pdgCode;
+	if(!isPrimary) tmp[0]+=5000.;
 	tmp[1]=d->Px();
 	tmp[2]=d->Py();
 	tmp[3]=d->Pz();
@@ -924,6 +925,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	tmp[27]=ntracks;
 	tmp[28]=fRDCutsAnalysis->GetCentrality(aod);
 	tmp[29]=runNumber;
+	tmp[30]=d->HasBadDaughters();
 	fNtupleDplus->Fill(tmp);
 	PostData(4,fNtupleDplus);
       }
