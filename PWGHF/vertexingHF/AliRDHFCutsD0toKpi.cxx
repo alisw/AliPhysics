@@ -262,7 +262,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   if(ptD<fMinPtCand) return 0;
   if(ptD>fMaxPtCand) return 0;
 
-  if(d->HasBadDaughters()) return 0;
+  if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
 
   // returnvalue: 0 not sel, 1 only D0, 2 only D0bar, 3 both
   Int_t returnvaluePID=3;

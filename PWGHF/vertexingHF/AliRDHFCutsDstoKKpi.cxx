@@ -473,7 +473,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
   if(ptD<fMinPtCand) return 0;
   if(ptD>fMaxPtCand) return 0;
 
-  if(d->HasBadDaughters()) return 0;
+  if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
   
 
   // selection on daughter tracks 

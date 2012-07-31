@@ -119,6 +119,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
   void SetUseAOD049(Bool_t flag=kTRUE) {fUseAOD049=flag; return;}
   void SetKinkRejection(Bool_t flag=kTRUE) {fKinkReject=flag; return;}
+  void SetUseEventsWithOnlySPDVertex(Bool_t flag=kTRUE){ 
+    fUseEventsWithOnlySPDVertex=flag; return;}
+  void SetUseTrackSelectionWithFilterBits(Bool_t flag=kTRUE){ 
+    fUseTrackSelectionWithFilterBits=flag; return;}
   void SetUseCentrality(Int_t flag=1);    // see enum below
   void SetPidHF(AliAODPidHF* pidObj) {
     if(fPidHF) delete fPidHF;
@@ -163,6 +167,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t  GetIsUsePID() const {return fUsePID;}
   Bool_t  GetUseAOD049() const {return fUseAOD049;}
   Bool_t  GetUseKinkRejection() const {return fKinkReject;}
+  Bool_t  GetUseEventsWithOnlySPDVertex() const{return fUseEventsWithOnlySPDVertex;}
+  Bool_t  GetUseTrackSelectionWithFilterBits() const{return fUseTrackSelectionWithFilterBits;}
   Bool_t  GetIsPrimaryWithoutDaughters() const {return fRemoveDaughtersFromPrimary;}
   Bool_t GetOptPileUp() const {return fOptPileup;}
   Int_t GetUseCentrality() const {return fUseCentrality;}
@@ -305,8 +311,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fRemoveTrackletOutliers; // flag to apply cut on tracklets vs. centrality for 2011 data
   Int_t fCutOnzVertexSPD; // cut on zSPD vertex to remove outliers in centrality vs. tracklets (0=no cut, 1= cut at 12 cm, 2= cut on difference to z of vtx tracks
   Bool_t fKinkReject; // flag to reject kink daughters
+  Bool_t fUseTrackSelectionWithFilterBits; // flag to enable/disable the check on filter bits
+  Bool_t fUseEventsWithOnlySPDVertex; // flag to enable/disable the usage of events with only SPD vertex
 
-  ClassDef(AliRDHFCuts,25);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,26);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
