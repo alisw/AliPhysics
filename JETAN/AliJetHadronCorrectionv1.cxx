@@ -168,19 +168,19 @@ Double_t AliJetHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t 
    
 }
 
-void AliJetHadronCorrectionv1::TrackPositionEMCal(const AliAODTrack* track,Double_t &eta, Double_t &phi)
-{
-// Return track position on EMCal
-  AliAODPid*    pid   = (AliAODPid*) track->GetDetPid();
-    
-  if(pid) {
-    Double_t emcpos[3];
-    pid->GetEMCALPosition(emcpos);      
-    TVector3 tpos(emcpos[0],emcpos[1],emcpos[2]);
-    
-    eta = tpos.Eta();
-    phi = tpos.Phi();
-
-  }
-
-}
+// void AliJetHadronCorrectionv1::TrackPositionEMCal(const AliAODTrack* track,Double_t &eta, Double_t &phi)
+// { // Temporarily commented - will be updated removing the AliAODpid dependence
+// // Return track position on EMCal
+//   AliAODPid*    pid   = (AliAODPid*) track->GetDetPid();
+//    
+//   if(pid) {
+//     Double_t emcpos[3];
+//     pid->GetEMCALPosition(emcpos);      
+//     TVector3 tpos(emcpos[0],emcpos[1],emcpos[2]);
+//     
+//     eta = tpos.Eta();
+//     phi = tpos.Phi();
+// 
+//   }
+// 
+// }

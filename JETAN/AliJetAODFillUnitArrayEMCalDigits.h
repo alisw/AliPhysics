@@ -54,7 +54,8 @@ class AliJetAODFillUnitArrayEMCalDigits : public AliJetFillUnitArray
   Double_t     fFractionHadronicCorrection;       // Fraction hadronic correction 
 
   //Track-matching (mth)
-  void GetTracksPointingToCell(TArrayS *arr, Double_t eta, Double_t phi, Double_t res);
+// Temporarily commented - will be updated removing the AliAODpid dependence
+//  void GetTracksPointingToCell(TArrayS *arr, Double_t eta, Double_t phi, Double_t res);
 
   // geometry info
   AliAODCaloCluster *fClus;           //! 

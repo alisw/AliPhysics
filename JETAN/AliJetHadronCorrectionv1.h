@@ -24,7 +24,8 @@ class AliJetHadronCorrectionv1 : public AliJetHadronCorrection
   
   void SetGeometry(TString name, Double_t fs = 1.); 
   void SetGeometry2(const AliJetDummyGeo *geometry);
-  void TrackPositionEMCal(const AliAODTrack* track,Double_t &eta, Double_t &phi);
+// Temporarily commented - will be updated removing the AliAODpid dependence
+//  void TrackPositionEMCal(const AliAODTrack* track,Double_t &eta, Double_t &phi);
 
  protected:
   AliJetHadronCorrectionv1():fSamplingFraction(0) {for (Int_t i = 0; i < 8; i++) fPar[i] = 0.;}

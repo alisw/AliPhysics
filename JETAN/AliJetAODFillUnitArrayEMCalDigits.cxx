@@ -186,8 +186,9 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 
       // Hadronic Correction
       double correction=0;
+// Temporarily commented - will be updated removing the AliAODpid dependence
+/*
       if (fApplyFractionHadronicCorrection) {
-      
         TArrayS* matched = new TArrayS();
 	GetTracksPointingToCell(matched, etaD, phiD,0.02);
 
@@ -213,7 +214,7 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 	delete matched;
 	
       }//end hadronic correction
-
+*/
       double enerCorr = digitEn;
       if (correction >= enerCorr) enerCorr = 0;
       else enerCorr -= correction;
@@ -297,8 +298,9 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 
 	// Hadronic Correction
 	double correction=0;
+// Temporarily commented - will be updated removing the AliAODpid dependence
+/*
 	if (fApplyFractionHadronicCorrection) {
-      
 	  TArrayS* matched = new TArrayS();
 	  GetTracksPointingToCell(matched, etaD, phiD,0.02);
 	  
@@ -324,7 +326,7 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 	  delete matched;
 	
 	}//end hadronic correction
-	
+*/	
 	double enerCorr = digitEn;
 	if (correction >= enerCorr) enerCorr = 0;
 	else enerCorr -= correction;
@@ -383,42 +385,42 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
     }
 }
 
-//____________________________________________________________________________
-void AliJetAODFillUnitArrayEMCalDigits::GetTracksPointingToCell(TArrayS* array,Double_t eta, Double_t phi, Double_t cut)
-{
-// Get all tracks pointing to cell 
-  int size=0;
-  
-  for (Int_t itrk =  0; itrk <  fAOD->GetNumberOfTracks() ; itrk++) { //track loop
-  
-    AliAODTrack * track = (AliAODTrack*) fAOD->GetTrack(itrk) ;  
-    AliAODPid*    pid   = (AliAODPid*) track->GetDetPid();
-    
-    if(pid) {
-      Double_t emcpos[3];
-      pid->GetEMCALPosition(emcpos);      
-      TVector3 tpos(emcpos[0],emcpos[1],emcpos[2]);
-
-      Double_t deta = tpos.Eta() - eta;
-      Double_t dphi = tpos.Phi() - phi;
-
-      if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
-      if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
-
-      Double_t res = sqrt(dphi*dphi + deta*deta);
-      
-      if (res< cut) {
-        //add this track-index
-        size++;
-        array->Set( size );
-        array->AddAt( itrk, (size-1) ); 
-	if(fDebug>1) printf("MTH:: track %d matched cell at eta=%f , phi=%f \n", itrk, eta, phi);
-		      
-      }
-    }
-  }
-
-}
+////____________________________________________________________________________
+//void AliJetAODFillUnitArrayEMCalDigits::GetTracksPointingToCell(TArrayS* array,Double_t eta, Double_t phi, Double_t cut)
+//{ // Temporarily commented -> will be corrected removing the dependence to AliAODPid
+//// Get all tracks pointing to cell 
+//  int size=0;
+//  
+//  for (Int_t itrk =  0; itrk <  fAOD->GetNumberOfTracks() ; itrk++) { //track loop
+//  
+//    AliAODTrack * track = (AliAODTrack*) fAOD->GetTrack(itrk) ;  
+//    AliAODPid*    pid   = (AliAODPid*) track->GetDetPid();
+//    
+//    if(pid) {
+//      Double_t emcpos[3];
+//      pid->GetEMCALPosition(emcpos);      
+//      TVector3 tpos(emcpos[0],emcpos[1],emcpos[2]);
+//
+//      Double_t deta = tpos.Eta() - eta;
+//      Double_t dphi = tpos.Phi() - phi;
+//
+//      if(dphi > TMath::Pi()) dphi -= 2*TMath::Pi();
+//      if(dphi < -TMath::Pi()) dphi += 2*TMath::Pi();
+//
+//      Double_t res = sqrt(dphi*dphi + deta*deta);
+//      
+//      if (res< cut) {
+//        //add this track-index
+//        size++;
+//        array->Set( size );
+//        array->AddAt( itrk, (size-1) ); 
+//	if(fDebug>1) printf("MTH:: track %d matched cell at eta=%f , phi=%f \n", itrk, eta, phi);
+//		      
+//      }
+//    }
+//  }
+//
+//}
 
 /*
 //____________________________________________________________________________
