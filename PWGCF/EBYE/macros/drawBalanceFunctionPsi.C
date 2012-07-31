@@ -1,11 +1,9 @@
-const Int_t numberOfCentralityBins = 9;
-TString centralityArray[numberOfCentralityBins] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
-Double_t gMinCentrality[numberOfCentralityBins] = {0.,5.,10.,20.,30.,40.,50.,60.,70.};
-Double_t gMaxCentrality[numberOfCentralityBins] = {5.,10.,20.,30.,40.,50.,60.,70.,80.};
-TString gAnalysisType[7] = {"y","eta","qlong","qout","qside","qinv","phi"};
+const Int_t numberOfCentralityBins = 8;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 
-const Int_t gRebin = 1;
 void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root", 
+			    Int_t gCentrality = 1,
+			    Int_t gDeltaEtaDeltaPhi = 2,
 			    Double_t psiMin = -0.5, Double_t psiMax = 0.5,
 			    Double_t ptTriggerMin = -1.,
 			    Double_t ptTriggerMax = -1.,
@@ -23,23 +21,29 @@ void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root",
   gSystem->Load("libPWGCFebye.so");
 
   //Prepare the objects and return them
-  TList *listBF = GetListOfObjects(filename);
-  TList *listBFShuffled = GetListOfObjects(filename,kTRUE);
+  TList *listBF = GetListOfObjects(filename,gCentrality,0);
+  TList *listBFShuffled = GetListOfObjects(filename,gCentrality,1);
+  TList *listBFMixed = GetListOfObjects(filename,gCentrality,2);
   if(!listBF) {
     Printf("The TList object was not created");
     return;
   }
   else 
-    draw(listBF,listBFShuffled,psiMin,psiMax,
+    draw(listBF,listBFShuffled,listBFMixed,
+	 gCentrality,gDeltaEtaDeltaPhi,
+	 psiMin,psiMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);  
 }
 
 //______________________________________________________//
-TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
+TList *GetListOfObjects(const char* filename, 
+			Int_t gCentrality, Int_t kData = 1) {
   //Get the TList objects (QA, bf, bf shuffled)
+  //kData == 0: data
+  //kData == 1: shuffling
+  //kData == 2: mixing
   TList *listQA = 0x0;
   TList *listBF = 0x0;
-  TList *listBFShuffling = 0x0;
   
   //Open the file
   TFile *f = TFile::Open(filename);
@@ -57,19 +61,32 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   //dir->ls();
   
   TString listBFName;
-  if(!kShuffling) 
-    listBFName = "listBFPsi";
-  else if(kShuffling)
-    listBFName = "listBFPsiShuffled";
+  if(kData == 0) {
+    //cout<<"no shuffling - no mixing"<<endl;
+    listBFName = "listBFPsi_";
+  }
+  else if(kData == 1) {
+    //cout<<"shuffling - no mixing"<<endl;
+    listBFName = "listBFPsiShuffled_";
+  }
+  else if(kData == 2) {
+    //cout<<"no shuffling - mixing"<<endl;
+    listBFName = "listBFPsiMixed_";
+  }
+  listBFName += centralityArray[gCentrality-1];
   listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
+  cout<<"======================================================="<<endl;
+  cout<<"List name: "<<listBF->GetName()<<endl;
   //listBF->ls();
 
   //Get the histograms
   TString histoName;
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistPV0M";
-  else if(kShuffling)
+  else if(kData == 1)
     histoName = "fHistP_shuffleV0M";
+  else if(kData == 2)
+    histoName = "fHistPV0M";
   AliTHn *fHistP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));  
   if(!fHistP) {
     Printf("fHistP %s not found!!!",histoName.Data());
@@ -77,10 +94,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistP->FillParent(); fHistP->DeleteContainers();
 
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistNV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistN_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistNV0M";
   AliTHn *fHistN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistN) {
     Printf("fHistN %s not found!!!",histoName.Data());
@@ -88,10 +107,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistN->FillParent(); fHistN->DeleteContainers();
     
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistPNV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistPN_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistPNV0M";
   AliTHn *fHistPN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistPN) {
     Printf("fHistPN %s not found!!!",histoName.Data());
@@ -99,10 +120,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistPN->FillParent(); fHistPN->DeleteContainers();
   
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistNPV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistNP_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistNPV0M";
   AliTHn *fHistNP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistNP) {
     Printf("fHistNP %s not found!!!",histoName.Data());
@@ -110,10 +133,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistNP->FillParent(); fHistNP->DeleteContainers();
 
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistPPV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistPP_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistPPV0M";
   AliTHn *fHistPP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistPP) {
     Printf("fHistPP %s not found!!!",histoName.Data());
@@ -121,10 +146,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistPP->FillParent(); fHistPP->DeleteContainers();
 
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistNNV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistNN_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistNNV0M";
   AliTHn *fHistNN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistNN) {
     Printf("fHistNN %s not found!!!",histoName.Data());
@@ -136,7 +163,8 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
 }
 
 //______________________________________________________//
-void draw(TList *listBF, TList *listBFShuffled,
+void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
+	  Int_t gCentrality, Int_t gDeltaEtaDeltaPhi, 
 	  Double_t psiMin, Double_t psiMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax) {
@@ -144,6 +172,8 @@ void draw(TList *listBF, TList *listBFShuffled,
   SetPlotStyle();
   gStyle->SetPalette(1,0);
   
+  const Int_t gRebin = gDeltaEtaDeltaPhi; //rebin by 2 the Delta phi projection
+
   //balance function
   AliTHn *hP = NULL;
   AliTHn *hN = NULL;
@@ -191,36 +221,83 @@ void draw(TList *listBF, TList *listBFShuffled,
   bShuffled->SetHistNpp(hPPShuffled);
   bShuffled->SetHistNnn(hNNShuffled);
 
+  //balance function mixing
+  AliTHn *hPMixed = NULL;
+  AliTHn *hNMixed = NULL;
+  AliTHn *hPNMixed = NULL;
+  AliTHn *hNPMixed = NULL;
+  AliTHn *hPPMixed = NULL;
+  AliTHn *hNNMixed = NULL;
+  //listBFMixed->ls();
+  hPMixed = (AliTHn*) listBFMixed->FindObject("fHistPV0M");
+  hNMixed = (AliTHn*) listBFMixed->FindObject("fHistNV0M");
+  hPNMixed = (AliTHn*) listBFMixed->FindObject("fHistPNV0M");
+  hNPMixed = (AliTHn*) listBFMixed->FindObject("fHistNPV0M");
+  hPPMixed = (AliTHn*) listBFMixed->FindObject("fHistPPV0M");
+  hNNMixed = (AliTHn*) listBFMixed->FindObject("fHistNNV0M");
+
+  AliBalancePsi *bMixed = new AliBalancePsi();
+  bMixed->SetHistNp(hPMixed);
+  bMixed->SetHistNn(hNMixed);
+  bMixed->SetHistNpn(hPNMixed);
+  bMixed->SetHistNnp(hNPMixed);
+  bMixed->SetHistNpp(hPPMixed);
+  bMixed->SetHistNnn(hNNMixed);
+
   TH1D *gHistBalanceFunction;
   TH1D *gHistBalanceFunctionShuffled;
-  TCanvas *c1;
+  TH1D *gHistBalanceFunctionMixed;
+  TH1D *gHistBalanceFunctionSubtracted;
   TString histoTitle, pngName;
   TLegend *legend;
   
-  //loop over the centrality bins
-  //for(Int_t iCentralityBin = 0; iCentralityBin < numberOfCentralityBins; iCentralityBin++) {  
   histoTitle = "Centrality: "; 
-  histoTitle += centralityArray[6]; 
+  histoTitle += centralityArray[gCentrality-1]; 
   histoTitle += "%";
-  histoTitle += " | "; histoTitle += psiMin; 
-  histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
+  if((psiMin == -0.5)&&(psiMax == 0.5))
+    histoTitle += " (-7.5^{o} < #phi - #Psi_{2} < 7.5^{o})"; 
+  else if((psiMin == 0.5)&&(psiMax == 1.5))
+    histoTitle += " (37.5^{o} < #phi - #Psi_{2} < 52.5^{o})"; 
+  else if((psiMin == 1.5)&&(psiMax == 2.5))
+    histoTitle += " (82.5^{o} < #phi - #Psi_{2} < 97.5^{o})"; 
+  else 
+    histoTitle += " (0^{o} < #phi - #Psi_{2} < 180^{o})"; 
   
-  gHistBalanceFunction = b->GetBalanceFunctionHistogram(0,2,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  //Raw balance function
+  gHistBalanceFunction = b->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistBalanceFunction->SetMarkerStyle(20);
   gHistBalanceFunction->SetTitle(histoTitle.Data());
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunction->SetName("gHistBalanceFunction");
   
-  gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram(0,2,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  //Shuffled balance function
+  gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistBalanceFunctionShuffled->SetMarkerStyle(24);
+  gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
+
+  //Mixed balance function
+  gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionHistogram(0,gDeltaEtaDeltaPhi,psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistBalanceFunctionMixed->SetMarkerStyle(25);
+  gHistBalanceFunctionMixed->SetName("gHistBalanceFunctionMixed");
   
-  c1 = new TCanvas(histoTitle.Data(),"",0,0,600,500);
+  //Subtracted balance function
+  gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(gHistBalanceFunction->Clone());
+  gHistBalanceFunctionSubtracted->Add(gHistBalanceFunctionMixed,-1);
+  gHistBalanceFunctionSubtracted->Rebin(gRebin);
+  gHistBalanceFunctionSubtracted->SetMarkerStyle(20);
+  gHistBalanceFunctionSubtracted->SetTitle(histoTitle.Data());
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionSubtracted->SetName("gHistBalanceFunctionSubtracted");
+
+  TCanvas *c1 = new TCanvas("c1","",0,0,600,500);
   c1->SetFillColor(10); 
   c1->SetHighLightColor(10);
   c1->SetLeftMargin(0.15);
   gHistBalanceFunction->DrawCopy("E");
   gHistBalanceFunctionShuffled->DrawCopy("ESAME");
+  gHistBalanceFunctionMixed->DrawCopy("ESAME");
   
-  legend = new TLegend(0.18,0.6,0.45,0.82,"","brNDC");
+  legend = new TLegend(0.18,0.62,0.45,0.82,"","brNDC");
   legend->SetTextSize(0.045); 
   legend->SetTextFont(42); 
   legend->SetBorderSize(0);
@@ -230,11 +307,12 @@ void draw(TList *listBF, TList *listBFShuffled,
   legend->SetShadowColor(10);
   legend->AddEntry(gHistBalanceFunction,"Data","lp");
   legend->AddEntry(gHistBalanceFunctionShuffled,"Shuffled data","lp");
+  legend->AddEntry(gHistBalanceFunctionMixed,"Mixed data","lp");
   legend->Draw();
   
   pngName = "BalanceFunctionDeltaEta.Centrality"; 
-  pngName += centralityArray[6]; 
-  pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
+  pngName += centralityArray[gCentrality-1]; 
+  pngName += ".Psi"; //pngName += psiMin; pngName += "To"; pngName += psiMax;
   pngName += ".png";
   c1->SaveAs(pngName.Data());
   
@@ -243,24 +321,34 @@ void draw(TList *listBF, TList *listBFShuffled,
   
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
   meanLatex = "#mu = "; 
-  meanLatex += Form("%.3f",gHistBalanceFunction->GetMean());
+  meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
   meanLatex += " #pm "; 
-  meanLatex += Form("%.3f",gHistBalanceFunction->GetMeanError());
+  meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMeanError());
   
   rmsLatex = "#sigma = "; 
-  rmsLatex += Form("%.3f",gHistBalanceFunction->GetRMS());
+  rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMS());
   rmsLatex += " #pm "; 
-  rmsLatex += Form("%.3f",gHistBalanceFunction->GetRMSError());
+  rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMSError());
   
   skewnessLatex = "S = "; 
-  skewnessLatex += Form("%.3f",gHistBalanceFunction->GetSkewness(1));
+  skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(1));
   skewnessLatex += " #pm "; 
-  skewnessLatex += Form("%.3f",gHistBalanceFunction->GetSkewness(11));
+  skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(11));
   
   kurtosisLatex = "K = "; 
-  kurtosisLatex += Form("%.3f",gHistBalanceFunction->GetKurtosis(1));
+  kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(1));
   kurtosisLatex += " #pm "; 
-  kurtosisLatex += Form("%.3f",gHistBalanceFunction->GetKurtosis(11));
+  kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
+  Printf("Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
+  Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
+  Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
+  Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+
+  TCanvas *c2 = new TCanvas("c2","",600,0,600,500);
+  c2->SetFillColor(10); 
+  c2->SetHighLightColor(10);
+  c2->SetLeftMargin(0.15);
+  gHistBalanceFunctionSubtracted->DrawCopy("E");
   
   TLatex *latex = new TLatex();
   latex->SetNDC();
@@ -270,11 +358,27 @@ void draw(TList *listBF, TList *listBFShuffled,
   latex->DrawLatex(0.64,0.81,rmsLatex.Data());
   latex->DrawLatex(0.64,0.77,skewnessLatex.Data());
   latex->DrawLatex(0.64,0.73,kurtosisLatex.Data());
-  Printf("Mean: %lf - Error: %lf",gHistBalanceFunction->GetMean(),gHistBalanceFunction->GetMeanError());
-  Printf("RMS: %lf - Error: %lf",gHistBalanceFunction->GetRMS(),gHistBalanceFunction->GetRMSError());
-  Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunction->GetSkewness(1),gHistBalanceFunction->GetSkewness(11));
-  Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunction->GetKurtosis(1),gHistBalanceFunction->GetKurtosis(11));
-  //}
+
+  TString newFileName = "balanceFunction.Centrality"; 
+  newFileName += gCentrality; newFileName += ".In";
+  if(gDeltaEtaDeltaPhi == 1) newFileName += "DeltaEta.Psi";
+  else if(gDeltaEtaDeltaPhi == 2) newFileName += "DeltaPhi.Psi";
+  if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+  else newFileName += "0.PttFrom";
+  newFileName += ptTriggerMin; newFileName += "To"; 
+  newFileName += ptTriggerMax; newFileName += ".PtaFrom";
+  newFileName += ptAssociatedMin; newFileName += "To"; 
+  newFileName += ptAssociatedMax;  newFileName += ".root";
+
+  TFile *fOutput = new TFile(newFileName.Data(),"recreate");
+  fOutput->cd();
+  gHistBalanceFunction->Write();
+  gHistBalanceFunctionShuffled->Write();
+  gHistBalanceFunctionMixed->Write();
+  gHistBalanceFunctionSubtracted->Write();
+  fOutput->Close();
 }
 
 //____________________________________________________________________//
@@ -324,4 +428,188 @@ void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1) {
   cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
   cout<<"=================================================="<<endl;
   cout<<endl;
+}
+
+void drawBFPsi(Int_t gCentrality = 1,
+	       Int_t gDeltaEtaDeltaPhi = 2,
+	       Double_t psiMin = -0.5, Double_t psiMax = 0.5,
+	       Double_t ptTriggerMin = -1.,
+	       Double_t ptTriggerMax = -1.,
+	       Double_t ptAssociatedMin = -1.,
+	       Double_t ptAssociatedMax = -1.) {
+  //Macro that draws the BF distributions for each centrality bin
+  //for reaction plane dependent analysis
+  //Author: Panos.Christakoglou@nikhef.nl
+  gROOT->LoadMacro("~/SetPlotStyle.C");
+  SetPlotStyle();
+
+  //Get the input file
+  TString filename = "LHC11h/PttFrom";
+  filename += ptTriggerMin; filename += "To"; 
+  filename += ptTriggerMax; filename += "PtaFrom";
+  filename += ptAssociatedMin; filename += "To"; 
+  filename += ptAssociatedMax; filename += "/balanceFunction.Centrality"; 
+  filename += gCentrality; filename += ".In";
+  if(gDeltaEtaDeltaPhi == 1) filename += "DeltaEta.Psi";
+  else if(gDeltaEtaDeltaPhi == 2) filename += "DeltaPhi.Psi";
+  if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
+  else filename += "0.PttFrom";
+  filename += ptTriggerMin; filename += "To"; 
+  filename += ptTriggerMax; filename += ".PtaFrom";
+  filename += ptAssociatedMin; filename += "To"; 
+  filename += ptAssociatedMax;  filename += ".root";  
+
+  //Open the file
+  TFile *f = TFile::Open(filename.Data());
+  if((!f)||(!f->IsOpen())) {
+    Printf("The file %s is not found. Aborting...",filename);
+    return listBF;
+  }
+  //f->ls();
+  
+  //Raw balance function
+  TH1D *gHistBalanceFunction = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunction"));
+  gHistBalanceFunction->SetStats(kFALSE);
+  gHistBalanceFunction->SetMarkerStyle(20);
+  gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
+  if(gDeltaEtaDeltaPhi == 2) {
+    gHistBalanceFunction->GetYaxis()->SetTitle("B(#Delta #varphi)");
+    gHistBalanceFunction->GetXaxis()->SetTitle("#Delta #varphi (deg.)");
+  }
+
+  //Shuffled balance function
+  TH1D *gHistBalanceFunctionShuffled = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionShuffled"));
+  gHistBalanceFunction->SetStats(kFALSE);
+  gHistBalanceFunctionShuffled->SetMarkerStyle(24);
+
+  //Mixed balance function
+  TH1D *gHistBalanceFunctionMixed = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionMixed"));
+  gHistBalanceFunction->SetStats(kFALSE);
+  gHistBalanceFunctionMixed->SetMarkerStyle(25);
+
+  //Subtracted balance function
+  TH1D *gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionSubtracted"));
+  gHistBalanceFunctionSubtracted->SetStats(kFALSE);
+  gHistBalanceFunctionSubtracted->SetMarkerStyle(20);
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
+  if(gDeltaEtaDeltaPhi == 2) {
+    gHistBalanceFunctionSubtracted->GetYaxis()->SetTitle("B(#Delta #varphi)");
+    gHistBalanceFunctionSubtracted->GetXaxis()->SetTitle("#Delta #varphi (deg.)");
+  }
+  
+  TString pngName;
+  TLegend *legend;
+  
+  TString centralityLatex = "Centrality: ";
+  centralityLatex += centralityArray[gCentrality-1]; 
+  centralityLatex += "%";
+
+  TString psiLatex;
+  if((psiMin == -0.5)&&(psiMax == 0.5))
+    psiLatex = " -7.5^{o} < #varphi - #Psi_{2} < 7.5^{o}"; 
+  else if((psiMin == 0.5)&&(psiMax == 1.5))
+    psiLatex = " 37.5^{o} < #varphi - #Psi_{2} < 52.5^{o}"; 
+  else if((psiMin == 1.5)&&(psiMax == 2.5))
+    psiLatex = " 82.5^{o} < #varphi - #Psi_{2} < 97.5^{o}"; 
+  else 
+    psiLatex = " 0^{o} < #varphi - #Psi_{2} < 180^{o}"; 
+ 
+  TString pttLatex = Form("%.1f",ptTriggerMin);
+  pttLatex += " < p_{T}^{t} < "; pttLatex += Form("%.1f",ptTriggerMax);
+  pttLatex += " GeV/c";
+
+  TString ptaLatex = Form("%.1f",ptAssociatedMin);
+  ptaLatex += " < p_{T}^{a} < "; ptaLatex += Form("%.1f",ptAssociatedMax);
+  ptaLatex += " GeV/c";
+
+  //Draw the results
+  TCanvas *c1 = new TCanvas("c1","",0,0,600,500);
+  c1->SetFillColor(10); c1->SetHighLightColor(10);
+  c1->SetLeftMargin(0.17); c1->SetTopMargin(0.05);
+  gHistBalanceFunction->SetTitle("");
+  gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.4);
+  gHistBalanceFunction->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunction->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunction->DrawCopy("E");
+  gHistBalanceFunctionShuffled->DrawCopy("ESAME");
+  gHistBalanceFunctionMixed->DrawCopy("ESAME");
+  
+  legend = new TLegend(0.2,0.72,0.45,0.92,"","brNDC");
+  legend->SetTextSize(0.05); 
+  legend->SetTextFont(42); 
+  legend->SetBorderSize(0);
+  legend->SetFillStyle(0); 
+  legend->SetFillColor(10);
+  legend->SetMargin(0.25); 
+  legend->SetShadowColor(10);
+  legend->AddEntry(gHistBalanceFunction,"Data","lp");
+  legend->AddEntry(gHistBalanceFunctionShuffled,"Shuffled data","lp");
+  legend->AddEntry(gHistBalanceFunctionMixed,"Mixed data","lp");
+  legend->Draw();
+  
+  TLatex *latexInfo1 = new TLatex();
+  latexInfo1->SetNDC();
+  latexInfo1->SetTextSize(0.04);
+  latexInfo1->SetTextColor(1);
+  latexInfo1->DrawLatex(0.58,0.88,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.58,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.58,0.76,pttLatex.Data());
+  latexInfo1->DrawLatex(0.58,0.70,ptaLatex.Data());
+
+  //pngName = "BalanceFunctionDeltaEta.Centrality"; 
+  //pngName += centralityArray[gCentrality-1]; 
+  //pngName += ".Psi"; //pngName += psiMin; pngName += "To"; pngName += psiMax;
+  //pngName += ".png";
+  //c1->SaveAs(pngName.Data());
+    
+  TCanvas *c2 = new TCanvas("c2","",600,0,600,500);
+  c2->SetFillColor(10); c2->SetHighLightColor(10);
+  c2->SetLeftMargin(0.17); c2->SetTopMargin(0.05);
+  gHistBalanceFunctionSubtracted->SetTitle("");
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.4);
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunctionSubtracted->DrawCopy("E");
+  
+  TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
+  meanLatex = "#mu = "; 
+  meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
+  meanLatex += " #pm "; 
+  meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMeanError());
+  
+  rmsLatex = "#sigma = "; 
+  rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMS());
+  rmsLatex += " #pm "; 
+  rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMSError());
+  
+  skewnessLatex = "S = "; 
+  skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(1));
+  skewnessLatex += " #pm "; 
+  skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(11));
+  
+  kurtosisLatex = "K = "; 
+  kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(1));
+  kurtosisLatex += " #pm "; 
+  kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
+  Printf("Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
+  Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
+  Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
+  Printf("Kurtosis: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetKurtosis(1),gHistBalanceFunctionSubtracted->GetKurtosis(11));
+
+  latexInfo1->DrawLatex(0.18,0.88,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.18,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.18,0.76,pttLatex.Data());
+  latexInfo1->DrawLatex(0.18,0.70,ptaLatex.Data());
+
+  TLatex *latexResults = new TLatex();
+  latexResults->SetNDC();
+  latexResults->SetTextSize(0.04);
+  latexResults->SetTextColor(1);
+  latexResults->DrawLatex(0.6,0.88,meanLatex.Data());
+  latexResults->DrawLatex(0.6,0.82,rmsLatex.Data());
+  latexResults->DrawLatex(0.6,0.76,skewnessLatex.Data());
+  latexResults->DrawLatex(0.6,0.70,kurtosisLatex.Data());
+
 }

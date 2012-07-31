@@ -1,12 +1,10 @@
-const Int_t numberOfCentralityBins = 9;
-TString centralityArray[numberOfCentralityBins] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
-Double_t gMinCentrality[numberOfCentralityBins] = {0.,5.,10.,20.,30.,40.,50.,60.,70.};
-Double_t gMaxCentrality[numberOfCentralityBins] = {5.,10.,20.,30.,40.,50.,60.,70.,80.};
-TString gAnalysisType[7] = {"y","eta","qlong","qout","qside","qinv","phi"};
+const Int_t numberOfCentralityBins = 8;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 
 const Int_t gRebin = 1;
 void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root", 
-			      Double_t psiMin = 0., Double_t psiMax = 7.5,
+			      Int_t gCentrality = 1,
+			      Double_t psiMin = -0.5, Double_t psiMax = 0.5,
 			      Double_t ptTriggerMin = -1.,
 			      Double_t ptTriggerMax = -1.,
 			      Double_t ptAssociatedMin = -1.,
@@ -23,23 +21,27 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
   gSystem->Load("libPWGCFebye.so");
 
   //Prepare the objects and return them
-  TList *listBF = GetListOfObjects(filename);
-  TList *listBFShuffled = GetListOfObjects(filename,kTRUE);
+  TList *listBF = GetListOfObjects(filename,gCentrality,0);
+  TList *listBFShuffled = GetListOfObjects(filename,gCentrality,1);
+  TList *listBFMixed = GetListOfObjects(filename,gCentrality,2);
   if(!listBF) {
     Printf("The TList object was not created");
     return;
   }
   else 
-    draw(listBF,listBFShuffled,psiMin,psiMax,
+    draw(listBF,listBFShuffled,listBFMixed,gCentrality,psiMin,psiMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);  
 }
 
 //______________________________________________________//
-TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
+TList *GetListOfObjects(const char* filename, 
+			Int_t gCentrality, Int_t kData = 1) {
   //Get the TList objects (QA, bf, bf shuffled)
+  //kData == 0: data
+  //kData == 1: shuffling
+  //kData == 2: mixing
   TList *listQA = 0x0;
   TList *listBF = 0x0;
-  TList *listBFShuffling = 0x0;
   
   //Open the file
   TFile *f = TFile::Open(filename);
@@ -57,19 +59,32 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   //dir->ls();
   
   TString listBFName;
-  if(!kShuffling) 
-    listBFName = "listBFPsi";
-  else if(kShuffling)
-    listBFName = "listBFPsiShuffled";
+  if(kData == 0) {
+    //cout<<"no shuffling - no mixing"<<endl;
+    listBFName = "listBFPsi_";
+  }
+  else if(kData == 1) {
+    //cout<<"shuffling - no mixing"<<endl;
+    listBFName = "listBFPsiShuffled_";
+  }
+  else if(kData == 2) {
+    //cout<<"no shuffling - mixing"<<endl;
+    listBFName = "listBFPsiMixed_";
+  }
+  listBFName += centralityArray[gCentrality-1];
   listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
+  cout<<"======================================================="<<endl;
+  cout<<"List name: "<<listBF->GetName()<<endl;
   //listBF->ls();
 
   //Get the histograms
   TString histoName;
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistPV0M";
-  else if(kShuffling)
+  else if(kData == 1)
     histoName = "fHistP_shuffleV0M";
+  else if(kData == 2)
+    histoName = "fHistPV0M";
   AliTHn *fHistP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));  
   if(!fHistP) {
     Printf("fHistP %s not found!!!",histoName.Data());
@@ -77,10 +92,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistP->FillParent(); fHistP->DeleteContainers();
 
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistNV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistN_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistNV0M";
   AliTHn *fHistN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistN) {
     Printf("fHistN %s not found!!!",histoName.Data());
@@ -88,10 +105,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistN->FillParent(); fHistN->DeleteContainers();
     
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistPNV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistPN_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistPNV0M";
   AliTHn *fHistPN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistPN) {
     Printf("fHistPN %s not found!!!",histoName.Data());
@@ -99,10 +118,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistPN->FillParent(); fHistPN->DeleteContainers();
   
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistNPV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistNP_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistNPV0M";
   AliTHn *fHistNP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistNP) {
     Printf("fHistNP %s not found!!!",histoName.Data());
@@ -110,10 +131,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistNP->FillParent(); fHistNP->DeleteContainers();
 
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistPPV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistPP_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistPPV0M";
   AliTHn *fHistPP = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistPP) {
     Printf("fHistPP %s not found!!!",histoName.Data());
@@ -121,10 +144,12 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
   }
   fHistPP->FillParent(); fHistPP->DeleteContainers();
 
-  if(!kShuffling)
+  if(kData == 0)
     histoName = "fHistNNV0M";
-  else if(kShuffling)
+  if(kData == 1)
     histoName = "fHistNN_shuffleV0M";
+  if(kData == 2)
+    histoName = "fHistNNV0M";
   AliTHn *fHistNN = dynamic_cast<AliTHn *>(listBF->FindObject(histoName.Data()));
   if(!fHistNN) {
     Printf("fHistNN %s not found!!!",histoName.Data());
@@ -136,8 +161,8 @@ TList *GetListOfObjects(const char* filename, Bool_t kShuffling = kFALSE) {
 }
 
 //______________________________________________________//
-void draw(TList *listBF, TList *listBFShuffled,
-	  Double_t psiMin, Double_t psiMax,
+void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
+	  Int_t gCentrality, Double_t psiMin, Double_t psiMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax) {
   gROOT->LoadMacro("~/SetPlotStyle.C");
@@ -191,98 +216,305 @@ void draw(TList *listBF, TList *listBFShuffled,
   bShuffled->SetHistNpp(hPPShuffled);
   bShuffled->SetHistNnn(hNNShuffled);
 
+  //balance function mixing
+  AliTHn *hPMixed = NULL;
+  AliTHn *hNMixed = NULL;
+  AliTHn *hPNMixed = NULL;
+  AliTHn *hNPMixed = NULL;
+  AliTHn *hPPMixed = NULL;
+  AliTHn *hNNMixed = NULL;
+  //listBFMixed->ls();
+  hPMixed = (AliTHn*) listBFMixed->FindObject("fHistPV0M");
+  hNMixed = (AliTHn*) listBFMixed->FindObject("fHistNV0M");
+  hPNMixed = (AliTHn*) listBFMixed->FindObject("fHistPNV0M");
+  hNPMixed = (AliTHn*) listBFMixed->FindObject("fHistNPV0M");
+  hPPMixed = (AliTHn*) listBFMixed->FindObject("fHistPPV0M");
+  hNNMixed = (AliTHn*) listBFMixed->FindObject("fHistNNV0M");
+
+  AliBalancePsi *bMixed = new AliBalancePsi();
+  bMixed->SetHistNp(hPMixed);
+  bMixed->SetHistNn(hNMixed);
+  bMixed->SetHistNpn(hPNMixed);
+  bMixed->SetHistNnp(hNPMixed);
+  bMixed->SetHistNpp(hPPMixed);
+  bMixed->SetHistNnn(hNNMixed);
+
   TH2D *gHistBalanceFunction;
+  TH2D *gHistBalanceFunctionSubtracted;
   TH2D *gHistBalanceFunctionShuffled;
-  TCanvas *c1;
+  TH2D *gHistBalanceFunctionMixed;
   TString histoTitle, pngName;
-  TLegend *legend;
   
-  //loop over the centrality bins
-  //for(Int_t iCentralityBin = 0; iCentralityBin < numberOfCentralityBins; iCentralityBin++) {  
   histoTitle = "Centrality: "; 
-  histoTitle += centralityArray[6]; 
+  histoTitle += centralityArray[gCentrality-1]; 
   histoTitle += "%";
-  histoTitle += " | "; histoTitle += psiMin; 
-  histoTitle += " < #phi - #Psi_{2} < "; histoTitle += psiMax;
+  if((psiMin == -0.5)&&(psiMax == 0.5))
+    histoTitle += " (-7.5^{o} < #phi - #Psi_{2} < 7.5^{o})"; 
+  else if((psiMin == 0.5)&&(psiMax == 1.5))
+    histoTitle += " (37.5^{o} < #phi - #Psi_{2} < 52.5^{o})"; 
+  else if((psiMin == 1.5)&&(psiMax == 2.5))
+    histoTitle += " (82.5^{o} < #phi - #Psi_{2} < 97.5^{o})"; 
+  else 
+    histoTitle += " (0^{o} < #phi - #Psi_{2} < 180^{o})"; 
   
   gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistBalanceFunction->SetTitle(histoTitle.Data());
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
-  
+  gHistBalanceFunction->SetName("gHistBalanceFunction");
+
   gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  
-  c1 = new TCanvas(histoTitle.Data(),"",0,0,600,500);
+  gHistBalanceFunctionShuffled->SetTitle(histoTitle.Data());
+  gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
+
+  gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+  gHistBalanceFunctionMixed->SetTitle(histoTitle.Data());
+  gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionMixed->SetName("gHistBalanceFunctionMixed");
+
+  gHistBalanceFunctionSubtracted = dynamic_cast<TH2D *>(gHistBalanceFunction->Clone());
+  gHistBalanceFunctionSubtracted->Add(gHistBalanceFunctionMixed,-1);
+  gHistBalanceFunctionSubtracted->SetTitle(histoTitle.Data());
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionSubtracted->SetName("gHistBalanceFunctionSubtracted");
+
+  //Draw the results
+  TCanvas *c1 = new TCanvas("c1","",0,0,600,500);
   c1->SetFillColor(10); 
   c1->SetHighLightColor(10);
   c1->SetLeftMargin(0.15);
-  gHistBalanceFunction->Draw("lego2");
-  //gHistBalanceFunctionShuffled->Draw("ESAME");
-  
-  legend = new TLegend(0.18,0.6,0.45,0.82,"","brNDC");
-  legend->SetTextSize(0.045); 
-  legend->SetTextFont(42); 
-  legend->SetBorderSize(0);
-  legend->SetFillStyle(0); 
-  legend->SetFillColor(10);
-  legend->SetMargin(0.25); 
-  legend->SetShadowColor(10);
-  legend->AddEntry(gHistBalanceFunction,"Data","lp");
-  legend->AddEntry(gHistBalanceFunctionShuffled,"Shuffled data","lp");
-  legend->Draw();
-  
-  pngName = "BalanceFunctionDeltaEta.Centrality"; 
-  pngName += centralityArray[6]; 
-  pngName += ".Psi"; pngName += psiMin; pngName += "To"; pngName += psiMax;
-  pngName += ".png";
-  c1->SaveAs(pngName.Data());
+  gHistBalanceFunction->DrawCopy("lego2");
+  TCanvas *c1a = new TCanvas("c1a","",600,0,600,500);
+  c1a->SetFillColor(10); 
+  c1a->SetHighLightColor(10);
+  c1a->SetLeftMargin(0.15);
+  gHistBalanceFunction->DrawCopy("colz");
+
+  TCanvas *c2 = new TCanvas("c2","",100,100,600,500);
+  c2->SetFillColor(10); 
+  c2->SetHighLightColor(10);
+  c2->SetLeftMargin(0.15);
+  gHistBalanceFunctionShuffled->DrawCopy("lego2");
+  TCanvas *c2a = new TCanvas("c2a","",700,100,600,500);
+  c2a->SetFillColor(10); 
+  c2a->SetHighLightColor(10);
+  c2a->SetLeftMargin(0.15);
+  gHistBalanceFunctionShuffled->DrawCopy("colz");
+
+  TCanvas *c3 = new TCanvas("c3","",200,200,600,500);
+  c3->SetFillColor(10); 
+  c3->SetHighLightColor(10);
+  c3->SetLeftMargin(0.15);
+  gHistBalanceFunctionMixed->DrawCopy("lego2");
+  TCanvas *c3a = new TCanvas("c3a","",700,200,600,500);
+  c3a->SetFillColor(10); 
+  c3a->SetHighLightColor(10);
+  c3a->SetLeftMargin(0.15);
+  gHistBalanceFunctionMixed->DrawCopy("colz");
+
+  TCanvas *c4 = new TCanvas("c4","",300,300,600,500);
+  c4->SetFillColor(10); 
+  c4->SetHighLightColor(10);
+  c4->SetLeftMargin(0.15);
+  gHistBalanceFunctionSubtracted->DrawCopy("lego2");
+  TCanvas *c4a = new TCanvas("c4a","",900,300,600,500);
+  c4a->SetFillColor(10); 
+  c4a->SetHighLightColor(10);
+  c4a->SetLeftMargin(0.15);
+  gHistBalanceFunctionSubtracted->DrawCopy("colz");
+
+  TString newFileName = "balanceFunction2D.Centrality"; 
+  newFileName += gCentrality; newFileName += ".Psi";
+  if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
+  else newFileName += "0.PttFrom";
+  newFileName += ptTriggerMin; newFileName += "To"; 
+  newFileName += ptTriggerMax; newFileName += ".PtaFrom";
+  newFileName += ptAssociatedMin; newFileName += "To"; 
+  newFileName += ptAssociatedMax;  newFileName += ".root";
+
+  TFile *fOutput = new TFile(newFileName.Data(),"recreate");
+  fOutput->cd();
+  gHistBalanceFunction->Write();
+  gHistBalanceFunctionShuffled->Write();
+  gHistBalanceFunctionMixed->Write();
+  gHistBalanceFunctionSubtracted->Write();
+  fOutput->Close();
 }
 
-//____________________________________________________________________//
-void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1) {
-  //Prints the calculated width of the BF and its error
-  Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
-  Double_t gSumBiXi2 = 0.0, gSumBi2Xi2 = 0.0;
-  Double_t gSumDeltaBi2 = 0.0, gSumXi2DeltaBi2 = 0.0;
-  Double_t deltaBalP2 = 0.0, integral = 0.0;
-  Double_t deltaErrorNew = 0.0;
+//____________________________________________________________//
+void drawBFPsi2D(Int_t gCentrality = 1,
+		 Double_t psiMin = -0.5, Double_t psiMax = 0.5,
+		 Double_t ptTriggerMin = -1.,
+		 Double_t ptTriggerMax = -1.,
+		 Double_t ptAssociatedMin = -1.,
+		 Double_t ptAssociatedMax = -1.) {
+  //Macro that draws the BF distributions for each centrality bin
+  //for reaction plane dependent analysis
+  //Author: Panos.Christakoglou@nikhef.nl
+  gROOT->LoadMacro("~/SetPlotStyle.C");
+  SetPlotStyle();
 
-  //Retrieve this variables from Histogram
-  Int_t fNumberOfBins = gHistBalance->GetNbinsX();
-  Double_t fP2Step    = gHistBalance->GetBinWidth(1); // assume equal binning!
-  
-  cout<<"=================================================="<<endl;
-  cout<<"RECALCULATION OF BF WIDTH (StartBin = "<<fStartBin<<")"<<endl;
-  cout<<"HISTOGRAM has "<<fNumberOfBins<<" bins with bin size of "<<fP2Step<<endl;
-  cout<<"=================================================="<<endl;
-  for(Int_t i = 1; i <= fNumberOfBins; i++) {
+  //Get the input file
+  TString filename = "LHC11h/PttFrom";
+  filename += ptTriggerMin; filename += "To"; 
+  filename += ptTriggerMax; filename += "PtaFrom";
+  filename += ptAssociatedMin; filename += "To"; 
+  filename += ptAssociatedMax; filename += "/balanceFunction2D.Centrality"; 
+  filename += gCentrality; filename += ".Psi";
+  if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
+  else filename += "0.PttFrom";
+  filename += ptTriggerMin; filename += "To"; 
+  filename += ptTriggerMax; filename += ".PtaFrom";
+  filename += ptAssociatedMin; filename += "To"; 
+  filename += ptAssociatedMax;  filename += ".root";  
 
-    // this is to simulate |Delta eta| or |Delta phi|
-    if(fNumberOfBins/2 - fStartBin + 1 < i && i < fNumberOfBins/2 + fStartBin ) continue;
-
-    cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<TMath::Abs(gHistBalance->GetBinCenter(i))<<endl;
-
-    gSumXi += TMath::Abs(gHistBalance->GetBinCenter(i)); // this is to simulate |Delta eta| or |Delta phi|
-    gSumBi += gHistBalance->GetBinContent(i); 
-    gSumBiXi += gHistBalance->GetBinContent(i)*TMath::Abs(gHistBalance->GetBinCenter(i));
-    gSumBiXi2 += gHistBalance->GetBinContent(i)*TMath::Power(TMath::Abs(gHistBalance->GetBinCenter(i)),2);
-    gSumBi2Xi2 += TMath::Power(gHistBalance->GetBinContent(i),2)*TMath::Power(TMath::Abs(gHistBalance->GetBinCenter(i)),2);
-    gSumDeltaBi2 +=  TMath::Power(gHistBalance->GetBinError(i),2);
-    gSumXi2DeltaBi2 += TMath::Power(TMath::Abs(gHistBalance->GetBinCenter(i)),2) * TMath::Power(gHistBalance->GetBinError(i),2);
-    
-    deltaBalP2 += fP2Step*TMath::Power(gHistBalance->GetBinError(i),2);
-    integral += fP2Step*gHistBalance->GetBinContent(i);
+  //Open the file
+  TFile *f = TFile::Open(filename.Data());
+  if((!f)||(!f->IsOpen())) {
+    Printf("The file %s is not found. Aborting...",filename);
+    return listBF;
   }
-  for(Int_t i = fStartBin; i < fNumberOfBins; i++)
-    deltaErrorNew += gHistBalance->GetBinError(i)*(TMath::Abs(gHistBalance->GetBinCenter(i))*gSumBi - gSumBiXi)/TMath::Power(gSumBi,2);
+  //f->ls();
   
-  Double_t integralError = TMath::Sqrt(deltaBalP2);
+  //Raw balance function
+  TH1D *gHistBalanceFunction = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunction"));
+  gHistBalanceFunction->SetStats(kFALSE);
+  gHistBalanceFunction->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunction->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunction->GetZaxis()->SetNdivisions(10);
+  gHistBalanceFunction->GetXaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunction->GetZaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunction->GetXaxis()->SetTitle("#Delta #eta");
+  gHistBalanceFunction->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
+  gHistBalanceFunction->GetZaxis()->SetTitle("B(#Delta #varphi)");
+
+  //Shuffled balance function
+  TH1D *gHistBalanceFunctionShuffled = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionShuffled"));
+  gHistBalanceFunctionShuffled->SetStats(kFALSE);
+  gHistBalanceFunctionShuffled->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunctionShuffled->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunctionShuffled->GetZaxis()->SetNdivisions(10);
+  gHistBalanceFunctionShuffled->GetXaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionShuffled->GetZaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionShuffled->GetXaxis()->SetTitle("#Delta #eta");
+  gHistBalanceFunctionShuffled->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
+  gHistBalanceFunctionShuffled->GetZaxis()->SetTitle("B(#Delta #varphi)");
+
+  //Mixed balance function
+  TH1D *gHistBalanceFunctionMixed = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionMixed"));
+  gHistBalanceFunctionMixed->SetStats(kFALSE);
+  gHistBalanceFunctionMixed->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunctionMixed->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunctionMixed->GetZaxis()->SetNdivisions(10);
+  gHistBalanceFunctionMixed->GetXaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionMixed->GetZaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionMixed->GetXaxis()->SetTitle("#Delta #eta");
+  gHistBalanceFunctionMixed->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
+  gHistBalanceFunctionMixed->GetZaxis()->SetTitle("B(#Delta #varphi)");
+
+  //Subtracted balance function
+  TH1D *gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionSubtracted"));
+  gHistBalanceFunctionSubtracted->SetStats(kFALSE);
+  gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunctionSubtracted->GetZaxis()->SetNdivisions(10);
+  gHistBalanceFunctionSubtracted->GetXaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionSubtracted->GetZaxis()->SetTitleOffset(1.3);
+  gHistBalanceFunctionSubtracted->GetXaxis()->SetTitle("#Delta #eta");
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
+  gHistBalanceFunctionSubtracted->GetZaxis()->SetTitle("B(#Delta #varphi)");
   
-  Double_t delta = gSumBiXi / gSumBi;
-  Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
-  cout<<"=================================================="<<endl;
-  cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
-  cout<<"New error: "<<deltaErrorNew<<endl;
-  cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
-  cout<<"=================================================="<<endl;
-  cout<<endl;
+  TString pngName;
+  
+  TString centralityLatex = "Centrality: ";
+  centralityLatex += centralityArray[gCentrality-1]; 
+  centralityLatex += "%";
+
+  TString psiLatex;
+  if((psiMin == -0.5)&&(psiMax == 0.5))
+    psiLatex = " -7.5^{o} < #varphi - #Psi_{2} < 7.5^{o}"; 
+  else if((psiMin == 0.5)&&(psiMax == 1.5))
+    psiLatex = " 37.5^{o} < #varphi - #Psi_{2} < 52.5^{o}"; 
+  else if((psiMin == 1.5)&&(psiMax == 2.5))
+    psiLatex = " 82.5^{o} < #varphi - #Psi_{2} < 97.5^{o}"; 
+  else 
+    psiLatex = " 0^{o} < #varphi - #Psi_{2} < 180^{o}"; 
+ 
+  TString pttLatex = Form("%.1f",ptTriggerMin);
+  pttLatex += " < p_{T}^{t} < "; pttLatex += Form("%.1f",ptTriggerMax);
+  pttLatex += " GeV/c";
+
+  TString ptaLatex = Form("%.1f",ptAssociatedMin);
+  ptaLatex += " < p_{T}^{a} < "; ptaLatex += Form("%.1f",ptAssociatedMax);
+  ptaLatex += " GeV/c";
+
+  TLatex *latexInfo1 = new TLatex();
+  latexInfo1->SetNDC();
+  latexInfo1->SetTextSize(0.04);
+  latexInfo1->SetTextColor(1);
+
+  //Draw the results
+  TCanvas *c1 = new TCanvas("c1","Raw balance function 2D",0,0,600,500);
+  c1->SetFillColor(10); c1->SetHighLightColor(10);
+  c1->SetLeftMargin(0.17); c1->SetTopMargin(0.05);
+  gHistBalanceFunction->SetTitle("Raw balance function");
+  gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.4);
+  gHistBalanceFunction->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunction->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunction->DrawCopy("lego2");
+
+  latexInfo1->DrawLatex(0.68,0.88,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.76,pttLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.70,ptaLatex.Data());
+
+  TCanvas *c2 = new TCanvas("c2","Shuffled balance function 2D",100,100,600,500);
+  c2->SetFillColor(10); c2->SetHighLightColor(10);
+  c2->SetLeftMargin(0.17); c2->SetTopMargin(0.05);
+  gHistBalanceFunctionShuffled->SetTitle("Shuffled events");
+  gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.4);
+  gHistBalanceFunctionShuffled->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunctionShuffled->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunctionShuffled->DrawCopy("lego2");
+
+  latexInfo1->DrawLatex(0.68,0.88,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.76,pttLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.70,ptaLatex.Data());
+
+  TCanvas *c3 = new TCanvas("c3","Mixed balance function 2D",200,200,600,500);
+  c3->SetFillColor(10); c3->SetHighLightColor(10);
+  c3->SetLeftMargin(0.17); c3->SetTopMargin(0.05);
+  gHistBalanceFunctionMixed->SetTitle("Mixed events");
+  gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.4);
+  gHistBalanceFunctionMixed->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunctionMixed->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunctionMixed->DrawCopy("lego2");
+  
+  latexInfo1->DrawLatex(0.68,0.88,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.76,pttLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.70,ptaLatex.Data());
+    
+  TCanvas *c4 = new TCanvas("c4","Subtracted balance function 2D",300,300,600,500);
+  c4->SetFillColor(10); c4->SetHighLightColor(10);
+  c4->SetLeftMargin(0.17); c4->SetTopMargin(0.05);
+  gHistBalanceFunctionSubtracted->SetTitle("Subtracted balance function");
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.4);
+  gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(10);
+  gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunctionSubtracted->DrawCopy("lego2");
+
+  latexInfo1->DrawLatex(0.68,0.88,centralityLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.82,psiLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.76,pttLatex.Data());
+  latexInfo1->DrawLatex(0.68,0.70,ptaLatex.Data());
 }
