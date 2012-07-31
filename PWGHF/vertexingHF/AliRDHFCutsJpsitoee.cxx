@@ -170,7 +170,7 @@ Int_t AliRDHFCutsJpsitoee::IsSelected(TObject* obj,Int_t selectionLevel) {
     return 0;
   }
 
-  if(d->HasBadDaughters()) return 0;
+  if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
 
 
   // selection on daughter tracks 

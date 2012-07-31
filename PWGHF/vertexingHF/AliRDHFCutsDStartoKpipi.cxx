@@ -283,7 +283,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     return 0;
   }
 
-  if(dd->HasBadDaughters()) return 0;
+  if(fUseTrackSelectionWithFilterBits && dd->HasBadDaughters()) return 0;
 
   AliAODTrack *b = (AliAODTrack*)d->GetBachelor();
   if(fTrackCutsSoftPi && fTrackCutsSoftPi->GetRequireTPCRefit()){

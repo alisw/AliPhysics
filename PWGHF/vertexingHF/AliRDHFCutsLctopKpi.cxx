@@ -273,7 +273,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
   if(d->Pt()<fMinPtCand) return 0;
   if(d->Pt()>fMaxPtCand) return 0;
 
-  if(d->HasBadDaughters()) return 0;
+  if(fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) return 0;
 
   if(selectionLevel==AliRDHFCuts::kAll ||
      selectionLevel==AliRDHFCuts::kCandidate|| 

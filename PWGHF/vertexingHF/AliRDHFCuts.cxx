@@ -96,7 +96,9 @@ fMaxPtCandTrackSPDFirst(0.),
 fApplySPDDeadPbPb2011(kFALSE),
 fRemoveTrackletOutliers(kFALSE),
 fCutOnzVertexSPD(0),
-fKinkReject(kFALSE)
+fKinkReject(kFALSE),
+fUseTrackSelectionWithFilterBits(kTRUE),
+fUseEventsWithOnlySPDVertex(kFALSE)
 {
   //
   // Default Constructor
@@ -151,7 +153,9 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fApplySPDDeadPbPb2011(source.fApplySPDDeadPbPb2011),
   fRemoveTrackletOutliers(source.fRemoveTrackletOutliers),
   fCutOnzVertexSPD(source.fCutOnzVertexSPD),
-  fKinkReject(source.fKinkReject)
+  fKinkReject(source.fKinkReject),
+  fUseTrackSelectionWithFilterBits(source.fUseTrackSelectionWithFilterBits),
+  fUseEventsWithOnlySPDVertex(source.fUseEventsWithOnlySPDVertex)
 {
   //
   // Copy constructor
@@ -220,6 +224,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fRemoveTrackletOutliers=source.fRemoveTrackletOutliers;
   fCutOnzVertexSPD=source.fCutOnzVertexSPD;
   fKinkReject=source.fKinkReject;
+  fUseTrackSelectionWithFilterBits=source.fUseTrackSelectionWithFilterBits;
+  fUseEventsWithOnlySPDVertex=source.fUseEventsWithOnlySPDVertex;
 
   if(source.GetTrackCuts()) {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*(source.GetTrackCuts()));}
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -381,13 +387,15 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     fEvRejectionBits+=1<<kNoVertex;
   }else{
     TString title=vertex->GetTitle();
-    if(title.Contains("Z") && fMinVtxType>1){
-      accept=kFALSE;
-      fEvRejectionBits+=1<<kNoVertex;
-    }
-    else if(title.Contains("3D") && fMinVtxType>2){
-      accept=kFALSE;
-      fEvRejectionBits+=1<<kNoVertex;
+    if(!fUseEventsWithOnlySPDVertex){
+      if(title.Contains("Z") && fMinVtxType>1){
+	accept=kFALSE;
+	fEvRejectionBits+=1<<kNoVertex;
+      }
+      else if(title.Contains("3D") && fMinVtxType>2){
+	accept=kFALSE;
+	fEvRejectionBits+=1<<kNoVertex;
+      }
     }
     if(vertex->GetNContributors()<fMinVtxContr){
       accept=kFALSE;
