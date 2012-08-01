@@ -15,7 +15,8 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",
 				 Int_t firstEvent = -1,
 				 Int_t lastEvent = -1, 
 				 Int_t myRandom = 0,
-				 Double_t ptMinSingleMuons = 0.0) {
+				 Double_t ptMinSingleMuons = 0.0,
+				 Bool_t evalDimuonVtxResolution=kFALSE) {
   
   gROOT -> LoadMacro("./AliMuonForwardTrackAnalysis.cxx+");
   //  AliLog::SetClassDebugLevel("AliMuonForwardTrackPair", 1);
@@ -37,10 +38,12 @@ void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",
   myAnalysis->SetPtMinSingleMuons(ptMinSingleMuons);
   myAnalysis->UseCutOnOffsetChi2(useCutOnOffsetChi2);
 
-  myAnalysis->SetPtDimuRange(10, 0., 5.);
+  myAnalysis->SetPtDimuRange(5, 0., 5.);
   myAnalysis->SetMatchTrigger(kTRUE);
   myAnalysis->UseBransonForCut(kFALSE);
   myAnalysis->UseBransonForKinematics(kFALSE);
+
+  myAnalysis->EvalDimuonVtxResolution(evalDimuonVtxResolution);    // only with prompt quarkonia
 
   myAnalysis->Init("MuonGlobalTracks.root");
 
