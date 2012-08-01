@@ -602,8 +602,22 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     evselection->AddRubric("evnonsel","zvtx");
     evselection->Init();
 
-    TH1F* hzvtx=new TH1F("hzvtx", "Distribution of z_{VTX};z_{VTX} [cm];Entries",100,-20,20);
-
+    TH1F* hxvtx=new TH1F("hxvtx", "Distribution of x_{VTX};x_{VTX} [cm];Entries",100,-1,1);
+    TH1F* hyvtx=new TH1F("hyvtx", "Distribution of y_{VTX};y_{VTX} [cm];Entries",100,-1,1);
+    TH1F* hzvtx=new TH1F("hzvtx", "Distribution of z_{VTX};z_{VTX} [cm];Entries",100,-30,30);
+    TH1F* hxvtxSelEv=new TH1F("hxvtxSelEv", "Distribution of x_{VTX} Selected Ev;x_{VTX} [cm];Entries",100,-1,1);
+    TH1F* hyvtxSelEv=new TH1F("hyvtxSelEv", "Distribution of y_{VTX} Selected Ev;y_{VTX} [cm];Entries",100,-1,1);
+    TH1F* hzvtxSelEv=new TH1F("hzvtxSelEv", "Distribution of z_{VTX} Selected Ev;z_{VTX} [cm];Entries",100,-30,30);
+    TH1F* hWhichVert=new TH1F("hWhichVert","Vertex Type",4,-1.5,2.5);
+    hWhichVert->GetXaxis()->SetBinLabel(1,"Not found");
+    hWhichVert->GetXaxis()->SetBinLabel(2,"Track");
+    hWhichVert->GetXaxis()->SetBinLabel(3,"SPD-3D");
+    hWhichVert->GetXaxis()->SetBinLabel(4,"SPD-z");
+    TH1F* hWhichVertSelEv=new TH1F("hWhichVertSelEv","Vertex Type",4,-1.5,2.5);
+    hWhichVertSelEv->GetXaxis()->SetBinLabel(1,"Not found");
+    hWhichVertSelEv->GetXaxis()->SetBinLabel(2,"Track");
+    hWhichVertSelEv->GetXaxis()->SetBinLabel(3,"SPD-3D");
+    hWhichVertSelEv->GetXaxis()->SetBinLabel(4,"SPD-z");
 
     TH2F* hTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",12,-1.5,10.5,12,-10,110);
     hTrigCent->GetXaxis()->SetBinLabel(1,"All");
@@ -653,7 +667,14 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     trigCounter->Init();
 
     fOutputEvSelection->Add(evselection);
+    fOutputEvSelection->Add(hxvtx);
+    fOutputEvSelection->Add(hyvtx);
     fOutputEvSelection->Add(hzvtx);
+    fOutputEvSelection->Add(hxvtxSelEv);
+    fOutputEvSelection->Add(hyvtxSelEv);
+    fOutputEvSelection->Add(hzvtxSelEv);
+    fOutputEvSelection->Add(hWhichVert);
+    fOutputEvSelection->Add(hWhichVertSelEv);
     fOutputEvSelection->Add(hTrigCent);
     fOutputEvSelection->Add(hTrigMul);
     fOutputEvSelection->Add(hTrigCentSel);
@@ -1186,9 +1207,24 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
   if(fOnOff[3]){
     const AliVVertex *vertex = aod->GetPrimaryVertex();
+    Double_t xvtx=vertex->GetX();
+    Double_t yvtx=vertex->GetY();
     Double_t zvtx=vertex->GetZ();
-    if(evSelected || (!evSelected && TMath::Abs(zvtx) > 10.))
+    Int_t vtxTyp=0;
+    if(vertex->GetNContributors()<=0) vtxTyp=-1;
+    TString title=vertex->GetTitle();
+    if(title.Contains("Z")) vtxTyp=3;
+    if(title.Contains("3D")) vtxTyp=2;    
+    ((TH1F*)fOutputEvSelection->FindObject("hxvtx"))->Fill(xvtx);
+    ((TH1F*)fOutputEvSelection->FindObject("hyvtx"))->Fill(yvtx);
     ((TH1F*)fOutputEvSelection->FindObject("hzvtx"))->Fill(zvtx);
+    ((TH1F*)fOutputEvSelection->FindObject("hWhichVert"))->Fill(vtxTyp);
+    if(evSelected){
+      ((TH1F*)fOutputEvSelection->FindObject("hxvtxSelEv"))->Fill(xvtx);
+      ((TH1F*)fOutputEvSelection->FindObject("hyvtxSelEv"))->Fill(yvtx);
+      ((TH1F*)fOutputEvSelection->FindObject("hzvtxSelEv"))->Fill(zvtx);
+      ((TH1F*)fOutputEvSelection->FindObject("hWhichVertSelEv"))->Fill(vtxTyp);
+    }
   }
 
   if(!evSelected) {
