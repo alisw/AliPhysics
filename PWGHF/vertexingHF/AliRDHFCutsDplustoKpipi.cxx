@@ -410,9 +410,17 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     
     //recalculate vertex w/o daughters
     AliAODVertex *origownvtx=0x0;
-    if(fRemoveDaughtersFromPrimary) {
+    if(fRemoveDaughtersFromPrimary && !fUseMCVertex) {
       if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
       if(!RecalcOwnPrimaryVtx(d,aod)) {
+	CleanOwnPrimaryVtx(d,aod,origownvtx);
+	return 0;
+      }
+    }
+
+    if(fUseMCVertex) {
+      if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+      if(!SetMCPrimaryVtx(d,aod)) {
 	CleanOwnPrimaryVtx(d,aod,origownvtx);
 	return 0;
       }
