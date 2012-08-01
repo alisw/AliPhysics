@@ -38,7 +38,7 @@ class AliITSUpg : public AliDetector {
     AliITSUpg(const Char_t *title); // standard Creator
     AliITSUpg(const char *name, const char *title); // extended standard Creator
     virtual ~AliITSUpg(); // destructor
-    virtual Int_t IsVersion() const {return 1;}
+    virtual Int_t IsVersion() const {return 11;}
 
     //===================== Simulation Geometry ========================
     // get geometry version - detailed (major) or coarse (minor)

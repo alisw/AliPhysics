@@ -1,6 +1,5 @@
-# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
-# Package File for ITSrec                                                        #
+# Package File for ITSsim                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -26,22 +25,18 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  
-    UPGRADE/v0/AliITSlayerUpgrade.cxx 
-    UPGRADE/v0/AliITStrackerUpgrade.cxx 
-    UPGRADE/v0/AliITStrackU.cxx 
-    UPGRADE/AliITStrackerU.cxx 
-    UPGRADE/v0/AliITSUpgradeReconstructor.cxx 
-    UPGRADE/v0/AliITSUpgradeClusterList.cxx 
-    UPGRADE/v0/AliITSUpgradeClusterListNode.cxx 
-    UPGRADE/v0/AliITSUPixelModule.cxx 
-    UPGRADE/v0/AliITSUpgradeClusterFinder.cxx 
-    )
+set ( SRCS  	
+v0/AliITSupgrade.cxx 
+v0/AliITSupgradeDigitizer.cxx 
+#
+AliITSUpg.cxx 
+AliITSvUpgrade.cxx 
+AliITSv11GeometryUpgrade.cxx 
+AliITSv11GeomBeamPipe.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR ITSUpgradeRecLinkDef.h)
+set ( DHDR ITSUpgradeSimLinkDef.h)
 
-set ( EINCLUDE TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase)
-
-# set ( EXPORT AliITStrackV2.h AliITSVertexer.h AliITSRecoParam.h)
+set ( EINCLUDE TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase )

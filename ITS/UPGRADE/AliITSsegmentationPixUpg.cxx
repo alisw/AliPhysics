@@ -364,3 +364,9 @@ Int_t AliITSsegmentationPixUpg::GetChipsInLocalWindow(Int_t* array, Float_t zmin
   //
   return nChipInW;
 }
+
+//______________________________________________________________________
+void AliITSsegmentationPixUpg::Init()
+{
+  // init settings
+}

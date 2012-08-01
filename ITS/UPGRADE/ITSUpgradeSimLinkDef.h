@@ -12,11 +12,15 @@
 //#pragma link C++ global gITSdisplay;  // global used by AliITSdisplay
 
 // ITS upgrade classes
+//v0 part >>>. obsolete?
 #pragma link C++ class  AliITSupgrade+;
 #pragma link C++ class  AliITSupgradeDigitizer+;
+//v0 part <<<
+// 
 #pragma link C++ class  AliITSUpg+;
 #pragma link C++ class  AliITSvUpgrade+;
 #pragma link C++ class  AliITSv11GeometryUpgrade+;
 #pragma link C++ class  AliITSv11GeomBeamPipe+;
+
 
 #endif

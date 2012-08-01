@@ -17,11 +17,13 @@ public AliITSsegmentation {
 			   double thickness=0,
 			   double edgL=0,double edgR=0,double edgT=0,double edgB=0);
   
-  AliITSsegmentationPixUpg(Option_t *opt="" );
+  //  AliITSsegmentationPixUpg(Option_t *opt="" );
   AliITSsegmentationPixUpg(const AliITSsegmentationPixUpg &source);
   virtual ~AliITSsegmentationPixUpg() {}
   AliITSsegmentationPixUpg& operator=(const AliITSsegmentationPixUpg &source);
-  
+  //
+  virtual void    Init();
+  //  
   virtual void    SetNPads(Int_t, Int_t) {MayNotUse("SetPadSize");}
   virtual Int_t   GetNPads() const {return fNCol*fNRow;}
   //

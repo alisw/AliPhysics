@@ -1,5 +1,5 @@
 #--------------------------------------------------------------------------------#
-# Package File for ITSsim                                                        #
+# Package File for ITSbase                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -25,10 +25,20 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	UPGRADE/v0/AliITSupgrade.cxx UPGRADE/v0/AliITSupgradeDigitizer.cxx UPGRADE/AliITSUpg.cxx UPGRADE/AliITSvUpgrade.cxx UPGRADE/AliITSv11GeometryUpgrade.cxx UPGRADE/AliITSv11GeomBeamPipe.cxx)
+set ( SRCS 
+v0/AliITSDigitUpgrade.cxx 
+v0/AliITSsegmentationUpgrade.cxx 
+v0/AliITSRecPointU.cxx 
+#
+AliITSInitGeometryUpg.cxx 
+AliITSLoaderUpg.cxx 
+AliITSgeomTGeoUpg.cxx
+AliITSCalibrationPixUpg.cxx
+AliITSsegmentationPixUpg.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR ITSUpgradeSimLinkDef.h)
+set ( DHDR ITSUpgradeBaseLinkDef.h)
 
-set ( EINCLUDE TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase )
+set ( EINCLUDE ${GEANT3_ROOT}/TGeant3 TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase )

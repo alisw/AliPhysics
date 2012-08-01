@@ -1,0 +1,130 @@
+#ifndef ALIITSDETTYPESIMUPG_H
+#define ALIITSDETTYPESIMUPG_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/*
+  $Id: AliITSDetTypeSimUpg.h 53025 2011-11-19 22:50:51Z masera $ 
+*/
+
+/////////////////////////////////////////////////////////////////////////
+// * This class contains all of the "external" information needed to do//
+// * detector specific simulations for the ITS.                        //
+/////////////////////////////////////////////////////////////////////////
+
+#include <TObject.h>
+#include "AliITSLoader.h"
+#include "AliITSSimuParam.h"
+
+class TObjArray;
+class TClonesArray;
+class TTree;
+class AliCDBMetaData;
+class AliITSdigit;
+class AliITSdigitPixUpg;
+class AliITSmodule;
+class AliITSpListItem;
+class AliITSsimulation;
+class AliITSsegmentation;
+class AliITSresponse;
+class AliITSCalibration;
+class AliITSgeom;
+class AliITSTriggerConditions;
+
+class AliITSDetTypeSimUpg : public TObject {
+ public:
+  //
+  enum {kDetPixUpg, kNDetTypes};
+  //  
+  AliITSDetTypeSimUpg();
+  virtual ~AliITSDetTypeSimUpg(); 
+  AliITSgeom *GetITSgeom() const {if(fLoader)return ((AliITSLoader*)fLoader)->GetITSgeom(); else return 0;}
+  void SetITSgeom(AliITSgeom *geom);
+  
+  virtual void SetSimulationModel(Int_t dettype,AliITSsimulation *sim);
+  virtual AliITSsimulation* GetSimulationModel(Int_t dettype) const;        
+  virtual AliITSsimulation* GetSimulationModelByModule(Int_t module) const;
+  
+  virtual void SetSegmentationModel(Int_t dettype,AliITSsegmentation *seg);
+  virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype) const;
+  virtual AliITSsegmentation* GetSegmentationModelByModule(Int_t module) const;
+  
+  virtual void SetCalibrationModel(Int_t iMod,AliITSCalibration *resp);
+  
+  virtual AliITSCalibration* GetCalibrationModel(Int_t iMod) const;
+  virtual AliITSTriggerConditions* GetTriggerConditions();
+  
+  virtual void SetSimuParam(const AliITSSimuParam* spar){
+    if(fSimuPar) delete fSimuPar;
+    fSimuPar = new AliITSSimuParam(*spar);
+  }
+  virtual AliITSSimuParam* GetSimuParam() const {return fSimuPar;}
+  
+  TObjArray* GetCalibrationArray() const {return fCalibration;}
+  TObjArray* GetSegmentation() const {return fSegmentation;}
+  void ResetCalibrationArray();
+  void ResetSegmentation();
+  
+  virtual void SetLoader(AliITSLoader* loader);
+  AliITSLoader* GetLoader() const {return fLoader;}
+  
+  virtual void SetDefaults();
+  virtual void SetDefaultSimulation();
+  virtual void SetRunNumber(Int_t rn=0){fRunNumber = rn;}
+  virtual Int_t GetRunNumber() const {return fRunNumber;}
+  virtual void SetTreeAddressS(TTree* treeS, const Char_t* name);
+  virtual void SetTreeAddressD(TTree* treeD, const Char_t* name);
+  
+  virtual void SetDigits(TObjArray* digits) {fDigits=digits;}
+  const TClonesArray* GetSDigits() const { return &fSDigits;}
+  TObjArray*    GetDigits() const {return fDigits;}
+  Int_t* GetNDigitArray() const {return fNDigits;}
+  TClonesArray *DigitsAddress(Int_t id) const { return ((TClonesArray*)(*fDigits)[id]);}
+  virtual void ResetSDigits(){fNSDigits=0; fSDigits.Clear();}
+  virtual void ResetDigits();
+  virtual void ResetDigits(Int_t branch);
+  virtual void SDigitsToDigits(Option_t *opt, Char_t* name);
+
+  virtual void AddSumDigit(AliITSpListItem &sdig);
+  virtual void AddSimDigit(Int_t branch, const AliITSdigit *d);
+  virtual void AddSimDigit(Int_t branch,Float_t phys,Int_t* digits,
+			   Int_t* tracks,Int_t *hits,Float_t* trkcharges,
+			   Int_t sigexpanded=-1000);
+  virtual void SetDigitClassName(Int_t i, const Char_t* name) {fkDigClassName[i]=name;}
+  const Char_t* GetDigitClassName(Int_t i) const {return fkDigClassName[i];}
+
+
+
+ protected:
+  virtual void CreateCalibrationArray(); 
+  virtual Bool_t GetCalibration();
+    
+ private:
+  AliITSDetTypeSimUpg(const AliITSDetTypeSimUpg &source);
+  AliITSDetTypeSimUpg& operator=(const AliITSDetTypeSimUpg &source);
+  void SetDefaultSegmentation(Int_t idet);  // creates def segm.
+
+  //
+  Int_t              fDetNModules[kNDetTypes]; // Total numbers of modules of each type, RS
+  //
+  TObjArray    *fSimulation;   //! [NDet]
+  TObjArray    *fSegmentation; //! [NDet]
+  TObjArray    *fCalibration;  //! [NMod]
+  Int_t         fNSDigits;     //! number of SDigits
+  TClonesArray  fSDigits;      //! Summable digits
+  Int_t*        fNDigits;      //! [NDet] number of Digits for det.
+  Int_t         fRunNumber;    //! run number (to access DB)
+  TObjArray     *fDigits;      //! [NMod][NDigits]
+  AliITSSimuParam *fSimuPar;   //! detector simulation parameters
+  const Char_t*    fkDigClassName[kNDetTypes]; //! String with digit class name.
+  AliITSLoader* fLoader;          //! loader  
+  Bool_t        fFirstcall;       //! flag
+  AliITSTriggerConditions* fTriggerConditions; //! Trigger conditions 
+  //
+  static const char* fgkDetTypeName[kNDetTypes];  // detector type names
+  //       
+  ClassDef(AliITSDetTypeSimUpg,1) // ITS Upg Simulation structure
+ 
+};
+
+#endif

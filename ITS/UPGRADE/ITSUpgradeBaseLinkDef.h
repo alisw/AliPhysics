@@ -9,11 +9,16 @@
 #pragma link off all functions;
 
 // ITS upgrade classes 
+// v0 part >>>
 #pragma link C++ class  AliITSDigitUpgrade+;
 #pragma link C++ class  AliITSsegmentationUpgrade+;
 #pragma link C++ class  AliITSRecPointU+;
+// v0 part <<<
+//
 #pragma link C++ class  AliITSInitGeometryUpg+;
 #pragma link C++ class  AliITSLoaderUpg+;
 #pragma link C++ class  AliITSgeomTGeoUpg+;
+#pragma link C++ class  AliITSCalibrationPixUpg+;
+#pragma link C++ class  AliITSsegmentationPixUpg+;
 
 #endif
