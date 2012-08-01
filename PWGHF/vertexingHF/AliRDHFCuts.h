@@ -45,6 +45,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMinCentrality(Float_t minCentrality=0.) {fMinCentrality=minCentrality;}
   void SetMaxCentrality(Float_t maxCentrality=100.) {fMaxCentrality=maxCentrality;} 
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
+  void SetUseEventsWithOnlySPDVertex(Bool_t flag=kTRUE){ 
+    if(flag) fMinVtxType=1;
+    else fMinVtxType=3;
+  }
   void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}  
   void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}  
   void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}  
@@ -119,8 +123,6 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
   void SetUseAOD049(Bool_t flag=kTRUE) {fUseAOD049=flag; return;}
   void SetKinkRejection(Bool_t flag=kTRUE) {fKinkReject=flag; return;}
-  void SetUseEventsWithOnlySPDVertex(Bool_t flag=kTRUE){ 
-    fUseEventsWithOnlySPDVertex=flag; return;}
   void SetUseTrackSelectionWithFilterBits(Bool_t flag=kTRUE){ 
     fUseTrackSelectionWithFilterBits=flag; return;}
   void SetUseCentrality(Int_t flag=1);    // see enum below
@@ -167,7 +169,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t  GetIsUsePID() const {return fUsePID;}
   Bool_t  GetUseAOD049() const {return fUseAOD049;}
   Bool_t  GetUseKinkRejection() const {return fKinkReject;}
-  Bool_t  GetUseEventsWithOnlySPDVertex() const{return fUseEventsWithOnlySPDVertex;}
+  Bool_t  GetUseEventsWithOnlySPDVertex() const{
+    if(fMinVtxType==1 || fMinVtxType==2) return kTRUE;
+    return kFALSE;
+  }
   Bool_t  GetUseTrackSelectionWithFilterBits() const{return fUseTrackSelectionWithFilterBits;}
   Bool_t  GetIsPrimaryWithoutDaughters() const {return fRemoveDaughtersFromPrimary;}
   Bool_t GetOptPileUp() const {return fOptPileup;}
@@ -312,9 +317,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fCutOnzVertexSPD; // cut on zSPD vertex to remove outliers in centrality vs. tracklets (0=no cut, 1= cut at 12 cm, 2= cut on difference to z of vtx tracks
   Bool_t fKinkReject; // flag to reject kink daughters
   Bool_t fUseTrackSelectionWithFilterBits; // flag to enable/disable the check on filter bits
-  Bool_t fUseEventsWithOnlySPDVertex; // flag to enable/disable the usage of events with only SPD vertex
 
-  ClassDef(AliRDHFCuts,26);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,27);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
