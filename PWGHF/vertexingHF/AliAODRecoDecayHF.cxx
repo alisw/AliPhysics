@@ -292,6 +292,17 @@ AliAODVertex* AliAODRecoDecayHF::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod)
     if(id<0) continue;
     skipped[nTrksToSkip++] = id;
   }
+
+  // exclude tracks with global constrained parameters
+  Int_t nTracks=aod->GetNumberOfTracks();
+  for(Int_t i=0; i<nTracks; i++){
+    t = aod->GetTrack(i);
+    if(t->TestFilterMask(512)){
+      id = (Int_t)t->GetID();
+      skipped[nTrksToSkip++] = id;
+    }
+  }
+
   vertexer->SetSkipTracks(nTrksToSkip,skipped);
   AliESDVertex *vtxESDNew = vertexer->FindPrimaryVertex(aod);
 
