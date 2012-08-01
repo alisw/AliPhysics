@@ -54,12 +54,17 @@ AliAnalysisTaskEfficiencyBF *AddTaskBalanceEfficiency(
   cuts->SetRequireTPCStandAlone(kTRUE); // TPC only cuts!  
   taskEfficiencyBF->SetAnalysisCutObject(cuts);
 
-  // analysis kinematic cuts
+  //analysis kinematic cuts
   taskEfficiencyBF->SetMinPt(0.3);
   taskEfficiencyBF->SetMaxPt(1.5);
   taskEfficiencyBF->SetMaxEta(0.8);
-
-
+  taskEfficiencyBF->SetEtaRangeMax(0.8); //acceptance cuts
+  taskEfficiencyBF->SetPtRangeMin(0.1);  //acceptance cuts
+  taskEfficiencyBF->SetPtRangeMax(5.0);  //acceptance cuts
+  taskEfficiencyBF->SetPhiRangeMin(0.);  //acceptance cuts
+  taskEfficiencyBF->SetPhiRangeMax(6.28);//acceptance cuts
+  
+  
   // ADD the task
   //===========================================================================
   //bf->PrintAnalysisSettings();
