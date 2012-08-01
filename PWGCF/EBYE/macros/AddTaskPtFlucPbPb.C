@@ -11,6 +11,11 @@ AliAnalysisTask *AddTaskPtFlucPbPb(){
   AliMCEventHandler  *mcH = static_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
 
 
+  // --- For MC: Set AMPT or other MC ---
+  Bool_t isAMPT = kFALSE;   // default is kFALSE, e.g. for data
+  if (mcH) isAMPT = kFALSE;  // kTRUE = AMPT, kFALSE = other, e.g. HIJING ---> has to be set by the user! <---
+
+
   //============= Set Task Name ===================
   TString taskName=("AliAnalysisTaskPtFlucPbPb.cxx+");
   //===============================================
@@ -77,12 +82,19 @@ AliAnalysisTask *AddTaskPtFlucPbPb(){
 //   task->SetAliESDtrackCuts(esdTrackCuts);
   task->SetAliESDtrackCuts(esdCuts);
 
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  if (!isAMPT) task->SelectCollisionCandidates(AliVEvent::kMB);
+
   task->SetMaxVertexZ(10.);    // cm
+  task->SetMaxVertexZDiff1(-1.);    // <= 0. -> off,    > 0. -> diff in cm
   task->SetNContributors(1);
   task->SetUseCentrality(1);   // 0=off, 1=VZERO, 2=SPD(not implemented)
 
   if (mcH) task->SetMC(kTRUE);
+  if (mcH) task->SetMCType(0);    // 0 = ESD,  1 = MC truth with ESD,  2 = mod. MC truth with ESD,
+				  // 	       3 = MC truth only,      4 = mod. MC truth only
+
+  if (isAMPT) task->SetMCAMPT(kTRUE);
+  else task->SetMCAMPT(kFALSE);
 
 
   mgr->AddTask(task);
