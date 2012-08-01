@@ -74,14 +74,17 @@ AliAnalysisTask *AddTaskPtFluc(){
   // --- End track Cuts ---
 
 
-  task->SetAliESDtrackCuts(esdTrackCuts);
-//   task->SetAliESDtrackCuts(esdCuts);
+//   task->SetAliESDtrackCuts(esdTrackCuts);
+  task->SetAliESDtrackCuts(esdCuts);
 
   task->SelectCollisionCandidates(AliVEvent::kMB);
   task->SetMaxVertexZ(10.);    // cm
+  task->SetMaxVertexZDiff1(-1.);    // <= 0. -> off,    > 0. -> diff in cm
   task->SetNContributors(1);
 
   if (mcH) task->SetMC(kTRUE);
+  if (mcH) task->SetMCType(0);    // 0 = ESD,  1 = MC truth with ESD,  2 = mod. MC truth with ESD,
+				  // 	       3 = MC truth only,      4 = mod. MC truth only
 
 
   mgr->AddTask(task);
