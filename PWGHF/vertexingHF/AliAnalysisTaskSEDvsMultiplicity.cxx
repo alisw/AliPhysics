@@ -259,17 +259,17 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD", "Tracklets multiplicity for events with D in mass region ; Tracklets ; Entries",200,-0.5,199.5); // 
   fHistNtrEta16vsNtrEta1 = new TH2F("hNtrEta16vsNtrEta1","Uncorrected Eta1.6 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<1.6",200,-0.5,199.5,200,-0.5,199.5); //eta 1.6 vs eta 1.0 histogram 
   fHistNtrCorrEta1vsNtrRawEta1 = new TH2F("hNtrCorrEta1vsNtrRawEta1","Corrected Eta1 vs Eta1.0; Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",200,-0.5,199.5,200,-0.5,199.5); //eta 1.6 vs eta 1.0 histogram 
-  fHistNtrVsZvtx = new TH2F("hNtrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
-  fHistNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,0,200.); // 
+  fHistNtrVsZvtx = new TH2F("hNtrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,-0.5,199.5); // 
+  fHistNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,200,-0.5,199.5); // 
 
-  fHistNtrVsNchMC = new TH2F("hNtrVsNchMC","Ntracklet vs NchMC; Nch;N_{tracklet};",200,0,200,200,0,200.); // 
-  fHistNtrCorrVsNchMC = new TH2F("hNtrCorrVsNchMC","Ntracklet vs Nch; Nch;N_{tracklet};",200,0,200,200,0,200.); // 
+  fHistNtrVsNchMC = new TH2F("hNtrVsNchMC","Ntracklet vs NchMC; Nch;N_{tracklet};",200,-0.5,199.5,200,-0.5,199.5); // 
+  fHistNtrCorrVsNchMC = new TH2F("hNtrCorrVsNchMC","Ntracklet vs Nch; Nch;N_{tracklet};",200,-0.5,199.5,200,-0.5,199.5); // 
   
-  fHistNtrVsNchMCPrimary = new TH2F("hNtrVsNchMCPrimary","Ntracklet vs Nch (Primary); Nch (Primary);N_{tracklet};",200,0,200,200,0,200.); // 
-  fHistNtrCorrVsNchMCPrimary = new TH2F("hNtrCorrVsNchMCPrimary","Ntracklet vs Nch (Primary); Nch(Primary) ;N_{tracklet};",200,0,200,200,0,200.); // 
+  fHistNtrVsNchMCPrimary = new TH2F("hNtrVsNchMCPrimary","Ntracklet vs Nch (Primary); Nch (Primary);N_{tracklet};",200,-0.5,199.5,200,-0.5,199.5); // 
+  fHistNtrCorrVsNchMCPrimary = new TH2F("hNtrCorrVsNchMCPrimary","Ntracklet vs Nch (Primary); Nch(Primary) ;N_{tracklet};",200,-0.5,199.5,200,-0.5,199.5); // 
 
-  fHistNtrVsNchMCPhysicalPrimary = new TH2F("hNtrVsNchMCPhysicalPrimary","Ntracklet vs Nch (Physical Primary); Nch (Physical Primary);N_{tracklet};",200,0,200,200,0,200.); // 
-  fHistNtrCorrVsNchMCPhysicalPrimary = new TH2F("hNtrCorrVsMCPhysicalPrimary","Ntracklet vs Nch (Physical Primary); Nch (Physical Primary);N_{tracklet};",200,0,200,200,0,200.); // 
+  fHistNtrVsNchMCPhysicalPrimary = new TH2F("hNtrVsNchMCPhysicalPrimary","Ntracklet vs Nch (Physical Primary); Nch (Physical Primary);N_{tracklet};",200,-0.5,199.5,200,-0.5,199.5); // 
+  fHistNtrCorrVsNchMCPhysicalPrimary = new TH2F("hNtrCorrVsMCPhysicalPrimary","Ntracklet vs Nch (Physical Primary); Nch (Physical Primary);N_{tracklet};",200,-0.5,199.5,200,-0.5,199.5); // 
   
   fHistGenPrimaryParticlesInelGt0 = new TH1F("hGenPrimaryParticlesInelGt0","Multiplcity of generated charged particles ; Nparticles ; Entries",200,-0.5,199.5);
 
