@@ -28,6 +28,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TROOT.h>
 #include <TClonesArray.h>
 #include <TObjArray.h>
 
@@ -1533,41 +1534,46 @@ const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(AliTRDpidUtil::ETRDPIDMethod met
 }
 
 //_____________________________________________________________________________
-AliTRDPIDResponse *AliTRDcalibDB::GetPIDResponse(AliTRDPIDResponse::ETRDPIDMethod method)
+AliTRDPIDResponse *AliTRDcalibDB::GetPIDResponse(AliTRDPIDResponse::ETRDPIDMethod /*method*/)
 {
   //
   // Returns the PID response object for 1D-LQ
   //
 
   if (!fPIDResponse) {
+    AliDebug(2, "Setting new PID response.");
 
     fPIDResponse = new AliTRDPIDResponse;
 
     // Load Reference Histos from OCDB
-    if(method == AliTRDPIDResponse::kLQ1D){
-      fPIDResponse->SetPIDmethod(method);
-      const TObjArray *references = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDPIDLQ1D));
+//    if(method == AliTRDPIDResponse::kLQ1D){
+    fPIDResponse->SetPIDmethod(AliTRDPIDResponse::kLQ1D);
+    const TObjArray *references = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDPIDLQ1D));
 
-      TIter refs(references);
-      TObject *obj = NULL;
-      AliTRDPIDReference *ref = NULL;
-      Bool_t hasReference = kFALSE;
-      while ((obj = refs())){
-        if ((ref = dynamic_cast<AliTRDPIDReference *>(obj))){
-          AliTRDPIDResponseObject *ro = new AliTRDPIDResponseObject;
-          ro->SetPIDReference(ref);
-          fPIDResponse->SetPIDResponseObject(ro);
-          hasReference = kTRUE;
-          break;
-        }
-      }
-
-      if (!hasReference) {
-        AliError("Reference histograms not found in the OCDB");
+    TIter refs(references);
+    TObject *obj = NULL;
+    AliTRDPIDReference *ref = NULL;
+    Bool_t hasReference = kFALSE;
+    while ((obj = refs())){
+      if ((ref = dynamic_cast<AliTRDPIDReference *>(obj))){
+        AliDebug(2, "Setting new PID response object.");
+        TDirectory *bkpdir = gDirectory;
+        gROOT->cd();
+        AliTRDPIDResponseObject *ro = new AliTRDPIDResponseObject;
+        ro->SetPIDReference(ref);
+        fPIDResponse->SetPIDResponseObject(ro);
+        hasReference = kTRUE;
+        gDirectory = bkpdir;
+        break;
       }
     }
 
+    if (!hasReference) {
+      AliError("Reference histograms not found in the OCDB");
+    }
   }
+
+//  }
 
   return fPIDResponse;
 
