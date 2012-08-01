@@ -77,7 +77,7 @@ fStrobePhase(-12.5e-9)
 }
 
 //______________________________________________________________________
-AliITSsimulationPixUpg::AliITSsimulationPixUpg(AliITSDetTypeSim *dettyp):
+AliITSsimulationPixUpg::AliITSsimulationPixUpg(AliITSDetTypeSimUpg *dettyp):
 AliITSsimulation(dettyp),
 fHistos(0),
 fHistName(),
@@ -120,12 +120,12 @@ void AliITSsimulationPixUpg::Init()
   SetMap(new AliITSpList(GetNPixelsZ(),GetNPixelsX()));
   AliITSSimuParam* simpar = fDetType->GetSimuParam();
   AliITSsegmentationPixUpg* seg = (AliITSsegmentationPixUpg*)GetSegmentationModel(-1);
-  Double_t bias = simpar->GetPixBiasVoltage();
+  Double_t bias = simpar->GetSPDBiasVoltage(); //RS !!!
 //    cout << "Bias Voltage --> " << bias << endl; // dom    
    simpar->SetDistanceOverVoltage(kmictocm*seg->Dy(),bias);
 // set kind of coupling ("old" or "new")
-   char opt[20];
-   simpar->GetPixCouplingOption(opt);
+   char opt[20] = {"new"};
+   //   simpar->GetSPDCouplingOption(opt); //RS !!!
    char *old = strstr(opt,"old");
    if (old) {
      fCoupling=2;
@@ -597,7 +597,7 @@ void AliITSsimulationPixUpg::SpreadCharge(Double_t x0,Double_t z0,
    Int_t ix,iz,ixs,ixe,izs,ize;
    Float_t x,z;
    Double_t x1,x2,z1,z2,s,sp;
-   AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(-1);
+   AliITSsegmentationPixUpg* seg = (AliITSsegmentationPixUpg*)GetSegmentationModel(-1);
    //
    if (GetDebug(4)) Info("SpreadCharge","(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,sig=%e,t=%d,i=%d)",x0,z0,ix0,iz0,el,sig,t,hi);
    if (sig<=0.0) { // if sig<=0 No diffusion to simulate.
@@ -669,7 +669,7 @@ void AliITSsimulationPixUpg::SpreadChargeAsym(Double_t x0,Double_t z0,
    Int_t ix,iz,ixs,ixe,izs,ize;
    Float_t x,z;
    Double_t x1,x2,z1,z2,s,spx,spz;
-   AliITSsegmentationSPD* seg = (AliITSsegmentationSPD*)GetSegmentationModel(-1);
+   AliITSsegmentationPixUpg* seg = (AliITSsegmentationPixUpg*)GetSegmentationModel(-1);
    //
    if (GetDebug(4)) Info("SpreadChargeAsym","(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,sigx=%e, sigz=%e, t=%d,i=%d)",x0,z0,ix0,iz0,el,sigx,sigz,t,hi);
    if (sigx<=0.0 || sigz<=0.0) { // if sig<=0 No diffusion to simulate.
@@ -729,7 +729,7 @@ void AliITSsimulationPixUpg::AddNoisyPixels()
   // Adds noisy pixels on each module (ladder)
   // This should be called before going from sdigits to digits (FrompListToDigits)
   Int_t mod = GetModuleNumber();
-  AliITSCalibrationPixUpg* calObj = (AliITSCalibrationPixUpg*) fDetType->GetPixNoisyModel(mod);
+  AliITSCalibrationPixUpg* calObj = (AliITSCalibrationPixUpg*) fDetType->GetSPDNoisyModel(mod); // RS !!!
   //
   Int_t nrNoisy = calObj->GetNrBad();
   for (Int_t i=0; i<nrNoisy; i++) {
@@ -754,7 +754,7 @@ void AliITSsimulationPixUpg::FrompListToDigits()
   Double_t  electronics;
   Double_t sig;
   const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
-  static AliITSdigitSPD dig;
+  static AliITSdigitPixUpg dig;
   AliITSSimuParam *simpar = fDetType->GetSimuParam();
   if (GetDebug(1)) Info("FrompListToDigits","()");
   for (iz=0; iz<GetNPixelsZ(); iz++) 
@@ -783,7 +783,7 @@ void AliITSsimulationPixUpg::FrompListToDigits()
 	AliWarning(Form("Too big or too small signal value %f",aSignal));
 	aSignal = TMath::Sign((Double_t)2147483647,aSignal);
       }
-      dig.SetSignalSPD((Int_t)aSignal);
+      dig.SetSignalPix((Int_t)aSignal);
       
       for (j=0;j<knmaxtrk;j++) {
 	if (j<GetMap()->GetNEntries()) {

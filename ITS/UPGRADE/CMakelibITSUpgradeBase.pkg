@@ -34,7 +34,6 @@ AliITSInitGeometryUpg.cxx
 AliITSLoaderUpg.cxx 
 AliITSgeomTGeoUpg.cxx
 AliITSCalibrationPixUpg.cxx
-AliITSsegmentationPixUpg.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
