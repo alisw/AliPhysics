@@ -11,6 +11,7 @@
 // ---------------------------------------------------------------------
 
 class TH1F;
+class TH3D;
 class TH2F;
 class TString;
 class AliESDEvent;
@@ -23,10 +24,10 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
   AliAnalysisTaskEfficiencyBF() : AliAnalysisTaskSE(), 
     fESD(0), fQAList(0), fOutputList(0), 
     fHistEventStats(0), fHistCentrality(0), fHistNMult(0), 
-    fHistGeneratedEtaPtPlus(0), fHistFindableEtaPtPlus(0), 
-    fHistReconstructedEtaPtPlus(0), fHistSurvivedEtaPtPlus(0),
-    fHistGeneratedEtaPtMinus(0), fHistFindableEtaPtMinus(0), 
-    fHistReconstructedEtaPtMinus(0), fHistSurvivedEtaPtMinus(0),
+    fHistGeneratedEtaPtPhiPlus(0), fHistFindableEtaPtPhiPlus(0), 
+    fHistReconstructedEtaPtPhiPlus(0), fHistSurvivedEtaPtPhiPlus(0),
+    fHistGeneratedEtaPtPhiMinus(0), fHistFindableEtaPtPhiMinus(0), 
+    fHistReconstructedEtaPtPhiMinus(0), fHistSurvivedEtaPtPhiMinus(0),
     fHistGeneratedEtaPtPlusControl(0), fHistFindableEtaPtPlusControl(0), 
     fHistReconstructedEtaPtPlusControl(0), fHistSurvivedEtaPtPlusControl(0),
     fHistGeneratedEtaPtMinusControl(0), fHistFindableEtaPtMinusControl(0), 
@@ -37,11 +38,17 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
     fHistReconstructedEtaPtMinusMinus(0), fHistSurvivedEtaPtMinusMinus(0),
     fHistGeneratedEtaPtPlusMinus(0), fHistFindableEtaPtPlusMinus(0), 
     fHistReconstructedEtaPtPlusMinus(0), fHistSurvivedEtaPtPlusMinus(0),
+    fHistGeneratedPhiEtaPlusPlus(0), fHistFindablePhiEtaPlusPlus(0), 
+    fHistReconstructedPhiEtaPlusPlus(0), fHistSurvivedPhiEtaPlusPlus(0),
+    fHistGeneratedPhiEtaMinusMinus(0), fHistFindablePhiEtaMinusMinus(0), 
+    fHistReconstructedPhiEtaMinusMinus(0), fHistSurvivedPhiEtaMinusMinus(0),
+    fHistGeneratedPhiEtaPlusMinus(0), fHistFindablePhiEtaPlusMinus(0), 
+    fHistReconstructedPhiEtaPlusMinus(0), fHistSurvivedPhiEtaPlusMinus(0),
     fESDtrackCuts(0), fAnalysisMode(0), 
     fCentralityEstimator("V0M"), fCentralityPercentileMin(0.0), fCentralityPercentileMax(5.0), 
     fVxMax(3.0), fVyMax(3.0), fVzMax(10.), 
     fMinNumberOfTPCClusters(80), fMaxChi2PerTPCCluster(4.0), fMaxDCAxy(3.0), fMaxDCAz(3.0),
-    fMinPt(0.3), fMaxPt(1.5), fMaxEta(0.8) {}
+    fMinPt(0.3), fMaxPt(1.5), fMaxEta(0.8), fEtaRangeMax(0.8), fPtRangeMin(0.1), fPtRangeMax(5.0), fPhiRangeMin(0.0),fPhiRangeMax(6.28){}
   AliAnalysisTaskEfficiencyBF(const char *name);
   virtual ~AliAnalysisTaskEfficiencyBF() {}
   
@@ -86,7 +93,18 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
   void SetMaxEta(Double_t maxEta) {
     fMaxEta = maxEta;}
 
+  void SetEtaRangeMax(Double_t maxRangeEta){
+    fEtaRangeMax = maxRangeEta;}//
+  void SetPtRangeMin(Double_t minRangePt){
+    fPtRangeMin = minRangePt;} // 
+  void SetPtRangeMax(Double_t maxRangePt){
+    fPtRangeMax = maxRangePt;} //
+  void SetPhiRangeMin(Double_t minRangePhi){
+    fPhiRangeMin = minRangePhi;} //
+  void SetPhiRangeMax(Double_t maxRangePhi){
+    fPhiRangeMax = maxRangePhi;} //
   
+   
  private:
   AliESDEvent *fESD;    //! ESD object
   TList       *fQAList; //! QA list
@@ -98,15 +116,15 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
   TH1F        *fHistNMult; //! nmult   
 
   // output histograms (single particles)
-  TH2F        *fHistGeneratedEtaPtPlus;//!correction map for positives (generated)
-  TH2F        *fHistFindableEtaPtPlus;//!correction map for positives (findable)
-  TH2F        *fHistReconstructedEtaPtPlus;//!correction map for positives (reconstructed)
-  TH2F        *fHistSurvivedEtaPtPlus;//!correction map positives (survived)
+  TH3D        *fHistGeneratedEtaPtPhiPlus;//!correction map for positives (generated)
+  TH3D        *fHistFindableEtaPtPhiPlus;//!correction map for positives (findable)
+  TH3D        *fHistReconstructedEtaPtPhiPlus;//!correction map for positives (reconstructed)
+  TH3D        *fHistSurvivedEtaPtPhiPlus;//!correction map positives (survived)
 
-  TH2F        *fHistGeneratedEtaPtMinus;//!correction map for negatives (generated)
-  TH2F        *fHistFindableEtaPtMinus;//!correction map for negatives (findable)
-  TH2F        *fHistReconstructedEtaPtMinus;//!correction map for negatives (reconstructed)
-  TH2F        *fHistSurvivedEtaPtMinus;//!correction map negatives (survived)
+  TH3D        *fHistGeneratedEtaPtPhiMinus;//!correction map for negatives (generated)
+  TH3D        *fHistFindableEtaPtPhiMinus;//!correction map for negatives (findable)
+  TH3D        *fHistReconstructedEtaPtPhiMinus;//!correction map for negatives (reconstructed)
+  TH3D        *fHistSurvivedEtaPtPhiMinus;//!correction map negatives (survived)
 
   TH2F        *fHistGeneratedEtaPtPlusControl;//!correction map for positives (generated)
   TH2F        *fHistFindableEtaPtPlusControl;//!correction map for positives (findable)
@@ -134,7 +152,22 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
   TH2F        *fHistReconstructedEtaPtPlusMinus;//!correction map for +- (reconstructed)
   TH2F        *fHistSurvivedEtaPtPlusMinus;//!correction map +- (survived)
 
+  //============//
+  TH2F        *fHistGeneratedPhiEtaPlusPlus;//!correction map for ++ (generated)
+  TH2F        *fHistFindablePhiEtaPlusPlus;//!correction map for ++ (findable)
+  TH2F        *fHistReconstructedPhiEtaPlusPlus;//!correction map for ++ (reconstructed)
+  TH2F        *fHistSurvivedPhiEtaPlusPlus;//!correction map ++ (survived)
 
+  TH2F        *fHistGeneratedPhiEtaMinusMinus;//!correction map for -- (generated)
+  TH2F        *fHistFindablePhiEtaMinusMinus;//!correction map for -- (findable)
+  TH2F        *fHistReconstructedPhiEtaMinusMinus;//!correction map for -- (reconstructed)
+  TH2F        *fHistSurvivedPhiEtaMinusMinus;//!correction map -- (survived)
+
+  TH2F        *fHistGeneratedPhiEtaPlusMinus;//!correction map for +- (generated)
+  TH2F        *fHistFindablePhiEtaPlusMinus;//!correction map for +- (findable)
+  TH2F        *fHistReconstructedPhiEtaPlusMinus;//!correction map for +- (reconstructed)
+  TH2F        *fHistSurvivedPhiEtaPlusMinus;//!correction map +- (survived)
+  //============//
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
 
@@ -147,11 +180,16 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
 
-  Double_t fMinNumberOfTPCClusters; //
-  Double_t fMaxChi2PerTPCCluster; //
-  Double_t fMaxDCAxy, fMaxDCAz;//
+  Double_t fMinNumberOfTPCClusters;
+  Double_t fMaxChi2PerTPCCluster;
+  Double_t fMaxDCAxy, fMaxDCAz;
   Double_t fMinPt, fMaxPt;
   Double_t fMaxEta;
+  Double_t fEtaRangeMax; // acceptance cuts
+  Double_t fPtRangeMin;  //acceptance cuts
+  Double_t fPtRangeMax;  //acceptance cuts
+  Double_t fPhiRangeMin; //acceptance cuts
+  Double_t fPhiRangeMax; // acceptance cuts
 
   AliAnalysisTaskEfficiencyBF(const AliAnalysisTaskEfficiencyBF&); // not implemented
   AliAnalysisTaskEfficiencyBF& operator=(const AliAnalysisTaskEfficiencyBF&); // not implemented
