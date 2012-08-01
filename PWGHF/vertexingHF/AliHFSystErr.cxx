@@ -1084,12 +1084,12 @@ void AliHFSystErr::InitDstartoD0pi2011PbPb07half() {
 
   // MC dN/dpt  (from study on D* pt shape)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
-  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0.045);
-  fMCPtShape->SetBinContent(4,0.025);
-  fMCPtShape->SetBinContent(5,0.025);
-  fMCPtShape->SetBinContent(6,0.025);
-  fMCPtShape->SetBinContent(7,0.04);
-  fMCPtShape->SetBinContent(8,0.04);
+  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0.035);
+  fMCPtShape->SetBinContent(4,0.015);
+  fMCPtShape->SetBinContent(5,0.015);
+  fMCPtShape->SetBinContent(6,0.015);
+  fMCPtShape->SetBinContent(7,0.02);
+  fMCPtShape->SetBinContent(8,0.02);
   fMCPtShape->SetBinContent(9,0.03);
   fMCPtShape->SetBinContent(10,0.03);
   fMCPtShape->SetBinContent(11,0.03);
