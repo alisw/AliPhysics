@@ -1,0 +1,28 @@
+Dmitri Peressounko:
+This is class and set of macros for the PHOS calibration using pi0 peak.
+It uses ESDs dataset.
+Since you will need to make a lot of iterations (5-15), the best way is to use CAF or similar staff.
+
+So the procedure is the following
+1. Produce file Calibration_pass1.root with initial calibration (these are _corrections_ so that all components are close to unit).
+   See MultCalib.C for the structure of the file.
+2. Run scan on CAF
+   root -l runAAF.C
+   [0] .x Pi0Calib.C //Here one should choose proper dataset - see inside
+3. Analyze produced file histos.root:
+   a. Copy its content from TList to set of histograms (TList does not work in mashines with limited memory)
+      root -q -b cphisto.C ; mv sum.root histos_pass0.root
+   b. Check is width still decrease
+      root -l CompWidth.C ; //Change the number of iterations here!
+   c. Fit pi0 peaks in each cell (Correct input and output files!!!)
+      root -q -b MakeFits.C"(1)"; root -q -b MakeFits.C"(2)";root -q -b MakeFits.C"(3)"; 
+   d. Produce next calibration file
+      root -q -b MultCalib.C ; // Here one should change number of iterations to take into account.
+                               // Note that 0-th iteration is the one from which you have started!
+   e. Copy calibration fot the next iteration 
+      cp calib.root Calibration_pass1.root
+4. Repeat from the p.2 is there was improvement.
+
+......
+5. Make OCDB object from the latest calibration and calibration used in the reconstruction:
+  mkOCDB.C
