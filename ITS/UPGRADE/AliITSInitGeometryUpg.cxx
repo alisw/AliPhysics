@@ -339,7 +339,7 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
 
   const Int_t kItype  = 0; // Type of transformation defined 0=> Geant
   const Int_t klayers = GetNumberOfLayers(); // Number of layers in the ITS
-  const AliITSDetector kIdet = kUPG;
+  const AliITSDetector kIdet = AliITSDetector(0); //kUPG; RS temporary
   const TString kPathbase = "/ALIC_1/ITSV_2/"; // We have 2 to cheat AliGeoManager::CheckSymNamesLUT
 
   if (klayers <= 0) {
