@@ -243,7 +243,7 @@ add_subdirectory(Vc)
 # ------------------------------
 foreach(MODULE ${MODDIRS})
   set(${MODULE}ALIBS)
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/Module.tmp ${PROJECT_SOURCE_DIR}/${MODULE}/CMakeLists.txt @ONLY)
+#RS  configure_file(${PROJECT_SOURCE_DIR}/cmake/Module.tmp ${PROJECT_SOURCE_DIR}/${MODULE}/CMakeLists.txt @ONLY)
   add_custom_target(${MODULE}-all ALL)
   add_custom_target(${MODULE}-par-all)
   add_custom_target(test-${MODULE}-par-all)
