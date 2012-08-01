@@ -58,6 +58,8 @@ public:
   Bool_t AnalyzeMuonPair();
   void BuildMuonPairs();
 
+  void EvalDimuonVtxResolution(Bool_t eval) { fEvalDimuonVtxResolution = eval; }
+
   Bool_t PassedCutSingleMuon(AliMuonForwardTrack *track);
   Bool_t PassedCutMuonPair(AliMuonForwardTrackPair *pair);
 
@@ -100,12 +102,28 @@ private:
   TH2D *fHistSingleMuonsOffsetChi2, *fHistSingleMuonsOffsetChi2_BeforeMFT, *fHistSingleMuonsOffsetChi2_AfterMFT;  //!
   TGraph *fGraphSingleMuonsOffsetChi2;                                                                            //!
 
-  TH1D *fHistWOffsetMuonPairs[fNMaxPtBinsDimuons+1];          //!
-  TH1D *fHistMassMuonPairs[fNMaxPtBinsDimuons+1];             //!
-  TH1D *fHistMassMuonPairsWithoutMFT[fNMaxPtBinsDimuons+1];   //!
-  TH1D *fHistMassMuonPairsMC[fNMaxPtBinsDimuons+1];           //!
-  TH2D *fHistRapidityPtMuonPairs;                             //!
+  TH1D *fHistMassMuonPairs[fNMaxPtBinsDimuons+1];                                  //!
+  TH1D *fHistMassMuonPairsWithoutMFT[fNMaxPtBinsDimuons+1];                        //!
+  TH1D *fHistMassMuonPairsMC[fNMaxPtBinsDimuons+1];                                //!
+  TH1D *fHistWOffsetMuonPairsAtPrimaryVtx[fNMaxPtBinsDimuons+1];                   //!
+  TH1D *fHistWOffsetMuonPairsAtPCA[fNMaxPtBinsDimuons+1];                          //!
+  TH1D *fHistDistancePrimaryVtxPCA[fNMaxPtBinsDimuons+1];                          //!
+  TH2D *fHistDistancePrimaryVtxPCAvsWOffsetMuonPairsAtPCA[fNMaxPtBinsDimuons+1];   //!
+  TH1D *fHistDimuonVtxResolutionX[fNMaxPtBinsDimuons+1];                           //!
+  TH1D *fHistDimuonVtxResolutionY[fNMaxPtBinsDimuons+1];                           //!
+  TH1D *fHistDimuonVtxResolutionZ[fNMaxPtBinsDimuons+1];                           //!
+
+  TH2D *fHistRapidityPtMuonPairs;           //!
  
+  TH2D *fHistMassMuonPairsVsPt;             //!
+  TH2D *fHistMassMuonPairsWithoutMFTVsPt;   //!
+	TH2D *fHistMassMuonPairsVsPtLSp;             //!
+	TH2D *fHistMassMuonPairsWithoutMFTVsPtLSp;   //!
+	TH2D *fHistMassMuonPairsVsPtLSm;             //!
+	TH2D *fHistMassMuonPairsWithoutMFTVsPtLSm;   //!
+	
+  Bool_t fEvalDimuonVtxResolution;
+
   Int_t fNMassBins, fNPtDimuBins;
   Double_t fMassMin, fMassMax, fPtDimuMin, fPtDimuMax;
   TAxis *fPtAxisDimuons;
