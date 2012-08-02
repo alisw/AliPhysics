@@ -10,6 +10,7 @@ Output Files: SPDVertexDiamondDA.root
 Trigger types used: PHYSICS, SPD-F0 
  */
 
+#define OUTPUT_FILE "SPDVertexDiamondDA.root"
 
 extern "C" {
 #include "daqDA.h"
@@ -31,7 +32,6 @@ extern "C" {
 #include <TH2.h>
 #include <TPaveText.h>
 #include <TSystem.h>
-#include <TString.h>
 #include <TGeoGlobalMagField.h>
 
 #include "AliLog.h"
@@ -42,7 +42,6 @@ extern "C" {
 
 int main(int argc, char **argv) {
 
-  TString outputFileName("SPDVertexDiamondDA.root");
  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
    "*",
    "TStreamerInfo",
@@ -276,7 +275,7 @@ int main(int argc, char **argv) {
        p->AddText(Form("%f events with good vertex (%i out of %i events with vertex)",histo->GetEntries()/((Double_t)nevents_with_vertex),(Int_t)histo->GetEntries(),nevents_with_vertex));
       }
      }
-     mv->WriteVertices(outputFileName.Data());
+     mv->WriteVertices(OUTPUT_FILE);
 #ifdef ALI_AMORE
      // send the histos to AMORE pool
      amore_status=vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY());
