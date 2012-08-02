@@ -37,7 +37,9 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   fDCosPtNumerator(0),
   fDCosPtDenominator(0),
   fPhi(0),
-  fEta(0)
+  fEta(0),
+  fYtYtNumerator(0),
+  fYtYtDenominator(0)
 {
   // set up numerator
   char tTitNumD[101] = "NumDPhiDEta";
@@ -74,6 +76,16 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   strncat(tTitEta,title, 100);
   fEta = new TH1D(tTitEta,title,90,-1.2,1.2);
   
+  // set up numerator
+  char tTitYtNum[101] = "NumYtYt";
+  strncat(tTitYtNum,title, 100);
+  fYtYtNumerator = new TH2D(tTitYtNum,title,aPhiBins,1,5,aEtaBins,1,5);
+  // set up denominator
+  char tTitYtYtDen[101] = "DenYtYt";
+  strncat(tTitYtYtDen,title, 100);
+  fYtYtDenominator = new TH2D(tTitYtYtDen,title,aPhiBins,1,5,aEtaBins,1,5);
+
+
 
   // to enable error bar calculation...
   fDPhiDEtaNumerator->Sumw2();
@@ -84,6 +96,8 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   fDCosDenominator->Sumw2();
   fPhi->Sumw2();
   fEta->Sumw2();
+  fYtYtNumerator->Sumw2();
+  fYtYtDenominator->Sumw2();
 }
 
 //____________________________
@@ -101,7 +115,9 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
   fDCosPtNumerator(0),
   fDCosPtDenominator(0),
   fPhi(0),
-  fEta(0)
+  fEta(0),
+  fYtYtNumerator(0),
+  fYtYtDenominator(0)
 {
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumerator)
@@ -157,6 +173,15 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
   else
     fEta = 0;
 
+ if (aCorrFctn.fYtYtNumerator)
+   fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
+ else 
+   fYtYtNumerator = 0;
+
+ if (aCorrFctn.fYtYtDenominator)
+   fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
+ else 
+   fYtYtDenominator = 0;
 }
 //____________________________
 AliFemtoCorrFctnDEtaDPhi::~AliFemtoCorrFctnDEtaDPhi(){
@@ -175,6 +200,9 @@ AliFemtoCorrFctnDEtaDPhi::~AliFemtoCorrFctnDEtaDPhi(){
   }
   delete fPhi;
   delete fEta;
+
+  delete fYtYtNumerator;
+  delete fYtYtDenominator;
 }
 //_________________________
 AliFemtoCorrFctnDEtaDPhi& AliFemtoCorrFctnDEtaDPhi::operator=(const AliFemtoCorrFctnDEtaDPhi& aCorrFctn)
@@ -235,6 +263,16 @@ AliFemtoCorrFctnDEtaDPhi& AliFemtoCorrFctnDEtaDPhi::operator=(const AliFemtoCorr
     fEta = new TH1D(*aCorrFctn.fEta);
   else
     fEta = 0;
+
+ if (aCorrFctn.fYtYtNumerator)
+   fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
+ else 
+   fYtYtNumerator = 0;
+
+ if (aCorrFctn.fYtYtDenominator)
+   fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
+ else 
+   fYtYtDenominator = 0;
 
   return *this;
 }
@@ -313,6 +351,11 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
   fPhi->Fill(phi1);
   fEta->Fill(eta1);
 
+  double PionMass = 0.13956995;
+  double yt1 = TMath::Log(sqrt(1+(pair->Track1()->Track()->Pt()/PionMass)*(pair->Track1()->Track()->Pt()/PionMass))+(pair->Track1()->Track()->Pt()/PionMass));
+  double yt2 = TMath::Log(sqrt(1+(pair->Track2()->Track()->Pt()/PionMass)*(pair->Track2()->Track()->Pt()/PionMass))+(pair->Track2()->Track()->Pt()/PionMass));
+  fYtYtNumerator->Fill(yt1,yt2);
+
 }
 //____________________________
 void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
@@ -356,10 +399,15 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
   fDPhiDenominator->Fill(dphi);
 //   fDCosDenominator->Fill(cosphi);
 
-  if (fDoPtAnalysis) {
+  //if (fDoPtAnalysis) {
     //   fDPhiPtDenominator->Fill(dphi, ptmin);
     //   fDCosPtDenominator->Fill(cosphi, ptmin);
-  }
+  //}
+
+  double PionMass = 0.13956995;
+  double yt1 = TMath::Log(sqrt(1+(pair->Track1()->Track()->Pt()/PionMass)*(pair->Track1()->Track()->Pt()/PionMass))+(pair->Track1()->Track()->Pt()/PionMass));
+  double yt2 = TMath::Log(sqrt(1+(pair->Track2()->Track()->Pt()/PionMass)*(pair->Track2()->Track()->Pt()/PionMass))+(pair->Track2()->Track()->Pt()/PionMass));
+  fYtYtDenominator->Fill(yt1,yt2);
 }
 
 
@@ -380,6 +428,7 @@ void AliFemtoCorrFctnDEtaDPhi::WriteHistos()
     }*/
   fPhi->Write();
   fEta->Write();
+  
 }
 
 TList* AliFemtoCorrFctnDEtaDPhi::GetOutputList()
@@ -401,7 +450,8 @@ TList* AliFemtoCorrFctnDEtaDPhi::GetOutputList()
     }*/
   tOutputList->Add(fPhi);
   tOutputList->Add(fEta);
-
+  tOutputList->Add(fYtYtNumerator);
+  tOutputList->Add(fYtYtDenominator);
   return tOutputList;
 
 }
