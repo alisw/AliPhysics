@@ -53,6 +53,7 @@ public:
   void SetTPCExitSepMinimum(double dtpc);
   void SetDataType(AliFemtoDataType type);
   void SetKstarCut(double kstar, AliFemtoParticleType firstParticle, AliFemtoParticleType secondParticle);
+  void SetMinAvgSeparation(int type, double minSep);
 
  protected:
   long fNPairsPassed;          // Number of pairs consideered that passed the cut 
@@ -72,7 +73,8 @@ public:
   double fKstarCut; //do we want the K star cut, if yes (>0) then it is the minimum value of k*
   AliFemtoParticleType fFirstParticleType;  //for kstar - first particle type (V0 type) 
   AliFemtoParticleType fSecondParticleType; //for kstar - second particle type (primary track)
-
+  double   fMinAvgSepTrackPos;
+  double   fMinAvgSepTrackNeg;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoV0TrackPairCut, 0)
@@ -93,7 +95,10 @@ inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairC
   fDTPCExitMin(0),
   fKstarCut(0),
   fFirstParticleType(kLambda), 
-  fSecondParticleType(kProton)
+  fSecondParticleType(kProton),
+  fMinAvgSepTrackPos(0),
+  fMinAvgSepTrackNeg(0)
+
 { /* no-op */ }
 
 inline AliFemtoPairCut* AliFemtoV0TrackPairCut::Clone() { AliFemtoV0TrackPairCut* c = new AliFemtoV0TrackPairCut(*this); return c;}

@@ -1052,21 +1052,21 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
 						 AliFemtoTrack *tFemtoTrack)
 {
 
-  // copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
+	// copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
 
-  double impact[2];
-  double covimpact[3];
-  
-  if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-    //cout << "sth went wrong with dca propagation" << endl;
-    tFemtoTrack->SetImpactD(-1000.0);
-    tFemtoTrack->SetImpactZ(-1000.0);
-    
-  }
-  else {
-    tFemtoTrack->SetImpactD(impact[0]);
-    tFemtoTrack->SetImpactZ(impact[1]);
-  }
+	double impact[2];
+	double covimpact[3];
+
+	if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+		//cout << "sth went wrong with dca propagation" << endl;
+		tFemtoTrack->SetImpactD(-1000.0);
+		tFemtoTrack->SetImpactZ(-1000.0);
+
+	}
+	else {
+		tFemtoTrack->SetImpactD(impact[0]);
+		tFemtoTrack->SetImpactZ(impact[1]);
+	}
 
   double aodpid[10];
   tAodTrack->GetPID(aodpid);
@@ -1081,7 +1081,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   aodpid[2] = -100000.0;
   aodpid[3] = -100000.0;
   aodpid[4] = -100000.0;
-  
+		
   double tTOF = 0.0;
 
   if (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000

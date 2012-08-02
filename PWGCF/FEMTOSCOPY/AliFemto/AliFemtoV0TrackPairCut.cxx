@@ -41,7 +41,9 @@ AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut():
   fDTPCExitMin(0),
   fKstarCut(0),
   fFirstParticleType(kLambda), 
-  fSecondParticleType(kProton)
+  fSecondParticleType(kProton),
+  fMinAvgSepTrackPos(0),
+  fMinAvgSepTrackNeg(0)
 {
   // Default constructor
   // Nothing to do
@@ -65,6 +67,8 @@ AliFemtoV0TrackPairCut& AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackP
     fDataType = kAOD;
     fDTPCMin = 0;
     fDTPCExitMin = 0;
+    fMinAvgSepTrackPos = 0;
+    fMinAvgSepTrackNeg = 0;
   }
 
   return *this;
@@ -258,6 +262,52 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair* pair){
   //koniec kopii
 
 
+  //avg sep pair cut
+  double avgSep=0;
+  AliFemtoThreeVector first, second, tmp;
+  for(int i=0; i<8 ;i++)
+    {
+      tmp = pair->Track1()->V0()->NominalTpcPointPos(i);
+      //cout<<"X pos: "<<tmp.x()<<endl;
+      first.SetX((double)(tmp.x()));
+      first.SetY((double)tmp.y());
+      first.SetZ((double)tmp.z());
+      
+      tmp = pair->Track2()->Track()->NominalTpcPoint(i);
+      second.SetX((double)tmp.x());
+      second.SetY((double)tmp.y());
+      second.SetZ((double)tmp.z()); 
+
+      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
+    }
+  avgSep /= 8;
+
+  if(avgSep<fMinAvgSepTrackPos) return false;
+
+  avgSep = 0;
+  
+  for(int i=0; i<8 ;i++)
+    {
+      tmp = pair->Track1()->V0()->NominalTpcPointNeg(i);
+      //cout<<"X pos: "<<tmp.x()<<endl;
+      first.SetX((double)(tmp.x()));
+      first.SetY((double)tmp.y());
+      first.SetZ((double)tmp.z());
+      
+      tmp = pair->Track2()->Track()->NominalTpcPoint(i);
+      second.SetX((double)tmp.x());
+      second.SetY((double)tmp.y());
+      second.SetZ((double)tmp.z()); 
+
+      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
+    }
+  avgSep /= 8;
+
+  if(avgSep<fMinAvgSepTrackNeg) return false;
+
+
+
+
   //Qinv cut (we are trying to get rid of antiresidual correlation between primary protons)
   if(fKstarCut > 0)
     {
@@ -405,4 +455,12 @@ void AliFemtoV0TrackPairCut::SetKstarCut(double kstar, AliFemtoParticleType firs
   fKstarCut = kstar; 
   fFirstParticleType = firstParticle;  //for kstar - first particle type (V0 type) 
   fSecondParticleType = secondParticle;
+}
+
+void AliFemtoV0TrackPairCut::SetMinAvgSeparation(int type, double minSep)
+{
+  if(type == 0) //Track-Pos
+    fMinAvgSepTrackPos = minSep;
+  else if(type == 1) //Track-Neg
+    fMinAvgSepTrackNeg = minSep;
 }
