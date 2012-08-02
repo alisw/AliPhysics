@@ -49,12 +49,15 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnPIDRange.cxx
            RESONANCES/AliRsnCutPIDNSigma.cxx
            RESONANCES/AliRsnCutMomentumComparison.cxx
+	   RESONANCES/AliRsnCutTOFMatch.cxx
            RESONANCES/AliRsnCutKaonForPhi2010.cxx
            RESONANCES/AliRsnCutKaonForPhi2010PP.cxx
            RESONANCES/AliRsnCutPion2010PP.cxx
            RESONANCES/AliRsnCutProton2010PP.cxx
            RESONANCES/AliRsnCutDaughterKStar2010PP.cxx 
-           RESONANCES/AliRsnCutDaughterLStar2010.cxx 
+           RESONANCES/AliRsnCutDaughterLStar2010.cxx
+	   RESONANCES/AliRsnCutDaughterSigmaStar2010PP.cxx 
+	   RESONANCES/AliRsnCutSetDaughterParticle.cxx 
            RESONANCES/AliRsnCutV0.cxx 
            RESONANCES/AliRsnCutSet.cxx
            RESONANCES/AliRsnExpression.cxx
@@ -80,9 +83,6 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnMiniMonitor.cxx
            RESONANCES/AliRsnMiniAnalysisTask.cxx
            RESONANCES/AliRsnMiniMonitorTask.cxx
-	   RESONANCES/AliRsnCutKaon.cxx	
-           RESONANCES/AliRsnCutPion.cxx
-	   RESONANCES/AliRsnCutDaughterSigmaStar2010PP.cxx 
  )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

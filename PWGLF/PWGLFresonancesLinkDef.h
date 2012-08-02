@@ -28,6 +28,7 @@
 #pragma link C++ class AliRsnPIDRange+;
 #pragma link C++ class AliRsnCutPIDNSigma+;
 #pragma link C++ class AliRsnCutMomentumComparison+;
+#pragma link C++ class AliRsnCutTOFMatch+;
 #pragma link C++ class AliRsnCutKaonForPhi2010+;
 #pragma link C++ class AliRsnCutKaonForPhi2010PP+;
 #pragma link C++ class AliRsnCutPion2010PP+;
@@ -35,9 +36,8 @@
 #pragma link C++ class AliRsnCutDaughterKStar2010PP+;
 #pragma link C++ class AliRsnCutDaughterLStar2010+;
 #pragma link C++ class AliRsnCutV0+;
-#pragma link C++ class AliRsnCutKaon+;
-#pragma link C++ class AliRsnCutPion+;
 #pragma link C++ class AliRsnCutDaughterSigmaStar2010PP+;
+#pragma link C++ class AliRsnCutSetDaughterParticle+;
 
 #pragma link C++ class AliRsnCutSet+;
 #pragma link C++ class AliRsnExpression+;
