@@ -216,3 +216,80 @@ void AliRsnCutPIDNSigma::Print(const Option_t *) const
    AliInfo(Form("--> match criteria: %s", match));
    AliInfo(Form("--> momentum range: %s", mom));
 }
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutPIDNSigma::MatchITS(const AliVTrack *vtrack) const
+{
+//
+// Checks if the track has the status flags required for an ITS standalone track
+//
+
+   if ((vtrack->GetStatus() & AliESDtrack::kITSin)  == 0) return kFALSE;
+   if ((vtrack->GetStatus() & AliESDtrack::kITSpid) == 0) return kFALSE;
+
+   return kTRUE;
+}
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutPIDNSigma::MatchTPC(const AliVTrack *vtrack) const
+{
+//
+// Checks if the track has the status flags required for a TPC track
+//
+
+   if ((vtrack->GetStatus() & AliESDtrack::kTPCin) == 0) return kFALSE;
+
+   return kTRUE;
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutPIDNSigma::MatchTOF(const AliVTrack *vtrack) const
+{
+//
+// Checks if the track has the status flags required for an ITS standalone track
+//
+
+   if ((vtrack->GetStatus() & AliESDtrack::kTOFout) == 0) return kFALSE;
+   if ((vtrack->GetStatus() & AliESDtrack::kTIME)   == 0) return kFALSE;
+
+   return kTRUE;
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutPIDNSigma::MatchDetector(const AliVTrack *vtrack) const
+{
+//
+// Checks if the track has matched the required detector.
+// If no valid detector is specified, kFALSE is always returned.
+//
+
+   switch (fDetector) {
+      case kITS: return MatchITS(vtrack);
+      case kTPC: return MatchTPC(vtrack);
+      case kTOF: return MatchTOF(vtrack);
+      default  : return kFALSE;
+   }
+}
+
+//_________________________________________________________________________________________________
+void AliRsnCutPIDNSigma::AddPIDRange(Double_t nsigma, Double_t pmin, Double_t pmax)
+{
+//
+// Add a new slot for checking PID
+//
+
+   Int_t n = fRanges.GetEntries();
+
+   new (fRanges[n]) AliRsnPIDRange(nsigma, pmin, pmax);
+}
+
+//_________________________________________________________________________________________________
+void AliRsnCutPIDNSigma::SinglePIDRange(Double_t nsigma)
+{
+//
+// Clear all slots and sets a unique one
+//
+
+   fRanges.Delete();
+
+   new (fRanges[0]) AliRsnPIDRange(nsigma, 0.0, 1E20);
+}
