@@ -74,6 +74,18 @@ protected:
 			   UShort_t det, Char_t ring, 
 			   UShort_t sec, UShort_t strip);
   /** 
+   * Add summary(s) for sectors 
+   * 
+   * @param secArray 
+   * @param det 
+   * @param ring 
+   * @param sector 
+   * @param nStrip 
+   */
+  virtual void AddSectorSummary(TObjArray* secArray, UShort_t det, 
+				Char_t ring, UShort_t sector, 
+				UShort_t nStrip);
+  /** 
    * Fill channel histogram 
    * 
    * @param digit Digit to fill from
@@ -121,6 +133,12 @@ protected:
    * @param dummy Not used
    */
   void Terminate(TFile* dummy);
+  /** 
+   * Initialize container 
+   * 
+   * @param dir Directory to make containers in 
+   */
+  virtual void InitContainer(TDirectory* dir);
 
 private:
   /** 
@@ -129,12 +147,12 @@ private:
    * @param det         Detector # 
    * @param ring        Ring identifier 
    * @param sec         Sector number
-   * @param strip       Strip number
+   * @param va          VA chip number
    * 
    * @return Histogram
    */  
   TH1S* GetChannelHistogram(UShort_t det, Char_t ring, UShort_t sec, 
-			    UShort_t strip);
+			    UShort_t va);
   /** 
    * Get strip graph
    * 
@@ -147,7 +165,17 @@ private:
    */
   TGraphErrors* GetChannel(UShort_t det, Char_t ring, 
 			   UShort_t sec, UShort_t strip);
-  TObjArray fGainArray;          // Array of gains 
+  /** 
+   * Get the summary for a sector
+   * 
+   * @param det    Detector
+   * @param ring   Ring 
+   * @param sec    Sector 
+   * @param pedNotNoise Option
+   * 
+   * @return histogram 
+   */
+  TH1F* GetSectorSummary(UShort_t det, Char_t   ring, UShort_t sec);
   Int_t     fHighPulse;          // Highest pulse
   TArrayS   fEventsPerChannel;   // # of events per pulse step
   TArrayS   fCurrentPulse;       // The current pulse size 

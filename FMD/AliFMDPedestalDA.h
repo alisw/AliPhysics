@@ -49,6 +49,10 @@ public:
   void Init();
  
 protected:
+  enum { 
+    kPedestalOffset = 1, 
+    kNoiseOffset   = 2
+  };
   /** 
    * Add a channel to the containers. 
    * 
@@ -60,6 +64,18 @@ protected:
    */
   void AddChannelContainer(TObjArray* sectorArray, UShort_t det, 
 			   Char_t ring, UShort_t sec, UShort_t strip);
+  /** 
+   * Add summary(s) for sectors 
+   * 
+   * @param secArray 
+   * @param det 
+   * @param ring 
+   * @param sector 
+   * @param nStrip 
+   */
+  virtual void AddSectorSummary(TObjArray* secArray, UShort_t det, 
+				Char_t ring, UShort_t sector, 
+				UShort_t nStrip);
   /** 
    * Fill ADC values from a digit into the corresponding histogram.
    * 
@@ -107,6 +123,18 @@ private:
    */
   TH1S* GetChannel(UShort_t det, Char_t ring, UShort_t sec, 
 		   UShort_t strip, UInt_t sample);
+  /** 
+   * Get the summary for a sector
+   * 
+   * @param det    Detector
+   * @param ring   Ring 
+   * @param sec    Sector 
+   * @param pedNotNoise Option
+   * 
+   * @return histogram 
+   */
+  TH1F* GetSectorSummary(UShort_t det, Char_t   ring, UShort_t sec, 
+			 Bool_t   pedNotNoise);
   /** 
    * Calculate the hardware index
    * 

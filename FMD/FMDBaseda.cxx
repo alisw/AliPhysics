@@ -11,6 +11,7 @@
   Output Files:            conditions.csv
   Trigger types used:      PHYSICS_EVENT
 */
+#include <cstdlib>
 #include <Riostream.h>
 #include "monitor.h"
 #include "event.h"
@@ -27,7 +28,16 @@
 #include "TROOT.h"
 #include "TPluginManager.h"
 
-
+void
+usage(std::ostream& o, const char* progname)
+{
+  o << "Usage: " << progname << " FILE [OPTIONS]\n\n"
+    << "Options:\n"
+    << "\t-h,--help         Show this help\n"
+    << "\t-d,--diagnostics  Create diagnostics\n"
+    << "\t-D,--debug LEVEL  Set the debug level\n"
+    << std::endl;
+}
 
 int main(int argc, char **argv) 
 {
@@ -51,18 +61,50 @@ int main(int argc, char **argv)
   AliFMDParameters::Instance()->UseCompleteHeader(old);
   struct eventHeaderStruct *event;
   int status;
-  /* define data source : this is argument 1 */  
-  if (argc < 2) { 
-    cout << "No monitor source set" << endl;
+
+  Int_t  debugLevel = 0;
+  Bool_t badOption  = false;
+  char*  source     = 0;
+  for (int i = 1; i < argc; i++) { 
+    if (argv[i][0] == '-') { // Options 
+      if (argv[i][1] == '-') { // Long option 
+	TString arg(&(argv[i][2])); 
+	if      (arg.EqualTo("help")) { usage(std::cout, argv[0]); return 0; }
+	if      (arg.EqualTo("diagnostics")) { }
+	else if (arg.EqualTo("debug")) debugLevel = atoi(argv[++i]); 
+	else                             badOption = true;
+      }
+      else { // Short option 
+	switch (argv[i][1]) { 
+	case 'h': usage(std::cout, argv[0]); return 0; 
+	case 'd': break; 
+	case 'D': debugLevel = atoi(argv[++i]); break;
+	default:  badOption = true;
+	}
+      }
+      if (badOption) { 
+	std::cerr << argv[0] << ": Unknown option " << argv[i] 
+		  << std::endl;
+	return 1;
+      }
+    }
+    else { 
+      if (!source) source     = argv[i];
+      else         debugLevel = atoi(argv[i]);
+    }
+  }
+  if (!source) { 
+    printf("%s: No data source specified\n", argv[0]);
     return -1;
   }
-  status=monitorSetDataSource( argv[1] );
+  status=monitorSetDataSource(source);
   if (status!=0) {
-    printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
+    printf("monitorSetDataSource() failed for %s: %s\n",
+	   source, monitorDecodeError(status));
     return -1;
   }
   
-  if (argc > 2) AliLog::SetModuleDebugLevel("FMD", atoi(argv[2]));
+  AliLog::SetModuleDebugLevel("FMD", debugLevel);
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );
   if (status!=0) {
@@ -91,7 +133,8 @@ int main(int argc, char **argv)
     }
     
     if (status!=0) {
-      printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+      printf("monitorGetEventDynamic() failed : %s\n",
+	     monitorDecodeError(status));
       break;
     }
     

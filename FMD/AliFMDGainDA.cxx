@@ -50,7 +50,6 @@ ClassImp(AliFMDGainDA)
 //_____________________________________________________________________
 AliFMDGainDA::AliFMDGainDA() 
   : AliFMDBaseDA(),
-    fGainArray(),
     fHighPulse(256), 
     fEventsPerChannel(10),
     fCurrentPulse(10),
@@ -76,13 +75,12 @@ AliFMDGainDA::AliFMDGainDA()
   fCurrentPulse.Reset(0);
   fCurrentChannel.Reset(0);
   fOutputFile.open("gains.csv");
-  fGainArray.SetOwner(); 
+  fDiagnosticsFilename = "diagnosticsGain.root";
 }
 
 //_____________________________________________________________________
 AliFMDGainDA::AliFMDGainDA(const AliFMDGainDA & gainDA) 
   : AliFMDBaseDA(gainDA),
-    fGainArray(gainDA.fGainArray),
     fHighPulse(gainDA.fHighPulse),
     fEventsPerChannel(gainDA.fEventsPerChannel),
     fCurrentPulse(gainDA.fCurrentPulse),
@@ -133,37 +131,37 @@ void AliFMDGainDA::Init()
       nEvents = (fPulseLength.At(idx)*fHighPulse) / fPulseSize.At(idx);
     fEventsPerChannel.AddAt(nEvents,idx);
     if(nEvents>nEventsRequired) 
-      nEventsRequired = nEvents * fNumberOfStripsPerChip;
-    
+      nEventsRequired = nEvents * fNumberOfStripsPerChip;    
   }
-  
   SetRequiredEvents(nEventsRequired); 
-  
-  TObjArray* detArray;
-  TObjArray* ringArray;
-  TObjArray* sectorArray;
+}
+
+//_____________________________________________________________________
+void AliFMDGainDA::InitContainer(TDirectory* dir) 
+{
+  AliFMDBaseDA::InitContainer(dir);
   
   for(UShort_t det=1;det<=3;det++) {
-    detArray = new TObjArray();
-    detArray->SetOwner();
-    fGainArray.AddAtAndExpand(detArray,det);
-    for (UShort_t ir = 0; ir < 2; ir++) {
+    UShort_t sr = (det == 1 ? 1 : 0);
+    for (UShort_t ir = sr; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'O' : 'I');
       UShort_t nsec = (ir == 0 ? 40  : 20);
-      UShort_t nstr = (ir == 0 ? 2 : 4);
-      ringArray = new TObjArray();
-      ringArray->SetOwner();
-      detArray->AddAtAndExpand(ringArray,ir);
+      UShort_t nva  = (ir == 0 ? 2 : 4);
       for(UShort_t sec =0; sec < nsec;  sec++)  {
-	sectorArray = new TObjArray();
-	sectorArray->SetOwner();
-	ringArray->AddAtAndExpand(sectorArray,sec);
-	for(UShort_t strip = 0; strip < nstr; strip++) {
-	  TH1S* hChannel = new TH1S(Form("hFMD%d%c_%d_%d",det,ring,sec,strip),
-				    Form("hFMD%d%c_%d_%d",det,ring,sec,strip),
-				    1024,0,1023);
+	TObjArray* sectorArray = GetSectorArray(det, ring, sec);
+	TObjArray* cache = new TObjArray(nva);
+	cache->SetName("Cache");
+	cache->SetOwner();
+	Int_t n = sectorArray->GetEntriesFast();
+	sectorArray->AddAtAndExpand(cache, n);
+	for(UShort_t va = 0; va < nva; va++) {
+	  TH1S* hChannel = new TH1S(Form("FMD%d%c[%02d]_va%d",
+					 det,ring,sec,va),
+				    Form("FMD%d%c[%02d] VA%d Cache",
+					 det,ring,sec,va),
+				    1024,-.5,1023.5);
 	  hChannel->SetDirectory(0);
-	  sectorArray->AddAtAndExpand(hChannel,strip);
+	  cache->AddAtAndExpand(hChannel,va);
 	}
       }
     }
@@ -171,7 +169,7 @@ void AliFMDGainDA::Init()
 }
 
 //_____________________________________________________________________
-void AliFMDGainDA::AddChannelContainer(TObjArray* sectorArray, 
+void AliFMDGainDA::AddChannelContainer(TObjArray* stripArray, 
 				       UShort_t det  , 
 				       Char_t   ring,  
 				       UShort_t sec, 
@@ -185,11 +183,36 @@ void AliFMDGainDA::AddChannelContainer(TObjArray* sectorArray,
   //  ring           Ring identifier 
   //  sec            Sector number
   //  strip          Strip number
-  TGraphErrors* hChannel  = new TGraphErrors();
-  hChannel->SetName(Form("FMD%d%c[%02d,%03d]", det, ring, sec, strip));
-  hChannel->SetTitle(Form("FMD%d%c[%02d,%03d] ADC vs DAC", 
+
+  AliFMDParameters* pars     = AliFMDParameters::Instance();
+  UShort_t          board    = pars->GetAltroMap()->Sector2Board(ring, sec);
+  Int_t             halfring = GetHalfringIndex(det,ring,board/16);
+  Int_t             dPulse   = fPulseSize.At(halfring);
+  Int_t             nPulses  = dPulse > 0 ? fHighPulse / dPulse : 0;
+
+  TGraphErrors* gChannel  = new TGraphErrors(nPulses);
+  gChannel->SetName(Form("FMD%d%c[%02d,%03d]", det, ring, sec, strip));
+  gChannel->SetTitle(Form("FMD%d%c[%02d,%03d] ADC vs DAC", 
 			  det, ring, sec, strip));
-  sectorArray->AddAtAndExpand(hChannel,strip);
+  stripArray->AddAtAndExpand(gChannel,0);
+}
+
+//_____________________________________________________________________
+void AliFMDGainDA::AddSectorSummary(TObjArray* sectorArray, 
+				    UShort_t det, 
+				    Char_t   ring, 
+				    UShort_t sec, 
+				    UShort_t nStr) 
+{
+  TH1F* summary = new TH1F("Summary", Form("Summary of gains in FMD%d%c[%02d]", 
+					   det, ring, sec), 
+			   nStr, -.5, nStr-.5);
+  summary->SetXTitle("Strip");
+  summary->SetYTitle("Gain [ADC/DAC]");
+  summary->SetDirectory(0);
+
+  Int_t n = sectorArray->GetEntriesFast();
+  sectorArray->AddAtAndExpand(summary, n);
 }
 
 //_____________________________________________________________________
@@ -211,8 +234,8 @@ void AliFMDGainDA::FillChannels(AliFMDDigit* digit)
   if((sec%2)     && ((strip+1) % fNumberOfStripsPerChip)) return;
   if(((sec+1)%2) && (strip % fNumberOfStripsPerChip)) return;
   
-  Int_t vaChip   = strip / fNumberOfStripsPerChip; 
-  TH1S* hChannel = GetChannelHistogram(det, ring, sec, vaChip);
+  UShort_t vaChip   = strip / fNumberOfStripsPerChip; 
+  TH1S*    hChannel = GetChannelHistogram(det, ring, sec, vaChip);
   hChannel->Fill(digit->Counts());
   UpdatePulseAndADC(det,ring,sec,strip);
 }
@@ -330,26 +353,9 @@ void AliFMDGainDA::Analyse(UShort_t det,
 
     // }
   if(fSaveHistograms) {
-    gDirectory->cd(GetSectorPath(det,ring, sec, kTRUE));
-    
-    TH1F* summary = dynamic_cast<TH1F*>(gDirectory->Get("Summary"));
-    if (!summary) { 
-      Int_t nStr = (ring == 'I' ? 512 : 256);
-      summary = new TH1F("Summary", Form("Summary of gains in FMD%d%c[%02d]", 
-					 det, ring, sec), 
-			 nStr, -.5, nStr-.5);
-      summary->SetXTitle("Strip");
-      summary->SetYTitle("Gain [ADC/DAC]");
-      summary->SetDirectory(gDirectory);
-    }
+    TH1F* summary = GetSectorSummary(det, ring, sec);
     summary->SetBinContent(strip+1, fitFunc.GetParameter(1));
     summary->SetBinError(strip+1, fitFunc.GetParError(1));
-    
-    gDirectory->cd(GetStripPath(det,ring,sec,strip, kTRUE));
-    grChannel->SetName(Form("FMD%d%c[%02d,%03d]",det,ring,sec,strip));
-    // grChannel->SetDirectory(gDirectory);
-    grChannel->Write();
-    // grChannel->Write(Form("grFMD%d%c_%d_%d",det,ring,sec,strip));
   }  
 }
 
@@ -384,15 +390,14 @@ void AliFMDGainDA::WriteHeaderToFile()
 		    "Strip, "
 		    "Gain, "
 		    "Error, "
-		    "Chi2/NDF \n",56);
-  
+		    "Chi2/NDF \n",56);  
 }
 
 //_____________________________________________________________________
 TH1S* AliFMDGainDA::GetChannelHistogram(UShort_t det, 
 					Char_t   ring, 
 					UShort_t sec, 
-					UShort_t strip) 
+					UShort_t va) 
 {
   // Get the current histogram of a single strip
   // 
@@ -400,17 +405,11 @@ TH1S* AliFMDGainDA::GetChannelHistogram(UShort_t det,
   //  det            Detector number
   //  ring           Ring identifier 
   //  sec            Sector number
-  //  strip          Strip number
-  
-  UShort_t  lRing = 1;
-  if(ring == 'O')
-    lRing = 0;
-  
-  
-  TObjArray* detArray  = static_cast<TObjArray*>(fGainArray.At(det));
-  TObjArray* ringArray = static_cast<TObjArray*>(detArray->At(lRing));
-  TObjArray* secArray  = static_cast<TObjArray*>(ringArray->At(sec));
-  TH1S* hChannel       = static_cast<TH1S*>(secArray->At(strip));
+  //  va             VA number
+  TObjArray* secArray  = GetSectorArray(det, ring, sec);
+  Int_t      n         = secArray->GetEntriesFast();
+  TObjArray* cache     = static_cast<TObjArray*>(secArray->At(n-1));
+  TH1S* hChannel       = static_cast<TH1S*>(cache->At(va));
   
   return hChannel;
 }
@@ -428,13 +427,20 @@ TGraphErrors* AliFMDGainDA::GetChannel(UShort_t det,
   //  ring           Ring identifier 
   //  sec            Sector number
   //  strip          Strip number
-  UShort_t      iring     = (ring == 'O' ? 0 : 1);
-  TObjArray*    detArray  = static_cast<TObjArray*>(fDetectorArray.At(det));
-  TObjArray*    ringArray = static_cast<TObjArray*>(detArray->At(iring));
-  TObjArray*    secArray  = static_cast<TObjArray*>(ringArray->At(sec));
-  TGraphErrors* hChannel  = static_cast<TGraphErrors*>(secArray->At(strip));
+  TObjArray*    stripArray = GetStripArray(det, ring, sec, strip);
+  TGraphErrors* hChannel   = static_cast<TGraphErrors*>(stripArray->At(0));
   
   return hChannel;
+}
+
+//_____________________________________________________________________
+TH1F* AliFMDGainDA::GetSectorSummary(UShort_t det, 
+				     Char_t   ring, 
+				     UShort_t sec) 
+{
+  TObjArray* secArray    = GetSectorArray(det, ring, sec);
+  Int_t      n           = secArray->GetEntriesFast();
+  return static_cast<TH1F*>(secArray->At(n-2)); // Cache added later
 }
 
 //_____________________________________________________________________
@@ -451,24 +457,20 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
   //  sec            Sector number
   //  strip          Strip number
   
-  AliFMDParameters* pars = AliFMDParameters::Instance();
-  // UInt_t ddl, board,chip,ch;
-  UShort_t board = pars->GetAltroMap()->Sector2Board(ring, sec);
-  // pars->Detector2Hardware(det,ring,sec,strip,ddl,board,chip,ch);
-  /// pars->GetAltroMap()->Strip2Channel(
-  Int_t halfring = GetHalfringIndex(det,ring,board/16);
+  AliFMDParameters* pars     = AliFMDParameters::Instance();
+  UShort_t          board    = pars->GetAltroMap()->Sector2Board(ring, sec);
+  Int_t             halfring = GetHalfringIndex(det,ring,board/16);
   
   if(GetCurrentEvent()> (fNumberOfStripsPerChip*fEventsPerChannel.At(halfring)))
     return;
   
-  if((sec%2)     && ((strip+1) % fNumberOfStripsPerChip)) return;
-  
-  if(((sec+1)%2) && (strip % fNumberOfStripsPerChip)) return;
+  if ((sec       % 2) && ((strip+1) % fNumberOfStripsPerChip)) return;
+  if (((sec + 1) % 2) && (strip     % fNumberOfStripsPerChip)) return;
   
   if(((GetCurrentEvent()) % fPulseLength.At(halfring)) 
      && GetCurrentEvent() > 0) return;
      
-  Int_t vaChip = strip/fNumberOfStripsPerChip; 
+  Int_t vaChip   = strip/fNumberOfStripsPerChip; 
   TH1S* hChannel = GetChannelHistogram(det,ring,sec,vaChip);
   
   if(!hChannel->GetEntries()) {
@@ -489,25 +491,25 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
   
   hChannel->GetXaxis()->SetRange(firstBin,lastBin);
   
-  Int_t    channelNumber      = (strip + 
-				 (GetCurrentEvent()-1)
-				 / ((fPulseLength.At(halfring)*fHighPulse)
-				    / fPulseSize.At(halfring))); 
-  if(sec%2)
-    channelNumber      = (strip - 
-			  (GetCurrentEvent()-1)
-			  / ((fPulseLength.At(halfring)*fHighPulse)
-			     / fPulseSize.At(halfring))); 
-  
-  TGraphErrors* channel = GetChannel(det,ring,sec,channelNumber);
-  
+  Int_t         channelOff = ((GetCurrentEvent()-1)
+			      / ((fPulseLength.At(halfring)*fHighPulse)
+				 / fPulseSize.At(halfring)));
+  Int_t         channelNo  = (strip + ((sec % 2 == 1) ? -1 : 1) * channelOff);
+  TGraphErrors* channel    = GetChannel(det,ring,sec,channelNo);
+
   channel->SetPoint(fCurrentPulse.At(halfring),pulse,mean);
   channel->SetPointError(fCurrentPulse.At(halfring),0,rms);
   
   if(fSaveHistograms) {
-    gDirectory->cd(GetStripPath(det,ring,sec,channelNumber));
-    hChannel->Write(Form("%s_pulse_%03d",hChannel->GetName(),(Int_t)pulse));
-    
+    TH1S* out = 
+      static_cast<TH1S*>(hChannel->Clone(Form("FMD%d%c[%02d,%03d]_0x%02x",
+					      det, ring, sec, channelNo, 
+					      int(pulse))));
+    out->SetTitle(Form("FMD%d%c[%02d,%03d] DAC=0x%02x (%3d)",
+		       det, ring, sec, channelNo, int(pulse), int(pulse)));
+    out->SetDirectory(0);
+    TObjArray* arr = GetStripArray(det, ring, sec, channelNo);
+    arr->AddAtAndExpand(out, fCurrentPulse.At(halfring)+1);
   }
     
   hChannel->Reset();

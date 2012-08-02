@@ -69,6 +69,12 @@ public:
    */
   void SetSaveDiagnostics(Bool_t save) {fSaveHistograms = save;}
   /** 
+   * Set the diagnostics file name 
+   * 
+   * @param f Diagnostics file name 
+   */
+  void SetDiagnosticsFilename(const TString& f) { fDiagnosticsFilename = f; }
+  /** 
    * Set whether to make summary histograms to be published to AMORE
    * 
    * @param save If true, will generate summary QA histograms
@@ -100,6 +106,24 @@ public:
    * @return true if the code has seen data from the detector 
    */
   Bool_t HasSeenDetector(UShort_t d) const;
+
+  /**
+   * Class to run the DAs 
+   */
+  struct Runner {
+    Runner();
+    Runner(const Runner&) : fReader(0), fDiagFile(""), fDiag(false) {}
+    ~Runner() {} 
+    Runner& operator=(const Runner&) { return *this; }
+    void   AddHandlers();
+    void   ShowUsage(std::ostream& o, const char* progname);
+    Int_t  Init(int argc, char** argv);
+    void   Exec(AliFMDBaseDA& da);
+    Int_t  RunNumber() const;
+    AliRawReader* fReader;
+    TString       fDiagFile;
+    Bool_t        fDiag;
+  };
 protected:
   /** 
    * Initialize 
@@ -122,6 +146,12 @@ protected:
    */
   virtual void AddChannelContainer(TObjArray*, UShort_t, Char_t, 
 				   UShort_t, UShort_t )  {};
+  /** 
+   * Add summary(s) for sectors 
+   * 
+   */
+  virtual void AddSectorSummary(TObjArray*, UShort_t, Char_t, UShort_t, 
+				UShort_t) {}
   /** 
    * End of event
    */
@@ -233,6 +263,11 @@ protected:
    */  
   const char* GetStripPath(UShort_t det, Char_t ring, UShort_t sec, 
 			   UShort_t str, Bool_t full=kTRUE) const;
+  TObjArray* GetDetectorArray(UShort_t det);
+  TObjArray* GetRingArray(UShort_t det, Char_t ring);
+  TObjArray* GetSectorArray(UShort_t det, Char_t ring, UShort_t sector);
+  TObjArray* GetStripArray(UShort_t det, Char_t ring, 
+			   UShort_t sector, UShort_t strip);
   /** 
    * Write conditions file 
    * 
@@ -250,7 +285,7 @@ protected:
    * 
    * @param dir Directory to make containers in 
    */
-  void InitContainer(TDirectory* dir);
+  virtual void InitContainer(TDirectory* dir);
   /** 
    * Utility function for defining summary histograms 
    *
@@ -266,6 +301,9 @@ protected:
    * 
    */
   virtual void  MakeSummary(UShort_t, Char_t) { }
+  
+  virtual Bool_t HaveEnough(Int_t nEvent) const;
+  virtual UShort_t GetProgress(Int_t nEvent) const;
 
 
 
@@ -280,6 +318,7 @@ protected:
   TArrayS       fPulseSize;            // Pulse size for gain calib
   TArrayS       fPulseLength;          // Pulse length for gain calib
   Bool_t        fSeenDetectors[3];     // Detectors seen so far
+  UInt_t        fNEventsPerDetector[3];// # events per detector
   Int_t         fRequiredEvents;       // # events required for this calib
   Int_t         fCurrentEvent;         // the current event       
   UInt_t        fRunno;                // Current run number 
