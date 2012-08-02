@@ -135,7 +135,9 @@ void AliGenEvtGen::Generate()
     }
   
   part->SetStatusCode(11); //Set particle as decayed : change the status code
-  
+  part->SetBit(kDoneBit);
+  part->ResetBit(kTransportBit);
+
   mom->SetPxPyPzE(part->Px(),part->Py(),part->Pz(),part->Energy());
   Int_t np;
 
