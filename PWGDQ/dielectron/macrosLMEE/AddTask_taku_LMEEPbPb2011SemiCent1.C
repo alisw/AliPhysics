@@ -35,7 +35,7 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011SemiCent1(Bool_t runRejection=kFALSE, 
   
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())){
     if(!gROOT->GetClass("LMEECutLibTaku")){
-      gROOT->LoadMacro(configLMEECutLibPath.Data(), 0, kTRUE);
+      gROOT->LoadMacro(configLMEECutLibPath.Data());
     }
   }
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data())){
