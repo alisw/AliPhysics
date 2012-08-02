@@ -105,19 +105,34 @@ macro(ALICE_CheckModule)
     endforeach(_srcfile ${_sources})
 
     if(_violfiles)
-      add_custom_target(${MODULE}-check DEPENDS ${_violfiles})
-      add_dependencies(${MODULE}-check factfile)
-      add_dependencies(check-all ${MODULE}-check)
-
-      add_custom_target(${MODULE}-smell DEPENDS ${_smellfiles})
-      add_dependencies(smell-all ${MODULE}-smell)
-
+      #
+      if(TARGET ${MODULE}-check)
+	message("Target ${MODULE}-check already exist, apparently created in nested CMakeLists. Skipping")
+      else()
+	add_custom_target(${MODULE}-check DEPENDS ${_violfiles})
+	add_dependencies(${MODULE}-check factfile)
+	add_dependencies(check-all ${MODULE}-check)	
+      endif(TARGET ${MODULE}-check)
+      #
+      if(TARGET ${MODULE}-smell)      
+	message("Target ${MODULE}-smell already exist, apparently created in nested CMakeLists. Skipping")
+      else()
+	add_custom_target(${MODULE}-smell DEPENDS ${_smellfiles})
+	add_dependencies(smell-all ${MODULE}-smell)	
+      endif(TARGET ${MODULE}-smell)
+      #
       if(_module_factfile_deps)
-	add_custom_target(${MODULE}-hxml DEPENDS ${_module_factfile_deps})
-	add_dependencies(check-hxml ${MODULE}-hxml)
+	#
+	if(TARGET ${MODULE}-hxml)
+	  message("Target ${MODULE}-hxml already exist, apparently created in nested CMakeLists. Skipping")
+	else()
+	  add_custom_target(${MODULE}-hxml DEPENDS ${_module_factfile_deps})
+	  add_dependencies(check-hxml ${MODULE}-hxml)	  
+	endif(TARGET ${MODULE}-hxml)
+	#
       endif(_module_factfile_deps)
     endif(_violfiles)
-
+    
 
   endif(RULECHECKER_FOUND)
 endmacro(ALICE_CheckModule)
