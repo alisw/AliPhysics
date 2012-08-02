@@ -54,6 +54,10 @@ private:
   TH1D *fPhi;
   TH1D *fEta;
 
+  TH2D *fYtYtNumerator;
+  TH2D *fYtYtDenominator; 
+
+
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnDEtaDPhi, 1)
 #endif
