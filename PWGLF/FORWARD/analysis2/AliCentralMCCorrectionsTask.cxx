@@ -25,7 +25,9 @@
 #include "AliMCEvent.h"
 #include "AliAODForwardMult.h"
 #include "AliCentralCorrSecondaryMap.h"
+#include "AliCentralCorrAcceptance.h"
 #include "AliForwardUtil.h"
+#include "AliMultiplicity.h"
 #include <TH1.h>
 #include <TH2D.h>
 #include <TDirectory.h>
@@ -54,7 +56,8 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask()
     fVtxAxis(),
     fEtaAxis(),
     fList(),
-    fNPhiBins(20)    
+    fNPhiBins(20),
+    fEffectiveCorr(true)
 {
   // 
   // Constructor 
@@ -78,7 +81,8 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const char* name)
     fVtxAxis(10,-10,10), 
     fEtaAxis(200,-4,6),
     fList(),
-    fNPhiBins(20)    
+    fNPhiBins(20),
+    fEffectiveCorr(true)
 {
   // 
   // Constructor 
@@ -104,7 +108,8 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const AliCentralMCCorre
     fVtxAxis(10,-10,10), 
     fEtaAxis(200,-4,6),
     fList(o.fList),
-    fNPhiBins(o.fNPhiBins)    
+    fNPhiBins(o.fNPhiBins),
+    fEffectiveCorr(o.fEffectiveCorr)
 {
   // 
   // Copy constructor 
@@ -140,6 +145,7 @@ AliCentralMCCorrectionsTask::operator=(const AliCentralMCCorrectionsTask& o)
   SetVertexAxis(o.fVtxAxis);
   SetEtaAxis(o.fEtaAxis);
   fNPhiBins          = o.fNPhiBins;
+  fEffectiveCorr     = o.fEffectiveCorr;
 
   return *this;
 }
@@ -406,6 +412,20 @@ AliCentralMCCorrectionsTask::UserExec(Option_t*)
 
   // Now process our input data and store in own ESD object 
   fTrackDensity.Calculate(*mcEvent, vZMc, *bin->fHits, bin->fPrimary);
+
+  // Get the ESD object
+  const AliMultiplicity* spdmult = esd->GetMultiplicity();
+
+  // Count number of tracklets per bin 
+  for(Int_t j = 0; j< spdmult->GetNumberOfTracklets();j++) 
+    bin->fClusters->Fill(spdmult->GetEta(j),spdmult->GetPhi(j));
+  //...and then the unused clusters in layer 1 
+  for(Int_t j = 0; j< spdmult->GetNumberOfSingleClusters();j++) {
+     Double_t eta = -TMath::Log(TMath::Tan(spdmult->GetThetaSingle(j)/2.));
+     bin->fClusters->Fill(eta, spdmult->GetPhiSingle(j));
+  }
+
+  // Count events  
   bin->fCounts->Fill(0.5);
   
   PostData(1, fList);
@@ -441,13 +461,17 @@ AliCentralMCCorrectionsTask::Terminate(Option_t*)
   corr->SetVertexAxis(fVtxAxis);
   // corr->SetEtaAxis(fEtaAxis);
 
+ AliCentralCorrAcceptance* acorr = new AliCentralCorrAcceptance;
+  acorr->SetVertexAxis(fVtxAxis);
+
   TIter     next(fVtxBins);
   VtxBin*   bin = 0;
   UShort_t  iVz = 1;
   while ((bin = static_cast<VtxBin*>(next()))) 
-    bin->Finish(fList, output, iVz++, corr);
+    bin->Finish(fList, output, iVz++, fEffectiveCorr, corr,acorr);
 
   output->Add(corr);
+ output->Add(acorr);
 
   PostData(2, output);
 }
@@ -488,6 +512,7 @@ AliCentralMCCorrectionsTask::VtxBin::BinName(Double_t low,
 //____________________________________________________________________
 AliCentralMCCorrectionsTask::VtxBin::VtxBin()
   : fHits(0), 
+    fClusters(0),
     fPrimary(0),
     fCounts(0)
 {
@@ -500,6 +525,7 @@ AliCentralMCCorrectionsTask::VtxBin::VtxBin(Double_t     low,
   : TNamed(BinName(low, high), 
 	   Form("%+5.1fcm<v_{z}<%+5.1fcm", low, high)),
     fHits(0), 
+    fClusters(0),
     fPrimary(0),
     fCounts(0)
 {
@@ -515,6 +541,10 @@ AliCentralMCCorrectionsTask::VtxBin::VtxBin(Double_t     low,
   fHits->SetTitle("Hits");
   fHits->SetDirectory(0);
 
+  fClusters = static_cast<TH2D*>(fPrimary->Clone("clusters"));
+  fClusters->SetTitle("Clusters");
+  fClusters->SetDirectory(0);
+
   fCounts = new TH1D("counts", "Counts", 1, 0, 1);
   fCounts->SetXTitle("Events");
   fCounts->SetYTitle("# of Events");
@@ -525,12 +555,17 @@ AliCentralMCCorrectionsTask::VtxBin::VtxBin(Double_t     low,
 AliCentralMCCorrectionsTask::VtxBin::VtxBin(const VtxBin& o)
   : TNamed(o),
     fHits(0),
+    fClusters(0),
     fPrimary(0), 
     fCounts(0)
 {
   if (o.fHits) {
     fHits = static_cast<TH2D*>(o.fHits->Clone());
     fHits->SetDirectory(0);
+  }
+  if (o.fClusters) {
+    fClusters = static_cast<TH2D*>(o.fClusters->Clone());
+    fClusters->SetDirectory(0);
   }
   if (o.fPrimary) {
     fPrimary = static_cast<TH2D*>(o.fPrimary->Clone());
@@ -548,12 +583,17 @@ AliCentralMCCorrectionsTask::VtxBin::operator=(const VtxBin& o)
 {
   if (&o == this) return *this; 
   TNamed::operator=(o);
-  fHits    = 0;
-  fPrimary = 0;
-  fCounts  = 0;
+  fHits     = 0;
+  fPrimary  = 0;
+  fClusters = 0;
+  fCounts   = 0;
   if (o.fHits) {
     fHits = static_cast<TH2D*>(o.fHits->Clone());
     fHits->SetDirectory(0);
+  }
+  if (o.fClusters) {
+    fClusters = static_cast<TH2D*>(o.fClusters->Clone());
+    fClusters->SetDirectory(0);
   }
   if (o.fPrimary) {
     fPrimary = static_cast<TH2D*>(o.fPrimary->Clone());
@@ -576,6 +616,7 @@ AliCentralMCCorrectionsTask::VtxBin::DefineOutput(TList* l)
   l->Add(d);
 
   d->Add(fHits);
+  d->Add(fClusters);
   d->Add(fPrimary);
   d->Add(fCounts);
 }
@@ -584,7 +625,9 @@ void
 AliCentralMCCorrectionsTask::VtxBin::Finish(const TList* input, 
 					    TList* output, 
 					    UShort_t iVz, 
-					    AliCentralCorrSecondaryMap* map)
+					    Bool_t effectiveCorr,
+					    AliCentralCorrSecondaryMap* map,
+					    AliCentralCorrAcceptance* acorr)
 {
   TList* out = new TList;
   out->SetName(GetName());
@@ -599,19 +642,49 @@ AliCentralMCCorrectionsTask::VtxBin::Finish(const TList* input,
 
 
   TH2D*   hits  = static_cast<TH2D*>(l->FindObject("hits"));
+  TH2D*   clus  = static_cast<TH2D*>(l->FindObject("clusters"));
   TH2D*   prim  = static_cast<TH2D*>(l->FindObject("primary"));
   if (!hits || !prim) {
     AliError(Form("Missing histograms: %p, %p", hits, prim));
     return;
   }
 
-  TH2D* h = static_cast<TH2D*>(hits->Clone("bgCorr"));
+  TH2D* h = 0;
+  if (effectiveCorr) h = static_cast<TH2D*>(clus->Clone("bgCorr"));
+  else               h = static_cast<TH2D*>(hits->Clone("bgCorr"));
   h->SetDirectory(0);
   h->Divide(prim);
 
-  map->SetCorrection(iVz, h);
+  TH1D* acc = new TH1D(Form("SPDacc_vrtbin_%d",iVz),
+			  "Acceptance correction for SPD" ,
+			  fPrimary->GetXaxis()->GetNbins(), 
+			  fPrimary->GetXaxis()->GetXmin(), 
+			  fPrimary->GetXaxis()->GetXmax());
+  TH1F* accden = static_cast<TH1F*>(acc->Clone(Form("%s_den",
+						    acc->GetName())));
 
+  for(Int_t xx = 1; xx <=h->GetNbinsX(); xx++) {
+    for(Int_t yy = 1; yy <=h->GetNbinsY(); yy++) {
+      if(TMath::Abs(h->GetXaxis()->GetBinCenter(xx)) > 1.9) {
+	h->SetBinContent(xx,yy,0.); 
+	h->SetBinError(xx,yy,0.); 
+      }
+      if(h->GetBinContent(xx,yy) > 0.9) 
+	acc->Fill(h->GetXaxis()->GetBinCenter(xx));
+      else {
+	h->SetBinContent(xx,yy,0.); 
+	h->SetBinError(xx,yy,0.); 
+      }
+      accden->Fill(h->GetXaxis()->GetBinCenter(xx));
+	
+    }
+  }
+  acc->Divide(accden);
+
+  map->SetCorrection(iVz, h);
+  acorr->SetCorrection(iVz, acc);
   out->Add(h);
+  out->Add(acc);
 }
 
 //

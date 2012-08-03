@@ -18,6 +18,7 @@
 #include "AliSPDMCTrackDensity.h"
 #include <TH1I.h>
 class AliCentralCorrSecondaryMap;
+class AliCentralCorrAcceptance;
 class AliESDEvent;
 class TH2D;
 class TH1D;
@@ -140,6 +141,12 @@ public:
    */
   void SetNPhiBins(UShort_t nBins) { fNPhiBins = nBins; }
   /** 
+   * Whether to make effective corrections
+   * 
+   * @param e if true, make effective correction
+   */
+  void SetEffectiveCorrection(Bool_t e) { fEffectiveCorr = e; }
+  /** 
    * Get a reference to the track density calculator 
    * 
    * @return Reference to the track density calculator 
@@ -218,18 +225,23 @@ protected:
      * @param o   List to add output to 
      * @param i   Input list
      * @param iVz Vertex bin 
+     * @param effective Make an effective correction 
+     * @param acorr Acceptance correction 
      * @param map Correctons map 
      */
     void Finish(const TList* i, 
 		TList* o,
 		UShort_t iVz, 
-		AliCentralCorrSecondaryMap* map);
+		Bool_t effective,
+		AliCentralCorrSecondaryMap* map,
+		AliCentralCorrAcceptance* acorr);
 
-    TH2D* fHits;    // Cache of per-ring histograms
+    TH2D* fHits;     // Cache of MC-truth hits
+    TH2D* fClusters; // Cache of reconstructed hits
     TH2D* fPrimary;  // Cache or primary 
     TH1D* fCounts;   // Event count 
 
-    ClassDef(VtxBin,1); // Vertex bin 
+    ClassDef(VtxBin,2); // Vertex bin 
   };
   /** 
    * Define our vertex bins 
@@ -241,15 +253,16 @@ protected:
   AliFMDMCEventInspector fInspector; // Event inspector 
   AliSPDMCTrackDensity   fTrackDensity; // Get the track density 
 
-  TObjArray* fVtxBins;      // Vertex bins 
-  Bool_t     fFirstEvent;   // First event flag 
-  TH1I*      fHEvents;      // All Events
-  TH1I*      fHEventsTr;    // Histogram of events w/trigger
-  TH1I*      fHEventsTrVtx; // Events w/trigger and vertex 
-  TAxis      fVtxAxis;      // Vertex axis 
-  TAxis      fEtaAxis;      // Eta axis 
-  TList*     fList;         // Output list 
-  UShort_t   fNPhiBins;     // Nunber of phi bins
+  TObjArray* fVtxBins;       // Vertex bins 
+  Bool_t     fFirstEvent;    // First event flag 
+  TH1I*      fHEvents;       // All Events
+  TH1I*      fHEventsTr;     // Histogram of events w/trigger
+  TH1I*      fHEventsTrVtx;  // Events w/trigger and vertex 
+  TAxis      fVtxAxis;       // Vertex axis 
+  TAxis      fEtaAxis;       // Eta axis 
+  TList*     fList;          // Output list 
+  UShort_t   fNPhiBins;      // Nunber of phi bins
+  Bool_t     fEffectiveCorr; // Whether to make effective corrections
   ClassDef(AliCentralMCCorrectionsTask,1) // Central corrections class
 };
 
