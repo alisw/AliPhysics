@@ -194,6 +194,7 @@ protected:
   Double_t fELossBadChi2Nu;    // Cut on bad chi2/nu
   Double_t fELossFkupChi2Nu;   // Cut on F**ked up chi2/nu
   Int_t    fELossMinEntries;   // Least number of entries before fitting
+  Int_t    fELossMaxEntries;   // Maximum number of entries before clear
   Double_t fELossGoodParError; // Least relative error
   Double_t fROErrorsBad;       // Cut on read-out errors 
   Double_t fROErrorsFkup;      // Cut on read-out errors 

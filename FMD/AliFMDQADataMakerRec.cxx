@@ -234,7 +234,7 @@ void AliFMDQADataMakerRec::InitRaws()
   hErrors->GetXaxis()->SetBinLabel(1, "FMD1");
   hErrors->GetXaxis()->SetBinLabel(2, "FMD2");
   hErrors->GetXaxis()->SetBinLabel(3, "FMD3");
-  hErrors->SetYTitle("# errors");
+  hErrors->SetYTitle("# errors [log]");
   hErrors->SetZTitle("Events [log]");
   hErrors->SetDirectory(0);
   Add2RawsList(hErrors, 1, !expert, image, !saveCorr);
@@ -504,6 +504,27 @@ void AliFMDQADataMakerRec::StartOfDetectorCycle()
   // What 
   // to 
   // do?
+  
+  if (fRawsQAList) {
+    for (Int_t index = 0 ; index < AliRecoParam::kNSpecies ; index++) {
+      if (!fRawsQAList[index]) continue;
+      AliRecoParam::EventSpecie_t specie = AliRecoParam::ConvertIndex(index);
+      if (specie == AliRecoParam::kCalib || specie == AliRecoParam::kCosmic) 
+	continue;
+
+      TIter    nextObject(fRawsQAList[index]);
+      TObject* object = 0;
+      while ((object = nextObject())) { 
+	if (!object->InheritsFrom(TH1::Class())) continue;
+	TH1* hist = static_cast<TH1*>(object);
+	if (!hist->TestBit(BIT(23))) continue;
+	
+	AliInfoF("Resetting histogram %s", hist->GetName());
+	hist->Reset("M");
+	hist->SetBit(BIT(23), false);
+      }
+    }
+  }
 }
 //_____________________________________________________________________ 
 Int_t AliFMDQADataMakerRec::GetHalfringIndex(UShort_t det, 
