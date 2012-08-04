@@ -198,7 +198,7 @@ class AliAnalysisTaskJetHBOM : public AliAnalysisTaskSE
     Double_t background; //background rho in the event
 
     TClonesArray  *fTCARandomConesOut;    //! TCA of output jets in randomized event
-    TClonesArray  *fTCARandomConesOutRan; //! TCA of output jets in randomized event
+    //TClonesArray  *fTCARandomConesOutRan; //! TCA of output jets in randomized event
 
     TRandom3*     fRandom;   //! random number generator
     TProfile*     fh1Xsec;   //! pythia cross section and trials

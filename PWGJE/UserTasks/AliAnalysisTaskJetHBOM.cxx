@@ -72,8 +72,8 @@ AliAnalysisTaskJetHBOM::~AliAnalysisTaskJetHBOM(){
   if(fTCARandomConesOut)fTCARandomConesOut->Delete();
   delete fTCARandomConesOut;
   
-  if(fTCARandomConesOutRan)fTCARandomConesOutRan->Delete();
-  delete fTCARandomConesOutRan;
+  //if(fTCARandomConesOutRan)fTCARandomConesOutRan->Delete();
+  //delete fTCARandomConesOutRan;
 
 }
 
@@ -131,7 +131,7 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM():
   fGhostEtamax(1.5),
   background(0),
   fTCARandomConesOut(0x0),
-  fTCARandomConesOutRan(0x0),
+  //fTCARandomConesOutRan(0x0),
   fRandom(0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
@@ -144,7 +144,7 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM():
   fh1DeltapT(0x0),
   fh1Rho(0x0),
   fh1PtRandCone(0x0),
-  fh1Area(0x0),
+  //fh1Area(0x0),
   fh1efficiencyPt(0x0),
   fh2efficiencyPhi(0x0),
   fh1ZPhySel(0x0), 
@@ -208,7 +208,7 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM(const char* name):
   fGhostEtamax(1.5),
   background(0),
   fTCARandomConesOut(0x0),
-  fTCARandomConesOutRan(0x0),
+  //fTCARandomConesOutRan(0x0),
   fRandom(0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
@@ -221,7 +221,7 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM(const char* name):
   fh1DeltapT(0x0),
   fh1Rho(0x0),
   fh1PtRandCone(0x0),
-  fh1Area(0x0),
+  //fh1Area(0x0),
   fh1efficiencyPt(0x0),
   fh2efficiencyPhi(0x0),
   fh1ZPhySel(0x0), 
@@ -277,6 +277,7 @@ void AliAnalysisTaskJetHBOM::UserCreateOutputObjects()
 	fTCARandomConesOut->SetName(cName.Data());
 	AddAODBranch("TClonesArray",&fTCARandomConesOut,fNonStdFile.Data());
       }
+      /*
       // create the branch with the random for the random cones on the random event
       cName = Form("%sRandomCone_random",fNonStdBranch.Data());
       if(!AODEvent()->FindListObject(cName.Data())){
@@ -284,7 +285,7 @@ void AliAnalysisTaskJetHBOM::UserCreateOutputObjects()
 	fTCARandomConesOutRan->SetName(cName.Data());
 	AddAODBranch("TClonesArray",&fTCARandomConesOutRan,fNonStdFile.Data());
       }
-      
+      */
       if(fNonStdFile.Length()!=0){
 	// 
 	// case that we have an AOD extension we need to fetch the jets from the extended output
@@ -367,7 +368,7 @@ void AliAnalysisTaskJetHBOM::UserCreateOutputObjects()
   fh1DeltapT = new TH1F("fh1DeltapT","DeltapT",100,-50,50);
   fh1Rho = new TH1F("fh1Rho","Rho",100,0,200);
   fh1PtRandCone = new TH1F("fh1PtRandCone","pt",100,0,200);
-  fh1Area = new TH1F("fh1Area","area",100,0,1);
+  //fh1Area = new TH1F("fh1Area","area",100,0,1);
 
   const Int_t saveLevel = 3; // large save level more histos
   if(saveLevel>0){
@@ -382,7 +383,7 @@ void AliAnalysisTaskJetHBOM::UserCreateOutputObjects()
     fHistList->Add(fh1DeltapT);
     fHistList->Add(fh1Rho);
     fHistList->Add(fh1PtRandCone);
-    fHistList->Add(fh1Area);
+    //fHistList->Add(fh1Area);
   }
 
   // =========== Switch on Sumw2 for all histos ===========
@@ -416,7 +417,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
   // handle and reset the output jet branch 
 
   if(fTCARandomConesOut)fTCARandomConesOut->Delete();
-  if(fTCARandomConesOutRan)fTCARandomConesOutRan->Delete();
+  //if(fTCARandomConesOutRan)fTCARandomConesOutRan->Delete();
 
   //
   // Execute analysis for current event
@@ -628,7 +629,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
       // create a random jet within the acceptance
       Double_t etaMax = fTrackEtaWindow - fRparam;//0.9 - 0.4
       Int_t nCone = 0;
-      Int_t nConeRan = 0;
+      //      Int_t nConeRan = 0;
       Double_t pTC = 1; // small number
       Double_t etaC = etaMax*2.*(fRandom->Rndm()-0.5); // +- etamax
       Double_t phiC = fRandom->Rndm()*2.*TMath::Pi(); // 0 - 2pi
@@ -647,7 +648,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
       
       tmpRecC.SetBgEnergy(0,0); // this is use as temporary storage of the summed p_T below
       if(fTCARandomConesOut)new ((*fTCARandomConesOut)[nCone++]) AliAODJet(tmpRecC);
-      if(fTCARandomConesOutRan)new ((*fTCARandomConesOutRan)[nConeRan++]) AliAODJet(tmpRecC);
+      //if(fTCARandomConesOutRan)new ((*fTCARandomConesOutRan)[nConeRan++]) AliAODJet(tmpRecC);
   
       // loop over the reconstructed particles and add up the pT in the random cones
       // maybe better to loop over randomized particles not in the real jets...
@@ -663,7 +664,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
 	    jC->SetBgEnergy(jC->ChargedBgEnergy()+vp->Pt(),0);
 	  }
 	}// add up energy in cone
-	
+	/*	
 	// the randomized input changes eta and phi, but keeps the p_T
 	if(fTCARandomConesOutRan){
 	  Double_t pTR = vp->Pt();
@@ -684,6 +685,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
 	    jC->SetBgEnergy(jC->ChargedBgEnergy()+vTmpRanR.Pt(),0);
 	  }
 	}
+	*/
       }// loop over recparticles
     }  //fTCARandomConesOut
     Float_t jetArea = fRparam*fRparam*TMath::Pi();
@@ -706,6 +708,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
 	rC->SetEffArea(jetArea,0);
       }
     }
+    /*
     if(fTCARandomConesOutRan){
       AliAODJet* rC = (AliAODJet*)fTCARandomConesOutRan->At(0);
       // same with random
@@ -725,6 +728,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
 	rC->SetEffArea(jetArea,0);
       }
     }//find the random jets
+    */
   }//inclusive Jets > 0
 
  //Calculate delta pT
@@ -737,7 +741,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
    fh1DeltapT->Fill(ptSub);// delta pT
    fh1Rho->Fill(background);// background rho
    fh1PtRandCone->Fill(randCone->Pt());// pT of random cone
-   fh1Area->Fill(randCone->EffectiveAreaCharged()); // area of random cone; should always be pi*0.4^2 = 0.5
+   //fh1Area->Fill(randCone->EffectiveAreaCharged()); // area of random cone; should always be pi*0.4^2 = 0.5
  }else{
    if(fDebug)Printf("%s:%d No random Cone found",(char*)__FILE__,__LINE__);
  }
@@ -745,7 +749,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
 
  if (fDebug > 2){
    if(fTCARandomConesOut)Printf("%s:%d RC %d",(char*)__FILE__,__LINE__,fTCARandomConesOut->GetEntriesFast());
-   if(fTCARandomConesOutRan)Printf("%s:%d RC Ran %d",(char*)__FILE__,__LINE__,fTCARandomConesOutRan->GetEntriesFast());
+   //if(fTCARandomConesOutRan)Printf("%s:%d RC Ran %d",(char*)__FILE__,__LINE__,fTCARandomConesOutRan->GetEntriesFast());
  }
  PostData(1, fHistList);
 }
