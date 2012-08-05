@@ -47,7 +47,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
 )
 
-set ( DHDR  PWGGAEMCALJetTasksLinkDef.h)
+set ( DHDR  PWGJEEMCALJetTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
@@ -65,4 +65,4 @@ else()
   set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet )
 endif(FASTJET_ROOT)
 
-set ( EINCLUDE JETAN/fastjet PWGGA/EMCALJetTasks PWGGA/EMCALTasks EMCAL OADB STEER/ESD STEER/STEERBase )
+set ( EINCLUDE JETAN/fastjet PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase )
