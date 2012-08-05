@@ -35,6 +35,7 @@ AliITSv11GeometryUpgrade.cxx
 AliITSv11GeomBeamPipe.cxx
 AliITSDetTypeSimUpg.cxx
 AliITSsimulationPixUpg.cxx
+AliITSdigitPixUpg.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

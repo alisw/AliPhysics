@@ -38,13 +38,15 @@ class AliITSvUpgrade : public AliITSUpg {
     virtual void   DefineLayer(const Int_t nlay, const Double_t r,
 			       const Double_t zlen, const Int_t nladd,
 			       const Int_t nmod, const Double_t lthick = 0.,
-			       const Double_t dthick = 0.);
+			       const Double_t dthick = 0.,
+			       const UInt_t detType=0);
     virtual void   DefineLayerTurbo(const Int_t nlay, const Double_t r,
 				    const Double_t zlen, const Int_t nladd,
 				    const Int_t nmod, const Double_t width,
 				    const Double_t tilt,
 				    const Double_t lthick = 0.,
-				    const Double_t dthick = 0.);
+				    const Double_t dthick = 0.,
+				    const UInt_t detType=0);
     virtual void   GetBeamPipeParameters(Double_t &rmin, Double_t &rmax,
 					 Double_t &hzlen);
     virtual void   GetLayerParameters(const Int_t nlay,
@@ -64,7 +66,9 @@ class AliITSvUpgrade : public AliITSUpg {
     virtual void   SetMinorVersion(Int_t v=2) {fMinorVersion = v;}
     virtual void   SetNumberOfLayers(Int_t n) {fNumberOfLayers = n;}
     virtual void   StepManager();
-
+    virtual void   SetLayerDetTypeID(Int_t lr, UInt_t id);
+    virtual Int_t  GetLayerDetTypeID(Int_t lr);
+    //
  protected:
     void SetT2Lmatrix(Int_t uid, Double_t yShift,Bool_t yFlip, Bool_t yRot180=kFALSE) const; // Set T2L matrix in TGeoPNEntries
 
@@ -85,7 +89,7 @@ class AliITSvUpgrade : public AliITSUpg {
     Double_t *fLadWidth;       // Vector of ladder width (only used for turbo)
     Double_t *fLadTilt;        // Vector of ladder tilt (only used for turbo)
     Double_t *fDetThick;       // Vector of detector thicknesses
-
+    UInt_t   *fDetTypeID;      // Vector of detector type id
     Bool_t    fBeamPipe;       // True for creating the beam pipe
     Double_t  fBeamPipeRmin;   // Rmin of beam pipe
     Double_t  fBeamPipeRmax;   // Rmax of beam pipe

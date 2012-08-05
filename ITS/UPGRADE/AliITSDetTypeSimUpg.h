@@ -42,7 +42,7 @@ class AliITSDetTypeSimUpg : public AliITSDetTypeSim {
   virtual ~AliITSDetTypeSimUpg(); 
   
   virtual AliITSCalibration* GetCalibrationModel(Int_t iMod) const;
-  virtual AliITSTriggerConditions* GetTriggerConditions();
+  virtual AliITSTriggerConditions* GetTriggerConditions() {return 0;} // tmp
   
   virtual void SetDefaults();
   virtual void SetDefaultSimulation();

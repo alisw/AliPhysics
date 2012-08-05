@@ -23,5 +23,7 @@
 #pragma link C++ class  AliITSv11GeomBeamPipe+;
 #pragma link C++ class  AliITSDetTypeSimUpg+;
 #pragma link C++ class  AliITSsimulationPixUpg+;
+#pragma link C++ class  AliITSdigitPixUpg+;
+
 
 #endif

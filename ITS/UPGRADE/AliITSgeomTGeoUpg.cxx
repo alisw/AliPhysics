@@ -41,6 +41,7 @@ const char* AliITSgeomTGeoUpg::fgkITSVolName = "ITSV";
 const char* AliITSgeomTGeoUpg::fgkITSLrName  = "ITSupgLayer";
 const char* AliITSgeomTGeoUpg::fgkITSLadName = "ITSupgLadder";
 const char* AliITSgeomTGeoUpg::fgkITSModName = "ITSupgModule";
+const char* AliITSgeomTGeoUpg::fgkITSSensName ="ITSupgSensor";
 
 const Int_t AliITSgeomTGeoUpg::fgkNModulesOld = 2198;
 const Int_t AliITSgeomTGeoUpg::fgkNLaddersOld[AliITSgeomTGeoUpg::kNLayersOld] = {20,40,14,22,34,38};
@@ -51,6 +52,7 @@ Int_t  AliITSgeomTGeoUpg::fgNLayers = 0;
 Int_t  AliITSgeomTGeoUpg::fgNModules = 0;
 Int_t* AliITSgeomTGeoUpg::fgNLadders = 0;
 Int_t* AliITSgeomTGeoUpg::fgNDetectors = 0;
+Int_t* AliITSgeomTGeoUpg::fgLrDetType = 0;
 
 
 //______________________________________________________________________
@@ -475,6 +477,7 @@ void AliITSgeomTGeoUpg::BuildITSOld()
   fgNModules = fgkNModulesOld;
   fgNLadders = (Int_t*)fgkNLaddersOld;
   fgNDetectors = (Int_t*)fgkNDetectorsOld;
+  fgLrDetType = 0;
 }
 
 //______________________________________________________________________
@@ -486,10 +489,12 @@ void AliITSgeomTGeoUpg::BuildITSUpg()
   //
   fgNLadders   = new Int_t[fgNLayers];
   fgNDetectors = new Int_t[fgNLayers];
+  fgLrDetType  = new Int_t[fgNLayers];
   fgNModules = 0;
   for (int i=0;i<fgNLayers;i++) {
     fgNLadders[i]   = ExtractNumberOfLadders(i+1);
     fgNDetectors[i] = ExtractNumberOfDetectors(i+1);
+    fgLrDetType[i]  = ExtractLayerDetType(i+1);
     fgNModules     += fgNLadders[i]*fgNDetectors[i];
   }
   //
@@ -621,8 +626,29 @@ Int_t AliITSgeomTGeoUpg::ExtractNumberOfDetectors(const Int_t lay)
   //
   // Loop on all ladder nodes, count Module volumes by checking names
   Int_t nNodes = volLd->GetNodes()->GetEntries();
-  for (Int_t j=0; j<nNodes; j++) if (strstr(volLd->GetNodes()->At(j)->GetName(),"ITSupgModule")) numberOfModules++;
+  for (Int_t j=0; j<nNodes; j++) if (strstr(volLd->GetNodes()->At(j)->GetName(),fgkITSModName)) numberOfModules++;
   //
   return numberOfModules;
+  //
+}
+
+//______________________________________________________________________
+Int_t AliITSgeomTGeoUpg::ExtractLayerDetType(const Int_t lay) 
+{
+  // Determines the layer detector type the Upgrade Geometry
+  //
+  // Inputs:
+  //   lay: layer number from 1
+  // Outputs:
+  //   none
+  // Return:
+  //   detector type id for the layer
+  // MS
+  char laddnam[30];
+  snprintf(laddnam, 30, "%s%d", fgkITSLrName,lay);
+  TGeoVolume* volLd = gGeoManager->GetVolume(laddnam);
+  if (!volLd) {AliFatalClass(Form("can't find %s volume",laddnam)); return -1;}
+  //
+  return volLd->GetUniqueID();
   //
 }

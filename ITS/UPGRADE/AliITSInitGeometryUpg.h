@@ -70,9 +70,10 @@ class AliITSInitGeometryUpg : public TObject{
                              AliITSVersion_t &maj,Int_t &min,TDatime &dt)const;
 
     Int_t GetNumberOfLayers();
-    Int_t GetNumberOfLadders(const Int_t lay)const;
-    Int_t GetNumberOfModules(const Int_t lay)const;
-
+    Int_t GetNumberOfLadders(const Int_t lay) const;
+    Int_t GetNumberOfModules(const Int_t lay) const;
+    Int_t GetLayerDetTypeID(const Int_t lay) const;
+    //
  private:
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersv11(Int_t mod,Int_t &lay,

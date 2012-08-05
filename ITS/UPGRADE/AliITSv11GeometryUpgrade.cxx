@@ -37,6 +37,7 @@
 #include <TGeoCompositeShape.h>
 #include <TGeoMatrix.h>
 #include "AliITSv11GeometryUpgrade.h"
+#include "AliITSgeomTGeoUpg.h"
 
 const Double_t AliITSv11GeometryUpgrade::fgkDefaultSensorThick = 300*fgkmicron;
 const Double_t AliITSv11GeometryUpgrade::fgkDefaultLadderThick =   1*fgkcm;
@@ -57,6 +58,7 @@ AliITSv11GeometryUpgrade::AliITSv11GeometryUpgrade():
   fLadderTilt(0),
   fNLadders(0),
   fNModules(0),
+  fDetTypeID(0),
   fIsTurbo(0)
 {
   //
@@ -76,6 +78,7 @@ AliITSv11GeometryUpgrade::AliITSv11GeometryUpgrade(Int_t debug):
   fLadderTilt(0),
   fNLadders(0),
   fNModules(0),
+  fDetTypeID(0),
   fIsTurbo(0)
 {
   //
@@ -95,6 +98,7 @@ AliITSv11GeometryUpgrade::AliITSv11GeometryUpgrade(Int_t lay, Int_t debug):
   fLadderTilt(0),
   fNLadders(0),
   fNModules(0),
+  fDetTypeID(0),
   fIsTurbo(0)
 {
   //
@@ -114,6 +118,7 @@ AliITSv11GeometryUpgrade::AliITSv11GeometryUpgrade(Int_t lay, Bool_t turbo, Int_
   fLadderTilt(0),
   fNLadders(0),
   fNModules(0),
+  fDetTypeID(0),
   fIsTurbo(turbo)
 {
   //
@@ -134,6 +139,7 @@ AliITSv11GeometryUpgrade::AliITSv11GeometryUpgrade(const AliITSv11GeometryUpgrad
   fLadderTilt(s.fLadderTilt),
   fNLadders(s.fNLadders),
   fNModules(s.fNModules),
+  fDetTypeID(0),
   fIsTurbo(s.fIsTurbo)
 {
   //
@@ -159,7 +165,7 @@ AliITSv11GeometryUpgrade& AliITSv11GeometryUpgrade::operator=(const AliITSv11Geo
   fNLadders    = s.fNLadders;
   fNModules    = s.fNModules;
   fIsTurbo     = s.fIsTurbo;
-
+  fDetTypeID   = s.fDetTypeID;
   return *this;
 }
 
@@ -242,8 +248,9 @@ void AliITSv11GeometryUpgrade::CreateLayer(TGeoVolume *moth,
   // We have all shapes: now create the real volumes
   TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
 
-  snprintf(volname, 30, "ITSupgLayer%d", fLayerNumber);
+  snprintf(volname, 30, "%s%d", AliITSgeomTGeoUpg::GetITSLayerPattern(),fLayerNumber);
   TGeoVolume *layVol = new TGeoVolume(volname, layer, medAir);
+  layVol->SetUniqueID(fDetTypeID);
 
 //  layVol->SetVisibility(kFALSE);
   layVol->SetVisibility(kTRUE);
@@ -334,10 +341,9 @@ void AliITSv11GeometryUpgrade::CreateLayerTurbo(TGeoVolume *moth,
   // We have all shapes: now create the real volumes
   TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
 
-  snprintf(volname, 30, "ITSupgLayer%d", fLayerNumber);
+  snprintf(volname, 30, "%s%d", AliITSgeomTGeoUpg::GetITSLayerPattern(), fLayerNumber);
   TGeoVolume *layVol = new TGeoVolume(volname, layer, medAir);
-
-//  layVol->SetVisibility(kFALSE);
+  layVol->SetUniqueID(fDetTypeID);
   layVol->SetVisibility(kTRUE);
   layVol->SetLineColor(1);
 
@@ -401,7 +407,7 @@ TGeoVolume* AliITSv11GeometryUpgrade::CreateLadder(const TGeoManager *mgr){
   // We have all shapes: now create the real volumes
   TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
 
-  snprintf(volname, 30, "ITSupgLadder%d", fLayerNumber);
+  snprintf(volname, 30, "%s%d", AliITSgeomTGeoUpg::GetITSLadderPattern(), fLayerNumber);
   TGeoVolume *laddVol = new TGeoVolume(volname, ladder, medAir);
 
 //  laddVol->SetVisibility(kFALSE);
@@ -466,13 +472,13 @@ TGeoVolume* AliITSv11GeometryUpgrade::CreateModule(const Double_t xlad,
   TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medSi  = mgr->GetMedium("ITS_SI$");
 
-  snprintf(volname, 30, "ITSupgModule%d", fLayerNumber);
+  snprintf(volname, 30, "%s%d", AliITSgeomTGeoUpg::GetITSModulePattern() ,fLayerNumber);
   TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
 
   modVol->SetVisibility(kFALSE);
   modVol->SetLineColor(1);
 
-  snprintf(volname, 30, "ITSupgSensor%d", fLayerNumber);
+  snprintf(volname, 30, "%s%d", AliITSgeomTGeoUpg::GetITSSensorPattern(), fLayerNumber);
   TGeoVolume *sensVol = new TGeoVolume(volname, sensor, medSi);
 
   sensVol->SetVisibility(kTRUE);

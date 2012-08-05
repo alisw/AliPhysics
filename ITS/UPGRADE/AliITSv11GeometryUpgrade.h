@@ -44,7 +44,8 @@ class AliITSv11GeometryUpgrade : public AliITSv11Geometry {
     Double_t  GetNModules()    {return fNModules;};
     Double_t  GetRadius()      {return fLayRadius;};
     Double_t  GetZLength()     {return fZLength;};
-
+    Int_t     GetDetType() const {return fDetTypeID;}
+    //
     void      SetLadderThick(const Double_t t) {fLadderThick = t;};
     void      SetLadderTilt(const Double_t t);
     void      SetLadderWidth(const Double_t w);
@@ -53,7 +54,7 @@ class AliITSv11GeometryUpgrade : public AliITSv11Geometry {
     void      SetNModules(const Int_t m) {fNModules = m;};
     void      SetRadius(const Double_t r) {fLayRadius = r;};
     void      SetZLength(const Double_t z) {fZLength   = z;};
-
+    void      SetDetType(Int_t tp) {fDetTypeID = tp;}
     virtual void CreateLayer(TGeoVolume *moth,
 		       const TGeoManager *mgr=gGeoManager);
 
@@ -77,8 +78,8 @@ class AliITSv11GeometryUpgrade : public AliITSv11Geometry {
     Double_t  fLadderTilt;  // Ladder tilt angle (for turbo layers only)
     Int_t     fNLadders;    // Number of ladders in this layer
     Int_t     fNModules;    // Number of modules per ladder in this layer
+    UInt_t    fDetTypeID;   // detector type id
     Bool_t    fIsTurbo;     // True if this layer is a "turbo" layer
-
   // Parameters for the Upgrade geometry
 
     static const Double_t fgkDefaultSensorThick; // Default sensor thickness

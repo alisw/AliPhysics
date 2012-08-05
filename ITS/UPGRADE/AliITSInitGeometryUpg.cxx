@@ -45,6 +45,7 @@ $Id: AliITSInitGeometryUpg.cxx $
 #include <TMath.h>
 
 #include "AliLog.h"
+#include "AliITSgeomTGeoUpg.h"
 #include "AliITSInitGeometryUpg.h"
 #include <TDatime.h>
 
@@ -126,7 +127,7 @@ AliITSgeom* AliITSInitGeometryUpg::CreateAliITSgeom(){
   AliITSVersion_t version = kvDefault;
   Int_t minor = 0;
   TDatime datetime;
-  TGeoVolume *itsV = gGeoManager->GetVolume("ITSV");
+  TGeoVolume *itsV = gGeoManager->GetVolume(AliITSgeomTGeoUpg::GetITSVolPattern());
   if(!itsV){
     Error("CreateAliITSgeom","Can't find ITS volume ITSV, aborting");
     return 0;
@@ -340,7 +341,7 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
   const Int_t kItype  = 0; // Type of transformation defined 0=> Geant
   const Int_t klayers = GetNumberOfLayers(); // Number of layers in the ITS
   const AliITSDetector kIdet = AliITSDetector(0); //kUPG; RS temporary
-  const TString kPathbase = "/ALIC_1/ITSV_2/"; // We have 2 to cheat AliGeoManager::CheckSymNamesLUT
+  TString pathbase = Form("/ALIC_1/%s_2/",AliITSgeomTGeoUpg::GetITSVolPattern()); // We have 2 to cheat AliGeoManager::CheckSymNamesLUT
 
   if (klayers <= 0) {
     AliError("No layers found in ITSV");
@@ -354,12 +355,13 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
     kladders[j] = GetNumberOfLadders(j);
     kdetectors[j] = GetNumberOfModules(j);
   }
-
-  const char *pathsens;
-  pathsens="%sITSupgLayer%d_1/ITSupgLadder%d_%d/ITSupgModule%d_%d/ITSupgSensor%d_%d";
-
-  const TString kNames = pathsens;
-  
+  const TString kPathBase = Form("/ALIC_1/%s_1/",AliITSgeomTGeoUpg::GetITSVolPattern());
+  const TString kNames = Form("%%s%s%%d_1/%s%%d_%%d/%s%%d_%%d/%s%%d_%%d"
+			      ,AliITSgeomTGeoUpg::GetITSLayerPattern()
+			      ,AliITSgeomTGeoUpg::GetITSLadderPattern()
+			      ,AliITSgeomTGeoUpg::GetITSModulePattern()
+			      ,AliITSgeomTGeoUpg::GetITSSensorPattern()
+			      );
   Int_t mod,nmods=0, lay, lad, det, cpn0, cpn1, cpn2;
   Double_t tran[3]={0.,0.,0.}, rot[10]={9*0.0,1.0};
   TArrayD shapePar;
@@ -379,7 +381,7 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
     geom->CreateMatrix(mod,lay,lad,det,kIdet,tran,rot);
     RecodeDetector(mod,cpn0,cpn1,cpn2);
 
-    path.Form(kNames.Data(),kPathbase.Data(),lay,lay,cpn0,lay,cpn1,lay,cpn2);
+    path.Form(kNames.Data(),kPathBase.Data(),lay,lay,cpn0,lay,cpn1,lay,cpn2);
 
     geom->GetGeomMatrix(mod)->SetPath(path);
     GetTransformation(path.Data(),matrix);
@@ -1187,25 +1189,26 @@ Int_t AliITSInitGeometryUpg::GetNumberOfLayers(){
       return 0;
     }
 
-    if (!gGeoManager->GetVolume("ITSV")) {
-      AliError("can't find ITSV volume");
+    if (!gGeoManager->GetVolume(AliITSgeomTGeoUpg::GetITSVolPattern())) {
+      AliError(Form("can't find %s volume",AliITSgeomTGeoUpg::GetITSVolPattern()));
       return 0;
     }
 
     // Loop on all ITSV nodes, count Layer volumes by checking names
-    Int_t nNodes = gGeoManager->GetVolume("ITSV")->GetNodes()->GetEntries();
+    Int_t nNodes = gGeoManager->GetVolume(AliITSgeomTGeoUpg::GetITSVolPattern())->GetNodes()->GetEntries();
 
     if (nNodes == 0)
       return 0;
 
     for (Int_t j=0; j<nNodes; j++)
-      if (strstr(gGeoManager->GetVolume("ITSV")->GetNodes()->At(j)->GetName(),
-		 "ITSupgLayer"))
+      if (strstr(gGeoManager->GetVolume(AliITSgeomTGeoUpg::GetITSVolPattern())->GetNodes()->At(j)->GetName(),
+		 AliITSgeomTGeoUpg::GetITSLayerPattern()))
 	numberOfLayers++;
 
 
     return numberOfLayers;
 }
+
 //______________________________________________________________________
 Int_t AliITSInitGeometryUpg::GetNumberOfLadders(const Int_t lay) const {
   // Determines the number of layers in the Upgrade Geometry
@@ -1233,7 +1236,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfLadders(const Int_t lay) const {
     }
 
     char laynam[15];
-    snprintf(laynam, 15, "ITSupgLayer%d", lay+1);
+    snprintf(laynam, 15, "%s%d", AliITSgeomTGeoUpg::GetITSLayerPattern(),lay+1);
     if (!gGeoManager->GetVolume(laynam)) {
       AliError(Form("can't find %s volume",laynam));
       return 0;
@@ -1247,12 +1250,50 @@ Int_t AliITSInitGeometryUpg::GetNumberOfLadders(const Int_t lay) const {
 
     for (Int_t j=0; j<nNodes; j++)
       if (strstr(gGeoManager->GetVolume(laynam)->GetNodes()->At(j)->GetName(),
-		 "ITSupgLadder"))
+		 AliITSgeomTGeoUpg::GetITSLadderPattern()))
 	numberOfLadders++;
 
 
     return numberOfLadders;
 }
+
+//______________________________________________________________________
+Int_t AliITSInitGeometryUpg::GetLayerDetTypeID(const Int_t lay) const 
+{
+  // Determines the layers det. type in the Upgrade Geometry
+  //
+  // Inputs:
+  //   lay: layer number
+  // Outputs:
+  //   none
+  // Return:
+  //   det id
+  //   -1 if not Upgrade Geometry
+  // MS
+  
+  if (fMajorVersion != kvUpgrade) {
+    AliError("Not Upgrade Geometry!");
+    return -1;
+  }
+  
+  // This checks should be redundant, but let's do things neatly
+  if (!gGeoManager) {
+    AliError("gGeoManager is null");
+    return 0;
+  }
+  
+  char laynam[15];
+  snprintf(laynam, 15, "%s%d", AliITSgeomTGeoUpg::GetITSLayerPattern(),lay+1);
+  TGeoVolume* volLr = gGeoManager->GetVolume(laynam);
+  if (!volLr) {
+    AliError(Form("can't find %s volume",laynam));
+    return -1;
+  }
+  //
+  return volLr->GetUniqueID();
+  //
+}
+
 //______________________________________________________________________
 Int_t AliITSInitGeometryUpg::GetNumberOfModules(const Int_t lay) const {
   // Determines the number of layers in the Upgrade Geometry
@@ -1280,7 +1321,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfModules(const Int_t lay) const {
     }
 
     char laddnam[15];
-    snprintf(laddnam, 15, "ITSupgLadder%d", lay+1);
+    snprintf(laddnam, 15, "%s%d", AliITSgeomTGeoUpg::GetITSLadderPattern(),lay+1);
     if (!gGeoManager->GetVolume(laddnam)) {
       AliError(Form("can't find %s volume",laddnam));
       return 0;
@@ -1294,7 +1335,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfModules(const Int_t lay) const {
 
     for (Int_t j=0; j<nNodes; j++)
       if (strstr(gGeoManager->GetVolume(laddnam)->GetNodes()->At(j)->GetName(),
-		 "ITSupgModule"))
+		 AliITSgeomTGeoUpg::GetITSModulePattern()))
 	numberOfModules++;
 
 

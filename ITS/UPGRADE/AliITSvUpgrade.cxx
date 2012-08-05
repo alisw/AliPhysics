@@ -53,6 +53,7 @@
 #include "AliITSv11GeometryUpgrade.h"
 #include "AliITSv11GeomBeamPipe.h"
 #include "AliITSvUpgrade.h"
+#include "AliITSgeomTGeoUpg.h"
 #include "AliGeomManager.h"
 
 const Double_t AliITSvUpgrade::fgkBeamPipeHalfZLen = 400;
@@ -74,6 +75,7 @@ AliITSvUpgrade::AliITSvUpgrade():
   fLadWidth(0),
   fLadTilt(0),
   fDetThick(0),
+  fDetTypeID(0),
   fBeamPipe(0),
   fBeamPipeRmin(0),
   fBeamPipeRmax(0),
@@ -106,6 +108,7 @@ AliITSvUpgrade::AliITSvUpgrade(const char *title):
   fLadWidth(0),
   fLadTilt(0),
   fDetThick(0),
+  fDetTypeID(0),
   fBeamPipe(0),
   fBeamPipeRmin(0),
   fBeamPipeRmax(0),
@@ -144,6 +147,7 @@ AliITSvUpgrade::AliITSvUpgrade(const char *title):
   fLadWidth   = new Double_t[fIdN];
   fLadTilt    = new Double_t[fIdN];
   fDetThick   = new Double_t[fIdN];
+  fDetTypeID  = new UInt_t[fIdN];
 
   fUpGeom = new AliITSv11GeometryUpgrade*[fIdN];
 
@@ -155,6 +159,7 @@ AliITSvUpgrade::AliITSvUpgrade(const char *title):
       fModPerLadd[j] = 0;
       fLadWidth[j] = 0.;
       fDetThick[j] = 0.;
+      fDetTypeID[j] = 0.;
       fUpGeom[j] = 0;
     }
     
@@ -176,6 +181,7 @@ AliITSvUpgrade::AliITSvUpgrade(const char *name, const char *title,
   fLadWidth(0),
   fLadTilt(0),
   fDetThick(0),
+  fDetTypeID(0),
   fBeamPipe(0),
   fBeamPipeRmin(0),
   fBeamPipeRmax(0),
@@ -197,8 +203,7 @@ AliITSvUpgrade::AliITSvUpgrade(const char *name, const char *title,
   fIdN = nlay;
   fIdName = new TString[fIdN];
 
-  for (Int_t j=0; j<fIdN; j++)
-    fIdName[j].Form("ITSupgSensor%d",j+1); // See AliITSv11GeometryUpgrade
+  for (Int_t j=0; j<fIdN; j++) fIdName[j].Form("%s%d",AliITSgeomTGeoUpg::GetITSSensorPattern(),j+1); // See AliITSv11GeometryUpgrade
 
   (void) name; // removes warning message
 
@@ -214,6 +219,7 @@ AliITSvUpgrade::AliITSvUpgrade(const char *name, const char *title,
   fLadWidth   = new Double_t[fIdN];
   fLadTilt    = new Double_t[fIdN];
   fDetThick   = new Double_t[fIdN];
+  fDetTypeID  = new UInt_t[fIdN];
 
   fUpGeom = new AliITSv11GeometryUpgrade*[fIdN];
   
@@ -225,6 +231,7 @@ AliITSvUpgrade::AliITSvUpgrade(const char *name, const char *title,
       fModPerLadd[j] = 0;
       fLadWidth[j] = 0.;
       fDetThick[j] = 0.;
+      fDetTypeID[j] = 0.;
       fUpGeom[j] = 0;
     }
     
@@ -248,6 +255,7 @@ AliITSvUpgrade::~AliITSvUpgrade() {
   delete [] fLadWidth;
   delete [] fLadTilt;
   delete [] fDetThick;
+  delete [] fDetTypeID;
   delete [] fUpGeom;
 
 }
@@ -324,30 +332,35 @@ void AliITSvUpgrade::AddAlignableVolumes() const{
     AliFatal("TGeoManager doesn't exist !");
     return;
   }
-  // RS: to be checked with MS
-  if( !gGeoManager->SetAlignableEntry("ITS","ALIC_1/ITSV_2") )
-    AliFatal(Form("Unable to set alignable entry ! %s :: %s","ITS","ALIC_1/ITSV_2"));    
-  //
   TString pth,snm;
+  //
+  pth = Form("ALIC_1/%s_2",AliITSgeomTGeoUpg::GetITSVolPattern());
+  // RS: to be checked with MS
+  if( !gGeoManager->SetAlignableEntry("ITS",pth.Data()) )
+    AliFatal(Form("Unable to set alignable entry ! %s :: %s","ITS",pth.Data()));    
+  //
   for (int lr=0; lr<fNumberOfLayers; lr++) {
     //
-    pth = Form("ALIC_1/ITSV_2/ITSupgLayer%d_1",lr+1);
-    snm = Form("ITS/LrUpg%d",lr+1);
+    pth = Form("ALIC_1/%s_2/%s%d_1"
+	       ,AliITSgeomTGeoUpg::GetITSVolPattern()
+	       ,AliITSgeomTGeoUpg::GetITSLayerPattern()
+	       ,lr+1);
+    snm = Form("ITS/%s%d",AliITSgeomTGeoUpg::GetITSLayerPattern(),lr+1);
     //printf("SetAlignable: %s %s\n",snm.Data(),pth.Data());
     gGeoManager->SetAlignableEntry(snm.Data(),pth.Data());
     int modNum = 0;
     //
     for (int ld=0; ld<fLaddPerLay[lr]; ld++) {
       //
-      TString pthL = Form("%s/ITSupgLadder%d_%d",pth.Data(),lr+1,ld+1);
-      TString snmL = Form("%s/LaddUpg%d",snm.Data(),ld+1);
+      TString pthL = Form("%s/%s%d_%d",pth.Data(),AliITSgeomTGeoUpg::GetITSLadderPattern(),lr+1,ld+1);
+      TString snmL = Form("%s/%s%d",snm.Data(),AliITSgeomTGeoUpg::GetITSLadderPattern(),ld+1);
       //printf("SetAlignable: %s %s\n",snmL.Data(),pthL.Data());
       gGeoManager->SetAlignableEntry(snmL.Data(),pthL.Data());
       //
       for (int md=0; md<fModPerLadd[lr]; md++) {
 	//
-	TString pthM = Form("%s/ITSupgModule%d_%d",pthL.Data(),lr+1,md+1);
-	TString snmM = Form("%s/ModUpg%d",snmL.Data(),md+1);
+	TString pthM = Form("%s/%s%d_%d",pthL.Data(),AliITSgeomTGeoUpg::GetITSModulePattern(),lr+1,md+1);
+	TString snmM = Form("%s/%s%d",snmL.Data(),AliITSgeomTGeoUpg::GetITSModulePattern(),md+1);
 	//
 	int modUID = AliGeomManager::LayerToVolUID(lr+1,modNum++);
 	//
@@ -400,14 +413,12 @@ void AliITSvUpgrade::AddBeamPipe(const Double_t rmin, const Double_t rmax,
 void AliITSvUpgrade::CreateGeometry() {
 
   // Create the geometry and insert it in the mother volume ITSV
-
-
   TGeoManager *geoManager = gGeoManager;
 
   TGeoVolume *vALIC = geoManager->GetVolume("ALIC");
 
-  new TGeoVolumeAssembly("ITSV");
-  TGeoVolume *vITSV = geoManager->GetVolume("ITSV");
+  new TGeoVolumeAssembly(AliITSgeomTGeoUpg::GetITSVolPattern());
+  TGeoVolume *vITSV = geoManager->GetVolume(AliITSgeomTGeoUpg::GetITSVolPattern());
   vALIC->AddNode(vITSV, 2, 0);  // Copy number is 2 to cheat AliGeoManager::CheckSymNamesLUT
 
   //
@@ -471,26 +482,28 @@ void AliITSvUpgrade::CreateGeometry() {
     }
     else
       fUpGeom[j] = new AliITSv11GeometryUpgrade(j+1,kFALSE);
+    //
     fUpGeom[j]->SetRadius(fLayRadii[j]);
     fUpGeom[j]->SetZLength(fLayZLength[j]);
     fUpGeom[j]->SetNLadders(fLaddPerLay[j]);
     fUpGeom[j]->SetNModules(fModPerLadd[j]);
+    fUpGeom[j]->SetDetType(fDetTypeID[j]);
+    //
     if (fLadThick[j] != 0) fUpGeom[j]->SetLadderThick(fLadThick[j]);
     if (fDetThick[j] != 0) fUpGeom[j]->SetSensorThick(fDetThick[j]);
     fUpGeom[j]->CreateLayer(vITSV);
   }
-
+  //
   // Finally add the beam pipe
   if (fBeamPipe) {
     fBPGeom = new AliITSv11GeomBeamPipe(fBeamPipeRmin, fBeamPipeRmax,
 					fBeamPipeZlen, kFALSE);
     fBPGeom->CreateBeamPipe(vALIC); // We put the BP in the ALIC volume
   }
-
 }
 
 //______________________________________________________________________
-void AliITSvUpgrade::CreateMaterials(){
+void AliITSvUpgrade::CreateMaterials() {
     // Create ITS materials
     //     This function defines the default materials used in the Geant
     // Monte Carlo simulations for the geometries AliITSv1, AliITSv3,
@@ -543,40 +556,43 @@ void AliITSvUpgrade::CreateMaterials(){
 
     AliMaterial(8,"BERILLIUM$",9.01, 4., 1.848, 35.3, 36.7);// From AliPIPEv3
     AliMedium(8,"BERILLIUM$",8,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-
+    
 }
 
 //______________________________________________________________________
 void AliITSvUpgrade::DefineLayer(const Int_t nlay, const Double_t r,
 				 const Double_t zlen, const Int_t nladd,
 				 const Int_t nmod, const Double_t lthick,
-				 const Double_t dthick){
-    //     Sets the layer parameters
-    // Inputs:
-    //          nlay    layer number
-    //          r       layer radius
-    //          zlen    layer length
-    //          nladd   number of ladders
-    //          nmod    number of modules per ladder
-    //          lthick  ladder thickness (if omitted, defaults to 0)
-    //          dthick  detector thickness (if omitted, defaults to 0)
-    // Outputs:
-    //   none.
-    // Return:
-    //   none.
-
-    if (nlay >= fNumberOfLayers || nlay < 0) {
-      AliError(Form("Wrong layer number (%d)",nlay));
-      return;
-    }
-
-    fLayTurbo[nlay] = kFALSE;
-    fLayRadii[nlay] = r;
-    fLayZLength[nlay] = zlen;
-    fLaddPerLay[nlay] = nladd;
-    fModPerLadd[nlay] = nmod;
-    fLadThick[nlay] = lthick;
-    fDetThick[nlay] = dthick;
+				 const Double_t dthick, const UInt_t dettypeID)
+{
+  //     Sets the layer parameters
+  // Inputs:
+  //          nlay    layer number
+  //          r       layer radius
+  //          zlen    layer length
+  //          nladd   number of ladders
+  //          nmod    number of modules per ladder
+  //          lthick  ladder thickness (if omitted, defaults to 0)
+  //          dthick  detector thickness (if omitted, defaults to 0)
+  // Outputs:
+  //   none.
+  // Return:
+  //   none.
+  
+  if (nlay >= fNumberOfLayers || nlay < 0) {
+    AliError(Form("Wrong layer number (%d)",nlay));
+    return;
+  }
+  
+  fLayTurbo[nlay] = kFALSE;
+  fLayRadii[nlay] = r;
+  fLayZLength[nlay] = zlen;
+  fLaddPerLay[nlay] = nladd;
+  fModPerLadd[nlay] = nmod;
+  fLadThick[nlay] = lthick;
+  fDetThick[nlay] = dthick;
+  fDetTypeID[nlay] = dettypeID;
+    
 }
 
 //______________________________________________________________________
@@ -585,7 +601,9 @@ void AliITSvUpgrade::DefineLayerTurbo(const Int_t nlay, const Double_t r,
 				      const Int_t nmod, const Double_t width,
 				      const Double_t tilt,
 				      const Double_t lthick,
-				      const Double_t dthick){
+				      const Double_t dthick,
+				      const UInt_t dettypeID)
+{
     //     Sets the layer parameters for a "turbo" layer
     //     (i.e. a layer whose ladders overlap in phi)
     // Inputs:
@@ -617,6 +635,8 @@ void AliITSvUpgrade::DefineLayerTurbo(const Int_t nlay, const Double_t r,
     fLadWidth[nlay] = width;
     fLadTilt[nlay] = tilt;
     fDetThick[nlay] = dthick;
+    fDetTypeID[nlay] = dettypeID;
+    //
 }
 
 //______________________________________________________________________
@@ -824,3 +844,18 @@ void AliITSvUpgrade::StepManager(){
     return;
 }
 
+//______________________________________________________________________
+void AliITSvUpgrade::SetLayerDetTypeID(Int_t lr, UInt_t id)
+{
+  // set det type
+  if (!fDetTypeID || fNumberOfLayers<=lr) AliFatal(Form("Number of layers %d, %d is manipulated",fNumberOfLayers,lr));
+  fDetTypeID[lr] = id;
+}
+
+//______________________________________________________________________
+Int_t AliITSvUpgrade::GetLayerDetTypeID(Int_t lr)
+{
+  // set det type
+  if (!fDetTypeID || fNumberOfLayers<=lr) AliFatal(Form("Number of layers %d, %d is manipulated",fNumberOfLayers,lr));
+  return fDetTypeID[lr];
+}

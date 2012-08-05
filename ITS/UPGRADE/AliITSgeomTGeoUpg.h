@@ -97,6 +97,13 @@ class AliITSgeomTGeoUpg : public TObject {
   static Bool_t LocalToGlobalVect(Int_t index, const Double_t *loc, Double_t *glob);
   static Bool_t GlobalToLocalVect(Int_t index, const Double_t *glob, Double_t *loc);
   static void   CheckInit() { if (fgVersion==kITSVNA) BuildITS(); }
+  static Int_t  GetLayerDetTypeID(Int_t lr) {CheckInit();  return (lr<1||lr>fgNLayers||!fgLrDetType) ? -1:fgLrDetType[lr-1];}
+
+  static const char* GetITSVolPattern()        {return fgkITSVolName;}
+  static const char* GetITSLayerPattern()      {return fgkITSLrName;}
+  static const char* GetITSLadderPattern()     {return fgkITSLadName;}
+  static const char* GetITSModulePattern()     {return fgkITSModName;}
+  static const char* GetITSSensorPattern()     {return fgkITSSensName;}
 
  private:
 
@@ -104,6 +111,7 @@ class AliITSgeomTGeoUpg : public TObject {
   static TGeoPNEntry* GetPNEntry(Int_t index);
   static Int_t        ExtractNumberOfDetectors(const Int_t lay);
   static Int_t        ExtractNumberOfLadders(const Int_t lay);
+  static Int_t        ExtractLayerDetType(const Int_t lay);
   static Int_t        ExtractNumberOfLayers();
   static Bool_t       ReadVersionString(const Char_t *str,Int_t &maj,Int_t &min,TDatime &dt);
   static void         BuildITSUpg();
@@ -117,6 +125,7 @@ class AliITSgeomTGeoUpg : public TObject {
   static Int_t  fgNLayers;             // number of layers
   static Int_t  fgNModules;            // The total number of modules
   static Int_t *fgNLadders;            // Array of the number of ladders/layer(layer)
+  static Int_t *fgLrDetType;           // Array of layer detector types
   static Int_t *fgNDetectors;          // Array of the number of detector/ladder(layer)
 
 
@@ -129,6 +138,7 @@ class AliITSgeomTGeoUpg : public TObject {
   static const char*  fgkITSLrName;              // ITS Layer name
   static const char*  fgkITSLadName;             // ITS Ladder name 
   static const char*  fgkITSModName;             // ITS Module name 
+  static const char*  fgkITSSensName;            // ITS Sensor name 
 
   ClassDef(AliITSgeomTGeoUpg, 0) // ITS geometry based on TGeo
 };
