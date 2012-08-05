@@ -78,6 +78,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistMaxTrackPtvsJetCorrPt[i] = 0;
     fHistMaxClusPtvsJetCorrPt[i] = 0;
     fHistMaxPartPtvsJetCorrPt[i] = 0;
+    fHistConstituents[i] = 0;
     fHistRho[i] = 0;
     fHistJetsCorrPt[i] = 0;
     fHistJetsCorrPtArea[i] = 0;
@@ -148,6 +149,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistMaxTrackPtvsJetCorrPt[i] = 0;
     fHistMaxClusPtvsJetCorrPt[i] = 0;
     fHistMaxPartPtvsJetCorrPt[i] = 0;
+    fHistConstituents[i] = 0;
     fHistRho[i] = 0;
     fHistJetsCorrPt[i] = 0;
     fHistJetsCorrPtArea[i] = 0;
@@ -362,10 +364,17 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistMaxPartPtvsJetCorrPt_";
     histname += i;
-    fHistMaxPartPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt,  (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
+    fHistMaxPartPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt, (Int_t)(fNbins / 2.5), fMinBinPt, fMaxBinPt / 2.5);
     fHistMaxPartPtvsJetCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{jet} [GeV/c]");
     fHistMaxPartPtvsJetCorrPt[i]->GetYaxis()->SetTitle("p_{T}^{part} [GeV/c]");
     fOutput->Add(fHistMaxPartPtvsJetCorrPt[i]);
+
+    histname = "fHistConstituents_";
+    histname += i;
+    fHistConstituents[i] = new TH2F(histname.Data(), histname.Data(), 100, 1, 101, 100, -0.5, 99.5);
+    fHistConstituents[i]->GetXaxis()->SetTitle("p_{T,part} [GeV/c]");
+    fHistConstituents[i]->GetYaxis()->SetTitle("no. of particles");
+    fOutput->Add(fHistConstituents[i]);
 
     histname = "fHistRho_";
     histname += i;
@@ -807,6 +816,9 @@ void AliAnalysisTaskSAJF::DoJetLoop()
 
   const Int_t njets = fJets->GetEntriesFast();
 
+  TH1F constituents("constituents", "constituents", 
+		    fHistConstituents[0]->GetNbinsX(), fHistConstituents[0]->GetXaxis()->GetXmin(), fHistConstituents[0]->GetXaxis()->GetXmax()); 
+
   for (Int_t ij = 0; ij < njets; ij++) {
 
     AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(ij));
@@ -849,6 +861,7 @@ void AliAnalysisTaskSAJF::DoJetLoop()
 	AliVParticle *track = jet->TrackAt(it, fTracks);
 	if (track) {
 	  fHistJetsZvsPt[fCentBin]->Fill(track->Pt() / jet->Pt(), jet->Pt());
+	  constituents.Fill(track->Pt());
 	  scalarpt += track->Pt();
 	}
       }
@@ -863,11 +876,18 @@ void AliAnalysisTaskSAJF::DoJetLoop()
 	  cluster->GetMomentum(nPart, fVertex);
 	  fHistJetsZvsPt[fCentBin]->Fill(nPart.Et() / jet->Pt(), jet->Pt());
 	  scalarpt += nPart.Pt();
+	  constituents.Fill(nPart.Pt());
 	}
       }
     }
 
     fHistDeltaVectorPt->Fill(scalarpt - jet->Pt());
+
+    for (Int_t i = 1; i <= constituents.GetNbinsX(); i++) {
+      fHistConstituents[fCentBin]->Fill(constituents.GetBinCenter(i), constituents.GetBinContent(i));
+    }
+
+    constituents.Reset();
   } //jet loop 
 }
 

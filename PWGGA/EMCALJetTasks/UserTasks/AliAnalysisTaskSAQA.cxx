@@ -70,7 +70,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   }
 
   for (Int_t i = 0; i < 4; i++) {
-    fHistJetsPhiEtaPt[i] = 0;
+    fHistJetsPhiEta[i] = 0;
     fHistJetsPtNonBias[i] = 0;
     fHistJetsPtTrack[i] = 0;
     fHistJetsPtClus[i] = 0;
@@ -122,7 +122,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   }
 
   for (Int_t i = 0; i < 4; i++) {
-    fHistJetsPhiEtaPt[i] = 0;
+    fHistJetsPhiEta[i] = 0;
     fHistJetsPtNonBias[i] = 0;
     fHistJetsPtTrack[i] = 0;
     fHistJetsPtClus[i] = 0;
@@ -317,13 +317,13 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     TString histname;
 
     for (Int_t i = 0; i < 4; i++) {
-      histname = "fHistJetsPhiEtaPt_";
+      histname = "fHistJetsPhiEta_";
       histname += i;
-      fHistJetsPhiEtaPt[i] = new TH3F(histname.Data(), histname.Data(), 80, -2, 2, 128, 0, 6.4, (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
-      fHistJetsPhiEtaPt[i]->GetXaxis()->SetTitle("#eta");
-      fHistJetsPhiEtaPt[i]->GetYaxis()->SetTitle("#phi");
-      fHistJetsPhiEtaPt[i]->GetZaxis()->SetTitle("p_{T} [GeV/c]");
-      fOutput->Add(fHistJetsPhiEtaPt[i]);
+      fHistJetsPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 80, -2, 2, 128, 0, 6.4);
+      fHistJetsPhiEta[i]->GetXaxis()->SetTitle("#eta");
+      fHistJetsPhiEta[i]->GetYaxis()->SetTitle("#phi");
+      fHistJetsPhiEta[i]->GetZaxis()->SetTitle("p_{T} [GeV/c]");
+      fOutput->Add(fHistJetsPhiEta[i]);
 
       histname = "fHistJetsPtNonBias_";
       histname += i;
@@ -664,7 +664,7 @@ void AliAnalysisTaskSAQA::DoJetLoop()
     fHistJetsPt[fCentBin]->Fill(jet->Pt());
     fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
 
-    fHistJetsPhiEtaPt[fCentBin]->Fill(jet->Eta(), jet->Phi(), jet->Pt());
+    fHistJetsPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi());
   }
 }
 

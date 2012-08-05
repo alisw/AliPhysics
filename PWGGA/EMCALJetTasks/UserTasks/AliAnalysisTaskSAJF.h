@@ -81,6 +81,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistMaxTrackPtvsJetCorrPt[4];   //!Max constituent track pt vs. jet pt
   TH2F                       *fHistMaxClusPtvsJetCorrPt[4];    //!Max constituent cluster pt vs. jet pt
   TH2F                       *fHistMaxPartPtvsJetCorrPt[4];    //!Max constituent particle (track or cluster) pt vs. jet pt
+  TH2F                       *fHistConstituents[4];            //!x axis = constituents pt; y axis = no. of constituents; z axis = jet pt
   TH1F                       *fHistDeltaVectorPt;              //!Delta Pt between vector and scalar sum
 
   // Rho

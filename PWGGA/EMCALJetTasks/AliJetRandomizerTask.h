@@ -13,10 +13,15 @@ class AliJetRandomizerTask : public AliJetModelBaseTask {
   AliJetRandomizerTask(const char *name); 
   virtual ~AliJetRandomizerTask();
 
+  void         SetRandomizeEta(Int_t opt = 1)    { fRandomizeEta = opt; }
+
   void         UserExec(Option_t* /*option*/);
+
 
  protected:
   void         Run();
+
+  Int_t        fRandomizeEta;  //0 = do not randomize eta; 1 = randomize eta uniformly; 2 = invert eta sign
 
  private:
   AliJetRandomizerTask(const AliJetRandomizerTask&);            // not implemented
