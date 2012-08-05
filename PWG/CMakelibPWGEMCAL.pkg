@@ -1,6 +1,7 @@
-# -*- mode: Makefile -*-
-# $Id$
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
+# Package File for PWGmuon                                                      #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
 # SRCS - C++ source files                                                        #
@@ -26,25 +27,29 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
- EMCALTasks/AliAnalysisTaskEMCALClusterize.cxx 
- EMCALTasks/AliAnalysisTaskEMCALIsoPhoton.cxx
- EMCALTasks/AliAnalysisTaskEMCALPhoton.cxx
- EMCALTasks/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
- EMCALTasks/AliAnalysisTaskEMCALPi0PbPb.cxx
- EMCALTasks/AliAnalysisTaskEMCALTriggerQA.cxx
- EMCALTasks/AliAnalysisTaskESDfilterEMCALEventSelect.cxx
- EMCALTasks/AliAnalysisTaskPi0V2.cxx
- EMCALTasks/AliAnalysisTaskSATR.cxx
- EMCALTasks/AliAnalysisTaskTrgContam.cxx
- EMCALTasks/AliStaObjects.cxx
- EMCALTasks/AliCaloTrackParticle.cxx
- EMCALTasks/AliAnalysisTaskEMCALCaloTrackCorr.cxx
+ EMCAL/AliAnalysisTaskEMCALClusterizeFast.cxx
+ EMCAL/AliAnalysisTaskEmcal.cxx
+ EMCAL/AliEmcalClusTrackMatcherTask.cxx
+ EMCAL/AliEmcalCompatTask.cxx
+ EMCAL/AliEmcalEsdTpcTrackTask.cxx
+ EMCAL/AliEmcalMCTrackSelector.cxx
+ EMCAL/AliEmcalParticle.cxx
+ EMCAL/AliEmcalParticleMaker.cxx
+ EMCAL/AliEmcalPhysicsSelection.cxx
+ EMCAL/AliEmcalPhysicsSelectionTask.cxx
+ EMCAL/AliEmcalPicoTrackMaker.cxx
+ EMCAL/AliEmcalSetupTask.cxx
+ EMCAL/AliEmcalTenderTask.cxx
+ EMCAL/AliEmcalTrackPropagatorTask.cxx
+ EMCAL/AliEsdSkimTask.cxx
+ EMCAL/AliEsdTrackExt.cxx
+ EMCAL/AliPicoTrack.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWGGAEMCALTasksLinkDef.h)
-
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE PWGGA/EMCALTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)
+set ( DHDR  PWGEMCALLinkDef.h)
+
+set ( EINCLUDE PWGGA/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)

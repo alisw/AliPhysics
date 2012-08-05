@@ -18,7 +18,7 @@ AliEmcalTenderTask *AddTaskEmcalAodTender()
 
   mgr->AddTask(ana);
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigEmcalTenderSupply.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
   AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(kFALSE);
 
   ana->SetEMCALTenderSupply(EMCALSupply);
