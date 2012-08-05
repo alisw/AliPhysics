@@ -39,18 +39,18 @@ void runJetAna(
   }
 
   // PSel task
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, 
                                                                       AliVEvent::kAnyINT /*| AliVEvent::kCentral| AliVEvent::kSemiCentral*/,
                                                                       10,10);
 
   // Setup task
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalSetup.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
   AliEmcalSetupTask *setupTask = AddTaskEmcalSetup();
 
   // Compatibility task (for skimmed ESD)
   if (dType == kSesd) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalCompat.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalCompat.C");
     AliEmcalCompatTask *comptask = AddTaskEmcalCompat();
   }
 
@@ -65,11 +65,11 @@ void runJetAna(
     inputTracks = "HybridTracks";
 
     // Hybrid tracks maker for ESD
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalEsdTpcTrack.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTpcTrack.C");
     AliEmcalEsdTpcTrackTask *hybTask = AddTaskEmcalEsdTpcTrack(inputTracks);
 
     // Track propagator
-    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalTrackPropagator.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
     AliEmcalTrackPropagatorTask *propTask = AddTaskEmcalTrackPropagator(inputTracks);
   }
   else if (dType == kSesd) {
@@ -78,7 +78,7 @@ void runJetAna(
 
   // PicoTracks maker
   TString tracksName("PicoTracks");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalPicoTrackMaker.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
   AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(tracksName, inputTracks, "LHC11h");
 
   TString clusName("CaloClusters");
@@ -86,30 +86,30 @@ void runJetAna(
     clusName = "caloClusters";
 
   // EmcalParticle maker
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalParticleMaker.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
   AliEmcalParticleMaker *emcalParts = 
     AddTaskEmcalParticleMaker(tracksName,clusName,"EmcalTracks","EmcalClusters");
 
   // Cluster-track matcher
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEmcalClusTrackMatcher.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
   AliEmcalClusTrackMatcherTask *matcherTask = AddTaskEmcalClusTrackMatcher("EmcalTracks","EmcalClusters");
 
   // Hadronic correction task
   TString clusNameCorr(Form("%sCorr",clusName.Data()));
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskHadCorr.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskHadCorr.C");
   AliHadCorrTask *hcorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",clusNameCorr);
 
   if (0) {
   // Embedding task
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
   AliJetEmbeddingTask* jemb = AddTaskJetEmbedding(tracksName, clusNameCorr, "JetEmbeddingTask", 10, 10, -0.9, 0.9);
 
   // Jet finder
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask *jetTask = AddTaskEmcalJet(tracksName, clusNameCorr);
 
   // Scale task
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALJetTasks/macros/AddTaskScale.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskScale.C");
   AliAnalysisTaskScale *scaleTask = AddTaskScale(tracksName, clusNameCorr);
   }
   if (1) {
@@ -144,10 +144,10 @@ void runJetAna(
   } else {
     const char *txtfile = gridmode;
     if (dType == kAod) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/CreateAODChain.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/CreateAODChain.C");
       chain = CreateAODChain(txtfile, 5);
     } else {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/CreateESDChain.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/CreateESDChain.C");
       TChain* chain = CreateESDChain(txtfile, 5);
     }
     mgr->StartAnalysis("local", chain);
