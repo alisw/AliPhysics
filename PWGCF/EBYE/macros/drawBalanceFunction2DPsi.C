@@ -22,7 +22,7 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
 
   gROOT->LoadMacro("~/SetPlotStyle.C");
   SetPlotStyle();
-  TGaxis::SetMaxDigits(1);
+  gStyle->SetPalette(1,0);
 
   //Prepare the objects and return them
   TList *listBF = GetListOfObjects(filename,gCentrality,0);
@@ -168,11 +168,7 @@ TList *GetListOfObjects(const char* filename,
 void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 	  Int_t gCentrality, Double_t psiMin, Double_t psiMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
-	  Double_t ptAssociatedMin, Double_t ptAssociatedMax) {
-  gROOT->LoadMacro("~/SetPlotStyle.C");
-  SetPlotStyle();
-  gStyle->SetPalette(1,0);
-  
+	  Double_t ptAssociatedMin, Double_t ptAssociatedMax) {  
   //balance function
   AliTHn *hP = NULL;
   AliTHn *hN = NULL;

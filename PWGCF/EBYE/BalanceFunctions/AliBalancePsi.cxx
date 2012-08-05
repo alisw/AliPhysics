@@ -143,11 +143,11 @@ void AliBalancePsi::InitHistograms() {
   axisTitlePair[2]  = "#Delta #phi (#circ)"; 
 
   // pt(trigger-associated)
-  const Int_t kNPtBins = 40;
-  Double_t ptBins[kNPtBins+1];
-  for(Int_t i = 0; i < kNPtBins+1; i++){
-    ptBins[i] = 0.0 + i * 0.5;
-   } 
+  const Int_t kNPtBins = 16;
+  Double_t ptBins[kNPtBins+1] = {0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.};
+  //for(Int_t i = 0; i < kNPtBins+1; i++){
+  //ptBins[i] = 0.2 + i * 0.5;
+  //} 
   iBinSingle[1]       = kNPtBins;
   dBinsSingle[1]      = ptBins;
   axisTitleSingle[1]  = "p_{t}^{trig.} (GeV/c)"; 
@@ -333,8 +333,10 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       else if( charge < 0 && charge2 > 0)  fHistNP->Fill(trackVariablesPair,0,1.); 
       else if( charge > 0 && charge2 > 0)  fHistPP->Fill(trackVariablesPair,0,1.); 
       else if( charge < 0 && charge2 < 0)  fHistNN->Fill(trackVariablesPair,0,1.); 
-      else AliWarning(Form("Wrong charge combination: charge1 = %d and charge2 = %d",charge,charge2));
-      
+      else {
+	//AliWarning(Form("Wrong charge combination: charge1 = %d and charge2 = %d",charge,charge2));
+	continue;
+      }
     }//end of 2nd particle loop
   }//end of 1st particle loop
 }  
