@@ -185,7 +185,6 @@ void LoadLibs()
   gSystem->Load("libPWGCaloTrackCorrBase");
   gSystem->Load("libPWGGACaloTrackCorrelations");
   gSystem->Load("libPWGGACaloTasks");
-  gSystem->Load("libPWGGAEMCALTasks");
   gSystem->Load("libEMCALraw");
   gSystem->Load("libEMCALbase");
   gSystem->Load("libEMCALrec");
@@ -202,7 +201,9 @@ void LoadLibs()
   gSystem->Load("$FASTJET/lib/libsiscone");
   gSystem->Load("$FASTJET/lib/libSISConePlugin");
   gSystem->Load("libFASTJETAN");
-  gSystem->Load("libPWGGAEMCALJetTasks");
+  gSystem->Load("libPWGEMCAL");
+  gSystem->Load("libPWGGAEMCALTasks");
+  gSystem->Load("libPWGJEEMCALJetTasks");
 }
 
 AliAnalysisGrid* CreateAlienHandler(const char *taskname, 
