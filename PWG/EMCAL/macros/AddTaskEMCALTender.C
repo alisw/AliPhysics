@@ -18,7 +18,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender()
   AliAnalysisTaskSE *ana = 0;
   AliEMCALTenderSupply *EMCALSupply = 0;
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/ConfigEmcalTenderSupply.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     EMCALSupply = ConfigEmcalTenderSupply(kTRUE);
