@@ -23,7 +23,8 @@ ClassImp(AliJetRandomizerTask)
 
 //________________________________________________________________________
 AliJetRandomizerTask::AliJetRandomizerTask() : 
-  AliJetModelBaseTask("AliJetRandomizerTask")
+  AliJetModelBaseTask("AliJetRandomizerTask"),
+  fRandomizeEta(0)
 {
   // Default constructor.
 
@@ -33,7 +34,8 @@ AliJetRandomizerTask::AliJetRandomizerTask() :
 
 //________________________________________________________________________
 AliJetRandomizerTask::AliJetRandomizerTask(const char *name) : 
-  AliJetModelBaseTask(name)
+  AliJetModelBaseTask(name),
+  fRandomizeEta(0)
 {
   // Standard constructor.
 
@@ -70,6 +72,8 @@ void AliJetRandomizerTask::Run()
 {
   // Randomize particles.
 
+  Double_t eta = -999;
+
   if (fNClusters > 0 && fOutClusters) {
     const Int_t nClusters = fClusters->GetEntriesFast();
     for (Int_t i = 0; i < nClusters; ++i) {
@@ -82,8 +86,11 @@ void AliJetRandomizerTask::Run()
       Float_t pos[3];
       cluster->GetPosition(pos);
       TVector3 clusVec(pos);
-
-      AddCluster(cluster->E(), clusVec.Eta());
+      if (fRandomizeEta == 0)
+	eta = clusVec.Eta();
+      else if (fRandomizeEta == 2)
+	eta = -clusVec.Eta();
+      AddCluster(cluster->E(), eta);
     }
   }
  
@@ -93,8 +100,11 @@ void AliJetRandomizerTask::Run()
       AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(fTracks->At(i));
       if (!track)
 	continue;
-
-      AddTrack(track->Pt(), track->Eta());
+      if (fRandomizeEta == 0)
+	eta = track->Eta();
+      else if (fRandomizeEta == 2)
+	eta = -track->Eta();
+      AddTrack(track->Pt(), eta);
     }
   }
 }
