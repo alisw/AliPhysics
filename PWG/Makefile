@@ -67,6 +67,10 @@ ifneq ($(PWGCaloTrackCorrBase_INCLUDE),)
   ALICEINC += -I../$(PWGCaloTrackCorrBase_INCLUDE)
 endif
 
+ifneq ($(PWGEMCAL_INCLUDE),)
+  ALICEINC += -I../$(PWGGAEMCALTasks_INCLUDE)
+endif
+
 # only if no par file was loaded before
 #ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
