@@ -46,7 +46,7 @@ Bool_t ConfigTOFanalysisKStar
   
   if(enableMonitor){
     Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
-    gROOT->LoadMacro("AddMonitorOutput.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
     AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput());
     AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput());
     AddMonitorOutput(isMC, cutSetK->GetMonitorOutput());
