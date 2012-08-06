@@ -57,10 +57,6 @@ ifneq ($(PWGGAEMCALTasks_INCLUDE),)
   ALICEINC += -I../$(PWGGAEMCALTasks_INCLUDE)
 endif
 
-ifneq ($(PWGGAEMCALJetTasks_INCLUDE),)
-  ALICEINC += -I../$(PWGGAEMCALJetTasks_INCLUDE)
-endif
-
 ifneq ($(PWGGAGammaConv_INCLUDE),)
   ALICEINC += -I../$(PWGGAGammaConv_INCLUDE)
 endif
