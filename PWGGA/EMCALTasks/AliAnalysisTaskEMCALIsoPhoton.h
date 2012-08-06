@@ -61,6 +61,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TList       *fOutputList; //! Output list
   //histograms for events with 1+ track pt>1
   TH1F        *fEvtSel;                  //!evt selection counter: 0=all trg, 1=pv cut 
+  TH1F        *fNClusEt10;               //!number of clusters w/ Et>10 in the event
   TH1F        *fPVtxZ;                   //!primary vertex Z before cut
   TH2F        *fCellAbsIdVsAmpl;         //!cell abs id vs cell amplitude (energy)
   TH2F        *fNClusHighClusE;          //!total number of clusters vs. highest clus energy in the event
