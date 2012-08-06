@@ -1,3 +1,5 @@
+/***************************************************************************
+              fbellini@cern.ch - last modified on 06/08/2012
 //
 // General macro to configure the RSN analysis task.
 // It calls all configs desired by the user, by means
@@ -11,14 +13,12 @@
 //  kTRUE  --> initialization successful
 //  kFALSE --> initialization failed (some config gave errors)
 //
-// Author: fbellini@cern.ch
-// Created on 06/08/2012
+****************************************************************************/
 
 AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
 (
    Bool_t      isMC,
    Bool_t      isPP,
-   const char *path,
    Int_t       aodFilterBit = 5,
    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTOFpidKstarPbPb2010,
    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTOFpidKstarPbPb2010,
@@ -41,7 +41,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddAnalysisTaskTOFKStarPbPb", "No analysis manager to connect to.");
+      ::Error("AddAnalysisTaskTOFKStar", "No analysis manager to connect to.");
       return NULL;
    } 
 
@@ -118,7 +118,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro(Form("%s/ConfigTOFanalysisKStar.C", path));
+   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigTOFanalysisKStar.C");
    if (isMC) {
      if (((Int_t)cutPiCandidate<4) && ((Int_t)cutKaCandidate<4))
        Printf("========================== MC analysis - no PID used for efficiency estimation");
@@ -133,8 +133,8 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    //
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    //  outputFileName += ":Rsn";
-   Printf("AddAnalysisTaskTOFKStarPbPb - Set OutputFileName : \n %s\n", outputFileName.Data() );
-
+   Printf("AddAnalysisTaskTOFKStar - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   
    AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()), 
 							   TList::Class(), 
 							   AliAnalysisManager::kOutputContainer, 
