@@ -66,13 +66,15 @@ endfunction()
 
 foreach(oldetect ${ONLINEDETECTORS})
 detector_module(h_module ${oldetect})
-list(APPEND mod "-I${ALICE_ROOT}/${h_module}")
+  list(APPEND mod "-I${CMAKE_SOURCE_DIR}/${h_module}")
 endforeach(oldetect ${ONLINEDETECTORS})
-list(APPEND mod "-I${ALICE_ROOT}/include" "-I${ALICE_ROOT}/STEER" "-I${ALICE_ROOT}/ANALYSIS" "-I${ALICE_ROOT}/RAW" "-I${ALICE_ROOT}/STEER/STEER" "-I${ALICE_ROOT}/STEER/CDB" "-I${ROOTSYS}/include" "-I${ALICE_ROOT}/STEER/STEERBase" "-I${ALICE_ROOT}/STEER/AOD" "-I${ALICE_ROOT}/STEER/ESD" "-I${ALICE_ROOT}/MUON/mapping" "-I$ENV{AMORE}/include/amore")
+list(APPEND mod "-I${CMAKE_SOURCE_DIR}/include" "-I${CMAKE_SOURCE_DIR}/STEER" "-I${CMAKE_SOURCE_DIR}/ANALYSIS" "-I${CMAKE_SOURCE_DIR}/RAW" "-I${CMAKE_SOURCE_DIR}/STEER/STEER" "-I${CMAKE_SOURCE_DIR}/STEER/CDB" "-I${ROOTINCDIR}" "-I${CMAKE_SOURCE_DIR}/STEER/STEERBase" "-I${CMAKE_SOURCE_DIR}/STEER/AOD" "-I${CMAKE_SOURCE_DIR}/STEER/ESD" "-I${CMAKE_SOURCE_DIR}/MUON/mapping" "-I$ENV{AMORE}/include/amore")
 
 # ----------Common stuff-------------------
 
-file(GLOB_RECURSE _dafiles $ENV{ALICE_ROOT}/*da.cxx)
+#file(GLOB_RECURSE _dafiles $ENV{ALICE_ROOT}/*da.cxx)
+file(GLOB_RECURSE _dafiles ${CMAKE_SOURCE_DIR}/*da.cxx)
+
 set (DAINSTALL "$ENV{ALICE_INSTALL}/DA")
 if(DAINSTALL STREQUAL "/DA") 
   set(DAINSTALL "$ENV{ALICE_ROOT}/DA")
@@ -97,16 +99,21 @@ endif(AMORE_FOUND)
 execute_process(COMMAND ${XML2} --libs OUTPUT_VARIABLE _xml2libs OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${DATE_CONFIG} --monitorlibs=noshift OUTPUT_VARIABLE MONITORLIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND $ENV{AMORE}/bin/amore-config --ldflags-da-static OUTPUT_VARIABLE _amore1 OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND $ENV{AMORE}/bin/amore-config --auxlibs  OUTPUT_VARIABLE _amore3 OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND date-config --rcproxylibs OUTPUT_VARIABLE _amore2 OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND date-config --monitorlibs=noshift OUTPUT_VARIABLE _monitor1 OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REPLACE "\n" " " _amore1 "${_amore1}") 
 set(AMOREDALIBS " ${_amore1} ${_amore2}")
+set(AMOREDADLIBS " ${_amore3} ${_amore2}")
 set(MONITORLIBS "${_monitor1} -lssl")
-
 separate_arguments(MONITORLIBS)
 separate_arguments(AMOREDALIBS)
+separate_arguments(AMOREDADLIBS)
 set(SYSLIBS -ldl -lpthread ${_xml2libs})
-
+set(DATE_CFLAGS "${DATEFLAGS}")
+separate_arguments(DATE_CFLAGS)
+set(ROOTDLIBS "${ROOTCLIBS} -lRMySQL")
+separate_arguments(ROOTDLIBS)
 
 set(EXTRAROOTLIB "libRootExtra.a")
 set(ROOTLIB "RootExtra")
@@ -123,7 +130,7 @@ else()
 endif(DAQDALIB_PATH)
 set(DAQDALIB "${DAQDADIR}/libdaqDA.a")
 
-include_directories(${DAQDADIR} ${ALICE_ROOT}/RAW ${ALICE_ROOT}/include ${ALICE_ROOT}/STEER)
+include_directories(${DAQDADIR} ${CMAKE_SOURCE_DIR}/RAW ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/STEER)
 include_directories(SYSTEM ${ROOTINCDIR})
 
 # ----------Create All Valid targets---------
@@ -139,29 +146,39 @@ foreach(detector ${ONLINEDETECTORS} )
   #ALIROOTALIBS
 
   set(ALIROOTALIBS)
+  set(ALIROOTDLIBS)
 	set(BASIC_TARGET "daqDA-${ONLINEDETECTORNAME}-all")
 	add_custom_target(${BASIC_TARGET}
 	WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 	) 
+  set(DYN_TARGET "daqDA-${ONLINEDETECTORNAME}-all-dyn")
+  add_custom_target(${DYN_TARGET}
+    WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    ) 
 	set(BASIC_RPM "daqDA-${ONLINEDETECTORNAME}-all-rpm")
 	add_custom_target(${BASIC_RPM}
 	WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
         )
  list(APPEND ALIROOTALIBS RAWDatabase-static RAWDatarec-static RAWDatasim-static STEERBase-static STEER-static CDB-static ESD-static STAT-static AOD-static ANALYSIS-static ANALYSISalice-static )
+  list(APPEND ALIROOTDLIBS -lRAWDatabase -lRAWDatarec -lRAWDatasim -lSTEERBase -lSTEER -lCDB -lESD -lSTAT -lAOD -lANALYSIS -lANALYSISalice )
 
   expand(ALIROOTALIBS2 "\${${DAMODULE}ALIBS}")
+  expand(ALIROOTDLIBS2 "\${${DAMODULE}LIBS}")
   expand(DAINCDIRS "\${${DAMODULE}INC}")
   list(APPEND ALIROOTALIBS ${ALIROOTALIBS2})
+  foreach (detlib ${ALIROOTDLIBS2}) 
+    list(APPEND ALIROOTDLIBS "-l${detlib}")
+  endforeach(detlib ${ALIROOTDLIBS2})  
+  # list(APPEND ALIROOTDLIBS ${ALIROOTDLIBS2})
   
   include_directories(${DAMODULE} ${SUBDIR} ${DAINCDIRS})
 #Get detector algorithms for this detector
-
   foreach(dafile ${_dafiles})
 
-	string(REGEX MATCH "$ENV{ALICE_ROOT}/${DAMODULE}/${DAMODULE}${SUBDAMODULE}" match ${dafile})
+    string(REGEX MATCH "${CMAKE_SOURCE_DIR}/${DAMODULE}/${DAMODULE}${SUBDAMODULE}" match ${dafile})
 #Found a valid target name
 	if(match)
-          string(REGEX REPLACE "$ENV{ALICE_ROOT}/${DAMODULE}/${DAMODULE}${SUBDAMODULE}(.*)da\\.cxx" "\\1" DANAME ${dafile})
+      string(REGEX REPLACE "${CMAKE_SOURCE_DIR}/${DAMODULE}/${DAMODULE}${SUBDAMODULE}(.*)da\\.cxx" "\\1" DANAME ${dafile})
 #Check for default DA 
 	  if(DANAME)
 	    set(DATARGETNAME "daqDA-${ONLINEDETECTORNAME}-${DANAME}")
@@ -170,6 +187,7 @@ foreach(detector ${ONLINEDETECTORS} )
 	  endif(DANAME)
 	add_dependencies(${BASIC_TARGET} ${DATARGETNAME})  
 	add_dependencies(${BASIC_RPM} ${DATARGETNAME}-rpm) 
+      add_dependencies(${DYN_TARGET} ${DATARGETNAME}-dyn)
 	 set(DATARGETDIR "${DAINSTALL}/${DAMODULE}/tgt_$ENV{ALICE_TARGET}")
 	  file(MAKE_DIRECTORY ${DATARGETDIR})
 	  set(DAOBJ "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.o")
@@ -177,8 +195,10 @@ foreach(detector ${ONLINEDETECTORS} )
 	  set(DALIB "${DAMODULE}${SUBDAMODULE}${DANAME}DA")
 	  set(DAEXE "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe")
 	  set(DADEP "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.d") 
+      set(DADYNEXE "${DAMODULE}${SUBDAMODULE}${DANAME}da")
+
 	# DAVERSION
-	  execute_process(COMMAND svn info $ENV{ALICE_ROOT}/${DASRC} OUTPUT_VARIABLE _daversion OUTPUT_STRIP_TRAILING_WHITESPACE)
+      execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR}/${DASRC} OUTPUT_VARIABLE _daversion OUTPUT_STRIP_TRAILING_WHITESPACE)
 	  string(REGEX REPLACE ".*Last Changed Rev: ([^\n]+)\n.*" "\\1" DAVERSION ${_daversion})
 
 	#DAREVISION
@@ -200,7 +220,7 @@ foreach(detector ${ONLINEDETECTORS} )
 	  set(DAMAKEFILE "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.make")
 
   
-	  file(READ "$ENV{ALICE_ROOT}/${DASRC}" _dasrc)
+      file(READ "${CMAKE_SOURCE_DIR}/${DASRC}" _dasrc)
 	  getinfo(DACONTACT "Contact" ${_dasrc})
 	  getinfo(DALINKPAGE "Link" ${_dasrc})
 	  getinfo(DAREFRUN "Reference Run" ${_dasrc})
@@ -224,10 +244,15 @@ foreach(detector ${ONLINEDETECTORS} )
 	  set(CMAKE_MODULE_LINKER_FLAGS ${LDFLAGS})
 
 add_dependencies(DA-all ${DATARGETNAME})
+      add_dependencies(DA-dyn-all ${DATARGETNAME}-dyn)
 add_custom_target(${DATARGETNAME}
 WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
 add_dependencies(${DATARGETNAME} ${DAEXE})
+      add_custom_target(${DATARGETNAME}-dyn
+	WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+	)
+      add_dependencies(${DATARGETNAME}-dyn ${DADYNEXE})
 
 set(ZIP)
 foreach(_lib ${ALIROOTALIBS})
@@ -322,7 +347,7 @@ COMMAND @echo "***** Making archive ${DATAR} *****"
 COMMAND rm -rf ${DATAR}
 COMMAND rm -rf junk
 COMMAND mkdir junk && mkdir junk/${DAARC} 
-COMMAND cp -a ${ALICE_ROOT}/${DASRC} junk/${DAARC} 
+	COMMAND cp -a ${CMAKE_SOURCE_DIR}/${DASRC} junk/${DAARC} 
 COMMAND cp -a ${DAMAKEFILE} junk/${DAARC}/Makefile 
 COMMAND cp -a ${DASPECFILE} junk/${DAARC}/${DAMODULE}${SUBDAMODULE}${DANAME}da.spec
 COMMAND cd junk && tar czf ${DATAR} * 
@@ -455,6 +480,12 @@ WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 
 add_dependencies(${DAEXE} ${DASRC} DAOBJ_${DAEXE}_ ${BINPATH} ${LIBPATH} ${DALIB}.a ${DAQDALIB} ${ROOTLIB})
 
+      add_custom_target(${DADYNEXE}
+	COMMAND echo "***** Making executable ${DADYNEXE} *****"
+	COMMAND g++ ${LDFLAGS} -L${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${DAOBJ} ${ALIROOTDLIBS} ${ROOTDLIBS} ${SYSLIBS} ${DAQDALIB} ${AMOREDADLIBS} ${MONITORLIBS} -o ${DADYNEXE}
+	WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+	)
+      add_dependencies(${DADYNEXE} ${DASRC} DAOBJ_${DAEXE}_ ${BINPATH} ${LIBPATH} ${DAQDALIB} ${ALIROOTDLIBS})
 
 add_custom_target(DAOBJ_${DAEXE}_
 )
@@ -462,27 +493,32 @@ add_custom_command(
 TARGET DAOBJ_${DAEXE}_
 COMMAND echo "***** Compiling ${DASRC} *****"
 COMMAND echo "${DFLAGS}"
-COMMAND g++ -c -D${CMAKE_SYSTEM_NAME} -DDATE_SYS=${CMAKE_SYSTEM_NAME} -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I/date/rorc -I/date/runControl -I/date/readList -I/date/eventBuilder -I/date/banksManager -I/date/bufferManager -I/date/db -I/date/commonDefs -I/date/monitoring -I/date/infoLogger -I/date/logbook -I${DAQDADIR} -I${ALICE_ROOT}/RAW -I${CMAKE_BINARY_DIR}/include -I$ENV{ROOTSYS}/include ${mod} ${date_head} ${ALICE_ROOT}/${DASRC} -o ${DAOBJ}
-#COMMAND g++ -c ${DATEFLAGS} -I${DAQDADIR} -I${ALICE_ROOT}/RAW -I${CMAKE_BINARY_DIR}/include -I$ENV{ROOTSYS}/include ${mod} ${date_head} ${ALICE_ROOT}/${DASRC} -o ${DAOBJ}
-
-WORKING_DIRECTORY ${ALICE_ROOT} 
+	COMMAND g++ -c ${AMOREDEFINITIONS} -D${CMAKE_SYSTEM_NAME} ${DATE_CFLAGS} -I${DATE_ROOT}/infoLogger -I${DATE_ROOT}/logbook -I${DAQDADIR} -I${CMAKE_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${CMAKE_SOURCE_DIR}/${DASRC} -o ${DAOBJ}
+	#COMMAND g++ -c ${DATEFLAGS} -I${DAQDADIR} -I${CMAKE_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${CMAKE_SOURCE_DIR}/${DASRC} -o ${DAOBJ}
+# -DDATE_SYS=${CMAKE_SYSTEM_NAME} -DDATE_SYS=Linux -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I${DATE_ROOT}/rorc -I${DATE_ROOT}/runControl -I${DATE_ROOT}/readList -I${DATE_ROOT}/eventBuilder -I${DATE_ROOT}/banksManager -I${DATE_ROOT}/bufferManager -I${DATE_ROOT}/db -I${DATE_ROOT}/commonDefs -I${DATE_ROOT}/monitoring
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}  
+	# ${CMAKE_SOURCE_DIR} 
 )
 add_dependencies(DAOBJ_${DAEXE}_ DADEP_${DAEXE}_ )
-
 
 
 add_custom_target(DADEP_${DAEXE}_)
 add_custom_command(
 TARGET DADEP_${DAEXE}_
 COMMAND echo "***** Making detector-algorithm dependencies ${DADEP} *****"
-COMMAND g++ -MM -DLinux -DDATE_SYS=Linux -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I/date/rorc -I/date/runControl -I/date/readList -I/date/eventBuilder -I/date/banksManager -I/date/bufferManager -I/date/db -I/date/commonDefs -I/date/monitoring -I/date/infoLogger -I/date/logbook -I${DAQDADIR} -I${ALICE_ROOT}/RAW -I${CMAKE_BINARY_DIR}/include -I$ENV{ROOTSYS}/include ${mod} ${date_head} ${ALICE_ROOT}/${DASRC} > ${DADEP}
-WORKING_DIRECTORY ${ALICE_ROOT}
+	COMMAND g++ -MM ${DATE_CFLAGS} -I${DAQDADIR} -I${CMAKE_SOURCE_DIR}/RAW -I${CMAKE_BINARY_DIR}/include -I${ROOTINCDIR} ${mod} ${date_head} ${CMAKE_SOURCE_DIR}/${DASRC} > ${DADEP}
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}  
+	# ${CMAKE_SOURCE_DIR}
+	# -DDATE_SYS=Linux -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I${DATE_ROOT}/rorc -I${DATE_ROOT}/runControl -I${DATE_ROOT}/readList -I${DATE_ROOT}/eventBuilder -I${DATE_ROOT}/banksManager -I${DATE_ROOT}/bufferManager -I${DATE_ROOT}/db -I${DATE_ROOT}/commonDefs -I${DATE_ROOT}/monitoring -I${DATE_ROOT}/infoLogger -I${DATE_ROOT}/logbook
 )
 
 
 add_custom_command(TARGET clean
 COMMAND rm -rf junk*.exe
 WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+      add_custom_command(TARGET clean
+	COMMAND rm -rf ${DADYNEXE}
+	WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
   
 
 	endif(match)
