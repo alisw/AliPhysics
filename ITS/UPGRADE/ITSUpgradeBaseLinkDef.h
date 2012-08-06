@@ -19,4 +19,5 @@
 #pragma link C++ class  AliITSLoaderUpg+;
 #pragma link C++ class  AliITSgeomTGeoUpg+;
 #pragma link C++ class  AliITSCalibrationPixUpg+;
+#pragma link C++ class  AliITSsegmentationPixUpg+;
 #endif

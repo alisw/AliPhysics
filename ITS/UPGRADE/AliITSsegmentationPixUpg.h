@@ -13,8 +13,8 @@ public AliITSsegmentation {
   enum {kCM2MC=10000};
   AliITSsegmentationPixUpg(int nchips=0,int ncol=0,int nrow=0,
 			   double pitchX=0,double pitchZ=0,
-			   double pitchLftC=-1,double pitchRgtC=-1,
 			   double thickness=0,
+			   double pitchLftC=-1,double pitchRgtC=-1,
 			   double edgL=0,double edgR=0,double edgT=0,double edgB=0);
   
   //  AliITSsegmentationPixUpg(Option_t *opt="" );
@@ -56,6 +56,9 @@ public AliITSsegmentation {
   //
   virtual void PrintDefaultParameters() const {AliWarning("No def. parameters defined as const static data members");}
   //
+  Bool_t                           StoreWithID(UInt_t id, const char* outf);
+  static AliITSsegmentationPixUpg* LoadWithID(UInt_t id, const char* inpf);
+  //
  protected:
   Float_t Z2Col(Float_t z) const;
   Float_t Col2Z(Int_t col) const;
@@ -75,7 +78,8 @@ public AliITSsegmentation {
     Int_t    fNRow;            // number of rows
     Int_t    fNCol;            // number of columns (total)
     //
-
+    static const char* fgkSegmListName; // pattern for segmentations list name
+    //
   ClassDef(AliITSsegmentationPixUpg,1) //Segmentation class upgrade pixels 
 
 };

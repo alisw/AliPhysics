@@ -17,6 +17,10 @@
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoBBox.h>
+#include <TObjArray.h>
+#include <TString.h>
+#include <TSystem.h>
+#include <TFile.h>
 #include "AliITSsegmentationPixUpg.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,11 +35,13 @@
 
 ClassImp(AliITSsegmentationPixUpg)
 
+const char* AliITSsegmentationPixUpg::fgkSegmListName = "ITSUpgradeSegmentations";
+
 //_____________________________________________________________________________RS
 AliITSsegmentationPixUpg::AliITSsegmentationPixUpg(int nchips,int ncol,int nrow,
 						   double pitchX,double pitchZ,
-						   double pitchLftC,double pitchRgtC,
 						   double thickness,
+						   double pitchLftC,double pitchRgtC,
 						   double edgL,double edgR,double edgT,double edgB)
 : AliITSsegmentation()
   ,fGuardLft(edgL)
@@ -369,4 +375,71 @@ Int_t AliITSsegmentationPixUpg::GetChipsInLocalWindow(Int_t* array, Float_t zmin
 void AliITSsegmentationPixUpg::Init()
 {
   // init settings
+}
+
+//______________________________________________________________________
+Bool_t AliITSsegmentationPixUpg::StoreWithID(UInt_t id, const char* outf)
+{
+  // store in the special list under given ID
+  TString fns = outf;
+  gSystem->ExpandPathName(fns);
+  if (fns.IsNull()) {AliFatal("No file name provided"); return kFALSE;}
+  TFile* fout = TFile::Open(fns.Data(),"update");
+  if (!fout) {AliFatal(Form("Failed to open output file %s",outf)); return kFALSE;}
+  TObjArray* arr = (TObjArray*)fout->Get(fgkSegmListName);
+  if (!arr) arr = new TObjArray();
+  else {
+    int nent = arr->GetEntriesFast();
+    for (int i=nent;i--;) {
+      AliITSsegmentationPixUpg* segm = dynamic_cast<AliITSsegmentationPixUpg*>(arr->At(i));
+      if (segm && segm->GetUniqueID()==id) {
+	AliFatal(Form("Segmenation %d already exists in file %s",id,outf)); 
+	return kFALSE;
+      }
+    }
+  }
+  //
+  this->SetUniqueID(id);  
+  arr->AddLast(this);
+  arr->SetOwner(kTRUE);
+  fout->WriteObject(arr,fgkSegmListName,"kSingleKey");
+  fout->Close();
+  delete fout;
+  arr->Remove(this);
+  delete arr;
+  AliInfo(Form("Stored segmentation %d in %s",id,outf));
+  return kTRUE;
+  //
+}
+
+//______________________________________________________________________
+AliITSsegmentationPixUpg* AliITSsegmentationPixUpg::LoadWithID(UInt_t id, const char* inpf)
+{
+  // store in the special list under given ID
+  TString fns = inpf;
+  gSystem->ExpandPathName(fns);
+  if (fns.IsNull()) {AliFatalGeneral("LoadWithID","No file name provided"); return 0;}
+  TFile* finp = TFile::Open(fns.Data());
+  if (!finp) {AliFatalGeneral("LoadWithID",Form("Failed to open file %s",inpf)); return 0;}
+  TObjArray* arr = (TObjArray*)finp->Get(fgkSegmListName);
+  if (!arr) {
+    AliFatalGeneral("LoadWithID",Form("Failed to find segmenation array %s in %s",fgkSegmListName,inpf)); 
+    return 0;
+  }
+  AliITSsegmentationPixUpg* segm = 0;
+  int nent = arr->GetEntriesFast();
+  for (int i=nent;i--;) {
+    segm = dynamic_cast<AliITSsegmentationPixUpg*>(arr->At(i));
+    if (segm && segm->GetUniqueID()==id) {arr->RemoveAt(i); break;}
+    segm = 0;
+  }
+  //
+  if (!segm) {AliFatalGeneral("LoadWithID",Form("Failed to find segmenation %d in %s",id,inpf)); return 0;}
+  //
+  arr->SetOwner(kTRUE); // to not leave in memory other segmenations
+  finp->Close();
+  delete finp;
+  delete arr;
+  //
+  return segm;
 }
