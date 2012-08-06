@@ -102,8 +102,10 @@ public:
    *
    * @param forceReInit Force (re-)initalize flag
    * @param what        What to initialize 
+   *
+   * @return 0 on success, bit mask of failed elements otherwise
    */
-  void Init(Bool_t forceReInit=kFALSE, UInt_t what=kAll );
+  UShort_t Init(Bool_t forceReInit=kFALSE, UInt_t what=kAll );
   /** 
    * Initialize the manager.  This tries to read the parameters from
    * CDB.  If that fails, the class uses the hard-coded parameters.
@@ -111,8 +113,10 @@ public:
    * @param pp          Preprocessor 
    * @param forceReInit Force (re-)initalize flag
    * @param what        What to initialize 
+   *
+   * @return 0 on success, bit mask of failed elements otherwise
    */
-  void Init(AliFMDPreprocessor* pp, 
+  UShort_t Init(AliFMDPreprocessor* pp, 
 	    Bool_t              forceReInit=kFALSE, 
 	    UInt_t              what=kAll);
   /** 
@@ -135,10 +139,12 @@ public:
    * @param path        Where to look for the CSV files
    * @param forceReInit Always reinitialise 
    * @param what        What calibrations to load. 
+   *
+   * @return 0 on success, bit mask of failed elements otherwise
    */  
-  void Init(const char* path, 
-	    Bool_t      forceReInit=kFALSE, 
-	    UInt_t      what=kAll);
+  UShort_t Init(const char* path, 
+		Bool_t      forceReInit=kFALSE, 
+		UInt_t      what=kAll);
   
   /** 
    * Automatically generate a dead map from the pedestals and gains.
@@ -636,7 +642,8 @@ protected:
       fPulseGain(o.fPulseGain),
       fDeadMap(o.fDeadMap),
       fAltroMap(o.fAltroMap),
-      fStripRange(o.fStripRange)
+    fStripRange(o.fStripRange), 
+    fRunNo(o.fRunNo)
   {}
   /** 
    * Assignement operator 
@@ -680,44 +687,59 @@ protected:
    * Initialize gains.  Try to get them from CDB 
    *
    * @param pp Pre-processor if called from shuttle
+   * 
+   * @return 0 on success, error mask otherwise 
    */
-  void InitPulseGain(AliFMDPreprocessor* pp=0);
+  UShort_t InitPulseGain(AliFMDPreprocessor* pp=0);
   /**
    * Initialize pedestals.  Try to get them from CDB
    *
    * @param pp Pre-processor if called from shuttle
+   * 
+   * @return 0 on success, error mask otherwise 
    */
-  void InitPedestal(AliFMDPreprocessor* pp=0);
+  UShort_t InitPedestal(AliFMDPreprocessor* pp=0);
   /**
    * Initialize dead map.  Try to get it from CDB
    *
    * @param pp Pre-processor if called from shuttle
+   * 
+   * @return 0 on success, error mask otherwise 
    */
-  void InitDeadMap(AliFMDPreprocessor* pp=0);
+  UShort_t InitDeadMap(AliFMDPreprocessor* pp=0);
   /**
    * Initialize sample rates.  Try to get them from CDB
    *
    * @param pp Pre-processor if called from shuttle
+   * 
+   * @return 0 on success, error mask otherwise 
    */
-  void InitSampleRate(AliFMDPreprocessor* pp=0);
+  UShort_t InitSampleRate(AliFMDPreprocessor* pp=0);
   /**
    * Initialize zero suppression thresholds.  Try to get them from CDB
    *
    * @param pp Pre-processor if called from shuttle
+   * 
+   * @return 0 on success, error mask otherwise 
    */
-  void InitZeroSuppression(AliFMDPreprocessor* pp=0);
+  UShort_t InitZeroSuppression(AliFMDPreprocessor* pp=0);
   /**
    * Initialize hardware map.  Try to get it from CDB
    *
    * @param pp Pre-processor if called from shuttle
+   * 
+   * @return 0 on success, error mask otherwise 
    */
-  void InitAltroMap(AliFMDPreprocessor* pp=0);
+  UShort_t InitAltroMap(AliFMDPreprocessor* pp=0);
   /**
    * Initialize strip range.  Try to get it from CDB
    *
    * @param pp Pre-processor if called from shuttle
+   * 
+   * @return 0 on success, error mask otherwise 
    */
-  void InitStripRange(AliFMDPreprocessor* pp=0);
+  UShort_t InitStripRange(AliFMDPreprocessor* pp=0);
+  Bool_t CheckForNewRun();
 
   Bool_t          fIsInit;                   // Whether we've been initialised  
 
@@ -759,8 +781,9 @@ protected:
   AliFMDCalibDeadMap*         fDeadMap;         // Pulser gain
   AliFMDAltroMapping*         fAltroMap;        // Map of hardware
   AliFMDCalibStripRange*      fStripRange;      // Strip range
+  Int_t                       fRunNo;           // Initialized for this run
   
-  ClassDef(AliFMDParameters,6) // Manager of parameters
+  ClassDef(AliFMDParameters,7) // Manager of parameters
 };
 
 //__________________________________________________________________

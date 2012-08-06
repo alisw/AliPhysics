@@ -501,10 +501,10 @@ void AliFMDQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 //_____________________________________________________________________ 
 void AliFMDQADataMakerRec::StartOfDetectorCycle()
 {
-  // What 
-  // to 
-  // do?
-  
+  // Do an init on the reconstructor.  If we have the
+  // same run nothing happens, but if we have a new run, we update our
+  // parameters.
+  if (fUseReconstructor && fReconstructor) fReconstructor->Init();
   if (fRawsQAList) {
     for (Int_t index = 0 ; index < AliRecoParam::kNSpecies ; index++) {
       if (!fRawsQAList[index]) continue;

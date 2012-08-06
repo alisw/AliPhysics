@@ -83,7 +83,8 @@ AliFMDReconstructor::AliFMDReconstructor()
     fDiagStep3(0),
     fDiagStep4(0),
     fDiagAll(0),
-    fBad(0)
+    fBad(0), 
+    fZombie(false)
 {
   // Make a new FMD reconstructor object - default CTOR.  
   SetNoiseFactor();
@@ -117,7 +118,12 @@ AliFMDReconstructor::Init()
 
   // Initialize the parameters
   AliFMDParameters* param = AliFMDParameters::Instance();
-  param->Init();
+  if (param->Init() != 0) {
+    AliError("Failed to initialize parameters, making zombie");
+    fZombie = true;
+  }
+  else 
+    fZombie = false;
   
   // Current vertex position
   fCurrentVertex = 0;
@@ -129,32 +135,42 @@ AliFMDReconstructor::Init()
   // Check if we need diagnostics histograms 
   if (!fDiagnostics) return;
   AliInfo("Making diagnostics histograms");
-  fDiagStep1   = new TH2I("diagStep1", "Read ADC vs. Noise surpressed ADC",
-			1024, -.5, 1023.5, 1024, -.5, 1023.5);
-  fDiagStep1->SetDirectory(0);
-  fDiagStep1->GetXaxis()->SetTitle("ADC (read)");
-  fDiagStep1->GetYaxis()->SetTitle(Form("ADC (noise surpressed %4.f)", 
-					fNoiseFactor));
-  fDiagStep2  = new TH2F("diagStep2",  "ADC vs Edep deduced",
-			1024, -.5, 1023.5, 100, 0, 2);
-  fDiagStep2->SetDirectory(0);
-  fDiagStep2->GetXaxis()->SetTitle("ADC (noise surpressed)");
-  fDiagStep2->GetYaxis()->SetTitle("#Delta E [GeV]");
-  fDiagStep3  = new TH2F("diagStep3",  "Edep vs Edep path corrected",
-			100, 0., 2., 100, 0., 2.);
-  fDiagStep3->SetDirectory(0);
-  fDiagStep3->GetXaxis()->SetTitle("#Delta E [GeV]");
-  fDiagStep3->GetYaxis()->SetTitle("#Delta E/#Delta x #times #delta x [GeV]");
-  fDiagStep4  = new TH2F("diagStep4",  "Edep vs Multiplicity deduced", 
-			100, 0., 2., 100, -.1, 19.9);
-  fDiagStep4->SetDirectory(0);
-  fDiagStep4->GetXaxis()->SetTitle("#Delta E/#Delta x #times #delta x [GeV]");
-  fDiagStep4->GetYaxis()->SetTitle("Multiplicity");
-  fDiagAll    = new TH2F("diagAll",    "Read ADC vs Multiplicity deduced", 
-			 1024, -.5, 1023.5, 100, -.1, 19.9);
-  fDiagAll->SetDirectory(0);
-  fDiagAll->GetXaxis()->SetTitle("ADC (read)");
-  fDiagAll->GetYaxis()->SetTitle("Multiplicity");
+  if (!fDiagStep1) {
+    fDiagStep1   = new TH2I("diagStep1", "Read ADC vs. Noise surpressed ADC",
+			    1024, -.5, 1023.5, 1024, -.5, 1023.5);
+    fDiagStep1->SetDirectory(0);
+    fDiagStep1->GetXaxis()->SetTitle("ADC (read)");
+    fDiagStep1->GetYaxis()->SetTitle(Form("ADC (noise surpressed %4.f)", 
+					  fNoiseFactor));
+  }
+  if (!fDiagStep2) {
+    fDiagStep2  = new TH2F("diagStep2",  "ADC vs Edep deduced",
+			   1024, -.5, 1023.5, 100, 0, 2);
+    fDiagStep2->SetDirectory(0);
+    fDiagStep2->GetXaxis()->SetTitle("ADC (noise surpressed)");
+    fDiagStep2->GetYaxis()->SetTitle("#Delta E [GeV]");
+  }
+  if (!fDiagStep3) {
+    fDiagStep3  = new TH2F("diagStep3",  "Edep vs Edep path corrected",
+			   100, 0., 2., 100, 0., 2.);
+    fDiagStep3->SetDirectory(0);
+    fDiagStep3->GetXaxis()->SetTitle("#Delta E [GeV]");
+    fDiagStep3->GetYaxis()->SetTitle("#Delta E/#Delta x #times #delta x [GeV]");
+  }
+  if (!fDiagStep4) {
+    fDiagStep4  = new TH2F("diagStep4",  "Edep vs Multiplicity deduced", 
+			   100, 0., 2., 100, -.1, 19.9);
+    fDiagStep4->SetDirectory(0);
+    fDiagStep4->GetXaxis()->SetTitle("#Delta E/#Delta x #times #delta x [GeV]");
+    fDiagStep4->GetYaxis()->SetTitle("Multiplicity");
+    fDiagAll    = new TH2F("diagAll",    "Read ADC vs Multiplicity deduced", 
+			   1024, -.5, 1023.5, 100, -.1, 19.9);
+  }
+  if (!fDiagAll) {
+    fDiagAll->SetDirectory(0);
+    fDiagAll->GetXaxis()->SetTitle("ADC (read)");
+    fDiagAll->GetYaxis()->SetTitle("Multiplicity");
+  }
 }
 
 //____________________________________________________________________
@@ -163,6 +179,10 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
 				   TTree* digitsTree) const
 {
   // Convert Raw digits to AliFMDDigit's in a tree 
+  if (fZombie { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return;
+  }
   AliFMDDebug(1, ("Reading raw data into digits tree"));
   if (!digitsTree) { 
     AliError("No digits tree passed");
@@ -317,6 +337,10 @@ void
 AliFMDReconstructor::Reconstruct(AliFMDRawReader& rawReader) const
 {
   AliFMDDebug(1, ("Reconstructing from FMD raw reader"));
+  if (fZombie { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return;
+  }
   fBad.Reset(false);
   UShort_t det, sec, str, fac;
   Short_t  adc, oldDet = -1;
@@ -347,6 +371,10 @@ AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
   //   reader	Raw event reader 
   //   ctree    Not used - 'cluster tree' to store rec-points in. 
   AliFMDDebug(1, ("Reconstructing from raw reader"));
+  if (fZombie { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return;
+  }
   AliFMDRawReader rawReader(reader, 0);
   Reconstruct(rawReader);
 }
@@ -361,6 +389,10 @@ AliFMDReconstructor::Digitize(AliRawReader* reader, TClonesArray* sdigits) const
   // Parameters: 
   //   reader	Raw event reader 
   //   ctree    Not used. 
+  if (fZombie { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return;
+  }
   AliFMDRawReader rawReader(reader, 0);
 
   UShort_t det, sec, str, sam, rat, fac;
@@ -395,6 +427,10 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   //   digitsTree	Pointer to a tree containing digits 
   //   clusterTree	Pointer to output tree 
   // 
+  if (fZombie { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return;
+  }
   if (!fMult) fMult = new TClonesArray("AliFMDRecPoint");
 
   AliFMDDebug(1, ("Reconstructing from digits in a tree"));
@@ -445,6 +481,10 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits,
   // Parameters: 
   //    digits	Array of digits
   // 
+  if (fZombie { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return;
+  }
   AliFMDAltroMapping* map = AliFMDParameters::Instance()->GetAltroMap();
   for (size_t i = 1; i <= 3; i++) { 
     fZS[i-1]       = rawRead.IsZeroSuppressed(map->Detector2DDL(i));
@@ -932,6 +972,10 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
   // FIXME: The vertex may not be known when Reconstruct is executed,
   // so we may have to move some of that member function here. 
   AliFMDDebug(2, ("Calling FillESD with two trees and one ESD"));
+  if (fZombie { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return;
+  }
   // fESDObj->Print();
 
   // Fix up ESD so that only truely dead channels get the kInvalidMult flag. 
@@ -994,6 +1038,10 @@ AliFMDReconstructor::FillESD(AliRawReader*, TTree* clusterTree,
   // 
   // Forwards to above member function 
   //
+  if (fZombie { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return;
+  }
   TTree* dummy = 0;
   FillESD(dummy, clusterTree, esd);
 }

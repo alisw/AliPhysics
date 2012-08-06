@@ -108,7 +108,8 @@ AliFMDParameters::AliFMDParameters()
     fPulseGain(0), 
     fDeadMap(0), 
     fAltroMap(0), 
-    fStripRange(0)
+  fStripRange(0),
+  fRunNo(-1)
 {
   //
   // Default constructor 
@@ -128,7 +129,19 @@ AliFMDParameters::AliFMDParameters()
 }
 
 //__________________________________________________________________
-void
+Bool_t
+AliFMDParameters::CheckForNewRun()
+{
+  Int_t run = AliCDBManager::Instance()->GetRun();
+  if (run != fRunNo) { 
+    fIsInit = false;
+    fRunNo = run;
+  }
+  return run != fRunNo;
+}
+
+//__________________________________________________________________
+UShort_t
 AliFMDParameters::Init(Bool_t forceReInit, UInt_t what)
 {
   // 
@@ -140,18 +153,24 @@ AliFMDParameters::Init(Bool_t forceReInit, UInt_t what)
   //    what        What to initialize 
   //
   if (forceReInit) fIsInit = kFALSE;
-  if (fIsInit) return;
-  if (what & kPulseGain)       InitPulseGain();
-  if (what & kPedestal)        InitPedestal();
-  if (what & kDeadMap)         InitDeadMap();
-  if (what & kSampleRate)      InitSampleRate();
-  if (what & kZeroSuppression) InitZeroSuppression();
-  if (what & kAltroMap)        InitAltroMap();
-  if (what & kStripRange)      InitStripRange();
+  CheckForNewRun();
+
+  if (fIsInit) return 0;
+
+  UShort_t errMask = 0;
+  if (what & kPulseGain)       errMask |= InitPulseGain();
+  if (what & kPedestal)        errMask |= InitPedestal();
+  if (what & kDeadMap)         errMask |= InitDeadMap();
+  if (what & kSampleRate)      errMask |= InitSampleRate();
+  if (what & kZeroSuppression) errMask |= InitZeroSuppression();
+  if (what & kAltroMap)        errMask |= InitAltroMap();
+  if (what & kStripRange)      errMask |= InitStripRange();
   fIsInit = kTRUE;
+
+  return errMask;
 }
 //__________________________________________________________________
-void
+UShort_t
 AliFMDParameters::Init(AliFMDPreprocessor* pp, Bool_t forceReInit, UInt_t what)
 {
   // 
@@ -164,15 +183,21 @@ AliFMDParameters::Init(AliFMDPreprocessor* pp, Bool_t forceReInit, UInt_t what)
   //    what        What to initialize 
   //
   if (forceReInit) fIsInit = kFALSE;
-  if (fIsInit) return;
-  if (what & kPulseGain)       InitPulseGain(pp);
-  if (what & kPedestal)        InitPedestal(pp);
-  if (what & kDeadMap)         InitDeadMap(pp);
-  if (what & kSampleRate)      InitSampleRate(pp);
-  if (what & kZeroSuppression) InitZeroSuppression(pp);
-  if (what & kAltroMap)        InitAltroMap(pp);
-  if (what & kStripRange)      InitStripRange(pp);
+  CheckForNewRun();
+
+  if (fIsInit) return 0;
+
+  UShort_t errMask = 0;
+  if (what & kPulseGain)       errMask |= InitPulseGain(pp);
+  if (what & kPedestal)        errMask |= InitPedestal(pp);
+  if (what & kDeadMap)         errMask |= InitDeadMap(pp);
+  if (what & kSampleRate)      errMask |= InitSampleRate(pp);
+  if (what & kZeroSuppression) errMask |= InitZeroSuppression(pp);
+  if (what & kAltroMap)        errMask |= InitAltroMap(pp);
+  if (what & kStripRange)      errMask |= InitStripRange(pp);
   fIsInit = kTRUE;
+
+  return errMask;
 }
 
 //__________________________________________________________________
@@ -203,7 +228,7 @@ AliFMDParameters::CheckFile(const char* prefix,
 }
 
 //__________________________________________________________________
-void
+UShort_t
 AliFMDParameters::Init(const char* path, Bool_t forceReInit, UInt_t what)
 {
   // 
@@ -229,7 +254,9 @@ AliFMDParameters::Init(const char* path, Bool_t forceReInit, UInt_t what)
   //    what        What calibrations to load. 
   //  
   if (forceReInit) fIsInit = kFALSE;
-  if (fIsInit) return;
+  CheckForNewRun();
+
+  if (fIsInit) return 0;
 
   AliFMDCalibStripRange*  range = 0;
   AliFMDCalibSampleRate*  rate  = 0;
@@ -266,7 +293,7 @@ AliFMDParameters::Init(const char* path, Bool_t forceReInit, UInt_t what)
   if (peds)  what &= ~kPedestal;
   if (gains) what &= ~kPulseGain;
 
-  Init(kFALSE, what);
+  UShort_t ret = Init(kFALSE, what);
   
   if (range) SetStripRange(range);
   if (rate)  SetSampleRate(rate);
@@ -274,6 +301,8 @@ AliFMDParameters::Init(const char* path, Bool_t forceReInit, UInt_t what)
   if (gains) SetGain(gains);
 
   fIsInit = kTRUE;
+
+  return ret;
 }
 
 //__________________________________________________________________
@@ -669,7 +698,7 @@ AliFMDParameters::GetEntry(const char* path, AliFMDPreprocessor* pp,
 
     
 //__________________________________________________________________
-void
+UShort_t
 AliFMDParameters::InitPulseGain(AliFMDPreprocessor* pp)
 {
   // 
@@ -679,16 +708,22 @@ AliFMDParameters::InitPulseGain(AliFMDPreprocessor* pp)
   //    pp Pre-processor if called from shuttle
   //
   AliCDBEntry*   gain     = GetEntry(fgkPulseGain, pp);
-  if (!gain) return;
+  if (!gain) return kPulseGain;
   
   AliFMDDebug(5, ("Got gain from CDB"));
   fPulseGain = dynamic_cast<AliFMDCalibGain*>(gain->GetObject());
-  if (!fPulseGain) AliFatal("Invalid pulser gain object from CDB");
-  if (!fPulseGain->Values().Ptr()) 
-    AliFatal("Empty pulser gain object from CDB");
+  if (!fPulseGain) { 
+    AliError("Invalid pulser gain object from CDB");
+    return kPulseGain;
+  }
+  if (!fPulseGain->Values().Ptr()) {
+    AliError("Empty pulser gain object from CDB");
+    return kPulseGain;
+  }
+  return 0;
 }
 //__________________________________________________________________
-void
+UShort_t
 AliFMDParameters::InitPedestal(AliFMDPreprocessor* pp)
 {
   //
@@ -698,16 +733,23 @@ AliFMDParameters::InitPedestal(AliFMDPreprocessor* pp)
   //    pp Pre-processor if called from shuttle
   //
   AliCDBEntry*   pedestal = GetEntry(fgkPedestal, pp);
-  if (!pedestal) return;
+  if (!pedestal) return kPedestal;
 
   AliFMDDebug(5, ("Got pedestal from CDB"));
   fPedestal = dynamic_cast<AliFMDCalibPedestal*>(pedestal->GetObject());
-  if (!fPedestal) AliFatal("Invalid pedestal object from CDB");
-  if (!fPedestal->Values().Ptr()) AliFatal("Empty pedestal object from CDB");
+  if (!fPedestal) {
+    AliError("Invalid pedestal object from CDB");
+    return kPedestal;
+  }
+  if (!fPedestal->Values().Ptr()) {
+    AliError("Empty pedestal object from CDB");
+    return kPedestal;
+  }
+  return 0;
 }
 
 //__________________________________________________________________
-void
+UShort_t
 AliFMDParameters::InitDeadMap(AliFMDPreprocessor* pp)
 {
   //
@@ -717,16 +759,23 @@ AliFMDParameters::InitDeadMap(AliFMDPreprocessor* pp)
   //    pp Pre-processor if called from shuttle
   //
   AliCDBEntry*   deadMap  = GetEntry(fgkDead, pp);
-  if (!deadMap) return;
+  if (!deadMap) return kDeadMap;
   
   AliFMDDebug(5, ("Got dead map from CDB"));
   fDeadMap = dynamic_cast<AliFMDCalibDeadMap*>(deadMap->GetObject());
-  if (!fDeadMap) AliFatal("Invalid dead map object from CDB");
-  if (!fDeadMap->Ptr()) AliFatal("Empty dead map object from CDB");
+  if (!fDeadMap) { 
+    AliError("Invalid dead map object from CDB");
+    return kDeadMap;
+  }
+  if (!fDeadMap->Ptr()) {
+    AliError("Empty dead map object from CDB");
+    return kDeadMap;
+  }
+  return 0;
 }
 
 //__________________________________________________________________
-void
+UShort_t
 AliFMDParameters::InitZeroSuppression(AliFMDPreprocessor* pp)
 {
   //
@@ -736,11 +785,15 @@ AliFMDParameters::InitZeroSuppression(AliFMDPreprocessor* pp)
   //    pp Pre-processor if called from shuttle
   //
   AliCDBEntry*   zeroSup  = GetEntry(fgkZeroSuppression, pp);
-  if (!zeroSup) return;
+  if (!zeroSup) return kZeroSuppression;
+
   AliFMDDebug(5, ("Got zero suppression from CDB"));
   fZeroSuppression = 
     dynamic_cast<AliFMDCalibZeroSuppression*>(zeroSup->GetObject());
-  if (!fZeroSuppression)AliFatal("Invalid zero suppression object from CDB");
+  if (!fZeroSuppression) {
+    AliError("Invalid zero suppression object from CDB");
+    return kZeroSuppression;
+  }
   if (!fZeroSuppression->Ptr()) {
     AliWarningF("Empty zero suppression object from CDB, assuming %d",
 		fFixedZeroSuppression);
@@ -749,10 +802,11 @@ AliFMDParameters::InitZeroSuppression(AliFMDPreprocessor* pp)
       delete fZeroSuppression;
     fZeroSuppression = 0;
   }
+  return 0;
 }
 
 //__________________________________________________________________
-void
+UShort_t
 AliFMDParameters::InitSampleRate(AliFMDPreprocessor* pp)
 {
   //
@@ -762,16 +816,23 @@ AliFMDParameters::InitSampleRate(AliFMDPreprocessor* pp)
   //    pp Pre-processor if called from shuttle
   //
   AliCDBEntry*   sampRat  = GetEntry(fgkSampleRate, pp);
-  if (!sampRat) return;
+  if (!sampRat) return kSampleRate;
+
   AliFMDDebug(5, ("Got zero suppression from CDB"));
   fSampleRate = dynamic_cast<AliFMDCalibSampleRate*>(sampRat->GetObject());
-  if (!fSampleRate) AliFatal("Invalid sample rate object from CDB");
-  if (!fSampleRate->Rates().Ptr()) 
-    AliFatal("empty sample rate object from CDB");
+  if (!fSampleRate) {
+    AliError("Invalid sample rate object from CDB");
+    return kSampleRate;
+  }
+  if (!fSampleRate->Rates().Ptr()) { 
+    AliError("empty sample rate object from CDB");
+    return kSampleRate;
+  }
+  return 0;
 }
 
 //__________________________________________________________________
-void
+UShort_t
 AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
 {
   //
@@ -785,18 +846,20 @@ AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
     fAltroMap = 0;
   }
   AliCDBEntry*   hwMap    = GetEntry(fgkAltroMap, pp, kFALSE);       
-  if (!hwMap) return;
-
-  AliFMDDebug(5, ("Got ALTRO map from CDB"));
-  fAltroMap = dynamic_cast<AliFMDAltroMapping*>(hwMap->GetObject());
-  if (!fAltroMap) {
-    AliFatal("Invalid ALTRO map object from CDB");
-    fAltroMap = new AliFMDAltroMapping;
+  if (hwMap) {
+    AliFMDDebug(5, ("Got ALTRO map from CDB"));
+    fAltroMap = dynamic_cast<AliFMDAltroMapping*>(hwMap->GetObject());
   }
+  if (!fAltroMap) {
+    AliError("Invalid ALTRO map object from CDB");
+    fAltroMap = new AliFMDAltroMapping;
+    // return kAltroMap;
+  }
+  return 0;
 }
 
 //__________________________________________________________________
-void
+UShort_t
 AliFMDParameters::InitStripRange(AliFMDPreprocessor* pp)
 {
   //
@@ -806,12 +869,20 @@ AliFMDParameters::InitStripRange(AliFMDPreprocessor* pp)
   //    pp Pre-processor if called from shuttle
   //
   AliCDBEntry*   range    = GetEntry(fgkStripRange, pp);
-  if (!range) return;
+  if (!range) return kStripRange;
+
   AliFMDDebug(5, ("Got strip range from CDB"));
   fStripRange = dynamic_cast<AliFMDCalibStripRange*>(range->GetObject());
-  if (!fStripRange) AliFatal("Invalid strip range object from CDB");
-  if (!fStripRange->Ranges().Ptr()) 
-    AliFatal("Empty strip range object from CDB");
+
+  if (!fStripRange) {
+    AliError("Invalid strip range object from CDB");
+    return kStripRange;
+  }
+  if (!fStripRange->Ranges().Ptr()) {
+    AliError("Empty strip range object from CDB");
+    return kStripRange;
+  }
+  return 0;
 }
 
 
