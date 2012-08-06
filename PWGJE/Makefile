@@ -88,6 +88,10 @@ ifneq ($(PWG4JCORRAN_INCLUDE),)
   ALICEINC += -I../$(PWG4JCORRAN_INCLUDE)
 endif
 
+ifneq ($(PWGJEEMCALJetTasks_INCLUDE),)
+  ALICEINC += -I../$(PWGJEEMCALJetTasks_INCLUDE)
+endif
+
 # only if no par file was loaded before
 #ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
