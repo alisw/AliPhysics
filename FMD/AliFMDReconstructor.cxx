@@ -179,7 +179,7 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
 				   TTree* digitsTree) const
 {
   // Convert Raw digits to AliFMDDigit's in a tree 
-  if (fZombie { 
+  if (fZombie) { 
     AliWarning("I'm a zombie - cannot do anything");
     return;
   }
@@ -337,7 +337,7 @@ void
 AliFMDReconstructor::Reconstruct(AliFMDRawReader& rawReader) const
 {
   AliFMDDebug(1, ("Reconstructing from FMD raw reader"));
-  if (fZombie { 
+  if (fZombie) { 
     AliWarning("I'm a zombie - cannot do anything");
     return;
   }
@@ -371,7 +371,7 @@ AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
   //   reader	Raw event reader 
   //   ctree    Not used - 'cluster tree' to store rec-points in. 
   AliFMDDebug(1, ("Reconstructing from raw reader"));
-  if (fZombie { 
+  if (fZombie) { 
     AliWarning("I'm a zombie - cannot do anything");
     return;
   }
@@ -389,7 +389,7 @@ AliFMDReconstructor::Digitize(AliRawReader* reader, TClonesArray* sdigits) const
   // Parameters: 
   //   reader	Raw event reader 
   //   ctree    Not used. 
-  if (fZombie { 
+  if (fZombie) { 
     AliWarning("I'm a zombie - cannot do anything");
     return;
   }
@@ -427,7 +427,7 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   //   digitsTree	Pointer to a tree containing digits 
   //   clusterTree	Pointer to output tree 
   // 
-  if (fZombie { 
+  if (fZombie) { 
     AliWarning("I'm a zombie - cannot do anything");
     return;
   }
@@ -481,7 +481,7 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits,
   // Parameters: 
   //    digits	Array of digits
   // 
-  if (fZombie { 
+  if (fZombie) { 
     AliWarning("I'm a zombie - cannot do anything");
     return;
   }
@@ -972,7 +972,7 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
   // FIXME: The vertex may not be known when Reconstruct is executed,
   // so we may have to move some of that member function here. 
   AliFMDDebug(2, ("Calling FillESD with two trees and one ESD"));
-  if (fZombie { 
+  if (fZombie) { 
     AliWarning("I'm a zombie - cannot do anything");
     return;
   }
@@ -1038,7 +1038,7 @@ AliFMDReconstructor::FillESD(AliRawReader*, TTree* clusterTree,
   // 
   // Forwards to above member function 
   //
-  if (fZombie { 
+  if (fZombie) { 
     AliWarning("I'm a zombie - cannot do anything");
     return;
   }
