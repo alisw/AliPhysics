@@ -436,6 +436,7 @@ protected:
   mutable Bool_t        fZS[3];         // Zero-suppredded?
   mutable UShort_t      fZSFactor[3];   // Noise factor for Zero-suppression
   mutable AliFMDBoolMap fBad;           // Strip marked bad
+  Bool_t                fZombie;        // Are we a zombie?
 private:
    
   ClassDef(AliFMDReconstructor, 3)  // class for the FMD reconstruction
