@@ -54,6 +54,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fESD(0),
   fOutputList(0),
   fEvtSel(0),
+  fNClusEt10(0),
   fPVtxZ(0),                 
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),        
@@ -82,6 +83,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fESD(0),
   fOutputList(0),
   fEvtSel(0),
+  fNClusEt10(0),
   fPVtxZ(0),            
   fCellAbsIdVsAmpl(0),  
   fNClusHighClusE(0),   
@@ -113,7 +115,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   
   fEvtSel = new TH1F("hEvtSel","Event selection counter (0=all trg, 1=pvz cut) ;evt cut ;dN/dcut}",2,0,2);
   fOutputList->Add(fEvtSel);
-    
+  
+  fNClusEt10 = new TH1F("hNClusEt10","# of cluster with E_{T}>10 per event;E;",101,-0.5,100.5);
+  fOutputList->Add(fNClusEt10);
   
   fPVtxZ = new TH1F("hPVtxZ","primary vertex Z before cut;prim-vz(cm) ;",200,-100,100);
   fOutputList->Add(fPVtxZ);
@@ -222,6 +226,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
   if(nclus==0)
     return;
   Double_t maxE = 0;
+  Int_t nclus10 = 0;
   for(Int_t ic=0;ic<nclus;ic++){
     maxE=0;
     AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(fCaloClusters->At(ic));
@@ -240,6 +245,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
     Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
+    if(Et>10)
+      nclus10++;
     Float_t ceiso, cephiband, cecore;
     Float_t triso, trphiband, trcore;
     Float_t alliso, allphiband, allcore;
@@ -271,6 +278,7 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       maxE = c->E();
   }
   fNClusHighClusE->Fill(maxE,nclus);
+  fNClusEt10->Fill(nclus10);
 } 
 
 //________________________________________________________________________
