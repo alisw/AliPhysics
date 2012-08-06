@@ -16,7 +16,6 @@
 #include "AliCentrality.h"
 #include "AliEMCALGeometry.h"
 #include "AliESDEvent.h"
-//#include "AliEmcalJet.h"
 #include "AliEmcalParticle.h"
 #include "AliEventplane.h"
 #include "AliInputEventHandler.h"
