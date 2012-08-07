@@ -275,10 +275,12 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
 
   fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",200,-0.5,199.5,200,-0.5,199.5,200,-0.5,199.5);
 
+  fHistNtrUnCorrEvSel->Sumw2();
   fHistNtrCorrEvSel->Sumw2();
   fHistNtrCorrEvWithCand->Sumw2();
   fHistNtrCorrEvWithD->Sumw2();
   fHistGenPrimaryParticlesInelGt0->Sumw2();
+  fOutput->Add(fHistNtrUnCorrEvSel);
   fOutput->Add(fHistNtrCorrEvSel);
   fOutput->Add(fHistNtrCorrEvWithCand);
   fOutput->Add(fHistNtrCorrEvWithD);
@@ -613,6 +615,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   }
   fCounter->StoreCandidates(aod,nSelectedNoPID,kTRUE);
   fCounter->StoreCandidates(aod,nSelectedPID,kFALSE);
+ fHistNtrUnCorrEvSel->Fill(countTreta1);
   fHistNtrCorrEvSel->Fill(countTreta1corr);
   if(nSelectedPID>0) fHistNtrCorrEvWithCand->Fill(countTreta1corr);
   if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countTreta1corr);
