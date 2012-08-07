@@ -308,10 +308,12 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     // --> SAME pT region for trigger and assoc: NO double counting with this
     // --> DIFF pT region for trigger and assoc: Missing assoc. particles with j > i to a trigger i 
     //                          --> can be handled afterwards by using assoc. as trigger as well ?!     
-    for(Int_t j = 0; j < iMax; j++) {   // or go to full here (everything prepared)?
-      if(j == i) continue;
-      if (particlesMixed && jMax < i)  // if the mixed track number is smaller than the main event one (could be done better if one loops over all tracks)
+    for(Int_t j = 0; j < iMax; j++) {  
+      
+      if (particlesMixed && j == jMax-1 )  // if the mixed track number is smaller than the main event one 
 	break;
+
+      if(j == i) continue; // no auto correlations
       
       AliVParticle* secondParticle = (AliVParticle*) particlesSecond->At(j);
       
