@@ -4,6 +4,8 @@ TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40
 const Int_t gRebin = 1;
 void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root", 
 			      Int_t gCentrality = 1,
+			      Bool_t kShowShuffled = kFALSE, 
+			      Bool_t kShowMixed = kTRUE, 
 			      Double_t psiMin = -0.5, Double_t psiMax = 0.5,
 			      Double_t ptTriggerMin = -1.,
 			      Double_t ptTriggerMax = -1.,
@@ -26,8 +28,10 @@ void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root",
 
   //Prepare the objects and return them
   TList *listBF = GetListOfObjects(filename,gCentrality,0);
-  TList *listBFShuffled = GetListOfObjects(filename,gCentrality,1);
-  TList *listBFMixed = GetListOfObjects(filename,gCentrality,2);
+  TList *listBFShuffled = NULL;
+  if(kShowShuffled) listBFShuffled = GetListOfObjects(filename,gCentrality,1);
+  TList *listBFMixed = NULL;
+  if(kShowMixed) listBFMixed = GetListOfObjects(filename,gCentrality,2);
   if(!listBF) {
     Printf("The TList object was not created");
     return;
@@ -179,11 +183,17 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   //listBF->ls();
   //Printf("=================");
   hP = (AliTHn*) listBF->FindObject("fHistPV0M");
+  hP->SetName("gHistP");
   hN = (AliTHn*) listBF->FindObject("fHistNV0M");
+  hN->SetName("gHistN");
   hPN = (AliTHn*) listBF->FindObject("fHistPNV0M");
+  hPN->SetName("gHistPN");
   hNP = (AliTHn*) listBF->FindObject("fHistNPV0M");
+  hNP->SetName("gHistNP");
   hPP = (AliTHn*) listBF->FindObject("fHistPPV0M");
+  hPP->SetName("gHistPP");
   hNN = (AliTHn*) listBF->FindObject("fHistNNV0M");
+  hNN->SetName("gHistNN");
 
   AliBalancePsi *b = new AliBalancePsi();
   b->SetHistNp(hP);
@@ -200,21 +210,30 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   AliTHn *hNPShuffled = NULL;
   AliTHn *hPPShuffled = NULL;
   AliTHn *hNNShuffled = NULL;
-  //listBFShuffled->ls();
-  hPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistP_shuffleV0M");
-  hNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistN_shuffleV0M");
-  hPNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPN_shuffleV0M");
-  hNPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNP_shuffleV0M");
-  hPPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPP_shuffleV0M");
-  hNNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNN_shuffleV0M");
-
-  AliBalancePsi *bShuffled = new AliBalancePsi();
-  bShuffled->SetHistNp(hPShuffled);
-  bShuffled->SetHistNn(hNShuffled);
-  bShuffled->SetHistNpn(hPNShuffled);
-  bShuffled->SetHistNnp(hNPShuffled);
-  bShuffled->SetHistNpp(hPPShuffled);
-  bShuffled->SetHistNnn(hNNShuffled);
+  if(listBFShuffled) {
+    //listBFShuffled->ls();
+    
+    hPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistP_shuffleV0M");
+    hPShuffled->SetName("gHistPShuffled");
+    hNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistN_shuffleV0M");
+    hNShuffled->SetName("gHistNShuffled");
+    hPNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPN_shuffleV0M");
+    hPNShuffled->SetName("gHistPNShuffled");
+    hNPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNP_shuffleV0M");
+    hNPShuffled->SetName("gHistNPShuffled");
+    hPPShuffled = (AliTHn*) listBFShuffled->FindObject("fHistPP_shuffleV0M");
+    hPPShuffled->SetName("gHistPPShuffled");
+    hNNShuffled = (AliTHn*) listBFShuffled->FindObject("fHistNN_shuffleV0M");
+    hNNShuffled->SetName("gHistNNShuffled");
+    
+    AliBalancePsi *bShuffled = new AliBalancePsi();
+    bShuffled->SetHistNp(hPShuffled);
+    bShuffled->SetHistNn(hNShuffled);
+    bShuffled->SetHistNpn(hPNShuffled);
+    bShuffled->SetHistNnp(hNPShuffled);
+    bShuffled->SetHistNpp(hPPShuffled);
+    bShuffled->SetHistNnn(hNNShuffled);
+  }
 
   //balance function mixing
   AliTHn *hPMixed = NULL;
@@ -223,21 +242,31 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   AliTHn *hNPMixed = NULL;
   AliTHn *hPPMixed = NULL;
   AliTHn *hNNMixed = NULL;
-  //listBFMixed->ls();
-  hPMixed = (AliTHn*) listBFMixed->FindObject("fHistPV0M");
-  hNMixed = (AliTHn*) listBFMixed->FindObject("fHistNV0M");
-  hPNMixed = (AliTHn*) listBFMixed->FindObject("fHistPNV0M");
-  hNPMixed = (AliTHn*) listBFMixed->FindObject("fHistNPV0M");
-  hPPMixed = (AliTHn*) listBFMixed->FindObject("fHistPPV0M");
-  hNNMixed = (AliTHn*) listBFMixed->FindObject("fHistNNV0M");
 
-  AliBalancePsi *bMixed = new AliBalancePsi();
-  bMixed->SetHistNp(hPMixed);
-  bMixed->SetHistNn(hNMixed);
-  bMixed->SetHistNpn(hPNMixed);
-  bMixed->SetHistNnp(hNPMixed);
-  bMixed->SetHistNpp(hPPMixed);
-  bMixed->SetHistNnn(hNNMixed);
+  if(listBFMixed) {
+    //listBFMixed->ls();
+
+    hPMixed = (AliTHn*) listBFMixed->FindObject("fHistPV0M");
+    hPMixed->SetName("gHistPMixed");
+    hNMixed = (AliTHn*) listBFMixed->FindObject("fHistNV0M");
+    hNMixed->SetName("gHistNMixed");
+    hPNMixed = (AliTHn*) listBFMixed->FindObject("fHistPNV0M");
+    hPNMixed->SetName("gHistPNMixed");
+    hNPMixed = (AliTHn*) listBFMixed->FindObject("fHistNPV0M");
+    hNPMixed->SetName("gHistNPMixed");
+    hPPMixed = (AliTHn*) listBFMixed->FindObject("fHistPPV0M");
+    hPPMixed->SetName("gHistPPMixed");
+    hNNMixed = (AliTHn*) listBFMixed->FindObject("fHistNNV0M");
+    hNNMixed->SetName("gHistNNMixed");
+    
+    AliBalancePsi *bMixed = new AliBalancePsi();
+    bMixed->SetHistNp(hPMixed);
+    bMixed->SetHistNn(hNMixed);
+    bMixed->SetHistNpn(hPNMixed);
+    bMixed->SetHistNnp(hNPMixed);
+    bMixed->SetHistNpp(hPPMixed);
+    bMixed->SetHistNnn(hNNMixed);
+  }
 
   TH2D *gHistBalanceFunction;
   TH2D *gHistBalanceFunctionSubtracted;
@@ -249,34 +278,38 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   histoTitle += centralityArray[gCentrality-1]; 
   histoTitle += "%";
   if((psiMin == -0.5)&&(psiMax == 0.5))
-    histoTitle += " (-7.5^{o} < #phi - #Psi_{2} < 7.5^{o})"; 
+    histoTitle += " (-7.5^{o} < #varphi - #Psi_{2} < 7.5^{o})"; 
   else if((psiMin == 0.5)&&(psiMax == 1.5))
-    histoTitle += " (37.5^{o} < #phi - #Psi_{2} < 52.5^{o})"; 
+    histoTitle += " (37.5^{o} < #varphi - #Psi_{2} < 52.5^{o})"; 
   else if((psiMin == 1.5)&&(psiMax == 2.5))
-    histoTitle += " (82.5^{o} < #phi - #Psi_{2} < 97.5^{o})"; 
+    histoTitle += " (82.5^{o} < #varphi - #Psi_{2} < 97.5^{o})"; 
   else 
-    histoTitle += " (0^{o} < #phi - #Psi_{2} < 180^{o})"; 
+    histoTitle += " (0^{o} < #varphi - #Psi_{2} < 180^{o})"; 
   
   gHistBalanceFunction = b->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
   gHistBalanceFunction->SetTitle(histoTitle.Data());
   gHistBalanceFunction->GetYaxis()->SetTitleOffset(1.3);
   gHistBalanceFunction->SetName("gHistBalanceFunction");
 
-  gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  gHistBalanceFunctionShuffled->SetTitle(histoTitle.Data());
-  gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
+  if(listBFShuffled) {
+    gHistBalanceFunctionShuffled = bShuffled->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistBalanceFunctionShuffled->SetTitle(histoTitle.Data());
+    gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionShuffled->SetName("gHistBalanceFunctionShuffled");
+  }
 
-  gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
-  gHistBalanceFunctionMixed->SetTitle(histoTitle.Data());
-  gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionMixed->SetName("gHistBalanceFunctionMixed");
-
-  gHistBalanceFunctionSubtracted = dynamic_cast<TH2D *>(gHistBalanceFunction->Clone());
-  gHistBalanceFunctionSubtracted->Add(gHistBalanceFunctionMixed,-1);
-  gHistBalanceFunctionSubtracted->SetTitle(histoTitle.Data());
-  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionSubtracted->SetName("gHistBalanceFunctionSubtracted");
+  if(listBFMixed) {
+    gHistBalanceFunctionMixed = bMixed->GetBalanceFunctionDeltaEtaDeltaPhi(psiMin,psiMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
+    gHistBalanceFunctionMixed->SetTitle(histoTitle.Data());
+    gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionMixed->SetName("gHistBalanceFunctionMixed");
+  
+    gHistBalanceFunctionSubtracted = dynamic_cast<TH2D *>(gHistBalanceFunction->Clone());
+    gHistBalanceFunctionSubtracted->Add(gHistBalanceFunctionMixed,-1);
+    gHistBalanceFunctionSubtracted->SetTitle(histoTitle.Data());
+    gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionSubtracted->SetName("gHistBalanceFunctionSubtracted");
+  }
 
   //Draw the results
   TCanvas *c1 = new TCanvas("c1","",0,0,600,500);
@@ -290,38 +323,42 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   c1a->SetLeftMargin(0.15);
   gHistBalanceFunction->DrawCopy("colz");
 
-  TCanvas *c2 = new TCanvas("c2","",100,100,600,500);
-  c2->SetFillColor(10); 
-  c2->SetHighLightColor(10);
-  c2->SetLeftMargin(0.15);
-  gHistBalanceFunctionShuffled->DrawCopy("lego2");
-  TCanvas *c2a = new TCanvas("c2a","",700,100,600,500);
-  c2a->SetFillColor(10); 
-  c2a->SetHighLightColor(10);
-  c2a->SetLeftMargin(0.15);
-  gHistBalanceFunctionShuffled->DrawCopy("colz");
+  if(listBFShuffled) {
+    TCanvas *c2 = new TCanvas("c2","",100,100,600,500);
+    c2->SetFillColor(10); 
+    c2->SetHighLightColor(10);
+    c2->SetLeftMargin(0.15);
+    gHistBalanceFunctionShuffled->DrawCopy("lego2");
+    TCanvas *c2a = new TCanvas("c2a","",700,100,600,500);
+    c2a->SetFillColor(10); 
+    c2a->SetHighLightColor(10);
+    c2a->SetLeftMargin(0.15);
+    gHistBalanceFunctionShuffled->DrawCopy("colz");
+  }
 
-  TCanvas *c3 = new TCanvas("c3","",200,200,600,500);
-  c3->SetFillColor(10); 
-  c3->SetHighLightColor(10);
-  c3->SetLeftMargin(0.15);
-  gHistBalanceFunctionMixed->DrawCopy("lego2");
-  TCanvas *c3a = new TCanvas("c3a","",700,200,600,500);
-  c3a->SetFillColor(10); 
-  c3a->SetHighLightColor(10);
-  c3a->SetLeftMargin(0.15);
-  gHistBalanceFunctionMixed->DrawCopy("colz");
+  if(listBFMixed) {
+    TCanvas *c3 = new TCanvas("c3","",200,200,600,500);
+    c3->SetFillColor(10); 
+    c3->SetHighLightColor(10);
+    c3->SetLeftMargin(0.15);
+    gHistBalanceFunctionMixed->DrawCopy("lego2");
+    TCanvas *c3a = new TCanvas("c3a","",800,200,600,500);
+    c3a->SetFillColor(10); 
+    c3a->SetHighLightColor(10);
+    c3a->SetLeftMargin(0.15);
+    gHistBalanceFunctionMixed->DrawCopy("colz");
 
-  TCanvas *c4 = new TCanvas("c4","",300,300,600,500);
-  c4->SetFillColor(10); 
-  c4->SetHighLightColor(10);
-  c4->SetLeftMargin(0.15);
-  gHistBalanceFunctionSubtracted->DrawCopy("lego2");
-  TCanvas *c4a = new TCanvas("c4a","",900,300,600,500);
-  c4a->SetFillColor(10); 
-  c4a->SetHighLightColor(10);
-  c4a->SetLeftMargin(0.15);
-  gHistBalanceFunctionSubtracted->DrawCopy("colz");
+    TCanvas *c4 = new TCanvas("c4","",300,300,600,500);
+    c4->SetFillColor(10); 
+    c4->SetHighLightColor(10);
+    c4->SetLeftMargin(0.15);
+    gHistBalanceFunctionSubtracted->DrawCopy("lego2");
+    TCanvas *c4a = new TCanvas("c4a","",900,300,600,500);
+    c4a->SetFillColor(10); 
+    c4a->SetHighLightColor(10);
+    c4a->SetLeftMargin(0.15);
+    gHistBalanceFunctionSubtracted->DrawCopy("colz");
+  }
 
   TString newFileName = "balanceFunction2D.Centrality"; 
   newFileName += gCentrality; newFileName += ".Psi";
@@ -336,10 +373,21 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 
   TFile *fOutput = new TFile(newFileName.Data(),"recreate");
   fOutput->cd();
+  /*hP->Write(); hN->Write();
+  hPN->Write(); hNP->Write();
+  hPP->Write(); hNN->Write();
+  hPShuffled->Write(); hNShuffled->Write();
+  hPNShuffled->Write(); hNPShuffled->Write();
+  hPPShuffled->Write(); hNNShuffled->Write();
+  hPMixed->Write(); hNMixed->Write();
+  hPNMixed->Write(); hNPMixed->Write();
+  hPPMixed->Write(); hNNMixed->Write();*/
   gHistBalanceFunction->Write();
-  gHistBalanceFunctionShuffled->Write();
-  gHistBalanceFunctionMixed->Write();
-  gHistBalanceFunctionSubtracted->Write();
+  if(listBFShuffled) gHistBalanceFunctionShuffled->Write();
+  if(listBFMixed) {
+    gHistBalanceFunctionMixed->Write();
+    gHistBalanceFunctionSubtracted->Write();
+  }
   fOutput->Close();
 }
 
