@@ -2,8 +2,8 @@
 #include <TString.h>
 #include <ANALYSIS/AliAnalysisManager.h>
 #include <AliRsnAnalysisTask.h>
-#include <PWG2/RESONANCES/AliRsnDaughterSelector.h>
-#include <PWG2/RESONANCES/AliRsnMiniAnalysisTask.h>
+#include "AliRsnDaughterSelector.h"
+#include "AliRsnMiniAnalysisTask.h"
 #endif
 AliAnalysisTaskSE *AddRsnAnalysisTask(TString format = "esd", Bool_t useMC = kFALSE,Bool_t isMixing = kFALSE,AliRsnInputHandler *rsnIH=0,TList *listRsn=0,TString postfix="")
 {
@@ -16,7 +16,7 @@ AliAnalysisTaskSE *AddRsnAnalysisTask(TString format = "esd", Bool_t useMC = kFA
 
    Bool_t valid;
    Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
-
+   Int_t isPhysSel = AliAnalysisManager::GetGlobalInt("rsnUsePhysSel",valid);
    if (isRsnMini) {
       postfix.Prepend("Mini");
       AliRsnMiniAnalysisTask *taskRsnMini = new AliRsnMiniAnalysisTask(Form("Rsn%s",postfix.Data()),useMC);
@@ -28,6 +28,8 @@ AliAnalysisTaskSE *AddRsnAnalysisTask(TString format = "esd", Bool_t useMC = kFA
       AliRsnAnalysisTask *taskRsn = new AliRsnAnalysisTask(Form("Rsn%s",postfix.Data()));
       task = (AliAnalysisTaskSE *) taskRsn;
    }
+
+   if (isPhysSel) task->SelectCollisionCandidates(AliVEvent::kMB);
 
    // TODO this is tmp hack
    if (!rsnIH) rsnIH = new AliRsnInputHandler();
