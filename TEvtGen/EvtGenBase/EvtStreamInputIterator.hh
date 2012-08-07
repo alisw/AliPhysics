@@ -23,7 +23,6 @@ public:
 
   typedef input_iterator_tag iterator_category;
   typedef Point              value_type;
-  typedef ptrdiff_t          difference_type;
   typedef const Point*       pointer;
   typedef const Point&       reference;
 

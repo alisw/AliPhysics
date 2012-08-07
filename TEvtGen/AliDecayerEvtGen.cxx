@@ -101,7 +101,7 @@ void AliDecayerEvtGen::Decay(Int_t ipart, TLorentzVector *p)
   //all informations about decay products are stored in fEvtstdhep 
   //
   EvtId IPART=EvtPDL::evtIdFromStdHep(ipart);
-  EvtVector4R p_init=EvtVector4R::EvtVector4R(p->E(),p->Px(),p->Py(),p->Pz());
+  EvtVector4R p_init(p->E(),p->Px(),p->Py(),p->Pz());
   EvtParticle *froot_part=EvtParticleFactory::particleFactory(IPART,p_init);
   fGenerator->generateDecay(froot_part);
   fEvtstdhep->init();
