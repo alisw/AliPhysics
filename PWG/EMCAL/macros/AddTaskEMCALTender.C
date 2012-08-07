@@ -17,6 +17,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender()
 
   AliAnalysisTaskSE *ana = 0;
   AliEMCALTenderSupply *EMCALSupply = 0;
+  AliAnalysisDataContainer *coutput1 = 0;
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
@@ -27,6 +28,11 @@ AliAnalysisTaskSE *AddTaskEMCALTender()
     alitender->AddSupply(EMCALSupply);
     alitender->SetDefaultCDBStorage("raw://"); 
     ana = alitender;
+
+    coutput1 = mgr->CreateContainer("emcal_tender_event", 
+				    AliESDEvent::Class(), 
+				    AliAnalysisManager::kExchangeContainer, 
+				    "default_tender");
   }
   else if (evhand->InheritsFrom("AliAODInputHandler")) {
     EMCALSupply = ConfigEmcalTenderSupply(kFALSE);
@@ -34,6 +40,10 @@ AliAnalysisTaskSE *AddTaskEMCALTender()
     AliEmcalTenderTask* emcaltender = new  AliEmcalTenderTask("AliEmcalTenderTask");
     emcaltender->SetEMCALTenderSupply(EMCALSupply);
     ana = emcaltender;
+    coutput1 = mgr->CreateContainer("emcal_tender_event", 
+				    AliAODEvent::Class(), 
+				    AliAnalysisManager::kExchangeContainer, 
+				    "default_tender");
   }
   else {
     ::Error("AddTaskEMCALTender", "Input event handler not recognized, AOD/ESD expected. Returning...");
@@ -46,13 +56,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender()
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
 
-  mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
-
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("emcal_tender_event", 
-							    AliAODEvent::Class(), 
-							    AliAnalysisManager::kExchangeContainer, 
-							    "default_tender");
-  mgr->ConnectOutput (ana, 1, coutput1 );
+  mgr->ConnectInput(ana, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(ana, 1, coutput1 );
    
   return ana;
 }
