@@ -42,6 +42,7 @@
 // Authors : Dmitri Peressounko
 // Date    : 28.05.2011
 // Modified: 03.08.2012 Henrik Qvigstad
+/* $Id$ */
 
 ClassImp(AliAnalysisTaskPi0Flow);
 
