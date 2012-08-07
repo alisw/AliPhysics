@@ -1,5 +1,8 @@
 #ifndef __CINT__
+#include <AliAnalysisManager.h>
+#include <AliLog.h>
 #endif
+
 Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",TString input="aod",TString inputMC="", TString postfix = "",TString idStr="0")
 {
 
@@ -9,6 +12,7 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    TList *listRsn = RsnManager();
 
    Bool_t useMC = !inputMC.CompareTo("mc");
+   input.ToLower();
    Bool_t valid;
 
    Int_t eventMixinPar = AliAnalysisManager::GetGlobalInt("rsnUseEventMixingPar",valid);
@@ -21,6 +25,8 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    Int_t useRsnIH = AliAnalysisManager::GetGlobalInt("rsnUseRsnInputHandler",valid);
    Int_t physSel = AliAnalysisManager::GetGlobalInt("rsnUsePhysSel",valid);
    Int_t useCentralityTask = AliAnalysisManager::GetGlobalInt("rsnUseCentralityTask",valid);
+   Int_t useEventPlaneTask = AliAnalysisManager::GetGlobalInt("rsnUseEventPlaneTask",valid);
+   Int_t usePIDqa = AliAnalysisManager::GetGlobalInt("rsnUsePIDqa",valid);
    Int_t splitMgrByTask = AliAnalysisManager::GetGlobalInt("rsnSplitMgrByTasks",valid);
 
    Int_t useMixing = AliAnalysisManager::GetGlobalInt("rsnUseMixing",valid);
@@ -55,29 +61,36 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
 
    AliMultiInputEventHandler *multiInputHandler = 0;
    AliInputEventHandler *inputHandler = mgr->GetInputEventHandler();
-   
+
    TString className = inputHandler->ClassName();
    if (!className.CompareTo("AliMultiInputEventHandler")) {
-      multiInputHandler = (AliMultiInputEventHandler*)inputHandler;
+      multiInputHandler = (AliMultiInputEventHandler *)inputHandler;
    }
 
    AliRsnInputHandler *rsnIH=0;
 
-   if (multiInputHandler && pidResponse) {
-      // add PID Response Handler
-      if (!RsnLoadMacro("AddPIDResponseInputHandler.C")) return kFALSE;
-      AddPIDResponseInputHandler(multiInputHandler,useMC);
+   if (pidResponse) {
+      if (multiInputHandler) {
+         // add PID Response Handler
+         if (!RsnLoadMacro("AddPIDResponseInputHandler.C")) return kFALSE;
+         AddPIDResponseInputHandler(multiInputHandler,useMC);
+      } else {
+         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+         AddTaskPIDResponse(useMC);
+      }
    }
 
    if (multiInputHandler && useRsnIH) {
       // add Rsn input handler (it has to be after ESD,MC,Tender input handler, but before Mixing)
-      AliRsnInputHandler *rsnIH = new AliRsnInputHandler();
+      rsnIH = new AliRsnInputHandler();
       multiInputHandler->AddInputEventHandler(rsnIH);
    }
 
    if (physSel) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-      AddTaskPhysicsSelection(useMC);
+      if (!input.CompareTo("esd")) {
+         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+         AddTaskPhysicsSelection(useMC);
+      }
 
       // maybe we can put it in $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C
       if (multiInputHandler) {
@@ -89,6 +102,16 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    if (useCentralityTask) {
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *centralityTask = AddTaskCentrality(kFALSE);
+   }
+
+   if (useEventPlaneTask) {
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
+      AliEPSelectionTask *eventPlaneTask = AddTaskEventplane();
+   }
+
+   if (usePIDqa) {
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+      AddTaskPIDqa();
    }
 
    // load and run AddTask macro
@@ -125,6 +148,8 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
       }
    }
 
+   //    mgr->AddClassDebug("AliRsnCutTrackQuality",AliLog::kDebug+3);
+
    return kTRUE;
 }
 
@@ -150,4 +175,3 @@ Bool_t RsnLoadMacro(TString macro,TString path="") {
 
    return kFALSE;
 }
-
