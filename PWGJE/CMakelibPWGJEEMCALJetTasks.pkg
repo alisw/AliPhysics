@@ -45,6 +45,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
 )
 
 set ( DHDR  PWGJEEMCALJetTasksLinkDef.h)

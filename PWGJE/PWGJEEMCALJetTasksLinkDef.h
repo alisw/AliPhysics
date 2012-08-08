@@ -27,5 +27,6 @@
 #pragma link C++ class AliAnalysisTaskSAJF+;
 #pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
+#pragma link C++ class AliAnalysisTaskFullppJet;
 
 #endif
