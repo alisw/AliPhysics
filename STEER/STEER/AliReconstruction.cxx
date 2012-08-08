@@ -1432,6 +1432,7 @@ Bool_t AliReconstruction::Run(const char* input)
       }
       iEvent++;
     }
+    if (!iEvent) AliWarning("No events passed trigger selection");
     SlaveTerminate();
     if (GetAbort() != TSelector::kContinue) return kFALSE;
     Terminate();
