@@ -42,6 +42,7 @@ AliTRDtrendValue::AliTRDtrendValue(const Char_t *n, const Char_t *t)
   if(names->GetEntriesFast()!=2){
     AliError(Form("Wrong trend value name format. Trend value name should be of the form \"trendClass_trendValue\" with only one \"_\" character."));
   } else SetName(n);
+  names->Delete(); delete names;
 
   //memset(fAlarmMessage, 0, kNlevels*sizeof(Char_t*));
   memset(fNotifiable, 0, kNnotifiable*sizeof(TNamed*));
@@ -86,28 +87,31 @@ const char* AliTRDtrendValue::GetAlarmMessage(Int_t ns) const
 //____________________________________________
 const char* AliTRDtrendValue::GetClassName() const
 {
-// Check task to which value belong
+// Check task to which value belong. Return value on heap !
   TString s(TNamed::GetName());
   TObjArray *names(s.Tokenize("_"));
   if(names->GetEntriesFast()!=2){
     AliError(Form("Wrong trend value name format."));
     return NULL;
   }
-
-  return ((TObjString*)names->At(0))->String().Data();
+  char *cn=StrDup(((TObjString*)(*names)[0])->GetName());
+  names->Delete(); delete names;
+  return cn;
 }
 
 //____________________________________________
 const char* AliTRDtrendValue::GetValueName() const
 {
-// value name
+// Value name.  Return value on heap !
   TString s(TNamed::GetName());
   TObjArray *names(s.Tokenize("_"));
   if(names->GetEntriesFast()!=2){
     AliError(Form("Wrong trend value name format."));
     return NULL;
   }
-  return ((TObjString*)names->At(1))->String().Data();
+  char *vn=StrDup(((TObjString*)(*names)[1])->GetName());
+  names->Delete(); delete names;
+  return vn;
 }
 
 //____________________________________________

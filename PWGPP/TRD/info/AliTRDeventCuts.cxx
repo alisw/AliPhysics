@@ -114,7 +114,7 @@ Bool_t AliTRDeventCuts::IsSelected(AliESDEvent *ev, Bool_t col)
     TObjString *trg(NULL);
     while((trg = dynamic_cast<TObjString *>(trgIter->Next())))
       passTrigger = passTrigger || CheckTrigger(trg->String().Data());
-    delete triggers; delete trgIter;
+    triggers->Delete(); delete triggers; delete trgIter;
     select = select && passTrigger;
   }
   if(!select){

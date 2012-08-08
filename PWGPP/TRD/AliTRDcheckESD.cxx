@@ -783,7 +783,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
   }  // end loop over tracks
   
   
-  
+  triggers->Delete(); delete triggers;
   delete [] valuesMatchingPhiEtaCF;
   delete [] valuesMatchingPtCF;
   delete [] valuesBCCF;
@@ -1281,6 +1281,8 @@ void AliTRDcheckESD::InitializeCFContainers() {
         // Assign an index into the trigger histogram and the CF container for this trigger
         GetTriggerIndex(arr2->At(jt)->GetName(), kTRUE);
       }
+      arr2->Delete(); delete arr2;
+      arr->Delete(); delete arr;
     }
   }
   // Add background triggers from PhysicsSelection
@@ -1295,6 +1297,8 @@ void AliTRDcheckESD::InitializeCFContainers() {
         // Assign an index into the trigger histogram and the CF container for this trigger
         GetTriggerIndex(arr2->At(jt)->GetName(), kTRUE);
       }
+      arr2->Delete(); delete arr2;
+      arr->Delete(); delete arr;
     }
   }
   if(!fNAssignedTriggers) {GetTriggerIndex("All triggers", kTRUE);}
@@ -1304,6 +1308,7 @@ void AliTRDcheckESD::InitializeCFContainers() {
   for(Int_t it=0; it<arr->GetEntries(); ++it) {
     GetTriggerIndex(arr->At(it)->GetName(), kTRUE);
   }
+  arr->Delete(); delete arr;
 }
 
 
@@ -1459,9 +1464,10 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
 	nVars++;
       }
       else {
-	TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
-	nBins[nVars] = arr->GetEntries()-1;
-	if(nBins[nVars]>0) nVars++;
+        TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
+        nBins[nVars] = arr->GetEntries()-1;
+        if(nBins[nVars]>0) nVars++;
+        arr->Delete(); delete arr;
       }
     }
     if(nVars<1) return 0x0;
@@ -1471,18 +1477,19 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
     Int_t iUsedVar = 0;
     for(Int_t ivar=0; ivar<kNTrdCfVariables; ++ivar) {
       if(!fExpertCFVarsEnabled[ivar]) continue;
-      if(fExpertCFVarBins[ivar][0]=='\0')
-	cf->SetBinLimits(iUsedVar, fExpertCFVarRanges[ivar][0], fExpertCFVarRanges[ivar][1]);
-      else {
-	TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
-	if(arr->GetEntries()-1>0) {
-	  Double_t* binLims = new Double_t[arr->GetEntries()];
-	  for(Int_t ib=0;ib<arr->GetEntries();++ib) {
-	    TString binStr = arr->At(ib)->GetName();
-	    binLims[ib] = binStr.Atof();
-	  }
-	  cf->SetBinLimits(iUsedVar++, binLims);
-	}
+      if(fExpertCFVarBins[ivar][0]=='\0'){
+        cf->SetBinLimits(iUsedVar, fExpertCFVarRanges[ivar][0], fExpertCFVarRanges[ivar][1]);
+      } else {
+        TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
+        if(arr->GetEntries()-1>0) {
+          Double_t* binLims = new Double_t[arr->GetEntries()];
+          for(Int_t ib=0;ib<arr->GetEntries();++ib) {
+            TString binStr = arr->At(ib)->GetName();
+            binLims[ib] = binStr.Atof();
+          }
+          cf->SetBinLimits(iUsedVar++, binLims);
+        }
+        arr->Delete(); delete arr;
       }
       cf->SetVarTitle(iUsedVar, varNames[ivar]);
     }

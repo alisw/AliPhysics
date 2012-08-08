@@ -37,6 +37,7 @@
 #include "AliAnalysisManager.h"
 #include "AliExternalTrackParam.h"
 
+#include "info/AliTRDchmbInfo.h"
 #include "info/AliTRDeventInfo.h"
 #include "info/AliTRDtrendingManager.h"
 #include "AliTRDrecoTask.h"
@@ -62,9 +63,11 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fkMC(NULL)
   ,fkESD(NULL)
   ,fSpecies(-6)
+  ,fTriggerSlot(-1)
   ,fPt(-1.)
   ,fPhi(0.)
   ,fEta(0.)
+  ,fTriggerList(NULL)
   ,fPlotFuncList(NULL)
   ,fDetFuncList(NULL)
   ,fRunTerminate(kFALSE)
@@ -88,9 +91,11 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fkMC(NULL)
   ,fkESD(NULL)
   ,fSpecies(-6)
+  ,fTriggerSlot(-1)
   ,fPt(-1.)
   ,fPhi(0.)
   ,fEta(0.)
+  ,fTriggerList(NULL)
   ,fPlotFuncList(NULL)
   ,fDetFuncList(NULL)
   ,fRunTerminate(kFALSE)
@@ -134,6 +139,7 @@ AliTRDrecoTask::~AliTRDrecoTask()
     fDets = NULL;
   }
   if(fDetsV) delete fDetsV; fDetsV=NULL;
+  if(fTriggerList){fTriggerList->Delete(); delete fTriggerList;}
 
   if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){
     if(fContainer->IsOwner()) fContainer->Delete();
@@ -185,6 +191,18 @@ void AliTRDrecoTask::UserExec(Option_t *)
 
   fTracks   = dynamic_cast<TObjArray *>(GetInputData(1));
   fEvent    = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
+  fTriggerSlot=0;
+  if(fTriggerList){
+    for(Int_t itrig(0); itrig<fTriggerList->GetEntries(); itrig++){
+      if(!fEvent->GetFiredTriggerClasses().Contains(((TObjString*)(*fTriggerList)[itrig])->GetName())) continue;
+      //printf("\"%s\" selected\n", ((TObjString*)(*fTriggerList)[itrig])->GetName());
+      SETBIT(fTriggerSlot,itrig);
+    }
+    if(!fTriggerSlot){
+      AliDebug(2, Form("Triggers[%s] not used for %s", fEvent->GetFiredTriggerClasses().Data(),  GetName()));
+      return;
+    }
+  }
   fClusters = dynamic_cast<TObjArray*>(GetInputData(3));
 
   if(!fPlotFuncList){
@@ -317,14 +335,15 @@ Bool_t AliTRDrecoTask::LoadDetectorMap(const Char_t *file, const Char_t *dir)
     AliWarning("Missing TRDinfoGen container.");
     return kFALSE;
   }
-  TObjArray *dets = (TObjArray*)info->FindObject("Chambers");
+  TObjArray *dets = (TObjArray*)info->FindObject("Chambers Status");
   if(!dets){
-    TVector *vdets = (TVector*)info->At(4);
-    if(!vdets){
-      AliWarning("Missing detector map from TRDinfoGen results.");
-      return kFALSE;
-    } else fDetsV = (TVector*)vdets->Clone();
-  } else fDets = (TObjArray*)dets->Clone("Chambers");
+    if(strcmp("TObjArray", info->At(4)->IsA()->GetName())) AliError("Looking for old style chamber status map. Failed.");
+    else {
+      AliWarning("Looking for old style chamber status map.");
+      TObjArray *vdets = (TObjArray*)info->At(4);
+      fDetsV = (TObjArray*)vdets->Clone();
+    }
+  } else fDets = (TObjArray*)dets->Clone();
   gFile->Close();
   return kTRUE;
 }
@@ -369,17 +388,46 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly, const Option_t *opt)
 // based on info collected by AliTRDinfoGen
 
   if(!fDets){
-    AliWarning("OLD Detector map and status not available. Try NEW");
-    MakeDetectorPlotNEW(ly, opt);
+    AliWarning("NEW Detector map and status not available. Try OLD");
+    MakeDetectorPlotOLD(ly, opt);
     return;
   }
+  AliTRDchmbInfo *ci(NULL);
+  for(Int_t idet(0); idet<fDets->GetEntriesFast(); idet++){
+    if(!(ci = (AliTRDchmbInfo*)fDets->At(idet))) continue;
+    if(AliTRDgeometry::GetLayer(ci->GetDetector()) != ly) continue;
+    ci->Draw(opt);
+  }
+  
+  Float_t dsm = TMath::TwoPi()/AliTRDgeometry::kNsector;
+  Float_t xmed=0.;
+  if(strcmp(opt, "pad")==0) xmed=38.;
+  TLatex *sm = new TLatex(); sm->SetTextAlign(22);sm->SetTextColor(kBlack); sm->SetTextFont(32);sm->SetTextSize(0.03);
+  for(Int_t is(0); is<AliTRDgeometry::kNsector; is++) sm->DrawLatex(xmed, -TMath::Pi()+(is+0.5)*dsm, Form("%02d", is>=9?(is-9):(is+9)));
+}
+
+//_______________________________________________________
+void AliTRDrecoTask::MakeDetectorPlotOLD(Int_t ly, const Option_t *opt)
+{
+// Draw chamber boundaries in eta/phi plots with misalignments
+// based on info collected by AliTRDinfoGen OLD data storage
+
+  if(!fDetsV){
+    AliError("OLD Detector map and status not available.");
+    return;
+  }
+  if(!fDetsV->GetEntries()){
+    AliError("OLD Detector map and status not filled.");
+    return;
+  }
+
   Float_t xmin(0.), xmax(0.);
   TBox *gdet = new TBox();
   gdet->SetLineColor(kBlack);gdet->SetFillColor(kBlack);
   Int_t style[] = {0, 3003};
   for(Int_t idet(0); idet<540; idet++){
     if(idet%6 != ly) continue;
-    TVectorF *det((TVectorF*)fDets->At(idet));
+    TVectorF *det((TVectorF*)fDetsV->At(idet));
     if(!det) continue;
     Int_t iopt = Int_t((*det)[4]);
     if(strcmp(opt, "eta")==0){
@@ -407,53 +455,7 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly, const Option_t *opt)
   Float_t dsm = TMath::TwoPi()/AliTRDgeometry::kNsector;
   xmin=0.;
   if(strcmp(opt, "pad")==0) xmin=38.;
-  TLatex *sm = new TLatex(); sm->SetTextAlign(22);sm->SetTextColor(0); sm->SetTextFont(32);sm->SetTextSize(0.03);
-  for(Int_t is(0); is<AliTRDgeometry::kNsector; is++) sm->DrawLatex(xmin, -TMath::Pi()+(is+0.5)*dsm, Form("%02d", is>=9?(is-9):(is+9)));
-}
-
-//_______________________________________________________
-void AliTRDrecoTask::MakeDetectorPlotNEW(Int_t ly, const Option_t *opt)
-{
-// Draw chamber boundaries in eta/phi plots with misalignments
-// based on info collected by AliTRDinfoGen NEW data storage
-
-  if(!fDetsV){
-    AliWarning("NEW Detector map and status not available.");
-    return;
-  }
-  Float_t xmin(0.), xmax(0.);
-  TBox *gdet = new TBox();
-  gdet->SetLineColor(kBlack);gdet->SetFillColor(kBlack);
-  Int_t style[] = {0, 3003};
-  for(Int_t idet(0), jdet(0); idet<AliTRDgeometry::kNdet; idet++, jdet+=5){
-    if(idet%6 != ly) continue;
-    Int_t iopt = Int_t((*fDetsV)[jdet+4]);
-    if(strcmp(opt, "eta")==0){
-      xmin=(*fDetsV)[jdet+0]; xmax=(*fDetsV)[jdet+2];
-    } else if(strcmp(opt, "pad")==0){
-      Int_t stk(AliTRDgeometry::GetStack(idet));
-      xmin=-0.6+16*(4-stk)-(stk<2?4:0); xmax=xmin+(stk==2?12:16)-0.2;
-    } else continue;
-    AliDebug(2, Form("det[%03d] 0[%+4.1f(%+4.1f) %+4.1f] 1[%+4.1f(%+4.1f) %+4.1f] opt[%d]", idet, xmin, (*fDetsV)[jdet+0], (*fDetsV)[jdet+1], xmax, (*fDetsV)[jdet+2], (*fDetsV)[jdet+3], iopt));
-    if(iopt==1){
-      gdet->SetFillStyle(style[1]);gdet->SetFillColor(kBlack);
-      gdet->DrawBox(xmin, (*fDetsV)[jdet+1], xmax, (*fDetsV)[jdet+3]);
-    } else {
-      gdet->SetFillStyle(style[0]);
-      gdet->DrawBox(xmin, (*fDetsV)[jdet+1], xmax, (*fDetsV)[jdet+3]);
-      if(iopt==2){
-        gdet->SetFillStyle(style[1]);gdet->SetFillColor(kGreen);
-        gdet->DrawBox(xmin, (*fDetsV)[jdet+1], xmax, 0.5*((*fDetsV)[jdet+3]+(*fDetsV)[jdet+1]));
-      } else if(iopt==3){
-        gdet->SetFillStyle(style[1]);gdet->SetFillColor(kRed);
-        gdet->DrawBox(xmin, 0.5*((*fDetsV)[jdet+3]+(*fDetsV)[jdet+1]), xmax, (*fDetsV)[jdet+3]);
-      } else if(iopt!=0) AliError(Form("Wrong chmb. status[%d] for det[%03d]", iopt, idet));
-    }
-  }
-  Float_t dsm = TMath::TwoPi()/AliTRDgeometry::kNsector;
-  xmin=0.;
-  if(strcmp(opt, "pad")==0) xmin=38.;
-  TLatex *sm = new TLatex(); sm->SetTextAlign(22);sm->SetTextColor(0); sm->SetTextFont(32);sm->SetTextSize(0.03);
+  TLatex *sm = new TLatex(); sm->SetTextAlign(22);sm->SetTextColor(kBlack); sm->SetTextFont(32);sm->SetTextSize(0.03);
   for(Int_t is(0); is<AliTRDgeometry::kNsector; is++) sm->DrawLatex(xmin, -TMath::Pi()+(is+0.5)*dsm, Form("%02d", is>=9?(is-9):(is+9)));
 }
 
@@ -730,6 +732,7 @@ TH2* AliTRDrecoTask::AliTRDrecoProjection::Projection2D(const Int_t nstat, const
   h2 = new TH2F(Form("%s_2D", fH->GetName()),
             Form("%s;%s;%s;%s(%s) %s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), title[mid], nt>0?(*tokenTitle)[0]->GetName():"", nt>1?(*tokenTitle)[1]->GetName():""),
             nx, ax->GetXmin(), ax->GetXmax(), ny, ay->GetXmin(), ay->GetXmax());
+  tokenTitle->Delete(); delete tokenTitle;
   h2->SetContour(ncol);
   h2->GetZaxis()->CenterTitle();
   h2->GetZaxis()->SetTitleOffset(1.4);
@@ -789,5 +792,17 @@ void AliTRDrecoTask::AliTRDrecoProjection::SetRebinStrategy(Int_t n, Int_t rebx[
   fRebinY = new Int_t[n]; memcpy(fRebinY, reby, n*sizeof(Int_t));
 }
 
+//________________________________________________________
+void AliTRDrecoTask::SetTriggerList(const Char_t *tl)
+{
+// Store list of triggers to be monitored
+  TString stl(tl);
+  if(fTriggerList){ fTriggerList->Delete(); delete fTriggerList;}
+  TObjArray *atl = stl.Tokenize(" ");
+  fTriggerList = (TObjArray*)atl->Clone("");
+  atl->Delete(); delete atl;
+  AliInfo("Running only for triggers::");
+  fTriggerList->Print();
+}
 
 

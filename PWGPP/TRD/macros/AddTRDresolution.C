@@ -26,6 +26,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     res->SetPostProcess(kFALSE);
     //res->SetDebugLevel(3);
     res->SetPtThreshold(0.2);
+    //res->SetTriggerList("CINT7WUHJT-S-NOPF-CENT CINT7WUHSE-S-NOPF-CENT CINT7WUHQU-S-NOPF-CENT CEMC7WU-S-NOPF-ALL");
     res->SetNameId(suffix[itq]);
     mgr->ConnectInput(res, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container 
     mgr->ConnectInput(res, 1, ci[itq]);                        // conect track info container

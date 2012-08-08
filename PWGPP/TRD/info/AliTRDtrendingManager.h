@@ -20,6 +20,7 @@
 #include "AliTRDtrendValue.h"
 #endif
 
+class TH1;
 class TObjArray;
 class AliTRDtrendingManager : public TObject
 {
@@ -39,7 +40,7 @@ public:
   static AliTRDtrendingManager*	Instance();
   Bool_t            IsRelativeMeanSigma() const     { return TestBit(kRelative);}
   void              Load(const char *fn = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root");
-  Bool_t            MakeTrends(const char *fileList);
+  TH1*              MakeTrends(const char *fileList, TObjArray *dump=NULL);
   Bool_t            ModifyValue(const Char_t *name
                             ,const Char_t *title
                             ,Double_t mean,Double_t sigm
