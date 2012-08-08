@@ -71,6 +71,7 @@ set ( EINCLUDE
   TRD 
   TOF 
   TRD/Cal 
+  TRD/info 
   ANALYSIS/Tender 
   ANALYSIS 
   PWGPP/comparison 
