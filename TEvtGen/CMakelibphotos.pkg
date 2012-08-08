@@ -26,7 +26,3 @@
 #--------------------------------------------------------------------------------#
 
 set ( FSRCS  PHOTOS/phcork.F PHOTOS/phint.F PHOTOS/phint1.F PHOTOS/phlupa.F PHOTOS/phoan1.F PHOTOS/phoan2.F PHOTOS/phobo3.F PHOTOS/phobos.F PHOTOS/phocha.F PHOTOS/phochk.F PHOTOS/phocin.F PHOTOS/phocor.F PHOTOS/phodo.F PHOTOS/phoene.F PHOTOS/phoerr.F PHOTOS/phofac.F PHOTOS/phoin.F PHOTOS/phoinf.F PHOTOS/phoini.F PHOTOS/phomak.F PHOTOS/phooma.F PHOTOS/phoout.F PHOTOS/phopre.F PHOTOS/phoran.F PHOTOS/phorep.F PHOTOS/phorin.F PHOTOS/phoro2.F PHOTOS/phoro3.F PHOTOS/phospi.F PHOTOS/photos.F PHOTOS/photos_get.F PHOTOS/photos_make.F PHOTOS/photos_set.F PHOTOS/photri.F PHOTOS/photwo.F PHOTOS/phtype.F)
-
-set ( EINCLUDE )
-
-set ( PACKFFLAGS  ${FFLAGS} -IPYTHIA6  -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET})

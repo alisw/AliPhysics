@@ -32,10 +32,3 @@ set ( HDRS  EvtGenBase/Evt3Rank3C.hh EvtGenBase/EvtAbsBinning.hh EvtGenBase/EvtA
 set ( EINCLUDE  TEvtGen TEvtGen/EvtGenBase)
 
 set ( DHDR EvtGenBase/EvtGenBaseLinkDef.h)
-
-set ( EXPORT )
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET})
-	endif( ALICE_TARGET STREQUAL "win32gcc")

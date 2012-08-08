@@ -36,9 +36,3 @@ set ( EXPORT )
 set ( EINCLUDE  TEvtGen TEvtGen/EvtGenModels)
 
 set ( FSRCS  EvtGenModels/EvtBTo3pi.F EvtGenModels/EvtBTo3piMPP.F EvtGenModels/EvtBTo3piP00.F EvtGenModels/EvtBToKpipi.F EvtGenModels/EvtLi2Spence.F EvtGenModels/begevtgenget.F EvtGenModels/begevtgengetx.F EvtGenModels/begevtgenstore.F EvtGenModels/begevtgenstorex.F EvtGenModels/pykcut.F EvtGenModels/pytime.F EvtGenModels/Pythia.F)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-	set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}  -lphotos -lEvtGenBase -llhapdf -lpythia6)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

@@ -30,9 +30,3 @@ set ( SRCS  EvtGen/EvtGen.cxx EvtGen/EvtCheckDecays.cxx)
 string ( REPLACE ".cxx" ".hh" HDRS "${SRCS}" )
 
 set ( DHDR EvtGen/EvtGenLinkDef.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lEvtGenBase -lEvtGenModels)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

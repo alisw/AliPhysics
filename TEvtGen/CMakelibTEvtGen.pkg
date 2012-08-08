@@ -32,9 +32,3 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  TEvtGenLinkDef.h)
 
 set ( EINCLUDE TEvtGen EVGEN)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}  -lSTEERBase -lSTEER -lFASTSIM -lESD -lAOD -lANALYSIS -lANALYSISalice -lEVGEN -llhapdf -L${ROOTLIBDIR} -lEG -lVMC -L${ALICE_ROOT}/TEvtGen/EvtGen -lEvtGen -lEvtGenBase -lEvtGenModels)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
