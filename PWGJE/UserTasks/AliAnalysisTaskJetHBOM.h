@@ -213,7 +213,7 @@ class AliAnalysisTaskJetHBOM : public AliAnalysisTaskSE
     TH1F*         fh1DeltapT;        // pT of random Cone - background energy
     TH1F*         fh1Rho;            //background rho
     TH1F*         fh1PtRandCone;     //pT of random Cone
-    TH1F*         fh1Area;           //area of random jet
+    //TH1F*         fh1Area;           //area of random jet
 
     TH1F*         fh1efficiencyPt;          //here efficiency is stored
     TH2D*         fh2efficiencyPhi;         //here efficiency is stored
