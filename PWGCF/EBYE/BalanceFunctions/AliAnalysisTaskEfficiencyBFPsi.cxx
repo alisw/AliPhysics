@@ -367,8 +367,8 @@ void AliAnalysisTaskEfficiencyBFPsi::UserExec(Option_t *) {
 		      continue;
 		    if((mcTrack->Pt() > fPtRangeMax)||(mcTrack->Pt() < fPtRangeMin)) 
 		      continue;
-		    if((mcTrack->Phi() > fPhiRangeMax)||(mcTrack->Phi() < fPhiRangeMin)) 
-		      continue;
+		    //if((mcTrack->Phi() > fPhiRangeMax)||(mcTrack->Phi() < fPhiRangeMin)) 
+		    //continue;
 		    
 		    TParticle* particle = mcTrack->Particle();
 		    if(!particle) continue;
@@ -417,9 +417,9 @@ void AliAnalysisTaskEfficiencyBFPsi::UserExec(Option_t *) {
 		      
 		      //fill the arrays for 2 particle analysis
 		      phiMinusPsi[nMCLabelCounter]    = gPsiMinusPhiBin;
-		      eta[nMCLabelCounter]    = particle->Eta();
-		      pt[nMCLabelCounter]     = particle->Pt();
-		      phi[nMCLabelCounter]     = particle->Phi();
+		      eta[nMCLabelCounter] = particle->Eta();
+		      pt[nMCLabelCounter]  = particle->Pt();
+		      phi[nMCLabelCounter] = particle->Phi()*TMath::RadToDeg();
 		      charge[nMCLabelCounter] = gMCCharge;
 		      // findable = generated in this case!
 		      
@@ -470,8 +470,8 @@ void AliAnalysisTaskEfficiencyBFPsi::UserExec(Option_t *) {
 			continue;
 		      if((particle->Pt() > fPtRangeMax)||(particle->Pt() <  fPtRangeMin)) 
 			continue;
-		      if((particle->Phi() > fPhiRangeMax)||(particle->Phi() < fPhiRangeMin)) 
-			continue;
+		      //if((particle->Phi() > fPhiRangeMax)||(particle->Phi() < fPhiRangeMin)) 
+		      //continue;
 
 		      if(!stack->IsPhysicalPrimary(label)) continue;
 		      
