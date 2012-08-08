@@ -22,7 +22,7 @@
 
 class AliDielectronHF : public TNamed {
 public:
-  enum { kMaxCuts=10 };
+  enum { kMaxCuts=20 };
   enum EBinType {
     kStdBin=0,
     kBinToMax,

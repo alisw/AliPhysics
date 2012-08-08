@@ -23,11 +23,11 @@
 class AliDielectronHFhelper : public TNamed {
 public:
   enum ECollectType { kSE=0, kME, kMEOS, kROT, kAll };
-    enum { kMaxCuts=10 };
-  
+  enum { kMaxCuts=20 };
+
   //AliDielectronHFhelper();
   AliDielectronHFhelper(const char* filename);
-  
+
   virtual ~AliDielectronHFhelper();
   void SetHFArray(const char* filename);
 
@@ -37,8 +37,8 @@ public:
   void UnsetRangeUser(AliDielectronVarManager::ValueTypes type, Bool_t leg=kFALSE);
 
   TObjArray* CollectHistos();
-  
-  TH1F* GetHistogram(const char *step);
+
+  TH1F* GetHistogram(const char *step, TObjArray *histArr=0x0);
   TH1F* FindHistograms(TObjArray *histos);
   TH1F* MergeHistos(TObjArray *arr);
 
@@ -51,10 +51,10 @@ private:
   TObjArray *fCutVars;             // array for cut variables
   TVectorD fCutLowLimits;
   TVectorD fCutUpLimits;
-  
+
   AliDielectronHFhelper(const AliDielectronHFhelper &c);
   AliDielectronHFhelper &operator=(const AliDielectronHFhelper &c);
-  
+
   ClassDef(AliDielectronHFhelper,0)                   // HF  helper class
 };
 
