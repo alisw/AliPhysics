@@ -30,9 +30,7 @@ class TList;
 class TObjArray;
 class TTreeSRedirector;
 class AliTRDtrackV1;
-template <typename Value> class TVectorT;
-typedef class TVectorT<Float_t> TVector;
-class AliTRDrecoTask : public AliAnalysisTaskSE 
+class AliTRDrecoTask : public AliAnalysisTaskSE
 {
 friend class AliEveTRDTrackList;
 public:
@@ -88,7 +86,7 @@ public:
   virtual Bool_t GetRefFigure(Int_t ifig);
   virtual void   MakeSummary();
   void           MakeDetectorPlot(Int_t ly=0, const Option_t *opt="eta");
-  void           MakeDetectorPlotNEW(Int_t ly=0, const Option_t *opt="eta");
+  void           MakeDetectorPlotOLD(Int_t ly=0, const Option_t *opt="eta");
   Bool_t         IsHeavyIon() const      { return TestBit(kHeavyIon);};
   Bool_t         IsPP() const            { return !TestBit(kHeavyIon);};
   Bool_t         HasFriends() const      { return TestBit(kFriends);};
@@ -109,6 +107,7 @@ public:
   static Float_t SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
   static void    SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0.);
   void SetRunTerminate(Bool_t runTerminate = kTRUE) { fRunTerminate = runTerminate; }
+  void           SetTriggerList(const Char_t *tl);
   virtual void   Terminate(Option_t *);
 
 protected:
@@ -119,7 +118,7 @@ protected:
   Char_t                fNameId[10];       // unique identifier of task particularity
   UChar_t               fNRefFigures;      // no of reference figures reported by task
   TObjArray             *fDets;            //! OLD container to store detector position and status support should be discontinued 
-  TVector               *fDetsV;           //! NEW container to store detector position and status
+  TObjArray             *fDetsV;           //! NEW container to store detector position and status
   TObjArray             *fContainer;       //! container to store results
   AliTRDeventInfo       *fEvent;           //! Event Info
   TObjArray             *fTracks;          //! Array of tracks
@@ -129,9 +128,11 @@ protected:
   const AliTRDtrackInfo::AliMCinfo  *fkMC; //! MC info
   const AliTRDtrackInfo::AliESDinfo *fkESD;//! ESD info
   Char_t                 fSpecies;         //! species index +1 with charge sign
+  Char_t                 fTriggerSlot;     //! selected triggers map (if requested)
   Float_t                fPt;              //! p_t of the track being analyzed
   Float_t                fPhi;             //! phi of the track being analyzed
   Float_t                fEta;             //! eta of the track being analyzed
+  TObjArray             *fTriggerList;     //! optional trigger list to be monitored
 
 private:
   AliTRDrecoTask(const AliTRDrecoTask&);

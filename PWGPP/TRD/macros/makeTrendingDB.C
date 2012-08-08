@@ -260,7 +260,7 @@ void makeTrendingDB(const Char_t *fl)
       continue;
     }
     if((h =(TH1F*)gROOT->FindObject("hp"))){delete h; h = NULL;}
-    h = new TH1F("hp", Form(";%s;entries", tvn[it][0]), 10, 0.5*(3*xmin-xmax), 0.5*(3*xmax - xmin));
+    h = new TH1F("hp", Form(";%s;entries", tvn[it][0]), 25, 0.5*(3*xmin-xmax), 0.5*(3*xmax - xmin));
     tDB->Draw(Form("%s>>hp", tvn[it][0]), Form("%s>-100", tvn[it][0]));
     if(h->Integral() < 1) continue;
     f.SetParameter(0, h->Integral());
@@ -281,7 +281,7 @@ void makeTrendingDB(const Char_t *fl)
 /*    } else if(strstr(tvn[it][0], "TrkInQ") || strstr(tvn[it][0], "TrkInQS")) {
       m=-2.; s=0.2;*/
 //    } else {
-      m=f.GetParameter(1); s=f.GetParameter(2);
+      m=f.GetParameter(1); s=h->GetRMS()/*f.GetParameter(2)*/;
 //    }
     tm->AddValue(tvn[it][0], m, s, tvn[it][1], res[it>13], notifiable);
   }

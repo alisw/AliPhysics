@@ -103,7 +103,6 @@ public:
   void            UserCreateOutputObjects();
 //  Float_t GetCorrectionX(Int_t det, Int_t tb) const {return fXcorr[det][tb];}
   static void     GetRangeZ(TH2 *h2, Float_t &m, Float_t &M);
-  Float_t         GetDyRange() const {return fDyRange;}
   Float_t         GetPtThreshold() const {return fPtThreshold;}
   static Int_t    GetPtBin(Float_t pt);
   Bool_t          GetRefFigure(Int_t ifig);
@@ -134,9 +133,8 @@ public:
   TH1*            PlotMC(const AliTRDtrackV1 *t=NULL);
 
   static Bool_t   Process(TH2* const /*h2*/, TGraphErrors **/*g*/, Int_t stat=100){ return Bool_t(stat);}
-  void            SetDyRange(Float_t dy) {fDyRange = dy;}
   void            SetPtThreshold(Float_t pt)            { fPtThreshold = pt;}
-  void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b==0?2:(b<0?1:3);}
+  void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b;}
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
   void            SetBsign(Int_t b=0)                   { fBsign = Bool_t(b);}
   void            SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin);
@@ -151,9 +149,6 @@ public:
   static Bool_t   UseTrack(const Int_t np, const AliTrackPoint *points, Float_t params[10]);
 
   void        AdjustF1(TH1 *h, TF1 *f);
-  TObjArray*  BuildMonitorContainerCluster(const char* name, Bool_t expand=kFALSE, Float_t range=-1.);
-  TObjArray*  BuildMonitorContainerTracklet(const char* name, Bool_t expand=kFALSE);
-  TObjArray*  BuildMonitorContainerTrack(const char* name);
   void        DrawSigma(TH2 *h2, const Char_t *t, Float_t m=0., Float_t M=-1., Float_t scale=1);
   void        GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
   void        GetRange(TH2 *h2, Char_t mod, Float_t *range);
@@ -172,9 +167,7 @@ protected:
   UShort_t              fSteer;           // bit map to steer internal behaviour of class
                                           // MakeProjection [kTrackIn kTracklet kCluster kDetector]
                                           // Dump3D [4+kTrackIn 4+kTracklet 4+kCluster 4+kDetector]
-  UShort_t              fIdxFrame;        // frame counter (internal)
   Float_t               fPtThreshold;     // pt threshold for some performance plots
-  Float_t               fDyRange;         // min/max dy
   Int_t                 fBCbinTOF;        // set/select by TOF BC index
   Int_t                 fBCbinFill;       // set/select by Bunch Fill index
   Bool_t                fBsign;           // sign of magnetic field (kFALSE[-] kTRUE[+])
@@ -191,6 +184,6 @@ protected:
   TObjArray            *fCl;              //! cluster2track calib
   TObjArray            *fMCcl;            //! cluster2mc calib
   
-  ClassDef(AliTRDresolution, 10) // TRD tracking resolution task
+  ClassDef(AliTRDresolution, 11) // TRD tracking resolution task
 };
 #endif

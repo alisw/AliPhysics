@@ -225,14 +225,14 @@ void processGEN(TNamed *otask, const Char_t *filename)
     delete info;
     return;
   }
-  if(summary) Info("processGEN", "MakeSummary() not implemented yet");//info->MakeSummary();
-  else{
-    for(Int_t ipic(0); ipic<info->GetNRefFigures(); ipic++){
-      c->Clear();
-      if(!info->GetRefFigure(ipic)) continue;
-      c->SaveAs(Form("%s_Fig%02d.gif", info->GetName(), ipic));
-    }
-  }
+  info->MakeSummary();
+//   else{
+//     for(Int_t ipic(0); ipic<info->GetNRefFigures(); ipic++){
+//       c->Clear();
+//       if(!info->GetRefFigure(ipic)) continue;
+//       c->SaveAs(Form("%s_Fig%02d.gif", info->GetName(), ipic));
+//     }
+//   }
 
   delete info;
 }

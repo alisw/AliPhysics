@@ -155,9 +155,7 @@ Float_t AliTRDresolution::fgPtBin[25];
 AliTRDresolution::AliTRDresolution()
   :AliTRDrecoTask()
   ,fSteer(0)
-  ,fIdxFrame(0)
   ,fPtThreshold(.3)
-  ,fDyRange(0.75)
   ,fBCbinTOF(0)
   ,fBCbinFill(0)
   ,fBsign(kFALSE)
@@ -178,9 +176,7 @@ AliTRDresolution::AliTRDresolution()
 AliTRDresolution::AliTRDresolution(char* name, Bool_t xchange)
   :AliTRDrecoTask(name, "TRD spatial and momentum resolution")
   ,fSteer(0)
-  ,fIdxFrame(0)
   ,fPtThreshold(.3)
-  ,fDyRange(0.75)
   ,fBCbinTOF(0)
   ,fBCbinFill(0)
   ,fBsign(kFALSE)
@@ -579,69 +575,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
 //
 // Additionally the momentum resolution/pulls are calculated for usage in the
 // PID calculation.
-  //printf("AliTRDresolution::PlotTrackIn() :: track[%p]\n", (void*)track);
-  const Int_t np(27);
-  Float_t vp[np] = {
-    0.3375, 0.3625, 0.3875, 0.4125, 0.4375, 0.4625, 0.4875, 0.5125, 0.5375, 0.5625, 0.5875, 0.6125, 0.6375, 0.6625, 0.6875, 0.7125, 0.7375, 0.7625, 0.7875, 0.8125, 0.8375, 0.8625, 0.8875, 0.9125, 0.9375, 0.9625, 0.9875};
-  Float_t vpar[np][7] = {
-    {1620.77, 1637.76, 1033.49,  219.90,  300.00, 11234.87, 1113.33},
-    {1761.62, 1772.56, 1002.12,  219.44,  300.00, 9247.25, 1180.65},
-    {1759.54, 1805.76, 1011.67,  226.35,   54.74, 7739.81, 1120.52},
-    {1785.01, 1847.86,  993.53,  225.54,   48.02, 6575.87, 1001.27},
-    {1816.10, 1893.11,  993.37,  219.72,   70.20, 5860.19,  924.65},
-    {1745.73, 1769.14,  984.64,  217.80,   99.74, 4987.99,  729.97},
-    {1630.73, 1739.22,  987.80,  210.79,  140.88, 4404.52,  661.83},
-    {1532.09, 1637.25,  969.80,  208.23,  183.06, 4023.80,  593.95},
-    {1406.39, 1457.61,  973.71,  214.04,  221.52, 3684.11,  568.14},
-    {1319.60, 1363.47,  973.81,  214.03,  213.82, 3358.99,  602.18},
-    {1204.52, 1286.62,  975.00,  213.85,  249.08, 3086.86,  451.61},
-    {1108.89, 1172.44,  969.34,  209.29,  234.00, 2857.36,  512.79},
-    {1080.99, 1119.23,  956.90,  199.72,  232.16, 2662.46,  511.70},
-    { 932.87, 1022.37,  996.10,  211.59,  191.86, 2495.88,  472.64},
-    { 870.37,  927.52,  979.59,  211.22,  185.93, 2352.64,  471.50},
-    { 813.63,  862.36,  976.39,  208.70,  170.30, 2228.81,  543.72},
-    { 719.08,  764.51,  979.11,  216.24,  159.93, 2121.21,  483.85},
-    { 686.97,  746.95,  981.91,  208.64,  172.86, 2027.26,  428.23},
-    { 657.16,  660.34,  979.22,  220.23,  146.15, 1874.18,  418.02},
-    { 586.85,  617.01,  994.70,  225.71,  151.23, 1816.44,  317.01},
-    { 590.84,  553.40,  973.50,  208.46,  153.81, 1608.13,  407.54},
-    { 548.43,  501.37,  979.41,  209.70,  130.38, 1551.19,  422.07},
-    { 500.07,  476.37,  969.69,  209.10,  159.85, 1500.49,  321.93},
-    { 484.45,  476.31,  990.48,  204.98,  117.53, 1608.40,  304.42},
-    { 448.54,  447.14,  981.36,  205.21,  128.96, 1513.62,  244.57},
-    { 412.45,  398.59,  999.26,  201.71,  164.19, 1441.81,  196.49},
-    { 385.75,  390.55,  983.29,  214.26,  117.22, 1360.23,  174.48}
-  };
-  Float_t vqq[np][2] = {
-    {10.1500, 0.0050},
-    {37.4500, 0.0050},
-    {39.8500, 0.0050},
-    {37.1500, 0.0050},
-    {39.5500, 0.0050},
-    {38.9500, 0.0050},
-    {37.1500, 0.0050},
-    {32.6500, 0.0250},
-    {22.1500, 0.0250},
-    {10.1500, 0.0750},
-    {15.5500, 0.0650},
-    {10.1500, 0.1150},
-    {11.0500, 0.1750},
-    {10.1500, 0.1050},
-    {10.1500, 0.1150},
-    {10.1500, 0.1750},
-    {10.7500, 0.1950},
-    {11.0500, 0.2050},
-    {11.3500, 0.1950},
-    {12.8500, 0.1950},
-    {10.1500, 0.2650},
-    {10.1500, 0.2950},
-    {10.1500, 0.3050},
-    {10.1500, 0.2350},
-    {11.6500, 0.2750},
-    {10.7500, 0.2750},
-    {10.1500, 0.2450}
-  };
-
+ 
   if(track) fkTrack = track;
   if(!fkTrack){
     AliDebug(4, "No Track defined.");
@@ -690,59 +624,10 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   // down scale PID resolution
   Int_t spc(fSpecies); if(spc==3) spc=2; if(spc==-3) spc=-2; if(spc>3) spc=3; if(spc<-3) spc=-3;
 
-  //identify high dEdx component
-  Int_t xid(0);
-  if(!fTracklet->IsRowCross()){
-    TF1 fl1("fl1", "landau", 5.5e2, 6.5e3);
-    TF1 fl2("fl2", "landau", 5.5e2, 6.5e3);
-    TF1 fg("fg", "gausn", -100, 100);
-    fg.SetParameter(0, 1.);
-    fg.SetParameter(1, -20.88);
-    fg.SetParameter(2,  14.47);
-    Double_t  ang(TMath::DegToRad()*50.), cs[2] = {TMath::Cos(ang), TMath::Sin(ang)};
-    Float_t p(fTracklet->GetMomentum()),
-            dqdl(fTracklet->GetdQdl());
-    if(p>vp[0] && p<vp[np-1]){
-      Int_t jp(0); while(jp<np && p>vp[jp]) jp++;
-      Int_t imin=TMath::Max(0, jp-1), imax=TMath::Min(jp, np-1);
-      //if(spc==2) printf("p[%6.4f] [%6.4f %6.4f]\n", p, vp[imin], vp[imax]);
-      for(Int_t ip(0); ip<3; ip++){
-        fl1.SetParameter(ip, 0.5*(vpar[imin][ip+1] + vpar[imax][ip+1]));
-        fl2.SetParameter(ip, 0.5*(vpar[imin][ip+4] + vpar[imax][ip+4]));
-      }
-      Float_t q0=fl1.Eval(dqdl), q1=fl2.Eval(dqdl);
-      q1/=(q0+q1); q1*=1.e2;
-
-      // calculate shape
-      AliTRDcluster *c(NULL);
-      Int_t ntb=0, q[26];Float_t qm(0.), qs(0.);
-      for(Int_t itb(0); itb<26/*AliTRDseedV1::kNtb*/; itb++){
-        q[itb]=0;
-        if(!(c=fTracklet->GetClusters(itb))) continue;
-        //Int_t col(c->GetPadCol());
-        Short_t *sig = c->GetSignals();
-        for(Int_t ipad(0); ipad<7; ipad++){
-          if(sig[ipad]<0) continue; // avoid signals below baseline
-          q[itb]+=sig[ipad];
-        }
-        if(!q[itb]) continue;
-        qm+=q[itb]; ntb++;
-      }
-      if(ntb) qm/=ntb;
-      for(Int_t itb(0); itb<26/*AliTRDseedV1::kNtb*/; itb++) qs += (q[itb]-qm)*(q[itb]-qm);
-      if(ntb) qs/=ntb;
-      if(qs>0.) qs=TMath::Sqrt(qs);
-      Float_t qsm = cs[0]*qm-cs[1]*qs;
-      Float_t q2 = 1.e2*fg.Eval(qsm);
-      if(q1>0.5*(vqq[imin][0]+vqq[imax][0])&&q2<=0.5*(vqq[imin][1]+vqq[imax][1])) xid = 1;
-    }
-  }
-
   if(DebugLevel()>=3){
     Float_t tpc(fkESD->GetTPCdedx());
     Float_t tof(fkESD->GetTOFbeta());
     (*DebugStream()) << "trackIn"
-      <<"xid="        << xid
       <<"spc="        << spc
       <<"tpc="        << tpc
       <<"tof="        << tof
@@ -766,7 +651,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   Double_t dphi = TMath::ATan(phit) - TMath::ASin(parR[2]);
 
   Double_t val[kNdim+2];
-  val[kBC]          = xid;//bc==0?0:(bc<0?-1.:1.);
+  val[kBC]          = fTriggerSlot;//bc==0?0:(bc<0?-1.:1.);
   Double_t alpha = (0.5+AliTRDgeometry::GetSector(fTracklet->GetDetector()))*AliTRDgeometry::GetAlpha(),
            cs    = TMath::Cos(alpha),
            sn    = TMath::Sin(alpha);
@@ -1317,7 +1202,9 @@ void AliTRDresolution::MakeSummary()
           h2->SetContour(9);
           h2->GetZaxis()->SetRangeUser(zmin[ispec], zmax[ispec]);
           h2->GetZaxis()->SetTitle("Rel. Abundancy [%]");h2->GetZaxis()->CenterTitle();
-          TString tit(h2->GetTitle()); h2->SetTitle(Form("%s :: Relative Abundancy", ((*(tit.Tokenize("::")))[0])->GetName()));
+          TString tit(h2->GetTitle()); TObjArray *atit = tit.Tokenize("::");
+          h2->SetTitle(Form("%s :: Relative Abundancy", ((*atit)[0])->GetName()));
+          atit->Delete(); delete atit;
           h2->Draw("colz");
           MakeDetectorPlot(0);
         }
@@ -2319,7 +2206,6 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         }
         php.AddLast(&specY[idx]);
         if((h2 = specY[idx].Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
-        if((h2 = (TH2*)gDirectory->Get(Form("%sEn", specY[idx].H()->GetName())))) arr->AddAt(h2, jh++);
         if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specY[idx];
       }
       /*!dphi*/
@@ -2832,159 +2718,6 @@ void AliTRDresolution::AdjustF1(TH1 *h, TF1 *f)
 }
 
 //________________________________________________________
-TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool_t expand, Float_t range)
-{
-// Build performance histograms for AliTRDcluster.vs TRD track or MC
-//  - y reziduals/pulls
-
-  TObjArray *arr = new TObjArray(2);
-  arr->SetName(name); arr->SetOwner();
-  TH1 *h(NULL); char hname[100], htitle[300];
-
-  // tracklet resolution/pull in y direction
-  snprintf(hname, 100, "%s_%s_Y", GetNameId(), name);
-  snprintf(htitle, 300, "Y res for \"%s\" @ %s;tg(#phi);#Delta y [cm];%s", GetNameId(), name, "Detector");
-  Float_t rr = range<0.?fDyRange:range;
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    Int_t nybins=50;
-    if(expand) nybins*=2;
-    h = new TH3S(hname, htitle,
-                 48, -.48, .48,            // phi
-                 60, -rr, rr,              // dy
-                 nybins, -0.5, nybins-0.5);// segment
-  } else h->Reset();
-  arr->AddAt(h, 0);
-  snprintf(hname, 100, "%s_%s_YZpull", GetNameId(), name);
-  snprintf(htitle, 300, "YZ pull for \"%s\" @ %s;%s;#Delta y  / #sigma_{y};#Delta z  / #sigma_{z}", GetNameId(), name, "Detector");
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle, 540, -0.5, 540-0.5, 100, -4.5, 4.5, 100, -4.5, 4.5);
-  } else h->Reset();
-  arr->AddAt(h, 1);
-
-  return arr;
-}
-
-//________________________________________________________
-TObjArray* AliTRDresolution::BuildMonitorContainerTracklet(const char* name, Bool_t expand)
-{
-// Build performance histograms for AliExternalTrackParam.vs TRD tracklet
-//  - y reziduals/pulls
-//  - z reziduals/pulls
-//  - phi reziduals
-  TObjArray *arr = BuildMonitorContainerCluster(name, expand, 0.05);
-  arr->Expand(5);
-  TH1 *h(NULL); char hname[100], htitle[300];
-
-  // tracklet resolution/pull in z direction
-  snprintf(hname, 100, "%s_%s_Z", GetNameId(), name);
-  snprintf(htitle, 300, "Z res for \"%s\" @ %s;tg(#theta);#Delta z [cm]", GetNameId(), name);
-  if(!(h = (TH2S*)gROOT->FindObject(hname))){
-    h = new TH2S(hname, htitle, 50, -1., 1., 100, -.05, .05);
-  } else h->Reset();
-  arr->AddAt(h, 2);
-  snprintf(hname, 100, "%s_%s_Zpull", GetNameId(), name);
-  snprintf(htitle, 300, "Z pull for \"%s\" @ %s;tg(#theta);#Delta z  / #sigma_{z};row cross", GetNameId(), name);
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle, 50, -1., 1., 100, -5.5, 5.5, 2, -0.5, 1.5);
-    h->GetZaxis()->SetBinLabel(1, "no RC");
-    h->GetZaxis()->SetBinLabel(2, "RC");
-  } else h->Reset();
-  arr->AddAt(h, 3);
-
-  // tracklet to track phi resolution
-  snprintf(hname, 100, "%s_%s_PHI", GetNameId(), name);
-  snprintf(htitle, 300, "#Phi res for \"%s\" @ %s;tg(#phi);#Delta #phi [rad];%s", GetNameId(), name, "Detector");
-  Int_t nsgms=540;
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle, 48, -.48, .48, 100, -.5, .5, nsgms, -0.5, nsgms-0.5);
-  } else h->Reset();
-  arr->AddAt(h, 4);
-
-  return arr;
-}
-
-//________________________________________________________
-TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
-{
-// Build performance histograms for AliExternalTrackParam.vs MC
-//  - y resolution/pulls
-//  - z resolution/pulls
-//  - phi resolution, snp pulls
-//  - theta resolution, tgl pulls
-//  - pt resolution, 1/pt pulls, p resolution
-
-  TObjArray *arr = BuildMonitorContainerTracklet(name);
-  arr->Expand(11);
-  TH1 *h(NULL); char hname[100], htitle[300];
-  //TAxis *ax(NULL);
-
-  // snp pulls
-  snprintf(hname, 100, "%s_%s_SNPpull", GetNameId(), name);
-  snprintf(htitle, 300, "SNP pull for \"%s\" @ %s;tg(#phi);#Delta snp  / #sigma_{snp};entries", GetNameId(), name);
-  if(!(h = (TH2I*)gROOT->FindObject(hname))){
-    h = new TH2I(hname, htitle, 60, -.3, .3, 100, -4.5, 4.5);
-  } else h->Reset();
-  arr->AddAt(h, 5);
-
-  // theta resolution
-  snprintf(hname, 100, "%s_%s_THT", GetNameId(), name);
-  snprintf(htitle, 300, "#Theta res for \"%s\" @ %s;tg(#theta);#Delta #theta [rad];entries", GetNameId(), name);
-  if(!(h = (TH2I*)gROOT->FindObject(hname))){
-    h = new TH2I(hname, htitle, 100, -1., 1., 100, -5e-3, 5e-3);
-  } else h->Reset();
-  arr->AddAt(h, 6);
-  // tgl pulls
-  snprintf(hname, 100, "%s_%s_TGLpull", GetNameId(), name);
-  snprintf(htitle, 300, "TGL pull for \"%s\" @ %s;tg(#theta);#Delta tgl  / #sigma_{tgl};entries", GetNameId(), name);
-  if(!(h = (TH2I*)gROOT->FindObject(hname))){
-    h = new TH2I(hname, htitle, 100, -1., 1., 100, -4.5, 4.5);
-  } else h->Reset();
-  arr->AddAt(h, 7);
-
-  const Int_t kNdpt(150);
-  const Int_t nNspc = 2*kNspc+1;
-  Float_t lPt=0.1, lDPt=-.1, lSpc=-5.5;
-  Float_t binsPt[kNpt+1], binsSpc[nNspc+1], binsDPt[kNdpt+1];
-  for(Int_t i=0;i<kNpt+1; i++,lPt=TMath::Exp(i*.15)-1.) binsPt[i]=lPt;
-  for(Int_t i=0; i<nNspc+1; i++,lSpc+=1.) binsSpc[i]=lSpc;
-  for(Int_t i=0; i<kNdpt+1; i++,lDPt+=2.e-3) binsDPt[i]=lDPt;
-
-  // Pt resolution
-  snprintf(hname, 100, "%s_%s_Pt", GetNameId(), name);
-  snprintf(htitle, 300, "#splitline{P_{t} res for}{\"%s\" @ %s};p_{t} [GeV/c];#Delta p_{t}/p_{t}^{MC};SPECIES", GetNameId(), name);
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle,
-                 kNpt, binsPt, kNdpt, binsDPt, nNspc, binsSpc);
-    //ax = h->GetZaxis();
-    //for(Int_t ib(1); ib<=ax->GetNbins(); ib++) ax->SetBinLabel(ib, fgParticle[ib-1]);
-  } else h->Reset();
-  arr->AddAt(h, 8);
-  // 1/Pt pulls
-  snprintf(hname, 100, "%s_%s_1Pt", GetNameId(), name);
-  snprintf(htitle, 300, "#splitline{1/P_{t} pull for}{\"%s\" @ %s};1/p_{t}^{MC} [c/GeV];#Delta(1/p_{t})/#sigma(1/p_{t});SPECIES", GetNameId(), name);
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle,
-                 kNpt, 0., 2., 100, -4., 4., kNspc, -5.5, kNspc-.5);
-    //ax = h->GetZaxis();
-    //for(Int_t ib(1); ib<=ax->GetNbins(); ib++) ax->SetBinLabel(ib, fgParticle[ib-1]);
-  } else h->Reset();
-  arr->AddAt(h, 9);
-  // P resolution
-  snprintf(hname, 100, "%s_%s_P", GetNameId(), name);
-  snprintf(htitle, 300, "P res for \"%s\" @ %s;p [GeV/c];#Delta p/p^{MC};SPECIES", GetNameId(), name);
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle,
-                 kNpt, binsPt, kNdpt, binsDPt, nNspc, binsSpc);
-    //ax = h->GetZaxis();
-    //for(Int_t ib(1); ib<=ax->GetNbins(); ib++) ax->SetBinLabel(ib, fgParticle[ib-1]);
-  } else h->Reset();
-  arr->AddAt(h, 10);
-
-  return arr;
-}
-
-
-//________________________________________________________
 TObjArray* AliTRDresolution::Histos()
 {
   //
@@ -3069,6 +2802,11 @@ TObjArray* AliTRDresolution::Histos()
     Int_t trinNbins[mdim];   memcpy(trinNbins, fgkNbins, kNdim*sizeof(Int_t));
     Double_t trinMin[mdim];  memcpy(trinMin, fgkMin, kNdim*sizeof(Double_t));
     Double_t trinMax[mdim];  memcpy(trinMax, fgkMax, kNdim*sizeof(Double_t));
+    if(fTriggerList){
+      trinTitle[kBC]=StrDup("trigger"); 
+      trinNbins[kBC] = TMath::Power(2.,fTriggerList->GetEntriesFast())-1;
+      trinMin[kBC] = 0.5; trinMax[kBC] = trinNbins[kBC]+.5;
+    }
     trinNbins[kSpeciesChgRC] = Int_t(kNcharge)*(kNspc-1)+1; trinMin[kSpeciesChgRC] = -kNspc+0.5; trinMax[kSpeciesChgRC] = kNspc-0.5;
     if(DebugLevel()>=1){trinNbins[kPt]=24; trinMax[kPt] = 23.5;}
     trinTitle[kNdim]=StrDup("bin_p"); trinNbins[kNdim] = (DebugLevel()>=1?24:kNpt); trinMin[kNdim] = -0.5; trinMax[kNdim] = trinNbins[kNdim]-.5;

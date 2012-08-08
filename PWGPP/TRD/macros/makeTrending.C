@@ -10,7 +10,14 @@ void makeTrending(const Char_t *fl, Bool_t relative=kFALSE, const Char_t *db = "
   AliTRDtrendingManager *tm = AliTRDtrendingManager::Instance();
   tm->Load(db);
   tm->SetRelativeMeanSigma(relative);
-  tm->MakeTrends(fl);
+
+  TH1 *h1(NULL); TObjArray *trend = new TObjArray(100);
+  h1 = tm->MakeTrends(fl, trend);
+
+  TFile *fOut = TFile::Open("Trend_TRDgraph.root", "RECREATE");
+  h1->SetDirectory(fOut); h1->Write();
+  trend->Write();
+  fOut->Close();
   return;
 }
 
