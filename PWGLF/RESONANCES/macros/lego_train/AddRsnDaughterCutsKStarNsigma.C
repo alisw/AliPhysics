@@ -8,6 +8,7 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
 
    Bool_t valid = kTRUE;
    Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
+   Int_t useCommonQualityCut = AliAnalysisManager::GetGlobalInt("rsnCommonQualityCut",valid);
 
    Bool_t usePPCut = kFALSE;
 
@@ -97,7 +98,11 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
    AliRsnCutSet *cutsK = new AliRsnCutSet(cutname.Data(), AliRsnTarget::kDaughter);
 
    AliRsnCutTrackQuality *qualityCutK = new AliRsnCutTrackQuality("cutQuatityK");
-   qualityCutK->SetDefaults2010();
+   if (useCommonQualityCut>=0) {
+      qualityCutK->SetAODTestFilterBit(useCommonQualityCut);
+   } else {
+      qualityCutK->SetDefaults2010();
+   }
    cutsK->AddCut(qualityCutK);
    if (!scheme.IsNull()) scheme += "&";
    scheme += qualityCutK->GetName();
@@ -146,7 +151,11 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
    AliRsnCutSet *cutsP = new AliRsnCutSet(cutname.Data(), AliRsnTarget::kDaughter);
 
    AliRsnCutTrackQuality *qualityCutPi = new AliRsnCutTrackQuality("cutQuatityPi");
-   qualityCutPi->SetDefaults2010();
+   if (useCommonQualityCut>=0) {
+      qualityCutPi->SetAODTestFilterBit(useCommonQualityCut);
+   } else {
+      qualityCutPi->SetDefaults2010();
+   }
    cutsP->AddCut(qualityCutPi);
    if (!scheme.IsNull()) scheme += "&";
    scheme += qualityCutPi->GetName();
@@ -180,7 +189,7 @@ Int_t AddRsnDaughterCutsKStarNsigma(AliPID::EParticleType type1,AliPID::EParticl
       scheme += cutPDGP->GetName();
    }
 
-   Printf ("CUT Scheme for PROTON is '%s'",scheme.Data());
+   Printf ("CUT Scheme for PION is '%s'",scheme.Data());
    cutsP->SetCutScheme(scheme.Data());
 
    // END PROTON =======================================

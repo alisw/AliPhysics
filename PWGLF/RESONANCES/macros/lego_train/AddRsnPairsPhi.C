@@ -84,15 +84,25 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
 
    if (isPP) taskRsnMini->UseMultiplicity("QUALITY");
-   else taskRsnMini->UseCentrality("V0M");
-   
+   else {
+      taskRsnMini->UseCentrality("V0M");
+      Int_t multID = taskRsnMini->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+      AliRsnMiniOutput *outMult = taskRsnMini->CreateOutput("eventMult", "HIST", "EVENT");
+      outMult->AddAxis(multID, 100, 0.0, 100.0);
+      Int_t paID = taskRsnMini->CreateValue(AliRsnMiniValue::kPlaneAngle, kFALSE);
+      AliRsnMiniOutput *outPa = taskRsnMini->CreateOutput("planeAngle", "HIST", "EVENT");
+      outPa->AddAxis(paID, 100, 0, TMath::Pi());
+   }
+
 
    /* invariant mass   */ Int_t imID   = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* IM resolution    */ Int_t resID  = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMassDiff, kTRUE);
    /* transv. momentum */ Int_t ptID   = taskRsnMini->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = taskRsnMini->CreateValue(AliRsnMiniValue::kMult, kFALSE);
    /* eta              */ Int_t etaID = taskRsnMini->CreateValue(AliRsnMiniValue::kEta, kFALSE);
+   /* rapidity         */ Int_t yID = taskRsnMini->CreateValue(AliRsnMiniValue::kY, kFALSE);
 
+   Bool_t useRapidity = kTRUE;
 
    // use an array for more compact writing, which are different on mixing and charges
    // [0] = unlike
@@ -112,9 +122,10 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    Int_t nIM   = 300; Double_t minIM   = 0.9, maxIM =  1.2;
 //    Int_t nEta   = 400; Double_t minEta   = -2.0, maxEta =  2.0;
    Int_t nEta   = 400; Double_t minEta   = -0.5, maxEta =  0.5;
+   Int_t nY   = 10; Double_t minY   = -0.5, maxY =  0.5;
 //   Int_t nIM   = 1000; Double_t minIM   = 0.9, maxIM =  1.9;
    Int_t nPt   = 120; Double_t minPt   = 0.0, maxPt = 12.0;
-   Int_t nCent = 20; Double_t minCent = 0.0, maxCent = 100.0;
+   Int_t nCent = 100; Double_t minCent = 0.0, maxCent = 100.0;
    Int_t nRes  = 200; Double_t maxRes  = 0.01;
 
    // retrieve mass from PDG database
@@ -147,7 +158,8 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
          // axis Y: transverse momentum
          out->AddAxis(ptID, nPt, minPt, maxPt);
 
-         out->AddAxis(etaID, nEta, minEta, maxEta);
+         if (useRapidity) out->AddAxis(yID, nY, minY, maxY);
+         else  out->AddAxis(etaID, nEta, minEta, maxEta);
          // axis Z: centrality
          if (!isPP) out->AddAxis(centID, nCent, minCent, maxCent);
       }
@@ -173,7 +185,8 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
       if (isFullOutput) {
          // axis Y: transverse momentum
          outRes->AddAxis(ptID, nPt, minPt, maxPt);
-         outRes->AddAxis(etaID, nEta, minEta, maxEta);
+         if (useRapidity) outRes->AddAxis(yID, nY, minY, maxY);
+         else  outRes->AddAxis(etaID, nEta, minEta, maxEta);
          // axis Z: centrality
          if (!isPP) outRes->AddAxis(centID, nCent, minCent, maxCent);
       }
@@ -198,7 +211,8 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
       if (isFullOutput) {
          // axis Y: transverse momentum
          outMC->AddAxis(ptID, nPt, minPt, maxPt);
-         outMC->AddAxis(etaID, nEta, minEta, maxEta);
+         if (useRapidity) outMC->AddAxis(yID, nY, minY, maxY);
+         else  outMC->AddAxis(etaID, nEta, minEta, maxEta);
          // axis Z: centrality
          if (!isPP) outMC->AddAxis(centID, nCent, minCent, maxCent);
       }
@@ -206,3 +220,6 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
 
 
 }
+
+
+
