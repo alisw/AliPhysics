@@ -64,7 +64,7 @@ AliDielectronHFhelper::AliDielectronHFhelper(const char* filename) :
   // get HF container(s) from file 'filename'
   //
   SetHFArray(filename);
-  
+
 }
 
 //________________________________________________________________
@@ -75,7 +75,7 @@ AliDielectronHFhelper::~AliDielectronHFhelper()
   //
   if(fArrPairType) delete fArrPairType;
   if(fCutVars)     delete fCutVars;
-  
+
 }
 
 //________________________________________________________________
@@ -91,12 +91,12 @@ void AliDielectronHFhelper::SetHFArray(const char* filename)
   TIter nextKey(l);
   TKey *k=0x0;
   while ( (k=static_cast<TKey*>(nextKey())) ){
-  
+
     TObject *o=k->ReadObj();
     if (o->IsA()==TList::Class()){
-      
+
       TList *tlist=(TList*)o;
- 
+
       TIter next(tlist);
       TObject *obj=0x0;
       while ((obj = next())) {
@@ -119,7 +119,18 @@ void AliDielectronHFhelper::SetRangeUser(const char *varname, Double_t min, Doub
   // Set range from variable name
   //
   //  Int_t size=sizeof(fCutVars)/sizeof(const char*);
+
   Int_t size=fCutLowLimits.GetNrows();
+
+  // check if cut is already set
+  for(Int_t icut=0; icut<size; icut++) {
+    TString cutName = fCutVars->At(icut)->GetName();
+    if(!cutName.CompareTo(Form("%s%s",(leg?"Leg":""),varname))) {
+      UnsetRangeUser(varname,leg);
+      SetRangeUser(varname, min, max, leg);
+      return;
+    }
+  }
 
   if(size>=kMaxCuts) return;
 
@@ -132,7 +143,6 @@ void AliDielectronHFhelper::SetRangeUser(const char *varname, Double_t min, Doub
   fCutUpLimits.ResizeTo(size+1);
 
   // fill
-  //  fCutVars[size]=Form("%s%s",(leg?"Leg":""),varname);
   TObjString *str = new TObjString(Form("%s%s",(leg?"Leg":""),varname));
   fCutVars->Add(str);
   fCutLowLimits(size) = min;
@@ -144,7 +154,7 @@ void AliDielectronHFhelper::SetRangeUser(const char *varname, Double_t min, Doub
 void AliDielectronHFhelper::SetRangeUser(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max, Bool_t leg)
 {
   //
-  // Set range from AliDielectronVarManager 
+  // Set range from AliDielectronVarManager
   //
   SetRangeUser(AliDielectronVarManager::GetValueName(type), min, max, leg);
 }
@@ -156,28 +166,29 @@ void AliDielectronHFhelper::UnsetRangeUser(const char *varname, Bool_t leg)
   // unset range from variable name
   //
   Int_t size=fCutLowLimits.GetNrows();
-  PrintCuts();
+  //  PrintCuts();
   TVectorD newlow;
   TVectorD newup;
 
+  // find cut and build new vectors w/o it
   Int_t ientries = 0;
   for(Int_t icut=0; icut<size; icut++) {
 
     TString cutName = fCutVars->At(icut)->GetName();
-    if(cutName.Contains(Form("%s%s",(leg?"Leg":""),varname))) { 
+    if(!cutName.CompareTo(Form("%s%s",(leg?"Leg":""),varname))) {
       fCutVars->AddAt(0x0,icut);
       continue;
     }
-    
+
     // fill new vectors
     newlow.ResizeTo(ientries+1);
     newup.ResizeTo(ientries+1);
     newlow(ientries) = fCutLowLimits(icut);
     newup(ientries)  = fCutUpLimits(icut);
-    
+
     ientries++;
   }
-  
+
   // adapt new arrays/vectors
   fCutVars->Compress();
 
@@ -187,51 +198,68 @@ void AliDielectronHFhelper::UnsetRangeUser(const char *varname, Bool_t leg)
     fCutLowLimits(icut) = newlow(icut);
     fCutUpLimits(icut)  = newup(icut);
   }
-  PrintCuts();
- 
+  // PrintCuts();
+
 }
 
 //________________________________________________________________
 void AliDielectronHFhelper::UnsetRangeUser(AliDielectronVarManager::ValueTypes type, Bool_t leg)
 {
   //
-  // Unset range from AliDielectronVarManager 
+  // Unset range from AliDielectronVarManager
   //
   UnsetRangeUser(AliDielectronVarManager::GetValueName(type), leg);
 }
 
 //________________________________________________________________
-TObjArray* AliDielectronHFhelper::CollectHistos() 
+TObjArray* AliDielectronHFhelper::CollectHistos()
 {
   //
   // collect histograms for all kind of pair types or sources
   //
-  
+
   TObjArray *collection = new TObjArray(AliDielectron::kEv1PMRot+1);
+
+  TObjArray *histArr = (TObjArray*) fArrPairType->Clone("tmpArr");
+  histArr->SetOwner(kTRUE);
 
   // loop over max. available pair types
   for(Int_t i=0; i<AliDielectron::kEv1PMRot+1; i++) {
 
-    collection->AddAt(GetHistogram(AliDielectron::PairClassName(i)),i);
-    
+    collection->AddAt(GetHistogram(AliDielectron::PairClassName(i),histArr), i);
+
+  }
+
+  // clean up the clone
+  if(histArr) {
+    delete histArr;
+    histArr=0;
   }
 
   return collection;
 }
 
 //________________________________________________________________
-TH1F* AliDielectronHFhelper::GetHistogram(const char *step)
+TH1F* AliDielectronHFhelper::GetHistogram(const char *step, TObjArray *histArr)
 {
   //
-  // main function to recive a single histogram
-  //
-  
-  TObjArray *histos = (TObjArray*) fArrPairType->FindObject(step);
-  AliInfo(Form(" Step %s selected",step));
-  if(!histos) return 0x0;
+  // main function to recieve a single histogram
+  // TODO: check memory
 
-  TH1F *hist = FindHistograms(histos);
+  AliDebug(1,Form(" Step %s selected",step));
+
+  TObjArray *histos= 0x0;
+  TH1F *hist       = 0x0;
+  if(!histArr) {
+    histos = (TObjArray*) fArrPairType->FindObject(step)->Clone("tmpArr");
+  }
+  else {
+    histos = (TObjArray*) histArr->FindObject(step);
+  }
+
+  if(histos) hist   = FindHistograms(histos);
   return hist;
+
 }
 
 //________________________________________________________________
@@ -240,15 +268,15 @@ TH1F* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
   //
   // exclude histograms
   //
-  
+
   // debug
   // TString title    = histos->At(0)->GetTitle();
   // TObjArray* vars  = title.Tokenize(":");
-  // AliDebug(1,Form(" number of cuts/vars: %d/%d",fCutLowLimits.GetNrows(),vars->GetEntriesFast()));  
-  
+  // AliDebug(1,Form(" number of cuts/vars: %d/%d",fCutLowLimits.GetNrows(),vars->GetEntriesFast()));
+
   // check for missing cuts
   CheckCuts(histos);
-  
+
   // loop over all cuts
   for(Int_t icut=0; icut<fCutLowLimits.GetNrows(); icut++) {
 
@@ -256,7 +284,7 @@ TH1F* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
     const char *cutvar   = fCutVars->At(icut)->GetName();
     Double_t min   = fCutLowLimits(icut);
     Double_t max   = fCutUpLimits(icut);
-    AliDebug(1,Form(" Cut %d: %s [%.2f,%.2f]",icut,cutvar,min,max));
+    AliDebug(5,Form(" Cut %d: %s [%.2f,%.2f]",icut,cutvar,min,max));
 
     // loop over all histograms
     for(Int_t i=0; i<histos->GetEntriesFast(); i++) {
@@ -267,29 +295,29 @@ TH1F* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
       // collect binning from histo title
       TString title    = histos->At(i)->GetTitle();
       if(title.IsNull()) continue;
-      AliDebug(1,Form(" histo title: %s",title.Data()));
+      AliDebug(10,Form(" histo title: %s",title.Data()));
 
       TObjArray *vars  = title.Tokenize(":");
       for(Int_t ivar=0; ivar<vars->GetEntriesFast(); ivar++) {
 	TString binvar = vars->At(ivar)->GetName();
-	AliDebug(1,Form(" Check ivar %d binvar %s",ivar,binvar.Data()));
-	
+	AliDebug(10,Form(" Check ivar %d binvar %s",ivar,binvar.Data()));
+
 	// check for cuts and ranges by the user
 	if(binvar.Contains(cutvar)) {
 	  TObjArray *limits = binvar.Tokenize("#");
-	  
+
 	  Double_t binmin = atof(limits->At(1)->GetName());
 	  Double_t binmax = atof(limits->At(2)->GetName());
-	  AliDebug(1,Form(" bin %s var %s [%.2f,%.2f]",binvar.Data(),limits->At(0)->GetName(),binmin,binmax));
-	  
+	  AliDebug(10,Form(" bin %s var %s [%.2f,%.2f]",binvar.Data(),limits->At(0)->GetName(),binmin,binmax));
+
 	  // remove histogram from array
 	  if(binmin < min || binmax < min || binmin > max || binmax > max ) {
-	    AliDebug(1,Form(" removed, out of range min %.2f,%.2f  max %.2f,%.2f",binmin,min,binmax,max));
+	    AliDebug(10,Form(" removed, out of range min %.2f,%.2f  max %.2f,%.2f",binmin,min,binmax,max));
 	    histos->AddAt(0x0,i);
 	  }
 	  if(bFndBin && !(binmin == min && binmax == max)) {
 	      histos->AddAt(0x0,i);
-	      AliDebug(1,Form(" removed, within range min %.2f,%.2f  max %.2f,%.2f",binmin,min,binmax,max));
+	      AliDebug(10,Form(" removed, within range min %.2f,%.2f  max %.2f,%.2f",binmin,min,binmax,max));
 	    }
 	  // clean up
 	  if(limits) delete limits;
@@ -302,13 +330,13 @@ TH1F* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
       }
       // clean up
       if(vars)   delete vars;
-      
+
     }
-    
+
   }
-  
+
   // compress the array by removing all empty histos
-  histos->Compress();  
+  histos->Compress();
   AliDebug(1,Form(" Compression: %d histograms left",histos->GetEntriesFast()));
 
   // merge histograms
@@ -322,12 +350,12 @@ TH1F* AliDielectronHFhelper::MergeHistos(TObjArray *arr)
   //
   // merge histos to one single histogram
   //
-  
-  if(arr->GetEntriesFast()<1) { AliError("[E] No more histosgrams left!"); return 0x0; }
 
-  TH1F *final=(TH1F*) arr->At(0)->Clone();  
+  if(arr->GetEntriesFast()<1) { AliError(" No more histosgrams left!"); return 0x0; }
+
+  TH1F *final=(TH1F*) arr->At(0)->Clone();
   if(!final) return 0x0;
-  
+
   final->Reset("CE");
   final->SetTitle(""); //TODO: change in future
   for(Int_t i=0; i<arr->GetEntriesFast(); i++) {
@@ -358,20 +386,20 @@ void AliDielectronHFhelper::CheckCuts(TObjArray *arr)
     TString elementF=binvarsF->At(ivar)->GetName();
     TString elementL=binvarsL->At(ivar)->GetName();
     AliDebug(1,Form(" binvar %d: %s,%s",ivar,elementF.Data(),elementL.Data()));
-    
+
     switch(ivar%3) {
     case 0: continue; break;
     case 1: binmin[(int)ivar/3]=atof(elementF.Data()); break;
     case 2: binmax[(int)ivar/3]=atof(elementL.Data()); break;
     }
-    
+
     binvarsF->AddAt(0x0,ivar);
   }
   binvarsF->Compress();
-  
+
   // loop over all vars and cuts, check for missing stuff
   for(Int_t ivar=0; ivar<binvarsF->GetEntriesFast(); ivar++) {
-    
+
     TString binvar=binvarsF->At(ivar)->GetName();
     Bool_t selected=kFALSE;
 
@@ -381,16 +409,18 @@ void AliDielectronHFhelper::CheckCuts(TObjArray *arr)
       if(binvar.Contains(fCutVars->At(icut)->GetName())) { selected=kTRUE; break; }
       //      else break;
     }
-    
+
     // add missing cut with max limits
     if(!selected) {
-      AliWarning("Not all bin variables covered. Add additional cut!");
-      SetRangeUser(binvar.Data(),binmin[ivar],binmax[ivar]);
+      AliWarning(Form(" Bin variable %s not covered. Add cut!",binvar.Data()));
+      Bool_t leg = binvar.BeginsWith("Leg");
+      if(leg) binvar.Remove(0,3);
+      SetRangeUser(binvar.Data(),binmin[ivar],binmax[ivar], leg);
     }
-    
+
   }
-  
-  // clean up 
+
+  // clean up
   if(binvarsF) delete binvarsF;
   if(binvarsL) delete binvarsL;
 }
@@ -404,9 +434,22 @@ void AliDielectronHFhelper::Print(const Option_t* /*option*/) const
   //
 
   // pairtypes, steps and sources
-  AliInfo(Form(" Number of steps: \t %d",fArrPairType->GetEntriesFast()));
-  for(Int_t i=0; i<fArrPairType->GetEntriesFast(); i++) {
-    AliInfo(Form(" Step %d:",0));
+  AliInfo(Form(" Number of filled steps:  %d",fArrPairType->GetEntries()));
+  for(Int_t istep=0; istep<fArrPairType->GetEntriesFast(); istep++) {
+    if(fArrPairType->At(istep))
+      AliInfo(Form(" step %d: %s",istep,fArrPairType->At(istep)->GetName()));
+  }
+
+  AliInfo(Form(" Number of histograms:    %d",((TObjArray*)fArrPairType->At(0))->GetEntriesFast()));
+
+  TString title       = ((TObjArray*)fArrPairType->At(0))->First()->GetTitle();
+  TObjArray* binvars  = title.Tokenize(":");
+  AliInfo(Form(" Number of variables:     %d",binvars->GetEntriesFast()));
+
+  TObjArray* binvars2  = title.Tokenize(":#");
+  for(Int_t ivar=0; ivar<binvars2->GetEntriesFast(); ivar++) {
+    if(ivar%3) continue;
+    AliInfo(Form(" variable %.0f: %s",((Double_t)ivar)/3+1,binvars2->At(ivar)->GetName()));
   }
 
 }
@@ -423,6 +466,6 @@ void AliDielectronHFhelper::PrintCuts()
   AliInfo(" Selected cuts:");
   for(Int_t icut=0; icut<fCutLowLimits.GetNrows(); icut++)
     AliInfo(Form(" %d: %s [%.2f,%.2f]",icut,fCutVars->At(icut)->GetName(),fCutLowLimits(icut),fCutUpLimits(icut)));
-  
+
 }
 

@@ -309,7 +309,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           BinsToVector(10,0.,100.), BinsToVector(100,-2.,2.), GetRunNumbers(),
                           AliDielectronVarManager::kCentrality,
                           AliDielectronVarManager::kv0CrpH2,
-                          AliDielectronVarManager::kRunNumber );                      
+                          AliDielectronVarManager::kRunNumber );
     }
     
     // PID QA
