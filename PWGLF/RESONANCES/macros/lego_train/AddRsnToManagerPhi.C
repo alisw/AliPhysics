@@ -10,16 +10,22 @@ Bool_t AddRsnToManagerPhi(TList *listRsn) {
    //    listRsn->Add(new TNamed("<Name>:mon","<CutName>:<opt>"));
 
    // default NSigma -> TPC=3 and TOF=3
-   listRsn->Add(new TNamed("Phi","PhiNsigma"));
+//    listRsn->Add(new TNamed("Phi","PhiNsigma"));
 
 // //    qualityonly
 //    listRsn->Add(new TNamed("Phi","PhiNsigma:qualityonly"));
 //
 // //    TPC only (Nsigma=1.5)
 //    listRsn->Add(new TNamed("Phi","PhiNsigma:KTPCnsig15"));
-//
+//    listRsn->Add(new TNamed("Phi","PhiNsigma:KTPCnsig15"));
+//    listRsn->Add(new TNamed("Phi","PhiNsigma:KTPCnsig20"));
+   listRsn->Add(new TNamed("Phi","PhiNsigma:KTPCnsig25_eta"));
 // //    TOF only (NSigma=2.0)
+//    listRsn->Add(new TNamed("Phi","PhiNsigma:KTOFnsig10"));
+//    listRsn->Add(new TNamed("Phi","PhiNsigma:KTOFnsig15"));
 //    listRsn->Add(new TNamed("Phi","PhiNsigma:KTOFnsig20"));
+//    listRsn->Add(new TNamed("Phi","PhiNsigma:KTOFnsig25"));
+//    listRsn->Add(new TNamed("Phi","PhiNsigma:KTOFnsig30"));
 
 
    return kTRUE;

@@ -57,6 +57,8 @@ Int_t AddRsnDaughterCutsPhiNsigma(AliPID::EParticleType type1,AliPID::EParticleT
    if (opt.Contains("KTOFnsig20")) nSigmaTOF = 2.0;
    if (opt.Contains("KTOFnsig25")) nSigmaTOF = 2.5;
    if (opt.Contains("KTOFnsig30")) nSigmaTOF = 3.0;
+   
+   if (opt.Contains("KTOFnsig1000")) nSigmaTOF = 100.0;
 
    if (opt.Contains("trackPt")) {
       useTrackPtCut = kTRUE;

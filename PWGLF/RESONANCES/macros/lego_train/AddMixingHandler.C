@@ -1,10 +1,8 @@
 #ifndef __CINT__
 #include <AliAnalysisManager.h>
 #include <AliMultiInputEventHandler.h>
-#include <ANALYSIS/EventMixing/AliMixEventPool.h>
-#include <ANALYSIS/EventMixing/AliMixEventCutObj.h>
-#include <PWG2/RESONANCES/AliRsnAnalysisTask.h>
-#include <PWG2/RESONANCES/AliRsnMiniAnalysisTask.h>
+#include <AliMixEventPool.h>
+#include <AliMixEventCutObj.h>
 #endif
 
 void AddMixingHandler ( AliMultiInputEventHandler *multiInputHandler,AliAnalysisTaskSE *task, TString format = "esd", Bool_t useMC = kFALSE,Bool_t isRsnMini=kFALSE,const Int_t mixNum = 10, TString opts = "" ) {
@@ -17,6 +15,7 @@ void AddMixingHandler ( AliMultiInputEventHandler *multiInputHandler,AliAnalysis
 
       // settings
       if (isPP) {
+//         taskRsn->UseMultiplicity("TRACKS");
          taskRsn->UseMultiplicity("QUALITY");
          taskRsn->SetMaxDiffMult(1.0);
       } else {
@@ -28,8 +27,8 @@ void AddMixingHandler ( AliMultiInputEventHandler *multiInputHandler,AliAnalysis
       //task->UseBinnedMix();
       taskRsn->SetNMix(mixNum);
       taskRsn->SetMaxDiffVz(1.0);
-//      taskRsn->SetMaxDiffMult(10.0);
-      taskRsn->SetMaxDiffAngle(1E20);
+//      taskRsn->SetMaxDiffAngle(30.0 * TMath::DegToRad());
+      
 
    } else {
       if ( !multiInputHandler ) return;

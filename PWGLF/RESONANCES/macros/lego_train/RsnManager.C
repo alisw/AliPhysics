@@ -2,24 +2,31 @@ TList *RsnManager() {
 
    Int_t isESD             = 0;
    
-   Int_t isPP              = 1;
+   Int_t isPP              = 0;
    Int_t useRsnMini        = 1;
 
-   Int_t useMixing         = 0;
-   Int_t numMix            = 10;
+   Int_t useMixing         = 1;
+   Int_t numMix            = 5;
 
    Int_t fullOutput        = 1;
    Int_t mcMomentum        = 0;
    Int_t mcMon             = 0;
    
-   Int_t usePhysSel        = 0;
+   Int_t usePhysSel        = 1;
    Int_t useCentralityTask = 0;
+   Int_t useEventPlaneTask = 0;
+   
+   Double_t eventCutVertex = 10.0;
+   
+   // useCommonQualityCut=-1  -> Defaultcuts for 2010
+   Int_t useCommonQualityCut = -1;
+   useCommonQualityCut = 5;
 
    Int_t useEventMixPar    = 0;
    Int_t useRsnPar         = 0;
    Int_t useRsnParDev      = -1;
 
-   TString rootver = "v5-32-01";
+   TString rootver = "v5-33-02b";
    TString alirootver = "";
 //      alirootver = "v5-03-07-AN";
 
@@ -49,28 +56,10 @@ TList *RsnManager() {
 
    
    //============= ONLY for GRID ====================
-   TString dsConfig;
-
-   //   isPP = 0;
-   //   dsConfig = "datasets-grid/LHC10h_p2_ESD.txt";
-   //   dsConfig = "datasets-grid/LHC10h_p2_AOD049.txt";
-   //   dsConfig = "datasets-grid/LHC10h_p2_AOD073.txt";
-
-   //   dsConfig = "datasets-grid/LHC11a10b_AOD080.txt";
-
-   //      isPP = 1;
-   //      dsConfig = "datasets-grid/LHC10b_p2_ESD.txt";
-   //      dsConfig = "datasets-grid/LHC10b_p2_AOD038.txt";
-
-   // pp 2.76 TeV data
-   isPP = 1;
-   // data
-   dsConfig = "datasets-grid/LHC11a_AOD072.txt";
-   // mc
-   dsConfig = "datasets-grid/LHC11h5b_AOD079.txt";
-   dsConfig = "datasets-grid/LHC11e3a_AOD074.txt";
-
-
+   TString dsConfig = "datasets-grid/LHC11e3a_AOD074.txt";
+   Int_t globalTrainID=0;
+   Int_t numRuns = 1000;
+   Int_t numRunsSkip = 0;
 
    //================================================
 
@@ -95,7 +84,12 @@ TList *RsnManager() {
    // common options
    AliAnalysisManager::SetGlobalInt("rsnUsePhysSel",usePhysSel);
    AliAnalysisManager::SetGlobalInt("rsnUseCentralityTask",useCentralityTask);
+   AliAnalysisManager::SetGlobalInt("rsnUseEventPlaneTask",useEventPlaneTask);
+   
    AliAnalysisManager::SetGlobalInt("rsnUsePIDResponse",1);
+   
+   AliAnalysisManager::SetGlobalInt("rsnCommonQualityCut",useCommonQualityCut);
+   
    // rsn options
 
    AliAnalysisManager::SetGlobalInt("rsnUseMixing",useMixing);
@@ -117,13 +111,16 @@ TList *RsnManager() {
    AliAnalysisManager::SetGlobalInt("rsnOutputFull",fullOutput);
    AliAnalysisManager::SetGlobalInt("rsnUseMCMomentum",mcMomentum);
    AliAnalysisManager::SetGlobalInt("rsnUseMCMonitoring",mcMon);
-
+   AliAnalysisManager::SetGlobalDbl("rsnEventCutVertex",eventCutVertex);
 
    // expert options (don't change)
    AliAnalysisManager::SetGlobalInt("rsnMixPrintRefresh",-1);
 
    // RSN train settings for GRID
    AliAnalysisManager::SetGlobalStr("rsnTrainDSConfig",dsConfig.Data());
+   AliAnalysisManager::SetGlobalInt("rsnGlobalTrainID",globalTrainID);
+   AliAnalysisManager::SetGlobalInt("rsnGridNumRuns",numRuns);
+   AliAnalysisManager::SetGlobalInt("rsnGridNumRunsSkip",numRunsSkip);
 
    // root and aliroot version
    AliAnalysisManager::SetGlobalStr("rsnLegoTrainROOTversion",rootver.Data());
@@ -151,7 +148,7 @@ Bool_t RsnManagerLoadMacro(TString macro,TString path="") {
    if (lego_path.IsNull()) {
       Bool_t valid;
       lego_path = AliAnalysisManager::GetGlobalStr("rsnLegoTrainPath",valid);
-      if (!valid) lego_path = "$ALICE_ROOT/PWG2/RESONANCES/macros/lego_train";
+      if (!valid) lego_path = "$ALICE_ROOT/PWGLF/RESONANCES/macros/lego_train";
    }
    if (!gSystem->AccessPathName(macro.Data())) {
       gROOT->LoadMacro(macro.Data());

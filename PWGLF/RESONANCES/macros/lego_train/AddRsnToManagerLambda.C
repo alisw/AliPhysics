@@ -9,8 +9,11 @@ Bool_t AddRsnToManagerLambda(TList *listRsn) {
    // Note : for now you have to set gRsnUseMiniPackage = 0 to have mon histograms
    //    listRsn->Add(new TNamed("<Name>:mon","<CutName>:<opt>"));
 
-   // defautl PID - NSigma -> TPC=3 and TOF=3
+   // default PID - NSigma -> TPC=3 and TOF=3
    listRsn->Add(new TNamed("Lambda","LambdaNsigma"));
+   listRsn->Add(new TNamed("Lambda","LambdaNsigma:qualityonly"));
+   listRsn->Add(new TNamed("Lambda","LambdaNsigma:qualityonly_pdg"));
+
 
 // //    quality only
 //    listRsn->Add(new TNamed("Lambda","LambdaNsigma:qualityonly"));

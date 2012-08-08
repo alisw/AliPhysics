@@ -1,12 +1,16 @@
 AliRsnCutSet *AddRsnCommonEventCuts(AliAnalysisTaskSE *task=0,Bool_t isPP=kTRUE) {
 
 //    return 0;
+
+   Bool_t valid;
+   Double_t eventCutVertex = AliAnalysisManager::GetGlobalDbl("rsnEventCutVertex",valid);
+
    // primary vertex:
    // - 2nd argument --> |Vz| range
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
    // we switch on the check for pileup
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", eventCutVertex, 0, kFALSE);
    if (isPP) cutVertex->SetCheckPileUp(kTRUE);
 
    // primary vertex is always used

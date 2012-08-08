@@ -7,6 +7,7 @@ Int_t AddRsnDaughterCutsLambdaNsigma(AliPID::EParticleType type1,AliPID::EPartic
 
    Bool_t valid = kTRUE;
    Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
+   Int_t useCommonQualityCut = AliAnalysisManager::GetGlobalInt("rsnCommonQualityCut",valid);
 
    Bool_t usePPCut = kFALSE;
 
@@ -101,8 +102,12 @@ Int_t AddRsnDaughterCutsLambdaNsigma(AliPID::EParticleType type1,AliPID::EPartic
    if (!opt.IsNull()) cutname += Form("_%s",opt.Data());
    AliRsnCutSet *cutsP = new AliRsnCutSet(cutname.Data(), AliRsnTarget::kDaughter);
 
-   AliRsnCutTrackQuality *qualityCutP = new AliRsnCutTrackQuality("cutQuatity{");
-   qualityCutP->SetDefaults2010();
+   AliRsnCutTrackQuality *qualityCutP = new AliRsnCutTrackQuality("cutQuatityP");
+   if (useCommonQualityCut>=0) {
+      qualityCutP->SetAODTestFilterBit(useCommonQualityCut);
+   } else {
+      qualityCutP->SetDefaults2010();
+   }
    cutsP->AddCut(qualityCutP);
    if (!scheme.IsNull()) scheme += "&";
    scheme += qualityCutP->GetName();
@@ -151,7 +156,11 @@ Int_t AddRsnDaughterCutsLambdaNsigma(AliPID::EParticleType type1,AliPID::EPartic
    AliRsnCutSet *cutsK = new AliRsnCutSet(cutname.Data(), AliRsnTarget::kDaughter);
 
    AliRsnCutTrackQuality *qualityCutK = new AliRsnCutTrackQuality("cutQuatityK");
-   qualityCutK->SetDefaults2010();
+   if (useCommonQualityCut>=0) {
+      qualityCutK->SetAODTestFilterBit(useCommonQualityCut);
+   } else {
+      qualityCutK->SetDefaults2010();
+   }
    cutsK->AddCut(qualityCutK);
    if (!scheme.IsNull()) scheme += "&";
    scheme += qualityCutK->GetName();
