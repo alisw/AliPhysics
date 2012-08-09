@@ -345,16 +345,22 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   Int_t trackDepth = fMixingTracks; 
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
    
+  // centrality bins
   Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
   Double_t* centbins        = centralityBins;
   Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
   
-  // bins for second buffer are shifted by 100 cm
+  // Zvtx bins
   Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
   Double_t* vtxbins     = vertexBins;
   Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
 
-  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
+  // Event plane angle (Psi) bins
+  Double_t psiBins[] = {0.,45.,135.,215.,305.,360.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+  Double_t* psibins     = psiBins;
+  Int_t nPsiBins     = sizeof(psiBins) / sizeof(Double_t) - 1;
+
+  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins, nPsiBins, psibins);
 
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
@@ -493,10 +499,10 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
       //    FillCorrelations(). Also nMix should be passed in, so a weight
       //    of 1./nMix can be applied.
       
-      AliEventPool* pool = fPoolMgr->GetEventPool(fCentrality, eventMain->GetPrimaryVertex()->GetZ());
+      AliEventPool* pool = fPoolMgr->GetEventPool(fCentrality, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane);
       
       if (!pool){
-	AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, eventMain->GetPrimaryVertex()->GetZ()));
+	AliFatal(Form("No pool found for centrality = %f, zVtx = %f, psi = %f", fCentrality, eventMain->GetPrimaryVertex()->GetZ(),gReactionPlane));
       }
       else{
 	
