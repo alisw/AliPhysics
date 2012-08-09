@@ -24,7 +24,7 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod=""){
   
   //set config file name
   TString configFile("$TRAIN_ROOT/jbook_jpsi/ConfigJpsiQA_jb_PbPb.C");
-  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");                                                                                   
+  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
   if (trainRoot.IsNull()) configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsiQA_jb_PbPb.C";
 
   //create task and add it to the manager

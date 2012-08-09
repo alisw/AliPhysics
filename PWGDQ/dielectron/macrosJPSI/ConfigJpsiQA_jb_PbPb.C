@@ -22,31 +22,31 @@ AliDielectron* ConfigJpsiQA_jb_PbPb(Int_t cutDefinition, TString prod="")
   //
   // Setup the instance of AliDielectron
   //
-  
+
   // find mc or not?
   if( list.IsNull()) list=prod;
   if( list.Contains("LHC10h")   || list.Contains("LHC11h")   ) hasMC=kFALSE;
   if( list.Contains("LHC11a10") || list.Contains("LHC12a17") ) hasMC=kTRUE;
-  
+
   //ESD handler?
   isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
-  
+
   // switch off some configurations
   switch(cutDefinition) {
-    case kCutStats:   
-      //case knoPID:
-    case kTPC:
+  case kCutStats:
+    //case knoPID:
+  case kTPC:
     case kTOF:
-    case kTOFTRD:
-    case kTRDeff:
-      if(hasMC)  return 0x0;
-      break;
-    case kTRD:   return 0x0; break;
-    case kEleMC: return 0x0; break;
-    case kEleJPsiMC:
-    case kEleConvMC:
-      if(!hasMC) return 0x0;
-      break;
+  case kTOFTRD:
+    if(hasMC)  return 0x0;
+    break;
+  case kTRDeff:return 0x0; break;
+  case kTRD:   return 0x0; break;
+  case kEleMC: return 0x0; break;
+  case kEleJPsiMC:
+  case kEleConvMC:
+    if(!hasMC) return 0x0;
+    break;
   }
   
   // create the actual framework object
