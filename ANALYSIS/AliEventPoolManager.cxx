@@ -11,22 +11,24 @@ void AliEventPool::PrintInfo() const
 	       GetCurrentNEvents(), NTracksInPool()) << endl;
   cout << Form("%20s: %.1f to %.1f", "Sub-event mult.", fMultMin, fMultMax) << endl;
   cout << Form("%20s: %.1f to %.1f", "Z-vtx range", fZvtxMin, fZvtxMax) << endl;
+  cout << Form("%20s: %.1f to %.1f", "Psi range", fPsiMin, fPsiMax) << endl;
 
   return;
 }
 
-Bool_t AliEventPool::EventMatchesBin(Int_t mult, Double_t zvtx) const
+Bool_t AliEventPool::EventMatchesBin(Int_t mult, Double_t zvtx, Double_t psi) const
 {
-  return EventMatchesBin((Double_t) mult, zvtx);
+  return EventMatchesBin((Double_t) mult, zvtx, psi);
 }
 
-Bool_t AliEventPool::EventMatchesBin(Double_t mult, Double_t zvtx) const
+Bool_t AliEventPool::EventMatchesBin(Double_t mult, Double_t zvtx, Double_t psi) const
 {
   // Lower bin limit included; upper limit excluded.
 
   Bool_t multOK = (mult >= fMultMin && mult < fMultMax);
   Bool_t zvtxOK = (zvtx >= fZvtxMin && zvtx < fZvtxMax);
-  return (multOK && zvtxOK);
+  Bool_t psiOK  = (psi >= fPsiMin   && psi  < fPsiMax);
+  return (multOK && zvtxOK && psiOK);
 }
 
 Int_t AliEventPool::NTracksInPool() const
@@ -59,6 +61,13 @@ Int_t AliEventPool::SetEventZvtxRange(Double_t zvtxMin, Double_t zvtxMax)
 {
   fZvtxMin = zvtxMin;
   fZvtxMax = zvtxMax;
+  return 0;
+}
+
+Int_t AliEventPool::SetEventPsiRange(Double_t psiMin, Double_t psiMax)
+{
+  fPsiMin = psiMin;
+  fPsiMax = psiMax;
   return 0;
 }
 
@@ -189,51 +198,79 @@ Int_t AliEventPool::NTracksInEvent(Int_t iEvent) const
 ClassImp(AliEventPoolManager)
 
 AliEventPoolManager::AliEventPoolManager(Int_t depth,     Int_t minNTracks,
-				   Int_t nMultBins, Double_t *multbins,
-				   Int_t nZvtxBins, Double_t *zvtxbins) :
-fDebug(0), fNMultBins(0), fNZvtxBins(0), fEvPool(0), fTargetTrackDepth(minNTracks) 
+					 Int_t nMultBins, Double_t *multbins,
+					 Int_t nZvtxBins, Double_t *zvtxbins) :
+fDebug(0), fNMultBins(0), fNZvtxBins(0), fNPsiBins(0), fEvPool(0), fTargetTrackDepth(minNTracks) 
 {
   // Constructor.
+  // without Event plane bins
+  Int_t nPsiBins = 1;
+  Double_t psibins[2] = {-999.,999.};
 
-  InitEventPools(depth, nMultBins, multbins, nZvtxBins, zvtxbins);
+  InitEventPools(depth, nMultBins, multbins, nZvtxBins, zvtxbins, nPsiBins, psibins);
   cout << "AliEventPoolManager initialized." << endl;
 }
 
-Int_t AliEventPoolManager::InitEventPools(Int_t depth, 
-                                       Int_t nMultBins, Double_t *multbin, 
-                                       Int_t nZvtxBins, Double_t *zvtxbin)
+AliEventPoolManager::AliEventPoolManager(Int_t depth,     Int_t minNTracks,
+					 Int_t nMultBins, Double_t *multbins,
+					 Int_t nZvtxBins, Double_t *zvtxbins,
+					 Int_t nPsiBins, Double_t *psibins) :
+fDebug(0), fNMultBins(0), fNZvtxBins(0), fNPsiBins(0), fEvPool(0), fTargetTrackDepth(minNTracks) 
 {
-  // Assign AliEventPoolManager members.
+  // Constructor.
+
+  InitEventPools(depth, nMultBins, multbins, nZvtxBins, zvtxbins, nPsiBins, psibins);
+  cout << "AliEventPoolManager initialized." << endl;
+}
+
+
+
+Int_t AliEventPoolManager::InitEventPools(Int_t depth, 
+					  Int_t nMultBins, Double_t *multbin, 
+					  Int_t nZvtxBins, Double_t *zvtxbin, 
+					  Int_t nPsiBins, Double_t *psibin)
+{
+  // Assign AliEventPoolManager members. (with Event plane)
 
   fNMultBins = nMultBins;
   fNZvtxBins = nZvtxBins;
+  fNPsiBins  = nPsiBins;
+  
+  for (Int_t iM=0; iM<nMultBins; iM++) {
+    for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
+      for (Int_t iP=0; iP<nPsiBins; iP++) {
 
-  for (Int_t iM=0; iM<nMultBins; iM++) {
-    std::vector<AliEventPool*> evp;
-    for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
-      evp.push_back(new AliEventPool(depth, 
-                                         multbin[iM], multbin[iM+1], 
-                                         zvtxbin[iZ], zvtxbin[iZ+1] ));
-    }
-    fEvPool.push_back(evp);
-  }
-  
-  for (Int_t iM=0; iM<nMultBins; iM++) {
-    for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
-      fEvPool.at(iM).at(iZ)->SetMultBinIndex(iM);
-      fEvPool.at(iM).at(iZ)->SetZvtxBinIndex(iZ);
-      fEvPool.at(iM).at(iZ)->SetTargetTrackDepth(fTargetTrackDepth);
+	fEvPool.push_back(new AliEventPool(depth, 
+					   multbin[iM], multbin[iM+1], 
+					   zvtxbin[iZ], zvtxbin[iZ+1],
+					   psibin[iP], psibin[iP+1] ));
+      }
     }
   }
   
+  
+  for (Int_t iM=0; iM<nMultBins; iM++) {
+    for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
+      for (Int_t iP=0; iP<nPsiBins; iP++) {
+	fEvPool.at(fNZvtxBins*fNPsiBins*iM + fNPsiBins*iZ + iP)->SetMultBinIndex(iM);
+	fEvPool.at(fNZvtxBins*fNPsiBins*iM + fNPsiBins*iZ + iP)->SetZvtxBinIndex(iZ);
+	fEvPool.at(fNZvtxBins*fNPsiBins*iM + fNPsiBins*iZ + iP)->SetPsiBinIndex(iP);
+	fEvPool.at(fNZvtxBins*fNPsiBins*iM + fNPsiBins*iZ + iP)->SetTargetTrackDepth(fTargetTrackDepth);
+      }
+    }
+  }
+    
   if (0) {
     cout << "fEvPool outer size: " << fEvPool.size() << endl;
     for (Int_t iM=0; iM<nMultBins; iM++) {
       for (Int_t iZ=0; iZ<nZvtxBins; iZ++) {
-	if(fEvPool.at(iM).at(iZ)) {
-	  cout << "multiplicity bin: " << iM;
-	  cout << ", z-vertex bin: " << iZ;
-	  fEvPool.at(iM).at(iZ)->PrintInfo();
+	for (Int_t iP=0; iP<nPsiBins; iP++) {
+	  if(fEvPool.at(fNZvtxBins*fNPsiBins*iM + fNPsiBins*iZ + iP)) {
+	    cout << "multiplicity bin: " << iM;
+	    cout << ", z-vertex bin: " << iZ;
+	    cout << ", psi bin: " << iP;
+	    fEvPool.at(fNZvtxBins*fNPsiBins*iM + fNPsiBins*iZ + iP)->PrintInfo();
+	  }
 	}
       }
     }
@@ -242,29 +279,35 @@ Int_t AliEventPoolManager::InitEventPools(Int_t depth,
   return fEvPool.size();
 }
 
-AliEventPool *AliEventPoolManager::GetEventPool(Int_t iMult, Int_t iZvtx) const
+
+AliEventPool *AliEventPoolManager::GetEventPool(Int_t iMult, Int_t iZvtx, Int_t iPsi) const
 {
   if (iMult < 0 || iMult >= fNMultBins) 
     return 0x0;
   if (iZvtx < 0 || iZvtx >= fNZvtxBins) 
     return 0x0;
-  return fEvPool.at(iMult).at(iZvtx);
+  if (iPsi < 0 || iPsi >= fNPsiBins) 
+    return 0x0;
+  
+  return fEvPool.at(fNZvtxBins*fNPsiBins*iMult + fNPsiBins*iZvtx + iPsi);
 }
 
-AliEventPool *AliEventPoolManager::GetEventPool(Int_t centVal, Double_t zVtxVal) const
+AliEventPool *AliEventPoolManager::GetEventPool(Int_t centVal, Double_t zVtxVal, Double_t psiVal) const
 {
-  return GetEventPool((Double_t)centVal, zVtxVal);
+  return GetEventPool((Double_t)centVal, zVtxVal, psiVal);
 }
 
-AliEventPool *AliEventPoolManager::GetEventPool(Double_t centVal, Double_t zVtxVal) const
+AliEventPool *AliEventPoolManager::GetEventPool(Double_t centVal, Double_t zVtxVal, Double_t psiVal) const
 {
   // Return appropriate pool for this centrality and z-vertex value.
 
   for (Int_t iM=0; iM<fNMultBins; iM++) {
     for (Int_t iZ=0; iZ<fNZvtxBins; iZ++) {
-      AliEventPool* pool = GetEventPool(iM, iZ);
-      if (pool->EventMatchesBin(centVal, zVtxVal))
-	return pool;
+      for (Int_t iP=0; iP<fNPsiBins; iP++) {
+	AliEventPool* pool = GetEventPool(iM, iZ, iP);
+	if (pool->EventMatchesBin(centVal, zVtxVal, psiVal))
+	  return pool;
+      }
     }
   }
   return 0x0;
@@ -276,8 +319,10 @@ Int_t AliEventPoolManager::UpdatePools(TObjArray *trk)
 
   for (Int_t iM=0; iM<fNMultBins; iM++) {
     for (Int_t iZ=0; iZ<fNZvtxBins; iZ++) {
-      if (fEvPool.at(iM).at(iZ)->UpdatePool(trk) > -1)
-        break;
+      for (Int_t iP=0; iP<fNPsiBins; iP++) {
+	if (fEvPool.at(fNZvtxBins*fNPsiBins*iM + fNPsiBins*iZ + iP)->UpdatePool(trk) > -1)
+	  break;
+      }
     }
   }  
   return 0;

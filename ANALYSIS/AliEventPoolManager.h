@@ -36,16 +36,21 @@ class AliEventPool : public TObject
     fMultMax(+999), 
     fZvtxMin(-999), 
     fZvtxMax(+999), 
+    fPsiMin(-999), 
+    fPsiMax(+999), 
     fWasUpdated(0), 
     fMultBinIndex(0), 
     fZvtxBinIndex(0), 
+    fPsiBinIndex(0), 
     fDebug(0), 
     fTargetTrackDepth(0),
     fFirstFilled(0),
     fNTimes(0) {;}
   
+
  AliEventPool(Int_t d, Double_t multMin, Double_t multMax, 
-		  Double_t zvtxMin, Double_t zvtxMax) 
+	      Double_t zvtxMin, Double_t zvtxMax,
+	      Double_t psiMin=-999., Double_t psiMax=999.) 
    : fEvents(0),
     fNTracksInEvent(0),
     fEventIndex(0),
@@ -54,17 +59,21 @@ class AliEventPool : public TObject
     fMultMax(multMax), 
     fZvtxMin(zvtxMin),
     fZvtxMax(zvtxMax),
+    fPsiMin(psiMin),
+    fPsiMax(psiMax),
     fWasUpdated(0),
     fMultBinIndex(0), 
     fZvtxBinIndex(0),
+    fPsiBinIndex(0),
     fDebug(0),
     fTargetTrackDepth(0),
     fFirstFilled(0),
     fNTimes(0) {;}
+  
   ~AliEventPool() {;}
   
-  Bool_t      EventMatchesBin(Int_t mult,    Double_t zvtx) const;
-  Bool_t      EventMatchesBin(Double_t mult, Double_t zvtx) const;
+  Bool_t      EventMatchesBin(Int_t mult,    Double_t zvtx, Double_t psi=0.) const;
+  Bool_t      EventMatchesBin(Double_t mult, Double_t zvtx, Double_t psi=0.) const;
   Bool_t      IsReady()                    const { return NTracksInPool() >= fTargetTrackDepth; }
   Bool_t      IsFirstReady()               const { return fFirstFilled;   }
   Int_t       GetNTimes()                  const { return fNTimes;        }
@@ -77,6 +86,7 @@ class AliEventPool : public TObject
   Int_t       NTracksInEvent(Int_t iEvent) const;
   Int_t       NTracksInCurrentEvent()      const { return fNTracksInEvent.back(); }
   void        PrintInfo()                  const;
+  Int_t       PsiBinIndex()                   const { return fPsiBinIndex; }
   Int_t       NTracksInPool()              const;
   Bool_t      WasUpdated()                 const { return fWasUpdated; }
   Int_t       ZvtxBinIndex()               const { return fZvtxBinIndex; }
@@ -85,8 +95,10 @@ class AliEventPool : public TObject
   Int_t       SetEventMultRange(Int_t    multMin, Int_t multMax);
   Int_t       SetEventMultRange(Double_t multMin, Double_t multMax);
   Int_t       SetEventZvtxRange(Double_t zvtxMin, Double_t zvtxMax);
+  Int_t       SetEventPsiRange(Double_t psiMin, Double_t psiMax);
   void        SetMultBinIndex(Int_t iM) { fMultBinIndex = iM; }
   void        SetZvtxBinIndex(Int_t iZ) { fZvtxBinIndex = iZ; }
+  void        SetPsiBinIndex(Int_t iP) { fPsiBinIndex  = iP; }
   Int_t       UpdatePool(TObjArray *trk);
   
 protected:
@@ -96,15 +108,17 @@ protected:
   Int_t                 fMixDepth;            //Number of evts. to mix with
   Double_t              fMultMin, fMultMax;   //Track multiplicity bin range
   Double_t              fZvtxMin, fZvtxMax;   //Event z-vertex bin range
+  Double_t              fPsiMin, fPsiMax;     //Event plane angle (Psi) bin range
   Bool_t                fWasUpdated;          //Evt. succesfully passed selection?
   Int_t                 fMultBinIndex;        //Multiplicity bin
   Int_t                 fZvtxBinIndex;        //Zvertex bin
+  Int_t                 fPsiBinIndex;         //Event plane angle (Psi) bin
   Int_t                 fDebug;               //If 1 then debug on
   Int_t                 fTargetTrackDepth;    //Number of tracks, once full
   Bool_t                fFirstFilled;         //Init to false
   Int_t                 fNTimes;              //Number of times init. condition reached
 
-  ClassDef(AliEventPool,1) // Event pool class
+  ClassDef(AliEventPool,2) // Event pool class
 };
 
 class AliEventPoolManager : public TObject
@@ -114,33 +128,42 @@ public:
     : fDebug(0),
     fNMultBins(0), 
     fNZvtxBins(0),
+    fNPsiBins(0),
     fEvPool(0),
     fTargetTrackDepth(0) {;}
   AliEventPoolManager(Int_t maxEvts, Int_t minNTracks,
-		   Int_t nMultBins, Double_t *multbins,
-		   Int_t nZvtxBins, Double_t *zvtxbins);
-
+		      Int_t nMultBins, Double_t *multbins,
+		      Int_t nZvtxBins, Double_t *zvtxbins);
+  
+  AliEventPoolManager(Int_t maxEvts, Int_t minNTracks,
+		      Int_t nMultBins, Double_t *multbins,
+		      Int_t nZvtxBins, Double_t *zvtxbins,
+		      Int_t nPsiBins, Double_t *psibins);
+  
   ~AliEventPoolManager() {;}
   
   // First uses bin indices, second uses the variables themselves.
-  AliEventPool *GetEventPool(Int_t iMult, Int_t iZvtx) const;
-  AliEventPool *GetEventPool(Int_t    centVal, Double_t zvtxVal) const;
-  AliEventPool *GetEventPool(Double_t centVal, Double_t zvtxVal) const;
+  AliEventPool *GetEventPool(Int_t iMult, Int_t iZvtx, Int_t iPsi=0) const;
+  AliEventPool *GetEventPool(Int_t centVal, Double_t zvtxVal, Double_t psiVal=0.) const;
+  AliEventPool *GetEventPool(Double_t centVal, Double_t zvtxVal, Double_t psiVal=0.) const;
 
   Int_t       InitEventPools(Int_t depth, 
 			     Int_t nmultbins, Double_t *multbins, 
-			     Int_t nzvtxbins, Double_t *zvtxbins);
+			     Int_t nzvtxbins, Double_t *zvtxbins,
+			     Int_t npsibins, Double_t *psibins);
+  
   void        SetTargetTrackDepth(Int_t d) { fTargetTrackDepth = d;} // Same as for G.E.P. class
   Int_t       UpdatePools(TObjArray *trk);
   void        SetDebug(Bool_t b) { fDebug = b; }
-
-protected:
+  
+ protected:
   Int_t      fDebug;                                    // If 1 then debug on
   Int_t      fNMultBins;                                // number mult bins
   Int_t      fNZvtxBins;                                // number vertex bins
-  std::vector<std::vector<AliEventPool*> > fEvPool; // pool in bins of [fMultBin][fZvtxBin]
+  Int_t      fNPsiBins;                                 // number Event plane angle (Psi) bins
+  std::vector<AliEventPool*> fEvPool;                   // pool in bins of [fNMultBin][fNZvtxBin][fNPsiBin]
   Int_t      fTargetTrackDepth;                         // Required track size, same for all pools.
-
-  ClassDef(AliEventPoolManager,1)
+  
+  ClassDef(AliEventPoolManager,2)
 };
 #endif
