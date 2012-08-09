@@ -27,6 +27,7 @@
 #include <TFile.h>
 #include <TDatabasePDG.h>
 #include <TKey.h>
+#include <TBits.h>
 
 #include <AliVEvent.h>
 #include <AliESDEvent.h>
@@ -99,6 +100,7 @@ public:
     kTPCsignalNfrac,         // fraction of points used for dEdx / cluster used for tracking
     kTPCchi2Cl,              // chi2/cl in TPC
     kTPCclsDiff,             // TPC cluster difference
+    kTPCclsSegments,         // TPC cluster segments
     kTrackStatus,            // track status bits
     
     kNclsTRD,                // number of clusters assigned in the TRD
@@ -495,6 +497,15 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
   values[AliDielectronVarManager::kTRDchi2]       = particle->GetTRDchi2();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
+  values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
+  const UChar_t threshold = 5;
+  TBits tpcClusterMap = particle->GetTPCClusterMap();
+  UChar_t n=0; UChar_t j=0;
+  for(UChar_t i=0; i<8; ++i) {
+    n=0;
+    for(j=i*20; j<(i+1)*20 && j<159; ++j) n+=tpcClusterMap.TestBitNumber(j);
+    if(n>=threshold) values[AliDielectronVarManager::kTPCclsSegments] += 1.0;
+  }
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
   
   
@@ -704,7 +715,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTPCsignal]=0;
   
   values[AliDielectronVarManager::kTOFsignal]=0;
-  values[AliDielectronVarManager::kTOFbeta]=0;
+  //values[AliDielectronVarManager::kTOFbeta]=0;
 
   values[AliDielectronVarManager::kTPCnSigmaEle]=0;
   values[AliDielectronVarManager::kTPCnSigmaPio]=0;
@@ -751,7 +762,24 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kTRDprobPio]    = prob[AliPID::kPion];
 
     values[AliDielectronVarManager::kTOFsignal]=pid->GetTOFsignal();
-    values[AliDielectronVarManager::kTOFbeta]  =0;
+    Double32_t expt[5];
+    particle->GetIntegratedTimes(expt);         // ps
+    Double_t l  = TMath::C()* expt[0]*1e-12;    // m
+    Double_t t  = pid->GetTOFsignal();          // ps start time subtracted (until v5-02-Rev09)
+    AliTOFHeader* tofH=0x0;                     // from v5-02-Rev10 on subtract the start time
+    if(fgEvent) tofH = (AliTOFHeader*)fgEvent->GetTOFHeader();
+    if(tofH) t -= fgPIDResponse->GetTOFResponse().GetStartTime(particle->P()); // ps
+
+    if( (l < 360.e-2 || l > 800.e-2) || (t <= 0.) ) {
+      values[AliDielectronVarManager::kTOFbeta]  =0;
+    }
+    else {
+      t *= 1e-12; //ps -> s
+      
+      Double_t v = l / t;
+      Float_t beta = v / TMath::C();
+      values[AliDielectronVarManager::kTOFbeta]=beta;
+    }
 
     Double_t tofNsigmaEle=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
     Double_t tofNsigmaPio=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);

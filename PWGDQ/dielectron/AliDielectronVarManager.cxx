@@ -56,6 +56,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "TPCsignalNfrac",
   "TPCchi2PerCluster",
   "TPCclsDiff",
+  "TPCclsSegments",
   "TrackStatus",
     
   "NclsTRD",
