@@ -1085,7 +1085,7 @@ void AliTRDresolution::MakeSummary()
   const Char_t *typName[] = {"", "MC"};
   const Int_t nx(2048), ny(1536);
 
-  if((arr = (TObjArray*)fProj->At(kDetector))){
+  if((arr = (TObjArray*)fProj->FindObject("hDet2Cluster"))){
     cOut = new TCanvas(Form("%s_DetOccupancy", GetName()), "Detector performance", 2*nx, 2*ny);
     cOut->Divide(AliTRDgeometry::kNlayer,AliTRDeventInfo::kCentralityClasses, 1.e-5, 1.e-5);
     Int_t n=0;
@@ -1120,7 +1120,7 @@ void AliTRDresolution::MakeSummary()
     cOut->SaveAs(Form("%s.gif", cOut->GetName()));
   }
   for(Int_t ityp(0); ityp<(HasMCdata()?2:1); ityp++){
-    if((arr = (TObjArray*)fProj->At(ityp?kMCcluster:kCluster))){
+    if((arr = (TObjArray*)fProj->FindObject(ityp?"hCluster2MC":"hCluster2Track"))){
       for(Int_t iview(0); iview<nClViews; iview++){
         cOut = new TCanvas(Form("%s_%s%s_%d", GetName(), typName[ityp], vClName[iview], vClOpt[iview]), "Cluster Resolution", nx, ny);
         cOut->Divide(3,2, 1.e-5, 1.e-5);
@@ -1138,7 +1138,7 @@ void AliTRDresolution::MakeSummary()
       }
     }
     // tracklet systematic
-    if((arr = (TObjArray*)fProj->At(ityp?kMCtracklet:kTracklet))){
+    if((arr = (TObjArray*)fProj->FindObject(ityp?"hTracklet2MC":"hTracklet2Track"))){
       for(Int_t iview(0); iview<nTrkltViews; iview++){
         cOut = new TCanvas(Form("%s_%s%s_%d", GetName(), typName[ityp], vTrkltName[iview], vTrkltOpt[iview]), "Tracklet Resolution", nx, ny);
         cOut->Divide(3,2, 1.e-5, 1.e-5);
@@ -1160,7 +1160,7 @@ void AliTRDresolution::MakeSummary()
       }
     }
     // trackIn systematic
-    if((arr = (TObjArray*)fProj->At(ityp?kMCtrackIn:kTrackIn))){
+    if((arr = (TObjArray*)fProj->FindObject(ityp?"hTRDin2MC":"hTracklet2TRDin"))){
       for(Int_t iview(0); iview<nTrkInViews; iview++){
         cOut = new TCanvas(Form("%s_%s%s_%d", GetName(), typName[ityp], vTrkInName[iview][0], vTrkInOpt[iview]), "Track IN Resolution", nx, ny);
         cOut->Divide(3,2, 1.e-5, 1.e-5);
@@ -1235,7 +1235,7 @@ void AliTRDresolution::MakeSummary()
     }
   }
   // track MC systematic
-  if((arr = (TObjArray*)fProj->At(kMCtrack))) {
+  if((arr = (TObjArray*)fProj->FindObject("hTRD2MC"))) {
     for(Int_t iview(0); iview<nTrkViews; iview++){
       cOut = new TCanvas(Form("%s_MC%s", GetName(), vTrkName[iview]), "Track Resolution", nx, ny);
       cOut->Divide(3,2, 1.e-5, 1.e-5);
@@ -1404,6 +1404,7 @@ Bool_t AliTRDresolution::MakeProjectionDetector()
   }
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kDetNproj), kDetector);
+  arr->SetName("hDet2Cluster");
 
   TH2 *h2(NULL);  Int_t jh(0);
   for(; ih--; ){
@@ -1453,7 +1454,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
   THnSparse *H(NULL);
   if(!(H = (THnSparse*)fContainer->FindObject(projName[Int_t(mc)]))){
     AliError(Form("Missing/Wrong data @ %s.", projName[Int_t(mc)]));
-    return kFALSE;
+    return kTRUE;
   }
   Int_t ndim(H->GetNdimensions()); Bool_t debug(ndim>Int_t(kNdimCl));
   Int_t coord[10]; memset(coord, 0, sizeof(Int_t) * 10); Double_t v = 0.;
@@ -1561,6 +1562,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
 
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kClNproj), cidx);
+  arr->SetName(projName[Int_t(mc)]);
 
   TH2 *h2(NULL);  Int_t jh(0);
   for(; ih--; ){
@@ -1685,7 +1687,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
   THnSparse *H(NULL);
   if(!(H = (THnSparse*)fContainer->FindObject(projName[Int_t(mc)]))){
     AliError(Form("Missing/Wrong data @ %s.", projName[Int_t(mc)]));
-    return kFALSE;
+    return kTRUE;
   }
   const Int_t mdim(kNdim+8);
   Int_t ndim(H->GetNdimensions()); Bool_t debug(ndim>Int_t(kNdimTrklt));
@@ -1839,6 +1841,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
 
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kTrkltNproj), cidx);
+  arr->SetName(projName[Int_t(mc)]);
 
   TH2 *h2(NULL); Int_t jh(0);
   for(; ih--; ){
@@ -2031,7 +2034,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   THnSparse *H(NULL);
   if(!(H = (THnSparse*)fContainer->FindObject(projName[Int_t(mc)]))){
     AliError(Form("Missing/Wrong data @ %s.", projName[Int_t(mc)]));
-    return kFALSE;
+    return kTRUE;
   }
 
   const Int_t mdim(kNdim+3);
@@ -2179,6 +2182,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
 
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(mc?kMCTrkInNproj:kTrkInNproj), cidx);
+  arr->SetName(projName[Int_t(mc)]);
 
   TH2 *h2(NULL); Int_t jh(0);
   for(; ih--; ){
@@ -2206,6 +2210,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         }
         php.AddLast(&specY[idx]);
         if((h2 = specY[idx].Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
+        if((h2 = (TH2*)gDirectory->Get(Form("%sEn", specY[idx].H()->GetName())))) arr->AddAt(h2, jh++);
         if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specY[idx];
       }
       /*!dphi*/
@@ -2463,7 +2468,7 @@ Bool_t AliTRDresolution::MakeProjectionTrack()
   THnSparse *H(NULL);
   if(!(H = (THnSparse*)fContainer->FindObject("hTRD2MC"))){
     AliError("Missing/Wrong data @ hTRD2MC.");
-    return kFALSE;
+    return kTRUE;
   }
   Int_t ndim(H->GetNdimensions());
   Int_t coord[kNdim+1]; memset(coord, 0, sizeof(Int_t) * (kNdim+1)); Double_t v = 0.;
@@ -2536,6 +2541,7 @@ Bool_t AliTRDresolution::MakeProjectionTrack()
   }
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kTrkNproj), cidx);
+  arr->SetName("hTRD2MC");
 
   TH2 *h2(NULL); Int_t jh(0);
   for(; ih--; ){

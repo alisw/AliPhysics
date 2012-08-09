@@ -337,7 +337,7 @@ Bool_t AliTRDrecoTask::LoadDetectorMap(const Char_t *file, const Char_t *dir)
   }
   TObjArray *dets = (TObjArray*)info->FindObject("Chambers Status");
   if(!dets){
-    if(strcmp("TObjArray", info->At(4)->IsA()->GetName())) AliError("Looking for old style chamber status map. Failed.");
+    if(!info->At(4) || strcmp("TObjArray", info->At(4)->IsA()->GetName())) AliError("Looking for old style chamber status map. Failed.");
     else {
       AliWarning("Looking for old style chamber status map.");
       TObjArray *vdets = (TObjArray*)info->At(4);
