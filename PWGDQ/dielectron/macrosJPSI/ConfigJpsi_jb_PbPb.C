@@ -36,13 +36,13 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 
   // switch off some configurations
   switch(cutDefinition) {
-    case kTPC:
+  case kTPC:
       //case kTOF:
-    case kTRD:
+  case kTRD:
+  case kTOFTRD:
       return 0x0;
       break;
-      //case kTOFTRD:
-    case krec:
+  case krec:
       if(!hasMC) return 0x0;
       break;
       //case kTOFTRD2:
@@ -102,7 +102,8 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
   SetupPairCuts(die,cutDefinition);
 
   // histogram setup
-  if(cutDefinition == kTOFTRD  ||
+  if(cutDefinition == kTOF     ||
+     cutDefinition == kTOFTRD  ||
      cutDefinition == kGam0    ||
      cutDefinition == kTOFTRD2 ||
      cutDefinition >= kEtaGap01 ) {
@@ -128,7 +129,6 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
 
   // bgrd estimators
   if(!hasMC) {
-    if(cutDefinition == kTOFTRD) {
       printf(" Activate bgrd estimators: ME and ROT \n");
 
       // rotations
@@ -144,19 +144,18 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
       mix->SetMixType(AliDielectronMixingHandler::kAll);
       mix->SetDepth(100);
       die->SetMixingHandler(mix);
-    }
 
 
-    // TPC event plane configurations
-    Double_t gGap;
-    switch(cutDefinition) {
+      // TPC event plane configurations
+      Double_t gGap;
+      switch(cutDefinition) {
       case kEtaGap01:   gGap=0.1;   break;
       case kEtaGap02:   gGap=0.2;   break;
       case kEtaGap03:   gGap=0.3;   break;
       case kEtaGap04:   gGap=0.4;   break;
       case kEtaGap05:   gGap=0.5;   break;
       default: gGap=0.0;
-    }
+      }
 
     AliDielectronVarCuts *poi = new AliDielectronVarCuts("PoI","PoI");
     poi->AddCut(AliDielectronVarManager::kM,2.92,3.20);     // particles of interest, jpsi mass window
@@ -210,7 +209,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   //Pt cut, should make execution a bit faster
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("PtCut","PtCut");
-  pt->AddCut(AliDielectronVarManager::kPt,0.8,1e30);
+  pt->AddCut(AliDielectronVarManager::kPt,1.1,1e30);    //0.8
   cuts->AddCut(pt);
 
 	// track cuts ESD and AOD
@@ -419,7 +418,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                       AliDielectronVarManager::kCentrality);
 
   ////// FLOW //////
-  if(cutDefinition == kTOFTRD || cutDefinition==kTPC) {
+  if(cutDefinition == kTOFTRD || cutDefinition==kTOF) {
     histos->UserHistogram("Event","TPCxH2","TPC Qx component;TPCxH2",
                           100,-1500.,1500.,
                           AliDielectronVarManager::kTPCxH2);
@@ -730,8 +729,9 @@ void InitHF(AliDielectron* die, Int_t cutDefinition)
   hf->SetPairTypes(AliDielectronHF::kAll);
   hf->SetVariable(AliDielectronVarManager::kM, 125, 0.0, 0.04*125);
 
-  hf->AddCutVariable(AliDielectronVarManager::kCentrality,  "0.,5.,10.,20.,40.,50.,60.,80.");
-  hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.,2.5,5.,100."               );
+  hf->AddCutVariable(AliDielectronVarManager::kCentrality,  "0.,5.,10.,20.,40.,50.,60.,80."  );
+  hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.,2.5,5.,100."                 );
+  hf->AddCutVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2,4,-1.*TMath::Pi(),TMath::Pi() );
   //  hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.8, 1.0, 1.1, 1.2, 1.5, 100.0", kTRUE, AliDielectronHF::kBinToMax);
   hf->AddCutVariable(AliDielectronVarManager::kNclsTPC,     "70,90,100,120,160",              kTRUE, AliDielectronHF::kBinToMax);
   hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4,-3,-2.5,-2,2,2.5,3,4",        kTRUE, AliDielectronHF::kSymBin);
