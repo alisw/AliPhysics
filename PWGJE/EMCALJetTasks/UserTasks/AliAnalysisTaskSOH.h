@@ -7,6 +7,7 @@ class TList;
 class TH1F;
 class TH2F;
 class TH3F;
+class THnSparse;
 class TArrayI;
 class AliESDEvent;
 class AliMCEvent;
@@ -74,15 +75,18 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   TH2F               *fHPhotonEdiff30HC;         //!(truth E - calculated E in 30% HC)/truth E vs. truth E with photon
   TH2F               *fHPhotonEdiff0HC;          //!(truth E - cluster E)/truth E vs. truth E with photon
   TH2F               *fHPhotonEVsClsE;           //!cluster E vs. truth photon E
-  TH2F               *fHistEsub1Pch;       //!(subtracted E in 100% HC) vs. total track P, clusters with 1 matching track
-  TH2F               *fHistEsub2Pch;        //!(subtracted E in 100% HC) vs. total track P, clusters with 2 matching tracks
-  TH2F               *fHistEsub1PchRat;    //!(subtracted E in 100% HC)/total track P vs. total track P, clusters with 1 matching track
-  TH2F               *fHistEsub2PchRat;     //!(subtracted E in 100% HC)/total track P vs. total track P, clusters with 2 matching tracks
- 
+  TH2F               *fHistEsub1Pch;             //!(subtracted E in 100% HC) vs. total track P, clusters with 1 matching track
+  TH2F               *fHistEsub2Pch;             //!(subtracted E in 100% HC) vs. total track P, clusters with 2 matching tracks
+  TH2F               *fHistEsub1PchRat;          //!(subtracted E in 100% HC)/total track P vs. total track P, clusters with 1 matching track
+  TH2F               *fHistEsub2PchRat;          //!(subtracted E in 100% HC)/total track P vs. total track P, clusters with 2 matching tracks
+  THnSparse          *fHClsEoverMcE_All;         //!cluster E/MC particle E, cluster with only one matching particle
+  THnSparse          *fHClsEoverMcE_Photon;      //!above for photon
+  THnSparse          *fHClsEoverMcE_Elec;        //!above for electron
+  THnSparse          *fHClsEoverMcE_Pion;        //!above for pion
 
   AliAnalysisTaskSOH(const AliAnalysisTaskSOH&); // not implemented
   AliAnalysisTaskSOH& operator=(const AliAnalysisTaskSOH&); // not implemented
   
-  ClassDef(AliAnalysisTaskSOH, 6); // Analysis task Saehanseul Oh
+  ClassDef(AliAnalysisTaskSOH, 7); // Analysis task Saehanseul Oh
 };
 #endif

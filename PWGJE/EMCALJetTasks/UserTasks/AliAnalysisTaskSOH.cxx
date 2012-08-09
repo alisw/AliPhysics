@@ -9,6 +9,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THnSparse.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTask.h"
@@ -64,7 +65,11 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
   fHistEsub1Pch(0x0),
   fHistEsub2Pch(0x0),
   fHistEsub1PchRat(0x0),
-  fHistEsub2PchRat(0x0)
+  fHistEsub2PchRat(0x0),
+  fHClsEoverMcE_All(0x0),
+  fHClsEoverMcE_Photon(0x0),
+  fHClsEoverMcE_Elec(0x0),
+  fHClsEoverMcE_Pion(0x0)
 {
   // Constructor
 
@@ -110,7 +115,11 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH(const char *name) :
   fHistEsub1Pch(0x0),
   fHistEsub2Pch(0x0),
   fHistEsub1PchRat(0x0),
-  fHistEsub2PchRat(0x0)
+  fHistEsub2PchRat(0x0),
+  fHClsEoverMcE_All(0x0),
+  fHClsEoverMcE_Photon(0x0),
+  fHClsEoverMcE_Elec(0x0),
+  fHClsEoverMcE_Pion(0x0)
 {
   // Constructor
 
@@ -247,6 +256,22 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   fHistEsub2PchRat =new  TH2F("fHistEsub2PchRat", "(subtracted E in 100% HC)/total track P vs. total track P, clusters with 2 matching tracks; total track P (GeV/c); E_{sub}/P_{tot}" , 1000, 0., 10, 1100, 0., 1.1);
   fOutputList->Add(fHistEsub2PchRat);
 
+  Int_t bins[4] = {150, 150, 100, 200};
+  Double_t xmin[4] = {1.3, -0.8, 0, 0};
+  Double_t xmax[4] = {3.2, 0.8, 10, 2};
+
+  fHClsEoverMcE_All = new THnSparseF("fHClsEoverMcE_All", "Cluster E/MC E, clusters with 1 matching particle; #phi; #eta; E (GeV); ClsE/McE", 4, bins, xmin, xmax);
+  fOutputList->Add(fHClsEoverMcE_All);
+
+  fHClsEoverMcE_Photon = new THnSparseF("fHClsEoverMcE_Photon", "Cluster E/MC E, clusters with 1 matching photon; #phi; #eta; E (GeV); ClsE/McE", 4, bins, xmin, xmax);
+  fOutputList->Add(fHClsEoverMcE_Photon);
+
+  fHClsEoverMcE_Elec = new THnSparseF("fHClsEoverMcE_Elec", "Cluster E/MC E, clusters with 1 matching electron; #phi; #eta; E (GeV); ClsE/McE", 4, bins, xmin, xmax);
+  fOutputList->Add(fHClsEoverMcE_Elec);
+
+  fHClsEoverMcE_Pion = new THnSparseF("fHClsEoverMcE_Pion", "Cluster E/MC E, clusters with 1 matching pion; #phi; #eta; E (GeV); ClsE/McE",4, bins, xmin, xmax);
+  fOutputList->Add(fHClsEoverMcE_Pion);
+  
   fTrackIndices = new TArrayI();
   fClusterIndices = new TArrayI();
 
@@ -382,9 +407,6 @@ void  AliAnalysisTaskSOH::ProcessTrack()
       }
     }
 
- // fake and secondary tracks
-    if(newTrack->GetLabel()<0 && newTrack->GetPID()==2) fHTrkEffDetRecFakePtEtaPhi->Fill(newTrack->Pt(), newTrack->Eta(), newTrack->Phi());
-
  // Track Indices
     fTrackIndices->AddAt(itr,nTracks);
     nTracks++;
@@ -404,6 +426,7 @@ void AliAnalysisTaskSOH::ProcessCluster()
   fESD->GetVertex()->GetXYZ(vertex);
   const Int_t nCaloClusters = fESD->GetNumberOfCaloClusters(); 
   fClusterIndices->Set(nCaloClusters);
+  Float_t ClsPos[3] = {-999,-999,-999};
 
   for(Int_t itr=0; itr<nCaloClusters; itr++) 
   {
@@ -414,6 +437,9 @@ void AliAnalysisTaskSOH::ProcessCluster()
     if (gamma.Pt() < 0.15) continue;
     fHEventStat->Fill(2.5);
 
+    cluster->GetPosition(ClsPos);
+    TVector3 VClsPos(ClsPos[0], ClsPos[1], ClsPos[2]);
+  
     TArrayI *TrackLabels = cluster->GetTracksMatched();
     
     if(TrackLabels->GetSize() == 1)
@@ -462,7 +488,28 @@ void AliAnalysisTaskSOH::ProcessCluster()
     TArrayI *MCLabels = cluster->GetLabelsArray();
 
     if(MCLabels->GetSize() == 0) fHEventStat->Fill(3.5);
-    if(MCLabels->GetSize() == 1) fHEventStat->Fill(4.5);
+    if(MCLabels->GetSize() == 1) 
+    {
+      fHEventStat->Fill(4.5);
+      AliVParticle* vParticle1 = fMC->GetTrack(MCLabels->GetAt(0));
+      if(IsGoodMcParticle(vParticle1, MCLabels->GetAt(0)))
+      {
+	Double_t Entries[4] = {VClsPos.Phi(), VClsPos.Eta(), vParticle1->E(), cluster->E()/vParticle1->E()}; 
+	fHClsEoverMcE_All->Fill(Entries);
+	if(vParticle1->PdgCode() == 22) 
+	{
+	  fHClsEoverMcE_Photon->Fill(Entries);
+	}
+	if(TMath::Abs(vParticle1->PdgCode()) == 11)
+	{
+	  fHClsEoverMcE_Elec->Fill(Entries);
+	}
+	if(TMath::Abs(vParticle1->PdgCode()) == 211) 
+	{
+	  fHClsEoverMcE_Pion->Fill(Entries);
+	}
+      }
+    }
     if(MCLabels->GetSize() == 2) 
     {
       fHEventStat->Fill(5.5);
@@ -515,6 +562,15 @@ void AliAnalysisTaskSOH::ProcessCluster()
 void AliAnalysisTaskSOH::ProcessMc()
 {
   // Process MC.
+
+  for(Int_t i=0; i<fTrackIndices->GetSize(); i++)
+  {
+    AliESDtrack *esdtrack = fESD->GetTrack(fTrackIndices->At(i));
+    Int_t index = esdtrack->GetLabel();
+    if(index < 0 || index > fESD->GetNumberOfTracks()) continue;
+    AliVParticle* vParticle = fMC->GetTrack(index);
+    if(!IsGoodMcParticle(vParticle, index) && esdtrack->GetPID() == 2) fHTrkEffDetRecFakePtEtaPhi->Fill(esdtrack->Pt(), esdtrack->Eta(), esdtrack->Phi());
+  }
 
   for(Int_t ipart=0; ipart<fMC->GetNumberOfTracks(); ipart++)
   {
