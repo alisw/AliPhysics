@@ -16,8 +16,21 @@ AliAODConversionPhoton::AliAODConversionPhoton(AliKFConversionPhoton *kfphoton) 
 AliAODConversionParticle(kfphoton),
 AliConversionPhotonBase(*((AliConversionPhotonBase*)kfphoton))
 {
-  //Constructor from kfphoton
+    //Constructor from kfphoton
+
+    // puts the mass to zero and store dilepton mass
+    SetMass(kfphoton->M());
+    SetE(P());
 }
+
+AliAODConversionPhoton::AliAODConversionPhoton(TLorentzVector *vec) :
+AliAODConversionParticle(vec),
+AliConversionPhotonBase()
+{
+    //Constructor from TLorentzVector
+}
+
+
 
 AliAODConversionPhoton::AliAODConversionPhoton(const AliAODConversionPhoton & original) :
 AliAODConversionParticle(original),

@@ -64,6 +64,7 @@ public:
 	virtual void Terminate(Option_t *option);
 	//virtual void ConnectInputData(Option_t * option);
 	void CheckMesonProcessTypeEventQuality(Int_t evtQ);
+        Bool_t CheckCentrality();
 	Int_t GetProcessType(const AliMCEvent * mcEvt) ;
 	void ProcessMCData();
 	void ProcessV0sNoCut();
@@ -121,7 +122,6 @@ public:
 	void SetDoNeutralMesonV0MCCheck(Bool_t flag){fDoNeutralMesonV0MCCheck=flag;}
 	void SetDoJet(Bool_t flag){fDoJet=flag;}
 	void SetDoChic(Bool_t flag){fDoChic=flag;}
-	void SetDoHadInt(Bool_t flag){fDoHadInt=flag;}
 	void SetRecalculateV0ForGamma(Bool_t flag){fRecalculateV0ForGamma=flag;}		
 
 	void SetElectronMass(Double_t electronMass){fElectronMass = electronMass;}
@@ -180,7 +180,7 @@ public:
 
 	void SetRemovePileUp(Bool_t removePileUp) { fRemovePileUp = removePileUp; }
 
-	void SetSelectV0AND(Bool_t selectV0AND) { fSelectV0AND = selectV0AND; }
+	void SetSelectV0AND(Int_t selectV0AND) { fSelectV0AND = selectV0AND; }
 	void SetUseMultiplicity(Int_t useMultiplicity) {fUseMultiplicity=useMultiplicity;}
 	void SetUseMultiplicityBin(Int_t useMultiplicityBin) {fUseMultiplicityBin=useMultiplicityBin;}
 	void SetUseHBTMultiplicity(Int_t useHBTMultiplicity) {fUseHBTMultiplicity=useHBTMultiplicity;}
@@ -189,11 +189,7 @@ public:
 	Int_t CalculateMultiplicityBin();
 	void SetUseCentrality(Int_t useCentrality) {fUseCentrality=useCentrality;}
 	void SetUseCentralityBin(Int_t useCentralityBin) {fUseCentralityBin=useCentralityBin;}
-
-	void SetMaxChi2HadIntCut(Float_t chi2HadInt){fMaxChi2HadInt = chi2HadInt; }
-	void SetMaxErr2DHadIntCut(Float_t err2DHadInt){fMaxErr2DHadInt =err2DHadInt ;}
-	void SetMinPtHadIntCut(Float_t ptMinHadInt){fPtMinHadInt =ptMinHadInt ;}
-	
+        void SetMultSelection(Int_t multselection) {fMultSelection=multselection;}
 
 
 
@@ -246,7 +242,6 @@ public:
 	Bool_t fDoOmegaMeson; // flag
 	Bool_t fDoJet; // flag
 	Bool_t fDoChic; // flag
-	Bool_t fDoHadInt; // flag
 		
 	Bool_t fRecalculateV0ForGamma;//flag
 			
@@ -326,7 +321,7 @@ public:
 	Bool_t fCheckBGProbability; //flag
 	//  vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
 	Bool_t fRemovePileUp;                 // Remove Pile Up
-	Bool_t fSelectV0AND;                 // Select V0AND
+	Int_t fSelectV0AND;                 // Select V0AND
 	AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
 	Int_t fMultiplicity;
 	Int_t fUseMultiplicity;
@@ -335,12 +330,10 @@ public:
 	Int_t fUseHBTMultiplicityBin;
 	Int_t fUseCentrality;
 	Int_t fUseCentralityBin;
+        Int_t fMultSelection;
 	TRandom3 fRandom;
-	Float_t fMaxChi2HadInt;		
-	Float_t fMaxErr2DHadInt;		
-	Float_t fPtMinHadInt;
-
-	ClassDef(AliAnalysisTaskGammaConversion, 22); // Analysis task for gamma conversions
+	
+	ClassDef(AliAnalysisTaskGammaConversion, 23); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

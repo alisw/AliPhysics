@@ -23,7 +23,7 @@
 
 #include "TClonesArray.h"
 #include "TH1F.h"
-#include "TH2F.h"
+#include "TH3.h"
 #include "TList.h"
 #include "AliAODConversionParticle.h"
 
@@ -116,6 +116,7 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fTrigAxisList.AddAt(&fAxistPt, 2);
   fTrigAxisList.AddAt(&fAxisIso, 3);
 
+
 }
 
 
@@ -128,6 +129,7 @@ void AliAnaConvCorrBase::CreateBaseHistograms() {
   fHistograms = new TList();
   fHistograms->SetOwner(kTRUE);
   fHistograms->SetName(fName);
+
 
 
   fCorrSparse = CreateSparse(GetName(), GetTitle(), &fAxesList);
@@ -183,31 +185,67 @@ THnSparseF * AliAnaConvCorrBase::CreateSparse(TString nameString, TString titleS
 }
 
 
+///____________________________________________________________________________
+// void AliAnaConvCorrBase::FillTriggerCounters(Float_t tPt, Bool_t isolated){ 
+//   //Fill histogram with trigger counters
+
+//   fHNTriggers[0]->Fill(tPt);
+  
+//   if(isolated) {
+//     fHNTriggers[isolated]->Fill(tPt);
+    
+//   }
+// }
+
+// ///_____________________________________________________________________________
+// void AliAnaConvCorrBase::FillHistograms(Float_t tPt, Float_t cPt, Float_t dPhi, Float_t dEta, Bool_t isolated) {
+//   //Fill histograms
+
+//   if(dEta) { ;}
+//   //fHdPhi[0]->Fill(tPt, cPt, dPhi);
+//   if(isolated) {
+//     //fHdPhi[isolated]->Fill(tPt, cPt, dPhi);
+//   }
+// }
+
+//_______________________________________________________________________________
+
+void AliAnaConvCorrBase::PrintStatistics()  { 
+  
+  // }
+}
+
+
+//_______________________________________________________________________________
+void AliAnaConvCorrBase::FillTriggerCounters(const AliAODConversionParticle * particle, Int_t leading) {
+
+}
+
 
 //________________________________________________________________
 void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, Int_t const tIDs[4], Int_t isolated = 0) {
   //Correlate particle with tracks
 
 
+  FillTriggerCounters(particle, isolated);
 
   Int_t nDim = fAxesList.GetSize();
   Double_t dphivalues[nDim];
   Double_t trackValues[nDim];
-  Double_t trigValues[nDim - 1];
 
+  Double_t trigValues[nDim - 1];
   trigValues[0] = particle->Eta();
   trigValues[1] = particle->Phi();
   trigValues[2] = particle->Pt();
   trigValues[3] = isolated;
+  
+  fTrigSparse->Fill(trigValues);
 
   if(nDim > 4) {
 	dphivalues[5] = particle->M();
 	trackValues[5] = particle->M();
 	trigValues[4] = particle->M();
   }
-  
-  fTrigSparse->Fill(trigValues);
-
 
   for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
 	AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(ij));

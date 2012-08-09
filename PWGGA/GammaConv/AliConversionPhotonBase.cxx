@@ -9,7 +9,8 @@ AliConversionPhotonBase::AliConversionPhotonBase() :
 fV0Index(-1),
   fChi2perNDF(-1),
   fTagged(kFALSE),
-  fIMass(-999)
+  fIMass(-999),
+  fPsiPair(-999)
 {
   //Default constructor
   fLabel[0] = -1;
@@ -32,7 +33,8 @@ AliConversionPhotonBase::AliConversionPhotonBase(const AliConversionPhotonBase &
 fV0Index(original.fV0Index),
 fChi2perNDF(original.fChi2perNDF),
 fTagged(original.fTagged),
-  fIMass(original.fIMass)
+fIMass(original.fIMass),
+fPsiPair(original.fPsiPair)
   {
   //Copy constructor
   fLabel[0] = original.fLabel[0];
@@ -72,6 +74,18 @@ TParticle *AliConversionPhotonBase::GetMCParticle(AliStack *fMCStack){
     }
 
     return 0x0;
+}
+
+Bool_t AliConversionPhotonBase::IsTruePhoton(AliStack *fMCStack){
+    TParticle *mcgamma=GetMCParticle(fMCStack);
+
+    if(mcgamma){
+	// Check if it is a true photon
+	if(mcgamma->GetPdgCode()==22){
+        return kTRUE;
+	}
+    }
+    return kFALSE;
 }
 
 Int_t AliConversionPhotonBase::GetMCParticleLabel(AliStack *fMCStack){
