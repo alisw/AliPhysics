@@ -21,33 +21,42 @@ class AliAODConversionMother : public AliAODConversionParticle{
 
  public: 
 
-  //Default Constructor
+     //Default Constructor
      AliAODConversionMother();
 
-  // Constructor for ESD to AOD Conversion
+     // Constructor for ESD to AOD Conversion
      AliAODConversionMother(AliKFConversionMother *kf);
- 
-  //Constructor Decay Mother Particle
+
+     //Constructor Decay Mother Particle
      AliAODConversionMother(AliAODConversionPhoton *y1,AliAODConversionPhoton *y2);
 
-  //Destructor
+     //Destructor
      virtual ~AliAODConversionMother();
 
-  ///Set the Chi2 of reconstructed conversion gamma
+     // MC
+
+     void SetMCLabel(Int_t i){fMCLabel=i;}
+     Int_t GetMCLabel(){return fMCLabel;}
+     TParticle *GetMCParticle(AliStack *fMCStack);
+     Bool_t IsTrueMeson(AliStack *fMCStack,Int_t pdgcode);
+
+     ///Set the Chi2 of reconstructed conversion gamma
      void SetChi2(Float_t chi2) {fChi2 = chi2;}
 
-  //Get the Chi2 of particle
+     //Get the Chi2 of particle
      Float_t Chi2() const {return fChi2;}
 
      ///Set track or MC labels
      void SetLabel1(Int_t label){fLabel[0] = label;}
      void SetLabel2(Int_t label){fLabel[1] = label;}
-     void SetLabels(Int_t label1, Int_t label2){fLabel[0] = label1; fLabel[1] = label2;}
+     void SetLabel3(Int_t label){fLabel[2] = label;}
+     void SetLabels(Int_t label1, Int_t label2, Int_t label3 = 0){fLabel[0] = label1; fLabel[1] = label2; fLabel[2] = label3;}
 
      Int_t GetLabel(Int_t i) const {return fLabel[i];}
      Int_t GetLabel1() const {return fLabel[0];}
      Int_t GetLabel2() const {return fLabel[1];}
-
+	  Int_t GetLabel3() const {return fLabel[2];}
+		
      Double_t GetOpeningAngle() const { return fOpeningAngle;}
 
      Double_t GetAlpha() const { return fAlpha;}
@@ -56,13 +65,14 @@ class AliAODConversionMother : public AliAODConversionParticle{
      Double_t GetWeight() const {return fWeight;}
 
 private:
-    Int_t fLabel[2]; // Labels of the decay photons
+    Int_t fLabel[3]; // Labels of the decay photons
+    Int_t fMCLabel; // MC Label
     Float_t fChi2; // Chi sq of reconstructed mother
     Double_t fOpeningAngle;
     Double_t fAlpha;
     Double_t fWeight; // Weight for BG Calculation
 
-    ClassDef(AliAODConversionMother,2)
+    ClassDef(AliAODConversionMother,3)
 };
 
 #endif

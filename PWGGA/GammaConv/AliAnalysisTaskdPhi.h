@@ -5,8 +5,8 @@
 //---------------------------------------------
 ////////////////////////////////////////////////
 
-#ifndef AliAnalysisTaskdPhi_H
-#define AliAnalysisTaskdPhi_H
+#ifndef AliAnalysisTaskdPhi_cxx
+#define AliAnalysisTaskdPhi_cxx
 
 #include "AliAnalysisTaskSE.h"
 
@@ -18,10 +18,8 @@
 #include <AliAnaConvCorrBase.h>
 #include <AliLog.h>
 #include <AliAnalysisCuts.h>
-#include "AliAODConversionPhoton.h"
 class AliAnaConvIsolation;
 class AliConversionCuts;
-
 class TList;
 class TH2I;
 //class THnSparseF;
@@ -47,12 +45,9 @@ public:
   TAxis& GetAxisCent() { return fAxisCent; }
   TAxis& GetAxisPiMass() { return fAxisPiM; }
 
-
   void SetV0Filter(AliConversionCuts * filter) { fV0Filter = filter; }
   AliAnalysisCuts * GetTrackCuts() const { return fTrackCuts; }
   void SetTrackCuts( AliAnalysisCuts * cuts) { if (fTrackCuts) delete fTrackCuts; fTrackCuts = cuts; }
-  Bool_t VerifyAODGamma(AliAODConversionPhoton * photon);
-  
   
 protected:
   
@@ -71,6 +66,7 @@ private:
   TList * fHistoGamma; //gamma histo
   TList * fHistoPion; //pion histo
 
+
   AliConversionCuts * fV0Filter; //v0 filter
   AliAnalysisCuts * fTrackCuts;
 
@@ -86,6 +82,8 @@ private:
   TObjArray * fPionCorr; //poin
   AliAnaConvIsolation * fIsoAna; //comment
 
+  Int_t fL1; //comment
+  Int_t fL2; //comment
 
   TString fDeltaAODBranchName; //comment
 
@@ -100,7 +98,7 @@ private:
   AliAnalysisTaskdPhi(const AliAnalysisTaskdPhi&); // not implemented
   AliAnalysisTaskdPhi& operator=(const AliAnalysisTaskdPhi&); // not implemented
   
-  ClassDef(AliAnalysisTaskdPhi, 3); // example of analysis
+  ClassDef(AliAnalysisTaskdPhi, 2); // example of analysis
 };
 
 inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array) {
@@ -127,16 +125,10 @@ inline AliAnaConvCorrBase * AliAnalysisTaskdPhi::GetCorrObject(Int_t binz, Int_t
 	  return NULL;
 	}
 
-  if(array->GetEntriesFast() > binc) {
+  TObjArray * arrayc = static_cast<TObjArray*>(array->At(binz));
+  AliAnaConvCorrBase * corrmaker = static_cast<AliAnaConvCorrBase*>(arrayc->At(binc));
+  return corrmaker;
 
-	TObjArray * arrayc = static_cast<TObjArray*>(array->At(binc));
-	if(arrayc->GetEntriesFast() > binz) {
-	  AliAnaConvCorrBase * corrmaker = static_cast<AliAnaConvCorrBase*>(arrayc->At(binz));
-	  return corrmaker;
-	} else { cout << "balle"<<endl; }
-  } else { cout << "balle"<<endl; }
-
-  return NULL;
 }
 
 inline Int_t AliAnalysisTaskdPhi::GetBin(TAxis & axis, Double_t value) {

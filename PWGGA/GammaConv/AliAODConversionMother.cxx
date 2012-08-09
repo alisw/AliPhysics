@@ -11,17 +11,20 @@ ClassImp(AliAODConversionMother)
 
 AliAODConversionMother::AliAODConversionMother() :
 AliAODConversionParticle(),
-fChi2(-1),
-fOpeningAngle(-1),
+    fMCLabel(-1),
+    fChi2(-1),
+    fOpeningAngle(-1),
     fAlpha(-1),
     fWeight(1)
 {
 	fLabel[0] = -1;
 	fLabel[1] = -1;
+	fLabel[2] = 0;
 }
 
 AliAODConversionMother::AliAODConversionMother(AliKFConversionMother *kf):
 AliAODConversionParticle(),
+fMCLabel(kf->GetMCLabel()),
 fChi2(kf->GetChi2()),
 fOpeningAngle(kf->GetOpeningAngle()),
 fAlpha(kf->GetAlpha()),
@@ -33,10 +36,12 @@ fWeight(1)
      //Set Decay Photon Labels
     fLabel[0]=kf->GetGammaLabel(0);
     fLabel[1]=kf->GetGammaLabel(1);
+    fLabel[2]=0;
 }
 
 AliAODConversionMother::AliAODConversionMother(AliAODConversionPhoton *y1,AliAODConversionPhoton *y2):
 AliAODConversionParticle(),
+fMCLabel(-1),
 fChi2(-1),
 fOpeningAngle(-1),
 fAlpha(-1),
@@ -61,11 +66,31 @@ fWeight(1)
     //Set Decay Photon Labels
     fLabel[0]=-1;
     fLabel[1]=-1;
-
+	 fLabel[2]=0;
 }
 
 AliAODConversionMother::~AliAODConversionMother() {
-// empty standard destructor
+    // empty standard destructor
+}
 
+TParticle *AliAODConversionMother::GetMCParticle(AliStack *fMCStack){
+    if(!fMCStack){AliError("MC Stack not defined");return 0x0;}
+
+    if(fMCLabel>-1){
+		return fMCStack->Particle(fMCLabel);
+    }
+    return 0x0;
+}
+
+Bool_t AliAODConversionMother::IsTrueMeson(AliStack *fMCStack,Int_t pdgcode){
+    TParticle *part=GetMCParticle(fMCStack);
+
+    if(part){
+	// Check if it is a true photon
+	if(part->GetPdgCode()==pdgcode){
+	    return kTRUE;
+	}
+    }
+    return kFALSE;
 }
 

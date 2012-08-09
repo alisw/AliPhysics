@@ -28,9 +28,15 @@ public:
 	kNCuts
   };
 
+//  enum trackVal {
+//	kPt = 0, 
+//	kPhi,
+//	kEta,
+//	kNVar
+//  };
   static const char * fgkCutNames[kNCuts];
 
-  Bool_t IsSelected(TObject * object ) { return AcceptTrack(static_cast<AliAODTrack*>(object)); }
+  Bool_t IsSelected(TObject * object ) { return AcceptTrack(dynamic_cast<AliAODTrack*>(object)); }
   Bool_t IsSelected(TList * /*list*/) { return kFALSE; }
   Bool_t AcceptTrack(AliAODTrack * track);
 
@@ -95,13 +101,13 @@ protected :
    Int_t      fAODTestFilterBit;       // test filter bit for AOD tracks
   Bool_t      fRequireTPCRefit;        // Require TPC refit
 
-  TH2F * fhPhi; //histo
-  TH2F * fhPt; //histo
-  TH2F * fhPhiPt;//histo
-  TH2F * fhdcaxyPt;//histo
-  TH2F * fhdcazPt;//histo
-  TH2F * fhnclpt;//histo
-  TH2F * fhnclsfpt;//histo
+  TH2F * fhPhi;
+  TH2F * fhPt;
+  TH2F * fhPhiPt;
+  TH2F * fhdcaxyPt;
+  TH2F * fhdcazPt;
+  TH2F * fhnclpt;
+  TH2F * fhnclsfpt;
   
  // TAxis fCutAxis;
  // TAxisArr fCutVarAxes[kNCuts];

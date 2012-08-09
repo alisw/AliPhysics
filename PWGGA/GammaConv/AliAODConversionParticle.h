@@ -12,6 +12,7 @@ class AliAODConversionParticle : public TLorentzVector {
   //Constructors
   AliAODConversionParticle();    
   AliAODConversionParticle(AliKFParticle *kfparticle);
+  AliAODConversionParticle(TLorentzVector *vec);
 
   //Copy Constructor
   AliAODConversionParticle(const AliAODConversionParticle & g);           

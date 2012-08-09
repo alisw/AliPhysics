@@ -48,6 +48,9 @@ AliConversionPhotonBase()
   Double_t ndf=fV0Reader->GetMotherCandidateNDF();
   if(ndf>0)fChi2perNDF=fV0Reader->GetMotherCandidateChi2()/ndf;
 
+
+  SetPsiPair(fV0Reader->GetPsiPair(fV0Reader->GetCurrentV0()));
+
 }
                                                                
 AliKFConversionPhoton::AliKFConversionPhoton(const AliKFParticle &fCurrentNegativeKFParticle,const AliKFParticle &fCurrentPositiveKFParticle) :
@@ -86,20 +89,19 @@ AliKFConversionPhoton & AliKFConversionPhoton::operator = (const AliKFConversion
 
 void AliKFConversionPhoton::SetArmenterosQtAlpha(Double_t armenteros[2],const AliKFParticle &fCurrentNegativeParticle,const AliKFParticle &fCurrentPositiveParticle){
 
-    TVector3 momentumVectorPositive(fCurrentPositiveParticle.GetPx(),fCurrentPositiveParticle.GetPy(),fCurrentPositiveParticle.GetPz());
-    TVector3 momentumVectorNegative(fCurrentNegativeParticle.GetPx(),fCurrentNegativeParticle.GetPy(),fCurrentNegativeParticle.GetPz());
-    TVector3 vecV0(GetPx(),GetPy(),GetPz());
 
-
-	Float_t thetaV0pos=TMath::ACos(( momentumVectorPositive* vecV0)/(momentumVectorPositive.Mag() * vecV0.Mag()));
-	Float_t thetaV0neg=TMath::ACos(( momentumVectorNegative* vecV0)/(momentumVectorNegative.Mag() * vecV0.Mag()));
-	
-       armenteros[1] =((momentumVectorNegative.Mag())*TMath::Cos(thetaV0pos)-(momentumVectorPositive.Mag())*TMath::Cos(thetaV0neg))/
-		((momentumVectorNegative.Mag())*TMath::Cos(thetaV0pos)+(momentumVectorPositive.Mag())*TMath::Cos(thetaV0neg)) ;
-	
-
-       armenteros[0] = momentumVectorPositive.Mag()*TMath::Sin(thetaV0pos);
-
+   AliKFParticle PosParticle = fCurrentPositiveParticle;
+   AliKFParticle NegParticle = fCurrentNegativeParticle;
+   
+   AliKFParticle Gamma;
+   Gamma += fCurrentPositiveParticle;
+   Gamma += fCurrentNegativeParticle;
+   
+   Double_t VertexGamma[3] = {Gamma.GetX(), Gamma.GetY(), Gamma.GetZ()};
+   PosParticle.TransportToPoint(VertexGamma);
+   NegParticle.TransportToPoint(VertexGamma);
+   
+   AliKFParticle::GetArmenterosPodolanski(PosParticle,NegParticle, armenteros);
 }
 
 

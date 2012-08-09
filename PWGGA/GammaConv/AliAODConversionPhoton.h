@@ -12,6 +12,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
   //Constructors
   AliAODConversionPhoton();    
   AliAODConversionPhoton(AliKFConversionPhoton *kfphoton);
+  AliAODConversionPhoton(TLorentzVector *vec);
 
   //Copy Constructor
   AliAODConversionPhoton(const AliAODConversionPhoton & g);           

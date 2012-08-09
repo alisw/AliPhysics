@@ -407,10 +407,10 @@ void AliV0Reader::Initialize(){
 	fV0Pindex.clear();
 	fV0Nindex.clear();
 
-	if(gRandom != NULL){
-		delete gRandom;
-		gRandom= new TRandom3(0);
-	}
+// 	if(gRandom != NULL){
+// 		delete gRandom;
+// 		gRandom= new TRandom3(0);
+// 	}
 
 
 	if (fBrem == NULL){
@@ -423,7 +423,7 @@ void AliV0Reader::Initialize(){
 	if(fCalculateBackground == kTRUE){
 		if(fBGEventInitialized == kFALSE){
 
-			Double_t zBinLimitsArray[9];
+			Double_t *zBinLimitsArray = new Double_t[9];
 			zBinLimitsArray[0] = -50.00;
 			zBinLimitsArray[1] = -3.375;
 			zBinLimitsArray[2] = -1.605;
@@ -434,7 +434,7 @@ void AliV0Reader::Initialize(){
 			zBinLimitsArray[7] = 50.00;
 			zBinLimitsArray[8] = 1000.00;
 			
-		   Double_t multiplicityBinLimitsArray[6];
+		   Double_t *multiplicityBinLimitsArray = new Double_t[6];
 			if(fUseChargedTrackMultiplicityForBG == kTRUE){
 				multiplicityBinLimitsArray[0] = 0;
 				multiplicityBinLimitsArray[1] = 8.5;
@@ -1368,8 +1368,8 @@ Bool_t AliV0Reader::NextV0(){
 Bool_t AliV0Reader::UpdateV0Information(){
 	//see header file for documentation
 	
-	const AliExternalTrackParam *fCurrentExternalTrackParamPositive=GetExternalTrackParamP(fCurrentV0);
-   const AliExternalTrackParam *fCurrentExternalTrackParamNegative=GetExternalTrackParamN(fCurrentV0);
+  	const AliExternalTrackParam *fCurrentExternalTrackParamPositive=GetExternalTrackParamP(fCurrentV0);
+   	const AliExternalTrackParam *fCurrentExternalTrackParamNegative=GetExternalTrackParamN(fCurrentV0);
 
 	Bool_t iResult=kTRUE;		 				// for taking out not refitted, kinks and like sign tracks 
 	
@@ -1387,7 +1387,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
 
 	
 	if(fCurrentNegativeKFParticle != NULL){
-		delete fCurrentNegativeKFParticle;
+           delete fCurrentNegativeKFParticle;
 	}
 	if(switchTracks == kFALSE){
 		fCurrentNegativeKFParticle = new AliKFParticle(*(fCurrentV0->GetParamN()),fNegativeTrackPID);
@@ -1411,7 +1411,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	}
 
 	if(fUseConstructGamma==kTRUE){
-		fCurrentMotherKFCandidate = new AliKFParticle;//(*fCurrentNegativeKFParticle,*fCurrentPositiveKFParticle);
+		fCurrentMotherKFCandidate = new AliKFParticle();//(*fCurrentNegativeKFParticle,*fCurrentPositiveKFParticle);
 		fCurrentMotherKFCandidate->ConstructGamma(*fCurrentNegativeKFParticle,*fCurrentPositiveKFParticle);
 	}else{
 		fCurrentMotherKFCandidate = new AliKFParticle(*fCurrentNegativeKFParticle,*fCurrentPositiveKFParticle);
@@ -1650,9 +1650,24 @@ void AliV0Reader::UpdateEventByEventData(){
 	fV0Pindex.clear();
 	fV0Nindex.clear();
 	
-
-
-	//	fBGEventHandler->PrintBGArray(); // for debugging
+        delete fCurrentEventGoodV0s;
+        fCurrentEventGoodV0s = NULL;
+        delete fBrem;
+        fBrem = NULL;
+        delete fCurrentNegativeKFParticle;
+        fCurrentNegativeKFParticle = NULL;
+        delete fCurrentPositiveKFParticle;
+        fCurrentPositiveKFParticle = NULL;
+        delete fCurrentMotherKFCandidate;
+        fCurrentMotherKFCandidate = NULL;
+        delete fNegativeTrackLorentzVector;
+        fNegativeTrackLorentzVector = NULL;
+        delete fPositiveTrackLorentzVector;
+        fPositiveTrackLorentzVector = NULL;
+        delete fMotherCandidateLorentzVector;
+        fMotherCandidateLorentzVector = NULL;
+        
+        //	fBGEventHandler->PrintBGArray(); // for debugging
 }
 
 
