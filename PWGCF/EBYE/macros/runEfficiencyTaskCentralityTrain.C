@@ -18,11 +18,11 @@ const TString  centralityEstimator = "V0M";
 Double_t vertexZ = 10.;
 
 //output file
-TString commonOutputFileName = "outputCentralityPions";
+TString commonOutputFileName = "AnalysisResultsEfficiency_proof";
 
-//void runEfficiencyTaskCentralityTrain(Int_t mode = mPROOF, 
-//Int_t nRuns = 600000, 
-//Bool_t DATA = kFALSE, 
+//void runEfficiencyTaskCentralityTrain(Int_t mode = mPROOF,Int_t nRuns = 600000, Bool_t DATA = kFALSE, 
+				      //const Char_t* dataDir="/alice/sim/LHC11a10a_000138795_AOD048", Int_t offset=0) {
+				      //const Char_t* dataDir="/alice/sim/LHC11a10b_plus_000139507", Int_t offset=0) {				      
 //const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_4plus#esdTree", Int_t offset=0) {
 void runEfficiencyTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA = kFALSE) {
 //void runEfficiencyTaskCentralityTrain(const char* runListFileName = "listOfRuns.txt",Int_t mode = mGrid,  Bool_t DATA = kFALSE) {
@@ -179,7 +179,7 @@ void LoadLibraries(const anaModes mode) {
     //TProof::Open("skaf.saske.sk");
     //TProof::Open("prf000-iep-grid.saske.sk");
 
-    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-12-AN");
+    gProof->EnablePackage("VO_ALICE@AliRoot::v5-03-46-AN");
   }  
   
 } // end of void LoadLibraries(const anaModes mode)

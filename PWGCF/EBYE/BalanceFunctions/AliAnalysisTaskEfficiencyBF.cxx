@@ -58,7 +58,7 @@ AliAnalysisTaskEfficiencyBF::AliAnalysisTaskEfficiencyBF(const char *name)
   fCentralityEstimator("V0M"), fCentralityPercentileMin(0.0), fCentralityPercentileMax(5.0), 
   fVxMax(3.0), fVyMax(3.0), fVzMax(10.), 
   fMinNumberOfTPCClusters(80), fMaxChi2PerTPCCluster(4.0), fMaxDCAxy(3.0), fMaxDCAz(3.0),
-    fMinPt(0.3), fMaxPt(1.5), fMaxEta(0.8), fEtaRangeMax(0.8), fPtRangeMin(0.1), fPtRangeMax(5.0), fPhiRangeMin(0.0),fPhiRangeMax(6.28) {  
+    fMinPt(0.3), fMaxPt(1.5), fMinEta(-0.8), fMaxEta(0.8),fEtaRangeMin(0.0), fEtaRangeMax(1.6), fPtRangeMin(0.3), fPtRangeMax(1.5), fPhiRangeMin(0.0),fPhiRangeMax(6.28),fEtaBin(64),fPtBin(49),fPhiBin(90) {  
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -107,182 +107,182 @@ void AliAnalysisTaskEfficiencyBF::UserCreateOutputObjects() {
   //eta vs pt for MC positives
   fHistGeneratedEtaPtPhiPlus = new TH3D("fHistGeneratedEtaPtPhiPlus",
 				     "Generated positive primaries;#eta;p_{T} (GeV/c);#phi",
-					40,-1.0,1.0,49,0.1,5.0,100,0.,2.*TMath::Pi());
+					fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax,fPhiBin,fPhiRangeMin,fPhiRangeMax);
   fOutputList->Add(fHistGeneratedEtaPtPhiPlus);
   fHistFindableEtaPtPhiPlus = new TH3D("fHistFindableEtaPtPhiPlus",
 				     "Findable positive primaries;#eta;p_{T} (GeV/c);#phi",
-				     40,-1.0,1.0,49,0.1,5.0,100,0.,2.*TMath::Pi());
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax,fPhiBin,fPhiRangeMin,fPhiRangeMax);
   fOutputList->Add(fHistFindableEtaPtPhiPlus);
   fHistReconstructedEtaPtPhiPlus = new TH3D("fHistReconstructedEtaPtPhiPlus",
 				     "Reconstructed positive primaries;#eta;p_{T} (GeV/c);#phi",
-				     40,-1.0,1.0,49,0.1,5.0,100,0.,2.*TMath::Pi());
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax,fPhiBin,fPhiRangeMin,fPhiRangeMax);
   fOutputList->Add(fHistReconstructedEtaPtPhiPlus);
   fHistSurvivedEtaPtPhiPlus = new TH3D("fHistSurvivedEtaPtPhiPlus",
 				     "Survived positive primaries;#eta;p_{T} (GeV/c);#phi",
-				     40,-1.0,1.0,49,0.1,5.0,100,0.,2.*TMath::Pi());
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax,fPhiBin,fPhiRangeMin,fPhiRangeMax);
   fOutputList->Add(fHistSurvivedEtaPtPhiPlus);
 
   //eta vs pt for MC negatives
   fHistGeneratedEtaPtPhiMinus = new TH3D("fHistGeneratedEtaPtPhiMinus",
 				     "Generated positive primaries;#eta;p_{T} (GeV/c);#phi",
-				     40,-1.0,1.0,49,0.1,5.0,100,0.,2.*TMath::Pi());
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax,fPhiBin,fPhiRangeMin,fPhiRangeMax);
   fOutputList->Add(fHistGeneratedEtaPtPhiMinus);
   fHistFindableEtaPtPhiMinus = new TH3D("fHistFindableEtaPtPhiMinus",
 				     "Findable positive primaries;#eta;p_{T} (GeV/c);#phi",
-				     40,-1.0,1.0,49,0.1,5.0,100,0.,2.*TMath::Pi());
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax,fPhiBin,fPhiRangeMin,fPhiRangeMax);
   fOutputList->Add(fHistFindableEtaPtPhiMinus);
   fHistReconstructedEtaPtPhiMinus = new TH3D("fHistReconstructedEtaPtPhiMinus",
 				     "Reconstructed positive primaries;#eta;p_{T} (GeV/c);#phi",
-				     40,-1.0,1.0,49,0.1,5.0,100,0.,2.*TMath::Pi());
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax,fPhiBin,fPhiRangeMin,fPhiRangeMax);
   fOutputList->Add(fHistReconstructedEtaPtPhiMinus);
   fHistSurvivedEtaPtPhiMinus = new TH3D("fHistSurvivedEtaPtPhiMinus",
 				     "Survived positive primaries;#eta;p_{T} (GeV/c);#phi",
-				     40,-1.0,1.0,49,0.1,5.0,100,0.,2.*TMath::Pi());
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax,fPhiBin,fPhiRangeMin,fPhiRangeMax);
   fOutputList->Add(fHistSurvivedEtaPtPhiMinus);
 
   //eta vs pt for MC positives (control)
   fHistGeneratedEtaPtPlusControl = new TH2F("fHistGeneratedEtaPtPlusControl",
 				     "Generated positive primaries;#eta;p_{T} (GeV/c)",
-				     40,-1.0,1.0,49,0.1,5.0);
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistGeneratedEtaPtPlusControl);
   fHistFindableEtaPtPlusControl = new TH2F("fHistFindableEtaPtPlusControl",
 				     "Findable positive primaries;#eta;p_{T} (GeV/c)",
-				     40,-1.0,1.0,49,0.1,5.0);
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistFindableEtaPtPlusControl);
   fHistReconstructedEtaPtPlusControl = new TH2F("fHistReconstructedEtaPtPlusControl",
 				     "Reconstructed positive primaries;#eta;p_{T} (GeV/c)",
-				     40,-1.0,1.0,49,0.1,5.0);
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistReconstructedEtaPtPlusControl);
   fHistSurvivedEtaPtPlusControl = new TH2F("fHistSurvivedEtaPtPlusControl",
 				     "Survived positive primaries;#eta;p_{T} (GeV/c)",
-				     40,-1.0,1.0,49,0.1,5.0);
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistSurvivedEtaPtPlusControl);
 
   //eta vs pt for MC negatives (control)
   fHistGeneratedEtaPtMinusControl = new TH2F("fHistGeneratedEtaPtMinusControl",
 				     "Generated positive primaries;#eta;p_{T} (GeV/c)",
-				     40,-1.0,1.0,49,0.1,5.0);
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistGeneratedEtaPtMinusControl);
   fHistFindableEtaPtMinusControl = new TH2F("fHistFindableEtaPtMinusControl",
 				     "Findable positive primaries;#eta;p_{T} (GeV/c)",
-				     40,-1.0,1.0,49,0.1,5.0);
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistFindableEtaPtMinusControl);
   fHistReconstructedEtaPtMinusControl = new TH2F("fHistReconstructedEtaPtMinusControl",
 				     "Reconstructed positive primaries;#eta;p_{T} (GeV/c)",
-				     40,-1.0,1.0,49,0.1,5.0);
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistReconstructedEtaPtMinusControl);
   fHistSurvivedEtaPtMinusControl = new TH2F("fHistSurvivedEtaPtMinusControl",
 				     "Survived positive primaries;#eta;p_{T} (GeV/c)",
-				     40,-1.0,1.0,49,0.1,5.0);
+				     fEtaBin,fMinEta,fMaxEta,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistSurvivedEtaPtMinusControl);
 
   //eta vs pt for MC ++
   fHistGeneratedEtaPtPlusPlus = new TH2F("fHistGeneratedEtaPtPlusPlus",
 				     "Generated ++ primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistGeneratedEtaPtPlusPlus);
   fHistFindableEtaPtPlusPlus = new TH2F("fHistFindableEtaPtPlusPlus",
 				     "Findable ++ primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistFindableEtaPtPlusPlus);
   fHistReconstructedEtaPtPlusPlus = new TH2F("fHistReconstructedEtaPtPlusPlus",
 				     "Reconstructed ++ primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistReconstructedEtaPtPlusPlus);
   fHistSurvivedEtaPtPlusPlus = new TH2F("fHistSurvivedEtaPtPlusPlus",
 				     "Survived ++ primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistSurvivedEtaPtPlusPlus);
 
   //eta vs pt for MC --
   fHistGeneratedEtaPtMinusMinus = new TH2F("fHistGeneratedEtaPtMinusMinus",
 				     "Generated -- primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistGeneratedEtaPtMinusMinus);
   fHistFindableEtaPtMinusMinus = new TH2F("fHistFindableEtaPtMinusMinus",
 				     "Findable -- primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistFindableEtaPtMinusMinus);
   fHistReconstructedEtaPtMinusMinus = new TH2F("fHistReconstructedEtaPtMinusMinus",
 				     "Reconstructed -- primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistReconstructedEtaPtMinusMinus);
   fHistSurvivedEtaPtMinusMinus = new TH2F("fHistSurvivedEtaPtMinusMinus",
 				     "Survived -- primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistSurvivedEtaPtMinusMinus);
 
   //eta vs pt for MC +-
   fHistGeneratedEtaPtPlusMinus = new TH2F("fHistGeneratedEtaPtPlusMinus",
 				     "Generated +- primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistGeneratedEtaPtPlusMinus);
   fHistFindableEtaPtPlusMinus = new TH2F("fHistFindableEtaPtPlusMinus",
 				     "Findable +- primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistFindableEtaPtPlusMinus);
   fHistReconstructedEtaPtPlusMinus = new TH2F("fHistReconstructedEtaPtPlusMinus",
 				     "Reconstructed +- primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistReconstructedEtaPtPlusMinus);
   fHistSurvivedEtaPtPlusMinus = new TH2F("fHistSurvivedEtaPtPlusMinus",
 				     "Survived +- primaries;#Delta#eta;p_{T} (GeV/c)",
-				     40,0.0,2.0,49,0.1,5.0);
+				     fEtaBin,fEtaRangeMin,fEtaRangeMax,fPtBin,fPtRangeMin,fPtRangeMax);
   fOutputList->Add(fHistSurvivedEtaPtPlusMinus);
 
   //=============================//
    //phi vs eta for MC ++
   fHistGeneratedPhiEtaPlusPlus = new TH2F("fHistGeneratedPhiEtaPlusPlus",
 				     "Generated ++ primaries;#Delta#phi",
-					  100,0.,2.*TMath::Pi(),40,0.0,2.0);
+					  fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistGeneratedPhiEtaPlusPlus);
   fHistFindablePhiEtaPlusPlus = new TH2F("fHistFindablePhiEtaPlusPlus",
 				     "Findable ++ primaries;#Delta#phi;#Delta#eta",
-					 100,0.,2.*TMath::Pi(),40,0.0,2.0);
+					 fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistFindablePhiEtaPlusPlus);
   fHistReconstructedPhiEtaPlusPlus = new TH2F("fHistReconstructedPhiEtaPlusPlus",
 				     "Reconstructed ++ primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistReconstructedPhiEtaPlusPlus);
   fHistSurvivedPhiEtaPlusPlus = new TH2F("fHistSurvivedPhiEtaPlusPlus",
 				     "Survived ++ primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistSurvivedPhiEtaPlusPlus);
 
   //phi vs eta for MC --
   fHistGeneratedPhiEtaMinusMinus = new TH2F("fHistGeneratedPhiEtaMinusMinus",
 				     "Generated -- primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistGeneratedPhiEtaMinusMinus);
   fHistFindablePhiEtaMinusMinus = new TH2F("fHistFindablePhiEtaMinusMinus",
 				     "Findable -- primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistFindablePhiEtaMinusMinus);
   fHistReconstructedPhiEtaMinusMinus = new TH2F("fHistReconstructedPhiEtaMinusMinus",
 				     "Reconstructed -- primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistReconstructedPhiEtaMinusMinus);
   fHistSurvivedPhiEtaMinusMinus = new TH2F("fHistSurvivedPhiEtaMinusMinus",
 				     "Survived -- primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistSurvivedPhiEtaMinusMinus);
 
   //phi vs eta for MC +-
   fHistGeneratedPhiEtaPlusMinus = new TH2F("fHistGeneratedPhiEtaPlusMinus",
 				     "Generated +- primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistGeneratedPhiEtaPlusMinus);
   fHistFindablePhiEtaPlusMinus = new TH2F("fHistFindablePhiEtaPlusMinus",
 				     "Findable +- primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistFindablePhiEtaPlusMinus);
   fHistReconstructedPhiEtaPlusMinus = new TH2F("fHistReconstructedPhiEtaPlusMinus",
 				     "Reconstructed +- primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistReconstructedPhiEtaPlusMinus);
   fHistSurvivedPhiEtaPlusMinus = new TH2F("fHistSurvivedPhiEtaPlusMinus",
 				     "Survived +- primaries;#Delta#phi;#Delta#eta",
-				     100,0.,2.*TMath::Pi(),40,0.0,2.0);
+				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistSurvivedPhiEtaPlusMinus);
   //=============================//
 
@@ -372,9 +372,9 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 		    if (TMath::Abs(vz) > 50.) continue;
 		   
 		    //acceptance
-		    if(TMath::Abs(mcTrack->Eta()) > fEtaRangeMax) 
+		    if(TMath::Abs(mcTrack->Eta()) > fMaxEta) 
 		      continue;
-		    if((mcTrack->Pt() > fPtRangeMax)||(mcTrack->Pt() < fPtRangeMin)) 
+		    if((mcTrack->Pt() > fMaxPt)||(mcTrack->Pt() < fMinPt)) 
 		      continue;
 		    if((mcTrack->Phi() > fPhiRangeMax)||(mcTrack->Phi() < fPhiRangeMin)) 
 		      continue;
@@ -484,9 +484,9 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 		      if(!particle) continue;
 		      
 		      //acceptance
-		      if(TMath::Abs(particle->Eta()) > fEtaRangeMax) 
+		      if(TMath::Abs(particle->Eta()) > fMaxEta) 
 			continue;
-		      if((particle->Pt() > fPtRangeMax)||(particle->Pt() <  fPtRangeMin)) 
+		      if((particle->Pt() > fMaxPt)||(particle->Pt() <  fMinPt)) 
 			continue;
 		      if((particle->Phi() > fPhiRangeMax)||(particle->Phi() < fPhiRangeMin)) 
 			continue;
