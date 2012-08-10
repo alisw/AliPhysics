@@ -172,6 +172,7 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("phiRPflat","RP distribution with TPC flat", 100,0.,TMath::Pi(),20,0.,100.)) ;
   fOutputContainer->Add(new TH2F("phiRPV0A","RP distribution with V0A", 100,0.,TMath::Pi(),20,0.,100.)) ;
   fOutputContainer->Add(new TH2F("phiRPV0C","RP distribution with V0C", 100,0.,TMath::Pi(),20,0.,100.)) ;
+  fOutputContainer->Add(new TH3F("phiRPV0AC","RP distribution with V0A and V0C", 100,0.,TMath::Pi(),100,0.,TMath::Pi(),20,0.,100.)) ;
   fOutputContainer->Add(new TH2F("phiRPV0Aflat","RP distribution with V0 flat", 100,0.,TMath::Pi(),20,0.,100.)) ;
   fOutputContainer->Add(new TH2F("phiRPV0Cflat","RP distribution with V0 flat", 100,0.,TMath::Pi(),20,0.,100.)) ;
   fOutputContainer->Add(new TH3F("phiRPV0ATPC","RP distribution with V0A + TPC", 100,0.,TMath::Pi(),100,0.,TMath::Pi(),20,0.,100.)) ;
@@ -529,9 +530,9 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 
   // Step 5: Reaction Plane
   // fHaveTPCRP, fRP, fRPV0A, fRPV0C, fRPBin
-  //EvalReactionPlane(); //TODO: uncomment this, or at least deal with it
-  //EvalV0ReactionPlane(); //TODO: uncomment this, or at least deal with it
-  //fRPBin = GetRPBin(); //TODO: uncomment this, or at least deal with it
+  EvalReactionPlane(); //TODO: uncomment this, or at least deal with it
+  EvalV0ReactionPlane(); //TODO: uncomment this, or at least deal with it
+  fEMRPBin = GetRPBin(); //TODO: uncomment this, or at least deal with it
   LogProgress(5, fInternalRunNumber);
 
 
@@ -598,7 +599,7 @@ void AliAnalysisTaskPi0Flow::SetPHOSBadMap(Int_t mod, TH2I* badMapHist)
       delete fPHOSBadMap[mod];
 
     fPHOSBadMap[mod]=new TH2I(*badMapHist);
-    if(fDebug > 0)
+    if(fDebug)
       AliInfo(Form("Setting Bad Map Histogram  %s",fPHOSBadMap[mod]->GetName()));
   }
 
@@ -1384,13 +1385,13 @@ Int_t AliAnalysisTaskPi0Flow::GetCentralityBin(Float_t centralityV0M)
  */
   int lastBinUpperIndex = fCentEdges.GetSize() -1;
   if( centralityV0M > fCentEdges[lastBinUpperIndex] ) {
-    if(fDebug > 1)
-      AliInfo( Form("centrality (%f) larger then upper edge of last centrality bin (%f)!", centralityV0M, fCentEdges[lastBinUpperIndex]) );
+    if(fDebug)
+      AliWarning( Form("centrality (%f) larger then upper edge of last centrality bin (%f)!", centralityV0M, fCentEdges[lastBinUpperIndex]) );
     return lastBinUpperIndex-1;
   }
   if( centralityV0M < fCentEdges[0] ) {
-    if( fDebug > 2 )
-      AliInfo( Form("centrality (%f) smaller then lower edge of first bin (%f)!", centralityV0M, fCentEdges[0]) );
+    if( fDebug )
+      AliWarning( Form("centrality (%f) smaller then lower edge of first bin (%f)!", centralityV0M, fCentEdges[0]) );
     return 0;
   }
   
@@ -1413,6 +1414,9 @@ Int_t AliAnalysisTaskPi0Flow::GetRPBin()
     fEMRPBin=fNEMRPBins-1 ;
   else if(fEMRPBin<0)
     fEMRPBin=0;
+
+  if ( fDebug )
+    AliInfo(Form("Event Mixing Reaction Plane bin is: %d", fEMRPBin));
 
   return fEMRPBin;
 }
@@ -3079,13 +3083,13 @@ void AliAnalysisTaskPi0Flow::SetMisalignment(){
     for(Int_t mod=0; mod<5; mod++) {
       const TGeoHMatrix* modMatrix = fEvent->GetPHOSMatrix(mod);
       if( ! modMatrix) {
-	if( fDebug > 0 )
+	if( fDebug )
 	  AliInfo(Form("no PHOS Geometric Misalignment Matrix for module %d", mod));
 	continue;
       }
       else {
 	fPHOSGeo->SetMisalMatrix(modMatrix, mod);
-	if( fDebug > 0 )
+	if( fDebug )
 	  AliInfo("PHOS Geometric Misalignment Matrix");
       }
     }
@@ -3124,7 +3128,7 @@ void AliAnalysisTaskPi0Flow::SetV0Calibration(){
 	return;
     }
 
-    if( fDebug > 0)  AliInfo("Setting V0 calibration") ;
+    if( fDebug )  AliInfo("Setting V0 calibration") ;
     fMultV0 = ((TH2F *) cont->GetObject(runNumber))->ProfileX();
 
     TF1 *fpol0 = new TF1("fpol0","pol0");
@@ -3216,7 +3220,7 @@ void AliAnalysisTaskPi0Flow::SetESDTrackCuts()
 void AliAnalysisTaskPi0Flow::SetGeometry()
 {
   // Initialize the PHOS geometry
-  if( kLHC10h == fPeriod ) {
+  if( kLHC10h == fPeriod && fEventESD ) {
     TGeoManager::Import("geometry.root"); //TODO: should perhaps not be done
     fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
     if( ! fPHOSGeo )
@@ -3253,7 +3257,7 @@ void AliAnalysisTaskPi0Flow::SetPHOSCalibData()
   
   // Calibration only needed for ESD
   if( fEventESD /*&& */ ) {
-    if( kLHC10h == fPeriod ) {
+    if( kLHC10h == fPeriod && fEventESD ) {
       //We have to apply re-calibration for pass1 LCH10h
       // Initialize decalibration factors in the form of the OCDB object
       AliCDBManager * man = AliCDBManager::Instance();
@@ -3281,6 +3285,9 @@ void AliAnalysisTaskPi0Flow::SetVertex()
   }
   fVertexVector = TVector3(fVertex);
   FillHistogram("hZvertex", fVertexVector.z(), fInternalRunNumber-0.5);
+  
+  if( fDebug > 1 )
+    AliInfo(Form("Vertex is set to (%.1f,%.1f,%.1f)", fVertex[0], fVertex[1], fVertex[2]));
 
   fVtxBin=0 ;// No support for vtx binning implemented.
 }
@@ -3309,6 +3316,9 @@ void AliAnalysisTaskPi0Flow::SetCentrality()
   FillHistogram("hCentrality",fCentralityV0M,fInternalRunNumber-0.5) ;
 
   fCentBin = GetCentralityBin(fCentralityV0M);
+
+  if ( fDebug )
+    AliInfo(Form("Centrality (bin) is: %f (%d)", fCentralityV0M, fCentBin));
 }
 
 //_____________________________________________________________________________
@@ -3320,10 +3330,16 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
 //     return true; // reject
     
   int lastBinUpperIndex = fCentEdges.GetSize() -1;
-  if( fCentralityV0M > fCentEdges[lastBinUpperIndex] )
+  if( fCentralityV0M > fCentEdges[lastBinUpperIndex] ) {
+    if( fDebug )
+      AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
-  if( fCentralityV0M < fCentEdges[0] ) 
+  }
+  if( fCentralityV0M < fCentEdges[0] ) {
+    if( fDebug )
+      AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
+  }
 
   return false;
 }
@@ -3336,18 +3352,22 @@ void AliAnalysisTaskPi0Flow::EvalReactionPlane()
   // also does a few histogram fills
 
   AliEventplane *eventPlane = fEvent->GetEventplane();
+  if( ! eventPlane ) { AliError("Event has no event plane"); return; }
+  
   Double_t reactionPlaneQ = eventPlane->GetEventplane("Q");
   FillHistogram("phiRP",reactionPlaneQ,fCentralityV0M) ;
 
   if(reactionPlaneQ==999 || reactionPlaneQ < 0.){ //reaction plain was not defined
-    fHaveTPCRP = false;
-    fRP=0.;
+    if( fDebug ) AliInfo(Form("No Q Reaction Plane, value is %f", reactionPlaneQ));
+    fHaveTPCRP = kFALSE;
   }
   else{
-    fHaveTPCRP = true;
+    if( fDebug ) AliInfo(Form("Q Reaction Plane is %f", reactionPlaneQ));
+    fHaveTPCRP = kTRUE;
   }
+
   if(fHaveTPCRP){
-    if( kLHC10h == fPeriod )
+    if( kLHC10h == fPeriod && fEventESD )
       fRP = ApplyFlattening(reactionPlaneQ, fCentralityV0M) ;
     else if ( fEventAOD )
       fRP = reactionPlaneQ;
@@ -3360,6 +3380,8 @@ void AliAnalysisTaskPi0Flow::EvalReactionPlane()
     Double_t dPsi = eventPlane->GetQsubRes() ;
     FillHistogram("cos2AC",TMath::Cos(2.*dPsi),fCentralityV0M) ;
   }
+  else
+    fRP=0.;
 }
 
 
@@ -3419,18 +3441,24 @@ void  AliAnalysisTaskPi0Flow::EvalV0ReactionPlane(){
 
   while(fRPV0A<0)fRPV0A+=TMath::Pi() ;
   while(fRPV0A>TMath::Pi())fRPV0A-=TMath::Pi() ;
-
-  fRPV0A=ApplyFlatteningV0A(fRPV0A,fCentralityV0M) ;
-  while(fRPV0A<0)fRPV0A+=TMath::Pi() ;
-  while(fRPV0A>TMath::Pi())fRPV0A-=TMath::Pi() ;
-
   while(fRPV0C<0)fRPV0C+=TMath::Pi() ;
   while(fRPV0C>TMath::Pi())fRPV0C-=TMath::Pi() ;
 
-  fRPV0C=ApplyFlatteningV0C(fRPV0C,fCentralityV0M) ;
-  while(fRPV0C<0)fRPV0C+=TMath::Pi() ;
-  while(fRPV0C>TMath::Pi())fRPV0C-=TMath::Pi() ;
-
+  // Flattening
+  if( kLHC10h == fPeriod && fEventESD ) {
+    fRPV0A=ApplyFlatteningV0A(fRPV0A,fCentralityV0M) ;
+    while(fRPV0A<0)fRPV0A+=TMath::Pi() ;
+    while(fRPV0A>TMath::Pi())fRPV0A-=TMath::Pi() ;
+    fRPV0C=ApplyFlatteningV0C(fRPV0C,fCentralityV0M) ;
+    while(fRPV0C<0)fRPV0C+=TMath::Pi() ;
+    while(fRPV0C>TMath::Pi())fRPV0C-=TMath::Pi() ;
+  }
+  else if ( fEventESD ) {
+    AliError("Don't know how to, or if to, apply flattening for ESD");
+  }
+    
+  if( fDebug )
+    AliInfo(Form("V0 Reaction Plane is: A side: %f, C side: %f", fRPV0A, fRPV0C));
 
   FillHistogram("phiRPV0A",fRPV0A,fCentralityV0M);
   FillHistogram("phiRPV0C",fRPV0C,fCentralityV0M);
