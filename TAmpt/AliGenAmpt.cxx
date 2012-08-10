@@ -246,9 +246,6 @@ void AliGenAmpt::Generate()
   Float_t p[3];
   Float_t tof;
 
-  //  converts from mm/c to s
-  const Float_t kconv = 0.001/2.99792458e8;
-
   Int_t nt  = 0;
   Int_t jev = 0;
   Int_t j, kf, ks, ksp, imo;
@@ -289,7 +286,17 @@ void AliGenAmpt::Generate()
     Int_t np = fParticles.GetEntriesFast();
     if (np == 0 ) 
       continue;
-
+    //
+    //RS>>: Decayers now returns cm and sec. Since TAmpt returns mm and mm/c, convert its result to cm and sec here
+    const Float_t kconvT=0.001/2.999792458e8; // mm/c to seconds conversion
+    const Float_t kconvL=1./10; // mm to cm conversion
+    for (int ip=np;ip--;) {
+      TParticle* part = (TParticle*)fParticles[ip];
+      if (!part) continue;
+      part->SetProductionVertex(part->Vx()*kconvL,part->Vy()*kconvL,part->Vz()*kconvL,kconvT*part->T());
+    }
+    // RS<<
+    //
     if (fTrigger != kNoTrigger) {
       if (!CheckTrigger()) 
         continue;
@@ -475,10 +482,10 @@ void AliGenAmpt::Generate()
         p[0] = iparticle->Px();
         p[1] = iparticle->Py();
         p[2] = iparticle->Pz() * sign;
-        origin[0] = origin0[0]+iparticle->Vx()/10;
-        origin[1] = origin0[1]+iparticle->Vy()/10;
-        origin[2] = origin0[2]+iparticle->Vz()/10;
-	tof = time0+kconv * iparticle->T();
+        origin[0] = origin0[0]+iparticle->Vx();
+        origin[1] = origin0[1]+iparticle->Vy();
+        origin[2] = origin0[2]+iparticle->Vz();
+	tof = time0 + iparticle->T();
 
         imo = -1;
         TParticle* mother = 0;

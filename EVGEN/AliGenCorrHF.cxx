@@ -810,10 +810,10 @@ void AliGenCorrHF::LoadTracks(Int_t iquark, Float_t *pq,
 	TParticle* iparticle = (TParticle *) particles->At(i);
 	Int_t kf  = iparticle->GetPdgCode();
 	Int_t jpa = iparticle->GetFirstMother()-1;
-
-	och[0] = origin0[0]+iparticle->Vx()/10;
-	och[1] = origin0[1]+iparticle->Vy()/10;
-	och[2] = origin0[2]+iparticle->Vz()/10;
+	// RS: note, the conversion mm->cm is done now in the decayer. The time is ignored here!
+	och[0] = origin0[0]+iparticle->Vx();
+	och[1] = origin0[1]+iparticle->Vy();
+	och[2] = origin0[2]+iparticle->Vz();
 	pc[0]  = iparticle->Px();
 	pc[1]  = iparticle->Py();
 	pc[2]  = iparticle->Pz();

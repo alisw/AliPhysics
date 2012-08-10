@@ -181,13 +181,13 @@ void AliGenEvtGen::Generate()
          Int_t jpa  = iparticle->GetFirstMother()-1; //jpa = 0 for daughters of beauty particles
          Int_t iparent = (jpa > 0) ? pParent[jpa] : iTrack;      
 
-         och[0] = origin0[0]+iparticle->Vx()/10; //[cm]
-         och[1] = origin0[1]+iparticle->Vy()/10; //[cm]
-         och[2] = origin0[2]+iparticle->Vz()/10; //[cm]
+         och[0] = origin0[0]+iparticle->Vx(); //[cm]
+         och[1] = origin0[1]+iparticle->Vy(); //[cm]
+         och[2] = origin0[2]+iparticle->Vz(); //[cm]
          pc[0]  = iparticle->Px(); //[GeV/c]
          pc[1]  = iparticle->Py(); //[GeV/c]
          pc[2]  = iparticle->Pz(); //[GeV/c]
-         tof = part->T()+kconv*iparticle->T(); 
+         tof = part->T()+iparticle->T(); 
 
          AliDebug(1,Form("FirstMother = %d e indicePart = %d e pdg = %d \n",jpa,i,kf));         
           
