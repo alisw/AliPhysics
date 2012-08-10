@@ -57,7 +57,14 @@ AliBalancePsi::AliBalancePsi() :
   fHistNP(0),
   fHistPP(0),
   fHistNN(0),
-  fPsiInterval(15.) {
+  fHistHBTbefore(0),
+  fHistHBTafter(0),
+  fHistConversionbefore(0),
+  fHistConversionafter(0),
+  fHistPshiMinusPhi(0),
+  fPsiInterval(15.),
+  fHBTCut(kFALSE),
+  fConversionCut(kFALSE) {
   // Default constructor
 }
 
@@ -75,7 +82,14 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistNP(balance.fHistNP),
   fHistPP(balance.fHistPP),
   fHistNN(balance.fHistNN),
-  fPsiInterval(balance.fPsiInterval) {
+  fHistHBTbefore(balance.fHistHBTbefore),
+  fHistHBTafter(balance.fHistHBTafter),
+  fHistConversionbefore(balance.fHistConversionbefore),
+  fHistConversionafter(balance.fHistConversionafter),
+  fHistPshiMinusPhi(balance.fHistPshiMinusPhi),
+  fPsiInterval(balance.fPsiInterval),
+  fHBTCut(balance.fHBTCut),
+  fConversionCut(balance.fConversionCut) {
   //copy constructor
 }
 
@@ -88,6 +102,12 @@ AliBalancePsi::~AliBalancePsi() {
   delete fHistNP;
   delete fHistPP;
   delete fHistNN;
+
+  delete fHistHBTbefore;
+  delete fHistHBTafter;
+  delete fHistConversionbefore;
+  delete fHistConversionafter;
+  delete fHistPshiMinusPhi;
 }
 
 //____________________________________________________________________//
@@ -221,12 +241,20 @@ void AliBalancePsi::InitHistograms() {
     fHistNN->SetVarTitle(j, axisTitlePair[j]);
   }
   AliInfo("Finished setting up the AliTHn");
+
+  // QA histograms
+  fHistHBTbefore        = new TH2D("fHistHBTbefore","before HBT cut",200,0,2,200,0,200);
+  fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,0,2,200,0,200);
+  fHistConversionbefore = new TH2D("fHistConversionbefore","before Conversion cut",200,0,2,200,0,200);
+  fHistConversionafter  = new TH2D("fHistConversionafter","after Conversion cut",200,0,2,200,0,200);
+  fHistPshiMinusPhi     = new TH2D("fHistPshiMinusPhi","",4,-0.5,3.5,100,0,360.);
 }
 
 //____________________________________________________________________//
 void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 				     TObjArray *particles, 
-				     TObjArray *particlesMixed ) {
+				     TObjArray *particlesMixed,
+				     Float_t bSign) {
   // Calculates the balance function
   fAnalyzedEvents++;
   
@@ -265,7 +293,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
   }
   
   // 1st particle loop
-  for (Int_t i=0; i<iMax; i++) {
+  for (Int_t i = 0; i < iMax; i++) {
     AliVParticle* firstParticle = (AliVParticle*) particles->At(i);
     
     // some optimization
@@ -295,14 +323,16 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     else 
       gPsiMinusPhiBin = 3.0;
     
-    Short_t  charge = (Short_t) firstParticle->Charge();
+    fHistPshiMinusPhi->Fill(gPsiMinusPhiBin,gPsiMinusPhi);
+
+    Short_t  charge1 = (Short_t) firstParticle->Charge();
     
     trackVariablesSingle[0]    =  gPsiMinusPhiBin;
     trackVariablesSingle[1]    =  firstPt;  
     
     //fill single particle histograms
-    if(charge > 0)      fHistP->Fill(trackVariablesSingle,0,1.); 
-    else if(charge < 0) fHistN->Fill(trackVariablesSingle,0,1.);  
+    if(charge1 > 0)      fHistP->Fill(trackVariablesSingle,0,1.); 
+    else if(charge1 < 0) fHistN->Fill(trackVariablesSingle,0,1.);  
     
     // 2nd particle loop (only for j < i for non double counting in the same pT region)
     // --> SAME pT region for trigger and assoc: NO double counting with this
@@ -330,11 +360,93 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
       trackVariablesPair[3]    =  firstPt;      // pt trigger
       trackVariablesPair[4]    =  secondPt[j];  // pt
       //	trackVariablesPair[5]    =  fCentrality;  // centrality
+
+      // HBT like cut
+      if(fHBTCut && charge1 * charge2 > 0){
+	//if( dphi < 3 || deta < 0.01 ){   // VERSION 1
+	//  continue;
+	
+	Double_t deta = firstEta - secondEta[j];
+	Double_t dphi = firstPhi - secondPhi[j];
+	// VERSION 2 (Taken from DPhiCorrelations)
+	// the variables & cuthave been developed by the HBT group 
+	// see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
+	fHistHBTbefore->Fill(deta,dphi);
+	
+	// optimization
+	if (TMath::Abs(deta) < 0.02 * 2.5 * 3) //twoTrackEfficiencyCutValue = 0.02 [default for dphicorrelations]
+	  {
+	    // phi in rad
+	    Float_t phi1rad = firstPhi*TMath::DegToRad();
+	    Float_t phi2rad = secondPhi[j]*TMath::DegToRad();
+	    
+	    // check first boundaries to see if is worth to loop and find the minimum
+	    Float_t dphistar1 = GetDPhiStar(phi1rad, firstPt, charge1, phi2rad, secondPt[j], charge2, 0.8, bSign);
+	    Float_t dphistar2 = GetDPhiStar(phi1rad, firstPt, charge1, phi2rad, secondPt[j], charge2, 2.5, bSign);
+	    
+	    const Float_t kLimit = 0.02 * 3;
+	    
+	    Float_t dphistarminabs = 1e5;
+	    Float_t dphistarmin = 1e5;
+	    
+	    if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0 ) {
+	      for (Double_t rad=0.8; rad<2.51; rad+=0.01) {
+		Float_t dphistar = GetDPhiStar(phi1rad, firstPt, charge1, phi2rad, secondPt[j], charge2, rad, bSign);
+		Float_t dphistarabs = TMath::Abs(dphistar);
+		
+		if (dphistarabs < dphistarminabs) {
+		  dphistarmin = dphistar;
+		  dphistarminabs = dphistarabs;
+		}
+	      }
+	      
+	      if (dphistarminabs < 0.02 && TMath::Abs(deta) < 0.02) {
+		//AliInfo(Form("HBT: Removed track pair %d %d with [[%f %f]] %f %f %f | %f %f %d %f %f %d %f", i, j, deta, dphi, dphistarminabs, dphistar1, dphistar2, phi1rad, pt1, charge1, phi2rad, pt2, charge2, bSign));
+		continue;
+	      }
+	    }
+	  }
+	fHistHBTafter->Fill(deta,dphi);
+      }//HBT cut
+	
+      // conversions
+      if(fConversionCut) {
+	if (charge1 * charge2 < 0) {
+	  Double_t deta = firstEta - secondEta[j];
+	  Double_t dphi = firstPhi - secondPhi[j];
+	  fHistConversionbefore->Fill(deta,dphi);
+	  
+	  Float_t m0 = 0.510e-3;
+	  Float_t tantheta1 = 1e10;
+	  
+	  // phi in rad
+	  Float_t phi1rad = firstPhi*TMath::DegToRad();
+	  Float_t phi2rad = secondPhi[j]*TMath::DegToRad();
+	  
+	  if (firstEta < -1e-10 || firstEta > 1e-10)
+	    tantheta1 = 2 * TMath::Exp(-firstEta) / ( 1 - TMath::Exp(-2*firstEta));
+	  
+	  Float_t tantheta2 = 1e10;
+	  if (secondEta[j] < -1e-10 || secondEta[j] > 1e-10)
+	    tantheta2 = 2 * TMath::Exp(-secondEta[j]) / ( 1 - TMath::Exp(-2*secondEta[j]));
+	  
+	  Float_t e1squ = m0 * m0 + firstPt * firstPt * (1.0 + 1.0 / tantheta1 / tantheta1);
+	  Float_t e2squ = m0 * m0 + secondPt[j] * secondPt[j] * (1.0 + 1.0 / tantheta2 / tantheta2);
+	  
+	  Float_t masssqu = 2 * m0 * m0 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( firstPt * secondPt[j] * ( TMath::Cos(phi1rad - phi2rad) + 1.0 / tantheta1 / tantheta2 ) ) );
+	  
+	  if (masssqu < 0.04*0.04){
+	    //AliInfo(Form("Conversion: Removed track pair %d %d with [[%f %f] %f %f] %d %d <- %f %f  %f %f   %f %f ", i, j, deta, dphi, masssqu, charge1, charge2,eta1,eta2,phi1,phi2,pt1,pt2));
+	    continue;
+	  }
+	  fHistConversionafter->Fill(deta,dphi);
+	}
+      }//conversion cut
       
-      if( charge > 0 && charge2 < 0)  fHistPN->Fill(trackVariablesPair,0,1.); 
-      else if( charge < 0 && charge2 > 0)  fHistNP->Fill(trackVariablesPair,0,1.); 
-      else if( charge > 0 && charge2 > 0)  fHistPP->Fill(trackVariablesPair,0,1.); 
-      else if( charge < 0 && charge2 < 0)  fHistNN->Fill(trackVariablesPair,0,1.); 
+      if( charge1 > 0 && charge2 < 0)  fHistPN->Fill(trackVariablesPair,0,1.); 
+      else if( charge1 < 0 && charge2 > 0)  fHistNP->Fill(trackVariablesPair,0,1.); 
+      else if( charge1 > 0 && charge2 > 0)  fHistPP->Fill(trackVariablesPair,0,1.); 
+      else if( charge1 < 0 && charge2 < 0)  fHistNN->Fill(trackVariablesPair,0,1.); 
       else {
 	//AliWarning(Form("Wrong charge combination: charge1 = %d and charge2 = %d",charge,charge2));
 	continue;
@@ -664,5 +776,30 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
     gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries()));
     
   return gHist;
+}
+
+//____________________________________________________________________//
+Float_t AliBalancePsi::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign) { 
+  //
+  // calculates dphistar
+  //
+  Float_t dphistar = phi1 - phi2 - charge1 * bSign * TMath::ASin(0.075 * radius / pt1) + charge2 * bSign * TMath::ASin(0.075 * radius / pt2);
+  
+  static const Double_t kPi = TMath::Pi();
+  
+  // circularity
+//   if (dphistar > 2 * kPi)
+//     dphistar -= 2 * kPi;
+//   if (dphistar < -2 * kPi)
+//     dphistar += 2 * kPi;
+  
+  if (dphistar > kPi)
+    dphistar = kPi * 2 - dphistar;
+  if (dphistar < -kPi)
+    dphistar = -kPi * 2 - dphistar;
+  if (dphistar > kPi) // might look funny but is needed
+    dphistar = kPi * 2 - dphistar;
+  
+  return dphistar;
 }
 

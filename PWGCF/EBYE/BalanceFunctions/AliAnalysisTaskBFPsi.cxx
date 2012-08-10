@@ -297,6 +297,13 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
   fList->Add(fHistRefTracks);
 
+  // QA histograms for HBTinspired and Conversion cuts
+  fList->Add(fBalance->GetQAHistHBTbefore());
+  fList->Add(fBalance->GetQAHistHBTafter());
+  fList->Add(fBalance->GetQAHistConversionbefore());
+  fList->Add(fBalance->GetQAHistConversionafter());
+  fList->Add(fBalance->GetQAHistPsiMinusPhi());
+
   // Balance function histograms
   // Initialize histograms if not done yet
   if(!fBalance->GetHistNp()){
@@ -430,6 +437,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   Int_t gNumberOfAcceptedTracks = 0;
   Double_t fCentrality          = -1.;
   Double_t gReactionPlane       = -1.; 
+  Float_t bSign = 0.;
 
   // get the event (for generator level: MCEvent())
   AliVEvent* eventMain = NULL;
@@ -438,13 +446,16 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   }
   else{
     eventMain = dynamic_cast<AliVEvent*>(InputEvent()); 
- 
+    
+    // for HBT like cuts need magnetic field sign
+    bSign = (eventMain->GetMagneticField() > 0) ? 1 : -1;
   }
   if(!eventMain) {
     AliError("eventMain not available");
     return;
   }
 
+  
   // PID Response task active?
   if(fUsePID) {
     fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
@@ -523,7 +534,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	  for (Int_t jMix=0; jMix<nMix; jMix++) 
 	    {
 	      TObjArray* tracksMixed = pool->GetEvent(jMix);
-	      fMixedBalance->CalculateBalance(gReactionPlane,tracksMain,tracksMixed); 
+	      fMixedBalance->CalculateBalance(gReactionPlane,tracksMain,tracksMixed,bSign); 
 	    }
 	}
 	
@@ -535,11 +546,11 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     }//run mixing
   
   // calculate balance function
-  fBalance->CalculateBalance(gReactionPlane,tracksMain,NULL);
+  fBalance->CalculateBalance(gReactionPlane,tracksMain,NULL,bSign);
   
   // calculate shuffled balance function
   if(fRunShuffling && tracksShuffled != NULL) {
-    fShuffledBalance->CalculateBalance(gReactionPlane,tracksShuffled,NULL);
+    fShuffledBalance->CalculateBalance(gReactionPlane,tracksShuffled,NULL,bSign);
   }
 }      
 
@@ -745,7 +756,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
 
 
   if(gAnalysisLevel == "AOD") { // handling of TPC only tracks different in AOD and ESD
-  
     // Loop over tracks in event
     for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
@@ -988,7 +998,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
     }//track loop
   }// ESD analysis
 
-  else if(gAnalysisLevel = "MC"){
+  else if(gAnalysisLevel == "MC"){
     
     // Loop over tracks in event
     for (Int_t iTracks = 0; iTracks < dynamic_cast<AliMCEvent*>(event)->GetNumberOfPrimaries(); iTracks++) {
