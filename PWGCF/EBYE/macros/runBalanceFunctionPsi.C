@@ -26,6 +26,8 @@ Float_t etaMin[numberOfSyst] = {-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.
 Float_t etaMax[numberOfSyst] = {0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,1.0,0.6,0.4};   // eta cuts
 
 Bool_t kUsePID = kFALSE;
+Bool_t kUseHBTCut = kFALSE;
+Bool_t kUseConversionCut = kFALSE;
 
 //______________________________________________________________________________
 void runBalanceFunctionPsi(
@@ -196,7 +198,7 @@ void runBalanceFunctionPsi(
 
     //Add the BF task (all centralities)
     gROOT->LoadMacro("AddTaskBalancePsiCentralityTrain.C"); 
-    AliAnalysisTaskBFPsi *task = AddTaskBalancePsiCentralityTrain(0,100,1,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUsePID);
+    AliAnalysisTaskBFPsi *task = AddTaskBalancePsiCentralityTrain(0,100,1,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1,kUseHBTCut,kUseConversionCut,kUsePID);
     
     // enable debug printouts
     //mgr->SetDebugLevel(2);

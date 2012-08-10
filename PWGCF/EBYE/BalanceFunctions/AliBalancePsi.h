@@ -15,6 +15,7 @@
 #include <vector>
 #include <TObject.h>
 #include "TString.h"
+#include "TH2D.h"
 
 #include "AliTHn.h"
 
@@ -63,7 +64,8 @@ class AliBalancePsi : public TObject {
 
   void CalculateBalance(Double_t gReactionPlane, 
 			TObjArray* particles,
-			TObjArray* particlesMixed);
+			TObjArray* particlesMixed,
+			Float_t bSign);
   
   TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax,
 				   Double_t ptTriggerMin=-1.,
@@ -120,7 +122,18 @@ class AliBalancePsi : public TObject {
 					   Double_t ptAssociatedMin=-1.,
 					   Double_t ptAssociatedMax=-1);
   
+  TH2D *GetQAHistHBTbefore() {return fHistHBTbefore;}
+  TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
+  TH2D *GetQAHistConversionbefore() {return fHistConversionbefore;}
+  TH2D *GetQAHistConversionafter() {return fHistConversionafter;}
+  TH2D *GetQAHistPsiMinusPhi() {return fHistPshiMinusPhi;}
+
+  void UseHBTCut() {fHBTCut = kTRUE;}
+  void UseConversionCut() {fConversionCut = kTRUE;}
+
  private:
+  Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign); 
+
   Bool_t fShuffle; //shuffled balance function object
   TString fAnalysisLevel; //ESD, AOD or MC
   Int_t fAnalyzedEvents; //number of events that have been analyzed
@@ -137,7 +150,17 @@ class AliBalancePsi : public TObject {
   AliTHn *fHistPP; //N++
   AliTHn *fHistNN; //N--
 
+  //QA histograms
+  TH2D *fHistHBTbefore; // Delta Eta vs. Delta Phi before HBT inspired cuts
+  TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts
+  TH2D *fHistConversionbefore; // Delta Eta vs. Delta Phi before Conversion cuts
+  TH2D *fHistConversionafter; // Delta Eta vs. Delta Phi before Conversion cuts
+  TH2D *fHistPshiMinusPhi;//
+
   Double_t fPsiInterval;// interval in Psi-phi1
+
+  Bool_t fHBTCut;//HBT cut
+  Bool_t fConversionCut;//conversion cut
 
   AliBalancePsi & operator=(const AliBalancePsi & ) {return *this;}
 
