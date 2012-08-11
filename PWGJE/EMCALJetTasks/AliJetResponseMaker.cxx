@@ -31,20 +31,21 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fMCJetsName("MCJets"),
   fMaxDistance(0.25),
   fDoWeighting(kFALSE),
-  fVertexCut(10),
+  fEventWeightHist(kFALSE),
   fMCFiducial(kFALSE),
   fMCminEta(0),
   fMCmaxEta(0),
   fMCminPhi(0),
   fMCmaxPhi(0),
+  fSelectPtHardBin(-999),
   fPythiaHeader(0),
   fEventWeight(0),
   fPtHardBin(0),
   fNTrials(0),
   fMCTracks(0),
   fMCJets(0),
+  fHistZVertex(0),
   fHistNTrials(0),
-  fHistAcceptedEvents(0),
   fHistEvents(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
@@ -66,6 +67,10 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistMissedMCJets(0)
 {
   // Default constructor.
+
+  for (Int_t i = 0; i < 11; i++) {
+    fHistEventWeight[i] = 0;
+  }
 }
 
 //________________________________________________________________________
@@ -75,20 +80,21 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fMCJetsName("MCJets"),
   fMaxDistance(0.25),
   fDoWeighting(kFALSE),
-  fVertexCut(10),
+  fEventWeightHist(kFALSE),
   fMCFiducial(kFALSE),
   fMCminEta(0),
   fMCmaxEta(0),
   fMCminPhi(0),
   fMCmaxPhi(0),
+  fSelectPtHardBin(-999),
   fPythiaHeader(0),
   fEventWeight(0),
   fPtHardBin(0),
   fNTrials(0),
   fMCTracks(0),
   fMCJets(0),
+  fHistZVertex(0),
   fHistNTrials(0),
-  fHistAcceptedEvents(0),
   fHistEvents(0),
   fHistMCJetPhiEta(0),
   fHistMCJetsPt(0),
@@ -110,6 +116,10 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistMissedMCJets(0)
 {
   // Standard constructor.
+
+  for (Int_t i = 0; i < 11; i++) {
+    fHistEventWeight[i] = 0;
+  }
 }
 
 //________________________________________________________________________
@@ -130,24 +140,31 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
   const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
 
+  fHistZVertex = new TH1F("fHistZVertex","Z vertex position", 60, -30, 30);
+  fHistZVertex->GetXaxis()->SetTitle("z");
+  fHistZVertex->GetYaxis()->SetTitle("counts");
+  fOutput->Add(fHistZVertex);
+
   fHistNTrials = new TH1F("fHistNTrials", "fHistNTrials", 11, 0, 11);
   fHistNTrials->GetXaxis()->SetTitle("p_{T} hard bin");
   fHistNTrials->GetYaxis()->SetTitle("trials");
   fOutput->Add(fHistNTrials);
-
-  fHistAcceptedEvents = new TH1F("fHistAcceptedEvents", "fHistAcceptedEvents", 11, 0, 11);
-  fHistAcceptedEvents->GetXaxis()->SetTitle("p_{T} hard bin");
-  fHistAcceptedEvents->GetYaxis()->SetTitle("accepted events");
-  fOutput->Add(fHistAcceptedEvents);
 
   fHistEvents = new TH1F("fHistEvents", "fHistEvents", 11, 0, 11);
   fHistEvents->GetXaxis()->SetTitle("p_{T} hard bin");
   fHistEvents->GetYaxis()->SetTitle("total events");
   fOutput->Add(fHistEvents);
 
+  if (fEventWeightHist) {
+    for (Int_t i = 0; i < 11; i++) {
+      TString name(Form("fHistEventWeight_%d", i+1));
+      fHistEventWeight[i] = new TH1F(name, name, 10, 0, 10);
+      fOutput->Add(fHistEventWeight[i]);
+    }
+  }
+
   for (Int_t i = 1; i < 12; i++) {
     fHistNTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
-    fHistAcceptedEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
     fHistEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
   }
 
@@ -312,6 +329,17 @@ void AliJetResponseMaker::ExecOnce()
 }
 
 //________________________________________________________________________
+Bool_t AliJetResponseMaker::IsEventSelected()
+{
+  // Check if event is selected
+
+  if (fSelectPtHardBin != -999 && fSelectPtHardBin != fPtHardBin) 
+    return kFALSE;
+
+  return AliAnalysisTaskEmcalJet::IsEventSelected();
+}
+
+//________________________________________________________________________
 Bool_t AliJetResponseMaker::RetrieveEventObjects()
 {
   // Retrieve event objects.
@@ -348,14 +376,6 @@ Bool_t AliJetResponseMaker::RetrieveEventObjects()
 Bool_t AliJetResponseMaker::Run()
 {
   // Find the closest jets
-
-  fHistEvents->SetBinContent(fPtHardBin + 1, fHistEvents->GetBinContent(fPtHardBin + 1) + 1);
-
-  if (TMath::Abs(fVertex[2]) > fVertexCut)
-    return kFALSE;
-  
-  fHistAcceptedEvents->SetBinContent(fPtHardBin + 1, fHistEvents->GetBinContent(fPtHardBin + 1) + 1);
-  fHistNTrials->SetBinContent(fPtHardBin + 1, fHistNTrials->GetBinContent(fPtHardBin + 1) + fNTrials);
 
   DoJetLoop(fJets, fMCJets, kFALSE);
   DoJetLoop(fMCJets, fJets, kTRUE);
@@ -441,6 +461,12 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
 Bool_t AliJetResponseMaker::FillHistograms()
 {
   // Fill histograms.
+
+  fHistEvents->SetBinContent(fPtHardBin + 1, fHistEvents->GetBinContent(fPtHardBin + 1) + 1);
+  fHistNTrials->SetBinContent(fPtHardBin + 1, fHistNTrials->GetBinContent(fPtHardBin + 1) + fNTrials);
+  if (fEventWeightHist)
+    fHistEventWeight[fPtHardBin]->Fill(fPythiaHeader->EventWeight());
+  fHistZVertex->Fill(fVertex[2]);
 
   const Int_t nMCJets = fMCJets->GetEntriesFast();
 

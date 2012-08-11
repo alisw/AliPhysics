@@ -1,7 +1,6 @@
 // $Id$
 
 AliJetResponseMaker* AddTaskJetResponseMaker(
-  const char *taskname           = "AliJetResponseMaker",
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
@@ -14,7 +13,9 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   Double_t    jetBiasTrack       = 10,
   Double_t    jetBiasClus        = 10,
   Double_t    maxDistance        = 0.25,
-  UInt_t      type               = AliAnalysisTaskEmcal::kTPC
+  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
+  Int_t       ptHardBin          = -999,
+  const char *taskname           = "AliJetResponseMaker"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -38,7 +39,32 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliJetResponseMaker* jetTask = new AliJetResponseMaker(taskname);
+  TString name(taskname);
+  name += "_";
+  name += njets;
+  name += "_Track";
+  name += jetBiasTrack;
+  name += "_Clus";
+  name += jetBiasClus;
+  name += "_R0";
+  name += floor(jetradius*10+0.5);
+  name += "_PtCut";
+  name += floor(ptcut*1000+0.5);
+  name += "_";
+  if (type == AliAnalysisTaskEmcal::kTPC) 
+    name += "TPC";
+  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
+    name += "EMCAL";
+  else if (type == AliAnalysisTaskEmcal::kTPCSmall) 
+    name += "TPCSmall";
+  else if (type == AliAnalysisTaskEmcal::kEMCALOnly) 
+    name += "EMCALOnly";
+  if (ptHardBin != -999) {
+    name += "_PtHard";
+    name += ptHardBin;
+  }
+
+  AliJetResponseMaker* jetTask = new AliJetResponseMaker(name);
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);
   jetTask->SetClusName(nclusters);
@@ -52,6 +78,8 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetPtBiasJetTrack(jetBiasTrack);
   jetTask->SetPtBiasJetClus(jetBiasClus);
   jetTask->SetMaxDistance(maxDistance);
+  jetTask->SetVzRange(-10,10);
+  jetTask->SetPtHardBin(ptHardBin);
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -61,7 +89,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  TString contname(taskname);
+  TString contname(name);
   contname += "_histos";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
