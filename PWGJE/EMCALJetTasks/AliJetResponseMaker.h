@@ -18,14 +18,16 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
 
-  void                        SetMCJetsName(const char *n)       { fMCJetsName    = n; }
-  void                        SetMCTracksName(const char *n)     { fMCTracksName  = n; }
-  void                        SetMaxDistance(Double_t d)         { fMaxDistance   = d; }
-  void                        SetDoWeighting(Bool_t d = kTRUE)   { fDoWeighting   = d; }
-  void                        SetVertexCut(Double_t v)           { fVertexCut     = v; }
-  void                        SetMCFiducial(Bool_t f = kTRUE)    { fMCFiducial    = f; }
+  void                        SetMCJetsName(const char *n)       { fMCJetsName      = n; }
+  void                        SetMCTracksName(const char *n)     { fMCTracksName    = n; }
+  void                        SetMaxDistance(Double_t d)         { fMaxDistance     = d; }
+  void                        SetDoWeighting(Bool_t d = kTRUE)   { fDoWeighting     = d; }
+  void                        SetMCFiducial(Bool_t f = kTRUE)    { fMCFiducial      = f; }
+  void                        SetEventWeightHist(Bool_t h)       { fEventWeightHist = h; }
+  void                        SetPtHardBin(Int_t b)              { fSelectPtHardBin = b; }
 
  protected:
+  Bool_t                      IsEventSelected();
   Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t /*bias*/ = kFALSE, Bool_t /*upCut*/ = kFALSE)   const;
   void                        ExecOnce();
   void                        DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc);
@@ -37,12 +39,13 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TString                     fMCJetsName;                // name of MC jet collection
   Double_t                    fMaxDistance;               // maximum distance between matched particle and detector level jets
   Bool_t                      fDoWeighting;               // = true, weight using trials and given x section
-  Double_t                    fVertexCut;                 // z vertex cut
+  Bool_t                      fEventWeightHist;           // = true create event weight histogram
   Bool_t                      fMCFiducial;                // = true MC jets in fiducial acceptance
   Double_t                    fMCminEta;                  // MC jets minimum eta
   Double_t                    fMCmaxEta;                  // MC jets maximum eta
   Double_t                    fMCminPhi;                  // MC jets minimum phi
   Double_t                    fMCmaxPhi;                  // MC jets maximum phi
+  Int_t                       fSelectPtHardBin;           // Select one pt hard bin for analysis
 
   AliGenPythiaEventHeader    *fPythiaHeader;              //!event Pythia header
   Double_t                    fEventWeight;               //!event weight
@@ -51,9 +54,10 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TClonesArray               *fMCTracks;                  //!MC particles
   TClonesArray               *fMCJets;                    //!MC jets
   // General histograms
+  TH1F                       *fHistZVertex;               //!Z vertex position
   TH1F                       *fHistNTrials;               //!total number of trials per pt hard bin
-  TH1F                       *fHistAcceptedEvents;        //!number of accepted events per pt hard bin
   TH1F                       *fHistEvents;                //!total number of events per pt hard bin
+  TH1F                       *fHistEventWeight[11];       //!event weight
   // Particle level jets
   TH2F                       *fHistMCJetPhiEta;           //!phi-eta distribution of jets
   TH1F                       *fHistMCJetsPt;              //!inclusive jet pt spectrum
@@ -80,6 +84,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 5) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 6) // Jet response matrix producing task
 };
 #endif

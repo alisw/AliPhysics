@@ -27,6 +27,6 @@ class AliJetRandomizerTask : public AliJetModelBaseTask {
   AliJetRandomizerTask(const AliJetRandomizerTask&);            // not implemented
   AliJetRandomizerTask &operator=(const AliJetRandomizerTask&); // not implemented
 
-  ClassDef(AliJetRandomizerTask, 1) // Jet randomizer task
+  ClassDef(AliJetRandomizerTask, 2) // Jet randomizer task
 };
 #endif

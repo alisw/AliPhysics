@@ -812,8 +812,6 @@ void AliAnalysisTaskSAJF::DoJetLoop()
   if (!fJets)
     return;
 
-  const Double_t rho = fRho->GetVal();
-
   const Int_t njets = fJets->GetEntriesFast();
 
   TH1F constituents("constituents", "constituents", 
@@ -831,7 +829,7 @@ void AliAnalysisTaskSAJF::DoJetLoop()
     if (!AcceptJet(jet))
       continue;
 
-    Float_t corrPt = jet->Pt() - rho * jet->Area();
+    Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
 
     fHistJetsPt[fCentBin]->Fill(jet->Pt());
     fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
