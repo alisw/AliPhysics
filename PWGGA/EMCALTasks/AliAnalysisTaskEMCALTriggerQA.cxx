@@ -1260,7 +1260,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   int kBitEGA = 4, kBitEJE = 5;	
 
-  TList *clist = gDirectory->GetFile()->GetStreamerInfoList();
+  const TList *clist = gDirectory->GetFile()->GetStreamerInfoCache();
   TStreamerInfo *cinfo = (TStreamerInfo*)clist->FindObject("AliESDCaloTrigger");
   Int_t classversionid = cinfo->GetClassVersion();
 
