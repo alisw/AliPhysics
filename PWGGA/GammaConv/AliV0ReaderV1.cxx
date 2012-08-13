@@ -76,6 +76,45 @@ AliV0ReaderV1::~AliV0ReaderV1()
 	fConversionGammas=0x0;
     }
 }
+/*
+//________________________________________________________________________
+AliV0ReaderV1::AliV0ReaderV1(AliV0ReaderV1 &original) : AliAnalysisTaskSE(original),
+    fConversionCuts(NULL),
+    fConversionGammas(NULL),
+    fUseImprovedVertex(original.fUseImprovedVertex),
+    fUseOwnXYZCalculation(original.fUseOwnXYZCalculation),
+    fUseConstructGamma(original.fUseConstructGamma),
+    kUseAODConversionPhoton(original.kUseAODConversionPhoton),
+    fCreateAOD(original.fCreateAOD),
+    fDeltaAODBranchName(original.fDeltaAODBranchName),
+    fDeltaAODFilename(original.fDeltaAODFilename),
+    fEventIsSelected(original.fEventIsSelected)
+{
+    // Default constructor
+
+    DefineInput(0, TChain::Class());
+}
+
+//____________________________________________________________
+AliV0ReaderV1 &AliV0ReaderV1::operator=(const AliV0ReaderV1 &ref){
+	//
+	// Assignment operator
+	// Only copies pointers, object is not the owner of the references
+	//
+    if(this != &ref){
+	AliAnalysisTaskSE::operator=(ref);
+	fUseImprovedVertex=ref.fUseImprovedVertex;
+	fUseOwnXYZCalculation=ref.fUseOwnXYZCalculation;
+	fUseConstructGamma=ref.fUseConstructGamma;
+	kUseAODConversionPhoton=ref.kUseAODConversionPhoton;
+	fCreateAOD=ref.fCreateAOD;
+	fDeltaAODBranchName=ref.fDeltaAODBranchName;
+	fDeltaAODFilename=ref.fDeltaAODFilename;
+	fEventIsSelected=ref.fEventIsSelected;
+    }
+    return *this;
+}
+*/
 //________________________________________________________________________
 void AliV0ReaderV1::Init()
 {

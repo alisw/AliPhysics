@@ -46,6 +46,9 @@ private:
     Double_t *fBinLimitsArrayMultiplicity;//! bin limit multiplicity array
     AliGammaConversionBGVector fBGPool; //background events
 
+    AliConversionAODBGHandlerRP(AliConversionAODBGHandlerRP &original);
+    AliConversionAODBGHandlerRP &operator=(const AliConversionAODBGHandlerRP &ref);
+
  ClassDef(AliConversionAODBGHandlerRP,0);
 
 };

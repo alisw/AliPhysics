@@ -312,9 +312,6 @@ class AliConversionCuts : public AliAnalysisCuts {
   UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
   TRandom3 fRandom; //
   Int_t *fElectronLabelArray; // Array with elec/pos v0 label
-  Float_t fConversionPointXArray; // Array with conversion Point x
-  Float_t fConversionPointYArray; // Array with conversion Point y
-  Float_t fConversionPointZArray; // Array with conversion Point z
 
   // Histograms
   TObjString *fCutString; // cut number used for analysis
