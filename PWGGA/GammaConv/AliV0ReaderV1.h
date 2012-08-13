@@ -28,6 +28,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
   virtual ~AliV0ReaderV1();                            //virtual destructor
   void UserCreateOutputObjects();
 
+
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
   virtual void Init();
@@ -83,6 +84,10 @@ protected:
     TString     fDeltaAODBranchName;// File where Gamma Conv AOD is located, if not in default AOD
     TString fDeltaAODFilename; // set filename for delta/satellite aod
     Bool_t fEventIsSelected;
+
+private:
+    AliV0ReaderV1(AliV0ReaderV1 &original);
+    AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
     ClassDef(AliV0ReaderV1,1)

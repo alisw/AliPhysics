@@ -128,7 +128,6 @@ private:
     TRandom3 *fRandomizer; // Randomizer for Event Plane Randomisation
     TList *fOutputList; // List for Output (Histograms etc.)
     EPDGCode fMesonPDGCode; // PDG Code of the processed Meson (for MC truth)
-    Int_t fPhotonMultiplicity; // Photon Multiplicity of the analyzed Event
     Double_t *fInvMassRange; // Inv Mass Range
     Double_t fDeltaPsiRP; // Difference between subEventPlane angles
     Int_t fRunNumber; // current run number
