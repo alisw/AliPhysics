@@ -162,6 +162,7 @@ public:
 
     kEMCALnSigmaEle,         // number of sigmas to the proton line in the TOF
     kEMCALEoverP,            // E over P from EMCAL
+    kEMCALE,                 // E from EMCAL
     kEMCALNCells,            // NCells from EMCAL
     kEMCALM02,               // M02 showershape parameter
     kEMCALM20,               // M20 showershape parameter
@@ -651,6 +652,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
 //   values[AliDielectronVarManager::kEMCALnSigmaEle]  = fgPIDResponse->NumberOfSigmasEMCAL(particle,AliPID::kElectron);
   values[AliDielectronVarManager::kEMCALnSigmaEle]  = fgPIDResponse->NumberOfSigmasEMCAL(particle,AliPID::kElectron,eop,showershape);
   values[AliDielectronVarManager::kEMCALEoverP]     = eop;
+  values[AliDielectronVarManager::kEMCALE]          = eop*values[AliDielectronVarManager::kP];
   values[AliDielectronVarManager::kEMCALNCells]     = showershape[0];
   values[AliDielectronVarManager::kEMCALM02]        = showershape[1];
   values[AliDielectronVarManager::kEMCALM20]        = showershape[2];
@@ -801,6 +803,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 //   values[AliDielectronVarManager::kEMCALnSigmaEle]  = fgPIDResponse->NumberOfSigmasEMCAL(particle,AliPID::kElectron);
   values[AliDielectronVarManager::kEMCALnSigmaEle]  = fgPIDResponse->NumberOfSigmasEMCAL(particle,AliPID::kElectron,eop,showershape);
   values[AliDielectronVarManager::kEMCALEoverP]     = eop;
+  values[AliDielectronVarManager::kEMCALE]          = eop*values[AliDielectronVarManager::kP];
   values[AliDielectronVarManager::kEMCALNCells]     = showershape[0];
   values[AliDielectronVarManager::kEMCALM02]        = showershape[1];
   values[AliDielectronVarManager::kEMCALM20]        = showershape[2];

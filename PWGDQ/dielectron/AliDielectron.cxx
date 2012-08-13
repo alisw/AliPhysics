@@ -321,9 +321,12 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
 
   if(!fSignalsMC) return;
   //loop over all MC data and Fill the CF container if it exist
-  if (!fCfManagerPair) return;
-  fCfManagerPair->SetPdgMother(fPdgMother);
-  if(!fCfManagerPair->GetStepForMCtruth()) return;
+  if (!fCfManagerPair && !fHistoArray) return;
+  if(fCfManagerPair) fCfManagerPair->SetPdgMother(fPdgMother);
+
+  Bool_t bFillCF = (fCfManagerPair ? fCfManagerPair->GetStepForMCtruth()  : kFALSE);
+  Bool_t bFillHF = (fHistoArray    ? fHistoArray->GetStepForMCGenerated() : kFALSE);
+  if(!bFillCF && !bFillHF) return;
 
   // signals to be studied
   Int_t nSignals = fSignalsMC->GetEntries();
@@ -388,15 +391,15 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
     // mix the particles which satisfy only one of the signal branches
     for(Int_t i1=0;i1<indexes1[isig];++i1) {
       for(Int_t i2=0;i2<indexes2[isig];++i2) {
-	if(fCfManagerPair) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
-	//	fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
+	if(bFillCF) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
+	if(bFillHF) fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
       }
     }
     // mix the particles which satisfy both branches
     for(Int_t i1=0;i1<indexes12[isig];++i1) {
       for(Int_t i2=0; i2<i1; ++i2) {
-	if(fCfManagerPair) fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
-	//	fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
+	if(bFillCF) fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
+	if(bFillHF) fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
       }
     }
   }    // end loop over signals

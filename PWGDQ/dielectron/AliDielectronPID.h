@@ -54,6 +54,7 @@ public:
   void AddCut(DetType det, AliPID::EParticleType type, TF1 * const funLow, TF1 * const funUp,
               Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire, 
 	      Int_t var=-1);
+  void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp, Double_t min, Double_t max, Bool_t exclude, UInt_t pidBitType,              TF1 * const funSigma);
   
   void SetDefaults(Int_t def);
 
@@ -93,6 +94,10 @@ private:
   UChar_t  fNcuts;                //number of cuts
   UChar_t  fRequirePIDbit[kNmaxPID]; //How to make use of the pid bit (see)
   UShort_t fActiveCuts[kNmaxPID]; // list of activated cuts
+  Double_t fSigmaFunLow[kNmaxPID]; // lower bound for fFunSigma
+  Double_t fSigmaFunUp[kNmaxPID];  // upper bound for fFunSigma
+  TF1      *fFunSigma[kNmaxPID];   // use function as cut range
+
 
   AliPIDResponse *fPIDResponse;   //! pid response object
   

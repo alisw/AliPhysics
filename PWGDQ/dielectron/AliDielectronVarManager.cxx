@@ -117,6 +117,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   "EMCAL_nSigma_Electrons",
   "EMCAL_EoverP",
+  "EMCAL_E",
   "EMCAL_NCells",
   "EMCAL_M02",
   "EMCAL_M20",

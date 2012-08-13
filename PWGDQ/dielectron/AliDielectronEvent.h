@@ -16,7 +16,6 @@
 #include <TNamed.h>
 #include <TClonesArray.h>
 
-#include "AliVVertex.h"
 #include "AliDielectronVarManager.h"
 
 

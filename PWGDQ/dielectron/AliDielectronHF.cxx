@@ -212,7 +212,12 @@ void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
   AliDielectronVarManager::FillVarMCParticle2(part1,part2,valuesPair);
 
   if(part1->Charge()*part2->Charge()<0) {
-    //    valuesPair[AliDielectronVarManager::kPairType]=1;
+    //valuesPair[AliDielectronVarManager::kPairType]=1;
+//     for(Int_t i=0; i<fAxes.GetEntriesFast(); i++) {
+//       printf("[D]: %s %f %f %f \n",
+// 	     AliDielectronVarManager::GetValueName(fVarCuts[i]),
+// 	     valuesLeg1[fVarCuts[i]], valuesLeg2[fVarCuts[i]], valuesPair[fVarCuts[i]]); 
+//     }
     Fill(nSignal, valuesPair,  valuesLeg1, valuesLeg2);
   }
   // on OS at the moment
