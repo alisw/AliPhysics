@@ -68,6 +68,9 @@ AliDielectronPID::AliDielectronPID() :
     fFunLowerCut[icut]=0x0;
     fRequirePIDbit[icut]=0;
     fActiveCuts[icut]=-1;
+    fSigmaFunLow[icut]=0;
+    fSigmaFunUp[icut]=0;
+    fFunSigma[icut]=0x0;
   }
 }
 
@@ -92,6 +95,9 @@ AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
     fFunLowerCut[icut]=0x0;
     fRequirePIDbit[icut]=0;
     fActiveCuts[icut]=0;
+    fSigmaFunLow[icut]=0;
+    fSigmaFunUp[icut]=0;
+    fFunSigma[icut]=0x0;
   }
 }
 
@@ -191,6 +197,25 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, TF1 * con
 }
 
 //______________________________________________
+void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp,
+                              Double_t min, Double_t max, Bool_t exclude,
+                              UInt_t pidBitType, TF1 * const funSigma)
+{
+  //
+  // cut using a TF1 as lower cut
+  //
+  if (funSigma==0x0){
+    AliError("A valid function is required for the sigma cut. Not adding the cut!");
+    return;
+  }
+  fFunSigma[fNcuts]=funSigma;
+  fSigmaFunLow[fNcuts]=min;
+  fSigmaFunUp[fNcuts]=max;
+
+  AddCut(det,type,nSigmaLow,nSigmaUp,0,0,exclude,pidBitType,-1);
+}
+
+//______________________________________________
 Bool_t AliDielectronPID::IsSelected(TObject* track)
 {
   //
@@ -223,7 +248,19 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     
     // test var range. In case min==max do not cut
     if ( (TMath::Abs(min-max)>1e-20) && (val<min || val>=max) ) continue;
-    
+
+
+    // check if fFunSigma is set, then check if 'part' is in sigma range of the function
+    if(fFunSigma[icut]){
+        val= fPIDResponse->NumberOfSigmasTPC(part, fPartType[icut]);
+        if (fPartType[icut]==AliPID::kElectron){
+            val-=fgCorr;
+        }
+        min= fFunSigma[icut]->Eval(part->GetTPCmomentum())+fSigmaFunLow[icut];
+        max= fFunSigma[icut]->Eval(part->GetTPCmomentum())+fSigmaFunUp[icut];
+        if(val<min || val>=max) continue;
+    }
+
     switch (fDetType[icut]){
     case kITS:
       selected = IsSelectedITS(part,icut);

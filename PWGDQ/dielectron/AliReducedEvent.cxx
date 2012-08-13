@@ -447,7 +447,7 @@ Int_t AliReducedEvent::GetTPCQvector(Double_t Qvec[][2], Int_t det,
       if(absWeight>2.0) absWeight = 2.0;    // pt is the weight used for the event plane
     }
     weight = absWeight;
-    if(track->Eta()<0.0) weight *= -1.0;
+    //if(track->Eta()<0.0) weight *= -1.0;
     
     ++nUsedTracks;
     x = TMath::Cos(track->Phi());
@@ -499,7 +499,7 @@ void AliReducedEvent::SubtractParticleFromQvector(
     if(absWeight>2.0) absWeight = 2.0;
   }
   weight = absWeight;
-  if(eta<0.0) weight *= -1.0;
+  //  if(eta<0.0) weight *= -1.0;
     
   Float_t x = TMath::Cos(particle->Phi());
   Float_t y = TMath::Sin(particle->Phi());

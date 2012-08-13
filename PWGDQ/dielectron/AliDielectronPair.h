@@ -156,7 +156,7 @@ private:
   TRef fRefD1;           // Reference to first daughter
   TRef fRefD2;           // Reference to second daughter
 
-  Bool_t fKFUsage;
+  Bool_t fKFUsage;       // Use KF for vertexing
   
   ClassDef(AliDielectronPair,4)
 };
