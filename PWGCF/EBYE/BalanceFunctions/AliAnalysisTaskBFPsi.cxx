@@ -812,7 +812,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
       fHistPhi->Fill(vPhi,fCentrality);
       
       // add the track to the TObjArray
-      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge));
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, 1.*vCharge));
     }//track loop
   }// AOD analysis
 
@@ -1087,17 +1087,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t fC
 	
 	for (Int_t j = 0; j < maxNumberOfIterations; j++) {
 	  Double_t phiprev = vPhi;
-	  Double_t fl = vPhi - phi0 + gV2*TMath::Sin(2.*(vPhi - gReactionPlane));
-	  Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(vPhi - gReactionPlane)); 
+	  Double_t fl = vPhi - phi0 + gV2*TMath::Sin(2.*(vPhi - gReactionPlane*TMath::DegToRad()));
+	  Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(vPhi - gReactionPlane*TMath::DegToRad())); 
 	  vPhi -= fl/fp;
 	  if (TMath::AreEqualAbs(phiprev,vPhi,precisionPhi)) break;
 	}
 	//Printf("phi (after): %lf\n",vPhi);
-	Double_t vDeltaphiBefore = phi0 - gReactionPlane;
+	Double_t vDeltaphiBefore = phi0 - gReactionPlane*TMath::DegToRad();
 	if(vDeltaphiBefore < 0) vDeltaphiBefore += 2*TMath::Pi();
 	fHistPhiBefore->Fill(vDeltaphiBefore,fCentrality);
 	
-	Double_t vDeltaphiAfter = vPhi - gReactionPlane;
+	Double_t vDeltaphiAfter = vPhi - gReactionPlane*TMath::DegToRad();
 	if(vDeltaphiAfter < 0) vDeltaphiAfter += 2*TMath::Pi();
 	fHistPhiAfter->Fill(vDeltaphiAfter,fCentrality);
       }
