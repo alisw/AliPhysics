@@ -366,11 +366,13 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
   else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
-  else newFileName += "0.PttFrom";
-  newFileName += ptTriggerMin; newFileName += "To"; 
-  newFileName += ptTriggerMax; newFileName += ".PtaFrom";
-  newFileName += ptAssociatedMin; newFileName += "To"; 
-  newFileName += ptAssociatedMax;  newFileName += ".root";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+  else newFileName += "All.PttFrom";
+  newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
+  newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptAssociatedMax); 
+  newFileName += ".root";
 
   TFile *fOutput = new TFile(newFileName.Data(),"recreate");
   fOutput->cd();
@@ -430,7 +432,9 @@ void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1) {
   cout<<endl;
 }
 
-void drawBFPsi(Int_t gCentrality = 1,
+//______________________________________________________//
+void drawBFPsi(const char* lhcPeriod = "LHC10h",
+	       Int_t gCentrality = 1,
 	       Int_t gDeltaEtaDeltaPhi = 2,
 	       Double_t psiMin = -0.5, Double_t psiMax = 0.5,
 	       Double_t ptTriggerMin = -1.,
@@ -444,7 +448,7 @@ void drawBFPsi(Int_t gCentrality = 1,
   SetPlotStyle();
 
   //Get the input file
-  TString filename = "LHC11h/PttFrom";
+  TString filename = lhcPeriod; filename +="/PttFrom";
   filename += ptTriggerMin; filename += "To"; 
   filename += ptTriggerMax; filename += "PtaFrom";
   filename += ptAssociatedMin; filename += "To"; 
@@ -455,7 +459,8 @@ void drawBFPsi(Int_t gCentrality = 1,
   if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
   else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
-  else filename += "0.PttFrom";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.Ptt";
+  else filename += "All.PttFrom";
   filename += ptTriggerMin; filename += "To"; 
   filename += ptTriggerMax; filename += ".PtaFrom";
   filename += ptAssociatedMin; filename += "To"; 

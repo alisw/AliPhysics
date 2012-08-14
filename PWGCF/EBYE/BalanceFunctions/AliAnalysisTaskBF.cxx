@@ -1232,7 +1232,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		if (TMath::AreEqualAbs(phiprev,vPhi,precisionPhi)) break;
 	      }
 	      //Printf("phi (after): %lf\n",vPhi);
-	      	      Double_t vDeltaphiBefore = phi0 - gReactionPlane;
+	      Double_t vDeltaphiBefore = phi0 - gReactionPlane;
 	      if(vDeltaphiBefore < 0) vDeltaphiBefore += 2*TMath::Pi();
 	      fHistPhiBefore->Fill(vDeltaphiBefore);
 

@@ -365,11 +365,13 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
   if((psiMin == -0.5)&&(psiMax == 0.5)) newFileName += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) newFileName += "Intermediate.Ptt";
   else if((psiMin == 1.5)&&(psiMax == 2.5)) newFileName += "OutOfPlane.Ptt";
-  else newFileName += "0.PttFrom";
-  newFileName += ptTriggerMin; newFileName += "To"; 
-  newFileName += ptTriggerMax; newFileName += ".PtaFrom";
-  newFileName += ptAssociatedMin; newFileName += "To"; 
-  newFileName += ptAssociatedMax;  newFileName += ".root";
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) newFileName += "Rest.PttFrom";
+  else newFileName += "All.PttFrom";
+  newFileName += Form("%.1f",ptTriggerMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptTriggerMax); newFileName += "PtaFrom";
+  newFileName += Form("%.1f",ptAssociatedMin); newFileName += "To"; 
+  newFileName += Form("%.1f",ptAssociatedMax); 
+  newFileName += ".root";
 
   TFile *fOutput = new TFile(newFileName.Data(),"recreate");
   fOutput->cd();
@@ -392,7 +394,10 @@ void draw(TList *listBF, TList *listBFShuffled, TList *listBFMixed,
 }
 
 //____________________________________________________________//
-void drawBFPsi2D(Int_t gCentrality = 1,
+void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
+		 Int_t gCentrality = 1,
+		 Bool_t kShowShuffled = kFALSE, 
+		 Bool_t kShowMixed = kFALSE, 
 		 Double_t psiMin = -0.5, Double_t psiMax = 0.5,
 		 Double_t ptTriggerMin = -1.,
 		 Double_t ptTriggerMax = -1.,
@@ -404,20 +409,22 @@ void drawBFPsi2D(Int_t gCentrality = 1,
   TGaxis::SetMaxDigits(1);
 
   //Get the input file
-  TString filename = "LHC11h/PttFrom";
-  filename += ptTriggerMin; filename += "To"; 
-  filename += ptTriggerMax; filename += "PtaFrom";
-  filename += ptAssociatedMin; filename += "To"; 
-  filename += ptAssociatedMax; filename += "/balanceFunction2D.Centrality"; 
+  TString filename = lhcPeriod; filename +="/PttFrom";
+  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+  filename += Form("%.1f",ptAssociatedMax); 
+  filename += "/balanceFunction2D.Centrality"; 
   filename += gCentrality; filename += ".Psi";
   if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
   else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
   else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
-  else filename += "0.PttFrom";
-  filename += ptTriggerMin; filename += "To"; 
-  filename += ptTriggerMax; filename += ".PtaFrom";
-  filename += ptAssociatedMin; filename += "To"; 
-  filename += ptAssociatedMax;  filename += ".root";  
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.Ptt";
+  else filename += "All.PttFrom";
+  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+  filename += Form("%.1f",ptTriggerMax); filename += ".PtaFrom";
+  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+  filename += Form("%.1f",ptAssociatedMax);  filename += ".root";  
 
   //Open the file
   TFile *f = TFile::Open(filename.Data());
@@ -441,44 +448,50 @@ void drawBFPsi2D(Int_t gCentrality = 1,
   gHistBalanceFunction->GetZaxis()->SetTitle("B(#Delta #eta, #Delta #varphi)");
 
   //Shuffled balance function
-  TH1D *gHistBalanceFunctionShuffled = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionShuffled"));
-  gHistBalanceFunctionShuffled->SetStats(kFALSE);
-  gHistBalanceFunctionShuffled->GetXaxis()->SetNdivisions(10);
-  gHistBalanceFunctionShuffled->GetYaxis()->SetNdivisions(10);
-  gHistBalanceFunctionShuffled->GetZaxis()->SetNdivisions(10);
-  gHistBalanceFunctionShuffled->GetXaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionShuffled->GetZaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionShuffled->GetXaxis()->SetTitle("#Delta #eta");
-  gHistBalanceFunctionShuffled->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
-  gHistBalanceFunctionShuffled->GetZaxis()->SetTitle("B(#Delta #eta, #Delta #varphi)");
+  if(kShowShuffled) {
+    TH1D *gHistBalanceFunctionShuffled = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionShuffled"));
+    gHistBalanceFunctionShuffled->SetStats(kFALSE);
+    gHistBalanceFunctionShuffled->GetXaxis()->SetNdivisions(10);
+    gHistBalanceFunctionShuffled->GetYaxis()->SetNdivisions(10);
+    gHistBalanceFunctionShuffled->GetZaxis()->SetNdivisions(10);
+    gHistBalanceFunctionShuffled->GetXaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionShuffled->GetZaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionShuffled->GetXaxis()->SetTitle("#Delta #eta");
+    gHistBalanceFunctionShuffled->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
+    gHistBalanceFunctionShuffled->GetZaxis()->SetTitle("B(#Delta #eta, #Delta #varphi)");
+  }
 
   //Mixed balance function
-  TH1D *gHistBalanceFunctionMixed = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionMixed"));
-  gHistBalanceFunctionMixed->SetStats(kFALSE);
-  gHistBalanceFunctionMixed->GetXaxis()->SetNdivisions(10);
-  gHistBalanceFunctionMixed->GetYaxis()->SetNdivisions(10);
-  gHistBalanceFunctionMixed->GetZaxis()->SetNdivisions(10);
-  gHistBalanceFunctionMixed->GetXaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionMixed->GetZaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionMixed->GetXaxis()->SetTitle("#Delta #eta");
-  gHistBalanceFunctionMixed->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
-  gHistBalanceFunctionMixed->GetZaxis()->SetTitle("B(#Delta #eta, #Delta #varphi)");
+  if(kShowMixed) {
+    TH1D *gHistBalanceFunctionMixed = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionMixed"));
+    gHistBalanceFunctionMixed->SetStats(kFALSE);
+    gHistBalanceFunctionMixed->GetXaxis()->SetNdivisions(10);
+    gHistBalanceFunctionMixed->GetYaxis()->SetNdivisions(10);
+    gHistBalanceFunctionMixed->GetZaxis()->SetNdivisions(10);
+    gHistBalanceFunctionMixed->GetXaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionMixed->GetZaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionMixed->GetXaxis()->SetTitle("#Delta #eta");
+    gHistBalanceFunctionMixed->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
+    gHistBalanceFunctionMixed->GetZaxis()->SetTitle("B(#Delta #eta, #Delta #varphi)");
+  }
 
   //Subtracted balance function
-  TH1D *gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionSubtracted"));
-  gHistBalanceFunctionSubtracted->SetStats(kFALSE);
-  gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
-  gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(10);
-  gHistBalanceFunctionSubtracted->GetZaxis()->SetNdivisions(10);
-  gHistBalanceFunctionSubtracted->GetXaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionSubtracted->GetZaxis()->SetTitleOffset(1.3);
-  gHistBalanceFunctionSubtracted->GetXaxis()->SetTitle("#Delta #eta");
-  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
-  gHistBalanceFunctionSubtracted->GetZaxis()->SetTitle("B(#Delta #eta, #Delta #varphi)");
-  
+  if(kShowMixed) {
+    TH1D *gHistBalanceFunctionSubtracted = dynamic_cast<TH1D *>(f->Get("gHistBalanceFunctionSubtracted"));
+    gHistBalanceFunctionSubtracted->SetStats(kFALSE);
+    gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
+    gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(10);
+    gHistBalanceFunctionSubtracted->GetZaxis()->SetNdivisions(10);
+    gHistBalanceFunctionSubtracted->GetXaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionSubtracted->GetZaxis()->SetTitleOffset(1.3);
+    gHistBalanceFunctionSubtracted->GetXaxis()->SetTitle("#Delta #eta");
+    gHistBalanceFunctionSubtracted->GetYaxis()->SetTitle("#Delta #varphi (deg.)");
+    gHistBalanceFunctionSubtracted->GetZaxis()->SetTitle("B(#Delta #eta, #Delta #varphi)");
+  }
+
   TString pngName;
   
   TString centralityLatex = "Centrality: ";
@@ -523,45 +536,51 @@ void drawBFPsi2D(Int_t gCentrality = 1,
   latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
   latexInfo1->DrawLatex(0.64,0.70,ptaLatex.Data());
 
-  TCanvas *c2 = new TCanvas("c2","Shuffled balance function 2D",100,100,600,500);
-  c2->SetFillColor(10); c2->SetHighLightColor(10);
-  c2->SetLeftMargin(0.17); c2->SetTopMargin(0.05);
-  gHistBalanceFunctionShuffled->SetTitle("Shuffled events");
-  gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.4);
-  gHistBalanceFunctionShuffled->GetYaxis()->SetNdivisions(10);
-  gHistBalanceFunctionShuffled->GetXaxis()->SetNdivisions(10);
-  gHistBalanceFunctionShuffled->DrawCopy("lego2");
-
-  latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
-  latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
-  latexInfo1->DrawLatex(0.64,0.70,ptaLatex.Data());
-
-  TCanvas *c3 = new TCanvas("c3","Mixed balance function 2D",200,200,600,500);
-  c3->SetFillColor(10); c3->SetHighLightColor(10);
-  c3->SetLeftMargin(0.17); c3->SetTopMargin(0.05);
-  gHistBalanceFunctionMixed->SetTitle("Mixed events");
-  gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.4);
-  gHistBalanceFunctionMixed->GetYaxis()->SetNdivisions(10);
-  gHistBalanceFunctionMixed->GetXaxis()->SetNdivisions(10);
-  gHistBalanceFunctionMixed->DrawCopy("lego2");
-  
-  latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
-  latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
-  latexInfo1->DrawLatex(0.64,0.70,ptaLatex.Data());
+  if(kShowShuffled) {
+    TCanvas *c2 = new TCanvas("c2","Shuffled balance function 2D",100,100,600,500);
+    c2->SetFillColor(10); c2->SetHighLightColor(10);
+    c2->SetLeftMargin(0.17); c2->SetTopMargin(0.05);
+    gHistBalanceFunctionShuffled->SetTitle("Shuffled events");
+    gHistBalanceFunctionShuffled->GetYaxis()->SetTitleOffset(1.4);
+    gHistBalanceFunctionShuffled->GetYaxis()->SetNdivisions(10);
+    gHistBalanceFunctionShuffled->GetXaxis()->SetNdivisions(10);
+    gHistBalanceFunctionShuffled->DrawCopy("lego2");
     
-  TCanvas *c4 = new TCanvas("c4","Subtracted balance function 2D",300,300,600,500);
-  c4->SetFillColor(10); c4->SetHighLightColor(10);
-  c4->SetLeftMargin(0.17); c4->SetTopMargin(0.05);
-  gHistBalanceFunctionSubtracted->SetTitle("Subtracted balance function");
-  gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.4);
-  gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(10);
-  gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
-  gHistBalanceFunctionSubtracted->DrawCopy("lego2");
+    latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
+    latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
+    latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
+    latexInfo1->DrawLatex(0.64,0.70,ptaLatex.Data());
+  }
 
-  latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
-  latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
-  latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
-  latexInfo1->DrawLatex(0.64,0.70,ptaLatex.Data());
+  if(kShowMixed) {
+    TCanvas *c3 = new TCanvas("c3","Mixed balance function 2D",200,200,600,500);
+    c3->SetFillColor(10); c3->SetHighLightColor(10);
+    c3->SetLeftMargin(0.17); c3->SetTopMargin(0.05);
+    gHistBalanceFunctionMixed->SetTitle("Mixed events");
+    gHistBalanceFunctionMixed->GetYaxis()->SetTitleOffset(1.4);
+    gHistBalanceFunctionMixed->GetYaxis()->SetNdivisions(10);
+    gHistBalanceFunctionMixed->GetXaxis()->SetNdivisions(10);
+    gHistBalanceFunctionMixed->DrawCopy("lego2");
+    
+    latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
+    latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
+    latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
+    latexInfo1->DrawLatex(0.64,0.70,ptaLatex.Data());
+  }
+
+  if(kShowMixed) {
+    TCanvas *c4 = new TCanvas("c4","Subtracted balance function 2D",300,300,600,500);
+    c4->SetFillColor(10); c4->SetHighLightColor(10);
+    c4->SetLeftMargin(0.17); c4->SetTopMargin(0.05);
+    gHistBalanceFunctionSubtracted->SetTitle("Subtracted balance function");
+    gHistBalanceFunctionSubtracted->GetYaxis()->SetTitleOffset(1.4);
+    gHistBalanceFunctionSubtracted->GetYaxis()->SetNdivisions(10);
+    gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
+    gHistBalanceFunctionSubtracted->DrawCopy("lego2");
+    
+    latexInfo1->DrawLatex(0.64,0.88,centralityLatex.Data());
+    latexInfo1->DrawLatex(0.64,0.82,psiLatex.Data());
+    latexInfo1->DrawLatex(0.64,0.76,pttLatex.Data());
+    latexInfo1->DrawLatex(0.64,0.70,ptaLatex.Data());
+  }
 }
