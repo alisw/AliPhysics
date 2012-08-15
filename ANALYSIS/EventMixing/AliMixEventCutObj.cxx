@@ -320,7 +320,7 @@ void AliMixEventCutObj::SetCurrentValueToIndex(Int_t index)
    //
    // Sets current value to index
    //
-   
+
    fCurrentVal = fCutMin;
    for (Int_t i = 0; i < index-1; i++) AddStep();
 }
