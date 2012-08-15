@@ -1,6 +1,5 @@
-AliAnalysisTaskExtractPerformanceV0 *AddTaskExtractPerformanceV0( Bool_t lSwitchIsNuclear     = kTRUE, 
+AliAnalysisTaskExtractCascade *AddTaskExtractCascade( Bool_t lSwitchIsNuclear     = kTRUE, 
                                                                   Bool_t lSwitchIsLowEnergyPP = kFALSE,
-                                                                  Bool_t lSwitchUseOnTheFly   = kFALSE, 
                                                                   const TString lMasterJobSessionFlag = "")
 {
 // Creates, configures and attaches to the train a cascades check task.
@@ -8,31 +7,30 @@ AliAnalysisTaskExtractPerformanceV0 *AddTaskExtractPerformanceV0( Bool_t lSwitch
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddTaskExtractPerformanceV0", "No analysis manager to connect to.");
+      ::Error("AddTaskExtractCascade", "No analysis manager to connect to.");
       return NULL;
    }   
 
    // Check the analysis type using the event handlers connected to the analysis manager.
    //==============================================================================
    if (!mgr->GetInputEventHandler()) {
-      ::Error("AddTaskExtractPerformanceV0", "This task requires an input event handler");
+      ::Error("AddTaskExtractCascade", "This task requires an input event handler");
       return NULL;
    }   
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-	 AliAnalysisTaskExtractPerformanceV0 *taskv0extractperformance = new AliAnalysisTaskExtractPerformanceV0("taskv0extractperformance");
+	 AliAnalysisTaskExtractCascade *taskextract = new AliAnalysisTaskExtractCascade("taskextract");
 
    //Configuration
-   taskv0extractperformance -> SetIsNuclear     ( lSwitchIsNuclear     );
-   taskv0extractperformance -> SetIsLowEnergyPP ( lSwitchIsLowEnergyPP );
-   taskv0extractperformance -> SetUseOnTheFly   ( lSwitchUseOnTheFly   );
+   taskextract -> SetIsNuclear     ( lSwitchIsNuclear     );
+   taskextract -> SetIsLowEnergyPP ( lSwitchIsLowEnergyPP );
 
-   mgr->AddTask(taskv0extractperformance);
+   mgr->AddTask(taskextract);
 
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    
-   outputFileName += ":PWGLFExtractPerformanceV0";
+   outputFileName += ":PWGLFExtractCascade";
    //if (lSwitchIsNuclear) outputFileName += "_AA";
    outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
@@ -40,22 +38,22 @@ AliAnalysisTaskExtractPerformanceV0 *AddTaskExtractPerformanceV0( Bool_t lSwitch
    
    Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
 
-   AliAnalysisDataContainer *coutputList = mgr->CreateContainer("clistV0MC",
+   AliAnalysisDataContainer *coutputList = mgr->CreateContainer("clist",
 							     TList::Class(),
 							     AliAnalysisManager::kOutputContainer,
 							     outputFileName );
-   AliAnalysisDataContainer *coutputTree = mgr->CreateContainer("cTreeMC",
+   AliAnalysisDataContainer *coutputTreeCascade = mgr->CreateContainer("cTreeCascade",
 							     TTree::Class(),
 							     AliAnalysisManager::kOutputContainer,
 							     outputFileName );
    
    //This one you should merge in file-resident ways...
-   coutputTree->SetSpecialOutput();
+   coutputTreeCascade->SetSpecialOutput();
 
    //Recommendation: Tree as a single output slot
-   mgr->ConnectInput( taskv0extractperformance, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(taskv0extractperformance, 1, coutputList);
-   mgr->ConnectOutput(taskv0extractperformance, 2, coutputTree);
+   mgr->ConnectInput( taskextract, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput(taskextract, 1, coutputList);
+   mgr->ConnectOutput(taskextract, 2, coutputTreeCascade);
    
-   return taskv0extractperformance;
+   return taskextract;
 }   

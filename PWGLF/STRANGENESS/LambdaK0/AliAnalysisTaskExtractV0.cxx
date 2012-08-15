@@ -90,7 +90,7 @@ class AliAODv0;
 ClassImp(AliAnalysisTaskExtractV0)
 
 AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0() 
-  : AliAnalysisTaskSE(), fListHistV0(0), fTree(0), fPIDResponse(0),
+  : AliAnalysisTaskSE(), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0),
    fkIsNuclear   ( kFALSE ), 
    fkLowEnergyPP ( kFALSE ),
    fkUseOnTheFly ( kFALSE ),
@@ -121,7 +121,7 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
 }
 
 AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name) 
-  : AliAnalysisTaskSE(name), fListHistV0(0), fTree(0), fPIDResponse(0),
+  : AliAnalysisTaskSE(name), fListHistV0(0), fTree(0), fPIDResponse(0),fESDtrackCuts(0),
    fkIsNuclear   ( kFALSE ), 
    fkLowEnergyPP ( kFALSE ),
    fkUseOnTheFly ( kFALSE ),
@@ -169,6 +169,13 @@ AliAnalysisTaskExtractV0::~AliAnalysisTaskExtractV0()
       delete fTree;
       fTree = 0x0;
    }
+    //cleanup esd track cuts object too...
+   if (fESDtrackCuts){
+    delete fESDtrackCuts;
+    fESDtrackCuts = 0x0; 
+  }
+
+
 }
 
 
@@ -224,7 +231,12 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
    fPIDResponse = inputHandler->GetPIDResponse();
 
-//Skipped. Will use Local setup.
+  // Multiplicity 
+
+    if(! fESDtrackCuts ){
+          fESDtrackCuts = new AliESDtrackCuts();
+    }
+
 
 //------------------------------------------------
 // V0 Multiplicity Histograms
@@ -392,7 +404,7 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
    //REVISED multiplicity estimator after 'multiplicity day' (2011)
    Int_t lMultiplicity = -100; 
 
-   if(fkIsNuclear == kFALSE) lMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity( lESDevent );
+   if(fkIsNuclear == kFALSE) lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC,0.5);
 
    //---> If this is a nuclear collision, then go nuclear on "multiplicity" variable...
    //---> Warning: Experimental
