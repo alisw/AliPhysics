@@ -110,6 +110,8 @@ Int_t AliTRDpwgppHelper::ParseOptions(const Char_t *trd)
       if(!foundOpt) Warning("AliTRDpwgppHelper::ParseOptions()", "TRD task %s not implemented (yet).", s.Data());
     }
   }
+  tasksArray->Delete(); delete tasksArray;
+
   // extra rules for calibration tasks
 //  if(TESTBIT(fSteerTask, kCheckTRK)) SETBIT(fSteerTask, kResolution);
   if(TESTBIT(fSteerTask, kCalibration)) SETBIT(fSteerTask, kCheckDET);

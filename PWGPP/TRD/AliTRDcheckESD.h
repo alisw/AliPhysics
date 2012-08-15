@@ -197,7 +197,7 @@ private:
   TH2F*         Proj3D(TH3* hist, TH2* accMap, Int_t binLow, Int_t binHigh, Float_t &entries);
   TH1D*         Proj2D(TH2* hist, TH1* fitErr=0x0);
   TH1F*         EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance=kTRUE);
-  TH1F*         EfficiencyFromPhiPt(AliCFContainer* cf, Int_t stepNom, Int_t stepDenom, const Char_t* varStr="pt");
+  TH1F*         EfficiencyFromPhiPt(AliCFContainer* cf, Int_t minNtrkl, Int_t maxNtrkl, Int_t stepNom, Int_t stepDenom, const Char_t* varStr="pt", const Char_t* type="TPCTRD");
   void          DrawTRDGrid();
   void          SetStyle(TH1* hist, Int_t lineStyle, Int_t lineColor, Int_t lineWidth, 
                          Int_t markerStyle, Int_t markerColor, Int_t markerSize);

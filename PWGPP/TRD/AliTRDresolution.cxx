@@ -48,6 +48,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <TFile.h>
 #include <TSystem.h>
 #include <TStyle.h>
 #include <TROOT.h>
@@ -93,7 +94,7 @@
 #include "info/AliTRDeventInfo.h"
 
 ClassImp(AliTRDresolution)
-ClassImp(AliTRDresolution::AliTRDresolutionProjection)
+ClassImp(AliTRDresolution::AliTRDrecoProjection)
 
 Int_t const   AliTRDresolution::fgkNbins[kNdim] = {
   Int_t(kNbunchCross)/*bc*/,
@@ -110,7 +111,7 @@ Double_t const AliTRDresolution::fgkMin[kNdim] = {
   -TMath::Pi(),
   -1.,
   -1.5,
-  -10.,
+  -5.,
   -2.5,
   -1.5,
   -0.5
@@ -120,7 +121,7 @@ Double_t const AliTRDresolution::fgkMax[kNdim] = {
   TMath::Pi(),
   1.,
   1.5,
-  10.,
+  5.,
   2.5,
   1.5,
   kNpt-0.5
@@ -154,9 +155,7 @@ Float_t AliTRDresolution::fgPtBin[25];
 AliTRDresolution::AliTRDresolution()
   :AliTRDrecoTask()
   ,fSteer(0)
-  ,fIdxFrame(0)
   ,fPtThreshold(.3)
-  ,fDyRange(0.75)
   ,fBCbinTOF(0)
   ,fBCbinFill(0)
   ,fBsign(kFALSE)
@@ -177,9 +176,7 @@ AliTRDresolution::AliTRDresolution()
 AliTRDresolution::AliTRDresolution(char* name, Bool_t xchange)
   :AliTRDrecoTask(name, "TRD spatial and momentum resolution")
   ,fSteer(0)
-  ,fIdxFrame(0)
   ,fPtThreshold(.3)
-  ,fDyRange(0.75)
   ,fBCbinTOF(0)
   ,fBCbinFill(0)
   ,fBsign(kFALSE)
@@ -497,7 +494,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     val[kEta] = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
 
     val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fkTrack->Charge();// fSpecies;
-    val[kPt]  = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fTracklet->GetMomentum());
+    val[kPt]  = GetPtBinSignificant(fPt); //fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fTracklet->GetMomentum());
     Double_t dyt(fTracklet->GetYfit(0) - fTracklet->GetYref(0)),
              dzt(fTracklet->GetZfit(0) - fTracklet->GetZref(0)),
              dydx(fTracklet->GetYfit(1)),
@@ -578,8 +575,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
 //
 // Additionally the momentum resolution/pulls are calculated for usage in the
 // PID calculation.
-  //printf("AliTRDresolution::PlotTrackIn() :: track[%p]\n", (void*)track);
-
+ 
   if(track) fkTrack = track;
   if(!fkTrack){
     AliDebug(4, "No Track defined.");
@@ -624,9 +620,23 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
     if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
     return H->Projection(kYrez);
   }
-//  printf("USE y[%+f] dydx[%+f]\n", fTracklet->GetYfit(0), fTracklet->GetYfit(1));
 
-  Int_t bc(fkESD?fkESD->GetTOFbc()/2:0);
+  // down scale PID resolution
+  Int_t spc(fSpecies); if(spc==3) spc=2; if(spc==-3) spc=-2; if(spc>3) spc=3; if(spc<-3) spc=-3;
+
+  if(DebugLevel()>=3){
+    Float_t tpc(fkESD->GetTPCdedx());
+    Float_t tof(fkESD->GetTOFbeta());
+    (*DebugStream()) << "trackIn"
+      <<"spc="        << spc
+      <<"tpc="        << tpc
+      <<"tof="        << tof
+      <<"tracklet.="  << fTracklet
+      <<"trackIn.="   << tin
+      << "\n";
+  }
+
+  //Int_t bc(fkESD?fkESD->GetTOFbc()/2:0);
   const Double_t *parR(tin->GetParameter());
   Double_t dyt(fTracklet->GetYfit(0)-parR[0]), dzt(fTracklet->GetZfit(0)-parR[1]),
             phit(fTracklet->GetYfit(1)),
@@ -640,29 +650,23 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   phit       += tilt*parR[3];
   Double_t dphi = TMath::ATan(phit) - TMath::ASin(parR[2]);
 
-  Double_t val[kNdim+3];
-  val[kBC]          = bc==0?0:(bc<0?-1.:1.);
+  Double_t val[kNdim+2];
+  val[kBC]          = fTriggerSlot;//bc==0?0:(bc<0?-1.:1.);
   Double_t alpha = (0.5+AliTRDgeometry::GetSector(fTracklet->GetDetector()))*AliTRDgeometry::GetAlpha(),
            cs    = TMath::Cos(alpha),
            sn    = TMath::Sin(alpha);
-  val[kPhi] = TMath::ATan2(fTracklet->GetX()*sn + fTracklet->GetY()*cs, fTracklet->GetX()*cs - fTracklet->GetY()*sn);
-  Float_t tgl = fTracklet->GetZ()/fTracklet->GetX()/TMath::Sqrt(1.+fTracklet->GetY()*fTracklet->GetY()/fTracklet->GetX()/fTracklet->GetX());
-  val[kEta] = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
+  val[kPhi]         = TMath::ATan2(fTracklet->GetX()*sn + fTracklet->GetY()*cs, fTracklet->GetX()*cs - fTracklet->GetY()*sn);
+  Float_t tgl       = fTracklet->GetZ()/fTracklet->GetX()/TMath::Sqrt(1.+fTracklet->GetY()*fTracklet->GetY()/fTracklet->GetX()/fTracklet->GetX());
+  val[kEta]         = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
   val[kYrez]        = dy;
   val[kZrez]        = fTracklet->IsRowCross()?dz:(fTracklet->GetdQdl()*5.e-4 - 2.5);
   val[kPrez]        = dphi*TMath::RadToDeg();
-  val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fSpecies; //printf("val[%d] = %4.2f\n", kSpeciesChgRC, val[kSpeciesChgRC]);
-  val[kPt]          = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fPt);
-  val[kNdim]        = GetPtBin(fTracklet->GetMomentum());
+  val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:spc;
+  val[kPt]          = DebugLevel()>=1?GetPtBin(fPt):GetPtBinSignificant(fPt);
+  val[kNdim]        = DebugLevel()>=1?GetPtBin(fTracklet->GetMomentum()):GetPtBinSignificant(fTracklet->GetMomentum());
   val[kNdim+1]      = dx;
-  val[kNdim+2]      = fEvent?fEvent->GetBunchFill():0;
+  //val[kNdim+2]      = fEvent?fEvent->GetBunchFill():0;
   H->Fill(val);
-  if(DebugLevel()>=3){
-    (*DebugStream()) << "trackIn"
-      <<"tracklet.="  << fTracklet
-      <<"trackIn.="   << tin
-      << "\n";
-  }
 
   if(!track) return NULL;
   // special care for EVE usage
@@ -957,31 +961,6 @@ Int_t AliTRDresolution::GetPtBin(Float_t pt)
   return ipt;
 }
 
-//________________________________________________________
-Float_t AliTRDresolution::GetMeanStat(TH1 *h, Float_t cut, Option_t *opt)
-{
-// return mean number of entries/bin of histogram "h"
-// if option "opt" is given the following values are accepted:
-//   "<" : consider only entries less than "cut"
-//   ">" : consider only entries greater than "cut"
-
-  //Int_t dim(h->GetDimension());
-  Int_t nbx(h->GetNbinsX()), nby(h->GetNbinsY()), nbz(h->GetNbinsZ());
-  Double_t sum(0.); Int_t n(0);
-  for(Int_t ix(1); ix<=nbx; ix++)
-    for(Int_t iy(1); iy<=nby; iy++)
-      for(Int_t iz(1); iz<=nbz; iz++){
-        if(strcmp(opt, "")==0){sum += h->GetBinContent(ix, iy, iz); n++;}
-        else{
-          if(strcmp(opt, "<")==0) {
-            if(h->GetBinContent(ix, iy, iz)<cut) {sum += h->GetBinContent(ix, iy, iz); n++;}
-          } else if(strcmp(opt, ">")==0){
-            if(h->GetBinContent(ix, iy, iz)>cut) {sum += h->GetBinContent(ix, iy, iz); n++;}
-          } else {sum += h->GetBinContent(ix, iy, iz); n++;}
-        }
-      }
-  return n>0?sum/n:0.;
-}
 
 //________________________________________________________
 void AliTRDresolution::GetRangeZ(TH2 *h2, Float_t &min, Float_t &max)
@@ -1106,26 +1085,30 @@ void AliTRDresolution::MakeSummary()
   if((arr = (TObjArray*)fProj->At(kDetector))){
     cOut = new TCanvas(Form("%s_DetOccupancy", GetName()), "Detector performance", 2*nx, 2*ny);
     cOut->Divide(AliTRDgeometry::kNlayer,AliTRDeventInfo::kCentralityClasses, 1.e-5, 1.e-5);
+    Int_t n=0;
     for(Int_t icen(0); icen<AliTRDeventInfo::kCentralityClasses; icen++){
       for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
         p=cOut->cd(icen*AliTRDgeometry::kNlayer+ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
         if(!(h2 = (TH2*)arr->FindObject(Form("HDet%d%dEn", ily, icen)))) continue;
-        SetNormZ(h2, 1, 11, 1, -1, 10.);
-        SetRangeZ(h2, 0., 150, -25.);
+        if(SetNormZ(h2, 1, -1, 1, -1, 10.) < 1.e3) continue;  // cut all bins with < 10 entries
+        SetRangeZ(h2, -90., 90, -200.);
+        //h2->GetXaxis()->SetNdivisions(1010);
         h2->GetZaxis()->SetTitle("Rel. Det. Occup. [%]");
         h2->GetZaxis()->CenterTitle();
-        h2->Draw("colz");
+        h2->SetContour(9); h2->Draw("colz"); n++;
         MakeDetectorPlot(ily, "pad");
       }
     }
-    cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+    if(n>=AliTRDgeometry::kNlayer) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+
     cOut = new TCanvas(Form("%s_DetCharge", GetName()), "Detector performance", nx, ny);
     cOut->Divide(3,2, 1.e-5, 1.e-5);
     for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
       p=cOut->cd(ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
       if(!(h2 = (TH2*)arr->FindObject(Form("HDet%d_2D", ily)))) continue;
-      SetNormZ(h2, 1, 11, 1, -1, 10.);
-      SetRangeZ(h2, 0., 45., -15.);
+      SetNormZ(h2, 1, -1, 1, -1, 10.); // cut all <q> < 10
+      SetRangeZ(h2, -30., 30., -200.);
+      //h2->GetXaxis()->SetNdivisions(1010);
       h2->GetZaxis()->SetTitle("Rel. Mean(q) [%]");
       h2->GetZaxis()->CenterTitle();
       h2->Draw("colz");
@@ -1194,10 +1177,10 @@ void AliTRDresolution::MakeSummary()
         else delete cOut;
       }
       // species
-      const Float_t zmin[] = {1., 20., 25., 10., 5.},
-                    zmax[] = {10., 38., 43., 28., 14.};
-      cOut = new TCanvas(Form("%s_%sTrkInSpc", GetName(), typName[ityp]), "Track IN PID", Int_t(1.5*nx), Int_t(1.5*ny));
-      cOut->Divide(5,3, 1.e-5, 1.e-5);
+      const Float_t zmin[] = {1., 61., 15.},
+                    zmax[] = {10., 79., 33.};
+      cOut = new TCanvas(Form("%s_%sTrkInSpc", GetName(), typName[ityp]), "Track IN PID", Int_t(1.5*ny), Int_t(1.5*ny));
+      cOut->Divide(3,3, 1.e-5, 1.e-5);
       Int_t nplot(0); const Char_t *chName[] = {"p", "n", ""};
       for(Int_t ich(0), ipad(1); ich<3; ich++){
         TH2 *h2s(NULL);
@@ -1205,7 +1188,7 @@ void AliTRDresolution::MakeSummary()
           AliInfo(Form("Missing H%sTrkIn%sEn", typName[ityp], chName[ich]));
           continue;
         }
-        for(Int_t ispec(0); ispec<AliPID::kSPECIES; ispec++){
+        for(Int_t ispec(0); ispec<kNspc; ispec++){
           p=cOut->cd(ipad++); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
           if(!(h2 = (TH2*)arr->FindObject(Form("H%sTrkInY%s%dEn", typName[ityp], chName[ich], ispec)))) {
             AliInfo(Form("Missing H%sTrkIn%s%dEn", typName[ityp], chName[ich], ispec));
@@ -1216,13 +1199,36 @@ void AliTRDresolution::MakeSummary()
           h2->SetContour(9);
           h2->GetZaxis()->SetRangeUser(zmin[ispec], zmax[ispec]);
           h2->GetZaxis()->SetTitle("Rel. Abundancy [%]");h2->GetZaxis()->CenterTitle();
-          TString tit(h2->GetTitle()); h2->SetTitle(Form("%s :: Relative Abundancy", ((*(tit.Tokenize("::")))[0])->GetName()));
+          TString tit(h2->GetTitle()); TObjArray *atit = tit.Tokenize("::");
+          h2->SetTitle(Form("%s :: Relative Abundancy", ((*atit)[0])->GetName()));
+          atit->Delete(); delete atit;
           h2->Draw("colz");
           MakeDetectorPlot(0);
         }
       }
-      if(nplot==15) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+      if(nplot==9) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
       else delete cOut;
+
+      const char *chQ[] = {"Q", "QS"};
+      for(Int_t iq(0); iq<2; iq++){
+        cOut = new TCanvas(Form("%s_%sTrkIn%s", GetName(), typName[ityp], chQ[iq]), "Track IN PID", Int_t(1.5*ny), Int_t(1.5*ny));
+        cOut->Divide(3,3, 1.e-5, 1.e-5);
+        nplot=0;
+        for(Int_t ich(0), ipad(1); ich<3; ich++){
+          for(Int_t ispec(0); ispec<kNspc; ispec++){
+            p=cOut->cd(ipad++); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
+            if(!(h2 = (TH2*)arr->FindObject(Form("H%sTrkIn%s%s%d_2D", typName[ityp], chQ[iq], chName[ich], ispec)))) {
+              AliInfo(Form("Missing H%sTrkIn%s%s%d_2D", typName[ityp], chQ[iq], chName[ich], ispec));
+              continue;
+            }
+            nplot++;
+            h2->Draw("colz");
+            MakeDetectorPlot(0);
+          }
+        }
+        if(nplot==9) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+        else delete cOut;
+      }
     }
   }
   // track MC systematic
@@ -1365,7 +1371,7 @@ Bool_t AliTRDresolution::MakeProjectionDetector()
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 2, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
   //const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"0-10%", "10-20%", "20-50%", "50-80%", "80-100%"};
   const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"2800-inf", "2100-2799", "1400-2099", "700-1399", "0-699"};
-  AliTRDresolutionProjection hp[kDetNproj];  TObjArray php(kDetNproj);
+  AliTRDrecoProjection hp[kDetNproj];  TObjArray php(kDetNproj);
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   for(Int_t ipad(0); ipad<nPad; ipad++){
     for(Int_t icen(0); icen<AliTRDeventInfo::kCentralityClasses; icen++){
@@ -1390,37 +1396,37 @@ Bool_t AliTRDresolution::MakeProjectionDetector()
     npad = 0;             // no. of pads selection
     if(an) npad = TMath::Min(coord[5]-1, Int_t(kNpads));
     isel = npad*AliTRDeventInfo::kCentralityClasses*AliTRDgeometry::kNlayer+cen*AliTRDgeometry::kNlayer+ly;
-    ((AliTRDresolutionProjection*)php.At(isel))->Increment(coord, v);
-    //Int_t ioff=isel;for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
+    ((AliTRDrecoProjection*)php.At(isel))->Increment(coord, v);
+    //Int_t ioff=isel;for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDrecoProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kDetNproj), kDetector);
 
   TH2 *h2(NULL);  Int_t jh(0);
   for(; ih--; ){
-    if(!hp[ih].fH) continue;
+    if(!hp[ih].H()) continue;
     if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours, 0, kFALSE))) continue;
     arr->AddAt(h2, jh++);
-    if(!(h2 = (TH2*)gDirectory->Get(Form("%sEn", hp[ih].fH->GetName())))) continue;
+    if(!(h2 = (TH2*)gDirectory->Get(Form("%sEn", hp[ih].H()->GetName())))) continue;
     arr->AddAt(h2, jh++);
   }
-  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
+  AliTRDrecoProjection *pr0(NULL), *pr1(NULL);
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     for(Int_t icen(0); icen<AliTRDeventInfo::kCentralityClasses; icen++){
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HDet%d%d%d", ily, icen, 0)))){
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HDet%d%d%d", ily, icen, 0)))){
         for(Int_t ipad(1); ipad<nPad; ipad++){
-          if((pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HDet%d%d%d", ily, icen, ipad)))){
+          if((pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HDet%d%d%d", ily, icen, ipad)))){
             (*pr0)+=(*pr1);
           }
         }
-        pr0->fH->SetNameTitle(Form("HDet%d%d", ily, icen), Form("Detectors :: Ly[%d] Cen[%s]", ily, cenName[icen]));
+        pr0->H()->SetNameTitle(Form("HDet%d%d", ily, icen), Form("Detectors :: Ly[%d] Cen[%s]", ily, cenName[icen]));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 0, kFALSE))) arr->AddAt(h2, jh++);
-        if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
-        if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HDet%d%d%d", ily, 0, 0)))) (*pr1)+=(*pr0);
+        if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName())))) arr->AddAt(h2, jh++);
+        if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HDet%d%d%d", ily, 0, 0)))) (*pr1)+=(*pr0);
       }
     }
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HDet%d%d%d", ily, 0, 0)))){
-      pr0->fH->SetNameTitle(Form("HDet%d", ily), Form("Detectors :: Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HDet%d%d%d", ily, 0, 0)))){
+      pr0->H()->SetNameTitle(Form("HDet%d", ily), Form("Detectors :: Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
     }
   }
@@ -1463,7 +1469,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
   const Int_t nsel(AliTRDgeometry::kNlayer*kNcharge*(kNpads+1)*AliTRDeventInfo::kCentralityClasses);
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  AliTRDresolutionProjection hp[kClNproj];  TObjArray php(kClNproj);
+  AliTRDrecoProjection hp[kClNproj];  TObjArray php(kClNproj);
   const Char_t chName[kNcharge] = {'n', 'p'};const Char_t chSgn[kNcharge] = {'-', '+'};
   const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"2800-inf", "2100-2799", "1400-2099", "700-1399", "0-699"};
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
@@ -1498,7 +1504,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
   }
   AliInfo(Form("Build %3d 3D projections.", ih));
 
-  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
+  AliTRDrecoProjection *pr0(NULL), *pr1(NULL);
   Int_t ly(0), ch(0), rcBin(as?as->FindBin(0.):-1), chBin(apt?apt->FindBin(0.):-1), ioff(0), cen(0), npad(0);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord); if(v<1.) continue;
@@ -1527,26 +1533,39 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
       AliError(Form("Wrong selection %d [%3d]", ioff, ih));
       return kFALSE;
     }
-    if(!(pr0=(AliTRDresolutionProjection*)php.At(ioff))) {
+    if(!(pr0=(AliTRDrecoProjection*)php.At(ioff))) {
       AliError(Form("Missing projection %d", ioff));
       return kFALSE;
     }
-    if(strcmp(pr0->fH->GetName(), Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ch], ly, cen, npad))!=0){
-      AliError(Form("Projection mismatch :: request[H%sClY%c%d%d%d] found[%s]", mc?"MC":"", chName[ch], ly, cen, npad, pr0->fH->GetName()));
+    if(strcmp(pr0->H()->GetName(), Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ch], ly, cen, npad))!=0){
+      AliError(Form("Projection mismatch :: request[H%sClY%c%d%d%d] found[%s]", mc?"MC":"", chName[ch], ly, cen, npad, pr0->H()->GetName()));
       return kFALSE;
     }
-    for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
+    for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDrecoProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
+  if(HasDump3DFor(kCluster)){
+    TDirectory *cwd = gDirectory;
+    TFile::Open(Form("ResDump_%s.root", H->GetName()), "RECREATE");
+    for(Int_t ip(0); ip<php.GetEntriesFast(); ip++){
+      if(!(pr0 = (AliTRDrecoProjection*)php.At(ip))) continue;
+      if(!pr0->H()) continue;
+      TH3 *h3=(TH3*)pr0->H()->Clone();
+      h3->Write();
+    }
+    gFile->Close();
+    cwd->cd();
+  }
+
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kClNproj), cidx);
 
   TH2 *h2(NULL);  Int_t jh(0);
   for(; ih--; ){
-    if(!hp[ih].fH) continue;
-    if(strchr(hp[ih].fH->GetName(), 'Q')){
+    if(!hp[ih].H()) continue;
+    if(strchr(hp[ih].H()->GetName(), 'Q')){
       if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours, 0, kFALSE))) continue;
       arr->AddAt(h2, jh++);
-      if(!(h2 = (TH2*)gDirectory->Get(Form("%sEn", hp[ih].fH->GetName())))) continue;
+      if(!(h2 = (TH2*)gDirectory->Get(Form("%sEn", hp[ih].H()->GetName())))) continue;
       arr->AddAt(h2, jh++);
     } else {
       if((h2 = hp[ih].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
@@ -1556,88 +1575,88 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
     for(Int_t ich(0); ich<nCh; ich++){
       for(Int_t icen(0); icen<nCen; icen++){
         /*!dy*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
           for(Int_t ipad(1); ipad<nNpad; ipad++){
-            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad)))) continue;
             (*pr0)+=(*pr1);
           }
-          pr0->fH->SetNameTitle(Form("H%sClY%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
+          pr0->H()->SetNameTitle(Form("H%sClY%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
+          if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
         }
         /*!Q*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
           for(Int_t ipad(1); ipad<nNpad; ipad++){
-            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad)))) continue;
             (*pr0)+=(*pr1);
           }
-          pr0->fH->SetNameTitle(Form("H%sClQ%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: Q Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
+          pr0->H()->SetNameTitle(Form("H%sClQ%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: Q Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 2, kFALSE))) arr->AddAt(h2, jh++);
-          if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
-          pr0->fH->SetName(Form("H%sClQS%c%d%d", mc?"MC":"", chName[ich], ily, icen));
+          if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName())))) arr->AddAt(h2, jh++);
+          pr0->H()->SetName(Form("H%sClQS%c%d%d", mc?"MC":"", chName[ich], ily, icen));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
-          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
+          if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
         }
         /*!YXTC*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
           for(Int_t ipad(1); ipad<nNpad; ipad++){
-            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad)))) continue;
             (*pr0)+=(*pr1);
           }
-          pr0->fH->SetNameTitle(Form("H%sClYXTC%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay(x,TC) Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
+          pr0->H()->SetNameTitle(Form("H%sClYXTC%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay(x,TC) Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
+          if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
         }
         /*!YXPh*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, 0)))){
           for(Int_t ipad(1); ipad<nNpad; ipad++){
-            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[1], ily, icen, ipad)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, icen, ipad)))) continue;
             (*pr0)+=(*pr1);
           }
-          pr0->fH->SetNameTitle(Form("H%sClYXPh%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay(x,#Phi) Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
+          pr0->H()->SetNameTitle(Form("H%sClYXPh%c%d%d", mc?"MC":"", chName[ich], ily, icen), Form("Clusters[%c] :: #Deltay(x,#Phi) Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
+          if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))) (*pr1)+=(*pr0);
         }
       } // end centrality integration
       /*!dy*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
-        pr0->fH->SetNameTitle(Form("H%sClY%c%d", mc?"MC":"", chName[ich], ily),
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
+        pr0->H()->SetNameTitle(Form("H%sClY%c%d", mc?"MC":"", chName[ich], ily),
                               Form("Clusters[%c]:: #Deltay Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
       }
       /*!Q*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
-        pr0->fH->SetNameTitle(Form("H%sClQ%c%d", mc?"MC":"", chName[ich], ily),
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
+        pr0->H()->SetNameTitle(Form("H%sClQ%c%d", mc?"MC":"", chName[ich], ily),
                               Form("Clusters[%c]:: Q Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
-        pr0->fH->SetName(Form("H%sClQS%c%d", mc?"MC":"", chName[ich], ily));
+        pr0->H()->SetName(Form("H%sClQS%c%d", mc?"MC":"", chName[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClQ%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
       }
       /*!YXTC*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
-        pr0->fH->SetNameTitle(Form("H%sClYXTC%c%d", mc?"MC":"", chName[ich], ily),
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
+        pr0->H()->SetNameTitle(Form("H%sClYXTC%c%d", mc?"MC":"", chName[ich], ily),
                               Form("Clusters[%c]:: #Deltay(x,TC) Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXTC%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
       }
       /*!YXPh*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
-        pr0->fH->SetNameTitle(Form("H%sClYXPh%c%d", mc?"MC":"", chName[ich], ily),
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[ich], ily, 0, 0)))){
+        pr0->H()->SetNameTitle(Form("H%sClYXPh%c%d", mc?"MC":"", chName[ich], ily),
                               Form("Clusters[%c]:: #Deltay(x,#Phi) Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))) (*pr1)+=(*pr0);
       }
     } // end charge integration
     /*!dy*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))){
-      pr0->fH->SetNameTitle(Form("H%sClY%d", mc?"MC":"", ily), Form("Clusters :: #Deltay Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClY%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))){
+      pr0->H()->SetNameTitle(Form("H%sClY%d", mc?"MC":"", ily), Form("Clusters :: #Deltay Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
     /*!YXPh*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))){
-      pr0->fH->SetNameTitle(Form("H%sClYXPh%d", mc?"MC":"", ily), Form("Clusters :: #Deltay Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sClYXPh%c%d%d%d", mc?"MC":"", chName[0], ily, 0, 0)))){
+      pr0->H()->SetNameTitle(Form("H%sClYXPh%d", mc?"MC":"", ily), Form("Clusters :: #Deltay Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
 
@@ -1675,19 +1694,19 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
   if(ndim > Int_t(kNdim))         ac = H->GetAxis(kNdim);         // init centrality selection
   // calculate size depending on debug level
   const Int_t nCen(debug?Int_t(AliTRDeventInfo::kCentralityClasses):1);
-  const Int_t nPt(debug?Int_t(kNpt):1);
+  const Int_t nPt(debug?Int_t(kNpt+2):1);
   const Int_t nSpc(1);//ndim>kNdimTrklt?fgkNbins[kSpeciesChgRC]:1);
   const Int_t nCh(debug?Int_t(kNcharge):1);
 
   // build list of projections
-  const Int_t nsel(AliTRDeventInfo::kCentralityClasses*AliTRDgeometry::kNlayer*kNpt*(AliPID::kSPECIES*kNcharge + 1));
+  const Int_t nsel(AliTRDeventInfo::kCentralityClasses*AliTRDgeometry::kNlayer*(kNpt+2)*(AliPID::kSPECIES*kNcharge + 1));
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  AliTRDresolutionProjection hp[kTrkltNproj]; TObjArray php(kTrkltNproj);
+  AliTRDrecoProjection hp[kTrkltNproj]; TObjArray php(kTrkltNproj);
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   const Char_t chName[kNcharge] = {'n', 'p'};const Char_t chSgn[kNcharge] = {'-', '+'};
-  const Char_t ptName[kNpt] = {'l', 'i', 'h'};
-  const Char_t *ptCut[kNpt] = {"p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "p_{t}[GeV/c]>=1.5"};
+  const Char_t ptName[kNpt+2] = {'L', 'l', 'i', 'h', 'H'};
+  const Char_t *ptCut[kNpt+2] = {"p_{t}[GeV/c]<0.5", "0.5<=p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "1.5<=p_{t}[GeV/c]<5.0", "p_{t}[GeV/c]>=5.0"};
 //  const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"0-10%", "10-20%", "20-50%", "50-80%", "80-100%"};
   const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"2800-inf", "2100-2799", "1400-2099", "700-1399", "0-699"};
   for(Int_t icen(0); icen<nCen; icen++){
@@ -1754,7 +1773,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
   }
   AliInfo(Form("Build %3d 3D projections.", ih));
 
-  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
+  AliTRDrecoProjection *pr0(NULL), *pr1(NULL);
   Int_t ly(0), ch(0), sp(2), rcBin(as?as->FindBin(0.):-1), pt(0), cen(0), ioff(0), jspc(nSpc*nCh+1), kspc(nSpc*nCh*4+1);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord);
@@ -1769,7 +1788,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     }
     // pt selection
     pt = 0; // low pt
-    if(ap) pt = TMath::Min(coord[kPt]-1, Int_t(kNpt)-1);
+    if(ap) pt = TMath::Min(coord[kPt], Int_t(kNpt)+1);
     // centrality selection
     cen = 0; // default
     if(ac) cen = coord[kNdim]-1;
@@ -1785,31 +1804,44 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
       AliError(Form("Wrong selection %d [%3d]", ioff, ih));
       return kFALSE;
     }
-    if(!(pr0=(AliTRDresolutionProjection*)php.At(ioff))) {
+    if(!(pr0=(AliTRDrecoProjection*)php.At(ioff))) {
       AliError(Form("Missing projection %d", ioff));
       return kFALSE;
     }
     if(sp>=0){
-      if(strcmp(pr0->fH->GetName(), Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ch], ptName[pt], sp, ly, cen))!=0){
-        AliError(Form("Projection mismatch :: request[H%sTrkltY%c%c%d%d%d] found[%s]", mc?"MC":"", chName[ch], ptName[pt], sp, ly, cen, pr0->fH->GetName()));
+      if(strcmp(pr0->H()->GetName(), Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ch], ptName[pt], sp, ly, cen))!=0){
+        AliError(Form("Projection mismatch :: request[H%sTrkltY%c%c%d%d%d] found[%s]", mc?"MC":"", chName[ch], ptName[pt], sp, ly, cen, pr0->H()->GetName()));
         return kFALSE;
       }
     } else {
-      if(strcmp(pr0->fH->GetName(), Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[pt], ly, cen))!=0){
-        AliError(Form("Projection mismatch :: request[H%sTrkltRCZ%c%d%d] found[%s]", mc?"MC":"", ptName[pt], ly, cen, pr0->fH->GetName()));
+      if(strcmp(pr0->H()->GetName(), Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[pt], ly, cen))!=0){
+        AliError(Form("Projection mismatch :: request[H%sTrkltRCZ%c%d%d] found[%s]", mc?"MC":"", ptName[pt], ly, cen, pr0->H()->GetName()));
         return kFALSE;
       }
     }
-    for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
+    for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDrecoProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
+  if(HasDump3DFor(kTracklet)){
+    TDirectory *cwd = gDirectory;
+    TFile::Open(Form("ResDump_%s.root", H->GetName()), "RECREATE");
+    for(Int_t ip(0); ip<php.GetEntriesFast(); ip++){
+      if(!(pr0 = (AliTRDrecoProjection*)php.At(ip))) continue;
+      if(!pr0->H()) continue;
+      TH3 *h3=(TH3*)pr0->H()->Clone();
+      h3->Write();
+    }
+    gFile->Close();
+    cwd->cd();
+  }
+
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kTrkltNproj), cidx);
 
   TH2 *h2(NULL); Int_t jh(0);
   for(; ih--; ){
-    if(!hp[ih].fH) continue;
+    if(!hp[ih].H()) continue;
     Int_t mid(0), nstat(kNstat);
-    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; nstat=kNstatQ;}
+    if(strchr(hp[ih].H()->GetName(), 'Q')){ mid=2; nstat=kNstatQ;}
     if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
     arr->AddAt(h2, jh++);
   }
@@ -1819,160 +1851,160 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
       for(Int_t icen(0); icen<nCen; icen++){
         for(Int_t ipt(0); ipt<nPt; ipt++){
           /*!dy*/
-          if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], 0, ily, icen)))){
+          if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], 0, ily, icen)))){
             for(Int_t isp(1); isp<nSpc; isp++){
-              if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen)))) continue;
+              if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen)))) continue;
               (*pr0)+=(*pr1);
             }
-            pr0->fH->SetNameTitle(Form("H%sTrkltY%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
+            pr0->H()->SetNameTitle(Form("H%sTrkltY%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
                                       Form("Tracklets[%c]:: #Deltay{%s} Ly[%d] Cen[%s]", chSgn[ich], ptCut[ipt], ily, cenName[icen]));
             if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-            if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))) (*pr1)+=(*pr0);
+            if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))) (*pr1)+=(*pr0);
           }
           /*!dphi*/
-          if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], 0, ily, icen)))){
+          if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], 0, ily, icen)))){
             for(Int_t isp(1); isp<nSpc; isp++){
-              if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen)))) continue;
+              if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen)))) continue;
               (*pr0)+=(*pr1);
             }
-            pr0->fH->SetNameTitle(Form("H%sTrkltPh%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
+            pr0->H()->SetNameTitle(Form("H%sTrkltPh%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
                                       Form("Tracklets[%c]:: #Delta#phi{%s} Ly[%d] Cen[%s]", chSgn[ich], ptCut[ipt], ily, cenName[icen]));
             if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-            if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))) (*pr1)+=(*pr0);
+            if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))) (*pr1)+=(*pr0);
           }
           /*!dQ/dl*/
-          if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], 0, ily, icen)))){
+          if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], 0, ily, icen)))){
             for(Int_t isp(1); isp<nSpc; isp++){
-              if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen)))) continue;
+              if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen)))) continue;
               (*pr0)+=(*pr1);
             }
-            pr0->fH->SetNameTitle(Form("H%sTrkltQ%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
+            pr0->H()->SetNameTitle(Form("H%sTrkltQ%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
                                       Form("Tracklets[%c]:: dQdl{%s} Ly[%d] Cen[%s]", chSgn[ich], ptCut[ipt], ily, cenName[icen]));
             if((h2 = pr0->Projection2D(kNstatQ, kNcontours, 2))) arr->AddAt(h2, jh++);
-            pr0->fH->SetNameTitle(Form("H%sTrkltQS%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
+            pr0->H()->SetNameTitle(Form("H%sTrkltQS%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
                                       Form("Tracklets[%c]:: dQdl{%s} Ly[%d] Cen[%s]", chSgn[ich], ptCut[ipt], ily, cenName[icen]));
             pr0->SetShowRange(2.4, 5.1);
             if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
-            if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))) (*pr1)+=(*pr0);
+            if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))) (*pr1)+=(*pr0);
           }
           /*!TB occupancy*/
-          if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], 0, ily, icen)))){
+          if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], 0, ily, icen)))){
             for(Int_t isp(1); isp<nSpc; isp++){
-              if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen)))) continue;
+              if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[ipt], isp, ily, icen)))) continue;
               (*pr0)+=(*pr1);
             }
-            pr0->fH->SetNameTitle(Form("H%sTrkltTB%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
+            pr0->H()->SetNameTitle(Form("H%sTrkltTB%c%c%d%d", mc?"MC":"", chName[ich], ptName[ipt], ily, icen),
                                       Form("Tracklets[%c]:: OccupancyTB{%s} Ly[%d] Cen[%s]", chSgn[ich], ptCut[ipt], ily, cenName[icen]));
             if((h2 = pr0->Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
-            if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))) (*pr1)+=(*pr0);
+            if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))) (*pr1)+=(*pr0);
           }
         } // end pt integration
         /*!dy*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))){
-          pr0->fH->SetNameTitle(Form("H%sTrkltY%c%d%d", mc?"MC":"", chName[ich], ily, icen),
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))){
+          pr0->H()->SetNameTitle(Form("H%sTrkltY%c%d%d", mc?"MC":"", chName[ich], ily, icen),
                                 Form("Tracklets[%c]:: #Deltay Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
+          if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
         }
         /*!dphi*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))){
-          pr0->fH->SetNameTitle(Form("H%sTrkltPh%c%d%d", mc?"MC":"", chName[ich], ily, icen),
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))){
+          pr0->H()->SetNameTitle(Form("H%sTrkltPh%c%d%d", mc?"MC":"", chName[ich], ily, icen),
                                 Form("Tracklets[%c]:: #Delta#phi Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
+          if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
         }
         /*!dQ/dl*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))){
-          pr0->fH->SetNameTitle(Form("H%sTrkltQ%c%d%d", mc?"MC":"", chName[ich], ily, icen),
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))){
+          pr0->H()->SetNameTitle(Form("H%sTrkltQ%c%d%d", mc?"MC":"", chName[ich], ily, icen),
                                 Form("Tracklets[%c]:: dQdl Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
           pr0->SetShowRange(1.,2.3);
           if((h2 = pr0->Projection2D(kNstatQ, kNcontours, 2))) arr->AddAt(h2, jh++);
-          pr0->fH->SetNameTitle(Form("H%sTrkltQS%c%d%d", mc?"MC":"", chName[ich], ily, icen),
+          pr0->H()->SetNameTitle(Form("H%sTrkltQS%c%d%d", mc?"MC":"", chName[ich], ily, icen),
                                 Form("Tracklets[%c]:: dQdl Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
           pr0->SetShowRange(2.4,5.1);
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
-          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
+          if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
         }
         /*!TB occupancy*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))){
-          pr0->fH->SetNameTitle(Form("H%sTrkltTB%c%d%d", mc?"MC":"", chName[ich], ily, icen),
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, icen)))){
+          pr0->H()->SetNameTitle(Form("H%sTrkltTB%c%d%d", mc?"MC":"", chName[ich], ily, icen),
                                 Form("Tracklets[%c]:: OccupancyTB Ly[%d] Cen[%s]", chSgn[ich], ily, cenName[icen]));
           if((h2 = pr0->Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
-          if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
+          if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
         }
       } // end centrality integration
       /*!dy*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))){
-        pr0->fH->SetNameTitle(Form("H%sTrkltY%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: #Deltay Ly[%d]", chSgn[ich], ily));
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))){
+        pr0->H()->SetNameTitle(Form("H%sTrkltY%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: #Deltay Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
       }
       /*!dphi*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))){
-        pr0->fH->SetNameTitle(Form("H%sTrkltPh%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: #Delta#phi Ly[%d]", chSgn[ich], ily));
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))){
+        pr0->H()->SetNameTitle(Form("H%sTrkltPh%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: #Delta#phi Ly[%d]", chSgn[ich], ily));
         pr0->SetShowRange(-.9,.9);
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
       }
       /*!dQ/dl*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))){
-        pr0->fH->SetNameTitle(Form("H%sTrkltQ%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: dQdl Ly[%d]", chSgn[ich], ily));
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))){
+        pr0->H()->SetNameTitle(Form("H%sTrkltQ%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: dQdl Ly[%d]", chSgn[ich], ily));
         pr0->SetShowRange(1.,2.3);
         if((h2 = pr0->Projection2D(kNstatQ, kNcontours, 2))) arr->AddAt(h2, jh++);
-        pr0->fH->SetNameTitle(Form("H%sTrkltQS%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: dQdl Ly[%d]", chSgn[ich], ily));
+        pr0->H()->SetNameTitle(Form("H%sTrkltQS%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: dQdl Ly[%d]", chSgn[ich], ily));
         pr0->SetShowRange(2.4,5.1);
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
       }
       /*!TB occupancy*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))){
-        pr0->fH->SetNameTitle(Form("H%sTrkltTB%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: OccupancyTB Ly[%d]", chSgn[ich], ily));
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))){
+        pr0->H()->SetNameTitle(Form("H%sTrkltTB%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: OccupancyTB Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
       }
     } // end charge integration
     /*!dy*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkltY%d", mc?"MC":"", ily), Form("Tracklets :: #Deltay Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltY%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkltY%d", mc?"MC":"", ily), Form("Tracklets :: #Deltay Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
     /*!dphi*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkltPh%d", mc?"MC":"", ily), Form("Tracklets :: #Delta#phi Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkltPh%d", mc?"MC":"", ily), Form("Tracklets :: #Delta#phi Ly[%d]", ily));
       pr0->SetShowRange(-.45,.45);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
     /*!dQdl*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkltQ%d", mc?"MC":"", ily), Form("Tracklets :: dQdl Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkltQ%d", mc?"MC":"", ily), Form("Tracklets :: dQdl Ly[%d]", ily));
       pr0->SetShowRange(1.,2.3);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
-      pr0->fH->SetName(Form("H%sTrkltQS%d", mc?"MC":"", ily));
+      pr0->H()->SetName(Form("H%sTrkltQS%d", mc?"MC":"", ily));
       pr0->SetShowRange(2.4,5.1);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
     }
     /*!TB occupancy*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkltTB%d", mc?"MC":"", ily), Form("Tracklets :: OccupancyTB Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltTB%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkltTB%d", mc?"MC":"", ily), Form("Tracklets :: OccupancyTB Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
     }
 
     /*! Row Cross processing*/
     for(Int_t icen(0); icen<nCen; icen++){
       /*!RC dz*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[0], ily, icen)))){
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[0], ily, icen)))){
         for(Int_t ipt(0); ipt<kNpt; ipt++){
-          if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[ipt], ily, icen)))) continue;
+          if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[ipt], ily, icen)))) continue;
           (*pr0)+=(*pr1);
         }
-        pr0->fH->SetNameTitle(Form("H%sTrkltRCZ%d%d", mc?"MC":"", ily, icen), Form("Tracklets[RC]:: #Deltaz Ly[%d] Cen[%s]", ily, cenName[icen]));
+        pr0->H()->SetNameTitle(Form("H%sTrkltRCZ%d%d", mc?"MC":"", ily, icen), Form("Tracklets[RC]:: #Deltaz Ly[%d] Cen[%s]", ily, cenName[icen]));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(icen && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[0], ily, 0)))) (*pr1)+=(*pr0);
+        if(icen && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[0], ily, 0)))) (*pr1)+=(*pr0);
       }
     } // end centrality integration for row cross
     /*!RC dz*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[0], ily, 0)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkltRCZ%d", mc?"MC":"", ily), Form("Tracklets[RC] :: #Deltaz Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkltRCZ%c%d%d", mc?"MC":"", ptName[0], ily, 0)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkltRCZ%d", mc?"MC":"", ily), Form("Tracklets[RC] :: #Deltaz Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
   } // end layer loop
@@ -2002,47 +2034,50 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   const Int_t mdim(kNdim+3);
   Int_t coord[mdim]; memset(coord, 0, sizeof(Int_t) * mdim); Double_t v = 0.;
   Int_t ndim(H->GetNdimensions());
-  TAxis *aa[mdim], *as(NULL), *ap(NULL), *ax(NULL), *abf(NULL); memset(aa, 0, sizeof(TAxis*) * (mdim));
+  TAxis *aa[mdim], *as(NULL), *ap(NULL), *apt(NULL), *ax(NULL), *abf(NULL); memset(aa, 0, sizeof(TAxis*) * (mdim));
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
   if(ndim > Int_t(kSpeciesChgRC)) as = H->GetAxis(kSpeciesChgRC);
-  if(ndim > Int_t(kPt))           ap = H->GetAxis(kPt);
+  if(ndim > Int_t(kPt))          apt = H->GetAxis(kPt);
+  if(ndim > Int_t(kNdim))         ap = H->GetAxis(kNdim);
   if(ndim > Int_t(kNdim)+1)       ax = H->GetAxis(kNdim+1);
   if(ndim > Int_t(kNdim)+2)      abf = H->GetAxis(kNdim+2);
   //AliInfo(Form("Using : Species[%c] Pt[%c] BunchFill[%c]", as?'y':'n', ap?'y':'n', abf?'y':'n'));
-  const Int_t nPt(ndim>Int_t(kNdimTrkIn)?Int_t(kNpt):1);
+  const Int_t nPt(ndim>Int_t(kNdimTrkIn)?Int_t(kNpt+2):1);
 
   // build list of projections
-  const Int_t nsel(kNpt*(AliPID::kSPECIES*kNcharge + 1));
+  const Int_t nsel((kNpt+2)*(kNspc*kNcharge + 1));
   const Char_t chName[kNcharge] = {'n', 'p'};const Char_t chSgn[kNcharge] = {'-', '+'};
-  const Char_t ptName[kNpt] = {'l', 'i', 'h'};
-  const Char_t *ptCut[kNpt] = {"p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "p_{t}[GeV/c]>=1.5"};
+  const Char_t *spcName[kNspc] = {"e", "#mu#pi", "Kp"};
+  const Char_t ptName[kNpt+2] = {'L', 'l', 'i', 'h', 'H'};
+  const Char_t *ptCut[kNpt+2] = {"p_{t}[GeV/c]<0.5", "0.5<=p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "1.5<=p_{t}[GeV/c]<5.0", "p_{t}[GeV/c]>=5.0"};
+  const Char_t *pCut[kNpt+2] = {"p[GeV/c]<0.5", "0.5<=p[GeV/c]<0.8", "0.8<=p[GeV/c]<1.5", "1.5<=p[GeV/c]<5.0", "p[GeV/c]>=5.0"};
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  AliTRDresolutionProjection hp[kMCTrkInNproj]; TObjArray php(kMCTrkInNproj+2);
+  AliTRDrecoProjection hp[kMCTrkInNproj]; TObjArray php(kMCTrkInNproj+2);
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   // define list of projections
   for(Int_t ipt(0); ipt<nPt; ipt++){
-    for(Int_t isp(0); isp<AliPID::kSPECIES; isp++){
+    for(Int_t isp(0); isp<kNspc; isp++){
       for(Int_t ich(0); ich<kNcharge; ich++){
         isel++; // new selection
         hp[ih].Build(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp),
-                     Form("TrackIn[%s%c]:: #Deltay{%s}", AliPID::ParticleLatexName(isp), chSgn[ich], ptCut[ipt]),
+                     Form("TrackIn[%s%c]:: #Deltay{%s}", spcName[isp], chSgn[ich], ptCut[ipt]),
                      kEta, kPhi, kYrez, aa);
         hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
         php.AddLast(&hp[ih++]); np[isel]++;
         hp[ih].Build(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp),
-                     Form("TrackIn[%s%c]:: #Delta#phi{%s}", AliPID::ParticleLatexName(isp), chSgn[ich], ptCut[ipt]),
+                     Form("TrackIn[%s%c]:: #Delta#phi{%s}", spcName[isp], chSgn[ich], ptCut[ipt]),
                      kEta, kPhi, kPrez, aa);
         hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
         php.AddLast(&hp[ih++]); np[isel]++;
         hp[ih].Build(Form("H%sTrkInQ%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp),
-                     Form("TrackIn[%s%c]:: dQdl {%s}", AliPID::ParticleLatexName(isp), chSgn[ich], ptCut[ipt]),
+                     Form("TrackIn[%s%c]:: dQdl {%s}", spcName[isp], chSgn[ich], pCut[ipt]),
                      kEta, kPhi, kZrez, aa);
         hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
         php.AddLast(&hp[ih++]); np[isel]++;
         if(!ax) continue;
         hp[ih].Build(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp),
-                     Form("TrackIn[%s%c]:: #Deltax{%s}", AliPID::ParticleLatexName(isp), chSgn[ich], ptCut[ipt]),
+                     Form("TrackIn[%s%c]:: #Deltax{%s}", spcName[isp], chSgn[ich], ptCut[ipt]),
                      kEta, kPhi, kNdim+1, aa);
         hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
         php.AddLast(&hp[ih++]); np[isel]++;
@@ -2074,283 +2109,335 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   AliInfo(Form("Build %3d 3D projections.", ih));
 
   // fill projections
-  Int_t ch(0), pt(0), sp(1), rcBin(as?as->FindBin(0.):-1), ioff(0);
-  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
+  Int_t ch(0), pt(0), p(0), sp(1), rcBin(as?as->FindBin(0.):-1), ioff(0), joff(0), jsel(0);
+  AliTRDrecoProjection *pr0(NULL), *pr1(NULL);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord);
     if(v<1.) continue;
     if(fBCbinTOF>0 && coord[kBC]!=fBCbinTOF) continue; // TOF bunch cross cut
     if(fBCbinFill>0 && abf && coord[kNdim+2]!=fBCbinTOF) continue; // Fill bunch cut
+    if(coord[kBC]==3) continue;
     // charge selection
-    ch = 0; sp=1;// [-] track
+    ch = 0; sp=1;// [pi-] track
     if(rcBin>0){ // debug mode in which species are also saved
       sp = Int_t(TMath::Abs(as->GetBinCenter(coord[kSpeciesChgRC])))-1;
-      if(sp>=AliPID::kSPECIES){
-        AliDebug(2, Form("Wrong SpeciesIndex[%d]. Rescale", sp));
-        sp = AliPID::kSPECIES-1;
+      // take care of old data format (2*AliPID::kSPECIES+1)
+      if(as->GetNbins() == kNcharge*AliPID::kSPECIES+1){
+        if(sp>2) sp=2;
+        else if(sp==2) sp=1;
       }
       if(coord[kSpeciesChgRC] > rcBin) ch = 1;  // [+] track
       else if(coord[kSpeciesChgRC] == rcBin) ch = 2;  // [RC] track
     }
     // pt selection
-    pt = 0; // low pt
-    if(ap) pt = TMath::Min(coord[kPt]-1, Int_t(kNpt)-1);
+    pt = 0; p = 0; // low pt
+    if(apt) pt = TMath::Min(coord[kPt], Int_t(kNpt)+1);
+    if(ap ) p  = TMath::Min(coord[kNdim], Int_t(kNpt)+1);
     // global selection
-    isel = pt*(AliPID::kSPECIES*kNcharge+1); isel+=sp<0?(AliPID::kSPECIES*kNcharge):(sp*kNcharge+ch);
-    ioff = isel*(ax?4:3);
+    isel = pt*(kNspc*kNcharge+1); isel+=(ch==2?(kNspc*kNcharge):(sp*kNcharge+ch)); ioff = isel*(ax?4:3);
+    jsel = p*(kNspc*kNcharge+1); jsel+=(ch==2?(kNspc*kNcharge):(sp*kNcharge+ch)); joff = jsel*(ax?4:3);
     if(ioff>=ih){
       AliError(Form("Wrong selection %d [%3d]", ioff, ih));
       return kFALSE;
     }
-    if(!(pr0=(AliTRDresolutionProjection*)php.At(ioff))) {
+    if(!(pr0=(AliTRDrecoProjection*)php.At(ioff))) {
       AliError(Form("Missing projection %d", ioff));
       return kFALSE;
     }
-    if(sp>=0 && ch<2){
-      if(strcmp(pr0->fH->GetName(), Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ch], ptName[pt], sp))!=0){
-        AliError(Form("Projection mismatch :: request[H%sTrkInY%c%c%d] found[%s]", mc?"MC":"", chName[ch], ptName[pt], sp, pr0->fH->GetName()));
+    if(ch<2){
+      if(strcmp(pr0->H()->GetName(), Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ch], ptName[pt], sp))!=0){
+        AliError(Form("Projection mismatch :: request[H%sTrkInY%c%c%d] found[%s]", mc?"MC":"", chName[ch], ptName[pt], sp, pr0->H()->GetName()));
         return kFALSE;
       }
     } else {
-      if(strcmp(pr0->fH->GetName(), Form("H%sTrkInRCZ%c", mc?"MC":"", ptName[pt]))!=0){
-        AliError(Form("Projection mismatch :: request[H%sTrkltRCZ%c] found[%s]", mc?"MC":"", ptName[pt], pr0->fH->GetName()));
+      if(strcmp(pr0->H()->GetName(), Form("H%sTrkInRCZ%c", mc?"MC":"", ptName[pt]))!=0){
+        AliError(Form("Projection mismatch :: request[H%sTrkltRCZ%c] found[%s]", mc?"MC":"", ptName[pt], pr0->H()->GetName()));
         return kFALSE;
       }
     }
-    for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
+    AliDebug(2, Form("Found %s for selection sp[%d] ch[%d] pt[%d]", pr0->H()->GetName(), sp, ch, pt));
+    for(Int_t jh(0); jh<np[isel]; jh++){
+      if(ch<2 && jh==2) ((AliTRDrecoProjection*)php.At(joff+jh))->Increment(coord, v); // special care for dQdl=f(p)
+      else ((AliTRDrecoProjection*)php.At(ioff+jh))->Increment(coord, v); // all = f(p_t)
+    }
   }
+  if(HasDump3DFor(kTrackIn)){
+    TDirectory *cwd = gDirectory;
+    TFile::Open(Form("ResDump_%s.root", H->GetName()), "RECREATE");
+    for(Int_t ip(0); ip<php.GetEntriesFast(); ip++){
+      if(!(pr0 = (AliTRDrecoProjection*)php.At(ip))) continue;
+      if(!pr0->H()) continue;
+      TH3 *h3=(TH3*)pr0->H()->Clone();
+      h3->Write();
+    }
+    gFile->Close();
+    cwd->cd();
+  }
+
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(mc?kMCTrkInNproj:kTrkInNproj), cidx);
 
   TH2 *h2(NULL); Int_t jh(0);
   for(; ih--; ){
-    if(!hp[ih].fH) continue;
+    if(!hp[ih].H()) continue;
     if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours))) continue;
     arr->AddAt(h2, jh++);
   }
   // build combined performance plots
   // combine up the tree of projections
-  AliTRDresolutionProjection xlow[2], specY[kNcharge*AliPID::kSPECIES], specPh[kNcharge*AliPID::kSPECIES], specQ[kNcharge*AliPID::kSPECIES];
+  Double_t m(0.), s(0.), trend(0.);
+  AliTRDrecoProjection xlow[2], specY[kNcharge*kNspc], specPh[kNcharge*kNspc], specQ[kNcharge*kNspc];
   for(Int_t ich(0); ich<kNcharge; ich++){
     // PID dependency - summation over pt
-    for(Int_t isp(0); isp<AliPID::kSPECIES; isp++){
+    for(Int_t isp(0); isp<kNspc; isp++){
       /*!dy*/
-      Int_t idx(ich*AliPID::kSPECIES+isp);
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[0], isp)))){
+      Int_t idx(ich*kNspc+isp);
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[0], isp)))){
         specY[idx] = (*pr0);
         specY[idx].SetNameTitle(Form("H%sTrkInY%c%d", mc?"MC":"", chName[ich], isp), "Sum over pt");
-        specY[idx].fH->SetNameTitle(Form("H%sTrkInY%c%d", mc?"MC":"", chName[ich], isp),
-                              Form("TrackIn[%s%c]:: #Deltay", AliPID::ParticleLatexName(isp), chSgn[ich]));
+        specY[idx].H()->SetNameTitle(Form("H%sTrkInY%c%d", mc?"MC":"", chName[ich], isp),
+                              Form("TrackIn[%s%c]:: #Deltay", spcName[isp], chSgn[ich]));
         for(Int_t ipt(1); ipt<nPt; ipt++){
-          if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
+          if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
           specY[idx]+=(*pr1);
         }
         php.AddLast(&specY[idx]);
         if((h2 = specY[idx].Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
-        if((h2 = (TH2*)gDirectory->Get(Form("%sEn", specY[idx].fH->GetName())))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specY[idx];
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specY[idx];
       }
       /*!dphi*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[0], isp)))){
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[0], isp)))){
         specPh[idx] = (*pr0);
         specPh[idx].SetNameTitle(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[ich], isp), "Sum over pt");
-        specPh[idx].fH->SetNameTitle(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[ich], isp),
-                              Form("TrackIn[%s%c]:: #Delta#phi", AliPID::ParticleLatexName(isp), chSgn[ich]));
+        specPh[idx].H()->SetNameTitle(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[ich], isp),
+                              Form("TrackIn[%s%c]:: #Delta#phi", spcName[isp], chSgn[ich]));
         specPh[idx].SetShowRange(-1.5, 1.5);
+        PutTrendValue(Form("TrkInPh%c%c%d", chName[ich], ptName[0], isp), pr0->GetTrendValue(1));
         for(Int_t ipt(1); ipt<nPt; ipt++){
-          if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
+          if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
+          PutTrendValue(Form("TrkInPh%c%c%d", chName[ich], ptName[ipt], isp), pr1->GetTrendValue(1));
           specPh[idx]+=(*pr1);
         }
         php.AddLast(&specPh[idx]);
         if((h2 = specPh[idx].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specPh[idx];
+        PutTrendValue(Form("TrkInPh%c%d", chName[ich], isp), specPh[idx].GetTrendValue(1));
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specPh[idx];
       }
       /*!dQdl*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInQ%c%c%d", mc?"MC":"", chName[ich], ptName[0], isp)))){
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInQ%c%c%d", mc?"MC":"", chName[ich], ptName[0], isp)))){
         specQ[idx] = (*pr0);
-        specQ[idx].SetNameTitle(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[ich], isp), "Sum over pt");
-        specQ[idx].fH->SetNameTitle(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[ich], isp),
-                              Form("TrackIn[%s%c]:: dQdl", AliPID::ParticleLatexName(isp), chSgn[ich]));
+        specQ[idx].SetNameTitle(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[ich], isp), "Sum over p");
+        specQ[idx].H()->SetNameTitle(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[ich], isp),
+                              Form("TrackIn[%s%c]:: dQdl", spcName[isp], chSgn[ich]));
         specQ[idx].SetShowRange(-2.2, -1.75);
-        specQ[idx].fH->GetZaxis()->SetTitle("dQdl [a.u.]");
+        specQ[idx].H()->GetZaxis()->SetTitle("dQdl [a.u.]");
+        if((trend = pr0->GetTrendValue(2, &m))>-100.){
+          PutTrendValue(Form("TrkInQ%c%c%d", chName[ich], ptName[0], isp), trend);
+          PutTrendValue(Form("TrkInQS%c%c%d", chName[ich], ptName[0], isp), m);
+        }
         for(Int_t ipt(1); ipt<nPt; ipt++){
-          if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInQ%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
+          if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInQ%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
+          if((trend=pr1->GetTrendValue(2, &m))>-100.){
+            PutTrendValue(Form("TrkInQ%c%c%d", chName[ich], ptName[ipt], isp), trend);
+            PutTrendValue(Form("TrkInQS%c%c%d", chName[ich], ptName[ipt], isp), m);
+          }
           specQ[idx]+=(*pr1);
         }
         php.AddLast(&specQ[idx]);
         if((h2 = specQ[idx].Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
-        specQ[idx].fH->SetName(Form("H%sTrkInQS%c%d", mc?"MC":"", chName[ich], isp));
-        specQ[idx].SetShowRange(-1.75, -1.25);
+        specQ[idx].H()->SetName(Form("H%sTrkInQS%c%d", mc?"MC":"", chName[ich], isp));
+        specQ[idx].SetShowRange(-1.85, -1.4);
         if((h2 = specQ[idx].Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
-        if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specQ[idx];
+        if((trend=specQ[idx].GetTrendValue(2, &m))>-100.){
+          PutTrendValue(Form("TrkInQ%c%d", chName[ich], isp), trend);
+          PutTrendValue(Form("TrkInQS%c%d", chName[ich], isp), m);
+        }
+        if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specQ[idx];
       }
     } // end PID loop for pt integration
 
     // pt dependency - summation over PID
     for(Int_t ipt(0); ipt<nPt; ipt++){
       /*!dy*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], 0)))){
-        for(Int_t isp(1); isp<AliPID::kSPECIES; isp++){
-          if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], 0)))){
+        for(Int_t isp(1); isp<kNspc; isp++){
+          if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
           (*pr0)+=(*pr1);
         }
-        pr0->fH->SetNameTitle(Form("H%sTrkInY%c%c", mc?"MC":"", chName[ich], ptName[ipt]),
+        pr0->H()->SetNameTitle(Form("H%sTrkInY%c%c", mc?"MC":"", chName[ich], ptName[ipt]),
                                   Form("TrackIn[%c]:: #Deltay{%s}", chSgn[ich], ptCut[ipt]));
         pr0->SetShowRange(-0.3, 0.3);
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
+        if((trend=pr0->GetTrendValue(1,&m,&s))>-100.){
+          PutTrendValue(Form("TrkInY%c%c", chName[ich], ptName[ipt]), trend);
+          PutTrendValue(Form("TrkInYS%c%c", chName[ich], ptName[ipt]), s);
+        }
+        if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
       }
       /*!dphi*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], 0)))){
-        for(Int_t isp(1); isp<AliPID::kSPECIES; isp++){
-          if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], 0)))){
+        for(Int_t isp(1); isp<kNspc; isp++){
+          if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
           (*pr0)+=(*pr1);
         }
-        pr0->fH->SetNameTitle(Form("H%sTrkInPh%c%c", mc?"MC":"", chName[ich], ptName[ipt]),
+        pr0->H()->SetNameTitle(Form("H%sTrkInPh%c%c", mc?"MC":"", chName[ich], ptName[ipt]),
                                   Form("TrackIn[%c]:: #Delta#phi{%s}", chSgn[ich], ptCut[ipt]));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
+        PutTrendValue(Form("TrkInPh%c%c", chName[ich], ptName[ipt]), pr0->GetTrendValue(1));
+        if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
       }
       /*!dx*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], 0)))){
-        for(Int_t isp(1); isp<AliPID::kSPECIES; isp++){
-          if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], 0)))){
+        for(Int_t isp(1); isp<kNspc; isp++){
+          if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
           (*pr0)+=(*pr1);
         }
-        pr0->fH->SetNameTitle(Form("H%sTrkInX%c%c", mc?"MC":"", chName[ich], ptName[ipt]),
+        pr0->H()->SetNameTitle(Form("H%sTrkInX%c%c", mc?"MC":"", chName[ich], ptName[ipt]),
                                   Form("TrackIn[%c]:: #Deltax{%s}", chSgn[ich], ptCut[ipt]));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+        PutTrendValue(Form("TrkInX%c%c", chName[ich], ptName[ipt]), pr0->GetTrendValue(1));
         if(!ipt){
           xlow[ich] = (*pr0);
           xlow[ich].SetNameTitle(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[0], 5),
                                  Form("TrackIn[%c]:: #Deltax{%s}", chSgn[ich], ptCut[0]));
           php.AddLast(&xlow[ich]);
         }
-        if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
+        if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))) (*pr1)+=(*pr0);
       }
     } // end pt loop for PID integration
 
     /*!dy*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkInY%c", mc?"MC":"", chName[ich]),
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkInY%c", mc?"MC":"", chName[ich]),
                             Form("TrackIn[%c]:: #Deltay", chSgn[ich]));
       pr0->SetShowRange(-0.3, 0.3);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
-      if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
-      if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
+      if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName())))) arr->AddAt(h2, jh++);
+      if((trend=pr0->GetTrendValue(1, &m, &s))>-100.){
+        PutTrendValue(Form("TrkInY%c", chName[ich]), trend);
+        PutTrendValue(Form("TrkInYS%c", chName[ich]), s);
+      }
+      if(ich && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
     }
     /*!dy high pt*/
-    if(ich && (pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[2], 0)))){
-      if((pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[2], 0)))){
+    if(ich && (pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[3], 0)))){
+      if((pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[ich], ptName[3], 0)))){
         (*pr0)+=(*pr1);
-        pr0->fH->SetNameTitle(Form("H%sTrkInY%c", mc?"MC":"", ptName[2]), Form("TrackIn :: #Deltay{%s}", ptCut[2]));
+        pr0->H()->SetNameTitle(Form("H%sTrkInY%c", mc?"MC":"", ptName[3]), Form("TrackIn :: #Deltay{%s}", ptCut[3]));
         pr0->SetShowRange(-0.3, 0.3);
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
       }
     }
     /*!dphi*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkInPh%c", mc?"MC":"", chName[ich]),
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkInPh%c", mc?"MC":"", chName[ich]),
                             Form("TrackIn[%c]:: #Delta#phi", chSgn[ich]));
       pr0->SetShowRange(-1., 1.);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-      if(ich==1 && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
+      PutTrendValue(Form("TrkInPh%c", chName[ich]), pr0->GetTrendValue(1));
+      if(ich==1 && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
     }
     /*!dx*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkInX%c", mc?"MC":"", chName[ich]),
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[0], 0)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkInX%c", mc?"MC":"", chName[ich]),
                             Form("TrackIn[%c]:: #Deltax", chSgn[ich]));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-      if(ich==1 && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
+      PutTrendValue(Form("TrkInX%c", chName[ich]), pr0->GetTrendValue(1));
+      if(ich==1 && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))) (*pr1)+=(*pr0);
     }
     /*!dx low pt*/
-    if(ich && (pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[0], ptName[0], 5)))){
-      if((pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[0], 5)))){
+    if(ich && (pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[0], ptName[1], 5)))){
+      if((pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[ich], ptName[1], 5)))){
         (*pr0)+=(*pr1);
-        pr0->fH->SetNameTitle(Form("H%sTrkInX%c", mc?"MC":"", ptName[0]), Form("TrackIn :: #Deltax{%s}", ptCut[0]));
+        pr0->H()->SetNameTitle(Form("H%sTrkInX%c", mc?"MC":"", ptName[1]), Form("TrackIn :: #Deltax{%s}", ptCut[1]));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
       }
     }
   } // end charge loop
 
-  for(Int_t isp(0); isp<AliPID::kSPECIES; isp++){
+  for(Int_t isp(0); isp<kNspc; isp++){
     /*!dy*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkInY%d", mc?"MC":"", isp), Form("TrackIn[%s] :: #Deltay", AliPID::ParticleLatexName(isp)));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkInY%d", mc?"MC":"", isp), Form("TrackIn[%s] :: #Deltay", spcName[isp]));
       pr0->SetShowRange(-0.3, 0.3);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
-      if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
+      if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName())))) arr->AddAt(h2, jh++);
     }
     /*!dphi*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[0], isp)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkInPh%d", mc?"MC":"", isp), Form("TrackIn[%s] :: #Delta#phi", AliPID::ParticleLatexName(isp)));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[0], isp)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkInPh%d", mc?"MC":"", isp), Form("TrackIn[%s] :: #Delta#phi", spcName[isp]));
       pr0->SetShowRange(-1., 1.);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+      PutTrendValue(Form("TrkInPh%d", isp), pr0->GetTrendValue(1));
     }
     /*!dQdl*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[0], isp)))){
-      pr0->fH->SetNameTitle(Form("H%sTrkInQ%d", mc?"MC":"", isp), Form("TrackIn[%s] :: dQdl", AliPID::ParticleLatexName(isp)));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInQ%c%d", mc?"MC":"", chName[0], isp)))){
+      pr0->H()->SetNameTitle(Form("H%sTrkInQ%d", mc?"MC":"", isp), Form("TrackIn[%s] :: dQdl", spcName[isp]));
       pr0->SetShowRange(-2.2, -1.75);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
-      pr0->fH->SetName(Form("H%sTrkInQS%d", mc?"MC":"", isp));
-      pr0->SetShowRange(-1.7, -1.25);
+      pr0->H()->SetName(Form("H%sTrkInQS%d", mc?"MC":"", isp));
+      pr0->SetShowRange(-1.85, -1.4);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
+      if((trend=pr0->GetTrendValue(2, &m))>-100.){
+        PutTrendValue(Form("TrkInQ%d", isp), trend);
+        PutTrendValue(Form("TrkInQS%d", isp), m);
+      }
     }
   } // end PID processing
 
   /*!dy*/
-  if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))){
-    pr0->fH->SetNameTitle(Form("H%sTrkInY", mc?"MC":""), "TrackIn :: #Deltay");
+  if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInY%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))){
+    pr0->H()->SetNameTitle(Form("H%sTrkInY", mc?"MC":""), "TrackIn :: #Deltay");
     pr0->SetShowRange(-0.3, 0.3);
     if((h2 = pr0->Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
-    if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
+    if((h2 = (TH2*)gDirectory->Get(Form("%sEn", pr0->H()->GetName())))) arr->AddAt(h2, jh++);
   }
   /*!dphi*/
-  if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))){
-    pr0->fH->SetNameTitle(Form("H%sTrkInPh", mc?"MC":""), "TrackIn :: #Delta#phi");
+  if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))){
+    pr0->H()->SetNameTitle(Form("H%sTrkInPh", mc?"MC":""), "TrackIn :: #Delta#phi");
     if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
   }
   /*!dx*/
-  if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))){
-    pr0->fH->SetNameTitle(Form("H%sTrkInX", mc?"MC":""), "TrackIn :: #Deltax");
+  if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInX%c%c%d", mc?"MC":"", chName[0], ptName[0], 0)))){
+    pr0->H()->SetNameTitle(Form("H%sTrkInX", mc?"MC":""), "TrackIn :: #Deltax");
     if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
   }
 
   // Row Cross processing
   /*!RC dz*/
-  if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInRCZ%c", mc?"MC":"", ptName[0])))){
+  if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInRCZ%c", mc?"MC":"", ptName[0])))){
     for(Int_t ipt(0); ipt<kNpt; ipt++){
-      if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInRCZ%c", mc?"MC":"", ptName[ipt])))) continue;
+      if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInRCZ%c", mc?"MC":"", ptName[ipt])))) continue;
       (*pr0)+=(*pr1);
     }
-    pr0->fH->SetNameTitle(Form("H%sTrkInRCZ", mc?"MC":""), "TrackIn[RC]:: #Deltaz");
+    pr0->H()->SetNameTitle(Form("H%sTrkInRCZ", mc?"MC":""), "TrackIn[RC]:: #Deltaz");
     if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
   }
   /*!RC dy*/
-  if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInRCY%c", mc?"MC":"", ptName[0])))){
+  if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInRCY%c", mc?"MC":"", ptName[0])))){
     for(Int_t ipt(0); ipt<kNpt; ipt++){
-      if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInRCY%c", mc?"MC":"", ptName[ipt])))) continue;
+      if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInRCY%c", mc?"MC":"", ptName[ipt])))) continue;
       (*pr0)+=(*pr1);
     }
-    pr0->fH->SetNameTitle(Form("H%sTrkInRCY", mc?"MC":""), "TrackIn[RC]:: #Deltay");
+    pr0->H()->SetNameTitle(Form("H%sTrkInRCY", mc?"MC":""), "TrackIn[RC]:: #Deltay");
     if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
   }
   /*!RC dphi*/
-  if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInRCPh%c", mc?"MC":"", ptName[0])))){
+  if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInRCPh%c", mc?"MC":"", ptName[0])))){
     for(Int_t ipt(0); ipt<kNpt; ipt++){
-      if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInRCPh%c", mc?"MC":"", ptName[ipt])))) continue;
+      if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInRCPh%c", mc?"MC":"", ptName[ipt])))) continue;
       (*pr0)+=(*pr1);
     }
-    pr0->fH->SetNameTitle(Form("H%sTrkInRCPh", mc?"MC":""), "TrackIn[RC]:: #Delta#phi");
+    pr0->H()->SetNameTitle(Form("H%sTrkInRCPh", mc?"MC":""), "TrackIn[RC]:: #Delta#phi");
     if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
   }
   /*!RC dx*/
-  if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInRCX%c", mc?"MC":"", ptName[0])))){
+  if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInRCX%c", mc?"MC":"", ptName[0])))){
     for(Int_t ipt(0); ipt<kNpt; ipt++){
-      if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInRCX%c", mc?"MC":"", ptName[ipt])))) continue;
+      if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("H%sTrkInRCX%c", mc?"MC":"", ptName[ipt])))) continue;
       (*pr0)+=(*pr1);
     }
-    pr0->fH->SetNameTitle(Form("H%sTrkInRCX", mc?"MC":""), "TrackIn[RC]:: #Deltax");
+    pr0->H()->SetNameTitle(Form("H%sTrkInRCX", mc?"MC":""), "TrackIn[RC]:: #Deltax");
     if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
   }
   AliInfo(Form("Done %3d 2D projections.", jh));
@@ -2389,7 +2476,7 @@ Bool_t AliTRDresolution::MakeProjectionTrack()
   const Char_t *ptCut[kNpt] = {"p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "p_{t}[GeV/c]>=1.5"};
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  AliTRDresolutionProjection hp[kTrkNproj]; TObjArray php(kTrkNproj);
+  AliTRDrecoProjection hp[kTrkNproj]; TObjArray php(kTrkNproj);
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     for(Int_t ipt(0); ipt<kNpt; ipt++){
@@ -2442,97 +2529,97 @@ Bool_t AliTRDresolution::MakeProjectionTrack()
     Int_t ioff = ly*kNpt*31+pt*31; ioff+=3*(sp<0?10:(sp*kNcharge+ch));
     isel = ly*kNpt*11+pt*11; isel+=sp<0?10:(sp*kNcharge+ch);
     AliDebug(4, Form("SELECTION[%d] :: ch[%c] pt[%c] sp[%d] ly[%d]\n", np[isel], ch==2?'Z':chName[ch], ptName[pt], sp, ly));
-    for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDresolutionProjection*)php.At(ioff+jh))->Increment(coord, v);
+    for(Int_t jh(0); jh<np[isel]; jh++) ((AliTRDrecoProjection*)php.At(ioff+jh))->Increment(coord, v);
   }
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kTrkNproj), cidx);
 
   TH2 *h2(NULL); Int_t jh(0);
   for(; ih--; ){
-    if(!hp[ih].fH) continue;
+    if(!hp[ih].H()) continue;
     if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours))) continue;
     arr->AddAt(h2, jh++);
   }
 
   // combine up the tree of projections
-  AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
+  AliTRDrecoProjection *pr0(NULL), *pr1(NULL);
   //Int_t iproj(0), jproj(0);
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     for(Int_t ich(0); ich<kNcharge; ich++){
       for(Int_t ipt(0); ipt<kNpt; ipt++){
         /*!dy*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[ich], ptName[ipt], 0, ily)))){
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[ich], ptName[ipt], 0, ily)))){
           for(Int_t isp(1); isp<AliPID::kSPECIES; isp++){
-            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[ich], ptName[ipt], isp, ily)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[ich], ptName[ipt], isp, ily)))) continue;
             (*pr0)+=(*pr1);
           }
-          AliDebug(2, Form("Rename %s to HMCTrkY%c%c%d", pr0->fH->GetName(), chName[ich], ptName[ipt], ily));
-          pr0->fH->SetNameTitle(Form("HMCTrkY%c%c%d", chName[ich], ptName[ipt], ily),
+          AliDebug(2, Form("Rename %s to HMCTrkY%c%c%d", pr0->H()->GetName(), chName[ich], ptName[ipt], ily));
+          pr0->H()->SetNameTitle(Form("HMCTrkY%c%c%d", chName[ich], ptName[ipt], ily),
                                     Form("Tracks[%c]:: #Deltay{%s} Ly[%d]", chSgn[ich], ptCut[ipt], ily));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-          if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[ich], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
+          if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[ich], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
         }
         /*!dphi*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[ich], ptName[ipt], 0, ily)))){
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[ich], ptName[ipt], 0, ily)))){
           for(Int_t isp(1); isp<AliPID::kSPECIES; isp++){
-            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[ich], ptName[ipt], isp, ily)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[ich], ptName[ipt], isp, ily)))) continue;
             (*pr0)+=(*pr1);
           }
-          AliDebug(2, Form("Rename %s to HMCTrkPh%c%c%d", pr0->fH->GetName(), chName[ich], ptName[ipt], ily));
-          pr0->fH->SetNameTitle(Form("HMCTrkPh%c%c%d", chName[ich], ptName[ipt], ily),
+          AliDebug(2, Form("Rename %s to HMCTrkPh%c%c%d", pr0->H()->GetName(), chName[ich], ptName[ipt], ily));
+          pr0->H()->SetNameTitle(Form("HMCTrkPh%c%c%d", chName[ich], ptName[ipt], ily),
                                     Form("Tracks[%c]:: #Delta#phi{%s} Ly[%d]", chSgn[ich], ptCut[ipt], ily));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-          if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[ich], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
+          if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[ich], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
         }
 
         /*!dpt/pt*/
-        if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[ich], ptName[ipt], 0, ily)))){
+        if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[ich], ptName[ipt], 0, ily)))){
           for(Int_t isp(1); isp<AliPID::kSPECIES; isp++){
-            if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[ich], ptName[ipt], isp, ily)))) continue;
+            if(!(pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[ich], ptName[ipt], isp, ily)))) continue;
             (*pr0)+=(*pr1);
           }
-          AliDebug(2, Form("Rename %s to HMCTrkDPt%c%c%d", pr0->fH->GetName(), chName[ich], ptName[ipt], ily));
-          pr0->fH->SetNameTitle(Form("HMCTrkDPt%c%c%d", chName[ich], ptName[ipt], ily),
+          AliDebug(2, Form("Rename %s to HMCTrkDPt%c%c%d", pr0->H()->GetName(), chName[ich], ptName[ipt], ily));
+          pr0->H()->SetNameTitle(Form("HMCTrkDPt%c%c%d", chName[ich], ptName[ipt], ily),
                                     Form("Tracks[%c]:: #Deltap_{t}/p_{t}{%s} Ly[%d]", chSgn[ich], ptCut[ipt], ily));
           if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-          if(ipt && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[ich], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
+          if(ipt && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[ich], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
         }
       }
       /*!dy*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[ich], ptName[0], 0, ily)))){
-        pr0->fH->SetNameTitle(Form("HMCTrkY%c%d", chName[ich], ily),
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[ich], ptName[0], 0, ily)))){
+        pr0->H()->SetNameTitle(Form("HMCTrkY%c%d", chName[ich], ily),
                               Form("Tracks[%c]:: #Deltay Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ich==1 && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[0], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
+        if(ich==1 && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[0], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
       }
       /*!dphi*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[ich], ptName[0], 0, ily)))){
-        pr0->fH->SetNameTitle(Form("HMCTrkPh%c%d", chName[ich], ily),
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[ich], ptName[0], 0, ily)))){
+        pr0->H()->SetNameTitle(Form("HMCTrkPh%c%d", chName[ich], ily),
                               Form("Tracks[%c]:: #Delta#phi Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ich==1 && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[0], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
+        if(ich==1 && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[0], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
       }
       /*!dpt/pt*/
-      if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[ich], ptName[0], 0, ily)))){
-        pr0->fH->SetNameTitle(Form("HMCTrkDPt%c%d", chName[ich], ily),
+      if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[ich], ptName[0], 0, ily)))){
+        pr0->H()->SetNameTitle(Form("HMCTrkDPt%c%d", chName[ich], ily),
                               Form("Tracks[%c]:: #Deltap_{t}/p_{t} Ly[%d]", chSgn[ich], ily));
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-        if(ich==1 && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[0], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
+        if(ich==1 && (pr1 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[0], ptName[0], 0, ily)))) (*pr1)+=(*pr0);
       }
     }
     /*!dy*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[0], ptName[0], 0, ily)))){
-      pr0->fH->SetNameTitle(Form("HMCTrkY%d", ily), Form("Tracks :: #Deltay Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkY%c%c%d%d", chName[0], ptName[0], 0, ily)))){
+      pr0->H()->SetNameTitle(Form("HMCTrkY%d", ily), Form("Tracks :: #Deltay Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
     /*!dphi*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[0], ptName[0], 0, ily)))){
-      pr0->fH->SetNameTitle(Form("HMCTrkPh%d", ily), Form("Tracks :: #Delta#phi Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkPh%c%c%d%d", chName[0], ptName[0], 0, ily)))){
+      pr0->H()->SetNameTitle(Form("HMCTrkPh%d", ily), Form("Tracks :: #Delta#phi Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
     /*!dpt/pt*/
-    if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[0], ptName[0], 0, ily)))){
-      pr0->fH->SetNameTitle(Form("HMCTrkDPt%d", ily), Form("Tracks :: #Deltap_{t}/p_{t} Ly[%d]", ily));
+    if((pr0 = (AliTRDrecoProjection*)php.FindObject(Form("HMCTrkDPt%c%c%d%d", chName[0], ptName[0], 0, ily)))){
+      pr0->H()->SetNameTitle(Form("HMCTrkDPt%d", ily), Form("Tracks :: #Deltap_{t}/p_{t} Ly[%d]", ily));
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
   }
@@ -2556,34 +2643,34 @@ Bool_t AliTRDresolution::PostProcess()
 
   //PROCESS EXPERIMENTAL DISTRIBUTIONS
   // Clusters detector
-  if(HasProcessDetector() && !MakeProjectionDetector()) return kFALSE;
+  if(HasProcess(kDetector)) if(!MakeProjectionDetector()) return kFALSE;
   // Clusters residuals
-  if(HasProcessCluster() && !MakeProjectionCluster()) return kFALSE;
+  if(HasProcess(kCluster)) if(!MakeProjectionCluster()) return kFALSE;
   fNRefFigures = 3;
   // Tracklet residual/pulls
-  if(HasProcessTrklt() && !MakeProjectionTracklet()) return kFALSE;
+  if(HasProcess(kTracklet)) if(!MakeProjectionTracklet()) return kFALSE;
   fNRefFigures = 7;
   // TRDin residual/pulls
-  if(HasProcessTrkIn() && !MakeProjectionTrackIn()) return kFALSE;
+  if(HasProcess(kTrackIn)) if(!MakeProjectionTrackIn()) return kFALSE;
   fNRefFigures = 11;
 
   if(!HasMCdata()) return kTRUE;
   //PROCESS MC RESIDUAL DISTRIBUTIONS
 
   // CLUSTER Y RESOLUTION/PULLS
-  if(!MakeProjectionCluster(kTRUE)) return kFALSE;
+  if(HasProcess(kCluster)) if(!MakeProjectionCluster(kTRUE)) return kFALSE;
   fNRefFigures = 17;
 
   // TRACKLET RESOLUTION/PULLS
-  if(!MakeProjectionTracklet(kTRUE)) return kFALSE;
+  if(HasProcess(kTracklet)) if(!MakeProjectionTracklet(kTRUE)) return kFALSE;
   fNRefFigures = 21;
 
   // TRACK RESOLUTION/PULLS
-  if(!MakeProjectionTrack()) return kFALSE;
+  if(HasProcess(kTracklet)) if(!MakeProjectionTrack()) return kFALSE;
   fNRefFigures+=16;
 
   // TRACK TRDin RESOLUTION/PULLS
-  if(!MakeProjectionTrackIn(kTRUE)) return kFALSE;
+  if(HasProcess(kTrackIn)) if(!MakeProjectionTrackIn(kTRUE)) return kFALSE;
   fNRefFigures+=8;
 
   return kTRUE;
@@ -2626,159 +2713,6 @@ void AliTRDresolution::AdjustF1(TH1 *h, TF1 *f)
   f->SetParLimits(5, 0., 1.e2);
   f->SetParameter(5, 2.e-1);
 }
-
-//________________________________________________________
-TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool_t expand, Float_t range)
-{
-// Build performance histograms for AliTRDcluster.vs TRD track or MC
-//  - y reziduals/pulls
-
-  TObjArray *arr = new TObjArray(2);
-  arr->SetName(name); arr->SetOwner();
-  TH1 *h(NULL); char hname[100], htitle[300];
-
-  // tracklet resolution/pull in y direction
-  snprintf(hname, 100, "%s_%s_Y", GetNameId(), name);
-  snprintf(htitle, 300, "Y res for \"%s\" @ %s;tg(#phi);#Delta y [cm];%s", GetNameId(), name, "Detector");
-  Float_t rr = range<0.?fDyRange:range;
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    Int_t nybins=50;
-    if(expand) nybins*=2;
-    h = new TH3S(hname, htitle,
-                 48, -.48, .48,            // phi
-                 60, -rr, rr,              // dy
-                 nybins, -0.5, nybins-0.5);// segment
-  } else h->Reset();
-  arr->AddAt(h, 0);
-  snprintf(hname, 100, "%s_%s_YZpull", GetNameId(), name);
-  snprintf(htitle, 300, "YZ pull for \"%s\" @ %s;%s;#Delta y  / #sigma_{y};#Delta z  / #sigma_{z}", GetNameId(), name, "Detector");
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle, 540, -0.5, 540-0.5, 100, -4.5, 4.5, 100, -4.5, 4.5);
-  } else h->Reset();
-  arr->AddAt(h, 1);
-
-  return arr;
-}
-
-//________________________________________________________
-TObjArray* AliTRDresolution::BuildMonitorContainerTracklet(const char* name, Bool_t expand)
-{
-// Build performance histograms for AliExternalTrackParam.vs TRD tracklet
-//  - y reziduals/pulls
-//  - z reziduals/pulls
-//  - phi reziduals
-  TObjArray *arr = BuildMonitorContainerCluster(name, expand, 0.05);
-  arr->Expand(5);
-  TH1 *h(NULL); char hname[100], htitle[300];
-
-  // tracklet resolution/pull in z direction
-  snprintf(hname, 100, "%s_%s_Z", GetNameId(), name);
-  snprintf(htitle, 300, "Z res for \"%s\" @ %s;tg(#theta);#Delta z [cm]", GetNameId(), name);
-  if(!(h = (TH2S*)gROOT->FindObject(hname))){
-    h = new TH2S(hname, htitle, 50, -1., 1., 100, -.05, .05);
-  } else h->Reset();
-  arr->AddAt(h, 2);
-  snprintf(hname, 100, "%s_%s_Zpull", GetNameId(), name);
-  snprintf(htitle, 300, "Z pull for \"%s\" @ %s;tg(#theta);#Delta z  / #sigma_{z};row cross", GetNameId(), name);
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle, 50, -1., 1., 100, -5.5, 5.5, 2, -0.5, 1.5);
-    h->GetZaxis()->SetBinLabel(1, "no RC");
-    h->GetZaxis()->SetBinLabel(2, "RC");
-  } else h->Reset();
-  arr->AddAt(h, 3);
-
-  // tracklet to track phi resolution
-  snprintf(hname, 100, "%s_%s_PHI", GetNameId(), name);
-  snprintf(htitle, 300, "#Phi res for \"%s\" @ %s;tg(#phi);#Delta #phi [rad];%s", GetNameId(), name, "Detector");
-  Int_t nsgms=540;
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle, 48, -.48, .48, 100, -.5, .5, nsgms, -0.5, nsgms-0.5);
-  } else h->Reset();
-  arr->AddAt(h, 4);
-
-  return arr;
-}
-
-//________________________________________________________
-TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
-{
-// Build performance histograms for AliExternalTrackParam.vs MC
-//  - y resolution/pulls
-//  - z resolution/pulls
-//  - phi resolution, snp pulls
-//  - theta resolution, tgl pulls
-//  - pt resolution, 1/pt pulls, p resolution
-
-  TObjArray *arr = BuildMonitorContainerTracklet(name);
-  arr->Expand(11);
-  TH1 *h(NULL); char hname[100], htitle[300];
-  //TAxis *ax(NULL);
-
-  // snp pulls
-  snprintf(hname, 100, "%s_%s_SNPpull", GetNameId(), name);
-  snprintf(htitle, 300, "SNP pull for \"%s\" @ %s;tg(#phi);#Delta snp  / #sigma_{snp};entries", GetNameId(), name);
-  if(!(h = (TH2I*)gROOT->FindObject(hname))){
-    h = new TH2I(hname, htitle, 60, -.3, .3, 100, -4.5, 4.5);
-  } else h->Reset();
-  arr->AddAt(h, 5);
-
-  // theta resolution
-  snprintf(hname, 100, "%s_%s_THT", GetNameId(), name);
-  snprintf(htitle, 300, "#Theta res for \"%s\" @ %s;tg(#theta);#Delta #theta [rad];entries", GetNameId(), name);
-  if(!(h = (TH2I*)gROOT->FindObject(hname))){
-    h = new TH2I(hname, htitle, 100, -1., 1., 100, -5e-3, 5e-3);
-  } else h->Reset();
-  arr->AddAt(h, 6);
-  // tgl pulls
-  snprintf(hname, 100, "%s_%s_TGLpull", GetNameId(), name);
-  snprintf(htitle, 300, "TGL pull for \"%s\" @ %s;tg(#theta);#Delta tgl  / #sigma_{tgl};entries", GetNameId(), name);
-  if(!(h = (TH2I*)gROOT->FindObject(hname))){
-    h = new TH2I(hname, htitle, 100, -1., 1., 100, -4.5, 4.5);
-  } else h->Reset();
-  arr->AddAt(h, 7);
-
-  const Int_t kNdpt(150);
-  const Int_t kNspc = 2*AliPID::kSPECIES+1;
-  Float_t lPt=0.1, lDPt=-.1, lSpc=-5.5;
-  Float_t binsPt[kNpt+1], binsSpc[kNspc+1], binsDPt[kNdpt+1];
-  for(Int_t i=0;i<kNpt+1; i++,lPt=TMath::Exp(i*.15)-1.) binsPt[i]=lPt;
-  for(Int_t i=0; i<kNspc+1; i++,lSpc+=1.) binsSpc[i]=lSpc;
-  for(Int_t i=0; i<kNdpt+1; i++,lDPt+=2.e-3) binsDPt[i]=lDPt;
-
-  // Pt resolution
-  snprintf(hname, 100, "%s_%s_Pt", GetNameId(), name);
-  snprintf(htitle, 300, "#splitline{P_{t} res for}{\"%s\" @ %s};p_{t} [GeV/c];#Delta p_{t}/p_{t}^{MC};SPECIES", GetNameId(), name);
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle,
-                 kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-    //ax = h->GetZaxis();
-    //for(Int_t ib(1); ib<=ax->GetNbins(); ib++) ax->SetBinLabel(ib, fgParticle[ib-1]);
-  } else h->Reset();
-  arr->AddAt(h, 8);
-  // 1/Pt pulls
-  snprintf(hname, 100, "%s_%s_1Pt", GetNameId(), name);
-  snprintf(htitle, 300, "#splitline{1/P_{t} pull for}{\"%s\" @ %s};1/p_{t}^{MC} [c/GeV];#Delta(1/p_{t})/#sigma(1/p_{t});SPECIES", GetNameId(), name);
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle,
-                 kNpt, 0., 2., 100, -4., 4., kNspc, -5.5, 5.5);
-    //ax = h->GetZaxis();
-    //for(Int_t ib(1); ib<=ax->GetNbins(); ib++) ax->SetBinLabel(ib, fgParticle[ib-1]);
-  } else h->Reset();
-  arr->AddAt(h, 9);
-  // P resolution
-  snprintf(hname, 100, "%s_%s_P", GetNameId(), name);
-  snprintf(htitle, 300, "P res for \"%s\" @ %s;p [GeV/c];#Delta p/p^{MC};SPECIES", GetNameId(), name);
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle,
-                 kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-    //ax = h->GetZaxis();
-    //for(Int_t ib(1); ib<=ax->GetNbins(); ib++) ax->SetBinLabel(ib, fgParticle[ib-1]);
-  } else h->Reset();
-  arr->AddAt(h, 10);
-
-  return arr;
-}
-
 
 //________________________________________________________
 TObjArray* AliTRDresolution::Histos()
@@ -2860,18 +2794,24 @@ TObjArray* AliTRDresolution::Histos()
   snprintf(hn, nhn, "h%s", fgPerformanceName[kTrackIn]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
     // set specific fields
-    const Int_t mdim(kNdim+3);
+    const Int_t mdim(kNdim+2);
     Char_t *trinTitle[mdim]; memcpy(trinTitle, fgkTitle, kNdim*sizeof(Char_t*));
     Int_t trinNbins[mdim];   memcpy(trinNbins, fgkNbins, kNdim*sizeof(Int_t));
     Double_t trinMin[mdim];  memcpy(trinMin, fgkMin, kNdim*sizeof(Double_t));
     Double_t trinMax[mdim];  memcpy(trinMax, fgkMax, kNdim*sizeof(Double_t));
-    trinNbins[kSpeciesChgRC] = Int_t(kNcharge)*AliPID::kSPECIES+1; trinMin[kSpeciesChgRC] = -AliPID::kSPECIES-0.5; trinMax[kSpeciesChgRC] = AliPID::kSPECIES+0.5;
-    trinTitle[kNdim]=StrDup("p [GeV/c]"); trinNbins[kNdim] = 24; trinMin[kNdim] = -0.5; trinMax[kNdim] = 23.5;
+    if(fTriggerList){
+      trinTitle[kBC]=StrDup("trigger"); 
+      trinNbins[kBC] = TMath::Power(2.,fTriggerList->GetEntriesFast())-1;
+      trinMin[kBC] = 0.5; trinMax[kBC] = trinNbins[kBC]+.5;
+    }
+    trinNbins[kSpeciesChgRC] = Int_t(kNcharge)*(kNspc-1)+1; trinMin[kSpeciesChgRC] = -kNspc+0.5; trinMax[kSpeciesChgRC] = kNspc-0.5;
+    if(DebugLevel()>=1){trinNbins[kPt]=24; trinMax[kPt] = 23.5;}
+    trinTitle[kNdim]=StrDup("bin_p"); trinNbins[kNdim] = (DebugLevel()>=1?24:kNpt); trinMin[kNdim] = -0.5; trinMax[kNdim] = trinNbins[kNdim]-.5;
     trinTitle[kNdim+1]=StrDup("dx [cm]"); trinNbins[kNdim+1]=48; trinMin[kNdim+1]=-2.4; trinMax[kNdim+1]=2.4;
-    trinTitle[kNdim+2]=StrDup("Fill Bunch"); trinNbins[kNdim+2]=3500; trinMin[kNdim+2]=-0.5; trinMax[kNdim+2]=3499.5;
+    //trinTitle[kNdim+2]=StrDup("Fill Bunch"); trinNbins[kNdim+2]=3500; trinMin[kNdim+2]=-0.5; trinMax[kNdim+2]=3499.5;
     st = "r-#phi/z/angular residuals @ TRD entry;";
     // define minimum info to be saved in non debug mode
-    Int_t ndim=DebugLevel()>=1?mdim:kNdim;//kNdimTrkIn;
+    Int_t ndim=(DebugLevel()>=1?mdim:(kNdim+1));//kNdimTrkIn;
     for(Int_t idim(0); idim<ndim; idim++){st+=trinTitle[idim]; st+=";";}
     H = new THnSparseI(hn, st.Data(), ndim, trinNbins, trinMin, trinMax);
   } else H->Reset();
@@ -3195,192 +3135,6 @@ void AliTRDresolution::GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm
 // }
 
 //________________________________________________________
-AliTRDresolution::AliTRDresolutionProjection::AliTRDresolutionProjection()
-  :TNamed()
-  ,fH(NULL)
-  ,fNrebin(0)
-  ,fRebinX(NULL)
-  ,fRebinY(NULL)
-{
-  // constructor
-  memset(fAx, 0, 3*sizeof(Int_t));
-  memset(fRange, 0, 4*sizeof(Float_t));
-}
-
-//________________________________________________________
-AliTRDresolution::AliTRDresolutionProjection::~AliTRDresolutionProjection()
-{
-  // destructor
-  if(fH) delete fH;
-}
-
-//________________________________________________________
-void AliTRDresolution::AliTRDresolutionProjection::Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[])
-{
-// check and build (if neccessary) projection determined by axis "ix", "iy" and "iz"
-  if(!aa[ix] || !aa[iy] || !aa[iz]) return;
-  TAxis *ax(aa[ix]), *ay(aa[iy]), *az(aa[iz]);
-  // check ax definiton to protect against older versions of the data
-  if(ax->GetNbins()<=0 || (ax->GetXmax()-ax->GetXmin())<=0.){
-    AliWarning(Form("Wrong definition of axis[%d] \"%s\"[%d](%f %f).", ix, ax->GetTitle(), ax->GetNbins(), ax->GetXmin(), ax->GetXmax()));
-    return;
-  }
-  if(ay->GetNbins()<=0 || (ay->GetXmax()-ay->GetXmin())<=0.){
-    AliWarning(Form("Wrong definition of axis[%d] \"%s\"[%d](%f %f).", ix, ay->GetTitle(), ay->GetNbins(), ay->GetXmin(), ay->GetXmax()));
-    return;
-  }
-  if(az->GetNbins()<=0 || (az->GetXmax()-az->GetXmin())<=0.){
-    AliWarning(Form("Wrong definition of axis[%d] \"%s\"[%d](%f %f).", ix, az->GetTitle(), az->GetNbins(), az->GetXmin(), az->GetXmax()));
-    return;
-  }
-  SetNameTitle(n,t);
-  fH = new TH3I(n, Form("%s;%s;%s;%s", t, ax->GetTitle(), ay->GetTitle(), az->GetTitle()),
-    ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
-    ay->GetNbins(), ay->GetXmin(), ay->GetXmax(),
-    az->GetNbins(), az->GetXmin(), az->GetXmax());
-  fAx[0] = ix; fAx[1] = iy; fAx[2] = iz;
-  fRange[0] = az->GetXmin()/3.; fRange[1] = az->GetXmax()/3.;
-  AliDebug(2, Form("H3(%s, %s) :: %s[%3d %4.2f %4.2f]%s[%3d %4.2f %4.2f]%s[%3d %4.2f %4.2f]", n, t,
-    ax->GetTitle(), ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
-    ay->GetTitle(), ay->GetNbins(), ay->GetXmin(), ay->GetXmax(),
-    az->GetTitle(), az->GetNbins(), az->GetXmin(), az->GetXmax()));
-}
-
-//________________________________________________________
-AliTRDresolution::AliTRDresolutionProjection& AliTRDresolution::AliTRDresolutionProjection::operator=(const AliTRDresolutionProjection& rhs)
-{
-// copy projections
-  if(this == &rhs) return *this;
-
-  TNamed::operator=(rhs);
-  if(fNrebin){fNrebin=0; delete [] fRebinX; delete [] fRebinY;}
-  if(rhs.fNrebin) SetRebinStrategy(rhs.fNrebin, rhs.fRebinX, rhs.fRebinY);
-  memcpy(fAx, rhs.fAx, 3*sizeof(Int_t));
-  memcpy(fRange, rhs.fRange, 4*sizeof(Float_t));
-  if(fH) delete fH;
-  if(rhs.fH) fH=(TH3I*)rhs.fH->Clone(Form("%s_CLONE", rhs.fH->GetName()));
-  return *this;
-}
-
-//________________________________________________________
-AliTRDresolution::AliTRDresolutionProjection& AliTRDresolution::AliTRDresolutionProjection::operator+=(const AliTRDresolutionProjection& other)
-{
-// increment projections
-  if(!fH || !other.fH) return *this;
-  AliDebug(2, Form("%s+=%s [%s+=%s]", GetName(), other.GetName(), fH->GetName(), (other.fH)->GetName()));
-  fH->Add(other.fH);
-  return *this;
-}
-
-//________________________________________________________
-void AliTRDresolution::AliTRDresolutionProjection::Increment(Int_t bin[], Double_t v)
-{
-// increment bin with value "v" pointed by general coord in "bin"
-  if(!fH) return;
-  AliDebug(4, Form("  %s[%2d]", fH->GetName(), Int_t(v)));
-  fH->AddBinContent(fH->GetBin(bin[fAx[0]],bin[fAx[1]],bin[fAx[2]]), Int_t(v));
-}
-
-//________________________________________________________
-TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid, Bool_t del)
-{
-// build the 2D projection and adjust binning
-
-  const Char_t *title[] = {"Mean", "#mu", "MPV"};
-  if(!fH) return NULL;
-  TAxis *ax(fH->GetXaxis()), *ay(fH->GetYaxis()), *az(fH->GetZaxis());
-  TH2D *h2s(NULL), *hyx(NULL);
-  if(!(h2s = (TH2D*)fH->Project3D("yx"))) return NULL;
-  // save a copy of the original distribution
-  if(!del){
-    hyx = (TH2D*)h2s->Clone();
-    hyx->SetName(Form("%sEn", fH->GetName()));
-  }
-  Int_t irebin(0), dxBin(1), dyBin(1);
-  while(irebin<fNrebin && (AliTRDresolution::GetMeanStat(h2s, .5, ">")<nstat)){
-    h2s->Rebin2D(fRebinX[irebin], fRebinY[irebin]);
-    dxBin*=fRebinX[irebin];dyBin*=fRebinY[irebin];
-    irebin++;
-  }
-  Int_t nx(h2s->GetNbinsX()), ny(h2s->GetNbinsY());
-  delete h2s;
-
-  // start projection
-  TH1 *h(NULL); Int_t n(0);
-  Float_t dz=(fRange[1]-fRange[1])/ncol;
-  TString titlez(az->GetTitle()); TObjArray *tokenTitle(titlez.Tokenize(" "));
-  Int_t nt(tokenTitle->GetEntriesFast());
-  TH2 *h2 = new TH2F(Form("%s_2D", fH->GetName()),
-            Form("%s;%s;%s;%s(%s) %s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), title[mid], nt>0?(*tokenTitle)[0]->GetName():"", nt>1?(*tokenTitle)[1]->GetName():""),
-            nx, ax->GetXmin(), ax->GetXmax(), ny, ay->GetXmin(), ay->GetXmax());
-  h2->SetContour(ncol);
-  h2->GetZaxis()->CenterTitle();
-  h2->GetZaxis()->SetTitleOffset(1.4);
-  h2->GetZaxis()->SetRangeUser(fRange[0], fRange[1]);
-  AliDebug(2, Form("%s[%s] nx[%d] ny[%d]", h2->GetName(), h2->GetTitle(), nx, ny));
-  for(Int_t iy(0); iy<ny; iy++){
-    for(Int_t ix(0); ix<nx; ix++){
-      h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, (ix+1)*dxBin+1, iy*dyBin+1, (iy+1)*dyBin+1);
-      Int_t ne((Int_t)h->Integral());
-      if(ne<nstat/2){
-        h2->SetBinContent(ix+1, iy+1, -999);
-        h2->SetBinError(ix+1, iy+1, 1.);
-        n++;
-      }else{
-        Float_t v(h->GetMean()), ve(h->GetRMS());
-        if(mid==1){
-          TF1 fg("fg", "gaus", az->GetXmin(), az->GetXmax());
-          fg.SetParameter(0, Float_t(ne)); fg.SetParameter(1, v); fg.SetParameter(2, ve);
-          h->Fit(&fg, "WQ");
-          v = fg.GetParameter(1); ve = fg.GetParameter(2);
-        } else if (mid==2) {
-          TF1 fl("fl", "landau", az->GetXmin(), az->GetXmax());
-          fl.SetParameter(0, Float_t(ne)); fl.SetParameter(1, v); fl.SetParameter(2, ve);
-          h->Fit(&fl, "WQ");
-          v = fl.GetMaximumX(); ve = fl.GetParameter(2);
-/*          TF1 fgle("gle", "[0]*TMath::Landau(x, [1], [2], 1)*TMath::Exp(-[3]*x/[1])", az->GetXmin(), az->GetXmax());
-          fgle.SetParameter(0, fl.GetParameter(0));
-          fgle.SetParameter(1, fl.GetParameter(1));
-          fgle.SetParameter(2, fl.GetParameter(2));
-          fgle.SetParameter(3, 1.);fgle.SetParLimits(3, 0., 5.);
-          h->Fit(&fgle, "WQ");
-          v = fgle.GetMaximumX(); ve = fgle.GetParameter(2);*/
-        }
-        if(v<fRange[0]) h2->SetBinContent(ix+1, iy+1, fRange[0]+0.1*dz);
-        else h2->SetBinContent(ix+1, iy+1, v);
-        h2->SetBinError(ix+1, iy+1, ve);
-      }
-    }
-  }
-  if(h) delete h;
-  if(n==nx*ny){delete h2; h2=NULL;} // clean empty projections
-  return h2;
-}
-
-//________________________________________________________
-void AliTRDresolution::SetNormZ(TH2 *h2, Int_t bxmin, Int_t bxmax, Int_t bymin, Int_t bymax, Float_t thr)
-{
-// Normalize histo content to the mean value in the range specified by bin ranges
-// [bxmin, bxmax] on the x axis and [bymin, bymax] on the y axis.
-// Optionally a threshold "thr" can be specified to disregard entries with no meaning 
-
-  Float_t s = 0., c=0.; Int_t is(0);
-  for(Int_t ix(bxmin); ix<=(bxmax>0?bxmax:(h2->GetXaxis()->GetNbins())); ix++){
-    for(Int_t iy(bymin); iy<=(bymax>0?bymax:(h2->GetYaxis()->GetNbins())); iy++){
-      if((c = h2->GetBinContent(ix, iy))<thr) continue;
-      s += c; is++;
-    }
-  }
-  s/= is?is:1;
-  for(Int_t ix(1); ix<=h2->GetXaxis()->GetNbins(); ix++){
-    for(Int_t iy(1); iy<=h2->GetYaxis()->GetNbins(); iy++){
-      if((c = h2->GetBinContent(ix, iy))<thr) h2->SetBinContent(ix, iy, thr-100);
-      else h2->SetBinContent(ix, iy, 100.*(c/s-1.));
-    }
-  }
-}
-
-//________________________________________________________
 void AliTRDresolution::SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin)
 {
 // steer processes
@@ -3390,28 +3144,14 @@ void AliTRDresolution::SetProcesses(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t 
   if(trkin) SETBIT(fSteer, kTrackIn); else CLRBIT(fSteer, kTrackIn);
 }
 
-//________________________________________________________
-void AliTRDresolution::SetRangeZ(TH2 *h2, Float_t min, Float_t max, Float_t thr)
-{
-// Set range on Z axis such to avoid outliers
-
-  Float_t c(0.), dz(1.e-3*(max-min));
-  for(Int_t ix(1); ix<=h2->GetXaxis()->GetNbins(); ix++){
-    for(Int_t iy(1); iy<=h2->GetYaxis()->GetNbins(); iy++){
-      if((c = h2->GetBinContent(ix, iy))<thr) continue;
-      if(c<=min) h2->SetBinContent(ix, iy, min+dz);
-    }
-  }
-  h2->GetZaxis()->SetRangeUser(min, max);
-}
 
 //________________________________________________________
-void AliTRDresolution::AliTRDresolutionProjection::SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[])
+void AliTRDresolution::SetDump3D(Bool_t det, Bool_t cl, Bool_t trklt, Bool_t trkin)
 {
-// define rebinning strategy for this projection
-  fNrebin = n;
-  fRebinX = new Int_t[n]; memcpy(fRebinX, rebx, n*sizeof(Int_t));
-  fRebinY = new Int_t[n]; memcpy(fRebinY, reby, n*sizeof(Int_t));
+// steer processes
+  if(det) SETBIT(fSteer, 4+kDetector); else CLRBIT(fSteer, 4+kDetector);
+  if(cl)  SETBIT(fSteer, 4+kCluster); else CLRBIT(fSteer, 4+kCluster);
+  if(trklt) SETBIT(fSteer, 4+kTracklet); else CLRBIT(fSteer, 4+kTracklet);
+  if(trkin) SETBIT(fSteer, 4+kTrackIn); else CLRBIT(fSteer, 4+kTrackIn);
 }
-
 

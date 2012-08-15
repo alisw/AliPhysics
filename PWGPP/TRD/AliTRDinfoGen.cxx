@@ -94,6 +94,8 @@
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDeventInfo.h"
 #include "info/AliTRDv0Info.h"
+#include "info/AliTRDchmbInfo.h"
+#include "info/AliTRDtriggerInfo.h"
 #include "info/AliTRDeventCuts.h"
 
 ClassImp(AliTRDinfoGen)
@@ -247,6 +249,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(Int_t(kTracksMC) + 1, "MC");
   ax->SetBinLabel(Int_t(kV0) + 1, "V0");
   ax->SetBinLabel(Int_t(kTPC) + 1, "TPC");
+  ax->SetBinLabel(Int_t(kITS) + 1, "ITS");
   ax->SetBinLabel(Int_t(kTRDin) + 1, "TRDin");
   ax->SetBinLabel(Int_t(kTRDout) + 1, "TRDout");
   ax->SetBinLabel(Int_t(kBarrel) + 1, "Barrel");
@@ -267,10 +270,9 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fContainer->AddAt(h, kEvType);
   TH2I* h2=new TH2I("hBCtrack", "Track Statistics;Fill Bunch;TOF BC;Entries", 3500, -0.5, 3499.5, 31, -10.5, 20.5);
   fContainer->AddAt(h2, kBC);
-  h=new TH1I("hTriggers", "Triggers statistics;;Entries", 21, -0.5, 20.5);
-  fContainer->AddAt(h, kTrigger);
+  fContainer->AddAt(new AliTRDtriggerInfo(), kTrigger);
   TObjArray *chmb = new TObjArray(AliTRDgeometry::kNdet);
-  chmb->SetName("Chambers"); chmb->SetOwner();
+  chmb->SetName("Chambers Status"); chmb->SetOwner(kTRUE);
   fContainer->AddAt(chmb, kChmb);
 
   PostData(AliTRDpwgppHelper::kTracksBarrel, fTracksBarrel);
@@ -362,7 +364,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // load misalignment
     fgGeo = new AliTRDgeometry;
     fgGeo->CreateClusterMatrixArray();
-    //PH    MakeChambers();
+    MakeChambers();
     // load reco param list from OCDB
     AliInfo("Initializing TRD reco params ...");
     fgReconstructor = new AliTRDReconstructor();
@@ -405,23 +407,17 @@ void AliTRDinfoGen::UserExec(Option_t *){
   fMCev = MCEvent();
   
   // trigger monitor
-  h = (TH1I*)fContainer->At(kTrigger);
-  TAxis *ax(h->GetXaxis());
+  AliTRDtriggerInfo *ti = (AliTRDtriggerInfo*)fContainer->At(kTrigger);
   TObjArray *evTriggers = fESDev->GetFiredTriggerClasses().Tokenize(" ");
-  for(Int_t iet(evTriggers->GetEntriesFast()); iet--;){
-    Int_t ix(1);
-    for(; ix<=ax->GetNbins(); ix++){
-      if(!Int_t(h->GetBinContent(ix))){
-        ax->SetBinLabel(ix, (*evTriggers)[iet]->GetName());
-        break;
-      }
-      if(strcmp((*evTriggers)[iet]->GetName(), ax->GetBinLabel(ix))==0) break;
-    }
-    h->AddBinContent(ix);
-  }
+  //printf("Ev[%03d] Triggers[%s]\n", fESDev->GetEventNumberInFile(), fESDev->GetFiredTriggerClasses().Data());
+  for(Int_t iet(evTriggers->GetEntriesFast()); iet--;) ti->Add((*evTriggers)[iet]->GetName());
+  evTriggers->Delete(); delete evTriggers;
 
   // event selection based on vertex cuts and trigger
-  if(UseLocalEvSelection() && !fEventCut->IsSelected(fESDev, IsCollision())) return;
+  if(UseLocalEvSelection() && !fEventCut->IsSelected(fESDev, IsCollision())){
+    AliDebug(2, "Event failed selection on vertex and trigger");
+    return;
+  }
 
   if(!fESDfriend){
     AliError("Failed retrieving ESD friend event");
@@ -467,7 +463,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   }
   
   Double32_t dedx[100]; Int_t nSlices(0);
-  Int_t nTRDout(0), nTRDin(0), nTPC(0)
+  Int_t nTRDout(0), nTRDin(0), nTPC(0), nITS(0)
        ,nclsTrklt
        ,nBarrel(0), nSA(0), nKink(0)
        ,nBarrelFriend(0), nSAFriend(0)
@@ -502,9 +498,16 @@ void AliTRDinfoGen::UserExec(Option_t *){
     new(fTrackInfo) AliTRDtrackInfo();
     esdTrack = fESDev->GetTrack(itrk);
     AliDebug(3, Form("\n%3d ITS[%d] TPC[%d] TRD[%d] TOF-BC[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2), esdTrack->GetTOFBunchCrossing()));
+    if(esdTrack->GetStatus()&AliESDtrack::kITSout) nITS++;
     if(esdTrack->GetStatus()&AliESDtrack::kTPCout) nTPC++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDout) nTRDout++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDin) nTRDin++;
+//     printf("  %3d ITS[%c] TPC[%c] TRDin[%c] TRDout[%c] TRDStop[%c]\n", itrk,
+//       (esdTrack->GetStatus()&AliESDtrack::kITSout)?'y':'n',
+//       (esdTrack->GetStatus()&AliESDtrack::kTPCout)?'y':'n',
+//       (esdTrack->GetStatus()&AliESDtrack::kTRDin)?'y':'n',
+//       (esdTrack->GetStatus()&AliESDtrack::kTRDout)?'y':'n',
+//       (esdTrack->GetStatus()&AliESDtrack::kTRDStop)?'y':'n');
     // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
     Double_t xyz[3];
@@ -545,6 +548,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
       fTrackInfo->SetPDG(fPdg);
       fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
       fTrackInfo->SetLabel(label);
+      fTrackInfo->SetTRDlabel(esdTrack->GetTRDLabel());
       Int_t jref = iref;//, kref = 0;
       while(jref<nRefs){
         ref = mcParticle->GetTrackReference(jref);
@@ -562,6 +566,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
     fTrackInfo->SetESDpid(p);
     fTrackInfo->SetESDpidQuality(esdTrack->GetTRDntrackletsPID());
+    fTrackInfo->SetESDeta(esdTrack->Eta());
+    Double_t loc[3];
+    if(esdTrack->GetXYZAt(298., fESDev->GetMagneticField(), loc)) fTrackInfo->SetESDphi(TMath::ATan2(loc[1], loc[0]));
+    fTrackInfo->SetESDpt(esdTrack->Pt());
     if(!nSlices) nSlices = esdTrack->GetNumberOfTRDslices();
     memset(dedx, 0, 100*sizeof(Double32_t));
     Int_t in(0);
@@ -574,6 +582,9 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // some other Informations which we may wish to store in order to find problematic cases
     fTrackInfo->SetKinkIndex(esdTrack->GetKinkIndex(0));
     fTrackInfo->SetTPCncls(static_cast<UShort_t>(esdTrack->GetNcls(1)));
+    fTrackInfo->SetTPCdedx(esdTrack->GetTPCsignal());
+    Float_t tofTime = esdTrack->GetTOFsignal() - fESDev->GetT0TOF(0);
+    fTrackInfo->SetTOFbeta(tofTime>0.?((esdTrack->GetIntegratedLength()/(tofTime*TMath::C()))*10e9):-999.);
     fTrackInfo->SetTOFbc(esdTrack->GetTOFBunchCrossing()==AliVTrack::kTOFBCNA?0:esdTrack->GetTOFBunchCrossing());
     nclsTrklt = 0;
   
@@ -592,10 +603,11 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
 
     // read track REC info
-    esdFriendTrack = (fESDfriend->GetNumberOfTracks() > itrk) ? fESDfriend->GetTrack(itrk): NULL;
-    if(esdFriendTrack){
+    if((esdFriendTrack = (fESDfriend->GetNumberOfTracks() > itrk) ? fESDfriend->GetTrack(itrk): NULL)) {
       fTrackInfo->SetTPCoutParam(esdFriendTrack->GetTPCOut());
       fTrackInfo->SetITSoutParam(esdFriendTrack->GetITSOut());
+      const AliTrackPointArray *tps(NULL);
+      if((tps=esdFriendTrack->GetTrackPointArray()) && HasTrackPoints()) fTrackInfo->SetTrackPointArray(tps);
       Int_t icalib = 0;
       while((calObject = esdFriendTrack->GetCalibObject(icalib++))){
         if(strcmp(calObject->IsA()->GetName(),"AliTRDtrackV1") != 0) continue; // Look for the TRDtrack
@@ -611,8 +623,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
         ((TH2I*)fContainer->At(kBC))->Fill(evBC, esdTrack->GetTOFBunchCrossing());
         break;
       }
-      AliDebug(3, Form("Ntracklets[%d]\n", fTrackInfo->GetNTracklets()));
-    } else AliDebug(3, "No ESD friends");
+      AliDebug(3, Form("Ntracklets[%d]", fTrackInfo->GetNTracklets()));
+    } else AliDebug(3, Form("No Friends for trk[%3d] Ntrk[%3d]", itrk, fESDfriend->GetNumberOfTracks()));
     if(op) fTrackInfo->SetOuterParam(op);
 
     if(DebugLevel() >= 1){
@@ -624,7 +636,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
 
     ULong_t status(esdTrack->GetStatus());
-    if((status&AliESDtrack::kTPCout)){
+    if((status&AliESDtrack::kTPCout)){  // TPC prolongation
       if(!esdTrack->GetKinkIndex(0)){ // Barrel  Track Selection
         Bool_t selected(kTRUE);
         if(UseLocalTrkSelection()){
@@ -667,7 +679,41 @@ void AliTRDinfoGen::UserExec(Option_t *){
         fTracksKink->Add(new AliTRDtrackInfo(*fTrackInfo));
         nKink++;
       }
-    } else if((status&AliESDtrack::kTRDout) && !(status&AliESDtrack::kTRDin)){ 
+    } else if((status&AliESDtrack::kITSout)) { // ITS prolongation 
+      Bool_t selected(kTRUE);
+      if(UseLocalTrkSelection()){
+        if(esdTrack->Pt() < fgkPt){
+          AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] Pt[%5.2f]", itrk, fESDev->GetEventNumberInFile(), esdTrack->Pt()));
+          selected = kFALSE;
+        }
+        if(selected && TMath::Abs(esdTrack->Eta()) > fgkEta){
+          AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] Eta[%5.2f]", itrk, fESDev->GetEventNumberInFile(), TMath::Abs(esdTrack->Eta())));
+          selected = kFALSE;
+        }
+        Float_t par[2], cov[3];
+        esdTrack->GetImpactParameters(par, cov);
+        if(IsCollision()){ // cuts on DCA
+          if(selected && TMath::Abs(par[0]) > fgkTrkDCAxy){
+            AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] DCAxy[%f]", itrk, fESDev->GetEventNumberInFile(), TMath::Abs(par[0])));
+            selected = kFALSE;
+          }
+          if(selected && TMath::Abs(par[1]) > fgkTrkDCAz){
+            AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] DCAz[%f]", itrk, fESDev->GetEventNumberInFile(), TMath::Abs(par[1])));
+            selected = kFALSE;
+          }
+        } else if(selected && fMCev && !fMCev->IsPhysicalPrimary(alab)){;
+          AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] Primary", itrk, fESDev->GetEventNumberInFile()));
+          selected = kFALSE;
+        }
+      }
+      if(fTrackCut && !fTrackCut->IsSelected(esdTrack)) selected = kFALSE;
+      if(selected){
+        fTracksBarrel->Add(new AliTRDtrackInfo(*fTrackInfo));
+        nBarrel++;
+        if(fTrackInfo->GetTrack())
+          nBarrelFriend++;
+      }
+    } else if((status&AliESDtrack::kTRDout) && !(status&AliESDtrack::kTRDin)){ // TRD SA tracking
       fTracksSA->Add(new AliTRDtrackInfo(*fTrackInfo));
       nSA++;
       if(fTrackInfo->GetTrack()) 
@@ -760,10 +806,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
   }
   AliDebug(1, Form(
     "\nEv[%3d] Tracks: ESD[%d] MC[%d] V0[%d]\n"
-    "        TPCout[%d] TRDin[%d] TRDout[%d]\n"
+    "        TPCout[%d] ITSout[%d] TRDin[%d] TRDout[%d]\n"
     "        Barrel[%3d+%3d=%3d] SA[%2d+%2d=%2d] Kink[%2d+%2d=%2d]"
     ,(Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC, fV0List->GetEntries()
-    , nTPC, nTRDin, nTRDout
+    , nTPC, nITS, nTRDin, nTRDout
     ,nBarrel, nBarrelMC, fTracksBarrel->GetEntries()
     ,nSA, nSAMC, fTracksSA->GetEntries()
     ,nKink, nKinkMC, fTracksKink->GetEntries()
@@ -774,6 +820,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   h->Fill(Float_t(kTracksMC), nTracksMC);
   h->Fill(Float_t(kV0), fV0List->GetEntries());
   h->Fill(Float_t(kTPC), nTPC);
+  h->Fill(Float_t(kITS), nITS);
   h->Fill(Float_t(kTRDin), nTRDin);
   h->Fill(Float_t(kTRDout), nTRDout);
   h->Fill(Float_t(kBarrel), nBarrel);
@@ -800,10 +847,9 @@ void AliTRDinfoGen::MakeChambers()
     AliError("No access to calibration data");
     return;
   }
-
-  TObjArray *chmb((TObjArray*)fContainer->At(kChmb));
-  Double_t alpha(0.), cs(-2.), sn(0.);
-  TVectorF pos(5);
+  TObjArray *chmb = (TObjArray*)fContainer->At(kChmb);
+  Int_t stat(0);
+  Double_t alpha(0.), cs(-2.), sn(0.), pos[4];
   for(Int_t isec(0); isec<AliTRDgeometry::kNsector; isec++){
     alpha = (0.5+isec)*AliTRDgeometry::GetAlpha();
     cs    = TMath::Cos(alpha);
@@ -822,7 +868,7 @@ void AliTRDinfoGen::MakeChambers()
         Double_t zm(0.5 * (pp->GetRow0() + pp->GetRowEnd())),
                  loc0[] = {AliTRDgeometry::AnodePos(), pp->GetCol0(), zm-pp->GetRow0()},
                  loc1[] = {AliTRDgeometry::AnodePos(), pp->GetColEnd(), zm-pp->GetRowEnd()},
-                 glb[3];
+                 glb[3] = {1,1,1};
         matrix->LocalToMaster(loc0, glb);
         Float_t phi = TMath::ATan2(glb[0]*sn + glb[1]*cs, glb[0]*cs - glb[1]*sn),
                 tgl = glb[2]/glb[0]/TMath::Sqrt(1.+glb[1]*glb[1]/glb[0]/glb[0]),
@@ -833,12 +879,12 @@ void AliTRDinfoGen::MakeChambers()
         tgl = glb[2]/glb[0]/TMath::Sqrt(1.+glb[1]*glb[1]/glb[0]/glb[0]);
         eta = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
         pos[2] = eta; pos[3] = phi;
-        pos[4] = 0.;
+        stat = 0;
         if(calib->IsChamberGood(idet)){
-          if(calib->IsHalfChamberNoData(idet, 0)) pos[4] += 2.;
-          if(calib->IsHalfChamberNoData(idet, 1)) pos[4] += 3.;
-        } else pos[4] = 1.;
-        chmb->AddAt(new TVectorF(pos), idet);
+          if(calib->IsHalfChamberNoData(idet, 0)) stat += 2;
+          if(calib->IsHalfChamberNoData(idet, 1)) stat += 3;
+        } else stat = 1;
+        chmb->Add(new AliTRDchmbInfo(idet, stat, pos));
       }
     }
   }
@@ -854,18 +900,18 @@ void AliTRDinfoGen::MakeSummary()
   }
   TH1 *h1(NULL); TVirtualPad *p(NULL); TCanvas *cOut(NULL);
 
-  const Int_t nx(2048), ny(750);
-  cOut = new TCanvas(GetName(), "Run Statistics", nx, ny);
-  cOut->Divide(3,1, 1.e-5, 1.e-5);
+  const Int_t nx(1024), ny(1024);
+  cOut = new TCanvas("infoGenSummary", "Run Statistics", nx, ny);
+  cOut->Divide(2,2, 1.e-5, 1.e-5);
   //=========
   p=cOut->cd(1);p->SetRightMargin(0.025);p->SetTopMargin(0.01);p->SetLogy();
   h1 = (TH1*)fContainer->At(kStatTrk);
-  h1->SetBarOffset(0.06); h1->SetBarWidth(0.88); h1->SetFillColor(3);
+  h1->SetBarOffset(0.06); h1->SetBarWidth(0.88); h1->SetFillColor(kGreen); h1->SetFillStyle(3001);
   h1->Draw("bar1");
   //=========
   p=cOut->cd(2);p->SetRightMargin(0.025);p->SetTopMargin(0.01);p->SetLogy();
   h1 = (TH1*)fContainer->At(kEvType);
-  h1->SetBarOffset(0.04); h1->SetBarWidth(0.92);h1->SetFillColor(6);
+  h1->SetBarOffset(0.04); h1->SetBarWidth(0.92);h1->SetFillColor(kGreen); h1->SetFillStyle(3001);
   h1->Draw("bar1");
   //=========
   p=cOut->cd(3);p->SetRightMargin(0.025);p->SetTopMargin(0.01);p->SetLogz();
@@ -883,7 +929,7 @@ void AliTRDinfoGen::MakeSummary()
                      n, -0.5, n-0.5, ay->GetNbins(), ay->GetXmin(), ay->GetXmax());
   hs->SetLineColor(kBlack);hs->SetLineWidth(1);
   hs->SetMarkerColor(kRed);
-  TAxis *ax(hs->GetXaxis());
+  TAxis *ax(hs->GetXaxis()); ax->CenterTitle(); ax->SetTitleOffset(1.4);
   for(Int_t ib(0); ib<n; ib++){
     ax->SetBinLabel(ib+1, Form("%d", bins[ib]));
     for(Int_t iy(1); iy<=ay->GetNbins(); iy++){
@@ -891,6 +937,19 @@ void AliTRDinfoGen::MakeSummary()
     }
   }
   hs->Draw("textbox");
+
+  //=========
+  p=cOut->cd(4); p->SetRightMargin(0.0215);p->SetLeftMargin(0.414);//p->SetLogz();
+  TObject *o = fContainer->At(kTrigger);
+  if(o){
+    if(!strcmp("TH1I", o->IsA()->GetName())){
+      h1 = dynamic_cast<TH1I*>(o);
+      h1->GetXaxis()->SetTitleOffset(6.5); h1->GetXaxis()->CenterTitle();
+      h1->SetFillStyle(3001);h1->SetFillColor(kGreen);
+      h1->SetBarWidth(0.8);h1->SetBarOffset(0.1);
+      ((TH1I*)o)->Draw("hbar2");
+    } else ((AliTRDtriggerInfo*)o)->Draw();
+  }
   cOut->SaveAs(Form("%s.gif", cOut->GetName()));
 }
 
@@ -932,11 +991,13 @@ void AliTRDinfoGen::Terminate(Option_t* /*option*/)
   AliInfo("");
   if(!(fContainer = dynamic_cast<TObjArray *>(GetOutputData(AliTRDpwgppHelper::kMonitor)))) return;
   AliInfo(Form("fContainer(%p)", (void*)fContainer));
+
+  AliTRDtriggerInfo* ti(NULL);
   if(UseLocalEvSelection()){
-    TH1 *h1 = (TH1*)fContainer->At(kTrigger); TAxis *ax(h1->GetXaxis());
-    AliInfo(Form("h1(%p)", (void*)h1));
-    for(Int_t ix(1); ix<=ax->GetNbins(); ix++){
-      if(fEventCut->CheckTrigger(ax->GetBinLabel(ix))) ax->SetBinLabel(ix, Form("#color[2]{%s}", ax->GetBinLabel(ix)));
+    if(!(ti = (AliTRDtriggerInfo*)fContainer->At(kTrigger))) return;
+    for(Int_t ix(0); ix<ti->GetNTriggers(); ix++){
+      if(fEventCut->CheckTrigger(ti->GetTrigger(ix))) ti->SetSelectTrigger(ix);
+      //ax->SetBinLabel(ix, Form("#color[2]{%s}", ax->GetBinLabel(ix)));
     }
   }
 }

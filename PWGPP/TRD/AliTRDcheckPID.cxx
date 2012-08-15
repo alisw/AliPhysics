@@ -1155,7 +1155,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
         h->SetMaximum(20.);
         h->GetXaxis()->SetRangeUser(0., 35.);
         kFIRST = kFALSE;
-      } else h = (TH1F*)h1->DrawClone("samec");
+      } else /*h = (TH1F*)*/h1->DrawClone("samec");
 
       legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
     }
@@ -1189,7 +1189,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
         h1->GetXaxis()->SetRangeUser(1.,6.);
         h1->GetYaxis()->SetTitle("Prob. [%]");
       }
-      h = (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
+      (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
       legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       kFIRST = kFALSE;
     }

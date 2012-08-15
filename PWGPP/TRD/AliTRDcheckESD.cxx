@@ -23,6 +23,7 @@
 //
 // Author
 //   Alex Bercuci <A.Bercuci@gsi.de>
+//   Ionut Arsene <i.c.arsene@gsi.de>
 //
 //////////////////////////////////////////////////////
 
@@ -260,6 +261,7 @@ void AliTRDcheckESD::MakeSummaryFromCF(Double_t* trendValues, const Char_t* trig
   //GetRefFigure(7);
   PlotCentSummaryFromCF(trendValues, triggerName, useIsolatedBC, cutTOFbc);
   cOut->SaveAs("centSummary.gif");
+
 }
 
 
@@ -781,7 +783,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
   }  // end loop over tracks
   
   
-  
+  triggers->Delete(); delete triggers;
   delete [] valuesMatchingPhiEtaCF;
   delete [] valuesMatchingPtCF;
   delete [] valuesBCCF;
@@ -1279,6 +1281,8 @@ void AliTRDcheckESD::InitializeCFContainers() {
         // Assign an index into the trigger histogram and the CF container for this trigger
         GetTriggerIndex(arr2->At(jt)->GetName(), kTRUE);
       }
+      arr2->Delete(); delete arr2;
+      arr->Delete(); delete arr;
     }
   }
   // Add background triggers from PhysicsSelection
@@ -1293,6 +1297,8 @@ void AliTRDcheckESD::InitializeCFContainers() {
         // Assign an index into the trigger histogram and the CF container for this trigger
         GetTriggerIndex(arr2->At(jt)->GetName(), kTRUE);
       }
+      arr2->Delete(); delete arr2;
+      arr->Delete(); delete arr;
     }
   }
   if(!fNAssignedTriggers) {GetTriggerIndex("All triggers", kTRUE);}
@@ -1302,6 +1308,7 @@ void AliTRDcheckESD::InitializeCFContainers() {
   for(Int_t it=0; it<arr->GetEntries(); ++it) {
     GetTriggerIndex(arr->At(it)->GetName(), kTRUE);
   }
+  arr->Delete(); delete arr;
 }
 
 
@@ -1457,9 +1464,10 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
 	nVars++;
       }
       else {
-	TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
-	nBins[nVars] = arr->GetEntries()-1;
-	if(nBins[nVars]>0) nVars++;
+        TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
+        nBins[nVars] = arr->GetEntries()-1;
+        if(nBins[nVars]>0) nVars++;
+        arr->Delete(); delete arr;
       }
     }
     if(nVars<1) return 0x0;
@@ -1469,18 +1477,19 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
     Int_t iUsedVar = 0;
     for(Int_t ivar=0; ivar<kNTrdCfVariables; ++ivar) {
       if(!fExpertCFVarsEnabled[ivar]) continue;
-      if(fExpertCFVarBins[ivar][0]=='\0')
-	cf->SetBinLimits(iUsedVar, fExpertCFVarRanges[ivar][0], fExpertCFVarRanges[ivar][1]);
-      else {
-	TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
-	if(arr->GetEntries()-1>0) {
-	  Double_t* binLims = new Double_t[arr->GetEntries()];
-	  for(Int_t ib=0;ib<arr->GetEntries();++ib) {
-	    TString binStr = arr->At(ib)->GetName();
-	    binLims[ib] = binStr.Atof();
-	  }
-	  cf->SetBinLimits(iUsedVar++, binLims);
-	}
+      if(fExpertCFVarBins[ivar][0]=='\0'){
+        cf->SetBinLimits(iUsedVar, fExpertCFVarRanges[ivar][0], fExpertCFVarRanges[ivar][1]);
+      } else {
+        TObjArray* arr = fExpertCFVarBins[ivar].Tokenize(";");
+        if(arr->GetEntries()-1>0) {
+          Double_t* binLims = new Double_t[arr->GetEntries()];
+          for(Int_t ib=0;ib<arr->GetEntries();++ib) {
+            TString binStr = arr->At(ib)->GetName();
+            binLims[ib] = binStr.Atof();
+          }
+          cf->SetBinLimits(iUsedVar++, binLims);
+        }
+        arr->Delete(); delete arr;
       }
       cf->SetVarTitle(iUsedVar, varNames[ivar]);
     }
@@ -1961,7 +1970,8 @@ void AliTRDcheckESD::CheckActiveSM(TH1D* phiProj, Bool_t activeSM[18]) {
 
 
 //__________________________________________________________________________________________________
-TH1F* AliTRDcheckESD::EfficiencyFromPhiPt(AliCFContainer* cf, Int_t stepNom, Int_t stepDenom, const Char_t* varStr) {
+TH1F* AliTRDcheckESD::EfficiencyFromPhiPt(AliCFContainer* cf, Int_t minNtrkl, Int_t maxNtrkl, 
+					  Int_t stepNom, Int_t stepDenom, const Char_t* varStr/*="pt"*/, const Char_t* type/*="TPCTRD"*/) {
   //
   // Use the CF container to extract the efficiency vs pt
   //
@@ -1974,8 +1984,18 @@ TH1F* AliTRDcheckESD::EfficiencyFromPhiPt(AliCFContainer* cf, Int_t stepNom, Int
   Double_t smPhiLimits[19];
   for(Int_t ism=0; ism<=18; ++ism) smPhiLimits[ism] = -TMath::Pi() + (2.0*TMath::Pi()/18.0)*ism;
   
-  TH2D* hNomPhiVar = (TH2D*)cf->Project(stepNom, var, varTrackPhi);
+  TString effTypeStr = type;
+  if(effTypeStr.Contains("TRDTOF")) {
+    if(minNtrkl>-1 && minNtrkl<7 && maxNtrkl>-1 && maxNtrkl<7)
+      cf->SetRangeUser(cf->GetVar("tracklets"), Double_t(minNtrkl), Double_t(maxNtrkl));
+  }
   TH2D* hDenomPhiVar = (TH2D*)cf->Project(stepDenom, var, varTrackPhi);
+  if(effTypeStr.Contains("TPCTRD")) {
+    if(minNtrkl>-1 && minNtrkl<7 && maxNtrkl>-1 && maxNtrkl<7)
+      cf->SetRangeUser(cf->GetVar("tracklets"), Double_t(minNtrkl), Double_t(maxNtrkl));
+  }
+  TH2D* hNomPhiVar = (TH2D*)cf->Project(stepNom, var, varTrackPhi);
+  cf->SetRangeUser(cf->GetVar("tracklets"), 0.0, 6.0);
   
   TH1F* hEff = new TH1F(Form("hEff%s_%d_%d_%f", varStr, stepNom, stepDenom, gRandom->Rndm()), "", 
 			hNomPhiVar->GetXaxis()->GetNbins(), hNomPhiVar->GetXaxis()->GetXbins()->GetArray());
@@ -2028,7 +2048,7 @@ TH1F* AliTRDcheckESD::EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance
       Bool_t isActive = kFALSE;
       for(Int_t ism=0; ism<18; ++ism) {
         if(phi>=smPhiLimits[ism] && phi<smPhiLimits[ism+1] && activeSM[ism]) {
-          isActive = kTRUE;
+	  isActive = kTRUE;
         }
       }
       if(!isActive) continue;
@@ -2109,23 +2129,16 @@ void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* /*trendValues*/, const Char
     cf->SetRangeUser(cf->GetVar("multiplicity"), Double_t(iCent), Double_t(iCent), kTRUE);
        
     cf->SetRangeUser(cf->GetVar("charge"), +1.0, +1.0);  
-    TH1F* hEffPosAll = EfficiencyFromPhiPt(cf, 1, 0);
-    cf->SetRangeUser(cf->GetVar("tracklets"), 4.0, 4.0);  
-    TH1F* hEffPosTrk4 = EfficiencyFromPhiPt(cf, 1, 0);
-    cf->SetRangeUser(cf->GetVar("tracklets"), 5.0, 5.0);  
-    TH1F* hEffPosTrk5 = EfficiencyFromPhiPt(cf, 1, 0);
-    cf->SetRangeUser(cf->GetVar("tracklets"), 6.0, 6.0);
-    TH1F* hEffPosTrk6 = EfficiencyFromPhiPt(cf, 1, 0);
+    TH1F* hEffPosAll = EfficiencyFromPhiPt(cf,  0,  6, 1, 0);
+    TH1F* hEffPosTrk4 = EfficiencyFromPhiPt(cf, 4,  4, 1, 0);  
+    TH1F* hEffPosTrk5 = EfficiencyFromPhiPt(cf, 5,  5, 1, 0);
+    TH1F* hEffPosTrk6 = EfficiencyFromPhiPt(cf, 6,  6, 1, 0);
      
     cf->SetRangeUser(cf->GetVar("charge"), -1.0, -1.0);  
-    cf->SetRangeUser(cf->GetVar("tracklets"), 0.0, 6.0);
-    TH1F* hEffNegAll = EfficiencyFromPhiPt(cf, 1, 0);
-    cf->SetRangeUser(cf->GetVar("tracklets"), 4.0, 4.0);  
-    TH1F* hEffNegTrk4 = EfficiencyFromPhiPt(cf, 1, 0);
-    cf->SetRangeUser(cf->GetVar("tracklets"), 5.0, 5.0);  
-    TH1F* hEffNegTrk5 = EfficiencyFromPhiPt(cf, 1, 0);
-    cf->SetRangeUser(cf->GetVar("tracklets"), 6.0, 6.0);  
-    TH1F* hEffNegTrk6 = EfficiencyFromPhiPt(cf, 1, 0);
+    TH1F* hEffNegAll = EfficiencyFromPhiPt(cf, 0, 6, 1, 0);  
+    TH1F* hEffNegTrk4 = EfficiencyFromPhiPt(cf, 4, 4, 1, 0);  
+    TH1F* hEffNegTrk5 = EfficiencyFromPhiPt(cf, 5, 5, 1, 0);  
+    TH1F* hEffNegTrk6 = EfficiencyFromPhiPt(cf, 6, 6, 1, 0);
     cf->SetRangeUser(cf->GetVar("tracklets"), 0.0, 6.0);  
     cf->SetRangeUser(cf->GetVar("charge"), -1.0, +1.0);  
     
@@ -2383,32 +2396,24 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   // switch to the Pt cf container
   cf = fMatchingPtCF;
   cf->SetRangeUser(cf->GetVar("charge"), +1.0, +1.0);  
-  TH1F* hTRDEffPtPosAll = EfficiencyFromPhiPt(cf, 1, 0);
-  TH1F* hTOFEffPtPosAll = EfficiencyFromPhiPt(cf, 2, 1);
-  cf->SetRangeUser(cf->GetVar("tracklets"), 4.0, 4.0);  
-  TH1F* hTRDEffPtPosTrk4 = EfficiencyFromPhiPt(cf, 1, 0);
-  TH1F* hTOFEffPtPosTrk4 = EfficiencyFromPhiPt(cf, 2, 1);
-  cf->SetRangeUser(cf->GetVar("tracklets"), 5.0, 5.0);  
-  TH1F* hTRDEffPtPosTrk5 = EfficiencyFromPhiPt(cf, 1, 0);
-  TH1F* hTOFEffPtPosTrk5 = EfficiencyFromPhiPt(cf, 2, 1);
-  cf->SetRangeUser(cf->GetVar("tracklets"), 6.0, 6.0);
-  TH1F* hTRDEffPtPosTrk6 = EfficiencyFromPhiPt(cf, 1, 0);
-  TH1F* hTOFEffPtPosTrk6 = EfficiencyFromPhiPt(cf, 2, 1);
+  TH1F* hTRDEffPtPosAll = EfficiencyFromPhiPt(cf, 0, 6, 1, 0);
+  TH1F* hTOFEffPtPosAll = EfficiencyFromPhiPt(cf, 0, 6, 2, 1, "pt", "TRDTOF");
+  TH1F* hTRDEffPtPosTrk4 = EfficiencyFromPhiPt(cf, 4, 4, 1, 0);
+  TH1F* hTOFEffPtPosTrk4 = EfficiencyFromPhiPt(cf, 4, 4, 2, 1, "pt", "TRDTOF");
+  TH1F* hTRDEffPtPosTrk5 = EfficiencyFromPhiPt(cf, 5, 5, 1, 0);
+  TH1F* hTOFEffPtPosTrk5 = EfficiencyFromPhiPt(cf, 5, 5, 2, 1, "pt", "TRDTOF");
+  TH1F* hTRDEffPtPosTrk6 = EfficiencyFromPhiPt(cf, 6, 6, 1, 0);
+  TH1F* hTOFEffPtPosTrk6 = EfficiencyFromPhiPt(cf, 6, 6, 2, 1, "pt", "TRDTOF");
   
   cf->SetRangeUser(cf->GetVar("charge"), -1.0, -1.0);  
-  cf->SetRangeUser(cf->GetVar("tracklets"), 0.0, 6.0);
-  TH1F* hTRDEffPtNegAll = EfficiencyFromPhiPt(cf, 1, 0);
-  TH1F* hTOFEffPtNegAll = EfficiencyFromPhiPt(cf, 2, 1);
-  cf->SetRangeUser(cf->GetVar("tracklets"), 4.0, 4.0);  
-  TH1F* hTRDEffPtNegTrk4 = EfficiencyFromPhiPt(cf, 1, 0);
-  TH1F* hTOFEffPtNegTrk4 = EfficiencyFromPhiPt(cf, 2, 1);
-  cf->SetRangeUser(cf->GetVar("tracklets"), 5.0, 5.0);  
-  TH1F* hTRDEffPtNegTrk5 = EfficiencyFromPhiPt(cf, 1, 0);
-  TH1F* hTOFEffPtNegTrk5 = EfficiencyFromPhiPt(cf, 2, 1);
-  cf->SetRangeUser(cf->GetVar("tracklets"), 6.0, 6.0);  
-  TH1F* hTRDEffPtNegTrk6 = EfficiencyFromPhiPt(cf, 1, 0);
-  TH1F* hTOFEffPtNegTrk6 = EfficiencyFromPhiPt(cf, 2, 1);
-  cf->SetRangeUser(cf->GetVar("tracklets"), 0.0, 6.0);  
+  TH1F* hTRDEffPtNegAll = EfficiencyFromPhiPt(cf, 0, 6, 1, 0);
+  TH1F* hTOFEffPtNegAll = EfficiencyFromPhiPt(cf, 0, 6, 2, 1, "pt", "TRDTOF");
+  TH1F* hTRDEffPtNegTrk4 = EfficiencyFromPhiPt(cf, 4, 4, 1, 0);
+  TH1F* hTOFEffPtNegTrk4 = EfficiencyFromPhiPt(cf, 4, 4, 2, 1, "pt", "TRDTOF");
+  TH1F* hTRDEffPtNegTrk5 = EfficiencyFromPhiPt(cf, 5, 5, 1, 0);
+  TH1F* hTOFEffPtNegTrk5 = EfficiencyFromPhiPt(cf, 5, 5, 2, 1, "pt", "TRDTOF");
+  TH1F* hTRDEffPtNegTrk6 = EfficiencyFromPhiPt(cf, 6, 6, 1, 0);
+  TH1F* hTOFEffPtNegTrk6 = EfficiencyFromPhiPt(cf, 6, 6, 2, 1, "pt", "TRDTOF");
   cf->SetRangeUser(cf->GetVar("charge"), -1.0, +1.0);  
   
   TF1* funcConst = new TF1("constFunc", "[0]", 1.0, 3.0);
@@ -2466,7 +2471,7 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   leg->SetMargin(0.15);
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
-  
+
   SetStyle(hTRDEffPtPosAll, 1, kRed, 1, 24, kRed, 1);
   SetStyle(hTRDEffPtNegAll, 1, kBlue, 1, 24, kBlue, 1);
   SetStyle(hTRDEffPtPosTrk4, 1, kRed, 1, 25, kRed, 1);
@@ -2495,7 +2500,6 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   
   rangeEffPt->Draw();
   lat->DrawLatex(0.2, 1.42, "TRD-TOF matching efficiency");
-  
   SetStyle(hTOFEffPtPosAll, 1, kRed, 1, 24, kRed, 1);
   SetStyle(hTOFEffPtPosTrk4, 1, kRed, 1, 25, kRed, 1);
   SetStyle(hTOFEffPtPosTrk5, 1, kRed, 1, 26, kRed, 1);
@@ -2585,8 +2589,8 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
 
   cf = fBunchCrossingsCF;
-  TH1F* hTRDEffBC = EfficiencyFromPhiPt(cf, 1, 0, "BC");
-  TH1F* hTOFEffBC = EfficiencyFromPhiPt(cf, 2, 1, "BC");
+  TH1F* hTRDEffBC = EfficiencyFromPhiPt(cf, 0, 6, 1, 0, "BC", "TPCTRD");
+  TH1F* hTOFEffBC = EfficiencyFromPhiPt(cf, 0, 6, 2, 1, "BC", "TRDTOF");
   
   if(gROOT->FindObject("rangeBC")) delete gROOT->FindObject("rangeBC");
   TH2F* rangeBC = new TH2F("rangeBC", "", 10, -0.5, 3499.5, 10, 0.0, 1.4);
@@ -2660,6 +2664,7 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* /
     if(hQtotEtaPhi) delete hQtotEtaPhi;
     
     if(hProf2D) {
+      hProf2D->SetName(Form("Qtot_layer%d",iLayer));
       hProf2D->SetStats(kFALSE);
       hProf2D->SetMinimum(0.);
       hProf2D->SetMaximum(4.);

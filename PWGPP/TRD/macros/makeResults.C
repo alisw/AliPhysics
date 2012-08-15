@@ -126,7 +126,7 @@ void makeResults(const Char_t *opt = "ALL",
   }
 
   TClass *ctask = new TClass;
-  AliAnalysisTask *task = 0x0;
+  AliAnalysisTask *task = NULL;
   for(Int_t itask = AliTRDpwgppHelper::kNTRDQATASKS; itask--;){
     if(!AliTRDpwgppHelper::DoTask(itask, fSteerTask)) continue;
     new(ctask) TClass(AliTRDpwgppHelper::TaskClassName(itask));
@@ -143,6 +143,8 @@ void makeResults(const Char_t *opt = "ALL",
   }
   delete ctask;
   delete c;
+  // write trending summary
+  AliTRDtrendingManager::Instance()->Terminate();
 }
 
 
@@ -222,14 +224,14 @@ void processGEN(TNamed *otask, const Char_t *filename)
     delete info;
     return;
   }
-  if(summary) Info("processGEN", "MakeSummary() not implemented yet");//info->MakeSummary();
-  else{
-    for(Int_t ipic(0); ipic<info->GetNRefFigures(); ipic++){
-      c->Clear();
-      if(!info->GetRefFigure(ipic)) continue;
-      c->SaveAs(Form("%s_Fig%02d.gif", info->GetName(), ipic));
-    }
-  }
+  info->MakeSummary();
+//   else{
+//     for(Int_t ipic(0); ipic<info->GetNRefFigures(); ipic++){
+//       c->Clear();
+//       if(!info->GetRefFigure(ipic)) continue;
+//       c->SaveAs(Form("%s_Fig%02d.gif", info->GetName(), ipic));
+//     }
+//   }
 
   delete info;
 }

@@ -26,6 +26,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     res->SetPostProcess(kFALSE);
     //res->SetDebugLevel(3);
     res->SetPtThreshold(0.2);
+    //res->SetTriggerList("CINT7WUHJT-S-NOPF-CENT CINT7WUHSE-S-NOPF-CENT CINT7WUHQU-S-NOPF-CENT CEMC7WU-S-NOPF-ALL");
     res->SetNameId(suffix[itq]);
     mgr->ConnectInput(res, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container 
     mgr->ConnectInput(res, 1, ci[itq]);                        // conect track info container
@@ -75,6 +76,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     mgr->ConnectInput(taskAlign,  0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(taskAlign,  1, ci[0]);
     mgr->ConnectInput(taskAlign,  2, evInfoContainer);
+    mgr->ConnectInput(taskAlign,  3, ci[4]);                          // conect clusters container
     mgr->ConnectOutput(taskAlign, 1, mgr->CreateContainer(Form("h%s", taskAlign->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer));
     mgr->ConnectOutput(taskAlign, 2, mgr->CreateContainer(taskAlign->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Alignment",mgr->GetCommonFileName())));
   }

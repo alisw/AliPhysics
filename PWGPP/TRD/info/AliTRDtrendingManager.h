@@ -20,32 +20,37 @@
 #include "AliTRDtrendValue.h"
 #endif
 
+class TH1;
 class TObjArray;
 class AliTRDtrendingManager : public TObject
 {
 public:
+  enum AliTRDtrendingManagerSteer{
+    kRelative    = BIT(14) // trending plots normalized to mean/sigma
+  };
   virtual ~AliTRDtrendingManager();
-  void              AddValue(Char_t *class_name
-                            ,Char_t *value_name
-                            ,Char_t *value_title
-                            ,Double_t limits[2*(AliTRDtrendValue::kNlevels+1)]
-                            ,Char_t *messages[AliTRDtrendValue::kNlevels]
-                            ,const Char_t *responsible
+  void              AddValue(const Char_t *name
+                            ,Double_t mean,Double_t sigm=1
+                            ,const Char_t *title=NULL
+                            ,const Char_t *responsible=NULL
                             ,const Char_t *notifiables=NULL
+                            ,Char_t **messages = NULL
                             );
-  AliTRDtrendValue* GetValue(Char_t *class_name, Char_t *value_name);
+  AliTRDtrendValue* GetValue(const Char_t *name);
   static AliTRDtrendingManager*	Instance();
-  Bool_t            ModifyValue(Char_t *class_name
-                            ,Char_t *value_name
-                            ,Char_t *value_title
-                            ,Double_t *limits=NULL
+  Bool_t            IsRelativeMeanSigma() const     { return TestBit(kRelative);}
+  void              Load(const char *fn = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root");
+  TH1*              MakeTrends(const char *fileList, TObjArray *dump=NULL);
+  Bool_t            ModifyValue(const Char_t *name
+                            ,const Char_t *title
+                            ,Double_t mean,Double_t sigm
                             ,Char_t **messages=NULL
                             ,const Char_t *responsible=NULL
                             ,const Char_t *notifiables=NULL
                             );
   void              Print(Option_t *o="") const;
-  void              Save();
-  void              ResetRunRange(Int_t runStart, Int_t runStop) {fRunRange[0]=runStart; fRunRange[1]=runStop;}
+//  void              ResetRunRange(Int_t runStart, Int_t runStop) {fRunRange[0]=runStart; fRunRange[1]=runStop;}
+  void              SetRelativeMeanSigma(Bool_t set=kTRUE) { SetBit(kRelative, set);}
   void              Terminate();
 
 protected:
@@ -58,7 +63,7 @@ private:
 	static AliTRDtrendingManager*	fgInstance;	  // instance
   TObjArray        *fEntries;    // list of trending values
   AliTRDtrendValue *fValue;      // current loaded trend value
-  Int_t             fRunRange[2];// valability range
+//  Int_t             fRunRange[2];// valability range
 
   ClassDef(AliTRDtrendingManager, 0) // TRD trending Manager
 };

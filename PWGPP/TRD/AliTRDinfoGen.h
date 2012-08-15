@@ -36,12 +36,14 @@ public:
    ,kUseLocalTrkSelection = BIT(19)
    ,kCollision            = BIT(20)
    ,kOCDB                 = BIT(21)
+   ,kTrkPoints            = BIT(22)
   };
   enum AliTRDinfoGenObjects{
      kTracksESD =  0
     ,kTracksMC
     ,kV0
     ,kTPC
+    ,kITS
     ,kTRDin
     ,kTRDout
     ,kBarrel
@@ -79,6 +81,7 @@ public:
   // temporary until check with AliAnalysisTaskSE collision selection mechanism
   Bool_t  IsInitOCDB() const {return TestBit(kOCDB);}
   Bool_t  IsCollision() const {return TestBit(kCollision);}
+  Bool_t  HasTrackPoints() const {return TestBit(kTrkPoints);}
   void    MakeSummary();
   static const AliTRDReconstructor* Reconstructor() {return fgReconstructor;}
   static AliTRDgeometry*      Geometry() {return fgGeo;}
@@ -94,6 +97,7 @@ public:
 
   Bool_t  UseLocalEvSelection() const {return Bool_t(fEventCut);}
   Bool_t  UseLocalTrkSelection() const {return TestBit(kUseLocalTrkSelection);}
+  void    UseTrackPoints(Bool_t use=kTRUE) {SetBit(kTrkPoints, use);}
   void    UserCreateOutputObjects();
   void    UserExec(Option_t *);
   void    Terminate(Option_t* option = "");

@@ -86,6 +86,8 @@
 #pragma link C++ class  AliTRDtrendValue+;
 #pragma link C++ class  AliTRDtrendingManager+;
 #pragma link C++ class  AliTRDclusterInfo+;
+#pragma link C++ class  AliTRDtriggerInfo+;
+#pragma link C++ class  AliTRDchmbInfo+;
 #pragma link C++ class  AliTRDv0Info+;
 #pragma link C++ class  AliTRDtrackInfo+;
 #pragma link C++ class  AliTRDtrackInfo::AliESDinfo+;
@@ -96,12 +98,12 @@
 #pragma link C++ class  AliTRDpidInfo::AliTRDpidData+;
 #pragma link C++ class  AliTRDinfoGen+;
 #pragma link C++ class  AliTRDrecoTask+;
+#pragma link C++ class  AliTRDrecoTask::AliTRDrecoProjection+;
 #pragma link C++ class  AliTRDcheckESD+;
 #pragma link C++ class  AliTRDcheckDET+;
 #pragma link C++ class  AliTRDcheckPID+;
 #pragma link C++ class  AliTRDcheckTRK+;
 #pragma link C++ class  AliTRDresolution+;
-#pragma link C++ class  AliTRDresolution::AliTRDresolutionProjection+;
 #pragma link C++ class  AliTRDefficiency+;
 #pragma link C++ class  AliTRDefficiencyMC+;
 #pragma link C++ class  AliTRDv0Monitor+;

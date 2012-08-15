@@ -141,6 +141,13 @@ Int_t  AliTRDeventInfo::GetCentralityBin(Float_t cenPer)
 }
 
 //____________________________________________________________________
+TString  AliTRDeventInfo::GetFiredTriggerClasses()
+{
+// copy of similar function from AliESDEvent
+  return (fRun&&fHeader)?fRun->GetFiredTriggerClasses(fHeader->GetTriggerMask()):"";
+}
+
+//____________________________________________________________________
 Int_t  AliTRDeventInfo::GetMultiplicityBin(Int_t n)
 {
 // calculate centrality bin

@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TString.h>
 
 class AliESDHeader;
 class AliESDRun;
@@ -34,6 +35,7 @@ public:
   AliESDRun*    GetRunInfo() const                     { return fRun; }
   Int_t         GetCentrality() const                  { return fCentrality; }
   static Int_t  GetCentralityBin(Float_t cenPer);
+  TString       GetFiredTriggerClasses();
   Int_t         GetMultiplicity() const                { return fMult; }
   static Int_t  GetMultiplicityBin(Int_t n);
   UShort_t      GetBunchFill() const;
