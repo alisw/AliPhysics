@@ -1542,10 +1542,10 @@ void AliReconstruction::Begin(TTree *)
   Bool_t toCDBSnapshot=kFALSE;
   TString snapshotFileOut(""); // we could use fSnapshotFileName if we are not interested
   // in reading from and writing to a snapshot file at the same time
-  if(TString(gSystem->Getenv("OCDB_SNAPSHOT_CREATE")) == TString("kTRUE")){
+  if(TString(getenv("OCDB_SNAPSHOT_CREATE")) == TString("kTRUE")){
       toCDBSnapshot=kTRUE;
       //fFromCDBSnapshot=kFALSE;
-      TString snapshotFile(gSystem->Getenv("OCDB_SNAPSHOT_FILENAME"));
+      TString snapshotFile(getenv("OCDB_SNAPSHOT_FILENAME"));
       if(!(snapshotFile.IsNull() || snapshotFile.IsWhitespace()))
 	  snapshotFileOut = snapshotFile;
       else
@@ -2445,7 +2445,7 @@ void AliReconstruction::SlaveTerminate()
    sVersion += ":";
    sVersion += ROOT_SVN_REVISION;
    sVersion += "; metadata ";
-   sVersion += gSystem->Getenv("PRODUCTION_METADATA");
+   sVersion += getenv("PRODUCTION_METADATA");
 		    
 
    TNamed * alirootVersion = new TNamed("alirootVersion",sVersion.Data());
@@ -3774,7 +3774,7 @@ Bool_t AliReconstruction::InitAliEVE()
   // The return flag shows whenever the
   // AliEVE initialization was successful or not.
 
-  TString macroStr(gSystem->Getenv("ALIEVE_ONLINE_MACRO"));
+  TString macroStr(getenv("ALIEVE_ONLINE_MACRO"));
 
   if (macroStr.IsNull())
     macroStr.Form("%s/EVE/macros/alieve_online.C",gSystem->ExpandPathName("$ALICE_ROOT"));
@@ -4390,8 +4390,7 @@ void AliReconstruction::DeleteDigits(const TString& detectors)
   AliInfo(Form("Deleting Digits: %s",detectors.Data()));
 
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
-    gSystem->Exec(Form("if [ -e %s.Digits.root ]; then\nrm %s.Digits.root\nfi",
-		       fgkDetectorName[iDet],fgkDetectorName[iDet]));
+    unlink(Form("%s.Digits.root",fgkDetectorName[iDet]));
   }
   AliSysInfo::AddStamp(Form("DelDigits_%d",iEvent), 0,0,iEvent);
   iEvent++;
@@ -4407,8 +4406,7 @@ void AliReconstruction::DeleteRecPoints(const TString& detectors)
   AliInfo(Form("Deleting Recpoints: %s",detectors.Data()));
   //
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
-    gSystem->Exec(Form("if [ -e %s.RecPoints.root ]; then\nrm %s.RecPoints.root\nfi",
-		       fgkDetectorName[iDet],fgkDetectorName[iDet]));
+    unlink(Form("%s.RecPoints.root",fgkDetectorName[iDet]));
   }
   AliSysInfo::AddStamp(Form("DelRecPoints_%d",iEvent), 0,0,iEvent);
   iEvent++;
@@ -4470,7 +4468,10 @@ Bool_t AliReconstruction::HasEnoughResources(int ev)
 		 int(procInfo.fMemResident/kKB2MB),fMaxRSS,
 		 int(procInfo.fMemVirtual/kKB2MB) ,fMaxVMEM));
     //
-    gSystem->Exec(Form("if [ -e %s ]; then\nrm %s\nfi\necho %d > %s",fgkStopEvFName,fgkStopEvFName,ev,fgkStopEvFName));
+    unlink(Form("%s",fgkStopEvFName));
+    ofstream outfile(fgkStopEvFName);
+    outfile << ev << endl;
+    outfile.close();
     fStopped = kTRUE;
   }
   return res;

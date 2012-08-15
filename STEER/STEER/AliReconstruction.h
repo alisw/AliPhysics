@@ -53,6 +53,8 @@ class AliRecoInputHandler;
 #include "AliEventInfo.h"
 #include "AliRecoParam.h"
 
+using std::ofstream;
+
 class AliReconstruction: public TSelector {
 public:
   AliReconstruction(const char* gAliceFilename = "galice.root");
