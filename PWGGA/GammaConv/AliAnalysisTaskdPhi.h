@@ -45,11 +45,9 @@ public:
   TAxis& GetAxisCent() { return fAxisCent; }
   TAxis& GetAxisPiMass() { return fAxisPiM; }
 
-
   void SetV0Filter(AliConversionCuts * filter) { fV0Filter = filter; }
   AliAnalysisCuts * GetTrackCuts() const { return fTrackCuts; }
   void SetTrackCuts( AliAnalysisCuts * cuts) { if (fTrackCuts) delete fTrackCuts; fTrackCuts = cuts; }
-  
   
 protected:
   
@@ -68,6 +66,7 @@ private:
   TList * fHistoGamma; //gamma histo
   TList * fHistoPion; //pion histo
 
+
   AliConversionCuts * fV0Filter; //v0 filter
   AliAnalysisCuts * fTrackCuts;
 
@@ -83,6 +82,8 @@ private:
   TObjArray * fPionCorr; //poin
   AliAnaConvIsolation * fIsoAna; //comment
 
+  Int_t fL1; //comment
+  Int_t fL2; //comment
 
   TString fDeltaAODBranchName; //comment
 
@@ -97,7 +98,7 @@ private:
   AliAnalysisTaskdPhi(const AliAnalysisTaskdPhi&); // not implemented
   AliAnalysisTaskdPhi& operator=(const AliAnalysisTaskdPhi&); // not implemented
   
-  ClassDef(AliAnalysisTaskdPhi, 3); // example of analysis
+  ClassDef(AliAnalysisTaskdPhi, 2); // example of analysis
 };
 
 inline THnSparseF * AliAnalysisTaskdPhi::GetMEHistogram(Int_t binz, Int_t binc, TObjArray * array) {

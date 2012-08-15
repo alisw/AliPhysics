@@ -10,10 +10,15 @@ TLorentzVector()
 {
 }
 
-AliAODConversionParticle::AliAODConversionParticle(AliKFParticle *kfparticle) :
-  TLorentzVector(kfparticle->Px(), kfparticle->Py(), kfparticle->Pz(), kfparticle->E())
+AliAODConversionParticle::AliAODConversionParticle(TLorentzVector *vec) :
+TLorentzVector(*vec)
 {
+}
 
+
+AliAODConversionParticle::AliAODConversionParticle(AliKFParticle *kfparticle) :
+TLorentzVector(kfparticle->Px(), kfparticle->Py(), kfparticle->Pz(), kfparticle->E())
+{
 }
 
 AliAODConversionParticle::AliAODConversionParticle(const AliAODConversionParticle & original) :

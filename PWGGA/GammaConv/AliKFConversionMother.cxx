@@ -9,8 +9,9 @@ ClassImp(AliKFConversionMother)
 
 AliKFConversionMother::AliKFConversionMother() :
 AliKFParticle(),
-fOpeningAngle(-1),
-fAlpha(-1)
+    fMCLabel(-1),
+    fOpeningAngle(-1),
+    fAlpha(-1)
 
 {
   //Default constructor
@@ -40,6 +41,7 @@ fAlpha(-1)
 
 AliKFConversionMother::AliKFConversionMother(const AliKFConversionPhoton& d1, const AliKFConversionPhoton& d2) :
 AliKFParticle(d1,d2),
+fMCLabel(-1),
 fOpeningAngle(-1),
 fAlpha(-1)
 
@@ -60,6 +62,7 @@ fAlpha(-1)
 
 AliKFConversionMother::AliKFConversionMother(const AliKFConversionMother & original) :
 AliKFParticle(original),
+fMCLabel(original.fMCLabel),
 fOpeningAngle(original.fOpeningAngle),
 fAlpha(original.fAlpha)
 {
@@ -79,7 +82,7 @@ Double_t AliKFConversionMother::GetRapidity()
 {
     Double_t rapidity;
     if(GetE() - GetPz() <= 0 || GetE() + GetPz() <= 0){
-	cout << "Error: |Pz| > E !!!! " << endl;
+	AliWarning("Error: |Pz| > E !!!! ");
 	rapidity=8.;
     } else {
 	rapidity = 0.5*(TMath::Log((GetE() +GetPz()) / (GetE()-GetPz())));

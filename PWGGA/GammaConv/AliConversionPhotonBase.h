@@ -55,6 +55,7 @@ class AliConversionPhotonBase {
 
   // GetMCParticle
 
+  Bool_t IsTruePhoton(AliStack *fMCStack);
   TParticle *GetMCParticle(AliStack *fMCStack);
   TParticle *GetPositiveMCDaughter(AliStack *fMCStack){return GetMCDaughter(fMCStack,0);};
   TParticle *GetNegativeMCDaughter(AliStack *fMCStack){return GetMCDaughter(fMCStack,1);};
@@ -92,6 +93,8 @@ class AliConversionPhotonBase {
   Float_t GetMass() const { return fIMass; }
   void SetMass( Float_t mass) { fIMass = mass; }
 
+  Float_t GetPsiPair() const {return fPsiPair;}
+  void SetPsiPair(Float_t PsiPair){fPsiPair=PsiPair;}
 
  protected:
 
@@ -102,10 +105,10 @@ class AliConversionPhotonBase {
   Double_t fArmenteros[2]; // Armenteros Paramters
   Double_t fConversionPoint[3]; // Conversion Point
   Bool_t fTagged; // Is it tagged as decay pion (only for gammas)
-  Float_t fIMass;
+  Float_t fIMass; // Invariant Mass of dilepton pair
+  Float_t fPsiPair; // Psi Pair Value
 
-
-  ClassDef(AliConversionPhotonBase,2);
+  ClassDef(AliConversionPhotonBase,3);
 };
 
 

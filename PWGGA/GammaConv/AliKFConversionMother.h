@@ -34,6 +34,11 @@ class AliKFConversionMother : public AliKFParticle {
   //Destructor
   virtual ~AliKFConversionMother() {;}
 
+
+  void SetMCLabel(Int_t i){fMCLabel=i;}
+
+  Int_t GetMCLabel(){return fMCLabel;}
+
   ///Set track or MC labels
   void SetLabel1(Int_t label){fLabel[0] = label;}
   void SetLabel2(Int_t label){fLabel[1] = label;}
@@ -52,6 +57,7 @@ class AliKFConversionMother : public AliKFParticle {
  private:
 
     Int_t fLabel[2]; // Labels of two decay gammas
+    Int_t fMCLabel; // MC label
     Double_t fOpeningAngle; // of decay gammas
     Double_t fAlpha; // of the meson
 

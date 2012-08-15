@@ -15,7 +15,7 @@
 
 /// @file   AliConversionTrackCuts.cxx
 /// @author Svein Lindal
-/// @brief  Base class for aod track cuts. An adapted copy of Alirsntrackcuts
+/// @brief  Base class for analysation of conversion particle - track correlations
 
 
 #include "AliConversionTrackCuts.h"
@@ -45,7 +45,7 @@ const char* AliConversionTrackCuts::fgkCutNames[AliConversionTrackCuts::kNCuts] 
 
 //________________________________________________________________________
 AliConversionTrackCuts::AliConversionTrackCuts() : 
-  AliAnalysisCuts(),
+AliAnalysisCuts(),
   fFlagsOn(0x0),
   fFlagsOff(0x0),
   fRejectKinkDaughters(kTRUE),
@@ -68,15 +68,11 @@ AliConversionTrackCuts::AliConversionTrackCuts() :
   fhPt(NULL),
   fhPhiPt(NULL),
   fhdcaxyPt(NULL),
-  fhdcazPt(NULL), 
-  fhnclpt(NULL),
-  fhnclsfpt(NULL),
+//  fCutAxis(),
   fHistograms(NULL)
 {
   //Constructor
-  fEta[0] = -0.8; fEta[1] = 0.8;
-  fPt[0] = 1.0; fPt[1] = 999.9;
-  
+  //SetUpAxes();
 }
 //________________________________________________________________________
 AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "title") : 
@@ -95,7 +91,6 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fITSminNClusters(0),
   fITSmaxChi2(1E20),
   fTPCminNClusters(0),
-  fTPCClusOverFindable(0.0),
   fTPCmaxChi2(1E20),
   fAODTestFilterBit(-1),
   fRequireTPCRefit(kFALSE),
@@ -103,15 +98,11 @@ AliConversionTrackCuts::AliConversionTrackCuts(TString name, TString title = "ti
   fhPt(NULL),
   fhPhiPt(NULL),
   fhdcaxyPt(NULL),
-  fhdcazPt(NULL), 
-  fhnclpt(NULL),
-  fhnclsfpt(NULL),
   fHistograms(NULL)
 {
   //Constructor
-  fEta[0] = -0.8; fEta[1] = 0.8;
-  fPt[0] = 1.0; fPt[1] = 999.9;
- }
+//  SetUpAxes();
+}
 
 
 //________________________________________________________________________________

@@ -62,6 +62,8 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fPhotonCorr(NULL),
   fPionCorr(NULL), 
   fIsoAna(NULL),
+  fL1(-1),
+  fL2(-1),
   fDeltaAODBranchName("AliAODGammaConversion_gamma"), 
   fAxistPt(),
   fAxiscPt(),
@@ -88,6 +90,8 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fAxisZ.Set(4, -10, 10);
 
   fAxisCent.SetNameTitle("CentAxis", "Cent");
+
+
   Double_t centbins[5] = {0, 10, 30, 60, 100.1};
   fAxisCent.Set(4, centbins);
 
@@ -134,7 +138,7 @@ AliAnalysisTaskdPhi::~AliAnalysisTaskdPhi(){
 	delete fHistograms;
   fHistograms = NULL;
 
-  if(fHistoPion)
+if(fHistoPion)
 	delete fHistoPion;
   fHistoPion = NULL;
 
@@ -194,16 +198,16 @@ void AliAnalysisTaskdPhi::SetUpCorrObjects() {
 
 	  AliAnaConvCorrPhoton * photonCorr = new AliAnaConvCorrPhoton(Form("PhotonCorr_%s", nameString.Data()), Form("photon %s", titleString.Data()));
 	  photonArray->AddAt(photonCorr, ic);
-	  photonCorr->GetAxistPt().Set(fAxistPt.GetNbins(), fAxistPt.GetXbins()->GetArray());
-	  photonCorr->GetAxiscPt().Set(fAxiscPt.GetNbins(), fAxiscPt.GetXbins()->GetArray());
+	  //photonCorr->GetAxistPt().Set(fAxistPt.GetNbins(), fAxistPt.GetXbins()->GetArray());
+	  //photonCorr->GetAxiscPt().Set(fAxiscPt.GetNbins(), fAxiscPt.GetXbins()->GetArray());
 	  photonCorr->CreateHistograms();
 	  photonList->Add(photonCorr->GetHistograms());
 
 	  AliAnaConvCorrPion * pionCorr = new AliAnaConvCorrPion(Form("PionCorr_%s", nameString.Data()), Form("pion %s", titleString.Data()));
 	  pionArray->AddAt(pionCorr, ic);
-	  pionCorr->GetAxistPt().Set(fAxistPt.GetNbins(), fAxistPt.GetXbins()->GetArray());
-	  pionCorr->GetAxiscPt().Set(fAxiscPt.GetNbins(), fAxiscPt.GetXbins()->GetArray());
-	  pionCorr->GetAxisM().Set(fAxisPiM.GetNbins(), fAxisPiM.GetXbins()->GetArray());
+	  //pionCorr->GetAxistPt().Set(fAxistPt.GetNbins(), fAxistPt.GetXbins()->GetArray());
+	  //pionCorr->GetAxiscPt().Set(fAxiscPt.GetNbins(), fAxiscPt.GetXbins()->GetArray());
+	  //pionCorr->GetAxisM().Set(fAxisPiM.GetNbins(), fAxisPiM.GetXbins()->GetArray());
 	  pionCorr->CreateHistograms();
 	  pionList->Add(pionCorr->GetHistograms());
 	}
@@ -245,6 +249,19 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   MEHistograms->SetOwner(kTRUE);
   fHistograms->Add(MEHistograms);
 
+  // hMETracks = new TObjArray();
+  // hMETracks->SetName("TrackArray");
+  // hMETracks->SetOwner(kTRUE);
+  // hMEPhotons = new TObjArray();
+  // hMEPhotons->SetName("PhotonArray");
+  // hMEPhotons->SetOwner(kTRUE);
+  // hMEPions = new TObjArray();
+  // hMEPions->SetName("PionArray");
+  // hMEPions->SetOwner(kTRUE);
+
+  // MEHistograms->Add(hMETracks);
+  // MEHistograms->Add(hMEPions);
+  // MEHistograms->Add(hMEPhotons);
 
   hMEvents = new TH2I("hMEvents", "Nevents vs centrality vertexz",
 					  fAxisZ.GetNbins(), fAxisZ.GetBinLowEdge(1), fAxisZ.GetBinUpEdge(fAxisZ.GetNbins()),
@@ -252,10 +269,63 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   hMEvents->GetYaxis()->Set(fAxisCent.GetNbins(), fAxisCent.GetXbins()->GetArray());
   MEHistograms->Add(hMEvents);
 
+
+  // TList axesList;
+  // axesList.AddAt(&GetAxisEta(), 0);
+  // axesList.AddAt(&GetAxisPhi(), 1);
+  // axesList.AddAt(&GetAxistPt(), 2);
+  // axesList.SetOwner(kFALSE);
+  
+  // TList piAxesList;
+  // piAxesList.AddAt(&GetAxisEta(), 0);
+  // piAxesList.AddAt(&GetAxisPhi(), 1);
+  // piAxesList.AddAt(&GetAxistPt(), 2);
+  // piAxesList.AddAt(&GetAxisPiMass(), 3);
+  // piAxesList.SetOwner(kFALSE);
+
+
   TList * outAxesList = new TList();
   outAxesList->Add(&fAxisCent);
   outAxesList->Add(&fAxisZ);
-  MEHistograms->Add(outAxesList);
+  fHistograms->Add(outAxesList);
+
+  // for(Int_t iz = 0; iz < fAxisZ.GetNbins(); iz++) {
+  // 	TObjArray * trackArray = new TObjArray();
+  // 	trackArray->SetName(Form("METracks_%d", iz));
+  // 	trackArray->SetOwner(kTRUE);
+  // 	TObjArray * photonArray = new TObjArray();
+  // 	photonArray->SetName(Form("MEPhotons_%d", iz));
+  // 	photonArray->SetOwner(kTRUE);
+  // 	TObjArray * pionArray = new TObjArray();
+  // 	pionArray->SetName(Form("MEPions_%d", iz));
+  // 	pionArray->SetOwner(kTRUE);
+
+
+  // 	hMEPions->AddAt(pionArray, iz);
+  // 	hMETracks->AddAt(trackArray, iz);
+  // 	hMEPhotons->AddAt(photonArray, iz);
+
+  // 	for(Int_t ic = 0; ic < fAxisCent.GetNbins(); ic++) {
+
+  // 	  TString nameString = Form("%d_%d", iz, ic);
+  // 	  TString titleString = Form("%f < Z < %f ... %f cent %f", 
+  // 								 fAxisZ.GetBinLowEdge(iz+1), fAxisZ.GetBinUpEdge(iz+1), 
+  // 								 fAxisCent.GetBinLowEdge(ic+1), fAxisCent.GetBinUpEdge(ic+1));
+
+
+  // 	  THnSparseF * trackHistogram = CreateSparse(Form("tracks_%s", nameString.Data()), 
+  // 												 Form("tracks %s", titleString.Data()), &axesList );
+  // 	  trackArray->AddAt(trackHistogram, ic);
+
+  // 	  THnSparseF * photonHistogram = CreateSparse(Form("photons_%s", nameString.Data()), 
+  // 												 Form("photons %s", titleString.Data()), &axesList );
+  // 	  photonArray->AddAt(photonHistogram, ic);
+
+  // 	  THnSparseF * pionHistogram = CreateSparse(Form("pions_%s", nameString.Data()), 
+  // 												 Form("pions %s", titleString.Data()), &piAxesList );
+  // 	  pionArray->AddAt(pionHistogram, ic);
+  // 	}
+  // }
 
   PostData(1, fHistograms);
   PostData(2, fHistoGamma);
@@ -265,7 +335,7 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
 
 ///________________________________________________________________________
 THnSparseF * AliAnalysisTaskdPhi::CreateSparse(TString nameString, TString titleString, TList * axesList) {
-  ///Creat sparse
+  ///Create sparse
   const Int_t dim = axesList->GetSize();
 
   TAxis * axes[dim];
@@ -342,7 +412,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	centrality = header->GetCentrality();
 	eventPlane = header->GetEventplane();
   } else {
-	centrality = static_cast<AliESDEvent*>(fInputEvent)->GetCentrality()->GetCentralityPercentile("V0M");
+	centrality = static_cast<AliESDEvent*>(fInputEvent)->GetCentrality()->GetCentralityPercentile("kV0M");
 	eventPlane = fInputEvent->GetEventplane()->GetEventplane("Q");
   }
 
@@ -358,9 +428,9 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   }
 
 
+
   if(centBin < 0 || vertexBin < 0) {
 	AliError("bin out of range");
-//	cout << "bad bin"<<endl;
 	return;
   }
 
@@ -371,6 +441,17 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   if(!aodGammas) {
 	AliError("no aod gammas found!");
 	return;
+  }
+
+  if(aodGammas->GetEntriesFast() > 0) {
+	if( static_cast<AliAODConversionParticle*>(aodGammas->At(0))->GetLabel(0) == fL1 && 
+		static_cast<AliAODConversionParticle*>(aodGammas->At(0))->GetLabel(1) == fL2 
+		) {
+	  return;
+	}
+	fL1 = static_cast<AliAODConversionParticle*>(aodGammas->At(0))->GetLabel(0);
+	fL2 = static_cast<AliAODConversionParticle*>(aodGammas->At(0))->GetLabel(1);
+	//cout << aodGammas->GetEntriesFast() << " " << fInputEvent->GetNumberOfTracks() << "c" << endl;
   }
 
   if(DebugLevel() > 1) printf("Number of conversion gammas %d \n", aodGammas->GetEntriesFast());
@@ -398,11 +479,11 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	if(track->Eta() < etalim[0] || track->Eta() > etalim[1]) continue;
 
 	
-	if(!fTrackCuts || fTrackCuts->IsSelected((track))) {
+	if(fTrackCuts && fTrackCuts->IsSelected((track))) {
 	  tracks.Add(track);
 	}
   }
-  
+
   Process(fGammas, &tracks, vertexBin, centBin);
 
   PostData(1, fHistograms);
@@ -419,7 +500,7 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
   if(DebugLevel() > 4) printf("Number of accepted gammas, tracks %d  %d \n", gammas->GetEntriesFast(), tracks->GetEntriesFast());
  
   AliAnaConvCorrBase * gCorr = GetCorrObject(vertexBin, centBin, fPhotonCorr);
-  AliAnaConvCorrPion * piCorr = dynamic_cast<AliAnaConvCorrPion*>(GetCorrObject(vertexBin, centBin, fPionCorr));
+  AliAnaConvCorrBase * piCorr = GetCorrObject(vertexBin, centBin, fPionCorr);
   
   if(!gCorr || !piCorr) {
 	AliError("corr object missing");
@@ -447,12 +528,11 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
 	  AliAODConversionMother * pion = new AliAODConversionMother(ph1, ph2);
 	  pion->SetLabels(i1, i2);
 	  
-	  
 	  if(!fV0Filter || fV0Filter->MesonIsSelected(pion, kTRUE) ) {
-	
+		
+
 		Int_t leadingpi = fIsoAna->IsLeading(static_cast<AliAODConversionParticle*>(pion), tracks, tIDs);
 		piCorr->FillTriggerCounters(pion, leadingpi);
-		
 		tIDs[2] = ph2->GetLabel(0);
 		tIDs[3] = ph2->GetLabel(1);
 		if(pion->Pt() > fAxistPt.GetBinLowEdge(1) && 
@@ -464,7 +544,6 @@ void AliAnalysisTaskdPhi::Process(TObjArray * gammas, TObjArray * tracks, Int_t 
 	}
   }
 }
-
 
 //________________________________________________________________________
 void AliAnalysisTaskdPhi::Terminate(Option_t *) {

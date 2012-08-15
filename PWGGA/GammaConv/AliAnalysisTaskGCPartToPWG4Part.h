@@ -47,9 +47,8 @@ public:
   //Get the AOD event from whereever it might be accessible
   AliAODEvent * GetAODEvent();
 
-  Bool_t BothTracksPresent(const AliAODConversionPhoton * photon) ;
-  Bool_t BothGammaPresent (const AliAODConversionPhoton * pion, 
-                           const TClonesArray * photons);
+  Bool_t BothTracksPresent(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks) const;
+  Bool_t BothGammaPresent(const AliAODConversionPhoton * const pion, const TClonesArray * const photons, const TClonesArray * const tracks) const;
 
   //Get Conversion gammas branch
   TClonesArray * GetConversionGammas(const AliAODEvent * aodEvent) const;
