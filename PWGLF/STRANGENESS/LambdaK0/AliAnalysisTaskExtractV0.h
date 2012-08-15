@@ -69,7 +69,8 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 	TList	*fListHistV0;	//! List of output objects
 	TTree	*fTree;							//! Output Tree
 
-	AliPIDResponse *fPIDResponse;     // PID response object
+  AliPIDResponse *fPIDResponse;     // PID response object
+  AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
 
   //Objects Controlling Task Behaviour 
   
