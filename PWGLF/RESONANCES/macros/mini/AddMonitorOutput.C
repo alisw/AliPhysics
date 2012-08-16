@@ -11,7 +11,7 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   
   // Multiplicity/centrality
   AliRsnValueEvent *multi = new AliRsnValueEvent("multi",AliRsnValueEvent::kMult);
-  multi->SetBins(0.0, 100.0, 1);
+  multi->SetBins(0.0, 400.0, 1);
   // Momentum
   AliRsnValueDaughter *axisMomTPC = new AliRsnValueDaughter("pTPC", AliRsnValueDaughter::kPtpc);
   axisMomTPC->SetBins(0.0, 10.0, 0.01);
@@ -22,33 +22,33 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
   axisMomPt->SetBins(0.0,10.0,0.01);
   // Eta
   AliRsnValueDaughter *axisMomEta = new AliRsnValueDaughter("eta", AliRsnValueDaughter::kEta);
-  axisMomEta->SetBins(-1.0, 1.0, 0.05);
+  axisMomEta->SetBins(-1.0, 1.0, 0.1);
 
   /* dEdx tpc */
   AliRsnValueDaughter *axisSigTPC = new AliRsnValueDaughter("sTPC", AliRsnValueDaughter::kTPCsignal);
   axisSigTPC->SetBins(0.0, 500.0, 2.0);
   // kTPCnsigmaPi
   AliRsnValueDaughter *axisTPCnsigmaPi = new AliRsnValueDaughter("pi", AliRsnValueDaughter::kTPCnsigmaPi);
-  axisTPCnsigmaPi->SetBins(-50.,50., 0.1);
+  axisTPCnsigmaPi->SetBins(-10.,10., 0.1);
   // kTPCnsigmaK
   AliRsnValueDaughter *axisTPCnsigmaK = new AliRsnValueDaughter("K", AliRsnValueDaughter::kTPCnsigmaK);
-  axisTPCnsigmaK->SetBins(-50.,50., 0.1);
+  axisTPCnsigmaK->SetBins(-10.,10., 0.1);
   // kTPCnsigmaP
   AliRsnValueDaughter *axisTPCnsigmaP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kTPCnsigmaP);
-  axisTPCnsigmaP->SetBins(-50.,50., 0.1);
+  axisTPCnsigmaP->SetBins(-10.,10., 0.1);
 
   /* tof signal - time */
   AliRsnValueDaughter *axisSigTOF = new AliRsnValueDaughter("sTOF", AliRsnValueDaughter::kTOFsignal);
   axisSigTOF->SetBins(10000.0, 50000.0, 250);//in ps
   // kTOFnsigmaPi
   AliRsnValueDaughter *axisTOFnsigmaPi = new AliRsnValueDaughter("pi", AliRsnValueDaughter::kTOFnsigmaPi);
-  axisTOFnsigmaPi->SetBins(-50.,50., 0.1);
+  axisTOFnsigmaPi->SetBins(-10.,10., 0.1);
   // kTOFnsigmaK
   AliRsnValueDaughter *axisTOFnsigmaK = new AliRsnValueDaughter("K", AliRsnValueDaughter::kTOFnsigmaK);
-  axisTOFnsigmaK->SetBins(-50.,50., 0.1);
+  axisTOFnsigmaK->SetBins(-10.,10., 0.1);
   // kTOFnsigmaP
   AliRsnValueDaughter *axisTOFnsigmaP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kTOFnsigmaP);
-  axisTOFnsigmaP->SetBins(-50.,50., 0.1);
+  axisTOFnsigmaP->SetBins(-10.,10., 0.1);
    
   /****************************************************************/
   /***************       MONITOR AOB           ********************/
@@ -167,7 +167,7 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="",AliRs
     // Eta
     AliRsnValueDaughter *axisEtaMC = new AliRsnValueDaughter("etaMC", AliRsnValueDaughter::kEta);
     axisEtaMC->SetUseMCInfo(kTRUE);
-    axisEtaMC->SetBins(-1.0,1.0,0.01);
+    axisEtaMC->SetBins(-1.0,1.0,0.1);
 
     // output: 2D histo for kine acceptance
     AliRsnListOutput *outMonitorPtVsEtaMC = new AliRsnListOutput("Pt_VsEtaMC", AliRsnListOutput::kHistoDefault);

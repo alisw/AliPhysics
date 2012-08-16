@@ -103,8 +103,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTOFKStar
    //event plane (only for PbPb)
    Int_t planeID = task->CreateValue(AliRsnMiniValue::kPlaneAngle, kFALSE);
    AliRsnMiniOutput *outPlane = task->CreateOutput("eventPlane", "HIST", "EVENT");
-   if (!isPP)
-     outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
+   outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
    
    //
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
