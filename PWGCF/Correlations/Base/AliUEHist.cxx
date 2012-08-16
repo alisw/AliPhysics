@@ -935,6 +935,8 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 	tracksMixed->Scale(1.0 / triggers2 / mixedNorm);
 	// tracksSame->Scale(tracksMixed->Integral() / tracksSame->Integral());
 	  
+// 	new TCanvas; tracksSame->DrawClone("SURF1");
+// 	new TCanvas; tracksMixed->DrawClone("SURF1");
 	tracksSame->Divide(tracksMixed);
 	  
 	// code to draw contributions
@@ -1517,18 +1519,20 @@ void AliUEHist::Correct(AliUEHist* corrections)
     else
     {
       // with 6 axes there is not enough memory, do the corrections in-place
-      Printf("Applying corrections in place to reduce memory consumption");
+      Printf(">>>>>>>> Applying corrections in place to reduce memory consumption");
       CFStep step = kCFStepBiasStudy;
 //       CFStep step = kCFStepReconstructed;
      
       // Dont use eta in the following, because it is a Delta-eta axis
       
-      // contamination correction
+      // --- contamination correction ---
       // correct single-particle contamination for associated particles
+      // correct contamination for trigger particles (tracks AND events)
       
+      // in bins of p,T
       TH1* contamination = corrections->GetTrackingContamination(1);
       
-      if (0)
+      if (1)
       {
 	Printf("Applying contamination enhancement");
 	
@@ -1541,42 +1545,52 @@ void AliUEHist::Correct(AliUEHist* corrections)
 	}
       }
 	
+      // correct pT,A in bins of pT
       CorrectTracks(step, step, contamination, 1);
-      delete contamination;    
+      delete contamination;
+      
+      // correct pT,T in bins of pT (for tracks AND events)
+      contamination = corrections->GetTrackEfficiency(kCFStepTracked, kCFStepTrackedOnlyPrim, 1, -1, 2);
+      new TCanvas; contamination->DrawCopy();
+      CorrectEvents(step, step, contamination, 0);
+      CorrectTracks(step, step, contamination, 2);
+      delete contamination;
       
       // correct for additional contamination due to trigger particle around phi ~ 0
-      TH2* correlatedContamination = corrections->GetCorrelatedContamination();
       if (0)
       {
-	Printf("Applying contamination enhancement");
-	
-	for (Int_t bin = 1; bin <= correlatedContamination->GetNbinsX(); bin++)
-	  for (Int_t bin2 = 1; bin2 <= correlatedContamination->GetNbinsY(); bin2++)
-	  {
-	    printf("%f", correlatedContamination->GetBinContent(bin, bin2));
-	    if (correlatedContamination->GetBinContent(bin, bin2) > 0)
-	      correlatedContamination->SetBinContent(bin, bin2, 1.0 + 1.1 * (correlatedContamination->GetBinContent(bin, bin2) - 1.0));
-	    printf(" --> %f\n", correlatedContamination->GetBinContent(bin, bin2));
-	  }
+	TH2* correlatedContamination = corrections->GetCorrelatedContamination();
+	if (1)
+	{
+	  Printf("Applying contamination enhancement");
+	  
+	  for (Int_t bin = 1; bin <= correlatedContamination->GetNbinsX(); bin++)
+	    for (Int_t bin2 = 1; bin2 <= correlatedContamination->GetNbinsY(); bin2++)
+	    {
+	      printf("%f", correlatedContamination->GetBinContent(bin, bin2));
+	      if (correlatedContamination->GetBinContent(bin, bin2) > 0)
+		correlatedContamination->SetBinContent(bin, bin2, 1.0 + 1.1 * (correlatedContamination->GetBinContent(bin, bin2) - 1.0));
+	      printf(" --> %f\n", correlatedContamination->GetBinContent(bin, bin2));
+	    }
+	}
+
+	// new TCanvas; correlatedContamination->DrawCopy("COLZ");
+	CorrectCorrelatedContamination(step, 0, correlatedContamination);
+
+	delete correlatedContamination;
       }
+      else
+	Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
       
-//       new TCanvas; correlatedContamination->DrawCopy("COLZ");
-  //     CorrectCorrelatedContamination(step, 0, correlatedContamination);
-      Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
-      
-      delete correlatedContamination;
-      
-      // TODO correct for contamination of trigger particles (for tracks AND events)
-      //CorrectEvents(kCFStepTracked, kCFStepTrackedOnlyPrim, 0, 0);
-      
-      // --- efficiency correction ---
+      // --- tracking efficiency correction ---
       // correct single-particle efficiency for associated particles
-      // in addition correct for efficiency on trigger particles (tracks AND events)
+      // correct for efficiency on trigger particles (tracks AND events)
       
       // in bins of pT and centrality
       TH1* efficiencyCorrection = corrections->GetTrackingEfficiencyCorrectionCentrality();
-//       new TCanvas; efficiencyCorrection->DrawCopy("COLZ");
-      // use kCFStepAnaTopology as a temporary step 
+      // new TCanvas; efficiencyCorrection->DrawCopy("COLZ");
+
+      // correct pT,A in bins of pT and centrality
       CorrectTracks(step, step, efficiencyCorrection, 1, 3);
       delete efficiencyCorrection;
       
@@ -1584,6 +1598,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
       efficiencyCorrection = corrections->GetTrackEfficiency(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, 1, 3, 2);
       CorrectEvents(step, step, efficiencyCorrection, 0, 1);
       CorrectTracks(step, step, efficiencyCorrection, 2, 3);
+      
       delete efficiencyCorrection;
     }
   }
