@@ -139,8 +139,8 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
       die->SetTrackRotator(rot);
       // mixing
       AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
-      mix->AddVariable(AliDielectronVarManager::kZvPrim,     10,-10.,10.);
-      mix->AddVariable(AliDielectronVarManager::kCentrality, 16,0.,80.);
+      mix->AddVariable(AliDielectronVarManager::kZvPrim,     20,-10.,10.);
+      mix->AddVariable(AliDielectronVarManager::kCentrality,  8,  0.,80.);
       mix->SetMixType(AliDielectronMixingHandler::kAll);
       mix->SetDepth(100);
       die->SetMixingHandler(mix);
@@ -331,7 +331,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   ////////////////////////////////// DATA + MC
   // pid cuts TPC + TOF & TRD
-  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.5,3.);
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0,4.);
   if(cutDefinition==kTOF || cutDefinition>=kTOFTRD || cutDefinition>=kTOFTRD2)
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE,AliDielectronPID::kIfAvailable);
 
@@ -378,9 +378,9 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
 
 
   // rapidity selection
-  AliDielectronVarCuts *rapCut=new AliDielectronVarCuts("|Y|<.9","|Y|<.9");
-  rapCut->AddCut(AliDielectronVarManager::kY,-0.9,0.9);
-  die->GetPairFilter().AddCuts(rapCut);
+  //  AliDielectronVarCuts *rapCut=new AliDielectronVarCuts("|Y|<.9","|Y|<.9");
+  // rapCut->AddCut(AliDielectronVarManager::kY,-0.9,0.9);
+  // die->GetPairFilter().AddCuts(rapCut);
 
 }
 
@@ -732,6 +732,7 @@ void InitHF(AliDielectron* die, Int_t cutDefinition)
   hf->AddCutVariable(AliDielectronVarManager::kCentrality,  "0.,5.,10.,20.,40.,50.,60.,80."  );
   hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.,2.5,5.,100."                 );
   hf->AddCutVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2,4,-1.*TMath::Pi(),TMath::Pi() );
+  hf->AddCutVariable(AliDielectronVarManager::kY,           1, -0.9, 0.9                     );
   //  hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.8, 1.0, 1.1, 1.2, 1.5, 100.0", kTRUE, AliDielectronHF::kBinToMax);
   hf->AddCutVariable(AliDielectronVarManager::kNclsTPC,     "70,90,100,120,160",              kTRUE, AliDielectronHF::kBinToMax);
   hf->AddCutVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4,-3,-2.5,-2,2,2.5,3,4",        kTRUE, AliDielectronHF::kSymBin);
@@ -766,14 +767,14 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   if(hasMC) cf->AddVariable(AliDielectronVarManager::kTRDpidEffPair,101,0.0,1.01);
   //    if(hasMC) cf->AddVariable(AliDielectronVarManager::kThetaCS,15,-1.,1.);
 
-  // flow variables  
-  cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2,4,-1.*TMath::Pi(),TMath::Pi()); 
-  cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0CrpH2,4,-1.*TMath::Pi(),TMath::Pi()); 
+  // flow variables
+  cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2,4,-1.*TMath::Pi(),TMath::Pi());
+  cf->AddVariable(AliDielectronVarManager::kDeltaPhiv0CrpH2,4,-1.*TMath::Pi(),TMath::Pi());
 
   // leg variables
   cf->AddVariable(AliDielectronVarManager::kPt,"0.8, 1.0, 1.1, 1.2, 1.5, 100.0",kTRUE);
   if(hasMC) cf->AddVariable(AliDielectronVarManager::kEta,"-0.9,0.9",kTRUE);
-  //    cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE); 
+  //    cf->AddVariable(AliDielectronVarManager::kITSLayerFirstCls,7,-1.5,5.5,kTRUE);
   //    cf->AddVariable(AliDielectronVarManager::kNclsITS,"1,2,3,4,5,6",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-3,-2.5,-2,2,2.5,3",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"2.5,3.0,3.5,4.0,4.5,100",kTRUE);
@@ -782,14 +783,14 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   //    cf->AddVariable(AliDielectronVarManager::kTOFnSigmaEle,"-3,-2,2,3",kTRUE); break;
   //    cf->AddVariable(AliDielectronVarManager::kTRDpidQuality,"3.5, 4.5, 5.5, 6.5",kTRUE);
   //    if(!hasMC && isESD) cf->AddVariable(AliDielectronVarManager::kTRDchi2,"-1.,0.,2.,4.",kTRUE);
-  
+
   // mc steps
   if(hasMC) {
     if(cutDefinition==kTOFTRD) cf->SetStepForMCtruth();
-    cf->SetStepsForMCtruthOnly();  
-    // cf->SetStepsForBackground();   
+    cf->SetStepsForMCtruthOnly();
+    // cf->SetStepsForBackground();
   }
-  
+
   die->SetCFManagerPair(cf);
 }
 
