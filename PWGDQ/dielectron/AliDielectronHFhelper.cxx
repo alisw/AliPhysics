@@ -53,7 +53,7 @@
 //const char* AliDielectronHFhelper::fCutVars[AliDielectronHFhelper::kMaxCuts] = {"","","","","","","","","",""};
 
 //________________________________________________________________
-AliDielectronHFhelper::AliDielectronHFhelper(const char* filename) :
+AliDielectronHFhelper::AliDielectronHFhelper(const char* filename, const char* container) :
   TNamed(),
   fArrPairType(0x0),
   fCutVars(0x0),
@@ -63,7 +63,7 @@ AliDielectronHFhelper::AliDielectronHFhelper(const char* filename) :
   //
   // get HF container(s) from file 'filename'
   //
-  SetHFArray(filename);
+  SetHFArray(filename, container);
 
 }
 
@@ -79,7 +79,7 @@ AliDielectronHFhelper::~AliDielectronHFhelper()
 }
 
 //________________________________________________________________
-void AliDielectronHFhelper::SetHFArray(const char* filename)
+void AliDielectronHFhelper::SetHFArray(const char* filename, const char* container)
 {
   //
   // get HF containers from file
@@ -102,7 +102,7 @@ void AliDielectronHFhelper::SetHFArray(const char* filename)
       while ((obj = next())) {
 	TString objname(obj->GetName());
 
-	if( objname.Contains("_HF") && obj->IsA()==TObjArray::Class()) {
+	if( objname.Contains(Form("%s_HF",container)) && obj->IsA()==TObjArray::Class()) {
 	  fArrPairType = new TObjArray( *(dynamic_cast<TObjArray*>(obj)) );
 	  //fArrPairType->Print();
 	  return;
@@ -341,6 +341,7 @@ TH1F* AliDielectronHFhelper::FindHistograms(TObjArray *histos)
 
   // merge histograms
   TH1F* hist = MergeHistos(histos);
+  if(hist) AliDebug(1,Form(" Merging: %e histogram entries",hist->GetEntries()));
   return hist;
 }
 
@@ -432,6 +433,7 @@ void AliDielectronHFhelper::Print(const Option_t* /*option*/) const
   //
   // Print out object contents
   //
+  AliInfo(Form(" Container:               %s",fArrPairType->GetName()));
 
   // pairtypes, steps and sources
   AliInfo(Form(" Number of filled steps:  %d",fArrPairType->GetEntries()));

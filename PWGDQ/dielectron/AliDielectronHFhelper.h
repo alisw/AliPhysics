@@ -26,10 +26,10 @@ public:
   enum { kMaxCuts=20 };
 
   //AliDielectronHFhelper();
-  AliDielectronHFhelper(const char* filename);
+  AliDielectronHFhelper(const char* filename, const char* container);
 
   virtual ~AliDielectronHFhelper();
-  void SetHFArray(const char* filename);
+  void SetHFArray(const char* filename, const char* container);
 
   void SetRangeUser(const char *varname, Double_t min, Double_t max, Bool_t leg=kFALSE);
   void SetRangeUser(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max, Bool_t leg=kFALSE);
