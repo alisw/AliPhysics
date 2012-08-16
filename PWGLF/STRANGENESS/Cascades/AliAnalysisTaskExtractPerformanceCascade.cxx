@@ -25,14 +25,13 @@
 //
 //  --- Algorithm Description 
 //   1. Loop over primaries in stack to acquire generated charged Xi
-//   2. Loop over stack to find V0s, fill TH3Fs "PrimRawPt"s for Efficiency
+//   2. Loop over stack to find Cascades, fill TH3Fs "PrimRawPt"s for Efficiency
 //   3. Perform Physics Selection
 //   4. Perform Primary Vertex |z|<10cm selection
 //   5. Perform Primary Vertex NoTPCOnly vertexing selection (>0 contrib.)
 //   6. Perform Pileup Rejection
 //   7. Analysis Loops: 
 //    7a. Fill TH3Fs "PrimAnalysisPt" for control purposes only
-//    7b. Fill TTree object with V0 information, candidates
 //
 //  Please Report Any Bugs! 
 //
@@ -568,8 +567,6 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 
    Int_t lNbMCPrimary        = 0;
 
-   Int_t lPdgcodeCurrentPart = 0;
-   Double_t lRapCurrentPart  = 0;
    Double_t lPtCurrentPart   = 0;
   
    //Int_t lComeFromSigma      = 0;
@@ -626,8 +623,6 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 // ---> Set Variables to Zero again
 // ---> Variable Definition
 
-   lPdgcodeCurrentPart = 0;
-   lRapCurrentPart  = 0;
    lPtCurrentPart   = 0;
 
 //------------------------------------------------

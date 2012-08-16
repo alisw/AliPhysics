@@ -1,4 +1,4 @@
-AliAnalysisTaskExtractPerformanceV0 *AddTaskExtractPerformanceV0( Bool_t lSwitchIsNuclear     = kTRUE, 
+AliAnalysisTaskExtractPerformanceV0 *AddTaskExtractPerformanceV0( Bool_t lSwitchIsNuclear     = kFALSE, 
                                                                   Bool_t lSwitchIsLowEnergyPP = kFALSE,
                                                                   Bool_t lSwitchUseOnTheFly   = kFALSE, 
                                                                   const TString lMasterJobSessionFlag = "")
