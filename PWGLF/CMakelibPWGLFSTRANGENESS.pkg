@@ -41,6 +41,8 @@ set ( SRCS
   STRANGENESS/LambdaK0/AliAnalysisTaskExtractV0.cxx
   STRANGENESS/LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
   STRANGENESS/LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
+  STRANGENESS/Cascades/AliAnalysisTaskExtractCascade.cxx
+  STRANGENESS/Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
