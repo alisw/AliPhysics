@@ -267,6 +267,10 @@ Bool_t AliTRDrecoTask::PutTrendValue(const Char_t *name, Double_t val, Double_t 
 // Generic publisher for trend values
 
   AliTRDtrendingManager *tm = AliTRDtrendingManager::Instance();
+  if(!tm){
+    AliError("Wrong usage of the trending functionality. Could not instantiate AliTRDtrendingManager singleton.");
+    return kFALSE;
+  }
   tm->AddValue(Form("%s_%s", GetName(), name), val, err);
   return kTRUE;
 }
