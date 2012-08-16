@@ -1,4 +1,4 @@
-AliAnalysisTaskExtractCascade *AddTaskExtractCascade( Bool_t lSwitchIsNuclear     = kTRUE, 
+AliAnalysisTaskExtractCascade *AddTaskExtractCascade( Bool_t lSwitchIsNuclear     = kFALSE, 
                                                                   Bool_t lSwitchIsLowEnergyPP = kFALSE,
                                                                   const TString lMasterJobSessionFlag = "")
 {

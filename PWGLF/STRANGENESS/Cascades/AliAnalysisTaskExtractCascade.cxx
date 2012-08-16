@@ -20,19 +20,16 @@
 // ROOT object to store the candidates, plus a couple of histograms filled on
 // a per-event basis for storing variables too numerous to put in a tree. 
 //
-// --- Adapted to look for lambdas as well, using code from 
-//        AliAnalysisTaskCheckPerformanceStrange.cxx
 //
 //  --- Algorithm Description 
 //   1. Loop over primaries in stack to acquire generated charged Xi
-//   2. Loop over stack to find V0s, fill TH3Fs "PrimRawPt"s for Efficiency
+//   2. Loop over stack to find Cascades, fill TH3Fs "PrimRawPt"s for Efficiency
 //   3. Perform Physics Selection
 //   4. Perform Primary Vertex |z|<10cm selection
-//   5. Perform Primary Vertex NoTPCOnly vertexing selection (>0 contrib.)
+//   5. Perform Primary Vertex NoTPCOnly vertexing selection
 //   6. Perform Pileup Rejection
 //   7. Analysis Loops: 
 //    7a. Fill TH3Fs "PrimAnalysisPt" for control purposes only
-//    7b. Fill TTree object with V0 information, candidates
 //
 //  Please Report Any Bugs! 
 //
