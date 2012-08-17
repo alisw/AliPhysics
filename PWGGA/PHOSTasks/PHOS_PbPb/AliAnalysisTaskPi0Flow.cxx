@@ -1105,7 +1105,7 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0sMix()
 
   for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-    for(Int_t evi=0; evi<arrayList->GetEntriesFast();evi++){
+    for(Int_t evi=0; evi<arrayList->GetEntries();evi++){
       TObjArray * mixPHOS = static_cast<TObjArray*>(arrayList->At(evi));
       for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
 	AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
@@ -1283,7 +1283,7 @@ void AliAnalysisTaskPi0Flow::UpdateLists()
   if(fCaloPhotonsPHOS->GetEntriesFast()>0){
     arrayList->AddFirst(fCaloPhotonsPHOS) ;
     fCaloPhotonsPHOS=0;
-    if(arrayList->GetEntriesFast()>100){//Remove redundant events
+    if(arrayList->GetEntries()>100){//Remove redundant events
       TObjArray * tmp = static_cast<TObjArray*>(arrayList->Last()) ;
       arrayList->RemoveLast() ;
       delete tmp ; // TODO: may conflict with delete done by list being owner.
