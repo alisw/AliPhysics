@@ -142,7 +142,7 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   
   // PID for the electrons
   AliESDpidCuts *electronID = new AliESDpidCuts("Electrons", "Electron PID cuts");
-  electronID->SetTPCnSigmaCut(AliPID::kElectron, 3.);
+  electronID->SetTPCnSigmaCut(AliPID::kElectron, 3.5);
   
   // tighter cuts on primary particles for high pT tracks
   // take the standard cuts, which include already 
