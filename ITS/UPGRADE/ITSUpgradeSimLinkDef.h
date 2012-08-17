@@ -17,13 +17,16 @@
 #pragma link C++ class  AliITSupgradeDigitizer+;
 //v0 part <<<
 // 
-#pragma link C++ class  AliITSUpg+;
-#pragma link C++ class  AliITSvUpgrade+;
-#pragma link C++ class  AliITSv11GeometryUpgrade+;
+#pragma link C++ class  AliITSU+;
+#pragma link C++ class  AliITSUv11+;
+#pragma link C++ class  AliITSUv11Layer+;
 #pragma link C++ class  AliITSv11GeomBeamPipe+;
-#pragma link C++ class  AliITSDetTypeSimUpg+;
-#pragma link C++ class  AliITSsimulationPixUpg+;
-#pragma link C++ class  AliITSdigitPixUpg+;
+#pragma link C++ class  AliITSUModule+;
+#pragma link C++ class  AliITSUSimulation+;
+#pragma link C++ class  AliITSUSimulationPix+;
+#pragma link C++ class  AliITSUDigitPix+;
+#pragma link C++ class  AliITSUDigitizer+;
+#pragma link C++ class  AliITSUHit+;
 
 
 #endif

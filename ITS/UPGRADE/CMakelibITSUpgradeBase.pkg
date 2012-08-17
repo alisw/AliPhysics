@@ -30,11 +30,12 @@ v0/AliITSDigitUpgrade.cxx
 v0/AliITSsegmentationUpgrade.cxx 
 v0/AliITSRecPointU.cxx 
 #
-AliITSInitGeometryUpg.cxx 
-AliITSLoaderUpg.cxx 
-AliITSgeomTGeoUpg.cxx
-AliITSCalibrationPixUpg.cxx
-AliITSsegmentationPixUpg.cxx
+AliITSULoader.cxx 
+AliITSUGeomTGeo.cxx
+AliITSUCalibrationPix.cxx
+AliITSUSegmentationPix.cxx
+AliITSUSensMap.cxx
+AliITSUSDigit.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

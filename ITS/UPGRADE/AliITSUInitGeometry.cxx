@@ -14,7 +14,7 @@
  **************************************************************************/
 
 /*
-$Id: AliITSInitGeometryUpg.cxx $
+$Id: AliITSUInitGeometry.cxx $
 */
 ////////////////////////////////////////////////////////////////
 //  This class initializes the class AliITSgeom
@@ -45,97 +45,39 @@ $Id: AliITSInitGeometryUpg.cxx $
 #include <TMath.h>
 
 #include "AliLog.h"
-#include "AliITSgeomTGeoUpg.h"
-#include "AliITSInitGeometryUpg.h"
+#include "AliITSUGeomTGeo.h"
+#include "AliITSUInitGeometry.h"
 #include <TDatime.h>
 
-ClassImp(AliITSInitGeometryUpg)
+ClassImp(AliITSUInitGeometry)
 
 //______________________________________________________________________
-AliITSInitGeometryUpg::AliITSInitGeometryUpg():
-TObject(),                   // Base Class
-fName(0),                    // Geometry name
-fMinorVersion(-1),           // Minor version number/type
-fMajorVersion(kvDefault),    // Major versin number
-fTiming(kFALSE),             // Flag to start inilization timing
-fSegGeom(kFALSE),            // Flag to switch between the old use of
-                             // AliITSgeomS?D class, or AliITSsegmentation
-                             // class in fShape of AliITSgeom class.
-fDecode(kFALSE),             // Flag for new/old decoding
-fDebug(0){                   // Debug flag
-    // Default Creator
-    // Inputs:
-    //   none.
-    // Outputs:
-    //   none.
-    // Return:
-    //   A default inilized AliITSInitGeometryUpg object
-
-    fName = "Undefined";
+AliITSUInitGeometry::AliITSUInitGeometry()
+: TObject()
+  ,fName(0)
+  ,fTiming(kFALSE)
+  ,fDebug(0)
+{  
 }
-//______________________________________________________________________
-AliITSInitGeometryUpg::AliITSInitGeometryUpg(AliITSVersion_t version,
-					     Int_t minorversion):
-TObject(),                   // Base Class
-fName(0),                    // Geometry name
-fMinorVersion(minorversion), // Minor version number/type
-fMajorVersion(version),      // Major versin number
-fTiming(kFALSE),             // Flag to start inilization timing
-fSegGeom(kFALSE),            // Flag to switch between the old use of
-                             // AliITSgeomS?D class, or AliITSsegmentation
-                             // class in fShape of AliITSgeom class.
-fDecode(kFALSE),             // Flag for new/old decoding
-fDebug(0){                   // Debug flag
-    // Default Creator
-    // Inputs:
-    //   none.
-    // Outputs:
-    //   none.
-    // Return:
-    //   A default inilized AliITSInitGeometryUpg object
 
-  switch (version) {
-    case kv11:
-        fName="AliITSv11";
-	break;
-    case kvUpgrade:
-        fName="AliITSvUpgrade";
-	break;
-    case kvDefault:
-    default:
-        AliFatal(Form("Undefined geometry: fMajorVersion=%d, "
-                      "fMinorVersion= %d",(Int_t)fMajorVersion,fMinorVersion));
-        fName = "Undefined";
-	break;
-    } // switch
-}
 //______________________________________________________________________
-AliITSgeom* AliITSInitGeometryUpg::CreateAliITSgeom(){
-    // Creates and Initilizes the geometry transformation class AliITSgeom
-    // to values appropreate to this specific geometry. Now that
-    // the segmentation is part of AliITSgeom, the detector
-    // segmentations are also defined here.
-    // Inputs:
-    //   none.
-    // Outputs:
-    //   none.
-    // Return:
-    //   A pointer to a new properly inilized AliITSgeom class. If
-    //   pointer = 0 then failed to init.
-
+AliITSgeom* AliITSUInitGeometry::CreateAliITSgeom()
+{
+  // Creates and Initilizes the geometry transformation class AliITSgeom
+  // to values appropreate to this specific geometry. Now that
+  // the segmentation is part of AliITSgeom, the detector
+  // segmentations are also defined here.
+  //
 
   AliITSVersion_t version = kvDefault;
   Int_t minor = 0;
   TDatime datetime;
-  TGeoVolume *itsV = gGeoManager->GetVolume(AliITSgeomTGeoUpg::GetITSVolPattern());
+  TGeoVolume *itsV = gGeoManager->GetVolume(AliITSUGeomTGeo::GetITSVolPattern());
   if(!itsV){
     Error("CreateAliITSgeom","Can't find ITS volume ITSV, aborting");
     return 0;
   }// end if
-  const Char_t *title = itsV->GetTitle();
-  if(!ReadVersionString(title,(Int_t)strlen(title),version,minor,
-			datetime))
-    Warning("UpdateInternalGeometry","Can't read title=%s\n",title);
+
   SetTiming(kFALSE);
   SetSegGeom(kFALSE);
   SetDecoding(kFALSE);
@@ -143,8 +85,9 @@ AliITSgeom* AliITSInitGeometryUpg::CreateAliITSgeom(){
   AliDebug(1,"AliITSgeom object has been initialized from TGeo\n");
   return geom;
 }
+
 //______________________________________________________________________
-AliITSgeom* AliITSInitGeometryUpg::CreateAliITSgeom(Int_t major,Int_t minor){
+AliITSgeom* AliITSUInitGeometry::CreateAliITSgeom(Int_t major,Int_t minor){
     // Creates and Initilizes the geometry transformation class AliITSgeom
     // to values appropreate to this specific geometry. Now that
     // the segmentation is part of AliITSgeom, the detector
@@ -164,7 +107,7 @@ AliITSgeom* AliITSInitGeometryUpg::CreateAliITSgeom(Int_t major,Int_t minor){
         SetVersion(kv11,minor);
         break;
     case kvUpgrade:
-        SetGeometryName("AliITSvUpgrade");
+        SetGeometryName("AliITSUv11");
         SetVersion(kvUpgrade,minor);
         break;
     case kvDefault:
@@ -181,7 +124,7 @@ AliITSgeom* AliITSInitGeometryUpg::CreateAliITSgeom(Int_t major,Int_t minor){
     return geom;
 }
 //______________________________________________________________________
-Bool_t AliITSInitGeometryUpg::InitAliITSgeom(AliITSgeom *geom){
+Bool_t AliITSUInitGeometry::InitAliITSgeom(AliITSgeom *geom){
   // Initilizes the geometry transformation class AliITSgeom
   // to values appropreate to this specific geometry. Now that
   // the segmentation is part of AliITSgeom, the detector
@@ -214,7 +157,7 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeom(AliITSgeom *geom){
     return kFALSE;
 }
 //______________________________________________________________________
-void AliITSInitGeometryUpg::TransposeTGeoHMatrix(TGeoHMatrix *m)const{
+void AliITSUInitGeometry::TransposeTGeoHMatrix(TGeoHMatrix *m)const{
     // Transpose the rotation matrix part of a TGeoHMatrix. This
     // is needed because TGeo stores the transpose of the rotation
     // matrix as compared to what AliITSgeomMatrix uses (and Geant3).
@@ -241,7 +184,7 @@ void AliITSInitGeometryUpg::TransposeTGeoHMatrix(TGeoHMatrix *m)const{
 
 
 //______________________________________________________________________
-Bool_t AliITSInitGeometryUpg::InitAliITSgeomV11(AliITSgeom *geom){
+Bool_t AliITSUInitGeometry::InitAliITSgeomV11(AliITSgeom *geom){
   // Initilizes the geometry transformation class AliITSgeom
   // Now that the segmentation is part of AliITSgeom, the detector
   // segmentations are also defined here.
@@ -327,7 +270,7 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomV11(AliITSgeom *geom){
   return kTRUE;
 }
 //______________________________________________________________________
-Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
+Bool_t AliITSUInitGeometry::InitAliITSgeomVUpgrade(AliITSgeom *geom){
   // Initilizes the geometry transformation class AliITSgeom
   // Now that the segmentation is part of AliITSgeom, the detector
   // segmentations are also defined here.
@@ -341,8 +284,6 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
   const Int_t kItype  = 0; // Type of transformation defined 0=> Geant
   const Int_t klayers = GetNumberOfLayers(); // Number of layers in the ITS
   const AliITSDetector kIdet = AliITSDetector(0); //kUPG; RS temporary
-  TString pathbase = Form("/ALIC_1/%s_2/",AliITSgeomTGeoUpg::GetITSVolPattern()); // We have 2 to cheat AliGeoManager::CheckSymNamesLUT
-
   if (klayers <= 0) {
     AliError("No layers found in ITSV");
     return kFALSE;
@@ -355,12 +296,12 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
     kladders[j] = GetNumberOfLadders(j);
     kdetectors[j] = GetNumberOfModules(j);
   }
-  const TString kPathBase = Form("/ALIC_1/%s_1/",AliITSgeomTGeoUpg::GetITSVolPattern());
+  const TString kPathBase = Form("/ALIC_1/%s_1/",AliITSUGeomTGeo::GetITSVolPattern());
   const TString kNames = Form("%%s%s%%d_1/%s%%d_%%d/%s%%d_%%d/%s%%d_%%d"
-			      ,AliITSgeomTGeoUpg::GetITSLayerPattern()
-			      ,AliITSgeomTGeoUpg::GetITSLadderPattern()
-			      ,AliITSgeomTGeoUpg::GetITSModulePattern()
-			      ,AliITSgeomTGeoUpg::GetITSSensorPattern()
+			      ,AliITSUGeomTGeo::GetITSLayerPattern()
+			      ,AliITSUGeomTGeo::GetITSLadderPattern()
+			      ,AliITSUGeomTGeo::GetITSModulePattern()
+			      ,AliITSUGeomTGeo::GetITSSensorPattern()
 			      );
   Int_t mod,nmods=0, lay, lad, det, cpn0, cpn1, cpn2;
   Double_t tran[3]={0.,0.,0.}, rot[10]={9*0.0,1.0};
@@ -406,7 +347,7 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
 }
 
 //_______________________________________________________________________
-Bool_t AliITSInitGeometryUpg::GetTransformation(const TString &volumePath,
+Bool_t AliITSUInitGeometry::GetTransformation(const TString &volumePath,
 					     TGeoHMatrix &mat){
     // Returns the Transformation matrix between the volume specified
     // by the path volumePath and the Top or mater volume. The format
@@ -442,7 +383,7 @@ Bool_t AliITSInitGeometryUpg::GetTransformation(const TString &volumePath,
     return kTRUE;
 }
 //______________________________________________________________________
-Bool_t AliITSInitGeometryUpg::GetShape(const TString &volumePath,
+Bool_t AliITSUInitGeometry::GetShape(const TString &volumePath,
 				    TString &shapeType,TArrayD &par){
     // Returns the shape and its parameters for the volume specified
     // by volumeName.
@@ -701,7 +642,7 @@ Bool_t AliITSInitGeometryUpg::GetShape(const TString &volumePath,
     return kFALSE;
 }
 //______________________________________________________________________
-void AliITSInitGeometryUpg::DecodeDetector(
+void AliITSUInitGeometry::DecodeDetector(
     Int_t &mod,Int_t layer,Int_t cpn0,Int_t cpn1,Int_t cpn2) const {
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
@@ -738,7 +679,7 @@ void AliITSInitGeometryUpg::DecodeDetector(
     return;
 }
 //______________________________________________________________________
-void AliITSInitGeometryUpg::RecodeDetector(Int_t mod,Int_t &cpn0,
+void AliITSUInitGeometry::RecodeDetector(Int_t mod,Int_t &cpn0,
                                         Int_t &cpn1,Int_t &cpn2){
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
@@ -775,7 +716,7 @@ void AliITSInitGeometryUpg::RecodeDetector(Int_t mod,Int_t &cpn0,
     return;
 }
 //______________________________________________________________________
-void AliITSInitGeometryUpg::DecodeDetectorLayers(Int_t mod,Int_t &layer,
+void AliITSUInitGeometry::DecodeDetectorLayers(Int_t mod,Int_t &layer,
                                               Int_t &lad,Int_t &det){
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
@@ -817,7 +758,7 @@ void AliITSInitGeometryUpg::DecodeDetectorLayers(Int_t mod,Int_t &layer,
 }
 
 //______________________________________________________________________
-void AliITSInitGeometryUpg::DecodeDetectorv11(Int_t &mod,Int_t layer,
+void AliITSUInitGeometry::DecodeDetectorv11(Int_t &mod,Int_t layer,
                                  Int_t cpn0,Int_t cpn1,Int_t cpn2) const {
     // decode geometry into detector module number
     // Inputs:
@@ -858,7 +799,7 @@ void AliITSInitGeometryUpg::DecodeDetectorv11(Int_t &mod,Int_t layer,
 }
 
 //______________________________________________________________________
-void AliITSInitGeometryUpg::DecodeDetectorvUpgrade(Int_t &mod,Int_t layer,
+void AliITSUInitGeometry::DecodeDetectorvUpgrade(Int_t &mod,Int_t layer,
                                  Int_t cpn0,Int_t cpn1,Int_t /*cpn2*/) const {
     // decode geometry into detector module number
     // Inputs:
@@ -883,7 +824,7 @@ void AliITSInitGeometryUpg::DecodeDetectorvUpgrade(Int_t &mod,Int_t layer,
 }
 
 //______________________________________________________________________
-void AliITSInitGeometryUpg::RecodeDetectorv11(Int_t mod,Int_t &cpn0,
+void AliITSUInitGeometry::RecodeDetectorv11(Int_t mod,Int_t &cpn0,
 					   Int_t &cpn1,Int_t &cpn2) {
     // decode geometry into detector module number using the new decoding
     // Scheme.
@@ -916,13 +857,13 @@ void AliITSInitGeometryUpg::RecodeDetectorv11(Int_t mod,Int_t &cpn0,
 	  cpn0--;
         } // end if Lay<5/else
     } // end if lay<3/else
-    /*printf("AliITSInitGeometryUpg::RecodeDetectorv11:"
+    /*printf("AliITSUInitGeometry::RecodeDetectorv11:"
            "mod=%d lay=%d lad=%d det=%d cpn0=%d cpn1=%d cpn2=%d\n",
            mod,lay,lad,det,cpn0,cpn1,cpn2);*/
 }
 
 //______________________________________________________________________
-void AliITSInitGeometryUpg::RecodeDetectorvUpgrade(Int_t mod,Int_t &cpn0,
+void AliITSUInitGeometry::RecodeDetectorvUpgrade(Int_t mod,Int_t &cpn0,
 						Int_t &cpn1,Int_t &cpn2) {
     // decode geometry into detector module number using the new decoding
     // Scheme.
@@ -944,13 +885,13 @@ void AliITSInitGeometryUpg::RecodeDetectorvUpgrade(Int_t mod,Int_t &cpn0,
     cpn0 = lad;
 //    cpn1--;
 //    cpn0--;
-    /*printf("AliITSInitGeometryUpg::RecodeDetectorv11:"
+    /*printf("AliITSUInitGeometry::RecodeDetectorv11:"
            "mod=%d lay=%d lad=%d det=%d cpn0=%d cpn1=%d cpn2=%d\n",
            mod,lay,lad,det,cpn0,cpn1,cpn2);*/
 }
 
 //______________________________________________________________________
-void AliITSInitGeometryUpg::DecodeDetectorLayersv11(Int_t mod,Int_t &lay,
+void AliITSUInitGeometry::DecodeDetectorLayersv11(Int_t mod,Int_t &lay,
 						 Int_t &lad,Int_t &det) {
 
   // decode module number into detector indices for v11
@@ -989,7 +930,7 @@ void AliITSInitGeometryUpg::DecodeDetectorLayersv11(Int_t mod,Int_t &lay,
 }
 
 //______________________________________________________________________
-void AliITSInitGeometryUpg::DecodeDetectorLayersvUpgrade(Int_t  mod,Int_t &lay,
+void AliITSUInitGeometry::DecodeDetectorLayersvUpgrade(Int_t  mod,Int_t &lay,
 						      Int_t &lad,Int_t &det){
 
   // decode module number into detector indices for vUpgrade
@@ -1030,7 +971,7 @@ void AliITSInitGeometryUpg::DecodeDetectorLayersvUpgrade(Int_t  mod,Int_t &lay,
 }
 
 //______________________________________________________________________
-Bool_t AliITSInitGeometryUpg::WriteVersionString(Char_t *str,Int_t length,
+Bool_t AliITSUInitGeometry::WriteVersionString(Char_t *str,Int_t length,
                         AliITSVersion_t maj,Int_t min,
                         const Char_t *cvsDate,const Char_t *cvsRevision)const{
     // fills the string str with the major and minor version number
@@ -1074,7 +1015,7 @@ Bool_t AliITSInitGeometryUpg::WriteVersionString(Char_t *str,Int_t length,
     n = 50+(Int_t)(TMath::Log10(TMath::Abs((Double_t)i)))+1+
         (Int_t)(TMath::Log10(TMath::Abs((Double_t)min)))+1
         +cvsDateLength-6+cvsRevisionLength-10;
-    if(GetDebug()>1) printf("AliITSInitGeometryUpg::WriteVersionString:"
+    if(GetDebug()>1) printf("AliITSUInitGeometry::WriteVersionString:"
                         "length=%d major=%d minor=%d cvsDate=%s[%d] "
                         "cvsRevision=%s[%d] n=%d\n",length,i,min,cvslikedate,
                         cvsDateLength,cvsRevision,cvsRevisionLength,n);
@@ -1096,7 +1037,7 @@ Bool_t AliITSInitGeometryUpg::WriteVersionString(Char_t *str,Int_t length,
     i = (Int_t)maj;
     snprintf(str,length-1,"Major Version= %d Minor Version= %d Revision: %s Date: %s",i,min,cvsrevision,cvsdate);
     /* this gives compilation warnings on some compilers: descriptor zu
-    if(GetDebug()>1)printf("AliITSInitGeometryUpg::WriteVersionString: "
+    if(GetDebug()>1)printf("AliITSUInitGeometry::WriteVersionString: "
                        "n=%d str=%s revision[%zu] date[%zu]\n",
                        n,str,strlen(cvsrevision),strlen(cvsdate));
     */
@@ -1105,7 +1046,7 @@ Bool_t AliITSInitGeometryUpg::WriteVersionString(Char_t *str,Int_t length,
     return kTRUE;
 }
 //______________________________________________________________________
-Bool_t AliITSInitGeometryUpg::ReadVersionString(const Char_t *str,Int_t length,
+Bool_t AliITSUInitGeometry::ReadVersionString(const Char_t *str,Int_t length,
                                              AliITSVersion_t &maj,Int_t &min,
                                              TDatime &dt)const{
     // fills the string str with the major and minor version number
@@ -1129,7 +1070,7 @@ Bool_t AliITSInitGeometryUpg::ReadVersionString(const Char_t *str,Int_t length,
     memset(cvsDate,0,11*sizeof(Char_t));    
     memset(cvsTime,0,9*sizeof(Char_t));
 
-    if(GetDebug()>1)printf("AliITSInitGeometryUpg::ReadVersionString:"
+    if(GetDebug()>1)printf("AliITSUInitGeometry::ReadVersionString:"
                        "str=%s length=%d\n",
                        str,length);
     if(n<35) return kFALSE; // not enough space for numbers
@@ -1144,10 +1085,10 @@ Bool_t AliITSInitGeometryUpg::ReadVersionString(const Char_t *str,Int_t length,
     ok = m==3;
     if(!ok) return !ok;
     dt.Set(year,month,day,hours,minuits,seconds);
-    if(GetDebug()>1)printf("AliITSInitGeometryUpg::ReadVersionString: i=%d "
+    if(GetDebug()>1)printf("AliITSUInitGeometry::ReadVersionString: i=%d "
                      "min=%d cvsRevision=%s cvsDate=%s cvsTime=%s m=%d\n",
                        i,min,cvsRevision,cvsDate,cvsTime,m);
-    if(GetDebug()>1)printf("AliITSInitGeometryUpg::ReadVersionString: year=%d"
+    if(GetDebug()>1)printf("AliITSUInitGeometry::ReadVersionString: year=%d"
                        " month=%d day=%d hours=%d minuits=%d seconds=%d\n",
                        year,month,day,hours,minuits,seconds);
     switch (i){
@@ -1164,7 +1105,7 @@ Bool_t AliITSInitGeometryUpg::ReadVersionString(const Char_t *str,Int_t length,
     return ok;
 }
 //______________________________________________________________________
-Int_t AliITSInitGeometryUpg::GetNumberOfLayers(){
+Int_t AliITSUInitGeometry::GetNumberOfLayers(){
   // Determines the number of layers in the Upgrade Geometry
   //
   // Inputs:
@@ -1189,20 +1130,20 @@ Int_t AliITSInitGeometryUpg::GetNumberOfLayers(){
       return 0;
     }
 
-    if (!gGeoManager->GetVolume(AliITSgeomTGeoUpg::GetITSVolPattern())) {
-      AliError(Form("can't find %s volume",AliITSgeomTGeoUpg::GetITSVolPattern()));
+    if (!gGeoManager->GetVolume(AliITSUGeomTGeo::GetITSVolPattern())) {
+      AliError(Form("can't find %s volume",AliITSUGeomTGeo::GetITSVolPattern()));
       return 0;
     }
 
     // Loop on all ITSV nodes, count Layer volumes by checking names
-    Int_t nNodes = gGeoManager->GetVolume(AliITSgeomTGeoUpg::GetITSVolPattern())->GetNodes()->GetEntries();
+    Int_t nNodes = gGeoManager->GetVolume(AliITSUGeomTGeo::GetITSVolPattern())->GetNodes()->GetEntries();
 
     if (nNodes == 0)
       return 0;
 
     for (Int_t j=0; j<nNodes; j++)
-      if (strstr(gGeoManager->GetVolume(AliITSgeomTGeoUpg::GetITSVolPattern())->GetNodes()->At(j)->GetName(),
-		 AliITSgeomTGeoUpg::GetITSLayerPattern()))
+      if (strstr(gGeoManager->GetVolume(AliITSUGeomTGeo::GetITSVolPattern())->GetNodes()->At(j)->GetName(),
+		 AliITSUGeomTGeo::GetITSLayerPattern()))
 	numberOfLayers++;
 
 
@@ -1210,7 +1151,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfLayers(){
 }
 
 //______________________________________________________________________
-Int_t AliITSInitGeometryUpg::GetNumberOfLadders(const Int_t lay) const {
+Int_t AliITSUInitGeometry::GetNumberOfLadders(const Int_t lay) const {
   // Determines the number of layers in the Upgrade Geometry
   //
   // Inputs:
@@ -1236,7 +1177,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfLadders(const Int_t lay) const {
     }
 
     char laynam[15];
-    snprintf(laynam, 15, "%s%d", AliITSgeomTGeoUpg::GetITSLayerPattern(),lay+1);
+    snprintf(laynam, 15, "%s%d", AliITSUGeomTGeo::GetITSLayerPattern(),lay+1);
     if (!gGeoManager->GetVolume(laynam)) {
       AliError(Form("can't find %s volume",laynam));
       return 0;
@@ -1250,7 +1191,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfLadders(const Int_t lay) const {
 
     for (Int_t j=0; j<nNodes; j++)
       if (strstr(gGeoManager->GetVolume(laynam)->GetNodes()->At(j)->GetName(),
-		 AliITSgeomTGeoUpg::GetITSLadderPattern()))
+		 AliITSUGeomTGeo::GetITSLadderPattern()))
 	numberOfLadders++;
 
 
@@ -1258,7 +1199,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfLadders(const Int_t lay) const {
 }
 
 //______________________________________________________________________
-Int_t AliITSInitGeometryUpg::GetLayerDetTypeID(const Int_t lay) const 
+Int_t AliITSUInitGeometry::GetLayerDetTypeID(const Int_t lay) const 
 {
   // Determines the layers det. type in the Upgrade Geometry
   //
@@ -1283,7 +1224,7 @@ Int_t AliITSInitGeometryUpg::GetLayerDetTypeID(const Int_t lay) const
   }
   
   char laynam[15];
-  snprintf(laynam, 15, "%s%d", AliITSgeomTGeoUpg::GetITSLayerPattern(),lay+1);
+  snprintf(laynam, 15, "%s%d", AliITSUGeomTGeo::GetITSLayerPattern(),lay+1);
   TGeoVolume* volLr = gGeoManager->GetVolume(laynam);
   if (!volLr) {
     AliError(Form("can't find %s volume",laynam));
@@ -1295,7 +1236,7 @@ Int_t AliITSInitGeometryUpg::GetLayerDetTypeID(const Int_t lay) const
 }
 
 //______________________________________________________________________
-Int_t AliITSInitGeometryUpg::GetNumberOfModules(const Int_t lay) const {
+Int_t AliITSUInitGeometry::GetNumberOfModules(const Int_t lay) const {
   // Determines the number of layers in the Upgrade Geometry
   //
   // Inputs:
@@ -1321,7 +1262,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfModules(const Int_t lay) const {
     }
 
     char laddnam[15];
-    snprintf(laddnam, 15, "%s%d", AliITSgeomTGeoUpg::GetITSLadderPattern(),lay+1);
+    snprintf(laddnam, 15, "%s%d", AliITSUGeomTGeo::GetITSLadderPattern(),lay+1);
     if (!gGeoManager->GetVolume(laddnam)) {
       AliError(Form("can't find %s volume",laddnam));
       return 0;
@@ -1335,7 +1276,7 @@ Int_t AliITSInitGeometryUpg::GetNumberOfModules(const Int_t lay) const {
 
     for (Int_t j=0; j<nNodes; j++)
       if (strstr(gGeoManager->GetVolume(laddnam)->GetNodes()->At(j)->GetName(),
-		 AliITSgeomTGeoUpg::GetITSModulePattern()))
+		 AliITSUGeomTGeo::GetITSModulePattern()))
 	numberOfModules++;
 
 

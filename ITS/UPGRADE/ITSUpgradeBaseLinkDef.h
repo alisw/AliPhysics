@@ -15,9 +15,10 @@
 #pragma link C++ class  AliITSRecPointU+;
 // v0 part <<<
 //
-#pragma link C++ class  AliITSInitGeometryUpg+;
-#pragma link C++ class  AliITSLoaderUpg+;
-#pragma link C++ class  AliITSgeomTGeoUpg+;
-#pragma link C++ class  AliITSCalibrationPixUpg+;
-#pragma link C++ class  AliITSsegmentationPixUpg+;
+#pragma link C++ class  AliITSULoader+;
+#pragma link C++ class  AliITSUGeomTGeo+;
+#pragma link C++ class  AliITSUCalibrationPix+;
+#pragma link C++ class  AliITSUSegmentationPix+;
+#pragma link C++ class  AliITSUSensMap+;
+#pragma link C++ class  AliITSUSDigit+;
 #endif

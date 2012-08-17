@@ -1,9 +1,9 @@
-#ifndef ALIITSCALIBRATIONPIXUPG_H
-#define ALIITSCALIBRATIONPIXUPG_H
+#ifndef ALIITSUCALIBRATIONPIX_H
+#define ALIITSUCALIBRATIONPIX_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliITSCalibrationPixUpg.h 53595 2011-12-14 16:13:16Z masera $ */
+/* $Id: AliITSUCalibrationPix.h 53595 2011-12-14 16:13:16Z masera $ */
 //#include "TRandom.h"
 #include "AliITSCalibration.h"
 #include "TArrayS.h"
@@ -13,13 +13,13 @@
 // ITS response class for pixels                  //
 ////////////////////////////////////////////////////
 
-class AliITSCalibrationPixUpg :  public AliITSCalibration {
+class AliITSUCalibrationPix :  public AliITSCalibration {
  public:
-    AliITSCalibrationPixUpg(); // default constructor
-    AliITSCalibrationPixUpg(Short_t nChips,Short_t nColPerChip,Short_t nRow); // default constructor
-    AliITSCalibrationPixUpg(const AliITSCalibrationPixUpg &src);
+    AliITSUCalibrationPix(); // default constructor
+    AliITSUCalibrationPix(Short_t nChips,Short_t nColPerChip,Short_t nRow); // default constructor
+    AliITSUCalibrationPix(const AliITSUCalibrationPix &src);
     //    
-    virtual ~AliITSCalibrationPixUpg() {;} // destructror
+    virtual ~AliITSUCalibrationPix() {;} // destructror
 
     virtual void   ClearBad();
 
@@ -30,9 +30,10 @@ class AliITSCalibrationPixUpg :  public AliITSCalibration {
     virtual Int_t  GetBadColAt(Int_t index) const;
     virtual Int_t  GetBadRowAt(Int_t index) const;
     virtual void   GetBadPixel(Int_t index, Int_t &row, Int_t &col) const;
+    virtual void   GetBadPixelSingle(Int_t i,UInt_t &row, UInt_t &col) const;
 
-    virtual Int_t  GetNrBadSingle() const {return fNrBad;}
-    virtual void   SetNrBadSingle(Int_t nr) {fNrBad=nr;} // used to be called SetNrBad, but misleading
+    virtual Int_t  GetNrBadSingle() const {return fNrBadSingle;}
+    virtual void   SetNrBadSingle(Int_t nr) {fNrBadSingle=nr;} // used to be called SetNrBad, but misleading
     virtual void   SetBadList(TArrayS badlist) {fBadChannels=badlist;}
     virtual void   SetNrBad(Int_t /*nr*/); // Use SetNrBadSingle!!!
 
@@ -69,13 +70,13 @@ class AliITSCalibrationPixUpg :  public AliITSCalibration {
     Short_t  fNColPerChip;     // n of columns per chip
     Short_t  fNCol;            // number of columns
     Short_t  fNRow;            // number of rows
-    Int_t    fNrBad;           // Nr of SINGLE bad pixels
+    Int_t    fNrBadSingle;     // Nr of SINGLE bad pixels
     UInt_t   fBadChips;        // bit pattern of completely dead chips?
-    TArrayS  fBadChannels;     // Array with bad channels info (col0,row0,col1...rowN) N = fNrBad
+    TArrayS  fBadChannels;     // Array with bad channels info (col0,row0,col1...rowN) N = fNrBadSingle
     //
-    AliITSCalibrationPixUpg& operator=(const AliITSCalibrationPixUpg& source);
+    AliITSUCalibrationPix& operator=(const AliITSUCalibrationPix& source);
     //
-    ClassDef(AliITSCalibrationPixUpg,1) // pixels response
+    ClassDef(AliITSUCalibrationPix,1) // pixels response
 };
 
 #endif

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliITSsegmentationPixUpg.cxx 47180 2011-02-08 09:42:29Z masera $ */
+/* $Id: AliITSUSegmentationPix.cxx 47180 2011-02-08 09:42:29Z masera $ */
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoBBox.h>
@@ -21,7 +21,8 @@
 #include <TString.h>
 #include <TSystem.h>
 #include <TFile.h>
-#include "AliITSsegmentationPixUpg.h"
+#include "AliITSUGeomTGeo.h"
+#include "AliITSUSegmentationPix.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Segmentation class for pixels                                                                          //
@@ -33,12 +34,12 @@
 //                                                                                                        //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ClassImp(AliITSsegmentationPixUpg)
+ClassImp(AliITSUSegmentationPix)
 
-const char* AliITSsegmentationPixUpg::fgkSegmListName = "ITSUpgradeSegmentations";
+const char* AliITSUSegmentationPix::fgkSegmListName = "ITSUpgradeSegmentations";
 
 //_____________________________________________________________________________RS
-AliITSsegmentationPixUpg::AliITSsegmentationPixUpg(int nchips,int ncol,int nrow,
+AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,int nrow,
 						   double pitchX,double pitchZ,
 						   double thickness,
 						   double pitchLftC,double pitchRgtC,
@@ -59,6 +60,7 @@ AliITSsegmentationPixUpg::AliITSsegmentationPixUpg(int nchips,int ncol,int nrow,
   ,fNCol(ncol)
 {
   // Default constructor, sizes in microns
+  if (nchips) SetUniqueID( AliITSUGeomTGeo::ComposeDetTypeID(id) );
   fChipDZ = (fNColPerChip-2)*fPitchZ + fPitchZLftCol + fPitchZRgtCol;
   SetDetSize( fNRow*fPitchX /*+fGuardTop+fGuardBot*/,
 	      fNChips*fChipDZ /*+fGuardLft+fGuardRgt*/,
@@ -67,7 +69,7 @@ AliITSsegmentationPixUpg::AliITSsegmentationPixUpg(int nchips,int ncol,int nrow,
 }
 
 //_____________________________________________________________________________RS
-void AliITSsegmentationPixUpg::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
+void AliITSUSegmentationPix::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
 {
   //  Returns pixel coordinates (ix,iz) for given real local coordinates (x,z)
   //  expects x, z in microns
@@ -80,7 +82,7 @@ void AliITSsegmentationPixUpg::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz
 }
 
 //_____________________________________________________________________________RS
-void AliITSsegmentationPixUpg::GetPadTxz(Float_t &x,Float_t &z) const
+void AliITSUSegmentationPix::GetPadTxz(Float_t &x,Float_t &z) const
 {
   //  local transformation of real local coordinates (x,z)
   //  expects x, z in microns
@@ -90,7 +92,7 @@ void AliITSsegmentationPixUpg::GetPadTxz(Float_t &x,Float_t &z) const
 }
 
 //_____________________________________________________________________________RS
-void AliITSsegmentationPixUpg::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) const
+void AliITSUSegmentationPix::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) const
 {
   // Transform from pixel to real local coordinates
   // returns x, z in microns
@@ -100,7 +102,7 @@ void AliITSsegmentationPixUpg::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z)
 }
 
 //_____________________________________________________________________________RS
-Float_t AliITSsegmentationPixUpg::Z2Col(Float_t z) const 
+Float_t AliITSUSegmentationPix::Z2Col(Float_t z) const 
 {
   // get column number (from 0) from local Z
   int chip = z/fChipDZ;
@@ -117,7 +119,7 @@ Float_t AliITSsegmentationPixUpg::Z2Col(Float_t z) const
 }
 
 //_____________________________________________________________________________RS
-Float_t AliITSsegmentationPixUpg::Col2Z(Int_t col) const 
+Float_t AliITSUSegmentationPix::Col2Z(Int_t col) const 
 {
   // convert column number (from 0) to Z coordinate
   int nchip = col/fNColPerChip;
@@ -132,7 +134,7 @@ Float_t AliITSsegmentationPixUpg::Col2Z(Int_t col) const
 }
 
 //______________________________________________________________________RS
-AliITSsegmentationPixUpg& AliITSsegmentationPixUpg::operator=(const AliITSsegmentationPixUpg &src)
+AliITSUSegmentationPix& AliITSUSegmentationPix::operator=(const AliITSUSegmentationPix &src)
 {
   // = operator
   if(this==&src) return *this;
@@ -156,7 +158,7 @@ AliITSsegmentationPixUpg& AliITSsegmentationPixUpg::operator=(const AliITSsegmen
 }
 
 //____________________________________________________________________________RS
-AliITSsegmentationPixUpg::AliITSsegmentationPixUpg(const AliITSsegmentationPixUpg &src) :
+AliITSUSegmentationPix::AliITSUSegmentationPix(const AliITSUSegmentationPix &src) :
   AliITSsegmentation(src)
   ,fGuardLft(src.fGuardLft)
   ,fGuardRgt(src.fGuardRgt)
@@ -175,14 +177,14 @@ AliITSsegmentationPixUpg::AliITSsegmentationPixUpg(const AliITSsegmentationPixUp
 }
 
 //____________________________________________________________________________RS
-Float_t AliITSsegmentationPixUpg::Dpx(Int_t ) const 
+Float_t AliITSUSegmentationPix::Dpx(Int_t ) const 
 {
   //returs x pixel pitch for a give pixel
   return fPitchX;
 }
 
 //____________________________________________________________________________RS
-Float_t AliITSsegmentationPixUpg::Dpz(Int_t col) const 
+Float_t AliITSUSegmentationPix::Dpz(Int_t col) const 
 {
   // returns z pixel pitch for a given pixel (cols starts from 0)
   col %= fNColPerChip;
@@ -193,7 +195,7 @@ Float_t AliITSsegmentationPixUpg::Dpz(Int_t col) const
 }
 
 //------------------------------
-void AliITSsegmentationPixUpg::Neighbours(Int_t iX, Int_t iZ, Int_t* nlist, Int_t xlist[8], Int_t zlist[8]) const 
+void AliITSUSegmentationPix::Neighbours(Int_t iX, Int_t iZ, Int_t* nlist, Int_t xlist[8], Int_t zlist[8]) const 
 {
   // returns the neighbouring pixels for use in Cluster Finders and the like.
   //
@@ -220,7 +222,7 @@ void AliITSsegmentationPixUpg::Neighbours(Int_t iX, Int_t iZ, Int_t* nlist, Int_
 }
 
 //______________________________________________________________________
-Bool_t AliITSsegmentationPixUpg::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
+Bool_t AliITSUSegmentationPix::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
 {
   // Transformation from Geant detector centered local coordinates (cm) to
   // Pixel cell numbers ix and iz.
@@ -249,7 +251,7 @@ Bool_t AliITSsegmentationPixUpg::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t 
 }
 
 //______________________________________________________________________
-void AliITSsegmentationPixUpg::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const
+void AliITSUSegmentationPix::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const
 {
 // Transformation from Detector cell coordiantes to Geant detector centerd 
 // local coordinates (cm).
@@ -275,7 +277,7 @@ void AliITSsegmentationPixUpg::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &
 }
 
 //______________________________________________________________________
-void AliITSsegmentationPixUpg::CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double_t &xu,Double_t &zl,Double_t &zu) const
+void AliITSUSegmentationPix::CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double_t &xu,Double_t &zl,Double_t &zu) const
 {
   // Transformation from Detector cell coordiantes to Geant detector centerd 
   // local coordinates (cm).
@@ -311,7 +313,7 @@ void AliITSsegmentationPixUpg::CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Doub
 }
 
 //______________________________________________________________________
-Int_t AliITSsegmentationPixUpg::GetChipFromChannel(Int_t, Int_t iz) const 
+Int_t AliITSUSegmentationPix::GetChipFromChannel(Int_t, Int_t iz) const 
 {
   // returns chip number (in range 0-4) starting from channel number
   if(iz>=fNCol  || iz<0 ){
@@ -322,7 +324,7 @@ Int_t AliITSsegmentationPixUpg::GetChipFromChannel(Int_t, Int_t iz) const
 }
 
 //______________________________________________________________________
-Int_t AliITSsegmentationPixUpg::GetChipFromLocal(Float_t, Float_t zloc) const 
+Int_t AliITSUSegmentationPix::GetChipFromLocal(Float_t, Float_t zloc) const 
 {
   // returns chip number (in range 0-4) starting from local coordinates
   Int_t ix0,iz;
@@ -334,7 +336,7 @@ Int_t AliITSsegmentationPixUpg::GetChipFromLocal(Float_t, Float_t zloc) const
 }
 
 //______________________________________________________________________
-Int_t AliITSsegmentationPixUpg::GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, Float_t, Float_t) const 
+Int_t AliITSUSegmentationPix::GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, Float_t, Float_t) const 
 {
   // returns the number of chips containing a road defined by given local coordinate limits
   //
@@ -372,13 +374,13 @@ Int_t AliITSsegmentationPixUpg::GetChipsInLocalWindow(Int_t* array, Float_t zmin
 }
 
 //______________________________________________________________________
-void AliITSsegmentationPixUpg::Init()
+void AliITSUSegmentationPix::Init()
 {
   // init settings
 }
 
 //______________________________________________________________________
-Bool_t AliITSsegmentationPixUpg::StoreWithID(UInt_t id, const char* outf)
+Bool_t AliITSUSegmentationPix::Store(const char* outf)
 {
   // store in the special list under given ID
   TString fns = outf;
@@ -387,25 +389,16 @@ Bool_t AliITSsegmentationPixUpg::StoreWithID(UInt_t id, const char* outf)
   TFile* fout = TFile::Open(fns.Data(),"update");
   if (!fout) {AliFatal(Form("Failed to open output file %s",outf)); return kFALSE;}
   TObjArray* arr = (TObjArray*)fout->Get(fgkSegmListName);
+  int id = GetUniqueID();
   if (!arr) arr = new TObjArray();
-  else {
-    int nent = arr->GetEntriesFast();
-    for (int i=nent;i--;) {
-      AliITSsegmentationPixUpg* segm = dynamic_cast<AliITSsegmentationPixUpg*>(arr->At(i));
-      if (segm && segm->GetUniqueID()==id) {
-	AliFatal(Form("Segmenation %d already exists in file %s",id,outf)); 
-	return kFALSE;
-      }
-    }
-  }
+  else if (arr->At(id)) {AliFatal(Form("Segmenation %d already exists in file %s",id,outf));return kFALSE;}
   //
-  this->SetUniqueID(id);  
-  arr->AddLast(this);
+  arr->AddAtAndExpand(this,id);
   arr->SetOwner(kTRUE);
   fout->WriteObject(arr,fgkSegmListName,"kSingleKey");
   fout->Close();
   delete fout;
-  arr->Remove(this);
+  arr->RemoveAt(id);
   delete arr;
   AliInfo(Form("Stored segmentation %d in %s",id,outf));
   return kTRUE;
@@ -413,7 +406,7 @@ Bool_t AliITSsegmentationPixUpg::StoreWithID(UInt_t id, const char* outf)
 }
 
 //______________________________________________________________________
-AliITSsegmentationPixUpg* AliITSsegmentationPixUpg::LoadWithID(UInt_t id, const char* inpf)
+AliITSUSegmentationPix* AliITSUSegmentationPix::LoadWithID(UInt_t id, const char* inpf)
 {
   // store in the special list under given ID
   TString fns = inpf;
@@ -426,20 +419,38 @@ AliITSsegmentationPixUpg* AliITSsegmentationPixUpg::LoadWithID(UInt_t id, const 
     AliFatalGeneral("LoadWithID",Form("Failed to find segmenation array %s in %s",fgkSegmListName,inpf)); 
     return 0;
   }
-  AliITSsegmentationPixUpg* segm = 0;
-  int nent = arr->GetEntriesFast();
-  for (int i=nent;i--;) {
-    segm = dynamic_cast<AliITSsegmentationPixUpg*>(arr->At(i));
-    if (segm && segm->GetUniqueID()==id) {arr->RemoveAt(i); break;}
-    segm = 0;
-  }
+  AliITSUSegmentationPix* segm = dynamic_cast<AliITSUSegmentationPix*>(arr->At(id));
+  if (!segm || segm->GetUniqueID()!=id) {AliFatalGeneral("LoadWithID",Form("Failed to find segmenation %d in %s",id,inpf)); return 0;}
   //
-  if (!segm) {AliFatalGeneral("LoadWithID",Form("Failed to find segmenation %d in %s",id,inpf)); return 0;}
-  //
+  arr->RemoveAt(id);
   arr->SetOwner(kTRUE); // to not leave in memory other segmenations
   finp->Close();
   delete finp;
   delete arr;
   //
   return segm;
+}
+
+//______________________________________________________________________
+void AliITSUSegmentationPix::LoadSegmentations(TObjArray* dest, const char* inpf)
+{
+  // store in the special list under given ID
+  if (!dest) return;
+  TString fns = inpf;
+  gSystem->ExpandPathName(fns);
+  if (fns.IsNull()) AliFatalGeneral("LoadWithID","No file name provided");
+  TFile* finp = TFile::Open(fns.Data());
+  if (!finp) AliFatalGeneral("LoadWithID",Form("Failed to open file %s",inpf));
+  TObjArray* arr = (TObjArray*)finp->Get(fgkSegmListName);
+  if (!arr) AliFatalGeneral("LoadWithID",Form("Failed to find segmenation array %s in %s",fgkSegmListName,inpf)); 
+  int nent = arr->GetEntriesFast();
+  TObject *segm = 0;
+  for (int i=nent;i--;) if ((segm=arr->At(i))) dest->AddAtAndExpand(segm,segm->GetUniqueID());
+  AliInfoGeneral("LoadSegmentations",Form("Loaded %d segmantions from %s",arr->GetEntries(),inpf));
+  arr->SetOwner(kFALSE);
+  arr->Delete();
+  finp->Close();
+  delete finp;
+  delete arr;
+  //
 }

@@ -8,14 +8,14 @@
 #include <AliITSdigit.h>
 
 //______________________________________________________________________
-class AliITSdigitPixUpg: public AliITSdigit {
+class AliITSUDigitPix: public AliITSdigit {
 
  public:
-    AliITSdigitPixUpg(); //default creator
-    AliITSdigitPixUpg(const Int_t *digits);//standard creator digits only
+    AliITSUDigitPix(); //default creator
+    AliITSUDigitPix(const Int_t *digits);//standard creator digits only
     //standard creator with digits, tracks, and hits
-    AliITSdigitPixUpg(const Int_t *digits,const Int_t *tracks,const Int_t *hits);
-    virtual ~AliITSdigitPixUpg(){/*destructor*/}
+    AliITSUDigitPix(const Int_t *digits,const Int_t *tracks,const Int_t *hits);
+    virtual ~AliITSUDigitPix(){/*destructor*/}
     // returns the signal in electrons
     Int_t GetSignalPix() const {return fSignalPix;}
     virtual Int_t GetListOfTracks(TArrayI &t);
@@ -30,11 +30,11 @@ class AliITSdigitPixUpg: public AliITSdigit {
     
     Int_t fSignalPix;   // Signal in electrons
 
-    ClassDef(AliITSdigitPixUpg,1)   // Simulated digit object for Pixels
+    ClassDef(AliITSUDigitPix,1)   // Simulated digit object for Pixels
 
 };
 // Input and output functions for standard C++ input/output.
-ostream &operator<<(ostream &os,AliITSdigitPixUpg &source);
-istream &operator>>(istream &os,AliITSdigitPixUpg &source);
+ostream &operator<<(ostream &os,AliITSUDigitPix &source);
+istream &operator>>(istream &os,AliITSUDigitPix &source);
 
 #endif

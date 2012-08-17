@@ -14,7 +14,7 @@
 
 
 /*
-  $Id: AliITSv11GeometryUpgrade.h
+  $Id: AliITSUv11Layer.h
  */
 
 #include "AliITSv11Geometry.h"
@@ -24,15 +24,15 @@
 
 class TGeoVolume;
 
-class AliITSv11GeometryUpgrade : public AliITSv11Geometry {
+class AliITSUv11Layer : public AliITSv11Geometry {
   public:
-    AliITSv11GeometryUpgrade();
-    AliITSv11GeometryUpgrade(Int_t debug);
-    AliITSv11GeometryUpgrade(Int_t lay, Int_t debug);
-    AliITSv11GeometryUpgrade(Int_t lay, Bool_t turbo, Int_t debug);
-    AliITSv11GeometryUpgrade(const AliITSv11GeometryUpgrade &source);
-    AliITSv11GeometryUpgrade& operator=(const AliITSv11GeometryUpgrade &source);
-    virtual ~AliITSv11GeometryUpgrade();
+    AliITSUv11Layer();
+    AliITSUv11Layer(Int_t debug);
+    AliITSUv11Layer(Int_t lay, Int_t debug);
+    AliITSUv11Layer(Int_t lay, Bool_t turbo, Int_t debug);
+    AliITSUv11Layer(const AliITSUv11Layer &source);
+    AliITSUv11Layer& operator=(const AliITSUv11Layer &source);
+    virtual ~AliITSUv11Layer();
     //
     Bool_t    IsTurbo() {return fIsTurbo;};
 
@@ -85,7 +85,7 @@ class AliITSv11GeometryUpgrade : public AliITSv11Geometry {
     static const Double_t fgkDefaultSensorThick; // Default sensor thickness
     static const Double_t fgkDefaultLadderThick; // Default ladder thickness
 
-  ClassDef(AliITSv11GeometryUpgrade,0) // ITS v11 Upgrade geometry
+  ClassDef(AliITSUv11Layer,0) // ITS v11 Upgrade geometry
 };
 
 #endif

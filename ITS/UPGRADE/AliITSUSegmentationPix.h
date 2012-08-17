@@ -1,5 +1,5 @@
-#ifndef ALIITSSEGMENTATIONPIXUPG_H
-#define ALIITSSEGMENTATIONPIXUPG_H
+#ifndef ALIITSUSEGMENTATIONPIX_H
+#define ALIITSUSEGMENTATIONPIX_H
 
 #include "AliITSsegmentation.h"
 
@@ -7,20 +7,20 @@
 
 // segmentation and response for pixels in ITS upgrade 
 
-class AliITSsegmentationPixUpg :
+class AliITSUSegmentationPix :
 public AliITSsegmentation {
  public:
   enum {kCM2MC=10000};
-  AliITSsegmentationPixUpg(int nchips=0,int ncol=0,int nrow=0,
+  AliITSUSegmentationPix(UInt_t id=0, int nchips=0,int ncol=0,int nrow=0,
 			   double pitchX=0,double pitchZ=0,
 			   double thickness=0,
 			   double pitchLftC=-1,double pitchRgtC=-1,
 			   double edgL=0,double edgR=0,double edgT=0,double edgB=0);
   
-  //  AliITSsegmentationPixUpg(Option_t *opt="" );
-  AliITSsegmentationPixUpg(const AliITSsegmentationPixUpg &source);
-  virtual ~AliITSsegmentationPixUpg() {}
-  AliITSsegmentationPixUpg& operator=(const AliITSsegmentationPixUpg &source);
+  //  AliITSUSegmentationPix(Option_t *opt="" );
+  AliITSUSegmentationPix(const AliITSUSegmentationPix &source);
+  virtual ~AliITSUSegmentationPix() {}
+  AliITSUSegmentationPix& operator=(const AliITSUSegmentationPix &source);
   //
   virtual void    Init();
   //  
@@ -56,8 +56,11 @@ public AliITSsegmentation {
   //
   virtual void PrintDefaultParameters() const {AliWarning("No def. parameters defined as const static data members");}
   //
-  Bool_t                           StoreWithID(UInt_t id, const char* outf);
-  static AliITSsegmentationPixUpg* LoadWithID(UInt_t id, const char* inpf);
+  virtual Int_t                    GetDetTypeID()              const {return GetUniqueID();}
+  //
+  Bool_t                           Store(const char* outf);
+  static AliITSUSegmentationPix* LoadWithID(UInt_t id, const char* inpf);
+  static void                      LoadSegmentations(TObjArray* dest, const char* inpf);
   //
  protected:
   Float_t Z2Col(Float_t z) const;
@@ -80,7 +83,7 @@ public AliITSsegmentation {
     //
     static const char* fgkSegmListName; // pattern for segmentations list name
     //
-  ClassDef(AliITSsegmentationPixUpg,1) //Segmentation class upgrade pixels 
+  ClassDef(AliITSUSegmentationPix,1) //Segmentation class upgrade pixels 
 
 };
 

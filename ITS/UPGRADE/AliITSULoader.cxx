@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliITSLoaderUpg.cxx $ */
+/* $Id: AliITSULoader.cxx $ */
 
 #include <TClonesArray.h>
 #include <TClass.h>
@@ -21,10 +21,9 @@
 #include <TTree.h>
 
 #include "AliITSdigit.h"
-#include "AliITSLoaderUpg.h"
+#include "AliITSULoader.h"
 #include "AliRunLoader.h"
 #include "AliObjectLoader.h"
-#include "AliITSInitGeometryUpg.h"
 #include "AliLog.h"
 
 ///////////////////////////////////////////////////////////////////////////
@@ -34,17 +33,19 @@
 // V0 and cascade
 // and tracks propagated to the origin
 //////////////////////////////////////////////////////////////////////////
-ClassImp(AliITSLoaderUpg)
+ClassImp(AliITSULoader)
 
 /**********************************************************************/
-  AliITSLoaderUpg::AliITSLoaderUpg():AliLoader(),
-fGeom(0){
+AliITSULoader::AliITSULoader()
+:AliLoader()
+{
   // Default constructor
 }
+
 /*********************************************************************/
-AliITSLoaderUpg::AliITSLoaderUpg(const Char_t *name,const Char_t *topfoldername):
-AliLoader(name,topfoldername),
-fGeom(0){
+AliITSULoader::AliITSULoader(const Char_t *name,const Char_t *topfoldername)
+: AliLoader(name,topfoldername)
+{
   //Constructor   
   TString rawContainerName = "TreeC";
     AliDataLoader* rawClustersDataLoader = new AliDataLoader(
@@ -83,9 +84,9 @@ fGeom(0){
     cascadeDataLoader->SetFolder(GetDetectorDataFolder());
 }
 /**********************************************************************/
-AliITSLoaderUpg::AliITSLoaderUpg(const Char_t *name,TFolder *topfolder): 
-  AliLoader(name,topfolder),
-fGeom(0){
+AliITSULoader::AliITSULoader(const Char_t *name,TFolder *topfolder)
+: AliLoader(name,topfolder)
+{
   //ctor  
    TString rawContainerName="TreeC";
     AliDataLoader*  rawClustersDataLoader = new AliDataLoader(
@@ -125,7 +126,7 @@ fGeom(0){
 
 
 /**********************************************************************/
-AliITSLoaderUpg::~AliITSLoaderUpg(){
+AliITSULoader::~AliITSULoader(){
     //destructor
     UnloadRawClusters();
     AliDataLoader *dl = GetRawClLoader();
@@ -147,12 +148,10 @@ AliITSLoaderUpg::~AliITSLoaderUpg(){
     dl = GetCascadeDataLoader();
     fDataLoaders->Remove(dl);
   
-    if(fGeom)delete fGeom;
-    fGeom = 0;
 }
 /*
 //----------------------------------------------------------------------
-AliITS* AliITSLoaderUpg::GetITS(){
+AliITS* AliITSULoader::GetITS(){
     // Returns the pointer to the ITS, kept on the file. A short cut metthod
     // Inputs:
     //    none.
@@ -177,7 +176,7 @@ AliITS* AliITSLoaderUpg::GetITS(){
     return its;
 }
 //----------------------------------------------------------------------
-void AliITSLoaderUpg::SetupDigits(AliITS *its){
+void AliITSULoader::SetupDigits(AliITS *its){
     // Sets up to store ITS Digits in side AliITS::fDtype TObjArray
     // Inputs:
     //    AliITS *its  Pointer to the ITS
@@ -190,7 +189,7 @@ void AliITSLoaderUpg::SetupDigits(AliITS *its){
 }
 */
 //----------------------------------------------------------------------
-void AliITSLoaderUpg::SetupDigits(TObjArray *digPerDet,Int_t n,
+void AliITSULoader::SetupDigits(TObjArray *digPerDet,Int_t n,
 				  const Char_t **digclass){
     // Sets up digPerDet to store ITS Digits.
     // Inputs:
@@ -251,7 +250,7 @@ void AliITSLoaderUpg::SetupDigits(TObjArray *digPerDet,Int_t n,
     } // end for i
 }
 //---------------------------------------------------------------------
-AliITSdigit * AliITSLoaderUpg::GetDigit(TObjArray *digPerDet,Int_t module,
+AliITSdigit * AliITSULoader::GetDigit(TObjArray *digPerDet,Int_t module,
 					Int_t digit){
     // Gets the digit for for a specific detector type and module.
     // To be used in conjustion with Setupdigits(AliITS *its).
@@ -272,36 +271,8 @@ AliITSdigit * AliITSLoaderUpg::GetDigit(TObjArray *digPerDet,Int_t module,
     } // end if
     return 0;
 }
-/*
-//---------------------------------------------------------------------
-AliITSdigit * AliITSLoaderUpg::GetDigit(AliITS *its,Int_t module,Int_t digit){
-    // Gets the digit for for a specific detector type and module.
-    // To be used in conjustion with Setupdigits(AliITS *its).
-    // Inputs:
-    //   AliITS *its    Pointer to the ITS
-    //   Int_t  module  Module number
-    //   Int_t digit    Digit number
-    // Outputs:
-    //   none.
-    // Return:
-    //   returns the pointer to the digit. if zero then last digit for that
-    //   module.
-    //AliITSDetType *idtype;
-    AliITSgeom *geom = its->GetITSgeom();
-    Int_t idet = geom->GetModuleType(module);
-    TClonesArray *digits;
- 
-    its->ResetDigits();
-    TreeD()->GetEvent(module);
-    digits = its->DigitsAddress(idet);
-    if(digit>-1 && digit<digits->GetEntriesFast()){ // if in range.
-        return (AliITSdigit*) digits->At(digit);
-    } // end if
-    return 0;
-}
-*/
 //----------------------------------------------------------------------
-void AliITSLoaderUpg::MakeTree(Option_t *opt){
+void AliITSULoader::MakeTree(Option_t *opt){
     // invokes AliLoader::MakeTree + specific ITS tree(s)
     // Valid options: H,S,D,R,T and C (C=raw clusters)
     AliLoader::MakeTree(opt);
@@ -316,42 +287,4 @@ void AliITSLoaderUpg::MakeTree(Option_t *opt){
 
     const char *oX = strstr(opt,"X");
     if (oX) MakeCascadeContainer();
-}
-
-//----------------------------------------------------------------------
-AliITSgeom* AliITSLoaderUpg::GetITSgeom(Bool_t force) {
-  // retrieves the ITS geometry from file
-  if(fGeom && !force)return fGeom;
-  if(fGeom && force){
-    delete fGeom;
-    fGeom = 0;
-  }
-  if(!gGeoManager){
-    AliError("gGeoManager is a null pointer - ITS geometry not built");
-    return fGeom;
-  }
-  AliITSInitGeometryUpg initgeom;
-  fGeom = initgeom.CreateAliITSgeom();
-  AliDebug(1,"AliITSgeom object has been initialized from TGeo\n");
-  AliDebug(1,Form("Geometry name: %s",(initgeom.GetGeometryName()).Data()));
-  return fGeom;
-}
-//______________________________________________________________________
-void AliITSLoaderUpg::SetITSgeom(AliITSgeom *geom){
-    // Replaces the AliITSgeom object read from file with the one
-    // given.
-    // Inputs:
-    //   AliITSgeom *geom   The AliITSgeom object to replace the one
-    //                      read from the file
-    // Outputs:
-    //   none.
-    // Return:
-    //   none.
-
-    if(fGeom==geom) return; // Same do nothing
-    if(fGeom) {
-	delete fGeom;
-	fGeom=0;
-    }// end if
-    fGeom=geom;
 }

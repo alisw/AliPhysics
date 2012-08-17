@@ -29,13 +29,16 @@ set ( SRCS
 v0/AliITSupgrade.cxx 
 v0/AliITSupgradeDigitizer.cxx 
 #
-AliITSUpg.cxx 
-AliITSvUpgrade.cxx 
-AliITSv11GeometryUpgrade.cxx 
+AliITSU.cxx 
+AliITSUv11.cxx 
+AliITSUv11Layer.cxx 
 AliITSv11GeomBeamPipe.cxx
-AliITSDetTypeSimUpg.cxx
-AliITSsimulationPixUpg.cxx
-AliITSdigitPixUpg.cxx
+AliITSUModule.cxx
+AliITSUSimulation.cxx
+AliITSUSimulationPix.cxx
+AliITSUDigitPix.cxx
+AliITSUDigitizer.cxx
+AliITSUHit.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

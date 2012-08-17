@@ -1,22 +1,21 @@
-#ifndef ALIITSLOADERUPG_H
-#define ALIITSLOADERUPG_H
+#ifndef ALIITSULOADER_H
+#define ALIITSULOADER_H
 //////////////////////////////////////////////////////////
 // Loader class for ITS Upgrade                         //
 //////////////////////////////////////////////////////////
 #include <AliLoader.h>
 #include <AliESDVertex.h>
-#include <AliITSgeom.h>
 class AliITSpidESD;
 class AliITSdigit;
 class TObjArray;
 
-class AliITSLoaderUpg: public AliLoader{
+class AliITSULoader: public AliLoader{
   public:
-    AliITSLoaderUpg();
-    AliITSLoaderUpg(const Char_t *name,const Char_t *topfoldername);
-    AliITSLoaderUpg(const Char_t *name,TFolder *topfolder);
+    AliITSULoader();
+    AliITSULoader(const Char_t *name,const Char_t *topfoldername);
+    AliITSULoader(const Char_t *name,TFolder *topfolder);
 
-    virtual ~AliITSLoaderUpg();
+    virtual ~AliITSULoader();
 
     void           MakeTree(Option_t* opt);
     virtual void   SetupDigits(TObjArray *digPerDet,Int_t n,
@@ -108,12 +107,10 @@ class AliITSLoaderUpg: public AliLoader{
 
     // Geometry. Geom is read from file, unless already loaded
     // readout from file can be forced if force=kTRUE
-    AliITSgeom* GetITSgeom(Bool_t force=kFALSE); 
-    void SetITSgeom(AliITSgeom* g);
   protected:
 
-    AliITSLoaderUpg(const AliITSLoaderUpg &ob); // copy constructor
-    AliITSLoaderUpg& operator=(const AliITSLoaderUpg & /* source */); // ass.
+    AliITSULoader(const AliITSULoader &ob); // copy constructor
+    AliITSULoader& operator=(const AliITSULoader & /* source */); // ass.
 
     // METHODS
     virtual void   MakeRawClustersContainer() {GetRawClLoader()->MakeTree();}
@@ -132,11 +129,8 @@ class AliITSLoaderUpg: public AliLoader{
     Int_t          PostCascades(){
         return GetCascadeDataLoader()->GetBaseLoader(0)->Post();}
 
-    // DATA
-    AliITSgeom *fGeom;     //! pointer to the ITS geometry class
 
-
-    ClassDef(AliITSLoaderUpg,1) // Loader for additional ITS specific trees.
+    ClassDef(AliITSULoader,1) // Loader for additional ITS specific trees.
 };
  
 #endif

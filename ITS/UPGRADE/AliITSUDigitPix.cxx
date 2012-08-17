@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <AliITSdigitPixUpg.h>
+#include <AliITSUDigitPix.h>
 #include <TArrayI.h>
 
 ///////////////////////////////////////////////////////////////////
@@ -24,10 +24,10 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-ClassImp(AliITSdigitPixUpg)
+ClassImp(AliITSUDigitPix)
 
 //______________________________________________________________________
-AliITSdigitPixUpg::AliITSdigitPixUpg():AliITSdigit(),
+AliITSUDigitPix::AliITSUDigitPix():AliITSdigit(),
 fSignalPix(0){
     // default constructor, zero coordinates and set array
     // elements to clearly unphysical values. A value of 0 may
@@ -39,7 +39,7 @@ fSignalPix(0){
 }
 
 //______________________________________________________________________
-AliITSdigitPixUpg::AliITSdigitPixUpg(const Int_t *digits):
+AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits):
   fSignalPix(digits[2])
 {
     // Creates a pixel digit object
@@ -53,7 +53,7 @@ AliITSdigitPixUpg::AliITSdigitPixUpg(const Int_t *digits):
 }
 
 //______________________________________________________________________
-AliITSdigitPixUpg::AliITSdigitPixUpg(const Int_t *digits,const Int_t *tracks,
+AliITSUDigitPix::AliITSUDigitPix(const Int_t *digits,const Int_t *tracks,
 			       const Int_t *hits):
 fSignalPix(digits[2])
 {
@@ -69,7 +69,7 @@ fSignalPix(digits[2])
 }
 
 //______________________________________________________________________
-Int_t AliITSdigitPixUpg::GetListOfTracks(TArrayI &t)
+Int_t AliITSUDigitPix::GetListOfTracks(TArrayI &t)
 {
     // Fills the TArrayI t with the tracks found in fTracks removing
     // duplicated tracks, but otherwise in the same order. It will return
@@ -102,7 +102,7 @@ Int_t AliITSdigitPixUpg::GetListOfTracks(TArrayI &t)
 }
 
 //______________________________________________________________________
-void AliITSdigitPixUpg::Print(ostream *os)
+void AliITSUDigitPix::Print(ostream *os)
 {
     //Standard output format for this class
     Int_t i;
@@ -114,7 +114,7 @@ void AliITSdigitPixUpg::Print(ostream *os)
 }
 
 //______________________________________________________________________
-void AliITSdigitPixUpg::Read(istream *os)
+void AliITSUDigitPix::Read(istream *os)
 {
     //Standard input for this class
     Int_t i;
@@ -126,7 +126,7 @@ void AliITSdigitPixUpg::Read(istream *os)
 }
 
 //______________________________________________________________________
-ostream &operator<<(ostream &os,AliITSdigitPixUpg &source)
+ostream &operator<<(ostream &os,AliITSUDigitPix &source)
 {
     // Standard output streaming function.
 
@@ -135,7 +135,7 @@ ostream &operator<<(ostream &os,AliITSdigitPixUpg &source)
 }
 
 //______________________________________________________________________
-istream &operator>>(istream &os,AliITSdigitPixUpg &source)
+istream &operator>>(istream &os,AliITSUDigitPix &source)
 {
     // Standard output streaming function.
 
