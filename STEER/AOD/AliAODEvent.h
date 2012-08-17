@@ -67,10 +67,10 @@ class AliAODEvent : public AliVEvent {
 		       kAODVZERO,
 		       kAODZDC,
 		       kTOFHeader,                       
+#ifdef MFT_UPGRADE
+	           kAODVZERO,
+#endif
 		       kAODListN
-	           #ifdef MFT_UPGRADE
-	           ,kAODVZERO
-			   #endif
   };
 
   AliAODEvent();
