@@ -4,13 +4,11 @@
 
 // AliAnalysisTaskPhiFlow:
 // origin: Redmer Alexander Bertens (rbertens@nikhef.nl)
-// analyis task for phi-meson reconstruction and determination of V2
-// handles aod's and esd's transparantly
+// analyis task for phi-meson reconstruction and estimation of v_n
 
 #ifndef ALIANALYSISTASKPHIFLOW_H
 #define ALIANALYSISTASKPHIFLOW_H
 
-class TH1F;
 class TH1F;
 class TH2F;
 class TProfile;
@@ -20,6 +18,7 @@ class AliFlowTrackCuts;
 class AliFlowEvent;
 class AliFlowCandidateTrack;
 class AliFlowBayesianPID;
+class AliEventPoolManager;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -34,6 +33,40 @@ enum ESDEventStats_t
    kNStats = kNLikePKPairs,
 };
 
+class AliPhiMesonHelperTrack : public TObject
+{
+public:
+        AliPhiMesonHelperTrack(Float_t eta, Float_t phi, Float_t p, Float_t px, Float_t py, Float_t pz, Float_t pt, Int_t charge) : fEta(eta), fPhi(phi), fp(p), fpX(px), fpY(py), fpZ(pz), fpT(pt), fCharge(charge) {  }
+    ~AliPhiMesonHelperTrack() {}
+    virtual Double_t P()                const { return fp; }
+    virtual Double_t Px()               const { return fpX; }
+    virtual Double_t Py()               const { return fpY; }
+    virtual Double_t Pz()               const { return fpZ; }
+    virtual Double_t Pt()               const { return fpT; }
+    virtual Double_t Phi()              const { return fPhi; }
+    virtual Double_t Eta()              const { return fEta; }
+    virtual Int_t Charge()              const { return fCharge; }
+    void    InitializeHelperTrack(Float_t eta, Float_t phi, Float_t p, Float_t px, Float_t py, Float_t pz, Float_t pt, Int_t charge) {     fEta = eta;
+                                                                                                                                fPhi =phi;
+                                                                                                                                fp = p;
+                                                                                                                                fpX = px;
+                                                                                                                                fpY = py;
+                                                                                                                                fpZ = pz;
+                                                                                                                                fpT = pt;
+                                                                                                                                fCharge = charge; }
+private:
+    Float_t                             fEta;      // eta
+    Float_t                             fPhi;      // phi
+    Float_t                             fp;        // p
+    Float_t                             fpX;       // pX
+    Float_t                             fpY;       // pY
+    Float_t                             fpZ;       // pZ
+    Float_t                             fpT;       // pT
+    Int_t                               fCharge;   // charge
+
+    ClassDef(AliPhiMesonHelperTrack, 1); // lightweight helper track for phi reconstruction
+};
+
 class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
 {
 public:
@@ -41,14 +74,17 @@ public:
    AliAnalysisTaskPhiFlow(const char *name);
    virtual ~AliAnalysisTaskPhiFlow();
 
-   Bool_t                               SetEnableDebugMode(Bool_t debug) {fDebug = debug; return fDebug; }
+   Int_t                                SetDebugLevelPhiTask(Int_t debug) {fDebug = debug; return fDebug; }
    Bool_t                               SetIsMC(Bool_t ismc) {fIsMC = ismc; return fIsMC; }
+   Bool_t                               UseEventMixing(Bool_t mix, Bool_t type) {fEventMixing = mix; fTypeMixing = type; return mix; }
+   Bool_t                               SetVZEROSubEvents(Bool_t v0) { fV0 = v0; return v0; }
    TH1F*                                BookHistogram(const char * name);
    TH2F*                                BookPIDHistogram(const char * name, Bool_t TPC);
    TH1F*                                InitPtSpectraHistograms(Int_t i);
    TH1F*                                BookPtHistogram(const char* name);
    void                                 AddPhiIdentificationOutputObjects();
    virtual void                         UserCreateOutputObjects();
+   AliEventPoolManager*                 InitializeEventMixing();
    template <typename T> Double_t       InvariantMass(const T* track1, const T* track2) const;
    template <typename T> Double_t       DeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckDeltaDipAngle(const T* track1, const T* track2) const;
@@ -69,13 +105,11 @@ public:
    Float_t                              GetDeltaDipPt() const {return fDeltaDipPt; }
    template <typename T> Bool_t         EventCut(T* event);
    template <typename T> void           PlotMultiplcities(const T* event) const;
-   template <typename T> Bool_t         CheckVertex(const T* event) const ;
+   template <typename T> Bool_t         CheckVertex(const T* event);
    template <typename T> Bool_t         CheckCentrality(T* event);
    void                                 InitializeBayesianPID(AliESDEvent* event);
    void                                 InitializeBayesianPID(AliAODEvent* event);
    template <typename T> Bool_t         PassesTPCbayesianCut(T* track) const;
-   Bool_t                               PassesStrictKaonCuts(AliESDtrack* track) const;
-   Bool_t                               PassesStrictKaonCuts(AliAODTrack* track) const;
    Bool_t                               PassesDCACut(AliAODTrack* track) const;
    Bool_t                               IsKaon(AliESDtrack* track) const;
    Bool_t                               IsKaon(AliAODTrack* track) const;
@@ -84,17 +118,22 @@ public:
    template <typename T> Bool_t         PhiTrack(T* track) const;
    template <typename T> void           SetNullCuts(T* esd);
    void                                 PrepareFlowEvent(Int_t iMulti);
+   void                                 VZEROSubEventAnalysis();
    virtual void                         UserExec(Option_t *option);
+   void                                 ReconstructionWithEventMixing(TObjArray* MixingCandidates) const;
    virtual void                         Terminate(Option_t *);
    void                                 SetPOICuts(AliFlowTrackCuts *cutsPOI) { fPOICuts = cutsPOI; }
    void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
-   void                                 SetRequireStrictKaonCuts() { fStrictKaonCuts= kTRUE; }
    void                                 SetRequireTPCStandAloneKaons() { fRequireTPCStandAlone = kTRUE; }
    void                                 SetOlderThanPbPbPass2() { fOldTrackParam = kTRUE; }
    void                                 SetPIDConfiguration(Double_t prob[7]) { for(Int_t i = 0; i < 7; i++) fPIDConfig[i] = prob[i]; }
    void                                 GetPIDConfiguration(Double_t prob[7]) const {for(Int_t i = 0; i < 7; i++) prob[i] = fPIDConfig[i]; }
    void                                 SetPOIDCAXYZ(Double_t dca[5]) { for(Int_t i = 0; i < 5; i++) fDCAConfig[i] = dca[i]; }
    void                                 GetPOIDCZXYZ(Double_t dca[5]) const { for(Int_t i = 0; i < 5; i++) dca[i] = fDCAConfig[i]; }
+   void                                 SetMixingBins(Int_t c[20], Int_t v[20]) {for(Int_t i = 0; i < 20; i++) { fCentralityMixingBins[i] = c[i];
+                                                                                                                 fVertexMixingBins[i] = v[i]; } }
+   void                                 SetMixingParameters(Int_t p[3]) { for(Int_t i = 0; i < 3; i++) fMixingParameters[i] = p[i]; }
+   void                                 GetMixingParameters(Int_t p[3]) const { for(Int_t i = 0; i < 3; i++) p[i] = fMixingParameters[i]; } 
    void                                 SetCandidateEtaAndPt(Double_t mineta, Double_t maxeta, Double_t minpt, Double_t maxpt) { fCandidateMinEta = mineta;
                                                                                                                                 fCandidateMaxEta = maxeta;
                                                                                                                                 fCandidateMinPt = minpt;
@@ -104,7 +143,6 @@ public:
                                                                                         etapt[1] = fCandidateMaxEta;
                                                                                         etapt[2] = fCandidateMinPt;
                                                                                         etapt[3] = fCandidateMaxPt; }
-   void                                 MakeArmPlot(TVector3& a, TVector3& b);
    void                                 SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass) {        fMassBins = massBins;
                                                                                                                         fMinMass = minMass;
                                                                                                                         fMaxMass= maxMass; }
@@ -113,9 +151,12 @@ public:
 
 private:
 
-   Bool_t               fDebug; // enable debug mode
-   Bool_t               fIsMC; // mc mode
-   Bool_t               fQA; // qa plots
+   Int_t                fDebug; // debug level (0 none, 1 fcn calls, 2 verbose)
+   Bool_t               fIsMC; // use mc mode
+   Bool_t               fEventMixing; // use event mixing
+   Bool_t               fTypeMixing; // select type: kTRUE for unlike sign background, kFALSE for like sign background
+   Bool_t               fQA; // make qa plots
+   Bool_t               fV0; // use three subevents including vzero
    Bool_t               fAODAnalysis; // set aod analysis
    Int_t                fMassBins; // mass bins
    Double_t             fMinMass; // mass range
@@ -128,7 +169,6 @@ private:
    TObjArray            *fCandidates; // candidate array
    Bool_t               fOldTrackParam; // set to true if data is older than pbpb pass 2 production
    Bool_t               fRequireTPCStandAlone; // set TPC standalone cut for kaon selection
-   Bool_t               fStrictKaonCuts; // require strict kaon cuts
    Bool_t               fCandidateEtaPtCut; // set eta and pt cut for candidate tracks and combinatorial background
    Double_t             fCandidateMinEta; // minimum eta for candidates
    Double_t             fCandidateMaxEta; // maximum eta for candidates
@@ -136,9 +176,14 @@ private:
    Double_t             fCandidateMaxPt; // maximum pt for candidates
    Double_t             fPIDConfig[7]; // configure pid routine
    Double_t             fDCAConfig[5]; // configure dca routine
+   Int_t                fMixingParameters[3]; // mixing: poolsize, mixing tracks, pool buffer
+   Int_t                fCentralityMixingBins[20]; // configure centrality bins for event mixing
+   Int_t                fVertexMixingBins[20]; // configure vertex bins for event mixing
    Double_t             fCentrality; // event centrality
+   Double_t             fVertex; // event vertex z 
    AliESDEvent          *fESD;    //! ESD object
    AliAODEvent          *fAOD;    //! AOD oject
+   AliEventPoolManager  *fPoolManager; //! event pool manager
    TList                *fOutputList; // ! Output list
    TH1F                 *fEventStats; // ! Histogram for event statistics
    TH1F                 *fCentralityPass; // ! QA histogram of events that pass centrality cut
@@ -147,78 +192,10 @@ private:
    TH2F                 *fPIDk;//! QA histogram of TPC response of kaons
    TH2F                 *fNOPIDTOF; //! QA histo of TOF repsonse charged particles
    TH2F                 *fPIDTOF; //! QA histo of TOF response kaons
-   TH1F                 *fInvMNP03; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP03; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN03; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP36; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP36; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN36; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP69; //!  Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP69; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN69; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP912; //!  Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP912; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN912; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP1215; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP1215; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN1215; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP1518; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP1518; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN1518; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP1821; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP1821; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN1821; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP2124; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP2124; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN2124; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP2427; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP2427; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN2427; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP2730; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP2730; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN2730; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP3035; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP3035; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN3035; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP3540; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP3540; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN3540; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP4045; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP4045; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN4045; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP4550; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP4550; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN4550; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP5055; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP5055; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN5055; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP5560; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP5560; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN5560; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP6065; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP6065; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN6065; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fInvMNP6570; //! Invariant mass of unlike sign kaon pairs
-   TH1F                 *fInvMPP6570; //! Invariant mass of like sign (++) kaon pairs
-   TH1F                 *fInvMNN6570; //! Invariant mass of like sign (--) kaon pairs
-   TH1F                 *fPtSpectra03; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra36; //! kaon pair Pt spectrum 
-   TH1F                 *fPtSpectra69; //!  kaon pair Pt spectrum
-   TH1F                 *fPtSpectra912; //!  kaon pair Pt spectrum
-   TH1F                 *fPtSpectra1215; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra1518; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra1821; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra2124; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra2427; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra2730; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra3035; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra3540; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra4045; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra4550; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra5055; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra5560; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra6065; //! kaon pair Pt spectrum
-   TH1F                 *fPtSpectra6570; //! kaon pair Pt spectrum
+   TH1F                 *fInvMNP[18]; //! unlike sign kaon pairs
+   TH1F                 *fInvMNN[18]; //! like-sign kaon pairs
+   TH1F                 *fInvMPP[18]; //! like-sign kaon pairs
+   TH1F                 *fPtSpectra[18]; //! pt spectra
    TH1F                 *fPtP; //! QA histogram of p_t distribution of positive particles
    TH1F                 *fPtN; //! QA histogram of p_t distribution of negative particles
    TH1F                 *fPtKP; //! QA histogram of p_t distribution of positive kaons
@@ -243,14 +220,15 @@ private:
    TH2F                 *fDCAPrim; //!dca of primaries (mc) or kaons (data)
    TH2F                 *fDCASecondaryWeak; //! dca of weak (mc)
    TH2F                 *fDCAMaterial; //!dca material (mc) all (data)
-   TH2F                 *fArmPod; //! ap plot 
+   TProfile             *fSubEventDPhiv2; //! subevent resolution info for v2
+   TProfile             *fSubEventDPhiv3; //! subevent resolution info for v3
+   TProfile             *fV0Data[18][2][2]; //! profiles for vzero vn(minv)
 
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
    void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[]) const;
 
-   ClassDef(AliAnalysisTaskPhiFlow, 4);
-
+   ClassDef(AliAnalysisTaskPhiFlow, 5);
 };
 
 #endif
