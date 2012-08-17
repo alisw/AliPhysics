@@ -2240,9 +2240,11 @@ TChain *AliAnalysisAlien::GetChainForTestMode(const char *treeName) const
    Int_t count = 0;
     // Read the input list of files and add them to the chain
    TString line;
-   TChain *chain = new TChain(treeName);
+   TString streeName(treeName);
+   if (IsUseMCchain()) streeName = "TE";
+   TChain *chain = new TChain(streeName);
    TChain *chainFriend = 0;
-   if (!fFriendChainName.IsNull()) chainFriend = new TChain(treeName);       
+   if (!fFriendChainName.IsNull()) chainFriend = new TChain(streeName);       
    while (in.good())
    {
       in >> line;
