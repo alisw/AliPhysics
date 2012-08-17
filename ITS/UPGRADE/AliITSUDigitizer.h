@@ -27,16 +27,18 @@ class AliITSUDigitizer : public AliDigitizer {
   virtual void Digitize(Option_t* opt=0);
   virtual void SetModuleActive(Int_t i){if(fModActive) fModActive[i] = kTRUE;}
   virtual void SetModuleInActive(Int_t i){if(fModActive) fModActive[i] = kFALSE;}
-  virtual void SetByRegionOfInterestFlag(Int_t i=0){fRoif = i;};
-  virtual void SetByRegionOfFileNumber(Int_t i=-1){fRoiifile = i;};
-  virtual void ClearByRegionOfInterestFlag(){fRoif = 0;};
+  virtual void SetByRegionOfInterestFlag(Int_t i=0){fRoif = i;}
+  virtual void SetByRegionOfFileNumber(Int_t i=-1){fRoiifile = i;}
+  virtual void ClearByRegionOfInterestFlag(){fRoif = 0;}
+  //
  private:
   AliITSUDigitizer(const AliITSUDigitizer& dig);
   AliITSUDigitizer& operator=(const AliITSUDigitizer &source);
   AliDigitizationInput* GetDigInput(){return fDigInput;}
   virtual void SetByRegionOfInterest(TTree *ts);
- private:
-  AliITSU *fITS;      //! local pointer to ITS
+  //
+ protected:
+  AliITSU   *fITS;      //! local pointer to ITS
   Bool_t    *fModActive;//! flag to indicate which module to digitize.
   Bool_t     fInit;     //! flag to indecate Initilization when well.
   Int_t      fRoif;     //! Region of interest flag.

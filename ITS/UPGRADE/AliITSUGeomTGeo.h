@@ -43,18 +43,19 @@ class AliITSUGeomTGeo : public TObject {
 
  public:
   enum {kITSVNA, kITSVUpg}; // ITS version
-  enum {kDetTypePixUpg=0, kNDetTypes, kMaxSegmPerDetType=10}; // defined detector types (each one can have different segmentations)
+  enum {kDetTypePix=0, kNDetTypes, kMaxSegmPerDetType=10}; // defined detector types (each one can have different segmentations)
   //
   AliITSUGeomTGeo(Bool_t build = kFALSE);
   virtual ~AliITSUGeomTGeo(); 
   AliITSUGeomTGeo(const AliITSUGeomTGeo &src);
   AliITSUGeomTGeo& operator=(const AliITSUGeomTGeo &geom);
   //
-  Int_t   GetNModules()                                                   const {return fNModules;}
-  Int_t   GetNDetectors(Int_t lay)                                        const {return fNDetectors[lay];}
-  Int_t   GetNLadders(Int_t lay)                                          const {return fNLadders[lay];}
-  Int_t   GetNLayers()                                                    const {return fNLayers;}
+  Int_t  GetNModules()                                                    const {return fNModules;}
+  Int_t  GetNDetectors(Int_t lay)                                         const {return fNDetectors[lay];}
+  Int_t  GetNLadders(Int_t lay)                                           const {return fNLadders[lay];}
+  Int_t  GetNLayers()                                                     const {return fNLayers;}
   
+  Int_t  GetModuleIndex(Int_t lay,int detInLay)                           const {return GetFirstModIndex(lay)+detInLay;}
   Int_t  GetModuleIndex(Int_t lay,Int_t lad,Int_t det)                    const;
   Bool_t GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det)        const;
   Int_t  GetLayer(Int_t index)                                            const;
@@ -102,6 +103,8 @@ class AliITSUGeomTGeo : public TObject {
   Int_t  GetLayerDetTypeID(Int_t lr)                                         const;
   Int_t  GetModuleDetTypeID(Int_t id)                                        const;
   //
+  virtual void Print(Option_t *opt="")  const;
+
   static const char* GetITSVolPattern()                                             {return fgkITSVolName;}
   static const char* GetITSLayerPattern()                                           {return fgkITSLrName;}
   static const char* GetITSLadderPattern()                                          {return fgkITSLadName;}
@@ -111,6 +114,10 @@ class AliITSUGeomTGeo : public TObject {
   static const char* GetITSsegmentationFileName()                                   {return fgITSsegmFileName.Data();}
   static void        SetITSsegmentationFileName(const char* nm)                     {fgITSsegmFileName = nm;}
   static UInt_t      ComposeDetTypeID(UInt_t segmId);
+  //
+  // hack to avoid using AliGeomManager
+  Int_t              LayerToVolUID(Int_t lay,int detInLay)                    const {return GetModuleIndex(lay,detInLay);}
+  static Int_t       ModuleVolUID(Int_t mod)                                        {return mod;}
   //
  private:
 //
@@ -210,7 +217,7 @@ inline TGeoHMatrix* AliITSUGeomTGeo::GetMatrixSens(Int_t index) const
 {
   // semsor matrix
   int lr,ld,dt; 
-  return GetModuleId(index,lr,ld,dt) ? GetMatrixSens(GetModuleIndex(lr,ld,dt)) : 0;
+  return GetModuleId(index,lr,ld,dt) ? GetMatrixSens(lr,ld,dt) : 0;
 }
 
 //_____________________________________________________________________________________________

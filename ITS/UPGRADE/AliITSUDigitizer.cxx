@@ -97,6 +97,7 @@ Bool_t AliITSUDigitizer::Init()
     fInit     = kFALSE;
     AliFatal("ITS not found");
   } 
+  if (!fITS->IsSimInitDone()) fITS->InitSimulation();
   int nm = fITS->GetITSGeomTGeo()->GetNModules();
   fModActive = new Bool_t[nm];
   for (Int_t i=nm;i--;) fModActive[i] = kTRUE;

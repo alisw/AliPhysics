@@ -36,7 +36,7 @@
 
 ClassImp(AliITSUSegmentationPix)
 
-const char* AliITSUSegmentationPix::fgkSegmListName = "ITSUpgradeSegmentations";
+const char* AliITSUSegmentationPix::fgkSegmListName = "ITSUSegmentations";
 
 //_____________________________________________________________________________RS
 AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,int nrow,
@@ -448,7 +448,7 @@ void AliITSUSegmentationPix::LoadSegmentations(TObjArray* dest, const char* inpf
   for (int i=nent;i--;) if ((segm=arr->At(i))) dest->AddAtAndExpand(segm,segm->GetUniqueID());
   AliInfoGeneral("LoadSegmentations",Form("Loaded %d segmantions from %s",arr->GetEntries(),inpf));
   arr->SetOwner(kFALSE);
-  arr->Delete();
+  arr->Clear();
   finp->Close();
   delete finp;
   delete arr;

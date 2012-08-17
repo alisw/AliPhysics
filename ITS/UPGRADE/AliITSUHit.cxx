@@ -89,7 +89,7 @@ void AliITSUHit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &tof
   tof = ft0;
 }
 
-//----------------------------------------------------------------------
+//______________________________________________________________________
 void AliITSUHit::GetDetectorID(Int_t &layer,Int_t &ladder,Int_t &det) const
 {
   // Returns the layer ladder and detector number lables for this
@@ -97,4 +97,31 @@ void AliITSUHit::GetDetectorID(Int_t &layer,Int_t &ladder,Int_t &det) const
   AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
   if (!gm) AliFatal("NULL pointer to the geometry!");
   gm->GetModuleId(fModule,layer,ladder,det);
+}  
+
+//______________________________________________________________________
+Int_t AliITSUHit::GetLayer() const
+{
+  // Returns the layer. Note: indices start from 0!
+  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
+  if (!gm) AliFatal("NULL pointer to the geometry!");
+  return gm->GetLayer(fModule);
+}  
+
+//______________________________________________________________________
+Int_t AliITSUHit::GetLadder() const
+{
+  // Returns the ladder of TS module. Note: indices start from 0!
+  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
+  if (!gm) AliFatal("NULL pointer to the geometry!");
+  return gm->GetLadder(fModule);
+}  
+
+//______________________________________________________________________
+Int_t AliITSUHit::GetDetector() const
+{
+  // Returns the detector within the ladder. Note: indices start from 0!
+  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
+  if (!gm) AliFatal("NULL pointer to the geometry!");
+  return gm->GetModIdInLadder(fModule);
 }  

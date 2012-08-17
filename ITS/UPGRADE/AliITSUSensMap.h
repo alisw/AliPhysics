@@ -40,8 +40,8 @@ class AliITSUSensMap: public TObject
   Int_t GetEntries()                       const {return fBTree->GetEntries();}
   Int_t GetEntriesUnsorted()               const {return fItems->GetEntriesFast();}
   void  GetMapIndex(UInt_t index,UInt_t &i,UInt_t &j) const {return GetCell(index, i,j);}
-  TObject* GetItem(UInt_t i,UInt_t j)            {fProbe.SetUniqueID(GetIndex(i,j)); return fBTree->FindObject(&fProbe);}
-  TObject* GetItem(UInt_t index)                 {fProbe.SetUniqueID(index);         return fBTree->FindObject(&fProbe);}
+  TObject* GetItem(UInt_t i,UInt_t j)            {SetUniqueID(GetIndex(i,j)); return fBTree->FindObject(this);}
+  TObject* GetItem(UInt_t index)                 {SetUniqueID(index);         return fBTree->FindObject(this);}
   TObject* GetItem(const TObject* obj)           {return fBTree->FindObject(obj);}
   TObject* At(Int_t i)                     const {return fBTree->At(i);}             //!!! Access in sorted order !!!
   TObject* AtUnsorted(Int_t i)             const {return fItems->At(i);}             //!!! Access in unsorted order !!!
@@ -54,27 +54,20 @@ class AliITSUSensMap: public TObject
   TClonesArray* GetItems()                 const {return fItems;}
   TBtree*       GetItemsBTree()            const {return fBTree;}
   //
+  Bool_t        IsSortable()                const {return kTRUE;}
+  Bool_t        IsEqual(const TObject* obj) const {return GetUniqueID()==obj->GetUniqueID();}
+  Int_t         Compare(const TObject* obj) const {return (GetUniqueID()<obj->GetUniqueID()) ? -1 : ((GetUniqueID()>obj->GetUniqueID()) ? 1 : 0 );}
+  //
   static Bool_t IsDisabled(TObject* obj)         {return obj ? obj->TestBit(kDisableBit) : kFALSE;}
   static void   Disable(TObject* obj)            {if (obj) obj->SetBit(kDisableBit);}
   static void   Enable(TObject* obj)             {if (obj) obj->ResetBit(kDisableBit);}
   //
- protected:
-  class TObjSortable : public TObject 
-  {
-  public:
-    Bool_t IsSortable()                const {return kTRUE;}
-    Bool_t IsEqual(const TObject* obj) const {return GetUniqueID()==obj->GetUniqueID();}
-    Int_t  Compare(const TObject* obj) const {return (GetUniqueID()<obj->GetUniqueID()) ? -1 : ((GetUniqueID()>obj->GetUniqueID()) ? 1 : 0 );}
-    ClassDef(TObjSortable,1)
-  };
-
  protected:
   //
   UInt_t fDim0;              // 1st dimension of the matrix
   UInt_t fDim1;              // 2nd dimention of the matrix
   TClonesArray*    fItems;   // pListItems array
   TBtree*          fBTree;   // tree for ordered access
-  TObjSortable     fProbe;   //! dummy object to test presence in the map
   //
   ClassDef(AliITSUSensMap,1) // list of sensor signals (should be sortable objects)
 };	

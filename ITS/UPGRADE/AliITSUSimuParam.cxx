@@ -416,7 +416,7 @@ Double_t AliITSUSimuParam::LorentzAngleElectron(Double_t B) const
 }
 
 //______________________________________________________________________
-Double_t AliITSSimuParam::SigmaDiffusion3D(Double_t l) const 
+Double_t AliITSUSimuParam::SigmaDiffusion3D(Double_t l) const 
 {
   // Returns the Gaussian sigma^2 == <x^2+y^2+z^2> [cm^2] due to the
   // defusion of electrons or holes through a distance l [cm] caused
@@ -462,7 +462,7 @@ Double_t AliITSUSimuParam::SigmaDiffusion2D(Double_t l) const
 }
 
 //______________________________________________________________________
-Double_t AliITSSimuParam::SigmaDiffusion1D(Double_t l) const 
+Double_t AliITSUSimuParam::SigmaDiffusion1D(Double_t l) const 
 {
   // Returns the Gaussian sigma^2 == <x^2> [cm^2] due to the defusion
   // of electrons or holes through a distance l [cm] caused by an applied

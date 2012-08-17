@@ -632,7 +632,7 @@ void AliITSUSimulationPix::FrompListToDigits()
       dig.SetTrack(j,-3);
       dig.SetHit(j,-1);
     }
-    aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePixUpg, &dig);
+    aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePix, &dig);
   }
   // if needed, add noisy pixels with id from last real hit to maxID
   if (probNoisy>minProb) CreateNoisyDigits(prevID,maxInd,probNoisy, noiseSig, noiseMean);
@@ -667,7 +667,7 @@ Int_t AliITSUSimulationPix::CreateNoisyDigits(Int_t minID,Int_t maxID,double pro
       dig.SetTrack(k,-3);
       dig.SetHit(k,-1);
     }
-    aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePixUpg,&dig);
+    aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePix,&dig);
     AliInfo(Form("Add noisy pixel %d(%d/%d) Noise=%d",ordV[ordI[j]],iz,ix,dig.GetSignalPix()));
   }
   return ncand;

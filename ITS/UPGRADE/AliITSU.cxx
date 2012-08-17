@@ -108,8 +108,8 @@ AliDetector()
   ,fIdSens(0)
   ,fLayerName(0)
   ,fTiming(kFALSE)
-  ,fSimuParam(0)
   ,fGeomTGeo(0)
+  ,fSimuParam(0)
   ,fModA(0)
   ,fpSDigits(0)
   ,fSDigits(0)
@@ -134,8 +134,8 @@ AliITSU::AliITSU(const Char_t *title, Int_t nlay) :
   ,fIdSens(0)
   ,fLayerName(0)
   ,fTiming(kFALSE)
-  ,fSimuParam(0)
   ,fGeomTGeo(0)
+  ,fSimuParam(0)
   ,fModA(0)
   ,fpSDigits(0)
   ,fSDigits(0)
@@ -150,6 +150,11 @@ AliITSU::AliITSU(const Char_t *title, Int_t nlay) :
   ,fSimInitDone(kFALSE)
 {
   //     The standard Constructor for the ITS class. 
+  AliMC* mc = gAlice->GetMCApp();
+  if( mc && mc->GetHitLists() ) {
+    fHits = new TClonesArray("AliITSUHit",100); // from AliDetector
+    mc->AddHitList(fHits);  
+  }
 }
 
 
@@ -159,7 +164,6 @@ AliITSU::~AliITSU()
   // Default destructor for ITS.
   //  
   delete fHits;
-  delete fModuleHits;
   delete fSimuParam;
   delete fSensMap;
   if (fSimulation) fSimulation->Delete();
@@ -197,7 +201,6 @@ AliDigitizer* AliITSU::CreateDigitizer(AliDigitizationInput* manager) const
   // Return:
   //    A new AliITSRunDigitizer (cast as a AliDigitizer).
   //
-  if (!IsSimInitDone()) AliFatal("Simulation is not initialized");
   return new AliITSUDigitizer(manager);
 }
 
@@ -213,6 +216,8 @@ void AliITSU::Init()
   //
   if (!fIdSens) fIdSens = new Int_t[fNLayers];
   for(int i=0;i<fNLayers;i++) fIdSens[i] = gMC ? gMC->VolId(fLayerName[i]) : 0;
+  fGeomTGeo     = new AliITSUGeomTGeo(kTRUE);
+  InitSimulation();
   //
 }
 
@@ -291,8 +296,6 @@ void AliITSU::InitArrays()
 {
   // initialize arrays
   //
-  fHits = new TClonesArray("AliITSUHit",1560); // from AliDetector
-  if(gAlice->GetMCApp()) gAlice->GetMCApp()->AddHitList(fHits);
   if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
   //  
   fDetDigits = new TObjArray(kNDetTypes);
@@ -312,7 +315,10 @@ void AliITSU::SetTreeAddress()
 {
   // Set branch address for the Trees.
   TTree *treeS = fLoader->TreeS();
-  if (treeS) treeS->GetBranch(GetName())->SetAddress(&fSDigits);
+  if (treeS) {
+    TBranch* br = treeS->GetBranch(GetName());
+    if (br) br->SetAddress(&fSDigits);
+  }
   //
   TTree *treeD = fLoader->TreeD();
   if (treeD) {
@@ -320,7 +326,7 @@ void AliITSU::SetTreeAddress()
     for (int i=0;i<kNDetTypes;i++) {
       TString brname = Form("%sDigits%s",GetName(),GetDetTypeName(i));
       TBranch* br = treeD->GetBranch(brname.Data());
-      if (!br) AliFatal(Form("Did not find branch for %s",brname.Data()));
+      if (!br) continue;
       TClonesArray* darr = (TClonesArray*)fDetDigits->At(i);
       br->SetAddress(&darr);
     }
@@ -421,7 +427,7 @@ void AliITSU::FillModules(TTree *treeH, Int_t /*mask*/)
     for (h=0; h<nHits; h++){
       itsHit = (AliITSUHit *)fHits->UncheckedAt(h);
       itsHit->GetDetectorID(lay,lad,det);
-      index = fGeomTGeo->GetModuleIndex(--lay,--lad,--det); // !!! AliITSHit counts indices from 1!
+      index = fGeomTGeo->GetModuleIndex(lay,lad,det); // !!! AliITSHit counts indices from 1!
       itsHit = new( (*fDetHits)[fDetHits->GetEntriesFast()] ) AliITSUHit(*itsHit);
       itsHit->SetUniqueID(h);
       GetModule(index)->AddHit(itsHit);
@@ -444,10 +450,6 @@ void AliITSU::ClearModules()
 void AliITSU::Hits2SDigits()
 {
   // Standard Hits to summable Digits function.
-  // Inputs:
-  //      none.
-  // Outputs:
-  //      none.
   if (!IsSimInitDone()) InitSimulation();
   fLoader->LoadHits("read");
   fLoader->LoadSDigits("recreate");
@@ -499,6 +501,28 @@ void AliITSU::Hits2SDigits(Int_t evNumber,Int_t bgrev,Option_t *option,const cha
   fLoader->TreeS()->AutoSave();
   fLoader->WriteSDigits("OVERWRITE");
   fLoader->TreeS()->Reset();
+}
+
+//______________________________________________________________________
+void AliITSU::Hits2Digits()
+{
+  // Standard Hits to Digits function.
+  if (!IsSimInitDone()) InitSimulation();
+  fLoader->LoadHits("read");
+  fLoader->LoadDigits("recreate");
+  AliRunLoader* rl = fLoader->GetRunLoader(); 
+  //
+  for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
+    rl->GetEvent(iEvent);
+    if (!fLoader->TreeS()) fLoader->MakeTree("S");
+    MakeBranch("D");
+    SetTreeAddress();
+    Hits2Digits(iEvent,0," "," ");
+  } // end for iEvent
+    //
+  fLoader->UnloadHits();
+  fLoader->UnloadSDigits();
+  // 
 }
 
 //______________________________________________________________________
@@ -670,7 +694,7 @@ void AliITSU::AddSimDigit(Int_t branch, AliITSdigit *d)
   TClonesArray &ldigits = *((TClonesArray*)fDetDigits->At(branch));
   int nd = ldigits.GetEntriesFast();
   switch(branch){
-  case AliITSUGeomTGeo::kDetTypePixUpg:
+  case AliITSUGeomTGeo::kDetTypePix:
     new(ldigits[nd]) AliITSUDigitPix(*((AliITSUDigitPix*)d));
     break;
   default:
@@ -699,7 +723,7 @@ void AliITSU::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,Int_t *tracks,
   TClonesArray &ldigits = *((TClonesArray*)fDetDigits->At(branch));
   int nd = ldigits.GetEntriesFast();
   switch(branch){
-  case AliITSUGeomTGeo::kDetTypePixUpg:
+  case AliITSUGeomTGeo::kDetTypePix:
     new(ldigits[nd]) AliITSUDigitPix(digits,tracks,hits);
     break;
   default:
@@ -790,7 +814,6 @@ void AliITSU::InitSimulation()
   //
   if (fSimInitDone) {AliInfo("Already done"); return;}
   //
-  fGeomTGeo     = new AliITSUGeomTGeo(kTRUE);
   fSimuParam    = new AliITSUSimuParam();
   fSensMap      = new AliITSUSensMap("AliITSUSDigit",0,0);
   fSimulation   = new TObjArray(kNDetTypes);
@@ -805,7 +828,7 @@ void AliITSU::InitSimulation()
     //
     AliITSUSimulation* simUpg = 0;
     switch (sType) {
-    case AliITSUGeomTGeo::kDetTypePixUpg : 
+    case AliITSUGeomTGeo::kDetTypePix : 
       simUpg = new AliITSUSimulationPix(fSimuParam,fSensMap); 
       break;
     default: AliFatal(Form("No %d detector type is defined",sType));

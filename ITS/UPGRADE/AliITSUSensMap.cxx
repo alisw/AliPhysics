@@ -27,7 +27,7 @@
 // map->RegisterItem( new(map->GetFree()) ItemConstructor(...) );
 //
 // The items must be sortable with the same sorting algorithm like 
-// for the dummy class AliITSUSensMap::TObjSortable
+// for AliITSUSensMap::IsSortable,IsEqual,Compare
 //
 // ***********************************************************************
 
@@ -42,7 +42,6 @@ AliITSUSensMap::AliITSUSensMap()
   ,fDim1(0)
   ,fItems(0)
   ,fBTree(0)
-  ,fProbe()
 {
   // Default constructor
 }
@@ -53,7 +52,6 @@ AliITSUSensMap::AliITSUSensMap(const char* className, UInt_t dim0,UInt_t dim1)
   ,fDim1(dim1)
   ,fItems(new TClonesArray(className,100))
   ,fBTree(new TBtree())
-  ,fProbe()
 {
   // Standard constructor
 }
@@ -74,7 +72,6 @@ AliITSUSensMap::AliITSUSensMap(const AliITSUSensMap &source)
   ,fDim1(source.fDim1)
   ,fItems( source.fItems ? new TClonesArray(*source.fItems) : 0)
   ,fBTree( 0 )
-  ,fProbe( source.fProbe)
 {
   if (source.fBTree) {
     fBTree = new TBtree();
@@ -103,15 +100,14 @@ void AliITSUSensMap::Clear(Option_t*)
   // clean everything
   if (fItems) fItems->Clear();
   if (fBTree) fBTree->Clear();
-  fProbe.Clear();
 }
 
 //______________________________________________________________________
 void AliITSUSensMap::DeleteItem(UInt_t i,UInt_t j)
 {
   // Delete a particular AliITSUSensMapItems.
-  fProbe.SetUniqueID( GetIndex(i,j) );
-  TObject* fnd = fBTree->FindObject(&fProbe);
+  SetUniqueID( GetIndex(i,j) );
+  TObject* fnd = fBTree->FindObject(this);
   if (!fnd) return;
   Disable(fnd);
   fBTree->Remove(fnd);

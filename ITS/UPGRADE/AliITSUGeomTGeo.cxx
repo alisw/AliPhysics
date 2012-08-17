@@ -41,11 +41,11 @@ ClassImp(AliITSUGeomTGeo)
 
 
 const char* AliITSUGeomTGeo::fgkITSVolName = "ITSV";
-const char* AliITSUGeomTGeo::fgkITSLrName  = "ITSupgLayer";
-const char* AliITSUGeomTGeo::fgkITSLadName = "ITSupgLadder";
-const char* AliITSUGeomTGeo::fgkITSModName = "ITSupgModule";
-const char* AliITSUGeomTGeo::fgkITSSensName ="ITSupgSensor";
-const char* AliITSUGeomTGeo::fgkITSDetTypeName[AliITSUGeomTGeo::kNDetTypes] = {"PixUpg"};
+const char* AliITSUGeomTGeo::fgkITSLrName  = "ITSULayer";
+const char* AliITSUGeomTGeo::fgkITSLadName = "ITSULadder";
+const char* AliITSUGeomTGeo::fgkITSModName = "ITSUModule";
+const char* AliITSUGeomTGeo::fgkITSSensName ="ITSUSensor";
+const char* AliITSUGeomTGeo::fgkITSDetTypeName[AliITSUGeomTGeo::kNDetTypes] = {"Pix"};
 //
 TString     AliITSUGeomTGeo::fgITSsegmFileName = "itsSegmentations.root";
 
@@ -167,8 +167,8 @@ Int_t AliITSUGeomTGeo::GetLayer(Int_t index) const
   // Get module layer, from 0
   //
   int lay = 0;
-  while(index<=fLastModIndex[lay]) lay++;
-  return --lay;
+  while(index>fLastModIndex[lay]) lay++;
+  return lay;
 }
 
 //______________________________________________________________________
@@ -177,8 +177,8 @@ Int_t AliITSUGeomTGeo::GetLadder(Int_t index) const
   // Get module ladder, from 0
   //
   int lay = 0;
-  while(index<=fLastModIndex[lay]) lay++;
-  index -= GetFirstModIndex(--lay);
+  while(index>fLastModIndex[lay]) lay++;
+  index -= GetFirstModIndex(lay);
   return index/fNDetectors[lay];
 }
 
@@ -188,8 +188,8 @@ Int_t AliITSUGeomTGeo::GetModIdInLayer(Int_t index) const
   // Get module number within layer, from 0
   //
   int lay = 0;
-  while(index<=fLastModIndex[lay]) lay++;
-  index -= GetFirstModIndex(--lay);
+  while(index>fLastModIndex[lay]) lay++;
+  index -= GetFirstModIndex(lay);
   return index;
 }
 
@@ -199,8 +199,8 @@ Int_t AliITSUGeomTGeo::GetModIdInLadder(Int_t index) const
   // Get module number within ladder, from 0
   //
   int lay = 0;
-  while(index<=fLastModIndex[lay]) lay++;
-  index -= GetFirstModIndex(--lay);
+  while(index>fLastModIndex[lay]) lay++;
+  index -= GetFirstModIndex(lay);
   return index%fNDetectors[lay];
 }
 
@@ -235,7 +235,8 @@ const char* AliITSUGeomTGeo::GetSymName(Int_t index)  const
   if (!GetLayer(index,lay,index2)) return NULL;
   // return AliGeomManager::SymName((AliGeomManager::ELayerID)((lay-1)+AliGeomManager::kSPD1),index2);
   // RS: this is not optimal, but we cannod access directly AliGeomManager, since the latter has hardwired layers 
-  TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID( AliGeomManager::LayerToVolUID(lay+1,index2) );
+  //  TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID( AliGeomManager::LayerToVolUID(lay+1,index2) );
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID( ModuleVolUID(index) );
   if (!pne) {
     AliError(Form("Failed to find alignable entry with index %d: (Lr%d Mod:%d) !",index,lay,index2));
     return NULL;
@@ -377,7 +378,7 @@ TGeoHMatrix* AliITSUGeomTGeo::GetMatrixSens(Int_t lay, Int_t ladd, Int_t detInLa
 {
   // Get the transformation matrix of the SENSOR (not ncessary the same as the module) for a given module 'index'
   // by quering the TGeoManager
-  const TString kPathBase = Form("/ALIC_1/%s_1/",AliITSUGeomTGeo::GetITSVolPattern());
+  const TString kPathBase = Form("/ALIC_1/%s_2/",AliITSUGeomTGeo::GetITSVolPattern());
   const TString kNames = Form("%%s%s%%d_1/%s%%d_%%d/%s%%d_%%d/%s%%d_%%d"
 			      ,AliITSUGeomTGeo::GetITSLayerPattern()
 			      ,AliITSUGeomTGeo::GetITSLadderPattern()
@@ -605,5 +606,17 @@ Int_t AliITSUGeomTGeo::ExtractLayerDetType(Int_t lay)  const
 UInt_t AliITSUGeomTGeo::ComposeDetTypeID(UInt_t segmId)
 {
   if (segmId>=kMaxSegmPerDetType) AliFatalClass(Form("Id=%d is >= max.allowed %d",segmId,kMaxSegmPerDetType));
-  return segmId + kDetTypePixUpg*kMaxSegmPerDetType;
+  return segmId + kDetTypePix*kMaxSegmPerDetType;
+}
+
+//______________________________________________________________________
+void AliITSUGeomTGeo::Print(Option_t *) const
+{
+  // print
+  printf("Geometry version %d, NLayers:%d NModules:%d\n",fVersion,fNLayers,fNModules);
+  if (fVersion==kITSVNA) return;
+  for (int i=0;i<fNLayers;i++) {
+    printf("Lr%2d\tNLadd:%2d\tNDet:%2d\tDetType:%3d\tMod#:%4d:%4d\n",
+	   i,fNLadders[i],fNDetectors[i],fLrDetType[i],GetFirstModIndex(i),GetLastModIndex(i));
+  }
 }

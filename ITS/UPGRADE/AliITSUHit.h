@@ -23,7 +23,7 @@ class AliITSUHit : public AliITShit {
   AliITSUHit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,Float_t tof,TLorentzVector &x,TLorentzVector &x0,TLorentzVector &p);
   AliITSUHit(const AliITSUHit &h);
   AliITSUHit& operator=(const AliITSUHit &h);
-  virtual ~AliITSUHit() {};
+  virtual ~AliITSUHit() {}
   virtual Int_t GetLayer() const;
   virtual Int_t GetLadder() const;
   virtual Int_t GetDetector() const;

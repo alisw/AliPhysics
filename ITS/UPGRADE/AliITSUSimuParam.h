@@ -12,6 +12,7 @@
 #include <TRandom.h>
 #include <TObject.h>
 #include <TMath.h>
+#include "AliMathBase.h"
 
 class AliITSUSimuParam : public TObject {
 
@@ -126,15 +127,17 @@ class AliITSUSimuParam : public TObject {
   Double_t*  fPixUpgBaseline;    //[fNPixUpg] PixUpg electronic noise: baseline
   //
 
-  ClassDef(AliITSUSimuParam,1);
+  ClassDef(AliITSUSimuParam,1);  // ITSU simulataion params
 };
 
 //_______________________________________________________________________
 inline Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(double mean, double sigma, double thresh) 
 {
   // calculate probability of gaussian noise exceeding the threshold
+  if (mean+6*sigma<thresh) return 0;
+  if (mean-6*sigma>thresh) return 1.;
   const double ksqrt2 = 1.41421356237309515e+00;
-  return 0.5*TMath::Erfc( (thresh-mean)/(sigma*ksqrt2));
+  return 0.5*AliMathBase::ErfcFast( (thresh-mean)/(sigma*ksqrt2));
 }
 
 //_______________________________________________________________________

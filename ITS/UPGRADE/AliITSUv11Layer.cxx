@@ -346,7 +346,6 @@ void AliITSUv11Layer::CreateLayerTurbo(TGeoVolume *moth,
   layVol->SetUniqueID(fDetTypeID);
   layVol->SetVisibility(kTRUE);
   layVol->SetLineColor(1);
-
   TGeoVolume *laddVol = CreateLadder();
 
 
@@ -413,7 +412,6 @@ TGeoVolume* AliITSUv11Layer::CreateLadder(const TGeoManager *mgr){
 //  laddVol->SetVisibility(kFALSE);
   laddVol->SetVisibility(kTRUE);
   laddVol->SetLineColor(2);
-
   TGeoVolume *modVol = CreateModule(ladder->GetDX(), ladder->GetDY(),
 				    ladder->GetDZ());
 
@@ -474,13 +472,11 @@ TGeoVolume* AliITSUv11Layer::CreateModule(const Double_t xlad,
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern() ,fLayerNumber);
   TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
-
   modVol->SetVisibility(kFALSE);
   modVol->SetLineColor(1);
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSSensorPattern(), fLayerNumber);
   TGeoVolume *sensVol = new TGeoVolume(volname, sensor, medSi);
-
   sensVol->SetVisibility(kTRUE);
   sensVol->SetLineColor(8);
   sensVol->SetLineWidth(1);

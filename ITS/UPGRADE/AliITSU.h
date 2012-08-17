@@ -24,7 +24,6 @@ class AliITSsegmentation;
 class AliITSUModule;
 class AliITSCalibration;
 class AliITSUHit;
-class AliITSgeom;
 class AliITSdigit;
 class AliDigitizationInput;
 class AliITSUSensMap;
@@ -120,7 +119,7 @@ class AliITSU : public AliDetector {
 
  protected:
   void        InitArrays();
-  const char* GetDigitClassName(Int_t i) {return Form("AliITSdigit%s",AliITSUGeomTGeo::GetDetTypeName(i));}
+  const char* GetDigitClassName(Int_t i) {return Form("AliITSUDigit%s",AliITSUGeomTGeo::GetDetTypeName(i));}
   const char* GetDetTypeName(Int_t i) {return AliITSUGeomTGeo::GetDetTypeName(i);}
   
  protected:
@@ -130,15 +129,15 @@ class AliITSU : public AliDetector {
   Int_t                *fIdSens;         //[fNLayers] layer identifier
   TString              *fLayerName;      //[fNLayers] layer identifier
   Bool_t                fTiming;         // flag to turn on/off timers.
-  AliITSUSimuParam*   fSimuParam;      //simulation parameters
-  AliITSUGeomTGeo*    fGeomTGeo;       //  access to geometry details
+  AliITSUGeomTGeo*      fGeomTGeo;       //  access to geometry details
+  AliITSUSimuParam*     fSimuParam;      //!simulation parameters
   TClonesArray**        fModA;           //! Used by Raw2SDigits (one TC per module)
   TClonesArray*         fpSDigits;       //! Branch address to build SD from raw data 
   TClonesArray*         fSDigits;        //! Branch address to build SD
   TClonesArray*         fDetHits;        //! array of full detector hits
   TObjArray*            fModuleHits;     //! module's hits container in (pointers on the fDetHits)
   TObjArray*            fDetDigits;      //! AliDetector has TClonesArray fDigits, avoid same name
-  AliITSUSensMap*     fSensMap;        //! sensor map for digitization
+  AliITSUSensMap*       fSensMap;        //! sensor map for digitization
   //
   TObjArray            *fSimulation;     //! simulation objects per det.type
   TObjArray            *fSegmentation;   //! segmentation objects per det.type (and segmentation)

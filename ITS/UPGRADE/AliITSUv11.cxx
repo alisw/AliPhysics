@@ -115,7 +115,7 @@ AliITSUv11::AliITSUv11(const char *title,const Int_t nlay)
   //
   fLayerName = new TString[fNLayers];
   //
-  for (Int_t j=0; j<fNLayers; j++) fLayerName[j].Form("%s%d",AliITSUGeomTGeo::GetITSSensorPattern(),j+1); // See AliITSUv11Layer
+  for (Int_t j=0; j<fNLayers; j++) fLayerName[j].Form("%s%d",AliITSUGeomTGeo::GetITSSensorPattern(),j); // See AliITSUv11Layer
   //
   fLayTurbo   = new Bool_t[fNLayers];
   fLayRadii   = new Double_t[fNLayers];
@@ -243,29 +243,32 @@ void AliITSUv11::AddAlignableVolumes() const{
   if( !gGeoManager->SetAlignableEntry("ITS",pth.Data()) )
     AliFatal(Form("Unable to set alignable entry ! %s :: %s","ITS",pth.Data()));    
   //
+  int modNum = 0;
+  //
   for (int lr=0; lr<fNLayers; lr++) {
     //
-    pth = Form("ALIC_1/%s_2/%s%d_1",AliITSUGeomTGeo::GetITSVolPattern(),AliITSUGeomTGeo::GetITSLayerPattern(),lr+1);
-    snm = Form("ITS/%s%d",AliITSUGeomTGeo::GetITSLayerPattern(),lr+1);
+    pth = Form("ALIC_1/%s_2/%s%d_1",AliITSUGeomTGeo::GetITSVolPattern(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
+    snm = Form("ITS/%s%d",AliITSUGeomTGeo::GetITSLayerPattern(),lr);
     //printf("SetAlignable: %s %s\n",snm.Data(),pth.Data());
     gGeoManager->SetAlignableEntry(snm.Data(),pth.Data());
-    int modNum = 0;
     //
     for (int ld=0; ld<fLaddPerLay[lr]; ld++) {
       //
-      TString pthL = Form("%s/%s%d_%d",pth.Data(),AliITSUGeomTGeo::GetITSLadderPattern(),lr+1,ld+1);
-      TString snmL = Form("%s/%s%d",snm.Data(),AliITSUGeomTGeo::GetITSLadderPattern(),ld+1);
+      TString pthL = Form("%s/%s%d_%d",pth.Data(),AliITSUGeomTGeo::GetITSLadderPattern(),lr,ld);
+      TString snmL = Form("%s/%s%d",snm.Data(),AliITSUGeomTGeo::GetITSLadderPattern(),ld);
       //printf("SetAlignable: %s %s\n",snmL.Data(),pthL.Data());
       gGeoManager->SetAlignableEntry(snmL.Data(),pthL.Data());
       //
       for (int md=0; md<fModPerLadd[lr]; md++) {
 	//
-	TString pthM = Form("%s/%s%d_%d",pthL.Data(),AliITSUGeomTGeo::GetITSModulePattern(),lr+1,md+1);
-	TString snmM = Form("%s/%s%d",snmL.Data(),AliITSUGeomTGeo::GetITSModulePattern(),md+1);
+	TString pthM = Form("%s/%s%d_%d",pthL.Data(),AliITSUGeomTGeo::GetITSModulePattern(),lr,md);
+	TString snmM = Form("%s/%s%d",snmL.Data(),AliITSUGeomTGeo::GetITSModulePattern(),md);
 	//
-	int modUID = AliGeomManager::LayerToVolUID(lr+1,modNum++);
-	//
-	//printf("SetAlignable (UID=%d, ModNum=%d): %s %s\n",modUID,modNum-1,snmM.Data(),pthM.Data());
+	// RS: Attention, this is a hack: AliGeomManager cannot accomodate all ITSU modules w/o
+	// conflicts with TPC. For this reason we define the UID of the module to be simply its ID
+	//	int modUID = AliGeomManager::LayerToVolUID(lr+1,modNum++); // here modNum would be module within the layer
+	int modUID = AliITSUGeomTGeo::ModuleVolUID( modNum++ );
+	// 
 	gGeoManager->SetAlignableEntry(snmM.Data(),pthM.Data(),modUID);
 	//
 	double yshift = -(fUpGeom[lr]->GetSensorThick()-fUpGeom[lr]->GetLadderThick())/2;
@@ -340,10 +343,8 @@ void AliITSUv11::CreateGeometry() {
     if (fDetThick[j] < 0)                  AliFatal(Form("Wrong module thickness for layer %d (%f)",j,fDetThick[j]));
     //
     if (j > 0) {
-      if (fLayRadii[j]<=fLayRadii[j-1])     AliFatal(Form("Layer %d radius (%f) is smaller than layer %d radius (%f)",
+      if (fLayRadii[j]<=fLayRadii[j-1])    AliFatal(Form("Layer %d radius (%f) is smaller than layer %d radius (%f)",
 							 j,fLayRadii[j],j-1,fLayRadii[j-1]));
-      if (fLayZLength[j]<=fLayZLength[j-1]) AliFatal(Form("Layer %d length (%f) is smaller than layer %d length (%f)",
-							  j,fLayZLength[j],j-1,fLayZLength[j-1]));
     } // if (j > 0)
 
     if (fLadThick[j] == 0) AliInfo(Form("Ladder thickness for layer %d not set, using default",j));
@@ -576,7 +577,7 @@ void AliITSUv11::Init()
   //     Initialise the ITS after it has been created.
   UpdateInternalGeometry();
   AliITSU::Init();
-  
+  //  
 }
 
 //______________________________________________________________________
