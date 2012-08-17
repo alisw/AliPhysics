@@ -69,9 +69,13 @@ class AliTRDdEdxBaseUtils
   static Int_t GetNtracklet(const AliESDEvent *esd);
   static AliTRDtrackV1 * GetTRDtrackV1(const AliESDtrack * esdtrack);
   static Bool_t IsInSameStack(const AliTRDtrackV1 *trdtrack);
+  static AliTRDseedV1 * GetFirstTracklet(const AliTRDtrackV1 *trdtrack);
   static AliTRDseedV1 * GetLastTracklet(const AliTRDtrackV1 *trdtrack);
-  static AliTRDseedV1 * GetFirstSectorStackMomentum(const AliTRDtrackV1 *trdtrack, Int_t & isec, Int_t & istk, Double_t & mom);
-  static Double_t GetDeltaPhi(const AliTRDseedV1 *tracklet);
+  static void GetFirstSectorStackMomentum(const AliTRDtrackV1 *trdtrack, Int_t & isec, Int_t & istk, Double_t & mom);
+  static Double_t GetRedefinedPhi(Double_t phi);
+  static Double_t Getdydx(const AliTRDseedV1 *tracklet);
+  static Double_t Getdzdx(const AliTRDseedV1 *tracklet);
+  static Double_t Getdldx(const AliTRDseedV1 *tracklet);
 
   //===================================================================================
   //                                 Detector, Data and Control Constant
@@ -85,6 +89,7 @@ class AliTRDdEdxBaseUtils
   static Int_t ToStack(const Int_t gtb);
   static Int_t ToLayer(const Int_t gtb);
 
+  static void CheckRunB(const TString listrun1kg, const Int_t run, TString & type);
   static TString GetRunType(const Int_t run);
 
   static void SetQ0Frac(const Double_t q0){ fgQ0Frac = q0; }
@@ -110,6 +115,7 @@ class AliTRDdEdxBaseUtils
   //===================================================================================
   static void FastFitdEdxTR(TH1 * hh);
 
+  static Double_t ALEPH(const Double_t * xx,  const Double_t * par);
   static Double_t MeandEdx(const Double_t * xx, const Double_t * par);
   static Double_t MeanTR(const Double_t * xx, const Double_t * par);
   static Double_t MeandEdxTR(const Double_t * xx, const Double_t * par);

@@ -146,15 +146,6 @@ Double_t AliTRDdEdxReconUtils::CombineddEdx(const Bool_t kinvq, Int_t &concls, T
   return coQ;
 }
 
-Double_t AliTRDdEdxReconUtils::GetAngularCorrection(const AliTRDseedV1 *seed)
-{
-  //
-  //return angular normalization factor
-  //
-
-  return TMath::Sqrt(1+seed->GetYref(1)*seed->GetYref(1)+seed->GetZref(1)*seed->GetZref(1));
-}
-
 Double_t AliTRDdEdxReconUtils::GetPadGain(const Int_t det, const Int_t icol, const Int_t irow)
 {
   //
@@ -186,7 +177,7 @@ Double_t AliTRDdEdxReconUtils::GetPadGain(const Int_t det, const Int_t icol, con
   return padgain;
 }
 
-Double_t AliTRDdEdxReconUtils::GetRNDClusterQ(AliTRDcluster *cl)
+Double_t AliTRDdEdxReconUtils::GetRNDClusterQ(AliTRDcluster *cl, const Double_t baseline)
 {
   //
   //get cluter q from GetRawQ, apply baseline and Kr pad-calibration
@@ -195,8 +186,6 @@ Double_t AliTRDdEdxReconUtils::GetRNDClusterQ(AliTRDcluster *cl)
   const Int_t det     = cl->GetDetector();
   const Int_t pad3col = cl->GetPadCol();
   const Int_t padrow  = cl->GetPadRow();
-
-  const Double_t baseline = 10;
 
   Double_t rndqsum = 0;
   for(Int_t ii=0; ii<7; ii++){
@@ -210,7 +199,7 @@ Double_t AliTRDdEdxReconUtils::GetRNDClusterQ(AliTRDcluster *cl)
       continue;
     }
 
-    const Double_t rndsignal = (cl->GetSignals()[ii] - baseline)/(AliTRDdEdxBaseUtils::IsPadGainOn()? padgain : 1);
+    const Double_t rndsignal = (cl->GetSignals()[ii] - baseline )/(AliTRDdEdxBaseUtils::IsPadGainOn()? padgain : 1);
 
     //sum it anyway even if signal below baseline, as long as the total is positive
     rndqsum += rndsignal;
@@ -227,11 +216,13 @@ Double_t AliTRDdEdxReconUtils::GetClusterQ(const Bool_t kinvq, const AliTRDseedV
   Double_t dq = 0;
   AliTRDcluster *cl = 0x0;
       
-  //GetRNDClusterQ(cl)>0 ensures that the total sum of q is above baseline*NsignalPhysical. 
-  cl = seed->GetClusters(itb);                    if(cl && GetRNDClusterQ(cl)>0 ) dq+= GetRNDClusterQ(cl);//cl->GetRawQ();
-  cl = seed->GetClusters(itb+AliTRDseedV1::kNtb); if(cl && GetRNDClusterQ(cl)>0 ) dq+= GetRNDClusterQ(cl);//cl->GetRawQ();
+  const Double_t baseline = 10;
 
-  dq /= GetAngularCorrection(seed);
+  //GetRNDClusterQ(cl)>0 ensures that the total sum of q is above baseline*NsignalPhysical. 
+  cl = seed->GetClusters(itb);                    if(cl && GetRNDClusterQ(cl, baseline)>0 ) dq+= GetRNDClusterQ(cl, baseline);
+  cl = seed->GetClusters(itb+AliTRDseedV1::kNtb); if(cl && GetRNDClusterQ(cl, baseline)>0 ) dq+= GetRNDClusterQ(cl, baseline);
+
+  dq /= AliTRDdEdxBaseUtils::Getdldx(seed);
   
   dq /= AliTRDdEdxBaseUtils::QScale();
       
@@ -308,7 +299,7 @@ Int_t AliTRDdEdxReconUtils::GetArrayClusterQ(const Bool_t kinvq, TVectorD *array
       if(!seed){
         printf("error seed null!!\n"); exit(1);
       }
-      const Double_t rawq =  (*arrayQ)[iq] * 45. * GetAngularCorrection(seed);
+      const Double_t rawq =  (*arrayQ)[iq] * 45. * AliTRDdEdxBaseUtils::Getdldx(seed);
       printf("esdid=%d; chamber=%d; timebin=%d; rawq= %.3f; myq[%d]= %e;\n", trdtrack->GetESDid(), ichamber, AliTRDdEdxBaseUtils::ToTimeBin((*arrayX)[iq]), rawq, iq, (*arrayQ)[iq]);
     }
     printf("\n");
