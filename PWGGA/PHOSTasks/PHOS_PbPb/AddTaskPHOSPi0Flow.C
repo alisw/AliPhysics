@@ -1,5 +1,4 @@
-AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (char* fname="PHOSPi0Flow.root",
-					     char* contname="PHOSPi0FlowResults")
+AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow ()
 {
   //Add a task AliAnalysisTaskPi0Flow to the analysis train
   //Author: Henrik Qvigstad
@@ -17,6 +16,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (char* fname="PHOSPi0Flow.root",
   }
 
   AliAnalysisTaskPi0Flow* task = new AliAnalysisTaskPi0Flow("PHOSPi0Flow");
+
   // Reduce binning for reduece memory footprint
   const int kNEdges = 4;
   Double_t cbin[kNEdges] = {0., 10., 40., 80.};
@@ -26,12 +26,12 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (char* fname="PHOSPi0Flow.root",
   //task->SetMixingArraysLength(10);
   task->SelectCollisionCandidates(AliVEvent::kCentral);
   
+
   mgr->AddTask(task);
-
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
-
-  // container output into particular file
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,TList::Class(), AliAnalysisManager::kOutputContainer, fname));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("PHOSPi0FlowCoutput1", TList::Class(), AliAnalysisManager::kOutputContainer, 
+							    Form("%s:PHOSPi0Flow", AliAnalysisManager::GetCommonFileName()) 		);
+  mgr->ConnectOutput(task, 1, coutput1);
   
   return task;
 }
