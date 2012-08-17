@@ -2,7 +2,6 @@
 //
 // AddTaskPhiFlow macro
 // Author: Redmer A. Bertens, Utrecht University, 2012
-//         Many thanks to Carlos Perez Lara
 //         Commented where necessary
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -14,9 +13,10 @@ class AliFlowEventSimpleCuts;
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
-                                       Bool_t SPSUB = kTRUE,
+                                       Bool_t SPSUB = kFALSE,
                                        Bool_t QC = kTRUE,
                                        Bool_t EP = kTRUE,
+                                       Bool_t EP3sub = kFALSE,
                                        Float_t centrMin = 20.,
                                        Float_t centrMax = 30.,
                                        Double_t ITSsigma = 0.,
@@ -40,6 +40,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
                                        Bool_t TPCStandAloneTracks = kFALSE,
                                        Bool_t useGlobalRPCuts = kTRUE,
                                        Float_t vertexZ = 10.,
+                                       Bool_t event_mixing = kFALSE,
                                        Bool_t shrinkSP = kTRUE,
                                        Bool_t debug = kFALSE)
 {
@@ -58,11 +59,18 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
        if(debug) cout << " --> Fatal error: Eta gap is introduced but method SPSUB is not enabled !!! <-- " << endl;
        return 0x0;
    }
-   else if ((QC||SP||EP)&&(EtaGap > 0.)) {
+   else if ((QC||SP||EP||EP3sub)&&(EtaGap > 0.)) {
        if(debug) cout << " --> Fatal error: one or more of the flow analyses is not compatible with the Eta Gap !!! <--" << endl;
        return 0x0;
    }
-   // get the manager and input event handler
+   else if(EP3sub) {
+       if(debug) cout << " --> Starting 3 subevent plane method - try at your own risk !!! <-- " << endl;
+       if(!(harm!=2||harm!=3)) {
+           if(debug) cout << " --> Fatal error: can only return v2 and v3 with 3 subevent method! " << endl;
+           return 0x0;
+       }
+   }
+  // get the manager and input event handler
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
       if(debug) cout << " Fatal error: no analysis manager found! " << endl;
@@ -72,12 +80,28 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
       if(debug) cout << " Fatal error: no imput event handler found!" << endl;
       return 0x0;
    }
+   if(EP3sub) {
+         gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskVZERO.C");
+         AddTaskVZERO();
+   }
    // create the main task3
    AliAnalysisTaskPhiFlow *task = new AliAnalysisTaskPhiFlow("TaskPhiFlow");
    if(debug) cout << " === AliAnalysisTaskPhiFlow === " << task << endl;
    if(!task) {
        if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
        return 0x0;
+   }
+   if(task->SetVZEROSubEvents(EP3sub)) cout << " --> Setting up VZERO subevents method ... " << endl;
+   if(event_mixing) {
+      if(debug) cout << " --> Enabeling event mixing for phi reconstruction - try at your own risk !!! <-- " << endl;
+      // set vertex and mixing bins - arrays MUST have length 20!
+      Int_t c[] = {0, 2, 4, 6, 8, 10, 20, 30, 40, 50, 60, 70, 80, 90, 101, 0, 0, 0, 0, 0};
+      Int_t v[] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      if(((Int_t)(sizeof(c)/sizeof(c[1]))!=20)||((Int_t)(sizeof(v)/sizeof(v[1]))!=20)) {
+          cout << " --> Fatal error: check mixing parameters ! <-- " << endl;
+          return 0x0;
+      }
+      else task->SetMixingBins(c, v);
    }
    // set triggers
    if (bCentralTrigger) task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
@@ -258,16 +282,18 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE,
    cout << " ************ Configured DCA setup ************** " << endl;
    cout << "  DCA type: " << DCA;
    if (DCA == "") cout << "default";
-   cout << endl << " ************* Task statistics ****************** " << endl;
+   cout << endl << " ************* Task statisti:q!cs ****************** " << endl;
    cout << "   -> Launched PHI reconstruction " << endl;
    if(SP) cout << "   --> Launched 30 QaQb SP filters and corresponding 30 SP tasks " << endl;
    if(EP) cout << "   --> Launched 30 QaQb QC filters and corresponding 30 EP tasks " << endl;
    if(SPSUB) cout << "   --> Launched 30+30 Qa&&Qb SP filters and corresponding 30+30 SP tasks " << endl;
    if(QC) cout << "   --> Launched 30 QaQb QC filters and corresponding 30 QC tasks " << endl;
+   if(EP3sub) cout << " --> Launched VZERO subevent analysis alongside reconstruction - USE WITH CAUTION!" << endl;
    cout << " ************************************************ " << endl;
    TString condit = "";
-   (task->SetQA(kTRUE)) ? condit+= " --> Enabled QA plots <-- " : condit+= " --> Disabled QA plots <-- ";
+   (task->SetQA(kFALSE)) ? condit+= " --> Enabled QA plots <-- " : condit+= " --> Disabled QA plots <-- ";
    (task->SetIsMC(kFALSE)) ? condit+= " --> MC mode <-- " : condit+= " --> DATA mode <-- ";
+   (task->UseEventMixing(event_mixing, kTRUE)) ? condit+= " --> Using EVENT MIXING <--" : condit+= "--> Combinatorial background <--";
    cout << condit << endl;
    cout << "           --> Now go for a coffee! <-- " << endl;
    cout << " ************************************************ " << endl;
