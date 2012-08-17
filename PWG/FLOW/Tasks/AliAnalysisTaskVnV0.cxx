@@ -977,9 +977,9 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
     evPlAngV0CCor3 = TMath::ATan2(QycCor3, QxcCor3)/3.;
 
     fgPsi2v0a = evPlAngV0ACor2;
-    fgPsi2v0c = evPlAngV0ACor2;
+    fgPsi2v0c = evPlAngV0CCor2;
     fgPsi3v0a = evPlAngV0ACor3;
-    fgPsi3v0c = evPlAngV0ACor3;
+    fgPsi3v0c = evPlAngV0CCor3;
 				 
     //loop track and get pid
     for(Int_t iT = 0; iT < nAODTracks; iT++) { // loop on the tracks
