@@ -827,12 +827,12 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     ph->SetUnfolded(clu->GetNExMax()<2); // Remember, if it is unfolde
 
   }
-  FillHistogram("hCenPHOS",fCentralityV0M, fCaloPhotonsPHOS->GetEntries()) ;
+  FillHistogram("hCenPHOS",fCentralityV0M, fCaloPhotonsPHOS->GetEntriesFast()) ;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::FillSelectedClusterHistograms()
 {
-  for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntries(); i1++) {
+  for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
 
     Double_t dphiA=ph1->Phi()-fRPV0A ;
@@ -914,9 +914,9 @@ void AliAnalysisTaskPi0Flow::FillSelectedClusterHistograms()
 void AliAnalysisTaskPi0Flow::ConsiderPi0s()
 {
   char key[55];
-  for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntries()-1; i1++) {
+  for (Int_t i1=0; i1 < fCaloPhotonsPHOS->GetEntriesFast()-1; i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-    for (Int_t i2=i1+1; i2<fCaloPhotonsPHOS->GetEntries(); i2++) {
+    for (Int_t i2=i1+1; i2<fCaloPhotonsPHOS->GetEntriesFast(); i2++) {
       AliCaloPhoton * ph2=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i2) ;
       TLorentzVector p12  = *ph1  + *ph2;
       TLorentzVector pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
@@ -1103,9 +1103,9 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0sMix()
 
   TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
 
-  for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntries(); i1++) {
+  for (Int_t i1=0; i1<fCaloPhotonsPHOS->GetEntriesFast(); i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fCaloPhotonsPHOS->At(i1) ;
-    for(Int_t evi=0; evi<arrayList->GetEntries();evi++){
+    for(Int_t evi=0; evi<arrayList->GetEntriesFast();evi++){
       TObjArray * mixPHOS = static_cast<TObjArray*>(arrayList->At(evi));
       for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
 	AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
@@ -1280,10 +1280,10 @@ void AliAnalysisTaskPi0Flow::UpdateLists()
   //Now we either add current events to stack or remove
   //If no photons in current event - no need to add it to mixed
   TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
-  if(fCaloPhotonsPHOS->GetEntries()>0){
+  if(fCaloPhotonsPHOS->GetEntriesFast()>0){
     arrayList->AddFirst(fCaloPhotonsPHOS) ;
     fCaloPhotonsPHOS=0;
-    if(arrayList->GetEntries()>100){//Remove redundant events
+    if(arrayList->GetEntriesFast()>100){//Remove redundant events
       TObjArray * tmp = static_cast<TObjArray*>(arrayList->Last()) ;
       arrayList->RemoveLast() ;
       delete tmp ; // TODO: may conflict with delete done by list being owner.
