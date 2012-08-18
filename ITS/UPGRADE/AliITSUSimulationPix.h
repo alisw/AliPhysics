@@ -8,7 +8,7 @@
 // Simulation class for upgrade pixels                    //
 ////////////////////////////////////////////////////////////
 
-#include "TObjArray.h"
+#include <TObjArray.h>
 #include "AliITSUSimulation.h"
 #include "AliITSUSegmentationPix.h"
 

@@ -72,7 +72,7 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
 void AliITSUSegmentationPix::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const 
 {
   //  Returns pixel coordinates (ix,iz) for given real local coordinates (x,z)
-  //  expects x, z in microns
+  //  expects x, z in microns. RS: TO CHECK: why from 1
   ix = int(x/fPitchX) + 1;     
   iz = int(Z2Col(z)) + 1;
   //  
@@ -95,7 +95,7 @@ void AliITSUSegmentationPix::GetPadTxz(Float_t &x,Float_t &z) const
 void AliITSUSegmentationPix::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) const
 {
   // Transform from pixel to real local coordinates
-  // returns x, z in microns
+  // returns x, z in microns. RS: TO CHECK if indexing starts from 1 or 0 
   x = (ix>0) ? Float_t((ix-0.5)*fPitchX) : Float_t((ix+0.5)*fPitchX);
   z = Col2Z(iz);
   //
@@ -105,16 +105,10 @@ void AliITSUSegmentationPix::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) c
 Float_t AliITSUSegmentationPix::Z2Col(Float_t z) const 
 {
   // get column number (from 0) from local Z
-  int chip = z/fChipDZ;
+  int chip = int(z/fChipDZ);
   float col = chip*fNColPerChip;
   z -= chip*fChipDZ;
-  if (z<fPitchZLftCol) col += z/fPitchZLftCol;
-  else {
-    z = fPitchZLftCol;
-    col += 1;
-    if (z<(fChipDZ-fPitchZRgtCol)) col += 1+z/fPitchZ;
-    else col += 1+(z - (fNColPerChip-2)*fPitchZ)/fPitchZRgtCol;
-  }
+  if (z>fPitchZLftCol) col += 1+(z-fPitchZLftCol)/fPitchZ;
   return col;
 }
 
@@ -125,10 +119,11 @@ Float_t AliITSUSegmentationPix::Col2Z(Int_t col) const
   int nchip = col/fNColPerChip;
   col %= fNColPerChip;
   float z = nchip*fChipDZ;
-  if (!col) z -= fPitchZRgtCol/2;
-  else if (col==1) z += fPitchZLftCol/2;
-  else if (col==fNColPerChip-1) z += fChipDZ - fPitchZRgtCol/2;
-  else    z += fPitchZLftCol + (col-0.5)*fChipDZ;
+  if (col>0) {
+    if (col<fNColPerChip-1) z += fPitchZLftCol + (col-0.5)*fPitchZ;
+    else                    z += fChipDZ - fPitchZRgtCol/2;
+  }
+  else z += fPitchZLftCol/2;
   return z;
   //
 }
@@ -269,8 +264,8 @@ void AliITSUSegmentationPix::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
   x = -0.5/kCM2MC*Dx(); // default value.
   z = -0.5/kCM2MC*Dz(); // default value.
   // RS: to check: why we don't do strict check for [0:n)
-  if(ix<0 || ix>=fNRow) return; // outside of detector 
-  if(iz<0 || iz>=fNCol) return; // outside of detctor
+  if(ix<0 || ix>fNRow) return; // outside of detector 
+  if(iz<0 || iz>fNCol) return; // outside of detctor
   x += (ix+0.5)*fPitchX*(1./kCM2MC);       // RS: we go to the center of the pad, i.e. + pitch/2, not to the boundary as in SPD
   z += Col2Z(iz)*(1./kCM2MC); 
   return; // Found x and z, return.

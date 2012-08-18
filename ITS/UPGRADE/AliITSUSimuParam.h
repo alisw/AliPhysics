@@ -17,27 +17,29 @@
 class AliITSUSimuParam : public TObject {
 
  public:
-  enum {kOldCouplingPixUpg,kNewCouplingPixUpg,kMaxCouplingOptPixUpg};
+  enum {kOldCouplingPix,kNewCouplingPix,kMaxCouplingOptPix};
   //
   AliITSUSimuParam();
-  AliITSUSimuParam(UInt_t nPixUpg);
+  AliITSUSimuParam(UInt_t nPix);
   AliITSUSimuParam(const AliITSUSimuParam& simpar);
   // assignment operator 
   AliITSUSimuParam& operator=(const AliITSUSimuParam& source);
   ~AliITSUSimuParam();
 
-  Double_t ApplyPixUpgBaselineAndNoise(UInt_t mod) const;
+  Double_t ApplyPixBaselineAndNoise(UInt_t mod) const;
   Double_t CalcProbNoiseOverThreshold(UInt_t mod) const;
   //
-  void     SetPixUpgThreshold(Double_t thresh, Double_t sigma, int mod=-1);
-  void     GetPixUpgThreshold(UInt_t mod, Double_t& thresh, Double_t& sigma) const;
-  Double_t GetPixUpgThreshold(UInt_t mod)                                    const;
+  void     SetPixThreshold(Double_t thresh, Double_t sigma, int mod=-1);
+  void     SetPixMinElToAdd(Double_t nel)                                        {fPixMinElToAddDef = nel;}
+  void     GetPixThreshold(UInt_t mod, Double_t& thresh, Double_t& sigma) const;
+  Double_t GetPixThreshold(UInt_t mod)                                    const;
+  Double_t GetPixMinElToAdd()                                             const  {return fPixMinElToAddDef;}
   //
-  void     SetPixUpgNoise(Double_t noise, Double_t baseline, Int_t mod=-1);
-  void     GetPixUpgNoise(UInt_t mod,Double_t &noise, Double_t &baseline)    const;
+  void     SetPixNoise(Double_t noise, Double_t baseline, Int_t mod=-1);
+  void     GetPixNoise(UInt_t mod,Double_t &noise, Double_t &baseline)    const;
   //
-  void     SetPixUpgBiasVoltage(Double_t bias=18.182,Int_t mod=-1);
-  Double_t GetPixUpgBiasVoltage(UInt_t mod)                                  const;
+  void     SetPixBiasVoltage(Double_t bias=18.182,Int_t mod=-1);
+  Double_t GetPixBiasVoltage(UInt_t mod)                                  const;
 
  
   void     SetGeVToCharge(Double_t gc=fgkNcompsDefault)                             {fGeVcharge = gc;}
@@ -48,24 +50,24 @@ class AliITSUSimuParam : public TObject {
   void     SetDistanceOverVoltage(Double_t dv=fgkDOverVDefault)                     {fDOverV = dv;}
   Double_t GetDistanceOverVoltage()                                          const  {return fDOverV;}
   //
-  void     SetPixUpgCouplingOption(UInt_t opt);
-  UInt_t   GetPixUpgCouplingOption()                                         const  {return fPixUpgCouplOpt;}
+  void     SetPixCouplingOption(UInt_t opt);
+  UInt_t   GetPixCouplingOption()                                         const  {return fPixCouplOpt;}
 
-  void     SetPixUpgCouplingParam(Double_t col, Double_t row)                       {fPixUpgCouplCol = col; fPixUpgCouplRow = row;}
-  void     GetPixUpgCouplingParam(Double_t &col, Double_t &row)              const  {col = fPixUpgCouplCol; row = fPixUpgCouplRow;}
+  void     SetPixCouplingParam(Double_t col, Double_t row)                       {fPixCouplCol = col; fPixCouplRow = row;}
+  void     GetPixCouplingParam(Double_t &col, Double_t &row)              const  {col = fPixCouplCol; row = fPixCouplRow;}
 
-  void     SetPixUpgSigmaDiffusionAsymmetry(Double_t ecc)                           {fPixUpgEccDiff=ecc;}   
-  void     GetPixUpgSigmaDiffusionAsymmetry(Double_t &ecc)                   const  {ecc=fPixUpgEccDiff;}
+  void     SetPixSigmaDiffusionAsymmetry(Double_t ecc)                           {fPixEccDiff=ecc;}   
+  void     GetPixSigmaDiffusionAsymmetry(Double_t &ecc)                   const  {ecc=fPixEccDiff;}
 
-  void     SetPixUpgLorentzDrift(Bool_t ison)                                       {fPixUpgLorentzDrift=ison;}
-  Bool_t   GetPixUpgLorentzDrift()                                           const  {return fPixUpgLorentzDrift;}
-  void     SetPixUpgLorentzHoleWeight(Double_t weight)                               {fPixUpgLorentzHoleWeight=weight;}
-  Double_t GetPixUpgLorentzHoleWeight()                                      const  {return fPixUpgLorentzHoleWeight;}
+  void     SetPixLorentzDrift(Bool_t ison)                                       {fPixLorentzDrift=ison;}
+  Bool_t   GetPixLorentzDrift()                                           const  {return fPixLorentzDrift;}
+  void     SetPixLorentzHoleWeight(Double_t weight)                               {fPixLorentzHoleWeight=weight;}
+  Double_t GetPixLorentzHoleWeight()                                      const  {return fPixLorentzHoleWeight;}
   
-  void     SetPixUpgAddNoisyFlag(Bool_t value)                                      {fPixUpgAddNoisyFlag = value;}
-  Bool_t   GetPixUpgAddNoisyFlag()                                           const  {return fPixUpgAddNoisyFlag;}
-  void     SetPixUpgRemoveDeadFlag(Bool_t value)                                    {fPixUpgRemoveDeadFlag = value;}
-  Bool_t   GetPixUpgRemoveDeadFlag()                                         const  {return fPixUpgRemoveDeadFlag;}
+  void     SetPixAddNoisyFlag(Bool_t value)                                      {fPixAddNoisyFlag = value;}
+  Bool_t   GetPixAddNoisyFlag()                                           const  {return fPixAddNoisyFlag;}
+  void     SetPixRemoveDeadFlag(Bool_t value)                                    {fPixRemoveDeadFlag = value;}
+  Bool_t   GetPixRemoveDeadFlag()                                         const  {return fPixRemoveDeadFlag;}
   //
   Double_t LorentzAngleElectron(Double_t bz)                                 const;
   Double_t LorentzAngleHole(Double_t bz)                                     const;
@@ -81,14 +83,15 @@ class AliITSUSimuParam : public TObject {
   //
  protected:
 
-  static const Double_t fgkPixUpgBiasVoltageDefault;//default for fPixUpgBiasVoltage
-  static const Double_t fgkPixUpgThreshDefault; //default for fThresh
-  static const Double_t fgkPixUpgThrSigmaDefault; //default for fSigma
-  static const Double_t fgkPixUpgCouplColDefault; //default for fPixUpgCouplCol
-  static const Double_t fgkPixUpgCouplRowDefault; //default for fPixUpgCouplRow
-  static const Double_t fgkPixUpgEccDiffDefault;//default for fPixUpgEccDiff
-  static const Double_t fgkPixUpgLorentzHoleWeightDefault;//default for fPixUpgLorentzHoleWeight
-  static const UInt_t   fgkPixUpgCouplingOptDefault;  // type of pixel Coupling (old or new)
+  static const Double_t fgkPixBiasVoltageDefault;//default for fPixBiasVoltage
+  static const Double_t fgkPixThreshDefault; //default for fThresh
+  static const Double_t fgkPixMinElToAddDefault; // default min number of electrons to add to sdigit
+  static const Double_t fgkPixThrSigmaDefault; //default for fSigma
+  static const Double_t fgkPixCouplColDefault; //default for fPixCouplCol
+  static const Double_t fgkPixCouplRowDefault; //default for fPixCouplRow
+  static const Double_t fgkPixEccDiffDefault;//default for fPixEccDiff
+  static const Double_t fgkPixLorentzHoleWeightDefault;//default for fPixLorentzHoleWeight
+  static const UInt_t   fgkPixCouplingOptDefault;  // type of pixel Coupling (old or new)
   static const Double_t fgkDOverVDefault;             // default distance over voltage 
   static const Double_t fgkGeVtoChargeDefault;        // default energy to ionize (free an electron) in GeV
   static const Double_t fgkTDefault;                  // default temperature
@@ -102,29 +105,30 @@ class AliITSUSimuParam : public TObject {
   Double_t   fDOverV;             // The parameter d/v where d is the disance over which the the potential v is applied d/v [cm/volts]
   Double_t   fT;                  // The temperature of the Si in Degree K.
   //
-  UInt_t     fNPixUpg;            // number of PixUpg type detectors
-  UInt_t     fPixUpgCouplOpt;     // PixUpg Coupling Option
-  Double_t   fPixUpgCouplCol;     // PixUpg Coupling parameter along the cols
-  Double_t   fPixUpgCouplRow;     // PixUpg Coupling parameter along the rows
-  Double_t   fPixUpgEccDiff;      // Eccentricity (i.e. asymmetry parameter) in the  Gaussian diffusion for PixUpg  
-  Bool_t     fPixUpgLorentzDrift;     // Flag to decide whether to simulate the Lorentz Drift or not in PixUpg
-  Double_t   fPixUpgLorentzHoleWeight;// Lorentz Angle is computed for PixUpg as average of Hole and Electron
+  UInt_t     fNPix;            // number of Pix type detectors
+  UInt_t     fPixCouplOpt;     // Pix Coupling Option
+  Double_t   fPixCouplCol;     // Pix Coupling parameter along the cols
+  Double_t   fPixCouplRow;     // Pix Coupling parameter along the rows
+  Double_t   fPixEccDiff;      // Eccentricity (i.e. asymmetry parameter) in the  Gaussian diffusion for Pix  
+  Bool_t     fPixLorentzDrift;     // Flag to decide whether to simulate the Lorentz Drift or not in Pix
+  Double_t   fPixLorentzHoleWeight;// Lorentz Angle is computed for Pix as average of Hole and Electron
   //                                    this parameter gives the relative weights between the two
-  Bool_t     fPixUpgAddNoisyFlag;     // Flag saying whether noisy pixels should be added to digits
-  Bool_t     fPixUpgRemoveDeadFlag;   // Flag saying whether dead pixels should be removed from digits
+  Bool_t     fPixAddNoisyFlag;     // Flag saying whether noisy pixels should be added to digits
+  Bool_t     fPixRemoveDeadFlag;   // Flag saying whether dead pixels should be removed from digits
   //
-  Double_t   fPixUpgThreshDef;      // PixUpg Threshold value
-  Double_t   fPixUpgThrSigmaDef;    // PixUpg Threshold fluctuation
-  Double_t   fPixUpgBiasVoltageDef; // Bias Voltage for the PixUpg
-  Double_t   fPixUpgNoiseDef;       // PixUpg electronic noise: sigma
-  Double_t   fPixUpgBaselineDef;    // PixUpg electronic noise: baseline
+  Double_t   fPixThreshDef;      // Pix Threshold value
+  Double_t   fPixThrSigmaDef;    // Pix Threshold fluctuation
+  Double_t   fPixBiasVoltageDef; // Bias Voltage for the Pix
+  Double_t   fPixNoiseDef;       // Pix electronic noise: sigma
+  Double_t   fPixBaselineDef;    // Pix electronic noise: baseline
+  Double_t   fPixMinElToAddDef;  // min number of electrons to add
   //
-  Double_t*  fPixUpgThresh;      //[fNPixUpg] PixUpg Threshold value
-  Double_t*  fPixUpgThrSigma;    //[fNPixUpg] PixUpg Threshold fluctuation
-  Double_t*  fPixUpgBiasVoltage; //[fNPixUpg] Bias Voltage for the PixUpg
-  Double_t*  fPixUpgSigma;       //[fNPixUpg] PixUpg threshold fluctuations spread
-  Double_t*  fPixUpgNoise;       //[fNPixUpg] PixUpg electronic noise: sigma
-  Double_t*  fPixUpgBaseline;    //[fNPixUpg] PixUpg electronic noise: baseline
+  Double_t*  fPixThresh;      //[fNPix] Pix Threshold value
+  Double_t*  fPixThrSigma;    //[fNPix] Pix Threshold fluctuation
+  Double_t*  fPixBiasVoltage; //[fNPix] Bias Voltage for the Pix
+  Double_t*  fPixSigma;       //[fNPix] Pix threshold fluctuations spread
+  Double_t*  fPixNoise;       //[fNPix] Pix electronic noise: sigma
+  Double_t*  fPixBaseline;    //[fNPix] Pix electronic noise: baseline
   //
 
   ClassDef(AliITSUSimuParam,1);  // ITSU simulataion params

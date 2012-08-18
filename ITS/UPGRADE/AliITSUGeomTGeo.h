@@ -18,7 +18,7 @@
 //                                                                     //
 //  Note on the upgrade detector types:                                //
 //  The coarse type defines detectors served by different classes,     //
-//  like PixUpg. Each such a detector type can have kMaxSegmPerDetType //
+//  like Pix. Each such a detector type can have kMaxSegmPerDetType //
 //  segmentations (pitch etc.) whose parameteres are stored in the     //
 //  AliITSsegmentation derived class (like AliITSUSegmentationPix)   //
 //  This allows to have in the setup modules served by the same        //

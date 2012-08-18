@@ -133,18 +133,20 @@ void AliITSUSDigit::AddSignal(Int_t track,Int_t hit,Double_t signal)
     } // end for i & if.
   }
   //
-  if (flg && fNTracks>1) { // resort arrays.  
-    for (i=1;i<fNTracks;i++) {
-      j = i;
-      while(j>0 && fSignal[j]>fSignal[j-1]) {
-	swap(fTrack[j-1],fTrack[j]);
-	swap(fHits[j-1] ,fHits[j]);
-	swap(fSignal[j-1],fSignal[j]);
-	j--;
-      } // end while
-    } // end if i
+  if (flg) {
+    if (fNTracks>1) { // resort arrays.  
+      for (i=1;i<fNTracks;i++) {
+	j = i;
+	while(j>0 && fSignal[j]>fSignal[j-1]) {
+	  swap(fTrack[j-1],fTrack[j]);
+	  swap(fHits[j-1] ,fHits[j]);
+	  swap(fSignal[j-1],fSignal[j]);
+	  j--;
+	} // end while
+      } // end if i
+    } // end if added to existing and resorted array
     return;
-  } // end if added to existing and resorted array
+  }
   //
   // new entry add it in order.
   // if this signal is <= smallest then don't add it.
@@ -269,6 +271,7 @@ Int_t AliITSUSDigit::Compare(const TObject* obj) const
 void AliITSUSDigit::Print(Option_t*) const 
 {
   // print itself
-  printf("Mod: %4d Index:%7d Ntr:%2d |",fModule,GetUniqueID(),fNTracks);
-  for (int i=0;i<fNTracks;i++) printf("%d |",fTrack[i]); printf("\n");
+  printf("Mod: %4d Index:%7d Ntr:%2d | TotSignal:%.2e Noise:%.2e |",
+	 fModule,GetUniqueID(),fNTracks,fTsignal,fNoise);
+  for (int i=0;i<fNTracks;i++) printf("%d(%.2e) |",fTrack[i],fSignal[i]); printf("\n");
 }

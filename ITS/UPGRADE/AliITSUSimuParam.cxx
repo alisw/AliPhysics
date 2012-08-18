@@ -26,14 +26,15 @@
 #include "AliLog.h"
 
 
-const Double_t  AliITSUSimuParam::fgkPixUpgBiasVoltageDefault = 18.182;
-const Double_t  AliITSUSimuParam::fgkPixUpgThreshDefault = 3000.;
-const Double_t  AliITSUSimuParam::fgkPixUpgThrSigmaDefault = 250.;
-const UInt_t    AliITSUSimuParam::fgkPixUpgCouplingOptDefault = AliITSUSimuParam::kOldCouplingPixUpg;
-const Double_t  AliITSUSimuParam::fgkPixUpgCouplColDefault = 0.;
-const Double_t  AliITSUSimuParam::fgkPixUpgCouplRowDefault = 0.055;
-const Double_t  AliITSUSimuParam::fgkPixUpgEccDiffDefault = 0.85;
-const Double_t  AliITSUSimuParam::fgkPixUpgLorentzHoleWeightDefault = 1.0;
+const Double_t  AliITSUSimuParam::fgkPixBiasVoltageDefault = 18.182;
+const Double_t  AliITSUSimuParam::fgkPixThreshDefault = 2000.;
+const Double_t  AliITSUSimuParam::fgkPixThrSigmaDefault = 200.;
+const Double_t  AliITSUSimuParam::fgkPixMinElToAddDefault = 2.;
+const UInt_t    AliITSUSimuParam::fgkPixCouplingOptDefault = AliITSUSimuParam::kOldCouplingPix;
+const Double_t  AliITSUSimuParam::fgkPixCouplColDefault = 0.;
+const Double_t  AliITSUSimuParam::fgkPixCouplRowDefault = 0.055;
+const Double_t  AliITSUSimuParam::fgkPixEccDiffDefault = 0.85;
+const Double_t  AliITSUSimuParam::fgkPixLorentzHoleWeightDefault = 1.0;
 const Double_t  AliITSUSimuParam::fgkGeVtoChargeDefault = 3.6e-9;
 const Double_t  AliITSUSimuParam::fgkDOverVDefault = 0.000375;
 const Double_t  AliITSUSimuParam::fgkTDefault = 300;
@@ -49,72 +50,74 @@ AliITSUSimuParam::AliITSUSimuParam()
   ,fDOverV(fgkDOverVDefault)
   ,fT(fgkTDefault)
   //
-  ,fNPixUpg(0)
-  ,fPixUpgCouplOpt(kOldCouplingPixUpg)
-  ,fPixUpgCouplCol(fgkPixUpgCouplColDefault)
-  ,fPixUpgCouplRow(fgkPixUpgCouplRowDefault)
-  ,fPixUpgEccDiff(fgkPixUpgEccDiffDefault)
-  ,fPixUpgLorentzDrift(kTRUE)
-  ,fPixUpgLorentzHoleWeight(fgkPixUpgLorentzHoleWeightDefault)
-  ,fPixUpgAddNoisyFlag(kFALSE)
-  ,fPixUpgRemoveDeadFlag(kFALSE)
+  ,fNPix(0)
+  ,fPixCouplOpt(kOldCouplingPix)
+  ,fPixCouplCol(fgkPixCouplColDefault)
+  ,fPixCouplRow(fgkPixCouplRowDefault)
+  ,fPixEccDiff(fgkPixEccDiffDefault)
+  ,fPixLorentzDrift(kTRUE)
+  ,fPixLorentzHoleWeight(fgkPixLorentzHoleWeightDefault)
+  ,fPixAddNoisyFlag(kFALSE)
+  ,fPixRemoveDeadFlag(kFALSE)
   //
-  ,fPixUpgThreshDef(fgkPixUpgThreshDefault)
-  ,fPixUpgThrSigmaDef(fgkPixUpgThrSigmaDefault)
-  ,fPixUpgBiasVoltageDef(fgkPixUpgBiasVoltageDefault)
-  ,fPixUpgNoiseDef(0)
-  ,fPixUpgBaselineDef(0)
+  ,fPixThreshDef(fgkPixThreshDefault)
+  ,fPixThrSigmaDef(fgkPixThrSigmaDefault)
+  ,fPixBiasVoltageDef(fgkPixBiasVoltageDefault)
+  ,fPixNoiseDef(0)
+  ,fPixBaselineDef(0)
+  ,fPixMinElToAddDef(fgkPixMinElToAddDefault)
   //
-  ,fPixUpgThresh(0)
-  ,fPixUpgThrSigma(0)
-  ,fPixUpgBiasVoltage(0)
-  ,fPixUpgSigma(0)
-  ,fPixUpgNoise(0)
-  ,fPixUpgBaseline(0)
+  ,fPixThresh(0)
+  ,fPixThrSigma(0)
+  ,fPixBiasVoltage(0)
+  ,fPixSigma(0)
+  ,fPixNoise(0)
+  ,fPixBaseline(0)
 {  
   // default constructor
 }
 
 //______________________________________________________________________
-AliITSUSimuParam::AliITSUSimuParam(UInt_t nPixUpg)
+AliITSUSimuParam::AliITSUSimuParam(UInt_t nPix)
   :fGeVcharge(fgkGeVtoChargeDefault)
   ,fDOverV(fgkDOverVDefault)
   ,fT(fgkTDefault)
     //
-  ,fNPixUpg(nPixUpg)
-  ,fPixUpgCouplOpt(kOldCouplingPixUpg)
-  ,fPixUpgCouplCol(fgkPixUpgCouplColDefault)
-  ,fPixUpgCouplRow(fgkPixUpgCouplRowDefault)
-  ,fPixUpgEccDiff(fgkPixUpgEccDiffDefault)
-  ,fPixUpgLorentzDrift(kTRUE)
-  ,fPixUpgLorentzHoleWeight(fgkPixUpgLorentzHoleWeightDefault)
-  ,fPixUpgAddNoisyFlag(kFALSE)
-  ,fPixUpgRemoveDeadFlag(kFALSE)
+  ,fNPix(nPix)
+  ,fPixCouplOpt(kOldCouplingPix)
+  ,fPixCouplCol(fgkPixCouplColDefault)
+  ,fPixCouplRow(fgkPixCouplRowDefault)
+  ,fPixEccDiff(fgkPixEccDiffDefault)
+  ,fPixLorentzDrift(kTRUE)
+  ,fPixLorentzHoleWeight(fgkPixLorentzHoleWeightDefault)
+  ,fPixAddNoisyFlag(kFALSE)
+  ,fPixRemoveDeadFlag(kFALSE)
   //
-  ,fPixUpgThreshDef(fgkPixUpgThreshDefault)
-  ,fPixUpgThrSigmaDef(fgkPixUpgThrSigmaDefault)
-  ,fPixUpgBiasVoltageDef(fgkPixUpgBiasVoltageDefault)
-  ,fPixUpgNoiseDef(0)
-  ,fPixUpgBaselineDef(0)
+  ,fPixThreshDef(fgkPixThreshDefault)
+  ,fPixThrSigmaDef(fgkPixThrSigmaDefault)
+  ,fPixBiasVoltageDef(fgkPixBiasVoltageDefault)
+  ,fPixNoiseDef(0)
+  ,fPixBaselineDef(0)
+  ,fPixMinElToAddDef(fgkPixMinElToAddDefault)
   //
-  ,fPixUpgThresh(0)
-  ,fPixUpgThrSigma(0)
-  ,fPixUpgBiasVoltage(0)
-  ,fPixUpgSigma(0)
-  ,fPixUpgNoise(0)
-  ,fPixUpgBaseline(0)
+  ,fPixThresh(0)
+  ,fPixThrSigma(0)
+  ,fPixBiasVoltage(0)
+  ,fPixSigma(0)
+  ,fPixNoise(0)
+  ,fPixBaseline(0)
 {  
   // regular constructor
-  if (fNPixUpg>0) {
-    fPixUpgBiasVoltage = new Double_t[fNPixUpg];
-    fPixUpgThresh      = new Double_t[fNPixUpg];
-    fPixUpgThrSigma    = new Double_t[fNPixUpg];
-    fPixUpgNoise       = new Double_t[fNPixUpg];
-    fPixUpgBaseline    = new Double_t[fNPixUpg];
+  if (fNPix>0) {
+    fPixBiasVoltage = new Double_t[fNPix];
+    fPixThresh      = new Double_t[fNPix];
+    fPixThrSigma    = new Double_t[fNPix];
+    fPixNoise       = new Double_t[fNPix];
+    fPixBaseline    = new Double_t[fNPix];
   }
-  SetPixUpgThreshold(fgkPixUpgThreshDefault,fgkPixUpgThrSigmaDefault);
-  SetPixUpgNoise(0.,0.);
-  SetPixUpgBiasVoltage(fgkPixUpgBiasVoltageDefault);
+  SetPixThreshold(fgkPixThreshDefault,fgkPixThrSigmaDefault);
+  SetPixNoise(0.,0.);
+  SetPixBiasVoltage(fgkPixBiasVoltageDefault);
   //
 }
 
@@ -125,44 +128,45 @@ AliITSUSimuParam::AliITSUSimuParam(const AliITSUSimuParam &simpar)
   ,fDOverV(simpar.fDOverV)
   ,fT(simpar.fT)
    //
-  ,fNPixUpg(simpar.fNPixUpg)
-  ,fPixUpgCouplOpt(simpar.fPixUpgCouplOpt)
-  ,fPixUpgCouplCol(simpar.fPixUpgCouplCol)
-  ,fPixUpgCouplRow(simpar.fPixUpgCouplRow)
-  ,fPixUpgEccDiff(simpar.fPixUpgEccDiff)
-  ,fPixUpgLorentzDrift(simpar.fPixUpgLorentzDrift)
-  ,fPixUpgLorentzHoleWeight(simpar.fPixUpgLorentzHoleWeight)
-  ,fPixUpgAddNoisyFlag(simpar.fPixUpgAddNoisyFlag)
-  ,fPixUpgRemoveDeadFlag(simpar.fPixUpgRemoveDeadFlag)
+  ,fNPix(simpar.fNPix)
+  ,fPixCouplOpt(simpar.fPixCouplOpt)
+  ,fPixCouplCol(simpar.fPixCouplCol)
+  ,fPixCouplRow(simpar.fPixCouplRow)
+  ,fPixEccDiff(simpar.fPixEccDiff)
+  ,fPixLorentzDrift(simpar.fPixLorentzDrift)
+  ,fPixLorentzHoleWeight(simpar.fPixLorentzHoleWeight)
+  ,fPixAddNoisyFlag(simpar.fPixAddNoisyFlag)
+  ,fPixRemoveDeadFlag(simpar.fPixRemoveDeadFlag)
    //
-  ,fPixUpgThreshDef(simpar.fPixUpgThreshDef)
-  ,fPixUpgThrSigmaDef(simpar.fPixUpgThrSigmaDef)
-  ,fPixUpgBiasVoltageDef(simpar.fPixUpgBiasVoltageDef)
-  ,fPixUpgNoiseDef(simpar.fPixUpgNoiseDef)
-  ,fPixUpgBaselineDef(simpar.fPixUpgBaselineDef)
+  ,fPixThreshDef(simpar.fPixThreshDef)
+  ,fPixThrSigmaDef(simpar.fPixThrSigmaDef)
+  ,fPixBiasVoltageDef(simpar.fPixBiasVoltageDef)
+  ,fPixNoiseDef(simpar.fPixNoiseDef)
+  ,fPixBaselineDef(simpar.fPixBaselineDef)
+  ,fPixMinElToAddDef(simpar.fPixMinElToAddDef)
   //
-  ,fPixUpgThresh(0)
-  ,fPixUpgThrSigma(0)
-  ,fPixUpgBiasVoltage(0)
-  ,fPixUpgSigma(0)
-  ,fPixUpgNoise(0)
-  ,fPixUpgBaseline(0)   
+  ,fPixThresh(0)
+  ,fPixThrSigma(0)
+  ,fPixBiasVoltage(0)
+  ,fPixSigma(0)
+  ,fPixNoise(0)
+  ,fPixBaseline(0)   
    //
 {
   // copy constructor
-  if (fNPixUpg) {
-    fPixUpgBiasVoltage = new Double_t[fNPixUpg];
-    fPixUpgThresh      = new Double_t[fNPixUpg];
-    fPixUpgThrSigma    = new Double_t[fNPixUpg];
-    fPixUpgNoise       = new Double_t[fNPixUpg];
-    fPixUpgBaseline    = new Double_t[fNPixUpg];
+  if (fNPix) {
+    fPixBiasVoltage = new Double_t[fNPix];
+    fPixThresh      = new Double_t[fNPix];
+    fPixThrSigma    = new Double_t[fNPix];
+    fPixNoise       = new Double_t[fNPix];
+    fPixBaseline    = new Double_t[fNPix];
   }
-  for (Int_t i=fNPixUpg;i--;) {
-    fPixUpgBiasVoltage[i] = simpar.fPixUpgBiasVoltage[i];
-    fPixUpgThresh[i]      = simpar.fPixUpgThresh[i];
-    fPixUpgThrSigma[i]    = simpar.fPixUpgThrSigma[i];
-    fPixUpgNoise[i]       = simpar.fPixUpgNoise[i];
-    fPixUpgBaseline[i]    = simpar.fPixUpgBaseline[i];
+  for (Int_t i=fNPix;i--;) {
+    fPixBiasVoltage[i] = simpar.fPixBiasVoltage[i];
+    fPixThresh[i]      = simpar.fPixThresh[i];
+    fPixThrSigma[i]    = simpar.fPixThrSigma[i];
+    fPixNoise[i]       = simpar.fPixNoise[i];
+    fPixBaseline[i]    = simpar.fPixBaseline[i];
   }
   //
 }
@@ -182,11 +186,11 @@ AliITSUSimuParam& AliITSUSimuParam::operator=(const AliITSUSimuParam& source)
 AliITSUSimuParam::~AliITSUSimuParam() 
 {
   // destructor
-  delete[] fPixUpgBiasVoltage;
-  delete[] fPixUpgThresh;
-  delete[] fPixUpgThrSigma;
-  delete[] fPixUpgNoise;
-  delete[] fPixUpgBaseline;
+  delete[] fPixBiasVoltage;
+  delete[] fPixThresh;
+  delete[] fPixThrSigma;
+  delete[] fPixNoise;
+  delete[] fPixBaseline;
 }
 
 //________________________________________________________________________
@@ -197,18 +201,18 @@ void AliITSUSimuParam::Print(Option_t *) const
 }
 
 //_______________________________________________________________________
-Double_t AliITSUSimuParam::ApplyPixUpgBaselineAndNoise(UInt_t mod) const 
+Double_t AliITSUSimuParam::ApplyPixBaselineAndNoise(UInt_t mod) const 
 {
   // generate random noise 
   double base,noise;
-  if (mod>=fNPixUpg) {
-    if (fNPixUpg>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPixUpg));}
-    base = fPixUpgBaselineDef;
-    noise = fPixUpgNoiseDef;
+  if (mod>=fNPix) {
+    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    base = fPixBaselineDef;
+    noise = fPixNoiseDef;
   }
   else {
-    base  = fPixUpgBaseline[mod];
-    noise = fPixUpgNoise[mod];    
+    base  = fPixBaseline[mod];
+    noise = fPixNoise[mod];    
   }
   return base+noise*gRandom->Gaus();
 }
@@ -218,16 +222,16 @@ Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(UInt_t mod) const
 {
   // calculate probability of noise exceeding the threshold
   double base,noise,thresh;
-  if (mod>=fNPixUpg) {
-    if (fNPixUpg>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPixUpg));}
-    base   = fPixUpgBaselineDef;
-    noise  = fPixUpgNoiseDef;
-    thresh = fPixUpgThreshDef;
+  if (mod>=fNPix) {
+    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    base   = fPixBaselineDef;
+    noise  = fPixNoiseDef;
+    thresh = fPixThreshDef;
   }
   else {
-    base   = fPixUpgBaseline[mod];
-    noise  = fPixUpgNoise[mod];
-    thresh = fPixUpgThresh[mod];
+    base   = fPixBaseline[mod];
+    noise  = fPixNoise[mod];
+    thresh = fPixThresh[mod];
   }
   if (noise<1e-12) {
     if (base>thresh) return 1;
@@ -237,127 +241,127 @@ Double_t AliITSUSimuParam::CalcProbNoiseOverThreshold(UInt_t mod) const
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::SetPixUpgThreshold(Double_t thresh, Double_t sigma, int mod)
+void AliITSUSimuParam::SetPixThreshold(Double_t thresh, Double_t sigma, int mod)
 {
   // set threshold params
   if (mod<0) {
-    fPixUpgThreshDef = thresh;
-    fPixUpgThrSigmaDef  = sigma;
-    for (int i=fNPixUpg;i--;) {
-      fPixUpgThresh[i] = thresh;
-      fPixUpgThrSigma[i]  = sigma;
+    fPixThreshDef = thresh;
+    fPixThrSigmaDef  = sigma;
+    for (int i=fNPix;i--;) {
+      fPixThresh[i] = thresh;
+      fPixThrSigma[i]  = sigma;
     }
   }
-  else if (mod>=(int)fNPixUpg) {
-    if (fNPixUpg>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPixUpg));}
-    fPixUpgThreshDef = thresh;
-    fPixUpgThrSigmaDef  = sigma;
+  else if (mod>=(int)fNPix) {
+    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    fPixThreshDef = thresh;
+    fPixThrSigmaDef  = sigma;
   }
   else {
-    fPixUpgThresh[mod] = thresh;
-    fPixUpgThrSigma[mod]  = sigma;
+    fPixThresh[mod] = thresh;
+    fPixThrSigma[mod]  = sigma;
   }
   //
 }
 
 //_______________________________________________________________________
-Double_t AliITSUSimuParam::GetPixUpgThreshold(UInt_t mod) const
+Double_t AliITSUSimuParam::GetPixThreshold(UInt_t mod) const
 {
   // obtain threshold
-  if (mod>=fNPixUpg) {
-    if (fNPixUpg>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPixUpg));}
-    return fPixUpgThreshDef;
+  if (mod>=fNPix) {
+    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    return fPixThreshDef;
   }
-  else return fPixUpgThresh[mod];
+  else return fPixThresh[mod];
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::GetPixUpgThreshold(UInt_t mod, Double_t &thresh, Double_t &sigma) const
+void AliITSUSimuParam::GetPixThreshold(UInt_t mod, Double_t &thresh, Double_t &sigma) const
 {
   // obtain thresholds
-  if (mod>=fNPixUpg) {
-    if (fNPixUpg>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPixUpg));}
-    thresh = fPixUpgThreshDef;
-    sigma  = fPixUpgThrSigmaDef;
+  if (mod>=fNPix) {
+    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    thresh = fPixThreshDef;
+    sigma  = fPixThrSigmaDef;
   }
   else {
-    thresh = fPixUpgThresh[mod];
-    sigma  = fPixUpgThrSigma[mod];
+    thresh = fPixThresh[mod];
+    sigma  = fPixThrSigma[mod];
   }
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::SetPixUpgBiasVoltage(Double_t val, int mod)
+void AliITSUSimuParam::SetPixBiasVoltage(Double_t val, int mod)
 {
   // set threshold params
   if (mod<0) {
-    fPixUpgBiasVoltageDef = val;
-    for (int i=fNPixUpg;i--;) fPixUpgBiasVoltage[i] = val;
+    fPixBiasVoltageDef = val;
+    for (int i=fNPix;i--;) fPixBiasVoltage[i] = val;
   }
-  else if (mod>=(int)fNPixUpg) {
-    if (fNPixUpg>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPixUpg));}
-    fPixUpgBiasVoltageDef = val;
+  else if (mod>=(int)fNPix) {
+    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    fPixBiasVoltageDef = val;
   }
-  else fPixUpgBiasVoltage[mod] = val;
+  else fPixBiasVoltage[mod] = val;
   //
 }
 
 //_______________________________________________________________________
-Double_t AliITSUSimuParam::GetPixUpgBiasVoltage(UInt_t mod) const
+Double_t AliITSUSimuParam::GetPixBiasVoltage(UInt_t mod) const
 {
   // obtain threshold
-  if (mod>=fNPixUpg) {
-    if (fNPixUpg>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPixUpg));}
-    return fPixUpgBiasVoltageDef;
+  if (mod>=fNPix) {
+    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    return fPixBiasVoltageDef;
   }
-  else return fPixUpgBiasVoltage[mod];
+  else return fPixBiasVoltage[mod];
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::SetPixUpgNoise(Double_t noise, Double_t baseline, int mod)
+void AliITSUSimuParam::SetPixNoise(Double_t noise, Double_t baseline, int mod)
 {
   // set noise params
   if (mod<0) {
-    fPixUpgNoiseDef = noise;
-    fPixUpgBaselineDef  = baseline;
-    for (int i=fNPixUpg;i--;) {
-      fPixUpgNoise[i] = noise;
-      fPixUpgBaseline[i]  = baseline;
+    fPixNoiseDef = noise;
+    fPixBaselineDef  = baseline;
+    for (int i=fNPix;i--;) {
+      fPixNoise[i] = noise;
+      fPixBaseline[i]  = baseline;
     }
   }
-  else if (mod>=(int)fNPixUpg) {
-    if (fNPixUpg>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPixUpg));}
-    fPixUpgNoiseDef = noise;
-    fPixUpgBaselineDef  = baseline;
+  else if (mod>=(int)fNPix) {
+    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    fPixNoiseDef = noise;
+    fPixBaselineDef  = baseline;
   }
   else {
-    fPixUpgNoise[mod] = noise;
-    fPixUpgBaseline[mod]  = baseline;
+    fPixNoise[mod] = noise;
+    fPixBaseline[mod]  = baseline;
   }
   //
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::GetPixUpgNoise(UInt_t mod, Double_t &noise, Double_t &baseline) const
+void AliITSUSimuParam::GetPixNoise(UInt_t mod, Double_t &noise, Double_t &baseline) const
 {
   // obtain noise
-  if (mod>=fNPixUpg) {
-    if (fNPixUpg>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPixUpg));}
-    noise     = fPixUpgNoiseDef;
-    baseline  = fPixUpgBaselineDef;
+  if (mod>=fNPix) {
+    if (fNPix>0) {AliFatal(Form("Wrong module %d, NPidUpg=%d",mod,fNPix));}
+    noise     = fPixNoiseDef;
+    baseline  = fPixBaselineDef;
   }
   else {
-    noise     = fPixUpgNoise[mod];
-    baseline  = fPixUpgBaseline[mod];
+    noise     = fPixNoise[mod];
+    baseline  = fPixBaseline[mod];
   }
 }
 
 //_______________________________________________________________________
-void AliITSUSimuParam::SetPixUpgCouplingOption(UInt_t opt)
+void AliITSUSimuParam::SetPixCouplingOption(UInt_t opt)
 {
   // set coupling option
-  if (opt>=kMaxCouplingOptPixUpg) AliFatal(Form("Coupling option %d should be less than %d",opt,kMaxCouplingOptPixUpg));
-  fPixUpgCouplOpt = opt;
+  if (opt>=kMaxCouplingOptPix) AliFatal(Form("Coupling option %d should be less than %d",opt,kMaxCouplingOptPix));
+  fPixCouplOpt = opt;
 }
 
 

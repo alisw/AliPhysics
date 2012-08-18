@@ -394,6 +394,9 @@ TGeoHMatrix* AliITSUGeomTGeo::GetMatrixSens(Int_t lay, Int_t ladd, Int_t detInLa
     return 0;
   } // end if !gGeoManager
   TGeoHMatrix* mat = gGeoManager->GetCurrentMatrix();
+  //RSS
+  //  printf("%d/%d/%d %s\n",lay,ladd,detInLad,path.Data());
+  //  mat->Print();
   // Retstore the modeler state.
   gGeoManager->PopPath();
   return mat;
