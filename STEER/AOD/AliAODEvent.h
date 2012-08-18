@@ -282,6 +282,8 @@ class AliAODEvent : public AliVEvent {
 
   // TZERO 
   AliAODTZERO *GetTZEROData() const { return fAODTZERO; }
+  Double32_t GetT0TOF(Int_t icase) const { return fAODTZERO?fAODTZERO->GetT0TOF(icase):999999;}
+  const Double32_t * GetT0TOF() const { return fAODTZERO?fAODTZERO->GetT0TOF():0x0;}
  
   // VZERO 
   AliAODVZERO *GetVZEROData() const { return fAODVZERO; }
