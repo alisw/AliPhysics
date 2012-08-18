@@ -175,14 +175,14 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
   // using the likelihood method
   //
   const Int_t nLay = 4;
-  const Int_t nPart = 3;
+  const Int_t nPart= 4;
 
   static AliITSPidParams pars(isMC);  // Pid parametrisation parameters
   
-  Double_t itsProb[nPart] = {1,1,1}; // p, K, pi
+  Double_t itsProb[nPart] = {1,1,1,1}; // e, p, K, pi
 
   for (Int_t iLay = 0; iLay < nLay; iLay++) {
-    if (qclu[iLay] <= 0)
+    if (qclu[iLay] <= 50.)
       continue;
 
     Float_t dedx = qclu[iLay];
@@ -190,11 +190,13 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
     itsProb[0] *= layProb;
     
     layProb = pars.GetLandauGausNorm(dedx,AliPID::kKaon,mom,iLay+3);
-    if (mom < 0.16) layProb=0.00001;
     itsProb[1] *= layProb;
     
     layProb = pars.GetLandauGausNorm(dedx,AliPID::kPion,mom,iLay+3);
     itsProb[2] *= layProb;
+   
+    layProb = pars.GetLandauGausNorm(dedx,AliPID::kElectron,mom,iLay+3);
+    itsProb[3] *= layProb;
   }
 
   // Normalise probabilities
@@ -202,13 +204,12 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
   for (Int_t iPart = 0; iPart < nPart; iPart++) {
     sumProb += itsProb[iPart];
   }
-  sumProb += 2*itsProb[2]; // muon and electron cannot be distinguished from pions
+  sumProb += itsProb[2]; // muon cannot be distinguished from pions
 
   for (Int_t iPart = 0; iPart < nPart; iPart++) {
     itsProb[iPart]/=sumProb;
   }
-  
-  condprobfun[AliPID::kElectron] = itsProb[2];
+  condprobfun[AliPID::kElectron] = itsProb[3];
   condprobfun[AliPID::kMuon] = itsProb[2];
   condprobfun[AliPID::kPion] = itsProb[2];
   condprobfun[AliPID::kKaon] = itsProb[1];
