@@ -85,11 +85,13 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   // Hybrid tracks
   TH1F                       *fHistTrackPhi[5];          //!Phi distribution of hybrid tracks
   TH1F                       *fHistTrackEta[5];          //!Eta distribution of hybrid tracks
+  TH1F                       *fHistTrackPhiPt[6];        //!Phi distribution of hybrid tracks per pt bins
+  TH1F                       *fHistTrackEtaPt[6];        //!Eta distribution of hybrid tracks per pt bins
 
  private:
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 11) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 12) // Quality task for Emcal analysis
 };
 #endif

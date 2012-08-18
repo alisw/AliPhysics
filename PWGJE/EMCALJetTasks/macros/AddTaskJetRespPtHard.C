@@ -18,7 +18,7 @@ AliJetResponseMaker* AddTaskJetRespPtHard(const char *ntracks            = "Trac
 					  const char *taskname           = "AliJetResponseMaker"
 )
 {  
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskJetResponseMaker.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
   
   AliJetResponseMaker *jetTask = 0;
 

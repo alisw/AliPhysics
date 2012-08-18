@@ -69,6 +69,11 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
     fHistTrackEta[i] = 0;
   }
 
+  for (Int_t i = 0; i < 6; i++) {
+    fHistTrackPhiPt[i] = 0;
+    fHistTrackEtaPt[i] = 0;
+  }
+
   for (Int_t i = 0; i < 4; i++) {
     fHistJetsPhiEta[i] = 0;
     fHistJetsPtNonBias[i] = 0;
@@ -119,6 +124,11 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   for (Int_t i = 0; i < 5; i++) {
     fHistTrackPhi[i] = 0;
     fHistTrackEta[i] = 0;
+  }
+
+  for (Int_t i = 0; i < 6; i++) {
+    fHistTrackPhiPt[i] = 0;
+    fHistTrackEtaPt[i] = 0;
   }
 
   for (Int_t i = 0; i < 4; i++) {
@@ -299,6 +309,20 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fHistTrackEta[i] = new TH1F(histnameeta.Data(),histnameeta.Data(), 100, -2, 2);
     fHistTrackEta[i]->GetXaxis()->SetTitle("Eta");
     fOutput->Add(fHistTrackEta[i]);
+  }
+
+  for (Int_t i = 0; i < 6; i++) {
+    TString histnamephipt("fHistTrackPhiPt_");
+    histnamephipt += i;
+    fHistTrackPhiPt[i] = new TH1F(histnamephipt.Data(),histnamephipt.Data(), 128, 0, 6.4);
+    fHistTrackPhiPt[i]->GetXaxis()->SetTitle("Phi");
+    fOutput->Add(fHistTrackPhiPt[i]);
+
+    TString histnameetapt("fHistTrackEtaPt_");
+    histnameetapt += i;
+    fHistTrackEtaPt[i] = new TH1F(histnameetapt.Data(),histnameetapt.Data(), 100, -2, 2);
+    fHistTrackEtaPt[i]->GetXaxis()->SetTitle("Eta");
+    fOutput->Add(fHistTrackEtaPt[i]);
   }
   
   fHistTrackPhi[0]->SetLineColor(kRed);
@@ -562,6 +586,31 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     if (label >= 0 && label < 4) {
       fHistTrackEta[label]->Fill(track->Eta());
       fHistTrackPhi[label]->Fill(track->Phi());
+    }
+
+    if (track->Pt() < 0.5) {
+      fHistTrackPhiPt[0]->Fill(track->Phi());
+      fHistTrackEtaPt[0]->Fill(track->Eta());
+    }
+    else if (track->Pt() < 1) {
+      fHistTrackPhiPt[1]->Fill(track->Phi());
+      fHistTrackEtaPt[1]->Fill(track->Eta());
+    }
+    else if (track->Pt() < 2) {
+      fHistTrackPhiPt[2]->Fill(track->Phi());
+      fHistTrackEtaPt[2]->Fill(track->Eta());
+    }
+    else if (track->Pt() < 3) {
+      fHistTrackPhiPt[3]->Fill(track->Phi());
+      fHistTrackEtaPt[3]->Fill(track->Eta());
+    }
+    else if (track->Pt() < 5) {
+      fHistTrackPhiPt[4]->Fill(track->Phi());
+      fHistTrackEtaPt[4]->Fill(track->Eta());
+    }
+    else {
+      fHistTrackPhiPt[5]->Fill(track->Phi());
+      fHistTrackEtaPt[5]->Fill(track->Eta());
     }
 
     if (!vtrack)

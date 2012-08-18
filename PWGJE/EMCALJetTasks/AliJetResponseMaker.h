@@ -25,6 +25,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetMCFiducial(Bool_t f = kTRUE)    { fMCFiducial      = f; }
   void                        SetEventWeightHist(Bool_t h)       { fEventWeightHist = h; }
   void                        SetPtHardBin(Int_t b)              { fSelectPtHardBin = b; }
+  void                        SetDoMatching(Bool_t b)            { fDoMatching      = b; }
 
  protected:
   Bool_t                      IsEventSelected();
@@ -45,7 +46,8 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Double_t                    fMCmaxEta;                  // MC jets maximum eta
   Double_t                    fMCminPhi;                  // MC jets minimum phi
   Double_t                    fMCmaxPhi;                  // MC jets maximum phi
-  Int_t                       fSelectPtHardBin;           // Select one pt hard bin for analysis
+  Int_t                       fSelectPtHardBin;           // select one pt hard bin for analysis
+  Bool_t                      fDoMatching;                // whether or not it should run the matching between MC and rec jets
 
   AliGenPythiaEventHeader    *fPythiaHeader;              //!event Pythia header
   Double_t                    fEventWeight;               //!event weight
@@ -84,6 +86,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 6) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 7) // Jet response matrix producing task
 };
 #endif

@@ -38,6 +38,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fMCminPhi(0),
   fMCmaxPhi(0),
   fSelectPtHardBin(-999),
+  fDoMatching(kTRUE),
   fPythiaHeader(0),
   fEventWeight(0),
   fPtHardBin(0),
@@ -87,6 +88,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fMCminPhi(0),
   fMCmaxPhi(0),
   fSelectPtHardBin(-999),
+  fDoMatching(kTRUE),
   fPythiaHeader(0),
   fEventWeight(0),
   fPtHardBin(0),
@@ -377,8 +379,38 @@ Bool_t AliJetResponseMaker::Run()
 {
   // Find the closest jets
 
+  if (!fDoMatching)
+    return kTRUE;
+
   DoJetLoop(fJets, fMCJets, kFALSE);
   DoJetLoop(fMCJets, fJets, kTRUE);
+
+  const Int_t nMCJets = fMCJets->GetEntriesFast();
+
+  for (Int_t i = 0; i < nMCJets; i++) {
+
+    AliEmcalJet* jet = static_cast<AliEmcalJet*>(fMCJets->At(i));
+
+    if (!jet) {
+      AliError(Form("Could not receive jet %d", i));
+      continue;
+    }  
+
+    if (!AcceptJet(jet))
+      continue;
+
+    if (jet->Eta() < fMCminEta || jet->Eta() > fMCmaxEta || jet->Phi() < fMCminPhi || jet->Phi() > fMCmaxPhi)
+      continue;
+
+    if (jet->Pt() > fMaxBinPt)
+      continue;
+
+    if (jet->ClosestJet() && jet->ClosestJet()->ClosestJet() == jet && 
+        jet->ClosestJetDistance() < fMaxDistance) {    // Matched jet found
+      jet->SetMatchedToClosest();
+      jet->ClosestJet()->SetMatchedToClosest();
+    }
+  }
 
   return kTRUE;
 }
@@ -404,10 +436,6 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
       continue;
 
     if (!mc) {
-      if (!AcceptBiasJet(jet1))
-	continue;
-      if (jet1->MaxTrackPt() > fMaxTrackPt || jet1->MaxClusterPt() > fMaxClusterPt)
-	continue;
       if (jet1->Eta() < fMinEta || jet1->Eta() > fMaxEta || jet1->Phi() < fMinPhi || jet1->Phi() > fMaxPhi)
 	continue;
     }
@@ -429,10 +457,6 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
 	continue;
 
       if (mc) {
-	if (!AcceptBiasJet(jet2))
-	  continue;
-	if (jet2->MaxTrackPt() > fMaxTrackPt || jet2->MaxClusterPt() > fMaxClusterPt)
-	  continue;
 	if (jet2->Eta() < fMinEta || jet2->Eta() > fMaxEta || jet2->Phi() < fMinPhi || jet2->Phi() > fMaxPhi)
 	  continue;
       }
@@ -455,7 +479,6 @@ void AliJetResponseMaker::DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bo
     }
   }
 }
-
 
 //________________________________________________________________________
 Bool_t AliJetResponseMaker::FillHistograms()
@@ -488,11 +511,11 @@ Bool_t AliJetResponseMaker::FillHistograms()
     if (jet->Pt() > fMaxBinPt)
       continue;
 
-    if (jet->ClosestJet() && jet->ClosestJet()->ClosestJet() == jet && 
-        jet->ClosestJetDistance() < fMaxDistance) {    // Matched jet found
-      jet->SetMatchedToClosest();
-      jet->ClosestJet()->SetMatchedToClosest();
-      if (jet->MatchedJet()->Pt() > fMaxBinPt) {
+    if (jet->MatchedJet()) {
+
+      if (!AcceptBiasJet(jet->MatchedJet()) || 
+	  jet->MatchedJet()->MaxTrackPt() > fMaxTrackPt || jet->MatchedJet()->MaxClusterPt() > fMaxClusterPt ||
+	  jet->MatchedJet()->Pt() > fMaxBinPt) {
 	fHistMissedMCJets->Fill(jet->Pt(), fEventWeight);
       }
       else {
