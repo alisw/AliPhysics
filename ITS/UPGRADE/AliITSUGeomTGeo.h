@@ -83,51 +83,56 @@ class AliITSUGeomTGeo : public TObject {
   Bool_t GetOrigRotation(Int_t index, Double_t r[9])                      const;
   Bool_t GetOrigRotation(Int_t lay,Int_t lad,Int_t det, Double_t r[9])    const;
   //
-  const TGeoHMatrix* GetTracking2LocalMatrix(Int_t index)                   const;
-  const TGeoHMatrix* GetTracking2LocalMatrix(Int_t lay,Int_t lad,Int_t det) const;
+  const TGeoHMatrix* GetMatrixT2L(Int_t index);
+  const TGeoHMatrix* GetMatrixT2L(Int_t lay,Int_t lad,Int_t det)  {return GetMatrixT2L( GetModuleIndex(lay,lad,det) );}
+  const TGeoHMatrix* GetMatrixSens(Int_t index);
+  const TGeoHMatrix* GetMatrixSens(Int_t lay,Int_t lad,Int_t det) {return GetMatrixSens( GetModuleIndex(lay,lad,det) );}
   //
-  Bool_t GetTrackingMatrix(Int_t index, TGeoHMatrix &m)                   const;
-  Bool_t GetTrackingMatrix(Int_t lay,Int_t lad,Int_t det, TGeoHMatrix &m) const;
+  Bool_t GetTrackingMatrix(Int_t index, TGeoHMatrix &m);
+  Bool_t GetTrackingMatrix(Int_t lay,Int_t lad,Int_t det, TGeoHMatrix &m);
   //
   // Attention: these are transformations wrt sensitive volume!
-  TGeoHMatrix* GetMatrixSens(Int_t index)                                 const;
-  TGeoHMatrix* GetMatrixSens(Int_t lay,Int_t lad,Int_t det)               const;
-  Bool_t LocalToGlobal(Int_t index, const Double_t *loc, Double_t *glob)  const;
-  Bool_t LocalToGlobal(Int_t lay, Int_t lad, Int_t det,const Double_t *loc, Double_t *glob) const;
+  void   LocalToGlobal(Int_t index, const Double_t *loc, Double_t *glob);
+  void   LocalToGlobal(Int_t lay, Int_t lad, Int_t det,const Double_t *loc, Double_t *glob);
   //
-  Bool_t GlobalToLocal(Int_t index, const Double_t *glob, Double_t *loc)  const;
-  Bool_t GlobalToLocal(Int_t lay, Int_t lad, Int_t det,const Double_t *glob, Double_t *loc) const;
+  void   GlobalToLocal(Int_t index, const Double_t *glob, Double_t *loc);
+  void   GlobalToLocal(Int_t lay, Int_t lad, Int_t det,const Double_t *glob, Double_t *loc);
   //
-  Bool_t LocalToGlobalVect(Int_t index, const Double_t *loc, Double_t *glob) const;
-  Bool_t GlobalToLocalVect(Int_t index, const Double_t *glob, Double_t *loc) const;
+  void   LocalToGlobalVect(Int_t index, const Double_t *loc, Double_t *glob);
+  void   GlobalToLocalVect(Int_t index, const Double_t *glob, Double_t *loc);
   Int_t  GetLayerDetTypeID(Int_t lr)                                         const;
   Int_t  GetModuleDetTypeID(Int_t id)                                        const;
   //
   virtual void Print(Option_t *opt="")  const;
 
-  static const char* GetITSVolPattern()                                             {return fgkITSVolName;}
-  static const char* GetITSLayerPattern()                                           {return fgkITSLrName;}
-  static const char* GetITSLadderPattern()                                          {return fgkITSLadName;}
-  static const char* GetITSModulePattern()                                          {return fgkITSModName;}
-  static const char* GetITSSensorPattern()                                          {return fgkITSSensName;}
-  static const char* GetDetTypeName(Int_t i)                                        {return (i<0||i>=kNDetTypes) ? 0 : fgkITSDetTypeName[i];}
-  static const char* GetITSsegmentationFileName()                                   {return fgITSsegmFileName.Data();}
-  static void        SetITSsegmentationFileName(const char* nm)                     {fgITSsegmFileName = nm;}
+  static const char* GetITSVolPattern()                                 {return fgkITSVolName;}
+  static const char* GetITSLayerPattern()                               {return fgkITSLrName;}
+  static const char* GetITSLadderPattern()                              {return fgkITSLadName;}
+  static const char* GetITSModulePattern()                              {return fgkITSModName;}
+  static const char* GetITSSensorPattern()                              {return fgkITSSensName;}
+  static const char* GetDetTypeName(Int_t i)                            {return (i<0||i>=kNDetTypes) ? 0 : fgkITSDetTypeName[i];}
+  static const char* GetITSsegmentationFileName()                       {return fgITSsegmFileName.Data();}
+  static void        SetITSsegmentationFileName(const char* nm)         {fgITSsegmFileName = nm;}
   static UInt_t      ComposeDetTypeID(UInt_t segmId);
   //
   // hack to avoid using AliGeomManager
-  Int_t              LayerToVolUID(Int_t lay,int detInLay)                    const {return GetModuleIndex(lay,detInLay);}
-  static Int_t       ModuleVolUID(Int_t mod)                                        {return mod;}
+  Int_t              LayerToVolUID(Int_t lay,int detInLay)        const {return GetModuleIndex(lay,detInLay);}
+  static Int_t       ModuleVolUID(Int_t mod)                            {return mod;}
+  //
+ protected:
+  void         FetchMatrices();
+  TGeoHMatrix* ExtractMatrixT2L(Int_t index)                      const;
+  TGeoHMatrix* ExtractMatrixSens(Int_t index)                     const;
+  Bool_t       GetLayer(Int_t index,Int_t &lay,Int_t &index2)     const;
+  TGeoPNEntry* GetPNEntry(Int_t index)                            const;
+  Int_t        ExtractNumberOfDetectors(Int_t lay)                const;
+  Int_t        ExtractNumberOfLadders(Int_t lay)                  const;
+  Int_t        ExtractLayerDetType(Int_t lay)                     const;
+  Int_t        ExtractNumberOfLayers()                            const;
+  void         BuildITS();
   //
  private:
 //
-  Bool_t       GetLayer(Int_t index,Int_t &lay,Int_t &index2) const;
-  TGeoPNEntry* GetPNEntry(Int_t index)                        const;
-  Int_t        ExtractNumberOfDetectors(Int_t lay)            const;
-  Int_t        ExtractNumberOfLadders(Int_t lay)              const;
-  Int_t        ExtractLayerDetType(Int_t lay)                 const;
-  Int_t        ExtractNumberOfLayers()                        const;
-  void         BuildITS();
   //
   Int_t  fVersion;             // ITS Version 
   Int_t  fNLayers;             // number of layers
@@ -136,6 +141,9 @@ class AliITSUGeomTGeo : public TObject {
   Int_t *fLrDetType;           //[fNLayers] Array of layer detector types
   Int_t *fNDetectors;          //[fNLayers] Array of the number of detector/ladder(layer)
   Int_t *fLastModIndex;        //[fNLayers] max ID of the detctor in the layer
+  //
+  TObjArray* fMatSens;         // Sensor's matrices pointers in the geometry
+  TObjArray* fMatT2L;          // Tracking to Local matrices pointers in the geometry
   //
   static const char*  fgkITSVolName;             // ITS mother volume name
   static const char*  fgkITSLrName;              // ITS Layer name
@@ -199,39 +207,10 @@ inline Bool_t AliITSUGeomTGeo::GetOrigRotation(Int_t lay,Int_t lad,Int_t det, Do
 }
 
 //_____________________________________________________________________________________________
-inline const TGeoHMatrix* AliITSUGeomTGeo::GetTracking2LocalMatrix(Int_t lay,Int_t lad,Int_t det) const  
-{
-  // t2l matrix
-  return GetTracking2LocalMatrix(GetModuleIndex(lay,lad,det)); 
-}
-
-//_____________________________________________________________________________________________
-inline Bool_t AliITSUGeomTGeo::GetTrackingMatrix(Int_t lay,Int_t lad,Int_t det, TGeoHMatrix &m) const    
+inline Bool_t AliITSUGeomTGeo::GetTrackingMatrix(Int_t lay,Int_t lad,Int_t det, TGeoHMatrix &m)
 {
   // tracking mat
   return GetTrackingMatrix(GetModuleIndex(lay,lad,det),m); 
-}
-
-//_____________________________________________________________________________________________
-inline TGeoHMatrix* AliITSUGeomTGeo::GetMatrixSens(Int_t index) const    
-{
-  // semsor matrix
-  int lr,ld,dt; 
-  return GetModuleId(index,lr,ld,dt) ? GetMatrixSens(lr,ld,dt) : 0;
-}
-
-//_____________________________________________________________________________________________
-inline Bool_t AliITSUGeomTGeo::LocalToGlobal(Int_t lay, Int_t lad, Int_t det,const Double_t *loc, Double_t *glob) const 
-{
-  // Local2Master (sensor)
-  return LocalToGlobal(GetModuleIndex(lay,lad,det), loc, glob);
-}
-
-//_____________________________________________________________________________________________
-inline Bool_t AliITSUGeomTGeo::GlobalToLocal(Int_t lay, Int_t lad, Int_t det,const Double_t *glob, Double_t *loc) const 
-{
-  // master2local (sensor)
-  return GlobalToLocal(GetModuleIndex(lay,lad,det), glob, loc);
 }
 
 //_____________________________________________________________________________________________
@@ -247,6 +226,64 @@ inline Int_t  AliITSUGeomTGeo::GetModuleDetTypeID(Int_t id) const
   // detector type ID of module
   return GetLayerDetTypeID(GetLayer(id));
 } 
+
+//_____________________________________________________________________________________________
+inline const TGeoHMatrix* AliITSUGeomTGeo::GetMatrixSens(Int_t index)
+{
+  // access global to sensor matrix
+  if (!fMatSens) FetchMatrices();
+  return (TGeoHMatrix*)fMatSens->At(index);
+}
+
+//_____________________________________________________________________________________________
+inline const TGeoHMatrix* AliITSUGeomTGeo::GetMatrixT2L(Int_t index)
+{
+  // access tracking to local matrix
+  if (!fMatT2L) FetchMatrices();
+  return (TGeoHMatrix*)fMatT2L->At(index);
+}
+
+//______________________________________________________________________
+inline void AliITSUGeomTGeo::LocalToGlobal(Int_t index,const Double_t *loc, Double_t *glob)
+{
+  // sensor local to global 
+  GetMatrixSens(index)->LocalToMaster(loc,glob);
+}
+
+//______________________________________________________________________
+inline void AliITSUGeomTGeo::GlobalToLocal(Int_t index, const Double_t *glob, Double_t *loc)
+{
+  // global to sensor local 
+  GetMatrixSens(index)->MasterToLocal(glob,loc);
+}
+
+//______________________________________________________________________
+inline void AliITSUGeomTGeo::LocalToGlobalVect(Int_t index, const Double_t *loc, Double_t *glob)
+{
+  // sensor local to global 
+  GetMatrixSens(index)->LocalToMasterVect(loc,glob);
+}
+
+//______________________________________________________________________
+inline void AliITSUGeomTGeo::GlobalToLocalVect(Int_t index, const Double_t *glob, Double_t *loc)
+{
+  // global to sensor local
+  GetMatrixSens(index)->MasterToLocalVect(glob,loc);
+}
+
+//_____________________________________________________________________________________________
+inline void AliITSUGeomTGeo::LocalToGlobal(Int_t lay, Int_t lad, Int_t det,const Double_t *loc, Double_t *glob)
+{
+  // Local2Master (sensor)
+  LocalToGlobal(GetModuleIndex(lay,lad,det), loc, glob);
+}
+
+//_____________________________________________________________________________________________
+inline void AliITSUGeomTGeo::GlobalToLocal(Int_t lay, Int_t lad, Int_t det,const Double_t *glob, Double_t *loc)
+{
+  // master2local (sensor)
+  GlobalToLocal(GetModuleIndex(lay,lad,det), glob, loc);
+}
 
 
 #endif

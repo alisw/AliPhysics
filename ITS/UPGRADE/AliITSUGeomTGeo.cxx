@@ -51,13 +51,15 @@ TString     AliITSUGeomTGeo::fgITSsegmFileName = "itsSegmentations.root";
 
 //______________________________________________________________________
 AliITSUGeomTGeo::AliITSUGeomTGeo(Bool_t build)
-:  fVersion(kITSVNA)
+  :fVersion(kITSVNA)
   ,fNLayers(0)
   ,fNModules(0)
   ,fNLadders(0)
   ,fLrDetType(0)
   ,fNDetectors(0)
   ,fLastModIndex(0)
+  ,fMatSens(0)
+  ,fMatT2L(0)
 {
   // default c-tor
   if (build) BuildITS();
@@ -73,6 +75,8 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
   ,fLrDetType(0)
   ,fNDetectors(0)
   ,fLastModIndex(0)
+  ,fMatSens(0)
+  ,fMatT2L(0)
 {
   // copy c-tor
   if (fNLayers) {
@@ -86,6 +90,22 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
       fLrDetType[i]  = src.fLrDetType[i];
       fLastModIndex[i] = src.fLastModIndex[i];
     }
+    if (src.fMatSens) {
+      fMatSens = new TObjArray(fNModules);
+      fMatSens->SetOwner(kTRUE);
+      for (int i=0;i<fNModules;i++) {
+	const TGeoHMatrix* mat = (TGeoHMatrix*)src.fMatSens->At(i);
+	fMatSens->AddAt(new TGeoHMatrix(*mat),i);
+      }
+    }
+    if (src.fMatT2L) {
+      fMatT2L = new TObjArray(fNModules);
+      fMatT2L->SetOwner(kTRUE);
+      for (int i=0;i<fNModules;i++) {
+	const TGeoHMatrix* mat =(TGeoHMatrix*) src.fMatT2L->At(i);
+	fMatSens->AddAt(new TGeoHMatrix(*mat),i);
+      }
+    }
   }
 }
 
@@ -97,6 +117,8 @@ AliITSUGeomTGeo::~AliITSUGeomTGeo()
   delete[] fLrDetType;
   delete[] fNDetectors;
   delete[] fLastModIndex;
+  delete fMatT2L;
+  delete fMatSens;
 }
 
 
@@ -113,6 +135,25 @@ AliITSUGeomTGeo& AliITSUGeomTGeo::operator=(const AliITSUGeomTGeo &src)
     fVersion = src.fVersion;
     fNLayers = src.fNLayers;
     fNModules = src.fNModules;
+    if (src.fMatSens) {
+      delete fMatSens; 
+      fMatSens = new TObjArray(fNModules);
+      fMatSens->SetOwner(kTRUE);
+      for (int i=0;i<fNModules;i++) {
+	const TGeoHMatrix* mat = (TGeoHMatrix*) src.fMatSens->At(i);
+	fMatSens->AddAt(new TGeoHMatrix(*mat),i);
+      }
+    }
+    if (src.fMatT2L) {
+      delete fMatT2L; 
+      fMatT2L = new TObjArray(fNModules);
+      fMatT2L->SetOwner(kTRUE);
+      for (int i=0;i<fNModules;i++) {
+	const TGeoHMatrix* mat = (TGeoHMatrix*) src.fMatT2L->At(i);
+	fMatT2L->AddAt(new TGeoHMatrix(*mat),i);
+      }
+    }
+    //
     if (fNLayers) {
       fNLadders   = new Int_t[fNLayers];
       fNDetectors = new Int_t[fNLayers];
@@ -339,22 +380,21 @@ Bool_t AliITSUGeomTGeo::GetOrigRotation(Int_t index, Double_t r[9])  const
 }
 
 //______________________________________________________________________
-const TGeoHMatrix* AliITSUGeomTGeo::GetTracking2LocalMatrix(Int_t index) const
+TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixT2L(Int_t index) const
 {
   // Get the matrix which transforms from the tracking to local r.s.
   // The method queries directly the TGeoPNEntry
   TGeoPNEntry *pne = GetPNEntry(index);
   if (!pne) return NULL;
 
-  const TGeoHMatrix *m = pne->GetMatrix();
-  if (!m)
-    AliError(Form("TGeoPNEntry (%s) contains no matrix !",pne->GetName()));
+  TGeoHMatrix *m = (TGeoHMatrix*) pne->GetMatrix();
+  if (!m) AliError(Form("TGeoPNEntry (%s) contains no matrix !",pne->GetName()));
 
   return m;
 }
 
 //______________________________________________________________________
-Bool_t AliITSUGeomTGeo::GetTrackingMatrix(Int_t index, TGeoHMatrix &m) const
+Bool_t AliITSUGeomTGeo::GetTrackingMatrix(Int_t index, TGeoHMatrix &m)
 {
   // Get the matrix which transforms from the tracking r.s. to
   // the global one.
@@ -364,7 +404,7 @@ Bool_t AliITSUGeomTGeo::GetTrackingMatrix(Int_t index, TGeoHMatrix &m) const
   TGeoHMatrix *m1 = GetMatrix(index);
   if (!m1) return kFALSE;
 
-  const TGeoHMatrix *m2 = GetTracking2LocalMatrix(index);
+  const TGeoHMatrix *m2 = GetMatrixT2L(index);
   if (!m2) return kFALSE;
 
   m = *m1;
@@ -374,10 +414,10 @@ Bool_t AliITSUGeomTGeo::GetTrackingMatrix(Int_t index, TGeoHMatrix &m) const
 }
 
 //______________________________________________________________________
-TGeoHMatrix* AliITSUGeomTGeo::GetMatrixSens(Int_t lay, Int_t ladd, Int_t detInLad)  const
+TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixSens(Int_t index) const
 {
-  // Get the transformation matrix of the SENSOR (not ncessary the same as the module) for a given module 'index'
-  // by quering the TGeoManager
+  // Get the transformation matrix of the SENSOR (not ncessary the same as the module) 
+  // for a given module 'index' by quering the TGeoManager
   const TString kPathBase = Form("/ALIC_1/%s_2/",AliITSUGeomTGeo::GetITSVolPattern());
   const TString kNames = Form("%%s%s%%d_1/%s%%d_%%d/%s%%d_%%d/%s%%d_%%d"
 			      ,AliITSUGeomTGeo::GetITSLayerPattern()
@@ -385,6 +425,8 @@ TGeoHMatrix* AliITSUGeomTGeo::GetMatrixSens(Int_t lay, Int_t ladd, Int_t detInLa
 			      ,AliITSUGeomTGeo::GetITSModulePattern()
 			      ,AliITSUGeomTGeo::GetITSSensorPattern());
   TString path;
+  Int_t lay,ladd,detInLad;
+  GetModuleId(index,lay,ladd,detInLad);
   //
   path.Form(kNames.Data(),kPathBase.Data(),lay,lay,ladd,lay,detInLad,lay,1);
   gGeoManager->PushPath();
@@ -428,74 +470,6 @@ TGeoPNEntry* AliITSUGeomTGeo::GetPNEntry(Int_t index) const
 }
 
 //______________________________________________________________________
-Bool_t AliITSUGeomTGeo::LocalToGlobal(Int_t index,const Double_t *loc, Double_t *glob) const
-{
-  // Make the conversion from the local sensitive reference system to the global
-  // reference system, for an arbitrary local position. The input is the pointer
-  // to the array of local coordinates, the result is sent to the glob pointer.
-  //
-  // Please don't use this method to get the global coordinates of clusters, use
-  // the direct method of AliCluster instead.
-  //
-  const TGeoHMatrix *m2 = GetTracking2LocalMatrix(index);
-  if (!m2) return kFALSE;
-
-  // The shift (in local y only) between alignable and sensitive volume
-  // is extracted directly from the Tracking2Local matrix
-  Double_t locSens[] = {loc[0], loc[1]+m2->GetTranslation()[1], loc[2]};
-
-  TGeoHMatrix *ml = GetMatrix(index);
-  if (!ml) return kFALSE;
-  ml->LocalToMaster(locSens,glob);
-  return kTRUE;
-}
-
-//______________________________________________________________________
-Bool_t AliITSUGeomTGeo::GlobalToLocal(Int_t index, const Double_t *glob, Double_t *loc) const
-{
-  // Make the conversion from the global reference system to the sensitive local
-  // reference system, for an arbitrary global position. The input is the pointer
-  // to the array of global coordinates, the result is sent to the loc pointer.
-  //
-  TGeoHMatrix *ml = GetMatrix(index);
-  if (!ml) return kFALSE;
-
-  const TGeoHMatrix *m2 = GetTracking2LocalMatrix(index);
-  if (!m2) return kFALSE;
-  ml->MasterToLocal(glob,loc);
-  // The shift (in local y only) between alignable and sensitive volume
-  // is extracted directly from the Tracking2Local matrix
-  loc[1] -= m2->GetTranslation()[1];
-
-  return kTRUE;
-}
-
-//______________________________________________________________________
-Bool_t AliITSUGeomTGeo::LocalToGlobalVect(Int_t index, const Double_t *loc, Double_t *glob) const
-{
-  // Make the conversion from the local sensitive reference system to the global
-  // reference system, for an arbitrary vector. The input is the pointer to the
-  // array of local coordinates, the result is sent to the glob pointer.
-  //
-  TGeoHMatrix *ml = GetMatrix(index);
-  if (!ml) return kFALSE;
-  ml->LocalToMasterVect(loc,glob);
-  return kTRUE;
-}
-
-//______________________________________________________________________
-Bool_t AliITSUGeomTGeo::GlobalToLocalVect(Int_t index, const Double_t *glob, Double_t *loc) const
-{
-  // Make the conversion from the global reference system to the sensitive local
-  // reference system, for an arbitrary vector. The input is the pointer to the
-  // array of global coordinates, the result is sent to the loc pointer.
-  TGeoHMatrix *ml = GetMatrix(index);
-  if (!ml) return kFALSE;
-  ml->MasterToLocalVect(glob,loc);
-  return kTRUE;
-}
-
-//______________________________________________________________________
 void AliITSUGeomTGeo::BuildITS()
 {
   // exract upg ITS parameters from TGeo
@@ -518,6 +492,7 @@ void AliITSUGeomTGeo::BuildITS()
     fLastModIndex[i]   = fNModules-1;
   }
   //
+  FetchMatrices();
   fVersion = kITSVUpg;
   //
 }
@@ -621,5 +596,20 @@ void AliITSUGeomTGeo::Print(Option_t *) const
   for (int i=0;i<fNLayers;i++) {
     printf("Lr%2d\tNLadd:%2d\tNDet:%2d\tDetType:%3d\tMod#:%4d:%4d\n",
 	   i,fNLadders[i],fNDetectors[i],fLrDetType[i],GetFirstModIndex(i),GetLastModIndex(i));
+  }
+}
+
+//______________________________________________________________________
+void AliITSUGeomTGeo::FetchMatrices()
+{
+  // store pointer on often used matrices for faster access
+  if (!gGeoManager) AliFatal("Geometry is not loaded");
+  fMatSens = new TObjArray(fNModules);
+  fMatSens->SetOwner(kTRUE);
+  fMatT2L  = new TObjArray(fNModules);  
+  fMatT2L->SetOwner(kTRUE);
+  for (int i=0;i<fNModules;i++) {
+    fMatSens->AddAt(new TGeoHMatrix(*ExtractMatrixSens(i)),i);
+    fMatT2L->AddAt(new TGeoHMatrix(*ExtractMatrixT2L(i)),i);
   }
 }

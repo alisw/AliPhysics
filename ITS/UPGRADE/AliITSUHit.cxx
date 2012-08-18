@@ -71,12 +71,6 @@ void AliITSUHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
   y = l[1];
   z = l[2];
   tof = fTof;
-  /*
-    RSS
-  printf("\nMod#%4d: Glo:%+7.2f %+7.2f %+7.2f | Loc: %+7.2f %+7.2f %+7.2f\n",
-	       fModule,g[0],g[1],g[2],l[0],l[1],l[2]);
-  */
-  gm->GetMatrixSens(fModule)->Print();
   //
 }
 

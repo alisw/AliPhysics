@@ -489,7 +489,8 @@ void AliITSUSimulationPix::SpreadChargeAsym(Double_t x0,Double_t z0,
   Float_t x,z;   // keep coordinates float (required by AliSegmentation)
   Double_t s,spx,spz,x1,x2,z1,z2; 
   //
-  if (GetDebug(2)) AliInfo(Form("SpreadChargeAsym","(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,sigx=%e, sigz=%e, t=%d,i=%d,ld=%e)",x0,z0,ix0,iz0,el,sigx,sigz,t,hi,ld));
+  if (GetDebug(2)) AliInfo(Form("(x0=%e,z0=%e,ix0=%d,iz0=%d,el=%e,sigx=%e, sigz=%e, t=%d,i=%d,ld=%e)",
+				x0,z0,ix0,iz0,el,sigx,sigz,t,hi,ld));
   if (sigx<=0.0 || sigz<=0.0) { // if sig<=0 No diffusion to simulate.
     UpdateMapSignal(iz0,ix0,t,hi,el);
     if (GetDebug(2)) {
