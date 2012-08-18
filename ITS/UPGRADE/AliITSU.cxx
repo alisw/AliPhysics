@@ -679,7 +679,6 @@ void AliITSU::ResetDigits(Int_t branch)
 void AliITSU::AddSumDigit(AliITSUSDigit &sdig)
 {
   // Adds the module summable digits to the summable digits tree.
-  printf("Add sdigit %d : ",fSDigits->GetEntriesFast()); sdig.Print();
   new( (*fSDigits)[fSDigits->GetEntriesFast()]) AliITSUSDigit(sdig);
   //  
 }
