@@ -77,6 +77,7 @@ AliAODHeader::AliAODHeader() :
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
   for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = 0;
   for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j]=-1;
+  for (Int_t i=0; i<kT0SpreadSize;i++) fT0spread[i]=0;
 }
 
 //______________________________________________________________________________
@@ -132,6 +133,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
   for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j]=-1;
+  for (Int_t i=0; i<kT0SpreadSize;i++) fT0spread[i]=0;
 }
 
 //______________________________________________________________________________
@@ -206,6 +208,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
   for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = 0;
   if (vzeroEqFactors) for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j] = vzeroEqFactors[j];
+  for (Int_t i=0; i<kT0SpreadSize;i++) fT0spread[i]=0;
 }
 
 //______________________________________________________________________________
@@ -280,6 +283,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   }
   for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = hdr.fITSClusters[i];
   for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j]=hdr.fVZEROEqFactors[j];
+  for (Int_t i=0; i<kT0SpreadSize;i++) fT0spread[i]=hdr.fT0spread[i];
+
 }
 
 //______________________________________________________________________________
@@ -360,6 +365,8 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
 
   for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = hdr.fITSClusters[i];
   for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j] = hdr.fVZEROEqFactors[j];
+  for (Int_t i=0; i<kT0SpreadSize;i++) fT0spread[i]=hdr.fT0spread[i];
+
   return *this;
 }
 
