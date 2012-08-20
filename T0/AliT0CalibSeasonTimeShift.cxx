@@ -153,11 +153,11 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	  return 300;
 	  }
 	  GetMeanAndSigma(cfd, mean, sigma);
-	  if (sigma == 0 || sigma > 500 || cfd->GetEntries()<200 ){
-	    AliError(Form("%s loe statsitics or bad histogram", histname[i].Data()));
+	  if (sigma == 0 || sigma > 600 || cfd->GetEntries()<50 ){ //!!!
+	    AliError(Form("%s low statsitics or bad histogram", histname[i].Data()));
 	    return 400;
 	  }
-	  if ( sigma > 0 && sigma < 500 && cfd->GetEntries()>200)
+	  if ( sigma > 0 && sigma < 600 && cfd->GetEntries()>=50) //!!!
 	    { 
 	      fMeanPar[i] =   mean;
 	      fSigmaPar[i] = sigma;
