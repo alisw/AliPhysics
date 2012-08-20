@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 8;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
+const Int_t numberOfCentralityBins = 10;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-1","1-2"};
 
 const Int_t gRebin = 1;
 void drawBalanceFunction2DPsi(const char* filename = "AnalysisResultsPsi.root", 
@@ -406,7 +406,7 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
   //Author: Panos.Christakoglou@nikhef.nl
-  TGaxis::SetMaxDigits(1);
+  TGaxis::SetMaxDigits(3);
 
   //Get the input file
   TString filename = lhcPeriod; filename +="/PttFrom";
@@ -422,7 +422,7 @@ void drawBFPsi2D(const char* lhcPeriod = "LHC11h",
   else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.Ptt";
   else filename += "All.PttFrom";
   filename += Form("%.1f",ptTriggerMin); filename += "To"; 
-  filename += Form("%.1f",ptTriggerMax); filename += ".PtaFrom";
+  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
   filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
   filename += Form("%.1f",ptAssociatedMax);  filename += ".root";  
 
