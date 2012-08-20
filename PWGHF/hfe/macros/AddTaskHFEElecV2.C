@@ -53,11 +53,11 @@ AliAnalysisTask *AddTaskHFEElecV2()
   mgr->AddTask(taskMB);
   mgr->AddTask(taskTR);
   
-  // Semi-central trigger
-  taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+  // Central trigger
+  taskMB->SelectCollisionCandidates(AliVEvent::kCentral);
   
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":PWGHF_hfeCalSemiCentralV2";
+  containerName += ":PWGHF_hfeCalCentralV2";
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histMB", TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
