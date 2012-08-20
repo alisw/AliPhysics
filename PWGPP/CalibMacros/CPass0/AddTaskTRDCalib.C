@@ -22,6 +22,14 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
     return NULL;
   }
 
+  // check the presence of the detectors
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject()); 
+  if (!grpData) {printf("Failed to get GRP data for run",runNumber); return;}
+  Int_t activeDetectors = grpData->GetDetectorMask(); 
+  TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
+
+
   ////////////////////////////////////////////
   // Number of timebins
   ///////////////////////////////////////////
@@ -32,6 +40,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   //
   /////////////////////////////////////////////
   Int_t versiongain, subversiongain, versionvdrift, subversionvdrift;
+
 
   /////////////////////////
   // The TRD calib Task
@@ -76,6 +85,9 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   calibTask->SetMinNbOfContributors(1);
   calibTask->SetMaxCluster(100.0);
   calibTask->SetNbMaxCluster(2);
+
+  if ( detStr.Contains("ITSSPD") && (!detStr.Contains("ITSSDD") || !detStr.Contains("ITSSSD"))) calibTask->SetUseSPDVertex();
+
   //calibTask->SetLimitChargeIntegration(kTRUE);
 
 
