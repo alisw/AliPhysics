@@ -139,10 +139,10 @@ AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, TString prod="")
       die->SetTrackRotator(rot);
       // mixing
       AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
-      mix->AddVariable(AliDielectronVarManager::kZvPrim,     20,-10.,10.);
-      mix->AddVariable(AliDielectronVarManager::kCentrality,  8,  0.,80.);
+      mix->AddVariable(AliDielectronVarManager::kZvPrim,     30,-10.,10.);
+      //      mix->AddVariable(AliDielectronVarManager::kCentrality,  8,  0.,80.);
       mix->SetMixType(AliDielectronMixingHandler::kAll);
-      mix->SetDepth(100);
+      mix->SetDepth(120);
       die->SetMixingHandler(mix);
 
 
@@ -731,7 +731,7 @@ void InitHF(AliDielectron* die, Int_t cutDefinition)
 
   hf->AddCutVariable(AliDielectronVarManager::kCentrality,  "0.,5.,10.,20.,40.,50.,60.,80."  );
   hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.,2.5,5.,100."                 );
-  hf->AddCutVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2,4,-1.*TMath::Pi(),TMath::Pi() );
+  hf->AddCutVariable(AliDielectronVarManager::kDeltaPhiv0ArpH2, 8,-1.*TMath::Pi(),TMath::Pi());
   hf->AddCutVariable(AliDielectronVarManager::kY,           1, -0.9, 0.9                     );
   //  hf->AddCutVariable(AliDielectronVarManager::kPt,          "0.8, 1.0, 1.1, 1.2, 1.5, 100.0", kTRUE, AliDielectronHF::kBinToMax);
   hf->AddCutVariable(AliDielectronVarManager::kNclsTPC,     "70,90,100,120,160",              kTRUE, AliDielectronHF::kBinToMax);
