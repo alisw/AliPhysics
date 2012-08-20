@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 8;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
+const Int_t numberOfCentralityBins = 10;
+TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-1","1-2"};
 
 void drawBalanceFunctionPsi(const char* filename = "AnalysisResultsPsi.root", 
 			    Int_t gCentrality = 1,
@@ -449,10 +449,11 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
 
   //Get the input file
   TString filename = lhcPeriod; filename +="/PttFrom";
-  filename += ptTriggerMin; filename += "To"; 
-  filename += ptTriggerMax; filename += "PtaFrom";
-  filename += ptAssociatedMin; filename += "To"; 
-  filename += ptAssociatedMax; filename += "/balanceFunction.Centrality"; 
+  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+  filename += Form("%.1f",ptAssociatedMax); 
+  filename += "/balanceFunction.Centrality"; 
   filename += gCentrality; filename += ".In";
   if(gDeltaEtaDeltaPhi == 1) filename += "DeltaEta.Psi";
   else if(gDeltaEtaDeltaPhi == 2) filename += "DeltaPhi.Psi";
@@ -461,10 +462,10 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
   else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.Ptt";
   else filename += "All.PttFrom";
-  filename += ptTriggerMin; filename += "To"; 
-  filename += ptTriggerMax; filename += ".PtaFrom";
-  filename += ptAssociatedMin; filename += "To"; 
-  filename += ptAssociatedMax;  filename += ".root";  
+  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+  filename += Form("%.1f",ptAssociatedMax);  filename += ".root";  
 
   //Open the file
   TFile *f = TFile::Open(filename.Data());
@@ -578,26 +579,93 @@ void drawBFPsi(const char* lhcPeriod = "LHC10h",
   gHistBalanceFunctionSubtracted->GetXaxis()->SetNdivisions(10);
   gHistBalanceFunctionSubtracted->DrawCopy("E");
   
+  //Opening the output ascii files
+  TString filenameMean = "meanIn"; 
+  TString filenameSigma = "sigmaIn"; 
+  TString filenameSkewness = "skewnessIn"; 
+  TString filenameKurtosis = "kurtosisIn"; 
+  if(gDeltaEtaDeltaPhi == 1) {
+    filenameMean += "DeltaEta.Psi"; filenameSigma += "DeltaEta.Psi";
+    filenameSkewness += "DeltaEta.Psi"; filenameKurtosis += "DeltaEta.Psi";
+  }
+  else if(gDeltaEtaDeltaPhi == 2) {
+    filenameMean += "DeltaPhi.Psi"; filenameSigma += "DeltaPhi.Psi";
+    filenameSkewness += "DeltaPhi.Psi"; filenameKurtosis += "DeltaPhi.Psi";
+  }
+  if((psiMin == -0.5)&&(psiMax == 0.5)) {
+    filenameMean += "InPlane.Ptt"; filenameSigma += "InPlane.Ptt";
+    filenameSkewness += "InPlane.Ptt"; filenameKurtosis += "InPlane.Ptt";
+  }
+  else if((psiMin == 0.5)&&(psiMax == 1.5)) {
+    filenameMean += "Intermediate.Ptt"; filenameSigma += "Intermediate.Ptt";
+    filenameSkewness += "Intermediate.Ptt"; 
+    filenameKurtosis += "Intermediate.Ptt";
+  }
+  else if((psiMin == 1.5)&&(psiMax == 2.5)) {
+    filenameMean += "OutOfPlane.Ptt"; filenameSigma += "OutOfPlane.Ptt";
+    filenameSkewness += "OutOfPlane.Ptt"; 
+    filenameKurtosis += "OutOfPlane.Ptt";    
+  }
+  else if((psiMin == 2.5)&&(psiMax == 3.5)) {
+    filenameMean += "Rest.Ptt"; filenameSigma += "Rest.Ptt";
+    filenameSkewness += "Rest.Ptt"; filenameKurtosis += "Rest.Ptt";
+  }
+  else {
+    filenameMean += "All.Ptt"; filenameSigma += "All.Ptt";
+    filenameSkewness += "All.Ptt"; filenameKurtosis += "All.Ptt";
+  }
+  filenameMean += Form("%.1f",ptTriggerMin); filenameMean += "To"; 
+  filenameMean += Form("%.1f",ptTriggerMax); filenameMean += "PtaFrom";
+  filenameMean += Form("%.1f",ptAssociatedMin); filenameMean += "To"; 
+  filenameMean += Form("%.1f",ptAssociatedMax);  filenameMean += ".txt";  
+  filenameSigma += Form("%.1f",ptTriggerMin); filenameSigma += "To"; 
+  filenameSigma += Form("%.1f",ptTriggerMax); filenameSigma += "PtaFrom";
+  filenameSigma += Form("%.1f",ptAssociatedMin); filenameSigma += "To"; 
+  filenameSigma += Form("%.1f",ptAssociatedMax);  filenameSigma += ".txt";  
+  filenameSkewness += Form("%.1f",ptTriggerMin); filenameSkewness += "To"; 
+  filenameSkewness += Form("%.1f",ptTriggerMax); filenameSkewness += "PtaFrom";
+  filenameSkewness += Form("%.1f",ptAssociatedMin); filenameSkewness += "To"; 
+  filenameSkewness += Form("%.1f",ptAssociatedMax);  
+  filenameSkewness += ".txt";  
+  filenameKurtosis += Form("%.1f",ptTriggerMin); filenameKurtosis += "To"; 
+  filenameKurtosis += Form("%.1f",ptTriggerMax); filenameKurtosis += "PtaFrom";
+  filenameKurtosis += Form("%.1f",ptAssociatedMin); filenameKurtosis += "To"; 
+  filenameKurtosis += Form("%.1f",ptAssociatedMax);  
+  filenameKurtosis += ".txt";  
+
   TString meanLatex, rmsLatex, skewnessLatex, kurtosisLatex;
   meanLatex = "#mu = "; 
   meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMean());
   meanLatex += " #pm "; 
   meanLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetMeanError());
-  
+  ofstream fileMean(filenameMean.Data(),ios::app);
+  fileMean << gCentrality << " " << gHistBalanceFunctionSubtracted->GetMean() << " " <<gHistBalanceFunctionSubtracted->GetMeanError()<<endl;
+  fileMean.close();
+
   rmsLatex = "#sigma = "; 
   rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMS());
   rmsLatex += " #pm "; 
   rmsLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetRMSError());
+  ofstream fileSigma(filenameSigma.Data(),ios::app);
+  fileSigma << gCentrality << " " << gHistBalanceFunctionSubtracted->GetRMS() << " " <<gHistBalanceFunctionSubtracted->GetRMSError()<<endl;
+  fileSigma.close();
   
   skewnessLatex = "S = "; 
   skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(1));
   skewnessLatex += " #pm "; 
   skewnessLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetSkewness(11));
-  
+  ofstream fileSkewness(filenameSkewness.Data(),ios::app);
+  fileSkewness << gCentrality << " " << gHistBalanceFunctionSubtracted->GetSkewness(1) << " " <<gHistBalanceFunctionSubtracted->GetSkewness(11)<<endl;
+  fileSkewness.close();
+
   kurtosisLatex = "K = "; 
   kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(1));
   kurtosisLatex += " #pm "; 
   kurtosisLatex += Form("%.3f",gHistBalanceFunctionSubtracted->GetKurtosis(11));
+  ofstream fileKurtosis(filenameKurtosis.Data(),ios::app);
+  fileKurtosis << gCentrality << " " << gHistBalanceFunctionSubtracted->GetKurtosis(1) << " " <<gHistBalanceFunctionSubtracted->GetKurtosis(11)<<endl;
+  fileKurtosis.close();
+
   Printf("Mean: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetMean(),gHistBalanceFunctionSubtracted->GetMeanError());
   Printf("RMS: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetRMS(),gHistBalanceFunctionSubtracted->GetRMSError());
   Printf("Skeweness: %lf - Error: %lf",gHistBalanceFunctionSubtracted->GetSkewness(1),gHistBalanceFunctionSubtracted->GetSkewness(11));
