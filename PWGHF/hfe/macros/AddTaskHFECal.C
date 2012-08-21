@@ -29,11 +29,13 @@ AliAnalysisTask *AddTaskHFECal()
 
   AliAnalysisTaskHFECal *hfetaskCent = ConfigHFECal(MCthere);
   AliAnalysisTaskHFECal *hfetaskTrig= ConfigHFECal(MCthere);
+  AliAnalysisTaskHFECal *hfetaskTrig2= ConfigHFECal(MCthere);
  
   mgr->AddTask(hfetaskCent);
   mgr->AddTask(hfetaskTrig);
+  mgr->AddTask(hfetaskTrig2);
   
-  // Semi-central trigger
+  // central trigger
   hfetaskCent->SelectCollisionCandidates(AliVEvent::kCentral);
   
   TString containerName = mgr->GetCommonFileName();
@@ -55,6 +57,19 @@ AliAnalysisTask *AddTaskHFECal()
   mgr->ConnectInput(hfetaskTrig, 0, cinput);
   mgr->ConnectOutput(hfetaskTrig, 1, coutput1);
   
+
+  //Jet trigger
+  hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kEMCEJE);
+  
+  TString containerName3 = mgr->GetCommonFileName();
+  containerName3 += ":PWGHF_hfeCalTrigEJE";
+  
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("HFE_Results_EMCalTrigEJE", TList::Class(),AliAnalysisManager::kOutputContainer, containerName3.Data());
+  mgr->ConnectInput(hfetaskTrig2, 0, cinput);
+  mgr->ConnectOutput(hfetaskTrig2, 1, coutput1);
+  
+
   //if(MCthere)
     //{
     //MB trigger
