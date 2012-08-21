@@ -928,7 +928,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     primV += recg;
     recg.SetProductionVertex(primV);
     
-    recg.SetMassConstraint(0,0.0001);
+    //recg.SetMassConstraint(0,0.0001);
     
     openingAngle = ge1.GetAngle(ge2);
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
