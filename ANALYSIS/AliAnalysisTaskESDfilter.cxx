@@ -390,6 +390,10 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   // VZERO channel equalization factors for event-plane reconstruction 	 
   header->SetVZEROEqFactors(esd.GetVZEROEqFactors());
 
+  // T0 Resolution information                                                                                                                                          
+  const AliESDRun* esdRun = esd.GetESDRun();
+  for (Int_t i=0;i<AliESDRun::kT0spreadSize;i++) header->SetT0spread(i,esdRun->GetT0spread(i));
+
   return header;
 }
 
