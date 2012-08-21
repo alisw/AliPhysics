@@ -931,7 +931,7 @@ Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &nsig
 	AliFatal("To use this AOD you must start AliPIDResponseTask"); 
       }
       else {
-	Double_t time[AliPID::kSPECIESN];
+	Double_t time[AliPID::kSPECIES];
 	Double_t sigmaTOFPid[AliPID::kSPECIES];
 	AliAODPid *pidObj = track->GetDetPid();
 	pidObj->GetIntegratedTimes(time);
