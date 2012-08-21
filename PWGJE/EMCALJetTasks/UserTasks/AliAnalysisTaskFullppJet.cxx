@@ -998,7 +998,7 @@ void AliAnalysisTaskFullppJet::FillAODJets(TClonesArray *fJetArray, AliFJWrapper
       //printf("AOD jet: ij=%d, pt=%f, eta=%f, phi=%f\n",ij, jet->Pt(), jet->Eta(),jet->Phi()*TMath::RadToDeg());
 
       jet->GetRefTracks()->Clear();
-      vector<fastjet::PseudoJet> constituents = jetFinder->GetJetConstituents(ij);
+			std::vector<fastjet::PseudoJet> constituents = jetFinder->GetJetConstituents(ij);
       Double_t totE=0, totPt=0, totChPt=0, leadChPt=0, neE=0, totNePt=0, leadNePt=0, leadPt=0;
       Double_t leadTrkType=0, nChPart = 0, nNePart = 0;
       Bool_t isHighPtTrigger = kFALSE, isTriggering = kFALSE, isHyperTrack = kFALSE;
@@ -1185,7 +1185,7 @@ void AliAnalysisTaskFullppJet::AnalyzeJets(AliFJWrapper *jetFinder, const Int_t 
       Float_t jetE   = jetsIncl[ij].E();
       Float_t jetPt  = jetsIncl[ij].perp();
 
-      vector<fastjet::PseudoJet> constituents = jetFinder->GetJetConstituents(ij);
+			std::vector<fastjet::PseudoJet> constituents = jetFinder->GetJetConstituents(ij);
       Double_t neE=0, leadingZ = 0, maxPt = 0;
       Int_t constituentType = -1, leadingIndex = 0; 
       for(UInt_t ic=0; ic<constituents.size(); ic++)
@@ -1468,7 +1468,7 @@ Double_t AliAnalysisTaskFullppJet::GetLeadingZ(const Int_t jetIndex, AliFJWrappe
   //
 
   Double_t z = 0;
-  vector<fastjet::PseudoJet> constituents = jetFinder->GetJetConstituents(jetIndex);
+	std::vector<fastjet::PseudoJet> constituents = jetFinder->GetJetConstituents(jetIndex);
   std::vector<fastjet::PseudoJet> jetsIncl = jetFinder->GetInclusiveJets();
   Int_t index = -1;
   Double_t maxPt = 0;
@@ -1503,7 +1503,7 @@ Double_t AliAnalysisTaskFullppJet::GetMeasuredJetPtResolution(const Int_t jetInd
   //
 
   Double_t jetSigma2 = 0;
-  vector<fastjet::PseudoJet> constituents = jetFinder->GetJetConstituents(jetIndex);
+	std::vector<fastjet::PseudoJet> constituents = jetFinder->GetJetConstituents(jetIndex);
   for(UInt_t ic=0; ic<constituents.size(); ic++)
     {
       if(constituents[ic].user_index()>0)
@@ -1607,7 +1607,7 @@ Int_t AliAnalysisTaskFullppJet::FindEnergyMatchedJet(AliFJWrapper *jetFinder1, c
   Int_t matchedIndex = -1;
   std::vector<fastjet::PseudoJet> jetsIncl1 = jetFinder1->GetInclusiveJets();  
   std::vector<fastjet::PseudoJet> jetsIncl2 = jetFinder2->GetInclusiveJets();
-  vector<fastjet::PseudoJet> constituents1 = jetFinder1->GetJetConstituents(index1);
+	std::vector<fastjet::PseudoJet> constituents1 = jetFinder1->GetJetConstituents(index1);
   Double_t jetPt1 = jetsIncl1[index1].perp();
   if(jetPt1<0) return matchedIndex;
 
@@ -1615,7 +1615,7 @@ Int_t AliAnalysisTaskFullppJet::FindEnergyMatchedJet(AliFJWrapper *jetFinder1, c
     {
       Double_t jetPt2  = jetsIncl2[ij2].perp();
       if(jetPt2<0) return matchedIndex;
-      vector<fastjet::PseudoJet> constituents2 = jetFinder2->GetJetConstituents(ij2);
+			std::vector<fastjet::PseudoJet> constituents2 = jetFinder2->GetJetConstituents(ij2);
       Double_t sharedPt1 = 0., sharedPt2 = 0.;
       for(UInt_t ic2=0; ic2<constituents2.size(); ic2++)
 	{

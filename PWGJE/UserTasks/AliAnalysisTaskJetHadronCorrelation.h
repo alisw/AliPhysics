@@ -46,7 +46,7 @@ class AliAnalysisTaskJetHadronCorrelation : public AliAnalysisTaskSE
 		virtual void   SetTrackPtCut(Float_t tPtcut=0)  {TrackPtcut=tPtcut;}
 		virtual void   SetSkipCone(Int_t skipCone=0)    {SkipCone=skipCone;}
 		virtual void   SetMC(Bool_t ismc=true)          {IsMC=ismc;}
-		virtual void   SetJetEScale(Float_t JEScale=1.)  {JetEScale=JEScale;}
+		virtual void   SetJetEScale  (Float_t JEScale=1.){JetEScale=JEScale;}
 		virtual void   SetTrackEScale(Float_t TEScale=1.){TrackEScale=TEScale;}
 		virtual void   FinishTaskOutput();
 
