@@ -21,7 +21,7 @@ AliAnalysisTaskJetHadronCorrelation *AddTaskJetHadronCorrelation(Char_t *jf="ANT
    //===========================================================================
 
    AliAnalysisTaskJetHadronCorrelation *jethadron = new AliAnalysisTaskJetHadronCorrelation("TaskJetHadronCorrelation");
-   jethadron->SetDebugLevel(0);
+   jethadron->SetDebugLevel(3);
 	 jethadron->SetAlgorithm(jf);
 	 jethadron->SetRadius(radius);
 	 jethadron->SetFilterMask(filter);
