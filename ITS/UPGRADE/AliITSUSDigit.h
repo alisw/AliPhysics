@@ -35,8 +35,6 @@ class AliITSUSDigit: public TObject
   void Add(const AliITSUSDigit *pl);
   void AddTo(Int_t fileIndex, const AliITSUSDigit *pl);
   void ShiftIndices(Int_t fileIndex);
-  void Print(ostream *os) const;
-  void Read(istream *is);
   void Print(Option_t *option="")                 const;
   Int_t Read(const char *name)                          {return TObject::Read(name);}
   //
@@ -60,9 +58,6 @@ class AliITSUSDigit: public TObject
   ClassDef(AliITSUSDigit,1) // Item list of signals and track numbers
 };	
 
-// Input and output functions for standard C++ input/output.
-ostream & operator<<(ostream &os,AliITSUSDigit &source);
-istream & operator>>(istream &is,AliITSUSDigit &source);
 
 
 #endif

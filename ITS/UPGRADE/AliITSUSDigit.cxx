@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <Riostream.h>
 #include <TMath.h>
 #include "AliLog.h"
 #include "AliITSUSDigit.h"
@@ -138,9 +137,9 @@ void AliITSUSDigit::AddSignal(Int_t track,Int_t hit,Double_t signal)
       for (i=1;i<fNTracks;i++) {
 	j = i;
 	while(j>0 && fSignal[j]>fSignal[j-1]) {
-	  swap(fTrack[j-1],fTrack[j]);
-	  swap(fHits[j-1] ,fHits[j]);
-	  swap(fSignal[j-1],fSignal[j]);
+	  std::swap(fTrack[j-1],fTrack[j]);
+	  std::swap(fHits[j-1] ,fHits[j]);
+	  std::swap(fSignal[j-1],fSignal[j]);
 	  j--;
 	} // end while
       } // end if i
@@ -211,51 +210,6 @@ void AliITSUSDigit::ShiftIndices(Int_t fileIndex)
   // Shift track numbers
   //
   for (int i=GetNTracks();i--;) fTrack[i] += fileIndex;
-}
-
-//______________________________________________________________________
-void AliITSUSDigit::Print(ostream *os) const 
-{
-  //Standard output format for this class
-  Int_t i;
-  //
-  *os << fModule <<","<<GetUniqueID()<<","<<fNTracks<<",";
-  for (i=0;i<fNTracks;i++) *os << fTrack[i] <<",";
-  for (i=0;i<fNTracks;i++) *os << fHits[i] <<",";
-  for (i=0;i<fNTracks;i++) *os << fSignal[i] <<",";
-  *os << fTsignal <<","<< fNoise << "," << fSignalAfterElect;
-}
-
-//______________________________________________________________________
-void AliITSUSDigit::Read(istream *is) 
-{
-  // Standard output streaming function.
-  Int_t i,iss;
-  UInt_t ind;
-  //
-  *is >> fModule >> ind >> fNTracks;
-  SetUniqueID(ind);
-  *is >> iss; // read in fNTracks
-  for(i=0;i<fNTracks&&i<iss;i++) *is >> fTrack[i];
-  for(i=0;i<fNTracks&&i<iss;i++) *is >> fHits[i];
-  for(i=0;i<fNTracks&&i<iss;i++) *is >> fSignal[i];
-  *is >> fTsignal >> fNoise >> fSignalAfterElect;
-}
-
-//______________________________________________________________________
-ostream &operator<<(ostream &os,AliITSUSDigit &source)
-{
-  // Standard output streaming function.
-  source.Print(&os);
-  return os;
-}
-
-//______________________________________________________________________
-istream &operator>>(istream &os,AliITSUSDigit &source)
-{
-  // Standard output streaming function.
-  source.Read(&os);
-  return os;
 }
 
 //______________________________________________________________________

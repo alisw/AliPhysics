@@ -19,7 +19,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-#include <Riostream.h>
 #include <TGeoGlobalMagField.h>
 #include <TH1.h>
 #include <TString.h>
@@ -242,8 +241,6 @@ void AliITSUSimulationPix::Hits2SDigits(AliITSUModule *mod)
 	if (!(fSeg->LocalToDet(x,z,ix,iz))) continue; // outside
 	el  = dt * de / fSimuParam->GetGeVToCharge();
 	//
-	if (GetDebug(1)) if (el<=0.0) cout<<"el="<<el<<" dt="<<dt<<" de="<<de<<endl; // end if GetDebug
-	//
 	sig = fSimuParam->SigmaDiffusion1D(TMath::Abs(thick + y)); 
 	sigx=sig;
 	sigz=sig*fda;
@@ -343,7 +340,6 @@ void AliITSUSimulationPix::Hits2SDigitsFast(AliITSUModule *mod)
 	sigz=sig*fda;
 	if (fSimuParam->GetPixLorentzDrift()) ld=(y+thick)*fTanLorAng;
 	SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
-	//                cout << "sigx sigz " << sigx << " " << sigz << endl; // dom
       } // end for i // End Integrate over t
     else { // st == 0.0 deposit it at this point
       x   = x0;
@@ -443,13 +439,7 @@ void AliITSUSimulationPix::SpreadCharge(Double_t x0,Double_t z0,
        z2 -= z0; // Distance from where track traveled
        s   = el*0.25; // Correction based on definision of Erfc
        s  *= AliMathBase::ErfcFast(sp*x1) - AliMathBase::ErfcFast(sp*x2);
-       if (GetDebug(3)) {
-	 cout <<"el="<<el<<" ix0="<<ix0<<" ix="<<ix<<" x0="<<x<<
-	   " iz0="<<iz0<<" iz="<<iz<<" z0="<<z<< 
-	   " sp*x1="<<sp*x1<<" sp*x2="<<sp*x2<<" s="<<s;
-       } // end if GetDebug
        s  *= AliMathBase::ErfcFast(sp*z1) - AliMathBase::ErfcFast(sp*z2);
-       if (GetDebug(3)) cout<<" sp*z1="<<sp*z1<<" sp*z2="<<sp*z2<<" s="<<s<< endl; // end if GetDebug
        if (s>fSimuParam->GetPixMinElToAdd()) UpdateMapSignal(iz,ix,t,hi,s);
      } // end for ix, iz
    //
@@ -493,18 +483,10 @@ void AliITSUSimulationPix::SpreadChargeAsym(Double_t x0,Double_t z0,
 				x0,z0,ix0,iz0,el,sigx,sigz,t,hi,ld));
   if (sigx<=0.0 || sigz<=0.0) { // if sig<=0 No diffusion to simulate.
     UpdateMapSignal(iz0,ix0,t,hi,el);
-    if (GetDebug(2)) {
-      cout << "sigx<=0.0=" << sigx << endl;
-      cout << "sigz<=0.0=" << sigz << endl;
-    } // end if GetDebug
     return;
   } // end if
   spx = 1.0/(sigx*kRoot2);     
   spz = 1.0/(sigz*kRoot2);
-  if (GetDebug(2)) {
-    cout << "sigx=" << sigx << " spx=" << spx << endl;
-    cout << "sigz=" << sigz << " spz=" << spz << endl;
-  } // end if GetDebug
   ixs = TMath::Max(-knx+ix0,0);
   ixe = TMath::Min(knx+ix0,fSeg->Npx()-1);
   izs = TMath::Max(-knz+iz0,0);
@@ -526,9 +508,7 @@ void AliITSUSimulationPix::SpreadChargeAsym(Double_t x0,Double_t z0,
       z2 -= z0; // Distance from where track traveled
       s   = el*0.25; // Correction based on definision of Erfc
       s  *= AliMathBase::ErfcFast(spx*x1) - AliMathBase::ErfcFast(spx*x2);
-      if (GetDebug(3)) cout <<"el="<<el<<" ix0="<<ix0<<" ix="<<ix<<" x0="<<x<<" iz0="<<iz0<<" iz="<<iz<<" z0="<<z<<" spx*x1="<<spx*x1<<" spx*x2="<<spx*x2<<" s="<<s; // end if GetDebug
       s  *= AliMathBase::ErfcFast(spz*z1) - AliMathBase::ErfcFast(spz*z2);
-      if (GetDebug(3)) cout<<" spz*z1="<<spz*z1<<" spz*z2="<<spz*z2<<" s="<<s<< endl; // end if GetDebug
       if (s>fSimuParam->GetPixMinElToAdd()) UpdateMapSignal(iz,ix,t,hi,s);
     } // end for ix, iz
   //
