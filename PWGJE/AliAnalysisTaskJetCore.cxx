@@ -53,6 +53,9 @@
 
 #include "AliAnalysisTaskJetCore.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskJetCore)
 
 AliAnalysisTaskJetCore::AliAnalysisTaskJetCore() :
