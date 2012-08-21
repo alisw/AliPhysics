@@ -24,6 +24,9 @@
 #include <cstdlib>
 
 
+using std::vector;
+using std::deque;
+
 // #include "AliDielectronPID.h"
 
 class AliDielectron;
