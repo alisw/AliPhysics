@@ -35,6 +35,7 @@ class AliAODPid : public TObject {
   void      SetTRDmomentum(Int_t nplane, Float_t trdMom)       {fTRDmomentum[nplane]=trdMom;}
   inline void  SetTRDncls(UChar_t ncls, Int_t layer = -1);
   void      SetTRDntrackletsPID(UChar_t ntls) {fTRDntls = ntls;}
+  void      SetTRDChi2(Double_t chi2)          {fTRDChi2 = chi2;}
   void      SetTOFsignal(Double_t tof)                         {fTOFesdsignal=tof;}
   void      SetTOFpidResolution(Double_t tofPIDres[5]);
   void      SetIntegratedTimes(Double_t timeint[5]);
@@ -52,6 +53,7 @@ class AliAODPid : public TObject {
   Double_t  GetTPCmomentum()     const {return  fTPCmomentum;}
   Int_t     GetTRDnSlices()      const {return  fTRDnSlices;}
   Double_t* GetTRDsignal()       const {return  fTRDslices;}
+  Double_t  GetTRDChi2()         const {return fTRDChi2;}
   const Double_t*  GetTRDmomentum() const {return  fTRDmomentum;}
   UChar_t   GetTRDncls(UChar_t layer) const { if(layer > 5) return 0; return fTRDncls[layer];}
   inline UChar_t GetTRDncls() const;
@@ -74,6 +76,7 @@ class AliAODPid : public TObject {
   UChar_t     fTRDncls[6];       // number of clusters used for dE/dx calculation
   Double32_t* fTRDslices;        //[fTRDnSlices][0.,0.,10]
   Double32_t  fTRDmomentum[6];   //[0.,0.,10]  momentum at the TRD layers
+  Double32_t  fTRDChi2;          //TRD chi2
 
   Double32_t  fTOFesdsignal;     //[0.,0.,20] TOF signal - t0 (T0 interaction time)
   Double32_t  fTOFpidResolution[5]; //[0.,0.,20] TOF pid resolution for each mass hypotesys 
@@ -81,7 +84,7 @@ class AliAODPid : public TObject {
  
   AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
 
-  ClassDef(AliAODPid, 11);
+  ClassDef(AliAODPid, 12);
 };
 
 //_____________________________________________________________

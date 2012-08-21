@@ -38,6 +38,7 @@ AliAODPid::AliAODPid():
     fTRDnSlices(0),
     fTRDntls(0),
     fTRDslices(0x0),
+    fTRDChi2(0x0),
     fTOFesdsignal(0),
     fTPCdEdxInfo(0)
 {
@@ -71,6 +72,7 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   fTRDnSlices(pid.fTRDnSlices),
   fTRDntls(pid.fTRDntls),
   fTRDslices(0x0),
+  fTRDChi2(pid.fTRDChi2),
   fTOFesdsignal(pid.fTOFesdsignal),
   fTPCdEdxInfo(0x0)
 {
@@ -121,6 +123,8 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
 	fTRDmomentum[i] = pid.fTRDmomentum[i];
 	fTRDncls[i]     = pid.fTRDncls[i];
     }
+
+    fTRDChi2 = pid.fTRDChi2;
 
     fTOFesdsignal=pid.fTOFesdsignal;
     for (Int_t i = 0; i < 5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
