@@ -156,6 +156,8 @@ AliForwardUtil::MagneticFieldString(Short_t f)
 AliAODEvent* AliForwardUtil::GetAODEvent(AliAnalysisTaskSE* task)
 {
   // Check if AOD is the output event
+  if (!task) ::Fatal("GetAODEvent", "Null task given, cannot do that");
+
   AliAODEvent* ret = task->AODEvent();
   if (ret) return ret; 
   

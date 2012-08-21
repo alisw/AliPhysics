@@ -324,7 +324,6 @@ AliForwardMCCorrectionsTask::UserCreateOutputObjects()
   AliInfo(Form("Initialising sub-routines: %p, %p", 
 	       &fInspector, &fTrackDensity));
   fInspector.DefineOutput(fList);
-  fInspector.Init(fVtxAxis);
   fTrackDensity.DefineOutput(fList);
 
   PostData(1, fList);
@@ -369,6 +368,8 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
 		 esd->GetCurrentL3(),
 		 esd->GetMagneticField(),
 		 esd->GetRunNumber()));
+
+    fInspector.Init(fVtxAxis);
 
     Print();
     fFirstEvent = false;
