@@ -49,9 +49,6 @@
 #include <cstdlib> 
 #include <TRandom.h>
 
-using std::vector;
-using std::deque;
-
 const char* kPairClassNamesTG[7] = {
   "unlike",
   "like_pp",
