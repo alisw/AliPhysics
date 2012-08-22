@@ -13,6 +13,9 @@
 
 // ITS upgrade classes 
  
+#pragma link C++ class AliITSURecoParam+;
+//
+//
 #pragma link C++ class AliITSlayerUpgrade+;
 #pragma link C++ class AliITStrackerUpgrade+;
 #pragma link C++ class AliITStrackU+;

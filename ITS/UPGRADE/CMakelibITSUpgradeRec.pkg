@@ -27,10 +27,12 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
+    AliITSURecoParam.cxx
+#
     v0/AliITSlayerUpgrade.cxx 
     v0/AliITStrackerUpgrade.cxx 
     v0/AliITStrackU.cxx 
-    AliITStrackerU.cxx 
+    v0/AliITStrackerU.cxx 
     v0/AliITSUpgradeReconstructor.cxx 
     v0/AliITSUpgradeClusterList.cxx 
     v0/AliITSUpgradeClusterListNode.cxx 
