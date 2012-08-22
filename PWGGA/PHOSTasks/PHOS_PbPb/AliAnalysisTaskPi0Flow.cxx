@@ -1283,7 +1283,7 @@ void AliAnalysisTaskPi0Flow::UpdateLists()
   if(fCaloPhotonsPHOS->GetEntriesFast()>0){
     arrayList->AddFirst(fCaloPhotonsPHOS) ;
     fCaloPhotonsPHOS=0;
-    if(arrayList->GetEntries()>100){//Remove redundant events
+    if(arrayList->GetEntries()>fMixingArraysLength){//Remove redundant events
       TObjArray * tmp = static_cast<TObjArray*>(arrayList->Last()) ;
       arrayList->RemoveLast() ;
       delete tmp ; // TODO: may conflict with delete done by list being owner.
