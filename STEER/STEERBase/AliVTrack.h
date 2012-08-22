@@ -60,6 +60,7 @@ public:
   virtual Double_t GetTRDslice(Int_t /*plane*/, Int_t /*slice*/) const { return -1.; }
   virtual Int_t    GetNumberOfTRDslices() const { return 0; }
   virtual UChar_t  GetTRDntrackletsPID() const { return 0;}
+  virtual Double_t GetTRDchi2()          const { return -1;}
   
   virtual Int_t GetEMCALcluster()     const {return -1;}
   virtual void SetEMCALcluster(Int_t)       {;}
