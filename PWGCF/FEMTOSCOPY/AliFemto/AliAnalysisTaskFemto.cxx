@@ -422,6 +422,14 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
 //       fAOD = aodH->GetEvent();
 //     }
 
+
+
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral));
+  if(!isSelected) {cout << "AliAnalysisTaskFemto: is not selected" << endl; return;}
+
+
+
+
     AliInfo(Form("Tracks in AOD: %d \n",fAOD->GetNumberOfTracks()));
     
     if (fAOD->GetNumberOfTracks() > 0) {
