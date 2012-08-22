@@ -34,6 +34,8 @@ class TCollection;
 class AliAnalysisTask;
 class AliAnalysisDataWrapper;
 
+using std::ostream;
+
 class AliAnalysisDataContainer : public TNamed {
 
 public:

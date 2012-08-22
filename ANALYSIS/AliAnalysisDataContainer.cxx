@@ -59,6 +59,9 @@
 
 using std::endl;
 using std::cout;
+using std::ios;
+using std::setiosflags;
+using std::setprecision;
 ClassImp(AliAnalysisDataContainer)
 
 //______________________________________________________________________________

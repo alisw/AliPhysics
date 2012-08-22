@@ -37,6 +37,9 @@
 #include "AliITSUSimuParam.h"
 #include "AliITSUSDigit.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliITSUSimulationPix)
 ////////////////////////////////////////////////////////////////////////
 //  Version: 1

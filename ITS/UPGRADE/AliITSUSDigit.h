@@ -5,6 +5,7 @@
 
 #include <TObject.h>
 
+using std::istream;
 
 class AliITSUSDigit: public TObject 
 {

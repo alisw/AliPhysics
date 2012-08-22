@@ -17,6 +17,9 @@
 #include "AliITSUSDigit.h"
 ClassImp(AliITSUSDigit)
 
+using std::istream;
+using std::swap;
+
 // Addapted from ITS/AliITSpListItem, ruben.shahoyan@cern.ch
 
 //______________________________________________________________________

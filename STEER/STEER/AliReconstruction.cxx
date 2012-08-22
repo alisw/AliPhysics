@@ -207,6 +207,8 @@
 #include <sys/resource.h>
 ClassImp(AliReconstruction)
 
+using std::endl;
+
 //_____________________________________________________________________________
 const char* AliReconstruction::fgkStopEvFName = "_stopEvent_";
 const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE"
