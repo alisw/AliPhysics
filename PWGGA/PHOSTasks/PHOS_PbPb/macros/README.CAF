@@ -1,0 +1,19 @@
+	Running analysis AliAnalysisTaskPi0Flow in CAF
+	----------------------------------------------
+
+Datasets with AOD from LHC11h pass2 reconstruction are available in
+CAF and can be found in CAF_datasets_AOD095.txt
+
+Check up-to-date datasets in CAF by the following ROOT commands:
+TProof::Open("alice-caf.cern.ch");
+gProof->ShowDataSets();
+
+To run this analysis on CAF, obtain the ALIEN token and run
+   root -l Pi0FlowCAF.C
+with optional parameters: dataset name, number of events to analyze,
+number of events to stip from the beginning.
+
+ROOT and ALIROOT versions defined in Pi0FlowCAF.C should be updated if
+necessary.
+
+22.08.2012
