@@ -58,7 +58,7 @@ AliAnalysisTaskEfficiencyBF::AliAnalysisTaskEfficiencyBF(const char *name)
   fCentralityEstimator("V0M"), fCentralityPercentileMin(0.0), fCentralityPercentileMax(5.0), 
   fVxMax(3.0), fVyMax(3.0), fVzMax(10.), 
   fMinNumberOfTPCClusters(80), fMaxChi2PerTPCCluster(4.0), fMaxDCAxy(3.0), fMaxDCAz(3.0),
-    fMinPt(0.3), fMaxPt(1.5), fMinEta(-0.8), fMaxEta(0.8),fEtaRangeMin(0.0), fEtaRangeMax(1.6), fPtRangeMin(0.3), fPtRangeMax(1.5), fPhiRangeMin(0.0),fPhiRangeMax(6.28),fEtaBin(64),fPtBin(49),fPhiBin(90) {  
+    fMinPt(0.3), fMaxPt(1.5), fMinEta(-0.8), fMaxEta(0.8),fEtaRangeMin(0.0), fEtaRangeMax(1.6), fPtRangeMin(0.3), fPtRangeMax(1.5), fPhiRangeMin(0.0),fPhiRangeMax(360.),fdPhiRangeMax(180.), fEtaBin(64),fPtBin(49),fPhiBin(100),fdPhiBin(90)   {  
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -234,55 +234,55 @@ void AliAnalysisTaskEfficiencyBF::UserCreateOutputObjects() {
    //phi vs eta for MC ++
   fHistGeneratedPhiEtaPlusPlus = new TH2F("fHistGeneratedPhiEtaPlusPlus",
 				     "Generated ++ primaries;#Delta#phi",
-					  fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+					  fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistGeneratedPhiEtaPlusPlus);
   fHistFindablePhiEtaPlusPlus = new TH2F("fHistFindablePhiEtaPlusPlus",
 				     "Findable ++ primaries;#Delta#phi;#Delta#eta",
-					 fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+					 fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistFindablePhiEtaPlusPlus);
   fHistReconstructedPhiEtaPlusPlus = new TH2F("fHistReconstructedPhiEtaPlusPlus",
 				     "Reconstructed ++ primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistReconstructedPhiEtaPlusPlus);
   fHistSurvivedPhiEtaPlusPlus = new TH2F("fHistSurvivedPhiEtaPlusPlus",
 				     "Survived ++ primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistSurvivedPhiEtaPlusPlus);
 
   //phi vs eta for MC --
   fHistGeneratedPhiEtaMinusMinus = new TH2F("fHistGeneratedPhiEtaMinusMinus",
 				     "Generated -- primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistGeneratedPhiEtaMinusMinus);
   fHistFindablePhiEtaMinusMinus = new TH2F("fHistFindablePhiEtaMinusMinus",
 				     "Findable -- primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistFindablePhiEtaMinusMinus);
   fHistReconstructedPhiEtaMinusMinus = new TH2F("fHistReconstructedPhiEtaMinusMinus",
 				     "Reconstructed -- primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistReconstructedPhiEtaMinusMinus);
   fHistSurvivedPhiEtaMinusMinus = new TH2F("fHistSurvivedPhiEtaMinusMinus",
 				     "Survived -- primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistSurvivedPhiEtaMinusMinus);
 
   //phi vs eta for MC +-
   fHistGeneratedPhiEtaPlusMinus = new TH2F("fHistGeneratedPhiEtaPlusMinus",
 				     "Generated +- primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistGeneratedPhiEtaPlusMinus);
   fHistFindablePhiEtaPlusMinus = new TH2F("fHistFindablePhiEtaPlusMinus",
 				     "Findable +- primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistFindablePhiEtaPlusMinus);
   fHistReconstructedPhiEtaPlusMinus = new TH2F("fHistReconstructedPhiEtaPlusMinus",
 				     "Reconstructed +- primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistReconstructedPhiEtaPlusMinus);
   fHistSurvivedPhiEtaPlusMinus = new TH2F("fHistSurvivedPhiEtaPlusMinus",
 				     "Survived +- primaries;#Delta#phi;#Delta#eta",
-				     fPhiBin,fPhiRangeMin,fPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
+				     fdPhiBin,fPhiRangeMin,fdPhiRangeMax,fEtaBin,fEtaRangeMin,fEtaRangeMax);
   fOutputList->Add(fHistSurvivedPhiEtaPlusMinus);
   //=============================//
 
@@ -326,7 +326,6 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
   Double_t phi[maxMCLabelCounter];
   Int_t level[maxMCLabelCounter];
   Int_t charge[maxMCLabelCounter];
-
 
   //AliInfo(Form("%d %d",mcEvent->GetNumberOfTracks(),fESD->GetNumberOfTracks()));
   fHistEventStats->Fill(1); //all events
@@ -385,15 +384,17 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 
 		    if(iTracks <= stack->GetNprimary()) {		      
 		      Short_t gMCCharge = mcTrack->Charge();
-		      
+		      Double_t phiRad = particle->Phi();
+		      Double_t phiDeg = phiRad*TMath::RadToDeg();	
+			
 		      if(gMCCharge > 0)
 			fHistGeneratedEtaPtPhiPlus->Fill(particle->Eta(),
 							 particle->Pt(),
-							 particle->Phi());
+							 phiDeg);
 		      else if(gMCCharge < 0)
 			fHistGeneratedEtaPtPhiMinus->Fill(particle->Eta(),
 							  particle->Pt(),
-							  particle->Phi());
+							  phiDeg);
 
 		      
 		      // findable tracks --> DOES NOT WORK????
@@ -423,8 +424,9 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 			//fill the arrays for 2 particle analysis
 			eta[nMCLabelCounter]    = particle->Eta();
 			pt[nMCLabelCounter]     = particle->Pt();
-			phi[nMCLabelCounter]     = particle->Phi();
+			phi[nMCLabelCounter]     = particle->Phi()*TMath::RadToDeg();
 			charge[nMCLabelCounter] = gMCCharge;
+		
 			// findable = generated in this case!
 
 			level[nMCLabelCounter]  = 1;
@@ -434,11 +436,11 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 			if(gMCCharge > 0)
 			  fHistFindableEtaPtPhiPlus->Fill(particle->Eta(),
 							  particle->Pt(),
-							  particle->Phi());
+							  phiDeg);
 			else if(gMCCharge < 0)
 			  fHistFindableEtaPtPhiMinus->Fill(particle->Eta(),
 							   particle->Pt(),
-							   particle->Phi());
+							   phiDeg);
 		      }
 		    }//primaries
 		  }//loop over MC particles
@@ -499,14 +501,17 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 			level[k]  = 2;
 			
 			Short_t gCharge = track->Charge();
+			Double_t phiRad = particle->Phi();
+			Double_t phiDeg = phiRad*TMath::RadToDeg();
+
 			if(gCharge > 0)
 			  fHistReconstructedEtaPtPhiPlus->Fill(particle->Eta(),
 							       particle->Pt(),
-							       particle->Phi());
+							       phiDeg);
 			else if(gCharge < 0)
 			  fHistReconstructedEtaPtPhiMinus->Fill(particle->Eta(),
 								particle->Pt(),
-								particle->Phi());
+								phiDeg);
 			
 			// track cuts + analysis kinematic cuts
 			if(fESDtrackCuts->AcceptTrack(track) && TMath::Abs(track->Eta()) < fMaxEta && track->Pt() > fMinPt && track->Pt() < fMaxPt ){
@@ -517,11 +522,11 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 			  if(gCharge > 0)
 			    fHistSurvivedEtaPtPhiPlus->Fill(particle->Eta(),
 							    particle->Pt(),
-							    particle->Phi());
+							    phiDeg);
 			  else if(gCharge < 0)
 			    fHistSurvivedEtaPtPhiMinus->Fill(particle->Eta(),
 							     particle->Pt(),
-							     particle->Phi());
+							     phiDeg);
 			  
 			}//track cuts
 		      }//primary particles
@@ -565,14 +570,17 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
       if(charge[i] > 0 && charge[j] > 0 ){
 	if(level[i] > 0 && level[j] > 0) {  
 	  fHistGeneratedEtaPtPlusPlus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
+	  if (TMath::Abs(phi[i]-phi[j]) < 180)
 	  fHistGeneratedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
 	}
 	if(level[i] > 1 && level[j] > 1) {
 	  fHistReconstructedEtaPtPlusPlus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
+	  if (TMath::Abs(phi[i]-phi[j]) < 180)
 	  fHistReconstructedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
 	}
 	if(level[i] > 2 && level[j] > 2) {
 	  fHistSurvivedEtaPtPlusPlus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
+	  if (TMath::Abs(phi[i]-phi[j]) < 180)
 	  fHistSurvivedPhiEtaPlusPlus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
 	}
       }
@@ -580,6 +588,7 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
       else if(charge[i] < 0 && charge[j] < 0 ){
 	if(level[i] > 0 && level[j] > 0) {
 	  fHistGeneratedEtaPtMinusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);	    
+	  if (TMath::Abs(phi[i]-phi[j]) < 180)
 	  fHistGeneratedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));  	    
 	}
 	if(level[i] > 1 && level[j] > 1) {
@@ -587,7 +596,8 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 	  fHistReconstructedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));	   
 	}
 	if(level[i] > 2 && level[j] > 2) {
-	  fHistSurvivedEtaPtMinusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);	   
+	  fHistSurvivedEtaPtMinusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
+	  if (TMath::Abs(phi[i]-phi[j]) < 180)
 	  fHistSurvivedPhiEtaMinusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
 	}
       }
@@ -595,6 +605,7 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
       else if((charge[i] > 0 && charge[j] < 0)||(charge[i] < 0 && charge[j] > 0)){
 	if(level[i] > 0 && level[j] > 0) {
 	  fHistGeneratedEtaPtPlusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
+	  if (TMath::Abs(phi[i]-phi[j]) < 180)
 	  fHistGeneratedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));	
 	}
 	if(level[i] > 1 && level[j] > 1) {
@@ -603,6 +614,7 @@ void AliAnalysisTaskEfficiencyBF::UserExec(Option_t *) {
 	}
 	if(level[i] > 2 && level[j] > 2) {
 	  fHistSurvivedEtaPtPlusMinus->Fill(TMath::Abs(eta[i]-eta[j]),pt[i]);
+	  if (TMath::Abs(phi[i]-phi[j]) < 180)
 	  fHistSurvivedPhiEtaPlusMinus->Fill(TMath::Abs(phi[i]-phi[j]),TMath::Abs(eta[i]-eta[j]));
 	}	      
       }

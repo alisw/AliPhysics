@@ -48,7 +48,7 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
     fCentralityEstimator("V0M"), fCentralityPercentileMin(0.0), fCentralityPercentileMax(5.0), 
     fVxMax(3.0), fVyMax(3.0), fVzMax(10.), 
     fMinNumberOfTPCClusters(80), fMaxChi2PerTPCCluster(4.0), fMaxDCAxy(3.0), fMaxDCAz(3.0),
-    fMinPt(0.3), fMaxPt(1.5), fMinEta(-0.8),fMaxEta(0.8), fEtaRangeMin(0.0), fEtaRangeMax(1.6), fPtRangeMin(0.1), fPtRangeMax(5.0), fPhiRangeMin(0.0),fPhiRangeMax(360.), fEtaBin(64),fPtBin(49),fPhiBin(90){}
+    fMinPt(0.3), fMaxPt(1.5), fMinEta(-0.8),fMaxEta(0.8), fEtaRangeMin(0.0), fEtaRangeMax(1.6), fPtRangeMin(0.1), fPtRangeMax(5.0), fPhiRangeMin(0.0),fPhiRangeMax(360.), fdPhiRangeMax(180.), fEtaBin(64),fPtBin(49),fPhiBin(100),fdPhiBin(90){}
   AliAnalysisTaskEfficiencyBF(const char *name);
   virtual ~AliAnalysisTaskEfficiencyBF() {}
   
@@ -105,10 +105,13 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
     fPtBin = binPt;}  
   //void SetPtRangeMax(Double_t maxRangePt){
   //fPtRangeMax = maxRangePt;} 
-  void SetPhiRange(Double_t minRangePhi, Double_t maxRangePhi,Int_t binPhi){
+  void SetPhiRange(Double_t minRangePhi, Double_t maxRangePhi,Int_t binPhi,Double_t maxRangedPhi,Int_t bindPhi ){
     fPhiRangeMin = minRangePhi;
     fPhiRangeMax = maxRangePhi;
-    fPhiBin = binPhi;} 
+    fPhiBin = binPhi;
+    fdPhiRangeMax = maxRangedPhi;
+    fdPhiBin = bindPhi;
+  } 
   
   //void SetPhiRangeMax(Double_t maxRangePhi){
   //fPhiRangeMax = maxRangePhi;} 
@@ -206,10 +209,12 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
   Double_t fPtRangeMax;  //acceptance cuts
   Double_t fPhiRangeMin; //acceptance cuts
   Double_t fPhiRangeMax; // acceptance cuts
+  Double_t fdPhiRangeMax; // acceptance cuts
   
   Int_t fEtaBin;  //acceptance cuts
   Int_t fPtBin; //acceptance cuts
   Int_t fPhiBin; // acceptance cuts
+  Int_t fdPhiBin; // acceptance cuts
 
   AliAnalysisTaskEfficiencyBF(const AliAnalysisTaskEfficiencyBF&); // not implemented
   AliAnalysisTaskEfficiencyBF& operator=(const AliAnalysisTaskEfficiencyBF&); // not implemented
