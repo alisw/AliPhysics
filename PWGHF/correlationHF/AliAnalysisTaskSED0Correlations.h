@@ -27,6 +27,8 @@
 #include "AliHFCorrelator.h"
 #include "AliNormalizationCounter.h"
 
+using std::vector;
+
 class AliAODEvent;
 
 class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
