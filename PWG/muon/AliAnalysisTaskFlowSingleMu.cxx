@@ -83,6 +83,7 @@
 ClassImp(AliAnalysisTaskFlowSingleMu) // Class implementation in ROOT context
 /// \endcond
 
+using std::ifstream;
 
 //________________________________________________________________________
 AliAnalysisTaskFlowSingleMu::AliAnalysisTaskFlowSingleMu() :

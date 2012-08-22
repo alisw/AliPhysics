@@ -39,6 +39,9 @@
 #include "AliReducedParticle.h"
 #include "AliCentrality.h"
 
+using std::cout;
+using std::endl;
+
 //_____________________________________________________
 AliHFCorrelator::AliHFCorrelator() :
 //

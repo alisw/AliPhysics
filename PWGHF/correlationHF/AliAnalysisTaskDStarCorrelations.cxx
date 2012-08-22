@@ -50,7 +50,8 @@
 #include "AliReducedParticle.h"
 #include "AliHFCorrelator.h"
 
-
+using std::cout;
+using std::endl;
 
 
 ClassImp(AliAnalysisTaskDStarCorrelations)
