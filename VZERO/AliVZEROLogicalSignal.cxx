@@ -32,13 +32,6 @@ AliVZEROLogicalSignal::AliVZEROLogicalSignal() : TObject(), fStart(0.), fStop(0.
 	// Default constructor
 }
 //_____________________________________________________________________________
-AliVZEROLogicalSignal::AliVZEROLogicalSignal(Float_t start, Float_t stop) : TObject(), fStart(start), fStop(stop)
-{
-	// Constructor using start and stop time
-	if(fStart>fStop) AliError("Logical Signal has a Start time AFTER the Stop time");
-	if(fStart==fStop) AliWarning("Logical Signal has a zero width");
-}
-//_____________________________________________________________________________
 AliVZEROLogicalSignal::AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay) : TObject(), fStart(0.), fStop(0.)
 {
 	// Constructor using the profilClock and delay parameters comming from the FEE
@@ -48,20 +41,21 @@ AliVZEROLogicalSignal::AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay)
 	Bool_t down=kFALSE;
 	
 	for(int i=0 ; i<5 ; i++) {
-		word = (profilClock >> i) & 0x1;
+	        Int_t shift = (i<4) ? (3-i) : 4;
+	        word = (profilClock >> shift) & 0x1;
 		if(word&&!up) {
-			fStart = 5. * i;
+		        fStart = 5. * (i + 1);
 			up = kTRUE;
 		}
 		if(!word&&up&&!down) {
-			fStop = 5. * i;
+		        fStop = 5. * (i + 1);
 			down = kTRUE;
 		}		
 	}
-	if(!down) fStop = 25.;
+	if(!down) fStop = 30.;
 	
-	fStart += delay*10.e-2; // Add 10 ps par register unit
-	fStop  += delay*10.e-2; 
+	fStart += delay*1e-2; // Add 10 ps par register unit
+	fStop  += delay*1e-2; 
 }
 //_____________________________________________________________________________
 AliVZEROLogicalSignal::AliVZEROLogicalSignal(const AliVZEROLogicalSignal &signal) : 

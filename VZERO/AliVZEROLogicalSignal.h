@@ -21,7 +21,6 @@
 class AliVZEROLogicalSignal  : public TObject {
 public:
 	AliVZEROLogicalSignal();
-	AliVZEROLogicalSignal(Float_t start, Float_t stop);
 	AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay);
 	virtual ~AliVZEROLogicalSignal();
 	AliVZEROLogicalSignal(const AliVZEROLogicalSignal &signal);

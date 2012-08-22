@@ -64,6 +64,7 @@ public:
 	void SetBeamGas()		{ (fTriggerWord += 0x1<<15);};
 	
 	void Run();
+	virtual void Print(Option_t* /* opt */) const;
 	
 private:
 	// Private methods
@@ -73,6 +74,7 @@ private:
 	void                  LoadClockOffset();
 	void GenerateBBWindows();
 	void GenerateBGWindows();
+	Bool_t AreGatesOpen() const;
 	
 	// Members
 	AliVZEROLogicalSignal * fBBGate[AliVZEROTriggerData::kNCIUBoards];  // BB Observation window

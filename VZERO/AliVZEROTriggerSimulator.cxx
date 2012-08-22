@@ -98,22 +98,50 @@ AliVZEROTriggerSimulator::~AliVZEROTriggerSimulator(){
 //_____________________________________________________________________________
 void AliVZEROTriggerSimulator::GenerateBBWindows() 
 {
-	// Generates the BB observation window
+  // Generates the BB observation window
+  // In case gates are open the windows are equal to 25ns
+  if (AreGatesOpen()) {
+	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
+	        fBBGate[i] = new AliVZEROLogicalSignal();
+		fBBGate[i]->SetStartTime(0.);
+		fBBGate[i]->SetStopTime(25.0);
+	}    
+  }
+  else {
 	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
 		AliVZEROLogicalSignal clk1BB(fTriggerData->GetClk1Win1(i),fTriggerData->GetDelayClk1Win1(i));
 		AliVZEROLogicalSignal clk2BB(fTriggerData->GetClk2Win1(i),fTriggerData->GetDelayClk2Win1(i));
 		fBBGate[i] = new AliVZEROLogicalSignal(clk1BB & clk2BB);
 	}
+  }
 }
 //_____________________________________________________________________________
 void AliVZEROTriggerSimulator::GenerateBGWindows() 
 {
-	// Generates the BG observation window
+  // Generates the BG observation window
+  // In case gates are open the windows are equal to 25ns
+  if (AreGatesOpen()) {
+	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
+	        fBGGate[i] = new AliVZEROLogicalSignal();
+		fBGGate[i]->SetStartTime(0.);
+		fBGGate[i]->SetStopTime(25.0);
+	}    
+  }
+  else {
 	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
 		AliVZEROLogicalSignal clk1BG(fTriggerData->GetClk1Win2(i),fTriggerData->GetDelayClk1Win2(i));
 		AliVZEROLogicalSignal clk2BG(fTriggerData->GetClk2Win2(i),fTriggerData->GetDelayClk2Win2(i));
 		fBGGate[i] = new AliVZEROLogicalSignal(clk1BG & clk2BG);
+		// In VZERO-A we have a shift by -25ns which is controlled by
+		// 'Delay Win2' = 7 instead of default 6.
+		// The flag is not stored in OCDB so we have manually shift the
+		// trigger windows
+		if (i < 4) {
+		  fBGGate[i]->SetStartTime(fBGGate[i]->GetStartTime()-25.0);
+		  fBGGate[i]->SetStopTime(fBGGate[i]->GetStopTime()-25.0);
+		}
 	}
+  }
 }
 
 //_____________________________________________________________________________
@@ -324,5 +352,34 @@ void AliVZEROTriggerSimulator::Run() {
 	
 }
 
+//_____________________________________________________________________________
+Bool_t AliVZEROTriggerSimulator::AreGatesOpen() const {
+  // The method check if the gates are suppossed to be open
+  // (corresponding to 'Test Window' flag in DCS).
+  // Since the flag is not stored in OCDB, we just check if
+  // all the clock delays are 0 or not.
+  // This rules should be followed when setting up the detector
+  // at the level of DCS
+
+  for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
+    if (fTriggerData->GetDelayClk1Win1(i)!=0 ||
+	fTriggerData->GetDelayClk2Win1(i)!=0 ||
+	fTriggerData->GetDelayClk1Win2(i)!=0 ||
+	fTriggerData->GetDelayClk2Win2(i)!=0)
+      return kFALSE;
+  }
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliVZEROTriggerSimulator::Print(Option_t* /* opt */) const
+{
+  // Prints the trigger windows as
+  // initialized from the OCDB
+  for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
+    cout << "Board=" << i << "   BB (" << fBBGate[i]->GetStartTime() << " -> " << fBBGate[i]->GetStopTime() << ")   BG (" << fBGGate[i]->GetStartTime() << " -> " << fBGGate[i]->GetStopTime() << ")" << endl;
+  }
+  cout << endl;
+}
 
 
