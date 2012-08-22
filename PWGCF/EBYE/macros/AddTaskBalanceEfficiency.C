@@ -2,7 +2,7 @@
 AliAnalysisTaskEfficiencyBF *AddTaskBalanceEfficiency(
 						      TString  centralityEstimator="V0M",
 						      Double_t centrMin=0.,
-						      Double_t centrMax=80.,
+						      Double_t centrMax=90.,
 						      Double_t vertexZ=10.,
 						      TString fileNameBase="AnalysisResults"
 						     ) {
@@ -62,7 +62,7 @@ AliAnalysisTaskEfficiencyBF *AddTaskBalanceEfficiency(
   taskEfficiencyBF->SetEtaRange(0.0,1.6, 64); //acceptance cuts
   taskEfficiencyBF->SetPtRange(0.1, 5.0, 49);  //acceptance cuts
   //taskEfficiencyBF->SetPtRangeMax(1.5);  //acceptance cuts
-  taskEfficiencyBF->SetPhiRange(0.0,6.28,90);  //acceptance cuts
+  taskEfficiencyBF->SetPhiRange(0.0,360.,100, 180., 90);  //acceptance cuts
   //taskEfficiencyBF->SetPhiRangeMax(6.28);//acceptance cuts
   
   
