@@ -140,16 +140,16 @@ enum EAliAnalysisFlags {
    void                SetAutoBranchLoading(Bool_t b) { fAutoBranchHandling = b; }
    void                SetCurrentEntry(Long64_t entry)            {fCurrentEntry = entry;}
    void                SetCollectSysInfoEach(Int_t nevents=0)     {fNSysInfo = nevents;}
-   void                SetCollectThroughput(Bool_t flag)          {TObject::SetBit(kCollectThroughput,flag);}
+   void                SetCollectThroughput(Bool_t flag)          {Changed(); TObject::SetBit(kCollectThroughput,flag);}
    static void         SetCommonFileName(const char *name)        {fgCommonFileName = name;}
    void                SetDebugLevel(UInt_t level);
-   void                SetDisableBranches(Bool_t disable=kTRUE)   {TObject::SetBit(kDisableBranches,disable);}
-   void                SetExternalLoop(Bool_t flag)               {TObject::SetBit(kExternalLoop,flag);}
-   void                SetEventPool(AliVEventPool* const epool)   {fEventPool = epool;}
+   void                SetDisableBranches(Bool_t disable=kTRUE)   {Changed(); TObject::SetBit(kDisableBranches,disable);}
+   void                SetExternalLoop(Bool_t flag)               {Changed(); TObject::SetBit(kExternalLoop,flag);}
+   void                SetEventPool(AliVEventPool* const epool)   {Changed(); fEventPool = epool;}
    void                SetFileInfoLog(const char *name) {TObject::SetBit(kCollectThroughput,kTRUE); fFileInfoLog = name;}
-   void                SetGridHandler(AliAnalysisGrid * const handler) {fGridHandler = handler;}
+   void                SetGridHandler(AliAnalysisGrid * const handler) {Changed(); fGridHandler = handler;}
    void                SetInputEventHandler(AliVEventHandler* const handler);
-   void                SetMCtruthEventHandler(AliVEventHandler* const handler) {fMCtruthEventHandler = handler;}
+   void                SetMCtruthEventHandler(AliVEventHandler* const handler) {Changed(); fMCtruthEventHandler = handler;}
    void                SetNSysInfo(Long64_t nevents)              {fNSysInfo = nevents;}
    void                SetOutputEventHandler(AliVEventHandler* const handler);
    void                SetRunFromPath(Int_t run)                  {fRunFromPath = run;}
@@ -212,7 +212,12 @@ enum EAliAnalysisFlags {
 
    void                 ApplyDebugOptions();
    void                 AddClassDebug(const char *className, Int_t debugLevel);
-
+   
+   // Security
+   Bool_t               IsLocked() const {return fLocked;}
+   void                 Lock();
+   void                 UnLock();
+   void                 Changed();
 protected:
    void                 ImportWrappers(TList *source);
    void                 SetEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kEventLoop,flag);}
@@ -230,6 +235,7 @@ private:
    Bool_t                  fInitOK;              // Initialisation done
    Bool_t                  fMustClean;           // Flag to let ROOT do cleanup
    Bool_t                  fIsRemote;            //! Flag is set for remote analysis
+   Bool_t                  fLocked;              //! Lock for the manager and handlers
    UInt_t                  fDebug;               // Debug level
    TString                 fSpecialOutputLocation; // URL/path where the special outputs will be copied
    TObjArray              *fTasks;               // List of analysis tasks

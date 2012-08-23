@@ -17,6 +17,9 @@ class TTree;
 class AliVEventHandler : public TNamed {
 
  public:
+enum EEventHandlerFlags {
+   kHandlerLocked       = BIT(14)
+};
     AliVEventHandler();
     AliVEventHandler(const char* name, const char* title);
     virtual ~AliVEventHandler();
@@ -43,6 +46,11 @@ class AliVEventHandler : public TNamed {
     virtual Bool_t       TerminateIO()                    = 0;
     //
     virtual Bool_t       Notify() { return TNamed::Notify(); };
+    // Security
+    Bool_t               IsLocked() const {return TObject::TestBit(kHandlerLocked);}
+    void                 Lock();
+    void                 UnLock();
+    void                 Changed();
  private :
   ClassDef(AliVEventHandler, 1);
 };

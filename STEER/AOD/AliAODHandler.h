@@ -44,10 +44,10 @@ class AliAODHandler : public AliVEventHandler {
     virtual Bool_t       Terminate();
     virtual Bool_t       TerminateIO();
     //
-    virtual void         SetCreateNonStandardAOD()               {fIsStandard = kFALSE;}
-    virtual void         SetFillAOD(Bool_t b)                    {fFillAOD = b;}
-    virtual void         SetFillExtension(Bool_t b)              {fFillExtension = b;}
-    virtual void         SetFillAODforRun(Bool_t b)              {fFillAODRun = b;}
+    virtual void         SetCreateNonStandardAOD()               {Changed(); fIsStandard = kFALSE;}
+    virtual void         SetFillAOD(Bool_t b)                    {Changed(); fFillAOD = b;}
+    virtual void         SetFillExtension(Bool_t b)              {Changed(); fFillExtension = b;}
+    virtual void         SetFillAODforRun(Bool_t b)              {Changed(); fFillAODRun = b;}
     virtual void         SetNeedsHeaderReplication()             {fNeedsHeaderReplication             = kTRUE;}
     virtual void         SetNeedsTracksBranchReplication()       {fNeedsTracksBranchReplication       = kTRUE;}
     virtual void         SetNeedsVerticesBranchReplication()     {fNeedsVerticesBranchReplication     = kTRUE;}
@@ -61,8 +61,8 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetNeedsCaloTriggerBranchReplication()  {fNeedsCaloTriggerBranchReplication  = kTRUE;}
     virtual void         SetNeedsMCParticlesBranchReplication()  {fNeedsMCParticlesBranchReplication  = kTRUE;}
     virtual void         SetNeedsDimuonsBranchReplication()      {fNeedsDimuonsBranchReplication      = kTRUE;}
-    virtual void         SetAODIsReplicated() {fAODIsReplicated = kTRUE;}
-    virtual void         SetAODExtensionMode()                   {fIsStandard=kFALSE; fFillAOD=kFALSE; fFillAODRun=kFALSE; fFillExtension=kTRUE;}
+    virtual void         SetAODIsReplicated()                    {Changed(); fAODIsReplicated = kTRUE;}
+    virtual void         SetAODExtensionMode()                   {Changed(); fIsStandard=kFALSE; fFillAOD=kFALSE; fFillAODRun=kFALSE; fFillExtension=kTRUE;}
     //
     AliAODEvent*         GetAOD()  {return fAODEvent;}
     virtual TTree*       GetTree() const {return fTreeA;}

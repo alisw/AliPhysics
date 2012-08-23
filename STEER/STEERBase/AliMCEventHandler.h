@@ -58,10 +58,10 @@ public:
     virtual Bool_t       TerminateIO();
     virtual void         ResetIO();
     virtual Bool_t       LoadEvent(Int_t iev);
-    virtual void         SetReadTR(Bool_t flag) { fReadTR = flag; }
+    virtual void         SetReadTR(Bool_t flag) { Changed(); fReadTR = flag; }
     virtual void         AddSubsidiaryHandler(AliMCEventHandler* handler);
     virtual void         SetNumberOfEventsInContainer(Int_t nev) {fEventsInContainer = nev;}
-    virtual void         SetPreReadMode(PreReadMode_t mode) {fPreReadMode = mode;}
+    virtual void         SetPreReadMode(PreReadMode_t mode) {Changed(); fPreReadMode = mode;}
     //
     AliMCEvent* MCEvent() const {return fMCEvent;}
     TTree*      TreeTR()  const {return fTreeTR;}

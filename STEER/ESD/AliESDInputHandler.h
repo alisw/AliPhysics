@@ -47,13 +47,16 @@ class AliESDInputHandler : public AliInputEventHandler {
     // HLT  analysis
     AliESDEvent         *GetHLTEvent()     const {return fHLTEvent;}
     TTree               *GetHLTTree()      const {return fHLTTree;}    
-    void                 SetReadHLT()            {fUseHLT = kTRUE;}
+    void                 SetReadHLT()            {Changed(); fUseHLT = kTRUE;}
+    Bool_t               GetReadHLT()      const {return fUseHLT;}
     // Friends&Co
     AliESDfriend        *GetESDfriend()    const {return fFriend;}
-    void                 SetReadFriends(Bool_t flag)   {fReadFriends = flag;}
-    void                 SetFriendFileName(const char *fname)  {fFriendFileName = fname;}
+    void                 SetReadFriends(Bool_t flag)   {Changed(); fReadFriends = flag;}
+    Bool_t               GetReadFriends()  const {return fReadFriends;}
+    void                 SetFriendFileName(const char *fname)  {Changed(); fFriendFileName = fname;}
+    const char          *GetFriendFileName() const {return fFriendFileName;}
     // Tag analysis
-    void                 SetReadTags()           {fUseTags = kTRUE;}
+    void                 SetReadTags()           {Changed(); fUseTags = kTRUE;}
     AliRunTag           *GetRunTag() const       {return fRunTag;}
     const AliEventTag   *GetEventTag() const     {return fEventTag;}
     // Get the statistics object (currently TH2). Option can be BIN0.
@@ -63,7 +66,7 @@ class AliESDInputHandler : public AliInputEventHandler {
     virtual AliPIDResponse* GetPIDResponse() {return (AliPIDResponse*)fESDpid;}
     virtual void CreatePIDResponse(Bool_t isMC=kFALSE);
     AliESDpid           *GetESDpid()       const {return fESDpid;}
-    void                 SetESDpid(AliESDpid* pid)     {fESDpid = pid;}
+    void                 SetESDpid(AliESDpid* pid)     {Changed(); fESDpid = pid;}
   
  private:
     AliESDInputHandler(const AliESDInputHandler& handler);             

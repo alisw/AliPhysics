@@ -77,6 +77,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fInitOK(kFALSE),
                     fMustClean(kFALSE),
                     fIsRemote(kFALSE),
+                    fLocked(kFALSE),
                     fDebug(0),
                     fSpecialOutputLocation(""), 
                     fTasks(0),
@@ -135,6 +136,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fInitOK(other.fInitOK),
                     fMustClean(other.fMustClean),
                     fIsRemote(other.fIsRemote),
+                    fLocked(other.fLocked),
                     fDebug(other.fDebug),
                     fSpecialOutputLocation(""), 
                     fTasks(NULL),
@@ -191,6 +193,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fMode       = other.fMode;
       fInitOK     = other.fInitOK;
       fIsRemote   = other.fIsRemote;
+      fLocked     = other.fLocked;
       fDebug      = other.fDebug;
       fTasks      = new TObjArray(*other.fTasks);
       fTopTasks   = new TObjArray(*other.fTopTasks);
@@ -1605,7 +1608,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    if (fDebug > 1) {
       printf("StartAnalysis %s\n",GetName());
       AliLog::SetGlobalLogLevel(AliLog::kInfo);
-   }   
+   }
    fMaxEntries = nentries;
    fIsRemote = kFALSE;
    TString anaType = type;
@@ -2150,6 +2153,7 @@ Bool_t AliAnalysisManager::IsPipe(std::ostream &out)
 void AliAnalysisManager::SetInputEventHandler(AliVEventHandler* const handler)
 {
 // Set the input event handler and create a container for it.
+   Changed();
    fInputEventHandler   = handler;
    if (!fCommonInput) fCommonInput = CreateContainer("cAUTO_INPUT", TChain::Class(), AliAnalysisManager::kInputContainer);
 }
@@ -2158,6 +2162,7 @@ void AliAnalysisManager::SetInputEventHandler(AliVEventHandler* const handler)
 void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler* const handler)
 {
 // Set the input event handler and create a container for it.
+   Changed();
    fOutputEventHandler   = handler;
    if (!fCommonOutput) fCommonOutput = CreateContainer("cAUTO_OUTPUT", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
    fCommonOutput->SetSpecialOutput();
@@ -2643,3 +2648,35 @@ void AliAnalysisManager::ApplyDebugOptions()
    }
 }
 
+//______________________________________________________________________________
+void AliAnalysisManager::Lock()
+{
+// Security lock. This is to detect NORMAL user errors and not really to
+// protect against intentional hacks.
+   if (fLocked) return;
+   fLocked = kTRUE;
+   if (fInputEventHandler)  fInputEventHandler->Lock();
+   if (fOutputEventHandler) fOutputEventHandler->Lock();
+   if (fMCtruthEventHandler) fMCtruthEventHandler->Lock();
+   Info("Lock","====== ANALYSIS MANAGER LOCKED ======");
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::UnLock()
+{
+// Verbose unlocking. Hackers will be punished ;-) ... 
+   if (!fLocked) return;
+   fLocked = kFALSE;
+   if (fInputEventHandler)  fInputEventHandler->UnLock();
+   if (fOutputEventHandler) fOutputEventHandler->UnLock();
+   if (fMCtruthEventHandler) fMCtruthEventHandler->UnLock();
+   Info("UnLock", "====== ANALYSIS MANAGER UNLOCKED ======");
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::Changed()
+{
+// All critical setters pass through the Changed method that throws an exception 
+// in case the lock was set.
+   if (fLocked) Fatal("Changed","Critical setter called in locked mode");
+}
