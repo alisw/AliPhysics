@@ -18,10 +18,14 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow ()
   AliAnalysisTaskPi0Flow* task = new AliAnalysisTaskPi0Flow("PHOSPi0Flow");
 
   // Reduce binning for reduece memory footprint
-  const int kNEdges = 4;
-  Double_t cbin[kNEdges] = {0., 10., 40., 80.};
-  TArrayD tbin(kNEdges, cbin);
+  const int nbins = 4;
+  Double_t cbin[nbins+1] = {0., 10., 40., 80.};
+  TArrayD tbin(nbins+1, cbin);
   task->SetCentralityBinning(tbin);
+  Int_t    nMixed[nbins] = {4, 20, 50};
+  TArrayI tNMixed(nbins, nMixed);
+  task->SetNMixedPerCentrality(tNMixed);
+
   //task->SetEventMixingRPBinning(9);
   //task->SetMixingArraysLength(10);
   task->SelectCollisionCandidates(AliVEvent::kCentral);
