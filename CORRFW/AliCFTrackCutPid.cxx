@@ -90,7 +90,7 @@ AliCFTrackCutPid::AliCFTrackCutPid() :
   //
   //Default constructor 
   //
-  for(Int_t j=0; j< AliPID::kSPECIESN; j++) {
+  for(Int_t j=0; j< AliPID::kSPECIES; j++) {
     fPriors[j]=0.2;
   }
   for(Int_t j=0; j< AliPID::kSPECIES; j++) {
@@ -127,7 +127,7 @@ AliCFTrackCutPid::AliCFTrackCutPid(const Char_t* name, const Char_t* title) :
   //
   //Constructor
   // 
-  for(Int_t j=0; j< AliPID::kSPECIESN; j++) {
+  for(Int_t j=0; j< AliPID::kSPECIES; j++) {
     fPriors[j]=0.2;
   }
   for(Int_t j=0; j< AliPID::kSPECIES; j++) {
@@ -172,7 +172,7 @@ AliCFTrackCutPid::AliCFTrackCutPid(const AliCFTrackCutPid& c) :
       fhProb[i][iP]=c.fhProb[i][iP];
     }
   }
-  for(Int_t j=0; j< AliPID::kSPECIESN; j++){
+  for(Int_t j=0; j< AliPID::kSPECIES; j++){
     fPriors[j]=c.fPriors[j];
   }
   for(Int_t j=0; j< AliPID::kSPECIES; j++){
@@ -215,7 +215,7 @@ AliCFTrackCutPid& AliCFTrackCutPid::operator=(const AliCFTrackCutPid& c)
       }  
     }
 
-    for(Int_t j=0; j< AliPID::kSPECIESN; j++){
+    for(Int_t j=0; j< AliPID::kSPECIES; j++){
       this->fPriors[j]=c.fPriors[j];
     }
     for(Int_t j=0; j< AliPID::kSPECIES; j++){
