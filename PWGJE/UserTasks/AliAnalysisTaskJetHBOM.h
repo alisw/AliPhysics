@@ -14,6 +14,8 @@
 #include "fastjet/AreaDefinition.hh"
 #include "fastjet/JetDefinition.hh"
 #include "fastjet/PseudoJet.hh"
+#include "TH1F.h"
+#include "TH2D.h"
 
 
 ////////////////
@@ -28,8 +30,6 @@ class AliAODJetEventBackground;
 class AliJetFinder;
 class TList;
 class TChain;
-class TH2F;
-class TH1F;
 class TH3F;
 class TProfile;
 class TRandom3;
@@ -73,8 +73,8 @@ class AliAnalysisTaskJetHBOM : public AliAnalysisTaskSE
     virtual void SetRandConePos(Double_t eta, Double_t phi){randCone_pos=1;randCone_Eta=eta;randCone_Phi=phi;}
 
     virtual void SetfNHBOM(Int_t x){fNHBOM = x;};
-    virtual void SetEfficiencyPt(TH1F *h){fh1efficiencyPt = h;}
-    virtual void SetEfficiencyPhi(TH2D *h){fh2efficiencyPhi = h;}
+    virtual void SetEfficiencyPt(TH1F *h){fh1efficiencyPt = (TH1F*)h->Clone("h1efficiencyPt");}
+    virtual void SetEfficiencyPhi(TH2D *h){fh2efficiencyPhi = (TH2D*)h->Clone("h2efficiencyPhi");}
 
     virtual void SetJetOutputBranch(const char *c){fNonStdBranch = c;}
     virtual const char* GetJetOutputBranch(){return fNonStdBranch.Data();}
