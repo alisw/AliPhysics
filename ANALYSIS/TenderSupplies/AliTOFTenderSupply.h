@@ -31,7 +31,6 @@ public:
   virtual void              ProcessEvent();
 
   // TOF tender methods
-  void SetTOFres(Float_t res){fTOFres=res;}
   void SetIsMC(Bool_t flag=kFALSE){fIsMC=flag;}
   void SetCorrectExpTimes(Bool_t flag=kTRUE){fCorrectExpTimes=flag;}
   void SetT0DetectorAdjust(Bool_t flag=kFALSE){fT0DetectorAdjust=flag;}
@@ -49,7 +48,6 @@ public:
   void SetUserRecoPass(Int_t flag=0){fUserRecoPass=flag;}
   Int_t GetRecoPass(void){return fRecoPass;}
   void DetectRecoPass();
-  virtual void SetTimeZeroType(AliESDpid::EStartTimeType_t tofTimeZeroType) {fTimeZeroType = tofTimeZeroType;}
 
   /* theoretical expected time: related stuff for LHC10d patch */
   static Float_t GetBetaTh(Float_t m, Float_t p) {return TMath::Sqrt(1. / (1. + m * m / (p * p)));}; // get beta th
@@ -68,13 +66,14 @@ public:
   Double_t CorrectExpectedKaonTime(Double_t pT,Double_t length, Bool_t isTRDout);
   Double_t CorrectExpectedPionTime(Double_t pT,Double_t length, Bool_t isTRDout);
   Int_t GetOCDBVersion(Int_t runNumber);
+  void LoadTOFPIDParams(Int_t runNumber);
 
 private:
   AliESDpid          *fESDpid;         //! ESD pid object
 
   
+  Bool_t fTenderNoAction;    // flag for periods when tender action is not requested/not supported
   Bool_t fIsMC;              // flag for MC data
-  Int_t  fTimeZeroType;      // flag to select timeZero type 
   Bool_t fCorrectExpTimes;   // flag to apply Expected Time correction 
   Bool_t fCorrectTRDBug;     // flag to fix wrong dE/dx inside TRD
   Bool_t fLHC10dPatch;       // flag to apply special patch for LHC10d (reconstructed with wrong geometry)
@@ -85,10 +84,11 @@ private:
   Int_t  fUserRecoPass;      // when reco pass is selected by user
   Bool_t fForceCorrectTRDBug; // force TRD bug correction (for some bad MC production...)
 
+
   // variables for TOF calibrations and timeZero setup
+  AliTOFPIDParams *fTOFPIDParams;   //! TOF PID Params - period depending (OADB loaded)
   AliTOFcalib     *fTOFCalib;       // recalibrate TOF signal with OCDB
   AliTOFT0maker   *fTOFT0maker;     // computation of TOF-T0
-  Float_t fTOFres;                  // TOF resolution
   Float_t fT0shift[4];              // T0 detector correction from OCDB
   Float_t fT0IntercalibrationShift; // extra-shift to adjust TOF/TO intercalibration issue in some period
 
@@ -111,7 +111,7 @@ private:
   AliTOFTenderSupply(const AliTOFTenderSupply&c);
   AliTOFTenderSupply& operator= (const AliTOFTenderSupply&c);
 
-  ClassDef(AliTOFTenderSupply, 9);
+  ClassDef(AliTOFTenderSupply, 10);
 };
 
 

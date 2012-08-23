@@ -42,6 +42,10 @@
 #include <AliGeomManager.h>
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
+
+#include <AliOADBContainer.h>
+#include <AliTOFPIDParams.h>
+
 #include <AliT0CalibSeasonTimeShift.h>
 
 #include "AliTOFTenderSupply.h"
@@ -54,8 +58,8 @@ Float_t AliTOFTenderSupply::fgT0Cresolution = 65.;
 AliTOFTenderSupply::AliTOFTenderSupply() :
   AliTenderSupply(),
   fESDpid(0x0),
+  fTenderNoAction(kTRUE),
   fIsMC(kFALSE),
-  fTimeZeroType(AliESDpid::kBest_T0),
   fCorrectExpTimes(kTRUE),
   fCorrectTRDBug(kFALSE),
   fLHC10dPatch(kFALSE),
@@ -65,9 +69,9 @@ AliTOFTenderSupply::AliTOFTenderSupply() :
   fRecoPass(0),
   fUserRecoPass(0),
   fForceCorrectTRDBug(kFALSE),
+  fTOFPIDParams(0x0),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
-  fTOFres(100.),
   fT0IntercalibrationShift(0),
   fGeomSet(kFALSE),
   fIsEnteringInTRD(kFALSE),
@@ -96,8 +100,8 @@ AliTOFTenderSupply::AliTOFTenderSupply() :
 AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender) :
   AliTenderSupply(name,tender),
   fESDpid(0x0),
+  fTenderNoAction(kTRUE),
   fIsMC(kFALSE),
-  fTimeZeroType(AliESDpid::kBest_T0),
   fCorrectExpTimes(kTRUE),
   fCorrectTRDBug(kFALSE),
   fLHC10dPatch(kFALSE),
@@ -107,9 +111,9 @@ AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender
   fRecoPass(0),
   fUserRecoPass(0),
   fForceCorrectTRDBug(kFALSE),
+  fTOFPIDParams(0x0),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
-  fTOFres(100.),
   fT0IntercalibrationShift(0),
   fGeomSet(kFALSE),
   fIsEnteringInTRD(kFALSE),
@@ -137,7 +141,7 @@ AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender
 void AliTOFTenderSupply::Init()
 {
 
-  Bool_t tenderUnsupported = kFALSE;
+  fTenderNoAction = kFALSE;
   // Initialise TOF tender (this is called at each detected run change)
   AliLog::SetClassDebugLevel("AliTOFTenderSupply",10); 
 
@@ -159,14 +163,12 @@ void AliTOFTenderSupply::Init()
       else fRecoPass = fUserRecoPass;
     }
     if (run<114737) {
-      tenderUnsupported = kTRUE;
+      fTenderNoAction = kTRUE;
     }
     else if (run>=114737&&run<=117223) {      //period="LHC10B";
       if (fRecoPass == 2) {fCorrectExpTimes=kTRUE; fCorrectTRDBug=kFALSE;}
       else if (fRecoPass == 3) {fCorrectExpTimes=kFALSE; fCorrectTRDBug=kTRUE;}
       fLHC10dPatch=kFALSE;
-      fTOFres=100.;
-      fTimeZeroType=AliESDpid::kTOF_T0;
       fT0IntercalibrationShift = 0;
       fT0DetectorAdjust=kTRUE;
     }
@@ -174,79 +176,53 @@ void AliTOFTenderSupply::Init()
       if (fRecoPass == 2) {fCorrectExpTimes=kTRUE; fCorrectTRDBug=kFALSE;}
       else if (fRecoPass == 3) {fCorrectExpTimes=kFALSE; fCorrectTRDBug=kTRUE;}
       fLHC10dPatch=kFALSE;
-      fTOFres=100.;
-      fTimeZeroType=AliESDpid::kTOF_T0;
       fT0IntercalibrationShift = 0;
       fT0DetectorAdjust=kFALSE;
     }
     else if (run>=122195&&run<=126437) { //period="LHC10D";
       fCorrectExpTimes=kFALSE;
       fLHC10dPatch=kTRUE;
-      fTOFres=100.;
-      fTimeZeroType=AliESDpid::kBest_T0;
       fT0IntercalibrationShift = 0;
       fT0DetectorAdjust=kTRUE;
     }
     else if (run>=127719&&run<=130850) { //period="LHC10E";
       fCorrectExpTimes=kFALSE;
       fLHC10dPatch=kFALSE;
-      fTOFres=100.;
-      fTimeZeroType=AliESDpid::kBest_T0;
       fT0IntercalibrationShift = 30.;
       fT0DetectorAdjust=kTRUE;
     }
     else if (run>=133004&&run<=135029) { //period="LHC10F";
-      fCorrectExpTimes=kFALSE;
-      fLHC10dPatch=kFALSE;
-      fTOFres=100.;
-      fTimeZeroType=AliESDpid::kBest_T0;
-      fT0IntercalibrationShift = 0.;
-      fT0DetectorAdjust=kTRUE;
-      AliWarning("TOF tender not supported for LHC10F period!! Settings are just a guess!!");
+      fTenderNoAction=kTRUE;
     }
     else if (run>=135654&&run<=136377) { //period="LHC10G";
-      fCorrectExpTimes=kFALSE;
-      fLHC10dPatch=kFALSE;
-      fTOFres=100.;
-      fTimeZeroType=AliESDpid::kBest_T0;
-      fT0IntercalibrationShift = 0.;
-      fT0DetectorAdjust=kTRUE;
-      AliWarning("TOF tender not supported for LHC10G period!! Settings are just a guess!!");
+      fTenderNoAction=kTRUE;
     }
     else if (run>=136851&&run<=139517) { //period="LHC10H" - pass2;
       fCorrectExpTimes=kFALSE;
       fLHC10dPatch=kFALSE;                
-      fTOFres=90.;
-      fTimeZeroType=AliESDpid::kTOF_T0;
       fT0IntercalibrationShift = 0.;
       fT0DetectorAdjust=kTRUE;
     }
     else if (run>=139699) {              //period="LHC11A";
-      /*
-      fCorrectExpTimes=kFALSE;
-      fLHC10dPatch=kFALSE;
-      fTOFres=100.;
-      fTimeZeroType=AliESDpid::kBest_T0;
-      fT0IntercalibrationShift = 0.;
-      fT0DetectorAdjust=kFALSE;
-      AliWarning("TOF tender not supported for LHC11A period!! Settings are just a guess!!");
-      */
-      AliError("TOF tender not supported for 2011 data!!!!!");
-      tenderUnsupported = kTRUE;
+      fTenderNoAction=kTRUE;
     }
   }
 
-  if (tenderUnsupported) {
+  if (fTenderNoAction) {
     AliInfo(" |---------------------------------------------------------------------------|");
     AliInfo(" |                                                                           |");
-    AliInfo(Form(" |  TOF tender is not supported for run %d                               |",run));
-    AliInfo(" | You cannot use TOF tender for this run, your results can be spoiled       |");
-    AliInfo(" | Check TOF tender usage for run/periods at:                                |");
+    AliInfo(Form(" |  TOF tender is not supported for run %d                           |",run));
+    AliInfo(" |  TOF tender will do nothing.                                              |");
+    AliInfo(" |  Check TOF tender usage for run/periods at:                               |");
     AliInfo(" |  https://twiki.cern.ch/twiki/bin/view/ALICE/TOF.                          |");
     AliInfo(" |---------------------------------------------------------------------------|");
     AliInfo(" ");
-    AliFatal(" ------- TOF tender not to be used in this run, issuing FATAL error -------- ");
+    return;
   }
+
+
+  // Load from OADB TOF resolution
+  LoadTOFPIDParams(run);
 
   // Check if another tender wagon already created the esd pid object
   // if not we create it and set it to the ESD input handler
@@ -267,7 +243,7 @@ void AliTOFTenderSupply::Init()
   // Configure TOFT0 maker class
   //  if (!fTOFT0maker) fTOFT0maker = new AliTOFT0maker(fESDpid,fTOFCalib); // create if needed
   if (!fTOFT0maker) fTOFT0maker = new AliTOFT0maker(fESDpid); // without passing AliTOFCalib it uses the diamond
-  fTOFT0maker->SetTimeResolution(fTOFres);     // set TOF resolution for the PID
+  fTOFT0maker->SetTimeResolution(fTOFPIDParams->GetTOFresolution());     // set TOF resolution for the PID
   fTOFT0maker->SetTOFT0algorithm(2);
 
   AliInfo("|******************************************************|");
@@ -276,8 +252,7 @@ void AliTOFTenderSupply::Init()
   AliInfo(Form("|    Correct Exp Times              :  %d               |",fCorrectExpTimes));
   AliInfo(Form("|    Correct TRD Bug                :  %d               |",fCorrectTRDBug));
   AliInfo(Form("|    LHC10d patch                   :  %d               |",fLHC10dPatch));
-  AliInfo(Form("|    TOF resolution for TOFT0 maker :  %5.2f (ps)     |",fTOFres));
-  AliInfo(Form("|    timeZero selection             :  %d               |",fTimeZeroType));
+  AliInfo(Form("|    TOF resolution for TOFT0 maker :  %5.2f (ps)     |",fTOFPIDParams->GetTOFresolution()));
   AliInfo(Form("|    MC flag                        :  %d               |",fIsMC));
   AliInfo(Form("|    T0 detector offsets applied    :  %d               |",fT0DetectorAdjust));
   AliInfo(Form("|    TOF/T0 intecalibration shift   :  %5.2f (ps)     |",fT0IntercalibrationShift));
@@ -303,7 +278,8 @@ void AliTOFTenderSupply::ProcessEvent()
     
   if (fTender->RunChanged()){ 
 
-    Init();            
+    Init();
+    if (fTenderNoAction) return;            
     Int_t versionNumber = GetOCDBVersion(fTender->GetRun());
     fTOFCalib->SetRunParamsSpecificVersion(versionNumber);
     fTOFCalib->Init(fTender->GetRun());
@@ -332,6 +308,7 @@ void AliTOFTenderSupply::ProcessEvent()
     }
   }
 
+  if (fTenderNoAction) return;
 
   fTOFCalib->CalibrateESD(event);   //recalculate TOF signal (no harm for MC, see settings inside init)
 
@@ -341,7 +318,7 @@ void AliTOFTenderSupply::ProcessEvent()
   if ( (fCorrectTRDBug && !(fIsMC)) || (fForceCorrectTRDBug)) FixTRDBug(event);     // LHC10b,c pass3: wrong TRD dE/dx 
 
   Double_t startTime = 0.;
-  if (fIsMC) startTime = fTOFCalib->TuneForMC(event,fTOFres);   // this is for old MC when we didn't jitter startTime in MC
+  if (fIsMC) startTime = fTOFCalib->TuneForMC(event,fTOFPIDParams->GetTOFresolution());   // this is for old MC when we didn't jitter startTime in MC
 
   if (fDebugLevel > 1) Printf(" TofTender: startTime %f",startTime);
   if (fDebugLevel > 1) Printf(" TofTender: T0 time (orig) %f %f %f",event->GetT0TOF(0),event->GetT0TOF(1),event->GetT0TOF(2));
@@ -393,8 +370,8 @@ void AliTOFTenderSupply::ProcessEvent()
   fTOFT0maker->ComputeT0TOF(event);
   fTOFT0maker->WriteInESD(event);
 
-  //set preferred startTime
-  fESDpid->SetTOFResponse(event, (AliESDpid::EStartTimeType_t)fTimeZeroType);
+  //  set preferred startTime: this is now done via AliPIDResponseTask
+  fESDpid->SetTOFResponse(event, (AliESDpid::EStartTimeType_t)fTOFPIDParams->GetStartTimeMethod());
 
   // recalculate PID probabilities
   // this is for safety, especially if the user doesn't attach a PID tender after TOF tender  
@@ -494,6 +471,12 @@ void AliTOFTenderSupply::DetectRecoPass()
     fRecoPass=2;
   } else if (fileName.Contains("pass3") ) {
     fRecoPass=3;
+  } else if (fileName.Contains("pass4") ) {
+    fRecoPass=4;
+  } else if (fileName.Contains("pass5") ) {
+    fRecoPass=5;
+  } else if (fileName.Contains("pass6") ) {
+    fRecoPass=6;
   }
   if (fRecoPass == 0) {
     AliInfo(Form("From file name %s reco pass cannot be detected",fileName.Data()));
@@ -1194,4 +1177,33 @@ Int_t AliTOFTenderSupply::GetOCDBVersion(Int_t runNo)
     }
   }
   return verNo;
+}
+
+
+//__________________________________________________________________________
+void AliTOFTenderSupply::LoadTOFPIDParams(Int_t runNumber)
+{
+  //
+  // Load the TOF pid params from the OADB
+  //
+
+  if (fTOFPIDParams) delete fTOFPIDParams;
+  fTOFPIDParams=0x0;
+  
+  TFile *oadbf = new TFile("$ALICE_ROOT/OADB/COMMON/PID/data/TOFPIDParams.root");
+  if (oadbf && oadbf->IsOpen()) {
+    AliInfo("Loading TOF Params from $ALICE_ROOT/OADB/COMMON/PID/data/TOFPIDParams.root");
+    AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("TOFoadb");
+    if (oadbc) fTOFPIDParams = dynamic_cast<AliTOFPIDParams *>(oadbc->GetObject(runNumber,"TOFparams"));
+    oadbf->Close();
+    delete oadbc;
+  }
+  delete oadbf;
+
+  if (!fTOFPIDParams) {
+    AliError("TOFPIDParams.root not found in $ALICE_ROOT/OADB/COMMON/PID/data !!");
+    fTOFPIDParams = new AliTOFPIDParams;
+    fTOFPIDParams->SetTOFresolution(90.);
+    fTOFPIDParams->SetStartTimeMethod(AliESDpid::kTOF_T0);
+  }  
 }
