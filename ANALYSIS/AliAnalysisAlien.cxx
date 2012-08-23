@@ -3912,6 +3912,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   plugin->SetNtestFiles(" << fNtestFiles << ");" << endl;
          if (!fFriendChainName.IsNull()) 
             out << "   plugin->SetFriendChainName(\"" << fFriendChainName << "\");" << endl;
+         if (IsUseMCchain())
+            out << "   plugin->SetUseMCchain();" << endl;
          out << "   mgr->SetGridHandler(plugin);" << endl;
          if (AliAnalysisManager::GetAnalysisManager()) {
             out << "   mgr->SetDebugLevel(" << AliAnalysisManager::GetAnalysisManager()->GetDebugLevel() << ");" << endl;
