@@ -40,8 +40,8 @@ public:
     void SetPeriod(Period period) { fPeriod = period;}
     
     void SetCentralityBinning(const TArrayD& edges);
+    void SetNMixedPerCentrality(const TArrayI& nMixed);
     void SetEventMixingRPBinning(UInt_t nBins) { fNEMRPBins = nBins; }
-    void SetMixingArraysLength(UInt_t length) { fMixingArraysLength = length; }
     
     void SetPHOSBadMap(Int_t mod,TH2I * badMapHist);
 
@@ -138,10 +138,9 @@ private:
     // Binning, [vtx, centrality, reaction-plane]
     static const Int_t kNVtxZBins = 1;
     static const Double_t kCentCutoff = 90.; // Ignore Centrality over 90%
-    TArrayD fCentEdges; // Centrality Bin Lower edges,
+    TArrayD fCentEdges;  // Centrality Bin Lower edges
+    TArrayI fCentNMixed; // Number of mixed events for each centrality bin
     UInt_t fNEMRPBins;
-    
-    UInt_t fMixingArraysLength;
     
 
     Period fPeriod;

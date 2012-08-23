@@ -61,8 +61,8 @@ Double_t rnlin(Double_t *x, Double_t * /*par*/)
 AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
 : AliAnalysisTaskSE(name),
   fCentEdges(10),
+  fCentNMixed(10),
   fNEMRPBins(9),
-  fMixingArraysLength(100),
   fPeriod(period),
   fOutputContainer(0x0),
   fNonLinCorr(0),
@@ -92,6 +92,8 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   const int elength = 10;
   Double_t edges[elength] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80.};
   fCentEdges = TArrayD(elength, edges);
+  Int_t nMixed[elength] = {4,4,6,10,20,30,50,100,100,100};
+  fCentNMixed = TArrayI(elength, nMixed);
   
   for(Int_t i=0;i<kNCenBins;i++){
     for(Int_t j=0;j<2; j++)
@@ -580,6 +582,8 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskPi0Flow::SetCentralityBinning(const TArrayD& edges)
 {
+  // Define centrality bins by their edges
+
   int last = edges.GetSize()-1;
   if( edges.At(0) < 0.) 
     AliError("lower edge less then 0");
@@ -590,6 +594,13 @@ void AliAnalysisTaskPi0Flow::SetCentralityBinning(const TArrayD& edges)
       AliError("edges are not sorted");
   
   fCentEdges = edges;
+}
+//________________________________________________________________________
+void AliAnalysisTaskPi0Flow::SetNMixedPerCentrality(const TArrayI& nMixed)
+{
+  // Set number of mixed events for all centrality bins
+
+  fCentNMixed = nMixed;
 }
 
 //________________________________________________________________________
@@ -1279,11 +1290,14 @@ void AliAnalysisTaskPi0Flow::UpdateLists()
 {
   //Now we either add current events to stack or remove
   //If no photons in current event - no need to add it to mixed
+
   TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
+  if( fDebug )
+    AliInfo( Form("fCentBin=%d, fCentNMixed[]=%d",fCentBin,fCentNMixed[fCentBin]) );
   if(fCaloPhotonsPHOS->GetEntriesFast()>0){
     arrayList->AddFirst(fCaloPhotonsPHOS) ;
     fCaloPhotonsPHOS=0;
-    if(arrayList->GetEntries()>fMixingArraysLength){//Remove redundant events
+    if(arrayList->GetEntries() > fCentNMixed[fCentBin]){ // Remove redundant events
       TObjArray * tmp = static_cast<TObjArray*>(arrayList->Last()) ;
       arrayList->RemoveLast() ;
       delete tmp ; // TODO: may conflict with delete done by list being owner.
