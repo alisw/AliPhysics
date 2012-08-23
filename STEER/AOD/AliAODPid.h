@@ -76,7 +76,7 @@ class AliAODPid : public TObject {
   UChar_t     fTRDncls[6];       // number of clusters used for dE/dx calculation
   Double32_t* fTRDslices;        //[fTRDnSlices][0.,0.,10]
   Double32_t  fTRDmomentum[6];   //[0.,0.,10]  momentum at the TRD layers
-  Double32_t  fTRDChi2;          //TRD chi2
+  Double32_t  fTRDChi2;          //[0.,0.,10]  TRD chi2
 
   Double32_t  fTOFesdsignal;     //[0.,0.,20] TOF signal - t0 (T0 interaction time)
   Double32_t  fTOFpidResolution[5]; //[0.,0.,20] TOF pid resolution for each mass hypotesys 
@@ -84,7 +84,7 @@ class AliAODPid : public TObject {
  
   AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
 
-  ClassDef(AliAODPid, 12);
+  ClassDef(AliAODPid, 13);
 };
 
 //_____________________________________________________________
