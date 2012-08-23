@@ -42,7 +42,7 @@
 // Authors : Dmitri Peressounko
 // Date    : 28.05.2011
 // Modified: 03.08.2012 Henrik Qvigstad
-/* $Id$ */
+/* $Id: AliAnalysisTaskPi0Flow.cxx 58214 2012-08-17 06:53:05Z kharlov $ */
 
 ClassImp(AliAnalysisTaskPi0Flow);
 
@@ -569,14 +569,14 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskPi0Flow::Terminate(Option_t *)
-{
-  // Draw result to the screen
-  // Called once at the end of the query
-  new TCanvas;
-  TH1 * hTotSelEvents = dynamic_cast<TH1*>(fOutputContainer->FindObject("hTotSelEvents"));
-  hTotSelEvents->Draw();
-}
+// void AliAnalysisTaskPi0Flow::Terminate(Option_t *)
+// {
+//   // Draw result to the screen
+//   // Called once at the end of the query
+//   // new TCanvas;
+//   // TH1 * hTotSelEvents = dynamic_cast<TH1*>(fOutputContainer->FindObject("hTotSelEvents"));
+//   // hTotSelEvents->Draw();
+// }
 //________________________________________________________________________
 void AliAnalysisTaskPi0Flow::SetCentralityBinning(const TArrayD& edges)
 {

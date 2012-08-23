@@ -5,7 +5,7 @@
 // Authors : Dmitri Peressounko
 // Date    : 28.05.2011
 // Modified: 03.08.2012 Henrik Qvigstad
-/* $Id$ */
+/* $Id: AliAnalysisTaskPi0Flow.h 58128 2012-08-07 17:52:08Z kharlov $ */
 
 class TObjArray;
 class TH1F;
@@ -35,7 +35,7 @@ public:
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
-    virtual void   Terminate(Option_t *);
+    /* virtual void   Terminate(Option_t *); */
 
     void SetPeriod(Period period) { fPeriod = period;}
     
