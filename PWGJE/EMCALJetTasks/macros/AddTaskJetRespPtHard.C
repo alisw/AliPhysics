@@ -13,19 +13,25 @@ AliJetResponseMaker* AddTaskJetRespPtHard(const char *ntracks            = "Trac
 					  Double_t    jetBiasClus        = 10,
 					  Double_t    maxDistance        = 0.25,
 					  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
-					  Int_t minPtBin                 = 1, 
-					  Int_t maxPtBin                 = 11,
+					  Int_t       minPtBin           = 1, 
+					  Int_t       maxPtBin           = 10,
+					  Bool_t      domatch            = kTRUE,
+					  Bool_t      biggerMatrix       = kFALSE,
 					  const char *taskname           = "AliJetResponseMaker"
+					  
 )
 {  
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetResponseMaker.C");
   
-  AliJetResponseMaker *jetTask = 0;
+  AliJetResponseMaker *jetTask = new AliJetResponseMaker[maxPtBin - minPtBin + 1];
 
   for (Int_t i = minPtBin; i <= maxPtBin; i++) {
-    jetTask = AddTaskJetResponseMaker(ntracks, nclusters, njets, nmcjets, nmctracks, 
-				      jetradius, jetptcut, jetareacut, ptcut, jetBiasTrack, 
-				      jetBiasClus, maxDistance, type, i, taskname);
+    AddTaskJetResponseMaker(ntracks, nclusters, njets, nmcjets, nmctracks, 
+			    jetradius, jetptcut, jetareacut, ptcut, jetBiasTrack, 
+			    jetBiasClus, maxDistance, type, i, taskname, jetTask + i - minPtBin);
+    jetTask[i - minPtBin].SetDoMatching(domatch);
+    if (biggerMatrix) 
+      jetTask[i - minPtBin].SetHistoBins(1000,0,500);
   }
   
   return jetTask;

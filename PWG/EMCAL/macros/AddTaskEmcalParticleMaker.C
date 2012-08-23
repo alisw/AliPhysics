@@ -2,7 +2,7 @@
 
 AliEmcalParticleMaker* AddTaskEmcalParticleMaker(
   const char *tracksName          = "PicoTracks",
-  const char *clustersName        = "CaloClusters",
+  char *clustersName              = 0,
   const char *tracksOutName       = "EmcalTracks",
   const char *clustersOutName     = "EmcalClusters",
   const char *taskName            = "AliEmcalParticleMaker"
@@ -19,10 +19,23 @@ AliEmcalParticleMaker* AddTaskEmcalParticleMaker(
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
-  {
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  if (!evhand) {
     ::Error("AddTaskEmcalParticleMaker", "This task requires an input event handler");
     return NULL;
+  }
+
+  if (!clustersName) {
+    clustersName = new char[100];
+
+    if (evhand->InheritsFrom("AliESDInputHandler")) {
+      ::Info("AddTaskEmcalParticleMaker", "ESD analysis, clustersName = \"CaloClusters\"");
+      strcpy(clustersName,"CaloClusters");
+    }
+    else {
+      ::Info("AddTaskEmcalParticleMaker", "AOD analysis, clustersName = \"caloClusters\"");
+      strcpy(clustersName,"caloClusters");
+    }
   }
   
   //-------------------------------------------------------

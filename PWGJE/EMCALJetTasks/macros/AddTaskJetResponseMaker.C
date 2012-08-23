@@ -15,7 +15,8 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   Double_t    maxDistance        = 0.25,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   Int_t       ptHardBin          = -999,
-  const char *taskname           = "AliJetResponseMaker"
+  const char *taskname           = "AliJetResponseMaker",
+  AliJetResponseMaker* address   = 0
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -64,7 +65,12 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
     name += ptHardBin;
   }
 
-  AliJetResponseMaker* jetTask = new AliJetResponseMaker(name);
+  AliJetResponseMaker* jetTask = address;
+  if (jetTask)
+    new (jetTask) AliJetResponseMaker(name);
+  else
+    jetTask = new AliJetResponseMaker(name);
+
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);
   jetTask->SetClusName(nclusters);
