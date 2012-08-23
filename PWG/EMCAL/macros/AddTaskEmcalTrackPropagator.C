@@ -9,20 +9,24 @@ AliEmcalTrackPropagatorTask* AddTaskEmcalTrackPropagator(
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr)
-  {
+  if (!mgr) {
     ::Error("AddTaskEmcalTrackPropagator", "No analysis manager to connect to.");
     return NULL;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
-  {
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  if (!evhand) {
     ::Error("AddTaskEmcalTrackPropagator", "This task requires an input event handler");
     return NULL;
   }
   
+  if (!evhand->InheritsFrom("AliESDInputHandler")) {
+    ::Info("AddTaskEmcalTrackPropagator", "This task is only needed for ESD analysis. No task added.");
+    return NULL;
+  }
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
