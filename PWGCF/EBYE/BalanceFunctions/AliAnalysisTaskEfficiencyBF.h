@@ -48,7 +48,7 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
     fCentralityEstimator("V0M"), fCentralityPercentileMin(0.0), fCentralityPercentileMax(5.0), 
     fVxMax(3.0), fVyMax(3.0), fVzMax(10.), 
     fMinNumberOfTPCClusters(80), fMaxChi2PerTPCCluster(4.0), fMaxDCAxy(3.0), fMaxDCAz(3.0),
-    fMinPt(0.3), fMaxPt(1.5), fMinEta(-0.8),fMaxEta(0.8), fEtaRangeMin(0.0), fEtaRangeMax(1.6), fPtRangeMin(0.1), fPtRangeMax(5.0), fPhiRangeMin(0.0),fPhiRangeMax(360.), fdPhiRangeMax(180.), fEtaBin(64),fPtBin(49),fPhiBin(100),fdPhiBin(90){}
+    fMinPt(0.3), fMaxPt(1.5), fMinEta(-0.8),fMaxEta(0.8), fEtaRangeMin(0.0), fEtaRangeMax(1.6), fPtRangeMin(0.1), fPtRangeMax(5.0), fPhiRangeMin(0.0),fPhiRangeMax(360.), fdPhiRangeMax(180.), fEtaBin(100),fdEtaBin(64),fPtBin(49),fPhiBin(100),fdPhiBin(90){}
   AliAnalysisTaskEfficiencyBF(const char *name);
   virtual ~AliAnalysisTaskEfficiencyBF() {}
   
@@ -90,21 +90,19 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
     fMinPt = minPt;}
   void SetMaxPt(Double_t maxPt) {
     fMaxPt = maxPt;}
-  void SetMinEta(Double_t minEta) {
-    fMinEta = minEta;}
-  void SetMaxEta(Double_t maxEta) {
-    fMaxEta = maxEta;}
-
-  void SetEtaRange(Double_t minRangeEta, Double_t maxRangeEta, Int_t binEta){
+ 
+  void SetEtaRange(Double_t minEta, Double_t maxEta, Int_t binEta, Double_t minRangeEta, Double_t maxRangeEta, Int_t bindEta){
+    fMinEta = minEta;
+    fMaxEta = maxEta;
+    fEtaBin = binEta;
     fEtaRangeMax = maxRangeEta;
     fEtaRangeMin = minRangeEta;
-    fEtaBin = binEta;}
+    fdEtaBin = bindEta;
+  }
   void SetPtRange(Double_t minRangePt, Double_t maxRangePt,Int_t binPt){
     fPtRangeMin = minRangePt;
     fPtRangeMax = maxRangePt;
     fPtBin = binPt;}  
-  //void SetPtRangeMax(Double_t maxRangePt){
-  //fPtRangeMax = maxRangePt;} 
   void SetPhiRange(Double_t minRangePhi, Double_t maxRangePhi,Int_t binPhi,Double_t maxRangedPhi,Int_t bindPhi ){
     fPhiRangeMin = minRangePhi;
     fPhiRangeMax = maxRangePhi;
@@ -113,16 +111,6 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
     fdPhiBin = bindPhi;
   } 
   
-  //void SetPhiRangeMax(Double_t maxRangePhi){
-  //fPhiRangeMax = maxRangePhi;} 
-
-  /*void SetEtaBin(Double_t binEta){
-    fEtaBin = binEta;}
-  void SetPtBin(Double_t binPt){
-    fPtBin = binPt;}
-  void SetPhiBin(Double_t binPhi){
-  fPhiBin = binPhi;}*/
-   
  private:
   AliESDEvent *fESD;    //! ESD object
   TList       *fQAList; //! QA list
@@ -212,6 +200,7 @@ class AliAnalysisTaskEfficiencyBF : public AliAnalysisTaskSE {
   Double_t fdPhiRangeMax; // acceptance cuts
   
   Int_t fEtaBin;  //acceptance cuts
+  Int_t fdEtaBin;  //acceptance cuts
   Int_t fPtBin; //acceptance cuts
   Int_t fPhiBin; // acceptance cuts
   Int_t fdPhiBin; // acceptance cuts

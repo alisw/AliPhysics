@@ -57,15 +57,12 @@ AliAnalysisTaskEfficiencyBF *AddTaskBalanceEfficiency(
   //analysis kinematic cuts
   taskEfficiencyBF->SetMinPt(0.3);
   taskEfficiencyBF->SetMaxPt(1.5);
-  taskEfficiencyBF->SetMinEta(-0.8);
-  taskEfficiencyBF->SetMaxEta(0.8);
-  taskEfficiencyBF->SetEtaRange(0.0,1.6, 64); //acceptance cuts
+  // taskEfficiencyBF->SetMinEta(-0.8);
+  //taskEfficiencyBF->SetMaxEta(0.8);
+  taskEfficiencyBF->SetEtaRange(-0.8,0.8,100,0.0,1.6, 64); //acceptance cuts
   taskEfficiencyBF->SetPtRange(0.1, 5.0, 49);  //acceptance cuts
-  //taskEfficiencyBF->SetPtRangeMax(1.5);  //acceptance cuts
   taskEfficiencyBF->SetPhiRange(0.0,360.,100, 180., 90);  //acceptance cuts
-  //taskEfficiencyBF->SetPhiRangeMax(6.28);//acceptance cuts
-  
-  
+    
   // ADD the task
   //===========================================================================
   //bf->PrintAnalysisSettings();
