@@ -1286,7 +1286,7 @@ Int_t AliHFEdca::GetCombinedPid(const AliESDtrack *const track)
  track->GetESDpid(prob);
 
  // setting priors!
- Double_t priors[AliPID::kSPECIESN];
+ Double_t priors[AliPID::kSPECIES];
  priors[0] = 0.01;
  priors[1] = 0.01;
  priors[2] = 0.85;

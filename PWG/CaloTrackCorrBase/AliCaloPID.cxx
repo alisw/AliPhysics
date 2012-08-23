@@ -253,16 +253,16 @@ Int_t AliCaloPID::GetIdentifiedParticleType(const AliVCluster * cluster)
   
   if(fUseBayesianWeights)
   {
-    Double_t weights[AliPID::kSPECIESN];
+    Double_t weights[AliPID::kSPECIESCN];
     
     if(cluster->IsEMCAL() && fRecalculateBayesian)
     {	        
       fEMCALPIDUtils->ComputePID(energy, lambda0);
-      for(Int_t i = 0; i < AliPID::kSPECIESN; i++) weights[i] = fEMCALPIDUtils->GetPIDFinal(i);
+      for(Int_t i = 0; i < AliPID::kSPECIESCN; i++) weights[i] = fEMCALPIDUtils->GetPIDFinal(i);
     }
     else 
     {
-      for(Int_t i = 0; i < AliPID::kSPECIESN; i++) weights[i] = cluster->GetPID()[i];
+      for(Int_t i = 0; i < AliPID::kSPECIESCN; i++) weights[i] = cluster->GetPID()[i];
     }
 
     if(fDebug > 0)  PrintClusterPIDWeights(weights);
