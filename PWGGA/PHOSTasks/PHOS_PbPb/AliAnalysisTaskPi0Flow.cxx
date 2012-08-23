@@ -89,11 +89,11 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fCaloPhotonsPHOS(0x0),
   fCaloPhotonsPHOSLists(0x0)
 {
-  const int elength = 10;
-  Double_t edges[elength] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80.};
-  fCentEdges = TArrayD(elength, edges);
-  Int_t nMixed[elength] = {4,4,6,10,20,30,50,100,100,100};
-  fCentNMixed = TArrayI(elength, nMixed);
+  const int nbins = 9;
+  Double_t edges[nbins+1] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80.};
+  fCentEdges = TArrayD(nbins+1, edges);
+  Int_t nMixed[nbins] = {4,4,6,10,20,30,50,100,100};
+  fCentNMixed = TArrayI(nbins, nMixed);
   
   for(Int_t i=0;i<kNCenBins;i++){
     for(Int_t j=0;j<2; j++)
