@@ -61,9 +61,9 @@ class AliESDCaloCluster : public AliVCluster
   Double_t Chi2() const         { return fChi2; }
   
   const Double_t *GetPID() const { return fPID; }
-  //for(Int_t i=0; i<AliPID::kSPECIESN; ++i) pid[i]=fPID[i];}
+  //for(Int_t i=0; i<AliPID::kSPECIESCN; ++i) pid[i]=fPID[i];}
   void SetPID  (const Float_t *pid) ;
-  void SetPIDAt(Float_t p, Int_t i) {if(i>=0 && i<AliPID::kSPECIESN) fPID[i] = p ; 
+  void SetPIDAt(Float_t p, Int_t i) {if(i>=0 && i<AliPID::kSPECIESCN) fPID[i] = p ; 
     else AliInfo(Form("Bad index for PID array, i = %d \n",i));}
   
   void     SetM20(Double_t m20) { fM20 = m20; }
@@ -156,7 +156,7 @@ class AliESDCaloCluster : public AliVCluster
   Double32_t   fTrackDz ;         // Distance to closest track in z
   
   Double32_t   fDistToBadChannel; // Distance to nearest bad channel
-  Double32_t   fPID[AliPID::kSPECIESN]; //[0,1,8]"detector response  probabilities" (for the PID)
+  Double32_t   fPID[AliPID::kSPECIESCN]; //[0,1,8]"detector response  probabilities" (for the PID)
   Int_t        fID;                // Unique Id of the cluster
   UChar_t      fNExMax ;           // number of (Ex-)maxima before unfolding  
   Char_t       fClusterType;       // Flag for different cluster type/versions

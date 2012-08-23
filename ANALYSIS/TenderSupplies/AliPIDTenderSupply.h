@@ -24,13 +24,15 @@ public:
   
   virtual void              Init(){;}
   virtual void              ProcessEvent();
-  
+
+  void SetCachePID(Bool_t cachePID) { fCachePID=cachePID; }
 private:
+  Bool_t fCachePID;                    // Cache PID values in transient object
   
   AliPIDTenderSupply(const AliPIDTenderSupply&c);
   AliPIDTenderSupply& operator= (const AliPIDTenderSupply&c);
   
-  ClassDef(AliPIDTenderSupply, 1);  // PID tender task
+  ClassDef(AliPIDTenderSupply, 2);  // PID tender task
 };
 
 

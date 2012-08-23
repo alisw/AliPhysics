@@ -350,7 +350,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 	}
       else
 	{
-	  for(Int_t k = 0; k < AliPID::kSPECIESN; k++)
+	  for(Int_t k = 0; k < AliPID::kSPECIESCN; k++)
 	    {
 	      caloClusterPtr->fPID[k] = 0;
 	    }

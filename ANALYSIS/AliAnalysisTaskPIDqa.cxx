@@ -381,13 +381,13 @@ void AliAnalysisTaskPIDqa::FillITSqa()
     }
     
     
-    for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
       TH2 *h=(TH2*)theList->At(ispecie);
       if (!h) continue;
       Double_t nSigma=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType)ispecie);
       h->Fill(mom,nSigma);
     }
-    TH2 *h=(TH2*)theList->At(AliPID::kSPECIES);
+    TH2 *h=(TH2*)theList->At(AliPID::kSPECIESC);
     if (h) {
       Double_t sig=track->GetITSsignal();
       h->Fill(mom,sig);
@@ -429,14 +429,14 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
     
     Double_t mom=track->GetTPCmomentum();
     
-    for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
       TH2 *h=(TH2*)fListQAtpc->At(ispecie);
       if (!h) continue;
       Double_t nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
       h->Fill(mom,nSigma);
     }
     
-    TH2 *h=(TH2*)fListQAtpc->At(AliPID::kSPECIES);
+    TH2 *h=(TH2*)fListQAtpc->At(AliPID::kSPECIESC);
     if (h) {
       Double_t sig=track->GetTPCsignal();
       h->Fill(mom,sig);
@@ -529,7 +529,7 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
 
     Double_t mom=track->P();
 
-    for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
       TH2 *h=(TH2*)fListQAtof->At(ispecie);
       if (!h) continue;
       Double_t nSigma=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
@@ -875,7 +875,7 @@ void AliAnalysisTaskPIDqa::FillTPCTOFqa()
     Double_t mom=track->P();
     Double_t momTPC=track->GetTPCmomentum();
 
-    for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
       //TOF nSigma
       Double_t nSigmaTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
       Double_t nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
@@ -885,11 +885,11 @@ void AliAnalysisTaskPIDqa::FillTPCTOFqa()
       if (h && TMath::Abs(nSigmaTOF)<3.) h->Fill(momTPC,nSigmaTPC);
 
       //TOF after TPC cut
-      h=(TH2*)fListQAtpctof->At(ispecie+AliPID::kSPECIES);
+      h=(TH2*)fListQAtpctof->At(ispecie+AliPID::kSPECIESC);
       if (h && TMath::Abs(nSigmaTPC)<3.) h->Fill(mom,nSigmaTOF);
 
       //EMCAL after TOF and TPC cut
-      h=(TH2*)fListQAtpctof->At(ispecie+2*AliPID::kSPECIES);
+      h=(TH2*)fListQAtpctof->At(ispecie+2*AliPID::kSPECIESC);
       if (h && TMath::Abs(nSigmaTOF)<3. && TMath::Abs(nSigmaTPC)<3. ){
 
 	Int_t nMatchClus = track->GetEMCALcluster();
@@ -929,7 +929,7 @@ void AliAnalysisTaskPIDqa::SetupITSqa()
   TVectorD *vX=MakeLogBinning(200,.1,30);
   
   //ITS+TPC tracks
-  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
     TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_ITS_%s",AliPID::ParticleName(ispecie)),
                               Form("ITS n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
                               vX->GetNrows()-1,vX->GetMatrixArray(),
@@ -943,7 +943,7 @@ void AliAnalysisTaskPIDqa::SetupITSqa()
   fListQAits->Add(hSig);
 
   //ITS Standalone tracks
-  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
     TH2F *hNsigmaPSA = new TH2F(Form("hNsigmaP_ITSSA_%s",AliPID::ParticleName(ispecie)),
 				Form("ITS n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
 				vX->GetNrows()-1,vX->GetMatrixArray(),
@@ -957,7 +957,7 @@ void AliAnalysisTaskPIDqa::SetupITSqa()
   fListQAitsSA->Add(hSigSA);
   
   //ITS Pure Standalone tracks
-  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
     TH2F *hNsigmaPPureSA = new TH2F(Form("hNsigmaP_ITSPureSA_%s",AliPID::ParticleName(ispecie)),
 				    Form("ITS n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
 				    vX->GetNrows()-1,vX->GetMatrixArray(),
@@ -982,7 +982,7 @@ void AliAnalysisTaskPIDqa::SetupTPCqa()
   
   TVectorD *vX=MakeLogBinning(200,.1,30);
   
-  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
     TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TPC_%s",AliPID::ParticleName(ispecie)),
                               Form("TPC n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
                               vX->GetNrows()-1,vX->GetMatrixArray(),
@@ -1028,7 +1028,7 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
   
   TVectorD *vX=MakeLogBinning(200,.1,30);
 
-  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
     TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TOF_%s",AliPID::ParticleName(ispecie)),
                               Form("TOF n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
                               vX->GetNrows()-1,vX->GetMatrixArray(),
@@ -1158,7 +1158,7 @@ void AliAnalysisTaskPIDqa::SetupTPCTOFqa()
   TVectorD *vX=MakeLogBinning(200,.1,30);
 
   //TPC signals after TOF cut
-  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
     TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TPC_TOF_%s",AliPID::ParticleName(ispecie)),
                               Form("TPC n#sigma %s vs. p (after TOF 3#sigma cut);p_{TPC} [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
                               vX->GetNrows()-1,vX->GetMatrixArray(),
@@ -1167,7 +1167,7 @@ void AliAnalysisTaskPIDqa::SetupTPCTOFqa()
   }
 
   //TOF signals after TPC cut
-  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
     TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TOF_TPC_%s",AliPID::ParticleName(ispecie)),
                               Form("TOF n#sigma %s vs. p (after TPC n#sigma cut);p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
                               vX->GetNrows()-1,vX->GetMatrixArray(),

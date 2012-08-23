@@ -32,7 +32,7 @@
 //
 //   pid->GetPIDFinal(idx) gives the probabilities
 //
-//   Double_t PIDFinal[AliPID::kSPECIESN]  is the standard PID for :
+//   Double_t PIDFinal[AliPID::kSPECIESCN]  is the standard PID for :
 //
 //	kElectron :  fPIDFinal[0]
 //	kMuon     :  fPIDFinal[1]
@@ -177,7 +177,7 @@ void AliEMCALPID::InitParameters()
   fPIDWeight[1] = -1;
   fPIDWeight[2] = -1;
   
-  for(Int_t i=0; i<AliPID::kSPECIESN+1; i++)
+  for(Int_t i=0; i<AliPID::kSPECIESCN+1; i++)
     fPIDFinal[i]= 0;
   
   const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();

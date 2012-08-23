@@ -220,7 +220,7 @@ AliHLTPHOSClusterAnalyser::CreateClusters(UInt_t availableSize, UInt_t& totSize)
 	}
       else
 	{
-	  for(Int_t k = 0; k < AliPID::kSPECIESN; k++)
+	  for(Int_t k = 0; k < AliPID::kSPECIESCN; k++)
 	    {
 	      caloClusterPtr->fPID[k] = 0;
 	    }

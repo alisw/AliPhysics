@@ -473,7 +473,7 @@ void AliPHOSPIDv1::InitParameters()
   fERecWeight ->SetParameters(fERecWeightPar[0],fERecWeightPar[1] ,fERecWeightPar[2] ,fERecWeightPar[3]) ; 
 
 
-  for (Int_t i =0; i<  AliPID::kSPECIESN ; i++)
+  for (Int_t i =0; i<  AliPID::kSPECIESCN ; i++)
     fInitPID[i] = 1.;
  
 }
@@ -944,7 +944,7 @@ void  AliPHOSPIDv1::MakePID()
 {
   // construct the PID weight from a Bayesian Method
   
-  const Int_t kSPECIES = AliPID::kSPECIESN ;
+  const Int_t kSPECIES = AliPID::kSPECIESCN ;
  
   Int_t nparticles = fRecParticles->GetEntriesFast() ;
 
@@ -1632,10 +1632,10 @@ void AliPHOSPIDv1::GetVertex(void)
 //_______________________________________________________________________
 void AliPHOSPIDv1::SetInitPID(const Double_t *p) {
   // Sets values for the initial population of each particle type 
-  for (Int_t i=0; i<AliPID::kSPECIESN; i++) fInitPID[i] = p[i];
+  for (Int_t i=0; i<AliPID::kSPECIESCN; i++) fInitPID[i] = p[i];
 }
 //_______________________________________________________________________
 void AliPHOSPIDv1::GetInitPID(Double_t *p) const {
   // Gets values for the initial population of each particle type 
-  for (Int_t i=0; i<AliPID::kSPECIESN; i++) p[i] = fInitPID[i];
+  for (Int_t i=0; i<AliPID::kSPECIESCN; i++) p[i] = fInitPID[i];
 }

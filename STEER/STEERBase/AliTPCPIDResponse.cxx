@@ -25,6 +25,7 @@
 #include <TGraph.h>
 #include <TObjArray.h>
 #include <TSpline.h>
+#include <TMath.h>
 
 #include "AliExternalTrackParam.h"
 
@@ -129,8 +130,12 @@ Double_t AliTPCPIDResponse::GetExpectedSignal(const Float_t mom,
   if (!fUseDatabase||fResponseFunctions.GetEntriesFast()>AliPID::kUnknown) return Bethe(mom/mass);
   //
   TSpline3 * responseFunction = (TSpline3 *) fResponseFunctions.UncheckedAt(n);
+
   if (!responseFunction) return Bethe(mom/mass);
-  return fMIP*responseFunction->Eval(mom/mass);
+  //charge factor. BB goes with z^2, however in reality it is slightly larger (calibration, threshold effects, ...)
+  // !!! Splines for light nuclei need to be normalised to this factor !!!
+  const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(n),2.3);
+  return fMIP*responseFunction->Eval(mom/mass)*chargeFactor;
 
 }
 

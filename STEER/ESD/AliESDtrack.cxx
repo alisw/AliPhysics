@@ -128,6 +128,7 @@
 #include "TPolyMarker3D.h"
 #include "AliTrackerBase.h"
 #include "AliTPCdEdxInfo.h"
+#include "AliDetectorPID.h"
 
 ClassImp(AliESDtrack)
 
@@ -239,6 +240,7 @@ AliESDtrack::AliESDtrack() :
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
   fCacheChi2TPCConstrainedVsGlobalVertex(0),
+  fDetectorPID(0x0),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999)
 {
@@ -354,6 +356,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fCacheNCrossedRows(track.fCacheNCrossedRows),
   fCacheChi2TPCConstrainedVsGlobal(track.fCacheChi2TPCConstrainedVsGlobal),
   fCacheChi2TPCConstrainedVsGlobalVertex(track.fCacheChi2TPCConstrainedVsGlobalVertex),
+  fDetectorPID(0x0),
   fTrackPhiOnEMCal(track.fTrackPhiOnEMCal),
   fTrackEtaOnEMCal(track.fTrackEtaOnEMCal)
 {
@@ -381,6 +384,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
     for (Int_t i=0; i<fTRDnSlices; i++) fTRDslices[i]=track.fTRDslices[i];
   }
 
+  if (track.fDetectorPID) fDetectorPID = new AliDetectorPID(*track.fDetectorPID);
 
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
@@ -481,6 +485,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
   fCacheChi2TPCConstrainedVsGlobalVertex(0),
+  fDetectorPID(0x0),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999)
 {
@@ -628,6 +633,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
   fCacheChi2TPCConstrainedVsGlobalVertex(0),
+  fDetectorPID(0x0),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999)
 {
@@ -769,6 +775,7 @@ AliESDtrack::~AliESDtrack(){
   fCacheChi2TPCConstrainedVsGlobal = -10.;
   if(fCacheChi2TPCConstrainedVsGlobalVertex) fCacheChi2TPCConstrainedVsGlobalVertex = 0;
 
+  delete fDetectorPID;
 }
 
 AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
@@ -979,6 +986,10 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fCacheChi2TPCConstrainedVsGlobal = source.fCacheChi2TPCConstrainedVsGlobal;
   fCacheChi2TPCConstrainedVsGlobalVertex = source.fCacheChi2TPCConstrainedVsGlobalVertex;
 
+  delete fDetectorPID;
+  fDetectorPID=0x0;
+  if (source.fDetectorPID) fDetectorPID = new AliDetectorPID(*source.fDetectorPID);
+  
   fTrackPhiOnEMCal= source.fTrackPhiOnEMCal;
   fTrackEtaOnEMCal= source.fTrackEtaOnEMCal;
 
@@ -2414,7 +2425,7 @@ void AliESDtrack::Print(Option_t *) const {
   // Prints info on the track
   AliExternalTrackParam::Print();
   printf("ESD track info\n") ; 
-  Double_t p[AliPID::kSPECIESN] ; 
+  Double_t p[AliPID::kSPECIES] ;
   Int_t index = 0 ; 
   if( IsOn(kITSpid) ){
     printf("From ITS: ") ; 
@@ -2631,4 +2642,14 @@ Double_t AliESDtrack::GetChi2TPCConstrainedVsGlobal(const AliESDVertex* vtx) con
   
   fCacheChi2TPCConstrainedVsGlobal = chi2(0,0);
   return fCacheChi2TPCConstrainedVsGlobal;
+}
+
+void AliESDtrack::SetDetectorPID(const AliDetectorPID *pid)
+{
+  //
+  // Set the detector PID
+  //
+  if (fDetectorPID) delete fDetectorPID;
+  fDetectorPID=pid;
+  
 }

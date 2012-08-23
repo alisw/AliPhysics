@@ -26,6 +26,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliVVertex.h"
 #include "AliAODTrack.h"
+#include "AliDetectorPID.h"
 #include "AliAODEvent.h"
 
 ClassImp(AliAODTrack)
@@ -53,6 +54,7 @@ AliAODTrack::AliAODTrack() :
   fCaloIndex(kEMCALNoMatch),
   fCovMatrix(NULL),
   fDetPid(NULL),
+  fDetectorPID(NULL),
   fProdVertex(NULL),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
@@ -106,6 +108,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fCaloIndex(kEMCALNoMatch),
   fCovMatrix(NULL),
   fDetPid(NULL),
+  fDetectorPID(NULL),
   fProdVertex(prodVertex),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
@@ -163,6 +166,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fCaloIndex(kEMCALNoMatch),
   fCovMatrix(NULL),
   fDetPid(NULL),
+  fDetectorPID(NULL),
   fProdVertex(prodVertex),
   fTrackPhiOnEMCal(-999),
   fTrackEtaOnEMCal(-999),
@@ -188,6 +192,7 @@ AliAODTrack::~AliAODTrack()
   // destructor
   delete fCovMatrix;
   delete fDetPid;
+  delete fDetectorPID;
 }
 
 
@@ -214,6 +219,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fCaloIndex(trk.fCaloIndex),
   fCovMatrix(NULL),
   fDetPid(NULL),
+  fDetectorPID(NULL),
   fProdVertex(trk.fProdVertex),
   fTrackPhiOnEMCal(trk.fTrackPhiOnEMCal),
   fTrackEtaOnEMCal(trk.fTrackEtaOnEMCal),
@@ -231,6 +237,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<6>(*trk.fCovMatrix);
   if(trk.fDetPid) fDetPid=new AliAODPid(*trk.fDetPid);
   SetPID(trk.fPID);
+  if (trk.fDetectorPID) fDetectorPID = new AliDetectorPID(*trk.fDetectorPID);
 }
 
 //______________________________________________________________________________
@@ -277,11 +284,15 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     SetUsedForVtxFit(trk.GetUsedForVtxFit());
     SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
 
+    //detector raw signals
     delete fDetPid;
     if(trk.fDetPid) fDetPid=new AliAODPid(*trk.fDetPid);
     else fDetPid=NULL;
 
-
+    //calibrated PID cache
+    delete fDetectorPID;
+    fDetectorPID=0x0;
+    if (trk.fDetectorPID) fDetectorPID = new AliDetectorPID(*trk.fDetectorPID);
   }
 
   return *this;
@@ -771,6 +782,16 @@ Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b, Bool_t) const
   }
   bcid = TMath::Nint((tdif - kShift)/kSpacing);
   return bcid;
+}
+
+void AliAODTrack::SetDetectorPID(const AliDetectorPID *pid)
+{
+  //
+  // Set the detector PID
+  //
+  if (fDetectorPID) delete fDetectorPID;
+  fDetectorPID=pid;
+  
 }
 
 //_____________________________________________________________________________

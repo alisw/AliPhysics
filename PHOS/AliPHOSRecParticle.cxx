@@ -46,7 +46,7 @@ AliPHOSRecParticle::AliPHOSRecParticle():
   fPos()
 {
   // ctor
-  const Int_t nSPECIES = AliPID::kSPECIESN;
+  const Int_t nSPECIES = AliPID::kSPECIESCN;
   for(Int_t i = 0; i<nSPECIES ; i++)
     fPID[i]=0.;
 }
@@ -82,7 +82,7 @@ AliPHOSRecParticle::AliPHOSRecParticle(const AliPHOSRecParticle & rp):
   fPolarTheta  = rp.fPolarTheta;
   fPolarPhi    = rp.fPolarPhi;
   fParticlePDG = rp.fParticlePDG; 
-  const Int_t nSPECIES = AliPID::kSPECIESN;
+  const Int_t nSPECIES = AliPID::kSPECIESCN;
   for(Int_t i = 0; i<nSPECIES ; i++)
     fPID[i]=rp.fPID[i];
 }

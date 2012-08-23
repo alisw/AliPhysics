@@ -32,7 +32,9 @@ public:
   AliAnalysisTaskPIDResponse(const char *name);
   virtual ~AliAnalysisTaskPIDResponse();
 
-  void SetIsMC(Bool_t isMC=kTRUE) { fIsMC=isMC; }
+  void SetIsMC(Bool_t isMC=kTRUE)   { fIsMC=isMC; }
+  void SetCachePID(Bool_t cachePID) { fCachePID=cachePID; }
+  Bool_t GetCachePID() const { return fCachePID; }
   
   virtual void UserCreateOutputObjects();
   
@@ -43,7 +45,8 @@ public:
   void SetTuneOnData(Bool_t flag,Int_t recopass){fIsTunedOnData=flag;fRecoPassTuned=recopass;};
 
 private:
-  Bool_t fIsMC;                        //  If we run on MC data
+  Bool_t fIsMC;                        // If we run on MC data
+  Bool_t fCachePID;                    // Cache PID values in transient object
   TString fOADBPath;                   // OADB path to use
   
   AliPIDResponse *fPIDResponse;        //! PID response Handler

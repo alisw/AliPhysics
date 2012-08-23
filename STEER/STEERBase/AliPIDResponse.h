@@ -23,15 +23,29 @@
 
 #include "TNamed.h"
 
-class AliVEvent;
 class TF1;
-class AliTRDPIDResponseObject; 
+class TObjArray;
+
+class AliVEvent;
+class AliTRDPIDResponseObject;
+class AliTOFPIDParams;
 
 class AliPIDResponse : public TNamed {
 public:
   AliPIDResponse(Bool_t isMC=kFALSE);
   virtual ~AliPIDResponse();
 
+  enum EDetector {
+    kITS=0,
+    kTPC=1,
+    kTRD=2,
+    kTOF=3,
+    kHMPID=4,
+    kEMCAL=5,
+    kPHOS=6,
+    kNdetectors=7
+  };
+  
   enum EDetCode {
     kDetITS = 0x1,
     kDetTPC = 0x2,
@@ -58,18 +72,21 @@ public:
   AliTRDPIDResponse &GetTRDResponse() {return fTRDResponse;}
   AliEMCALPIDResponse &GetEMCALResponse() {return fEMCALResponse;}
 
-  Float_t NumberOfSigmas(EDetCode detCode, const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t NumberOfSigmas(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type) const;
+  Float_t NumberOfSigmas(EDetCode  detCode, const AliVParticle *track, AliPID::EParticleType type) const;
   
-  virtual Float_t NumberOfSigmasITS(const AliVParticle *track, AliPID::EParticleType type) const;
-  virtual Float_t NumberOfSigmasTPC(const AliVParticle *track, AliPID::EParticleType type) const;
-  virtual Float_t NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EParticleType type) const;
-  virtual Float_t NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
-  virtual Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const = 0;
+  virtual Float_t NumberOfSigmasITS  (const AliVParticle *track, AliPID::EParticleType type) const;
+  virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
+  virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
+  virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const = 0;
+  virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
+
   virtual Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel) const;
 
-  EDetPidStatus ComputePIDProbability  (EDetCode detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus ComputePIDProbability  (EDetector detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
+  EDetPidStatus ComputePIDProbability  (EDetCode  detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   
-  EDetPidStatus ComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t  p[]) const;
+  EDetPidStatus ComputeITSProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus ComputeTPCProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus ComputeTOFProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   EDetPidStatus ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
@@ -84,8 +101,15 @@ public:
   
   void SetOADBPath(const char* path) {fOADBPath=path;}
   const char *GetOADBPath() const {return fOADBPath.Data();}
-  void InitialiseEvent(AliVEvent *event, Int_t pass);
+
+  void SetCustomTPCpidResponse(const char* tpcpid) { fCustomTPCpidResponse = tpcpid; }
+  const char* GetCustomTPCpidResponse() const { return fCustomTPCpidResponse.Data(); }
+  
+  void InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run=-1);
   void SetCurrentFile(const char* file) { fCurrentFile=file; }
+
+  // cache PID in the track
+  void FillTrackDetectorPID();
 
   AliVEvent * GetCurrentEvent() const {return fCurrentEvent;}
 
@@ -122,6 +146,7 @@ private:
   Bool_t fIsMC;                        //  If we run on MC data
 
   TString fOADBPath;                   // OADB path to use
+  TString fCustomTPCpidResponse;       // Custom TPC Pid Response file for debugging purposes
   
   TString fBeamType;                   //! beam type (PP) or (PBPB)
   TString fLHCperiod;                  //! LHC period
@@ -179,37 +204,7 @@ private:
   //
   void SetRecoInfo();
   
-  ClassDef(AliPIDResponse, 8);  //PID response handling
+  ClassDef(AliPIDResponse, 9);  //PID response handling
 };
-
-inline Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EParticleType type) const {
-  AliVTrack *track=(AliVTrack*)vtrack;
-  Double_t mom  = track->GetTPCmomentum();
-  Double_t sig  = track->GetTPCsignal();
-  UInt_t   sigN = track->GetTPCsignalN();
-
-  if(fTuneMConData) sig = GetTPCsignalTunedOnData(track);
-
-  Double_t nSigma = -999.;
-  if (sigN>0) nSigma=fTPCResponse.GetNumberOfSigmas(mom,sig,sigN,type);
-
-  return nSigma;
-}
-
-inline Float_t AliPIDResponse::NumberOfSigmasITS(const AliVParticle *vtrack, AliPID::EParticleType type) const {
-  AliVTrack *track=(AliVTrack*)vtrack;
-  Float_t dEdx=track->GetITSsignal();
-  if (dEdx<=0) return -999.;
-  
-  UChar_t clumap=track->GetITSClusterMap();
-  Int_t nPointsForPid=0;
-  for(Int_t i=2; i<6; i++){
-    if(clumap&(1<<i)) ++nPointsForPid;
-  }
-  Float_t mom=track->P();
-  Bool_t isSA=kTRUE;
-  if(track->GetTPCNcls()>0) isSA=kFALSE;
-  return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA);
-}
 
 #endif

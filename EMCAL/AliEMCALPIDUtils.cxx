@@ -31,7 +31,7 @@
 //
 //   pid->GetPIDFinal(idx) gives the probabilities
 //
-//   Double_t PIDFinal[AliPID::kSPECIESN]  is the standard PID for :
+//   Double_t PIDFinal[AliPID::kSPECIESCN]  is the standard PID for :
 //
 //	kElectron :  fPIDFinal[0]
 //	kMuon     :  fPIDFinal[1]
@@ -164,19 +164,27 @@ void AliEMCALPIDUtils::ComputePID(Double_t energy, Double_t lambda0)
     AliInfo(Form( "PIDWeight in loop = %f ||| %f ||| %f",  fPIDWeight[0] , fPIDWeight[1], fPIDWeight[2]) );
     AliInfo("********************************************************" );
   }
-  
-  fPIDFinal[0]  = fPIDWeight[0]/2; // photon
-  fPIDFinal[1]  = fPIDWeight[2]/8;
-  fPIDFinal[2]  = fPIDWeight[2]/8;
-  fPIDFinal[3]  = fPIDWeight[2]/8;
-  fPIDFinal[4]  = fPIDWeight[2]/8;
-  fPIDFinal[5]  = fPIDWeight[0]/2; // electron
-  fPIDFinal[6]  = fPIDWeight[1]  ; // Pi0
-  fPIDFinal[7]  = fPIDWeight[2]/8;
-  fPIDFinal[8]  = fPIDWeight[2]/8;
-  fPIDFinal[9]  = fPIDWeight[2]/8;
-  fPIDFinal[10] = fPIDWeight[2]/8;
 
+  //default particles
+  fPIDFinal[AliPID::kElectron]  = fPIDWeight[0]/2; // photon
+  fPIDFinal[AliPID::kMuon]      = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kPion]      = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kKaon]      = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kProton]    = fPIDWeight[2]/8;
+  //light nuclei
+  fPIDFinal[AliPID::kDeuteron]  = 0;
+  fPIDFinal[AliPID::kTriton]    = 0;
+  fPIDFinal[AliPID::kHe3]       = 0;
+  fPIDFinal[AliPID::kAlpha]     = 0;
+  //neutral particles
+  fPIDFinal[AliPID::kPhoton]    = fPIDWeight[0]/2; // electron
+  fPIDFinal[AliPID::kPi0]       = fPIDWeight[1]  ; // Pi0
+  fPIDFinal[AliPID::kNeutron]   = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kKaon0]     = fPIDWeight[2]/8;
+  fPIDFinal[AliPID::kEleCon]    = fPIDWeight[2]/8;
+  //
+  fPIDFinal[AliPID::kUnknown]   = fPIDWeight[2]/8;
+  
 }
 
 
@@ -389,7 +397,7 @@ void AliEMCALPIDUtils::InitParameters()
   fPIDWeight[1] = -1;
   fPIDWeight[2] = -1;
   
-  for(Int_t i=0; i<AliPID::kSPECIESN+1; i++)
+  for(Int_t i=0; i<AliPID::kSPECIESCN+1; i++)
     fPIDFinal[i]= 0;
   
   //   init the parameters here instead of from loading from recparam

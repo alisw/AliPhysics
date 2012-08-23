@@ -30,15 +30,23 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
   tender->SetCheckEventSelection(checkEvtSelection);
   tender->SetDefaultCDBStorage("raw://");
   mgr->AddTask(tender);
-  if (checkEvtSelection) {
-    if (mgr->GetTasks()->First() != (TObject*)tender ) {
-      TString firstName(mgr->GetTasks()->First()->GetName());
-      Bool_t isSecond=(mgr->GetTasks()->At(1) == (TObject*)tender);
-      if (! (firstName=="PIDResponseTask" && isSecond )){
-        Fatal("AddTaskTender","When setting the tender to check the event selection, it has to be the first wagon, or the first after the PID Response!");
-        return NULL;
-      }
-    }
+  
+  Bool_t cachePID=kFALSE;
+
+  //check that that tender is the first task after the pid response
+  TString firstName(mgr->GetTasks()->First()->GetName());
+  Bool_t isSecond=(mgr->GetTasks()->At(1) == (TObject*)tender);
+
+  if (! (firstName=="PIDResponseTask" && isSecond )){
+    Fatal("AddTaskTender","When using the tender the first task needs to be the PIDResponse and the tender the second task!!!");
+    return NULL;
+  }
+  
+  AliAnalysisTaskPIDResponse *pidResp=(AliAnalysisTaskPIDResponse*)mgr->GetTasks()->First();
+  if (pidResp->GetCachePID()){
+    usePID=kTRUE;
+    pidResp->SetCachePID(kFALSE);
+    cachePID=kTRUE;
   }
   
   //========= Attach VZERO supply ======
@@ -105,11 +113,6 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
     tender->AddSupply(trdSupply);
   }  
 
-  //========= Attach PID supply ======
-  if (usePID) {
-    tender->AddSupply(new AliPIDTenderSupply("PIDtender"));
-  }  
-
   //========= Attach Primary Vertex supply ======
   if (useVTX) {
     tender->AddSupply(new AliVtxTenderSupply("PriVtxtender"));
@@ -121,6 +124,13 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE,
     emcSupply->SetDefaults();
     tender->AddSupply(emcSupply);
   }  
+
+  //========= Attach PID supply ======
+  if (usePID) {
+    AliPIDTenderSupply *pidSupply=new AliPIDTenderSupply("PIDtender");
+    pidSupply->SetCachePID(cachePID);
+    tender->AddSupply(pidSupply);
+  }
 
   //================================================
   //              data containers

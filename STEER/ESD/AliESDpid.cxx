@@ -35,6 +35,7 @@
 #include "AliESDtrack.h"
 #include "AliMCEvent.h"
 
+#include <AliDetectorPID.h>
 
 ClassImp(AliESDpid)
 
@@ -255,7 +256,7 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
   Int_t ibin = fTOFResponse.GetMomBin(track->GetP());
   Float_t timezero = fTOFResponse.GetT0bin(ibin);
 
-  Double_t time[AliPID::kSPECIESN];
+  Double_t time[AliPID::kSPECIES];
   track->GetIntegratedTimes(time);
 
   Double_t sigma[AliPID::kSPECIES];
@@ -405,4 +406,20 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
     
     
     return status;
+}
+
+Float_t AliESDpid::NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const
+{
+  //
+  // Number of sigma implementation for the TOF
+  //
+  
+  AliVTrack *vtrack=(AliVTrack*)track;
+  // look for cached value first
+  if (vtrack->GetDetectorPID()){
+    return vtrack->GetDetectorPID()->GetNumberOfSigmas(kTOF, type);
+  }
+  
+  Double_t expTime = fTOFResponse.GetExpectedSignal(vtrack,type);
+  return (vtrack->GetTOFsignal() - fTOFResponse.GetStartTime(vtrack->P()) - expTime)/fTOFResponse.GetExpectedSigma(vtrack->P(),expTime,AliPID::ParticleMassZ(type));
 }

@@ -16,6 +16,7 @@
 class AliVVertex;
 class AliExternalTrackParam;
 class AliTPCdEdxInfo;
+class AliDetectorPID;
  
 class AliVTrack: public AliVParticle {
 
@@ -60,6 +61,8 @@ public:
   virtual Double_t GetTRDslice(Int_t /*plane*/, Int_t /*slice*/) const { return -1.; }
   virtual Int_t    GetNumberOfTRDslices() const { return 0; }
   virtual UChar_t  GetTRDntrackletsPID() const { return 0;}
+  virtual void     SetDetectorPID(const AliDetectorPID */*pid*/) {;}
+  virtual const    AliDetectorPID* GetDetectorPID() const { return 0x0; }
   virtual Double_t GetTRDchi2()          const { return -1;}
   
   virtual Int_t GetEMCALcluster()     const {return -1;}

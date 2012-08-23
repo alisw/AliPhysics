@@ -48,36 +48,6 @@ private:
   ClassDef(AliAODpidUtil,3)  // PID calculation class
 };
 
-inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {
-  AliAODTrack *track=(AliAODTrack*)vtrack;
-  Bool_t oldAod=kTRUE;
-  Double_t sigTOF;
-  AliAODPid *pidObj = track->GetDetPid();
-  if (!pidObj) return -999.;
-  Double_t tofTime=pidObj->GetTOFsignal();
-  Double_t expTime=fTOFResponse.GetExpectedSignal((AliVTrack*)vtrack,type);
-  Double_t sigmaTOFPid[AliPID::kSPECIES];
-  pidObj->GetTOFpidResolution(sigmaTOFPid);
-  AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
-  if (event) {  // protection if the user didn't call GetTrack, which sets the internal pointer
-    AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
-    if (tofH && (TMath::Abs(sigmaTOFPid[0]) <= 1.E-16) ) { // new AOD
-	sigTOF=fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type)); //fTOFResponse is set in InitialiseEvent
-	tofTime -= fTOFResponse.GetStartTime(vtrack->P());
-	oldAod=kFALSE;
-    } 
-  } else {
-    AliError("pointer to AliAODEvent not found, please call GetTrack to set it");
-    return -996.;
-  }
-  if (oldAod) { // old AOD
-    if (type <= AliPID::kProton) {
-      sigTOF=sigmaTOFPid[type];
-    } else return -998.;  // light nuclei cannot be supported on old AOD because we don't have timeZero resolution
-  }
-  if (sigTOF>0) return (tofTime - expTime)/sigTOF;
-  else return -997.;
-}
 
 #endif
 

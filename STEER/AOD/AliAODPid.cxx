@@ -43,7 +43,7 @@ AliAODPid::AliAODPid():
     fTPCdEdxInfo(0)
 {
   // default constructor
-    for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]   = 0; 
+    for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntTime[i]   = 0; 
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i] = 0.;
     for(Int_t i=0; i<6; i++) {
       fTRDmomentum[i]      = 0.;
@@ -78,7 +78,7 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
 {
   // Copy constructor
   SetTRDsignal(fTRDnSlices, pid.fTRDslices);
-    for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
+    for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
 
     for(Int_t i=0; i<6; i++){ 
       fTRDmomentum[i]=pid.fTRDmomentum[i];
@@ -136,16 +136,16 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
   return *this;
 }
 //_______________________________________________________________________________
-void AliAODPid::GetIntegratedTimes(Double_t timeint[kSPECIES]) const
+void AliAODPid::GetIntegratedTimes(Double_t timeint[AliPID::kSPECIES]) const
 {
  // Returns the array with integrated times for each particle hypothesis
-for(Int_t i=0; i<kSPECIES; i++) timeint[i]=fIntTime[i];
+ for(Int_t i=0; i<AliPID::kSPECIES; i++) timeint[i]=fIntTime[i];
 }
 //_______________________________________________________________________________
-void AliAODPid::SetIntegratedTimes(Double_t timeint[kSPECIES])
+void AliAODPid::SetIntegratedTimes(Double_t timeint[AliPID::kSPECIES])
 {
  // Returns the array with integrated times for each particle hypothesis
-for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=timeint[i];
+ for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntTime[i]=timeint[i];
 }
 //______________________________________________________________________________
 void AliAODPid::SetTOFpidResolution(Double_t tofPIDres[5])

@@ -105,7 +105,7 @@ class AliPHOSFastRecParticle : public TParticle {
   Int_t fIndexInList ; // the index of this RecParticle in the list stored in TreeR (to be set by analysis)
   Float_t fTof ;       // time of fliht
   Int_t fType ;        // particle type obtained by "virtual" reconstruction
-  Float_t fPID[AliPID::kSPECIESN] ; // PID probability densities
+  Float_t fPID[AliPID::kSPECIESCN] ; // PID probability densities
 
  private:
 

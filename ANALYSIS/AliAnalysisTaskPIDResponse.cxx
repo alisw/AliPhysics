@@ -27,7 +27,6 @@
 #include <AliPIDResponse.h>
 #include <AliESDpid.h>
 
-
 #include "AliAnalysisTaskPIDResponse.h"
 
 ClassImp(AliAnalysisTaskPIDResponse)
@@ -36,6 +35,7 @@ ClassImp(AliAnalysisTaskPIDResponse)
 AliAnalysisTaskPIDResponse::AliAnalysisTaskPIDResponse():
 AliAnalysisTaskSE(),
 fIsMC(kFALSE),
+fCachePID(kTRUE),
 fOADBPath(),
 fPIDResponse(0x0),
 fRun(0),
@@ -53,6 +53,7 @@ fRecoPassTuned(0)
 AliAnalysisTaskPIDResponse::AliAnalysisTaskPIDResponse(const char* name):
 AliAnalysisTaskSE(name),
 fIsMC(kFALSE),
+fCachePID(kTRUE),
 fOADBPath(),
 fPIDResponse(0x0),
 fRun(0),
@@ -81,8 +82,9 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   //
   // Create the output QA objects
   //
-    
+  
   AliLog::SetClassDebugLevel("AliAnalysisTaskPIDResponse",10);
+  
   //input hander
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
@@ -117,6 +119,10 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
   AliESDpid *pidresp = dynamic_cast<AliESDpid*>(fPIDResponse);
   if(pidresp && AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
       pidresp->SetEventHandler(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  }
+  //create and attach transient PID object
+  if (fCachePID) {
+    fPIDResponse->FillTrackDetectorPID();
   }
 }
 

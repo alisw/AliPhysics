@@ -37,8 +37,8 @@ public :
     void   SetPIDParams(const TObjArray * params) { fkPIDParams = params; }
     
 
-    // EMCAL probability -> should go to another place?
-    Double_t ComputeEMCALProbability( Float_t pt, Float_t eop, Int_t charge, Double_t *pEMCAL) const;
+    // EMCAL probability
+    Bool_t ComputeEMCALProbability(Int_t nSpecies, Float_t pt, Float_t eop, Int_t charge, Double_t *pEMCAL) const;
 
 protected:
   

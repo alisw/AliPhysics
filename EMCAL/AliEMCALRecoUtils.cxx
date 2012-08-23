@@ -1528,8 +1528,8 @@ void AliEMCALRecoUtils::RecalculateClusterPID(AliVCluster * cluster)
   if ( cluster->GetM02() != 0)
     fPIDUtils->ComputePID(cluster->E(),cluster->GetM02());
   
-  Float_t pidlist[AliPID::kSPECIESN+1];
-  for(Int_t i = 0; i < AliPID::kSPECIESN+1; i++) pidlist[i] = fPIDUtils->GetPIDFinal(i);
+  Float_t pidlist[AliPID::kSPECIESCN+1];
+  for(Int_t i = 0; i < AliPID::kSPECIESCN+1; i++) pidlist[i] = fPIDUtils->GetPIDFinal(i);
         
   cluster->SetPID(pidlist);
 }

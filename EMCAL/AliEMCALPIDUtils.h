@@ -34,11 +34,11 @@ public:
   Double_t DistEnergy(const Double_t energy, const Int_t nature) ;
 
   Double_t GetPID(Int_t idx) const {if (idx>=0&&idx<3) return fPID[idx]; else return 0.;}
-  Double_t GetPIDFinal(Int_t idx) const {if (idx>=0&&idx<AliPID::kSPECIESN) return fPIDFinal[idx]; else return 0.;}
+  Double_t GetPIDFinal(Int_t idx) const {if (idx>=0&&idx<AliPID::kSPECIESCN) return fPIDFinal[idx]; else return 0.;}
   Double_t GetPIDWeight(Int_t idx) const {if (idx>=0&&idx<3) return fPIDWeight[idx]; else return 0.;}
   
   void    SetPID(Double_t val, Int_t idx) {if (idx>=0&&idx<3) fPID[idx] = val;}
-  void    SetPIDFinal(Double_t val, Int_t idx) {if (idx>=0&&idx<AliPID::kSPECIESN) fPIDFinal[idx] = val;}
+  void    SetPIDFinal(Double_t val, Int_t idx) {if (idx>=0&&idx<AliPID::kSPECIESCN) fPIDFinal[idx] = val;}
   void    SetPIDWeight(Double_t val, Int_t idx) {if (idx>=0&&idx<3) fPIDWeight[idx] = val;}
   void    SetPrintInfo(Bool_t yesno) {fPrintInfo = yesno;}
 	
@@ -67,7 +67,7 @@ protected:
    
   Float_t fPID[3];
   
-  Float_t  fPIDFinal[AliPID::kSPECIESN+1]; // final PID format
+  Float_t  fPIDFinal[AliPID::kSPECIESCN+1]; // final PID format
   Float_t  fPIDWeight[3];                  // order: gamma, pi0, hadrons,
   Double_t fProbGamma;	                  // probility to be a Gamma
   Double_t fProbPiZero;	                  // probility to be a PiO

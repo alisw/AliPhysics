@@ -22,7 +22,7 @@ class AliAODPid : public TObject {
   AliAODPid(const AliAODPid& pid); 
   AliAODPid& operator=(const AliAODPid& pid);
   
-  enum{kSPECIES=5, kTRDnPlanes=6};
+  enum{kTRDnPlanes=6};
 
  //setters
   void      SetITSsignal(Double_t its)                         {fITSsignal=its;}

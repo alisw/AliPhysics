@@ -36,7 +36,8 @@ public:
  Double_t GetResolution(Double_t bethe, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const;
  void GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES],Bool_t isMC=kFALSE) const;
  Float_t GetNumberOfSigmas(Float_t mom, Float_t signal, AliPID::EParticleType type, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const {
-   Float_t bethe = Bethe(mom,AliPID::ParticleMass(type),isSA);
+   const Double_t chargeFactor = TMath::Power(AliPID::ParticleCharge(type),2.);
+   Float_t bethe = Bethe(mom,AliPID::ParticleMassZ(type),isSA)*chargeFactor;
    return (signal - bethe)/GetResolution(bethe,nPtsForPid,isSA);
  }
  Int_t GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, Bool_t isSA=kFALSE) const;

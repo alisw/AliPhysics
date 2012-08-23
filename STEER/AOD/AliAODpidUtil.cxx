@@ -34,6 +34,8 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 
+#include <AliDetectorPID.h>
+
 ClassImp(AliAODpidUtil)
 
   Int_t AliAODpidUtil::MakePID(const AliAODTrack *track,Double_t *p) const {
@@ -239,8 +241,8 @@ void AliAODpidUtil::MakeTOFPID(const AliAODTrack *track, Double_t *p) const
   if ((track->GetStatus()&AliESDtrack::kTIME )==0)     return;
   if ((track->GetStatus()&AliESDtrack::kTOFpid )==0)   return;
 
-  Double_t time[AliPID::kSPECIESN];
-  Double_t sigma[AliPID::kSPECIESN];
+  Double_t time[AliPID::kSPECIES];
+  Double_t sigma[AliPID::kSPECIES];
   AliAODPid *pidObj = track->GetDetPid();
   pidObj->GetIntegratedTimes(time);
 
@@ -296,3 +298,45 @@ void AliAODpidUtil::MakeTRDPID(const AliAODTrack *track,Double_t *p) const
   return;
 }
 
+//_________________________________________________________________________
+Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const
+{
+  //
+  // Number of sigma implementation for the TOF
+  //
+  
+  AliAODTrack *track=(AliAODTrack*)vtrack;
+
+  // look for cached value first
+  if (track->GetDetectorPID()){
+    return track->GetDetectorPID()->GetNumberOfSigmas(kTOF, type);
+  }  
+  
+  Bool_t oldAod=kTRUE;
+  Double_t sigTOF;
+  AliAODPid *pidObj = track->GetDetPid();
+  if (!pidObj) return -999.;
+  Double_t tofTime=pidObj->GetTOFsignal();
+  Double_t expTime=fTOFResponse.GetExpectedSignal((AliVTrack*)vtrack,type);
+  Double_t sigmaTOFPid[AliPID::kSPECIES];
+  pidObj->GetTOFpidResolution(sigmaTOFPid);
+  AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
+  if (event) {  // protection if the user didn't call GetTrack, which sets the internal pointer
+    AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
+    if (tofH && (TMath::Abs(sigmaTOFPid[0]) <= 1.E-16) ) { // new AOD
+        sigTOF=fTOFResponse.GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type)); //fTOFResponse is set in InitialiseEvent
+        tofTime -= fTOFResponse.GetStartTime(vtrack->P());
+        oldAod=kFALSE;
+    }
+  } else {
+    AliError("pointer to AliAODEvent not found, please call GetTrack to set it");
+    return -996.;
+  }
+  if (oldAod) { // old AOD
+    if (type <= AliPID::kProton) {
+      sigTOF=sigmaTOFPid[type];
+    } else return -998.;  // light nuclei cannot be supported on old AOD because we don't have timeZero resolution
+  }
+  if (sigTOF>0) return (tofTime - expTime)/sigTOF;
+  else return -997.;
+}

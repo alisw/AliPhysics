@@ -20,6 +20,7 @@
  
 
 class AliVVertex;
+class AliDetectorPID;
 class AliTPCdEdxInfo;
 class AliAODEvent;
 
@@ -368,7 +369,9 @@ class AliAODTrack : public AliVTrack {
   void     SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
   void     SetType(AODTrk_t ttype) { fType=ttype; }
 
-
+  // Trasient PID object, is owned by the track
+  virtual void  SetDetectorPID(const AliDetectorPID *pid);
+  virtual const AliDetectorPID* GetDetectorPID() const { return fDetectorPID; }
 
   // Dummy
   Int_t    PdgCode() const {return 0;}
@@ -413,7 +416,8 @@ class AliAODTrack : public AliVTrack {
 
   
   AliAODRedCov<6> *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
-  AliAODPid    *fDetPid;            // more detailed or detector specific pid information
+  AliAODPid    *fDetPid;            // more detailed or detector specific raw pid information
+  mutable const AliDetectorPID* fDetectorPID; //! transient object to cache calibrated PID information
   TRef          fProdVertex;        // vertex of origin
 
   Double_t      fTrackPhiOnEMCal;   // phi of track after being propagated to 430cm

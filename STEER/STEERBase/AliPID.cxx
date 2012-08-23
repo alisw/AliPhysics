@@ -50,79 +50,90 @@
 
 ClassImp(AliPID)
 
-const char* AliPID::fgkParticleName[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
+const char* AliPID::fgkParticleName[AliPID::kSPECIESCN+1] = {
   "electron",
   "muon",
   "pion",
-  "kaon",
+  "kaon",  
   "proton",
+  
+  "deuteron",
+  "triton",
+  "helium-3",
+  "alpha",
+  
   "photon",
   "pi0",
   "neutron",
   "kaon0",
   "eleCon",
-  "deuteron",
-  "triton",
-  "helium-3",
-  "alpha",
+  
   "unknown"
 };
 
-const char* AliPID::fgkParticleShortName[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
+const char* AliPID::fgkParticleShortName[AliPID::kSPECIESCN+1] = {
   "e",
   "mu",
   "pi",
   "K",
   "p",
+
+  "d",
+  "t",
+  "he3",
+  "alpha",
+
   "photon",
   "pi0",
   "n",
   "K0",
   "eleCon",
-  "d",
-  "t",
-  "he3",
-  "alpha",
+  
   "unknown"
 };
 
-const char* AliPID::fgkParticleLatexName[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
+const char* AliPID::fgkParticleLatexName[AliPID::kSPECIESCN+1] = {
   "e",
   "#mu",
   "#pi",
   "K",
   "p",
+
+  "d",
+  "t",
+  "he3",
+  "#alpha",
+
   "#gamma",
   "#pi_{0}",
   "n",
   "K_{0}",
   "eleCon",
-  "d",
-  "t",
-  "he3",
-  "#alpha",
+
   "unknown"
 };
 
-const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
+const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESCN+1] = {
   ::kElectron, 
   ::kMuonMinus, 
   ::kPiPlus, 
   ::kKPlus, 
   ::kProton,
+  
+  1000010020,
+  1000010030,
+  1000020030,
+  1000020040,
+
   ::kGamma,
   ::kPi0,
   ::kNeutron,
   ::kK0,
   ::kElectron,
-  1000010020,
-  1000010030,
-  1000020030,
-  1000020040,
   0
 };
 
-/*const*/ Float_t AliPID::fgkParticleMass[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
+/*const*/ Float_t AliPID::fgkParticleMass[AliPID::kSPECIESCN+1] = {
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   /*
   M(kElectron),  // electron
@@ -142,7 +153,7 @@ const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
   0.00000        // unknown
   */
 };
-/*const*/ Float_t AliPID::fgkParticleMassZ[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
+/*const*/ Float_t AliPID::fgkParticleMassZ[AliPID::kSPECIESCN+1] = {
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   /*
   M(kElectron),  // electron
@@ -163,7 +174,7 @@ const Int_t AliPID::fgkParticleCode[AliPID::kSPECIESN+AliPID::kSPECIESLN+1] = {
   */
 };
 
-Double_t AliPID::fgPrior[kSPECIESN] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+Double_t AliPID::fgPrior[kSPECIESCN] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
 //_______________________________________________________________________
@@ -176,8 +187,8 @@ AliPID::AliPID() :
   //
   Init();
   // set default values (= equal probabilities)
-  for (Int_t i = 0; i < kSPECIESN; i++)
-    fProbDensity[i] = 1./kSPECIESN;
+  for (Int_t i = 0; i < kSPECIESCN; i++)
+    fProbDensity[i] = 1./kSPECIESCN;
 }
 
 //_______________________________________________________________________
@@ -190,10 +201,10 @@ AliPID::AliPID(const Double_t* probDensity, Bool_t charged) :
   //
   Init();
   // set given probability densities
-  for (Int_t i = 0; i < kSPECIES; i++) 
+  for (Int_t i = 0; i < kSPECIESC; i++)
     fProbDensity[i] = probDensity[i];
 
-  for (Int_t i = kSPECIES; i < kSPECIESN; i++) 
+  for (Int_t i = kSPECIESC; i < kSPECIESCN; i++)
     fProbDensity[i] = ((charged) ? 0 : probDensity[i]);
 }
 
@@ -207,10 +218,10 @@ AliPID::AliPID(const Float_t* probDensity, Bool_t charged) :
   //
   Init();
   // set given probability densities
-  for (Int_t i = 0; i < kSPECIES; i++) 
+  for (Int_t i = 0; i < kSPECIESC; i++) 
     fProbDensity[i] = probDensity[i];
 
-  for (Int_t i = kSPECIES; i < kSPECIESN; i++) 
+  for (Int_t i = kSPECIESC; i < kSPECIESCN; i++) 
     fProbDensity[i] = ((charged) ? 0 : probDensity[i]);
 }
 
@@ -223,7 +234,7 @@ AliPID::AliPID(const AliPID& pid) :
   // copy constructor
   //
   // We do not call init here, MUST already be done
-  for (Int_t i = 0; i < kSPECIESN; i++) 
+  for (Int_t i = 0; i < kSPECIESCN; i++) 
     fProbDensity[i] = pid.fProbDensity[i];
 }
 
@@ -233,10 +244,10 @@ void AliPID::SetProbabilities(const Double_t* probDensity, Bool_t charged)
   //
   // Set the probability densities
   //
-  for (Int_t i = 0; i < kSPECIES; i++) 
+  for (Int_t i = 0; i < kSPECIESC; i++) 
     fProbDensity[i] = probDensity[i];
 
-  for (Int_t i = kSPECIES; i < kSPECIESN; i++) 
+  for (Int_t i = kSPECIESC; i < kSPECIESCN; i++) 
     fProbDensity[i] = ((charged) ? 0 : probDensity[i]);
 }
 
@@ -247,7 +258,7 @@ AliPID& AliPID::operator = (const AliPID& pid)
 
   if(this != &pid) {
     fCharged = pid.fCharged;
-    for (Int_t i = 0; i < kSPECIESN; i++) {
+    for (Int_t i = 0; i < kSPECIESCN; i++) {
       fProbDensity[i] = pid.fProbDensity[i];
     }
   }
@@ -263,7 +274,7 @@ void AliPID::Init()
   // Initialise only once... 
   if(!fgkParticleMass[0]) {
     AliPDG::AddParticlesToPdgDataBase();
-    for (Int_t i = 0; i < kSPECIESN + kSPECIESLN; i++) {
+    for (Int_t i = 0; i < kSPECIESC; i++) {
       fgkParticleMass[i] = M(i);
       if (i == kHe3 || i == kAlpha) fgkParticleMassZ[i] = M(i)/2.;
       else fgkParticleMassZ[i]=M(i);
@@ -280,7 +291,7 @@ Double_t AliPID::GetProbability(EParticleType iType,
   // assuming the a priori probabilities "prior"
   //
   Double_t sum = 0.;
-  Int_t nSpecies = ((fCharged) ? kSPECIES : kSPECIESN);
+  Int_t nSpecies = ((fCharged) ? kSPECIESC : kSPECIESCN);
   for (Int_t i = 0; i < nSpecies; i++) {
     sum += fProbDensity[i] * prior[i];
   }
@@ -308,7 +319,7 @@ void AliPID::GetProbabilities(Double_t* probabilities,
 // assuming the a priori probabilities "prior"
 
   Double_t sum = 0.;
-  Int_t nSpecies = ((fCharged) ? kSPECIES : kSPECIESN);
+  Int_t nSpecies = ((fCharged) ? kSPECIESC : kSPECIESCN);
   for (Int_t i = 0; i < nSpecies; i++) {
     sum += fProbDensity[i] * prior[i];
   }
@@ -339,7 +350,7 @@ AliPID::EParticleType AliPID::GetMostProbable(const Double_t* prior) const
 
   Double_t max = 0.;
   EParticleType id = kPion;
-  Int_t nSpecies = ((fCharged) ? kSPECIES : kSPECIESN);
+  Int_t nSpecies = ((fCharged) ? kSPECIESC : kSPECIESCN);
   for (Int_t i = 0; i < nSpecies; i++) {
     Double_t prob = fProbDensity[i] * prior[i];
     if (prob > max) {
@@ -369,8 +380,8 @@ void AliPID::SetPriors(const Double_t* prior, Bool_t charged)
 // use the given priors as global a priori probabilities
 
   Double_t sum = 0;
-  for (Int_t i = 0; i < kSPECIESN; i++) {
-    if (charged && (i >= kSPECIES)) {
+  for (Int_t i = 0; i < kSPECIESCN; i++) {
+    if (charged && (i >= kSPECIESC)) {
       fgPrior[i] = 0;      
     } else {
       if (prior[i] < 0) {
@@ -409,7 +420,7 @@ AliPID& AliPID::operator *= (const AliPID& pid)
 {
 // combine this probability densities with the one of "pid"
 
-  for (Int_t i = 0; i < kSPECIESN; i++) {
+  for (Int_t i = 0; i < kSPECIESCN; i++) {
     fProbDensity[i] *= pid.fProbDensity[i];
   }
   return *this;

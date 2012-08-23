@@ -40,7 +40,7 @@ class AliESDEvent;
 class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
-
+class AliDetectorPID;
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -395,7 +395,12 @@ public:
   }
   virtual void Print(Option_t * opt) const ;
   const AliESDEvent* GetESDEvent() const {return fESDEvent;}
-  void         SetESDEvent(const AliESDEvent* evt) {fESDEvent = evt;}  
+  void         SetESDEvent(const AliESDEvent* evt) {fESDEvent = evt;}
+
+  // Trasient PID object, is owned by the track
+  virtual void  SetDetectorPID(const AliDetectorPID *pid);
+  virtual const AliDetectorPID* GetDetectorPID() const { return fDetectorPID; }
+  
   //
   // visualization (M. Ivanov)
   //
@@ -533,6 +538,8 @@ protected:
   mutable Float_t fCacheNCrossedRows; //! Cache for the number of crossed rows
   mutable Float_t fCacheChi2TPCConstrainedVsGlobal; //! Cache for the chi2 of constrained TPC vs global track
   mutable const AliESDVertex* fCacheChi2TPCConstrainedVsGlobalVertex; //! Vertex for which the cache is valid
+
+  mutable const AliDetectorPID* fDetectorPID; //! transient object to cache PID information
 
   Double_t fTrackPhiOnEMCal;   // phi of track after being propagated to 430cm
   Double_t fTrackEtaOnEMCal;   // eta of track after being propagated to 430cm

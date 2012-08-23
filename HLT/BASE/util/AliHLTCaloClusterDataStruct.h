@@ -131,7 +131,7 @@ struct AliHLTCaloClusterDataStruct
   // In case all the weights are non-positive they are replaced by
   // uniform probabilities
 
-  Int_t n = AliPID::kSPECIESN;
+  Int_t n = AliPID::kSPECIESCN;
 
   Float_t uniform = 1./(Float_t)n;
 
@@ -283,7 +283,7 @@ struct AliHLTCaloClusterDataStruct
   Float_t fTrackDz; //COMMENT
 
   /** PID */
-  Float_t fPID[AliPID::kSPECIESN];            //COMMENT
+  Float_t fPID[AliPID::kSPECIESCN];            //COMMENT
 
   /** Unique ID of the cluster*/
   Int_t fID;                                     //COMMENT

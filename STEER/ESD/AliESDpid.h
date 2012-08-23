@@ -40,8 +40,8 @@ AliESDpid(const AliESDpid&a): AliPIDResponse(a), fRangeTOFMismatch(a.fRangeTOFMi
   void MakeTRDPID(AliESDtrack *track) const;
   void CombinePID(AliESDtrack *track) const;
   
-  virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type, const Float_t timeZeroTOF) const;
-  virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {return NumberOfSigmasTOF(vtrack,type,0); }
+  virtual Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const;
+  virtual Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const {return NumberOfSigmasTOF(track,type,0); }
   
   void SetNMaxSigmaTOFTPCMismatch(Float_t range) {fRangeTOFMismatch=range;}
   Float_t GetNMaxSigmaTOFTPCMismatch() const {return fRangeTOFMismatch;}
@@ -58,15 +58,6 @@ private:
   ClassDef(AliESDpid,7)  // PID calculation class
 };
 
-
-inline Float_t AliESDpid::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const {
-  AliESDtrack *track=(AliESDtrack*)vtrack;
-  //  Double_t times[AliPID::kSPECIES];
-  // track->GetIntegratedTimes(times);
-  Double_t expTime = fTOFResponse.GetExpectedSignal((AliVTrack*)vtrack,type);
-  //  return (track->GetTOFsignal() - fTOFResponse.GetStartTime(track->GetP()) - times[type])/fTOFResponse.GetExpectedSigma(track->GetP(),times[type],AliPID::ParticleMass(type));
-  return (track->GetTOFsignal() - fTOFResponse.GetStartTime(track->GetP()) - expTime)/fTOFResponse.GetExpectedSigma(track->GetP(),expTime,AliPID::ParticleMassZ(type));
-}
 
 #endif
 

@@ -60,11 +60,11 @@ private:
   Int_t fRejectMismatchMask; // Detectors set return flat prob. if mismatch detected 
   Bool_t fEnablePriors;      // Enable bayesian PID (if kFALSE priors set flat)
   Int_t fSelectedSpecies;    // Number of selected species to study
-  TH1F *fPriorsDistributions[AliPID::kSPECIES+AliPID::kSPECIESLN]; // priors
+  TH1F *fPriorsDistributions[AliPID::kSPECIESC]; // priors
   Bool_t fUseDefaultTPCPriors; // switch to use Defaul TPC Priors
-  static TH2F *fDefaultPriorsTPC[5]; // Default priors for TPC tracks
+  static TH2F *fDefaultPriorsTPC[AliPID::kSPECIES]; // Default priors for TPC tracks
 
-  ClassDef(AliPIDCombined,2);
+  ClassDef(AliPIDCombined, 3);   // Combined PID using priors
 };
 
 #endif

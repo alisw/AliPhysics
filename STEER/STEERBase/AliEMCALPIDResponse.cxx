@@ -45,7 +45,7 @@
 //             -->  Probability from Gaussian distribution              //
 //                  (proper normalization to each other?)               //
 //                                                                      //
-// NO Parametrization (outside pT range): --> return 999                //
+// NO Parametrization (outside pT range): --> return kFALSE             //
 //////////////////////////////////////////////////////////////////////////
 
 #include <TF1.h>
@@ -179,38 +179,37 @@ Double_t  AliEMCALPIDResponse::GetNumberOfSigmas( Float_t pt,  Float_t eop, AliP
 
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliEMCALPIDResponse::ComputeEMCALProbability(Float_t pt, Float_t eop, Int_t charge, Double_t *pEMCAL) const {
+Bool_t AliEMCALPIDResponse::ComputeEMCALProbability(Int_t nSpecies, Float_t pt, Float_t eop, Int_t charge, Double_t *pEMCAL) const {
   //
   //
   Double_t fRange  = 5.0;   // hardcoded (???)
   Double_t nsigma  = 0.0;
-  Double_t proba   = 999.;
   
 
   // Check the charge
   if( charge != -1 && charge != 1){
-    return proba;
+    return kFALSE;
   }
 
  
   // default value (will be returned, if pt below threshold)
-  for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
-    pEMCAL[species] = 999.;
+  for (Int_t species = 0; species < nSpecies; species++) {
+    pEMCAL[species] = 1./nSpecies;
   }
 
   // set E/p range
   if(eop < 0.05) eop = 0.05;
   if(eop > 2.00) eop = 2.00;
   
-  for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+  for (Int_t species = 0; species < nSpecies; species++) {
     
     AliPID::EParticleType type = AliPID::EParticleType(species);
 
     // Get the parameters for this particle type and pt
     const TVectorD *params = GetParams(species, pt, charge);
     
-    // IF not in momentum range, NULL is returned --> return default value
-    if(!params) return proba;
+    // IF not in momentum/species (only for kSPECIES so far) range, NULL is returned --> return kFALSE
+    if(!params) return kFALSE;
 
     Double_t sigma    = (*params)[3];   // sigma value of Gausiian parametrization
     Double_t probLow  = (*params)[6];   // probability to be below eopMin
@@ -246,13 +245,9 @@ Double_t AliEMCALPIDResponse::ComputeEMCALProbability(Float_t pt, Float_t eop, I
 	pEMCAL[species]*=GetExpectedNorm(pt,type,charge);
       }
     }
-    
-    // return the electron probability
-    proba = pEMCAL[AliPID::kElectron];  
-
   }
 
-  return proba;
+  return kTRUE;
 
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -38,7 +38,7 @@
 #include "AliOADBContainer.h"
 
 // initialize static members
-TH2F* AliPIDCombined::fDefaultPriorsTPC[5];
+TH2F* AliPIDCombined::fDefaultPriorsTPC[]={0x0};
 
 ClassImp(AliPIDCombined);
 
@@ -53,7 +53,7 @@ AliPIDCombined::AliPIDCombined():
   //
   // default constructor
   //	
-  for (Int_t i=0;i<AliPID::kSPECIES+AliPID::kSPECIESLN;i++) fPriorsDistributions[i]=NULL;
+  for (Int_t i=0;i<AliPID::kSPECIESC;i++) fPriorsDistributions[i]=NULL;
   AliLog::SetClassDebugLevel("AliPIDCombined",10);
 }
 
@@ -69,7 +69,7 @@ AliPIDCombined::AliPIDCombined(const TString& name,const TString& title):
   //
   // default constructor with name and title
   //
-  for (Int_t i=0;i<AliPID::kSPECIES+AliPID::kSPECIESLN;i++) fPriorsDistributions[i]=NULL;
+  for (Int_t i=0;i<AliPID::kSPECIESC;i++) fPriorsDistributions[i]=NULL;
   AliLog::SetClassDebugLevel("AliPIDCombined",10);
 
 }
@@ -77,7 +77,7 @@ AliPIDCombined::AliPIDCombined(const TString& name,const TString& title):
 //-------------------------------------------------------------------------------------------------	
 AliPIDCombined::~AliPIDCombined() {
 
-  for(Int_t i=0;i < AliPID::kSPECIES+AliPID::kSPECIESLN;i++){
+  for(Int_t i=0;i < AliPID::kSPECIESC;i++){
     if(fPriorsDistributions[i])
       delete fPriorsDistributions[i];
   }
@@ -85,22 +85,12 @@ AliPIDCombined::~AliPIDCombined() {
 
 //-------------------------------------------------------------------------------------------------	
 void AliPIDCombined::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior) {
-  if ( (type < 0) || ( type >= (AliPID::kSPECIESN+AliPID::kSPECIESLN) ) ){
+  if ( (type < 0) || ( type >= ((AliPID::EParticleType)AliPID::kSPECIESC) ) ){
     AliError(Form("Invalid EParticleType setting prior (offending type: %d)",type));
     return;
   }
   if(prior) {
     Int_t i = (Int_t)type;
-    if (i >= AliPID::kSPECIES ) {
-      if (i < (Int_t)AliPID::kDeuteron) {
-	AliError(Form("Invalid EParticleType setting prior. Type: %d (neutral) not supported",i));
-	return;
-      } else i -= (AliPID::kSPECIESN-AliPID::kSPECIES);
-    }
-    if (i>(AliPID::kSPECIES+AliPID::kSPECIESLN)) {             // coverity fix (to put it mildly....)
-      AliError(Form("Unexpected EParticleType setting prior. Type: %d (neutral) not supported",i));
-      return;
-    }
     if (fPriorsDistributions[i]) {
       delete fPriorsDistributions[i]; 
     }
@@ -371,20 +361,29 @@ void AliPIDCombined::SetDefaultTPCPriors(){
   fEnablePriors=kTRUE;
   fUseDefaultTPCPriors = kTRUE;
 
+  //check if priors are already initialized
+  if (fDefaultPriorsTPC[0]) return;
+  
   TString oadbfilename("$ALICE_ROOT/OADB/COMMON/PID/data/");
   oadbfilename += "/PIDdefaultPriors.root";
   TFile * foadb = TFile::Open(oadbfilename.Data());
-  if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
+  if(!foadb || !foadb->IsOpen()) {
+    delete foadb;
+    AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
+    return;
+  }
   
   AliOADBContainer * priorsContainer = (AliOADBContainer*) foadb->Get("priorsTPC");
   if (!priorsContainer) AliFatal("Cannot fetch OADB container for Priors");
   
-  const char *namespecies[5] = {"El","Mu","Pi","Ka","Pr"};
+  const char *namespecies[AliPID::kSPECIES] = {"El","Mu","Pi","Ka","Pr"};
   char name[100];
 
-  for(Int_t i=0;i < 5;i++){
+  for(Int_t i=0;i < AliPID::kSPECIES;i++){
     snprintf(name,99,"hDefault%sPriors",namespecies[i]);
     fDefaultPriorsTPC[i] = (TH2F*) priorsContainer->GetDefaultObject(name);
     if (!fDefaultPriorsTPC[i]) AliFatal(Form("Cannot find priors for %s", namespecies[i]));
   }
+
+  delete foadb;
 }

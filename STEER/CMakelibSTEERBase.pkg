@@ -72,6 +72,8 @@ set ( SRCS
     STEERBase/AliTRDPIDResponse.cxx 
     STEERBase/AliEMCALPIDResponse.cxx 
     STEERBase/AliPIDCombined.cxx
+    STEERBase/AliPIDValues.cxx
+    STEERBase/AliDetectorPID.cxx
     STEERBase/AliDAQ.cxx 
     STEERBase/AliRefArray.cxx
     STEERBase/AliOADBContainer.cxx	

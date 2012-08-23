@@ -29,8 +29,11 @@
 
 #include "AliPIDTenderSupply.h"
 
+ClassImp(AliPIDTenderSupply)
+
 AliPIDTenderSupply::AliPIDTenderSupply() :
-  AliTenderSupply()
+  AliTenderSupply(),
+  fCachePID(kFALSE)
 {
   //
   // default ctor
@@ -39,7 +42,8 @@ AliPIDTenderSupply::AliPIDTenderSupply() :
 
 //_____________________________________________________
 AliPIDTenderSupply::AliPIDTenderSupply(const char *name, const AliTender *tender) :
-  AliTenderSupply(name,tender)
+  AliTenderSupply(name,tender),
+  fCachePID(kFALSE)
 {
   //
   // named ctor
@@ -58,6 +62,11 @@ void AliPIDTenderSupply::ProcessEvent()
 
   AliESDpid *pid=fTender->GetESDhandler()->GetESDpid();
   if (!pid) return;
+  // chache pid if requested
+  if (fCachePID) {
+    pid->FillTrackDetectorPID();
+  }
+  
   //
   // recalculate combined PID probabilities
   //

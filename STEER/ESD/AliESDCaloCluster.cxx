@@ -53,7 +53,7 @@ AliESDCaloCluster::AliESDCaloCluster() :
   // The default ESD constructor 
   //
   fGlobalPos[0] = fGlobalPos[1] = fGlobalPos[2] = 0.;
-  for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = 0.;
+  for(Int_t i=0; i<AliPID::kSPECIESCN; i++) fPID[i] = 0.;
 }
 
 //_______________________________________________________________________
@@ -85,7 +85,7 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fGlobalPos[1] = clus.fGlobalPos[1];
   fGlobalPos[2] = clus.fGlobalPos[2];
 
-  for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = clus.fPID[i];
+  for(Int_t i=0; i<AliPID::kSPECIESCN; i++) fPID[i] = clus.fPID[i];
 
   if (clus.fNCells > 0) {
 
@@ -125,7 +125,7 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   fTrackDx= source.fTrackDx ;
   fTrackDz= source.fTrackDz ;
   fDistToBadChannel = source.fDistToBadChannel ;
-  for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = source.fPID[i];
+  for(Int_t i=0; i<AliPID::kSPECIESCN; i++) fPID[i] = source.fPID[i];
   fID = source.fID;
 
   fNCells= source.fNCells;
@@ -233,7 +233,7 @@ void AliESDCaloCluster::SetPID(const Float_t *p) {
   // In case all the weights are non-positive they are replaced by
   // uniform probabilities
 
-  Int_t n = AliPID::kSPECIESN;
+  Int_t n = AliPID::kSPECIESCN;
 
   Float_t uniform = 1./(Float_t)n;
 

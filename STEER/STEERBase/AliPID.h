@@ -14,14 +14,14 @@
 
 
 #include <TObject.h>
-
+#include <TMath.h>
 
 class AliPID : public TObject {
  public:
   enum {
-    kSPECIES = 5,    // Number of particle species recognized by the PID
-    kSPECIESN = 10,  // Number of charged+neutral particle species recognized by the PHOS/EMCAL PID
-    kSPECIESLN = 4   // Number of light nuclei: deuteron, triton, helium-3 and alpha
+    kSPECIES = 5,     // Number of default particle species recognized by the PID
+    kSPECIESC = 9,    // Number of default particles + light nuclei recognized by the PID
+    kSPECIESCN = 14,  // Number of charged+neutral particle species recognized by the PHOS/EMCAL PID
   };
   enum EParticleType {
     kElectron = 0, 
@@ -29,17 +29,21 @@ class AliPID : public TObject {
     kPion = 2, 
     kKaon = 3, 
     kProton = 4, 
-    kPhoton = 5, 
-    kPi0 = 6, 
-    kNeutron = 7, 
-    kKaon0 = 8, 
-    kEleCon = 9,
-    kDeuteron = 10,
-    kTriton = 11,
-    kHe3 = 12,
-    kAlpha = 13,
+
+    kDeuteron = 5,
+    kTriton = 6,
+    kHe3 = 7,
+    kAlpha = 8,
+    
+    kPhoton = 9,
+    kPi0 = 10, 
+    kNeutron = 11, 
+    kKaon0 = 12, 
+    kEleCon = 13,
+    
     kUnknown = 14
   };
+  
   static Float_t       ParticleMass(Int_t iType) {
      if(!fgkParticleMass[0]) Init(); 
      return fgkParticleMass[iType];
@@ -47,6 +51,11 @@ class AliPID : public TObject {
   static Float_t       ParticleMassZ(Int_t iType) {
      if(!fgkParticleMass[0]) Init(); 
      return fgkParticleMassZ[iType];
+  }
+  static Int_t         ParticleCharge(Int_t iType){
+    if(!fgkParticleMass[0]) Init();
+    if (iType<0||iType>=kSPECIESC) return 0;
+    return TMath::Nint(fgkParticleMass[iType]/fgkParticleMassZ[iType]);
   }
   static const char*   ParticleName(Int_t iType) 
     {return fgkParticleName[iType];};
@@ -85,18 +94,18 @@ class AliPID : public TObject {
 
   static void          Init();
 
-  Bool_t               fCharged;                   // flag for charged/neutral
-  Double_t             fProbDensity[kSPECIESN];    // probability densities
-  static Double_t      fgPrior[kSPECIESN];         // a priori probabilities
+  Bool_t               fCharged;                           // flag for charged/neutral
+  Double_t             fProbDensity[kSPECIESCN];           // probability densities
+  static Double_t      fgPrior[kSPECIESCN];                // a priori probabilities
 
-  static /*const*/ Float_t fgkParticleMass[kSPECIESN+kSPECIESLN+1]; // particle masses
-  static /*const*/ Float_t fgkParticleMassZ[kSPECIESN+kSPECIESLN+1]; // particle masses/charge
-  static const char*   fgkParticleName[kSPECIESN+kSPECIESLN+1]; // particle names
-  static const char*   fgkParticleShortName[kSPECIESN+kSPECIESLN+1]; // particle names
-  static const char*   fgkParticleLatexName[kSPECIESN+kSPECIESLN+1]; // particle names
-  static const Int_t   fgkParticleCode[kSPECIESN+kSPECIESLN+1]; // particle codes
+  static /*const*/ Float_t fgkParticleMass[kSPECIESCN+1];  // particle masses
+  static /*const*/ Float_t fgkParticleMassZ[kSPECIESCN+1]; // particle masses/charge
+  static const char*   fgkParticleName[kSPECIESCN+1];      // particle names
+  static const char*   fgkParticleShortName[kSPECIESCN+1]; // particle names
+  static const char*   fgkParticleLatexName[kSPECIESCN+1]; // particle names
+  static const Int_t   fgkParticleCode[kSPECIESCN+1];      // particle codes
 
-  ClassDef(AliPID, 3)    // particle id probability densities
+  ClassDef(AliPID, 3)                                      // particle id probability densities
 };
 
 

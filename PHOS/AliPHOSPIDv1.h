@@ -155,7 +155,7 @@ private:
   TVector3   fVtx ;                      //! Vertex position in current event
 
   //Initial pid population
-  Double_t fInitPID[AliPID::kSPECIESN] ; // Initial population to do bayesian PID
+  Double_t fInitPID[AliPID::kSPECIESCN] ; // Initial population to do bayesian PID
   // pid probability function parameters
   // ToF
   Double_t fTphoton[3] ;       // gaussian tof response for photon
