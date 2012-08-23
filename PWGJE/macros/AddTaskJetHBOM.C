@@ -157,8 +157,9 @@ TH1F *GetEfficiencyPt(TString effLoc){
   static TH1F *hEffPt = 0; 
 
   if(!fIn)fIn = TFile::Open(effLoc.Data());
+  if(!fIn)Printf("%s%d no input data",(char*)__FILE__,__LINE__);
   if(!hEffPt)hEffPt = (TH1F*)fIn->Get("hSingleTrackEffPt");
-  if(!hEffPt) cout<<"Could not load hSingleTrackEffPt"<<endl; 
+  if(!hEffPt)Printf("%s%d no single track efficiency spectrum available",(char*)__FILE__,__LINE__);
 
   if(hEffPt){return hEffPt;}
   return 0;
@@ -171,8 +172,10 @@ TH2D *GetEfficiencyPhi(TString effLoc){
   static TH2D *hPhiPt = 0; 
 
   if(!fIn)fIn = TFile::Open(effLoc.Data());
+  if(!fIn)Printf("%s%d no input data",(char*)__FILE__,__LINE__);
   if(!hPhiPt)hPhiPt = (TH2D*)fIn->Get("h2TrackPtPhiNorm");
   if(!hPhiPt) cout<<"Could not load h2TrackPtPhiNorm"<<endl; 
+  if(!hPhiPt)Printf("%s%d no phi-pt efficiency spectrum available",(char*)__FILE__,__LINE__);
 
   if(hPhiPt){return hPhiPt;}
   return 0;
