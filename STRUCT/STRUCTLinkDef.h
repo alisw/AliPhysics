@@ -25,5 +25,6 @@
 #pragma link C++ class  AliPIPEv4+;
 #pragma link C++ class  AliSHIL+;
 #pragma link C++ class  AliSHILv3+;
+#pragma link C++ class  AliPIPEupgrade+;
 
 #endif

@@ -44,6 +44,7 @@ set ( SRCS
     AliPIPEv4.cxx 
     AliBODY.cxx 
     AliSHILv3.cxx
+    AliPIPEupgrade.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
