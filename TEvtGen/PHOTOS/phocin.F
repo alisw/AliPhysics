@@ -1,4 +1,4 @@
-      SUBROUTINE PHOCIN
+      SUBROUTINE PHOCIN(ISEEDF,ISEEDS)
 C.----------------------------------------------------------------------
 C.
 C.    PHOTOS:   PHOton Common INitialisation
@@ -15,6 +15,7 @@ C.                Z. Was                          Last Update: 10/08/93
 C.
 C.----------------------------------------------------------------------
       IMPLICIT NONE
+      INTEGER ISEEDF, ISEEDS
       INTEGER NMXHEP
       PARAMETER (NMXHEP=10000)
       LOGICAL QEDRAD
@@ -60,8 +61,11 @@ C--   Define some constants
       TWOPI=6.28318530717958648D0
 C--
 C--   Default seeds Marsaglia and Zaman random number generator
-      ISEED(1)=1802
-      ISEED(2)=9373
+C      ISEED(1)=1802
+C      ISEED(2)=9373
+C      updated on 23.08.2012 to introduce proper random number sequence
+       ISEED(1)=ISEEDF
+       ISEED(2)=ISEEDS
 C--
 C--   Iitialization for extra options
 C--   (1)

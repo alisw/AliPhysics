@@ -86,7 +86,8 @@ C.   PHOPRO   3)               4      var. for photon rep. (in branch)
 C.   PHOCMS   2)               3      parameters of boost to branch CMS
 C.   PHNUM    4)               1      event number from outside         
 C.----------------------------------------------------------------------
-      SUBROUTINE PHOINI
+      SUBROUTINE PHOINI(ISEEDF,ISEEDS)
+
 C.----------------------------------------------------------------------
 C.
 C.    PHOTOS:   PHOton radiation in decays INItialisation
@@ -104,6 +105,7 @@ C.                                                Last Update: 12/04/90
 C.
 C.----------------------------------------------------------------------
       IMPLICIT NONE
+      INTEGER ISEEDF, ISEEDS
       INTEGER INIT
       SAVE INIT
       DATA INIT/ 0/
@@ -113,7 +115,7 @@ C--   Return if already initialized...
       INIT=1
 C--
 C--   Preset parameters in PHOTOS commons
-      CALL PHOCIN
+      CALL PHOCIN(ISEEDF,ISEEDS)
 C--
 C--   Print info
       CALL PHOINF

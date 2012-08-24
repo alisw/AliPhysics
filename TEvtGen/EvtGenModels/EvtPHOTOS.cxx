@@ -28,6 +28,7 @@
 #include "EvtGenBase/EvtPDL.hh"
 #include "EvtGenModels/EvtPHOTOS.hh"
 #include "EvtGenBase/EvtReport.hh"
+#include "TRandom.h"
 #include <stdlib.h>
 
 extern "C" void begevtgenstorex_(int *,int *,int *,int *,
@@ -46,7 +47,7 @@ extern "C" void heplst_(int *);
 
 extern "C" void photos_(int *);
 
-extern "C" void phoini_();
+extern "C" void phoini_(int *, int *);
 
 
 EvtPHOTOS::EvtPHOTOS(std::string photontype){
@@ -71,7 +72,9 @@ void EvtPHOTOS::doRadCorr( EvtParticle *p){
 
   if (first) {
     first=0;
-    phoini_();
+    int iseed1=(int)gRandom->Integer(31327);
+    int iseed2=(int)gRandom->Integer(30080);
+    phoini_(&iseed1,&iseed2);
   }
 
   double mpho=EvtPDL::getMeanMass(GAMM);
