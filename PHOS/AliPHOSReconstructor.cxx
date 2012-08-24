@@ -273,7 +273,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     if(dig->GetId() <= knEMC && 
        Calibrate(dig->GetEnergy(),dig->GetId()) > GetRecoParam()->GetEMCMinE() ){
       phsCells.SetCell(idignew,dig->GetId(), Calibrate(dig->GetEnergy(),dig->GetId()),
-                                             CalibrateT(dig->GetTime(),dig->GetId()));   
+                                             CalibrateT(dig->GetTime(),dig->GetId()),
+                                             dig->GetPrimary(1)) ;
       idignew++;
     }
   }
