@@ -10,9 +10,9 @@ const TString analysisMode = "TPC"; //"TPC", "Global"
 
 //Centrality stuff
 Int_t binfirst = 0;  //where do we start numbering bins
-Int_t binlast = 8;  //where do we stop numbering bins
-const Int_t numberOfCentralityBins = 9;
-Double_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
+Int_t binlast = 7;  //where do we stop numbering bins
+const Int_t numberOfCentralityBins = 8;
+Double_t centralityArray[numberOfCentralityBins+1] = {0.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
 Bool_t kUsePID = kFALSE;
 const TString  centralityEstimator = "V0M";
 Double_t vertexZ = 10.;
@@ -99,8 +99,8 @@ void runBalancePsiEfficiencyTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA
   // Load the analysis task:
   gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/AddTaskBalancePsiEfficiency.C");
   
-  //for (Int_t i=binfirst; i<binlast+1; i++) {
-  for (Int_t i = 0; i < 9; i++) {
+  for (Int_t i=binfirst; i<binlast+1; i++) {
+    //for (Int_t i = 0; i < 9; i++) {
     Double_t lowCentralityBinEdge = centralityArray[i];
     Double_t highCentralityBinEdge = centralityArray[i+1];
     Printf("\nWagon for centrality bin %i: %.0f-%.0f",i,lowCentralityBinEdge,highCentralityBinEdge);
@@ -180,6 +180,14 @@ void LoadLibraries(const anaModes mode) {
     //TProof::Open("prf000-iep-grid.saske.sk");
 
     gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-12-AN");
+ 
+    TString extraLibs = "";
+    extraLibs += "CORRFW:PWGTools";
+
+    TList *list = new TList();
+    list->Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
+
+    gProof->EnablePackage("VO_ALICE@AliRoot::v5-03-46-AN",list);
   }  
   
 } // end of void LoadLibraries(const anaModes mode)
