@@ -11,7 +11,7 @@ void Pi0FlowCAF(const char* dataset="/alice/data/LHC11h_2_*AOD095",
   const TString proofCluster="alice-caf.cern.ch";
   const TString alirootVersion = "VO_ALICE@AliRoot::v5-03-50-AN";
 
-  TProof::Mgr(alirootVersion.Data())->SetROOTVersion("VO_ALICE@ROOT::v5-34-01-1"); 
+  TProof::Mgr(proofCluster.Data())->SetROOTVersion("VO_ALICE@ROOT::v5-34-01-1"); 
   // Connecting to proof cluster
 
   TProof::Open(proofCluster.Data()); // all available workers
@@ -25,12 +25,14 @@ void Pi0FlowCAF(const char* dataset="/alice/data/LHC11h_2_*AOD095",
   TList* list = new TList();
   list->Add(new TNamed("ALIROOT_MODE", "ALIROOT"));
   list->Add(new TNamed("ALIROOT_EXTRA_LIBS","ANALYSIS:OADB:ANALYSISalice"));
-  list->Add(new TNamed("ALIROOT_EXTRA_LIBS","ANALYSIS:OADB:ANALYSISalice:PWGGAPHOSTasks"));
+  // list->Add(new TNamed("ALIROOT_EXTRA_LIBS","ANALYSIS:OADB:ANALYSISalice:PWGGAPHOSTasks"));
 
   gProof->EnablePackage(alirootVersion.Data(),list);
 
   cout << "Pi0Flow: processing dataset " << dataset << endl;
   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PHOS");
+  gProof->Load("AliCaloPhoton.cxx+g");
+  gProof->Load("AliAnalysisTaskPi0Flow.cxx++g");
   
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("Pi0Spectrum");
@@ -45,10 +47,14 @@ void Pi0FlowCAF(const char* dataset="/alice/data/LHC11h_2_*AOD095",
   // Add pi0 flow task
   AliAnalysisTaskPi0Flow *task1 = new AliAnalysisTaskPi0Flow("Pi0Spectrum");
   // Reduce binning for reduece memory footprint
-  const int kNEdges = 4;
-  Double_t cbin[kNEdges] = {0., 10., 40., 80.};
+  const int kNEdges = 2;
+  Double_t cbin[kNEdges] = {0., 10.,};
   TArrayD tbin(kNEdges, cbin);
+  Int_t    nMixed[kNEdges-1] = {4};
+  TArrayI tNMixed(kNEdges-1, nMixed);
+
   task1->SetCentralityBinning(tbin);
+  task1->SetNMixedPerCentrality(tNMixed);
   task1->SelectCollisionCandidates(AliVEvent::kCentral);
   
   mgr->AddTask(task1);
