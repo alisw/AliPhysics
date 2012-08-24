@@ -18,7 +18,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow ()
   AliAnalysisTaskPi0Flow* task = new AliAnalysisTaskPi0Flow("PHOSPi0Flow");
 
   // Reduce binning for reduece memory footprint
-  const int nbins = 4;
+  const int nbins = 3;
   Double_t cbin[nbins+1] = {0., 10., 40., 80.};
   TArrayD tbin(nbins+1, cbin);
   task->SetCentralityBinning(tbin);
