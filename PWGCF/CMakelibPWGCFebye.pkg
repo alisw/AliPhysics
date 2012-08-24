@@ -47,6 +47,8 @@ set ( SRCS
     EBYE/LRC/AliLRCPtPt.cxx 
     EBYE/LRC/AliLRCProcess.cxx 
     EBYE/Fluctuations/AliEbyEFluctuationAnalysisTask.cxx 
+    EBYE/Fluctuations/AliAnalysisTaskChargeFluctuations.cxx
+    EBYE/Fluctuations/AliEbyEHigherMomentsTask.cxx 
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx 
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
     EBYE/PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx	 

@@ -28,6 +28,8 @@
 #pragma link C++ class AliLRCBase+;
 
 #pragma link C++ class AliEbyEFluctuationAnalysisTask+;
+#pragma link C++ class AliAnalysisTaskChargeFluctuations+;
+#pragma link C++ class AliEbyEHigherMomentsTask+;
 
 #pragma link C++ class AliAnalysisTaskPtFluc+;
 #pragma link C++ class AliAnalysisTaskPtFlucPbPb+;
