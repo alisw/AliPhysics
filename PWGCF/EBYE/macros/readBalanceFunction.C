@@ -533,7 +533,12 @@ void drawBF(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResults.root", In
 
   TFile *fOut = NULL;
   if(etaWindow > 0 || etaBins > -1){
-    fOut = TFile::Open(Form("Histograms_AccCorr_Window%.1f_Bins%d_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", etaWindow, etaBins, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
+    if(correctWithEfficiency){
+      fOut = TFile::Open(Form("Histograms_AccCorrWithEfficiency_Window%.1f_Bins%d_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", etaWindow, etaBins, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
+    }
+    else{
+      fOut = TFile::Open(Form("Histograms_AccCorr_Window%.1f_Bins%d_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", etaWindow, etaBins, fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");
+    }
   }
   else{
     fOut = TFile::Open(Form("Histograms_WMstart%d_rebin%d_WMstartPhi%d_rebinPhi%d_%s", fStartBinBFWidth, fRebin,fStartBinBFWidthPhi, fRebinPhi,inFile.Data()),"RECREATE");

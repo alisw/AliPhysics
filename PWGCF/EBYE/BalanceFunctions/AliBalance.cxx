@@ -24,6 +24,7 @@
 #include <Riostream.h>
 #include <TMath.h>
 #include <TAxis.h>
+#include <TFile.h>
 #include <TF1.h>
 #include <TH2D.h>
 #include <TLorentzVector.h>
@@ -883,19 +884,49 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
   // do correction with the efficiency calculated from HIJING (for two particle correlations)
   if(iAnalysisType == kEta && etaWindow > 0 && correctWithEfficiency){
 
-    TF1 *fPP = new TF1("fPP","pol2",0,1.6);  // phase space factor + efficiency for ++
-    fPP->SetParameters(0.143919,-0.0521531,-0.0234203);
-    TF1 *fNN = new TF1("fNN","pol2",0,1.6);  // phase space factor + efficiency for --
-    fNN->SetParameters(0.14103,-0.0516936,-0.0226052);
-    TF1 *fPN = new TF1("fPN","pol2",0,1.6);  // phase space factor + efficiency for +-
-    fPN->SetParameters(0.142484,-0.0519515,-0.0229989);
-
+    TFile *fEfficiencyMatrix = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/efficienciesFromHijing.root");
+    TH1F* hEffPP = (TH1F*)fEfficiencyMatrix->Get("h1d3n");
+    TH1F* hEffNN = (TH1F*)fEfficiencyMatrix->Get("h1d4n");
+    TH1F* hEffPN = (TH1F*)fEfficiencyMatrix->Get("h1d5n");
+    hEffPP->Smooth();
+    hEffPN->Smooth();
+    hEffNN->Smooth();
+    
     for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
-      hTemp1->SetBinContent(iBin+1,hTemp1->GetBinContent(iBin+1)/fPN->Eval(hTemp1->GetBinCenter(iBin+1)));
-      hTemp2->SetBinContent(iBin+1,hTemp2->GetBinContent(iBin+1)/fPN->Eval(hTemp1->GetBinCenter(iBin+1)));
-      hTemp3->SetBinContent(iBin+1,hTemp3->GetBinContent(iBin+1)/fNN->Eval(hTemp1->GetBinCenter(iBin+1)));
-      hTemp4->SetBinContent(iBin+1,hTemp4->GetBinContent(iBin+1)/fPP->Eval(hTemp1->GetBinCenter(iBin+1)));
+
+      cout<<"ula  "<<iBin<<" : "<<hTemp1->GetBinContent(iBin+1)<<" "<<hTemp1->GetBinContent(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp1->GetBinCenter(iBin+1)))<<endl;
+      cout<<"                  "<<hTemp1->GetBinError(iBin+1)<<" "<<hTemp1->GetBinError(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp1->GetBinCenter(iBin+1)))<<endl;
+
+      hTemp1->SetBinError(iBin+1,hTemp1->GetBinError(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp1->GetBinCenter(iBin+1))));
+      hTemp1->SetBinContent(iBin+1,hTemp1->GetBinContent(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp1->GetBinCenter(iBin+1))));
+      hTemp2->SetBinError(iBin+1,hTemp2->GetBinError(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp2->GetBinCenter(iBin+1))));
+      hTemp2->SetBinContent(iBin+1,hTemp2->GetBinContent(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp2->GetBinCenter(iBin+1))));
+      hTemp3->SetBinError(iBin+1,hTemp3->GetBinError(iBin+1)/hEffNN->GetBinContent(hEffNN->FindBin(hTemp3->GetBinCenter(iBin+1))));
+      hTemp3->SetBinContent(iBin+1,hTemp3->GetBinContent(iBin+1)/hEffNN->GetBinContent(hEffNN->FindBin(hTemp3->GetBinCenter(iBin+1))));
+      hTemp4->SetBinError(iBin+1,hTemp4->GetBinError(iBin+1)/hEffPP->GetBinContent(hEffPP->FindBin(hTemp4->GetBinCenter(iBin+1))));      
+      hTemp4->SetBinContent(iBin+1,hTemp4->GetBinContent(iBin+1)/hEffPP->GetBinContent(hEffPP->FindBin(hTemp4->GetBinCenter(iBin+1))));
+      
     }
+
+    // TF1 *fPP = new TF1("fPP","pol1",0,1.6);  // phase space factor + efficiency for ++
+    // fPP->SetParameters(0.736466,-0.461529);
+    // TF1 *fNN = new TF1("fNN","pol1",0,1.6);  // phase space factor + efficiency for --
+    // fNN->SetParameters(0.718616,-0.450473);
+    // TF1 *fPN = new TF1("fPN","pol1",0,1.6);  // phase space factor + efficiency for +-
+    // fPN->SetParameters(0.727507,-0.455981);
+    
+    // for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
+    //   hTemp1->SetBinContent(iBin+1,hTemp1->GetBinContent(iBin+1)/fPN->Eval(hTemp1->GetBinCenter(iBin+1)));
+    //   hTemp1->SetBinError(iBin+1,hTemp1->GetBinError(iBin+1)/fPN->Eval(hTemp1->GetBinCenter(iBin+1)));
+    //   hTemp2->SetBinContent(iBin+1,hTemp2->GetBinContent(iBin+1)/fPN->Eval(hTemp1->GetBinCenter(iBin+1)));
+    //   hTemp2->SetBinError(iBin+1,hTemp2->GetBinError(iBin+1)/fPN->Eval(hTemp1->GetBinCenter(iBin+1)));
+    //   hTemp3->SetBinContent(iBin+1,hTemp3->GetBinContent(iBin+1)/fNN->Eval(hTemp1->GetBinCenter(iBin+1)));
+    //   hTemp3->SetBinError(iBin+1,hTemp3->GetBinError(iBin+1)/fNN->Eval(hTemp1->GetBinCenter(iBin+1)));
+    //   hTemp4->SetBinContent(iBin+1,hTemp4->GetBinContent(iBin+1)/fPP->Eval(hTemp1->GetBinCenter(iBin+1)));
+    //   hTemp4->SetBinError(iBin+1,hTemp4->GetBinError(iBin+1)/fPP->Eval(hTemp1->GetBinCenter(iBin+1)));
+    // }      
+
+    fEfficiencyMatrix->Close();
   }
 
   if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)) {
@@ -918,6 +949,7 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
       Double_t notCorrected = gHistBalanceFunctionHistogram->GetBinContent(iBin+1);
       Double_t corrected    = notCorrected / (1 - (gHistBalanceFunctionHistogram->GetBinCenter(iBin+1))/ etaWindow );
       gHistBalanceFunctionHistogram->SetBinContent(iBin+1, corrected);
+      gHistBalanceFunctionHistogram->SetBinError(iBin+1,corrected/notCorrected*gHistBalanceFunctionHistogram->GetBinError(iBin+1));
       
     }
   }
