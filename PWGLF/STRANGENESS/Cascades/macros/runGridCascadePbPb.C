@@ -17,6 +17,7 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
                          Bool_t   kacccut              = kFALSE,
                          Bool_t   krelaunchvertexers  = kFALSE,
                          Float_t  minptondaughtertracks = 0.,
+                         Float_t  etacutondaughtertracks= 9999999.,
                          TString  anatype             = "AOD",//"ESD",
                          TString  gridoutputdir       = "LHC10h_AOD086",
                          //the following are used for the Cascade task only
@@ -93,12 +94,12 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
   if (runperformancetask) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckPerformanceCascadePbPb.C");
-    AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,kacccut ,krelaunchvertexers,minptondaughtertracks);
+    AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,kacccut ,krelaunchvertexers,minptondaughtertracks,etacutondaughtertracks);
 
   } else {
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx++g");
     gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckCascadePbPb.C");
-    AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim, kextrasel ,krelaunchvertexers,minptondaughtertracks);
+    AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim, kextrasel ,krelaunchvertexers,minptondaughtertracks,etacutondaughtertracks);
 
   }
 

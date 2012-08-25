@@ -33,7 +33,8 @@
 //                        - distance xi-V0 added in the container
 //                        - AOD analysis developed (January 2012)
 //                        - cut on TPC clusters as a parameter
-//                        - cut on min pt of daughter tracks added (parameter)  
+//                        - cut on min pt of daughter tracks added (parameter+control histos)
+//                        - cut on pseudorapidity for daughter tracks as a parameter (+control histos for Xi-)  
 //-----------------------------------------------------------------
 
 
@@ -101,6 +102,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fVtxRange                      (0),
     fApplyAccCut                   (0),
     fMinPtCutOnDaughterTracks      (0),
+    fEtaCutOnDaughterTracks      (0),
     
 	// - Cascade part initialisation
     fListHistCascade(0),
@@ -310,7 +312,11 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
 
     fCFContAsCascadeCuts(0),
 
-    fV0Ampl             (0)
+    fV0Ampl             (0),
+    
+    fHistEtaBachXiM  (0),
+    fHistEtaPosXiM   (0),
+    fHistEtaNegXiM   (0)
 
 {
 // Dummy constructor
@@ -339,7 +345,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
     fVtxRange                      (0),
     fApplyAccCut                   (0),
     fMinPtCutOnDaughterTracks      (0),
-      
+    fEtaCutOnDaughterTracks      (0),
+       
     	// - Cascade part initialisation
     fListHistCascade(0),
 
@@ -547,7 +554,12 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::AliAnalysisTaskCheckPerformanceCasca
 
     fCFContAsCascadeCuts(0),
 
-    fV0Ampl(0)
+    fV0Ampl(0),
+
+    fHistEtaBachXiM  (0),
+    fHistEtaPosXiM   (0),
+    fHistEtaNegXiM   (0)
+
 
 {
   // Constructor
@@ -1752,6 +1764,14 @@ if(! fCFContAsCascadeCuts){
   fV0Ampl = new TH1F("fV0Ampl","",500,0.,30000);
   fListHistCascade->Add(fV0Ampl);
 
+  fHistEtaBachXiM = new TH1F("fHistEtaBachXiM","",40,-2.,2.);
+  fListHistCascade->Add(fHistEtaBachXiM);
+  fHistEtaPosXiM = new TH1F("fHistEtaPosXiM","",40,-2.,2.);
+  fListHistCascade->Add(fHistEtaPosXiM); 
+  fHistEtaNegXiM = new TH1F("fHistEtaNegXiM","",40,-2.,2.);
+  fListHistCascade->Add(fHistEtaNegXiM); 
+ 
+
 
 PostData(1, fListHistCascade); 
 PostData(2, fCFContCascadePIDAsXiMinus);
@@ -2695,6 +2715,8 @@ Double_t   lmcPtBach = -100.;
 
 Double_t cascadeMass = 0.;
 
+
+
 for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Cascade loop
 
 
@@ -2741,6 +2763,11 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
       Bool_t lAssoOmegaPlus  = kFALSE;
 
       Bool_t kIsNaturalPart = kFALSE;
+
+      Float_t  etaBach = 0.;
+      Float_t  etaPos  = 0.;
+      Float_t  etaNeg  = 0.;
+
 
       if ( fAnalysisType == "ESD" ) {		
 	AliESDcascade *xiESD = lESDevent->GetCascade(iXi);
@@ -2791,6 +2818,11 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                 if(lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than n TPC clusters ... continue!"); continue; }
                 if(lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than n TPC clusters ... continue!"); continue; }
         }
+
+        etaPos  = pTrackXi->Eta();
+        etaNeg  = nTrackXi->Eta();
+        etaBach = bachTrackXi->Eta();
+       
 	
 	// - Step II.2 : Info over reconstructed cascades
 	//-------------	
@@ -3267,6 +3299,10 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                 if(lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than n TPC clusters ... continue!"); continue; }
         }
 
+        etaPos  = pTrackXi->Eta();
+        etaNeg  = nTrackXi->Eta();
+        etaBach = bachTrackXi->Eta();
+
         // - Step II.2 : Info over reconstructed cascades
         //-------------
 
@@ -3556,6 +3592,11 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
       if (lpTrackTransvMom<fMinPtCutOnDaughterTracks) continue;
       if (lnTrackTransvMom<fMinPtCutOnDaughterTracks) continue;
 
+      // Cut on pseudorapidity of the three daughter tracks
+      if (TMath::Abs(etaBach)>fEtaCutOnDaughterTracks) continue;
+      if (TMath::Abs(etaPos)>fEtaCutOnDaughterTracks) continue;
+      if (TMath::Abs(etaNeg)>fEtaCutOnDaughterTracks) continue;
+
 
       // Extra-selection for cascade candidates
                 // Towards optimisation of AA selection
@@ -3716,8 +3757,12 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Casc
                 lContainerCutVars[12] = lInvMassOmegaMinus;//1.63;
                 lContainerCutVars[14] = lmcRapCasc;
                 lContainerCutVars[15] = -1.;
-                if ( lIsBachelorPionForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC )    
+                if ( lIsBachelorPionForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC ) {   
                   fCFContAsCascadeCuts->Fill(lContainerCutVars,0); // for Xi-
+                  fHistEtaBachXiM->Fill(etaBach);
+                  fHistEtaPosXiM->Fill(etaPos);
+                  fHistEtaNegXiM->Fill(etaNeg);
+                }
         }
         if( lChargeXi > 0 && lAssoXiPlus    ) {
                 lContainerCutVars[11] = lInvMassXiPlus;

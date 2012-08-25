@@ -7,7 +7,8 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
                                                                                 Bool_t   kextrasel            = kFALSE,
                                                                                 Bool_t   kacccut              = kFALSE,
                                                                                 Bool_t   krelaunchvertexers   = kFALSE,
-                                                                                Float_t   minptondaughtertracks= 0.     ) {
+                                                                                Float_t  minptondaughtertracks= 0.,
+                                                                                Float_t  etacutondaughtertracks = 9999999. ) {
 // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -44,6 +45,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb *AddTaskCheckPerformanceCascadePbPb( 
    taskCheckPerfCascadePbPb-> SetUseCleaning                (kusecleaning);
    taskCheckPerfCascadePbPb-> SetVertexRange                (vtxlim);
    taskCheckPerfCascadePbPb-> SetMinptCutOnDaughterTracks   (minptondaughtertracks); 
+   taskCheckPerfCascadePbPb-> SetEtaCutOnDaughterTracks     (etacutondaughtertracks);
    taskCheckPerfCascadePbPb-> SelectCollisionCandidates();   
  
    mgr->AddTask(taskCheckPerfCascadePbPb);

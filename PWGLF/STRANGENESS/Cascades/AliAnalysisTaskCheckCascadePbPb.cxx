@@ -39,9 +39,11 @@
 //               Genuary2012 
 //                - AOD analysis part completed 
 //               March2012
-//                - min number of TPC clusters for track selection as a parameter      
+//                - min number of TPC clusters for track selection as a parameter       
 //               July2012
-//                - cut on min pt for daughter tracks as a parameter
+//                - cut on min pt for daughter tracks as a parameter (+control histos)
+//               August2012 
+//                - cut on pseudorapidity for daughter tracks as a parameter (+control histos for Xi-)
 //-----------------------------------------------------------------
 
 class TTree;
@@ -111,6 +113,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
     fkUseCleaning               (0),
     fVtxRange                   (0),
     fMinPtCutOnDaughterTracks   (0),
+    fEtaCutOnDaughterTracks     (0),
 
 
     	// - Cascade part initialisation
@@ -177,8 +180,11 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
     fV0Ampl(0),
 
     fHistDcaXiDaughtersvsInvMass(0), fHistDcaBachToPrimVertexvsInvMass(0), fHistXiCosineOfPointingAnglevsInvMass(0),
-    fHistMassLambdaAsCascDghtervsInvMass(0),fHistDcaV0DaughtersXivsInvMass(0),fHistDcaV0ToPrimVertexXivsInvMass(0)
+    fHistMassLambdaAsCascDghtervsInvMass(0),fHistDcaV0DaughtersXivsInvMass(0),fHistDcaV0ToPrimVertexXivsInvMass(0),
 
+    fHistEtaBachXiM  (0),
+    fHistEtaPosXiM   (0),
+    fHistEtaNegXiM   (0)
 
 {
   // Dummy Constructor
@@ -204,6 +210,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
     fkUseCleaning               (0),
     fVtxRange                   (0),
     fMinPtCutOnDaughterTracks   (0),
+    fEtaCutOnDaughterTracks   (0),
      
     	// - Cascade part initialisation
     fListHistCascade(0),
@@ -268,8 +275,11 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
     fV0Ampl(0),
 
     fHistDcaXiDaughtersvsInvMass(0), fHistDcaBachToPrimVertexvsInvMass(0), fHistXiCosineOfPointingAnglevsInvMass(0),
-    fHistMassLambdaAsCascDghtervsInvMass(0),fHistDcaV0DaughtersXivsInvMass(0),fHistDcaV0ToPrimVertexXivsInvMass(0)
+    fHistMassLambdaAsCascDghtervsInvMass(0),fHistDcaV0DaughtersXivsInvMass(0),fHistDcaV0ToPrimVertexXivsInvMass(0),
 
+    fHistEtaBachXiM  (0),
+    fHistEtaPosXiM   (0),
+    fHistEtaNegXiM   (0)
 
 {
   // Constructor
@@ -1182,6 +1192,14 @@ if(! fCFContCascadeCuts) {
   fHistDcaV0ToPrimVertexXivsInvMass = new TH2F("fHistDcaV0ToPrimVertexXivsInvMass", "DCA of V0 to Prim. Vertex, in cascade;DCA (cm);Number of Cascades", 200, 0., 1.,400,1.2,2.0);
         fListHistCascade->Add(fHistDcaV0ToPrimVertexXivsInvMass);
 
+  fHistEtaBachXiM = new TH1F("fHistEtaBachXiM","",40,-2.,2.);
+  fListHistCascade->Add(fHistEtaBachXiM);
+  fHistEtaPosXiM = new TH1F("fHistEtaPosXiM","",40,-2.,2.);
+  fListHistCascade->Add(fHistEtaPosXiM);
+  fHistEtaNegXiM = new TH1F("fHistEtaNegXiM","",40,-2.,2.);
+  fListHistCascade->Add(fHistEtaNegXiM);
+
+
 PostData(1, fListHistCascade);
 PostData(2, fCFContCascadePIDXiMinus);
 PostData(3, fCFContCascadePIDXiPlus);
@@ -1546,6 +1564,10 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
 	
     Double_t lRapXi   = -20.0, lRapOmega = -20.0,  lEta = -20.0, lTheta = 360., lPhi = 720. ;
     Double_t lAlphaXi = -200., lPtArmXi  = -200.0;
+
+    Float_t  etaBach = 0.;
+    Float_t  etaPos  = 0.;
+    Float_t  etaNeg  = 0.; 
 	
   	// - 7th part of initialisation : variables for the AliCFContainer dedicated to cascade cut optmisiation
   
@@ -1608,7 +1630,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
         
       AliESDtrack *pTrackXi		= lESDevent->GetTrack( lIdxPosXi );
       AliESDtrack *nTrackXi		= lESDevent->GetTrack( lIdxNegXi );
-      AliESDtrack *bachTrackXi	= lESDevent->GetTrack( lBachIdx );
+      AliESDtrack *bachTrackXi	        = lESDevent->GetTrack( lBachIdx );
       if (!pTrackXi || !nTrackXi || !bachTrackXi ) {
         AliWarning("ERROR: Could not retrieve one of the 3 ESD daughter tracks of the cascade ...");
         continue;
@@ -1634,6 +1656,11 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
         if (lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than minn TPC clusters ... continue!"); continue; }
         if (lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than minn TPC clusters ... continue!"); continue; }
       }
+
+      etaPos  = pTrackXi->Eta();             
+      etaNeg  = nTrackXi->Eta();
+      etaBach = bachTrackXi->Eta();
+    
         
       const AliExternalTrackParam *pExtTrack    = pTrackXi    ->GetInnerParam();
       const AliExternalTrackParam *nExtTrack    = nTrackXi    ->GetInnerParam();
@@ -1939,6 +1966,11 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
           continue; }
       }
 
+      etaPos  = pTrackXi->Eta();
+      etaNeg  = nTrackXi->Eta();
+      etaBach = bachTrackXi->Eta();
+
+
 
 		// - II.Step 3 : around the tracks : Bach + V0 (AOD)
 		// ~ Necessary variables for AODcascade data members coming from the AODv0 part (inheritance)
@@ -2047,6 +2079,12 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
     if (lBachTransvMom<fMinPtCutOnDaughterTracks) continue;
     if (lpTrackTransvMom<fMinPtCutOnDaughterTracks) continue;
     if (lnTrackTransvMom<fMinPtCutOnDaughterTracks) continue;
+ 
+
+    // Cut on pseudorapidity of the three daughter tracks
+    if (TMath::Abs(etaBach)>fEtaCutOnDaughterTracks) continue;
+    if (TMath::Abs(etaPos)>fEtaCutOnDaughterTracks) continue;
+    if (TMath::Abs(etaNeg)>fEtaCutOnDaughterTracks) continue;
 
 
     // Calculate proper time for cascade
@@ -2424,9 +2462,12 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
          lContainerCutVars[12] = lInvMassOmegaMinus;//1.63;
          lContainerCutVars[14] = lRapXi;
          lContainerCutVars[15] = -1.;
-         if ( lIsBachelorPionForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC )
+         if ( lIsBachelorPionForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC ) {
            fCFContCascadeCuts->Fill(lContainerCutVars,0); // for Xi-
-
+           fHistEtaBachXiM->Fill(etaBach); 
+           fHistEtaPosXiM->Fill(etaPos);
+           fHistEtaNegXiM->Fill(etaNeg);
+           }
          lContainerCutVars[11] = lInvMassXiMinus;
          lContainerCutVars[12] = lInvMassOmegaMinus;
          lContainerCutVars[14] = -1.;
