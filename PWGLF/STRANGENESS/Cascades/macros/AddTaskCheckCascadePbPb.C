@@ -6,21 +6,22 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Int_t    minnTPCcls   
                                                           Float_t  vtxlim              = 10.,
                                                           Bool_t   kextrasel           = kFALSE,
                                                           Bool_t   krelaunchvertexers  = kFALSE,
-                                                          Float_t  minptondaughtertracks = 1.) {
+                                                          Float_t  minptondaughtertracks = 1.,
+                                                          Float_t  etacutondaughtertracks = 9999999.) {
 
    // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddTaskCheckCascade", "No analysis manager to connect to.");
+      ::Error("AddTaskCheckCascadePbPb", "No analysis manager to connect to.");
       return NULL;
    }   
 
    // Check the analysis type using the event handlers connected to the analysis manager.
    //==============================================================================
    if (!mgr->GetInputEventHandler()) {
-      ::Error("AddTaskCheckCascade", "This task requires an input event handler");
+      ::Error("AddTaskCheckCascadePbPb", "This task requires an input event handler");
       return NULL;
    }   
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -42,6 +43,7 @@ AliAnalysisTaskCheckCascadePbPb *AddTaskCheckCascadePbPb( Int_t    minnTPCcls   
    taskcheckcascadepbpb->SetUseCleaning                (kusecleaning);
    taskcheckcascadepbpb->SetVertexRange                (vtxlim);
    taskcheckcascadepbpb->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  
+   taskcheckcascadepbpb->SetEtaCutOnDaughterTracks     (etacutondaughtertracks);
    taskcheckcascadepbpb->SelectCollisionCandidates();
 
    mgr->AddTask(taskcheckcascadepbpb);

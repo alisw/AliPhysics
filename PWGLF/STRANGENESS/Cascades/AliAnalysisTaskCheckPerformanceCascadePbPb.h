@@ -50,6 +50,7 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
   void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                      = vtxrange;                  }
   void SetApplyAccCut                (Bool_t acccut                     = kFALSE){ fApplyAccCut                   = acccut;                    }    
   void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks            = 0.   ) { fMinPtCutOnDaughterTracks      = minptdaughtrks;            }
+  void SetEtaCutOnDaughterTracks   (Float_t etadaughtrks              = 0.   ) { fEtaCutOnDaughterTracks      = etadaughtrks;             }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -75,7 +76,9 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
         Bool_t          fkUseCleaning;                  // Boolean : kTRUE = uses all the cleaning criteria of centrality selections (vertex cut + outliers) otherwise only outliers
         Float_t         fVtxRange;                      // to select events with |zvtx|<fVtxRange cm
         Bool_t          fApplyAccCut;                   // flag to apply acceptance cuts to MC cascades        
-        Float_t         fMinPtCutOnDaughterTracks;      // minimum pt to cut daughter tracks    
+        Float_t         fMinPtCutOnDaughterTracks;      // minimum pt to cut daughter tracks   
+        Float_t         fEtaCutOnDaughterTracks;        // pseudorapidity cut on daughter tracks
+ 
 
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
@@ -314,10 +317,17 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
 
         TH1F *fV0Ampl;                                    //! Histo to check the V0 amplitude distribution (centrality estimator)  
 
+         // Control plots for reco pseudorapidity of daughter tracks (Xi- asso only)
+
+        TH1F    *fHistEtaBachXiM;                       //! bachelor pseudorapidity
+        TH1F    *fHistEtaPosXiM;                        //! positive daughter pseudorapidity
+        TH1F    *fHistEtaNegXiM;                        //! negative daughter pseudorapidity
+
+
   AliAnalysisTaskCheckPerformanceCascadePbPb(const AliAnalysisTaskCheckPerformanceCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascadePbPb& operator=(const AliAnalysisTaskCheckPerformanceCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 7);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 8);
 };
 
 #endif

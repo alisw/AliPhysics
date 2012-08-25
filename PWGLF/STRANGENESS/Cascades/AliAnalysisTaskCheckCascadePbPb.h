@@ -63,6 +63,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   void SetUseCleaning                (Bool_t   usecleaning              = kTRUE) { fkUseCleaning                = usecleaning;                }
   void SetVertexRange                (Float_t vtxrange                  = 0.   ) { fVtxRange                    = vtxrange;                   }
   void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks            = 0.   ) { fMinPtCutOnDaughterTracks    = minptdaughtrks;             }
+  void SetEtaCutOnDaughterTracks   (Float_t etadaughtrks              = 0.   ) { fEtaCutOnDaughterTracks      = etadaughtrks;             }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -88,6 +89,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         Bool_t          fkUseCleaning;                  // Boolean : kTRUE = uses all the cleaning criteria of centrality selections (vertex cut + outliers) otherwise only outliers
         Float_t         fVtxRange;                      // to select events with |zvtx|<fVtxRange cm
         Float_t         fMinPtCutOnDaughterTracks;      // minimum pt cut on daughter tracks
+        Float_t         fEtaCutOnDaughterTracks;        // pseudorapidity cut on daughter tracks
        
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
@@ -236,12 +238,18 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         TH2F    *fHistDcaV0DaughtersXivsInvMass;        //! cut variables vs inv. mass
         TH2F    *fHistDcaV0ToPrimVertexXivsInvMass;     //! cut variables vs inv. mass
 
+        // Control plots for reco pseudorapidity of daughter tracks (Xi- only)
+
+        TH1F    *fHistEtaBachXiM;                       //! bachelor pseudorapidity
+        TH1F    *fHistEtaPosXiM;                        //! positive daughter pseudorapidity
+        TH1F    *fHistEtaNegXiM;                        //! negative daughter pseudorapidity
+
 
 
   AliAnalysisTaskCheckCascadePbPb(const AliAnalysisTaskCheckCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckCascadePbPb& operator=(const AliAnalysisTaskCheckCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadePbPb, 6);
+  ClassDef(AliAnalysisTaskCheckCascadePbPb, 7);
 };
 
 #endif
