@@ -398,99 +398,6 @@ void AliAODPidHF::CombinedProbability(AliAODTrack *track,Bool_t *type) const{
 
  return;
 }
-//--------------------
-void AliAODPidHF::BayesianProbability(AliAODTrack *track,Double_t *pid) const{
-// bayesian PID for single detectors or combined
-
-  if(fITS && !fTPC && !fTOF) {BayesianProbabilityITS(track,pid);return;}
-  if(fTPC && !fITS && !fTOF) {BayesianProbabilityTPC(track,pid);return;}
-  if(fTOF && !fITS && !fTPC) {BayesianProbabilityTOF(track,pid);return;}
-
-    Double_t probITS[5]={1.,1.,1.,1.,1.};
-    Double_t probTPC[5]={1.,1.,1.,1.,1.};
-    Double_t probTOF[5]={1.,1.,1.,1.,1.};
-    if(fITS) BayesianProbabilityITS(track,probITS);
-    if(fTPC) BayesianProbabilityTPC(track,probTPC);
-    if(fTOF) BayesianProbabilityTOF(track,probTOF);
-    Double_t probTot[5]={0.,0.,0.,0.,0.};
-    for(Int_t i=0;i<5;i++){
-     probTot[i]=probITS[i]*probTPC[i]*probTOF[i];
-    }
-    for(Int_t i2=0;i2<5;i2++){
-     pid[i2]=probTot[i2]*fPriors[i2]/(probTot[0]*fPriors[0]+probTot[1]*fPriors[1]+probTot[2]*fPriors[2]+probTot[3]*fPriors[3]+probTot[4]*fPriors[4]);
-    }
-
- return;
-
-}
-//------------------------------------
-void AliAODPidHF::BayesianProbabilityITS(AliAODTrack *track,Double_t *prob) const{
-
-// bayesian PID for ITS
- AliAODpidUtil pid;
- Double_t itspid[AliPID::kSPECIES];
- pid.MakeITSPID(track,itspid);
- for(Int_t ind=0;ind<AliPID::kSPECIES;ind++){
-  if(fTOF || fTPC || fTRD){
-   prob[ind]=itspid[ind];
-  }else{
-   prob[ind]=itspid[ind]*fPriors[ind]/(itspid[0]*fPriors[0]+itspid[1]*fPriors[1]+itspid[2]*fPriors[2]+itspid[3]*fPriors[3]+itspid[4]*fPriors[4]);
-  }
- }
- return;
-
-}
-//------------------------------------
-void AliAODPidHF::BayesianProbabilityTPC(AliAODTrack *track,Double_t *prob) const{
-// bayesian PID for TPC
-
- AliAODpidUtil pid;
- Double_t tpcpid[AliPID::kSPECIES];
- pid.MakeTPCPID(track,tpcpid);
- for(Int_t ind=0;ind<AliPID::kSPECIES;ind++){
-  if(fTOF || fITS || fTRD){
-   prob[ind]=tpcpid[ind];
-  }else{
-   prob[ind]=tpcpid[ind]*fPriors[ind]/(tpcpid[0]*fPriors[0]+tpcpid[1]*fPriors[1]+tpcpid[2]*fPriors[2]+tpcpid[3]*fPriors[3]+tpcpid[4]*fPriors[4]);
- }
-}
- return;
-
-}
-//------------------------------------
-void AliAODPidHF::BayesianProbabilityTOF(AliAODTrack *track,Double_t *prob) const{
-// bayesian PID for TOF
-
- AliAODpidUtil pid;
- Double_t tofpid[AliPID::kSPECIES];
- pid.MakeTOFPID(track,tofpid);
- for(Int_t ind=0;ind<AliPID::kSPECIES;ind++){
-  if(fTPC || fITS || fTRD){
-   prob[ind]=tofpid[ind];
-  }else{
-  prob[ind]=tofpid[ind]*fPriors[ind]/(tofpid[0]*fPriors[0]+tofpid[1]*fPriors[1]+tofpid[2]*fPriors[2]+tofpid[3]*fPriors[3]+tofpid[4]*fPriors[4]);
- }
-}
- return;
-
-}
-//---------------------------------
-void AliAODPidHF::BayesianProbabilityTRD(AliAODTrack *track,Double_t *prob) const{
-// bayesian PID for TRD
-
- AliAODpidUtil pid;
- Double_t trdpid[AliPID::kSPECIES];
- pid.MakeTRDPID(track,trdpid);
- for(Int_t ind=0;ind<AliPID::kSPECIES;ind++){
-  if(fTPC || fITS || fTOF){
-   prob[ind]=trdpid[ind];
-  }else{
-   prob[ind]=trdpid[ind]*fPriors[ind]/(trdpid[0]*fPriors[0]+trdpid[1]*fPriors[1]+trdpid[2]*fPriors[2]+trdpid[3]*fPriors[3]+trdpid[4]*fPriors[4]);
- }
-}
-  return;
-
- }
 //--------------------------------
 Bool_t AliAODPidHF::CheckITSPIDStatus(AliAODTrack *track) const{
   // ITS PID quality cuts
@@ -923,27 +830,12 @@ Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &nsig
 
   if(fPidResponse){
     nsigma = fPidResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)species);
+    return 1;
   }else{
-    AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
-    if (event) {
-      AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
-      if (tofH) { // reading a new AOD without setting fPidResponse!!! 
-	AliFatal("To use this AOD you must start AliPIDResponseTask"); 
-      }
-      else {
-	Double_t time[AliPID::kSPECIES];
-	Double_t sigmaTOFPid[AliPID::kSPECIES];
-	AliAODPid *pidObj = track->GetDetPid();
-	pidObj->GetIntegratedTimes(time);
-	Double_t sigTOF=pidObj->GetTOFsignal();
-	pidObj->GetTOFpidResolution(sigmaTOFPid);
-	if(sigmaTOFPid[species]<1e-99) return -2;
-	Double_t sigmaTOF=(sigTOF-time[species])/sigmaTOFPid[species];
-	nsigma=sigmaTOF;
-      } 
-    }
+    AliFatal("To use TOF PID you need to attach AliPIDResponseTask");
+    nsigma=-999.;
+    return -1;
   }
-  return 1;
 }
 
 //-----------------------
