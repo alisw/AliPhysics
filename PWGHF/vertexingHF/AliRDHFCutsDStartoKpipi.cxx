@@ -524,7 +524,7 @@ Int_t AliRDHFCutsDStartoKpipi::SelectPID(AliAODTrack *track, Int_t type)
     Double_t prob[5]={1.,1.,1.,1.,1.};
     
     //fPidHF->SetPriors(priors);
-    fPidHF->BayesianProbability(track,prob);
+    //    fPidHF->BayesianProbability(track,prob);
     
     Double_t max=0.;
     Int_t k=-1;
