@@ -311,12 +311,12 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
   }
   //
   UInt_t time = event->GetTimeStamp();
-  Int_t ntracks = event->GetNumberOfTracks();
+  Int_t nFriendTracks = esdFriend->GetNumberOfTracks();
   Int_t runNumber = event->GetRunNumber();
   //
   // track loop
   //
-  for (Int_t i=0;i<ntracks;++i) {
+  for (Int_t i=0;i<nFriendTracks;++i) {
 
     AliESDtrack *track = event->GetTrack(i);
     if (!track) continue;
@@ -374,12 +374,12 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
   }
   //
   UInt_t time = event->GetTimeStamp();
-  Int_t ntracks = event->GetNumberOfTracks();
+  Int_t nFriendTracks = esdFriend->GetNumberOfTracks();
   Int_t runNumber = event->GetRunNumber();
   //
   // track loop
   //
-  for (Int_t i=0;i<ntracks;++i) { // begin track loop
+  for (Int_t i=0;i<nFriendTracks;++i) { // begin track loop
 
     AliESDtrack *track = event->GetTrack(i);
     if (!track) continue;
