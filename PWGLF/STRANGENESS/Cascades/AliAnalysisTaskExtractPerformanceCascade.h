@@ -73,6 +73,10 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Bool_t fkIsNuclear;   //if true, replace multiplicity est. by centrality (default FALSE) 
   Bool_t fkLowEnergyPP; //if true, skip FASTOnly (default FALSE)
 
+	Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
+	Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
+
+
 //===========================================================================================
 //   Variables for tree, cascades
 //===========================================================================================

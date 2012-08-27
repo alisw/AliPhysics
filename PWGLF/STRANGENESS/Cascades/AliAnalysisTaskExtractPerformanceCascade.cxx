@@ -177,6 +177,28 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fHistPVzAnalysis(0)
 {
    // Constructor
+
+   //Set Variables for re-running the cascade vertexers (as done for MS paper)
+        
+        // New Loose : 1st step for the 7 TeV pp analysis
+        
+        fV0Sels[0] =  33.  ;  // max allowed chi2
+        fV0Sels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
+        fV0Sels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
+        fV0Sels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
+        fV0Sels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
+        fV0Sels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
+        fV0Sels[6] = 100.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
+        
+        fCascSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
+        fCascSels[1] =   0.05 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
+        fCascSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
+        fCascSels[3] =   0.03 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
+        fCascSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
+        fCascSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
+        fCascSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
+        fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
+
    // Output slot #0 writes into a TList container (Cascade)
    DefineOutput(1, TList::Class());
    DefineOutput(2, TTree::Class());
@@ -645,6 +667,22 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
         PostData(2, fTreeCascade);
       return;
    }
+
+//------------------------------------------------
+// Rerun cascade vertexer! 
+//------------------------------------------------
+
+  lESDevent->ResetCascades();
+  lESDevent->ResetV0s();
+
+  AliV0vertexer lV0vtxer;
+  AliCascadeVertexer lCascVtxer;
+                
+  lV0vtxer.SetDefaultCuts(fV0Sels);
+  lCascVtxer.SetDefaultCuts(fCascSels);
+
+  lV0vtxer.Tracks2V0vertices(lESDevent);
+  lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
 
 //------------------------------------------------
 // After Trigger Selection
