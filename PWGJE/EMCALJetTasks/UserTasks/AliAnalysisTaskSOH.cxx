@@ -43,6 +43,18 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
   fHTrkEffDetGenPtEtaPhi(0), 
   fHTrkEffDetRecPtEtaPhi(0),
   fHTrkEffDetRecFakePtEtaPhi(0), 
+  fHTrkEffParGenPt_all(0),
+  fHTrkEffDetRecPt_all(0),
+  fHTrkEffParGenPt_Dch(0),
+  fHTrkEffDetRecPt_Dch(0),
+  fHTrkEffParGenPt_Dn(0),
+  fHTrkEffDetRecPt_Dn(0),
+  fHTrkEffParGenPt_Ds(0),
+  fHTrkEffDetRecPt_Ds(0),
+  fHTrkEffParGenPt_cL(0),
+  fHTrkEffDetRecPt_cL(0),
+  fHTrkEffParGenPt_JPsi(0),
+  fHTrkEffDetRecPt_JPsi(0),
   fHScaleFactor(0),
   fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
@@ -93,6 +105,18 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH(const char *name) :
   fHTrkEffDetGenPtEtaPhi(0), 
   fHTrkEffDetRecPtEtaPhi(0), 
   fHTrkEffDetRecFakePtEtaPhi(0),
+  fHTrkEffParGenPt_all(0),
+  fHTrkEffDetRecPt_all(0),
+  fHTrkEffParGenPt_Dch(0),
+  fHTrkEffDetRecPt_Dch(0),
+  fHTrkEffParGenPt_Dn(0),
+  fHTrkEffDetRecPt_Dn(0),
+  fHTrkEffParGenPt_Ds(0),
+  fHTrkEffDetRecPt_Ds(0),
+  fHTrkEffParGenPt_cL(0),
+  fHTrkEffDetRecPt_cL(0),
+  fHTrkEffParGenPt_JPsi(0),
+  fHTrkEffDetRecPt_JPsi(0),
   fHScaleFactor(0),
   fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
@@ -186,6 +210,42 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   fHTrkEffDetRecFakePtEtaPhi->GetYaxis()->SetTitle("#eta");
   fHTrkEffDetRecFakePtEtaPhi->GetZaxis()->SetTitle("#phi");
   fOutputList->Add(fHTrkEffDetRecFakePtEtaPhi);
+
+  fHTrkEffParGenPt_all = new TH1F("fHTrkEffParGenPt_all", "Truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffParGenPt_all);
+
+  fHTrkEffDetRecPt_all = new TH1F("fHTrkEffDetRecPt_all", "Reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffDetRecPt_all);
+
+  fHTrkEffParGenPt_Dch = new TH1F("fHTrkEffParGenPt_Dch", "Charged D meson truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffParGenPt_Dch);
+
+  fHTrkEffDetRecPt_Dch = new TH1F("fHTrkEffDetRecPt_Dch", "Charged D meson reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffDetRecPt_Dch);
+
+  fHTrkEffParGenPt_Dn = new TH1F("fHTrkEffParGenPt_Dn", "Neutral D meson truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffParGenPt_Dn);
+
+  fHTrkEffDetRecPt_Dn = new TH1F("fHTrkEffDetRecPt_Dn", "Neutral D meson reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffDetRecPt_Dn);
+
+  fHTrkEffParGenPt_Ds = new TH1F("fHTrkEffParGenPt_Ds", "D_{s} truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffParGenPt_Ds);
+
+  fHTrkEffDetRecPt_Ds = new TH1F("fHTrkEffDetRecPt_Ds", "D_{s} reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffDetRecPt_Ds);
+
+  fHTrkEffParGenPt_cL = new TH1F("fHTrkEffParGenPt_cL", "#Lambda_{c} truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffParGenPt_cL);
+
+  fHTrkEffDetRecPt_cL = new TH1F("fHTrkEffDetRecPt_cL", "#Lambda_{c} reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffDetRecPt_cL);
+
+  fHTrkEffParGenPt_JPsi = new TH1F("fHTrkEffParGenPt_JPsi", "J/#Psi truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffParGenPt_JPsi);
+
+  fHTrkEffDetRecPt_JPsi = new TH1F("fHTrkEffDetRecPt_JPsi", "J/#Psi Reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fOutputList->Add(fHTrkEffDetRecPt_JPsi);
 
   fHScaleFactor = new TH1F("fHScaleFactor", "Scale factor distribution without hadronic correction;Scale factor",100,0,10);
   fOutputList->Add(fHScaleFactor);
@@ -406,6 +466,7 @@ void  AliAnalysisTaskSOH::ProcessTrack()
         }
       }
     }
+    if(newTrack->GetLabel()<0 && newTrack->GetPID()==2) fHTrkEffDetRecFakePtEtaPhi->Fill(esdtrack->Pt(), esdtrack->Eta(), esdtrack->Phi());
 
  // Track Indices
     fTrackIndices->AddAt(itr,nTracks);
@@ -572,27 +633,51 @@ void AliAnalysisTaskSOH::ProcessMc()
     if(!IsGoodMcParticle(vParticle, index) && esdtrack->GetPID() == 2) fHTrkEffDetRecFakePtEtaPhi->Fill(esdtrack->Pt(), esdtrack->Eta(), esdtrack->Phi());
   }
 
+  //tracking effciency
   for(Int_t ipart=0; ipart<fMC->GetNumberOfTracks(); ipart++)
   {
     AliVParticle* vParticle = fMC->GetTrack(ipart);
-    if(!IsGoodMcParticle(vParticle, ipart)) continue;
     Int_t pdgCode = vParticle->PdgCode();
-      
-   //tracking effciency
+    AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(ipart);
+    if(!IsGoodMcParticle(vParticle, ipart)) continue;  
+
+    if(McParticle->GetMother() > 0 && TMath::Abs(vParticle->Eta())<0.9 && TMath::Abs(pdgCode)==211)
+    {
+      AliMCParticle *McMother = (AliMCParticle*)fMC->GetTrack(McParticle->GetMother());
+      if(TMath::Abs(McMother->PdgCode()) == 411) fHTrkEffParGenPt_Dch->Fill(vParticle->Pt());
+      else if(TMath::Abs(McMother->PdgCode()) == 421) fHTrkEffParGenPt_Dn->Fill(vParticle->Pt());
+      else if(TMath::Abs(McMother->PdgCode()) == 431) fHTrkEffParGenPt_Ds->Fill(vParticle->Pt());	 
+      else if(TMath::Abs(McMother->PdgCode()) == 4122) fHTrkEffParGenPt_cL->Fill(vParticle->Pt()); 
+      else if(TMath::Abs(McMother->PdgCode()) == 443) fHTrkEffParGenPt_JPsi->Fill(vParticle->Pt()); 
+      else {;}
+    }
+ 
     if(TMath::Abs(vParticle->Eta())<0.9)
     {
+      fHTrkEffParGenPt_all->Fill(vParticle->Pt());
       if(TMath::Abs(pdgCode==211)) fHTrkEffParGenPtEtaPhi->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
+      
       for(Int_t j=0; j<fTrackIndices->GetSize(); j++)
       {
         AliESDtrack *esdtrack = fESD->GetTrack(fTrackIndices->At(j));
         if(esdtrack && esdtrack->GetLabel()==ipart)
         {
+	  fHTrkEffDetRecPt_all->Fill(esdtrack->Pt());
 	  if(TMath::Abs(pdgCode==211))
 	  {
 	    fHTrkEffDetGenPtEtaPhi->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
 	    fHTrkEffDetRecPtEtaPhi->Fill(esdtrack->Pt(), esdtrack->Eta(), esdtrack->Phi());
 	  }
-
+	  if(McParticle->GetMother() > 0 && TMath::Abs(pdgCode) == 211)
+	  {
+	    AliMCParticle *McMother = (AliMCParticle*)fMC->GetTrack(McParticle->GetMother());
+	    if(TMath::Abs(McMother->PdgCode()) == 411) fHTrkEffDetRecPt_Dch->Fill(esdtrack->Pt());
+	    else if(TMath::Abs(McMother->PdgCode()) == 421) fHTrkEffDetRecPt_Dn->Fill(esdtrack->Pt());
+	    else if(TMath::Abs(McMother->PdgCode()) == 431) fHTrkEffDetRecPt_Ds->Fill(esdtrack->Pt());	 
+	    else if(TMath::Abs(McMother->PdgCode()) == 4122) fHTrkEffDetRecPt_cL->Fill(esdtrack->Pt()); 
+	    else if(TMath::Abs(McMother->PdgCode()) == 443) fHTrkEffDetRecPt_JPsi->Fill(esdtrack->Pt()); 
+	    else {;}
+	  }
     //cluster E vs. truth photon energy
 	  for(Int_t k=0; k<fClusterIndices->GetSize(); k++)
 	  {
