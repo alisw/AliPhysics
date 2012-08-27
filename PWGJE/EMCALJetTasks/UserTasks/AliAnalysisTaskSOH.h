@@ -52,10 +52,22 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   
   TList              *fOutputList;               //!output list
   TH1F               *fHEventStat;               //!statistics histo
-  TH3F               *fHTrkEffParGenPtEtaPhi;    //!mc truth pt spectrum
-  TH3F               *fHTrkEffDetGenPtEtaPhi;    //!mc detector level pt spectrum
-  TH3F               *fHTrkEffDetRecPtEtaPhi;    //!reconstructed detector level pt spectrum
+  TH3F               *fHTrkEffParGenPtEtaPhi;    //!charged pion mc truth pt spectrum
+  TH3F               *fHTrkEffDetGenPtEtaPhi;    //!charged pion mc detector level pt spectrum
+  TH3F               *fHTrkEffDetRecPtEtaPhi;    //!charged pion reconstructed detector level pt spectrum
   TH3F               *fHTrkEffDetRecFakePtEtaPhi;//!fake and secondary tracks pt spectrum
+  TH1F               *fHTrkEffParGenPt_all;      //!mc truth pt spectrum
+  TH1F               *fHTrkEffDetRecPt_all;      //!reconstructed detector level pt spectrum
+  TH1F               *fHTrkEffParGenPt_Dch;      //!charged D meson truth pt spectrum
+  TH1F               *fHTrkEffDetRecPt_Dch;      //!charged D meson reconstructed detector level pt spectrum
+  TH1F               *fHTrkEffParGenPt_Dn;       //!neutral D meson truth pt spectrum
+  TH1F               *fHTrkEffDetRecPt_Dn;       //!neutral D meson reconstructed detector level pt spectrum
+  TH1F               *fHTrkEffParGenPt_Ds;       //!strange D meson truth pt spectrum
+  TH1F               *fHTrkEffDetRecPt_Ds;       //!strange D meson reconstructed detector level pt spectrum
+  TH1F               *fHTrkEffParGenPt_cL;       //!charmed lambda truth pt spectrum
+  TH1F               *fHTrkEffDetRecPt_cL;       //!charmed lambda reconstructed detector level pt spectrum
+  TH1F               *fHTrkEffParGenPt_JPsi;     //!J/Psi truth pt spectrum
+  TH1F               *fHTrkEffDetRecPt_JPsi;     //!J/Psi reconstructed detector level pt spectrum
   TH1F               *fHScaleFactor;             //!scale factor spectrum
   TH1F               *fHScaleFactor100HC;        //!scale factor with 100% HC spectrum
   TH2F               *fHEOverPVsPt;              //!(cluster energy over reconstructed track p) vs. track pt
@@ -87,6 +99,6 @@ class AliAnalysisTaskSOH : public AliAnalysisTaskSE {
   AliAnalysisTaskSOH(const AliAnalysisTaskSOH&); // not implemented
   AliAnalysisTaskSOH& operator=(const AliAnalysisTaskSOH&); // not implemented
   
-  ClassDef(AliAnalysisTaskSOH, 7); // Analysis task Saehanseul Oh
+  ClassDef(AliAnalysisTaskSOH, 8); // Analysis task Saehanseul Oh
 };
 #endif
