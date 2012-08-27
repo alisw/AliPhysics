@@ -72,7 +72,8 @@ void AliTRDdEdxBaseUtils::BinLogX(TAxis *axis)
   const Double_t from = axis->GetXmin();
   const Double_t to = axis->GetXmax();
   if (from<EPSILON){
-    printf("AliTRDdEdxBaseUtils::BinLogX xmin < epsilon! %e\n", from); exit(1);
+    //printf("AliTRDdEdxBaseUtils::BinLogX warning xmin < epsilon! nothing done, axis not set. %e\n", from);  exit(1);
+    return;
   }
 
   Double_t *new_bins = new Double_t[bins + 1];

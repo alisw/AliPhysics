@@ -55,7 +55,10 @@ AliTRDdEdxCalibHistArray::AliTRDdEdxCalibHistArray(const Bool_t kNoInv):
       TAxis *xi = hi->GetAxis(iaxis);
       xi->SetName(aname[iaxis]);
       xi->SetTitle(atitle[iaxis]);
-      AliTRDdEdxBaseUtils::BinLogX(xi);
+      //only log for y-axis
+      if(iaxis==1){
+        AliTRDdEdxBaseUtils::BinLogX(xi);
+      }
     }
     AddAt(hi, iter);
   }
