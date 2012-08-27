@@ -27,9 +27,11 @@ AliAnalysisTaskITSsaTracks *AddTaskITSsaTracks(Bool_t readMC=kFALSE,Bool_t UseMC
   
   // Add MC handler (for kinematics)
   if(readMC){
-    AliMCEventHandler* handler = new AliMCEventHandler;
-    handler->SetReadTR(kFALSE);
-    mgr->SetMCtruthEventHandler(handler);
+    AliMCEventHandler* handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
+    if (!handler) {
+      ::Error("AddTaskITSsaTracks","Macro called with readMC=true but MC handler not present");
+      return 0;
+    }
   }
   // Create and configure the task
   AliAnalysisTaskITSsaTracks *taskits = new AliAnalysisTaskITSsaTracks();
