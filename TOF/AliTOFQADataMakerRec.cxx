@@ -604,6 +604,10 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   //
   // makes data from Raws
   //
+  // AliLog::SetClassDebugLevel("AliRawReader",0);
+  // AliLog::SetClassDebugLevel("AliTOFRawStream",0);
+  // AliLog::SetClassDebugLevel("AliTOFDecoderV2",0);
+  AliLog::SetGlobalLogLevel(AliLog::kError);
   if (rawReader->GetType()==7) {
    
     Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;//in ns
@@ -690,7 +694,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	      //fired macropad map (from LTM hits) - only for low multi evts (UPC)
 	      if ((nFiredMacropad<=fgCutNmaxFiredMacropad)){	
 		iFiredMacropad++;
-		AliInfo(Form("Event found with %i fired macropads in BCID = %i!",nFiredMacropad,BCID));
+		//AliInfo(Form("Event found with %i fired macropads in BCID = %i!",nFiredMacropad,BCID));
 		FillRawsData(26,indexCTTM[0],indexCTTM[1]);
 		Float_t halfSMphi=-999.0;
 		if (indexCTTM[0]<36)
@@ -797,7 +801,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       }    
     }//end cut on number of fired macropad
   } else {
-    AliDebug(1,Form("Event of type %d found. Skipping non-physics event for QA.\n", rawReader->GetType())); 
+    AliDebug(2,Form("Event of type %d found. Skipping non-physics event for QA.\n", rawReader->GetType())); 
   }
   
   //fill reference map for DQM shifter only once in a detector cycle 
@@ -1135,7 +1139,7 @@ void AliTOFQADataMakerRec::GetMapIndeces(const Int_t* const in , Int_t* out)
     stripOffset = nStripC+nStripB+nStripA+nStripB;
     break;
   default:
-    AliDebug(1,Form("Wrong plate number in TOF (%d) !",iplate));
+    //    AliDebug(2,Form("Wrong plate number in TOF (%d) !",iplate));
     break;
   };
   Int_t zindex=npadZ*(istrip+stripOffset)+(ipadZ+1);
@@ -1178,7 +1182,7 @@ Int_t AliTOFQADataMakerRec::GetStripIndex(const Int_t * const in)
     stripOffset = nStripC+nStripB+nStripA+nStripB;
     break;
   default:
-      AliDebug(1,Form("Wrong plate number in TOF (%d) !",iplate));
+    //AliDebug(2,Form("Wrong plate number in TOF (%d) !",iplate));
       stripOffset=-1;
       break;
   };
@@ -1196,7 +1200,7 @@ Bool_t  AliTOFQADataMakerRec::CheckVolumeID(const Int_t * const volumeID)
     //   
     for (Int_t j=0;j<5;j++){
 	if (volumeID[j]<0) {
-	    AliDebug(1,Form("Invalid detector volume index for volumeID[%i]",j));
+	  //AliDebug(2,Form("Invalid detector volume index for volumeID[%i]",j));
 	    return kFALSE;
 	}
     }
@@ -1210,7 +1214,7 @@ Bool_t  AliTOFQADataMakerRec::CheckEquipID(const Int_t * const equipmentID)
     //Checks equipment ID validity    
    for (Int_t j=0;j<5;j++){
 	if (equipmentID[j]<0) {
-	  AliDebug(1,Form("Invalid equipment volume index for equipmentID[%i]",j));
+	  // AliDebug(2,Form("Invalid equipment volume index for equipmentID[%i]",j));
 	  return kFALSE;
 	}
    }
@@ -1460,7 +1464,7 @@ void AliTOFQADataMakerRec::SetDefaultHistogramRange()
   //
   // set default histogram ranges (tuned on 2011 pp collisions)
   // 
-  AliInfo("Setting all histogram ranges to default values.");
+  //AliInfo("Setting all histogram ranges to default values.");
   SetDefaultMultiHistogramRange();
   SetDefaultTimeHistogramRange();
   SetDefaultCutNmaxFiredMacropad();
@@ -1475,9 +1479,9 @@ void AliTOFQADataMakerRec::SetDefaultMultiHistogramRange()
   // 
   SetMultiplicityHistoRange (0, 200);
   SetNbinsMultiplicityHisto(200);
-  AliInfo("Setting Multiplicity histogram ranges to default values.");
-  AliInfo(Form("multMin = %i - multMax = %i - nMultBins = %i",
-	       fgRangeMinMultiplicity, fgRangeMaxMultiplicity, fgNbinsMultiplicity));
+  //AliInfo("Setting Multiplicity histogram ranges to default values.");
+  //AliInfo(Form("multMin = %i - multMax = %i - nMultBins = %i",
+  //	       fgRangeMinMultiplicity, fgRangeMaxMultiplicity, fgNbinsMultiplicity));
   return;
 }
 
@@ -1490,9 +1494,9 @@ void AliTOFQADataMakerRec::SetDefaultTimeHistogramRange()
   SetNbinsTimeHisto(250);
   SetTimeHistoRange (0.0,610.);   
   
-  AliInfo("Setting Time histogram ranges to default values:");
-  AliInfo(Form("timeMin = %5.2f ns - timeMax = %5.2f ns - nTimeBins = %i",
-	       fgRangeMinTime, fgRangeMaxTime,fgNbinsTime));
+  // AliInfo("Setting Time histogram ranges to default values:");
+  // AliInfo(Form("timeMin = %5.2f ns - timeMax = %5.2f ns - nTimeBins = %i",
+  //	       fgRangeMinTime, fgRangeMaxTime,fgNbinsTime));
   return;
 }
 
@@ -1503,6 +1507,6 @@ void AliTOFQADataMakerRec::SetDefaultCutNmaxFiredMacropad()
   // set default cut on fired macropad 
   // 
   SetCutNmaxFiredMacropad(50); 
-  AliInfo(Form("Setting cut on fired macropad to default values: NfiredMacropad = %i", fgCutNmaxFiredMacropad));
+  // AliInfo(Form("Setting cut on fired macropad to default values: NfiredMacropad = %i", fgCutNmaxFiredMacropad));
   return;
 }
