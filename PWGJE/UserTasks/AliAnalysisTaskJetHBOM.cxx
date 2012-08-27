@@ -67,13 +67,18 @@ AliAnalysisTaskJetHBOM::~AliAnalysisTaskJetHBOM(){
   //
 
   delete fRef;
+  fRef = 0;
   delete fRandom;
+  fRandom = 0;
 
   if(fTCARandomConesOut)fTCARandomConesOut->Delete();
   delete fTCARandomConesOut;
+  fTCARandomConesOut = 0;
+
   
   if(fTCARandomConesOutRan)fTCARandomConesOutRan->Delete();
   delete fTCARandomConesOutRan;
+  fTCARandomConesOutRan = 0;
 
 }
 
@@ -81,7 +86,7 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM():
   AliAnalysisTaskSE(),
   fAOD(0x0),
   fAODExtension(0x0),
-  fRef(new TRefArray),
+  fRef(0),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fEventSelection(kFALSE),     
@@ -158,7 +163,7 @@ AliAnalysisTaskJetHBOM::AliAnalysisTaskJetHBOM(const char* name):
   AliAnalysisTaskSE(name),
   fAOD(0x0),
   fAODExtension(0x0),
-  fRef(new TRefArray),
+  fRef(0),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fEventSelection(kFALSE),							  

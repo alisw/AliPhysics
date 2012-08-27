@@ -147,29 +147,32 @@ AliAnalysisTaskJetHBOM *AddTaskJetHBOM(char* bRec,char* bGen ,UInt_t filterMask,
    //loads efficiencies
    hbom->SetEfficiencyPt(GetEfficiencyPt(effLoc));
    hbom->SetEfficiencyPhi(GetEfficiencyPhi(effLoc));
-
+   
    return hbom;
 }
 
 //loads single track pT efficiency from root file
 TH1F *GetEfficiencyPt(TString effLoc){
-  static TFile *fIn = 0;
-  static TH1F *hEffPt = 0; 
+  TFile *fIn = 0;
+  TH1F *hEffPt = 0; 
 
   if(!fIn)fIn = TFile::Open(effLoc.Data());
   if(!fIn)Printf("%s%d no input data",(char*)__FILE__,__LINE__);
   if(!hEffPt)hEffPt = (TH1F*)fIn->Get("hSingleTrackEffPt");
   if(!hEffPt)Printf("%s%d no single track efficiency spectrum available",(char*)__FILE__,__LINE__);
+  gROOT->cd();
 
-  if(hEffPt){return hEffPt;}
-  return 0;
+  TH1F *hEffPtClone = (TH1F*)hEffPt->Clone(hEffPt->GetName()); 
+  fIn->Close();
+  return hEffPtClone;
+
 
 }
 
 //loads phi-pT efficiency from root file
 TH2D *GetEfficiencyPhi(TString effLoc){
-  static TFile *fIn = 0;
-  static TH2D *hPhiPt = 0; 
+  TFile *fIn = 0;
+  TH2D *hPhiPt = 0; 
 
   if(!fIn)fIn = TFile::Open(effLoc.Data());
   if(!fIn)Printf("%s%d no input data",(char*)__FILE__,__LINE__);
@@ -177,7 +180,9 @@ TH2D *GetEfficiencyPhi(TString effLoc){
   if(!hPhiPt) cout<<"Could not load h2TrackPtPhiNorm"<<endl; 
   if(!hPhiPt)Printf("%s%d no phi-pt efficiency spectrum available",(char*)__FILE__,__LINE__);
 
-  if(hPhiPt){return hPhiPt;}
-  return 0;
+  gROOT->cd();
+  TH2D *hPhiPtClone = (TH2D*)hPhiPt->Clone(hPhiPt->GetName()); 
+  fIn->Close();
+  return hPhiPtClone;
 
 }
