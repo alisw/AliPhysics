@@ -324,7 +324,7 @@ Bool_t AliAnalysisTaskJetSpectrum2::Notify()
       return kFALSE;
     }
     if(!fh1Xsec||!fh1Trials){
-      Error("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+      Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
       return kFALSE;
     }
     AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
