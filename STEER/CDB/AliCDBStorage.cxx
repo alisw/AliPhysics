@@ -385,11 +385,11 @@ Bool_t AliCDBStorage::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaDat
 
 	AliCDBEntry anEntry(object, id, metaData);
 
-	return Put(&anEntry, type);
+	return Put(&anEntry, "", type);
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBStorage::Put(AliCDBEntry* entry, AliCDBManager::DataType type) {
+Bool_t AliCDBStorage::Put(AliCDBEntry* entry, const char* mirrors, AliCDBManager::DataType type) {
 // store an AliCDBEntry object into the database
 
 	if (!entry){
@@ -423,7 +423,7 @@ Bool_t AliCDBStorage::Put(AliCDBEntry* entry, AliCDBManager::DataType type) {
 			return 0;
 	}
 
-	return PutEntry(entry);
+	return PutEntry(entry,mirrors);
 }
 
 //_____________________________________________________________________________

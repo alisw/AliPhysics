@@ -709,7 +709,7 @@ TList* AliCDBGrid::GetEntries(const AliCDBId& queryId) {
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
+Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 // put an AliCDBEntry object into the database
 
 	AliCDBId& id = entry->GetId();
@@ -731,34 +731,58 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	TDirectory* saveDir = gDirectory;
 
 	TString fullFilename = Form("/alien%s", filename.Data());
+	TString seMirrors(mirrors);
 	// specify SE to filename
-	if (fSE != "default") fullFilename += Form("?se=%s",fSE.Data());
+	// if a list of SEs was passed, set the first as SE for opening the file. The others will be used in cascade in case of
+	// failure in opening the file. The remaining will be used to create replicas.
+	TObjArray *arraySEs = seMirrors.Tokenize(',');
+	Int_t nSEs = arraySEs->GetEntries();
+	Int_t remainingSEs = 1;
+	if(nSEs == 0){
+	    if (fSE != "default") fullFilename += Form("?se=%s",fSE.Data());
+	}else{
+	    remainingSEs = nSEs;
+	}
 
-	Int_t nsleep = fInitRetrySeconds;
 	// open file
 	TFile *file=0;
 	AliDebug(2, Form("fNretry = %d, fInitRetrySeconds = %d",fNretry,fInitRetrySeconds));
-	for(Int_t i=0; i<=fNretry; ++i) {
-		AliDebug(2, Form("Putting the file in the OCDB: Retry n. %d",i));
+	TString targetSE("");
+	while(remainingSEs>0){
+	    if(nSEs!=0){
+		TObjString *target = (TObjString*) arraySEs->At(nSEs-remainingSEs);
+		targetSE=target->String();
+		if ( !(targetSE.BeginsWith("ALICE::") && targetSE.CountChar(':')==4) ) {
+		    AliError(Form("\"%s\" is an invalid storage element identifier.",targetSE.Data()));
+		    continue;
+		}
+		fullFilename.Remove(fullFilename.Last('?'));
+		fullFilename += Form("?se=%s",targetSE.Data());
+	    }
+	    Int_t remainingAttempts=fNretry;
+	    Int_t nsleep = fInitRetrySeconds; // number of seconds between attempts. We let it increase exponentially
+	    while(remainingAttempts > 0) {
+		AliDebug(2, Form("Putting the file in the OCDB - Attempt n. %d",fNretry-remainingAttempts+1));
 		file = TFile::Open(fullFilename,"CREATE");
+		remainingAttempts--;
 		if(!file || !file->IsWritable()){
-			AliError(Form("Can't open file <%s>!", filename.Data()));
-			if(file && !file->IsWritable()) file->Close(); delete file; file=0;
-			if(i==fNretry) {
-				AliError(Form("After %d retries, failing putting the object in the OCDB - returning...",i));
-				return kFALSE;
-			}
-			else {
-				AliDebug(2,Form("Retry %d failed, sleeping for %d seconds",i,nsleep));
-				sleep(nsleep);
-			}
-		} 
-		else {
-			AliDebug(2, " Successful!");
-			break;
+		    AliError(Form("Can't open file <%s>!", filename.Data()));
+		    if(file && !file->IsWritable()) file->Close(); delete file; file=0;
+		    AliDebug(2,Form("Attempt %d failed, sleeping for %d seconds",fNretry-remainingAttempts+1,nsleep));
+		    if(remainingAttempts>0) sleep(nsleep);
+		}else{
+		    remainingAttempts=0;
 		}
 		nsleep*=fInitRetrySeconds;
+	    }
+	    remainingSEs--;
+	    if(file) break;
 	}
+	if(!file){
+	    AliError(Form("All %d attempts have failed on all %d SEs. Returning...",fNretry,nSEs));
+	    return kFALSE;
+	}
+
 
 	file->cd();
 
@@ -787,7 +811,25 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	}
 
 	AliInfo(Form("CDB object stored into file %s", filename.Data()));
-	AliInfo(Form("Storage Element: %s", fSE.Data()));
+	if(nSEs==0)
+	    AliInfo(Form("Storage Element: %s", fSE.Data()));
+	else
+	    AliInfo(Form("Storage Element: %s", targetSE.Data()));
+
+	//In case of other SEs specified by the user, mirror the file to the remaining SEs
+	while(remainingSEs>0){
+	    TString mirrorCmd("mirror ");
+	    mirrorCmd += filename;
+	    mirrorCmd += " ";
+	    TObjString *target = (TObjString*) arraySEs->At(nSEs-remainingSEs);
+	    TString mirrorSE(target->String());
+	    mirrorCmd += mirrorSE;
+	    AliDebug(5,Form("mirror command: \"%s\"",mirrorCmd.Data()));
+	    AliInfo(Form("Mirroring to storage element: %s", mirrorSE.Data()));
+	    gGrid->Command(mirrorCmd.Data());
+	    remainingSEs--;
+	}
+
 	return result;
 }
 //_____________________________________________________________________________

@@ -35,7 +35,7 @@ protected:
 	virtual AliCDBEntry* 	GetEntry(const AliCDBId& query);
 	virtual AliCDBId* 	GetEntryId(const AliCDBId& query);
         virtual TList* 		GetEntries(const AliCDBId& query);
-        virtual Bool_t 		PutEntry(AliCDBEntry* entry);
+        virtual Bool_t 		PutEntry(AliCDBEntry* entry, const char* mirrors="");
 	virtual TList* 		GetIdListFromFile(const char* fileName);
 
 private:

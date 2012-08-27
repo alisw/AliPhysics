@@ -1217,13 +1217,13 @@ Bool_t AliCDBManager::Put(TObject* object, const AliCDBId& id, AliCDBMetaData* m
 	} 
 
 	AliCDBEntry anEntry(object, id, metaData);
-	return Put(&anEntry, type);
+	return Put(&anEntry, "", type);
 
 }
 
 
 //_____________________________________________________________________________
-Bool_t AliCDBManager::Put(AliCDBEntry* entry, DataType type){
+Bool_t AliCDBManager::Put(AliCDBEntry* entry, const char* mirrors, DataType type){
 // store an AliCDBEntry object into the database
 
 	if(type == kPrivate && !fDefaultStorage) {
@@ -1276,7 +1276,7 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry, DataType type){
 
 	AliDebug(2,Form("Storing object into storage: %s", aStorage->GetURI().Data()));
 
-	Bool_t result = aStorage->Put(entry, type);
+	Bool_t result = aStorage->Put(entry, mirrors, type);
 
 	if(fRun >= 0) QueryCDB();
 

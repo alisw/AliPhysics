@@ -86,7 +86,7 @@ public:
 
 	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData,
 				AliCDBManager::DataType type=AliCDBManager::kPrivate);
-	Bool_t Put(AliCDBEntry* entry, AliCDBManager::DataType type=AliCDBManager::kPrivate);
+	Bool_t Put(AliCDBEntry* entry, const char* mirrors="", AliCDBManager::DataType type=AliCDBManager::kPrivate);
 
 	virtual Bool_t IsReadOnly() const = 0;
 	virtual Bool_t HasSubVersion() const = 0;
@@ -109,7 +109,7 @@ protected:
 	virtual AliCDBEntry* GetEntry(const AliCDBId& query) = 0;
 	virtual AliCDBId* GetEntryId(const AliCDBId& query) = 0;
 	virtual TList* GetEntries(const AliCDBId& query) = 0;
-	virtual Bool_t PutEntry(AliCDBEntry* entry) = 0;
+	virtual Bool_t PutEntry(AliCDBEntry* entry, const char* mirrors="") = 0;
 	virtual TList *GetIdListFromFile(const char* fileName)=0;
 	virtual void   QueryValidFiles() = 0;
 	void 	LoadTreeFromFile(AliCDBEntry* entry) const;
