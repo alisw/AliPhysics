@@ -170,10 +170,9 @@ AliCentralCorrAcceptance::SetCorrection(UShort_t b, TH1D*  h)
     return false;
   }
   
-  h->SetName(Form("SPD_vtxbin%03d",  b));
-  h->SetTitle(Form("Acceptance correction for SPD "
-		   "in vertex bin %d [%+8.4f,%+8.4f]", 
-		   b, fVertexAxis.GetBinLowEdge(b), 
+  h->SetName(Form("acc_vtxbin%03d",  b));
+  h->SetTitle(Form("Acceptance correction [%+5.1f<v_{z}<%+5.1f]", 
+		   fVertexAxis.GetBinLowEdge(b), 
 		   fVertexAxis.GetBinUpEdge(b)));
   h->SetXTitle("#eta");
   h->SetYTitle("dN_{ch}/d#eta / sum_i N_{ch,i}");

@@ -462,7 +462,7 @@ AliCentralMCCorrectionsTask::Terminate(Option_t*)
   corr->SetVertexAxis(fVtxAxis);
   // corr->SetEtaAxis(fEtaAxis);
 
- AliCentralCorrAcceptance* acorr = new AliCentralCorrAcceptance;
+  AliCentralCorrAcceptance* acorr = new AliCentralCorrAcceptance;
   acorr->SetVertexAxis(fVtxAxis);
 
   TIter     next(fVtxBins);
@@ -472,7 +472,7 @@ AliCentralMCCorrectionsTask::Terminate(Option_t*)
     bin->Finish(fList, output, iVz++, fEffectiveCorr, corr,acorr);
 
   output->Add(corr);
- output->Add(acorr);
+  output->Add(acorr);
 
   PostData(2, output);
 }
@@ -657,12 +657,11 @@ AliCentralMCCorrectionsTask::VtxBin::Finish(const TList* input,
   h->Divide(prim);
 
   TH1D* acc = new TH1D(Form("SPDacc_vrtbin_%d",iVz),
-			  "Acceptance correction for SPD" ,
-			  fPrimary->GetXaxis()->GetNbins(), 
-			  fPrimary->GetXaxis()->GetXmin(), 
-			  fPrimary->GetXaxis()->GetXmax());
-  TH1F* accden = static_cast<TH1F*>(acc->Clone(Form("%s_den",
-						    acc->GetName())));
+		       "Acceptance correction for SPD" ,
+		       fPrimary->GetXaxis()->GetNbins(), 
+		       fPrimary->GetXaxis()->GetXmin(), 
+		       fPrimary->GetXaxis()->GetXmax());
+  TH1F* accden = static_cast<TH1F*>(acc->Clone(Form("%s_den",acc->GetName())));
 
   for(Int_t xx = 1; xx <=h->GetNbinsX(); xx++) {
     for(Int_t yy = 1; yy <=h->GetNbinsY(); yy++) {
@@ -677,7 +676,6 @@ AliCentralMCCorrectionsTask::VtxBin::Finish(const TList* input,
 	h->SetBinError(xx,yy,0.); 
       }
       accden->Fill(h->GetXaxis()->GetBinCenter(xx));
-	
     }
   }
   acc->Divide(accden);

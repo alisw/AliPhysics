@@ -53,6 +53,9 @@ protected:
     // --- Check if this is MC ---------------------------------------
     if (!mgr->GetMCtruthEventHandler()) return;
     
+    // --- Task to copy header information ---------------------------
+    gROOT->Macro("AddTaskCopyHeader.C");
+
     // --- Add the task ----------------------------------------------
     gROOT->Macro("AddTaskForwardMCCorr.C"); 
 
@@ -90,7 +93,7 @@ protected:
   /** 
    * Do not the centrality selection
    */
-  void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
+  // void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
   //__________________________________________________________________
   const char* ClassName() const { return "MakeMCCorrTrain"; }
 };
