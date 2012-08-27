@@ -307,19 +307,27 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrix() {
   printf("binWidthMeas: %f  binWidthUnf: %f   fBinWidthFactorUnfolded: %d\n",binWidthMeas,binWidthUnf,fBinWidthFactorUnfolded);
   printf("binWidthUnfLowPt: %f\n",binWidthUnfLowPt);
 
-  int tmp = round((fPtMaxUnfolded-fPtMinUnfolded)/binWidthUnf); //nbins which fit between 0 and fPtMaxUnfolded
-  tmp = tmp - fSkipBinsUnfolded;
-  fPtMinUnfolded = fPtMaxUnfolded-(double)(tmp)*binWidthUnf; //set ptmin unfolded
-  fPtMaxUnfolded = fPtMinUnfolded+(double)(tmp)*binWidthUnf; //set ptmax unfolded
-  nbins[fDimGen] = (int)((fPtMaxUnfolded-fPtMinUnfolded)/binWidthUnf); //adjust nbins to bin width
+  printf("fPtMinUnfolded: %f  fPtMaxUnfolded: %f\n",fPtMinUnfolded,fPtMaxUnfolded);
+
 
   if(fbVariableBinning) {
-    tmp = (int)(fPtMaxUnfVarBinning/binWidthUnfLowPt);
+    // cout << "fPtMaxUnfVarBinning: " << fPtMaxUnfVarBinning << " \tfPtMinUnfolded: " << fPtMinUnfolded << "  binWidthUnfLowPt: " << binWidthUnfLowPt << endl;
+    Int_t tmp = (int)((fPtMaxUnfVarBinning-fPtMinUnfolded)/binWidthUnfLowPt);
     tmp = tmp - fSkipBinsUnfolded;
     fPtMinUnfolded = fPtMaxUnfVarBinning-(double)(tmp)*binWidthUnfLowPt;  
+    //cout << "tmp = " << tmp << "  fSkipBinsUnfolded = " << fSkipBinsUnfolded << " fPtMinUnfolded = " << fPtMinUnfolded << endl;
     //Redefine also number of bins on generated axis in case of variable binning
     nbins[fDimGen] = (int)((fPtMaxUnfVarBinning-fPtMinUnfolded)/binWidthUnfLowPt)+(int)((fPtMaxUnfolded-fPtMaxUnfVarBinning)/binWidthUnf);
   }
+  else {
+    int tmp = round((fPtMaxUnfolded-fPtMinUnfolded)/binWidthUnf); //nbins which fit between 0 and fPtMaxUnfolded
+    tmp = tmp - fSkipBinsUnfolded;
+    fPtMinUnfolded = fPtMaxUnfolded-(double)(tmp)*binWidthUnf; //set ptmin unfolded
+    fPtMaxUnfolded = fPtMinUnfolded+(double)(tmp)*binWidthUnf; //set ptmax unfolded
+    nbins[fDimGen] = (int)((fPtMaxUnfolded-fPtMinUnfolded)/binWidthUnf); //adjust nbins to bin width
+  }
+
+  printf("   nbins[fDimGen] = %d   nbins[fDimRec] = %d\n",nbins[fDimGen],nbins[fDimRec]);
 
   Double_t binWidth[2];
   binWidth[fDimRec] = (double)((fPtMax-fPtMin)/nbins[fDimRec]);
@@ -665,6 +673,7 @@ void AliAnaChargedJetResponseMaker::FillResponseMatrixFineAndMerge() {
 	//	printf("weight: %f \n", weight );
       } else {
 	weight = 1./((double)fFineFrac);
+	if(fbVariableBinning && pTgen<fPtMaxUnfVarBinning) weight=1./(0.5*(double)fFineFrac);
       }
 
       for(int ix=ixMin; ix<=ixMax; ix++) {                    //loop reconstructed axis
@@ -681,8 +690,6 @@ void AliAnaChargedJetResponseMaker::FillResponseMatrixFineAndMerge() {
   } // iy (dimGen) loop
 
   //Fill Efficiency corresponding to merged response matrix
-  // FillEfficiency(errorArray,fFineFrac);
-  
   for(int iy=1; iy<=fResponseMatrix->GetAxis(fDimGen)->GetNbins(); iy++) { //gen
     sumyield = 0.;
     ipt[fDimGen] = iy;
@@ -732,7 +739,7 @@ TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *h
     Int_t binxUpFine = hRMFine->GetXaxis()->FindBin(xUp)-1;
     //cout << "xLowFine: " << hRMFine->GetXaxis()->GetBinLowEdge(binxLowFine) << "\txUpFine: " << hRMFine->GetXaxis()->GetBinUpEdge(binxUpFine) << endl;
     normVector->SetAt(hRMFine->Integral(binxLowFine,binxUpFine,1,hRMFine->GetYaxis()->GetNbins()),ix-1);
-    if(fDebug) cout << "ix norm: " << normVector->At(ix-1) << endl;
+    //    if(fDebug) cout << "ix norm: " << normVector->At(ix-1) << endl;
   }
 
   Double_t content, oldcontent = 0.;
@@ -864,7 +871,7 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
     else
       eff = hEfficiency->GetBinContent(igen);
     yieldMC = hGen->GetBinContent(igen)*eff;
-    //    yieldMCerror = hGen->GetBinError(igen);
+    yieldMCerror = hGen->GetBinError(igen)*eff;
 
     if(bDrawSlices) {
       hRecGenBin = hResponse->ProjectionY(Form("hRecGenBin%d",igen));
@@ -880,7 +887,8 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
       Double_t A = yieldMC*hResponse->GetBinError(igen,irec);
       Double_t B = hResponse->GetBinContent(igen,irec)*yieldMCerror;
       Double_t tmp2 = A*A + B*B;
-      sumError2[irec-1] += tmp2 ;
+      //sumError2[irec-1] += tmp2 ;
+      sumError2[irec-1] += B*B;
 
       if(bDrawSlices)
 	hRecGenBin->SetBinContent(irec,yieldMC*hResponse->GetBinContent(igen,irec));

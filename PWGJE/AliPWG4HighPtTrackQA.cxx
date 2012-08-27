@@ -506,6 +506,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fHistList->Add(fh1NTracksAll);
 
   fh1NTracksReject = new TH1F("fh1NTracksReject","fh1NTracksReject",1,-0.5,0.5);
+  fh1NTracksReject->Fill("noHybridTrack",0);
   fh1NTracksReject->Fill("noESDtrack",0);
   fh1NTracksReject->Fill("noTPCInner",0);
   fh1NTracksReject->Fill("FillTPC",0);
@@ -1208,12 +1209,15 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
   // Do QA on AOD input
   //
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fEvent);
-  if(!aod)return;
+  if(!aod) return;
   AliExternalTrackParam *exParam = new  AliExternalTrackParam();
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
 
     AliAODTrack *aodtrack = aod->GetTrack(iTrack);
-    if( !aodtrack->TestFilterMask(fFilterMask) ) continue;
+    if( !aodtrack->TestFilterMask(fFilterMask) ) {
+      fh1NTracksReject->Fill("noHybridTrack",1);
+      continue;
+    }
 
     fVariables->Reset(0.);
 
