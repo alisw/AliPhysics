@@ -162,8 +162,8 @@ AliCentralCorrSecondaryMap::SetCorrection(UShort_t b, TH2D*  h)
 		    b, fVertexAxis.GetNbins()));
     return false;
   }
-  h->SetName(Form("SPD_vtxbin%03d", b));
-  h->SetTitle(Form("Secondary correction %+5.1f<v_{z}<%+5.1f]", 
+  h->SetName(Form("sec_vtxbin%03d", b));
+  h->SetTitle(Form("Secondary correction [%+5.1f<v_{z}<%+5.1f]", 
 		   fVertexAxis.GetBinLowEdge(b), 
 		   fVertexAxis.GetBinUpEdge(b)));
   h->SetXTitle("#eta");

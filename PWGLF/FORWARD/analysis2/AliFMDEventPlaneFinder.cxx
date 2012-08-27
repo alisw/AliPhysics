@@ -407,7 +407,7 @@ AliFMDEventPlaneFinder::CalcQVectors(TH2D* h, TH1D* eHist)
       qx += weight*TMath::Cos(2.*phi);
       qy += weight*TMath::Sin(2.*phi);
     }
-    TVector2 qVec = TVector2(qx, qy);
+    TVector2 qVec(qx, qy);
     fQt += qVec;
     if (eta < 0) fQa += qVec;
     if (eta > 0) fQc += qVec;
