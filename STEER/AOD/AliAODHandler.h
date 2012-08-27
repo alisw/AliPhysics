@@ -61,6 +61,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetNeedsCaloTriggerBranchReplication()  {fNeedsCaloTriggerBranchReplication  = kTRUE;}
     virtual void         SetNeedsMCParticlesBranchReplication()  {fNeedsMCParticlesBranchReplication  = kTRUE;}
     virtual void         SetNeedsDimuonsBranchReplication()      {fNeedsDimuonsBranchReplication      = kTRUE;}
+    virtual void         SetNeedsHMPIDBranchReplication()        {fNeedsHMPIDBranchReplication        = kTRUE;}
     virtual void         SetAODIsReplicated()                    {Changed(); fAODIsReplicated = kTRUE;}
     virtual void         SetAODExtensionMode()                   {Changed(); fIsStandard=kFALSE; fFillAOD=kFALSE; fFillAODRun=kFALSE; fFillExtension=kTRUE;}
     //
@@ -93,6 +94,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t               NeedsCaloTriggerBranchReplication()  const {return  fNeedsCaloTriggerBranchReplication;}
     Bool_t               NeedsMCParticlesBranchReplication()  const {return  fNeedsMCParticlesBranchReplication;}
     Bool_t               NeedsDimuonsBranchReplication()      const {return  fNeedsDimuonsBranchReplication;}
+    Bool_t               NeedsHMPIDBranchReplication()        const {return  fNeedsHMPIDBranchReplication;}
     Bool_t               AODIsReplicated()                    const {return  fAODIsReplicated;}
     //
     void                 SetInputTree(TTree* /*tree*/) {;}
@@ -127,6 +129,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t                   fNeedsCaloTriggerBranchReplication;  // Flag for Calo Trigger replication
     Bool_t                   fNeedsMCParticlesBranchReplication;  // Flag for MCParticles replication
     Bool_t                   fNeedsDimuonsBranchReplication;      // Flag for Dimuons replication
+    Bool_t                   fNeedsHMPIDBranchReplication;        // Flag for HMPID replication
     Bool_t                   fAODIsReplicated;                    // Flag true if replication as been executed
     AliAODEvent             *fAODEvent;               //! Pointer to the AOD event
     AliMCEventHandler       *fMCEventH;               //! Pointer to mc event handler needed not to depend on the manager

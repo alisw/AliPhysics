@@ -407,7 +407,7 @@ void AliAODEvent::GetStdContent()
   fPHOSTrigger   = (AliAODCaloTrigger*)fAODObjects->FindObject("phosTrigger");
   fFmdClusters   = (TClonesArray*)fAODObjects->FindObject("fmdClusters");
   fPmdClusters   = (TClonesArray*)fAODObjects->FindObject("pmdClusters");
-  fHMPIDrings    = (TClonesArray*)fAODObjects->FindObject("hmpidRings");
+  fHMPIDrings    = (TClonesArray*)fAODObjects->FindObject("hmpidRings");  
   fDimuons       = (TClonesArray*)fAODObjects->FindObject("dimuons");
   fAODTZERO      = (AliAODTZERO*)fAODObjects->FindObject("AliAODTZERO");
   fAODVZERO      = (AliAODVZERO*)fAODObjects->FindObject("AliAODVZERO");
@@ -473,7 +473,7 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
       fPmdClusters->Expand(pmdClusSize);
   }
   if (fHMPIDrings) {
-       fHMPIDrings->Delete();
+     fHMPIDrings->Delete();
     if (hmpidRingsSize > fHMPIDrings->GetSize()) 
       fHMPIDrings->Expand(hmpidRingsSize);
   }
@@ -522,9 +522,9 @@ void AliAODEvent::ClearStd()
   if (fFmdClusters)
     fFmdClusters   ->Clear();
   if (fPmdClusters)
-    fPmdClusters   ->Clear();
-  if (fHMPIDrings)
-    fHMPIDrings   ->Delete();
+    fPmdClusters   ->Clear();  
+  if (fHMPIDrings) 
+     fHMPIDrings   ->Clear();    
   if (fDimuons)
     fDimuons       ->Clear();
 	

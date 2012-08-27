@@ -213,7 +213,7 @@ class AliAODEvent : public AliVEvent {
   {new((*fPmdClusters)[fPmdClusters->GetEntriesFast()]) AliAODPmdCluster(*clus); return fPmdClusters->GetEntriesFast()-1;}
 
   // -- HMPID objects 
-  TClonesArray *GetHMPIDrings()       const { return fHMPIDrings; } 
+  TClonesArray *GetHMPIDrings()       const {return fHMPIDrings; } 
   Int_t         GetNHMPIDrings();
   AliAODHMPIDrings *GetHMPIDring(Int_t nRings);
   Int_t         AddHMPIDrings(const  AliAODHMPIDrings* ring) 

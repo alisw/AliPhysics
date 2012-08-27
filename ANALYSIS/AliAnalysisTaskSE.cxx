@@ -68,6 +68,7 @@ AliAODCaloCells* AliAnalysisTaskSE::fgAODPhosCells      = NULL;
 AliAODCaloTrigger* AliAnalysisTaskSE::fgAODEMCALTrigger = NULL;
 AliAODCaloTrigger* AliAnalysisTaskSE::fgAODPHOSTrigger  = NULL;
 TClonesArray*    AliAnalysisTaskSE::fgAODDimuons        = NULL;
+TClonesArray*    AliAnalysisTaskSE::fgAODHmpidRings     = NULL;
 
 AliAnalysisTaskSE::AliAnalysisTaskSE():
     AliAnalysisTask(),
@@ -294,13 +295,21 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 		fgAODMCParticles->SetName("mcparticles");
 		handler->AddBranch("TClonesArray", &fgAODMCParticles);
 	    }
-	    if ((handler->NeedsDimuonsBranchReplication() || merging) && !(fgAODDimuons))      
+            if ((handler->NeedsDimuonsBranchReplication() || merging) && !(fgAODDimuons))      
 	    {   
 		if (fDebug > 1) AliInfo("Replicating dimuon branch\n");
 		fgAODDimuons = new TClonesArray("AliAODDimuon",0);
 		fgAODDimuons->SetName("dimuons");
 		handler->AddBranch("TClonesArray", &fgAODDimuons);
 	    }    
+	    if ((handler->NeedsHMPIDBranchReplication() || merging) && !(fgAODHmpidRings))      
+	    {   
+		if (fDebug > 1) AliInfo("Replicating HMPID branch\n");
+		fgAODHmpidRings = new TClonesArray("AliAODHMPIDrings",0);
+		fgAODHmpidRings->SetName("hmpidRings");
+		handler->AddBranch("TClonesArray", &fgAODHmpidRings);
+	    }
+                
 
 	    // cache the pointerd in the AODEvent
 	    fOutputAOD->GetStdContent();
@@ -469,6 +478,14 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		    }    
 		}
 	    }
+            if ((handler->NeedsHMPIDBranchReplication()) && (fgAODHmpidRings))
+	    {
+		TClonesArray* hmpidRings = aod->GetHMPIDrings();
+		new (fgAODHmpidRings) TClonesArray(*hmpidRings);
+	    }
+            
+            
+            
 	    // Additional merging if needed
 	    if (merging) {
 	      Int_t nc;

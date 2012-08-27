@@ -100,7 +100,8 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static AliAODTracklets* fgAODTracklets;     //! Tracklets for replication
     static AliAODCaloCells* fgAODEmcalCells;    //! Emcal Cell replication
     static AliAODCaloCells* fgAODPhosCells;     //! Phos  Cell replication
-	static TClonesArray*    fgAODDimuons;       //! Dimuons replication
+    static TClonesArray*    fgAODDimuons;       //! Dimuons replication
+    static TClonesArray*    fgAODHmpidRings;    //! HMPID replication
     // Event Selection
     UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
     // Event Mixing
