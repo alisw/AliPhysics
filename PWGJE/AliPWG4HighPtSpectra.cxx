@@ -323,23 +323,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     AliDebug(2,Form("MC particles stack: %d", fStack->GetNtrack()));
   }
 
-  // ---- Get MC Header information (for MC productions in pThard bins) ----
-  Double_t ptHard = 0.;
-  Double_t nTrials = 1; // trials for MC trigger weight for real data
-  
-  if(fMC){
-    AliGenPythiaEventHeader*  pythiaGenHeader = GetPythiaEventHeader(fMC);
-     if(pythiaGenHeader){
-       nTrials = pythiaGenHeader->Trials();
-       ptHard  = pythiaGenHeader->GetPtHard();
-       
-       fh1PtHard->Fill(ptHard);
-       fh1PtHardTrials->Fill(ptHard,nTrials);
-       
-       fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
-     }
-  }
-  
   Int_t nTracks = fESD->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d", nTracks));
 
@@ -588,7 +571,6 @@ Bool_t AliPWG4HighPtSpectra::Notify()
   Float_t xsection = 0;
   Float_t ftrials  = 1;
 
-  fAvgTrials = 1;
   if(tree){
     TFile *curfile = tree->GetCurrentFile();
     if (!curfile) {
@@ -599,12 +581,10 @@ Bool_t AliPWG4HighPtSpectra::Notify()
       //      Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
       return kFALSE;
     }
-     PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
+    PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
     fh1Xsec->Fill("<#sigma>",xsection);
-    // construct a poor man average trials 
-    Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
-    if(ftrials>=nEntries && nEntries>0.)fAvgTrials = ftrials/nEntries;
-  }  
+    fh1Trials->Fill("#sum{ntrials}",ftrials);
+  } 
   return kTRUE;
 }
 
