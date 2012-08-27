@@ -9,36 +9,36 @@ const Float_t etamax = 0.9;
 const Int_t   mintrackrefsTPC = 0;
 const Int_t   mintrackrefsITS = 0;
 
-void AddTaskPWG4HighPtSpectraAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0)
+void AddTaskPWG4HighPtSpectra(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0)
 {
   int cent = 10;
 
-  AliPWG4HighPtSpectra *taskSpectra00cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
-  AliPWG4HighPtSpectra *taskSpectra01cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
-  //  AliPWG4HighPtSpectra *taskSpectra02cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
-  //  AliPWG4HighPtSpectra *taskSpectra10cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
-  //  AliPWG4HighPtSpectra *taskSpectra20cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
-  AliPWG4HighPtSpectra *taskSpectra70cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0);
-  AliPWG4HighPtSpectra *taskSpectra71cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1);
-  AliPWG4HighPtSpectra *taskSpectra72cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2);
+  AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
+  AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
+  //  AliPWG4HighPtSpectra *taskSpectra02cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
+  //  AliPWG4HighPtSpectra *taskSpectra10cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
+  //  AliPWG4HighPtSpectra *taskSpectra20cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
+  AliPWG4HighPtSpectra *taskSpectra70cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0);
+  AliPWG4HighPtSpectra *taskSpectra71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1);
+  AliPWG4HighPtSpectra *taskSpectra72cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2);
 
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
-      AliPWG4HighPtSpectra *taskSpectra00 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
-      AliPWG4HighPtSpectra *taskSpectra01 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
-      //      AliPWG4HighPtSpectra *taskSpectra02 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
-      //      AliPWG4HighPtSpectra *taskSpectra10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
-      //      AliPWG4HighPtSpectra *taskSpectra20 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
-      AliPWG4HighPtSpectra *taskSpectra70 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0);
-      AliPWG4HighPtSpectra *taskSpectra71 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1);
-      AliPWG4HighPtSpectra *taskSpectra72 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2);
+      AliPWG4HighPtSpectra *taskSpectra00 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
+      AliPWG4HighPtSpectra *taskSpectra01 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
+      //      AliPWG4HighPtSpectra *taskSpectra02 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
+      //      AliPWG4HighPtSpectra *taskSpectra10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
+      //      AliPWG4HighPtSpectra *taskSpectra20 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
+      AliPWG4HighPtSpectra *taskSpectra70 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0);
+      AliPWG4HighPtSpectra *taskSpectra71 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1);
+      AliPWG4HighPtSpectra *taskSpectra72 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2);
     }
   }
 
 }
 
 
-AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool_t isPbPb=kTRUE,Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0)
+AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool_t isPbPb=kTRUE,Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0)
 {
 
   /*
