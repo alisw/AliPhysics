@@ -884,9 +884,9 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
     for(int irec=1; irec<=hRec->GetNbinsX(); irec++) {
       hRec->AddBinContent(irec,yieldMC*hResponse->GetBinContent(igen,irec));
       sumYield+=hResponse->GetBinContent(igen,irec);
-      Double_t A = yieldMC*hResponse->GetBinError(igen,irec);
+      //      Double_t A = yieldMC*hResponse->GetBinError(igen,irec);
       Double_t B = hResponse->GetBinContent(igen,irec)*yieldMCerror;
-      Double_t tmp2 = A*A + B*B;
+      //      Double_t tmp2 = A*A + B*B;
       //sumError2[irec-1] += tmp2 ;
       sumError2[irec-1] += B*B;
 
