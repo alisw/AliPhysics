@@ -1180,17 +1180,16 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
 
   cluster->SetE(energy);
 
-  // Recalculate time of cluster   
+  // Recalculate time of cluster
   Double_t timeorg = cluster->GetTOF();
+
+  Double_t time = cells->GetCellTime(absIdMax);
   if(!fCellsRecalibrated && IsTimeRecalibrationOn())
-  {
-    Double_t time = timeorg;
     RecalibrateCellTime(absIdMax,bc,time);
-    cluster->SetTOF(time);
-  } 
+
+  cluster->SetTOF(time);
 
   AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - Time before %f, after %f \n",timeorg,cluster->GetTOF()));
-
 }
 
 //_____________________________________________________________
