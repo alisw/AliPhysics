@@ -281,8 +281,14 @@ class LMEECutLib {
 		case kPbPb2011TPCandTOFwide :
 		case kpp2010TPCorTOF  :
 		  if (!togglePC) {
-		  pairCuts =new AliDielectronVarCuts("Phiv Cuts","Phiv<2.0rad");
-		  pairCuts->AddCut(AliDielectronVarManager::kPhivPair, 2.0, TMath::ACos(-1.0), kTRUE); //exclude
+		  
+		  pairCuts =new AliDielectronCutGroup("pairCutsCG","pairCutsCG",AliDielectronCutGroup::kAND);
+		  pairCutsPhiv =new AliDielectronVarCuts("Phiv Cuts","Phiv<2.0rad");
+		  pairCutsPhiv->AddCut(AliDielectronVarManager::kPhivPair, 2.0, TMath::ACos(-1.0), kTRUE); //exclude
+		  pairCutsInvM =new AliDielectronVarCuts("InvM Cuts","InvM<0.3");
+		  pairCutsInvM->AddCut(AliDielectronVarManager::kInvMPair, 0.0, 0.3,kTRUE); //exclude
+		  pairCuts->AddCut(pairCutsPhiv);
+		  pairCuts->AddCut(pairCutsInvM);
 		  }
 		  else {
 			pairCuts =new AliDielectronVarCuts("OpeningAngle","Opening angle > .035rad");

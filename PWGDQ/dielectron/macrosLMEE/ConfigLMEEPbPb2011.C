@@ -302,6 +302,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 	  500,0.0,5.0,500,0.,50.,AliDielectronVarManager::kM,AliDielectronVarManager::kPt);
 
 
+  histos->UserHistogram("Pair","MPhivPair","PhivPair vs M;M ;PhiV",
+	  500,0.0,5.0,200,0.,6.3,AliDielectronVarManager::kM,AliDielectronVarManager::kPhivPair);
+
   histos->UserHistogram("Pair","PsiPairPhivPair","PhivPair vs PsiPair;PsiPair ;#pairs",
 	  200,0.0,6.3,200,0.,6.3,AliDielectronVarManager::kPsiPair,AliDielectronVarManager::kPhivPair);
  
