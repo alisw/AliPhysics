@@ -92,6 +92,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetDiceEfficiencyMinPt(Double_t pt) {fDiceEfficiencyMinPt = pt;}
     virtual void SetMomentumResolutionHybrid(TProfile *p1, TProfile *p2, TProfile *p3);
     virtual void SetEfficiencyHybrid(TH1 *h1, TH1 *h2, TH1 *h3);
+    virtual void SetFixedEfficiency(Double_t eff) {fEfficiencyFixed = eff;}
 
     Double_t GetMomentumSmearing(Int_t cat, Double_t pt);
     void FitMomentumResolution();
@@ -195,7 +196,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Bool_t fUseTrEfficiencyFromOADB;       // Load tracking efficiency root file from OADB path
     TString fPathTrPtResolution;           // OADB path to root file
     TString fPathTrEfficiency;             // OADB path to root file
-    Double_t fChangeEfficiencyFraction;    //change efficiency by fraction
+    Double_t fChangeEfficiencyFraction;    // change efficiency by fraction
+    Double_t fEfficiencyFixed;             // fixed efficiency for all pT and all types of tracks
 
 
     // Fast jet

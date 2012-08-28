@@ -139,12 +139,13 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fhEffH3(0x0),
   fUseTrPtResolutionSmearing(kFALSE),
   fUseDiceEfficiency(kFALSE),
-  fDiceEfficiencyMinPt(0.),
+  fDiceEfficiencyMinPt(-1.),
   fUseTrPtResolutionFromOADB(kFALSE),
   fUseTrEfficiencyFromOADB(kFALSE),
   fPathTrPtResolution(""),
   fPathTrEfficiency(""),
   fChangeEfficiencyFraction(0.),
+  fEfficiencyFixed(1.),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -302,12 +303,13 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fhEffH3(0x0),
   fUseTrPtResolutionSmearing(kFALSE),
   fUseDiceEfficiency(kFALSE),
-  fDiceEfficiencyMinPt(0.),
+  fDiceEfficiencyMinPt(-1.),
   fUseTrPtResolutionFromOADB(kFALSE),
   fUseTrEfficiencyFromOADB(kFALSE),
   fPathTrPtResolution(""),
   fPathTrEfficiency(""),
   fChangeEfficiencyFraction(0.),
+  fEfficiencyFixed(1.),
   fRparam(1.0), 
   fAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -466,8 +468,12 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       if(fJetTypes&kJetRan){
 	fTCAJetsOutRan = new TClonesArray("AliAODJet", 0);
 	fTCAJetsOutRan->SetName(Form("%s_%s",fNonStdBranch.Data(),"random"));
-	if(fUseDiceEfficiency || fUseTrPtResolutionSmearing)
-	  fTCAJetsOutRan->SetName(Form("%s_%sDetector%d%dFr%d",fNonStdBranch.Data(),"random",fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fChangeEfficiencyFraction*100.)));
+	if(fUseDiceEfficiency || fUseTrPtResolutionSmearing) {
+	  if(  fEfficiencyFixed < 1.)
+	    fTCAJetsOutRan->SetName(Form("%s_%sDetector%d%dEffFixed%d",fNonStdBranch.Data(),"random",fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fEfficiencyFixed*100.)));
+	  else
+	    fTCAJetsOutRan->SetName(Form("%s_%sDetector%d%dFr%d",fNonStdBranch.Data(),"random",fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fChangeEfficiencyFraction*100.)));
+	}
 	AddAODBranch("TClonesArray",&fTCAJetsOutRan,fNonStdFile.Data());
       }
 
@@ -475,17 +481,23 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 	if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
 	  fAODJetBackgroundOut = new AliAODJetEventBackground();
 	  fAODJetBackgroundOut->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
-	  if(fUseDiceEfficiency || fUseTrPtResolutionSmearing)
-	    fAODJetBackgroundOut->SetName(Form("%s_%sDetector%d%dFr%d",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data(),fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fChangeEfficiencyFraction*100.)));
-
+	  if(fUseDiceEfficiency || fUseTrPtResolutionSmearing) {
+	    if(  fEfficiencyFixed < 1.)
+	      fAODJetBackgroundOut->SetName(Form("%s_%sDetector%d%dEffFixed%d",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data(),fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fEfficiencyFixed*100.)));
+	    else
+	      fAODJetBackgroundOut->SetName(Form("%s_%sDetector%d%dFr%d",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data(),fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fChangeEfficiencyFraction*100.)));
+	  }
 	  AddAODBranch("AliAODJetEventBackground",&fAODJetBackgroundOut,fNonStdFile.Data());  
 	}
       }
       // create the branch for the random cones with the same R 
       TString cName = Form("%sRandomConeSkip%02d",fNonStdBranch.Data(),fNSkipLeadingCone);
-      if(fUseDiceEfficiency || fUseTrPtResolutionSmearing)
-	cName = Form("%sDetector%d%dFr%d_RandomConeSkip%02d",fNonStdBranch.Data(),fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fChangeEfficiencyFraction*100.),fNSkipLeadingCone);
-
+      if(fUseDiceEfficiency || fUseTrPtResolutionSmearing) {
+	if(  fEfficiencyFixed < 1.)
+	  cName = Form("%sDetector%d%dEffFixed%d_RandomConeSkip%02d",fNonStdBranch.Data(),fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fEfficiencyFixed*100.),fNSkipLeadingCone);
+	else
+	  cName = Form("%sDetector%d%dFr%d_RandomConeSkip%02d",fNonStdBranch.Data(),fUseTrPtResolutionSmearing,fUseDiceEfficiency,(int)(fChangeEfficiencyFraction*100.),fNSkipLeadingCone);
+      }
       if(fNRandomCones>0){
 	if(fJetTypes&kRC){
 	  if(!AODEvent()->FindListObject(cName.Data())){
@@ -889,8 +901,9 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
   //Check if information is provided detector level effects
   if(!fMomResH1 || !fMomResH2 || !fMomResH3) fUseTrPtResolutionSmearing = kFALSE;
-  if(!fhEffH1 || !fhEffH2 || !fhEffH3)       fUseDiceEfficiency = kFALSE;
-  
+  if(!fhEffH1 || !fhEffH2 || !fhEffH3 )      fUseDiceEfficiency = kFALSE;
+  if(  fEfficiencyFixed < 1. )               fUseDiceEfficiency = kTRUE;  
+
   Bool_t selectEvent =  false;
   Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
 
@@ -985,63 +998,72 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
       // Dice to decide if particle is kept or not - toy  model for efficiency
       //
-      Double_t rnd = fRandom->Uniform(1.);
-      Double_t pT = vp->Pt();
+      Double_t sumEff = 0.;
+      Double_t pT = 0.;
       Double_t eff[3] = {0.};
-      Double_t pTtmp = pT;
-      if(pT>10.) pTtmp = 10.;
-      Double_t eff1 = fhEffH1->GetBinContent(fhEffH1->FindBin(pTtmp));
-      Double_t eff2 = fhEffH2->GetBinContent(fhEffH2->FindBin(pTtmp));
-      Double_t eff3 = fhEffH3->GetBinContent(fhEffH3->FindBin(pTtmp));
       Int_t cat[3] = {0};
-      //Sort efficiencies from large to small
-      if(eff1>eff2 && eff1>eff3) { 
-	eff[0] = eff1; 
-	cat[0] = 1;
-	if(eff2>eff3) {
-	  eff[1] = eff2;
-	  eff[2] = eff3; 
-	  cat[1] = 2;
-	  cat[2] = 3;
-	} else {
-	  eff[1] = eff3;
-	  eff[2] = eff2; 
-	  cat[1] = 3;
-	  cat[2] = 2;
+
+      Double_t rnd = fRandom->Uniform(1.);
+      if(  fEfficiencyFixed<1. ) {
+	sumEff = fEfficiencyFixed;
+      } else {
+
+	pT = vp->Pt();
+	Double_t pTtmp = pT;
+	if(pT>10.) pTtmp = 10.;
+	Double_t eff1 = fhEffH1->GetBinContent(fhEffH1->FindBin(pTtmp));
+	Double_t eff2 = fhEffH2->GetBinContent(fhEffH2->FindBin(pTtmp));
+	Double_t eff3 = fhEffH3->GetBinContent(fhEffH3->FindBin(pTtmp));
+
+	//Sort efficiencies from large to small
+	if(eff1>eff2 && eff1>eff3) { 
+	  eff[0] = eff1; 
+	  cat[0] = 1;
+	  if(eff2>eff3) {
+	    eff[1] = eff2;
+	    eff[2] = eff3; 
+	    cat[1] = 2;
+	    cat[2] = 3;
+	  } else {
+	    eff[1] = eff3;
+	    eff[2] = eff2; 
+	    cat[1] = 3;
+	    cat[2] = 2;
+	  }
 	}
-      }
-      else if(eff2>eff1 && eff2>eff3) {
-	eff[0] = eff2;
-	cat[0] = 2;
-	if(eff1>eff3) {
-	  eff[1] = eff1;
-	  eff[2] = eff3; 
-	  cat[1] = 1;
-	  cat[2] = 3;
-	} else {
-	  eff[1] = eff3;
-	  eff[2] = eff1; 
-	  cat[1] = 3;
-	  cat[2] = 1;
+	else if(eff2>eff1 && eff2>eff3) {
+	  eff[0] = eff2;
+	  cat[0] = 2;
+	  if(eff1>eff3) {
+	    eff[1] = eff1;
+	    eff[2] = eff3; 
+	    cat[1] = 1;
+	    cat[2] = 3;
+	  } else {
+	    eff[1] = eff3;
+	    eff[2] = eff1; 
+	    cat[1] = 3;
+	    cat[2] = 1;
+	  }
 	}
-      }
-      else if(eff3>eff1 && eff3>eff2) {
-	eff[0] = eff3;
-	cat[0] = 3;
-	if(eff1>eff2) {
-	  eff[1] = eff1;
-	  eff[2] = eff2; 
-	  cat[1] = 1;
-	  cat[2] = 2;
-	} else {
-	  eff[1] = eff2;
-	  eff[2] = eff1; 
-	  cat[1] = 2;
-	  cat[2] = 1;
+	else if(eff3>eff1 && eff3>eff2) {
+	  eff[0] = eff3;
+	  cat[0] = 3;
+	  if(eff1>eff2) {
+	    eff[1] = eff1;
+	    eff[2] = eff2; 
+	    cat[1] = 1;
+	    cat[2] = 2;
+	  } else {
+	    eff[1] = eff2;
+	    eff[2] = eff1; 
+	    cat[1] = 2;
+	    cat[2] = 1;
+	  }
 	}
+	
+	sumEff = eff[0]+eff[1]+eff[2];
       }
-      
-      Double_t sumEff = eff[0]+eff[1]+eff[2];
       fp1Efficiency->Fill(vp->Pt(),sumEff);
       if(rnd>sumEff && pT > fDiceEfficiencyMinPt) continue;
 
