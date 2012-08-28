@@ -1,8 +1,9 @@
 // $Id$
 
-AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(const char *name       = "TpcSpdVertexConstrainedTracks",
-						 const char *trackCuts  = "Hybrid_LHC11h"
-						 )
+AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
+  const char *name       = "TpcSpdVertexConstrainedTracks",
+  const char *trackCuts  = "Hybrid_LHC11h"
+)
 { 
   enum CutsType {
     kHybrid  = 0,
