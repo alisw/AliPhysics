@@ -14,6 +14,8 @@
 
 #include <TGeoMatrix.h>
 
+class TString;
+
 class AliTPCParam : public AliDetectorParam {
   //////////////////////////////////////////////////////
   //////////////////////////////////////////////////////
@@ -192,6 +194,7 @@ public:
   void  SetMaxTBin(Int_t maxtbin)  {  fMaxTBin = maxtbin;}
   void  SetADCSat(Int_t adcsat)    {  fADCSat  = adcsat;}
   void  SetADCDynRange(Float_t adcdynrange) {fADCDynRange = adcdynrange;}
+  void  SetNominalVoltage(Float_t v, UInt_t i) {if (i<72) fNominalVoltage[i]=v;}
   //
   //set response  parameters  
   //
@@ -316,6 +319,7 @@ public:
   Float_t  GetADCDynRange() const {return fADCDynRange;}
   Float_t  GetTotalNormFac() const {return fTotalNormFac;}
   Float_t  GetNoiseNormFac() const {return fNoiseNormFac;}
+  Float_t  GetNominalVoltage(UInt_t i) const {return (i<72)?fNominalVoltage[i]:0;} //0-35:IROC, 36-71:OROC
   //
   // get response data
   //  
@@ -438,6 +442,7 @@ protected :
   Float_t fADCDynRange;     //input dynamic range (mV)
   Float_t fTotalNormFac;    //full normalisation factor - calculated
   Float_t fNoiseNormFac;    //normalisation factor to transform noise in electron to ADC channel   
+  Float_t fNominalVoltage[72];  //nominal voltage in [V] per chamber
   
   //---------------------------------------------------------------------
   // ALICE TPC response data 

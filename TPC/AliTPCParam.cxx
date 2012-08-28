@@ -32,6 +32,7 @@
 
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
+#include <TString.h>
 #include "AliAlignObj.h"
 #include "AliAlignObjParams.h"
 #include "AliLog.h"
@@ -115,6 +116,7 @@ AliTPCParam::AliTPCParam()
 	     fADCDynRange(0.),
 	     fTotalNormFac(0.),
 	     fNoiseNormFac(0.),
+       fNominalVoltage(),
 	     fNResponseMax(0),
 	     fResponseThreshold(0.),
 	     fCurrentMax(0),
@@ -491,6 +493,14 @@ void AliTPCParam::SetDefault()
   SetMaxTBin(kMaxTBin);
   SetADCSat(kADCSat);
   SetADCDynRange(kADCDynRange);
+  for (UInt_t i=0; i<36; i++)
+  {
+    SetNominalVoltage(1196.0, i);
+  }
+  for (UInt_t i=36; i<72; i++)
+  {
+    SetNominalVoltage(1417.0, i);
+  }
 //   //set magnetic field
 //   SetBField(kBField);
 //   SetNPrimLoss(kNPrimLoss);
@@ -836,6 +846,4 @@ Float_t AliTPCParam::GetChamberCenter(Int_t isec, Float_t * center) const
     return kROCcenterOut;
   }
 }
-
-
 
