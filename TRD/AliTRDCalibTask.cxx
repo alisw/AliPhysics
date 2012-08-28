@@ -727,7 +727,9 @@ void AliTRDCalibTask::UserExec(Option_t *)
     ULong_t status = fkEsdTrack->GetStatus(); 
     if(status&(AliESDtrack::kTPCout)) ++nbtrackTPC;
     
-    fFriendTrack = fESDfriend->GetTrack(itrk);
+    // Fix suggested by Alex
+    //fFriendTrack = fESDfriend->GetTrack(itrk);
+    fFriendTrack = (fESDfriend->GetNumberOfTracks()>itrk)?fESDfriend->GetTrack(itrk):NULL;
     if(!fFriendTrack)  {
       //printf("No friend track %d\n",itrk);
       continue;
