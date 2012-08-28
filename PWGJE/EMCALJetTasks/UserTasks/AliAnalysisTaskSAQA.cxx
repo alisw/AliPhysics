@@ -193,7 +193,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fHistCellsTracks->GetYaxis()->SetTitle("No. of EMCal cells");
     fOutput->Add(fHistCellsTracks);
 
-    fHistClusTimeEnergy = new TH2F("fHistClusTimeEnergy","Time vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, fNbins,  0, 1e-6);
+    fHistClusTimeEnergy = new TH2F("fHistClusTimeEnergy","Time vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, fNbins,  -1e-6, 1e-6);
     fHistClusTimeEnergy->GetXaxis()->SetTitle("Energy (GeV)");
     fHistClusTimeEnergy->GetYaxis()->SetTitle("Time");
     fOutput->Add(fHistClusTimeEnergy);
