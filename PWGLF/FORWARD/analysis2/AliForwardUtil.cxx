@@ -47,6 +47,7 @@ AliForwardUtil::ParseCollisionSystem(const char* sys)
   // we do pA first to avoid pp catch on ppb string (AH)
   if (s.Contains("p-pb")  || s.Contains("ppb"))   return AliForwardUtil::kPPb;
   if (s.Contains("p-a")   || s.Contains("pa"))    return AliForwardUtil::kPPb;
+  if (s.Contains("a-p")   || s.Contains("ap"))    return AliForwardUtil::kPPb;
   if (s.Contains("p-p")   || s.Contains("pp"))    return AliForwardUtil::kPP; 
   if (s.Contains("pb-pb") || s.Contains("pbpb"))  return AliForwardUtil::kPbPb;
   if (s.Contains("a-a")   || s.Contains("aa"))    return AliForwardUtil::kPbPb;
@@ -97,6 +98,7 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t /* sys */, Float_t v)
   if (TMath::Abs(energy - 2400.)  < 10)  return 2400;
   if (TMath::Abs(energy - 2750.)  < 20)  return 2750;
   if (TMath::Abs(energy - 4400.)  < 10)  return 4400;
+  if (TMath::Abs(energy - 5022.)  < 10)  return 5000;
   if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
   if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
   if (TMath::Abs(energy - 8000.)  < 10)  return 8000;
