@@ -4392,6 +4392,7 @@ void AliReconstruction::DeleteDigits(const TString& detectors)
   AliInfo(Form("Deleting Digits: %s",detectors.Data()));
 
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if(!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     unlink(Form("%s.Digits.root",fgkDetectorName[iDet]));
   }
   AliSysInfo::AddStamp(Form("DelDigits_%d",iEvent), 0,0,iEvent);
@@ -4408,6 +4409,7 @@ void AliReconstruction::DeleteRecPoints(const TString& detectors)
   AliInfo(Form("Deleting Recpoints: %s",detectors.Data()));
   //
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if(!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     unlink(Form("%s.RecPoints.root",fgkDetectorName[iDet]));
   }
   AliSysInfo::AddStamp(Form("DelRecPoints_%d",iEvent), 0,0,iEvent);
