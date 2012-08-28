@@ -348,6 +348,11 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
 	     colGeometry->TargetParticipants());
     nbin  = colGeometry->NN();
   }
+  if (fDebug && !colGeometry) { 
+    AliWarningF("Collision header of class %s is not a CollisionHeader", 
+		genHeader->ClassName());
+  }
+    
   if(pythiaHeader) {
     Int_t pythiaType = pythiaHeader->ProcessType();
     // 92 and 93 are SD 
@@ -420,6 +425,10 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   genHeader->PrimaryVertex(vtx);
   vz = vtx[2];
 
+  if (fDebug) { 
+    AliInfoF("vz=%f, phiR=%f, b=%f, npart=%d, nbin=%d", 
+	     vz, phiR, b, npart, nbin);
+  }
   fHVertex->Fill(vz);
   fHPhiR->Fill(phiR);
   fHB->Fill(b);
@@ -542,8 +551,8 @@ AliFMDMCEventInspector::IsSingleDiffractive(AliStack* stack,
     return false;
   
   // Rapidity shift
-  Double_t m02s = 1 - 2 * p1->Energy() / fEnergy; 
-  Double_t m12s = 1 - 2 * p2->Energy() / fEnergy;
+  Double_t m02s = (fEnergy > 0 ? 1 - 2 * p1->Energy() / fEnergy : 0); 
+  Double_t m12s = (fEnergy > 0 ? 1 - 2 * p2->Energy() / fEnergy : 0);
   
   if (arm == 0 && m02s > xiMin && m02s < xiMax) return true;
   if (arm == 1 && m12s > xiMin && m12s < xiMax) return true;

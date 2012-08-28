@@ -1050,21 +1050,29 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
   // 	       esd->GetBeamType(), 2*esd->GetBeamEnergy(), 
   // 	       esd->GetMagneticField()));
   DGUARD(fDebug,2,"Read the run details in AliFMDEventInspector");
-  fCollisionSystem = 
-    AliForwardUtil::ParseCollisionSystem(esd->GetBeamType());
-  fEnergy          = 
-    AliForwardUtil::ParseCenterOfMassEnergy(fCollisionSystem,	
-					    2 * esd->GetBeamEnergy());
-  fField           = 
-    AliForwardUtil::ParseMagneticField(esd->GetMagneticField());
+  const char* sys  = esd->GetBeamType();
+  Float_t     cms  = 2 * esd->GetBeamEnergy();
+  Float_t     fld  = esd->GetMagneticField();
+  fCollisionSystem = AliForwardUtil::ParseCollisionSystem(sys);
+  fEnergy          = AliForwardUtil::ParseCenterOfMassEnergy(fCollisionSystem, 
+							     cms);
+  fField           = AliForwardUtil::ParseMagneticField(fld);
 
   StoreInformation(esd->GetRunNumber());
-  if (fCollisionSystem   == AliForwardUtil::kUnknown || 
-      fEnergy            <= 0                        || 
-      TMath::Abs(fField) >  10) 
-    return kFALSE;
+  if (fCollisionSystem   == AliForwardUtil::kUnknown) { 
+    AliWarningF("Unknown collision system: %s - please check", sys);
+    return false;
+  }
+  if (fEnergy            <= 0) {
+    AliWarningF("Unknown CMS energy: %f (%d) - please check", cms, fEnergy);
+    return false;
+  }
+  if (TMath::Abs(fField) >  10) {
+    AliWarningF("Unknown L3 field setting: %f (%d) - please check", fld,fField);
+    return false;
+  }
 
-  return kTRUE;
+  return true;
 }
 
 
