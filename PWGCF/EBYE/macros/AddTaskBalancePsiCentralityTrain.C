@@ -19,6 +19,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Double_t centrMax=100.,
 						       Bool_t gRunShuffling=kFALSE,
 						       Bool_t gRunMixing=kFALSE,
+						       Bool_t gRunMixingWithEventPlane=kFALSE,
 						       TString centralityEstimator="V0M",
 						       Double_t vertexZ=10.,
 						       Double_t DCAxy=-1,
@@ -91,6 +92,9 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   if(gRunMixing){
     taskBF->SetMixingObject(bfm);
     taskBF->SetMixingTracks(50000);
+    if(gRunMixingWithEventPlane){
+      taskBF->SetMixingWithEventPlane(gRunMixingWithEventPlane);
+    }
   }
 
   taskBF->SetCentralityPercentileRange(centrMin,centrMax);
