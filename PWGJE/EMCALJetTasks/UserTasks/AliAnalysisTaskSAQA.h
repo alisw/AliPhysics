@@ -42,13 +42,18 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   Bool_t                      fRepropagateTracks;        // Repropagate tracks to the EMCal surface
   TString                     fTrgClusName;              // Name of trg clus name
   TClonesArray               *fTrgClusters;              //!Trg Clusters
-
+  Int_t                       fNclusters;                //!Number of accepted clusters in the event
+  Int_t                       fNtracks;                  //!Number of accepted tracks in the event
+  Int_t                       fNjets;                    //!Number of accepted jets in the event
+ 
   // General histograms
   TH1F                       *fHistCentrality;           //!Event centrality distribution
   TH1F                       *fHistZVertex;              //!Z vertex position
   TH2F                       *fHistTracksCent;           //!Number of tracks vs. centrality
   TH2F                       *fHistClusCent;             //!Number of clusters vs. centrality
+  TH2F                       *fHistJetsCent;             //!Number of jets vs. centrality
   TH2F                       *fHistClusTracks;           //!Number of clusters vs. number of tracks
+  TH2F                       *fHistJetsParts;            //!Number of jets vs. number of particles (tracks+clusters)
   TH2F                       *fHistCellsCent;            //!Number of cells vs. centrality
   TH2F                       *fHistCellsTracks;          //!Number of cells vs. number of tracks
   // EMCAL trigger
@@ -92,6 +97,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 12) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 13) // Quality task for Emcal analysis
 };
 #endif
