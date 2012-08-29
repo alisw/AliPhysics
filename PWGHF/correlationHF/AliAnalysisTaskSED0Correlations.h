@@ -85,9 +85,9 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t option, Int_t idArrayV0[][2]) const;
 
   Int_t             fNPtBinsCorr;        // number of pt bins per correlations
-  vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
-  vector<Double_t>  fPtThreshLow;        // pT treshold of hadrons - low
-  vector<Double_t>  fPtThreshUp;         // pT treshold of hadrons - up
+  std::vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
+  std::vector<Double_t>  fPtThreshLow;        // pT treshold of hadrons - low
+  std::vector<Double_t>  fPtThreshUp;         // pT treshold of hadrons - up
 
   Int_t     fEvents;		  	// EventCounter
   Bool_t    fAlreadyFilled;	  	// D0 in an event already analyzed (for track distribution plots)

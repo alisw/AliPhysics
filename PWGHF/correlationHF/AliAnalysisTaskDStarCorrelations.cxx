@@ -187,17 +187,17 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 
 	
 	
-	cout << " " << endl;
-	cout << "=================================================================================" << endl;
+	std::cout << " " << std::endl;
+	std::cout << "=================================================================================" << std::endl;
 	if(!fmixing){
-	if(fselect==1) cout << "TASK::Correlation with hadrons on SE "<< endl;
-	if(fselect==2) cout << "TASK::Correlation with kaons on SE "<< endl;
-	if(fselect==3) cout << "TASK::Correlation with kzeros on SE "<< endl;
+	if(fselect==1) std::cout << "TASK::Correlation with hadrons on SE "<< std::endl;
+	if(fselect==2) std::cout << "TASK::Correlation with kaons on SE "<< std::endl;
+	if(fselect==3) std::cout << "TASK::Correlation with kzeros on SE "<< std::endl;
 	}
 	if(fmixing){
-		if(fselect==1) cout << "TASK::Correlation with hadrons on ME "<< endl;
-		if(fselect==2) cout << "TASK::Correlation with kaons on ME "<< endl;
-		if(fselect==3) cout << "TASK::Correlation with kzeros on ME "<< endl;
+		if(fselect==1) std::cout << "TASK::Correlation with hadrons on ME "<< std::endl;
+		if(fselect==2) std::cout << "TASK::Correlation with kaons on ME "<< std::endl;
+		if(fselect==3) std::cout << "TASK::Correlation with kzeros on ME "<< std::endl;
 	}
 	if (!fInputEvent) {
 		Error("UserExec","NO EVENT FOUND!");
@@ -477,7 +477,7 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
 	Bool_t updated = fCorrelator->PoolUpdate();
 	if(!updated) AliInfo("Pool was not updated");
 	
-		//cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> END OF THE EVENT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
+		//std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> END OF THE EVENT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 	
 	
 		

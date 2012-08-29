@@ -1066,9 +1066,7 @@ void AliAnalysisTaskMultiDielectronTG::CalcVars(AliDielectronSingleTG *iep, AliD
     + sqrt(me*me+iem->Px()*iem->Px()+iem->Py()*iem->Py()+iem->Pz()*iem->Pz());
   
   mass =  e*e-px*px-py*py-pz*pz;
-  if(mass<0){
-    mass = mass;
-  }else{
+  if(mass>=0){
     mass = sqrt(mass);
   }
    

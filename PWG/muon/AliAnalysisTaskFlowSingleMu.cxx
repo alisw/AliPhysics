@@ -424,7 +424,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   if ( externalReso ) {
     // If plane resolution file exists, fill resolution
     TString currLine = "";
-    ifstream inFile(resoFilename.Data());
+    std::ifstream inFile(resoFilename.Data());
     if (inFile.is_open()) {
       ib = 0;
       while (! inFile.eof() ) {

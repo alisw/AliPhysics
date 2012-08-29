@@ -178,8 +178,11 @@ Bool_t AliHFCorrelator::DefineEventPool(){
 //_____________________________________________________
 Bool_t AliHFCorrelator::Initialize(){
 	
-	cout << "AliHFCorrelator::Initialize"<< endl;
-	if(!fAODEvent) cout << "No AOD event" << endl;
+    //  std::cout << "AliHFCorrelator::Initialize"<< std::endl;
+  AliInfo("AliHFCorrelator::Initialize") ;
+	if(!fAODEvent)
+    AliInfo("No AOD event") ;
+    //std::cout << "No AOD event" << std::endl;
 	
 	AliCentrality *centralityObj = 0;
 	Int_t multiplicity = -1;
@@ -374,7 +377,11 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceKZero(AliAODEvent* inputEvent){
 	Int_t prevposID[size];
 	for(Int_t iv0 =0; iv0< nOfVZeros; iv0++){// loop on all v0 candidates
 		AliAODv0 *v0 = (static_cast<AliAODEvent*> (inputEvent))->GetV0(iv0);
-		if(!v0) {cout << "is not a v0 at step " << iv0 << endl; continue;}
+		if(!v0) {
+      AliInfo(Form("is not a v0 at step, %d", iv0)) ;
+        //cout << "is not a v0 at step " << iv0 << endl;
+      continue;
+    }
 		
 		if(!fhadcuts->IsKZeroSelected(v0,vertex1)) continue; // check if it is a k0
 	    
