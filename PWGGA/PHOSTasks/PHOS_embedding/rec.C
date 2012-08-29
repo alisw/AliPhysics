@@ -20,9 +20,10 @@ void rec() {
 //
 // Residual OCDB
 
-  reco.SetDefaultStorage("alien://folder=/alice/data/2010/OCDB");
-//  reco.SetDefaultStorage("local://./OCDB");
-  reco.SetSpecificStorage("PHOS/*/*","local://./OCDB");
+//  reco.SetDefaultStorage("alien://folder=/alice/data/2010/OCDB");
+  reco.SetDefaultStorage("local://./OCDB");
+//  reco.SetSpecificStorage("PHOS/*/*","local://./OCDB");
+  reco.SetSpecificStorage("PHOS/Calib/RecoParam","local://./PHOSRP");
 
 
 //  reco.SetRunReconstruction("PHOS EMCAL") ;
