@@ -38,6 +38,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
+#include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDHandler.h"
 #include "AliAODEvent.h"
@@ -63,12 +64,11 @@
 #include "TGeoManager.h"
 #include "iostream"
 #include "fstream"
-/*
-#include "AliEventPoolManager.h"
-#include "AliAnalysisTaskPhiCorrelations.h"
-*/
+
+//#include "AliEventPoolManager.h"
+
 #include "AliCentrality.h"
-#include "AliEMCALTrack.h"
+//#include "AliEMCALTrack.h"
 //#include "AliEMCALTracker.h"
 #include "AliMagF.h"
 
@@ -87,6 +87,7 @@
 #include "AliCFManager.h"
 
 ClassImp(AliAnalysisTaskElecHadronCorrel)
+//ClassImp(AliehDPhiBasicParticle)  
 //________________________________________________________________________
   AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel(const char *name) 
   : AliAnalysisTaskSE(name)
@@ -105,19 +106,23 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
   ,fInvmassCut(0.01)	
+  ,fCentrality(0)
+  ,fCentralityMin(0)
+  ,fCentralityMax(0)
+  ,fkCentralityMethod(0)  
 //  ,fPoolMgr(0x0)  
   ,fNoEvents(0)
-  ,fTrkpt(0)
+//  ,fTrkpt(0)
   ,fTrkEovPBef(0)	 
   ,fTrkEovPBefHad(0)	 
-  ,fTrkEovPAft(0)	
+/*  ,fTrkEovPAft(0)	
   ,fTrkEovPAftOwn(0)	
   ,fdEdxBef(0)	 
   ,fdEdxAft(0)	 
   ,fdEdxAftOwn(0)	 
   ,fOpeningAngleLS(0)	
   ,fOpeningAngleULS(0)	
-  ,fSemiIncElecDphi(0) 	
+*/  ,fSemiIncElecDphi(0) 	
   ,fSemiIncElecDphi1(0) 	
   ,fSemiIncElecDphi2(0) 	
   ,fSemiIncElecDphi3(0) 	
@@ -157,17 +162,17 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fInclusiveElecPt(0)
   ,fULSElecPt(0)
   ,fLSElecPt(0)  
-  ,fTrackPtBefTrkCuts(0)	 
-  ,fTrackPtAftTrkCuts(0)
+//  ,fTrackPtBefTrkCuts(0)	 
+//  ,fTrackPtAftTrkCuts(0)
   ,fTPCnsigma(0)
-  ,fTPCnsigmaAft(0)
+/*  ,fTPCnsigmaAft(0)
   ,fTPCnsigmaAftOwn(0)
   ,fNCellv1(0)
   ,fClsEv1(0)
   ,fNClusv1(0)
   ,fKFParticleP(0)
   ,fKFParticleE(0)
-  ,fInvmassLS1(0)       
+*/  ,fInvmassLS1(0)       
   ,fInvmassLS2(0)       
   ,fInvmassLS3(0)       
   ,fInvmassLS4(0)       
@@ -179,28 +184,47 @@ ClassImp(AliAnalysisTaskElecHadronCorrel)
   ,fInvmassULS5(0)
   ,fcentrality(0)     
   ,fElecPhi(0)  
-  ,fElecPhiTPC(0)  
-  ,fElecPhiTPCEovP(0)  
+  ,fElecPhiTPChalf(0)
+  ,fElecPhiPt(0)  
+//  ,fElecPhiTPC(0)  
+//  ,fElecPhiTPCEovP(0)  
   ,fHadronPhi(0)  
-  ,fTrackHFEcuts(0)
+  ,fHadronPhiTPChalf(0)  
+  ,fHadronPhiPt(0)  
+/*  ,fTrackHFEcuts(0)
   ,fTrakPhiSPD1(0)
   ,fTrakPhiSPD2(0)
   ,fTrakPhiSPDOr(0)
   ,fTrakPhiSPDAnd(0)
   ,fTrackHFEcutsITS(0)  
+*/
 /*  ,fNoMixedEvents(0)
   ,fMixStat(0)       
   ,fMixStat1(0)        
   ,fMixedIncElecDphi(0)  
+  ,fMixedIncElecDphi1(0)  
+  ,fMixedIncElecDphi2(0)  
   ,fMixedPhotElecDphi(0)
+  ,fMixedPhotElecDphi1(0)
+  ,fMixedPhotElecDphi2(0)
   ,fMixedSemiIncElecDphi(0)  
+  ,fMixedSemiIncElecDphi1(0)  
+  ,fMixedSemiIncElecDphi2(0)  
   ,fMixedDphiULSMassLow(0)  
+  ,fMixedDphiULSMassLow1(0)  
+  ,fMixedDphiULSMassLow2(0)  
   ,fMixedDphiLSMassLow(0)  
-*/  ,fNLSminus(0)
+  ,fMixedDphiLSMassLow1(0)  
+  ,fMixedDphiLSMassLow2(0)  
+*/
+/*  ,fNLSminus(0)
   ,fNLSplus(0)
   ,fNULS(0)  
-  ,fHadronIPxy(0)  
+*/  ,fHadronIPxy(0)  
   ,fHadronIPz(0)  
+  ,fHadronPt(0)  
+  ,fCentralityPass(0)
+  ,fCentralityNoPass(0)
 //  ,fSparseElectron(0)  
 //  ,fvalueElectron(0)   
 {
@@ -237,19 +261,23 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fPIDqa(0)	       
   ,fOpeningAngleCut(0.1)
   ,fInvmassCut(0.01)	
+  ,fCentrality(0)
+  ,fCentralityMin(0)
+  ,fCentralityMax(0)
+  ,fkCentralityMethod(0)  
 //  ,fPoolMgr(0x0)    
   ,fNoEvents(0)
-  ,fTrkpt(0)
+//  ,fTrkpt(0)
   ,fTrkEovPBef(0)	 
   ,fTrkEovPBefHad(0)	 
-  ,fTrkEovPAft(0)	 
+/*  ,fTrkEovPAft(0)	 
   ,fTrkEovPAftOwn(0)	 
   ,fdEdxBef(0)	 
   ,fdEdxAft(0)	 
   ,fdEdxAftOwn(0)	 
   ,fOpeningAngleLS(0)	
   ,fOpeningAngleULS(0)	
-  ,fSemiIncElecDphi(0) 	
+*/  ,fSemiIncElecDphi(0) 	
   ,fSemiIncElecDphi1(0) 	
   ,fSemiIncElecDphi2(0) 	
   ,fSemiIncElecDphi3(0) 	
@@ -289,17 +317,17 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fInclusiveElecPt(0)
   ,fULSElecPt(0)
   ,fLSElecPt(0)  
-  ,fTrackPtBefTrkCuts(0)	 
-  ,fTrackPtAftTrkCuts(0)	 	  
+//  ,fTrackPtBefTrkCuts(0)	 
+//  ,fTrackPtAftTrkCuts(0)	 	  
   ,fTPCnsigma(0)	
-  ,fTPCnsigmaAft(0)	
+/*  ,fTPCnsigmaAft(0)	
   ,fTPCnsigmaAftOwn(0)	
   ,fNCellv1(0)  
   ,fClsEv1(0)
   ,fNClusv1(0)
   ,fKFParticleP(0)
   ,fKFParticleE(0)
-  ,fInvmassLS1(0)   
+*/  ,fInvmassLS1(0)   
   ,fInvmassLS2(0)   
   ,fInvmassLS3(0)   
   ,fInvmassLS4(0)   
@@ -311,28 +339,47 @@ AliAnalysisTaskElecHadronCorrel::AliAnalysisTaskElecHadronCorrel()
   ,fInvmassULS5(0)  
   ,fcentrality(0)     
   ,fElecPhi(0)
-  ,fElecPhiTPC(0)
-  ,fElecPhiTPCEovP(0)  
+  ,fElecPhiTPChalf(0)  
+  ,fElecPhiPt(0)
+//  ,fElecPhiTPC(0)
+//  ,fElecPhiTPCEovP(0)  
   ,fHadronPhi(0)
-  ,fTrackHFEcuts(0)
+  ,fHadronPhiTPChalf(0)
+  ,fHadronPhiPt(0)
+/*  ,fTrackHFEcuts(0)
   ,fTrakPhiSPD1(0)
   ,fTrakPhiSPD2(0)
   ,fTrakPhiSPDOr(0)
   ,fTrakPhiSPDAnd(0)
   ,fTrackHFEcutsITS(0)  
+*/
 /*  ,fNoMixedEvents(0)
   ,fMixStat(0)      
   ,fMixStat1(0)     
   ,fMixedIncElecDphi(0)  
+  ,fMixedIncElecDphi1(0)  
+  ,fMixedIncElecDphi2(0)  
   ,fMixedPhotElecDphi(0)
+  ,fMixedPhotElecDphi1(0)
+  ,fMixedPhotElecDphi2(0)
   ,fMixedSemiIncElecDphi(0)
+  ,fMixedSemiIncElecDphi1(0)
+  ,fMixedSemiIncElecDphi2(0)
   ,fMixedDphiULSMassLow(0) 
+  ,fMixedDphiULSMassLow1(0) 
+  ,fMixedDphiULSMassLow2(0) 
   ,fMixedDphiLSMassLow(0)      
-*/  ,fNLSminus(0)
+  ,fMixedDphiLSMassLow1(0)      
+  ,fMixedDphiLSMassLow2(0)      
+*/
+/*  ,fNLSminus(0)
   ,fNLSplus(0)    
   ,fNULS(0)       
-  ,fHadronIPxy(0) 
+*/  ,fHadronIPxy(0) 
   ,fHadronIPz(0)      
+  ,fHadronPt(0)  
+  ,fCentralityPass(0)
+  ,fCentralityNoPass(0)
     //  ,fSparseElectron(0)  
     //    ,fvalueElectron(0)  
 {
@@ -385,6 +432,13 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
     return;
   }
 
+  //---------------CENTRALITY SELECTION-----------------------    
+  SetCentralityParameters(0., 10., "V0M");
+  Bool_t pass = kFALSE; //to select centrality
+  CheckCentrality(fESD,pass);
+
+  if(!pass)return;
+
   if(!fPID->IsInitialized()){ 
     // Initialize PID with the given run number
     AliWarning("PID not initialised, get from Run no");
@@ -401,14 +455,12 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
   if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
 
-  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
+/*  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
 
   Float_t centvalue = fCentrality->GetCentralityPercentile("V0M");
   fcentrality->Fill(centvalue);    
- // cout << "cent val" << centvalue <<endl;
   if(centvalue<0 || centvalue>10) return;
-
- // cout << "event no : " <<fESD->GetRunNumber() <<endl;
+*/
   Int_t fNOtrks =  fESD->GetNumberOfTracks();
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
 
@@ -437,11 +489,8 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
    AliEventPool* pool = fPoolMgr->GetEventPool(centvalue, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
    if (!pool)
      AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue, pVtxZ));
+*/     
 
-   TObjArray* tracksClone = CloneAndReduceTrackList();
-   tracksClone->SetOwner();
-   pool->UpdatePool(tracksClone);
-*/
    // Track loop 
    for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
      AliESDtrack* track = fESD->GetTrack(iTracks);
@@ -452,7 +501,7 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
      if(track->Pt()<1) continue;
 
-     fTrackPtBefTrkCuts->Fill(track->Pt());		
+    // fTrackPtBefTrkCuts->Fill(track->Pt());		
 
      // RecKine: ITSTPC cuts  
      if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
@@ -468,21 +517,22 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
      // HFE cuts: TPC PID cleanup
      if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
 
-     fTrackHFEcuts->Fill(track->Phi());
+    // fTrackHFEcuts->Fill(track->Phi());
 
      //track phi distribution for diff ITS layer hit
-     if(track->HasPointOnITSLayer(0)) fTrakPhiSPD1->Fill(track->Phi());
-     if(track->HasPointOnITSLayer(1)) fTrakPhiSPD2->Fill(track->Phi());
+//     if(track->HasPointOnITSLayer(0)) fTrakPhiSPD1->Fill(track->Phi());
+//     if(track->HasPointOnITSLayer(1)) fTrakPhiSPD2->Fill(track->Phi());
 
-     if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) fTrakPhiSPDOr->Fill(track->Phi());
-     if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)) fTrakPhiSPDAnd->Fill(track->Phi());
+
+//     if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) fTrakPhiSPDOr->Fill(track->Phi());
+//     if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)) fTrakPhiSPDAnd->Fill(track->Phi());
 
      // HFEcuts: ITS layers cuts
      if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
 
-     fTrackHFEcutsITS->Fill(track->Phi());
+//     fTrackHFEcutsITS->Fill(track->Phi());
 
-     fTrackPtAftTrkCuts->Fill(track->Pt());		
+//     fTrackPtAftTrkCuts->Fill(track->Pt());		
 
      Double_t fClsE = -999, p = -999, fEovP=-999, pt = -999, dEdx=-999, fTPCnSigma=0;
      pt = track->Pt();
@@ -492,7 +542,7 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
      //TPC electron phi
      if(fTPCnSigma >= -2 && fTPCnSigma <= 2){
-       fElecPhiTPC->Fill(track->Phi());
+//       fElecPhiTPC->Fill(track->Phi());
      }
 
      //eta cut (-0.7,0.7)
@@ -503,10 +553,10 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
      if(fClsId <0) continue;
      AliESDCaloCluster *cluster = fESD->GetCaloCluster(fClsId);
      if(TMath::Abs(cluster->GetTrackDx())>0.05 || TMath::Abs(cluster->GetTrackDz())>0.05) continue;    
-     fdEdxBef->Fill(p,dEdx);
+//     fdEdxBef->Fill(p,dEdx);
      fTPCnsigma->Fill(p,fTPCnSigma);
 
-     fTrkpt->Fill(pt);
+//     fTrkpt->Fill(pt);
      fClsE = cluster->E();
      fEovP = fClsE/p;
      /*
@@ -544,14 +594,19 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
      //Electron id with TPC and E/p
      if(fTPCnSigma >= -2 && fTPCnSigma <= 2 && fEovP >= 0.8 && fEovP <=1.2) {
-       fElecPhiTPCEovP->Fill(track->Phi());
+//       fElecPhiTPCEovP->Fill(track->Phi());
 
        //Electron id with shower shape  
        if(cluster->GetM20()<0.2 && cluster->GetM02()< 0.5 && cluster->GetDispersion()<1){
+         
          fElecPhi->Fill(track->Phi());
-         fTrkEovPAftOwn->Fill(pt,fEovP);
-         fdEdxAftOwn->Fill(p,dEdx);
-         fTPCnsigmaAftOwn->Fill(p,fTPCnSigma);
+         fElecPhiPt->Fill(track->Phi(),track->Pt());
+         if (track->Eta() >0 && track->Eta() <0.7) fElecPhiTPChalf->Fill(track->Phi());
+//         fTrkEovPAftOwn->Fill(pt,fEovP);
+//         fdEdxAftOwn->Fill(p,dEdx);
+//         fTPCnsigmaAftOwn->Fill(p,fTPCnSigma);
+
+         HadronInfo(iTracks);
 
          Bool_t fFlagPhotonicElec = kFALSE;
          // select photonic electron
@@ -559,14 +614,14 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
          //Inclusive electron-hadron correlation
          ElectronHadCorrel(iTracks, track, fInclusiveElecDphi, fInclusiveElecDphi1,fInclusiveElecDphi2,fInclusiveElecDphi3,fInclusiveElecDphi4);
          fInclusiveElecPt->Fill(pt);
-//         MixedEvent(track,fMixedIncElecDphi);
+//         MixedEvent(track,fMixedIncElecDphi, fMixedIncElecDphi1,fMixedIncElecDphi2);
          
          // photonic electron
          if(fFlagPhotonicElec){
          //Electron hadron correlation
          ElectronHadCorrel(iTracks, track, fPhotElecDphi,fPhotElecDphi1,fPhotElecDphi2,fPhotElecDphi3,fPhotElecDphi4);
          fPhotoElecPt->Fill(pt);
-//         MixedEvent(track,fMixedPhotElecDphi);
+//         MixedEvent(track,fMixedPhotElecDphi, fMixedPhotElecDphi1,fMixedPhotElecDphi2);
          }
 
          // Semi inclusive electron 
@@ -574,13 +629,13 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
            //Electron hadron correlation
            ElectronHadCorrel(iTracks, track, fSemiIncElecDphi, fSemiIncElecDphi1,fSemiIncElecDphi2,fSemiIncElecDphi3,fSemiIncElecDphi4);
            fSemiInclElecPt->Fill(pt);
-//           MixedEvent(track,fMixedSemiIncElecDphi);
+//           MixedEvent(track,fMixedSemiIncElecDphi,fMixedSemiIncElecDphi1,fMixedSemiIncElecDphi2);
          }
          
        }
      }
    }
-
+   /*
    //EMC clusters  
    Int_t clsNo = fESD->GetNumberOfCaloClusters();
    fNClusv1->Fill(clsNo); 
@@ -590,8 +645,12 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
      fNCellv1->Fill(clus->GetNCells());
      fClsEv1->Fill(clus->E());  
    }
-
-
+*/
+/*
+   TObjArray* tracksClone = CloneAndReduceTrackList();
+   tracksClone->SetOwner();
+   pool->UpdatePool(tracksClone);
+ */  
    PostData(1, fOutputList);
 }
 //_________________________________________
@@ -649,7 +708,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fcentrality = new TH1F("fcentrality","centrality", 100,0,100);
   fOutputList->Add(fcentrality);
-
+/*
   fTrkpt = new TH1F("fTrkpt","track pt",1000,0,50);
   fOutputList->Add(fTrkpt);
 
@@ -658,22 +717,22 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fTrackPtAftTrkCuts = new TH1F("fTrackPtAftTrkCuts","track pt after track cuts",1000,0,50);
   fOutputList->Add(fTrackPtAftTrkCuts);
-
+*/
   fTPCnsigma = new TH2F("fTPCnsigma", "TPC - n sigma",1000,0,50,200,-10,10);
   fOutputList->Add(fTPCnsigma);
-
+/*
   fTPCnsigmaAft = new TH2F("fTPCnsigmaAft", "TPC - n sigma after hfepid",1000,0,50,200,-10,10);
   fOutputList->Add(fTPCnsigmaAft);
 
   fTPCnsigmaAftOwn = new TH2F("fTPCnsigmaAftOwn", "TPC - n sigma after own pid",1000,0,50,200,-10,10);
   fOutputList->Add(fTPCnsigmaAftOwn);
-
+*/
   fTrkEovPBef = new TH2F("fTrkEovPBef","track E/p before HFE pid",1000,0,50,100,0,2);
   fOutputList->Add(fTrkEovPBef);
 
   fTrkEovPBefHad = new TH2F("fTrkEovPBefHad","track E/p for TPCnsig < 3.5",1000,0,50,100,0,2);
   fOutputList->Add(fTrkEovPBefHad);
-
+/*
   fTrkEovPAft = new TH2F("fTrkEovPAft","track E/p after HFE pid",1000,0,50,100,0,2);
   fOutputList->Add(fTrkEovPAft);
 
@@ -688,19 +747,32 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fdEdxAftOwn = new TH2F("fdEdxAftOwn","track dEdx vs p own HFE pid",1000,0,50,150,0,150);
   fOutputList->Add(fdEdxAftOwn);
-
+*/
   fElecPhi = new TH1F("fElecPhi", "Electron phi",1000,0,6.28);
   fOutputList->Add(fElecPhi);
 
-  fElecPhiTPC = new TH1F("fElecPhiTPC", "Electron phi after TPC cut",1000,0,6.28);
+  fElecPhiPt = new TH2F("fElecPhiPt", "Electron phi vs pt; Electron phi; pt (GeV/c)",1000,0,6.28,1000,0,100);
+  fOutputList->Add(fElecPhiPt);
+
+  fElecPhiTPChalf = new TH1F("fElecPhiTPChalf", "Electron phi for 0<eta<0.7",1000,0,6.28);                            
+  fOutputList->Add(fElecPhiTPChalf);
+
+/*  fElecPhiTPC = new TH1F("fElecPhiTPC", "Electron phi after TPC cut",1000,0,6.28);
   fOutputList->Add(fElecPhiTPC);
 
   fElecPhiTPCEovP = new TH1F("fElecPhiTPCEovP", "Electron phi after TPC and E/p cut",1000,0,6.28);
   fOutputList->Add(fElecPhiTPCEovP);
-
+*/
   fHadronPhi = new TH1F("fHadronPhi", "Hadron phi",1000,0,6.28);
   fOutputList->Add(fHadronPhi);
 
+  fHadronPhiTPChalf = new TH1F("fHadronPhiTPChalf", "Hadron phi for 0<eta<0.9",1000,0,6.28);                          
+  fOutputList->Add(fHadronPhiTPChalf);
+
+  fHadronPhiPt = new TH2F("fHadronPhiPt", "Hadron phi vs pt; hadron phi; pt (GeV/c)",1000,0,6.28,1000,0,100);
+  fOutputList->Add(fHadronPhiPt);
+
+/*
   fTrackHFEcuts = new TH1F("fTrackHFEcuts","Track phi for HFE cuts",1000,0,6.28);
   fOutputList->Add(fTrackHFEcuts);
 
@@ -724,110 +796,110 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fOpeningAngleULS = new TH1F("fOpeningAngleULS","Opening angle for ULS pairs",100,0,1);
   fOutputList->Add(fOpeningAngleULS);
-
+*/
   fSemiIncElecDphi = new TH2F("fSemiIncElecDphi", "Semi Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi);
 
-  fSemiIncElecDphi1 = new TH2F("fSemiIncElecDphi1", "Semi Inclusive elec-had Dphi correlation for 2<pt^{asso}<4",200,0,20,100,-1.57,4.71);
+  fSemiIncElecDphi1 = new TH2F("fSemiIncElecDphi1", "Semi Inclusive elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi1);
 
-  fSemiIncElecDphi2 = new TH2F("fSemiIncElecDphi2", "Semi Inclusive elec-had Dphi correlation for 4<pt^{asso}<6",200,0,20,100,-1.57,4.71);
+  fSemiIncElecDphi2 = new TH2F("fSemiIncElecDphi2", "Semi Inclusive elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi2);
 
-  fSemiIncElecDphi3 = new TH2F("fSemiIncElecDphi3", "Semi Inclusive elec-had Dphi correlation for 6<pt^{asso}<8",200,0,20,100,-1.57,4.71);
+  fSemiIncElecDphi3 = new TH2F("fSemiIncElecDphi3", "Semi Inclusive elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi3);
 
-  fSemiIncElecDphi4 = new TH2F("fSemiIncElecDphi4", "Semi Inclusive elec-had Dphi correlation for 8<pt^{asso}<10",200,0,20,100,-1.57,4.71);
+  fSemiIncElecDphi4 = new TH2F("fSemiIncElecDphi4", "Semi Inclusive elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi4);
 
   fPhotElecDphi = new TH2F("fPhotElecDphi", "Photon elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi);
 
-  fPhotElecDphi1 = new TH2F("fPhotElecDphi1", "Photon elec-had Dphi correlation for 2<pt^{asso}<4",200,0,20,100,-1.57,4.71);
+  fPhotElecDphi1 = new TH2F("fPhotElecDphi1", "Photon elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi1);
 
-  fPhotElecDphi2 = new TH2F("fPhotElecDphi2", "Photon elec-had Dphi correlation for 4<pt^{asso}<6",200,0,20,100,-1.57,4.71);
+  fPhotElecDphi2 = new TH2F("fPhotElecDphi2", "Photon elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi2);
 
-  fPhotElecDphi3 = new TH2F("fPhotElecDphi3", "Photon elec-had Dphi correlation for 6<pt^{asso}<8",200,0,20,100,-1.57,4.71);
+  fPhotElecDphi3 = new TH2F("fPhotElecDphi3", "Photon elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi3);
 
-  fPhotElecDphi4 = new TH2F("fPhotElecDphi4", "Photon elec-had Dphi correlation for 8<pt^{asso}<10",200,0,20,100,-1.57,4.71);
+  fPhotElecDphi4 = new TH2F("fPhotElecDphi4", "Photon elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi4);
 
   fInclusiveElecDphi = new TH2F("fInclusiveElecDphi", "Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi);
 
-  fInclusiveElecDphi1 = new TH2F("fInclusiveElecDphi1", "Inclusive elec-had Dphi correlation for 2<pt^{asso}<4",200,0,20,100,-1.57,4.71);
+  fInclusiveElecDphi1 = new TH2F("fInclusiveElecDphi1", "Inclusive elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi1);
 
-  fInclusiveElecDphi2 = new TH2F("fInclusiveElecDphi2", "Inclusive elec-had Dphi correlation for 4<pt^{asso}<6",200,0,20,100,-1.57,4.71);
+  fInclusiveElecDphi2 = new TH2F("fInclusiveElecDphi2", "Inclusive elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi2);
 
-  fInclusiveElecDphi3 = new TH2F("fInclusiveElecDphi3", "Inclusive elec-had Dphi correlation for 6<pt^{asso}<8",200,0,20,100,-1.57,4.71);
+  fInclusiveElecDphi3 = new TH2F("fInclusiveElecDphi3", "Inclusive elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi3);
 
-  fInclusiveElecDphi4 = new TH2F("fInclusiveElecDphi4", "Inclusive elec-had Dphi correlation for 8<pt^{asso}<10",200,0,20,100,-1.57,4.71);
+  fInclusiveElecDphi4 = new TH2F("fInclusiveElecDphi4", "Inclusive elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi4);
 
   fDphiULSMassLow = new TH2F("fDphiULSMassLow", "e-h Dphi ULS, mass<cut",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow);
 
-  fDphiULSMassLow1 = new TH2F("fDphiULSMassLow1", "e-h Dphi ULS, mass<cut for 2<pt^{asso}<4",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLow1 = new TH2F("fDphiULSMassLow1", "e-h Dphi ULS, mass<cut for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow1);
 
-  fDphiULSMassLow2 = new TH2F("fDphiULSMassLow2", "e-h Dphi ULS, mass<cut for 4<pt^{asso}<6",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLow2 = new TH2F("fDphiULSMassLow2", "e-h Dphi ULS, mass<cut for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow2);
 
-  fDphiULSMassLow3 = new TH2F("fDphiULSMassLow3", "e-h Dphi ULS, mass<cut for 6<pt^{asso}<8",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLow3 = new TH2F("fDphiULSMassLow3", "e-h Dphi ULS, mass<cut for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow3);
 
-  fDphiULSMassLow4 = new TH2F("fDphiULSMassLow4", "e-h Dphi ULS, mass<cut for 8<pt^{asso}<10",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLow4 = new TH2F("fDphiULSMassLow4", "e-h Dphi ULS, mass<cut for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow4);
 
   fDphiLSMassLow = new TH2F("fDphiLSMassLow", "e-h Dphi LS, mass<cut",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow);
 
-  fDphiLSMassLow1 = new TH2F("fDphiLSMassLow1", "e-h Dphi LS, mass<cut for 2<pt^{asso}<4",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLow1 = new TH2F("fDphiLSMassLow1", "e-h Dphi LS, mass<cut for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow1);
 
-  fDphiLSMassLow2 = new TH2F("fDphiLSMassLow2", "e-h Dphi LS, mass<cut for 4<pt^{asso}<6",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLow2 = new TH2F("fDphiLSMassLow2", "e-h Dphi LS, mass<cut for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow2);
 
-  fDphiLSMassLow3 = new TH2F("fDphiLSMassLow3", "e-h Dphi LS, mass<cut for 6<pt^{asso}<8",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLow3 = new TH2F("fDphiLSMassLow3", "e-h Dphi LS, mass<cut for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow3);
 
-  fDphiLSMassLow4 = new TH2F("fDphiLSMassLow4", "e-h Dphi LS, mass<cut for 8<pt^{asso}<10",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLow4 = new TH2F("fDphiLSMassLow4", "e-h Dphi LS, mass<cut for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow4);
 
   fDphiULSMassLowNoPartner = new TH2F("fDphiULSMassLowNoPartner", "e-h Dphi ULS with no partner, mass<mass cut,",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner);
 
-  fDphiULSMassLowNoPartner1 = new TH2F("fDphiULSMassLowNoPartner1", "e-h Dphi ULS with no partner, mass<mass cut for 2<pt^{asso}<4,",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLowNoPartner1 = new TH2F("fDphiULSMassLowNoPartner1", "e-h Dphi ULS with no partner, mass<mass cut for 1<pt^{asso}<3,",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner1);
 
-  fDphiULSMassLowNoPartner2 = new TH2F("fDphiULSMassLowNoPartner2", "e-h Dphi ULS with no partner, mass<mass cut for 4<pt^{asso}<6,",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLowNoPartner2 = new TH2F("fDphiULSMassLowNoPartner2", "e-h Dphi ULS with no partner, mass<mass cut for 3<pt^{asso}<5,",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner2);
 
-  fDphiULSMassLowNoPartner3 = new TH2F("fDphiULSMassLowNoPartner3", "e-h Dphi ULS with no partner, mass<mass cut for 6<pt^{asso}<8,",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLowNoPartner3 = new TH2F("fDphiULSMassLowNoPartner3", "e-h Dphi ULS with no partner, mass<mass cut for 5<pt^{asso}<7,",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner3);
 
-  fDphiULSMassLowNoPartner4 = new TH2F("fDphiULSMassLowNoPartner4", "e-h Dphi ULS with no partner, mass<mass cut for 8<pt^{asso}<10,",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLowNoPartner4 = new TH2F("fDphiULSMassLowNoPartner4", "e-h Dphi ULS with no partner, mass<mass cut for 7<pt^{asso}<9,",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner4);
 
   fDphiLSMassLowNoPartner = new TH2F("fDphiLSMassLowNoPartner", "e-h Dphi LS with no partner, mass<mass cut",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner);
 
-  fDphiLSMassLowNoPartner1 = new TH2F("fDphiLSMassLowNoPartner1", "e-h Dphi LS with no partner, mass<mass cut for 2<pt^{asso}<4,",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLowNoPartner1 = new TH2F("fDphiLSMassLowNoPartner1", "e-h Dphi LS with no partner, mass<mass cut for 1<pt^{asso}<3,",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner1);                                            
 
-  fDphiLSMassLowNoPartner2 = new TH2F("fDphiLSMassLowNoPartner2", "e-h Dphi LS with no partner, mass<mass cut for 4<pt^{asso}<6,",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLowNoPartner2 = new TH2F("fDphiLSMassLowNoPartner2", "e-h Dphi LS with no partner, mass<mass cut for 3<pt^{asso}<5,",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner2);
 
-  fDphiLSMassLowNoPartner3 = new TH2F("fDphiLSMassLowNoPartner3", "e-h Dphi LS with no partner, mass<mass cut for 6<pt^{asso}<8,",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLowNoPartner3 = new TH2F("fDphiLSMassLowNoPartner3", "e-h Dphi LS with no partner, mass<mass cut for 5<pt^{asso}<7,",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner3);
 
-  fDphiLSMassLowNoPartner4 = new TH2F("fDphiLSMassLowNoPartner4", "e-h Dphi LS with no partner, mass<mass cut for 8<pt^{asso}<10,",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLowNoPartner4 = new TH2F("fDphiLSMassLowNoPartner4", "e-h Dphi LS with no partner, mass<mass cut for 7<pt^{asso}<9,",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner4);
 
   fPhotoElecPt = new TH1F("fPhotoElecPt", "photonic electron pt",1000,0,100);
@@ -844,7 +916,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fLSElecPt = new TH1F("fLSElecPt", "LS electron pt",1000,0,100);
   fOutputList->Add(fLSElecPt);
-
+/*
   fNCellv1 = new TH1F("fNCellv1","Ncell in clus (v1); NCell; count",100,0,100) ;
   fOutputList->Add(fNCellv1);
 
@@ -859,7 +931,7 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fKFParticleE = new TH1F("fKFParticleE", "KfParticle rec E; E; count",1000,0,100); 
   fOutputList->Add(fKFParticleE);
-
+*/
   fInvmassLS1 = new TH1F("fInvmassLS1", "Inv mass of LS (e,e); mass(GeV/c^2); counts;", 1000,0,1.0);
   fOutputList->Add(fInvmassLS1);
 
@@ -893,27 +965,58 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
   fNoMixedEvents = new TH1F("fNoMixedEvents","",1,0,1) ;
   fOutputList->Add(fNoMixedEvents);
 
-  fMixStat = new TH2F("fMixStat","no of events in pool  vs multiplicity;Nevent in pool;N hadrons",200,0,200,500,0,500);
+  fMixStat = new TH2F("fMixStat","no of events in pool  vs Centrality;Nevent in pool;Centrality",200,0,200,5,0,10);
   fOutputList->Add(fMixStat);                                                             
 
-  fMixStat1 = new TH2F("fMixStat1","no of events in pool  vs zvtx;Nevents in pool;zvtx",200,0,200,200,-11,11);
+  fMixStat1 = new TH2F("fMixStat1","no of events in pool  vs zvtx;Nevents in pool;zvtx",200,0,200,4,-10,10);
   fOutputList->Add(fMixStat1);
 
   fMixedIncElecDphi = new TH2F("fMixedIncElecDphi", "Mixed event - Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fMixedIncElecDphi);
 
+  fMixedIncElecDphi1 = new TH2F("fMixedIncElecDphi1", "Mixed event - Inclusive elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedIncElecDphi1);
+
+  fMixedIncElecDphi2 = new TH2F("fMixedIncElecDphi2", "Mixed event - Inclusive elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedIncElecDphi2);
+
   fMixedSemiIncElecDphi = new TH2F("fMixedSemiIncElecDphi", "Mixed event - Semi Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fMixedSemiIncElecDphi);
+
+  fMixedSemiIncElecDphi1 = new TH2F("fMixedSemiIncElecDphi1", "Mixed event - Semi Inclusive elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedSemiIncElecDphi1);
+
+  fMixedSemiIncElecDphi2 = new TH2F("fMixedSemiIncElecDphi2", "Mixed event - Semi Inclusive elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedSemiIncElecDphi2);
 
   fMixedPhotElecDphi = new TH2F("fMixedPhotElecDphi", "Mixed event - Photo elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fMixedPhotElecDphi);
 
+  fMixedPhotElecDphi1 = new TH2F("fMixedPhotElecDphi1", "Mixed event - Photo elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedPhotElecDphi1);
+
+  fMixedPhotElecDphi2 = new TH2F("fMixedPhotElecDphi2", "Mixed event - Photo elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedPhotElecDphi2);
+
   fMixedDphiULSMassLow = new TH2F("fMixedDphiULSMassLow", "Mixed event - ULS mass < cut elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fMixedDphiULSMassLow);
 
+  fMixedDphiULSMassLow1 = new TH2F("fMixedDphiULSMassLow1", "Mixed event - ULS mass < cut elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiULSMassLow1);
+
+  fMixedDphiULSMassLow2 = new TH2F("fMixedDphiULSMassLow2", "Mixed event - ULS mass < cut elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiULSMassLow2);
+
   fMixedDphiLSMassLow = new TH2F("fMixedDphiLSMassLow", "Mixed event - LS mass < cut elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
   fOutputList->Add(fMixedDphiLSMassLow);
+
+  fMixedDphiLSMassLow1 = new TH2F("fMixedDphiLSMassLow1", "Mixed event - LS mass < cut elec-had Dphi correlation 1<pt<3",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiLSMassLow1);
+
+  fMixedDphiLSMassLow2 = new TH2F("fMixedDphiLSMassLow2", "Mixed event - LS mass < cut elec-had Dphi correlation 3<pt<5",200,0,20,100,-1.57,4.71);
+  fOutputList->Add(fMixedDphiLSMassLow2);
 */
+  /*
   fNLSminus = new TH1F("fNLSminus","No of LS negative pairs (e-,e-) ",1000,-0.5,999.5);
   fOutputList->Add(fNLSminus);
 
@@ -922,12 +1025,21 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
 
   fNULS = new TH1F("fNULS","No of ULS pairs (e+,e-)",1000,-0.5,999.5);
   fOutputList->Add(fNULS);
-
+*/
   fHadronIPxy = new TH1F("fHadronIPxy", "hadron impact paramter XY",1000,-5,5);
   fOutputList->Add(fHadronIPxy);
 
   fHadronIPz = new TH1F("fHadronIPz", "hadron impact paramter Z",1000,-20,20);
   fOutputList->Add(fHadronIPz);
+
+  fHadronPt = new TH1F("fHadronPt","hadron pt distribution",1000,0,100);
+  fOutputList->Add(fHadronPt);
+
+  fCentralityPass = new TH1F("fCentralityPass", "Centrality Pass", 101, -1, 100);
+  fOutputList->Add(fCentralityPass);
+
+  fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass", 101, -1, 100);
+  fOutputList->Add(fCentralityNoPass);
 
   /*
      Int_t binsv1[8]={1000,1000,200,150,100,100,100,100}; //pt, p, TPCnsig, dEdx, E/p, M20, M02, dispersion 
@@ -989,8 +1101,12 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
     Int_t charge = track->Charge();
 
     if(ptAsso <0.3) continue;
-    if(!fTrackCuts1->AcceptTrack(trackAsso)) continue;
-//    if(dEdxAsso <70 || dEdxAsso>100) continue; //11a pass1
+    if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
+    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackAsso)) continue;
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackAsso)) continue;
+
+    //    if(!fTrackCuts1->AcceptTrack(trackAsso)) continue;
+    //    if(dEdxAsso <70 || dEdxAsso>100) continue; //11a pass1
     if(nsigma < -3 || nsigma > 3) continue;
 
     Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
@@ -1003,19 +1119,20 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
     AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
     AliKFParticle ge2 = AliKFParticle(*trackAsso, fPDGe2);
     AliKFParticle recg(ge1, ge2);
-    
+
     if(recg.GetNDF()<1) continue;
     Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
     if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
 
     openingAngle = ge1.GetAngle(ge2);
-    if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
-    if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
+    //    if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
+    //    if(fFlagULS) fOpeningAngleULS->Fill(openingAngle);
 
- //   if(openingAngle > fOpeningAngleCut) continue;
+    //   if(openingAngle > fOpeningAngleCut) continue;
 
-    recg.GetMass(mass,width);
-  
+    Int_t MassCorrect;
+    MassCorrect = recg.GetMass(mass,width);
+
     if(fFlagLS){
       if(track->Charge() > 0 ) NLS_plus++;
       if(track->Charge() < 0 ) NLS_minus++;
@@ -1042,13 +1159,13 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
       {
         ElectronHadCorrel(itrack,track,fDphiULSMassLow, fDphiULSMassLow1,fDphiULSMassLow2,fDphiULSMassLow3,fDphiULSMassLow4);
         fULSElecPt->Fill(track->Pt());
-//        MixedEvent(track,fMixedDphiULSMassLow);
+//        MixedEvent(track,fMixedDphiULSMassLow,fMixedDphiULSMassLow1,fMixedDphiULSMassLow2);
       }
       if(fFlagLS)
       {
         ElectronHadCorrel(itrack,track,fDphiLSMassLow,fDphiLSMassLow1,fDphiLSMassLow2,fDphiLSMassLow3,fDphiLSMassLow4);
         fLSElecPt->Fill(track->Pt());
-//        MixedEvent(track,fMixedDphiLSMassLow);
+//        MixedEvent(track,fMixedDphiLSMassLow,fMixedDphiLSMassLow1,fMixedDphiLSMassLow2);
       }
       if(fFlagLS) ElectronHadCorrelNoPartner(itrack,jTracks,track,fDphiLSMassLowNoPartner, fDphiLSMassLowNoPartner1,fDphiLSMassLowNoPartner2,fDphiLSMassLowNoPartner3,fDphiLSMassLowNoPartner4);
       if(fFlagULS) ElectronHadCorrelNoPartner(itrack,jTracks,track,fDphiULSMassLowNoPartner, fDphiULSMassLowNoPartner1,fDphiULSMassLowNoPartner2,fDphiULSMassLowNoPartner3,fDphiULSMassLowNoPartner4);
@@ -1062,9 +1179,9 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
   }
   fFlagPhotonicElec = flagPhotonicElec;
 
-  fNLSminus->Fill(NLS_minus);
-  fNLSplus->Fill(NLS_plus);
-  fNULS->Fill(NULS);
+//  fNLSminus->Fill(NLS_minus);
+//  fNLSplus->Fill(NLS_plus);
+//  fNULS->Fill(NULS);
 
 }
 //_________________________________________
@@ -1092,23 +1209,27 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliESDtrac
     Double_t ptEle = -999;
     Double_t phiEle = -999, phiHad = -999, Dphi = -999;
     Double_t pi = 3.14;
+    Float_t IPxy=-999.0, IPz=-999.0;
 
     dEdxHad = trackHad->GetTPCsignal();
     ptHad = trackHad->Pt();
     pHad = trackHad->P();
     ptEle = track->Pt();
+    trackHad->GetImpactParameters(IPxy,IPz);
 
 //    if(ptHad <2) continue;
     if(ptHad > ptEle) continue;
-    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
-  
-    Float_t IPxy=-999.0, IPz=-999.0;
-    trackHad->GetImpactParameters(IPxy,IPz);
-   //cout << "xy,z: " << IPxy << ", " << IPz <<endl;
-    fHadronIPxy->Fill(IPxy);
-    fHadronIPz->Fill(IPz);
+    if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
+    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
 
-    fHadronPhi->Fill(trackHad->Phi());
+//    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
+  
+   // fHadronIPxy->Fill(IPxy);
+   // fHadronIPz->Fill(IPz);
+
+   // if(TMath::Abs(IPxy)>2.5) continue;
+   // fHadronPhi->Fill(trackHad->Phi());
     
     phiEle = track->Phi();
     phiHad = trackHad->Phi();
@@ -1152,15 +1273,22 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
     Double_t ptEle = -999;
     Double_t phiEle = -999, phiHad = -999, Dphi = -999;
     Double_t pi = 3.14;
+    Float_t IPxy=-999.0, IPz=-999.0;
 
     dEdxHad = trackHad->GetTPCsignal();
     ptHad = trackHad->Pt();
     pHad = trackHad->P();
     ptEle = track->Pt();
+    trackHad->GetImpactParameters(IPxy,IPz);
 
-    if(ptHad <2) continue;
+//    if(ptHad <2) continue;
     if(ptHad > ptEle) continue;
-    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
+    if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
+    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
+
+//    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
+//    if(TMath::Abs(IPxy)>2.5) continue;
 
     phiEle = track->Phi();
     phiHad = trackHad->Phi();
@@ -1179,7 +1307,7 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
 }
 /*
 //_________________________________________
-void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliESDtrack *track, TH2F *DphiPt)
+void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliESDtrack *track, TH2F *DphiPt, TH2F *DphiPt1,TH2F *DphiPt2)
 {
 
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
@@ -1203,7 +1331,7 @@ void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliESDtrack *track, TH2F *DphiP
     fMixStat1->Fill(pool->GetCurrentNEvents(),zVtx);
 
    // cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
-    for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++)  // mix with each event in the buffer
+    for (Int_t jMix=0; jMix<nMix; jMix++)  // mix with each event in the buffer
     {
       TObjArray* bgTracks = pool->GetEvent(jMix);
       for (Int_t i=0;i<bgTracks->GetEntriesFast(); i++)
@@ -1217,6 +1345,7 @@ void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliESDtrack *track, TH2F *DphiP
         Double_t ptmixtrk = -999;
 
         ptEle = track->Pt();
+        ptmixtrk = mixtrk->Pt();
         if(ptmixtrk > ptEle) continue;
 
         mixtrkPhi = mixtrk->Phi();
@@ -1228,6 +1357,8 @@ void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliESDtrack *track, TH2F *DphiP
         if (Dphi < -pi/2)
           Dphi = Dphi + 2*pi;
         DphiPt->Fill(ptEle,Dphi);
+        if(ptmixtrk>2 && ptmixtrk<4) DphiPt1->Fill(ptEle,Dphi);
+        if(ptmixtrk>4 && ptmixtrk<6) DphiPt2->Fill(ptEle,Dphi);
       }
     }
 
@@ -1237,7 +1368,7 @@ void AliAnalysisTaskElecHadronCorrel::MixedEvent(AliESDtrack *track, TH2F *DphiP
 //___________________________________________
 TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
 {
-  // clones a track list by using AliDPhiBasicParticle which uses much less memory (used for event mixing)
+  // clones a track list by using AliehDPhiBasicParticle which uses much less memory (used for event mixing)
 
   fTrackCuts2->SetAcceptKinkDaughters(kFALSE);
   fTrackCuts2->SetRequireTPCRefit(kTRUE);
@@ -1258,17 +1389,94 @@ TObjArray*  AliAnalysisTaskElecHadronCorrel::CloneAndReduceTrackList()
     }
 
     //   if(ktracks == iTrack) continue;
-    Double_t ptHad= -999, pHad=-999.;
+    Double_t eta=-999,ptHad= -999, pHad=-999., phi=-999.0;
+    Int_t label=-9999, id=-999;
+    eta = track->Eta();
     ptHad = track->Pt();
     pHad = track->P();
+    phi= track->Phi();
+    label= track->GetLabel();
+    id=track->GetID();
     
     if(ptHad <2) continue;
     if(!fTrackCuts2->AcceptTrack(track)) continue;
 
     AliVParticle* particle = (AliVParticle*) fESD->GetTrack(ktracks);
-    tracksClone->Add(new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
+    tracksClone->Add(new AliehDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
+
   }
 
   return tracksClone;
 }
 */
+//___________________________________________
+void AliAnalysisTaskElecHadronCorrel::HadronInfo(Int_t itrack)
+{
+  //Hadron information
+  fTrackCuts2->SetAcceptKinkDaughters(kFALSE);                                           
+  fTrackCuts2->SetRequireTPCRefit(kTRUE);                                                
+  fTrackCuts2->SetRequireITSRefit(kTRUE);                                                
+  fTrackCuts2->SetEtaRange(-0.9,0.9);
+  fTrackCuts2->SetRequireSigmaToVertex(kTRUE);                                           
+  fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);                                             
+  fTrackCuts2->SetMinNClustersTPC(80);                                                   
+
+  for(Int_t ktracks = 0; ktracks<fESD->GetNumberOfTracks(); ktracks++){                  
+    AliESDtrack* trackHad = fESD->GetTrack(ktracks);                                     
+    if (!trackHad) {
+      printf("ERROR: Could not receive track %d\n", ktracks);                            
+      continue;                                                                          
+    }
+    
+    if(ktracks == itrack) continue; //do not select the same electron
+    
+    Double_t ptHad= -999;
+    Float_t IPxy=-999.0, IPz=-999.0;                                                     
+    ptHad = trackHad->Pt();
+    trackHad->GetImpactParameters(IPxy,IPz);
+    
+    if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
+    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
+
+//    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;                                    
+    if(ptHad<2) continue;
+
+    fHadronPhi->Fill(trackHad->Phi());
+    fHadronPhiPt->Fill(trackHad->Phi(),ptHad);
+    if (trackHad->Eta() >0 && trackHad->Eta() <0.9) fHadronPhiTPChalf->Fill(trackHad->Phi());
+
+    fHadronIPxy->Fill(IPxy);
+    fHadronIPz->Fill(IPz);
+    fHadronPt->Fill(ptHad);
+  }
+}
+//_________________________________________
+void AliAnalysisTaskElecHadronCorrel::CheckCentrality(AliESDEvent* event, Bool_t &centralitypass)
+{
+  // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
+  if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
+  fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
+//  cout << "--------------Centrality evaluated-------------------------"<<endl;
+
+  if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
+  {
+    fCentralityNoPass->Fill(fCentrality);
+//    cout << "--------------Fill no pass-------------------------"<<endl;
+    centralitypass = kFALSE;
+  }else
+  {
+    fCentralityPass->Fill(fCentrality);
+//    cout << "--------------Fill pass-------------------------"<<endl;
+    centralitypass = kTRUE;
+  }
+
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskElecHadronCorrel::SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod)
+{
+  // Set a centrality range ]min, max] and define the method to use for centrality selection
+  fCentralityMin = CentralityMin;
+  fCentralityMax = CentralityMax;
+  fkCentralityMethod = CentralityMethod;
+}
