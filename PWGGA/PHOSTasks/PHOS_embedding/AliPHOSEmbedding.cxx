@@ -117,7 +117,6 @@ void AliPHOSEmbedding::UserExec(Option_t *) {
   if( acentrality <= 0. || acentrality>80.){
     return;
   }
-
   
   //Read next AOD event
   //If necesary method checks if AOD event is good to embed
@@ -132,9 +131,7 @@ void AliPHOSEmbedding::UserExec(Option_t *) {
   Init() ;
 
   //Remember PHOS digits before any modification
-  if(fCellsPHOS)
-    delete fCellsPHOS ;
-  fCellsPHOS = new AliESDCaloCells(*(event->GetPHOSCells())) ;
+  CopyRecalibrateDigits() ;
 
   //First re-reconstruct existing digits to ensure identical reconstruction before and 
   //after embeding
@@ -157,6 +154,39 @@ void AliPHOSEmbedding::UserExec(Option_t *) {
   delete signal ;
 
   PostData(0, fTreeOut);
+}
+//______________________________________________________________________________
+void AliPHOSEmbedding::CopyRecalibrateDigits(){
+  //Recalibrate digits if there is better calibration ("new") 
+  //exists than one used in reconstruction ("ESD")
+  
+  AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+  if(fCellsPHOS)
+    delete fCellsPHOS ;
+  fCellsPHOS = new AliESDCaloCells() ;
+  fCellsPHOS->CreateContainer(event->GetPHOSCells()->GetNumberOfCells());
+
+  //Apply recalibration if necessary to account for
+  //difference between calibration used in reconstruction and 
+  //final calibration
+//  if(fOldPHOSCalibration[0]){ //there is a difference in calibrations
+    for (Short_t icell = 0; icell < event->GetPHOSCells()->GetNumberOfCells(); icell++) {
+      Short_t id=0;
+      Double_t time=0., amp=0. ;
+      Short_t mclabel; 
+      Double_t efrac =0. ;
+//      if (fCellsPHOS->GetCell(icell, id, amp,time,mclabel,efrac) != kTRUE)
+      if (event->GetPHOSCells()->GetCell(icell, id, amp,time,mclabel,efrac) != kTRUE)
+        break;      
+      Int_t relId[4] ;
+      AliPHOSGeometry::GetInstance()->AbsToRelNumbering(id,relId);
+      Float_t calibESD=fOldPHOSCalibration[relId[0]-1]->GetBinContent(relId[2],relId[3]) ;
+      Float_t calibNew=fPHOSReconstructor->Calibrate(1.,id) ;
+      if(calibESD>0.)
+        amp=amp*calibNew/calibESD ;
+      fCellsPHOS->SetCell(icell, id, amp, time,mclabel,efrac);     
+    }
+//  }  
 }
 //______________________________________________________________________________
 void AliPHOSEmbedding::Init(){
@@ -191,7 +221,7 @@ void AliPHOSEmbedding::Init(){
 
 //________________________________________________________________________
 AliAODEvent* AliPHOSEmbedding::GetNextSignalEvent(){
-  //Read AOD event from the chain
+  //Read signal AOD event from the chain
   
   if(fAODChain==0){
     AliError("No chain to read signal events") ;
@@ -259,6 +289,13 @@ void AliPHOSEmbedding::MakeEmbedding(AliESDEvent *event,AliAODEvent * signal){
   
   //create digits
   MakeDigits(signal);	  
+
+/*  
+for(Int_t i=0;i<fDigitsArr->GetEntriesFast();i++){  
+   AliPHOSDigit * d = (AliPHOSDigit *) fDigitsArr->At(i) ;
+   printf("  Digit(%d) = %d, E=%f \n",i,d->GetId(),d->GetEnergy()) ;
+}
+*/
   
   //clusterize and make tracking
   fPHOSReconstructor->Reconstruct(fDigitsTree,fClustersTree) ;
@@ -339,8 +376,7 @@ void AliPHOSEmbedding::ConvertPHOSCells(const AliESDEvent& esd)
     aodPHcells.CreateContainer(nPHcell);
     aodPHcells.SetType(AliAODCaloCells::kPHOSCell);
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
-      aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell),
-                         esdPHcells.GetTime(iCell),esdPHcells.GetMCLabel(iCell),0);
+      aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell),esdPHcells.GetTime(iCell),-1,0.);
     }
     aodPHcells.Sort();
   }
@@ -358,8 +394,7 @@ void AliPHOSEmbedding::ConvertEMCALCells(const AliESDEvent& esd)
     aodEMcells.CreateContainer(nEMcell);
     aodEMcells.SetType(AliAODCaloCells::kEMCALCell);
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
-      aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell),
-                         esdEMcells.GetTime(iCell),esdEMcells.GetMCLabel(iCell),0);
+      aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell),esdEMcells.GetTime(iCell));
     }
     aodEMcells.Sort();
   }
@@ -501,8 +536,7 @@ void AliPHOSEmbedding::ConvertEmbeddedClusters(const AliESDEvent* esd)
     fEmbeddedCells->CreateContainer(nPHcell);
     fEmbeddedCells->SetType(AliAODCaloCells::kPHOSCell);
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
-      fEmbeddedCells->SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell),
-                              esdPHcells.GetTime(iCell),esdPHcells.GetMCLabel(iCell),0);
+      fEmbeddedCells->SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell),esdPHcells.GetTime(iCell));
     }
     fEmbeddedCells->Sort();
   }
@@ -613,7 +647,9 @@ void AliPHOSEmbedding::ConvertHeader(AliESDEvent & esd){
   } 
   
   //EventPlane
-  Double_t epQ=TPCrp(&esd);
+  AliEventplane *eventplane = (dynamic_cast<AliESDEvent*>(InputEvent()))->GetEventplane();
+  Double_t epQ = eventplane->GetEventplane("Q"); 
+  
   //Standard Eventplane setter is too complicated...
   //use durty hack
   header->SetZDCN1Energy(epQ) ;
@@ -694,8 +730,9 @@ void AliPHOSEmbedding::ConvertPrimaryVertices(AliESDEvent const&esd){
 //__________________________________________________________________________________
 void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
   
-    //-------------------------------------------------------------------------------------
-  //Transform CaloCells into Digits
+  //-------------------------------------------------------------------------------------
+  //Transform CaloCells into Digits which can be used for standard reconstruction
+  //Add signal digits to the event
   //-------------------------------------------------------------------------------------
   
   fDigitsArr->Clear() ;
@@ -704,9 +741,11 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
   //First copy data digits
   Int_t ndigit=0 ;
   for (Short_t icell = 0; icell < fCellsPHOS->GetNumberOfCells(); icell++) {
-    Short_t id=0, mcLabel=-1;
-    Double_t time=0., amp=0., efrac = 0. ;
-    if (fCellsPHOS->GetCell(icell, id, amp, time,mcLabel,efrac) != kTRUE)
+    Short_t id=0;
+    Double_t time=0., amp=0. ;
+    Short_t mclabel;
+    Double_t efrac =0. ;
+    if (fCellsPHOS->GetCell(icell, id, amp, time,mclabel, efrac) != kTRUE)
       break;
         
     new((*fDigitsArr)[ndigit]) AliPHOSDigit(-1,id,float(amp),float(time),ndigit);
@@ -719,17 +758,16 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
   Int_t isdigit=0 ;
   if(signal){
     AliAODCaloCells* cellsS = signal->GetPHOSCells();
-//    Int_t cellLabels[cellsS->GetNumberOfCells()]={0} ;
-//    Int_t cellSecondLabels[cellsS->GetNumberOfCells()]={0} ;
     Int_t cellLabels[1000]={0} ;       //1000 should be enough for simulated
     Int_t cellSecondLabels[1000]={0} ; //low-statistics event.
     for(Int_t i=0;i<cellsS->GetNumberOfCells();i++){
       cellLabels[i]=-1 ;
       cellSecondLabels[i]=-1;
-   }
-//  printf("===========Signal clusters==============\n") ;
+    }
     //------------------------------------------------------------------------------------
     //Ancestry information
+    //Celect digits contributing to signal clusters and add primary information
+    //(it is not stored in CaloCells)
     //------------------------------------------------------------------------------------
     sdigits.Expand(cellsS->GetNumberOfCells());
     for(Int_t i=0; i<signal->GetNumberOfCaloClusters(); i++) {    
@@ -738,25 +776,19 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
     
       if(!clus->IsPHOS())
         continue;
-/*    
-    printf("Signal clu(%d): E=%f \n",i,clus->E()) ;
-    UShort_t * ind    = clus->GetCellsAbsId() ;
-    for(Int_t ic=0; ic < clus->GetNCells(); ic++ )
-      printf("Dig(%d)=%d, ",ic,ind[ic]) ;
-  printf("\n") ;
-*/   
     
       Int_t label = clus->GetLabel();
       Int_t label2 = -1 ;
       if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
     
       UShort_t * index    = clus->GetCellsAbsId() ;
-    
       for(Int_t ic=0; ic < clus->GetNCells(); ic++ ){
         for (Int_t icell = 0; icell < cellsS->GetNumberOfCells(); icell++){
-	   Short_t cellNumber, mcLabel = -1;
-	   Double_t cellAmplitude=0., cellTime=0., efrac = 0 ;
-	   cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime,mcLabel,efrac) ;
+	   Short_t cellNumber;
+	   Double_t cellAmplitude=0., cellTime=0. ;
+           Short_t mclabel;
+           Double_t efrac =0. ;
+	   cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime,mclabel,efrac) ;
 	   if(cellNumber==index[ic]){
 	      cellLabels[icell]=label;
               cellSecondLabels[icell]=label2;
@@ -765,35 +797,23 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
         }
       }
     }
-// printf("================End Signal==================\n") ;
 
     for (Int_t icell = 0; icell < cellsS->GetNumberOfCells(); icell++) {
-      Short_t cellNumber, mcLabel = -1;
-      Double_t cellAmplitude=0., cellTime=0., efrac ;
-      if (cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime, mcLabel, efrac) != kTRUE)
+      Short_t cellNumber;
+      Double_t cellAmplitude=0., cellTime=0. ;
+      Short_t mclabel;
+      Double_t efrac =0. ;
+      if (cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime,mclabel,efrac) != kTRUE)
         break;
       //Add only digits related to the cluster, no noisy digits...
-      if(cellLabels[icell]==-1)
+      if(cellLabels[icell]==-1){
         continue ;
-    
+      }    
       new(sdigits[isdigit]) AliPHOSDigit(cellLabels[icell],cellNumber,float(cellAmplitude),float(cellTime),isdigit);    
       isdigit++;
     }
   }
-  
-  //If necessary, take into account difference between calibration used to produce ESD and
-  //final calibration
-  if(fOldPHOSCalibration[0]){ //there is a difference
-    for(Int_t i=0; i<isdigit;i++){
-      AliPHOSDigit * sdigit=static_cast<AliPHOSDigit*>(sdigits.At(i)) ;
-      Int_t relId[4] ;
-      AliPHOSGeometry::GetInstance()->AbsToRelNumbering(sdigit->GetId(),relId);
-      Float_t calibESD=fOldPHOSCalibration[relId[0]-1]->GetBinContent(relId[2],relId[3]) ;
-      Float_t calibNew=fPHOSReconstructor->Calibrate(1.,sdigit->GetId()) ;
-      if(calibNew>0.)
-        sdigit->SetEnergy(sdigit->GetEnergy()*calibESD/calibNew) ;
-    }
-  }
+
   
   //Merge digits  
   Int_t icurrent = 0 ; //index of the last used digit in underlying event
@@ -821,22 +841,14 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
   }
  
   //Change Amp back from Energy to ADC counts
+  //Note that Reconstructor uses best ("new") calibration
   for(Int_t i=0; i<ndigit;i++){
      AliPHOSDigit * digit=static_cast<AliPHOSDigit*>(fDigitsArr->At(i)) ;
-     Float_t calib = 0 ; 
-     if(fOldPHOSCalibration[0]){ //Use old calibration
-        Int_t relId[4] ;
-	AliPHOSGeometry::GetInstance()->AbsToRelNumbering(digit->GetId(),relId);
-        calib=fOldPHOSCalibration[relId[0]-1]->GetBinContent(relId[2],relId[3]) ;
-     }
-     else{
-       calib=fPHOSReconstructor->Calibrate(1.,digit->GetId()) ;	
-     }
+     Float_t calib =fPHOSReconstructor->Calibrate(1.,digit->GetId()) ;	
      if(calib>0.)
        digit->SetEnergy(digit->GetEnergy()/calib) ;
   }  
-  
-   
+     
   fDigitsArr->Sort() ;
   for (Int_t i = 0 ; i < ndigit ; i++) { 
     AliPHOSDigit *digit = static_cast<AliPHOSDigit*>( fDigitsArr->At(i) ) ; 
@@ -856,56 +868,6 @@ void AliPHOSEmbedding::SetOldCalibration(TH2F **calibH){
     fOldPHOSCalibration[i]->SetName(name) ;
   }
 }  
-//___________________________________________________________________________
-Double_t AliPHOSEmbedding::TPCrp(const AliESDEvent * event){
-  //calculate reaction plain in TPC
- 
-  Double_t rp=999 ; //!Reaction plain calculated with full TPC 
-  
-  Double_t cosF=0.,sinF=0.,nF=0.;
-  for (Int_t i=0;i<event->GetNumberOfTracks();i++) {
-    AliESDtrack *track = event->GetTrack(i) ;
-    if(!SelectTrack(track))
-      continue ;
-    Double_t eta= track->Eta() ;
-    if(TMath::Abs(eta)> 0.9)
-      continue ;
-    Double_t phi=track->Phi();
-    Double_t cos2phi=TMath::Cos(2.*phi) ;
-    Double_t sin2phi=TMath::Sin(2.*phi) ;
-    cosF+=cos2phi ;
-    sinF+=sin2phi ;
-    nF+=1. ;
-  }
-  if(nF>0){
-    rp=0.5*TMath::ATan2(sinF,cosF) ;
-  }
-  return rp ;
-  
-}
-//___________________________________________________________________________
-Bool_t AliPHOSEmbedding::SelectTrack(AliESDtrack * t){
-  //estimate if this track can be used for the RP calculation
-  Float_t pt=t->Pt();
-  if(pt<0.15 || pt>5.)
-    return kFALSE ;
-//  if(!fESDtrackCuts->AcceptTrack(t))
-//    return kFALSE ;
-  if(t->GetTPCNcls()<70) 
-    return kFALSE;
-/*
-  Float_t dcaXY=t->DCA();
-  Float_t dcaZ=t->ZAtDCA() ;
-  t->GetImpactParametersTPC(&dcaXY,&dcaZ);
-  if (TMath::Abs(dcaZ)>3)
-    return kFALSE;
-  if (TMath::Abs(dcaXY)>3.) 
-    return kFALSE;
-*/  
-  return kTRUE ;
-
-
-}
 //____________________________________________________________________________
 void AliPHOSEmbedding::InitMF(){
   
@@ -1042,7 +1004,7 @@ void AliPHOSEmbedding::InitGeometry(){
         
   if(AliGeomManager::GetNalignable("GRP") != 0)
       loadAlObjsListOfDets.Prepend("GRP "); //add alignment objects for non-sensitive modules
-  AliGeomManager::ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
+//  AliGeomManager::ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
 
   AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
   AliCDBManager::Instance()->UnloadFromCache("GRP/Geometry/Data");
@@ -1053,14 +1015,32 @@ Float_t AliPHOSEmbedding::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t c
   //Parameterization of LHC10h period
   //_true if neutral_
   
-  Double_t z0=0.84 ; //Both charges
-  Double_t sz=TMath::Min(2.75,2.*3.*3./(pt*pt+3.*3.)+1.);
-  Double_t x0=TMath::Min(7.6, 27.4628*TMath::Exp(-(pt+13.3572)*(pt+13.3572)/2./6.29214/6.29214)+
-                                    243.020*0.0526626*0.0526626/(pt*pt+0.0526626*0.0526626)) ;
-  if(charge>0)
-    x0=-x0 ;
-  Double_t sx=TMath::Min(5.4,9.9*TMath::Exp(-pt/0.31)+0.5*0.4*0.4/((pt-1.2)*(pt-1.2)+0.4*0.4)+1.5);
-  Double_t rz=(dz-z0)/sz ;
-  Double_t rx=(dx-x0)/sx ;
-  return TMath::Sqrt(rx*rx+rz*rz)/2. ;
+  Double_t meanX=0;
+  Double_t meanZ=0.;
+  Double_t sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
+              6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
+  Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
+  
+  AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+  Double_t mf = event->GetMagneticField(); //Positive for ++ and negative for --
+
+  if(mf<0.){ //field --
+    meanZ = -0.468318 ;
+    if(charge>0)
+      meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01)) ;
+    else
+      meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01)) ;
+  }
+  else{ //Field ++
+    meanZ= -0.468318;
+    if(charge>0)
+      meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01)) ;
+    else
+      meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01)) ;     
+  }
+
+  Double_t rz=(dz-meanZ)/sz ;
+  Double_t rx=(dx-meanX)/sx ;
+  return TMath::Sqrt(rx*rx+rz*rz) ;
 }
+

@@ -3,13 +3,16 @@ These are tasks to perform PHOS embedding. Steps are following:
 2. Performs simulation of the same number of events, using enclosed Config.C 
    (single pi0 per event with flat or Hagedorn spectrum)
    then simulated signals are reconstructed clusters and converted to AOD
+   There are several special moments:
+   - no noise is added to digits in simulation (special setting in sim.C)
+   - all digits are copied to CaloCells (threshold is zero in cpecial RecoParams) 
 3. Then class AliPHOSEmbedding is called
    - read data ESDs, extract PHOS calocells, convert them to PHOSDigits
    - run default reconstruction to avoid possible problems with different 
      OCDBs used now and in official reconstruction. Apply final calibration if necessary
    - merge digits with (re-calibrated if necessary) signal digits
    - reconstruct digits with embedding signal (with final calibration if necessary)
-4. As a result of all these procedures AOD is produced with
+4. As a result of all these procedures AliAODout file is produced with
    - MC information about embedded pi0s
    - standard CaloClosters, CaloCells with final calibration
    - Embedded CaloClusters, embedded CaloCells with final calibration

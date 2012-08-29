@@ -16,6 +16,7 @@ class AliPHOSGeometry;
 class AliAODEvent ;
 class AliPHOSCalibData;
 class AliAODTrack ;
+class AliPHOSAodCluster ;
 
 
 #include "AliAnalysisTaskSE.h"
@@ -35,17 +36,19 @@ public:
     printf("Set %s \n",fPHOSBadMap[mod]->GetName());
   }
   
-private:
-  AliAnalysisTaskPi0Efficiency(const AliAnalysisTaskPi0Efficiency&); // not implemented
-  AliAnalysisTaskPi0Efficiency& operator=(const AliAnalysisTaskPi0Efficiency&); // not implemented
+protected:
+  AliAnalysisTaskPi0Efficiency(const AliAnalysisTaskPi0Efficiency& a):AliAnalysisTaskSE(a){} // not implemented
+  AliAnalysisTaskPi0Efficiency& operator=(const AliAnalysisTaskPi0Efficiency& ){return *this;} // not implemented
   Bool_t IsGoodChannel(const char * det, Int_t mod,Int_t ix, Int_t iz); //Use addisional bad map for PHOS
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
-  Bool_t TestLambda(Double_t l1,Double_t l2) ;  //Evaluate Dispersion cuts for photons
+  Bool_t TestLambda(Double_t e,Double_t l1,Double_t l2) ;  //Evaluate Dispersion cuts for photons
+  Bool_t TestLambda2(Double_t e,Double_t l1,Double_t l2) ;  //Evaluate Dispersion cuts for photons
   void ProcessMC() ;
+  Double_t CoreEnergy(AliPHOSAodCluster * clu); 
  
-private:
+protected:
   AliStack * fStack ;
   TList * fOutputContainer;        //final histogram container
   TList * fPHOSEvents[1][10][11] ; //Containers for events with PHOS photons

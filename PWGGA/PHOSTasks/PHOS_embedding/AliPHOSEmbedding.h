@@ -22,16 +22,17 @@ public:
   AliPHOSEmbedding(const char *name = "AliPHOSEmbedding");
   virtual ~AliPHOSEmbedding() {}
   
+  //Standard methods
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *){}
   
-
+  //Chain with signal AOD for embedding
   void SetSignalChain(TChain * signal){fAODChain =signal;}
 
-  void SetOldCalibration(TH2F **calib) ; 
   //Calibration used in reconstruction of real data (ESDs)
   //If not set, assume same calibration as set by default
+  void SetOldCalibration(TH2F **calib) ; 
 
 private:
   AliPHOSEmbedding(const AliPHOSEmbedding&); // not implemented
@@ -43,9 +44,12 @@ private:
   
   AliAODEvent * GetNextSignalEvent(void) ;
 
+  void CopyRecalibrateDigits(void) ;
   void MakeEmbedding(AliESDEvent * data, AliAODEvent * signal) ;
   void MakeDigits(AliAODEvent* signal) ;  
 
+  //Convert ESD with embedded signal to AOD
+  //First standard stuff
   void ConvertESDtoAOD(AliESDEvent *esd) ;
   void ConvertHeader(AliESDEvent &esd) ;
   void ConvertPrimaryVertices(const AliESDEvent &esd) ;
@@ -53,12 +57,11 @@ private:
   void ConvertEMCALCells(const AliESDEvent &esd) ;
   void ConvertPHOSCells(const AliESDEvent &esd) ;
   
+  //Add new branch
   void ConvertEmbeddedClusters(const AliESDEvent *esd) ;
   void ConvertEmbeddedCells(const AliESDEvent *esd) ;
   void ConvertMCParticles(const AliAODEvent *aod) ;
 
-  Double_t TPCrp(const AliESDEvent * event) ;
-  Bool_t SelectTrack(AliESDtrack * t) ;  
   Float_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
   
 
@@ -66,7 +69,7 @@ private:
 
   TTree * fDigitsTree ;  //! Digits
   TTree * fClustersTree; //! Clusters
-  TTree * fTreeOut; //Output AOD
+  TTree * fTreeOut;      //Output AOD
   TClonesArray * fDigitsArr ; //!
 
   TClonesArray * fEmbeddedClusters ; //!

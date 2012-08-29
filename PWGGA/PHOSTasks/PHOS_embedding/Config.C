@@ -30,7 +30,7 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv3.h"
 #include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSv11.h"
+#include "ITS/AliITSv11Hybrid.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv6T0.h"
 #include "HMPID/AliHMPIDv3.h"
@@ -206,27 +206,37 @@ void Config()
       gener = MbPhojet();
   }
 */  
-/*
+
+printf("Creating Hagedorn generator \n") ;
    AliGenCocktail *gener  = new AliGenCocktail();
 
-   AliGenPHOSlib * lib = new AliGenPHOSlib() ;
-   //4pi0
-   AliGenParam *genPHOS = new AliGenParam(4,AliGenPHOSlib::kPion,lib->GetPt(AliGenPHOSlib::kPi0),lib->GetY(AliGenPHOSlib::kPi0Flat),lib->GetIp(AliGenPHOSlib::kPi0)) ;
-   genPHOS->SetPhiRange(250.,330.) ;
-   genPHOS->SetYRange(-0.15.,0.15) ;
-   genPHOS->SetPtRange(0.5,30.) ;
-   gener->AddGenerator(genPHOS,"PHOS",1.) ;
-*/
+    myIp * my = new myIp(111) ;
 
+
+   AliGenPHOSlib * lib = new AliGenPHOSlib() ;
+   //2pi0
+   AliGenParam *genPHOS = new AliGenParam(1,AliGenPHOSlib::kPion, my->GetPt(AliGenPHOSlib::kPion, ""),
+                                            lib->GetY(AliGenPHOSlib::kPi0Flat),
+                                            my->GetV2(AliGenPHOSlib::kPi0Flat,""),
+                                            my->GetIp(AliGenPHOSlib::kPi0)) ;
+   genPHOS->SetPhiRange(260.,320.) ;
+   genPHOS->SetYRange(-0.125.,0.125) ;
+   genPHOS->SetPtRange(1.,10.) ; 
+//   genPHOS->SetPtRange(2.,10.) ; 
+   genPHOS->SetForceDecay(kNoDecay);
+   gener->AddGenerator(genPHOS,"PHOS",1.) ;
+
+
+/*
 printf("Creating FLAT generator \n") ;
 
-   gener = new AliGenBox(2) ;
+   gener = new AliGenBox(1) ;
    gener->SetPhiRange(250.,330.) ;
    gener->SetYRange(-0.15.,0.15) ;
-   gener->SetEtaRange(-0.15,0.15) ;
    gener->SetPtRange(0.5,30.) ;
    gener->SetPart(111) ;
 
+*/
   //
   //
   // Size of the interaction diamond
@@ -342,7 +352,7 @@ printf("Creating FLAT generator \n") ;
     {
         //=================== ITS parameters ============================
 
-	AliITS *ITS  = new AliITSv11("ITS","ITS v11");
+       AliITS *ITS  = new AliITSv11("ITS","ITS v11");
     }
 
     if (iTPC)
