@@ -1,11 +1,13 @@
 const Double_t kMean=0.136 ; //Approximate peak position to facilitate error estimate
 
 //-----------------------------------------------------------------------------
-void MakeMmixPi0(const Int_t centrality=0, const char* pid="CPV")
+void MakeMmixPi0(const TString filename = "Pi0Flow_000167920.root",
+		 const Int_t centrality=0, 
+		 const char* pid="CPV")
 {
   //Fit Real/Mixed ratio, normalize Mixed and subtract it from Real
 
-  TFile * f = new TFile("Pi0Flow_000167920.root") ;
+  TFile * f = new TFile(filename) ;
   TList *histoList = (TList*)f->Get("PHOSPi0Flow");
   char key[125] ;
 
@@ -38,9 +40,9 @@ void MakeMmixPi0(const Int_t centrality=0, const char* pid="CPV")
     return;
   }
 
-  Int_t nPadX = 2, nPadY = 2;
-  Int_t nbin=4 ;
-  Double_t xa[21]={1., 2., 3., 5., 10.} ;
+  Int_t nPadX = 3, nPadY = 2;
+  Int_t nbin=6 ;
+  Double_t xa[21]={1., 2., 3., 4., 5., 7., 10.} ;
 
   PPRstyle();
   gStyle->SetPadLeftMargin(0.14);

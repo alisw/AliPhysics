@@ -42,7 +42,7 @@
 // Authors : Dmitri Peressounko
 // Date    : 28.05.2011
 // Modified: 03.08.2012 Henrik Qvigstad
-/* $Id: AliAnalysisTaskPi0Flow.cxx 58214 2012-08-17 06:53:05Z kharlov $ */
+/* $Id$ */
 
 ClassImp(AliAnalysisTaskPi0Flow);
 
@@ -701,7 +701,7 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
   }
 
   
-  AliESDCaloCells* esdCells = dynamic_cast<AliESDCaloCells*> (fEvent->GetPHOSCells());
+  AliVCaloCells* cells = dynamic_cast<AliVCaloCells*> (fEvent->GetPHOSCells());
   for (Int_t i=0; i<fEvent->GetNumberOfCaloClusters(); i++) {
     AliVCluster *clu = fEvent->GetCaloCluster(i);
 
@@ -727,12 +727,13 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
 
     TLorentzVector lorentzMomentum;
     Double_t ecore;
+    ecore = CoreEnergy(clu,cells);
 
     //if ESD, Apply re-Calibreation
     Double_t origo[3] = {0,0,0}; // don't rely on event vertex, assume (0,0,0)
     if( fEventESD ) {
       AliPHOSEsdCluster cluPHOS1( *(AliESDCaloCluster*) (clu) );
-      cluPHOS1.Recalibrate(fPHOSCalibData, esdCells); // modify the cell energies
+      cluPHOS1.Recalibrate(fPHOSCalibData, dynamic_cast<AliESDCaloCells*> (cells)); // modify the cell energies
       Reclusterize(&cluPHOS1) ;
       cluPHOS1.EvalAll(kLogWeight, fVertexVector);         // recalculate the cluster parameters
       cluPHOS1.SetE(fNonLinCorr->Eval(cluPHOS1.E()));// Users's nonlinearity
@@ -751,7 +752,6 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
       cluPHOS1.SetPosition(position);
 
       cluPHOS1.GetMomentum(lorentzMomentum ,origo);
-      ecore = CoreEnergy(&cluPHOS1);
       
       //TODO: Check, this may be LHC10h specific:
       if(mod==2) lorentzMomentum*=135.5/134.0 ;
@@ -763,7 +763,6 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     else if (fEventAOD) { // is ! ESD, AOD.
       AliESDCaloCluster* aodCluster = (AliESDCaloCluster*) (clu);
       aodCluster->GetMomentum(lorentzMomentum ,origo);
-      ecore = CoreEnergy(clu);
     }
     else {
       AliError("(Calo)Cluster is neither ESD nor AOD");
@@ -2964,7 +2963,8 @@ Double_t  AliAnalysisTaskPi0Flow::ApplyFlattening(Double_t phi, Double_t c){
 
 }
 //____________________________________________________________________________
-Double_t  AliAnalysisTaskPi0Flow::CoreEnergy(AliVCluster * clu){
+Double_t  AliAnalysisTaskPi0Flow::CoreEnergy(AliVCluster * clu, AliVCaloCells * cells)
+{
   //calculate energy of the cluster in the circle with radius distanceCut around the maximum
 
   //Can not use already calculated coordinates?
@@ -2988,6 +2988,8 @@ Double_t  AliAnalysisTaskPi0Flow::CoreEnergy(AliVCluster * clu){
     fPHOSGeo->RelPosInModule(relid, xi, zi);
     xc[iDigit]=xi ;
     zc[iDigit]=zi ;
+    elist[iDigit] *= cells->GetCellAmplitude(clu->GetCellsAbsId()[iDigit]);
+    printf("%f ",elist[iDigit]);
     if (clu->E()>0 && elist[iDigit]>0) {
       Float_t w = TMath::Max( 0., logWeight + TMath::Log( elist[iDigit] / clu->E() ) ) ;
       x    += xc[iDigit] * w ;

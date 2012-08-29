@@ -5,7 +5,7 @@
 // Authors : Dmitri Peressounko
 // Date    : 28.05.2011
 // Modified: 03.08.2012 Henrik Qvigstad
-/* $Id: AliAnalysisTaskPi0Flow.h 58128 2012-08-07 17:52:08Z kharlov $ */
+/* $Id$ */
 
 class TObjArray;
 class TH1F;
@@ -94,7 +94,7 @@ private:
     Double_t ApplyFlatteningV0A(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
     Double_t ApplyFlatteningV0C(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
     Int_t ConvertToInternalRunNumber(Int_t run) ;
-    Double_t CoreEnergy(AliVCluster * clu);
+    Double_t CoreEnergy(AliVCluster * clu, AliVCaloCells * cells);
 
 
 
