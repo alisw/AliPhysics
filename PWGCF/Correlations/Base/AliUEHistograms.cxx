@@ -64,7 +64,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
   fOnlyOneEtaSide(0),
-  fRunNumber(0)
+  fRunNumber(0),
+  fMergeCount(1)
 {
   // Constructor
   //
@@ -176,7 +177,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCutConversions(kFALSE),
   fCutResonances(kFALSE),
   fOnlyOneEtaSide(0),
-  fRunNumber(0)
+  fRunNumber(0),
+  fMergeCount(1)
 {
   //
   // AliUEHistograms copy constructor
@@ -853,6 +855,7 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fCutResonances = fCutResonances;
   target.fOnlyOneEtaSide = fOnlyOneEtaSide;
   target.fRunNumber = fRunNumber;
+  target.fMergeCount = fMergeCount;
 }
 
 //____________________________________________________________________
@@ -910,6 +913,9 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
       lists[16]->Add(entry->fCentralityCorrelation);
     if (entry->fYields)
       lists[17]->Add(entry->fYields);
+
+    fMergeCount += entry->fMergeCount;
+
     count++;
   }
     
@@ -941,7 +947,7 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   
   for (Int_t i=0; i<kMaxLists; i++)
     delete lists[i];
-
+  
   return count+1;
 }
 
