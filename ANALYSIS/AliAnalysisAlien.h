@@ -109,7 +109,7 @@ public:
    Bool_t              GenerateTest(const char *name, const char *modname="");
    Bool_t              GenerateTrain(const char *name);
    virtual Bool_t      CreateDataset(const char *pattern);
-   Bool_t              CopyLocalDataset(const char *griddir, const char *pattern, Int_t nfiles, const char *output="data.txt", const char *archivefile="", const char *outputdir="data");
+   Int_t               CopyLocalDataset(const char *griddir, const char *pattern, Int_t nfiles, const char *output="data.txt", const char *archivefile="", const char *outputdir="data");
    virtual Bool_t      CreateJDL();
    virtual void        EnablePackage(const char *package);
    static Bool_t       DirectoryExists(const char *lfn);
