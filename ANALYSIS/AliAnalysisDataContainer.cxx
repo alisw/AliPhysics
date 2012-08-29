@@ -615,7 +615,7 @@ void AliAnalysisFileDescriptor::Print(Option_t*) const
 }
 
 //______________________________________________________________________________
-void AliAnalysisFileDescriptor::SavePrimitive(ostream &out, Option_t *)
+void AliAnalysisFileDescriptor::SavePrimitive(std::ostream &out, Option_t *)
 {
 // Stream info to file
    const Double_t megabyte = 1048576.;
@@ -626,7 +626,7 @@ void AliAnalysisFileDescriptor::SavePrimitive(ostream &out, Option_t *)
    out << "image        " << fImage << endl;
    out << "nreplicas    " << fNreplicas << endl;
    out << "openstamp    " << fOpenedAt << endl;
-   out << setiosflags(ios::fixed) << setprecision(3);
+   out << setiosflags(std::ios::fixed) << std::setprecision(3);
    out << "opentime     " << fOpenTime << endl;
    out << "runtime      " << fProcessingTime << endl;
    out << "filesize     " << fSize/megabyte << endl;

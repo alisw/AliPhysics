@@ -422,8 +422,12 @@ void AliQADataMakerRec::StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const
     if (AliQAManager::QAManager(AliQAv1::kRECMODE)->IsSaveData())
       fOutput = AliQAv1::GetQADataFile(GetName(), fRun) ; 	
   }	
-  AliDebug(AliQAv1::GetQADebugLevel(), Form(" Run %d Cycle %d task %s file %s", 
+  if (AliQAManager::QAManager(AliQAv1::kRECMODE)->IsSaveData())
+    AliDebug(AliQAv1::GetQADebugLevel(), Form(" Run %d Cycle %d task %s file %s", 
 					    fRun, fCurrentCycle, AliQAv1::GetTaskName(task).Data(), fOutput->GetName() )) ;
+  else
+    AliDebug(AliQAv1::GetQADebugLevel(), Form(" Run %d Cycle %d task %s not saved", 
+                                              fRun, fCurrentCycle, AliQAv1::GetTaskName(task).Data() )) ;    
 
   //	fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
   //	if (!fDetectorDir)

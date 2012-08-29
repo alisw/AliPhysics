@@ -661,6 +661,8 @@ void AliReconstruction::InitQA()
 
 
   AliQAManager * qam = AliQAManager::QAManager(AliQAv1::kRECMODE) ; 
+  qam->SetSaveData(kTRUE); 
+  qam->SetCycleLength(AliQAv1::kITS, 5) ; 
   if (fWriteQAExpertData)
     qam->SetWriteExpert() ; 
  
@@ -4474,7 +4476,7 @@ Bool_t AliReconstruction::HasEnoughResources(int ev)
     //
     unlink(Form("%s",fgkStopEvFName));
     ofstream outfile(fgkStopEvFName);
-    outfile << ev << endl;
+    outfile << ev << std::endl;
     outfile.close();
     fStopped = kTRUE;
   }

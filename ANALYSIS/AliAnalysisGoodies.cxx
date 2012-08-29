@@ -48,6 +48,9 @@ AliAnalysisGoodies::AliAnalysisGoodies() :
   fESDTreeName("esdTree"), 
   fAmgr(0)
 {
+    //ctor
+    // connects to alien and creates an analysis manager
+
   fTimer.Reset() ; 
    
   TString token = gSystem->Getenv("GRID_TOKEN") ; 
@@ -67,7 +70,9 @@ AliAnalysisGoodies::AliAnalysisGoodies(const AliAnalysisGoodies& ag) :
   fESDTreeName(""), 
   fAmgr(0x0)  
 {
-  
+    //copy ctor
+    // connects to alien and creates an analysis manager
+
   fESDTreeName = ag.fESDTreeName ;  
   TString token = gSystem->Getenv("GRID_TOKEN") ; 
   
@@ -93,6 +98,8 @@ AliAnalysisGoodies& AliAnalysisGoodies::operator=(const AliAnalysisGoodies& ag)
 //______________________________________________________________________________
 void AliAnalysisGoodies::Help() const  
 {
+    // helper
+    // display all available utilities
   AliInfo("Analysis utilities:\n") ; 
   printf("                ***  Alien2Local  : copy files ESD files listed in an xml collection from AliEn catalog to local storage and creates a local xml collection  \n") ; 
   printf("                                        usage: Alien2Local(in, out)\n") ; 

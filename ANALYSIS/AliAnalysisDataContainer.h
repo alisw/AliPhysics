@@ -178,7 +178,7 @@ public:
    const char  *GetUrl() const    {return fUrl;}
    Bool_t       IsArchive() const {return fIsArchive;}
    virtual void Print(Option_t *option="") const;
-   virtual void SavePrimitive(ostream &out, Option_t *option = "");
+   virtual void SavePrimitive(std::ostream &out, Option_t *option = "");
    void         SetOpenTime(Double_t time) {fOpenTime = time;}
    
 

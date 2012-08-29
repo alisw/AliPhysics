@@ -377,9 +377,9 @@ void AliVZEROTriggerSimulator::Print(Option_t* /* opt */) const
   // Prints the trigger windows as
   // initialized from the OCDB
   for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
-    cout << "Board=" << i << "   BB (" << fBBGate[i]->GetStartTime() << " -> " << fBBGate[i]->GetStopTime() << ")   BG (" << fBGGate[i]->GetStartTime() << " -> " << fBGGate[i]->GetStopTime() << ")" << endl;
+    std::cout << "Board=" << i << "   BB (" << fBBGate[i]->GetStartTime() << " -> " << fBBGate[i]->GetStopTime() << ")   BG (" << fBGGate[i]->GetStartTime() << " -> " << fBGGate[i]->GetStopTime() << ")" << std::endl;
   }
-  cout << endl;
+  std::cout << std::endl;
 }
 
 
