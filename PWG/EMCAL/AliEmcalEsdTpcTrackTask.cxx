@@ -88,6 +88,7 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
   }
 
   // add tracks to event if not yet there
+  fTracks->Delete();
   if (!(InputEvent()->FindListObject(fTracksName)))
     InputEvent()->AddObject(fTracks);
 

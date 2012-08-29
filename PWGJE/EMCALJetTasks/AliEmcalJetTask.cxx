@@ -397,6 +397,7 @@ Bool_t AliEmcalJetTask::DoInit()
   }
 
   // add jets to event if not yet there
+  fJets->Delete();
   if (!(fEvent->FindListObject(fJetsName)))
     fEvent->AddObject(fJets);
   else {

@@ -289,6 +289,7 @@ void AliJetModelBaseTask::ExecOnce()
     }
 
     if (fCopyArray) {
+      fOutTracks->Delete();
       if (!(InputEvent()->FindListObject(fOutTracksName)))
 	InputEvent()->AddObject(fOutTracks);
     }
@@ -321,6 +322,7 @@ void AliJetModelBaseTask::ExecOnce()
     }
 
     if (fCopyArray) {
+      fOutClusters->Delete();
       if (!(InputEvent()->FindListObject(fOutCaloName)))
 	InputEvent()->AddObject(fOutClusters);
     }

@@ -72,6 +72,7 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
   }
 
   // add tracks to event if not yet there
+  fTracksOut->Delete();
   if (!(event->FindListObject(fTracksOutName))) {
     event->AddObject(fTracksOut);
   }
