@@ -39,6 +39,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
   fRandTracksName("TracksRandomized"),
   fRandCaloName("CaloClustersRandomized"),
   fRhoName("Rho"),
+  fRCperEvent(-1),
   fEmbJets(0),
   fEmbTracks(0),
   fEmbCaloClusters(0),
@@ -110,7 +111,8 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
   fEmbCaloName(""),
   fRandTracksName("TracksRandomized"),
   fRandCaloName("CaloClustersRandomized"),
-  fRhoName("Rho"),
+  fRhoName("Rho"), 
+  fRCperEvent(-1),
   fEmbJets(0),
   fEmbTracks(0),
   fEmbCaloClusters(0),
@@ -593,50 +595,52 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
   const Float_t rcArea = fJetRadius * fJetRadius * TMath::Pi();
 
   // Simple random cones
-  Float_t RCpt = 0;
-  Float_t RCptRigid = 0;
-  Float_t RCeta = 0;
-  Float_t RCphi = 0;
-  GetRigidCone(RCpt, RCptRigid, RCeta, RCphi, 0);
-  if (RCpt > 0) {
-    fHistRCPt[fCentBin]->Fill(RCpt / rcArea);
-    fHistDeltaPtRC[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
-  }
-  if (RCptRigid > 0) {
-    fHistRCPtRigid[fCentBin]->Fill(RCptRigid / rcArea);
-    fHistDeltaPtRCRigid[fCentBin]->Fill(RCptRigid - rcArea * fRhoVal);
+  for (Int_t i = 0; i < fRCperEvent; i++) {
+    Float_t RCpt = 0;
+    Float_t RCptRigid = 0;
+    Float_t RCeta = 0;
+    Float_t RCphi = 0;
+    GetRigidCone(RCpt, RCptRigid, RCeta, RCphi, 0);
+    if (RCpt > 0) {
+      fHistRCPt[fCentBin]->Fill(RCpt / rcArea);
+      fHistDeltaPtRC[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
+    }
+    if (RCptRigid > 0) {
+      fHistRCPtRigid[fCentBin]->Fill(RCptRigid / rcArea);
+      fHistDeltaPtRCRigid[fCentBin]->Fill(RCptRigid - rcArea * fRhoVal);
+    }
+  
+    // Random cones far from leading jet
+    RCpt = 0;
+    RCptRigid = 0;
+    RCeta = 0;
+    RCphi = 0;
+    GetRigidCone(RCpt, RCptRigid, RCeta, RCphi, jet);
+    if (RCpt > 0) {
+      fHistRCPhiEta->Fill(RCeta, RCphi);
+      fHistRhoVSRCPt->Fill(fRhoVal, RCpt / rcArea);
+      
+      Float_t dphi = RCphi - jet->Phi();
+      if (dphi > 4.8) dphi -= TMath::Pi() * 2;
+      if (dphi < -1.6) dphi += TMath::Pi() * 2; 
+      fHistRCPtExLJVSDPhiLJ->Fill(RCpt, dphi);
+    
+      fHistRCPtExLJ[fCentBin]->Fill(RCpt / rcArea);
+      fHistDeltaPtRCExLJ[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
+    }
+    
+    // Random cones with randomized particles
+    RCpt = 0;
+    RCptRigid = 0;
+    RCeta = 0;
+    RCphi = 0;
+    GetRigidCone(RCpt, RCptRigid, RCeta, RCphi, 0, fRandTracks, fRandCaloClusters);
+    if (RCpt > 0) {
+      fHistRCPtRand[fCentBin]->Fill(RCpt / rcArea);
+      fHistDeltaPtRCRand[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
+    }  
   }
   
-  // Random cones far from leading jet
-  RCpt = 0;
-  RCptRigid = 0;
-  RCeta = 0;
-  RCphi = 0;
-  GetRigidCone(RCpt, RCptRigid, RCeta, RCphi, jet);
-  if (RCpt > 0) {
-    fHistRCPhiEta->Fill(RCeta, RCphi);
-    fHistRhoVSRCPt->Fill(fRhoVal, RCpt / rcArea);
-
-    Float_t dphi = RCphi - jet->Phi();
-    if (dphi > 4.8) dphi -= TMath::Pi() * 2;
-    if (dphi < -1.6) dphi += TMath::Pi() * 2; 
-    fHistRCPtExLJVSDPhiLJ->Fill(RCpt, dphi);
-    
-    fHistRCPtExLJ[fCentBin]->Fill(RCpt / rcArea);
-    fHistDeltaPtRCExLJ[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
-  }
-
-  // Random cones with randomized particles
-  RCpt = 0;
-  RCptRigid = 0;
-  RCeta = 0;
-  RCphi = 0;
-  GetRigidCone(RCpt, RCptRigid, RCeta, RCphi, 0, fRandTracks, fRandCaloClusters);
-  if (RCpt > 0) {
-    fHistRCPtRand[fCentBin]->Fill(RCpt / rcArea);
-    fHistDeltaPtRCRand[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
-  }
-
   // ************
   // Embedding
   // _________________________________
@@ -1218,6 +1222,14 @@ void AliAnalysisTaskSAJF::ExecOnce()
   }
 
   AliAnalysisTaskEmcalJet::ExecOnce();
+
+  if (fRCperEvent < 0) {
+    Double_t area = (fMaxEta - fMinEta) * (fMaxPhi - fMinPhi);
+    Double_t jetArea = TMath::Pi() * fJetRadius * fJetRadius;
+    fRCperEvent = TMath::FloorNint(area / jetArea - 0.5);
+    if (fRCperEvent == 0)
+      fRCperEvent = 1;
+  }
 
   if (fMinRC2LJ < 0)
     fMinRC2LJ = fJetRadius * 1.5;
