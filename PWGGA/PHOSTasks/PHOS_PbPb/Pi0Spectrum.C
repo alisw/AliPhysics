@@ -14,6 +14,7 @@ void Pi0Spectrum(const char* dataset="collection.xml")
 
   // A task can be compiled dynamically with AClic
   gROOT->LoadMacro("AliCaloPhoton.cxx+g");
+  gROOT->LoadMacro("AliPHOSEPFlattener.cxx++") ;
   gROOT->LoadMacro("AliAnalysisTaskPi0Flow.cxx+g");
   
   // Connect to alien
