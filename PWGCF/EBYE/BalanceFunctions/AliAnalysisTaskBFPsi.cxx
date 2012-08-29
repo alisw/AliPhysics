@@ -55,6 +55,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fRunShuffling(kFALSE),
   fShuffledBalance(0),
   fRunMixing(kFALSE),
+  fRunMixingEventPlane(kFALSE),
   fMixingTracks(50000),
   fMixedBalance(0),
   fPoolMgr(0),
@@ -349,25 +350,33 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
 
 
   // Event Mixing
-  Int_t trackDepth = fMixingTracks; 
-  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
-   
-  // centrality bins
-  Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-  Double_t* centbins        = centralityBins;
-  Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
-  
-  // Zvtx bins
-  Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-  Double_t* vtxbins     = vertexBins;
-  Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
-
-  // Event plane angle (Psi) bins
-  Double_t psiBins[] = {0.,45.,135.,215.,305.,360.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
-  Double_t* psibins     = psiBins;
-  Int_t nPsiBins     = sizeof(psiBins) / sizeof(Double_t) - 1;
-
-  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins, nPsiBins, psibins);
+  if(fRunMixing){
+    Int_t trackDepth = fMixingTracks; 
+    Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+    
+    // centrality bins
+    Double_t centralityBins[] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.,90.,100.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t* centbins        = centralityBins;
+    Int_t nCentralityBins     = sizeof(centralityBins) / sizeof(Double_t) - 1;
+    
+    // Zvtx bins
+    Double_t vertexBins[] = {-10., -7., -5., -3., -1., 1., 3., 5., 7., 10.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t* vtxbins     = vertexBins;
+    Int_t nVertexBins     = sizeof(vertexBins) / sizeof(Double_t) - 1;
+    
+    // Event plane angle (Psi) bins
+    Double_t psiBins[] = {0.,45.,135.,215.,305.,360.}; // SHOULD BE DEDUCED FROM CREATED ALITHN!!!
+    Double_t* psibins     = psiBins;
+    Int_t nPsiBins     = sizeof(psiBins) / sizeof(Double_t) - 1;
+    
+    // run the event mixing also in bins of event plane (statistics!)
+    if(fRunMixingEventPlane){
+      fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins, nPsiBins, psibins);
+    }
+    else{
+      fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centbins, nVertexBins, vtxbins);
+    }
+  }
 
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 

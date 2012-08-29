@@ -44,6 +44,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fRunMixing = kTRUE;
     fMixedBalance = analysisMixed;
   }
+  void SetMixingWithEventPlane(Bool_t bMixingWithEventPlane = kTRUE) { fRunMixingEventPlane = bMixingWithEventPlane; }
   void SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
   void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
     fESDtrackCuts = trackCuts;}
@@ -143,6 +144,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fRunShuffling;//run shuffling or not
   AliBalancePsi *fShuffledBalance; //BF object (shuffled)
   Bool_t fRunMixing;//run mixing or not
+  Bool_t fRunMixingEventPlane;//run mixing with Event Plane
   Int_t  fMixingTracks;
   AliBalancePsi *fMixedBalance; //TriggeredBF object (mixed)
   AliEventPoolManager*     fPoolMgr;         //! event pool manager
