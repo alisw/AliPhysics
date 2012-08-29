@@ -1292,7 +1292,7 @@ void AliAnalysisTaskPi0Flow::UpdateLists()
   //If no photons in current event - no need to add it to mixed
 
   TList * arrayList = GetCaloPhotonsPHOSList(fVtxBin, fCentBin, fEMRPBin);
-  if( fDebug )
+  if( fDebug >= 2 )
     AliInfo( Form("fCentBin=%d, fCentNMixed[]=%d",fCentBin,fCentNMixed[fCentBin]) );
   if(fCaloPhotonsPHOS->GetEntriesFast()>0){
     arrayList->AddFirst(fCaloPhotonsPHOS) ;
@@ -1399,12 +1399,12 @@ Int_t AliAnalysisTaskPi0Flow::GetCentralityBin(Float_t centralityV0M)
  */
   int lastBinUpperIndex = fCentEdges.GetSize() -1;
   if( centralityV0M > fCentEdges[lastBinUpperIndex] ) {
-    if(fDebug)
+    if( fDebug >= 1 )
       AliWarning( Form("centrality (%f) larger then upper edge of last centrality bin (%f)!", centralityV0M, fCentEdges[lastBinUpperIndex]) );
     return lastBinUpperIndex-1;
   }
   if( centralityV0M < fCentEdges[0] ) {
-    if( fDebug )
+    if( fDebug >= 1 )
       AliWarning( Form("centrality (%f) smaller then lower edge of first bin (%f)!", centralityV0M, fCentEdges[0]) );
     return 0;
   }
@@ -1429,7 +1429,7 @@ Int_t AliAnalysisTaskPi0Flow::GetRPBin()
   else if(fEMRPBin<0)
     fEMRPBin=0;
 
-  if ( fDebug )
+  if ( fDebug >= 2 )
     AliInfo(Form("Event Mixing Reaction Plane bin is: %d", fEMRPBin));
 
   return fEMRPBin;
@@ -1439,7 +1439,7 @@ Int_t AliAnalysisTaskPi0Flow::GetRPBin()
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::LogProgress(int step)
 {
-  if(fDebug > 1) {
+  if(fDebug >= 2) {
     AliInfo(Form("step %d completed", step));
   }
   // the +0.5 is not realy neccisarry, but oh well... -henrik
@@ -1787,7 +1787,7 @@ Int_t AliAnalysisTaskPi0Flow::ConvertToInternalRunNumber(Int_t run){
     default : return 199;
     }
   }
-  if(kUndefinedPeriod && fDebug > 0) {
+  if(kUndefinedPeriod && fDebug >= 1 ) {
     AliWarning("Period not defined");
   }
   return 1;
@@ -3001,7 +3001,8 @@ Double_t  AliAnalysisTaskPi0Flow::CoreEnergy(AliVCluster * clu, AliVCaloCells * 
     xc[iDigit]=xi ;
     zc[iDigit]=zi ;
     elist[iDigit] *= cells->GetCellAmplitude(clu->GetCellsAbsId()[iDigit]);
-    printf("%f ",elist[iDigit]);
+    if( fDebug >= 3 )
+      printf("%f ",elist[iDigit]);
     if (clu->E()>0 && elist[iDigit]>0) {
       Float_t w = TMath::Max( 0., logWeight + TMath::Log( elist[iDigit] / clu->E() ) ) ;
       x    += xc[iDigit] * w ;
@@ -3118,7 +3119,7 @@ void AliAnalysisTaskPi0Flow::SetMisalignment(){
       else {
 	fPHOSGeo->SetMisalMatrix(modMatrix, mod);
 	if( fDebug )
-	  AliInfo("PHOS Geometric Misalignment Matrix");
+	  AliInfo(Form("PHOS Geometric Misalignment Matrix set for module %d", mod));
       }
     }
   }
@@ -3264,7 +3265,7 @@ void AliAnalysisTaskPi0Flow::SetGeometry()
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) {
 	continue;
-	if( fDebug > 0 )
+	if( fDebug )
 	  AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
       }
       else {
@@ -3314,7 +3315,7 @@ void AliAnalysisTaskPi0Flow::SetVertex()
   fVertexVector = TVector3(fVertex);
   FillHistogram("hZvertex", fVertexVector.z(), fInternalRunNumber-0.5);
   
-  if( fDebug > 1 )
+  if( fDebug >= 2 )
     AliInfo(Form("Vertex is set to (%.1f,%.1f,%.1f)", fVertex[0], fVertex[1], fVertex[2]));
 
   fVtxBin=0 ;// No support for vtx binning implemented.
@@ -3348,7 +3349,7 @@ void AliAnalysisTaskPi0Flow::SetCentrality()
 
   fCentBin = GetCentralityBin(fCentralityV0M);
 
-  if ( fDebug )
+  if ( fDebug >= 2 )
     AliInfo(Form("Centrality (bin) is: %f (%d)", fCentralityV0M, fCentBin));
 }
 
@@ -3398,7 +3399,7 @@ void AliAnalysisTaskPi0Flow::EvalReactionPlane()
     fHaveTPCRP = kFALSE;
   }
   else{
-    if( fDebug ) AliInfo(Form("Q Reaction Plane is %f", reactionPlaneQ));
+    if( fDebug >= 2 ) AliInfo(Form("Q Reaction Plane is %f", reactionPlaneQ));
     fHaveTPCRP = kTRUE;
   }
 
@@ -3493,7 +3494,7 @@ void  AliAnalysisTaskPi0Flow::EvalV0ReactionPlane(){
     AliError("Don't know how to, or if to, apply flattening for ESD");
   }
     
-  if( fDebug )
+  if( fDebug >= 2 )
     AliInfo(Form("V0 Reaction Plane is: A side: %f, C side: %f", fRPV0A, fRPV0C));
 
   FillHistogram("phiRPV0A",fRPV0A,fCentralityV0M);
