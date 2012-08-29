@@ -36,11 +36,16 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fRepropagateTracks(kFALSE),
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTrgClusters(0),
+  fNclusters(0),
+  fNtracks(0),
+  fNjets(0),
   fHistCentrality(0),
   fHistZVertex(0),
   fHistTracksCent(0),
   fHistClusCent(0),
+  fHistJetsCent(0),
   fHistClusTracks(0),
+  fHistJetsParts(0),
   fHistCellsCent(0),
   fHistCellsTracks(0),
   fHistMaxL1FastORCent(0),
@@ -93,11 +98,16 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fRepropagateTracks(kFALSE),
   fTrgClusName("ClustersL1GAMMAFEE"),
   fTrgClusters(0),
+  fNclusters(0),
+  fNtracks(0),
+  fNjets(0),
   fHistCentrality(0),
   fHistZVertex(0),
   fHistTracksCent(0),
   fHistClusCent(0),
+  fHistJetsCent(0),
   fHistClusTracks(0),
+  fHistJetsParts(0),
   fHistCellsCent(0),
   fHistCellsTracks(0),
   fHistMaxL1FastORCent(0),
@@ -171,6 +181,16 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTracksCent->GetXaxis()->SetTitle("Centrality (%)");
   fHistTracksCent->GetYaxis()->SetTitle("No. of tracks");
   fOutput->Add(fHistTracksCent);
+
+  fHistJetsCent = new TH2F("fHistJetsCent","Jets vs. centrality", 100, 0, 100, 60, 0, 60);
+  fHistJetsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistJetsCent->GetYaxis()->SetTitle("No. of jets");
+  fOutput->Add(fHistJetsCent);
+
+  fHistJetsParts = new TH2F("fHistJetsParts","Jets vs. centrality", fNbins, 0, 6000, 60, 0, 60);
+  fHistJetsParts->GetXaxis()->SetTitle("No. of particles");
+  fHistJetsParts->GetYaxis()->SetTitle("No. of jets");
+  fOutput->Add(fHistJetsParts);
 
   if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
     fHistClusCent = new TH2F("fHistClusCent","Clusters vs. centrality", 100, 0, 100, fNbins, 0, 2000);
@@ -406,6 +426,10 @@ Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects())
     return kFALSE;
 
+  fNclusters = 0;
+  fNtracks = 0;
+  fNjets = 0;
+
   if (!fTrgClusName.IsNull() && fDoTrigger && !fTrgClusters) {
     fTrgClusters =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTrgClusName));
     if (!fTrgClusters) {
@@ -425,29 +449,27 @@ Bool_t AliAnalysisTaskSAQA::RetrieveEventObjects()
   return kTRUE;
 }
 
+
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSAQA::FillHistograms()
 {
   // Fill histograms.
 
   fHistCentrality->Fill(fCent);
-  if (fTracks)
-    fHistTracksCent->Fill(fCent, fTracks->GetEntriesFast());
-  if (fCaloClusters)
-    fHistClusCent->Fill(fCent, fCaloClusters->GetEntriesFast());
-
   fHistZVertex->Fill(fVertex[2]);
 
   Float_t trackSum = DoTrackLoop();
 
   DoJetLoop();
 
+  fHistTracksCent->Fill(fCent, fNtracks);
+
   if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
 
-    if (fTracks && fCaloClusters)
-      fHistClusTracks->Fill(fTracks->GetEntriesFast(), fCaloClusters->GetEntriesFast());
-
     Float_t clusSum = DoClusterLoop();
+
+    fHistClusCent->Fill(fCent, fNclusters);
+    fHistClusTracks->Fill(fNtracks, fNclusters);
 
     Float_t cellSum = 0, cellCutSum = 0;
     
@@ -478,6 +500,9 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
 	fHistMaxL1ThrCent->Fill(fCent, maxL1thr);
     }
   }
+
+  fHistJetsCent->Fill(fCent, fNjets);
+  fHistJetsParts->Fill(fNtracks + fNclusters, fNjets);
 
   return kTRUE;
 }
@@ -538,6 +563,8 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
     fHistNCellsEnergy->Fill(cluster->E(), cluster->GetNCells());
 
     fHistClusTimeEnergy->Fill(cluster->E(), cluster->GetTOF());
+
+    fNclusters++;
   }
 
   return sum;
@@ -571,6 +598,8 @@ Float_t AliAnalysisTaskSAQA::DoTrackLoop()
     
     if (vtrack && !AcceptTrack(vtrack, kTRUE)) 
       continue;
+
+    fNtracks++;
     
     fHistTracksPt->Fill(track->Pt());
 
@@ -700,6 +729,8 @@ void AliAnalysisTaskSAQA::DoJetLoop()
 
     fHistJetsPtNonBias[fCentBin]->Fill(jet->Pt());
     fHistJetsPtAreaNonBias[fCentBin]->Fill(jet->Pt(), jet->Area());
+
+    fNjets++;
 
     if (jet->MaxTrackPt() > fPtBiasJetTrack)
       fHistJetsPtTrack[fCentBin]->Fill(jet->Pt());
