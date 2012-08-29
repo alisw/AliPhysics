@@ -107,7 +107,8 @@ private:
     Int_t GetCentralityBin(Float_t centralityV0M);
     Int_t GetRPBin();
 
-    void LogProgress(int step, int internalRunNumber);
+    void LogProgress(int step);
+    void LogSelection(int step, int internalRunNumber);
 
     Bool_t IsGoodChannel(const char * det, Int_t mod,Int_t ix, Int_t iz); //Use addisional bad map for PHOS
 

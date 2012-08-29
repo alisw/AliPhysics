@@ -481,7 +481,7 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   fEventESD = dynamic_cast<AliESDEvent*> (fEvent);
   fEventAOD = dynamic_cast<AliAODEvent*> (fEvent);
   fMCStack = GetMCStack();
-  LogProgress(0, ConvertToInternalRunNumber(fEvent->GetRunNumber()));
+  LogProgress(0);
 
 
   // Step 1: Run Number, Misalignment Matrix, and Calibration
@@ -500,7 +500,8 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
     SetESDTrackCuts();
     SetPHOSCalibData();
   }
-  LogProgress(1, fInternalRunNumber);
+  LogProgress(1);
+  LogSelection(0, fInternalRunNumber);
 
 
   // Step 2: Vertex
@@ -510,14 +511,14 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
     PostData(1, fOutputContainer);
     return; // Reject!
   }
-  LogProgress(2, fInternalRunNumber);
+  LogProgress(2);
 
 // Step 3:
 //   if(event->IsPileupFromSPD()){
 //     PostData(1, fOutputContainer);
 //     return; // Reject!
 //   }
-  LogProgress(3, fInternalRunNumber);
+  LogProgress(3);
 
 
   // Step 4: Centrality
@@ -527,7 +528,7 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
     PostData(1, fOutputContainer);
     return; // Reject! 
   }
-  LogProgress(4, fInternalRunNumber);
+  LogProgress(4);
 
 
   // Step 5: Reaction Plane
@@ -535,35 +536,35 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   EvalReactionPlane(); //TODO: uncomment this, or at least deal with it
   EvalV0ReactionPlane(); //TODO: uncomment this, or at least deal with it
   fEMRPBin = GetRPBin(); //TODO: uncomment this, or at least deal with it
-  LogProgress(5, fInternalRunNumber);
+  LogProgress(5);
 
 
   // Step 6: MC
   //  ProcessMC() ;
-  LogProgress(6, fInternalRunNumber);
+  LogProgress(6);
 
 
   // Step 7: QA PHOS cells
   FillPHOSCellQAHists();
-  LogProgress(7, fInternalRunNumber);
+  LogProgress(7);
 
 
   // Step 8: Event Photons (PHOS Clusters) selection
   SelectPhotonClusters();
   FillSelectedClusterHistograms();
-  LogProgress(8, fInternalRunNumber);
+  LogProgress(8);
 
   // Step 9: Consider pi0 (photon/cluster) pairs.
   ConsiderPi0s();
-  LogProgress(9, fInternalRunNumber);
+  LogProgress(9);
 
   // Step 10; Mixing
   ConsiderPi0sMix();
-  LogProgress(10, fInternalRunNumber);
+  LogProgress(10);
   
   // Step 11: Update lists
   UpdateLists();
-  LogProgress(11,fInternalRunNumber);
+  LogProgress(11);
 
   
   // Post output data.
@@ -1436,15 +1437,26 @@ Int_t AliAnalysisTaskPi0Flow::GetRPBin()
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPi0Flow::LogProgress(int step, int internalRunNumber)
+void AliAnalysisTaskPi0Flow::LogProgress(int step)
 {
   if(fDebug > 1) {
     AliInfo(Form("step %d completed", step));
   }
   // the +0.5 is not realy neccisarry, but oh well... -henrik
+  //FillHistogram("hSelEvents", step+0.5, internalRunNumber-0.5);
+  //FillHistogram("hTotSelEvents", step+0.5);
+}
+
+void AliAnalysisTaskPi0Flow::LogSelection(int step, int internalRunNumber)
+{
+  // if(fDebug > 1) {
+  //   AliInfo(Form("step %d completed", step));
+  // }
+  // the +0.5 is not realy neccisarry, but oh well... -henrik
   FillHistogram("hSelEvents", step+0.5, internalRunNumber-0.5);
   FillHistogram("hTotSelEvents", step+0.5);
 }
+
 
 //___________________________________________________________________________
 Int_t AliAnalysisTaskPi0Flow::ConvertToInternalRunNumber(Int_t run){
@@ -3313,8 +3325,11 @@ Bool_t AliAnalysisTaskPi0Flow::RejectEventVertex()
 {
   if( ! fEvent->GetPrimaryVertex() )
     return true; // reject
+  LogSelection(1, fInternalRunNumber);
+
   if ( TMath::Abs(fVertexVector.z()) > 10. )
     return true; // reject
+  LogSelection(2, fInternalRunNumber);
 
   return false; // accept event.
 }
@@ -3342,6 +3357,8 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
 {
   if( ! fEvent->GetCentrality() )
     return true; // reject
+  LogSelection(3, fInternalRunNumber);
+
 //   if( fCentralityV0M <= 0. || fCentralityV0M>80. )
 //     return true; // reject
     
@@ -3351,11 +3368,14 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
       AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
   }
+  LogSelection(4, fInternalRunNumber);
+
   if( fCentralityV0M < fCentEdges[0] ) {
     if( fDebug )
       AliInfo("Rejecting due to centrality outside of binning.");
     return true; // reject
   }
+  LogSelection(5, fInternalRunNumber);
 
   return false;
 }
