@@ -29,6 +29,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        SetEmbClusName(const char *n)                        { fEmbCaloName             = n          ; }
   void                        SetRhoName(const char *n)                            { fRhoName                 = n          ; }
   void                        SetMC(Bool_t m)                                      { fMCAna                   = m          ; }
+  void                        SetRCperEvent(Int_t n)                               { fRCperEvent              = n          ; }
 
  protected:
   void                        ExecOnce()                                                                                    ;
@@ -52,6 +53,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TString                     fRandTracksName;             // Name of randomized track collection
   TString                     fRandCaloName;               // Name of randomized calo cluster collection
   TString                     fRhoName;                    // Name of rho object
+  Int_t                       fRCperEvent;                 // No. of random cones per event
 
   TClonesArray               *fEmbJets;                    //!Embedded Jets
   TClonesArray               *fEmbTracks;                  //!Embedded tracks
@@ -120,6 +122,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 9) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 10) // jet analysis task
 };
 #endif

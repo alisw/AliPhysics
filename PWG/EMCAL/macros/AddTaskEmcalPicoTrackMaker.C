@@ -3,7 +3,7 @@
 AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   const char *name       = "PicoTracks",
   const char *inname     = "tracks",
-  const char *runPeriod  = "LHC11h",
+  const char *runPeriod  = "",
   AliESDtrackCuts *cuts  = 0
 )
 {  
@@ -34,12 +34,12 @@ AliEmcalPicoTrackMaker* AddTaskEmcalPicoTrackMaker(
   if (!strcmp(runPeriod, "LHC11h")) {
     eTask->SetAODfilterBits(256,512); // hybrid tracks for LHC11h
   }
-  else if (!strcmp(runPeriod, "LHC11a") || !strcmp(runPeriod, "LHC12a15a")) {
-    eTask->SetAODfilterBits(256,16); // hybrid tracks for LHC12a and LHC12a15a
+  else if (!strcmp(runPeriod, "LHC11a") || !strcmp(runPeriod, "LHC12a15a") || !strcmp(runPeriod, "LHC12a15e")) {
+    eTask->SetAODfilterBits(256,16); // hybrid tracks for LHC11a, LHC12a15a and LHC12a15e
   }
   else {
-    if (!cuts)
-      ::Warning(Form("Run period %s not known. AOD filter bit not set.", runPeriod));
+    if (strcmp(runPeriod, ""))
+      ::Warning(Form("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod));
   }
   eTask->SetESDtrackCuts(cuts);
 

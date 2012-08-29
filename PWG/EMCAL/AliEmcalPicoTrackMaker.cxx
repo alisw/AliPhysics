@@ -37,8 +37,8 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker() :
 {
   // Constructor.
 
-  fAODfilterBits[0] = 0;
-  fAODfilterBits[1] = 0;
+  fAODfilterBits[0] = -1;
+  fAODfilterBits[1] = -1;
 }
 
 //________________________________________________________________________
@@ -59,8 +59,8 @@ AliEmcalPicoTrackMaker::AliEmcalPicoTrackMaker(const char *name) :
 {
   // Constructor.
 
-  fAODfilterBits[0] = 0;
-  fAODfilterBits[1] = 0;
+  fAODfilterBits[0] = -1;
+  fAODfilterBits[1] = -1;
   fBranchNames = "ESD:AliESDHeader.,AliESDRun.,SPDVertex.,Tracks";
 }
 
@@ -144,12 +144,20 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
       isEmc = track->IsEMCAL();
     } else {
       AliAODTrack *aodtrack = static_cast<AliAODTrack*>(track);
-      if (aodtrack->TestFilterBit(fAODfilterBits[0]))
-	label = 0;
-      else if (aodtrack->TestFilterBit(fAODfilterBits[1]))
-	label = 3;
-      else /*not a good track*/
-        continue;
+      if (fAODfilterBits[0] < 0) {
+	if (aodtrack->IsHybridGlobalConstrainedGlobal())
+	  label = 3;
+	else /*not a good track*/
+	  continue;
+      }
+      else {
+	if (aodtrack->TestFilterBit(fAODfilterBits[0]))
+	  label = 0;
+	else if (aodtrack->TestFilterBit(fAODfilterBits[1]))
+	  label = 3;
+	else /*not a good track*/
+	  continue;
+      }
 
       if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75 && 
 	  track->GetTrackPhiOnEMCal() > 70 * TMath::DegToRad() && 
