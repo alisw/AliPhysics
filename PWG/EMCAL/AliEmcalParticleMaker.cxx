@@ -62,9 +62,11 @@ Bool_t AliEmcalParticleMaker::Run()
   // Create th emcal particles
 
   // add tracks to event if not yet there
+  fTracksOut->Delete();
   if (!(InputEvent()->FindListObject(fTracksOutName))) {
     InputEvent()->AddObject(fTracksOut);
   }
+  fCaloClustersOut->Delete();
   if (!(InputEvent()->FindListObject(fCaloOutName))) {
     InputEvent()->AddObject(fCaloClustersOut);
   }

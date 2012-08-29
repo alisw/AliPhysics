@@ -509,6 +509,7 @@ Bool_t AliHadCorrTask::Run()
   // Run the hadronic correction
 
   // post output in event if not yet present
+  fOutClusters->Delete();
   if (!(InputEvent()->FindListObject(fOutCaloName)))
     InputEvent()->AddObject(fOutClusters);
   

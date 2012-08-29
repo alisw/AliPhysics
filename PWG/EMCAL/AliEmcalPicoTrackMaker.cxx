@@ -104,6 +104,7 @@ void AliEmcalPicoTrackMaker::UserExec(Option_t *)
   }
 
   // add tracks to event if not yet there
+  fTracksOut->Delete();
   if (!(InputEvent()->FindListObject(fTracksOutName))) {
     InputEvent()->AddObject(fTracksOut);
   }
