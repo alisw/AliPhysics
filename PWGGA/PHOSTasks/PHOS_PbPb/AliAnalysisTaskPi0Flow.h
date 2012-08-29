@@ -20,6 +20,7 @@ class AliESDEvent ;
 class AliPHOSCalibData;
 class AliESDtrack ;
 class AliESDCaloCluster ;
+class AliPHOSEPFlattener;
 
 #include "TArrayD.h"
 
@@ -44,7 +45,8 @@ public:
     void SetEventMixingRPBinning(UInt_t nBins) { fNEMRPBins = nBins; }
     
     void SetPHOSBadMap(Int_t mod,TH2I * badMapHist);
-
+    //Where to read AODB object with EP calibration if not default
+    void SetEPcalibFileName(const TString filename) {fEPcalibFileName = filename; }   
 
 private:
     AliAnalysisTaskPi0Flow(const AliAnalysisTaskPi0Flow&); // not implemented
@@ -60,6 +62,7 @@ private:
     void SetV0Calibration(); //V0 calibration
     void SetESDTrackCuts(); // AliESDtrack cuts ( for esd data )
     void SetPHOSCalibData(); // phos re-calibration ( for esd data)
+    void SetFlatteningData(); // phos flattening
 
     // Step 2:
     void SetVertex();
@@ -171,7 +174,12 @@ private:
     Float_t fWidthQ[kNCenBins][2][2];   // ...
     AliESDtrackCuts *fESDtrackCuts; // Track cut
     AliPHOSCalibData *fPHOSCalibData; // PHOS calibration object
-
+    TString fEPcalibFileName; 
+    AliPHOSEPFlattener * fTPCFlat ; //Object for flattening of TPC
+    AliPHOSEPFlattener * fV0AFlat ; //Object for flattening of V0A
+    AliPHOSEPFlattener * fV0CFlat ; //Object for flattening of V0C
+    
+    
     // Step 2: Vertex
     Double_t fVertex[3];
     TVector3 fVertexVector;
