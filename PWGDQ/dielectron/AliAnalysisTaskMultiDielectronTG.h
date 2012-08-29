@@ -163,17 +163,17 @@ public:
   void RejectOP(double val){fdop = val;} ///To reject conversions
   void RejectConversion(double val, double mass){fdconvphiv = val; fdconvMee = mass;} ///To reject conversions
   void EnableV0mixing(Bool_t val){fdv0mixing = val;}   ///Enable V0 mixing  
-  void CheckGhostPairs(vector<AliDielectronSingleTG*> e1); ///identify ghost pairs in like sign pais
-  Bool_t CheckGhost(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2); ///check ghost pairs for like sign and mixed like-sign pais
-  void RejectPairs(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2, Int_t idie); ///identify conversions for the rejection
+  void CheckGhostPairs(std::vector<AliDielectronSingleTG*> e1); ///identify ghost pairs in like sign pais
+  Bool_t CheckGhost(std::vector<AliDielectronSingleTG*> e1, std::vector<AliDielectronSingleTG*> e2); ///check ghost pairs for like sign and mixed like-sign pais
+  void RejectPairs(std::vector<AliDielectronSingleTG*> e1, std::vector<AliDielectronSingleTG*> e2, Int_t idie); ///identify conversions for the rejection
   void FillPair(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, int type, AliDielectron *die, Int_t idie); /// Fill Pairs
   bool PairTrackcut(double var1, double var2, double var3, int idie); /// Pair cuts
   void CalcVars(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2, 
 		 double &mass, double &phiv, double &px, double &py, double&pz,
 		double &pt, double &e, double &phi, double &eta, double &cos, double &psi); /// Calcualate kinematic variables
-  void CalcPair(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2, AliDielectron *die, Int_t idie);  ///Process Pairs
-  void RandomizePool(vector<AliDielectronSingleTG*> e1, vector<AliDielectronSingleTG*> e2);         ///Randimize pairs
-  void ReshuffleBuffer(vector<AliDielectronSingleTG*> ve, deque<AliDielectronSingleTG*> pool);  ///ReshuffleBuffer
+  void CalcPair(std::vector<AliDielectronSingleTG*> e1, std::vector<AliDielectronSingleTG*> e2, AliDielectron *die, Int_t idie);  ///Process Pairs
+  void RandomizePool(std::vector<AliDielectronSingleTG*> e1, std::vector<AliDielectronSingleTG*> e2);         ///Randimize pairs
+  void ReshuffleBuffer(std::vector<AliDielectronSingleTG*> ve, std::deque<AliDielectronSingleTG*> pool);  ///ReshuffleBuffer
 
   Double_t GetPhiv(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2); /// calculate phiv
   Double_t GetOpeningAngle(AliDielectronSingleTG* e1, AliDielectronSingleTG* e2); /// calculate opening angle 
