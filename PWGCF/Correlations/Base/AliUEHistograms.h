@@ -61,6 +61,7 @@ class AliUEHistograms : public TNamed
   TH1F* GetVertexContributors() { return fVertexContributors; }
   TH1F* GetCentralityDistribution() { return fCentralityDistribution; }
   Long64_t GetRunNumber() { return fRunNumber; }
+  Int_t GetMergeCount() { return fMergeCount; }
   TH3F* GetTwoTrackDistance(Int_t i) { return fTwoTrackDistancePt[i]; }
   
   void Correct(AliUEHistograms* corrections);
@@ -129,7 +130,9 @@ protected:
   
   Long64_t fRunNumber;           // run number that has been processed
   
-  ClassDef(AliUEHistograms, 16)  // underlying event histogram container
+  Int_t fMergeCount;		// counts how many objects have been merged together
+  
+  ClassDef(AliUEHistograms, 17)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)
