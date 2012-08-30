@@ -297,6 +297,7 @@ AliCDBManager::AliCDBManager():
   fCondParam(0),
   fRefParam(0),
   fRun(-1),
+  fMirrorSEs(""),
   fCache(kTRUE),
   fLock(kFALSE),
   fSnapshotMode(kFALSE),
@@ -1276,7 +1277,12 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry, const char* mirrors, DataType type
 
 	AliDebug(2,Form("Storing object into storage: %s", aStorage->GetURI().Data()));
 
-	Bool_t result = aStorage->Put(entry, mirrors, type);
+	TString strMirrors(mirrors);
+	Bool_t result = "kFALSE";
+	if(!strMirrors.IsNull() && !strMirrors.IsWhitespace())
+	    result = aStorage->Put(entry, mirrors, type);
+	else
+	    result = aStorage->Put(entry, fMirrorSEs, type);
 
 	if(fRun >= 0) QueryCDB();
 

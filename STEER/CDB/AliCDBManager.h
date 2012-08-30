@@ -103,6 +103,9 @@ class AliCDBManager: public TObject {
 	void SetRun(Int_t run);
 	Int_t GetRun() const {return fRun;}
 
+	void SetMirrorSEs(const char* mirrors){fMirrorSEs=mirrors;}
+	const char* GetMirrorSEs() const {return fMirrorSEs;}
+
 	void DestroyActiveStorages();
 	void DestroyActiveStorage(AliCDBStorage* storage);
 
@@ -182,6 +185,7 @@ protected:
 	AliCDBParam* fRefParam;		// Reference data storage parameters
 
 	Int_t fRun;			//! The run number
+	const char* fMirrorSEs;         //! List of SEs used in case we are putting objects on an AliEn storage 
 	Bool_t fCache;			//! The cache flag
 	Bool_t fLock; 	//! Lock flag, if ON default storage and run number cannot be reset
 
