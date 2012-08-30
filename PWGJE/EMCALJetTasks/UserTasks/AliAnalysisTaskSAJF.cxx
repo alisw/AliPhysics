@@ -205,7 +205,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fHistRhoVSleadJetPt->GetYaxis()->SetTitle("Leading jet p_{T} [GeV/c]");
   fOutput->Add(fHistRhoVSleadJetPt);
 
-  fHistRCPhiEta = new TH2F("fHistRCPhiEta","Phi-Eta distribution of rigid cones", 40, -2, 2, 64, 0, 6.4);
+  fHistRCPhiEta = new TH2F("fHistRCPhiEta","Phi-Eta distribution of rigid cones", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
   fHistRCPhiEta->GetXaxis()->SetTitle("#eta");
   fHistRCPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistRCPhiEta);
@@ -221,12 +221,12 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   fOutput->Add(fHistRhoVSRCPt);
 
   if (!fEmbJetsName.IsNull()) {
-    fHistEmbJetPhiEta = new TH2F("fHistEmbJetPhiEta","Phi-Eta distribution of embedded jets", 40, -2, 2, 64, 0, 6.4);
+    fHistEmbJetPhiEta = new TH2F("fHistEmbJetPhiEta","Phi-Eta distribution of embedded jets", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
     fHistEmbJetPhiEta->GetXaxis()->SetTitle("#eta");
     fHistEmbJetPhiEta->GetYaxis()->SetTitle("#phi");
     fOutput->Add(fHistEmbJetPhiEta);
     
-    fHistEmbPartPhiEta = new TH2F("fHistEmbPartPhiEta","Phi-Eta distribution of embedded particles", 40, -2, 2, 64, 0, 6.4);
+    fHistEmbPartPhiEta = new TH2F("fHistEmbPartPhiEta","Phi-Eta distribution of embedded particles", 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
     fHistEmbPartPhiEta->GetXaxis()->SetTitle("#eta");
     fHistEmbPartPhiEta->GetYaxis()->SetTitle("#phi");
     fOutput->Add(fHistEmbPartPhiEta);
@@ -272,7 +272,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistJetPhiEta_";
     histname += i;
-    fHistJetPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 40, -2, 2, 64, 0, 6.4);
+    fHistJetPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 50, -1, 1, 101, 0, TMath::Pi() * 2.02);
     fHistJetPhiEta[i]->GetXaxis()->SetTitle("#eta");
     fHistJetPhiEta[i]->GetYaxis()->SetTitle("#phi");
     fOutput->Add(fHistJetPhiEta[i]);
