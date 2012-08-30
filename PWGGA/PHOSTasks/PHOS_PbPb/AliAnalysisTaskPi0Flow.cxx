@@ -2363,12 +2363,7 @@ void AliAnalysisTaskPi0Flow::EvalReactionPlane()
   }
 
   if(fHaveTPCRP){
-    if( kLHC10h == fPeriod && fEventESD )
-      fRP = ApplyFlattening(reactionPlaneQ, fCentralityV0M) ;
-    else if ( fEventAOD )
-      fRP = reactionPlaneQ;
-    else
-      AliError("Don't know how to set fRP");
+    fRP = ApplyFlattening(reactionPlaneQ, fCentralityV0M) ;
 
     while(fRP<0)  fRP+=TMath::Pi();
     while(fRP>TMath::Pi())  fRP-=TMath::Pi();
@@ -2441,18 +2436,13 @@ void  AliAnalysisTaskPi0Flow::EvalV0ReactionPlane(){
   while(fRPV0C>TMath::Pi())fRPV0C-=TMath::Pi() ;
 
   // Flattening
-  if( kLHC10h == fPeriod && fEventESD ) {
-    fRPV0A=ApplyFlatteningV0A(fRPV0A,fCentralityV0M) ;
-    while(fRPV0A<0)fRPV0A+=TMath::Pi() ;
-    while(fRPV0A>TMath::Pi())fRPV0A-=TMath::Pi() ;
-    fRPV0C=ApplyFlatteningV0C(fRPV0C,fCentralityV0M) ;
-    while(fRPV0C<0)fRPV0C+=TMath::Pi() ;
-    while(fRPV0C>TMath::Pi())fRPV0C-=TMath::Pi() ;
-  }
-  else if ( fEventESD ) {
-    AliError("Don't know how to, or if to, apply flattening for ESD");
-  }
-    
+  fRPV0A=ApplyFlatteningV0A(fRPV0A,fCentralityV0M) ;
+  while(fRPV0A<0)fRPV0A+=TMath::Pi() ;
+  while(fRPV0A>TMath::Pi())fRPV0A-=TMath::Pi() ;
+  fRPV0C=ApplyFlatteningV0C(fRPV0C,fCentralityV0M) ;
+  while(fRPV0C<0)fRPV0C+=TMath::Pi() ;
+  while(fRPV0C>TMath::Pi())fRPV0C-=TMath::Pi() ;
+  
   if( fDebug >= 2 )
     AliInfo(Form("V0 Reaction Plane is: A side: %f, C side: %f", fRPV0A, fRPV0C));
 
