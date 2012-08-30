@@ -24,8 +24,8 @@ void Pi0SpectrumLHC11h(const char* dataset="collection.xml",
   // A task can be compiled dynamically with AClic
   if( recompile ) {
     gROOT->LoadMacro("AliCaloPhoton.cxx+g");
-    gROOT->LoadMacro("AliAnalysisTaskPi0Flow.cxx+g");
     gROOT->LoadMacro("AliPHOSEPFlattener.cxx+g");
+    gROOT->LoadMacro("AliAnalysisTaskPi0Flow.cxx+g");
   }
   else {
     gSystem->Load("libPWGGAPHOSTasks.so");
