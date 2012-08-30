@@ -139,6 +139,11 @@ void AliV0ReaderV1::Init()
     }
     fConversionGammas->Delete();//Reset the TClonesArray
    
+}
+
+//________________________________________________________________________
+void AliV0ReaderV1::UserCreateOutputObjects()
+{
     // Create AODs
 
     if(fCreateAOD){
@@ -152,16 +157,14 @@ void AliV0ReaderV1::Init()
 	AddAODBranch("TClonesArray", &fConversionGammas, fDeltaAODFilename.Data());
 	AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(fDeltaAODFilename.Data());
     }
-}
 
-//________________________________________________________________________
-void AliV0ReaderV1::UserCreateOutputObjects()
-{
-    // Create User Output Objects
 }
 
 //________________________________________________________________________
 void AliV0ReaderV1::UserExec(Option_t *){
+
+    // Check if correctly initialized
+    if(!fConversionGammas)Init();
 
     // User Exec
     fEventIsSelected=ProcessEvent(fInputEvent,fMCEvent);
@@ -212,7 +215,7 @@ void AliV0ReaderV1::FillAODOutput()
 	    AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
 	    if (aodhandler && aodhandler->GetFillAOD()) {
 	      AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
-	      PostData(0, fConversionGammas);
+	      //PostData(0, fConversionGammas);
 	      
 	    }
 	}
