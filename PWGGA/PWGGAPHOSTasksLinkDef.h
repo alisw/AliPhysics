@@ -10,6 +10,7 @@
 
 //PHOS_PbPb
 #pragma link C++ class AliAnalysisTaskPi0Flow+;
+#pragma link C++ class AliPHOSEPFlattener+;
 
 // PHOS_embedding
 #pragma link C++ class AliPHOSEmbedding+;
