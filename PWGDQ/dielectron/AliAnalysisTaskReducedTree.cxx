@@ -38,6 +38,7 @@
 #include <AliVZDC.h>
 #include <AliESDv0.h>
 #include <AliESDv0Cuts.h>
+#include <AliESDv0KineCuts.h>
 #include <AliVCluster.h>
 #include "AliDielectron.h"
 #include "AliDielectronHistos.h"
@@ -48,6 +49,10 @@
 
 #include "AliReducedEvent.h"
 #include "AliAnalysisTaskReducedTree.h"
+
+#include <iostream>
+using std::cout;
+using std::endl;
 
 ClassImp(AliAnalysisTaskReducedTree)
 
@@ -63,6 +68,10 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree() :
   fFillTrackInfo(kTRUE),
   fFillDielectronInfo(kTRUE),
   fFillV0Info(kTRUE),
+  fFillGammaConversions(kTRUE),
+  fFillK0s(kTRUE),
+  fFillLambda(kTRUE),
+  fFillALambda(kTRUE),
   fFillCaloClusterInfo(kTRUE),
   fFillFriendInfo(kTRUE),
   fEventFilter(0x0),
@@ -70,11 +79,14 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree() :
   fFlowTrackFilter(0x0),
   fK0sCuts(0x0),
   fLambdaCuts(0x0),
+  fGammaConvCuts(0x0),
   fK0sPionCuts(0x0),
   fLambdaProtonCuts(0x0),
   fLambdaPionCuts(0x0),
+  fGammaElectronCuts(0x0),
   fK0sMassRange(),
   fLambdaMassRange(),
+  fGammaMassRange(),
   fV0Histos(0x0),
   fTreeFile(0x0),
   fTree(0x0),
@@ -99,6 +111,10 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree(const char *name) :
   fFillTrackInfo(kTRUE),
   fFillDielectronInfo(kTRUE),
   fFillV0Info(kTRUE),
+  fFillGammaConversions(kTRUE),
+  fFillK0s(kTRUE),
+  fFillLambda(kTRUE),
+  fFillALambda(kTRUE),
   fFillCaloClusterInfo(kTRUE),
   fFillFriendInfo(kTRUE),
   fEventFilter(0x0),
@@ -106,11 +122,14 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree(const char *name) :
   fFlowTrackFilter(0x0),
   fK0sCuts(0x0),
   fLambdaCuts(0x0),
+  fGammaConvCuts(0x0),
   fK0sPionCuts(0x0),
   fLambdaProtonCuts(0x0),
   fLambdaPionCuts(0x0),
+  fGammaElectronCuts(0x0),
   fK0sMassRange(),
   fLambdaMassRange(),
+  fGammaMassRange(),
   fV0Histos(0x0),
   fTreeFile(0x0),
   fTree(0x0),
@@ -124,13 +143,14 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree(const char *name) :
   //
   fK0sMassRange[0] = 0.4; fK0sMassRange[1] = 0.6;
   fLambdaMassRange[0] = 1.08; fLambdaMassRange[1] = 1.15;
+  fGammaMassRange[0] = 0.0; fGammaMassRange[1] = 0.1;
   
   DefineInput(0,TChain::Class());
   DefineOutput(1, TList::Class());   // QA histograms
-  //DefineOutput(2, TTree::Class());   // reduced information tree
+  DefineOutput(2, TTree::Class());   // reduced information tree
   //if(fFillFriendInfo) DefineOutput(3, TTree::Class());   // reduced information tree with friends
   //DefineOutput(2, TTree::Class());   // reduced information tree with friends
-  DefineOutput(2, TTree::Class());   // reduced information tree  
+  //DefineOutput(2, TTree::Class());   // reduced information tree  
 
   fListHistos.SetName("QAhistograms");
   fListDielectron.SetOwner();
@@ -259,10 +279,10 @@ void AliAnalysisTaskReducedTree::UserExec(Option_t *option)
       
   // if there are candidate pairs, add the information to the reduced tree
   PostData(1, &fListHistos);
-  //PostData(2, fTree);
+  PostData(2, fTree);
   //if(fFillFriendInfo) PostData(3, fFriendTree);
   //PostData(2, fFriendTree);
-  PostData(2, fTree);
+  //PostData(2, fTree);
 }
 
 
@@ -391,12 +411,57 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
   Bool_t isESD = (event->IsA()==AliESDEvent::Class());
   Bool_t isAOD = (event->IsA()==AliAODEvent::Class());
 
+  // find all the tracks which belong to a V0 stored in the reduced event
+  UShort_t trackIdsV0[4][20000]={{0}};
+  Int_t nV0LegsTagged[4] = {0};
+  Bool_t leg1Found[4]; Bool_t leg2Found[4];
+  for(Int_t iv0=0;iv0<fReducedEvent->fNV0candidates[1];++iv0) {
+    AliReducedPair* pair = fReducedEvent->GetV0Pair(iv0);
+    Int_t pairId = 0;
+    if(pair->fCandidateId==AliReducedPair::kGammaConv) pairId=0;
+    if(pair->fCandidateId==AliReducedPair::kK0sToPiPi) pairId=1;
+    if(pair->fCandidateId==AliReducedPair::kLambda0ToPPi) pairId=2;
+    if(pair->fCandidateId==AliReducedPair::kALambda0ToPPi) pairId=3;
+    leg1Found[pairId] = kFALSE; leg2Found[pairId] = kFALSE;
+    for(Int_t it=0;it<nV0LegsTagged[pairId];++it) {
+      if(trackIdsV0[pairId][it]==pair->fLegIds[0]) leg1Found[pairId]=kTRUE;
+      if(trackIdsV0[pairId][it]==pair->fLegIds[1]) leg2Found[pairId]=kTRUE;
+    }
+    // if the legs of this V0 were not already stored then add them now to the list
+    if(!leg1Found[pairId]) {trackIdsV0[pairId][nV0LegsTagged[pairId]] = pair->fLegIds[0]; ++nV0LegsTagged[pairId];}
+    if(!leg2Found[pairId]) {trackIdsV0[pairId][nV0LegsTagged[pairId]] = pair->fLegIds[1]; ++nV0LegsTagged[pairId];}
+  }
+  
+  AliESDtrack* esdTrack=0;
+  AliAODTrack* aodTrack=0;
   Int_t ntracks=event->GetNumberOfTracks();
+  Int_t trackId = 0; Bool_t usedForV0[4] = {kFALSE}; Bool_t usedForV0Or = kFALSE;
   for(Int_t itrack=0; itrack<ntracks; ++itrack){
     AliVParticle *particle=event->GetTrack(itrack);
-    //apply track cuts
-    if(fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
+    if(isESD) {
+      esdTrack=static_cast<AliESDtrack*>(particle);
+      trackId = esdTrack->GetID();
+    }
+    if(isAOD) {
+      aodTrack=static_cast<AliAODTrack*>(particle);
+      trackId = aodTrack->GetID();
+    }
+    // check whether this track belongs to a V0 stored in the reduced event
+    usedForV0Or = kFALSE;
+    for(Int_t i=0; i<4; ++i) {
+      usedForV0[i] = kFALSE;
+      for(Int_t ii=0; ii<nV0LegsTagged[i]; ++ii) {
+        if(UShort_t(trackId)==trackIdsV0[i][ii]) {
+          usedForV0[i] = kTRUE;
+          break;
+        }
+      }
+      usedForV0Or |= usedForV0[i];
+    }
     
+    //apply track cuts
+    if(!usedForV0Or && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
+       
     TClonesArray& tracks = *(fReducedEvent->fTracks);
     AliReducedTrack *reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrack();
         
@@ -412,6 +477,10 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
     
     reducedParticle->fITSclusterMap = (UChar_t)values[AliDielectronVarManager::kITSclusterMap];
     reducedParticle->fITSsignal     = values[AliDielectronVarManager::kITSsignal];
+    reducedParticle->fITSnSig[0]    = values[AliDielectronVarManager::kITSnSigmaEle];
+    reducedParticle->fITSnSig[1]    = values[AliDielectronVarManager::kITSnSigmaPio];
+    reducedParticle->fITSnSig[2]    = values[AliDielectronVarManager::kITSnSigmaKao];
+    reducedParticle->fITSnSig[3]    = values[AliDielectronVarManager::kITSnSigmaPro];
     
     reducedParticle->fTPCNcls      = (UChar_t)values[AliDielectronVarManager::kNclsTPC];
     reducedParticle->fTPCNclsF     = (UChar_t)values[AliDielectronVarManager::kNFclsTPC];
@@ -435,26 +504,30 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
       // switch on the first bit if this particle should be used for the event plane
       if(fFlowTrackFilter->IsSelected(particle)) reducedParticle->fFlags |= (1<<0);
     }
+    // switch bits to show wheter the track is used in a V0
+    for(Int_t iV0type=0;iV0type<4;++iV0type) {
+      if(usedForV0[iV0type]) reducedParticle->fFlags |= (1<<(iV0type+1));
+    }
     
     if(isESD){
-      AliESDtrack *track=static_cast<AliESDtrack*>(particle);
-      reducedParticle->fTrackId          = (UShort_t)track->GetID();
-      reducedParticle->fTPCCrossedRows   = (UChar_t)track->GetTPCCrossedRows();
-      reducedParticle->fTPCClusterMap    = EncodeTPCClusterMap(track);
-      const AliExternalTrackParam* tpcInner = track->GetTPCInnerParam();
+      reducedParticle->fTrackId          = (UShort_t)esdTrack->GetID();
+      reducedParticle->fTPCCrossedRows   = (UChar_t)esdTrack->GetTPCCrossedRows();
+      reducedParticle->fTPCClusterMap    = EncodeTPCClusterMap(esdTrack);
+      const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
       reducedParticle->fTPCPhi        = (tpcInner ? tpcInner->Phi() : 0.0);
       reducedParticle->fTPCPt         = (tpcInner ? tpcInner->Pt() : 0.0);
       reducedParticle->fTPCEta        = (tpcInner ? tpcInner->Eta() : 0.0);
-      reducedParticle->fTRDntracklets[0] = track->GetTRDntracklets();
-      reducedParticle->fTRDntracklets[1] = track->GetTRDntrackletsPID();
-      if(track->IsEMCAL()) reducedParticle->fCaloClusterId = track->GetEMCALcluster();
-      if(track->IsPHOS()) reducedParticle->fCaloClusterId = track->GetPHOScluster();
+      reducedParticle->fTRDntracklets[0] = esdTrack->GetTRDntracklets();
+      reducedParticle->fTRDntracklets[1] = esdTrack->GetTRDntrackletsPID();
+      for(Int_t idx=0; idx<3; ++idx) if(esdTrack->GetKinkIndex(idx)>0) reducedParticle->fFlags |= (1<<(5+idx));
+      if(esdTrack->IsEMCAL()) reducedParticle->fCaloClusterId = esdTrack->GetEMCALcluster();
+      if(esdTrack->IsPHOS()) reducedParticle->fCaloClusterId = esdTrack->GetPHOScluster();
     }
     if(isAOD) {
-      AliAODTrack *track=static_cast<AliAODTrack*>(particle);
-      reducedParticle->fTrackId = track->GetID(); 
-      if(track->IsEMCAL()) reducedParticle->fCaloClusterId = track->GetEMCALcluster();
-      if(track->IsPHOS()) reducedParticle->fCaloClusterId = track->GetPHOScluster();
+      reducedParticle->fTrackId = aodTrack->GetID(); 
+      if(aodTrack->IsEMCAL()) reducedParticle->fCaloClusterId = aodTrack->GetEMCALcluster();
+      if(aodTrack->IsPHOS()) reducedParticle->fCaloClusterId = aodTrack->GetPHOScluster();
+      if(values[AliDielectronVarManager::kKinkIndex0]>0.0) reducedParticle->fFlags |= (1<<5);
     }
 
     fReducedEvent->fNtracks[1] += 1;
@@ -497,8 +570,8 @@ void AliAnalysisTaskReducedTree::FillDielectronPairInfo(AliDielectron* die, Shor
       reducedParticle->fEta          = values[AliDielectronVarManager::kEta];
       reducedParticle->fLxy          = values[AliDielectronVarManager::kPseudoProperTime];
       reducedParticle->fLxyErr       = values[AliDielectronVarManager::kPseudoProperTimeErr];
-      reducedParticle->fOpeningAngle = values[AliDielectronVarManager::kOpeningAngle];     
-     
+      reducedParticle->fPointingAngle = values[AliDielectronVarManager::kCosPointingAngle];
+      
       reducedParticle->fMCid         = 0;
       if(hasMC) {
 	AliDielectronMC::Instance()->ConnectMCEvent();
@@ -531,7 +604,11 @@ void AliAnalysisTaskReducedTree::FillV0PairInfo()
   
   Double_t valuesPos[AliDielectronVarManager::kNMaxValues];
   Double_t valuesNeg[AliDielectronVarManager::kNMaxValues];
-   
+  
+  fGammaConvCuts->SetEvent(esd);
+  fGammaConvCuts->SetPrimaryVertex(&primaryVertexKF);
+  
+  Int_t pdgV0=0; Int_t pdgP=0; Int_t pdgN=0;
   for(Int_t iV0=0; iV0<InputEvent()->GetNumberOfV0s(); ++iV0) {   // loop over V0s
     AliESDv0 *v0 = esd->GetV0(iV0);
        
@@ -549,7 +626,7 @@ void AliAnalysisTaskReducedTree::FillV0PairInfo()
     // apply the K0s filter
     Bool_t goodK0s = kTRUE;
     if(fK0sPionCuts && (!fK0sPionCuts->IsSelected(legPos) || !fK0sPionCuts->IsSelected(legNeg))) goodK0s = kFALSE;
-    if(fK0sCuts) {
+    if(goodK0s && fK0sCuts) {
       TList k0sList;
       k0sList.Add(v0);
       k0sList.Add(legPos); k0sList.Add(legNeg);
@@ -572,42 +649,68 @@ void AliAnalysisTaskReducedTree::FillV0PairInfo()
       if(!fLambdaCuts->IsSelected(&lambdaList)) {goodLambda = kFALSE; goodALambda = kFALSE;}
     }
     
-    if(!(goodK0s || goodLambda || goodALambda)) continue;
+    // apply the gamma conversion filter
+    Bool_t goodGamma = kTRUE;
+    //cout << "fGammaElectronCuts " << fGammaElectronCuts << endl;
+    if(fGammaElectronCuts && (!fGammaElectronCuts->IsSelected(legPos) || !fGammaElectronCuts->IsSelected(legNeg))) goodGamma = kFALSE;
+    //cout << "goodGamma1 " << goodGamma << endl;
+    goodGamma = goodGamma && fGammaConvCuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
+    //cout << "goodGamma2 " << goodGamma << endl;
+    //cout << "pdg V0/p/n: " << pdgV0 << "/" << pdgP << "/" << pdgN << endl;
+    if(pdgV0!=22 || TMath::Abs(pdgP)!=11 || TMath::Abs(pdgN)!=11) goodGamma = kFALSE;
+    //cout << "goodGamma3 " << goodGamma << endl;
     
-    // Fill the V0 information into the tree for 3 hypothesis: K0s, Lambda, Anti-Lambda
+    if(!(goodK0s || goodLambda || goodALambda || goodGamma)) continue;
+    
+    // Fill the V0 information into the tree for 4 hypothesis: K0s, Lambda, Anti-Lambda and gamma conversion
     AliReducedPair* k0sReducedPair     = FillV0PairInfo(v0, AliReducedPair::kK0sToPiPi,     legPos, legNeg, &primaryVertexKF, v0ChargesAreCorrect);
     AliReducedPair* lambdaReducedPair  = FillV0PairInfo(v0, AliReducedPair::kLambda0ToPPi,  legPos, legNeg, &primaryVertexKF, v0ChargesAreCorrect);
     AliReducedPair* alambdaReducedPair = FillV0PairInfo(v0, AliReducedPair::kALambda0ToPPi, legPos, legNeg, &primaryVertexKF, v0ChargesAreCorrect);
-
-    if(goodK0s && k0sReducedPair->fMass[0]>fK0sMassRange[0] && k0sReducedPair->fMass[0]<fK0sMassRange[1]) {
+    AliReducedPair* gammaReducedPair   = FillV0PairInfo(v0, AliReducedPair::kGammaConv,     legPos, legNeg, &primaryVertexKF, v0ChargesAreCorrect);
+    
+    if(fFillK0s && goodK0s && k0sReducedPair->fMass[0]>fK0sMassRange[0] && k0sReducedPair->fMass[0]<fK0sMassRange[1]) {
       TClonesArray& tracks = *(fReducedEvent->fCandidates);
       AliReducedPair *goodK0sPair = new (tracks[fReducedEvent->fNV0candidates[1]]) AliReducedPair(*k0sReducedPair);
       goodK0sPair->fMass[0] = k0sReducedPair->fMass[0];
       goodK0sPair->fMass[1] = lambdaReducedPair->fMass[0];
       goodK0sPair->fMass[2] = alambdaReducedPair->fMass[0];
+      goodK0sPair->fMass[3] = gammaReducedPair->fMass[0];
       fReducedEvent->fNV0candidates[1] += 1;
     } else {goodK0s=kFALSE;}
-    if(goodLambda && lambdaReducedPair->fMass[0]>fLambdaMassRange[0] && lambdaReducedPair->fMass[0]<fLambdaMassRange[1]) {
+    if(fFillLambda && goodLambda && lambdaReducedPair->fMass[0]>fLambdaMassRange[0] && lambdaReducedPair->fMass[0]<fLambdaMassRange[1]) {
       TClonesArray& tracks = *(fReducedEvent->fCandidates);
       AliReducedPair *goodLambdaPair = new (tracks[fReducedEvent->fNV0candidates[1]]) AliReducedPair(*lambdaReducedPair);
       fReducedEvent->fNV0candidates[1] += 1;
       goodLambdaPair->fMass[0] = k0sReducedPair->fMass[0];
       goodLambdaPair->fMass[1] = lambdaReducedPair->fMass[0];
       goodLambdaPair->fMass[2] = alambdaReducedPair->fMass[0];
+      goodLambdaPair->fMass[3] = gammaReducedPair->fMass[0];
     } else {goodLambda=kFALSE;}
-    if(goodALambda && alambdaReducedPair->fMass[0]>fLambdaMassRange[0] && alambdaReducedPair->fMass[0]<fLambdaMassRange[1]) {
+    if(fFillALambda && goodALambda && alambdaReducedPair->fMass[0]>fLambdaMassRange[0] && alambdaReducedPair->fMass[0]<fLambdaMassRange[1]) {
       TClonesArray& tracks = *(fReducedEvent->fCandidates);
       AliReducedPair *goodALambdaPair = new (tracks[fReducedEvent->fNV0candidates[1]]) AliReducedPair(*alambdaReducedPair);
       fReducedEvent->fNV0candidates[1] += 1;  
       goodALambdaPair->fMass[0] = k0sReducedPair->fMass[0];
       goodALambdaPair->fMass[1] = lambdaReducedPair->fMass[0];
       goodALambdaPair->fMass[2] = alambdaReducedPair->fMass[0];
+      goodALambdaPair->fMass[3] = gammaReducedPair->fMass[0];
     } else {goodALambda = kFALSE;}
+    //cout << "gamma mass: " << gammaReducedPair->fMass[0] << endl;
+    if(fFillGammaConversions && goodGamma && gammaReducedPair->fMass[0]>fGammaMassRange[0] && gammaReducedPair->fMass[0]<fGammaMassRange[1]) {
+      TClonesArray& tracks = *(fReducedEvent->fCandidates);
+      AliReducedPair *goodGammaPair = new (tracks[fReducedEvent->fNV0candidates[1]]) AliReducedPair(*gammaReducedPair);
+      goodGammaPair->fMass[0] = k0sReducedPair->fMass[0];
+      goodGammaPair->fMass[1] = lambdaReducedPair->fMass[0];
+      goodGammaPair->fMass[2] = alambdaReducedPair->fMass[0];
+      goodGammaPair->fMass[3] = gammaReducedPair->fMass[0];
+      fReducedEvent->fNV0candidates[1] += 1;
+    } else {goodGamma=kFALSE;}
     delete k0sReducedPair;
     delete lambdaReducedPair;
     delete alambdaReducedPair;
-
-    if(!(goodK0s || goodLambda || goodALambda)) continue;
+    delete gammaReducedPair;
+    
+    if(!(goodK0s || goodLambda || goodALambda || goodGamma)) continue;
     
     //  Fill histograms and the CF container
     AliDielectronVarManager::Fill(legPos, valuesPos);
@@ -637,15 +740,17 @@ AliReducedPair* AliAnalysisTaskReducedTree::FillV0PairInfo(AliESDv0* v0, Int_t i
   if(!reducedPair->fPairType) {    // offline
     UInt_t pidPos = AliPID::kPion;
     if(id==AliReducedPair::kLambda0ToPPi) pidPos = AliPID::kProton;
+    if(id==AliReducedPair::kGammaConv) pidPos = AliPID::kElectron;
     UInt_t pidNeg = AliPID::kPion;
     if(id==AliReducedPair::kALambda0ToPPi) pidNeg = AliPID::kProton;
+    if(id==AliReducedPair::kGammaConv) pidNeg = AliPID::kElectron;
     reducedPair->fMass[0]      = v0->GetEffMass(pidPos, pidNeg);
     reducedPair->fPhi          = v0->Phi();
     if(reducedPair->fPhi<0.0) reducedPair->fPhi = 2.0*TMath::Pi() + reducedPair->fPhi;  // converted to [0,2pi]
     reducedPair->fPt           = v0->Pt();
     reducedPair->fEta          = v0->Eta();
-    reducedPair->fLxy          = 0.0;           //TODO
-    reducedPair->fOpeningAngle = 0.0;
+    reducedPair->fLxy          = v0->GetRr();
+    reducedPair->fPointingAngle = v0->GetV0CosineOfPointingAngle(vtxKF->GetX(), vtxKF->GetY(), vtxKF->GetZ());
   }
   else {
     const AliExternalTrackParam *negHelix=v0->GetParamN();
@@ -654,8 +759,14 @@ AliReducedPair* AliAnalysisTaskReducedTree::FillV0PairInfo(AliESDv0* v0, Int_t i
       negHelix = v0->GetParamP();
       posHelix = v0->GetParamN();
     }
-    AliKFParticle negKF(*(negHelix),(id==AliReducedPair::kALambda0ToPPi ? -2212 : -211));
-    AliKFParticle posKF(*(posHelix),(id==AliReducedPair::kLambda0ToPPi ? +2212 : +211));
+    Int_t pdgPos = 211;
+    if(id==AliReducedPair::kLambda0ToPPi) pdgPos = 2212;
+    if(id==AliReducedPair::kGammaConv) pdgPos = -11;
+    Int_t pdgNeg = -211;
+    if(id==AliReducedPair::kALambda0ToPPi) pdgNeg = -2212;
+    if(id==AliReducedPair::kGammaConv) pdgNeg = 11;
+    AliKFParticle negKF(*(negHelix), pdgPos);
+    AliKFParticle posKF(*(posHelix), pdgNeg);
     AliKFParticle v0Refit;
     v0Refit += negKF;
     v0Refit += posKF;
@@ -667,7 +778,12 @@ AliReducedPair* AliAnalysisTaskReducedTree::FillV0PairInfo(AliESDv0* v0, Int_t i
     reducedPair->fPt           = v0Refit.GetPt();
     reducedPair->fEta          = v0Refit.GetEta();
     reducedPair->fLxy          = v0Refit.GetPseudoProperDecayTime(*vtxKF, massFit);
-    reducedPair->fOpeningAngle = negKF.GetAngle(posKF);
+    Double_t deltaPos[3];
+    deltaPos[0] = v0Refit.GetX() - vtxKF->GetX(); deltaPos[1] = v0Refit.GetY() - vtxKF->GetY(); deltaPos[2] = v0Refit.GetZ() - vtxKF->GetZ();
+    Double_t momV02 = v0Refit.GetPx()*v0Refit.GetPx() + v0Refit.GetPy()*v0Refit.GetPy() + v0Refit.GetPz()*v0Refit.GetPz();
+    Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
+    reducedPair->fPointingAngle = (deltaPos[0]*v0Refit.GetPx() + deltaPos[1]*v0Refit.GetPy() + deltaPos[2]*v0Refit.GetPz()) / 
+                                  TMath::Sqrt(momV02*deltaPos2);
   }
   return reducedPair;
 }

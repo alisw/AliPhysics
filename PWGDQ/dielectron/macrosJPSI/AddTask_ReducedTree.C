@@ -15,11 +15,16 @@ AliAnalysisTask *AddTask_ReducedTree(){
   AliAnalysisTaskReducedTree *task=new AliAnalysisTaskReducedTree("DSTTreeMaker");
   task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
   //if(trainConfig=="pp") task->SetRejectPileup();
-  if(!hasMC) task->UsePhysicsSelection(kFALSE);
+  if(!hasMC) task->UsePhysicsSelection(kTRUE);
   mgr->AddTask(task);
   
-  task->SetFillV0Info(kFALSE);
+  //  task->SetFillV0Info(kFALSE);
+  //task->SetFillGammaConversions(kFALSE);
+  task->SetFillK0s(kFALSE);
+  task->SetFillLambda(kFALSE);
+  task->SetFillALambda(kFALSE);
   task->SetFillCaloClusterInfo(kFALSE);
+  task->SetFillDielectronInfo(kFALSE);
   task->SetFillFriendInfo(kFALSE);
   
   task->SetEventFilter(CreateEventFilter());
@@ -28,13 +33,16 @@ AliAnalysisTask *AddTask_ReducedTree(){
   task->SetK0sPionCuts(CreateK0sPionCuts());
   task->SetLambdaProtonCuts(CreateLambdaProtonCuts());
   task->SetLambdaPionCuts(CreateLambdaPionCuts());
+  task->SetGammaElectronCuts(CreateGammaConvElectronCuts());
   task->SetK0sCuts(CreateK0sCuts());
   task->SetK0sMassRange(0.44,0.55);
   task->SetLambdaMassRange(1.090,1.14);
   task->SetLambdaCuts(CreateLambdaCuts());
+  task->SetGammaConvCuts(CreateGammaConvCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));
+  task->SetGammaConvMassRange(0.0,0.1);
   //task->SetV0Histograms(CreateV0Histograms());
   
-  task->AddDielectron(ConfigDielectron(0));   // J/psi -> e+e-
+  //task->AddDielectron(ConfigDielectron(0));   // J/psi -> e+e-
   //task->AddDielectron(ConfigDielectron(1));   // phi -> K+K-
   
   //create output container
@@ -48,7 +56,7 @@ AliAnalysisTask *AddTask_ReducedTree(){
     mgr->CreateContainer("qaHistos",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "dstTree.root");
+                         "dst_Histos.root");
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("dstTree",
@@ -101,17 +109,23 @@ AliAnalysisCuts* CreateGlobalTrackFilter() {
   // basic track quality cuts  (basicQ)
   esdTrackCuts->SetMaxDCAToVertexZ(10.0);
   esdTrackCuts->SetMaxDCAToVertexXY(3.0);
-  esdTrackCuts->SetEtaRange( -0.9 , 0.9 );
+  esdTrackCuts->SetEtaRange( -1.0 , 1.0 );
   //esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  //esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetPRange(0.8,1e30);
+  esdTrackCuts->SetPRange(0.2,1e30);
+  //esdTrackCuts->SetPtRange(0.15,1e30);
   //esdTrackCuts->SetMinNClustersTPC(60);
   //esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   //  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   //  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
   cuts->AddCut(esdTrackCuts);
-  
+
+  AliDielectronPID *electronPid = new AliDielectronPID("PID","PID cut");
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron     
+  electronPid->AddCut(AliDielectronPID::kTOF,AliPID::kProton,  -3.0, 3.0, -2.0, 2.0, kTRUE, AliDielectronPID::kRequire,AliDielectronVarManager::kTPCnSigmaPro); // TPC exclusion for proton   
+  cuts->AddCut(electronPid);
+ 
   return cuts;
 }
 
@@ -136,7 +150,9 @@ AliAnalysisCuts* CreateK0sPionCuts() {
   // Cuts on the K0s pions (tracking cuts, pid cuts, ...) 
   //
   AliESDtrackCuts *pionCuts = new AliESDtrackCuts;
-  pionCuts->SetPtRange(0.15,100.0);
+  pionCuts->SetPtRange(0.1,100.0);
+  pionCuts->SetRequireTPCRefit(kTRUE);
+  pionCuts->SetMinNClustersTPC(50);
   return pionCuts;
 }
 
@@ -147,7 +163,7 @@ AliAnalysisCuts* CreateLambdaPionCuts() {
   // Cuts on the Lambda pions (tracking cuts, pid cuts, ...) 
   //
   AliESDtrackCuts *pionCuts = new AliESDtrackCuts;
-  pionCuts->SetPtRange(0.15,100.0);
+  pionCuts->SetPtRange(0.1,100.0);
   return pionCuts;
 }
 
@@ -158,8 +174,20 @@ AliAnalysisCuts* CreateLambdaProtonCuts() {
   // Cuts on the Lambda protons (tracking cuts, pid cuts, ...) 
   //
   AliESDtrackCuts *protonCuts = new AliESDtrackCuts;
-  protonCuts->SetPtRange(0.15,100.0);
+  protonCuts->SetPtRange(0.1,100.0);
   return protonCuts;
+}
+
+
+//______________________________________________________________________________________
+AliAnalysisCuts* CreateGammaConvElectronCuts() {
+  //
+  // Cuts for the selection of electrons from gamma conversions
+  //
+  AliESDtrackCuts* electronCuts = new AliESDtrackCuts;
+  electronCuts->SetRequireTPCRefit(kTRUE);
+  electronCuts->SetMinNClustersTPC(50);
+  return electronCuts;
 }
 
 
@@ -176,7 +204,7 @@ AliESDv0Cuts* CreateK0sCuts() {
   //cuts->SetMaxDcaV0Daughters(0.3);
   //cuts->SetMinRadius(3.0);
   //cuts->SetMaxRadius(90.0);
-  //cuts->SetMinCosinePointingAngle(0.9);
+  cuts->SetMinCosinePointingAngle(0.8);
   //cuts->SetRequireOnFlyStatus(kTRUE);
   //cuts->SetMaxDcaV0ToVertex(0.5);
   //cuts->SetPRange(0.,1.0e10);
@@ -203,6 +231,35 @@ AliESDv0Cuts* CreateLambdaCuts() {
   //cuts->SetMaxDcaV0ToVertex(0.5);
   //cuts->SetPRange(0.,1.0e10);
   //cuts->SetPtRange(0.,1.0e10);
+  return cuts;
+}
+
+
+//______________________________________________________________________________________
+AliESDv0KineCuts* CreateGammaConvCuts(Int_t mode, Int_t type) {
+  //
+  // cuts for the selection of gamma conversions
+  //
+  AliESDv0KineCuts* cuts = new AliESDv0KineCuts();
+  cuts->SetMode(mode, type);
+  
+  //cuts->SetNTPCclusters(60);
+  cuts->SetTPCrefit(kTRUE);
+  //cuts->SetTPCchi2perCls(4.0);
+  //cuts->SetTPCclusterratio(0.6);
+  cuts->SetNoKinks(kTRUE);
+  // gamma cuts                                                                                                                      
+  cuts->SetGammaCutChi2NDF(10.0);
+  Float_t cosPoint[2] = {0.0, 0.2};
+  //cuts->SetGammaCutCosPoint(cosPoint);
+  Float_t cutDCA[2] = {0.0, 1.25};
+  cuts->SetGammaCutDCA(cutDCA);
+  Float_t vtxR[2] = {3.0, 90.0};
+  cuts->SetGammaCutVertexR(vtxR);
+  Float_t psiPairCut[2]={0.0,0.10};
+  cuts->SetGammaCutPsiPair(psiPairCut);
+  cuts->SetGammaCutInvMass(0.1);
+  
   return cuts;
 }
 
@@ -359,7 +416,7 @@ void SetupDielectronTrackCuts(AliDielectron *die, Int_t cutDefinition)
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   //esdTrackCuts->SetRequireITSRefit(kTRUE);
   if(cutDefinition==0) esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  if(cutDefinition==0) esdTrackCuts->SetPRange(.9,1e30);   // for J/psi
+  if(cutDefinition==0) esdTrackCuts->SetPRange(.8,1e30);   // for J/psi
   if(cutDefinition==1) esdTrackCuts->SetPRange(.1,1e30);   // for phi
   //if(cutDefinition==0) esdTrackCuts->SetMinNClustersTPC(60);
   //if(cutDefinition==0) esdTrackCuts->SetMaxChi2PerClusterTPC(4);

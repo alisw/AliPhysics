@@ -13,6 +13,7 @@ class AliAnalysisCuts;
 class TTree;
 class TFile;
 class AliESDv0Cuts;
+class AliESDv0KineCuts;
 class AliKFVertex;
 class AliReducedEvent;
 class AliReducedEventFriend;
@@ -47,18 +48,25 @@ public:
   void SetK0sPionCuts(AliAnalysisCuts * const filter) {fK0sPionCuts=filter;}
   void SetLambdaProtonCuts(AliAnalysisCuts * const filter) {fLambdaProtonCuts=filter;}
   void SetLambdaPionCuts(AliAnalysisCuts * const filter) {fLambdaPionCuts=filter;}
+  void SetGammaElectronCuts(AliAnalysisCuts* const filter) {fGammaElectronCuts=filter;}
   void SetK0sCuts(AliESDv0Cuts* const cuts) {fK0sCuts = cuts;}
   void SetLambdaCuts(AliESDv0Cuts* const cuts) {fLambdaCuts = cuts;}
+  void SetGammaConvCuts(AliESDv0KineCuts* const cuts) {fGammaConvCuts = cuts;}
   void SetK0sMassRange(Double_t min=0.4, Double_t max=0.6) {fK0sMassRange[0]=min; fK0sMassRange[1]=max;}
   void SetLambdaMassRange(Double_t min=1.08, Double_t max=1.15) {fLambdaMassRange[0]=min; fLambdaMassRange[1]=max;}
+  void SetGammaConvMassRange(Double_t min=0.0, Double_t max=0.1) {fGammaMassRange[0]=min; fGammaMassRange[1]=max;}
   void SetV0Histograms(AliDielectronHistos * const histos) {fV0Histos=histos;}
   
   // Toggle on/off information branches
-  void SetFillTrackInfo(Bool_t flag=kTRUE)       {fFillTrackInfo = flag;}
-  void SetFillDielectronInfo(Bool_t flag=kTRUE)  {fFillDielectronInfo = flag;}
-  void SetFillV0Info(Bool_t flag=kTRUE)          {fFillV0Info = flag;}
-  void SetFillCaloClusterInfo(Bool_t flag=kTRUE) {fFillCaloClusterInfo = flag;}
-  void SetFillFriendInfo(Bool_t flag=kTRUE)      {fFillFriendInfo = flag;}
+  void SetFillTrackInfo(Bool_t flag=kTRUE)        {fFillTrackInfo = flag;}
+  void SetFillDielectronInfo(Bool_t flag=kTRUE)   {fFillDielectronInfo = flag;}
+  void SetFillV0Info(Bool_t flag=kTRUE)           {fFillV0Info = flag;}
+  void SetFillGammaConversions(Bool_t flag=kTRUE) {fFillGammaConversions = flag;}
+  void SetFillK0s(Bool_t flag=kTRUE)              {fFillK0s = flag;}
+  void SetFillLambda(Bool_t flag=kTRUE)           {fFillLambda = flag;}
+  void SetFillALambda(Bool_t flag=kTRUE)          {fFillALambda = flag;}
+  void SetFillCaloClusterInfo(Bool_t flag=kTRUE)  {fFillCaloClusterInfo = flag;}
+  void SetFillFriendInfo(Bool_t flag=kTRUE)       {fFillFriendInfo = flag;}
   
   // Add dielectron objects to the list. These contain cuts and histogram definitions
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
@@ -75,6 +83,10 @@ public:
   Bool_t fFillTrackInfo;             // fill track information
   Bool_t fFillDielectronInfo;        // fill dielectrons
   Bool_t fFillV0Info;                // fill the V0 information
+  Bool_t fFillGammaConversions;      // fill gamma conversions
+  Bool_t fFillK0s;                   // fill the K0s V0s
+  Bool_t fFillLambda;                // fill the lambda V0s
+  Bool_t fFillALambda;               // fill the anti-lambda V0s
   Bool_t fFillCaloClusterInfo;       // fill the calorimeter clusters
   Bool_t fFillFriendInfo;            // fill friend tree information
 
@@ -84,16 +96,19 @@ public:
   
   AliESDv0Cuts *fK0sCuts;            // v0 standard filter for K0s->pi+pi-
   AliESDv0Cuts *fLambdaCuts;         // v0 standard filter for Lambda0->p + pi
+  AliESDv0KineCuts *fGammaConvCuts;  // v0 standard filter for gamma conversions
   AliAnalysisCuts *fK0sPionCuts;     // filter for pions from K0s
   AliAnalysisCuts *fLambdaProtonCuts;// filter for protons from Lambda
   AliAnalysisCuts *fLambdaPionCuts;  // filter for pions from Lambda
-  Double_t fK0sMassRange[2];           // mass range for allowed K0s pairs
-  Double_t fLambdaMassRange[2];        // mass range for allowed Lambda pairs
+  AliAnalysisCuts *fGammaElectronCuts;  // filter for electrons from gamma conversions
+  Double_t fK0sMassRange[2];         // mass range for allowed K0s pairs
+  Double_t fLambdaMassRange[2];      // mass range for allowed Lambda pairs
+  Double_t fGammaMassRange[2];       // mass range for allowed Gamma conversion pairs
   AliDielectronHistos* fV0Histos;    // histogram manager for V0s
 
   TFile *fTreeFile;                  //! output file containing the tree
   TTree *fTree;                      //! Reduced event tree
-  TTree *fFriendTreeFile;            //! output file containing the friend tree
+  TFile *fFriendTreeFile;            //! output file containing the friend tree
   TTree *fFriendTree;                //! Reduced event tree with friend info (event plane, etc.)
   AliReducedEvent *fReducedEvent;    //! reduced event wise information
   AliReducedEventFriend *fReducedEventFriend;    //! friend reduced event wise information
@@ -110,6 +125,6 @@ public:
   AliAnalysisTaskReducedTree(const AliAnalysisTaskReducedTree &c);
   AliAnalysisTaskReducedTree& operator= (const AliAnalysisTaskReducedTree &c);
 
-  ClassDef(AliAnalysisTaskReducedTree, 1); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTree, 2); //Analysis Task for creating a reduced event information tree 
 };
 #endif
