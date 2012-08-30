@@ -20,6 +20,8 @@ public:
   virtual void   UserExec(Option_t *option);
   
 private:
+  AliAnalysisTaskPi0DiffEfficiency(const AliAnalysisTaskPi0DiffEfficiency&); // not implemented
+  AliAnalysisTaskPi0DiffEfficiency& operator=(const AliAnalysisTaskPi0DiffEfficiency&); // not implemented
   Bool_t IsSameCluster(AliAODCaloCluster * c1,AliAODCaloCluster * c2)const ;
  
 private:
