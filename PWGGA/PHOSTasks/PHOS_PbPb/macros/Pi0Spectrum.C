@@ -1,5 +1,7 @@
 void Pi0Spectrum(const char* dataset="collection.xml")
 {
+
+  /* $Id$ */
     
   gSystem->Load("libTree.so");
   gSystem->Load("libGeom.so");

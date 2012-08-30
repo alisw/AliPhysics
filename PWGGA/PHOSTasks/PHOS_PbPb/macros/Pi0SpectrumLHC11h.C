@@ -2,6 +2,7 @@ void Pi0SpectrumLHC11h(const char* dataset="collection.xml",
 		       bool recompile = true
 )
 {
+  /* $Id$ */
   TStopwatch timer;
   timer.Start();
 
