@@ -739,7 +739,7 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 
 	TString mirrorsString(mirrors);
 	if(!mirrorsString.IsNull())
-		AliError("AliCDBLocal storage cannot take mirrors into account.");
+		AliWarning("AliCDBLocal storage cannot take mirror SEs into account. They will be ignored.");
 
 	// open file
 	TFile file(filename, "CREATE");

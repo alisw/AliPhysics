@@ -665,7 +665,7 @@ Bool_t AliCDBDump::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 
 	TString mirrorsString(mirrors);
 	if(!mirrorsString.IsNull())
-		AliError("AliCDBDump storage cannot take mirrors into account.");
+		AliWarning("AliCDBLocal storage cannot take mirror SEs into account. They will be ignored.");
 
 	AliCDBId& id = entry->GetId();
 	
