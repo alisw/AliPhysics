@@ -241,17 +241,17 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   fHistTracksPt->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistTracksPt);
        
-  fHistTrPhiEta = new TH2F("fHistTrPhiEta","Phi-Eta distribution of tracks", 80, -2, 2, 128, 0, 6.4);
+  fHistTrPhiEta = new TH2F("fHistTrPhiEta","Phi-Eta distribution of tracks", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
   fHistTrPhiEta->GetXaxis()->SetTitle("#eta");
   fHistTrPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistTrPhiEta);
 
-  fHistTrEmcPhiEta = new TH2F("fHistTrEmcPhiEta","Phi-Eta emcal distribution of tracks", 80, -2, 2, 128, 0, 6.4);
+  fHistTrEmcPhiEta = new TH2F("fHistTrEmcPhiEta","Phi-Eta emcal distribution of tracks", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
   fHistTrEmcPhiEta->GetXaxis()->SetTitle("#eta");
   fHistTrEmcPhiEta->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistTrEmcPhiEta);
 
-  fHistTrPhiEtaNonProp = new TH2F("fHistTrPhiEtaNonProp","fHistTrPhiEtaNonProp", 80, -2, 2, 128, 0, 6.4);
+  fHistTrPhiEtaNonProp = new TH2F("fHistTrPhiEtaNonProp","fHistTrPhiEtaNonProp", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
   fHistTrPhiEtaNonProp->GetXaxis()->SetTitle("#eta");
   fHistTrPhiEtaNonProp->GetYaxis()->SetTitle("#phi");
   fOutput->Add(fHistTrPhiEtaNonProp);
@@ -279,7 +279,8 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   }
 
   if (fAnaType == kEMCAL || fAnaType == kEMCALOnly) {
-    fHistClusPhiEtaEnergy = new TH3F("fHistClusPhiEtaEnergy","Phi-Eta-Energy distribution of clusters", fNbins, fMinBinPt, fMaxBinPt, 80, -2, 2, 128, 0, 6.4);
+    fHistClusPhiEtaEnergy = new TH3F("fHistClusPhiEtaEnergy","Phi-Eta-Energy distribution of clusters", 
+				     fNbins, fMinBinPt, fMaxBinPt, 100, -1.2, 1.2, 201, 0, TMath::Pi() * 2.01);
     fHistClusPhiEtaEnergy->GetXaxis()->SetTitle("E [GeV]");
     fHistClusPhiEtaEnergy->GetYaxis()->SetTitle("#eta");
     fHistClusPhiEtaEnergy->GetZaxis()->SetTitle("#phi");
@@ -320,13 +321,13 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   for (Int_t i = 0; i < 5; i++) {
     TString histnamephi("fHistTrackPhi_");
     histnamephi += i;
-    fHistTrackPhi[i] = new TH1F(histnamephi.Data(),histnamephi.Data(), 128, 0, 6.4);
+    fHistTrackPhi[i] = new TH1F(histnamephi.Data(),histnamephi.Data(), 201, 0, TMath::Pi() * 2.01);
     fHistTrackPhi[i]->GetXaxis()->SetTitle("Phi");
     fOutput->Add(fHistTrackPhi[i]);
 
     TString histnameeta("fHistTrackEta_");
     histnameeta += i;
-    fHistTrackEta[i] = new TH1F(histnameeta.Data(),histnameeta.Data(), 100, -2, 2);
+    fHistTrackEta[i] = new TH1F(histnameeta.Data(),histnameeta.Data(), 100, -1, 1);
     fHistTrackEta[i]->GetXaxis()->SetTitle("Eta");
     fOutput->Add(fHistTrackEta[i]);
   }
@@ -334,13 +335,13 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   for (Int_t i = 0; i < 6; i++) {
     TString histnamephipt("fHistTrackPhiPt_");
     histnamephipt += i;
-    fHistTrackPhiPt[i] = new TH1F(histnamephipt.Data(),histnamephipt.Data(), 128, 0, 6.4);
+    fHistTrackPhiPt[i] = new TH1F(histnamephipt.Data(),histnamephipt.Data(), 201, 0, TMath::Pi() * 2.01);
     fHistTrackPhiPt[i]->GetXaxis()->SetTitle("Phi");
     fOutput->Add(fHistTrackPhiPt[i]);
 
     TString histnameetapt("fHistTrackEtaPt_");
     histnameetapt += i;
-    fHistTrackEtaPt[i] = new TH1F(histnameetapt.Data(),histnameetapt.Data(), 100, -2, 2);
+    fHistTrackEtaPt[i] = new TH1F(histnameetapt.Data(),histnameetapt.Data(), 100, -1, 1);
     fHistTrackEtaPt[i]->GetXaxis()->SetTitle("Eta");
     fOutput->Add(fHistTrackEtaPt[i]);
   }
@@ -363,7 +364,7 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     for (Int_t i = 0; i < 4; i++) {
       histname = "fHistJetsPhiEta_";
       histname += i;
-      fHistJetsPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 80, -2, 2, 128, 0, 6.4);
+      fHistJetsPhiEta[i] = new TH2F(histname.Data(), histname.Data(), 100, -1.2, 1.2, 201, 0, TMath::Pi() * 2.01);
       fHistJetsPhiEta[i]->GetXaxis()->SetTitle("#eta");
       fHistJetsPhiEta[i]->GetYaxis()->SetTitle("#phi");
       fHistJetsPhiEta[i]->GetZaxis()->SetTitle("p_{T} [GeV/c]");
