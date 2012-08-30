@@ -1,4 +1,4 @@
-// $Id: AddTaskEmcalJetHMECadron.C 57095 2012-07-23 3:50:07Z mconnors $
+// $Id: AddTaskEmcalJetHMECadron.C 57095 2012-06-27 18:50:07Z mconnors $
 
 AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const char *outfilename    = "AnalysisOutput.root",
@@ -12,7 +12,8 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const Int_t EvtMix         = 0, 
    const Double_t TrkBias     = 5,
    const Double_t ClusBias    = 5,
-   const Double_t TrkEta     = 0.9
+   const Double_t TrkEta      = 0.9,
+   const char *branch         = "biased"
                                                  
 )
 {  
@@ -37,7 +38,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("Correlations_%s", nJets));
+  TString name(Form("Correlations_%s_%s", nJets, branch));
   AliAnalysisTaskEmcalJetHMEC *correlationtask = new AliAnalysisTaskEmcalJetHMEC(name);
   correlationtask->SetJetsName(nJets);
   correlationtask->SetTracksName(nTracks);
