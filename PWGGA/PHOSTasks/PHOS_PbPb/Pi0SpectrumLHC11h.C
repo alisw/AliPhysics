@@ -1,5 +1,5 @@
 void Pi0SpectrumLHC11h(const char* dataset="collection.xml",
-		       bool recompile = false
+		       bool recompile = true
 )
 {
   TStopwatch timer;
@@ -25,6 +25,7 @@ void Pi0SpectrumLHC11h(const char* dataset="collection.xml",
   if( recompile ) {
     gROOT->LoadMacro("AliCaloPhoton.cxx+g");
     gROOT->LoadMacro("AliAnalysisTaskPi0Flow.cxx+g");
+    gROOT->LoadMacro("AliPHOSEPFlattener.cxx+g");
   }
   else {
     gSystem->Load("libPWGGAPHOSTasks.so");
