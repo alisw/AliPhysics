@@ -7,6 +7,7 @@ class TList;
 class TH1;
 class TH2;
 class THnSparse;
+class AliEmcalJet;
 class AliESDEvent;
 class AliEventPoolManager;
 
@@ -22,6 +23,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   virtual Double_t        RelativePhi(Double_t mphi, Double_t vphi);
   virtual void            UserExec(Option_t *option);
   virtual void            Terminate(Option_t *);
+  virtual Int_t           AcceptJet(AliEmcalJet *jet);
   virtual THnSparse*      NewTHnSparseF(const char* name, UInt_t entries);
   virtual void            GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
 
@@ -85,6 +87,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalJetHMEC(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   AliAnalysisTaskEmcalJetHMEC& operator=(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetHMEC, 8); 
+  ClassDef(AliAnalysisTaskEmcalJetHMEC, 9); 
 };
 #endif

@@ -165,7 +165,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
 
   for(Int_t ipta=0; ipta<7; ++ipta){
     sprintf(name, "fHistTrackEtaPhi_%i", ipta);
-    fHistTrackEtaPhi[ipta] = new TH2F(name,name,400,-1,1,640,0.0,2*TMath::Pi());
+    fHistTrackEtaPhi[ipta] = new TH2F(name,name,400,-1,1,640,0.0,2.0*TMath::Pi());
     fOutputList->Add(fHistTrackEtaPhi[ipta]);
 
   }
@@ -204,7 +204,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
 
 
   UInt_t cifras = 0; // bit coded, see GetDimParams() below 
-  cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7; 
+  cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<8; 
   fhnJH = NewTHnSparseF("fhnJH", cifras);
   
   fhnJH->Sumw2();
@@ -213,13 +213,13 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
 
 
   if(fDoEventMixing){    
-     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7; 
-     fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
-
-     fhnMixedEvents->Sumw2();
-     
-     fOutputList->Add(fhnMixedEvents);
-
+    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<8; 
+    fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
+    
+    fhnMixedEvents->Sumw2();
+    
+    fOutputList->Add(fhnMixedEvents);
+    
   }
   
 
@@ -419,23 +419,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
       if (!jet)
 	continue;
       
-      //pt,eta,phi,centrality
-      float jetphi = jet->Phi();
-      if (jetphi>TMath::Pi())
-	jetphi = jetphi-2*TMath::Pi();
-      
-      if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax))
-	continue;
-      if ((jet->Eta()<fEtamin)||(jet->Eta()>fEtamax))
-	continue;
-      //fHistAreavsRawPt[centbin]->Fill(jet->Pt(),jet->Area());
-      if (jet->Area()<fAreacut)
-	continue;
-      //prevents 0 area jets from sneaking by when area cut == 0
-      if (jet->Area()==0)
-	continue;
-      //exclude jets with extremely high pt tracks which are likely misreconstructed
-      if(jet->MaxTrackPt()>100)
+      if(!AcceptJet(jet))
 	continue;
 
       Double_t jetPt = jet->Pt();
@@ -449,11 +433,14 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
 
     
-  //Only look at the highest pT jet in the event
-
-  if(ijethi>-1){
-    AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijethi)); 
+  for (Int_t ijet = 0; ijet < Njets; ijet++){
     
+    AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
+
+    if(!AcceptJet(jet))
+      continue;
+
+        
     Double_t jetphi = jet->Phi();
     Double_t jetPt = jet->Pt();
     Double_t jeteta=jet->Eta();
@@ -466,7 +453,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
       fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
 
-      //fHistDeltaPtvsArea->Fill(jetPt,jet->Area());
 
       if(iTT>0){
 	AliVTrack* TT = static_cast<AliVTrack*>(tracks->At(iTT));
@@ -522,7 +508,10 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	  if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
 	    fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,trackpt);
 
-	    Double_t triggerEntries[7] = {fcent,jetPt,track->Pt(),dR,deta,dphijh,0.0};                      
+	    Double_t leadjet=0;
+	    if (ijet==ijethi) leadjet=1;
+
+	    Double_t triggerEntries[8] = {fcent,jetPt,track->Pt(),dR,deta,dphijh,0.0,leadjet};                      
 	    fhnJH->Fill(triggerEntries);
 	  }
 
@@ -533,7 +522,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	} //track loop
   }//jet pt cut
 
-  }//jet index > -1
+  }//jet loop
   
 
   //Prepare to do event mixing
@@ -577,15 +566,23 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
 
     //check for a trigger jet
-    if(ijethi>-1){
+        
 
-      if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
-	{
+    if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10 || pool->GetCurrentNEvents() >= 5) 
+      {
+	
+	for (Int_t ijet = 0; ijet < Njets; ijet++){
+
+	  Double_t leadjet=0;
+	  if (ijet==ijethi) leadjet=1;
 	  
-	  AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijethi)); 
-	  
+	  AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
+
+	  if(!AcceptJet(jet))
+	    continue;
+
+	  Double_t jetPt = jet->Pt();	
 	  Double_t jetphi = jet->Phi();
-	  Double_t jetPt = jet->Pt();
 	  Double_t jeteta=jet->Eta();
 	  
 	  
@@ -608,7 +605,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 		  Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
 		  if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
 		  if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
-		  Double_t triggerEntries[7] = {fcent,jetPt,part->Pt(),DR,DEta,DPhi,0.0};                      
+		  Double_t triggerEntries[8] = {fcent,jetPt,part->Pt(),DR,DEta,DPhi,0.0,leadjet};                      
 		  fhnMixedEvents->Fill(triggerEntries,1./nMix);
 		  
 		  
@@ -635,6 +632,35 @@ void AliAnalysisTaskEmcalJetHMEC::Terminate(Option_t *)
   //just terminate
 
 }
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEmcalJetHMEC::AcceptJet(AliEmcalJet *jet) 
+{
+  //applies all jet cuts except pt
+  float jetphi = jet->Phi();
+  if (jetphi>TMath::Pi())
+    jetphi = jetphi-2*TMath::Pi();
+  
+  if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax))
+    return 0;
+  if ((jet->Eta()<fEtamin)||(jet->Eta()>fEtamax))
+    return 0;
+  if (jet->Area()<fAreacut)
+    return 0;
+  //prevents 0 area jets from sneaking by when area cut == 0
+  if (jet->Area()==0)
+    return 0;
+  
+  //exclude jets with extremely high pt tracks which are likely misreconstructed
+  if(jet->MaxTrackPt()>100)
+    return 0;
+
+  //passed all above cuts
+  return 1;
+  
+}
+
+//________________________________________________________________________
 
 THnSparse* AliAnalysisTaskEmcalJetHMEC::NewTHnSparseF(const char* name, UInt_t entries)
 {
@@ -746,7 +772,12 @@ void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int
       xmax = 50;
       break;
 
-
+    case 8:
+      label = "leading jet";
+      nbins = 3;
+      xmin = -0.5;
+      xmax = 2.5;
+      break;
   
 
    }
@@ -788,6 +819,7 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList(TObjArray* track
   
   return tracksClone;
 }
+
 
 
 
