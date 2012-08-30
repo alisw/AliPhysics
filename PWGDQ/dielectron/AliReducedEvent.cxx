@@ -38,6 +38,7 @@ AliReducedTrack::AliReducedTrack() :
   fDCA(),
   fITSclusterMap(0),
   fITSsignal(0.0),
+  fITSnSig(),
   fTPCNcls(0),
   fTPCCrossedRows(0),
   fTPCNclsF(0),
@@ -51,13 +52,14 @@ AliReducedTrack::AliReducedTrack() :
   fTRDpid(),
   fCaloClusterId(-999),
   fBayesPID(),
-  fFlags(0)
+  fFlags(0),
+  fMoreFlags(0)
 {
   //
   // Constructor
   //
   fDCA[0] = 0.0; fDCA[1]=0.0;
-  for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=-999.; fTOFnSig[i]=-999.;} 
+  for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=-999.; fTOFnSig[i]=-999.; fITSnSig[i]=-999.;} 
   for(Int_t i=0; i<3; ++i) {fBayesPID[i]=-999.;}
   fTRDpid[0]=-999.; fTRDpid[1]=-999.;
 }
@@ -83,15 +85,14 @@ AliReducedPair::AliReducedPair() :
   fEta(0.0),
   fLxy(0.0),
   fLxyErr(0.0),
-  fOpeningAngle(-1.0),
-  //fOnTheFly(kFALSE),
+  fPointingAngle(0.0),
   fMCid(0)
 {
   //
   // Constructor
   //
   fLegIds[0] = -1; fLegIds[1] = -1;
-  fMass[0]=-999.; fMass[1]=-999.; fMass[2]=-999.;
+  fMass[0]=-999.; fMass[1]=-999.; fMass[2]=-999.; fMass[3]=-999.;
 }
 
 
@@ -107,8 +108,7 @@ AliReducedPair::AliReducedPair(const AliReducedPair &c) :
   fEta(c.Eta()),
   fLxy(c.Lxy()),
   fLxyErr(c.LxyErr()),
-  fOpeningAngle(c.OpeningAngle()),
-  //fOnTheFly(c.IsOnTheFly()),
+  fPointingAngle(c.PointingAngle()),
   fMCid(c.MCid())
 {
   //
@@ -116,7 +116,7 @@ AliReducedPair::AliReducedPair(const AliReducedPair &c) :
   //
   fLegIds[0] = c.LegId(0);
   fLegIds[1] = c.LegId(1);
-  fMass[0] = c.Mass(0); fMass[1] = c.Mass(1); fMass[2] = c.Mass(2);
+  fMass[0] = c.Mass(0); fMass[1] = c.Mass(1); fMass[2] = c.Mass(2); fMass[3] = c.Mass(3);
 }
 
 
@@ -387,8 +387,8 @@ AliReducedCaloCluster::~AliReducedCaloCluster()
 
 //_______________________________________________________________________________
 void AliReducedEvent::GetQvector(Double_t Qvec[][2], Int_t det,
-					    Float_t etaMin/*=-0.8*/, Float_t etaMax/*=+0.8*/,
-					    Bool_t (*IsTrackSelected)(AliReducedTrack*)/*=NULL*/) {
+                                 Float_t etaMin/*=-0.8*/, Float_t etaMax/*=+0.8*/,
+				 Bool_t (*IsTrackSelected)(AliReducedTrack*)/*=NULL*/) {
   //
   // Get the event plane for a specified detector
   //
@@ -419,8 +419,8 @@ void AliReducedEvent::GetQvector(Double_t Qvec[][2], Int_t det,
 
 //_________________________________________________________________
 Int_t AliReducedEvent::GetTPCQvector(Double_t Qvec[][2], Int_t det, 
-						Float_t etaMin/*=-0.8*/, Float_t etaMax/*=+0.8*/,
-						Bool_t (*IsTrackSelected)(AliReducedTrack*)/*=NULL*/) {
+                                     Float_t etaMin/*=-0.8*/, Float_t etaMax/*=+0.8*/,
+				     Bool_t (*IsTrackSelected)(AliReducedTrack*)/*=NULL*/) {
   //
   // Construct the event plane using tracks in the barrel
   //
@@ -447,8 +447,7 @@ Int_t AliReducedEvent::GetTPCQvector(Double_t Qvec[][2], Int_t det,
       if(absWeight>2.0) absWeight = 2.0;    // pt is the weight used for the event plane
     }
     weight = absWeight;
-    //if(track->Eta()<0.0) weight *= -1.0;
-    
+        
     ++nUsedTracks;
     x = TMath::Cos(track->Phi());
     y = TMath::Sin(track->Phi());
@@ -478,7 +477,7 @@ Int_t AliReducedEvent::GetTPCQvector(Double_t Qvec[][2], Int_t det,
 //____________________________________________________________________________
 void AliReducedEvent::SubtractParticleFromQvector(
 	AliReducedTrack* particle, Double_t Qvec[][2], Int_t det, 
-	Float_t etaMin/*=-0.8*/, Float_t etaMax/*=+0.8*/,
+        Float_t etaMin/*=-0.8*/, Float_t etaMax/*=+0.8*/,
 	Bool_t (*IsTrackSelected)(AliReducedTrack*)/*=NULL*/) {
   //
   // subtract a particle from the event Q-vector
@@ -486,7 +485,7 @@ void AliReducedEvent::SubtractParticleFromQvector(
   Float_t eta = particle->Eta();
   if(eta<etaMin) return;
   if(eta>etaMax) return;
-
+  
   Float_t charge = particle->Charge();
   if(det==AliReducedEventFriend::kTPCpos && charge<0) return;
   if(det==AliReducedEventFriend::kTPCneg && charge>0) return;

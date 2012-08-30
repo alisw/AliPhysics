@@ -15,11 +15,6 @@
 
 
 const Int_t fgkNMaxHarmonics = 10;
-/*class AliCorrelationReducedTrack;
-class AliCorrelationReducedPair;
-class AliReducedEventFriend;
-class AliReducedEvent;
-class AliCorrelationReducedCaloCluster;*/
 
 //_____________________________________________________________________
 class AliReducedTrack : public TObject {
@@ -59,6 +54,7 @@ class AliReducedTrack : public TObject {
   UChar_t  ITSclusterMap()          const {return fITSclusterMap;}
   Bool_t   ITSLayerHit(Int_t layer) const {return (layer>=0 && layer<6 ? (fITSclusterMap&(1<<layer)) : kFALSE);};
   Float_t  ITSsignal()              const {return fITSsignal;}
+  Float_t  ITSnSig(Int_t specie)    const {return (specie>=0 && specie<=3 ? fITSnSig[specie] : -999.);}
   
   UChar_t TPCncls()                        const {return fTPCNcls;}
   UChar_t TPCFindableNcls()                const {return fTPCNclsF;}
@@ -77,12 +73,19 @@ class AliReducedTrack : public TObject {
   Float_t  TRDpid(Int_t specie)       const {return (specie>=0 && specie<=1 ? fTRDpid[specie] : -999.);}
   
   Int_t    CaloClusterId() const {return fCaloClusterId;}
-  //Float_t  CaloEnergy(AliReducedEvent* event) const {if(fCaloClusterId>0) return event->GetCaloCluster(fCaloClusterId)->Energy();}
-  //Float_t  CaloDx(AliReducedEvent* event) const {if(fCaloClusterId>0) return event->GetCaloCluster(fCaloClusterId)->Dx();}
-  //Float_t  CaloDz(AliReducedEvent* event) const {if(fCaloClusterId>0) return event->GetCaloCluster(fCaloClusterId)->Dz();}
-  
+    
   Float_t  BayesPID(Int_t specie) const {return (specie>=0 && specie<=2 ? fBayesPID[specie] : -999.);}
-  Bool_t   UsedForQvector()       const {return fFlags&(1<<0);}
+  
+  Bool_t UsedForQvector()             const {return fFlags&(1<<0);}
+  Bool_t TestFlag(UShort_t iflag)     const {return (iflag<sizeof(UShort_t) ? fFlags&(1<<iflag) : kFALSE);}
+  Bool_t SetFlag(UShort_t iflag)            {if (iflag>=sizeof(UShort_t)) return kFALSE; fFlags|=(1<<iflag); return kTRUE;}
+  Bool_t IsGammaLeg()                 const {return fFlags&(1<<1);}
+  Bool_t IsK0sLeg()                   const {return fFlags&(1<<2);}
+  Bool_t IsLambdaLeg()                const {return fFlags&(1<<3);}
+  Bool_t IsALambdaLeg()               const {return fFlags&(1<<4);}
+  Bool_t IsKink(Int_t i=0)            const {return (i>=0 && i<3 ? fFlags&(1<<(5+i)) : kFALSE);}
+  Bool_t TestFlagMore(UShort_t iflag) const {return (iflag<sizeof(ULong_t) ? fMoreFlags&(1<<iflag) : kFALSE);}
+  Bool_t SetFlagMore(UShort_t iflag)        {if(iflag>=sizeof(ULong_t)) return kFALSE; fMoreFlags|=(1<<iflag); return kTRUE;}
   
  private:
   UShort_t fTrackId;            // track id 
@@ -99,6 +102,7 @@ class AliReducedTrack : public TObject {
   // ITS
   UChar_t  fITSclusterMap;      // ITS cluster map
   Float_t  fITSsignal;          // ITS signal
+  Float_t  fITSnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
   
   // TPC
   UChar_t fTPCNcls;            // TPC ncls                          
@@ -115,21 +119,28 @@ class AliReducedTrack : public TObject {
   
   // TRD
   UChar_t fTRDntracklets[2];       // 0 - AliESDtrack::GetTRDntracklets(); 1 - AliESDtrack::GetTRDntrackletsPID()   TODO: use only 1 char
-  Float_t fTRDpid[2];              // TRD pid probabilities, [0]-electron, [1]-pion
+  Float_t fTRDpid[2];              // TRD electron probabilities, [0]- 1D likelihood, [1]- 2D likelihood
   
   // EMCAL/PHOS
   Int_t  fCaloClusterId;          // ID for the calorimeter cluster (if any)
   
   // Bayesian PID
-  Float_t fBayesPID[3];            // Combined Bayesian PID   pi/K/p
+  Float_t fBayesPID[3];           // Combined Bayesian PID   pi/K/p
   
-  UShort_t fFlags;                // BIT0 toggled if track used for TPC event plane   TODO combine with other posible flags, use for MC pid?
-  // TODO flag for which TPC part used for pid  --> Char_t  used in 2011 data
-  
+  UShort_t fFlags;                // BIT0 toggled if track used for TPC event plane
+                                  // BIT1 toggled if track belongs to a gamma conversion
+                                  // BIT2 toggled if track belongs to a K0s
+                                  // BIT3 toggled if track belongs to a Lambda
+                                  // BIT4 toggled if track belongs to an Anti-Lambda
+                                  // BIT5 toggled if the track has kink0 index > 0
+                                  // BIT6 toggled if the track has kink1 index > 0
+                                  // BIT7 toggled if the track has kink2 index > 0
+  ULong_t  fMoreFlags;            // Space reserved for more information which might be needed later for analysis
+    
   AliReducedTrack(const AliReducedTrack &c);
   AliReducedTrack& operator= (const AliReducedTrack &c);
 
-  ClassDef(AliReducedTrack, 2);
+  ClassDef(AliReducedTrack, 3);
 };
 
 
@@ -146,6 +157,7 @@ class AliReducedPair : public TObject {
     kALambda0ToPPi,
     kJpsiToEE,
     kUpsilon,
+    kGammaConv,
     kNMaxCandidateTypes
   };
   AliReducedPair();
@@ -156,7 +168,7 @@ class AliReducedPair : public TObject {
   Char_t   CandidateId()         const {return fCandidateId;}
   Char_t   PairType()            const {return fPairType;}
   Int_t    LegId(Int_t leg)      const {return (leg==0 || leg==1 ? fLegIds[leg] : -1);}
-  Float_t  Mass(Int_t idx=0)     const {return (idx>=0 && idx<3 ? fMass[idx] : -999.);}
+  Float_t  Mass(Int_t idx=0)     const {return (idx>=0 && idx<4 ? fMass[idx] : -999.);}
   Float_t  Px()                  const {return fPt*TMath::Cos(fPhi);}
   Float_t  Py()                  const {return fPt*TMath::Sin(fPhi);}
   Float_t  Pz()                  const {return fPt*TMath::SinH(fEta);}
@@ -169,7 +181,7 @@ class AliReducedPair : public TObject {
   Float_t  Theta()               const {return TMath::ACos(TMath::TanH(fEta));}
   Float_t  Lxy()                 const {return fLxy;}
   Float_t  LxyErr()              const {return fLxyErr;}
-  Float_t  OpeningAngle()        const {return fOpeningAngle;}
+  Float_t  PointingAngle()       const {return fPointingAngle;}
   Bool_t   IsOnTheFly()          const {return fPairType;}
   UInt_t   MCid()                const {return fMCid;}
   Bool_t   CheckMC(const Int_t flag) const {return (flag<32 ? (fMCid&(1<<flag)) : kFALSE);}
@@ -178,19 +190,19 @@ class AliReducedPair : public TObject {
   Char_t  fCandidateId;         // candidate type (K0s, Lambda, J/psi, phi, etc)
   Char_t  fPairType;            // 0 ++; 1 +-; 2 -- for dielectron pairs; 0- offline, 1- on the fly for V0 candidates
   UShort_t fLegIds[2];          // leg ids 
-  Float_t fMass[3];             // invariant mass for pairs (2 extra mass values for other V0 pid assumptions)
-                                // idx=0 -> K0s assumption; idx=1 -> Lambda; idx=2 -> anti-Lambda
+  Float_t fMass[4];             // invariant mass for pairs (3 extra mass values for other V0 pid assumptions)
+                                // idx=0 -> K0s assumption; idx=1 -> Lambda; idx=2 -> anti-Lambda; idx=3 -> gamma conversion
   Float_t fPhi;                 // pair phi in the [0,2*pi) interval
   Float_t fPt;                  // pair pt
   Float_t fEta;                 // pair eta 
   Float_t fLxy;                 // pseudo-proper decay length
   Float_t fLxyErr;              // error on Lxy
-  Float_t fOpeningAngle;        // opening angle                TODO remove   ???
+  Float_t fPointingAngle;       // angle between the pair momentum vector and the secondary vertex position vector
   UInt_t  fMCid;                // Bit map with Monte Carlo info about the pair
 
   AliReducedPair& operator= (const AliReducedPair &c);
 
-  ClassDef(AliReducedPair, 1);
+  ClassDef(AliReducedPair, 2);
 };
 
 
@@ -342,8 +354,9 @@ class AliReducedEvent : public TObject {
   void  GetVZEROQvector(Double_t Qvec[][2], Int_t det) ;
   void  GetVZEROQvector(Double_t Qvec[][2], Int_t det, Float_t* vzeroMult);
   void  GetZDCQvector(Double_t Qvec[][2], Int_t det) const;
-  void  SubtractParticleFromQvector(AliReducedTrack* particle, Double_t Qvec[][2], Int_t det, 
-	 			    Float_t etaMin=-0.8, Float_t etaMax=+0.8, Bool_t (*IsTrackSelected)(AliReducedTrack*)=NULL);
+  void  SubtractParticleFromQvector(AliReducedTrack* particle, Double_t Qvec[][2], Int_t det,
+                                    Float_t etaMin=-0.8, Float_t etaMax=+0.8,
+	 			    Bool_t (*IsTrackSelected)(AliReducedTrack*)=NULL);
 
  private:
   Int_t     fRunNo;                 // run number
@@ -421,6 +434,9 @@ inline Float_t AliReducedPair::Energy() const
       break;
     case kALambda0ToPPi:
       mass = fMass[2];
+      break;
+    case kGammaConv:
+      mass = fMass[3];
       break;
     default:
       mass = fMass[0];
