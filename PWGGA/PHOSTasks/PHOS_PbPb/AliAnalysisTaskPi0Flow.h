@@ -1,6 +1,9 @@
 #ifndef AliAnalysisTaskPi0Flow_cxx
 #define AliAnalysisTaskPi0Flow_cxx
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 // Analysis task to fill histograms with PHOS ESD or AOD clusters and cells
 // Authors : Dmitri Peressounko
 // Date    : 28.05.2011

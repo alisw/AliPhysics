@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 //_________________________________________________________________________
 //  Class to perform flattening of the event plane distribution
@@ -23,7 +24,7 @@
 // --- ROOT system ---
 
 #include "TMath.h"
-#include "TH1.h"
+#include "TH2.h"
 
 // --- Standard library ---
 
@@ -40,6 +41,7 @@ AliPHOSEPFlattener::AliPHOSEPFlattener() :
   TNamed(),
   fNCentrBins(0), 
   fNHarmonics(0),
+  fNparam(0),
   fParam(0x0)
 {
   // default ctor
@@ -51,6 +53,7 @@ AliPHOSEPFlattener::AliPHOSEPFlattener(const char * name) :
   TNamed(name,"PHOSEPFlattener"),
   fNCentrBins(0), 
   fNHarmonics(0),
+  fNparam(0),
   fParam(0x0)
 {
 //  Nothing to initialize
@@ -60,14 +63,16 @@ AliPHOSEPFlattener::AliPHOSEPFlattener(const AliPHOSEPFlattener & fl):
   TNamed(fl.GetName(),"PHOSEPFlattener"),
   fNCentrBins(0), 
   fNHarmonics(0),
+  fNparam(0),
   fParam(0x0)
 
 {
   
   fNCentrBins = fl.fNCentrBins ;
   fNHarmonics = fl.fNHarmonics ;
-  fParam = new Double32_t[fNHarmonics*fNCentrBins] ;
-  for(Int_t i=0; i<fNHarmonics*fNCentrBins; i++)
+  fNparam     = fl.fNparam ;
+  fParam = new Double32_t[fNparam] ;
+  for(Int_t i=0; i<fNparam; i++)
     fParam[i]=fl.fParam[i] ;  
 }  
 
@@ -77,9 +82,10 @@ AliPHOSEPFlattener & AliPHOSEPFlattener::operator = (const AliPHOSEPFlattener & 
   SetName(fl.GetName()) ;
   fNCentrBins = fl.fNCentrBins ;
   fNHarmonics = fl.fNHarmonics ;
+  fNparam     = fl.fNparam ;
   if(fParam) delete [] fParam ;
-  fParam = new Double32_t[fNHarmonics*fNCentrBins] ;
-  for(Int_t i=0; i<fNHarmonics*fNCentrBins; i++)
+  fParam = new Double32_t[fNparam] ;
+  for(Int_t i=0; i<fNparam; i++)
     fParam[i]=fl.fParam[i] ;
   
   return *this;
@@ -90,6 +96,7 @@ AliPHOSEPFlattener::~AliPHOSEPFlattener()
 // Nothing to delete
   fNCentrBins = 0 ; 
   fNHarmonics = 0 ;
+  fNparam     = 0 ;
   if(fParam)
     delete [] fParam ;
   fParam = 0x0 ;
@@ -117,19 +124,18 @@ Double_t AliPHOSEPFlattener::MakeFlat(Double_t oldPhi,Double_t centrality)const
   return result ;
 }
 //____________________________________________________________________________
-void AliPHOSEPFlattener::SetParameterization(TH1D * h){
+void AliPHOSEPFlattener::SetParameterization(TH2 * h){
  //Fill parameterizations
  //We expect histogram with <cos(i*phi)>, <sin(i*phi)> with centrality bins in x axis
  //and harmonics: <cos(x)>, <sin(x)>, <cos(2x)>, <sin(2x)>, .... in y axis
  
   fNCentrBins = h->GetXaxis()->GetNbins() ;
   fNHarmonics = h->GetYaxis()->GetNbins() ;
+  fNparam     = fNCentrBins*fNHarmonics ;
   if(fParam) delete [] fParam ;
-  fParam = new Double32_t[fNHarmonics*fNCentrBins] ;
+  fParam = new Double32_t[fNparam] ;
   for(Int_t i=0; i<fNCentrBins; i++)
     for(Int_t j=0; j<fNHarmonics; j++)
       fParam[i*fNHarmonics+j]=h->GetBinContent(i,j) ;
-  
-  
 }
 
