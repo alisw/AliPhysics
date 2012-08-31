@@ -104,8 +104,6 @@
 #pragma link C++ class AliSPDMCTrackDensity+;
 
 
-#pragma link C++ class AliDisplacedVerticesESDFilterTask+;
-
 #pragma link C++ class AliForwardCreateResponseMatrices+;
 #pragma link C++ class AliForwardMultiplicityDistribution+;
 
