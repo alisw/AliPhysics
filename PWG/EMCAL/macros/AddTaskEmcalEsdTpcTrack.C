@@ -11,8 +11,11 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
   };
 
   enum DataSet {
-    kLHC11h  = 0,
-    kLHC11a  = 1
+    kLHC10h  = 0,
+    kLHC11a  = 1,
+    kLHC11c  = 3,
+    kLHC11d  = 3,
+    kLHC11h  = 3
   };
 
   CutsType cutsType = kHybrid;
@@ -34,12 +37,24 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
     ::Warning("AddTaskEmcalEsdTpcTrack", "Cuts type not recognized, will assume Hybrid");
   }
 
-  if (strTrackCuts.Contains("LHC11h")) {
-    dataSet = kLHC11h;
+  if (strTrackCuts.Contains("LHC10h")) {
+    dataSet = kLHC10h;
   }
   else if (strTrackCuts.Contains("LHC11a")) {
     dataSet = kLHC11a;
     dataSetLabel = "LHC11a";
+  }
+  else if (strTrackCuts.Contains("LHC11c")) {
+    dataSet = kLHC11c;
+    dataSetLabel = "LHC11c";
+  }
+  else if (strTrackCuts.Contains("LHC11d")) {
+    dataSet = kLHC11d;
+    dataSetLabel = "LHC11d";
+  }
+  else if (strTrackCuts.Contains("LHC11h")) {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC11h";
   }
   else {
     ::Warning("AddTaskEmcalEsdTpcTrack", "Dataset not recognized, will assume LHC11h");
@@ -74,7 +89,9 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
 
   AliEmcalEsdTpcTrackTask *eTask = new AliEmcalEsdTpcTrackTask(); // default is TPC only tracks constrained to the vertex
 
-  if (dataSet == kLHC11h && cutsType == kHybrid) {
+  if ((dataSet == kLHC11c && cutsType == kHybrid) ||
+      (dataSet == kLHC11d && cutsType == kHybrid) ||
+      (dataSet == kLHC11h && cutsType == kHybrid)) {
     /* hybrid track cuts*/
     AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(10001007);       //1000 adds SPD any requirement
     AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041007);       //1004 removes ITSrefit requirement from standard set    
@@ -82,7 +99,8 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
     eTask->SetTrackCuts(cutsp);
     eTask->SetHybridTrackCuts(hybsp);
   }
-  else if (dataSet == kLHC11a && cutsType == kHybrid) {
+  else if ((dataSet == kLHC10h && cutsType == kHybrid) ||
+           (dataSet == kLHC11a && cutsType == kHybrid)} {
     /* hybrid track cuts*/
     AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(10001006);       //1000 adds SPD any requirement
     AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041006);       //1004 removes ITSrefit requirement from standard set    
