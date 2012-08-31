@@ -33,6 +33,7 @@ void Pi0FlowCAF(const char* dataset="/alice/data/LHC11h_2_*AOD095",
   cout << "Pi0Flow: processing dataset " << dataset << endl;
   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PHOS");
   gProof->Load("AliCaloPhoton.cxx+g");
+  gProof->Load("AliPHOSEPFlattener.cxx+g");
   gProof->Load("AliAnalysisTaskPi0Flow.cxx++g");
   
   // Make the analysis manager
