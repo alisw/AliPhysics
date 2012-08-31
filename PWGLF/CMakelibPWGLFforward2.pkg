@@ -76,6 +76,9 @@ set ( SRCS
   FORWARD/analysis2/AliPoissonCalculator.cxx
   FORWARD/analysis2/AliSPDMCTrackDensity.cxx
   FORWARD/GEO/AliAnalysisTaskZDCPbPb.cxx
+  FORWARD/analysis2/AliDisplacedVerticesESDFilterTask.cxx
+  FORWARD/analysis2/AliForwardMultiplicityDistribution.cxx
+  FORWARD/analysis2/AliForwardCreateResponseMatrices.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
