@@ -95,18 +95,14 @@
 #pragma link C++ class AliForwardUtil+;
 #pragma link C++ class AliForwardUtil::Histos+;
 #pragma link C++ class AliForwardUtil::RingHistos+;
-
 #pragma link C++ class AliMCTruthdNdetaTask+;
 #pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
-
 #pragma link C++ class AliPoissonCalculator+;
-
 #pragma link C++ class AliSPDMCTrackDensity+;
-
-
 #pragma link C++ class AliForwardCreateResponseMatrices+;
+#pragma link C++ class AliForwardCreateResponseMatrices::Bin+;
 #pragma link C++ class AliForwardMultiplicityDistribution+;
-
+#pragma link C++ class AliForwardMultiplicityDistribution::Bin+;
 #else
 # error Not for compilation 
 #endif
