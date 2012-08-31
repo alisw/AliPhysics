@@ -136,6 +136,6 @@ void AliPHOSEPFlattener::SetParameterization(TH2 * h){
   fParam = new Double32_t[fNparam] ;
   for(Int_t i=0; i<fNCentrBins; i++)
     for(Int_t j=0; j<fNHarmonics; j++)
-      fParam[i*fNHarmonics+j]=h->GetBinContent(i,j) ;
+      fParam[i*fNHarmonics+j]=h->GetBinContent(i+1,j+1) ;
 }
 
