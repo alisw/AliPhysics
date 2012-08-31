@@ -100,7 +100,7 @@ AliEmcalEsdTpcTrackTask* AddTaskEmcalEsdTpcTrack(
     eTask->SetHybridTrackCuts(hybsp);
   }
   else if ((dataSet == kLHC10h && cutsType == kHybrid) ||
-           (dataSet == kLHC11a && cutsType == kHybrid) {
+           (dataSet == kLHC11a && cutsType == kHybrid)) {
     /* hybrid track cuts*/
     AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(10001006);       //1000 adds SPD any requirement
     AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041006);       //1004 removes ITSrefit requirement from standard set    
