@@ -675,6 +675,8 @@ Bool_t AliAnalysisTaskPi0Flow::IsGoodChannel(const char * det, Int_t mod, Int_t 
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::FillPHOSCellQAHists()
 {
+  // Fill cell occupancy per module
+
   AliVCaloCells * cells = fEvent->GetPHOSCells();
 
   FillHistogram("hCenPHOSCells",fCentralityV0M,cells->GetNumberOfCells()) ;
@@ -2135,9 +2137,9 @@ void AliAnalysisTaskPi0Flow::SetV0Calibration(){
     fMultV0 = ((TH2F *) cont->GetObject(runNumber))->ProfileX();
 
     TF1 *fpol0 = new TF1("fpol0","pol0");
-    fMultV0->Fit(fpol0,"","",0,31);
+    fMultV0->Fit(fpol0,"Q0","",0,31);
     fV0Cpol = fpol0->GetParameter(0);
-    fMultV0->Fit(fpol0,"","",32,64);
+    fMultV0->Fit(fpol0,"Q0","",32,64);
     fV0Apol = fpol0->GetParameter(0);
 
     for(Int_t iside=0;iside<2;iside++){
