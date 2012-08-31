@@ -95,7 +95,6 @@ public:
   void SetRunMultFinder(Bool_t flag=kTRUE) {fRunMultFinder=flag;};
   void SetRunVertexFinder(Bool_t flag=kTRUE) {fRunVertexFinder=flag;};
   void SetRunVertexFinderTracks(Bool_t flag=kTRUE) {fRunVertexFinderTracks=flag;};
-  void SetRunHLTTracking(Bool_t flag=kTRUE) {fRunHLTTracking=flag;};
   void SetRunV0Finder(Bool_t flag=kTRUE) {fRunV0Finder=flag;};
   void SetRunCascadeFinder(Bool_t flag=kTRUE) {fRunCascadeFinder=flag;};
   void SetStopOnError(Bool_t flag=kTRUE) {fStopOnError=flag;}
@@ -220,7 +219,6 @@ private:
   Bool_t         ReadIntensityInfoCDB();
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESDEvent*& esd);
-  Bool_t         RunHLTTracking(AliESDEvent*& esd);
   Bool_t         RunMuonTracking(AliESDEvent*& esd);
   Bool_t         RunSPDTrackleting(AliESDEvent*& esd);
   Bool_t         RunMultFinder(AliESDEvent*& esd);
@@ -265,8 +263,7 @@ private:
   //*** Global reconstruction flags *******************
   Bool_t         fRunVertexFinder;    // run the vertex finder
   Bool_t         fRunVertexFinderTracks;    // run the vertex finder with tracks
-  Bool_t         fRunHLTTracking;     // run the HLT tracking
-  Bool_t         fRunMuonTracking;    // run the HLT tracking
+  Bool_t         fRunMuonTracking;    // run the MUON tracking
   Bool_t         fRunV0Finder;        // run the ESD V0 finder
   Bool_t         fRunCascadeFinder;   // run the ESD cascade finder
   Bool_t         fRunMultFinder;      // run the trackleter for ITS clusters
@@ -388,7 +385,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 43)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 44)      // class for running the reconstruction
 };
 
 #endif

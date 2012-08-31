@@ -224,7 +224,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   TSelector(),
   fRunVertexFinder(kTRUE),
   fRunVertexFinderTracks(kTRUE),
-  fRunHLTTracking(kFALSE),
   fRunMuonTracking(kFALSE),
   fRunV0Finder(kTRUE),
   fRunCascadeFinder(kTRUE),
@@ -349,7 +348,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   TSelector(),
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunVertexFinderTracks(rec.fRunVertexFinderTracks),
-  fRunHLTTracking(rec.fRunHLTTracking),
   fRunMuonTracking(rec.fRunMuonTracking),
   fRunV0Finder(rec.fRunV0Finder),
   fRunCascadeFinder(rec.fRunCascadeFinder),
@@ -490,7 +488,6 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
 
   fRunVertexFinder       = rec.fRunVertexFinder;
   fRunVertexFinderTracks = rec.fRunVertexFinderTracks;
-  fRunHLTTracking        = rec.fRunHLTTracking;
   fRunMuonTracking       = rec.fRunMuonTracking;
   fRunV0Finder           = rec.fRunV0Finder;
   fRunCascadeFinder      = rec.fRunCascadeFinder;
@@ -1953,26 +1950,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     AliQAManager::QAManager()->RunOneEvent(fRawReader) ;  
     AliSysInfo::AddStamp(Form("RawQA_%d",iEvent), 0,0,iEvent);
   }
-    // local single event reconstruction
-    if (!fRunLocalReconstruction.IsNull()) {
-      TString detectors=fRunLocalReconstruction;
-      // run HLT event reconstruction first
-      // ;-( IsSelected changes the string
-      if (IsSelected("HLT", detectors) &&
-	  !RunLocalEventReconstruction("HLT")) {
-	if (fStopOnError) {CleanUp(); return kFALSE;}
-      }
-      detectors=fRunLocalReconstruction;
-      detectors.ReplaceAll("HLT", "");
-      if (!RunLocalEventReconstruction(detectors)) {
-        if (fStopOnError) {
-          CleanUp(); 
-          return kFALSE;
-        }
-      }
-    }
 
-  
     // fill Event header information from the RawEventHeader
     if (fRawReader){FillRawEventHeaderESD(fesd);}
     if (fRawReader){FillRawEventHeaderESD(fhltesd);}
@@ -2027,6 +2005,43 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       fhltesd->SetUniformBMap(fld->IsUniform());
       fhltesd->SetBInfoStored();
     }
+
+    //
+    // run full HLT reconstruction first
+    //
+    {
+      TString detectors=fRunLocalReconstruction;
+      if (IsSelected("HLT", detectors) &&
+	  !RunLocalEventReconstruction("HLT")) {
+	if (fStopOnError) {CleanUp(); return kFALSE;}
+      }
+      detectors=fFillESD;
+      // run HLT on hltesd
+      if (IsSelected("HLT", detectors) &&
+	  !FillESD(fhltesd, "HLT")) {
+	if (fStopOnError) {CleanUp(); return kFALSE;}
+      }
+    }
+
+    // local single event reconstruction
+    if (!fRunLocalReconstruction.IsNull()) {
+      TString detectors=fRunLocalReconstruction;
+      // the logic for selection and correct sequence of reconstruction relies on the
+      // full list of detectors. Keyword 'ALL' should have been replaced at this point.
+      if (detectors.Contains("ALL")) {
+	AliFatal("Keyword 'ALL' needs to be replaced by the full list of detectors in "
+		 "fRunLocalReconstruction. This should have been done by the framework");
+      }
+      detectors.ReplaceAll("HLT", "");
+      if (!RunLocalEventReconstruction(detectors)) {
+        if (fStopOnError) {
+          CleanUp(); 
+          return kFALSE;
+        }
+      }
+    }
+
+  
     //
     // Set most probable pt, for B=0 tracking
     // Get the global reco-params. They are atposition 16 inside the array of detectors in fRecoParam
@@ -2074,27 +2089,18 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // fill ESD
     if (!fFillESD.IsNull()) {
       TString detectors=fFillESD;
-      // run HLT first and on hltesd
-      // ;-( IsSelected changes the string
-      if (IsSelected("HLT", detectors) &&
-	  !FillESD(fhltesd, "HLT")) {
-	if (fStopOnError) {CleanUp(); return kFALSE;}
-      }
-      detectors=fFillESD;
-      // Temporary fix to avoid problems with HLT that overwrites the offline ESDs
+      // the logic for selection and correct sequence of reconstruction relies on the
+      // full list of detectors. Keyword 'ALL' should have been replaced at this point.
       if (detectors.Contains("ALL")) {
-	detectors="";
-	for (Int_t idet=0; idet<kNDetectors; ++idet){
-	  detectors += fgkDetectorName[idet];
-	  detectors += " ";
-	}
+	AliFatal("Keyword 'ALL' needs to be replaced by the full list of detectors in "
+		 "fFillESD. This should have been done by the framework");
       }
+      // remove HLT as this has been executed at the beginning of the event reconstruction
       detectors.ReplaceAll("HLT", "");
       if (!FillESD(fesd, detectors)) {
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
-    
 
     ffile->cd();
 
@@ -2356,6 +2362,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       fesdf->~AliESDfriend();
       new (fesdf) AliESDfriend(); // Reset...
     }
+
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+      if (fReconstructor[iDet]) fReconstructor[iDet]->FinishEvent();
+    }
  
     gSystem->GetProcInfo(&procInfo);
     Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
@@ -2554,7 +2564,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
   // execute HLT reconstruction first since other detector reconstruction
   // might depend on HLT data
   // key 'HLT' is removed from detStr by IsSelected
-  if (!IsSelected("HLT", detStr)) {
+  if (IsSelected("HLT", detStr)) {
     AliReconstructor* reconstructor = GetReconstructor(kNDetectors-1);
     if (reconstructor) {
       // there is no AliLoader for HLT, see
@@ -2795,62 +2805,6 @@ Bool_t AliReconstruction::RunMultFinder(AliESDEvent*& esd)
   }
 
   delete trackleter;
-
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliReconstruction::RunHLTTracking(AliESDEvent*& esd)
-{
-// run the HLT barrel tracking
-
-  AliCodeTimerAuto("",0)
-
-  if (!fRunLoader) {
-    AliError("Missing runLoader!");
-    return kFALSE;
-  }
-
-  AliInfo("running HLT tracking");
-
-  // Get a pointer to the HLT reconstructor
-  AliReconstructor *reconstructor = GetReconstructor(kNDetectors-1);
-  if (!reconstructor) return kFALSE;
-
-  // TPC + ITS
-  for (Int_t iDet = 1; iDet >= 0; iDet--) {
-    TString detName = fgkDetectorName[iDet];
-    AliDebug(1, Form("%s HLT tracking", detName.Data()));
-    reconstructor->SetOption(detName.Data());
-    AliTracker *tracker = reconstructor->CreateTracker();
-    if (!tracker) {
-      AliWarning(Form("couldn't create a HLT tracker for %s", detName.Data()));
-      if (fStopOnError) return kFALSE;
-      continue;
-    }
-    Double_t vtxPos[3];
-    Double_t vtxErr[3]={0.005,0.005,0.010};
-    const AliESDVertex *vertex = esd->GetVertex();
-    vertex->GetXYZ(vtxPos);
-    tracker->SetVertex(vtxPos,vtxErr);
-    if(iDet != 1) {
-      fLoader[iDet]->LoadRecPoints("read");
-      TTree* tree = fLoader[iDet]->TreeR();
-      if (!tree) {
-	AliError(Form("Can't get the %s cluster tree", detName.Data()));
-	return kFALSE;
-      }
-      tracker->LoadClusters(tree);
-    }
-    if (tracker->Clusters2Tracks(esd) != 0) {
-      AliError(Form("HLT %s Clusters2Tracks failed", fgkDetectorName[iDet]));
-      return kFALSE;
-    }
-    if(iDet != 1) {
-      tracker->UnloadClusters();
-    }
-    delete tracker;
-  }
 
   return kTRUE;
 }
@@ -3292,7 +3246,6 @@ Bool_t AliReconstruction::InitRunLoader()
     TString libs = gSystem->GetLibraries();
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
       TString detName = fgkDetectorName[iDet];
-      if (detName == "HLT") continue;
       if (libs.Contains("lib" + detName + "base.so")) continue;
       gSystem->Load("lib" + detName + "base.so");
     }
@@ -3391,6 +3344,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
     TObject* obj = fOptions.FindObject(detName.Data());
     if (obj) reconstructor->SetOption(obj->GetTitle());
     reconstructor->SetRunInfo(fRunInfo);
+    reconstructor->SetHLTESD(fhltesd);
     reconstructor->Init();
     fReconstructor[iDet] = reconstructor;
   }
@@ -3497,10 +3451,6 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
     TString detName = fgkDetectorName[iDet];
-    if (detName == "HLT") {
-      fRunHLTTracking = kTRUE;
-      continue;
-    }
     if (detName == "MUON") {
       fRunMuonTracking = kTRUE;
       continue;

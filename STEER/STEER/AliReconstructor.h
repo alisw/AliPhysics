@@ -29,7 +29,7 @@ class AliESDpid;
 
 class AliReconstructor: public TObject {
 public:
-  AliReconstructor(): TObject(), fOption(), fRunInfo(0x0), fEventInfo(0x0) {};
+  AliReconstructor(): TObject(), fOption(), fRunInfo(0x0), fEventInfo(0x0), fhltesd(NULL) {};
   virtual ~AliReconstructor() {};
 
   virtual void         Init() {};
@@ -67,9 +67,12 @@ public:
   void                               SetRecoParam(const AliDetectorRecoParam *par);
   static const AliDetectorRecoParam* GetRecoParam(Int_t iDet);
   virtual void                 GetPidSettings(AliESDpid *esdPID);
+  void SetHLTESD(AliESDEvent* hltesd) {fhltesd=hltesd;}
+  AliESDEvent* GetHLTESD() const {return fhltesd;}
 
   virtual void FillEventTimeWithTOF(AliESDEvent *, AliESDpid *)
     {return;}
+  virtual void FinishEvent() {return; }
   virtual void Terminate() const {return; }
 
 private:
@@ -81,6 +84,7 @@ private:
   static const AliDetectorRecoParam* fgRecoParam[AliReconstruction::kNDetectors]; //! event reconstruction parameters for all detectors
   AliRunInfo*                        fRunInfo;                                    //! pointer to the run info object
   AliEventInfo*                      fEventInfo;                                  //! pointer to the event info object
+  AliESDEvent*                       fhltesd;                                     //! pointer to HLT ESD
 
   ClassDef(AliReconstructor, 0)   // base class for reconstruction algorithms
 };
