@@ -2447,27 +2447,32 @@ void  AliAnalysisTaskPi0Flow::EvalV0ReactionPlane(){
   fRPV0A = TMath::ATan2(QyaCor2, QxaCor2)/2.;
   fRPV0C = TMath::ATan2(QycCor2, QxcCor2)/2.;
 
-  while(fRPV0A<0)fRPV0A+=TMath::Pi() ;
-  while(fRPV0A>TMath::Pi())fRPV0A-=TMath::Pi() ;
-  while(fRPV0C<0)fRPV0C+=TMath::Pi() ;
-  while(fRPV0C>TMath::Pi())fRPV0C-=TMath::Pi() ;
+  while (fRPV0A<0          ) fRPV0A+=TMath::Pi() ;
+  while (fRPV0A>TMath::Pi()) fRPV0A-=TMath::Pi() ;
+  while (fRPV0C<0          ) fRPV0C+=TMath::Pi() ;
+  while (fRPV0C>TMath::Pi()) fRPV0C-=TMath::Pi() ;
+
+  // Reaction plane histograms before flattening
+  if( fDebug >= 2 )
+    AliInfo(Form("V0 Reaction Plane before flattening: A side: %f, C side: %f", fRPV0A, fRPV0C));
+
+  FillHistogram("phiRPV0A" ,fRPV0A,fCentralityV0M);
+  FillHistogram("phiRPV0C" ,fRPV0C,fCentralityV0M);
+  FillHistogram("phiRPV0AC",fRPV0A,fRPV0C,fCentralityV0M) ;
 
   // Flattening
   fRPV0A=ApplyFlatteningV0A(fRPV0A,fCentralityV0M) ;
-  while(fRPV0A<0)fRPV0A+=TMath::Pi() ;
-  while(fRPV0A>TMath::Pi())fRPV0A-=TMath::Pi() ;
+  while (fRPV0A<0          ) fRPV0A+=TMath::Pi() ;
+  while (fRPV0A>TMath::Pi()) fRPV0A-=TMath::Pi() ;
+
   fRPV0C=ApplyFlatteningV0C(fRPV0C,fCentralityV0M) ;
-  while(fRPV0C<0)fRPV0C+=TMath::Pi() ;
-  while(fRPV0C>TMath::Pi())fRPV0C-=TMath::Pi() ;
+  while (fRPV0C<0          ) fRPV0C+=TMath::Pi() ;
+  while (fRPV0C>TMath::Pi()) fRPV0C-=TMath::Pi() ;
   
   if( fDebug >= 2 )
-    AliInfo(Form("V0 Reaction Plane is: A side: %f, C side: %f", fRPV0A, fRPV0C));
-
-  FillHistogram("phiRPV0A",fRPV0A,fCentralityV0M);
-  FillHistogram("phiRPV0C",fRPV0C,fCentralityV0M);
+    AliInfo(Form("V0 Reaction Plane after  flattening: A side: %f, C side: %f", fRPV0A, fRPV0C));
 
   FillHistogram("phiRPV0Aflat",fRPV0A,fCentralityV0M) ;
-  FillHistogram("phiRPV0AC",fRPV0A,fRPV0C,fCentralityV0M) ;
   FillHistogram("cos2V0AC",TMath::Cos(2.*(fRPV0A-fRPV0C)),fCentralityV0M) ;
   if(fHaveTPCRP){
     FillHistogram("phiRPV0ATPC",fRP,fRPV0A,fCentralityV0M) ;
