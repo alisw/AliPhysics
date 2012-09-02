@@ -1,6 +1,23 @@
 // $Id$
 
-AliEsdSkimTask* AddTaskEsdSkim()
+AliEsdSkimTask* AddTaskEsdSkim(
+  Bool_t tof       = kFALSE,
+  Bool_t emc       = kFALSE,
+  Bool_t emt       = kFALSE,
+  Bool_t phc       = kFALSE,
+  Bool_t pht       = kFALSE,
+  Bool_t clus      = kFALSE,
+  Bool_t tracks    = kFALSE,
+  Bool_t mtracks   = kFALSE,
+  Bool_t ptracks   = kFALSE,
+  Bool_t remcov    = kFALSE,
+  Bool_t rescov    = kFALSE,
+  Bool_t sbytes    = kFALSE,
+  Bool_t phosclus  = kFALSE,
+  Bool_t emcclus   = kFALSE,
+  const char *tname = "Tracks",
+  const char *filename = "AliSkimmedESD.root"
+)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -23,6 +40,21 @@ AliEsdSkimTask* AddTaskEsdSkim()
   // Init the task and do settings
   //-------------------------------------------------------
   AliEsdSkimTask *task = new AliEsdSkimTask("EmcalSkimTask");
+  task->SetDoTof(tof);
+  task->SetDoEmC(emc);
+  task->SetDoEmT(emt);
+  task->SetDoPhC(phc);
+  task->SetDoPhT(pht);
+  task->SetDoClus(clus);
+  task->SetDoTracks(tracks);
+  task->SetDoMiniTracks(mtracks);
+  task->SetDoPicoTracks(ptracks);
+  task->SetRemoveCP(remcov);
+  task->SetResetCov(rescov);
+  task->SetDoSaveBytes(sbytes);
+  task->SetPhosClusOnly(phosclus);
+  task->SetEmcalClusOnly(emcclus);
+  task->SetTracks(tname);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -37,7 +69,7 @@ AliEsdSkimTask* AddTaskEsdSkim()
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("EsdSkimTree"),
                                                            TTree::Class(),   
                                                            AliAnalysisManager::kOutputContainer, 
-                                                           "AliSkimmedESD.root");
+                                                           filename);
   mgr->ConnectOutput(task, 1, coutput);
 
   return task;
