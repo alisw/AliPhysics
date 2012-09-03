@@ -159,13 +159,16 @@ void AliGenDPMjet::Init()
     // fICentr<0 && fICentr>-100 -> bmin = fMinImpactParam, bmax = fMaxImpactParam	  
     // fICentr<-99 -> fraction of x-sec. = XSFRAC		  
     // fICentr=-1. -> evaporation/fzc suppressed		  
-    // fICentr<-1. -> evaporation/fzc suppressed		  
+    // fICentr<-1. -> evaporation/fzc allowed		  
     if (fAProjectile == 1 && TMath::Abs(fZProjectile == 1)) fDPMjet->SetfIdp(1);
     
     fDPMjet->SetfFCentr(fICentr);  
     fDPMjet->SetbRange(fMinImpactParam, fMaxImpactParam); 
     fDPMjet->SetPi0Decay(fPi0Decay);
     fDPMjet->SetDecayAll(fDecayAll);
+
+    AliGenMC::Init();
+    
 //
 //  Initialize DPMjet  
 //    
@@ -278,7 +281,6 @@ void AliGenDPMjet::Generate()
 	  ks = iparticle->GetStatusCode();
 // No initial state partons
           if (ks==21) continue;
-	    
 	  if (!fSelectAll) selected = KinematicSelection(iparticle, 0) && 
 			       SelectFlavor(kf);
 
@@ -496,6 +498,7 @@ AliGenDPMjet& AliGenDPMjet::operator=(const  AliGenDPMjet& /*rhs*/)
 }
 
 
+//______________________________________________________________________________
 void AliGenDPMjet::FinishRun()
 {
     // Print run statistics
@@ -503,7 +506,7 @@ void AliGenDPMjet::FinishRun()
 }
 
 
-
+//______________________________________________________________________________
 Bool_t AliGenDPMjet::CheckDiffraction()
 {
 

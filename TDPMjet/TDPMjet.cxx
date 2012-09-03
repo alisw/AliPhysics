@@ -285,10 +285,24 @@ void TDPMjet::Initialize()
     }
 
 //  Beam energy and crossing-angle
-    fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fEpn, fEpn, 0., 0., 0., 0.);
+    fprintf(out, "CMENERGY      %10.1f\n",fCMEn);      
+    if(fIt == 1 && fIp ==1){ 
+      fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fEpn, fEpn, 0., 0., 0., 0.); //p-p
+    }
+    else if(fIp > 1 || fIt > 1){ 
+      if(fIp>1 && fIt>1) fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fEpn, fEpn, 0., 0., 0., 0.);//A-A
+      else if(fIp==1 && fIt>1){ // proton towwards A side (directed z>0)
+        fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", fEpn,fEpn*fItz/fIt, 0., 0., 0., 0.);//pA
+	printf("\n  TDPMjet::Initialize() -> p-A: p beam energy =  %10.1f, CMS energy = %10.1f\n\n",fEpn,fCMEn/2);
+      }
+      else if(fIt==1 && fIp>1){ // proton towards C side (directed z<0)
+        fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", fEpn*fIpz/fIp, fEpn, 0., 0., 0., 0.);//A-p
+	printf("\n  TDPMjet::Initialize() -> A-p: p beam energy =  %10.1f, CMS energy = %10.1f\n\n",fEpn,fCMEn/2);
+      }
+    }
 //  Centrality
-    if (fIp > 1. && fIt > 1) 
-	fprintf(out, "CENTRAL   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-1., fBmin, fBmax, 0., 0., 0.);
+    if(fIp > 1 || fIt > 1)
+	fprintf(out, "CENTRAL   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-2., fBmin, fBmax, 0., 0., 0.);
 //  Particle decays
     if (fPi0Decay) 
 	fprintf(out, "PARDECAY  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", 2., 0., 0., 0., 0., 0.);    
