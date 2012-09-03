@@ -432,6 +432,7 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     }
     fITSSumTP->SetUniqueID(fCurrentRunNumber);
     if (ntp) fTPTree->Fill();
+    CopyUserInfo();
   }
 
   //
@@ -799,11 +800,16 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
     AliError("TrackPoints summary tree does not exist"); 
     return;
   }
+  TList* uInfo = fTPTree->GetUserInfo();
+  TMap  *cdbMapCopy  = (TMap*)uInfo->FindObject("cdbMap");
+  TList *cdbListCopy = (TList*)uInfo->FindObject("cdbList"); 
+  TList *bzList      = (TList*)uInfo->FindObject("BzkGauss"); 
+  if (cdbMapCopy && cdbListCopy && bzList) return; //already done
   //
   const TMap *cdbMap = AliCDBManager::Instance()->GetStorageMap();	 
   const TList *cdbList = AliCDBManager::Instance()->GetRetrievedIds();	 
   //
-  TMap *cdbMapCopy = new TMap(cdbMap->GetEntries());	 
+  cdbMapCopy = new TMap(cdbMap->GetEntries());	 
   cdbMapCopy->SetOwner(1);	 
   cdbMapCopy->SetName("cdbMap");	 
   TIter iter(cdbMap->GetTable());	 
@@ -817,8 +823,8 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
       AliInfo(Form("Add %s : %s to cdbMap of ITSTPUserInfo",keyStr->GetName(),valStr->GetName()));
     }
   }	 
-  
-  TList *cdbListCopy = new TList();	 
+  //
+  cdbListCopy = new TList();	 
   cdbListCopy->SetOwner(1);	 
   cdbListCopy->SetName("cdbList");	 
   // 
@@ -829,8 +835,70 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
     AliInfo(Form("Add %s to cdbList of ITSTPUserInfo",id->ToString().Data()));
   }	 
   // 
-  fTPTree->GetUserInfo()->Add(cdbMapCopy);	 
-  fTPTree->GetUserInfo()->Add(cdbListCopy);  
+  uInfo->Add(cdbMapCopy);	 
+  uInfo->Add(cdbListCopy);  
+  //
+  AliMagF *fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  Double_t bz = fld ? fld->SolenoidField() : 0;
+  TString bzString; bzString+=bz;
+  TObjString *bzObjString = new TObjString(bzString);
+  bzList = new TList();	 
+  bzList->SetOwner(1);	 
+  bzList->SetName("BzkGauss");	 
+  bzList->Add(bzObjString);
+  uInfo->Add(bzList);
+  //
+}
+
+//_______________________________________________________________________________________
+void AliAnalysisTaskITSAlignQA::CopyUserInfo()
+{
+  // if available, copy the UserInfo from the ESDtree to the output tree
+  static Bool_t done = kFALSE;
+  if (done) return;
+  if (!fTPTree) {
+    AliError("TrackPoints summary tree does not exist"); 
+    return;
+  }
+  AliESDInputHandler *handler = (AliESDInputHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  TTree* esdTree = 0;
+  if (!handler || !(esdTree=handler->GetTree())) return;
+  if (esdTree->InheritsFrom(TChain::Class())) esdTree = esdTree->GetTree();
+  TList* uInfoSrc = esdTree->GetUserInfo();
+  const TMap  *cdbMapSrc  = (TMap*)uInfoSrc->FindObject("cdbMap");
+  const TList *cdbListSrc = (TList*)uInfoSrc->FindObject("cdbList"); 
+  if (!cdbMapSrc || !cdbListSrc) return;
+  //
+  AliInfo("Create ITSTPUserInfo from esdTree");
+  TList* uInfoDst = fTPTree->GetUserInfo();
+  //
+  TMap *cdbMapCopy = new TMap(cdbMapSrc->GetEntries());	 
+  cdbMapCopy->SetOwner(1);	 
+  cdbMapCopy->SetName("cdbMap");	 
+  TIter iter(cdbMapSrc->GetTable());	 
+  TPair* pair = 0;	 
+  while((pair = dynamic_cast<TPair*> (iter.Next()))){	 
+    TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
+    TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
+    if (keyStr && valStr) {
+      cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+    }
+    AliInfo(Form("Add %s : %s to cdbMap of ITSTPUserInfo",keyStr->GetName(),valStr->GetName()));
+  }	 
+  //  
+  TList *cdbListCopy = new TList();	 
+  cdbListCopy->SetOwner(1);	 
+  cdbListCopy->SetName("cdbList");	 
+  // 
+  TIter iter2(cdbListSrc);	  	 
+  TObjString* id=0;
+  while((id = dynamic_cast<TObjString*> (iter2.Next()))){	 
+    cdbListCopy->Add(new TObjString(*id));	 
+    AliInfo(Form("Add %s to cdbList of ITSTPUserInfo",id->GetName()));
+  }	 
+  // 
+  uInfoDst->Add(cdbMapCopy);	 
+  uInfoDst->Add(cdbListCopy);  
   //
   AliMagF *fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   Double_t bz = fld ? fld->SolenoidField() : 0;
@@ -840,6 +908,7 @@ void AliAnalysisTaskITSAlignQA::CreateUserInfo()
   bzList->SetOwner(1);	 
   bzList->SetName("BzkGauss");	 
   bzList->Add(bzObjString);
-  fTPTree->GetUserInfo()->Add(bzList);
+  uInfoDst->Add(bzList);
   //
+  done = kTRUE;
 }
