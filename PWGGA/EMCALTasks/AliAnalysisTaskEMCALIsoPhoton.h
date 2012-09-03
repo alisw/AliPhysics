@@ -55,6 +55,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Double_t               fIsoConeR;              // variable to set the isolation cone radius
   Int_t                  fNDimensions;           // variable to set the number of dimensions of n-sparse
   Double_t               fECut;                  // variable to set the minimum E of a cluster
+  Int_t                  fTrackMult;             // global variable with the event multiplicity        
+
   
  private:
   AliESDEvent *fESD;      //! ESD object
