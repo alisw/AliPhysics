@@ -1,0 +1,50 @@
+AliAnalysisTaskEMCAPi0V2ShSh *AddTaskEMCAPi0V2ShSh()
+{
+
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	
+	if (!mgr)
+	{
+		::Error("AddTaskEMCAPi0V2ShSh", "No analysis manager to connect to.");
+		return NULL;
+  	}  
+  	
+  	if (!mgr->GetInputEventHandler())
+	{
+		::Error("AddTaskEventplane", "This task requires an input event handler");
+		return NULL;
+	}		
+	TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+
+	Bool_t ismc=kFALSE;
+  	ismc = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
+  	cout<<"AddTaskEMCAPi0V2ShSh - MC config is: "<<ismc<<endl;
+  
+	if (ismc) return 0;
+	
+	UInt_t physMB = 0;
+	UInt_t physJet = 0;
+	UInt_t physGam = 0;
+	UInt_t physEMC = 0; 
+		
+	TString sGeomName = AliEMCALGeometry::GetDefaultGeometryName();
+	
+	AliAnalysisTaskEMCAPi0V2ShSh *task = new AliAnalysisTaskEMCAPi0V2ShSh("EMCALTry_astahlle");
+
+	task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+
+  	if(!ismc)
+	{		
+		RequestMemory(task, 250*1024);
+		mgr->AddTask(task);
+
+		AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+		AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("hist", TList::Class(),AliAnalysisManager::kOutputContainer, "lhc11h_2_EMCAPi0V2ShSh.root");
+			
+		mgr->ConnectInput(task, 0, cinput);
+		mgr->ConnectOutput(task, 1, coutput1);
+		
+  	}
+  	return task;
+}
+

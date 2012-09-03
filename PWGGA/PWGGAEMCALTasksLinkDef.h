@@ -29,5 +29,6 @@
 #pragma link C++ class AliStaVertex+;
 #pragma link C++ class AliCaloTrackParticle+;
 #pragma link C++ class AliAnalysisTaskEMCALCaloTrackCorr+;
+#pragma link C++ class AliAnalysisTaskEMCALPi0V2ShSh+;
 
 #endif
