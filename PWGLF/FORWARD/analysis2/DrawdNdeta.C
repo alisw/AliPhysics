@@ -240,7 +240,9 @@ struct dNdetaDrawer
   void SetSys(UShort_t sys)
   {
     fSysString = new TNamed("sys", (sys == 1 ? "pp" : 
-				    sys == 2 ? "PbPb" : "unknown"));
+				    sys == 2 ? "PbPb" : 
+				    sys == 3 ? "pPb" : 
+				    "unknown"));
     fSysString->SetUniqueID(sys);
   }
   //__________________________________________________________________
