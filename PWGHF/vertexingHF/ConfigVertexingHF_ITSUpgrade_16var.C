@@ -84,7 +84,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDstoKKpi->SetPtBins(nptbins,ptlimits);
   cutsDstoKKpi->SetCuts(16,cutsArrayDstoKKpi);
   cutsDstoKKpi->AddTrackCuts(esdTrackCuts);
-  cutsDstoKKpi->SetMinPtCandidate(2.);
+  cutsDstoKKpi->SetMinPtCandidate(1.);
   vHF->SetCutsDstoKKpi(cutsDstoKKpi);
   AliRDHFCutsLctopKpi *cutsLctopKpi = new AliRDHFCutsLctopKpi("CutsLctopKpi");
   cutsLctopKpi->SetStandardCutsPbPb2010();
