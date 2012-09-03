@@ -69,7 +69,7 @@ void AliGenEpos::Generate() {
 	  // Generate one event
 
 	  GetTEpos()->GenerateEvent();
-	  AliWarning("Generated");
+	  //AliWarning("Generated");
 	  GetTEpos()->ImportParticles(&fParticles);
 
 	  Int_t np = fParticles.GetEntriesFast();
@@ -96,14 +96,13 @@ void AliGenEpos::Generate() {
 			  origin[2] = iparticle->Vz();
 			  time      = iparticle->T();
 			  //doubled track with freeze out coordinates for femtoscopy
-			  PushTrack(0,
-					  imo>=0?idsOnStack[imo]:-1,
-					  iparticle->GetPdgCode(),
+			  PushTrack(0, imo>=0?idsOnStack[imo]:-1,
+				iparticle->GetPdgCode(),
 				iparticle->Px(),iparticle->Py(),iparticle->Pz(),iparticle->Energy(),
-				origin[0], origin[1], origin[2],
-			        time,
+				origin[0], origin[1], origin[2], time,
 				polar[0],polar[1],polar[2],
-				hasMother ? kPDecay:kPNoProcess,nt);
+				hasMother ? kPDecay:kPNoProcess, nt, 1., 
+				iparticle->GetStatusCode());
 
 		      idsOnStack[i] = nt;
 		      fNprimaries++;
@@ -130,14 +129,13 @@ void AliGenEpos::Generate() {
 			  origin[1] = iparticle->Vy();
 			  origin[2] = iparticle->Vz();
 			  time      = iparticle->T();
-			  PushTrack(0,
-					  imo>=0?idsOnStack[imo]:-1,
-					  iparticle->GetPdgCode(),
+			  PushTrack(0, imo>=0?idsOnStack[imo]:-1,
+				iparticle->GetPdgCode(),
 				iparticle->Px(),iparticle->Py(),iparticle->Pz(),iparticle->Energy(),
-				origin[0], origin[1], origin[2],
-				time,
+				origin[0], origin[1], origin[2], time,
 				polar[0],polar[1],polar[2],
-				hasMother ? kPDecay:kPNoProcess,nt);
+				hasMother ? kPDecay:kPNoProcess, nt, 1., 
+				iparticle->GetStatusCode());
 		      idsOnStack[i] = nt;
 		      fNprimaries++;
 		      KeepTrack(nt);
