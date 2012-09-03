@@ -1,16 +1,20 @@
 // $Id$
 
 AliAnalysisTaskRhoAverage* AddTaskRhoAverage(
-   const char *nJets          = "Jets",
-   const char *nTracks        = "PicoTracks",   
-   const char *nClusters      = "CaloClustersCorr",  
-   const char *nRho           = "RhoAverage",
-   const Double_t minPhi      = 0,
-   const Double_t maxPhi      = 2 * TMath::Pi(),
-   const Double_t minEta      = -0.9,
-   const Double_t maxEta      = 0.9,
-   const Double_t minPt       = 0.15,
-   const char *taskname       = "RhoAverage"
+   const char    *nJets       = "Jets",
+   const char    *nTracks     = "PicoTracks",
+   const char    *nClusters   = "CaloClusters",  
+   const char    *nRho        = "Rho",
+   Double_t       jetradius   = 0.2,
+   UInt_t         type        = AliAnalysisTaskEmcal::kTPC,
+   Double_t       jetareacut  = 0.01,
+   Double_t       emcareacut  = 0,
+   Double_t       ptcut       = 0.15,
+   TF1           *sfunc       = 0,
+   const UInt_t   exclPart    = 2,
+   const UInt_t   rhotype     = 1,
+   const Bool_t   histo       = kFALSE,
+   const char    *taskname    = "RhoAverage"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -34,15 +38,27 @@ AliAnalysisTaskRhoAverage* AddTaskRhoAverage(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s_%s", taskname, nTracks, nClusters));
-  AliAnalysisTaskRhoAverage *rhotask = new AliAnalysisTaskRhoAverage(name);
+  TString name(Form("%s_%s_%s_", taskname, nTracks, nClusters));
+  if (type == AliAnalysisTaskEmcal::kTPC) 
+    name += "TPC";
+  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
+    name += "EMCAL";
+  else if (type == AliAnalysisTaskEmcal::kUser) 
+    name += "USER";
+  AliAnalysisTaskRhoAverage *rhotask = new AliAnalysisTaskRhoAverage(name, histo);
+  rhotask->SetAnaType(type);
+  rhotask->SetScaleFunction(sfunc);
   rhotask->SetJetsName(nJets);
   rhotask->SetTracksName(nTracks);
-  rhotask->SetClustersName(nClusters);
+  rhotask->SetClusName(nClusters);
   rhotask->SetRhoName(nRho);
-  rhotask->SetPhiLimits(minPhi,maxPhi);
-  rhotask->SetEtaLimits(minEta,maxEta);
-  rhotask->SetPtMin(minPt);
+  rhotask->SetJetAreaCut(jetareacut);
+  rhotask->SetAreaEmcCut(emcareacut);
+  rhotask->SetPtCut(ptcut);
+  rhotask->SetJetPtCut(0);
+  rhotask->SetJetRadius(jetradius);
+  rhotask->SetExcludeLeadPart(exclPart);
+  rhotask->SetRhoType(rhotype);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -51,7 +67,16 @@ AliAnalysisTaskRhoAverage* AddTaskRhoAverage(
   mgr->AddTask(rhotask);
 
   // Create containers for input/output
-  mgr->ConnectInput (rhotask, 0, mgr->GetCommonInputContainer() );
+  mgr->ConnectInput(rhotask, 0, mgr->GetCommonInputContainer());
+
+  if (histo) {
+    TString contname(name);
+    contname += "_histos";
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
+							      TList::Class(),AliAnalysisManager::kOutputContainer,
+							      Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectOutput(rhotask, 1, coutput1);
+  }
 
   return rhotask;
 }

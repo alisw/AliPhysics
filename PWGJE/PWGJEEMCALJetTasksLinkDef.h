@@ -7,9 +7,10 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskEmcalJet+;
+#pragma link C++ class AliAnalysisTaskRhoBase+;
 #pragma link C++ class AliAnalysisTaskRho+;
 #pragma link C++ class AliAnalysisTaskRhoAverage+;
-#pragma link C++ class AliAnalysisTaskRhoBase+;
+#pragma link C++ class AliAnalysisTaskDeltaPt+;
 #pragma link C++ class AliAnalysisTaskScale+;
 #pragma link C++ class AliEmcalJet+;
 #pragma link C++ class AliEmcalJetTask+;

@@ -4,13 +4,10 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
-  const char *ntrgclusters       = "",
-  Double_t    jetradius          = 0.4,
+  Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.8,
   Double_t    ptcut              = 0.15,
-  Double_t    jetBiasTrack       = 5,
-  Double_t    jetBiasClus        = 5,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   const char *taskname           = "AliAnalysisTaskSAQA"
 )
@@ -35,37 +32,21 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString name(taskname);
-  name += "_";
-  name += njets;
-  name += "_Track";
-  name += jetBiasTrack;
-  name += "_Clus";
-  name += jetBiasClus;
-  name += "_R0";
-  name += floor(jetradius*10+0.5);
-  name += "_PtCut";
-  name += floor(ptcut*1000+0.5);
-  name += "_";
+  TString name(Form("%s_%s_%s_%s_R0%d_",taskname,njets,ntracks,nclusters,(Int_t)floor(jetradius*100+0.5)));
   if (type == AliAnalysisTaskEmcal::kTPC) 
     name += "TPC";
   else if (type == AliAnalysisTaskEmcal::kEMCAL) 
     name += "EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kTPCSmall) 
-    name += "TPCSmall";
-  else if (type == AliAnalysisTaskEmcal::kEMCALOnly) 
-    name += "EMCALOnly";
+  else if (type == AliAnalysisTaskEmcal::kUser) 
+    name += "USER";
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
   qaTask->SetTracksName(ntracks);
   qaTask->SetClusName(nclusters);
   qaTask->SetJetsName(njets);
-  qaTask->SetTrgClusName(ntrgclusters);
   qaTask->SetJetRadius(jetradius);
   qaTask->SetJetPtCut(jetptcut);
   qaTask->SetPercAreaCut(jetareacut);
   qaTask->SetPtCut(ptcut);
-  qaTask->SetPtBiasJetTrack(jetBiasTrack);
-  qaTask->SetPtBiasJetClus(jetBiasClus);
   qaTask->SetAnaType(type);
 
   //-------------------------------------------------------

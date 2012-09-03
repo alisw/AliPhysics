@@ -1,17 +1,20 @@
-// $Id$
 
-AliAnalysisTaskSAJF* AddTaskSAJF(
+AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
+  const char *nembtracks         = "TracksEmbedded",
+  const char *nembclusters       = "CaloClustersEmbedded",
+  const char *nembjets           = "EmbJets",
+  const char *nrandtracks        = "TracksRandomized",
+  const char *nrandclusters      = "CaloClustersRandomized",
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.8,
   Double_t    ptcut              = 0.15,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
-  Int_t       leadhadtype        = 0,
-  const char *taskname           = "AliAnalysisTaskSAJF"
+  const char *taskname           = "AliAnalysisTaskDeltaPt"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -34,25 +37,29 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-
-  TString name(Form("%s_%s_%s_R0%d_",taskname,njets,nrho,(Int_t)floor(jetradius*100+0.5)));
+  TString name(Form("%s_%s_%s_%s_R0%d_",taskname,ntracks,nclusters,nrho,(Int_t)floor(jetradius*100+0.5)));
   if (type == AliAnalysisTaskEmcal::kTPC) 
     name += "TPC";
   else if (type == AliAnalysisTaskEmcal::kEMCAL) 
     name += "EMCAL";
   else if (type == AliAnalysisTaskEmcal::kUser) 
     name += "USER";
-  AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(name);
+
+  AliAnalysisTaskDeltaPt* jetTask = new AliAnalysisTaskDeltaPt(name);
   jetTask->SetAnaType(type);
   jetTask->SetTracksName(ntracks);
   jetTask->SetClusName(nclusters);
   jetTask->SetJetsName(njets);
+  jetTask->SetEmbTracksName(nembtracks);
+  jetTask->SetEmbClusName(nembclusters);
+  jetTask->SetEmbJetsName(nembjets);
+  jetTask->SetRandTracksName(nrandtracks);
+  jetTask->SetRandClusName(nrandclusters);
   jetTask->SetRhoName(nrho);
   jetTask->SetPtCut(ptcut);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
   jetTask->SetPercAreaCut(jetareacut);
-  jetTask->SetLeadingHadronType(leadhadtype);
   
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -61,7 +68,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   mgr->AddTask(jetTask);
   
   // Create containers for input/output
-  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   TString contname(name);
   contname += "_histos";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
