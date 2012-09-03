@@ -35,6 +35,7 @@
 #include <TImage.h>
 #include <TRandom.h>
 #include <fstream>
+#include <iostream>
 /** Systematic error color */
 #define SYSERR_COLOR kBlue-10
 /** Systematic error style */
@@ -75,6 +76,8 @@ struct dNdetaDrawer
     fCutEdges(false),      // Whether to cut edges
     fRemoveOuters(false),  // Whether to remove outers
     fShowOthers(0),        // Show other data
+    fMirror(false), 
+    fForceMB(false),    
     // Settings 
     fRebin(0),             // Rebinning factor 
     fFwdSysErr(0.076),     // Systematic error in forward range
@@ -213,6 +216,8 @@ struct dNdetaDrawer
    * @param e Systematic error in the forward region 
    */
   void SetCentralSysError(Double_t e=0) { fCenSysErr = e; }
+  void SetForceMB(Bool_t force=true) { fForceMB = force; }
+  void SetMirror(Bool_t mirror=true) { fMirror = mirror; }
   /* @} */
   //==================================================================  
   /** 
@@ -379,6 +384,9 @@ struct dNdetaDrawer
 	Info("", "Adding systematic error histogram %s", 
 	     tmp->GetName());
 	fResults->GetHists()->AddFirst(tmp, "e5");
+
+	if (!fMirror) continue;
+
 	TH1* tmp2 = Symmetrice(tmp);
 	tmp2->SetFillColor(tmp->GetFillColor());
 	tmp2->SetFillStyle(tmp->GetFillStyle());
@@ -493,7 +501,8 @@ struct dNdetaDrawer
 	       Double_t&    rmax,
 	       Double_t&    amax)
   {
-    UShort_t   n = fCentAxis ? fCentAxis->GetNbins() : 0;
+    UShort_t   n = HasCent() ? fCentAxis->GetNbins() : 0;
+    Info("Fetch results, got %d centrality bins", n);
     if (n == 0) {
       TList* all = static_cast<TList*>(list->FindObject("all"));
       if (!all) {
@@ -504,6 +513,7 @@ struct dNdetaDrawer
       TObjArray* a = new TObjArray;
       TH1*       h = FetchResults(all, name, FetchOthers(0,0), 
 				  -1000, 0, max, rmax, amax);
+      Info("FetchResults", "Adding %s to result stack", h->GetName());
       a->AddAt(h, 0);
       return a;
     }
@@ -524,6 +534,7 @@ struct dNdetaDrawer
       }
       TH1* h = FetchResults(thisCent, name, FetchOthers(centLow, centHigh), 
 			    col, centTxt.Data(), max, rmax, amax);
+      Info("FetchResults", "Adding %p to result stack", h);
       a->AddAt(h, i);
     }
     return a;
@@ -619,17 +630,20 @@ struct dNdetaDrawer
     TH1* dndetaSym   = 0;
     TH1* dndetaMCSym = 0;
     SetAttributes(dndeta,     color);
-    SetAttributes(dndetaMC,   fCentAxis ? color : color+2);
+    SetAttributes(dndetaMC,   HasCent() ? color : color+2);
     SetAttributes(dndetaTruth,color);
     SetAttributes(dndetaSym,  color);
-    SetAttributes(dndetaMCSym,fCentAxis ? color : color+2);
-    if (dndetaMC && fCentAxis) 
+    SetAttributes(dndetaMCSym,HasCent() ? color : color+2);
+    if (dndetaMC && HasCent()) 
       dndetaMC->SetMarkerStyle(dndetaMC->GetMarkerStyle()+2);
-    if (dndetaMCSym && fCentAxis) 
+    if (dndetaMCSym && HasCent()) 
       dndetaMCSym->SetMarkerStyle(dndetaMCSym->GetMarkerStyle()+2);
-    if (dndetaTruth && fCentAxis) {
+    if (dndetaTruth && HasCent()) {
       dndetaTruth->SetMarkerStyle(34);
       dndetaTruth->SetMarkerColor(kYellow-1);
+    }
+    if (dndetaTruth) { 
+      dndetaTruth->SetLineColor(kBlack); 
     }
     ModifyTitle(dndeta,     centTxt);
     ModifyTitle(dndetaMC,   centTxt);
@@ -769,7 +783,7 @@ struct dNdetaDrawer
 		   Double_t x1, Double_t y1, Double_t x2, Double_t y2)
   {
     TLegend* l = new TLegend(x1,y1,x2,y2);
-    l->SetNColumns(fCentAxis ? 1 : 2);
+    l->SetNColumns(HasCent() ? 1 : 2);
     l->SetFillColor(0);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
@@ -789,10 +803,10 @@ struct dNdetaDrawer
       if (t.Contains("mirrored")) continue;
       if (n.Contains("syserror")) { sysErrSeen = true; continue; }
       if (unique.FindObject(t.Data())) continue;
-      TObjString* s = new TObjString(hist->GetTitle());
-      s->SetUniqueID(((hist->GetMarkerStyle() & 0xFFFF) << 16) |
-		     ((hist->GetMarkerColor() & 0xFFFF) <<  0));
-      unique.Add(s);
+      TObjString* s1 = new TObjString(hist->GetTitle());
+      s1->SetUniqueID(((hist->GetMarkerStyle() & 0xFFFF) << 16) |
+		      ((hist->GetMarkerColor() & 0xFFFF) <<  0));
+      unique.Add(s1);
       // l->AddEntry(hist, hist->GetTitle(), "pl");
     }
     if (mg) {
@@ -803,10 +817,10 @@ struct dNdetaDrawer
 	TString n(g->GetTitle());
 	if (n.Contains("mirrored")) continue;
 	if (unique.FindObject(n.Data())) continue;
-	TObjString* s = new TObjString(n);
-	s->SetUniqueID(((g->GetMarkerStyle() & 0xFFFF) << 16) |
-		       ((g->GetMarkerColor() & 0xFFFF) <<  0));
-	unique.Add(s);
+	TObjString* s2 = new TObjString(n);
+	s2->SetUniqueID(((g->GetMarkerStyle() & 0xFFFF) << 16) |
+			 ((g->GetMarkerColor() & 0xFFFF) <<  0));
+	unique.Add(s2);
 	// l->AddEntry(hist, hist->GetTitle(), "pl");
       }
     }
@@ -821,7 +835,7 @@ struct dNdetaDrawer
       Int_t style = (s->GetUniqueID() >> 16) & 0xFFFF;
       Int_t color = (s->GetUniqueID() >>  0) & 0xFFFF;
       dd->SetLineColor(kBlack);
-      if (fCentAxis) dd->SetMarkerColor(kBlack);
+      if (HasCent()) dd->SetMarkerColor(kBlack);
       else           dd->SetMarkerColor(color);
       dd->SetMarkerStyle(style);
     }
@@ -837,7 +851,7 @@ struct dNdetaDrawer
       d0->SetLineWidth(0);
       i++;
     }
-    if (!fCentAxis && i % 2 == 1)  {
+    if (!HasCent() && i % 2 == 1)  {
       // To make sure the 'data' and 'mirrored' entries are on a line
       // by themselves 
       TLegendEntry* dd = l->AddEntry("dd", "   ", "");
@@ -854,10 +868,12 @@ struct dNdetaDrawer
     d1->SetMarkerColor(kBlack);
     d1->SetMarkerStyle(20);
     // Add entry for 'mirrored data'
-    TLegendEntry* d2 = l->AddEntry("d2", "Mirrored data", "lp");
-    d2->SetLineColor(kBlack);
-    d2->SetMarkerColor(kBlack);
-    d2->SetMarkerStyle(24);
+    if (fMirror) {
+      TLegendEntry* d2 = l->AddEntry("d2", "Mirrored data", "lp");
+      d2->SetLineColor(kBlack);
+      d2->SetMarkerColor(kBlack);
+      d2->SetMarkerStyle(24);
+    }
     
     l->Draw();
   }
@@ -872,7 +888,7 @@ struct dNdetaDrawer
    */
   void BuildCentLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2)
   {
-    if (!fCentAxis) return;
+    if (!HasCent()) return;
 
     TLegend* l = new TLegend(x1,y1,x2,y2);
     l->SetNColumns(1);
@@ -939,10 +955,10 @@ struct dNdetaDrawer
     // Make a legend in the main result pad
     BuildCentLegend(.12, 1-p1->GetTopMargin()-.01-.5,  
 		    .35, 1-p1->GetTopMargin()-.01-.1);
-    Double_t x1 = (fCentAxis ? .7 : .15); 
-    Double_t x2 = (fCentAxis ? 1-p1->GetRightMargin()-.01: .90);
-    Double_t y1 = (fCentAxis ? .5: p1->GetBottomMargin()+.01); 
-    Double_t y2 = (fCentAxis ? 1-p1->GetTopMargin()-.01-.15 : .35);
+    Double_t x1 = (HasCent() ? .7 : .15); 
+    Double_t x2 = (HasCent() ? 1-p1->GetRightMargin()-.01: .90);
+    Double_t y1 = (HasCent() ? .5: p1->GetBottomMargin()+.01); 
+    Double_t y2 = (HasCent() ? 1-p1->GetTopMargin()-.01-.15 : .35);
 		   
     BuildLegend(fResults, fOthers, x1, y1, x2, y2);
 
@@ -964,9 +980,9 @@ struct dNdetaDrawer
     else            eS = Form("%3dGeV", snn);
     TLatex* tt = new TLatex(.93, .93, Form("%s #sqrt{s%s}=%s, %s", 
 					   sys, 
-					   (fCentAxis ? "_{NN}" : ""),
+					   (HasCent() ? "_{NN}" : ""),
 					   eS.Data(), 
-					   fCentAxis ? "by centrality" : 
+					   HasCent() ? "by centrality" : 
 					   fTrigString->GetTitle()));
     tt->SetTextColor(aliceBlue);
     tt->SetNDC();
@@ -1133,10 +1149,10 @@ struct dNdetaDrawer
 
     
     // Make a legend
-    Double_t xx1 = (fCentAxis ? .7                           : .15); 
-    Double_t xx2 = (fCentAxis ? 1-p3->GetRightMargin()-.01   : .90);
+    Double_t xx1 = (HasCent() ? .7                           : .15); 
+    Double_t xx2 = (HasCent() ? 1-p3->GetRightMargin()-.01   : .90);
     Double_t yy1 = p3->GetBottomMargin()+.01;
-    Double_t yy2 = (fCentAxis ? 1-p3->GetTopMargin()-.01-.15 : .5);
+    Double_t yy2 = (HasCent() ? 1-p3->GetTopMargin()-.01-.15 : .5);
     BuildLegend(fLeftRight, 0, xx1, yy1, xx2, yy2);
     // TLegend* l2 = p3->BuildLegend(.15,p3->GetBottomMargin()+.01,.9,.5);
     // l2->SetNColumns(2);
@@ -1240,8 +1256,10 @@ struct dNdetaDrawer
     stack->Add(hist, option);
 
     // Now symmetrice the histogram 
-    sym = Symmetrice(hist);
-    stack->Add(sym, option);
+    if (fMirror) {
+      sym = Symmetrice(hist);
+      stack->Add(sym, option);
+    }
 
     return hist->GetMaximum();
   }
@@ -1883,19 +1901,19 @@ struct dNdetaDrawer
     bname.ReplaceAll("-", "_");
     TString fname(Form("%s.C", bname.Data()));
 
-    std::ofstream out(fname.Data());
-    if (!out) { 
+    std::ofstream outf(fname.Data());
+    if (!outf) { 
       Error("Export", "Failed to open output file %s", fname.Data());
       return;
     }
-    out << "// Create by dNdetaDrawer\n"
-	<< "void " << bname << "(THStack* stack, TLegend* l, Int_t m)\n"
-	<< "{"
-	<< "   Int_t ma[] = { 24, 25, 26, 32,\n"
-	<< "                  20, 21, 22, 33,\n"
-	<< "                  34, 30, 29, 0, \n"
-	<< "                  23, 27 };\n"
-	<< "   Int_t mm = ((m < 20 || m > 34) ? 0 : ma[m-20]);\n\n";
+    outf << "// Create by dNdetaDrawer\n"
+	 << "void " << bname << "(THStack* stack, TLegend* l, Int_t m)\n"
+	 << "{"
+	 << "   Int_t ma[] = { 24, 25, 26, 32,\n"
+	 << "                  20, 21, 22, 33,\n"
+	 << "                  34, 30, 29, 0, \n"
+	 << "                  23, 27 };\n"
+	 << "   Int_t mm = ((m < 20 || m > 34) ? 0 : ma[m-20]);\n\n";
     TList* hists = fResults->GetHists();
     TIter  next(hists);
     TH1*   hist = 0;
@@ -1904,16 +1922,16 @@ struct dNdetaDrawer
       hname.Append(Form("_%04x", (gRandom->Integer(0xffff) & 0xffff)));
       hist->SetName(hname);
       hist->GetListOfFunctions()->Clear();
-      hist->SavePrimitive(out, "nodraw");
+      hist->SavePrimitive(outf, "nodraw");
       bool mirror = hname.Contains("mirror");
       bool syserr = hname.Contains("SysError");
       if (!syserr) 
-	out << "   " << hname << "->SetMarkerStyle(" 
-	    << (mirror ? "mm" : "m") << ");\n";
+	outf << "   " << hname << "->SetMarkerStyle(" 
+	     << (mirror ? "mm" : "m") << ");\n";
       else 
-	out << "   " << hname << "->SetMarkerStyle(1);\n";
-      out << "   stack->Add(" << hname 
-	  << (syserr ? ",\"e5\"" : "") << ");\n\n";
+	outf << "   " << hname << "->SetMarkerStyle(1);\n";
+      outf << "   stack->Add(" << hname 
+	   << (syserr ? ",\"e5\"" : "") << ");\n\n";
     }
     UShort_t    snn = fSNNString->GetUniqueID();
     // const char* sys = fSysString->GetTitle();
@@ -1922,15 +1940,15 @@ struct dNdetaDrawer
     if      (snn < 1000)      eS = Form("%3dGeV", snn);
     else if (snn % 1000 == 0) eS = Form("%dTeV", snn/1000);
     else                      eS = Form("%4.2fTeV", float(snn)/1000);
-    out << "  if (l) {\n"
-	<< "    TLegendEntry* e = l->AddEntry(\"\",\"" << eS << "\",\"pl\");\n"
-	<< "    e->SetMarkerStyle(m);\n"
-	<< "    e->SetMarkerColor(kBlack);\n"
-	<< "  }\n"
-	<< "}\n" << std::endl;
+    outf << "  if (l) {\n"
+	 << "    TLegendEntry* e = l->AddEntry(\"\",\"" << eS << "\",\"pl\");\n"
+	 << "    e->SetMarkerStyle(m);\n"
+	 << "    e->SetMarkerColor(kBlack);\n"
+	 << "  }\n"
+	 << "}\n" << std::endl;
   }
-	      
   /* @} */
+  Bool_t HasCent() const { return fCentAxis && !fForceMB; }
 
 
 
@@ -1946,6 +1964,8 @@ struct dNdetaDrawer
   Bool_t       fCutEdges;     // Whether to cut edges
   Bool_t       fRemoveOuters; // Whether to remove outers
   UShort_t     fShowOthers;   // Show other data
+  Bool_t       fMirror;       // Whether to mirror 
+  Bool_t       fForceMB;      // Force min-bias
   /* @} */
   /** 
    * @{ 
@@ -2099,6 +2119,8 @@ Usage()
        "  0x10  Cut edges when rebinning\n"
        "  0x20  Remove FMDxO points\n"
        "  0x40  Do not make our own canvas\n"
+       "  0x80  Force use of MB\n"
+       "  0x100 Mirror data\n"
        );
 }
 
@@ -2124,7 +2146,7 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
 	   const char* title="",
 	   UShort_t    rebin=5, 
 	   UShort_t    others=0x7,
-	   UShort_t    flags=0x7,
+	   UShort_t    flags=0x187,
 	   UShort_t    sNN=0, 
 	   UShort_t    sys=0,
 	   UShort_t    trg=0,
@@ -2150,6 +2172,8 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetCutEdges(flags & 0x10);
   d.fRemoveOuters = (flags & 0x20);
   d.SetExport(flags & 0x40);
+  d.SetForceMB(flags & 0x80);
+  d.SetMirror(flags & 0x100);
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
