@@ -4,7 +4,8 @@ DrawPi0Flow(const TString filename = "Pi0Flow_000167920.root")
 
   gStyle->SetOptStat(0);
   TFile * f = new TFile(filename) ;
-  TList *histoList = (TList*)f->Get("PHOSPi0Flow");
+  //TList *histoList = (TList*)f->Get("PHOSPi0Flow");
+  TList *histoList = (TList*)f->Get("PHOSPi0Flow/PHOSPi0FlowCoutput1"); // lego train
 
   TH1F *hev        = (TH1F*)histoList->FindObject("hTotSelEvents") ;
   TH2F* hZvertex   = (TH2F*)histoList->FindObject("hZvertex");
@@ -20,19 +21,15 @@ DrawPi0Flow(const TString filename = "Pi0Flow_000167920.root")
 
   //-----------------------------------------------------------------------------
   TCanvas *c1 = new TCanvas("c1","Event selection");
+  hev->GetXaxis()->SetRangeUser(0,5);
   hev->GetXaxis()->SetBinLabel(1,"Total");
-  hev->GetXaxis()->SetBinLabel(2,"Total");
-  hev->GetXaxis()->SetBinLabel(3,"Goog vertex");
-  hev->GetXaxis()->SetBinLabel(4,"No pileup");
-  hev->GetXaxis()->SetBinLabel(5,"Good centrality");
-  hev->GetXaxis()->SetBinLabel(6,"Good RP");
-  hev->GetXaxis()->SetBinLabel(7,"MC");
-  hev->GetXaxis()->SetBinLabel(8,"QA filled");
-  hev->GetXaxis()->SetBinLabel(9,"Clusters filled");
-  hev->GetXaxis()->SetBinLabel(10,"Pi0 filled");
-  hev->GetXaxis()->SetBinLabel(11,"Mixed filled");
-  hev->GetXaxis()->SetBinLabel(12,"Lists updated");
+  hev->GetXaxis()->SetBinLabel(2,"Has Vertex");
+  hev->GetXaxis()->SetBinLabel(3,"abs(z_vertex) < 10.");
+  hev->GetXaxis()->SetBinLabel(4,"Has Centrality");
+  hev->GetXaxis()->SetBinLabel(5,"C. upper edge");
+  hev->GetXaxis()->SetBinLabel(6,"C. lower edge");
   hev->SetYTitle("N_{events}");
+  hev->GetYaxis()->SetTitleOffset(1.2);
   hev->Draw();
   c1->Print("PHOS_EvSel.eps");
 
