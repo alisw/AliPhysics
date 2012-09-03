@@ -7,7 +7,7 @@ void Pi0SpectrumLHC11h(const char* dataset="collection.xml",
   timer.Start();
 
 
-    TStringToken libs("Core,Tree,Geom,VMC,Physics,Minuit,Gui,XMLParser,Minuit2,Proof,STEERBase,ESD,AOD,OADB,ANALYSIS,ANALYSISalice,CDB,RAWDatabase,STEER,CORRFW,PHOSUtils,PHOSbase,PHOSpi0Calib,PHOSrec,PHOSshuttle,PHOSsim,PWGGAPHOSTasks", ",");
+    TStringToken libs("Core,Tree,Geom,VMC,Physics,Minuit,Gui,XMLParser,Minuit2,Proof,STEERBase,ESD,AOD,OADB,ANALYSIS,ANALYSISalice,CDB,RAWDatabase,STEER,CORRFW,PHOSUtils,PHOSbase,PHOSpi0Calib,PHOSrec,PHOSshuttle,PHOSsim", ",");
   while( libs.NextToken() )
     gSystem->Load( Form("lib%s", libs.Data()) );
 
@@ -82,7 +82,7 @@ void Pi0SpectrumLHC11h(const char* dataset="collection.xml",
     //task->SetPeriod(AliAnalysisTaskPi0Flow::kLHC11h);
     mgr->AddTask(task);
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer("outCont1", TList::Class(),AliAnalysisManager::kOutputContainer,"output.root"));
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer("outCont1", TList::Class(),AliAnalysisManager::kOutputContainer,"histos.root"));
   } else {
     gROOT->LoadMacro("$ALICE_ROOT/PWGGA/PHOSTasks/PHOS_PbPb/AddTaskPHOSPi0Flow.C");
     task = AddTaskPHOSPi0Flow();
