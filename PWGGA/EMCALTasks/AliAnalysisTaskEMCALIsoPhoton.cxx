@@ -51,13 +51,14 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fIsoConeR(0.4),
   fNDimensions(7),
   fECut(3.),
+  fTrackMult(0),        
   fESD(0),
   fOutputList(0),
   fEvtSel(0),
   fNClusEt10(0),
   fPVtxZ(0),                 
   fCellAbsIdVsAmpl(0),       
-  fNClusHighClusE(0),        
+  fNClusHighClusE(0),
   fHnOutput(0)
 {
   // Default constructor.
@@ -80,6 +81,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fIsoConeR(0.4),
   fNDimensions(7),
   fECut(3.),
+  fTrackMult(0),        
   fESD(0),
   fOutputList(0),
   fEvtSel(0),
@@ -128,12 +130,12 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fNClusHighClusE = new TH2F("hNClusHighClusE","total number of clusters vs. highest clus energy in the event;E (GeV);NClus",200,0,100,301,-0.5,300.5);
   fOutputList->Add(fNClusHighClusE);
 
-  Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNC=1000,  nAllIsoNC=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128;
-  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNC, nAllIsoNC, nTrClDphi, nTrClDeta,nClEta,nClPhi};
+  Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNC=1000,  nAllIsoNC=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=20;
+  Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNC, nAllIsoNC, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult};
   fNDimensions = sizeof(bins)/sizeof(Int_t);
   const Int_t ndims =   fNDimensions;
-  Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4};
-  Double_t xmax[] = { 100., 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192};
+  Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,1};
+  Double_t xmax[] = { 100., 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,500};
   fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02,CeIso,TrIso,AllIso, CeIsoNoCore, AllIsoNoCore, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus}", ndims, bins, xmin, xmax);
   fOutputList->Add(fHnOutput);
 
@@ -204,6 +206,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
     }
   }
+  AliESDtrackCuts *fTrackCuts = new AliESDtrackCuts();
+  fTrackMult = fTrackCuts->GetReferenceMultiplicity(fESD);//kTrackletsITSTPC ,0.5);  
+
   fESD->GetEMCALClusters(fCaloClusters);
   fEMCalCells = fESD->GetEMCALCells();
   
@@ -273,6 +278,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     outputValues[8] = c->GetTrackDz();
     outputValues[9] = clsVec.Eta();
     outputValues[10] = clsVec.Phi();
+    outputValues[11] = fEMCalCells->GetCellTime(id);
+    outputValues[12] = fTrackMult;
     fHnOutput->Fill(outputValues);
     if(c->E()>maxE)
       maxE = c->E();
