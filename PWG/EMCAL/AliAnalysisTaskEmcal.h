@@ -10,6 +10,8 @@ class AliEmcalParticle;
 class AliMCParticle;
 class AliVCluster;
 class AliVTrack;
+class TH1F;
+class AliEMCALGeometry;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -17,10 +19,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
  public:
   
   enum EmcalAnaType {
-    kTPC       = 0,     // TPC only analysis
-    kEMCAL     = 1,     // EMCal + TPC analysis
-    kTPCSmall  = 2,     // TPC only in EMCal acceptance
-    kEMCALOnly = 3,     // EMCal only analysis
+    kTPC       = 0,     // TPC acceptance
+    kEMCAL     = 1,     // EMCal acceptance
+    kUser      = 2,     // User defined acceptance
   };
 
   enum BeamType {
@@ -35,36 +36,41 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskEmcal();
 
   void                        UserExec(Option_t *option);
+  void                        UserCreateOutputObjects();
 
-  void                        SetAnaType(EmcalAnaType type)                         { fAnaType        = type;         }
-  void                        SetCentRange(Double_t min, Double_t max)              { fMinCent = min; fMaxCent = max; }
-  void                        SetClusName(const char *n)                            { fCaloName       = n;            }
-  void                        SetClusPtCut(Double_t cut)                            { fClusPtCut      = cut;          }
-  void                        SetClusTimeCut(Double_t min, Double_t max)            { fClusTimeCutLow = min; fClusTimeCutUp = max;      }
-  void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max; }
-  void                        SetOffTrigger(UInt_t t)                               { fOffTrigger    = t;                               }
-  void                        SetPtCut(Double_t cut)                                { SetClusPtCut(cut); SetTrackPtCut(cut);            }
-  void                        SetTrackPtCut(Double_t cut)                           { fTrackPtCut     = cut;          }
-  void                        SetTrackEtaLimits(Double_t min, Double_t max)         { fMaxTrackEta      = max ; fMinTrackEta      = min ; }
-  void                        SetTrackPhiLimits(Double_t min, Double_t max)         { fMaxTrackPhi      = max ; fMinTrackPhi      = min ; }
-  void                        SetTracksName(const char *n)                          { fTracksName     = n;            }
-  void                        SetTrigClass(const char *n)                           { fTrigClass = n;                 } 
-  void                        SetVzRange(Double_t min, Double_t max)                { fMinVz = min; fMaxVz   = max;   }
+  void                        SetAnaType(EmcalAnaType type)                         { fAnaType           = type ;                         ; }
+  void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
+  void                        SetClusName(const char *n)                            { fCaloName          = n                              ; }
+  void                        SetClusPtCut(Double_t cut)                            { fClusPtCut         = cut                            ; }
+  void                        SetClusTimeCut(Double_t min, Double_t max)            { fClusTimeCutLow    = min  ; fClusTimeCutUp = max    ; }
+  void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
+  void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
+  void                        SetPtCut(Double_t cut)                                { SetClusPtCut(cut)         ; SetTrackPtCut(cut)      ; }
+  void                        SetTrackPtCut(Double_t cut)                           { fTrackPtCut        = cut                            ; }
+  void                        SetTrackEtaLimits(Double_t min, Double_t max)         { fTrackMaxEta       = max  ; fTrackMinEta      = min ; }
+  void                        SetTrackPhiLimits(Double_t min, Double_t max)         { fTrackMaxPhi       = max  ; fTrackMinPhi      = min ; }
+  void                        SetTracksName(const char *n)                          { fTracksName        = n                              ; }
+  void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; }  
+  void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
+  void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
+  void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
 
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE) const;
   Bool_t                      AcceptEmcalPart(AliEmcalParticle *part,  Bool_t acceptMC = kFALSE) const;
   Bool_t                      AcceptTrack(AliVTrack            *track, Bool_t acceptMC = kFALSE) const;
   virtual void                ExecOnce();
-  virtual Bool_t              FillHistograms()                                     { return fCreateHisto; }
+  virtual Bool_t              FillGeneralHistograms();
+  virtual Bool_t              FillHistograms()                                     { return kTRUE                 ; }
   BeamType                    GetBeamType();
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
   virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
   virtual Bool_t              Run()                                                { return kTRUE                 ; }
-  void                        SetInitialized(Bool_t ini = kTRUE)                   { fInitialized    = ini        ; }
 
   EmcalAnaType                fAnaType;                    // analysis type
+  BeamType                    fForceBeamType;              // forced beam type
+  Bool_t                      fGeneralHistograms;          // whether or not it should fill some general histograms
   Bool_t                      fInitialized;                // whether or not the task has been already initialized
   Bool_t                      fCreateHisto;                // whether or not create histograms
   TString                     fTracksName;                 // name of track collection
@@ -80,12 +86,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMaxBinPt;                   // max pt in histograms
   Double_t                    fClusPtCut;                  // cut on cluster pt
   Double_t                    fTrackPtCut;                 // cut on track pt
-  Double_t                    fMinTrackEta;                // cut on track eta
-  Double_t                    fMaxTrackEta;                // cut on track eta
-  Double_t                    fMinTrackPhi;                // cut on track phi
-  Double_t                    fMaxTrackPhi;                // cut on track phi
+  Double_t                    fTrackMinEta;                // cut on track eta
+  Double_t                    fTrackMaxEta;                // cut on track eta
+  Double_t                    fTrackMinPhi;                // cut on track phi
+  Double_t                    fTrackMaxPhi;                // cut on track phi
   Double_t                    fClusTimeCutLow;             // low time cut for clusters
   Double_t                    fClusTimeCutUp;              // up time cut for clusters
+  AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
   Double_t                    fCent;                       //!event centrality
@@ -98,10 +105,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   BeamType                    fBeamType;                   //!event beam type
   TList                      *fOutput;                     //!output list
 
+  TH1F                       *fHistCentrality;             //!Event centrality distribution
+  TH1F                       *fHistZVertex;                //!Z vertex position
+
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 6) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 7) // EMCAL base analysis task
 };
 #endif
