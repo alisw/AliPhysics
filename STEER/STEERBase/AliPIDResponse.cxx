@@ -68,13 +68,14 @@ fRecoPass(0),
 fRecoPassUser(-1),
 fRun(0),
 fOldRun(0),
-fArrPidResponseMaster(0x0),
-fResolutionCorrection(0x0),
-fTRDPIDResponseObject(0x0),
+fArrPidResponseMaster(NULL),
+fResolutionCorrection(NULL),
+fOADBvoltageMaps(NULL),
+fTRDPIDResponseObject(NULL),
 fTOFtail(1.1),
-fTOFPIDParams(0x0),
-fEMCALPIDParams(0x0),
-fCurrentEvent(0x0),
+fTOFPIDParams(NULL),
+fEMCALPIDParams(NULL),
+fCurrentEvent(NULL),
 fCurrCentrality(0.0),
 fTuneMConData(kFALSE)
 {
@@ -121,13 +122,14 @@ fRecoPass(0),
 fRecoPassUser(other.fRecoPassUser),
 fRun(0),
 fOldRun(0),
-fArrPidResponseMaster(0x0),
-fResolutionCorrection(0x0),
-fTRDPIDResponseObject(0x0),
+fArrPidResponseMaster(NULL),
+fResolutionCorrection(NULL),
+fOADBvoltageMaps(NULL),
+fTRDPIDResponseObject(NULL),
 fTOFtail(1.1),
-fTOFPIDParams(0x0),
-fEMCALPIDParams(0x0),
-fCurrentEvent(0x0),
+fTOFPIDParams(NULL),
+fEMCALPIDParams(NULL),
+fCurrentEvent(NULL),
 fCurrCentrality(0.0),
 fTuneMConData(kFALSE)
 {
@@ -165,13 +167,14 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fRecoPassUser=other.fRecoPassUser;
     fRun=0;
     fOldRun=0;
-    fArrPidResponseMaster=0x0;
-    fResolutionCorrection=0x0;
-    fTRDPIDResponseObject=0x0;
-    fEMCALPIDParams=0x0;
+    fArrPidResponseMaster=NULL;
+    fResolutionCorrection=NULL;
+    fOADBvoltageMaps=NULL;
+    fTRDPIDResponseObject=NULL;
+    fEMCALPIDParams=NULL;
     memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
     fTOFtail=1.1;
-    fTOFPIDParams=0x0;
+    fTOFPIDParams=NULL;
     fCurrentEvent=other.fCurrentEvent;
   }
   return *this;
@@ -259,6 +262,19 @@ Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EP
   Double_t nSigma = -999.;
   if (sigN>0) nSigma=fTPCResponse.GetNumberOfSigmas(mom,sig,sigN,type);
   
+  return nSigma;
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::NumberOfSigmasTPC( const AliVParticle *vtrack, 
+                                           AliPID::EParticleType type,
+                                           AliTPCPIDResponse::ETPCdEdxSource dedxSource) 
+{
+  //get number of sigmas according the selected TPC gain configuration scenario
+  const AliVTrack *track=static_cast<const AliVTrack*>(vtrack);
+
+  Float_t nSigma=fTPCResponse.GetNumberOfSigmas(track, type, dedxSource);
+
   return nSigma;
 }
 
@@ -696,7 +712,7 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
   //
   fRecoPass=pass;
   
-  fCurrentEvent=0x0;
+  fCurrentEvent=NULL;
   if (!event) return;
   fCurrentEvent=event;
   if (run>0) fRun=run;
@@ -748,6 +764,8 @@ void AliPIDResponse::ExecNewRun()
   
   SetTOFPidResponseMaster();
   InitializeTOFResponse();
+
+  if (fCurrentEvent) fTPCResponse.SetMagField(fCurrentEvent->GetMagneticField());
 }
 
 //_____________________________________________________
@@ -783,7 +801,6 @@ void AliPIDResponse::SetRecoInfo()
     
   fBeamType="PP";
   
-
   TPRegexp reg(".*(LHC1[1-2][a-z]+[0-9]+[a-z_]*)/.*");
   TPRegexp reg12a17(".*(LHC12a17[a-z]+)/.*");
 
@@ -835,6 +852,7 @@ void AliPIDResponse::SetTPCPidResponseMaster()
 {
   //
   // Load the TPC pid response functions from the OADB
+  // Load the TPC voltage maps from OADB
   //
   //don't load twice for the moment
    if (fArrPidResponseMaster) return;
@@ -842,20 +860,35 @@ void AliPIDResponse::SetTPCPidResponseMaster()
 
   //reset the PID response functions
   delete fArrPidResponseMaster;
-  fArrPidResponseMaster=0x0;
+  fArrPidResponseMaster=NULL;
   
   TString fileName(Form("%s/COMMON/PID/data/TPCPIDResponse.root", fOADBPath.Data()));
+  TFile *f=NULL;
   if (!fCustomTPCpidResponse.IsNull()) fileName=fCustomTPCpidResponse;
   
-  TFile *f=TFile::Open(fileName.Data());
+  TString fileNamePIDresponse(Form("%s/COMMON/PID/data/TPCPIDResponse.root", fOADBPath.Data()));
+  f=TFile::Open(fileNamePIDresponse.Data());
   if (f && f->IsOpen() && !f->IsZombie()){
     fArrPidResponseMaster=dynamic_cast<TObjArray*>(f->Get("TPCPIDResponse"));
   }
   delete f;
+
+  TString fileNameVoltageMaps(Form("%s/COMMON/PID/data/TPCvoltageSettings.root", fOADBPath.Data()));
+  f=TFile::Open(fileNameVoltageMaps.Data());
+  if (f && f->IsOpen() && !f->IsZombie()){
+    fOADBvoltageMaps=dynamic_cast<AliOADBContainer*>(f->Get("TPCvoltageSettings"));
+  }
+  delete f;
   
   if (!fArrPidResponseMaster){
-    AliFatal(Form("Could not retrieve the TPC pid response from: %s",fileName.Data()));
+    AliFatal(Form("Could not retrieve the TPC pid response from: %s",fileNamePIDresponse.Data()));
     return;
+  }
+  fArrPidResponseMaster->SetOwner();
+
+  if (!fOADBvoltageMaps)
+  {
+    AliFatal(Form("Could not retrieve the TPC voltage maps from: %s",fileNameVoltageMaps.Data()));
   }
   fArrPidResponseMaster->SetOwner();
 }
@@ -887,9 +920,7 @@ void AliPIDResponse::SetTPCParametrisation()
   //
   //reset old splines
   //
-  for (Int_t ispec=0; ispec<AliPID::kSPECIESC; ++ispec){
-    fTPCResponse.SetResponseFunction((AliPID::EParticleType)ispec,0x0);
-  }
+  fTPCResponse.ResetSplines();
 
   // period
   TString period=fLHCperiod;
@@ -903,59 +934,82 @@ void AliPIDResponse::SetTPCParametrisation()
   if (fArrPidResponseMaster){
     Int_t recopass = fRecoPass;
     if(fTuneMConData) recopass = fRecoPassUser;
-    TObject *grAll=0x0;
     //for MC don't use period information
-//     if (fIsMC) period="[A-Z0-9]*";
+    //if (fIsMC) period="[A-Z0-9]*";
     //for MC use MC period information
-//pattern for the default entry (valid for all particles)
-    TPRegexp reg(Form("TSPLINE3_%s_([A-Z]*)_%s_PASS%d_%s_MEAN",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
-   
-    //loop over entries and filter them
-    for (Int_t iresp=0; iresp<fArrPidResponseMaster->GetEntriesFast();++iresp){
-      TObject *responseFunction=fArrPidResponseMaster->At(iresp);
-      if (responseFunction==0x0) continue;
-      TString responseName=responseFunction->GetName();
-      
-      if (!reg.MatchB(responseName)) continue;
-      
-      TObjArray *arr=reg.MatchS(responseName);
-      TString particleName=arr->At(1)->GetName();
-      delete arr;
-      if (particleName.IsNull()) continue;
-      if (!grAll&&particleName=="ALL") grAll=responseFunction;
-      else {
-        //find particle id
-        for (Int_t ispec=0; ispec<AliPID::kSPECIESC; ++ispec){
-          TString particle=AliPID::ParticleName(ispec);
-          particle.ToUpper();
-          if ( particle == particleName ){
-            fTPCResponse.SetResponseFunction((AliPID::EParticleType)ispec,responseFunction);
-            fTPCResponse.SetUseDatabase(kTRUE);
-            AliInfo(Form("Adding graph: %d - %s",ispec,responseFunction->GetName()));
-            // overwrite default with proton spline (for light nuclei)
-            if (ispec==AliPID::kProton) grAll=responseFunction;
-            found=kTRUE;
-            break;
+    //pattern for the default entry (valid for all particles)
+    TPRegexp reg(Form("TSPLINE3_%s_([A-Z]*)_%s_PASS%d_%s_MEAN(_*)([A-Z1-9]*)",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
+
+    //find particle id ang gain scenario
+    for (Int_t igainScenario=0; igainScenario<AliTPCPIDResponse::fgkNumberOfGainScenarios; igainScenario++)
+    {
+      TObject *grAll=NULL;
+      TString gainScenario = AliTPCPIDResponse::GainScenarioName(igainScenario);
+      gainScenario.ToUpper();
+      //loop over entries and filter them
+      for (Int_t iresp=0; iresp<fArrPidResponseMaster->GetEntriesFast();++iresp)
+      {
+        TObject *responseFunction=fArrPidResponseMaster->At(iresp);
+        if (responseFunction==NULL) continue;
+        TString responseName=responseFunction->GetName();
+         
+        if (!reg.MatchB(responseName)) continue;
+
+        TObjArray *arr=reg.MatchS(responseName); if (!arr) continue;
+        TObject* tmp=NULL;
+        tmp=arr->At(1); if (!tmp) continue;
+        TString particleName=tmp->GetName();
+        tmp=arr->At(3); if (!tmp) continue;
+        TString gainScenarioName=tmp->GetName();
+        delete arr;
+        if (particleName.IsNull()) continue;
+        if (!grAll && particleName=="ALL" && gainScenarioName==gainScenario) grAll=responseFunction;
+        else 
+        {
+          for (Int_t ispec=0; ispec<(AliTPCPIDResponse::fgkNumberOfParticleSpecies); ++ispec)
+          {
+            TString particle=AliPID::ParticleName(ispec);
+            particle.ToUpper();
+            //std::cout<<responseName<<" "<<particle<<" "<<particleName<<" "<<gainScenario<<" "<<gainScenarioName<<std::endl;
+            if ( particle == particleName && gainScenario == gainScenarioName )
+            {
+              fTPCResponse.SetResponseFunction( responseFunction,
+                                                (AliPID::EParticleType)ispec,
+                                                (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
+              fTPCResponse.SetUseDatabase(kTRUE);
+              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,responseFunction->GetName()));
+              found=kTRUE;
+              // overwrite default with proton spline (for light nuclei)
+              if (ispec==AliPID::kProton) grAll=responseFunction;
+              break;
+            }
+          }
+        }
+      }
+      if (grAll)
+      {
+        for (Int_t ispec=0; ispec<(AliTPCPIDResponse::fgkNumberOfParticleSpecies); ++ispec)
+        {
+          if (!fTPCResponse.GetResponseFunction( (AliPID::EParticleType)ispec,
+                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario))
+          {
+              fTPCResponse.SetResponseFunction( grAll,
+                                                (AliPID::EParticleType)ispec,
+                                                (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
+              fTPCResponse.SetUseDatabase(kTRUE);
+              AliInfo(Form("Adding graph: %d %d - %s",ispec,igainScenario,grAll->GetName()));
+              found=kTRUE;
           }
         }
       }
     }
-    
-    //set default response function to all particles which don't have a specific one
-    if (grAll){
-      for (Int_t ispec=0; ispec<AliPID::kSPECIESC; ++ispec){
-        if (!fTPCResponse.GetResponseFunction((AliPID::EParticleType)ispec)){
-          fTPCResponse.SetResponseFunction((AliPID::EParticleType)ispec,grAll);
-          AliInfo(Form("Adding graph: %d - %s",ispec,grAll->GetName()));
-          found=kTRUE;
-        }
-      }
-    }
   }
+  else AliInfo("no fArrPidResponseMaster");
 
   if (!found){
     AliError(Form("No splines found for: %s %s PASS%d %s",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
   }
+
   //
   // Setup resolution parametrisation
   //
@@ -970,6 +1024,24 @@ void AliPIDResponse::SetTPCParametrisation()
   fResolutionCorrection=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_SIGMA",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
   
   if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s",fResolutionCorrection->GetName()));
+
+  //read in the voltage map
+  TVectorF* gsm = dynamic_cast<TVectorF*>(fOADBvoltageMaps->GetObject(fRun));
+  if (gsm) 
+  {
+    fTPCResponse.SetVoltageMap(*gsm);
+    TString vals;
+    AliInfo(Form("Reading the voltage map for run %d\n",fRun));
+    vals="IROC A: "; for (Int_t i=0; i<18; i++){vals+=Form("%.2f ",(*gsm)[i]);}
+    AliInfo(vals.Data());
+    vals="IROC C: "; for (Int_t i=18; i<36; i++){vals+=Form("%.2f ",(*gsm)[i]);}
+    AliInfo(vals.Data());
+    vals="OROC A: "; for (Int_t i=36; i<54; i++){vals+=Form("%.2f ",(*gsm)[i]);}
+    AliInfo(vals.Data());
+    vals="OROC C: "; for (Int_t i=54; i<72; i++){vals+=Form("%.2f ",(*gsm)[i]);}
+    AliInfo(vals.Data());
+  }
+  else AliInfo("no voltage map, ideal default assumed");
 }
 
 //______________________________________________________________________________
@@ -1044,7 +1116,7 @@ void AliPIDResponse::SetTOFPidResponseMaster()
   //
 
   if (fTOFPIDParams) delete fTOFPIDParams;
-  fTOFPIDParams=0x0;
+  fTOFPIDParams=NULL;
 
   TFile *oadbf = new TFile(Form("%s/COMMON/PID/data/TOFPIDParams.root",fOADBPath.Data()));
   if (oadbf && oadbf->IsOpen()) {

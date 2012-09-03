@@ -24,6 +24,7 @@
 #include "TNamed.h"
 
 class TF1;
+class AliOADBContainer;
 class TObjArray;
 
 class AliVEvent;
@@ -65,7 +66,7 @@ public:
     kDetPidOk=1,
     kDetMismatch=2
   };
-  
+
   AliITSPIDResponse &GetITSResponse() {return fITSResponse;}
   AliTPCPIDResponse &GetTPCResponse() {return fTPCResponse;}
   AliTOFPIDResponse &GetTOFResponse() {return fTOFResponse;}
@@ -77,6 +78,7 @@ public:
   
   virtual Float_t NumberOfSigmasITS  (const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type) const;
+  virtual Float_t NumberOfSigmasTPC  (const AliVParticle *track, AliPID::EParticleType type, AliTPCPIDResponse::ETPCdEdxSource dedxSource);
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type, Double_t &eop, Double_t showershape[4]) const;
   virtual Float_t NumberOfSigmasTOF  (const AliVParticle *track, AliPID::EParticleType type) const = 0;
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
@@ -160,6 +162,7 @@ private:
   
   TObjArray *fArrPidResponseMaster;    //!  TPC pid splines
   TF1       *fResolutionCorrection;    //! TPC resolution correction
+  AliOADBContainer* fOADBvoltageMaps;  //! container with the voltage maps
 
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
   UInt_t fTRDslicesForPID[2];           //! TRD PID slices

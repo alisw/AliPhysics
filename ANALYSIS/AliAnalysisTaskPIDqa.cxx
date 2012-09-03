@@ -428,15 +428,35 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
     if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) continue;
     
     Double_t mom=track->GetTPCmomentum();
-    
+    // the default scenario
     for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
       TH2 *h=(TH2*)fListQAtpc->At(ispecie);
       if (!h) continue;
       Double_t nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
       h->Fill(mom,nSigma);
     }
+    // the "hybrid" scenario
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+      TH2 *h=(TH2*)fListQAtpc->At(ispecie+AliPID::kSPECIESC);
+      if (!h) continue;
+      Double_t nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie, AliTPCPIDResponse::kdEdxHybrid);
+      h->Fill(mom,nSigma);
+    }
     
-    TH2 *h=(TH2*)fListQAtpc->At(AliPID::kSPECIESC);
+    // the "OROC" scenario
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+      TH2 *h=(TH2*)fListQAtpc->At(ispecie+2*AliPID::kSPECIESC);
+      if (!h) continue;
+      Double_t nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie, AliTPCPIDResponse::kdEdxOROC);
+      //TSpline3* spline = fPIDResponse->GetTPCResponse().GetCurrentResponseFunction();
+      //std::cout<<ispecie<<" "<<nSigma<<" phi:"<<track->Phi()<<". "<<std::endl;
+      //if (spline) {cout<<spline->GetName()<<endl;}
+      //else {cout<<"NULL spline"<<endl;}
+      h->Fill(mom,nSigma);
+    }
+    
+    TH2 *h=(TH2*)fListQAtpc->At(3*AliPID::kSPECIESC);
+
     if (h) {
       Double_t sig=track->GetTPCsignal();
       h->Fill(mom,sig);
@@ -989,13 +1009,32 @@ void AliAnalysisTaskPIDqa::SetupTPCqa()
                               200,-10,10);
     fListQAtpc->Add(hNsigmaP);
   }
+
+  // the "hybrid" scenario
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+    TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TPC_%s_Hybrid",AliPID::ParticleName(ispecie)),
+                              Form("TPC n#sigma %s vs. p (Hybrid gain scenario);p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1,vX->GetMatrixArray(),
+                              200,-10,10);
+    fListQAtpc->Add(hNsigmaP);
+  }
+   
+  // the "OROC high" scenario
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+    TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TPC_%s_OROChigh",AliPID::ParticleName(ispecie)),
+                              Form("TPC n#sigma %s vs. p (OROChigh gain scenario);p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1,vX->GetMatrixArray(),
+                              200,-10,10);
+    fListQAtpc->Add(hNsigmaP);
+  }
+  
   
   
   TH2F *hSig = new TH2F("hSigP_TPC",
                         "TPC signal vs. p;p [GeV]; TPC signal [arb. units]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
                         300,0,300);
-  fListQAtpc->Add(hSig);
+  fListQAtpc->Add(hSig); //3*AliPID::kSPECIESC
 
   delete vX;  
 }
