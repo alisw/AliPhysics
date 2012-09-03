@@ -425,10 +425,9 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   genHeader->PrimaryVertex(vtx);
   vz = vtx[2];
 
-  if (fDebug) { 
-    AliInfoF("vz=%f, phiR=%f, b=%f, npart=%d, nbin=%d", 
-	     vz, phiR, b, npart, nbin);
-  }
+  DMSG(fDebug, 2, "vz=%f, phiR=%f, b=%f, npart=%d, nbin=%d", 
+       vz, phiR, b, npart, nbin);
+
   fHVertex->Fill(vz);
   fHPhiR->Fill(phiR);
   fHB->Fill(b);
