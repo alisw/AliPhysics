@@ -20,7 +20,8 @@ ClassImp(AliAnalysisTaskRhoAverage)
 AliAnalysisTaskRhoAverage::AliAnalysisTaskRhoAverage() : 
   AliAnalysisTaskRhoBase("AliAnalysisTaskRhoAverage"),
   fRhoType(0),
-  fNExclLeadPart(0)
+  fNExclLeadPart(0),
+  fUseMedian(kFALSE)
 {
   // Default constructor.
 }
@@ -29,7 +30,8 @@ AliAnalysisTaskRhoAverage::AliAnalysisTaskRhoAverage() :
 AliAnalysisTaskRhoAverage::AliAnalysisTaskRhoAverage(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBase(name, histo),
   fRhoType(0),
-  fNExclLeadPart(0)
+  fNExclLeadPart(0),
+  fUseMedian(kFALSE)
 {
   // Constructor.
 }
@@ -42,8 +44,8 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
   static Double_t rhovec[9999];
   Int_t NpartAcc = 0;
 
-  Int_t   maxPartIds[] = {-1, -1};
-  Float_t maxPartPts[] = { 0,  0};
+  Int_t   maxPartIds[] = {0, 0};
+  Float_t maxPartPts[] = {0, 0};
 
   // push all jets within selected acceptance into stack
 
@@ -111,7 +113,7 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
     }
  
     if (fNExclLeadPart < 2) {
-      maxPartIds[1] = -1;
+      maxPartIds[1] = 0;
       maxPartPts[1] = 0;
     }
   }
@@ -169,9 +171,22 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
     }
   }
 
-  Double_t rho = TMath::Median(NpartAcc, rhovec);
+  Double_t rho = 0;
+
+  if (fUseMedian)
+    rho = TMath::Median(NpartAcc, rhovec);
+  else
+    rho = TMath::Mean(NpartAcc, rhovec);
  
-  Double_t area = (fTrackMaxEta - fTrackMinEta) * (fTrackMaxPhi - fTrackMinPhi);
+  Float_t maxEta = fTrackMaxEta;
+  Float_t minEta = fTrackMinEta;
+  Float_t maxPhi = fTrackMaxPhi;
+  Float_t minPhi = fTrackMinPhi;
+
+  if (maxPhi > TMath::Pi() * 2) maxPhi = TMath::Pi() * 2;
+  if (minPhi < 0) minPhi = 0;
+
+  Double_t area = (maxEta - minEta) * (maxPhi - minPhi);
 
   if (area > 0) {
     rho *= NpartAcc / area;
