@@ -10,7 +10,9 @@ void MakeMmixPi0(const TString filename = "Pi0Flow_000167920.root",
   //Fit Real/Mixed ratio, normalize Mixed and subtract it from Real
 
   TFile * f = new TFile(filename) ;
-  TList *histoList = (TList*)f->Get("PHOSPi0Flow");
+  //TList *histoList = (TList*)f->Get("PHOSPi0Flow");
+  TList *histoList = (TList*)f->Get("PHOSPi0Flow/PHOSPi0FlowCoutput1"); // lego train
+
   char key[125] ;
 
   TH1F * hev = (TH1F*)histoList->FindObject("hTotSelEvents") ;
