@@ -120,6 +120,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void                PrepareVertexConstraint(const AliESDVertex* vtx, AliTrackPoint &point);
   //
   void    CreateUserInfo();
+  void    CopyUserInfo();
  private:
   AliAnalysisTaskITSAlignQA(const AliAnalysisTaskITSAlignQA &source);
   AliAnalysisTaskITSAlignQA& operator=(const AliAnalysisTaskITSAlignQA &source);
