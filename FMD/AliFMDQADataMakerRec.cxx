@@ -255,6 +255,25 @@ void AliFMDQADataMakerRec::InitRaws()
     // AliLog::SetModuleDebugLevel("FMD", oldDbg);
   }
 
+  TH2* status = new TH2D("status", "Status per cycle", 
+			  5, .5, 5.5, 4, -.5, 3.5);
+  status->SetDirectory(0);
+  status->SetXTitle("Detector");
+  status->SetYTitle("Status");
+  status->SetZTitle("N_{cycles} [LOG]");
+  status->GetXaxis()->SetBinLabel(1, "FMD1i");
+  status->GetXaxis()->SetBinLabel(2, "FMD2i");
+  status->GetXaxis()->SetBinLabel(3, "FMD2o");
+  status->GetXaxis()->SetBinLabel(4, "FMD3i");
+  status->GetXaxis()->SetBinLabel(5, "FMD3o");
+  status->GetYaxis()->SetBinLabel(1, "OK");
+  status->GetYaxis()->SetBinLabel(2, "Problem");
+  status->GetYaxis()->SetBinLabel(3, "Bad");
+  status->GetYaxis()->SetBinLabel(4, "What the ...?");
+  status->SetStats(0);
+  Add2RawsList(status, GetHalfringIndex(4, 'i', 0, 0), 
+	       !expert, image, !saveCorr);
+	       
   TH1* hist;
   Int_t idx = 0;
   for(UShort_t d = 1; d<=3; d++) {
@@ -530,7 +549,7 @@ void AliFMDQADataMakerRec::StartOfDetectorCycle()
 Int_t AliFMDQADataMakerRec::GetHalfringIndex(UShort_t det, 
 					     Char_t ring, 
 					     UShort_t board, 
-					     UShort_t monitor) const
+					     UShort_t monitor)
 {
   // 
   // Get the half-ring index
@@ -556,6 +575,19 @@ Int_t AliFMDQADataMakerRec::GetHalfringIndex(UShort_t det,
 #endif
   return index-2;
 }
+//_____________________________________________________________________ 
+void AliFMDQADataMakerRec::GetHalfringFromIndex(Int_t     idx, 
+						UShort_t& det, 
+						Char_t&   ring, 
+						UShort_t& board, 
+						UShort_t& monitor)
+{
+  det     = ((idx >> 3) & 0x3) + 1;
+  ring    = ((idx >> 2) & 0x1) == 1 ? 'I' : 'O';
+  board   = ((idx >> 1) & 0x1);
+  monitor = ((idx >> 0) & 0x1);
+}
+
 
 //_____________________________________________________________________ 
 

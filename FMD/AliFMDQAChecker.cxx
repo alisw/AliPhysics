@@ -41,12 +41,14 @@
 #include <TFitResult.h>
 #include <TParameter.h>
 #include <TMacro.h>
+#include <TPaveText.h>
 
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliFMDQAChecker.h"
+#include "AliFMDQADataMakerRec.h"
 #include "AliRecoParam.h"
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
@@ -756,14 +758,41 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
     
     if(!list[specie]) continue;
     
-    TH1* hist  = 0;
-    Int_t nHist = list[specie]->GetEntriesFast();
-    UShort_t ret = 0;
+    TH1*     hist  = 0;
+    Int_t    nHist = list[specie]->GetEntriesFast();
+
+    // Find the status histogram if any 
+    TH2*  status  = 0;
+    Int_t istatus = AliFMDQADataMakerRec::GetHalfringIndex(4, 'i', 0, 0);
+    if (istatus < nHist) 
+      status = dynamic_cast<TH2*>(list[specie]->At(istatus));
+      
+    UShort_t ret   = 0;
     for(Int_t i= 0; i< nHist; i++) {
       if (!(hist = static_cast<TH1*>(list[specie]->At(i)))) continue;
+      if (hist == status) continue;
+      
       Int_t qual = CheckOne(what, AliRecoParam::ConvertIndex(specie), hist);
       hist->SetUniqueID(Quality2Bit(qual));
       ret += qual;
+
+      if (!status) continue;
+
+      // AliFMDQADataMakerRec::GetHalfringFromIndex(i, d, r, b, mm);
+      // AliWarningF("Got index %2d -> halfring FMD%d%c %s", i, d, r, 
+      //             hist->GetName());
+      TString nme(hist->GetName());
+      Char_t cD   = nme[nme.Length()-2];
+      Char_t cR   = nme[nme.Length()-1];
+      Int_t  xbin = 0;
+      switch (cD) { 
+      case '1': xbin = 1; break;
+      case '2': xbin = 2 + ((cR == 'i' || cR == 'I') ? 0 : 1); break;
+      case '3': xbin = 4 + ((cR == 'i' || cR == 'I') ? 0 : 1); break;
+      }
+      if (xbin == 0) continue;
+      status->Fill(xbin, qual);
+		   
     } // for (int i ...)
     rv[specie] = ret;
     // if      (ret > kWhatTheFk) rv[specie] = fLowTestValue[AliQAv1::kFATAL];
@@ -772,6 +801,33 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
     // else                       rv[specie] = fUpTestValue[AliQAv1::kINFO]; 
     AliDebugF(3, "Combined sum is %d -> %f", ret, rv[specie]);
 
+    if (status) { 
+      Int_t qual = 0;
+      for (Int_t i = 1; i < status->GetXaxis()->GetNbins(); i++) { 
+	if (status->GetBinContent(i, 3) > 1) qual++;
+	if (status->GetBinContent(i, 4) > 0) qual++;
+      }
+      status->SetUniqueID(Quality2Bit(qual));
+      TPaveText* text = new TPaveText(.6, .8, .95, .95, "brNDC");
+      Int_t   bg  = kGreen-10;
+      Int_t   fg  = kBlack;
+      TString msg = "OK";
+      if      (qual >= kWhatTheFk) { bg = kRed+1; fg = kWhite; msg = "Argh!"; }
+      else if (qual >= kBad)       { bg = kRed-3; fg = kWhite; msg = "Bad"; }
+      else if (qual >= kProblem)   { bg = kOrange-4; msg = "Warning"; }
+      text->AddText(msg);
+      text->SetTextFont(62);
+      text->SetTextColor(fg);
+      text->SetFillColor(bg);
+
+      TList*   ll  = status->GetListOfFunctions(); 
+      TObject* old = ll->FindObject(text->GetName());
+      if (old) { 
+	ll->Remove(old);
+	delete old;
+      }
+      ll->Add(text);
+    }
     // if (count != 0) rv[specie] /= count;
   }
   // return rv;
@@ -818,6 +874,22 @@ namespace {
     max = tmax;
   }
 }
+
+namespace { 
+  Int_t GetHalfringPad(TH1* h) {
+    TString nme(h->GetName());
+    Char_t cD   = nme[nme.Length()-2];
+    Char_t cR   = nme[nme.Length()-1];
+    Int_t  xbin = 0;
+    switch (cD) { 
+    case '1': xbin = 1; break;
+    case '2': xbin = ((cR == 'i' || cR == 'I') ? 2 : 5); break;
+    case '3': xbin = ((cR == 'i' || cR == 'I') ? 3 : 6); break;
+    }
+    return xbin;
+  }
+}
+
 //____________________________________________________________________________ 
 void 
 AliFMDQAChecker::MakeImage(TObjArray** list, 
@@ -855,7 +927,8 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
       if (hist && hist->TestBit(AliQAv1::GetImageBit())) {
         nImages++; 
 	TString name(hist->GetName());
-	if (name.Contains("readouterrors", TString::kIgnoreCase)) continue;
+	if (name.Contains("readouterrors", TString::kIgnoreCase) || 
+	    name.Contains("status", TString::kIgnoreCase)) continue;
 
 	// Double_t hMax = hist->GetMaximum(); 
 	// hist->GetBinContent(hist->GetMaximumBin());
@@ -940,25 +1013,54 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
     topText->SetTextColor(kBlue+3);
     topText->SetNDC();
     topText->Draw();
-				 
+
+    // Find the status histogram if any 
+    TH2*  status  = 0;
+    Int_t istatus = AliFMDQADataMakerRec::GetHalfringIndex(4, 'i', 0, 0);
+    if (istatus < list[specie]->GetEntriesFast()) 
+      status = dynamic_cast<TH2*>(list[specie]->At(istatus));
+
     // Divide canvas 
-    Int_t nx = int(nImages + .5) / 2;
-    Int_t ny = 2;
     // if (fDoScale) 
-    fImage[specie]->Divide(nx, ny, 0, 0);
+    TVirtualPad* plots = fImage[specie];
+    TVirtualPad* stat  = 0;
+    if (status) {
+      // AliWarning("Drawing plots sub-pad");
+      TPad* pM = new TPad("plots", "Plots Pad", 0, .2, 1., .9, 0, 0);
+      fImage[specie]->cd();
+      pM->Draw();
+      plots = pM;
+      // AliWarning("Drawing status sub-pad");
+      TPad* pS = new TPad("status", "Status Pad", 0, 0, 1., .2, 0, 0);
+      fImage[specie]->cd();
+      pS->Draw();
+      pS->SetLogz();
+      stat = pS;
+      // status->DrawCopy("colz");
+    }
+    // AliWarningF("fImage[specie]=%p, plots=%p", fImage[specie], plots);
+    // plots->cd();
+    Int_t nx = 3;
+    Int_t ny = (nImages + .5) / nx;
+    plots->Divide(nx, ny, 0, 0);
     // else fImage[specie]->Divide(nx, ny);
     
     
     // Loop over histograms 
     TH1*  hist  = 0;
     Int_t nHist = list[specie]->GetEntriesFast();
-    Int_t j     = 0;
     for (Int_t i = 0; i < nHist; i++) { 
       hist = static_cast<TH1*>(list[specie]->At(i));
       if (!hist || !hist->TestBit(AliQAv1::GetImageBit())) continue;
+      if (hist == status) continue;
+      TString name(hist->GetName());
+      Bool_t isROE = name.Contains("readouterrors", TString::kIgnoreCase);
 
       // Go to sub-pad 
-      TVirtualPad* pad = fImage[specie]->cd(++j);
+      TVirtualPad* pad = 0;
+      if      (isROE) pad = plots->cd(4);
+      else            pad = plots->cd(GetHalfringPad(hist));
+      
       pad->SetRightMargin(0.01);
       if (!fDoScale) { 
 	pad->SetLeftMargin(0.10);
@@ -973,8 +1075,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 
       // Figure out special cases 
       TString opt("");
-      TString name(hist->GetName());
-      if (name.Contains("readouterrors", TString::kIgnoreCase)) {
+      if (isROE) {
 	pad->SetRightMargin(0.15);
 	pad->SetBottomMargin(0.10);
 	// pad->SetTopMargin(0.02);
@@ -1011,7 +1112,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
       else {
 	gStyle->SetOptTitle(0);
 	TPad* insert = new TPad("insert", "Zoom", 
-				.4,.4, .99, .95, 0, 0, 0);
+				.5,.5, .99, .95, 0, 0, 0);
 	insert->SetTopMargin(0.01);
 	insert->SetRightMargin(0.01);
 	insert->SetFillColor(0);
@@ -1035,13 +1136,16 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
       RestoreLog(hist->GetYaxis(), logOpts & 0x2);
       RestoreLog(hist->GetZaxis(), logOpts & 0x4);
     }
+    if (status && stat) {
+      stat->cd();
+      status->DrawCopy("BOX TEXT");
+    }
     // Print to a post-script file 
     fImage[specie]->Print(outName, "ps");
-#if 0
-    fImage[specie]->Print(Form("%s_%d.png", 
-			       AliRecoParam::GetEventSpecieName(specie), 
-			       AliQAChecker::Instance()->GetRunNumber()));
-#endif
+    if (AliDebugLevel() > 1) 
+      fImage[specie]->Print(Form("%s_%d.png", 
+				 AliRecoParam::GetEventSpecieName(specie), 
+				 AliQAChecker::Instance()->GetRunNumber()));
   }
 }
 
