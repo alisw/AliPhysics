@@ -1,18 +1,19 @@
 // $Id$
 
 AliAnalysisTaskRho* AddTaskRho(
-   const char *outfilename    = "AnalysisResults.root",
-   const char *nJets          = "Jets",
-   const char *nTracks        = "PicoTracks",   
-   const char *nRho           = "Rho",
-   const Double_t minPhi      = 0,
-   const Double_t maxPhi      = 2 * TMath::Pi(),
-   const Double_t minEta      = -0.3,
-   const Double_t maxEta      = 0.3,
-   const Double_t minArea     = 0.01,
-   const UInt_t   exclJets    = 1,
+   const char    *nJets       = "Jets",
+   const char    *nTracks     = "PicoTracks",
+   const char    *nClusters   = "CaloClusters",  
+   const char    *nRho        = "Rho",
+   Double_t       jetradius   = 0.2,
+   UInt_t         type        = AliAnalysisTaskEmcal::kTPC,
+   Double_t       jetareacut  = 0.01,
+   Double_t       emcareacut  = 0,
+   Double_t       ptcut       = 0.15,
+   TF1           *sfunc       = 0,
+   const UInt_t   exclJets    = 2,
    const Bool_t   histo       = kFALSE,
-   const char *taskname       = "Rho"
+   const char    *taskname    = "Rho"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -36,14 +37,25 @@ AliAnalysisTaskRho* AddTaskRho(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s", taskname, nJets));
+  TString name(Form("%s_%s_", taskname, nJets));
+  if (type == AliAnalysisTaskEmcal::kTPC) 
+    name += "TPC";
+  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
+    name += "EMCAL";
+  else if (type == AliAnalysisTaskEmcal::kUser) 
+    name += "USER";
   AliAnalysisTaskRho *rhotask = new AliAnalysisTaskRho(name, histo);
+  rhotask->SetAnaType(type);
+  rhotask->SetScaleFunction(sfunc);
   rhotask->SetJetsName(nJets);
   rhotask->SetTracksName(nTracks);
+  rhotask->SetClusName(nClusters);
   rhotask->SetRhoName(nRho);
-  rhotask->SetJetPhi(minPhi,maxPhi);
-  rhotask->SetJetEta(minEta,maxEta);
-  rhotask->SetAreaCut(minArea);
+  rhotask->SetJetAreaCut(jetareacut);
+  rhotask->SetAreaEmcCut(emcareacut);
+  rhotask->SetPtCut(ptcut);
+  rhotask->SetJetPtCut(0);
+  rhotask->SetJetRadius(jetradius);
   rhotask->SetExcludeLeadJets(exclJets);
 
   //-------------------------------------------------------
@@ -53,13 +65,14 @@ AliAnalysisTaskRho* AddTaskRho(
   mgr->AddTask(rhotask);
 
   // Create containers for input/output
-  mgr->ConnectInput (rhotask, 0, mgr->GetCommonInputContainer() );
+  mgr->ConnectInput(rhotask, 0, mgr->GetCommonInputContainer());
   if (histo) {
-    AliAnalysisDataContainer *corho = mgr->CreateContainer(name,
-                                                           TList::Class(),
-                                                           AliAnalysisManager::kOutputContainer,
-                                                           outfilename);
-    mgr->ConnectOutput(rhotask, 1, corho);
+    TString contname(name);
+    contname += "_histos";
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
+							      TList::Class(),AliAnalysisManager::kOutputContainer,
+							      Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectOutput(rhotask, 1, coutput1);
   }
 
   return rhotask;

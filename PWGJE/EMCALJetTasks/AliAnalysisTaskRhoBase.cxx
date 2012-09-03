@@ -6,15 +6,14 @@
 // Author: S.Aiola
 
 #include <TF1.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TClonesArray.h>
 
 #include "AliAnalysisManager.h"
-#include "AliCentrality.h"
-#include "AliESDEvent.h"
-#include "AliEmcalJet.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
-#include "AliVCluster.h"
-#include "AliVEventHandler.h"
+#include "AliEmcalJet.h"
 
 #include "AliAnalysisTaskRhoBase.h"
 
@@ -22,88 +21,247 @@ ClassImp(AliAnalysisTaskRhoBase)
 
 //________________________________________________________________________
 AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() : 
-  AliAnalysisTaskSE(),
-  fRhoName("Rho"),
-  fRhoFunction(0x0),
-  fCent(-1),
-  fRho(0),
-  fDoCent(0),
-  fIsInit(0)
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoBase", kFALSE),
+  fRhoScaledName(),
+  fCompareRhoName(),
+  fCompareRhoScaledName(),
+  fRhoFunction(0),
+  fScaleFunction(0),
+  fRhoScaled(0),
+  fCompareRho(0),
+  fCompareRhoScaled(0),
+  fHistJetPtvsCent(0),
+  fHistJetAreavsCent(0),
+  fHistNjetvsCent(0),
+  fHistJetPtvsNtrack(0),
+  fHistJetAreavsNtrack(0),
+  fHistNjetvsNtrack(0),
+  fHistRhovsCent(0),
+  fHistRhoScaledvsCent(0),
+  fHistDeltaRhovsCent(0),
+  fHistDeltaRhoScalevsCent(0),
+  fHistRhovsNtrack(0),
+  fHistRhoScaledvsNtrack(0),
+  fHistDeltaRhovsNtrack(0),
+  fHistDeltaRhoScalevsNtrack(0),
+  fHistRhovsNcluster(0),
+  fHistRhoScaledvsNcluster(0)
 {
   // Constructor.
 }
 
 //________________________________________________________________________
-AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name) :
-  AliAnalysisTaskSE(name),
-  fRhoName("Rho"),
-  fRhoFunction(0x0),
-  fCent(-1),
-  fRho(0),
-  fDoCent(0),
-  fIsInit(0)
+AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
+  AliAnalysisTaskEmcalJet(name, histo),
+  fRhoScaledName(),
+  fCompareRhoName(),
+  fCompareRhoScaledName(),
+  fRhoFunction(0),
+  fScaleFunction(0),
+  fRhoScaled(0),
+  fCompareRho(0),
+  fCompareRhoScaled(0),
+  fHistJetPtvsCent(0),
+  fHistJetAreavsCent(0),
+  fHistNjetvsCent(0),
+  fHistJetPtvsNtrack(0),
+  fHistJetAreavsNtrack(0),
+  fHistNjetvsNtrack(0),
+  fHistRhovsCent(0),
+  fHistRhoScaledvsCent(0),
+  fHistDeltaRhovsCent(0),
+  fHistDeltaRhoScalevsCent(0),
+  fHistRhovsNtrack(0),
+  fHistRhoScaledvsNtrack(0),
+  fHistDeltaRhovsNtrack(0),
+  fHistDeltaRhoScalevsNtrack(0),
+  fHistRhovsNcluster(0),
+  fHistRhoScaledvsNcluster(0)
 {
   // Constructor.
+
+  SetMakeGeneralHistograms(histo);
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
 {
-  // Run at beginning of task.
+  // User create output objects, called at the beginning of the analysis.
 
-  AliVEventHandler* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!handler) {
-    AliError("Input handler not available!");
+  if (!fCreateHisto)
     return;
+
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+  fHistRhovsCent = new TH2F("RhovsCent", "RhovsCent", 101, -1,  100, fNbins, fMinBinPt, fMaxBinPt*2);
+  fOutput->Add(fHistRhovsCent);
+
+  if (!fTracksName.IsNull()) {
+    fHistRhovsNtrack = new TH2F("RhovsNtrack", "RhovsNtrack", 125, 0, 4000, fNbins, fMinBinPt, fMaxBinPt*2);
+    fOutput->Add(fHistRhovsNtrack);
   }
 
-  fRho = new AliRhoParameter(fRhoName, 0);
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskRhoBase::UserExec(Option_t *) 
-{
-  // Main loop, called for each event.
-
-  if (!fIsInit) {
-    ExecOnce();
-    fIsInit = 1;
+  if (!fCaloName.IsNull()) {
+    fHistRhovsNcluster = new TH2F("RhovsNcluster", "RhovsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt*2);
+    fOutput->Add(fHistRhovsNcluster);
   }
 
-  DetermineCent();
+  if (!fJetsName.IsNull()) {
+    fHistJetPtvsCent            = new TH2F("JetPtvsCent",           "JetPtvsCent",           101, -1,  100,   fNbins, fMinBinPt, fMaxBinPt);
+    fHistJetAreavsCent          = new TH2F("JetAreavsCent",         "JetAreavsCent",         101, -1,  100,   30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+    fHistNjetvsCent             = new TH2F("NjetvsCent",            "NjetvsCent",            101, -1,  100,   150, -0.5, 149.5);
 
-  Double_t rho = GetRhoFactor(fCent);
-  fRho->SetVal(rho);
-}      
+    fOutput->Add(fHistJetPtvsCent);
+    fOutput->Add(fHistJetAreavsCent);
+    fOutput->Add(fHistNjetvsCent);
 
-//________________________________________________________________________
-void AliAnalysisTaskRhoBase::DetermineCent() 
-{
-  // Determine centrality.
+    if (!fTracksName.IsNull()) {
+      fHistJetPtvsNtrack        = new TH2F("JetPtvsNtrack",         "JetPtvsNtrack",         125,  0,  4000,  fNbins, fMinBinPt, fMaxBinPt);
+      fHistJetAreavsNtrack      = new TH2F("JetAreavsNtrack",       "JetAreavsNtrack",       125,  0,  4000,  30, 0, fJetRadius * fJetRadius * TMath::Pi() * 3);
+      fHistNjetvsNtrack         = new TH2F("NjetvsNtrack",          "rNjetvsNtrack",         125,  0,  4000,  150, -0.5, 149.5);
 
-  fCent = 99; 
+      fOutput->Add(fHistJetPtvsNtrack);
+      fOutput->Add(fHistJetAreavsNtrack);
+      fOutput->Add(fHistNjetvsNtrack);
+    }
+  }
   
-  if (fDoCent) {
-    AliCentrality *centrality = InputEvent()->GetCentrality();
-    
-    if (centrality)
-      fCent = centrality->GetCentralityPercentile("V0M");
-    else
-      fCent = 99; // probably pp data
-    
-    if (fCent < 0) {
-      AliWarning(Form("%s: Centrality negative: %f, assuming 99", GetName(), fCent));
-      fCent = 99;
+  if (!fCompareRhoName.IsNull()) {
+    fHistDeltaRhovsCent = new TH2F("DeltaRhovsCent", "DetlaRhovsCent", 101, -1, 100, fNbins, -fMaxBinPt, fMaxBinPt);
+    fOutput->Add(fHistDeltaRhovsCent);
+    if (!fTracksName.IsNull()) {
+      fHistDeltaRhovsNtrack = new TH2F("DeltaRhovsNtrack", "DeltaRhovsNtrack", 125, 0, 4000, fNbins, -fMaxBinPt, fMaxBinPt);
+      fOutput->Add(fHistDeltaRhovsNtrack);
+    }
+  }
+
+  if (fScaleFunction) {
+    fHistRhoScaledvsCent = new TH2F("RhoScaledvsCent", "RhoScalevsCent", 101, -1, 100, fNbins, fMinBinPt , fMaxBinPt*2);
+    fOutput->Add(fHistRhoScaledvsCent);
+
+    if (!fTracksName.IsNull()) {
+      fHistRhoScaledvsNtrack = new TH2F("RhoScaledvsNtrack", "RhoScaledvsNtrack", 125, 0, 4000, fNbins, fMinBinPt, fMaxBinPt*2);
+      fOutput->Add(fHistRhoScaledvsNtrack);
+    }
+
+    if (!fCaloName.IsNull()) {
+      fHistRhoScaledvsNcluster = new TH2F("RhoScaledvsNcluster", "RhoScaledvsNcluster", 50, 0, 1500, fNbins, fMinBinPt, fMaxBinPt*2);
+      fOutput->Add(fHistRhoScaledvsNcluster);
+    }
+
+    if (!fCompareRhoScaledName.IsNull()) {
+      fHistDeltaRhoScalevsCent = new TH2F("DeltaRhoScalevsCent", "DeltaRhoScalevsCent", 101, -1, 100, fNbins, -fMaxBinPt, fMaxBinPt);
+      fOutput->Add(fHistDeltaRhoScalevsCent);
+      
+      if (!fTracksName.IsNull()) {
+	fHistDeltaRhoScalevsNtrack = new TH2F("DeltaRhoScalevsNtrack", "DeltaRhoScalevsNtrack", 125, 0, 4000, fNbins, -fMaxBinPt, fMaxBinPt);
+	fOutput->Add(fHistDeltaRhoScalevsNtrack);
+      }
     }
   }
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisTaskRhoBase::Run() 
+{
+  // Run the analysis.
+
+  Double_t rho = GetRhoFactor(fCent);
+  fRho->SetVal(rho);
+
+  if (fScaleFunction) {
+    Double_t rhoScaled = rho * GetScaleFactor(fCent);
+    fRhoScaled->SetVal(rhoScaled);
+  }
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskRhoBase::FillHistograms() 
+{
+  // Fill histograms.
+
+  Int_t Njets     = 0;
+  Int_t Ntracks   = 0;
+  Int_t Nclusters = 0;
+
+  if (fJets)
+    Njets     = fJets->GetEntries();
+  if (fTracks)
+    Ntracks   = fTracks->GetEntriesFast();
+  if (fCaloClusters)
+    Nclusters = fCaloClusters->GetEntriesFast();
+
+  Int_t NjetAcc = 0;
+
+  if (fJets) {
+
+    for (Int_t i = 0; i < Njets; ++i) {
+      
+      AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(i));
+      if (!jet) {
+	AliError(Form("%s: Could not receive jet %d", GetName(), i));
+	continue;
+      } 
+      
+      if (!AcceptJet(jet))
+	continue;
+      
+      fHistJetPtvsCent->Fill(fCent, jet->Pt());
+      fHistJetAreavsCent->Fill(fCent, jet->Area());
+      
+      if (fTracks) {
+	fHistJetPtvsNtrack->Fill(Ntracks, jet->Pt());
+	fHistJetAreavsNtrack->Fill(Ntracks, jet->Area());
+      }
+      
+      NjetAcc++;
+    }
+    
+    
+    fHistNjetvsCent->Fill(fCent, NjetAcc);
+    if (fTracks)
+      fHistNjetvsNtrack->Fill(Ntracks, NjetAcc);
+  }
+  
+  fHistRhovsCent->Fill(fCent, fRho->GetVal());
+
+  if (fTracks)
+    fHistRhovsNtrack->Fill(Ntracks, fRho->GetVal());
+  if (fCaloClusters)
+    fHistRhovsNcluster->Fill(Nclusters, fRho->GetVal());
+  if (fCompareRho) {
+    fHistDeltaRhovsCent->Fill(fCent, fRho->GetVal() - fCompareRho->GetVal());
+    if (fTracks)
+      fHistDeltaRhovsNtrack->Fill(Ntracks, fRho->GetVal() - fCompareRho->GetVal());
+  }
+
+  if (fScaleFunction) {
+    fHistRhoScaledvsCent->Fill(fCent, fRhoScaled->GetVal());
+    if (fTracks)
+      fHistRhoScaledvsNtrack->Fill(Ntracks, fRhoScaled->GetVal());
+    if (fCaloClusters)
+      fHistRhoScaledvsNcluster->Fill(Nclusters,  fRhoScaled->GetVal());
+    if (fCompareRhoScaled) {
+      fHistDeltaRhoScalevsCent->Fill(fCent, fRhoScaled->GetVal() - fCompareRhoScaled->GetVal());
+      if (fTracks)
+	fHistDeltaRhoScalevsNtrack->Fill(Ntracks, fRhoScaled->GetVal() - fCompareRhoScaled->GetVal());
+    }
+  }
+
+  return kTRUE;
+}      
+
+
+//________________________________________________________________________
 void AliAnalysisTaskRhoBase::ExecOnce() 
 {
-  // Initialize some settings that need to be determined in UserExec.
+  // Init the analysis.
 
   // add rho to event if not yet there
+  fRho = new AliRhoParameter(fRhoName, 0);
+
   if (!(InputEvent()->FindListObject(fRhoName))) {
     InputEvent()->AddObject(fRho);
   } else {
@@ -111,42 +269,31 @@ void AliAnalysisTaskRhoBase::ExecOnce()
     return;
   }
 
-  // determine if centrality should be used
-  TString bt(GetBeamType());
-  if (bt == "A-A")
-    fDoCent = 1;
-  else fDoCent = 0;
-}
-
-//_____________________________________________________
-TString AliAnalysisTaskRhoBase::GetBeamType()
-{
-  // Get beam type : pp-AA-pA
-  // ESDs have it directly, AODs get it from hardcoded run number ranges
-  
-  AliVEvent *event = InputEvent();
-  if (!event) { 
-    AliError(Form("%s: Couldn't retrieve event!", GetName()));
-    return "";
-  }
-
-  TString beamType;
-
-  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
-  if (esd) {
-    const AliESDRun *run = esd->GetESDRun();
-    beamType = run->GetBeamType();
-  } else {
-    Int_t runNumber = event->GetRunNumber();
-    if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
-	(runNumber >= 166529 && runNumber <= 170593)) {  // LHC11h
-      beamType = "A-A";
+  if (fScaleFunction) {
+    fRhoScaled = new AliRhoParameter(fRhoScaledName, 0);
+    if (!(InputEvent()->FindListObject(fRhoScaledName))) {
+      InputEvent()->AddObject(fRhoScaled);
     } else {
-      beamType = "p-p";
+      AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fRhoScaledName.Data()));
+      return;
     }
   }
 
-  return beamType;    
+  if (!fCompareRhoName.IsNull() && !fCompareRho) {
+    fCompareRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fCompareRhoName));
+    if (!fCompareRho) {
+      AliWarning(Form("%s: Could not retrieve rho %s!", GetName(), fCompareRhoName.Data()));
+    }
+  }
+
+  if (!fCompareRhoScaledName.IsNull() && !fCompareRhoScaled) {
+    fCompareRhoScaled = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fCompareRhoScaledName));
+    if (!fCompareRhoScaled) {
+      AliWarning(Form("%s: Could not retrieve rho %s!", GetName(), fCompareRhoScaledName.Data()));
+    }
+  }
+
+  AliAnalysisTaskEmcalJet::ExecOnce();
 }
 
 //________________________________________________________________________
@@ -154,8 +301,19 @@ Double_t AliAnalysisTaskRhoBase::GetRhoFactor(Double_t cent)
 {
   // Return rho per centrality.
 
-  Double_t rho = -1;
+  Double_t rho = 0;
   if (fRhoFunction)
     rho = fRhoFunction->Eval(cent);
   return rho;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskRhoBase::GetScaleFactor(Double_t cent)
+{
+  // Get scale factor.
+
+  Double_t scale = 1;
+  if (fScaleFunction)
+    scale = fScaleFunction->Eval(cent);
+  return scale;
 }

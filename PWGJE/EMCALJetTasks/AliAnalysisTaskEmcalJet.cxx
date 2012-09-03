@@ -29,18 +29,22 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   AliAnalysisTaskEmcal("AliAnalysisTaskEmcalJet"),
   fJetRadius(0.4),
   fJetsName(),
-  fPtBiasJetTrack(5),
-  fPtBiasJetClus(5),
+  fRhoName(),
+  fPtBiasJetTrack(0),
+  fPtBiasJetClus(0),
   fJetPtCut(1),
-  fJetAreaCut(-1),
-  fPercAreaCut(0.8),
-  fMinEta(-0.9),
-  fMaxEta(0.9),
-  fMinPhi(-10),
-  fMaxPhi(10),
+  fJetAreaCut(0.4),
+  fPercAreaCut(-1),
+  fAreaEmcCut(0),
+  fJetMinEta(-0.9),
+  fJetMaxEta(0.9),
+  fJetMinPhi(-10),
+  fJetMaxPhi(10),
   fMaxClusterPt(100),
   fMaxTrackPt(100),
-  fJets(0)
+  fJets(0),
+  fRho(0),
+  fRhoVal(0)
 {
   // Default constructor.
 }
@@ -50,18 +54,22 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   AliAnalysisTaskEmcal(name, histo),
   fJetRadius(0.4),
   fJetsName(),
-  fPtBiasJetTrack(5),
-  fPtBiasJetClus(5),
+  fRhoName(),
+  fPtBiasJetTrack(0),
+  fPtBiasJetClus(0),
   fJetPtCut(1),
-  fJetAreaCut(-1),
-  fPercAreaCut(0.8),
-  fMinEta(-0.9),
-  fMaxEta(0.9),
-  fMinPhi(-10),
-  fMaxPhi(10),
+  fJetAreaCut(0.4),
+  fPercAreaCut(-1),
+  fAreaEmcCut(0),
+  fJetMinEta(-0.9),
+  fJetMaxEta(0.9),
+  fJetMinPhi(-10),
+  fJetMaxPhi(10),
   fMaxClusterPt(100),
   fMaxTrackPt(100),
-  fJets(0)
+  fJets(0),
+  fRho(0),
+  fRhoVal(0)
 {
   // Standard constructor.
 }
@@ -77,14 +85,14 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptBiasJet(AliEmcalJet *jet) const
 { 
   // Accept jet with a bias.
 
-  if (jet->MaxTrackPt() < fPtBiasJetTrack && (fAnaType == kTPC || jet->MaxClusterPt() < fPtBiasJetClus))
+  if (jet->MaxTrackPt() < fPtBiasJetTrack && jet->MaxClusterPt() < fPtBiasJetClus)
     return kFALSE;
   else
     return kTRUE;
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Bool_t bias, Bool_t upCut) const
+Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet) const
 {   
   // Return true if jet is accepted.
 
@@ -92,12 +100,14 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Bool_t bias, Bool_t 
     return kFALSE;
   if (jet->Area() <= fJetAreaCut)
     return kFALSE;
-  if (bias && !AcceptBiasJet(jet))
+  if (jet->AreaEmc()<fAreaEmcCut)
     return kFALSE;
-  if (upCut && (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt))
+  if (!AcceptBiasJet(jet))
+    return kFALSE;
+  if (jet->MaxTrackPt() > fMaxTrackPt || jet->MaxClusterPt() > fMaxClusterPt)
     return kFALSE;
 
-  return (Bool_t)(jet->Eta() > fMinEta && jet->Eta() < fMaxEta && jet->Phi() > fMinPhi && jet->Phi() < fMaxPhi);
+  return (Bool_t)(jet->Eta() > fJetMinEta && jet->Eta() < fJetMaxEta && jet->Phi() > fJetMinPhi && jet->Phi() < fJetMaxPhi);
 }
 
 //________________________________________________________________________
@@ -122,6 +132,8 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
 {
   // Init the analysis.
 
+  AliAnalysisTaskEmcal::ExecOnce();
+
   if (fPercAreaCut >= 0) {
     if (fJetAreaCut >= 0)
       AliInfo(Form("%s: jet area cut will be calculated as a percentage of the average area, given value will be overwritten", GetName()));
@@ -129,28 +141,125 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
   }
 
   if (fAnaType == kTPC) {
-    SetEtaLimits(-0.9 + fJetRadius, 0.9 - fJetRadius);
-    SetPhiLimits(-10, 10);
-  } else if (fAnaType == kEMCAL || fAnaType == kTPCSmall || fAnaType == kEMCALOnly) {
-    AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
-    if (geom) {
-      SetEtaLimits(geom->GetArm1EtaMin() + fJetRadius, geom->GetArm1EtaMax() - fJetRadius);
-      SetPhiLimits(geom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, geom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
-    }
-    else {
-      AliWarning(Form("%s: Can not create geometry", GetName()));
-    }
-  } else {
-    AliWarning(Form("%s: Analysis type not recognized! Assuming kTPC!", GetName()));
-    SetAnaType(kTPC);
-    ExecOnce();
-    return;
+    SetJetEtaLimits(-0.5, 0.5);
+    SetJetPhiLimits(-10, 10);
+    SetTrackEtaLimits(-0.5 - fJetRadius, 0.5 + fJetRadius);
+    SetTrackPhiLimits(-10, 10);
+  } 
+  else if (fAnaType == kEMCAL && fGeom) {
+    SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
+    SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
+    SetTrackEtaLimits(fGeom->GetArm1EtaMin(), fGeom->GetArm1EtaMax());
+    SetTrackPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad(), fGeom->GetArm1PhiMax() * TMath::DegToRad());
   }
 
-  if (fAnaType == kTPCSmall)
-    fAnaType = kTPC;
+  if (!fRhoName.IsNull() && !fRho) {
+    fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
+    if (!fRho) {
+      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
+      fInitialized = kFALSE;
+      return;
+    }
+  }
 
-  AliAnalysisTaskEmcal::ExecOnce();
+  if (!fJetsName.IsNull() && !fJets) {
+    fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
+    if (!fJets) {
+      AliError(Form("%s: Could not retrieve jets %s!", GetName(), fJetsName.Data()));
+      fInitialized = kFALSE;
+      return;
+    }
+    else if (!fJets->GetClass()->GetBaseClass("AliEmcalJet")) {
+      AliError(Form("%s: Collection %s does not contain AliEmcalJet objects!", GetName(), fJetsName.Data())); 
+      fJets = 0;
+      fInitialized = kFALSE;
+      return;
+    }
+  }
+}
+
+//________________________________________________________________________
+Int_t* AliAnalysisTaskEmcalJet::GetSortedArray(TClonesArray *array) const
+{
+  // Get the leading jets.
+
+  static Float_t pt[9999];
+  static Int_t indexes[9999];
+
+  if (!array)
+    return 0;
+
+  const Int_t n = array->GetEntriesFast();
+
+  if (fJets->GetClass()->GetBaseClass("AliEmcalJet")) {
+
+    for (Int_t i = 0; i < n; i++) {
+
+      pt[i] = -FLT_MAX;
+
+      AliEmcalJet* jet = static_cast<AliEmcalJet*>(array->At(i));
+      
+      if (!jet) {
+	AliError(Form("Could not receive jet %d", i));
+	continue;
+      }
+      
+      if (!AcceptJet(jet))
+	continue;
+      
+      pt[i] = jet->Pt() - fRhoVal * jet->Area();
+    }
+  }
+
+  else if (fJets->GetClass()->GetBaseClass("AliVTrack")) {
+
+    for (Int_t i = 0; i < n; i++) {
+
+      pt[i] = -FLT_MAX;
+
+      AliVTrack* track = static_cast<AliVTrack*>(array->At(i));
+      
+      if (!track) {
+	AliError(Form("Could not receive track %d", i));
+	continue;
+      }  
+      
+      if (!AcceptTrack(track))
+	continue;
+      
+      pt[i] = track->Pt();
+    }
+  }
+
+  else if (fJets->GetClass()->GetBaseClass("AliVCluster")) {
+
+    for (Int_t i = 0; i < n; i++) {
+
+      pt[i] = -FLT_MAX;
+
+      AliVCluster* cluster = static_cast<AliVCluster*>(array->At(i));
+      
+      if (!cluster) {
+	AliError(Form("Could not receive cluster %d", i));
+	continue;
+      }  
+      
+      if (!AcceptCluster(cluster))
+	continue;
+
+      TLorentzVector nPart;
+      cluster->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
+      
+      pt[i] = nPart.Pt();
+    }
+  }
+
+  TMath::Sort(n, pt, indexes);
+
+  if (pt[indexes[0]] == -FLT_MAX) 
+    return 0;
+
+  return indexes;
 }
 
 //________________________________________________________________________
@@ -191,18 +300,8 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
   if (!AliAnalysisTaskEmcal::RetrieveEventObjects())
     return kFALSE;
 
-  if (!fJetsName.IsNull() && !fJets) {
-    fJets = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetsName));
-    if (!fJets) {
-      AliError(Form("%s: Could not retrieve jets %s!", GetName(), fJetsName.Data()));
-      return kFALSE;
-    }
-    else if (!fJets->GetClass()->GetBaseClass("AliEmcalJet")) {
-      AliError(Form("%s: Collection %s does not contain AliEmcalJet objects!", GetName(), fJetsName.Data())); 
-      fJets = 0;
-      return kFALSE;
-    }
-  }
+  if (fRho)
+    fRhoVal = fRho->GetVal();
 
   return kTRUE;
 }

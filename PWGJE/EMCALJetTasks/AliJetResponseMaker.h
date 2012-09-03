@@ -29,7 +29,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
 
  protected:
   Bool_t                      IsEventSelected();
-  Bool_t                      AcceptJet(AliEmcalJet* jet, Bool_t /*bias*/ = kFALSE, Bool_t /*upCut*/ = kFALSE)   const;
+  Bool_t                      AcceptJet(AliEmcalJet* jet)   const;
   void                        ExecOnce();
   void                        DoJetLoop(TClonesArray *jets1, TClonesArray *jets2, Bool_t mc);
   Bool_t                      FillHistograms();
@@ -56,7 +56,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TClonesArray               *fMCTracks;                  //!MC particles
   TClonesArray               *fMCJets;                    //!MC jets
   // General histograms
-  TH1F                       *fHistZVertex;               //!Z vertex position
   TH1F                       *fHistNTrials;               //!total number of trials per pt hard bin
   TH1F                       *fHistEvents;                //!total number of events per pt hard bin
   TH1F                       *fHistEventWeight[11];       //!event weight
@@ -86,6 +85,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 7) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 8) // Jet response matrix producing task
 };
 #endif
