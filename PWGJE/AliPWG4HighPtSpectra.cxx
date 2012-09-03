@@ -71,6 +71,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fMC(0x0),
   fStack(0x0),
   fVtx(0x0),
+  fTriggerMask(AliVEvent::kMB),
   fIsPbPb(0),
   fCentClass(10),
   fTrackType(0),
@@ -104,6 +105,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fMC(0x0),
   fStack(0x0),
   fVtx(0x0),
+  fTriggerMask(AliVEvent::kMB),
   fIsPbPb(0),
   fCentClass(10),
   fTrackType(0),
@@ -203,7 +205,7 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent() {
 
   //Trigger
   UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(!(isSelected&AliVEvent::kMB)) { //Select collison candidates
+  if(fTriggerMask != AliVEvent::kAny && !(isSelected&fTriggerMask)) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
     fNEventReject->Fill("Trigger",1);
     selectEvent = kFALSE;
@@ -307,7 +309,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   fNEventAll->Fill(0.);
 
   if(!SelectEvent()) {
-    fNEventReject->Fill("NTracks<2",1);
     // Post output data
     PostData(0,fHistList);
     PostData(1,fCFManagerPos->GetParticleContainer());
@@ -415,6 +416,11 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	//Only fill the MC containers if MC information is available
 	if(fMC) {
 	  Int_t label = TMath::Abs(track->GetLabel());
+	  if(label>fStack->GetNtrack()) {
+	    if(fTrackType==1 || fTrackType==2 || fTrackType==7)
+	      delete track;
+	    continue;
+	  }
 	  TParticle *particle = fStack->Particle(label) ;
 	  if(!particle) {
 	    if(fTrackType==1 || fTrackType==2 || fTrackType==7)

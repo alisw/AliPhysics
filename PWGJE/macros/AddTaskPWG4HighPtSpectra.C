@@ -9,36 +9,37 @@ const Float_t etamax = 0.9;
 const Int_t   mintrackrefsTPC = 0;
 const Int_t   mintrackrefsITS = 0;
 
-void AddTaskPWG4HighPtSpectra(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0)
+void AddTaskPWG4HighPtSpectra(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0, UInt_t triggerMask = AliVEvent::kMB)
 {
   int cent = 10;
 
-  AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
-  AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
-  //  AliPWG4HighPtSpectra *taskSpectra02cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
-  //  AliPWG4HighPtSpectra *taskSpectra10cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
-  //  AliPWG4HighPtSpectra *taskSpectra20cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
-  AliPWG4HighPtSpectra *taskSpectra70cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0);
-  AliPWG4HighPtSpectra *taskSpectra71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1);
-  AliPWG4HighPtSpectra *taskSpectra72cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2);
+  AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,triggerMask);
+  AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,triggerMask);
+  //  AliPWG4HighPtSpectra *taskSpectra02cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2,triggerMask);
+  //  AliPWG4HighPtSpectra *taskSpectra10cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0,triggerMask);
+  //  AliPWG4HighPtSpectra *taskSpectra20cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0,triggerMask);
+  AliPWG4HighPtSpectra *taskSpectra70cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0,triggerMask);
+  AliPWG4HighPtSpectra *taskSpectra71cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1,triggerMask);
+  AliPWG4HighPtSpectra *taskSpectra72cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2,triggerMask);
 
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
-      AliPWG4HighPtSpectra *taskSpectra00 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
-      AliPWG4HighPtSpectra *taskSpectra01 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
-      //      AliPWG4HighPtSpectra *taskSpectra02 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
-      //      AliPWG4HighPtSpectra *taskSpectra10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
-      //      AliPWG4HighPtSpectra *taskSpectra20 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
-      AliPWG4HighPtSpectra *taskSpectra70 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0);
-      AliPWG4HighPtSpectra *taskSpectra71 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1);
-      AliPWG4HighPtSpectra *taskSpectra72 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2);
+      AliPWG4HighPtSpectra *taskSpectra00 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0,triggerMask);
+      AliPWG4HighPtSpectra *taskSpectra01 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1,triggerMask);
+      //      AliPWG4HighPtSpectra *taskSpectra02 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2,triggerMask);
+      //      AliPWG4HighPtSpectra *taskSpectra10 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0,triggerMask);
+      //      AliPWG4HighPtSpectra *taskSpectra20 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0,triggerMask);
+      AliPWG4HighPtSpectra *taskSpectra70 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0,triggerMask);
+      AliPWG4HighPtSpectra *taskSpectra71 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1,triggerMask);
+      AliPWG4HighPtSpectra *taskSpectra72 = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2,triggerMask);
     }
   }
 
 }
 
 
-AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool_t isPbPb=kTRUE,Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0)
+AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool_t isPbPb=kTRUE,Int_t centClass = 0, 
+						     Int_t trackType = 0, Int_t cuts = 0, UInt_t triggerMask = AliVEvent::kMB)
 {
 
   /*
@@ -177,27 +178,48 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   }
   if(trackType==0 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis
-    trackCuts = CreateTrackCutsPWGJE(10001006);
+    if (!strcmp(prodType,"LHC12a15e"))
+      trackCuts = CreateTrackCutsPWGJE(10001007);
+    else
+      trackCuts = CreateTrackCutsPWGJE(10001006);
   }
   if(trackType==0 && cuts==2) {
     //Cuts global tracks with ITSrefit requirement but without SPD
-    trackCuts = CreateTrackCutsPWGJE(10011006);
+    if (!strcmp(prodType,"LHC12a15e"))
+      trackCuts = CreateTrackCutsPWGJE(10011007);
+    else
+      trackCuts = CreateTrackCutsPWGJE(10011006);
   }
   if(trackType==7 && cuts==0) {
     // no requirements on SPD and ITSrefit failed
-    trackCuts = CreateTrackCutsPWGJE(10041006);   //no ITSrefit requirement
-    trackCutsReject = CreateTrackCutsPWGJE(1006); //ITSrefit requirement
+    if (!strcmp(prodType,"LHC12a15e")){
+      trackCuts = CreateTrackCutsPWGJE(10041007);   //no ITSrefit requirement
+      trackCutsReject = CreateTrackCutsPWGJE(1007); //ITSrefit requirement
+    }
+    else {
+      trackCuts = CreateTrackCutsPWGJE(10041006);   //no ITSrefit requirement
+      trackCutsReject = CreateTrackCutsPWGJE(1006); //ITSrefit requirement
+    }
     trackCutsReject->SetEtaRange(etamin,etamax);
     trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement but without SPD
-    trackCuts = CreateTrackCutsPWGJE(10011006);
+    if (!strcmp(prodType,"LHC12a15e"))
+      trackCuts = CreateTrackCutsPWGJE(10011007);
+    else
+      trackCuts = CreateTrackCutsPWGJE(10011006);
   }
   if(trackType==7 && cuts==2) {
     // no requirements on SPD and ITSrefit failed
-    trackCuts = CreateTrackCutsPWGJE(10041006);       //no ITSrefit requirement filter 256
-    trackCutsReject = CreateTrackCutsPWGJE(10001006); //ITSrefit requirement filter 16
+    if (!strcmp(prodType,"LHC12a15e")){
+      trackCuts = CreateTrackCutsPWGJE(10041007);       //no ITSrefit requirement filter 256
+      trackCutsReject = CreateTrackCutsPWGJE(10001007); //ITSrefit requirement filter 16
+    }
+    else {
+      trackCuts = CreateTrackCutsPWGJE(10041006);       //no ITSrefit requirement filter 256
+      trackCutsReject = CreateTrackCutsPWGJE(10001006); //ITSrefit requirement filter 16
+    }
     trackCutsReject->SetEtaRange(etamin,etamax);
     trackCutsReject->SetPtRange(0.15, 1e10);
   }
@@ -256,6 +278,7 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   taskPWG4HighPtSpectra->SetCutsReject(trackCutsReject);
   taskPWG4HighPtSpectra->SetCFManagerPos(manPos); //here is set the CF manager +
   taskPWG4HighPtSpectra->SetCFManagerNeg(manNeg); //here is set the CF manager -
+  taskPWG4HighPtSpectra->SetTriggerMask(triggerMask);
 
   if(isPbPb) {
     taskPWG4HighPtSpectra->SetIsPbPb(kTRUE);

@@ -70,6 +70,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   //Setters
   void SetIsPbPb(Bool_t cs)                {fIsPbPb = cs;}
   void SetCentralityClass(int cent)        {fCentClass=cent;}
+  void SetTriggerMask(UInt_t t)             {fTriggerMask=t;}
  
   // CORRECTION FRAMEWORK RELATED FUNCTIONS
   void     SetCFManagerPos(const AliCFManager* io1) {fCFManagerPos = io1;}   // global correction manager 
@@ -105,8 +106,9 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
 
   const AliESDVertex   *fVtx;     //! vertex object
 
-  Bool_t   fIsPbPb;               //  kTRUE if PbPb
-  Int_t fCentClass;               // Select only events from predefined centrality class
+  UInt_t      fTriggerMask;          // Trigger mask to select events 
+  Bool_t      fIsPbPb;               // kTRUE if PbPb
+  Int_t       fCentClass;            // Select only events from predefined centrality class
 
   Int_t   fTrackType;     // Type of track to be used in analysis
   //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPTSpectra.C. They correspond with different steps in container.
