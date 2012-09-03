@@ -86,6 +86,10 @@ class AliAnaChargedJetResponseMaker {
 
   virtual TH2* MultiplityResponseMatrices(TH2 *h2RMDeltaPt, TH2 *h2RMDetector);
 
+  virtual TH2* GetTransposeResponsMatrix(TH2 *h2RM);
+
+  virtual TH2* NormalizeResponsMatrixYaxisWithPrior(TH2 *h2RM, TH1 *hPrior);
+
  protected:
   Bool_t      fDebug;
   ResolutionType fResolutionType;

@@ -9,6 +9,7 @@
 #include "TCanvas.h"
 #include "TF1.h"
 #include "THnSparse.h"
+#include "TArrayD.h"
 
 #define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 
@@ -823,6 +824,55 @@ TH2* AliAnaChargedJetResponseMaker::MultiplityResponseMatrices(TH2 *h2RMDeltaPt,
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
+TH2* AliAnaChargedJetResponseMaker::GetTransposeResponsMatrix(TH2 *h2RM) {
+  //
+  // Transpose response matrix
+  //
+
+  //Initialize transposed response matrix h2RMTranspose
+  TArrayD *arrayX = (TArrayD*)h2RM->GetXaxis()->GetXbins();
+  for(int i=0; i<arrayX->GetSize(); i++) cout << "i: " << arrayX->At(i) << endl;
+  Double_t *xbinsArray = arrayX->GetArray();
+
+  TArrayD *arrayY = (TArrayD*)h2RM->GetYaxis()->GetXbins();
+  for(int i=0; i<arrayY->GetSize(); i++) cout << "i: " << arrayY->At(i) << endl;
+  Double_t *ybinsArray = arrayY->GetArray();
+
+  TH2D *h2RMTranspose = new TH2D("h2RMTranspose","h2RMTranspose",h2RM->GetNbinsY(),ybinsArray,h2RM->GetNbinsX(),xbinsArray);
+
+  //Fill tranposed response matrix
+  for (Int_t ibin = 1; ibin <= h2RMTranspose->GetNbinsX(); ibin++) {
+    for (Int_t jbin = 1; jbin <= h2RMTranspose->GetNbinsY(); jbin++) {
+      h2RMTranspose->SetBinContent(ibin,jbin, h2RM->GetBinContent(jbin,ibin));
+    }
+  }
+
+
+  return h2RMTranspose;
+
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+TH2* AliAnaChargedJetResponseMaker::NormalizeResponsMatrixYaxisWithPrior(TH2 *h2RM, TH1 *hPrior) {
+  //
+  // Normalize such that the Y projection is the prior
+  //
+
+  TH1D *hProjRespY = (TH1D*)h2RM->ProjectionY("hProjRespY");
+  double intPrior = hPrior->Integral();//"width");
+  for (Int_t jbin = 1; jbin <= h2RM->GetNbinsY(); jbin++) {
+    //    double corr = hPrior->GetBinContent(jbin)/hProjRespY->GetBinContent(jbin);
+      for (Int_t ibin = 1; ibin <= h2RM->GetNbinsX(); ibin++) {
+	double content = h2RM->GetBinContent(ibin,jbin);
+	//	h2RM->SetBinContent(ibin,jbin,content*corr);
+	h2RM->SetBinContent(ibin,jbin,hPrior->GetBinContent(jbin)/hPrior->GetBinWidth(jbin)/intPrior*content);
+    }
+  }
+
+  return h2RM;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
 TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *hResponse,TH1 *hEfficiency,Bool_t bDrawSlices) {
 
   //
@@ -831,8 +881,12 @@ TH1D* AliAnaChargedJetResponseMaker::MultiplyResponseGenerated(TH1 *hGen, TH2 *h
   //
 
   if(!hEfficiency) {
-    printf("Efficiency must be given. In case efficiency is 1 use SetFlatEfficiency(1.) before calling function. Aborting!");
-    return 0;
+    //    printf("Efficiency must be given. In case efficiency is 1 use SetFlatEfficiency(1.) before calling function. Aborting!");
+    //    return 0;
+    printf("Setting efficiency to 1 \n");
+    hEfficiency = (TH1D*)hGen->Clone("hEfficiency");
+    hEfficiency->Reset();
+    for(int i=1; i<=hEfficiency->GetNbinsX(); i++) hEfficiency->SetBinContent(i,1.);
   }
 
   //For response
