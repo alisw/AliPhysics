@@ -44,6 +44,7 @@
 #include "AliESDTrdTracklet.h"
 #include "AliESDTrdTrigger.h"
 #include "AliTRDtrackletWord.h"
+#include "AliTRDtrackletMCM.h"
 
 #define SETFLG(n,f) ((n) |= f)
 #define CLRFLG(n,f) ((n) &= ~f)
@@ -314,8 +315,14 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
   TList trklList;
   AliTRDrawStream::SortTracklets(fgTracklets, trklList, trackletIndex);
   TIter trackletIter(&trklList);
-  while (AliESDTrdTracklet* tracklet = (AliESDTrdTracklet*) trackletIter()) {
-    esd->AddTrdTracklet(tracklet);
+  while (AliTRDtrackletBase* tracklet = (AliTRDtrackletBase*) trackletIter()) {
+    Int_t label = -2; // mark raw tracklets with label -2
+    if (AliTRDtrackletMCM *trklMCM = dynamic_cast<AliTRDtrackletMCM*> (tracklet))
+      label = trklMCM->GetLabel();
+
+    AliESDTrdTracklet *esdTracklet = new AliESDTrdTracklet(tracklet->GetTrackletWord(), tracklet->GetHCId(), label);
+
+    esd->AddTrdTracklet(esdTracklet);
   }
 
   // ----- filling GTU tracks -----
@@ -325,39 +332,25 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
     for (Int_t iTrack = 0; iTrack < fgTracks->GetEntriesFast(); iTrack++) {
       AliESDTrdTrack *trdTrack = (AliESDTrdTrack*) ((*fgTracks)[iTrack]);
 
-      UInt_t mask  = trdTrack->GetLayerMask();
       UInt_t stack = trdTrack->GetStack();
 
-      for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
-	if (mask & (1 << iLayer)) {
+      Int_t refIndex[6];
+      AliTRDrawStream::AssignTracklets(trdTrack, trackletIndex, refIndex);
 
-	  Int_t det = trdTrack->GetSector()*30 + stack*6 + iLayer;
-	  Int_t idx = trdTrack->GetTrackletIndex(iLayer);
+      for (Int_t iLayer = 0; iLayer < 6; ++iLayer) {
+	Int_t det = trdTrack->GetSector()*30 + stack*6 + iLayer;
 
-	  if ((det < 0) || (det > 539)) {
-	    AliError(Form("Invalid detector no. from track: %i", 2*det));
-	    continue;
-	  }
-	  if (trackletIndex[2*det] >= 0) {
-	    if ((trackletIndex[2*det] + idx > -1) &&
-		(trackletIndex[2*det] + idx < esd->GetNumberOfTrdTracklets())) {
-	      AliESDTrdTracklet *trkl = esd->GetTrdTracklet(trackletIndex[2*det] + idx);
-	      if (trkl) {
-		AliDebug(5, Form("adding tracklet with index %i: 0x%08x",
-				 idx, trkl->GetTrackletWord()));
-		if (trkl->GetDetector() != det)
-		  AliError(Form("inconsistent assignment of tracklet 0x%08x in det %i to track in %i",
-				trkl->GetTrackletWord(), trkl->GetDetector(), det));
-		trdTrack->AddTrackletReference(trkl, iLayer);
-	      }
-	    } else {
-	      AliError(Form("Requested tracklet index %i out of range", idx));
-	    }
-	  } else {
-	    AliError(Form("Non-existing tracklets requested in det %i", det));
-	  }
+	AliESDTrdTracklet *trkl = refIndex[iLayer] > -1 ? esd->GetTrdTracklet(refIndex[iLayer]) : 0x0;
+	if (trkl) {
+	  AliDebug(5, Form("adding tracklet with index %i: 0x%08x",
+			   refIndex[iLayer], trkl->GetTrackletWord()));
+	  if (trkl->GetDetector() != det)
+	    AliError(Form("inconsistent assignment of tracklet 0x%08x in det %i to track in %i",
+			  trkl->GetTrackletWord(), trkl->GetDetector(), det));
+	  trdTrack->AddTrackletReference(trkl, iLayer);
 	}
       }
+
       // only add the track when it's complete (including tracklet references)
       esd->AddTrdTrack(trdTrack);
     }

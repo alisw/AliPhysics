@@ -26,6 +26,7 @@ class AliTRDdigitsParam;
 class AliTRDarrayADC;
 class AliTRDSignalIndex;
 class AliTRDtrackletContainer;
+class AliESDTrdTrack;
 
 class AliTRDrawStream : public TObject
 {
@@ -170,7 +171,7 @@ class AliTRDrawStream : public TObject
   Int_t GetNMCMs(Int_t sector)      const { return fStats.fStatsSector[sector].fNMCMs; }
   Int_t GetNChannels(Int_t sector)  const { return fStats.fStatsSector[sector].fNChannels; }
 
-  ULong64_t GetTrkFlags(Int_t sector, Int_t stack) const { return fCurrTrkFlags[sector*fgkNstacks + stack]; }
+  ULong64_t GetTrkFlags(Int_t sector, Int_t stack) const { return (fCurrTrgFlags[sector] & (1 << (27 + stack))) ? fCurrTrkFlags[sector*fgkNstacks + stack] : 0; }
   UInt_t GetTriggerFlags(Int_t sector) const { return fCurrTrgFlags[sector]; }
 
   // raw data dumping
@@ -184,6 +185,7 @@ class AliTRDrawStream : public TObject
   TString DumpAdcMask(TString title, UInt_t word);
 
   static void SortTracklets(TClonesArray *trklArray, TList &sortedTracklets, Int_t *indices);
+  static void AssignTracklets(AliESDTrdTrack *trdTrack, Int_t *trackletIndex, Int_t refIndex[6]);
 
   // temporary: allow to change expected readout order
   static void SetMCMReadoutPos(Int_t mcm, Int_t pos) { if (mcm > -1 && mcm < 16) fgMcmOrder[mcm] = pos; }

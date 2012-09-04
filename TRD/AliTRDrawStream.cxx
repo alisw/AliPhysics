@@ -2304,19 +2304,48 @@ void AliTRDrawStream::SortTracklets(TClonesArray *trklArray, TList &sortedTrackl
 	}
       }
       if (trklNext) {
-	Int_t label = -2; // mark raw tracklets with label -2
- 	if (AliTRDtrackletMCM *trklMCM = dynamic_cast<AliTRDtrackletMCM*> (trklNext))
- 	  label = trklMCM->GetLabel();
-	AliESDTrdTracklet *esdTracklet = new AliESDTrdTracklet(trklNext->GetTrackletWord(), trklNext->GetHCId(), label);
-	sortedTracklets.Add(esdTracklet);
+	sortedTracklets.Add(trklNext);
+
       }
     }
 
     // updating tracklet indices as in output
     if (sortedTracklets.GetEntries() != trklIndex) {
-      indices[2*iDet + 0] = indices[2*iDet + 1] = trklIndex;
+      indices[2*iDet + 0] = trklIndex;
+      indices[2*iDet + 1] = sortedTracklets.GetEntries();
     } else {
       indices[2*iDet + 0] = indices[2*iDet + 1] = -1;
+    }
+  }
+}
+
+void AliTRDrawStream::AssignTracklets(AliESDTrdTrack *trdTrack, Int_t *trackletIndex, Int_t refIndex[6])
+{
+  UInt_t mask  = trdTrack->GetLayerMask();
+  UInt_t stack = trdTrack->GetStack();
+
+  for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
+    refIndex[iLayer] = -1;
+
+    if (mask & (1 << iLayer)) {
+
+      Int_t det = trdTrack->GetSector()*30 + stack*6 + iLayer;
+      Int_t idx = trdTrack->GetTrackletIndex(iLayer);
+
+      if ((det < 0) || (det > 539)) {
+	AliErrorClass(Form("Invalid detector no. from track: %i", 2*det));
+	continue;
+      }
+      if (trackletIndex[2*det] >= 0) {
+	if ((trackletIndex[2*det] + idx > -1) &&
+	    (trackletIndex[2*det] + idx < trackletIndex[2*det+1])) {
+	  refIndex[iLayer] = trackletIndex[2*det] + idx;
+	} else {
+	  AliErrorClass(Form("Requested tracklet index %i out of range", idx));
+	}
+      } else {
+	AliErrorClass(Form("Non-existing tracklets requested in det %i", det));
+      }
     }
   }
 }
