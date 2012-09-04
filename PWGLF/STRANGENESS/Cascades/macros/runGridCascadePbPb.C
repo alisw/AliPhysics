@@ -1,7 +1,7 @@
 /// **** to run the macro: ***********
 // alien-token-init username
 // source /tmp/gclient_env_XXX
-// root -l runGrid.C
+// root -l runGridCascadePbPb.C
 
 class AliAnalysisGrid;
 
@@ -14,16 +14,16 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
                          Float_t  vtxlim              = 10.,
                          Int_t minnTPCcls             = 70, 
                          Bool_t   kextrasel           = kFALSE,
-                         Bool_t   kacccut              = kFALSE,
+                         Bool_t   kacccut             = kFALSE,
                          Bool_t   krelaunchvertexers  = kFALSE,
                          Float_t  minptondaughtertracks = 0.,
-                         Float_t  etacutondaughtertracks= 9999999.,
+                         Float_t  etacutondaughtertracks= .5,//9999999.,
                          TString  anatype             = "AOD",//"ESD",
-                         TString  gridoutputdir       = "LHC10h_AOD086",
+                         TString  gridoutputdir       = "LHC10h_AOD086test",
                          //the following are used for the Cascade task only
                          TString  datadir             = "/alice/data/2010/LHC10h",///alice/data/2011/LHC11h_2",
                          TString  datapattern         = "ESDs/pass2/AOD086/*/AliAOD.root", // "ESDs/pass2/*/*ESDs.root" // for data
-                         const char *plugin_mode      ="full") {
+                         const char *plugin_mode      = "test") {
 
   // Load common libraries
   gSystem->Load("libCore.so");
@@ -92,13 +92,13 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
   AliAnalysisTaskPIDResponse *pidTask = AddTaskPIDResponse(useMC);
 
   if (runperformancetask) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckPerformanceCascadePbPb.C");
+    gROOT->LoadMacro("./AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");//$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx++g");
+    gROOT->LoadMacro("./AddTaskCheckPerformanceCascadePbPb.C");//$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckPerformanceCascadePbPb.C");
     AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,kacccut ,krelaunchvertexers,minptondaughtertracks,etacutondaughtertracks);
 
   } else {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx++g");
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckCascadePbPb.C");
+    gROOT->LoadMacro("./AliAnalysisTaskCheckCascadePbPb.cxx++g");//$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx++g");
+    gROOT->LoadMacro("./AddTaskCheckCascadePbPb.C");//$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckCascadePbPb.C");
     AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim, kextrasel ,krelaunchvertexers,minptondaughtertracks,etacutondaughtertracks);
 
   }
@@ -136,8 +136,8 @@ AliAnalysisGrid* CreateAlienHandler(const char *plugin_mode, Bool_t runperforman
 
   //__________________________________________________________________________
   // On GRID - current
-  plugin->SetROOTVersion("v5-33-02b");
-  plugin->SetAliROOTVersion("v5-03-32-AN"); 
+  plugin->SetROOTVersion("v5-34-01-1");
+  plugin->SetAliROOTVersion("v5-03-50-AN"); 
 
   //__________________________________________________________________________
   // Declare input data to be processed.
