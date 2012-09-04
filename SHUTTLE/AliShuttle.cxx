@@ -1083,19 +1083,8 @@ Bool_t AliShuttle::ContinueProcessing()
 		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(fCurrentDetector));
 	if (!aPreprocessor)
 	{
-	    Log("SHUTTLE", Form("ContinueProcessing - %s: no preprocessor registered", fCurrentDetector.Data()));
-	    if(fCurrentDetector==TString("HLT")){
-		Log("SHUTTLE", "ContinueProcessing: Fake processing HLT, to avoid pending runs! => temporary, till an HLT preprocessor is made available.");
-		UpdateShuttleLogbook("HLT","DONE");
-		Log(fCurrentDetector, "ContinueProcessing - skipping HLT preprocessor.");
-
-		AliShuttleStatus* status = ReadShuttleStatus();
-		if (!status) {
-		    status = new AliShuttleStatus(AliShuttleStatus::kDone);
-		    WriteShuttleStatus(status);
-		}
-	    }
-	    return kFALSE;
+	        Log("SHUTTLE", Form("ContinueProcessing - %s: no preprocessor registered", fCurrentDetector.Data()));
+	        return kFALSE;
 	}
 
 	AliShuttleLogbookEntry::Status entryStatus =
