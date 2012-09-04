@@ -49,6 +49,7 @@ fGridUrl(gridUrl),
 fUser(user),
 fDBFolder(dbFolder),
 fSE(se),
+fMirrorSEs(""),
 fCacheFolder(cacheFolder),
 fOperateDisconnected(operateDisconnected),
 fCacheSize(cacheSize),
@@ -732,9 +733,11 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 
 	TString fullFilename = Form("/alien%s", filename.Data());
 	TString seMirrors(mirrors);
+	if(seMirrors.IsNull() || seMirrors.IsWhitespace()) seMirrors=GetMirrorSEs();
 	// specify SE to filename
-	// if a list of SEs was passed, set the first as SE for opening the file. The others will be used in cascade in case of
-	// failure in opening the file. The remaining will be used to create replicas.
+	// if a list of SEs was passed to this method or set via SetMirrorSEs, set the first as SE for opening the file.
+	// The other SEs will be used in cascade in case of failure in opening the file.
+	// The remaining SEs will be used to create replicas.
 	TObjArray *arraySEs = seMirrors.Tokenize(',');
 	Int_t nSEs = arraySEs->GetEntries();
 	Int_t remainingSEs = 1;
@@ -756,7 +759,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 		    AliError(Form("\"%s\" is an invalid storage element identifier.",targetSE.Data()));
 		    continue;
 		}
-		fullFilename.Remove(fullFilename.Last('?'));
+		if(fullFilename.Contains('?')) fullFilename.Remove(fullFilename.Last('?'));
 		fullFilename += Form("?se=%s",targetSE.Data());
 	    }
 	    Int_t remainingAttempts=fNretry;
@@ -832,6 +835,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 
 	return result;
 }
+
 //_____________________________________________________________________________
 Bool_t AliCDBGrid::AddTag(TString& folderToTag, const char* tagname){
 // add "tagname" tag (CDB or CDB_MD) to folder where object will be stored

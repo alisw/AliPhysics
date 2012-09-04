@@ -84,9 +84,12 @@ public:
 	AliCDBId* GetId(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1);
 
-	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData,
+	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData, const char* mirrors="",
 				AliCDBManager::DataType type=AliCDBManager::kPrivate);
 	Bool_t Put(AliCDBEntry* entry, const char* mirrors="", AliCDBManager::DataType type=AliCDBManager::kPrivate);
+
+	virtual void SetMirrorSEs(const char* mirrors);
+	virtual const char* GetMirrorSEs() const;
 
 	virtual Bool_t IsReadOnly() const = 0;
 	virtual Bool_t HasSubVersion() const = 0;
@@ -116,9 +119,9 @@ protected:
 	//void 	SetTreeToFile(AliCDBEntry* entry, TFile* file) const;
 
 	TObjArray fValidFileIds; 	// list of Id's of the files valid for a given run (cached as fRun)
-	Int_t fRun;		// run number, used to manage list of valid files
-	AliCDBPath fPathFilter;	// path filter, used to manage list of valid files
-	Int_t fVersion;		// version, used to manage list of valid files
+	Int_t fRun;		        // run number, used to manage list of valid files
+	AliCDBPath fPathFilter;	        // path filter, used to manage list of valid files
+	Int_t fVersion;		        // version, used to manage list of valid files
 	AliCDBMetaData* fMetaDataFilter; // metadata, used to manage list of valid files
 
 	TList fSelections; 	// list of selection criteria

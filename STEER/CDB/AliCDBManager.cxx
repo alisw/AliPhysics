@@ -297,7 +297,6 @@ AliCDBManager::AliCDBManager():
   fCondParam(0),
   fRefParam(0),
   fRun(-1),
-  fMirrorSEs(""),
   fCache(kTRUE),
   fLock(kFALSE),
   fSnapshotMode(kFALSE),
@@ -1209,7 +1208,7 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBManager::Put(TObject* object, const AliCDBId& id, AliCDBMetaData* metaData, const DataType type){
+Bool_t AliCDBManager::Put(TObject* object, const AliCDBId& id, AliCDBMetaData* metaData, const char* mirrors, const DataType type){
 // store an AliCDBEntry object into the database
 
 	if (object==0x0) {
@@ -1218,7 +1217,7 @@ Bool_t AliCDBManager::Put(TObject* object, const AliCDBId& id, AliCDBMetaData* m
 	} 
 
 	AliCDBEntry anEntry(object, id, metaData);
-	return Put(&anEntry, "", type);
+	return Put(&anEntry, mirrors, type);
 
 }
 
@@ -1282,13 +1281,34 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry, const char* mirrors, DataType type
 	if(!strMirrors.IsNull() && !strMirrors.IsWhitespace())
 	    result = aStorage->Put(entry, mirrors, type);
 	else
-	    result = aStorage->Put(entry, fMirrorSEs, type);
+	    result = aStorage->Put(entry, "", type);
 
 	if(fRun >= 0) QueryCDB();
 
 	return result;
 
 
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::SetMirrorSEs(const char* mirrors)
+{
+// set mirror Storage Elements for the default storage, if it is of type "alien"
+    if(fDefaultStorage->GetType() != "alien"){
+	AliInfo("The default storage is not of type \"alien\". Settings for Storage Elements are not taken into account!");
+	return;
+    }
+    fDefaultStorage->SetMirrorSEs(mirrors);
+}
+
+//_____________________________________________________________________________
+const char* AliCDBManager::GetMirrorSEs() const {
+// get mirror Storage Elements for the default storage, if it is of type "alien"
+    if(fDefaultStorage->GetType() != "alien"){
+	AliInfo("The default storage is not of type \"alien\". Settings for Storage Elements are not taken into account!");
+	return "";
+    }
+    return fDefaultStorage->GetMirrorSEs();
 }
 
 //_____________________________________________________________________________
