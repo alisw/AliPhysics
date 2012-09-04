@@ -22,6 +22,8 @@
 class AliAODEvent;
 class AliPIDResponse;
 class AliAODTrack;
+class AliAODVertex;
+class AliAODv0;
 
 class TH1F;
 class TH2F;
