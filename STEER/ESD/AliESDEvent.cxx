@@ -1488,9 +1488,16 @@ void AliESDEvent::CreateStdContent()
 
 void AliESDEvent::CompleteStdContent() 
 {
-  // create missing standard objects and add them to the TList of objects
-  
-  // add new MUON containers if missing (for backward compatibility)
+  // Create missing standard objects and add them to the TList of objects
+  //
+  // Add cosmic tracks for cases where esd files were created 
+  // before adding them to the std content
+  if (!fESDObjects->FindObject(fgkESDListName[kCosmicTracks])) {
+    TClonesArray* cosmics = new TClonesArray("AliESDCosmicTrack",0);
+    fESDObjects->AddAt(cosmics, kCosmicTracks);
+    fESDObjects->SetOwner(kTRUE);
+  }
+  // Add new MUON containers if missing (for backward compatibility)
   if (!fESDObjects->FindObject(fgkESDListName[kMuonClusters])) {
     TClonesArray* muonClusters = new TClonesArray("AliESDMuonCluster",0);
     muonClusters->SetName(fgkESDListName[kMuonClusters]);
