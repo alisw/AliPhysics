@@ -687,6 +687,7 @@ void AliAnalysisTaskVnV0::UserExec(Option_t *)
     // Main loop
     // Called for each event
     
+
     fgIsPsiComputed = kFALSE;
     fgPsi2v0a=999.;
     fgPsi2v0c=999.;
@@ -840,18 +841,18 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	    }
 	  }
 
+	  EvPlaneMCV2[0] = TMath::ATan2(QyMCv2[0],QxMCv2[0])/2.;
+	  EvPlaneMCV2[1] = TMath::ATan2(QyMCv2[1],QxMCv2[1])/2.;
+	  EvPlaneMCV2[2] = TMath::ATan2(QyMCv2[2],QxMCv2[2])/2.;
 	  if(fV2){
-	    EvPlaneMCV2[0] = TMath::ATan2(QyMCv2[0],QxMCv2[0])/2.;
-	    EvPlaneMCV2[1] = TMath::ATan2(QyMCv2[1],QxMCv2[1])/2.;
-	    EvPlaneMCV2[2] = TMath::ATan2(QyMCv2[2],QxMCv2[2])/2.;
 	    fHResMA2->Fill(Double_t(iC), TMath::Cos(2*(EvPlaneMCV2[2]-EvPlaneMCV2[0])));
 	    fHResMC2->Fill(Double_t(iC), TMath::Cos(2*(EvPlaneMCV2[2]-EvPlaneMCV2[1])));
 	    fHResAC2->Fill(Double_t(iC), TMath::Cos(2*(EvPlaneMCV2[0]-EvPlaneMCV2[1])));
 	  }
+	  EvPlaneMCV3[0] = TMath::ATan2(QyMCv3[0],QxMCv3[0])/3.;
+	  EvPlaneMCV3[1] = TMath::ATan2(QyMCv3[1],QxMCv3[1])/3.;
+	  EvPlaneMCV3[2] = TMath::ATan2(QyMCv3[2],QxMCv3[2])/3.;
 	  if(fV3){
-	    EvPlaneMCV3[0] = TMath::ATan2(QyMCv3[0],QxMCv3[0])/3.;
-	    EvPlaneMCV3[1] = TMath::ATan2(QyMCv3[1],QxMCv3[1])/3.;
-	    EvPlaneMCV3[2] = TMath::ATan2(QyMCv3[2],QxMCv3[2])/3.;
 	    fHResMA3->Fill(Double_t(iC), TMath::Cos(3*(EvPlaneMCV3[2]-EvPlaneMCV3[0])));
 	    fHResMC3->Fill(Double_t(iC), TMath::Cos(3*(EvPlaneMCV3[2]-EvPlaneMCV3[1])));
 	    fHResAC3->Fill(Double_t(iC), TMath::Cos(3*(EvPlaneMCV3[0]-EvPlaneMCV3[1])));
@@ -884,40 +885,44 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	      xMCepCv3[1] = -1;
 	    }
 
-	    fContAllChargesMCA->Fill(0,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
-	    fContAllChargesMCC->Fill(0,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
-	    fContAllChargesMCAv3->Fill(0,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
-	    fContAllChargesMCCv3->Fill(0,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
+	    if(fV2){
+	      fContAllChargesMCA->Fill(0,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
+	      fContAllChargesMCC->Fill(0,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
+	    }
+	    if(fV3){
+	      fContAllChargesMCAv3->Fill(0,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
+	      fContAllChargesMCCv3->Fill(0,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
+	    }
 
 	    if(iS==11){
-	      fContAllChargesMCA->Fill(4,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
-	      fContAllChargesMCC->Fill(4,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
-	      fContAllChargesMCAv3->Fill(4,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
-	      fContAllChargesMCCv3->Fill(4,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
+	      if(fV2) fContAllChargesMCA->Fill(4,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
+	      if(fV2) fContAllChargesMCC->Fill(4,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
+	      if(fV3) fContAllChargesMCAv3->Fill(4,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
+	      if(fV3) fContAllChargesMCCv3->Fill(4,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
 	    }
 	    else if(iS==13){
-	      fContAllChargesMCA->Fill(5,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
-	      fContAllChargesMCC->Fill(5,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
-	      fContAllChargesMCAv3->Fill(5,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
-	      fContAllChargesMCCv3->Fill(5,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
+	      if(fV2) fContAllChargesMCA->Fill(5,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
+	      if(fV2) fContAllChargesMCC->Fill(5,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
+	      if(fV3) fContAllChargesMCAv3->Fill(5,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
+	      if(fV3) fContAllChargesMCCv3->Fill(5,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
 	    }
 	    else if(iS==211){
-	      fContAllChargesMCA->Fill(1,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
-	      fContAllChargesMCC->Fill(1,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
-	      fContAllChargesMCAv3->Fill(1,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
-	      fContAllChargesMCCv3->Fill(1,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
+	      if(fV2) fContAllChargesMCA->Fill(1,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
+	      if(fV2) fContAllChargesMCC->Fill(1,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
+	      if(fV3) fContAllChargesMCAv3->Fill(1,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
+	      if(fV3) fContAllChargesMCCv3->Fill(1,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
 	    }
 	    else if(iS==321){
-	      fContAllChargesMCA->Fill(2,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
-	      fContAllChargesMCC->Fill(2,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
-	      fContAllChargesMCAv3->Fill(2,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
-	      fContAllChargesMCCv3->Fill(2,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
+	      if(fV2) fContAllChargesMCA->Fill(2,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
+	      if(fV2)  fContAllChargesMCC->Fill(2,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
+	      if(fV3) fContAllChargesMCAv3->Fill(2,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
+	      if(fV3) fContAllChargesMCCv3->Fill(2,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
 	    }
 	    else if(iS==2212){
-	      fContAllChargesMCA->Fill(3,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
-	      fContAllChargesMCC->Fill(3,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
-	      fContAllChargesMCAv3->Fill(3,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
-	      fContAllChargesMCCv3->Fill(3,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
+	      if(fV2) fContAllChargesMCA->Fill(3,pt, TMath::Cos(2*(phi - EvPlaneMCV2[0])),xMCepAv2);
+	      if(fV2) fContAllChargesMCC->Fill(3,pt, TMath::Cos(2*(phi - EvPlaneMCV2[1])),xMCepCv2);
+	      if(fV3) fContAllChargesMCAv3->Fill(3,pt, TMath::Cos(3*(phi - EvPlaneMCV3[0])),xMCepAv3);
+	      if(fV3) fContAllChargesMCCv3->Fill(3,pt, TMath::Cos(3*(phi - EvPlaneMCV3[1])),xMCepCv3);
 	    }
 	  }
 	}
@@ -1026,23 +1031,25 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
 	Float_t v2mc = TMath::Cos(2*(aodTrack->Phi() - evplaneMC));
 
-	fContAllChargesMC->Fill(0,aodTrack->Pt(),v2mc,xMC);
-	
-	Int_t iS = TMath::Abs(((AliAODMCParticle*)mcArray->At(TMath::Abs(aodTrack->GetLabel())))->GetPdgCode());
-	if(iS==11){
-	  fContAllChargesMC->Fill(4,aodTrack->Pt(),v2mc,xMC);
-	}
-	else if(iS==13){
-	  fContAllChargesMC->Fill(5,aodTrack->Pt(),v2mc,xMC);	  
-	}
-	else if(iS==211){
-	  fContAllChargesMC->Fill(1,aodTrack->Pt(),v2mc,xMC);
-	}
-	else if(iS==321){
-	  fContAllChargesMC->Fill(2,aodTrack->Pt(),v2mc,xMC);
-	}
-	else if(iS==2212){
-	  fContAllChargesMC->Fill(3,aodTrack->Pt(),v2mc,xMC);	  
+	if(fV2){
+	  fContAllChargesMC->Fill(0,aodTrack->Pt(),v2mc,xMC);
+	  
+	  Int_t iS = TMath::Abs(((AliAODMCParticle*)mcArray->At(TMath::Abs(aodTrack->GetLabel())))->GetPdgCode());
+	  if(iS==11){
+	    fContAllChargesMC->Fill(4,aodTrack->Pt(),v2mc,xMC);
+	  }
+	  else if(iS==13){
+	    fContAllChargesMC->Fill(5,aodTrack->Pt(),v2mc,xMC);	  
+	  }
+	  else if(iS==211){
+	    fContAllChargesMC->Fill(1,aodTrack->Pt(),v2mc,xMC);
+	  }
+	  else if(iS==321){
+	    fContAllChargesMC->Fill(2,aodTrack->Pt(),v2mc,xMC);
+	  }
+	  else if(iS==2212){
+	    fContAllChargesMC->Fill(3,aodTrack->Pt(),v2mc,xMC);	  
+	  }
 	}
       }
 
@@ -1078,7 +1085,6 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	    }
 	  }
 	}
-
 	// Fill no PID
 	if(fV2) contV0[iV0]->Fill(0,aodTrack->Pt(),v2V0,x);
 	if(fV3) contV0v3[iV0]->Fill(0,aodTrack->Pt(),v3V0,x3);
@@ -1144,7 +1150,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
 	// QA fill
 	if(!(fPID->GetCurrentMask(0)) || !aodTrack->GetDetPid() || dedx < 10. || aodTrack->Pt() < 0 || aodTrack->Pt() > 7){}
-	else{
+	else if(fQAsw){
 	  if(TMath::Abs(nsigmaTPC[2])<5 && (!(fPID->GetCurrentMask(1)) || (TMath::Abs(nsigmaTOF[2])<5))){ //pi
 	    xQA[2] = prob[2];
 	    xQA3[2] = xQA[2];
