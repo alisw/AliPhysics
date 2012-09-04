@@ -26,6 +26,7 @@
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TRandom.h"
+#include "THashList.h"
 
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
@@ -166,7 +167,7 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
   if(fOutputContainer != NULL){
     delete fOutputContainer;
   }
-  fOutputContainer = new TList();
+  fOutputContainer = new THashList();
   fOutputContainer->SetOwner(kTRUE);
 
   //========QA histograms=======
@@ -1336,58 +1337,40 @@ void AliAnalysisTaskPi0Flow::UpdateLists()
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::FillHistogram(const char * key,Double_t x)const{
   //FillHistogram
-  TH1I * tmpI = dynamic_cast<TH1I*>(fOutputContainer->FindObject(key)) ;
-  if(tmpI){
-    tmpI->Fill(x) ;
-    return ;
-  }
-  TH1F * tmpF = dynamic_cast<TH1F*>(fOutputContainer->FindObject(key)) ;
-  if(tmpF){
-    tmpF->Fill(x) ;
-    return ;
-  }
-  TH1D * tmpD = dynamic_cast<TH1D*>(fOutputContainer->FindObject(key)) ;
-  if(tmpD){
-    tmpD->Fill(x) ;
-    return ;
-  }
-  AliInfo(Form("can not find histogram <%s> ",key)) ;
+  TH1 * hist = dynamic_cast<TH1*>(fOutputContainer->FindObject(key)) ;
+  if(hist)
+    hist->Fill(x) ;
+  else
+    AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::FillHistogram(const char * key,Double_t x,Double_t y)const{
   //FillHistogram
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH1F")){
-    ((TH1F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  AliError(Form("Calling FillHistogram with 2 parameters for histo <%s> of type %s",key,tmp->IsA()->GetName())) ;
+  TH1 * th1 = dynamic_cast<TH1*> (fOutputContainer->FindObject(key));
+  if(th1)
+    th1->Fill(x, y) ;
+  else
+    AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
 }
 
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const{
   //Fills 1D histograms with key
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
+  TObject * obj = fOutputContainer->FindObject(key);
+  
+  TH2 * th2 = dynamic_cast<TH2*> (obj);
+  if(th2) {
+    th2->Fill(x, y, z) ;
+    return;
   }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y,z) ;
-    return ;
+
+  TH3 * th3 = dynamic_cast<TH3*> (obj);
+  if(th3) {
+    th3->Fill(x, y, z) ;
+    return;
   }
-  if(tmp->IsA() == TClass::GetClass("TH3F")){
-    ((TH3F*)tmp)->Fill(x,y,z) ;
-    return ;
-  }
+  
+  AliError(Form("can not find histogram (of instance TH2) <%s> ",key)) ;
 }
 
 //_____________________________________________________________________________
