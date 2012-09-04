@@ -3,17 +3,16 @@
 
 #ifndef ALIHLTPREPROCESSOR_H
 #define ALIHLTPREPROCESSOR_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/**
- * @file   AliHLTPreprocessor.h
- * @author Matthias Richter
- * @date   2008-01-22
- * @brief  Container for HLT module preprocessors, acts to the outside as
- *         HLT preprocessor used by the Offline Shuttle 
- */
+/// @file   AliHLTPreprocessor.h
+/// @author Matthias Richter
+/// @date   2008-01-22
+/// @brief  Container for HLT module preprocessors, acts to the outside as
+///         HLT preprocessor used by the Offline Shuttle 
+/// 
 
 #include "TList.h"
 #include "AliPreprocessor.h"
@@ -71,7 +70,7 @@ class AliHLTPreprocessor : public AliPreprocessor , public AliHLTShuttleInterfac
    *
    * @return true if DCS data can be processed, else false. 
    */
-  virtual Bool_t ProcessDCS();
+  virtual Bool_t ProcessDCS() {return kFALSE;}
 
   /** Define for name of the HLT Preproc */
   static const char* fgkHLTPreproc; 			// see above

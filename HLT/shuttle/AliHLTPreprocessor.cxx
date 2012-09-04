@@ -1,7 +1,7 @@
 // $Id: AliHLTPreprocessor.cxx 23039 2007-12-13 20:53:02Z richterm $
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -37,11 +37,10 @@ AliHLTPreprocessor::AliHLTPreprocessor(AliShuttleInterface* shuttle)
   fProcessors(),
   fActiveDetectors(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // Implementation of the HLT version for the Shuttle Preprocessor.
+  // Since HLT requires a more modular concept of the pre-processors, this
+  // class acts as HLT pre-processor to the outside and container class for
+  // the specific HLT module pre-processors to the inside.
 
   // run types according to 
   // http://alice-ecs.web.cern.ch/alice-ecs/runtypes_3.16.html
@@ -72,7 +71,6 @@ const char* AliHLTPreprocessor::fgkHLTDefaultShuttleLibs[]= {
   "libAliHLTRCU.so", 
   "libAliHLTTPC.so", 
   "libAliHLTComp.so", 
-  "libAliHLTSample.so",
   //"libAliHLTPHOS.so",
   //"libAliHLTMUON.so",
   "libAliHLTTRD.so",
@@ -83,13 +81,13 @@ const char* AliHLTPreprocessor::fgkHLTDefaultShuttleLibs[]= {
 
 AliHLTPreprocessor::~AliHLTPreprocessor()
 {
-  // see header file for function documentation
+  // destructor
 }
 
 void AliHLTPreprocessor::Initialize(Int_t run, UInt_t startTime, 
 			UInt_t endTime) 
 {
-  // see header file for function documentation
+  // init the preprocessor
   fRun = run;
   fStartTime = startTime;
   fEndTime = endTime;
@@ -144,7 +142,7 @@ void AliHLTPreprocessor::Initialize(Int_t run, UInt_t startTime,
 
 UInt_t AliHLTPreprocessor::Process(TMap* dcsAliasMap)
 {
-  // see header file for function documentation
+  // process map of objects
   UInt_t retVal = 0;
 
   if (!GetHLTStatus()) {
@@ -171,11 +169,4 @@ UInt_t AliHLTPreprocessor::Process(TMap* dcsAliasMap)
 
   if (bAllFailed) return 1;
   return retVal;
-}
-
-
-Bool_t AliHLTPreprocessor::ProcessDCS()
-{
-  // see header file for function documentation
-  return kFALSE;
 }
