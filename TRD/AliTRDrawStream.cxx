@@ -1699,7 +1699,11 @@ Int_t AliTRDrawStream::ReadZSData()
 	  fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb0);
 	else
 	  tb0 = -1;
+	if (currentTimebin >= fCurrNtimebins)
+	  break;
 	fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb1);
+	if (currentTimebin >= fCurrNtimebins)
+	  break;
 	fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb2);
 
 	adcwc++;
@@ -1859,7 +1863,11 @@ Int_t AliTRDrawStream::ReadNonZSData()
 	  fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb0);
 	else
 	  tb0 = -1;
+	if (currentTimebin >= fCurrNtimebins)
+	  break;
 	fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb1);
+	if (currentTimebin >= fCurrNtimebins)
+	  break;
 	fAdcArray->SetDataByAdcCol(row, adccol, currentTimebin++, tb2);
 
 	adcwc++;
