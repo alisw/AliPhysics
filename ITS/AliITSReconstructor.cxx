@@ -220,7 +220,8 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   }
   else {
   // by default an AliITSVertexer3D object is instatiated
-    AliITSVertexer3D*  vtxr = new AliITSVertexer3D();
+    AliITSVertexer3D*  vtxr = 
+       new AliITSVertexer3D(GetRecoParam()->GetVertexer3DWideFiducialRegionZ());
     Float_t dzw=GetRecoParam()->GetVertexer3DWideFiducialRegionZ();
     Float_t drw=GetRecoParam()->GetVertexer3DWideFiducialRegionR();
     vtxr->SetWideFiducialRegion(dzw,drw);

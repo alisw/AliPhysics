@@ -202,6 +202,10 @@ int main(int argc, char **argv) {
 
  // Init mean vertexer
  AliITSMeanVertexer *mv = new AliITSMeanVertexer();
+
+ // Optionally change the Z fiducial region here (default +/- 40 cm
+ // mv->SetZFiducialRegion(VALUE);
+
  if (!mv->Init()) {
   printf("Initialization of mean vertexer object failed ! Check the log for details");
   return -1;

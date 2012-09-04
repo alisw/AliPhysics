@@ -21,7 +21,7 @@ class AliITSVertexer3D : public AliITSVertexer {
 
  public:
 
-  AliITSVertexer3D();
+  AliITSVertexer3D(Double_t zcut=0.);
   AliITSVertexer3D(TRootIOCtor* );
   virtual ~AliITSVertexer3D();
   virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
@@ -50,7 +50,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   void SetCoarseMaxRCut(Double_t rad = 2.5){fCoarseMaxRCut=rad;}
   void SetMaxRCut(Double_t rad = 0.5){fMaxRCut=rad;}
   void SetMaxRCutAlgo2(Double_t rad = 0.2){fMaxRCut2=rad;}
-  void SetZCutDiamond(Double_t zcut = 40.0){fZCutDiamond=zcut;}
+  void SetZCutDiamond(Double_t zcut = 40.0);
   void SetMaxZCut(Double_t dz = 0.5){fMaxZCut=dz;}
   void SetDCACut(Double_t dca=0.1){fDCAcut=dca;} 
   void SetDiffPhiMax(Double_t pm = 0.025){fDiffPhiMax = pm;}

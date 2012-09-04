@@ -43,7 +43,7 @@ ClassImp(AliITSVertexer3D)
 /* $Id$ */
 
 //______________________________________________________________________
-AliITSVertexer3D::AliITSVertexer3D():
+AliITSVertexer3D::AliITSVertexer3D(Double_t zcut):
   AliITSVertexer(),
   fLines("AliStrLine",1000),
   fVert3D(),
@@ -85,7 +85,12 @@ AliITSVertexer3D::AliITSVertexer3D():
   SetCoarseMaxRCut();
   SetMaxRCut();
   SetMaxRCutAlgo2();
-  SetZCutDiamond();
+  if(zcut>0.){
+    SetZCutDiamond(zcut);
+  }
+  else {
+    SetZCutDiamond();
+  }
   SetMaxZCut();
   SetDCACut();
   SetDiffPhiMax();
@@ -96,9 +101,6 @@ AliITSVertexer3D::AliITSVertexer3D():
   SetPileupAlgo();
   SetBinSizeR();
   SetBinSizeZ();
-  Double_t binsize=0.02; // default 200 micron
-  Int_t nbins=static_cast<Int_t>(1+2*fZCutDiamond/binsize);
-  fZHisto=new TH1F("hz","",nbins,-fZCutDiamond,-fZCutDiamond+binsize*nbins);
   fGenerForDownScale=new TRandom3(987654321);
 }
 
@@ -1091,6 +1093,19 @@ void AliITSVertexer3D::SetMeanPPtSelTracks(Double_t fieldTesla){
     SetMeanPSelTracks();
     SetMeanPtSelTracks();
   }
+}
+
+//________________________________________________________
+void AliITSVertexer3D::SetZCutDiamond(Double_t zcut){
+  // The fiducial region along Z is set. The TH1 object pointed by 
+  // fZHisto is created 
+  if(TMath::AreEqualAbs(zcut,fZCutDiamond,1.e-10))return;
+  fZCutDiamond=zcut;
+  if(fZHisto) delete fZHisto;
+  Double_t binsize=0.02; // default 200 micron
+  Int_t nbins=static_cast<Int_t>(1+2*fZCutDiamond/binsize);
+  fZHisto=new TH1F("hz","",nbins,-fZCutDiamond,-fZCutDiamond+binsize*nbins);
+  fZHisto->SetDirectory(0);
 }
 
 //________________________________________________________
