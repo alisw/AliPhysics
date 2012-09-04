@@ -1,11 +1,11 @@
 void runProofCascadePbPb(
                      TString  proofCluster      = "mnicassi@alice-caf.cern.ch",//kiaf.sdfarm.kr", //skaf.saske.sk"
-                     TString  alirootVer        = "VO_ALICE@AliRoot::v5-03-32-AN",
-                     TString  rootVer           = "VO_ALICE@ROOT::v5-33-02b", 
+                     TString  alirootVer        = "VO_ALICE@AliRoot::v5-03-50-AN",
+                     TString  rootVer           = "VO_ALICE@ROOT::v5-34-01-1", 
                      TString  dataset           = "/alice/sim/LHC11f5_000139514", 
                      TString  outFileMC         = "CascadePerformance.root",
                      TString  outFileData       = "CascadeAna.root",
-                     Bool_t   runperformancetask= kTRUE, 
+                     Bool_t   runperformancetask= kFALSE, 
                      Bool_t   useMC             = kTRUE, 
                      Bool_t   dataonalien       = kFALSE,
                      Float_t  centrlowlim       = 0., 
@@ -17,7 +17,7 @@ void runProofCascadePbPb(
                      Float_t  minptondaughtertracks = 0.,
                      Float_t  etacutondaughtertracks = 9999999., 
                      Bool_t   kextrasel         = kFALSE,
-                     Bool_t   kacccut            = kFALSE,
+                     Bool_t   kacccut           = kFALSE,
                      Bool_t   krelaunchvertexers= kFALSE,
                      Int_t    nEvents           = 1.0*1e7, 
                      Int_t    nEventsSkip       = 0) { 
@@ -63,7 +63,7 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
               Bool_t useMC, Int_t nEvents, Int_t nEventsSkip, 
               Int_t minnTPCcls, Float_t centrlowlim, Float_t centruplim, TString centrest, Bool_t kusecleaning,
               Float_t vtxlim, 
-              Bool_t kextrasel, Bool_t runperformancetask, Bool_t kacccut, Bool_t krelaunchvertexers, Float_t  minptondaughtertracksi,
+              Bool_t kextrasel, Bool_t runperformancetask, Bool_t kacccut, Bool_t krelaunchvertexers, Float_t  minptondaughtertracks,
               Float_t  etacutondaughtertracks) {
 
 
@@ -106,8 +106,11 @@ void Analysis(TString dataset, TString outFileMC, TString outFileData,
     AliAnalysisTaskCheckPerformanceCascadePbPb *task = AddTaskCheckPerformanceCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,kacccut ,krelaunchvertexers,minptondaughtertracks,etacutondaughtertracks);
   
   } else {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx++g");
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckCascadePbPb.C");
+//    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/AliAnalysisTaskCheckCascadePbPb.cxx++g");
+//    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/AddTaskCheckCascadePbPb.C");
+    gProof->Load("AliAnalysisTaskCheckCascadePbPb.cxx++");
+    gProof->Load("AddTaskCheckCascadePbPb.C");
+
     AliAnalysisTaskCheckCascadePbPb *task = AddTaskCheckCascadePbPb(minnTPCcls, centrlowlim, centruplim, centrest, kusecleaning, vtxlim,kextrasel ,krelaunchvertexers,minptondaughtertracks,etacutondaughtertracks);
 
   }
