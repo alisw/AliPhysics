@@ -87,6 +87,7 @@ public:
 
 	static void SetMainRefStorage (TString mainRefStorage) {fgkMainRefStorage = mainRefStorage;}
 	static void SetLocalRefStorage (TString localRefStorage) {fgkLocalRefStorage = localRefStorage;}
+	static void SetMirrorSEs (TString mirrors) {fgkMirrorSEs = mirrors;}
 
 	static void SetShuttleTempDir (const char* tmpDir);
 	static void SetShuttleLogDir (const char* logDir);

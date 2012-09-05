@@ -60,9 +60,10 @@ class AliShuttleInterface : public TObject
 
     static TString GetMainCDB () {return fgkMainCDB;}
     static TString GetLocalCDB () {return fgkLocalCDB;}
-
     static TString GetMainRefStorage() {return fgkMainRefStorage;}
     static TString GetLocalRefStorage() {return fgkLocalRefStorage;}
+    static TString GetMirrorSEs () {return fgkMirrorSEs;}
+
     static const char* GetShuttleLogDir() {return fgkShuttleLogDir.Data();}
     static const char* GetShuttleTempDir() {return fgkShuttleTempDir.Data();}
 
@@ -79,6 +80,7 @@ class AliShuttleInterface : public TObject
     static TString fgkLocalCDB;		// URI of the local backup CDB storage
     static TString fgkMainRefStorage;	// URI of the main (Grid) REFERENCE storage
     static TString fgkLocalRefStorage;	// URI of the local REFERENCE storage
+    static TString fgkMirrorSEs;	// mirror SEs for the main (Grid) CDB storage
 
     static TString fgkShuttleTempDir;	// path of SHUTTLE temp folder
     static TString fgkShuttleLogDir;	// path of SHUTTLE log folder

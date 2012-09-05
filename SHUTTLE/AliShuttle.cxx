@@ -357,6 +357,7 @@ Int_t AliShuttle::StoreOCDB(const TString& gridURI)
 			Form("StoreOCDB - cannot activate main %s storage", type));
 		return -2;
 	}
+	gridSto->SetMirrorSEs(fgkMirrorSEs.Data());
 
 	gridIds = gridSto->GetQueryCDBList();
 

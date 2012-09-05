@@ -44,6 +44,7 @@ TString AliShuttleInterface::fgkMainCDB("alien://folder=ShuttleCDB");
 TString AliShuttleInterface::fgkLocalCDB("local://LocalShuttleCDB");
 TString AliShuttleInterface::fgkMainRefStorage("alien://folder=ShuttleReference");
 TString AliShuttleInterface::fgkLocalRefStorage("local://LocalReferenceStorage");
+TString AliShuttleInterface::fgkMirrorSEs("ALICE::CERN::OCDB");
 
 TString AliShuttleInterface::fgkShuttleTempDir("/tmp");
 TString AliShuttleInterface::fgkShuttleLogDir("/tmp/log");
