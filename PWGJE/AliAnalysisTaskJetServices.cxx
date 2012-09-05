@@ -93,6 +93,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices():
   fVtxZMean(0),
   fVtxRCut(1.),
   fVtxZCut(8.),
+  fVtxDeltaZCut(0.1),
   fPtMinCosmic(5.),
   fRIsolMinCosmic(3.),
   fMaxCosmicAngle(0.01),
@@ -167,6 +168,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fVtxZMean(0),
   fVtxRCut(1.),
   fVtxZCut(8.),
+  fVtxDeltaZCut(0.1),
   fPtMinCosmic(5.),
   fRIsolMinCosmic(3.),
   fMaxCosmicAngle(0.01),
@@ -501,7 +503,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
 
   fEventCutInfoESD |= kPhysicsSelectionCut; // other alreay set via IsEventSelected
-  fh1EventCutInfoESD->Fill(fEventCutInfoESD);
+  fh1EventCutInfoESD->Fill (fEventCutInfoESD);
 
   if(esdEventSelected) fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kVertexIn;
   if(esdEventPileUp)   fSelectionInfoESD |=  AliAnalysisHelperJetTasks::kIsPileUp;
@@ -545,8 +547,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   if(esd){
     const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
+    const AliESDVertex *vtxESDSPD = esd->GetPrimaryVertexSPD();
     esdVtxValid = IsVertexValid(vtxESD);
-    esdVtxIn = IsVertexIn(vtxESD);
+    esdVtxIn = IsVertexIn(vtxESD,vtxESDSPD);
     if(aodH&&physicsSelection&&fFilterAODCollisions&&aod){
       if(fDebug)Printf("%s:%d Centrality %3.3f vtxin %d",(char*)__FILE__,__LINE__,cent,esdVtxIn);
       if(cent<=80&&esdVtxIn){
@@ -615,8 +618,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   if(aod){
     const AliAODVertex *vtxAOD = aod->GetPrimaryVertex();
+    const AliAODVertex *vtxAODSPD = aod->GetPrimaryVertexSPD();
     aodVtxValid = IsVertexValid(vtxAOD);
-    aodVtxIn = IsVertexIn(vtxAOD);
+    aodVtxIn = IsVertexIn(vtxAOD,vtxAODSPD);
     Float_t zvtx = vtxAOD->GetZ();
     Int_t  iCl = GetEventClass(aod);
     AliAnalysisHelperJetTasks::EventClass(kTRUE,iCl);
@@ -779,7 +783,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 Bool_t AliAnalysisTaskJetServices::IsEventSelected(const AliESDEvent* esd){
   if(!esd)return kFALSE;
   const AliESDVertex *vtx = esd->GetPrimaryVertex();
-  return IsVertexIn(vtx); // vertex in calls vertex valid
+  const AliESDVertex *vtxSPD = esd->GetPrimaryVertex();
+  return IsVertexIn(vtx,vtxSPD); // vertex in calls vertex valid
 }
 
 AliAnalysisTaskJetServices::~AliAnalysisTaskJetServices(){
@@ -835,7 +840,8 @@ void AliAnalysisTaskJetServices::SetV0Centroids(TProfile *xa,TProfile *ya,TProfi
 Bool_t AliAnalysisTaskJetServices::IsEventSelected(const AliAODEvent* aod) const {
   if(!aod)return kFALSE;
   const AliAODVertex *vtx = aod->GetPrimaryVertex();
-  return IsVertexIn(vtx); // VertexIn calls VertexValid
+  const AliAODVertex *vtxSPD = aod->GetPrimaryVertexSPD();
+  return IsVertexIn(vtx,vtxSPD); // VertexIn calls VertexValid
 }
 
 Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliESDVertex* vtx) {
@@ -913,7 +919,7 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliAODVertex* vtx) con
 
   if(vtxName.Contains("TPCVertex"))return kFALSE;
 
-  // no dispersion yet...
+  // no dispersion yet... 
   /* 
   TString vtxTitle(vtx->GetTitle());
   if(vtxTitle.Contains("vertexer: Z")){
@@ -924,13 +930,15 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliAODVertex* vtx) con
 }
 
 
-Bool_t  AliAnalysisTaskJetServices::IsVertexIn (const AliESDVertex* vtx) {
+Bool_t  AliAnalysisTaskJetServices::IsVertexIn (const AliESDVertex* vtx,const AliESDVertex* vtxSPD) {
 
   if(!IsVertexValid(vtx))return kFALSE;
 
   Float_t zvtx = vtx->GetZ();
   Float_t yvtx = vtx->GetY();
   Float_t xvtx = vtx->GetX();
+  Float_t deltaZ = zvtx - vtxSPD->GetZ();
+  if(fDebug)Printf("%s:%d deltaz %3.3f ",__FILE__,__LINE__,deltaZ);
 
   xvtx -= fVtxXMean;
   yvtx -= fVtxYMean;
@@ -947,17 +955,25 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexIn (const AliESDVertex* vtx) {
     return kFALSE;
   }
   fEventCutInfoESD |= kVertexRCut;  
+
+
+
+
+  if(TMath::Abs(deltaZ)>fVtxDeltaZCut)return kFALSE;
+  fEventCutInfoESD |= kVertexDeltaZCut;  
   return kTRUE;
 }
 
 
-Bool_t  AliAnalysisTaskJetServices::IsVertexIn (const AliAODVertex* vtx) const {
+Bool_t  AliAnalysisTaskJetServices::IsVertexIn (const AliAODVertex* vtx,const AliAODVertex* vtxSPD) const {
 
   if(!IsVertexValid(vtx))return kFALSE;
 
   Float_t zvtx = vtx->GetZ();
   Float_t yvtx = vtx->GetY();
   Float_t xvtx = vtx->GetX();
+  Float_t deltaZ = zvtx - vtxSPD->GetZ();
+  if(fDebug)Printf("%s:%d deltaz %3.3f ",__FILE__,__LINE__,deltaZ);
 
   xvtx -= fVtxXMean;
   yvtx -= fVtxYMean;
@@ -966,6 +982,12 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexIn (const AliAODVertex* vtx) const {
   Float_t r2   = yvtx*yvtx+xvtx*xvtx;      
 
   Bool_t vertexIn = TMath::Abs(zvtx)<fVtxZCut&&r2<(fVtxRCut*fVtxRCut);
+
+
+  if(TMath::Abs(deltaZ)>fVtxDeltaZCut)vertexIn = kFALSE;
+  if(fDebug)Printf("%s:%d vertexIn %d ",__FILE__,__LINE__,vertexIn);
+  
+
   return vertexIn;
 }
 

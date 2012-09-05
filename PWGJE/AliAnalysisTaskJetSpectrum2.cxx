@@ -360,13 +360,13 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
   
   // event npsparse cent, mult
-  const Int_t nBinsSparse0 = 3;
-  const Int_t nBins0[nBinsSparse0] = {     100, 500,fNTrigger};
-  const Double_t xmin0[nBinsSparse0]  = {    0,   0, -0.5};
-  const Double_t xmax0[nBinsSparse0]  = {  100,5000,fNTrigger-0.5};
+  const Int_t nBinsSparse0 = 4;
+  const Int_t nBins0[nBinsSparse0] = {     100, 500,fNTrigger,125};
+  const Double_t xmin0[nBinsSparse0]  = {    0,   0, -0.5,-2};
+  const Double_t xmax0[nBinsSparse0]  = {  100,5000,fNTrigger-0.5,248};
       
 
-  fhnEvent = new THnSparseF("fhnEvent",";cent;mult",nBinsSparse0,
+  fhnEvent = new THnSparseF("fhnEvent",";cent;mult:trigger;#rho",nBinsSparse0,
 			    nBins0,xmin0,xmax0);
   fHistList->Add(fhnEvent);
 
@@ -895,12 +895,13 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   fMultGen = genMult1;
   if(fMultGen<=0)fMultGen = genMult2;
 
-  Double_t var0[3] = {0,};
+  Double_t var0[4] = {0,};
   var0[0] = fCentrality;
   var0[1] = fMultRec;
   for(int it=0;it<fNTrigger;it++){
     if(fInputHandler->IsEventSelected()&fTriggerBit[it]){
       var0[2] = it;
+      var0[3] = GetRho(recJetsList);
       fhnEvent->Fill(var0);
     }
   }
@@ -1746,7 +1747,16 @@ Int_t AliAnalysisTaskJetSpectrum2::CheckAcceptance(Float_t phi,Float_t eta){
   return fNAcceptance;
 }
 
+Float_t AliAnalysisTaskJetSpectrum2::GetRho(TList &list){
 
+  // invert the correction
+  AliAODJet *jet = (AliAODJet*)list.At(0);  // highest pt jet
+  if(!jet)return -1;
+  if(jet->EffectiveAreaCharged()<=0)return -1;
+  Float_t rho = jet->ChargedBgEnergy()/jet->EffectiveAreaCharged();
+  return rho;
+ 
+}
 
 
 

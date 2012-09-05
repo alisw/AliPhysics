@@ -130,6 +130,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     void    MakeJetContainer();
     Int_t   GetListOfTracks(TList *list,Int_t type);
     void    FillTrackHistos(TList &particlesList,int iType);
+    Float_t GetRho(TList &list);
     Float_t GetCentrality();
     Bool_t  CalculateReactionPlaneAngle(const TList *trackList);
     Int_t   GetPhiBin(Double_t phi);
