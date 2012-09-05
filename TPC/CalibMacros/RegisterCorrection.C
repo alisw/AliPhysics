@@ -26,6 +26,23 @@
   RegisterCorrection();
 
 */
+/*
+ ExampleDrawing()
+ .x ~/rootlogon.C
+ .L $ALICE_ROOT/TPC/CalibMacros/RegisterCorrection.C+
+ RegisterCorrection();
+
+ //dz shift
+ TF1 f705("f705","AliTPCCorrectionFit::EvalAtPar(0,0,x,0.1,705,0,10)",0,500);
+ f705->Draw();
+ TF1 f705Helix("f705Helix","AliTPCCorrectionFit::EvalAtHelix(0,0,x,0.1,705,0,10)",0,500);
+ f705Helix->Draw();
+ f705->Draw("same");
+
+
+*/
+
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
 #include "TObjArray.h"
@@ -1404,3 +1421,5 @@ AliTPCComposedCorrection * GetCorrectionFromFile(){
   }
   return cc;
 }
+
+

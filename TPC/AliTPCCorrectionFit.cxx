@@ -172,6 +172,7 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
 Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps){
   //
   // Fit the distortion along the line with the helix model
+  // FIXME - original trajectory to be changed - AliHelix to be used
   // We assume that the track are primaries  - where the vertex is at (0,0,0)
   //
   // Parameters:
