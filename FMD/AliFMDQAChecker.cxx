@@ -35,7 +35,6 @@
 #include <TFile.h> 
 #include <iostream>
 #include <TCanvas.h>
-#include <TPaveText.h>
 #include <TStyle.h>
 #include <TLatex.h>
 #include <TFitResult.h>
@@ -712,6 +711,9 @@ UShort_t
 AliFMDQAChecker::CheckSim(AliRecoParam::EventSpecie_t /* specie*/, 
 			  TH1*                        hist) const
 {
+  // 
+  // Check simulated hits 
+  // 
   return BasicCheck(hist);
 }
 //__________________________________________________________________
@@ -719,7 +721,44 @@ UShort_t
 AliFMDQAChecker::CheckRec(AliRecoParam::EventSpecie_t /* specie*/, 
 			  TH1*                        hist) const
 {
+  // 
+  // Check reconstructed data 
+  // 
   return BasicCheck(hist);
+}
+
+//__________________________________________________________________
+void AliFMDQAChecker::AddStatusPave(TH1* hist, Int_t qual, 
+				    Double_t xl, Double_t yl, 
+				    Double_t xh, Double_t yh) const
+{
+  //
+  // Add a status pave to a plot
+  // 
+  if (xh < 0) xh = gStyle->GetStatX();
+  if (xl < 0) xl = xh - gStyle->GetStatW(); 
+  if (yh < 0) yh = gStyle->GetStatY();
+  if (yl < 0) yl = xl - gStyle->GetStatH(); 
+  
+  TPaveText* text = new TPaveText(xl, yl, xh, yh, "brNDC");
+  Int_t   bg  = kGreen-10;
+  Int_t   fg  = kBlack;
+  TString msg = "OK";
+  if      (qual >= kWhatTheFk) { bg = kRed+1; fg = kWhite; msg = "Argh!"; }
+  else if (qual >= kBad)       { bg = kRed-3; fg = kWhite; msg = "Bad"; }
+  else if (qual >= kProblem)   { bg = kOrange-4; msg = "Warning"; }
+  text->AddText(msg);
+  text->SetTextFont(62);
+  text->SetTextColor(fg);
+  text->SetFillColor(bg);
+
+  TList*   ll  = hist->GetListOfFunctions();
+  TObject* old = ll->FindObject(text->GetName());
+  if (old) { 
+    ll->Remove(old);
+    delete old;
+  }
+  ll->Add(text);
 }
 
 //__________________________________________________________________
@@ -774,13 +813,14 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
       
       Int_t qual = CheckOne(what, AliRecoParam::ConvertIndex(specie), hist);
       hist->SetUniqueID(Quality2Bit(qual));
+      hist->SetStats(0);
+      AddStatusPave(hist, qual);
       ret += qual;
 
       if (!status) continue;
 
-      // AliFMDQADataMakerRec::GetHalfringFromIndex(i, d, r, b, mm);
-      // AliWarningF("Got index %2d -> halfring FMD%d%c %s", i, d, r, 
-      //             hist->GetName());
+      // Parse out the detector and ring, calculate the bin, and fill
+      // status histogram.
       TString nme(hist->GetName());
       Char_t cD   = nme[nme.Length()-2];
       Char_t cR   = nme[nme.Length()-1];
@@ -808,25 +848,7 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
 	if (status->GetBinContent(i, 4) > 0) qual++;
       }
       status->SetUniqueID(Quality2Bit(qual));
-      TPaveText* text = new TPaveText(.6, .8, .95, .95, "brNDC");
-      Int_t   bg  = kGreen-10;
-      Int_t   fg  = kBlack;
-      TString msg = "OK";
-      if      (qual >= kWhatTheFk) { bg = kRed+1; fg = kWhite; msg = "Argh!"; }
-      else if (qual >= kBad)       { bg = kRed-3; fg = kWhite; msg = "Bad"; }
-      else if (qual >= kProblem)   { bg = kOrange-4; msg = "Warning"; }
-      text->AddText(msg);
-      text->SetTextFont(62);
-      text->SetTextColor(fg);
-      text->SetFillColor(bg);
-
-      TList*   ll  = status->GetListOfFunctions(); 
-      TObject* old = ll->FindObject(text->GetName());
-      if (old) { 
-	ll->Remove(old);
-	delete old;
-      }
-      ll->Add(text);
+      AddStatusPave(status, qual);
     }
     // if (count != 0) rv[specie] /= count;
   }

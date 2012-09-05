@@ -61,6 +61,19 @@ protected:
     kWhatTheFk
   };
   /** 
+   * Add a status pave to the plot 
+   * 
+   * @param ll   List to add to 
+   * @param qual Quality 
+   * @param xl   X coordinate of lower-left corner (NDC)
+   * @param yl   Y coordinate of lower-left corner (NDC)
+   * @param xh   X coordinate of upper-right corner (NDC)
+   * @param yh 	 Y coordinate of upper-right corner (NDC)
+   */
+  void AddStatusPave(TH1* hist, Int_t qual, 
+		     Double_t xl=-1, Double_t yl=-1, 
+		     Double_t xh=-1, Double_t yh=-1) const;
+  /** 
    * Check one histogram 
    * 
    * @param specie Event specie 
