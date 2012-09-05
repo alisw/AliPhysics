@@ -180,12 +180,10 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistJetsZvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
   fOutput->Add(fHistJetsZvsPt);
   
-  if (fAnaType == kEMCAL) {
-    fHistJetsNEFvsPt = new TH2F("fHistJetsNEFvsPt", "fHistJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
-    fHistJetsNEFvsPt->GetXaxis()->SetTitle("NEF");
-    fHistJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
-    fOutput->Add(fHistJetsNEFvsPt);
-  }
+  fHistJetsNEFvsPt = new TH2F("fHistJetsNEFvsPt", "fHistJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
+  fHistJetsNEFvsPt->GetXaxis()->SetTitle("NEF");
+  fHistJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
+  fOutput->Add(fHistJetsNEFvsPt);
 
   fHistMCJetPhiEta = new TH2F("fHistMCJetPhiEta", "fHistMCJetPhiEta", 20, -2, 2, 32, 0, 6.4);
   fHistMCJetPhiEta->GetXaxis()->SetTitle("#eta");
@@ -211,13 +209,11 @@ void AliJetResponseMaker::UserCreateOutputObjects()
   fHistMCJetsZvsPt->GetXaxis()->SetTitle("Z");
   fHistMCJetsZvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
   fOutput->Add(fHistMCJetsZvsPt);
-  
-  if (fAnaType == kEMCAL) {
-    fHistMCJetsNEFvsPt = new TH2F("fHistMCJetsNEFvsPt", "fHistMCJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
-    fHistMCJetsNEFvsPt->GetXaxis()->SetTitle("NEF");
-    fHistMCJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
-    fOutput->Add(fHistMCJetsNEFvsPt);
-  }
+
+  fHistMCJetsNEFvsPt = new TH2F("fHistMCJetsNEFvsPt", "fHistMCJetsNEFvsPt", fNbins, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
+  fHistMCJetsNEFvsPt->GetXaxis()->SetTitle("NEF");
+  fHistMCJetsNEFvsPt->GetYaxis()->SetTitle("p_{T} [GeV/c]");
+  fOutput->Add(fHistMCJetsNEFvsPt);
 
   fHistClosestDistance = new TH1F("fHistClosestDistance", "fHistClosestDistance", 50, 0, fMaxDistance * 1.2);
   fHistClosestDistance->GetXaxis()->SetTitle("d");
@@ -535,9 +531,8 @@ Bool_t AliJetResponseMaker::FillHistograms()
     fHistMCJetsPt->Fill(jet->Pt(), fEventWeight);
     fHistMCJetPhiEta->Fill(jet->Eta(), jet->Phi(), fEventWeight);
 
-    if (fAnaType == kEMCAL)
-      fHistMCJetsNEFvsPt->Fill(jet->NEF(), jet->Pt(), fEventWeight);
-
+    fHistMCJetsNEFvsPt->Fill(jet->NEF(), jet->Pt(), fEventWeight);
+      
     for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
       AliVParticle *track = jet->TrackAt(it, fMCTracks);
       if (track)
@@ -581,8 +576,7 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     fHistJetPhiEta->Fill(jet->Eta(), jet->Phi(), fEventWeight);
 
-    if (fAnaType == kEMCAL)
-      fHistJetsNEFvsPt->Fill(jet->NEF(), jet->Pt(), fEventWeight);
+    fHistJetsNEFvsPt->Fill(jet->NEF(), jet->Pt(), fEventWeight);
 
     for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
       AliVParticle *track = jet->TrackAt(it, fTracks);
