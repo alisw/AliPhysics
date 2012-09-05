@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -1010,7 +1010,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
   // Init geometry, I do not like much to do it like this ...
   if(fImportGeometryFromFile && !gGeoManager) 
   {
-    if (fImportGeometryFilePath == "") fImportGeometryFilePath = "$ALICE_ROOT/PWGGA/EMCALTasks/macros/geometry.root" ; // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
+    if (fImportGeometryFilePath == "") fImportGeometryFilePath = "$ALICE_ROOT/PWGGA/OADB/EMCAL/geometry_2011.root" ; // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
     printf("AliAnalysisTaskEMCALClusterize::Init() - Import %s\n",fImportGeometryFilePath.Data());
     TGeoManager::Import(fImportGeometryFilePath) ; 
   }
