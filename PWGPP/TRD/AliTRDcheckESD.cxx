@@ -1661,11 +1661,13 @@ void AliTRDcheckESD::Terminate(Option_t *)
   
   // All tracks
   h1[0] = h2->ProjectionX("Ncl_px");
-  TGraphErrors *ge=(TGraphErrors*)arr->At(0);
-  for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
-    ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
+  TGraphErrors *ge(NULL);
+  if((ge=(TGraphErrors*)arr->At(0))){
+    for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+      ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
+    }
   }
-  
+
   // All charged tracks
   TH1 *hNclCh[2] = {(TH1D*)h1[0]->Clone("NEG"), (TH1D*)h1[0]->Clone("POS")};
   hNclCh[0]->Reset();hNclCh[1]->Reset();
@@ -1673,15 +1675,13 @@ void AliTRDcheckESD::Terminate(Option_t *)
     hNclCh[0]->Add(h2->ProjectionX("Ncl_px", 2*is-1, 2*is-1)); // neg
     hNclCh[1]->Add(h2->ProjectionX("Ncl_px", 2*is, 2*is));     // pos
   }
-  if(Int_t(hNclCh[0]->GetEntries())){
-    ge=(TGraphErrors*)arr->At(1);
+  if(Int_t(hNclCh[0]->GetEntries()) && (ge=(TGraphErrors*)arr->At(1))){
     for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[0]->GetBinContent(ib));
     }
   }
   
-  if(Int_t(hNclCh[1]->GetEntries())){
-    ge=(TGraphErrors*)arr->At(2);
+  if(Int_t(hNclCh[1]->GetEntries()) && (ge=(TGraphErrors*)arr->At(2))){
     for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[1]->GetBinContent(ib));
     }
@@ -1690,7 +1690,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
   for(Int_t is(1); is<=AliPID::kSPECIES; is++){
     h1[0] = h2->ProjectionX("Ncl_px", 2*is-1, 2*is);
     if(!Int_t(h1[0]->GetEntries())) continue;
-    ge=(TGraphErrors*)arr->At(2+is);
+    if(!(ge=(TGraphErrors*)arr->At(2+is))) continue;
     for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
     }
@@ -1723,46 +1723,49 @@ void AliTRDcheckESD::Terminate(Option_t *)
 
   // ENERGY LOSS
   if(!(h2 = dynamic_cast<TH2I*>(fHistos->At(kTRDmom)))) return;
-  arr = (TObjArray*)fResults->At(kTRDmom-1);
-  TGraphAsymmErrors *g06 = (TGraphAsymmErrors*)arr->At(0), *g09 = (TGraphAsymmErrors*)arr->At(1);
-  ax=h2->GetXaxis();
-  const Int_t nq(4);
-  const Double_t xq[nq] = {0.05, 0.2, 0.8, 0.95};
-  Double_t yq[nq];
-  for(Int_t ily=6; ily--;){
-    h1[0] = h2->ProjectionX("checkESDp0", ily+1, ily+1);
-    h1[0]->GetQuantiles(nq,yq,xq);
-    g06->SetPoint(ily, Float_t(ily), ax->GetBinCenter(h1[0]->GetMaximumBin()));
-    g06->SetPointError(ily, 0., 0., TMath::Abs(yq[0]), yq[3]);
-    g09->SetPoint(ily, Float_t(ily), h1[0]->GetMean());
-    g09->SetPointError(ily, 0., 0., TMath::Abs(yq[1]), yq[2]);
+  if((arr = (TObjArray*)fResults->At(kTRDmom-1))){
+    TGraphAsymmErrors *g06 = (TGraphAsymmErrors*)arr->At(0), *g09 = (TGraphAsymmErrors*)arr->At(1);
+    if(g06 && g09){
+      ax=h2->GetXaxis();
+      const Int_t nq(4);
+      const Double_t xq[nq] = {0.05, 0.2, 0.8, 0.95};
+      Double_t yq[nq];
+      for(Int_t ily=6; ily--;){
+        h1[0] = h2->ProjectionX("checkESDp0", ily+1, ily+1);
+        h1[0]->GetQuantiles(nq,yq,xq);
+        g06->SetPoint(ily, Float_t(ily), ax->GetBinCenter(h1[0]->GetMaximumBin()));
+        g06->SetPointError(ily, 0., 0., TMath::Abs(yq[0]), yq[3]);
+        g09->SetPoint(ily, Float_t(ily), h1[0]->GetMean());
+        g09->SetPointError(ily, 0., 0., TMath::Abs(yq[1]), yq[2]);
 
-    //printf(" max[%f] mean[%f] q[%f %f %f %f]\n", ax->GetBinCenter(h1[0]->GetMaximumBin()), h1[0]->GetMean(), yq[0], yq[1], yq[2], yq[3]);
-    delete h1[0];
+        //printf(" max[%f] mean[%f] q[%f %f %f %f]\n", ax->GetBinCenter(h1[0]->GetMaximumBin()), h1[0]->GetMean(), yq[0], yq[1], yq[2], yq[3]);
+        delete h1[0];
+      }
+      fNRefFigures++;
+    }
   }
-  fNRefFigures++;
 //  if(!HasMC()) return;
 
   // Pt RESOLUTION @ DCA
   TH3S* h3(NULL); TGraphErrors *gg[2] = {NULL,NULL};
   if(!(h3 = dynamic_cast<TH3S*>(fHistos->At(kPtRes)))) return;
-  arr = (TObjArray*)fResults->At(kPtRes-1);
-  TAxis *az(h3->GetZaxis());
-  for(Int_t i(0); i<AliPID::kSPECIES; i++){
-    Int_t idx(2*i);
-    az->SetRange(idx+1, idx+2); 
-    gg[1] = (TGraphErrors*)arr->At(idx);
-    gg[0] = (TGraphErrors*)arr->At(idx+1);
-    Process2D((TH2*)h3->Project3D("yx"), gg);
+  if((arr = (TObjArray*)fResults->At(kPtRes-1))){
+    TAxis *az(h3->GetZaxis());
+    for(Int_t i(0); i<AliPID::kSPECIES; i++){
+      Int_t idx(2*i);
+      az->SetRange(idx+1, idx+2);
+      gg[1] = (TGraphErrors*)arr->At(idx);
+      gg[0] = (TGraphErrors*)arr->At(idx+1);
+      Process2D((TH2*)h3->Project3D("yx"), gg);
 
-    idx+=10;
-    az->SetRange(idx+1, idx+2); 
-    gg[1] = (TGraphErrors*)arr->At(idx);
-    gg[0] = (TGraphErrors*)arr->At(idx+1);
-    Process2D((TH2*)h3->Project3D("yx"), gg);
+      idx+=10;
+      az->SetRange(idx+1, idx+2);
+      gg[1] = (TGraphErrors*)arr->At(idx);
+      gg[0] = (TGraphErrors*)arr->At(idx+1);
+      Process2D((TH2*)h3->Project3D("yx"), gg);
+    }
+    fNRefFigures++;
   }
-  fNRefFigures++;
-  
   fNRefFigures++;
   // 3x3 tracking summary canvases for every centrality class
   fNRefFigures++;
@@ -1800,6 +1803,7 @@ void AliTRDcheckESD::Process(TH1 **h1, TGraphErrors *g)
 {
 // Generic function to process one reference plot
 
+  if(!g) return;
   Int_t n1 = 0, n2 = 0, ip=0;
   Double_t eff = 0.;
 
@@ -1821,6 +1825,7 @@ void AliTRDcheckESD::Process2D(TH2 * const h2, TGraphErrors **g)
   // Do the processing
   //
 
+  if(!g[0] || !g[1]) return;
   Int_t n = 0;
   if((n=g[0]->GetN())) for(;n--;) g[0]->RemovePoint(n);
   if((n=g[1]->GetN())) for(;n--;) g[1]->RemovePoint(n);
