@@ -2,12 +2,15 @@
   marian.ivanov@cern.ch
   //
   Register primitive corrections: base functions for minimization:
-  Id numbers are assoctied to given primitive corrections.
+  Id numbers are associated to given primitive corrections.
   See comments in the function headers. 
   Used only for residuals minimization not in the reconstruction.
-  File with all primitives expected to be in the current directory
-  filename =  TPCCorrectionPrimitives.root
-  //
+  File with all primitives expected to be in the current directory:
+  filenames:  
+  TPCCorrectionPrimitives.root                  - Alignment, Quadrants, 2D symentrid and rod misalingment
+  TPCCorrectionPrimitivesROC.root               - ExB distortion due to the common ROC misalignment
+  TPCCorrectionPrimitivesSector.root            - ExB distortion due to the one sector misalingment (sector 0)
+  //      
 
   RegisterCorrection();                         - Reserved id's  0 -999
   //
@@ -48,6 +51,7 @@
 #include "AliTPCCalibGlobalMisalignment.h"
 #include "AliTPCExBBShape.h"
 #include "AliTPCExBTwist.h"
+#include "AliTPCCorrectionDrift.h"
 #include "AliMagF.h"
 #include "AliCDBEntry.h"
 #include "AliTPCROC.h"
@@ -57,6 +61,7 @@
 #include  "AliTrackerBase.h"
 #include  "TGeoGlobalMagField.h"
 #include  "TROOT.h"
+#include "TLinearFitter.h"
 #endif
 
 
@@ -83,10 +88,16 @@ AliTPCROCVoltError3D *rocRotgXA=0;     // roc rotation A side - inclination in X
 AliTPCROCVoltError3D *rocRotgYA=0;     // roc rotation A side - inclination in Y
 AliTPCROCVoltError3D *rocRotgXC=0;     // roc rotation C side - inclination in X
 AliTPCROCVoltError3D *rocRotgYC=0;     // roc rotation C side - inclination in Y
+//
 AliTPCROCVoltError3D *rocDzIROCA=0;      // roc shift A side - in Z
 AliTPCROCVoltError3D *rocDzIROCC=0;      // roc shift C side - in Z
 AliTPCROCVoltError3D *rocRotIROCA=0;      // roc rotation A side - in Z
 AliTPCROCVoltError3D *rocRotIROCC=0;      // roc rotation C side - in Z
+AliTPCROCVoltError3D *rocDzUDA=0;         // roc shift Up-Down A side
+AliTPCROCVoltError3D *rocDzUDC=0;         // roc shift Up-Down C side
+AliTPCROCVoltError3D *rocRotUDA=0;        // roc rotation updown A side
+AliTPCROCVoltError3D *rocRotUDC=0;        // roc rotation updown C side
+
 //
 AliTPCROCVoltError3D *rocShiftIROCA0=0;      // IROC shift A0 side
 AliTPCROCVoltError3D *rocRotIROCA0=0;        // IROC rot   A0 side
@@ -113,7 +124,18 @@ AliTPCCalibGlobalMisalignment *alignRot2=0;
 AliTPCCalibGlobalMisalignment *alignTrans0=0;
 AliTPCCalibGlobalMisalignment *alignTrans1=0;
 AliTPCCalibGlobalMisalignment *alignTrans2=0;
+//
+AliTPCCalibGlobalMisalignment *alignTrans0D[4]={0};       // delta alignemnt 4 quadrants
+AliTPCCalibGlobalMisalignment *alignTrans1D[4]={0};       // 
+AliTPCCalibGlobalMisalignment *alignTrans2D[4]={0};       // 
+AliTPCCalibGlobalMisalignment *alignRot0D[4]={0};
+AliTPCCalibGlobalMisalignment *alignRot1D[4]={0};
+AliTPCCalibGlobalMisalignment *alignRot2D[4]={0};
 
+
+
+
+AliTPCCorrectionDrift  *calibDrift[7]={0};
 
 
 //
@@ -124,6 +146,8 @@ void RegisterAliTPCExBShape();
 void RegisterAliTPCExBTwist();
 void RegisterAliTPCROCVoltError3D();
 void RegisterAliTPCROCVoltError3DSector();
+void RegisterAliTPCCorrectionDrift();
+
 //
 
 void RegisterCorrection(Int_t type=0){
@@ -132,7 +156,7 @@ void RegisterCorrection(Int_t type=0){
   //
   // check the presence of corrections in file
   //
-  gROOT->Macro("ConfigCalibTrain.C(119037)");
+  //gROOT->Macro("ConfigCalibTrain.C(119037)");
   //
   //
   if (type==1) return RegisterAliTPCROCVoltError3D();
@@ -150,6 +174,7 @@ void RegisterCorrection(Int_t type=0){
   RegisterAliTPCFCVoltError3D();
   RegisterAliTPCExBShape();
   RegisterAliTPCExBTwist();
+  RegisterAliTPCCorrectionDrift();
   if (fCorrections) fCorrections->Close();
   //
 }
@@ -353,6 +378,7 @@ void RegisterAliTPCCalibGlobalMisalignment(){
   rot2.MultiplyBy(&rot90,kTRUE);
   rot90.SetAngles(0,-90,0);
   rot2.MultiplyBy(&rot90,kFALSE);
+  //
   alignRot0  =new  AliTPCCalibGlobalMisalignment;
   alignRot0->SetAlignGlobal(&rot0);
   alignRot0->SetName("alignRot0");
@@ -373,21 +399,88 @@ void RegisterAliTPCCalibGlobalMisalignment(){
   alignTrans2->SetAlignGlobal(&matrixZ);
   alignTrans2->SetName("alignTrans2");
   //
+  
+
+  alignRot0D[0]  =new  AliTPCCalibGlobalMisalignment;
+  alignRot0D[0]->SetAlignGlobalDelta(&rot0);
+  alignRot0D[0]->SetName("alignRot0D");
+  alignRot1D[0]=new  AliTPCCalibGlobalMisalignment;
+  alignRot1D[0]->SetAlignGlobalDelta(&rot1);
+  alignRot1D[0]->SetName("alignRot1D");
+  alignRot2D[0]=new  AliTPCCalibGlobalMisalignment;
+  alignRot2D[0]->SetAlignGlobalDelta(&rot2);
+  alignRot2D[0]->SetName("alignRot2D");
+  //
+  alignTrans0D[0]  =new  AliTPCCalibGlobalMisalignment;
+  alignTrans0D[0]->SetAlignGlobalDelta(&matrixX);
+  alignTrans0D[0]->SetName("alignTrans0D");
+  alignTrans1D[0]=new  AliTPCCalibGlobalMisalignment;
+  alignTrans1D[0]->SetAlignGlobalDelta(&matrixY);
+  alignTrans1D[0]->SetName("alignTrans1D");
+  alignTrans2D[0]=new  AliTPCCalibGlobalMisalignment;
+  alignTrans2D[0]->SetAlignGlobalDelta(&matrixZ);
+  alignTrans2D[0]->SetName("alignTrans2D");
+
+  TObjArray * arrayDX = new TObjArray(72);
+  TObjArray * arrayDY = new TObjArray(72);
+  TObjArray * arrayDPhi = new TObjArray(72);
+  //
+  // Up down A side
+  //
+  for (Int_t isec=0; isec<72; isec++){  //A side
+    TGeoHMatrix *matrixDX = new TGeoHMatrix;
+    TGeoHMatrix *matrixDY = new TGeoHMatrix;
+    TGeoRotation *matrixDPhi= new TGeoRotation;
+    arrayDX->AddAt(matrixDX,isec);
+    arrayDY->AddAt(matrixDY,isec);
+    arrayDPhi->AddAt(matrixDPhi,isec);
+    if (isec%36<18) matrixDX->SetDx(isec%18<9?0.1:-0.1);
+    if (isec%36<18) matrixDY->SetDy(isec%18<9?0.1:-0.1);
+    if (isec%36<18) matrixDPhi->SetAngles((isec%18<9?0.001:-0.001)*TMath::RadToDeg(),0,0);
+  }
+  alignTrans0D[1]  =new  AliTPCCalibGlobalMisalignment;
+  alignTrans0D[1]->SetName("alignTrans0UDA");
+  alignTrans0D[1]->SetAlignSectors((TObjArray *)(arrayDX->Clone()));
+  alignTrans1D[1]  =new  AliTPCCalibGlobalMisalignment;
+  alignTrans1D[1]->SetName("alignTrans1UDA");
+  alignTrans1D[1]->SetAlignSectors((TObjArray *)(arrayDY->Clone()));
+  alignRot0D[1]  =new  AliTPCCalibGlobalMisalignment;
+  alignRot0D[1]->SetName("alignRot0UDA");
+  alignRot0D[1]->SetAlignSectors((TObjArray *)(arrayDPhi->Clone()));
+  //
+  // Uu-down C side
+  //
+  for (Int_t isec=0; isec<72; isec++){  //A side
+    TGeoHMatrix *matrixDX = new TGeoHMatrix;
+    TGeoHMatrix *matrixDY = new TGeoHMatrix;
+    TGeoRotation *matrixDPhi= new TGeoRotation;
+    arrayDX->AddAt(matrixDX,isec);
+    arrayDY->AddAt(matrixDY,isec);
+    arrayDPhi->AddAt(matrixDPhi,isec);
+    if (isec%36>=18) matrixDX->SetDx(isec%18<9?0.1:-0.1);
+    if (isec%36>=18) matrixDY->SetDy(isec%18<9?0.1:-0.1);
+    if (isec%36>=18) matrixDPhi->SetAngles((isec%18<9?0.001:-0.001)*TMath::RadToDeg(),0,0);
+  }
+  alignTrans0D[2]  =new  AliTPCCalibGlobalMisalignment;
+  alignTrans0D[2]->SetName("alignTrans0UDC");
+  alignTrans0D[2]->SetAlignSectors((TObjArray *)(arrayDX->Clone()));
+  alignTrans1D[2]  =new  AliTPCCalibGlobalMisalignment;
+  alignTrans1D[2]->SetName("alignTrans1UDC");
+  alignTrans1D[2]->SetAlignSectors((TObjArray *)(arrayDY->Clone()));
+  alignRot0D[2]  =new  AliTPCCalibGlobalMisalignment;
+  alignRot0D[2]->SetName("alignRot0UDC");
+  alignRot0D[2]->SetAlignSectors((TObjArray *)(arrayDPhi->Clone()));
+  //
+
+
+  //
   AliTPCCorrection::AddVisualCorrection(alignTrans0  ,200);
   AliTPCCorrection::AddVisualCorrection(alignTrans1  ,201);
   AliTPCCorrection::AddVisualCorrection(alignTrans2  ,202);
   AliTPCCorrection::AddVisualCorrection(alignRot0    ,203);
   AliTPCCorrection::AddVisualCorrection(alignRot1    ,204);
   AliTPCCorrection::AddVisualCorrection(alignRot2    ,205);
-  //
-  TObjArray arrAlign(6);
-  arrAlign.AddAt(alignTrans0->Clone(),0);
-  arrAlign.AddAt(alignTrans1->Clone(),1);
-  arrAlign.AddAt(alignTrans2->Clone(),2);
-  arrAlign.AddAt(alignRot0->Clone(),3);
-  arrAlign.AddAt(alignRot1->Clone(),4);
-  arrAlign.AddAt(alignRot2->Clone(),5);
-  //combAlign.SetCorrections((TObjArray*)arrAlign.Clone());
+ 
 }
 
 
@@ -480,7 +573,7 @@ void RegisterAliTPCBoundaryVoltError(){
     corrField=(AliTPCCorrection *)boundaryVoltErrorC[ipar]->Clone();
     corrField->SetOmegaTauT1T2(wtP,T1,T2);
     AliTPCCorrection::AddVisualCorrection(corrField,130+ipar);
-
+    // correction for +-0.5 T setting
     corrField=(AliTPCCorrection *)boundaryVoltErrorA[ipar]->Clone();
     corrField->SetOmegaTauT1T2(wtM,T1,T2);
     AliTPCCorrection::AddVisualCorrection(corrField,140+ipar);
@@ -542,6 +635,41 @@ void RegisterAliTPCExBTwist(){
   AliTPCCorrection::AddVisualCorrection(twistY,601); 
 }
 
+void RegisterAliTPCCorrectionDrift(){
+  //
+  // Drift distortion/correction
+  //
+  for (Int_t idrift=0; idrift<7; idrift++) {
+    calibDrift[idrift]=new AliTPCCorrectionDrift;
+  }
+  calibDrift[0]->SetName("driftT0");
+  calibDrift[0]->SetTitle("driftT0");
+  calibDrift[0]->fZ0Aside=0.1; 
+  calibDrift[0]->fZ0Cside=0.1;
+  calibDrift[1]->SetName("driftScale0");
+  calibDrift[1]->SetTitle("driftScale0");
+  calibDrift[1]->fVScale0=0.001;
+  calibDrift[2]->SetName("driftScaleR");
+  calibDrift[2]->SetTitle("driftScaleR");
+  calibDrift[2]->fVScaleR=0.001;
+  calibDrift[3]->SetName("driftScaleX");
+  calibDrift[3]->SetTitle("driftScaleX");
+  calibDrift[3]->fVScaleX=0.001;
+  calibDrift[4]->SetName("driftScaleY");
+  calibDrift[4]->SetTitle("driftScaleY");
+  calibDrift[4]->fVScaleY=0.001;
+  //
+  calibDrift[5]->SetName("driftIROCDZ");
+  calibDrift[5]->SetTitle("driftIROCDZ");
+  calibDrift[5]->fIROCZ0=0.1; //delta Z for IROCORC
+  //
+  calibDrift[6]->SetName("driftOROCDT");
+  calibDrift[6]->SetTitle("driftOROCDT");
+  calibDrift[6]->fOROCDZ=0.001; //delta Z for IROCORC
+  
+
+}
+
 
 void RegisterAliTPCROCVoltError3D(){
   //
@@ -563,8 +691,14 @@ void RegisterAliTPCROCVoltError3D(){
   rocRotgYC=0;     // roc rotation C side - inclination in Y
   rocDzIROCA=0;      // roc shift A side - in Z
   rocDzIROCC=0;      // roc shift C side - in Z
+  //
+  rocDzUDA=0;        // roc shift up-down - A side
+  rocDzUDC=0;        // roc shift up-down - C side
+  //
   rocRotIROCA=0;      // roc rot IROC A side - in Z
   rocRotIROCC=0;      // roc rot OROC C side - in Z
+  rocRotUDA=0;        // roc rot updown A side
+  rocRotUDC=0;        // roc rot updown C side
  //
   printf("RegisterAliTPCROCVoltError3D()");
   Double_t kAngle=0.001;
@@ -597,10 +731,18 @@ void RegisterAliTPCROCVoltError3D(){
     rocDzIROCA=(AliTPCROCVoltError3D*)iter->FindObject("rocDzIROCA");  
    
     rocDzIROCC=(AliTPCROCVoltError3D*)iter->FindObject("rocDzIROCC");  
+    //
+    rocDzUDA=(AliTPCROCVoltError3D*)iter->FindObject("rocDzUDA");  
+   
+    rocDzUDC=(AliTPCROCVoltError3D*)iter->FindObject("rocDzUDC");  
 
     rocRotIROCA=(AliTPCROCVoltError3D*)iter->FindObject("rocRotIROCA");  
    
     rocRotIROCC=(AliTPCROCVoltError3D*)iter->FindObject("rocRotIROCC");  
+
+    rocRotUDA=(AliTPCROCVoltError3D*)iter->FindObject("rocRotUDA");  
+   
+    rocRotUDC=(AliTPCROCVoltError3D*)iter->FindObject("rocRotUDC");  
      
   } else {
     corrField3D = new AliTPCComposedCorrection;
@@ -610,8 +752,12 @@ void RegisterAliTPCROCVoltError3D(){
     rocRotgYC=new AliTPCROCVoltError3D;  
     rocDzIROCA=new AliTPCROCVoltError3D;  
     rocDzIROCC=new AliTPCROCVoltError3D;  
+    rocDzUDA=new AliTPCROCVoltError3D;  
+    rocDzUDC=new AliTPCROCVoltError3D;  
     rocRotIROCA=new AliTPCROCVoltError3D;  
     rocRotIROCC=new AliTPCROCVoltError3D;  
+    rocRotUDA=new AliTPCROCVoltError3D;  
+    rocRotUDC=new AliTPCROCVoltError3D;  
     //
     for (Int_t isec=0; isec<72; isec++){
       Double_t secAlpha = TMath::DegToRad()*(10.+20.*(((Int_t)isec)%18));
@@ -678,6 +824,28 @@ void RegisterAliTPCROCVoltError3D(){
       }
     }
     rocDzIROCC->SetROCData(&matrix);
+
+    //
+    //
+    for (Int_t isec=0; isec<72; isec++){
+      matrix(isec,0)=0; matrix(isec,1)=0; matrix(isec,2)=0;
+      if (isec%36<18){
+        matrix(isec,0) = (isec%18<9)? 0.05:-0.05;  // 1 mm 
+        matrix(isec,1) = 0;
+        matrix(isec,2) = 0;
+      }
+    }
+    rocDzUDA->SetROCData(&matrix);
+    //
+    for (Int_t isec=0; isec<72; isec++){
+      matrix(isec,0)=0; matrix(isec,1)=0; matrix(isec,2)=0;
+      if (isec%36>=18){
+        matrix(isec,0) = (isec%18<9)?0.05:-0.05;  // 1 mm 
+        matrix(isec,1) = 0;
+        matrix(isec,2) = 0;
+      }
+    }
+    rocDzUDC->SetROCData(&matrix);
     //
     //
     for (Int_t isec=0; isec<72; isec++){
@@ -688,6 +856,7 @@ void RegisterAliTPCROCVoltError3D(){
         matrix(isec,2) = 0;
       }
     }
+    //
     rocRotIROCA->SetROCData(&matrix);
     //
     for (Int_t isec=0; isec<72; isec++){
@@ -699,6 +868,28 @@ void RegisterAliTPCROCVoltError3D(){
       }
     }
     rocRotIROCC->SetROCData(&matrix);
+    //
+    //
+    for (Int_t isec=0; isec<72; isec++){
+      matrix(isec,0)=0; matrix(isec,1)=0; matrix(isec,2)=0;
+      if (isec%36<18){
+        matrix(isec,0) = 0;   
+        matrix(isec,1) = (isec%18<9)?kAngle:-kAngle;
+        matrix(isec,2) = 0;
+      }
+    }
+    //
+    rocRotUDA->SetROCData(&matrix);
+    //
+    for (Int_t isec=0; isec<72; isec++){
+      matrix(isec,0)=0; matrix(isec,1)=0; matrix(isec,2)=0;
+      if (isec%36>=18){
+        matrix(isec,0) = 0;
+        matrix(isec,1) = (isec%18<9)?kAngle:-kAngle;
+        matrix(isec,2) = 0;
+      }
+    }
+    rocRotUDC->SetROCData(&matrix);
 
 
     //
@@ -708,8 +899,12 @@ void RegisterAliTPCROCVoltError3D(){
     rocRotgYC->SetElectronArrivalCorrection(kFALSE);
     rocDzIROCA->SetElectronArrivalCorrection(kFALSE);
     rocDzIROCC->SetElectronArrivalCorrection(kFALSE);
+    rocDzUDA->SetElectronArrivalCorrection(kFALSE);
+    rocDzUDC->SetElectronArrivalCorrection(kFALSE);
     rocRotIROCA->SetElectronArrivalCorrection(kFALSE);
     rocRotIROCC->SetElectronArrivalCorrection(kFALSE);
+    rocRotUDA->SetElectronArrivalCorrection(kFALSE);
+    rocRotUDC->SetElectronArrivalCorrection(kFALSE);
 
     /* // verification plots
     rocRotgXA.CreateHistoOfZAlignment(0,500,500)->Draw("surf2"); 
@@ -725,8 +920,12 @@ void RegisterAliTPCROCVoltError3D(){
     rocRotgYC->SetName("rocRotgYC");rocRotgYC->SetTitle("rocRotgYC");
     rocDzIROCA->SetName("rocDzIROCA");rocDzIROCA->SetTitle("rocDzIROCA");
     rocDzIROCC->SetName("rocDzIROCC");rocDzIROCC->SetTitle("rocDzIROCC");
+    rocDzUDA->SetName("rocDzUDA");rocDzUDA->SetTitle("rocDzUDA");
+    rocDzUDC->SetName("rocDzUDC");rocDzUDC->SetTitle("rocDzUDC");
     rocRotIROCA->SetName("rocRotIROCA");rocRotIROCA->SetTitle("rocRotIROCA");
     rocRotIROCC->SetName("rocRotIROCC");rocRotIROCC->SetTitle("rocRotIROCC");
+    rocRotUDA->SetName("rocRotUDA");rocRotUDA->SetTitle("rocRotUDA");
+    rocRotUDC->SetName("rocRotUDC");rocRotUDC->SetTitle("rocRotUDC");
     //
     //
     TObjArray *cs = new TObjArray();
@@ -736,8 +935,12 @@ void RegisterAliTPCROCVoltError3D(){
     cs->Add(rocRotgYC);
     cs->Add(rocDzIROCA);
     cs->Add(rocDzIROCC);
+    cs->Add(rocDzUDA);
+    cs->Add(rocDzUDC);
     cs->Add(rocRotIROCA);
     cs->Add(rocRotIROCC);
+    cs->Add(rocRotUDA);
+    cs->Add(rocRotUDC);
     corrField3D->SetCorrections(cs);
     corrField3D->SetOmegaTauT1T2(0,1.,1.);
     corrField3D->Print();
@@ -746,12 +949,6 @@ void RegisterAliTPCROCVoltError3D(){
     corrField3D->Print("da");
     fCorrectionsROC->cd();
     corrField3D->Write("TPCROCVoltError3DRotationgXgY");
-    //     rocRotgXA->Write();       
-    //     rocRotgYA->Write(); 
-    //     rocRotgXC->Write(); 
-    //     rocRotgYC->Write(); 
-    //     rocDzIROCA->Write(); 
-    //     rocDzIROCC->Write(); 
   }
   AliTPCCorrection::AddVisualCorrection(rocRotgXA,701); 
   AliTPCCorrection::AddVisualCorrection(rocRotgYA,702); 
@@ -759,8 +956,12 @@ void RegisterAliTPCROCVoltError3D(){
   AliTPCCorrection::AddVisualCorrection(rocRotgYC,704); 
   AliTPCCorrection::AddVisualCorrection(rocDzIROCA,705); 
   AliTPCCorrection::AddVisualCorrection(rocDzIROCC,706); 
+  AliTPCCorrection::AddVisualCorrection(rocDzUDA,709); 
+  AliTPCCorrection::AddVisualCorrection(rocDzUDC,710); 
   AliTPCCorrection::AddVisualCorrection(rocRotIROCA,707); 
   AliTPCCorrection::AddVisualCorrection(rocRotIROCC,708); 
+  AliTPCCorrection::AddVisualCorrection(rocRotUDA,711); 
+  AliTPCCorrection::AddVisualCorrection(rocRotUDC,712); 
 
   AliTPCCorrection *corrPlus =0; 
   //
@@ -1052,50 +1253,154 @@ AliTPCComposedCorrection * MakeComposedCorrectionExB(){
   //
   RegisterCorrection();
   //
-  //Double_t bzField=AliTrackerBase::GetBz();    
-  //  AliMagF* magF= (AliMagF*)(TGeoGlobalMagField::Instance()->GetField());
-  //Double_t vdrift = 2.6; // [cm/us]   // to be updated: per second (ideally)
-  //Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
-  //  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
-  //Double_t T1 = 1.0;
-  //Double_t T2 = 1.0;
+   //
+  TObjArray * corr = new TObjArray;       // primitive corrections - for fitting
+  TObjArray * testCorr = new TObjArray;   // test corrections - to be used as benchmark for fitting
   //
-  TObjArray * corr = new TObjArray;
   corr->AddLast(twistX);
   corr->AddLast(twistY);
+  corr->AddLast(exbShape);
+  corr->AddLast(exbShapeT1X);
+  corr->AddLast(exbShapeT2X);
+  //
   for (Int_t i=0; i<8; i++){
     corr->AddLast(boundaryVoltErrorA[i]);
     corr->AddLast(boundaryVoltErrorC[i]);
   }
+  //
+  // ROD alignment
+  //
+  corr->AddLast(rodIFCCos);
+  corr->AddLast(rodIFCSin);
+  corr->AddLast(rodOFCSin);
+  corr->AddLast(rodOFCCos);
+  //alignment
   corr->AddLast(alignTrans0);
   corr->AddLast(alignTrans1);
   corr->AddLast(alignTrans2);
   corr->AddLast(alignRot0);
   corr->AddLast(alignRot1);
   corr->AddLast(alignRot2);
-  corr->AddLast(rocRotgXA);
-  corr->AddLast(rocRotgYA);
-  corr->AddLast(rocRotgXC);
-  corr->AddLast(rocRotgYC);
-  corr->AddLast(exbShape);
-  corr->AddLast(exbShapeT1X);
-  corr->AddLast(exbShapeT2X);
-  corr->AddLast(rocRotgXA);
+  //
+  corr->AddLast(alignTrans0D[0]);
+  corr->AddLast(alignTrans1D[0]);
+  corr->AddLast(alignTrans2D[0]);
+  corr->AddLast(alignRot0D[0]);
+  corr->AddLast(alignRot1D[0]);
+  corr->AddLast(alignRot2D[0]);
+  corr->AddLast(alignTrans0D[1]);
+  corr->AddLast(alignTrans1D[1]);
+  corr->AddLast(alignRot0D[1]);
+  corr->AddLast(alignTrans0D[2]);
+  corr->AddLast(alignTrans1D[2]);
+  corr->AddLast(alignRot0D[2]);
+  //
+  // z alignment + E field distortion due z misalignment
+  //
+  corr->AddLast(rocRotgXA);  // A side C side
   corr->AddLast(rocRotgYA);
   corr->AddLast(rocRotgXC);
   corr->AddLast(rocRotgYC);
   corr->AddLast(rocDzIROCA);
   corr->AddLast(rocDzIROCC);
+  corr->AddLast(rocRotIROCA);
+  corr->AddLast(rocRotIROCC);
+  corr->AddLast(rocDzUDA);
+  corr->AddLast(rocDzUDC);
+  corr->AddLast(rocRotUDA);
+  corr->AddLast(rocRotUDC);
+  //
+  //
+  corr->AddLast(calibDrift[0]);
+  corr->AddLast(calibDrift[1]);
+  corr->AddLast(calibDrift[2]);
+  corr->AddLast(calibDrift[3]);
+  corr->AddLast(calibDrift[4]);
+  corr->AddLast(calibDrift[5]);
+  corr->AddLast(calibDrift[6]);
+  //
+  // setup test correction 
+  // 
+  testCorr->AddLast(rodIFCCos);
+  testCorr->AddLast(rodIFCSin);
+  testCorr->AddLast(rodOFCSin);
+  testCorr->AddLast(rodOFCCos);
+  //
+  testCorr->AddLast(twistX);
+  testCorr->AddLast(twistY);
+  testCorr->AddLast(alignTrans0);
+  testCorr->AddLast(alignTrans1);
+  testCorr->AddLast(alignTrans2);
+  testCorr->AddLast(alignRot0);
+  testCorr->AddLast(alignRot1);
+  testCorr->AddLast(alignRot2);  
+  testCorr->AddLast(rocRotgXA);  // A side C side
+  testCorr->AddLast(rocRotgYA);
+  testCorr->AddLast(rocRotgXC);
+  testCorr->AddLast(rocRotgYC);
+  testCorr->AddLast(rocDzIROCA);
+  testCorr->AddLast(rocDzIROCC);
+  testCorr->AddLast(rocRotIROCA);
+  testCorr->AddLast(rocRotIROCC);
+  Int_t entries=testCorr->GetEntries();
+  TVectorD weights(entries);
+  for (Int_t i=0; i<entries; i++) weights[i]=1;
+  //
+  AliTPCComposedCorrection *composedTest= new AliTPCComposedCorrection ;
+  composedTest->SetName("FitSample");
+  composedTest->SetTitle("FitSample");
+  composedTest->SetCorrections(testCorr);
+  composedTest->SetWeights(&weights);
+  //
+  corr->AddLast(composedTest);
   AliTPCComposedCorrection *cc= new AliTPCComposedCorrection ;
   cc->SetCorrections((TObjArray*)(corr));
-  //cc->SetOmegaTauT1T2(wt,T1,T2);  
-  //exbShapeT1X->SetOmegaTauT1T2(0,1.2,1.0);
-  //exbShapeT2X->SetOmegaTauT1T2(0,1.0,1.2);
-  //cc->Init();
+   //cc->Init();
   cc->Print("DA"); // Print used correction classes
   cc->SetName("ComposedExB");
   TFile fexb("RegisterCorrectionExB.root","recreate");
   cc->Write("ComposedExB");
   fexb.Close();
+  return cc;
+}
+
+
+AliTPCComposedCorrection * GetCorrectionFromFile(){
+  //
+  // Getthe appropariate correction form the closest file
+  //
+  TFile * fexb= TFile::Open("RegisterCorrectionExB.root");
+  if (!fexb)  fexb= TFile::Open("../RegisterCorrectionExB.root");
+  if (!fexb)  fexb= TFile::Open("../../RegisterCorrectionExB.root");
+  if (!fexb)  fexb= TFile::Open("../../../RegisterCorrectionExB.root");
+  //
+  if (!fexb)   return 0;
+  TFile * fitter= TFile::Open("fitCorrection.root");
+
+  if (!fitter)  fitter= TFile::Open("../fitCorrection.root");
+  if (!fitter)  fitter= TFile::Open("../../fitCorrection.root");
+  if (!fitter)  fitter= TFile::Open("../../../fitCorrection.root");
+  //
+  AliTPCComposedCorrection *cc=  (AliTPCComposedCorrection*) fexb->Get("ComposedExB");
+  {if (!cc){
+    printf("File or correction RegisterCorrectionExB.root doees not exist or corrupted\n\n\n");
+    return 0;
+    }}
+  TObjArray * corr = (TObjArray*)(cc->GetCorrections());
+  TObjArray * corrLocal =new TObjArray;
+  TObjArray * corrGlobal =new TObjArray;
+  //
+  if (fitter){
+    if (fitter->GetKey("FitBoundary")) corr->AddLast(fitter->Get("FitBoundary"));
+    if (fitter->GetKey("FitExBTwist"))  corr->AddLast(fitter->Get("FitExBTwist"));
+    if (fitter->GetKey("FitAlignGlobal"))  corr->AddLast(fitter->Get("FitAlignGlobal"));
+    if (fitter->GetKey("FitRodAlignGloba"))  corr->AddLast(fitter->Get("FitRodAlignGlobal"));
+    if (fitter->GetKey("FitRocAlignGlobal"))  corr->AddLast(fitter->Get("FitRocAlignGlobal"));  
+    if (fitter->GetKey("FitRocAlignZ"))  corr->AddLast(fitter->Get("FitRocAlignZ"));
+    if (fitter->GetKey("FitAlignLocal"))  corr->AddLast(fitter->Get("FitAlignLocal"));
+    if (fitter->GetKey("FitAlignTPC"))  corr->AddLast(fitter->Get("FitAlignTPC"));
+    if (fitter->GetKey("FitAlignTOF"))  corr->AddLast(fitter->Get("FitAlignTOF"));
+    if (fitter->GetKey("FitAlignTRD"))  corr->AddLast(fitter->Get("FitAlignTRD"));
+  }
   return cc;
 }

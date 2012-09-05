@@ -22,8 +22,17 @@
   
  
 1. Creation of the distortion maps from the residual histograms
+
 2. Making fit trees
-3. Parameters to calculate-  dO/dp
+
+3. Space point distortion not directly observable. Instead a derived variables
+   like DCA at vertex, local y distortion in the TPC-*TOF,TRD,ITS) matching
+   in all 5 tracking parameters are obsereved.
+   In the AliTPCcorrection fir code we calculate the derivative of given variables
+   dO_{i}/dp_{i}
+
+4. Global fit - later
+   d0 = sum{ki*dO_{i}/dp_{i}}  - linear fitting of the amplitudes ki
 
  Some functions, for the moment function present in the AliTPCPreprocesorOffline, some will be 
  extracted from the old macros 
@@ -77,6 +86,7 @@
 #include "TDatabasePDG.h"
 #include "AliTPCcalibAlign.h"
 #include "AliLog.h"
+#include "AliRieman.h"
 
 ClassImp(AliTPCCorrectionFit)
 
@@ -97,7 +107,7 @@ AliTPCCorrectionFit::~AliTPCCorrectionFit() {
 
 Double_t AliTPCCorrectionFit::EvalAt(Double_t phi, Double_t refX, Double_t theta, Int_t corr, Int_t ptype){
   //
-  //
+  // Evalution at point using the lienar approximation
   //
   Double_t sector = 9*phi/TMath::Pi();
   if (sector<0) sector+=18;
@@ -114,12 +124,23 @@ Double_t AliTPCCorrectionFit::EvalAt(Double_t phi, Double_t refX, Double_t theta
 Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps){
   //
   // Fit the distortion along the line with the parabolic model
+  // We assume that the track are primaries  - where the vertex is at (0,0,0)
+  //
   // Parameters:
-  //  phi0 - phi at the entrance of the TPC
-  //  snp  - local inclination angle at the entrance of the TPC
-  //  refX - ref X where the distortion is evanluated
-  //  theta
-  //  
+  //  phi0  -  phi at the entrance of the TPC
+  //  snp   -  local inclination angle at the entrance of the TPC
+  //  refX  -  ref X where the distortion is evanluated
+  //  theta -  inclination angle
+  //  corr  -  internal number of the correction and distortion 
+  //  ptype -  0 - local y distortion
+  //           //1 - local z distortion
+  //           2 - local derivative distortion
+  //           //3
+  //           4 - distortion in the curvature
+  //  nsteps - number of fit points
+  //
+  // return value -  distortion at point refX with type ptype
+  //
   static TLinearFitter fitter(3,"pol2"); 
   fitter.ClearPoints();
   if (nsteps<3) nsteps=3;
@@ -130,10 +151,10 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
     Double_t localPhi=phi0+deltaX*snp*istep;
     Double_t sector = 9*localPhi/TMath::Pi();
     if (sector<0) sector+=18;
-    Double_t y=AliTPCCorrection::GetCorrSector(sector,localX,theta,1,corr);
+    Double_t dy=AliTPCCorrection::GetCorrSector(sector,localX,theta,1,corr);
     Double_t dlocalX=AliTPCCorrection::GetCorrSector(sector,localX,theta,0,corr);
     Double_t x[1]={localX-dlocalX};
-    fitter.AddPoint(x,y);
+    fitter.AddPoint(x,dy);
   }
   fitter.Eval();
   Double_t par[3];
@@ -144,6 +165,52 @@ Double_t AliTPCCorrectionFit::EvalAtPar(Double_t phi0, Double_t snp, Double_t re
   if (ptype==0) return par[0]+par[1]*refX+par[2]*refX*refX;
   if (ptype==2) return par[1]+2*par[2]*refX;
   if (ptype==4) return par[2];
+  return 0;
+}
+
+
+Double_t AliTPCCorrectionFit::EvalAtHelix(Double_t phi0, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nsteps){
+  //
+  // Fit the distortion along the line with the helix model
+  // We assume that the track are primaries  - where the vertex is at (0,0,0)
+  //
+  // Parameters:
+  //  phi0  -  phi at the entrance of the TPC
+  //  snp   -  local inclination angle at the entrance of the TPC
+  //  refX  -  ref X where the distortion is evanluated
+  //  theta -  inclination angle
+  //  corr  -  internal number of the correction and distortion 
+  //  ptype -  0 - local y distortion
+  //           //1 - local z distortion
+  //           2 - local derivative distortion
+  //           //3
+  //           4 - distortion in the curvature
+  //  nsteps - number of fit points
+  //
+  // return value -  distortion at point refX with type ptype
+  //
+  if (nsteps<3) nsteps=3;
+  Double_t deltaX=(245-85)/(nsteps);
+  AliRieman rieman(nsteps);
+
+  for (Int_t istep=0; istep<(nsteps+1); istep++){
+    //
+    Double_t localX =85.+deltaX*istep;
+    Double_t localPhi=phi0+deltaX*snp*istep;
+    Double_t sector = 9*localPhi/TMath::Pi();
+    if (sector<0) sector+=18;
+    Double_t dy=AliTPCCorrection::GetCorrSector(sector,localX,theta,1,corr);
+    Double_t dlocalX=AliTPCCorrection::GetCorrSector(sector,localX,theta,0,corr);
+    Double_t x[1]={localX-dlocalX};
+    Double_t z=theta*x[0];
+    rieman.AddPoint(x[0],dy,z,0.1,0.1);
+  }
+  rieman.Update();
+  //
+ 
+  if (ptype==0) return rieman.GetYat(refX);
+  if (ptype==2) return rieman.GetDYat(refX);
+  if (ptype==4) return rieman.GetC();
   return 0;
 }
 
