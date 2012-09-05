@@ -319,7 +319,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       //Play with the MC stack if available		
       Int_t mompdg = -1;
       Int_t label  = tr->GetLabel();
-      if(label > 0)
+      if(label >= 0)
       {
         if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
         {
