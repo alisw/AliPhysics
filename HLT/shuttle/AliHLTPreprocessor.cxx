@@ -121,11 +121,13 @@ void AliHLTPreprocessor::Initialize(Int_t run, UInt_t startTime,
     if (pProc) 
       {
 
-	// test if pProc is necessary, if not, take next one
-	if((pProc->GetModuleNumber() & fActiveDetectors) == 0)
+	// filter preprocessors according to active detector pattern
+	// don't filter if module returns 0 (i.e. always active)
+	int moduleNo=pProc->GetModuleNumber();
+	if(moduleNo>0 && (moduleNo & fActiveDetectors) == 0)
 	  {
 	    TString msg;
-	    msg.Form("%s not needed", pProc->GetModuleID());
+	    msg.Form("preprocessor module %s inactive", pProc->GetModuleID());
 	    Log(msg.Data());
 	    continue;
 	  }
@@ -149,7 +151,7 @@ UInt_t AliHLTPreprocessor::Process(TMap* dcsAliasMap)
     return 0;
   }
 
-  bool bAllFailed=true;
+  bool bAllFailed=fProcessors.GetEntries()>0;
   TObjLink *lnk = NULL;
   lnk=fProcessors.FirstLink();
   while (lnk) {
@@ -167,6 +169,7 @@ UInt_t AliHLTPreprocessor::Process(TMap* dcsAliasMap)
     lnk = lnk->Next();
   }
 
+  // error if all preprocessors failed
   if (bAllFailed) return 1;
   return retVal;
 }
