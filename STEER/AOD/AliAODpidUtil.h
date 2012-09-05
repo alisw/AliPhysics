@@ -32,15 +32,8 @@ public:
   AliAODpidUtil(Bool_t isMC = kFALSE): AliPIDResponse(isMC) {;}
   virtual ~AliAODpidUtil() {;}
 
-  Int_t MakePID(const AliAODTrack *track,Double_t *p) const;
-  void MakeTPCPID(const AliAODTrack *track,Double_t *p) const;
-  void MakeITSPID(const AliAODTrack *track,Double_t *p) const;
-  void MakeTOFPID(const AliAODTrack *track,Double_t *p) const;
-  //  void MakeHMPIDPID(AliESDtrack *track);
-  void MakeTRDPID(const AliAODTrack *track,Double_t *p) const;
 
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const;
-  
   Float_t GetTPCsignalTunedOnData(const AliVTrack *t) const;
 
 private:
