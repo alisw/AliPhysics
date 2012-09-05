@@ -314,37 +314,47 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       fhEtaPhiNeg->Fill(tr->Eta(),tr->Phi());
     }
     
-    if(IsDataMC()){
+    if(IsDataMC())
+    {
       //Play with the MC stack if available		
       Int_t mompdg = -1;
-      Int_t label  = TMath::Abs(tr->GetLabel());
-      if(GetReader()->ReadStack()){
-        TParticle * mom = GetMCStack()->Particle(label);
-        mompdg =TMath::Abs(mom->GetPdgCode());
-      }
-      else if(GetReader()->ReadAODMCParticles()){
-        AliAODMCParticle * aodmom = 0;
-        //Get the list of MC particles
-        aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(tr->GetInputFileIndex()))->At(label);
-        mompdg =TMath::Abs(aodmom->GetPdgCode());
+      Int_t label  = tr->GetLabel();
+      if(label > 0)
+      {
+        if( GetReader()->ReadStack() && label < GetMCStack()->GetNtrack())
+        {
+          TParticle * mom = GetMCStack()->Particle(label);
+          mompdg =TMath::Abs(mom->GetPdgCode());
+        }
+        else if(GetReader()->ReadAODMCParticles())
+        {
+          AliAODMCParticle * aodmom = 0;
+          //Get the list of MC particles
+          aodmom = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(tr->GetInputFileIndex()))->At(label);
+          mompdg =TMath::Abs(aodmom->GetPdgCode());
+        }
       }
       
-      if(mompdg==211){
+      if(mompdg==211)
+      {
         fhPtPion ->Fill(tr->Pt());
         fhPhiPion->Fill(tr->Pt(), tr->Phi());
         fhEtaPion->Fill(tr->Pt(), tr->Eta());
       }
-      else if(mompdg==2212){
+      else if(mompdg==2212)
+      {
         fhPtProton ->Fill(tr->Pt());
         fhPhiProton->Fill(tr->Pt(), tr->Phi());
         fhEtaProton->Fill(tr->Pt(), tr->Eta());
       }
-      else if(mompdg==321){
+      else if(mompdg==321)
+      {
         fhPtKaon ->Fill(tr->Pt());
         fhPhiKaon->Fill(tr->Pt(), tr->Phi());
         fhEtaKaon->Fill(tr->Pt(), tr->Eta());
       }
-      else if(mompdg==11){
+      else if(mompdg==11)
+      {
         fhPtElectron ->Fill(tr->Pt());
         fhPhiElectron->Fill(tr->Pt(), tr->Phi());
         fhEtaElectron->Fill(tr->Pt(), tr->Eta());
