@@ -433,12 +433,12 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   }
 
   //---------------CENTRALITY SELECTION-----------------------    
-  SetCentralityParameters(0., 10., "V0M");
+/*  SetCentralityParameters(0., 10., "V0M");
   Bool_t pass = kFALSE; //to select centrality
   CheckCentrality(fESD,pass);
 
   if(!pass)return;
-
+*/
   if(!fPID->IsInitialized()){ 
     // Initialize PID with the given run number
     AliWarning("PID not initialised, get from Run no");
@@ -455,12 +455,12 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
   if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
 
-/*  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
+  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
 
   Float_t centvalue = fCentrality->GetCentralityPercentile("V0M");
   fcentrality->Fill(centvalue);    
   if(centvalue<0 || centvalue>10) return;
-*/
+
   Int_t fNOtrks =  fESD->GetNumberOfTracks();
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
 
