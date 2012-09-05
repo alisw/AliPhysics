@@ -35,13 +35,30 @@ public:
   Double_t CheckRec(TObjArray *listrec, TObjArray *listref) const ;
   Double_t CheckSim(TObjArray *listsim, TObjArray *listref) const ;
 
+  Double_t CheckRaw(Int_t specie, TObjArray* list);
+
+  void    InitOnlineThresholds();
+  void    PrintThresholds();
+  
+  
 private:
   AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) ; // cpy ctor   
   AliHMPIDQAChecker& operator= (const AliHMPIDQAChecker&); // Not implemented
   Bool_t        fNoReference ; //! flag telling if reference data hqve been found or not  
   TObjArray *   fQARefRec ;    //! Reference data from OCDB 
-      
-  ClassDef(AliHMPIDQAChecker,1)  // description 
+  
+  Int_t         fHmpQaThr_NumberOfExcludedDDL;                //
+  Int_t         fHmpQaThr_DataSizeLowerThreshold;             //
+  Int_t         fHmpQaThr_DataSizeUpperThreshold;             //
+  Float_t       fHmpQaThr_PadOccupancyLowerThreshold;         //
+  Float_t       fHmpQaThr_PadOccupancyUpperThreshold;         //
+  Int_t         fHmpQaThr_SectorGainLossWarningThreshold;     //
+  Int_t         fHmpQaThr_SectorGainLossErrorThreshold;       //
+  Float_t       fHmpQaThr_MissingPadFractionWarningThreshold; //
+  Float_t       fHmpQaThr_MissingPadFractionErrorThreshold;   //
+  Bool_t        fIsOnlineThr;                                 // 
+  
+  ClassDef(AliHMPIDQAChecker,2)  // description 
 
 };
 
