@@ -22,6 +22,7 @@
 // ### General Steering variables
 // =============================================================================
 //== general setup variables
+Int_t       iRunFlag = 0;
 TString     kTrainName         = "testAnalysis"; // *CHANGE ME* (no blancs or special characters)
 TString     kJobTag            = "PWGJE Jet Tasks analysis train configured"; // *CHANGE ME*
 
@@ -85,7 +86,7 @@ Bool_t      kIsPbPb             = kFALSE;  // Pb+Pb
 Int_t       iJETAN             = 1;      // Jet analysis  // 1 write standard 2 write non-standard jets, 3 wrtie both
 Int_t       iJETANReader       = 0;      // Jet analysis  // DEV
 Int_t       iJETANFinder       = 0;      // Jet analysis  // DEV
-Int_t       iJETSUBTRACT        = 0;      // Jet background subtration
+Int_t       iJETSUBTRACT        = 1;      // Jet background subtration
 TList       kJetListSpectrum;             // list of jets contains TObjString of possible jet finder names
 TExMap      kJetMapSpectrum;             // Maps the jet finder pairs to be used in the spectrum task second number negative no pair other wise (j1+1) + (1000 * (j2+1)) +10000 * (j3+1)
 TExMap      kJetBackMapSpectrum;             // Maps the jet finder pairs with the background branch used, just for countint of trackrefs
@@ -339,7 +340,7 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
    }   
 
    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/ConfigLegoTrainPWGJE.C");
-   ConfigLegoTrainPWGJE(1108);
+   ConfigLegoTrainPWGJE(1008);
    // Create input handler (input container created automatically)
    if (iAODanalysis) {
    // AOD input handler
@@ -970,12 +971,14 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
      taskjetServ->SetZVertexCut(fVertexWindow);
      taskjetServ->SetFilterMask(kHighPtFilterMask);
 
+     taskjetServ->SetDebugLevel(10);
+
+
      if(kIsPbPb)taskjetServ->SetCollisionType(AliAnalysisTaskJetServices::kPbPb);
      else taskjetServ->SetCollisionType(AliAnalysisTaskJetServices::kPP);
      if(kIsPbPb){
        if(kDeltaAODJetName.Length()>0&&kFilterAOD)taskjetServ->SetFilterAODCollisions(kTRUE);
        //       else if(iAODanalysis)taskjetServ->SetFilterAODCollisions(kTRUE);
-       //       taskjetServ->SetDebugLevel(3);
      }
      if(iAODanalysis){
        //  
@@ -1484,7 +1487,7 @@ void CheckModuleFlags(const char *mode) {
    }
 
    // Decide if we have PbPb
-   if(kGridDataSet.CompareTo("LHC10h")==0||kGridDataSet.Contains("LHC10h")) {
+   if(kGridDataSet.CompareTo("LHC10h")==0||kGridDataSet.Contains("LHC10h")||kGridDataSet.CompareTo("LHC11h")==0||kGridDataSet.Contains("LHC11h")) {
      Printf("Using settings for Pb+Pb");
      kIsPbPb = true;
    }

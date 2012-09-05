@@ -49,6 +49,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
     virtual void SetZVertexCut(Float_t f){fVtxZCut = f;}
+    virtual void SetDeltaZVertexCut(Float_t f){fVtxDeltaZCut = f;}
     virtual void SetPtMinCosmic(Float_t ptMin) {fPtMinCosmic = ptMin;}
     virtual void SetRMinCosmic(Float_t rMin) {fRIsolMinCosmic = rMin;}
     virtual void SetMaxCosmicAngle(Float_t angle)   {fMaxCosmicAngle = angle;}
@@ -73,8 +74,8 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Bool_t IsVertexValid(const AliESDVertex *vtx);
     Bool_t IsVertexValid(const AliAODVertex *vtx) const;
 
-    Bool_t IsVertexIn(const AliESDVertex *vtx);
-    Bool_t IsVertexIn(const AliAODVertex *vtx) const;
+    Bool_t IsVertexIn(const AliESDVertex *vtx,const AliESDVertex *vtxSPD);
+    Bool_t IsVertexIn(const AliAODVertex *vtx,const AliAODVertex *vtxSPD) const;
     Int_t GetEventClass(AliESDEvent *esd);
     Int_t GetEventClass(AliAODEvent *aod);
 
@@ -115,7 +116,8 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 	   kSPDDispersionCut=1<<8,
 	   kVertexZCut=1<<9,
 	   kVertexRCut=1<<10,
-	   kTotalEventCuts=(1<<11)-1};
+	   kVertexDeltaZCut=1<<11,
+	   kTotalEventCuts=(1<<12)-1};
     enum {kPbPb = 0,kPP,kPbP};
 
  private:
@@ -140,6 +142,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Float_t       fVtxZMean;           // mean z for cuts
     Float_t       fVtxRCut;            // vtx cut in R
     Float_t       fVtxZCut;            // vtzx cut in Z
+    Float_t       fVtxDeltaZCut;       // cut on difference between SPD and Global vtx
     Float_t       fPtMinCosmic;        // Minimum pT to be considered as cosmic candidate
     Float_t       fRIsolMinCosmic;     // Minimum R = sqrt{deltaPhi^2 + deltaEta^2} to be considered as cosmic candidate
     Float_t       fMaxCosmicAngle;     // Max deviation from pi (angle between two tracks) in case of cosmic candidate
@@ -200,7 +203,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     static AliAODHeader*    fgAODHeader;        //! Header for replication
     static AliAODVZERO*    fgAODVZERO;        //! vzero for replication
     static TClonesArray*  fgAODVertices;        //! primary vertex for replication
-    ClassDef(AliAnalysisTaskJetServices,16)
+    ClassDef(AliAnalysisTaskJetServices,17)
 };
  
 #endif

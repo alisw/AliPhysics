@@ -103,7 +103,7 @@
     if(iAODanalysis == 1){
       iJETAN = 0;
       iPWG4Cluster = 0;
-      iJETSUBTRACT = 0;
+      //      iJETSUBTRACT = 0;
     }
   }
 
@@ -625,7 +625,7 @@
 	kGridPassPattern = "pass2/AOD049";
 	iJETAN = 0;
 	iPWG4Cluster = 0;
-	iJETSUBTRACT = 0;
+	//	iJETSUBTRACT = 0;
 
 
 	/* 
@@ -810,32 +810,37 @@
     }// version1
 
 
-	
-	// anti kT 150 MeV
-	kJetMapSpectrum.Add(25,12);
-	kJetBackMapSpectrum.Add(25,5);
-	kJetBackMapSpectrum.Add(12,5);
-
-	// anti kT R  = 0.2
-	kJetMapSpectrum.Add(28,16);
-	kJetBackMapSpectrum.Add(28,5);      
-	kJetBackMapSpectrum.Add(16,5);
-
-	// anti kT 2 GeV
-	kJetMapSpectrum.Add(31,15);
-	kJetBackMapSpectrum.Add(31,8);      
-	kJetBackMapSpectrum.Add(15,8);
+    kJetMapSpectrum.Add(25,17);
+    kJetBackMapSpectrum.Add(25,5);
+    kJetBackMapSpectrum.Add(17,5);
 
 	
-	// random cones
-	kJetMapSpectrum.Add(9,10);
-	kJetBackMapSpectrum.Add(10,5);
-	kJetBackMapSpectrum.Add(9,5);
-	
-	kJetMapSpectrum.Add(13,14);
-	kJetBackMapSpectrum.Add(14,5);
-	kJetBackMapSpectrum.Add(13,5);
-
+    // anti kT 150 MeV
+    /*
+    kJetMapSpectrum.Add(25,12);
+    kJetBackMapSpectrum.Add(25,5);
+    kJetBackMapSpectrum.Add(12,5);
+    
+    // anti kT R  = 0.2
+    kJetMapSpectrum.Add(28,16);
+    kJetBackMapSpectrum.Add(28,5);      
+    kJetBackMapSpectrum.Add(16,5);
+    
+    // anti kT 2 GeV
+    kJetMapSpectrum.Add(31,15);
+    kJetBackMapSpectrum.Add(31,8);      
+    kJetBackMapSpectrum.Add(15,8);
+    
+    
+    // random cones
+    kJetMapSpectrum.Add(9,10);
+    kJetBackMapSpectrum.Add(10,5);
+    kJetBackMapSpectrum.Add(9,5);
+    
+    kJetMapSpectrum.Add(13,14);
+    kJetBackMapSpectrum.Add(14,5);
+    kJetBackMapSpectrum.Add(13,5);
+    */ 
 
     // CLEAN XML FILES LOCALLY AND ON ALIEN WHEN STARTING A NEW PASS!
     kGridPassPattern       = "pass2";    // reset for AODs below
@@ -1139,7 +1144,7 @@
     iPWG4Minijet  = 0;
 
     // running as light a possible 
-    iJETSUBTRACT = 0; // no subtraction
+    //    iJETSUBTRACT = 0; // no subtraction
 
 
     iPWG4PtQAMC     = 1;
@@ -1268,3 +1273,4 @@
 
 
 }
+ 
