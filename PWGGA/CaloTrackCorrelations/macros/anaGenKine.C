@@ -236,7 +236,7 @@ void  LoadLibraries(Int_t mode)
   if (mode == mPROOF) {
     //TProof::Mgr("ccalpmaster")->SetROOTVersion("ALICE_v5-27-06b");
     gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/EnableAliRootForLAF.C");
-    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations:PWGGAEMCALTasks");
+    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations");
     
     //  TProof* proof = TProof::Open("ccaplmaster",Form("workers=%s",nPROOFWorkers.Data()));
     
@@ -253,8 +253,7 @@ void  LoadLibraries(Int_t mode)
     //     proof->UploadPackage("EMCALUtils");
     //     proof->UploadPackage("PWGCaloTrackCorrBase");
     //     proof->UploadPackage("PWGGACaloTrackCorrelations");
-    //     proof->UploadPackage("PWGGAEMCALTasks");
-    
+
     //     proof->EnablePackage("STEERBase");
     //     proof->EnablePackage("ESD");
     //     proof->EnablePackage("AOD");
@@ -267,7 +266,7 @@ void  LoadLibraries(Int_t mode)
     //     proof->EnablePackage("EMCALUtils");
     //     proof->EnablePackage("PWGCaloTrackCorrBase");
     //     proof->EnablePackage("PWGGACaloTrackCorrelations");
-    //     proof->EnablePackage("PWGGAEMCALTasks");
+
     return;
   }  
   
@@ -317,10 +316,8 @@ void  LoadLibraries(Int_t mode)
   gSystem->Load("libEMCALUtils");
   gSystem->Load("libPWGCaloTrackCorrBase");
   gSystem->Load("libPWGGACaloTrackCorrelations");
-  gSystem->Load("libPWGGAEMCALTasks");
   //SetupPar("PWGCaloTrackCorrBase");
   //SetupPar("PWGGACaloTrackCorrelations");
-  //SetupPar("PWGGAEMCALTasks");
   
  
   //gSystem->Load("libJETAN");
