@@ -199,6 +199,7 @@ AliAnalysisTaskSE(),
   fHOutMultV0A(0),
   fHOutMultV0C(0),
   fHOutMultV0O(0),
+  fHOutMultV0Cells(0),
   fHOutMultFMD(0),
   fHOutMultTRK(0),
   fHOutMultTKL(0),
@@ -366,6 +367,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutMultV0A(0),
   fHOutMultV0C(0),
   fHOutMultV0O(0),
+  fHOutMultV0Cells(0),
   fHOutMultFMD(0),
   fHOutMultTRK(0),
   fHOutMultTKL(0),
@@ -543,6 +545,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutMultV0A(ana.fHOutMultV0A),
   fHOutMultV0C(ana.fHOutMultV0C),
   fHOutMultV0O(ana.fHOutMultV0O),
+  fHOutMultV0Cells(ana.fHOutMultV0Cells),
   fHOutMultFMD(ana.fHOutMultFMD),
   fHOutMultTRK(ana.fHOutMultTRK),
   fHOutMultTKL(ana.fHOutMultTKL),
@@ -650,6 +653,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutMultV0A  = new TH1F("fHOutMultV0A","fHOutMultV0A; Multiplicity V0",25000,0,25000);
     fHOutMultV0C  = new TH1F("fHOutMultV0C","fHOutMultV0C; Multiplicity V0",25000,0,25000);
     fHOutMultV0O  = new TH1F("fHOutMultV0O","fHOutMultV0O; Multiplicity V0",40000,0,40000);
+    fHOutMultV0Cells = new TH2F("fHOutMultV0Cells","fHOutMultV0Cells",33,-0.5,32.5,33,-0.5,32.5); 
     fHOutMultFMD = new TH1F("fHOutMultFMD","fHOutMultFMD; Multiplicity FMD",24000,0,24000);
     fHOutMultTRK = new TH1F("fHOutMultTRK","fHOutMultTRK; Multiplicity TPC",4000,0,4000);
     fHOutMultTKL = new TH1F("fHOutMultTKL","fHOutMultTKL; Multiplicity tracklets",5000,0,5000);
@@ -740,7 +744,8 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fOutputList->Add(  fHOutMultV0M); 
     fOutputList->Add(  fHOutMultV0A); 
     fOutputList->Add(  fHOutMultV0C); 
-    fOutputList->Add(  fHOutMultV0O); 
+    fOutputList->Add(  fHOutMultV0O);
+    fOutputList->Add(  fHOutMultV0Cells) ;   
     fOutputList->Add(  fHOutMultFMD); 
     fOutputList->Add(  fHOutMultTRK); 
     fOutputList->Add(  fHOutMultTKL); 
@@ -807,6 +812,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   Short_t  multV0AOnline  = 0;      //  multiplicity from V0 reco side A
   Short_t  multV0COnline  = 0;      //  multiplicity from V0 reco side C
   Float_t  v0Corr = 0;               // corrected V0 multiplicity (used for MC)
+  Int_t nV0A = 0;
+  Int_t nV0C = 0;
 
   Float_t  multFMDA = 0;            //  multiplicity from FMD on detector A
   Float_t  multFMDC = 0;            //  multiplicity from FMD on detector C
@@ -851,6 +858,12 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     multV0AOnline=esdV0->GetTriggerChargeA(); 
     multV0COnline=esdV0->GetTriggerChargeC(); 
 
+    // Count V0 flags
+    for(Int_t i = 0; i < 32; ++i) {
+      if (esdV0->GetBBFlag(i)) nV0C++;
+      if (esdV0->GetBBFlag(i+32)) nV0A++;
+    }
+    
     // ***** T0 info    
     const AliESDTZERO* esdT0 = esd->GetESDTZERO();
     if (!esdT0)
@@ -1132,6 +1145,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 	fHOutMultV0A->Fill(multV0A);
 	fHOutMultV0C->Fill(multV0C);
 	fHOutMultV0O->Fill(multV0AOnline+multV0COnline);
+	fHOutMultV0Cells->Fill(nV0A,nV0C); 
 	fHOutMultFMD->Fill(multFMDA+multFMDC);
 	fHOutMultTRK->Fill(nTracks);
 	fHOutMultTKL->Fill(nTracklets);
