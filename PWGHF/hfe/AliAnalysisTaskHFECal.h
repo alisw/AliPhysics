@@ -135,9 +135,10 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  THnSparseD 		*fPhoElecPtMCM20;	        //! Pho inclusive ele pt
  THnSparseD 		*fSameElecPtMC;	        //! Same inclusive ele pt
  THnSparseD 		*fSameElecPtMCM20;	        //! Same inclusive ele pt
- TH1D                  *CheckNclust;  
- TH1D                  *CheckNits;  
-  
+ TH1D                   *CheckNclust;  
+ TH1D                   *CheckNits;  
+ TH2D                   *Hpi0pTcheck; 
+ 
   AliAnalysisTaskHFECal(const AliAnalysisTaskHFECal&); // not implemented
   AliAnalysisTaskHFECal& operator=(const AliAnalysisTaskHFECal&); // not implemented
   

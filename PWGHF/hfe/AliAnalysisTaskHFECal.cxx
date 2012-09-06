@@ -150,6 +150,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fSameElecPtMCM20(0)
   ,CheckNclust(0)
   ,CheckNits(0)
+  ,Hpi0pTcheck(0)
 {
   //Named constructor
   
@@ -235,6 +236,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fSameElecPtMCM20(0)
   ,CheckNclust(0)
   ,CheckNits(0)
+  ,Hpi0pTcheck(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -313,12 +315,20 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       Bool_t mcInDtoE= kFALSE;
       Bool_t mcInBtoE= kFALSE;
 
+      Bool_t MChijing = fMC->IsFromBGEvent(iParticle);
+      if(!MChijing)printf("not MC hijing");
+      int iHijing = 1;
+      if(!MChijing)iHijing = 0;
+      if(fPDG==111)Hpi0pTcheck->Fill(pTMC,iHijing);
+
       if(particle->GetFirstMother()>-1 && fabs(fPDG)==11)
         {
 	    int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();  
             if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(fPDG)==11)mcInDtoE = kTRUE;
             if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(fPDG)==11)mcInBtoE = kTRUE;
             if((mcInBtoE || mcInDtoE) && fabs(mcZvertex)<10.0)fInputHFEMC->Fill(cent,pTMC);
+
+
          }
 
          if(proR<7.0 && fabs(fPDG)==11)fInputAlle->Fill(cent,pTMC);
@@ -394,9 +404,16 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     double mcele = -1.;
     double mcpT = 0.0;
     double mcMompT = 0.0;
+
+    int iHijing = 1;
+
     if(fmcData && fMC && stack)
       {
        Int_t label = TMath::Abs(track->GetLabel());
+
+       Bool_t MChijing = fMC->IsFromBGEvent(label);
+       if(!MChijing)iHijing = 0;
+
        TParticle* particle = stack->Particle(label);
        int mcpid = particle->GetPdgCode();
        mcpT = particle->Pt();
@@ -567,10 +584,11 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
          }
        if(mcPho)
         {
-         double phoval[3];
+         double phoval[4];
          phoval[0] = cent;
          phoval[1] = pt;
          phoval[2] = fTPCnSigma;
+         phoval[3] = iHijing;
 
          fIncpTMCpho->Fill(phoval);    
          if(fFlagPhotonicElec) fPhoElecPtMC->Fill(phoval);
@@ -812,26 +830,26 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fIncpTMCM20hfeAll);
 
 
-  Int_t nBinspho2[3] =  { 200, 100,    7};
-  Double_t minpho2[3] = {  0.,  0., -2.5};   
-  Double_t maxpho2[3] = {100., 50.,  4.5};   
+  Int_t nBinspho2[4] =  { 200, 100,    7, 3};
+  Double_t minpho2[4] = {  0.,  0., -2.5, -0.5};   
+  Double_t maxpho2[4] = {100., 50.,  4.5, 2.5};   
 
-  fIncpTMCpho = new THnSparseD("fIncpTMCpho","MC Pho pid electro vs. centrality",3,nBinspho2,minpho2,maxpho2);
+  fIncpTMCpho = new THnSparseD("fIncpTMCpho","MC Pho pid electro vs. centrality",4,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fIncpTMCpho);
 
-  fIncpTMCM20pho = new THnSparseD("fIncpTMCM20pho","MC Pho pid electro vs. centrality with M20",3,nBinspho2,minpho2,maxpho2);
+  fIncpTMCM20pho = new THnSparseD("fIncpTMCM20pho","MC Pho pid electro vs. centrality with M20",4,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fIncpTMCM20pho);
 
-  fPhoElecPtMC = new THnSparseD("fPhoElecPtMC", "MC Pho-inclusive electron pt",3,nBinspho2,minpho2,maxpho2);
+  fPhoElecPtMC = new THnSparseD("fPhoElecPtMC", "MC Pho-inclusive electron pt",4,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fPhoElecPtMC);
   
-  fPhoElecPtMCM20 = new THnSparseD("fPhoElecPtMCM20", "MC Pho-inclusive electron pt with M20",3,nBinspho2,minpho2,maxpho2);
+  fPhoElecPtMCM20 = new THnSparseD("fPhoElecPtMCM20", "MC Pho-inclusive electron pt with M20",4,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fPhoElecPtMCM20);
 
-  fSameElecPtMC = new THnSparseD("fSameElecPtMC", "MC Same-inclusive electron pt",3,nBinspho2,minpho2,maxpho2);
+  fSameElecPtMC = new THnSparseD("fSameElecPtMC", "MC Same-inclusive electron pt",4,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fSameElecPtMC);
 
-  fSameElecPtMCM20 = new THnSparseD("fSameElecPtMCM20", "MC Same-inclusive electron pt with M20",3,nBinspho2,minpho2,maxpho2);
+  fSameElecPtMCM20 = new THnSparseD("fSameElecPtMCM20", "MC Same-inclusive electron pt with M20",4,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fSameElecPtMCM20);
 
   CheckNclust = new TH1D("CheckNclust","cluster check",200,0,200);
@@ -839,6 +857,10 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   CheckNits = new TH1D("CheckNits","ITS cluster check",8,-0.5,7.5);
   fOutputList->Add(CheckNits);
+
+  Hpi0pTcheck = new TH2D("Hpi0pTcheck","Pi0 pT from Hijing",100,0,50,3,-0.5,2.5);
+  fOutputList->Add(Hpi0pTcheck);
+
 
   PostData(1,fOutputList);
 }
@@ -928,7 +950,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     primV += recg;
     recg.SetProductionVertex(primV);
     
-    //recg.SetMassConstraint(0,0.0001);
+    recg.SetMassConstraint(0,0.0001);
     
     openingAngle = ge1.GetAngle(ge2);
     if(fFlagLS) fOpeningAngleLS->Fill(openingAngle);
