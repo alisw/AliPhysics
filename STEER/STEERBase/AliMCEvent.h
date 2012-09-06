@@ -123,10 +123,12 @@ public:
     virtual void      SetPrimaryOffset(Int_t ioff)    {fPrimaryOffset = ioff;}
     virtual void      SetSecondaryOffset(Int_t ioff)  {fSecondaryOffset = ioff;}    
     virtual Bool_t    IsPhysicalPrimary(Int_t i) const;
+
     virtual Int_t     BgLabelToIndex(Int_t label);
     static  Int_t     BgLabelOffset() {return fgkBgLabelOffset;}
     virtual Bool_t    IsFromBGEvent(Int_t index);
-    
+    virtual Bool_t    IsSecondaryFromWeakDecay(Int_t index);
+    virtual Bool_t    IsSecondaryFromMaterial(Int_t index);
     // External particle array
     virtual void      SetParticleArray(TClonesArray* mcParticles) 
 	{fMCParticles = mcParticles; fNparticles = fMCParticles->GetEntries(); fExternal = kTRUE;}

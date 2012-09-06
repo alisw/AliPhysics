@@ -651,6 +651,33 @@ Bool_t AliMCEvent::IsPhysicalPrimary(Int_t i) const
     }
 }
 
+Bool_t AliMCEvent::IsSecondaryFromWeakDecay(Int_t i)
+{
+//
+// Delegate to subevent if necesarry 
+    if (!fSubsidiaryEvents) {
+	return fStack->IsSecondaryFromWeakDecay(i);
+    } else {
+	AliMCEvent* evt = 0;
+	Int_t idx = FindIndexAndEvent(i, evt);
+	return (evt->IsSecondaryFromWeakDecay(idx));
+    }
+}
+
+Bool_t AliMCEvent::IsSecondaryFromMaterial(Int_t i)
+{
+//
+// Delegate to subevent if necesarry 
+    if (!fSubsidiaryEvents) {
+	return fStack->IsSecondaryFromMaterial(i);
+    } else {
+	AliMCEvent* evt = 0;
+	Int_t idx = FindIndexAndEvent(i, evt);
+	return (evt->IsSecondaryFromMaterial(idx));
+    }
+}
+
+
 void AliMCEvent::InitEvent()
 {
 //
