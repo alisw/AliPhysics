@@ -307,8 +307,8 @@ void AliAODHandler::StoreMCParticles(){
 	  if(i<nprim)flag |= AliAODMCParticle::kPrimary;
 	  
 	  if(mcEvent->IsPhysicalPrimary(i))flag |= AliAODMCParticle::kPhysicalPrim;
-	  if(mcEvent->Stack()->IsSecondaryFromWeakDecay(i))flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
-	  if(mcEvent->Stack()->IsSecondaryFromMaterial(i))flag |= AliAODMCParticle::kSecondaryFromMaterial;
+	  if(mcEvent->IsSecondaryFromWeakDecay(i))flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
+	  if(mcEvent->IsSecondaryFromMaterial(i))flag |= AliAODMCParticle::kSecondaryFromMaterial;
 
 	  if(fMCEventH->GetNewLabel(i)!=j){
 	      AliError(Form("MISMATCH New label %d j: %d",fMCEventH->GetNewLabel(i),j));
