@@ -55,8 +55,7 @@ void Pi0FlowCAF(const char* dataset="/alice/data/LHC11h_2_*AOD095",
   Int_t    nMixed[kNEdges-1] = {4};
   TArrayI tNMixed(kNEdges-1, nMixed);
 
-  task1->SetCentralityBinning(tbin);
-  task1->SetNMixedPerCentrality(tNMixed);
+  task1->SetCentralityBinning(tbin, tNMixed);
   task1->SelectCollisionCandidates(AliVEvent::kCentral);
   
   mgr->AddTask(task1);

@@ -21,10 +21,9 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow ()
   const int nbins = 3;
   Double_t cbin[nbins+1] = {0., 10., 40., 80.};
   TArrayD tbin(nbins+1, cbin);
-  task->SetCentralityBinning(tbin);
   Int_t    nMixed[nbins] = {4, 20, 50};
   TArrayI tNMixed(nbins, nMixed);
-  task->SetNMixedPerCentrality(tNMixed);
+  task->SetCentralityBinning(tbin, tNMixed);
 
   //task->SetEventMixingRPBinning(9);
   //task->SetMixingArraysLength(10);

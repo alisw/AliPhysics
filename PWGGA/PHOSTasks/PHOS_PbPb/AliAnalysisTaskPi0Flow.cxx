@@ -113,9 +113,10 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
 {
   const int nbins = 9;
   Double_t edges[nbins+1] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80.};
-  fCentEdges = TArrayD(nbins+1, edges);
+  TArrayD centEdges(nbins+1, edges);
   Int_t nMixed[nbins] = {4,4,6,10,20,30,50,100,100};
-  fCentNMixed = TArrayI(nbins, nMixed);
+  TArrayI centNMixed(nbins, nMixed);
+  SetCentralityBinning(centEdges, centNMixed);
   
   for(Int_t i=0;i<kNCenBins;i++){
     for(Int_t j=0;j<2; j++)
@@ -608,28 +609,20 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 //   // hTotSelEvents->Draw();
 // }
 //________________________________________________________________________
-void AliAnalysisTaskPi0Flow::SetCentralityBinning(const TArrayD& edges)
+void AliAnalysisTaskPi0Flow::SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed)
 {
   // Define centrality bins by their edges
-
-  int last = edges.GetSize()-1;
-  if( edges.At(0) < 0.) 
-    AliError("lower edge less then 0");
-  if( 90. < edges.At(last)  )
-    AliError("upper edge larger then 90.");
-  for(int i=0; i<last-1; ++i)
-    if(edges.At(i) > edges.At(i+1))
-      AliError("edges are not sorted");
+  if( edges.At(0) < 0.) AliFatal("lower edge less then 0");
+  if( 90. < edges.At(edges.GetSize()-1)  ) AliFatal("upper edge larger then 90.");
+  for(int i=0; i<edges.GetSize()-1; ++i)
+    if(edges.At(i) > edges.At(i+1)) AliFatal("edges are not sorted");
+  if( edges.GetSize() != nMixed.GetSize()+1) AliFatal("edges and nMixed don't have appropriate relative sizes");
   
   fCentEdges = edges;
-}
-//________________________________________________________________________
-void AliAnalysisTaskPi0Flow::SetNMixedPerCentrality(const TArrayI& nMixed)
-{
-  // Set number of mixed events for all centrality bins
-
   fCentNMixed = nMixed;
 }
+
+
 
 //________________________________________________________________________
 void AliAnalysisTaskPi0Flow::SetPHOSBadMap(Int_t mod, TH2I* badMapHist)
