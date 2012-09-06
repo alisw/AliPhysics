@@ -3,6 +3,7 @@
 #pragma link C++ class AlidNdPtAcceptanceCuts+;
 #pragma link C++ class AlidNdPtAnalysis+;
 #pragma link C++ class AlidNdPtAnalysisPbPb+;
+#pragma link C++ class AlidNdPtAnalysisPbPb2011+;
 #pragma link C++ class AlidNdPtBackgroundCuts+;
 #pragma link C++ class AlidNdPtCorrection+;
 #pragma link C++ class AlidNdPtCutAnalysis+;
