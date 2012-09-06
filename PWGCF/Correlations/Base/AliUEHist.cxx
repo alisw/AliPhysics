@@ -46,6 +46,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fkRegions(4),
   fEventHist(0),
   fTrackHistEfficiency(0),
+  fFakePt(0),
   fEtaMin(0),
   fEtaMax(0),
   fPtMin(0),
@@ -299,7 +300,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
   iTrackBin[2] = kNSpeciesBins;
 
-  fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 3, 4, iTrackBin);
+  fTrackHistEfficiency = new AliCFContainer("fTrackHistEfficiency", "Tracking efficiency", 4, 4, iTrackBin);
   fTrackHistEfficiency->SetBinLimits(0, trackBins[0]);
   fTrackHistEfficiency->SetVarTitle(0, trackAxisTitle[0]);
   fTrackHistEfficiency->SetBinLimits(1, trackBins[1]);
@@ -308,6 +309,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fTrackHistEfficiency->SetVarTitle(2, "particle species");
   fTrackHistEfficiency->SetBinLimits(3, trackBins[3]);
   fTrackHistEfficiency->SetVarTitle(3, trackAxisTitle[3]);
+
+  fFakePt = new TH3F("fFakePt","fFakePt;p_{T,rec};p_{T};centrality", 200, 0, 20, 200, 0, 20, 20, 0, 100);
 }
 
 //_____________________________________________________________________________
@@ -316,6 +319,7 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fkRegions(4),
   fEventHist(0),
   fTrackHistEfficiency(0),
+  fFakePt(0),
   fEtaMin(0),
   fEtaMax(0),
   fPtMin(0),
@@ -373,6 +377,12 @@ AliUEHist::~AliUEHist()
     fTrackHistEfficiency = 0;
   }
 
+  if (fFakePt)
+  {
+    delete fFakePt;
+    fFakePt = 0;
+  }
+
   if (fCache)
   {
     delete fCache;
@@ -408,6 +418,9 @@ void AliUEHist::Copy(TObject& c) const
   if (fTrackHistEfficiency)
     target.fTrackHistEfficiency = dynamic_cast<AliCFContainer*> (fTrackHistEfficiency->Clone());
     
+  if (fFakePt)
+    target.fFakePt = dynamic_cast<TH3F*> (fFakePt->Clone());
+
   target.fEtaMin = fEtaMin;
   target.fEtaMax = fEtaMax;
   target.fPtMin = fPtMin;
@@ -441,7 +454,7 @@ Long64_t AliUEHist::Merge(TCollection* list)
   TObject* obj;
 
   // collections of objects
-  const UInt_t kMaxLists = fkRegions+2;
+  const UInt_t kMaxLists = fkRegions+3;
   TList** lists = new TList*[kMaxLists];
   
   for (UInt_t i=0; i<kMaxLists; i++)
@@ -460,6 +473,8 @@ Long64_t AliUEHist::Merge(TCollection* list)
     
     lists[fkRegions]->Add(entry->fEventHist);
     lists[fkRegions+1]->Add(entry->fTrackHistEfficiency);
+    if (entry->fFakePt)
+      lists[fkRegions+2]->Add(entry->fFakePt);
 
     count++;
   }
@@ -469,6 +484,8 @@ Long64_t AliUEHist::Merge(TCollection* list)
   
   fEventHist->Merge(lists[fkRegions]);
   fTrackHistEfficiency->Merge(lists[fkRegions+1]);
+  if (fFakePt)
+    fFakePt->Merge(lists[fkRegions+2]);
 
   for (UInt_t i=0; i<kMaxLists; i++)
     delete lists[i];
@@ -850,6 +867,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   TH2* eventMixedAll = 0;
   
   Int_t totalEvents = 0;
+  Int_t nCorrelationFunctions = 0;
   
   GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackSameAll, &eventSameAll);
   mixed->GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackMixedAll, &eventMixedAll);
@@ -959,11 +977,13 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
 
       delete tracksSame;
       delete tracksMixed;
+      
+      nCorrelationFunctions++;
     }
   }
 
   if (totalTracks) {
-    Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
+    Printf("Dividing %f tracks by %d events (%d correlation function(s))", totalTracks->Integral(), totalEvents, nCorrelationFunctions);
     if (totalEvents > 0)
       totalTracks->Scale(1.0 / totalEvents);
   
@@ -2141,6 +2161,12 @@ TH2D* AliUEHist::GetTrackingEfficiency()
   return dynamic_cast<TH2D*> (GetTrackEfficiency(kCFStepAnaTopology, kCFStepTrackedOnlyPrim, 0, 1));
 }
   
+//____________________________________________________________________
+TH2D* AliUEHist::GetFakeRate()
+{
+  return dynamic_cast<TH2D*> (GetTrackEfficiency(kCFStepTracked, kCFStepReconstructed, 0, 1));
+}
+
 //____________________________________________________________________
 TH2D* AliUEHist::GetTrackingEfficiencyCentrality()
 {

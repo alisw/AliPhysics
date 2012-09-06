@@ -519,7 +519,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	  fAnalyseUE->RemoveInjectedSignals(allRecoTracksMatched, mc, skipParticlesAbove);
 	}
       
-        fHistos->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, particleSpecies, centrality);
+        fHistos->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, 0, particleSpecies, centrality);
         
 // 	Printf("%d --> %d %d %d", particleSpecies, primMCParticles->GetEntries(), primRecoTracksMatched->GetEntries(), allRecoTracksMatched->GetEntries());
 
@@ -527,6 +527,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
         delete primRecoTracksMatched;
         delete allRecoTracksMatched;
       }
+      TObjArray* fakeParticles = fAnalyseUE->GetFakeParticles(inputEvent, mc, kFALSE, -1, kTRUE);
+      fHistos->FillTrackingEfficiency(0, 0, 0, (TObjArray*) fakeParticles->At(2), -1, centrality);
+      fHistos->FillFakePt(fakeParticles, centrality);
+      delete fakeParticles;
     
       // (MC-true all particles)
       // STEP 2

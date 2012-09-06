@@ -32,8 +32,9 @@ class AliUEHistograms : public TNamed
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
   void FillEvent(Double_t centrality, Int_t step);
-  void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType, Double_t centrality = 0);
-  
+  void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, TObjArray* fake, Int_t particleType, Double_t centrality = 0);
+  void FillFakePt(TObjArray* fake, Double_t centrality);
+ 
   void CopyReconstructedData(AliUEHistograms* from);
   void DeepCopy(AliUEHistograms* from);
   

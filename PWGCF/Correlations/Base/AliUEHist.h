@@ -15,6 +15,7 @@ class AliCFContainer;
 class TH1;
 class TH1F;
 class TH3;
+class TH3F;
 class TH1D;
 class TH2;
 class TH2D;
@@ -41,7 +42,8 @@ class AliUEHist : public TObject
   AliCFContainer* GetTrackHist(Region region) { return fTrackHist[region]; }
   AliCFContainer* GetEventHist() { return fEventHist; }
   AliCFContainer* GetTrackHistEfficiency()     { return fTrackHistEfficiency; }
-  
+  TH3F* GetMCRecoPtCorrelation() { return fFakePt; } 
+ 
   void SetTrackHist(Region region, AliCFContainer* hist) { fTrackHist[region] = hist; }
   void SetEventHist(AliCFContainer* hist) { fEventHist = hist; }
   void SetTrackHistEfficiency(AliCFContainer* hist) { fTrackHistEfficiency = hist; }
@@ -66,6 +68,8 @@ class AliUEHist : public TObject
   TH2D* GetTrackingEfficiency();
   TH2D* GetTrackingEfficiencyCentrality();
   
+  TH2D* GetFakeRate();
+
   TH1D* GetTrackingContamination(Int_t axis);
   TH2D* GetTrackingContamination();
   TH2D* GetTrackingContaminationCentrality();
@@ -130,7 +134,8 @@ protected:
   AliCFContainer* fTrackHist[4];      // container for track level distributions in four regions (toward, away, min, max) and at four analysis steps
   AliCFContainer* fEventHist;         // container for event level distribution at four analysis steps
   AliCFContainer* fTrackHistEfficiency; // container for tracking efficiency and contamination (all particles filled including leading one): axes: eta, pT, particle species
-  
+  TH3F* fFakePt;
+ 
   Float_t fEtaMin;                    // eta min for projections
   Float_t fEtaMax;                    // eta max for projections
   Float_t fPtMin;                     // pT min for projections (for track pT, not pT,lead)
