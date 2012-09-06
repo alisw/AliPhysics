@@ -8,17 +8,13 @@
 
 #include <TClonesArray.h>
 #include <TF1.h>
-#include <TH1F.h>
 #include <TH2F.h>
-#include <TList.h>
 #include <TLorentzVector.h>
+#include <TMath.h>
 
-#include "AliAnalysisManager.h"
-#include "AliCentrality.h"
 #include "AliEMCALGeometry.h"
 #include "AliLog.h"
 #include "AliVCluster.h"
-#include "AliVEvent.h"
 #include "AliVTrack.h"
 
 ClassImp(AliAnalysisTaskScale)
@@ -27,8 +23,6 @@ ClassImp(AliAnalysisTaskScale)
 AliAnalysisTaskScale::AliAnalysisTaskScale() : 
   AliAnalysisTaskEmcal("AliAnalysisTaskScale", kTRUE), 
   fScaleFunction(0),
-  fGeom(0),
-  fHistCentrality(0), 
   fHistPtTPCvsCent(0), 
   fHistPtEMCALvsCent(0), 
   fHistEtvsCent(0),  
@@ -45,14 +39,14 @@ AliAnalysisTaskScale::AliAnalysisTaskScale() :
   fHistClusterEtaPhi(0)
 {
   // Default constructor.
+
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 //________________________________________________________________________
 AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
   AliAnalysisTaskEmcal(name, kTRUE), 
   fScaleFunction(0),
-  fGeom(0),
-  fHistCentrality(0), 
   fHistPtTPCvsCent(0), 
   fHistPtEMCALvsCent(0), 
   fHistEtvsCent(0),  
@@ -70,6 +64,7 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
 {
   // Constructor.
 
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 //________________________________________________________________________
@@ -77,11 +72,8 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
 {
   // Create my user objects.
 
-  OpenFile(1);
-  fOutput = new TList();
-  fOutput->SetOwner();
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  fHistCentrality         = new TH1F("Centrality","Centrality",              101, -1, 100);
   fHistPtTPCvsCent        = new TH2F("PtTPCvsCent","rho vs cent",            101, -1, 100, 500,   0, 1000);
   fHistPtEMCALvsCent      = new TH2F("PtEMCALvsCent","rho vs cent",          101, -1, 100, 500,   0, 1000);
   fHistEtvsCent           = new TH2F("EtvsCent","rho vs cent",               101, -1, 100, 500,   0, 1000);
@@ -94,8 +86,8 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fHistDeltaScalevsNtrack = new TH2F("DeltaScalevsNtrack","rho vs cent",     500,  0, 2500, 400, -2, 2);
   fHistTrackPtvsCent      = new TH2F("TrackPtvsCent","Track pt vs cent",     101, -1, 100,  500,  0, 100);
   fHistClusterPtvsCent    = new TH2F("ClusterPtvsCent","Cluster pt vs cent", 101, -1, 100,  500,  0, 100);
-  fHistTrackEtaPhi        = new TH2F("TrackEtaPhi","Track eta phi",          100, -1.0, 1.0, 64,  0, 6.4);
-  fHistClusterEtaPhi      = new TH2F("ClusterEtaPhi","Cluster eta phi",      100, -1.0, 1.0, 64, -3.2, 3.2);
+  fHistTrackEtaPhi        = new TH2F("TrackEtaPhi","Track eta phi",          100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistClusterEtaPhi      = new TH2F("ClusterEtaPhi","Cluster eta phi",      100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
 
   fOutput->Add(fHistCentrality);
   fOutput->Add(fHistPtTPCvsCent);
@@ -125,21 +117,6 @@ Double_t AliAnalysisTaskScale::GetScaleFactor(Double_t cent)
   if (fScaleFunction)
     scale = fScaleFunction->Eval(cent);
   return scale;
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskScale::ExecOnce() 
-{
-  // Init the analysis.
-
-  fGeom = AliEMCALGeometry::GetInstance();
-
-  if (!fGeom) {
-    AliFatal("Can not create geometry");
-    return;
-  }
-
-  AliAnalysisTaskEmcal::ExecOnce();
 }
 
 //________________________________________________________________________
@@ -209,7 +186,6 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   const Double_t scalecalc = ((Et + ptEMCAL) / EmcalArea) * (TpcArea / ptTPC);
   const Double_t scale     = GetScaleFactor(fCent);
 
-  fHistCentrality->Fill(fCent);
   fHistPtTPCvsCent->Fill(fCent, ptTPC);
   fHistPtEMCALvsCent->Fill(fCent, ptEMCAL);
   fHistEtvsCent->Fill(fCent, Et);
@@ -222,10 +198,4 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   fHistDeltaScalevsNtrack->Fill(Ntracks, scalecalc - scale);
 
   return kTRUE;
-}      
-
-//________________________________________________________________________
-void AliAnalysisTaskScale::Terminate(Option_t *) 
-{
-  // Called once at the end of the analysis.
 }

@@ -25,6 +25,7 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   void                   SetCompareRhoScaledName(const char *name)             { fCompareRhoScaledName = name ;                   }
   void                   SetScaleFunction(TF1* sf)                             { fScaleFunction        = sf   ;                   }
   void                   SetRhoFunction(TF1* rf)                               { fRhoFunction          = rf   ;                   }
+  void                   SetInEventSigmaRho(Double_t s)                        { fInEventSigmaRho      = s    ;                   }
 
  protected:
   void                   ExecOnce();
@@ -39,6 +40,7 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   TString                fCompareRhoScaledName;          // name of scaled rho object to compare
   TF1                   *fRhoFunction;                   // pre-computed rho as a function of centrality
   TF1                   *fScaleFunction;                 // pre-computed scale factor as a function of centrality
+  Double_t               fInEventSigmaRho;               // in-event sigma rho
 
   AliRhoParameter       *fRhoScaled;                     //!scaled rho object
   AliRhoParameter       *fCompareRho;                    //!rho object to compare
@@ -50,6 +52,8 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   TH2F                  *fHistJetPtvsNtrack;             //!jet pt vs. no. of tracks
   TH2F                  *fHistJetAreavsNtrack;           //!jet area vs. no. of tracks
   TH2F                  *fHistNjetvsNtrack;              //!no. of jets vs. no. of tracks
+  TH2F                  *fHistNjUEvsNj[4];               //!no. of jets below rho*A+sigma_rho vs. no. of jets
+  TH2F                  *fHistNjUEoverNjVsNj[4];         //!ratio no. of jets below rho*A+sigma_rho over. no. of jets vs. no. of jets
 
   TH2F                  *fHistRhovsCent;                 //!rho vs. centrality
   TH2F                  *fHistRhoScaledvsCent;           //!rhoscaled vs. centrality
@@ -67,6 +71,6 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskRhoBase(const AliAnalysisTaskRhoBase&);             // not implemented
   AliAnalysisTaskRhoBase& operator=(const AliAnalysisTaskRhoBase&);  // not implemented
   
-  ClassDef(AliAnalysisTaskRhoBase, 4); // Rho base task
+  ClassDef(AliAnalysisTaskRhoBase, 5); // Rho base task
 };
 #endif

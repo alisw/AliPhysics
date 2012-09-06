@@ -3,11 +3,8 @@
 
 // $Id$
 
-class TList;
-class TH1F;
 class TH2F;
 class TF1;
-class AliEMCALGeometry;
 
 #include "AliAnalysisTaskEmcal.h"
 
@@ -18,20 +15,16 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   virtual ~AliAnalysisTaskScale() {}
   
   void                   UserCreateOutputObjects();
-  void                   Terminate(Option_t *);
 
   void                   SetScaleFunction(TF1* sf)  { fScaleFunction = sf   ; }
   
  protected:
-  virtual Double_t       GetScaleFactor(Double_t cent);
-  virtual Bool_t         FillHistograms();
-  void                   ExecOnce();
+  Double_t               GetScaleFactor(Double_t cent);
+  Bool_t                 FillHistograms();
 
  private:
   TF1                   *fScaleFunction;          // scale factor as a function of centrality
 
-  AliEMCALGeometry      *fGeom;                   //!ptr to emcal geometry object
-  TH1F                  *fHistCentrality;         //!output histogram
   TH2F                  *fHistPtTPCvsCent;        //!output histogram
   TH2F                  *fHistPtEMCALvsCent;      //!output histogram
   TH2F                  *fHistEtvsCent;           //!output histogram
@@ -50,6 +43,6 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented
   
-  ClassDef(AliAnalysisTaskScale, 7); // Scale task
+  ClassDef(AliAnalysisTaskScale, 8); // Scale task
 };
 #endif
