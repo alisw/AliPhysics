@@ -115,7 +115,12 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fSwitchOnValidation(kFALSE), // flag to switch on validation of OCDB parameters
   fMinGain(2.0),
   fMaxGain(3.0),
-  fMaxVdriftCorr(0.03)
+  fMaxVdriftCorr(0.03),
+  fNtracksVdrift(0),
+  fMinTracksVdrift(0),
+  fNeventsVdrift(0),
+  fMinEventsVdrift(0),
+  fCalibrationStatus(0)
 {
   //
   // default constructor
@@ -192,6 +197,10 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
   }
   if(!fTimeDrift) return;
 
+  //extract statistics
+  fNtracksVdrift = TMath::Nint(fTimeDrift->GetResHistoTPCITS(0)->GetEntries());
+  fNeventsVdrift = TMath::Nint(fTimeDrift->GetTPCVertexHisto(0)->GetEntries());
+
   startRun=ustartRun;
   endRun=ustartRun; 
   TObjArray *hisArray =fTimeDrift->GetHistoDrift();  
@@ -210,6 +219,7 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
   AddAlignmentGraphs(fVdriftArray,fTimeDrift);
   AddHistoGraphs(fVdriftArray,fTimeDrift,fMinEntries);
   AddLaserGraphs(fVdriftArray,fTimeDrift);
+  
   //
   // 3. Append QA plots
   //
@@ -267,16 +277,27 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
   TGraphErrors *gr = (TGraphErrors*)fGainArray->FindObject("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");
   if (!gr) {
     gr = (TGraphErrors*)fGainArray->FindObject("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL");
-    if (!gr) return kFALSE;
+    if (!gr) 
+    { 
+      fCalibrationStatus |= kCalibFailedTimeGain;
+      return kFALSE;
+    }
     Printf("Assuming given run is a cosmic run. Using gain calibration from Fermi-plateau muons.");
   }
-  if(gr->GetN()<1) return kFALSE;
+  if(gr->GetN()<1) 
+  { 
+    fCalibrationStatus |= kCalibFailedTimeGain;
+    return kFALSE;
+  }
 
   // check whether gain in the range
   for(Int_t iPoint=0; iPoint<gr->GetN(); iPoint++) 
   {
     if(gr->GetY()[iPoint] < minGain || gr->GetY()[iPoint] > maxGain)  
+    { 
+      fCalibrationStatus |= kCalibFailedTimeGain;
       return kFALSE;
+    }
   }
 
 return kTRUE;
@@ -295,10 +316,24 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift()
   TGraphErrors* gr = (TGraphErrors*)fVdriftArray->FindObject("ALIGN_ITSB_TPC_DRIFTVD");
   Printf("ALIGN_ITSB_TPC_DRIFTVD graph = %p",gr);
 
-  if(!gr) return kFALSE;
+  //check if we have enough statistics
+  if (fNtracksVdrift<fMinTracksVdrift) 
+  {
+    fCalibrationStatus|=kCalibFailedTimeDrift;
+    return kFALSE;
+  }
+
+  if(!gr) 
+  {
+    fCalibrationStatus|=kCalibFailedTimeDrift;
+    return kFALSE;
+  }
   if(gr->GetN()<1)  { 
     Printf("ALIGN_ITSB_TPC_DRIFTVD number of points = %d",gr->GetN());
-    return kFALSE;
+    {
+      fCalibrationStatus|=kCalibFailedTimeDrift;
+      return kFALSE;
+    }
   }
 
   // check whether drift velocity corrections in the range
@@ -306,7 +341,10 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift()
   {
     Printf("Y value from the graph: %f",TMath::Abs(gr->GetY()[iPoint]));
     if(TMath::Abs(gr->GetY()[iPoint]) > maxVDriftCorr)  
+    {
+      fCalibrationStatus|=kCalibFailedTimeDrift;
       return kFALSE;
+    }
   }
 
 return kTRUE;
@@ -901,8 +939,6 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   }
 
 }
-
-
 
 Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit,  Float_t FPtoMIPratio){
   //
@@ -1641,3 +1677,21 @@ void AliTPCPreprocessorOffline::CreateAlignTime(TString fstring, TVectorD paramC
   f->Close();
 }
 
+//_____________________________________________________________________________
+Int_t AliTPCPreprocessorOffline::GetStatus()
+{
+  //get the calibration status
+  // 0 means OK
+  // positive numbers invalidate for unknown reasons.
+  // negative numbers invalidate with a known reason (e.g. low statistics).
+  // the returned integer has one bit set for every component that failed.
+
+  Bool_t enoughStatistics = (fNtracksVdrift>fMinTracksVdrift && fNeventsVdrift>fMinEventsVdrift);
+  
+  if (!enoughStatistics) 
+  {
+    fCalibrationStatus=-TMath::Abs(fCalibrationStatus);
+  }
+
+  return fCalibrationStatus;
+}

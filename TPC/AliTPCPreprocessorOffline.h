@@ -65,6 +65,14 @@ public:
   static Double_t EvalAt(Double_t phi, Double_t refX, Double_t theta, Int_t corr, Int_t ptype);
   static Double_t EvalAtPar(Double_t phi, Double_t snp, Double_t refX, Double_t theta, Int_t corr, Int_t ptype, Int_t nstep);
 
+  // event/track counter related setters and getters
+  Int_t GetNeventsVdrift() const {return fNeventsVdrift;}
+  Int_t GetNtracksVdrift() const {return fNtracksVdrift;}
+  Int_t GetMinEventsVdrift() const {return fMinEventsVdrift;}
+  Int_t GetMinTracksVdrift() const {return fMinTracksVdrift;}
+  void SetMinEventsVdrift(Int_t min) {fMinEventsVdrift=min;}
+  void SetMinTracksVdrift(Int_t min) {fMinTracksVdrift=min;}
+
   //
   // QA drawing part
   //
@@ -81,6 +89,11 @@ public:
   //
   void SwitchOnValidation(Bool_t val = kTRUE) {fSwitchOnValidation = val;} 
   Bool_t IsSwitchOnValidation() { return fSwitchOnValidation; } 
+
+  //
+  Int_t GetStatus();
+  enum ECalibStatusBit { kCalibFailedTimeDrift =0x0001,
+                         kCalibFailedTimeGain  =0x0002 };
 
 private:
   Int_t fMinEntries;                      // minimal number of entries for fit
@@ -107,6 +120,12 @@ private:
   Float_t fMinGain;   	       // min gain
   Float_t fMaxGain;            // max gain
   Float_t fMaxVdriftCorr;      // max v-drift correction
+  Int_t fNtracksVdrift;           // n tracks used for v drift determination
+  Int_t fMinTracksVdrift;         // minimum numner of tracks for v drift determination
+  Int_t fNeventsVdrift;           // number of events used for drift calibration
+  Int_t fMinEventsVdrift;         // minimum number of events used for drift calibration
+
+  Int_t fCalibrationStatus;       // status of calibration, each set bit signifies a failure in a component (see ECalibStatusBit)
 
 private:
   AliTPCPreprocessorOffline& operator=(const AliTPCPreprocessorOffline&); // not implemented
