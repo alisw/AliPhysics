@@ -995,10 +995,13 @@ void  AliPHOSPIDv1::MakePID()
     //    Info("MakePID", "TOF");
     Float_t  en   = emc->GetEnergy();    
     Double_t time = emc->GetTime() ;
-    //    cout<<">>>>>>>Energy "<<en<<"Time "<<time<<endl;
+    //      cout<<">>>>>>>Energy "<<en<<"Time "<<time<<endl;
    
     // now get the signals probability
     // s(pid) in the Bayesian formulation
+
+    //Initialize anused species
+    for(Int_t iii=0; iii<kSPECIES; iii)stof[iii][index]=0. ;
     
     stof[AliPID::kPhoton][index]   = 1.; 
     stof[AliPID::kElectron][index] = 1.;
@@ -1057,6 +1060,8 @@ void  AliPHOSPIDv1::MakePID()
     //DP: still to be done 
 
     //dispersion is not well defined if the cluster is only in few crystals
+    //Initialize anused species
+    for(Int_t iii=0; iii<kSPECIES; iii)sdp[iii][index]=0. ;
     
     sdp[AliPID::kPhoton][index]   = 1. ;
     sdp[AliPID::kElectron][index] = 1. ;
@@ -1121,6 +1126,8 @@ void  AliPHOSPIDv1::MakePID()
       }
     //    else
     //      cout<<">>>>>>>>>>>CHARGED>>>>>>>>>>>"<<endl;
+    //Initialize anused species
+    for(Int_t iii=0; iii<kSPECIES; iii)scpv[iii][index]=0. ;
     
     scpv[AliPID::kPion][index]     =  pcpvcharged  ; 
     scpv[AliPID::kKaon][index]     =  pcpvcharged  ; 
@@ -1168,6 +1175,8 @@ void  AliPHOSPIDv1::MakePID()
     }
 
     //Weight to apply to hadrons due to energy reconstruction
+    //Initialize anused species
+    for(Int_t iii=0; iii<kSPECIES; iii)sw[iii][index]=1. ;
 
     Float_t weight = fERecWeight ->Eval(en) ;
  
