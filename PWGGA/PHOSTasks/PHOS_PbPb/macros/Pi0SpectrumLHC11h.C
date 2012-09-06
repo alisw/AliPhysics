@@ -67,7 +67,7 @@ void Pi0SpectrumLHC11h(const char* dataset="collection.xml",
 
   
   // Debug level
-  mgr->SetDebugLevel(999999);
+  mgr->SetDebugLevel(2);
 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
   AliEPSelectionTask *taskEP = AddTaskEventplane() ; 

@@ -43,8 +43,7 @@ public:
 
     void SetPeriod(Period period) { fPeriod = period;}
     
-    void SetCentralityBinning(const TArrayD& edges);
-    void SetNMixedPerCentrality(const TArrayI& nMixed);
+    void SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed);
     void SetEventMixingRPBinning(UInt_t nBins) { fNEMRPBins = nBins; }
     void SetManualV0EPCalc(Bool_t manCalc = true) {fManualV0EPCalc = manCalc;}
     
