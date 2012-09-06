@@ -328,6 +328,60 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
 }
 
 //-------------------------------------------------------------------
+TObjArray* AliAnalyseLeadingTrackUE::GetFakeParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts)
+{
+  // particleSpecies: -1 all particles are returned
+  //                  0 (pions) 1 (kaons) 2 (protons) 3 (others) particles
+
+  Int_t nTracks = NParticles(obj);
+  TObjArray* tracksReconstructed = new TObjArray;
+  TObjArray* tracksOriginal = new TObjArray;
+  TObjArray* tracksFake = new TObjArray;
+
+  // for TPC only tracks
+  Bool_t hasOwnership = kFALSE;
+  if ((fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512 || fFilterBit == 1024) && obj->InheritsFrom("AliESDEvent"))
+    hasOwnership = kTRUE;
+
+  tracksReconstructed->SetOwner(hasOwnership);
+  tracksFake->SetOwner(hasOwnership);
+
+  // Loop over tracks or jets
+  for (Int_t ipart=0; ipart<nTracks; ++ipart) {
+    AliVParticle* partReconstructed = ParticleWithCuts( obj, ipart, onlyprimaries, particleSpecies );
+    if (!partReconstructed) continue;
+
+    if (useEtaPtCuts)
+      if (TMath::Abs(partReconstructed->Eta()) > fTrackEtaCut || partReconstructed->Pt() < fTrackPtMin)
+      {
+        if (hasOwnership)
+          delete partReconstructed;
+        continue;
+      }
+
+    Int_t label = partReconstructed->GetLabel();
+    if (label == 0)
+    {
+      tracksFake->AddLast(partReconstructed);
+      continue;
+    }
+    if (hasOwnership)
+      delete partReconstructed;
+    AliVParticle* partOriginal = ParticleWithCuts(arrayMC, TMath::Abs(label),onlyprimaries, particleSpecies);
+    if (!partOriginal)continue;
+
+    tracksReconstructed->AddLast(partReconstructed);
+    tracksOriginal->AddLast(partOriginal);
+  }
+  TObjArray* pairs = new TObjArray;
+  pairs->SetOwner(kTRUE);
+  pairs->Add(tracksReconstructed);
+  pairs->Add(tracksOriginal);
+  pairs->Add(tracksFake);
+  return pairs;
+}
+
+//-------------------------------------------------------------------
 TObjArray* AliAnalyseLeadingTrackUE::GetMinMaxRegion(TList *transv1, TList *transv2)
 {
   

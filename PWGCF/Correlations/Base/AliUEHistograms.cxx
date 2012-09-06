@@ -662,7 +662,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 }
   
 //____________________________________________________________________
-void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType, Double_t centrality)
+void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, TObjArray* fake, Int_t particleType, Double_t centrality)
 {
   // fills the tracking efficiency objects
   //
@@ -670,15 +670,20 @@ void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim,
   // recoPrim: reconstructed primaries (again MC particles)
   // recoAll: reconstructed (again MC particles)
   // particleType is: 0 for pion, 1 for kaon, 2 for proton, 3 for others
-  
-  for (Int_t step=0; step<3; step++)
+ 
+  for (Int_t step=0; step<4; step++)
   {
     TObjArray* list = mc;
     if (step == 1)
       list = recoPrim;
     else if (step == 2)
       list = recoAll;
-      
+    else if (step == 3)
+      list = fake;
+    
+    if (!list)
+      continue;
+
     for (Int_t i=0; i<list->GetEntriesFast(); i++)
     {
       AliVParticle* particle = (AliVParticle*) list->At(i);
@@ -692,6 +697,26 @@ void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim,
         if (GetUEHist(j))
           GetUEHist(j)->GetTrackHistEfficiency()->Fill(vars, step);
     }
+  }
+}
+
+//____________________________________________________________________
+void AliUEHistograms::FillFakePt(TObjArray* fake, Double_t centrality)
+{
+  TObjArray* tracksReco = (TObjArray*) fake->At(0);
+  TObjArray* tracksMC = (TObjArray*) fake->At(1);
+  
+  for (Int_t i=0; i<tracksReco->GetEntriesFast(); i++)
+  {
+    AliVParticle* particle1 = (AliVParticle*) tracksReco->At(i);
+    AliVParticle* particle2 = (AliVParticle*) tracksMC->At(i);
+    Double_t vars[3];
+    vars[0] = particle1->Pt();
+    vars[1] = particle2->Pt();
+    vars[2] = centrality;
+    for (Int_t j=0; j<fgkUEHists; j++)
+      if (GetUEHist(j))
+        GetUEHist(j)->GetMCRecoPtCorrelation()->Fill(vars[0],vars[1],vars[2]);
   }
 }
 
