@@ -614,7 +614,7 @@ AliAnalysisTaskCheckPerformanceCascadePbPb::~AliAnalysisTaskCheckPerformanceCasc
   if (fCFContCascadePIDAsXiPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDAsXiPlus;     fCFContCascadePIDAsXiPlus = 0x0;  }
   if (fCFContCascadePIDAsOmegaMinus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDAsOmegaMinus;     fCFContCascadePIDAsOmegaMinus = 0x0;  }
   if (fCFContCascadePIDAsOmegaPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDAsOmegaPlus;     fCFContCascadePIDAsOmegaPlus = 0x0;  }
-  if (fCFContAsCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDAsOmegaPlus;     fCFContAsCascadeCuts = 0x0;  }
+  if (fCFContAsCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContAsCascadeCuts;     fCFContAsCascadeCuts = 0x0;  }
 
   if (fESDtrackCuts)         { delete fESDtrackCuts;        fESDtrackCuts = 0x0; }
   /*if (fPaveTextBookKeeping)  { delete fPaveTextBookKeeping; fPaveTextBookKeeping = 0x0; } // fPaveTextBookKeeping is not stored into the TList*/
