@@ -41,7 +41,8 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
 {
   // Run the analysis.
 
-  static Double_t rhovec[9999];
+  const Int_t NMAX = 9999;
+  static Double_t rhovec[NMAX];
   Int_t NpartAcc = 0;
 
   Int_t   maxPartIds[] = {0, 0};
@@ -122,7 +123,7 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
 
     const Int_t Ntracks = fTracks->GetEntriesFast();
 
-    for (Int_t it = 0; it < Ntracks; ++it) {
+    for (Int_t it = 0; it < Ntracks && NpartAcc < NMAX; ++it) {
 
       // exlcuding lead particles
       if (it == maxPartIds[0]-1 || it == maxPartIds[1]-1)
@@ -147,7 +148,7 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
 
     const Int_t Nclusters = fCaloClusters->GetEntriesFast();
 
-    for (Int_t ic = 0; ic < Nclusters; ++ic) {
+    for (Int_t ic = 0; ic < Nclusters && NpartAcc < NMAX; ++ic) {
 
       // exlcuding lead particles
       if (ic == -maxPartIds[0]-1 || ic == -maxPartIds[1]-1)
@@ -171,31 +172,38 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
     }
   }
 
-  Double_t rho = 0;
-
-  if (fUseMedian)
-    rho = TMath::Median(NpartAcc, rhovec);
-  else
-    rho = TMath::Mean(NpartAcc, rhovec);
- 
-  Float_t maxEta = fTrackMaxEta;
-  Float_t minEta = fTrackMinEta;
-  Float_t maxPhi = fTrackMaxPhi;
-  Float_t minPhi = fTrackMinPhi;
-
-  if (maxPhi > TMath::Pi() * 2) maxPhi = TMath::Pi() * 2;
-  if (minPhi < 0) minPhi = 0;
-
-  Double_t area = (maxEta - minEta) * (maxPhi - minPhi);
-
-  if (area > 0) {
-    rho *= NpartAcc / area;
-    fRho->SetVal(rho);
-  } 
-  else {
-    AliError(Form("%s: Area <= 0 %f", GetName(), area));
-    return kFALSE;
+  if (NpartAcc == NMAX) {
+    AliError(Form("%s: NpartAcc >= %d", GetName(), NMAX));
   }
+
+  Double_t rho = 0;
+  
+  if (NpartAcc > 0) {
+    if (fUseMedian)
+      rho = TMath::Median(NpartAcc, rhovec);
+    else
+      rho = TMath::Mean(NpartAcc, rhovec);
+    
+    Float_t maxEta = fTrackMaxEta;
+    Float_t minEta = fTrackMinEta;
+    Float_t maxPhi = fTrackMaxPhi;
+    Float_t minPhi = fTrackMinPhi;
+    
+    if (maxPhi > TMath::Pi() * 2) maxPhi = TMath::Pi() * 2;
+    if (minPhi < 0) minPhi = 0;
+    
+    Double_t area = (maxEta - minEta) * (maxPhi - minPhi);
+    
+    if (area > 0) {
+      rho *= NpartAcc / area;
+    } 
+    else {
+      AliError(Form("%s: Area <= 0 %f", GetName(), area));
+      return kFALSE;
+    }
+  }
+
+  fRho->SetVal(rho);
 
   if (fScaleFunction) {
     Double_t rhoScaled = rho * GetScaleFactor(fCent);

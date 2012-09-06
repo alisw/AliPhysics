@@ -27,6 +27,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
   fCompareRhoScaledName(),
   fRhoFunction(0),
   fScaleFunction(0),
+  fInEventSigmaRho(71.66),
   fRhoScaled(0),
   fCompareRho(0),
   fCompareRhoScaled(0),
@@ -48,6 +49,10 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
   fHistRhoScaledvsNcluster(0)
 {
   // Constructor.
+  for (Int_t i = 0; i < 4; i++) {
+    fHistNjUEvsNj[i] = 0;
+    fHistNjUEoverNjVsNj[i] = 0;
+  }
 }
 
 //________________________________________________________________________
@@ -58,6 +63,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
   fCompareRhoScaledName(),
   fRhoFunction(0),
   fScaleFunction(0),
+  fInEventSigmaRho(71.66),
   fRhoScaled(0),
   fCompareRho(0),
   fCompareRhoScaled(0),
@@ -79,6 +85,11 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
   fHistRhoScaledvsNcluster(0)
 {
   // Constructor.
+
+  for (Int_t i = 0; i < 4; i++) {
+    fHistNjUEvsNj[i] = 0;
+    fHistNjUEoverNjVsNj[i] = 0;
+  }
 
   SetMakeGeneralHistograms(histo);
 }
@@ -123,6 +134,20 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
       fOutput->Add(fHistJetPtvsNtrack);
       fOutput->Add(fHistJetAreavsNtrack);
       fOutput->Add(fHistNjetvsNtrack);
+    }
+
+    for (Int_t i = 0; i < 4; i++) {
+      TString name1(Form("NjUEvsNj_%d",i));
+      fHistNjUEvsNj[i] = new TH2F(name1, name1, 150, -0.5, 149.5, 150, -0.5, 149.5);
+      fHistNjUEvsNj[i]->GetXaxis()->SetTitle("N_{jet}");
+      fHistNjUEvsNj[i]->GetYaxis()->SetTitle("N_{jet_{UE}}");
+      fOutput->Add(fHistNjUEvsNj[i]);
+
+      TString name2(Form("NjUEoverNjVsNj_%d",i));
+      fHistNjUEoverNjVsNj[i] = new TH2F(name2, name2, 150, -0.5, 149.5, 120, -0.01, 1.19);
+      fHistNjUEoverNjVsNj[i]->GetXaxis()->SetTitle("N_{jet_{UE}} / N_{jet}");
+      fHistNjUEoverNjVsNj[i]->GetYaxis()->SetTitle("N_{jet}");
+      fOutput->Add(fHistNjUEoverNjVsNj[i]);
     }
   }
   
@@ -182,20 +207,19 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
 {
   // Fill histograms.
 
-  Int_t Njets     = 0;
   Int_t Ntracks   = 0;
   Int_t Nclusters = 0;
 
-  if (fJets)
-    Njets     = fJets->GetEntries();
   if (fTracks)
     Ntracks   = fTracks->GetEntriesFast();
   if (fCaloClusters)
     Nclusters = fCaloClusters->GetEntriesFast();
 
-  Int_t NjetAcc = 0;
-
   if (fJets) {
+    Int_t Njets    = fJets->GetEntries();
+    Int_t NjetAcc  = 0;
+    Int_t NjetUE   = 0;
+    Double_t rhoPlusSigma = fRho->GetVal() + fInEventSigmaRho;
 
     for (Int_t i = 0; i < Njets; ++i) {
       
@@ -215,11 +239,18 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
 	fHistJetPtvsNtrack->Fill(Ntracks, jet->Pt());
 	fHistJetAreavsNtrack->Fill(Ntracks, jet->Area());
       }
+
+      if (jet->Pt() < rhoPlusSigma * jet->Area())
+	NjetUE++;
       
       NjetAcc++;
     }
+
+    fHistNjUEvsNj[fCentBin]->Fill(NjetAcc,NjetUE);
     
-    
+    if (NjetAcc>0)
+      fHistNjUEoverNjVsNj[fCentBin]->Fill(NjetAcc,1.*NjetUE/NjetAcc);
+
     fHistNjetvsCent->Fill(fCent, NjetAcc);
     if (fTracks)
       fHistNjetvsNtrack->Fill(Ntracks, NjetAcc);

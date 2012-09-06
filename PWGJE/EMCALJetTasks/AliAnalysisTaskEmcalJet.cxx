@@ -143,14 +143,10 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
   if (fAnaType == kTPC) {
     SetJetEtaLimits(-0.5, 0.5);
     SetJetPhiLimits(-10, 10);
-    SetTrackEtaLimits(-0.5 - fJetRadius, 0.5 + fJetRadius);
-    SetTrackPhiLimits(-10, 10);
   } 
   else if (fAnaType == kEMCAL && fGeom) {
     SetJetEtaLimits(fGeom->GetArm1EtaMin() + fJetRadius, fGeom->GetArm1EtaMax() - fJetRadius);
     SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + fJetRadius, fGeom->GetArm1PhiMax() * TMath::DegToRad() - fJetRadius);
-    SetTrackEtaLimits(fGeom->GetArm1EtaMin(), fGeom->GetArm1EtaMax());
-    SetTrackPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad(), fGeom->GetArm1PhiMax() * TMath::DegToRad());
   }
 
   if (!fRhoName.IsNull() && !fRho) {

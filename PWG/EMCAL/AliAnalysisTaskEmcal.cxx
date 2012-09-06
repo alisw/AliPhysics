@@ -324,15 +324,6 @@ void AliAnalysisTaskEmcal::ExecOnce()
     }
   }
 
-  if (fAnaType == kTPC) {
-    SetTrackEtaLimits(-0.9, 0.9);
-    SetTrackPhiLimits(-10, 10);
-  } 
-  else if (fAnaType == kEMCAL && fGeom) {
-    SetTrackEtaLimits(fGeom->GetArm1EtaMin(), fGeom->GetArm1EtaMax());
-    SetTrackPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad(), fGeom->GetArm1PhiMax() * TMath::DegToRad());
-  }
-
   fInitialized = kTRUE;
 }
 
