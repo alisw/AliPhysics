@@ -962,8 +962,8 @@ void  AliPHOSPIDv1::MakePID()
   Double_t * sw  [kSPECIES] ;
   //Info("MakePID","Begin MakePID"); 
   
-  for (Int_t i =0; i< kSPECIES; i++){
-    stof[i] = new Double_t[nparticles] ;
+	  for (Int_t i =0; i< kSPECIES; i++){
+	    stof[i] = new Double_t[nparticles] ;
     sdp [i] = new Double_t[nparticles] ;
     scpv[i] = new Double_t[nparticles] ;
     sw  [i] = new Double_t[nparticles] ;
@@ -1001,7 +1001,7 @@ void  AliPHOSPIDv1::MakePID()
     // s(pid) in the Bayesian formulation
 
     //Initialize anused species
-    for(Int_t iii=0; iii<kSPECIES; iii)stof[iii][index]=0. ;
+    for(Int_t iii=0; iii<kSPECIES; iii++)stof[iii][index]=0. ;
     
     stof[AliPID::kPhoton][index]   = 1.; 
     stof[AliPID::kElectron][index] = 1.;
@@ -1061,7 +1061,7 @@ void  AliPHOSPIDv1::MakePID()
 
     //dispersion is not well defined if the cluster is only in few crystals
     //Initialize anused species
-    for(Int_t iii=0; iii<kSPECIES; iii)sdp[iii][index]=0. ;
+    for(Int_t iii=0; iii<kSPECIES; iii++)sdp[iii][index]=0. ;
     
     sdp[AliPID::kPhoton][index]   = 1. ;
     sdp[AliPID::kElectron][index] = 1. ;
@@ -1127,7 +1127,7 @@ void  AliPHOSPIDv1::MakePID()
     //    else
     //      cout<<">>>>>>>>>>>CHARGED>>>>>>>>>>>"<<endl;
     //Initialize anused species
-    for(Int_t iii=0; iii<kSPECIES; iii)scpv[iii][index]=0. ;
+    for(Int_t iii=0; iii<kSPECIES; iii++)scpv[iii][index]=0. ;
     
     scpv[AliPID::kPion][index]     =  pcpvcharged  ; 
     scpv[AliPID::kKaon][index]     =  pcpvcharged  ; 
@@ -1176,7 +1176,7 @@ void  AliPHOSPIDv1::MakePID()
 
     //Weight to apply to hadrons due to energy reconstruction
     //Initialize anused species
-    for(Int_t iii=0; iii<kSPECIES; iii)sw[iii][index]=1. ;
+    for(Int_t iii=0; iii<kSPECIES; iii++)sw[iii][index]=1. ;
 
     Float_t weight = fERecWeight ->Eval(en) ;
  
