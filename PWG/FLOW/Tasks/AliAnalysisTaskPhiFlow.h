@@ -22,17 +22,6 @@ class AliEventPoolManager;
 
 #include "AliAnalysisTaskSE.h"
 
-enum ESDEventStats_t
-{
-   kNUnlikePairs = 0,
-   kNLikeNPairs,
-   kNLikePPairs,
-   kNUnlikeKPairs,
-   kNLikeNKPairs,
-   kNLikePKPairs,
-   kNStats = kNLikePKPairs,
-};
-
 class AliPhiMesonHelperTrack : public TObject
 {
 public:
@@ -46,14 +35,7 @@ public:
     virtual Double_t Phi()              const { return fPhi; }
     virtual Double_t Eta()              const { return fEta; }
     virtual Int_t Charge()              const { return fCharge; }
-    void    InitializeHelperTrack(Float_t eta, Float_t phi, Float_t p, Float_t px, Float_t py, Float_t pz, Float_t pt, Int_t charge) {     fEta = eta;
-                                                                                                                                fPhi =phi;
-                                                                                                                                fp = p;
-                                                                                                                                fpX = px;
-                                                                                                                                fpY = py;
-                                                                                                                                fpZ = pz;
-                                                                                                                                fpT = pt;
-                                                                                                                                fCharge = charge; }
+    void    InitializeHelperTrack(Float_t eta, Float_t phi, Float_t p, Float_t px, Float_t py, Float_t pz, Float_t pt, Int_t charge) { fEta = eta; fPhi = phi; fp = p; fpX = px; fpY = py; fpZ = pz; fpT = pt; fCharge = charge; }
 private:
     Float_t                             fEta;      // eta
     Float_t                             fPhi;      // phi
@@ -63,7 +45,6 @@ private:
     Float_t                             fpZ;       // pZ
     Float_t                             fpT;       // pT
     Int_t                               fCharge;   // charge
-
     ClassDef(AliPhiMesonHelperTrack, 1); // lightweight helper track for phi reconstruction
 };
 
@@ -73,18 +54,18 @@ public:
    AliAnalysisTaskPhiFlow();
    AliAnalysisTaskPhiFlow(const char *name);
    virtual ~AliAnalysisTaskPhiFlow();
-
    Int_t                                SetDebugLevelPhiTask(Int_t debug) {fDebug = debug; return fDebug; }
    Bool_t                               SetIsMC(Bool_t ismc) {fIsMC = ismc; return fIsMC; }
    Bool_t                               UseEventMixing(Bool_t mix, Bool_t type) {fEventMixing = mix; fTypeMixing = type; return mix; }
    Bool_t                               SetVZEROSubEvents(Bool_t v0) { fV0 = v0; return v0; }
    TH1F*                                BookHistogram(const char * name);
    TH2F*                                BookPIDHistogram(const char * name, Bool_t TPC);
-   TH1F*                                InitPtSpectraHistograms(Int_t i);
+   TH1F*                                InitPtSpectraHistograms(Float_t nmin, Float_t nmax);
    TH1F*                                BookPtHistogram(const char* name);
    void                                 AddPhiIdentificationOutputObjects();
    virtual void                         UserCreateOutputObjects();
    AliEventPoolManager*                 InitializeEventMixing();
+   void                                 SetPtBins(Float_t bin[19], Int_t n) { for(Int_t i = 0; i < n+1; i++) fPtBins[i] = bin[i]; fNPtBins = n; }
    template <typename T> Double_t       InvariantMass(const T* track1, const T* track2) const;
    template <typename T> Double_t       DeltaDipAngle(const T* track1, const T* track2) const;
    template <typename T> Bool_t         CheckDeltaDipAngle(const T* track1, const T* track2) const;
@@ -179,6 +160,8 @@ private:
    Int_t                fMixingParameters[3]; // mixing: poolsize, mixing tracks, pool buffer
    Int_t                fCentralityMixingBins[20]; // configure centrality bins for event mixing
    Int_t                fVertexMixingBins[20]; // configure vertex bins for event mixing
+   Float_t              fPtBins[19]; // pt bin borders
+   Int_t                fNPtBins; // no of pt bins + 1
    Double_t             fCentrality; // event centrality
    Double_t             fVertex; // event vertex z 
    AliESDEvent          *fESD;    //! ESD object
@@ -221,14 +204,13 @@ private:
    TH2F                 *fDCASecondaryWeak; //! dca of weak (mc)
    TH2F                 *fDCAMaterial; //!dca material (mc) all (data)
    TProfile             *fSubEventDPhiv2; //! subevent resolution info for v2
-   TProfile             *fSubEventDPhiv3; //! subevent resolution info for v3
-   TProfile             *fV0Data[18][2][2]; //! profiles for vzero vn(minv)
+   TProfile             *fV0Data[18][2]; //! profiles for vzero vn(minv)
 
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
    void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[]) const;
 
-   ClassDef(AliAnalysisTaskPhiFlow, 5);
+   ClassDef(AliAnalysisTaskPhiFlow, 6);
 };
 
 #endif
