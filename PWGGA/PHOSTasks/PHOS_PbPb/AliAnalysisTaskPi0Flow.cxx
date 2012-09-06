@@ -81,6 +81,7 @@ AliAnalysisTaskPi0Flow::AliAnalysisTaskPi0Flow(const char *name, Period period)
   fCentNMixed(10),
   fNEMRPBins(9),
   fPeriod(period),
+  fManualV0EPCalc(false),
   fOutputContainer(0x0),
   fNonLinCorr(0),
   fEvent(0x0),
@@ -2088,6 +2089,12 @@ void AliAnalysisTaskPi0Flow::SetMisalignment(){
 void AliAnalysisTaskPi0Flow::SetV0Calibration(){
     // assigns: fMultV0, fV0Cpol, fV0Apol, fMeanQ, and fWidthQ
 
+    if ( ! fManualV0EPCalc ) {
+      if( fDebug >=2 )
+	AliInfo("Not setting V0Calibration, only needed for manual V0 EP Calculation");
+      return; 
+    }
+
     int runNumber = this->fRunNumber;
     
     TString oadbfilename = "$ALICE_ROOT/OADB/PWGCF/VZERO/VZEROcalibEP.root";
@@ -2380,56 +2387,72 @@ void AliAnalysisTaskPi0Flow::EvalReactionPlane()
 void  AliAnalysisTaskPi0Flow::EvalV0ReactionPlane(){
   // set: fRPV0A and fRPV0C
 
-  //VZERO data
-  AliVVZERO* v0 = fEvent->GetVZEROData();
+  // Do Manual V0 EP Calculation
+  if ( fManualV0EPCalc ) 
+    {
+      //VZERO data
+      AliVVZERO* v0 = fEvent->GetVZEROData();
 
-  //reset Q vector info
-  Double_t Qxa2 = 0, Qya2 = 0;
-  Double_t Qxc2 = 0, Qyc2 = 0;
+      //reset Q vector info
+      Double_t Qxa2 = 0, Qya2 = 0;
+      Double_t Qxc2 = 0, Qyc2 = 0;
 
-  for (Int_t iv0 = 0; iv0 < 64; iv0++) {
-    Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);
-    Float_t multv0 = v0->GetMultiplicity(iv0);
-    if (iv0 < 32){ // V0C
-      Qxc2 += TMath::Cos(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-      Qyc2 += TMath::Sin(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
-    } else {       // V0A
-      Qxa2 += TMath::Cos(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
-      Qya2 += TMath::Sin(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+      for (Int_t iv0 = 0; iv0 < 64; iv0++) {
+	Double_t phiV0 = TMath::PiOver4()*(0.5 + iv0 % 8);
+	Float_t multv0 = v0->GetMultiplicity(iv0);
+	if (iv0 < 32){ // V0C
+	  Qxc2 += TMath::Cos(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	  Qyc2 += TMath::Sin(2*phiV0) * multv0*fV0Cpol/fMultV0->GetBinContent(iv0+1);
+	} else {       // V0A
+	  Qxa2 += TMath::Cos(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	  Qya2 += TMath::Sin(2*phiV0) * multv0*fV0Apol/fMultV0->GetBinContent(iv0+1);
+	}
+      }
+
+      Int_t iC = -1;
+      // centrality bins
+      if(fCentralityV0M < 5) iC = 0;
+      else if(fCentralityV0M < 10) iC = 1;
+      else if(fCentralityV0M < 20) iC = 2;
+      else if(fCentralityV0M < 30) iC = 3;
+      else if(fCentralityV0M < 40) iC = 4;
+      else if(fCentralityV0M < 50) iC = 5;
+      else if(fCentralityV0M < 60) iC = 6;
+      else if(fCentralityV0M < 70) iC = 7;
+      else iC = 8;
+
+      //grab for each centrality the proper histo with the Qx and Qy to do the recentering
+      Double_t Qxamean2 = fMeanQ[iC][1][0];
+      Double_t Qxarms2  = fWidthQ[iC][1][0];
+      Double_t Qyamean2 = fMeanQ[iC][1][1];
+      Double_t Qyarms2  = fWidthQ[iC][1][1];
+
+      Double_t Qxcmean2 = fMeanQ[iC][0][0];
+      Double_t Qxcrms2  = fWidthQ[iC][0][0];
+      Double_t Qycmean2 = fMeanQ[iC][0][1];
+      Double_t Qycrms2  = fWidthQ[iC][0][1];
+
+      Double_t QxaCor2 = (Qxa2 - Qxamean2)/Qxarms2;
+      Double_t QyaCor2 = (Qya2 - Qyamean2)/Qyarms2;
+      Double_t QxcCor2 = (Qxc2 - Qxcmean2)/Qxcrms2;
+      Double_t QycCor2 = (Qyc2 - Qycmean2)/Qycrms2;
+
+      fRPV0A = TMath::ATan2(QyaCor2, QxaCor2)/2.;
+      fRPV0C = TMath::ATan2(QycCor2, QxcCor2)/2.;
     }
-  }
-
-  Int_t iC = -1;
-  // centrality bins
-  if(fCentralityV0M < 5) iC = 0;
-  else if(fCentralityV0M < 10) iC = 1;
-  else if(fCentralityV0M < 20) iC = 2;
-  else if(fCentralityV0M < 30) iC = 3;
-  else if(fCentralityV0M < 40) iC = 4;
-  else if(fCentralityV0M < 50) iC = 5;
-  else if(fCentralityV0M < 60) iC = 6;
-  else if(fCentralityV0M < 70) iC = 7;
-  else iC = 8;
-
-    //grab for each centrality the proper histo with the Qx and Qy to do the recentering
-  Double_t Qxamean2 = fMeanQ[iC][1][0];
-  Double_t Qxarms2  = fWidthQ[iC][1][0];
-  Double_t Qyamean2 = fMeanQ[iC][1][1];
-  Double_t Qyarms2  = fWidthQ[iC][1][1];
-
-  Double_t Qxcmean2 = fMeanQ[iC][0][0];
-  Double_t Qxcrms2  = fWidthQ[iC][0][0];
-  Double_t Qycmean2 = fMeanQ[iC][0][1];
-  Double_t Qycrms2  = fWidthQ[iC][0][1];
-
-  Double_t QxaCor2 = (Qxa2 - Qxamean2)/Qxarms2;
-  Double_t QyaCor2 = (Qya2 - Qyamean2)/Qyarms2;
-  Double_t QxcCor2 = (Qxc2 - Qxcmean2)/Qxcrms2;
-  Double_t QycCor2 = (Qyc2 - Qycmean2)/Qycrms2;
-
-  fRPV0A = TMath::ATan2(QyaCor2, QxaCor2)/2.;
-  fRPV0C = TMath::ATan2(QycCor2, QxcCor2)/2.;
-
+  else // Use Official V0 EP Calculation. 
+    {
+      AliEventplane *eventPlane = fEvent->GetEventplane();
+      if( ! eventPlane ) { AliError("Event has no event plane"); return; }
+      fRPV0A = eventPlane->GetEventplane("V0A", fEvent);
+      fRPV0C = eventPlane->GetEventplane("V0C", fEvent);
+    }
+  
+  // Check that the A&C RP are within allowed range.
+  if( fDebug >= 3 && (fRPV0A<0 || fRPV0A>TMath::Pi() ) )
+    AliInfo(Form("RPV0A outside of permited range [0,pi]: %f, correcting", fRPV0A));
+  if( fDebug >= 3 && (fRPV0C<0 || fRPV0C>TMath::Pi() ) )
+    AliInfo(Form("RPV0C outside of permited range [0,pi]: %f, correcting", fRPV0C));
   while (fRPV0A<0          ) fRPV0A+=TMath::Pi() ;
   while (fRPV0A>TMath::Pi()) fRPV0A-=TMath::Pi() ;
   while (fRPV0C<0          ) fRPV0C+=TMath::Pi() ;

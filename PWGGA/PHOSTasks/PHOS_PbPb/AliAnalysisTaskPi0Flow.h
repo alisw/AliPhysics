@@ -46,6 +46,7 @@ public:
     void SetCentralityBinning(const TArrayD& edges);
     void SetNMixedPerCentrality(const TArrayI& nMixed);
     void SetEventMixingRPBinning(UInt_t nBins) { fNEMRPBins = nBins; }
+    void SetManualV0EPCalc(Bool_t manCalc = true) {fManualV0EPCalc = manCalc;}
     
     void SetPHOSBadMap(Int_t mod,TH2I * badMapHist);
     //Where to read AODB object with EP calibration if not default
@@ -150,7 +151,9 @@ private:
     UInt_t fNEMRPBins;
     
 
+    // Behavior
     Period fPeriod;
+    Bool_t fManualV0EPCalc;
 
     TList * fOutputContainer;        //final histogram container
 
