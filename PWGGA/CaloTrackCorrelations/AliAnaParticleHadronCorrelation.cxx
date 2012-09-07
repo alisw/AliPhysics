@@ -3002,8 +3002,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
   Int_t    nTracks = 0 ;  
   Int_t iParticle  = 0 ;
   Double_t charge  = 0.;
-
-
+  
   if(GetReader()->ReadStack())
   {
     nTracks = GetMCStack()->GetNtrack() ;
@@ -3020,7 +3019,6 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
     if(GetDebug() > 0) printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation *** bad label ***:  label %d \n", label);
     return;
   }  
-
   
   if(GetReader()->ReadStack())
   {
@@ -3053,7 +3051,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
       etaprim  = primary->Eta();
       
       if(ptprim < 0.01 || eprim < 0.01) return ;
-
+      
       for (iParticle = 0 ; iParticle <  nTracks ; iParticle++) 
       {
         TParticle * particle = stack->Particle(iParticle);
@@ -3087,17 +3085,20 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
       } //track loop
     } //when the leading particles could trace back to MC
   } //ESD MC
+  
   else if(GetReader()->ReadAODMCParticles())
   {
     //Get the list of MC particles
     mcparticles0 = GetReader()->GetAODMCParticles(0);
     if(!mcparticles0) return;
+    
     if(label >=mcparticles0->GetEntriesFast())
     {
       if(GetDebug() > 2)  
         printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation *** large label ***:  label %d, n tracks %d \n", label,mcparticles0->GetEntriesFast());
       return;
     }
+    
     //Get the particle
     aodprimary = (AliAODMCParticle*) mcparticles0->At(label);
     if(!aodprimary)  
@@ -3105,28 +3106,29 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
       printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation *** no AOD primary ***:  label %d \n", label);   
       return;
     }
-
-   
+    
     if(aodprimary)
     {
       ptprim  = aodprimary->Pt();
       phiprim = aodprimary->Phi();
       etaprim = aodprimary->Eta();
       eprim   = aodprimary->E();
-
+      
       Bool_t lead = kFALSE;
       
       if(ptprim < 0.01 || eprim < 0.01) return ;
- 
+      
       mcparticles= GetReader()->GetAODMCParticles();
-      for (Int_t i = 0; i < nTracks; i++) 
+      for (iParticle = 0; iParticle < nTracks; iParticle++) 
       {
-        AliAODMCParticle *part = (AliAODMCParticle*) mcparticles->At(i);
-	 
+        AliAODMCParticle *part = (AliAODMCParticle*) mcparticles->At(iParticle);
+        
         if (!part->IsPhysicalPrimary()) continue;        
+   
         Int_t pdg = part->GetPdgCode();	
         charge = TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-        TLorentzVector momentum(part->Px(),part->Py(),part->Pz(),part->E());        
+        TLorentzVector momentum(part->Px(),part->Py(),part->Pz(),part->E());   
+        
         if(charge != 0)
         {
           if(part->Pt()> GetReader()->GetCTSPtMin())
@@ -3134,6 +3136,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
             //Particles in CTS acceptance
             Bool_t inCTS =  GetFiducialCut()->IsInFiducialCut(momentum,"CTS");
             Int_t indexmother=part->GetMother();
+            
             if(indexmother>-1)
             {
               Int_t mPdg = ((AliAODMCParticle*) mcparticles->At(indexmother)) ->GetPdgCode();
@@ -3145,18 +3148,18 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
               if( label!=iParticle) // avoid trigger particle
               {
                 if(!FillChargedMCCorrelationHistograms(part->Pt(),part->Phi(),part->Eta(),ptprim,phiprim,etaprim)) return;
-		else lead = kTRUE;
+                else lead = kTRUE;
               }
             } // in acceptance
           } // min pt cut
         } //only charged particles
       }  //MC particle loop 
       if (lead) 
-      	{
-	  fhMCPtLeading->Fill(ptprim);
-	  fhMCPhiLeading->Fill(ptprim,phiprim);
-	  fhMCEtaLeading->Fill(ptprim,etaprim);
-	}
+      {
+        fhMCPtLeading->Fill(ptprim);
+        fhMCPhiLeading->Fill(ptprim,phiprim);
+        fhMCEtaLeading->Fill(ptprim,etaprim);
+      }
     } //when the leading particles could trace back to MC
   }// AOD MC
 }
