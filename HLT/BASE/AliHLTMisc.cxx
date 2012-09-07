@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -29,19 +29,24 @@ ClassImp(AliHLTMisc);
 
 AliHLTMisc::AliHLTMisc()
 {
-  // see header file for function documentation
+  // Abstract interface of various glue functions implemented in dynamically
+  // loaded libraries.
+  //
+  // The HLT base library is independent from AliRoot and binds AliRoot
+  // functionality via dynamic libraries. The provided methods can be used
+  // from any module library without introducing additional dependencies.
 }
 
 AliHLTMisc::~AliHLTMisc()
 {
-  // see header file for function documentation
+  // destructor
 }
 
 AliHLTMisc* AliHLTMisc::fgInstance=NULL;
 
 AliHLTMisc& AliHLTMisc::Instance()
 {
-  // see header file for function documentation
+  // get global instance of the interface implementation
   if (!fgInstance) {
     fgInstance=LoadInstance((AliHLTMisc*)NULL, "AliHLTMiscImplementation", ALIHLTMISC_LIBRARY);
   }
@@ -154,6 +159,12 @@ int AliHLTMisc::InitStreamerInfos(TObjArray* /*pSchemas*/) const
 {
   // default method, functionality is implemented in the child class
   return -EFAULT;
+}
+
+int AliHLTMisc::MergeStreamerInfo(TObjArray* /*tgt*/, const TObjArray* /*src*/, int /*iVerbosity*/) const
+{
+  // default method, functionality is implemented in the child class
+  return 0;
 }
 
 void AliHLTMisc::SetAliESDtrackOnlineModeFlag(bool /*mode*/) const

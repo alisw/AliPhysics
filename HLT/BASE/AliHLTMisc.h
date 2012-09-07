@@ -3,7 +3,7 @@
 
 #ifndef ALIHLTMISC_H
 #define ALIHLTMISC_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
@@ -27,19 +27,33 @@ struct AliHLTComponentDataType;
 class AliHLTGlobalTriggerDecision;
 class TMap;
 
+/**
+ * @class AliHLTMisc
+ * Abstract interface of various glue functions implemented in dynamically
+ * loaded libraries.
+ *
+ * The HLT base library is independent from AliRoot and binds AliRoot
+ * functionality via dynamic libraries. The provided methods can be used
+ * from any module library without introducing additional dependencies.
+ */
 class AliHLTMisc : public TObject {
  public:
   AliHLTMisc();
   ~AliHLTMisc();
 
+  /// dynamically load a class from a library
   template<class T>
   static T* LoadInstance(const T* dummy, const char* classname, const char* library=NULL);
 
+  /// the global instance of the interface implementation
   static AliHLTMisc& Instance();
 
+  /// init the CDB patch
   virtual int InitCDB(const char* cdbpath);
 
+  /// init the CDB run number
   virtual int SetCDBRunNo(int runNo);
+  /// get the run number from CDB manager
   virtual int GetCDBRunNo() const;
 
   /// Load an OCDB object
@@ -53,6 +67,7 @@ class AliHLTMisc : public TObject {
   ///  value : auxiliary object - short description
   virtual int CheckOCDBEntries(const TMap* const pMap) const;
 
+  /// init the global magnetic field
   virtual int InitMagneticField() const;
 
   /// extract the triggermask from the rawreader
@@ -82,6 +97,12 @@ class AliHLTMisc : public TObject {
 
   /// Init streamer info for a collection of classes
   virtual int InitStreamerInfos(TObjArray* pSchemas) const;
+
+  /// merge streamer info entries from source array to target array
+  /// add all existing infos if not existing in the current one, or having
+  /// different class version
+  /// return 1 if target array has been changed
+  virtual int MergeStreamerInfo(TObjArray* tgt, const TObjArray* src, int iVerbosity=0) const;
 
   /// set the online mode flag of AliESDtrack
   virtual void SetAliESDtrackOnlineModeFlag(bool mode) const;
@@ -144,7 +165,7 @@ extern "C" {
 template<class T>
 T* AliHLTMisc::LoadInstance(const T* /*t*/, const char* classname, const char* library)
 {
-  // see header file for function documentation
+  /// dynamically load a class from a library
   int iLibResult=0;
   T* pInstance=NULL;
   AliHLTLogging log;
