@@ -3,21 +3,15 @@
 
 #ifndef ALIHLTGLOBALPREPROCESSOR_H
 #define ALIHLTGLOBALPREPROCESSOR_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
-//* See cxx source for full Copyright notice                               */
+//* See cxx source for full Copyright notice                               *
 
-//  @file   AliHLTGlobalPreprocessor.h
-//  @author Matthias Richter
-//  @date   2010-08-20
-//  @brief  HLT Preprocessor plugin for global HLT
-// 
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @file   AliHLTGlobalPreprocessor.h
+/// @author Matthias Richter
+/// @date   2010-08-20
+/// @brief  HLT Preprocessor plugin for global HLT
+///
 
 #include "AliHLTModulePreprocessor.h"
 
