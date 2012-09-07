@@ -115,12 +115,6 @@ class AliHLTRootSchemaEvolutionComponent : public AliHLTCalibrationProcessor
   /// and adds if it is a new info. 
   int UpdateStreamerInfos(const TList* list, TObjArray* infos) const;
 
-  /// merge streamer info entries from source array to target array
-  /// add all existing infos if not existing in the current one, or having
-  /// different class version
-  /// return 1 if target array has been changed
-  static int MergeStreamerInfo(TObjArray* tgt, const TObjArray* src);
-
   class AliHLTDataBlockItem
   {
   public:
