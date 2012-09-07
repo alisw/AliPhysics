@@ -389,14 +389,13 @@ AliTOFAnalysisTaskCalibPass0::GetStatus()
 
 //_______________________________________________________
 
-Bool_t
-AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t *dbString)
+void
+AliTOFAnalysisTaskCalibPass0::PrintStatus()
 {
   /*
-   * process output
+   * print status
    */
 
-  Int_t ret = DoProcessOutput(filename, dbString);
   Int_t status = GetStatus();
   if (status == 0) {
     AliInfo(Form("TOF calibration successful: %s (status=%d)", fgkStatusCodeName[fStatus], status));
@@ -408,6 +407,19 @@ AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t
     AliInfo(Form("TOF calibration failed (expected): %s (status=%d)", fgkStatusCodeName[fStatus], status));
   }
   
+}
+
+//_______________________________________________________
+
+Bool_t
+AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t *dbString)
+{
+  /*
+   * process output
+   */
+
+  Int_t ret = DoProcessOutput(filename, dbString);
+  PrintStatus();
   return ret;
 }
 

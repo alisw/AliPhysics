@@ -51,6 +51,7 @@ public AliAnalysisTaskSE
   Bool_t ProcessOutput(const Char_t *filename, const Char_t *dbString); // process output
   Bool_t DoProcessOutput(const Char_t *filename, const Char_t *dbString); // process output
   Int_t GetStatus(); // get status
+  void PrintStatus(); // print status
 
   /* static setters */
   static void SetMinVertexIntegral(Double_t value) {fgMinVertexIntegral = value;}; // setter
