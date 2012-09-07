@@ -76,8 +76,8 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   const Double_t kOuterACentral = 2.4374*fgkcm;
   const Double_t kOuterBCentral = 3.8162*fgkcm;
   const Double_t kCoolManifHoleWid  = 24.0*fgkmm; // TO BE CHECKED!
-  const Double_t kCoolManifHoleLen  = 54.0*fgkmm; // TO BE CHECKED!
-  const Double_t kCoolManifHoleZPos = 33.8*fgkcm;
+  const Double_t kCoolManifHoleLen  = 57.5*fgkmm; // 54.2 + 1.5*2 + 0.3 toll.
+  const Double_t kCoolManifHoleZPos = 36.47*fgkcm;// MUST match SPD class
   const Double_t kCoolSuppHoleWid  = 15.0*fgkmm; // TO BE CHECKED!
   const Double_t kCoolSuppHoleLen  = 35.1*fgkmm; // TO BE CHECKED!
   const Double_t kCoolSuppHoleZPos = 26.5*fgkcm;
@@ -216,7 +216,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 				     kCoolManifHoleLen/2);
   manifhole->SetName("mhTS");
 
-  zpos = kCoolManifHoleZPos + manifhole->GetDZ();
+  zpos = kCoolManifHoleZPos;
 
   TGeoTranslation *m1p = new TGeoTranslation("m1p",0,radius, zpos);
   TGeoTranslation *m1n = new TGeoTranslation("m1n",0,radius,-zpos);
