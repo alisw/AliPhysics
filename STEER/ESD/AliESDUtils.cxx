@@ -231,3 +231,21 @@ Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const 
   //
   return kTRUE;
 }
+//________________________________________________________________________
+Float_t AliESDUtils::GetCorrV0A(Float_t  v0araw, Float_t zv)
+{
+  // renormalize v0A signal at given Zv to acceptance at Zv=0
+  const Double_t pars[] = {1.03075,-0.00347109,-4.93343e-05};
+  zv -= pars[0];
+  Float_t corr = 1 + zv*(pars[1] + zv*pars[2]);
+  return corr>0 ? v0araw/corr : -1;
+}
+//________________________________________________________________________
+Float_t AliESDUtils::GetCorrV0C(Float_t  v0craw, Float_t zv)
+{
+  // renormalize v0C signal at given Zv to acceptance at Zv=0
+  const Double_t pars[] = {1.01941,0.00409037,-8.55458e-05};
+  zv -= pars[0];
+  Float_t corr = 1 + zv*(pars[1] + zv*pars[2]);
+  return corr>0 ? v0craw/corr : -1;
+}
