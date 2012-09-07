@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -18,8 +18,9 @@
 
 /// @file   AliHLTMisc.cxx
 /// @author Matthias Richter
-/// @date   
-/// @brief  Miscellaneous methods for the HLT AliRoot integration
+/// @date   2009-07-07
+/// @brief  Implementation of various glue functions implemented in dynamically
+///         loaded libraries
 
 #include "AliHLTMiscImplementation.h"
 #include "AliHLTLogging.h"
@@ -404,6 +405,57 @@ int AliHLTMiscImplementation::InitStreamerInfos(TObjArray* pSchemas) const
   }
 
   return 0;
+}
+
+int AliHLTMiscImplementation::MergeStreamerInfo(TObjArray* tgt, const TObjArray* src, int iVerbosity) const
+{
+  /// merge streamer info entries from source array to target array
+  /// return 1 if target array has been changed
+
+  // add all existing infos if not existing in the current one, or having
+  // different class version
+  int iResult=0;
+  if (!tgt || !src) return -EINVAL;
+
+  {
+    // check if all infos from the existing entry are in the new entry and with
+    // identical class version
+    TIter next(src);
+    TObject* nextobj=NULL;
+    while ((nextobj=next())) {
+      TStreamerInfo* srcInfo=dynamic_cast<TStreamerInfo*>(nextobj);
+      if (!srcInfo) continue;
+      TString srcInfoName=srcInfo->GetName();
+
+      int i=0;
+      for (; i<tgt->GetEntriesFast(); i++) {
+	if (tgt->At(i)==NULL) continue;
+	if (srcInfoName.CompareTo(tgt->At(i)->GetName())!=0) continue;
+	// TODO: 2010-08-23 some more detailed investigation is needed.
+	// Structures used for data exchange, e.g. AliHLTComponentDataType
+	// or AliHLTEventDDLV1 do not have a class version, but need to be stored in the
+	// streamer info. Strictly speaking not, because those structures are not supposed
+	// to be changed at all, so they should be the same in all versions in the future.
+	// There has been a problem with detecting whether the streamer info is already in
+	// the target array if the srcInfo has class version -1. As it just concerns
+	// structures not going to be changed we can safely skip checking the class version,
+	// as long as the entry is already in the target streamer infos it does not need
+	// to be copied again.
+	if (srcInfo->GetClassVersion()<0) break;
+	TStreamerInfo* tgtInfo=dynamic_cast<TStreamerInfo*>(tgt->At(i));
+	if (tgtInfo && tgtInfo->GetClassVersion()==srcInfo->GetClassVersion()) break;
+      }
+      if (i<tgt->GetEntriesFast()) continue;
+
+      iResult=1;
+      if (iVerbosity>0) {
+	AliInfo(Form("adding streamer info for class %s version %d", srcInfoName.Data(), srcInfo->GetClassVersion()));
+      }
+      tgt->Add(srcInfo);
+    }
+  }
+
+  return iResult;
 }
 
 void AliHLTMiscImplementation::SetAliESDtrackOnlineModeFlag(bool mode) const

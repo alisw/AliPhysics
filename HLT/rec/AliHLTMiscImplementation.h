@@ -3,9 +3,9 @@
 
 #ifndef ALIHLTMISCIMPLEMENTATION_H
 #define ALIHLTMISCIMPLEMENTATION_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the                          * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
-//* See cxx source for full Copyright notice                               */
+//* See cxx source for full Copyright notice                               *
 
 /// @file   AliHLTMiscImplementation.h
 /// @author Matthias Richter
@@ -14,7 +14,10 @@
 ///         loaded libraries
 
 #include "AliHLTMisc.h"
-
+/**
+ * @class AliHLTMiscImplementation
+ * Implementation of various glue functions provided by AliHLTMisc.
+ */
 class AliHLTMiscImplementation : public AliHLTMisc
 {
  public:
@@ -48,6 +51,7 @@ class AliHLTMiscImplementation : public AliHLTMisc
 
   int InitStreamerInfos(const char* ocdbEntry) const;
   int InitStreamerInfos(TObjArray* pSchemas) const;
+  int MergeStreamerInfo(TObjArray* tgt, const TObjArray* src, int iVerbosity=0) const;
 
   void SetAliESDtrackOnlineModeFlag(bool mode) const;
   bool GetAliESDtrackOnlineModeFlag() const;
