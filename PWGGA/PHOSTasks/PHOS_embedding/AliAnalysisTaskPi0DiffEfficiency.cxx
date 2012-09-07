@@ -87,6 +87,10 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
   char key[55] ;
   for(Int_t cent=0; cent<6; cent++){
     //Single photon
+
+    fOutputContainer->Add(new TH1F(Form("hPhotAll_DistBad2_cen%d",cent),"All clusters",nPt,ptMin,ptMax));
+    fOutputContainer->Add(new TH1F(Form("hPhotAll_DistBad4_cen%d",cent),"All clusters",nPt,ptMin,ptMax));
+    fOutputContainer->Add(new TH1F(Form("hPhotAll_DistBad6_cen%d",cent),"All clusters",nPt,ptMin,ptMax));
     snprintf(key,55,"hPhotAll_cen%d",cent) ;
     fOutputContainer->Add(new TH1F(key,"dN/dpt" ,nPt,ptMin,ptMax));
     ((TH1F*)fOutputContainer->Last())->Sumw2() ;
@@ -109,7 +113,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
     snprintf(key,55,"hPhotDisp2_cen%d",cent) ;
     fOutputContainer->Add(new TH1F(key,"dN/dpt" ,nPt,ptMin,ptMax));
     ((TH1F*)fOutputContainer->Last())->Sumw2() ;
-    snprintf(key,55,"hPhotDispwou_cen%d",cent) ;
+    snprintf(key,55,"hPhotDispcore_cen%d",cent) ;
     fOutputContainer->Add(new TH1F(key,"dN/dpt" ,nPt,ptMin,ptMax));
     ((TH1F*)fOutputContainer->Last())->Sumw2() ;
     snprintf(key,55,"hPhotBoth_cen%d",cent) ;
@@ -141,7 +145,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
     snprintf(key,55,"hNegPhotDisp2_cen%d",cent) ;
     fOutputContainer->Add(new TH1F(key,"dN/dpt" ,nPt,ptMin,ptMax));
     ((TH1F*)fOutputContainer->Last())->Sumw2() ;
-    snprintf(key,55,"hNegPhotDispwou_cen%d",cent) ;
+    snprintf(key,55,"hNegPhotDispcore_cen%d",cent) ;
     fOutputContainer->Add(new TH1F(key,"dN/dpt" ,nPt,ptMin,ptMax));
     ((TH1F*)fOutputContainer->Last())->Sumw2() ;
     snprintf(key,55,"hNegPhotBoth_cen%d",cent) ;
@@ -173,7 +177,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
     snprintf(key,55,"hOldMassPtDisp2_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     ((TH2F*)fOutputContainer->Last())->Sumw2() ;
-    snprintf(key,55,"hOldMassPtDispwou_cen%d",cent) ;
+    snprintf(key,55,"hOldMassPtDispcore_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     ((TH2F*)fOutputContainer->Last())->Sumw2() ;
     snprintf(key,55,"hOldMassPtBoth_cen%d",cent) ;
@@ -207,7 +211,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
     snprintf(key,55,"hNewMassPtDisp2_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     ((TH2F*)fOutputContainer->Last())->Sumw2() ;
-    snprintf(key,55,"hNewMassPtDispwou_cen%d",cent) ;
+    snprintf(key,55,"hNewMassPtDispcore_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     ((TH2F*)fOutputContainer->Last())->Sumw2() ;
     snprintf(key,55,"hNewMassPtBoth_cen%d",cent) ;
@@ -241,7 +245,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
     snprintf(key,55,"hNegMassPtDisp2_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     ((TH2F*)fOutputContainer->Last())->Sumw2() ;
-    snprintf(key,55,"hNegMassPtDispwou_cen%d",cent) ;
+    snprintf(key,55,"hNegMassPtDispcore_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     ((TH2F*)fOutputContainer->Last())->Sumw2() ;
     snprintf(key,55,"hNegMassPtBoth_cen%d",cent) ;
@@ -276,7 +280,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
     snprintf(key,55,"hMassPtDisp2_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     ((TH2F*)fOutputContainer->Last())->Sumw2() ;
-    snprintf(key,55,"hMassPtDispwou_cen%d",cent) ;
+    snprintf(key,55,"hMassPtDispcore_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     ((TH2F*)fOutputContainer->Last())->Sumw2() ;
     snprintf(key,55,"hMassPtBoth_cen%d",cent) ;
@@ -337,7 +341,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     snprintf(key,55,"hMiMassPtDisp2_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
-    snprintf(key,55,"hMiMassPtDispwou_cen%d",cent) ;
+    snprintf(key,55,"hMiMassPtDispcore_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     snprintf(key,55,"hMiMassPtBoth_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
@@ -393,7 +397,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     snprintf(key,55,"hMCMassPtDisp2_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
-    snprintf(key,55,"hMCMassPtDispwou_cen%d",cent) ;
+    snprintf(key,55,"hMCMassPtDispcore_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
     snprintf(key,55,"hMCMassPtBoth_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"(M,p_{T},d#phi)_{#gamma#gamma}" ,nM,mMin,mMax,nPt,ptMin,ptMax));
@@ -458,7 +462,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserCreateOutputObjects()
     snprintf(key,55,"hMCPhotDisp2_cen%d",cent) ;
     fOutputContainer->Add(new TH1F(key,"dN/dpt" ,nPt,ptMin,ptMax));
     ((TH1F*)fOutputContainer->Last())->Sumw2() ;
-    snprintf(key,55,"hMCPhotDispwou_cen%d",cent) ;
+    snprintf(key,55,"hMCPhotDispcore_cen%d",cent) ;
     fOutputContainer->Add(new TH1F(key,"dN/dpt" ,nPt,ptMin,ptMax));
     ((TH1F*)fOutputContainer->Last())->Sumw2() ;
     snprintf(key,55,"hMCPhotBoth_cen%d",cent) ;
@@ -663,6 +667,15 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
       ph->SetTagged(1) ;
     ph->SetPhoton(clu->GetNExMax()<2); // Remember, if it is unfolded
 
+    if(!survive){
+      Double_t distBC=clu->GetDistanceToBadChannel();
+      if(distBC>2.)
+        FillHistogram(Form("hPhotAll_DistBad2_cen%d",fCenBin),ph->Pt(),-1.) ;
+        if(distBC>4.)
+          FillHistogram(Form("hPhotAll_DistBad4_cen%d",fCenBin),ph->Pt(),-1.) ;
+          if(distBC>6.)
+            FillHistogram(Form("hPhotAll_DistBad6_cen%d",fCenBin),ph->Pt(),-1.) ;
+    }
     inPHOSold++ ;
   }
 
@@ -714,6 +727,16 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
       ph->SetTagged(1) ;
     ph->SetPhoton(clu->GetNExMax()<2); // Remember, if it is unfolded
 
+    if(!survive){
+      Double_t distBC=clu->GetDistanceToBadChannel();
+      if(distBC>2.)
+        FillHistogram(Form("hPhotAll_DistBad2_cen%d",fCenBin),ph->Pt()) ;
+        if(distBC>4.)
+          FillHistogram(Form("hPhotAll_DistBad4_cen%d",fCenBin),ph->Pt()) ;
+          if(distBC>6.)
+            FillHistogram(Form("hPhotAll_DistBad6_cen%d",fCenBin),ph->Pt()) ;
+    }
+
     inPHOSemb++ ;
   }
   
@@ -763,12 +786,10 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
       FillHistogram(key,ph1->Pt(),-1.) ;
       snprintf(key,55,"hNegPhotDisp_cen%d",fCenBin) ;
       FillHistogram(key,ph1->Pt(),-1.) ;
-      if(ph1->IsPhoton()){
-        snprintf(key,55,"hPhotDispwou_cen%d",fCenBin) ;
-        FillHistogram(key,ph1->Pt(),-1.) ;
-        snprintf(key,55,"hNegPhotDispwou_cen%d",fCenBin) ;
-        FillHistogram(key,ph1->Pt(),-1.) ;
-      }
+      snprintf(key,55,"hPhotDispcore_cen%d",fCenBin) ;
+      FillHistogram(key,ph1->GetMomV2()->Pt(),-1.) ;
+      snprintf(key,55,"hNegPhotDispcore_cen%d",fCenBin) ;
+      FillHistogram(key,ph1->GetMomV2()->Pt(),-1.) ;
       if(ph1->IsCPVOK()){
 	snprintf(key,55,"hPhotBoth_cen%d",fCenBin) ;
         FillHistogram(key,ph1->Pt(),-1.) ;
@@ -811,10 +832,8 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
     if(ph1->IsDispOK()){
       snprintf(key,55,"hPhotDisp_cen%d",fCenBin) ;
       FillHistogram(key,ph1->Pt(),1.) ;
-      if(ph1->IsPhoton()){
-        snprintf(key,55,"hPhotDispwou_cen%d",fCenBin) ;
-        FillHistogram(key,ph1->Pt(),1.) ;
-      }
+      snprintf(key,55,"hPhotDispcore_cen%d",fCenBin) ;
+      FillHistogram(key,ph1->GetMomV2()->Pt(),1.) ;
       if(ph1->IsCPVOK()){
 	snprintf(key,55,"hPhotBoth_cen%d",fCenBin) ;
         FillHistogram(key,ph1->Pt(),1.) ;
@@ -864,10 +883,8 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
       if(ph1->IsDispOK() && ph2->IsDispOK()){
 	snprintf(key,55,"hOldMassPtDisp_cen%d",fCenBin) ;
 	FillHistogram(key,p12.M() ,p12.Pt(),-1) ;
-        if(ph1->IsPhoton() && ph2->IsPhoton()){
-	  snprintf(key,55,"hOldMassPtDispwou_cen%d",fCenBin) ;
-	  FillHistogram(key,p12.M() ,p12.Pt(),-1) ;
-	}
+        snprintf(key,55,"hOldMassPtDispcore_cen%d",fCenBin) ;
+	FillHistogram(key,pv12.M() ,pv12.Pt(),-1) ;
 	if(ph1->IsCPVOK() && ph2->IsCPVOK()){
 	  snprintf(key,55,"hOldMassPtBoth_cen%d",fCenBin) ;
 	  FillHistogram(key,p12.M() ,p12.Pt(),-1) ;
@@ -956,10 +973,8 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
       if(ph1->IsDispOK() && ph2->IsDispOK()){
 	snprintf(key,55,"hMassPtDisp_cen%d",fCenBin) ;
 	FillHistogram(key,p12.M() ,p12.Pt(),-1) ;
-        if(ph1->IsPhoton() && ph2->IsPhoton()){
-  	  snprintf(key,55,"hMassPtDispwou_cen%d",fCenBin) ;
-	  FillHistogram(key,p12.M() ,p12.Pt(),-1) ;
-	}
+  	snprintf(key,55,"hMassPtDispcore_cen%d",fCenBin) ;
+	FillHistogram(key,pv12.M() ,pv12.Pt(),-1) ;
         if(a<0.9){
           snprintf(key,55,"hMassPtDisp_a09_cen%d",fCenBin) ;
           FillHistogram(key,p12.M() ,p12.Pt(),-1.) ;
@@ -974,10 +989,8 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
         }
 	snprintf(key,55,"hNegMassPtDisp_cen%d",fCenBin) ;
 	FillHistogram(key,p12.M() ,p12.Pt(),-1) ;
-        if(ph1->IsPhoton() && ph2->IsPhoton()){
-  	  snprintf(key,55,"hNegMassPtDispwou_cen%d",fCenBin) ;
-	  FillHistogram(key,p12.M() ,p12.Pt(),-1) ;
-	}
+  	snprintf(key,55,"hNegMassPtDispcore_cen%d",fCenBin) ;
+	FillHistogram(key,pv12.M() ,pv12.Pt(),-1) ;
 	if(ph1->IsCPVOK() && ph2->IsCPVOK()){
 	  snprintf(key,55,"hMassPtBoth_cen%d",fCenBin) ;
 	  FillHistogram(key,p12.M() ,p12.Pt(),-1) ;
@@ -1043,10 +1056,8 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
       if(ph1->IsDispOK() && ph2->IsDispOK()){
 	snprintf(key,55,"hNewMassPtDisp_cen%d",fCenBin) ;
 	FillHistogram(key,p12.M() ,p12.Pt(),1) ;
-        if(ph1->IsPhoton() && ph2->IsPhoton()){
-	  snprintf(key,55,"hNewMassPtDispwou_cen%d",fCenBin) ;
-	  FillHistogram(key,p12.M() ,p12.Pt(),1) ;
-	}
+	snprintf(key,55,"hNewMassPtDispcore_cen%d",fCenBin) ;
+	FillHistogram(key,pv12.M() ,pv12.Pt(),1) ;
 	if(ph1->IsCPVOK() && ph2->IsCPVOK()){
 	  snprintf(key,55,"hNewMassPtBoth_cen%d",fCenBin) ;
 	  FillHistogram(key,p12.M() ,p12.Pt(),1) ;
@@ -1120,10 +1131,8 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
       if(ph1->IsDispOK() && ph2->IsDispOK()){
 	snprintf(key,55,"hMassPtDisp_cen%d",fCenBin) ;
 	FillHistogram(key,p12.M() ,p12.Pt(),1) ;
-        if(ph1->IsPhoton() && ph2->IsPhoton()){
-	  snprintf(key,55,"hMassPtDispwou_cen%d",fCenBin) ;
-	  FillHistogram(key,p12.M() ,p12.Pt(),1) ;
-	}
+	snprintf(key,55,"hMassPtDispcore_cen%d",fCenBin) ;
+	FillHistogram(key,pv12.M() ,pv12.Pt(),1) ;
 	if(a<0.9){
           snprintf(key,55,"hMassPtDisp_a09_cen%d",fCenBin) ;
           FillHistogram(key,p12.M() ,p12.Pt()) ;
@@ -1232,10 +1241,8 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
 	if(ph1->IsDispOK() && ph2->IsDispOK()){
 	  snprintf(key,55,"hMiMassPtDisp_cen%d",fCenBin) ;
 	  FillHistogram(key,p12.M() ,p12.Pt(),1.) ;
-          if(ph1->IsPhoton() && ph2->IsPhoton()){
-	    snprintf(key,55,"hMiMassPtDispwou_cen%d",fCenBin) ;
-	    FillHistogram(key,p12.M() ,p12.Pt(),1.) ;
-	  }
+	  snprintf(key,55,"hMiMassPtDispcore_cen%d",fCenBin) ;
+	  FillHistogram(key,pv12.M() ,pv12.Pt(),1.) ;
 	  if(a<0.9){
             snprintf(key,55,"hMiMassPtDisp_a09_cen%d",fCenBin) ;
             FillHistogram(key,p12.M() ,p12.Pt()) ;
