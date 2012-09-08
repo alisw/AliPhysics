@@ -198,6 +198,9 @@ AliAnalysisTaskSE(),
   fHOutMultV0M(0),
   fHOutMultV0A(0),
   fHOutMultV0C(0),
+  fHOutMultV0Mnc(0),
+  fHOutMultV0Anc(0),
+  fHOutMultV0Cnc(0),
   fHOutMultV0O(0),
   fHOutMultV0Cells(0),
   fHOutMultFMD(0),
@@ -366,6 +369,9 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutMultV0M(0),
   fHOutMultV0A(0),
   fHOutMultV0C(0),
+  fHOutMultV0Mnc(0),
+  fHOutMultV0Anc(0),
+  fHOutMultV0Cnc(0),
   fHOutMultV0O(0),
   fHOutMultV0Cells(0),
   fHOutMultFMD(0),
@@ -544,6 +550,9 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutMultV0M(ana.fHOutMultV0M),
   fHOutMultV0A(ana.fHOutMultV0A),
   fHOutMultV0C(ana.fHOutMultV0C),
+  fHOutMultV0Mnc(ana.fHOutMultV0Mnc),
+  fHOutMultV0Anc(ana.fHOutMultV0Anc),
+  fHOutMultV0Cnc(ana.fHOutMultV0Cnc),
   fHOutMultV0O(ana.fHOutMultV0O),
   fHOutMultV0Cells(ana.fHOutMultV0Cells),
   fHOutMultFMD(ana.fHOutMultFMD),
@@ -652,6 +661,9 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutMultV0M  = new TH1F("fHOutMultV0M","fHOutMultV0M; Multiplicity V0",25000,0,25000);
     fHOutMultV0A  = new TH1F("fHOutMultV0A","fHOutMultV0A; Multiplicity V0",25000,0,25000);
     fHOutMultV0C  = new TH1F("fHOutMultV0C","fHOutMultV0C; Multiplicity V0",25000,0,25000);
+    fHOutMultV0Mnc= new TH1F("fHOutMultV0Mnc","fHOutMultV0Mnc; Multiplicity V0",25000,0,25000);
+    fHOutMultV0Anc= new TH1F("fHOutMultV0Anc","fHOutMultV0Anc; Multiplicity V0",25000,0,25000);
+    fHOutMultV0Cnc= new TH1F("fHOutMultV0Cnc","fHOutMultV0Cnc; Multiplicity V0",25000,0,25000);
     fHOutMultV0O  = new TH1F("fHOutMultV0O","fHOutMultV0O; Multiplicity V0",40000,0,40000);
     fHOutMultV0Cells = new TH2F("fHOutMultV0Cells","fHOutMultV0Cells",33,-0.5,32.5,33,-0.5,32.5); 
     fHOutMultFMD = new TH1F("fHOutMultFMD","fHOutMultFMD; Multiplicity FMD",24000,0,24000);
@@ -744,6 +756,9 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fOutputList->Add(  fHOutMultV0M); 
     fOutputList->Add(  fHOutMultV0A); 
     fOutputList->Add(  fHOutMultV0C); 
+    fOutputList->Add(  fHOutMultV0Mnc); 
+    fOutputList->Add(  fHOutMultV0Anc); 
+    fOutputList->Add(  fHOutMultV0Cnc); 
     fOutputList->Add(  fHOutMultV0O);
     fOutputList->Add(  fHOutMultV0Cells) ;   
     fOutputList->Add(  fHOutMultFMD); 
@@ -809,6 +824,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   Float_t  multV0A  = 0;            //  multiplicity from V0 reco side A
   Float_t  multV0C  = 0;            //  multiplicity from V0 reco side C
+  Float_t  multV0ACorr  = 0;            //  multiplicity from V0 reco side A
+  Float_t  multV0CCorr  = 0;            //  multiplicity from V0 reco side C
   Short_t  multV0AOnline  = 0;      //  multiplicity from V0 reco side A
   Short_t  multV0COnline  = 0;      //  multiplicity from V0 reco side C
   Float_t  v0Corr = 0;               // corrected V0 multiplicity (used for MC)
@@ -844,6 +861,11 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     
     esdCent = esd->GetCentrality();
 
+    // ***** Vertex Info
+    const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
+    zvtx        = vtxESD->GetZ(); 
+    zvtxNcont   = vtxESD->GetNContributors();
+
     // ***** V0 info    
     AliESDVZERO* esdV0 = esd->GetVZEROData();
     if (!esdV0)
@@ -853,6 +875,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       }
     multV0A=esdV0->GetMTotV0A();
     multV0C=esdV0->GetMTotV0C();
+
+    multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);    
+    multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);    
+
     v0Corr = multV0A+multV0C;
 
     multV0AOnline=esdV0->GetTriggerChargeA(); 
@@ -924,11 +950,6 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       fCSEMIbit=kTRUE;
 
     
-    // ***** Vertex Info
-    const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
-    zvtx        = vtxESD->GetZ(); 
-    zvtxNcont   = vtxESD->GetNContributors();
-
     // ***** CB info (tracklets, clusters, chips)
     //nTracks    = event->GetNumberOfTracks();     
     nTracks    = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esd,kTRUE):-1;
@@ -1027,8 +1048,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   // ***** Centrality Selection
   if(fHtempV0M) fCentV0M = fHtempV0M->GetBinContent(fHtempV0M->FindBin((v0Corr)));
-  if(fHtempV0A) fCentV0A = fHtempV0A->GetBinContent(fHtempV0A->FindBin((multV0A)));
-  if(fHtempV0C) fCentV0C = fHtempV0C->GetBinContent(fHtempV0C->FindBin((multV0C)));
+  if(fHtempV0A) fCentV0A = fHtempV0A->GetBinContent(fHtempV0A->FindBin((multV0ACorr)));
+  if(fHtempV0C) fCentV0C = fHtempV0C->GetBinContent(fHtempV0C->FindBin((multV0CCorr)));
   if(fHtempFMD) fCentFMD = fHtempFMD->GetBinContent(fHtempFMD->FindBin((multFMDA+multFMDC)));
   if(fHtempTRK) fCentTRK = fHtempTRK->GetBinContent(fHtempTRK->FindBin(nTracks));
   if(fHtempTKL) fCentTKL = fHtempTKL->GetBinContent(fHtempTKL->FindBin(nTracklets));
@@ -1141,9 +1162,12 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 	fHOutCentV0CvsCentCL1->Fill(fCentV0C,fCentCL1);
 
 	fHOutMultV0AC->Fill(multV0A,multV0C);
-	fHOutMultV0M->Fill(multV0A+multV0C);
-	fHOutMultV0A->Fill(multV0A);
-	fHOutMultV0C->Fill(multV0C);
+	fHOutMultV0M->Fill(multV0ACorr+multV0CCorr);
+	fHOutMultV0A->Fill(multV0ACorr);
+	fHOutMultV0C->Fill(multV0CCorr);
+	fHOutMultV0Mnc->Fill(multV0A+multV0C);
+	fHOutMultV0Anc->Fill(multV0A);
+	fHOutMultV0Cnc->Fill(multV0C);
 	fHOutMultV0O->Fill(multV0AOnline+multV0COnline);
 	fHOutMultV0Cells->Fill(nV0A,nV0C); 
 	fHOutMultFMD->Fill(multFMDA+multFMDC);
