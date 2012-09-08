@@ -1555,6 +1555,7 @@ void AliEMCALTenderSupply::GetPass()
   if      (fname.Contains("pass1")) fFilepass = TString("pass1");
   else if (fname.Contains("pass2")) fFilepass = TString("pass2");
   else if (fname.Contains("pass3")) fFilepass = TString("pass3");
+  else if (fname.Contains("pass4")) fFilepass = TString("pass4");
   else 
   {
     AliError(Form("Pass number string not found: %s", fname.Data()));
