@@ -25,24 +25,35 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
  private:
   TF1                   *fScaleFunction;          // scale factor as a function of centrality
 
-  TH2F                  *fHistPtTPCvsCent;        //!output histogram
-  TH2F                  *fHistPtEMCALvsCent;      //!output histogram
-  TH2F                  *fHistEtvsCent;           //!output histogram
-  TH2F                  *fHistScalevsCent;        //!output histogram
-  TH2F                  *fHistDeltaScalevsCent;   //!output histogram
-  TH2F                  *fHistPtTPCvsNtrack;      //!output histogram
-  TH2F                  *fHistPtEMCALvsNtrack;    //!output histogram
-  TH2F                  *fHistEtvsNtrack;         //!output histogram
-  TH2F                  *fHistScalevsNtrack;      //!output histogram
-  TH2F                  *fHistDeltaScalevsNtrack; //!output histogram
-  TH2F                  *fHistTrackPtvsCent;      //!output histogram
-  TH2F                  *fHistClusterPtvsCent;    //!output histogram
-  TH2F                  *fHistTrackEtaPhi;        //!output histogram
-  TH2F                  *fHistClusterEtaPhi;      //!output histogram
+  TH2F                  *fHistPtTPCvsCent;             //!output histogram
+  TH2F                  *fHistPtEMCALvsCent;           //!output histogram
+  TH2F                  *fHistEtvsCent;                //!output histogram
+  TH2F                  *fHistScalevsCent;             //!output histogram
+  TH2F                  *fHistDeltaScalevsCent;        //!output histogram
+  TH2F                  *fHistScaleEmcalvsCent;        //!output histogram
+  TH2F                  *fHistScale2EmcalvsCent;       //!output histogram
+  TH2F                  *fHistChScalevsCent;           //!output histogram
+  TH2F                  *fHistChScale2EmcalvsCent;     //!output histogram
+  TH2F                  *fHistPtTPCvsNtrack;           //!output histogram
+  TH2F                  *fHistPtEMCALvsNtrack;         //!output histogram
+  TH2F                  *fHistEtvsNtrack;              //!output histogram
+  TH2F                  *fHistScalevsNtrack;           //!output histogram
+  TH2F                  *fHistDeltaScalevsNtrack;      //!output histogram
+  TH2F                  *fHistScaleEmcalvsNtrack;      //!output histogram
+  TH2F                  *fHistScale2EmcalvsNtrack;     //!output histogram
+  TH2F                  *fHistChScalevsNtrack;         //!output histogram
+  TH2F                  *fHistChScale2EmcalvsNtrack;   //!output histogram
+  TH2F                  *fHistTrackPtvsCent;           //!output histogram
+  TH2F                  *fHistClusterPtvsCent;         //!output histogram
+  TH2F                  *fHistTrackEtaPhi;             //!output histogram
+  TH2F                  *fHistClusterEtaPhi;           //!output histogram
+  TH2F                  *fHistScalevsScale2Emcal;      //!output histogram
+  TH2F                  *fHistScalevsScaleEmcal;       //!output histogram
+  TH2F                  *fHistScaleEmcalvsScale2Emcal; //!output histogram
 
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented
   
-  ClassDef(AliAnalysisTaskScale, 8); // Scale task
+  ClassDef(AliAnalysisTaskScale, 9); // Scale task
 };
 #endif
