@@ -894,9 +894,6 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
     
     for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
 
-      cout<<"ula  "<<iBin<<" : "<<hTemp1->GetBinContent(iBin+1)<<" "<<hTemp1->GetBinContent(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp1->GetBinCenter(iBin+1)))<<endl;
-      cout<<"                  "<<hTemp1->GetBinError(iBin+1)<<" "<<hTemp1->GetBinError(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp1->GetBinCenter(iBin+1)))<<endl;
-
       hTemp1->SetBinError(iBin+1,hTemp1->GetBinError(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp1->GetBinCenter(iBin+1))));
       hTemp1->SetBinContent(iBin+1,hTemp1->GetBinContent(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp1->GetBinCenter(iBin+1))));
       hTemp2->SetBinError(iBin+1,hTemp2->GetBinError(iBin+1)/hEffPN->GetBinContent(hEffPN->FindBin(hTemp2->GetBinCenter(iBin+1))));
@@ -928,6 +925,35 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centr
 
     fEfficiencyMatrix->Close();
   }
+
+  // do correction with the efficiency calculated from HIJING (for two particle correlations)
+  if(iAnalysisType == kPhi && correctWithEfficiency){
+
+    TFile *fEfficiencyMatrixPhi = TFile::Open("$ALICE_ROOT/PWGCF/EBYE/macros/efficienciesPhiFromHijing.root");
+    TH1F* hEffPhiPP = (TH1F*)fEfficiencyMatrixPhi->Get("h1d3n");
+    TH1F* hEffPhiNN = (TH1F*)fEfficiencyMatrixPhi->Get("h1d4n");
+    TH1F* hEffPhiPN = (TH1F*)fEfficiencyMatrixPhi->Get("h1d5n");
+    hEffPhiPP->Smooth();
+    hEffPhiPN->Smooth();
+    hEffPhiNN->Smooth();
+    
+    for(Int_t iBin = 0; iBin < gHistBalanceFunctionHistogram->GetNbinsX(); iBin++){
+
+      hTemp1->SetBinError(iBin+1,hTemp1->GetBinError(iBin+1)/hEffPhiPN->GetBinContent(hEffPhiPN->FindBin(hTemp1->GetBinCenter(iBin+1))));
+      hTemp1->SetBinContent(iBin+1,hTemp1->GetBinContent(iBin+1)/hEffPhiPN->GetBinContent(hEffPhiPN->FindBin(hTemp1->GetBinCenter(iBin+1))));
+      hTemp2->SetBinError(iBin+1,hTemp2->GetBinError(iBin+1)/hEffPhiPN->GetBinContent(hEffPhiPN->FindBin(hTemp2->GetBinCenter(iBin+1))));
+      hTemp2->SetBinContent(iBin+1,hTemp2->GetBinContent(iBin+1)/hEffPhiPN->GetBinContent(hEffPhiPN->FindBin(hTemp2->GetBinCenter(iBin+1))));
+      hTemp3->SetBinError(iBin+1,hTemp3->GetBinError(iBin+1)/hEffPhiNN->GetBinContent(hEffPhiNN->FindBin(hTemp3->GetBinCenter(iBin+1))));
+      hTemp3->SetBinContent(iBin+1,hTemp3->GetBinContent(iBin+1)/hEffPhiNN->GetBinContent(hEffPhiNN->FindBin(hTemp3->GetBinCenter(iBin+1))));
+      hTemp4->SetBinError(iBin+1,hTemp4->GetBinError(iBin+1)/hEffPhiPP->GetBinContent(hEffPhiPP->FindBin(hTemp4->GetBinCenter(iBin+1))));      
+      hTemp4->SetBinContent(iBin+1,hTemp4->GetBinContent(iBin+1)/hEffPhiPP->GetBinContent(hEffPhiPP->FindBin(hTemp4->GetBinCenter(iBin+1))));
+      
+    }  
+
+    fEfficiencyMatrixPhi->Close();
+  }
+
+
 
   if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)) {
     hTemp1->Sumw2();
