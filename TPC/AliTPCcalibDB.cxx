@@ -2048,6 +2048,7 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
 
   // use TPC-ITS if present
   TGraphErrors *gr= (TGraphErrors*)array->FindObject("ALIGN_ITSB_TPC_VDGY");
+  if (!gr) gr = (TGraphErrors*)array->FindObject("ALIGN_TOFB_TPC_VDGY");
   if(gr) { 
     result = AliTPCcalibDButil::EvalGraphConst(gr,timeStamp);
 
