@@ -51,7 +51,7 @@ AliITSMultRecBg::AliITSMultRecBg()
 
 //_________________________________________________________________
 AliITSMultRecBg::AliITSMultRecBg(const AliITSMultRecBg &src) 
-  : AliITSMultReconstructor(src)
+  : AliITSMultReconstructor(src),
   fRecType(kData),
   fInjLr(0),
   fInjStave(0),
