@@ -109,6 +109,14 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0()
    fHistMultiplicity(0),
    fHistMultiplicityNoTPCOnly(0),
    fHistMultiplicityNoTPCOnlyNoPileup(0),
+
+  //Raw Data for Vertex Z position estimator change
+	f2dHistMultiplicityVsVertexZBeforeTrigSel(0),
+	f2dHistMultiplicityVsVertexZForTrigEvt(0),
+	f2dHistMultiplicityVsVertexZ(0),
+	f2dHistMultiplicityVsVertexZNoTPCOnly(0),
+	f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup(0),
+
    fHistPVx(0),
    fHistPVy(0),
    fHistPVz(0),
@@ -140,6 +148,14 @@ AliAnalysisTaskExtractV0::AliAnalysisTaskExtractV0(const char *name)
    fHistMultiplicity(0),
    fHistMultiplicityNoTPCOnly(0),
    fHistMultiplicityNoTPCOnlyNoPileup(0),
+
+  //Raw Data for Vertex Z position estimator change
+	f2dHistMultiplicityVsVertexZBeforeTrigSel(0),
+	f2dHistMultiplicityVsVertexZForTrigEvt(0),
+	f2dHistMultiplicityVsVertexZ(0),
+	f2dHistMultiplicityVsVertexZNoTPCOnly(0),
+	f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup(0),
+
    fHistPVx(0),
    fHistPVy(0),
    fHistPVz(0),
@@ -319,6 +335,43 @@ void AliAnalysisTaskExtractV0::UserCreateOutputObjects()
       fListHistV0->Add(fHistMultiplicityNoTPCOnlyNoPileup);
    }
 
+
+
+  //Raw Data for Vertex Z position estimator change
+	//TH2F    *f2dHistMultiplicityVsVertexZBeforeTrigSel; 	        //! multiplicity distribution    
+	//TH2F    *f2dHistMultiplicityVsVertexZForTrigEvt;  		        //! multiplicity distribution
+	//TH2F    *f2dHistMultiplicityVsVertexZ;     					        //! multiplicity distribution
+	//TH2F    *f2dHistMultiplicityVsVertexZNoTPCOnly;			        //! multiplicity distribution
+	//TH2F    *f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup;			//! multiplicity distribution
+
+   if(! f2dHistMultiplicityVsVertexZBeforeTrigSel) {
+      f2dHistMultiplicityVsVertexZBeforeTrigSel = new TH2F("f2dHistMultiplicityVsVertexZBeforeTrigSel", 
+         "Tracks per event", 200, 0, 200,400, -20, 20); 		
+      fListHistV0->Add(f2dHistMultiplicityVsVertexZBeforeTrigSel);
+   }
+   if(! f2dHistMultiplicityVsVertexZForTrigEvt) {
+      f2dHistMultiplicityVsVertexZForTrigEvt = new TH2F("f2dHistMultiplicityVsVertexZForTrigEvt", 
+         "Tracks per event", 200, 0, 200, 400, -20, 20); 		
+      fListHistV0->Add(f2dHistMultiplicityVsVertexZForTrigEvt);
+   }
+   if(! f2dHistMultiplicityVsVertexZ) {
+      f2dHistMultiplicityVsVertexZ = new TH2F("f2dHistMultiplicityVsVertexZ", 
+         "Tracks per event", 200, 0, 200, 400, -20, 20); 		
+      fListHistV0->Add(f2dHistMultiplicityVsVertexZ);
+   }
+   if(! f2dHistMultiplicityVsVertexZNoTPCOnly) {
+      f2dHistMultiplicityVsVertexZNoTPCOnly = new TH2F("f2dHistMultiplicityVsVertexZNoTPCOnly", 
+         "Tracks per event", 200, 0, 200, 400, -20, 20); 		
+      fListHistV0->Add(f2dHistMultiplicityVsVertexZNoTPCOnly);
+   }
+   if(! f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup) {
+      f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup = new TH2F("f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup", 
+         "Tracks per event", 200, 0, 200, 400, -20, 20); 		
+      fListHistV0->Add(f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup);
+   }
+
+//-----------------------------------------------------
+
    if(! fHistPVx) {
       fHistPVx = new TH1F("fHistPVx", 
          "PV x position;Nbr of Evts;x", 
@@ -481,6 +534,8 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
    fHistPVy->Fill( tPrimaryVtxPosition[1] );
    fHistPVz->Fill( tPrimaryVtxPosition[2] );
 
+   f2dHistMultiplicityVsVertexZForTrigEvt->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
+
 //------------------------------------------------
 // Primary Vertex Z position: SKIP
 //------------------------------------------------
@@ -491,6 +546,8 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       PostData(2, fTree);
       return; 
    }
+
+   f2dHistMultiplicityVsVertexZ->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
 
    lMagneticField = lESDevent->GetMagneticField( );
    fHistV0MultiplicityForSelEvt ->Fill( nV0s );
@@ -509,6 +566,8 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       return;
    }
 
+
+   f2dHistMultiplicityVsVertexZNoTPCOnly->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
    fHistV0MultiplicityForSelEvtNoTPCOnly ->Fill( nV0s );
    fHistMultiplicityNoTPCOnly->Fill(lMultiplicity);
 
@@ -522,6 +581,8 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
       PostData(2, fTree); 
       return;
    }
+
+   f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup->Fill( lMultiplicity, tPrimaryVtxPosition[2] );
    fHistV0MultiplicityForSelEvtNoTPCOnlyNoPileup ->Fill( nV0s );
    fHistMultiplicityNoTPCOnlyNoPileup->Fill(lMultiplicity);
   

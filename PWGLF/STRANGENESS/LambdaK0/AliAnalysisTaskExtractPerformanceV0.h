@@ -146,6 +146,26 @@ class AliAnalysisTaskExtractPerformanceV0 : public AliAnalysisTaskSE {
    TH1F      *fHistMultiplicityNoTPCOnly;         //! multiplicity distribution
    TH1F      *fHistMultiplicityNoTPCOnlyNoPileup; //! multiplicity distribution
 
+  //Raw Data for J/Psi paper Technique
+	TH2F    *f2dHistMultiplicityVsTrueBeforeTrigSel; 	        //! multiplicity distribution    
+	TH2F    *f2dHistMultiplicityVsTrueForTrigEvt;  		        //! multiplicity distribution
+	TH2F    *f2dHistMultiplicityVsTrue;     					        //! multiplicity distribution
+	TH2F    *f2dHistMultiplicityVsTrueNoTPCOnly;			        //! multiplicity distribution
+	TH2F    *f2dHistMultiplicityVsTrueNoTPCOnlyNoPileup;			//! multiplicity distribution
+
+  //Raw Data for Vertex Z position estimator change
+	TH2F    *f2dHistMultiplicityVsVertexZBeforeTrigSel; 	        //! multiplicity distribution    
+	TH2F    *f2dHistMultiplicityVsVertexZForTrigEvt;  		        //! multiplicity distribution
+	TH2F    *f2dHistMultiplicityVsVertexZ;     					        //! multiplicity distribution
+	TH2F    *f2dHistMultiplicityVsVertexZNoTPCOnly;			        //! multiplicity distribution
+	TH2F    *f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup;			//! multiplicity distribution
+
+   TH1F      *fHistGenVertexZBeforeTrigSel;     //! multiplicity distribution      
+   TH1F      *fHistGenVertexZForTrigEvt;        //! multiplicity distribution
+   TH1F      *fHistGenVertexZ;                  //! multiplicity distribution
+   TH1F      *fHistGenVertexZNoTPCOnly;         //! multiplicity distribution
+   TH1F      *fHistGenVertexZNoTPCOnlyNoPileup; //! multiplicity distribution
+
 //---> Filled At Analysis Scope
 
    TH3F      *f3dHistPrimAnalysisPtVsYVsMultLambda;     //! Lambda
