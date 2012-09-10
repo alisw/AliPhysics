@@ -227,6 +227,27 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
 
   }
 
+  if(stdCutMode == 1008) {
+    
+    bStdCutsDefined = kTRUE;
+    
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+    //accept secondaries
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+
+    //
+    trackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+    trackCuts->->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+
+    trackCuts->SetEtaRange(-0.9,0.9);
+    trackCuts->SetPtRange(0.15, 1E+15.);
+ 
+    tag = "Global tracks 2011 with NCrossedRows cut";
+
+  }
+
 
   if(stdCutMode == 2000) {
 
