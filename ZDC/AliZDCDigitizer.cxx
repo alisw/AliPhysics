@@ -517,7 +517,7 @@ void AliZDCDigitizer::ReadPMTGains()
 void AliZDCDigitizer::CalculatePMTGains()
 {
 // Calculate PMT gain according to beam type and beam energy
-  if(((fBeamType.CompareTo("P-P")) == 0)  ((fBeamType.CompareTo("p-p")))){
+  if( ((fBeamType.CompareTo("P-P")) == 0) ||  ((fBeamType.CompareTo("p-p"))) ){
     // PTM gains rescaled to beam energy for p-p
     // New correction coefficients for PMT gains needed
     // to reproduce experimental spectra (from Grazia Jul 2010)
