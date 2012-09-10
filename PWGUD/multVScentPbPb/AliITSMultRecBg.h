@@ -41,7 +41,7 @@ class AliITSMultRecBg : public AliITSMultReconstructor
  protected:
   virtual void CreateMultiplicityObject();
   //
-  AliITSMultRecBg(const AliTracker &AliITSMultRecBg);
+  AliITSMultRecBg(const AliITSMultRecBg &src);
   //     Injection stuff
   void    GenInjBgSample(TTree* treeRP, Float_t *vtx);
   Bool_t  PrepareInjBgGenerator(Float_t *vtx);
