@@ -24,7 +24,7 @@ AliAnalysisTask *AddTask_ReducedTree(){
   task->SetFillLambda(kFALSE);
   task->SetFillALambda(kFALSE);
   task->SetFillCaloClusterInfo(kFALSE);
-  task->SetFillDielectronInfo(kFALSE);
+  //task->SetFillDielectronInfo(kFALSE);
   task->SetFillFriendInfo(kFALSE);
   
   task->SetEventFilter(CreateEventFilter());

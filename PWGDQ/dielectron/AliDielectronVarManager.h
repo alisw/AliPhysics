@@ -184,16 +184,16 @@ public:
     kPhiHE,                  // phi in mother's rest frame in the helicity picture
     kThetaSqHE,              // squared value of kThetaHE
     kCos2PhiHE,              // Cosine of 2*phi in mother's rest frame in the helicity picture
-    kCosTilPhiHE,            // Sin(phi) +/- Cos(phi) in mother's rest frame in the helicity picture; Sign is sign(Cos(phi))
+    kCosTilPhiHE,            // Shifted phi depending on kThetaHE
     // Collins-Soper picture: Z-axis is considered the direction of the vectorial difference between 
     // the 3-mom vectors of target and projectile beams
     kThetaCS,                // theta in mother's rest frame in Collins-Soper picture
     kPhiCS,                  // phi in mother's rest frame in Collins-Soper picture
     kThetaSqCS,              // squared value of kThetaCS
     kPsiPair,                // phi in mother's rest frame in Collins-Soper picture
-    kPhivPair,                // angle between ee plane and the magnetic field (can be useful for conversion rejection)
+    kPhivPair,               // angle between ee plane and the magnetic field (can be useful for conversion rejection)
     kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
-    kCosTilPhiCS,            // Sin(phi) +/- Cos(phi) in mother's rest frame in Collins-Soper picture; Sign is sign(Cos(phi))
+    kCosTilPhiCS,            // Shifted phi depending on kThetaCS
     kDeltaPhiV0ArpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A
     kDeltaPhiV0CrpH2,        // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-C
     kDeltaPhiV0ACrpH2,       // Delta phi of the pair with respect to the 2nd order harmonic reaction plane from V0-A + V0-C
@@ -990,8 +990,8 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kPhiCS]     = AliDielectronPair::ThetaPhiCM(p1,p2,kFALSE, kFALSE);
   values[AliDielectronVarManager::kThetaSqCS]  = values[AliDielectronVarManager::kThetaCS] * values[AliDielectronVarManager::kThetaCS];
   values[AliDielectronVarManager::kCos2PhiCS] = TMath::Cos(2*values[AliDielectronVarManager::kPhiCS]);
-  values[AliDielectronVarManager::kCosTilPhiHE]  = (TMath::Cos(values[AliDielectronVarManager::kPhiHE])>0)?(TMath::Cos(values[AliDielectronVarManager::kPhiHE]-TMath::Pi()/4.)):(TMath::Cos(values[AliDielectronVarManager::kPhiHE]-3*TMath::Pi()/4.));
-  values[AliDielectronVarManager::kCosTilPhiCS]  = (TMath::Cos(values[AliDielectronVarManager::kPhiCS])>0)?(TMath::Cos(values[AliDielectronVarManager::kPhiCS]-TMath::Pi()/4.)):(TMath::Cos(values[AliDielectronVarManager::kPhiCS]-3*TMath::Pi()/4.));
+  values[AliDielectronVarManager::kCosTilPhiHE]  = (values[AliDielectronVarManager::kThetaHE]>0)?(TMath::Cos(values[AliDielectronVarManager::kPhiHE]-TMath::Pi()/4.)):(TMath::Cos(values[AliDielectronVarManager::kPhiHE]-3*TMath::Pi()/4.));
+  values[AliDielectronVarManager::kCosTilPhiCS]  = (values[AliDielectronVarManager::kThetaCS]>0)?(TMath::Cos(values[AliDielectronVarManager::kPhiCS]-TMath::Pi()/4.)):(TMath::Cos(values[AliDielectronVarManager::kPhiCS]-3*TMath::Pi()/4.));
 }
 
 
@@ -1090,12 +1090,12 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kPhiHE]        = phiHE;
   values[AliDielectronVarManager::kThetaSqHE]    = thetaHE * thetaHE;
   values[AliDielectronVarManager::kCos2PhiHE]    = TMath::Cos(2.0*phiHE);
-  values[AliDielectronVarManager::kCosTilPhiHE]  = (TMath::Cos(phiHE)>0)?(TMath::Cos(phiHE-TMath::Pi()/4.)):(TMath::Cos(phiHE-3*TMath::Pi()/4.));
+  values[AliDielectronVarManager::kCosTilPhiHE]  = (thetaHE>0)?(TMath::Cos(phiHE-TMath::Pi()/4.)):(TMath::Cos(phiHE-3*TMath::Pi()/4.));
   values[AliDielectronVarManager::kThetaCS]      = thetaCS;
   values[AliDielectronVarManager::kPhiCS]        = phiCS;
   values[AliDielectronVarManager::kThetaSqCS]    = thetaCS * thetaCS;
   values[AliDielectronVarManager::kCos2PhiCS]    = TMath::Cos(2.0*phiCS);
-  values[AliDielectronVarManager::kCosTilPhiCS]  = (TMath::Cos(phiCS)>0)?(TMath::Cos(phiCS-TMath::Pi()/4.)):(TMath::Cos(phiCS-3*TMath::Pi()/4.));
+  values[AliDielectronVarManager::kCosTilPhiCS]  = (thetaCS>0)?(TMath::Cos(phiCS-TMath::Pi()/4.)):(TMath::Cos(phiCS-3*TMath::Pi()/4.));
   values[AliDielectronVarManager::kLegDist]      = pair->DistanceDaughters();
   values[AliDielectronVarManager::kLegDistXY]    = pair->DistanceDaughtersXY();
   values[AliDielectronVarManager::kDeltaEta]     = pair->DeltaEta();

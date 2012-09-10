@@ -432,10 +432,26 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
     if(!leg2Found[pairId]) {trackIdsV0[pairId][nV0LegsTagged[pairId]] = pair->fLegIds[1]; ++nV0LegsTagged[pairId];}
   }
   
+  // find all the tracks which belong to a stored dielectron pair
+  UShort_t trackIdsDiele[20000]={0};
+  Int_t nDieleLegsTagged = 0;
+  for(Int_t idie=0;idie<fReducedEvent->NDielectrons();++idie) {
+    AliReducedPair* pair = fReducedEvent->GetDielectronPair(idie);
+    leg1Found[0]=kFALSE; leg2Found[0]=kFALSE;
+    for(Int_t it=0; it<nDieleLegsTagged; ++it) {
+      if(trackIdsDiele[it]==pair->fLegIds[0]) leg1Found[0]=kTRUE;
+      if(trackIdsDiele[it]==pair->fLegIds[1]) leg2Found[0]=kTRUE;
+    }
+    // if the legs of this dielectron were not already stored then add them now to the list
+    if(!leg1Found[0]) {trackIdsDiele[nDieleLegsTagged] = pair->fLegIds[0]; ++nDieleLegsTagged;}
+    if(!leg2Found[0]) {trackIdsDiele[nDieleLegsTagged] = pair->fLegIds[1]; ++nDieleLegsTagged;}
+  }
+    
   AliESDtrack* esdTrack=0;
   AliAODTrack* aodTrack=0;
   Int_t ntracks=event->GetNumberOfTracks();
   Int_t trackId = 0; Bool_t usedForV0[4] = {kFALSE}; Bool_t usedForV0Or = kFALSE;
+  Bool_t usedForDielectron = kFALSE;
   for(Int_t itrack=0; itrack<ntracks; ++itrack){
     AliVParticle *particle=event->GetTrack(itrack);
     if(isESD) {
@@ -458,10 +474,18 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
       }
       usedForV0Or |= usedForV0[i];
     }
-    
+    // check whether this track belongs to a dielectron stored in the reduced event
+    usedForDielectron = kFALSE;
+    for(Int_t ii=0; ii<nDieleLegsTagged; ++ii) {
+      if(UShort_t(trackId)==trackIdsDiele[ii]) {
+        usedForDielectron = kTRUE;
+        break;
+      }
+    }
+        
     //apply track cuts
-    if(!usedForV0Or && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
-       
+    if(!usedForV0Or && !usedForDielectron && fTrackFilter && !fTrackFilter->IsSelected(particle)) continue;
+    
     TClonesArray& tracks = *(fReducedEvent->fTracks);
     AliReducedTrack *reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrack();
         
@@ -504,7 +528,6 @@ void AliAnalysisTaskReducedTree::FillTrackInfo()
       // switch on the first bit if this particle should be used for the event plane
       if(fFlowTrackFilter->IsSelected(particle)) reducedParticle->fFlags |= (1<<0);
     }
-    // switch bits to show wheter the track is used in a V0
     for(Int_t iV0type=0;iV0type<4;++iV0type) {
       if(usedForV0[iV0type]) reducedParticle->fFlags |= (1<<(iV0type+1));
     }
@@ -564,6 +587,7 @@ void AliAnalysisTaskReducedTree::FillDielectronPairInfo(AliDielectron* die, Shor
       reducedParticle->fMass[0]      = values[AliDielectronVarManager::kM];
       reducedParticle->fMass[1]      = -999.;
       reducedParticle->fMass[2]      = -999.;
+      reducedParticle->fMass[3]      = -999.;
       reducedParticle->fPhi          = values[AliDielectronVarManager::kPhi];  // in the [-pi,pi] interval
       if(reducedParticle->fPhi<0.0) reducedParticle->fPhi = 2.0*TMath::Pi() + reducedParticle->fPhi;  // converted to [0,2pi]
       reducedParticle->fPt           = values[AliDielectronVarManager::kPt];
