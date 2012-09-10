@@ -59,7 +59,10 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
    :AliAnalysisTaskSE(name),
     fOutput(0),
     fESD(0),
+    fTrackCuts(0),
     fEvtSelect(1),
+    fVtxCut(10.),
+    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.), 
@@ -75,6 +78,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
 
 {
     // Dummy constructor ALWAYS needed for I/O.
+    fTrackCuts = new AliESDtrackCuts();
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());                                            // for output list
 }
@@ -84,7 +88,10 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
    :AliAnalysisTaskSE("default_name"),
     fOutput(0),
     fESD(0),
+    fTrackCuts(0),
     fEvtSelect(1),
+    fVtxCut(10.),
+    fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0),
     fCentrality(99.),
     fEPTPC(-999.),
     fEPTPCreso(0.),
@@ -102,6 +109,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     // Define input and output slots here (never in the dummy constructor)
     // Input slot #0 works with a TChain - it is connected to the default input container
     // Output slot #1 writes into a TH1 container
+    fTrackCuts = new AliESDtrackCuts();
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());                                            // for output list
 }
@@ -111,7 +119,8 @@ AliAnalysisTaskPi0V2::~AliAnalysisTaskPi0V2()
 {
     // Destructor. Clean-up the output list, but not the histograms that are put inside
     // (the list is owner and will clean-up these histograms). Protect in PROOF case.
-        delete fOutput;
+     delete fTrackCuts;
+     delete fOutput;
 }
 //_____________________________________________________________________
 Double_t AliAnalysisTaskPi0V2::GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const
@@ -123,8 +132,6 @@ Double_t AliAnalysisTaskPi0V2::GetMaxCellEnergy(const AliVCluster *cluster, Shor
   AliVCaloCells *cells = 0;
   if (fESD)
     cells = fESD->GetEMCALCells();
-//  else
-//    cells = fAOD->GetEMCALCells();
   if (!cells)
     return 0;
 
@@ -147,8 +154,6 @@ Double_t AliAnalysisTaskPi0V2::GetCrossEnergy(const AliVCluster *cluster, Short_
   AliVCaloCells *cells = 0;
   if (fESD)
     cells = fESD->GetEMCALCells();
-//  else
-//    cells = fAOD->GetEMCALCells();
   if (!cells)
     return 0;
 
@@ -248,10 +253,10 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodCluster(const AliESDCaloCluster *c) const
   if(!c)
     return kFALSE;
 
-  if(c->GetNCells() < 2)
+  if(c->GetNCells() < fNcellCut)
    return kFALSE;
 
-  if(c->E() < 1.)
+  if(c->E() < fECut)
    return kFALSE;
 
   Short_t id = -1;
@@ -265,13 +270,13 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodCluster(const AliESDCaloCluster *c) const
   TVector3 clsPos(pos1);
   Double_t eta = clsPos.Eta();
 
-  if(eta > 0.65 || eta < -0.65)
+  if(TMath::Abs(eta) > fEtaCut)
     return kFALSE;  
 
   if (!IsWithinFiducialVolume(id))
     return kFALSE;
 
-  if(c->GetM02() >0.5 )
+  if(c->GetM02() >fM02Cut)
     return kFALSE;
 
 //  if(c->M20 >)
@@ -284,20 +289,15 @@ Bool_t AliAnalysisTaskPi0V2::IsGoodPion(const TLorentzVector &p1, const TLorentz
 {
   // Is good pion?
 
-
-//  Double_t asym = TMath::Abs(p1.E()-p2.E())/(p1.E()+p2.E());
-//  if (asym>0.7)
-//    return kFALSE;
-
-//    if (TMath::Abs(p1.Eta()-p2.Eta())>0.5)
-//      return kFALSE;
-
+  if(fPi0AsyCut){
+    Double_t asym = TMath::Abs(p1.E()-p2.E())/(p1.E()+p2.E());
+    if (asym>0.7)
+      return kFALSE;
+  }
   TLorentzVector pion;
   pion = p1 + p2;
   Double_t eta = pion.Eta();
-  if (eta<-0.65)
-    return kFALSE;
-  if (eta>0.65)
+  if(TMath::Abs(eta) > fEtaCut)
     return kFALSE;
 
   return kTRUE;
@@ -330,10 +330,6 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, const TLorentzVect
   dphiV0A = TVector2::Phi_0_2pi(dphiV0A); if(dphiV0A >TMath::Pi())  dphiV0A -= TMath::Pi();
   dphiV0C = TVector2::Phi_0_2pi(dphiV0C); if(dphiV0C >TMath::Pi())  dphiV0C -= TMath::Pi();
   dphiTPC = TVector2::Phi_0_2pi(dphiTPC); if(dphiTPC >TMath::Pi())  dphiTPC -= TMath::Pi();
-
-  //cout<<"cos2V0: "<<cos2phiV0<<"  cos2V0A: "<<cos2phiV0A<<"  cos2V0C: "<<cos2phiV0C<<endl;
-  //cout<<mass<<"  "<<pt<<"  "<<phi<<"  "<<endl;
-  //cout<<" dphiV0: "<<dphiV0<<"    dphiV0A: "<<dphiV0A<<"  dphiV0C: "<<dphiV0C<<"+++++++"<<endl;
 
   Double_t xV0[5]; // Match ndims in fH  V0 EP
   xV0[0]       = mass;
@@ -508,10 +504,12 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    if (!event) { Printf("ERROR: Could not retrieve event"); return; }
 
   Bool_t isSelected =0;      
-  if(fEvtSelect == 2){
+  if(fEvtSelect == 1){  //MB+SemiCentral
     isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral));
-  } else if (fEvtSelect == 1){
+  } else if (fEvtSelect == 2){  //MB+Central+SemiCentral
     isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral));
+  } else if(fEvtSelect == 3){  //MB
+ isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB ));
   }
   if(!isSelected )
         return; 
@@ -526,7 +524,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     hEvtCount->Fill(1);
     
     const AliESDVertex* fvertex = fESD->GetPrimaryVertex();
-    if(TMath::Abs(fvertex->GetZ())>10.)
+    if(TMath::Abs(fvertex->GetZ())>fVtxCut)
       return;
     Double_t vertex[3] = {fvertex->GetX(), fvertex->GetY(), fvertex->GetZ()};
 
@@ -534,7 +532,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 
     if(fESD->GetCentrality()) {
       fCentrality = 
-	fESD->GetCentrality()->GetCentralityPercentile("V0M");
+	fESD->GetCentrality()->GetCentralityPercentile("CL1"); //spd vertex
     } else{
 	   return;
     }
@@ -571,16 +569,13 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
       fEPV0CR3 = ep->CalculateVZEROEventPlane(fESD, 3, 2, qx, qy);
 
     }
-//cout<<" fEPV0:"<<fEPV0<<" fEPV0A:"<<fEPV0A<<" fEPV0C:"<<fEPV0C<<" fEPV0Ar:"<<fEPV0Ar<<" fEPV0Cr:"<<fEPV0Cr<<" fEPV0r:"<<fEPV0AR4<<" fEPV0AR7:"<<fEPV0AR7<<" fEPV0CR0:"<<fEPV0CR0<<" fEPV0CR3:"<<fEPV0CR3<<"--------------------------------------------"<<endl;
-    
-//cout<<" EPTPC: "<<fEPTPC<<" resoTPC: "<<fEPTPCreso<<"---------------"<<endl;
 
     hEvtCount->Fill(4);
 
-      if( fEPV0A<-2. || fEPV0C<-2. || fEPV0AR4<-2. 
-	  || fEPV0AR7<-2. || fEPV0CR0<-2. || fEPV0CR3<-2. 
-	  || fEPTPC<-2. || fEPV0r<-2. || fEPV0Ar<-2. 
-	  || fEPV0Cr<-2.) return;
+    if( fEPV0A<-2. || fEPV0C<-2. || fEPV0AR4<-2. 
+	|| fEPV0AR7<-2. || fEPV0CR0<-2. || fEPV0CR3<-2. 
+	|| fEPTPC<-2. || fEPV0r<-2. || fEPV0Ar<-2. 
+	|| fEPV0Cr<-2.) return;
 
     hEvtCount->Fill(5);
 
@@ -594,9 +589,6 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     fEPV0AR7   = TVector2::Phi_0_2pi(fEPV0AR7);    if(fEPV0AR7>TMath::Pi())   fEPV0AR7  = fEPV0AR7 - TMath::Pi();
     fEPV0CR0   = TVector2::Phi_0_2pi(fEPV0CR0);    if(fEPV0CR0>TMath::Pi())   fEPV0CR0  = fEPV0CR0 - TMath::Pi();
     fEPV0CR3   = TVector2::Phi_0_2pi(fEPV0CR3);    if(fEPV0CR3>TMath::Pi())   fEPV0CR3  = fEPV0CR3 - TMath::Pi();
-
-//cout<<" EPTPC: "<<fEPTPC<<" reso: "<<fEPTPCreso<<" -------------------"<<endl;
-//cout<<" cent: "<<fCentrality<<" fEPV0:"<<fEPV0<<" fEPV0A:"<<fEPV0A<<" fEPV0C:"<<fEPV0C<<" fEPV0Ar:"<<fEPV0Ar<<" fEPV0Cr:"<<fEPV0Cr<<" fEPV0r:"<<fEPV0AR4<<" fEPV0AR7:"<<fEPV0AR7<<" fEPV0CR0:"<<fEPV0CR0<<" fEPV0CR3:"<<fEPV0CR3<<"--------------------------------------------"<<endl;
 
    if(fEPTPC != -999.)
    hEPTPC->Fill(fCentrality,  fEPTPC); 
@@ -630,30 +622,40 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
    hdifV0C_TPC->Fill(fCentrality, TMath::Cos(2*(fEPV0C - fEPTPC)));
    hdifV0C_V0A->Fill(fCentrality, TMath::Cos(2*(fEPV0C - fEPV0A)));
     // Cluster loop for reconstructed event
-   
 
-    Int_t nCluster =  fESD->GetNumberOfCaloClusters(); 
-    for(Int_t i=0; i<nCluster; ++i){
-      AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
-      if(!c1->IsEMCAL()) continue;
-      if(!IsGoodCluster(c1)) continue;
-      for(Int_t j=i+1; j<nCluster; ++j){
-	AliESDCaloCluster *c2 = fESD->GetCaloCluster(j);
-        if(!c2->IsEMCAL()) continue;
-        if(!IsGoodCluster(c2)) continue;
-        TLorentzVector p1;
-        GetMom(p1, c1, vertex);
-        TLorentzVector p2;
-        GetMom(p2, c2, vertex);
-        FillPion(p1, p2, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
-      } 
-    }
+   Int_t nCluster =  fESD->GetNumberOfCaloClusters(); 
+   for(Int_t i=0; i<nCluster; ++i){
+     AliESDCaloCluster *c1 = fESD->GetCaloCluster(i);
+     if(!c1->IsEMCAL()) continue;
+     if(!IsGoodCluster(c1)) continue;
+     for(Int_t j=i+1; j<nCluster; ++j){
+       AliESDCaloCluster *c2 = fESD->GetCaloCluster(j);
+       if(!c2->IsEMCAL()) continue;
+       if(!IsGoodCluster(c2)) continue;
+       TLorentzVector p1;
+       GetMom(p1, c1, vertex);
+       TLorentzVector p2;
+       GetMom(p2, c2, vertex);
+       FillPion(p1, p2, fEPV0r, fEPV0A, fEPV0C, fEPTPC);
+     } 
+   }
 
-    Int_t nTrack = fESD->GetNumberOfTracks();
-    for(Int_t i=0; i<nTrack; ++i){
-        AliESDtrack* esdtrack = fESD->GetTrack(i); // pointer to reconstructed to track          
-        if(!esdtrack) {
-            AliError(Form("ERROR: Could not retrieve esdtrack %d",i));
+   //for track analysis.
+   fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+   fTrackCuts->SetRequireTPCRefit(kTRUE);
+   fTrackCuts->SetRequireITSRefit(kTRUE);
+   fTrackCuts->SetEtaRange(-0.7,0.7);
+   fTrackCuts->SetRequireSigmaToVertex(kTRUE);
+   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
+   fTrackCuts->SetMinNClustersTPC(100);
+
+   Int_t nTrack = fESD->GetNumberOfTracks();
+   for(Int_t i=0; i<nTrack; ++i){
+     AliESDtrack* esdtrack = fESD->GetTrack(i); // pointer to reconstructed to track          
+     if(!fTrackCuts->AcceptTrack(esdtrack))
+       continue;
+     if(!esdtrack) {
+       AliError(Form("ERROR: Could not retrieve esdtrack %d",i));
             continue;
         }
 	Double_t tPhi = esdtrack->Phi();

@@ -42,15 +42,26 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Bool_t		IsGoodPion(const TLorentzVector& p1, const TLorentzVector& p2) const;
     void		FillPion(const TLorentzVector& p1, const TLorentzVector& p2, Double_t EPV0r, Double_t EPV0A, Double_t EPV0C, Double_t EPTPC);
     void 		GetMom(TLorentzVector& p, const AliESDCaloCluster *c, Double_t *vertex);		
-    void		SetEventMethod(Double_t b )	{ fEvtSelect =b ;}
+    void		SetEventMethod(Double_t e )	{ fEvtSelect  =e ;}
+    void		SetVtxCut(Double_t v )	        { fVtxCut     =v ;}
+    void		SetClusNcell(Double_t c )	{ fNcellCut   =c ;}
+    void		SetClusE(Double_t e )	        { fECut       =e ;}
+    void		SetClusEta(Double_t e )	        { fEtaCut     =e ;}
+    void		SetClusM02(Double_t m )	        { fM02Cut     =m ;}
+    void		SetPi0Asy(Double_t a )	        { fPi0AsyCut  =a ;}
 
     
  private:
     TList           		*fOutput;        //! Output list
     AliESDEvent			*fESD;          //!ESD object
-
-    Double_t 			fEvtSelect;	// 1 = MB+Semi+Central, 2 = MB+Semi;
-    // NEW HISTO to be declared here
+    AliESDtrackCuts             *fTrackCuts;    //! ESD track cuts
+    Double_t 			fEvtSelect;	// 1 = MB+Semi+Central, 2 = MB+Semi, 3 = MB;
+    Double_t			fVtxCut;	// vertex cut
+    Double_t			fNcellCut;      // N cells Cut
+    Double_t			fECut;		// Cluster E cut
+    Double_t			fEtaCut;	// Cluster Eta Cut
+    Double_t			fM02Cut;	// Cluster long axis cut
+    Bool_t			fPi0AsyCut;	// pion Asymetry cut 0=off 1=on
     Double_t			fCentrality;	//! Centrality
     Double_t			fEPTPC;		//! Evt plane TPC
     Double_t			fEPTPCreso;	//! resolution of TPC method
