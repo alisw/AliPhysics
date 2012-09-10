@@ -111,6 +111,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t  fCentCL0;            // percentile centrality from clusters in layer 0
   Float_t  fCentCL1;            // percentile centrality from clusters in layer 1
   Float_t  fCentCND;            // percentile centrality from candle 
+  Float_t  fCentNPA;            // percentile centrality from Npart (MC) 
   Float_t  fCentV0MvsFMD;       // percentile centrality from V0 vs FMD
   Float_t  fCentTKLvsV0M;       // percentile centrality from tracklets vs V0
   Float_t  fCentZEMvsZDC;       // percentile centrality from ZEM vs ZDC
@@ -124,6 +125,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F    *fHtempCL0;           // histogram with centrality vs multiplicity using clusters in layer 0
   TH1F    *fHtempCL1;           // histogram with centrality vs multiplicity using clusters in layer 1
   TH1F    *fHtempCND;           // histogram with centrality vs multiplicity using candle
+  TH1F    *fHtempNPA;           // histogram with centrality vs multiplicity using Npart
   TH1F    *fHtempV0MvsFMD;      // histogram with centrality vs multiplicity using V0 vs FMD   
   TH1F    *fHtempTKLvsV0M;      // histogram with centrality vs multiplicity using tracklets vs V0
   TH2F    *fHtempZEMvsZDC;      // histogram with centrality vs multiplicity using ZEM vs ZDC 
@@ -161,6 +163,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutCentCL0     ;      //control histogram for centrality
   TH1F *fHOutCentCL1     ;      //control histogram for centrality
   TH1F *fHOutCentCND     ;      //control histogram for centrality
+  TH1F *fHOutCentNPA     ;      //control histogram for centrality
   TH1F *fHOutCentV0MvsFMD;      //control histogram for centrality
   TH1F *fHOutCentTKLvsV0M;      //control histogram for centrality
   TH1F *fHOutCentZEMvsZDC;      //control histogram for centrality
@@ -175,6 +178,11 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutCentV0CvsCentTRK;  //control histogram for centrality
   TH2F *fHOutCentV0CvsCentCND;  //control histogram for centrality
   TH2F *fHOutCentV0CvsCentCL1;  //control histogram for centrality
+  TH2F *fHOutCentNPAvsCentV0A;  //control histogram for centrality
+  TH2F *fHOutCentNPAvsCentV0C;  //control histogram for centrality
+  TH2F *fHOutCentNPAvsCentTRK;  //control histogram for centrality
+  TH2F *fHOutCentNPAvsCentCND;  //control histogram for centrality
+  TH2F *fHOutCentNPAvsCentCL1;  //control histogram for centrality
 
   TH2F *fHOutMultV0AC;          //control histogram for multiplicity
   TH1F *fHOutMultV0M ;          //control histogram for multiplicity
@@ -191,6 +199,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutMultCL0 ;          //control histogram for multiplicity
   TH1F *fHOutMultCL1 ;          //control histogram for multiplicity
   TH1F *fHOutMultCND ;          //control histogram for multiplicity
+  TH1F *fHOutMultNPA ;          //control histogram for multiplicity
 
   TH2F *fHOutMultV0MvsZDN;      //control histogram for multiplicity
   TH2F *fHOutMultZEMvsZDN;      //control histogram for multiplicity
@@ -203,7 +212,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutMultV0MvsV0O;      //control histogram for multiplicity
   TH2F *fHOutMultV0OvsCL1;      //control histogram for multiplicity
   TH2F *fHOutMultV0OvsTRK;      //control histogram for multiplicity
-  TH2F *fHOutMultCL1vsTKL;    //control histogram for multiplicity
+  TH2F *fHOutMultCL1vsTKL;      //control histogram for multiplicity
 
   TH1F *fHOutCentV0Mqual1     ; //control histogram for centrality quality 1
   TH1F *fHOutCentTRKqual1     ; //control histogram for centrality quality 1
@@ -223,7 +232,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutVertex ;           //control histogram for vertex SPD
   TH1F *fHOutVertexT0 ;         //control histogram for vertex T0
 
-  ClassDef(AliCentralitySelectionTask, 21); 
+  ClassDef(AliCentralitySelectionTask, 22); 
 };
 
 #endif
