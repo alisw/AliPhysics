@@ -16,7 +16,7 @@ Double_t gMinAcceptedProbability = 0.7;
 
 //_________________________________________________________//
 AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
-						 Double_t centrMax=100.,
+						 Double_t centrMax=80.,  //100.
 						 Bool_t gRunShuffling=kFALSE,
 						 TString centralityEstimator="V0M",
 						 Double_t vertexZ=10.,
@@ -96,7 +96,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   //gROOT->LoadMacro("./configBalanceFunctionAnalysis.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGCF/EBYE/macros/configBalanceFunctionAnalysis.C");
   AliBalance *bf  = 0;  // Balance Function object
-  AliBalance *bfs = 0;  // shuffled Balance function object
+  AliBalance *bfs = 0;  // shuffled Balance function objects
 
   if (analysisType=="ESD"){
     bf  = GetBalanceFunctionObject("ESD",centralityEstimator,centrMin,centrMax,kFALSE,bHBTcut,bConversionCut,kUsePID);

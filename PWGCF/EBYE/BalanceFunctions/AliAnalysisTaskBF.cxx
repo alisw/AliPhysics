@@ -202,9 +202,22 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   //Event stats.
   TString gCutName[4] = {"Total","Offline trigger",
                          "Vertex","Analyzed"};
-  fHistEventStats = new TH1F("fHistEventStats",
-                             "Event statistics;;N_{events}",
-                             4,0.5,4.5);
+
+  TString gAnalysisLevel = fBalance->GetAnalysisLevel();
+  
+  if ((gAnalysisLevel == "ESD") || (gAnalysisLevel == "AOD") || (gAnalysisLevel == "MCESD")) {
+    fHistEventStats = new TH2D("fHistEventStats",
+			       "Event statistics;;Centrality",
+			       4,0.5,4.5, 100,0,100);
+  }
+  
+  if (gAnalysisLevel == "MC"){
+    fHistEventStats = new TH2D("fHistEventStats",
+			       "Event statistics;;Centrality",
+			       4,0.5,4.5, 10000,0,15);
+  }
+
+
   for(Int_t i = 1; i <= 4; i++)
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
@@ -372,7 +385,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   AliESDtrack *trackTPC   = NULL;
 
   Int_t gNumberOfAcceptedTracks = 0;
-  Float_t fCentrality           = 0.;
+  Float_t fCentrality           = -999.;
 
   // for HBT like cuts need magnetic field sign
   Float_t bSign = 0; // only used in AOD so far
@@ -409,26 +422,28 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     // store offline trigger bits
     fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
 
+    AliCentrality *centrality = 0x0; 
+    if(fUseCentrality) {
+      //Centrality stuff
+      centrality = gESD->GetCentrality();
+      fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+    }
+
     // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    fHistEventStats->Fill(1); //all events
+    fHistEventStats->Fill(1,fCentrality); //all events
     Bool_t isSelected = kTRUE;
     if(fUseOfflineTrigger)
       isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     if(isSelected) {
-      fHistEventStats->Fill(2); //triggered events
+      fHistEventStats->Fill(2,fCentrality); //triggered events
 
       if(fUseCentrality) {
 	//Centrality stuff
-	AliCentrality *centrality = gESD->GetCentrality();
-	
-	fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-	
 	// take only events inside centrality class
 	if(!centrality->IsEventInCentralityClass(fCentralityPercentileMin,
 						 fCentralityPercentileMax,
 						 fCentralityEstimator.Data()))
 	  return;
-	
 	// centrality QA (V0M)
 	fHistV0M->Fill(gESD->GetVZEROData()->GetMTotV0A(), gESD->GetVZEROData()->GetMTotV0C());
       }
@@ -437,11 +452,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       if(vertex) {
 	if(vertex->GetNContributors() > 0) {
 	  if(vertex->GetZRes() != 0) {
-	    fHistEventStats->Fill(3); //events with a proper vertex
+	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
 	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
 	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
 		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
-		  fHistEventStats->Fill(4); //analayzed events
+		  fHistEventStats->Fill(4,fCentrality); //analayzed events
 		  fHistVx->Fill(vertex->GetXv());
 		  fHistVy->Fill(vertex->GetYv());
 		  fHistVz->Fill(vertex->GetZv());
@@ -648,19 +663,22 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 
     // store offline trigger bits
     fHistTriggerStats->Fill(aodHeader->GetOfflineTrigger());
+
+    if(fUseCentrality) {
+      fCentrality = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+    }
     
-    // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    fHistEventStats->Fill(1); //all events
+    //event selection done in AliAnalysisTaskSE::Exec() --> this is not used
+    fHistEventStats->Fill(1,fCentrality); //all events
     Bool_t isSelected = kTRUE;
     if(fUseOfflineTrigger)
       isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     if(isSelected) {
-      fHistEventStats->Fill(2); //triggered events
+      fHistEventStats->Fill(2,fCentrality); //triggered events
 		  
       //Centrality stuff (centrality in AOD header)
       if(fUseCentrality) {
-    	fCentrality = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-
+    	//fCentrality = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
 	// in OLD AODs (i.e. AOD049) fCentrality can be == 0
 	if(fCentrality == 0) 
 	  return;
@@ -703,11 +721,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	
       	if(vertex->GetNContributors() > 0) {
       	  if(fCov[5] != 0) {
-      	    fHistEventStats->Fill(3); //events with a proper vertex
+      	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
       	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
       	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
       		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-      		  fHistEventStats->Fill(4); //analyzed events
+      		  fHistEventStats->Fill(4,fCentrality); //analyzed events
       		  fHistVx->Fill(vertex->GetX());
       		  fHistVy->Fill(vertex->GetY());
       		  fHistVz->Fill(vertex->GetZ());
@@ -957,26 +975,27 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     // store offline trigger bits
     fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
 
+    AliCentrality *centrality = 0x0; 
+    if(fUseCentrality) {
+	centrality = gESD->GetCentrality();
+	fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+    }
+
     // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
-    fHistEventStats->Fill(1); //all events
+    fHistEventStats->Fill(1,fCentrality); //all events
     Bool_t isSelected = kTRUE;
     if(fUseOfflineTrigger)
       isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     if(isSelected) {
-      fHistEventStats->Fill(2); //triggered events
+      fHistEventStats->Fill(2,fCentrality); //triggered events
 
       if(fUseCentrality) {
 	//Centrality stuff
-	AliCentrality *centrality = gESD->GetCentrality();
-
-	fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-	
 	// take only events inside centrality class
 	if(!centrality->IsEventInCentralityClass(fCentralityPercentileMin,
 						 fCentralityPercentileMax,
 						 fCentralityEstimator.Data()))
 	  return;
-	
 	// centrality QA (V0M)
 	fHistV0M->Fill(gESD->GetVZEROData()->GetMTotV0A(), gESD->GetVZEROData()->GetMTotV0C());
       }
@@ -985,11 +1004,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       if(vertex) {
 	if(vertex->GetNContributors() > 0) {
 	  if(vertex->GetZRes() != 0) {
-	    fHistEventStats->Fill(3); //events with a proper vertex
+	    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
 	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
 	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
 		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
-		  fHistEventStats->Fill(4); //analayzed events
+		  fHistEventStats->Fill(4,fCentrality); //analayzed events
 		  fHistVx->Fill(vertex->GetXv());
 		  fHistVy->Fill(vertex->GetYv());
 		  fHistVz->Fill(vertex->GetZv());
@@ -1096,8 +1115,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       Printf("ERROR: mcEvent not available");
       return;
     }
-    fHistEventStats->Fill(1); //total events
-    fHistEventStats->Fill(2); //offline trigger
+
+    //fHistEventStats->Fill(1,fCentrality); //total events
+    //fHistEventStats->Fill(2,fCentrality); //offline trigger
 
     Double_t gReactionPlane = 0., gImpactParameter = 0.;
     if(fUseCentrality) {
@@ -1118,6 +1138,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       if((fImpactParameterMin > gImpactParameter) || (fImpactParameterMax < gImpactParameter))
 	return;
     }
+
+    fHistEventStats->Fill(1,fCentrality); //total events
+    fHistEventStats->Fill(2,fCentrality); //offline trigger
     
     AliGenEventHeader *header = mcEvent->GenEventHeader();
     if(!header) return;
@@ -1128,11 +1151,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     //gVertexArray.At(0),
     //gVertexArray.At(1),
     //gVertexArray.At(2));
-    fHistEventStats->Fill(3); //events with a proper vertex
+    fHistEventStats->Fill(3,fCentrality); //events with a proper vertex
     if(TMath::Abs(gVertexArray.At(0)) < fVxMax) {
       if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
 	if(TMath::Abs(gVertexArray.At(2)) < fVzMax) {
-	  fHistEventStats->Fill(4); //analayzed events
+	  fHistEventStats->Fill(4,fCentrality); //analayzed events
 	  fHistVx->Fill(gVertexArray.At(0));
 	  fHistVy->Fill(gVertexArray.At(1));
 	  fHistVz->Fill(gVertexArray.At(2));
