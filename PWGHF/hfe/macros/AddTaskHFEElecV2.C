@@ -26,7 +26,7 @@ AliAnalysisTask *AddTaskHFEElecV2()
   
   //Event plane task
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kEMCEGA);
+  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
 
   eventplaneTask->SetTrackType("TPC");
   eventplaneTask->SetUsePtWeight();
@@ -54,7 +54,7 @@ AliAnalysisTask *AddTaskHFEElecV2()
   mgr->AddTask(taskTR);
   
   // Central trigger
-  taskMB->SelectCollisionCandidates(AliVEvent::kCentral);
+  taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral);
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGHF_hfeCalCentralV2";
@@ -64,8 +64,8 @@ AliAnalysisTask *AddTaskHFEElecV2()
   mgr->ConnectInput(taskMB, 0, cinput);
   mgr->ConnectOutput(taskMB, 1, coutput1);
   
-  //L1 gamma trigger
-  taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  //L1 gamma and jet trigger
+  taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
   
   TString containerName2 = mgr->GetCommonFileName();
   containerName2 += ":PWGHF_hfeCalL1GammaV2";
