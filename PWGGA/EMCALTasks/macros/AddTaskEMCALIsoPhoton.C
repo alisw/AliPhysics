@@ -24,6 +24,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   //ana->SetClusThreshold(clusTh);
   
   ana->SetTrainMode(kTRUE);
+  ana->SetMcMode(isMC);
   ana->SetTriggerBit(trigbitname);
   // ana->SetMcMode(isMC);
   
