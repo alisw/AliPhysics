@@ -433,12 +433,12 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
   }
 
   //---------------CENTRALITY SELECTION-----------------------    
-/*  SetCentralityParameters(0., 10., "V0M");
+  SetCentralityParameters(0., 10., "V0M");
   Bool_t pass = kFALSE; //to select centrality
   CheckCentrality(fESD,pass);
 
   if(!pass)return;
-*/
+
   if(!fPID->IsInitialized()){ 
     // Initialize PID with the given run number
     AliWarning("PID not initialised, get from Run no");
@@ -455,12 +455,12 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
   if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
 
-  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
+/*  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
 
   Float_t centvalue = fCentrality->GetCentralityPercentile("V0M");
   fcentrality->Fill(centvalue);    
   if(centvalue<0 || centvalue>10) return;
-
+*/
   Int_t fNOtrks =  fESD->GetNumberOfTracks();
   const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
 
@@ -797,109 +797,109 @@ void AliAnalysisTaskElecHadronCorrel::UserCreateOutputObjects()
   fOpeningAngleULS = new TH1F("fOpeningAngleULS","Opening angle for ULS pairs",100,0,1);
   fOutputList->Add(fOpeningAngleULS);
 */
-  fSemiIncElecDphi = new TH2F("fSemiIncElecDphi", "Semi Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
+  fSemiIncElecDphi = new TH2F("fSemiIncElecDphi", "Semi Inclusive elec-had Dphi correlation",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi);
 
-  fSemiIncElecDphi1 = new TH2F("fSemiIncElecDphi1", "Semi Inclusive elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
+  fSemiIncElecDphi1 = new TH2F("fSemiIncElecDphi1", "Semi Inclusive elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi1);
 
-  fSemiIncElecDphi2 = new TH2F("fSemiIncElecDphi2", "Semi Inclusive elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
+  fSemiIncElecDphi2 = new TH2F("fSemiIncElecDphi2", "Semi Inclusive elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi2);
 
-  fSemiIncElecDphi3 = new TH2F("fSemiIncElecDphi3", "Semi Inclusive elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
+  fSemiIncElecDphi3 = new TH2F("fSemiIncElecDphi3", "Semi Inclusive elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi3);
 
-  fSemiIncElecDphi4 = new TH2F("fSemiIncElecDphi4", "Semi Inclusive elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
+  fSemiIncElecDphi4 = new TH2F("fSemiIncElecDphi4", "Semi Inclusive elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fSemiIncElecDphi4);
 
-  fPhotElecDphi = new TH2F("fPhotElecDphi", "Photon elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
+  fPhotElecDphi = new TH2F("fPhotElecDphi", "Photon elec-had Dphi correlation",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi);
 
-  fPhotElecDphi1 = new TH2F("fPhotElecDphi1", "Photon elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
+  fPhotElecDphi1 = new TH2F("fPhotElecDphi1", "Photon elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi1);
 
-  fPhotElecDphi2 = new TH2F("fPhotElecDphi2", "Photon elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
+  fPhotElecDphi2 = new TH2F("fPhotElecDphi2", "Photon elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi2);
 
-  fPhotElecDphi3 = new TH2F("fPhotElecDphi3", "Photon elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
+  fPhotElecDphi3 = new TH2F("fPhotElecDphi3", "Photon elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi3);
 
-  fPhotElecDphi4 = new TH2F("fPhotElecDphi4", "Photon elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
+  fPhotElecDphi4 = new TH2F("fPhotElecDphi4", "Photon elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fPhotElecDphi4);
 
-  fInclusiveElecDphi = new TH2F("fInclusiveElecDphi", "Inclusive elec-had Dphi correlation",200,0,20,100,-1.57,4.71);
+  fInclusiveElecDphi = new TH2F("fInclusiveElecDphi", "Inclusive elec-had Dphi correlation",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi);
 
-  fInclusiveElecDphi1 = new TH2F("fInclusiveElecDphi1", "Inclusive elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
+  fInclusiveElecDphi1 = new TH2F("fInclusiveElecDphi1", "Inclusive elec-had Dphi correlation for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi1);
 
-  fInclusiveElecDphi2 = new TH2F("fInclusiveElecDphi2", "Inclusive elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
+  fInclusiveElecDphi2 = new TH2F("fInclusiveElecDphi2", "Inclusive elec-had Dphi correlation for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi2);
 
-  fInclusiveElecDphi3 = new TH2F("fInclusiveElecDphi3", "Inclusive elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
+  fInclusiveElecDphi3 = new TH2F("fInclusiveElecDphi3", "Inclusive elec-had Dphi correlation for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi3);
 
-  fInclusiveElecDphi4 = new TH2F("fInclusiveElecDphi4", "Inclusive elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
+  fInclusiveElecDphi4 = new TH2F("fInclusiveElecDphi4", "Inclusive elec-had Dphi correlation for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fInclusiveElecDphi4);
 
-  fDphiULSMassLow = new TH2F("fDphiULSMassLow", "e-h Dphi ULS, mass<cut",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLow = new TH2F("fDphiULSMassLow", "e-h Dphi ULS, mass<cut",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow);
 
-  fDphiULSMassLow1 = new TH2F("fDphiULSMassLow1", "e-h Dphi ULS, mass<cut for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLow1 = new TH2F("fDphiULSMassLow1", "e-h Dphi ULS, mass<cut for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow1);
 
-  fDphiULSMassLow2 = new TH2F("fDphiULSMassLow2", "e-h Dphi ULS, mass<cut for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLow2 = new TH2F("fDphiULSMassLow2", "e-h Dphi ULS, mass<cut for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow2);
 
-  fDphiULSMassLow3 = new TH2F("fDphiULSMassLow3", "e-h Dphi ULS, mass<cut for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLow3 = new TH2F("fDphiULSMassLow3", "e-h Dphi ULS, mass<cut for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow3);
 
-  fDphiULSMassLow4 = new TH2F("fDphiULSMassLow4", "e-h Dphi ULS, mass<cut for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLow4 = new TH2F("fDphiULSMassLow4", "e-h Dphi ULS, mass<cut for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLow4);
 
-  fDphiLSMassLow = new TH2F("fDphiLSMassLow", "e-h Dphi LS, mass<cut",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLow = new TH2F("fDphiLSMassLow", "e-h Dphi LS, mass<cut",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow);
 
-  fDphiLSMassLow1 = new TH2F("fDphiLSMassLow1", "e-h Dphi LS, mass<cut for 1<pt^{asso}<3",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLow1 = new TH2F("fDphiLSMassLow1", "e-h Dphi LS, mass<cut for 1<pt^{asso}<3",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow1);
 
-  fDphiLSMassLow2 = new TH2F("fDphiLSMassLow2", "e-h Dphi LS, mass<cut for 3<pt^{asso}<5",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLow2 = new TH2F("fDphiLSMassLow2", "e-h Dphi LS, mass<cut for 3<pt^{asso}<5",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow2);
 
-  fDphiLSMassLow3 = new TH2F("fDphiLSMassLow3", "e-h Dphi LS, mass<cut for 5<pt^{asso}<7",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLow3 = new TH2F("fDphiLSMassLow3", "e-h Dphi LS, mass<cut for 5<pt^{asso}<7",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow3);
 
-  fDphiLSMassLow4 = new TH2F("fDphiLSMassLow4", "e-h Dphi LS, mass<cut for 7<pt^{asso}<9",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLow4 = new TH2F("fDphiLSMassLow4", "e-h Dphi LS, mass<cut for 7<pt^{asso}<9",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLow4);
 
-  fDphiULSMassLowNoPartner = new TH2F("fDphiULSMassLowNoPartner", "e-h Dphi ULS with no partner, mass<mass cut,",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLowNoPartner = new TH2F("fDphiULSMassLowNoPartner", "e-h Dphi ULS with no partner, mass<mass cut,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner);
 
-  fDphiULSMassLowNoPartner1 = new TH2F("fDphiULSMassLowNoPartner1", "e-h Dphi ULS with no partner, mass<mass cut for 1<pt^{asso}<3,",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLowNoPartner1 = new TH2F("fDphiULSMassLowNoPartner1", "e-h Dphi ULS with no partner, mass<mass cut for 1<pt^{asso}<3,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner1);
 
-  fDphiULSMassLowNoPartner2 = new TH2F("fDphiULSMassLowNoPartner2", "e-h Dphi ULS with no partner, mass<mass cut for 3<pt^{asso}<5,",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLowNoPartner2 = new TH2F("fDphiULSMassLowNoPartner2", "e-h Dphi ULS with no partner, mass<mass cut for 3<pt^{asso}<5,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner2);
 
-  fDphiULSMassLowNoPartner3 = new TH2F("fDphiULSMassLowNoPartner3", "e-h Dphi ULS with no partner, mass<mass cut for 5<pt^{asso}<7,",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLowNoPartner3 = new TH2F("fDphiULSMassLowNoPartner3", "e-h Dphi ULS with no partner, mass<mass cut for 5<pt^{asso}<7,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner3);
 
-  fDphiULSMassLowNoPartner4 = new TH2F("fDphiULSMassLowNoPartner4", "e-h Dphi ULS with no partner, mass<mass cut for 7<pt^{asso}<9,",200,0,20,100,-1.57,4.71);
+  fDphiULSMassLowNoPartner4 = new TH2F("fDphiULSMassLowNoPartner4", "e-h Dphi ULS with no partner, mass<mass cut for 7<pt^{asso}<9,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiULSMassLowNoPartner4);
 
-  fDphiLSMassLowNoPartner = new TH2F("fDphiLSMassLowNoPartner", "e-h Dphi LS with no partner, mass<mass cut",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLowNoPartner = new TH2F("fDphiLSMassLowNoPartner", "e-h Dphi LS with no partner, mass<mass cut",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner);
 
-  fDphiLSMassLowNoPartner1 = new TH2F("fDphiLSMassLowNoPartner1", "e-h Dphi LS with no partner, mass<mass cut for 1<pt^{asso}<3,",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLowNoPartner1 = new TH2F("fDphiLSMassLowNoPartner1", "e-h Dphi LS with no partner, mass<mass cut for 1<pt^{asso}<3,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner1);                                            
 
-  fDphiLSMassLowNoPartner2 = new TH2F("fDphiLSMassLowNoPartner2", "e-h Dphi LS with no partner, mass<mass cut for 3<pt^{asso}<5,",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLowNoPartner2 = new TH2F("fDphiLSMassLowNoPartner2", "e-h Dphi LS with no partner, mass<mass cut for 3<pt^{asso}<5,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner2);
 
-  fDphiLSMassLowNoPartner3 = new TH2F("fDphiLSMassLowNoPartner3", "e-h Dphi LS with no partner, mass<mass cut for 5<pt^{asso}<7,",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLowNoPartner3 = new TH2F("fDphiLSMassLowNoPartner3", "e-h Dphi LS with no partner, mass<mass cut for 5<pt^{asso}<7,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner3);
 
-  fDphiLSMassLowNoPartner4 = new TH2F("fDphiLSMassLowNoPartner4", "e-h Dphi LS with no partner, mass<mass cut for 7<pt^{asso}<9,",200,0,20,100,-1.57,4.71);
+  fDphiLSMassLowNoPartner4 = new TH2F("fDphiLSMassLowNoPartner4", "e-h Dphi LS with no partner, mass<mass cut for 7<pt^{asso}<9,",200,0,20,64,-1.57,4.71);
   fOutputList->Add(fDphiLSMassLowNoPartner4);
 
   fPhotoElecPt = new TH1F("fPhotoElecPt", "photonic electron pt",1000,0,100);
