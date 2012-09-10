@@ -47,16 +47,21 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fPeriod("LHC11c"),
   fTrigBit("kEMC7"),
   fIsTrain(0),
+  fIsMc(0),
   fExoticCut(0.97),
   fIsoConeR(0.4),
   fNDimensions(7),
   fECut(3.),
   fTrackMult(0),        
   fESD(0),
+  fMCEvent(0),
+  fStack(0),
   fOutputList(0),
   fEvtSel(0),
   fNClusEt10(0),
-  fPVtxZ(0),                 
+  fPVtxZ(0),  
+  fDirPhotonPtMC(0),
+  fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),
   fHnOutput(0)
@@ -77,17 +82,22 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fPeriod("LHC11c"),
   fTrigBit("kEMC7"),
   fIsTrain(0),
+  fIsMc(0),
   fExoticCut(0.97),
   fIsoConeR(0.4),
   fNDimensions(7),
   fECut(3.),
   fTrackMult(0),        
   fESD(0),
+  fMCEvent(0),
+  fStack(0),
   fOutputList(0),
   fEvtSel(0),
   fNClusEt10(0),
   fPVtxZ(0),            
-  fCellAbsIdVsAmpl(0),  
+  fDirPhotonPtMC(0),
+  fDecayPhotonPtMC(0),
+  fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),   
   fHnOutput(0)
 {
@@ -123,7 +133,15 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   
   fPVtxZ = new TH1F("hPVtxZ","primary vertex Z before cut;prim-vz(cm) ;",200,-100,100);
   fOutputList->Add(fPVtxZ);
-  
+
+  fDirPhotonPtMC = new TH1F("hDirPhotonPtMC","photon (gq->#gammaq) p_{T};GeV/c;dN/dp_{T} (c GeV^{-1})",1000,0,100);
+  fDirPhotonPtMC->Sumw2();
+  fOutputList->Add(fDirPhotonPtMC);
+
+  fDecayPhotonPtMC = new TH1F("hDecayPhotonPtMC","decay photon p_{T};GeV/c;dN/dp_{T} (c GeV^{-1})",1000,0,100);
+  fDecayPhotonPtMC->Sumw2();
+  fOutputList->Add(fDecayPhotonPtMC);
+
   fCellAbsIdVsAmpl = new TH2F("hCellAbsIdVsAmpl","cell abs id vs cell amplitude (energy);E (GeV);ID",200,0,100,24*48*10,-0.5,24*48*10-0.5);
   fOutputList->Add(fCellAbsIdVsAmpl);
 
@@ -163,6 +181,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     else
       isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
   }
+  if(fIsMc)
+    isSelected = kTRUE;
   if(!isSelected )
         return; 
 
@@ -217,6 +237,11 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
 
   fCaloClusters->Clear();
   fSelPrimTracks->Clear();
+
+  fMCEvent = MCEvent();
+  if(fMCEvent)
+    fStack = (AliStack*)fMCEvent->Stack();
+
   PostData(1, fOutputList);
 }      
 
@@ -445,6 +470,34 @@ Double_t AliAnalysisTaskEMCALIsoPhoton ::GetMaxCellEnergy(const AliVCluster *clu
   return maxe;
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
+{
+  if(!fStack)
+    return;
+  Int_t nTracks = fStack->GetNtrack();
+  for(Int_t iTrack=0;iTrack<nTracks;iTrack++){
+    TParticle *mcp = static_cast<TParticle*>(fStack->Particle(iTrack));  
+    if(!mcp)
+      continue;  
+    Int_t pdg = mcp->GetPdgCode();
+    if(pdg!=22)
+      continue;
+    Int_t imom = mcp->GetMother(0);
+    if(imom<0 || imom>nTracks)
+      continue;
+    TParticle *mcmom = static_cast<TParticle*>(fStack->Particle(imom));  
+    if(!mcmom)
+      continue;
+    Int_t pdgMom = mcmom->GetPdgCode();
+    if(TMath::Abs(pdgMom)<7)
+      fDirPhotonPtMC->Fill(mcp->Pt());
+    else{
+      if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
+	fDecayPhotonPtMC->Fill(mcp->Pt());
+    }
+  }
+}
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 
 {
