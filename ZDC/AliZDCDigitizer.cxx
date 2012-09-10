@@ -167,10 +167,10 @@ Bool_t AliZDCDigitizer::Init()
     }
   }
   
-  if(fIspASystem){
+  /*if(fIspASystem){
     fBeamType = "p-A";
     AliInfo(" AliZDCDigitizer -> Manually setting beam type to p-A\n");
-  }
+    }*/
   
   // Setting beam type for spectator generator and RELDIS generator
   if(((fBeamType.CompareTo("UNKNOWN")) == 0) || fIsRELDISgen){
@@ -181,6 +181,7 @@ Bool_t AliZDCDigitizer::Init()
   
   if(fBeamEnergy>0.1){
     ReadPMTGains();
+    //CalculatePMTGains();
   }
   else{
     AliWarning("\n Beam energy is 0 -> ZDC PMT gains can't be set -> NO ZDC DIGITS!!!\n");
@@ -489,7 +490,7 @@ void AliZDCDigitizer::ReadPMTGains()
      AliInfo(Form("\n    ZDC PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
   }
-  else if(((fBeamType.CompareTo("p-A")) == 0)){
+  else if(((fBeamType.CompareTo("p-A")) == 0) || ((fBeamType.CompareTo("P-A")) == 0)){
     for(int i=0; i<12; i++){
       if(beam[i]==0 && fBeamEnergy!=0.){
         if(det[i]==1 || det[i]==2){
@@ -516,7 +517,7 @@ void AliZDCDigitizer::ReadPMTGains()
 void AliZDCDigitizer::CalculatePMTGains()
 {
 // Calculate PMT gain according to beam type and beam energy
-  if(((fBeamType.CompareTo("P-P")) == 0)){
+  if(((fBeamType.CompareTo("P-P")) == 0)  ((fBeamType.CompareTo("p-p")))){
     // PTM gains rescaled to beam energy for p-p
     // New correction coefficients for PMT gains needed
     // to reproduce experimental spectra (from Grazia Jul 2010)
@@ -552,19 +553,20 @@ void AliZDCDigitizer::CalculatePMTGains()
     AliInfo(Form("\n    ZDC PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
   }
-  else if(((fBeamType.CompareTo("p-A")) == 0)){
+  else if(((fBeamType.CompareTo("p-A")) == 0) || ((fBeamType.CompareTo("P-A"))) ){
     // PTM gains for Pb-Pb @ 1.38+1.38 A TeV on side A
     // PTM gains rescaled to beam energy for p-p on side C
     // WARNING! Energies are set by hand for 2011 pA RUN!!!
     Float_t scalGainFactor = fBeamEnergy/2760.;
+    Float_t npartScalingFactor = 208./15.;
     
     for(Int_t j = 0; j < 5; j++){
        fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000; //ZNC (p)
        fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;  //ZPC (p)
-       fPMGain[2][j] = 100000./scalGainFactor; 	   // ZEM (Pb)
+       fPMGain[2][j] = npartScalingFactor*100000./scalGainFactor; 	   // ZEM (Pb)
        // Npart max scales from 400 in Pb-Pb to ~8 in pPb -> *40.
-       fPMGain[3][j] = 10*50000./(4*scalGainFactor);  // ZNA (Pb)  	     
-       fPMGain[4][j] = 10*100000./(5*scalGainFactor); // ZPA (Pb)  
+       fPMGain[3][j] = npartScalingFactor*50000/(4*scalGainFactor);  // ZNA (Pb)  	     
+       fPMGain[4][j] = npartScalingFactor*100000/(5*scalGainFactor); // ZPA (Pb)  
     }
     AliInfo(Form("\n    ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
       	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));

@@ -117,6 +117,10 @@ void AliZDCReconstructor::Init()
      ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
     fRecoMode=1;
   }
+  if(((beamType.CompareTo("p-A"))==0) || ((beamType.CompareTo("A-p"))==0)
+     ||((beamType.CompareTo("P-A"))==0) || ((beamType.CompareTo("A-P"))==0)){
+    fRecoMode=1;
+  }
   else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
     fRecoMode=2;
     if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
