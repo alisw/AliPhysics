@@ -199,6 +199,8 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
 
   //extract statistics
   fNtracksVdrift = TMath::Nint(fTimeDrift->GetResHistoTPCITS(0)->GetEntries());
+  //if we have 0 ITS TPC matches it means we have no ITS tracks and we try to use TPC-TOF matching for calibration
+  if (fNtracksVdrift==0) fNtracksVdrift=TMath::Nint(fTimeDrift->GetResHistoTPCTOF(0)->GetEntries());
   fNeventsVdrift = TMath::Nint(fTimeDrift->GetTPCVertexHisto(0)->GetEntries());
 
   startRun=ustartRun;
@@ -315,12 +317,10 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift()
 
   TGraphErrors* gr = (TGraphErrors*)fVdriftArray->FindObject("ALIGN_ITSB_TPC_DRIFTVD");
   Printf("ALIGN_ITSB_TPC_DRIFTVD graph = %p",gr);
-
-  //check if we have enough statistics
-  if (fNtracksVdrift<fMinTracksVdrift) 
+  if (!gr)
   {
-    fCalibrationStatus|=kCalibFailedTimeDrift;
-    return kFALSE;
+    gr = (TGraphErrors*)fVdriftArray->FindObject("ALIGN_TOFB_TPC_DRIFTVD");
+    Printf("ALIGN_TOFB_TPC_DRIFTVD graph = %p",gr);
   }
 
   if(!gr) 
@@ -328,6 +328,15 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift()
     fCalibrationStatus|=kCalibFailedTimeDrift;
     return kFALSE;
   }
+  
+  // for now we validate even with low statistics
+  ////check if we have enough statistics
+  //if (fNtracksVdrift<fMinTracksVdrift) 
+  //{
+  //  fCalibrationStatus|=kCalibFailedTimeDrift;
+  //  return kFALSE;
+  //}
+
   if(gr->GetN()<1)  { 
     Printf("ALIGN_ITSB_TPC_DRIFTVD number of points = %d",gr->GetN());
     {
