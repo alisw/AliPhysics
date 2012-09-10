@@ -33,7 +33,7 @@ AliITSMultRecBg::AliITSMultRecBg()
   fInjScale(1),
   fInjCurrTrial(0),
   fInjCluster(),
-  fInjBuffer(2*kTrNPar)
+  fInjBuffer(20*kTrNPar)
   //
 {
   // constructor
@@ -63,7 +63,7 @@ AliITSMultRecBg::AliITSMultRecBg(const AliITSMultRecBg &src)
   fInjScale(1),
   fInjCurrTrial(0),
   fInjCluster(),
-  fInjBuffer(2*kTrNPar)
+  fInjBuffer(20*kTrNPar)
   //
 {
   // dummy copy c-tor
@@ -541,11 +541,11 @@ Int_t AliITSMultRecBg::SearchInjTracklet(const Float_t *vtx)
   if (winner<0) return 0;
   //
   int nCurrTr = GetNInjSuccsess();
-  if (nCurrTr >= fInjBuffer.GetSize()/kTrNPar) 
-    fInjBuffer.Set(nCurrTr*2*kTrNPar);
+  if (nCurrTr >= fInjBuffer.GetSize()/kTrNPar) fInjBuffer.Set((20+nCurrTr*2)*kTrNPar);
   //
   Float_t *tracklet = fInjBuffer.GetArray() + nCurrTr*kTrNPar;
   Float_t *clPar1=0,*clPar2=0;
+  //  AliInfo(Form("Size: %d NCurrTr: %d El: %d Winner: %d trackler: %p",fInjBuffer.GetSize(), nCurrTr, nCurrTr*kTrNPar, winner,tracklet));
   if (fInjLr) {
     clPar1 = GetClusterOfLayer(partnerLr,winner);
     clPar2 = clustersLayInj;
