@@ -129,6 +129,14 @@ class AliAnalysisTaskExtractV0 : public AliAnalysisTaskSE {
 	TH1F    *fHistMultiplicityNoTPCOnly;			        //! multiplicity distribution
 	TH1F    *fHistMultiplicityNoTPCOnlyNoPileup;			//! multiplicity distribution
 
+  //Raw Data for Vertex Z position estimator change
+	TH2F    *f2dHistMultiplicityVsVertexZBeforeTrigSel; 	        //! multiplicity distribution    
+	TH2F    *f2dHistMultiplicityVsVertexZForTrigEvt;  		        //! multiplicity distribution
+	TH2F    *f2dHistMultiplicityVsVertexZ;     					        //! multiplicity distribution
+	TH2F    *f2dHistMultiplicityVsVertexZNoTPCOnly;			        //! multiplicity distribution
+	TH2F    *f2dHistMultiplicityVsVertexZNoTPCOnlyNoPileup;			//! multiplicity distribution
+
+
 	TH1F    *fHistPVx;     					        //! multiplicity distribution
 	TH1F    *fHistPVy;     					        //! multiplicity distribution
 	TH1F    *fHistPVz;     					        //! multiplicity distribution
