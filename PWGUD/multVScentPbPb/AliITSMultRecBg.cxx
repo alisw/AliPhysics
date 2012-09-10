@@ -50,8 +50,9 @@ AliITSMultRecBg::AliITSMultRecBg()
 }
 
 //_________________________________________________________________
-AliITSMultRecBg::AliITSMultRecBg(const AliTracker &AliITSMultRecBg) 
-: fRecType(kData),
+AliITSMultRecBg::AliITSMultRecBg(const AliITSMultRecBg &src) 
+  : AliITSMultReconstructor(src)
+  fRecType(kData),
   fInjLr(0),
   fInjStave(0),
   fInjModule(0),
@@ -128,7 +129,7 @@ void AliITSMultRecBg::Run(TTree* tree, Float_t* vtx, TTree* treeMix)
 {
   // reconstruct with current settings
   if (!tree) AliFatal("The RP Tree is missing");
-  if (fRecType==kBgMix && !treeMix) AliFatal("Mixed Mode requested but 2nd RP Tree is missing")
+  if (fRecType==kBgMix && !treeMix) AliFatal("Mixed Mode requested but 2nd RP Tree is missing");
   if (!vtx)  return;
   //
   if      (fRecType==kData)  Reconstruct(tree, vtx);
