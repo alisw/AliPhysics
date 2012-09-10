@@ -1,49 +1,62 @@
-enum {kNoOption, kPionsKaons, kResonanceOnly};
+enum {kNoOption, kResonanceOnly};
 
-//================================================================================================================================
+const Double_t mJpsi = TDatabasePDG::Instance()->GetParticle("J/psi")->Mass();
 
-void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",
-				 Int_t option = kNoOption,
-				 Int_t nMassBin = 100, 
-				 Double_t massMin = 0.,
-				 Double_t massMax = 10.,
-				 Bool_t useCutOnOffsetChi2 = kFALSE,
-				 Int_t maxNWrongClusters = 999,
-				 const Char_t *outDir = ".",
-				 Bool_t singleMuonAnalysis = kTRUE,
-				 Bool_t muonPairAnalysis = kTRUE,
+//=============================================================================================================================================================
+
+void AliMuonForwardTrackAnalysis(const Char_t *readDir= ".",                       // the directory with the MuonGlobalTracks.root and geometry.root files
+				 Int_t option = kNoOption,                         // for resonance analysis: kResonanceOnly 
+				 Double_t massMin = 0.,                            // lower limit for the cut on dimuon mass
+				 Double_t massMax = 10.,                           // upper limit for the cut on dimuon mass
+				 Double_t maxChi2SingleMuons = 1.5,                // upper limit for the cut on the single muon chi2
+				 Double_t maxOffsetSingleMuons = 250.,             // upper limit for the cut on the single muon offset w.r.t. the primary vtx
+				 Bool_t correlateCutOnOffsetChi2 = kTRUE,          // if true, the cur region in the chi2-offset plane for single muons is a quadrant aorund the origin
+				 Double_t maxWOffsetMuonPairsAtPrimaryVtx = 1.e9,  // upper limit for the cut on weighted offset of dimuond w.r.t. the primary vtx
+				 Double_t maxWOffsetMuonPairsAtPCA = 1.e9,         // upper limit for the cut on weighted offset of dimuond w.r.t. their PCA
+				 Double_t maxDistancePrimaryVtxPCA = 1.e9,         // upper limit for the cut on the distance between primary vtx and PCA
+				 Double_t minPCAQuality = 0.,                      // lower limit for the cut on the PCA quality
+				 Int_t triggerLevel = 1,                           // level of the trigger both muons must satisfy
+				 Int_t maxNWrongClusters = 999,                    // maximum number of wrong MFT clusters for a global muon track
+				 const Char_t *outDir = ".",                       // directory where the output file will be created
+				 Bool_t singleMuonAnalysis = kTRUE,                // if true, the aalysis of single muons will be performed
+				 Bool_t muonPairAnalysis = kTRUE,                  // if true, the aalysis of muon pairs will be performed
 				 Int_t firstEvent = -1,
 				 Int_t lastEvent = -1, 
-				 Int_t myRandom = 0,
-				 Double_t ptMinSingleMuons = 0.0,
-				 Bool_t evalDimuonVtxResolution=kFALSE) {
+				 Int_t myRandom = 0,                               // number which will tag the name of the output file
+				 Double_t ptMinSingleMuons = 0.0,                  // lower limit for the cut on the single muon pt
+				 Double_t trueMass = mJpsi,                        // used to evaluate the pseudo proper decay length, usually for J/psi only
+				 Bool_t evalDimuonVtxResolution=kFALSE) {          // to be set true only if prompt dimuon sources are analyzed
   
   gROOT -> LoadMacro("./AliMuonForwardTrackAnalysis.cxx+");
   //  AliLog::SetClassDebugLevel("AliMuonForwardTrackPair", 1);
   //  AliLog::SetClassDebugLevel("AliMuonForwardTrackAnalysis", 1);
 
-  //  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG, AliMagF::kBeamTypeAA, 2750.));
-  //  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG, AliMagF::kBeamTypepp, 7000.));
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG));
   
   AliMuonForwardTrackAnalysis *myAnalysis = new AliMuonForwardTrackAnalysis();
   myAnalysis->ReadEvents(firstEvent, lastEvent);
   myAnalysis->SetInputDir(readDir);
   myAnalysis->SetOutputDir(outDir);
-  myAnalysis->SetMassRange(nMassBin, massMin, massMax);
+  myAnalysis->SetMassRange(massMin, massMax);
+  myAnalysis->SetTrueMass(trueMass);
   myAnalysis->SetSingleMuonAnalysis(singleMuonAnalysis);
   myAnalysis->SetMuonPairAnalysis(muonPairAnalysis);
   myAnalysis->SetOption(option);
+
   myAnalysis->SetMaxNWrongClustersMC(maxNWrongClusters);
-  myAnalysis->SetPtMinSingleMuons(ptMinSingleMuons);
-  myAnalysis->UseCutOnOffsetChi2(useCutOnOffsetChi2);
+  myAnalysis->SetMinPtSingleMuons(ptMinSingleMuons);
+  myAnalysis->SetMaxChi2SingleMuons(maxChi2SingleMuons);
+  myAnalysis->SetMaxOffsetSingleMuons(maxOffsetSingleMuons);
+  myAnalysis->CorrelateCutOnOffsetChi2(correlateCutOnOffsetChi2);
 
-  myAnalysis->SetPtDimuRange(5, 0., 5.);
-  myAnalysis->SetMatchTrigger(kTRUE);
-  myAnalysis->UseBransonForCut(kFALSE);
-  myAnalysis->UseBransonForKinematics(kFALSE);
+  myAnalysis->SetMaxWOffsetMuonPairsAtPrimaryVtx(maxWOffsetMuonPairsAtPrimaryVtx);
+  myAnalysis->SetMaxWOffsetMuonPairsAtPCA(maxWOffsetMuonPairsAtPCA);
+  myAnalysis->SetMaxDistancePrimaryVtxPCA(maxDistancePrimaryVtxPCA);
+  myAnalysis->SetMinPCAQuality(minPCAQuality);
 
-  myAnalysis->EvalDimuonVtxResolution(evalDimuonVtxResolution);    // only with prompt quarkonia
+  myAnalysis->SetMatchTrigger(triggerLevel);
+
+  myAnalysis->EvalDimuonVtxResolution(evalDimuonVtxResolution);    // it should be true only with prompt dimuon sources
 
   myAnalysis->Init("MuonGlobalTracks.root");
 

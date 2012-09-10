@@ -55,12 +55,17 @@ public:
   }
 
   Double_t GetWeightedOffset(Double_t x, Double_t y, Double_t z);
+  Double_t GetWeightedOffsetAtPCA();
+  Double_t GetPCAQuality();
   Double_t GetMassWithoutMFT(Double_t x, Double_t y, Double_t z, Int_t nClusters=-1);
   Double_t GetMassMC()     { return fKinemMC.M(); }
   Double_t GetRapidityMC() { return fKinemMC.Rapidity(); }
   Double_t GetPtMC()       { return fKinemMC.Pt(); }
   Double_t GetMass()     { return fKinem.M(); }
   Double_t GetRapidity() { return fKinem.Rapidity(); }
+  Double_t GetPx()       { return fKinem.Px(); }
+  Double_t GetPy()       { return fKinem.Py(); }
+  Double_t GetPz()       { return fKinem.Pz(); }
   Double_t GetPt()       { return fKinem.Pt(); }
 
   Bool_t IsResonance();

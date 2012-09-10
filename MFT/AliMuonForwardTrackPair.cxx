@@ -142,6 +142,29 @@ Double_t AliMuonForwardTrackPair::GetWeightedOffset(Double_t x, Double_t y, Doub
 
 //====================================================================================================================================================
 
+Double_t AliMuonForwardTrackPair::GetWeightedOffsetAtPCA() {
+
+  return GetWeightedOffset(fXPointOfClosestApproach, fYPointOfClosestApproach, fZPointOfClosestApproach);
+
+}
+
+//====================================================================================================================================================
+
+Double_t AliMuonForwardTrackPair::GetPCAQuality() {
+
+  Double_t wOffset_1 = GetTrack(0)->GetWeightedOffset(fXPointOfClosestApproach, fYPointOfClosestApproach, fZPointOfClosestApproach);
+  Double_t wOffset_2 = GetTrack(1)->GetWeightedOffset(fXPointOfClosestApproach, fYPointOfClosestApproach, fZPointOfClosestApproach);
+  
+  Double_t f1 = TMath::Exp(-0.5 * wOffset_1);
+  Double_t f2 = TMath::Exp(-0.5 * wOffset_2);
+
+  if (f1+f2 > 0.) return (2.*f1*f2)/(f1+f2); 
+  else return 0.;
+  
+}
+
+//====================================================================================================================================================
+
 Double_t AliMuonForwardTrackPair::GetMassWithoutMFT(Double_t x, Double_t y, Double_t z, Int_t nClusters) {
 
   Int_t idCluster[2] = {0};

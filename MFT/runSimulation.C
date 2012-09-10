@@ -10,7 +10,7 @@ void runSimulation(Int_t seed,
   simulator->SetTriggerConfig("MUON");
   simulator->SetMakeDigits("MUON MFT");
   simulator->SetMakeSDigits("MUON MFT");
-  simulator->SetRunQA("ALL");
+  simulator->SetRunQA("DetectorList:ActionList");
   simulator->SetRunHLT("");
 
   // MUON Tracker -> local:///$OCDB should reflect the content of alien://folder=/alice

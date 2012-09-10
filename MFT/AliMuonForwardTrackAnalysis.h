@@ -31,7 +31,7 @@ class AliMuonForwardTrackAnalysis : public TObject {
 
 public:
 
-  enum {kNoOption, kPionsKaons, kResonanceOnly};
+  enum {kNoOption, kResonanceOnly};
   
   AliMuonForwardTrackAnalysis();
   
@@ -48,11 +48,11 @@ public:
 
   Int_t GetNTracksAnalyzed() { return fNTracksAnalyzed; }
 
-  void SetMassRange(Int_t nBins, Double_t min, Double_t max) { fNMassBins=nBins; fMassMin=min; fMassMax=max; }
-  void SetPtDimuRange(Int_t nBins, Double_t min, Double_t max) { fNPtDimuBins=TMath::Min(nBins,fNMaxPtBinsDimuons) ; fPtDimuMin=min; fPtDimuMax=max; }
+  void SetMassRange(Double_t min, Double_t max) { fMassMin=min; fMassMax=max; }
+  void SetTrueMass(Double_t mass) { fTrueMass = mass; }
   void SetSingleMuonAnalysis(Bool_t singleMuonAnalysis) { fSingleMuonAnalysis = singleMuonAnalysis; }
   void SetMuonPairAnalysis(Bool_t muonPairAnalysis) { fMuonPairAnalysis = muonPairAnalysis; }
-  void SetMatchTrigger(Bool_t matchTrigger) { fMatchTrigger = matchTrigger; }
+  void SetMatchTrigger(Int_t triggerLevel) { fTriggerLevel = triggerLevel; }
 
   Bool_t AnalyzeSingleMuon();
   Bool_t AnalyzeMuonPair();
@@ -66,8 +66,17 @@ public:
   void SetVertResMC(Double_t xRes, Double_t yRes, Double_t zRes) { fXVertResMC=xRes; fYVertResMC=yRes; fZVertResMC=zRes; }
 
   void SetOption(Int_t option) { fOption = option; }
+
   void SetMaxNWrongClustersMC(Int_t nClusters) { fMaxNWrongClustersMC = nClusters; }
-  void SetPtMinSingleMuons(Double_t ptMin) { fPtMinSingleMuons = ptMin; }
+  void SetMinPtSingleMuons(Double_t ptMin) { fPtMinSingleMuons = ptMin; }
+  void SetMaxChi2SingleMuons(Double_t chi2Max) { fMaxChi2SingleMuons = chi2Max; }
+  void SetMaxOffsetSingleMuons(Double_t offsetMax) { fMaxOffsetSingleMuons = offsetMax; }
+  void CorrelateCutOnOffsetChi2(Bool_t option) { fCorrelateCutOnOffsetChi2 = option; }
+
+  void SetMaxWOffsetMuonPairsAtPrimaryVtx(Double_t wOffsetMax) { fMaxWOffsetMuonPairsAtPrimaryVtx = wOffsetMax; }
+  void SetMaxWOffsetMuonPairsAtPCA(Double_t wOffsetMax) { fMaxWOffsetMuonPairsAtPCA = wOffsetMax; }
+  void SetMaxDistancePrimaryVtxPCA(Double_t distanceMax) { fMaxDistancePrimaryVtxPCA = distanceMax; }
+  void SetMinPCAQuality(Double_t minQuality) { fMinPCAQuality = minQuality; }
 
   void ReadEvents(Int_t firstEv, Int_t lastEv) { fFirstEvent = firstEv; fLastEvent = lastEv; }
   Int_t GetFirstEvent() { return fFirstEvent; }
@@ -75,11 +84,10 @@ public:
 
   void UseBransonForCut(Bool_t useBranson) { fUseBransonForCut = useBranson; }
   void UseBransonForKinematics(Bool_t useBranson) { fUseBransonForKinematics = useBranson; }
-  void UseCutOnOffsetChi2(Bool_t useCut) { fCutOnOffsetChi2 = useCut; }
+
+  Double_t GetPseudoProperDecayLength(AliMuonForwardTrackPair *pair, Double_t trueMass);
 
 private:
-
-  static const Int_t fNMaxPtBinsDimuons = 50;
 
   TString fInputDir, fOutputDir;
 
@@ -98,47 +106,43 @@ private:
   TH1D *fHistErrorSingleMuonsX, *fHistErrorSingleMuonsY;                                                           //!
   TH1D *fHistZOriginSingleMuonsMC;
   
-  TH2D *fHistZROriginSingleMuonsMC, *fHistSingleMuonsPtRapidityMC;                                                //! 
-  TH2D *fHistSingleMuonsOffsetChi2, *fHistSingleMuonsOffsetChi2_BeforeMFT, *fHistSingleMuonsOffsetChi2_AfterMFT;  //!
-  TGraph *fGraphSingleMuonsOffsetChi2;                                                                            //!
+  TH2D *fHistZROriginSingleMuonsMC, *fHistSingleMuonsPtRapidity, *fHistSingleMuonsOffsetChi2;   //!
 
-  TH1D *fHistMassMuonPairs[fNMaxPtBinsDimuons+1];                                  //!
-  TH1D *fHistMassMuonPairsWithoutMFT[fNMaxPtBinsDimuons+1];                        //!
-  TH1D *fHistMassMuonPairsMC[fNMaxPtBinsDimuons+1];                                //!
-  TH1D *fHistWOffsetMuonPairsAtPrimaryVtx[fNMaxPtBinsDimuons+1];                   //!
-  TH1D *fHistWOffsetMuonPairsAtPCA[fNMaxPtBinsDimuons+1];                          //!
-  TH1D *fHistDistancePrimaryVtxPCA[fNMaxPtBinsDimuons+1];                          //!
-  TH2D *fHistDistancePrimaryVtxPCAvsWOffsetMuonPairsAtPCA[fNMaxPtBinsDimuons+1];   //!
-  TH1D *fHistDimuonVtxResolutionX[fNMaxPtBinsDimuons+1];                           //!
-  TH1D *fHistDimuonVtxResolutionY[fNMaxPtBinsDimuons+1];                           //!
-  TH1D *fHistDimuonVtxResolutionZ[fNMaxPtBinsDimuons+1];                           //!
-
-  TH2D *fHistRapidityPtMuonPairs;           //!
+  TH2D *fHistRapidityPtMuonPairs;  //!
  
-  TH2D *fHistMassMuonPairsVsPt;             //!
-  TH2D *fHistMassMuonPairsWithoutMFTVsPt;   //!
-	TH2D *fHistMassMuonPairsVsPtLSp;             //!
-	TH2D *fHistMassMuonPairsWithoutMFTVsPtLSp;   //!
-	TH2D *fHistMassMuonPairsVsPtLSm;             //!
-	TH2D *fHistMassMuonPairsWithoutMFTVsPtLSm;   //!
-	
+  TH2D *fHistMassMuonPairsMCVsPt;              //!
+  TH2D *fHistMassMuonPairsVsPt;                //!
+  TH2D *fHistMassMuonPairsWithoutMFTVsPt;      //!
+  TH2D *fHistMassMuonPairsVsPtLSp;             //!
+  TH2D *fHistMassMuonPairsWithoutMFTVsPtLSp;   //!
+  TH2D *fHistMassMuonPairsVsPtLSm;             //!
+  TH2D *fHistMassMuonPairsWithoutMFTVsPtLSm;   //!
+
+  TH2D *fHistWOffsetMuonPairsAtPrimaryVtxVsPt;    //!
+  TH2D *fHistWOffsetMuonPairsAtPCAVsPt;           //!
+  TH2D *fHistDistancePrimaryVtxPCAVsPt;           //!
+  TH2D *fHistPCAQualityVsPt;                      //!
+  TH2D *fHistPseudoProperDecayLengthVsPt;         //!
+  TH2D *fHistDimuonVtxResolutionXVsPt;            //!
+  TH2D *fHistDimuonVtxResolutionYVsPt;            //!
+  TH2D *fHistDimuonVtxResolutionZVsPt;            //!
+  
   Bool_t fEvalDimuonVtxResolution;
 
-  Int_t fNMassBins, fNPtDimuBins;
-  Double_t fMassMin, fMassMax, fPtDimuMin, fPtDimuMax;
-  TAxis *fPtAxisDimuons;
+  Double_t fTrueMass, fMassMin, fMassMax;
 
-  Bool_t fSingleMuonAnalysis, fMuonPairAnalysis, fMatchTrigger;
-  Int_t fOption;
+  Bool_t fSingleMuonAnalysis, fMuonPairAnalysis;
+  Int_t fOption, fTriggerLevel;
 
   Double_t fXVertResMC, fYVertResMC, fZVertResMC;
   Double_t fPrimaryVtxX, fPrimaryVtxY, fPrimaryVtxZ;
   Int_t fMaxNWrongClustersMC;
   Double_t fPtMinSingleMuons;
 
-  Bool_t fUseBransonForCut, fUseBransonForKinematics, fCutOnOffsetChi2;
+  Bool_t fUseBransonForCut, fUseBransonForKinematics, fCorrelateCutOnOffsetChi2;
 
-  Double_t fCenterOffset, fCenterChi2, fScaleOffset, fScaleChi2, fRadiusCut;
+  Double_t fMaxChi2SingleMuons, fMaxOffsetSingleMuons;
+  Double_t fMaxWOffsetMuonPairsAtPrimaryVtx, fMaxWOffsetMuonPairsAtPCA, fMaxDistancePrimaryVtxPCA, fMinPCAQuality;
 
   ClassDef(AliMuonForwardTrackAnalysis, 1)
 

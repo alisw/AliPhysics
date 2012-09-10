@@ -99,7 +99,7 @@ void Config() {
 
   AliRunLoader* rl=0x0;
 
-  AliInfo("Config.C: Creating Run Loader ...");
+  printf("Config.C: Creating Run Loader ...");
   rl = AliRunLoader::Open("galice.root", AliConfig::GetDefaultEventFolderName(), "recreate");
   if (rl == 0x0) {
     gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
