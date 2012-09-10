@@ -179,22 +179,22 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   if(trackType==0 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis
     if (!strcmp(prodType,"LHC12a15e"))
-      trackCuts = CreateTrackCutsPWGJE(10001007);
+      trackCuts = CreateTrackCutsPWGJE(10001008);
     else
       trackCuts = CreateTrackCutsPWGJE(10001006);
   }
   if(trackType==0 && cuts==2) {
     //Cuts global tracks with ITSrefit requirement but without SPD
     if (!strcmp(prodType,"LHC12a15e"))
-      trackCuts = CreateTrackCutsPWGJE(10011007);
+      trackCuts = CreateTrackCutsPWGJE(10011008);
     else
       trackCuts = CreateTrackCutsPWGJE(10011006);
   }
   if(trackType==7 && cuts==0) {
     // no requirements on SPD and ITSrefit failed
     if (!strcmp(prodType,"LHC12a15e")){
-      trackCuts = CreateTrackCutsPWGJE(10041007);   //no ITSrefit requirement
-      trackCutsReject = CreateTrackCutsPWGJE(1007); //ITSrefit requirement
+      trackCuts = CreateTrackCutsPWGJE(10041008);   //no ITSrefit requirement
+      trackCutsReject = CreateTrackCutsPWGJE(1008); //ITSrefit requirement
     }
     else {
       trackCuts = CreateTrackCutsPWGJE(10041006);   //no ITSrefit requirement
@@ -206,15 +206,15 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   if(trackType==7 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement but without SPD
     if (!strcmp(prodType,"LHC12a15e"))
-      trackCuts = CreateTrackCutsPWGJE(10011007);
+      trackCuts = CreateTrackCutsPWGJE(10011008);
     else
       trackCuts = CreateTrackCutsPWGJE(10011006);
   }
   if(trackType==7 && cuts==2) {
     // no requirements on SPD and ITSrefit failed
     if (!strcmp(prodType,"LHC12a15e")){
-      trackCuts = CreateTrackCutsPWGJE(10041007);       //no ITSrefit requirement filter 256
-      trackCutsReject = CreateTrackCutsPWGJE(10001007); //ITSrefit requirement filter 16
+      trackCuts = CreateTrackCutsPWGJE(10041008);       //no ITSrefit requirement filter 256
+      trackCutsReject = CreateTrackCutsPWGJE(10001008); //ITSrefit requirement filter 16
     }
     else {
       trackCuts = CreateTrackCutsPWGJE(10041006);       //no ITSrefit requirement filter 256
