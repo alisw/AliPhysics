@@ -134,7 +134,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TList *fListBFS; //fList object
   TList *fHistListPIDQA;  //! list of histograms
 
-  TH1F *fHistEventStats; //event stats
+  TH2D *fHistEventStats; //event stats
   TH2F *fHistCentStats; //centrality stats
   TH1F *fHistTriggerStats; //trigger stats
   TH1F *fHistTrackStats; //Track filter bit stats
