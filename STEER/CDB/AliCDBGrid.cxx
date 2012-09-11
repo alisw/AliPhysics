@@ -765,11 +765,10 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 	    Int_t remainingAttempts=fNretry;
 	    Int_t nsleep = fInitRetrySeconds; // number of seconds between attempts. We let it increase exponentially
 	    while(remainingAttempts > 0) {
-		AliDebug(2, Form("Putting the file in the OCDB - Attempt n. %d",fNretry-remainingAttempts+1));
+		AliDebug(2, Form("Putting file in the OCDB at %s - Attempt n. %d",targetSE.Data(),fNretry-remainingAttempts+1));
 		file = TFile::Open(fullFilename,"CREATE");
 		remainingAttempts--;
 		if(!file || !file->IsWritable()){
-		    AliError(Form("Can't open file <%s>!", filename.Data()));
 		    if(file && !file->IsWritable()) file->Close(); delete file; file=0;
 		    AliDebug(2,Form("Attempt %d failed, sleeping for %d seconds",fNretry-remainingAttempts+1,nsleep));
 		    if(remainingAttempts>0) sleep(nsleep);
