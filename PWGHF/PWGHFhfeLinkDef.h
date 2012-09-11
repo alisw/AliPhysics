@@ -49,16 +49,10 @@
 #pragma link C++ class  AliHFEextraEventCuts+;
 #pragma link C++ class  AliHFEsignalCuts+;
 
-#pragma link C++ class  AliHFEdca+;
-#pragma link C++ class  AliAnalysisTaskDCA+;
-
 #pragma link C++ class  AliHFEpostAnalysis+;
 #pragma link C++ class  AliAnalysisTaskHFE+;
 #pragma link C++ class  AliAnalysisTaskHFEpidQA+;
 #pragma link C++ class  AliHFEefficiency+;
-
-#pragma link C++ class  AliHFEdisplacedElectrons+;
-#pragma link C++ class  AliAnalysisTaskDisplacedElectrons+;
 
 #pragma link C++ class  AliHFEOADBThresholdsTRD+;
 #pragma link C++ class  AliHFEOADBThresholdsTRD::AliHFEthresholdParamsTRD+;
@@ -75,7 +69,6 @@
 
 #pragma link C++ class  AliHFEVZEROEventPlane+;
 #pragma link C++ class  AliAnalysisTaskHFEFlow+;
-#pragma link C++ class  AliAnalysisTaskHFEFlowData+;
 
 #pragma link C++ class  AliSelectNonHFE+;
 

@@ -72,6 +72,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     inline void SetMaxImpactParamZ(Double_t impactParam);
     inline void SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t issigmacut, Bool_t isabs);
     inline void SetMinTrackletsTRD(Int_t minTracklets, Bool_t exact = kFALSE);
+    inline void SetMaxChi2TRD(Float_t maxchi2);
     inline void SetMinNClustersTPC(Int_t minclusters, ETPCclusterDef_t def);
     void SetMinNClustersTPCPID(Int_t minclusters) { SETBIT(fRequirements, kMinNClustersTPCPID); fMinNClustersTPCPID = minclusters; }
     void SetTOFPID(Bool_t tofPid) { tofPid ? SETBIT(fRequirements, kTOFPID) : CLRBIT(fRequirements, kTOFPID); }
@@ -84,14 +85,16 @@ class AliHFEextraCuts: public AliCFCutBase{
     void SetRejectKinkDaughter() { SETBIT(fRequirements, kRejectKinkDaughter);}; 
     void SetRejectKinkMother() { SETBIT(fRequirements, kRejectKinkMother);}; 
     void SetCheckITSstatus(Bool_t check) { fCheck = check; };
+    void SetITSpatternCut() { SETBIT(fRequirements, kITSpattern); }
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };
 
     Bool_t GetCheckITSstatus() const { return fCheck; };
     Int_t GetDebugLevel() const { return fDebugLevel; };
     void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy); // temporary moved from protected to publich for IP QA 
     void GetHFEImpactParameters(AliVTrack *track, Double_t dcaD[2], Double_t covD[3]);
-    Int_t GetITSstatus(AliVTrack *track, Int_t layer);
+    Int_t GetITSstatus(const AliVTrack * const track, Int_t layer) const;
     Bool_t CheckITSstatus(Int_t itsStatus) const;
+    Bool_t CheckITSpattern(const AliVTrack *const track) const;
 
     void UnSetRejectKinkDaughter() { CLRBIT(fRequirements, kRejectKinkDaughter);}; 
     void UnSetRejectKinkMother() { CLRBIT(fRequirements, kRejectKinkMother);}; 
@@ -116,6 +119,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     void GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maximpactRcut);
     void GetTOFsignalDxDz(AliVTrack *track, Double_t &tofsignalDx, Double_t &tofsignalDz);
     Float_t GetTPCsharedClustersRatio(AliVTrack *track);
+    Float_t GetTRDchi(AliVTrack *track);
     Int_t GetITSNbOfcls(AliVTrack *track);
     Bool_t IsKinkDaughter(AliVTrack *track);
     Bool_t IsKinkMother(AliVTrack *track);
@@ -144,7 +148,9 @@ class AliHFEextraCuts: public AliCFCutBase{
       kRejectKinkMother = 19,
       kDriftITS = 20,
       kTOFsignalDxy = 21,
-      kNcuts = 22
+      kMaxTRDChi2 = 22,
+      kITSpattern = 23,
+      kNcuts = 24
     } Cut_t;
     enum{
       //
@@ -163,6 +169,7 @@ class AliHFEextraCuts: public AliCFCutBase{
     UInt_t fMinNClustersTPCPID;       // Minimum TPC PID clusters cut
     Float_t fClusterRatioTPC;	      // Ratio of findable vs. found clusters in TPC
     UChar_t fMinTrackletsTRD;	      // Min. Number of Tracklets inside TRD
+    Float_t fMaxChi2TRD;	      // Max chi2 TRD
     UChar_t fMinNbITScls;	      // Min. Number of ITS clusters
     Bool_t  fTRDtrackletsExact;       // Require exact number of tracklets
     UChar_t fPixelITS;                // Cut on ITS Pixels
@@ -241,6 +248,13 @@ void AliHFEextraCuts::SetMinTrackletsTRD(Int_t minTracklets, Bool_t exact){
   fMinTrackletsTRD = minTracklets;
   fTRDtrackletsExact = exact;
 }
+
+//__________________________________________________________
+void AliHFEextraCuts::SetMaxChi2TRD(Float_t maxchi2){
+  SETBIT(fRequirements, kMaxTRDChi2);
+  fMaxChi2TRD = maxchi2;
+}
+
 
 //__________________________________________________________
 void AliHFEextraCuts::SetMinNClustersTPC(Int_t minClusters, ETPCclusterDef_t tpcdef){

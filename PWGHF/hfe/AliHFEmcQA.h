@@ -48,7 +48,7 @@ class AliHFEmcQA: public TObject {
   public: 
     enum heavyType {kCharm=4, kBeauty=5, kOthers=6, kElectronPDG=11};
     enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
-    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12, kGammaPi0=13, kGammaEta=14, kGammaOmega=15, kGammaPhi=16, kGammaEtaPrime=17, kGammaRho0=18, kJpsi=19, kB2Jpsi=20, kKe3=21};
+    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12, kGammaPi0=13, kGammaEta=14, kGammaOmega=15, kGammaPhi=16, kGammaEtaPrime=17, kGammaRho0=18, kJpsi=19, kB2Jpsi=20, kKe3=21, kGammaB2M=22, kGammaD2M=23};
     enum ProcessType {
       kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
     };
@@ -162,6 +162,39 @@ class AliHFEmcQA: public TObject {
       TH2F *feDistance; // distance between electron production point to mother particle 
       TH2F *fDeDistance; // distance between D electron production point to mother particle
 
+      TH2F *fPtCorrDinein; // pt correlation between e and direct D or B 
+      TH2F *fPtCorrDineout; // pt correlation between e and direct D or B 
+      TH2F *fPtCorrDoutein; // pt correlation between e and direct D or B 
+      TH2F *fPtCorrDouteout; // pt correlation between e and direct D or B 
+      TH2F *fPtCorrDpDinein; // pt correlation between e and direct D+
+      TH2F *fPtCorrDpDineout; // pt correlation between e and direct D+
+      TH2F *fPtCorrDpDoutein; // pt correlation between e and direct D+
+      TH2F *fPtCorrDpDouteout; // pt correlation between e and direct D+
+      TH2F *fPtCorrD0Dinein; // pt correlation between e and direct D0
+      TH2F *fPtCorrD0Dineout; // pt correlation between e and direct D0
+      TH2F *fPtCorrD0Doutein; // pt correlation between e and direct D0
+      TH2F *fPtCorrD0Douteout; // pt correlation between e and direct D0
+      TH2F *fPtCorrDrestDinein; // pt correlation between e and direct D rest
+      TH2F *fPtCorrDrestDineout; // pt correlation between e and direct D rest
+      TH2F *fPtCorrDrestDoutein; // pt correlation between e and direct D rest
+      TH2F *fPtCorrDrestDouteout; // pt correlation between e and direct D rest
+
+      TH2F *fEtaCorrD; // eta correlation between e and direct D 
+      TH2F *fEtaCorrDp; // eta correlation between e and direct D 
+      TH2F *fEtaCorrD0; // eta correlation between e and direct D 
+      TH2F *fEtaCorrDrest; // eta correlation between e and direct D 
+      TH2F *fEtaCorrGD; // eta correlation between e and direct D 
+      TH2F *fEtaCorrGDp; // eta correlation between e and direct D 
+      TH2F *fEtaCorrGD0; // eta correlation between e and direct D 
+      TH2F *fEtaCorrGDrest; // eta correlation between e and direct D 
+
+      TH2F *fEtaCorrB; // eta correlation between e and B
+      TH2F *fEtaCorrGB; // eta correlation between e and B
+      TH2F *fPtCorrBinein; // eta correlation between e and B
+      TH2F *fPtCorrBineout; // eta correlation between e and B
+      TH2F *fPtCorrBoutein; // eta correlation between e and B
+      TH2F *fPtCorrBouteout; // eta correlation between e and B
+
 			AliHistsComm()
 			  : fNq()
 			  , fProcessID()
@@ -173,6 +206,39 @@ class AliHFEmcQA: public TObject {
 			  , fDePtRatio()
 			  , feDistance()
 			  , fDeDistance()
+
+                          , fPtCorrDinein()
+                          , fPtCorrDineout()
+                          , fPtCorrDoutein()
+                          , fPtCorrDouteout()
+                          , fPtCorrDpDinein()
+                          , fPtCorrDpDineout()
+                          , fPtCorrDpDoutein()
+                          , fPtCorrDpDouteout()
+                          , fPtCorrD0Dinein()
+                          , fPtCorrD0Dineout()
+                          , fPtCorrD0Doutein()
+                          , fPtCorrD0Douteout()
+                          , fPtCorrDrestDinein()
+                          , fPtCorrDrestDineout()
+                          , fPtCorrDrestDoutein()
+                          , fPtCorrDrestDouteout()
+
+                          , fEtaCorrD()
+                          , fEtaCorrDp()
+                          , fEtaCorrD0()
+                          , fEtaCorrDrest()
+                          , fEtaCorrGD()
+                          , fEtaCorrGDp()
+                          , fEtaCorrGD0()
+                          , fEtaCorrGDrest()
+
+                          , fEtaCorrB()
+                          , fEtaCorrGB()
+                          , fPtCorrBinein()
+                          , fPtCorrBineout()
+                          , fPtCorrBoutein()
+                          , fPtCorrBouteout()
       {  
 			  // default constructor
 			};
@@ -187,6 +253,39 @@ class AliHFEmcQA: public TObject {
 			  , fDePtRatio(p.fDePtRatio)
 			  , feDistance(p.feDistance)
 			  , fDeDistance(p.fDeDistance)
+
+                          , fPtCorrDinein(p.fPtCorrDinein)
+                          , fPtCorrDineout(p.fPtCorrDineout)
+                          , fPtCorrDoutein(p.fPtCorrDoutein)
+                          , fPtCorrDouteout(p.fPtCorrDouteout)
+                          , fPtCorrDpDinein(p.fPtCorrDpDinein)
+                          , fPtCorrDpDineout(p.fPtCorrDpDineout)
+                          , fPtCorrDpDoutein(p.fPtCorrDpDoutein)
+                          , fPtCorrDpDouteout(p.fPtCorrDpDouteout)
+                          , fPtCorrD0Dinein(p.fPtCorrD0Dinein)
+                          , fPtCorrD0Dineout(p.fPtCorrD0Dineout)
+                          , fPtCorrD0Doutein(p.fPtCorrD0Doutein)
+                          , fPtCorrD0Douteout(p.fPtCorrD0Douteout)
+                          , fPtCorrDrestDinein(p.fPtCorrDrestDinein)
+                          , fPtCorrDrestDineout(p.fPtCorrDrestDineout)
+                          , fPtCorrDrestDoutein(p.fPtCorrDrestDoutein)
+                          , fPtCorrDrestDouteout(p.fPtCorrDrestDouteout)
+
+                          , fEtaCorrD(p.fEtaCorrD)
+                          , fEtaCorrDp(p.fEtaCorrDp)
+                          , fEtaCorrD0(p.fEtaCorrD0)
+                          , fEtaCorrDrest(p.fEtaCorrDrest)
+                          , fEtaCorrGD(p.fEtaCorrGD)
+                          , fEtaCorrGDp(p.fEtaCorrGDp)
+                          , fEtaCorrGD0(p.fEtaCorrGD0)
+                          , fEtaCorrGDrest(p.fEtaCorrGDrest)
+
+                          , fEtaCorrB(p.fEtaCorrB)
+                          , fEtaCorrGB(p.fEtaCorrGB)
+                          , fPtCorrBinein(p.fPtCorrBinein)
+                          , fPtCorrBineout(p.fPtCorrBineout)
+                          , fPtCorrBoutein(p.fPtCorrBoutein)
+                          , fPtCorrBouteout(p.fPtCorrBouteout)
       {
 			  // copy constructor
 			};

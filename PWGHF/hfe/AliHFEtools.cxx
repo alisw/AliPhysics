@@ -23,6 +23,7 @@
 #include <TArrayD.h>
 #include <TMath.h>
 #include <TParticle.h>
+#include <TF1.h>
 #include "TH1.h"
 #include "TH1D.h"
 #include "TH2.h"
@@ -424,4 +425,33 @@ TH1D* AliHFEtools::GraphToHist(TGraph* g, Double_t firstBinWidth, Bool_t exchang
 
 
     return result;
+}
+
+//__________________________________________
+void AliHFEtools::BinParameterisation(const TF1 &fun, const TArrayD &xbins, TArrayD &bincontent){
+    //
+    // Calculate binned version of a function defined as the integral of x*f(x) in
+    // the integration range xmin,xmax, where xmin and xmax are the bin limits, divided
+    // by the binwidth. The function is important in case of steeply falling functions
+    //
+    // Parameters
+    //   fun:           the function to be binned
+    //   xbins:         the bin limits
+    //   bincontent:    the binned parameterisation
+    //
+    TString expression(Form("x*%s", fun.GetName()));
+    Double_t xmin(0), xmax(0);
+    fun.GetRange(xmin,xmax);
+    // check range
+    xmin = TMath::Min(xmin, xbins[0]);
+    xmax = TMath::Max(xmax, xbins[xbins.GetSize()-1]);
+    TF1 helper("helper",expression.Data(),xmin,xmax);   // make function x*f(x)
+    if(bincontent.GetSize() != xbins.GetSize()-1)
+        bincontent.Set(xbins.GetSize()-1); // Adapt array to number of bins
+    //Caclulate Binned
+    for(Int_t ib = 0; ib < xbins.GetSize()-1; ib++){
+        xmin = xbins[ib];
+        xmax = xbins[ib+1];
+        bincontent[ib] = (helper.Integral(xmin, xmax))/(xmax - xmin);
+    }
 }

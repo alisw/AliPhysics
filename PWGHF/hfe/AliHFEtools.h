@@ -30,6 +30,7 @@ class AliVParticle;
 class TGraph;
 class TGraphErrors;
 class TH1D;
+class TF1;
 class TString;
 
 class AliHFEtools : public TObject{
@@ -53,6 +54,7 @@ class AliHFEtools : public TObject{
     static TH1D* GraphToHist(TGraph* g = 0, Double_t firstBinWidth = -1, Bool_t exchange=kFALSE, Int_t markerstyle=8, Int_t markercolor=2, Float_t markersize=0.7);
     static Bool_t ExchangeXYGraph(TGraph* g = 0);
     static Bool_t ExchangeXYGraphErrors(TGraphErrors* g = 0);
+    static void BinParameterisation(const TF1 &fun, const TArrayD &xbins, TArrayD &bincontent);
 
   private:
       AliHFEtools(const AliHFEtools &);

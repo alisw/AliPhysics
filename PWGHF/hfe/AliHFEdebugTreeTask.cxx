@@ -261,7 +261,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                     << "pdg="                 << pdg
                     << "ProductionVertex="    << productionVertex
                     << "motherPdg="           << motherPdg
-                  << "source="              << source
+                    << "source="              << source
                     << "\n";
     }
   }
@@ -282,7 +282,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     Double_t nSigmaTPC = pid->NumberOfSigmasTPC(&copyTrack, AliPID::kElectron);
     //if(TMath::Abs(nSigmaTOF) > 5) continue;
     // we are not interested in tracks which are more than 5 sigma away from the electron hypothesis in either TOF or TPC
-    Double_t tPCdEdx = track->GetTPCsignal();
+    Double_t tPCdEdx = copyTrack.GetTPCsignal();
     // Signal, source and MCPID
     Bool_t signal = kTRUE;
     source = 5;
@@ -357,6 +357,7 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
       unique=mctrackt->GetUniqueID();
     
       AliMCParticle *mctrackmother = NULL;
+      AliMCParticle *mctrackmother2 = NULL;
 
       if(!(mArr<0)){
     if(mesonID>=AliHFEmcQA::kGammaPi0) {  // conversion electron, be careful with the enum odering
@@ -372,8 +373,15 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
 
           mctrackt = mctrackmother->Particle();
           if(mctrackt){
-        mesonunique = mctrackt->GetUniqueID();
+            mesonunique = mctrackt->GetUniqueID();
           }
+
+        Int_t glabel2=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
+        if((mctrackmother2 = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel2)))){
+            mesonMomPdg=mctrackmother2->PdgCode();
+            mesonMomPt=mctrackmother2->Pt();
+        }
+
           if(glabel>fMCEvent->GetNumberOfPrimaries()) {
         bgcategory = 2.;
         glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's mother
@@ -467,9 +475,13 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
     UChar_t nclustersTRD = track->GetTRDncls();
     UChar_t ntrackletsTRDPID = track->GetTRDntrackletsPID();
     // ITS and TRD acceptance maps
-    UChar_t hasClusterITS[6], hasTrackletTRD[6];
+    UChar_t hasClusterITS[6], statusITS[5], hasTrackletTRD[6];
     UChar_t itsPixel = track->GetITSClusterMap();
-    for(Int_t icl = 0; icl < 6; icl++) hasClusterITS[icl] = TESTBIT(itsPixel, icl) ? 1 : 0;
+    for(Int_t icl = 0; icl < 6; icl++){ 
+      hasClusterITS[icl] = TESTBIT(itsPixel, icl) ? 1 : 0;
+      if(CheckITSstatus(track, icl)) statusITS[icl] = 1;
+      else statusITS[icl] = 0;
+    }
     Double_t trddEdxSum[6];
     for(Int_t a=0;a<6;a++) { trddEdxSum[a]= 0.;}
     for(Int_t itl = 0; itl < 6; itl++){
@@ -541,31 +553,37 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                   << "nclustersITS="        << nclustersITS
                   << "nclusters="           << nclustersTRD
                   << "chi2matching="        << chi2matching
-      << "chi2PerClusterITS="   << chi2PerClusterITS
+                  << "chi2PerClusterITS="   << chi2PerClusterITS
                   << "its0="                << hasClusterITS[0]
                   << "its1="                << hasClusterITS[1]
                   << "its2="                << hasClusterITS[2]
                   << "its3="                << hasClusterITS[3]
                   << "its4="                << hasClusterITS[4]
                   << "its5="                << hasClusterITS[5]
+                  << "statusITS0="          << statusITS[0]
+                  << "statusITS1="          << statusITS[1]
+                  << "statusITS2="          << statusITS[2]
+                  << "statusITS3="          << statusITS[3]
+                  << "statusITS4="          << statusITS[4]
+                  << "statusITS5="          << statusITS[5]
                   << "trd0="                << hasTrackletTRD[0]
                   << "trd1="                << hasTrackletTRD[1]
                   << "trd2="                << hasTrackletTRD[2]
                   << "trd3="                << hasTrackletTRD[3]
                   << "trd4="                << hasTrackletTRD[4]
                   << "trd5="                << hasTrackletTRD[5]
-            << "TRDdEdxl0="           << trddEdxSum[0]
-            << "TRDdEdxl1="           << trddEdxSum[1]
-            << "TRDdEdxl2="           << trddEdxSum[2]
-            << "TRDdEdxl3="           << trddEdxSum[3]
-            << "TRDdEdxl4="           << trddEdxSum[4]
-            << "TRDdEdxl5="           << trddEdxSum[5]
+                  << "TRDdEdxl0="           << trddEdxSum[0]
+                  << "TRDdEdxl1="           << trddEdxSum[1]
+                  << "TRDdEdxl2="           << trddEdxSum[2]
+                  << "TRDdEdxl3="           << trddEdxSum[3]
+                  << "TRDdEdxl4="           << trddEdxSum[4]
+                  << "TRDdEdxl5="           << trddEdxSum[5]
                   << "TOFsigmaEl="          << nSigmaTOF
                   << "TPCsigmaEl="          << nSigmaTPC
                   << "TPCdEdx="             << tPCdEdx
                   << "TRDlikeEl="           << likeEleTRD
                   << "TRDlikeEln="          << likeEleTRDn
-            << "trdtruncmean1="       << trdtruncmean1
+                  << "trdtruncmean1="       << trdtruncmean1
                   << "trdtruncmean2="       << trdtruncmean2
                   << "dcaR="                << b[0]
                   << "dcaZ="                << b[1]
@@ -580,18 +598,18 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
                   << "vx="                  << vtx[0]
                   << "vy="                  << vtx[1]
                   << "vz="                  << vtx[2]
-            << "tofdx="                << tofdx
-            << "tofdz="                << tofdz
-            << "ncontrib="            << ncontrib
-            << "mesonID="             << mesonID
-            << "eR="                  << eR
-            << "mesonR="              << mesonR
-            << "eZ="                  << eZ
-            << "mesonZ="              << mesonZ
-            << "unique="              << unique
-            << "mesonunique="         << mesonunique
-            << "bgcategory="          << bgcategory
-            << "mesonpt="             << mesonPt
+                  << "tofdx="                << tofdx
+                  << "tofdz="                << tofdz
+                  << "ncontrib="            << ncontrib
+                  << "mesonID="             << mesonID
+                  << "eR="                  << eR
+                  << "mesonR="              << mesonR
+                  << "eZ="                  << eZ
+                  << "mesonZ="              << mesonZ
+                  << "unique="              << unique
+                  << "mesonunique="         << mesonunique
+                  << "bgcategory="          << bgcategory
+                  << "mesonpt="             << mesonPt
                   << "mesonMomPdg="         << mesonMomPdg
                   << "mesonGMomPdg="         << mesonGMomPdg
                   << "mesonGGMomPdg="         << mesonGGMomPdg
@@ -761,3 +779,23 @@ Int_t AliHFEdebugTreeTask::GetElecSourceMC(TParticle * const mcpart)
   }
   return origin;
 }
+
+//______________________________________________________
+Bool_t AliHFEdebugTreeTask::CheckITSstatus( const AliESDtrack * const esdtrack, Int_t layer) const {
+  //
+  // Check whether ITS area is dead
+  //
+  Int_t itsStatus = 0;
+  Int_t det;
+  Float_t xloc, zloc;
+  esdtrack->GetITSModuleIndexInfo(layer, det, itsStatus, xloc, zloc);
+  Bool_t status;
+  switch(itsStatus){
+    case 2: status = kFALSE; break;
+    case 3: status = kFALSE; break;
+    case 7: status = kFALSE; break;
+    default: status = kTRUE;
+  }
+  return status;
+}
+

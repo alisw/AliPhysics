@@ -52,6 +52,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Bool_t HasAsymmetricSigmaCut() const { return TestBit(kAsymmetricSigmaCut);}
     Bool_t HasParticleRejection() const { return TestBit(kRejection); }
     void SetTPCnSigma(Short_t nSigma) { fNsigmaTPC = nSigma; };
+    void SetUseOnlyOROC(Bool_t useOnlyOROC) { fUseOnlyOROC = useOnlyOROC; };
     inline void SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, Float_t sigmaMin, Float_t sigmaMax);
     inline void SetRejectParticle(Int_t species, Float_t pmin, Float_t sigmaMin, Float_t pmax, Float_t sigmaMax);
 
@@ -64,6 +65,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
 
     Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
     void ApplyEtaCorrection(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
+    void UseOROC(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const;
 
   protected:
     void Copy(TObject &o) const;
@@ -82,6 +84,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     const TF1 *fkLowerSigmaCut[12];                         // Lower Sigma Cut
     const TF1 *fkEtaCorrection;                             // Correction for the eta dependence
     Bool_t fHasCutModel;                                    // Has cut model functions
+    Bool_t fUseOnlyOROC;                                    // Use only OROC
     Float_t fPAsigCut[2];                                   // Momentum region where to perform asymmetric sigma cut
     Float_t fNAsigmaTPC[2];                                 // Asymmetric TPC Sigma band        
     Short_t fNsigmaTPC;                                     // TPC sigma band

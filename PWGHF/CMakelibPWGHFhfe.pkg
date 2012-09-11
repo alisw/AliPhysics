@@ -63,11 +63,7 @@ set (SRCS
     hfe/AliHFEsignalCuts.cxx 
     hfe/AliHFEelecbackground.cxx 
     hfe/AliHFEtaggedTrackAnalysis.cxx 
-    hfe/AliHFEdca.cxx 
-    hfe/AliAnalysisTaskDCA.cxx 
-    hfe/AliHFEdisplacedElectrons.cxx 
     hfe/AliHFEpostAnalysis.cxx 
-    hfe/AliAnalysisTaskDisplacedElectrons.cxx 
     hfe/AliAnalysisTaskHFEpidQA.cxx 
     hfe/AliHFEefficiency.cxx 
     hfe/AliAnalysisTaskHFE.cxx 
@@ -83,7 +79,6 @@ set (SRCS
     hfe/AliHFEdebugTreeTask.cxx
     hfe/AliHFEVZEROEventPlane.cxx
     hfe/AliAnalysisTaskHFEFlow.cxx
-    hfe/AliAnalysisTaskHFEFlowData.cxx
     hfe/AliSelectNonHFE.cxx
     )
 
