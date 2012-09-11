@@ -817,6 +817,16 @@ void AliAnalysisManager::PackOutput(TList *target)
          out << "init_time    " << fInitTime << endl;
          out << "io_mng_time  " << fIOTime << endl;
          out << "exec_time    " << fCPUTime << endl;
+         TString aliensite = gSystem->Getenv("ALIEN_SITE");
+         out << "alien_site   " << aliensite << endl;
+         out << "host_name    ";
+         TString hostname = gSystem->Getenv("ALIEN_HOSTNAME");
+         if (hostname.IsNull()) {
+            out.close();
+            gSystem->Exec(Form("hostname -f >> %s", fFileInfoLog.Data()));
+         } else {
+            out << hostname << endl;
+         }   
       }
    }
               
