@@ -1,0 +1,197 @@
+// $Id$
+
+//**************************************************************************
+//* This file is property of and copyright by the ALICE Project            * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  Hege Erdal       <hege.erdal@gmail.com>               *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
+
+/// @file   AliDxHFEParticleSelectionMCD0.cxx
+/// @author Hege Erdal, Matthias Richter
+/// @date   2012-07-19
+/// @brief  MC D0 selection for D0-HFE correlation
+///
+
+#include "AliDxHFEParticleSelectionMCD0.h"
+#include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
+#include <iostream>
+#include <cerrno>
+#include <memory>
+
+using namespace std;
+
+/// ROOT macro for the implementation of ROOT specific class methods
+ClassImp(AliDxHFEParticleSelectionMCD0)
+
+// TODO: can that be a common definition
+const char* AliDxHFEParticleSelectionMCD0::fgkTrackControlBinNames[]={
+"Pt",
+"Phi",
+"Ptbin", 
+"D0InvMass", 
+"Eta",
+"Statistics D0",
+"Mother of D0"
+};
+
+AliDxHFEParticleSelectionMCD0::AliDxHFEParticleSelectionMCD0(const char* opt)
+  : AliDxHFEParticleSelectionD0(opt)
+  , fMCTools()
+  , fResultMC(0)
+  , fOriginMother(0)
+{
+  // constructor
+  // 
+  // 
+  // 
+  // 
+
+  // TODO: argument scan, pass only relevant arguments to tools
+  fMCTools.~AliDxHFEToolsMC();
+  TString toolopt("pdg=421 mc-last");
+  new (&fMCTools) AliDxHFEToolsMC(toolopt);
+}
+
+AliDxHFEParticleSelectionMCD0::~AliDxHFEParticleSelectionMCD0()
+{
+  // destructor
+}
+THnSparse* AliDxHFEParticleSelectionMCD0::DefineTHnSparse() const
+{
+  //
+  // Defines the THnSparse.
+  // could/should remove Pt and leave Ptbin
+
+  const int thnSize2 = 7;
+  const double Pi=TMath::Pi();
+  TString name;
+  name.Form("%s info", GetName());
+
+  // 			       0    1      2      3          4     5         6      
+  // 	 	               Pt   Phi   Ptbin  D0InvMass  Eta  'stat D0'  mother 
+  int    thnBins[thnSize2] = { 1000,  200, 21,     200,     500,     2,       10  };
+  double thnMin [thnSize2] = {    0,    0,  0,    1.5648,   -1.,  -0.5,     -1.5  };
+  double thnMax [thnSize2] = {  100, 2*Pi, 20,    2.1648,    1.,   1.5,      8.5  };
+
+  return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,fgkTrackControlBinNames);
+
+}
+
+int AliDxHFEParticleSelectionMCD0::DefineParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
+{
+  // fill the data array from the particle data
+  if (!data) return -EINVAL;
+  AliAODTrack *track=(AliAODTrack*)p;
+  if (!track) return -ENODATA;
+  int i=0;
+  // TODO: this corresponds to the THnSparse dimensions which is available in the same class
+  // use this consistently
+  const int requiredDimension=7;
+  if (dimension!=requiredDimension) {
+    // TODO: think about filling only the available data and throwing a warning
+    return -ENOSPC;
+  }
+  data[i++]=track->Pt();
+  data[i++]=track->Phi();
+  data[i++]=AliDxHFEParticleSelectionMCD0::GetPtBin(); 
+  data[i++]=AliDxHFEParticleSelectionMCD0::GetInvMass();
+  data[i++]=track->Eta();
+  data[i++]=fResultMC;     // stat electron (MC electron or not)
+  data[i++]=fOriginMother; // at the moment not included background. Should expand
+
+  return i;
+}
+
+int AliDxHFEParticleSelectionMCD0::IsSelected(AliVParticle* p, const AliVEvent* pEvent)
+{
+  /// overloaded from AliDxHFEParticleSelection: check particle
+  /// H: Have changed function. Now doing particle selection first, then run MC over 
+  /// selected tracks. Could configure it to be configurable, but not sure if it
+  /// is needed.  
+  /// result from normal track selection is returned, result from MC is stored in
+  /// THnSparse. 
+
+  int iResult=0;
+  fOriginMother=-1;
+
+  // step 1:
+  // MC selection
+  if (fMCTools.MCFirst() && (iResult=CheckMC(p, pEvent))==0) {
+    // histograming?
+    return iResult;
+  }
+
+  // step 2 or 1, depending on sequence:
+  // normal particle selection
+  iResult=AliDxHFEParticleSelectionD0::IsSelected(p, pEvent);
+  if (fMCTools.MCFirst() || iResult==0) return iResult;
+
+  // step 2, only executed if MC check is last
+  // MC selection  - > Should maybe also distinguish between D0 and D0bar
+  iResult=CheckMC(p, pEvent);
+  // TODO: why do we need to store the result in a member?
+  fResultMC=iResult;
+ 
+  return iResult;
+}
+
+int AliDxHFEParticleSelectionMCD0::CheckMC(AliVParticle* p, const AliVEvent* pEvent)
+{
+  /// check if MC criteria are fulfilled
+  // Check both D0 and D0bar (for now only D0)
+
+  if (!p || !pEvent){
+    return -EINVAL;
+  }
+  int iResult=0;
+
+  if (!fMCTools.IsInitialized() && (iResult=fMCTools.InitMCParticles(pEvent))<0) {
+    // TODO: message? but has to be filtered in order to avoid message flood
+    return 0; // no meaningful filtering on mc possible
+  }
+
+  AliAODRecoDecayHF2Prong *particle = dynamic_cast<AliAODRecoDecayHF2Prong*>(p);
+
+  if(!particle) return 0;
+
+  Int_t pdgDgD0toKpi[2]={AliDxHFEToolsMC::kPDGkaon,AliDxHFEToolsMC::kPDGpion};
+
+  TClonesArray* fMCArray = dynamic_cast<TClonesArray*>(fMCTools.GetMCArray());
+  if(!fMCArray) {cout << "no array" << endl; return -1;}
+
+  // find associated MC particle for D0->Kpi
+  Int_t MClabel=-9999;
+
+  //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx). Checks both D0s and daughters
+  MClabel=particle->MatchToMC(AliDxHFEToolsMC::kPDGD0,fMCArray,2,pdgDgD0toKpi); 
+  
+  if(MClabel<0){
+    fOriginMother=-1;
+    return 0;
+  }
+
+  fMCTools.SetMClabel(MClabel);
+  fMCTools.FindMotherPDG(p,AliDxHFEToolsMC::kGetOriginMother);
+  fOriginMother=fMCTools.GetOriginMother();
+
+  return 1;
+}
+
+void AliDxHFEParticleSelectionMCD0::Clear(const char* option)
+{
+  /// clear internal memory
+  fMCTools.Clear(option);
+}

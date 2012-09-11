@@ -49,6 +49,7 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t*);
 
   void SetOption(const char* opt) { fOption = opt; }
+  void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
   virtual void SetCuts(AliAnalysisCuts* cuts){fCuts=cuts;}
   Bool_t GetUseMC() const {return fUseMC;}
@@ -68,6 +69,8 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
   AliAnalysisCuts* fCuts;               //  Cuts 
   AliDxHFEParticleSelection* fSelector; // selector instance
   bool fUseMC;                          // use MC info
+  Int_t     fFillOnlyD0D0bar;            // flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
+
 
   ClassDef(AliAnalysisTaskDxHFEParticleSelection, 2);
 };

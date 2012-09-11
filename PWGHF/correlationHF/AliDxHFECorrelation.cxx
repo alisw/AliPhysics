@@ -67,7 +67,7 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
 const char* AliDxHFECorrelation::fgkEventControlBinNames[]={
   "nEventsAll",
   "nEventsSelected",
-  "nEventsD0"
+  "nEventsD0",
   "nEventsD0e"
 };
 
@@ -162,7 +162,7 @@ int AliDxHFECorrelation::Init()
   }
 
   for (iLabel=0; iLabel<kNEventControlLabels; iLabel++)
-    hEventControl->GetXaxis()->SetBinLabel(iLabel, fgkEventControlBinNames[iLabel]);
+    hEventControl->GetXaxis()->SetBinLabel(iLabel+1, fgkEventControlBinNames[iLabel]);
 
   fCorrProperties=CorrProperties.release();
   AddControlObject(fCorrProperties);

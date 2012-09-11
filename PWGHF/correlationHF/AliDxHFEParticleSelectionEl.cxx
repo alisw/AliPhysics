@@ -76,42 +76,43 @@ AliDxHFEParticleSelectionEl::~AliDxHFEParticleSelectionEl()
     delete fCFM;
     fCFM=NULL;
   }
+  if(fWhichCut){
+    delete fWhichCut;
+    fWhichCut=NULL;
+  }
 
   // NOTE: external objects fPID and fCuts are not deleted here
   fPID=NULL;
   fCuts=NULL;
 }
- 
-int AliDxHFEParticleSelectionEl::InitControlObjects()
+
+const char* AliDxHFEParticleSelectionEl::fgkTrackControlBinNames[]={
+  "Pt",
+  "Phi",
+  "Eta"
+};
+
+const char* AliDxHFEParticleSelectionEl::fgkCutBinNames[]={
+  "kRecKineITSTPC",
+  "kRecPrim",
+  "kHFEcuts",
+  "kHFEcutsTOFPID",
+  "kHFEcutsTPCPID",
+  "kPID",
+  "Selected e"
+};
+
+int AliDxHFEParticleSelectionEl::Init()
 {
-  /// init control and monitoring objects
-  AliInfo("Electron THnSparse");
-  const int thnSize = 3;
-  const double Pi=TMath::Pi();
-  TString name;// ="e information";
-  //     		       0    1       2
-  // 	 	               Pt   Phi    Eta
-  int    thnBins[thnSize] = { 1000,  200, 500};
-  double thnMin [thnSize] = {    0,    0, -1.};
-  double thnMax [thnSize] = {  100, 2*Pi,  1.};
+  //
+  // init function
+  // 
+  int iResult=0;
 
-  name.Form("%s info", GetName());
-  std::auto_ptr<THnSparseF> ElectronProperties(new THnSparseF(name, name, thnSize, thnBins, thnMin, thnMax));
-
-  if (ElectronProperties.get()==NULL) {
-    return -ENOMEM;
-  }
-  int axis=0;
-  ElectronProperties->GetAxis(axis++)->SetTitle("Pt");
-  ElectronProperties->GetAxis(axis++)->SetTitle("Phi");
-  ElectronProperties->GetAxis(axis++)->SetTitle("Eta"); 
-
-  fElectronProperties=ElectronProperties.release();
-
-  AddControlObject(fElectronProperties);
-
-  fWhichCut= new TH1F("fWhichCut","effective cut for a rejected particle",6,-0.5,5.5);
-  AddControlObject(fWhichCut);
+  // Implicit call to InitControlObjects() before setting up CFM and fCuts
+  // (if not there)
+  iResult=AliDxHFEParticleSelection::Init();
+  if (iResult<0) return iResult;
 
   //--------Initialize correction Framework and Cuts
   // Consider moving this, either to separate function or
@@ -137,6 +138,43 @@ int AliDxHFEParticleSelectionEl::InitControlObjects()
   fCuts->Initialize(fCFM);
 
   return 0;
+
+}
+
+THnSparse* AliDxHFEParticleSelectionEl::DefineTHnSparse() const
+{
+  //
+  // Defines the THnSparse. For now, only calls CreatControlTHnSparse
+  const int thnSize = 3;
+  const double Pi=TMath::Pi();
+  TString name;
+  name.Form("%s info", GetName());
+
+  //     		       0    1       2
+  // 	 	               Pt   Phi    Eta
+  int    thnBins[thnSize] = { 1000,  200, 500};
+  double thnMin [thnSize] = {    0,    0, -1.};
+  double thnMax [thnSize] = {  100, 2*Pi,  1.};
+
+  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,fgkTrackControlBinNames);
+
+}
+
+int AliDxHFEParticleSelectionEl::InitControlObjects()
+{
+  /// init control and monitoring objects
+  AliInfo("Electron THnSparse");
+
+  fElectronProperties=DefineTHnSparse();
+  AddControlObject(fElectronProperties);
+
+  //
+  fWhichCut= new TH1F("fWhichCut","effective cut for a rejected particle",kNCutLabels,-0.5,kNCutLabels-0.5);
+  for (int iLabel=0; iLabel<kNCutLabels; iLabel++)
+    fWhichCut->GetXaxis()->SetBinLabel(iLabel+1, fgkCutBinNames[iLabel]);
+  AddControlObject(fWhichCut);
+
+  return AliDxHFEParticleSelection::InitControlObjects();
 }
 
 int AliDxHFEParticleSelectionEl::HistogramParticleProperties(AliVParticle* p, int selectionCode)
@@ -145,17 +183,40 @@ int AliDxHFEParticleSelectionEl::HistogramParticleProperties(AliVParticle* p, in
   if (!p) return -EINVAL;
   //if (!fControlObjects) return 0;
   if(selectionCode==0) return  0;
-
-  AliAODTrack *track=(AliAODTrack*)p;
-  Double_t eProperties[]={track->Pt(),track->Phi(),track->Eta()};
+  // TODO: make array a member, consistent dimensions for THnSparse and array
+  Double_t eProperties[3]={0.0, 0.0, 0.0};
+  DefineParticleProperties(p, eProperties, 3);
   if(fElectronProperties) fElectronProperties->Fill(eProperties);
-  
+    
   return 0;
 }
+
+int AliDxHFEParticleSelectionEl::DefineParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
+{
+  // fill the data array from the particle data
+  if (!data) return -EINVAL;
+  AliAODTrack *track=(AliAODTrack*)p;
+  if (!track) return -ENODATA;
+  int i=0;
+  // TODO: this corresponds to the THnSparse dimensions which is available in the same class
+  // use this consistently
+  const int requiredDimension=3;
+  if (dimension!=requiredDimension) {
+    // TODO: think about filling only the available data and throwing a warning
+    return -ENOSPC;
+  }
+  data[i++]=track->Pt();
+  data[i++]=track->Phi();
+  data[i++]=track->Eta();
+  return i;
+}
+
 
 int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent*)
 {
   /// select El candidates
+  // TODO: How to handle MC? would be too much duplicate code if copy entire IsSelected. 
+
   AliAODTrack *track=(AliAODTrack*)pEl;
  
 
@@ -163,31 +224,31 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent*)
   //Using AliHFECuts:
   // RecKine: ITSTPC cuts  
   if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)){
-    fWhichCut->Fill(0);
+    fWhichCut->Fill(kRecKineITSTPC);
     return 0;
   }
   
   // RecPrim
   if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) {
-    fWhichCut->Fill(1);
+    fWhichCut->Fill(kRecPrim);
     return 0;
   }
   
   // HFEcuts: ITS layers cuts
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) {
-    fWhichCut->Fill(2);
+    fWhichCut->Fill(kHFEcutsITS);
     return 0;
   }
   
   // HFE cuts: TOF PID and mismatch flag
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) {
-    fWhichCut->Fill(3);
+    fWhichCut->Fill(kHFEcutsTOF);
     return 0;
   }
   
   // HFE cuts: TPC PID cleanup
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)){
-    fWhichCut->Fill(4);
+    fWhichCut->Fill(kHFEcutsTPC);
     return 0;
   } 
  
@@ -206,11 +267,11 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent*)
 
   if(fPID && fPID->IsSelected(&hfetrack)) {
     AliDebug(3,"Inside FilldPhi, electron is selected");
-
+    fWhichCut->Fill(kSelected);
     return 1;
   }
   else{
-    fWhichCut->Fill(5);
+    fWhichCut->Fill(kPID);
     return 0;
   }
 }

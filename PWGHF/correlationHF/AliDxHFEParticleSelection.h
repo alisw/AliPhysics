@@ -45,8 +45,14 @@ class AliDxHFEParticleSelection : public TNamed {
   enum {
     kEventsAll = 0,
     kEventsSel,
-    kEventsD0,
+    kEventsWithParticle,
     kNEventPropertyLabels
+  };
+  
+  enum {
+    kTrackAll = 0,
+    kTrackSel,
+    kNTrackPropertyLabels
   };
 
   /// set options
@@ -55,6 +61,7 @@ class AliDxHFEParticleSelection : public TNamed {
   virtual Option_t* GetOption() const { return fOption;}
 
   /// init the control objects
+  virtual int Init();
   virtual int InitControlObjects();
 
   /// create selection from 'Tracks' member of the event,
@@ -72,6 +79,9 @@ class AliDxHFEParticleSelection : public TNamed {
   /// histogram event properties
   virtual int HistogramEventProperties(int bin);
 
+  // TODO: function can be renamed to better describe what it's doing
+  virtual int DefineParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
+
   /// check and add track to internal array
   int CheckAndAdd(AliVParticle* p);
 
@@ -79,6 +89,8 @@ class AliDxHFEParticleSelection : public TNamed {
   // different types; a type cast check is implemented in the method
   virtual void SetCuts(TObject* /*cuts*/, int /*level*/=0) {}
 
+  // TODO: check whether that is needed, should be covered by the specific
+  // child implementation
   Bool_t GetUseMC() const {return fUseMC;}
 
   /// get selected tracks
@@ -104,6 +116,16 @@ class AliDxHFEParticleSelection : public TNamed {
   void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
   /// get verbosity
   int GetVerbosity() const {return fVerbosity;}
+  
+  /// create control THnSparse
+  THnSparse* CreateControlTHnSparse(const char* name,
+				    int thnSize,
+				    int* thnBins,
+				    double* thnMin,
+				    double* thnMax,
+				    const char** binLabels) const;
+
+  virtual THnSparse* DefineTHnSparse() const;
 
  protected:
   /// add control object to list, the base class becomes owner of the object
@@ -111,12 +133,6 @@ class AliDxHFEParticleSelection : public TNamed {
 
   /// histogram particle properties
   virtual int HistogramParticleProperties(AliVParticle* p, int selected=1);
-
-  /// set from the specific child class implementation
-  /// TODO: think about removing this function
-  /// in principle that should not be necessary, the analysis should
-  /// be blind after the particle selection
-  void SetUseMC(bool useMC=true) {fUseMC=useMC;}
 
  private:
   /// copy contructor prohibited
@@ -135,6 +151,8 @@ class AliDxHFEParticleSelection : public TNamed {
   int fVerbosity;      //! verbosity
 
   static const char* fgkEventControlBinNames[]; //! bin labels for event control histogram
+  static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
+  static const char* fgkTrackControlDimNames[]; //! bin labels fro track thnsparse
 
   ClassDef(AliDxHFEParticleSelection, 2);
 

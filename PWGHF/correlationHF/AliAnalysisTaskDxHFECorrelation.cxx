@@ -26,7 +26,9 @@
 #include "AliAnalysisTaskDxHFECorrelation.h"
 #include "AliDxHFECorrelation.h"
 #include "AliDxHFEParticleSelectionD0.h"
+#include "AliDxHFEParticleSelectionMCD0.h"
 #include "AliDxHFEParticleSelectionEl.h"
+#include "AliDxHFEParticleSelectionMCEl.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliESDInputHandler.h"
@@ -143,15 +145,17 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   default: selectionD0Options+="FillD0D0bar ";
   }
 
-  fD0s=new AliDxHFEParticleSelectionD0(selectionD0Options);
+  if(fUseMC) fD0s=new AliDxHFEParticleSelectionMCD0(selectionD0Options);
+  else fD0s=new AliDxHFEParticleSelectionD0(selectionD0Options);
   fD0s->SetCuts(fCutsD0);
-  fD0s->InitControlObjects();
+  fD0s->Init();
 
   //Electrons
-  fElectrons=new AliDxHFEParticleSelectionEl;
+  if(fUseMC) fElectrons=new AliDxHFEParticleSelectionMCEl;
+  else fElectrons=new AliDxHFEParticleSelectionEl;
   fElectrons->SetCuts(fPID, AliDxHFEParticleSelectionEl::kCutPID);
   fElectrons->SetCuts(fCutsHFE, AliDxHFEParticleSelectionEl::kCutHFE);
-  fElectrons->InitControlObjects();
+  fElectrons->Init();
 
   //Correlation
   fCorrelation=new AliDxHFECorrelation;
@@ -160,7 +164,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
 
   // Fix for merging:
   // Retrieving the individual objects created
-  // and storing them instead of fD0s,fElectrons etc.. 
+  // and storing them instead of fD0s, fElectrons etc.. 
   TList *list =(TList*)fD0s->GetControlObjects();
   TObject *obj=NULL;
 
