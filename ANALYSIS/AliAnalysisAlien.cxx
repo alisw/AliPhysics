@@ -670,6 +670,9 @@ Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
    WriteAnalysisMacro();
    WriteExecutable();
    WriteValidationScript();   
+   WriteMergingMacro();
+   WriteMergeExecutable();
+   WriteValidationScript(kTRUE);
    SetLocalTest(kFALSE);
    SetProductionMode(productionMode);
    fAnalysisMacro = macro;
@@ -2254,7 +2257,7 @@ TChain *AliAnalysisAlien::GetChainForTestMode(const char *treeName) const
    while (in.good())
    {
       in >> line;
-      if (line.IsNull()) continue;
+      if (line.IsNull() || line.BeginsWith("#")) continue;
       if (count++ == fNtestFiles) break;
       TString esdFile(line);
       TFile *file = TFile::Open(esdFile);
@@ -2710,6 +2713,23 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
          fname += inputFile;      
          listoffiles->Add(new TNamed(fname.Data(),""));
       }   
+   } else if (sbasedir.Contains(".txt")) {
+      // Assume lfn's on each line
+      TString line;
+      ifstream in;
+      in.open(sbasedir);
+      Int_t nfiles = 0;
+      while (in.good()) {
+         in >> line;
+         if (line.IsNull() || line.BeginsWith("#")) continue;
+         nfiles++;
+         listoffiles->Add(new TNamed(line.Data(),""));
+      }
+      if (!nfiles) {
+         ::Error("MergeOutput","Input file %s contains no files to be merged\n", sbasedir.Data());
+         delete listoffiles;
+         return kFALSE;
+      }
    } else {   
       command = Form("find %s/ *%s", basedir, inputFile.Data());
       printf("command: %s\n", command.Data());
