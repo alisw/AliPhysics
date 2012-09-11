@@ -241,6 +241,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   fMCEvent = MCEvent();
   if(fMCEvent)
     fStack = (AliStack*)fMCEvent->Stack();
+  FillMcHists();
 
   PostData(1, fOutputList);
 }      
