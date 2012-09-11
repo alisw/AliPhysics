@@ -30,6 +30,9 @@ set ( CLASS_HDRS
     AliDxHFEParticleSelection.h
     AliDxHFEParticleSelectionD0.h
     AliDxHFEParticleSelectionEl.h
+    AliDxHFEParticleSelectionMCD0.h
+    AliDxHFEParticleSelectionMCEl.h
+    AliDxHFEToolsMC.h
     AliDxHFECorrelation.h
     AliAnalysisTaskDxHFEParticleSelection.h
     AliAnalysisTaskDxHFECorrelation.h

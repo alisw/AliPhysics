@@ -49,7 +49,7 @@ AliDxHFEParticleSelection::AliDxHFEParticleSelection(const char* name, const cha
   , fControlObjects(NULL)
   , fhEventControl(NULL)
   , fhTrackControl(NULL)
-  , fUseMC(false)
+  , fUseMC(0)
   , fVerbosity(0)
 {
   // constructor
@@ -62,7 +62,18 @@ AliDxHFEParticleSelection::AliDxHFEParticleSelection(const char* name, const cha
 const char* AliDxHFEParticleSelection::fgkEventControlBinNames[]={
   "nEventsAll",
   "nEventsSelected",
-  "nEventsD0"
+  "nEventsWParticle"
+};
+
+const char* AliDxHFEParticleSelection::fgkTrackControlBinNames[]={
+  "nTrackAll",
+  "nTrackSelected",
+};
+
+const char* AliDxHFEParticleSelection::fgkTrackControlDimNames[]={
+  "Pt",
+  "Phi",
+  "Eta"
 };
 
 AliDxHFEParticleSelection::~AliDxHFEParticleSelection()
@@ -76,9 +87,23 @@ AliDxHFEParticleSelection::~AliDxHFEParticleSelection()
   fhTrackControl=NULL;
 }
 
+int AliDxHFEParticleSelection::Init()
+{
+  //
+  // Init part sel. Calls InitControlObjects()
+  //
+
+  InitControlObjects();
+  return 0;
+}
+
+
 int AliDxHFEParticleSelection::InitControlObjects()
 {
+  //
   // init control objects
+  // TODO: Change to private now that have Init()?
+  //
   if (fVerbosity>0) {
     AliInfo("Setting up control objects");
   }
@@ -90,12 +115,61 @@ int AliDxHFEParticleSelection::InitControlObjects()
 
   fhEventControl=hEventControl.release();
   for (int iLabel=0; iLabel<kNEventPropertyLabels; iLabel++)
-    fhEventControl->GetXaxis()->SetBinLabel(iLabel, fgkEventControlBinNames[iLabel]);
+    fhEventControl->GetXaxis()->SetBinLabel(iLabel+1, fgkEventControlBinNames[iLabel]);
   AddControlObject(fhEventControl);
   fhTrackControl=hTrackControl.release();
+  for (int iLabel=0; iLabel<kNTrackPropertyLabels; iLabel++)
+    fhTrackControl->GetXaxis()->SetBinLabel(iLabel+1, fgkTrackControlBinNames[iLabel]);
   AddControlObject(fhTrackControl);
 
   return 0;
+}
+
+THnSparse* AliDxHFEParticleSelection::CreateControlTHnSparse(const char* name,
+							     int thnSize,
+							     int* thnBins,
+							     double* thnMin,
+							     double* thnMax,
+							     const char** binLabels) const
+{
+  //
+  // Creates THnSparse. 
+  //
+
+  AliInfo("Setting up THnSparse");
+
+  std::auto_ptr<THnSparseF> th(new THnSparseF(name, name, thnSize, thnBins, thnMin, thnMax));
+  if (th.get()==NULL) {
+    return NULL;
+  }
+  for (int iLabel=0; iLabel<thnSize; iLabel++) {
+    th->GetAxis(iLabel)->SetTitle(binLabels[iLabel]);    
+   
+  }
+ return th.release();
+
+}
+
+THnSparse* AliDxHFEParticleSelection::DefineTHnSparse() const
+{
+  //
+  // Defines the THnSparse. For now, only calls CreatControlTHnSparse
+
+  //TODO: Should make it more general. Or maybe one can use this here, and skip in PartSelEl?
+
+  const int thnSize = 3;
+  const double Pi=TMath::Pi();
+  TString name;
+  //     		       0    1       2
+  // 	 	               Pt   Phi    Eta
+  int    thnBins[thnSize] = { 1000,  200, 500};
+  double thnMin [thnSize] = {    0,    0, -1.};
+  double thnMax [thnSize] = {  100, 2*Pi,  1.};
+
+  name.Form("%s info", GetName());
+
+  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,fgkTrackControlDimNames);
+
 }
 
 int AliDxHFEParticleSelection::AddControlObject(TObject* pObj)
@@ -132,13 +206,32 @@ int AliDxHFEParticleSelection::HistogramEventProperties(int bin)
 int AliDxHFEParticleSelection::HistogramParticleProperties(AliVParticle* p, int selected)
 {
   /// histogram particle properties
+
   if (!p) return -EINVAL;
   if (!fControlObjects) return 0;
 
   // TODO: use enums for the bins of the control histogram
-  fhTrackControl->Fill(0);
-  if (selected) fhTrackControl->Fill(1);
+  fhTrackControl->Fill(kTrackAll);
+  if (selected) fhTrackControl->Fill(kTrackSel);
   return 0;
+}
+
+int AliDxHFEParticleSelection::DefineParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
+{
+  // fill the data array from the particle data
+  if (!data) return -EINVAL;
+  int i=0;
+  // TODO: this corresponds to the THnSparse dimensions which is available in the same class
+  // use this consistently
+  const int requiredDimension=3;
+  if (dimension!=requiredDimension) {
+    // TODO: think about filling only the available data and throwing a warning
+    return -ENOSPC;
+  }
+  data[i++]=p->Pt();
+  data[i++]=p->Phi();
+  data[i++]=p->Eta();
+  return i;
 }
 
 TObjArray* AliDxHFEParticleSelection::Select(const AliVEvent* pEvent)
@@ -152,7 +245,7 @@ TObjArray* AliDxHFEParticleSelection::Select(const AliVEvent* pEvent)
   int nofTracks=pEvent->GetNumberOfTracks();
   for (int itrack=0; itrack<nofTracks; itrack++) {
     AliVParticle* track=pEvent->GetTrack(itrack);
-    int selectionCode=IsSelected(track);
+    int selectionCode=IsSelected(track,pEvent);
     HistogramParticleProperties(track, selectionCode);
     if (selectionCode==0) continue;
     selectedTracks->Add(track);

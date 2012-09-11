@@ -26,6 +26,7 @@
 #include "AliAnalysisTaskDxHFEParticleSelection.h"
 #include "AliDxHFEParticleSelection.h"
 #include "AliDxHFEParticleSelectionD0.h"
+#include "AliDxHFEParticleSelectionMCD0.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisCuts.h"
 #include "AliLog.h"
@@ -52,6 +53,7 @@ AliAnalysisTaskDxHFEParticleSelection::AliAnalysisTaskDxHFEParticleSelection(con
   , fCuts(NULL)
   , fSelector(NULL)
   , fUseMC(kFALSE)
+  , fFillOnlyD0D0bar(0)
 {
   // constructor
   //
@@ -101,22 +103,18 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
-  std::auto_ptr<AliDxHFEParticleSelection> selector(new AliDxHFEParticleSelectionD0);
-  if (!selector.get()) return;
-  if (fCuts) {
-    AliRDHFCutsD0toKpi* cuts=dynamic_cast<AliRDHFCutsD0toKpi*>(fCuts);
-    if (!cuts) {
-      AliFatal(Form("cut object %s is of incorrect type %s, expecting AliRDHFCutsD0toKpi", fCuts->GetName(), fCuts->ClassName()));
-      return;
-    }
-    selector->SetCuts(fCuts);
-    AliInfo(Form("Initializing particle selection %s, using %d pt bins", selector->GetName(), cuts->GetNPtBins()));
-  } else {
-    AliWarning("no cut object available for particle selection");
+  // setting up for D0s
+  TString selectionD0Options;
+  switch (fFillOnlyD0D0bar) {
+  case 1: selectionD0Options+="FillOnlyD0 "; break;
+  case 2: selectionD0Options+="FillOnlyD0bar "; break;
+  default: selectionD0Options+="FillD0D0bar ";
   }
-  selector->InitControlObjects();
 
-  fSelector=selector.release();
+  if(fUseMC) fSelector=new AliDxHFEParticleSelectionMCD0(selectionD0Options);
+  else fSelector=new AliDxHFEParticleSelectionD0(selectionD0Options);
+  fSelector->SetCuts(fCuts);
+  fSelector->Init();
 
   // Retrieving the list containing histos and THnSparse
   // and storing them instead of fSelector
@@ -186,7 +184,7 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
     return;
   }
 
-  Int_t nInD0toKpi = inputArray->GetEntriesFast();
+  //  Int_t nInD0toKpi = inputArray->GetEntriesFast();
 
   fSelector->HistogramEventProperties(AliDxHFEParticleSelection::kEventsSel);
              
@@ -206,14 +204,12 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
 
   //Test to see if I have read in D0s and retrieved them after selection
   Int_t nD0Selected = selectedTracks->GetEntriesFast();
-  printf("Number of D0->Kpi Start: %d , End: %d\n",nInD0toKpi,nD0Selected);
 
-  fSelector->HistogramEventProperties(AliDxHFEParticleSelection::kEventsD0);
+  fSelector->HistogramEventProperties(AliDxHFEParticleSelection::kEventsWithParticle);
 
   for(Int_t iD0toKpi = 0; iD0toKpi < nD0Selected; iD0toKpi++) {
     AliAODRecoDecayHF2Prong *particle = (AliAODRecoDecayHF2Prong*)selectedTracks->UncheckedAt(iD0toKpi);
     if (!particle) continue;
-    cout << "D0s inv mass: " << particle->InvMassD0() << endl;
   }
 
   PostData(1, fOutput);

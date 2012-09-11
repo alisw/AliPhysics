@@ -51,6 +51,8 @@ AliDxHFEParticleSelectionD0::AliDxHFEParticleSelectionD0(const char* opt)
   , fD0Daughter1(NULL)
   , fCuts(NULL)
   , fFillOnlyD0D0bar(0)
+  , fD0InvMass(0.0)
+  , fPtBin(-1)
 {
   // constructor
   // 
@@ -85,35 +87,28 @@ AliDxHFEParticleSelectionD0::~AliDxHFEParticleSelectionD0()
   fCuts=NULL;
 }
 
+const char* AliDxHFEParticleSelectionD0::fgkTrackControlBinNames[]={
+  "Pt",
+  "Phi",
+  "Ptbin", 
+  "D0InvMass", 
+  "Eta"
+};
+
+const char* AliDxHFEParticleSelectionD0::fgkDgTrackControlBinNames[]={
+  "Pt",
+  "Phi",
+  "Ptbin", 
+  "D0InvMass", 
+  "Eta"
+};
+
 int AliDxHFEParticleSelectionD0::InitControlObjects()
 {
   /// init the control objects, can be overloaded by childs which should
   /// call AliDxHFEParticleSelection::InitControlObjects() explicitly
-  AliInfo("Setting up THnSparse");
-  TString name;
-  const int thnSize = 4;
-  const double pi=TMath::Pi();
 
-  // TODO: theta?
-  // 			         0       1     2      3
-  // 			      mass      Pt   Phi    Ptbin
-  int    thnBins[thnSize] = {   200,   1000,  100,   100  };
-  double thnMin [thnSize] = {  1.5648,   0,    0,     0   };
-  double thnMax [thnSize] = {  2.1648, 100,  (2*pi), 100  };
-
-  name.Form("%s info", GetName());
-  std::auto_ptr<THnSparseF> D0Properties(new THnSparseF(name, name, thnSize, thnBins, thnMin, thnMax));
-
-  if (D0Properties.get()==NULL) {
-    return -ENOMEM;
-  }
-  int axis=0;
-  D0Properties->GetAxis(axis++)->SetTitle("D0 inv mass");
-  D0Properties->GetAxis(axis++)->SetTitle("Pt");
-  D0Properties->GetAxis(axis++)->SetTitle("Phi"); 
-  D0Properties->GetAxis(axis++)->SetTitle("Ptbin"); 
-
-  fD0Properties=D0Properties.release();
+  fD0Properties=DefineTHnSparse();
   AddControlObject(fD0Properties);
 
   //Adding control objects for the daughters
@@ -123,9 +118,55 @@ int AliDxHFEParticleSelectionD0::InitControlObjects()
   return AliDxHFEParticleSelection::InitControlObjects();
 }
 
+THnSparse* AliDxHFEParticleSelectionD0::DefineTHnSparse() const
+{
+  //
+  // Defines the THnSparse. For now, only calls CreateControlTHnSparse
+  // TODO: remove pt?? (Have ptbin)
+
+  const int thnSize2 = 5;
+  const double Pi=TMath::Pi();
+  TString name;
+  name.Form("%s info", GetName());
+
+  // 			       0    1      2      3          4    
+  // 	 	               Pt   Phi   Ptbin  D0InvMass  Eta  
+  int    thnBins[thnSize2] = { 1000,  200, 21,     200,     500 };
+  double thnMin [thnSize2] = {    0,    0,  0,    1.5648,   -1. };
+  double thnMax [thnSize2] = {  100, 2*Pi, 20,    2.1648,    1. };
+
+  return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,fgkTrackControlBinNames);
+
+}
+
+int AliDxHFEParticleSelectionD0::DefineParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
+{
+  // fill the data array from the particle data
+  if (!data) return -EINVAL;
+  //  AliAODTrack *track=(AliAODTrack*)p;
+  AliAODRecoDecayHF2Prong* track=dynamic_cast<AliAODRecoDecayHF2Prong*>(p);
+  if (!track) return -ENODATA;
+  int i=0;
+  // TODO: this corresponds to the THnSparse dimensions which is available in the same class
+  // use this consistently
+  const int requiredDimension=5;
+  if (dimension!=requiredDimension) {
+    // TODO: think about filling only the available data and throwing a warning
+    return -ENOSPC;
+  }
+  data[i++]=track->Pt();
+  data[i++]=track->Phi();
+  data[i++]=fPtBin;
+  data[i++]=fD0InvMass;
+  data[i++]=track->Eta();
+
+  return i;
+}
+
 int AliDxHFEParticleSelectionD0::InitControlObjectsDaughters(TString name, int daughter)
 {
-  //Setting up Control objects for the daughters.
+  // Setting up Control objects for the daughters.
+  // Move to ParticleSelection?? 
   AliInfo("Setting up daughter THnSparse");
 
   const int thnSize2 = 5;
@@ -141,12 +182,9 @@ int AliDxHFEParticleSelectionD0::InitControlObjectsDaughters(TString name, int d
   if (DaughterProperties.get()==NULL) {
     return -ENOMEM;
   }
-  int axis=0;
-  DaughterProperties->GetAxis(axis++)->SetTitle("Pt");
-  DaughterProperties->GetAxis(axis++)->SetTitle("Phi");
-  DaughterProperties->GetAxis(axis++)->SetTitle("Ptbin"); 
-  DaughterProperties->GetAxis(axis++)->SetTitle("D0InvMass"); 
-  DaughterProperties->GetAxis(axis++)->SetTitle("Eta"); 
+
+  for(int iLabel=0; iLabel< 5;iLabel++)
+    DaughterProperties->GetAxis(iLabel)->SetTitle(fgkDgTrackControlBinNames[iLabel]);  
 
   if(daughter==0){ 
     fD0Daughter0=DaughterProperties.release();
@@ -186,14 +224,17 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
   // Only D0s are filled 
   // TODO: Also include D0bar
   if ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2) {
-    Double_t invmassD0 = part->InvMassD0();
-    AliDebug(3,Form("pt %f,  nr pt bins %d",part->Pt(),fCuts->GetNPtBins()));
-    Int_t ptbin=fCuts->PtBin(part->Pt());
-    Double_t D0Properties[] = {invmassD0,part->Pt(),part->Phi(),ptbin};
-    Double_t KProperties[]={prongneg->Pt(),prongneg->Phi(),ptbin, invmassD0,prongneg->Eta()};
-    Double_t piProperties[]={prongpos->Pt(),prongpos->Phi(),ptbin,invmassD0,prongpos->Eta()};
+    fD0InvMass= part->InvMassD0();
+    fPtBin=fCuts->PtBin(part->Pt());
 
-    if(fD0Properties) fD0Properties->Fill(D0Properties);
+    // TODO: avoid repeated allocation of the arrays
+    Double_t KProperties[]={prongneg->Pt(),prongneg->Phi(),fPtBin, fD0InvMass,prongneg->Eta()};
+    Double_t piProperties[]={prongpos->Pt(),prongpos->Phi(),fPtBin,fD0InvMass,prongpos->Eta()};
+
+    // TODO: make array a member, consistent dimensions for THnSparse and array
+    Double_t d0Properties[5]={0.0, 0.0, 0.0, 0.0, 0.0};
+    DefineParticleProperties(p, d0Properties, 5);
+    if(fD0Properties) fD0Properties->Fill(d0Properties);
     if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
     if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
   }
@@ -215,8 +256,8 @@ TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, const AliVEve
     if (!track) continue;
     int selectionCode=IsSelected(track,pEvent);
     HistogramParticleProperties(track, selectionCode);
-    //TODO: Also add selection for D0bar
 
+    //TODO: Also add selection for D0bar
     // Add track if it is either defined as D0(selectionCode==1) or both 
     // D0bar and a D0 (selectionCode==3)
     if (! ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2)) continue;
@@ -228,7 +269,9 @@ TObjArray* AliDxHFEParticleSelectionD0::Select(TObjArray* pTracks, const AliVEve
 int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pEvent)
 {
   /// TODO: implement specific selection of D0 candidates
-  /// Could also return values based on where where selection "failed"
+  /// Could also return values based on where where selection "failed
+  /// Selected. Return 0 (none), 1(D0), 2(D0bar) or 3 (both)
+
   int selectionCode=0;
 
   AliAODRecoDecayHF2Prong *d0 = dynamic_cast<AliAODRecoDecayHF2Prong*>(p);
@@ -241,9 +284,9 @@ int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pE
   // AliRDHFCuts::IsSelected does not allow this
   AliRDHFCuts* cuts=const_cast<AliRDHFCuts*>(fCuts);
   if (!cuts) {
-    selectionCode=1;
+    selectionCode=0;
   } else if(cuts->IsInFiducialAcceptance(d0->Pt(),d0->Y(421)) ) {
-    //    if(cuts->IsSelected(d0,AliRDHFCuts::kTracks,pEvent))fNentries->Fill(6);       
+
     Int_t ptbin=cuts->PtBin(d0->Pt());
     if(ptbin==-1) {
       AliDebug(1,"Pt out of bounds");
@@ -255,7 +298,7 @@ int AliDxHFEParticleSelectionD0::IsSelected(AliVParticle* p, const AliVEvent* pE
     AliAODEvent* aod=NULL;
     if (pEvent) aod=dynamic_cast<AliAODEvent*>(const_cast<AliVEvent*>(pEvent));
   
-    // Selected. Return 0 (none), 1(D0), 2(D0bar) or 3 (both)
+    // Selected. Return 0 (none), 1 (D0), 2 (D0bar) or 3 (both)
     selectionCode=cuts->IsSelected(d0,AliRDHFCuts::kAll,aod); 
 
     AliDebug(1,Form("Candidate is %d \n", selectionCode));
