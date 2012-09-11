@@ -76,6 +76,7 @@ class AliHFEspectrum : public TNamed{
     AliCFDataGrid *CorrectParametrizedEfficiency(AliCFDataGrid* const bgsubpectrum = 0x0);
    
     TList *Unfold(AliCFDataGrid* const bgsubpectrum = 0x0);
+    void UnfoldBG(AliCFDataGrid* const bgsubpectrum);
     AliCFDataGrid *CorrectForEfficiency(AliCFDataGrid* const bgsubpectrum = 0x0);
    
     TGraphErrors *Normalize(THnSparse * const spectrum,Int_t i = 0) const;
@@ -88,6 +89,7 @@ class AliHFEspectrum : public TNamed{
     void SetContainer(AliCFContainer *cont, AliHFEspectrum::CFContainer_t type);
     void SetEfficiencyFunction(TF1 *efficiencyFunction) { fEfficiencyFunction = efficiencyFunction; };
     void SetPbPbAnalysis(Bool_t isPbPb = kFALSE) { fBeamType=(Char_t) isPbPb; };
+    void SetEtaSyst(Bool_t etaSyst = kTRUE) { fEtaSyst = etaSyst; };
 
     void SetParameterizedEff(AliCFContainer *container, AliCFContainer *containermb, AliCFContainer *containeresd, AliCFContainer *containeresdmb, Int_t *dimensions);
     
@@ -105,6 +107,7 @@ class AliHFEspectrum : public TNamed{
     void SetUnSetCorrelatedErrors(Bool_t unsetcorrelatederrors) {fUnSetCorrelatedErrors = unsetcorrelatederrors;};
     void SetSmoothing(Bool_t setSmoothing) {fSetSmoothing = setSmoothing;};
     void SetTestOneBinCentrality(Double_t centralitymin, Double_t centralitymax) { fTestCentralityLow = centralitymin; fTestCentralityHigh = centralitymax;}
+    void SetFillMoreCorrelationMatrix(Bool_t fillMoreCorrelationMatrix) { fFillMoreCorrelationMatrix = fillMoreCorrelationMatrix;}
 
     void SetNCentralityBinAtTheEnd(Int_t nCentralityBinAtTheEnd) {fNCentralityBinAtTheEnd = nCentralityBinAtTheEnd; };
     void SetLowHighBoundaryCentralityBinAtTheEnd(Int_t low, Int_t high, Int_t i) { fLowBoundaryCentralityBinAtTheEnd[i] = low; fHighBoundaryCentralityBinAtTheEnd[i] = high;};
@@ -123,6 +126,7 @@ class AliHFEspectrum : public TNamed{
     void SetDumpToFile(Bool_t dumpToFile) { fDumpToFile=dumpToFile; }; 
   
     void SetDebugLevel(Int_t debugLevel, Bool_t writeToFile = kFALSE) { fDebugLevel = debugLevel; fWriteToFile = writeToFile; };
+    void SetUnfoldBG() { fUnfoldBG = kTRUE; };
 
 
     AliCFDataGrid* GetRawBspectra2ndMethod();
@@ -213,6 +217,7 @@ class AliHFEspectrum : public TNamed{
     Int_t fHighBoundaryCentralityBinAtTheEnd[20];  // Boundary of the bins
     Int_t fTestCentralityLow;                      // To test one bin in centrality only
     Int_t fTestCentralityHigh;                     // To test one bin in centrality only
+    Bool_t fFillMoreCorrelationMatrix;             // For low stats to have reasonable errors
 
     THnSparseF *fHadronEffbyIPcut;// container for hadron efficiency by IP cut
     TH1D *fEfficiencyCharmSigD[kCentrality]; // charm IP cut eff from signal enhanced MC
@@ -227,10 +232,12 @@ class AliHFEspectrum : public TNamed{
     TH1D *fBSpectrum2ndMethod;             // beauty spectrum for 2nd method
     const char *fkBeauty2ndMethodfilename;      // name of file, which contains beauty spectrum for 2ndmethod
     Char_t fBeamType;             // beamtype; default -1; pp =0; PbPb=1
+    Bool_t fEtaSyst;              // pp 2.76 TeV (= kTRUE) or 7 TeV (= kFALSE)
 
 
     Int_t fDebugLevel;            // Debug Level
     Bool_t fWriteToFile;           // Write plots to eps files
+    Bool_t fUnfoldBG;             // flag to unfold backgroud
 
     ClassDef(AliHFEspectrum, 1) 
 };

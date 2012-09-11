@@ -44,6 +44,7 @@ class AliHFEtofPIDqa : public AliHFEdetPIDqa{
     virtual void Initialize();
     virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
+    TH2 *MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1, Int_t centralityClass = -1);
     TH2 *MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
     TH1 *GetHistogram(const char *name);
     AliHFEcollection *GetHistoCollection() const { return fHistos; }

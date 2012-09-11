@@ -28,6 +28,7 @@
 #include <TF1.h>
 #include <TMath.h>
 
+#include "AliTPCdEdxInfo.h"
 #include "AliAODPid.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
@@ -50,6 +51,7 @@ AliHFEpidTPC::AliHFEpidTPC() :
   , fLineCrossingsEnabled(0)
   , fkEtaCorrection(NULL)
   , fHasCutModel(kFALSE)
+  , fUseOnlyOROC(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
 {
@@ -74,6 +76,7 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   , fLineCrossingsEnabled(0)
   , fkEtaCorrection(NULL)
   , fHasCutModel(kFALSE)
+  , fUseOnlyOROC(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
 {
@@ -96,6 +99,7 @@ AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   , fLineCrossingsEnabled(0)
   , fkEtaCorrection(NULL)
   , fHasCutModel(ref.fHasCutModel)
+  , fUseOnlyOROC(ref.fUseOnlyOROC)
   , fNsigmaTPC(2)
   , fRejectionEnabled(0)
 {
@@ -126,6 +130,7 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   target.fkEtaCorrection =fkEtaCorrection;
   target.fLineCrossingsEnabled = fLineCrossingsEnabled;
   target.fHasCutModel = fHasCutModel;
+  target.fUseOnlyOROC = fUseOnlyOROC;
   target.fNsigmaTPC = fNsigmaTPC;
   target.fRejectionEnabled = fRejectionEnabled;
 
@@ -173,7 +178,20 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   const AliVTrack *rectrack;
   AliESDtrack esdtrack;
   AliAODTrack aodtrack;
-  if(fkEtaCorrection){
+  if(fUseOnlyOROC && !fkEtaCorrection) {
+    if(track->IsESDanalysis()){
+      esdtrack.~AliESDtrack();
+      new(&esdtrack) AliESDtrack(*(static_cast<const AliESDtrack *>(track->GetRecTrack())));
+      UseOROC(&esdtrack, anatype);
+      rectrack = &esdtrack;
+    } else {
+      aodtrack.~AliAODTrack();
+      new(&aodtrack) AliAODTrack(*(static_cast<const AliAODTrack *>(track->GetRecTrack())));
+      UseOROC(&aodtrack, anatype);
+      rectrack = &aodtrack;
+    }
+  }
+  else if(fkEtaCorrection){
     // Correction available
     // apply it on copy
     if(track->IsESDanalysis()){
@@ -300,7 +318,35 @@ void AliHFEpidTPC::ApplyEtaCorrection(AliVTrack *track, AliHFEpidObject::Analysi
     if(pid) pid->SetTPCsignal(original);
   }
 }
+//___________________________________________________________________
+void AliHFEpidTPC::UseOROC(AliVTrack *track, AliHFEpidObject::AnalysisType_t anatype) const{
+  //
+  // Use TPC signal from the OROC
+  // N.B. This correction has to be applied on a copy track
+  //
+  //Double_t original = track->GetTPCsignal();
+  
+  if(anatype == AliHFEpidObject::kESDanalysis){
+    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+    AliTPCdEdxInfo *dEdxInfo = track->GetTPCdEdxInfo();
+    Double32_t  TPCsignalRegion[4]; // TPC dEdx signal in 4 different regions - 0 - IROC, 1- OROC medium, 2 - OROC long, 3- OROC all, (default truncation used)
+    Char_t      TPCsignalNRegion[3]; // number of clusters above threshold used in the dEdx calculation
+    Char_t      TPCsignalNRowRegion[3]; // number of crosed rows used in the dEdx calculation - signal below threshold included
+    dEdxInfo->GetTPCSignalRegionInfo(TPCsignalRegion,TPCsignalNRegion,TPCsignalNRowRegion);
+    esdtrack->SetTPCsignal(TPCsignalRegion[3],esdtrack->GetTPCsignalSigma(),(TPCsignalNRegion[1]+TPCsignalNRegion[2])); // the two last are not ok
+  } else {
+    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(track);
+    AliTPCdEdxInfo *dEdxInfo = track->GetTPCdEdxInfo();
+    Double32_t  TPCsignalRegion[4]; // TPC dEdx signal in 4 different regions - 0 - IROC, 1- OROC medium, 2 - OROC long, 3- OROC all, (default truncation used)
+    Char_t      TPCsignalNRegion[3]; // number of clusters above threshold used in the dEdx calculation
+    Char_t      TPCsignalNRowRegion[3]; // number of crosed rows used in the dEdx calculation - signal below threshold included
+    dEdxInfo->GetTPCSignalRegionInfo(TPCsignalRegion,TPCsignalNRegion,TPCsignalNRowRegion);
+    AliAODPid *pid = aodtrack->GetDetPid();
+    if(pid) pid->SetTPCsignal(TPCsignalRegion[3]);
+    if(pid) pid->SetTPCsignalN((TPCsignalNRegion[1]+TPCsignalNRegion[2]));
+  }
 
+}
 //___________________________________________________________________
 void AliHFEpidTPC::AddTPCdEdxLineCrossing(Int_t species, Double_t sigma){
   //

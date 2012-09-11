@@ -120,6 +120,7 @@ AliHFEcuts::AliHFEcuts():
   fMinClustersTPCPID(0),
   fMinClustersITS(0),
   fMinTrackletsTRD(0),
+  fMaxChi2TRD(-1.),
   fCutITSPixel(0),
   fCheckITSLayerStatus(kTRUE),
   fCutITSDrift(0),
@@ -131,6 +132,7 @@ AliHFEcuts::AliHFEcuts():
   fTOFPIDStep(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
+  fITSpatternCut(kFALSE),
   fUseMixedVertex(kTRUE),
   fIsIPSigmacut(kFALSE),
   fIsIPAbs(kTRUE),
@@ -165,6 +167,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fMinClustersTPCPID(0),
   fMinClustersITS(0),
   fMinTrackletsTRD(0),
+  fMaxChi2TRD(-1.),
   fCutITSPixel(0),
   fCheckITSLayerStatus(kTRUE),
   fCutITSDrift(0),
@@ -176,6 +179,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fTOFPIDStep(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
+  fITSpatternCut(kFALSE),
   fUseMixedVertex(kTRUE),
   fIsIPSigmacut(kFALSE),
   fIsIPAbs(kTRUE),
@@ -209,6 +213,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fMinClustersTPCPID(0),
   fMinClustersITS(0),
   fMinTrackletsTRD(0),
+  fMaxChi2TRD(-1.),
   fCutITSPixel(0),
   fCheckITSLayerStatus(0),
   fCutITSDrift(0),
@@ -220,6 +225,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fTOFPIDStep(kFALSE),
   fTOFMISMATCHStep(kFALSE),
   fTPCPIDCLEANUPStep(kFALSE),
+  fITSpatternCut(c.fITSpatternCut),
   fUseMixedVertex(kTRUE),
   fIsIPSigmacut(kFALSE),
   fIsIPAbs(kTRUE),
@@ -262,6 +268,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fMinClustersTPCPID = fMinClustersTPCPID;
   target.fMinClustersITS = fMinClustersITS;
   target.fMinTrackletsTRD = fMinTrackletsTRD;
+  target.fMaxChi2TRD  = fMaxChi2TRD;
   target.fCutITSPixel = fCutITSPixel;
   target.fCheckITSLayerStatus = fCheckITSLayerStatus;
   target.fCutITSDrift = fCutITSDrift;
@@ -595,6 +602,7 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   hfecuts->SetMinNClustersTPCPID(fMinClustersTPCPID);
   hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC, fTPCratioDef);
   if(fFractionOfSharedTPCClusters > 0.0) hfecuts->SetFractionOfTPCSharedClusters(fFractionOfSharedTPCClusters); 
+  if(fITSpatternCut) hfecuts->SetITSpatternCut();
   
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineRec", (Char_t *)"REC Kine Cuts");
   kineCuts->SetPtRange(fPtRange[0], fPtRange[1]);
@@ -728,6 +736,9 @@ void AliHFEcuts::SetHFElectronTRDCuts(){
   AliDebug(2, "Called\n");
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTRD","Extra cuts from the HFE group on TRD PID");
   if(fMinTrackletsTRD > 0.) hfecuts->SetMinTrackletsTRD(fMinTrackletsTRD, fTRDtrackletsExact);
+  if(fMaxChi2TRD >= 0)
+    hfecuts->SetMaxChi2TRD(fMaxChi2TRD);
+  
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
   

@@ -43,6 +43,7 @@
 #include "AliHFEpidBase.h"
 #include "AliHFEpidQAmanager.h"
 #include "AliHFEpidTPC.h"
+#include "AliHFEpidTRD.h"
 #include "AliHFEpidTOF.h"
 #include "AliHFEtools.h"
 #include "AliHFEtofPIDqa.h"
@@ -153,7 +154,7 @@ void AliHFEtofPIDqa::Initialize(){
   const Double_t kMaxP = 20.;
   // Quantities where one can switch between low and high resolution
   Int_t kPbins = fQAmanager->HasHighResolutionHistos() ?  1000 : 100;
-  Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
+  Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 140;
 
   // 1st histogram: TOF sigmas: (species, p nsigma, step)
   Int_t nBinsSigma[5] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins};
@@ -171,12 +172,15 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   // Fill TPC histograms
   //
   //AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
+  AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
+
   Float_t centrality = track->GetCentrality();
   Int_t species = track->GetAbInitioPID();
   if(species >= AliPID::kSPECIES) species = -1;
 
   AliDebug(1, Form("Monitoring particle of type %d for step %d", species, step));
   AliHFEpidTOF *tofpid= dynamic_cast<AliHFEpidTOF *>(fQAmanager->GetDetectorPID(AliHFEpid::kTOFpid));
+  AliHFEpidTRD *trdpid= dynamic_cast<AliHFEpidTRD *>(fQAmanager->GetDetectorPID(AliHFEpid::kTRDpid));
   
   const AliPIDResponse *pidResponse = tofpid ? tofpid->GetPIDResponse() : NULL;
   Double_t contentSignal[5];
@@ -186,10 +190,63 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   contentSignal[3] = step;
   contentSignal[4] = centrality;
   fHistos->Fill("tofnSigma", contentSignal);
-  if(species > -1){
-    contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.;
+  //if(species > -1){
+  contentSignal[1] =trdpid ? trdpid->GetP(track->GetRecTrack(), anatype) : 0.;
+  contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.;
     fHistos->Fill("tofMonitorTPC", contentSignal);
+  //}
+}
+
+//_________________________________________________________
+TH2 *AliHFEtofPIDqa::MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species, Int_t centralityClass){
+  //
+  // Get the TPC control histogram for the TRD selection step (either before or after PID)
+  //
+  THnSparseF *histo = dynamic_cast<THnSparseF *>(fHistos->Get("tofMonitorTPC"));
+  if(!histo){
+    AliError("QA histogram monitoring TPC nSigma not available");
+    return NULL;
   }
+  if(species > -1 && species < AliPID::kSPECIES){
+    // cut on species (if available)
+    histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
+  }
+  TString centname, centtitle;
+  Bool_t hasCentralityInfo = kTRUE;
+  if(centralityClass > -1){
+    if(histo->GetNdimensions() < 5){
+      AliError("Centrality Information not available");
+      centname = centtitle = "MinBias";
+      hasCentralityInfo = kFALSE;
+    } else {
+      // Project centrality classes
+      // -1 is Min. Bias
+      histo->GetAxis(4)->SetRange(centralityClass+1, centralityClass+1);
+      centname = Form("Cent%d", centralityClass);
+      centtitle = Form("Centrality %d", centralityClass);
+    }
+  } else {
+    histo->GetAxis(4)->SetRange(1, histo->GetAxis(4)->GetNbins()-1);
+    centname = centtitle = "MinBias";
+    hasCentralityInfo = kTRUE;
+  }
+  histo->GetAxis(3)->SetRange(step + 1, step + 1); 
+
+  TH2 *hSpec = histo->Projection(2, 1);
+  // construct title and name
+  TString stepname = step == AliHFEdetPIDqa::kBeforePID ? "before" : "after";
+  TString speciesname = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "all Particles";
+  TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
+  TString histname = Form("hSigmaTPC%s%s%s", specID.Data(), stepname.Data(), centname.Data());
+  TString histtitle = Form("TPC Sigma for %s %s PID %s", speciesname.Data(), stepname.Data(), centtitle.Data());
+  hSpec->SetName(histname.Data());
+  hSpec->SetTitle(histtitle.Data());
+
+  // Unset range on the original histogram
+  histo->GetAxis(0)->SetRange(0, histo->GetAxis(0)->GetNbins());
+  histo->GetAxis(3)->SetRange(0, histo->GetAxis(3)->GetNbins());
+  if(hasCentralityInfo)histo->GetAxis(4)->SetRange(0, histo->GetAxis(4)->GetNbins());
+  return hSpec; 
 }
 
 //_________________________________________________________

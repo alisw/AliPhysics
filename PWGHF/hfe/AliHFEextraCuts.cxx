@@ -49,7 +49,7 @@
 
 ClassImp(AliHFEextraCuts)
 
-const Int_t AliHFEextraCuts::fgkNQAhistos = 8;
+const Int_t AliHFEextraCuts::fgkNQAhistos = 9;
 
 //______________________________________________________
 AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
@@ -61,6 +61,7 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fMinNClustersTPCPID(0),
   fClusterRatioTPC(0.),
   fMinTrackletsTRD(0),
+  fMaxChi2TRD(5.0),
   fMinNbITScls(0),
   fTRDtrackletsExact(0),
   fPixelITS(0),
@@ -93,6 +94,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fMinNClustersTPCPID(c.fMinNClustersTPCPID),
   fClusterRatioTPC(c.fClusterRatioTPC),
   fMinTrackletsTRD(c.fMinTrackletsTRD),
+  fMaxChi2TRD(c.fMaxChi2TRD),
   fMinNbITScls(c.fMinNbITScls),
   fTRDtrackletsExact(c.fTRDtrackletsExact),
   fPixelITS(c.fPixelITS),
@@ -134,6 +136,7 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fMinNClustersTPC = c.fMinNClustersTPC;
     fMinNClustersTPCPID = c.fMinNClustersTPCPID;
     fMinTrackletsTRD = c.fMinTrackletsTRD;
+    fMaxChi2TRD      = c.fMaxChi2TRD;
     fMinNbITScls = c.fMinNbITScls;
     fTRDtrackletsExact = c.fTRDtrackletsExact;
     fPixelITS = c.fPixelITS;
@@ -204,7 +207,7 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   // QA histograms are filled before track selection and for
   // selected tracks after track selection
   //
-  AliDebug(1, "Called");
+  AliDebug(1, Form("%s: Called", GetName()));
   ULong64_t survivedCut = 0;	// Bitmap for cuts which are passed by the track, later to be compared with fRequirements
   if(IsQAOn()) FillQAhistosRec(track, kBeforeCuts);
   // Apply cuts
@@ -227,6 +230,8 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   Double_t ratioTPC = GetTPCclusterRatio(track);
   UChar_t trdTracklets;
   trdTracklets = track->GetTRDntrackletsPID();
+  Float_t trdchi2=-999.;
+  trdchi2=GetTRDchi(track);
   UChar_t itsPixel = track->GetITSClusterMap();
   Int_t status1 = GetITSstatus(track, 0);
   Int_t status2 = GetITSstatus(track, 1);
@@ -295,36 +300,45 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   }
   if(TESTBIT(fRequirements, kMinTrackletsTRD)){
     // cut on minimum number of TRD tracklets
-    AliDebug(1, Form("Min TRD cut: [%d|%d], Require exact number [%s]\n", fMinTrackletsTRD, trdTracklets, fTRDtrackletsExact ? "Yes" : "No"));
+    AliDebug(1, Form("%s: Min TRD cut: [%d|%d], Require exact number [%s]\n", GetName(), fMinTrackletsTRD, trdTracklets, fTRDtrackletsExact ? "Yes" : "No"));
     if(fTRDtrackletsExact){
       if(trdTracklets == fMinTrackletsTRD) {
         SETBIT(survivedCut, kMinTrackletsTRD);
-        AliDebug(1, "Track Selected");
+        AliDebug(1, Form("%s: Track Selected", GetName()));
       }
     }else{
       if(trdTracklets >= fMinTrackletsTRD){ 
         SETBIT(survivedCut, kMinTrackletsTRD);
-        AliDebug(1, "Track Selected");
+        AliDebug(1, Form("%s: Track Selected", GetName()));
       }
       //printf("Min number of tracklets %d\n",fMinTrackletsTRD);
     }
   }
-  
+
+  if(TESTBIT(fRequirements, kMaxTRDChi2)){
+    // cut on TRD chi2
+    AliDebug(1, Form("%s: Cut on TRD chi2: [%f|%f]\n", GetName(),fMaxChi2TRD, trdchi2));
+    if(trdchi2 < fMaxChi2TRD) {
+	SETBIT(survivedCut, kMaxTRDChi2);
+        AliDebug(1,Form("%s: survived %f\n",GetName(),trdchi2));
+    }
+  }
+
   if(TESTBIT(fRequirements, kMinNbITScls)){
     // cut on minimum number of ITS clusters
     //printf(Form("Min ITS clusters: [%d|%d]\n", (Int_t)fMinNbITScls, nclsITS));
-    AliDebug(1, Form("Min ITS clusters: [%d|%d]\n", fMinNbITScls, nclsITS));
+    AliDebug(1, Form("%s: Min ITS clusters: [%d|%d]\n", GetName(), fMinNbITScls, nclsITS));
     if(nclsITS >= ((Int_t)fMinNbITScls)) SETBIT(survivedCut, kMinNbITScls);
   }
   
   if(TESTBIT(fRequirements, kMinNClustersTPC)){
     // cut on minimum number of TPC tracklets
     //printf(Form("Min TPC cut: [%d|%d]\n", fMinNClustersTPC, nclsTPC));
-    AliDebug(1, Form("Min TPC cut: [%d|%d]\n", fMinNClustersTPC, nclsTPC));
+    AliDebug(1, Form("%s: Min TPC cut: [%d|%d]\n", GetName(), fMinNClustersTPC, nclsTPC));
     if(nclsTPC >= fMinNClustersTPC) SETBIT(survivedCut, kMinNClustersTPC);
   }
   if(TESTBIT(fRequirements, kMinNClustersTPCPID)){
-    AliDebug(1, Form("Min TPC PID cut: [%d|%d]\n", fMinNClustersTPCPID, nclsTPCPID));
+    AliDebug(1, Form("%s: Min TPC PID cut: [%d|%d]\n", GetName(), fMinNClustersTPCPID, nclsTPCPID));
     if(nclsTPCPID >= fMinNClustersTPCPID) SETBIT(survivedCut, kMinNClustersTPCPID);
   }
   if(TESTBIT(fRequirements, kDriftITS)){
@@ -340,7 +354,7 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   }
   if(TESTBIT(fRequirements, kPixelITS)){
     // cut on ITS pixel layers
-    AliDebug(1, "ITS cluster Map: ");
+    AliDebug(1, Form("%s: ITS cluster Map: ", GetName()));
     //PrintBitMap(itsPixel);
     switch(fPixelITS){
       case kFirst:
@@ -399,7 +413,7 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
         SETBIT(survivedCut, kPixelITS);
         break;
     }
-    AliDebug(1, Form("Survived Cut: %s\n", TESTBIT(survivedCut, kPixelITS) ? "YES" : "NO"));
+    AliDebug(1, Form("%s: Survived Cut: %s\n", GetName(), TESTBIT(survivedCut, kPixelITS) ? "YES" : "NO"));
   }
 
   if(TESTBIT(fRequirements, kTOFPID)){
@@ -437,16 +451,20 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     // cut on TOF matching cluster
     if((TMath::Abs(tofsignalDx) <= fTOFsignalDx) && (TMath::Abs(tofsignalDz) <= fTOFsignalDz)) SETBIT(survivedCut, kTOFsignalDxy);
   }
+  if(TESTBIT(fRequirements, kITSpattern)){
+    // cut on ITS pattern (every layer with a working ITS module must have an ITS cluster)
+    if(CheckITSpattern(track)) SETBIT(survivedCut, kITSpattern); 
+  }
   
   if(fRequirements == survivedCut){
-    //
+    // 
     // Track selected
     //
-    AliDebug(2, "Track Survived cuts\n");
+    AliDebug(2, Form("%s: Track Survived cuts\n", GetName()));
     if(IsQAOn()) FillQAhistosRec(track, kAfterCuts);
     return kTRUE;
   }
-  AliDebug(2, "Track cut");
+  AliDebug(2, Form("%s: Track cut", GetName()));
   if(IsQAOn()) FillCutCorrelation(survivedCut);
   return kFALSE;
 }
@@ -506,6 +524,8 @@ void AliHFEextraCuts::FillQAhistosRec(AliVTrack *track, UInt_t when){
     if(GetTPCCountSharedMapBitsAboveThreshold(track)==0) hStatusBits->Fill(4);
   }
   if((htmp = dynamic_cast<TH1F *>(fQAlist->At(7 + when * fgkNQAhistos)))) htmp->Fill(track->GetTPCsignalN());
+
+  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(8 + when * fgkNQAhistos)))) htmp->Fill(GetTRDchi(track));
 }
 
 // //______________________________________________________
@@ -589,6 +609,11 @@ void AliHFEextraCuts::AddQAHistograms(TList *qaList){
     fQAlist->AddAt(histo1D, 7 + icond * fgkNQAhistos);
     histo1D->GetXaxis()->SetTitle("Number of TPC clusters for dEdx calculation");
     histo1D->GetYaxis()->SetTitle("counts");
+    qaList->AddAt((histo1D = new TH1F(Form("%s_trdchi2perTracklet%s",GetName(),cutstr[icond].Data()), "chi2 per TRD tracklet", 100, 0, 10)), 8 + icond * fgkNQAhistos);
+    fQAlist->AddAt(histo1D, 8 + icond * fgkNQAhistos);
+    histo1D->GetXaxis()->SetTitle("Chi2 per TRD Tracklet");
+    histo1D->GetYaxis()->SetTitle("Number of Tracks");
+
   }
   // Add cut correlation
   qaList->AddAt((histo2D = new TH2F(Form("%s_cutcorrelation",GetName()), "Cut Correlation", kNcuts, 0, kNcuts - 1, kNcuts, 0, kNcuts -1)), 2 * fgkNQAhistos);
@@ -624,7 +649,7 @@ Bool_t AliHFEextraCuts::CheckITSstatus(Int_t itsStatus) const {
 }
 
 //______________________________________________________
-Int_t AliHFEextraCuts::GetITSstatus(AliVTrack *track, Int_t layer){
+Int_t AliHFEextraCuts::GetITSstatus(const AliVTrack * const track, Int_t layer) const {
 	//
 	// Check ITS layer status
 	//
@@ -632,7 +657,7 @@ Int_t AliHFEextraCuts::GetITSstatus(AliVTrack *track, Int_t layer){
 	if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
 		Int_t det;
 		Float_t xloc, zloc;
-		AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+		const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
 		if(esdtrack) esdtrack->GetITSModuleIndexInfo(layer, det, status, xloc, zloc);
 	}
 	return status;
@@ -824,6 +849,31 @@ Bool_t AliHFEextraCuts::IsKinkMother(AliVTrack *track){
   return kFALSE;
 
 }
+
+//______________________________________________________
+Float_t AliHFEextraCuts::GetTRDchi(AliVTrack *track){
+  //
+  // Get TRDchi2
+  //
+  Int_t ntls(0);
+  TClass *type = track->IsA();
+  if(type == AliESDtrack::Class()){
+      AliESDtrack *esdtrack = static_cast<AliESDtrack *>(track);
+      ntls = esdtrack->GetTRDntracklets();
+      return ntls ? esdtrack->GetTRDchi2()/ntls : -999;
+  }
+  else if(type == AliAODTrack::Class()){
+    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
+    if(aodtrack){
+      return  999.;
+    }
+  }
+
+  return 999.;
+
+}
+
+
 //______________________________________________________
 Int_t AliHFEextraCuts::GetITSNbOfcls(AliVTrack *track){
   //
@@ -1051,4 +1101,26 @@ void AliHFEextraCuts::GetTOFsignalDxDz(AliVTrack *track, Double_t &tofsignalDx, 
     tofsignalDz = esdtrack->GetTOFsignalDz();
   }
 
+}
+
+//______________________________________________________
+Bool_t AliHFEextraCuts::CheckITSpattern(const AliVTrack *const track) const {
+  //
+  // Check if every ITS layer, which has a module which is alive, also
+  // has an ITS cluster
+  //
+  Bool_t patternOK(kTRUE);
+  Int_t status(0);
+  for(Int_t ily = 0; ily < 6; ily++){
+    status = GetITSstatus(track, ily);
+    if(CheckITSstatus(status)){
+      // pixel alive, check whether layer has a cluster
+      if(!TESTBIT(track->GetITSClusterMap(),ily)){
+        // No cluster even though pixel is alive - reject track
+        patternOK = kFALSE;
+        break;
+      }
+    }
+  }
+  return patternOK;
 }

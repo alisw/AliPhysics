@@ -52,6 +52,7 @@ class AliHFEdebugTreeTask : public AliAnalysisTaskSE{
     AliHFEdebugTreeTask &operator=(const AliHFEdebugTreeTask &);
 
     AliTrackReference *FindTrackReference(AliMCParticle *track, Float_t minRadius, Float_t maxRadius, Int_t detectorID);
+    Bool_t CheckITSstatus( const AliESDtrack * const esdtrack, Int_t layer) const;
     
     AliHFEcuts *fTrackCuts;           // Track
     AliHFEsignalCuts *fSignalCuts;    // Signal Cuts

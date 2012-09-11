@@ -360,7 +360,7 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark)
     fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1);
     hname = kqEtaRangeLabel[icut]+"PtCorrDrest_"+kqTypeLabel[kQuark];
     fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1);
-  
+
     hname = kqEtaRangeLabel[icut]+"ePtRatio_"+kqTypeLabel[kQuark];
     fHistComm[iq][icut].fePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",200,0,20,100,0,1);
     hname = kqEtaRangeLabel[icut]+"DePtRatio_"+kqTypeLabel[kQuark];
@@ -369,8 +369,79 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark)
     fHistComm[iq][icut].feDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,20,200,0,2);
     hname = kqEtaRangeLabel[icut]+"DeDistance_"+kqTypeLabel[kQuark];
     fHistComm[iq][icut].fDeDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,20,200,0,2);
+
+    if(icut <1){
+      hname = kqEtaRangeLabel[icut]+"PtCorrDinein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDinein = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrDineout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDineout = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrDoutein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDoutein = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrDouteout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDouteout = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+
+      hname = kqEtaRangeLabel[icut]+"PtCorrDpDinein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDpDinein = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrDpDineout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDpDineout = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrDpDoutein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDpDoutein = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrDpDouteout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDpDouteout = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+
+      hname = kqEtaRangeLabel[icut]+"PtCorrD0Dinein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrD0Dinein = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrD0Dineout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrD0Dineout = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrD0Doutein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrD0Doutein = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrD0Douteout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrD0Douteout = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+
+      hname = kqEtaRangeLabel[icut]+"PtCorrDrestDinein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDrestDinein = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrDrestDineout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDrestDineout = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrDrestDoutein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDrestDoutein = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrDrestDouteout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrDrestDouteout = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrD_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrD = new TH2F(hname,hname+";D Y;e eta",200,-10,10,200,-10,10); 
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrDp_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrDp = new TH2F(hname,hname+";D Y;e eta",200,-10,10,200,-10,10); 
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrD0_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrD0 = new TH2F(hname,hname+";D Y;e eta",200,-10,10,200,-10,10); 
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrDrest_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrDrest = new TH2F(hname,hname+";D Y;e eta",200,-10,10,200,-10,10); 
+
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrGD_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrGD = new TH2F(hname,hname+";D Y;e eta",200,-10,10,200,-10,10); 
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrGDp_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrGDp = new TH2F(hname,hname+";D Y;e eta",200,-10,10,200,-10,10); 
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrGD0_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrGD0 = new TH2F(hname,hname+";D Y;e eta",200,-10,10,200,-10,10); 
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrGDrest_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrGDrest = new TH2F(hname,hname+";D Y;e eta",200,-10,10,200,-10,10); 
+
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrB_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrB = new TH2F(hname,hname+";B Y;e eta",200,-10,10,200,-10,10); 
+      hname = kqEtaRangeLabel[icut]+"fEtaCorrGB_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fEtaCorrGB = new TH2F(hname,hname+";B Y;e eta",200,-10,10,200,-10,10); 
+
+      hname = kqEtaRangeLabel[icut]+"PtCorrBinein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrBinein = new TH2F(hname,hname+";B p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrBineout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrBineout = new TH2F(hname,hname+";B p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrBoutein_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrBoutein = new TH2F(hname,hname+";B p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+      hname = kqEtaRangeLabel[icut]+"PtCorrBouteout_"+kqTypeLabel[kQuark];
+      fHistComm[iq][icut].fPtCorrBouteout = new TH2F(hname,hname+";B p_{T} (GeV/c);e p_{T} (GeV/c)",ndptbins,xcorrbin,iBin[1],kPtbinning1); // new binning
+    }
     if(fQAhistos) fHistComm[iq][icut].FillList(fQAhistos);
   }
+
 
   hname = kqEtaRangeLabel[0]+"Nq_"+kqTypeLabel[kQuark];
   fHistComm[iq][0].fNq = new TH1F(hname,hname,50,-0.5,49.5);
@@ -977,6 +1048,35 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
                     fHist[iq][kDeHadron][2][fCentrality].fEta->Fill(grandMa->Eta());
                   }
 
+                  //mj: to calculate B to e eta correlation to calculate total heavy quark cross section
+                  Int_t kLabel0 = grandMa->GetFirstMother();
+                  Bool_t isGGrandmaYes = kFALSE;
+                  Double_t ggmrapidwstmp=0;
+                  if (!(kLabel0 < 0)){ // safety protection
+                    if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(kLabel0))))){
+                      TParticle* ggrandMatmp = mctrack->Particle();
+                      Int_t ggrandMaPDGtmp = ggrandMatmp->GetPdgCode();
+                      if ( int(abs(ggrandMaPDGtmp)/100.) == kBeauty || int(abs(ggrandMaPDGtmp)/1000.) == kBeauty) isGGrandmaYes = kTRUE;
+                      ggmrapidwstmp = AliHFEtools::GetRapidity(ggrandMatmp);
+                    }
+                  }
+
+                  Double_t gmrapidwstmp0 = AliHFEtools::GetRapidity(grandMa);
+                  Double_t eetawstmp0 = mcpart->Eta();
+  
+                  Double_t gmrapidtmp0 = TMath::Abs(gmrapidwstmp0);
+                  Double_t eetatmp0 = TMath::Abs(eetawstmp0);
+
+                  fHistComm[iq][0].fEtaCorrB->Fill(gmrapidwstmp0,eetawstmp0);
+                  if(isGGrandmaYes) fHistComm[iq][0].fEtaCorrGB->Fill(ggmrapidwstmp,eetawstmp0);
+                  else fHistComm[iq][0].fEtaCorrGB->Fill(gmrapidwstmp0,eetawstmp0);
+
+                  if(gmrapidtmp0<0.5 && eetatmp0<0.5 ) fHistComm[iq][0].fPtCorrBinein->Fill(grandMa->Pt(),mcpart->Pt());
+                  else if(gmrapidtmp0<0.5 && eetatmp0>0.5 ) fHistComm[iq][0].fPtCorrBineout->Fill(grandMa->Pt(),mcpart->Pt());
+                  else if(gmrapidtmp0>0.5 && eetatmp0<0.5 ) fHistComm[iq][0].fPtCorrBoutein->Fill(grandMa->Pt(),mcpart->Pt());
+                  else if(gmrapidtmp0>0.5 && eetatmp0>0.5 ) fHistComm[iq][0].fPtCorrBouteout->Fill(grandMa->Pt(),mcpart->Pt());
+                  //======================================================================================
+
                   // ratio between pT of electron and pT of mother B hadron 
                   if(grandMa->Pt()) {
                     fHistComm[iq][0].fDePtRatio->Fill(grandMa->Pt(),mcpart->Pt()/grandMa->Pt());
@@ -1087,6 +1187,62 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
                 if(eabsY<0.5){
                   fHistComm[iq][2].fPtCorrDrest->Fill(partMotherCopy->Pt(),mcpart->Pt());
                 }
+              }
+
+              //mj: to calculate D to e eta correlation to calculate total heavy quark cross section
+              Int_t kLabel = partMotherCopy->GetFirstMother();
+              Bool_t isGrandmaYes = kFALSE;
+              Double_t gmrapidwstmp =0;
+              if (!(kLabel < 0)){ // safety protection
+                if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(kLabel))))){ 
+                  TParticle* grandMatmp = mctrack->Particle();
+                  Int_t grandMaPDGtmp = grandMatmp->GetPdgCode();
+                  if ( int(abs(grandMaPDGtmp)/100.) == kCharm || int(abs(grandMaPDGtmp)/1000.) == kCharm ) isGrandmaYes = kTRUE;
+                  if ( int(abs(grandMaPDGtmp)/100.) == kBeauty || int(abs(grandMaPDGtmp)/1000.) == kBeauty) isGrandmaYes = kTRUE;
+                  gmrapidwstmp = AliHFEtools::GetRapidity(grandMatmp);
+                }
+              }
+
+              Double_t mrapidwstmp = AliHFEtools::GetRapidity(partMotherCopy);
+              Double_t eetawstmp = mcpart->Eta();
+
+              Double_t mrapidtmp = TMath::Abs(mrapidwstmp);
+              Double_t eetatmp = TMath::Abs(eetawstmp);
+
+              fHistComm[iq][0].fEtaCorrD->Fill(mrapidwstmp,eetawstmp);
+              if(isGrandmaYes) fHistComm[iq][0].fEtaCorrGD->Fill(gmrapidwstmp,eetawstmp);
+              else fHistComm[iq][0].fEtaCorrGD->Fill(mrapidwstmp,eetawstmp);
+
+              if(mrapidtmp<0.5 && eetatmp<0.5 ) fHistComm[iq][0].fPtCorrDinein->Fill(partMotherCopy->Pt(),mcpart->Pt());
+              else if(mrapidtmp<0.5 && eetatmp>0.5 ) fHistComm[iq][0].fPtCorrDineout->Fill(partMotherCopy->Pt(),mcpart->Pt());
+              else if(mrapidtmp>0.5 && eetatmp<0.5 ) fHistComm[iq][0].fPtCorrDoutein->Fill(partMotherCopy->Pt(),mcpart->Pt());
+              else if(mrapidtmp>0.5 && eetatmp>0.5 ) fHistComm[iq][0].fPtCorrDouteout->Fill(partMotherCopy->Pt(),mcpart->Pt());
+              if(TMath::Abs(partMotherCopy->GetPdgCode())==411) {
+                fHistComm[iq][0].fEtaCorrDp->Fill(mrapidwstmp,eetawstmp);
+                if(isGrandmaYes) fHistComm[iq][0].fEtaCorrGDp->Fill(gmrapidwstmp,eetawstmp);
+                else fHistComm[iq][0].fEtaCorrGDp->Fill(mrapidwstmp,eetawstmp);
+                if(mrapidtmp<0.5 && eetatmp<0.5 ) fHistComm[iq][0].fPtCorrDpDinein->Fill(partMotherCopy->Pt(),mcpart->Pt());
+                else if(mrapidtmp<0.5 && eetatmp>0.5 ) fHistComm[iq][0].fPtCorrDpDineout->Fill(partMotherCopy->Pt(),mcpart->Pt());
+                else if(mrapidtmp>0.5 && eetatmp<0.5 ) fHistComm[iq][0].fPtCorrDpDoutein->Fill(partMotherCopy->Pt(),mcpart->Pt());
+                else if(mrapidtmp>0.5 && eetatmp>0.5 ) fHistComm[iq][0].fPtCorrDpDouteout->Fill(partMotherCopy->Pt(),mcpart->Pt());
+              }
+              else if(TMath::Abs(partMotherCopy->GetPdgCode())==421) {
+                fHistComm[iq][0].fEtaCorrD0->Fill(mrapidwstmp,eetawstmp);
+                if(isGrandmaYes) fHistComm[iq][0].fEtaCorrGD0->Fill(gmrapidwstmp,eetawstmp);
+                else fHistComm[iq][0].fEtaCorrGD0->Fill(mrapidwstmp,eetawstmp);
+                if(mrapidtmp<0.5 && eetatmp<0.5 ) fHistComm[iq][0].fPtCorrD0Dinein->Fill(partMotherCopy->Pt(),mcpart->Pt());
+                else if(mrapidtmp<0.5 && eetatmp>0.5 ) fHistComm[iq][0].fPtCorrD0Dineout->Fill(partMotherCopy->Pt(),mcpart->Pt());
+                else if(mrapidtmp>0.5 && eetatmp<0.5 ) fHistComm[iq][0].fPtCorrD0Doutein->Fill(partMotherCopy->Pt(),mcpart->Pt());
+                else if(mrapidtmp>0.5 && eetatmp>0.5 ) fHistComm[iq][0].fPtCorrD0Douteout->Fill(partMotherCopy->Pt(),mcpart->Pt());
+              }
+              else {
+                fHistComm[iq][0].fEtaCorrDrest->Fill(mrapidwstmp,eetawstmp);
+                if(isGrandmaYes) fHistComm[iq][0].fEtaCorrGDrest->Fill(gmrapidwstmp,eetawstmp);
+                else fHistComm[iq][0].fEtaCorrGDrest->Fill(mrapidwstmp,eetawstmp);
+                if(mrapidtmp<0.5 && eetatmp<0.5 ) fHistComm[iq][0].fPtCorrDrestDinein->Fill(partMotherCopy->Pt(),mcpart->Pt());
+                else if(mrapidtmp<0.5 && eetatmp>0.5 ) fHistComm[iq][0].fPtCorrDrestDineout->Fill(partMotherCopy->Pt(),mcpart->Pt());
+                else if(mrapidtmp>0.5 && eetatmp<0.5 ) fHistComm[iq][0].fPtCorrDrestDoutein->Fill(partMotherCopy->Pt(),mcpart->Pt());
+                else if(mrapidtmp>0.5 && eetatmp>0.5 ) fHistComm[iq][0].fPtCorrDrestDouteout->Fill(partMotherCopy->Pt(),mcpart->Pt());
               }
 
               // distance between electron production point and primary vertex
@@ -1563,16 +1719,19 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
   TParticle *partMother = mctrack->Particle();
   TParticle *partMotherCopy = mctrack->Particle();
   Int_t maPdgcode = partMother->GetPdgCode();
+  Int_t grmaPdgcode;
+  Int_t ggrmaPdgcode;
 
    // if the mother is charmed hadron  
 
    if(abs(maPdgcode)==443){ // J/spi
       Int_t jLabel = partMother->GetFirstMother();
-      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))) return kJpsi; 
-      TParticle* grandMa = mctrack->Particle();
-      Int_t grandMaPDG = grandMa->GetPdgCode();
-      if((int(abs(grandMaPDG)/100.)%10) == kBeauty || (int(abs(grandMaPDG)/1000.)%10) == kBeauty) return kB2Jpsi;
-      else return -1;   
+      if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(jLabel))))){
+        TParticle* grandMa = mctrack->Particle();
+        Int_t grandMaPDG = grandMa->GetPdgCode();
+        if((int(abs(grandMaPDG)/100.)%10) == kBeauty || (int(abs(grandMaPDG)/1000.)%10) == kBeauty) return kB2Jpsi;
+      }
+      return kJpsi;   
    } 
    else if ( (int(abs(maPdgcode)/100.)%10) == kCharm || (int(abs(maPdgcode)/1000.)%10) == kCharm ) {
 
@@ -1622,6 +1781,27 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
      if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) return -1;
      partMother = mctrack->Particle();
      maPdgcode = partMother->GetPdgCode();
+
+     // check if the ligth meson is the decay product of heavy mesons
+     tmpMomLabel = partMother->GetFirstMother();
+     if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
+      partMother = mctrack->Particle();
+      grmaPdgcode = partMother->GetPdgCode();
+
+      if ( (int(abs(grmaPdgcode)/100.)%10) == kBeauty || (int(abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
+      if ( (int(abs(grmaPdgcode)/100.)%10) == kCharm || (int(abs(grmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
+      if ( abs(grmaPdgcode) == 221 ) return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
+
+      tmpMomLabel = partMother->GetFirstMother();
+      if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
+       partMother = mctrack->Particle();
+       ggrmaPdgcode = partMother->GetPdgCode();
+
+       if ( (int(abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
+       if ( (int(abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
+      }
+     }
+
      if ( abs(maPdgcode) == 111 ) {
        return kGammaPi0;
      } 
@@ -1644,29 +1824,53 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
      return origin;
 
    } 
-   else if ( abs(maPdgcode) == 111 ) {
-     return kPi0;
-   } 
-   else if ( abs(maPdgcode) == 221 ) {
-     return kEta;
-   } 
-   else if ( abs(maPdgcode) == 223 ) {
-     return kOmega;
-   } 
-   else if ( abs(maPdgcode) == 333 ) {
-     return kPhi;
-   } 
-   else if ( abs(maPdgcode) == 331 ) {
-     return kEtaPrime;
-   } 
-   else if ( abs(maPdgcode) == 113 ) {
-     return kRho0;
-   } 
-   else if ( abs(maPdgcode) == 321 || abs(maPdgcode) == 130 ) {
-     return kKe3;
-   }
-   else{ 
-    origin = kElse;
+   else {
+
+     // check if the ligth meson is the decay product of heavy mesons
+     tmpMomLabel = partMotherCopy->GetFirstMother();
+     if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
+      partMother = mctrack->Particle();
+      grmaPdgcode = partMother->GetPdgCode();
+
+      if ( (int(abs(grmaPdgcode)/100.)%10) == kBeauty || (int(abs(grmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
+      if ( (int(abs(grmaPdgcode)/100.)%10) == kCharm || (int(abs(grmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
+      if ( abs(grmaPdgcode) == 221 ) return kElse; //mj to remove secondary pi0 decay electrons from eta decays, mainly to eta signal enhance samples
+
+      tmpMomLabel = partMother->GetFirstMother();
+      if((mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) {
+       partMother = mctrack->Particle();
+       ggrmaPdgcode = partMother->GetPdgCode();
+
+       if ( (int(abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) return kGammaB2M;
+       if ( (int(abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(abs(ggrmaPdgcode)/1000.)%10) == kCharm ) return kGammaD2M;
+      }
+     }
+
+     if ( abs(maPdgcode) == 111 ) {
+       return kPi0;
+     } 
+     else if ( abs(maPdgcode) == 221 ) {
+       return kEta;
+     } 
+     else if ( abs(maPdgcode) == 223 ) {
+       return kOmega;
+     } 
+     else if ( abs(maPdgcode) == 333 ) {
+       return kPhi;
+     } 
+     else if ( abs(maPdgcode) == 331 ) {
+       return kEtaPrime;
+     } 
+     else if ( abs(maPdgcode) == 113 ) {
+       return kRho0;
+     } 
+     else if ( abs(maPdgcode) == 321 || abs(maPdgcode) == 130 ) {
+       return kKe3;
+     }
+     else{ 
+      origin = kElse;
+     }
+
    }
    return origin;
 }
@@ -1914,6 +2118,41 @@ void AliHFEmcQA::AliHistsComm::FillList(TList *l) const {
   if(fPtCorrDp) l->Add(fPtCorrDp);
   if(fPtCorrD0) l->Add(fPtCorrD0);
   if(fPtCorrDrest) l->Add(fPtCorrDrest);
+
+  if(fPtCorrDinein) l->Add(fPtCorrDinein);
+  if(fPtCorrDineout) l->Add(fPtCorrDineout);
+  if(fPtCorrDoutein) l->Add(fPtCorrDoutein);
+  if(fPtCorrDouteout) l->Add(fPtCorrDouteout);
+  if(fPtCorrDpDinein) l->Add(fPtCorrDpDinein);
+  if(fPtCorrDpDineout) l->Add(fPtCorrDpDineout);
+  if(fPtCorrDpDoutein) l->Add(fPtCorrDpDoutein);
+  if(fPtCorrDpDouteout) l->Add(fPtCorrDpDouteout);
+  if(fPtCorrD0Dinein) l->Add(fPtCorrD0Dinein);
+  if(fPtCorrD0Dineout) l->Add(fPtCorrD0Dineout);
+  if(fPtCorrD0Doutein) l->Add(fPtCorrD0Doutein);
+  if(fPtCorrD0Douteout) l->Add(fPtCorrD0Douteout);
+  if(fPtCorrDrestDinein) l->Add(fPtCorrDrestDinein);
+  if(fPtCorrDrestDineout) l->Add(fPtCorrDrestDineout);
+  if(fPtCorrDrestDoutein) l->Add(fPtCorrDrestDoutein);
+  if(fPtCorrDrestDouteout) l->Add(fPtCorrDrestDouteout);
+
+  if(fEtaCorrD) l->Add(fEtaCorrD);
+  if(fEtaCorrDp) l->Add(fEtaCorrDp);
+  if(fEtaCorrD0) l->Add(fEtaCorrD0);
+  if(fEtaCorrDrest) l->Add(fEtaCorrDrest);
+
+  if(fEtaCorrGD) l->Add(fEtaCorrGD);
+  if(fEtaCorrGDp) l->Add(fEtaCorrGDp);
+  if(fEtaCorrGD0) l->Add(fEtaCorrGD0);
+  if(fEtaCorrGDrest) l->Add(fEtaCorrGDrest);
+
+  if(fEtaCorrB) l->Add(fEtaCorrB);
+  if(fEtaCorrGB) l->Add(fEtaCorrGB);
+  if(fPtCorrBinein) l->Add(fPtCorrBinein);
+  if(fPtCorrBineout) l->Add(fPtCorrBineout);
+  if(fPtCorrBoutein) l->Add(fPtCorrBoutein);
+  if(fPtCorrBouteout) l->Add(fPtCorrBouteout);
+
   if(fDePtRatio) l->Add(fDePtRatio);
   if(feDistance) l->Add(feDistance);
   if(fDeDistance) l->Add(fDeDistance);

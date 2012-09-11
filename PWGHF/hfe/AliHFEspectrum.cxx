@@ -94,14 +94,17 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   fNCentralityBinAtTheEnd(0),
   fTestCentralityLow(-1),
   fTestCentralityHigh(-1),
+  fFillMoreCorrelationMatrix(kFALSE),
   fHadronEffbyIPcut(NULL),
   fConversionEffbgc(NULL),
   fNonHFEEffbgc(NULL),      
   fBSpectrum2ndMethod(NULL),
   fkBeauty2ndMethodfilename(""),
   fBeamType(0),
+  fEtaSyst(kTRUE),
   fDebugLevel(0),
-  fWriteToFile(kFALSE)
+  fWriteToFile(kFALSE),
+  fUnfoldBG(kFALSE)
 {
   //
   // Default constructor
@@ -162,7 +165,7 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
   // and the appropriate correlation matrix
   //
 
-
+  
   if(fBeauty2ndMethod) CallInputFileForBeauty2ndMethod();
 
   Int_t kNdim = 3;
@@ -269,19 +272,20 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
 	      if(fBeamType==1)
 	      {
               
-		fConvSourceContainer[iSource][iLevel][icentr] = GetSlicedContainer(convtempContainer, fNbDimensions, dims, -1, fChargeChoosen,icentr+1,icentr+1);
-		fNonHFESourceContainer[iSource][iLevel][icentr] = GetSlicedContainer(nonHFEtempContainer, fNbDimensions, dims, -1, fChargeChoosen,icentr+1,icentr+1);
+		fConvSourceContainer[iSource][iLevel][icentr] = GetSlicedContainer(convtempContainer, fNbDimensions, dims, -1, fChargeChoosen,icentr,icentr);
+		fNonHFESourceContainer[iSource][iLevel][icentr] = GetSlicedContainer(nonHFEtempContainer, fNbDimensions, dims, -1, fChargeChoosen,icentr,icentr);
 	      }
 //	      if((!fConvSourceContainer[iSource][iLevel][icentr])||(!fNonHFESourceContainer[iSource][iLevel])) return kFALSE;
 	  }
+          if(fBeamType == 1)break;
 	}
       }
     }
-    else{      
+    // else{      
       nonHFEweightedContainer = bghfecontainer->GetCFContainer("mesonElecs");
       convweightedContainer = bghfecontainer->GetCFContainer("conversionElecs");
       if((!convweightedContainer)||(!nonHFEweightedContainer)) return kFALSE;  
-    }
+      //}
   }
   if((!mccontaineresd) || (!mccontainermc)) return kFALSE;  
   
@@ -299,21 +303,21 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
    mccontainermcD = GetSlicedContainer(mccontainermcbg, fNbDimensions, dims, source, fChargeChoosen);
    SetContainer(mccontainermcD,AliHFEspectrum::kMCContainerCharmMC);
 
-   if(!fNonHFEsyst){
+   //if(!fNonHFEsyst){
      AliCFContainer *nonHFEweightedContainerD = GetSlicedContainer(nonHFEweightedContainer, fNbDimensions, dims, -1, fChargeChoosen);
      SetContainer(nonHFEweightedContainerD,AliHFEspectrum::kMCWeightedContainerNonHFEESD);
      AliCFContainer *convweightedContainerD = GetSlicedContainer(convweightedContainer, fNbDimensions, dims, -1, fChargeChoosen);
      SetContainer(convweightedContainerD,AliHFEspectrum::kMCWeightedContainerConversionESD);
-   }
+     //}
 
-   SetParameterizedEff(mccontainermc, mccontainermcbg, mccontaineresd, mccontaineresdbg, dims);
+     SetParameterizedEff(mccontainermc, mccontainermcbg, mccontaineresd, mccontaineresdbg, dims);
 
   }
   // MC container: correlation matrix
   THnSparseF *mccorrelation = 0x0;
   if(fInclusiveSpectrum) {
-    if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 2)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
-    else if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 1)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
+    if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 2)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
+    else if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 1)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
     else if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
     else if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD - 1)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
     else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
@@ -323,7 +327,13 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
   else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID"); // we confirmed that we get same result by using it instead of correlationstepafterDE
   //else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterDE");
   if(!mccorrelation) return kFALSE;
-  THnSparseF *mccorrelationD = GetSlicedCorrelation(mccorrelation, fNbDimensions, dims,fTestCentralityLow,fTestCentralityHigh);
+  Int_t testCentralityLow = fTestCentralityLow;
+  Int_t testCentralityHigh = fTestCentralityHigh;
+  if(fFillMoreCorrelationMatrix) {
+    testCentralityLow = fTestCentralityLow-1;
+    testCentralityHigh = fTestCentralityHigh+1;
+  }
+  THnSparseF *mccorrelationD = GetSlicedCorrelation(mccorrelation, fNbDimensions, dims,testCentralityLow,testCentralityHigh);
   if(!mccorrelationD) {
     printf("No correlation\n");
     return kFALSE;
@@ -1574,6 +1584,8 @@ AliCFDataGrid* AliHFEspectrum::GetCharmBackground(){
   delete[] nBinPbPb;
   delete[] binsPbPb;
 
+  if(fUnfoldBG) UnfoldBG(charmBackgroundGrid);
+
   return charmBackgroundGrid;
 }
 
@@ -2318,7 +2330,7 @@ TGraphErrors *AliHFEspectrum::Normalize(THnSparse * const spectrum,Int_t i) cons
   // Normalize the spectrum to 1/(2*Pi*p_{T})*dN/dp_{T} (GeV/c)^{-2}
   // Give the final pt spectrum to be compared
   //
- 
+
   if(fNEvents[i] > 0) {
 
     Int_t ptpr = 0;
@@ -2793,8 +2805,8 @@ void AliHFEspectrum::SetParameterizedEff(AliCFContainer *container, AliCFContain
      loopcentr=nCentralitybinning;
    }
 
-   TF1 *fittofpid = new TF1("fittofpid","[0]*([1]+[2]*log(x)+[3]*log(x)*log(x))*tanh([4]*x-[5])",0.5,8.);
-   TF1 *fipfit = new TF1("fipfit","[0]*([1]+[2]*log(x)+[3]*log(x)*log(x))*tanh([4]*x-[5])",0.5,8.);
+   TF1 *fittofpid = new TF1("fittofpid","[0]*([1]+[2]*log(x)+[3]*log(x)*log(x))*tanh([4]*x-[5])",0.9,8.);
+   TF1 *fipfit = new TF1("fipfit","[0]*([1]+[2]*log(x)+[3]*log(x)*log(x))*tanh([4]*x-[5])",0.9,8.);
    TF1 *fipfitnonhfe = new TF1("fipfitnonhfe","[0]*([1]+[2]*log(x)+[3]*log(x)*log(x))*tanh([4]*x-[5])",0.3,10.0);
 
    TCanvas * cefficiencyParamtof = new TCanvas("efficiencyParamtof","efficiencyParamtof",600,600);
@@ -2890,11 +2902,15 @@ void AliHFEspectrum::SetParameterizedEff(AliCFContainer *container, AliCFContain
    efficiencyesdTOFPIDD[0]->Draw("same");
 
    //signal mc fit
-   fEfficiencyTOFPIDD[0]->SetLineColor(2);
-   fEfficiencyTOFPIDD[0]->Draw("same");
+   if(fEfficiencyTOFPIDD[0]){
+     fEfficiencyTOFPIDD[0]->SetLineColor(2);
+     fEfficiencyTOFPIDD[0]->Draw("same");
+   }
    //mb esd fit
-   fEfficiencyesdTOFPIDD[0]->SetLineColor(3);
-   fEfficiencyesdTOFPIDD[0]->Draw("same");
+   if(fEfficiencyesdTOFPIDD[0]){
+       fEfficiencyesdTOFPIDD[0]->SetLineColor(3);
+       fEfficiencyesdTOFPIDD[0]->Draw("same");
+     }
 
    TLegend *legtofeff = new TLegend(0.3,0.15,0.79,0.44);
    legtofeff->AddEntry(efficiencysigTOFPIDD[0],"TOF PID Step Efficiency","");
@@ -3027,7 +3043,7 @@ void AliHFEspectrum::SetParameterizedEff(AliCFContainer *container, AliCFContain
      fEfficiencyCharmSigD[icentr]->Fit(fipfit,"R");
      fEfficiencyCharmSigD[icentr]->GetYaxis()->SetTitle("Efficiency");
      fEfficiencyIPCharmD[icentr] = fEfficiencyCharmSigD[icentr]->GetFunction("fipfit");
-
+     
      if(fIPParameterizedEff){
        fipfitnonhfe->SetParameters(0.5,0.319,0.0157,0.00664,6.77,2.08);
        fipfitnonhfe->SetLineColor(3);
@@ -3090,10 +3106,12 @@ void AliHFEspectrum::SetParameterizedEff(AliCFContainer *container, AliCFContain
      fConversionEff[0]->Draw("same");
      fNonHFEEff[0]->Draw("same");
    }
-
-   fEfficiencyIPBeautyD[0]->Draw("same");
-   fEfficiencyIPBeautyesdD[0]->Draw("same");
-   fEfficiencyIPCharmD[0]->Draw("same");
+   if(fEfficiencyIPBeautyD[0])
+      fEfficiencyIPBeautyD[0]->Draw("same");
+   if(fEfficiencyIPBeautyesdD[0])
+     fEfficiencyIPBeautyesdD[0]->Draw("same");
+   if( fEfficiencyIPCharmD[0])
+     fEfficiencyIPCharmD[0]->Draw("same");
    if(fIPParameterizedEff){
      fEfficiencyIPConversionD[0]->Draw("same");
      fEfficiencyIPNonhfeD[0]->Draw("same");
@@ -3547,12 +3565,13 @@ void AliHFEspectrum::CalculateNonHFEsyst(Int_t centrality){
   AliCFDataGrid *convSourceGrid[kElecBgSources][kBgLevels];
   AliCFDataGrid *nonHFESourceGrid[kElecBgSources][kBgLevels];
 
-  AliCFDataGrid *bgLevelGrid[kBgLevels];
+  AliCFDataGrid *bgLevelGrid[2][kBgLevels];//for pi0 and eta based errors
   AliCFDataGrid *bgNonHFEGrid[kBgLevels];
   AliCFDataGrid *bgConvGrid[kBgLevels];
 
   Int_t stepbackground = 3;
   Int_t* bins=new Int_t[1];
+  const Char_t *bgBase[2] = {"pi0","eta"};
  
   bins[0]=fConversionEff[centrality]->GetNbinsX();
    
@@ -3571,98 +3590,132 @@ void AliHFEspectrum::CalculateNonHFEsyst(Int_t centrality){
     }
     
     bgConvGrid[iLevel] = (AliCFDataGrid*)convSourceGrid[0][iLevel]->Clone();
-    for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
+    for(Int_t iSource = 2; iSource < kElecBgSources; iSource++){
       bgConvGrid[iLevel]->Add(convSourceGrid[iSource][iLevel]);
     }
+    if(!fEtaSyst)
+      bgConvGrid[iLevel]->Add(convSourceGrid[1][iLevel]);
     
     bgNonHFEGrid[iLevel] = (AliCFDataGrid*)nonHFESourceGrid[0][iLevel]->Clone(); 
-    for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){//add other sources to get overall background from all meson decays
+    for(Int_t iSource = 2; iSource < kElecBgSources; iSource++){//add other sources to pi0, to get overall background from all meson decays, exception: eta (independent error calculation)
       bgNonHFEGrid[iLevel]->Add(nonHFESourceGrid[iSource][iLevel]);
     }
+    if(!fEtaSyst)
+      bgNonHFEGrid[iLevel]->Add(nonHFESourceGrid[1][iLevel]);
     
-    bgLevelGrid[iLevel] = (AliCFDataGrid*)bgConvGrid[iLevel]->Clone();
-    bgLevelGrid[iLevel]->Add(bgNonHFEGrid[iLevel]);
+    bgLevelGrid[0][iLevel] = (AliCFDataGrid*)bgConvGrid[iLevel]->Clone();
+    bgLevelGrid[0][iLevel]->Add(bgNonHFEGrid[iLevel]);
+    if(fEtaSyst){
+      bgLevelGrid[1][iLevel] = (AliCFDataGrid*)nonHFESourceGrid[1][iLevel]->Clone();//background for eta source
+      bgLevelGrid[1][iLevel]->Add(convSourceGrid[1][iLevel]);
+    }
+  }
+ 
+  
+  //Now subtract the mean from upper, and lower from mean container to get the error based on the pion yield uncertainty (-> this error sums linearly, since its contribution to all meson yields is correlated; exception: eta errors in pp 7 TeV sum with others the gaussian way, as they are independent from pi0) 
+  AliCFDataGrid *bgErrorGrid[2][2];//for pions/eta error base, for lower/upper
+  TH1D* hBaseErrors[2][2];//pi0/eta and lower/upper
+  for(Int_t iErr = 0; iErr < 2; iErr++){//errors for pi0 and eta base
+    bgErrorGrid[iErr][0] = (AliCFDataGrid*)bgLevelGrid[iErr][1]->Clone();
+    bgErrorGrid[iErr][0]->Add(bgLevelGrid[iErr][0],-1.);
+    bgErrorGrid[iErr][1] = (AliCFDataGrid*)bgLevelGrid[iErr][2]->Clone();    
+    bgErrorGrid[iErr][1]->Add(bgLevelGrid[iErr][0],-1.);
+
+  //plot absolute differences between limit yields (upper/lower limit, based on pi0 and eta errors) and best estimate
+ 
+    hBaseErrors[iErr][0] = (TH1D*)bgErrorGrid[iErr][0]->Project(0);
+    hBaseErrors[iErr][0]->Scale(-1.);
+    hBaseErrors[iErr][0]->SetTitle(Form("Absolute %s-based systematic errors from non-HF meson decays and conversions",bgBase[iErr]));
+    hBaseErrors[iErr][1] = (TH1D*)bgErrorGrid[iErr][1]->Project(0);
+    if(!fEtaSyst)break;
   }
   
-  
-  //Now subtract the mean from upper, and lower from mean container to get the error based on the pion yield uncertainty (-> this error sums linearly, since its contribution to all meson yields is correlated)
-  AliCFDataGrid *bgErrorGrid[2];
-  bgErrorGrid[0] = (AliCFDataGrid*)bgLevelGrid[1]->Clone();
-  bgErrorGrid[1] = (AliCFDataGrid*)bgLevelGrid[2]->Clone();
-  bgErrorGrid[0]->Add(bgLevelGrid[0],-1.);
-  bgErrorGrid[1]->Add(bgLevelGrid[0],-1.);
  
-  //plot absolute differences between limit yields (upper/lower limit, based on pi0 errors) and best estimate
-  TH1D* hpiErrors[2];
-  hpiErrors[0] = (TH1D*)bgErrorGrid[0]->Project(0);
-  hpiErrors[0]->Scale(-1.);
-  hpiErrors[0]->SetTitle("Absolute systematic errors from non-HF meson decays and conversions");
-  hpiErrors[1] = (TH1D*)bgErrorGrid[1]->Project(0);
-
-  
-
-   //Calculate the scaling errors for electrons from all mesons except for pions: square sum of (0.3 * best yield estimate), where 0.3 is the error generally assumed for m_t scaling
+  //Calculate the scaling errors for electrons from all mesons except for pions (and in pp 7 TeV case eta): square sum of (0.3 * best yield estimate), where 0.3 is the error generally assumed for m_t scaling
   TH1D *hSpeciesErrors[kElecBgSources-1];
   for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
+    if(fEtaSyst && (iSource == 1))continue;
     hSpeciesErrors[iSource-1] = (TH1D*)convSourceGrid[iSource][0]->Project(0);
     TH1D *hNonHFEtemp = (TH1D*)nonHFESourceGrid[iSource][0]->Project(0);
     hSpeciesErrors[iSource-1]->Add(hNonHFEtemp);
     hSpeciesErrors[iSource-1]->Scale(0.3);   
   }
-
-  TH1D *hOverallSystErrLow = (TH1D*)hSpeciesErrors[0]->Clone();
-  TH1D *hOverallSystErrUp = (TH1D*)hSpeciesErrors[0]->Clone();
-  TH1D *hScalingErrors = (TH1D*)hSpeciesErrors[0]->Clone();
+  
+  //Int_t firstBgSource = 0;//if eta systematics are not from scaling
+  //if(fEtaSyst){firstBgSource = 1;}//source 0 histograms are not filled if eta errors are independently determined!
+  TH1D *hOverallSystErrLow = (TH1D*)hSpeciesErrors[1]->Clone();
+  TH1D *hOverallSystErrUp = (TH1D*)hSpeciesErrors[1]->Clone();
+  TH1D *hScalingErrors = (TH1D*)hSpeciesErrors[1]->Clone();
 
   TH1D *hOverallBinScaledErrsUp = (TH1D*)hOverallSystErrUp->Clone();
   TH1D *hOverallBinScaledErrsLow = (TH1D*)hOverallSystErrLow->Clone();
 
   for(Int_t iBin = 1; iBin <= kBgPtBins; iBin++){
-    Double_t pi0basedErrLow = hpiErrors[0]->GetBinContent(iBin); 
-    Double_t pi0basedErrUp = hpiErrors[1]->GetBinContent(iBin);
-    
+    Double_t pi0basedErrLow,pi0basedErrUp,etaErrLow,etaErrUp;    
+    pi0basedErrLow = hBaseErrors[0][0]->GetBinContent(iBin); 
+    pi0basedErrUp = hBaseErrors[0][1]->GetBinContent(iBin);
+    if(fEtaSyst){
+      etaErrLow = hBaseErrors[1][0]->GetBinContent(iBin); 
+      etaErrUp = hBaseErrors[1][1]->GetBinContent(iBin);
+    }
+    else{ etaErrLow = etaErrUp = 0.;}
+
     Double_t sqrsumErrs= 0;
     for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
+      if(fEtaSyst && (iSource == 1))continue;
       Double_t scalingErr=hSpeciesErrors[iSource-1]->GetBinContent(iBin);
       sqrsumErrs+=(scalingErr*scalingErr);
     }
     for(Int_t iErr = 0; iErr < 2; iErr++){
-      hpiErrors[iErr]->SetBinContent(iBin,hpiErrors[iErr]->GetBinContent(iBin)/hpiErrors[iErr]->GetBinWidth(iBin));
+      for(Int_t iLevel = 0; iLevel < 2; iLevel++){
+        hBaseErrors[iErr][iLevel]->SetBinContent(iBin,hBaseErrors[iErr][iLevel]->GetBinContent(iBin)/hBaseErrors[iErr][iLevel]->GetBinWidth(iBin));
+      }
+      if(!fEtaSyst)break;
     }
-    hOverallSystErrUp->SetBinContent(iBin, TMath::Sqrt((pi0basedErrUp*pi0basedErrUp)+sqrsumErrs));
-    hOverallSystErrLow->SetBinContent(iBin, TMath::Sqrt((pi0basedErrLow*pi0basedErrLow)+sqrsumErrs));
+    hOverallSystErrUp->SetBinContent(iBin, TMath::Sqrt((pi0basedErrUp*pi0basedErrUp)+(etaErrUp*etaErrUp)+sqrsumErrs));
+    hOverallSystErrLow->SetBinContent(iBin, TMath::Sqrt((pi0basedErrLow*pi0basedErrLow)+(etaErrLow*etaErrLow)+sqrsumErrs));
     hScalingErrors->SetBinContent(iBin, TMath::Sqrt(sqrsumErrs)/hScalingErrors->GetBinWidth(iBin));
 
     hOverallBinScaledErrsUp->SetBinContent(iBin,hOverallSystErrUp->GetBinContent(iBin)/hOverallBinScaledErrsUp->GetBinWidth(iBin));
     hOverallBinScaledErrsLow->SetBinContent(iBin,hOverallSystErrLow->GetBinContent(iBin)/hOverallBinScaledErrsLow->GetBinWidth(iBin));		  
   }
    
-
-   // /hOverallSystErrUp->GetBinWidth(iBin))
   
   TCanvas *cPiErrors = new TCanvas("cPiErrors","cPiErrors",1000,600);
   cPiErrors->cd();
   cPiErrors->SetLogx();
   cPiErrors->SetLogy();
-  hpiErrors[0]->Draw();
-  hpiErrors[1]->SetMarkerColor(kBlack);
-  hpiErrors[1]->SetLineColor(kBlack);
-  hpiErrors[1]->Draw("SAME");
-  hOverallBinScaledErrsUp->SetMarkerColor(kBlue);
-  hOverallBinScaledErrsUp->SetLineColor(kBlue);
-  hOverallBinScaledErrsUp->Draw("SAME");
+  hBaseErrors[0][0]->Draw();
+  //hBaseErrors[0][1]->SetMarkerColor(kBlack);
+  //hBaseErrors[0][1]->SetLineColor(kBlack);
+  //hBaseErrors[0][1]->Draw("SAME");
+  if(fEtaSyst){
+    hBaseErrors[1][0]->Draw("SAME");
+    hBaseErrors[1][0]->SetMarkerColor(kBlack);
+    hBaseErrors[1][0]->SetLineColor(kBlack);
+  //hBaseErrors[1][1]->SetMarkerColor(13);
+  //hBaseErrors[1][1]->SetLineColor(13);
+  //hBaseErrors[1][1]->Draw("SAME");
+  }
+  //hOverallBinScaledErrsUp->SetMarkerColor(kBlue);
+  //hOverallBinScaledErrsUp->SetLineColor(kBlue);
+  //hOverallBinScaledErrsUp->Draw("SAME");
   hOverallBinScaledErrsLow->SetMarkerColor(kGreen);
   hOverallBinScaledErrsLow->SetLineColor(kGreen);
   hOverallBinScaledErrsLow->Draw("SAME");
-  hScalingErrors->SetLineColor(11);
+  hScalingErrors->SetLineColor(kBlue);
   hScalingErrors->Draw("SAME");
 
   TLegend *lPiErr = new TLegend(0.6,0.6, 0.95,0.95);
-  lPiErr->AddEntry(hpiErrors[0],"Lower error from pion error");
-  lPiErr->AddEntry(hpiErrors[1],"Upper error from pion error");
+  lPiErr->AddEntry(hBaseErrors[0][0],"Lower error from pion error");
+  //lPiErr->AddEntry(hBaseErrors[0][1],"Upper error from pion error");
+  if(fEtaSyst){
+  lPiErr->AddEntry(hBaseErrors[1][0],"Lower error from eta error");
+  //lPiErr->AddEntry(hBaseErrors[1][1],"Upper error from eta error");
+  }
   lPiErr->AddEntry(hScalingErrors, "scaling error");
   lPiErr->AddEntry(hOverallBinScaledErrsLow, "overall lower systematics");
-  lPiErr->AddEntry(hOverallBinScaledErrsUp, "overall upper systematics");
+  //lPiErr->AddEntry(hOverallBinScaledErrsUp, "overall upper systematics");
   lPiErr->Draw("SAME");
 
   //Normalize errors
@@ -3697,7 +3750,10 @@ void AliHFEspectrum::CalculateNonHFEsyst(Int_t centrality){
 
 
   AliCFDataGrid *bgYieldGrid;
-  bgYieldGrid = (AliCFDataGrid*)bgLevelGrid[0]->Clone();
+  if(fEtaSyst){
+    bgLevelGrid[0][0]->Add(bgLevelGrid[1][0]);//Addition of the eta background best estimate to the rest. Needed to be separated for error treatment - now overall background necessary! If no separate eta systematics exist, the corresponding grid has already been added before.
+  }
+  bgYieldGrid = (AliCFDataGrid*)bgLevelGrid[0][0]->Clone();
 
   TH1D *hBgYield = (TH1D*)bgYieldGrid->Project(0);
   TH1D* hRelErrUp = (TH1D*)hOverallSystErrUp->Clone();
@@ -3745,3 +3801,94 @@ void AliHFEspectrum::CalculateNonHFEsyst(Int_t centrality){
   
 }
 
+//____________________________________________________________
+void AliHFEspectrum::UnfoldBG(AliCFDataGrid* const bgsubpectrum){
+
+  //
+  // Unfold backgrounds to check its sanity
+  //
+
+  AliCFContainer *mcContainer = GetContainer(kMCContainerCharmMC);
+  //AliCFContainer *mcContainer = GetContainer(kMCContainerMC);
+  if(!mcContainer){
+    AliError("MC Container not available");
+  }
+
+  if(!fCorrelation){
+    AliError("No Correlation map available");
+  }
+
+  // Data 
+  AliCFDataGrid *dataGrid = 0x0;
+  dataGrid = bgsubpectrum;
+
+  // Guessed
+  AliCFDataGrid* guessedGrid = new AliCFDataGrid("guessed","",*mcContainer, fStepGuessedUnfolding);
+  THnSparse* guessedTHnSparse = ((AliCFGridSparse*)guessedGrid->GetData())->GetGrid();
+
+  // Efficiency
+  AliCFEffGrid* efficiencyD = new AliCFEffGrid("efficiency","",*mcContainer);
+  efficiencyD->CalculateEfficiency(fStepMC+2,fStepTrue);
+
+  // Unfold background spectra
+  Int_t nDim=1;
+  if(fBeamType==0)nDim = 1;
+  if(fBeamType==1)nDim = 2;
+  AliCFUnfolding unfolding("unfolding","",nDim,fCorrelation,efficiencyD->GetGrid(),dataGrid->GetGrid(),guessedTHnSparse);
+  if(fUnSetCorrelatedErrors) unfolding.UnsetCorrelatedErrors();
+  unfolding.SetMaxNumberOfIterations(fNumberOfIterations);
+  if(fSetSmoothing) unfolding.UseSmoothing();
+  unfolding.Unfold();
+
+  // Results
+  THnSparse* result = unfolding.GetUnfolded();
+  TCanvas *ctest = new TCanvas("yvonnetest","yvonnetest",1000,600);
+  if(fBeamType==1)
+  {
+      ctest->Divide(2,2);
+      ctest->cd(1);
+      result->GetAxis(0)->SetRange(1,1);
+      TH1D* htest1=(TH1D*)result->Projection(0);
+      htest1->Draw();
+      ctest->cd(2);
+      result->GetAxis(0)->SetRange(1,1);
+      TH1D* htest2=(TH1D*)result->Projection(1);
+      htest2->Draw();
+      ctest->cd(3);
+      result->GetAxis(0)->SetRange(6,6);
+      TH1D* htest3=(TH1D*)result->Projection(0);
+      htest3->Draw();
+      ctest->cd(4);
+      result->GetAxis(0)->SetRange(6,6);
+      TH1D* htest4=(TH1D*)result->Projection(1);
+      htest4->Draw();
+
+  }
+
+
+
+
+
+  TGraphErrors* unfoldedbgspectrumD = Normalize(result);
+  if(!unfoldedbgspectrumD) {
+    AliError("Unfolded background spectrum doesn't exist");
+  }
+  else{
+    TFile *file = TFile::Open("unfoldedbgspectrum.root","recreate");
+    if(fBeamType==0)unfoldedbgspectrumD->Write("unfoldedbgspectrum");
+
+    if(fBeamType==1)
+    {
+        Int_t centr=1;
+	result->GetAxis(0)->SetRange(centr,centr);
+	unfoldedbgspectrumD = Normalize(result,centr-1);
+	unfoldedbgspectrumD->Write("unfoldedbgspectrum_centr0_20");
+        centr=6;
+	result->GetAxis(0)->SetRange(centr,centr);
+	unfoldedbgspectrumD = Normalize(result,centr-1);
+        unfoldedbgspectrumD->Write("unfoldedbgspectrum_centr40_80");
+    }
+
+    file->Close();
+  }
+}

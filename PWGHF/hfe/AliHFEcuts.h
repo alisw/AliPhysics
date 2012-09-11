@@ -142,6 +142,7 @@ class AliHFEcuts : public TNamed{
     void SetMinNClustersTPCPID(UChar_t minClustersTPC) { fMinClustersTPCPID = minClustersTPC; }
     void SetMinNClustersITS(UChar_t minClustersITS) { fMinClustersITS = minClustersITS; }
     void SetMinNTrackletsTRD(UChar_t minNtrackletsTRD, Bool_t exact = kFALSE) { fMinTrackletsTRD = minNtrackletsTRD; fTRDtrackletsExact = exact; }
+    void SetMaxChi2perTrackletTRD(Float_t maxchi2trackletTRD) { fMaxChi2TRD = maxchi2trackletTRD; }
     void SetMaxChi2perClusterITS(Double_t chi2) { fMaxChi2clusterITS = chi2; };
     void SetMaxChi2perClusterTPC(Double_t chi2) { fMaxChi2clusterTPC = chi2; };
     inline void SetMaxImpactParam(Double_t radial, Double_t z);
@@ -162,6 +163,7 @@ class AliHFEcuts : public TNamed{
     void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};
     void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
     void SetTPCPIDCleanUpStep(Bool_t tpcPIDCleanUpStep) {fTPCPIDCLEANUPStep = tpcPIDCleanUpStep;};
+    void SetITSpatternCut() { fITSpatternCut = kTRUE; }
     void SetUseMixedVertex(Bool_t useMixedVertex) {fUseMixedVertex = useMixedVertex;};    
     void SetFractionOfSharedTPCClusters(Double_t fractionOfSharedTPCClusters) {fFractionOfSharedTPCClusters = fractionOfSharedTPCClusters;};
     void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { fMaxImpactParameterRpar = maxImpactParameterRpar; };
@@ -196,7 +198,7 @@ class AliHFEcuts : public TNamed{
       kITSPixel = 4,
       kMaxImpactParam = 5,
       kKineMCCuts = 6,
-      kITSDrift = 7,
+      kITSDrift = 7
     } Require_t;
     void SetParticleGenCutList();
     void SetAcceptanceCutList();
@@ -227,6 +229,7 @@ class AliHFEcuts : public TNamed{
     UChar_t fMinClustersTPCPID;	  // Min.Number of TPC clusters
     UChar_t fMinClustersITS;	    // Min.Number of TPC clusters
     UChar_t fMinTrackletsTRD;	    // Min. Number of TRD tracklets
+    Float_t fMaxChi2TRD;                // Max. Chi2 per TRD tracklet
     UChar_t fCutITSPixel;	        // Cut on ITS pixel
     Bool_t  fCheckITSLayerStatus;       // Check ITS layer status
     UChar_t fCutITSDrift;	        // Cut on ITS drift
@@ -239,6 +242,7 @@ class AliHFEcuts : public TNamed{
     Bool_t   fTOFPIDStep;               // TOF matching step efficiency
     Bool_t   fTOFMISMATCHStep;        // TOF mismatch step
     Bool_t   fTPCPIDCLEANUPStep;      // TPC PIC cleanup step
+    Bool_t   fITSpatternCut;          // Cut on ITS pattern
     Bool_t   fUseMixedVertex;         // Use primary vertex from track only as before
     Float_t  fIPCutParams[4];         // Parameters of impact parameter cut parametrization
     Bool_t   fIsIPSigmacut;           // if IP cut or IP sigma cut 
