@@ -104,7 +104,13 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fStatisticsMsg(),
                     fRequestedBranches(),
                     fStatistics(0),
-                    fGlobals(0)
+                    fGlobals(0),
+                    fIOTimer(0),
+                    fCPUTimer(0),
+                    fInitTimer(0),
+                    fIOTime(0),
+                    fCPUTime(0),
+                    fInitTime(0)
 {
 // Default constructor.
    fgAnalysisManager = this;
@@ -118,7 +124,10 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
      fOutputs    = new TObjArray();
      fParamCont  = new TObjArray();
      fGlobals    = new TMap();
-   }  
+   }
+   fIOTimer = new TStopwatch();
+   fCPUTimer = new TStopwatch();
+   fInitTimer = new TStopwatch();
    SetEventLoop(kTRUE);
 }
 
@@ -163,7 +172,13 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fStatisticsMsg(other.fStatisticsMsg),
                     fRequestedBranches(other.fRequestedBranches),
                     fStatistics(other.fStatistics),
-                    fGlobals(other.fGlobals)
+                    fGlobals(other.fGlobals),
+                    fIOTimer(new TStopwatch()),
+                    fCPUTimer(new TStopwatch()),
+                    fInitTimer(new TStopwatch()),
+                    fIOTime(0),
+                    fCPUTime(0),
+                    fInitTime(0)
 {
 // Copy constructor.
    fTasks      = new TObjArray(*other.fTasks);
@@ -222,6 +237,12 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fRequestedBranches = other.fRequestedBranches;
       fStatistics = other.fStatistics;
       fGlobals = new TMap();
+      fIOTimer = new TStopwatch();
+      fCPUTimer = new TStopwatch();
+      fInitTimer = new TStopwatch();
+      fIOTime = 0.;
+      fCPUTime = 0.;
+      fInitTime = 0.;
    }
    return *this;
 }
@@ -246,6 +267,9 @@ AliAnalysisManager::~AliAnalysisManager()
    if (fgAnalysisManager==this) fgAnalysisManager = NULL;
    if (fGlobals) {fGlobals->DeleteAll(); delete fGlobals;}
    if (fFileDescriptors) {fFileDescriptors->Delete(); delete fFileDescriptors;}
+   delete fIOTimer;
+   delete fCPUTimer;
+   delete fInitTimer;
 }
 
 //______________________________________________________________________________
@@ -255,8 +279,11 @@ Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
    fCurrentEntry = entry;
    if (!fAutoBranchHandling)
      return 123456789;
-   if (!fTree) return -1;  
+   if (!fTree) return -1; 
+   fIOTimer->Start(kTRUE); 
    Long64_t readbytes = fTree->GetTree()->GetEntry(entry, getall);
+   fIOTimer->Stop();
+   fIOTime += fIOTimer->RealTime();
    return (Int_t)readbytes;
 }
 
@@ -378,7 +405,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
    if (fDebug > 1) printf("->AliAnalysisManager::SlaveBegin()\n");
-
+   // Init timer should be already started
    // Apply debug options
    ApplyDebugOptions();
    
@@ -457,6 +484,10 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    }
    TH1::AddDirectory(dirStatus);
    if (curdir) curdir->cd();
+   fInitTimer->Stop();
+   fInitTime += fInitTimer->RealTime();
+   fInitTimer->Continue();
+   printf("Initialization time: %g [sec]\n", fInitTime);
    if (fDebug > 1) printf("<-AliAnalysisManager::SlaveBegin()\n");
 }
 
@@ -468,6 +499,7 @@ Bool_t AliAnalysisManager::Notify()
    // is started when using PROOF. It is normaly not necessary to make changes
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
+   fIOTimer->Start(kTRUE); 
    if (!fTree) return kFALSE;
    if (!TObject::TestBit(AliAnalysisManager::kTrueNotify)) return kFALSE;
 
@@ -478,7 +510,7 @@ Bool_t AliAnalysisManager::Notify()
    if (!curfile) {
       Error("Notify","No current file");
       return kFALSE;
-   }   
+   }  
    if (IsCollectThroughput()) {
       if (fCurrentDescriptor) fCurrentDescriptor->Done();
       fCurrentDescriptor = new AliAnalysisFileDescriptor(curfile);
@@ -512,6 +544,8 @@ Bool_t AliAnalysisManager::Notify()
       task->Notify();
 
    if (fDebug > 1) printf("<-AliAnalysisManager::Notify()\n");
+   fIOTimer->Stop();
+   fIOTime += fIOTimer->RealTime();
    return kTRUE;
 }    
 
@@ -546,12 +580,13 @@ void AliAnalysisManager::PackOutput(TList *target)
   // Pack all output data containers in the output list. Called at SlaveTerminate
   // stage in PROOF case for each slave.
    if (fDebug > 1) printf("->AliAnalysisManager::PackOutput()\n");
+   fIOTimer->Start(kTRUE);
+   std::ofstream out;
    if (IsCollectThroughput()) {
       if (fCurrentDescriptor) fCurrentDescriptor->Done();
       fFileDescriptors->Print();
       if (fFileInfoLog.IsNull()) fFileInfoLog = "fileinfo.log";
-      std::ofstream out;
-      out.open(fFileInfoLog, std::ios::out);
+      out.open(fFileInfoLog, std::ios::app);
       if (out.bad()) Error("SavePrimitive", "Bad file name: %s", fFileInfoLog.Data());
       else {
          TIter nextflog(fFileDescriptors);
@@ -765,6 +800,26 @@ void AliAnalysisManager::PackOutput(TList *target)
          }      
       }
    } 
+   fIOTime += fIOTimer->RealTime();
+   if ((fDebug || IsCollectThroughput())) {
+      fInitTimer->Stop();
+      fInitTime = fInitTimer->RealTime()-fIOTime-fCPUTime;
+      printf("=Analysis %s= init time:       %g[sec]\
+            \n              I/O & data mng.: %g [sec]\
+            \n              task execution: %g [sec]\
+            \n              total time:     CPU=%g [sec]  REAL=%g[sec]\n",
+            GetName(), fInitTime, fIOTime, fCPUTime, fInitTimer->CpuTime(), fInitTimer->RealTime());
+      if (IsCollectThroughput()) {
+         out << "#summary#########################################################" << endl;
+         out << "train_name   " << GetName() << endl;
+         out << "root_time    " << fInitTimer->RealTime() << endl;
+         out << "root_cpu     " << fInitTimer->CpuTime() << endl;
+         out << "init_time    " << fInitTime << endl;
+         out << "io_mng_time  " << fIOTime << endl;
+         out << "exec_time    " << fCPUTime << endl;
+      }
+   }
+              
    if (cdir) cdir->cd();
    if (fDebug > 1) printf("<-AliAnalysisManager::PackOutput: output list contains %d containers\n", target->GetSize());
 }
@@ -774,6 +829,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
 {
 // Import data in output containers from wrappers coming in source.
    if (fDebug > 1) printf("->AliAnalysisManager::ImportWrappers()\n");
+   fIOTimer->Start(kTRUE);
    TIter next(fOutputs);
    AliAnalysisDataContainer *cont;
    AliAnalysisDataWrapper   *wrap;
@@ -843,6 +899,8 @@ void AliAnalysisManager::ImportWrappers(TList *source)
       cont->ImportData(wrap);
    }
    if (cdir) cdir->cd();
+   fIOTimer->Stop();
+   fIOTime += fIOTimer->RealTime();
    if (fDebug > 1) printf("<-AliAnalysisManager::ImportWrappers(): %d containers imported\n", icont);
 }
 
@@ -850,6 +908,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
 void AliAnalysisManager::UnpackOutput(TList *source)
 {
   // Called by AliAnalysisSelector::Terminate only on the client.
+   fIOTimer->Start(kTRUE);
    if (fDebug > 1) printf("->AliAnalysisManager::UnpackOutput()\n");
    if (!source) {
       Error("UnpackOutput", "No target. Exiting.");
@@ -880,6 +939,8 @@ void AliAnalysisManager::UnpackOutput(TList *source)
          }
       }   
    }
+   fIOTimer->Stop();
+   fIOTime += fIOTimer->RealTime();
    if (fDebug > 1) printf("<-AliAnalysisManager::UnpackOutput()\n");
 }
 
@@ -890,6 +951,7 @@ void AliAnalysisManager::Terminate()
   // a query. It always runs on the client, it can be used to present
   // the results graphically.
    if (fDebug > 1) printf("->AliAnalysisManager::Terminate()\n");
+   fInitTimer->Start(kTRUE);
    TDirectory *cdir = gDirectory;
    gROOT->cd();
    AliAnalysisTask *task;
@@ -910,8 +972,8 @@ void AliAnalysisManager::Terminate()
       if (TObject::TestBit(kSaveCanvases)) {
          if (!gROOT->IsBatch()) {
             if (fDebug>1) printf("Waiting 5 sec for %s::Terminate() to finish drawing ...\n", task->ClassName());
-            timer.Start();
-            while (timer.CpuTime()<5) {
+            timer.Start(kTRUE);
+            while (timer.RealTime()<5) {
                timer.Continue();
                gSystem->ProcessEvents();
             }
@@ -1137,7 +1199,11 @@ void AliAnalysisManager::Terminate()
       out.open("outputs_valid", ios::out);
       out.close();
    }
-   if (cdir) cdir->cd();      
+   if (cdir) cdir->cd();  
+   fInitTimer->Stop();
+   if (fDebug || IsCollectThroughput()) {
+      printf("=Analysis %s= Terminate time:  %g[sec]\n", GetName(), fInitTimer->RealTime());
+   }
    if (fDebug > 1) printf("<-AliAnalysisManager::Terminate()\n");
 }
 //______________________________________________________________________________
@@ -2047,6 +2113,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (!fNcalls) timer->Start();
       if (!fIsRemote && TObject::TestBit(kUseProgressBar)) ProgressBar("Processing event", fNcalls, TMath::Min(fMaxEntries,nentries), timer, kFALSE);
    }
+   fIOTimer->Start(kTRUE);
    gROOT->cd();
    TDirectory *cdir = gDirectory;
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
@@ -2085,6 +2152,9 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 //
 //    Execute the tasks
 //      TIter next1(cont->GetConsumers());
+      fIOTimer->Stop();
+      fIOTime += fIOTimer->RealTime();
+      fCPUTimer->Start(kTRUE);
       TIter next1(fTopTasks);
       Int_t itask = 0;
       while ((task=(AliAnalysisTask*)next1())) {
@@ -2097,6 +2167,9 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
             AliSysInfo::AddStamp(task->ClassName(), fNcalls, itask, 1);
          itask++;   
       }
+      fCPUTimer->Stop();
+      fCPUTime += fCPUTimer->RealTime();
+      fIOTimer->Start(kTRUE);
 //
 //    Call FinishEvent() for optional output and MC services 
       if (fInputEventHandler)   fInputEventHandler  ->FinishEvent();
@@ -2106,17 +2179,23 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
          AliSysInfo::AddStamp("Handlers_FinishEvent",fNcalls, 1001, 1);
       if (cdir) cdir->cd();   
+      fIOTimer->Stop();
+      fIOTime += fIOTimer->RealTime();
       return;
    }   
    // The event loop is not controlled by TSelector   
 //
 //  Call BeginEvent() for optional input/output and MC services 
+   fIOTimer->Start(kTRUE);
    if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(-1);
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(-1);
    if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(-1);
+   fIOTimer->Stop();
+   fIOTime += fIOTimer->RealTime();
    gROOT->cd();
    if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
       AliSysInfo::AddStamp("Handlers_BeginEvent",fNcalls, 1000, 0);
+   fCPUTimer->Start(kTRUE);
    TIter next2(fTopTasks);
    while ((task=(AliAnalysisTask*)next2())) {
       task->SetActive(kTRUE);
@@ -2126,14 +2205,19 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       task->ExecuteTask(option);
       gROOT->cd();
    }   
+   fCPUTimer->Stop();
+   fCPUTime += fCPUTimer->RealTime();
 //
 // Call FinishEvent() for optional output and MC services 
+   fIOTimer->Start(kTRUE);
    if (fInputEventHandler)   fInputEventHandler  ->FinishEvent();
    if (fOutputEventHandler)  fOutputEventHandler ->FinishEvent();
    if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
    if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
       AliSysInfo::AddStamp("Handlers_FinishEvent",fNcalls, 1000, 1);
    if (cdir) cdir->cd();   
+   fIOTimer->Stop();
+   fIOTime += fIOTimer->RealTime();
 }
 
 //______________________________________________________________________________

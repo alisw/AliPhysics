@@ -1535,6 +1535,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
 {
 // Generate a JDL file according to current settings. The name of the file is 
 // specified by fJDLName.
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    Bool_t error = kFALSE;
    TObjArray *arr = 0;
    Bool_t copy = kTRUE;
@@ -1719,7 +1720,11 @@ Bool_t AliAnalysisAlien::CreateJDL()
                delete arr;
             }
             files.ReplaceAll(".root", "*.root");
-            outputArchive += Form("root_archive.zip:%s,*.stat@disk=%d",files.Data(),fNreplicas);
+            
+            if (mgr->IsCollectThroughput())
+               outputArchive += Form("root_archive.zip:%s,*.stat,*%s@disk=%d",files.Data(),mgr->GetFileInfoLog(),fNreplicas);
+            else
+               outputArchive += Form("root_archive.zip:%s,*.stat@disk=%d",files.Data(),fNreplicas);
          } else {
             TString files = fOutputArchive;
             files.ReplaceAll(".root", "*.root"); // nreplicas etc should be already atttached by use
@@ -2631,6 +2636,44 @@ Int_t AliAnalysisAlien::SubmitSingleJob(const char *query)
 }  
 
 //______________________________________________________________________________
+Bool_t AliAnalysisAlien::MergeInfo(const char *output, const char *collection)
+{
+// Merges a collection of output files using concatenation.
+   TGridCollection *coll = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\");", collection));
+   if (!coll) {
+      ::Error("MergeInfo", "Input XML %s collection empty.", collection);
+      return kFALSE;
+   }
+   // Iterate grid collection
+   TString outtmp;
+   Bool_t merged = kFALSE;
+   Int_t ifile = 0;
+   while (coll->Next()) {
+      TString fname = gSystem->DirName(coll->GetTURL());
+      fname += "/";
+      fname += output;
+      outtmp = Form("%d_%s", ifile, output);
+      if (!TFile::Cp(fname, outtmp)) {
+         ::Error("MergeInfo", "Could not copy %s", fname.Data());
+         continue;
+      }
+      ifile++;
+      if (ifile<2) {
+         gSystem->Exec(Form("cp %s lastmerged", outtmp.Data()));
+         continue;
+      }
+      gSystem->Exec(Form("cat lastmerged %s > tempmerged", outtmp.Data()));
+      gSystem->Exec("cp tempmerged lastmerged");
+   }
+   if (ifile) {
+      gSystem->Exec(Form("cp lastmerged %s", output));
+      gSystem->Exec(Form("rm tempmerged lastmerged *_%s", output));
+      merged = kTRUE;
+   }
+   return merged;
+}   
+
+//______________________________________________________________________________
 Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge, Int_t stage)
 {
 // Merge given output files from basedir. Basedir can be an alien output directory
@@ -3272,7 +3315,10 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       }
       // Compose the output archive.
       fOutputArchive = "log_archive.zip:std*@disk=1 ";
-      fOutputArchive += Form("root_archive.zip:%s,*.stat@disk=%d",fOutputFiles.Data(),fNreplicas);
+      if (mgr->IsCollectThroughput())
+         fOutputArchive += Form("root_archive.zip:%s,*.stat,*%s@disk=%d",fOutputFiles.Data(),mgr->GetFileInfoLog(),fNreplicas);
+      else
+         fOutputArchive += Form("root_archive.zip:%s,*.stat@disk=%d",fOutputFiles.Data(),fNreplicas);
    }
 //   if (!fCloseSE.Length()) fCloseSE = gSystem->Getenv("alien_CLOSE_SE");
    if (TestBit(AliAnalysisGrid::kOffline)) {
@@ -4075,6 +4121,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       Error("WriteMergingMacro", "No output file names defined. Are you running the right AliAnalysisAlien configuration ?");
       return;
    }   
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    TString mergingMacro = fExecutable;
    mergingMacro.ReplaceAll(".sh","_merge.C");
    if (gGrid && !fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
@@ -4257,6 +4304,14 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   TObjString *str;" << endl;
       out << "   TString outputFile;" << endl;
       out << "   Bool_t merged = kTRUE;" << endl;
+      TString analysisFile = fExecutable;
+      analysisFile.ReplaceAll(".sh", ".root");
+      out << "   AliAnalysisManager *mgr = AliAnalysisAlien::LoadAnalysisManager(\""
+          << analysisFile << "\");" << endl;
+      out << "   if (!mgr) {" << endl;
+      out << "      printf(\"ERROR: Analysis manager could not be extracted from file \");" << endl;
+      out << "      return;" << endl;
+      out << "   }" << endl;
       out << "   while((str=(TObjString*)iter->Next())) {" << endl;
       out << "      outputFile = str->GetString();" << endl;
       out << "      if (outputFile.Contains(\"*\")) continue;" << endl;
@@ -4274,22 +4329,21 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "         return;" << endl;
       out << "      }" << endl;
       out << "   }" << endl;
+      if (mgr && mgr->IsCollectThroughput()) {
+         out << "   TString infolog = \"" << mgr->GetFileInfoLog() << "\";" << endl;
+         out << "   AliAnalysisAlien::MergeInfo(infolog, outputDir);" << endl;
+      }
       out << "   // all outputs merged, validate" << endl;
       out << "   ofstream out;" << endl;
       out << "   out.open(\"outputs_valid\", ios::out);" << endl;
       out << "   out.close();" << endl;
       out << "   // read the analysis manager from file" << endl;
-      TString analysisFile = fExecutable;
-      analysisFile.ReplaceAll(".sh", ".root");
       out << "   if (!outputDir.Contains(\"Stage\")) return;" << endl;
-      out << "   AliAnalysisManager *mgr = AliAnalysisAlien::LoadAnalysisManager(\"" 
-          << analysisFile << "\");" << endl;
-      out << "   if (!mgr) return;" << endl;
       out << "   mgr->SetRunFromPath(mgr->GetRunFromAlienPath(dir));" << endl;
       out << "   mgr->SetSkipTerminate(kFALSE);" << endl;
       out << "   mgr->PrintStatus();" << endl;
-      if (AliAnalysisManager::GetAnalysisManager()) {
-         if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>3) {
+      if (mgr) {
+         if (mgr->GetDebugLevel()>3) {
             out << "   gEnv->SetValue(\"XNet.Debug\", \"1\");" << endl;
          } else {
             if (TestBit(AliAnalysisGrid::kTest))            

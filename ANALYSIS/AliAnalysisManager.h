@@ -264,6 +264,12 @@ private:
    TString                 fRequestedBranches;   // Requested branch names
    AliAnalysisStatistics  *fStatistics;          // Statistics info about input events
    TMap                   *fGlobals;             // Map with global variables
+   TStopwatch             *fIOTimer;             //! Timer for I/O + deserialization
+   TStopwatch             *fCPUTimer;            //! Timer for useful processing
+   TStopwatch             *fInitTimer;           //! Timer for initialization
+   Double_t                fIOTime;              //! Cumulated time in IO
+   Double_t                fCPUTime;             //! Cumulated time in Exec
+   Double_t                fInitTime;            //! Cumulated time in initialization
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
    ClassDef(AliAnalysisManager,17)  // Analysis manager class
