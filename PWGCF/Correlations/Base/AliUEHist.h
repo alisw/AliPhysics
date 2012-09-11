@@ -156,7 +156,7 @@ protected:
   
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 9) // underlying event histogram container
+  ClassDef(AliUEHist, 10) // underlying event histogram container
 };
 
 #endif
