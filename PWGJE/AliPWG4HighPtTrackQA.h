@@ -99,7 +99,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   AliPWG4HighPtTrackQA(const AliPWG4HighPtTrackQA&);
   AliPWG4HighPtTrackQA& operator=(const AliPWG4HighPtTrackQA&);
 
-  DataType fDataType;             //! kESD or kAOD
+  DataType fDataType;             // kESD or kAOD
 
   AliVEvent   *fEvent;            //! AliVEvent object
   AliESDEvent *fESD;              //! ESD object
@@ -236,7 +236,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TList *fHistList; //! List of Histograms
   
  
-  ClassDef(AliPWG4HighPtTrackQA,1) 
+  ClassDef(AliPWG4HighPtTrackQA,2) 
   
 };
 #endif
