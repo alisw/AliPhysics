@@ -22,6 +22,10 @@
 // Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de P. Antonioli pietro.antonioli@bo.infn.it
 //***********************************************************
 #include <TCanvas.h>
+#include <TString.h>
+#include <TH1F.h>
+#include <TF1.h>
+#include <TFile.h>
 
 #include "AliAODPidHF.h"
 #include "AliAODPid.h"
@@ -63,7 +67,10 @@ AliAODPidHF::AliAODPidHF():
   fPtThresholdTPC(999999.),
   fPidResponse(0),
   fPidCombined(new AliPIDCombined()),
-  fTPCResponse(new AliTPCPIDResponse())
+  fTPCResponse(new AliTPCPIDResponse()),
+  fPriorsH(),
+  fCombDetectors(kTPCTOF),
+  fUseCombined(kFALSE)
 {
  //
  // Default constructor
@@ -95,6 +102,9 @@ AliAODPidHF::~AliAODPidHF()
  //   if(fnSigma)  delete fnSigma;
  //   if(fPriors)  delete fPriors;
   delete fTPCResponse;
+  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
+    delete fPriorsH[ispecies];
+  }
 }
 //------------------------
 AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
@@ -126,7 +136,9 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fPtThresholdTPC(pid.fPtThresholdTPC),
   fPidResponse(pid.fPidResponse),
   fPidCombined(pid.fPidCombined),
-  fTPCResponse(0x0)
+  fTPCResponse(0x0),
+  fCombDetectors(pid.fCombDetectors),
+  fUseCombined(pid.fUseCombined)
 {
   
   fnSigma = new Double_t[fnNSigma];
@@ -140,6 +152,13 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fPLimit = new Double_t[fnPLimit];
   for(Int_t i=0;i<fnPLimit;i++){
     fPLimit[i]=pid.fPLimit[i];
+  }
+  fPriors = new Double_t[fnPriors];
+  for(Int_t i=0;i<fnPriors;i++){
+    fPriors[i]=pid.fPriors[i];
+  }
+  for(Int_t i=0;i<AliPID::kSPECIES;i++){
+    fPriorsH[i]=pid.fPriorsH[i];
   }
 
   if(pid.fTPCResponse) fTPCResponse = new AliTPCPIDResponse(*(pid.fTPCResponse));
@@ -743,6 +762,7 @@ void AliAODPidHF::SetBetheBloch() {
 }
 //-----------------------
 Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
+  // TOF proton compatibility
 
   if(!CheckTOFPIDStatus(track)) return 0;
 
@@ -798,7 +818,8 @@ void AliAODPidHF::DrawPrior(AliPID::EParticleType type){
 
 //--------------------------------------------------------------------------
 Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &nsigma) const{
- 
+  // get n sigma for TPC 
+
   if(!CheckTPCPIDStatus(track)) return -1;
   
   Double_t nsigmaTPC=-999;
@@ -825,6 +846,7 @@ Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &nsi
 //-----------------------------
 
 Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &nsigma) const{
+  // get n sigma for TOF
 
   if(!CheckTOFPIDStatus(track)) return -1;
 
@@ -839,8 +861,8 @@ Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &nsig
 }
 
 //-----------------------
-Bool_t AliAODPidHF::IsExcluded(AliAODTrack *track, Int_t labelTrack, Double_t nsigmaCut,
-			       TString detectors) {
+Bool_t AliAODPidHF::IsExcluded(AliAODTrack *track, Int_t labelTrack, Double_t nsigmaCut, TString detectors) {
+  // Exclude a given hypothesis (labelTracks) in detector
 
   if (detectors.Contains("ITS")) {
 
@@ -875,3 +897,48 @@ Bool_t AliAODPidHF::IsExcluded(AliAODTrack *track, Int_t labelTrack, Double_t ns
 
 }
 //-----------------------------
+void AliAODPidHF::SetPriorsHistos(TString priorFileName){
+  // Set histograms with priors
+  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
+    if(fPriorsH[ispecies]) delete fPriorsH[ispecies];
+    TString nt ="name";
+    nt+="_prior_";
+    nt+=AliPID::ParticleName(ispecies);
+    fPriorsH[ispecies]=new TH1F(nt,nt,100,0,10);
+  }
+  TFile *priorFile=TFile::Open(priorFileName);
+  if (priorFile) {
+    fPriorsH[AliPID::kProton]->Add(static_cast<TH1*>(priorFile->Get("priors3step9")));
+    fPriorsH[AliPID::kKaon  ]->Add(static_cast<TH1*>(priorFile->Get("priors2step9")));
+    fPriorsH[AliPID::kPion  ]->Add(static_cast<TH1*>(priorFile->Get("priors1step9")));
+    delete priorFile;
+    TF1 *salt=new TF1("salt","1.e-10",0,10);
+    fPriorsH[AliPID::kProton]->Add(salt);
+    fPriorsH[AliPID::kKaon  ]->Add(salt);
+    fPriorsH[AliPID::kPion  ]->Add(salt);
+    delete salt;
+  }
+}
+//----------------------------------
+void AliAODPidHF::SetUpCombinedPID(){
+  // Configuration of combined Bayesian PID
+
+ fPidCombined->SetSelectedSpecies(AliPID::kSPECIES);
+  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
+    fPidCombined->SetPriorDistribution(static_cast<AliPID::EParticleType>(ispecies),fPriorsH[ispecies]);
+  }
+ switch (fCombDetectors){
+  case kTPCTOF:
+   fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+  break;
+  case kTPCITS:
+   fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetITS);
+  break;
+  case kTPC:
+   fPidCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+  break;
+  case kTOF:
+   fPidCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+  break;
+ }
+}

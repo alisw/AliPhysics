@@ -12,14 +12,24 @@
 //// Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de
 ////***********************************************************
 
+#include <TString.h>
+#include <TH1F.h>
 #include "AliAODPid.h"
 #include "AliAODTrack.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliPID.h"
 
 class AliAODPidHF : public AliAODPid{
 
  public:
+
+ enum ECombDetectors {
+  kTPC,
+  kTOF,
+  kTPCTOF,
+  kTPCITS
+ };
 
  AliAODPidHF();
  AliAODPidHF(const AliAODPidHF& pid);
@@ -57,6 +67,9 @@ class AliAODPidHF : public AliAODPid{
  void SetOldPid(Bool_t oldPid){fOldPid=oldPid;return;}
  void SetPtThresholdTPC(Double_t ptThresholdTPC){fPtThresholdTPC=ptThresholdTPC;return;}
  void SetPidResponse(AliPIDResponse *pidResp) {fPidResponse=pidResp;return;}
+ void SetCombDetectors(ECombDetectors pidComb) {
+   fCombDetectors=pidComb;
+  }
  
  //Getters
  
@@ -88,6 +101,10 @@ class AliAODPidHF : public AliAODPid{
  Double_t GetPtThresholdTPC(){return fPtThresholdTPC;}
  AliPIDResponse *GetPidResponse() const {return fPidResponse;}
  AliPIDCombined *GetPidCombined() const {return fPidCombined;}
+ ECombDetectors GetCombDetectors() const {
+   return fCombDetectors;
+  }
+ Bool_t GetUseCombined() {return fUseCombined;}
 
  Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
  Bool_t IsKaonRaw (AliAODTrack *track, TString detector) const;
@@ -117,6 +134,9 @@ class AliAODPidHF : public AliAODPid{
  void SetSelectedSpecies(Int_t ispecies = AliPID::kSPECIES){GetPidCombined()->SetSelectedSpecies(ispecies);};
  void SetPriorDistribution(AliPID::EParticleType type,TH1F *prior);
  void DrawPrior(AliPID::EParticleType type);
+ void SetPriorsHistos(TString priorFileName);
+ void SetUpCombinedPID();
+ void SetUseCombined(Bool_t useCombined=kTRUE) {fUseCombined=useCombined;}
 
  Int_t ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const;
  Int_t ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const;
@@ -156,7 +176,11 @@ class AliAODPidHF : public AliAODPid{
 
  AliTPCPIDResponse* fTPCResponse; //! TPC response 
 
- ClassDef(AliAODPidHF,17) // AliAODPid for heavy flavor PID
+ TH1F* fPriorsH[AliPID::kSPECIES]; // priors histos
+ ECombDetectors fCombDetectors; // detectors to be involved for combined PID
+ Bool_t fUseCombined; // detectors to be involved for combined PID
+
+ ClassDef(AliAODPidHF,18) // AliAODPid for heavy flavor PID
 
 };
 

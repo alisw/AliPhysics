@@ -305,6 +305,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
       AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
       fPidHF->SetPidResponse(pidResp);
     }
+      if(fPidHF->GetUseCombined()) fPidHF->SetUpCombinedPID();
     if(fPidHF->GetOldPid()) {
       // pp, from LHC10d onwards
       if((event->GetRunNumber()>121693 && event->GetRunNumber()<136851) ||
