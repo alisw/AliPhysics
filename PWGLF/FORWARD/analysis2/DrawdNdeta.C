@@ -558,6 +558,16 @@ struct dNdetaDrawer
    */
   Int_t GetCentralityColor(Int_t bin) const
   {
+    if (fCentAxis->GetNbins() < 6) { 
+      switch (bin) { 
+      case 1: return kRed+2;
+      case 2: return kGreen+2;
+      case 3: return kBlue+1;
+      case 4: return kCyan+1;
+      case 5: return kMagenta+1;
+      case 6: return kYellow+2;
+      }
+    }
     UShort_t centLow  = fCentAxis->GetBinLowEdge(bin);
     UShort_t centHigh = fCentAxis->GetBinUpEdge(bin);
     Float_t  fc       = (centLow+double(centHigh-centLow)/2) / 100;
