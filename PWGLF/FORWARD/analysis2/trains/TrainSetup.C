@@ -36,6 +36,7 @@
 #include <TSystemDirectory.h>
 #include <TSystemFile.h>
 #include <TROOT.h>
+#include <TUrl.h>
 
 #include <AliAODHandler.h>
 #include <AliAODInputHandler.h>
@@ -54,6 +55,7 @@ class AliAnalysisManager;
 class TDatime;
 class TString;
 class TSystemDirectory;
+class TUrl;
 #endif
 
 
@@ -129,7 +131,7 @@ struct TrainSetup
       fRootVersion("last"),
       fAliRootVersion("last"),
       fAliEnAPIVersion("V1.1x"),
-      fProofServer("alicecaf.cern.ch"),
+      fProofServer("alice-caf.cern.ch"),
       fDataDir("/alice/data/2010/LHC10c"),
       fDataPattern("*"),
       fDataSet("/COMMON/COMMON/LHC09a4_run8100X#/esdTree"),
@@ -449,6 +451,18 @@ struct TrainSetup
    */
   void SetPerRunMerge(Bool_t perRun) { fPerRunMerge = perRun; }
   /* @} */
+  /** 
+   * Check if we' running on a Alice Analysis Facility (AAF) like for
+   * example alice-caf.cern.ch
+   * 
+   * @return True if we're running on an AAF
+   */
+  Bool_t IsAAF() const
+  {
+    if (fExecMode != kProof) return false;
+    TString host(fProofServer.GetHost());
+    return host.Contains("alice-caf") || host.Contains("skaf");
+  }
   //__________________________________________________________________
   /**
    * @{ 
@@ -461,7 +475,8 @@ struct TrainSetup
    */
   Bool_t Init()
   {
-    if (fExecMode == kProof) fUsePar    = true;
+    // If we're in PROOF mode (and not on an AAF) force use of PAR files
+    if (fExecMode == kProof && !IsAAF()) fUsePar    = true;
 
     if (!CheckSoftware()) return false;
 
@@ -476,7 +491,7 @@ struct TrainSetup
     if (!LoadCommonLibraries()) return false;
     
     // --- Create analysis manager -----------------------------------
-    AliAnalysisManager *mgr  = new AliAnalysisManager(fName,"Analysis Train");
+    AliAnalysisManager *mgr  = CreateAnalysisManager(fName);
 
     // In test mode, collect system information on every event 
     // if (oper == kTest)  mgr->SetNSysInfo(1); 
@@ -533,6 +548,9 @@ struct TrainSetup
     // gSystem->Exec("printenv");
     // }
 
+    // --- If in proof mode, reset connection ------------------------
+    // if (fExecMode == kProof) 
+    //   TProof::Reset(fProofServer.GetUrl(), true);
     // --- Initialise the train --------------------------------------
     if (!mgr->InitAnalysis())  {
       gSystem->ChangeDirectory(cwd.Data());
@@ -542,6 +560,7 @@ struct TrainSetup
 
     // --- Show status -----------------------------------------------
     mgr->PrintStatus();
+    if (gridHandler) gridHandler->Print();
 
     return true;
   }
@@ -600,11 +619,12 @@ struct TrainSetup
     bool mc=AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
     std::cout << fName << " train setup\n"
 	      << std::boolalpha;
+    TString pUrl = fProofServer.GetUrl();
     PrintField(std::cout, "Escaped name",               fEscapedName);
     PrintField(std::cout, "ROOT version",		fRootVersion);
     PrintField(std::cout, "AliROOT version",		fAliRootVersion);
     PrintField(std::cout, "AliEn API version",		fAliEnAPIVersion);
-    PrintField(std::cout, "Name of proof server",	fProofServer);
+    PrintField(std::cout, "Name of proof server",	pUrl);
     PrintField(std::cout, "Input directory",		fDataDir);
     PrintField(std::cout, "Data pattern",		fDataPattern);
     PrintField(std::cout, "Proof data set name",	fDataSet);
@@ -915,6 +935,25 @@ protected:
    * @{ 
    * @name Overloadable creators 
    */
+  Int_t ExtractWorkers(TUrl& u)
+  {
+    TString    opts(u.GetOptions());
+    TObjArray* tokens = opts.Tokenize("&");
+    TObject*   obj    = 0;
+    TIter      next(tokens);
+    while ((obj = next())) {
+      TString opt(obj->GetName());
+      if (!opt.BeginsWith("workers")) continue;
+      Int_t   idx = opt.Index("=");
+      if (idx == kNPOS) continue;
+      
+      TString val = opt(idx+1, opt.Length()-idx-1);
+    
+      return val.Atoi();
+    }
+    Warning("ExtractWorkers", "Workers option not found");
+    return 0;
+  }
   /** 
    * Create a grid handler 
    * 
@@ -923,7 +962,7 @@ protected:
   virtual AliAnalysisAlien* 
   CreateGridHandler()
   {
-    if (fExecMode != kGrid) return 0;
+    if (fExecMode != kGrid && !IsAAF()) return 0;
 
     TString name = EscapedName();
 
@@ -934,6 +973,17 @@ protected:
     
     // Production mode - not used here 
     // plugin->SetProductionMode();
+
+    // Set the proof server 
+    if (fExecMode == kProof) {
+      plugin->SetProofCluster(fProofServer.GetHost());
+      plugin->SetProofReset(0);
+      plugin->SetAliRootMode("default");
+      if (!fDataSet.IsNull()) 
+	plugin->SetProofDataSet(fDataSet);
+      Int_t nWorkers = ExtractWorkers(fProofServer);
+      if (nWorkers != 0) plugin->SetNproofWorkers(nWorkers);
+    }
     
     // Do not test copying 
     plugin->SetCheckCopy(false);
@@ -982,7 +1032,9 @@ protected:
     plugin->SetOverwriteMode(true);
 
     // Set the executable binary name and options 
-    plugin->SetExecutableCommand("aliroot -b -q -x");
+    if (fExecMode == kGrid)
+      plugin->SetExecutableCommand("aliroot -b -q -x");
+    
     
     // Split by storage element - must be lower case!
     plugin->SetSplitMode("se");
@@ -1010,6 +1062,9 @@ protected:
     if (!fAliEnAPIVersion.IsNull()) plugin->SetAPIVersion(fAliEnAPIVersion);
     if (!fRootVersion.IsNull())     plugin->SetROOTVersion(fRootVersion);
     if (!fAliRootVersion.IsNull())  plugin->SetAliROOTVersion(fAliRootVersion);
+    if (fExecMode == kProof && !fRootVersion.IsNull())     
+      plugin->SetRootVersionForProof(Form("VO_ALICE@ROOT::%s",
+					  fRootVersion.Data()));
 
     // Declare root of input data directory 
     TString dataDir(fDataDir);
@@ -1043,17 +1098,25 @@ protected:
     // Enable configured PARs 
     TIter nextPar(&fListOfPARs);
     TObject* parName;
-    while ((parName = nextPar()))
+    while ((parName = nextPar())) {
+      Info("CreateGridHandler", "Enabling package: %s", parName->GetName());
       plugin->EnablePackage(parName->GetName());
+    }
     
     // Add sources that need to be compiled on the workers using
     // AcLIC. 
     TString addSources = SetupSources();
-    if (!addSources.IsNull()) plugin->SetAnalysisSource(addSources.Data());
+    if (!addSources.IsNull()) {
+      Info("CreateGridHandler", "Additional sources: %s", addSources.Data());
+      plugin->SetAnalysisSource(addSources.Data());
+    }
 
     // Add binary libraries that should be uploaded to the workers 
     TString addLibs = SetupLibraries();
-    if (!addLibs.IsNull()) plugin->SetAdditionalLibs(addLibs.Data());
+    if (!addLibs.IsNull()) {
+      Info("CreateGridHandler", "Additional libraries: %s", addLibs.Data());
+      plugin->SetAdditionalLibs(addLibs.Data());
+    }
     
     // Loop over defined containers in the analysis manager, 
     // and declare these as outputs 
@@ -1094,6 +1157,18 @@ protected:
     
 
     return plugin;
+  }
+  //------------------------------------------------------------------
+  /** 
+   * Create the analysis manager 
+   * 
+   * @param name Name of the analysis 
+   * 
+   * @return Created analysis manager 
+   */
+  virtual AliAnalysisManager* CreateAnalysisManager(const char* name)
+  {
+    return new AliAnalysisManager(name,"Analysis Train");
   }
   //------------------------------------------------------------------
   /** 
@@ -1216,17 +1291,19 @@ protected:
     gSystem->Load("libVMC.so");
     gSystem->Load("libPhysics.so");
     gSystem->Load("libMinuit.so");
-    if (fExecMode == kProof) { 
-      gProof->Exec("gSystem->Load(\"libTree.so\");");
-      gProof->Exec("gSystem->Load(\"libGeom.so\");");
-      gProof->Exec("gSystem->Load(\"libMinuit.so\");");
-      gProof->Exec("gSystem->Load(\"libVMC.so\");");
-
-      
-    }
 
     Bool_t ret   = true;
-    Bool_t basic = fExecMode == kGrid ? false : fUsePar;
+    Bool_t basic = (fExecMode == kGrid || IsAAF()) ? false : fUsePar;
+    if (fExecMode == kProof) { 
+      LoadLibrary("Tree", false, false);
+      LoadLibrary("Geom", false, false);
+      LoadLibrary("Minuit", false, false);
+      LoadLibrary("VMC", false, false);
+      // gProof->Exec("gSystem->Load(\"libTree.so\");");
+      // gProof->Exec("gSystem->Load(\"libGeom.so\");");
+      // gProof->Exec("gSystem->Load(\"libMinuit.so\");");
+      // gProof->Exec("gSystem->Load(\"libVMC.so\");");
+    }
     
     ret &= LoadLibrary("STEERBase",     basic, false);
     ret &= LoadLibrary("ESD",           basic, false);
@@ -1276,6 +1353,7 @@ protected:
       }
       break;
     case kGrid: 
+    case kProof:
       if (par) { 
 	ret = SetupPAR(what) ? 0 : -1;
 	if (rec) fListOfPARs.Add(new TObjString(what));
@@ -1284,28 +1362,37 @@ protected:
 	if (rec) fListOfLibraries.Add(new TObjString(libName));
       }
       break;
+#if 0
     case kProof: 
-      Info("LoadLibrary", "Uploading %s", what);
-      ret = gProof->UploadPackage(what, TProof::kRemoveOld);
-      if (ret < 0)  {	
+      if (par) {
+	Info("LoadLibrary", "Uploading %s", what);
+	ret = gProof->UploadPackage(what, TProof::kRemoveOld);
+	if (ret < 0)  {	
 	  ret = gProof->UploadPackage(gSystem->ExpandPathName(Form("../%s.par",
 								   what)));
-	if (ret < 0) {	
-	  ret = 
-	    gProof->UploadPackage(gSystem
-				  ->ExpandPathName(Form("$ALICE_ROOT/%s.par", 
-							what)));
-	  if (ret < 0) {
-	    Error("LoadLibrary", 
-		  "Could not find module %s.par in current directory nor "
-		  "in $ALICE_ROOT", module.Data());
-	    return false;
+	  if (ret < 0) {	
+	    ret = 
+	      gProof->UploadPackage(gSystem
+				    ->ExpandPathName(Form("$ALICE_ROOT/%s.par", 
+							  what)));
+	    if (ret < 0) {
+	      Error("LoadLibrary", 
+		    "Could not find module %s.par in current directory nor "
+		    "in $ALICE_ROOT", module.Data());
+	      return false;
+	    }
 	  }
 	}
+	Info("LoadLibrary", "Enabling package %s", what);
+	ret = gProof->EnablePackage(what);
       }
-      Info("LoadLibrary", "Enabling package %s", what);
-      ret = gProof->EnablePackage(what);
+      else { 
+	Info("LoadLibrary", "Enabling remote PROOF library %s", what);
+	ret = gSystem->Load(libName.Data());
+	if (rec) fListOfLibraries.Add(new TObjString(libName));
+      }
       break;
+#endif
     }
     if (ret < 0) { 
       Error("LoadLibrary", "Couldn't load %s", what);
@@ -1570,7 +1657,7 @@ protected:
 	if (nEvents < 0) nEvents = chain->GetEntries();
 	return mgr->StartAnalysis(mode, chain, nEvents);
       }
-      return mgr->StartAnalysis(mode, fDataSet);
+      return mgr->StartAnalysis(mode); // , fDataSet);
     case kGrid: 
       Info("StartAnalysis", "Analysing %d events", nEvents);
       if (nEvents < 0)
@@ -1583,7 +1670,7 @@ protected:
   //------------------------------------------------------------------
   virtual Bool_t CheckSoftware()
   {
-    if (fExecMode != kGrid) return true;
+    if (fExecMode != kGrid && !IsAAF()) return true;
 
     // Figure out what to do.  
     // If mode == 0, then do nothing. 
@@ -1681,28 +1768,42 @@ protected:
 			  
     // --- Set-up connections to Proof cluster and alien -------------
     if (fExecMode == kProof) { 
-      Info("Connect", "Opening connection to proof server");
+      // Info("Connect", "Opening connection to proof server");
       // --- Find user name ------------------------------------------
       TString userName(gSystem->Getenv("alien_API_USER"));
       if (userName.IsNull()) {
 	userName = gSystem->GetUserInfo()->fUser;
-	Warning("Connect", 
-		"environment variable 'alien_API_USER' not set, using %s", 
-		userName.Data());
       }
 
       // --- Set prefered GSI method ---------------------------------
       gEnv->SetValue("XSec.GSI.DelegProxy", "2");
 
       // --- Figure out some server settings -------------------------
-      TString serv = "";
+      TString serv = fProofServer.GetHost();
       Bool_t  lite = false;
-      if (fProofServer.BeginsWith("workers=") || fProofServer.IsNull()) {
+      // Check the server 
+      if (serv.IsNull() || serv.BeginsWith("workers=")) {
 	lite = true;
-	serv = fProofServer;
+	fProofServer.SetProtocol("lite");
+	fProofServer.SetHost("");
+	fProofServer.SetOptions(serv);
       }
-      else 
-	serv = Form("%s@%s", userName.Data(), fProofServer.Data());
+      // Check the protocol
+      TString prot = fProofServer.GetProtocol();
+      if (prot.BeginsWith("lite:")) 
+	lite = true;
+      else if (prot.BeginsWith("http")) { 
+	prot.ReplaceAll("http", "proof");
+	fProofServer.SetProtocol("proof");
+      }
+      // Check the port 
+      Int_t port = fProofServer.GetPort();
+      if (port == 80) fProofServer.SetPort(1093);
+      // Add the user name 
+      if (fProofServer.GetUser()[0] == '\0' && 
+	  !userName.IsNull())
+	fProofServer.SetUser(userName);
+      serv = fProofServer.GetUrl();
 
       // --- Possibly debug slave sessions with GDB ------------------
       if (fUseGDB) { 
@@ -1720,21 +1821,34 @@ protected:
 			  gSystem->Getenv("ALICE_ROOT")));
 						     
       // --- Set OADB path on workers --------------------------------
-      const char* oadbPath = AliAnalysisManager::GetOADBPath();
-      TProof::AddEnvVar("OADB_PATH", oadbPath);
+      // const char* oadbPath = AliAnalysisManager::GetOADBPath();
+      // TProof::AddEnvVar("OADB_PATH", oadbPath);
       // if (lite) gSystem->Setenv("OADB_PATH", oadbPath);
       // Info("Connect", "OADB_PATH=%s", gSystem->Getenv("OADB_PATH"));
 
-      // --- Now open connection to PROOF cluster --------------------
-      TProof::Open(serv);
-      if (!gProof) { 
-	Error("Connect", "Failed to connect to Proof cluster %s as %s",
-	      fProofServer.Data(), userName.Data());
-	return false;
+      // --- Only connect in ProofLite - plugin does this --------------
+      if (!lite) {
+	TString opts(fProofServer.GetOptions());
+	Int_t reset = 0;
+	if      (opts.Contains("reset=hard")) reset = 2;
+	else if (opts.Contains("reset"))      reset = 1;
+	if (reset > 0) TProof::Reset(serv.Data(), reset > 1);
       }
-      Info("Connect", "Now connected to Proof");
-      // gProof->SetParameter("PROOF_LookupOpt", "all");
-      if (lite) return true;
+      else {
+	// --- Now open connection to PROOF cluster --------------------
+	Info("Connect", "Connecting to PROOF server: %s w/options \"%s\"", 
+	     serv.Data(), fProofServer.GetOptions());
+	TProof::Open(serv, fProofServer.GetOptions());
+	if (!gProof) { 
+	  Error("Connect", "Failed to connect to Proof cluster %s",
+		fProofServer.GetUrl());
+	  return false;
+	}
+	Info("Connect", "Now connected to Proof");
+	// gProof->SetParameter("PROOF_LookupOpt", "all");
+      }
+      // if (lite) return true;
+      return true;
     }
 
     // --- Open a connection to the grid -----------------------------
@@ -2679,7 +2793,7 @@ protected:
     Option* run_merge   = r.FindOption("per-run");
     
     if (date    && !date->IsSet())    date->fValue    = fDatime.AsString();
-    if (cluster && !cluster->IsSet()) cluster->fValue = fProofServer;
+    if (cluster && !cluster->IsSet()) cluster->fValue = fProofServer.GetUrl();
     if (dataSet && !dataSet->IsSet()) dataSet->fValue = fDataSet;
     if (dataDir && !dataDir->IsSet()) dataDir->fValue = fDataSet;
     if (pattern && !pattern->IsSet()) pattern->fValue = fDataPattern;
@@ -2772,7 +2886,7 @@ protected:
 			      fDatime.GetDay(), 
 			      fDatime.GetHour(),
 			      fDatime.GetMinute()));
-    if (cluster)  cluster->Save(o, str, fProofServer);
+    if (cluster)  cluster->Save(o, str, fProofServer.GetUrl());
     if (dataSet)  dataSet->Save(o, str, fDataSet);
     if (dataDir)  dataDir->Save(o, str, fDataDir);
     if (pattern)  pattern->Save(o, str, fDataPattern);
@@ -2864,7 +2978,7 @@ protected:
   TString fRootVersion;      // ROOT version to use 
   TString fAliRootVersion;   // AliROOT version to use 
   TString fAliEnAPIVersion;  // AliEn API version to use 
-  TString fProofServer;      // Name of proof server
+  TUrl    fProofServer;      // Name of proof server
   TString fDataDir;          // Grid Input directory 
   TString fDataPattern;      // Data directory pattern
   TString fDataSet;          // Proof data set name 
