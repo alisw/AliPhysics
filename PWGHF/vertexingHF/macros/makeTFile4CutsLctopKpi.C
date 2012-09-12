@@ -5,6 +5,7 @@
 #include <TClonesArray.h>
 #include <TParameter.h>
 #include <TF1.h>
+#include <TCanvas.h>
 
 
 //Use:
@@ -19,44 +20,10 @@
 //macro to make a .root file which contains an AliRDHFCutsLctopKpi for AliAnalysisTaskSELambdac task
 
 void SetupCombinedPID(AliRDHFCutsLctopKpi *cutsObj,Double_t threshold,TString priorFileName="noferini-priors.root") {
-  AliPIDCombined *pid=cutsObj->GetPidHF()->GetPidCombined();
-  pid->SetSelectedSpecies(AliPID::kSPECIES);
-  pid->SetDetectorMask(AliPIDResponse::kDetITS
-		       |AliPIDResponse::kDetTPC
-		       |AliPIDResponse::kDetTOF);
-  TH1F *priors[5]; // 5 to make PROOF happy
-  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
-    TString nt ="name";
-    nt+="_prior_";
-    nt+=AliPID::ParticleName(ispecies);
-    priors[ispecies]=new TH1F(nt,nt,100,0,10);
-  }
-  TFile *priorFile=TFile::Open(priorFileName);
-  if (priorFile) {
-    priors[AliPID::kProton]->Add(static_cast<TH1*>(priorFile->Get("priors3step9")));
-    priors[AliPID::kKaon  ]->Add(static_cast<TH1*>(priorFile->Get("priors2step9")));
-    priors[AliPID::kPion  ]->Add(static_cast<TH1*>(priorFile->Get("priors1step9")));
-    delete priorFile;
-    TF1 *salt=new TF1("salt","1.e-10",0,10);
-    priors[AliPID::kProton]->Add(salt);
-    priors[AliPID::kKaon  ]->Add(salt);
-    priors[AliPID::kPion  ]->Add(salt);
-    delete salt;
-  }
-  else {
-    TF1 *flat=new TF1("flat","1",0,10);
-    priors[AliPID::kProton]->Add(flat,1.0); // ... who likes 
-    priors[AliPID::kKaon  ]->Add(flat,1.0); //  these priors
-    priors[AliPID::kPion  ]->Add(flat,1.0); //   anyways?? - Rossella
-    //    priors[AliPID::kProton]->Add(flat,0.162); // from 900 GeV identified particle 
-    //    priors[AliPID::kKaon  ]->Add(flat,0.366); // paper (pp)
-    //    priors[AliPID::kPion  ]->Add(flat,2.977); // dN/dy
-    delete flat;
-  }
-  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
-    pid->SetPriorDistribution(static_cast<AliPID::EParticleType>(ispecies),priors[ispecies]);
-  }
 
+  cutsObj->GetPidHF()->SetUseCombined(kTRUE);
+  cutsObj->GetPidHF()->SetPriorsHistos(priorFileName);
+  cutsObj->GetPidHF()->SetCombDetectors(AliAODPidHF::kTPCTOF);
   for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies)
     cutsObj->SetPIDThreshold(static_cast<AliPID::EParticleType>(ispecies),threshold);
 }
@@ -238,11 +205,17 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   RDHFLctopKpiAn->SetPidprot(pidObjp);
 
   // uncomment these lines for Baysian PID:
-  // Double_t threshold=0.3;
-  // SetupCombinedPID(RDHFLctopKpiAn  ,threshold);
-  // SetupCombinedPID(RDHFLctopKpiProd,threshold);
-  // RDHFLctopKpiAn  ->SetPIDStrategy(AliRDHFCutsLctopKpi::kCombined);
-  // RDHFLctopKpiProd->SetPIDStrategy(AliRDHFCutsLctopKpi::kCombined);
+   Double_t threshold=0.3;
+   SetupCombinedPID(RDHFLctopKpiAn  ,threshold);
+   SetupCombinedPID(RDHFLctopKpiProd,threshold);
+   RDHFLctopKpiAn  ->SetPIDStrategy(AliRDHFCutsLctopKpi::kCombined);
+   RDHFLctopKpiProd->SetPIDStrategy(AliRDHFCutsLctopKpi::kCombined);
+
+
+   AliPIDCombined *pid=RDHFLctopKpiAn->GetPidHF()->GetPidCombined();
+   TH1* hplot=pid->GetPriorDistribution(static_cast<AliPID::EParticleType>(3));
+   TCanvas *c1=new TCanvas();
+   hplot->Draw();
   //
 
 
@@ -265,7 +238,7 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   cout<<"This is the object I'm going to save:"<<endl;
   RDHFLctopKpiProd->PrintAll();
   RDHFLctopKpiAn->PrintAll();
-  TFile* fout=new TFile("cuts4LctopKpi.root","RECREATE"); 
+  TFile* fout=new TFile("prova.root","RECREATE"); 
   fout->cd();
   RDHFLctopKpiProd->Write();
   RDHFLctopKpiAn->Write();
