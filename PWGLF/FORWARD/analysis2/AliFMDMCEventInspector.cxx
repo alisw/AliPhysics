@@ -36,6 +36,7 @@
 #include <TH2F.h>
 #include <TParticle.h>
 #include <TMath.h>
+#include <TParameter.h>
 
 //====================================================================
 AliFMDMCEventInspector::AliFMDMCEventInspector()
@@ -229,7 +230,7 @@ AliFMDMCEventInspector::StoreInformation(Int_t runNo)
   // Store information about running conditions in the output list 
   if (!fList) return;
   AliFMDEventInspector::StoreInformation(runNo);
-  TNamed* mc = new TNamed("mc", fProduction.Data());
+  TParameter<bool>* mc = new TParameter<bool>("mc",true); // , fProduction.Data());
   mc->SetUniqueID(1);
   fList->Add(mc);
 }
