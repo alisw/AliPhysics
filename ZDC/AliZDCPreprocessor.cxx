@@ -900,7 +900,9 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
  // ******************************************
  // NO ENERGY CALIBRATION -> coefficients set to 1.
  // Temp -> also inter-calibration coefficients are set to 1.
- if((strcmp(beamType,"p-p")==0) || (strcmp(beamType,"P-P")==0)) resEnergyCalib = ProcessppData();
+ if((strcmp(beamType,"p-p")==0) || (strcmp(beamType,"P-P")==0) 
+     || (strcmp(beamType,"P-A")==0) || (strcmp(beamType,"A-P")==0)) 
+     	resEnergyCalib = ProcessppData();
  
  // *****************************************************
  // CALIBRATION_EMD -> Energy calibration and equalization
