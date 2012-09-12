@@ -93,6 +93,9 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const char* name)
   DGUARD(fDebug,0,"Named construction of AliCentralMCCorrectionsTask: %s",name);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+  fBranchNames = 
+    "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
+    "SPDVertex.,PrimaryVertex.";
 }
 
 //____________________________________________________________________

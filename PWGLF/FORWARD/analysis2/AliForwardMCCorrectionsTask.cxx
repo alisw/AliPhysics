@@ -104,6 +104,9 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const char* name)
   //
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+  fBranchNames = 
+    "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
+    "AliESDFMD.,SPDVertex.,PrimaryVertex.";
 }
 
 //____________________________________________________________________
