@@ -91,8 +91,8 @@ void emcalReclusterize(Int_t mode=mLocal)
       AliAODInputHandler *aodHandler = new AliAODInputHandler();
       mgr->SetInputEventHandler(aodHandler);
       if(kEmbed){
-	aodHandler->SetMergeEvents(kTRUE);
-	aodHandler->AddFriend("AliAOD.root");
+        aodHandler->SetMergeEvents(kTRUE);
+        aodHandler->AddFriend("AliAOD.root");
       }
       
       cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
@@ -113,10 +113,32 @@ void emcalReclusterize(Int_t mode=mLocal)
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
     }
     
-    gROOT->LoadMacro("AddTaskEMCALClusterize.C");
-    AliAnalysisTaskEMCALClusterize * clusterize = AddTaskEMCALClusterize();    
+    gROOT->LoadMacro("$ALICE_ROOT/PWGGA/EMCALTasks/macros/AddTaskEMCALClusterize.C"); 
     
-//    AliAnalysisTaskEMCALClusterize * clusterize = new AliAnalysisTaskEMCALClusterize();
+    Bool_t kMC = kFALSE; // extra checks in case of MC analysis
+    Bool_t outAOD = kFALSE ; // Generate output AOD with new clusters
+    Bool_t calibEE = kTRUE; // It is set automatically, but here we force to use it or not in any case
+    Bool_t calibTT = kTRUE; // It is set automatically, but here we force to use it or not in any case
+    if(kRun < 122195 || (kRun > 126437 && kRun < 136851) || kMC) calibTT=kFALSE ; // Recalibration parameters not available for LHC10a,b,c,e,f,g
+    Bool_t badMap  = kTRUE; // It is set automatically, but here we force to use it or not in any case  
+    Bool_t  clTM      = kTRUE;
+    Bool_t  exo       = kTRUE;  // Remove exotic cells
+    Bool_t  clnonlin  = kTRUE;  // Apply non linearity (clusterization)
+    Int_t   minEcell  = 50;     // 50  MeV (10 MeV used in reconstruction)
+    Int_t   minEseed  = 100;    // 100 MeV
+    Int_t   dTime     = 0;      // default, 250 ns
+    Int_t   wTime     = 30;     // default 425 < T < 825 ns, careful if time calibration is on
+    Int_t   unfMinE   = 15;     // Remove cells with less than 15 MeV from cluster after unfolding
+    Int_t   unfFrac   = 1;      // Remove cells with less than 1% of cluster energy after unfolding
+    
+    TString arrayName = "";
+    TString clusterzerName = "V1"; // "V2", "NxN","V1Unfold"
+    
+    AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(arrayNameV1,outAOD,kMC,exo,clusterizerName,clTrigger, clTM,
+                                                                   minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
+                                                                   calibEnergy,badMap,calibTime,nonlinear);
+    
+    //    AliAnalysisTaskEMCALClusterize * clusterize = new AliAnalysisTaskEMCALClusterize();
 //    clusterize->SetConfigFileName("ConfigEMCALClusterize.C");
 //    clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB");
 //    mgr->AddTask(clusterize);
@@ -177,34 +199,15 @@ void  LoadLibraries(const anaModes mode) {
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
     gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libEMCALUtils.so");  
 
     //SetupPar("EMCALUtils"); 
+    //SetupPar("PWGEMCAL");
     //SetupPar("PWGGAEMCALTasks"); 
     
-    //TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
+    gSystem->Load("libEMCALUtils.so");  
+    gSystem->Load("libPWGEMCAL");
     gSystem->Load("libPWGGAEMCALTasks.so");
    
-    /*
-      //     gSystem->Load("libCORRFW.so");
-      //     gSystem->Load("libPWGHFbase.so");
-      //     gSystem->Load("libPWGmuon.so");
- */
-    //--------------------------------------------------------
-    //If you want to use root and par files from aliroot
-    //--------------------------------------------------------  
-    /*     
-	   SetupPar("STEERBase");
-	   SetupPar("ESD");
-	   SetupPar("AOD");
-	   SetupPar("ANALYSIS");
-	   SetupPar("ANALYSISalice");  
-	   SetupPar("PHOSUtils");
-	   SetupPar("EMCALUtils");
-	   //Create Geometry
-	   TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
-	   SetupPar("PWGGAEMCALTasks");
-*/
   }
 
   //---------------------------------------------------------
