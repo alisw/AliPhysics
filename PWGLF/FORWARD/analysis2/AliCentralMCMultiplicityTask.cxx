@@ -45,6 +45,9 @@ AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask(const char* name)
   // Constructor 
   //   
   DGUARD(fDebug,0,"Named CTOR of AliCentralMCMultiplicityTask: %s", name);
+  fBranchNames = 
+    "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
+    "SPDVertex.,PrimaryVertex.";
 }
 //____________________________________________________________________
 AliCentralMCMultiplicityTask::AliCentralMCMultiplicityTask() 
