@@ -30,7 +30,7 @@ public:
   AliMFTCluster& operator=(const AliMFTCluster&);
   virtual ~AliMFTCluster() { fDigitsInCluster->Delete(); delete fDigitsInCluster; }
 
-  virtual void Clear(const Option_t* /*opt*/) { delete fDigitsInCluster; fDigitsInCluster = 0x0; }
+  virtual void Clear(const Option_t* /*opt*/) { fDigitsInCluster->Delete(); delete fDigitsInCluster; fDigitsInCluster = 0x0; }
   
   void SetXYZ(Double_t x, Double_t y, Double_t z) { fX=x; fY=y; fZ=z; }
 

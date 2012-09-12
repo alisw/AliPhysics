@@ -141,9 +141,10 @@ AliMuonForwardTrack& AliMuonForwardTrack::operator=(const AliMuonForwardTrack& t
 void AliMuonForwardTrack::Clear(const Option_t* /*opt*/) {
 
   // Clear arrays
+  fMFTClusters -> Delete(); 
+  delete fMFTClusters; fMFTClusters = 0x0;
   delete fMUONTrack;   fMUONTrack   = 0x0;
   delete fMCTrackRef;  fMCTrackRef  = 0x0;
-  delete fMFTClusters; fMFTClusters = 0x0;
   
 }
 

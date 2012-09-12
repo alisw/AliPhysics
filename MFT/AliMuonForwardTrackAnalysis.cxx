@@ -134,7 +134,8 @@ Bool_t AliMuonForwardTrackAnalysis::Init(Char_t *inputFileName) {
     return kFALSE;
   }
 
-  if (fFirstEvent<0 || fLastEvent<0 || fFirstEvent>fLastEvent || fFirstEvent>=fInputTreeWithBranson->GetEntriesFast()) {
+  if (fFirstEvent>=fInputTreeWithBranson->GetEntriesFast()) return kFALSE;
+  else if (fFirstEvent<0 || fLastEvent<0 || fFirstEvent>fLastEvent || fFirstEvent>=fInputTreeWithBranson->GetEntriesFast()) {
     fFirstEvent = 0;
     fLastEvent  = fInputTreeWithBranson->GetEntriesFast()-1;
   }
@@ -327,7 +328,7 @@ Bool_t AliMuonForwardTrackAnalysis::AnalyzeMuonPair() {
       fHistDimuonVtxResolutionYVsPt->Fill(pca[1]*1.e4, fMFTTrackPair->GetPt());
       fHistDimuonVtxResolutionZVsPt->Fill(pca[2]*1.e4, fMFTTrackPair->GetPt());
     }
-    fHistRapidityPtMuonPairs -> Fill(fMFTTrackPair->GetRapidityMC(), fMFTTrackPair->GetPt());
+    fHistRapidityPtMuonPairs -> Fill(fMFTTrackPair->GetRapidity(), fMFTTrackPair->GetPt());
   } 
   else if (fMFTTrackPair->GetCharge() == -2) {
     fHistMassMuonPairsVsPtLSm           -> Fill(fMFTTrackPair->GetMass(), fMFTTrackPair->GetPt());
