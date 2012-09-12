@@ -19,6 +19,7 @@
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TString.h>
+#include <TApplication.h>
 
 /** 
  * Build the train setup script 
@@ -181,6 +182,7 @@ void Usage(const char* progname, std::ostream& o, TrainSetup::Runner* r)
   PrintFakeOption(o, "tmp",           "Copy code to temporary directory");
   PrintFakeOption(o, "debug",         "Create debugging symbols");
   PrintFakeOption(o, "include=DIRECTORY", "Append dir to macro/header path");
+  PrintFakeOption(o, "gui",           "Enable graphics");
   if (!r) { 
     o << "\n"
       << "Additional options may be defined by the specific train setup\n"
@@ -258,6 +260,7 @@ int main(int argc, char** argv)
   Bool_t  trainTmp = false;
   Bool_t  trainDbg = false;
   Bool_t  progHelp = false;
+  Bool_t  gui      = false;
 
   for (int i = 1; i < argc; i++) { 
     // std::cout << "Arg # " << i << ": \"" << argv[i] << "\"" << std::endl;
@@ -276,6 +279,7 @@ int main(int argc, char** argv)
 	else if (arg.BeginsWith("--debug"))   trainDbg = !trainDbg;
 	else if (arg.BeginsWith("--include")) AppendPath(val);
 	else if (arg.BeginsWith("--help"))    progHelp=true; 
+	else if (arg.BeginsWith("--gui"))     gui=true;
 	else    AppendTo(trainOpts, arg(2,arg.Length()-2)); 
       }
       else {
@@ -288,6 +292,7 @@ int main(int argc, char** argv)
 	case 'd': trainDbg    = !trainDbg; break;
 	case 'r': AppendTo(trainRuns, argv[++i]); break;
 	case 'I': AppendPath(argv[++i]); break;
+	case 'g': gui         = true; break;
 	default: 
 	  Error("runMain", "Unknown option %s", argv[i]);
 	  return 1;
@@ -307,6 +312,13 @@ int main(int argc, char** argv)
   if (trainDbg) AppendTo(trainOpts, "debug");
   if (progHelp) AppendTo(trainOpts, "help");
 
+  // Make an application 
+  TApplication* app = 0;
+  if (gui) {
+    app = new TApplication("runtrain", 0, 0);
+    app->InitializeGraphics();
+  }
+  
   // Build the code 
   if (!BuildTrain(trainClass, trainTmp, trainDbg)) return 1;
   
