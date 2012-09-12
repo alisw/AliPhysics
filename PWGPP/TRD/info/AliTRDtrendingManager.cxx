@@ -187,15 +187,17 @@ TH1* AliTRDtrendingManager::MakeTrends(const char *fileList, TObjArray *dump)
     afp->Delete(); delete afp;
     if(!TFile::Open(sfp.Data())) continue;
 
-    run[nr] = rno;
+    run[nr] = rno; Int_t nmiss(0);
     for(Int_t it(0); it<ntv; it++){
       if(!(TV = (AliTRDtrendValue*)fEntries->At(it))) continue;
       if(!(tv = (AliTRDtrendValue*)gFile->Get(TV->GetName()))) {
-        AliWarning(Form("Missing %09d.%s", rno, TV->GetName()));
+        AliDebug(1, Form("Missing %09d.%s", rno, TV->GetName()));
+        nmiss++;
         continue;
       }
       if(tv->GetVal()<-998. ||
-         (strstr(TV->GetName(), "TRDcheckDET")&&TMath::Abs(tv->GetVal())<1.e-5)) continue;
+         (strstr(TV->GetName(), "TRDcheckDET")&&TMath::Abs(tv->GetVal())<1.e-5) ||
+         (!(strcmp(TV->GetName(), "TRDcheckDET_ChargeTracklet"))&&TMath::Abs(tv->GetVal())<1.e1)) continue;
       if(IsRelativeMeanSigma()){
         (*tv)/=(*TV);
         la[it]+=tv->GetVal(); na[it]++;
@@ -211,6 +213,7 @@ TH1* AliTRDtrendingManager::MakeTrends(const char *fileList, TObjArray *dump)
       }
       g[it]->SetPoint(g[it]->GetN(), nr, tv->GetVal());
     }
+    if(Float_t(nmiss)/ntv>.1) AliWarning(Form("Run[%09d] Missing %6.2f%% values", rno, 1.e2*nmiss/ntv));
     nr++;
   }
 

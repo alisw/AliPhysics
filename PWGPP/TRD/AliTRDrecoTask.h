@@ -82,7 +82,7 @@ public:
   Int_t          GetNRefFigures() const; 
   const Char_t*  GetNameId() const       { return fNameId;}
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
-  static Int_t   GetPtBinSignificant(Float_t pt);
+  Int_t          GetPtBin(Float_t pt);
   virtual Bool_t GetRefFigure(Int_t ifig);
   virtual void   MakeSummary();
   void           MakeDetectorPlot(Int_t ly=0, const Option_t *opt="eta");
@@ -106,7 +106,7 @@ public:
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
   static Float_t SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
   static void    SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0.);
-  void SetRunTerminate(Bool_t runTerminate = kTRUE) { fRunTerminate = runTerminate; }
+  void           SetRunTerminate(Bool_t runTerminate = kTRUE) { fRunTerminate = runTerminate; }
   void           SetTriggerList(const Char_t *tl);
   virtual void   Terminate(Option_t *);
 
@@ -114,6 +114,7 @@ protected:
   static TTreeSRedirector* DebugStream() { return fgDebugStream;}
   virtual void   InitFunctorList();
   Bool_t         HasFunctorList() const { return fPlotFuncList != NULL; }
+  Bool_t         MakeMomSegmentation();
 
   Char_t                fNameId[10];       // unique identifier of task particularity
   UChar_t               fNRefFigures;      // no of reference figures reported by task
@@ -132,6 +133,7 @@ protected:
   Float_t                fPt;              //! p_t of the track being analyzed
   Float_t                fPhi;             //! phi of the track being analyzed
   Float_t                fEta;             //! eta of the track being analyzed
+  Int_t                  fNpt;             // no of pt/p bins actually used
   TObjArray             *fTriggerList;     //! optional trigger list to be monitored
 
 private:
@@ -140,10 +142,11 @@ private:
 
   TList             *fPlotFuncList;        //! track functors list
   TList             *fDetFuncList;         //! detector functors list
-  Bool_t            fRunTerminate;         // Switch for Terminate Function
+  Bool_t             fRunTerminate;        // Switch for Terminate Function
   static TTreeSRedirector *fgDebugStream;  //! Debug stream
-  static const Int_t fgNPt0 = 4;           // No of significant pt bins 
-  static Float_t fgPt0[fgNPt0];            // Array with limits for significant pt bins 
+  static const Int_t fgNPt = 25;           //! No of debug pt bins
+protected:
+  static Float_t         fgPt[fgNPt];      //! Array with limits for debug pt bins
 
   ClassDef(AliTRDrecoTask, 5) // base TRD reconstruction task
 };

@@ -521,6 +521,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // read MC info
     Int_t fPdg = -1;
     Int_t label = -1; UInt_t alab=UINT_MAX;
+    Int_t nRefs = 0;
     if(HasMCdata()){
       label = esdTrack->GetLabel(); 
       alab = TMath::Abs(label);
@@ -537,7 +538,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
         continue;
       }
       fPdg = mcParticle->Particle()->GetPdgCode();
-      Int_t nRefs = mcParticle->GetNumberOfTrackReferences();
+      nRefs = mcParticle->GetNumberOfTrackReferences();
       Int_t iref = 0; AliTrackReference *ref = NULL; 
       while(iref<nRefs){
         ref = mcParticle->GetTrackReference(iref);
