@@ -133,13 +133,14 @@ void AliForwardCreateResponseMatrices::UserExec(Option_t */*option*/)
   dndetaEventCentral = central.ProjectionX("dndetaCentral",1,central.GetNbinsY(),"");
   dndetaEventMC      = primHist->ProjectionX("dndetaMC",1,primHist->GetNbinsY(),"");
    
-  // underflow eta bin of forward/central carry information on whether there is acceptance. 1= acceptance, 0= no acceptance
+  // underflow eta bin of forward/central carry information on whether
+  // there is acceptance. 1= acceptance, 0= no acceptance
   TH1D* normEventForward    = 0;
   TH1D* normEventCentral    = 0;
-  TH1D* normEventMC         = 0;
+  // TH1D* normEventMC         = 0;
   normEventForward   = forward.ProjectionX("dndetaEventForwardNorm",0,0,"");
   normEventCentral   = central.ProjectionX("dndetaEventCentralNorm",0,0,"");
-  normEventMC        = primHist->ProjectionX("dndetaEventNormMC",0,0,"");
+  // normEventMC        = primHist->ProjectionX("dndetaEventNormMC",0,0,"");
 
   dndetaSumForward->Add(dndetaEventForward);
   dndetaSumCentral->Add(dndetaEventCentral);
@@ -148,12 +149,15 @@ void AliForwardCreateResponseMatrices::UserExec(Option_t */*option*/)
   
   Double_t VtxZ = AODforward->GetIpZ();
 
-  // loop over all eta bins, and create response matrices, trigger-vertex bias histograms etc
+  // loop over all eta bins, and create response matrices,
+  // trigger-vertex bias histograms etc
   TIter next(&fBins);
   Bin * bin = 0;
   while ((bin = static_cast<Bin*>(next()))) { 
     bin->Process(dndetaEventForward, dndetaEventCentral, 
-		 normEventForward,   normEventCentral, dndetaEventMC, VtxZ, selectedTrigger,isMCNSD, isESDNSD,  aod);
+		 normEventForward,   normEventCentral, 
+		 dndetaEventMC, VtxZ, selectedTrigger,
+		 isMCNSD, isESDNSD,  aod);
   }
     
   PostData(1, fOutput);
