@@ -66,6 +66,9 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
   DGUARD(fDebug,0,"Named CTOR of AliFMDEnergyFitterTask: %s", name);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+  fBranchNames = 
+    "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
+    "AliESDFMD.,SPDVertex.,PrimaryVertex.";
 }
 
 //____________________________________________________________________
