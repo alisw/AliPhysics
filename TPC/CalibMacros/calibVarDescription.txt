@@ -55,6 +55,12 @@ timePulser.   1,Pulser_Position_[timebins],Pulser,IROC_A-Side,IROC_C-Side,OROC_A
 #CEfitC.		1,CE_Fit_C-Side,CE,Offset_[timebins],IROC/OROC_Offset_[timebins],dt/dgx_[timebins/cm],dt/dgy_[timebins/cm],dt/dlx_[timebins/cm],dt/dlx^{2}_[timebins/cm^{2}]
 CEfitA.     1,CE_Fit_A-Side,CE,Offset_[timebins],IROC/OROC_Offset_[timebins],dt/dgx_[timebins/cm],dt/dgy_[timebins/cm],dt/dlx_common_[timebins/cm],dt/dlx_IROCs_[timebins/cm]
 CEfitC.     1,CE_Fit_C-Side,CE,Offset_[timebins],IROC/OROC_Offset_[timebins],dt/dgx_[timebins/cm],dt/dgy_[timebins/cm],dt/dlx_common_[timebins/cm],dt/dlx_IROCs_[timebins/cm]
+CEfitAMI.   1,CE_Fit_A-Side,CE,Offset_[timebins],IROC/OROC_Offset_[timebins],dt/dgx_[timebins/cm],dt/dgy_[timebins/cm],dt/dlx_common_[timebins/cm],dt/dlx_IROCs_[timebins/cm]
+CEfitCMI.   1,CE_Fit_C-Side,CE,Offset_[timebins],IROC/OROC_Offset_[timebins],dt/dgx_[timebins/cm],dt/dgy_[timebins/cm],dt/dlx_common_[timebins/cm],dt/dlx_IROCs_[timebins/cm]
+chi2ACE     1,Chi^{2}_from_CE_fit_A-Side,CE
+chi2CCE     1,Chi^{2}_from_CE_fit_C-Side,CE
+chi2CEA     1,Chi^{2}_from_CE_fit_A-Side,CE
+chi2CEC     1,Chi^{2}_from_CE_fit_C-Side,CE
 nmaskedCE   1,CE_Number_of_outliers,CE
 tdriftCE.   1,CE_arrival_time,CE,A00,A01,A02,A03,A04,A05,A06,A07,A08,A09,A10,A11,A12,A13,A14,A15,A16,A17,C00,C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13,C14,C15,C16,C17
 vdriftCE.   1,CE_derived_drift_velocity,CE,A00,A01,A02,A03,A04,A05,A06,A07,A08,A09,A10,A11,A12,A13,A14,A15,A16,A17,C00,C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13,C14,C15,C16,C17
@@ -116,6 +122,19 @@ vdriftLTMon 1,Online_Laser_track_vdrift_correction_(Mean),Drift
 dlaOn       1,Online_Laser_track_distance_to_closest_measurement_(A-Side),Drift
 dlcOn       1,Online_Laser_track_distance_to_closest_measurement_(C-Side),Drift
 dlmOn       1,Online_Laser_track_distance_to_closest_measurement_(Mean),Drift
+#
+# Gain
+#
+rocGainIROC.           1,ROC_Gain_Correction_Short_Pads,Gain,A00,A01,A02,A03,A04,A05,A06,A07,A08,A09,A10,A11,A12,A13,A14,A15,A16,A17,C00,C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13,C14,C15,C16,C17
+rocGainOROCMedium.     1,ROC_Gain_Correction_Medium_Pads,Gain,A00,A01,A02,A03,A04,A05,A06,A07,A08,A09,A10,A11,A12,A13,A14,A15,A16,A17,C00,C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13,C14,C15,C16,C17
+rocGainOROCLong.       1,ROC_Gain_correction_Long_pads,Gain,A00,A01,A02,A03,A04,A05,A06,A07,A08,A09,A10,A11,A12,A13,A14,A15,A16,A17,C00,C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13,C14,C15,C16,C17
+rocGainErrIROC.        1,ROC_Gain_correction_error_Short_pads,Gain,A00,A01,A02,A03,A04,A05,A06,A07,A08,A09,A10,A11,A12,A13,A14,A15,A16,A17,C00,C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13,C14,C15,C16,C17
+rocGainErrOROCMedium.  1,ROC_Gain_correction_error_Medium_pads,Gain,A00,A01,A02,A03,A04,A05,A06,A07,A08,A09,A10,A11,A12,A13,A14,A15,A16,A17,C00,C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13,C14,C15,C16,C17
+rocGainErrOROCLong.    1,ROC_Gain_correction_error_Long_pads,Gain,A00,A01,A02,A03,A04,A05,A06,A07,A08,A09,A10,A11,A12,A13,A14,A15,A16,A17,C00,C01,C02,C03,C04,C05,C06,C07,C08,C09,C10,C11,C12,C13,C14,C15,C16,C17
+gainMIP                1,Gain_from_MIPs,Gain
+attachMIP              1,Attachment_coefficien_from_MIPs,Gain
+dMIP                   1,Distance_to_last_MIP_calibration,Gain
+gainCosmic             1,Gain_from_Cosmics,Gain
 #
 # alignment 
 #
