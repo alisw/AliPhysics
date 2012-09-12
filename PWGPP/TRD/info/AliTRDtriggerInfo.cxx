@@ -67,7 +67,7 @@ void AliTRDtriggerInfo::Draw(Option_t *opt)
   if(!(nt = GetNTriggers())) return;
   if(fHisto && fHisto->GetNbinsX() != nt){ delete fHisto; fHisto=NULL;}
 //
-  if(!fHisto) fHisto = new TH1I("hTriggerStat", "Trigger Statistics;TRIGGER;Freq. [%]", nt, 0.5, nt+0.5);
+  if(!fHisto) fHisto = new TH1F("hTriggerStat", "Trigger Statistics;TRIGGER;Freq. [%]", nt, 0.5, nt+0.5);
   TAxis *ax(fHisto->GetXaxis());  fHisto->Reset();
   ax->SetTitleOffset(6.5); ax->CenterTitle();
   fHisto->SetFillStyle(3001);fHisto->SetFillColor(kGreen);
