@@ -63,7 +63,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   virtual THnSparse* DefineTHnSparse() const;
 
   /// overloaded from AliDxHFEParticleSelection: check particle
-  virtual int IsSelected(AliVParticle* p, const AliVEvent*);
+  virtual int IsSelected(AliVParticle* p, const AliVEvent* pEvent);
 
   virtual int HistogramParticleProperties(AliVParticle* p, int selected);
 

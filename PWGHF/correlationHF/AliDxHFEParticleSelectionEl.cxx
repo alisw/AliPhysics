@@ -212,13 +212,13 @@ int AliDxHFEParticleSelectionEl::DefineParticleProperties(AliVParticle* p, Doubl
 }
 
 
-int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent*)
+int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* pEvent)
 {
   /// select El candidates
   // TODO: How to handle MC? would be too much duplicate code if copy entire IsSelected. 
 
   AliAODTrack *track=(AliAODTrack*)pEl;
- 
+  fCFM->SetRecEventInfo(pEvent);
 
   //--------track cut selection-----------------------
   //Using AliHFECuts:
