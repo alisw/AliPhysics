@@ -545,7 +545,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area, trigger, acceptance, signed pT leading
     const Int_t nBinsSparse2 = 9;
-    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 60,   8,  18, 72, 10,fNTrigger,fNAcceptance+0.5,10};
+    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 60,   8,  18, 72, 10,fNTrigger,fNAcceptance+0.5,20};
     if(cJetBranch.Contains("RandomCone")){
       nBins2[5] = 1;
     }
