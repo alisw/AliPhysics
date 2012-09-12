@@ -751,34 +751,58 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
   static Float_t  attachMIP = 0;
   static Double_t dMIP=0; 
   Double_t dummy=0;
+  static TVectorD vGainGraphIROC(36);
+  static TVectorD vGainGraphOROCmed(36);
+  static TVectorD vGainGraphOROClong(36);
+  static TVectorD vGainGraphIROCErr(36);
+  static TVectorD vGainGraphOROCmedErr(36);
+  static TVectorD vGainGraphOROClongErr(36);
+  
+  TGraphErrors grDummy;
   TObjArray * gainSplines = fCalibDB->GetTimeGainSplinesRun(irun);
   if (gainSplines) {
     TGraphErrors * graphMIP = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");
     TGraphErrors * graphCosmic = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL");
     TGraphErrors * graphAttach = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_ATTACHMENT_BEAM_ALL");
     //
-    TGraphErrors * graphGainIROC = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_SHORT_BEAM_ALL");
+    TGraphErrors * graphGainIROC       = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_SHORT_BEAM_ALL");
     TGraphErrors * graphGainOROCMedium = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_MEDIUM_BEAM_ALL");
-    TGraphErrors * graphGainOROCLong = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_LONG_BEAM_ALL");
+    TGraphErrors * graphGainOROCLong   = (TGraphErrors *) gainSplines->FindObject("TGRAPHERRORS_MEAN_CHAMBERGAIN_LONG_BEAM_ALL");
 
+    if (graphGainIROC && graphGainOROCMedium && graphGainOROCLong) {
+      Double_t x=0,y=0;
+      for (Int_t i=0; i<36; ++i){
+        graphGainIROC->GetPoint(i,x,y);
+        vGainGraphIROC(i)=y;
+        graphGainOROCMedium->GetPoint(i,x,y);
+        vGainGraphOROCmed(i)=y;
+        graphGainOROCLong->GetPoint(i,x,y);
+        vGainGraphOROClong(i)=y;
+        //errors
+        vGainGraphIROCErr(i)     = graphGainIROC->GetEY()[i];
+        vGainGraphOROCmedErr(i)  = graphGainOROCMedium->GetEY()[i];
+        vGainGraphOROClongErr(i) = graphGainOROCLong->GetEY()[i];
+      }
+    }
+    
     if (graphMIP) gainMIP = AliTPCcalibDButil::EvalGraphConst(graphMIP,timeStamp);
     if (graphCosmic) gainCosmic = AliTPCcalibDButil::EvalGraphConst(graphCosmic,timeStamp);
     if (graphAttach) attachMIP = AliTPCcalibDButil::EvalGraphConst(graphAttach,timeStamp);
-    if (graphMIP)  AliTPCcalibDButil::GetNearest(graphMIP, timeStamp, dMIP,dummy);
-    if (graphGainIROC){
-      (*fPcstream)<<"dcs"<<
-	"graphGainIROC.="<<graphGainIROC<<
-	"graphGainOROCMedium.="<<graphGainOROCMedium<<
-	"graphGainOROCLong.="<<graphGainOROCLong;      
-    }
-    
+    if (graphMIP)  AliTPCcalibDButil::GetNearest(graphMIP, timeStamp, dMIP,dummy);    
   }
+    
   // time dependence of gain
   (*fPcstream)<<"dcs"<<
-    "gainMIP="<<gainMIP<<
-    "attachMIP="<<attachMIP<<
-    "dMIP="<<dMIP<<
-    "gainCosmic="<<gainCosmic;
+    "rocGainIROC.="            << &vGainGraphIROC        <<
+    "rocGainOROCMedium.="      << &vGainGraphOROCmed     <<
+    "rocGainOROCLong.="        << &vGainGraphOROClong    <<
+    "rocGainErrIROC.="         << &vGainGraphIROCErr     <<
+    "rocGainErrOROCMedium.="   << &vGainGraphOROCmedErr  <<
+    "rocGainErrOROCLong.="     << &vGainGraphOROClongErr <<
+    "gainMIP="                 << gainMIP                <<
+    "attachMIP="               << attachMIP              <<
+    "dMIP="                    << dMIP                   <<
+    "gainCosmic="              << gainCosmic;
 }
 
 
