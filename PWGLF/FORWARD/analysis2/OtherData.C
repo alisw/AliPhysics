@@ -1389,7 +1389,7 @@ GetData(UShort_t sys,
     sn = "PbPb";
     // Warning("GetData", "No other data for PbPb yet");
   }
-  else 
+  else if (sys != 3) 
     Warning("GetData", "Unknown system %d", sys);
 
   if (!mp->GetListOfGraphs() || mp->GetListOfGraphs()->GetEntries() <= 0) {

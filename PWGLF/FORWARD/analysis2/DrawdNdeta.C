@@ -324,9 +324,10 @@ struct dNdetaDrawer
     fOthers    = new TMultiGraph();
     
     // --- Loop over input data --------------------------------------
-    /*TObjArray* mcA =*/ FetchResults(mcTruth,  "MCTruth", max, rmax, amax);
-    TObjArray* fwdA = FetchResults(forward,  "Forward", max, rmax, amax);
-    TObjArray* cenA = FetchResults(clusters, "Central", max, rmax, amax);
+    TObjArray truths;
+    /*TObjArray* mcA =*/ FetchResults(mcTruth,  "MCTruth", max, rmax, amax,truths);
+    TObjArray* fwdA = FetchResults(forward,  "Forward", max, rmax, amax,truths);
+    TObjArray* cenA = FetchResults(clusters, "Central", max, rmax, amax,truths);
 
     // --- Get trigger information -----------------------------------
     TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
@@ -499,10 +500,11 @@ struct dNdetaDrawer
 	       const char*  name, 
 	       Double_t&    max,
 	       Double_t&    rmax,
-	       Double_t&    amax)
+	       Double_t&    amax,
+	       TObjArray&   truths)
   {
     UShort_t   n = HasCent() ? fCentAxis->GetNbins() : 0;
-    Info("Fetch results, got %d centrality bins", n);
+    // Info("FetchResults","got %d centrality bins", n);
     if (n == 0) {
       TList* all = static_cast<TList*>(list->FindObject("all"));
       if (!all) {
@@ -512,13 +514,14 @@ struct dNdetaDrawer
       }
       TObjArray* a = new TObjArray;
       TH1*       h = FetchResults(all, name, FetchOthers(0,0), 
-				  -1000, 0, max, rmax, amax);
-      Info("FetchResults", "Adding %s to result stack", h->GetName());
+				  -1000, 0, max, rmax, amax, fTruth);
+      // Info("FetchResults", "Adding %s to result stack", h->GetName());
       a->AddAt(h, 0);
       return a;
     }
     
     TObjArray* a = new TObjArray;
+    truths.Expand(n);
     for (UShort_t i = 0; i < n; i++) { 
       UShort_t centLow  = fCentAxis->GetBinLowEdge(i+1);
       UShort_t centHigh = fCentAxis->GetBinUpEdge(i+1);
@@ -532,9 +535,15 @@ struct dNdetaDrawer
 	      lname.Data(), list->GetName());
 	continue;
       }
+      TH1* tt = static_cast<TH1*>(truths.At(i));
+      TH1* ot = tt;
       TH1* h = FetchResults(thisCent, name, FetchOthers(centLow, centHigh), 
-			    col, centTxt.Data(), max, rmax, amax);
-      Info("FetchResults", "Adding %p to result stack", h);
+			    col, centTxt.Data(), max, rmax, amax, tt);
+      if (ot != tt) { 
+	//Info("FetchResults", "old truth=%p new truth=%p (%s)", ot, tt, name);
+	truths.AddAt(tt, i);
+      }
+      // Info("FetchResults", "Adding %p to result stack", h);
       a->AddAt(h, i);
     }
     return a;
@@ -622,8 +631,10 @@ struct dNdetaDrawer
 		    const char*  centTxt,
 		    Double_t&    max,
 		    Double_t&    rmax,
-		    Double_t&    amax)
+		    Double_t&    amax, 
+		    TH1*&        truth)
   {
+    
     TH1* dndeta      = FetchResult(list, Form("dndeta%s", name));
     TH1* dndetaMC    = FetchResult(list, Form("dndeta%sMC", name));
     TH1* dndetaTruth = FetchResult(list, "dndetaTruth");
@@ -644,6 +655,9 @@ struct dNdetaDrawer
     }
     if (dndetaTruth) { 
       dndetaTruth->SetLineColor(kBlack); 
+      dndetaTruth->SetFillColor(kBlack); 
+      dndetaTruth->SetFillStyle(3002); 
+      // dndetaTruth->SetLineColor(kBlack); 
     }
     ModifyTitle(dndeta,     centTxt);
     ModifyTitle(dndetaMC,   centTxt);
@@ -652,12 +666,12 @@ struct dNdetaDrawer
     ModifyTitle(dndetaMCSym,centTxt);
       
 
-    max = TMath::Max(max, AddHistogram(fResults, dndetaTruth, "e5 p"));
+    max = TMath::Max(max, AddHistogram(fResults, dndetaTruth, "e5"));
     max = TMath::Max(max, AddHistogram(fResults, dndetaMC,    dndetaMCSym));
     max = TMath::Max(max, AddHistogram(fResults, dndeta,      dndetaSym));
 
     if (dndetaTruth) {
-      fTruth = dndetaTruth;
+      truth = dndetaTruth;
     }
     else {
       if (fShowRings) {
@@ -698,9 +712,9 @@ struct dNdetaDrawer
       fRatios->Add(Ratio(dndeta,    dndetaMC,    rmax));
       fRatios->Add(Ratio(dndetaSym, dndetaMCSym, rmax));
     }
-    if (fTruth) {
-      fRatios->Add(Ratio(dndeta,      fTruth, rmax));
-      fRatios->Add(Ratio(dndetaSym,   fTruth, rmax));
+    if (truth) {
+      fRatios->Add(Ratio(dndeta,      truth, rmax));
+      fRatios->Add(Ratio(dndetaSym,   truth, rmax));
     }
     return dndeta;
   }
@@ -780,10 +794,13 @@ struct dNdetaDrawer
    * @param y2 	    Upper Y coordinate in the range [0,1]
    */
   void BuildLegend(THStack* stack, TMultiGraph* mg, 
-		   Double_t x1, Double_t y1, Double_t x2, Double_t y2)
+		   Double_t x1, Double_t y1, Double_t x2, Double_t y2,
+		   Int_t forceCol=0)
   {
     TLegend* l = new TLegend(x1,y1,x2,y2);
-    l->SetNColumns(HasCent() ? 1 : 2);
+    Int_t nCol = forceCol;
+    if (nCol <= 0) nCol = HasCent() ? 1 : 2;
+    l->SetNColumns(nCol);
     l->SetFillColor(0);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
@@ -851,7 +868,7 @@ struct dNdetaDrawer
       d0->SetLineWidth(0);
       i++;
     }
-    if (!HasCent() && i % 2 == 1)  {
+    if (nCol == 2 && i % 2 == 1)  {
       // To make sure the 'data' and 'mirrored' entries are on a line
       // by themselves 
       TLegendEntry* dd = l->AddEntry("dd", "   ", "");
@@ -862,13 +879,14 @@ struct dNdetaDrawer
       dd->SetLineColor(0);
       dd->SetMarkerSize(0);
     }
-    // Add entry for 'data'
-    TLegendEntry* d1 = l->AddEntry("d1", "Data", "lp");
-    d1->SetLineColor(kBlack);
-    d1->SetMarkerColor(kBlack);
-    d1->SetMarkerStyle(20);
-    // Add entry for 'mirrored data'
     if (fMirror) {
+      // Add entry for 'data'
+      TLegendEntry* d1 = l->AddEntry("d1", "Data", "lp");
+      d1->SetLineColor(kBlack);
+      d1->SetMarkerColor(kBlack);
+      d1->SetMarkerStyle(20);
+
+      // Add entry for 'mirrored data'
       TLegendEntry* d2 = l->AddEntry("d2", "Mirrored data", "lp");
       d2->SetLineColor(kBlack);
       d2->SetMarkerColor(kBlack);
@@ -932,7 +950,7 @@ struct dNdetaDrawer
 
     // Info("PlotResults", "Plotting results with max=%f", max);
     fResults->SetMaximum(1.15*max);
-    fResults->SetMinimum(yd > 0.00001 ? -0.1 : 0);
+    fResults->SetMinimum(yd > 0.00001 ? -0.02*max : 0);
 
     FixAxis(fResults, (1-yd)*(yd > .001 ? 1 : .9 / 1.2), 
 	    "#font[12]{#frac{1}{N} "
@@ -1078,7 +1096,7 @@ struct dNdetaDrawer
     
     // Make a legend
     BuildLegend(fRatios, 0, .15,p2->GetBottomMargin()+.01,.9,
-		isBottom ? .6 : .4);
+		isBottom ? .6 : .4, 2);
 #if 0
     TLegend* l2 = p2->BuildLegend(.15,p2->GetBottomMargin()+.01,.9,
 				  isBottom ? .6 : .4);
@@ -1548,6 +1566,8 @@ struct dNdetaDrawer
     if (r) {
       r->SetMarkerStyle(m2->GetMarkerStyle());
       r->SetMarkerColor(m1->GetMarkerColor());
+      if (TString(o2->GetName()).Contains("truth", TString::kIgnoreCase)) 
+	r->SetMarkerStyle(m1->GetMarkerStyle());
       r->SetMarkerSize(0.9*m1->GetMarkerSize());
       r->SetName(Form("%s_over_%s", o1->GetName(), o2->GetName()));
       r->SetTitle(Form("%s / %s", o1->GetTitle(), o2->GetTitle()));
