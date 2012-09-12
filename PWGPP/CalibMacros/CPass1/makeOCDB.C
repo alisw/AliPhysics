@@ -50,22 +50,20 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   }
   // set OCDB storage
   if (targetOCDBstorage.Length()==0) targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-  TString ocdbLocal = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
 
   // TPC part
   AliTPCPreprocessorOffline* procesTPC=0;
   if (detStr.Contains("TPC")){
     Printf("\n******* Calibrating TPC *******");
-    procesTPC = new AliTPCPreprocessorOffline;
+    Printf("TPC won't be calibrated at CPass1 for the time being... Doing nothing here");
+    //procesTPC = new AliTPCPreprocessorOffline;
     // switch on parameter validation
-    procesTPC->SetTimeGainRange(0.5,4.0);
-    procesTPC->SwitchOnValidation();
+    //procesTPC->SetTimeGainRange(0.5,4.0);
+    //procesTPC->SwitchOnValidation();
     // Make timegain calibration
     //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
-    //procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,ocdbLocal);
     // Make vdrift calibration
     //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
-    //procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,ocdbLocal);
   }
 
   // TOF part
