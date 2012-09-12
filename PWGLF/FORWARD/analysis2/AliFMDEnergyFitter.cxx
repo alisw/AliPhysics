@@ -288,8 +288,7 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
   // 
   // Return:
   //    True on success, false otherwise 
-  //
-  DGUARD(fDebug, 1, "Accumulate statistics in AliFMDEnergyFitter");
+  //  DGUARD(fDebug, 3, "Accumulate statistics in AliFMDEnergyFitter");
   Int_t icent = fCentralityAxis.FindBin(cent);
   if (icent < 1 || icent > fCentralityAxis.GetNbins()) icent = 0;
 
@@ -323,7 +322,7 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
     } // for ring 
   } // for detector
 
-  DMSG(fDebug, 1, "Found a total of %d signals for c=%f, and %sempty event", 
+  DMSG(fDebug, 3, "Found a total of %d signals for c=%f, and %sempty event", 
        nFills, cent, (empty ? "" : "non-"));
   return kTRUE;
 }
