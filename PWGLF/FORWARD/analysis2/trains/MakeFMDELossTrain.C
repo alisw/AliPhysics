@@ -39,6 +39,20 @@ public:
    */
   void SetUseCentrality(Bool_t use) { fUseCent = use; }
 protected:
+  //------------------------------------------------------------------
+  /** 
+   * Create the analysis manager 
+   * 
+   * @param name Name of the analysis 
+   * 
+   * @return Created analysis manager 
+   */
+  virtual AliAnalysisManager* CreateAnalysisManager(const char* name)
+  {
+    AliAnalysisManager* mgr = TrainSetup::CreateAnalysisManager(name);
+    // mgr->SetAutoBranchLoading(false);
+    return mgr;
+  }
   //__________________________________________________________________
   /** 
    * Create the tasks 
