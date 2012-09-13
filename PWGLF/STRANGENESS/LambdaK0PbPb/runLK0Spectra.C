@@ -107,9 +107,9 @@ void runLK0Spectra(const char * data, const char * passOrPath, Long64_t nev = -1
   Int_t iCentralityBin = 0;
   gROOT->ProcessLine(".L AddTaskLK0Spectra.C");
   iCentralityBin = 0;
-  AddTaskLK0Spectra("lambdak0.root", iCentralityBin,isMC, usePID); // FIXME also pass cuts, centrality bin type selection(5,10% percentiles, ranges...)
+  AddTaskLK0Spectra("lambdak0.root", iCentralityBin,isMC, usePID, kFALSE); // FIXME also pass cuts, centrality bin type selection(5,10% percentiles, ranges...)
   iCentralityBin = 10;
-  AddTaskLK0Spectra("lambdak0.root", iCentralityBin,isMC, usePID); // FIXME also pass cuts, centrality bin type selection(5,10% percentiles, ranges...)
+  AddTaskLK0Spectra("lambdak0.root", iCentralityBin,isMC, usePID, kFALSE); // FIXME also pass cuts, centrality bin type selection(5,10% percentiles, ranges...)
 
   
 

@@ -39,6 +39,7 @@ class AliAnalysisTaskLK0Spectra : public AliAnalysisTaskSE {
   void   SetCentralitySelector(AliAnalysisCentralitySelector * centr) { fCentrSelector = centr;}
   void   SetQASelector(Bool_t QA = 0) { fQASelector = QA;}
   void   SetArmenterosCut(Double_t armenterosCut = 0.2) { fArmenterosCut = armenterosCut;}
+  void   SetRemoveInjected(Double_t removeInjected = kFALSE) { fRemoveInjected = removeInjected;}
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;
  
  private:
@@ -60,6 +61,7 @@ class AliAnalysisTaskLK0Spectra : public AliAnalysisTaskSE {
   Bool_t      fQASelector;                    // Quality Assurenc Histo switch
 	
   Double_t	fArmenterosCut;			//gradient for Armenteros cut, 0->OFF;
+	Bool_t  fRemoveInjected;		//Select whether to remove injected particles
 
   // MC histograms
   TH1F        *fHistMCPrimaryVertexX;      //! Histo
