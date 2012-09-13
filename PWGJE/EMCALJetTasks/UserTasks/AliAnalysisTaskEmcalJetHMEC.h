@@ -75,6 +75,8 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
 
   TH1                   *fHistJetPt[6];
   TH1                   *fHistJetPtBias[6];
+  TH1                   *fHistLeadJetPt[6];
+  TH1                   *fHistLeadJetPtBias[6];
   TH1                   *fHistJetPtTT[6];
   TH2                   *fHistJetH[6][5][3];
   TH2                   *fHistJetHBias[6][5][3];
@@ -87,6 +89,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalJetHMEC(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   AliAnalysisTaskEmcalJetHMEC& operator=(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   
-  ClassDef(AliAnalysisTaskEmcalJetHMEC, 9); 
+  ClassDef(AliAnalysisTaskEmcalJetHMEC, 10); 
 };
 #endif
