@@ -7,8 +7,7 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.8,
-  Double_t    ptcut              = 0.15,
+  Double_t    jetareacut         = 0.557,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   Int_t       leadhadtype        = 0,
   const char *taskname           = "AliAnalysisTaskSAJF"
@@ -48,7 +47,6 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   jetTask->SetClusName(nclusters);
   jetTask->SetJetsName(njets);
   jetTask->SetRhoName(nrho);
-  jetTask->SetPtCut(ptcut);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
   jetTask->SetPercAreaCut(jetareacut);

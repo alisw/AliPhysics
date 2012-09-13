@@ -10,7 +10,6 @@
 #include <TH2F.h>
 #include <TClonesArray.h>
 
-#include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
 #include "AliEmcalJet.h"
@@ -27,7 +26,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
   fCompareRhoScaledName(),
   fRhoFunction(0),
   fScaleFunction(0),
-  fInEventSigmaRho(71.66),
+  fInEventSigmaRho(35.83),
   fRhoScaled(0),
   fCompareRho(0),
   fCompareRhoScaled(0),
@@ -49,8 +48,11 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase() :
   fHistRhoScaledvsNcluster(0)
 {
   // Constructor.
+
   for (Int_t i = 0; i < 4; i++) {
-    fHistNjUEvsNj[i] = 0;
+    fHistJetNconstVsPt[i] = 0;
+  }
+  for (Int_t i = 0; i < 12; i++) {
     fHistNjUEoverNjVsNj[i] = 0;
   }
 }
@@ -63,7 +65,7 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
   fCompareRhoScaledName(),
   fRhoFunction(0),
   fScaleFunction(0),
-  fInEventSigmaRho(71.66),
+  fInEventSigmaRho(35.83),
   fRhoScaled(0),
   fCompareRho(0),
   fCompareRhoScaled(0),
@@ -87,7 +89,9 @@ AliAnalysisTaskRhoBase::AliAnalysisTaskRhoBase(const char *name, Bool_t histo) :
   // Constructor.
 
   for (Int_t i = 0; i < 4; i++) {
-    fHistNjUEvsNj[i] = 0;
+    fHistJetNconstVsPt[i] = 0;
+  }
+  for (Int_t i = 0; i < 12; i++) {
     fHistNjUEoverNjVsNj[i] = 0;
   }
 
@@ -136,18 +140,22 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
       fOutput->Add(fHistNjetvsNtrack);
     }
 
-    for (Int_t i = 0; i < 4; i++) {
-      TString name1(Form("NjUEvsNj_%d",i));
-      fHistNjUEvsNj[i] = new TH2F(name1, name1, 150, -0.5, 149.5, 150, -0.5, 149.5);
-      fHistNjUEvsNj[i]->GetXaxis()->SetTitle("N_{jet}");
-      fHistNjUEvsNj[i]->GetYaxis()->SetTitle("N_{jet_{UE}}");
-      fOutput->Add(fHistNjUEvsNj[i]);
 
-      TString name2(Form("NjUEoverNjVsNj_%d",i));
-      fHistNjUEoverNjVsNj[i] = new TH2F(name2, name2, 150, -0.5, 149.5, 120, -0.01, 1.19);
-      fHistNjUEoverNjVsNj[i]->GetXaxis()->SetTitle("N_{jet_{UE}} / N_{jet}");
-      fHistNjUEoverNjVsNj[i]->GetYaxis()->SetTitle("N_{jet}");
-      fOutput->Add(fHistNjUEoverNjVsNj[i]);
+    TString name;
+    for (Int_t i = 0; i < 4; i++) {
+      name = Form("fHistJetNconstVsPt_%d",i);
+      fHistJetNconstVsPt[i] = new TH2F(name, name, 150, -0.5, 149.5, fNbins, fMinBinPt, fMaxBinPt);
+      fHistJetNconstVsPt[i]->GetXaxis()->SetTitle("# of constituents");
+      fHistJetNconstVsPt[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
+      fOutput->Add(fHistJetNconstVsPt[i]);
+
+      for (Int_t j = 0; j < 3; j++) {
+	name = Form("NjUEoverNjVsNj_%d_%d",i,j+1);
+	fHistNjUEoverNjVsNj[i*3+j] = new TH2F(name, name, 150, -0.5, 149.5, 120, 0.01, 1.21);
+	fHistNjUEoverNjVsNj[i*3+j]->GetXaxis()->SetTitle("N_{jet}");
+	fHistNjUEoverNjVsNj[i*3+j]->GetYaxis()->SetTitle("N_{jet_{UE}} / N_{jet}");
+	fOutput->Add(fHistNjUEoverNjVsNj[i*3+j]);
+      }
     }
   }
   
@@ -216,10 +224,14 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
     Nclusters = fCaloClusters->GetEntriesFast();
 
   if (fJets) {
-    Int_t Njets    = fJets->GetEntries();
-    Int_t NjetAcc  = 0;
-    Int_t NjetUE   = 0;
-    Double_t rhoPlusSigma = fRho->GetVal() + fInEventSigmaRho;
+    Int_t    Njets         = fJets->GetEntries();
+    Int_t    NjetAcc       = 0;
+    Int_t    NjetUE1Sigma  = 0;
+    Int_t    NjetUE2Sigma  = 0;
+    Int_t    NjetUE3Sigma  = 0;
+    Double_t rhoPlus1Sigma = fRho->GetVal() + fInEventSigmaRho;
+    Double_t rhoPlus2Sigma = fRho->GetVal() + 2*fInEventSigmaRho;
+    Double_t rhoPlus3Sigma = fRho->GetVal() + 3*fInEventSigmaRho;
 
     for (Int_t i = 0; i < Njets; ++i) {
       
@@ -240,16 +252,25 @@ Bool_t AliAnalysisTaskRhoBase::FillHistograms()
 	fHistJetAreavsNtrack->Fill(Ntracks, jet->Area());
       }
 
-      if (jet->Pt() < rhoPlusSigma * jet->Area())
-	NjetUE++;
+      fHistJetNconstVsPt[fCentBin]->Fill(jet->GetNumberOfConstituents(), jet->Pt());
+
+      if (jet->Pt() < rhoPlus1Sigma * jet->Area())
+	NjetUE1Sigma++;
+
+      if (jet->Pt() < rhoPlus2Sigma * jet->Area())
+	NjetUE2Sigma++;
+
+      if (jet->Pt() < rhoPlus3Sigma * jet->Area())
+	NjetUE3Sigma++;
       
       NjetAcc++;
     }
-
-    fHistNjUEvsNj[fCentBin]->Fill(NjetAcc,NjetUE);
     
-    if (NjetAcc>0)
-      fHistNjUEoverNjVsNj[fCentBin]->Fill(NjetAcc,1.*NjetUE/NjetAcc);
+    if (NjetAcc>0) {
+      fHistNjUEoverNjVsNj[fCentBin*3  ]->Fill(NjetAcc,1.*NjetUE1Sigma/NjetAcc);
+      fHistNjUEoverNjVsNj[fCentBin*3+1]->Fill(NjetAcc,1.*NjetUE2Sigma/NjetAcc);
+      fHistNjUEoverNjVsNj[fCentBin*3+2]->Fill(NjetAcc,1.*NjetUE3Sigma/NjetAcc);
+    }
 
     fHistNjetvsCent->Fill(fCent, NjetAcc);
     if (fTracks)

@@ -9,7 +9,6 @@ AliAnalysisTaskRhoBase* AddTaskRhoBase(
    UInt_t         type        = AliAnalysisTaskEmcal::kTPC,
    Double_t       jetareacut  = 0.01,
    Double_t       emcareacut  = 0,
-   Double_t       ptcut       = 0.15,
    TF1           *sfunc       = 0,
    TF1           *rfunc       = 0,
    const Bool_t   histo       = kFALSE,
@@ -48,7 +47,6 @@ AliAnalysisTaskRhoBase* AddTaskRhoBase(
   rhotask->SetRhoName(nRho);
   rhotask->SetJetAreaCut(jetareacut);
   rhotask->SetAreaEmcCut(emcareacut);
-  rhotask->SetPtCut(ptcut);
   rhotask->SetJetPtCut(0);
   rhotask->SetJetRadius(jetradius);
 

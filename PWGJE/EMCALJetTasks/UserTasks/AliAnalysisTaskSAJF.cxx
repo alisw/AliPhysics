@@ -4,24 +4,17 @@
 //
 // Author: S.Aiola
 
-#include <TObject.h>
-#include <TChain.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TList.h>
 #include <TLorentzVector.h>
-#include <TRandom3.h>
-#include <TParameter.h>
 
-#include "AliAnalysisManager.h"
-#include "AliCentrality.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
-#include "AliVEventHandler.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
 
@@ -33,7 +26,8 @@ ClassImp(AliAnalysisTaskSAJF)
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
   fLeadingHadronType(0),
-  fHistRhoVSleadJetPt(0)
+  fHistRhoVSleadJetPt(0),
+  fNjetsVsCent(0)
 
 {
   // Default constructor.
@@ -51,6 +45,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistConstituents[i] = 0;
     fHistTracksJetPt[i] = 0;
     fHistClustersJetPt[i] = 0;
+    fHistJetNconstVsPt[i] = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -60,7 +55,8 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fLeadingHadronType(0),
-  fHistRhoVSleadJetPt(0)
+  fHistRhoVSleadJetPt(0),
+  fNjetsVsCent(0)
 {
   // Standard constructor.
 
@@ -77,6 +73,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistConstituents[i] = 0;
     fHistTracksJetPt[i] = 0;
     fHistClustersJetPt[i] = 0;
+    fHistJetNconstVsPt[i] = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -110,9 +107,14 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   fHistRhoVSleadJetPt = new TH2F("fHistRhoVSleadJetPt","fHistRhoVSleadJetPt", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
-  fHistRhoVSleadJetPt->GetXaxis()->SetTitle("#rho * area [GeV/c]");
-  fHistRhoVSleadJetPt->GetYaxis()->SetTitle("Leading jet p_{T} [GeV/c]");
+  fHistRhoVSleadJetPt->GetXaxis()->SetTitle("#rho * area (GeV/c)");
+  fHistRhoVSleadJetPt->GetYaxis()->SetTitle("Leading jet p_{T} (GeV/c)");
   fOutput->Add(fHistRhoVSleadJetPt);
+
+  fNjetsVsCent = new TH2F("fNjetsVsCent","fNjetsVsCent", 100, 0, 100, 150, -0.5, 149.5);
+  fNjetsVsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fNjetsVsCent->GetYaxis()->SetTitle("# of jets");
+  fOutput->Add(fNjetsVsCent);
 
   const Int_t nbinsZ = 12;
   Float_t binsZ[nbinsZ+1] = {0,1,2,3,4,5,6,7,8,9,10,20,1000};
@@ -123,6 +125,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   Float_t *binsEta      = GenerateFixedBinArray(50,-1, 1);
   Float_t *binsPhi      = GenerateFixedBinArray(101, 0, TMath::Pi() * 2.02);
   Float_t *bins120      = GenerateFixedBinArray(120, 0, 1.2);
+  Float_t *bins150      = GenerateFixedBinArray(150, -0.5, 149.5);
 
   TString histname;
 
@@ -218,10 +221,10 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 
     histname = "fHistConstituents_";
     histname += i;
-    fHistConstituents[i] = new TH3F(histname.Data(), histname.Data(), 100, 1, 101, 100, -0.5, 99.5, fNbins, fMinBinPt, fMaxBinPt);
+    fHistConstituents[i] = new TH2F(histname.Data(), histname.Data(), 100, 1, 101, 100, -0.5, 99.5);
     fHistConstituents[i]->GetXaxis()->SetTitle("p_{T,part} (GeV/c)");
     fHistConstituents[i]->GetYaxis()->SetTitle("no. of particles");
-    fHistConstituents[i]->GetZaxis()->SetTitle("p_{T,jet} (GeV/c)");
+    fHistConstituents[i]->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistConstituents[i]);
 
     histname = "fHistTracksJetPt_";
@@ -241,6 +244,14 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
       fHistClustersJetPt[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistClustersJetPt[i]);
     }
+
+    histname = "fHistJetNconstVsPt_";
+    histname += i;
+    fHistJetNconstVsPt[i] = new TH3F(histname.Data(), histname.Data(), 150, bins150, fNbins, binsPt, nbinsZ, binsZ);
+    fHistJetNconstVsPt[i]->GetXaxis()->SetTitle("# of constituents");
+    fHistJetNconstVsPt[i]->GetYaxis()->SetTitle("p_{T,jet} (GeV/c)");
+    fHistJetNconstVsPt[i]->GetZaxis()->SetTitle("p_{T,lead} (GeV/c)");
+    fOutput->Add(fHistJetNconstVsPt[i]);
   }
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
@@ -307,20 +318,23 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
   if (jet2)
     fHist2LeadingJetPt[fCentBin]->Fill(jet2->Pt());
 
-  DoJetLoop();
+  Int_t njets = DoJetLoop();
+
+  fNjetsVsCent->Fill(fCent, njets);
 
   return kTRUE;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAJF::DoJetLoop()
+Int_t AliAnalysisTaskSAJF::DoJetLoop()
 {
   // Do the jet loop.
 
   if (!fJets)
-    return;
+    return 0;
 
   const Int_t njets = fJets->GetEntriesFast();
+  Int_t nAccJets = 0;
 
   TH1F constituents("constituents", "constituents", 
 		    fHistConstituents[0]->GetNbinsX(), fHistConstituents[0]->GetXaxis()->GetXmin(), fHistConstituents[0]->GetXaxis()->GetXmax()); 
@@ -351,6 +365,7 @@ void AliAnalysisTaskSAJF::DoJetLoop()
     fHistJetPhiEta[fCentBin]->Fill(jet->Eta(), jet->Phi(), ptLeading);
     fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area(), ptLeading);
     fHistJetsCorrPtArea[fCentBin]->Fill(corrPt, jet->Area(), ptLeading);
+    fHistJetNconstVsPt[fCentBin]->Fill(jet->GetNumberOfConstituents(), jet->Pt(), ptLeading);
 
     if (fCaloClusters)
       fHistJetsNEFvsPt[fCentBin]->Fill(jet->NEF(), jet->Pt(), ptLeading);
@@ -381,11 +396,14 @@ void AliAnalysisTaskSAJF::DoJetLoop()
     }
 
     for (Int_t i = 1; i <= constituents.GetNbinsX(); i++) {
-      fHistConstituents[fCentBin]->Fill(constituents.GetBinCenter(i), constituents.GetBinContent(i), jet->Pt());
+      fHistConstituents[fCentBin]->Fill(constituents.GetBinCenter(i), constituents.GetBinContent(i));
     }
 
     constituents.Reset();
+    nAccJets++;
   } //jet loop 
+
+  return nAccJets;
 }
 
 //________________________________________________________________________

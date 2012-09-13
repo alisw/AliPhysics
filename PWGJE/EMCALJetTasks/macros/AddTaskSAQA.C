@@ -6,8 +6,9 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   const char *njets              = "Jets",
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.8,
-  Double_t    ptcut              = 0.15,
+  Double_t    jetareacut         = 0.557,
+  Double_t    trackptcut         = 0.15,
+  Double_t    clusptcut          = 0.30,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   const char *taskname           = "AliAnalysisTaskSAQA"
 )
@@ -32,13 +33,21 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString name(Form("%s_%s_%s_%s_R0%d_",taskname,njets,ntracks,nclusters,(Int_t)floor(jetradius*100+0.5)));
-  if (type == AliAnalysisTaskEmcal::kTPC) 
-    name += "TPC";
-  else if (type == AliAnalysisTaskEmcal::kEMCAL) 
-    name += "EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kUser) 
-    name += "USER";
+  
+  TString name;
+  if (strcmp(njets,"")) {
+    name = Form("%s_%s_%s_%s_R0%d_",taskname,njets,ntracks,nclusters,(Int_t)floor(jetradius*100+0.5));
+    if (type == AliAnalysisTaskEmcal::kTPC) 
+      name += "TPC";
+    else if (type == AliAnalysisTaskEmcal::kEMCAL) 
+      name += "EMCAL";
+    else if (type == AliAnalysisTaskEmcal::kUser) 
+      name += "USER";
+  }
+  else {
+    name = Form("%s_%s_%s_",taskname,ntracks,nclusters);
+  }
+
   AliAnalysisTaskSAQA* qaTask = new AliAnalysisTaskSAQA(name);
   qaTask->SetTracksName(ntracks);
   qaTask->SetClusName(nclusters);
@@ -46,7 +55,8 @@ AliAnalysisTaskSAQA* AddTaskSAQA(
   qaTask->SetJetRadius(jetradius);
   qaTask->SetJetPtCut(jetptcut);
   qaTask->SetPercAreaCut(jetareacut);
-  qaTask->SetPtCut(ptcut);
+  qaTask->SetTrackPtCut(trackptcut);
+  qaTask->SetClusPtCut(clusptcut);
   qaTask->SetAnaType(type);
 
   //-------------------------------------------------------

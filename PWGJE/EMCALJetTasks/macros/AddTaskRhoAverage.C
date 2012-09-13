@@ -9,7 +9,8 @@ AliAnalysisTaskRhoAverage* AddTaskRhoAverage(
    UInt_t         type        = AliAnalysisTaskEmcal::kTPC,
    Double_t       jetareacut  = 0.01,
    Double_t       emcareacut  = 0,
-   Double_t       ptcut       = 0.15,
+   Double_t       trackptcut  = 0.15,
+   Double_t       clusptcut   = 0.30,
    TF1           *sfunc       = 0,
    const UInt_t   exclPart    = 2,
    const UInt_t   rhotype     = 1,
@@ -54,7 +55,8 @@ AliAnalysisTaskRhoAverage* AddTaskRhoAverage(
   rhotask->SetRhoName(nRho);
   rhotask->SetJetAreaCut(jetareacut);
   rhotask->SetAreaEmcCut(emcareacut);
-  rhotask->SetPtCut(ptcut);
+  rhotask->SetClusPtCut(clusptcut);
+  rhotask->SetTrackPtCut(trackptcut);
   rhotask->SetJetPtCut(0);
   rhotask->SetJetRadius(jetradius);
   rhotask->SetExcludeLeadPart(exclPart);

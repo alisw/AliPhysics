@@ -57,6 +57,7 @@ class AliEmcalJet : public AliVParticle
   AliVCluster      *ClusterAt(Int_t idx, TClonesArray *ca)  const { if (!ca) return 0; return dynamic_cast<AliVCluster*>(ca->At(ClusterAt(idx))); }
   UShort_t          GetNumberOfClusters()        const { return fClusterIDs.GetSize();     }
   UShort_t          GetNumberOfTracks()          const { return fTrackIDs.GetSize();       }
+  UShort_t          GetNumberOfConstituents()    const { return GetNumberOfClusters()+GetNumberOfTracks();       }
   Double_t          FracEmcalArea()              const { return fAreaEmc/fArea;            }
   Bool_t            IsInsideEmcal()              const { return (fAreaEmc/fArea>0.999);    }
   Bool_t            IsInEmcal()                  const { return (fAreaEmc>0);              }
@@ -136,6 +137,6 @@ class AliEmcalJet : public AliVParticle
   Double_t          fPtSub;               //!          background subtracted pt (not stored set from outside) 
   Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
 
-  ClassDef(AliEmcalJet,8) // Emcal jet class in cylindrical coordinates
+  ClassDef(AliEmcalJet,9) // Emcal jet class in cylindrical coordinates
 };
 #endif

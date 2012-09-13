@@ -5,12 +5,11 @@ AliJetResponseMaker* AddTaskJetRespPtHard(const char *ntracks            = "Trac
 					  const char *njets              = "Jets",
 					  const char *nmcjets            = "MCJets",
 					  const char *nmctracks          = "MCParticles",
-					  Double_t    jetradius          = 0.4,
+					  Double_t    jetradius          = 0.2,
 					  Double_t    jetptcut           = 1,
-					  Double_t    jetareacut         = 0.8,
-					  Double_t    ptcut              = 0.15,
-					  Double_t    jetBiasTrack       = 10,
-					  Double_t    jetBiasClus        = 10,
+					  Double_t    jetareacut         = 0.557,
+					  Double_t    jetBiasTrack       = 5,
+					  Double_t    jetBiasClus        = 5,
 					  Double_t    maxDistance        = 0.25,
 					  UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
 					  Int_t       minPtBin           = 1, 
@@ -27,7 +26,7 @@ AliJetResponseMaker* AddTaskJetRespPtHard(const char *ntracks            = "Trac
 
   for (Int_t i = minPtBin; i <= maxPtBin; i++) {
     AddTaskJetResponseMaker(ntracks, nclusters, njets, nmcjets, nmctracks, 
-			    jetradius, jetptcut, jetareacut, ptcut, jetBiasTrack, 
+			    jetradius, jetptcut, jetareacut, jetBiasTrack, 
 			    jetBiasClus, maxDistance, type, i, taskname, jetTask + i - minPtBin);
     jetTask[i - minPtBin].SetDoMatching(domatch);
     if (biggerMatrix) 
