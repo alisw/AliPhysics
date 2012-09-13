@@ -17,16 +17,16 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   //===========================================================================
   AliAnalysisTaskEMCALIsoPhoton* ana = new  AliAnalysisTaskEMCALIsoPhoton("");
   
-  ana->SelectCollisionCandidates( AliVEvent::kEMC1 | AliVEvent::kMB | AliVEvent::kEMC7 | AliVEvent::kINT7);
-  
   Bool_t isMC = (mgr->GetMCtruthEventHandler() != NULL);
 
+  if(!isMC)
+    ana->SelectCollisionCandidates( AliVEvent::kEMC1 | AliVEvent::kMB | AliVEvent::kEMC7 | AliVEvent::kINT7);
+  
   //ana->SetClusThreshold(clusTh);
   
   ana->SetTrainMode(kTRUE);
-  ana->SetMcMode(isMC);
   ana->SetTriggerBit(trigbitname);
-  // ana->SetMcMode(isMC);
+  ana->SetMcMode(isMC);
   
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
   cutsp->SetMinNClustersTPC(70);
