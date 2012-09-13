@@ -1,4 +1,4 @@
-AliAnalysisTaskLK0Spectra * AddTaskLK0Spectra(const char * outfilename, Int_t ibin, Int_t iMCAnalysis = 0,  Bool_t usePID = kTRUE) {
+AliAnalysisTaskLK0Spectra * AddTaskLK0Spectra(const char * outfilename, Int_t ibin, Int_t iMCAnalysis = 0,  Bool_t usePID = kTRUE, Bool_t removeInjected = kFALSE) {
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -35,7 +35,7 @@ AliAnalysisTaskLK0Spectra * AddTaskLK0Spectra(const char * outfilename, Int_t ib
 	 myTracksCuts->SetRequireITSRefit(kFALSE);
      // myTracksCuts->SetMinNClustersTPC(nbMinTPCclusters);
      myTracksCuts->SetMinNCrossedRowsTPC(70);
-     myTracksCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+     //myTracksCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 	
 	char taskName[15];
 	sprintf(taskName,"TaskLambdaK0_%d",ibin);
@@ -54,6 +54,7 @@ AliAnalysisTaskLK0Spectra * AddTaskLK0Spectra(const char * outfilename, Int_t ib
 		task->SetUsePID("withoutPID"); // withPID or withoutPID
 	task->SetArmenterosCut(0.2);
     task->SetTrackCuts(myTracksCuts);
+	task->SetRemoveInjected(removeInjected);
    
     mgr->AddTask(task);
       

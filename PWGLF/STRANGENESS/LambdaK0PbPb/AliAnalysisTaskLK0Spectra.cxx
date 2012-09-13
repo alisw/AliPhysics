@@ -81,7 +81,7 @@ ClassImp(AliAnalysisTaskLK0Spectra)
 
 //________________________________________________________________________
 AliAnalysisTaskLK0Spectra::AliAnalysisTaskLK0Spectra()
-: AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fESD(0), fListHist(0),fCentrSelector(0),fTracksCuts(0),fPIDResponse(0),fQASelector(0),fArmenterosCut(0.2), 
+: AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fESD(0), fListHist(0),fCentrSelector(0),fTracksCuts(0),fPIDResponse(0),fQASelector(0),fArmenterosCut(0.2),fRemoveInjected(kFALSE), 
 
 fHistMCPrimaryVertexX(0),
 fHistMCPrimaryVertexY(0),
@@ -430,7 +430,7 @@ fHistAsMcSecondaryPtVsMassAntiLambda(0)/*,
 
 //________________________________________________________________________
 AliAnalysisTaskLK0Spectra::AliAnalysisTaskLK0Spectra(const char *name)
-  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fESD(0), fListHist(),fCentrSelector(0), fTracksCuts(0),fPIDResponse(0),fQASelector(0),fArmenterosCut(0.2),
+  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fESD(0), fListHist(),fCentrSelector(0), fTracksCuts(0),fPIDResponse(0),fQASelector(0),fArmenterosCut(0.2),fRemoveInjected(kFALSE),
 
 fHistMCPrimaryVertexX(0),
 fHistMCPrimaryVertexY(0),
@@ -1819,7 +1819,9 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
   // Cut Rapidity:
   Double_t lCutRap  = 0.5;
 
-	Int_t selectInjected = -1; //1 for just injected, -1 for just pure; 0 for both.
+	Int_t selectInjected = 0; //1 for just injected, -1 for just pure; 0 for both.
+	if(fRemoveInjected == kTRUE)
+	{selectInjected = -1;}
 	
   // cut Pseudorapidity:
 
