@@ -73,7 +73,8 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0), 
-    hdifEMC_EP(0), hdifful_EP(0), hdifout_EP(0),
+    hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
+    hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
     fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
 
 {
@@ -102,7 +103,8 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     hEPV0(0), hEPV0A(0), hEPV0C(0), hEPV0Ar(0), hEPV0Cr(0), hEPV0r(0), hEPV0AR4(0), hEPV0AR7(0), hEPV0CR0(0), hEPV0CR3(0),
     hdifV0A_V0CR0(0), hdifV0A_V0CR3(0), hdifV0ACR0_V0CR3(0), hdifV0C_V0AR4(0), hdifV0C_V0AR7(0), hdifV0AR4_V0AR7(0),
     hdifV0A_V0C(0), hdifV0A_TPC(0), hdifV0C_TPC(0), hdifV0C_V0A(0),  
-    hdifEMC_EP(0), hdifful_EP(0), hdifout_EP(0),
+    hdifEMC_EPV0(0), hdifEMC_EPV0A(0), hdifEMC_EPV0C(0), hdifful_EPV0(0), hdifful_EPV0A(0), hdifful_EPV0C(0), 
+    hdifout_EPV0(0), hdifout_EPV0A(0), hdifout_EPV0C(0), hdifEMC_EPTPC(0), hdifful_EPTPC(0), hdifout_EPTPC(0),
     fHEPV0r(0), fHEPV0A(0), fHEPV0C(0), fHEPTPC(0)
 {
     // Constructor
@@ -456,12 +458,33 @@ void AliAnalysisTaskPi0V2::UserCreateOutputObjects()
 
 
 
-    hdifEMC_EP = new TH3F("hdifEMC_EP", "dif phi in EMC with EP",  100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
-    hdifful_EP = new TH3F("hdifful_EP", "dif phi in full with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
-    hdifout_EP = new TH3F("hdifout_EP", "dif phi NOT in EMC with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
-    fOutput->Add(hdifEMC_EP);
-    fOutput->Add(hdifful_EP);
-    fOutput->Add(hdifout_EP);
+    hdifEMC_EPV0  = new TH3F("hdifEMC_EPV0",  "dif phi in EMC with EP",  100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifEMC_EPV0A = new TH3F("hdifEMC_EPV0A", "dif phi in EMC with EP",  100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifEMC_EPV0C = new TH3F("hdifEMC_EPV0C", "dif phi in EMC with EP",  100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    fOutput->Add(hdifEMC_EPV0);
+    fOutput->Add(hdifEMC_EPV0A);
+    fOutput->Add(hdifEMC_EPV0C);
+
+    hdifful_EPV0 = new TH3F("hdifful_EPV0",    "dif phi in full with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifful_EPV0A = new TH3F("hdifful_EPV0A",  "dif phi in full with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifful_EPV0C = new TH3F("hdifful_EPV0C",  "dif phi in full with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    fOutput->Add(hdifful_EPV0);
+    fOutput->Add(hdifful_EPV0A);
+    fOutput->Add(hdifful_EPV0C);
+
+    hdifout_EPV0  = new TH3F("hdifout_EPV0",  "dif phi NOT in EMC with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifout_EPV0A = new TH3F("hdifout_EPV0A", "dif phi NOT in EMC with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifout_EPV0C = new TH3F("hdifout_EPV0C", "dif phi NOT in EMC with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    fOutput->Add(hdifout_EPV0);
+    fOutput->Add(hdifout_EPV0A);
+    fOutput->Add(hdifout_EPV0C);
+
+    hdifEMC_EPTPC = new TH3F("hdifEMC_EPTPC", "dif phi in EMC with EP",  100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifful_EPTPC = new TH3F("hdifful_EPTPC",  "dif phi in full with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    hdifout_EPTPC = new TH3F("hdifout_EPTPC", "dif phi NOT in EMC with EP", 100, 0., 100., 100, 0., TMath::Pi(), 15, 0., 15.);
+    fOutput->Add(hdifEMC_EPTPC);
+    fOutput->Add(hdifful_EPTPC);
+    fOutput->Add(hdifout_EPTPC);
 
     hAllcentV0  = new TH1F("hAllcentV0",  "All cent EP V0",  100, 0., TMath::Pi());
     hAllcentV0r = new TH1F("hAllcentV0r", "All cent EP V0r", 100, 0., TMath::Pi());
@@ -661,13 +684,25 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 	Double_t tPhi = esdtrack->Phi();
 	Double_t tPt  = esdtrack->Pt();
 
-	Double_t difTrack = TVector2::Phi_0_2pi(tPhi-fEPV0);  if(difTrack >TMath::Pi()) difTrack -= TMath::Pi();
+	Double_t difTrackV0  = TVector2::Phi_0_2pi(tPhi-fEPV0);   if(difTrackV0  >TMath::Pi()) difTrackV0  -= TMath::Pi();
+	Double_t difTrackV0A = TVector2::Phi_0_2pi(tPhi-fEPV0A);  if(difTrackV0A >TMath::Pi()) difTrackV0A -= TMath::Pi();
+	Double_t difTrackV0C = TVector2::Phi_0_2pi(tPhi-fEPV0C);  if(difTrackV0C >TMath::Pi()) difTrackV0C -= TMath::Pi();
+	Double_t difTrackTPC = TVector2::Phi_0_2pi(tPhi-fEPTPC);  if(difTrackTPC >TMath::Pi()) difTrackTPC -= TMath::Pi();
 	if(esdtrack->IsEMCAL()){	
-          hdifEMC_EP->Fill(fCentrality, difTrack, tPt);
+          hdifEMC_EPV0->Fill(fCentrality, difTrackV0, tPt);
+          hdifEMC_EPV0A->Fill(fCentrality, difTrackV0A, tPt);
+          hdifEMC_EPV0C->Fill(fCentrality, difTrackV0C, tPt);
+          hdifEMC_EPTPC->Fill(fCentrality, difTrackTPC, tPt);
 	}else{
-	  hdifout_EP->Fill(fCentrality, difTrack, tPt);
+	  hdifout_EPV0->Fill(fCentrality, difTrackV0, tPt);
+	  hdifout_EPV0A->Fill(fCentrality, difTrackV0A, tPt);
+	  hdifout_EPV0C->Fill(fCentrality, difTrackV0C, tPt);
+	  hdifout_EPTPC->Fill(fCentrality, difTrackTPC, tPt);
 	}
-	hdifful_EP->Fill(fCentrality,   difTrack, tPt);
+	hdifful_EPV0->Fill(fCentrality,    difTrackV0, tPt);
+	hdifful_EPV0A->Fill(fCentrality,   difTrackV0A, tPt);
+	hdifful_EPV0C->Fill(fCentrality,   difTrackV0C, tPt);
+	hdifful_EPTPC->Fill(fCentrality,   difTrackTPC, tPt);
     }
     hEvtCount->Fill(6);
 

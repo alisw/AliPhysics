@@ -111,9 +111,21 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     TH2F			*hdifV0C_TPC;		//! 2-D histo diff V0C - TPC
     TH2F			*hdifV0C_V0A;		//! 2-D histo diff V0C - V0A
 
-    TH3F			*hdifEMC_EP;		//! 2-D histo dif phi in EMC with EP
-    TH3F			*hdifful_EP;		//! 2-D histo dif phi in full with EP
-    TH3F			*hdifout_EP;		//! 2-D histo dif phi NOT in EMC with EP
+    TH3F			*hdifEMC_EPV0;		//! 3-D histo dif phi in EMC with EPV0
+    TH3F			*hdifEMC_EPV0A;		//! 3-D histo dif phi in EMC with EPV0A
+    TH3F			*hdifEMC_EPV0C;		//! 3-D histo dif phi in EMC with EPV0C
+
+    TH3F			*hdifful_EPV0;		//! 3-D histo dif phi in full with EPV0
+    TH3F			*hdifful_EPV0A;		//! 3-D histo dif phi in full with EPV0A
+    TH3F			*hdifful_EPV0C;		//! 3-D histo dif phi in full with EPV0C
+
+    TH3F			*hdifout_EPV0;		//! 3-D histo dif phi out EMC with EPV0
+    TH3F			*hdifout_EPV0A;		//! 3-D histo dif phi out EMC with EPV0A
+    TH3F			*hdifout_EPV0C;		//! 3-D histo dif phi out EMC with EPV0C
+
+    TH3F			*hdifEMC_EPTPC;		//! 3-D histo dif phi in EMC with EPTPC
+    TH3F			*hdifful_EPTPC;		//! 3-D histo dif phi in full with EPTPC
+    TH3F			*hdifout_EPTPC;		//! 3-D histo dif phi out EMC with EPTPC
 
     THnSparse                   *fHEPV0r;	        //! Flow 4-D Histo
     THnSparse                   *fHEPV0A;	        //! Flow 4-D Histo
