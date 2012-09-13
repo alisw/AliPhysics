@@ -39,7 +39,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s_Track%f_Clus%f_R0%d_",taskname,njets,jetBiasTrack,jetBiasClus,(Int_t)floor(jetradius*100+0.5)));
+  TString name(Form("%s_%s_Track%d_Clus%d_R0%d_",taskname,njets,(Int_t)floor(jetBiasTrack),(Int_t)floor(jetBiasClus),(Int_t)floor(jetradius*100+0.5)));
   if (type == AliAnalysisTaskEmcal::kTPC)
     name += "TPC";
   else if (type == AliAnalysisTaskEmcal::kEMCAL) 
