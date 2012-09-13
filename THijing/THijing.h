@@ -82,6 +82,8 @@ public:
    
    virtual Int_t       GetNATT() const;
 
+   virtual Int_t       GetNPART() const;
+
    virtual Float_t     GetEATT() const;
 
    virtual Int_t       GetJATT() const;

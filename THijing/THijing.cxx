@@ -506,6 +506,13 @@ Int_t  THijing::GetNATT() const
 
 }
 
+Int_t  THijing::GetNPART() const
+{
+// Get true number of participants
+   return HIMAIN1.npart;
+
+}
+
 //______________________________________________________________________________
 Float_t  THijing::GetEATT() const
 {

@@ -21,6 +21,7 @@ ClassImp(AliGenHijingEventHeader)
 AliGenHijingEventHeader::AliGenHijingEventHeader():
     fTotalEnergy(0.),
     fTrials(0),
+    fNPart(0),
     fJet1(0., 0., 0., 0.),
     fJet2(0., 0., 0., 0.),
     fJetFsr1(0., 0., 0., 0.),
@@ -33,6 +34,7 @@ AliGenHijingEventHeader::AliGenHijingEventHeader(const char* name):
     AliGenEventHeader(name),
     fTotalEnergy(0.),
     fTrials(0),
+    fNPart(0),
     fJet1(0., 0., 0., 0.),
     fJet2(0., 0., 0., 0.),
     fJetFsr1(0., 0., 0., 0.),

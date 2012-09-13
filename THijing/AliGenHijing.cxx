@@ -563,6 +563,7 @@ void AliGenHijing::MakeHeader()
     fHeader.SetSpectators(fProjectileSpecn, fProjectileSpecp,
 			  fTargetSpecn,fTargetSpecp);
     fHeader.SetReactionPlaneAngle(fHijing->GetHINT1(20));
+    fHeader.SetTrueNPart(fHijing->GetNPART());
 
 // 4-momentum vectors of the triggered jets.
 //
