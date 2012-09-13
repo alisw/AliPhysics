@@ -6,7 +6,6 @@
 
 #include "AliAnalysisTaskEmcal.h"
 
-#include <TChain.h>
 #include <TClonesArray.h>
 #include <TList.h>
 #include <TObject.h>

@@ -4,23 +4,17 @@
 //
 // Author: S.Aiola
 
-#include <TObject.h>
-#include <TChain.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 #include <TRandom3.h>
-#include <TParameter.h>
 
-#include "AliAnalysisManager.h"
-#include "AliCentrality.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
-#include "AliVEventHandler.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
 
@@ -328,7 +322,7 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
   // Embedding
   // _________________________________
 
-  if (!fJets)
+  if (!fEmbJets)
     return kTRUE;
 
   AliEmcalJet *embJet  = 0;

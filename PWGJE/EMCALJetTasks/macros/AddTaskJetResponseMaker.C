@@ -4,14 +4,13 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
-  const char *nmcjets            = "MCJets",
   const char *nmctracks          = "MCParticles",
-  Double_t    jetradius          = 0.4,
+  const char *nmcjets            = "MCJets",
+  Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.8,
-  Double_t    ptcut              = 0.15,
-  Double_t    jetBiasTrack       = 10,
-  Double_t    jetBiasClus        = 10,
+  Double_t    jetareacut         = 0.557,
+  Double_t    jetBiasTrack       = 5,
+  Double_t    jetBiasClus        = 5,
   Double_t    maxDistance        = 0.25,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   Int_t       ptHardBin          = -999,
@@ -40,26 +39,13 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(taskname);
-  name += "_";
-  name += njets;
-  name += "_Track";
-  name += jetBiasTrack;
-  name += "_Clus";
-  name += jetBiasClus;
-  name += "_R0";
-  name += floor(jetradius*10+0.5);
-  name += "_PtCut";
-  name += floor(ptcut*1000+0.5);
-  name += "_";
-  if (type == AliAnalysisTaskEmcal::kTPC) 
+  TString name(Form("%s_%s_Track%f_Clus%f_R0%d_",taskname,njets,jetBiasTrack,jetBiasClus,(Int_t)floor(jetradius*100+0.5)));
+  if (type == AliAnalysisTaskEmcal::kTPC)
     name += "TPC";
   else if (type == AliAnalysisTaskEmcal::kEMCAL) 
     name += "EMCAL";
-  else if (type == AliAnalysisTaskEmcal::kTPCSmall) 
-    name += "TPCSmall";
-  else if (type == AliAnalysisTaskEmcal::kEMCALOnly) 
-    name += "EMCALOnly";
+  else if (type == AliAnalysisTaskEmcal::kUser) 
+    name += "USER";
   if (ptHardBin != -999) {
     name += "_PtHard";
     name += ptHardBin;
@@ -77,7 +63,6 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetTask->SetJetsName(njets);
   jetTask->SetMCJetsName(nmcjets);
   jetTask->SetMCTracksName(nmctracks);
-  jetTask->SetPtCut(ptcut);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
   jetTask->SetPercAreaCut(jetareacut);

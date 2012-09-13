@@ -26,7 +26,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
 
  protected:
   Bool_t                      FillHistograms()                                              ;
-  void                        DoJetLoop()                                                   ;
+  Int_t                       DoJetLoop()                                                   ;
   Float_t*                    GenerateFixedBinArray(Int_t n, Float_t min, Float_t max) const;
 
   Int_t                       fLeadingHadronType;          // 0 = charged, 1 = neutral, 2 = both
@@ -37,6 +37,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHist2LeadingJetPt[4];       //!Second leading jet pt spectrum
   TH1F                       *fHistLeadingJetCorrPt[4];    //!Corrected leading jet pt spectrum
   TH2F                       *fHistRhoVSleadJetPt;         //!Area(leadjet) * rho vs. leading jet pt
+  TH2F                       *fNjetsVsCent;                //!No. of jets vs. centrality
 
   // Inclusive jets histograms
   TH3F                       *fHistJetPhiEta[4];           //!Phi-Eta distribution of jets
@@ -44,14 +45,15 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH3F                       *fHistJetsCorrPtArea[4];      //!Jet corr pt vs. area
   TH3F                       *fHistJetsNEFvsPt[4];         //!Jet neutral energy fraction vs. jet pt
   TH3F                       *fHistJetsZvsPt[4];           //!Constituent Pt over Jet Pt ratio vs. jet pt
-  TH3F                       *fHistConstituents[4];        //!x axis = constituents pt; y axis = no. of constituents; z axis = jet pt
+  TH2F                       *fHistConstituents[4];        //!x axis = constituents pt; y axis = no. of constituents
   TH2F                       *fHistTracksJetPt[4];         //!Track pt vs. jet pt
   TH2F                       *fHistClustersJetPt[4];       //!Cluster pt vs. jet pt
+  TH3F                       *fHistJetNconstVsPt[4];       //!Jet no. of constituents vs. pt
 
  private:
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 11) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 12) // jet analysis task
 };
 #endif

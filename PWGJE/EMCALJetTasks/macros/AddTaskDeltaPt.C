@@ -1,3 +1,4 @@
+// $Id$
 
 AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   const char *ntracks            = "Tracks",
@@ -11,8 +12,9 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.8,
-  Double_t    ptcut              = 0.15,
+  Double_t    jetareacut         = 0.557,
+  Double_t    trackptcut         = 0.15,
+  Double_t    clusptcut          = 0.30,
   UInt_t      type               = AliAnalysisTaskEmcal::kTPC,
   const char *taskname           = "AliAnalysisTaskDeltaPt"
 )
@@ -56,7 +58,8 @@ AliAnalysisTaskDeltaPt* AddTaskDeltaPt(
   jetTask->SetRandTracksName(nrandtracks);
   jetTask->SetRandClusName(nrandclusters);
   jetTask->SetRhoName(nrho);
-  jetTask->SetPtCut(ptcut);
+  jetTask->SetClusPtCut(clusptcut);
+  jetTask->SetTrackPtCut(trackptcut);
   jetTask->SetJetRadius(jetradius);
   jetTask->SetJetPtCut(jetptcut);
   jetTask->SetPercAreaCut(jetareacut);
