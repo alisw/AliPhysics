@@ -964,9 +964,6 @@ Bool_t AliDielectronMC::CheckIsRadiative(Int_t label)
     AliMCParticle *mother=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(label));
     const Int_t nd=(mother->GetLastDaughter()-mother->GetFirstDaughter()+1);
     if (!mother) return kFALSE;
-    printf("nd: %d\n",nd);
-    for (Int_t i=0; i<nd; ++i) printf("   d%d: %d",i, GetPdgFromLabel(mother->GetFirstDaughter()+i));
-    printf("\n");
     if (nd==2) return kFALSE;
     for (Int_t i=2; i<nd; ++i)
       if (GetMCTrackFromMCEvent(mother->GetFirstDaughter()+i)->PdgCode()!=22) return kFALSE; //last daughters are photons
