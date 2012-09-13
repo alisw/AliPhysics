@@ -66,6 +66,7 @@ class AliDielectronSignalMC : public TNamed {
  public:
   enum EBranchRelation {kUndefined=0, kSame, kDifferent};
   enum ESource {kDontCare=0, kPrimary, kFinalState, kDirect, kSecondary};
+  enum EJpsiRadiativ {kAll=0, kIsRadiative, kIsNotRadiative};
   
   AliDielectronSignalMC();
   AliDielectronSignalMC(const Char_t* name, const Char_t* title);
@@ -101,6 +102,8 @@ class AliDielectronSignalMC : public TNamed {
   EBranchRelation GetMothersRelation()                 const {return fMothersRelation;}
   Bool_t GetFillPureMCStep()                           const {return fFillPureMCStep;}
 
+  void SetJpsiRadiative(EJpsiRadiativ rad) { fJpsiRadiative=rad;    }
+  EJpsiRadiativ GetJpsiRadiative() const   { return fJpsiRadiative; }
  private:
   // PDG codes for legs, mothers and grand-mothers
   Int_t fLeg1;                        // leg 1 PDG
@@ -137,10 +140,12 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t fCheckBothChargesGrandMother2; //              grand mother 2
   
   EBranchRelation fMothersRelation;   // mother 1&2 relation (same, different or whatever)
+
+  EJpsiRadiativ fJpsiRadiative;      // check for J/psi radiative decay
   
   Bool_t fFillPureMCStep;             // check and fill the pure MC step
   
-  ClassDef(AliDielectronSignalMC,1);
+  ClassDef(AliDielectronSignalMC,2);
 };
 
 #endif

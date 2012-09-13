@@ -120,6 +120,8 @@ private:
   
   Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t pdgExclusion, Bool_t checkBothCharges) const;
   Bool_t CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const;
+  Bool_t CheckIsRadiative(Int_t label);
+
   ClassDef(AliDielectronMC, 0)
 };
 
