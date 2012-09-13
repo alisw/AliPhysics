@@ -943,6 +943,36 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
   return kFALSE;
 }
 
+//________________________________________________________________________________
+Bool_t AliDielectronMC::CheckIsRadiative(Int_t label)
+{
+  //
+  // Check if the particle has a three body decay, one being a photon
+  //
+  if(label<0) return kFALSE;
+  
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return kFALSE;
+    AliAODMCParticle *mother=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label));
+    if (!mother) return kFALSE;
+    const Int_t nd=mother->GetNDaughters();
+    if (nd==2) return kFALSE;
+    for (Int_t i=2; i<nd; ++i)
+      if (GetMCTrackFromMCEvent(mother->GetDaughter(0)+i)->PdgCode()!=22) return kFALSE; //last daughter is photon
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return kFALSE;
+    AliMCParticle *mother=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(label));
+    const Int_t nd=(mother->GetLastDaughter()-mother->GetFirstDaughter()+1);
+    if (!mother) return kFALSE;
+    printf("nd: %d\n",nd);
+    for (Int_t i=0; i<nd; ++i) printf("   d%d: %d",i, GetPdgFromLabel(mother->GetFirstDaughter()+i));
+    printf("\n");
+    if (nd==2) return kFALSE;
+    for (Int_t i=2; i<nd; ++i)
+      if (GetMCTrackFromMCEvent(mother->GetFirstDaughter()+i)->PdgCode()!=22) return kFALSE; //last daughters are photons
+  }
+  return kTRUE;
+}
 
 //________________________________________________________________________________
 Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, Int_t branch) {
@@ -977,6 +1007,13 @@ Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, 
 
     if(!ComparePDG((mcMother ? mcMother->PdgCode() : 0),signalMC->GetMotherPDG(branch),signalMC->GetMotherPDGexclude(branch),signalMC->GetCheckBothChargesMothers(branch))) return kFALSE;
     if(!CheckParticleSource(mLabel, signalMC->GetMotherSource(branch))) return kFALSE;
+
+    //check for radiative deday
+    if (signalMC->GetJpsiRadiative()!=AliDielectronSignalMC::kAll){
+      Bool_t isRadiative=CheckIsRadiative(mLabel);
+      if ((signalMC->GetJpsiRadiative()==AliDielectronSignalMC::kIsRadiative) && !isRadiative) return kFALSE;
+      if ((signalMC->GetJpsiRadiative()==AliDielectronSignalMC::kIsNotRadiative) && isRadiative) return kFALSE;
+    }
   }
   
   // check the grandmother

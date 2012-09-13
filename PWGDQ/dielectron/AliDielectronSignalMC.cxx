@@ -60,6 +60,7 @@ AliDielectronSignalMC::AliDielectronSignalMC() :
   fCheckBothChargesGrandMother1(kFALSE),
   fCheckBothChargesGrandMother2(kFALSE),
   fMothersRelation(kUndefined),
+  fJpsiRadiative(kAll),
   fFillPureMCStep(kFALSE) {
 
   //
@@ -96,6 +97,7 @@ AliDielectronSignalMC::AliDielectronSignalMC(const Char_t* name, const Char_t* t
   fCheckBothChargesGrandMother1(kFALSE),
   fCheckBothChargesGrandMother2(kFALSE),
   fMothersRelation(kUndefined),
+  fJpsiRadiative(kAll),
   fFillPureMCStep(kFALSE) {
 
   //
