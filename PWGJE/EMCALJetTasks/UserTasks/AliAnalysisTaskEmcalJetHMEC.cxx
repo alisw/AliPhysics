@@ -73,6 +73,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   for(Int_t icent = 0; icent<6; ++icent){
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
+    fHistLeadJetPt[icent]=0;
+    fHistLeadJetPtBias[icent]=0;
     fHistJetPtTT[icent]=0;
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
@@ -117,6 +119,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   for(Int_t icent = 0; icent<6; ++icent){
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
+    fHistLeadJetPt[icent]=0;
+    fHistLeadJetPtBias[icent]=0;
     fHistJetPtTT[icent]=0;
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
@@ -178,6 +182,14 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
     sprintf(name,"fHistJetPtBias_%i",icent);   
     fHistJetPtBias[icent] = new TH1F(name,name,200,0,200);
     fOutputList->Add(fHistJetPtBias[icent]);
+
+    sprintf(name,"fHistLeadJetPt_%i",icent);   
+    fHistLeadJetPt[icent] = new TH1F(name,name,200,0,200);
+    fOutputList->Add(fHistLeadJetPt[icent]);
+
+    sprintf(name,"fHistLeadJetPtBias_%i",icent);   
+    fHistLeadJetPtBias[icent] = new TH1F(name,name,200,0,200);
+    fOutputList->Add(fHistLeadJetPtBias[icent]);
 
     sprintf(name,"fHistJetPtTT_%i",icent);   
     fHistJetPtTT[icent] = new TH1F(name,name,200,0,200);
@@ -445,11 +457,17 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
     Double_t jetPt = jet->Pt();
     Double_t jeteta=jet->Eta();
 
-    fHistJetPt[centbin]->Fill(jet->Pt());
-    
-    if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias))
-      fHistJetPtBias[centbin]->Fill(jet->Pt());
+    Double_t leadjet=0;
+    if (ijet==ijethi) leadjet=1;
 
+
+    fHistJetPt[centbin]->Fill(jet->Pt());
+    fHistLeadJetPt[centbin]->Fill(jet->Pt());
+    
+    if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
+      fHistJetPtBias[centbin]->Fill(jet->Pt());
+      fHistLeadJetPtBias[centbin]->Fill(jet->Pt());
+    }
 
       fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
 
@@ -508,8 +526,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	  if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
 	    fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,trackpt);
 
-	    Double_t leadjet=0;
-	    if (ijet==ijethi) leadjet=1;
 
 	    Double_t triggerEntries[8] = {fcent,jetPt,track->Pt(),dR,deta,dphijh,0.0,leadjet};                      
 	    fhnJH->Fill(triggerEntries);
@@ -533,7 +549,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 
   Double_t fvertex[3]={0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(fvertex);
-  Double_t zVtx=fvertex[3];
+  Double_t zVtx=fvertex[2];
 
   if(fDoEventMixing>0){
     
