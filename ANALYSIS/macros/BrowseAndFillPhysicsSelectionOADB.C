@@ -1221,11 +1221,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC12g->SetOfflineTrigger          ( triggerCount,"(SPDGFO >= 1) && !TPCLaserWarmUp");
 
   triggerCount++;
-  oadbLHC12g->AddCollisionTriggerClass   ( AliVEvent::kCINT5,"+CINT5-B-NOPF-ALLNOTRD","B",0);
-  oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-AC-NOPF-ALLNOTRD","AC",0);
-  oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-A-NOPF-ALLNOTRD","A",0);
-  oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-C-NOPF-ALLNOTRD","C",0);
-  oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-E-NOPF-ALLNOTRD","E",0);  
+  oadbLHC12g->AddCollisionTriggerClass   ( AliVEvent::kCINT5,"+CINT5-B-NOPF-ALLNOTRD","B",triggerCount);
+  oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-AC-NOPF-ALLNOTRD","AC",triggerCount);
+  oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-ACE-NOPF-ALLNOTRD","ACE",triggerCount);
+  oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-A-NOPF-ALLNOTRD","A",triggerCount);
+  oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-C-NOPF-ALLNOTRD","C",triggerCount);
+  oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-E-NOPF-ALLNOTRD","E",triggerCount);  
   oadbLHC12g->SetHardwareTrigger         ( triggerCount,"V0A || V0C");
   oadbLHC12g->SetOfflineTrigger          ( triggerCount,"(V0A || V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp");
 
