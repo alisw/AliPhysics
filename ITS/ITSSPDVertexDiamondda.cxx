@@ -66,13 +66,15 @@ int main(int argc, char **argv) {
  UInt_t maxClInner = 999 ;
  Int_t nEvFirstLoop = 0;
  Int_t nEvAUTOSAVE = 0; 
+ Int_t zFiducialRegion=0;
+
  char name[10][10];
 
  FILE *fpConfig = fopen("ITSSPD_VertexQualityTuning_DA.config","r");
- fscanf(fpConfig,"%s %f\n %s %f\n %s %d\n %s %d \n %s %d \n %s %d ",&name[0], &errX, &name[1], &r, &name[2], &minClInner,&name[3], &maxClInner, &name[4],&nEvFirstLoop,&name[5],&nEvAUTOSAVE);
+ fscanf(fpConfig,"%s %f\n %s %f\n %s %d\n %s %d \n %s %d \n %s %d \n %s %d",&name[0], &errX, &name[1], &r, &name[2], &minClInner,&name[3], &maxClInner, &name[4],&nEvFirstLoop,&name[5],&nEvAUTOSAVE,&name[6],&zFiducialRegion);
  fclose(fpConfig);
 
- printf("\n\n Mean Vertex quality cuts : \n- errX = %f\n- r = %f\n- minSPD0 = %d maxSPD0 = %d\n- nEventsFirstLoop = %d nEventsAUTOSAVE = %d \n\n\n",errX,r,minClInner,maxClInner,nEvFirstLoop,nEvAUTOSAVE);
+ printf("\n\n Mean Vertex quality cuts : \n- errX = %f\n- r = %f\n- minSPD0 = %d maxSPD0 = %d\n- nEventsFirstLoop = %d nEventsAUTOSAVE = %d \n- zFiducialRegion = %d\n\n\n",errX,r,minClInner,maxClInner,nEvFirstLoop,nEvAUTOSAVE,zFiducialRegion);
 
  /* define data source : this is argument 1 */  
  status=monitorSetDataSource( argv[1] );
@@ -204,7 +206,7 @@ int main(int argc, char **argv) {
  AliITSMeanVertexer *mv = new AliITSMeanVertexer();
 
  // Optionally change the Z fiducial region here (default +/- 40 cm
- // mv->SetZFiducialRegion(VALUE);
+  mv->SetZFiducialRegion(zFiducialRegion);
 
  if (!mv->Init()) {
   printf("Initialization of mean vertexer object failed ! Check the log for details");
