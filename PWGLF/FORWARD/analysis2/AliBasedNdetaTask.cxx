@@ -1753,6 +1753,8 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   if(dndetaMCCorrection && dndetaMCtruth) {
     AliInfo("Correcting with final MC correction");
     dndetaMCCorrection->Divide(dndetaMCtruth);
+    dndetaMCCorrection->SetTitle("Final MC correction");
+    dndetaMCCorrection->SetName("finalMCCorr");
     dndeta->Divide(dndetaMCCorrection);
     
     //std::cout<<"histo "<<Form("dndeta%s%s",GetName(), postfix)<<"  "<<GetListName()<<"  "<<dndetaMCCorrection<<std::endl;
@@ -1778,6 +1780,7 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   fOutput->Add(copy);
   fOutput->Add(Rebin(dndeta, rebin, cutEdges));
   if (symmetrice)   fOutput->Add(Symmetrice(Rebin(dndeta, rebin, cutEdges)));
+  if (dndetaMCCorrection) fOutput->Add(dndetaMCCorrection);
 }  
 
 //________________________________________________________________________
