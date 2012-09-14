@@ -22,6 +22,7 @@ AliPhysicsSelectionTask::AliPhysicsSelectionTask() :
   AliAnalysisTaskSE("AliPhysicsSelectionTask"),
   fOutput(0),
   fOption(""),
+  fUseSpecialOutput(kFALSE),
   fPhysicsSelection(0)
 {
   //
@@ -33,6 +34,7 @@ AliPhysicsSelectionTask::AliPhysicsSelectionTask(const char* opt) :
   AliAnalysisTaskSE("AliPhysicsSelectionTask"),
   fOutput(0),
   fOption(opt),
+  fUseSpecialOutput(kFALSE),
   fPhysicsSelection(new AliPhysicsSelection())
 {
   //
@@ -45,6 +47,11 @@ AliPhysicsSelectionTask::AliPhysicsSelectionTask(const char* opt) :
   } else {
     AliError("No input event handler connected to analysis manager. No Physics Event Selection.");
   }
+  //
+  TString opts = opt;
+  opts.ToLower();
+  if (opts.Contains("specialoutput")) fUseSpecialOutput = kTRUE;
+
   // Define input and output slots here
   DefineOutput(1, TList::Class());
   fBranchNames = "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,AliESDVZERO.,"
@@ -73,6 +80,8 @@ void AliPhysicsSelectionTask::UserCreateOutputObjects()
   // create result objects and add to output list
 
   Printf("AliPhysicsSelectionTask::CreateOutputObjects");
+
+  if (fUseSpecialOutput) OpenFile(1);
 
   fOutput = new TList;
   fOutput->SetOwner();

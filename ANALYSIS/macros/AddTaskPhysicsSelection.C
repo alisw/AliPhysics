@@ -1,4 +1,4 @@
-AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE, Bool_t deprecatedFlag = kTRUE, UInt_t computeBG = 0) 
+AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE, Bool_t deprecatedFlag = kTRUE, UInt_t computeBG = 0, Bool_t useSpecialOutput=kFALSE) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -19,8 +19,8 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
 
   // Configure analysis
   //===========================================================================
-  AliPhysicsSelectionTask *task = new AliPhysicsSelectionTask("");
-
+  AliPhysicsSelectionTask *task = new AliPhysicsSelectionTask();
+  task->SetUseSpecialOutput(useSpecialOutput); // RS: optionally use special output
   // this makes physics selection to work using AliMultiInputEventHandler
   if (inputHandler && (inputHandler->IsA() == AliMultiInputEventHandler::Class())) {
     AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
@@ -49,7 +49,9 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
                 TList::Class(),
                 AliAnalysisManager::kOutputContainer,
                 "EventStat_temp.root");
-		
+  //		
+  if (useSpecialOutput) coutput1->SetSpecialOutput(); // RS: optionally use special output
+  //
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
 

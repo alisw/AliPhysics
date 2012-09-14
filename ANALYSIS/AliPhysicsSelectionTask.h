@@ -27,11 +27,13 @@ class AliPhysicsSelectionTask : public AliAnalysisTaskSE {
     
     void SetPhysicsSelection(AliPhysicsSelection* physicsSelection) { fPhysicsSelection = physicsSelection; }
     AliPhysicsSelection* GetPhysicsSelection() const { return fPhysicsSelection; }
+    void   SetUseSpecialOutput(Bool_t v=kTRUE)         {fUseSpecialOutput = v;}
+    Bool_t GetUseSpecialOutput()               const { return fUseSpecialOutput; }
 
  protected:
     TList* fOutput;                  //! list send on output slot 1
     TString fOption;                 // option string  
-    
+    Bool_t  fUseSpecialOutput;       // do we use special output instead of merging?
     AliPhysicsSelection* fPhysicsSelection; // event selection class
 
  private:
