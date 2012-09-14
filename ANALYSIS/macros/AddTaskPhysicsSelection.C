@@ -19,7 +19,7 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
 
   // Configure analysis
   //===========================================================================
-  AliPhysicsSelectionTask *task = new AliPhysicsSelectionTask();
+  AliPhysicsSelectionTask *task = new AliPhysicsSelectionTask("");
   task->SetUseSpecialOutput(useSpecialOutput); // RS: optionally use special output
   // this makes physics selection to work using AliMultiInputEventHandler
   if (inputHandler && (inputHandler->IsA() == AliMultiInputEventHandler::Class())) {
