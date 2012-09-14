@@ -1200,7 +1200,7 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells,
   // of the cells that compose the cluster.
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
 
-  if(!IsRecalibrationOn() && !IsTimeRecalibrationOn()) return;
+  if(!IsRecalibrationOn() && !IsTimeRecalibrationOn() && !IsBadChannelsRemovalSwitchedOn()) return;
   
   if(!cells)
   {
