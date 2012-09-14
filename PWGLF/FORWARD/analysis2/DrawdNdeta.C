@@ -503,6 +503,7 @@ struct dNdetaDrawer
 	       Double_t&    amax,
 	       TObjArray&   truths)
   {
+    if (!list) return 0;
     UShort_t   n = HasCent() ? fCentAxis->GetNbins() : 0;
     // Info("FetchResults","got %d centrality bins", n);
     if (n == 0) {
@@ -612,8 +613,19 @@ struct dNdetaDrawer
    * Modify the title 
    * 
    */
-  void ModifyTitle(TNamed* /*h*/, const char* /*centTxt*/)
+  void ModifyTitle(TNamed* h, const char* /*centTxt*/)
   {
+    if (!h) return;
+
+    TString title(h->GetTitle());
+    title.ReplaceAll("ALICE ","");
+    if (title.Contains("Central")) 
+      title.ReplaceAll("Central", "SPD clusters");
+    if (title.Contains("Forward"))
+      title.ReplaceAll("Forward", "FMD");
+    h->SetTitle(title);
+    
+    
     return;
     // if (!centTxt || !h) return;
     // h->SetTitle(Form("%s, %s", h->GetTitle(), centTxt));
