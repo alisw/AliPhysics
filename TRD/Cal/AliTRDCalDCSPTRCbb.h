@@ -1,5 +1,5 @@
-#ifndef AliTRDCALDCSPTRCBB_H
-#define AliTRDCALDCSPTRCBB_H
+#ifndef ALITRDCALDCSPTRCBB_H
+#define ALITRDCALDCSPTRCBB_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -27,8 +27,8 @@ class AliTRDCalDCSPTRCbb : public TNamed {
   TString GetControlBoxSide()                         { return fSide;                         }
   Int_t   GetControlBoxPrimary()                      { return fPrimary;                      }
   
-  void    SetControlBoxSide(TString bs)               { fSide = bs;                           }
-  void    SetControlBoxPrimary(Int_t bp)              { fPrimary = bp;                        }
+  void    SetControlBoxSide(TString bs) const        { fSide = bs;                           }
+  void    SetControlBoxPrimary(Int_t bp) const        { fPrimary = bp;                        }
   UInt_t  GetPreToNextCycles() const                  { return fPreToNextCycles;                         }
   UInt_t  GetL0ToNextCycles() const                   { return fL0ToNextCycles;                         }
   UInt_t  GetL1ToNextCycles() const                   { return fL1ToNextCycles;                         }

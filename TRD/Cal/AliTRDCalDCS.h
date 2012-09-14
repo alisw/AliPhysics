@@ -65,7 +65,7 @@ class AliTRDCalDCS : public TNamed {
   		  	          { return (AliTRDCalDCSFEE*)fFEEArr->At(det); }
   AliTRDCalDCSPTR* GetCalDCSPTRObj(Int_t det) 
   			          { return (AliTRDCalDCSPTR*)fPTRArr->At(det); }
-  AliTRDCalDCSGTU* GetGTUObj() 
+  AliTRDCalDCSGTU* GetGTUObj() const
            		          { return (AliTRDCalDCSGTU*)fGTUObj;          }
 
  protected:

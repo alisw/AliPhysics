@@ -50,8 +50,8 @@ class AliTRDCalDet : public TNamed {
   Double_t CalcMean(Bool_t wghtPads, Int_t &calib);
   Double_t CalcRMS(Bool_t wghtPads=kFALSE);
   Double_t CalcRMS(Bool_t wghtPads, Int_t &calib);
-	Double_t GetMeanSM(Bool_t wghtPads, Int_t sector);
-
+  Double_t GetMeanSM(Bool_t wghtPads, Int_t sector) const;
+  
   // Plot functions
   TH1F * MakeHisto1Distribution(Float_t min=4, Float_t max=-4, Int_t type=0);     
   TH1F * MakeHisto1DAsFunctionOfDet(Float_t min=4, Float_t max=-4, Int_t type=0);

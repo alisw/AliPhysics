@@ -20,7 +20,7 @@ class AliTRDCalChamberStatus : public TNamed {
  public:
 
   enum { kNdet = 540, kNstacks = 90, kNcham = 5, kNsect = 18 };
-  enum { kGood = 0, kNoData = 1, kNoDataHalfChamberSideA = 2, kNoDataHalfChamberSideB = 3, kBadCalibrated = 4};
+  enum { kGood = 0, kNoData = 1, kNoDataHalfChamberSideA = 2, kNoDataHalfChamberSideB = 3, kBadCalibrated = 4, kNotCalibrated = 5};
   
   AliTRDCalChamberStatus();
   AliTRDCalChamberStatus(const Text_t* name, const Text_t* title);
@@ -34,6 +34,7 @@ class AliTRDCalChamberStatus : public TNamed {
   Bool_t IsNoDataSideA(Int_t det) const      { return TESTBIT(fStatus[det], kNoDataHalfChamberSideA); }
   Bool_t IsNoDataSideB(Int_t det) const      { return TESTBIT(fStatus[det], kNoDataHalfChamberSideB); }
   Bool_t IsBadCalibrated(Int_t det) const    { return TESTBIT(fStatus[det], kBadCalibrated);          }
+  Bool_t IsNotCalibrated(Int_t det) const    { return TESTBIT(fStatus[det], kNotCalibrated);          }
 
  TH2D *Plot(Int_t sm, Int_t rphi);           // Plot fStatus for sm and halfchamberside  
  TH2D *PlotNoData(Int_t sm, Int_t rphi);     // Plot data status for sm and halfchamberside  

@@ -24,9 +24,9 @@ class AliTRDCalDCSPTRFeb : public TNamed {
   AliTRDCalDCSPTRFeb(const AliTRDCalDCSPTRFeb &);
   virtual ~AliTRDCalDCSPTRFeb() { };
 
-  TString GetControlBoxSide()                         { return fSide;                         }
-  TString GetDetectorName()                           { return fDetName;                      }
-  Int_t   GetControlBoxPrimary()                      { return fPrimary;                      }
+  TString GetControlBoxSide() const                   { return fSide;                         }
+  TString GetDetectorName() const                     { return fDetName;                      }
+  Int_t   GetControlBoxPrimary() const                { return fPrimary;                      }
 
   void    SetControlBoxSide(TString bs)               { fSide = bs;                           }
   void    SetDetectorName(TString bs)                 { fDetName = bs;                        }

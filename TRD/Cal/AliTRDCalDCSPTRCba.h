@@ -1,5 +1,5 @@
-#ifndef AliTRDCALDCSPTRCba_H
-#define AliTRDCALDCSPTRCba_H
+#ifndef ALITRDCALDCSPTRCBA_H
+#define ALITRDCALDCSPTRCBA_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -69,8 +69,8 @@ class AliTRDCalDCSPTRCba : public TNamed {
   UInt_t  GetBitsToCbB45Lb() const                    { return fBitsToCbB45Lb;                }
   UInt_t  GetBitsToCbB45Hb() const                    { return fBitsToCbB45Hb;                }
   
-  TString GetControlBoxSide()                         { return fSide;                         }
-  Int_t   GetControlBoxPrimary()                      { return fPrimary;                      }
+  TString GetControlBoxSide() const                   { return fSide;                         }
+  Int_t   GetControlBoxPrimary() const                { return fPrimary;                      }
 
   void    SetControlBoxSide(TString bs)               { fSide = bs;                           }
   void    SetControlBoxPrimary(Int_t bp)              { fPrimary = bp;                        }

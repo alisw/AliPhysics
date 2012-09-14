@@ -690,7 +690,7 @@ Double_t AliTRDCalDet::CalcRMS(Bool_t wghtPads)
 	return CalcRMS(wghtPads, calib);
 }
 //_____________________________________________________________________________
-Double_t AliTRDCalDet::GetMeanSM(Bool_t wghtPads, Int_t sector)
+Double_t AliTRDCalDet::GetMeanSM(Bool_t wghtPads, Int_t sector) const
 {
   // Calculate the mean value for given sector
   // wghPads = kTRUE weighted with the number of pads in case of a AliTRDCalPad created (t0)
@@ -721,7 +721,7 @@ Double_t AliTRDCalDet::GetMeanSM(Bool_t wghtPads, Int_t sector)
     det++;
   }
 	
-	Double_t mean=0.0;
+  Double_t mean=0.0;
   if(!wghtPads) mean= meanSM[sector];
   if(wghtPads) mean= meanSMWP[sector];
 	
@@ -730,4 +730,3 @@ Double_t AliTRDCalDet::GetMeanSM(Bool_t wghtPads, Int_t sector)
 	
   return mean;
 }
-

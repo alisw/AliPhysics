@@ -51,13 +51,14 @@ AliTRDCalDCS::AliTRDCalDCS()
   ,fRunType("")
   ,fStartTime(0)
   ,fEndTime(0)
-  ,fFEEArr(new TObjArray(540))
-  ,fPTRArr(new TObjArray(6))
-  ,fGTUObj(new AliTRDCalDCSGTU())
+  ,fFEEArr(0)
+  ,fPTRArr(0)
+  ,fGTUObj(0)
 {
   //
   // AliTRDCalDCS default constructor
   //
+
 }
 
 //_____________________________________________________________________________
@@ -91,6 +92,7 @@ AliTRDCalDCS::AliTRDCalDCS(const Text_t *name, const Text_t *title)
   //
   // AliTRDCalDCS constructor
   //
+
 }
 
 //_____________________________________________________________________________
@@ -124,6 +126,7 @@ AliTRDCalDCS::AliTRDCalDCS(const AliTRDCalDCS &cd)
   //
   // AliTRDCalDCS copy constructor
   //
+
 }
 
 //_____________________________________________________________________________

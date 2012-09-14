@@ -772,6 +772,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   calibra->SetCalDetVdriftExB(fCalDetVdriftUsed,fCalDetExBUsed);
   calibra->SetMinEntries(fMinStatsVdriftLinear); // If there is less than 1000 entries in the histo: no fit
   printf("The mean stat is by %d for VdriftLinear\n",fMinStatsVdriftLinear);
+  //fAliTRDCalibraVdriftLinearFit->SetSeeDetector(0);
+  //fAliTRDCalibraVdriftLinearFit->SetDebugLevel(1);
   //printf("Fill PE Array\n");
   fAliTRDCalibraVdriftLinearFit->SetRobustFit(fRobustFitDriftVelocity);
   fAliTRDCalibraVdriftLinearFit->SetMinNumberOfPointsForFit(fMinNbOfPointVdriftFit);
@@ -1023,6 +1025,19 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
   // Check
   if((TMath::Abs(gainrms) < 0.001) || (TMath::Abs(vdriftrms) < 0.001) || (TMath::Abs(exbrms) < 0.0000001)) return kFALSE;
 
+  // Take mean each SM
+  Double_t *gainmeanSM = new Double_t[18];
+  Double_t *vdriftmeanSM = new Double_t[18];
+  Double_t *exbmeanSM = new Double_t[18];
+  //Double_t *t0meanSM = new Double_t[18];
+  for(Int_t sm=0; sm< 18; sm++) {
+    gainmeanSM[sm] = calDetGain->GetMeanSM(kFALSE,sm);
+    vdriftmeanSM[sm] = calDetVDrift->GetMeanSM(kFALSE,sm);
+    exbmeanSM[sm] = calDetExB->GetMeanSM(kFALSE,sm);
+    //t0meanSM[sm] = calDetGain->GetMeanSM(kFALSE);
+  }
+
+
   // mask chambers with empty gain entries
   //Int_t counter = 0;
   for (Int_t idet = 0; idet < 540; idet++) {
@@ -1031,6 +1046,9 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
     TH1I *projch =  (TH1I *) fCH2d->ProjectionX("projch",idet+1,idet+1,(Option_t *)"e");
     Double_t entries = projch->GetEntries();
     //printf("Number of entries %f for det %d\n",entries,idet);
+
+    // sm number
+    Int_t smnumber = (Int_t) idet/30;
 
     // gain
     Double_t gain = calDetGain->GetValue(idet);
@@ -1056,6 +1074,19 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
       //counter++;
     }
 
+    if(TMath::Abs(gainmeanSM[smnumber]-gain) < 0.000001  ||
+       TMath::Abs(vdriftmeanSM[smnumber]-vdrift) < 0.000001 ||
+       TMath::Abs(exbmeanSM[smnumber]-exb) < 0.000001) {
+      
+      //printf(" chamber det %03d notcalibrated sm %d \n",idet,smnumber);
+      //printf(" gainmeanSM %f and gain %f\n",gainmeanSM[smnumber],gain);
+      //printf(" vdriftmeanSM %f and vdrift %f \n",vdriftmeanSM[smnumber],vdrift);
+      //printf(" exbmeanSM %f and exb %f \n",exbmeanSM[smnumber],exb);
+
+      calChamberStatus->SetStatus(idet,AliTRDCalChamberStatus::kNotCalibrated);
+    }
+
+
     delete projch;
     
    }
@@ -1075,6 +1106,11 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
     fBadCalib[sm]= smbadcalib;
     //printf("No Data %d, bad calibrated %d for %d\n",fNoData[sm],fBadCalib[sm],sm);
   }
+
+  // delete
+  delete []gainmeanSM;
+  delete []vdriftmeanSM;
+  delete []exbmeanSM;
   
   // Security
   //   for(Int_t sm=0; sm < 18; sm++) {

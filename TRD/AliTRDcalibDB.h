@@ -124,6 +124,7 @@ class AliTRDcalibDB : public TObject {
   Bool_t                              IsChamberNoData(Int_t det);
   Bool_t                              IsHalfChamberNoData(Int_t det, Int_t side);
   Bool_t                              IsChamberBadCalibrated(Int_t det);
+  Bool_t                              IsChamberNotCalibrated(Int_t det);
 
   const AliTRDCalMonitoring          *GetMonitoringObject();
   const AliTRDCalPID                 *GetPIDObject(AliTRDpidUtil::ETRDPIDMethod m);

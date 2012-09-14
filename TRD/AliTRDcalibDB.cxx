@@ -1514,6 +1514,23 @@ Bool_t AliTRDcalibDB::IsChamberBadCalibrated(Int_t det)
 }
 
 //_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsChamberNotCalibrated(Int_t det)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalChamberStatus     * cal = dynamic_cast<const AliTRDCalChamberStatus *> 
+                                           (GetCachedCDBObject(kIDChamberStatus));
+  if (!cal) {
+    return -1;
+  }
+
+  return cal->IsNotCalibrated(det);
+
+}
+
+//_____________________________________________________________________________
 const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(AliTRDpidUtil::ETRDPIDMethod method)
 {
   //

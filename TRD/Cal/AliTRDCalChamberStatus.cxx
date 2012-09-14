@@ -94,12 +94,17 @@ void AliTRDCalChamberStatus::SetStatus(Int_t det, Char_t status)
       CLRBIT(fStatus[det], kGood);
       SETBIT(fStatus[det], kBadCalibrated);
       break;
+    case AliTRDCalChamberStatus::kNotCalibrated:
+      SETBIT(fStatus[det], kNotCalibrated);
+      //CLRBIT(fStatus[det], kBadCalibrated);
+      break;
     default:
       CLRBIT(fStatus[det], kGood);
       CLRBIT(fStatus[det], kNoData);
       CLRBIT(fStatus[det], kNoDataHalfChamberSideA);
       CLRBIT(fStatus[det], kNoDataHalfChamberSideB);
       CLRBIT(fStatus[det], kBadCalibrated);
+      CLRBIT(fStatus[det], kNotCalibrated);
     }
 
 }
@@ -129,12 +134,16 @@ void AliTRDCalChamberStatus::UnsetStatusBit(Int_t det, Char_t status)
     case AliTRDCalChamberStatus::kBadCalibrated:
       CLRBIT(fStatus[det], kBadCalibrated);
       break;
+    case AliTRDCalChamberStatus::kNotCalibrated:
+      CLRBIT(fStatus[det], kNotCalibrated);
+      break;
     default:
       CLRBIT(fStatus[det], kGood);
       CLRBIT(fStatus[det], kNoData);
       CLRBIT(fStatus[det], kNoDataHalfChamberSideA);
       CLRBIT(fStatus[det], kNoDataHalfChamberSideB);
       CLRBIT(fStatus[det], kBadCalibrated);
+      CLRBIT(fStatus[det], kNotCalibrated);
     }
 
 }
