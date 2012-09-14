@@ -21,11 +21,8 @@
 #include "AliESDHeader.h"
 #include "AliESDInputHandler.h"
 #include "AliESDUtils.h"
-#include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliESDv0.h"
-#include "AliKFParticle.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
@@ -48,6 +45,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fTrigBit("kEMC7"),
   fIsTrain(0),
   fIsMc(0),
+  fDebug(0),
   fExoticCut(0.97),
   fIsoConeR(0.4),
   fNDimensions(7),
@@ -83,6 +81,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fTrigBit("kEMC7"),
   fIsTrain(0),
   fIsMc(0),
+  fDebug(0),
   fExoticCut(0.97),
   fIsoConeR(0.4),
   fNDimensions(7),
@@ -183,6 +182,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   }
   if(fIsMc)
     isSelected = kTRUE;
+  if(fDebug)
+    printf("isSelected = %d, fIsMC=%d\n", isSelected, fIsMc);
   if(!isSelected )
         return; 
 
@@ -193,6 +194,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   }
   
   fEvtSel->Fill(0);
+  if(fDebug)
+    printf("fESD is ok\n");
   
   AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
   if(!pv) 
@@ -200,6 +203,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   fPVtxZ->Fill(pv->GetZ());
   if(TMath::Abs(pv->GetZ())>15)
     return;
+  if(fDebug)
+    printf("passed vertex cut\n");
 
   fEvtSel->Fill(1);
 
@@ -234,14 +239,26 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   
     
   FillClusHists(); 
+  if(fDebug)
+    printf("passed calling of FillClusHists\n");
 
   fCaloClusters->Clear();
   fSelPrimTracks->Clear();
 
   fMCEvent = MCEvent();
-  if(fMCEvent)
+  if(fMCEvent){
+    if(fDebug)
+      cout<<"MCevent exists\n";
     fStack = (AliStack*)fMCEvent->Stack();
+  }
+  else{
+    if(fDebug)
+      cout<<"ERROR: NO MC EVENT!!!!!!\n";
+  }
   FillMcHists();
+  if(fDebug)
+    printf("passed calling of FillMcHists\n");
+
 
   PostData(1, fOutputList);
 }      
@@ -256,6 +273,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
   const Int_t nclus = fCaloClusters->GetEntries();
   if(nclus==0)
     return;
+  if(fDebug)
+    printf("Inside FillClusHists and there are %d clusters\n",nclus);
   Double_t maxE = 0;
   Int_t nclus10 = 0;
   for(Int_t ic=0;ic<nclus;ic++){
@@ -477,6 +496,8 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
   if(!fStack)
     return;
   Int_t nTracks = fStack->GetNtrack();
+  if(fDebug)
+    printf("Inside FillMcHists and there are %d mcparts\n",nTracks);
   for(Int_t iTrack=0;iTrack<nTracks;iTrack++){
     TParticle *mcp = static_cast<TParticle*>(fStack->Particle(iTrack));  
     if(!mcp)
