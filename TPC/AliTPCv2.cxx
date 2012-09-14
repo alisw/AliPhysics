@@ -52,6 +52,7 @@
 #include "TGeoPhysicalNode.h"
 #include "TGeoHalfSpace.h"
 #include "TTreeStream.h"
+#include "TGeoArb8.h"
 
 using std::ifstream;
 using std::ios_base;
@@ -219,6 +220,8 @@ void AliTPCv2::CreateGeometry()
   TGeoMedium *sm3 = gGeoManager->GetMedium("TPC_Prepreg2");
   TGeoMedium *sm4 = gGeoManager->GetMedium("TPC_Nomex");
   //
+  TGeoMedium *smep = gGeoManager->GetMedium("TPC_Epoxy1");
+  //
   TGeoVolume *tov1 = new TGeoVolume("TPC_OCV1",to1,sm1);
   TGeoVolume *tov2 = new TGeoVolume("TPC_OCV2",to2,sm2);
   TGeoVolume *tov3 = new TGeoVolume("TPC_OCV3",to3,sm3);
@@ -255,7 +258,7 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *tf1v = new TGeoVolume("TPC_OFC1",tf1,sm2);
   TGeoVolume *tf2v = new TGeoVolume("TPC_OFC2",tf2,sm5);
   TGeoVolume *tf3v = new TGeoVolume("TPC_OFC3",tf3,sm4);
-  TGeoVolume *tfg4v = new TGeoVolume("TPC_OFCG4",tfg4,sm1);
+  TGeoVolume *tfg4v = new TGeoVolume("TPC_OFCG4",tfg4,smep);
   //
   // outer part - positioning
   //
@@ -407,7 +410,7 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *tv3 = new TGeoVolume("TPC_IFC4",t3,sm3);
   TGeoVolume *tv4 = new TGeoVolume("TPC_IFC5",t4,sm5);
   TGeoVolume *tv5 = new TGeoVolume("TPC_IFC6",t5,sm4);
-  TGeoVolume *tvep1 = new TGeoVolume("TPC_IFEPOX1",tepox1,sm1); 
+  TGeoVolume *tvep1 = new TGeoVolume("TPC_IFEPOX1",tepox1,smep); 
   TGeoVolume *tvpr1 = new TGeoVolume("TPC_PRSTR1",tpr1,sm2); 
   //
   // middle parts - 2 copies
@@ -425,7 +428,7 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *tv7 = new TGeoVolume("TPC_IFC8",t7,sm3);
   TGeoVolume *tv8 = new TGeoVolume("TPC_IFC9",t8,sm5);
   TGeoVolume *tv9 = new TGeoVolume("TPC_IFC10",t9,sm4);
-  TGeoVolume *tvep2 = new TGeoVolume("TPC_IFEPOX2",tepox2,sm1);
+  TGeoVolume *tvep2 = new TGeoVolume("TPC_IFEPOX2",tepox2,smep);
   TGeoVolume *tvpr2 = new TGeoVolume("TPC_PRSTR2",tpr2,sm2);
   // central part - 1 copy
   // 
@@ -440,7 +443,7 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *tv10 = new TGeoVolume("TPC_IFC11",t10,sm2);
   TGeoVolume *tv11 = new TGeoVolume("TPC_IFC12",t11,sm5);
   TGeoVolume *tv12 = new TGeoVolume("TPC_IFC13",t12,sm4);
-  TGeoVolume *tvep3 = new TGeoVolume("TPC_IFEPOX3",tepox3,sm1);
+  TGeoVolume *tvep3 = new TGeoVolume("TPC_IFEPOX3",tepox3,smep);
   TGeoVolume *tvpr3 = new TGeoVolume("TPC_PRSTR3",tpr3,sm2);  
   //
   // creating a sandwich for the outer par,t tv2 is the mother
@@ -553,15 +556,11 @@ void AliTPCv2::CreateGeometry()
   //
   TGeoVolume *cflv = new TGeoVolume("TPC_CDR",cfl,m3);
   // sandwich
-  TGeoTubeSeg *cd1 = new TGeoTubeSeg(60.6224,61.19,71.1,0.1,119.9);
-  TGeoTubeSeg *cd2 = new TGeoTubeSeg(60.6262,61.1862,71.1,0.1,119.9);
-  TGeoTubeSeg *cd3 = new TGeoTubeSeg(60.6462,61.1662,71.1,0.1,119.9);
-  TGeoTubeSeg *cd4 = new TGeoTubeSeg(60.6562,61.1562,71.1,0.1,119.9);
-  TGeoTubeSeg *tepox4 = new TGeoTubeSeg(60.6224,61.19,71.1,359.9,0.1);
-  //  TGeoTube *cd1 = new TGeoTube(60.6224,61.19,71.1);
-  //  TGeoTube *cd2 = new TGeoTube(60.6262,61.1862,71.1);
-  //  TGeoTube *cd3 = new TGeoTube(60.6462,61.1662,71.1);  
-  //  TGeoTube *cd4 = new TGeoTube(60.6562,61.1562,71.1);  
+  TGeoTubeSeg *cd1 = new TGeoTubeSeg(60.6224,61.19,71.1,0.2,119.8);
+  TGeoTubeSeg *cd2 = new TGeoTubeSeg(60.6262,61.1862,71.1,0.2,119.8);
+  TGeoTubeSeg *cd3 = new TGeoTubeSeg(60.6462,61.1662,71.1,0.2,119.8);
+  TGeoTubeSeg *cd4 = new TGeoTubeSeg(60.6562,61.1562,71.1,0.2,119.8);
+  TGeoTubeSeg *tepox4 = new TGeoTubeSeg(60.6224,61.19,71.1,359.8,0.2);
   //
   TGeoMedium *sm6 = gGeoManager->GetMedium("TPC_Prepreg1");
   TGeoMedium *sm8 = gGeoManager->GetMedium("TPC_Epoxyfm");
@@ -569,7 +568,7 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *cd2v = new TGeoVolume("TPC_CDR2",cd2,sm6);// prepreg1
   TGeoVolume *cd3v = new TGeoVolume("TPC_CDR3",cd3,sm8); //epoxy film
   TGeoVolume *cd4v = new TGeoVolume("TPC_CDR4",cd4,sm4); //nomex
-  TGeoVolume *tvep4 = new TGeoVolume("TPC_IFEPOX4",tepox4,sm1);
+  TGeoVolume *tvep4 = new TGeoVolume("TPC_IFEPOX4",tepox4,smep);
 
   //
   // seals for central drum 2 copies
@@ -1190,54 +1189,46 @@ void AliTPCv2::CreateGeometry()
     tpcmrod->AddNode(ringv,i+12,new TGeoTranslation(0.,0.,-105.+i*21));
   }
   for(Int_t i=0;i<10;i++){
-    tpcrrod->AddNode(lpart,i+1,new TGeoTranslation(0.,0.,-94.5+i*21));
-    tpcmrod->AddNode(mrodl,i+1,new TGeoTranslation(0.,0.,-94.5+i*21));	    
+    tpcrrod->AddNode(lpart,i+1,new TGeoTranslation(0.,0.,-94.5+i*21));//resistor rod
+    tpcmrod->AddNode(mrodl,i+1,new TGeoTranslation(0.,0.,-94.5+i*21));//makrolon rod	    
   }
   //
-  // short pieces
+  // right plug - identical for all rods
+  //
+  TGeoPcon *tpcrp = new TGeoPcon(0.,360.,6);
+  //
+  tpcrp->DefineSection(0,123.05,1.89,2.1075);
+  tpcrp->DefineSection(1,123.59,1.89,2.1075);
+  //
+  tpcrp->DefineSection(2,123.59,1.8,2.2);
+  tpcrp->DefineSection(3,127.,1.8,2.2);
+  //
+  tpcrp->DefineSection(4,127.,0.,2.2);
+  tpcrp->DefineSection(5,127.5,0.,2.2);
+  //
+  TGeoVolume *tpcrpv = new TGeoVolume("TPC_RP",tpcrp,m6);
+  //
+  // adding short pieces and right plug
   //
   tpcrrod->AddNode(spart,1,new TGeoTranslation(0.,0.,-114.));
   tpcrrod->AddNode(spart,2,new TGeoTranslation(0.,0.,114.)); 
   tpcrrod->AddNode(ringv,23,new TGeoTranslation(0.,0.,-123.));
   tpcrrod->AddNode(ringv,24,new TGeoTranslation(0.,0.,123.));
+  tpcrrod->AddNode(tpcrpv,1);
   //
   tpcmrod->AddNode(mrods,1,new TGeoTranslation(0.,0.,-114.));
   tpcmrod->AddNode(mrods,2,new TGeoTranslation(0.,0.,114.)); 
   tpcmrod->AddNode(ringv,25,new TGeoTranslation(0.,0.,-123.));
   tpcmrod->AddNode(ringv,26,new TGeoTranslation(0.,0.,123.));
- //
-  // left plaque
+  tpcmrod->AddNode(tpcrpv,2);
   //
-  TGeoPcon *lp = new TGeoPcon(0.,360.,4);
-  //
-  lp->DefineSection(0,-125.8,1.92,2.235);
-  lp->DefineSection(1,-124.8,1.92,2.235);
-  //
-  lp->DefineSection(2,-124.8,1.92,2.08);
-  lp->DefineSection(3,-123.1,1.92,2.08);
-  //
-  TGeoVolume *lpv1 = new TGeoVolume("TPC_lpv1",lp,m6);
-  TGeoVolume *lpv2 = new TGeoVolume("TPC_lpv2",lp,m6);
-  // left ring
-  TGeoTube *lr = new TGeoTube(2.1075,2.235,0.5);
-  TGeoVolume *lrv = new TGeoVolume("TPC_lrv",lr,m3);
-  //
-  lpv2->AddNode(lrv,1,new TGeoTranslation(0.,0.,-125.3));
-  //
-  tpcrrod->AddNode(lpv2,1); 
-  tpcmrod->AddNode(lpv1,1);
-  //
-  //  right plaque
-  //
-  TGeoTube *rp = new TGeoTube(1.92,2.08,2.025);
-  TGeoVolume *rpv = new TGeoVolume("TPC_rpv",rp,m6);
-  tpcrrod->AddNode(rpv,1, new TGeoTranslation(0.,0.,125.125)); 
-  tpcmrod->AddNode(rpv,2,new TGeoTranslation(0.,0.,125.125));
+  // from the ringv position to the CM is 3.0 cm!
+  //----------------------------------------
   //
   //
-  //HV rods - makrolon + 0.58cm (diameter) Cu
-  TGeoTube *hvr = new TGeoTube(0.,1.465,126.5);
-  TGeoTube *hvc = new TGeoTube(0.,0.29,126.5);
+  //HV rods - makrolon + 0.58cm (diameter) Cu ->check the length
+  TGeoTube *hvr = new TGeoTube(0.,1.465,123.);
+  TGeoTube *hvc = new TGeoTube(0.,0.29,123.);
   //
   TGeoVolume *hvrv = new TGeoVolume("TPC_HV_Rod",hvr,m6);
   TGeoVolume *hvcv = new TGeoVolume("TPC_HV_Cable",hvc,m7);
@@ -1245,8 +1236,8 @@ void AliTPCv2::CreateGeometry()
   //
   //resistor rod
   //
-  TGeoTube *cr = new TGeoTube(0.,0.45,126.2);   
-  TGeoTube *cw = new TGeoTube(0.,0.15,126.2);  
+  TGeoTube *cr = new TGeoTube(0.,0.45,123.);   
+  TGeoTube *cw = new TGeoTube(0.,0.15,123.);  
   TGeoVolume *crv = new TGeoVolume("TPC_CR",cr,m10);
   TGeoVolume *cwv = new TGeoVolume("TPC_W",cw,m12);   
   //
@@ -1256,7 +1247,7 @@ void AliTPCv2::CreateGeometry()
   //
   //peek rod
   //
-  TGeoTube *pr =new TGeoTube(0.2,0.35,126.2);  
+  TGeoTube *pr =new TGeoTube(0.2,0.35,123.);  
   TGeoVolume *prv = new TGeoVolume("TPC_PR",pr,m11); 
   //
   // copper plates with connectors
@@ -1347,6 +1338,517 @@ ctr1->RegisterYourself();
 
  tpcrrod->AddNode(rrod,1,new TGeoCombiTrans(0.,0.,0.5,crr1));
  //
+ // rod left head with holders - inner
+ //
+ // first element - support for inner holder  TPC_IHS
+ Double_t shift1[3] = {0.0,-0.175,0.0};
+
+new TGeoBBox("tpcihs1", 4.7, 0.66, 2.35);               
+new TGeoBBox("tpcihs2", 4.7, 0.485, 1.0, shift1);
+new TGeoBBox("tpcihs3", 1.5, 0.485, 2.35, shift1);
+new TGeoTube("tpcihs4", 0.0, 2.38, 0.1);
+//
+Double_t pointstrap[16];    
+pointstrap[0]= 0.0;
+pointstrap[1]= 0.0;
+pointstrap[2]= 0.0;
+pointstrap[3]= 1.08;
+pointstrap[4]= 2.3;
+pointstrap[5]= 1.08;
+pointstrap[6]= 3.38;
+pointstrap[7]= 0.0;
+pointstrap[8]= 0.0;
+pointstrap[9]= 0.0;
+pointstrap[10]= 0.0;
+pointstrap[11]= 1.08;
+pointstrap[12]= 2.3;
+pointstrap[13]= 1.08;
+pointstrap[14]= 3.38;
+pointstrap[15]= 0.0;
+//
+TGeoArb8 *tpcihs5 = new TGeoArb8("tpcihs5", 0.6, pointstrap);
+//
+//  half space - cutting "legs"
+// 
+ p[0]=0.0;
+ p[1]=0.105;
+ p[2]=0.0;
+ //       
+n[0] = 0.0;
+n[1] = 1.0;
+n[2] = 0.0;
+
+new TGeoHalfSpace("cutil1", p, n);
+
+//
+// transformations
+//
+TGeoTranslation *trans2 = new TGeoTranslation("trans2", 0.0, 2.84, 2.25);
+trans2->RegisterYourself();
+TGeoTranslation*trans3= new TGeoTranslation("trans3", 0.0, 2.84, -2.25);
+trans3->RegisterYourself();
+//support - composite volume
+//
+TGeoCompositeShape *tpcihs6 = new TGeoCompositeShape("tpcihs6", "tpcihs1-(tpcihs2+tpcihs3)-(tpcihs4:trans2)-(tpcihs4:trans3)-cutil1");
+//
+// volumes - all makrolon
+//  
+ TGeoVolume *tpcihss = new TGeoVolume("TPC_IHSS", tpcihs6, m6); //support
+ TGeoVolume *tpcihst = new TGeoVolume("TPC_IHSTR",tpcihs5 , m6); //trapesoid
+ //now assembly
+TGeoRotation *rot111 = new TGeoRotation(); 
+rot111->RotateY(180.0);
+//
+TGeoVolumeAssembly *tpcihs = new TGeoVolumeAssembly("TPC_IHS");    // assembly of the support
+tpcihs->AddNode(tpcihss, 1);
+tpcihs->AddNode(tpcihst, 1, new TGeoTranslation(-4.7, 0.66, 0.0));
+tpcihs->AddNode(tpcihst, 2, new TGeoCombiTrans(4.7, 0.66, 0.0, rot111));
+//
+// two rod holders (TPC_IRH) assembled with the support
+//
+new TGeoBBox("tpcirh1", 4.7, 1.33, 0.5);
+ shift1[0]=-3.65;
+ shift1[1]=0.53;
+ shift1[2]=0.;
+new TGeoBBox("tpcirh2", 1.05, 0.8, 0.5, shift1);
+ shift1[0]=3.65;
+ shift1[1]=0.53;
+ shift1[2]=0.;
+new TGeoBBox("tpcirh3", 1.05, 0.8, 0.5, shift1);
+ shift1[0]=0.0;
+ shift1[1]=1.08;
+ shift1[2]=0.;
+new TGeoBBox("tpcirh4", 1.9, 0.25, 0.5, shift1);
+new TGeoTube("tpcirh5", 0, 1.9, 5);
+//
+TGeoTranslation *trans4 = new TGeoTranslation("trans4", 0, 0.83, 0.0); 
+trans4->RegisterYourself();
+//
+TGeoCompositeShape *tpcirh6 = new TGeoCompositeShape("tpcirh6", "tpcirh1-tpcirh2-tpcirh3-(tpcirh5:trans4)-tpcirh4");
+//
+// now volume
+//
+TGeoVolume *tpcirh = new TGeoVolume("TPC_IRH", tpcirh6, m6);   
+//
+// and all together...
+//
+TGeoVolume *tpciclamp = new TGeoVolumeAssembly("TPC_ICLP");
+tpciclamp->AddNode(tpcihs, 1);
+tpciclamp->AddNode(tpcirh, 1, new TGeoTranslation(0, 1.99, 1.1));
+tpciclamp->AddNode(tpcirh, 2, new TGeoTranslation(0, 1.99, -1.1));
+//
+// and now left inner "head"
+//
+TGeoPcon *inplug = new TGeoPcon("inplug", 0.0, 360.0, 14); 
+
+inplug->DefineSection(0, 0.3, 0.0, 2.2);
+inplug->DefineSection(1, 0.6, 0.0, 2.2);
+
+inplug->DefineSection(2, 0.6, 0.0, 1.75);
+inplug->DefineSection(3, 0.7, 0.0, 1.75);
+
+inplug->DefineSection(4, 0.7, 1.55, 1.75);
+inplug->DefineSection(5, 1.6, 1.55, 1.75);
+
+inplug->DefineSection(6, 1.6, 1.55, 2.2);
+inplug->DefineSection(7, 1.875, 1.55, 2.2);
+
+inplug->DefineSection(8, 1.875, 1.55, 2.2);
+inplug->DefineSection(9, 2.47, 1.75, 2.2);
+
+inplug->DefineSection(10, 2.47, 1.75, 2.08);
+inplug->DefineSection(11, 2.57, 1.8, 2.08);
+
+inplug->DefineSection(12, 2.57, 1.92, 2.08);
+inplug->DefineSection(13, 2.95, 1.92, 2.08);
+//
+ shift1[0]=0.0;
+ shift1[1]=-2.09;
+ shift1[2]=1.075;
+ //
+new TGeoBBox("pcuti", 1.5, 0.11, 1.075, shift1);
+//
+TGeoCompositeShape *inplleft = new TGeoCompositeShape("inplleft", "inplug-pcuti");
+TGeoVolume *tpcinlplug = new TGeoVolume("TPC_INPLL", inplleft, m6);   
+//
+//  holder + plugs
+//
+ TGeoVolume *tpcihpl = new TGeoVolumeAssembly("TPC_IHPL"); //holder+2 plugs (reflected)
+ tpcihpl->AddNode(tpcinlplug, 1);
+ tpcihpl->AddNode(tpcinlplug, 2,ref);
+ tpcihpl->AddNode(tpciclamp,1,new TGeoTranslation(0.0, -2.765, 0.0)); 
+ //
+ // outer holders and clamps
+ //
+
+ // outer membrane holder (between rods)  
+pointstrap[0]= 0.0;
+pointstrap[1]= 0.0;
+pointstrap[2]= 0.0;
+pointstrap[3]= 2.8;
+pointstrap[4]= 3.1;
+pointstrap[5]= 2.8-3.1*TMath::Tan(15.*TMath::DegToRad());
+pointstrap[6]= 3.1;
+pointstrap[7]= 0.0;
+pointstrap[8]= 0.0;
+pointstrap[9]= 0.0;
+pointstrap[10]= 0.0;
+pointstrap[11]= 2.8;
+pointstrap[12]= 3.1;
+pointstrap[13]= 2.8-3.1*TMath::Tan(15.*TMath::DegToRad());
+pointstrap[14]= 3.1;
+pointstrap[15]= 0.0;
+//
+TGeoArb8 *tpcomh1 = new TGeoArb8("tpcomh1", 1.05, pointstrap);   
+TGeoBBox *tpcomh2 = new TGeoBBox("tpcomh2", 0.8, 1.4, 6);
+//
+TGeoVolume *tpcomh1v = new TGeoVolume("TPC_OMH1", tpcomh1, m7);    
+TGeoVolume *tpcomh2v = new TGeoVolume("TPC_OMH2", tpcomh2, m7);
+//
+TGeoVolume *tpcomh3v = new TGeoVolumeAssembly("TPC_OMH3");    // assembly1
+tpcomh3v->AddNode(tpcomh1v, 1, new TGeoTranslation(0.8, -1.4, 4.95));
+ tpcomh3v->AddNode(tpcomh1v, 2, new TGeoTranslation(0.8, -1.4, -4.95));
+tpcomh3v->AddNode(tpcomh2v, 1);
+//
+shift1[0] = 0.9;
+shift1[1] = -1.85;
+shift1[2] = 0.0;
+//
+new TGeoBBox("tpcomh3", 1.65, 1.15, 3.4);
+TGeoBBox *tpcomh4 = new TGeoBBox("tpcomh4", 0.75, 0.7, 3.4, shift1);
+//
+// halfspace 1
+//
+p[0] = 0.0;
+p[1] = -1.05;   
+p[2] = -3.4;
+//
+n[0] = 0.0;
+n[1] = -1.0*TMath::Tan(30.*TMath::DegToRad());
+n[2] = 1.0;
+//
+new TGeoHalfSpace("cutomh1", p, n); 
+//
+// halfspace 2
+//
+p[0] = 0.0;
+p[1] = -1.05;   
+p[2] = 3.4;
+//
+n[0] = 0.0;
+n[1] = -1.0*TMath::Tan(30.*TMath::DegToRad());
+n[2] = -1.0;
+//
+new TGeoHalfSpace("cutomh2", p, n);
+//
+// halfspace 3
+//
+p[0] = -1.65;
+p[1] = 0.0;     
+p[2] = -0.9;
+//
+n[0] = 1.0*TMath::Tan(75.*TMath::DegToRad());
+n[1] = 0.0;
+n[2] = 1.0;
+//
+new TGeoHalfSpace("cutomh3", p, n);   
+//
+// halfspace 4
+//
+p[0] = -1.65;
+p[1] = 0.0;      
+p[2] = 0.9;
+//
+n[0] = 1.0*TMath::Tan(75*TMath::DegToRad());
+n[1] = 0.0;
+n[2] = -1.0;
+//
+new TGeoHalfSpace("cutomh4", p, n); 
+//
+// halsfspace 5
+//
+p[0] = 1.65;
+p[1] = -1.05;      
+p[2] = 0.0;  
+//
+n[0] = -1.0;
+n[1] = -1.0*TMath::Tan(20.*TMath::DegToRad());
+n[2] = 0.0;
+//
+new TGeoHalfSpace("cutomh5", p, n); 
+//  
+TGeoCompositeShape *tpcomh5 = new TGeoCompositeShape("tpcomh5", "tpcomh3-cutomh1-cutomh2-cutomh3-cutomh4-cutomh5"); 
+//
+ TGeoVolume *tpcomh5v = new TGeoVolume("TPC_OMH5",tpcomh5,m6);
+ TGeoVolume *tpcomh4v = new TGeoVolume("TPC_OMH6",tpcomh4,m6);
+ //
+ TGeoVolumeAssembly *tpcomh7v = new TGeoVolumeAssembly("TPC_OMH7");
+ tpcomh7v->AddNode(tpcomh5v,1);
+ tpcomh7v->AddNode(tpcomh4v,1);
+ //
+ // full membrane holder - tpcomh3v + tpcomh7v
+ //
+ TGeoVolumeAssembly *tpcomh = new TGeoVolumeAssembly("TPC_OMH");
+ tpcomh->AddNode(tpcomh3v,1,new TGeoTranslation(1.5,0.,0.));
+ tpcomh->AddNode(tpcomh3v,2,new TGeoCombiTrans(-1.5,0.,0.,rot111));
+ tpcomh->AddNode(tpcomh7v,1,new TGeoTranslation(0.65+1.5, 2.55, 0.0));
+ tpcomh->AddNode(tpcomh7v,2,new TGeoCombiTrans(-0.65-1.5, 2.55, 0.0,rot111)); 
+ //
+ //  outer rod holder support
+ //
+new TGeoBBox("tpcohs1", 3.8, 0.675, 2.35); 
+//
+shift1[0] = 0.0;
+shift1[1] = 0.175;
+shift1[2] = 0.0;
+//
+new TGeoBBox("tpcohs2", 1.5, 0.5, 2.35, shift1);
+new TGeoBBox("tpcohs3", 3.8, 0.5, 0.85, shift1);
+//
+shift1[0] = 0.0;
+shift1[1] = -1.175;
+shift1[2] = 0.0;
+//
+TGeoBBox *tpcohs4 = new TGeoBBox("tpsohs4", 3.1, 0.5, 0.7, shift1);
+//
+TGeoVolume *tpcohs4v = new TGeoVolume("TPC_OHS4", tpcohs4, m6);
+//
+p[0] = 0.0;
+p[1] = -0.186;   
+p[2] = 0.0;
+//
+n[0] = 0.0;
+n[1] = -1.0;
+n[2] = 0.0;
+//
+new TGeoHalfSpace("cutohs1", p, n);
+//
+TGeoCompositeShape *tpcohs5 = new TGeoCompositeShape("tpcohs5", "tpcohs1-tpcohs2-tpcohs3-cutohs1"); 
+TGeoVolume *tpcohs5v = new TGeoVolume("TPC_OHS5", tpcohs5, m6); 
+//
+TGeoVolumeAssembly *tpcohs = new TGeoVolumeAssembly("TPC_OHS");    
+tpcohs->AddNode(tpcohs5v, 1);
+tpcohs->AddNode(tpcohs4v, 1); 
+//
+// outer rod holder itself
+//
+shift1[0] = 0.0;
+shift1[1] = 1.325;
+shift1[2] = 0.0;
+ new TGeoBBox("tpcorh1", 3.1, 1.825, 0.55); //from this box we cut pieces...
+ //
+shift1[0] = -3.1;	
+shift1[1] = -0.5;	
+shift1[2] = 0.0;
+//
+new TGeoBBox("tpcorh2", 0.5, 2.75, 1.1, shift1);
+//
+shift1[0] = 3.1;	
+shift1[1] = -0.5;	
+shift1[2] = 0.0;
+//
+new TGeoBBox("tpcorh3", 0.5, 2.75, 1.1, shift1);
+//
+shift1[0] = 0.0;
+shift1[1] = -0.5;	
+shift1[2] = -0.95;
+//
+new TGeoBBox("tpcorh4", 3.9, 2.75, 0.5, shift1);
+//
+shift1[0] = 0.0;
+shift1[1] = -0.5;
+shift1[2] = 0.0;
+//
+new TGeoBBox("tpcorh5", 1.95, 0.5, 1.1, shift1);
+//
+shift1[0] = 0.0;
+shift1[1] = -0.5;
+shift1[2] = 0.55;
+//
+new TGeoBBox("tpcorh6", 2.4, 0.5, 0.6, shift1);
+//
+new TGeoTube("tpcorh7", 0, 1.95, 0.85);
+new TGeoTube("tpcorh8", 0, 2.4, 0.6);
+//
+TGeoTranslation *trans33 = new TGeoTranslation("trans33", 0.0, 0.0, 0.55); 
+trans33->RegisterYourself();
+//
+TGeoCompositeShape *tpcorh9 = new TGeoCompositeShape("tpcorh9", "tpcorh1-tpcorh2-tpcorh3-tpcorh4-tpcorh5-tpcorh6-(tpcorh8:trans33)-tpcorh7");
+//
+ TGeoVolume *tpcorh9v = new TGeoVolume("TPC_ORH",tpcorh9,m6); //outer rod holder 
+ //
+ // now 2 holders together
+ //
+ TGeoVolumeAssembly *tpcorh = new TGeoVolumeAssembly("TPC_ORH2");
+ //
+ tpcorh->AddNode(tpcorh9v,1,new TGeoTranslation(0.0, 0.0, 1.25));
+ tpcorh->AddNode(tpcorh9v,2,new TGeoCombiTrans(0.0, 0.0, -1.25,rot111));
+//
+// outer rod plug left
+//
+TGeoPcon *outplug = new TGeoPcon("outplug", 0.0, 360.0, 14); 
+
+outplug->DefineSection(0, 0.5, 0.0, 2.2);
+outplug->DefineSection(1, 0.7, 0.0, 2.2);
+
+outplug->DefineSection(2, 0.7, 1.55, 2.2);
+outplug->DefineSection(3, 0.8, 1.55, 2.2);
+
+outplug->DefineSection(4, 0.8, 1.55, 1.75);
+outplug->DefineSection(5, 1.2, 1.55, 1.75);
+
+outplug->DefineSection(6, 1.2, 1.55, 2.2);
+outplug->DefineSection(7, 1.875, 1.55, 2.2);
+
+outplug->DefineSection(8, 1.875, 1.55, 2.2);
+outplug->DefineSection(9, 2.47, 1.75, 2.2);
+
+outplug->DefineSection(10, 2.47, 1.75, 2.08);
+outplug->DefineSection(11, 2.57, 1.8, 2.08);
+
+outplug->DefineSection(12, 2.57, 1.92, 2.08);
+outplug->DefineSection(13, 2.95, 1.92, 2.08);
+//
+shift1[0] = 0.0;
+shift1[1] = 2.09;
+shift1[2] = 1.01;
+
+new TGeoBBox("cutout", 2.5, 0.11, 1.01, shift1);
+//
+
+TGeoCompositeShape *outplleft = new TGeoCompositeShape("outplleft", "outplug-cutout");    
+TGeoVolume *outplleftv = new TGeoVolume("TPC_OPLL", outplleft, m6); 
+//
+//  support + holder + plug
+//
+
+ 
+ TGeoVolumeAssembly *tpcohpl = new TGeoVolumeAssembly("TPC_OHPL"); 
+ //
+ tpcohpl->AddNode(outplleftv,1); //plug
+ tpcohpl->AddNode(outplleftv,2,ref); //plug reflected
+ tpcohpl->AddNode(tpcorh,1); //rod holder
+ tpcohpl->AddNode(tpcohs,1,new TGeoTranslation(0.0, 3.925, 0)); // support
+ //
+
+ //
+ // main membrane holder
+ //	      
+pointstrap[0]= 0.0;
+pointstrap[1]= 0.0;
+pointstrap[2]= 0.0;
+pointstrap[3]= 2.8;
+pointstrap[4]= 3.1;
+pointstrap[5]= 1.96;
+pointstrap[6]= 3.1;
+pointstrap[7]= 0.0;
+pointstrap[8]= 0.0;
+pointstrap[9]= 0.0;
+pointstrap[10]= 0.0;
+pointstrap[11]= 2.8;
+pointstrap[12]= 3.1;
+pointstrap[13]= 1.96;
+pointstrap[14]= 3.1;
+pointstrap[15]= 0.0; 
+//
+TGeoArb8 *tpcmmh1 = new TGeoArb8("tpcmmh1", 1.75, pointstrap);
+TGeoBBox *tpcmmh2 = new TGeoBBox("tpcmmh2", 0.8, 1.4, 12.5); 
+//
+TGeoVolume *tpcmmh1v = new TGeoVolume("TPC_MMH1", tpcmmh1, m6);   
+TGeoVolume *tpcmmh2v = new TGeoVolume("TPC_MMH2", tpcmmh2, m6);
+//
+ TGeoVolumeAssembly *tpcmmhs = new TGeoVolumeAssembly("TPC_MMHS");
+ tpcmmhs->AddNode(tpcmmh1v,1,new TGeoTranslation(0.8, -1.4, 10.75));
+ tpcmmhs->AddNode(tpcmmh1v,2,new TGeoTranslation(0.8, -1.4, -10.75));
+ tpcmmhs->AddNode(tpcmmh2v,1);
+ //
+ // main membrahe holder clamp
+ //
+shift1[0] = -0.75;
+shift1[1] = -1.15;
+shift1[2] = 0.0;
+//
+new TGeoBBox("tpcmmhc1", 1.65, 1.85, 8.9); 
+new TGeoBBox("tpcmmhc2", 0.9, 0.7, 8.9, shift1);
+//
+// half spaces  - cuts
+//
+p[0] = -1.65;
+p[1] = 0.0;   
+p[2] = -0.9;
+//
+n[0] = 8.0;
+n[1] = 0.0;
+n[2] = 8.0*TMath::Tan(13.*TMath::DegToRad());
+//
+new TGeoHalfSpace("cutmmh1", p, n);
+//
+p[0] = -1.65;
+p[1] = 0.0;   
+p[2] = 0.9;
+//
+n[0] = 8.0;
+n[1] = 0.0;
+n[2] = -8.0*TMath::Tan(13.*TMath::DegToRad());
+//
+new TGeoHalfSpace("cutmmh2", p, n);
+//
+p[0] = 0.0;
+p[1] = 1.85;   
+p[2] = -2.8;
+//
+n[0] = 0.0;
+n[1] = -6.1;
+n[2] = 6.1*TMath::Tan(20.*TMath::DegToRad());
+//
+new TGeoHalfSpace("cutmmh3", p, n);
+//
+p[0] = 0.0;
+p[1] = 1.85;      
+p[2] = 2.8;
+//
+n[0] = 0.0;
+n[1] = -6.1;
+n[2] = -6.1*TMath::Tan(20*TMath::DegToRad());
+//
+new TGeoHalfSpace("cutmmh4", p, n);
+//
+p[0] = 0.75;
+p[1] = 0.0; 
+p[2] = -8.9;
+//
+n[0] = 2.4*TMath::Tan(30*TMath::DegToRad());
+n[1] = 0.0;
+n[2] = 2.4;
+//
+ new TGeoHalfSpace("cutmmh5", p, n);
+//
+p[0] = 0.75;
+p[1] = 0.0;
+p[2] = 8.9;
+//
+n[0] = 2.4*TMath::Tan(30*TMath::DegToRad());
+n[1] = 0.0;
+n[2] = -2.4;
+//
+new TGeoHalfSpace("cutmmh6", p, n);
+
+TGeoCompositeShape *tpcmmhc = new TGeoCompositeShape("TPC_MMHC", "tpcmmhc1-tpcmmhc2-cutmmh1-cutmmh2-cutmmh3-cutmmh4-cutmmh5-cutmmh6"); 
+
+ TGeoVolume *tpcmmhcv = new TGeoVolume("TPC_MMHC",tpcmmhc,m6);
+ //
+TGeoVolume *tpcmmh = new TGeoVolumeAssembly("TPC_MMH");
+//
+ tpcmmh->AddNode(tpcmmhcv,1,new TGeoTranslation(0.65+1.5, 1.85, 0.0));
+ tpcmmh->AddNode(tpcmmhcv,2,new TGeoCombiTrans(-0.65-1.5, 1.85, 0.0,rot111));
+ tpcmmh->AddNode(tpcmmhs,1,new TGeoTranslation(1.5, 0.0, 0.0));
+ tpcmmh->AddNode(tpcmmhs,2,new TGeoCombiTrans(-1.5, 0.0, 0.0,rot111));
+ //
+ 
+ //
+
+//--------------------------------------------
+ //
  // guard ring resistor chain
  //
 
@@ -1375,30 +1877,25 @@ ctr1->RegisterYourself();
  TGeoRotation *rotpos[2]; 
  //
  TGeoRotation *rotrod1[2]; 
- TGeoTubeSeg *irh = new TGeoTubeSeg(78.825,79.25,1.5,358.5,1.5);
- TGeoTubeSeg *orh = new TGeoTubeSeg(256.5,257.95,1.5,359.5,0.5);
- TGeoTubeSeg *ohh = new TGeoTubeSeg(256.5,257.95,1.5,9.5,10.5);
-  TGeoVolume *irhv = new TGeoVolume("TPC_IRHH",irh,m4);
-  TGeoVolume *orhv = new TGeoVolume("TPC_ORHH",orh,m4);
-  TGeoVolume *ohhv = new TGeoVolume("TPC_OHVHH",ohh,m4);
+
   
  //v9 - drift gas
+
+    TGeoRotation rot102("rot102");
+    rot102.RotateY(-90.);
 
   for(Int_t i=0;i<18;i++){
     Double_t angle,x,y;
     Double_t z,r; 
     angle=TMath::DegToRad()*20.*(Double_t)i;
-    TGeoRotation *roth = new TGeoRotation(); //rotation for rod holders
-    roth->RotateZ(angle);
     //inner rods
     r=81.5;
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
-    z = 126.1;
-    //
-    v9->AddNode(irhv,i+1,roth);
-    v9->AddNode(orhv,i+1,roth);
-    v9->AddNode(ohhv,i+1,roth);
+    z = 126.;
+    TGeoRotation *rot12 = new TGeoRotation();
+    rot12->RotateZ(-90.0+i*20.);
+    v9->AddNode(tpcihpl,i+1,new TGeoCombiTrans(x, y, 0., rot12));
     //
     if(i==11){//resistor rod inner
        rotrod.RotateZ(-90.+angle);
@@ -1418,7 +1915,34 @@ ctr1->RegisterYourself();
     r=254.25;
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
-    z=126.3;
+    z=126.;
+    //
+    // outer rod holder + outer left plug
+    //
+    TGeoRotation *rot33 = new TGeoRotation();
+    rot33->RotateZ(-90+i*20.);
+    //
+    v9->AddNode(tpcohpl,i+1,new TGeoCombiTrans(x, y, 0., rot33));
+    //
+    Double_t xxx = 256.297*TMath::Cos((i*20.+10.)*TMath::DegToRad());
+    Double_t yyy = 256.297*TMath::Sin((i*20.+10.)*TMath::DegToRad());
+    //
+    TGeoRotation rot101("rot101");
+    rot101.RotateZ(90.+i*20.+10.);
+    TGeoRotation *rot103 = new TGeoRotation("rot103");
+    *rot103 = rot101*rot102;
+    //
+    TGeoCombiTrans *trh100 = new TGeoCombiTrans(xxx,yyy,0.,rot103);
+    //
+    if(i==2) {
+      //main membrane holder
+      v9->AddNode(tpcmmh,1,trh100);
+    }
+    else{
+      // "normal" membrane holder
+      v9->AddNode(tpcomh,i+1,trh100);      
+    }
+
     //
     if(i==3){//resistor rod outer
       rotrod.RotateZ(90.+angle);
@@ -1435,6 +1959,8 @@ ctr1->RegisterYourself();
     }
     if(i==15){
       v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z+0.7)); //hv->A-side only      
+
+
     }
   } //end of rods positioning
 

@@ -587,6 +587,9 @@ void AliTPC::CreateMaterials()
 
   AliMixture(26,"Epoxy",amat,zmat,density,-3,wmat);
   //
+  density *= 1.1;
+  AliMixture(35,"Epoxy1",amat,zmat,density,-3,wmat);
+  //
   // epoxy film - 90% epoxy, 10% glass fiber 
   //
   amat[0]=12.01;
@@ -731,7 +734,8 @@ void AliTPC::CreateMaterials()
   AliMedium(21,"Alumina",31,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);    
   AliMedium(22,"Water",32,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
   AliMedium(23,"Brass",33,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
-  AliMedium(24,"Epoxyfm",34,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001);  
+  AliMedium(24,"Epoxyfm",34,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001); 
+  AliMedium(25,"Epoxy1",35,0, iSXFLD, sXMGMX, 10., 999., .1, .0005, .001); 
 }
 
 void AliTPC::GenerNoise(Int_t tablesize)
