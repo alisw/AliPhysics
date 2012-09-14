@@ -310,6 +310,7 @@ protected:
    */
   Bool_t ReadTriggers(const AliESDEvent& esd, UInt_t& triggers, 
 		      UShort_t& nClusters);
+  Bool_t CheckpAExtraV0(const AliESDEvent& esd) const;
   /** 
    * Check, for the @f$\sqrt{s}=2.76GeV@f$ pp run wether this event
    * was in the fast partition, and if so, filter it out.
@@ -467,7 +468,7 @@ protected:
   AliDisplacedVertexSelection fDisplacedVertex; //Displaced vertex selector
   TList    fCollWords;     //! Configured collision words 
   TList    fBgWords;       //! Configured background words 
-  ClassDef(AliFMDEventInspector,4); // Inspect the event 
+  ClassDef(AliFMDEventInspector,5); // Inspect the event 
 };
 
 #endif
