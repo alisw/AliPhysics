@@ -2188,6 +2188,11 @@ TH1D* AliUEHist::GetTrackingEfficiency(Int_t axis)
 }
 
 //____________________________________________________________________
+TH1D* AliUEHist::GetFakeRate(Int_t axis)
+{
+  return dynamic_cast<TH1D*> (GetTrackEfficiency(kCFStepTracked, kCFStepReconstructed, axis));
+}
+//____________________________________________________________________
 TH2D* AliUEHist::GetTrackingCorrection()
 {
   // extracts the tracking correction by calculating the efficiency from step kCFStepAnaTopology to kCFStepTracked
