@@ -38,6 +38,7 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
+#include "AliVVZERO.h"
 
 //====================================================================
 AliFMDEventInspector::AliFMDEventInspector()
@@ -673,6 +674,18 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent& esd,
 
 //____________________________________________________________________
 Bool_t
+AliFMDEventInspector::CheckpAExtraV0(const AliESDEvent& esd) const
+{
+  if (fCollisionSystem != AliForwardUtil::kPPb) return true;
+
+   AliVVZERO* esdV0 = esd.GetVZEROData();
+   if ((esdV0->GetV0ADecision()!=1) || (esdV0->GetV0CDecision()!=1)) 
+     return false;
+   return true;
+}
+
+//____________________________________________________________________
+Bool_t
 AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
 				   UShort_t& nClusters)
 {
@@ -712,7 +725,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   // on the AliPhysicsSelection obejct.  If we called the latter
   // then the AliPhysicsSelection object would overcount by a 
   // factor of 2! :-(
-  Bool_t  offline  = ih->IsEventSelected() ;
+  Bool_t  offline  = ih->IsEventSelected();
   Bool_t  fastonly = (ih->IsEventSelected() & AliVEvent::kFastOnly);
   TString trigStr  = esd.GetFiredTriggerClasses();
 
@@ -725,6 +738,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   
   if (CheckFastPartition(fastonly))     offline = false;
   if (offline && CheckCosmics(trigStr)) offline = false;
+  if (!CheckpAExtraV0(esd))             offline = false;
 
   DMSG(fDebug,2,"Event is %striggered by off-line", offline ? "" : "NOT ");
 
