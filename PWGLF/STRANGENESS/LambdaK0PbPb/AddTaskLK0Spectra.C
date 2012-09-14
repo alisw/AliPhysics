@@ -37,8 +37,8 @@ AliAnalysisTaskLK0Spectra * AddTaskLK0Spectra(const char * outfilename, Int_t ib
      myTracksCuts->SetMinNCrossedRowsTPC(70);
      //myTracksCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 	
-	char taskName[15];
-	sprintf(taskName,"TaskLambdaK0_%d",ibin);
+	char taskName[18];
+	sprintf(taskName,"TaskLambdaK0_%d_%d",ibin,removeInjected);
 	
 	
   AliAnalysisTaskLK0Spectra * task = new AliAnalysisTaskLK0Spectra(taskName);
@@ -124,7 +124,7 @@ AliAnalysisTaskLK0Spectra * AddTaskLK0Spectra(const char * outfilename, Int_t ib
 
     AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
    
-	sprintf(taskName,"clambdak0Histo_%2.2d",ibin);
+	sprintf(taskName,"clambdak0Histo_%2.2d_%d",ibin,removeInjected);
 	
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(taskName, TList::Class(),AliAnalysisManager::kOutputContainer, Form("%s:lambdak0", AliAnalysisManager::GetCommonFileName()));
     //AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("clambdak0Centr_%2.2d",ibin), AliAnalysisCentralitySelector::Class(),AliAnalysisManager::kOutputContainer, outfilenameCentr.Data());
