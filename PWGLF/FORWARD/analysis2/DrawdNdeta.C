@@ -218,6 +218,8 @@ struct dNdetaDrawer
   void SetCentralSysError(Double_t e=0) { fCenSysErr = e; }
   void SetForceMB(Bool_t force=true) { fForceMB = force; }
   void SetMirror(Bool_t mirror=true) { fMirror = mirror; }
+  void SetFinalMC(const TString& file) { fFinalMC = file; }
+  void SetEmpirical(const TString& file) { fEmpirical = file; }
   /* @} */
   //==================================================================  
   /** 
@@ -322,12 +324,50 @@ struct dNdetaDrawer
     fRatios    = new THStack("ratios",  "Ratios");
     fLeftRight = new THStack("asymmetry", "Left-right asymmetry");
     fOthers    = new TMultiGraph();
-    
+
+    // --- Try to open the final MC file, and find relevant lists ----
+    TList* forwardMC = 0;
+    TList* centralMC = 0;
+    if (!fFinalMC.IsNull()) { 
+      TFile* finalMC = TFile::Open(fFinalMC, "READ");
+      if (!finalMC) { 
+	Warning("Run", "Failed to open file %s for final MC corrections", 
+		fFinalMC.Data());
+      }
+      else { 
+	forwardMC = static_cast<TList*>(finalMC->Get("ForwardResults"));
+	if (!forwardMC) 
+	  Warning("Open", "Couldn't find list ForwardResults for final MC");
+	centralMC = static_cast<TList*>(finalMC->Get("CentralResults"));
+	if (!forwardMC) 
+	  Warning("Open", "Couldn't find list CentralResults for final MC");
+      }
+    }
+    if (!forwardMC) fFinalMC = "";
+
+    // --- Try to get the emperical correction -----------------------
+    TGraphErrors* empCorr = 0;
+    if (!fEmpirical.IsNull()) {
+      TFile* empirical = TFile::Open(fEmpirical, "READ");
+      if (!empirical) { 
+	Warning("Run", "Failed to open file %s for empirical corrections", 
+		fEmpirical.Data());
+      }
+      else { 
+	empCorr = static_cast<TGraphErrors*>(empirical->Get("average"));
+	if (!empCorr) 
+	  Warning("Open", "couldn't get the empirical correction");
+      }
+    }
+    if (!empCorr) fEmpirical = "";
+
     // --- Loop over input data --------------------------------------
     TObjArray truths;
-    /*TObjArray* mcA =*/ FetchResults(mcTruth,  "MCTruth", max, rmax, amax,truths);
-    TObjArray* fwdA = FetchResults(forward,  "Forward", max, rmax, amax,truths);
-    TObjArray* cenA = FetchResults(clusters, "Central", max, rmax, amax,truths);
+    FetchResults(mcTruth,  0, 0, "MCTruth", max, rmax, amax,truths);
+    TObjArray* fwdA = FetchResults(forward,  forwardMC, empCorr, "Forward", 
+				   max, rmax, amax,truths);
+    TObjArray* cenA = FetchResults(clusters, 0, 0, "Central", 
+				   max, rmax, amax,truths);
 
     // --- Get trigger information -----------------------------------
     TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
@@ -496,26 +536,24 @@ struct dNdetaDrawer
    * @return Array of results
    */
   TObjArray* 
-  FetchResults(const TList* list, 
-	       const char*  name, 
-	       Double_t&    max,
-	       Double_t&    rmax,
-	       Double_t&    amax,
-	       TObjArray&   truths)
+  FetchResults(const TList*  list, 
+	       const TList*  mcList,
+	       TGraphErrors* empCorr,
+	       const char*   name, 
+	       Double_t&     max,
+	       Double_t&     rmax,
+	       Double_t&     amax,
+	       TObjArray&    truths)
   {
     if (!list) return 0;
     UShort_t   n = HasCent() ? fCentAxis->GetNbins() : 0;
     // Info("FetchResults","got %d centrality bins", n);
     if (n == 0) {
-      TList* all = static_cast<TList*>(list->FindObject("all"));
-      if (!all) {
-	Error("FetchResults", "Couldn't find list 'all' in %s", 
-	      list->GetName());
-	return 0;
-      }
+      TH1*  h = FetchOne(list, mcList, empCorr, name, "all",
+			 FetchOthers(0,0), -1000, 0, 
+			 max, rmax, amax, fTruth);
+      if (!h) return 0;
       TObjArray* a = new TObjArray;
-      TH1*       h = FetchResults(all, name, FetchOthers(0,0), 
-				  -1000, 0, max, rmax, amax, fTruth);
       // Info("FetchResults", "Adding %s to result stack", h->GetName());
       a->AddAt(h, 0);
       return a;
@@ -527,19 +565,15 @@ struct dNdetaDrawer
       UShort_t centLow  = fCentAxis->GetBinLowEdge(i+1);
       UShort_t centHigh = fCentAxis->GetBinUpEdge(i+1);
       TString  lname    = Form("cent%03d_%03d", centLow, centHigh);
-      TList*   thisCent = static_cast<TList*>(list->FindObject(lname));
       Int_t    col      = GetCentralityColor(i+1);
+      TString  centTxt  = Form("%3d%%-%3d%% central", centLow, centHigh);
 
-      TString centTxt = Form("%3d%%-%3d%% central", centLow, centHigh);
-      if (!thisCent) {
-	Error("FetchResults", "Couldn't find list '%s' in %s", 
-	      lname.Data(), list->GetName());
-	continue;
-      }
       TH1* tt = static_cast<TH1*>(truths.At(i));
       TH1* ot = tt;
-      TH1* h = FetchResults(thisCent, name, FetchOthers(centLow, centHigh), 
-			    col, centTxt.Data(), max, rmax, amax, tt);
+      TH1* h  = FetchOne(list, mcList, empCorr, name, lname,
+			 FetchOthers(centLow,centHigh), col, 
+			 centTxt.Data(), max, rmax, amax, fTruth);
+      if (!h) continue;
       if (ot != tt) { 
 	//Info("FetchResults", "old truth=%p new truth=%p (%s)", ot, tt, name);
 	truths.AddAt(tt, i);
@@ -630,7 +664,38 @@ struct dNdetaDrawer
     // if (!centTxt || !h) return;
     // h->SetTitle(Form("%s, %s", h->GetTitle(), centTxt));
   }
-
+  //__________________________________________________________________
+  TH1* FetchOne(const TList*  list, 
+		const TList*  mcList,
+		TGraphErrors* empCorr,
+		const char*   name, 
+		const char*   folderName,
+		TMultiGraph*  others, 
+		Int_t         col,
+		const char*   txt,
+		Double_t&     max,
+		Double_t&     rmax,
+		Double_t&     amax,
+		TH1*&         truth)
+  {
+    TList* folder = static_cast<TList*>(list->FindObject(folderName));
+    if (!folder) {
+      Error("FetchResults", "Couldn't find list '%s' in %s", 
+	    folderName, list->GetName());
+      return 0;
+    }
+    TList* mcFolder = 0;
+    if (mcList) {
+      mcFolder = static_cast<TList*>(mcList->FindObject(folderName));
+      if (!mcFolder) 
+	Warning("FetchResults", 
+		"Didn't find the list '%s' in %s for final MC correction", 
+		folderName, mcList->GetName());
+    }
+    TH1* h = FetchResults(folder, mcFolder, empCorr, name, 
+			  others, col, txt, max, rmax, amax, truth);
+    return h;
+  }
   //__________________________________________________________________
   /** 
    * Fetch results for a particular centrality bin
@@ -646,20 +711,30 @@ struct dNdetaDrawer
    *
    * @return Histogram of results 
    */
-  TH1* FetchResults(const TList* list, 
-		    const char*  name, 
-		    TMultiGraph* thisOther,
-		    Int_t        color,
-		    const char*  centTxt,
-		    Double_t&    max,
-		    Double_t&    rmax,
-		    Double_t&    amax, 
-		    TH1*&        truth)
+  TH1* FetchResults(const TList*  list, 
+		    const TList*  mcList, 
+		    TGraphErrors* empCorr,
+		    const char*   name, 
+		    TMultiGraph*  thisOther,
+		    Int_t         color,
+		    const char*   centTxt,
+		    Double_t&     max,
+		    Double_t&     rmax,
+		    Double_t&     amax, 
+		    TH1*&         truth)
   {
     
     TH1* dndeta      = FetchResult(list, Form("dndeta%s", name));
     TH1* dndetaMC    = FetchResult(list, Form("dndeta%sMC", name));
     TH1* dndetaTruth = FetchResult(list, "dndetaTruth");
+
+    if (mcList && FetchResult(mcList, "finalMCCorr")) 
+      Warning("FetchResults", "dNdeta already corrected for final MC");
+    else 
+      CorrectFinalMC(dndeta, mcList);
+      
+    CorrectEmpirical(dndeta, empCorr);
+
     TH1* dndetaSym   = 0;
     TH1* dndetaMCSym = 0;
     SetAttributes(dndeta,     color);
@@ -686,7 +761,7 @@ struct dNdetaDrawer
     ModifyTitle(dndetaTruth,centTxt);
     ModifyTitle(dndetaSym,  centTxt);
     ModifyTitle(dndetaMCSym,centTxt);
-      
+
 
     max = TMath::Max(max, AddHistogram(fResults, dndetaTruth, "e5"));
     max = TMath::Max(max, AddHistogram(fResults, dndetaMC,    dndetaMCSym));
@@ -740,6 +815,38 @@ struct dNdetaDrawer
     }
     return dndeta;
   }
+  //__________________________________________________________________
+  void CorrectFinalMC(TH1* dndeta, const TList* mcList)
+  {
+    if (!dndeta) return;
+    if (!mcList) return;
+
+    TH1* dndetaMC    = FetchResult(mcList, dndeta->GetName());
+    TH1* dndetaTruth = FetchResult(mcList, "dndetaTruth");
+    if (!dndetaMC || !dndetaTruth) return;
+    
+    TH1* corr = static_cast<TH1*>(dndetaMC->Clone("finalMCCorr"));
+    corr->Divide(dndetaTruth);
+    
+    Info("CorrectFinalMC", "Correcting dN/deta with final MC correction");
+    dndeta->Divide(corr);
+  }
+  //__________________________________________________________________
+  void CorrectEmpirical(TH1* dndeta, const TGraphErrors* empCorr) 
+  {
+    if (!dndeta) return;
+    if (!empCorr) return;
+   
+    Info("CorrectEmpirical", "Doing empirical correction of dN/deta");
+    TAxis* xAxis = dndeta->GetXaxis();
+    for (Int_t i = 1; i <= xAxis->GetNbins(); i++) {
+      Double_t x = xAxis->GetBinCenter(i);
+      Double_t y = dndeta->GetBinContent(i);
+      Double_t c = empCorr->Eval(x);
+      dndeta->SetBinContent(i, y / c);
+    }
+  }
+
   //__________________________________________________________________
   /** 
    * Plot the results
@@ -1051,6 +1158,24 @@ struct dNdetaDrawer
     }
     // results->Draw("nostack e1 same");
 
+    TString corrs;
+    if (!fEmpirical.IsNull()) corrs.Append("Emperical");
+    if (!fFinalMC.IsNull())   {
+      if (!corrs.IsNull()) corrs.Append("+");
+      corrs.Append("Final MC");
+    }
+
+    if (!corrs.IsNull()) {
+      corrs.Append(" correction");
+      if (corrs.Index("+") != kNPOS) corrs.Append("s");
+      TLatex* em = new TLatex(.93, .79, corrs);
+      em->SetNDC();
+      em->SetTextFont(132);
+      em->SetTextAlign(33);
+      em->SetTextColor(aliceBlue);
+      em->Draw();
+    }
+      
     fRangeParam->fSlave1Axis = FindXAxis(p1, fResults->GetName());
     fRangeParam->fSlave1Pad  = p1;
 
@@ -2018,6 +2143,8 @@ struct dNdetaDrawer
   Double_t     fCenSysErr;    // Systematic error in central range 
   TString      fTitle;        // Title on plot
   TString      fClusterScale; // Scaling of clusters to tracklets      
+  TString      fFinalMC;      // Final MC correction file name
+  TString      fEmpirical;    // Empirical correction file name
   /* @} */
   /** 
    * @{ 
@@ -2163,6 +2290,10 @@ Usage()
        "  0x40  Do not make our own canvas\n"
        "  0x80  Force use of MB\n"
        "  0x100 Mirror data\n"
+       "  0x200 Apply `final MC' correction\n"
+       "  0x400 Apply `Emperical' correction\n\n"
+       "0x200 requires the file forward_dndetamc.root\n"
+       "0x400 requires the file EmpiricalCorrection.root\n"
        );
 }
 
@@ -2216,6 +2347,8 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetExport(flags & 0x40);
   d.SetForceMB(flags & 0x80);
   d.SetMirror(flags & 0x100);
+  d.SetFinalMC(flags & 0x200 ? "forward_dndetamc.root" : "");
+  d.SetEmpirical(flags & 0x400 ? "EmpiricalCorrection.root" : "");
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
