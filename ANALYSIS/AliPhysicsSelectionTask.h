@@ -40,7 +40,7 @@ class AliPhysicsSelectionTask : public AliAnalysisTaskSE {
     AliPhysicsSelectionTask(const AliPhysicsSelectionTask&);
     AliPhysicsSelectionTask& operator=(const AliPhysicsSelectionTask&);
 
-  ClassDef(AliPhysicsSelectionTask, 1);
+  ClassDef(AliPhysicsSelectionTask, 2);
 };
 
 #endif
