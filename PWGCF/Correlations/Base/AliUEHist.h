@@ -69,6 +69,7 @@ class AliUEHist : public TObject
   TH2D* GetTrackingEfficiencyCentrality();
   
   TH2D* GetFakeRate();
+  TH1D* GetFakeRate(Int_t axis);
 
   TH1D* GetTrackingContamination(Int_t axis);
   TH2D* GetTrackingContamination();

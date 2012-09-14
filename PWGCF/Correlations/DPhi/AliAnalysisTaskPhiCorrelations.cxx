@@ -439,7 +439,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     }
     
     if (!eventHeader)
-      AliFatal("First event header not found");
+    {
+      // We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
+      // (due to unreadable Kinematics) and we don't want to loose the whole job because of a few events
+      AliError("First event header not found. Skipping this event.");
+      fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+      return;
+    }
     
     skipParticlesAbove = eventHeader->NProduced();
     AliInfo(Form("Injected signals in this event (%d headers). Keeping events of %s. Will skip particles/tracks above %d.", headers, eventHeader->ClassName(), skipParticlesAbove));
@@ -528,6 +534,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
         delete allRecoTracksMatched;
       }
       TObjArray* fakeParticles = fAnalyseUE->GetFakeParticles(inputEvent, mc, kFALSE, -1, kTRUE);
+      if (fInjectedSignals)
+      {
+	fAnalyseUE->RemoveInjectedSignals((TObjArray*) fakeParticles->At(0), mc, skipParticlesAbove);
+	fAnalyseUE->RemoveInjectedSignals((TObjArray*) fakeParticles->At(1), mc, skipParticlesAbove);
+      }
       fHistos->FillTrackingEfficiency(0, 0, 0, (TObjArray*) fakeParticles->At(2), -1, centrality);
       fHistos->FillFakePt(fakeParticles, centrality);
       delete fakeParticles;
