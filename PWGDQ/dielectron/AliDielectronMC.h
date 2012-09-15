@@ -64,7 +64,7 @@ public:
   Bool_t IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Bool_t IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMother);
   Bool_t IsMCTruth(const AliDielectronPair* pair, const AliDielectronSignalMC* signalMC) const;
-  Bool_t IsMCTruth(Int_t ipart, AliDielectronSignalMC* signalMC, Int_t branch);
+  Bool_t IsMCTruth(Int_t ipart, AliDielectronSignalMC* signalMC, Int_t branch) const;
   Int_t GetMothersLabel(Int_t daughterLabel) const;
   Int_t GetPdgFromLabel(Int_t label) const;
 
@@ -120,7 +120,9 @@ private:
   
   Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t pdgExclusion, Bool_t checkBothCharges) const;
   Bool_t CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const;
-  Bool_t CheckIsRadiative(Int_t label);
+  Bool_t CheckIsRadiative(Int_t label) const;
+  Bool_t CheckRadiativeDecision(Int_t mLabel, const AliDielectronSignalMC * const signalMC) const;
+
 
   ClassDef(AliDielectronMC, 0)
 };
