@@ -25,7 +25,6 @@
 #include <TH2F.h>
 #include <TF1.h>
 #include <TProfile2D.h> 
-#include <TDirectory.h>
 #include <TStreamerInfo.h>
 #include <TFile.h>
 
@@ -41,6 +40,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliOADBContainer.h"
+#include "AliAnalysisManager.h"
 
 #include "AliAnalysisTaskEMCALTriggerQA.h"
 
@@ -51,7 +51,10 @@ AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA() :
 AliAnalysisTaskSE(), 
 fOutputList(0),            fRecoUtils(0x0),
 fGeoSet(0),                fGeometry(0),         fGeoName(""), 
-fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),           
+fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),
+fBitEGA(0),                fBitEJE(0),
+fEtaPhiEnMin(10.),
+//Histograms
 fhNEvents(0),              fhFORAmp(0),
 fhFORAmpL1G(0),            fhFORAmpL1J(0),
 fhL0Amp(0),                fhL0AmpL1G(0),        fhL0AmpL1J(0),
@@ -60,72 +63,7 @@ fhL0Patch(0),              fhL1GPatch(0),        fhL1JPatch(0),
 fhFEESTU(0),               fhTRUSTU(0),          fhV0STU(0),
 fhGPMaxVV0TT(0),           fhJPMaxVV0TT(0),
 fhFORMeanAmp(0),           fhL0MeanAmp(0),       fhL1MeanAmp(0),
-fhV0MB(0),                 fhV0L1G(0),           fhV0L1J(0),
 fhL1GPatchMax(0),          fhL1JPatchMax(0),
-
-fhClusMB(0),               fhClusMBPure(0),      fhClusL0(0),
-fhClusL1G(0),              fhClusL1J(0),
-fhClusL1GOnly(0),          fhClusL1JOnly(0),
-fhClusMaxMB(0),            fhClusMaxMBPure(0),   fhClusMaxL0(0),
-fhClusMaxL1G(0),           fhClusMaxL1J(0),
-fhClusMaxL1GOnly(0),       fhClusMaxL1JOnly(0),
-
-fhClusCenMB(0),            fhClusCenL0(0),
-fhClusCenL1G(0),           fhClusCenL1J(0),
-fhClusCenL1GOnly(0),       fhClusCenL1JOnly(0),
-fhClusCenMaxMB(0),         fhClusCenMaxL0(0),
-fhClusCenMaxL1G(0),        fhClusCenMaxL1J(0),
-fhClusCenMaxL1GOnly(0),    fhClusCenMaxL1JOnly(0),
-
-fhClusV0MB(0),             fhClusV0L0(0),
-fhClusV0L1G(0),            fhClusV0L1J(0),
-fhClusV0L1GOnly(0),        fhClusV0L1JOnly(0),
-fhClusV0MaxMB(0),          fhClusV0MaxL0(0),
-fhClusV0MaxL1G(0),         fhClusV0MaxL1J(0),
-fhClusV0MaxL1GOnly(0),     fhClusV0MaxL1JOnly(0),
-
-fhClusEtaMB(0),            fhClusEtaL0(0),
-fhClusEtaL1G(0),           fhClusEtaL1J(0),
-fhClusEtaL1GOnly(0),       fhClusEtaL1JOnly(0),
-fhClusEtaMaxMB(0),         fhClusEtaMaxL0(0),
-fhClusEtaMaxL1G(0),        fhClusEtaMaxL1J(0),
-fhClusEtaMaxL1GOnly(0),    fhClusEtaMaxL1JOnly(0),
-
-fhClusPhiMB(0),            fhClusPhiL0(0),
-fhClusPhiL1G(0),           fhClusPhiL1J(0),
-fhClusPhiL1GOnly(0),       fhClusPhiL1JOnly(0),
-fhClusPhiMaxMB(0),         fhClusPhiMaxL0(0),
-fhClusPhiMaxL1G(0),        fhClusPhiMaxL1J(0),
-fhClusPhiMaxL1GOnly(0),    fhClusPhiMaxL1JOnly(0),
-
-fhClusEtaPhiHighMB(0),            fhClusEtaPhiHighL0(0),
-fhClusEtaPhiHighL1G(0),           fhClusEtaPhiHighL1J(0),
-fhClusEtaPhiHighL1GOnly(0),       fhClusEtaPhiHighL1JOnly(0),
-fhClusEtaPhiHighCluMaxMB(0),      fhClusEtaPhiHighCluMaxL0(0),
-fhClusEtaPhiHighCluMaxL1G(0),     fhClusEtaPhiHighCluMaxL1J(0),
-fhClusEtaPhiHighCluMaxL1GOnly(0), fhClusEtaPhiHighCluMaxL1JOnly(0),
-
-fhClusEtaPhiHighCellMaxMB(0),            fhClusEtaPhiHighCellMaxL0(0),
-fhClusEtaPhiHighCellMaxL1G(0),           fhClusEtaPhiHighCellMaxL1J(0),
-fhClusEtaPhiHighCellMaxL1GOnly(0),       fhClusEtaPhiHighCellMaxL1JOnly(0),
-fhClusEtaPhiHighCellMaxCluMaxMB(0),      fhClusEtaPhiHighCellMaxCluMaxL0(0),
-fhClusEtaPhiHighCellMaxCluMaxL1G(0),     fhClusEtaPhiHighCellMaxCluMaxL1J(0),
-fhClusEtaPhiHighCellMaxCluMaxL1GOnly(0), fhClusEtaPhiHighCellMaxCluMaxL1JOnly(0),
-
-fhClusEtaPhiLowMB(0),            fhClusEtaPhiLowL0(0),
-fhClusEtaPhiLowL1G(0),           fhClusEtaPhiLowL1J(0),
-fhClusEtaPhiLowL1GOnly(0),       fhClusEtaPhiLowL1JOnly(0),
-fhClusEtaPhiLowCluMaxMB(0),      fhClusEtaPhiLowCluMaxL0(0),
-fhClusEtaPhiLowCluMaxL1G(0),     fhClusEtaPhiLowCluMaxL1J(0),
-fhClusEtaPhiLowCluMaxL1GOnly(0), fhClusEtaPhiLowCluMaxL1JOnly(0),
-
-fhClusEtaPhiLowCellMaxMB(0),            fhClusEtaPhiLowCellMaxL0(0),
-fhClusEtaPhiLowCellMaxL1G(0),           fhClusEtaPhiLowCellMaxL1J(0),
-fhClusEtaPhiLowCellMaxL1GOnly(0),       fhClusEtaPhiLowCellMaxL1JOnly(0),
-fhClusEtaPhiLowCellMaxCluMaxMB(0),      fhClusEtaPhiLowCellMaxCluMaxL0(0),
-fhClusEtaPhiLowCellMaxCluMaxL1G(0),     fhClusEtaPhiLowCellMaxCluMaxL1J(0),
-fhClusEtaPhiLowCellMaxCluMaxL1GOnly(0), fhClusEtaPhiLowCellMaxCluMaxL1JOnly(0),
-
 //Histogram settings
 fNBinsSTUSignal  (2000),   fMaxSTUSignal  (200000),
 fNBinsTRUSignal  (2000),   fMaxTRUSignal  (200000),
@@ -136,7 +74,9 @@ fNBinsClusterE   (500),    fMaxClusterE   (200)
 
 {
   // Constructor
-    
+
+  InitHistogramArrays();
+  
   DefineOutput(1, TList::Class());
   
 }		      
@@ -145,8 +85,11 @@ fNBinsClusterE   (500),    fMaxClusterE   (200)
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA(const char *name) : 
 AliAnalysisTaskSE(name), 
 fOutputList(0),            fRecoUtils(0x0),
-fGeoSet(0),                fGeometry(0),         fGeoName(""),   
-fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),           
+fGeoSet(0),                fGeometry(0),         fGeoName(""), 
+fOADBSet(kFALSE),          fAccessOADB(kTRUE),   fOADBFilePath(""),
+fBitEGA(0),                fBitEJE(0),
+fEtaPhiEnMin(10.),
+//Histograms
 fhNEvents(0),              fhFORAmp(0),
 fhFORAmpL1G(0),            fhFORAmpL1J(0),
 fhL0Amp(0),                fhL0AmpL1G(0),        fhL0AmpL1J(0),
@@ -155,72 +98,7 @@ fhL0Patch(0),              fhL1GPatch(0),        fhL1JPatch(0),
 fhFEESTU(0),               fhTRUSTU(0),          fhV0STU(0),
 fhGPMaxVV0TT(0),           fhJPMaxVV0TT(0),
 fhFORMeanAmp(0),           fhL0MeanAmp(0),       fhL1MeanAmp(0),
-fhV0MB(0),                 fhV0L1G(0),           fhV0L1J(0),
 fhL1GPatchMax(0),          fhL1JPatchMax(0),
-
-fhClusMB(0),               fhClusMBPure(0),      fhClusL0(0),
-fhClusL1G(0),              fhClusL1J(0),
-fhClusL1GOnly(0),          fhClusL1JOnly(0),
-fhClusMaxMB(0),            fhClusMaxMBPure(0),   fhClusMaxL0(0),
-fhClusMaxL1G(0),           fhClusMaxL1J(0),
-fhClusMaxL1GOnly(0),       fhClusMaxL1JOnly(0),
-
-fhClusCenMB(0),            fhClusCenL0(0),
-fhClusCenL1G(0),           fhClusCenL1J(0),
-fhClusCenL1GOnly(0),       fhClusCenL1JOnly(0),
-fhClusCenMaxMB(0),         fhClusCenMaxL0(0),
-fhClusCenMaxL1G(0),        fhClusCenMaxL1J(0),
-fhClusCenMaxL1GOnly(0),    fhClusCenMaxL1JOnly(0),
-
-fhClusV0MB(0),             fhClusV0L0(0),
-fhClusV0L1G(0),            fhClusV0L1J(0),
-fhClusV0L1GOnly(0),        fhClusV0L1JOnly(0),
-fhClusV0MaxMB(0),          fhClusV0MaxL0(0),
-fhClusV0MaxL1G(0),         fhClusV0MaxL1J(0),
-fhClusV0MaxL1GOnly(0),     fhClusV0MaxL1JOnly(0),
-
-fhClusEtaMB(0),            fhClusEtaL0(0),
-fhClusEtaL1G(0),           fhClusEtaL1J(0),
-fhClusEtaL1GOnly(0),       fhClusEtaL1JOnly(0),
-fhClusEtaMaxMB(0),         fhClusEtaMaxL0(0),
-fhClusEtaMaxL1G(0),        fhClusEtaMaxL1J(0),
-fhClusEtaMaxL1GOnly(0),    fhClusEtaMaxL1JOnly(0),
-
-fhClusPhiMB(0),            fhClusPhiL0(0),
-fhClusPhiL1G(0),           fhClusPhiL1J(0),
-fhClusPhiL1GOnly(0),       fhClusPhiL1JOnly(0),
-fhClusPhiMaxMB(0),         fhClusPhiMaxL0(0),
-fhClusPhiMaxL1G(0),        fhClusPhiMaxL1J(0),
-fhClusPhiMaxL1GOnly(0),    fhClusPhiMaxL1JOnly(0),
-
-fhClusEtaPhiHighMB(0),            fhClusEtaPhiHighL0(0),
-fhClusEtaPhiHighL1G(0),           fhClusEtaPhiHighL1J(0),
-fhClusEtaPhiHighL1GOnly(0),       fhClusEtaPhiHighL1JOnly(0),
-fhClusEtaPhiHighCluMaxMB(0),      fhClusEtaPhiHighCluMaxL0(0),
-fhClusEtaPhiHighCluMaxL1G(0),     fhClusEtaPhiHighCluMaxL1J(0),
-fhClusEtaPhiHighCluMaxL1GOnly(0), fhClusEtaPhiHighCluMaxL1JOnly(0),
-
-fhClusEtaPhiHighCellMaxMB(0),            fhClusEtaPhiHighCellMaxL0(0),
-fhClusEtaPhiHighCellMaxL1G(0),           fhClusEtaPhiHighCellMaxL1J(0),
-fhClusEtaPhiHighCellMaxL1GOnly(0),       fhClusEtaPhiHighCellMaxL1JOnly(0),
-fhClusEtaPhiHighCellMaxCluMaxMB(0),      fhClusEtaPhiHighCellMaxCluMaxL0(0),
-fhClusEtaPhiHighCellMaxCluMaxL1G(0),     fhClusEtaPhiHighCellMaxCluMaxL1J(0),
-fhClusEtaPhiHighCellMaxCluMaxL1GOnly(0), fhClusEtaPhiHighCellMaxCluMaxL1JOnly(0),
-
-fhClusEtaPhiLowMB(0),            fhClusEtaPhiLowL0(0),
-fhClusEtaPhiLowL1G(0),           fhClusEtaPhiLowL1J(0),
-fhClusEtaPhiLowL1GOnly(0),       fhClusEtaPhiLowL1JOnly(0),
-fhClusEtaPhiLowCluMaxMB(0),      fhClusEtaPhiLowCluMaxL0(0),
-fhClusEtaPhiLowCluMaxL1G(0),     fhClusEtaPhiLowCluMaxL1J(0),
-fhClusEtaPhiLowCluMaxL1GOnly(0), fhClusEtaPhiLowCluMaxL1JOnly(0),
-
-fhClusEtaPhiLowCellMaxMB(0),            fhClusEtaPhiLowCellMaxL0(0),
-fhClusEtaPhiLowCellMaxL1G(0),           fhClusEtaPhiLowCellMaxL1J(0),
-fhClusEtaPhiLowCellMaxL1GOnly(0),       fhClusEtaPhiLowCellMaxL1JOnly(0),
-fhClusEtaPhiLowCellMaxCluMaxMB(0),      fhClusEtaPhiLowCellMaxCluMaxL0(0),
-fhClusEtaPhiLowCellMaxCluMaxL1G(0),     fhClusEtaPhiLowCellMaxCluMaxL1J(0),
-fhClusEtaPhiLowCellMaxCluMaxL1GOnly(0), fhClusEtaPhiLowCellMaxCluMaxL1JOnly(0),
-
 //Histogram settings
 fNBinsSTUSignal  (2000),   fMaxSTUSignal  (200000),
 fNBinsTRUSignal  (2000),   fMaxTRUSignal  (200000),
@@ -231,11 +109,12 @@ fNBinsClusterE   (500),    fMaxClusterE   (200)
 
 {
   // Constructor
+
+  InitHistogramArrays();
     
   DefineOutput(1, TList::Class());
   
 }
-
 
 //______________________________________________
 void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
@@ -244,7 +123,7 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
   
   //Set it only once
   if(fOADBSet) return ; 
-    
+  
   if(fOADBFilePath == "") fOADBFilePath = "$ALICE_ROOT/OADB/EMCAL" ;          
   
   Int_t   runnumber = InputEvent()->GetRunNumber() ;
@@ -294,12 +173,54 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
   
 }  
 
+//_______________________________________________________________________________________________________________
+void AliAnalysisTaskEMCALTriggerQA::FillClusterHistograms(const Int_t triggerNumber, const Bool_t max,
+                                                          const Float_t e,  const Float_t eta, const Float_t phi,
+                                                          const Int_t ieta, const Int_t iphi,
+                                                          const Float_t centrality, const Float_t v0AC)
+{
+  //Fill normal cluster related histograms depending on the trigger selection
+  if(!max)
+  {
+    fhClus[triggerNumber]      ->Fill(e); 
+    fhClusCen[triggerNumber]   ->Fill(e,centrality); 
+    fhClusV0[triggerNumber]    ->Fill(e,v0AC);
+    fhClusEta[triggerNumber]   ->Fill(e,eta);
+    fhClusPhi[triggerNumber]   ->Fill(e,phi);
+    if(e > fEtaPhiEnMin) 
+    {
+      fhClusEtaPhiHigh[triggerNumber]        ->Fill( eta, phi);
+      fhClusEtaPhiHighCellMax[triggerNumber] ->Fill(ieta,iphi);
+    }
+    else {
+      fhClusEtaPhiLow[triggerNumber]         ->Fill( eta, phi);
+      fhClusEtaPhiLowCellMax[triggerNumber]  ->Fill(ieta,iphi);
+    }
+  }
+  else
+  {
+    fhClusMax[triggerNumber]      ->Fill(e); 
+    fhClusCenMax[triggerNumber]   ->Fill(e,centrality); 
+    fhClusV0Max[triggerNumber]    ->Fill(e,v0AC);
+    fhClusEtaMax[triggerNumber]   ->Fill(e,eta);
+    fhClusPhiMax[triggerNumber]   ->Fill(e,phi);
+    if(e > fEtaPhiEnMin) 
+    {
+      fhClusEtaPhiHighCluMax[triggerNumber]        ->Fill( eta, phi);
+      fhClusEtaPhiHighCellMaxCluMax[triggerNumber] ->Fill(ieta,iphi);
+    }
+    else {
+      fhClusEtaPhiLowCluMax[triggerNumber]         ->Fill( eta, phi);
+      fhClusEtaPhiLowCellMaxCluMax[triggerNumber]  ->Fill(ieta,iphi);
+    }
+  }
+}
+
 //_________________________________________
 void AliAnalysisTaskEMCALTriggerQA::Init()
 {
   //Init analysis parameters not set before
-  
-
+      
   if(!fRecoUtils) 
   {
     fRecoUtils    = new AliEMCALRecoUtils ;
@@ -315,6 +236,31 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
   // Also set once the run dependent calibrations
   
   if(fGeoSet) return;
+  
+  // Init the trigger bit once, correct depending on version
+  fBitEGA = 4; 
+  fBitEJE = 5;	
+  
+  TFile* file = AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile();
+ 
+  const TList *clist = file->GetStreamerInfoCache();
+  
+  if(clist)
+  {  
+    TStreamerInfo *cinfo = (TStreamerInfo*)clist->FindObject("AliESDCaloTrigger");
+    if(!cinfo)     cinfo = (TStreamerInfo*)clist->FindObject("AliAODCaloTrigger");
+    
+    if(cinfo) 
+    {
+      Int_t classversionid = cinfo->GetClassVersion();
+      
+      if (classversionid >= 5) 
+      {
+        fBitEGA = 6;
+        fBitEJE = 8;
+      }
+    }  else printf("AliAnalysisTaskEMCALTriggerQA - Streamer info for trigger class not available, bit not changed\n");
+  } else printf("AliAnalysisTaskEMCALTriggerQA - Streamer list not available!, bit not changed\n");
   
   Int_t runnumber = InputEvent()->GetRunNumber() ;
   
@@ -336,31 +282,55 @@ void AliAnalysisTaskEMCALTriggerQA::InitGeometry()
 
 }
 
+//_______________________________________________________
+void AliAnalysisTaskEMCALTriggerQA::InitHistogramArrays()
+{
+
+  //Histograms array initialization
+  
+  for (Int_t i = 0; i < 8; i++) 
+  {
+    fhClus[i]=0;                   fhClusMax[i]=0;                   
+    fhClusCen[i]=0;                fhClusCenMax[i]=0;        
+    fhClusV0[i]=0;                 fhClusV0Max[i]=0;         
+    fhClusEta[i]=0;                fhClusEtaMax[i]=0;     
+    fhClusPhi[i]=0;                fhClusPhiMax[i]=0;  
+    fhClusEtaPhiHigh[i]=0;         fhClusEtaPhiHighCluMax[i]=0;      
+    fhClusEtaPhiHighCellMax[i]=0;  fhClusEtaPhiHighCellMaxCluMax[i]=0;      
+    fhClusEtaPhiLow[i]=0;          fhClusEtaPhiLowCluMax[i]=0;     
+    fhClusEtaPhiLowCellMax[i]=0;   fhClusEtaPhiLowCellMaxCluMax[i]=0;
+    
+    if(i<3){ fhClusMBPure[i]=0;   fhClusMaxMBPure[i]=0;}
+  }
+  
+}
+
 
 //___________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects() 
 {
   // Init histograms and geometry 
-    
+  
   fOutputList  = new TList;
   fOutputList ->SetOwner(kTRUE);
   
-  fhNEvents    = new TH1F("hNEvents","Number of selected events",12,0,12);
+  fhNEvents    = new TH1F("hNEvents","Number of selected events",14,0,14);
   fhNEvents   ->SetYTitle("N events");
   fhNEvents   ->GetXaxis()->SetBinLabel(1 ,"All");
   fhNEvents   ->GetXaxis()->SetBinLabel(2 ,"MB");
-  fhNEvents   ->GetXaxis()->SetBinLabel(3 ,"L0");
-  fhNEvents   ->GetXaxis()->SetBinLabel(4 ,"L1-G");
-  fhNEvents   ->GetXaxis()->SetBinLabel(5 ,"L1-J");
-  fhNEvents   ->GetXaxis()->SetBinLabel(6 ,"L1-G & !L1-J");
-  fhNEvents   ->GetXaxis()->SetBinLabel(7 ,"L1-J & !L1-G");
-  fhNEvents   ->GetXaxis()->SetBinLabel(8 ,"L1-J & L1-G");  
-  fhNEvents   ->GetXaxis()->SetBinLabel(9 ,"MB & !L1 & !L0");
-  fhNEvents   ->GetXaxis()->SetBinLabel(10,"L0 & !MB");
-  fhNEvents   ->GetXaxis()->SetBinLabel(11,"L1-G & !MB");
-  fhNEvents   ->GetXaxis()->SetBinLabel(12,"L1-J & !MB");
+  fhNEvents   ->GetXaxis()->SetBinLabel(3 ,"Central Pb");
+  fhNEvents   ->GetXaxis()->SetBinLabel(4 ,"SemiCentral Pb");
+  fhNEvents   ->GetXaxis()->SetBinLabel(5 ,"L0");
+  fhNEvents   ->GetXaxis()->SetBinLabel(6 ,"L1-G");
+  fhNEvents   ->GetXaxis()->SetBinLabel(7 ,"L1-J");
+  fhNEvents   ->GetXaxis()->SetBinLabel(8 ,"L1-G & !L1-J");
+  fhNEvents   ->GetXaxis()->SetBinLabel(9 ,"L1-J & !L1-G");
+  fhNEvents   ->GetXaxis()->SetBinLabel(10 ,"L1-J & L1-G");  
+  fhNEvents   ->GetXaxis()->SetBinLabel(11 ,"MB & !L1 & !L0");
+  fhNEvents   ->GetXaxis()->SetBinLabel(12,"L0 & !MB");
+  fhNEvents   ->GetXaxis()->SetBinLabel(13,"L1-G & !MB");
+  fhNEvents   ->GetXaxis()->SetBinLabel(14,"L1-J & !MB");
 
-  
   fhFORAmp     = new TH2F("hFORAmp", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhFORAmp    ->SetXTitle("Index #eta (columnns)");
@@ -470,15 +440,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1MeanAmp->SetXTitle("Index #eta");
   fhL1MeanAmp->SetYTitle("Index #phi");
   
-  fhV0MB = new TH1F("hV0MB","V0 distribution for MB triggered event",fNBinsV0Signal,0,fMaxV0Signal);
-  fhV0MB->SetXTitle("V0");
-  
-  fhV0L1G = new TH1F("hV0L1G","V0 distribution for L1G triggered event",fNBinsV0Signal,0,fMaxV0Signal);
-  fhV0L1G->SetXTitle("V0");
-  
-  fhV0L1J = new TH1F("hV0L1J","V0 distribution for L1J triggered event",fNBinsV0Signal,0,fMaxV0Signal);
-  fhV0L1J->SetXTitle("V0");
-  
   fhL1GPatchMax   = new TH2F("hL1GPatchMax","FOR of max amplitude patch with associated L1 Gamma Patch",
                              fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatchMax  ->SetXTitle("Index #eta (columnns)");
@@ -514,588 +475,180 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhFORMeanAmp);
   fOutputList->Add(fhL0MeanAmp);
   fOutputList->Add(fhL1MeanAmp);
-  
-  fOutputList->Add(fhV0MB );
-  fOutputList->Add(fhV0L1G);
-  fOutputList->Add(fhV0L1J);
-  
+    
   fOutputList->Add(fhL1GPatchMax);
   fOutputList->Add(fhL1JPatchMax);
   
   // Cluster histograms, E
-  
-  fhClusMB     = new TH1F("hClusMB","clusters E distribution for MB trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMB    ->SetXTitle("Energy (GeV)");
-  
-  fhClusMBPure  = new TH1F("hClusMBPure","clusters E distribution for MB trigger, no other EMCAL trigger on",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMBPure ->SetXTitle("Energy (GeV)");
-  
-  fhClusL0     = new TH1F("hClusL0","clusters E distribution for L0 trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusL0    ->SetXTitle("Energy (GeV)");
-  
-  fhClusL1G    = new TH1F("hClusL1G","clusters E distribution for L1G trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusL1G   ->SetXTitle("Energy (GeV)");
-  
-  fhClusL1J    = new TH1F("hClusL1J","clusters E distribution for L1J trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusL1J   ->SetXTitle("Energy (GeV)");
-  
-  fhClusL1GOnly = new TH1F("hClusL1GOnly","clusters E distribution for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE);
-  fhClusL1GOnly->SetXTitle("Energy (GeV)");
-  
-  fhClusL1JOnly = new TH1F("hClusL1JOnly","clusters E distribution for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE);
-  fhClusL1JOnly->SetXTitle("Energy (GeV)");
-  
-  fhClusMaxMB  = new TH1F("hClusMaxMB","maximum energy cluster per event for MB trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMaxMB ->SetXTitle("Energy (GeV)");
-  
-  fhClusMaxMBPure  = new TH1F("hClusMaxMBPure","maximum energy cluster per event for MB trigger, no other EMCAL trigger on",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMaxMBPure ->SetXTitle("Energy (GeV)");
-  
-  fhClusMaxL0  = new TH1F("hClusMaxL0","maximum energy cluster per event for L0 trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMaxL0 ->SetXTitle("Energy (GeV)");
-  
-  fhClusMaxL1G = new TH1F("hClusMaxL1G","maximum energy cluster per event for L1G trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMaxL1G->SetXTitle("Energy (GeV)");
-  
-  fhClusMaxL1J = new TH1F("hClusMaxL1J","maximum energy cluster per event for L1J trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMaxL1J->SetXTitle("Energy (GeV)");
-  
-  fhClusMaxL1GOnly = new TH1F("hClusMaxL1GOnly","maximum energy cluster per event for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMaxL1GOnly->SetXTitle("Energy (GeV)");
-  
-  fhClusMaxL1JOnly = new TH1F("hClusMaxL1JOnly","maximum energy cluster per event for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMaxL1JOnly->SetXTitle("Energy (GeV)");
-  
-  
-  fOutputList->Add(fhClusMB);
-  fOutputList->Add(fhClusMBPure);
-  fOutputList->Add(fhClusL0);
-  fOutputList->Add(fhClusL1G);
-  fOutputList->Add(fhClusL1J);
-  fOutputList->Add(fhClusL1GOnly);
-  fOutputList->Add(fhClusL1JOnly);
-  
-  fOutputList->Add(fhClusMaxMB);
-  fOutputList->Add(fhClusMaxMBPure);
-  fOutputList->Add(fhClusMaxL0);
-  fOutputList->Add(fhClusMaxL1G);
-  fOutputList->Add(fhClusMaxL1J);
-  fOutputList->Add(fhClusMaxL1GOnly);
-  fOutputList->Add(fhClusMaxL1JOnly);
-  
-  // Cluster histograms, E vs Cen
+  TString hName [] = {"MB","L0","L1G","L1J","L1GOnly","L1JOnly","Central","SemiCentral"};
+  TString hTitle [] = {"MB trigger","L0 trigger","L1 Gamma trigger","L1 Jet trigger",
+    "L1 Gamma trigger and not L1 Jet","L1 Jet trigger and not L1 Gamma","Central trigger","SemiCentral trigger"};
 
-  fhClusCenMB     = new TH2F("hClusCenMB","clusters E distribution vs centrality for MB trigger",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenMB    ->SetXTitle("Energy (GeV)");
-  fhClusCenMB    ->SetYTitle("Centrality");
-  
-  fhClusCenL0     = new TH2F("hClusCenL0","clusters E distribution vs centrality for L0 trigger",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenL0    ->SetXTitle("Energy (GeV)");
-  fhClusCenL0    ->SetYTitle("Centrality");
+  for(Int_t i=0; i < 3; i++)
+  {
+    Int_t j = i+5;
+    if(i==0)j=0;
+    
+    fhClusMBPure[i]  = new TH1F(Form("hClus%sPure",hName[j].Data()),
+                                Form("clusters E distribution for %s, no other EMCAL trigger on",hTitle[j].Data()),
+                                fNBinsClusterE,0,fMaxClusterE);
+    fhClusMBPure[i] ->SetXTitle("Energy (GeV)");
+    fOutputList->Add(fhClusMBPure[i]);
 
-  fhClusCenL1G    = new TH2F("hClusCenL1G","clusters E distribution vs centrality for L1G trigger",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenL1G   ->SetXTitle("Energy (GeV)");
+    fhClusMaxMBPure[i]  = new TH1F(Form("hClusMax%sPure",hName[j].Data()),
+                                   Form("maximum energy cluster per event for %s, no other EMCAL trigger on",hTitle[j].Data()),
+                                        fNBinsClusterE,0,fMaxClusterE);
+    fhClusMaxMBPure[i] ->SetXTitle("Energy (GeV)");
+    fOutputList->Add(fhClusMaxMBPure[i]);  
+  }
   
-  fhClusCenL1J    = new TH2F("hClusCenL1J","clusters E distribution vs centrality for L1J trigger",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenL1J   ->SetXTitle("Energy (GeV)");
-  fhClusCenL1J   ->SetYTitle("Centrality");
+  for(Int_t i=0; i < 8; i++)
+  {
+    fhV0[i] = new TH1F(Form("hV0%s",hName[i].Data()),
+                         Form("V0 distribution for %s",hTitle[i].Data()),
+                         fNBinsV0Signal,0,fMaxV0Signal);
+    fhV0[i]->SetXTitle("V0");
+    fOutputList->Add(fhV0[i] );
 
-  fhClusCenL1GOnly = new TH2F("hClusCenL1GOnly","clusters E distribution vs centrality for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenL1GOnly->SetXTitle("Energy (GeV)");
-  fhClusCenL1GOnly->SetYTitle("Centrality");
-
-  fhClusCenL1JOnly = new TH2F("hClusCenL1JOnly","clusters E distribution vs centrality for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenL1JOnly->SetXTitle("Energy (GeV)");
-  fhClusCenL1JOnly->SetYTitle("Centrality");
-
-  fhClusCenMaxMB  = new TH2F("hClusCenMaxMB","maximum energy cluster per event vs centrality for MB trigger",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenMaxMB ->SetXTitle("Energy (GeV)");
-  fhClusCenMaxMB ->SetYTitle("Centrality");
-
-  fhClusCenMaxL0  = new TH2F("hClusCenMaxL0","maximum energy cluster per event vs centrality for L0 trigger",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenMaxL0 ->SetXTitle("Energy (GeV)");
-  fhClusCenMaxL0 ->SetYTitle("Centrality");
-
-  fhClusCenMaxL1G = new TH2F("hClusCenMaxL1G","maximum energy cluster per event vs centrality for L1G trigger",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenMaxL1G->SetXTitle("Energy (GeV)");
-  fhClusCenMaxL1G->SetYTitle("Centrality");
-
-  fhClusCenMaxL1J = new TH2F("hClusCenMaxL1J","maximum energy cluster per event vs centrality for L1J trigger",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenMaxL1J->SetXTitle("Energy (GeV)");
-  fhClusCenMaxL1J->SetYTitle("Centrality");
-
-  fhClusCenMaxL1GOnly = new TH2F("hClusCenMaxL1GOnly","maximum energy cluster per event vs centrality for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenMaxL1GOnly->SetXTitle("Energy (GeV)");
-  fhClusCenMaxL1GOnly->SetYTitle("Centrality");
-
-  fhClusCenMaxL1JOnly = new TH2F("hClusCenMaxL1JOnly","maximum energy cluster per event vs centrality for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
-  fhClusCenMaxL1JOnly->SetXTitle("Energy (GeV)");
-  fhClusCenMaxL1JOnly->SetYTitle("Centrality");
-
-  
-  fOutputList->Add(fhClusCenMB);
-  fOutputList->Add(fhClusCenL0);
-  fOutputList->Add(fhClusCenL1G);
-  fOutputList->Add(fhClusCenL1J);
-  fOutputList->Add(fhClusCenL1GOnly);
-  fOutputList->Add(fhClusCenL1JOnly);
-  
-  fOutputList->Add(fhClusCenMaxMB);
-  fOutputList->Add(fhClusCenMaxL0);
-  fOutputList->Add(fhClusCenMaxL1G);
-  fOutputList->Add(fhClusCenMaxL1J);
-  fOutputList->Add(fhClusCenMaxL1GOnly);
-  fOutputList->Add(fhClusCenMaxL1JOnly);
-  
-  
-  // Cluster histograms, E vs V0
-  
-  fhClusV0MB     = new TH2F("hClusV0MB","clusters E distribution vs V0 for MB trigger",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0MB    ->SetXTitle("Energy (GeV)");
-  fhClusV0MB    ->SetYTitle("V0");
-  
-  fhClusV0L0     = new TH2F("hClusV0L0","clusters E distribution vs V0 for L0 trigger",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0L0    ->SetXTitle("Energy (GeV)");
-  fhClusV0L0    ->SetYTitle("V0");
-  
-  fhClusV0L1G    = new TH2F("hClusV0L1G","clusters E distribution vs V0 for L1G trigger",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0L1G   ->SetXTitle("Energy (GeV)");
-  
-  fhClusV0L1J    = new TH2F("hClusV0L1J","clusters E distribution vs V0 for L1J trigger",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0L1J   ->SetXTitle("Energy (GeV)");
-  fhClusV0L1J   ->SetYTitle("V0");
-  
-  fhClusV0L1GOnly = new TH2F("hClusV0L1GOnly","clusters E distribution vs V0 for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0L1GOnly->SetXTitle("Energy (GeV)");
-  fhClusV0L1GOnly->SetYTitle("V0");
-  
-  fhClusV0L1JOnly = new TH2F("hClusV0L1JOnly","clusters E distribution vs V0 for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0L1JOnly->SetXTitle("Energy (GeV)");
-  fhClusV0L1JOnly->SetYTitle("V0");
-  
-  fhClusV0MaxMB  = new TH2F("hClusV0MaxMB","maximum energy cluster per event vs V0 for MB trigger",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0MaxMB ->SetXTitle("Energy (GeV)");
-  fhClusV0MaxMB ->SetYTitle("V0");
-  
-  fhClusV0MaxL0  = new TH2F("hClusV0MaxL0","maximum energy cluster per event vs V0 for L0 trigger",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0MaxL0 ->SetXTitle("Energy (GeV)");
-  fhClusV0MaxL0 ->SetYTitle("V0");
-  
-  fhClusV0MaxL1G = new TH2F("hClusV0MaxL1G","maximum energy cluster per event vs V0 for L1G trigger",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0MaxL1G->SetXTitle("Energy (GeV)");
-  fhClusV0MaxL1G->SetYTitle("V0");
-  
-  fhClusV0MaxL1J = new TH2F("hClusV0MaxL1J","maximum energy cluster per event vs V0 for L1J trigger",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0MaxL1J->SetXTitle("Energy (GeV)");
-  fhClusV0MaxL1J->SetYTitle("V0");
-  
-  fhClusV0MaxL1GOnly = new TH2F("hClusV0MaxL1GOnly","maximum energy cluster per event vs V0 for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0MaxL1GOnly->SetXTitle("Energy (GeV)");
-  fhClusV0MaxL1GOnly->SetYTitle("V0");
-  
-  fhClusV0MaxL1JOnly = new TH2F("hClusV0MaxL1JOnly","maximum energy cluster per event vs V0 for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
-  fhClusV0MaxL1JOnly->SetXTitle("Energy (GeV)");
-  fhClusV0MaxL1JOnly->SetYTitle("V0");
-  
-  
-  fOutputList->Add(fhClusV0MB);
-  fOutputList->Add(fhClusV0L0);
-  fOutputList->Add(fhClusV0L1G);
-  fOutputList->Add(fhClusV0L1J);
-  fOutputList->Add(fhClusV0L1GOnly);
-  fOutputList->Add(fhClusV0L1JOnly);
-  
-  fOutputList->Add(fhClusV0MaxMB);
-  fOutputList->Add(fhClusV0MaxL0);
-  fOutputList->Add(fhClusV0MaxL1G);
-  fOutputList->Add(fhClusV0MaxL1J);
-  fOutputList->Add(fhClusV0MaxL1GOnly);
-  fOutputList->Add(fhClusV0MaxL1JOnly);
-
-  // Cluster histograms, E vs Pseudorapidity
-  Float_t etamin =-0.8;
-  Float_t etamax = 0.8;
-  Int_t neta     = 160;
-  fhClusEtaMB     = new TH2F("hClusEtaMB","clusters distribution vs #eta for MB trigger",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaMB    ->SetXTitle("Energy (GeV)");
-  fhClusEtaMB    ->SetYTitle("#eta");
-  
-  fhClusEtaL0     = new TH2F("hClusEtaL0","clusters distribution vs #eta for L0 trigger",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaL0    ->SetXTitle("Energy (GeV)");
-  fhClusEtaL0    ->SetYTitle("#eta");
-  
-  fhClusEtaL1G    = new TH2F("hClusEtaL1G","clusters distribution vs #eta for L1G trigger",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaL1G   ->SetXTitle("Energy (GeV)");
-  
-  fhClusEtaL1J    = new TH2F("hClusEtaL1J","clusters distribution vs #eta for L1J trigger",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaL1J   ->SetXTitle("Energy (GeV)");
-  fhClusEtaL1J   ->SetYTitle("#eta");
-  
-  fhClusEtaL1GOnly = new TH2F("hClusEtaL1GOnly","clusters distribution vs #eta for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaL1GOnly->SetXTitle("Energy (GeV)");
-  fhClusEtaL1GOnly->SetYTitle("#eta");
-  
-  fhClusEtaL1JOnly = new TH2F("hClusEtaL1JOnly","clusters distribution vs #eta for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaL1JOnly->SetXTitle("Energy (GeV)");
-  fhClusEtaL1JOnly->SetYTitle("#eta");
-  
-  fhClusEtaMaxMB  = new TH2F("hClusEtaMaxMB","maximum energy cluster per event vs #eta for MB trigger",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaMaxMB ->SetXTitle("Energy (GeV)");
-  fhClusEtaMaxMB ->SetYTitle("#eta");
-  
-  fhClusEtaMaxL0  = new TH2F("hClusEtaMaxL0","maximum energy cluster per event vs #eta for L0 trigger",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaMaxL0 ->SetXTitle("Energy (GeV)");
-  fhClusEtaMaxL0 ->SetYTitle("#eta");
-  
-  fhClusEtaMaxL1G = new TH2F("hClusEtaMaxL1G","maximum energy cluster per event vs #eta for L1G trigger",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaMaxL1G->SetXTitle("Energy (GeV)");
-  fhClusEtaMaxL1G->SetYTitle("#eta");
-  
-  fhClusEtaMaxL1J = new TH2F("hClusEtaMaxL1J","maximum energy cluster per event vs #eta for L1J trigger",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaMaxL1J->SetXTitle("Energy (GeV)");
-  fhClusEtaMaxL1J->SetYTitle("#eta");
-  
-  fhClusEtaMaxL1GOnly = new TH2F("hClusEtaMaxL1GOnly","maximum energy cluster per event vs #eta for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaMaxL1GOnly->SetXTitle("Energy (GeV)");
-  fhClusEtaMaxL1GOnly->SetYTitle("#eta");
-  
-  fhClusEtaMaxL1JOnly = new TH2F("hClusEtaMaxL1JOnly","maximum energy cluster per event vs #eta for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
-  fhClusEtaMaxL1JOnly->SetXTitle("Energy (GeV)");
-  fhClusEtaMaxL1JOnly->SetYTitle("#eta");
-  
-  
-  fOutputList->Add(fhClusEtaMB);
-  fOutputList->Add(fhClusEtaL0);
-  fOutputList->Add(fhClusEtaL1G);
-  fOutputList->Add(fhClusEtaL1J);
-  fOutputList->Add(fhClusEtaL1GOnly);
-  fOutputList->Add(fhClusEtaL1JOnly);
-  
-  fOutputList->Add(fhClusEtaMaxMB);
-  fOutputList->Add(fhClusEtaMaxL0);
-  fOutputList->Add(fhClusEtaMaxL1G);
-  fOutputList->Add(fhClusEtaMaxL1J);
-  fOutputList->Add(fhClusEtaMaxL1GOnly);
-  fOutputList->Add(fhClusEtaMaxL1JOnly);
-  
- 
-  // Cluster histograms, E vs Azimuthal angle
-  Float_t phimin = 80. *TMath::DegToRad();
-  Float_t phimax = 190.*TMath::DegToRad();
-  Int_t   nphi   = 110;
-  
-  fhClusPhiMB     = new TH2F("hClusPhiMB","clusters distribution vs #phi for MB trigger",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiMB    ->SetXTitle("Energy (GeV)");
-  fhClusPhiMB    ->SetYTitle("#phi (rad)");
-  
-  fhClusPhiL0     = new TH2F("hClusPhiL0","clusters distribution vs #phi for L0 trigger",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiL0    ->SetXTitle("Energy (GeV)");
-  fhClusPhiL0    ->SetYTitle("#phi (rad)");
-  
-  fhClusPhiL1G    = new TH2F("hClusPhiL1G","clusters distribution vs #phi for L1G trigger",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiL1G   ->SetXTitle("Energy (GeV)");
-  
-  fhClusPhiL1J    = new TH2F("hClusPhiL1J","clusters distribution vs #phi for L1J trigger",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiL1J   ->SetXTitle("Energy (GeV)");
-  fhClusPhiL1J   ->SetYTitle("#phi (rad)");
-  
-  fhClusPhiL1GOnly = new TH2F("hClusPhiL1GOnly","clusters distribution vs #phi for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiL1GOnly->SetXTitle("Energy (GeV)");
-  fhClusPhiL1GOnly->SetYTitle("#phi (rad)");
-  
-  fhClusPhiL1JOnly = new TH2F("hClusPhiL1JOnly","clusters distribution vs #phi for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiL1JOnly->SetXTitle("Energy (GeV)");
-  fhClusPhiL1JOnly->SetYTitle("#phi (rad)");
-  
-  fhClusPhiMaxMB  = new TH2F("hClusPhiMaxMB","maximum energy cluster per event vs #phi for MB trigger",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiMaxMB ->SetXTitle("Energy (GeV)");
-  fhClusPhiMaxMB ->SetYTitle("#phi (rad)");
-  
-  fhClusPhiMaxL0  = new TH2F("hClusPhiMaxL0","maximum energy cluster per event vs #phi for L0 trigger",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiMaxL0 ->SetXTitle("Energy (GeV)");
-  fhClusPhiMaxL0 ->SetYTitle("#phi (rad)");
-  
-  fhClusPhiMaxL1G = new TH2F("hClusPhiMaxL1G","maximum energy cluster per event vs #phi for L1G trigger",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiMaxL1G->SetXTitle("Energy (GeV)");
-  fhClusPhiMaxL1G->SetYTitle("#phi (rad)");
-  
-  fhClusPhiMaxL1J = new TH2F("hClusPhiMaxL1J","maximum energy cluster per event vs #phi for L1J trigger",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiMaxL1J->SetXTitle("Energy (GeV)");
-  fhClusPhiMaxL1J->SetYTitle("#phi (rad)");
-  
-  fhClusPhiMaxL1GOnly = new TH2F("hClusPhiMaxL1GOnly","maximum energy cluster per event vs #phi for L1G trigger and not L1J",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiMaxL1GOnly->SetXTitle("Energy (GeV)");
-  fhClusPhiMaxL1GOnly->SetYTitle("#phi (rad)");
-  
-  fhClusPhiMaxL1JOnly = new TH2F("hClusPhiMaxL1JOnly","maximum energy cluster per event vs #phi for L1J trigger and not L1G",fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
-  fhClusPhiMaxL1JOnly->SetXTitle("Energy (GeV)");
-  fhClusPhiMaxL1JOnly->SetYTitle("#phi (rad)");
-  
-  
-  fOutputList->Add(fhClusPhiMB);
-  fOutputList->Add(fhClusPhiL0);
-  fOutputList->Add(fhClusPhiL1G);
-  fOutputList->Add(fhClusPhiL1J);
-  fOutputList->Add(fhClusPhiL1GOnly);
-  fOutputList->Add(fhClusPhiL1JOnly);
-  
-  fOutputList->Add(fhClusPhiMaxMB);
-  fOutputList->Add(fhClusPhiMaxL0);
-  fOutputList->Add(fhClusPhiMaxL1G);
-  fOutputList->Add(fhClusPhiMaxL1J);
-  fOutputList->Add(fhClusPhiMaxL1GOnly);
-  fOutputList->Add(fhClusPhiMaxL1JOnly);
-  
-  // Cluster histograms, Pseudorapidity vs Azimuthal angle
-  
-  fhClusEtaPhiHighMB     = new TH2F("hClusEtaPhiHighMB","clusters distribution #eta vs #phi for MB trigger, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighMB    ->SetXTitle("#eta");
-  fhClusEtaPhiHighMB    ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighL0     = new TH2F("hClusEtaPhiHighL0","clusters distribution #eta  vs #phi for L0 trigger, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighL0    ->SetXTitle("#eta");
-  fhClusEtaPhiHighL0    ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighL1G    = new TH2F("hClusEtaPhiHighL1G","clusters distribution #eta  vs #phi for L1G trigger, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighL1G   ->SetXTitle("#eta");
-  
-  fhClusEtaPhiHighL1J    = new TH2F("hClusEtaPhiHighL1J","clusters distribution #eta  vs #phi for L1J trigger, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighL1J   ->SetXTitle("#eta");
-  fhClusEtaPhiHighL1J   ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighL1GOnly = new TH2F("hClusEtaPhiHighL1GOnly","clusters distribution #eta  vs #phi for L1G trigger and not L1J, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighL1GOnly->SetXTitle("#eta");
-  fhClusEtaPhiHighL1GOnly->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighL1JOnly = new TH2F("hClusEtaPhiHighL1JOnly","clusters distribution #eta  vs #phi for L1J trigger and not L1G, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighL1JOnly->SetXTitle("#eta");
-  fhClusEtaPhiHighL1JOnly->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighCluMaxMB  = new TH2F("hClusEtaPhiHighCluMaxMB","maximum energy cluster per event #eta  vs #phi for MB trigger, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighCluMaxMB ->SetXTitle("#eta");
-  fhClusEtaPhiHighCluMaxMB ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighCluMaxL0  = new TH2F("hClusEtaPhiHighCluMaxL0","maximum energy cluster per event #eta  vs #phi for L0 trigger, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighCluMaxL0 ->SetXTitle("#eta");
-  fhClusEtaPhiHighCluMaxL0 ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighCluMaxL1G = new TH2F("hClusEtaPhiHighCluMaxL1G","maximum energy cluster per event #eta  vs #phi for L1G trigger, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighCluMaxL1G->SetXTitle("#eta");
-  fhClusEtaPhiHighCluMaxL1G->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighCluMaxL1J = new TH2F("hClusEtaPhiHighCluMaxL1J","maximum energy cluster per event #eta  vs #phi for L1J trigger, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighCluMaxL1J->SetXTitle("#eta");
-  fhClusEtaPhiHighCluMaxL1J->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighCluMaxL1GOnly = new TH2F("hClusEtaPhiHighCluMaxL1GOnly","maximum energy cluster per event #eta  vs #phi for L1G trigger and not L1J, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighCluMaxL1GOnly->SetXTitle("#eta");
-  fhClusEtaPhiHighCluMaxL1GOnly->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiHighCluMaxL1JOnly = new TH2F("hClusEtaPhiHighCluMaxL1JOnly","maximum energy cluster per event #eta  vs #phi for L1J trigger and not L1G, E > 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiHighCluMaxL1JOnly->SetXTitle("#eta");
-  fhClusEtaPhiHighCluMaxL1JOnly->SetYTitle("#phi (rad)");
-  
-  
-  fOutputList->Add(fhClusEtaPhiHighMB);
-  fOutputList->Add(fhClusEtaPhiHighL0);
-  fOutputList->Add(fhClusEtaPhiHighL1G);
-  fOutputList->Add(fhClusEtaPhiHighL1J);
-  fOutputList->Add(fhClusEtaPhiHighL1GOnly);
-  fOutputList->Add(fhClusEtaPhiHighL1JOnly);
-  
-  fOutputList->Add(fhClusEtaPhiHighCluMaxMB);
-  fOutputList->Add(fhClusEtaPhiHighCluMaxL0);
-  fOutputList->Add(fhClusEtaPhiHighCluMaxL1G);
-  fOutputList->Add(fhClusEtaPhiHighCluMaxL1J);
-  fOutputList->Add(fhClusEtaPhiHighCluMaxL1GOnly);
-  fOutputList->Add(fhClusEtaPhiHighCluMaxL1JOnly);
-  
-  fhClusEtaPhiLowMB     = new TH2F("hClusEtaPhiLowMB","clusters distribution #eta vs #phi for MB trigger, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowMB    ->SetXTitle("#eta");
-  fhClusEtaPhiLowMB    ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowL0     = new TH2F("hClusEtaPhiLowL0","clusters distribution #eta  vs #phi for L0 trigger, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowL0    ->SetXTitle("#eta");
-  fhClusEtaPhiLowL0    ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowL1G    = new TH2F("hClusEtaPhiLowL1G","clusters distribution #eta  vs #phi for L1G trigger, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowL1G   ->SetXTitle("#eta");
-  
-  fhClusEtaPhiLowL1J    = new TH2F("hClusEtaPhiLowL1J","clusters distribution #eta  vs #phi for L1J trigger, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowL1J   ->SetXTitle("#eta");
-  fhClusEtaPhiLowL1J   ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowL1GOnly = new TH2F("hClusEtaPhiLowL1GOnly","clusters distribution #eta  vs #phi for L1G trigger and not L1J, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowL1GOnly->SetXTitle("#eta");
-  fhClusEtaPhiLowL1GOnly->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowL1JOnly = new TH2F("hClusEtaPhiLowL1JOnly","clusters distribution #eta  vs #phi for L1J trigger and not L1G, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowL1JOnly->SetXTitle("#eta");
-  fhClusEtaPhiLowL1JOnly->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCluMaxMB  = new TH2F("hClusEtaPhiLowCluMaxMB","maximum energy cluster per event #eta  vs #phi for MB trigger, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowCluMaxMB ->SetXTitle("#eta");
-  fhClusEtaPhiLowCluMaxMB ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCluMaxL0  = new TH2F("hClusEtaPhiLowCluMaxL0","maximum energy cluster per event #eta  vs #phi for L0 trigger, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowCluMaxL0 ->SetXTitle("#eta");
-  fhClusEtaPhiLowCluMaxL0 ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCluMaxL1G = new TH2F("hClusEtaPhiLowCluMaxL1G","maximum energy cluster per event #eta  vs #phi for L1G trigger, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowCluMaxL1G->SetXTitle("#eta");
-  fhClusEtaPhiLowCluMaxL1G->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCluMaxL1J = new TH2F("hClusEtaPhiLowCluMaxL1J","maximum energy cluster per event #eta  vs #phi for L1J trigger, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowCluMaxL1J->SetXTitle("#eta");
-  fhClusEtaPhiLowCluMaxL1J->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCluMaxL1GOnly = new TH2F("hClusEtaPhiLowCluMaxL1GOnly","maximum energy cluster per event #eta  vs #phi for L1G trigger and not L1J, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowCluMaxL1GOnly->SetXTitle("#eta");
-  fhClusEtaPhiLowCluMaxL1GOnly->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCluMaxL1JOnly = new TH2F("hClusEtaPhiLowCluMaxL1JOnly","maximum energy cluster per event #eta  vs #phi for L1J trigger and not L1G, E < 10 GeV",neta, etamin, etamax,nphi, phimin, phimax);
-  fhClusEtaPhiLowCluMaxL1JOnly->SetXTitle("#eta");
-  fhClusEtaPhiLowCluMaxL1JOnly->SetYTitle("#phi (rad)");
-  
-  
-  fOutputList->Add(fhClusEtaPhiLowMB);
-  fOutputList->Add(fhClusEtaPhiLowL0);
-  fOutputList->Add(fhClusEtaPhiLowL1G);
-  fOutputList->Add(fhClusEtaPhiLowL1J);
-  fOutputList->Add(fhClusEtaPhiLowL1GOnly);
-  fOutputList->Add(fhClusEtaPhiLowL1JOnly);
-  
-  fOutputList->Add(fhClusEtaPhiLowCluMaxMB);
-  fOutputList->Add(fhClusEtaPhiLowCluMaxL0);
-  fOutputList->Add(fhClusEtaPhiLowCluMaxL1G);
-  fOutputList->Add(fhClusEtaPhiLowCluMaxL1J);
-  fOutputList->Add(fhClusEtaPhiLowCluMaxL1GOnly);
-  fOutputList->Add(fhClusEtaPhiLowCluMaxL1JOnly);
-  
-  
-  fhClusEtaPhiHighCellMaxMB     = new TH2F("hClusEtaPhiHighCellMaxMB","Cluster hit map in calorimeter (max cell), column vs row for MB trigger, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxMB    ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxMB    ->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxL0     = new TH2F("hClusEtaPhiHighCellMaxL0","Cluster hit map in calorimeter (max cell), column vs row for L0 trigger, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxL0    ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxL0    ->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxL1G    = new TH2F("hClusEtaPhiHighCellMaxL1G","Cluster hit map in calorimeter (max cell), column vs row for L1G trigger, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxL1G   ->SetXTitle("Index #eta (columnns)");
-  
-  fhClusEtaPhiHighCellMaxL1J    = new TH2F("hClusEtaPhiHighCellMaxL1J","Cluster hit map in calorimeter (max cell), column vs row for L1J trigger, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxL1J   ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxL1J   ->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxL1GOnly = new TH2F("hClusEtaPhiHighCellMaxL1GOnly","Cluster hit map in calorimeter (max cell), column vs row for L1G trigger and not L1J, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxL1GOnly->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxL1GOnly->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxL1JOnly = new TH2F("hClusEtaPhiHighCellMaxL1JOnly","Cluster hit map in calorimeter (max cell), column vs row for L1J trigger and not L1G, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxL1JOnly->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxL1JOnly->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxCluMaxMB  = new TH2F("hClusEtaPhiHighCellMaxCluMaxMB","Max E cluster hit map in calorimeter (max cell), column vs row  for MB trigger, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxCluMaxMB ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxCluMaxMB ->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxCluMaxL0  = new TH2F("hClusEtaPhiHighCellMaxCluMaxL0","Max E cluster hit map in calorimeter (max cell), column vs row  for L0 trigger, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxCluMaxL0 ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxCluMaxL0 ->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxCluMaxL1G = new TH2F("hClusEtaPhiHighCellMaxCluMaxL1G","Max E cluster hit map in calorimeter (max cell), column vs row  for L1G trigger, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxCluMaxL1G->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxCluMaxL1G->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxCluMaxL1J = new TH2F("hClusEtaPhiHighCellMaxCluMaxL1J","Max E cluster hit map in calorimeter (max cell), column vs row  for L1J trigger, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxCluMaxL1J->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxCluMaxL1J->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxCluMaxL1GOnly = new TH2F("hClusEtaPhiHighCellMaxCluMaxL1GOnly","Max E cluster hit map in calorimeter (max cell), column vs row  for L1G trigger and not L1J, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxCluMaxL1GOnly->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxCluMaxL1GOnly->SetYTitle("Index #phi (rows)");
-  
-  fhClusEtaPhiHighCellMaxCluMaxL1JOnly = new TH2F("hClusEtaPhiHighCellMaxCluMaxL1JOnly","Max E cluster hit map in calorimeter (max cell), column vs row  for L1J trigger and not L1G, E > 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiHighCellMaxCluMaxL1JOnly->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiHighCellMaxCluMaxL1JOnly->SetYTitle("Index #phi (rows)");
-  
-  
-  fOutputList->Add(fhClusEtaPhiHighCellMaxMB);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxL0);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxL1G);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxL1J);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxL1GOnly);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxL1JOnly);
-  
-  fOutputList->Add(fhClusEtaPhiHighCellMaxCluMaxMB);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxCluMaxL0);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxCluMaxL1G);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxCluMaxL1J);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxCluMaxL1GOnly);
-  fOutputList->Add(fhClusEtaPhiHighCellMaxCluMaxL1JOnly);
-  
-  fhClusEtaPhiLowCellMaxMB     = new TH2F("hClusEtaPhiLowCellMaxMB","Cluster hit map in calorimeter (max cell), column vs row for MB trigger, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxMB    ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxMB    ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxL0     = new TH2F("hClusEtaPhiLowCellMaxL0","Cluster hit map in calorimeter (max cell), column vs row for L0 trigger, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxL0    ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxL0    ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxL1G    = new TH2F("hClusEtaPhiLowCellMaxL1G","Cluster hit map in calorimeter (max cell), column vs row for L1G trigger, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxL1G   ->SetXTitle("Index #eta (columnns)");
-  
-  fhClusEtaPhiLowCellMaxL1J    = new TH2F("hClusEtaPhiLowCellMaxL1J","Cluster hit map in calorimeter (max cell), column vs row for L1J trigger, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxL1J   ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxL1J   ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxL1GOnly = new TH2F("hClusEtaPhiLowCellMaxL1GOnly","Cluster hit map in calorimeter (max cell), column vs row for L1G trigger and not L1J, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxL1GOnly->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxL1GOnly->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxL1JOnly = new TH2F("hClusEtaPhiLowCellMaxL1JOnly","Cluster hit map in calorimeter (max cell), column vs row for L1J trigger and not L1G, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxL1JOnly->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxL1JOnly->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxCluMaxMB  = new TH2F("hClusEtaPhiLowCellMaxCluMaxMB","Max E cluster hit map in calorimeter (max cell), column vs row  for MB trigger, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxCluMaxMB ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxCluMaxMB ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxCluMaxL0  = new TH2F("hClusEtaPhiLowCellMaxCluMaxL0","Max E cluster hit map in calorimeter (max cell), column vs row  for L0 trigger, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxCluMaxL0 ->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxCluMaxL0 ->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxCluMaxL1G = new TH2F("hClusEtaPhiLowCellMaxCluMaxL1G","Max E cluster hit map in calorimeter (max cell), column vs row  for L1G trigger, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxCluMaxL1G->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxCluMaxL1G->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxCluMaxL1J = new TH2F("hClusEtaPhiLowCellMaxCluMaxL1J","Max E cluster hit map in calorimeter (max cell), column vs row  for L1J trigger, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxCluMaxL1J->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxCluMaxL1J->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxCluMaxL1GOnly = new TH2F("hClusEtaPhiLowCellMaxCluMaxL1GOnly","Max E cluster hit map in calorimeter (max cell), column vs row  for L1G trigger and not L1J, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxCluMaxL1GOnly->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxCluMaxL1GOnly->SetYTitle("#phi (rad)");
-  
-  fhClusEtaPhiLowCellMaxCluMaxL1JOnly = new TH2F("hClusEtaPhiLowCellMaxCluMaxL1JOnly","Max E cluster hit map in calorimeter (max cell), column vs row  for L1J trigger and not L1G, E < 10 GeV",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhClusEtaPhiLowCellMaxCluMaxL1JOnly->SetXTitle("Index #eta (columnns)");
-  fhClusEtaPhiLowCellMaxCluMaxL1JOnly->SetYTitle("#phi (rad)");
-  
-  
-  fOutputList->Add(fhClusEtaPhiLowCellMaxMB);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxL0);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxL1G);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxL1J);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxL1GOnly);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxL1JOnly);
-  
-  fOutputList->Add(fhClusEtaPhiLowCellMaxCluMaxMB);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxCluMaxL0);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxCluMaxL1G);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxCluMaxL1J);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxCluMaxL1GOnly);
-  fOutputList->Add(fhClusEtaPhiLowCellMaxCluMaxL1JOnly);  
+    fhClus[i]    = new TH1F(Form("hClus%s",hName[i].Data()),
+                            Form("clusters E distribution for %s",hTitle[i].Data()),
+                            fNBinsClusterE,0,fMaxClusterE);
+    fhClus[i]   ->SetXTitle("Energy (GeV)");
+    fOutputList->Add(fhClus[i]);
+    
+    fhClusMax[i] = new TH1F(Form("hClusMax%s",hName[i].Data()),
+                            Form("maximum energy cluster per event for %s",hTitle[i].Data()),
+                            fNBinsClusterE,0,fMaxClusterE);
+    fhClusMax[i]->SetXTitle("Energy (GeV)");
+    fOutputList->Add(fhClusMax[i]);
+    
+    // Cluster histograms, E vs Cen
+    
+    fhClusCen[i]    = new TH2F(Form("hClusCen%s",hName[i].Data()),
+                               Form("clusters E distribution vs centrality for %s",hTitle[i].Data()),
+                               fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
+    fhClusCen[i]   ->SetXTitle("Energy (GeV)");
+    fhClusCen[i]   ->SetYTitle("Centrality");
+    fOutputList->Add(fhClusCen[i]);  
+    
+    fhClusCenMax[i] = new TH2F(Form("hClusCenMax%s",hName[i].Data()),
+                               Form("maximum energy cluster per event vs centrality for %s",hTitle[i].Data()),
+                               fNBinsClusterE,0,fMaxClusterE,100, 0, 100);
+    fhClusCenMax[i]->SetXTitle("Energy (GeV)");
+    fhClusCenMax[i]->SetYTitle("Centrality");
+    fOutputList->Add(fhClusCenMax[i]);
+    
+    // Cluster histograms, E vs V0
+    
+    fhClusV0[i]    = new TH2F(Form("hClusV0%s",hName[i].Data()),
+                              Form("clusters E distribution vs V0 for %s",hTitle[i].Data()),
+                              fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
+    fhClusV0[i]   ->SetXTitle("Energy (GeV)");
+    fhClusV0[i]   ->SetYTitle("V0");  
+    fOutputList->Add(fhClusV0[i]);
+    
+    fhClusV0Max[i] = new TH2F(Form("hClusV0Max%s",hName[i].Data()),
+                              Form("maximum energy cluster per event vs V0 for %s",hTitle[i].Data()),
+                              fNBinsClusterE,0,fMaxClusterE,fNBinsV0Signal,0,fMaxV0Signal);
+    fhClusV0Max[i]->SetXTitle("Energy (GeV)");
+    fhClusV0Max[i]->SetYTitle("V0");
+    fOutputList->Add(fhClusV0Max[i]);
+    
+    // Cluster histograms, E vs Pseudorapidity
+    Float_t etamin =-0.8;
+    Float_t etamax = 0.8;
+    Int_t neta     = 160;
+    fhClusEta[i]    = new TH2F(Form("hClusEta%s",hName[i].Data()),
+                               Form("clusters distribution vs #eta for %s",hTitle[i].Data()),
+                               fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
+    fhClusEta[i]   ->SetXTitle("Energy (GeV)");
+    fhClusEta[i]   ->SetYTitle("#eta");
+    fOutputList->Add(fhClusEta[i]);  
+    
+    fhClusEtaMax[i] = new TH2F(Form("hClusEtaMax%s",hName[i].Data()),
+                               Form("maximum energy cluster per event vs #eta for %s",hTitle[i].Data()),
+                               fNBinsClusterE,0,fMaxClusterE,neta, etamin, etamax);
+    fhClusEtaMax[i]->SetXTitle("Energy (GeV)");
+    fhClusEtaMax[i]->SetYTitle("#eta");
+    fOutputList->Add(fhClusEtaMax[i]);
+    
+    // Cluster histograms, E vs Azimuthal angle
+    Float_t phimin = 80. *TMath::DegToRad();
+    Float_t phimax = 190.*TMath::DegToRad();
+    Int_t   nphi   = 110;
+    
+    fhClusPhi[i]    = new TH2F(Form("hClusPhi%s",hName[i].Data()),
+                               Form("clusters distribution vs #phi for %s",hTitle[i].Data()),
+                               fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
+    fhClusPhi[i]   ->SetXTitle("Energy (GeV)");
+    fhClusPhi[i]   ->SetYTitle("#phi (rad)");
+    fOutputList->Add(fhClusPhi[i]);  
+    
+    fhClusPhiMax[i] = new TH2F(Form("hClusPhiMax%s",hName[i].Data()),
+                               Form("maximum energy cluster per event vs #phi for %s",hTitle[i].Data()),
+                               fNBinsClusterE,0,fMaxClusterE,nphi, phimin, phimax);
+    fhClusPhiMax[i]->SetXTitle("Energy (GeV)");
+    fhClusPhiMax[i]->SetYTitle("#phi (rad)");  
+    fOutputList->Add(fhClusPhiMax[i]);
+    
+    // Cluster histograms, Pseudorapidity vs Azimuthal angle
+    
+    fhClusEtaPhiHigh[i]    = new TH2F(Form("hClusEtaPhiHigh%s",hName[i].Data()),
+                                      Form("clusters distribution #eta vs #phi for %s, E > 10 GeV",hTitle[i].Data()),
+                                      neta, etamin, etamax,nphi, phimin, phimax);
+    fhClusEtaPhiHigh[i]   ->SetXTitle("#eta");
+    fhClusEtaPhiHigh[i]   ->SetYTitle("#phi (rad)");
+    fOutputList->Add(fhClusEtaPhiHigh[i]);  
+    
+    fhClusEtaPhiHighCluMax[i] = new TH2F(Form("hClusEtaPhiHighCluMax%s",hName[i].Data()),
+                                         Form("maximum energy cluster per event #eta  vs #phi for %s, E > 10 GeV",hTitle[i].Data()),
+                                         neta, etamin, etamax,nphi, phimin, phimax);
+    fhClusEtaPhiHighCluMax[i]->SetXTitle("#eta");
+    fhClusEtaPhiHighCluMax[i]->SetYTitle("#phi (rad)");
+    fOutputList->Add(fhClusEtaPhiHighCluMax[i]);
+    
+    fhClusEtaPhiLow[i]    = new TH2F(Form("hClusEtaPhiLow%s",hName[i].Data()),
+                                     Form("clusters distribution #eta vs #phi for %s, E < 10 GeV",hTitle[i].Data()),
+                                     neta, etamin, etamax,nphi, phimin, phimax);
+    fhClusEtaPhiLow[i]   ->SetXTitle("#eta");
+    fhClusEtaPhiLow[i]   ->SetYTitle("#phi (rad)");
+    fOutputList->Add(fhClusEtaPhiLow[i]);
+    
+    fhClusEtaPhiLowCluMax[i] = new TH2F(Form("hClusEtaPhiLowCluMax%s",hName[i].Data()),
+                                        Form("maximum energy cluster per event #eta  vs #phi for %s, E < 10 GeV",hTitle[i].Data()),
+                                        neta, etamin, etamax,nphi, phimin, phimax);
+    fhClusEtaPhiLowCluMax[i]->SetXTitle("#eta");
+    fhClusEtaPhiLowCluMax[i]->SetYTitle("#phi (rad)");
+    fOutputList->Add(fhClusEtaPhiLowCluMax[i]);
+    
+    fhClusEtaPhiHighCellMax[i]    = new TH2F(Form("hClusEtaPhiHighCellMax%s",hName[i].Data()),
+                                             Form("Cluster hit map in calorimeter (max cell), column vs row for %s, E > 10 GeV",hTitle[i].Data()),
+                                             fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+    fhClusEtaPhiHighCellMax[i]   ->SetXTitle("Index #eta (columnns)");
+    fhClusEtaPhiHighCellMax[i]   ->SetYTitle("Index #phi (rows)");
+    fOutputList->Add(fhClusEtaPhiHighCellMax[i]);
+    
+    fhClusEtaPhiHighCellMaxCluMax[i] = new TH2F(Form("hClusEtaPhiHighCellMaxCluMax%s",hName[i].Data()),
+                                                Form("Max E cluster hit map in calorimeter (max cell), column vs row  for %s, E > 10 GeV",
+                                                     hTitle[i].Data()),fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+    fhClusEtaPhiHighCellMaxCluMax[i]->SetXTitle("Index #eta (columnns)");
+    fhClusEtaPhiHighCellMaxCluMax[i]->SetYTitle("Index #phi (rows)");
+    fOutputList->Add(fhClusEtaPhiHighCellMaxCluMax[i]);
+    
+    fhClusEtaPhiLowCellMax[i]    = new TH2F(Form("hClusEtaPhiLowCellMax%s",hName[i].Data()),
+                                            Form("Cluster hit map in calorimeter (max cell), column vs row for %s, E < 10 GeV",hTitle[i].Data()),
+                                            fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+    fhClusEtaPhiLowCellMax[i]   ->SetXTitle("Index #eta (columnns)");
+    fhClusEtaPhiLowCellMax[i]   ->SetYTitle("#phi (rad)");
+    fOutputList->Add(fhClusEtaPhiLowCellMax[i]);
+    
+    fhClusEtaPhiLowCellMaxCluMax[i] = new TH2F(Form("hClusEtaPhiLowCellMaxCluMax%s",hName[i].Data()),
+                                               Form("Max E cluster hit map in calorimeter (max cell), column vs row  for %s, E < 10 GeV",
+                                                    hTitle[i].Data()),fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+    fhClusEtaPhiLowCellMaxCluMax[i]->SetXTitle("Index #eta (columnns)");
+    fhClusEtaPhiLowCellMaxCluMax[i]->SetYTitle("#phi (rad)"); 
+    fOutputList->Add(fhClusEtaPhiLowCellMaxCluMax[i]);
+  }
   
   PostData(1, fOutputList);  
   
@@ -1104,7 +657,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
 void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *) 
 {
   // Main loop
-  
+
   AliVEvent* event = InputEvent();
   
   //Remove next lines when AODs ready
@@ -1133,52 +686,67 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   Bool_t bL0  = kFALSE;
   Bool_t bL1G = kFALSE;
   Bool_t bL1J = kFALSE;
+  Bool_t bCen = kFALSE;
+  Bool_t bSem = kFALSE;
   
-  if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
-     triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
-     triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
-     triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD") ||
-     triggerclasses.Contains("CPBI2_B1-B-NOPF-ALLNOTRD") )   bMB  = kTRUE;
+  //Min bias event trigger?
+  if((triggerclasses.Contains("CINT") || triggerclasses.Contains("CPBI2_B1") ) && 
+     (triggerclasses.Contains("-B-")  || triggerclasses.Contains("-I-"))       &&
+      triggerclasses.Contains("-NOPF-ALLNOTRD") )   bMB  = kTRUE;
   
-  if(triggerclasses.Contains("CEMC7-B") || 
-     triggerclasses.Contains("CEMC1-B")    )   bL0  = kTRUE;
+  // EMC triggered event? Which type?
+  if( triggerclasses.Contains("-B-") || triggerclasses.Contains("-S-") || triggerclasses.Contains("-I-") )
+  {
+    if( triggerclasses.Contains("CEMC") && 
+       !triggerclasses.Contains("EGA" ) && 
+       !triggerclasses.Contains("EJE" )    ) bL0  = kTRUE;
+    
+    if( triggerclasses.Contains("EGA" )    ) bL1G = kTRUE;
+    
+    if( triggerclasses.Contains("EJE" )    ) bL1J = kTRUE;
+  }
   
-  if(triggerclasses.Contains("CEMC7EGA-B") ||
-     triggerclasses.Contains("CPBI2EGA-B")                 )   bL1G = kTRUE;
+  // Semi/Central PbPb trigger
+  if     (triggerclasses.Contains("CCENT_R2-B-NOPF-ALLNOTRD")) bCen = kTRUE;
+  else if(triggerclasses.Contains("CSEMI_R1-B-NOPF-ALLNOTRD")) bSem = kTRUE;
   
-  if(triggerclasses.Contains("CEMC7EJE-B") ||
-     triggerclasses.Contains("CPBI2EJE-B")                 )   bL1J = kTRUE;
   
+   //printf("MB : %d; L0 : %d; L1-Gam : %d; L1-Jet : %d; Central : %d; SemiCentral : %d; Trigger Names : %s \n ",
+   //       bMB,bL0,bL1G,bL1J,bCen,bSem,triggerclasses.Data());    
+     
   // Fill event histo
   fhNEvents->Fill(0.5); // All physics events
   
   if( bMB ) 
   { 
     fhNEvents->Fill(1.5);
-    if( !bL1G && !bL1J && !bL0 ) fhNEvents->Fill(8.5);
+    if( !bL1G && !bL1J && !bL0 ) fhNEvents->Fill(10.5);
   }
   else 
   {
-    if( bL0  ) fhNEvents->Fill( 9.5);
-    if( bL1G ) fhNEvents->Fill(10.5);
-    if( bL1J ) fhNEvents->Fill(11.5);
+    if( bL0  ) fhNEvents->Fill(11.5);
+    if( bL1G ) fhNEvents->Fill(12.5);
+    if( bL1J ) fhNEvents->Fill(13.5);
   }
 
-  if( bL0  )  fhNEvents->Fill(2.5);
+  if( bCen)   fhNEvents->Fill(2.5);
+  if( bSem)   fhNEvents->Fill(3.5);
+  
+  if( bL0  )  fhNEvents->Fill(4.5);
   
   if( bL1G ) 
   {
-    fhNEvents->Fill(3.5);
-    if(!bL1J)  fhNEvents->Fill(5.5);
+    fhNEvents->Fill(5.5);
+    if(!bL1J)  fhNEvents->Fill(7.5);
   }
   
   if( bL1J ) 
   {
-    fhNEvents->Fill(4.5);
-    if(!bL1G)  fhNEvents->Fill(6.5);
+    fhNEvents->Fill(6.5);
+    if(!bL1G)  fhNEvents->Fill(8.5);
   }
   
-  if(bL1J && bL1G) fhNEvents->Fill(7.5);
+  if(bL1J && bL1G) fhNEvents->Fill(9.5);
 
     
   //std::cout << "trigger = " << triggerclasses << std::endl;
@@ -1258,17 +826,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   AliESDCaloTrigger& trg= * (esdEvent->GetCaloTrigger("EMCAL"));
   
-  int kBitEGA = 4, kBitEJE = 5;	
-
-  const TList *clist = gDirectory->GetFile()->GetStreamerInfoCache();
-  TStreamerInfo *cinfo = (TStreamerInfo*)clist->FindObject("AliESDCaloTrigger");
-  Int_t classversionid = cinfo->GetClassVersion();
-
-  if (classversionid >= 5) {
-	  kBitEGA = 6;
-	  kBitEJE = 8;
-  }
-	
   Int_t    nL0Patch = 0 ;
   Int_t    nL1Patch = 0 ;
   Double_t totSTU   = 0.;
@@ -1317,7 +874,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       totSTU += ts;
       
       //L1-Gamma
-      if (bit >> kBitEGA & 0x1) 
+      if (bit >> fBitEGA & 0x1) 
       {
         nL1Patch ++;
         emcalPatchL1G[posY][posX] += 1.;
@@ -1329,7 +886,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       }
       
       //L1-Jet
-      if (bit >> kBitEJE & 0x1) 
+      if (bit >> fBitEJE & 0x1) 
       {
         nL1Patch ++;
         emcalPatchL1J[posY][posX] += 1.;
@@ -1371,9 +928,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     if( v0A+v0C > fMaxV0Signal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large v0A+v0C %f\n",v0A+v0C);
   }
   
-  if( bL1G ) fhV0L1G->Fill(v0A+v0C);                              ;
-  if( bL1J ) fhV0L1J->Fill(v0A+v0C);
-  if( bMB  ) fhV0MB ->Fill(v0A+v0C);
+  if( bL1G ) fhV0[kL1GammaTrig]    ->Fill(v0A+v0C);                              
+  if( bL1J ) fhV0[kL1JetTrig]      ->Fill(v0A+v0C);
+  if( bMB  ) fhV0[kMBTrig]         ->Fill(v0A+v0C);
+  if( bL0  ) fhV0[kL0Trig]         ->Fill(v0A+v0C);
+  if( bCen ) fhV0[kCentralTrig]    ->Fill(v0A+v0C);
+  if( bSem ) fhV0[kSemiCentralTrig]->Fill(v0A+v0C);
+  if(bL1G && !bL1J)  fhV0[kL1GammaOnlyTrig]->Fill(v0A+v0C);
+  if(bL1J && !bL1G)  fhV0[kL1JetOnlyTrig]  ->Fill(v0A+v0C);
   
   //if(nL0Patch!=0 || nL1Patch!=0) printf("total TRU %f, total STU %f, V0C+V0A %f; nL0 %d, nL1 %d \n",
   //       totTRU,totSTU,v0A+v0C,nL0Patch,nL1Patch);
@@ -1527,9 +1089,6 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   Float_t eta    = 0;
   Float_t phi    = 0;
 
-  //Energy threshold to fill Eta vs Phi histograms
-  Float_t etaphiEnMin = 10.;
-  
   TLorentzVector mom;
   
   //Get vertex for momentum calculation
@@ -1580,224 +1139,45 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       ietamax = ieta;
       iphimax = iphi;
     }
+        
+    // Fill cluster histograms depending on the event trigger selection
+    if(bMB ) FillClusterHistograms(kMBTrig         ,kFALSE,e,eta,phi,ieta,iphi,centrality,v0A+v0C);
+    if(bCen) FillClusterHistograms(kCentralTrig    ,kFALSE,e,eta,phi,ieta,iphi,centrality,v0A+v0C);
+    if(bSem) FillClusterHistograms(kSemiCentralTrig,kFALSE,e,eta,phi,ieta,iphi,centrality,v0A+v0C);
     
-    if( bMB  ) 
-    { 
-      fhClusMB      ->Fill(e); 
-      fhClusCenMB   ->Fill(e,centrality); 
-      fhClusV0MB    ->Fill(e,v0A+v0C);
-      fhClusEtaMB   ->Fill(e,eta);
-      fhClusPhiMB   ->Fill(e,phi);
-      if(e > etaphiEnMin) 
-      {
-        fhClusEtaPhiHighMB        ->Fill( eta, phi);
-        fhClusEtaPhiHighCellMaxMB ->Fill(ieta,iphi);
-      }
-      else {
-        fhClusEtaPhiLowMB         ->Fill( eta, phi);
-        fhClusEtaPhiLowCellMaxMB  ->Fill(ieta,iphi);
-      }
-    }
-    
-    if( bL0  )    { 
-      fhClusL0      ->Fill(e); 
-      fhClusCenL0   ->Fill(e,centrality); 
-      fhClusV0L0    ->Fill(e,v0A+v0C);
-      fhClusEtaL0   ->Fill(e,eta);
-      fhClusPhiL0   ->Fill(e,phi);
-      if(e > etaphiEnMin) 
-      {
-        fhClusEtaPhiHighL0        ->Fill( eta, phi);
-        fhClusEtaPhiHighCellMaxL0 ->Fill(ieta,iphi);
-      }
-      else {
-        fhClusEtaPhiLowL0         ->Fill( eta, phi);
-        fhClusEtaPhiLowCellMaxL0  ->Fill(ieta,iphi);
-      }
-    }
-    
-    if( bL1G )    { 
-      fhClusL1G      ->Fill(e); 
-      fhClusCenL1G   ->Fill(e,centrality); 
-      fhClusV0L1G    ->Fill(e,v0A+v0C);
-      fhClusEtaL1G   ->Fill(e,eta);
-      fhClusPhiL1G   ->Fill(e,phi);
-      if(e > etaphiEnMin) 
-      {
-        fhClusEtaPhiHighL1G        ->Fill( eta, phi);
-        fhClusEtaPhiHighCellMaxL1G ->Fill(ieta,iphi);
-      }
-      else {
-        fhClusEtaPhiLowL1G         ->Fill( eta, phi);
-        fhClusEtaPhiLowCellMaxL1G  ->Fill(ieta,iphi);
-      }
-    }
-    
-    if( bL1J )    { 
-      fhClusL1J      ->Fill(e); 
-      fhClusCenL1J   ->Fill(e,centrality); 
-      fhClusV0L1J    ->Fill(e,v0A+v0C);
-      fhClusEtaL1J   ->Fill(e,eta);
-      fhClusPhiL1J   ->Fill(e,phi);
-      if(e > etaphiEnMin) 
-      {
-        fhClusEtaPhiHighL1J        ->Fill( eta, phi);
-        fhClusEtaPhiHighCellMaxL1J ->Fill(ieta,iphi);
-      }
-      else {
-        fhClusEtaPhiLowL1J         ->Fill( eta, phi);
-        fhClusEtaPhiLowCellMaxL1J  ->Fill(ieta,iphi);
-      }
-    }   
-    
-    if( bL1G && !bL1J )    
-    { 
-      fhClusL1GOnly      ->Fill(e); 
-      fhClusCenL1GOnly   ->Fill(e,centrality); 
-      fhClusV0L1GOnly    ->Fill(e,v0A+v0C);
-      fhClusEtaL1GOnly   ->Fill(e,eta);
-      fhClusPhiL1GOnly   ->Fill(e,phi);
-      if(e > etaphiEnMin) 
-      {
-        fhClusEtaPhiHighL1GOnly        ->Fill( eta, phi);
-        fhClusEtaPhiHighCellMaxL1GOnly ->Fill(ieta,iphi);
-      }
-      else {
-        fhClusEtaPhiLowL1GOnly         ->Fill( eta, phi);
-        fhClusEtaPhiLowCellMaxL1GOnly  ->Fill(ieta,iphi);
-      }
-    }    
-    
-    if( bL1J && !bL1G ) 
-    { 
-      fhClusL1JOnly      ->Fill(e); 
-      fhClusCenL1JOnly   ->Fill(e,centrality); 
-      fhClusV0L1JOnly    ->Fill(e,v0A+v0C);
-      fhClusEtaL1JOnly   ->Fill(e,eta);
-      fhClusPhiL1JOnly   ->Fill(e,phi);
-      if(e > etaphiEnMin) 
-      {
-        fhClusEtaPhiHighL1JOnly        ->Fill( eta, phi);
-        fhClusEtaPhiHighCellMaxL1JOnly ->Fill(ieta,iphi);
-      }
-      else {
-        fhClusEtaPhiLowL1JOnly         ->Fill( eta, phi);
-        fhClusEtaPhiLowCellMaxL1JOnly  ->Fill(ieta,iphi);
-      }
-    } 
-    
-    if( bMB && !bL1G && !bL1J && !bL0  ) fhClusMBPure  ->Fill(e);
+    if(bL0 ) FillClusterHistograms(kL0Trig         ,kFALSE,e,eta,phi,ieta,iphi,centrality,v0A+v0C);
+    if(bL1G) FillClusterHistograms(kL1GammaTrig    ,kFALSE,e,eta,phi,ieta,iphi,centrality,v0A+v0C);
+    if(bL1J) FillClusterHistograms(kL1JetTrig      ,kFALSE,e,eta,phi,ieta,iphi,centrality,v0A+v0C);
+
+    if(bL1G && !bL1J) 
+      FillClusterHistograms       (kL1GammaOnlyTrig,kFALSE,e,eta,phi,ieta,iphi,centrality,v0A+v0C);
+    if(bL1J && !bL1G) 
+      FillClusterHistograms       (kL1JetOnlyTrig  ,kFALSE,e,eta,phi,ieta,iphi,centrality,v0A+v0C);
+
+    if( bMB  && !bL1G && !bL1J && !bL0  ) fhClusMBPure[0]  ->Fill(e);
+    if( bCen && !bL1G && !bL1J && !bL0  ) fhClusMBPure[1]  ->Fill(e);
+    if( bSem && !bL1G && !bL1J && !bL0  ) fhClusMBPure[2]  ->Fill(e);
 
   }
-  
+ 
   // Maximum energy cluster per event histograms
-
-  if( bMB  ) 
-  { 
-    fhClusMaxMB      ->Fill(emax); 
-    fhClusCenMaxMB   ->Fill(emax,centrality); 
-    fhClusV0MaxMB    ->Fill(emax,v0A+v0C);
-    fhClusEtaMaxMB   ->Fill(emax,etamax);
-    fhClusPhiMaxMB   ->Fill(emax,phimax);
-    if(emax > etaphiEnMin) 
-    {
-      fhClusEtaPhiHighCluMaxMB        ->Fill( etamax, phimax);
-      fhClusEtaPhiHighCellMaxCluMaxMB ->Fill(ietamax,iphimax);
-    }
-    else {
-      fhClusEtaPhiLowCluMaxMB         ->Fill( etamax, phimax);
-      fhClusEtaPhiLowCellMaxCluMaxMB  ->Fill(ietamax,iphimax);
-    }
-  }
   
-  if( bL0  )    { 
-    fhClusMaxL0      ->Fill(emax); 
-    fhClusCenMaxL0   ->Fill(emax,centrality); 
-    fhClusV0MaxL0    ->Fill(emax,v0A+v0C);
-    fhClusEtaMaxL0   ->Fill(emax,etamax);
-    fhClusPhiMaxL0   ->Fill(emax,phimax);
-    if(emax > etaphiEnMin) 
-    {
-      fhClusEtaPhiHighCluMaxL0        ->Fill( etamax, phimax);
-      fhClusEtaPhiHighCellMaxCluMaxL0 ->Fill(ietamax,iphimax);
-    }
-    else {
-      fhClusEtaPhiLowCluMaxL0         ->Fill( etamax, phimax);
-      fhClusEtaPhiLowCellMaxCluMaxL0  ->Fill(ietamax,iphimax);
-    }
-  }
+  if(bMB ) FillClusterHistograms(kMBTrig         ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
+  if(bCen) FillClusterHistograms(kCentralTrig    ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
+  if(bSem) FillClusterHistograms(kSemiCentralTrig,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
   
-  if( bL1G )    { 
-    fhClusMaxL1G      ->Fill(emax); 
-    fhClusCenMaxL1G   ->Fill(emax,centrality); 
-    fhClusV0MaxL1G    ->Fill(emax,v0A+v0C);
-    fhClusEtaMaxL1G   ->Fill(emax,etamax);
-    fhClusPhiMaxL1G   ->Fill(emax,phimax);
-    if(emax > etaphiEnMin) 
-    {
-      fhClusEtaPhiHighCluMaxL1G        ->Fill( etamax, phimax);
-      fhClusEtaPhiHighCellMaxCluMaxL1G ->Fill(ietamax,iphimax);
-    }
-    else {
-      fhClusEtaPhiLowCluMaxL1G         ->Fill( etamax, phimax);
-      fhClusEtaPhiLowCellMaxCluMaxL1G  ->Fill(ietamax,iphimax);
-    }
-  }
+  if(bL0 ) FillClusterHistograms(kL0Trig         ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
+  if(bL1G) FillClusterHistograms(kL1GammaTrig    ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
+  if(bL1J) FillClusterHistograms(kL1JetTrig      ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
   
-  if( bL1J )    { 
-    fhClusMaxL1J      ->Fill(emax); 
-    fhClusCenMaxL1J   ->Fill(emax,centrality); 
-    fhClusV0MaxL1J    ->Fill(emax,v0A+v0C);
-    fhClusEtaMaxL1J   ->Fill(emax,etamax);
-    fhClusPhiMaxL1J   ->Fill(emax,phimax);
-    if(emax > etaphiEnMin) 
-    {
-      fhClusEtaPhiHighCluMaxL1J        ->Fill( etamax, phimax);
-      fhClusEtaPhiHighCellMaxCluMaxL1J ->Fill(ietamax,iphimax);
-    }
-    else {
-      fhClusEtaPhiLowCluMaxL1J         ->Fill( etamax, phimax);
-      fhClusEtaPhiLowCellMaxCluMaxL1J  ->Fill(ietamax,iphimax);
-    }
-  }   
+  if(bL1G && !bL1J) 
+    FillClusterHistograms       (kL1GammaOnlyTrig,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
+  if(bL1J && !bL1G) 
+    FillClusterHistograms       (kL1JetOnlyTrig  ,kTRUE,emax,etamax,phimax,ietamax,iphimax,centrality,v0A+v0C);
   
-  if( bL1G && !bL1J )    
-  { 
-    fhClusMaxL1GOnly      ->Fill(emax); 
-    fhClusCenMaxL1GOnly   ->Fill(emax,centrality);
-    fhClusV0MaxL1GOnly    ->Fill(emax,v0A+v0C);
-    fhClusEtaMaxL1GOnly   ->Fill(emax,etamax);
-    fhClusPhiMaxL1GOnly   ->Fill(emax,phimax);
-    if(emax > etaphiEnMin) 
-    {
-      fhClusEtaPhiHighCluMaxL1GOnly        ->Fill( etamax, phimax);
-      fhClusEtaPhiHighCellMaxCluMaxL1GOnly ->Fill(ietamax,iphimax);
-    }
-    else {
-      fhClusEtaPhiLowCluMaxL1GOnly         ->Fill( etamax, phimax);
-      fhClusEtaPhiLowCellMaxCluMaxL1GOnly  ->Fill(ietamax,iphimax);
-    }
-  }    
-  
-  if( bL1J && !bL1G ) 
-  { 
-    fhClusMaxL1JOnly      ->Fill(emax); 
-    fhClusCenMaxL1JOnly   ->Fill(emax,centrality); 
-    fhClusV0MaxL1JOnly    ->Fill(emax,v0A+v0C);
-    fhClusEtaMaxL1JOnly   ->Fill(emax,etamax);
-    fhClusPhiMaxL1JOnly   ->Fill(emax,phimax);
-    if(emax > etaphiEnMin) 
-    {
-      fhClusEtaPhiHighCluMaxL1JOnly        ->Fill( etamax, phimax);
-      fhClusEtaPhiHighCellMaxCluMaxL1JOnly ->Fill(ietamax,iphimax);
-    }
-    else {
-      fhClusEtaPhiLowCluMaxL1JOnly         ->Fill( etamax, phimax);
-      fhClusEtaPhiLowCellMaxCluMaxL1JOnly  ->Fill(ietamax,iphimax);
-    }
-  } 
-    
-  if( bMB && !bL1G && !bL1J && !bL0 ) fhClusMaxMBPure  ->Fill(emax);
+  if( bMB  && !bL1G && !bL1J && !bL0  ) fhClusMaxMBPure[0]  ->Fill(emax);
+  if( bCen && !bL1G && !bL1J && !bL0  ) fhClusMaxMBPure[1]  ->Fill(emax);
+  if( bSem && !bL1G && !bL1J && !bL0  ) fhClusMaxMBPure[2]  ->Fill(emax);
   
   PostData(1, fOutputList);  
   
