@@ -944,13 +944,14 @@ Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::
 }
 
 //________________________________________________________________________________
-Bool_t AliDielectronMC::CheckIsRadiative(Int_t label)
+Bool_t AliDielectronMC::CheckIsRadiative(Int_t label) const
 {
   //
   // Check if the particle has a three body decay, one being a photon
   //
   if(label<0) return kFALSE;
-  
+
+
   if(fAnaType==kAOD) {
     if(!fMcArray) return kFALSE;
     AliAODMCParticle *mother=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label));
@@ -972,7 +973,25 @@ Bool_t AliDielectronMC::CheckIsRadiative(Int_t label)
 }
 
 //________________________________________________________________________________
-Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, Int_t branch) {
+Bool_t AliDielectronMC::CheckRadiativeDecision(Int_t mLabel, const AliDielectronSignalMC * const signalMC) const
+{
+  //
+  // Check for the decision of the radiative type request
+  //
+  
+  if (!signalMC) return kFALSE;
+  
+  if (signalMC->GetJpsiRadiative()==AliDielectronSignalMC::kAll) return kTRUE;
+  
+  Bool_t isRadiative=CheckIsRadiative(mLabel);
+  if ((signalMC->GetJpsiRadiative()==AliDielectronSignalMC::kIsRadiative) && !isRadiative) return kFALSE;
+  if ((signalMC->GetJpsiRadiative()==AliDielectronSignalMC::kIsNotRadiative) && isRadiative) return kFALSE;
+  
+  return kTRUE;
+}
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, Int_t branch) const {
   //
   // Check if the particle corresponds to the MC truth in signalMC in the branch specified
   //
@@ -1006,11 +1025,7 @@ Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, 
     if(!CheckParticleSource(mLabel, signalMC->GetMotherSource(branch))) return kFALSE;
 
     //check for radiative deday
-    if (signalMC->GetJpsiRadiative()!=AliDielectronSignalMC::kAll){
-      Bool_t isRadiative=CheckIsRadiative(mLabel);
-      if ((signalMC->GetJpsiRadiative()==AliDielectronSignalMC::kIsRadiative) && !isRadiative) return kFALSE;
-      if ((signalMC->GetJpsiRadiative()==AliDielectronSignalMC::kIsNotRadiative) && isRadiative) return kFALSE;
-    }
+    if (!CheckRadiativeDecision(mLabel, signalMC)) return kFALSE;
   }
   
   // check the grandmother
@@ -1072,9 +1087,10 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   if(signalMC->GetMotherPDG(1)!=0 || signalMC->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
     labelM1 = GetMothersLabel(labelD1);
     if(labelD1>-1 && labelM1>-1) mcM1 = GetMCTrackFromMCEvent(labelM1);
-    directTerm = directTerm && (mcM1 || signalMC->GetMotherPDGexclude(1)) 
+    directTerm = directTerm && (mcM1 || signalMC->GetMotherPDGexclude(1))
                  && ComparePDG((mcM1 ? mcM1->PdgCode() : 0),signalMC->GetMotherPDG(1),signalMC->GetMotherPDGexclude(1),signalMC->GetCheckBothChargesMothers(1))
-                 && CheckParticleSource(labelM1, signalMC->GetMotherSource(1));
+                 && CheckParticleSource(labelM1, signalMC->GetMotherSource(1))
+                 && CheckRadiativeDecision(labelM1,signalMC);
   }
   
   Int_t labelM2 = -1;
@@ -1083,7 +1099,8 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
     if(labelD2>-1 && labelM2>-1) mcM2 = GetMCTrackFromMCEvent(labelM2);
     directTerm = directTerm && (mcM2 || signalMC->GetMotherPDGexclude(2))
                  && ComparePDG((mcM2 ? mcM2->PdgCode() : 0),signalMC->GetMotherPDG(2),signalMC->GetMotherPDGexclude(2),signalMC->GetCheckBothChargesMothers(2))
-                 && CheckParticleSource(labelM2, signalMC->GetMotherSource(2));
+                 && CheckParticleSource(labelM2, signalMC->GetMotherSource(2))
+                 && CheckRadiativeDecision(labelM2,signalMC);
   }
  
   // grand-mothers
@@ -1124,7 +1141,8 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
     }
     crossTerm = crossTerm && (mcM2 || signalMC->GetMotherPDGexclude(1)) 
                 && ComparePDG((mcM2 ? mcM2->PdgCode() : 0),signalMC->GetMotherPDG(1),signalMC->GetMotherPDGexclude(1),signalMC->GetCheckBothChargesMothers(1))
-                && CheckParticleSource(labelM2, signalMC->GetMotherSource(1));
+                && CheckParticleSource(labelM2, signalMC->GetMotherSource(1))
+                && CheckRadiativeDecision(labelM2,signalMC);
   }
   
   if(signalMC->GetMotherPDG(2)!=0 || signalMC->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
@@ -1134,7 +1152,8 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
     }
     crossTerm = crossTerm && (mcM1 || signalMC->GetMotherPDGexclude(2)) 
                 && ComparePDG((mcM1 ? mcM1->PdgCode() : 0),signalMC->GetMotherPDG(2),signalMC->GetMotherPDGexclude(2),signalMC->GetCheckBothChargesMothers(2))
-                && CheckParticleSource(labelM1, signalMC->GetMotherSource(2));
+                && CheckParticleSource(labelM1, signalMC->GetMotherSource(2))
+                && CheckRadiativeDecision(labelM1,signalMC);
   }
 
   // grand-mothers
