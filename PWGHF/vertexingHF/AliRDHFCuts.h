@@ -29,7 +29,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening};
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
   
   virtual ~AliRDHFCuts();
@@ -138,6 +138,7 @@ class AliRDHFCuts : public AliAnalysisCuts
     // see enum below
     fOptPileup=opt;
   }
+  void SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef=0.,Int_t switchTRand=0);
   void ConfigurePileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
     fMinContrPileup=minContrib;
     fMinDzPileup=minDz;
@@ -181,9 +182,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t GetMaxCentrality() const {return fMaxCentrality;}
   Double_t GetMinPtCandidate() const {return fMinPtCand;}
   Double_t GetMaxPtCandidate() const {return fMaxPtCand;}
+  TH1F *GetHistoForCentralityFlattening(){return fHistCentrDistr;}
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
+  Bool_t IsEventSelectedForCentrFlattening(Float_t centvalue);
   Bool_t IsEventSelected(AliVEvent *event);
   Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd) const;
   Bool_t IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts) const;
@@ -317,8 +320,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fCutOnzVertexSPD; // cut on zSPD vertex to remove outliers in centrality vs. tracklets (0=no cut, 1= cut at 12 cm, 2= cut on difference to z of vtx tracks
   Bool_t fKinkReject; // flag to reject kink daughters
   Bool_t fUseTrackSelectionWithFilterBits; // flag to enable/disable the check on filter bits
+  TH1F *fHistCentrDistr;   // histogram with reference centrality distribution for centrality distribution flattening
 
-  ClassDef(AliRDHFCuts,27);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,28);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
