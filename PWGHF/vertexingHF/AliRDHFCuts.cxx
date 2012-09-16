@@ -43,6 +43,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
+#include "TRandom.h"
 
 using std::cout;
 using std::endl;
@@ -97,7 +98,8 @@ fApplySPDDeadPbPb2011(kFALSE),
 fRemoveTrackletOutliers(kFALSE),
 fCutOnzVertexSPD(0),
 fKinkReject(kFALSE),
-fUseTrackSelectionWithFilterBits(kTRUE)
+  fUseTrackSelectionWithFilterBits(kTRUE),
+  fHistCentrDistr(0x0)
 {
   //
   // Default Constructor
@@ -153,7 +155,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fRemoveTrackletOutliers(source.fRemoveTrackletOutliers),
   fCutOnzVertexSPD(source.fCutOnzVertexSPD),
   fKinkReject(source.fKinkReject),
-  fUseTrackSelectionWithFilterBits(source.fUseTrackSelectionWithFilterBits)
+  fUseTrackSelectionWithFilterBits(source.fUseTrackSelectionWithFilterBits),
+  fHistCentrDistr(0x0)
 {
   //
   // Copy constructor
@@ -167,6 +170,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   if(source.fCutsRD) SetCuts(source.fGlobalIndex,source.fCutsRD);
   if(source.fVarsForOpt) SetVarsForOpt(source.fnVarsForOpt,source.fVarsForOpt);
   if(source.fPidHF) SetPidHF(source.fPidHF);
+  if(source.fHistCentrDistr) fHistCentrDistr=(TH1F*)(source.fHistCentrDistr->Clone());
   PrintAll();
 
 }
@@ -223,6 +227,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fCutOnzVertexSPD=source.fCutOnzVertexSPD;
   fKinkReject=source.fKinkReject;
   fUseTrackSelectionWithFilterBits=source.fUseTrackSelectionWithFilterBits;
+  if(fHistCentrDistr) delete fHistCentrDistr;
+  if(source.fHistCentrDistr)fHistCentrDistr=(TH1F*)(source.fHistCentrDistr->Clone());
 
   if(source.GetTrackCuts()) {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*(source.GetTrackCuts()));}
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -250,6 +256,7 @@ AliRDHFCuts::~AliRDHFCuts() {
     delete fPidHF;
     fPidHF=0;
   }
+  if(fHistCentrDistr)delete fHistCentrDistr;
 }
 //---------------------------------------------------------------------------
 Int_t AliRDHFCuts::IsEventSelectedInCentrality(AliVEvent *event) {
@@ -266,10 +273,101 @@ Int_t AliRDHFCuts::IsEventSelectedInCentrality(AliVEvent *event) {
     }else{      
       if (centvalue<fMinCentrality || centvalue>fMaxCentrality){
 	return 2;      
-      }    
+      }
+      // selection to flatten the centrality distribution
+      if(fHistCentrDistr){
+	if(!IsEventSelectedForCentrFlattening(centvalue))return 4;     
+      }
     } 
   }  
   return 0;
+}
+
+
+//-------------------------------------------------
+void AliRDHFCuts::SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef,Int_t switchTRand){
+  // set the histo for centrality flattening 
+  // the centrality is flatten in the range minCentr,maxCentr
+  // if centrRef is zero, the minimum in h within (minCentr,maxCentr) defines the reference 
+  //                positive, the value of h(centrRef) defines the reference (-> the centrality distribution might be not flat in the whole desired range)
+  //                negative, h(bin with max in range)*centrRef is used to define the reference (-> defines the maximum loss of events, also in this case the distribution might be not flat) 
+  // switchTRand is used to set the unerflow bin of the histo: if it is < -1 in the analysis the random event selection will be done on using TRandom 
+  
+  if(maxCentr<minCentr){
+    AliWarning("AliRDHFCuts::Wrong centralities values while setting the histogram for centrality flattening");
+  }
+  
+  if(fHistCentrDistr)delete fHistCentrDistr;
+  fHistCentrDistr=(TH1F*)h->Clone("hCentralityFlat");
+  fHistCentrDistr->SetTitle("Reference histo for centrality flattening");
+  Int_t minbin=fHistCentrDistr->FindBin(minCentr*1.00001); // fast if fix bin width
+  Int_t maxbin=fHistCentrDistr->FindBin(maxCentr*0.9999);
+  fHistCentrDistr->GetXaxis()->SetRange(minbin,maxbin);
+  Double_t ref=0.,bincont=0.,binrefwidth=1.;
+  Int_t binref=0;
+  if(TMath::Abs(centrRef)<0.0001){
+    binref=fHistCentrDistr->GetMinimumBin();
+    binrefwidth=fHistCentrDistr->GetBinWidth(binref);
+    ref=fHistCentrDistr->GetBinContent(binref)/binrefwidth;   
+  }
+  else if(centrRef>0.){
+    binref=h->FindBin(centrRef);
+    if(binref<1||binref>h->GetNbinsX()){
+      AliWarning("AliRDHFCuts::Wrong centrality reference value while setting the histogram for centrality flattening");
+    }
+    binrefwidth=fHistCentrDistr->GetBinWidth(binref);
+    ref=fHistCentrDistr->GetBinContent(binref)/binrefwidth;
+  }
+  else{
+    if(centrRef<-1) AliWarning("AliRDHFCuts: with this centrality reference no flattening will be applied");
+    binref=fHistCentrDistr->GetMaximumBin();
+    binrefwidth=fHistCentrDistr->GetBinWidth(binref);
+    ref=fHistCentrDistr->GetMaximum()*TMath::Abs(centrRef)/binrefwidth;   
+  }
+  
+  for(Int_t j=1;j<=h->GetNbinsX();j++){// Now set the "probabilities"
+    if(h->GetBinLowEdge(j)*1.0001>=minCentr&&h->GetBinLowEdge(j+1)*0.9999<=maxCentr){
+      bincont=h->GetBinContent(j);
+      fHistCentrDistr->SetBinContent(j,ref/bincont*h->GetBinWidth(j));
+      fHistCentrDistr->SetBinError(j,h->GetBinError(j)*ref/bincont);
+    }
+    else{
+      h->SetBinContent(j,1.1);// prob > 1 to assure that events will not be rejected
+    }
+  }
+
+  fHistCentrDistr->SetBinContent(0,switchTRand);
+  return;
+
+}
+
+//-------------------------------------------------
+Bool_t AliRDHFCuts::IsEventSelectedForCentrFlattening(Float_t centvalue){
+  //
+  //  Random event selection, based on fHistCentrDistr, to flatten the centrality distribution
+  //  Can be faster if it was required that fHistCentrDistr covers
+  //  exactly the desired centrality range (e.g. part of the lines below should be done during the 
+  // setting of the histo) and TH1::SetMinimum called 
+  //
+
+  if(!fHistCentrDistr) return kTRUE;
+  // Int_t maxbin=fHistCentrDistr->FindBin(fMaxCentrality*0.9999);
+  //   if(maxbin>fHistCentrDistr->GetNbinsX()){
+  //     AliWarning("AliRDHFCuts: The maximum centrality exceeds the x-axis limit of the histogram for centrality flattening");
+  //   }
+  
+  Int_t bin=fHistCentrDistr->FindBin(centvalue); // Fast if the histo has a fix bin
+  Double_t bincont=fHistCentrDistr->GetBinContent(bin);
+  Double_t centDigits=centvalue-(Int_t)(centvalue*100.)/100.;// this is to extract a random number between 0 and 0.01
+  
+  if(fHistCentrDistr->GetBinContent(0)<-0.9999){
+    if(gRandom->Uniform(1.)<bincont)return kTRUE;
+    return kFALSE;
+  }
+
+  if(centDigits*100.<bincont)return kTRUE;
+  return kFALSE;   
+
 }
 //---------------------------------------------------------------------------
 Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
@@ -439,9 +537,11 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     Int_t rejection=IsEventSelectedInCentrality(event);    
     if(rejection>1){      
       if(accept) fWhyRejection=rejection;      
-      fEvRejectionBits+=1<<kOutsideCentrality;
+      if(fWhyRejection==4)fEvRejectionBits+=1<<kCentralityFlattening;
+      else fEvRejectionBits+=1<<kOutsideCentrality;
       accept=kFALSE;
     }
+   
   }
 
   // PbPb2011 outliers in tracklets vs. VZERO
