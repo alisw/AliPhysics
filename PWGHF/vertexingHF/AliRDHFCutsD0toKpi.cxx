@@ -250,6 +250,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   }
   //PrintAll();
   AliAODRecoDecayHF2Prong* d=(AliAODRecoDecayHF2Prong*)obj;
+  if(!d->HasSelectionBit(AliRDHFCutsD0toKpi::kD0toKpiCuts))return 0;
 
   if(!d){
     cout<<"AliAODRecoDecayHF2Prong null"<<endl;
