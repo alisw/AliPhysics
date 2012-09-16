@@ -1,7 +1,7 @@
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ymin  = -1.2 ;
 const Double_t ymax  =  1.2 ;
-const Double_t cosmin = -0.7;
+const Double_t cosmin = -1.05;
 const Double_t cosmax =  1.05;
 const Double_t cTmin = 0;  // micron
 const Double_t cTmax = 500;  // micron
@@ -25,6 +25,7 @@ const Float_t centmin_10_60 = 10.;
 const Float_t centmax_10_60 = 60.;
 const Float_t centmin_60_100 = 60.;
 const Float_t centmax_60_100 = 100.;
+const Float_t centmin = 0.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
 const Float_t fakemax = 2.5.;
@@ -34,7 +35,7 @@ const Double_t dispVtxmin = 0;
 const Double_t dispVtxmax = 600;
 const Double_t sumd02min = 0.;
 const Double_t sumd02max = 50000.;
-const Float_t cosminXY = 0.95;
+const Float_t cosminXY = -1.0;
 const Float_t cosmaxXY = 1.0;
 const Float_t normDecLXYmin = 0;
 const Float_t normDecLXYmax = 20;
@@ -49,7 +50,7 @@ const Float_t multmax_50_102 = 102;
 //----------------------------------------------------
 
 //AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
-AliCFContainer *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -89,7 +90,7 @@ AliCFContainer *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4Lctop
 	  return 0x0;
 	}
 
-	AliRDHFCutsLctopKpi *cutsLctopKpi = (AliRDHFCutsLctopKpi*)fileCuts->Get("LctopKpiProdCuts");
+	AliRDHFCutsLctopKpi *cutsLctopKpi = (AliRDHFCutsLctopKpi*)fileCuts->Get("LctopKpiAnalysisCuts");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
@@ -492,7 +493,7 @@ AliCFContainer *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4Lctop
 		container -> SetVarTitle(imultFast, "multiplicity");
 	}
 
-	return container;
+	//return container;
 
 	container -> SetStepTitle(0, "MCLimAcc");
 	container -> SetStepTitle(1, "MC");
@@ -586,6 +587,7 @@ AliCFContainer *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4Lctop
 	task->SetFakeSelection(0);
 	task->SetRejectCandidateIfNotFromQuark(kTRUE); // put to false if you want to keep HIJING D0!!
 	task->SetUseMCVertex(kFALSE); // put to true if you want to do studies on pp
+        task->SetResonantDecay(decayLc);
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
 
