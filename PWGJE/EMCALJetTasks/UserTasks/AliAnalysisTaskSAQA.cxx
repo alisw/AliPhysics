@@ -48,7 +48,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistDeltaPhiPt(0),
   fHistNCellsEnergy(0),
   fHistClusTimeEnergy(0),
-  fHistCellsEnergy(0),
+  fHistCellsAbsIdEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
   fHistChVSneCorrCells(0)
@@ -90,7 +90,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistDeltaPhiPt(0),
   fHistNCellsEnergy(0),
   fHistClusTimeEnergy(0),
-  fHistCellsEnergy(0),
+  fHistCellsAbsIdEnergy(0),
   fHistChVSneCells(0),
   fHistChVSneClus(0),
   fHistChVSneCorrCells(0)
@@ -232,10 +232,11 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
     fHistNCellsEnergy->GetYaxis()->SetTitle("N_{cells}");
     fOutput->Add(fHistNCellsEnergy); 
      
-    fHistCellsEnergy = new TH1F("fHistCellsEnergy","Energy spectrum of cells", fNbins, fMinBinPt, fMaxBinPt);
-    fHistCellsEnergy->GetXaxis()->SetTitle("Energy (GeV)");
-    fHistCellsEnergy->GetYaxis()->SetTitle("counts");
-    fOutput->Add(fHistCellsEnergy);
+    fHistCellsAbsIdEnergy = new TH2F("fHistCellsAbsIdEnergy","fHistCellsAbsIdEnergy", 11600,0,11599,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
+    fHistCellsAbsIdEnergy->GetXaxis()->SetTitle("cell abs. Id");
+    fHistCellsAbsIdEnergy->GetYaxis()->SetTitle("Energy (GeV)");
+    fHistCellsAbsIdEnergy->GetZaxis()->SetTitle("counts");    
+    fOutput->Add(fHistCellsAbsIdEnergy);
     
     fHistChVSneCells = new TH2F("fHistChVSneCells","Charged energy vs. neutral (cells) energy", 
 				(Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
@@ -363,8 +364,9 @@ Int_t AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
   const Int_t ncells = cells->GetNumberOfCells();
 
   for (Int_t pos = 0; pos < ncells; pos++) {
-    Float_t amp = cells->GetAmplitude(pos);
-    fHistCellsEnergy->Fill(amp);
+    Float_t amp   = cells->GetAmplitude(pos);
+    Int_t   absId = cells->GetCellNumber(pos);
+    fHistCellsAbsIdEnergy->Fill(absId,amp);
     sum += amp;
     if (amp < fCellEnergyCut)
       continue;

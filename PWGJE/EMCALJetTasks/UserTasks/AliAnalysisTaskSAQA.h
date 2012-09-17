@@ -62,7 +62,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistJetsPtArea[4];        //!Pt vs. area of jets
 
   // EMCAL Cells
-  TH1F                       *fHistCellsEnergy;          //!Energy spectrum of cells
+  TH2F                       *fHistCellsAbsIdEnergy;    //!Energy spectrum of cells
 
   // Had corr QA
   TH2F                       *fHistChVSneCells;          //!Charged vs. neutral (cells) energy
