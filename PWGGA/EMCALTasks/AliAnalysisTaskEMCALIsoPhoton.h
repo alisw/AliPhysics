@@ -5,6 +5,7 @@
 
 class TH1F;
 class TH2F;
+class TH3F;
 class THnSparse;
 class TList;
 class TObjArray;
@@ -76,7 +77,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fEvtSel;                  //!evt selection counter: 0=all trg, 1=pv cut 
   TH1F        *fNClusEt10;               //!number of clusters w/ Et>10 in the event
   TH1F        *fPVtxZ;                   //!primary vertex Z before cut
-  TH1F        *fDirPhotonPtMC;           //!direct produced photon pt
+  TH3F        *fMCDirPhotonPtEtaPhi;     //!direct produced photon pt
   TH1F        *fDecayPhotonPtMC;         //!decay photon pt
   TH2F        *fCellAbsIdVsAmpl;         //!cell abs id vs cell amplitude (energy)
   TH2F        *fNClusHighClusE;          //!total number of clusters vs. highest clus energy in the event

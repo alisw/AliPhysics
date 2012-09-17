@@ -7,6 +7,7 @@
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <THnSparse.h>
 #include <TLorentzVector.h>
 #include <TList.h>
@@ -58,7 +59,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fEvtSel(0),
   fNClusEt10(0),
   fPVtxZ(0),  
-  fDirPhotonPtMC(0),
+  fMCDirPhotonPtEtaPhi(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),
@@ -94,7 +95,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fEvtSel(0),
   fNClusEt10(0),
   fPVtxZ(0),            
-  fDirPhotonPtMC(0),
+  fMCDirPhotonPtEtaPhi(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),   
@@ -133,9 +134,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fPVtxZ = new TH1F("hPVtxZ","primary vertex Z before cut;prim-vz(cm) ;",200,-100,100);
   fOutputList->Add(fPVtxZ);
 
-  fDirPhotonPtMC = new TH1F("hDirPhotonPtMC","photon (gq->#gammaq) p_{T};GeV/c;dN/dp_{T} (c GeV^{-1})",1000,0,100);
-  fDirPhotonPtMC->Sumw2();
-  fOutputList->Add(fDirPhotonPtMC);
+  fMCDirPhotonPtEtaPhi = new TH3F("hMCDirPhotonPtEtaPhi","photon (gq->#gammaq) p_{T}, #eta, #phi;GeV/c;#eta;#phi",1000,0,100,154,-0.77,0.77,130,1.38,3.20);
+  fMCDirPhotonPtEtaPhi->Sumw2();
+  fOutputList->Add(fMCDirPhotonPtEtaPhi);
 
   fDecayPhotonPtMC = new TH1F("hDecayPhotonPtMC","decay photon p_{T};GeV/c;dN/dp_{T} (c GeV^{-1})",1000,0,100);
   fDecayPhotonPtMC->Sumw2();
@@ -515,7 +516,7 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
       continue;
     Int_t pdgMom = mcmom->GetPdgCode();
     if(imom==6 || imom==7 && pdgMom==22) {
-      fDirPhotonPtMC->Fill(mcp->Pt());
+      fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fDebug)
 	printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatusCode());
       printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatusCode());
