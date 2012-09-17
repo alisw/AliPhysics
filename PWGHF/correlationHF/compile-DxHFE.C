@@ -14,6 +14,7 @@
 
 #if defined(__CINT__) && !defined(__MAKECINT__)
 {
+
   //----------- Loading the required libraries ---------//
   gInterpreter->ExecuteMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
@@ -25,12 +26,19 @@
   gSystem->Load("libPWGHFhfe.so");
   gSystem->Load("libCORRFW");
   gSystem->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/hfe ");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/correlationHF/AliDxHFEParticleSelection.cxx+");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/correlationHF/AliDxHFEParticleSelectionD0.cxx+");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/correlationHF/AliDxHFEParticleSelectionEl.cxx+");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/correlationHF/AliAnalysisTaskDxHFEParticleSelection.cxx+");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/correlationHF/AliDxHFECorrelation.cxx+");
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/correlationHF/AliAnalysisTaskDxHFECorrelation.cxx+");
+
+  TString dir("$ALICE_ROOT/PWGHF/correlationHF/");
+  gROOT->LoadMacro(dir+"AliDxHFEParticleSelection.cxx+");
+  gROOT->LoadMacro(dir+"AliDxHFEParticleSelectionD0.cxx+");
+  gROOT->LoadMacro(dir+"AliDxHFEParticleSelectionEl.cxx+");
+  gROOT->LoadMacro(dir+"AliDxHFEToolsMC.cxx+");
+  gROOT->LoadMacro(dir+"AliDxHFEParticleSelectionMCD0.cxx+");
+  gROOT->LoadMacro(dir+"AliDxHFEParticleSelectionMCEl.cxx+");
+  gROOT->LoadMacro(dir+"AliDxHFECorrelation.cxx+");
+  gROOT->LoadMacro(dir+"AliAnalysisTaskDxHFEParticleSelection.cxx+");
+  gROOT->LoadMacro(dir+"AliAnalysisTaskDxHFEParticleSelectionEl.cxx+");
+  gROOT->LoadMacro(dir+"AliAnalysisTaskDxHFECorrelation.cxx+");
+
 }
 #elif
 {
