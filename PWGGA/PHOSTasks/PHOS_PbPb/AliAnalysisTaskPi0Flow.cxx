@@ -245,8 +245,8 @@ void AliAnalysisTaskPi0Flow::UserCreateOutputObjects()
 
 
   //Single photon and pi0 spectrum
-  const Int_t nPtPhot = 300 ;
-  const Double_t ptPhotMax = 30 ;
+  const Int_t nPtPhot = 400 ;
+  const Double_t ptPhotMax = 40 ;
   const Int_t nM       = 500;
   const Double_t mMin  = 0.0;
   const Double_t mMax  = 1.0;
@@ -1109,7 +1109,6 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0s()
             snprintf(key,55,"hPi0Both_a07_cen%d",fCentBin) ;
             FillHistogram(Form("hPi0Both_a07_cen%d",fCentBin),p12.M() ,p12.Pt()) ;
           }
-      	  if(fCentralityV0M>20.){
           if(ph1->Module()==1 && ph2->Module()==1)
 	    FillHistogram("hPi0M11",p12.M(),p12.Pt() );
           else if(ph1->Module()==2 && ph2->Module()==2)
@@ -1122,7 +1121,6 @@ void AliAnalysisTaskPi0Flow::ConsiderPi0s()
 	    FillHistogram("hPi0M13",p12.M(),p12.Pt() );
           else if(ph1->Module()==2 && ph2->Module()==3)
 	    FillHistogram("hPi0M23",p12.M(),p12.Pt() );
-	  }
 
         }
       }
