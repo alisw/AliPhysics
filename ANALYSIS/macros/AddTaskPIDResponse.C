@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE)
+AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,Bool_t tuneOnData=kFALSE,Int_t recoPass=2)
 {
 // Macro to connect a centrality selection task to an existing analysis manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -40,6 +40,7 @@ AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE)
   AliAnalysisTaskPIDResponse *pidTask = new AliAnalysisTaskPIDResponse("PIDResponseTask");
 //   pidTask->SelectCollisionCandidates(AliVEvent::kMB);
   pidTask->SetIsMC(isMC);
+  if(isMC&&tuneOnData) pidTask->SetTuneOnData(kTRUE,recoPass);
   mgr->AddTask(pidTask);
   
 //   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("PIDResponseQA",
