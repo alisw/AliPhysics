@@ -41,7 +41,7 @@ ifneq ($(ESD_INCLUDE),)
         endif
 else
   ifneq ($(ALICE_ROOT),)
-    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PWGHF/base -I$(ALICE_ROOT)/PWGHF/vertexingHF -I$(ALICE_ROOT)/PWG/FLOW/Base -I$(ALICE_ROOT)/PWG/FLOW/Tasks
+    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PWGHF/base -I$(ALICE_ROOT)/PWGHF/vertexingHF -I$(ALICE_ROOT)/PWGHF/hfe -I$(ALICE_ROOT)/PWG/FLOW/Base -I$(ALICE_ROOT)/PWG/FLOW/Tasks
   else
   endif
 endif
