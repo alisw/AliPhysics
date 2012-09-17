@@ -21,16 +21,16 @@
 using namespace std;
 #endif
 
-/// @file   AddTaskCorrelationHF.C
+/// @file   AddTaskDxHFECorrelation.C
 /// @author Matthias.Richter@ift.uib.no
 /// @date   2012-05-09
 /// @brief  Add the D0-HFE correlation task to the manager
 ///
-void AddTaskCorrelationHF(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcorrelationDxHF")
+void AddTaskDxHFECorrelation(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcorrelationDxHF")
 {
   AliAnalysisManager *pManager = AliAnalysisManager::GetAnalysisManager();
   if (!pManager) {
-    ::Error("AddTaskCorrelationHF", "No analysis manager to connect to.");
+    ::Error("AddTaskDxHFECorrelation", "No analysis manager to connect to.");
     return;
   }
 
@@ -74,14 +74,14 @@ void AddTaskCorrelationHF(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcorre
     pidFunction.Form("AddTaskPIDResponse(%d, %d)", bUseMC, kTRUE);
     gROOT->ProcessLine(pidFunction);
     if (pManager->GetTask(pidTaskName)==NULL) {
-      ::Error("AddTaskCorrelationHF", Form("failed to add PID task '%s' from macro '%s'",
+      ::Error("AddTaskDxHFECorrelation", Form("failed to add PID task '%s' from macro '%s'",
 					   pidTaskName, pidTaskMacro));
       return;
     }
   } else {
     // TODO: would like to check if the PID task was set up
     // with consistent parameters, however there are no getters at the moment
-    ::Info("AddTaskCorrelationHF", Form("PID task '%s' already existing", pidTaskName));
+    ::Info("AddTaskDxHFECorrelation", Form("PID task '%s' already existing", pidTaskName));
   }
 
   TString cutname="cutsD0Corr";
@@ -89,7 +89,7 @@ void AddTaskCorrelationHF(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcorre
   if (ofilename.IsNull()) ofilename=AliAnalysisManager::GetCommonFileName();
   ofilename+=":"+analysisName;
 
-  ::Info("AddTaskCorrelationHF", Form("\ninitializing analysis '%s'%s, output file '%s'\n", analysisName.Data(), bUseMC?" (using MC)":"", ofilename.Data()));
+  ::Info("AddTaskDxHFECorrelation", Form("\ninitializing analysis '%s'%s, output file '%s'\n", analysisName.Data(), bUseMC?" (using MC)":"", ofilename.Data()));
     
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   RDHFD0toKpi->SetStandardCutsPP2010();
@@ -138,14 +138,14 @@ void AddTaskCorrelationHF(Bool_t bUseMC=kFALSE, TString analysisName="PWGHFcorre
 
   const char* taskName=AliAnalysisTaskDxHFECorrelation::Class()->GetName();
   if (pManager->GetTask(taskName)) {
-    ::Warning("AddTaskCorrelationHF", Form("task '%s' already existing, skipping ...",
+    ::Warning("AddTaskDxHFECorrelation", Form("task '%s' already existing, skipping ...",
 					   taskName));
     return;
   }
   
   AliAnalysisTaskDxHFECorrelation *pTask=new AliAnalysisTaskDxHFECorrelation();
   if (!pTask) {
-    ::Error("AddTaskCorrelationHF", "failed to create task.");
+    ::Error("AddTaskDxHFECorrelation", "failed to create task.");
     return;
   }
   pTask->SetFillOnlyD0D0bar(1); //0=both, 1=D0 only, 2=D0bar only
