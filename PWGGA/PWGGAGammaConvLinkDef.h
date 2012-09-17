@@ -16,10 +16,17 @@
 #pragma link C++ class AliV0ReaderV1+;
 #pragma link C++ class AliConversionAODBGHandlerRP+;
 #pragma link C++ class AliConversionTrackCuts++;
+#pragma link C++ class AliConversionMesonCuts+;
+#pragma link C++ class AliDalitzElectronCuts+;
+#pragma link C++ class AliDalitzElectronSelector+;
 
 // User tasks
 #pragma link C++ class AliAnalysisTaskGammaConvDalitz+;
 #pragma link C++ class AliAnalysisTaskPi0v2+;
+#pragma link C++ class AliGammaConversionAODBGHandler+;
+#pragma link C++ class AliAnalysisTaskGammaConvV1+;
+#pragma link C++ class AliAnalysisTaskGammaConvDalitzV1+;
+#pragma link C++ class AliAnalysisTaskConversionQA+;
 
 #pragma link C++ class AliAnaConvIsolation+;
 #pragma link C++ class AliAnaConvCorrBase++;
@@ -34,7 +41,5 @@
 #pragma link C++ class AliGammaConversionHistograms+;
 #pragma link C++ class AliGammaConversionBGHandler+;
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
-
-
 
 #endif

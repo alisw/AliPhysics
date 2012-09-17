@@ -122,6 +122,7 @@ class AliConversionCuts : public AliAnalysisCuts {
   Bool_t EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent);
   Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
   Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma=kTRUE);
+  Bool_t ElectronIsSelectedMC(TParticle *particle,AliStack *fMCStack);
   Bool_t TracksAreSelected(AliVTrack * negTrack, AliVTrack * posTrack);
   Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
   Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Bool_t bMCDaughtersInAcceptance=kFALSE);
@@ -312,6 +313,9 @@ class AliConversionCuts : public AliAnalysisCuts {
   UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
   TRandom3 fRandom; //
   Int_t *fElectronLabelArray; // Array with elec/pos v0 label
+  Float_t fConversionPointXArray; // Array with conversion Point x
+  Float_t fConversionPointYArray; // Array with conversion Point y
+  Float_t fConversionPointZArray; // Array with conversion Point z
 
   // Histograms
   TObjString *fCutString; // cut number used for analysis

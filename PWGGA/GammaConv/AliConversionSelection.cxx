@@ -340,6 +340,8 @@ Double_t AliConversionSelection::GetMultiplicity(AliVEvent *inputEvent){
 	return GetVZEROMult(inputEvent);
     case 3:
 	return GetSPDMult(inputEvent);
+    case 9:
+        return 1; // if mult is used as a weight, this number can be used to switch off weighting
     default:
 	return 0;
     }
