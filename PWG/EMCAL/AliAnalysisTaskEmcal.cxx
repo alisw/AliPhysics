@@ -54,6 +54,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fTrackMaxPhi(10),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
+  fMinPtTrackInEmcal(0),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -100,6 +101,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fTrackMaxPhi(10),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
+  fMinPtTrackInEmcal(0),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -424,6 +426,25 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     if (vz<fMinVz)
       return kFALSE;
     if (vz>fMaxVz)
+      return kFALSE;
+  }
+
+  if (fMinPtTrackInEmcal > 0 && fTracks && fGeom) {
+    Bool_t trackInEmcalOk = kFALSE;
+    Int_t ntracks = fTracks->GetEntries();
+    for (Int_t i = 0; i < ntracks; i++) {
+      AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(i));
+      if (!AcceptTrack(track))
+	continue;
+      if (track->Eta() < fGeom->GetArm1EtaMin() || track->Eta() > fGeom->GetArm1EtaMax() ||
+	  track->Phi() < fGeom->GetArm1PhiMin() * TMath::DegToRad() || track->Phi() > fGeom->GetArm1PhiMax() * TMath::DegToRad())
+	continue;
+      if (track->Pt() > fMinPtTrackInEmcal) {
+	trackInEmcalOk = kTRUE;
+	break;
+      }
+    }
+    if (!trackInEmcalOk)
       return kFALSE;
   }
 
