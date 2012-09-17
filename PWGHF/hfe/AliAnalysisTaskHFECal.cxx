@@ -324,7 +324,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       Bool_t mcInBtoE= kFALSE;
 
       Bool_t MChijing = fMC->IsFromBGEvent(iParticle);
-      if(!MChijing)printf("not MC hijing");
+      //if(!MChijing)printf("not MC hijing");
       int iHijing = 1;
       if(!MChijing)iHijing = 0;
       if(fPDG==111)Hpi0pTcheck->Fill(pTMC,iHijing);
