@@ -135,9 +135,13 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  THnSparseD 		*fPhoElecPtMCM20;	        //! Pho inclusive ele pt
  THnSparseD 		*fSameElecPtMC;	        //! Same inclusive ele pt
  THnSparseD 		*fSameElecPtMCM20;	        //! Same inclusive ele pt
+ THnSparseD 		*fIncpTMCM20pho_pi0e;	//! MC HFE pid electron vs centrality
+ THnSparseD 		*fPhoElecPtMCM20_pi0e;	        //! Pho inclusive ele pt
+ THnSparseD 		*fSameElecPtMCM20_pi0e;	        //! Same inclusive ele pt
  TH1D                   *CheckNclust;  
  TH1D                   *CheckNits;  
  TH2D                   *Hpi0pTcheck; 
+ TH2D                   *HphopTcheck; 
  
   AliAnalysisTaskHFECal(const AliAnalysisTaskHFECal&); // not implemented
   AliAnalysisTaskHFECal& operator=(const AliAnalysisTaskHFECal&); // not implemented

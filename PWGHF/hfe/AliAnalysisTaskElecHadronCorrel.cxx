@@ -432,13 +432,6 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
     return;
   }
 
-  //---------------CENTRALITY SELECTION-----------------------    
-  SetCentralityParameters(0., 10., "V0M");
-  Bool_t pass = kFALSE; //to select centrality
-  CheckCentrality(fESD,pass);
-
-  if(!pass)return;
-
   if(!fPID->IsInitialized()){ 
     // Initialize PID with the given run number
     AliWarning("PID not initialised, get from Run no");
@@ -455,7 +448,14 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
   if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
 
-/*  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
+  //---------------CENTRALITY SELECTION-----------------------    
+  SetCentralityParameters(0., 10., "V0M");
+  Bool_t pass = kFALSE; //to select centrality
+  CheckCentrality(fESD,pass);
+
+  if(!pass)return;
+
+  /*  AliCentrality *fCentrality = (AliCentrality*)fESD->GetCentrality();
 
   Float_t centvalue = fCentrality->GetCentralityPercentile("V0M");
   fcentrality->Fill(centvalue);    
@@ -1073,9 +1073,11 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
 
   fTrackCuts1->SetAcceptKinkDaughters(kFALSE);
   fTrackCuts1->SetRequireTPCRefit(kTRUE);
+  fTrackCuts1->SetRequireITSRefit(kTRUE);
   fTrackCuts1->SetEtaRange(-0.9,0.9);
   fTrackCuts1->SetRequireSigmaToVertex(kTRUE);
-  fTrackCuts1->SetMaxChi2PerClusterTPC(3.5);
+  //fTrackCuts1->SetMaxChi2PerClusterTPC(3.5);
+  fTrackCuts1->SetMaxChi2PerClusterTPC(4);
   fTrackCuts1->SetMinNClustersTPC(80);
 
   //  const AliESDVertex *pVtx = fESD->GetPrimaryVertex();
@@ -1083,12 +1085,13 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
   Bool_t flagPhotonicElec = kFALSE;
   Int_t NLS_plus=0, NLS_minus=0, NULS=0;
 
-  for(Int_t jTracks = itrack+1; jTracks<fESD->GetNumberOfTracks(); jTracks++){
+  for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
     AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
     if (!trackAsso) {
       printf("ERROR: Could not receive track %d\n", jTracks);
       continue;
     }
+    if(jTracks==itrack) continue;
 
     Double_t dEdxAsso = -999., ptAsso=-999., openingAngle = -999.,nsigma=-999.0;
     Double_t mass=-999., width = -999;
@@ -1102,10 +1105,10 @@ void AliAnalysisTaskElecHadronCorrel::SelectPhotonicElectron(Int_t itrack, AliES
 
     if(ptAsso <0.3) continue;
     if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
-    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackAsso)) continue;
-    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackAsso)) continue;
+//    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackAsso)) continue;
+//    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackAsso)) continue;
 
-    //    if(!fTrackCuts1->AcceptTrack(trackAsso)) continue;
+    if(!fTrackCuts1->AcceptTrack(trackAsso)) continue;
     //    if(dEdxAsso <70 || dEdxAsso>100) continue; //11a pass1
     if(nsigma < -3 || nsigma > 3) continue;
 
@@ -1194,7 +1197,8 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliESDtrac
   fTrackCuts2->SetRequireITSRefit(kTRUE);
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
-  fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);
+//  fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);
+  fTrackCuts2->SetMaxChi2PerClusterTPC(4);
   fTrackCuts2->SetMinNClustersTPC(80);
 
   for(Int_t ktracks = 0; ktracks<fESD->GetNumberOfTracks(); ktracks++){
@@ -1220,10 +1224,10 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrel(Int_t itrack, AliESDtrac
 //    if(ptHad <2) continue;
     if(ptHad > ptEle) continue;
     if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
-    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
-    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
+//    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
+//    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
 
-//    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
+    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
   
    // fHadronIPxy->Fill(IPxy);
    // fHadronIPz->Fill(IPz);
@@ -1257,7 +1261,8 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
   fTrackCuts2->SetRequireITSRefit(kTRUE);
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);
-  fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);
+ // fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);
+  fTrackCuts2->SetMaxChi2PerClusterTPC(4);
   fTrackCuts2->SetMinNClustersTPC(80);
 
   for(Int_t ktracks = 0; ktracks<fESD->GetNumberOfTracks(); ktracks++){
@@ -1284,10 +1289,10 @@ void AliAnalysisTaskElecHadronCorrel::ElectronHadCorrelNoPartner(Int_t itrack,In
 //    if(ptHad <2) continue;
     if(ptHad > ptEle) continue;
     if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
-    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
-    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
+//    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
+//    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
 
-//    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
+    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;
 //    if(TMath::Abs(IPxy)>2.5) continue;
 
     phiEle = track->Phi();
@@ -1418,7 +1423,8 @@ void AliAnalysisTaskElecHadronCorrel::HadronInfo(Int_t itrack)
   fTrackCuts2->SetRequireITSRefit(kTRUE);                                                
   fTrackCuts2->SetEtaRange(-0.9,0.9);
   fTrackCuts2->SetRequireSigmaToVertex(kTRUE);                                           
-  fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);                                             
+ // fTrackCuts2->SetMaxChi2PerClusterTPC(3.5);                                             
+  fTrackCuts2->SetMaxChi2PerClusterTPC(4);                                             
   fTrackCuts2->SetMinNClustersTPC(80);                                                   
 
   for(Int_t ktracks = 0; ktracks<fESD->GetNumberOfTracks(); ktracks++){                  
@@ -1436,10 +1442,10 @@ void AliAnalysisTaskElecHadronCorrel::HadronInfo(Int_t itrack)
     trackHad->GetImpactParameters(IPxy,IPz);
     
     if(trackHad->Eta()<-0.9 || trackHad->Eta()>0.9) continue;
-    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
-    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
+//    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, trackHad)) continue;
+//    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, trackHad)) continue;
 
-//    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;                                    
+    if(!fTrackCuts2->AcceptTrack(trackHad)) continue;                                    
     if(ptHad<2) continue;
 
     fHadronPhi->Fill(trackHad->Phi());
