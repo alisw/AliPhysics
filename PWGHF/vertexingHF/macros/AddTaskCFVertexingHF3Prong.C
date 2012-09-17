@@ -552,6 +552,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	    AliFatal("Histogram for multiplicity weights not found");
 	    return 0x0;
 	  }
+	}
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
 
@@ -690,4 +691,5 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	mgr->ConnectOutput(task,4,coutput4);
 
 	return task;
-}
+	}
+
