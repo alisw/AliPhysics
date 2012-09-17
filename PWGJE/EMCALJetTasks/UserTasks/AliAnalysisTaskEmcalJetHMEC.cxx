@@ -250,7 +250,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects()
  
   Int_t nZvtxBins  = 7+1+7;
   // bins for second buffer are shifted by 100 cm
-  Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7, 93, 95, 97, 99, 101, 103, 105, 107 };
+  Double_t vertexBins[] = { -10, -5, -3, -1, 1, 3, 5, 10, 93, 95, 97, 99, 101, 103, 105, 107 };
   Double_t* zvtxbin = vertexBins;
 
   Int_t nCentralityBins  = 100;
@@ -527,7 +527,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserExec(Option_t *)
 	    fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,trackpt);
 
 
-	    Double_t triggerEntries[8] = {fcent,jetPt,track->Pt(),dR,deta,dphijh,0.0,leadjet};                      
+	    Double_t triggerEntries[8] = {fcent,jetPt,trackpt,dR,deta,dphijh,0.0,leadjet};                      
 	    fhnJH->Fill(triggerEntries);
 	  }
 
@@ -749,9 +749,9 @@ void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int
       
     case 3:
       label = "deltaR";
-      nbins = 15;
+      nbins = 10;
       xmin = 0.;
-      xmax = 1.5;
+      xmax = 5.0;
       break;
 
 
