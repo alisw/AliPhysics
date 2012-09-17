@@ -505,6 +505,8 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     Int_t pdg = mcp->GetPdgCode();
     if(pdg!=22)
       continue;
+    if(TMath::Abs(mcp->Eta())>0.7 ||mcp->Phi()<1.4 || mcp->Phi()>3.2)
+      continue;
     Int_t imom = mcp->GetMother(0);
     if(imom<0 || imom>nTracks)
       continue;
@@ -512,8 +514,12 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     if(!mcmom)
       continue;
     Int_t pdgMom = mcmom->GetPdgCode();
-    if(TMath::Abs(pdgMom)<7)
+    if(imom==6 || imom==7 && pdgMom==22) {
       fDirPhotonPtMC->Fill(mcp->Pt());
+      if(fDebug)
+	printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatusCode());
+      printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatusCode());
+    }
     else{
       if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
 	fDecayPhotonPtMC->Fill(mcp->Pt());
