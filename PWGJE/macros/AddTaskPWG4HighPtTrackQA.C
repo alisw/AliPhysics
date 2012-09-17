@@ -383,6 +383,8 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%dkCentral",centClass,trackType,cuts);
   else if(iPhysicsSelectionFlag == AliVEvent::kSemiCentral)
     outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%dkSemiCentral",centClass,trackType,cuts);
+  else
+    outputfile += Form(":PWG4_HighPtTrackQACent%dTrackType%dCuts%dPSF%d",centClass,trackType,cuts,iPhysicsSelectionFlag);
 
   AliAnalysisDataContainer *cout_histQAtrack = 0x0;
   if(iPhysicsSelectionFlag == AliVEvent::kMB)
@@ -391,6 +393,8 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     cout_histQAtrack = mgr->CreateContainer(Form("qa_histsQAtrackCent%dType%dcuts%dkCentral",centClass,trackType,cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
   else if(iPhysicsSelectionFlag == AliVEvent::kSemiCentral)
     cout_histQAtrack = mgr->CreateContainer(Form("qa_histsQAtrackCent%dType%dcuts%dkSemiCentral",centClass,trackType,cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
+  else
+    cout_histQAtrack = mgr->CreateContainer(Form("qa_histsQAtrackCent%dType%dcuts%dPSF%d",centClass,trackType,cuts,iPhysicsSelectionFlag), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
 
   mgr->AddTask(taskPWG4TrackQA);
   mgr->ConnectInput(taskPWG4TrackQA,0,mgr->GetCommonInputContainer());
