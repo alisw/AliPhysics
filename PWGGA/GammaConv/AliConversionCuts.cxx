@@ -579,6 +579,7 @@ Bool_t AliConversionCuts::PhotonIsSelectedMC(TParticle *particle,AliStack *fMCSt
     return kFALSE;
 }
 
+
 //________________________________________________________________________
 Bool_t AliConversionCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack,Bool_t bMCDaughtersInAcceptance){
     // Returns true for all pions within acceptance cuts for decay into 2 photons
@@ -1732,11 +1733,23 @@ Bool_t AliConversionCuts::SetRCut(Int_t RCut){
 	fMaxR = 70.;
 	fMinR = 5.;
 	break;
+	// High purity cuts for PbPb (remove first layers of material)
     case 5:
 	fMaxR = 180.;
-	fMinR = 10.;
+	fMinR = 10.;  
 	break;
-    // High purity cuts for PbPb
+     case 6:
+	fMaxR = 180.;
+	fMinR = 20.;
+         break;
+    case 7:
+	fMaxR = 180.;
+	fMinR = 26.;
+	break;
+    case 8:
+	fMaxR = 180.;
+	fMinR = 35.;
+	break;
     case 9:
 	fMaxR = 180.;
 	fMinR = 60.;

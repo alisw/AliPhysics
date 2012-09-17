@@ -35,13 +35,19 @@ set ( SRCS
 	GammaConv/AliKFConversionMother.cxx
 	GammaConv/AliConversionCuts.cxx
 	GammaConv/AliConversionSelection.cxx
+   GammaConv/AliConversionMesonCuts.cxx
+   GammaConv/AliDalitzElectronCuts.cxx
+   GammaConv/AliDalitzElectronSelector.cxx
 	GammaConv/AliV0ReaderV1.cxx
 	GammaConv/AliConversionAODBGHandlerRP.cxx
 	GammaConv/AliConversionTrackCuts.cxx
-
+   GammaConv/AliGammaConversionAODBGHandler.cxx
+   GammaConv/AliAnalysisTaskConversionQA.cxx
 	GammaConv/AliAnalysisTaskGammaConvDalitz.cxx
 	GammaConv/AliAnalysisTaskPi0v2.cxx
-        GammaConv/AliAnaConvIsolation.cxx
+   GammaConv/AliAnalysisTaskGammaConvV1.cxx
+   GammaConv/AliAnalysisTaskGammaConvDalitzV1.cxx
+   GammaConv/AliAnaConvIsolation.cxx
 	GammaConv/AliAnaConvCorrBase.cxx
 	GammaConv/AliAnaConvCorrPion.cxx
 	GammaConv/AliAnaConvCorrPhoton.cxx
@@ -53,7 +59,6 @@ set ( SRCS
 	GammaConv/AliGammaConversionHistograms.cxx
 	GammaConv/AliGammaConversionBGHandler.cxx
 	GammaConv/AliAnalysisTaskGCPartToPWG4Part.cxx
-
 	)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
