@@ -23,6 +23,9 @@
 #include "AliExternalTrackParam.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
+#include "AliHeader.h"
+#include "AliGenCocktailEventHeader.h"
+
 
 ClassImp(AliAnalysisTaskSOH)
 
@@ -43,18 +46,22 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH() :
   fHTrkEffDetGenPtEtaPhi(0), 
   fHTrkEffDetRecPtEtaPhi(0),
   fHTrkEffDetRecFakePtEtaPhi(0), 
+  fHTrkEffParGenPt_rmInj(0),
+  fHTrkEffDetGenPt_rmInj(0),
+  fHTrkEffParGenPt_PiRmInj(0),
+  fHTrkEffDetGenPt_PiRmInj(0),
   fHTrkEffParGenPt_all(0),
-  fHTrkEffDetRecPt_all(0),
+  fHTrkEffDetGenPt_all(0),
   fHTrkEffParGenPt_Dch(0),
-  fHTrkEffDetRecPt_Dch(0),
+  fHTrkEffDetGenPt_Dch(0),
   fHTrkEffParGenPt_Dn(0),
-  fHTrkEffDetRecPt_Dn(0),
+  fHTrkEffDetGenPt_Dn(0),
   fHTrkEffParGenPt_Ds(0),
-  fHTrkEffDetRecPt_Ds(0),
+  fHTrkEffDetGenPt_Ds(0),
   fHTrkEffParGenPt_cL(0),
-  fHTrkEffDetRecPt_cL(0),
+  fHTrkEffDetGenPt_cL(0),
   fHTrkEffParGenPt_JPsi(0),
-  fHTrkEffDetRecPt_JPsi(0),
+  fHTrkEffDetGenPt_JPsi(0),
   fHScaleFactor(0),
   fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
@@ -103,20 +110,24 @@ AliAnalysisTaskSOH::AliAnalysisTaskSOH(const char *name) :
   fHEventStat(0),      
   fHTrkEffParGenPtEtaPhi(0), 
   fHTrkEffDetGenPtEtaPhi(0), 
-  fHTrkEffDetRecPtEtaPhi(0), 
-  fHTrkEffDetRecFakePtEtaPhi(0),
+  fHTrkEffDetRecPtEtaPhi(0),
+  fHTrkEffDetRecFakePtEtaPhi(0), 
+  fHTrkEffParGenPt_rmInj(0),
+  fHTrkEffDetGenPt_rmInj(0),
+  fHTrkEffParGenPt_PiRmInj(0),
+  fHTrkEffDetGenPt_PiRmInj(0),
   fHTrkEffParGenPt_all(0),
-  fHTrkEffDetRecPt_all(0),
+  fHTrkEffDetGenPt_all(0),
   fHTrkEffParGenPt_Dch(0),
-  fHTrkEffDetRecPt_Dch(0),
+  fHTrkEffDetGenPt_Dch(0),
   fHTrkEffParGenPt_Dn(0),
-  fHTrkEffDetRecPt_Dn(0),
+  fHTrkEffDetGenPt_Dn(0),
   fHTrkEffParGenPt_Ds(0),
-  fHTrkEffDetRecPt_Ds(0),
+  fHTrkEffDetGenPt_Ds(0),
   fHTrkEffParGenPt_cL(0),
-  fHTrkEffDetRecPt_cL(0),
+  fHTrkEffDetGenPt_cL(0),
   fHTrkEffParGenPt_JPsi(0),
-  fHTrkEffDetRecPt_JPsi(0),
+  fHTrkEffDetGenPt_JPsi(0),
   fHScaleFactor(0),
   fHScaleFactor100HC(0),
   fHEOverPVsPt(0x0),
@@ -187,65 +198,77 @@ void AliAnalysisTaskSOH::UserCreateOutputObjects()
   fHEventStat->GetXaxis()->SetBinLabel(8,"cls/>3-truth");
   fOutputList->Add(fHEventStat);
 
-  fHTrkEffParGenPtEtaPhi = new TH3F("fHTrkEffParGenPtEtaPhi","Particle level truth Phi-Eta-p_{T} distribution of primary charged pions", 500, 0, 50, 60, -1.5, 1.5, 128, 0, 6.4);
+  fHTrkEffParGenPtEtaPhi = new TH3F("fHTrkEffParGenPtEtaPhi","Particle level truth Phi-Eta-p_{T} distribution of primary charged pions", 500, 0, 100, 60, -1.5, 1.5, 128, 0, 6.4);
   fHTrkEffParGenPtEtaPhi->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fHTrkEffParGenPtEtaPhi->GetYaxis()->SetTitle("#eta");
   fHTrkEffParGenPtEtaPhi->GetZaxis()->SetTitle("#phi");
   fOutputList->Add(fHTrkEffParGenPtEtaPhi);
   
-  fHTrkEffDetGenPtEtaPhi = new TH3F("fHTrkEffDetGenPtEtaPhi","Detector level truth Phi-Eta-p_{T} distribution of primary charged pions", 500, 0, 50, 60, -1.5, 1.5, 128, 0, 6.4);
+  fHTrkEffDetGenPtEtaPhi = new TH3F("fHTrkEffDetGenPtEtaPhi","Detector level truth Phi-Eta-p_{T} distribution of primary charged pions", 500, 0, 100, 60, -1.5, 1.5, 128, 0, 6.4);
   fHTrkEffDetGenPtEtaPhi->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fHTrkEffDetGenPtEtaPhi->GetYaxis()->SetTitle("#eta");
   fHTrkEffDetGenPtEtaPhi->GetZaxis()->SetTitle("#phi");
   fOutputList->Add(fHTrkEffDetGenPtEtaPhi);
 
-  fHTrkEffDetRecPtEtaPhi = new TH3F("fHTrkEffDetRecPtEtaPhi","Reconstructed track Phi-Eta-p_{T} distribution of primary charged pions", 500, 0, 50, 60, -1.5, 1.5, 128, 0, 6.4);
+  fHTrkEffDetRecPtEtaPhi = new TH3F("fHTrkEffDetRecPtEtaPhi","Reconstructed track Phi-Eta-p_{T} distribution of primary charged pions", 500, 0, 100, 60, -1.5, 1.5, 128, 0, 6.4);
   fHTrkEffDetRecPtEtaPhi->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fHTrkEffDetRecPtEtaPhi->GetYaxis()->SetTitle("#eta");
   fHTrkEffDetRecPtEtaPhi->GetZaxis()->SetTitle("#phi");
   fOutputList->Add(fHTrkEffDetRecPtEtaPhi);
 
-  fHTrkEffDetRecFakePtEtaPhi = new TH3F("fHTrkEffDetRecFakePtEtaPhi","Reconstructed fake track Phi-Eta-p_{T} distribution of pions", 500, 0, 50, 60, -1.5, 1.5, 128, 0, 6.4);
+  fHTrkEffDetRecFakePtEtaPhi = new TH3F("fHTrkEffDetRecFakePtEtaPhi","Reconstructed fake track Phi-Eta-p_{T} distribution of pions", 500, 0, 100, 60, -1.5, 1.5, 128, 0, 6.4);
   fHTrkEffDetRecFakePtEtaPhi->GetXaxis()->SetTitle("p_{T}^{gen} (GeV/c)");
   fHTrkEffDetRecFakePtEtaPhi->GetYaxis()->SetTitle("#eta");
   fHTrkEffDetRecFakePtEtaPhi->GetZaxis()->SetTitle("#phi");
   fOutputList->Add(fHTrkEffDetRecFakePtEtaPhi);
 
-  fHTrkEffParGenPt_all = new TH1F("fHTrkEffParGenPt_all", "Truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fHTrkEffParGenPt_rmInj = new TH1F("fHTrkEffParGenPt_rmInj", "Truth w/o injected signal p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffParGenPt_rmInj);
+
+  fHTrkEffDetGenPt_rmInj = new TH1F("fHTrkEffDetGenPt_rmInj", "generated detector level w/o injected signal track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffDetGenPt_rmInj);
+
+  fHTrkEffParGenPt_PiRmInj = new TH1F("fHTrkEffParGenPt_PiRmInj", "Truth pion w/o injected signal p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffParGenPt_PiRmInj);
+
+  fHTrkEffDetGenPt_PiRmInj = new TH1F("fHTrkEffDetGenPt_PiRmInj", "generated detector level pion w/o injected signal track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffDetGenPt_PiRmInj);
+
+  fHTrkEffParGenPt_all = new TH1F("fHTrkEffParGenPt_all", "Truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
   fOutputList->Add(fHTrkEffParGenPt_all);
 
-  fHTrkEffDetRecPt_all = new TH1F("fHTrkEffDetRecPt_all", "Reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
-  fOutputList->Add(fHTrkEffDetRecPt_all);
+  fHTrkEffDetGenPt_all = new TH1F("fHTrkEffDetGenPt_all", "generated detector level track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffDetGenPt_all);
 
-  fHTrkEffParGenPt_Dch = new TH1F("fHTrkEffParGenPt_Dch", "Charged D meson truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fHTrkEffParGenPt_Dch = new TH1F("fHTrkEffParGenPt_Dch", "Charged D meson truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
   fOutputList->Add(fHTrkEffParGenPt_Dch);
 
-  fHTrkEffDetRecPt_Dch = new TH1F("fHTrkEffDetRecPt_Dch", "Charged D meson reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
-  fOutputList->Add(fHTrkEffDetRecPt_Dch);
+  fHTrkEffDetGenPt_Dch = new TH1F("fHTrkEffDetGenPt_Dch", "Charged D meson generated detector level track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffDetGenPt_Dch);
 
-  fHTrkEffParGenPt_Dn = new TH1F("fHTrkEffParGenPt_Dn", "Neutral D meson truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fHTrkEffParGenPt_Dn = new TH1F("fHTrkEffParGenPt_Dn", "Neutral D meson truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
   fOutputList->Add(fHTrkEffParGenPt_Dn);
 
-  fHTrkEffDetRecPt_Dn = new TH1F("fHTrkEffDetRecPt_Dn", "Neutral D meson reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
-  fOutputList->Add(fHTrkEffDetRecPt_Dn);
+  fHTrkEffDetGenPt_Dn = new TH1F("fHTrkEffDetGenPt_Dn", "Neutral D meson generated detector level track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffDetGenPt_Dn);
 
-  fHTrkEffParGenPt_Ds = new TH1F("fHTrkEffParGenPt_Ds", "D_{s} truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fHTrkEffParGenPt_Ds = new TH1F("fHTrkEffParGenPt_Ds", "D_{s} truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
   fOutputList->Add(fHTrkEffParGenPt_Ds);
 
-  fHTrkEffDetRecPt_Ds = new TH1F("fHTrkEffDetRecPt_Ds", "D_{s} reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
-  fOutputList->Add(fHTrkEffDetRecPt_Ds);
+  fHTrkEffDetGenPt_Ds = new TH1F("fHTrkEffDetGenPt_Ds", "D_{s} generated detector level track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffDetGenPt_Ds);
 
-  fHTrkEffParGenPt_cL = new TH1F("fHTrkEffParGenPt_cL", "#Lambda_{c} truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fHTrkEffParGenPt_cL = new TH1F("fHTrkEffParGenPt_cL", "#Lambda_{c} truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
   fOutputList->Add(fHTrkEffParGenPt_cL);
 
-  fHTrkEffDetRecPt_cL = new TH1F("fHTrkEffDetRecPt_cL", "#Lambda_{c} reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
-  fOutputList->Add(fHTrkEffDetRecPt_cL);
+  fHTrkEffDetGenPt_cL = new TH1F("fHTrkEffDetGenPt_cL", "#Lambda_{c} generated detector level track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffDetGenPt_cL);
 
-  fHTrkEffParGenPt_JPsi = new TH1F("fHTrkEffParGenPt_JPsi", "J/#Psi truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
+  fHTrkEffParGenPt_JPsi = new TH1F("fHTrkEffParGenPt_JPsi", "J/#Psi truth p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
   fOutputList->Add(fHTrkEffParGenPt_JPsi);
 
-  fHTrkEffDetRecPt_JPsi = new TH1F("fHTrkEffDetRecPt_JPsi", "J/#Psi Reconstructed track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,50);
-  fOutputList->Add(fHTrkEffDetRecPt_JPsi);
+  fHTrkEffDetGenPt_JPsi = new TH1F("fHTrkEffDetGenPt_JPsi", "J/#Psi generated detector level track p_{T} distribution;p_{T}^{rec} (GeV/c)",500,0.0,100);
+  fOutputList->Add(fHTrkEffDetGenPt_JPsi);
 
   fHScaleFactor = new TH1F("fHScaleFactor", "Scale factor distribution without hadronic correction;Scale factor",100,0,10);
   fOutputList->Add(fHScaleFactor);
@@ -634,6 +657,20 @@ void AliAnalysisTaskSOH::ProcessMc()
   }
 
   //tracking effciency
+  AliHeader* header = (AliHeader*) fMC->Header();    
+  if (!header) AliFatal("fInjectedSignals set but no MC header found");
+
+  AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (header->GenEventHeader());
+  if (!cocktailHeader)
+  {
+    header->Dump();
+    AliFatal("fInjectedSignals set but no MC cocktail header found");
+  }
+
+  AliGenEventHeader* eventHeader = 0;
+  eventHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+  if (!eventHeader) AliFatal("First event header not found");
+
   for(Int_t ipart=0; ipart<fMC->GetNumberOfTracks(); ipart++)
   {
     AliVParticle* vParticle = fMC->GetTrack(ipart);
@@ -641,7 +678,7 @@ void AliAnalysisTaskSOH::ProcessMc()
     AliMCParticle *McParticle  = (AliMCParticle*)fMC->GetTrack(ipart);
     if(!IsGoodMcParticle(vParticle, ipart)) continue;  
 
-    if(McParticle->GetMother() > 0 && TMath::Abs(vParticle->Eta())<0.9 && TMath::Abs(pdgCode)==211)
+    if((McParticle->GetMother() > eventHeader->NProduced()-1) && TMath::Abs(vParticle->Eta())<0.9 && TMath::Abs(pdgCode)==211)
     {
       AliMCParticle *McMother = (AliMCParticle*)fMC->GetTrack(McParticle->GetMother());
       if(TMath::Abs(McMother->PdgCode()) == 411) fHTrkEffParGenPt_Dch->Fill(vParticle->Pt());
@@ -651,33 +688,45 @@ void AliAnalysisTaskSOH::ProcessMc()
       else if(TMath::Abs(McMother->PdgCode()) == 443) fHTrkEffParGenPt_JPsi->Fill(vParticle->Pt()); 
       else {;}
     }
- 
+
+    if((McParticle->GetMother() < eventHeader->NProduced()) && TMath::Abs(vParticle->Eta())<0.9) 
+    {
+      fHTrkEffParGenPt_rmInj->Fill(vParticle->Pt());
+      if(TMath::Abs(pdgCode)==211) fHTrkEffParGenPt_PiRmInj->Fill(vParticle->Pt());
+    }
+
     if(TMath::Abs(vParticle->Eta())<0.9)
     {
       fHTrkEffParGenPt_all->Fill(vParticle->Pt());
-      if(TMath::Abs(pdgCode==211)) fHTrkEffParGenPtEtaPhi->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
+      if(TMath::Abs(pdgCode)==211) fHTrkEffParGenPtEtaPhi->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
       
       for(Int_t j=0; j<fTrackIndices->GetSize(); j++)
       {
         AliESDtrack *esdtrack = fESD->GetTrack(fTrackIndices->At(j));
-        if(esdtrack && esdtrack->GetLabel()==ipart)
+        if(esdtrack && (TMath::Abs(esdtrack->GetLabel())==ipart))
         {
-	  fHTrkEffDetRecPt_all->Fill(esdtrack->Pt());
-	  if(TMath::Abs(pdgCode==211))
+	  fHTrkEffDetGenPt_all->Fill(vParticle->Pt());
+	  if(TMath::Abs(pdgCode)==211)
 	  {
 	    fHTrkEffDetGenPtEtaPhi->Fill(vParticle->Pt(), vParticle->Eta(), vParticle->Phi());
 	    fHTrkEffDetRecPtEtaPhi->Fill(esdtrack->Pt(), esdtrack->Eta(), esdtrack->Phi());
 	  }
-	  if(McParticle->GetMother() > 0 && TMath::Abs(pdgCode) == 211)
+	  if((McParticle->GetMother() > eventHeader->NProduced()-1) && TMath::Abs(pdgCode) == 211)
 	  {
 	    AliMCParticle *McMother = (AliMCParticle*)fMC->GetTrack(McParticle->GetMother());
-	    if(TMath::Abs(McMother->PdgCode()) == 411) fHTrkEffDetRecPt_Dch->Fill(esdtrack->Pt());
-	    else if(TMath::Abs(McMother->PdgCode()) == 421) fHTrkEffDetRecPt_Dn->Fill(esdtrack->Pt());
-	    else if(TMath::Abs(McMother->PdgCode()) == 431) fHTrkEffDetRecPt_Ds->Fill(esdtrack->Pt());	 
-	    else if(TMath::Abs(McMother->PdgCode()) == 4122) fHTrkEffDetRecPt_cL->Fill(esdtrack->Pt()); 
-	    else if(TMath::Abs(McMother->PdgCode()) == 443) fHTrkEffDetRecPt_JPsi->Fill(esdtrack->Pt()); 
+	    if(TMath::Abs(McMother->PdgCode()) == 411) fHTrkEffDetGenPt_Dch->Fill(vParticle->Pt());
+	    else if(TMath::Abs(McMother->PdgCode()) == 421) fHTrkEffDetGenPt_Dn->Fill(vParticle->Pt());
+	    else if(TMath::Abs(McMother->PdgCode()) == 431) fHTrkEffDetGenPt_Ds->Fill(vParticle->Pt());	 
+	    else if(TMath::Abs(McMother->PdgCode()) == 4122) fHTrkEffDetGenPt_cL->Fill(vParticle->Pt()); 
+	    else if(TMath::Abs(McMother->PdgCode()) == 443) fHTrkEffDetGenPt_JPsi->Fill(vParticle->Pt()); 
 	    else {;}
 	  }
+	  if(McParticle->GetMother() < eventHeader->NProduced())
+	  {
+	    fHTrkEffDetGenPt_rmInj->Fill(vParticle->Pt());
+	    if(TMath::Abs(pdgCode)==211) fHTrkEffDetGenPt_PiRmInj->Fill(vParticle->Pt());
+	  }
+
     //cluster E vs. truth photon energy
 	  for(Int_t k=0; k<fClusterIndices->GetSize(); k++)
 	  {
