@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011Cent(Bool_t runRejection=kFALSE, Bool_t setMC=kFALSE,Bool_t enableCF=kFALSE, Bool_t switchToPhiV=kFALSE,Bool_t switchToOA=kTRUE){
+AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011Cent(Bool_t runRejection=kFALSE, Bool_t setMC=kFALSE,Bool_t enableCF=kFALSE, Bool_t switchToPhiV=kTRUE,Bool_t switchToOA=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -58,6 +58,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011Cent(Bool_t runRejection=kFALSE, B
 	  lowmass9->SetUseKF(kFALSE);
 	  task->AddDielectron(lowmass9);
 	  printf("add: %s\n",lowmass9->GetName()); }
+
 	else if (switchToOA) {
 
    AliDielectron *lowmass12=ConfigLMEEPbPb2011(12,hasMC,enableCF);
