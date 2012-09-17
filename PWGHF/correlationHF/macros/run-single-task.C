@@ -8,10 +8,10 @@
 ///
 /// Helper macro to run a single task either locally or on Grid
 /// Usage:
-/// aliroot -b -q -l run-single-task'("mode", "run", "task", "name", events, "path", "pattern")'
+/// aliroot -b -q -l run-single-task.C'("mode", "run", "task", "name", useMC, events, "path", "pattern", "friendPattern", "outputDir", "user")'
 ///  arguments
 ///   mode:    local, full, test
-///   run:     list of run numbers
+///   run:     list of run numbers. Or if using AODs with predefined list/AODs in same folder, specifiy as "AOD"
 ///   task:    class name of task
 ///
 ///  optional arguments
@@ -24,6 +24,8 @@
 /// aliroot -b -q -l run-single-task.C'("full", "146860", "AliAnalysisTaskSample", "myanalysis_LHC11a")'
 ///
 /// aliroot -b -q -l run-single-task.C'("local", "$ALICE_ROOT/test/ppbench/AliESDs.root", "AliAnalysisTaskSample")'
+///
+/// aliroot -b -q -l run-single-task.C'("local", "AOD", "AddTaskSample.C"")'
 ///
 /// aliroot -b -q -l run-single-task.C'("full", "146860", "AliAnalysisTaskSample", "correlation3p_LHC11a", -1, "/alice/data/2011/LHC11a", "*/pass2_without_SDD/AOD*/*/AliAOD.root")'
 ///
@@ -67,13 +69,15 @@
 //
 // environment
 //
+int macroVerbosity=0;
+const char* defaultAnalysisName="myanalysis";
 const char* includePath="-I. -I$ROOTSYS/include -I$ALICE_ROOT/include";
 const char* libraryDependencies=
-  "libSTEERBase "
-  "libESD "
-  "libAOD "
-  "libANALYSIS "
-  "libANALYSISalice "
+  "libSTEERBase.so "
+  "libESD.so "
+  "libAOD.so "
+  "libANALYSIS.so "
+  "libANALYSISalice.so "
   ;
 
 TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs, bool loadClass=true);
@@ -82,10 +86,13 @@ void ErrorConfigurationFile(const char* fileName);
 void run_single_task(const char* mode,
 		     const char* input,
 		     const char* taskname,
-		     const char* analysisName="myanalysis",
+		     const char* analysisName=defaultAnalysisName,
+		     Bool_t useMC=kFALSE,
 		     int nevents=-1,
 		     const char* gridDataDir=NULL,
 		     const char* dataPattern=NULL,
+		     const char* friendDataPattern=NULL,
+		     TString odir="",
 		     const char* user=NULL
 		     )
 {
@@ -95,6 +102,18 @@ void run_single_task(const char* mode,
   //
   // defaults
   //
+  if (analysisName==defaultAnalysisName && gDirectory!=NULL) {
+    // NOTE: the direct pointer comparison is on purpose
+    // string comparison not necessary in this special case
+
+    // fetch the analysis name from the setup file
+    const char* confObjectName="analysis_name";
+    TObject* confObject=gDirectory->FindObject(confObjectName);
+    if (confObject) {
+      analysisName=confObject->GetTitle();
+    }
+  }
+
   bool bRunLocal=strcmp(mode, "local")==0;
   const char* gridConfigFile="grid-config.C";
   TString strGridConfigFile=gridConfigFile;
@@ -113,22 +132,30 @@ void run_single_task(const char* mode,
   if (strGridConfigFile.IsNull()==0 && !bRunLocal) {
     cout << "loading grid configuration from file '" << strGridConfigFile << "':" << endl;
     gROOT->LoadMacro(strGridConfigFile);
-    cout << " alienAPIVersion    =" << alienAPIVersion     << endl;
-    cout << " alienROOTVersion   =" << alienROOTVersion    << endl;
-    cout << " alienAliROOTVersion=" << alienAliROOTVersion << endl;
-    cout << " defaultGridDataDir =" << defaultGridDataDir  << endl;
-    cout << " defaultDataPattern =" << defaultDataPattern  << endl;
+    cout << " alienAPIVersion          =" << alienAPIVersion     << endl;
+    cout << " alienROOTVersion         =" << alienROOTVersion    << endl;
+    cout << " alienAliROOTVersion      =" << alienAliROOTVersion << endl;
+    cout << " defaultGridDataDir       =" << defaultGridDataDir  << endl;
+    cout << " defaultDataPattern       =" << defaultDataPattern  << endl;
+    cout << " defaultFriendDataPattern =" << defaultFriendDataPattern  << endl;
 
     if (gridDataDir==NULL) gridDataDir=defaultGridDataDir;
     if (dataPattern==NULL) dataPattern=defaultDataPattern;
+    if (friendDataPattern==NULL) friendDataPattern=defaultFriendDataPattern;
   } else if (bRunLocal) {
     if (dataPattern==NULL) {
-      // TODO: extend to AOD, as a quick fix set to a pattern which
-      // allows to create the ESD input handler
-      dataPattern="ESD";
+      TString strin=input;
+      if (strin.EndsWith("AOD"))
+	dataPattern="AOD";
+      else if (strin.EndsWith("ESD"))
+	dataPattern="ESD";
     }
   }
 
+  if(!bRunLocal) {
+    // Connect to AliEn
+    TGrid::Connect("alien://");
+  }
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,8 +169,8 @@ void run_single_task(const char* mode,
   }
   AliInputEventHandler *pInputHandler = NULL;
   TString strDataPattern(dataPattern);
-  if (strDataPattern.Contains("ESD")) pInputHandler=new AliESDInputHandler;
-  else if (strDataPattern.Contains("AOD")) pInputHandler=new AliAODInputHandler;
+  if (strDataPattern.Contains("AOD")) pInputHandler=new AliAODInputHandler;
+  else if (strDataPattern.Contains("ESD")) pInputHandler=new AliESDInputHandler;
   else {
     cerr << "can not determine input type from data pattern '" << dataPattern << "'" << endl;
     return;
@@ -166,15 +193,33 @@ void run_single_task(const char* mode,
   //
   gSystem->AddIncludePath(includePath);
   TString libraries=libraryDependencies;
+  if (gDirectory!=NULL) {
+    // fetch the analysis libraries from the setup file
+    const char* confObjectName="analysis_libraries";
+    TObject* confObject=gDirectory->FindObject(confObjectName);
+    if (confObject) {
+      TString analysisLibraries(confObject->GetTitle());
+      TObjArray* pTokens=analysisLibraries.Tokenize(" ");
+      if (pTokens) {
+	for (int i=0; i<pTokens->GetEntriesFast(); i++) {
+	  if (libraries.Contains(pTokens->At(i)->GetName())==0) {
+	    libraries+=" ";
+	    libraries+=pTokens->At(i)->GetName();
+	  }
+	}
+	delete pTokens;
+      }
+    }
+  }
   TObjArray* pTokens=libraries.Tokenize(" ");
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntriesFast(); i++) {
-      cout << "loading " << pTokens->At(i)->GetName() << endl;
-      gSystem->Load(pTokens->At(i)->GetName());
+      if (gSystem->Load(pTokens->At(i)->GetName())==0) {
+	cout << "loading " << pTokens->At(i)->GetName() << endl;
+      }
     }
     delete pTokens;
   }
-  libraries="";
 
   bool bCreateAndAddTask=true;
   TString taskSource=taskname;
@@ -221,7 +266,7 @@ void run_single_task(const char* mode,
   //
   // init for local or GRID analysis
   //
-  AliAnalysisGrid *alienHandler = NULL; // for grid analysis
+  AliAnalysisAlien *alienHandler = NULL; // for grid analysis
   TChain *chain=NULL; // for local analysis
   TString strInput=input;
   if (bRunLocal) {
@@ -251,6 +296,18 @@ void run_single_task(const char* mode,
 	  break;
 	}
       }
+    } else if(strInput.EndsWith("AOD")){
+      // fetch aod tree from the setup macro
+      if (gDirectory!=NULL) {
+	TObject* chainObject=gDirectory->FindObject("aodTree");
+	if (chainObject) {
+	  chain=dynamic_cast<TChain*>(chainObject);
+	}
+      }
+      if (!chain) {
+	cout << "failed to fetch aod tree object from setup" << endl;
+	return -1;
+      }
     } else {
       cerr << "invalid input" << endl;
       return -1;
@@ -278,6 +335,8 @@ void run_single_task(const char* mode,
     alienHandler->SetAliROOTVersion(alienAliROOTVersion);
 
     //Allow non-default outputs
+    //This is required to set non-default output files with the SetOutputFiles
+    //function below
     alienHandler->SetDefaultOutputs(kFALSE);
     if (user && user[0]!=0) alienHandler->SetUser(user);
 
@@ -286,19 +345,36 @@ void run_single_task(const char* mode,
   
     // Set data search pattern
     alienHandler->SetDataPattern(dataPattern);
+    alienHandler->SetFriendChainName(friendDataPattern);
 
-    alienHandler->SetRunPrefix("000");   // real data
+    if (!useMC)
+      alienHandler->SetRunPrefix("000");   // real data
 
     alienHandler->AddRunNumber(input);
 
     // define working and output directories
     TDatime dt;
-    TString odir(Form("gridwork/%04d-%02d-%02d_%02d-%02d", dt.GetYear(), dt.GetMonth(), dt.GetDay(), dt.GetHour(), dt.GetMinute()));
+    if(odir.IsNull())
+      odir=(Form("gridwork/%04d-%02d-%02d_%02d-%02d", dt.GetYear(), dt.GetMonth(), dt.GetDay(), dt.GetHour(), dt.GetMinute()));
+    cout << odir << endl;
     alienHandler->SetGridWorkingDir(odir); // relative to $HOME
     alienHandler->SetGridOutputDir("output");   // relative to working dir
-    alienHandler->SetOverwriteMode();                // overwrites the contents of the working and output directory
+    //alienHandler->SetOverwriteMode();                // overwrites the contents of the working and output directory
 
-    alienHandler->AddIncludePath(includePath);
+    // workaround for a Root feature: GetIncludePath() appends always
+    // the current Root include path including escaped quotes. Those
+    // quotes make it difficult to pass the output directly. Search for the
+    // last appended include path and truncate
+    TString strIncludePath(gSystem->GetIncludePath());
+    Int_t pos=strIncludePath.Index(includePath);
+    if (pos>=0) {
+      Int_t cut=0;
+      do {
+	cut=pos+strlen(includePath);
+      } while ((pos=strIncludePath.Index(includePath, cut))>cut);
+      strIncludePath.Resize(cut);
+    }
+    alienHandler->AddIncludePath(strIncludePath);
 
     // Note: there is no extra source or header file to be transferred if 'AddTask' macros are used
     alienHandler->SetAnalysisSource(Form("%s %s %s %s", dependencySource.Data(), dependencyHeader.Data(), (bCreateAndAddTask)?taskSource.Data():"", taskHeader.Data()));
@@ -307,7 +383,8 @@ void run_single_task(const char* mode,
     alienHandler->SetOutputFiles(ofile);
 
     // Optionally define the files to be archived.
-    alienHandler->SetOutputArchive("log_archive.zip:stdout,stderr");
+    //-
+    //alienHandler->SetOutputArchive("log_archive.zip:stdout,stderr");
   
     // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
     TString macroName; macroName.Form("run_%s.C",analysisName); macroName.ReplaceAll("-","_");
@@ -341,11 +418,11 @@ void run_single_task(const char* mode,
     // comment out the next line when using the "terminate" option, unless
     // you want separate merged files for each run
     if (strcmp(mode, "terminate")==0) {
-      alienHandler->SetMergeViaJDL();
+      alienHandler->SetMergeViaJDL(kFALSE);
     }
 
-    //alienHandler->SetOneStageMerging(kFALSE);
-    //alienHandler->SetMaxMergeStages(2);
+    alienHandler->SetOneStageMerging(kFALSE);
+    alienHandler->SetMaxMergeStages(2);
   }
 
   // Connect plugin to the analysis manager
@@ -379,7 +456,7 @@ void run_single_task(const char* mode,
   } else {
     taskSource+="+g";
     TString configuration;
-    configuration.Form("name=%s file=%s", analysisName, ofile.Data());
+    configuration.Form("name=%s file=%s %s", analysisName, ofile.Data(), useMC?"mc":"");
     if (gDirectory) gDirectory->Add(new TNamed("run_single_task_configuration", configuration.Data()));
     gROOT->Macro(taskSource);
   }
@@ -390,6 +467,7 @@ void run_single_task(const char* mode,
   //
   // run
   //
+  
   if (!pManager->InitAnalysis()) {
     cerr << "failed to initialize analysis" << endl;
     return;
@@ -408,7 +486,6 @@ TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs,
   // scan the file and add all include headers found by path
   // to the parameter headers
   ifstream input(filename);
-  
   if (input.bad()) {
     cerr << "failed to open file " << filename << endl;
     return headers;
@@ -454,11 +531,13 @@ TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs,
         if (!headers.BeginsWith(line)) {
           headers.ReplaceAll(line, "");
           if (!headers.IsNull()) headers.Insert(0, " ");
+	  if (macroVerbosity>0) cout << "moving " << line << endl;
           headers.Insert(0, line);
         }
         continue;
       }
       if (!headers.IsNull()) headers.Insert(0, " ");
+      if (macroVerbosity>0) cout << "inserting " << line << endl;
       headers.Insert(0, line);
       TString source=line; source.ReplaceAll(".h", ".cxx");
       if (gSystem->AccessPathName(source)==0) {
@@ -474,6 +553,7 @@ TString GetIncludeHeaders(const char* filename, TString& headers, TString& libs,
       }
     }
   }
+
   return headers;
 }
 
@@ -490,6 +570,7 @@ void ErrorConfigurationFile(const char* fileName) {
   cout << "const char* alienAliROOTVersion=\"v5-01-Rev-29\";" << endl;
   cout << "const char* defaultGridDataDir=\"/alice/data/2011/LHC11f\";" << endl;
   cout << "const char* defaultDataPattern=\"*ESDs.root\";" << endl;
+  cout << "const char* defaultFriendDataPattern=\"\";" << endl;
   cout << "{} // note this empty body";
   cout << endl;
 }
