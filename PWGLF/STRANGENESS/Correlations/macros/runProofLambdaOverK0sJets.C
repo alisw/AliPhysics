@@ -1,7 +1,7 @@
 //Based on the file $ALICE_ROOT/PWGLF/STRANGENESS/Cascades/macros/runProofCascadePbPb()
 void runProofLambdaOverK0sJets(TString  proofCluster  = "xsanchez@skaf.saske.sk",
-			       TString  alirootVer    = "VO_ALICE@AliRoot::v5-03-33-AN",
-			       TString  rootVer       = "VO_ALICE@ROOT::v5-33-02b", 
+			       TString  alirootVer    = "VO_ALICE@AliRoot::v5-03-46-AN",
+			       TString  rootVer       = "VO_ALICE@ROOT::v5-34-01-1", 
 			       TString  path          = "/alice/data/LHC10h_000138624_p2_AOD049",
 			       TString  name          = "LambdaOverK0sRatio", 
 			       Double_t minCen        = 0.,
@@ -9,6 +9,7 @@ void runProofLambdaOverK0sJets(TString  proofCluster  = "xsanchez@skaf.saske.sk"
 			       Double_t ptMinTrig     = 8.,
 			       Double_t ptMaxTrig     = 20.,
 			       Double_t etaMaxTrig    = 0.75,
+			       Double_t rapMaxV0      = 0.75,
 			       Bool_t   sepInjec      = kTRUE,
 			       Bool_t   isMC          = kFALSE,
 			       Bool_t   usePID        = kTRUE){
@@ -56,7 +57,7 @@ void runProofLambdaOverK0sJets(TString  proofCluster  = "xsanchez@skaf.saske.sk"
   // My task
   gProof->Load("AliAnalysisTaskLambdaOverK0sJets.cxx+g");
   gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
-  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,sepInjec,isMC,usePID);
+  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,rapMaxV0,sepInjec,isMC,usePID);
   
   // _____________________________________________________ //
   

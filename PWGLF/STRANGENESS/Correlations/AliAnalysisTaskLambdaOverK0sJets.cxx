@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  * 
  **************************************************************************/
 
-
 #include <TCanvas.h>
 #include <TTree.h>
 #include <TFile.h>
@@ -48,6 +47,7 @@
 #include "AliAnalysisTaskLambdaOverK0sJets.h"
 
 extern TROOT *gROOT;
+
 
 ClassImp(AliAnalysisTaskLambdaOverK0sJets)
 
@@ -1583,9 +1583,7 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
     
   noas:
 
-    Double_t pNeg = -100.;
     Double_t pPos = -100.;
-    Double_t dedxNeg = -1000.;
     Double_t dedxPos = -1000.;
 
     Double_t nsigPosPion   = 0.;
@@ -1598,9 +1596,7 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::V0Loop(AliAODTrack *trkTrig, V0LoopSt
       const AliAODPid *pidPos = ptrack->GetDetPid();
       
       if (pidNeg && pidPos) {
-	pNeg = pidNeg->GetTPCmomentum();
 	pPos = pidPos->GetTPCmomentum();
-	dedxNeg = pidNeg->GetTPCsignal()/47.; 
 	dedxPos = pidPos->GetTPCsignal()/47.; 
       }
      
@@ -2129,8 +2125,12 @@ TArrayD* AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
   isTriggerFromV0Daug  = TMath::FloorNint( v0Audit->At(1) );
   ptV0LP               = v0Audit->At(2);
   
-  if(isV0LP)
-    fTriggerIsV0->Fill(ptV0LP);
+  fCheckTriggerFromV0Daug->Fill(isTriggerFromV0Daug);
+
+  if(isV0LP) fTriggerIsV0->Fill(ptV0LP);
+
+  if(isTriggerFromV0Daug && isV0LP) 
+    fCheckTriggerFromV0Daug->Fill(2);
 
   if(isTriggerFromV0Daug)
     fTriggerComingFromDaug->Fill(ptTrigger);
@@ -2326,15 +2326,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
  
   // -------------------
    
-  fCheckTriggerFromV0Daug->Fill(isTriggerFromV0daug);
-
   if(!isTriggerFromV0daug && is2ndLoop) 
     fCheckTriggerFromV0Daug->Fill(-1);
-  else if(isTriggerFromV0daug && isV0LP) 
-    fCheckTriggerFromV0Daug->Fill(isTriggerFromV0daug+isV0LP);
   else if(isTriggerFromV0daug && isV0LP && is2ndLoop) 
-    fCheckTriggerFromV0Daug->Fill(isTriggerFromV0daug+isV0LP+is2ndLoop);
-  
+    fCheckTriggerFromV0Daug->Fill(3);
+
   // The highest-pt particle is a V0-candidate 
   if(isV0LP)
     fEvents->Fill(8);
