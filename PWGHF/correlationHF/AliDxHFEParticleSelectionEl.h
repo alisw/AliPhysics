@@ -15,11 +15,24 @@
 #define ALIDXHFEPARTICLESELECTIONEL_H
 
 #include "AliDxHFEParticleSelection.h"
+
+
+// 2012-09-17: there has been a problem in the dictionary generation for par file
+// compilation, so we have to include the header files indicated below
+//  Generating dictionary ...
+//  In file included from $ROOTSYS/include/TObject.h:230:0,
+//                   from G__PWGHFcorrelationHF.h:32,
+//                   from G__PWGHFcorrelationHF.cxx:17:
+//  $ROOTSYS/include/TBuffer.h: In function ‘TBuffer& operator>>(TBuffer&, Tmpl*&) [with Tmpl = AliHFEcuts]’:
+//  G__PWGHFcorrelationHF.cxx:1658:15:   instantiated from here
+//  $ROOTSYS/include/TBuffer.h:373:47: error: invalid use of incomplete type ‘struct AliHFEcuts’
+//  correlationHF/AliDxHFEParticleSelectionEl.h:25:7: error: forward declaration of ‘struct AliHFEcuts’
+#include "AliHFEcuts.h" // need to directly include to avoid compilation error in the dictionary
+#include "AliHFEpid.h"  // need to directly include to avoid compilation error in the dictionary
+
 class AliPID;
 class AliPIDResponse;
-class AliHFEcuts;
 class AliHFEvarManager;
-class AliHFEpid;
 class AliHFEpidBase;
 class AliHFEtools;
 class AliVEvent;
