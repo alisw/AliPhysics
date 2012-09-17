@@ -54,6 +54,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
+  void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
 
  protected:
   Bool_t                      AcceptCluster(AliVCluster        *clus,  Bool_t acceptMC = kFALSE) const;
@@ -92,6 +93,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fTrackMaxPhi;                // cut on track phi
   Double_t                    fClusTimeCutLow;             // low time cut for clusters
   Double_t                    fClusTimeCutUp;              // up time cut for clusters
+  Double_t                    fMinPtTrackInEmcal;          // min pt track in emcal
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
@@ -112,6 +114,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 7) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 8) // EMCAL base analysis task
 };
 #endif
