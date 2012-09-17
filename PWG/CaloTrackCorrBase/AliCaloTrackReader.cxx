@@ -275,25 +275,22 @@ AliHeader* AliCaloTrackReader::GetHeader() const
 AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const 
 {
   //Return pointer to Generated event header
-  if(fMC)
+  if     (ReadStack() && fMC)
   {
     return fMC->GenEventHeader();
   }
-  else
-  {    
-    if(GetAODMCHeader())
-    {
-      //printf("AliCaloTrackReader::GetGenEventHeader() - N headers %d\n",GetAODMCHeader()->GetNCocktailHeaders());
-      if( GetAODMCHeader()->GetNCocktailHeaders() > 0)
-        return GetAODMCHeader()->GetCocktailHeader(0) ;
-      else 
-        return 0x0;
-    }
+  else if(ReadAODMCParticles() && GetAODMCHeader())
+  {
+    //printf("AliCaloTrackReader::GetGenEventHeader() - N headers %d\n",GetAODMCHeader()->GetNCocktailHeaders());
+    if( GetAODMCHeader()->GetNCocktailHeaders() > 0)
+      return GetAODMCHeader()->GetCocktailHeader(0) ;
     else 
-    {
-      return 0;
-      printf("AliCaloTrackReader::GetGenEventHeader() - MC header not available!n");
-    }
+      return 0x0;
+  }
+  else 
+  {
+    return 0;
+    printf("AliCaloTrackReader::GetGenEventHeader() - MC header not available! \n");
   }
 }
 
