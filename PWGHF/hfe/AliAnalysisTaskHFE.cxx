@@ -598,7 +598,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
   if(!pidResponse){
     AliDebug(1, "Using default PID Response");
-    pidResponse = AliHFEtools::GetDefaultPID(HasMCData(), fInputEvent->IsA() == AliAODEvent::Class());
+    pidResponse = AliHFEtools::GetDefaultPID(HasMCData(), fInputEvent->IsA() == AliESDEvent::Class());
   }
   fPID->SetPIDResponse(pidResponse);
   if(fPIDpreselect) fPIDpreselect->SetPIDResponse(pidResponse);
@@ -778,6 +778,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   // Run Analysis of reconstructed event in ESD Mode
   // Loop over Tracks, filter according cut steps defined in AliHFEcuts
   //
+  AliDebug(1, Form("Task %s", GetName()));
   AliDebug(3, "Processing ESD Event");
   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
   if(!fESD){
@@ -826,7 +827,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
   if(!fPassTheEventCut) return;
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepReconstructed);
 
- 
 
   fContainer->NewEvent();
 
@@ -895,10 +895,14 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(fTaggedTrackAnalysis && v0pid > -1){ 
       AliDebug(1, Form("Track identified as %s", AliPID::ParticleName(v0pid)));
       fTaggedTrackAnalysis->ProcessTrack(track, v0pid);
+      AliDebug(1, "V0 PID done");
     }
  
+
+    //Fill non-HFE source containers at reconstructed events cut step
     AliDebug(3, Form("Doing track %d, %p", itrack, track));
-     
+
+
     //////////////////////////////////////
     // preselect
     /////////////////////////////////////
@@ -930,7 +934,44 @@ void AliAnalysisTaskHFE::ProcessESD(){
         fVarManager->FillContainer(fContainer, "recTrackContMC", AliHFEcuts::kStepRecNoCut, kTRUE);
       }
     }
-
+        
+    if(fisNonHFEsystematics && IsPbPb())  {
+      //FillProductionVertex(track);     
+      if(fMCQA && signal){ 
+	fMCQA->SetCentrality(fCentralityF);
+	if(mctrack && (TMath::Abs(mctrack->Particle()->GetPdgCode()) == 11)){
+	  Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.};
+          
+	  fMCQA->SetTrkKine(track->Pt(),track->Eta(), track->Phi());
+	  fMCQA->SetContainerStep(4);
+          
+	  weightElecBgV0[0] = fMCQA->GetWeightFactor(mctrack, 0); // positive:conversion e, negative: nonHFE 
+          
+	  //Fill additional containers for electron source distinction
+	  Int_t elecSource = 0;
+	  elecSource = fMCQA->GetElecSource(mctrack->Particle());
+	  const Char_t *sourceName[kElecBgSpecies]={"Pion","Eta","Omega","Phi","EtaPrime","Rho"};
+	  const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
+	  Int_t iName = 0;
+	  for(Int_t iSource = AliHFEmcQA::kPi0; iSource <=  AliHFEmcQA::kGammaRho0; iSource++){
+	    if((iSource == AliHFEmcQA::kElse)||(iSource == AliHFEmcQA::kMisID)) continue;
+	    if(elecSource == iSource){
+	      
+	      if(weightElecBgV0[0]>0){ 
+		fVarManager->FillContainer(fContainer, Form("conversionElecs%s%s",sourceName[iName], levelName[0]), 4, kTRUE, weightElecBgV0[0]);
+	      } 
+	      else if(weightElecBgV0[0]<0){ 
+		fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[0]), 4, kTRUE, -1*weightElecBgV0[0]);
+	      }           
+	      break;
+	    }
+	    iName++;
+	    if(iName == kElecBgSpecies)iName = 0;
+	  }
+	}
+      }
+    }
+  
     // RecKine: ITSTPC cuts  
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
     
@@ -979,7 +1020,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
          fMCQA->SetContainerStep(3);
          for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
            weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
-           if(!fisNonHFEsystematics)break;   
+           if(!fisNonHFEsystematics || IsPbPb())break;   
          }
          
          if(fisNonHFEsystematics){
@@ -999,6 +1040,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
                  else if(weightElecBgV0[iLevel]<0){ 
                    fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[iLevel]), 3, kFALSE, -1*weightElecBgV0[iLevel]);
                  }
+                 if(IsPbPb())break;
                }
                break;
              }
@@ -1212,7 +1254,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
           fMCQA->SetContainerStep(0);
           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
             weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
-            if(!fisNonHFEsystematics)break;        
+            if(!fisNonHFEsystematics || IsPbPb())break;        
           }
           
           if(fisNonHFEsystematics){
@@ -1227,6 +1269,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
                 for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
                   if(weightElecBgV0[iLevel]>0) fVarManager->FillContainer(fContainer, Form("conversionElecs%s%s",sourceName[iName], levelName[iLevel]), 0, kFALSE, weightElecBgV0[iLevel]);
                   else if(weightElecBgV0[iLevel]<0) fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[iLevel]), 0, kFALSE, -1*weightElecBgV0[iLevel]);
+                  if(IsPbPb())break;
                 }
                 break;
               }
@@ -1266,7 +1309,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
           fMCQA->SetContainerStep(1);
           for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
             weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
-            if(!fisNonHFEsystematics)break;        
+            if(!fisNonHFEsystematics || IsPbPb())break;        
           }       
           if(fisNonHFEsystematics){
             //Fill additional containers for electron source distinction             
@@ -1280,6 +1323,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
                 for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
                   if(weightElecBgV0[iLevel]>0) fVarManager->FillContainer(fContainer, Form("conversionElecs%s%s",sourceName[iName], levelName[iLevel]), 1, kFALSE, weightElecBgV0[iLevel]);
                   else if(weightElecBgV0[iLevel]<0) fVarManager->FillContainer(fContainer, Form("mesonElecs%s%s",sourceName[iName], levelName[iLevel]), 1, kFALSE, -1*weightElecBgV0[iLevel]);
+                  if(IsPbPb())break;
                 }
                 break;
               }
@@ -1324,9 +1368,10 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   //printf("Process AOD\n");
   AliDebug(3, "Processing AOD Event");
   Double_t eventContainer[4];
+  eventContainer[0] = 0.0;
   if(HasMCData()) eventContainer[0] = fVz;
   else {
-    eventContainer[0] = fInputEvent->GetPrimaryVertex()->GetZ();
+    if(fInputEvent->GetPrimaryVertex()) eventContainer[0] = fInputEvent->GetPrimaryVertex()->GetZ();
   }
   eventContainer[1] = 1.; // No Information available in AOD analysis, assume all events have V0AND
   eventContainer[2] = fCentralityF; 
@@ -1699,10 +1744,11 @@ void AliAnalysisTaskHFE::MakeParticleContainer(){
       const Char_t *levelName[kBgLevels]={"Best","Lower","Upper"};
       for(Int_t iSource = 0; iSource < kElecBgSpecies; iSource++){
         for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
-          fContainer->CreateContainer(Form("conversionElecs%s%s",sourceName[iSource],levelName[iLevel]), Form("Container for weighted conversion electrons from %s grandm., %s level",sourceName[iSource],levelName[iLevel]),4);
-          fContainer->CreateContainer(Form("mesonElecs%s%s",sourceName[iSource],levelName[iLevel]), Form("Container for weighted electrons from %s decays, %s level",sourceName[iSource],levelName[iLevel]),4);
+          fContainer->CreateContainer(Form("conversionElecs%s%s",sourceName[iSource],levelName[iLevel]), Form("Container for weighted conversion electrons from %s grandm., %s level",sourceName[iSource],levelName[iLevel]),5);
+          fContainer->CreateContainer(Form("mesonElecs%s%s",sourceName[iSource],levelName[iLevel]), Form("Container for weighted electrons from %s decays, %s level",sourceName[iSource],levelName[iLevel]),5);
           fContainer->Sumw2(Form("conversionElecs%s%s",sourceName[iSource],levelName[iLevel]));
           fContainer->Sumw2(Form("mesonElecs%s%s",sourceName[iSource],levelName[iLevel]));
+          if(IsPbPb())break;
         }
       }
     }
@@ -2013,7 +2059,10 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
   }
   else {
     Int_t contributorstemp = vtx->GetNContributors();
-    if( contributorstemp <=  0) fContributors =  0.5;
+    if( contributorstemp <=  0) {
+      fContributors =  0.5;
+      //printf("Number of contributors %d and vz %f\n",contributorstemp,vtx->GetZ());
+    }
     else fContributors = 1.5;
     //printf("Number of contributors %d\n",contributorstemp);
   }

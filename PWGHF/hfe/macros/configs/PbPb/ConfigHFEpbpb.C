@@ -1,10 +1,10 @@
 TF1* GetEtaCorrection(){
   TString list=gSystem->Getenv("LIST");
 
-  TString etaMap="$TRAIN_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
+  TString etaMap="$ALICE_ROOT/PWGDQ/dielectron/files/EtaCorrMaps.root";
   
   if (gSystem->AccessPathName(gSystem->ExpandPathName(etaMap.Data()))){
-    Error("ConfigPbPb2010_Cent","Eta map not found: %s",etaMap.Data());
+    Error("ConfigHFEpbpb","Eta map not found: %s",etaMap.Data());
     return 0;
   }
 
