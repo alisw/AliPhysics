@@ -148,9 +148,13 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPhoElecPtMCM20(0)
   ,fSameElecPtMC(0)
   ,fSameElecPtMCM20(0)
+  ,fIncpTMCM20pho_pi0e(0)	
+  ,fPhoElecPtMCM20_pi0e(0)
+  ,fSameElecPtMCM20_pi0e(0)
   ,CheckNclust(0)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
+  ,HphopTcheck(0)
 {
   //Named constructor
   
@@ -234,9 +238,13 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPhoElecPtMCM20(0)
   ,fSameElecPtMC(0)
   ,fSameElecPtMCM20(0)
+  ,fIncpTMCM20pho_pi0e(0)	
+  ,fPhoElecPtMCM20_pi0e(0)
+  ,fSameElecPtMCM20_pi0e(0)
   ,CheckNclust(0)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
+  ,HphopTcheck(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -321,14 +329,18 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       if(!MChijing)iHijing = 0;
       if(fPDG==111)Hpi0pTcheck->Fill(pTMC,iHijing);
 
+      if(particle->GetFirstMother()>-1 && fPDG==22)
+        {
+	 int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();  
+         if(parentPID==111 || parentPID==221)HphopTcheck->Fill(pTMC,iHijing); // pi0->g & eta->g
+        } 
+
       if(particle->GetFirstMother()>-1 && fabs(fPDG)==11)
         {
 	    int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();  
             if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(fPDG)==11)mcInDtoE = kTRUE;
             if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(fPDG)==11)mcInBtoE = kTRUE;
             if((mcInBtoE || mcInDtoE) && fabs(mcZvertex)<10.0)fInputHFEMC->Fill(cent,pTMC);
-
-
          }
 
          if(proR<7.0 && fabs(fPDG)==11)fInputAlle->Fill(cent,pTMC);
@@ -404,6 +416,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     double mcele = -1.;
     double mcpT = 0.0;
     double mcMompT = 0.0;
+    //double mcGrandMompT = 0.0;
+    double mcWeight = -10.0;
 
     int iHijing = 1;
 
@@ -420,11 +434,46 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        //printf("MCpid = %d",mcpid);
        if(particle->GetFirstMother()>-1)
          {
+          int parentlabel = particle->GetFirstMother();
           int parentPID = stack->Particle(particle->GetFirstMother())->GetPdgCode();
           mcMompT = stack->Particle(particle->GetFirstMother())->Pt();
           if((parentPID==22 || parentPID==111 || parentPID==221)&& fabs(mcpid)==11)mcPho = kTRUE;
           if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(mcpid)==11)mcDtoE = kTRUE;
           if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(mcpid)==11)mcBtoE = kTRUE;
+
+          // pi->e (Da;itz)
+          if(parentPID==111 && fabs(mcpid)==11)
+              {
+                 if(mcMompT>0.0 && mcMompT<5.0)
+                   {
+                    mcWeight = 0.323*mcMompT/(TMath::Exp(-1.6+0.767*mcMompT+0.0285*mcMompT*mcMompT));
+                   }
+                 else
+                   {
+                    mcWeight = 115.0/(0.718*mcMompT*TMath::Power(mcMompT,3.65));
+                   }
+              }
+
+          // access grand parent pi0->g->e
+          TParticle* particle_parent = stack->Particle(parentlabel); // get parent pointer
+          if(particle_parent->GetFirstMother()>-1 && parentPID==22 && fabs(mcpid)==11) // get grand parent g->e
+            {
+             int grand_parentPID = stack->Particle(particle_parent->GetFirstMother())->GetPdgCode();
+             if(grand_parentPID==111)
+                {
+                 //mcGrandMompT = stack->Particle(particle_parent->GetFirstMother())->Pt();
+                 double pTtmp = stack->Particle(particle_parent->GetFirstMother())->Pt();
+                 //if(mcGrandMompT>0.0 && mcGrandMompT<5.0)
+                 if(pTtmp>0.0 && pTtmp<5.0)
+                   {
+                    mcWeight = 0.323*pTtmp/(TMath::Exp(-1.6+0.767*pTtmp+0.0285*pTtmp*pTtmp));
+                   }
+                 else
+                   {
+                    mcWeight = 115.0/(0.718*pTtmp*TMath::Power(pTtmp,3.65));
+                   }
+                }
+            }
          } 
        if(fabs(mcpid)==11 && mcDtoE)mcele= 1.; 
        if(fabs(mcpid)==11 && mcBtoE)mcele= 2.; 
@@ -571,18 +620,19 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
      }
     
     // MC
-    if(mcele>0)
+    if(mcele>0) // select MC electrons
       {
 
           fIncpTMChfeAll->Fill(cent,pt);    
           if(m20>0.0 && m20<0.3)fIncpTMCM20hfeAll->Fill(cent,pt);    
 
-       if(mcBtoE || mcDtoE)
+       if(mcBtoE || mcDtoE) // select B->e & D->e
          {
           fIncpTMChfe->Fill(cent,pt);    
           if(m20>0.0 && m20<0.3)fIncpTMCM20hfe->Fill(cent,pt);    
          }
-       if(mcPho)
+      
+       if(mcPho) // select photonic electrons
         {
          double phoval[4];
          phoval[0] = cent;
@@ -599,6 +649,13 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
             fIncpTMCM20pho->Fill(phoval);    
             if(fFlagPhotonicElec) fPhoElecPtMCM20->Fill(phoval);
             if(fFlagConvinatElec) fSameElecPtMCM20->Fill(phoval);
+            // pi0->g->e
+            if(mcWeight>-1)
+              {
+               fIncpTMCM20pho_pi0e->Fill(phoval,mcWeight);    
+               if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval,mcWeight);
+               if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval,mcWeight);
+              }
            }
         } 
       } 
@@ -852,6 +909,15 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fSameElecPtMCM20 = new THnSparseD("fSameElecPtMCM20", "MC Same-inclusive electron pt with M20",4,nBinspho2,minpho2,maxpho2);
   fOutputList->Add(fSameElecPtMCM20);
 
+  fIncpTMCM20pho_pi0e = new THnSparseD("fIncpTMCM20pho_pi0e","MC Pho pi0->e pid electro vs. centrality with M20",4,nBinspho2,minpho2,maxpho2);
+  fOutputList->Add(fIncpTMCM20pho_pi0e);
+
+  fPhoElecPtMCM20_pi0e = new THnSparseD("fPhoElecPtMCM20_pi0e", "MC Pho-inclusive electron pt with M20 pi0->e",4,nBinspho2,minpho2,maxpho2);
+  fOutputList->Add(fPhoElecPtMCM20_pi0e);
+
+  fSameElecPtMCM20_pi0e = new THnSparseD("fSameElecPtMCM20_pi0e", "MC Same-inclusive electron pt pi0->e",4,nBinspho2,minpho2,maxpho2);
+  fOutputList->Add(fSameElecPtMCM20_pi0e);
+
   CheckNclust = new TH1D("CheckNclust","cluster check",200,0,200);
   fOutputList->Add(CheckNclust);
 
@@ -860,6 +926,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   Hpi0pTcheck = new TH2D("Hpi0pTcheck","Pi0 pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(Hpi0pTcheck);
+
+  HphopTcheck = new TH2D("HphopTcheck","Pho pT from Hijing",100,0,50,3,-0.5,2.5);
+  fOutputList->Add(HphopTcheck);
 
 
   PostData(1,fOutputList);
