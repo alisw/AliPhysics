@@ -1,8 +1,8 @@
 class AliAnalysisAlien;
 
 void runGridLambdaOverK0sJets(TString  runMode    = "full", 
-			      TString  alirootVer = "v5-03-39-AN",
-			      TString  rootVer    = "v5-33-02b", 
+			      TString  alirootVer = "v5-03-46-AN",
+			      TString  rootVer    = "v5-34-01-1",
 			      TString  dataPath   = "ESDs/pass2/AOD049/*/AliAOD.root",
 			      TString  dataDir    = "/alice/data/2010/LHC10h",
 			      TString  workDir    = "work",
@@ -12,6 +12,7 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
 			      Double_t ptMinTrig  = 8.,
 			      Double_t ptMaxTrig  = 20.,
 			      Double_t etaMaxTrig = 0.75,
+			      Double_t rapMaxV0   = 0.75,
 			      Bool_t   sepInjec   = kTRUE,
 			      Bool_t   isMC       = kFALSE,
 			      Bool_t   usePID     = kTRUE,
@@ -41,11 +42,11 @@ void runGridLambdaOverK0sJets(TString  runMode    = "full",
   AliAnalysisTask *pidTask = AddTaskPIDResponse(isMC);
   //AliAnalysisTask *pidTask = AddTaskPIDResponse(isMC,kTRUE);
   if(!pidTask) { printf("no PIDtask\n"); return; }
-  
+ 
   // My task
   gROOT->LoadMacro("AliAnalysisTaskLambdaOverK0sJets.cxx+g"); 
   gROOT->LoadMacro("AddTaskLambdaOverK0sJets.C");
-  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,sepInjec,isMC,usePID);
+  AliAnalysisTaskLambdaOverK0sJets *task = AddTaskLambdaOverK0sJets(name,minCen,maxCen,ptMinTrig,ptMaxTrig,etaMaxTrig,rapMaxV0,sepInjec,isMC,usePID);
    // _____________________________________________________ //
  
    if (!mgr->InitAnalysis()) return;
@@ -81,7 +82,9 @@ void InitAndLoadLibs() {
     gSystem->Load("libRAWDatabase.so");
     gSystem->Load("libSTEER.so");
     gSystem->Load("libCORRFW.so");
- 
+
+   
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 }
 
 // ___________________________________________________________________ //

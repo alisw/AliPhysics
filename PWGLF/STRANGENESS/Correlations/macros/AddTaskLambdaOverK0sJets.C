@@ -4,6 +4,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
 							    Double_t ptMinTrig = 8.,
 							    Double_t ptMaxTrig = 20.,
 							    Double_t etaMaxTrig = 0.75,
+							    Double_t rapMaxV0  = 0.75,
 							    Bool_t   sepInjec  = kTRUE,
 							    Bool_t   isMC      = kFALSE,
 							    Bool_t   usePID    = kTRUE){
@@ -21,6 +22,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   task->SetCentrality(minCen,maxCen);
   task->SetTriggerPt(ptMinTrig,ptMaxTrig);
   task->SetTriggerEta(etaMaxTrig);
+  task->SetMaxY(rapMaxV0);
   task->SetSeparateInjectedPart(sepInjec);
   task->SetMC(isMC);
   task->SetPID(usePID);
@@ -38,7 +40,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   if (isMC) name+="_mc";
   
   AliAnalysisDataContainer *coutput1 =  
-    mgr->CreateContainer("LambdaOverK0sRatio", TList::Class(), 
+    mgr->CreateContainer(name, TList::Class(), 
 			 AliAnalysisManager::kOutputContainer, 
 			 name+".root");
   
