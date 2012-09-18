@@ -1,4 +1,5 @@
-AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* options = "",
+AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
+					    const char* options = "",
 					    UInt_t offlineTriggerMask = AliVEvent::kCentral )
 {
   //Add a task AliAnalysisTaskPi0Flow to the analysis train
@@ -34,7 +35,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* options = "",
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("PHOSPi0FlowCoutput1", TList::Class(), AliAnalysisManager::kOutputContainer, 
-							    Form("%s:PHOSPi0Flow", AliAnalysisManager::GetCommonFileName()) 		);
+							    Form("%s:%s", AliAnalysisManager::GetCommonFileName(), name) 		);
   mgr->ConnectOutput(task, 1, coutput1);
   
   return task;
