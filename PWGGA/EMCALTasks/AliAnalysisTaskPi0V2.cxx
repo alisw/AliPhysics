@@ -48,6 +48,8 @@
 #include "AliEventplane.h"
 #include "AliEMCALGeometry.h"
 #include "THnSparse.h"
+#include "TClonesArray.h"
+#include "TString.h"
 
 using std::cout;
 using std::endl;
@@ -59,7 +61,8 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
    :AliAnalysisTaskSE(name),
     fOutput(0),
     fESD(0),
-    fTrackCuts(0),
+    fTracksName("Tracks"),
+    fTracks(0),
     fEvtSelect(1),
     fVtxCut(10.),
     fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0),
@@ -79,7 +82,6 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) // All data members
 
 {
     // Dummy constructor ALWAYS needed for I/O.
-    fTrackCuts = new AliESDtrackCuts();
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());                                            // for output list
 }
@@ -89,7 +91,8 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
    :AliAnalysisTaskSE("default_name"),
     fOutput(0),
     fESD(0),
-    fTrackCuts(0),
+    fTracksName("Tracks"),
+    fTracks(0),
     fEvtSelect(1),
     fVtxCut(10.),
     fNcellCut(2), fECut(1), fEtaCut(0.65), fM02Cut(0.5), fPi0AsyCut(0),
@@ -111,7 +114,6 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() // All data members should be initi
     // Define input and output slots here (never in the dummy constructor)
     // Input slot #0 works with a TChain - it is connected to the default input container
     // Output slot #1 writes into a TH1 container
-    fTrackCuts = new AliESDtrackCuts();
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());                                            // for output list
 }
@@ -121,7 +123,6 @@ AliAnalysisTaskPi0V2::~AliAnalysisTaskPi0V2()
 {
     // Destructor. Clean-up the output list, but not the histograms that are put inside
     // (the list is owner and will clean-up these histograms). Protect in PROOF case.
-     delete fTrackCuts;
      delete fOutput;
 }
 //_____________________________________________________________________
@@ -663,46 +664,46 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
      } 
    }
 
-   //for track analysis.
-   fTrackCuts->SetAcceptKinkDaughters(kFALSE);
-   fTrackCuts->SetRequireTPCRefit(kTRUE);
-   fTrackCuts->SetRequireITSRefit(kTRUE);
-   fTrackCuts->SetEtaRange(-0.7,0.7);
-   fTrackCuts->SetRequireSigmaToVertex(kTRUE);
-   fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
-   fTrackCuts->SetMinNClustersTPC(100);
+   if (!fTracksName.IsNull() && !fTracks) {
+     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksName));
+     if (!fTracks) {
+       AliError(Form("%s: Could not retrieve tracks %s!", GetName(), fTracksName.Data())); 
+       return;
+     } else {
+       TClass *cl = fTracks->GetClass();
+       if (!cl->GetBaseClass("AliVParticle") && !cl->GetBaseClass("AliEmcalParticle")) {
+	 AliError(Form("%s: Collection %s does not contain AliVParticle nor AliEmcalParticle objects!", GetName(), fTracksName.Data())); 
+	 fTracks = 0;
+	 return;
+       }
+     }
+   }
 
-   Int_t nTrack = fESD->GetNumberOfTracks();
-   for(Int_t i=0; i<nTrack; ++i){
-     AliESDtrack* esdtrack = fESD->GetTrack(i); // pointer to reconstructed to track          
-     if(!fTrackCuts->AcceptTrack(esdtrack))
-       continue;
-     if(!esdtrack) {
-       AliError(Form("ERROR: Could not retrieve esdtrack %d",i));
-            continue;
-        }
-	Double_t tPhi = esdtrack->Phi();
-	Double_t tPt  = esdtrack->Pt();
+   Int_t ntracks = fTracks->GetEntries();
+   for(Int_t i=0; i<ntracks; ++i){
+     AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(i));
+     Double_t tPhi = track->Phi();
+     Double_t tPt  = track->Pt();
 
-	Double_t difTrackV0  = TVector2::Phi_0_2pi(tPhi-fEPV0);   if(difTrackV0  >TMath::Pi()) difTrackV0  -= TMath::Pi();
-	Double_t difTrackV0A = TVector2::Phi_0_2pi(tPhi-fEPV0A);  if(difTrackV0A >TMath::Pi()) difTrackV0A -= TMath::Pi();
-	Double_t difTrackV0C = TVector2::Phi_0_2pi(tPhi-fEPV0C);  if(difTrackV0C >TMath::Pi()) difTrackV0C -= TMath::Pi();
-	Double_t difTrackTPC = TVector2::Phi_0_2pi(tPhi-fEPTPC);  if(difTrackTPC >TMath::Pi()) difTrackTPC -= TMath::Pi();
-	if(esdtrack->IsEMCAL()){	
-          hdifEMC_EPV0->Fill(fCentrality, difTrackV0, tPt);
-          hdifEMC_EPV0A->Fill(fCentrality, difTrackV0A, tPt);
-          hdifEMC_EPV0C->Fill(fCentrality, difTrackV0C, tPt);
-          hdifEMC_EPTPC->Fill(fCentrality, difTrackTPC, tPt);
-	}else{
-	  hdifout_EPV0->Fill(fCentrality, difTrackV0, tPt);
-	  hdifout_EPV0A->Fill(fCentrality, difTrackV0A, tPt);
-	  hdifout_EPV0C->Fill(fCentrality, difTrackV0C, tPt);
-	  hdifout_EPTPC->Fill(fCentrality, difTrackTPC, tPt);
-	}
-	hdifful_EPV0->Fill(fCentrality,    difTrackV0, tPt);
-	hdifful_EPV0A->Fill(fCentrality,   difTrackV0A, tPt);
-	hdifful_EPV0C->Fill(fCentrality,   difTrackV0C, tPt);
-	hdifful_EPTPC->Fill(fCentrality,   difTrackTPC, tPt);
+     Double_t difTrackV0  = TVector2::Phi_0_2pi(tPhi-fEPV0);   if(difTrackV0  >TMath::Pi()) difTrackV0  -= TMath::Pi();
+     Double_t difTrackV0A = TVector2::Phi_0_2pi(tPhi-fEPV0A);  if(difTrackV0A >TMath::Pi()) difTrackV0A -= TMath::Pi();
+     Double_t difTrackV0C = TVector2::Phi_0_2pi(tPhi-fEPV0C);  if(difTrackV0C >TMath::Pi()) difTrackV0C -= TMath::Pi();
+     Double_t difTrackTPC = TVector2::Phi_0_2pi(tPhi-fEPTPC);  if(difTrackTPC >TMath::Pi()) difTrackTPC -= TMath::Pi();
+     if(track->IsEMCAL()){	
+       hdifEMC_EPV0->Fill(fCentrality, difTrackV0, tPt);
+       hdifEMC_EPV0A->Fill(fCentrality, difTrackV0A, tPt);
+       hdifEMC_EPV0C->Fill(fCentrality, difTrackV0C, tPt);
+       hdifEMC_EPTPC->Fill(fCentrality, difTrackTPC, tPt);
+     }else{
+       hdifout_EPV0->Fill(fCentrality, difTrackV0, tPt);
+       hdifout_EPV0A->Fill(fCentrality, difTrackV0A, tPt);
+       hdifout_EPV0C->Fill(fCentrality, difTrackV0C, tPt);
+       hdifout_EPTPC->Fill(fCentrality, difTrackTPC, tPt);
+     }
+     hdifful_EPV0->Fill(fCentrality,    difTrackV0, tPt);
+     hdifful_EPV0A->Fill(fCentrality,   difTrackV0A, tPt);
+     hdifful_EPV0C->Fill(fCentrality,   difTrackV0C, tPt);
+     hdifful_EPTPC->Fill(fCentrality,   difTrackTPC, tPt);
     }
     hEvtCount->Fill(6);
 

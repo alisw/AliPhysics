@@ -21,6 +21,8 @@ class AliESDCaloCluster;
 class AliESDtrackCuts;
 class AliESDEvent;
 class THnSparse;
+class TClonesArray;
+class TString;
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -49,12 +51,14 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     void		SetClusEta(Double_t e )	        { fEtaCut     =e ;}
     void		SetClusM02(Double_t m )	        { fM02Cut     =m ;}
     void		SetPi0Asy(Double_t a )	        { fPi0AsyCut  =a ;}
+    void                SetTracksName(const char *n)    { fTracksName =n ;}
 
     
  private:
     TList           		*fOutput;        //! Output list
     AliESDEvent			*fESD;          //!ESD object
-    AliESDtrackCuts             *fTrackCuts;    //! ESD track cuts
+    TString                     fTracksName;    // name of track collection
+    TClonesArray                *fTracks;       //! pico tracks specific for Skim ESD
     Double_t 			fEvtSelect;	// 1 = MB+Semi+Central, 2 = MB+Semi, 3 = MB;
     Double_t			fVtxCut;	// vertex cut
     Double_t			fNcellCut;      // N cells Cut
@@ -137,7 +141,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     AliAnalysisTaskPi0V2(const AliAnalysisTaskPi0V2&); // not implemented
     AliAnalysisTaskPi0V2& operator=(const AliAnalysisTaskPi0V2&); // not implemented
     
-    ClassDef(AliAnalysisTaskPi0V2, 3); // example of analysis
+    ClassDef(AliAnalysisTaskPi0V2, 4); // example of analysis
 };
 
 #endif
