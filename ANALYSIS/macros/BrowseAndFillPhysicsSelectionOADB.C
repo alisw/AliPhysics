@@ -1228,7 +1228,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-C-NOPF-ALLNOTRD","C",triggerCount);
   oadbLHC12g->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-E-NOPF-ALLNOTRD","E",triggerCount);  
   oadbLHC12g->SetHardwareTrigger         ( triggerCount,"V0A || V0C");
-  oadbLHC12g->SetOfflineTrigger          ( triggerCount,"(V0A || V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp");
+  oadbLHC12g->SetOfflineTrigger          ( triggerCount,"(V0A || V0C) && !V0ABG && !V0CBG && !ZNABG && !ZNCBG && !TPCLaserWarmUp");
 
   triggerCount++;
   oadbLHC12g->AddCollisionTriggerClass   ( AliVEvent::kZED,"+C1ZED-B-NOPF-ALLNOTRD", "B",  triggerCount);

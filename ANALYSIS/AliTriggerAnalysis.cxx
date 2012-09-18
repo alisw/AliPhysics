@@ -249,6 +249,10 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kZDC : str = "ZDC"; break;
     case kZDCA : str = "ZDC A"; break;
     case kZDCC : str = "ZDC C"; break;
+    case kZNA : str = "ZN A"; break;
+    case kZNC : str = "ZN C"; break;
+    case kZNABG : str = "ZN A BG"; break;
+    case kZNCBG : str = "ZN C BG"; break;
     case kFMDA : str = "FMD A"; break;
     case kFMDC : str = "FMD C"; break;
     case kFPANY : str = "SPD GFO | V0 | ZDC | FMD"; break;
@@ -471,6 +475,38 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigg
         decision = 1;
       break;
     }
+    case kZNA:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (ZDCTDCTrigger(aEsd,kASide,kTRUE,kFALSE,kFALSE))
+	decision = 1;
+      break;
+    }
+    case kZNC:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (ZDCTDCTrigger(aEsd,kCSide,kTRUE,kFALSE,kFALSE))
+	decision = 1;
+      break;
+    }
+    case kZNABG:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (ZDCTimeBGTrigger(aEsd,kASide))
+	decision = 1;
+      break;
+    }
+    case kZNCBG:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (ZDCTimeBGTrigger(aEsd,kCSide))
+	decision = 1;
+      break;
+    }
     case kFMDA:
     {
       if (!offline)
@@ -681,6 +717,30 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     {
       if (ZDCTrigger(aEsd, kCSide))
         decision = kTRUE;
+      break;
+    }
+    case kZNA:
+    {
+      if (ZDCTDCTrigger(aEsd,kASide,kTRUE,kFALSE,kFALSE))
+	decision = kTRUE;
+      break;
+    }
+    case kZNC:
+    {
+      if (ZDCTDCTrigger(aEsd,kCSide,kTRUE,kFALSE,kFALSE))
+	decision = kTRUE;
+      break;
+    }
+    case kZNABG:
+    {
+      if (ZDCTimeBGTrigger(aEsd,kASide))
+	decision = kTRUE;
+      break;
+    }
+    case kZNCBG:
+    {
+      if (ZDCTimeBGTrigger(aEsd,kCSide))
+	decision = kTRUE;
       break;
     }
     case kFMDA:
@@ -1370,6 +1430,49 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
     }
   }
   return zdcAccept;
+}
+
+Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide side) const
+{
+  // This method implements a selection
+  // based on the timing in of zdcN
+  // It can be used in order to flag  background
+
+  AliESDZDC *zdcData = aEsd->GetESDZDC();
+  Bool_t zna = kFALSE;
+  Bool_t znc = kFALSE;
+
+  Float_t tdcC=999, tdcCcorr=999, tdcA=999, tdcAcorr=999;
+  for(Int_t i = 0; i < 4; ++i) {
+    if (zdcData->GetZDCTDCData(10,i) != 0) {
+      znc = kTRUE;
+      tdcC = 0.025*(zdcData->GetZDCTDCData(10,i)-zdcData->GetZDCTDCData(14,i));
+      tdcCcorr = zdcData->GetZDCTDCCorrected(10,i);
+    }
+  }
+  for(Int_t j = 0; j < 4; ++j) {
+    if (zdcData->GetZDCTDCData(12,j) != 0) {
+      zna = kTRUE;
+      tdcA = 0.025*(zdcData->GetZDCTDCData(12,j)-zdcData->GetZDCTDCData(14,j));
+      tdcAcorr = zdcData->GetZDCTDCCorrected(12,j);
+    }
+  }
+
+  const Int_t runNumber = aEsd->GetRunNumber();
+  if(runNumber<188124 || runNumber>188374){
+    AliError(Form(" ZN BG time cut not implemented for run %d",runNumber));
+    return kFALSE;
+  }
+
+  Bool_t znabg = (zna && (TMath::Abs(tdcAcorr)>2.0));
+  Bool_t zncbg = (znc && (TMath::Abs(tdcCcorr)>5.0));
+
+  // Printf("Checking ZN background (time) for run %d, A = %d, time=%2.2f, C = %d, time=%2.2f",runNumber,(Int_t)zna,tdcAcorr,(Int_t)znc,tdcCcorr);
+  // Printf("Checking ZN background (time) for run %d, A-BG = %d, C-BG = %d",runNumber,(Int_t)znabg,(Int_t)zncbg);
+
+  if (side == kASide) return znabg;
+  if (side == kCSide) return zncbg;
+  return kFALSE;
 }
 
 Bool_t AliTriggerAnalysis::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const

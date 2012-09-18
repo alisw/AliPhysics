@@ -26,7 +26,7 @@ class AliTriggerAnalysis : public TObject
 {
   public:
     enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, 
-		   kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
+		   kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kZNA, kZNC, kZNABG, kZNCBG, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
 		   kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, kSPDClsVsTrkBG,
 		   kCentral,kSemiCentral, kT0, kT0BG, kT0Pileup, kEMCAL,
 		   kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
@@ -63,6 +63,7 @@ class AliTriggerAnalysis : public TObject
     Bool_t ZDCTrigger   (const AliESDEvent* aEsd, AliceSide side) const;
     Bool_t ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t useZN=kTRUE, Bool_t useZP=kFALSE, Bool_t fillHists=kFALSE) const;
     Bool_t ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHists=kFALSE) const;
+    Bool_t ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide side) const;
     Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side);
     Int_t SSDClusters(const AliESDEvent* aEsd);
     Bool_t EMCALCellsTrigger(const AliESDEvent *aEsd);
