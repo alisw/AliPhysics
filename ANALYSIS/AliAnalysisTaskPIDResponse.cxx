@@ -37,6 +37,7 @@ AliAnalysisTaskSE(),
 fIsMC(kFALSE),
 fCachePID(kTRUE),
 fOADBPath(),
+fSpecialDetResponse(),
 fPIDResponse(0x0),
 fRun(0),
 fOldRun(0),
@@ -55,6 +56,7 @@ AliAnalysisTaskSE(name),
 fIsMC(kFALSE),
 fCachePID(kTRUE),
 fOADBPath(),
+fSpecialDetResponse(),
 fPIDResponse(0x0),
 fRun(0),
 fOldRun(0),
@@ -96,9 +98,22 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   if (!fPIDResponse) AliFatal("PIDResponse object was not created");
 
   fPIDResponse->SetOADBPath(AliAnalysisManager::GetOADBPath());
+  fPIDResponse->SetCachePID(fCachePID);
   if (!fOADBPath.IsNull()) fPIDResponse->SetOADBPath(fOADBPath.Data());
 
   if(fIsTunedOnData) fPIDResponse->SetTunedOnData(kTRUE,fRecoPassTuned);
+
+  if (!fSpecialDetResponse.IsNull()){
+    TObjArray *arr=fSpecialDetResponse.Tokenize("; ");
+    for (Int_t i=0; i<arr->GetEntriesFast();++i){
+      TString resp(arr->At(i)->GetName());
+      if (resp.BeginsWith("TPC:")){
+        resp.ReplaceAll("TPC:","");
+        fPIDResponse->SetCustomTPCpidResponse(resp.Data());
+        AliInfo(Form("Setting custom TPC response file: '%s'",resp.Data()));
+      }
+    }
+  }
 }
 
 //______________________________________________________________________________

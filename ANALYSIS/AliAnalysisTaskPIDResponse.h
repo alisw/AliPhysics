@@ -44,10 +44,13 @@ public:
   const char* GetOADBPath() const { return fOADBPath.Data(); }
   void SetTuneOnData(Bool_t flag,Int_t recopass){fIsTunedOnData=flag;fRecoPassTuned=recopass;};
 
+  void SetSpecialDetectorResponse(const char* det) { fSpecialDetResponse=det; }
+
 private:
   Bool_t fIsMC;                        // If we run on MC data
   Bool_t fCachePID;                    // Cache PID values in transient object
   TString fOADBPath;                   // OADB path to use
+  TString fSpecialDetResponse;         // Special detector response files for debugging
   
   AliPIDResponse *fPIDResponse;        //! PID response Handler
   Int_t   fRun;                        //! current run number
