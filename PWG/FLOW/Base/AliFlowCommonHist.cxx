@@ -137,7 +137,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHarmonic);  
   fHistList-> Add(fRefMultVsNoOfRPs);
   fHistList-> Add(fHistRefMult); 
-  fHistList-> Add(fHistMassPOI); 
+  if(!fBookOnlyBasic){fHistList-> Add(fHistMassPOI);} 
   if(!fBookOnlyBasic){fHistList-> Add(fHistQ);} 
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQ);}
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub0);}
@@ -417,10 +417,14 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   sName +=anInput;
   fHistMassPOI = new TH2F(sName.Data(), sName.Data(), iNbinsMass, dMassMin, dMassMax,
 			  iNbinsPt, dPtMin, dPtMax);
-  double mbWidth = (dMassMax-dMassMin)/iNbinsMass*1000.;
+  Double_t mbWidth = 0.;
+  if(iNbinsMass != 0) 
+  {
+   mbWidth = (dMassMax-dMassMin)/iNbinsMass*1000.;
+  } 
   fHistMassPOI->SetXTitle("Mass (GeV/c^{2})");
   fHistMassPOI->SetYTitle("P_{t} (GeV/c)");
-  fHistMassPOI->SetZTitle( Form("Counts/(%.2f MeV/c^{2})",mbWidth) );
+  fHistMassPOI->SetZTitle( Form("Counts/(%.2f MeV/c^{2})",mbWidth));
 
   //list of histograms if added here also add in copy constructor
   fHistList = new TList();
@@ -446,7 +450,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList-> Add(fHarmonic); 
   fHistList-> Add(fRefMultVsNoOfRPs); 
   fHistList-> Add(fHistRefMult);   
-  fHistList-> Add(fHistMassPOI);   
+  if(!fBookOnlyBasic){fHistList-> Add(fHistMassPOI);}   
   if(!fBookOnlyBasic){fHistList-> Add(fHistQ);}           
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQ);}
   if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub0);}
@@ -684,11 +688,11 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
 	//eta
 	fHistEtaPOI ->Fill(dEta,dW);
 	//eta vs phi
-	if(!fBookOnlyBasic){fHistPhiEtaPOI ->Fill(dEta,dPhi,dW);}
+	if(!fBookOnlyBasic){fHistPhiEtaPOI->Fill(dEta,dPhi,dW);}
 	//mean pt
 	fHistProMeanPtperBin ->Fill(dPt,dPt,dW);
 	//mass
-	fHistMassPOI->Fill(pTrack->Mass(),dPt,dW);
+	if(!fBookOnlyBasic){fHistMassPOI->Fill(pTrack->Mass(),dPt,dW);}
 	//count
 	dMultPOI += dW;
       }
