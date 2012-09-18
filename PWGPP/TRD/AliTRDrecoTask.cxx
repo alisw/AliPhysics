@@ -46,7 +46,7 @@
 
 ClassImp(AliTRDrecoTask)
 
-Float_t AliTRDrecoTask::fgPt0[AliTRDrecoTask::fgNPt0] = {0.5, 0.8, 1.5, 5};
+Float_t AliTRDrecoTask::fgPt[AliTRDrecoTask::fgNPt] = {0.};
 TTreeSRedirector* AliTRDrecoTask::fgDebugStream(NULL);
 //_______________________________________________________
 AliTRDrecoTask::AliTRDrecoTask()
@@ -67,6 +67,7 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fPt(-1.)
   ,fPhi(0.)
   ,fEta(0.)
+  ,fNpt(0)
   ,fTriggerList(NULL)
   ,fPlotFuncList(NULL)
   ,fDetFuncList(NULL)
@@ -95,6 +96,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fPt(-1.)
   ,fPhi(0.)
   ,fEta(0.)
+  ,fNpt(0)
   ,fTriggerList(NULL)
   ,fPlotFuncList(NULL)
   ,fDetFuncList(NULL)
@@ -164,22 +166,47 @@ Int_t AliTRDrecoTask::GetNRefFigures() const
 } 
 
 //____________________________________________________________________
-Int_t AliTRDrecoTask::GetPtBinSignificant(Float_t pt)
+Int_t AliTRDrecoTask::GetPtBin(Float_t pt)
 {
 // Get significant (very low, low, medium, high, very high) pt bin
 
   Int_t ipt(0);
-  while(ipt<fgNPt0){
-    if(pt<fgPt0[ipt]) break;
+  while(ipt<fNpt){
+    if(pt<fgPt[ipt]) break;
     ipt++;
   }
   return ipt-1;
 }
 
 //_______________________________________________________
+Bool_t AliTRDrecoTask::MakeMomSegmentation()
+{
+  switch(fNpt){
+  case fgNPt:
+    fgPt[0]=0.5;
+    for(Int_t j(1); j<=fgNPt; j++) fgPt[j]=fgPt[j-1]+(TMath::Exp(j*j*2.e-3)-1.);
+    AliDebug(2, "Using debug momentum segmentation");
+    break;
+  case 4:
+    fgPt[0]=0.5; fgPt[1]=0.8; fgPt[2]=1.5; fgPt[3]=5.;
+    AliDebug(2, "Using default momentum segmentation");
+    break;
+  default:
+    AliError(Form("Momentum segmentation %d not supported.", fNpt));
+    fNpt=0;
+    return kFALSE;
+  }
+  return kTRUE;
+}
+
+//_______________________________________________________
 void AliTRDrecoTask::UserCreateOutputObjects()
 {
   if(!HasFunctorList()) InitFunctorList();
+  if(DebugLevel()) fNpt = fgNPt;
+  else fNpt = 4;
+  MakeMomSegmentation();
+
   fContainer = Histos();
   PostData(1, fContainer);
 }
@@ -337,7 +364,7 @@ Bool_t AliTRDrecoTask::LoadDetectorMap(const Char_t *file, const Char_t *dir)
   }
   TObjArray *dets = (TObjArray*)info->FindObject("Chambers Status");
   if(!dets){
-    if(strcmp("TObjArray", info->At(4)->IsA()->GetName())) AliError("Looking for old style chamber status map. Failed.");
+    if(!info->At(4) || strcmp("TObjArray", info->At(4)->IsA()->GetName())) AliError("Looking for old style chamber status map. Failed.");
     else {
       AliWarning("Looking for old style chamber status map.");
       TObjArray *vdets = (TObjArray*)info->At(4);

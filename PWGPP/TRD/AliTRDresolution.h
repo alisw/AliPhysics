@@ -104,14 +104,12 @@ public:
 //  Float_t GetCorrectionX(Int_t det, Int_t tb) const {return fXcorr[det][tb];}
   static void     GetRangeZ(TH2 *h2, Float_t &m, Float_t &M);
   Float_t         GetPtThreshold() const {return fPtThreshold;}
-  static Int_t    GetPtBin(Float_t pt);
   Bool_t          GetRefFigure(Int_t ifig);
 
   virtual TObjArray*  Histos(); 
 //  Bool_t  Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir="TRD_Performance");
 //  Bool_t  LoadCorrection(const Char_t *file=NULL);
   void            MakeSummary();
-  static void     MakePtSegmentation(Float_t pt0=0.5, Float_t dpt=0.002);
 
   TObjArray*      Results(ETRDresolutionClass c) const  { if(!fProj) return NULL; return (TObjArray*)fProj->At(c);}
   void            UserExec(Option_t * opt);
@@ -176,7 +174,6 @@ protected:
   static Double_t const fgkMin[kNdim];    //! low limits for projections
   static Double_t const fgkMax[kNdim];    //! high limits for projections
   static Char_t const  *fgkTitle[kNdim];  //! title of projection
-  static Float_t        fgPtBin[25];      //! pt segmentation
   TObjArray            *fProj;            //! result holder - sigma values
   TDatabasePDG         *fDBPDG;           //! PDG database
 

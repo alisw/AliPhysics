@@ -2,6 +2,7 @@
 #include "TError.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliLog.h"
 #include "PWGPP/TRD/AliTRDpwgppHelper.h"
 #include "PWGPP/TRD/AliTRDefficiency.h"
 #include "PWGPP/TRD/AliTRDefficiencyMC.h"
@@ -15,6 +16,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
   AliAnalysisDataContainer *evInfoContainer = ci[3];
   AliTRDrecoTask *eff(NULL);
   mgr->AddTask(eff = new AliTRDefficiency((char*)"TRDefficiency"));
+  res->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
   eff->SetDebugLevel(0);
   //AliLog::SetClassDebugLevel("AliTRDefficiency", 5);  
   Int_t trackStatus = 0; // barrel tracks
