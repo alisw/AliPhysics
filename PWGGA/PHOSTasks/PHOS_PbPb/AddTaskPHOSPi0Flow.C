@@ -1,4 +1,5 @@
-AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow ()
+AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* options = "",
+					    UInt_t offlineTriggerMask = AliVEvent::kCentral )
 {
   //Add a task AliAnalysisTaskPi0Flow to the analysis train
   //Author: Henrik Qvigstad
@@ -27,7 +28,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow ()
 
   //task->SetEventMixingRPBinning(9);
   //task->SetMixingArraysLength(10);
-  task->SelectCollisionCandidates(AliVEvent::kCentral);
+  task->SelectCollisionCandidates(offlineTriggerMask);
   
 
   mgr->AddTask(task);
