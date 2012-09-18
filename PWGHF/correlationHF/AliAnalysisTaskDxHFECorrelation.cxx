@@ -29,6 +29,7 @@
 #include "AliDxHFEParticleSelectionMCD0.h"
 #include "AliDxHFEParticleSelectionEl.h"
 #include "AliDxHFEParticleSelectionMCEl.h"
+#include "AliDxHFEParticleSelection.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliESDInputHandler.h"
@@ -113,9 +114,9 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   fElectrons=NULL;
   if (fCorrelation) delete fCorrelation;
   fCorrelation=NULL;
-  if (fCutsD0) delete fCutsD0;
+  // external object, do not delete
   fCutsD0=NULL;
-  if (fCutsHFE) delete fCutsHFE;
+  // external object, do not delete
   fCutsHFE=NULL;
   if(fPID) delete fPID;
   fPID=NULL;
@@ -160,6 +161,8 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   //Correlation
   fCorrelation=new AliDxHFECorrelation;
   fCorrelation->SetCuts(dynamic_cast<AliRDHFCutsD0toKpi*>(fCutsD0));
+  // TODO: check if we can get rid of the mc flag in the correlation analysis class
+  fCorrelation->SetUseMC(fUseMC);
   fCorrelation->Init();
 
   // Fix for merging:
