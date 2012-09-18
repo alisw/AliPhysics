@@ -582,6 +582,12 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
   FillSelectedClusterHistograms();
   LogProgress(8);
 
+  if( ! fCaloPhotonsPHOS->GetEntriesFast() )
+    return;
+  else
+    LogSelection(6, fInternalRunNumber);
+
+
   // Step 9: Consider pi0 (photon/cluster) pairs.
   ConsiderPi0s();
   LogProgress(9);
