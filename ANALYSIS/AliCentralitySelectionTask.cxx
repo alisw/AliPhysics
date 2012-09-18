@@ -1108,6 +1108,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   if (fIsMCInput) {
     fUseScaling=kFALSE;
     v0Corr  = Short_t((multV0A+multV0C)  * fV0MScaleFactorMC);
+    multV0A  = multV0A * fV0MScaleFactorMC;
+    multV0C  = multV0C * fV0MScaleFactorMC;
   }
   // ***** Scaling for Data 
   if (fUseScaling) {
