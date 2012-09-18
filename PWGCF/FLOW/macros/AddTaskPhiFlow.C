@@ -18,6 +18,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
                                        Bool_t QC = kTRUE,
                                        Bool_t EP = kTRUE,
                                        Bool_t EP3sub = kFALSE,
+                                       Bool_t VZERO_SP = kFALSE, // use vzero sp method
                                        Float_t centrMin = 20., // centrality selection
                                        Float_t centrMax = 30.,
                                        Double_t ITSsigma = 0., // pid mode (see task implementation)
@@ -93,7 +94,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
    }
    if(EP3sub&&debug) { // don't use this on train ! this is why it's only enabled in macro debug mode
          gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskVZERO.C");
-         AddTaskVZERO(0,0,0,0); // FIXME suppressing qa mode causes crash
+         AddTaskVZERO(0,0,0,0);
    }
    // create the main task
    AliAnalysisTaskPhiFlow *task = new AliAnalysisTaskPhiFlow("TaskPhiFlow");
@@ -126,7 +127,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
        if(debug) cout << " Fatal error: no RP cuts found, could be a library problem! " << endl;
        return 0x0;
    }
-   if(useGlobalRPCuts) {
+   if(useGlobalRPCuts&&(!VZERO_SP)) {
        AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
        cutsRP->SetParamType(rptype);
        cutsRP->SetPtRange(0.2, 5.0);
@@ -145,20 +146,15 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
        }
        if(debug) cout << "    --> kGlobal RP's " << cutsRP << endl;
    }
-   if(!useGlobalRPCuts) { // deprecated
-       AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kTPCstandalone;
-       cutsRP->SetParamType(rptype);
-       cutsRP->SetPtRange(0.2,5.);
-       cutsRP->SetEtaRange(-0.8,0.8);
-       cutsRP->SetMinNClustersTPC(70);
-       cutsRP->SetMinChi2PerClusterTPC(0.2);
-       cutsRP->SetMaxChi2PerClusterTPC(4.0);
-       cutsRP->SetMaxDCAToVertexXY(3.0);
-       cutsRP->SetMaxDCAToVertexZ(3.0);
-       cutsRP->SetDCAToVertex2D(kTRUE);
-       cutsRP->SetAcceptKinkDaughters(kFALSE);
-       cutsRP->SetMinimalTPCdedx(10.);
-       if(debug) cout << "    --> kTPCStandAlone RP's " << cutsRP << endl;
+   if(VZERO_SP) { // use vzero sub analysis
+       cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
+       SP = kFALSE; // disable other methods
+       SPSUB = kTRUE; // calculate sp_qa and sp_qb
+       QC = kFALSE;
+       EP = kFALSE;
+       EP3sub = kFALSE;
+       EtaGap = 0.; // no eta gap, full tpc poi's
+       if(debug) cout << "    --> VZERO RP's " << cutsRP << endl;
    }
    task->SetRPCuts(cutsRP);
    // set POI cuts for kaon selection
@@ -366,9 +362,9 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
             if(debug) cout << "    --> Hanging QC task ... " << mb << " succes! "<< endl;
          }
          if (SPSUB) {  // add sp subevent tasks
-            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qa", harm, flowEvent, POIfilterSP[mb][1], NULL, false, shrinkSP, debug, true, suffixName.Data());
+            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qa", harm, flowEvent, POIfilterSP[mb][1], NULL, false, shrinkSP, debug, true, suffixName.Data(), VZERO_SP);
             if(debug) cout << "    --> Hanging SP Qa task " << mb << " succes!" << endl;
-            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qb", harm, flowEvent, POIfilterSP[mb][0], NULL, false, shrinkSP, debug, true, suffixName.Data());
+            AddSPmethod(Form("SPTPCMB_%d_%s", mb, suffixName.Data()), -0.8, -.5*EtaGap, .5*EtaGap, +0.8, "Qb", harm, flowEvent, POIfilterSP[mb][0], NULL, false, shrinkSP, debug, true, suffixName.Data(), VZERO_SP);
             if(debug) cout << "    --> Hanging SP Qb task ..." << mb << " succes!"<< endl;
          }
          if (SP) { // add sp tasks
@@ -412,7 +408,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
    return task;
 }
 //_____________________________________________________________________________
-void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, AliFlowTrackSimpleCuts *cutsRFP = NULL, bool bEP, bool shrink = false, bool debug, bool etagap = false, char *suffixName)
+void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, double maxEtaB, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, AliFlowTrackSimpleCuts *cutsPOI = NULL, AliFlowTrackSimpleCuts *cutsRFP = NULL, bool bEP, bool shrink = false, bool debug, bool etagap = false, char *suffixName, Bool_t VZERO_SP = kFALSE)
 {
    // add sp task and invm filter tasks
    if(debug) (bEP) ? cout << " ****** Reveived request for EP task ****** " << endl : cout << " ******* Switching to SP task ******* " << endl;
@@ -431,6 +427,7 @@ void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, dou
    AliAnalysisDataContainer *flowEvent2 = mgr->CreateContainer(Form("Filter_%s", myNameSP.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
    AliAnalysisTaskFilterFE *tskFilter = new AliAnalysisTaskFilterFE(Form("TaskFilter_%s", myNameSP.Data()), cutsRFP, cutsPOI);
    tskFilter->SetSubeventEtaRange(minEtaA, maxEtaA, minEtaB, maxEtaB);
+   if(VZERO_SP) tskFilter->SetSubeventEtaRange(-10, 0, 0, 10);
    mgr->AddTask(tskFilter);
    mgr->ConnectInput(tskFilter, 0, flowEvent);
    mgr->ConnectOutput(tskFilter, 1, flowEvent2);
