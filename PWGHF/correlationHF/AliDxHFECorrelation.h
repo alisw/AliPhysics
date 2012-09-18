@@ -92,16 +92,25 @@ class AliDxHFECorrelation : public TNamed {
   /// assignment operator
   AliDxHFECorrelation& operator=(const AliDxHFECorrelation& other);
 
-  TObjArray* fHistograms;     // the histograms - for the moment not in use. 
-  TList* fControlObjects;     // list of control objects
-  THnSparse* fCorrProperties; // the Correlation properties of selected particles
-  TH1* fhEventControlCorr;    // event control histogram
-  AliRDHFCutsD0toKpi *fCuts;  //  Cuts 
-  Bool_t fUseMC;              // use MC info
+  // 2012-09-18: when running on Grid the histograms were empty. We encountered
+  // messages "cannot create object of class TH1" when writing the analysis manager
+  // to file for Grid analysis.
+  // This class had a TH1 member marked to be saved, the object though was part of
+  // a list, also a member of the class. Root has a problem with the schema info
+  // in that case.
+  // Solved by marking fhEventControlCorr as transient, the cause, though, is not
+  // understood
+
+  TObjArray* fHistograms;     //  the histograms - for the moment not in use. 
+  TList* fControlObjects;     //  list of control objects
+  THnSparse* fCorrProperties; //  the Correlation properties of selected particles
+  TH1* fhEventControlCorr;    //! event control histogram (saved via control object list)
+  AliRDHFCutsD0toKpi *fCuts;  //! Cuts 
+  Bool_t fUseMC;              //! use MC info
 
   static const char* fgkEventControlBinNames[];
   static const char* fgkCorrControlBinNames[];
 
-  ClassDef(AliDxHFECorrelation, 2)
+  ClassDef(AliDxHFECorrelation, 3)
 };
 #endif
