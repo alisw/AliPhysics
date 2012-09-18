@@ -21,13 +21,14 @@ DrawPi0Flow(const TString filename = "Pi0Flow_000167920.root")
 
   //-----------------------------------------------------------------------------
   TCanvas *c1 = new TCanvas("c1","Event selection");
-  hev->GetXaxis()->SetRangeUser(0,5);
+  hev->GetXaxis()->SetRangeUser(0,6);
   hev->GetXaxis()->SetBinLabel(1,"Total");
   hev->GetXaxis()->SetBinLabel(2,"Has Vertex");
   hev->GetXaxis()->SetBinLabel(3,"abs(z_vertex) < 10.");
   hev->GetXaxis()->SetBinLabel(4,"Has Centrality");
   hev->GetXaxis()->SetBinLabel(5,"C. upper edge");
   hev->GetXaxis()->SetBinLabel(6,"C. lower edge");
+  hev->GetXaxis()->SetBinLabel(7,"Has PClusters");
   hev->SetYTitle("N_{events}");
   hev->GetYaxis()->SetTitleOffset(1.2);
   hev->Draw();
