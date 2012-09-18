@@ -241,6 +241,8 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     trackCuts->SetMaxChi2TPCConstrainedGlobal(36);
     trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
 
+    trackCuts->SetMaxFractionSharedTPCClusters(0.4);
+
     trackCuts->SetEtaRange(-0.9,0.9);
     trackCuts->SetPtRange(0.15, 1E+15.);
  
