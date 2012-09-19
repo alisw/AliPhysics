@@ -573,18 +573,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
 	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
 	Printf("Dselection = %d",(Int_t)task->GetDselection());
-	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
-	if (task->GetUseWeight()) {
-		funcWeight = (TF1*)cutFile->Get("funcWeight");
-		if (funcWeight == 0x0){
-			Printf("FONLL Weights will be used");
-		}
-		else {
-			task->SetWeightFunction(funcWeight);
-			Printf("User-defined Weights will be used. The function being:");
-			task->GetWeightFunction()->Print();
-		}
-	}
 	Printf("Sign = %d",(Int_t)task->GetSign());
 	Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
 	Printf("Fake selection = %d",(Int_t)task->GetFakeSelection());
