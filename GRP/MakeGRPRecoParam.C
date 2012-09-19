@@ -27,7 +27,7 @@ void MakeGRPRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     AliGRPRecoParam * param = AliGRPRecoParam::GetLowFluxParam();
     param->SetEventSpecie(AliRecoParam::kLowMult);
     param->SetVertexerTracksConstraintITS(kTRUE);
-    Double_t cutsITS[21]={0.1,
+    Double_t cutsITS[24]={0.1,
                           0.1,
 			  0.5,
 			  //4, // minimum 4 clusters (default was 5)
@@ -49,9 +49,13 @@ void MakeGRPRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
 			  2.,
 			  10.,
 			  1.,
-			  50.
+			  50.,
+			  50.,
+			  0.,
+			  999999.,
+			  3.
     };
-    param->SetVertexerTracksCutsITS(21,cutsITS);
+    param->SetVertexerTracksCutsITS(24,cutsITS);
     param->SetVertexerTracksConstraintTPC(kTRUE);
     recoParamArray->AddLast(param);
   }
@@ -59,7 +63,7 @@ void MakeGRPRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
     AliGRPRecoParam * param = AliGRPRecoParam::GetHighFluxParam();
     param->SetEventSpecie(AliRecoParam::kHighMult);
     param->SetVertexerTracksConstraintITS(kTRUE);
-    Double_t cutsITS[21]={0.1,
+    Double_t cutsITS[24]={0.1,
                           0.1,
 			  0.5,
 			  4, // minimum 4 clusters (default was 5)
@@ -80,9 +84,12 @@ void MakeGRPRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
 			  2.,
 			  10.,
 			  1.,
-			  50.
+			  50.,
+			  0.,
+			  999999.,
+			  3.
     }; // faster finder algo for Iteration 0
-    param->SetVertexerTracksCutsITS(21,cutsITS);
+    param->SetVertexerTracksCutsITS(24,cutsITS);
     param->SetVertexerTracksConstraintTPC(kTRUE);
     recoParamArray->AddLast(param);
   }
