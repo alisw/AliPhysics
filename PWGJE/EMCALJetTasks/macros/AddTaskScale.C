@@ -3,9 +3,10 @@
 AliAnalysisTaskScale* AddTaskScale(
   const char *nTracks        = "Tracks",
   const char *nClusters      = "CaloClustersCorr",
-  Double_t    ptcut          = 0.150,
-  const char *outfilename    = "AnalysisResults.root",
-  const char *taskname       = "Scale"
+  Double_t    trackptcut     = 0.150,
+  Double_t    clusptcut      = 0.150,
+  const char *taskname       = "Scale",
+  const char *outfilename    = "AnalysisResults.root"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -29,12 +30,12 @@ AliAnalysisTaskScale* AddTaskScale(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("%s_%s_%s_%d", taskname, nTracks, nClusters, TMath::FloorNint(ptcut*1000)));
+  TString name(Form("%s_%s_%s_%d_%d", taskname, nTracks, nClusters, TMath::FloorNint(trackptcut*1000), TMath::FloorNint(clusptcut*1000)));
   AliAnalysisTaskScale *scaletask = new AliAnalysisTaskScale(name);
   scaletask->SetTracksName(nTracks);
   scaletask->SetClusName(nClusters);
-  scaletask->SetPtCut(ptcut);
-  scaletask->SetAnaType(AliAnalysisTaskEmcal::kEMCAL);
+  scaletask->SetTrackPtCut(trackptcut);
+  scaletask->SetClusPtCut(clusptcut);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

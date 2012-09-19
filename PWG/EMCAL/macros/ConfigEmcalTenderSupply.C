@@ -9,7 +9,8 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   Bool_t remExotic     = kTRUE,
   Bool_t fidRegion     = kFALSE,
   Bool_t calibEnergy   = kTRUE,
-  Bool_t calibTime     = kTRUE)
+  Bool_t calibTime     = kTRUE,
+  UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected)
 {
   AliEMCALTenderSupply *EMCALSupply = new AliEMCALTenderSupply("EMCALtender");  
   EMCALSupply->SetDebugLevel(2);
@@ -45,7 +46,7 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     EMCALSupply->SwitchOffRecalculateClusPos();
   
   if (nonLinearCorr) {
-    EMCALSupply->SetNonLinearityFunction(AliEMCALTenderSupply::kBeamTestCorrected);
+    EMCALSupply->SetNonLinearityFunction(nonLinFunct);
     EMCALSupply->SwitchOnNonLinearityCorrection();
   }
   else {

@@ -34,7 +34,7 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   void                        ExecOnce()                                                                                    ;
   Bool_t                      FillHistograms()                                                                              ;
   void                        GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex)                                       ;
-  void                        DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &embPart)                                            ;
+  void                        DoEmbJetLoop(AliEmcalJet* &embJet, TObject* &embPart)                                         ;
   void                        DoEmbTrackLoop()                                                                              ;
   void                        DoEmbClusterLoop()                                                                            ;
   void                        GetRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, 
@@ -63,7 +63,7 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistRCPtExLJ[4];            //!Random cone pt, imposing min distance from leading jet
   TH1F                       *fHistRCPtRand[4];            //!Random cone pt, randomized particles
   TH2F                       *fHistRCPtExLJVSDPhiLJ;       //!Random cone pt, imposing min distance from leading jet, vs. deltaPhi leading jet
-  TH2F                       *fHistRhoVSRCPt;              //!Area(RC) * rho vs. Pt(RC)
+  TH2F                       *fHistRhoVSRCPt[4];           //!Area(RC) * rho vs. Pt(RC)
   TH1F                       *fHistDeltaPtRC[4];           //!deltaPt = Pt(RC) - A * rho
   TH1F                       *fHistDeltaPtRCExLJ[4];       //!deltaPt = Pt(RC) - A * rho, imposing min distance from leading jet
   TH1F                       *fHistDeltaPtRCRand[4];       //!deltaPt = Pt(RC) - A * rho, randomzied particles
@@ -77,7 +77,7 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   TH2F                       *fHistEmbJetPhiEta;           //!Phi-Eta distribution of embedded jets
   TH2F                       *fHistEmbPartPhiEta;          //!Phi-Eta distribution of embedded particles
   TH1F                       *fHistDistEmbPartJetAxis[4];  //!Distance between embedded particle and jet axis
-  TH2F                       *fHistRhoVSEmbBkg;            //!Area(embjet) * rho vs. Pt(embjet) - Pt(embtrack)
+  TH2F                       *fHistRhoVSEmbBkg[4];         //!Area(embjet) * rho vs. Pt(embjet) - Pt(embtrack)
   TH1F                       *fHistDeltaPtEmb[4];          //!deltaPt = Pt(embjet) - Area(embjet) * rho - Pt(embtrack)
 
  private:

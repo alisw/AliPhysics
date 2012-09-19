@@ -23,6 +23,8 @@
 #include "AliExternalTrackParam.h"
 #include "AliTrackerBase.h"
 #include "AliLog.h"
+#include "AliEMCALGeometry.h"
+#include "AliEMCALGeoParams.h"
 
 #include "AliAnalysisTaskSAQA.h"
 
@@ -47,6 +49,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fHistDeltaEtaPt(0),
   fHistDeltaPhiPt(0),
   fHistNCellsEnergy(0),
+  fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
   fHistCellsAbsIdEnergy(0),
   fHistChVSneCells(0),
@@ -89,6 +92,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fHistDeltaEtaPt(0),
   fHistDeltaPhiPt(0),
   fHistNCellsEnergy(0),
+  fHistFcrossEnergy(0),
   fHistClusTimeEnergy(0),
   fHistCellsAbsIdEnergy(0),
   fHistChVSneCells(0),
@@ -218,23 +222,28 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
       fHistClusPhiEtaEnergy[i] = new TH3F(histname, histname, 100, -1.2, 1.2, 201, 0, TMath::Pi() * 2.01, fNbins, fMinBinPt, fMaxBinPt);
       fHistClusPhiEtaEnergy[i]->GetXaxis()->SetTitle("#eta");
       fHistClusPhiEtaEnergy[i]->GetYaxis()->SetTitle("#phi");
-      fHistClusPhiEtaEnergy[i]->GetZaxis()->SetTitle("Energy (GeV)");
+      fHistClusPhiEtaEnergy[i]->GetZaxis()->SetTitle("E_{cluster} (GeV)");
       fOutput->Add(fHistClusPhiEtaEnergy[i]);
     }
 
     fHistClusTimeEnergy = new TH2F("fHistClusTimeEnergy","Time vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, fNbins,  -1e-6, 1e-6);
-    fHistClusTimeEnergy->GetXaxis()->SetTitle("Energy (GeV)");
+    fHistClusTimeEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
     fHistClusTimeEnergy->GetYaxis()->SetTitle("Time");
     fOutput->Add(fHistClusTimeEnergy);
 
     fHistNCellsEnergy = new TH2F("fHistNCellsEnergy","Number of cells vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, 30, 0, 30);
-    fHistNCellsEnergy->GetXaxis()->SetTitle("Energy (GeV)");
+    fHistNCellsEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
     fHistNCellsEnergy->GetYaxis()->SetTitle("N_{cells}");
     fOutput->Add(fHistNCellsEnergy); 
+
+    fHistFcrossEnergy = new TH2F("fHistFcrossEnergy","fHistFcrossEnergy", fNbins, fMinBinPt, fMaxBinPt, 200, -3.5, 1.5);
+    fHistFcrossEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+    fHistFcrossEnergy->GetYaxis()->SetTitle("F_{cross}");
+    fOutput->Add(fHistFcrossEnergy); 
      
     fHistCellsAbsIdEnergy = new TH2F("fHistCellsAbsIdEnergy","fHistCellsAbsIdEnergy", 11600,0,11599,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
     fHistCellsAbsIdEnergy->GetXaxis()->SetTitle("cell abs. Id");
-    fHistCellsAbsIdEnergy->GetYaxis()->SetTitle("Energy (GeV)");
+    fHistCellsAbsIdEnergy->GetYaxis()->SetTitle("E_{cluster} (GeV)");
     fHistCellsAbsIdEnergy->GetZaxis()->SetTitle("counts");    
     fOutput->Add(fHistCellsAbsIdEnergy);
     
@@ -377,12 +386,73 @@ Int_t AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
 }
 
 //________________________________________________________________________
+Double_t AliAnalysisTaskSAQA::GetFcross(AliVCluster *cluster, AliVCaloCells *cells)
+{
+  Int_t    AbsIdseed  = -1;
+  Double_t Eseed      = 0;
+  for (Int_t i = 0; i < cluster->GetNCells(); i++) {
+    if (cells->GetCellAmplitude(cluster->GetCellAbsId(i)) > AbsIdseed) {
+      Eseed     = cells->GetCellAmplitude(cluster->GetCellAbsId(i));
+      AbsIdseed = cluster->GetCellAbsId(i);
+    }
+  }
+
+  if (Eseed < 1e-9)
+    return 100;
+
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+  fGeom->GetCellIndex(AbsIdseed,imod,iTower,iIphi,iIeta); 
+  fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,iphi,ieta);  
+  
+  //Get close cells index and energy, not in corners
+  
+  Int_t absID1 = -1;
+  Int_t absID2 = -1;
+  
+  if (iphi < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
+  if (iphi > 0)                                 absID2 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
+  
+  // In case of cell in eta = 0 border, depending on SM shift the cross cell index
+  
+  Int_t absID3 = -1;
+  Int_t absID4 = -1;
+  
+  if (ieta == AliEMCALGeoParams::fgkEMCALCols-1 && !(imod%2)) {
+    absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod+1, iphi, 0);
+    absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod,   iphi, ieta-1); 
+  }
+  else if (ieta == 0 && imod%2) {
+    absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod,   iphi, ieta+1);
+    absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod-1, iphi, AliEMCALGeoParams::fgkEMCALCols-1); 
+  }
+  else {
+    if (ieta < AliEMCALGeoParams::fgkEMCALCols-1) 
+      absID3 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
+    if (ieta > 0)                                 
+      absID4 = fGeom->GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1); 
+  }
+  
+  Double_t  ecell1 = cells->GetCellAmplitude(absID1);
+  Double_t  ecell2 = cells->GetCellAmplitude(absID2);
+  Double_t  ecell3 = cells->GetCellAmplitude(absID3);
+  Double_t  ecell4 = cells->GetCellAmplitude(absID4);
+
+  Double_t Ecross = ecell1 + ecell2 + ecell3 + ecell4;
+  
+  Double_t Fcross = 1 - Ecross/Eseed;
+
+  return Fcross;
+}
+
+//________________________________________________________________________
 Float_t AliAnalysisTaskSAQA::DoClusterLoop()
 {
   // Do cluster loop.
 
   if (!fCaloClusters)
     return 0;
+
+  AliVCaloCells *cells = InputEvent()->GetEMCALCells();
 
   Float_t sum = 0;
 
@@ -408,6 +478,9 @@ Float_t AliAnalysisTaskSAQA::DoClusterLoop()
     fHistNCellsEnergy->Fill(cluster->E(), cluster->GetNCells());
 
     fHistClusTimeEnergy->Fill(cluster->E(), cluster->GetTOF());
+
+    if (cells)
+      fHistFcrossEnergy->Fill(cluster->E(), GetFcross(cluster, cells));
 
     fNclusters++;
   }
