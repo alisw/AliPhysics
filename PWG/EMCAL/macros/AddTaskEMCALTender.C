@@ -1,6 +1,6 @@
 // $Id$
 
-AliAnalysisTaskSE *AddTaskEMCALTender()
+AliAnalysisTaskSE *AddTaskEMCALTender(const char *p = "lhc11h")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -19,10 +19,19 @@ AliAnalysisTaskSE *AddTaskEMCALTender()
   AliEMCALTenderSupply *EMCALSupply = 0;
   AliAnalysisDataContainer *coutput1 = 0;
 
+  UInt_t nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
+
+  TString period(p);
+  period.ToLower();
+  if (period == "lhc12a15e")
+    nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
+  else if (period == "lhc12a15a")
+    nonLinFunct = AliEMCALRecoUtils::kPi0MCv2;
+
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
   if (evhand->InheritsFrom("AliESDInputHandler")) {
-    EMCALSupply = ConfigEmcalTenderSupply(kTRUE);
+    EMCALSupply = ConfigEmcalTenderSupply(kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, nonLinFunct);
 
     AliTender* alitender = new  AliTender("AliTender");
     alitender->AddSupply(EMCALSupply);
@@ -35,7 +44,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender()
 				    "default_tender");
   }
   else if (evhand->InheritsFrom("AliAODInputHandler")) {
-    EMCALSupply = ConfigEmcalTenderSupply(kFALSE);
+    EMCALSupply = ConfigEmcalTenderSupply(kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, nonLinFunct);
 
     AliEmcalTenderTask* emcaltender = new  AliEmcalTenderTask("AliEmcalTenderTask");
     emcaltender->SetEMCALTenderSupply(EMCALSupply);

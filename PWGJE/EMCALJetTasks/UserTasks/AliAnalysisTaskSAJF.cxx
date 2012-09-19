@@ -26,7 +26,6 @@ ClassImp(AliAnalysisTaskSAJF)
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
   fLeadingHadronType(0),
-  fHistRhoVSleadJetPt(0),
   fNjetsVsCent(0)
 
 {
@@ -37,6 +36,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
     fHistLeadingJetPt[i] = 0;
     fHist2LeadingJetPt[i] = 0;
     fHistLeadingJetCorrPt[i] = 0;
+    fHistRhoVSleadJetPt[i] = 0;
     fHistJetPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
     fHistJetsCorrPtArea[i] = 0;
@@ -55,7 +55,6 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fLeadingHadronType(0),
-  fHistRhoVSleadJetPt(0),
   fNjetsVsCent(0)
 {
   // Standard constructor.
@@ -65,6 +64,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
     fHistLeadingJetPt[i] = 0;
     fHist2LeadingJetPt[i] = 0;
     fHistLeadingJetCorrPt[i] = 0;
+    fHistRhoVSleadJetPt[i] = 0;
     fHistJetPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
     fHistJetsCorrPtArea[i] = 0;
@@ -105,11 +105,6 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
   // Create user output.
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
-
-  fHistRhoVSleadJetPt = new TH2F("fHistRhoVSleadJetPt","fHistRhoVSleadJetPt", fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
-  fHistRhoVSleadJetPt->GetXaxis()->SetTitle("#rho * area (GeV/c)");
-  fHistRhoVSleadJetPt->GetYaxis()->SetTitle("Leading jet p_{T} (GeV/c)");
-  fOutput->Add(fHistRhoVSleadJetPt);
 
   fNjetsVsCent = new TH2F("fNjetsVsCent","fNjetsVsCent", 100, 0, 100, 150, -0.5, 149.5);
   fNjetsVsCent->GetXaxis()->SetTitle("Centrality (%)");
@@ -162,6 +157,13 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
     fHistLeadingJetCorrPt[i]->GetXaxis()->SetTitle("p_{T}^{corr} (GeV/c)");
     fHistLeadingJetCorrPt[i]->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistLeadingJetCorrPt[i]);
+
+    histname = "fHistRhoVSleadJetPt_";
+    histname += i;
+    fHistRhoVSleadJetPt[i] = new TH2F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt*2, fNbins, fMinBinPt, fMaxBinPt);
+    fHistRhoVSleadJetPt[i]->GetXaxis()->SetTitle("#rho * area (GeV/c)");
+    fHistRhoVSleadJetPt[i]->GetYaxis()->SetTitle("Leading jet p_{T} (GeV/c)");
+    fOutput->Add(fHistRhoVSleadJetPt[i]);
     
     histname = "fHistJetPhiEta_";
     histname += i;
@@ -307,7 +309,7 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 
   if (jet) {
     fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
-    fHistRhoVSleadJetPt->Fill(fRhoVal * jet->Area(), jet->Pt());
+    fHistRhoVSleadJetPt[fCentBin]->Fill(fRhoVal, jet->Pt());
     fHistLeadingJetCorrPt[fCentBin]->Fill(maxJetCorrPt);
   }
 

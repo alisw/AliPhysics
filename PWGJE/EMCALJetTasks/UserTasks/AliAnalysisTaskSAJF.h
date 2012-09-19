@@ -36,7 +36,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH1F                       *fHistLeadingJetPt[4];        //!Leading jet pt spectrum
   TH1F                       *fHist2LeadingJetPt[4];       //!Second leading jet pt spectrum
   TH1F                       *fHistLeadingJetCorrPt[4];    //!Corrected leading jet pt spectrum
-  TH2F                       *fHistRhoVSleadJetPt;         //!Area(leadjet) * rho vs. leading jet pt
+  TH2F                       *fHistRhoVSleadJetPt[4];      //!Area(leadjet) * rho vs. leading jet pt
   TH2F                       *fNjetsVsCent;                //!No. of jets vs. centrality
 
   // Inclusive jets histograms
@@ -54,6 +54,6 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
   AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 12) // jet analysis task
+  ClassDef(AliAnalysisTaskSAJF, 13) // jet analysis task
 };
 #endif

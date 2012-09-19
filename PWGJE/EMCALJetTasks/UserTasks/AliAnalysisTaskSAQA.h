@@ -30,6 +30,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   Float_t                     DoTrackLoop()                                                 ;
   Float_t                     DoClusterLoop()                                               ;
   void                        DoJetLoop()                                                   ;
+  Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells)         ;
 
   Float_t                     fCellEnergyCut;            // Energy cell cut
   Int_t                       fNclusters;                //!Number of accepted clusters in the event
@@ -55,6 +56,7 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   // Clusters
   TH3F                       *fHistClusPhiEtaEnergy[4];  //!Phi-Eta-Energy distribution of clusters
   TH2F                       *fHistNCellsEnergy;         //!Number of cells vs. energy of cluster
+  TH2F                       *fHistFcrossEnergy;         //!Fcross vs. energy of cluster
   TH2F                       *fHistClusTimeEnergy;       //!Time vs. energy of cluster
 
   //Jets
@@ -77,6 +79,6 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskSAQA(const AliAnalysisTaskSAQA&);            // not implemented
   AliAnalysisTaskSAQA &operator=(const AliAnalysisTaskSAQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAQA, 14) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskSAQA, 15) // Quality task for Emcal analysis
 };
 #endif
