@@ -116,7 +116,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	// Nch correction settings if needed
 	//
 	TFile* fileNchCorr = TFile::Open(nchCorrFile);
-	if( (useNchWeight && !nchCorrFile) || (nchCorrFile && !nchCorrFile->IsOpen()) ){ 
+	if( (useNchWeight && !fileNchCorr) || (fileNchCorr && !fileNchCorr->IsOpen()) ){ 
 	  AliError("No Nch correction applied");
 	  return 0x0;
 	}
@@ -590,8 +590,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	  TDirectoryFile *dir1 = (TDirectoryFile*)fileNchCorr->Get("PWG3_D2H_DMult_DplusLoose");
 	  TList* list1=(TList*)dir1->Get("coutputDplusLoose");
 	  TH1F *hMult=(TH1F*)list1->FindObject("hGenPrimaryParticlesInelGt0");
-	  if(hMult) task->SetMCNchHisto(hMult);
-	  else { 
+	  if(hMult) {
+	    task->SetMCNchHisto(hMult);
+	    task->SetUseNchWeight(kTRUE);
+	  } else { 
 	    AliFatal("Histogram for multiplicity weights not found");
 	    return 0x0;
 	  }
