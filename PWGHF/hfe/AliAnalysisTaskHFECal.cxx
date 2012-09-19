@@ -155,6 +155,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
   ,HphopTcheck(0)
+  ,fMomDtoE(0) 
 {
   //Named constructor
   
@@ -245,6 +246,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,CheckNits(0)
   ,Hpi0pTcheck(0)
   ,HphopTcheck(0)
+  ,fMomDtoE(0)
 {
 	//Default constructor
 	fPID = new AliHFEpid("hfePid");
@@ -441,8 +443,11 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           if((fabs(parentPID)==411 || fabs(parentPID)==413 || fabs(parentPID)==421 || fabs(parentPID)==423 || fabs(parentPID)==431)&& fabs(mcpid)==11)mcDtoE = kTRUE;
           if((fabs(parentPID)==511 || fabs(parentPID)==513 || fabs(parentPID)==521 || fabs(parentPID)==523 || fabs(parentPID)==531)&& fabs(mcpid)==11)mcBtoE = kTRUE;
 
-          // pi->e (Da;itz)
-          if(parentPID==111 && fabs(mcpid)==11)
+          // make D->e pT correlation
+          if(mcDtoE)fMomDtoE->Fill(mcpT,mcMompT); 
+
+          // pi->e (Dalitz)
+          if(parentPID==111 && fabs(mcpid)==11 && mcMompT>0.0)
               {
                  if(mcMompT>0.0 && mcMompT<5.0)
                    {
@@ -464,14 +469,17 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                  //mcGrandMompT = stack->Particle(particle_parent->GetFirstMother())->Pt();
                  double pTtmp = stack->Particle(particle_parent->GetFirstMother())->Pt();
                  //if(mcGrandMompT>0.0 && mcGrandMompT<5.0)
-                 if(pTtmp>0.0 && pTtmp<5.0)
-                   {
-                    mcWeight = 0.323*pTtmp/(TMath::Exp(-1.6+0.767*pTtmp+0.0285*pTtmp*pTtmp));
-                   }
-                 else
+                 if(pTtmp>0.0)
+                   { 
+                    if(pTtmp<5.0)
+                    {
+                     mcWeight = 0.323*pTtmp/(TMath::Exp(-1.6+0.767*pTtmp+0.0285*pTtmp*pTtmp));
+                    }
+                   else
                    {
                     mcWeight = 115.0/(0.718*pTtmp*TMath::Power(pTtmp,3.65));
                    }
+                  }
                 }
             }
          } 
@@ -480,6 +488,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
        if(fabs(mcpid)==11 && mcPho)mcele= 3.; 
       }
  
+    //printf("weight = %f\n",mcWeight);
+
     if(TMath::Abs(track->Eta())>0.6) continue;
     if(TMath::Abs(track->Pt()<2.0)) continue;
     
@@ -930,6 +940,8 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   HphopTcheck = new TH2D("HphopTcheck","Pho pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(HphopTcheck);
 
+  fMomDtoE = new TH2D("fMomDtoE","D->E pT correlations;e p_{T} GeV/c;D p_{T} GeV/c",400,0,40,400,0,40);
+  fOutputList->Add(fMomDtoE);
 
   PostData(1,fOutputList);
 }
