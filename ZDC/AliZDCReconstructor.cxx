@@ -117,7 +117,7 @@ void AliZDCReconstructor::Init()
      ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
     fRecoMode=1;
   }
-  if(((beamType.CompareTo("p-A"))==0) || ((beamType.CompareTo("A-p"))==0)
+  else if(((beamType.CompareTo("p-A"))==0) || ((beamType.CompareTo("A-p"))==0)
      ||((beamType.CompareTo("P-A"))==0) || ((beamType.CompareTo("A-P"))==0)){
     fRecoMode=1;
   }
@@ -166,6 +166,10 @@ void AliZDCReconstructor::Init(TString beamType, Float_t beamEnergy)
   
   if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
      ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
+    fRecoMode=1;
+  }
+  else if(((beamType.CompareTo("p-A"))==0) || ((beamType.CompareTo("A-p"))==0)
+     ||((beamType.CompareTo("P-A"))==0) || ((beamType.CompareTo("A-P"))==0)){
     fRecoMode=1;
   }
   else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
@@ -630,8 +634,6 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   }
   else if(fPedSubMode==0 && fRecoMode==1){
     //  **** p-p data taking 2011 -> temporary patch to overcome DA problem ****
-    tZN1Corr[0] = adcZN1[0] - meanPed[0];
-    tZN1Corr[5] = adcZN1lg[0] - meanPed[kNch];
     //
     dZEM1Corr[0] = adcZEM[0]   - meanPed[10];
     dZEM1Corr[1] = adcZEMlg[0] - meanPed[10+kNch];
