@@ -85,7 +85,7 @@ void ErrorConfigurationFile(const char* fileName);
 
 void run_single_task(const char* mode,
 		     const char* input,
-		     const char* taskname,
+		     const char* tasknames,
 		     const char* analysisName=defaultAnalysisName,
 		     Bool_t useMC=kFALSE,
 		     int nevents=-1,
@@ -221,25 +221,58 @@ void run_single_task(const char* mode,
     delete pTokens;
   }
 
-  bool bCreateAndAddTask=true;
-  TString taskSource=taskname;
-  TString taskHeader=taskname;
+  TString taskNames=tasknames;
+  TString taskClasses="";
+  TString taskSources="";
+  TString taskHeaders="";
+  TString addTaskMacros="";
+  TString parPackages="";
+  TObjArray* pTaskNames=taskNames.Tokenize(" ");
+  if (pTaskNames) {
+    for (int iTaskName=0; iTaskName<pTaskNames->GetEntriesFast(); iTaskName++) {
+      TString taskSource=pTaskNames->At(iTaskName)->GetName();
+      TString taskHeader=pTaskNames->At(iTaskName)->GetName();
+      bool bIsAddTask=false;
   if (taskSource.EndsWith(".C")) {
     // suppose that's an 'AddTask' macro
     taskHeader="";
-    bCreateAndAddTask=false;
+    bIsAddTask=true;
+  } else if (taskSource.EndsWith(".par")) {
+    // par file
+    if (gSystem->AccessPathName(taskSource)!=0) {
+      ::Error("run_single_task", Form("par file '%s' not found in current directory, you might want to set a symbolic link", taskSource.Data()));
+      return;
+    }
+    parPackages+=" ";
+    parPackages+=taskSource;
+    continue;
   } else if (taskSource.EndsWith(".h")) {
-    taskSource.ReplaceAll(".h", ".cxx");
+    taskSource.ReplaceAll(".h", "");
+    taskClasses+=" ";
+    taskClasses+=taskSource;
+    taskSource+=".cxx";
   } else if (taskSource.EndsWith(".cxx")) {
-    taskHeader.ReplaceAll(".cxx", ".h");
+    taskHeader.ReplaceAll(".cxx", "");
+    taskClasses+=" ";
+    taskClasses+=taskHeader;
+    taskHeader+=".h";
   } else {
+    taskClasses+=" ";
+    taskClasses+=taskSource;
     taskSource+=".cxx";
     taskHeader+=".h";
   }
   TString dependencyHeader;
   TString dependencySource;
+  if (gSystem->AccessPathName(taskHeader)==0) {
   GetIncludeHeaders(taskHeader, dependencyHeader, libraries);
+  taskHeaders+=" "; taskHeaders+=taskHeader;
+  }
+  if (gSystem->AccessPathName(taskSource)==0) {
   GetIncludeHeaders(taskSource, dependencyHeader, libraries);
+  if (!bIsAddTask) {taskSources+=" "; taskSources+=taskSource;}
+  else {addTaskMacros+=" "; addTaskMacros+=taskSource;}
+  }
   TObjArray* pTokens=dependencyHeader.Tokenize(" ");
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntriesFast(); i++) {
@@ -255,10 +288,15 @@ void run_single_task(const char* mode,
   }
   dependencySource.ReplaceAll(taskSource, "");
   dependencyHeader.ReplaceAll(taskHeader, "");
-  cout << "Task files: " << taskSource << " " << taskHeader << endl;
+    }
+    delete pTaskNames;
+  }
+  cout << "Tasks: " << taskClasses << endl;
+  cout << "Task files: " << taskSources << addTaskMacros << taskHeaders << endl;
   cout << "Dependency classes: " << dependencySource << endl;
   cout << "Dependency headers: " << dependencyHeader << endl;
   cout << "Dependency libraries: " << libraries << endl;
+  cout << "Packages: " << parPackages << endl;
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -347,6 +385,14 @@ void run_single_task(const char* mode,
     alienHandler->SetDataPattern(dataPattern);
     alienHandler->SetFriendChainName(friendDataPattern);
 
+    TObjArray* packageTokens=parPackages.Tokenize(" " );
+    if (packageTokens) {
+      for (int iPackageToken=0; iPackageToken<packageTokens->GetEntriesFast(); iPackageToken++) {
+    	alienHandler->EnablePackage(packageTokens->At(iPackageToken)->GetName());
+      }
+      delete packageTokens;
+    }
+
     if (!useMC)
       alienHandler->SetRunPrefix("000");   // real data
 
@@ -377,8 +423,8 @@ void run_single_task(const char* mode,
     alienHandler->AddIncludePath(strIncludePath);
 
     // Note: there is no extra source or header file to be transferred if 'AddTask' macros are used
-    alienHandler->SetAnalysisSource(Form("%s %s %s %s", dependencySource.Data(), dependencyHeader.Data(), (bCreateAndAddTask)?taskSource.Data():"", taskHeader.Data()));
-    alienHandler->SetAdditionalLibs(Form("%s %s %s", libraries.Data(), taskHeader.Data(), dependencyHeader.Data()));
+    alienHandler->SetAnalysisSource(Form("%s %s %s %s", dependencySource.Data(), dependencyHeader.Data(), taskSources.Data(), taskHeaders.Data()));
+    alienHandler->SetAdditionalLibs(Form("%s %s %s", libraries.Data(), taskHeaders.Data(), dependencyHeader.Data()));
 
     alienHandler->SetOutputFiles(ofile);
 
@@ -436,16 +482,20 @@ void run_single_task(const char* mode,
   //
   // create task from the name, create output container, connect slots
   //
-  AliAnalysisTaskSE *pTask=NULL;
-  if (bCreateAndAddTask) {
-    TClass* pCl=TClass::GetClass(taskname);
+  TObjArray* taskClassTokens=taskClasses.Tokenize(" ");
+  if (taskClassTokens) {
+    for (int iTaskClassToken=0; iTaskClassToken<taskClassTokens->GetEntriesFast(); iTaskClassToken++) {
+    AliAnalysisTaskSE *pTask=NULL;
+    TString taskName=taskClassTokens->At(iTaskClassToken)->GetName();
+    taskName.ReplaceAll(".cxx", "");
+    TClass* pCl=TClass::GetClass(taskName);
     if (!pCl) {
-      cerr << "can not load class " << taskname << endl;
+      cerr << "can not load class " << taskName << endl;
       return -1;
     }
     TObject* p=pCl->New();
     if (!p) {
-      cerr << "failed to instantiate class " << taskname << endl;
+      cerr << "failed to instantiate class " << taskName << endl;
       return -1;
     }
     pTask=reinterpret_cast<AliAnalysisTaskSE*>(p);
@@ -453,12 +503,19 @@ void run_single_task(const char* mode,
     AliAnalysisDataContainer *pContainer=pManager->CreateContainer(analysisName ,TObject::Class(), AliAnalysisManager::kOutputContainer, ofile);       
     pManager->ConnectInput(pTask,0,pManager->GetCommonInputContainer());
     pManager->ConnectOutput(pTask,1,pContainer);
-  } else {
+    }
+    delete taskClassTokens;
+  }
+  TObjArray* taskMacroTokens=addTaskMacros.Tokenize(" ");
+  if (taskMacroTokens) {
+    for (int iTaskMacroToken=0; iTaskMacroToken<taskMacroTokens->GetEntriesFast(); iTaskMacroToken++) {
     taskSource+="+g";
     TString configuration;
     configuration.Form("name=%s file=%s %s", analysisName, ofile.Data(), useMC?"mc":"");
     if (gDirectory) gDirectory->Add(new TNamed("run_single_task_configuration", configuration.Data()));
-    gROOT->Macro(taskSource);
+    gROOT->Macro(taskMacroTokens->At(iTaskMacroToken)->GetName());
+    }
+    delete taskMacroTokens;
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////

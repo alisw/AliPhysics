@@ -20,13 +20,14 @@
 ///   object is created
 /// - setting a default analysis name via a configuration object
 /// - the optional parameter 'localAodDir' allows to create an input chain from
-///   locakl AODs
+///   local AODs; either a single AliAOD.root, or a folder containing directories
+///   named "1, 2, ..."
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // environment specific for DxHFE
 //
-const char* includePath="-I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWGHF/hfe";
+const char* includePath="-I$ALICE_ROOT/PWGHF/correlationHF -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWGHF/hfe";
 const char* libraryDependencies=
   "libSTEERBase "
   "libESD "
@@ -38,6 +39,7 @@ const char* libraryDependencies=
   "libCORRFW.so "
   "libPWGHFvertexingHF.so "
   "libPWGHFhfe.so "
+  "libPWGHFcorrelationHF.so "
   ;
 
 void setupDxHFE(const char* aodDirectory=NULL)
@@ -63,16 +65,21 @@ void setupDxHFE(const char* aodDirectory=NULL)
     // create AOD tree from local files
     // the created object is added automatically to gDirectory and can be fetched
     // from there later
-    // TODO: decide depending on running mode and input to be used
     gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/MakeAODInputChain.C");
-    // Create a chain with one set of AliAOD.root and AliAOD.VertexingHF.root. The set needs 
-    // to be located in the same folder as you run from (physically or linked)
-    TChain* chain = MakeAODInputChain(aodDirectory ,1, -1);
-    // If you have several folders containing different AODs, use below. 
-    // From the MakeAODInputChain.C: The AODs need to be in folders named 1, 2,...
-    //if(useMC)chain =MakeAODInputChain("/scratch/Data/2010/MC/LHC10f7a/130375/AOD051/",1,2);//73
-    //chain =MakeAODInputChain("/scratch/Data/2010/MC/LHC10f6a/126437/AOD041/",1,10);//84
-    //else chain =MakeAODInputChain("/scratch/Data/2010/LHC10d/000126437/ESDs/pass2/AOD057/",1,10);//LHC10f7a/130375/AOD051/",1,20);
-    cout << "local AOD chain: " << chain->GetEntries() << " entries" << endl;
+    TString aodPathName(aodDirectory);
+    if (!aodPathName.EndsWith("/")) aodPathName+="/";
+    aodPathName+="AliAOD.root";
+    if (gSystem->AccessPathName(aodPathName)==0) {
+      // Create a chain with one set of AliAOD.root and AliAOD.VertexingHF.root. The set needs 
+      // to be located in the same folder as you run from (physically or linked)
+      ::Info("setupDxHFE.C", Form("make chain from single chunk %s", aodPathName));
+      TChain* chain = MakeAODInputChain(aodDirectory ,1, -1);
+    } else {
+      // Assume several folders containing different AODs. 
+      // The AODs need to be in folders named 1, 2,...
+      ::Info("setupDxHFE.C", Form("make chain from directory %s", aodDirectory));
+      chain=MakeAODInputChain(aodDirectory, 1, 10);
+    }
+    ::Info("setupDxHFE.C", Form("local AOD chain: %d entries", chain->GetEntries()));
   }
 }
