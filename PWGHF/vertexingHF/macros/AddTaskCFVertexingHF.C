@@ -47,7 +47,7 @@ const Float_t multmax_50_102 = 102;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, const char* nchCorrFile="", Bool_t useNchWeight=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE)
 {
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -110,16 +110,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	ptmax_8_16 =  16.0 ;
 	ptmin_16_24 =  16.0 ;
 	ptmax_16_24 =  24.0 ;
-
-
-	//
-	// Nch correction settings if needed
-	//
-	TFile* fileNchCorr = TFile::Open(nchCorrFile);
-	if( (useNchWeight && !fileNchCorr) || (fileNchCorr && !fileNchCorr->IsOpen()) ){ 
-	  AliError("No Nch correction applied");
-	  return 0x0;
-	}
 
 
 	//CONTAINER DEFINITION
@@ -587,13 +577,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	}
 
 	if(useNchWeight){
-	  TDirectoryFile *dir1 = (TDirectoryFile*)fileNchCorr->Get("PWG3_D2H_DMult_DplusLoose");
-	  TList* list1=(TList*)dir1->Get("coutputDplusLoose");
-	  TH1F *hMult=(TH1F*)list1->FindObject("hGenPrimaryParticlesInelGt0");
-	  if(hMult) {
-	    task->SetMCNchHisto(hMult);
+	  TH1F *hNchPrimaries = (TH1F*)fileCuts->Get("hGenPrimaryParticlesInelGt0");
+	  if(hNchPrimaries) {
 	    task->SetUseNchWeight(kTRUE);
-	  } else { 
+	    task->SetMCNchHisto(hNchPrimaries);
+	  } else {
 	    AliFatal("Histogram for multiplicity weights not found");
 	    return 0x0;
 	  }
