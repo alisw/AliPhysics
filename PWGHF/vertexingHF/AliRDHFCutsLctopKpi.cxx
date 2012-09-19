@@ -45,7 +45,8 @@ fPidObjprot(0),
 fPidObjpion(0),
 fUseImpParProdCorrCut(kFALSE),
 fPIDStrategy(kNSigma),
-fCutsStrategy(kStandard)
+fCutsStrategy(kStandard),
+fUseSpecialCut(kFALSE)
 {
   //
   // Default Constructor
@@ -106,7 +107,8 @@ AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi &source) :
   fPidObjpion(0x0),
   fUseImpParProdCorrCut(source.fUseImpParProdCorrCut),
   fPIDStrategy(source.fPIDStrategy),
-  fCutsStrategy(source.fCutsStrategy)
+  fCutsStrategy(source.fCutsStrategy),
+  fUseSpecialCut(source.fUseSpecialCut)
 {
   //
   // Copy constructor
@@ -286,6 +288,9 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
       case kCombined:
        returnvaluePID = IsSelectedCombinedPID(d);
       break;
+      case kCombinedSoft:
+       returnvaluePID = IsSelectedCombinedPIDSoft(d);
+      break;
      }
      fIsSelectedPID=returnvaluePID;
   }
@@ -317,6 +322,10 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     case kStandard:
     if(TMath::Abs(d->PtProng(1)) < fCutsRD[GetGlobalIndex(1,ptbin)] || TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]) return 0;//Kaon
     if(d->Pt()>=3. && d->PProng(1)<0.55) return 0;
+    if(fUseSpecialCut) {
+      if(TMath::Abs(d->PtProng(0)) < TMath::Abs(d->PtProng(2)) )okLcpKpi=0;
+      if(TMath::Abs(d->PtProng(2)) < TMath::Abs(d->PtProng(0)) )okLcpiKp=0;
+    }
     if((TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(12,ptbin)])) okLcpKpi=0;
     if((TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(12,ptbin)]))okLcpiKp=0;
     if(!okLcpKpi && !okLcpiKp) return 0;
@@ -419,10 +428,12 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
      }
      if(i==1) {
       Int_t isKaon=fPidHF->MakeRawPid(track,3); 
-      if(isKaon>=1) {
-       iskaon1=kTRUE;
-      if(fPidHF->MakeRawPid(track,2)>=1) iskaon1=kFALSE;
+      if(isKaon>=1) iskaon1=kTRUE;
+      if(track->P()<0.55){
+       fPidHF->SetTOF(kTRUE);
+       fPidHF->SetTOFdecide(kTRUE);
       }
+      
       if(!iskaon1) return 0;
      
      }else{
@@ -433,22 +444,15 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
      }
       
      Int_t isProton=fPidObjprot->MakeRawPid(track,4);
-     if(isProton>=1){
-      if(fPidHF->MakeRawPid(track,2)>=1) isProton=-1;
-      if(fPidHF->MakeRawPid(track,3)>=1) isProton=-1;
-     }
+     
 
      Int_t isPion=fPidObjpion->MakeRawPid(track,2);
-     if(fPidHF->MakeRawPid(track,3)>=1) isPion=-1;
-     if(fPidObjprot->MakeRawPid(track,4)>=1) isPion=-1;
+     
      if(track->P()<1.){
       fPidObjprot->SetTOF(kTRUE);
       fPidObjprot->SetTOFdecide(kTRUE);
      }
-     if(track->P()<0.55){
-      fPidHF->SetTOF(kTRUE);
-      fPidHF->SetTOFdecide(kTRUE);
-     }
+     
 
      if(i==0) {
       if(isPion<0) ispion0=kFALSE;
@@ -836,4 +840,165 @@ Bool_t AliRDHFCutsLctopKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) cons
   //
   return kTRUE;
 }
+//--------------------------------------------------------
+Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPIDSoft(AliAODRecoDecayHF* obj) {
+ if(!fUsePID || !obj) {return 3;}
+ Int_t okLcpKpi=0,okLcpiKp=0;
+ Int_t returnvalue=0;
+ 
+ AliVTrack *track0=dynamic_cast<AliVTrack*>(obj->GetDaughter(0));
+ AliVTrack *track1=dynamic_cast<AliVTrack*>(obj->GetDaughter(1));
+ AliVTrack *track2=dynamic_cast<AliVTrack*>(obj->GetDaughter(2));
+ if (!track0 || !track1 || !track2) return 0;
+ Double_t prob0[AliPID::kSPECIES];
+ Double_t prob1[AliPID::kSPECIES];
+ Double_t prob2[AliPID::kSPECIES];
 
+ Bool_t isTOF0=fPidHF->CheckTOFPIDStatus((AliAODTrack*)obj->GetDaughter(0));
+ Bool_t isTOF1=fPidHF->CheckTOFPIDStatus((AliAODTrack*)obj->GetDaughter(1));
+ Bool_t isTOF2=fPidHF->CheckTOFPIDStatus((AliAODTrack*)obj->GetDaughter(2));
+
+Bool_t isK1=kFALSE;
+ if(isTOF1){ //kaon
+  if(track1->P()<1.8) {
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+    if(obj->Pt()<3. && track1->P()<0.55) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track1,fPidHF->GetPidResponse(),prob1);
+   
+  }else{
+    AliAODTrack *trackaod1=(AliAODTrack*)(obj->GetDaughter(1));
+    if(trackaod1->P()<0.55){
+      fPidHF->SetTOF(kFALSE);
+      fPidHF->SetTOFdecide(kFALSE);
+     }
+    Int_t isKaon=fPidHF->MakeRawPid(trackaod1,3);
+    if(isKaon>=1) isK1=kTRUE;
+    if(trackaod1->P()<0.55){
+      fPidHF->SetTOF(kTRUE);
+      fPidHF->SetTOFdecide(kTRUE);
+     }
+  }
+ }else{
+  if(track1->P()<0.8){
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track1,fPidHF->GetPidResponse(),prob0);
+  }else{
+    AliAODTrack *trackaod1=(AliAODTrack*)(obj->GetDaughter(1));
+     if(trackaod1->P()<0.55){
+      fPidHF->SetTOF(kFALSE);
+      fPidHF->SetTOFdecide(kFALSE);
+     }
+    Int_t isKaon=fPidHF->MakeRawPid(trackaod1,3);
+    if(isKaon>=1) isK1=kTRUE;
+     if(trackaod1->P()<0.55){
+      fPidHF->SetTOF(kTRUE);
+      fPidHF->SetTOFdecide(kTRUE);
+     }
+  }
+ }
+
+ Bool_t ispi0=kFALSE;
+ Bool_t isp0=kFALSE;
+ Bool_t ispi2=kFALSE;
+ Bool_t isp2=kFALSE;
+
+ if(isTOF0){ //proton
+  if(track0->P()<2.2) {
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+    if(obj->Pt()<3. && track0->P()<1.) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
+  }else{
+   AliAODTrack *trackaod0=(AliAODTrack*)(obj->GetDaughter(0));
+   if(trackaod0->P()<1.){
+      fPidObjprot->SetTOF(kFALSE);
+      fPidObjprot->SetTOFdecide(kFALSE);
+   }
+   Int_t isProton=fPidObjprot->MakeRawPid(trackaod0,4);
+   if(isProton>=1) isp0=kTRUE;
+   if(trackaod0->P()<1.){
+      fPidObjprot->SetTOF(kTRUE);
+      fPidObjprot->SetTOFdecide(kTRUE);
+   }
+  }
+ }else{
+   if(track0->P()<1.2){
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
+   }else{
+    AliAODTrack *trackaod0=(AliAODTrack*)(obj->GetDaughter(0));
+    if(trackaod0->P()<1.){
+      fPidObjprot->SetTOF(kFALSE);
+      fPidObjprot->SetTOFdecide(kFALSE);
+    }
+    Int_t isProton=fPidObjprot->MakeRawPid(trackaod0,4);
+    if(isProton>=1) isp0=kTRUE;
+    if(trackaod0->P()<1.){
+      fPidObjprot->SetTOF(kTRUE);
+      fPidObjprot->SetTOFdecide(kTRUE);
+    }
+   }
+ }
+
+ if(isTOF2){ //proton
+  if(track2->P()<2.2) {
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+    if(obj->Pt()<3. && track2->P()<1.) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track2,fPidHF->GetPidResponse(),prob2);
+  }else{
+    AliAODTrack *trackaod2=(AliAODTrack*)(obj->GetDaughter(2));
+    if(trackaod2->P()<1.){
+      fPidObjprot->SetTOF(kFALSE);
+      fPidObjprot->SetTOFdecide(kFALSE);
+    }
+   Int_t isProton=fPidObjprot->MakeRawPid(trackaod2,4);
+   if(isProton>=1) isp2=kTRUE;
+   if(trackaod2->P()<1.){
+      fPidObjprot->SetTOF(kTRUE);
+      fPidObjprot->SetTOFdecide(kTRUE);
+    }
+  }
+ }else{
+   if(track2->P()<1.2){
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track2,fPidHF->GetPidResponse(),prob2);
+   }else{
+    AliAODTrack *trackaod2=(AliAODTrack*)(obj->GetDaughter(2));
+     if(trackaod2->P()<1.){
+      fPidObjprot->SetTOF(kFALSE);
+      fPidObjprot->SetTOFdecide(kFALSE);
+    }
+    Int_t isProton=fPidObjprot->MakeRawPid(trackaod2,4);
+    if(isProton>=1) isp2=kTRUE;
+    if(trackaod2->P()<1.){
+      fPidObjprot->SetTOF(kTRUE);
+      fPidObjprot->SetTOFdecide(kTRUE);
+    }
+   }
+ }
+  AliAODTrack *trackaod2=(AliAODTrack*)(obj->GetDaughter(2));
+  if(fPidObjpion->MakeRawPid(trackaod2,2)>=1)ispi2=kTRUE;
+  AliAODTrack *trackaod0=(AliAODTrack*)(obj->GetDaughter(2));
+  if(fPidObjpion->MakeRawPid(trackaod0,2)>=1)ispi0=kTRUE;
+
+  if(TMath::MaxElement(AliPID::kSPECIES,prob1) == prob1[AliPID::kKaon]){
+
+    if(TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kProton] && TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kPion]) okLcpKpi = 1;
+    if(TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kProton] && TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kPion]) okLcpiKp = 1;
+    }
+
+   if(!isK1 && TMath::MaxElement(AliPID::kSPECIES,prob1) == prob1[AliPID::kKaon]) isK1=kTRUE;
+    if(!ispi0 && TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kPion]) ispi0=kTRUE;
+    if(!ispi2 && TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kPion]) ispi2=kTRUE;
+    if(!isp0 && TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kProton]) isp0=kTRUE;
+    if(!isp2 && TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kProton]) isp2=kTRUE;
+    if(isK1 && ispi0 && isp2) okLcpiKp = 1;
+    if(isK1 && isp0 && ispi2) okLcpKpi = 1;
+
+   if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
+    if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
+    if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
+
+    return returnvalue;
+ 
+
+}
