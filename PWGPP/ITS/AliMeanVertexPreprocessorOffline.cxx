@@ -60,7 +60,7 @@ AliMeanVertexPreprocessorOffline::~AliMeanVertexPreprocessorOffline()
 
 }
 //____________________________________________________
-void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const char *dbString, Int_t runNb){
+void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCDBStorage *db, Int_t runNb){
 	
 	TFile *file = TFile::Open(filename);
 	if (!file || !file->IsOpen()){
@@ -68,9 +68,9 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		return; 
 	}
 
-    if (!dbString){
-		AliError(Form("no OCDB path found, return"));
-	    return;
+	if (!db){
+	  AliError(Form("no OCDB storage found, return"));
+	  return;
 	}
     
 	
@@ -347,16 +347,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		Double_t sigma[3]={0.0150, 0.0150, zSigmaVtx};
 			 
 		AliESDVertex  *vertex =  new AliESDVertex(posOnline, sigma, "vertex");
-		
-		AliCDBManager *cdb = AliCDBManager::Instance();  	
-		AliCDBStorage *sto = cdb->GetStorage(dbString); 
-		
-		
-		if (!sto) {
-			AliError(Form("cannot get storage %s", dbString));
-			return;
-		}
-		
+				
 		AliCDBId id("GRP/Calib/MeanVertex", runNb, runNb);
 		
 		AliCDBMetaData metaData;
@@ -364,8 +355,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		metaData.SetResponsible("Davide Caffarri");
 		metaData.SetComment("Mean Vertex object used in reconstruction");
 		
-		if (!sto->Put(vertex, id, &metaData)) {
-			AliError(Form("Error while putting object in storage %s", dbString));
+		if (!db->Put(vertex, id, &metaData)) {
+		  AliError(Form("Error while putting object in storage %s", db->GetURI().Data()));
 		}
 		
 		delete vertex;
@@ -603,16 +594,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	//Printf ("%f, %f, %f, %f", xSigmaVtx, ySigmaVtx, covarXZ, covarYZ);
  
   AliESDVertex  *vertex =  new AliESDVertex(position, covMatrix, chi2, nContr, "vertex");
- 
-  AliCDBManager *cdb = AliCDBManager::Instance();  	
-  AliCDBStorage *sto = cdb->GetStorage(dbString); 
- 
-	
-	if (!sto) {
-	AliError(Form("cannot get storage %s", dbString));
-	return;
-  }
- 
+  
   AliCDBId id("GRP/Calib/MeanVertex", runNb, runNb);
  
   AliCDBMetaData metaData;
@@ -620,8 +602,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
   metaData.SetResponsible("Davide Caffarri");
   metaData.SetComment("Mean Vertex object used in reconstruction");
       
-  if (!sto->Put(vertex, id, &metaData)) {
-	AliError(Form("Error while putting object in storage %s", dbString));
+  if (!db->Put(vertex, id, &metaData)) {
+    AliError(Form("Error while putting object in storage %s", db->GetURI().Data()));
    }
  
   delete vertex;
