@@ -24,6 +24,7 @@ class TList;
 class TH2F;
 class TF1;
 class TH1D;
+class AliCDBStorage;
 
 class AliTOFAnalysisTaskCalibPass0 :
 public AliAnalysisTaskSE
@@ -48,8 +49,8 @@ public AliAnalysisTaskSE
   void SetVertexCut(Double_t value) {fVertexCut = value;}; // setter
 
   /* post-processing methods */
-  Bool_t ProcessOutput(const Char_t *filename, const Char_t *dbString); // process output
-  Bool_t DoProcessOutput(const Char_t *filename, const Char_t *dbString); // process output
+  Bool_t ProcessOutput(const Char_t *filename, AliCDBStorage* db); // process output
+  Bool_t DoProcessOutput(const Char_t *filename, AliCDBStorage* db); // process output
   Int_t GetStatus(); // get status
   void PrintStatus(); // print status
 
@@ -85,7 +86,7 @@ public AliAnalysisTaskSE
 
   /* post-processing methods */
   Bool_t CheckMatchingPerformance(const TH2F *histoDeltazEta, const TH2F *histoAcceptedTracksEtaPt, const TH2F *histoMatchedTracksEtaPt) const; // check matching efficiency
-  Bool_t CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F *histoDeltatTimestamp, const Char_t *dbString); // calibrate and store
+  Bool_t CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F *histoDeltatTimestamp, AliCDBStorage *db); // calibrate and store
   Int_t FitPeak(TF1 *fitFunc, TH1D *h, Float_t startSigma, Float_t nSigmaMin, Float_t nSigmaMax); // fit peak
 
   /* flags and cuts */

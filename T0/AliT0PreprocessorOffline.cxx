@@ -50,7 +50,7 @@ TNamed("AliT0PreprocessorOffline","AliT0PreprocessorOffline"),
   endRun(0),  
   startTime(0),    
   endTime(0),     
-  ocdbStorage(""),
+  ocdbStorage(0),
   fNewDArun(9999999),
   fStatusDelay(0),
   fStatusAdjust(0)
@@ -66,7 +66,7 @@ AliT0PreprocessorOffline::~AliT0PreprocessorOffline()
 
 }
 //____________________________________________________
-void AliT0PreprocessorOffline::Process(TString filePhysName, Int_t ustartRun, Int_t uendRun, TString pocdbStorage)
+void AliT0PreprocessorOffline::Process(TString filePhysName, Int_t ustartRun, Int_t uendRun, AliCDBStorage* pocdbStorage)
 {
   if ( ustartRun < fNewDArun) 
     CalibOffsetChannels(filePhysName, ustartRun, uendRun, pocdbStorage);
@@ -74,7 +74,7 @@ void AliT0PreprocessorOffline::Process(TString filePhysName, Int_t ustartRun, In
 }
 //____________________________________________________
 
-void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t ustartRun, Int_t uendRun, TString pocdbStorage)
+void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t ustartRun, Int_t uendRun, AliCDBStorage* pocdbStorage)
 {
 
   Float_t zero_timecdb[24]={0};
@@ -87,9 +87,11 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
   Int_t badpmt=-1;
   //Processing data from DAQ Physics run
   AliInfo("Processing Time Offset between channels");
-  if (pocdbStorage.Length()>0) ocdbStorage=pocdbStorage;
-  else
-    ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  if (pocdbStorage) ocdbStorage=pocdbStorage;
+  else {
+   TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB"; 
+   ocdbStorage= AliCDBManager::Instance()->GetStorage(localStorage.Data());
+  }
   AliCDBEntry *entryCalib = AliCDBManager::Instance()->Get("T0/Calib/TimeDelay");
   if(!entryCalib) {
     AliWarning(Form("Cannot find any AliCDBEntry for [Calib, TimeDelay]!"));
@@ -115,8 +117,7 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
   if (writeok==0)  {
     AliCDBId* id1=NULL;
     id1=new AliCDBId("T0/Calib/TimeDelay", ustartRun, uendRun );
-    AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
-    gStorage->Put(offline, (*id1), &metaData);
+    ocdbStorage->Put(offline, (*id1), &metaData);
   }
   else {
     
@@ -127,14 +128,16 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
  
 }
 //-------------------------------------------------------------------------------------
-void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t ustartRun, Int_t uendRun, TString pocdbStorage)
+void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t ustartRun, Int_t uendRun, AliCDBStorage* pocdbStorage)
 {
   printf(" AliT0PreprocessorOffline::CalibT0sPosition \n");
   Float_t zero_timecdb[4]={0};
   Float_t *timecdb = zero_timecdb;
-  if (pocdbStorage.Length()>0) ocdbStorage=pocdbStorage;
-  else
-    ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  if (pocdbStorage) ocdbStorage=pocdbStorage;
+  else {
+    TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    ocdbStorage=AliCDBManager::Instance()->GetStorage(localStorage.Data());
+  }
   
   AliT0CalibSeasonTimeShift *offline = new AliT0CalibSeasonTimeShift();
   Int_t writeok = offline->SetT0Par(filePhysName.Data(), timecdb);
@@ -147,8 +150,7 @@ void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t usta
   if (writeok == 0)  {
     AliCDBId* id1=NULL;
     id1=new AliCDBId("T0/Calib/TimeAdjust", ustartRun, uendRun);
-    AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
-    gStorage->Put(offline, (*id1), &metaData);
+    ocdbStorage->Put(offline, (*id1), &metaData);
   }
 
 }

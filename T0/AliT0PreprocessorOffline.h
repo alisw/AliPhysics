@@ -9,15 +9,16 @@
 
 // T0 preprocessor. 
 #include "TNamed.h"
+class AliCDBStorage;
 
 class AliT0PreprocessorOffline: public TNamed 
 {
   public:
   AliT0PreprocessorOffline();  
   virtual ~AliT0PreprocessorOffline();
-  void	CalibOffsetChannels(TString FileName, Int_t ustartRun, Int_t uendRun, TString ocdbStorage);
-  void	CalibT0sPosition(TString FileName, Int_t ustartRun, Int_t uendRun, TString ocdbStorage);
-  void  Process(TString FileName, Int_t ustartRun, Int_t uendRun, TString ocdbStorage);
+  void	CalibOffsetChannels(TString FileName, Int_t ustartRun, Int_t uendRun, AliCDBStorage* ocdbStorage);
+  void	CalibT0sPosition(TString FileName, Int_t ustartRun, Int_t uendRun, AliCDBStorage* ocdbStorage);
+  void  Process(TString FileName, Int_t ustartRun, Int_t uendRun, AliCDBStorage* ocdbStorage);
   void setDArun(Int_t runnumber) {fNewDArun = runnumber; };
   Int_t GetStatus() const;
   private:
@@ -27,7 +28,7 @@ class AliT0PreprocessorOffline: public TNamed
   Int_t endRun;                           // end   Run - used to make fast selection in THnSparse
   Int_t startTime;                        // startTime - used to make fast selection in THnSparse
   Int_t endTime;                          // endTime   - used to make fast selection in THnSparse
-  TString  ocdbStorage;                   // path to the OCDB storage
+  AliCDBStorage*  ocdbStorage;            // OCDB storage
   Int_t fNewDArun;                         // run number with new DA
   Int_t fStatusDelay;                     //status time delay calibration  
   Int_t fStatusAdjust;                   // status time adjust calibration

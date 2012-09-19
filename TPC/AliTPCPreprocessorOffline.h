@@ -19,20 +19,21 @@ class AliTPCROC;
 class AliTPCParam;
 class TPad;
 class AliCDBRunRange;
+class AliCDBStorage;
 
 class AliTPCPreprocessorOffline:public TNamed { 
 public:
   AliTPCPreprocessorOffline();
   virtual ~AliTPCPreprocessorOffline();
-  void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun, const char* storagePath);
-  void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
-  void UpdateDriftParam(AliTPCParam *param, TObjArray *const arr, Int_t startRun);
+  void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun, AliCDBStorage* storage);
+  void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
+  void UpdateDriftParam(AliTPCParam *param, TObjArray *const arr, Int_t lstartRun);
 
   //
   // v drift part
   //
   void GetRunRange(AliTPCcalibTime* const timeDrift);
-  void CalibTimeVdrift(const Char_t* file, Int_t ustartRun, Int_t uendRun,TString ocdbStorage="");
+  void CalibTimeVdrift(const Char_t* file, Int_t ustartRun, Int_t uendRun,AliCDBStorage* ocdbStorage=0x0);
   void AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime * const timeDrift, Int_t minEntries);
   void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime * const timeDrift);
   void AddLaserGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
@@ -43,7 +44,7 @@ public:
   //
   // Gain part
   //
-  void CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage);
+  void CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  AliCDBStorage* ocdbStorage);
   void ReadGainGlobal(const Char_t* fileName="CalibObjectsTrain1.root");
   void MakeQAPlot(Float_t  FPtoMIPratio);
   Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit = 500, Float_t FPtoMIPratio = 1.43); 
@@ -97,11 +98,11 @@ public:
 
 private:
   Int_t fMinEntries;                      // minimal number of entries for fit
-  Int_t startRun;                         // start Run - used to make fast selection in THnSparse
-  Int_t endRun;                           // end   Run - used to make fast selection in THnSparse
-  Int_t startTime;                        // startTime - used to make fast selection in THnSparse
-  Int_t endTime;                          // endTime   - used to make fast selection in THnSparse
-  TString  ocdbStorage;                   // path to the OCDB storage
+  Int_t fStartRun;                         // start Run - used to make fast selection in THnSparse
+  Int_t fEndRun;                           // end   Run - used to make fast selection in THnSparse
+  Int_t fStartTime;                        // fStartTime - used to make fast selection in THnSparse
+  Int_t fEndTime;                          // fEndTime   - used to make fast selection in THnSparse
+  AliCDBStorage*  fOCDBstorage;            // OCDB storage
   TObjArray * fVdriftArray;               // array with output calibration graphs
   AliTPCcalibTime * fTimeDrift;           // input data to construct calibration graphs
   TGraphErrors * fGraphMIP;                // graph time dependence of MIP

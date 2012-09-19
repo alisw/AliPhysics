@@ -95,11 +95,11 @@ ClassImp(AliTPCPreprocessorOffline)
 AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   TNamed("TPCPreprocessorOffline","TPCPreprocessorOffline"),
   fMinEntries(500),                      // minimal number of entries for fit
-  startRun(0),                         // start Run - used to make fast selection in THnSparse
-  endRun(0),                           // end   Run - used to make fast selection in THnSparse
-  startTime(0),                        // startTime - used to make fast selection in THnSparse
-  endTime(0),                          // endTime   - used to make fast selection in THnSparse
-  ocdbStorage(""),                   // path to the OCDB storage
+  fStartRun(0),                         // start Run - used to make fast selection in THnSparse
+  fEndRun(0),                           // end   Run - used to make fast selection in THnSparse
+  fStartTime(0),                        // fStartTime - used to make fast selection in THnSparse
+  fEndTime(0),                          // fEndTime   - used to make fast selection in THnSparse
+  fOCDBstorage(0),                       // OCDB storage
   fVdriftArray(new TObjArray),
   fTimeDrift(0),
   fGraphMIP(0),                // graph time dependence of MIP
@@ -149,33 +149,33 @@ void AliTPCPreprocessorOffline::GetRunRange(AliTPCcalibTime * const  timeDrift){
     TH1D* histoTime=addHist->Projection(0);
     printf("%s\t%f\t%d\t%d\n",histo->GetName(), histo->GetEntries(),histo->FindFirstBinAbove(0),histo->FindLastBinAbove(0));
 
-    if (startRun<=0){ 
-      startRun=histo->FindFirstBinAbove(0);
-      endRun  =histo->FindLastBinAbove(0);
+    if (fStartRun<=0){ 
+      fStartRun=histo->FindFirstBinAbove(0);
+      fEndRun  =histo->FindLastBinAbove(0);
     }else{
-      startRun=TMath::Min(histo->FindFirstBinAbove(0),startRun);
-      endRun  =TMath::Max(histo->FindLastBinAbove(0),endRun);
+      fStartRun=TMath::Min(histo->FindFirstBinAbove(0),fStartRun);
+      fEndRun  =TMath::Max(histo->FindLastBinAbove(0),fEndRun);
     }
-    if (startTime==0){ 
-      startTime=histoTime->FindFirstBinAbove(0);
-      endTime  =histoTime->FindLastBinAbove(0);
+    if (fStartTime==0){ 
+      fStartTime=histoTime->FindFirstBinAbove(0);
+      fEndTime  =histoTime->FindLastBinAbove(0);
     }else{
-      startTime=TMath::Min(histoTime->FindFirstBinAbove(0),startTime);
-      endTime  =TMath::Max(histoTime->FindLastBinAbove(0),endTime);
+      fStartTime=TMath::Min(histoTime->FindFirstBinAbove(0),fStartTime);
+      fEndTime  =TMath::Max(histoTime->FindLastBinAbove(0),fEndTime);
     }
     delete histo;
     delete histoTime;
   }}
-  if (startRun<0) startRun=0;
-  if (endRun<0) endRun=100000000;
-  printf("Run range  :\t%d-%d\n", startRun, endRun);
-  printf("Time range :\t%d-%d\n", startTime, endTime);
+  if (fStartRun<0) fStartRun=0;
+  if (fEndRun<0) fEndRun=100000000;
+  printf("Run range  :\t%d-%d\n", fStartRun, fEndRun);
+  printf("Time range :\t%d-%d\n", fStartTime, fEndTime);
 
 }
 
 
 
-void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustartRun, Int_t uendRun, TString pocdbStorage){
+void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustartRun, Int_t uendRun, AliCDBStorage* pocdbStorage){
   //
   // make calibration of the drift velocity
   // Input parameters:
@@ -183,9 +183,12 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
   //      ustartRun, uendrun     - run validity period 
   //      pocdbStorage           - path to hte OCDB storage
   //                             - if empty - local storage 'pwd' uesed
-  if (pocdbStorage.Length()>0) ocdbStorage=pocdbStorage;
-  else
-  ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  if (pocdbStorage) fOCDBstorage=pocdbStorage;
+  else {
+    TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB"; 
+    fOCDBstorage=AliCDBManager::Instance()->GetStorage(localStorage.Data());
+  }
+
   //
   // 1. Initialization and run range setting
   TFile fcalib(file);
@@ -203,15 +206,15 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
   if (fNtracksVdrift==0) fNtracksVdrift=TMath::Nint(fTimeDrift->GetResHistoTPCTOF(0)->GetEntries());
   fNeventsVdrift = TMath::Nint(fTimeDrift->GetTPCVertexHisto(0)->GetEntries());
 
-  startRun=ustartRun;
-  endRun=ustartRun; 
+  fStartRun=ustartRun;
+  fEndRun=ustartRun; 
   TObjArray *hisArray =fTimeDrift->GetHistoDrift();  
   GetRunRange(fTimeDrift);
   for (Int_t i=0; i<hisArray->GetEntriesFast(); i++){
     THnSparse* addHist=(THnSparse*)hisArray->At(i);
     if (!addHist) continue;
-    if (startTime<endTime) addHist->GetAxis(0)->SetRange(startTime-1,endTime+1);
-    if (startRun<endRun) addHist->GetAxis(3)->SetRange(startRun-1,endRun+1);
+    if (fStartTime<fEndTime) addHist->GetAxis(0)->SetRange(fStartTime-1,fEndTime+1);
+    if (fStartRun<fEndRun) addHist->GetAxis(3)->SetRange(fStartRun-1,fEndRun+1);
   }
   //
   //
@@ -248,10 +251,10 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
   // 5. update of OCDB
   //
   //
-  UpdateOCDBDrift(ustartRun,uendRun,ocdbStorage);
+  UpdateOCDBDrift(ustartRun,uendRun,fOCDBstorage);
 }
 
-void AliTPCPreprocessorOffline::UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun,  const char* storagePath ){
+void AliTPCPreprocessorOffline::UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun,  AliCDBStorage* storage ){
   //
   // Update OCDB 
   //
@@ -263,8 +266,7 @@ void AliTPCPreprocessorOffline::UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun,
   metaData->SetComment("Calibration of the time dependence of the drift velocity");
   AliCDBId* id1=NULL;
   id1=new AliCDBId("TPC/Calib/TimeDrift", ustartRun, uendRun);
-  AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
-  gStorage->Put(fVdriftArray, (*id1), metaData);
+  storage->Put(fVdriftArray, (*id1), metaData);
 }
 
 Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
@@ -348,7 +350,7 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift()
   // check whether drift velocity corrections in the range
   for(Int_t iPoint = 0; iPoint<gr->GetN(); iPoint++) 
   {
-    Printf("Y value from the graph: %f",TMath::Abs(gr->GetY()[iPoint]));
+    //Printf("Y value from the graph: %f",TMath::Abs(gr->GetY()[iPoint]));
     if(TMath::Abs(gr->GetY()[iPoint]) > maxVDriftCorr)  
     {
       fCalibrationStatus|=kCalibFailedTimeDrift;
@@ -380,8 +382,7 @@ void AliTPCPreprocessorOffline::UpdateDriftParam(AliTPCParam *param, TObjArray *
   metaData->SetComment("Updated calibration of nominal time 0");
   AliCDBId* id1=NULL;
   id1=new AliCDBId("TPC/Calib/Parameters", lstartRun, AliCDBRunRange::Infinity());
-  AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
-  gStorage->Put(param, (*id1), metaData);
+  fOCDBstorage->Put(param, (*id1), metaData);
 
 }
 
@@ -871,11 +872,14 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArra
 
 
 
-void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  TString  pocdbStorage){
+void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  AliCDBStorage* pocdbStorage){
   //
   // Update OCDB gain
   //
-  if (pocdbStorage.Length()==0) pocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  if (pocdbStorage==0) {
+    TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    pocdbStorage = AliCDBManager::Instance()->GetStorage(localStorage.Data());
+  }
 
   //
   // 1. Read gain values
@@ -906,7 +910,7 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   //
   // 5. Update OCDB
   //
-  UpdateOCDBGain( startRunNumber, endRunNumber, pocdbStorage.Data());
+  UpdateOCDBGain( startRunNumber, endRunNumber, pocdbStorage);
 }
 
 void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
@@ -925,8 +929,8 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
     fGainMult   = ( AliTPCcalibGainMult *)fcalib.Get("calibGainMult");
   }
   if (!fGainMult){
-    TFile fcalibMult("TPCMultObjects.root");
-    fGainMult   = ( AliTPCcalibGainMult *)fcalibMult.Get("calibGainMult");
+    TFile calibMultFile("TPCMultObjects.root");
+    fGainMult   = ( AliTPCcalibGainMult *)calibMultFile.Get("calibGainMult");
   }
   TH1 * hisT=0;
   Int_t firstBinA =0, lastBinA=0;
@@ -1197,6 +1201,7 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainChamberByChamber(){
   //
   // get chamber by chamber gain
   //
+  if (!fGainMult) return kFALSE;
   TGraphErrors *grShort  = fGainMult->GetGainPerChamber(0);
   TGraphErrors *grMedium = fGainMult->GetGainPerChamber(1);
   TGraphErrors *grLong   = fGainMult->GetGainPerChamber(2);
@@ -1214,7 +1219,7 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainChamberByChamber(){
   return kTRUE;
 }
 
-void AliTPCPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
+void AliTPCPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage *storage){
   //
   // Update OCDB entry
   //
@@ -1225,8 +1230,7 @@ void AliTPCPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRu
   metaData->SetAliRootVersion("05-24-00"); //root version
   metaData->SetComment("Calibration of the time dependence of the gain due to pressure and temperature changes.");
   AliCDBId id1("TPC/Calib/TimeGain", startRunNumber, endRunNumber);
-  AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
-  gStorage->Put(fGainArray, id1, metaData);    
+  storage->Put(fGainArray, id1, metaData);    
 }
 
 void AliTPCPreprocessorOffline::MakeQAPlot(Float_t  FPtoMIPratio) {

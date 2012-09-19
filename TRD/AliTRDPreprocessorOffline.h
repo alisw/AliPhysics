@@ -22,6 +22,7 @@ class AliTRDCalibraExbAltFit;
 class TH1I;
 class TH2F;
 class TString;
+class AliCDBStorage;
 
 class AliTRDPreprocessorOffline:public TNamed { 
 public:
@@ -57,7 +58,7 @@ public:
   virtual ~AliTRDPreprocessorOffline();
 
   Bool_t Init(const Char_t* fileName);
-  void Process(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage);
+  void Process(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* ocdbStorage);
 
   // settings
   void SetLinearFitForVdrift(Bool_t methodsecond) { fMethodSecond = methodsecond;};
@@ -147,12 +148,12 @@ public:
 
   // Internal functions
 
-  void CalibVdriftT0(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage="");
-  void CalibExbAlt(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage="");
-  void CalibGain(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage="");
-  void CalibPRF(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage="");
-  void CalibChamberStatus(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage="");
-  void CalibPHQ(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage);
+  void CalibVdriftT0(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* ocdbStorage=0x0);
+  void CalibExbAlt(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* ocdbStorage=0x0);
+  void CalibGain(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber,  AliCDBStorage* ocdbStorage=0x0);
+  void CalibPRF(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber,  AliCDBStorage* ocdbStorage=0x0);
+  void CalibChamberStatus(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* ocdbStorage=0x0);
+  void CalibPHQ(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* ocdbStorage);
 
   Bool_t ReadStatusGlobal(const Char_t* fileName="CalibObjects.root");
   Bool_t ReadGainGlobal(const Char_t* fileName="CalibObjects.root");
@@ -173,14 +174,14 @@ public:
   void CorrectFromDetGainUsed();
   void CorrectFromDetVdriftUsed();
   
-  void UpdateOCDBT0(Int_t startRunNumber, Int_t endRunNumber, const char* storagePath);
-  void UpdateOCDBVdrift(Int_t startRunNumber, Int_t endRunNumber, const char* storagePath);
-  void UpdateOCDBExB(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath);
-  void UpdateOCDBExBAlt(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath);
-  void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
-  void UpdateOCDBPRF(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
-  void UpdateOCDBChamberStatus(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath);
-  void UpdateOCDBPHQ(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath);
+  void UpdateOCDBT0(Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
+  void UpdateOCDBVdrift(Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
+  void UpdateOCDBExB(Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
+  void UpdateOCDBExBAlt(Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
+  void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
+  void UpdateOCDBPRF(Int_t  startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
+  void UpdateOCDBChamberStatus(Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
+  void UpdateOCDBPHQ(Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
 
   Bool_t ValidateGain();
   Bool_t ValidateVdrift();

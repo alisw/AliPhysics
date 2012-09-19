@@ -412,13 +412,13 @@ AliTOFAnalysisTaskCalibPass0::PrintStatus()
 //_______________________________________________________
 
 Bool_t
-AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t *dbString)
+AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, AliCDBStorage* db)
 {
   /*
    * process output
    */
 
-  Int_t ret = DoProcessOutput(filename, dbString);
+  Int_t ret = DoProcessOutput(filename, db);
   PrintStatus();
   return ret;
 }
@@ -426,7 +426,7 @@ AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t
 //_______________________________________________________
 
 Bool_t
-AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, const Char_t *dbString)
+AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, AliCDBStorage *db)
 {
   /*
    * do process output
@@ -506,7 +506,7 @@ AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, const Char
     return kFALSE;
   }
   /* calibrate and store */
-  if (!CalibrateAndStore(histoVertexTimestamp, histoDeltatTimestamp, dbString)) {
+  if (!CalibrateAndStore(histoVertexTimestamp, histoDeltatTimestamp, db)) {
     AliError("error while calibrating and storing");
     return kFALSE;
   }
@@ -534,7 +534,7 @@ AliTOFAnalysisTaskCalibPass0::CheckMatchingPerformance(const TH2F *histoDeltazCo
 //_______________________________________________________
 
 Bool_t
-AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F *histoDeltatTimestamp, const Char_t *dbString)
+AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F *histoDeltatTimestamp, AliCDBStorage *db)
 {
   /*
    * calibrate and store
@@ -783,29 +783,22 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   
   /*** CREATE OCDB ENTRY ***/
 
-  if (!dbString) {
-    AliError("cannot store object because of NULL string");
+  if (!db) {
+    AliError("cannot store object because of NULL storage");
     fStatus = kStoreError;
     return kFALSE;
   }
 
   /* install run params object in OCDB */
-  AliCDBManager *cdb = AliCDBManager::Instance();
-  AliCDBStorage *sto = cdb->GetStorage(dbString);
-  if (!sto) {
-    AliError(Form("cannot get storage %s", dbString));
-    fStatus = kStoreError;
-    return kFALSE;
-  }
   AliCDBId id("TOF/Calib/RunParams", runNb, runNb);
   AliCDBMetaData md;
   md.SetResponsible("Roberto Preghenella");
   md.SetComment("offline TOF run parameters");
   md.SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md.SetBeamPeriod(0);
-  if (!sto->Put(&obj, id, &md)) {
+  if (!db->Put(&obj, id, &md)) {
     fStatus = kStoreError;
-    AliError(Form("error while putting object in storage %s", dbString));
+    AliError(Form("error while putting object in storage %s", db->GetURI().Data()));
     return kFALSE;
   }
 
