@@ -1436,7 +1436,10 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide s
 {
   // This method implements a selection
   // based on the timing in of zdcN
-  // It can be used in order to flag  background
+  // It can be used in order to flag background
+  // ** So far only implemented for the 2012 pA run **
+
+  if(fMC) return kFALSE;
 
   AliESDZDC *zdcData = aEsd->GetESDZDC();
   Bool_t zna = kFALSE;
