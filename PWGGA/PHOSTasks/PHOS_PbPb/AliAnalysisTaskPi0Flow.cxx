@@ -824,7 +824,7 @@ void AliAnalysisTaskPi0Flow::SelectPhotonClusters()
     // Track Matching
     Double_t dx=clu->GetTrackDx() ;
     Double_t dz=clu->GetTrackDz() ;
-    Bool_t cpvBit=kTRUE ; //No track matched by default
+    Bool_t cpvBit=kTRUE ; //No track matched by default. True means: not from charged, according to veto.
     Bool_t cpvBit2=kTRUE ; //More Strict criterion
     if( fEventESD ) {
       

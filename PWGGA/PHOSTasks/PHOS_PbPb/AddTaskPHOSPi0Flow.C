@@ -31,6 +31,8 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
   //task->SetMixingArraysLength(10);
   task->SelectCollisionCandidates(offlineTriggerMask);
   
+  if( TString(options).Contains("11h") )
+    task->SetPeriod( AliAnalysisTaskPi0Flow::kLHC11h );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
