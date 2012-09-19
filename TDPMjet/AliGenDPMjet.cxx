@@ -65,7 +65,8 @@ AliGenDPMjet::AliGenDPMjet()
      fTriggerMultiplicityEta(0),
      fTriggerMultiplicityPtMin(0),
      fkTuneForDiff(0),
-     fProcDiff(0)
+     fProcDiff(0),
+     fFragmentation(kFALSE)
 {
 // Constructor
     fEnergyCMS = 5500.;
@@ -97,7 +98,9 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
      fTriggerMultiplicityEta(0),
      fTriggerMultiplicityPtMin(0),
      fkTuneForDiff(0),
-     fProcDiff(0)
+     fProcDiff(0),
+     fFragmentation(kFALSE)
+
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -133,7 +136,9 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fTriggerMultiplicityEta(0),
      fTriggerMultiplicityPtMin(0),
      fkTuneForDiff(0),
-     fProcDiff(0)
+     fProcDiff(0),
+     fFragmentation(kFALSE)
+
 {
     // Dummy copy constructor
     fEnergyCMS = 5500.;
@@ -166,6 +171,7 @@ void AliGenDPMjet::Init()
     fDPMjet->SetbRange(fMinImpactParam, fMaxImpactParam); 
     fDPMjet->SetPi0Decay(fPi0Decay);
     fDPMjet->SetDecayAll(fDecayAll);
+    fDPMjet->SetFragmentProd(fFragmentation);
 
     AliGenMC::Init();
     

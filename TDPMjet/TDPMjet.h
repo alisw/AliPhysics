@@ -73,6 +73,8 @@ public:
    virtual void  SetPi0Decay(Int_t iPi0)    {fPi0Decay = iPi0;}
    virtual void  SetDecayAll(Int_t iDecAll) {fDecayAll = iDecAll;}
    
+   virtual void  SetFragmentProd(Bool_t val) {fFragmentation = val;}
+   
    // Access to DPMJET common blocks:
    virtual Int_t    GetEvNum() const;	    	  
    virtual Int_t    GetEntriesNum() const;	    	  
@@ -142,8 +144,10 @@ protected:
    Int_t        fPi0Decay;// Flag for pi0 decays
    Int_t        fDecayAll;// Flag to decay also long-lived particles
    DpmProcess_t fProcess; // Process type
+   //
+   Bool_t       fFragmentation; // Allows evaporation and fragments production
    
-   ClassDef(TDPMjet,2)  //Interface to DPMJET Event Generator
+   ClassDef(TDPMjet,3)  //Interface to DPMJET Event Generator
 };
 
 #endif
