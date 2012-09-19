@@ -46,12 +46,16 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
 
   // activate target OCDB storage
   AliCDBStorage* targetStorage = 0x0;
-  if (targetOCDBstorage.Length()==0) targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  if (targetOCDBstorage.Length()==0) {
+    targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+  }
   else if (targetOCDBstorage.CompareTo("same",TString::kIgnoreCase) == 0 ){
     targetStorage = AliCDBManager::Instance()->GetDefaultStorage();
   }
   else {
     targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+    targetStorage->SetMirrorSEs(mirrorsStr.Data());
   }
   printf("** targetOCDBstorage: \"%s\"\n",targetOCDBstorage.Data());
 

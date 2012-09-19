@@ -12,10 +12,8 @@
 
 void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream);
 
-
 void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDBstorage="raw://")
 {
-
   //
   // extract OCDB entries for detectors participating in the calibration for the current run
   //
@@ -48,7 +46,10 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
 
   // activate target OCDB storage
   AliCDBStorage* targetStorage = 0x0;
-  if (targetOCDBstorage.Length()==0) targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  if (targetOCDBstorage.Length()==0) {
+    targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+  }
   else if (targetOCDBstorage.CompareTo("same",TString::kIgnoreCase) == 0 ){
     targetStorage = AliCDBManager::Instance()->GetDefaultStorage();
   }
@@ -96,7 +97,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   if (detStr.Contains("T0")) {
     Printf("\n******* Calibrating T0 *******");
     // Make  calibration of channels offset
-    procesT0 = new  AliT0PreprocessorOffline;
+    procesT0 = new AliT0PreprocessorOffline;
     procesT0->Process("CalibObjects.root",runNumber, runNumber, targetStorage);
   }
 
