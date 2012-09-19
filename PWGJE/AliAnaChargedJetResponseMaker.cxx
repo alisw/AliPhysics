@@ -299,10 +299,9 @@ void AliAnaChargedJetResponseMaker::InitializeResponseMatrix() {
   if(fbVariableBinning) 
     binWidthUnfLowPt = binWidthUnf*0.5;
 
-  if(fExtraBinsUnfolded>0) {
-    fPtMaxUnfolded = fPtMax+(double)(fExtraBinsUnfolded)*binWidthUnf;
-    nbins[fDimGen]+=fExtraBinsUnfolded;
-  }
+  fPtMaxUnfolded = fPtMax+(double)(fExtraBinsUnfolded)*binWidthUnf;
+  nbins[fDimGen]+=fExtraBinsUnfolded;
+
 
   printf("fPtMinMeas: %f  fPtMaxMeas: %f\n",fPtMin,fPtMax);
   printf("binWidthMeas: %f  binWidthUnf: %f   fBinWidthFactorUnfolded: %d\n",binWidthMeas,binWidthUnf,fBinWidthFactorUnfolded);
@@ -716,15 +715,17 @@ void AliAnaChargedJetResponseMaker::FillResponseMatrixFineAndMerge() {
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
-TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *hRM) {
+TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *hRM, Bool_t useFunctionWeight) {
 
   //
   // Rebin matrix hRMFine to dimensions of hRM
-  // function returns matrix in TH2D format with dimensions from hRM
+  // function returns matrix in TH2D format (hRM2) with dimensions from hRM
   //
 
   TH2 *hRM2 = (TH2*)hRM->Clone("hRM2");
   hRM2->Reset();
+
+  if(useFunctionWeight)  cout << "Use function to do weighting" << endl;
 
   //First normalize columns of input
   const Int_t nbinsNorm = hRM2->GetNbinsX();
@@ -739,8 +740,11 @@ TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *h
     Int_t binxLowFine = hRMFine->GetXaxis()->FindBin(xLow);
     Int_t binxUpFine = hRMFine->GetXaxis()->FindBin(xUp)-1;
     //cout << "xLowFine: " << hRMFine->GetXaxis()->GetBinLowEdge(binxLowFine) << "\txUpFine: " << hRMFine->GetXaxis()->GetBinUpEdge(binxUpFine) << endl;
-    normVector->SetAt(hRMFine->Integral(binxLowFine,binxUpFine,1,hRMFine->GetYaxis()->GetNbins()),ix-1);
-    //    if(fDebug) cout << "ix norm: " << normVector->At(ix-1) << endl;
+    if(useFunctionWeight)
+      normVector->SetAt(f1MergeFunction->Integral(xLow,xUp),ix-1);
+    else
+      normVector->SetAt(hRMFine->Integral(binxLowFine,binxUpFine,1,hRMFine->GetYaxis()->GetNbins()),ix-1);
+    if(fDebug) cout << "ix norm: " << normVector->At(ix-1) << endl;
   }
 
   Double_t content, oldcontent = 0.;
@@ -766,7 +770,12 @@ TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *h
 
       //if(fDebug) cout << "ixNew: " << ixNew << " " << xvalLo << " iyNew: " << iyNew << " " << yvalLo << " content: " << content << " oldContent: " << oldcontent << " newContent: " << oldcontent+content << endl;
       Double_t weight = 1.;
-      if(normVector->At(ixNew-1)>0.) weight = 1./normVector->At(ixNew-1);
+      if(normVector->At(ixNew-1)>0.) {
+	if(useFunctionWeight)
+	  weight = f1MergeFunction->Integral(xvalLo,xvalUp)/normVector->At(ixNew-1);
+	else
+	  weight = 1./normVector->At(ixNew-1);
+      }
       hRM2->SetBinContent(ixNew,iyNew,oldcontent+content*weight);
     }
   }
@@ -774,6 +783,101 @@ TH2* AliAnaChargedJetResponseMaker::MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *h
   if(normVector) delete normVector;
   
   return hRM2;
+
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+TH2* AliAnaChargedJetResponseMaker::CreateTruncated2DHisto(TH2 *h2, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax) {
+
+  //
+  // Limit axis range of 2D histogram
+  //
+
+  Int_t binMinXh2 = h2->GetXaxis()->FindBin(xmin);
+  if(h2->GetXaxis()->GetBinLowEdge(binMinXh2) < xmin ) binMinXh2++;
+  if(h2->GetXaxis()->GetBinLowEdge(binMinXh2) > xmin ) binMinXh2--;
+
+  Int_t binMinYh2 = h2->GetYaxis()->FindBin(ymin);
+  if(h2->GetYaxis()->GetBinLowEdge(binMinYh2) < ymin ) binMinYh2++;
+  if(h2->GetYaxis()->GetBinLowEdge(binMinYh2) > ymin ) binMinYh2--;
+
+  Int_t binMaxXh2 = h2->GetXaxis()->FindBin(xmax);
+  if(h2->GetXaxis()->GetBinUpEdge(binMaxXh2) < xmax ) binMaxXh2++;
+  if(h2->GetXaxis()->GetBinUpEdge(binMaxXh2) > xmax ) binMaxXh2--;
+
+  Int_t binMaxYh2 = h2->GetYaxis()->FindBin(ymax);
+  if(h2->GetYaxis()->GetBinUpEdge(binMaxYh2) < ymax ) binMaxYh2++;
+  if(h2->GetYaxis()->GetBinUpEdge(binMaxYh2) > ymax ) binMaxYh2--;
+
+  Int_t nbinsX = binMaxXh2-binMinXh2;
+  Int_t nbinsY = binMaxYh2-binMinYh2;
+
+  Double_t *binsX = new Double_t[nbinsX+1];
+  Double_t *binsY = new Double_t[nbinsY+1];
+
+  for(int ix=1; ix<=nbinsX; ix++)
+    binsX[ix-1] = h2->GetXaxis()->GetBinLowEdge(binMinXh2+ix-1);
+  binsX[nbinsX] = h2->GetXaxis()->GetBinUpEdge(binMaxXh2);
+
+  for(int iy=1; iy<=nbinsY; iy++)
+    binsY[iy-1] = h2->GetYaxis()->GetBinLowEdge(binMinYh2+iy-1);
+  binsY[nbinsY] = h2->GetYaxis()->GetBinUpEdge(binMaxYh2);
+
+  TH2 *h2Lim = new TH2D("h2Lim","h2Lim",nbinsX,binsX,nbinsY,binsY);
+
+  for(int ix=1; ix<=nbinsX; ix++) {
+    //    cout << "ix: " << ix << "  " << binsX[ix] << endl;
+    for(int iy=1; iy<=nbinsY; iy++) {
+      cout << "ix: " << ix << "  " << binsX[ix] << "\tiy: " << iy << "  " << binsY[iy] << endl;
+
+      double content = h2->GetBinContent(binMinXh2+ix-1,binMinYh2+iy-1);
+      double error = h2->GetBinContent(binMinXh2+ix-1,binMinYh2+iy-1);
+      h2Lim->SetBinContent(ix,iy,content);
+      h2Lim->SetBinError(ix,iy,error);
+
+    }
+  }
+
+
+
+  return h2Lim;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+TH2* AliAnaChargedJetResponseMaker::TruncateAxisRangeResponseMatrix(TH2 *hRMOrig, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax) {
+
+  //
+  // Limit axis range of response matrix without changing normalization
+  //
+
+  //TH2 *hRMLimit
+  //TH2 *hRMLimit2 = (TH2*)hRMLimit->Clone("hRMLimit2");
+
+  TH2 *hRMLimit2 = CreateTruncated2DHisto(hRMOrig, xmin, xmax, ymin, ymax);
+  hRMLimit2->Reset();
+
+  double binCent[2] = {0.,0.}; 
+  double content = 0.;
+  double error = 0.;
+  Int_t binOrig[2] = {0};
+  for(int ix=1; ix<=hRMLimit2->GetXaxis()->GetNbins(); ix++) {
+    binCent[0] = hRMLimit2->GetXaxis()->GetBinCenter(ix);
+    binOrig[0] = hRMOrig->GetXaxis()->FindBin(binCent[0]);
+    for(int iy=1; iy<=hRMLimit2->GetYaxis()->GetNbins(); iy++) {
+      binCent[1] = hRMLimit2->GetYaxis()->GetBinCenter(iy);
+      binOrig[1] = hRMOrig->GetYaxis()->FindBin(binCent[1]);
+
+      content = hRMOrig->GetBinContent(binOrig[0],binOrig[1]);
+      error = hRMOrig->GetBinError(binOrig[0],binOrig[1]);
+
+      hRMLimit2->SetBinContent(ix,iy,content);
+      hRMLimit2->SetBinError(ix,iy,error);
+
+    }
+  }
+  
+
+  return hRMLimit2;
 
 }
 
@@ -789,7 +893,7 @@ TH2* AliAnaChargedJetResponseMaker::MultiplityResponseMatrices(TH2 *h2RMDeltaPt,
   // Function assumes that generated/unfolded axis is x-axis and reconstructed is on y-axis on both respone matrices
 
 
-  TH2D *h2ResponseMatrixCombined = (TH2D*)h2RMDeltaPt->Clone("h2ResponseMatrixCombined"); //h2ResponseMatrix is the bkg fluctuations RM which has the dimensions we want for the combined response matrix
+  TH2D *h2ResponseMatrixCombined = (TH2D*)h2RMDeltaPt->Clone("h2ResponseMatrixCombined"); //h2RMDeltaPt is the bkg fluctuations RM which has the dimensions we want for the combined response matrix
   h2ResponseMatrixCombined->SetTitle("h2ResponseMatrixCombined");
   h2ResponseMatrixCombined->SetName("h2ResponseMatrixCombined");
 
@@ -803,18 +907,20 @@ TH2* AliAnaChargedJetResponseMaker::MultiplityResponseMatrices(TH2 *h2RMDeltaPt,
   // RM_comb(m,t) = Sum_d RM_deltaPt(m,d)*RM_DetEffects(d,t)
 
   if(fDebug) {
-    printf("Nt=%d",h2ResponseMatrixCombined->GetNbinsX());
-    printf("Nm=%d",h2ResponseMatrixCombined->GetNbinsY());
-    printf("Nd=%d",h2RMDetector->GetNbinsX());
+    printf("Nt=%d\n",h2ResponseMatrixCombined->GetNbinsX());
+    printf("Nm=%d\n",h2ResponseMatrixCombined->GetNbinsY());
+    printf("Nd=%d\n",h2RMDeltaPt->GetNbinsX());
   }
+
 
   for(Int_t t=1; t<=h2ResponseMatrixCombined->GetNbinsX();t++) { 
     for(Int_t m=1; m<=h2ResponseMatrixCombined->GetNbinsY();m++) { 
       Double_t valueSum = 0.;    
       for(Int_t d=1; d<=h2RMDeltaPt->GetNbinsX();d++) { 
 	valueSum += h2RMDeltaPt->GetBinContent(d,m) * h2RMDetector->GetBinContent(t,d);
+	//	if(t==10 && m==10) cout << "sum m,d=" << m << "," << d << endl;
       }//d-loop
-      //  cout << "t,m = " << t << "," << m << endl; 
+      //  if(t==10) cout << "t,m = " << t << "," << m << "\tvalueSum: " << valueSum << endl; 
       h2ResponseMatrixCombined->SetBinContent(t,m,valueSum);
     } //m-loop
   }//t-loop
@@ -858,7 +964,7 @@ TH2* AliAnaChargedJetResponseMaker::NormalizeResponsMatrixYaxisWithPrior(TH2 *h2
   // Normalize such that the Y projection is the prior
   //
 
-  TH1D *hProjRespY = (TH1D*)h2RM->ProjectionY("hProjRespY");
+  //  TH1D *hProjRespY = (TH1D*)h2RM->ProjectionY("hProjRespY");
   double intPrior = hPrior->Integral();//"width");
   for (Int_t jbin = 1; jbin <= h2RM->GetNbinsY(); jbin++) {
     //    double corr = hPrior->GetBinContent(jbin)/hProjRespY->GetBinContent(jbin);

@@ -38,6 +38,7 @@ class AliESDVertex;
 class AliMCEvent;
 class AliStack;
 class AliGenPythiaEventHeader;
+class AliGenHijingEventHeader;
 
 class AliPWG4HighPtSpectra : public AliAnalysisTask {
  public:
@@ -85,6 +86,9 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   //AliESDtrackCuts setters
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsReject(AliESDtrackCuts* trackCuts) {fTrackCutsReject = trackCuts;}
+  void SelectHIJINGOnly(Bool_t b)    {fbSelectHIJING = b;}
+
+  Bool_t IsHIJINGParticle(Int_t label);
 
   void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
 
@@ -93,7 +97,11 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   void   SetReadAODData(Bool_t flag=kTRUE) {fReadAODData=flag;}
 
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
+  static AliGenHijingEventHeader*  GetHijingEventHeader(AliMCEvent *mcEvent);
+
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+
+
   
  protected:
   Bool_t              fReadAODData ;       // flag for AOD/ESD input files
@@ -114,6 +122,8 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPTSpectra.C. They correspond with different steps in container.
   AliESDtrackCuts *fTrackCuts;           // trackCuts applied to global tracks
   AliESDtrackCuts *fTrackCutsReject;     // trackCuts to reject tracks (hybrid case)
+
+  Bool_t fbSelectHIJING; //Select only particles from HIJING event
 
   Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
 
