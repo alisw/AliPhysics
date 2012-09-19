@@ -82,7 +82,10 @@ class AliAnaChargedJetResponseMaker {
 
   virtual void FillResponseMatrixFineAndMerge();
 
-  virtual TH2* MakeResponseMatrixRebin(TH2 *hRMFine, TH2 *hRM);
+  virtual TH2* MakeResponseMatrixRebin(TH2 *hRMFine = 0, TH2 *hRM = 0, Bool_t useFunctionWeight = kFALSE);
+
+  virtual TH2* CreateTruncated2DHisto(TH2 *h2=0, Double_t xmin=-1, Double_t xmax=-1, Double_t ymin=-1, Double_t ymax=-1);
+  virtual TH2* TruncateAxisRangeResponseMatrix(TH2 *hRMOrig=0,  Double_t xmin=-1, Double_t xmax=-1, Double_t ymin=-1, Double_t ymax=-1);
 
   virtual TH2* MultiplityResponseMatrices(TH2 *h2RMDeltaPt, TH2 *h2RMDetector);
 
