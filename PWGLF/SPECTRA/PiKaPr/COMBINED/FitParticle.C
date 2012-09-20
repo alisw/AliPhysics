@@ -20,8 +20,12 @@ using namespace std;
 #endif
 
 enum {kFitExpPt, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave, kFitBoseEinstein, kFitFermiDirac};
+Bool_t skipMean = 0;
 
-void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname=0, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliPWGFunc::kdNdpt, const char * fileOut = 0, Bool_t wait = 0) {
+void FitParticle(TH1 * h, const char * partName, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliPWGFunc::kdNdpt, const char * fileOut = 0, Bool_t wait = 0) ;
+void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname=0, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliPWGFunc::kdNdpt, const char * fileOut = 0, Bool_t wait = 0);
+
+void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname, Float_t min, Float_t max, Float_t scaleHisto, Int_t fitFunc, Int_t vartype, const char * fileOut, Bool_t wait) {
 
   // Generic Macro to fit any particle using the PWG2/SPECTRA/Fit macros
   //
@@ -57,6 +61,26 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   gSystem->Load("libPWG2spectra.so");
 
 
+  // open file
+  TFile * f = file ? new TFile(file) : gFile;  
+  TH1 * h = 0;
+  if(listname){
+    TList * l = (TList*) gDirectory->Get(listname);
+    h = (TH1*) l->FindObject(histo);
+  }
+  else{
+    h = (TH1*) gDirectory->Get(histo); // 
+  }
+
+  FitParticle(h, partName, min, max, scaleHisto, fitFunc, vartype, fileOut, wait);
+  
+
+
+}
+
+void FitParticle(TH1 * h, const char * partName, Float_t min , Float_t max, Float_t scaleHisto, Int_t fitFunc, Int_t vartype, const char * fileOut, Bool_t wait) { 
+
+
   // get histo and draw
   AliPWGFunc * fm = new AliPWGFunc;
   fm->SetVarType(AliPWGFunc::VarType_t(vartype));
@@ -88,39 +112,39 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   Int_t normPar = -1;
   Int_t slopePar=0;
   if (fitFunc == kFitLevi)   {
-    func = fm->GetLevi (mass, 0.4, 20,3);
+    func = fm->GetLevi (mass, 0.4, 750,3);
     func->SetParLimits(1,0.0001,20000);
-    table = new AliLatexTable(9,"c|cccccccc");
-    table->InsertCustomRow("Part & Func & Yield & FD Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    table = new AliLatexTable(10,"c|ccccccccc");
+    table->InsertCustomRow("Part & Func & Yield & FD Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below  & Mean ");
     normPar = 0;
     slopePar = 2;
   }
   if (fitFunc == kFitExpPt)  {
     func = fm->GetPTExp(0.2, 20);
-    table = new AliLatexTable(9,"c|cccccccc");
-    table->InsertCustomRow("Part & Func & Yield & pT Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    table = new AliLatexTable(10,"c|ccccccccc");
+    table->InsertCustomRow("Part & Func & Yield & pT Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below & Mean ");
     normPar = 0;
     slopePar = 1;
   }
   if (fitFunc == fFitExpMt)  {
     func = fm->GetMTExp(mass,0.2, 20);
-    table = new AliLatexTable(9,"c|cccccccc");
-    table->InsertCustomRow("Part & Func & Yield & mT Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    table = new AliLatexTable(10,"c|ccccccccc");
+    table->InsertCustomRow("Part & Func & Yield & mT Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below & Mean  ");
     normPar = 0;
     slopePar = 1;
   }
   if (fitFunc == kFitBoltzmann)  {
     func = fm->GetBoltzmann(mass, 0.2, 20);
-    table = new AliLatexTable(9,"c|cccccccc");
-    table->InsertCustomRow("Part & Func & Yield & Bz Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    table = new AliLatexTable(10,"c|ccccccccc");
+    table->InsertCustomRow("Part & Func & Yield & Bz Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below & Mean  ");
     normPar = 0;
     slopePar = 1;
 
   }
   if (fitFunc == kFitBlastWave)  {
     func = fm->GetBGBW(mass,0.6,0.3, 1, 1e5);// beta, T, n, norm 
-    table = new AliLatexTable(11,"cc|ccccccccccc");
-    table->InsertCustomRow("Part & Func & Yield & T & beta & n & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    table = new AliLatexTable(12,"cc|cccccccccccc");
+    table->InsertCustomRow("Part & Func & Yield & T & beta & n & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below  & Mean ");
     func->SetParLimits(1, 0.1, 0.99);
     func->SetParLimits(2, 0.01, 1);
     func->SetParLimits(3, 0.01, 2);
@@ -129,42 +153,37 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   }
   if (fitFunc == kFitBoseEinstein)  {
     func = fm->GetBoseEinstein(mass,0.3,20);
-    table = new AliLatexTable(9,"c|cccccccc");
-    table->InsertCustomRow("Part & Func & Yield & BE Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    table = new AliLatexTable(10,"c|ccccccccc");
+    table->InsertCustomRow("Part & Func & Yield & BE Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below & Mean ");
     normPar = 0;
     slopePar = 1;
   }
   if (fitFunc == kFitFermiDirac)  {
     func = fm->GetFermiDirac(mass,0.3,20);
-    table = new AliLatexTable(9,"c|cccccccc");
-    table->InsertCustomRow("Part & Func & Yield & FD Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    table = new AliLatexTable(10,"c|ccccccccc");
+    table->InsertCustomRow("Part & Func & Yield & FD Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below  & Mean  ");
     normPar = 0;
     slopePar = 1;
   }
 
-  
-  TFile * f = file ? new TFile(file) : gFile;  
-  TH1 * h = 0;
-  if(listname){
-    TList * l = (TList*) gDirectory->Get(listname);
-    h = (TH1*) l->FindObject(histo);
-  }
-  else{
-    h = (TH1*) gDirectory->Get(histo); // 
-  }
-  h->Sumw2();
+    h->Sumw2();
   if (scaleHisto > 0) h->Scale(scaleHisto, "width");
 //   TH1 * h = AliPWGHistoTools::GetdNdPtFromOneOverPt((TH1*) gDirectory->Get(histo)); // FIXME
 //   cout << "WARNING SCALING2PI" << endl;
 //   h->Scale(2*TMath::Pi());//Fixme
 
    h->Fit(func); // FIXME
-   gMinuit->Command("SET STRATEGY 2"); // FIXME
+   h->Fit(func); // FIXME
+   h->Fit(func); // FIXME
+   h->Fit(func,"IME0","",min,max);      
+   h->Fit(func,"IME0","",min,max);      
 
-  if (!AliPWGHistoTools::Fit(h,func,min,max)) {
-    cout << "Fitting error!" << endl;
-    //    return;    
-  }
+   //   gMinuit->Command("SET STRATEGY 2"); // FIXME
+
+  // if (!AliPWGHistoTools::Fit(h,func,min,max)) {
+  //   cout << "Fitting error!" << endl;
+  //   //    return;    
+  // } FIXME
   cout << "Drawing" << endl;
 
   TCanvas * c = new TCanvas();
@@ -186,10 +205,9 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   TLatex * l = new TLatex(2,(h->GetMaximum()+h->GetMinimum())/2,Form("%3.3f #pm %3.3f (%s)", yield,yieldE, func->GetName()));
   l->Draw();
 
-  if(wait)  c->WaitPrimitive();
   if(fileOut) {
     TFile * fout = new TFile(fileOut, "update");    
-    c->SetName(Form("c_%s_%s_fit_%2.2f_%2.2f",histo, func->GetName(), min, max));
+    c->SetName(Form("c_%s_%s_fit_%2.2f_%2.2f", h->GetName(), func->GetName(), min, max));
     c->Write();
     fout->Purge(); // remove old canvases
     fout->Close();
@@ -220,16 +238,18 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   table->SetNextCol(max,-2);
   table->SetNextCol(yieldBelow/yield,-3);
 
-  // Float_t mean=0, meane=0;
+  Double_t mean=0, meane=0;
   // Float_t mean2=0, mean2e=0;
-  // AliPWGHistoTools::GetMean      (func, mean,  meane , 0.,100., normPar);
+  //  AliPWGHistoTools::GetMean      (func, mean,  meane , 0.,100., normPar);
+  AliPWGHistoTools::GetMeanDataAndExtrapolation      (h, func, mean,  meane , 0.,100.);
   // AliPWGHistoTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
-  // table->SetNextCol(mean,  meane ,-4);
+  if(skipMean) table->SetNextCol("N/A");
+  else table->SetNextCol(mean,  meane ,-4);
   // table->SetNextCol(mean2, mean2e,-4);
   //			 fMean2->IntegralError(0,100)/func->Integral(0,100),-7);
   table->InsertRow();
   table->PrintTable("ASCII");
-  
+  if(wait)  c->WaitPrimitive();
 
 
 }
